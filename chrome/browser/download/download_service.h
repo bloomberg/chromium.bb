@@ -44,11 +44,12 @@ class DownloadService : public BrowserContextKeyedService {
   // Has a download manager been created?
   bool HasCreatedDownloadManager();
 
-  // Number of downloads associated with this instance of the service.
-  int DownloadCount() const;
+  // Number of non-malicious downloads associated with this instance of the
+  // service.
+  int NonMaliciousDownloadCount() const;
 
-  // Number of downloads associated with all profiles.
-  static int DownloadCountAllProfiles();
+  // Number of non-malicious downloads associated with all profiles.
+  static int NonMaliciousDownloadCountAllProfiles();
 
   // Sets the DownloadManagerDelegate associated with this object and
   // its DownloadManager.  Takes ownership of |delegate|, and destroys

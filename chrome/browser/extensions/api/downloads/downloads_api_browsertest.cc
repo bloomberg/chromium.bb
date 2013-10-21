@@ -473,6 +473,7 @@ class DownloadExtensionTest : public ExtensionApiTest {
     GURL slow_download_url(URLRequestSlowDownloadJob::kUnknownSizeUrl);
     DownloadManager* manager = GetCurrentManager();
 
+    EXPECT_EQ(0, manager->NonMaliciousInProgressCount());
     EXPECT_EQ(0, manager->InProgressCount());
     if (manager->InProgressCount() != 0)
       return NULL;
@@ -3345,6 +3346,7 @@ IN_PROC_BROWSER_TEST_F(
     scoped_ptr<content::DownloadTestObserver> observer(
         new JustInProgressDownloadObserver(manager, 1));
     ASSERT_EQ(0, manager->InProgressCount());
+    ASSERT_EQ(0, manager->NonMaliciousInProgressCount());
     // Tabs created just for a download are automatically closed, invalidating
     // the download's WebContents. Downloads without WebContents cannot be
     // resumed. http://crbug.com/225901

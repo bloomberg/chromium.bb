@@ -255,6 +255,8 @@ class BrowserCloseTest : public InProcessBrowserTest {
   // an assertion has failed and the test should be aborted.
   bool ExecuteDownloadCloseCheckCase(size_t i) {
     const DownloadsCloseCheckCase& check_case(download_close_check_cases[i]);
+    SCOPED_TRACE(testing::Message() << "Case" << i
+                                    << ": " << check_case.DebugString());
 
     // Test invariant: so that we don't actually try and close the browser,
     // we always enter the function with a single browser window open on the
@@ -270,18 +272,14 @@ class BrowserCloseTest : public InProcessBrowserTest {
       return false;
 
     Browser* entry_browser = FirstUnclosedBrowser();
-    EXPECT_EQ(first_profile_, entry_browser->profile())
-        << "Case" << i
-        << ": " << check_case.DebugString();
+    EXPECT_EQ(first_profile_, entry_browser->profile());
     if (first_profile_ != entry_browser->profile())
       return false;
-    int total_download_count = DownloadService::DownloadCountAllProfiles();
-    EXPECT_EQ(0, total_download_count)
-        << "Case " << i
-        << ": " << check_case.DebugString();
+    int total_download_count =
+        DownloadService::NonMaliciousDownloadCountAllProfiles();
+    EXPECT_EQ(0, total_download_count);
     if (0 != total_download_count)
       return false;
-
     Profile* first_profile_incognito = first_profile_->GetOffTheRecordProfile();
     Profile* second_profile_incognito =
         second_profile_->GetOffTheRecordProfile();
@@ -356,12 +354,9 @@ class BrowserCloseTest : public InProcessBrowserTest {
     Browser::DownloadClosePreventionType type =
         browser_to_probe->OkToCloseWithInProgressDownloads(
             &num_downloads_blocking);
-    EXPECT_EQ(check_case.type, type) << "Case " << i
-                                     << ": " << check_case.DebugString();
+    EXPECT_EQ(check_case.type, type);
     if (type != Browser::DOWNLOAD_CLOSE_OK)
-      EXPECT_EQ(check_case.num_blocking, num_downloads_blocking)
-          << "Case " << i
-          << ": " << check_case.DebugString();
+      EXPECT_EQ(check_case.num_blocking, num_downloads_blocking);
 
     // Release all the downloads.
     CompleteAllDownloads(browser_to_probe);

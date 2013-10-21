@@ -158,6 +158,12 @@ class CONTENT_EXPORT DownloadManager : public base::SupportsUserData::Data {
   // is too slow, use an AllDownloadItemNotifier to count in-progress items.
   virtual int InProgressCount() const = 0;
 
+  // The number of in progress (including paused) downloads.
+  // Performance note: this loops over all items. If profiling finds that this
+  // is too slow, use an AllDownloadItemNotifier to count in-progress items.
+  // This excludes downloads that are marked as malicious.
+  virtual int NonMaliciousInProgressCount() const = 0;
+
   virtual BrowserContext* GetBrowserContext() const = 0;
 
   // Checks whether downloaded files still exist. Updates state of downloads

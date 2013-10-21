@@ -673,6 +673,20 @@ int DownloadManagerImpl::InProgressCount() const {
   return count;
 }
 
+int DownloadManagerImpl::NonMaliciousInProgressCount() const {
+  int count = 0;
+  for (DownloadMap::const_iterator it = downloads_.begin();
+       it != downloads_.end(); ++it) {
+    if (it->second->GetState() == DownloadItem::IN_PROGRESS &&
+        it->second->GetDangerType() != DOWNLOAD_DANGER_TYPE_DANGEROUS_URL &&
+        it->second->GetDangerType() != DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT &&
+        it->second->GetDangerType() != DOWNLOAD_DANGER_TYPE_DANGEROUS_HOST) {
+      ++count;
+    }
+  }
+  return count;
+}
+
 DownloadItem* DownloadManagerImpl::GetDownload(uint32 download_id) {
   return ContainsKey(downloads_, download_id) ? downloads_[download_id] : NULL;
 }

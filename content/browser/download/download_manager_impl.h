@@ -89,6 +89,7 @@ class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
       DownloadInterruptReason interrupt_reason,
       bool opened) OVERRIDE;
   virtual int InProgressCount() const OVERRIDE;
+  virtual int NonMaliciousInProgressCount() const OVERRIDE;
   virtual BrowserContext* GetBrowserContext() const OVERRIDE;
   virtual void CheckForHistoryFilesRemoval() OVERRIDE;
   virtual DownloadItem* GetDownload(uint32 id) OVERRIDE;

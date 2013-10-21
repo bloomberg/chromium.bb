@@ -172,6 +172,10 @@ void DownloadTestObserver::OnDownloadUpdated(DownloadItem* download) {
       case ON_DANGEROUS_DOWNLOAD_IGNORE:
         break;
 
+      case ON_DANGEROUS_DOWNLOAD_QUIT:
+        DownloadInFinalState(download);
+        break;
+
       default:
         NOTREACHED();
     }

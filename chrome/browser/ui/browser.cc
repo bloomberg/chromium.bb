@@ -697,7 +697,8 @@ Browser::DownloadClosePreventionType Browser::OkToCloseWithInProgressDownloads(
   if (!g_browser_process->profile_manager())
     return DOWNLOAD_CLOSE_OK;
 
-  int total_download_count = DownloadService::DownloadCountAllProfiles();
+  int total_download_count =
+      DownloadService::NonMaliciousDownloadCountAllProfiles();
   if (total_download_count == 0)
     return DOWNLOAD_CLOSE_OK;   // No downloads; can definitely close.
 
@@ -731,9 +732,9 @@ Browser::DownloadClosePreventionType Browser::OkToCloseWithInProgressDownloads(
   DownloadService* download_service =
       DownloadServiceFactory::GetForBrowserContext(profile());
   if ((profile_window_count == 0) &&
-      (download_service->DownloadCount() > 0) &&
+      (download_service->NonMaliciousDownloadCount() > 0) &&
       profile()->IsOffTheRecord()) {
-    *num_downloads_blocking = download_service->DownloadCount();
+    *num_downloads_blocking = download_service->NonMaliciousDownloadCount();
     return DOWNLOAD_CLOSE_LAST_WINDOW_IN_INCOGNITO_PROFILE;
   }
 

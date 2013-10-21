@@ -760,8 +760,9 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
     DownloadManager* download_manager =
         (download_service->HasCreatedDownloadManager() ?
          BrowserContext::GetDownloadManager(profiles[i]) : NULL);
-    if (download_manager && download_manager->InProgressCount() > 0) {
-      int downloadCount = download_manager->InProgressCount();
+    if (download_manager &&
+        download_manager->NonMaliciousInProgressCount() > 0) {
+      int downloadCount = download_manager->NonMaliciousInProgressCount();
       if ([self userWillWaitForInProgressDownloads:downloadCount]) {
         // Create a new browser window (if necessary) and navigate to the
         // downloads page if the user chooses to wait.

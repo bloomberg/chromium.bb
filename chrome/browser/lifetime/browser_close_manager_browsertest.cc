@@ -8,6 +8,9 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/download/chrome_download_manager_delegate.h"
+#include "chrome/browser/download/download_service.h"
+#include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/lifetime/browser_close_manager.h"
 #include "chrome/browser/net/url_request_mock_util.h"
@@ -31,6 +34,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/download_test_observer.h"
 #include "content/public/test/test_navigation_observer.h"
+#include "content/test/net/url_request_mock_http_job.h"
 #include "content/test/net/url_request_slow_download_job.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
@@ -121,6 +125,7 @@ class TestBrowserCloseManager : public BrowserCloseManager {
   enum UserChoice {
     USER_CHOICE_USER_CANCELS_CLOSE,
     USER_CHOICE_USER_ALLOWS_CLOSE,
+    NO_USER_CHOICE
   };
 
   static void AttemptClose(UserChoice user_choice) {
@@ -135,7 +140,9 @@ class TestBrowserCloseManager : public BrowserCloseManager {
   virtual void ConfirmCloseWithPendingDownloads(
       int download_count,
       const base::Callback<void(bool)>& callback) OVERRIDE {
+    EXPECT_NE(NO_USER_CHOICE, user_choice_);
     switch (user_choice_) {
+      case NO_USER_CHOICE:
       case USER_CHOICE_USER_CANCELS_CLOSE: {
         callback.Run(false);
         break;
@@ -154,6 +161,38 @@ class TestBrowserCloseManager : public BrowserCloseManager {
   UserChoice user_choice_;
 
   DISALLOW_COPY_AND_ASSIGN(TestBrowserCloseManager);
+};
+
+class TestDownloadManagerDelegate : public ChromeDownloadManagerDelegate {
+ public:
+  explicit TestDownloadManagerDelegate(Profile* profile)
+      : ChromeDownloadManagerDelegate(profile) {
+    SetNextId(content::DownloadItem::kInvalidId + 1);
+  }
+
+  virtual bool DetermineDownloadTarget(
+      content::DownloadItem* item,
+      const content::DownloadTargetCallback& callback) OVERRIDE {
+    content::DownloadTargetCallback dangerous_callback =
+        base::Bind(&TestDownloadManagerDelegate::SetDangerous, this, callback);
+    return ChromeDownloadManagerDelegate::DetermineDownloadTarget(
+        item, dangerous_callback);
+  }
+
+  void SetDangerous(
+      const content::DownloadTargetCallback& callback,
+      const base::FilePath& target_path,
+      content::DownloadItem::TargetDisposition disp,
+      content::DownloadDangerType danger_type,
+      const base::FilePath& intermediate_path) {
+    callback.Run(target_path,
+                 disp,
+                 content::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL,
+                 intermediate_path);
+  }
+
+ private:
+  virtual ~TestDownloadManagerDelegate() {}
 };
 
 }  // namespace
@@ -614,6 +653,49 @@ IN_PROC_BROWSER_TEST_P(BrowserCloseManagerBrowserTest,
   ASSERT_NO_FATAL_FAILURE(dialogs_.AcceptClose());
   ASSERT_NO_FATAL_FAILURE(dialogs_.AcceptClose());
 
+  close_observer.Wait();
+  EXPECT_TRUE(browser_shutdown::IsTryingToQuit());
+  EXPECT_TRUE(chrome::BrowserIterator().done());
+}
+
+// Test shutdown with a DANGEROUS_URL download undecided.
+IN_PROC_BROWSER_TEST_P(BrowserCloseManagerBrowserTest,
+    TestWithDangerousUrlDownload) {
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+
+  // Set up the fake delegate that forces the download to be malicious.
+  scoped_refptr<TestDownloadManagerDelegate> test_delegate(
+      new TestDownloadManagerDelegate(browser()->profile()));
+  DownloadServiceFactory::GetForBrowserContext(browser()->profile())->
+      SetDownloadManagerDelegateForTesting(test_delegate.get());
+
+  // Run a dangerous download, but the user doesn't make a decision.
+  // This .swf normally would be categorized as DANGEROUS_FILE, but
+  // TestDownloadManagerDelegate turns it into DANGEROUS_URL.
+  base::FilePath file(FILE_PATH_LITERAL("downloads/dangerous/dangerous.swf"));
+  GURL download_url(content::URLRequestMockHTTPJob::GetMockUrl(file));
+  content::DownloadTestObserverInterrupted observer(
+      content::BrowserContext::GetDownloadManager(browser()->profile()),
+      1,
+      content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_QUIT);
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(),
+      GURL(download_url),
+      NEW_BACKGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_NONE);
+  observer.WaitForFinished();
+
+  // Check that the download manager has the expected state.
+  EXPECT_EQ(1, content::BrowserContext::GetDownloadManager(
+      browser()->profile())->InProgressCount());
+  EXPECT_EQ(0, content::BrowserContext::GetDownloadManager(
+      browser()->profile())->NonMaliciousInProgressCount());
+
+  // Close the browser with no user action.
+  RepeatedNotificationObserver close_observer(
+      chrome::NOTIFICATION_BROWSER_CLOSED, 1);
+  TestBrowserCloseManager::AttemptClose(
+      TestBrowserCloseManager::NO_USER_CHOICE);
   close_observer.Wait();
   EXPECT_TRUE(browser_shutdown::IsTryingToQuit());
   EXPECT_TRUE(chrome::BrowserIterator().done());

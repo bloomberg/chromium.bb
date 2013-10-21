@@ -74,7 +74,7 @@ void BrowserCloseManager::OnBrowserReportCloseable(bool proceed) {
 }
 
 void BrowserCloseManager::CheckForDownloadsInProgress() {
-  int download_count = DownloadService::DownloadCountAllProfiles();
+  int download_count = DownloadService::NonMaliciousDownloadCountAllProfiles();
   if (download_count == 0) {
     CloseBrowsers();
     return;
@@ -113,7 +113,7 @@ void BrowserCloseManager::OnReportDownloadsCancellable(bool proceed) {
        ++it) {
     DownloadService* download_service =
         DownloadServiceFactory::GetForBrowserContext(*it);
-    if (download_service->DownloadCount() > 0) {
+    if (download_service->NonMaliciousDownloadCount() > 0) {
       Browser* browser =
           chrome::FindOrCreateTabbedBrowser(*it, chrome::GetActiveDesktop());
       DCHECK(browser);

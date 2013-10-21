@@ -116,6 +116,7 @@ class MockDownloadManager : public DownloadManager {
                DownloadItem*(CreateDownloadItemAdapter adapter));
 
   MOCK_CONST_METHOD0(InProgressCount, int());
+  MOCK_CONST_METHOD0(NonMaliciousInProgressCount, int());
   MOCK_CONST_METHOD0(GetBrowserContext, BrowserContext*());
   MOCK_METHOD0(CheckForHistoryFilesRemoval, void());
   MOCK_METHOD1(GetDownload, DownloadItem*(uint32 id));

@@ -88,24 +88,26 @@ bool DownloadService::HasCreatedDownloadManager() {
   return download_manager_created_;
 }
 
-int DownloadService::DownloadCount() const {
+int DownloadService::NonMaliciousDownloadCount() const {
   if (!download_manager_created_)
     return 0;
-  return BrowserContext::GetDownloadManager(profile_)->InProgressCount();
+  return BrowserContext::GetDownloadManager(profile_)->
+      NonMaliciousInProgressCount();
 }
 
 // static
-int DownloadService::DownloadCountAllProfiles() {
+int DownloadService::NonMaliciousDownloadCountAllProfiles() {
   std::vector<Profile*> profiles(
       g_browser_process->profile_manager()->GetLoadedProfiles());
 
   int count = 0;
   for (std::vector<Profile*>::iterator it = profiles.begin();
        it < profiles.end(); ++it) {
-    count += DownloadServiceFactory::GetForBrowserContext(*it)->DownloadCount();
+    count += DownloadServiceFactory::GetForBrowserContext(*it)->
+        NonMaliciousDownloadCount();
     if ((*it)->HasOffTheRecordProfile())
       count += DownloadServiceFactory::GetForBrowserContext(
-          (*it)->GetOffTheRecordProfile())->DownloadCount();
+          (*it)->GetOffTheRecordProfile())->NonMaliciousDownloadCount();
   }
 
   return count;

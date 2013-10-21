@@ -437,6 +437,8 @@ bool DownloadItemModel::MightBeMalicious() const {
   return false;
 }
 
+// If you change this definition of malicious, also update
+// DownloadManagerImpl::NonMaliciousInProgressCount.
 bool DownloadItemModel::IsMalicious() const {
   if (!MightBeMalicious())
     return false;
