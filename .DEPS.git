@@ -12,7 +12,7 @@ vars = {
 
 deps = {
     'breakpad':
-        Var('git_url') + '/external/google-breakpad.git@85c352695f41b3c4bab8773bc2ace5a730dff2b7',
+        Var('git_url') + '/external/google-breakpad.git@24c6c0aaefa5e508ce58dc06a68f051260050ebc',
     'native_client/tools/perf_expectations':
         Var('git_url') + '/chromium/src/tools/perf_expectations.git@25b37aafa73c6530d84e79d95f4b6d75cd4e1e7b',
     'testing/gtest':
@@ -22,7 +22,7 @@ deps = {
     'third_party/lcov':
         Var('git_url') + '/chromium/src/third_party/lcov.git@b37daf5968200da8ff520ce65c4e5bce4047dd15',
     'third_party/lss':
-        Var('git_url') + '/external/linux-syscall-support/lss.git@833a10e5529d400827756f4f8396809e837248a0',
+        Var('git_url') + '/external/linux-syscall-support/lss.git@e6c7682c40c27527894fbb8bcba38f77edbbb6b7',
     'third_party/valgrind':
         Var('git_url') + '/chromium/deps/valgrind.git@684ce00f66fdc9ac9d560068c3e69a9ecc3a2bf5',
     'tools/clang':
