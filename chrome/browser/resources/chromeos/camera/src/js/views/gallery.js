@@ -39,19 +39,18 @@ camera.views.Gallery = function(context) {
   this.pictures_ = [];
 
   /**
-   * @type {camera.VerticalScrollBar}
-   * @private
-   */
-  this.scrollBar_ = new camera.VerticalScrollBar(
-      document.querySelector('#gallery'));
-
-  /**
    * @type {camera.util.SmoothScroller}
    * @private
    */
   this.scroller_ = new camera.util.SmoothScroller(
       document.querySelector('#gallery'),
       document.querySelector('#gallery .padder'));
+
+  /**
+   * @type {camera.VerticalScrollBar}
+   * @private
+   */
+  this.scrollBar_ = new camera.VerticalScrollBar(this.scroller_);
 
   // End of properties, seal the object.
   Object.seal(this);

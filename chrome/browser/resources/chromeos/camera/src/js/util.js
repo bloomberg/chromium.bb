@@ -252,6 +252,14 @@ camera.util.SmoothScroller.prototype = {
   },
   get animating() {
     return this.animating_;
+  },
+  get scrollLeft() {
+    // TODO(mtomasz): This does not reflect paddings nor margins.
+    return -this.padder_.getBoundingClientRect().left;
+  },
+  get scrollTop() {
+    // TODO(mtomasz): This does not reflect paddings nor margins.
+    return -this.padder_.getBoundingClientRect().top;
   }
 };
 
