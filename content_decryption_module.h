@@ -71,6 +71,9 @@ class AudioFrames_1;
 class AudioFrames_2;
 typedef AudioFrames_2 AudioFrames;
 
+class Host_1;
+class Host_2;
+
 class DecryptedBlock;
 class VideoFrame;
 
@@ -306,6 +309,7 @@ const int kCdmInterfaceVersion_1 = 1;
 class ContentDecryptionModule_1 {
  public:
   static const int kVersion = kCdmInterfaceVersion_1;
+  typedef Host_1 Host;
 
   // Generates a |key_request| given |type| and |init_data|.
   //
@@ -437,6 +441,7 @@ const int kCdmInterfaceVersion_2 = 2;
 class ContentDecryptionModule_2 {
  public:
   static const int kVersion = kCdmInterfaceVersion_2;
+  typedef Host_2 Host;
 
   // Generates a |key_request| given |type| and |init_data|.
   //
@@ -596,11 +601,18 @@ class Buffer {
   void operator=(const Buffer&);
 };
 
+// Deprecated.
+// Remove after CDMs start to use ContentDecryptionModule*::Host::kVersion.
+const int kHostInterfaceVersion_1 = 1;
+const int kHostInterfaceVersion_2 = 2;
+
 // Host interface that the CDM can call into to access browser side services.
 // Host interfaces are versioned for backward compatibility. CDM should use
 // HostFactory object to request a Host interface of a particular version.
 class Host_1 {
  public:
+  static const int kVersion = kHostInterfaceVersion_1;
+
   // Returns a Buffer* containing non-zero members upon success, or NULL on
   // failure. The caller owns the Buffer* after this call. The buffer is not
   // guaranteed to be zero initialized. The capacity of the allocated Buffer
@@ -640,6 +652,8 @@ class Host_1 {
 
 class Host_2 {
  public:
+  static const int kVersion = kHostInterfaceVersion_2;
+
   // Returns a Buffer* containing non-zero members upon success, or NULL on
   // failure. The caller owns the Buffer* after this call. The buffer is not
   // guaranteed to be zero initialized. The capacity of the allocated Buffer
@@ -691,9 +705,8 @@ class Host_2 {
   virtual ~Host_2() {}
 };
 
-const int kHostInterfaceVersion_1 = 1;
-const int kHostInterfaceVersion_2 = 2;
-
+// Deprecated. Remove after CDMs start to use ContentDecryptionModule*::Host
+// and ContentDecryptionModule*::Host::kVersion.
 typedef Host_2 Host;
 const int kHostInterfaceVersion = kHostInterfaceVersion_2;
 
