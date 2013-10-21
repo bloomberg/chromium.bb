@@ -155,6 +155,9 @@ static void {{attribute.name}}AttributeSetterCallback{{world_suffix}}(v8::Local<
     {% if attribute.deprecate_as %}
     UseCounter::countDeprecation(activeExecutionContext(), UseCounter::{{attribute.deprecate_as}});
     {% endif %}
+    {% if attribute.measure_as %}
+    UseCounter::count(activeDOMWindow(), UseCounter::{{attribute.measure_as}});
+    {% endif %}
     {% if world_suffix in attribute.activity_logging_world_list_for_setter %}
     V8PerContextData* contextData = V8PerContextData::from(info.GetIsolate()->GetCurrentContext());
     if (contextData && contextData->activityLogger()) {
