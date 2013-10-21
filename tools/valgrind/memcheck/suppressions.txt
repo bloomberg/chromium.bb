@@ -6865,26 +6865,6 @@
    fun:_ZN4base11MessageLoop8PostTaskERKN15tracked_objects8LocationERKNS_8CallbackIFvvEEE
 }
 {
-   bug_272179_a
-   Memcheck:Uninitialized
-   ...
-   fun:_ZN7WebCore14HarfBuzzShaper17shapeHarfBuzzRuns*
-}
-{
-   bug_272179_b
-   Memcheck:Uninitialized
-   ...
-   fun:_ZN7WebCore14HarfBuzzShaper19collectHarfBuzzRunsEv
-}
-{
-   bug_272179_c
-   Memcheck:Param
-   sendmsg(msg.msg_iov[0])
-   obj:/lib/x86_64-linux-gnu/libpthread-2.15.so
-   ...
-   fun:_ZN7WebCore14HarfBuzzShaper19collectHarfBuzzRunsEv
-}
-{
    bug_272596
    Memcheck:Leak
    ...
