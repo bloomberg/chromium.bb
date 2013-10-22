@@ -3,15 +3,16 @@
 <script type="text/javascript" src="../../http/tests/inspector-protocol/resources/protocol-test.js"></script>
 <script>
 
-function logActiveElement() {
-    var el = document.activeElement;
-    log(el ? (el.id || el.tagName) : "(none)");
-}
+window.addEventListener("load", function() {
+    document.querySelector("#second").addEventListener("focus", onFocus);
+
+    function onFocus() {
+        log("focused");
+    }
+});
 
 function test()
 {
-    InspectorTest.sendCommand("Runtime.evaluate", { "expression": "logActiveElement()" });
-
     InspectorTest.sendCommand("DOM.getDocument", {}, onGotDocument);
 
     function onGotDocument(msg) {
@@ -37,8 +38,6 @@ function test()
     function onFocus(msg) {
         if (msg.error)
             InspectorTest.log(msg.error);
-
-        InspectorTest.sendCommand("Runtime.evaluate", { expression: 'logActiveElement()' });
         InspectorTest.completeTest();
     }
 }

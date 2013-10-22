@@ -151,7 +151,6 @@
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/EventHandler.h"
-#include "core/page/FocusController.h"
 #include "core/page/FrameTree.h"
 #include "core/page/MouseEventWithHitTestResults.h"
 #include "core/page/Page.h"
@@ -3332,26 +3331,23 @@ bool Document::setFocusedElement(PassRefPtr<Element> prpNewFocusedElement, Focus
             oldFocusedElement->dispatchFormControlChangeEvent();
 
         // Dispatch the blur event and let the node do any other blur related activities (important for text fields)
-        // If page lost focus, blur event will have already been dispatched
-        if (page() && (page()->focusController().isFocused())) {
-            oldFocusedElement->dispatchBlurEvent(newFocusedElement.get());
+        oldFocusedElement->dispatchBlurEvent(newFocusedElement.get());
 
-            if (m_focusedElement) {
-                // handler shifted focus
-                focusChangeBlocked = true;
-                newFocusedElement = 0;
-            }
+        if (m_focusedElement) {
+            // handler shifted focus
+            focusChangeBlocked = true;
+            newFocusedElement = 0;
+        }
 
-            oldFocusedElement->dispatchFocusOutEvent(EventTypeNames::focusout, newFocusedElement.get()); // DOM level 3 name for the bubbling blur event.
-            // FIXME: We should remove firing DOMFocusOutEvent event when we are sure no content depends
-            // on it, probably when <rdar://problem/8503958> is resolved.
-            oldFocusedElement->dispatchFocusOutEvent(EventTypeNames::DOMFocusOut, newFocusedElement.get()); // DOM level 2 name for compatibility.
+        oldFocusedElement->dispatchFocusOutEvent(EventTypeNames::focusout, newFocusedElement.get()); // DOM level 3 name for the bubbling blur event.
+        // FIXME: We should remove firing DOMFocusOutEvent event when we are sure no content depends
+        // on it, probably when <rdar://problem/8503958> is resolved.
+        oldFocusedElement->dispatchFocusOutEvent(EventTypeNames::DOMFocusOut, newFocusedElement.get()); // DOM level 2 name for compatibility.
 
-            if (m_focusedElement) {
-                // handler shifted focus
-                focusChangeBlocked = true;
-                newFocusedElement = 0;
-            }
+        if (m_focusedElement) {
+            // handler shifted focus
+            focusChangeBlocked = true;
+            newFocusedElement = 0;
         }
 
         if (view()) {
@@ -3378,35 +3374,31 @@ bool Document::setFocusedElement(PassRefPtr<Element> prpNewFocusedElement, Focus
         m_focusedElement = newFocusedElement;
 
         // Dispatch the focus event and let the node do any other focus related activities (important for text fields)
-        // If page lost focus, event will be dispatched on page focus, don't duplicate
-        if (page() && (page()->focusController().isFocused())) {
-            m_focusedElement->dispatchFocusEvent(oldFocusedElement.get(), direction);
+        m_focusedElement->dispatchFocusEvent(oldFocusedElement.get(), direction);
 
-            if (m_focusedElement != newFocusedElement) {
-                // handler shifted focus
-                focusChangeBlocked = true;
-                goto SetFocusedElementDone;
-            }
-
-            m_focusedElement->dispatchFocusInEvent(EventTypeNames::focusin, oldFocusedElement.get()); // DOM level 3 bubbling focus event.
-
-            if (m_focusedElement != newFocusedElement) {
-                // handler shifted focus
-                focusChangeBlocked = true;
-                goto SetFocusedElementDone;
-            }
-
-            // FIXME: We should remove firing DOMFocusInEvent event when we are sure no content depends
-            // on it, probably when <rdar://problem/8503958> is m.
-            m_focusedElement->dispatchFocusInEvent(EventTypeNames::DOMFocusIn, oldFocusedElement.get()); // DOM level 2 for compatibility.
-
-            if (m_focusedElement != newFocusedElement) {
-                // handler shifted focus
-                focusChangeBlocked = true;
-                goto SetFocusedElementDone;
-            }
+        if (m_focusedElement != newFocusedElement) {
+            // handler shifted focus
+            focusChangeBlocked = true;
+            goto SetFocusedElementDone;
         }
 
+        m_focusedElement->dispatchFocusInEvent(EventTypeNames::focusin, oldFocusedElement.get()); // DOM level 3 bubbling focus event.
+
+        if (m_focusedElement != newFocusedElement) {
+            // handler shifted focus
+            focusChangeBlocked = true;
+            goto SetFocusedElementDone;
+        }
+
+        // FIXME: We should remove firing DOMFocusInEvent event when we are sure no content depends
+        // on it, probably when <rdar://problem/8503958> is m.
+        m_focusedElement->dispatchFocusInEvent(EventTypeNames::DOMFocusIn, oldFocusedElement.get()); // DOM level 2 for compatibility.
+
+        if (m_focusedElement != newFocusedElement) {
+            // handler shifted focus
+            focusChangeBlocked = true;
+            goto SetFocusedElementDone;
+        }
         m_focusedElement->setFocus(true);
 
         if (m_focusedElement->isRootEditableElement())
