@@ -765,18 +765,25 @@ void RootWindowController::CreateContainersInRootWindow(
   views::corewm::SetChildWindowVisibilityChangesAnimated(docked_container);
   SetUsesScreenCoordinates(docked_container);
 
-  aura::Window* panel_container = CreateContainer(
-      kShellWindowId_PanelContainer,
-      "PanelContainer",
-      non_lock_screen_containers);
-  SetUsesScreenCoordinates(panel_container);
-
   aura::Window* shelf_container =
       CreateContainer(kShellWindowId_ShelfContainer,
                       "ShelfContainer",
                       non_lock_screen_containers);
   SetUsesScreenCoordinates(shelf_container);
   DescendantShouldStayInSameRootWindow(shelf_container);
+
+  aura::Window* panel_container = CreateContainer(
+      kShellWindowId_PanelContainer,
+      "PanelContainer",
+      non_lock_screen_containers);
+  SetUsesScreenCoordinates(panel_container);
+
+  aura::Window* shelf_bubble_container =
+      CreateContainer(kShellWindowId_ShelfBubbleContainer,
+                      "ShelfBubbleContainer",
+                      non_lock_screen_containers);
+  SetUsesScreenCoordinates(shelf_bubble_container);
+  DescendantShouldStayInSameRootWindow(shelf_bubble_container);
 
   aura::Window* app_list_container =
       CreateContainer(kShellWindowId_AppListContainer,

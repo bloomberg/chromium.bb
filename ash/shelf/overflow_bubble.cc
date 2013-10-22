@@ -12,6 +12,7 @@
 #include "ash/shelf/shelf_view.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
+#include "ash/shell_window_ids.h"
 #include "ash/system/tray/system_tray.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/root_window.h"
@@ -120,6 +121,9 @@ void OverflowBubbleView::InitOverflowBubble(views::View* anchor,
   shelf_view_ = shelf_view;
   AddChildView(shelf_view_);
 
+  set_parent_window(Shell::GetContainer(
+        anchor->GetWidget()->GetNativeWindow()->GetRootWindow(),
+        internal::kShellWindowId_ShelfBubbleContainer));
   views::BubbleDelegateView::CreateBubble(this);
 }
 

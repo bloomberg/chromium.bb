@@ -50,54 +50,57 @@ const int kShellWindowId_AlwaysOnTopContainer = 7;
 // The container for windows docked to either side of the desktop.
 const int kShellWindowId_DockedContainer = 8;
 
-// The container for panel windows.
-const int kShellWindowId_PanelContainer = 9;
-
 // The container for the shelf.
-const int kShellWindowId_ShelfContainer = 10;
+const int kShellWindowId_ShelfContainer = 9;
+
+// The container for bubbles which float over the shelf.
+const int kShellWindowId_ShelfBubbleContainer = 10;
+
+// The container for panel windows.
+const int kShellWindowId_PanelContainer = 11;
 
 // The container for the app list.
-const int kShellWindowId_AppListContainer = 11;
+const int kShellWindowId_AppListContainer = 12;
 
 // The container for user-specific modal windows.
-const int kShellWindowId_SystemModalContainer = 12;
+const int kShellWindowId_SystemModalContainer = 13;
 
 // The container for input method components such like candidate windows.  They
 // are almost panels but have no activations/focus, and they should appear over
 // the AppList and SystemModal dialogs.
-const int kShellWindowId_InputMethodContainer = 13;
+const int kShellWindowId_InputMethodContainer = 14;
 
 // The container for the lock screen background.
-const int kShellWindowId_LockScreenBackgroundContainer = 14;
+const int kShellWindowId_LockScreenBackgroundContainer = 15;
 
 // The container for the lock screen.
-const int kShellWindowId_LockScreenContainer = 15;
+const int kShellWindowId_LockScreenContainer = 16;
 
 // The container for the lock screen modal windows.
-const int kShellWindowId_LockSystemModalContainer = 16;
+const int kShellWindowId_LockSystemModalContainer = 17;
 
 // The container for the status area.
-const int kShellWindowId_StatusContainer = 17;
+const int kShellWindowId_StatusContainer = 18;
 
 // The container for menus.
-const int kShellWindowId_MenuContainer = 18;
+const int kShellWindowId_MenuContainer = 19;
 
 // The container for drag/drop images and tooltips.
-const int kShellWindowId_DragImageAndTooltipContainer = 19;
+const int kShellWindowId_DragImageAndTooltipContainer = 20;
 
 // The container for bubbles briefly overlaid onscreen to show settings changes
 // (volume, brightness, etc.).
-const int kShellWindowId_SettingBubbleContainer = 20;
+const int kShellWindowId_SettingBubbleContainer = 21;
 
 // The container for special components overlaid onscreen, such as the
 // region selector for partial screenshots.
-const int kShellWindowId_OverlayContainer = 21;
+const int kShellWindowId_OverlayContainer = 22;
 
 // ID of the window created by PhantomWindowController or DragWindowController.
-const int kShellWindowId_PhantomWindow = 22;
+const int kShellWindowId_PhantomWindow = 23;
 
 // The topmost container, used for power off animation.
-const int kShellWindowId_PowerButtonAnimationContainer = 23;
+const int kShellWindowId_PowerButtonAnimationContainer = 24;
 
 }  // namespace internal
 
