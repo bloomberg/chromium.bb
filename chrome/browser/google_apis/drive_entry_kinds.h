@@ -22,6 +22,7 @@ enum DriveEntryKind {
   ENTRY_KIND_PRESENTATION,
   ENTRY_KIND_DRAWING,
   ENTRY_KIND_TABLE,
+  ENTRY_KIND_FORM,
   // Hosted external application document.
   ENTRY_KIND_EXTERNAL_APP,
   // Folders; collections.

@@ -173,6 +173,20 @@ list.autocomplete-suggestions [selected] [file-type-icon='gtable'] {
     url('../images/files/file_types/200/gtable_white.png') 2x);
 }
 
+[file-type-icon='gform'] {
+  background-image: -webkit-image-set(
+    url('../images/files/file_types/100/form.png') 1x,
+    url('../images/files/file_types/200/form.png') 2x);
+}
+
+tree:focus .tree-item[selected] > .tree-row > [file-type-icon='gform'],
+list:focus [selected] [file-type-icon='gform'],
+list.autocomplete-suggestions [selected] [file-type-icon='gform'] {
+  background-image: -webkit-image-set(
+    url('../images/files/file_types/100/form_white.png') 1x,
+    url('../images/files/file_types/200/form_white.png') 2x);
+}
+
 [file-type-icon='image'] {
   background-image: -webkit-image-set(
     url('../images/files/file_types/100/image.png') 1x,

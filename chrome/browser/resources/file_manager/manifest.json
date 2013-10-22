@@ -162,7 +162,8 @@
       "default_icon": "images/filetype_generic.png",
       "file_filters": [
         "filesystem:*.gdraw",
-        "filesystem:*.gtable"
+        "filesystem:*.gtable",
+        "filesystem:*.gform"
       ]
     },
     {

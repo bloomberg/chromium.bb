@@ -33,6 +33,7 @@ const char kGooglePresentationMimeType[] =
 const char kGoogleSpreadsheetMimeType[] =
     "application/vnd.google-apps.spreadsheet";
 const char kGoogleTableMimeType[] = "application/vnd.google-apps.table";
+const char kGoogleFormMimeType[] = "application/vnd.google-apps.form";
 const char kDriveFolderMimeType[] = "application/vnd.google-apps.folder";
 
 ScopedVector<std::string> CopyScopedVectorString(
@@ -389,6 +390,8 @@ google_apis::DriveEntryKind GetKind(
     return google_apis::ENTRY_KIND_DRAWING;
   if (mime_type == kGoogleTableMimeType)
     return google_apis::ENTRY_KIND_TABLE;
+  if (mime_type == kGoogleFormMimeType)
+    return google_apis::ENTRY_KIND_FORM;
   if (mime_type == "application/pdf")
     return google_apis::ENTRY_KIND_PDF;
   return google_apis::ENTRY_KIND_FILE;

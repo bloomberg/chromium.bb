@@ -106,6 +106,7 @@ const EntryKindMap kEntryKindMap[] = {
     { ENTRY_KIND_PRESENTATION, "presentation", ".gslides" },
     { ENTRY_KIND_DRAWING,      "drawing",      ".gdraw"},
     { ENTRY_KIND_TABLE,        "table",        ".gtable"},
+    { ENTRY_KIND_FORM,         "form",         ".gform"},
     { ENTRY_KIND_EXTERNAL_APP, "externalapp",  ".glink"},
     { ENTRY_KIND_SITE,         "site",         NULL},
     { ENTRY_KIND_FOLDER,       "folder",       NULL},
@@ -586,6 +587,7 @@ int ResourceEntry::ClassifyEntryKind(DriveEntryKind kind) {
     case ENTRY_KIND_PRESENTATION:
     case ENTRY_KIND_DRAWING:
     case ENTRY_KIND_TABLE:
+    case ENTRY_KIND_FORM:
       classes = KIND_OF_GOOGLE_DOCUMENT | KIND_OF_HOSTED_DOCUMENT;
       break;
 

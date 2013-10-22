@@ -89,6 +89,8 @@ FileType.types = [
    subtype: 'table', pattern: /\.gtable$/i},
   {type: 'hosted', icon: 'glink', name: 'GLINK_DOCUMENT_FILE_TYPE',
    subtype: 'glink', pattern: /\.glink$/i},
+  {type: 'hosted', icon: 'gform', name: 'GFORM_DOCUMENT_FILE_TYPE',
+   subtype: 'form', pattern: /\.gform$/i},
 
   // Others
   {type: 'document', icon: 'pdf', name: 'PDF_DOCUMENT_FILE_TYPE',
