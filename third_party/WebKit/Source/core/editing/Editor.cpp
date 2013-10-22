@@ -1270,6 +1270,25 @@ PassRefPtr<Range> Editor::rangeOfString(const String& target, Range* referenceRa
     }
 
     RefPtr<Range> resultRange(findPlainText(searchRange.get(), target, options));
+    // If we started in the reference range and the found range exactly matches the reference range, find again.
+    // Build a selection with the found range to remove collapsed whitespace.
+    // Compare ranges instead of selection objects to ignore the way that the current selection was made.
+    if (startInReferenceRange && areRangesEqual(VisibleSelection(resultRange.get()).toNormalizedRange().get(), referenceRange)) {
+        searchRange = rangeOfContents(m_frame.document());
+        if (forward)
+            searchRange->setStart(referenceRange->endPosition());
+        else
+            searchRange->setEnd(referenceRange->startPosition());
+
+        if (shadowTreeRoot) {
+            if (forward)
+                searchRange->setEnd(shadowTreeRoot.get(), shadowTreeRoot->childNodeCount());
+            else
+                searchRange->setStart(shadowTreeRoot.get(), 0);
+        }
+
+        resultRange = findPlainText(searchRange.get(), target, options);
+    }
 
     // If nothing was found in the shadow tree, search in main content following the shadow tree.
     if (resultRange->collapsed(ASSERT_NO_EXCEPTION) && shadowTreeRoot) {
