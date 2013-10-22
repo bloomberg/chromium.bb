@@ -209,8 +209,8 @@
         "toggleable": true,
         "items": [
           {
-            "title": "In-App Payments",
-            "href": "/apps/in_app_payments.html"
+            "title": "Google Wallet for Digital Goods",
+            "href": "/apps/google_wallet.html"
           }
         ]
       },
