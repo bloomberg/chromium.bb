@@ -3413,6 +3413,23 @@ bool Element::supportsStyleSharing() const
         return false;
     if (shadow() && shadow()->containsActiveStyles())
         return false;
+    // Turn off style sharing for elements that can gain layers for reasons outside of the style system.
+    // See comments in RenderObject::setStyle().
+    // FIXME: Why does gaining a layer from outside the style system require disabling sharing?
+    if (hasTagName(iframeTag)
+        || hasTagName(frameTag)
+        || hasTagName(embedTag)
+        || hasTagName(objectTag)
+        || hasTagName(appletTag)
+        || hasTagName(canvasTag))
+        return false;
+    // FIXME: We should share style for option and optgroup whenever possible.
+    // Before doing so, we need to resolve issues in HTMLSelectElement::recalcListItems
+    // and RenderMenuList::setText. See also https://bugs.webkit.org/show_bug.cgi?id=88405
+    if (hasTagName(optionTag) || hasTagName(optgroupTag))
+        return false;
+    if (FullscreenElementStack::isActiveFullScreenElement(this))
+        return false;
     return true;
 }
 

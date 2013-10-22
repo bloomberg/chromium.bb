@@ -204,12 +204,6 @@ bool SharedStyleFinder::canShareStyleWithElement(Element& candidate) const
     if (candidate.shadow() && candidate.shadow()->containsActiveStyles())
         return 0;
 
-    // FIXME: We should share style for option and optgroup whenever possible.
-    // Before doing so, we need to resolve issues in HTMLSelectElement::recalcListItems
-    // and RenderMenuList::setText. See also https://bugs.webkit.org/show_bug.cgi?id=88405
-    if (candidate.hasTagName(optionTag) || candidate.hasTagName(optgroupTag))
-        return false;
-
     bool isControl = candidate.isFormControlElement();
 
     if (isControl != element().isFormControlElement())
@@ -219,11 +213,6 @@ bool SharedStyleFinder::canShareStyleWithElement(Element& candidate) const
         return false;
 
     if (style->transitions() || style->animations())
-        return false;
-
-    // Turn off style sharing for elements that can gain layers for reasons outside of the style system.
-    // See comments in RenderObject::setStyle().
-    if (candidate.hasTagName(iframeTag) || candidate.hasTagName(frameTag) || candidate.hasTagName(embedTag) || candidate.hasTagName(objectTag) || candidate.hasTagName(appletTag) || candidate.hasTagName(canvasTag))
         return false;
 
     // FIXME: This line is surprisingly hot, we may wish to inline hasDirectionAuto into StyleResolver.
@@ -242,11 +231,6 @@ bool SharedStyleFinder::canShareStyleWithElement(Element& candidate) const
 
     if (candidate.isWebVTTElement() && element().isWebVTTElement() && toWebVTTElement(candidate).isPastNode() != toWebVTTElement(element()).isPastNode())
         return false;
-
-    if (FullscreenElementStack* fullscreen = FullscreenElementStack::fromIfExists(&document())) {
-        if (candidate == fullscreen->webkitCurrentFullScreenElement() || element() == fullscreen->webkitCurrentFullScreenElement())
-            return false;
-    }
 
     if (element().parentElement() != parent) {
         if (!parent->isStyledElement())
