@@ -611,7 +611,7 @@ InjectedScript.prototype = {
 
     /**
      * @param {Object} callFrame
-     * @return {Array.<InjectedScript.CallFrameProxy>|boolean}
+     * @return {!Array.<InjectedScript.CallFrameProxy>|boolean}
      */
     wrapCallFrames: function(callFrame)
     {
@@ -1093,7 +1093,7 @@ InjectedScript.RemoteObject.prototype = {
 /**
  * @constructor
  * @param {number} ordinal
- * @param {Object} callFrame
+ * @param {!Object} callFrame
  */
 InjectedScript.CallFrameProxy = function(ordinal, callFrame)
 {
