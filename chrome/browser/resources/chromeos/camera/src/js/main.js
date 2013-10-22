@@ -83,9 +83,6 @@ camera.Camera = function() {
   // Handle window resize.
   window.addEventListener('resize', this.onWindowResize_.bind(this));
 
-  // Handle mouse wheel event on the entire document
-  window.addEventListener('mousewheel', this.onMouseWheel_.bind(this));
-
   // Set the localized window title.
   document.title = chrome.i18n.getMessage('name');
 };
@@ -226,7 +223,6 @@ camera.Camera.prototype.onKeyPressed_ = function(event) {
   this.keyBuffer_ = this.keyBuffer_.substr(-10);
 
   // Allow to load a file stream (for debugging).
-  // TODO(mtomasz): Fix this race in initialization.
   if (this.keyBuffer_.indexOf('CRAZYPONY') !== -1) {
     if (this.currentView_ != this.cameraView_);
       this.switchView_(this.cameraView_);
@@ -236,19 +232,7 @@ camera.Camera.prototype.onKeyPressed_ = function(event) {
 
   if (this.context_.hasError)
     return;
-
-  if (this.currentView_)
-    this.currentView_.onKeyPressed(event);
-};
-
-/**
- * Handles the mouse wheel.
- * @param {Event} event Mouse wheel event.
- * @private
- */
-camera.Camera.prototype.onMouseWheel_ = function(event) {
-  if (this.currentView_)
-    this.currentView_.onMouseWheel(event);
+  this.currentView_.onKeyPressed(event);
 };
 
 /**

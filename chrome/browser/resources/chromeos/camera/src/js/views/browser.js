@@ -47,7 +47,7 @@ camera.views.Browser = function(context, router) {
       document.querySelector('#browser'),
       document.querySelector('#browser .padder'));
 
-  /*
+  /**
    * @type {camera.HorizontalScrollBar}
    * @private
    */
@@ -165,17 +165,6 @@ camera.views.Browser.prototype.onExportButtonClicked_ = function(event) {
   this.exportSelection_();
 };
 
-/**
- * @override
- */
-camera.views.Browser.prototype.onMouseWheel = function(event) {
-  if (event.wheelDelta > 0) {
-    this.model_.currentIndex = Math.min(
-        this.model_.length - 1, this.model_.currentIndex + 1);
-  } else {
-    this.model_.currentIndex = Math.max(0, this.model_.currentIndex - 1);
-  }
-};
 
 /**
  * Handles ending of scrolling.
