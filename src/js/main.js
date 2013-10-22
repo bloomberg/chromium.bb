@@ -23,10 +23,18 @@ camera.Camera = function() {
       this.onErrorRecovered_.bind(this));
 
   /**
+   * @type {Array.<camera.ViewsStack>}
+   * @private
+   */
+  this.viewsStack_ = new camera.Camera.ViewsStack();
+
+  /**
    * @type {camera.Router}
    * @private
    */
-  this.router_ = new camera.Router(this.switchViewFromRouter_.bind(this));
+  this.router_ = new camera.Router(
+      this.navigateById_.bind(this),
+      this.viewsStack_.pop.bind(this.viewsStack_));
 
    /**
    * @type {camera.views.Camera}
@@ -47,22 +55,10 @@ camera.Camera = function() {
   this.browserView_ = new camera.views.Browser(this.context_, this.router_);
 
   /**
-   * @type {camera.View}
-   * @private
-   */
-  this.currentView_ = null;
-
-  /**
    * @type {?number}
    * @private
    */
   this.resizingTimer_ = null;
-
-  /**
-   * @type {string}
-   * @private
-   */
-  this.keyBuffer_ = '';
 
   // End of properties. Seal the object.
   Object.seal(this);
@@ -71,10 +67,6 @@ camera.Camera = function() {
   document.body.addEventListener('keydown', this.onKeyPressed_.bind(this));
 
   // Handle window decoration buttons.
-  document.querySelector('#toolbar .gallery-switch').addEventListener('click',
-      this.onGalleryClicked_.bind(this));
-  document.querySelector('#corner-buttons .gallery-switch').addEventListener(
-      'click', this.onGalleryClicked_.bind(this));
   document.querySelector('#maximize-button').addEventListener('click',
       this.onMaximizeClicked_.bind(this));
   document.querySelector('#close-button').addEventListener('click',
@@ -102,9 +94,7 @@ camera.Camera = function() {
  *     when the error goes away. The argument is the error id.
  * @constructor
  */
-camera.Camera.Context = function(
-    onError, onErrorRecovered, onCameraRequested, onGalleryRequested,
-    onBrowserRequested) {
+camera.Camera.Context = function(onError, onErrorRecovered) {
   camera.View.Context.call(this);
 
   /**
@@ -135,9 +125,72 @@ camera.Camera.Context.prototype = {
   __proto__: camera.View.Context.prototype
 };
 
+/**
+ * Creates a stack of views.
+ * @constructor
+ */
+camera.Camera.ViewsStack = function() {
+  /**
+   * Stack with the views as well as return callbacks.
+   * @type {Array.<Object>}
+   * @private
+   */
+  this.stack_ = [];
+
+  // No more properties. Seal the object.
+  Object.seal(this);
+};
+
+camera.Camera.ViewsStack.prototype = {
+  get current() {
+    return this.stack_.length ? this.stack_[this.stack_.length - 1].view : null;
+  }
+};
+
+/**
+ * Adds the view on the stack and hence makes it the current one. Optionally,
+ * passes the arguments to the view.
+ *
+ * @param {camera.View} view View to be pushed on top of the stack.
+ * @param {Object=} opt_arguments Optional arguments.
+ * @param {function(Object=)} opt_callback Optional result callback to be called
+ *     when the view is closed.
+ */
+camera.Camera.ViewsStack.prototype.push = function(
+    view, opt_arguments, opt_callback) {
+  if (this.current)
+    this.current.inactivate();
+
+  this.stack_.push({
+    view: view,
+    callback: opt_callback || function(result) {}
+  });
+
+  view.enter(opt_arguments);
+  view.activate();
+};
+
+/**
+ * Removes the current view from the stack and hence makes the previous one
+ * the current one. Calls the callback passed to the previous view's navigate()
+ * method with the result.
+ *
+ * @param {Object=} opt_result Optional result. If not passed, then undefined
+ *     will be passed to the callback.
+ */
+camera.Camera.ViewsStack.prototype.pop = function(opt_result) {
+  var entry = this.stack_.pop();
+  entry.view.inactivate();
+  entry.view.leave();
+
+  this.current.activate();
+  if (entry.callback)
+    entry.callback(opt_result);
+};
+
 camera.Camera.prototype = {
   get currentView() {
-    return this.currentView_;
+    return this.viewsStack_.current;
   },
   get cameraView() {
     return this.cameraView_;
@@ -163,38 +216,31 @@ camera.Camera.prototype.start = function() {
 
   // Display the camera view after initializing.
   queue.run(function(callback) {
-    this.switchView_(this.cameraView_);
+    this.viewsStack_.push(this.cameraView_);
     callback();
   }.bind(this));
 };
 
 /**
- * Leaves the previous view and enters the passed one.
- * @param {camera.View} view View to be opened.
- * @private
- */
-camera.Camera.prototype.switchView_ = function(view) {
-  if (this.currentView_)
-    this.currentView_.leave();
-  this.currentView_ = view;
-  view.enter();
-};
-
-/**
  * Switches the view using a router's view identifier.
+ *
  * @param {camera.Router.ViewIdentifier} viewIdentifier View identifier.
+ * @param {Object=} opt_arguments Optional arguments for the view.
+ * @param {function(Object=)} opt_callback Optional result callback to be called
+ *     when the view is closed.
  * @private
  */
-camera.Camera.prototype.switchViewFromRouter_ = function(viewIdentifier) {
+camera.Camera.prototype.navigateById_ = function(
+    viewIdentifier, opt_arguments, opt_callback) {
   switch (viewIdentifier) {
     case camera.Router.ViewIdentifier.CAMERA:
-      this.switchView_(this.cameraView_);
+      this.viewsStack_.push(this.cameraView_, opt_arguments, opt_callback);
       break;
     case camera.Router.ViewIdentifier.GALLERY:
-      this.switchView_(this.galleryView_);
+      this.viewsStack_.push(this.galleryView_, opt_arguments, opt_callback);
       break;
     case camera.Router.ViewIdentifier.BROWSER:
-      this.switchView_(this.browserView_);
+      this.viewsStack_.push(this.browserView_, opt_arguments, opt_callback);
       break;
   }
 };
@@ -215,8 +261,8 @@ camera.Camera.prototype.onWindowResize_ = function() {
     this.context_.resizing = false;
   }.bind(this), 100);
 
-  if (this.currentView_)
-    this.currentView_.onResize();
+  if (this.currentView)
+    this.currentView.onResize();
 };
 
 /**
@@ -237,30 +283,9 @@ camera.Camera.prototype.onErrorIconClicked_ = function() {
  * @private
  */
 camera.Camera.prototype.onKeyPressed_ = function(event) {
-  this.keyBuffer_ += String.fromCharCode(event.which);
-  this.keyBuffer_ = this.keyBuffer_.substr(-10);
-
-  // Allow to load a file stream (for debugging).
-  if (this.keyBuffer_.indexOf('CRAZYPONY') !== -1) {
-    if (this.currentView_ != this.cameraView_);
-      this.switchView_(this.cameraView_);
-    this.cameraView_.chooseFileStream();
-    this.keyBuffer_ = '';
-  }
-
   if (this.context_.hasError)
     return;
-  this.currentView_.onKeyPressed(event);
-};
-
-/**
- * Handles clicking on the toggle gallery button. Enters or leaves the
- * gallery mode.
- * @private
- */
-camera.Camera.prototype.onGalleryClicked_ = function() {
-  this.switchView_(this.currentView_ != this.galleryView_ ? this.galleryView_ :
-                                                            this.cameraView_);
+  this.currentView.onKeyPressed(event);
 };
 
 /**
