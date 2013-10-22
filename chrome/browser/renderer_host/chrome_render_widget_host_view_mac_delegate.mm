@@ -23,10 +23,10 @@
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
-#include "content/public/browser/render_view_host_observer.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_observer.h"
 
 using content::RenderViewHost;
 
@@ -37,32 +37,25 @@ using content::RenderViewHost;
 
 namespace ChromeRenderWidgetHostViewMacDelegateInternal {
 
-// Filters the message sent to RenderViewHost to know if spellchecking is
-// enabled or not for the currently focused element.
-class SpellCheckRenderViewObserver : public content::RenderViewHostObserver {
+// Filters the message sent by the renderer to know if spellchecking is enabled
+// or not for the currently focused element.
+class SpellCheckObserver : public content::WebContentsObserver {
  public:
-  SpellCheckRenderViewObserver(
+  SpellCheckObserver(
       RenderViewHost* host,
       ChromeRenderWidgetHostViewMacDelegate* view_delegate)
-      : content::RenderViewHostObserver(host),
+      : content::WebContentsObserver(
+            content::WebContents::FromRenderViewHost(host)),
         view_delegate_(view_delegate) {
   }
 
-  virtual ~SpellCheckRenderViewObserver() {
+  virtual ~SpellCheckObserver() {
   }
 
  private:
-  // content::RenderViewHostObserver implementation.
-  virtual void RenderViewHostDestroyed(RenderViewHost* rvh) OVERRIDE {
-    // The parent implementation destroys the observer, scoping the lifetime of
-    // the observer to the RenderViewHost. Since this class is acting as a
-    // bridge to the view for the delegate below, and is owned by that delegate,
-    // undo the scoping by not calling through to the parent implementation.
-  }
-
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE {
     bool handled = true;
-    IPC_BEGIN_MESSAGE_MAP(SpellCheckRenderViewObserver, message)
+    IPC_BEGIN_MESSAGE_MAP(SpellCheckObserver, message)
       IPC_MESSAGE_HANDLER(SpellCheckHostMsg_ToggleSpellCheck,
                           OnToggleSpellCheck)
       IPC_MESSAGE_UNHANDLED(handled = false)
@@ -90,9 +83,8 @@ class SpellCheckRenderViewObserver : public content::RenderViewHostObserver {
 
     if (renderWidgetHost_->IsRenderView()) {
       spellingObserver_.reset(
-          new ChromeRenderWidgetHostViewMacDelegateInternal::
-              SpellCheckRenderViewObserver(
-                  RenderViewHost::From(renderWidgetHost_), self));
+          new ChromeRenderWidgetHostViewMacDelegateInternal::SpellCheckObserver(
+              RenderViewHost::From(renderWidgetHost_), self));
     }
   }
   return self;

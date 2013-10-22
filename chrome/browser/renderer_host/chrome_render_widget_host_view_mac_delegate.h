@@ -15,15 +15,15 @@ class RenderWidgetHost;
 }
 
 namespace ChromeRenderWidgetHostViewMacDelegateInternal {
-class SpellCheckRenderViewObserver;
+class SpellCheckObserver;
 }
 
 @interface ChromeRenderWidgetHostViewMacDelegate
     : NSObject<RenderWidgetHostViewMacDelegate> {
  @private
   content::RenderWidgetHost* renderWidgetHost_;  // weak
-  scoped_ptr<ChromeRenderWidgetHostViewMacDelegateInternal::
-      SpellCheckRenderViewObserver> spellingObserver_;
+  scoped_ptr<ChromeRenderWidgetHostViewMacDelegateInternal::SpellCheckObserver>
+      spellingObserver_;
 
   // If the viewport is scrolled all the way to the left or right.
   // Used for history swiping.
