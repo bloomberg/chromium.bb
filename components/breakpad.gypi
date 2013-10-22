@@ -52,7 +52,7 @@
             '../sandbox/sandbox.gyp:sandbox',
           ],
         }],
-        ['os_posix == 1 and OS != "mac" and OS != "ios"', {
+        ['os_posix == 1 and OS != "mac" and OS != "ios" and android_webview_build != 1', {
           'dependencies': [
             '../breakpad/breakpad.gyp:breakpad_client',
           ],
@@ -150,7 +150,7 @@
         },
       ],
     }],
-    ['os_posix == 1 and OS != "mac" and OS != "ios"', {
+    ['os_posix == 1 and OS != "mac" and OS != "ios" and android_webview_build != 1', {
       'targets': [
         {
           'target_name': 'breakpad_host',
