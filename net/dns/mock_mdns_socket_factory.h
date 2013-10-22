@@ -57,6 +57,8 @@ class MockMDnsDatagramServerSocket : public DatagramServerSocket {
 
   MOCK_METHOD1(SetMulticastLoopbackMode, int(bool loopback));
 
+  MOCK_METHOD1(SetDiffServCodePoint, int(DiffServCodePoint dscp));
+
   void SetResponsePacket(std::string response_packet);
 
   int HandleRecvNow(IOBuffer* buffer, int size, IPEndPoint* address,

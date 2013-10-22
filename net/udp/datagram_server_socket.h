@@ -93,6 +93,10 @@ class NET_EXPORT DatagramServerSocket : public DatagramSocket {
   // Should be called before Bind().
   // Returns a network error code.
   virtual int SetMulticastLoopbackMode(bool loopback) = 0;
+
+  // Set the Differentiated Services Code Point. May do nothing on
+  // some platforms. Returns a network error code.
+  virtual int SetDiffServCodePoint(DiffServCodePoint dscp) = 0;
 };
 
 }  // namespace net

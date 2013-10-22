@@ -94,15 +94,15 @@ TEST_F(P2PSocketHostTcpTest, SendStunNoAuth) {
 
   std::vector<char> packet1;
   CreateStunRequest(&packet1);
-  socket_host_->Send(dest_, packet1, 0);
+  socket_host_->Send(dest_, packet1, net::DSCP_NO_CHANGE, 0);
 
   std::vector<char> packet2;
   CreateStunResponse(&packet2);
-  socket_host_->Send(dest_, packet2, 0);
+  socket_host_->Send(dest_, packet2, net::DSCP_NO_CHANGE, 0);
 
   std::vector<char> packet3;
   CreateStunError(&packet3);
-  socket_host_->Send(dest_, packet3, 0);
+  socket_host_->Send(dest_, packet3, net::DSCP_NO_CHANGE, 0);
 
   std::string expected_data;
   expected_data.append(IntToSize(packet1.size()));
@@ -125,15 +125,15 @@ TEST_F(P2PSocketHostTcpTest, ReceiveStun) {
 
   std::vector<char> packet1;
   CreateStunRequest(&packet1);
-  socket_host_->Send(dest_, packet1, 0);
+  socket_host_->Send(dest_, packet1, net::DSCP_NO_CHANGE, 0);
 
   std::vector<char> packet2;
   CreateStunResponse(&packet2);
-  socket_host_->Send(dest_, packet2, 0);
+  socket_host_->Send(dest_, packet2, net::DSCP_NO_CHANGE, 0);
 
   std::vector<char> packet3;
   CreateStunError(&packet3);
-  socket_host_->Send(dest_, packet3, 0);
+  socket_host_->Send(dest_, packet3, net::DSCP_NO_CHANGE, 0);
 
   std::string received_data;
   received_data.append(IntToSize(packet1.size()));
@@ -171,7 +171,7 @@ TEST_F(P2PSocketHostTcpTest, SendDataNoAuth) {
 
   std::vector<char> packet;
   CreateRandomPacket(&packet);
-  socket_host_->Send(dest_, packet, 0);
+  socket_host_->Send(dest_, packet, net::DSCP_NO_CHANGE, 0);
 
   EXPECT_EQ(0U, sent_data_.size());
 }
@@ -197,7 +197,7 @@ TEST_F(P2PSocketHostTcpTest, SendAfterStunRequest) {
   // Now we should be able to send any data to |dest_|.
   std::vector<char> packet;
   CreateRandomPacket(&packet);
-  socket_host_->Send(dest_, packet, 0);
+  socket_host_->Send(dest_, packet, net::DSCP_NO_CHANGE, 0);
 
   std::string expected_data;
   expected_data.append(IntToSize(packet.size()));
@@ -219,11 +219,12 @@ TEST_F(P2PSocketHostTcpTest, AsyncWrites) {
 
   std::vector<char> packet1;
   CreateStunRequest(&packet1);
-  socket_host_->Send(dest_, packet1, 0);
+
+  socket_host_->Send(dest_, packet1, net::DSCP_NO_CHANGE, 0);
 
   std::vector<char> packet2;
   CreateStunResponse(&packet2);
-  socket_host_->Send(dest_, packet2, 0);
+  socket_host_->Send(dest_, packet2, net::DSCP_NO_CHANGE, 0);
 
   message_loop.RunUntilIdle();
 
@@ -246,15 +247,15 @@ TEST_F(P2PSocketHostStunTcpTest, SendStunNoAuth) {
 
   std::vector<char> packet1;
   CreateStunRequest(&packet1);
-  socket_host_->Send(dest_, packet1, 0);
+  socket_host_->Send(dest_, packet1, net::DSCP_NO_CHANGE, 0);
 
   std::vector<char> packet2;
   CreateStunResponse(&packet2);
-  socket_host_->Send(dest_, packet2, 0);
+  socket_host_->Send(dest_, packet2, net::DSCP_NO_CHANGE, 0);
 
   std::vector<char> packet3;
   CreateStunError(&packet3);
-  socket_host_->Send(dest_, packet3, 0);
+  socket_host_->Send(dest_, packet3, net::DSCP_NO_CHANGE, 0);
 
   std::string expected_data;
   expected_data.append(packet1.begin(), packet1.end());
@@ -274,15 +275,15 @@ TEST_F(P2PSocketHostStunTcpTest, ReceiveStun) {
 
   std::vector<char> packet1;
   CreateStunRequest(&packet1);
-  socket_host_->Send(dest_, packet1, 0);
+  socket_host_->Send(dest_, packet1, net::DSCP_NO_CHANGE, 0);
 
   std::vector<char> packet2;
   CreateStunResponse(&packet2);
-  socket_host_->Send(dest_, packet2, 0);
+  socket_host_->Send(dest_, packet2, net::DSCP_NO_CHANGE, 0);
 
   std::vector<char> packet3;
   CreateStunError(&packet3);
-  socket_host_->Send(dest_, packet3, 0);
+  socket_host_->Send(dest_, packet3, net::DSCP_NO_CHANGE, 0);
 
   std::string received_data;
   received_data.append(packet1.begin(), packet1.end());
@@ -317,7 +318,7 @@ TEST_F(P2PSocketHostStunTcpTest, SendDataNoAuth) {
 
   std::vector<char> packet;
   CreateRandomPacket(&packet);
-  socket_host_->Send(dest_, packet, 0);
+  socket_host_->Send(dest_, packet, net::DSCP_NO_CHANGE, 0);
 
   EXPECT_EQ(0U, sent_data_.size());
 }
@@ -335,11 +336,11 @@ TEST_F(P2PSocketHostStunTcpTest, AsyncWrites) {
 
   std::vector<char> packet1;
   CreateStunRequest(&packet1);
-  socket_host_->Send(dest_, packet1, 0);
+  socket_host_->Send(dest_, packet1, net::DSCP_NO_CHANGE,0);
 
   std::vector<char> packet2;
   CreateStunResponse(&packet2);
-  socket_host_->Send(dest_, packet2, 0);
+  socket_host_->Send(dest_, packet2, net::DSCP_NO_CHANGE, 0);
 
   message_loop.RunUntilIdle();
 

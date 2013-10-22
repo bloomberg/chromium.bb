@@ -44,10 +44,14 @@ bool IsTransientError(int error) {
 namespace content {
 
 P2PSocketHostUdp::PendingPacket::PendingPacket(
-    const net::IPEndPoint& to, const std::vector<char>& content, uint64 id)
+    const net::IPEndPoint& to,
+    const std::vector<char>& content,
+    net::DiffServCodePoint dscp_,
+    uint64 id)
     : to(to),
       data(new net::IOBuffer(content.size())),
       size(content.size()),
+      dscp(dscp_),
       id(id) {
   memcpy(data->data(), &content[0], size);
 }
@@ -61,6 +65,7 @@ P2PSocketHostUdp::P2PSocketHostUdp(IPC::Sender* message_sender,
     : P2PSocketHost(message_sender, id),
       socket_(new net::UDPServerSocket(NULL, net::NetLog::Source())),
       send_pending_(false),
+      last_dscp_(net::DSCP_CS0),
       throttler_(throttler) {
 }
 
@@ -161,6 +166,7 @@ void P2PSocketHostUdp::HandleReadResult(int result) {
 
 void P2PSocketHostUdp::Send(const net::IPEndPoint& to,
                             const std::vector<char>& data,
+                            net::DiffServCodePoint dscp,
                             uint64 packet_id) {
   if (!socket_) {
     // The Send message may be sent after the an OnError message was
@@ -186,9 +192,9 @@ void P2PSocketHostUdp::Send(const net::IPEndPoint& to,
   }
 
   if (send_pending_) {
-    send_queue_.push_back(PendingPacket(to, data, packet_id));
+    send_queue_.push_back(PendingPacket(to, data, dscp, packet_id));
   } else {
-    PendingPacket packet(to, data, packet_id);
+    PendingPacket packet(to, data, dscp, packet_id);
     DoSend(packet);
   }
 }
@@ -196,6 +202,17 @@ void P2PSocketHostUdp::Send(const net::IPEndPoint& to,
 void P2PSocketHostUdp::DoSend(const PendingPacket& packet) {
   TRACE_EVENT_ASYNC_STEP1("p2p", "Send", packet.id, "UdpAsyncSendTo",
                           "size", packet.size);
+  if (last_dscp_ != packet.dscp && last_dscp_ != net::DSCP_NO_CHANGE) {
+    int result = socket_->SetDiffServCodePoint(packet.dscp);
+    if (result == net::OK) {
+      last_dscp_ = packet.dscp;
+    } else if (!IsTransientError(result) && last_dscp_ != net::DSCP_CS0) {
+      // We receieved a non-transient error, and it seems we have
+      // not changed the DSCP in the past, disable DSCP as it unlikely
+      // to work in the future.
+      last_dscp_ = net::DSCP_NO_CHANGE;
+    }
+  }
   int result = socket_->SendTo(
       packet.data.get(),
       packet.size,

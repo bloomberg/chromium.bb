@@ -34,6 +34,7 @@ class CONTENT_EXPORT P2PSocketHostUdp : public P2PSocketHost {
                     const net::IPEndPoint& remote_address) OVERRIDE;
   virtual void Send(const net::IPEndPoint& to,
                     const std::vector<char>& data,
+                    net::DiffServCodePoint dscp,
                     uint64 packet_id) OVERRIDE;
   virtual P2PSocketHost* AcceptIncomingTcpConnection(
       const net::IPEndPoint& remote_address, int id) OVERRIDE;
@@ -46,11 +47,13 @@ class CONTENT_EXPORT P2PSocketHostUdp : public P2PSocketHost {
   struct PendingPacket {
     PendingPacket(const net::IPEndPoint& to,
                   const std::vector<char>& content,
+                  net::DiffServCodePoint dscp,
                   uint64 id);
     ~PendingPacket();
     net::IPEndPoint to;
     scoped_refptr<net::IOBuffer> data;
     int size;
+    net::DiffServCodePoint dscp;
     uint64 id;
   };
 
@@ -70,6 +73,7 @@ class CONTENT_EXPORT P2PSocketHostUdp : public P2PSocketHost {
 
   std::deque<PendingPacket> send_queue_;
   bool send_pending_;
+  net::DiffServCodePoint last_dscp_;
 
   // Set of peer for which we have received STUN binding request or
   // response or relay allocation request or response.

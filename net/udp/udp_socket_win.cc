@@ -753,4 +753,10 @@ int UDPSocketWin::SetMulticastLoopbackMode(bool loopback) {
   return OK;
 }
 
+// TODO(hubbe): Implement differentiated services for windows.
+// Note: setsockopt(IP_TOS) does not work on windows XP and later.
+int UDPSocketWin::SetDiffServCodePoint(DiffServCodePoint dscp) {
+  return ERR_NOT_IMPLEMENTED;
+}
+
 }  // namespace net

@@ -8,6 +8,7 @@
 #include "content/common/content_export.h"
 #include "content/common/p2p_sockets.h"
 #include "net/base/ip_endpoint.h"
+#include "net/udp/datagram_socket.h"
 
 namespace IPC {
 class Sender;
@@ -39,6 +40,7 @@ class CONTENT_EXPORT P2PSocketHost {
   // Sends |data| on the socket to |to|.
   virtual void Send(const net::IPEndPoint& to,
                     const std::vector<char>& data,
+                    net::DiffServCodePoint dscp,
                     uint64 packet_id) = 0;
 
   virtual P2PSocketHost* AcceptIncomingTcpConnection(

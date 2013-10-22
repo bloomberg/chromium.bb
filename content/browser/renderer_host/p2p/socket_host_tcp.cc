@@ -271,8 +271,11 @@ void P2PSocketHostTcpBase::OnPacket(const std::vector<char>& data) {
   message_sender_->Send(new P2PMsg_OnDataReceived(id_, remote_address_, data));
 }
 
+// Note: dscp is not actually used on TCP sockets as this point,
+// but may be honored in the future.
 void P2PSocketHostTcpBase::Send(const net::IPEndPoint& to,
                                 const std::vector<char>& data,
+                                net::DiffServCodePoint dscp,
                                 uint64 packet_id) {
   if (!socket_) {
     // The Send message may be sent after the an OnError message was

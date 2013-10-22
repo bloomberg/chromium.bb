@@ -85,4 +85,8 @@ int UDPServerSocket::SetMulticastLoopbackMode(bool loopback) {
   return socket_.SetMulticastLoopbackMode(loopback);
 }
 
+int UDPServerSocket::SetDiffServCodePoint(DiffServCodePoint dscp) {
+  return socket_.SetDiffServCodePoint(dscp);
+}
+
 }  // namespace net

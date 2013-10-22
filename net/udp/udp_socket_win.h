@@ -151,6 +151,10 @@ class NET_EXPORT UDPSocketWin : NON_EXPORTED_BASE(public base::NonThreadSafe) {
   // other applications on the same host. See MSDN: http://goo.gl/6vqbj
   int SetMulticastLoopbackMode(bool loopback);
 
+  // Set the differentiated services flags on outgoing packets. May not
+  // do anything on some platforms.
+  int SetDiffServCodePoint(DiffServCodePoint dscp);
+
  private:
   enum SocketOptions {
     SOCKET_OPTION_REUSE_ADDRESS  = 1 << 0,

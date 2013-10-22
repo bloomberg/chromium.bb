@@ -16,6 +16,7 @@
 #define IPC_MESSAGE_START P2PMsgStart
 
 IPC_ENUM_TRAITS(content::P2PSocketType)
+IPC_ENUM_TRAITS(net::DiffServCodePoint)
 
 IPC_STRUCT_TRAITS_BEGIN(net::NetworkInterface)
   IPC_STRUCT_TRAITS_MEMBER(name)
@@ -73,10 +74,11 @@ IPC_MESSAGE_CONTROL3(P2PHostMsg_AcceptIncomingTcpConnection,
                     int /* connected_socket_id */)
 
 // TODO(sergeyu): Use shared memory to pass the data.
-IPC_MESSAGE_CONTROL4(P2PHostMsg_Send,
+IPC_MESSAGE_CONTROL5(P2PHostMsg_Send,
                      int /* socket_id */,
                      net::IPEndPoint /* socket_address */,
                      std::vector<char> /* data */,
+                     net::DiffServCodePoint /* dscp */,
                      uint64 /* packet_id */)
 
 IPC_MESSAGE_CONTROL1(P2PHostMsg_DestroySocket,
