@@ -590,6 +590,11 @@ class BASE_EXPORT TraceLog {
 
   size_t GetObserverCountForTest() const;
 
+  // Call this method if the current thread may block the message loop to
+  // prevent the thread from using the thread-local buffer because the thread
+  // may not handle the flush request in time causing lost of unflushed events.
+  void SetCurrentThreadBlocksMessageLoop();
+
  private:
   FRIEND_TEST_ALL_PREFIXES(TraceEventTestFixture,
                            TraceBufferRingBufferGetReturnChunk);
@@ -713,6 +718,7 @@ class BASE_EXPORT TraceLog {
   CategoryFilter category_filter_;
 
   ThreadLocalPointer<ThreadLocalEventBuffer> thread_local_event_buffer_;
+  ThreadLocalBoolean thread_blocks_message_loop_;
 
   // Contains the message loops of threads that have had at least one event
   // added into the local event buffer. Not using MessageLoopProxy because we

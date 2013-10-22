@@ -1625,6 +1625,7 @@ void TraceLog::FlushCurrentThread(int generation) {
     }
   }
 
+  // This will flush the thread local buffer.
   delete thread_local_event_buffer_.Get();
 
   {
@@ -1647,8 +1648,16 @@ void TraceLog::OnFlushTimeout(int generation) {
       return;
     }
 
-    LOG(WARNING) << thread_message_loops_.size() << " threads haven't finished"
-                 << " flush in time. Discarding remaining events of them";
+    LOG(WARNING) <<
+        "The following threads haven't finished flush in time. "
+        "If this happens stably for some thread, please call "
+        "TraceLog::GetInstance()->SetCurrentThreadBlocksMessageLoop() from "
+        "the thread to avoid its trace events from being lost.";
+    for (hash_set<MessageLoop*>::const_iterator it =
+         thread_message_loops_.begin();
+         it != thread_message_loops_.end(); ++it) {
+      LOG(WARNING) << "Thread: " << (*it)->thread_name();
+    }
   }
   FinishFlush(generation);
 }
@@ -1725,9 +1734,9 @@ TraceEventHandle TraceLog::AddTraceEventWithThreadIdAndTimestamp(
   // A ThreadLocalEventBuffer needs the message loop
   // - to know when the thread exits;
   // - to handle the final flush.
-  // For a thread without a message loop, the trace events will be added into
-  // the main buffer directly.
-  if (MessageLoop::current()) {
+  // For a thread without a message loop or the message loop may be blocked, the
+  // trace events will be added into the main buffer directly.
+  if (!thread_blocks_message_loop_.Get() && MessageLoop::current()) {
     thread_local_event_buffer = thread_local_event_buffer_.Get();
     if (thread_local_event_buffer &&
         !CheckGeneration(thread_local_event_buffer->generation())) {
@@ -2073,6 +2082,14 @@ void TraceLog::SetTimeOffset(TimeDelta offset) {
 
 size_t TraceLog::GetObserverCountForTest() const {
   return enabled_state_observer_list_.size();
+}
+
+void TraceLog::SetCurrentThreadBlocksMessageLoop() {
+  thread_blocks_message_loop_.Set(true);
+  if (thread_local_event_buffer_.Get()) {
+    // This will flush the thread local buffer.
+    delete thread_local_event_buffer_.Get();
+  }
 }
 
 bool CategoryFilter::IsEmptyOrContainsLeadingOrTrailingWhitespace(

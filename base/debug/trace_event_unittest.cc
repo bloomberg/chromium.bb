@@ -2226,5 +2226,69 @@ TEST_F(TraceEventTestFixture, CategoryFilter) {
       "good_category"));
 }
 
+void BlockUntilStopped(WaitableEvent* task_start_event,
+                       WaitableEvent* task_stop_event) {
+  task_start_event->Signal();
+  task_stop_event->Wait();
+}
+
+TEST_F(TraceEventTestFixture, SetCurrentThreadBlocksMessageLoopBeforeTracing) {
+  BeginTrace();
+
+  Thread thread("1");
+  WaitableEvent task_complete_event(false, false);
+  thread.Start();
+  thread.message_loop()->PostTask(
+      FROM_HERE, Bind(&TraceLog::SetCurrentThreadBlocksMessageLoop,
+                      Unretained(TraceLog::GetInstance())));
+
+  thread.message_loop()->PostTask(
+      FROM_HERE, Bind(&TraceWithAllMacroVariants, &task_complete_event));
+  task_complete_event.Wait();
+
+  WaitableEvent task_start_event(false, false);
+  WaitableEvent task_stop_event(false, false);
+  thread.message_loop()->PostTask(
+      FROM_HERE, Bind(&BlockUntilStopped, &task_start_event, &task_stop_event));
+  task_start_event.Wait();
+
+  EndTraceAndFlush();
+  ValidateAllTraceMacrosCreatedData(trace_parsed_);
+
+  task_stop_event.Signal();
+  thread.Stop();
+}
+
+void SetBlockingFlagAndBlockUntilStopped(WaitableEvent* task_start_event,
+                                         WaitableEvent* task_stop_event) {
+  TraceLog::GetInstance()->SetCurrentThreadBlocksMessageLoop();
+  BlockUntilStopped(task_start_event, task_stop_event);
+}
+
+TEST_F(TraceEventTestFixture, SetCurrentThreadBlocksMessageLoopAfterTracing) {
+  BeginTrace();
+
+  Thread thread("1");
+  WaitableEvent task_complete_event(false, false);
+  thread.Start();
+
+  thread.message_loop()->PostTask(
+      FROM_HERE, Bind(&TraceWithAllMacroVariants, &task_complete_event));
+  task_complete_event.Wait();
+
+  WaitableEvent task_start_event(false, false);
+  WaitableEvent task_stop_event(false, false);
+  thread.message_loop()->PostTask(
+      FROM_HERE, Bind(&SetBlockingFlagAndBlockUntilStopped,
+                      &task_start_event, &task_stop_event));
+  task_start_event.Wait();
+
+  EndTraceAndFlush();
+  ValidateAllTraceMacrosCreatedData(trace_parsed_);
+
+  task_stop_event.Signal();
+  thread.Stop();
+}
+
 }  // namespace debug
 }  // namespace base

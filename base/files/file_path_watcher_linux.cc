@@ -18,6 +18,7 @@
 
 #include "base/bind.h"
 #include "base/containers/hash_tables.h"
+#include "base/debug/trace_event.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/lazy_instance.h"
@@ -157,6 +158,8 @@ void InotifyReaderCallback(InotifyReader* reader, int inotify_fd,
   CHECK_GT(FD_SETSIZE, inotify_fd);
   CHECK_LE(0, shutdown_fd);
   CHECK_GT(FD_SETSIZE, shutdown_fd);
+
+  base::debug::TraceLog::GetInstance()->SetCurrentThreadBlocksMessageLoop();
 
   while (true) {
     fd_set rfds;
