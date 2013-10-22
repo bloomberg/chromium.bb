@@ -463,22 +463,6 @@ camera.views.Camera.prototype.onKeyPressed = function(event) {
 };
 
 /**
- * @override
- */
-camera.views.Camera.prototype.onMouseWheel = function(event) {
-  // TODO(mtomasz): Introduce an effects model.
-  if (event.wheelDelta > 0) {
-    this.setCurrentEffect_(
-        (this.currentEffectIndex_ + this.previewProcessors_.length - 1) %
-            this.previewProcessors_.length);
-  } else {
-    this.setCurrentEffect_(
-        (this.currentEffectIndex_ + 1) % this.previewProcessors_.length);
-    event.preventDefault();
-  }
-};
-
-/**
  * Handles scrolling via mouse on the effects ribbon.
  * @param {Event} event Mouse move event.
  * @private
