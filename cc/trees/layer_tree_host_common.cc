@@ -1982,7 +1982,7 @@ static void CalculateDrawPropertiesInternal(
     DCHECK(layer->render_surface());
     layer->render_surface()->SetContentRect(
         ancestor_clip_rect_in_target_space);
-  } else if (layer->render_surface() && !IsRootLayer(layer)) {
+  } else if (layer->render_surface()) {
     typename LayerType::RenderSurfaceType* render_surface =
         layer->render_surface();
     gfx::Rect clipped_content_rect = local_drawable_content_rect_of_subtree;
