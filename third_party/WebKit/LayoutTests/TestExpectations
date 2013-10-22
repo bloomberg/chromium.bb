@@ -894,3 +894,7 @@ crbug.com/256226 [ Debug ] webmidi/requestmidiaccess.html [ Crash Pass ]
 crbug.com/282079 [ Debug ] webmidi/requestmidiaccess-basic.html [ Crash Pass ]
 crbug.com/282079 [ Debug ] webmidi/requestmidiaccess-fail.html [ Crash Pass ]
 crbug.com/282079 [ Debug ] webmidi/permission.html [ Crash Pass ]
+
+crbug.com/310323 [ Debug ] http/tests/plugins/third-party-cookie-accept-policy.html [ Crash Pass ]
+crbug.com/310323 [ Debug ] http/tests/security/contentSecurityPolicy/report-multiple-violations-02.html [ Crash Pass ]
+
