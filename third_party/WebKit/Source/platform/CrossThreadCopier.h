@@ -31,6 +31,7 @@
 #ifndef CrossThreadCopier_h
 #define CrossThreadCopier_h
 
+#include "platform/PlatformExport.h"
 #include "wtf/Assertions.h"
 #include "wtf/Forward.h"
 #include "wtf/PassOwnPtr.h"
@@ -105,27 +106,27 @@ namespace WebCore {
 
     template<> struct CrossThreadCopierBase<false, false, KURL> {
         typedef KURL Type;
-        static Type copy(const KURL&);
+        PLATFORM_EXPORT static Type copy(const KURL&);
     };
 
     template<> struct CrossThreadCopierBase<false, false, String> {
         typedef String Type;
-        static Type copy(const String&);
+        PLATFORM_EXPORT static Type copy(const String&);
     };
 
     template<> struct CrossThreadCopierBase<false, false, ResourceError> {
         typedef ResourceError Type;
-        static Type copy(const ResourceError&);
+        PLATFORM_EXPORT static Type copy(const ResourceError&);
     };
 
     template<> struct CrossThreadCopierBase<false, false, ResourceRequest> {
         typedef PassOwnPtr<CrossThreadResourceRequestData> Type;
-        static Type copy(const ResourceRequest&);
+        PLATFORM_EXPORT static Type copy(const ResourceRequest&);
     };
 
     template<> struct CrossThreadCopierBase<false, false, ResourceResponse> {
         typedef PassOwnPtr<CrossThreadResourceResponseData> Type;
-        static Type copy(const ResourceResponse&);
+        PLATFORM_EXPORT static Type copy(const ResourceResponse&);
     };
 
     template<typename T> struct CrossThreadCopier : public CrossThreadCopierBase<WTF::IsConvertibleToInteger<T>::value,

@@ -7,6 +7,8 @@
       'Clock.h',
       'ContentType.cpp',
       'ContentType.h',
+      'CrossThreadCopier.cpp',
+      'CrossThreadCopier.h',
       'DateComponents.cpp',
       'DateComponents.h',
       'Decimal.cpp',

@@ -33,9 +33,9 @@
 
 #include "core/dom/CrossThreadTask.h"
 #include "core/dom/ExecutionContext.h"
-#include "core/platform/CrossThreadCopier.h"
 #include "modules/websockets/WebSocketChannel.h"
 #include "modules/websockets/WebSocketChannelClient.h"
+#include "platform/CrossThreadCopier.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
 

@@ -2628,8 +2628,6 @@
             'platform/AsyncFileSystemCallbacks.h',
             'platform/ContextMenu.cpp',
             'platform/ContextMenuItem.cpp',
-            'platform/CrossThreadCopier.cpp',
-            'platform/CrossThreadCopier.h',
             'platform/Cursor.cpp',
             'platform/DragData.cpp',
             'platform/DragImage.cpp',

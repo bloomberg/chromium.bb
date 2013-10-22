@@ -30,8 +30,8 @@
 
 #include "WebWorkerBase.h"
 #include "core/dom/CrossThreadTask.h"
-#include "core/platform/CrossThreadCopier.h"
 #include "core/workers/WorkerGlobalScope.h"
+#include "platform/CrossThreadCopier.h"
 
 namespace WebKit {
 

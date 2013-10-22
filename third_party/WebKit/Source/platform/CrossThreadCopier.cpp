@@ -30,7 +30,7 @@
 
 #include "config.h"
 
-#include "core/platform/CrossThreadCopier.h"
+#include "platform/CrossThreadCopier.h"
 
 #include "platform/network/ResourceError.h"
 #include "platform/network/ResourceRequest.h"

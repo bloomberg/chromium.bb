@@ -33,7 +33,7 @@
 
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/ExecutionContextTask.h"
-#include "core/platform/CrossThreadCopier.h"
+#include "platform/CrossThreadCopier.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/TypeTraits.h"
