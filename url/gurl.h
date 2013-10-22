@@ -8,6 +8,7 @@
 #include <iosfwd>
 #include <string>
 
+#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "url/url_canon.h"
 #include "url/url_canon_stdstring.h"
@@ -345,7 +346,7 @@ class URL_EXPORT GURL {
   // Returns the inner URL of a nested URL [currently only non-null for
   // filesystem: URLs].
   const GURL* inner_url() const {
-    return inner_url_;
+    return inner_url_.get();
   }
 
  private:
@@ -370,7 +371,7 @@ class URL_EXPORT GURL {
   url_parse::Parsed parsed_;
 
   // Used for nested schemes [currently only filesystem:].
-  GURL* inner_url_;
+  scoped_ptr<GURL> inner_url_;
 
   // TODO bug 684583: Add encoding for query params.
 };
