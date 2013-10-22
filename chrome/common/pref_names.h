@@ -230,6 +230,7 @@ extern const char kScreenMagnifierType[];
 extern const char kScreenMagnifierScale[];
 extern const char kVirtualKeyboardEnabled[];
 extern const char kAutoclickEnabled[];
+extern const char kAutoclickDelayMs[];
 extern const char kShouldAlwaysShowAccessibilityMenu[];
 extern const char kLabsAdvancedFilesystemEnabled[];
 extern const char kLabsMediaplayerEnabled[];

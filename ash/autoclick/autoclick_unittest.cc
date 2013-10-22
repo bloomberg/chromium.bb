@@ -63,7 +63,7 @@ class AutoclickTest : public test::AshTestBase {
   virtual void SetUp() OVERRIDE {
     test::AshTestBase::SetUp();
     Shell::GetInstance()->AddPreTargetHandler(&mouse_event_capturer_);
-    GetAutoclickController()->SetClickWaitTime(0);
+    GetAutoclickController()->SetAutoclickDelay(0);
 
     // Move mouse to deterministic location at the start of each test.
     GetEventGenerator().MoveMouseTo(10, 10);

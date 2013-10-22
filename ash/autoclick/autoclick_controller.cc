@@ -16,12 +16,8 @@
 
 namespace ash {
 
-namespace {
-
-// The default wait time between last mouse movement and sending the autoclick.
-int kDefaultClickWaitTimeMs = 500;
-
-}  // namespace
+// static.
+const int AutoclickController::kDefaultAutoclickDelayMs = 400;
 
 class AutoclickControllerImpl : public AutoclickController,
                                 public ui::EventHandler {
@@ -33,8 +29,8 @@ class AutoclickControllerImpl : public AutoclickController,
   // AutoclickController overrides:
   virtual void SetEnabled(bool enabled) OVERRIDE;
   virtual bool IsEnabled() const OVERRIDE;
-  virtual void SetClickWaitTime(int wait_time_ms) OVERRIDE;
-  virtual int GetClickWaitTime() const OVERRIDE;
+  virtual void SetAutoclickDelay(int delay_ms) OVERRIDE;
+  virtual int GetAutoclickDelay() const OVERRIDE;
 
   // ui::EventHandler overrides:
   virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
@@ -46,7 +42,7 @@ class AutoclickControllerImpl : public AutoclickController,
   void DoAutoclick();
 
   bool enabled_;
-  int wait_time_ms_;
+  int delay_ms_;
   int mouse_event_flags_;
   scoped_ptr<base::Timer> autoclick_timer_;
 
@@ -56,7 +52,7 @@ class AutoclickControllerImpl : public AutoclickController,
 
 AutoclickControllerImpl::AutoclickControllerImpl()
     : enabled_(false),
-      wait_time_ms_(kDefaultClickWaitTimeMs),
+      delay_ms_(kDefaultAutoclickDelayMs),
       mouse_event_flags_(ui::EF_NONE) {
   InitClickTimer();
 }
@@ -81,19 +77,19 @@ bool AutoclickControllerImpl::IsEnabled() const {
   return enabled_;
 }
 
-void AutoclickControllerImpl::SetClickWaitTime(int wait_time_ms) {
-  wait_time_ms_ = wait_time_ms;
+void AutoclickControllerImpl::SetAutoclickDelay(int delay_ms) {
+  delay_ms_ = delay_ms;
   InitClickTimer();
 }
 
-int AutoclickControllerImpl::GetClickWaitTime() const {
-  return wait_time_ms_;
+int AutoclickControllerImpl::GetAutoclickDelay() const {
+  return delay_ms_;
 }
 
 void AutoclickControllerImpl::InitClickTimer() {
   autoclick_timer_.reset(new base::Timer(
       FROM_HERE,
-      base::TimeDelta::FromMilliseconds(wait_time_ms_),
+      base::TimeDelta::FromMilliseconds(delay_ms_),
       base::Bind(&AutoclickControllerImpl::DoAutoclick,
                  base::Unretained(this)),
       false));

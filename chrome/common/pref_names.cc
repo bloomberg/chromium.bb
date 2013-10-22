@@ -686,6 +686,9 @@ const char kScreenMagnifierScale[] = "settings.a11y.screen_magnifier_scale";
 const char kVirtualKeyboardEnabled[] = "settings.a11y.virtual_keyboard";
 // A boolean pref which determines whether autoclick is enabled.
 const char kAutoclickEnabled[] = "settings.a11y.autoclick";
+// An integer pref which determines time in ms between when the mouse cursor
+// stops and when an autoclick is triggered.
+const char kAutoclickDelayMs[] = "settings.a11y.autoclick_delay_ms";
 // A boolean pref which determines whether the accessibility menu shows
 // regardless of the state of a11y features.
 const char kShouldAlwaysShowAccessibilityMenu[] = "settings.a11y.enable_menu";

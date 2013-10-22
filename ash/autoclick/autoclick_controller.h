@@ -5,12 +5,14 @@
 #ifndef ASH_AUTOCLICK_AUTOCLICK_CONTROLLER_H
 #define ASH_AUTOCLICK_AUTOCLICK_CONTROLLER_H
 
+#include "ash/ash_export.h"
+
 namespace ash {
 
 // Controls the autoclick a11y feature in ash.
 // If enabled, we will automatically send a click event a short time after
 // the mouse had been at rest.
-class AutoclickController {
+class ASH_EXPORT AutoclickController {
  public:
   virtual ~AutoclickController() {}
 
@@ -20,14 +22,18 @@ class AutoclickController {
   // Returns true if autoclicking is enabled.
   virtual bool IsEnabled() const = 0;
 
-  // Set the time to wait from when the mouse stops moving to when
-  // the autoclick event is sent.
-  virtual void SetClickWaitTime(int wait_time_ms) = 0;
+  // Set the time to wait in milliseconds from when the mouse stops moving
+  // to when the autoclick event is sent.
+  virtual void SetAutoclickDelay(int delay_ms) = 0;
 
-  // Returns the wait time in milliseconds.
-  virtual int GetClickWaitTime() const = 0;
+  // Returns the autoclick delay in milliseconds.
+  virtual int GetAutoclickDelay() const = 0;
 
   static AutoclickController* CreateInstance();
+
+  // The default wait time between last mouse movement and sending
+  // the autoclick.
+  static const int kDefaultAutoclickDelayMs;
 
  protected:
   AutoclickController() {}

@@ -6545,6 +6545,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_FLAGS_ENABLE_STICKY_KEYS_DESCRIPTION" desc="Description for the flag to enable sticky keys.">
           StickyKeys allows the user to press and release a modifier key, such as Shift, Ctrl, or Alt, and have it remain active until any other key is pressed.
         </message>
+        <message name="IDS_FLAGS_ENABLE_AUTOCLICK_NAME" desc="Name for the flag to enable autoclick.">
+          Enable autoclick.
+        </message>
+        <message name="IDS_FLAGS_ENABLE_AUTOCLICK_DESCRIPTION" desc="Description for the flag to enable autoclick.">
+          Enables an accessibility setting which automatically triggers a click when the mouse pointer stops.
+        </message>
         <message name="IDS_FLAGS_ENABLE_SAML_SIGNIN_NAME" desc="Name for the flag to enable SAML signin support.">
           Enable SAML signin.
         </message>

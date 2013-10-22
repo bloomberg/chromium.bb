@@ -402,3 +402,12 @@ list:not([disabled]) > .network-group[selected] {
   /* Same as .settings-row {margin}. */
   -webkit-border-vertical-spacing: 0.65em;
 }
+
+#accessibility-autoclick .controlled-setting-with-label {
+  -webkit-box-align: baseline;
+}
+
+#accessibility-autoclick label + select {
+  /* Same as .controlled-setting-with-label > input + span. */
+  -webkit-margin-start: 0.6em;
+}

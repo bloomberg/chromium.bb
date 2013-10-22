@@ -445,6 +445,8 @@ cr.define('options', function() {
         };
         $('accessibility-sticky-keys').hidden =
             !loadTimeData.getBoolean('enableStickyKeys');
+        $('accessibility-autoclick').hidden =
+            !loadTimeData.getBoolean('enableAutoclick');
       }
 
       // Display management section (CrOS only).

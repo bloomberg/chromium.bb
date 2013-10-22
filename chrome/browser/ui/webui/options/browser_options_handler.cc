@@ -95,6 +95,7 @@
 #endif
 
 #if defined(OS_CHROMEOS)
+#include "ash/ash_switches.h"
 #include "ash/magnifier/magnifier_constants.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_util.h"
 #include "chrome/browser/chromeos/extensions/wallpaper_manager_util.h"
@@ -346,6 +347,20 @@ void BrowserOptionsHandler::GetLocalizedValues(DictionaryValue* values) {
       IDS_OPTIONS_SETTINGS_ACCESSIBILITY_VIRTUAL_KEYBOARD_DESCRIPTION },
     { "accessibilityAlwaysShowMenu",
       IDS_OPTIONS_SETTINGS_ACCESSIBILITY_SHOULD_ALWAYS_SHOW_MENU },
+    { "accessibilityAutoclick",
+      IDS_OPTIONS_SETTINGS_ACCESSIBILITY_AUTOCLICK_DESCRIPTION },
+    { "accessibilityAutoclickDropdown",
+      IDS_OPTIONS_SETTINGS_ACCESSIBILITY_AUTOCLICK_DROPDOWN_DESCRIPTION },
+    { "autoclickDelayExtremelyShort",
+      IDS_OPTIONS_SETTINGS_ACCESSIBILITY_AUTOCLICK_DELAY_EXTREMELY_SHORT },
+    { "autoclickDelayVeryShort",
+      IDS_OPTIONS_SETTINGS_ACCESSIBILITY_AUTOCLICK_DELAY_VERY_SHORT },
+    { "autoclickDelayShort",
+      IDS_OPTIONS_SETTINGS_ACCESSIBILITY_AUTOCLICK_DELAY_SHORT },
+    { "autoclickDelayLong",
+      IDS_OPTIONS_SETTINGS_ACCESSIBILITY_AUTOCLICK_DELAY_LONG },
+    { "autoclickDelayVeryLong",
+      IDS_OPTIONS_SETTINGS_ACCESSIBILITY_AUTOCLICK_DELAY_VERY_LONG },
     { "enableContentProtectionAttestation",
       IDS_OPTIONS_ENABLE_CONTENT_PROTECTION_ATTESTATION },
     { "factoryResetHeading", IDS_OPTIONS_FACTORY_RESET_HEADING },
@@ -492,6 +507,9 @@ void BrowserOptionsHandler::GetLocalizedValues(DictionaryValue* values) {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   values->SetBoolean("enableStickyKeys",
                      command_line.HasSwitch(switches::kEnableStickyKeys));
+  values->SetBoolean("enableAutoclick",
+                     command_line.HasSwitch(
+                        ash::switches::kAshEnableAutoclick));
 #endif
 
 #if defined(OS_MACOSX)
