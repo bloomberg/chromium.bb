@@ -1352,8 +1352,6 @@ static void eventHandlerAttributeAttributeGetterCallback(v8::Local<v8::String> n
 static void eventHandlerAttributeAttributeSetter(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    if (!jsValue->IsNull() && !jsValue->IsFunction())
-        jsValue = v8::Null(info.GetIsolate());
     transferHiddenDependency(info.Holder(), imp->eventHandlerAttribute(isolatedWorldForIsolate(info.GetIsolate())), jsValue, V8TestObjectPython::eventListenerCacheIndex, info.GetIsolate());
     imp->setEventHandlerAttribute(V8EventListenerList::getEventListener(jsValue, true, ListenerFindOrCreate), isolatedWorldForIsolate(info.GetIsolate()));
 }

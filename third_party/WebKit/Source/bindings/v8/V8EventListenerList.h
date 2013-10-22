@@ -52,6 +52,9 @@ public:
     static PassRefPtr<V8EventListener> findWrapper(v8::Local<v8::Value> value, bool isAttribute, v8::Isolate* isolate)
     {
         ASSERT(v8::Context::InContext());
+        // Non-callable input should be treated as null
+        if (!value->IsNull() && !value->IsFunction())
+            value = v8::Null(isolate);
         if (!value->IsObject())
             return 0;
 
@@ -91,6 +94,9 @@ template<typename WrapperType>
 PassRefPtr<V8EventListener> V8EventListenerList::findOrCreateWrapper(v8::Local<v8::Value> value, bool isAttribute, v8::Isolate* isolate)
 {
     ASSERT(v8::Context::InContext());
+    // Non-callable attribute setter input should be treated as null
+    if (isAttribute && !value->IsNull() && !value->IsFunction())
+        value = v8::Null(isolate);
     if (!value->IsObject())
         return 0;
 

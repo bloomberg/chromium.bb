@@ -453,8 +453,6 @@ static void eventHandlerAttrAttributeGetterCallback(v8::Local<v8::String> name, 
 static void eventHandlerAttrAttributeSetter(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
-    if (!jsValue->IsNull() && !jsValue->IsFunction())
-        jsValue = v8::Null(info.GetIsolate());
     transferHiddenDependency(info.Holder(), imp->eventHandlerAttr(isolatedWorldForIsolate(info.GetIsolate())), jsValue, V8TestObject::eventListenerCacheIndex, info.GetIsolate());
     imp->setEventHandlerAttr(V8EventListenerList::getEventListener(jsValue, true, ListenerFindOrCreate), isolatedWorldForIsolate(info.GetIsolate()));
 }

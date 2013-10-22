@@ -48,7 +48,7 @@ namespace WebCore {
     void createHiddenDependency(v8::Handle<v8::Object>, v8::Local<v8::Value>, int cacheIndex, v8::Isolate*);
     void removeHiddenDependency(v8::Handle<v8::Object>, v8::Local<v8::Value>, int cacheIndex, v8::Isolate*);
 
-    // Combo create/remove, for generated event-handler-setter bindings:
+    // Combo create/remove, for EventHandler setters in generated bindings:
     void transferHiddenDependency(v8::Handle<v8::Object>, EventListener* oldValue, v8::Local<v8::Value> newValue, int cacheIndex, v8::Isolate*);
 
     ExecutionContext* getExecutionContext();

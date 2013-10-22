@@ -42,11 +42,12 @@ PassRefPtr<EventListener> V8EventListenerList::getEventListener(v8::Local<v8::Va
     v8::Handle<v8::Context> context = v8::Context::GetCurrent();
     if (context.IsEmpty())
         return 0;
+    v8::Isolate* isolate = context->GetIsolate();
     if (lookup == ListenerFindOnly)
-        return V8EventListenerList::findWrapper(value, isAttribute, context->GetIsolate());
+        return V8EventListenerList::findWrapper(value, isAttribute, isolate);
     if (V8DOMWrapper::isWrapperOfType(toInnerGlobalObject(context), &V8Window::info))
-        return V8EventListenerList::findOrCreateWrapper<V8EventListener>(value, isAttribute, context->GetIsolate());
-    return V8EventListenerList::findOrCreateWrapper<V8WorkerGlobalScopeEventListener>(value, isAttribute, context->GetIsolate());
+        return V8EventListenerList::findOrCreateWrapper<V8EventListener>(value, isAttribute, isolate);
+    return V8EventListenerList::findOrCreateWrapper<V8WorkerGlobalScopeEventListener>(value, isAttribute, isolate);
 }
 
 } // namespace WebCore

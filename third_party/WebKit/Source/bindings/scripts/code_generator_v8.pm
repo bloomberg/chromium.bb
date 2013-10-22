@@ -1955,9 +1955,6 @@ END
 
     if ($attribute->type eq "EventHandler") {
         my $implSetterFunctionName = FirstLetterToUpperCase($attrName);
-        # Non callable input should be treated as null
-        $code .= "    if (!jsValue->IsNull() && !jsValue->IsFunction())\n";
-        $code .= "        jsValue = v8::Null(info.GetIsolate());\n";
         if (!InheritsInterface($interface, "Node")) {
             my $attrImplName = GetImplName($attribute);
             $code .= "    transferHiddenDependency(info.Holder(), imp->${attrImplName}(isolatedWorldForIsolate(info.GetIsolate())), jsValue, ${v8ClassName}::eventListenerCacheIndex, info.GetIsolate());\n";
