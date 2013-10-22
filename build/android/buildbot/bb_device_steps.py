@@ -322,13 +322,19 @@ def _ParseLayoutTestResults(results):
   passes = {}
   for (test, result) in tests.iteritems():
     if result.get('is_unexpected'):
-      actual_result = result['actual']
-      if ' PASS' in actual_result:
-        flakes[test] = actual_result
-      elif actual_result == 'PASS':
+      actual_results = result['actual'].split()
+      expected_results = result['expected'].split()
+      if len(actual_results) > 1:
+        # We report the first failure type back, even if the second
+        # was more severe.
+        if actual_results[1] in expected_results:
+          flakes[test] = actual_results[0]
+        else:
+          failures[test] = actual_results[0]
+      elif actual_results[0] == 'PASS':
         passes[test] = result
       else:
-        failures[test] = actual_result
+        failures[test] = actual_results[0]
 
   return (passes, failures, flakes)
 
