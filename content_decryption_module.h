@@ -59,7 +59,7 @@ typedef void* (*GetCdmHostFunc)(int host_interface_version, void* user_data);
 // object.
 CDM_EXPORT void* CreateCdmInstance(
     int cdm_interface_version,
-    const char* key_system, int key_system_size,
+    const char* key_system, uint32_t key_system_size,
     GetCdmHostFunc get_cdm_host_func, void* user_data);
 
 CDM_EXPORT const char* GetCdmVersion();
@@ -121,11 +121,11 @@ enum MediaKeyError {
 //
 // TODO(xhwang): Add checks to make sure these structs have fixed layout.
 struct SubsampleEntry {
-  SubsampleEntry(int32_t clear_bytes, int32_t cipher_bytes)
+  SubsampleEntry(uint32_t clear_bytes, uint32_t cipher_bytes)
       : clear_bytes(clear_bytes), cipher_bytes(cipher_bytes) {}
 
-  int32_t clear_bytes;
-  int32_t cipher_bytes;
+  uint32_t clear_bytes;
+  uint32_t cipher_bytes;
 };
 
 // Represents an input buffer to be decrypted (and possibly decoded). It does
@@ -144,18 +144,18 @@ struct InputBuffer {
         timestamp(0) {}
 
   const uint8_t* data;  // Pointer to the beginning of the input data.
-  int32_t data_size;  // Size (in bytes) of |data|.
+  uint32_t data_size;  // Size (in bytes) of |data|.
 
-  int32_t data_offset;  // Number of bytes to be discarded before decryption.
+  uint32_t data_offset;  // Number of bytes to be discarded before decryption.
 
   const uint8_t* key_id;  // Key ID to identify the decryption key.
-  int32_t key_id_size;  // Size (in bytes) of |key_id|.
+  uint32_t key_id_size;  // Size (in bytes) of |key_id|.
 
   const uint8_t* iv;  // Initialization vector.
-  int32_t iv_size;  // Size (in bytes) of |iv|.
+  uint32_t iv_size;  // Size (in bytes) of |iv|.
 
   const struct SubsampleEntry* subsamples;
-  int32_t num_subsamples;  // Number of subsamples in |subsamples|.
+  uint32_t num_subsamples;  // Number of subsamples in |subsamples|.
 
   int64_t timestamp;  // Presentation timestamp in microseconds.
 };
@@ -183,7 +183,7 @@ struct AudioDecoderConfig {
   // Optional byte data required to initialize audio decoders, such as the
   // vorbis setup header.
   uint8_t* extra_data;
-  int32_t extra_data_size;
+  uint32_t extra_data_size;
 };
 
 // Supported sample formats for AudioFrames.
@@ -249,7 +249,7 @@ struct VideoDecoderConfig {
   // Optional byte data required to initialize video decoders, such as H.264
   // AAVC data.
   uint8_t* extra_data;
-  int32_t extra_data_size;
+  uint32_t extra_data_size;
 };
 
 enum StreamType {
@@ -264,15 +264,15 @@ struct PlatformChallengeResponse {
   // |challenge| provided during Host::SendPlatformChallenge() combined with
   // nonce data and signed with the platform's private key.
   const uint8_t* signed_data;
-  int32_t signed_data_length;
+  uint32_t signed_data_length;
 
   // RSASSA-PKCS1-v1_5-SHA256 signature of the |signed_data| block.
   const uint8_t* signed_data_signature;
-  int32_t signed_data_signature_length;
+  uint32_t signed_data_signature_length;
 
   // X.509 device specific certificate for the |service_id| requested.
   const uint8_t* platform_key_certificate;
-  int32_t platform_key_certificate_length;
+  uint32_t platform_key_certificate_length;
 };
 
 // Supported output protection methods for use with EnableOutputProtection() and
@@ -319,16 +319,16 @@ class ContentDecryptionModule_1 {
   // Returns kSessionError if any error happened, in which case the CDM must
   // send a key error by calling Host::SendKeyError().
   virtual Status GenerateKeyRequest(
-      const char* type, int type_size,
-      const uint8_t* init_data, int init_data_size) = 0;
+      const char* type, uint32_t type_size,
+      const uint8_t* init_data, uint32_t init_data_size) = 0;
 
   // Adds the |key| to the CDM to be associated with |key_id|.
   //
   // Returns kSuccess if the key was successfully added, kSessionError
   // otherwise.
-  virtual Status AddKey(const char* session_id, int session_id_size,
-                        const uint8_t* key, int key_size,
-                        const uint8_t* key_id, int key_id_size) = 0;
+  virtual Status AddKey(const char* session_id, uint32_t session_id_size,
+                        const uint8_t* key, uint32_t key_size,
+                        const uint8_t* key_id, uint32_t key_id_size) = 0;
 
   // Cancels any pending key request made to the CDM for |session_id|.
   //
@@ -336,7 +336,7 @@ class ContentDecryptionModule_1 {
   // successfully canceled or there was no key request to be canceled,
   // kSessionError otherwise.
   virtual Status CancelKeyRequest(
-      const char* session_id, int session_id_size) = 0;
+      const char* session_id, uint32_t session_id_size) = 0;
 
   // Performs scheduled operation with |context| when the timer fires.
   virtual void TimerExpired(void* context) = 0;
@@ -451,16 +451,16 @@ class ContentDecryptionModule_2 {
   // Returns kSessionError if any error happened, in which case the CDM must
   // send a key error by calling Host::SendKeyError().
   virtual Status GenerateKeyRequest(
-      const char* type, int type_size,
-      const uint8_t* init_data, int init_data_size) = 0;
+      const char* type, uint32_t type_size,
+      const uint8_t* init_data, uint32_t init_data_size) = 0;
 
   // Adds the |key| to the CDM to be associated with |key_id|.
   //
   // Returns kSuccess if the key was successfully added, kSessionError
   // otherwise.
-  virtual Status AddKey(const char* session_id, int session_id_size,
-                        const uint8_t* key, int key_size,
-                        const uint8_t* key_id, int key_id_size) = 0;
+  virtual Status AddKey(const char* session_id, uint32_t session_id_size,
+                        const uint8_t* key, uint32_t key_size,
+                        const uint8_t* key_id, uint32_t key_id_size) = 0;
 
   // Cancels any pending key request made to the CDM for |session_id|.
   //
@@ -468,7 +468,7 @@ class ContentDecryptionModule_2 {
   // successfully canceled or there was no key request to be canceled,
   // kSessionError otherwise.
   virtual Status CancelKeyRequest(
-      const char* session_id, int session_id_size) = 0;
+      const char* session_id, uint32_t session_id_size) = 0;
 
   // Performs scheduled operation with |context| when the timer fires.
   virtual void TimerExpired(void* context) = 0;
@@ -594,10 +594,10 @@ class Buffer {
   // Destroys the buffer in the same context as it was created.
   virtual void Destroy() = 0;
 
-  virtual int32_t Capacity() const = 0;
+  virtual uint32_t Capacity() const = 0;
   virtual uint8_t* Data() = 0;
-  virtual void SetSize(int32_t size) = 0;
-  virtual int32_t Size() const = 0;
+  virtual void SetSize(uint32_t size) = 0;
+  virtual uint32_t Size() const = 0;
 
  protected:
   Buffer() {}
@@ -624,7 +624,7 @@ class Host_1 {
   // failure. The caller owns the Buffer* after this call. The buffer is not
   // guaranteed to be zero initialized. The capacity of the allocated Buffer
   // is guaranteed to be not less than |capacity|.
-  virtual Buffer* Allocate(int32_t capacity) = 0;
+  virtual Buffer* Allocate(uint32_t capacity) = 0;
 
   // Requests the host to call ContentDecryptionModule::TimerFired() |delay_ms|
   // from now with |context|.
@@ -636,14 +636,14 @@ class Host_1 {
   // Sends a keymessage event to the application.
   // Length parameters should not include null termination.
   virtual void SendKeyMessage(
-      const char* session_id, int32_t session_id_length,
-      const char* message, int32_t message_length,
-      const char* default_url, int32_t default_url_length) = 0;
+      const char* session_id, uint32_t session_id_length,
+      const char* message, uint32_t message_length,
+      const char* default_url, uint32_t default_url_length) = 0;
 
   // Sends a keyerror event to the application.
   // |session_id_length| should not include null termination.
   virtual void SendKeyError(const char* session_id,
-                            int32_t session_id_length,
+                            uint32_t session_id_length,
                             MediaKeyError error_code,
                             uint32_t system_code) = 0;
 
@@ -665,7 +665,7 @@ class Host_2 {
   // failure. The caller owns the Buffer* after this call. The buffer is not
   // guaranteed to be zero initialized. The capacity of the allocated Buffer
   // is guaranteed to be not less than |capacity|.
-  virtual Buffer* Allocate(int32_t capacity) = 0;
+  virtual Buffer* Allocate(uint32_t capacity) = 0;
 
   // Requests the host to call ContentDecryptionModule::TimerFired() |delay_ms|
   // from now with |context|.
@@ -677,14 +677,14 @@ class Host_2 {
   // Sends a keymessage event to the application.
   // Length parameters should not include null termination.
   virtual void SendKeyMessage(
-      const char* session_id, int32_t session_id_length,
-      const char* message, int32_t message_length,
-      const char* default_url, int32_t default_url_length) = 0;
+      const char* session_id, uint32_t session_id_length,
+      const char* message, uint32_t message_length,
+      const char* default_url, uint32_t default_url_length) = 0;
 
   // Sends a keyerror event to the application.
   // |session_id_length| should not include null termination.
   virtual void SendKeyError(const char* session_id,
-                            int32_t session_id_length,
+                            uint32_t session_id_length,
                             MediaKeyError error_code,
                             uint32_t system_code) = 0;
 
@@ -698,8 +698,8 @@ class Host_2 {
   // with the signed challenge response and platform certificate. Length
   // parameters should not include null termination.
   virtual void SendPlatformChallenge(
-      const char* service_id, int32_t service_id_length,
-      const char* challenge, int32_t challenge_length) = 0;
+      const char* service_id, uint32_t service_id_length,
+      const char* challenge, uint32_t challenge_length) = 0;
 
   // Attempts to enable output protection (e.g. HDCP) on the display link. The
   // |desired_protection_mask| is a bit mask of OutputProtectionMethods. No
@@ -760,11 +760,11 @@ class VideoFrame {
   virtual void SetFrameBuffer(Buffer* frame_buffer) = 0;
   virtual Buffer* FrameBuffer() = 0;
 
-  virtual void SetPlaneOffset(VideoPlane plane, int32_t offset) = 0;
-  virtual int32_t PlaneOffset(VideoPlane plane) = 0;
+  virtual void SetPlaneOffset(VideoPlane plane, uint32_t offset) = 0;
+  virtual uint32_t PlaneOffset(VideoPlane plane) = 0;
 
-  virtual void SetStride(VideoPlane plane, int32_t stride) = 0;
-  virtual int32_t Stride(VideoPlane plane) = 0;
+  virtual void SetStride(VideoPlane plane, uint32_t stride) = 0;
+  virtual uint32_t Stride(VideoPlane plane) = 0;
 
   virtual void SetTimestamp(int64_t timestamp) = 0;
   virtual int64_t Timestamp() const = 0;
