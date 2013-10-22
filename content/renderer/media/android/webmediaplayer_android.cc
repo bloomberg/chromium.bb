@@ -63,6 +63,18 @@ const char* kMediaEme = "Media.EME.";
 
 namespace content {
 
+// static
+void WebMediaPlayerAndroid::OnReleaseRemotePlaybackTexture(
+    const scoped_refptr<base::MessageLoopProxy>& main_loop,
+    const base::WeakPtr<WebMediaPlayerAndroid>& player,
+    uint32 sync_point) {
+  main_loop->PostTask(
+      FROM_HERE,
+      base::Bind(&WebMediaPlayerAndroid::DoReleaseRemotePlaybackTexture,
+                 player,
+                 sync_point));
+}
+
 WebMediaPlayerAndroid::WebMediaPlayerAndroid(
     WebKit::WebFrame* frame,
     WebKit::WebMediaPlayerClient* client,
@@ -109,7 +121,8 @@ WebMediaPlayerAndroid::WebMediaPlayerAndroid(
       proxy_(proxy),
       current_time_(0),
       is_remote_(false),
-      media_log_(media_log) {
+      media_log_(media_log),
+      weak_factory_(this) {
   DCHECK(proxy_);
   DCHECK(manager_);
 
@@ -763,7 +776,6 @@ void WebMediaPlayerAndroid::OnDisconnectedFromRemoteDevice() {
     EstablishSurfaceTexturePeer();
   is_remote_ = false;
   ReallocateVideoFrame();
-  // TODO(sievers): Consider deleting remote_playback_texture_id_ here.
 }
 
 void WebMediaPlayerAndroid::OnDidEnterFullscreen() {
@@ -983,7 +995,9 @@ void WebMediaPlayerAndroid::DrawRemotePlaybackIcon() {
       new VideoFrame::MailboxHolder(
           texture_mailbox,
           texture_mailbox_sync_point,
-          VideoFrame::MailboxHolder::TextureNoLongerNeededCallback()),
+          base::Bind(&WebMediaPlayerAndroid::OnReleaseRemotePlaybackTexture,
+                     main_loop_,
+                     weak_factory_.GetWeakPtr())),
       texture_target,
       canvas_size /* coded_size */,
       gfx::Rect(canvas_size) /* visible_rect */,
@@ -1403,6 +1417,19 @@ bool WebMediaPlayerAndroid::InjectMediaStream(
   return true;
 }
 #endif
+
+void WebMediaPlayerAndroid::DoReleaseRemotePlaybackTexture(uint32 sync_point) {
+  DCHECK(main_thread_checker_.CalledOnValidThread());
+  DCHECK(remote_playback_texture_id_);
+
+  WebKit::WebGraphicsContext3D* context =
+      stream_texture_factory_->Context3d();
+
+  if (sync_point)
+    context->waitSyncPoint(sync_point);
+  context->deleteTexture(remote_playback_texture_id_);
+  remote_playback_texture_id_ = 0;
+}
 
 void WebMediaPlayerAndroid::enterFullscreen() {
   if (manager_->CanEnterFullscreen(frame_)) {

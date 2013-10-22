@@ -233,6 +233,12 @@ class WebMediaPlayerAndroid
                          const base::Closure& destroy_demuxer_cb);
 #endif
 
+  // Can be called on any thread.
+  static void OnReleaseRemotePlaybackTexture(
+      const scoped_refptr<base::MessageLoopProxy>& main_loop,
+      const base::WeakPtr<WebMediaPlayerAndroid>& player,
+      uint32 sync_point);
+
  protected:
   // Helper method to update the playing state.
   void UpdatePlayingState(bool is_playing_);
@@ -261,6 +267,7 @@ class WebMediaPlayerAndroid
   void ReallocateVideoFrame();
   void SetCurrentFrameInternal(scoped_refptr<media::VideoFrame>& frame);
   void DidLoadMediaInfo(MediaInfoLoader::Status status);
+  void DoReleaseRemotePlaybackTexture(uint32 sync_point);
 
   // Actually do the work for generateKeyRequest/addKey so they can easily
   // report results to UMA.
@@ -444,6 +451,8 @@ class WebMediaPlayerAndroid
 
   // The decryptor that manages decryption keys and decrypts encrypted frames.
   scoped_ptr<ProxyDecryptor> decryptor_;
+
+  base::WeakPtrFactory<WebMediaPlayerAndroid> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WebMediaPlayerAndroid);
 };
