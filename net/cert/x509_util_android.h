@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_ANDROID_X509_UTIL_H_
-#define NET_ANDROID_X509_UTIL_H_
+#ifndef NET_CERT_X509_UTIL_ANDROID_H_
+#define NET_CERT_X509_UTIL_ANDROID_H_
 
 #include <jni.h>
 
@@ -13,4 +13,4 @@ bool RegisterX509Util(JNIEnv* env);
 
 }  // net namespace
 
-#endif  // NET_ANDROID_X509_UTIL_H_
+#endif  // NET_CERT_X509_UTIL_ANDROID_H_

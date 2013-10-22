@@ -11,7 +11,7 @@
 #include "net/android/keystore.h"
 #include "net/android/network_change_notifier_android.h"
 #include "net/android/network_library.h"
-#include "net/android/x509_util.h"
+#include "net/cert/x509_util_android.h"
 #include "net/proxy/proxy_config_service_android.h"
 
 namespace net {
