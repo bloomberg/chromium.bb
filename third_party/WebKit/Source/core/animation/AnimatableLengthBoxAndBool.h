@@ -62,11 +62,7 @@ private:
     bool m_flag;
 };
 
-inline const AnimatableLengthBoxAndBool* toAnimatableLengthBoxAndBool(const AnimatableValue* value)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(value && value->isLengthBoxAndBool());
-    return static_cast<const AnimatableLengthBoxAndBool*>(value);
-}
+DEFINE_ANIMATABLE_VALUE_TYPE_CASTS(AnimatableLengthBoxAndBool, isLengthBoxAndBool());
 
 } // namespace WebCore
 

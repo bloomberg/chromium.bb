@@ -59,11 +59,7 @@ private:
     const TransformOperations m_transform;
 };
 
-inline const AnimatableTransform* toAnimatableTransform(const AnimatableValue* value)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(value && value->isTransform());
-    return static_cast<const AnimatableTransform*>(value);
-}
+DEFINE_ANIMATABLE_VALUE_TYPE_CASTS(AnimatableTransform, isTransform());
 
 } // namespace WebCore
 

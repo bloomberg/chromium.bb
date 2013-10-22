@@ -66,11 +66,7 @@ private:
     SVGLength m_length;
 };
 
-inline const AnimatableSVGLength* toAnimatableSVGLength(const AnimatableValue* value)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(value && value->isSVGLength());
-    return static_cast<const AnimatableSVGLength*>(value);
-}
+DEFINE_ANIMATABLE_VALUE_TYPE_CASTS(AnimatableSVGLength, isSVGLength());
 
 } // namespace WebCore
 

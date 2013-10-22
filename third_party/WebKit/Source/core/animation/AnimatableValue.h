@@ -123,6 +123,9 @@ private:
     virtual bool equalTo(const AnimatableValue*) const = 0;
 };
 
+#define DEFINE_ANIMATABLE_VALUE_TYPE_CASTS(thisType, predicate) \
+    DEFINE_TYPE_CASTS(thisType, AnimatableValue, value, value->predicate, value.predicate)
+
 } // namespace WebCore
 
 #endif // AnimatableValue_h

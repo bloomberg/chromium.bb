@@ -62,11 +62,7 @@ private:
     RefPtr<AnimatableValue> m_height;
 };
 
-inline const AnimatableLengthSize* toAnimatableLengthSize(const AnimatableValue* value)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(value && value->isLengthSize());
-    return static_cast<const AnimatableLengthSize*>(value);
-}
+DEFINE_ANIMATABLE_VALUE_TYPE_CASTS(AnimatableLengthSize, isLengthSize());
 
 } // namespace WebCore
 

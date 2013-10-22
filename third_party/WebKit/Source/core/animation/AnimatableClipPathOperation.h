@@ -59,11 +59,7 @@ private:
     RefPtr<ClipPathOperation> m_operation;
 };
 
-inline const AnimatableClipPathOperation* toAnimatableClipPathOperation(const AnimatableValue* value)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(value && value->isClipPathOperation());
-    return static_cast<const AnimatableClipPathOperation*>(value);
-}
+DEFINE_ANIMATABLE_VALUE_TYPE_CASTS(AnimatableClipPathOperation, isClipPathOperation());
 
 } // namespace WebCore
 

@@ -71,11 +71,7 @@ private:
     const RefPtr<CSSValue> m_value;
 };
 
-inline const AnimatableUnknown* toAnimatableUnknown(const AnimatableValue* value)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(value && value->isUnknown());
-    return static_cast<const AnimatableUnknown*>(value);
-}
+DEFINE_ANIMATABLE_VALUE_TYPE_CASTS(AnimatableUnknown, isUnknown());
 
 inline bool AnimatableUnknown::equalTo(const AnimatableValue* value) const
 {

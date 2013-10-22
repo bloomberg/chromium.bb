@@ -78,11 +78,7 @@ private:
     const AnimatableColorImpl m_visitedLinkColor;
 };
 
-inline const AnimatableColor* toAnimatableColor(const AnimatableValue* value)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(value && value->isColor());
-    return static_cast<const AnimatableColor*>(value);
-}
+DEFINE_ANIMATABLE_VALUE_TYPE_CASTS(AnimatableColor, isColor());
 
 } // namespace WebCore
 

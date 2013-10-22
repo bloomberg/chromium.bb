@@ -61,11 +61,7 @@ private:
     virtual AnimatableType type() const { return TypeStrokeDasharrayList; }
 };
 
-inline const AnimatableStrokeDasharrayList* toAnimatableStrokeDasharrayList(const AnimatableValue* value)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(value && value->isStrokeDasharrayList());
-    return static_cast<const AnimatableStrokeDasharrayList*>(value);
-}
+DEFINE_ANIMATABLE_VALUE_TYPE_CASTS(AnimatableStrokeDasharrayList, isStrokeDasharrayList());
 
 } // namespace WebCore
 

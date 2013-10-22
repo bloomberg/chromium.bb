@@ -152,11 +152,7 @@ private:
     friend class CoreAnimationAnimatableLengthTest;
 };
 
-inline const AnimatableLength* toAnimatableLength(const AnimatableValue* value)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(value && value->isLength());
-    return static_cast<const AnimatableLength*>(value);
-}
+DEFINE_ANIMATABLE_VALUE_TYPE_CASTS(AnimatableLength, isLength());
 
 } // namespace WebCore
 

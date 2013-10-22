@@ -70,11 +70,7 @@ private:
     Constraint m_constraint;
 };
 
-inline const AnimatableDouble* toAnimatableDouble(const AnimatableValue* value)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(value && value->isDouble());
-    return static_cast<const AnimatableDouble*>(value);
-}
+DEFINE_ANIMATABLE_VALUE_TYPE_CASTS(AnimatableDouble, isDouble());
 
 } // namespace WebCore
 

@@ -68,11 +68,7 @@ private:
     RefPtr<AnimatableValue> m_bottom;
 };
 
-inline const AnimatableLengthBox* toAnimatableLengthBox(const AnimatableValue* value)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(value && value->isLengthBox());
-    return static_cast<const AnimatableLengthBox*>(value);
-}
+DEFINE_ANIMATABLE_VALUE_TYPE_CASTS(AnimatableLengthBox, isLengthBox());
 
 } // namespace WebCore
 

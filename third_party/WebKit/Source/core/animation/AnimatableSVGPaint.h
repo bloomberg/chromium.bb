@@ -71,11 +71,7 @@ private:
     String m_uri;
 };
 
-inline const AnimatableSVGPaint* toAnimatableSVGPaint(const AnimatableValue* value)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(value && value->isSVGPaint());
-    return static_cast<const AnimatableSVGPaint*>(value);
-}
+DEFINE_ANIMATABLE_VALUE_TYPE_CASTS(AnimatableSVGPaint, isSVGPaint());
 
 } // namespace WebCore
 

@@ -59,11 +59,7 @@ private:
     RefPtr<ShapeValue> m_shape;
 };
 
-inline const AnimatableShapeValue* toAnimatableShapeValue(const AnimatableValue* value)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(value && value->isShapeValue());
-    return static_cast<const AnimatableShapeValue*>(value);
-}
+DEFINE_ANIMATABLE_VALUE_TYPE_CASTS(AnimatableShapeValue, isShapeValue());
 
 } // namespace WebCore
 

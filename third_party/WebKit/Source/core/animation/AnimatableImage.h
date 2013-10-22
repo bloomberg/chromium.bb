@@ -63,11 +63,7 @@ private:
     const RefPtr<StyleImage> m_image;
 };
 
-inline const AnimatableImage* toAnimatableImage(const AnimatableValue* value)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(value && value->isImage());
-    return static_cast<const AnimatableImage*>(value);
-}
+DEFINE_ANIMATABLE_VALUE_TYPE_CASTS(AnimatableImage, isImage());
 
 } // namespace WebCore
 
