@@ -334,7 +334,7 @@ void Canvas::DrawStringRectWithHalo(const base::string16& text,
   // Create a temporary buffer filled with the halo color. It must leave room
   // for the 1-pixel border around the text.
   Size size(display_rect.width() + 2, display_rect.height() + 2);
-  Canvas text_canvas(size, image_scale(), true);
+  Canvas text_canvas(size, image_scale(), false);
   SkPaint bkgnd_paint;
   bkgnd_paint.setColor(halo_color);
   text_canvas.DrawRect(Rect(size), bkgnd_paint);

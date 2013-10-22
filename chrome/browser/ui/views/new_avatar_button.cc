@@ -107,13 +107,13 @@ void NewAvatarButton::OnPaint(gfx::Canvas* canvas) {
     rect = gfx::Rect(-kInset, 0, size().width(), size().height());
   else
     rect = gfx::Rect(kInset, 0, size().width(), size().height());
-  // TODO(noms): This should be DrawStringRectWithHalo but that function
-  // has a bug at the moment and incorrectly draws the background.
-  canvas->DrawStringRectWithFlags(
+
+  canvas->DrawStringRectWithHalo(
       text(),
       gfx::FontList(ui::ResourceBundle::GetSharedInstance().GetFont(
           ui::ResourceBundle::BaseFont)),
-      SK_ColorBLACK,
+      SK_ColorWHITE,
+      SK_ColorDKGRAY,
       rect,
       gfx::Canvas::NO_SUBPIXEL_RENDERING);
 
