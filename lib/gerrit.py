@@ -19,16 +19,15 @@ gob_util.LOGGER = cros_build_lib.logger
 
 
 class GerritException(Exception):
-  "Base exception, thrown for gerrit failures"""
+  """Base exception, thrown for gerrit failures"""
 
 
 class QueryHasNoResults(GerritException):
-  "Exception thrown when a query returns no results."""
+  """Exception thrown when a query returns no results."""
 
 
 class QueryNotSpecific(GerritException):
-  """Exception thrown for when a query needs to identify one CL, but matched
-  multiple."""
+  """Thrown when a query needs to identify one CL, but matched multiple."""
 
 
 class FailedToReachGerrit(GerritException):
