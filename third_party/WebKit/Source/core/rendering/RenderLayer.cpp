@@ -1739,6 +1739,11 @@ RenderLayer* RenderLayer::scrollParent() const
     if (!compositorDrivenAcceleratedScrollingEnabled())
         return 0;
 
+    // Normal flow elements will be parented under the main scrolling layer, so
+    // we don't need a scroll parent/child relationship to get them to scroll.
+    if (stackingNode()->isNormalFlowOnly())
+        return 0;
+
     // A layer scrolls with its containing block. So to find the overflow scrolling layer
     // that we scroll with respect to, we must ascend the layer tree until we reach the
     // first overflow scrolling div at or above our containing block. I will refer to this
