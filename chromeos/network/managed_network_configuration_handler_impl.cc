@@ -43,22 +43,13 @@ typedef std::map<std::string, const base::DictionaryValue*> GuidToPolicyMap;
 
 // These are error strings used for error callbacks. None of these error
 // messages are user-facing: they should only appear in logs.
-const char kInvalidUserSettingsMessage[] = "User settings are invalid.";
-const char kInvalidUserSettings[] = "Error.InvalidUserSettings";
-const char kNetworkAlreadyConfiguredMessage[] =
-    "Network is already configured.";
-const char kNetworkAlreadyConfigured[] = "Error.NetworkAlreadyConfigured";
-const char kPoliciesNotInitializedMessage[] = "Policies not initialized.";
-const char kPoliciesNotInitialized[] = "Error.PoliciesNotInitialized";
-const char kProfileNotInitializedMessage[] = "Profile not initialized.";
-const char kProfileNotInitialized[] = "Error.ProflieNotInitialized";
-const char kSetOnUnconfiguredNetworkMessage[] =
-    "Unable to modify properties of an unconfigured network.";
-const char kSetOnUnconfiguredNetwork[] = "Error.SetCalledOnUnconfiguredNetwork";
-const char kUnknownProfilePathMessage[] = "Profile path is unknown.";
-const char kUnknownProfilePath[] = "Error.UnknownProfilePath";
-const char kUnknownServicePathMessage[] = "Service path is unknown.";
-const char kUnknownServicePath[] = "Error.UnknownServicePath";
+const char kInvalidUserSettings[] = "InvalidUserSettings";
+const char kNetworkAlreadyConfigured[] = "NetworkAlreadyConfigured";
+const char kPoliciesNotInitialized[] = "PoliciesNotInitialized";
+const char kProfileNotInitialized[] = "ProflieNotInitialized";
+const char kSetOnUnconfiguredNetwork[] = "SetCalledOnUnconfiguredNetwork";
+const char kUnknownProfilePath[] = "UnknownProfilePath";
+const char kUnknownServicePath[] = "UnknownServicePath";
 
 std::string ToDebugString(::onc::ONCSource source,
                           const std::string& userhash) {
@@ -66,17 +57,13 @@ std::string ToDebugString(::onc::ONCSource source,
       ("user policy of " + userhash) : "device policy";
 }
 
-void RunErrorCallback(const std::string& service_path,
-                      const std::string& error_name,
-                      const std::string& error_message,
-                      const network_handler::ErrorCallback& error_callback) {
-  NET_LOG_ERROR(error_name, error_message);
-  error_callback.Run(
-      error_name,
-      make_scoped_ptr(
-          network_handler::CreateErrorData(service_path,
-                                           error_name,
-                                           error_message)));
+void InvokeErrorCallback(const std::string& service_path,
+                         const network_handler::ErrorCallback& error_callback,
+                         const std::string& error_name) {
+  std::string error_msg = "ManagedConfig Error: " + error_name;
+  NET_LOG_ERROR(error_msg, service_path);
+  network_handler::RunErrorCallback(
+      error_callback, service_path, error_name, error_msg);
 }
 
 void LogErrorWithDict(const tracked_objects::Location& from_where,
@@ -133,10 +120,7 @@ void ManagedNetworkConfigurationHandlerImpl::GetManagedProperties(
     const network_handler::DictionaryResultCallback& callback,
     const network_handler::ErrorCallback& error_callback) {
   if (!GetPoliciesForUser(userhash) || !GetPoliciesForUser(std::string())) {
-    RunErrorCallback(service_path,
-                     kPoliciesNotInitialized,
-                     kPoliciesNotInitializedMessage,
-                     error_callback);
+    InvokeErrorCallback(service_path, error_callback, kPoliciesNotInitialized);
     return;
   }
   network_configuration_handler_->GetProperties(
@@ -199,10 +183,8 @@ void ManagedNetworkConfigurationHandlerImpl::GetManagedPropertiesCallback(
   if (!guid.empty() && profile) {
     const Policies* policies = GetPoliciesForProfile(*profile);
     if (!policies) {
-      RunErrorCallback(service_path,
-                       kPoliciesNotInitialized,
-                       kPoliciesNotInitializedMessage,
-                       error_callback);
+      InvokeErrorCallback(
+          service_path, error_callback, kPoliciesNotInitialized);
       return;
     }
     const base::DictionaryValue* policy =
@@ -246,10 +228,7 @@ void ManagedNetworkConfigurationHandlerImpl::SetProperties(
       network_state_handler_->GetNetworkState(service_path);
 
   if (!state) {
-    RunErrorCallback(service_path,
-                     kUnknownServicePath,
-                     kUnknownServicePathMessage,
-                     error_callback);
+    InvokeErrorCallback(service_path, error_callback, kUnknownServicePath);
     return;
   }
 
@@ -258,10 +237,8 @@ void ManagedNetworkConfigurationHandlerImpl::SetProperties(
     // TODO(pneubeck): create an initial configuration in this case. As for
     // CreateConfiguration, user settings from older ChromeOS versions have to
     // determined here.
-    RunErrorCallback(service_path,
-                     kSetOnUnconfiguredNetwork,
-                     kSetOnUnconfiguredNetworkMessage,
-                     error_callback);
+    InvokeErrorCallback(
+        service_path, error_callback, kSetOnUnconfiguredNetwork);
     return;
   }
 
@@ -269,10 +246,7 @@ void ManagedNetworkConfigurationHandlerImpl::SetProperties(
   const NetworkProfile *profile =
       network_profile_handler_->GetProfileForPath(profile_path);
   if (!profile) {
-    RunErrorCallback(service_path,
-                     kUnknownProfilePath,
-                     kUnknownProfilePathMessage,
-                     error_callback);
+    InvokeErrorCallback(service_path, error_callback, kUnknownProfilePath);
     return;
   }
 
@@ -281,10 +255,7 @@ void ManagedNetworkConfigurationHandlerImpl::SetProperties(
 
   const Policies* policies = GetPoliciesForProfile(*profile);
   if (!policies) {
-    RunErrorCallback(service_path,
-                     kPoliciesNotInitialized,
-                     kPoliciesNotInitializedMessage,
-                     error_callback);
+    InvokeErrorCallback(service_path, error_callback, kPoliciesNotInitialized);
     return;
   }
 
@@ -303,10 +274,7 @@ void ManagedNetworkConfigurationHandlerImpl::SetProperties(
           &validation_result);
 
   if (validation_result == onc::Validator::INVALID) {
-    RunErrorCallback(service_path,
-                     kInvalidUserSettings,
-                     kInvalidUserSettingsMessage,
-                     error_callback);
+    InvokeErrorCallback(service_path, error_callback, kInvalidUserSettings);
     return;
   }
   if (validation_result == onc::Validator::VALID_WITH_WARNINGS)
@@ -331,28 +299,21 @@ void ManagedNetworkConfigurationHandlerImpl::CreateConfiguration(
     const network_handler::ErrorCallback& error_callback) const {
   const Policies* policies = GetPoliciesForUser(userhash);
   if (!policies) {
-    RunErrorCallback("",
-                     kPoliciesNotInitialized,
-                     kPoliciesNotInitializedMessage,
-                     error_callback);
+    InvokeErrorCallback("", error_callback, kPoliciesNotInitialized);
     return;
   }
 
   if (policy_util::FindMatchingPolicy(policies->per_network_config,
                                       properties)) {
-    RunErrorCallback("",
-                     kNetworkAlreadyConfigured,
-                     kNetworkAlreadyConfiguredMessage,
-                     error_callback);
+    InvokeErrorCallback("", error_callback, kNetworkAlreadyConfigured);
+    return;
   }
 
   const NetworkProfile* profile =
       network_profile_handler_->GetProfileForUserhash(userhash);
   if (!profile) {
-    RunErrorCallback("",
-                     kProfileNotInitialized,
-                     kProfileNotInitializedMessage,
-                     error_callback);
+    InvokeErrorCallback("", error_callback, kProfileNotInitialized);
+    return;
   }
 
   // TODO(pneubeck): In case of WiFi, check that no other configuration for the

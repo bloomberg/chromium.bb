@@ -38,15 +38,13 @@ std::string StripQuotations(const std::string& in_str) {
   return in_str;
 }
 
-void InvokeErrorCallback(const std::string& error,
-                         const std::string& path,
-                         const network_handler::ErrorCallback& error_callback) {
-  NET_LOG_ERROR(error, path);
-  if (error_callback.is_null())
-    return;
-  scoped_ptr<base::DictionaryValue> error_data(
-      network_handler::CreateErrorData(path, error, ""));
-  error_callback.Run(error, error_data.Pass());
+void InvokeErrorCallback(const std::string& service_path,
+                         const network_handler::ErrorCallback& error_callback,
+                         const std::string& error_name) {
+  std::string error_msg = "Config Error: " + error_name;
+  NET_LOG_ERROR(error_msg, service_path);
+  network_handler::RunErrorCallback(
+      error_callback, service_path, error_name, error_msg);
 }
 
 void GetPropertiesCallback(
@@ -65,14 +63,10 @@ void GetPropertiesCallback(
   if (call_status != DBUS_METHOD_CALL_SUCCESS) {
     // Because network services are added and removed frequently, we will see
     // failures regularly, so don't log these.
-    if (!error_callback.is_null()) {
-      scoped_ptr<base::DictionaryValue> error_data(
-          network_handler::CreateErrorData(
-              service_path,
-              network_handler::kDBusFailedError,
-              network_handler::kDBusFailedErrorMessage));
-      error_callback.Run(network_handler::kDBusFailedError, error_data.Pass());
-    }
+    network_handler::RunErrorCallback(error_callback,
+                                      service_path,
+                                      network_handler::kDBusFailedError,
+                                      network_handler::kDBusFailedErrorMessage);
   } else if (!callback.is_null()) {
     callback.Run(service_path, *properties_copy.get());
   }
@@ -147,7 +141,7 @@ class NetworkConfigurationHandler::ProfileEntryDeleter
       const base::DictionaryValue& profile_entries) {
     if (call_status != DBUS_METHOD_CALL_SUCCESS) {
       InvokeErrorCallback(
-          "GetLoadableProfileEntries Failed", service_path_, error_callback_);
+          service_path_, error_callback_, "GetLoadableProfileEntriesFailed");
       owner_->ProfileEntryDeleterCompleted(service_path_);  // Deletes this.
       return;
     }
@@ -311,9 +305,9 @@ void NetworkConfigurationHandler::RemoveConfiguration(
     const network_handler::ErrorCallback& error_callback) {
   // Service.Remove is not reliable. Instead, request the profile entries
   // for the service and remove each entry.
-  if (profile_entry_deleters_.count(service_path)) {
+  if (ContainsKey(profile_entry_deleters_,service_path)) {
     InvokeErrorCallback(
-        "RemoveConfiguration In-Progress", service_path, error_callback);
+        service_path, error_callback, "RemoveConfigurationInProgress");
     return;
   }
   NET_LOG_USER("Remove Configuration", service_path);

@@ -33,11 +33,8 @@ void InvokeErrorCallback(const std::string& service_path,
                          const std::string& error_name) {
   std::string error_msg = "Connect Error: " + error_name;
   NET_LOG_ERROR(error_msg, service_path);
-  if (error_callback.is_null())
-    return;
-  scoped_ptr<base::DictionaryValue> error_data(
-      network_handler::CreateErrorData(service_path, error_name, error_msg));
-  error_callback.Run(error_name, error_data.Pass());
+  network_handler::RunErrorCallback(
+      error_callback, service_path, error_name, error_msg);
 }
 
 bool IsAuthenticationError(const std::string& error) {
@@ -609,9 +606,8 @@ void NetworkConnectionHandler::CheckPendingRequest(
   pending_requests_.erase(service_path);
   if (error_callback.is_null())
     return;
-  scoped_ptr<base::DictionaryValue> error_data(
-      network_handler::CreateErrorData(service_path, error_name, shill_error));
-  error_callback.Run(error_name, error_data.Pass());
+  network_handler::RunErrorCallback(
+      error_callback, service_path, error_name, shill_error);
 }
 
 void NetworkConnectionHandler::CheckAllPendingRequests() {

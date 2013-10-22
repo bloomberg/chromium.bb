@@ -22,10 +22,21 @@ const char kDbusErrorName[] = "dbusErrorName";
 const char kDbusErrorMessage[] = "dbusErrorMessage";
 const char kPath[] = "path";
 
-base::DictionaryValue* CreateErrorData(const std::string& service_path,
+base::DictionaryValue* CreateErrorData(const std::string& path,
                                        const std::string& error_name,
                                        const std::string& error_detail) {
-  return CreateDBusErrorData(service_path, error_name, error_detail, "", "");
+  return CreateDBusErrorData(path, error_name, error_detail, "", "");
+}
+
+void RunErrorCallback(const ErrorCallback& error_callback,
+                      const std::string& path,
+                      const std::string& error_name,
+                      const std::string& error_detail) {
+  if (error_callback.is_null())
+    return;
+  error_callback.Run(
+      error_name,
+      make_scoped_ptr(CreateErrorData(path, error_name, error_detail)));
 }
 
 base::DictionaryValue* CreateDBusErrorData(
@@ -65,22 +76,17 @@ void ShillErrorCallbackFunction(const std::string& error_name,
   error_callback.Run(error_name, error_data.Pass());
 }
 
-void GetPropertiesCallback(
-    const network_handler::DictionaryResultCallback& callback,
-    const network_handler::ErrorCallback& error_callback,
-    const std::string& path,
-    DBusMethodCallStatus call_status,
-    const base::DictionaryValue& value) {
+void GetPropertiesCallback(const DictionaryResultCallback& callback,
+                           const ErrorCallback& error_callback,
+                           const std::string& path,
+                           DBusMethodCallStatus call_status,
+                           const base::DictionaryValue& value) {
   if (call_status != DBUS_METHOD_CALL_SUCCESS) {
-    scoped_ptr<base::DictionaryValue> error_data(
-        network_handler::CreateErrorData(path,
-                                         kDBusFailedError,
-                                         kDBusFailedErrorMessage));
     NET_LOG_ERROR(
         base::StringPrintf("GetProperties failed. Status: %d", call_status),
         path);
-    if (!error_callback.is_null())
-      error_callback.Run(kDBusFailedError, error_data.Pass());
+    RunErrorCallback(
+        error_callback, path, kDBusFailedError, kDBusFailedErrorMessage);
   } else if (!callback.is_null()) {
     callback.Run(path, value);
   }

@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/memory/scoped_ptr.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
 
@@ -45,6 +46,13 @@ CHROMEOS_EXPORT base::DictionaryValue* CreateErrorData(
     const std::string& error_name,
     const std::string& error_detail);
 
+// If not NULL, runs |error_callback| with an ErrorData dictionary created from
+// the other arguments.
+CHROMEOS_EXPORT void RunErrorCallback(const ErrorCallback& error_callback,
+                                      const std::string& path,
+                                      const std::string& error_name,
+                                      const std::string& error_detail);
+
 CHROMEOS_EXPORT base::DictionaryValue* CreateDBusErrorData(
     const std::string& path,
     const std::string& error_name,
@@ -69,8 +77,8 @@ CHROMEOS_EXPORT void ShillErrorCallbackFunction(
 // the DBus Dictionary callback into one that calls the error callback
 // if |call_status| != DBUS_METHOD_CALL_SUCCESS.
 CHROMEOS_EXPORT void GetPropertiesCallback(
-    const network_handler::DictionaryResultCallback& callback,
-    const network_handler::ErrorCallback& error_callback,
+    const DictionaryResultCallback& callback,
+    const ErrorCallback& error_callback,
     const std::string& path,
     DBusMethodCallStatus call_status,
     const base::DictionaryValue& value);
