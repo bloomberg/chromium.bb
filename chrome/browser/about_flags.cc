@@ -1692,10 +1692,10 @@ const Experiment kExperiments[] = {
   },
   {
     "disable-app-launcher",
-    IDS_FLAGS_DISABLE_APP_LIST_NAME,
-    IDS_FLAGS_DISABLE_APP_LIST_DESCRIPTION,
+    IDS_FLAGS_RESET_APP_LIST_INSTALL_STATE_NAME,
+    IDS_FLAGS_RESET_APP_LIST_INSTALL_STATE_DESCRIPTION,
     kOsMac | kOsWin,
-    SINGLE_VALUE_TYPE(switches::kDisableAppList)
+    SINGLE_VALUE_TYPE(switches::kResetAppListInstallState)
   },
 #if defined(ENABLE_APP_LIST)
   {

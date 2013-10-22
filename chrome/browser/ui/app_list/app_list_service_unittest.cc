@@ -168,7 +168,7 @@ TEST_F(AppListServiceUnitTest, EnableViaCommandLineFlag) {
 
 TEST_F(AppListServiceUnitTest, DisableViaCommandLineFlag) {
   CommandLine command_line(CommandLine::NO_PROGRAM);
-  command_line.AppendSwitch(switches::kDisableAppList);
+  command_line.AppendSwitch(switches::kResetAppListInstallState);
   SetupWithCommandLine(command_line);
   service_->HandleCommandLineFlags(profile1_.get());
   EXPECT_FALSE(local_state_->GetBoolean(prefs::kAppLauncherHasBeenEnabled));

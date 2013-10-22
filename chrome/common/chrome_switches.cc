@@ -270,11 +270,6 @@ const char kDiagnosticsFormat[]             = "diagnostics-format";
 // Tells the diagnostics mode to do the requested recovery step(s).
 const char kDiagnosticsRecovery[]           = "diagnostics-recovery";
 
-// If set, the app list will be disabled at startup. Note this doesn't prevent
-// the app list from running, it just makes Chrome think the app list hasn't
-// been enabled (as in kEnableAppList) yet.
-const char kDisableAppList[]                = "disable-app-list";
-
 // Disables the experimental asynchronous DNS client.
 const char kDisableAsyncDns[]               = "disable-async-dns";
 
@@ -1248,6 +1243,11 @@ const char kRemoteDebuggingFrontend[]       = "remote-debugging-frontend";
 // Enables print preview in the renderer. This flag is generated internally by
 // Chrome and does nothing when directly passed to the browser.
 const char kRendererPrintPreview[]          = "renderer-print-preview";
+
+// If set, the app list will forget it has been installed on startup. Note this
+// doesn't prevent the app list from running, it just makes Chrome think the app
+// list hasn't been enabled (as in kEnableAppList) yet.
+const char kResetAppListInstallState[]      = "reset-app-list-install-state";
 
 // Forces a reset of the one-time-randomized FieldTrials on this client, also
 // known as the Chrome Variations state.

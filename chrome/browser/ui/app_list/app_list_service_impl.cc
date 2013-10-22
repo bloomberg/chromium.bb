@@ -281,7 +281,7 @@ void AppListServiceImpl::HandleCommandLineFlags(Profile* initial_profile) {
   if (command_line_.HasSwitch(switches::kEnableAppList))
     EnableAppList(initial_profile);
 
-  if (command_line_.HasSwitch(switches::kDisableAppList))
+  if (command_line_.HasSwitch(switches::kResetAppListInstallState))
     local_state_->SetBoolean(prefs::kAppLauncherHasBeenEnabled, false);
 }
 

@@ -6802,11 +6802,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_TRANSLATE_SETTINGS_DESCRIPTION" desc="Description of the flag to translate setting.">
         Enable Translate settings in chrome://settings/languages where the user can configure which language should be translated.
       </message>
-      <message name="IDS_FLAGS_DISABLE_APP_LIST_NAME" desc="Name of the flag to disable the app list on startup.">
-        Disable the app launcher on startup.
+      <message name="IDS_FLAGS_RESET_APP_LIST_INSTALL_STATE_NAME" desc="Name of the flag to reset the app launcher install state.">
+        Reset the app launcher install state on every restart.
       </message>
-      <message name="IDS_FLAGS_DISABLE_APP_LIST_DESCRIPTION" desc="Description of the flag to disable the app list on startup.">
-        Disable the app launcher on startup. While this flag is set the launcher will be disabled every time Chrome starts. This is used for testing the app launcher install flow.
+      <message name="IDS_FLAGS_RESET_APP_LIST_INSTALL_STATE_DESCRIPTION" desc="Description of the flag to reset the app launcher install state.">
+        Reset the app launcher install state on every restart. While this flag is set, Chrome will forget the launcher has been installed each time it starts. This is used for testing the app launcher install flow.
       </message>
       <if expr="pp_ifdef('enable_app_list')">
         <message name="IDS_FLAGS_ENABLE_APP_LIST_START_PAGE_NAME" desc="Name of the flag to enable the start page of app launcher.">
