@@ -11,12 +11,14 @@
 #include "base/memory/weak_ptr.h"
 #include "components/dom_distiller/core/article_entry.h"
 #include "components/dom_distiller/core/dom_distiller_database.h"
+#include "components/dom_distiller/core/dom_distiller_model.h"
 #include "sync/api/sync_change.h"
 #include "sync/api/sync_data.h"
 #include "sync/api/sync_error.h"
 #include "sync/api/sync_error_factory.h"
 #include "sync/api/sync_merge_result.h"
 #include "sync/api/syncable_service.h"
+#include "url/gurl.h"
 
 namespace base {
 class FilePath;
@@ -33,6 +35,12 @@ class DomDistillerStoreInterface {
   virtual syncer::SyncableService* GetSyncableService() = 0;
 
   virtual bool AddEntry(const ArticleEntry& entry) = 0;
+
+  // Lookup an ArticleEntry by ID or URL. Returns whether a corresponding entry
+  // was found. On success, if |entry| is not null, it will contain the entry.
+  virtual bool GetEntryById(const std::string& entry_id,
+                            ArticleEntry* entry) = 0;
+  virtual bool GetEntryByUrl(const GURL& url, ArticleEntry* entry) = 0;
 
   // Gets a copy of all the current entries.
   virtual std::vector<ArticleEntry> GetEntries() const = 0;
@@ -59,8 +67,6 @@ class DomDistillerStoreInterface {
 class DomDistillerStore : public syncer::SyncableService,
                           DomDistillerStoreInterface {
  public:
-  typedef base::hash_map<std::string, ArticleEntry> EntryMap;
-
   // Creates storage using the given database for local storage. Initializes the
   // database with |database_dir|.
   DomDistillerStore(scoped_ptr<DomDistillerDatabaseInterface> database,
@@ -70,7 +76,7 @@ class DomDistillerStore : public syncer::SyncableService,
   // database with |database_dir|.  Also initializes the internal model to
   // |initial_model|.
   DomDistillerStore(scoped_ptr<DomDistillerDatabaseInterface> database,
-                    const EntryMap& initial_model,
+                    const std::vector<ArticleEntry>& initial_data,
                     const base::FilePath& database_dir);
 
   virtual ~DomDistillerStore();
@@ -78,6 +84,9 @@ class DomDistillerStore : public syncer::SyncableService,
   // DomDistillerStoreInterface implementation.
   virtual syncer::SyncableService* GetSyncableService() OVERRIDE;
   virtual bool AddEntry(const ArticleEntry& entry) OVERRIDE;
+  virtual bool GetEntryById(const std::string& entry_id,
+                            ArticleEntry* entry) OVERRIDE;
+  virtual bool GetEntryByUrl(const GURL& url, ArticleEntry* entry) OVERRIDE;
   virtual std::vector<ArticleEntry> GetEntries() const OVERRIDE;
 
   // syncer::SyncableService implementation.
@@ -92,9 +101,6 @@ class DomDistillerStore : public syncer::SyncableService,
   virtual syncer::SyncError ProcessSyncChanges(
       const tracked_objects::Location& from_here,
       const syncer::SyncChangeList& change_list) OVERRIDE;
-
-  static ArticleEntry GetEntryFromChange(const syncer::SyncChange& change);
-
  private:
   void OnDatabaseInit(bool success);
   void OnDatabaseLoad(bool success, scoped_ptr<EntryVector> entries);
@@ -116,24 +122,18 @@ class DomDistillerStore : public syncer::SyncableService,
                           const syncer::SyncChangeList& change_list);
   bool ApplyChangesToDatabase(const syncer::SyncChangeList& change_list);
 
-  // Applies the change list to the in-memory model, appending the actual
-  // changes made to the model to changes_applied. If conflict resolution does
-  // not apply the requested change, then adds the "diff" to changes_missing.
-  syncer::SyncError ApplyChangesToModel(
-      const syncer::SyncChangeList& change_list,
-      syncer::SyncChangeList* changes_applied,
-      syncer::SyncChangeList* changes_missing);
-
-  void ApplyChangeToModel(const syncer::SyncChange& change,
-                          syncer::SyncChangeList* changes_applied,
-                          syncer::SyncChangeList* changes_missing);
+  // Applies the changes to |model_|. If the model returns an error, disables
+  // syncing and database changes and returns false.
+  bool ApplyChangesToModel(const syncer::SyncChangeList& change_list,
+                           syncer::SyncChangeList* changes_applied,
+                           syncer::SyncChangeList* changes_missing);
 
   scoped_ptr<syncer::SyncChangeProcessor> sync_processor_;
   scoped_ptr<syncer::SyncErrorFactory> error_factory_;
   scoped_ptr<DomDistillerDatabaseInterface> database_;
   bool database_loaded_;
 
-  EntryMap model_;
+  DomDistillerModel model_;
 
   base::WeakPtrFactory<DomDistillerStore> weak_ptr_factory_;
 

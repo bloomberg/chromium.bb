@@ -23,6 +23,7 @@
             'browser_context_keyed_service/dependency_graph_unittest.cc',
             'dom_distiller/core/distiller_url_fetcher_unittest.cc',
             'dom_distiller/core/dom_distiller_database_unittest.cc',
+            'dom_distiller/core/dom_distiller_model_unittest.cc',
             'dom_distiller/core/dom_distiller_store_unittest.cc',
             'dom_distiller/core/article_entry_unittest.cc',
             'json_schema/json_schema_validator_unittest.cc',
