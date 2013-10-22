@@ -24,6 +24,7 @@
 #include "sql/statement.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using base::ASCIIToUTF16;
 using base::Time;
 using base::TimeDelta;
 
@@ -55,33 +56,59 @@ std::ostream& operator<<(std::ostream& os, const AutofillChange& change) {
 
 namespace {
 
+typedef std::set<AutofillEntry,
+    bool (*)(const AutofillEntry&, const AutofillEntry&)> AutofillEntrySet;
+typedef AutofillEntrySet::iterator AutofillEntrySetIterator;
+
 bool CompareAutofillEntries(const AutofillEntry& a, const AutofillEntry& b) {
   std::set<Time> timestamps1(a.timestamps().begin(), a.timestamps().end());
   std::set<Time> timestamps2(b.timestamps().begin(), b.timestamps().end());
 
   int compVal = a.key().name().compare(b.key().name());
-  if (compVal != 0) {
+  if (compVal != 0)
     return compVal < 0;
-  }
 
   compVal = a.key().value().compare(b.key().value());
-  if (compVal != 0) {
+  if (compVal != 0)
     return compVal < 0;
-  }
 
-  if (timestamps1.size() != timestamps2.size()) {
+  if (timestamps1.size() != timestamps2.size())
     return timestamps1.size() < timestamps2.size();
-  }
 
   std::set<Time>::iterator it;
-  for (it = timestamps1.begin(); it != timestamps1.end(); it++) {
+  for (it = timestamps1.begin(); it != timestamps1.end(); ++it) {
     timestamps2.erase(*it);
   }
 
   return !timestamps2.empty();
 }
 
-}  // anonymous namespace
+AutofillEntry MakeAutofillEntry(const char* name,
+                                const char* value,
+                                time_t timestamp0,
+                                time_t timestamp1) {
+  std::vector<Time> timestamps;
+  if (timestamp0 >= 0)
+    timestamps.push_back(Time::FromTimeT(timestamp0));
+  if (timestamp1 >= 0)
+    timestamps.push_back(Time::FromTimeT(timestamp1));
+  return AutofillEntry(
+      AutofillKey(ASCIIToUTF16(name), ASCIIToUTF16(value)), timestamps);
+}
+
+// Checks |actual| and |expected| contain the same elements.
+void CompareAutofillEntrySets(const AutofillEntrySet& actual,
+                              const AutofillEntrySet& expected) {
+  ASSERT_EQ(expected.size(), actual.size());
+  size_t count = 0;
+  for (AutofillEntrySet::const_iterator it = actual.begin();
+       it != actual.end(); ++it) {
+    count += expected.count(*it);
+  }
+  EXPECT_EQ(actual.size(), count);
+}
+
+}  // namespace
 
 class AutofillTableTest : public testing::Test {
  public:
@@ -89,11 +116,6 @@ class AutofillTableTest : public testing::Test {
   virtual ~AutofillTableTest() {}
 
  protected:
-  typedef std::set<AutofillEntry,
-    bool (*)(const AutofillEntry&, const AutofillEntry&)> AutofillEntrySet;
-  typedef std::set<AutofillEntry, bool (*)(const AutofillEntry&,
-    const AutofillEntry&)>::iterator AutofillEntrySetIterator;
-
   virtual void SetUp() {
 #if defined(OS_MACOSX)
     Encryptor::UseMockKeychain(true);
@@ -105,19 +127,6 @@ class AutofillTableTest : public testing::Test {
     db_.reset(new WebDatabase);
     db_->AddTable(table_.get());
     ASSERT_EQ(sql::INIT_OK, db_->Init(file_));
-  }
-
-  static AutofillEntry MakeAutofillEntry(const char* name,
-                                         const char* value,
-                                         time_t timestamp0,
-                                         time_t timestamp1) {
-    std::vector<Time> timestamps;
-    if (timestamp0 >= 0)
-      timestamps.push_back(Time::FromTimeT(timestamp0));
-    if (timestamp1 >= 0)
-      timestamps.push_back(Time::FromTimeT(timestamp1));
-    return AutofillEntry(
-        AutofillKey(ASCIIToUTF16(name), ASCIIToUTF16(value)), timestamps);
   }
 
   base::FilePath file_;
@@ -144,17 +153,17 @@ TEST_F(AutofillTableTest, Autofill) {
   EXPECT_TRUE(table_->AddFormFieldValue(field, &changes));
   EXPECT_TRUE(table_->HasFormElements());
   std::vector<base::string16> v;
-  for (int i = 0; i < 5; i++) {
+  for (int i = 0; i < 5; ++i) {
     field.value = ASCIIToUTF16("Clark Kent");
     EXPECT_TRUE(table_->AddFormFieldValueTime(field, &changes,
                                               now + i * two_seconds));
   }
-  for (int i = 0; i < 3; i++) {
+  for (int i = 0; i < 3; ++i) {
     field.value = ASCIIToUTF16("Clark Sutter");
     EXPECT_TRUE(table_->AddFormFieldValueTime(field, &changes,
                                               now + i * two_seconds));
   }
-  for (int i = 0; i < 2; i++) {
+  for (int i = 0; i < 2; ++i) {
     field.name = ASCIIToUTF16("Favorite Color");
     field.value = ASCIIToUTF16("Green");
     EXPECT_TRUE(table_->AddFormFieldValueTime(field, &changes,
@@ -220,7 +229,7 @@ TEST_F(AutofillTableTest, Autofill) {
   changes.clear();
   EXPECT_TRUE(table_->RemoveFormElementsAddedBetween(t1, Time(), &changes));
 
-  const AutofillChange expected_changes[] = {
+  const AutofillChange kExpectedChanges[] = {
     AutofillChange(AutofillChange::REMOVE,
                    AutofillKey(ASCIIToUTF16("Name"),
                                ASCIIToUTF16("Superman"))),
@@ -234,9 +243,9 @@ TEST_F(AutofillTableTest, Autofill) {
                    AutofillKey(ASCIIToUTF16("Favorite Color"),
                                ASCIIToUTF16("Green"))),
   };
-  EXPECT_EQ(arraysize(expected_changes), changes.size());
-  for (size_t i = 0; i < arraysize(expected_changes); i++) {
-    EXPECT_EQ(expected_changes[i], changes[i]);
+  EXPECT_EQ(arraysize(kExpectedChanges), changes.size());
+  for (size_t i = 0; i < arraysize(kExpectedChanges); ++i) {
+    EXPECT_EQ(kExpectedChanges[i], changes[i]);
   }
 
   field.name = ASCIIToUTF16("Name");
@@ -355,7 +364,7 @@ TEST_F(AutofillTableTest, Autofill_UpdateOneWithOneTimestamp) {
   std::vector<AutofillEntry> all_entries;
   ASSERT_TRUE(table_->GetAllAutofillEntries(&all_entries));
   ASSERT_EQ(1U, all_entries.size());
-  EXPECT_TRUE(entry == all_entries[0]);
+  EXPECT_EQ(entry, all_entries[0]);
 }
 
 TEST_F(AutofillTableTest, Autofill_UpdateOneWithTwoTimestamps) {
@@ -376,7 +385,7 @@ TEST_F(AutofillTableTest, Autofill_UpdateOneWithTwoTimestamps) {
   std::vector<AutofillEntry> all_entries;
   ASSERT_TRUE(table_->GetAllAutofillEntries(&all_entries));
   ASSERT_EQ(1U, all_entries.size());
-  EXPECT_TRUE(entry == all_entries[0]);
+  EXPECT_EQ(entry, all_entries[0]);
 }
 
 TEST_F(AutofillTableTest, Autofill_GetAutofillTimestamps) {
@@ -390,8 +399,8 @@ TEST_F(AutofillTableTest, Autofill_GetAutofillTimestamps) {
                                             ASCIIToUTF16("bar"),
                                             &timestamps));
   ASSERT_EQ(2U, timestamps.size());
-  EXPECT_TRUE(Time::FromTimeT(1) == timestamps[0]);
-  EXPECT_TRUE(Time::FromTimeT(2) == timestamps[1]);
+  EXPECT_EQ(Time::FromTimeT(1), timestamps[0]);
+  EXPECT_EQ(Time::FromTimeT(2), timestamps[1]);
 }
 
 TEST_F(AutofillTableTest, Autofill_UpdateTwo) {
@@ -435,7 +444,7 @@ TEST_F(AutofillTableTest, Autofill_UpdateReplace) {
   std::vector<AutofillEntry> all_entries;
   ASSERT_TRUE(table_->GetAllAutofillEntries(&all_entries));
   ASSERT_EQ(1U, all_entries.size());
-  EXPECT_TRUE(entry == all_entries[0]);
+  EXPECT_EQ(entry, all_entries[0]);
 }
 
 TEST_F(AutofillTableTest, Autofill_UpdateDontReplace) {
@@ -764,7 +773,7 @@ TEST_F(AutofillTableTest, AutofillProfileTrashInteraction) {
   profile.SetRawInfo(NAME_FIRST, ASCIIToUTF16("John"));
   profile.SetRawInfo(NAME_MIDDLE, ASCIIToUTF16("Q."));
   profile.SetRawInfo(NAME_LAST, ASCIIToUTF16("Smith"));
-  profile.SetRawInfo(EMAIL_ADDRESS,ASCIIToUTF16("js@smith.xyz"));
+  profile.SetRawInfo(EMAIL_ADDRESS, ASCIIToUTF16("js@smith.xyz"));
   profile.SetRawInfo(ADDRESS_HOME_LINE1, ASCIIToUTF16("1 Main St"));
   profile.SetRawInfo(ADDRESS_HOME_CITY, ASCIIToUTF16("Los Angeles"));
   profile.SetRawInfo(ADDRESS_HOME_STATE, ASCIIToUTF16("CA"));
@@ -923,12 +932,12 @@ TEST_F(AutofillTableTest, UpdateAutofillProfile) {
   table_->AddAutofillProfile(profile);
 
   // Set a mocked value for the profile's creation time.
-  const time_t mock_creation_date = Time::Now().ToTimeT() - 13;
+  const time_t kMockCreationDate = Time::Now().ToTimeT() - 13;
   sql::Statement s_mock_creation_date(
       db_->GetSQLConnection()->GetUniqueStatement(
           "UPDATE autofill_profiles SET date_modified = ?"));
   ASSERT_TRUE(s_mock_creation_date.is_valid());
-  s_mock_creation_date.BindInt64(0, mock_creation_date);
+  s_mock_creation_date.BindInt64(0, kMockCreationDate);
   ASSERT_TRUE(s_mock_creation_date.Run());
 
   // Get the profile.
@@ -940,7 +949,7 @@ TEST_F(AutofillTableTest, UpdateAutofillProfile) {
       "SELECT date_modified FROM autofill_profiles"));
   ASSERT_TRUE(s_original.is_valid());
   ASSERT_TRUE(s_original.Step());
-  EXPECT_EQ(mock_creation_date, s_original.ColumnInt64(0));
+  EXPECT_EQ(kMockCreationDate, s_original.ColumnInt64(0));
   EXPECT_FALSE(s_original.Step());
 
   // Now, update the profile and save the update to the database.
@@ -956,7 +965,7 @@ TEST_F(AutofillTableTest, UpdateAutofillProfile) {
       "SELECT date_modified FROM autofill_profiles"));
   ASSERT_TRUE(s_updated.is_valid());
   ASSERT_TRUE(s_updated.Step());
-  EXPECT_LT(mock_creation_date, s_updated.ColumnInt64(0));
+  EXPECT_LT(kMockCreationDate, s_updated.ColumnInt64(0));
   EXPECT_FALSE(s_updated.Step());
 
   // Set a mocked value for the profile's modification time.
@@ -994,12 +1003,12 @@ TEST_F(AutofillTableTest, UpdateCreditCard) {
   table_->AddCreditCard(credit_card);
 
   // Set a mocked value for the credit card's creation time.
-  const time_t mock_creation_date = Time::Now().ToTimeT() - 13;
+  const time_t kMockCreationDate = Time::Now().ToTimeT() - 13;
   sql::Statement s_mock_creation_date(
       db_->GetSQLConnection()->GetUniqueStatement(
           "UPDATE credit_cards SET date_modified = ?"));
   ASSERT_TRUE(s_mock_creation_date.is_valid());
-  s_mock_creation_date.BindInt64(0, mock_creation_date);
+  s_mock_creation_date.BindInt64(0, kMockCreationDate);
   ASSERT_TRUE(s_mock_creation_date.Run());
 
   // Get the credit card.
@@ -1011,7 +1020,7 @@ TEST_F(AutofillTableTest, UpdateCreditCard) {
       "SELECT date_modified FROM credit_cards"));
   ASSERT_TRUE(s_original.is_valid());
   ASSERT_TRUE(s_original.Step());
-  EXPECT_EQ(mock_creation_date, s_original.ColumnInt64(0));
+  EXPECT_EQ(kMockCreationDate, s_original.ColumnInt64(0));
   EXPECT_FALSE(s_original.Step());
 
   // Now, update the credit card and save the update to the database.
@@ -1027,7 +1036,7 @@ TEST_F(AutofillTableTest, UpdateCreditCard) {
       "SELECT date_modified FROM credit_cards"));
   ASSERT_TRUE(s_updated.is_valid());
   ASSERT_TRUE(s_updated.Step());
-  EXPECT_LT(mock_creation_date, s_updated.ColumnInt64(0));
+  EXPECT_LT(kMockCreationDate, s_updated.ColumnInt64(0));
   EXPECT_FALSE(s_updated.Step());
 
   // Set a mocked value for the credit card's modification time.
@@ -1073,12 +1082,12 @@ TEST_F(AutofillTableTest, UpdateProfileOriginOnly) {
   table_->AddAutofillProfile(profile);
 
   // Set a mocked value for the profile's creation time.
-  const time_t mock_creation_date = Time::Now().ToTimeT() - 13;
+  const time_t kMockCreationDate = Time::Now().ToTimeT() - 13;
   sql::Statement s_mock_creation_date(
       db_->GetSQLConnection()->GetUniqueStatement(
           "UPDATE autofill_profiles SET date_modified = ?"));
   ASSERT_TRUE(s_mock_creation_date.is_valid());
-  s_mock_creation_date.BindInt64(0, mock_creation_date);
+  s_mock_creation_date.BindInt64(0, kMockCreationDate);
   ASSERT_TRUE(s_mock_creation_date.Run());
 
   // Get the profile.
@@ -1090,7 +1099,7 @@ TEST_F(AutofillTableTest, UpdateProfileOriginOnly) {
       "SELECT date_modified FROM autofill_profiles"));
   ASSERT_TRUE(s_original.is_valid());
   ASSERT_TRUE(s_original.Step());
-  EXPECT_EQ(mock_creation_date, s_original.ColumnInt64(0));
+  EXPECT_EQ(kMockCreationDate, s_original.ColumnInt64(0));
   EXPECT_FALSE(s_original.Step());
 
   // Now, update just the profile's origin and save the update to the database.
@@ -1106,7 +1115,7 @@ TEST_F(AutofillTableTest, UpdateProfileOriginOnly) {
       "SELECT date_modified FROM autofill_profiles"));
   ASSERT_TRUE(s_updated.is_valid());
   ASSERT_TRUE(s_updated.Step());
-  EXPECT_LT(mock_creation_date, s_updated.ColumnInt64(0));
+  EXPECT_LT(kMockCreationDate, s_updated.ColumnInt64(0));
   EXPECT_FALSE(s_updated.Step());
 }
 
@@ -1120,12 +1129,12 @@ TEST_F(AutofillTableTest, UpdateCreditCardOriginOnly) {
   table_->AddCreditCard(credit_card);
 
   // Set a mocked value for the credit card's creation time.
-  const time_t mock_creation_date = Time::Now().ToTimeT() - 13;
+  const time_t kMockCreationDate = Time::Now().ToTimeT() - 13;
   sql::Statement s_mock_creation_date(
       db_->GetSQLConnection()->GetUniqueStatement(
           "UPDATE credit_cards SET date_modified = ?"));
   ASSERT_TRUE(s_mock_creation_date.is_valid());
-  s_mock_creation_date.BindInt64(0, mock_creation_date);
+  s_mock_creation_date.BindInt64(0, kMockCreationDate);
   ASSERT_TRUE(s_mock_creation_date.Run());
 
   // Get the credit card.
@@ -1137,7 +1146,7 @@ TEST_F(AutofillTableTest, UpdateCreditCardOriginOnly) {
       "SELECT date_modified FROM credit_cards"));
   ASSERT_TRUE(s_original.is_valid());
   ASSERT_TRUE(s_original.Step());
-  EXPECT_EQ(mock_creation_date, s_original.ColumnInt64(0));
+  EXPECT_EQ(kMockCreationDate, s_original.ColumnInt64(0));
   EXPECT_FALSE(s_original.Step());
 
   // Now, update just the credit card's origin and save the update to the
@@ -1153,7 +1162,7 @@ TEST_F(AutofillTableTest, UpdateCreditCardOriginOnly) {
       "SELECT date_modified FROM credit_cards"));
   ASSERT_TRUE(s_updated.is_valid());
   ASSERT_TRUE(s_updated.Step());
-  EXPECT_LT(mock_creation_date, s_updated.ColumnInt64(0));
+  EXPECT_LT(kMockCreationDate, s_updated.ColumnInt64(0));
   EXPECT_FALSE(s_updated.Step());
 }
 
@@ -1376,8 +1385,8 @@ TEST_F(AutofillTableTest, Autofill_GetAllAutofillEntries_OneResult) {
                                             Time::FromTimeT(start)));
   timestamps1.push_back(Time::FromTimeT(start));
   std::string key1("NameSuperman");
-  name_value_times_map.insert(std::pair<std::string,
-    std::vector<Time> > (key1, timestamps1));
+  name_value_times_map.insert(
+      std::pair<std::string, std::vector<Time> >(key1, timestamps1));
 
   AutofillEntrySet expected_entries(CompareAutofillEntries);
   AutofillKey ak1(ASCIIToUTF16("Name"), ASCIIToUTF16("Superman"));
@@ -1388,16 +1397,9 @@ TEST_F(AutofillTableTest, Autofill_GetAllAutofillEntries_OneResult) {
   std::vector<AutofillEntry> entries;
   ASSERT_TRUE(table_->GetAllAutofillEntries(&entries));
   AutofillEntrySet entry_set(entries.begin(), entries.end(),
-    CompareAutofillEntries);
+                             CompareAutofillEntries);
 
-  // make sure the lists of entries match
-  ASSERT_EQ(expected_entries.size(), entry_set.size());
-  AutofillEntrySetIterator it;
-  for (it = entry_set.begin(); it != entry_set.end(); it++) {
-    expected_entries.erase(*it);
-  }
-
-  EXPECT_EQ(0U, expected_entries.size());
+  CompareAutofillEntrySets(entry_set, expected_entries);
 }
 
 TEST_F(AutofillTableTest, Autofill_GetAllAutofillEntries_TwoDistinct) {
@@ -1413,10 +1415,10 @@ TEST_F(AutofillTableTest, Autofill_GetAllAutofillEntries_TwoDistinct) {
                                             Time::FromTimeT(start)));
   timestamps1.push_back(Time::FromTimeT(start));
   std::string key1("NameSuperman");
-  name_value_times_map.insert(std::pair<std::string,
-    std::vector<Time> > (key1, timestamps1));
+  name_value_times_map.insert(
+      std::pair<std::string, std::vector<Time> >(key1, timestamps1));
 
-  start++;
+  ++start;
   std::vector<Time> timestamps2;
   field.name = ASCIIToUTF16("Name");
   field.value = ASCIIToUTF16("Clark Kent");
@@ -1424,8 +1426,8 @@ TEST_F(AutofillTableTest, Autofill_GetAllAutofillEntries_TwoDistinct) {
                                             Time::FromTimeT(start)));
   timestamps2.push_back(Time::FromTimeT(start));
   std::string key2("NameClark Kent");
-  name_value_times_map.insert(std::pair<std::string,
-    std::vector<Time> > (key2, timestamps2));
+  name_value_times_map.insert(
+      std::pair<std::string, std::vector<Time> >(key2, timestamps2));
 
   AutofillEntrySet expected_entries(CompareAutofillEntries);
   AutofillKey ak1(ASCIIToUTF16("Name"), ASCIIToUTF16("Superman"));
@@ -1439,37 +1441,29 @@ TEST_F(AutofillTableTest, Autofill_GetAllAutofillEntries_TwoDistinct) {
   std::vector<AutofillEntry> entries;
   ASSERT_TRUE(table_->GetAllAutofillEntries(&entries));
   AutofillEntrySet entry_set(entries.begin(), entries.end(),
-    CompareAutofillEntries);
+                             CompareAutofillEntries);
 
-  // make sure the lists of entries match
-  ASSERT_EQ(expected_entries.size(), entry_set.size());
-  AutofillEntrySetIterator it;
-  for (it = entry_set.begin(); it != entry_set.end(); it++) {
-    expected_entries.erase(*it);
-  }
-
-  EXPECT_EQ(0U, expected_entries.size());
+  CompareAutofillEntrySets(entry_set, expected_entries);
 }
 
 TEST_F(AutofillTableTest, Autofill_GetAllAutofillEntries_TwoSame) {
   AutofillChangeList changes;
   std::map<std::string, std::vector<Time> > name_value_times_map;
 
-  time_t start = 0;
   std::vector<Time> timestamps;
-  for (int i = 0; i < 2; i++) {
+  time_t start = 0;
+  for (int i = 0; i < 2; ++i, ++start) {
     FormFieldData field;
     field.name = ASCIIToUTF16("Name");
     field.value = ASCIIToUTF16("Superman");
     EXPECT_TRUE(table_->AddFormFieldValueTime(field, &changes,
                                               Time::FromTimeT(start)));
     timestamps.push_back(Time::FromTimeT(start));
-    start++;
   }
 
   std::string key("NameSuperman");
-  name_value_times_map.insert(std::pair<std::string,
-      std::vector<Time> > (key, timestamps));
+  name_value_times_map.insert(
+      std::pair<std::string, std::vector<Time> >(key, timestamps));
 
   AutofillEntrySet expected_entries(CompareAutofillEntries);
   AutofillKey ak1(ASCIIToUTF16("Name"), ASCIIToUTF16("Superman"));
@@ -1480,16 +1474,9 @@ TEST_F(AutofillTableTest, Autofill_GetAllAutofillEntries_TwoSame) {
   std::vector<AutofillEntry> entries;
   ASSERT_TRUE(table_->GetAllAutofillEntries(&entries));
   AutofillEntrySet entry_set(entries.begin(), entries.end(),
-    CompareAutofillEntries);
+                             CompareAutofillEntries);
 
-  // make sure the lists of entries match
-  ASSERT_EQ(expected_entries.size(), entry_set.size());
-  AutofillEntrySetIterator it;
-  for (it = entry_set.begin(); it != entry_set.end(); it++) {
-    expected_entries.erase(*it);
-  }
-
-  EXPECT_EQ(0U, expected_entries.size());
+  CompareAutofillEntrySets(entry_set, expected_entries);
 }
 
 }  // namespace autofill
