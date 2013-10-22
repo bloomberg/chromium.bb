@@ -94,7 +94,6 @@ void TimedItem::updateInheritedTime(double inheritedTime) const
     m_calculated.timeFraction = timeFraction;
 
     const Phase previousPhase = m_calculated.phase;
-    const bool wasInEffect = m_calculated.isInEffect;
     m_calculated.phase = currentPhase;
     m_calculated.isInEffect = !isNull(activeTime);
     m_calculated.isInPlay = phase() == PhaseActive && (!m_parent || m_parent->isInPlay());
@@ -107,10 +106,9 @@ void TimedItem::updateInheritedTime(double inheritedTime) const
     m_isFirstSample = false;
 
     // FIXME: This probably shouldn't be recursive.
-    updateChildrenAndEffects(wasInEffect);
+    updateChildrenAndEffects();
 
     m_calculated.timeToEffectChange = calculateTimeToEffectChange(localTime, m_startTime + m_specified.startDelay, m_calculated.phase);
-
 }
 
 } // namespace WebCore

@@ -86,15 +86,14 @@ void Animation::clearEffects()
     m_target->setNeedsStyleRecalc(LocalStyleChange, StyleChangeFromRenderer);
 }
 
-void Animation::updateChildrenAndEffects(bool wasInEffect) const
+void Animation::updateChildrenAndEffects() const
 {
     if (!m_effect)
         return;
 
-    ASSERT(m_activeInAnimationStack == wasInEffect);
     if (isInEffect())
-        const_cast<Animation*>(this)->applyEffects(wasInEffect);
-    else if (wasInEffect)
+        const_cast<Animation*>(this)->applyEffects(m_activeInAnimationStack);
+    else if (m_activeInAnimationStack)
         const_cast<Animation*>(this)->clearEffects();
 }
 

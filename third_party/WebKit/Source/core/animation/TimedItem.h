@@ -94,7 +94,7 @@ protected:
     void updateInheritedTime(double inheritedTime) const;
 
 private:
-    virtual void updateChildrenAndEffects(bool wasInEffect) const = 0;
+    virtual void updateChildrenAndEffects() const = 0;
     virtual double intrinsicIterationDuration() const { return 0; };
     virtual void willDetach() = 0;
     virtual double calculateTimeToEffectChange(double inheritedTime, double activeTime, Phase) const = 0;

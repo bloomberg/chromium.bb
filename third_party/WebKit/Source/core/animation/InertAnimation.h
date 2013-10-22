@@ -45,7 +45,7 @@ public:
     AnimationEffect* effect() const { return m_effect.get(); }
 
 protected:
-    virtual void updateChildrenAndEffects(bool) const OVERRIDE { };
+    virtual void updateChildrenAndEffects() const OVERRIDE { };
     virtual void willDetach() OVERRIDE { };
     virtual double calculateTimeToEffectChange(double inheritedTime, double activeTime, Phase) const OVERRIDE FINAL;
 
