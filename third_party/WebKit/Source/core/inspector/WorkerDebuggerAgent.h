@@ -46,7 +46,7 @@ public:
     static PassOwnPtr<WorkerDebuggerAgent> create(InstrumentingAgents*, InspectorCompositeState*, WorkerScriptDebugServer*, WorkerGlobalScope*, InjectedScriptManager*);
     virtual ~WorkerDebuggerAgent();
 
-    static const char* debuggerTaskMode;
+    static const char debuggerTaskMode[];
     static void interruptAndDispatchInspectorCommands(WorkerThread*);
 
 private:

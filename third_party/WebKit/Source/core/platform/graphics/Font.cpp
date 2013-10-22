@@ -381,7 +381,7 @@ static inline UChar32 keyExtractorUChar32(const UChar32* value)
 
 Font::CodePath Font::characterRangeCodePath(const UChar* characters, unsigned len)
 {
-    static UChar complexCodePathRanges[] = {
+    static const UChar complexCodePathRanges[] = {
         // U+02E5 through U+02E9 (Modifier Letters : Tone letters)
         0x2E5, 0x2E9,
         // U+0300 through U+036F Combining diacritical marks
@@ -496,7 +496,7 @@ Font::CodePath Font::characterRangeCodePath(const UChar* characters, unsigned le
 
 bool Font::isCJKIdeograph(UChar32 c)
 {
-    static UChar32 cjkIdeographRanges[] = {
+    static const UChar32 cjkIdeographRanges[] = {
         // CJK Radicals Supplement and Kangxi Radicals.
         0x2E80, 0x2FDF,
         // CJK Strokes.
@@ -551,7 +551,7 @@ bool Font::isCJKIdeographOrSymbol(UChar32 c)
     if (isCJKIdeograph(c))
         return true;
 
-    static UChar32 cjkSymbolRanges[] = {
+    static const UChar32 cjkSymbolRanges[] = {
         0x2156, 0x215A,
         0x2160, 0x216B,
         0x2170, 0x217B,

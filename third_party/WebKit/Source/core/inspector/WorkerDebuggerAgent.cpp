@@ -76,7 +76,7 @@ private:
 
 } // namespace
 
-const char* WorkerDebuggerAgent::debuggerTaskMode = "debugger";
+const char WorkerDebuggerAgent::debuggerTaskMode[] = "debugger";
 
 PassOwnPtr<WorkerDebuggerAgent> WorkerDebuggerAgent::create(InstrumentingAgents* instrumentingAgents, InspectorCompositeState* inspectorState, WorkerScriptDebugServer* scriptDebugServer, WorkerGlobalScope* inspectedWorkerGlobalScope, InjectedScriptManager* injectedScriptManager)
 {

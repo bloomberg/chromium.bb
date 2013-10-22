@@ -1225,7 +1225,7 @@ selector:
 
 namespace_selector:
     /* empty */ '|' { $$.clear(); }
-    | '*' '|' { static LChar star = '*'; $$.init(&star, 1); }
+    | '*' '|' { static const LChar star = '*'; $$.init(&star, 1); }
     | IDENT '|'
     ;
 
@@ -1278,7 +1278,7 @@ element_name:
         $$ = $1;
     }
     | '*' {
-        static LChar star = '*';
+        static const LChar star = '*';
         $$.init(&star, 1);
     }
   ;
