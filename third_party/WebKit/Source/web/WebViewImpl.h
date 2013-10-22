@@ -46,13 +46,10 @@
 #include "WebNavigationPolicy.h"
 #include "WebView.h"
 #include "core/page/PagePopupDriver.h"
-#include "core/platform/graphics/GraphicsContext3D.h"
 #include "core/platform/graphics/GraphicsLayer.h"
 #include "platform/Timer.h"
-#include "platform/geometry/FloatSize.h"
 #include "platform/geometry/IntPoint.h"
 #include "platform/geometry/IntRect.h"
-#include "public/platform/WebFloatQuad.h"
 #include "public/platform/WebGestureCurveTarget.h"
 #include "public/platform/WebLayer.h"
 #include "public/platform/WebPoint.h"
@@ -66,10 +63,7 @@
 namespace WebCore {
 class ChromiumDataObject;
 class Color;
-class DocumentLoader;
-class FloatSize;
 class Frame;
-class GraphicsContext3D;
 class GraphicsLayerFactory;
 class HistoryItem;
 class HitTestResult;
@@ -81,10 +75,7 @@ class PagePopupClient;
 class PlatformKeyboardEvent;
 class PopupContainer;
 class PopupMenuClient;
-class Range;
 class RenderLayerCompositor;
-class RenderTheme;
-class Widget;
 }
 
 namespace WebKit {
