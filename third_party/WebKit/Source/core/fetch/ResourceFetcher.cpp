@@ -143,7 +143,7 @@ static ResourceLoadPriority loadPriority(Resource::Type type, const FetchRequest
     return ResourceLoadPriorityUnresolved;
 }
 
-static Resource* resourceFromDataURIRequest(const ResourceRequest& request)
+static Resource* resourceFromDataURIRequest(const ResourceRequest& request, const ResourceLoaderOptions& resourceOptions)
 {
     const KURL& url = request.url();
     ASSERT(url.protocolIsData());
@@ -156,6 +156,7 @@ static Resource* resourceFromDataURIRequest(const ResourceRequest& request)
     ResourceResponse response(url, mimetype, data->size(), charset, String());
 
     Resource* resource = createResource(Resource::Image, request, charset);
+    resource->setOptions(resourceOptions);
     resource->responseReceived(response);
     // FIXME: AppendData causes an unnecessary memcpy.
     if (data->size())
@@ -250,7 +251,7 @@ void ResourceFetcher::preCacheDataURIImage(const FetchRequest& request)
     if (Resource* existing = memoryCache()->resourceForURL(url))
         return;
 
-    if (Resource* resource = resourceFromDataURIRequest(request.resourceRequest()))
+    if (Resource* resource = resourceFromDataURIRequest(request.resourceRequest(), request.options()))
         memoryCache()->add(resource);
 }
 

@@ -109,7 +109,8 @@ public:
     ResourceRequest& resourceRequest() { return m_resourceRequest; }
     const KURL& url() const { return m_resourceRequest.url();}
     Type type() const { return static_cast<Type>(m_type); }
-    const ResourceLoaderOptions& options() const {  return m_options; }
+    const ResourceLoaderOptions& options() const { return m_options; }
+    void setOptions(const ResourceLoaderOptions& options) { m_options = options; }
 
     void didChangePriority(ResourceLoadPriority);
 
