@@ -6,6 +6,7 @@
 
 #include <string.h>
 
+#include <algorithm>
 #include <sstream>
 
 #include "ppapi/cpp/core.h"
