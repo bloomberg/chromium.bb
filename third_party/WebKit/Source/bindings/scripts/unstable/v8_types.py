@@ -235,7 +235,20 @@ CPP_REF_PTR_CONVERSION_TYPES = set([
 
 def cpp_type(idl_type, extended_attributes=None, used_as_argument=False):
     """Returns C++ type corresponding to IDL type."""
+    def cpp_string_type():
+        if not used_as_argument:
+            return 'String'
+        # FIXME: the Web IDL spec requires 'EmptyString', not 'NullString',
+        # but we use NullString for performance.
+        if extended_attributes.get('TreatNullAs') == 'NullString':
+            mode = 'WithNullCheck'
+        else:
+            mode = ''
+        return 'V8StringResource<%s>' % mode
+
     extended_attributes = extended_attributes or {}
+    idl_type = preprocess_idl_type(idl_type)
+
     if idl_type in CPP_TYPE_SAME_AS_IDL_TYPE:
         return idl_type
     if idl_type in CPP_INT_TYPES:
@@ -246,13 +259,8 @@ def cpp_type(idl_type, extended_attributes=None, used_as_argument=False):
         return CPP_SPECIAL_CONVERSION_RULES[idl_type]
     if idl_type in CPP_REF_PTR_CONVERSION_TYPES:
         return 'RefPtr<%s>' % idl_type
-    if idl_type == 'DOMString' or is_enum_type(idl_type):
-        # enum is internally a string
-        if used_as_argument:
-            return 'V8StringResource<>'
-        return 'String'
-    if is_callback_function_type(idl_type):
-        return 'ScriptValue'
+    if idl_type == 'DOMString':
+        return cpp_string_type()
     if is_union_type(idl_type):
         raise Exception('UnionType is not supported')
     this_array_or_sequence_type = array_or_sequence_type(idl_type)
@@ -356,10 +364,7 @@ def v8_value_to_cpp_value(idl_type, extended_attributes, v8_value, includes, iso
     if this_array_or_sequence_type:
         return v8_value_to_cpp_value_array_or_sequence(this_array_or_sequence_type, v8_value, includes, isolate)
 
-    if is_callback_function_type(idl_type):
-        idl_type = 'any'
-    if is_enum_type(idl_type):
-        idl_type = 'DOMString'
+    idl_type = preprocess_idl_type(idl_type)
 
     if 'EnforceRange' in extended_attributes:
         arguments = ', '.join([v8_value, 'EnforceRange', 'ok'])
@@ -401,7 +406,8 @@ def v8_value_to_local_cpp_value(idl_type, extended_attributes, v8_value, variabl
     """Returns an expression that converts a V8 value to a C++ value and stores it as a local value."""
     this_cpp_type = cpp_type(idl_type, extended_attributes=extended_attributes, used_as_argument=True)
 
-    if idl_type == 'DOMString' or is_enum_type(idl_type):
+    idl_type = preprocess_idl_type(idl_type)
+    if idl_type == 'DOMString':
         format_string = 'V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID({cpp_type}, {variable_name}, {cpp_value})'
     elif 'EnforceRange' in extended_attributes:
         format_string = 'V8TRYCATCH_WITH_TYPECHECK_VOID({cpp_type}, {variable_name}, {cpp_value}, {isolate})'
@@ -417,12 +423,19 @@ def v8_value_to_local_cpp_value(idl_type, extended_attributes, v8_value, variabl
 ################################################################################
 
 
-def preprocess_type_and_value(idl_type, cpp_value, extended_attributes):
-    """Returns type and value, with preliminary type conversions applied."""
+def preprocess_idl_type(idl_type):
     if is_enum_type(idl_type):
         # Enumerations are internally DOMStrings
-        idl_type = 'DOMString'
-    if idl_type in ['Promise', 'any'] or is_callback_function_type(idl_type):
+        return 'DOMString'
+    if is_callback_function_type(idl_type):
+        return 'ScriptValue'
+    return idl_type
+
+
+def preprocess_idl_type_and_value(idl_type, cpp_value, extended_attributes):
+    """Returns IDL type and value, with preliminary type conversions applied."""
+    idl_type = preprocess_idl_type(idl_type)
+    if idl_type in ['Promise', 'any']:
         idl_type = 'ScriptValue'
     if idl_type in ['long long', 'unsigned long long']:
         # long long and unsigned long long are not representable in ECMAScript;
@@ -514,7 +527,7 @@ def v8_set_return_value(idl_type, cpp_value, includes, callback_info, isolate, c
             return 'DOMWrapperDefault'
         return 'DOMWrapperFast'
 
-    idl_type, cpp_value = preprocess_type_and_value(idl_type, cpp_value, extended_attributes)
+    idl_type, cpp_value = preprocess_idl_type_and_value(idl_type, cpp_value, extended_attributes)
     this_v8_conversion_type = v8_conversion_type(idl_type, extended_attributes, includes)
     # SetReturn-specific overrides
     if this_v8_conversion_type in ['Date', 'EventHandler', 'ScriptValue', 'SerializedScriptValue', 'array']:
@@ -549,7 +562,7 @@ CPP_VALUE_TO_V8_VALUE = {
 
 def cpp_value_to_v8_value(idl_type, cpp_value, includes, isolate, callback_info='', creation_context='', extended_attributes=None):
     """Returns an expression that converts a C++ value to a V8 value."""
-    idl_type, cpp_value = preprocess_type_and_value(idl_type, cpp_value, extended_attributes)
+    idl_type, cpp_value = preprocess_idl_type_and_value(idl_type, cpp_value, extended_attributes)
     this_v8_conversion_type = v8_conversion_type(idl_type, extended_attributes, includes)
     format_string = CPP_VALUE_TO_V8_VALUE[this_v8_conversion_type]
     statement = format_string.format(callback_info=callback_info, cpp_value=cpp_value, creation_context=creation_context, isolate=isolate)

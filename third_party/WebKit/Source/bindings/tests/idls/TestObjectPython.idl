@@ -158,7 +158,7 @@ interface TestObjectPython {
     [SetterRaisesException] attribute long setterRaisesExceptionLongAttribute;
     [StrictTypeChecking] attribute float strictTypeCheckingFloatAttribute;  // nop for non-interface types
     [StrictTypeChecking] attribute TestInterface strictTypeCheckingTestInterfaceAttribute;
-    [TreatNullAs=NullString] readonly attribute DOMString treatNullAsNullStringReadonlyStringAttribute;  // FIXME: only applicable to writable attributes, implement with setters
+    [TreatNullAs=NullString] attribute DOMString treatNullAsNullStringStringAttribute;
     [TreatReturnedNullStringAs=Null] attribute DOMString treatReturnedNullStringAsNullStringAttribute;
     [TreatReturnedNullStringAs=Undefined] attribute DOMString treatReturnedNullStringAsUndefinedStringAttribute;
     [Reflect, URL] readonly attribute DOMString urlReadonlyStringAttribute;
