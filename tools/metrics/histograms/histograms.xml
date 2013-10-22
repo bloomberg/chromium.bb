@@ -19219,6 +19219,14 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="WebFont.CacheHit" enum="WebFontCacheHit">
+  <summary>
+    Recorded upon web fonts load. Counts the number of times web font is loaded
+    from cache (disk cache or memory cache), fetched over network, or served
+    from data URL.
+  </summary>
+</histogram>
+
 <histogram name="WebFont.DownloadTime.0.Under10KB" units="milliseconds">
   <summary>
     The time it takes for a webfont download to finish, for webfonts of under
@@ -27963,6 +27971,12 @@ other types of suffix sets.
   <int value="9" label="Verify CVV"/>
   <int value="10" label="Invalid form field"/>
   <int value="11" label="Require phone number"/>
+</enum>
+
+<enum name="WebFontCacheHit" type="int">
+  <int value="0" label="Miss"/>
+  <int value="1" label="Hit"/>
+  <int value="2" label="Served from data URL"/>
 </enum>
 
 <enum name="WebFontUsageType" type="int">
