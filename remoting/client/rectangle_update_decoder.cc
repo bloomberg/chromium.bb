@@ -102,6 +102,8 @@ void RectangleUpdateDecoder::Initialize(const SessionConfig& config) {
     decoder_.reset(new VideoDecoderVerbatim());
   } else if (codec == ChannelConfig::CODEC_VP8) {
     decoder_ = VideoDecoderVpx::CreateForVP8();
+  } else if (codec == ChannelConfig::CODEC_VP9) {
+    decoder_ = VideoDecoderVpx::CreateForVP9();
   } else {
     NOTREACHED() << "Invalid Encoding found: " << codec;
   }

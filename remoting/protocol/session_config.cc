@@ -195,6 +195,10 @@ scoped_ptr<CandidateSessionConfig> CandidateSessionConfig::CreateDefault() {
   result->mutable_video_configs()->push_back(
       ChannelConfig(ChannelConfig::TRANSPORT_STREAM,
                     kDefaultStreamVersion,
+                    ChannelConfig::CODEC_VP9));
+  result->mutable_video_configs()->push_back(
+      ChannelConfig(ChannelConfig::TRANSPORT_STREAM,
+                    kDefaultStreamVersion,
                     ChannelConfig::CODEC_VP8));
 
   // Audio channel.
@@ -209,9 +213,24 @@ scoped_ptr<CandidateSessionConfig> CandidateSessionConfig::CreateDefault() {
 
 // static
 void CandidateSessionConfig::DisableAudioChannel(
-  CandidateSessionConfig* config) {
+    CandidateSessionConfig* config) {
   config->mutable_audio_configs()->clear();
   config->mutable_audio_configs()->push_back(ChannelConfig());
+}
+
+// static
+void CandidateSessionConfig::DisableVideoCodec(
+    CandidateSessionConfig* config,
+    ChannelConfig::Codec codec) {
+  std ::vector<ChannelConfig>::iterator i;
+  for (i = config->mutable_video_configs()->begin();
+       i != config->mutable_video_configs()->end();) {
+    if (i->codec == codec) {
+      i = config->mutable_video_configs()->erase(i);
+    } else {
+      ++i;
+    }
+  }
 }
 
 }  // namespace protocol

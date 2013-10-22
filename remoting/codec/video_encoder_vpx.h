@@ -18,10 +18,9 @@ class DesktopSize;
 
 namespace remoting {
 
-// A class that uses VP8 to perform encoding.
 class VideoEncoderVpx : public VideoEncoder {
  public:
-  // Creates a encoder for VP8.
+  // Create encoder for the specified protocol.
   static scoped_ptr<VideoEncoderVpx> CreateForVP8();
 
   virtual ~VideoEncoderVpx();

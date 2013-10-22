@@ -61,6 +61,26 @@ scoped_ptr<VideoDecoderVpx> VideoDecoderVpx::CreateForVP8() {
   return scoped_ptr<VideoDecoderVpx>(new VideoDecoderVpx(codec.Pass()));
 }
 
+// static
+scoped_ptr<VideoDecoderVpx> VideoDecoderVpx::CreateForVP9() {
+  ScopedVpxCodec codec(new vpx_codec_ctx_t);
+
+  // TODO(hclam): Scale the number of threads with number of cores of the
+  // machine.
+  vpx_codec_dec_cfg config;
+  config.w = 0;
+  config.h = 0;
+  config.threads = 2;
+  vpx_codec_err_t ret =
+      vpx_codec_dec_init(codec.get(), vpx_codec_vp9_dx(), &config, 0);
+  if (ret != VPX_CODEC_OK) {
+    LOG(INFO) << "Cannot initialize codec.";
+    return scoped_ptr<VideoDecoderVpx>();
+  }
+
+  return scoped_ptr<VideoDecoderVpx>(new VideoDecoderVpx(codec.Pass()));
+}
+
 VideoDecoderVpx::~VideoDecoderVpx() {}
 
 void VideoDecoderVpx::Initialize(const webrtc::DesktopSize& screen_size) {

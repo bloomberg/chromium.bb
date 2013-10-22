@@ -197,6 +197,11 @@ bool VideoEncoderVpx::Initialize(const webrtc::DesktopSize& size) {
   image_->d_h = size.height();
   image_->h = size.height();
 
+  // libvpx should derive this from|fmt| but currently has a bug:
+  // https://code.google.com/p/webm/issues/detail?id=627
+  image_->x_chroma_shift = 1;
+  image_->y_chroma_shift = 1;
+
   // Initialize active map.
   active_map_width_ = (image_->w + kMacroBlockSize - 1) / kMacroBlockSize;
   active_map_height_ = (image_->h + kMacroBlockSize - 1) / kMacroBlockSize;

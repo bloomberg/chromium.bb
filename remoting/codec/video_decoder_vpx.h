@@ -18,8 +18,9 @@ namespace remoting {
 
 class VideoDecoderVpx : public VideoDecoder {
  public:
-  // Creates a decoder for VP8.
+  // Create decoders for the specified protocol.
   static scoped_ptr<VideoDecoderVpx> CreateForVP8();
+  static scoped_ptr<VideoDecoderVpx> CreateForVP9();
 
   virtual ~VideoDecoderVpx();
 

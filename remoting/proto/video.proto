@@ -17,6 +17,7 @@ message VideoPacketFormat {
     ENCODING_VERBATIM = 0;
     ENCODING_ZLIB = 1;
     ENCODING_VP8 = 2;
+    ENCODING_VP9 = 3;
   };
 
   // The encoding used for this image update.

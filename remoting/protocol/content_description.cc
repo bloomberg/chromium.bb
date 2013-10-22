@@ -47,6 +47,7 @@ const NameMapElement<ChannelConfig::TransportType> kTransports[] = {
 const NameMapElement<ChannelConfig::Codec> kCodecs[] = {
   { ChannelConfig::CODEC_VERBATIM, "verbatim" },
   { ChannelConfig::CODEC_VP8, "vp8" },
+  { ChannelConfig::CODEC_VP9, "vp9" },
   { ChannelConfig::CODEC_ZIP, "zip" },
   { ChannelConfig::CODEC_OPUS, "opus" },
   { ChannelConfig::CODEC_SPEEX, "speex" },

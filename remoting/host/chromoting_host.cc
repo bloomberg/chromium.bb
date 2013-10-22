@@ -86,6 +86,10 @@ ChromotingHost::ChromotingHost(
   DCHECK(network_task_runner_->BelongsToCurrentThread());
   DCHECK(signal_strategy);
 
+  // VP9 encode is not yet supported.
+  protocol::CandidateSessionConfig::DisableVideoCodec(
+      protocol_config_.get(), protocol::ChannelConfig::CODEC_VP9);
+
   if (!desktop_environment_factory_->SupportsAudioCapture()) {
     protocol::CandidateSessionConfig::DisableAudioChannel(
         protocol_config_.get());

@@ -380,6 +380,11 @@ void HostNPScriptObject::It2MeImpl::FinishConnect() {
   scoped_ptr<protocol::CandidateSessionConfig> protocol_config =
       protocol::CandidateSessionConfig::CreateDefault();
   protocol::CandidateSessionConfig::DisableAudioChannel(protocol_config.get());
+
+  // VP9 encode is not yet supported.
+  protocol::CandidateSessionConfig::DisableVideoCodec(
+      protocol_config.get(), protocol::ChannelConfig::CODEC_VP9);
+
   host_->set_protocol_config(protocol_config.Pass());
 
   // Create event logger.
