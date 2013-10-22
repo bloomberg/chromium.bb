@@ -1,339 +1,179 @@
 {
-  "_description": "This file contains info about our performance test suites, used by the perf dashboard (http://chromeperf.appspot.com).",
-  "blink_perf": {
-    "description": "Runs all enabled benchmarks in third_party/WebKit/PerformanceTests/",
-    "code": [
+  "_description":"This file contains info about our performance test suites, used by the perf dashboard (http://chromeperf.appspot.com).",
+  "blink_perf":{
+    "description":"Runs all enabled benchmarks in third_party/WebKit/PerformanceTests/",
+    "code":[
       "chrome/src/tools/perf/measurements/blink_perf.py",
       "third_party/WebKit/PerformanceTests/"
     ]
   },
-  "page_cycler.bloat": {
-    "description": "Load an image many times and ensure memory usage stays low.",
-    "code": [
-      "chrome/src/tools/perf/page_sets/page_cycler/bloat.json",
-      "chrome/src/tools/perf/measurements/page_cycler.py"
-    ]
-  },
-  "cc_perftests": {
-    "description": "Microbenchmarks for compositor (cc/) component.",
-    "code": [
+  "cc_perftests":{
+    "description":"Microbenchmarks for compositor (cc/) component.",
+    "code":[
       "chrome/src/cc/cc_tests.gyp",
       "chrome/src/cc/trees/layer_tree_host_perftest.cc"
     ]
   },
-  "page_cycler.dhtml": {
-    "description": "Benchmarks for various DHTML operations like simple animations.",
-    "code": [
-      "chrome/src/tools/perf/page_sets/page_cycler/dhtml.json",
-      "chrome/src/tools/perf/measurements/page_cycler.py"
-    ]
+  "dom_perf":{
+    "description":"Performance of DOM operations."
   },
-  "dom_perf": {
-    "description": "Performance of DOM operations.",
-    "code": ["chrome/src/tools/perf/benchmarks/dom_perf.py"]
+  "dromaeo.domcoreattr":{
+    "description":"Setting and getting DOM node attributes."
   },
-  "dromaeo.domcoreattr": {
-    "description": "Setting and getting DOM node attributes.",
-    "code": [
-      "chrome/src/tools/perf/page_sets/dromaeo/domcoreattr.json",
-      "chrome/src/tools/perf/measurements/dromaeo.py"
-    ]
+  "dromaeo.domcoremodify":{
+    "description":"Creating and injecting DOM nodes."
   },
-  "dromaeo.domcoremodify": {
-    "description": "Creating and injecting DOM nodes.",
-    "code": [
-      "chrome/src/tools/perf/page_sets/dromaeo/domcoremodify.json",
-      "chrome/src/tools/perf/measurements/dromaeo.py"
-    ]
+  "dromaeo.domcorequery":{
+    "description":"Querying DOM elements in a document."
   },
-  "dromaeo.domcorequery": {
-    "description": "Querying DOM elements in a document.",
-    "code": [
-      "chrome/src/tools/perf/page_sets/dromaeo/domcorequery.json",
-      "chrome/src/tools/perf/measurements/dromaeo.py"
-    ]
+  "dromaeo.domcoretraverse":{
+    "description":"Traversing a DOM structure."
   },
-  "dromaeo.domcoretraverse": {
-    "description": "Traversing a DOM structure.",
-    "code": [
-      "chrome/src/tools/perf/page_sets/dromaeo/domcoretraverse.json",
-      "chrome/src/tools/perf/measurements/dromaeo.py"
-    ]
+  "dromaeo.jslibattrjquery":{
+    "description":"Setting and getting DOM node attributes using the jQuery JavaScript Library."
   },
-  "dromaeo.jslibattrjquery": {
-    "description": "Setting and getting DOM node attributes using the jQuery JavaScript Library.",
-    "code": [
-      "chrome/src/tools/perf/page_sets/dromaeo/jslibattrjquery.json",
-      "chrome/src/tools/perf/measurements/dromaeo.py"
-    ]
+  "dromaeo.jslibattrprototype":{
+    "description":"Setting and getting DOM node attributes using the Prototype JavaScript Library."
   },
-  "dromaeo.jslibattrprototype": {
-    "description": "Setting and getting DOM node attributes using the Prototype JavaScript Library.",
-    "code": [
-      "chrome/src/tools/perf/page_sets/dromaeo/jslibattrprototype.json",
-      "chrome/src/tools/perf/measurements/dromaeo.py"
-    ]
+  "dromaeo.jslibeventjquery":{
+    "description":"Binding, removing, and triggering DOM events using the jQuery JavaScript Library."
   },
-  "dromaeo.jslibeventjquery": {
-    "description": "Binding, removing, and triggering DOM events using the jQuery JavaScript Library.",
-    "code": [
-      "chrome/src/tools/perf/page_sets/dromaeo/jslibattrprototype.json",
-      "chrome/src/tools/perf/measurements/dromaeo.py"
-    ]
+  "dromaeo.jslibeventprototype":{
+    "description":"Binding, removing, and triggering DOM events using the Prototype JavaScript Library."
   },
-  "dromaeo.jslibeventprototype": {
-    "description": "Binding, removing, and triggering DOM events using the Prototype JavaScript Library.",
-    "code": [
-      "chrome/src/tools/perf/page_sets/dromaeo/jslibeventprototype.json",
-      "chrome/src/tools/perf/measurements/dromaeo.py"
-    ]
+  "dromaeo.jslibmodifyjquery":{
+    "description":"Creating and injecting DOM nodes into a document using the jQuery JavaScript Library"
   },
-  "dromaeo.jslibmodifyjquery": {
-    "description": "Creating and injecting DOM nodes into a document using the jQuery JavaScript Library",
-    "code": [
-      "chrome/src/tools/perf/page_sets/dromaeo/jslibmodifyjquery.json",
-      "chrome/src/tools/perf/measurements/dromaeo.py"
-    ]
+  "dromaeo.jslibmodifyprototype":{
+    "description":"Creating and injecting DOM nodes into a document using the Prototype JavaScript Library."
   },
-  "dromaeo.jslibmodifyprototype": {
-    "description": "Creating and injecting DOM nodes into a document using the Prototype JavaScript Library.",
-    "code": [
-      "chrome/src/tools/perf/page_sets/dromaeo/jslibmodifyprototype.json",
-      "chrome/src/tools/perf/measurements/dromaeo.py"
-    ]
+  "dromaeo.jslibstylejquery":{
+    "description":"Getting and setting CSS information on DOM elements using the jQuery JavaScript Library."
   },
-  "dromaeo.jslibstylejquery": {
-    "description": "Getting and setting CSS information on DOM elements using the jQuery JavaScript Library.",
-    "code": [
-      "chrome/src/tools/perf/page_sets/dromaeo/jslibstylejquery.json",
-      "chrome/src/tools/perf/measurements/dromaeo.py"
-    ]
+  "dromaeo.jslibstyleprototype":{
+    "description":"Getting and setting CSS information on DOM elements using the Prototype JavaScript Library."
   },
-  "dromaeo.jslibstyleprototype": {
-    "description": "Getting and setting CSS information on DOM elements using the Prototype JavaScript Library.",
-    "code": [
-      "chrome/src/tools/perf/page_sets/dromaeo/jslibstyleprototype.json",
-      "chrome/src/tools/perf/measurements/dromaeo.py"
-    ]
+  "dromaeo.jslibtraversejquery":{
+    "description":"Traversing a DOM structure using the jQuery JavaScript Library."
   },
-  "dromaeo.jslibtraversejquery": {
-    "description": "Traversing a DOM structure using the jQuery JavaScript Library.",
-    "code": [
-      "chrome/src/tools/perf/page_sets/dromaeo/jslibtraversejquery.json",
-      "chrome/src/tools/perf/measurements/dromaeo.py"
-    ]
+  "dromaeo.jslibtraverseprototype":{
+    "description":"Traversing a DOM structure using the Prototype JavaScript Library."
   },
-  "dromaeo.jslibtraverseprototype": {
-    "description": "Traversing a DOM structure using the Prototype JavaScript Library.",
-    "code": [
-      "chrome/src/tools/perf/page_sets/dromaeo/jslibtraverseprototype.json",
-      "chrome/src/tools/perf/measurements/dromaeo.py"
-    ]
-  },
-  "idb_perf": {
-    "description": "Benchmarks for a variety of IndexedDB operations.",
-    "code": [
+  "idb_perf":{
+    "description":"Benchmarks for a variety of IndexedDB operations.",
+    "code":[
       "chrome/src/chrome/test/perf/indexeddb_uitest.cc",
       "chrome/src/chrome/test/data/indexeddb/perf_test.html"
     ]
   },
-  "image_decoding.tough_decoding_cases": {
-    "description": "Milliseconds to decode a large image of various formats (gif, jpg, png, webp).",
-    "code": [
-      "chrome/src/tools/perf/measurements/image_decoding.py",
-      "chrome/src/tools/perf/page_sets/image_decoding_measurement.json"
-    ]
+  "image_decoding.image_decoding_measurement ":{
+    "description":"Milliseconds to decode a large image of various formats (gif, jpg, png, webp)."
   },
-  "page_cycler.indexeddb": {
-    "description": "Benchmark for a basic insert operation in Indexed DB.",
-    "code": [
-      "chrome/src/tools/perf/measurements/page_cycler.py",
-      "chrome/src/tools/perf/page_sets/page_cycler/indexed_db/basic_insert.json"
-    ]
+  "jsgamebench":{
+    "description":"Score on [Facebook's JSGameBench benchmark](https://github.com/facebook/jsgamebench).\n\nThe focus is sprite performance a player is likely to see. Scoring is how many sprites are drawn, so large scores are better.\n\nFor each render path, JSGameBench draws as many moving, animating sprites as possible at 30fps against a background with both axis-aligned and rotated sprites. We try both because significant performance differences between the two indicate flaws or oversights in current rendering techniques. More importantly, while animation can be used instead of sprite rotations, it is often an unacceptable trade off that game developers should not be forced to make.\n\nThe final score is the geometric mean of the axis aligned and rotated scores. Geometric mean is used to prevent a high axis aligned score from hiding the poor rotated performance."
   },
-  "page_cycler.intl_ar_fa_he": {
-    "description": "Page load time benchmark for a variety of pages in Arabic, Farsi and Hebrew. Runs against pages recorded in April, 2013.",
-    "code": [
-      "chrome/src/tools/perf/measurements/page_cycler.py",
-      "chrome/src/tools/perf/page_sets/intl_ar_fa_he.json"
-    ]
+  "kraken":{
+    "description":"Score on [Mozilla's Kraken JavaScript benchmark](http://krakenbenchmark.mozilla.org/)"
   },
-  "page_cycler.intl_es_fr_pt-BR": {
-    "description": "Page load time benchmark for a variety of pages in Spanish, French and Brazilian Portuguese. Runs against pages recorded in April, 2013.",
-    "code": [
-      "chrome/src/tools/perf/measurements/page_cycler.py",
-      "chrome/src/tools/perf/page_sets/intl_es_fr_pt-BR.json"
-    ]
-  },
-  "page_cycler.intl_hi_ru": {
-    "description": "Page load time benchmark for a variety of pages in Hindi and Russian. Runs against pages recorded in April, 2013.",
-    "code": [
-      "chrome/src/tools/perf/measurements/page_cycler.py",
-      "chrome/src/tools/perf/page_sets/intl_hi_ru.json"
-    ]
-  },
-  "page_cycler.intl_ja_zh": {
-    "description": "Page load time benchmark for a variety of pages in Japanese and Chinese. Runs against pages recorded in April, 2013.",
-    "code": [
-      "chrome/src/tools/perf/measurements/page_cycler.py",
-      "chrome/src/tools/perf/page_sets/intl_ja_zh.json"
-    ]
-  },
-  "page_cycler.intl_ko_th_vi": {
-    "description": "Page load time benchmark for a variety of pages in Korean, Thai and Vietnamese. Runs against pages recorded in April, 2013.",
-    "code": [
-      "chrome/src/tools/perf/measurements/page_cycler.py",
-      "chrome/src/tools/perf/page_sets/intl_ko_th_vi.json"
-    ]
-  },
-  "jsgamebench": {
-    "description": "Score on [Facebook's JSGameBench benchmark](https://github.com/facebook/jsgamebench).\n\nThe focus is sprite performance a player is likely to see. Scoring is how many sprites are drawn, so large scores are better.\n\nFor each render path, JSGameBench draws as many moving, animating sprites as possible at 30fps against a background with both axis-aligned and rotated sprites. We try both because significant performance differences between the two indicate flaws or oversights in current rendering techniques. More importantly, while animation can be used instead of sprite rotations, it is often an unacceptable trade off that game developers should not be forced to make.\n\nThe final score is the geometric mean of the axis aligned and rotated scores. Geometric mean is used to prevent a high axis aligned score from hiding the poor rotated performance.",
-    "code": ["chrome/src/tools/perf/benchmarks/jsgamebench.py"]
-  },
-  "kraken": {
-    "description": "Score on [Mozilla's Kraken JavaScript benchmark](http://krakenbenchmark.mozilla.org/)",
-    "code": ["chrome/src/tools/perf/benchmarks/kraken.py"]
-  },
-  "mach_ports": {
-    "description": "This test spawns a new browser and counts the number of open Mach ports in the browser process. It navigates tabs and closes them, repeatedly measuring the number of open ports. This is used to protect against leaking Mach ports, which was the source of [bug 105513](http://crbug.com/105513).",
-    "code": [
+  "mach_ports":{
+    "description":"This test spawns a new browser and counts the number of open Mach ports in the browser process. It navigates tabs and closes them, repeatedly measuring the number of open ports. This is used to protect against leaking Mach ports, which was the source of [bug 105513](http://crbug.com/105513).",
+    "code":[
       "chrome/src/chrome/test/perf/mach_ports_test.cc"
     ]
   },
-  "media.tough_video_cases": {
-    "description": "Obtains media metrics for key user scenarios.",
-    "code": [
-      "chrome/src/tools/perf/measurements/media.py",
-      "chrome/src/tools/perf/page_sets/tough_video_cases.json"
+  "media.tough_video_cases":{
+    "description":"Obtains media metrics for key user scenarios."
+  },
+  "memory.reload.2012Q3":{
+    "description":"Memory consumption for a set of top pages from 2012, reloading and garbage collecting on each page load."
+  },
+  "memory.top_25":{
+    "description":"Use (recorded versions of) real world web sites and measure memory consumption."
+  },
+  "memory_test":{
+    "description":"Loads a number of URLs across tabs and windows and measures the memory usage.",
+    "code":[
+      "chrome/src/chrome/test/perf/memory_test.cc"
     ]
   },
-  "memory.reload.2012Q3": {
-    "code": [
-      "chrome/src/tools/perf/measurements/memory.py",
-      "chrome/src/tools/perf/page_sets/2012Q3.json"
+  "octane":{
+    "description":"Score on the [V8 team's Octane benchmark](http://octane-benchmark.googlecode.com/svn/latest/index.html)"
+  },
+  "page_cycler.bloat":{
+    "description":"Load an image many times and ensure memory usage stays low."
+  },
+  "page_cycler.dhtml":{
+    "description":"Benchmarks for various DHTML operations like simple animations."
+  },
+  "page_cycler.indexeddb":{
+    "description":"Benchmark for a basic insert operation in Indexed DB."
+  },
+  "page_cycler.intl_ar_fa_he":{
+    "description":"Page load time benchmark for a variety of pages in Arabic, Farsi and Hebrew. Runs against pages recorded in April, 2013."
+  },
+  "page_cycler.intl_es_fr_pt-BR":{
+    "description":"Page load time benchmark for a variety of pages in Spanish, French and Brazilian Portuguese. Runs against pages recorded in April, 2013."
+  },
+  "page_cycler.intl_hi_ru":{
+    "description":"Page load time benchmark for a variety of pages in Hindi and Russian. Runs against pages recorded in April, 2013."
+  },
+  "page_cycler.intl_ja_zh":{
+    "description":"Page load time benchmark for a variety of pages in Japanese and Chinese. Runs against pages recorded in April, 2013."
+  },
+  "page_cycler.intl_ko_th_vi":{
+    "description":"Page load time benchmark for a variety of pages in Korean, Thai and Vietnamese. Runs against pages recorded in April, 2013."
+  },
+  "page_cycler.morejs":{
+    "description":"Page loading benchmark for a variety of pages that were JavaScript heavy in 2009."
+  },
+  "page_cycler.moz":{
+    "description":"Page loading benchmark for mozilla's original page set. Recorded in December 2000."
+  },
+  "page_cycler.pica":{
+    "description":"Loading benchmark for the Polymer toolkit's [Pica](http://www.polymer-project.org/polymer-all/projects/pica/index.html) demo app"
+  },
+  "page_cycler.netsim.top_10":{
+    "description":"Page loading benchmark for a set of 25 top pages recorded in Q2, 2012.  Despite the name, network simulation has not actually been enabled on this test yet."
+  },
+  "page_cycler.tough_layout_cases":{
+    "description":"Page loading benchmark for the slowest layouts observed in the Alexa top 1 million sites in July 2013."
+  },
+  "page_cycler.typical_25":{
+    "description":"Page load time benchmark for a 25 typical web pages. Designed to represent typical, not highly optimized or highly popular web sites. Runs against pages recorded in April, 2013."
+  },
+  "robohornet_pro":{
+    "description":"Milliseconds to complete the [RoboHornetPro demo by Microsoft](http://ie.microsoft.com/testdrive/performance/robohornetpro/)"
+  },
+  "sizes":{
+    "description":"Tracks binary sizes and number of static initializers.",
+    "code":[
+      "chrome/tools/build/scripts/slave/chromium/sizes.py"
     ]
   },
-  "memory.top_25": {
-    "description": "Use (recorded versions of) real world web sites and measure memory consumption.",
-    "code": [
-      "chrome/src/tools/perf/measurements/memory.py",
-      "chrome/src/tools/perf/page_sets/top_25.json"
-    ]
+  "smoothness.top_25":{
+    "description":"Measures frame rate and a variety of other statistics while scrolling down the top 25 web pages. [Documentation](http://www.chromium.org/developers/design-documents/rendering-benchmarks)."
   },
-  "memory_test": {
-    "description": "Loads a number of URLs across tabs and windows and measures the memory usage.",
-    "code": ["chrome/src/chrome/test/perf/memory_test.cc"]
+  "spaceport":{
+    "description":"Performance on [spaceport.io's perfmarks benchmark](http://spaceport.io/community/perfmarks). This test performs 3 animations (rotate, translate, scale) using a variety of methods (css, webgl, canvas, etc) and reports the number of objects that can be simultaneously animated while still achieving 30FPS."
   },
-  "page_cycler.morejs": {
-    "description": "Page loading benchmark for a variety of pages that were JavaScript heavy in 2009.",
-    "code": [
-      "chrome/src/tools/perf/measurements/page_cycler.py",
-      "chrome/src/tools/perf/page_sets/page_cycler/morejs.json"
-    ]
+  "startup.cold.blank_page":{
+    "description":"Measures cold startup time with a clean profile."
   },
-  "page_cycler.moz": {
-    "description": "Page loading benchmark for mozilla's original page set. Recorded in December 2000.",
-    "code": [
-      "chrome/src/tools/perf/measurements/page_cycler.py",
-      "chrome/src/tools/perf/page_sets/page_cycler/moz.json"
-    ]
+  "startup.cold.dirty.blank_page":{
+    "description":"Measures cold startup time with a dirty profile.",
+    "comment":"The same as startup.cold.blank_page, except for the user profile that's used. Set up in tools/build/scripts/master/factory/chromium_factory.py."
   },
-  "octane": {
-    "description": "Score on the [V8 team's Octane benchmark](http://octane-benchmark.googlecode.com/svn/latest/index.html)",
-    "code": ["chrome/src/tools/perf/benchmarks/octane.py"]
+  "startup.warm.blank_page":{
+    "description":"Measures warm startup time with a clean profile."
   },
-  "page_cycler.pica": {
-    "description": "Loading benchmark for the Polymer toolkit's [Pica](http://www.polymer-project.org/polymer-all/projects/pica/index.html) demo app",
-    "code": ["chrome/src/tools/perf/benchmarks/pica.py"]
+  "startup.warm.dirty.blank_page":{
+    "description":"Measures warm startup time with a dirty profile.",
+    "comment":"The same as startup.warm.blank_page, except for the user profile that's used. Set up in tools/build/scripts/master/factory/chromium_factory.py."
   },
-  "page_cycler.netsim.top_10": {
-    "description": "Page loading benchmark for a set of 25 top pages recorded in Q2, 2012.  Despite the name, network simulation has not actually been enabled on this test yet.",
-    "code": [
-      "chrome/src/tools/perf/measurements/page_cycler.py",
-      "chrome/src/tools/perf/page_sets/page_cycler/moz.json"
-    ]
+  "sunspider":{
+    "description":"Performance on the [SunSpider JavaScript benchmark](http://www.webkit.org/perf/sunspider/sunspider.html)"
   },
-  "robohornet_pro": {
-    "description": "Milliseconds to complete the [RoboHornetPro demo by Microsoft](http://ie.microsoft.com/testdrive/performance/robohornetpro/)",
-    "code": ["chrome/src/tools/perf/benchmarks/robohornet_pro.py"]
-  },
-  "sizes": {
-    "description": "Tracks binary sizes and number of static initializers.",
-    "code": ["chrome/tools/build/scripts/slave/chromium/sizes.py"]
-  },
-  "smoothness.top_25": {
-    "description": "Measures frame rate and a variety of other statistics while scrolling down the top 25 web pages. [Documentation](http://www.chromium.org/developers/design-documents/rendering-benchmarks).",
-    "code": [
-      "chrome/src/tools/perf/measurements/smoothness.py",
-      "chrome/src/tools/perf/page_sets/top_25.json"
-    ]
-  },
-  "spaceport": {
-    "description": "Performance on [spaceport.io's perfmarks benchmark](http://spaceport.io/community/perfmarks). This test performs 3 animations (rotate, translate, scale) using a variety of methods (css, webgl, canvas, etc) and reports the number of objects that can be simultaneously animated while still achieving 30FPS.",
-    "code": ["chrome/src/tools/perf/benchmarks/spaceport.py"]
-  },
-  "startup.cold.blank_page": {
-    "description": "Measures cold startup time with a clean profile.",
-    "code": [
-      "chrome/src/tools/perf/measurements/startup.py",
-      "src/tools/perf/page_sets/blank_page.json"
-    ]
-  },
-  "startup.cold.dirty.blank_page": {
-    "description": "Measures cold startup time with a dirty profile.",
-    "code": [
-      "chrome/src/tools/perf/measurements/startup.py",
-      "src/tools/perf/page_sets/blank_page.json"
-    ]
-  },
-  "startup_measurement": {
-    "description": "Measures startup time under various scenarios. This is a port of our old startup_test target to Telemetry.",
-    "code": [
-      "chrome/src/tools/perf/measurements/startup.py",
-      "src/tools/perf/page_sets/blank_page.json"
-    ]
-  },
-  "startup_test": {
-    "description": "Measures startup and shutdown time for 1 tab, 5 tabs, and 10 tabs under a several different user profiles. These tests are in the process of being ported to Telemetry - see the startup_measurement test.",
-    "code": ["chrome/src/chrome/test/perf/startup_test.cc"]
-  },
-  "startup.warm.blank_page": {
-    "description": "Measures warm startup time with a clean profile.",
-    "code": [
-      "chrome/src/tools/perf/measurements/startup.py",
-      "src/tools/perf/page_sets/blank_page.json"
-    ]
-  },
-  "startup.warm.dirty.blank_page": {
-    "description": "Measures warm startup time with a dirty profile.",
-    "code": [
-      "chrome/src/tools/perf/measurements/startup.py",
-      "src/tools/perf/page_sets/blank_page.json"
-    ]
-  },
-  "sunspider": {
-    "description": "Performance on the [SunSpider JavaScript benchmark](http://www.webkit.org/perf/sunspider/sunspider.html)",
-    "code": ["chrome/src/tools/perf/benchmarks/sunspider.py"]
-  },
-  "page_cycler.tough_layout_cases": {
-    "description": "Page loading benchmark for the slowest layouts observed in the Alexa top 1 million sites in July 2013.",
-    "code": [
-      "chrome/src/tools/perf/measurements/page_cycler.py",
-      "chrome/src/tools/perf/page_sets/tough_layout_cases.json"
-    ]
-  },
-  "tab_switching.top_10": {
-    "description": "This test records the MPArch.RWH_TabSwitchPaintDuration histogram, which is a measure of the time between when a tab was requested to be shown, and when first paint occurred. The script opens 10 pages in different tabs, waits for them to load, and then switches to each tab and records the metric. The pages were chosen from Alexa top ranking sites.",
-    "code": [
-      "chrome/src/tools/perf/perf_tools/tab_switching_measurement.py",
-      "chrome/src/tools/perf/page_sets/top_10.json"
-    ]
-  },
-  "page_cycler.typical_25": {
-    "description": "Page load time benchmark for a 25 typical web pages. Designed to represent typical, not highly optimized or highly popular web sites. Runs against pages recorded in April, 2013.",
-    "code": [
-      "chrome/src/tools/perf/measurements/page_cycler.py",
-      "chrome/src/tools/perf/page_sets/typical_25.json"
-    ]
+  "tab_switching.top_10":{
+    "description":"This test records the MPArch.RWH_TabSwitchPaintDuration histogram, which is a measure of the time between when a tab was requested to be shown, and when first paint occurred. The script opens 10 pages in different tabs, waits for them to load, and then switches to each tab and records the metric. The pages were chosen from Alexa top ranking sites."
   }
 }
