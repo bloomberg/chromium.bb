@@ -709,6 +709,17 @@ class CompositingRenderWidgetHostViewBrowserTestTabCapture
                                                     video_frame,
                                                     callback);
     } else {
+#if defined(USE_AURA)
+      if (!content::GpuDataManager::GetInstance()
+               ->CanUseGpuBrowserCompositor()) {
+        // Skia rendering can cause color differences, particularly in the
+        // middle two columns.
+        SetAllowableError(2);
+        SetExcludeRect(
+            gfx::Rect(output_size.width() / 2 - 1, 0, 2, output_size.height()));
+      }
+#endif
+
       base::Callback<void(bool, const SkBitmap&)> callback =
           base::Bind(&CompositingRenderWidgetHostViewBrowserTestTabCapture::
                        CopyFromCompositingSurfaceCallback,
@@ -768,12 +779,6 @@ IN_PROC_BROWSER_TEST_F(CompositingRenderWidgetHostViewBrowserTestTabCapture,
 
 IN_PROC_BROWSER_TEST_F(CompositingRenderWidgetHostViewBrowserTestTabCapture,
                        CopyFromCompositingSurface_Origin_Scaled) {
-#if defined(USE_AURA)
-  // TODO(gpu): Fix this test in software compositing mode:
-  // http://crbug.com/306789.
-  if (!content::GpuDataManager::GetInstance()->CanUseGpuBrowserCompositor())
-    return;
-#endif
   gfx::Rect copy_rect(400, 300);
   gfx::Size output_size(200, 100);
   gfx::Size expected_bitmap_size = output_size;
@@ -805,12 +810,6 @@ IN_PROC_BROWSER_TEST_F(CompositingRenderWidgetHostViewBrowserTestTabCapture,
 
 IN_PROC_BROWSER_TEST_F(CompositingRenderWidgetHostViewBrowserTestTabCapture,
                        CopyFromCompositingSurface_Cropped_Scaled) {
-#if defined(USE_AURA)
-  // TODO(gpu): Fix this test in software compositing mode:
-  // http://crbug.com/306789.
-  if (!content::GpuDataManager::GetInstance()->CanUseGpuBrowserCompositor())
-    return;
-#endif
   // Grab 60x60 pixels from the center of the tab contents.
   gfx::Rect copy_rect(400, 300);
   copy_rect = gfx::Rect(copy_rect.CenterPoint() - gfx::Vector2d(30, 30),
