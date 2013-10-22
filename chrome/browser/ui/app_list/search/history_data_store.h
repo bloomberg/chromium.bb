@@ -14,6 +14,7 @@
 #include "base/files/important_file_writer.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/ui/app_list/search/common/dictionary_data_store.h"
 #include "chrome/browser/ui/app_list/search/history_data.h"
 
 namespace base {
@@ -28,18 +29,16 @@ class HistoryDataStoreTest;
 }
 
 // A simple json store to persist HistoryData.
-class HistoryDataStore : public base::RefCountedThreadSafe<HistoryDataStore>,
-                         public base::ImportantFileWriter::DataSerializer {
+class HistoryDataStore : public base::RefCountedThreadSafe<HistoryDataStore> {
  public:
   typedef base::Callback<void(scoped_ptr<HistoryData::Associations>)>
       OnLoadedCallback;
-  typedef base::Closure OnFlushedCallback;
 
   explicit HistoryDataStore(const base::FilePath& data_file);
 
   // Flushes pending writes. |on_flushed| is invoked when disk write is
   // finished.
-  void Flush(const OnFlushedCallback& on_flushed);
+  void Flush(const DictionaryDataStore::OnFlushedCallback& on_flushed);
 
   // Reads the persisted data from disk asynchronously. |on_read| is called
   // with the loaded and parsed data. If there is an error, |on_read| is called
@@ -65,18 +64,10 @@ class HistoryDataStore : public base::RefCountedThreadSafe<HistoryDataStore>,
   // Gets entry dictionary for given |query|. Creates one if necessary.
   base::DictionaryValue* GetEntryDict(const std::string& query);
 
-  // Reads data from backing file.
-  scoped_ptr<HistoryData::Associations> LoadOnBlockingPool();
+  void OnDictionaryLoadedCallback(OnLoadedCallback callback,
+                                  scoped_ptr<base::DictionaryValue> dict);
 
-  // ImportantFileWriter::DataSerializer overrides:
-  virtual bool SerializeData(std::string* data) OVERRIDE;
-
-  base::FilePath data_file_;
-  scoped_refptr<base::SequencedTaskRunner> file_task_runner_;
-  scoped_ptr<base::ImportantFileWriter> writer_;
-
-  // Cached json dictionary to serve read and incremental change calls.
-  scoped_ptr<base::DictionaryValue> cached_json_;
+  scoped_refptr<DictionaryDataStore> data_store_;
 
   DISALLOW_COPY_AND_ASSIGN(HistoryDataStore);
 };

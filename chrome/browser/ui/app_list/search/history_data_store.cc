@@ -60,15 +60,17 @@ void GetSecondary(const base::ListValue* list,
 //      ...
 //    }
 //  }
-scoped_ptr<HistoryData::Associations> Parse(const base::DictionaryValue& dict) {
+scoped_ptr<HistoryData::Associations> Parse(
+    scoped_ptr<base::DictionaryValue> dict) {
   std::string version;
-  if (!dict.GetStringWithoutPathExpansion(kKeyVersion, &version) ||
+  if (!dict->GetStringWithoutPathExpansion(kKeyVersion, &version) ||
       version != kCurrentVersion) {
     return scoped_ptr<HistoryData::Associations>();
   }
 
   const base::DictionaryValue* assoc_dict = NULL;
-  if (!dict.GetDictionaryWithoutPathExpansion(kKeyAssociations, &assoc_dict) ||
+  if (!dict->GetDictionaryWithoutPathExpansion(kKeyAssociations,
+                                               &assoc_dict) ||
       !assoc_dict) {
     return scoped_ptr<HistoryData::Associations>();
   }
@@ -107,52 +109,29 @@ scoped_ptr<HistoryData::Associations> Parse(const base::DictionaryValue& dict) {
   return data.Pass();
 }
 
-// An empty callback used to ensure file tasks are cleared.
-void EmptyCallback() {}
-
 }  // namespace
 
 HistoryDataStore::HistoryDataStore(const base::FilePath& data_file)
-    : data_file_(data_file) {
-  std::string token("app-launcher-history-data-store");
-  token.append(data_file.AsUTF8Unsafe());
-
-  // Uses a SKIP_ON_SHUTDOWN file task runner because losing a couple
-  // associations is better than blocking shutdown.
-  base::SequencedWorkerPool* pool = BrowserThread::GetBlockingPool();
-  file_task_runner_ = pool->GetSequencedTaskRunnerWithShutdownBehavior(
-      pool->GetNamedSequenceToken(token),
-      base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
-  writer_.reset(
-      new base::ImportantFileWriter(data_file, file_task_runner_.get()));
-
-  cached_json_.reset(new base::DictionaryValue);
-  cached_json_->SetString(kKeyVersion, kCurrentVersion);
-  cached_json_->Set(kKeyAssociations, new base::DictionaryValue);
+    : data_store_(new DictionaryDataStore(data_file)) {
+  base::DictionaryValue* dict = data_store_->cached_dict();
+  DCHECK(dict);
+  dict->SetString(kKeyVersion, kCurrentVersion);
+  dict->Set(kKeyAssociations, new base::DictionaryValue);
 }
 
 HistoryDataStore::~HistoryDataStore() {
-  Flush(OnFlushedCallback());
 }
 
-void HistoryDataStore::Flush(const OnFlushedCallback& on_flushed) {
-  if (writer_->HasPendingWrite())
-    writer_->DoScheduledWrite();
-
-  if (on_flushed.is_null())
-    return;
-
-  file_task_runner_->PostTaskAndReply(
-      FROM_HERE, base::Bind(&EmptyCallback), on_flushed);
+void HistoryDataStore::Flush(
+    const DictionaryDataStore::OnFlushedCallback& on_flushed) {
+  data_store_->Flush(on_flushed);
 }
 
 void HistoryDataStore::Load(
     const HistoryDataStore::OnLoadedCallback& on_loaded) {
-  base::PostTaskAndReplyWithResult(
-      file_task_runner_.get(),
-      FROM_HERE,
-      base::Bind(&HistoryDataStore::LoadOnBlockingPool, this),
-      on_loaded);
+  data_store_->Load(base::Bind(&HistoryDataStore::OnDictionaryLoadedCallback,
+                               this,
+                               on_loaded));
 }
 
 void HistoryDataStore::SetPrimary(const std::string& query,
@@ -160,7 +139,7 @@ void HistoryDataStore::SetPrimary(const std::string& query,
   base::DictionaryValue* entry_dict = GetEntryDict(query);
   entry_dict->SetWithoutPathExpansion(kKeyPrimary,
                                       new base::StringValue(result));
-  writer_->ScheduleWrite(this);
+  data_store_->ScheduleWrite();
 }
 
 void HistoryDataStore::SetSecondary(
@@ -172,7 +151,7 @@ void HistoryDataStore::SetSecondary(
 
   base::DictionaryValue* entry_dict = GetEntryDict(query);
   entry_dict->SetWithoutPathExpansion(kKeySecondary, results_list.release());
-  writer_->ScheduleWrite(this);
+  data_store_->ScheduleWrite();
 }
 
 void HistoryDataStore::SetUpdateTime(const std::string& query,
@@ -181,18 +160,21 @@ void HistoryDataStore::SetUpdateTime(const std::string& query,
   entry_dict->SetWithoutPathExpansion(kKeyUpdateTime,
                                       new base::StringValue(base::Int64ToString(
                                           update_time.ToInternalValue())));
-  writer_->ScheduleWrite(this);
+  data_store_->ScheduleWrite();
 }
 
 void HistoryDataStore::Delete(const std::string& query) {
   base::DictionaryValue* assoc_dict = GetAssociationDict();
   assoc_dict->RemoveWithoutPathExpansion(query, NULL);
-  writer_->ScheduleWrite(this);
+  data_store_->ScheduleWrite();
 }
 
 base::DictionaryValue* HistoryDataStore::GetAssociationDict() {
+  base::DictionaryValue* cached_dict = data_store_->cached_dict();
+  DCHECK(cached_dict);
+
   base::DictionaryValue* assoc_dict = NULL;
-  CHECK(cached_json_->GetDictionary(kKeyAssociations, &assoc_dict) &&
+  CHECK(cached_dict->GetDictionary(kKeyAssociations, &assoc_dict) &&
         assoc_dict);
 
   return assoc_dict;
@@ -212,29 +194,13 @@ base::DictionaryValue* HistoryDataStore::GetEntryDict(
   return entry_dict;
 }
 
-scoped_ptr<HistoryData::Associations> HistoryDataStore::LoadOnBlockingPool() {
-  DCHECK(BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
-
-  int error_code = JSONFileValueSerializer::JSON_NO_ERROR;
-  std::string error_message;
-  JSONFileValueSerializer serializer(data_file_);
-  base::Value* value = serializer.Deserialize(&error_code, &error_message);
-  base::DictionaryValue* dict_value = NULL;
-  if (error_code != JSONFileValueSerializer::JSON_NO_ERROR ||
-      !value ||
-      !value->GetAsDictionary(&dict_value) ||
-      !dict_value) {
-    return scoped_ptr<HistoryData::Associations>();
+void HistoryDataStore::OnDictionaryLoadedCallback(
+    OnLoadedCallback callback, scoped_ptr<base::DictionaryValue> dict) {
+  if (!dict) {
+    callback.Run(scoped_ptr<HistoryData::Associations>());
+  } else {
+    callback.Run(Parse(dict.Pass()).Pass());
   }
-
-  cached_json_.reset(dict_value);
-  return Parse(*dict_value).Pass();
-}
-
-bool HistoryDataStore::SerializeData(std::string* data) {
-  JSONStringValueSerializer serializer(data);
-  serializer.set_pretty_print(true);
-  return serializer.Serialize(*cached_json_.get());
 }
 
 }  // namespace app_list
