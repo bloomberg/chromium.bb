@@ -26,10 +26,12 @@
 #include "config.h"
 #include "core/platform/graphics/chromium/ImageFrameGenerator.h"
 
-#include "platform/SharedBuffer.h"
 #include "core/platform/graphics/chromium/ImageDecodingStore.h"
 #include "core/platform/graphics/chromium/test/MockImageDecoder.h"
-#include "wtf/Threading.h"
+#include "platform/SharedBuffer.h"
+#include "platform/Task.h"
+#include "public/platform/Platform.h"
+#include "public/platform/WebThread.h"
 #include <gtest/gtest.h>
 
 namespace WebCore {
@@ -303,9 +305,8 @@ TEST_F(ImageFrameGeneratorTest, incompleteDecodeAndScaleBecomesComplete)
     EXPECT_EQ(2, m_frameBufferRequestCount);
 }
 
-static void decodeThreadMain(void* arg)
+static void decodeThreadMain(ImageFrameGenerator* generator)
 {
-    ImageFrameGenerator* generator = reinterpret_cast<ImageFrameGenerator*>(arg);
     const ScaledImageFragment* tempImage = generator->decodeAndScale(fullSize());
     ImageDecodingStore::instance()->unlockCache(generator, tempImage);
 }
@@ -326,8 +327,9 @@ TEST_F(ImageFrameGeneratorTest, incompleteDecodeBecomesCompleteMultiThreaded)
     // Frame can now be decoded completely.
     setFrameStatus(ImageFrame::FrameComplete);
     addNewData();
-    ThreadIdentifier threadID = createThread(&decodeThreadMain, m_generator.get(), "DecodeThread");
-    waitForThreadCompletion(threadID);
+    OwnPtr<WebKit::WebThread> thread = adoptPtr(WebKit::Platform::current()->createThread("DecodeThread"));
+    thread->postTask(new Task(WTF::bind(&decodeThreadMain, m_generator.get())));
+    thread.clear();
 
     EXPECT_EQ(2, m_frameBufferRequestCount);
     EXPECT_EQ(1, m_decodersDestroyed);

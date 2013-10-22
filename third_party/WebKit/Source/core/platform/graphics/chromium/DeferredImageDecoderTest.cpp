@@ -29,13 +29,15 @@
 #include "SkBitmapDevice.h"
 #include "SkCanvas.h"
 #include "SkPicture.h"
-#include "platform/SharedBuffer.h"
 #include "core/platform/graphics/chromium/ImageDecodingStore.h"
 #include "core/platform/graphics/chromium/test/MockImageDecoder.h"
 #include "core/platform/graphics/skia/NativeImageSkia.h"
+#include "platform/SharedBuffer.h"
+#include "platform/Task.h"
+#include "public/platform/Platform.h"
+#include "public/platform/WebThread.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
-#include "wtf/Threading.h"
 #include <gtest/gtest.h>
 
 namespace WebCore {
@@ -201,10 +203,9 @@ TEST_F(DeferredImageDecoderTest, DISABLED_drawScaledIntoSkPicture)
     EXPECT_EQ(SkColorSetARGB(255, 255, 255, 255), canvasBitmap.getColor(49, 50));
 }
 
-static void rasterizeMain(void* arg)
+static void rasterizeMain(SkCanvas* canvas, SkPicture* picture)
 {
-    Rasterizer* rasterizer = static_cast<Rasterizer*>(arg);
-    rasterizer->canvas->drawPicture(*rasterizer->picture);
+    canvas->drawPicture(*picture);
 }
 
 TEST_F(DeferredImageDecoderTest, decodeOnOtherThread)
@@ -222,11 +223,9 @@ TEST_F(DeferredImageDecoderTest, decodeOnOtherThread)
     EXPECT_EQ(0, m_frameBufferRequestCount);
 
     // Create a thread to rasterize SkPicture.
-    Rasterizer rasterizer;
-    rasterizer.canvas = m_canvas;
-    rasterizer.picture = &m_picture;
-    ThreadIdentifier threadID = createThread(&rasterizeMain, &rasterizer, "RasterThread");
-    waitForThreadCompletion(threadID);
+    OwnPtr<WebKit::WebThread> thread = adoptPtr(WebKit::Platform::current()->createThread("RasterThread"));
+    thread->postTask(new Task(WTF::bind(&rasterizeMain, m_canvas.get(), &m_picture)));
+    thread.clear();
     EXPECT_EQ(0, m_frameBufferRequestCount);
 
     SkBitmap canvasBitmap;
