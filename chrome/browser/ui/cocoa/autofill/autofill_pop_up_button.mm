@@ -29,6 +29,13 @@
   return self;
 }
 
+- (BOOL)becomeFirstResponder {
+  BOOL result = [super becomeFirstResponder];
+  if (result && delegate_)
+    [delegate_ fieldBecameFirstResponder:self];
+  return result;
+}
+
 - (NSString*)fieldValue {
   return [[self cell] fieldValue];
 }
