@@ -27,6 +27,7 @@ class FakeBluetoothProfileManagerClient;
 class FakeCrosDisksClient;
 class FakeCryptohomeClient;
 class FakeGsmSMSClient;
+class FakeNfcManagerClient;
 class FakePowerManagerClient;
 class FakeImageBurnerClient;
 class FakeSessionManagerClient;
@@ -72,6 +73,7 @@ class FakeDBusThreadManager : public DBusThreadManager {
   virtual ImageBurnerClient* GetImageBurnerClient() OVERRIDE;
   virtual IntrospectableClient* GetIntrospectableClient() OVERRIDE;
   virtual ModemMessagingClient* GetModemMessagingClient() OVERRIDE;
+  virtual NfcManagerClient* GetNfcManagerClient() OVERRIDE;
   virtual PermissionBrokerClient* GetPermissionBrokerClient() OVERRIDE;
   virtual PowerManagerClient* GetPowerManagerClient() OVERRIDE;
   virtual PowerPolicyController* GetPowerPolicyController() OVERRIDE;
@@ -120,6 +122,10 @@ class FakeDBusThreadManager : public DBusThreadManager {
 
   FakeImageBurnerClient* fake_image_burner_client() {
     return fake_image_burner_client_.get();
+  }
+
+  FakeNfcManagerClient* fake_nfc_manager_client() {
+    return fake_nfc_manager_client_.get();
   }
 
   FakeSessionManagerClient* fake_session_manager_client() {
@@ -179,6 +185,7 @@ class FakeDBusThreadManager : public DBusThreadManager {
   scoped_ptr<FakeCryptohomeClient> fake_cryptohome_client_;
   scoped_ptr<FakeGsmSMSClient> fake_gsm_sms_client_;
   scoped_ptr<FakeImageBurnerClient> fake_image_burner_client_;
+  scoped_ptr<FakeNfcManagerClient> fake_nfc_manager_client_;
   scoped_ptr<FakeSessionManagerClient> fake_session_manager_client_;
   scoped_ptr<FakeShillDeviceClient> fake_shill_device_client_;
   scoped_ptr<FakeShillManagerClient> fake_shill_manager_client_;

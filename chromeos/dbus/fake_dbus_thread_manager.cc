@@ -14,6 +14,7 @@
 #include "chromeos/dbus/fake_cryptohome_client.h"
 #include "chromeos/dbus/fake_gsm_sms_client.h"
 #include "chromeos/dbus/fake_image_burner_client.h"
+#include "chromeos/dbus/fake_nfc_manager_client.h"
 #include "chromeos/dbus/fake_power_manager_client.h"
 #include "chromeos/dbus/fake_session_manager_client.h"
 #include "chromeos/dbus/fake_shill_device_client.h"
@@ -38,6 +39,7 @@ FakeDBusThreadManager::FakeDBusThreadManager()
     fake_cryptohome_client_(new FakeCryptohomeClient),
     fake_gsm_sms_client_(new FakeGsmSMSClient),
     fake_image_burner_client_(new FakeImageBurnerClient),
+    fake_nfc_manager_client_(new FakeNfcManagerClient()),
     fake_session_manager_client_(new FakeSessionManagerClient),
     fake_shill_device_client_(new FakeShillDeviceClient),
     fake_shill_manager_client_(new FakeShillManagerClient),
@@ -172,6 +174,10 @@ ModemMessagingClient*
     FakeDBusThreadManager::GetModemMessagingClient() {
   NOTIMPLEMENTED();
   return NULL;
+}
+
+NfcManagerClient* FakeDBusThreadManager::GetNfcManagerClient() {
+  return fake_nfc_manager_client_.get();
 }
 
 PermissionBrokerClient*

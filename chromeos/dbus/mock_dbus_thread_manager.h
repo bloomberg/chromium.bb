@@ -26,6 +26,7 @@ class FakeBluetoothDeviceClient;
 class FakeBluetoothInputClient;
 class FakeBluetoothProfileManagerClient;
 class FakeGsmSMSClient;
+class FakeNfcManagerClient;
 class FakeShillDeviceClient;
 class FakeShillIPConfigClient;
 class MockCryptohomeClient;
@@ -71,6 +72,7 @@ class MockDBusThreadManager : public DBusThreadManager {
   MOCK_METHOD0(GetImageBurnerClient, ImageBurnerClient*(void));
   MOCK_METHOD0(GetIntrospectableClient, IntrospectableClient*(void));
   MOCK_METHOD0(GetModemMessagingClient, ModemMessagingClient*(void));
+  MOCK_METHOD0(GetNfcManagerClient, NfcManagerClient*(void));
   MOCK_METHOD0(GetPermissionBrokerClient, PermissionBrokerClient*(void));
   MOCK_METHOD0(GetPowerManagerClient, PowerManagerClient*(void));
   MOCK_METHOD0(GetPowerPolicyController, PowerPolicyController*(void));
@@ -102,6 +104,9 @@ class MockDBusThreadManager : public DBusThreadManager {
   }
   FakeGsmSMSClient* fake_gsm_sms_client() {
     return fake_gsm_sms_client_.get();
+  }
+  FakeNfcManagerClient* fake_nfc_manager_client() {
+    return fake_nfc_manager_client_.get();
   }
   FakeShillDeviceClient* fake_shill_device_client() {
     return fake_shill_device_client_.get();
@@ -138,6 +143,7 @@ class MockDBusThreadManager : public DBusThreadManager {
   scoped_ptr<FakeBluetoothProfileManagerClient>
       fake_bluetooth_profile_manager_client_;
   scoped_ptr<FakeGsmSMSClient> fake_gsm_sms_client_;
+  scoped_ptr<FakeNfcManagerClient> fake_nfc_manager_client_;
   scoped_ptr<FakeShillDeviceClient> fake_shill_device_client_;
   scoped_ptr<FakeShillIPConfigClient> fake_shill_ipconfig_client_;
   scoped_ptr<MockCryptohomeClient> mock_cryptohome_client_;
