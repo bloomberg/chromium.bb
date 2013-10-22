@@ -344,12 +344,6 @@ const char kEnableAcceleratedScrollableFrames[] =
 // Turns on extremely verbose logging of accessibility events.
 const char kEnableAccessibilityLogging[]    = "enable-accessibility-logging";
 
-// Enable notifications of audible/silent audio output from a render view.
-//
-// TODO(miu): Remove --enable-audible-notifications once the feature goes
-// live.  http://crbug.com/178934
-const char kEnableAudibleNotifications[]    = "enable-audible-notifications";
-
 // Use a begin frame signal from browser to renderer to schedule rendering.
 const char kEnableBeginFrameScheduling[]    = "enable-begin-frame-scheduling";
 

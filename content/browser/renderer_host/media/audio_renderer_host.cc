@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/command_line.h"
 #include "base/memory/shared_memory.h"
 #include "base/metrics/histogram.h"
 #include "base/process/process.h"
@@ -19,7 +18,6 @@
 #include "content/common/media/audio_messages.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/media_observer.h"
-#include "content/public/common/content_switches.h"
 #include "media/audio/audio_manager_base.h"
 #include "media/audio/shared_memory_util.h"
 #include "media/base/audio_bus.h"
@@ -249,14 +247,11 @@ void AudioRendererHost::DoNotifyAudioPowerLevel(int stream_id,
   MediaObserver* const media_observer =
       GetContentClient()->browser()->GetMediaObserver();
   if (media_observer) {
-    if (CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kEnableAudibleNotifications)) {
-      AudioEntry* const entry = LookupById(stream_id);
-      if (entry) {
-        media_observer->OnAudioStreamPlayingChanged(
-            render_process_id_, entry->render_view_id(), entry->stream_id(),
-            true, power_dbfs, clipped);
-      }
+    AudioEntry* const entry = LookupById(stream_id);
+    if (entry) {
+      media_observer->OnAudioStreamPlayingChanged(
+          render_process_id_, entry->render_view_id(), entry->stream_id(),
+          true, power_dbfs, clipped);
     }
   }
 }

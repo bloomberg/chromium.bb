@@ -111,7 +111,6 @@ CONTENT_EXPORT extern const char kEnableAcceleratedFixedRootBackground[];
 extern const char kEnableAcceleratedOverflowScroll[];
 extern const char kEnableAcceleratedScrollableFrames[];
 extern const char kEnableAccessibilityLogging[];
-extern const char kEnableAudibleNotifications[];
 CONTENT_EXPORT extern const char kEnableBeginFrameScheduling[];
 CONTENT_EXPORT extern const char kEnableBrowserPluginForAllViewTypes[];
 CONTENT_EXPORT extern const char kEnableBrowserPluginDragDrop[];
