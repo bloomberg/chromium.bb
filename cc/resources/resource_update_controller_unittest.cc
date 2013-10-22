@@ -137,7 +137,7 @@ class ResourceUpdateControllerTest : public Test {
     CHECK(output_surface_->BindToClient(&output_surface_client_));
 
     resource_provider_ =
-        ResourceProvider::Create(output_surface_.get(), 0, false);
+        ResourceProvider::Create(output_surface_.get(), NULL, 0, false);
   }
 
   void AppendFullUploadsOfIndexedTextureToUpdateQueue(int count,

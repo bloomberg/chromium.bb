@@ -60,7 +60,8 @@ bool DelegatingRenderer::Initialize() {
   capabilities_.using_offscreen_context3d = false;
 
   if (!output_surface_->context_provider()) {
-    // TODO(danakj): Make software compositing work.
+    capabilities_.using_shared_memory_resources = true;
+    capabilities_.using_map_image = settings_->use_map_image;
     return true;
   }
 

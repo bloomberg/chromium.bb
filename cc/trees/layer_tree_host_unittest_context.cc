@@ -1089,7 +1089,7 @@ class LayerTreeHostContextTestDontUseLostResources
     child_output_surface_ = FakeOutputSurface::Create3d();
     child_output_surface_->BindToClient(&output_surface_client_);
     child_resource_provider_ =
-        ResourceProvider::Create(child_output_surface_.get(), 0, false);
+        ResourceProvider::Create(child_output_surface_.get(), NULL, 0, false);
   }
 
   static void EmptyReleaseCallback(unsigned sync_point, bool lost) {}
@@ -1781,6 +1781,7 @@ class LayerTreeHostTestCannotCreateIfCannotCreateOutputSurface
     settings.impl_side_painting = impl_side_painting;
     scoped_ptr<LayerTreeHost> layer_tree_host = LayerTreeHost::Create(
         this,
+        NULL,
         settings,
         impl_thread ? impl_thread->message_loop_proxy() : NULL);
     EXPECT_FALSE(layer_tree_host);

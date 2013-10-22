@@ -39,6 +39,8 @@ class Vector2d;
 }
 
 namespace cc {
+class SharedBitmap;
+class SharedBitmapManager;
 class TextureUploader;
 
 // This class is not thread-safe and can only be called from the thread it was
@@ -59,9 +61,11 @@ class CC_EXPORT ResourceProvider {
     Bitmap,
   };
 
-  static scoped_ptr<ResourceProvider> Create(OutputSurface* output_surface,
-                                             int highp_threshold_min,
-                                             bool use_rgba_4444_texture_format);
+  static scoped_ptr<ResourceProvider> Create(
+      OutputSurface* output_surface,
+      SharedBitmapManager* shared_bitmap_manager,
+      int highp_threshold_min,
+      bool use_rgba_4444_texture_format);
   virtual ~ResourceProvider();
 
   void InitializeSoftware();
@@ -320,6 +324,8 @@ class CC_EXPORT ResourceProvider {
   // Returns the stride for the image.
   int GetImageStride(ResourceId id);
 
+  base::SharedMemory* GetSharedMemory(ResourceId id);
+
   // For tests only! This prevents detecting uninitialized reads.
   // Use SetPixels or LockForWrite to allocate implicitly.
   void AllocateForTesting(ResourceId id);
@@ -359,6 +365,7 @@ class CC_EXPORT ResourceProvider {
              TextureUsageHint hint,
              ResourceFormat format);
     Resource(uint8_t* pixels,
+             SharedBitmap* bitmap,
              gfx::Size size,
              GLenum filter,
              GLint wrap_mode);
@@ -398,6 +405,7 @@ class CC_EXPORT ResourceProvider {
     TextureUsageHint hint;
     ResourceType type;
     ResourceFormat format;
+    SharedBitmap* shared_bitmap;
   };
   typedef base::hash_map<ResourceId, Resource> ResourceMap;
 
@@ -422,6 +430,7 @@ class CC_EXPORT ResourceProvider {
   }
 
   ResourceProvider(OutputSurface* output_surface,
+                   SharedBitmapManager* shared_bitmap_manager,
                    int highp_threshold_min,
                    bool use_rgba_4444_texture_format);
 
@@ -461,6 +470,7 @@ class CC_EXPORT ResourceProvider {
   WebKit::WebGraphicsContext3D* Context3d() const;
 
   OutputSurface* output_surface_;
+  SharedBitmapManager* shared_bitmap_manager_;
   bool lost_output_surface_;
   int highp_threshold_min_;
   ResourceId next_id_;

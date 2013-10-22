@@ -32,7 +32,7 @@ namespace {
 class MockLayerTreeHost : public LayerTreeHost {
  public:
   explicit MockLayerTreeHost(LayerTreeHostClient* client)
-      : LayerTreeHost(client, LayerTreeSettings()) {
+      : LayerTreeHost(client, NULL, LayerTreeSettings()) {
     Initialize(NULL);
   }
 };

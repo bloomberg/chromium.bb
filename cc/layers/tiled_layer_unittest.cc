@@ -60,6 +60,7 @@ class TiledLayerTest : public testing::Test {
   virtual void SetUp() {
     impl_thread_.Start();
     layer_tree_host_ = LayerTreeHost::Create(&fake_layer_tree_host_client_,
+                                             NULL,
                                              settings_,
                                              impl_thread_.message_loop_proxy());
     proxy_ = layer_tree_host_->proxy();
@@ -73,7 +74,7 @@ class TiledLayerTest : public testing::Test {
     DebugScopedSetImplThreadAndMainThreadBlocked
         impl_thread_and_main_thread_blocked(proxy_);
     resource_provider_ =
-        ResourceProvider::Create(output_surface_.get(), 0, false);
+        ResourceProvider::Create(output_surface_.get(), NULL, 0, false);
     host_impl_ = make_scoped_ptr(new FakeLayerTreeHostImpl(proxy_));
   }
 

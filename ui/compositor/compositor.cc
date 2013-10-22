@@ -432,7 +432,8 @@ Compositor::Compositor(gfx::AcceleratedWidget widget)
   scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner =
       g_compositor_thread ? g_compositor_thread->message_loop_proxy() : NULL;
 
-  host_ = cc::LayerTreeHost::Create(this, settings, compositor_task_runner);
+  host_ =
+      cc::LayerTreeHost::Create(this, NULL, settings, compositor_task_runner);
   host_->SetRootLayer(root_web_layer_);
   host_->SetLayerTreeHostClientReady();
 }

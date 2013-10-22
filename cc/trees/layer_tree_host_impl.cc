@@ -180,19 +180,18 @@ scoped_ptr<LayerTreeHostImpl> LayerTreeHostImpl::Create(
     const LayerTreeSettings& settings,
     LayerTreeHostImplClient* client,
     Proxy* proxy,
-    RenderingStatsInstrumentation* rendering_stats_instrumentation) {
-  return make_scoped_ptr(
-      new LayerTreeHostImpl(settings,
-                            client,
-                            proxy,
-                            rendering_stats_instrumentation));
+    RenderingStatsInstrumentation* rendering_stats_instrumentation,
+    SharedBitmapManager* manager) {
+  return make_scoped_ptr(new LayerTreeHostImpl(
+      settings, client, proxy, rendering_stats_instrumentation, manager));
 }
 
 LayerTreeHostImpl::LayerTreeHostImpl(
     const LayerTreeSettings& settings,
     LayerTreeHostImplClient* client,
     Proxy* proxy,
-    RenderingStatsInstrumentation* rendering_stats_instrumentation)
+    RenderingStatsInstrumentation* rendering_stats_instrumentation,
+    SharedBitmapManager* manager)
     : client_(client),
       proxy_(proxy),
       input_handler_client_(NULL),
@@ -230,7 +229,8 @@ LayerTreeHostImpl::LayerTreeHostImpl(
       external_stencil_test_enabled_(false),
       animation_registrar_(AnimationRegistrar::Create()),
       rendering_stats_instrumentation_(rendering_stats_instrumentation),
-      need_to_update_visible_tiles_before_draw_(false) {
+      need_to_update_visible_tiles_before_draw_(false),
+      shared_bitmap_manager_(manager) {
   DCHECK(proxy_->IsImplThread());
   DidVisibilityChange(this, visible_);
 
@@ -513,7 +513,8 @@ static DrawMode GetDrawMode(OutputSurface* output_surface) {
   } else if (output_surface->context_provider()) {
     return DRAW_MODE_HARDWARE;
   } else {
-    DCHECK(output_surface->software_device());
+    DCHECK_EQ(!output_surface->software_device(),
+              output_surface->capabilities().delegated_rendering);
     return DRAW_MODE_SOFTWARE;
   }
 }
@@ -1682,10 +1683,11 @@ bool LayerTreeHostImpl::InitializeRenderer(
   if (!output_surface->BindToClient(this))
     return false;
 
-  scoped_ptr<ResourceProvider> resource_provider = ResourceProvider::Create(
-      output_surface.get(),
-      settings_.highp_threshold_min,
-      settings_.use_rgba_4444_textures);
+  scoped_ptr<ResourceProvider> resource_provider =
+      ResourceProvider::Create(output_surface.get(),
+                               shared_bitmap_manager_,
+                               settings_.highp_threshold_min,
+                               settings_.use_rgba_4444_textures);
   if (!resource_provider)
     return false;
 

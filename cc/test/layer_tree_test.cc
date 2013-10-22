@@ -68,7 +68,8 @@ class LayerTreeHostImplForTesting : public LayerTreeHostImpl {
       : LayerTreeHostImpl(settings,
                           host_impl_client,
                           proxy,
-                          stats_instrumentation),
+                          stats_instrumentation,
+                          NULL),
         test_hooks_(test_hooks),
         block_notify_ready_to_activate_for_testing_(false),
         notify_ready_to_activate_was_blocked_(false) {}
@@ -233,7 +234,7 @@ class LayerTreeHostForTesting : public LayerTreeHost {
   LayerTreeHostForTesting(TestHooks* test_hooks,
                           LayerTreeHostClient* client,
                           const LayerTreeSettings& settings)
-      : LayerTreeHost(client, settings),
+      : LayerTreeHost(client, NULL, settings),
         test_hooks_(test_hooks),
         test_started_(false) {}
 

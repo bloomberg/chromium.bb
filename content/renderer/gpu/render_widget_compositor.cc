@@ -412,9 +412,8 @@ bool RenderWidgetCompositor::ScheduleMicroBenchmark(
 bool RenderWidgetCompositor::initialize(cc::LayerTreeSettings settings) {
   scoped_refptr<base::MessageLoopProxy> compositor_message_loop_proxy =
       RenderThreadImpl::current()->compositor_message_loop_proxy();
-  layer_tree_host_ = cc::LayerTreeHost::Create(this,
-                                               settings,
-                                               compositor_message_loop_proxy);
+  layer_tree_host_ = cc::LayerTreeHost::Create(
+      this, NULL, settings, compositor_message_loop_proxy);
   return layer_tree_host_;
 }
 

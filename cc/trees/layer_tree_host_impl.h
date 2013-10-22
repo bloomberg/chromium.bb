@@ -99,7 +99,8 @@ class CC_EXPORT LayerTreeHostImpl
       const LayerTreeSettings& settings,
       LayerTreeHostImplClient* client,
       Proxy* proxy,
-      RenderingStatsInstrumentation* rendering_stats_instrumentation);
+      RenderingStatsInstrumentation* rendering_stats_instrumentation,
+      SharedBitmapManager* manager);
   virtual ~LayerTreeHostImpl();
 
   // InputHandler implementation
@@ -411,7 +412,8 @@ class CC_EXPORT LayerTreeHostImpl
       const LayerTreeSettings& settings,
       LayerTreeHostImplClient* client,
       Proxy* proxy,
-      RenderingStatsInstrumentation* rendering_stats_instrumentation);
+      RenderingStatsInstrumentation* rendering_stats_instrumentation,
+      SharedBitmapManager* manager);
 
   // Virtual for testing.
   virtual void AnimateLayers(base::TimeTicks monotonic_time,
@@ -619,6 +621,8 @@ class CC_EXPORT LayerTreeHostImpl
 
   // Optional callback to notify of new tree activations.
   base::Closure tree_activation_callback_;
+
+  SharedBitmapManager* shared_bitmap_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(LayerTreeHostImpl);
 };

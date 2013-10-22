@@ -26,7 +26,7 @@ class VideoResourceUpdaterTest : public testing::Test {
         FakeOutputSurface::Create3d(context3d.Pass());
     CHECK(output_surface3d_->BindToClient(&client_));
     resource_provider3d_ =
-        ResourceProvider::Create(output_surface3d_.get(), 0, false);
+        ResourceProvider::Create(output_surface3d_.get(), NULL, 0, false);
   }
 
   scoped_refptr<media::VideoFrame> CreateTestYUVVideoFrame() {

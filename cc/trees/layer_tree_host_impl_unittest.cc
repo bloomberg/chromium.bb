@@ -92,10 +92,8 @@ class LayerTreeHostImplTest : public testing::Test,
     settings.minimum_occlusion_tracking_size = gfx::Size();
     settings.impl_side_painting = true;
 
-    host_impl_ = LayerTreeHostImpl::Create(settings,
-                                           this,
-                                           &proxy_,
-                                           &stats_instrumentation_);
+    host_impl_ = LayerTreeHostImpl::Create(
+        settings, this, &proxy_, &stats_instrumentation_, NULL);
     host_impl_->InitializeRenderer(CreateOutputSurface());
     host_impl_->SetViewportSize(gfx::Size(10, 10));
   }
@@ -157,10 +155,8 @@ class LayerTreeHostImplTest : public testing::Test,
     settings.minimum_occlusion_tracking_size = gfx::Size();
     settings.partial_swap_enabled = partial_swap;
 
-    host_impl_ = LayerTreeHostImpl::Create(settings,
-                                           this,
-                                           &proxy_,
-                                           &stats_instrumentation_);
+    host_impl_ = LayerTreeHostImpl::Create(
+        settings, this, &proxy_, &stats_instrumentation_, NULL);
 
     host_impl_->InitializeRenderer(output_surface.Pass());
     host_impl_->SetViewportSize(gfx::Size(10, 10));
@@ -391,7 +387,7 @@ TEST_F(LayerTreeHostImplTest, CanDrawIncompleteFrames) {
   LayerTreeSettings settings;
   settings.impl_side_painting = true;
   host_impl_ = LayerTreeHostImpl::Create(
-      settings, this, &proxy_, &stats_instrumentation_);
+      settings, this, &proxy_, &stats_instrumentation_, NULL);
 
   scoped_ptr<FakeOutputSurface> output_surface(
       FakeOutputSurface::CreateAlwaysDrawAndSwap3d());
@@ -494,10 +490,8 @@ TEST_F(LayerTreeHostImplTest, ScrollWithoutRootLayer) {
 
 TEST_F(LayerTreeHostImplTest, ScrollWithoutRenderer) {
   LayerTreeSettings settings;
-  host_impl_ = LayerTreeHostImpl::Create(settings,
-                                         this,
-                                         &proxy_,
-                                         &stats_instrumentation_);
+  host_impl_ = LayerTreeHostImpl::Create(
+      settings, this, &proxy_, &stats_instrumentation_, NULL);
   scoped_ptr<TestWebGraphicsContext3D> context_owned =
       TestWebGraphicsContext3D::Create();
   context_owned->set_times_make_current_succeeds(0);
@@ -1152,8 +1146,8 @@ class LayerTreeHostImplOverridePhysicalTime : public LayerTreeHostImpl {
       : LayerTreeHostImpl(settings,
                           client,
                           proxy,
-                          rendering_stats_instrumentation) {}
-
+                          rendering_stats_instrumentation,
+                          NULL) {}
 
   virtual base::TimeTicks CurrentPhysicalTimeTicks() const OVERRIDE {
     return fake_current_physical_time_;
@@ -1286,7 +1280,7 @@ void LayerTreeHostImplTest::SetupMouseMoveAtWithDeviceScale(
   gfx::Size content_size(1000, 1000);
 
   host_impl_ = LayerTreeHostImpl::Create(
-      settings, this, &proxy_, &stats_instrumentation_);
+      settings, this, &proxy_, &stats_instrumentation_, NULL);
   host_impl_->InitializeRenderer(CreateOutputSurface());
   host_impl_->SetDeviceScaleFactor(device_scale_factor);
   host_impl_->SetViewportSize(device_viewport_size);
@@ -1794,10 +1788,8 @@ TEST_F(LayerTreeHostImplTest, ScrollNonScrollableRootWithTopControls) {
   settings.calculate_top_controls_position = true;
   settings.top_controls_height = 50;
 
-  host_impl_ = LayerTreeHostImpl::Create(settings,
-                                         this,
-                                         &proxy_,
-                                         &stats_instrumentation_);
+  host_impl_ = LayerTreeHostImpl::Create(
+      settings, this, &proxy_, &stats_instrumentation_, NULL);
   host_impl_->InitializeRenderer(CreateOutputSurface());
   host_impl_->SetViewportSize(gfx::Size(10, 10));
 
@@ -2759,7 +2751,7 @@ TEST_F(LayerTreeHostImplTest, OverscrollAlways) {
   LayerTreeSettings settings;
   settings.always_overscroll = true;
   host_impl_ = LayerTreeHostImpl::Create(
-      settings, this, &proxy_, &stats_instrumentation_);
+      settings, this, &proxy_, &stats_instrumentation_, NULL);
 
   SetupScrollAndContentsLayers(gfx::Size(50, 50));
   host_impl_->SetViewportSize(gfx::Size(50, 50));
@@ -3112,7 +3104,7 @@ class LayerTreeHostImplViewportCoveredTest : public LayerTreeHostImplTest {
     settings.minimum_occlusion_tracking_size = gfx::Size();
     settings.impl_side_painting = true;
     host_impl_ = LayerTreeHostImpl::Create(
-        settings, this, &proxy_, &stats_instrumentation_);
+        settings, this, &proxy_, &stats_instrumentation_, NULL);
 
     scoped_ptr<FakeOutputSurface> output_surface;
     if (always_draw)
@@ -3532,10 +3524,8 @@ TEST_F(LayerTreeHostImplTest, PartialSwapReceivesDamageRect) {
   LayerTreeSettings settings;
   settings.partial_swap_enabled = true;
   scoped_ptr<LayerTreeHostImpl> layer_tree_host_impl =
-      LayerTreeHostImpl::Create(settings,
-                                this,
-                                &proxy_,
-                                &stats_instrumentation_);
+      LayerTreeHostImpl::Create(
+          settings, this, &proxy_, &stats_instrumentation_, NULL);
   layer_tree_host_impl->InitializeRenderer(output_surface.Pass());
   layer_tree_host_impl->SetViewportSize(gfx::Size(500, 500));
 
@@ -3847,8 +3837,8 @@ static scoped_ptr<LayerTreeHostImpl> SetupLayersForOpacity(
 
   LayerTreeSettings settings;
   settings.partial_swap_enabled = partial_swap;
-  scoped_ptr<LayerTreeHostImpl> my_host_impl =
-      LayerTreeHostImpl::Create(settings, client, proxy, stats_instrumentation);
+  scoped_ptr<LayerTreeHostImpl> my_host_impl = LayerTreeHostImpl::Create(
+      settings, client, proxy, stats_instrumentation, NULL);
   my_host_impl->InitializeRenderer(output_surface.Pass());
   my_host_impl->SetViewportSize(gfx::Size(100, 100));
 
@@ -4228,10 +4218,8 @@ class FakeMaskLayerImpl : public LayerImpl {
 TEST_F(LayerTreeHostImplTest, MaskLayerWithScaling) {
   LayerTreeSettings settings;
   settings.layer_transforms_should_scale_layer_contents = true;
-  host_impl_ = LayerTreeHostImpl::Create(settings,
-                                         this,
-                                         &proxy_,
-                                         &stats_instrumentation_);
+  host_impl_ = LayerTreeHostImpl::Create(
+      settings, this, &proxy_, &stats_instrumentation_, NULL);
   host_impl_->InitializeRenderer(CreateOutputSurface());
   host_impl_->SetViewportSize(gfx::Size(10, 10));
 
@@ -5219,10 +5207,8 @@ TEST_F(LayerTreeHostImplTestDeferredInitialize, Fails_OffscreenContext) {
 // doesn't support memory management extensions.
 TEST_F(LayerTreeHostImplTest, DefaultMemoryAllocation) {
   LayerTreeSettings settings;
-  host_impl_ = LayerTreeHostImpl::Create(settings,
-                                         this,
-                                         &proxy_,
-                                         &stats_instrumentation_);
+  host_impl_ = LayerTreeHostImpl::Create(
+      settings, this, &proxy_, &stats_instrumentation_, NULL);
 
   scoped_ptr<OutputSurface> output_surface(
       FakeOutputSurface::Create3d(TestWebGraphicsContext3D::Create()));
@@ -5331,12 +5317,10 @@ TEST_F(LayerTreeHostImplTest, ShutdownReleasesContext) {
   scoped_refptr<TestContextProvider> context_provider =
       TestContextProvider::Create();
 
-  host_impl_ = LayerTreeHostImpl::Create(LayerTreeSettings(),
-                                         this,
-                                         &proxy_,
-                                         &stats_instrumentation_);
-  host_impl_->InitializeRenderer(
-      FakeOutputSurface::Create3d(context_provider).PassAs<OutputSurface>());
+  host_impl_ = LayerTreeHostImpl::Create(
+      LayerTreeSettings(), this, &proxy_, &stats_instrumentation_, NULL);
+  host_impl_->InitializeRenderer(FakeOutputSurface::Create3d(context_provider)
+                                     .PassAs<OutputSurface>());
   host_impl_->SetViewportSize(gfx::Size(10, 10));
 
   SetupRootLayerImpl(LayerImpl::Create(host_impl_->active_tree(), 1));

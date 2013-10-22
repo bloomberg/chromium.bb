@@ -8,6 +8,7 @@
 #include <limits>
 
 #include "base/containers/hash_tables.h"
+#include "base/debug/trace_event.h"
 #include "base/stl_util.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -15,6 +16,7 @@
 #include "cc/output/gl_renderer.h"  // For the GLC() macro.
 #include "cc/resources/platform_color.h"
 #include "cc/resources/returned_resource.h"
+#include "cc/resources/shared_bitmap_manager.h"
 #include "cc/resources/transferable_resource.h"
 #include "cc/scheduler/texture_uploader.h"
 #include "gpu/GLES2/gl2extchromium.h"
@@ -118,7 +120,8 @@ ResourceProvider::Resource::Resource()
       lost(false),
       hint(TextureUsageAny),
       type(static_cast<ResourceType>(0)),
-      format(RGBA_8888) {}
+      format(RGBA_8888),
+      shared_bitmap(NULL) {}
 
 ResourceProvider::Resource::~Resource() {}
 
@@ -159,11 +162,13 @@ ResourceProvider::Resource::Resource(unsigned texture_id,
       lost(false),
       hint(hint),
       type(GLTexture),
-      format(format) {
+      format(format),
+      shared_bitmap(NULL) {
   DCHECK(wrap_mode == GL_CLAMP_TO_EDGE || wrap_mode == GL_REPEAT);
 }
 
 ResourceProvider::Resource::Resource(uint8_t* pixels,
+                                     SharedBitmap* bitmap,
                                      gfx::Size size,
                                      GLenum filter,
                                      GLint wrap_mode)
@@ -196,7 +201,8 @@ ResourceProvider::Resource::Resource(uint8_t* pixels,
       lost(false),
       hint(TextureUsageAny),
       type(Bitmap),
-      format(RGBA_8888) {
+      format(RGBA_8888),
+      shared_bitmap(bitmap) {
   DCHECK(wrap_mode == GL_CLAMP_TO_EDGE || wrap_mode == GL_REPEAT);
 }
 
@@ -206,10 +212,12 @@ ResourceProvider::Child::~Child() {}
 
 scoped_ptr<ResourceProvider> ResourceProvider::Create(
     OutputSurface* output_surface,
+    SharedBitmapManager* shared_bitmap_manager,
     int highp_threshold_min,
     bool use_rgba_4444_texture_format) {
   scoped_ptr<ResourceProvider> resource_provider(
       new ResourceProvider(output_surface,
+                           shared_bitmap_manager,
                            highp_threshold_min,
                            use_rgba_4444_texture_format));
 
@@ -311,10 +319,19 @@ ResourceProvider::ResourceId ResourceProvider::CreateGLTexture(
 ResourceProvider::ResourceId ResourceProvider::CreateBitmap(gfx::Size size) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  uint8_t* pixels = new uint8_t[4 * size.GetArea()];
+  scoped_ptr<SharedBitmap> bitmap;
+  if (shared_bitmap_manager_)
+    bitmap = shared_bitmap_manager_->AllocateSharedBitmap(size);
+
+  uint8_t* pixels;
+  if (bitmap)
+    pixels = bitmap->pixels();
+  else
+    pixels = new uint8_t[4 * size.GetArea()];
 
   ResourceId id = next_id_++;
-  Resource resource(pixels, size, GL_LINEAR, GL_CLAMP_TO_EDGE);
+  Resource resource(
+      pixels, bitmap.release(), size, GL_LINEAR, GL_CLAMP_TO_EDGE);
   resource.allocated = true;
   resources_[id] = resource;
   return id;
@@ -375,8 +392,16 @@ ResourceProvider::ResourceId ResourceProvider::CreateResourceFromTextureMailbox(
     base::SharedMemory* shared_memory = mailbox.shared_memory();
     DCHECK(shared_memory->memory());
     uint8_t* pixels = reinterpret_cast<uint8_t*>(shared_memory->memory());
-    resource = Resource(
-        pixels, mailbox.shared_memory_size(), GL_LINEAR, GL_CLAMP_TO_EDGE);
+    scoped_ptr<SharedBitmap> shared_bitmap;
+    if (shared_bitmap_manager_) {
+      shared_bitmap =
+          shared_bitmap_manager_->GetBitmapForSharedMemory(shared_memory);
+    }
+    resource = Resource(pixels,
+                        shared_bitmap.release(),
+                        mailbox.shared_memory_size(),
+                        GL_LINEAR,
+                        GL_CLAMP_TO_EDGE);
   }
   resource.external = true;
   resource.allocated = true;
@@ -407,8 +432,9 @@ void ResourceProvider::DeleteResource(ResourceId id) {
 
 void ResourceProvider::DeleteResourceInternal(ResourceMap::iterator it,
                                               DeleteStyle style) {
+  TRACE_EVENT0("cc", "ResourceProvider::DeleteResourceInternal");
   Resource* resource = &it->second;
-  bool lost_resource = lost_output_surface_ || resource->lost;
+  bool lost_resource = resource->lost;
 
   DCHECK(resource->exported_count == 0 || style != Normal);
   if (style == ForShutdown && resource->exported_count > 0)
@@ -438,6 +464,7 @@ void ResourceProvider::DeleteResourceInternal(ResourceMap::iterator it,
   if (resource->mailbox.IsValid() && resource->external) {
     unsigned sync_point = resource->mailbox.sync_point();
     if (resource->mailbox.IsTexture()) {
+      lost_resource |= lost_output_surface_;
       WebGraphicsContext3D* context3d = Context3d();
       DCHECK(context3d);
       if (resource->gl_id)
@@ -450,9 +477,15 @@ void ResourceProvider::DeleteResourceInternal(ResourceMap::iterator it,
       if (resource->pixels && shared_memory) {
         DCHECK(shared_memory->memory() == resource->pixels);
         resource->pixels = NULL;
+        delete resource->shared_bitmap;
+        resource->shared_bitmap = NULL;
       }
     }
     resource->release_callback.Run(sync_point, lost_resource);
+  }
+  if (resource->shared_bitmap) {
+    delete resource->shared_bitmap;
+    resource->pixels = NULL;
   }
   if (resource->pixels)
     delete[] resource->pixels;
@@ -754,9 +787,11 @@ ResourceProvider::ScopedWriteLockSoftware::~ScopedWriteLockSoftware() {
 }
 
 ResourceProvider::ResourceProvider(OutputSurface* output_surface,
+                                   SharedBitmapManager* shared_bitmap_manager,
                                    int highp_threshold_min,
                                    bool use_rgba_4444_texture_format)
     : output_surface_(output_surface),
+      shared_bitmap_manager_(shared_bitmap_manager),
       lost_output_surface_(false),
       highp_threshold_min_(highp_threshold_min),
       next_id_(1),
@@ -876,17 +911,15 @@ void ResourceProvider::PrepareSendToParent(const ResourceIdArray& resources,
                                            TransferableResourceArray* list) {
   DCHECK(thread_checker_.CalledOnValidThread());
   WebGraphicsContext3D* context3d = Context3d();
-  if (!context3d || !context3d->makeContextCurrent()) {
-    // TODO(skaslev): Implement this path for software compositing.
-    return;
-  }
+  if (context3d)
+    context3d->makeContextCurrent();
   bool need_sync_point = false;
   for (ResourceIdArray::const_iterator it = resources.begin();
        it != resources.end();
        ++it) {
     TransferableResource resource;
     TransferResource(context3d, *it, &resource);
-    if (!resource.sync_point)
+    if (!resource.sync_point && !resource.is_software)
       need_sync_point = true;
     ++resources_.find(*it)->second.exported_count;
     list->push_back(resource);
@@ -906,10 +939,8 @@ void ResourceProvider::ReceiveFromChild(
     int child, const TransferableResourceArray& resources) {
   DCHECK(thread_checker_.CalledOnValidThread());
   WebGraphicsContext3D* context3d = Context3d();
-  if (!context3d || !context3d->makeContextCurrent()) {
-    // TODO(skaslev): Implement this path for software compositing.
-    return;
-  }
+  if (context3d)
+    context3d->makeContextCurrent();
   Child& child_info = children_.find(child)->second;
   for (TransferableResourceArray::const_iterator it = resources.begin();
        it != resources.end();
@@ -920,34 +951,58 @@ void ResourceProvider::ReceiveFromChild(
       resources_[resource_in_map_it->second].imported_count++;
       continue;
     }
-    unsigned texture_id;
-    // NOTE: If the parent is a browser and the child a renderer, the parent
-    // is not supposed to have its context wait, because that could induce
-    // deadlocks and/or security issues. The caller is responsible for
-    // waiting asynchronously, and resetting sync_point before calling this.
-    // However if the parent is a renderer (e.g. browser tag), it may be ok
-    // (and is simpler) to wait.
-    if (it->sync_point)
-      GLC(context3d, context3d->waitSyncPoint(it->sync_point));
-    GLC(context3d, texture_id = context3d->createTexture());
-    GLC(context3d, context3d->bindTexture(it->target, texture_id));
-    GLC(context3d,
-        context3d->consumeTextureCHROMIUM(it->target, it->mailbox.name));
+
+    scoped_ptr<SharedBitmap> bitmap;
+    uint8_t* pixels = NULL;
+    if (it->is_software) {
+      if (shared_bitmap_manager_)
+        bitmap = shared_bitmap_manager_->GetSharedBitmapFromId(it->size,
+                                                               it->mailbox);
+      if (bitmap)
+        pixels = bitmap->pixels();
+    }
+
+    if ((!it->is_software && !context3d) || (it->is_software && !pixels)) {
+      TRACE_EVENT0("cc", "ResourceProvider::ReceiveFromChild dropping invalid");
+      ReturnedResourceArray to_return;
+      to_return.push_back(it->ToReturnedResource());
+      child_info.return_callback.Run(to_return);
+      continue;
+    }
+
     ResourceId local_id = next_id_++;
-    Resource resource(texture_id,
-                      it->size,
-                      it->target,
-                      it->filter,
-                      0,
-                      GL_CLAMP_TO_EDGE,
-                      TextureUsageAny,
-                      it->format);
-    resource.mailbox.SetName(it->mailbox);
+    Resource& resource = resources_[local_id];
+    if (it->is_software) {
+      resource = Resource(
+          pixels, bitmap.release(), it->size, GL_LINEAR, GL_CLAMP_TO_EDGE);
+    } else {
+      unsigned texture_id;
+      // NOTE: If the parent is a browser and the child a renderer, the parent
+      // is not supposed to have its context wait, because that could induce
+      // deadlocks and/or security issues. The caller is responsible for
+      // waiting asynchronously, and resetting sync_point before calling this.
+      // However if the parent is a renderer (e.g. browser tag), it may be ok
+      // (and is simpler) to wait.
+      if (it->sync_point)
+        GLC(context3d, context3d->waitSyncPoint(it->sync_point));
+      GLC(context3d, texture_id = context3d->createTexture());
+      GLC(context3d, context3d->bindTexture(it->target, texture_id));
+      GLC(context3d,
+          context3d->consumeTextureCHROMIUM(it->target, it->mailbox.name));
+      resource = Resource(texture_id,
+                          it->size,
+                          it->target,
+                          it->filter,
+                          0,
+                          GL_CLAMP_TO_EDGE,
+                          TextureUsageAny,
+                          it->format);
+      resource.mailbox.SetName(it->mailbox);
+    }
     resource.child_id = child;
     // Don't allocate a texture for a child.
     resource.allocated = true;
     resource.imported_count = 1;
-    resources_[local_id] = resource;
     child_info.parent_to_child_map[local_id] = it->id;
     child_info.child_to_parent_map[it->id] = local_id;
   }
@@ -997,10 +1052,8 @@ void ResourceProvider::ReceiveReturnsFromParent(
     const ReturnedResourceArray& resources) {
   DCHECK(thread_checker_.CalledOnValidThread());
   WebGraphicsContext3D* context3d = Context3d();
-  if (!context3d || !context3d->makeContextCurrent()) {
-    // TODO(skaslev): Implement this path for software compositing.
-    return;
-  }
+  if (context3d)
+    context3d->makeContextCurrent();
 
   int child_id = 0;
   Child* child_info = NULL;
@@ -1043,7 +1096,7 @@ void ResourceProvider::ReceiveReturnsFromParent(
     if (resource->gl_id) {
       if (returned.sync_point)
         GLC(context3d, context3d->waitSyncPoint(returned.sync_point));
-    } else {
+    } else if (!resource->shared_bitmap) {
       resource->mailbox =
           TextureMailbox(resource->mailbox.name(), returned.sync_point);
     }
@@ -1096,10 +1149,10 @@ void ResourceProvider::TransferResource(WebGraphicsContext3D* context,
   resource->filter = source->filter;
   resource->size = source->size;
 
-  // TODO(skaslev) Implement this path for shared memory resources.
-  DCHECK(!source->mailbox.IsSharedMemory());
-
-  if (!source->mailbox.IsTexture()) {
+  if (source->shared_bitmap) {
+    resource->mailbox = source->shared_bitmap->id();
+    resource->is_software = true;
+  } else if (!source->mailbox.IsValid()) {
     // This is a resource allocated by the compositor, we need to produce it.
     // Don't set a sync point, the caller will do it.
     DCHECK(source->gl_id);
@@ -1110,6 +1163,7 @@ void ResourceProvider::TransferResource(WebGraphicsContext3D* context,
                                         resource->mailbox.name));
     source->mailbox.SetName(resource->mailbox);
   } else {
+    DCHECK(source->mailbox.IsTexture());
     // This is either an external resource, or a compositor resource that we
     // already exported. Make sure to forward the sync point that we were given.
     resource->mailbox = source->mailbox.name();
@@ -1129,10 +1183,8 @@ void ResourceProvider::DeleteAndReturnUnusedResourcesToChild(
     return;
 
   WebGraphicsContext3D* context3d = Context3d();
-  if (!context3d || !context3d->makeContextCurrent()) {
-    // TODO(skaslev): Implement this path for software compositing.
-    return;
-  }
+  if (context3d)
+    context3d->makeContextCurrent();
 
   ReturnedResourceArray to_return;
 
@@ -1152,7 +1204,8 @@ void ResourceProvider::DeleteAndReturnUnusedResourcesToChild(
     ResourceId child_id = child_info->parent_to_child_map[local_id];
     DCHECK(child_info->child_to_parent_map.count(child_id));
 
-    bool is_lost = resource.lost || lost_output_surface_;
+    bool is_lost =
+        resource.lost || (!resource.shared_bitmap && lost_output_surface_);
     if (resource.exported_count > 0) {
       if (style != ForShutdown) {
         // Defer this until we receive the resource back from the parent.
@@ -1164,7 +1217,7 @@ void ResourceProvider::DeleteAndReturnUnusedResourcesToChild(
       is_lost = true;
     }
 
-    if (resource.filter != resource.original_filter) {
+    if (context3d && resource.filter != resource.original_filter) {
       DCHECK(resource.target);
       DCHECK(resource.gl_id);
 
@@ -1182,7 +1235,7 @@ void ResourceProvider::DeleteAndReturnUnusedResourcesToChild(
     ReturnedResource returned;
     returned.id = child_id;
     returned.sync_point = resource.mailbox.sync_point();
-    if (!returned.sync_point)
+    if (!returned.sync_point && !resource.shared_bitmap)
       need_sync_point = true;
     returned.count = resource.imported_count;
     returned.lost = is_lost;
@@ -1194,6 +1247,7 @@ void ResourceProvider::DeleteAndReturnUnusedResourcesToChild(
     DeleteResourceInternal(it, style);
   }
   if (need_sync_point) {
+    DCHECK(context3d);
     unsigned int sync_point = context3d->insertSyncPoint();
     for (size_t i = 0; i < to_return.size(); ++i) {
       if (!to_return[i].sync_point)
@@ -1644,6 +1698,16 @@ int ResourceProvider::GetImageStride(ResourceId id) {
   }
 
   return stride;
+}
+
+base::SharedMemory* ResourceProvider::GetSharedMemory(ResourceId id) {
+  Resource* resource = GetResource(id);
+  DCHECK(!resource->external);
+  DCHECK_EQ(resource->exported_count, 0);
+
+  if (!resource->shared_bitmap)
+    return NULL;
+  return resource->shared_bitmap->memory();
 }
 
 GLint ResourceProvider::GetActiveTextureUnit(WebGraphicsContext3D* context) {

@@ -46,7 +46,7 @@ class FakeLayerTreeHost : protected LayerTreeHost {
  private:
   FakeLayerTreeHost(LayerTreeHostClient* client,
                     const LayerTreeSettings& settings)
-      : LayerTreeHost(client, settings),
+      : LayerTreeHost(client, NULL, settings),
         host_impl_(settings, &proxy_),
         needs_commit_(false) {}
 

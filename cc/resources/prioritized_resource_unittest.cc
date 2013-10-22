@@ -24,7 +24,7 @@ class PrioritizedResourceTest : public testing::Test {
     DebugScopedSetImplThread impl_thread(&proxy_);
     CHECK(output_surface_->BindToClient(&output_surface_client_));
     resource_provider_ =
-        cc::ResourceProvider::Create(output_surface_.get(), 0, false);
+        cc::ResourceProvider::Create(output_surface_.get(), NULL, 0, false);
   }
 
   virtual ~PrioritizedResourceTest() {

@@ -229,7 +229,8 @@ void CompositorImpl::SetVisible(bool visible) {
         g_impl_thread ? g_impl_thread->message_loop()->message_loop_proxy()
                       : NULL;
 
-    host_ = cc::LayerTreeHost::Create(this, settings, impl_thread_task_runner);
+    host_ = cc::LayerTreeHost::Create(
+        this, NULL, settings, impl_thread_task_runner);
     host_->SetRootLayer(root_layer_);
 
     host_->SetVisible(true);

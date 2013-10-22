@@ -35,6 +35,7 @@ struct CC_EXPORT TransferableResource {
   uint32 filter;
   gfx::Size size;
   gpu::Mailbox mailbox;
+  bool is_software;
 };
 
 }  // namespace cc
