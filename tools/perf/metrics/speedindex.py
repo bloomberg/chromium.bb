@@ -46,7 +46,8 @@ class SpeedIndexMetric(Metric):
   def AddResults(self, tab, results, chart_name=None):
     """Calculate the speed index and add it to the results."""
     events = tab.timeline_model.GetAllEvents()
-    results.Add('speed_index', 'ms', _SpeedIndex(events), chart_name=chart_name)
+    index = _SpeedIndex(events, _GetViewportSize(tab))
+    results.Add('speed_index', 'ms', index, chart_name=chart_name)
 
   def IsFinished(self, tab):
     """Decide whether the timeline recording should be stopped.
@@ -85,7 +86,12 @@ class SpeedIndexMetric(Metric):
     return self._is_finished
 
 
-def _SpeedIndex(events):
+def _GetViewportSize(tab):
+  """Returns dimensions of the viewport."""
+  return tab.EvaluateJavaScript('[ window.innerWidth, window.innerHeight ]')
+
+
+def _SpeedIndex(events, viewport):
   """Calculate the speed index of a page load from a list of events.
 
   The speed index number conceptually represents the number of milliseconds
@@ -96,12 +102,13 @@ def _SpeedIndex(events):
 
   Args:
     events: A list of telemetry.core.timeline.slice.Slice objects
+    viewport: A tuple (width, height) of the window.
 
   Returns:
     A single number, milliseconds of visual incompleteness.
   """
   paint_events = _IncludedPaintEvents(events)
-  time_area_dict = _TimeAreaDict(paint_events)
+  time_area_dict = _TimeAreaDict(paint_events, viewport)
   time_completeness_dict = _TimeCompletenessDict(time_area_dict)
   # The first time interval starts from the start of the first event.
   prev_time = events[0].start
@@ -155,12 +162,13 @@ def _IncludedPaintEvents(events):
         return event.start
     assert False, 'There were no layout events after resource receive events.'
 
+  first_layout_time = FirstLayoutTime(events)
   paint_events = [e for e in events
-                  if e.start >= FirstLayoutTime(events) and e.name == 'Paint']
+                  if e.start >= first_layout_time and e.name == 'Paint']
   return paint_events
 
 
-def _TimeAreaDict(paint_events):
+def _TimeAreaDict(paint_events, viewport):
   """Make a dict from time to adjusted area value for events at that time.
 
   The adjusted area value of each paint event is determined by how many paint
@@ -171,29 +179,39 @@ def _TimeAreaDict(paint_events):
 
   Args:
     paint_events: A list of paint events
+    viewport: A tuple (width, height) of the window.
 
   Returns:
     A dictionary of times of each paint event (in milliseconds) to the
     adjusted area that the paint event is worth.
   """
+  width, height = viewport
+  fullscreen_area = width * height
+
+  def ClippedArea(rectangle):
+    """Returns rectangle area clipped to viewport size."""
+    _, x0, y0, x1, y1 = rectangle
+    x0 = max(0, x0)
+    y0 = max(0, y0)
+    x1 = min(width, x1)
+    y1 = min(height, y1)
+    return max(0, x1 - x0) * max(0, y1 - y0)
+
   grouped = _GroupEventByRectangle(paint_events)
-  # Note: It is assumed here that the fullscreen area is considered to be
-  # area of the largest paint event that has NOT been filtered out.
-  fullscreen_area = max([_RectangleArea(rect) for rect in grouped.keys()])
   event_area_dict = collections.defaultdict(int)
 
-  for rectangle in grouped:
+  for rectangle, events in grouped.items():
     # The area points for each rectangle are divided up among the paint
     # events in that rectangle.
-    area = _RectangleArea(rectangle)
-    update_count = len(grouped[rectangle])
+    area = ClippedArea(rectangle)
+    update_count = len(events)
     adjusted_area = float(area) / update_count
 
     # Paint events for the largest-area rectangle are counted as 50%.
     if area == fullscreen_area:
       adjusted_area /= 2
 
-    for event in grouped[rectangle]:
+    for event in events:
       # The end time for an event is used for that event's time.
       event_time = event.end
       event_area_dict[event_time] += adjusted_area
@@ -209,7 +227,7 @@ def _GetRectangle(paint_event):
   In the WPT source, this 'rectangle' is also called a 'region'.
   """
   def GetBox(quad):
-    """Convert the "clip" data in a paint event to coordinates and dimensions.
+    """Gets top-left and bottom-right coordinates from paint event.
 
     In the timeline data from devtools, paint rectangle dimensions are
     represented x-y coordinates of four corners, clockwise from the top-left.
@@ -217,19 +235,11 @@ def _GetRectangle(paint_event):
     in file src/out/Debug/obj/gen/devtools/TimelinePanel.js.
     """
     x0, y0, _, _, x1, y1, _, _ = quad
-    width, height = (x1 - x0), (y1 - y0)
-    return (x0, y0, width, height)
+    return (x0, y0, x1, y1)
 
   assert paint_event.name == 'Paint'
   frame = paint_event.args['frameId']
-  x, y, width, height = GetBox(paint_event.args['data']['clip'])
-  return (frame, x, y, width, height)
-
-
-def _RectangleArea(rectangle):
-  """Get the area of a rectangle as returned by _GetRectangle, above."""
-  # Width and height are the last two items in the 5-tuple.
-  return rectangle[3] * rectangle[4]
+  return (frame,) + GetBox(paint_event.args['data']['clip'])
 
 
 def _GroupEventByRectangle(paint_events):

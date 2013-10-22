@@ -30,7 +30,8 @@ class IncludedPaintEventsTest(unittest.TestCase):
 class TimeAreaDictTest(unittest.TestCase):
   def testAdjustedAreaDict(self):
     paint_events = speedindex._IncludedPaintEvents(_SAMPLE_EVENTS)
-    time_area_dict = speedindex._TimeAreaDict(paint_events)
+    viewport = 1000, 1000
+    time_area_dict = speedindex._TimeAreaDict(paint_events, viewport)
     self.assertEquals(len(time_area_dict), 4)
     # The event that ends at time 100 is a fullscreen; it's discounted by half.
     self.assertEquals(time_area_dict[100], 500000)
@@ -41,6 +42,7 @@ class TimeAreaDictTest(unittest.TestCase):
 
 class SpeedIndexTest(unittest.TestCase):
   def testWithSampleData(self):
+    viewport = 1000, 1000
     # Add up the parts of the speed index for each time interval.
     # Each part is the time interval multiplied by the proportion of the
     # total area value that is not yet painted for that interval.
@@ -50,7 +52,7 @@ class SpeedIndexTest(unittest.TestCase):
     parts.append(100 * 0.4)
     parts.append(400 * 0.2)
     expected = sum(parts)  # 330.0
-    actual = speedindex._SpeedIndex(_SAMPLE_EVENTS)
+    actual = speedindex._SpeedIndex(_SAMPLE_EVENTS, viewport)
     self.assertEqual(actual, expected)
 
 
@@ -62,7 +64,7 @@ class WPTComparisonTest(unittest.TestCase):
   provides timeline data in json format along with the speed index results.
   """
 
-  def _TestJsonTimelineExpectation(self, filename, expected):
+  def _TestJsonTimelineExpectation(self, filename, viewport, expected):
     """Check whether the result for some timeline data is as expected.
 
     Args:
@@ -73,7 +75,7 @@ class WPTComparisonTest(unittest.TestCase):
     with open(file_path) as json_file:
       raw_events = json.load(json_file)
       events = model.TimelineModel(event_data=raw_events).GetAllEvents()
-      actual = speedindex._SpeedIndex(events)
+      actual = speedindex._SpeedIndex(events, viewport)
       # The result might differ by 1 or more milliseconds due to rounding,
       # so compare to the nearest 10 milliseconds.
       self.assertAlmostEqual(actual, expected, places=-1)
@@ -81,17 +83,20 @@ class WPTComparisonTest(unittest.TestCase):
   def testCern(self):
     # Page: http://info.cern.ch/hypertext/WWW/TheProject.html
     # This page has only one paint event.
-    self._TestJsonTimelineExpectation('cern_repeat_timeline.json', 379.0)
+    self._TestJsonTimelineExpectation(
+        'cern_repeat_timeline.json', (1014, 650), 379.0)
 
   def testBaidu(self):
     # Page: http://www.baidu.com/
     # This page has several paint events, but no nested paint events.
-    self._TestJsonTimelineExpectation('baidu_repeat_timeline.json', 1761.43)
+    self._TestJsonTimelineExpectation(
+        'baidu_repeat_timeline.json', (1014, 650), 1761.43)
 
   def test2ch(self):
     # Page: http://2ch.net/
     # This page has several paint events, including nested paint events.
-    self._TestJsonTimelineExpectation('2ch_repeat_timeline.json', 674.58)
+    self._TestJsonTimelineExpectation(
+        '2ch_repeat_timeline.json', (997, 650), 674.58)
 
 
 if __name__ == "__main__":
