@@ -291,6 +291,12 @@ class MEDIA_EXPORT SourceBufferStream {
   // or there is a pending seek beyond any existing ranges.
   bool IsEndSelected() const;
 
+  // Deletes the range pointed to by |*itr| and removes it from |ranges_|.
+  // If |*itr| points to |selected_range_|, then |selected_range_| is set to
+  // NULL. After the range is removed, |*itr| is to the range after the one that
+  // was removed or to |ranges_.end()| if the last range was removed.
+  void DeleteAndRemoveRange(RangeList::iterator* itr);
+
   // Callback used to report error strings that can help the web developer
   // figure out what is wrong with the content.
   LogCB log_cb_;

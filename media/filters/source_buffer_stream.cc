@@ -519,11 +519,7 @@ void SourceBufferStream::Remove(base::TimeDelta start, base::TimeDelta end,
     // If the current range now is completely covered by the removal
     // range then delete it and move on.
     if (start <= range->GetStartTimestamp()) {
-      if (selected_range_ == range)
-        SetSelectedRange(NULL);
-
-      delete range;
-      itr = ranges_.erase(itr);
+      DeleteAndRemoveRange(&itr);
       continue;
     }
 
@@ -937,10 +933,8 @@ void SourceBufferStream::ResolveCompleteOverlaps(
     if (*next_range_itr == selected_range_) {
       DCHECK(deleted_buffers->empty());
       selected_range_->DeleteAll(deleted_buffers);
-      SetSelectedRange(NULL);
     }
-    delete *next_range_itr;
-    next_range_itr = ranges_.erase(next_range_itr);
+    DeleteAndRemoveRange(&next_range_itr);
   }
 }
 
@@ -950,48 +944,43 @@ void SourceBufferStream::ResolveEndOverlap(
   DCHECK(deleted_buffers);
 
   SourceBufferRange* range_with_new_buffers = *range_with_new_buffers_itr;
-  RangeList::iterator next_range_itr = range_with_new_buffers_itr;
-  ++next_range_itr;
+  RangeList::iterator overlapped_range_itr = range_with_new_buffers_itr;
+  ++overlapped_range_itr;
 
-  if (next_range_itr == ranges_.end() ||
-      !range_with_new_buffers->EndOverlaps(**next_range_itr)) {
+  if (overlapped_range_itr == ranges_.end() ||
+      !range_with_new_buffers->EndOverlaps(**overlapped_range_itr)) {
     return;
   }
 
   // Split the overlapped range after |range_with_new_buffers|'s last buffer
-  // overlaps. Now |overlapped_range| contains only the buffers that do not
+  // overlaps. Now |*overlapped_range_itr| contains only the buffers that do not
   // belong in |ranges_| anymore, and |new_next_range| contains buffers that
   // go after |range_with_new_buffers| (without overlap).
-  scoped_ptr<SourceBufferRange> overlapped_range(*next_range_itr);
-  next_range_itr = ranges_.erase(next_range_itr);
-
   SourceBufferRange* new_next_range =
-      overlapped_range->SplitRange(
+      (*overlapped_range_itr)->SplitRange(
           range_with_new_buffers->GetEndTimestamp(), true);
+
+  if (selected_range_ == *overlapped_range_itr) {
+    SourceBufferRange* overlapped_range = *overlapped_range_itr;
+    // If the |overlapped_range| transfers its next buffer position to
+    // |new_next_range|, make |new_next_range| the |selected_range_|.
+    if (new_next_range && new_next_range->HasNextBufferPosition()) {
+      DCHECK(!overlapped_range->HasNextBufferPosition());
+      SetSelectedRange(new_next_range);
+    } else {
+      // The |overlapped_range| still has the current playback position.
+      // Move the buffers for the current playback position in
+      // |overlapped_range| into |deleted_buffers|.
+      DCHECK(overlapped_range->HasNextBufferPosition());
+      DCHECK(deleted_buffers->empty());
+      overlapped_range->DeleteAll(deleted_buffers);
+    }
+  }
+  DeleteAndRemoveRange(&overlapped_range_itr);
 
   // If there were non-overlapped buffers, add the new range to |ranges_|.
   if (new_next_range)
     AddToRanges(new_next_range);
-
-  // If we didn't overlap a selected range, return.
-  if (selected_range_ != overlapped_range)
-    return;
-
-  // If the |overlapped_range| transfers its next buffer position to
-  // |new_next_range|, make |new_next_range| the |selected_range_|.
-  if (new_next_range && new_next_range->HasNextBufferPosition()) {
-    DCHECK(!overlapped_range->HasNextBufferPosition());
-    SetSelectedRange(new_next_range);
-    return;
-  }
-
-  // Save the buffers in |overlapped_range|.
-  DCHECK(deleted_buffers->empty());
-  DCHECK_EQ(overlapped_range.get(), selected_range_);
-  overlapped_range->DeleteAll(deleted_buffers);
-
-  // |overlapped_range| will be deleted, so set |selected_range_| to NULL.
-  SetSelectedRange(NULL);
 }
 
 void SourceBufferStream::PruneTrackBuffer(const base::TimeDelta timestamp) {
@@ -1007,26 +996,29 @@ void SourceBufferStream::PruneTrackBuffer(const base::TimeDelta timestamp) {
 
 void SourceBufferStream::MergeWithAdjacentRangeIfNecessary(
     const RangeList::iterator& range_with_new_buffers_itr) {
+  DCHECK(range_with_new_buffers_itr != ranges_.end());
+
   SourceBufferRange* range_with_new_buffers = *range_with_new_buffers_itr;
   RangeList::iterator next_range_itr = range_with_new_buffers_itr;
   ++next_range_itr;
 
-  if (next_range_itr != ranges_.end() &&
-      range_with_new_buffers->CanAppendRangeToEnd(**next_range_itr)) {
-    bool transfer_current_position = selected_range_ == *next_range_itr;
-    range_with_new_buffers->AppendRangeToEnd(**next_range_itr,
-                                             transfer_current_position);
-    // Update |selected_range_| pointer if |range| has become selected after
-    // merges.
-    if (transfer_current_position)
-      SetSelectedRange(range_with_new_buffers);
-
-    if (next_range_itr == range_for_next_append_)
-      range_for_next_append_ = range_with_new_buffers_itr;
-
-    delete *next_range_itr;
-    ranges_.erase(next_range_itr);
+  if (next_range_itr == ranges_.end() ||
+      !range_with_new_buffers->CanAppendRangeToEnd(**next_range_itr)) {
+    return;
   }
+
+  bool transfer_current_position = selected_range_ == *next_range_itr;
+  range_with_new_buffers->AppendRangeToEnd(**next_range_itr,
+                                           transfer_current_position);
+  // Update |selected_range_| pointer if |range| has become selected after
+  // merges.
+  if (transfer_current_position)
+    SetSelectedRange(range_with_new_buffers);
+
+  if (next_range_itr == range_for_next_append_)
+    range_for_next_append_ = range_with_new_buffers_itr;
+
+  DeleteAndRemoveRange(&next_range_itr);
 }
 
 void SourceBufferStream::Seek(base::TimeDelta timestamp) {
@@ -1079,10 +1071,9 @@ void SourceBufferStream::OnSetDuration(base::TimeDelta duration) {
   while (itr != ranges_.end()) {
     // If we're about to delete the selected range, also reset the seek state.
     DCHECK((*itr)->GetStartTimestamp() >= duration);
-    if (*itr== selected_range_)
+    if (*itr == selected_range_)
       ResetSeekState();
-    delete *itr;
-    itr = ranges_.erase(itr);
+    DeleteAndRemoveRange(&itr);
   }
 }
 
@@ -1462,6 +1453,15 @@ std::string SourceBufferStream::GetStreamTypeName() const {
   return "AUDIO";
 }
 
+void SourceBufferStream::DeleteAndRemoveRange(RangeList::iterator* itr) {
+  DCHECK(*itr != ranges_.end());
+  if (**itr == selected_range_)
+    SetSelectedRange(NULL);
+
+  delete **itr;
+  *itr = ranges_.erase(*itr);
+}
+
 SourceBufferRange::SourceBufferRange(
     const BufferQueue& new_buffers, base::TimeDelta media_segment_start_time,
     const InterbufferDistanceCB& interbuffer_distance_cb)
@@ -1826,7 +1826,6 @@ int SourceBufferRange::GetNextConfigId() const {
   DCHECK(HasNextBuffer());
   return buffers_.at(next_buffer_index_)->GetConfigId();
 }
-
 
 base::TimeDelta SourceBufferRange::GetNextTimestamp() const {
   DCHECK(!buffers_.empty());
