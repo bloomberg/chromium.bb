@@ -2278,8 +2278,9 @@ class BisectPerformanceMetrics(object):
       regression_size = math.fabs(max(mean_of_good_runs, mean_of_bad_runs) /
           max(0.0001, min(mean_of_good_runs, mean_of_bad_runs))) * 100.0 - 100.0
 
-      regression_std_err = CalculatePooledStandardError(
-          [working_mean, broken_mean])
+      regression_std_err = math.fabs(CalculatePooledStandardError(
+          [working_mean, broken_mean]) /
+          max(0.0001, min(mean_of_good_runs, mean_of_bad_runs))) * 100.0
 
       print
       print 'Average step time: %s' % datetime.timedelta(
