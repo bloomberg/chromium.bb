@@ -136,7 +136,7 @@ deps = {
     'src/tools/swarm_client':
         Var('git_url') + '/chromium/tools/swarm_client.git@f24e5c3a284b836668b956cbbe7d92c62c90f303',
     'src/v8':
-        Var('git_url') + '/external/v8.git@0fdb2a65d0f07bb7f6d6ce2f8337e00e5c9c323d',
+        Var('git_url') + '/external/v8.git@e7a07450b06d405206bf210de0aa6bbb440ab9a7',
 }
 
 deps_os = {
