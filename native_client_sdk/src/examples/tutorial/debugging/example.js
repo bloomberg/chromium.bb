@@ -6,8 +6,8 @@ var lastModuleError = '';
 var crashed = false;
 
 function domContentLoaded(name, tc, config, width, height) {
-  common.createNaClModule(name, tc, config, width, height);
   common.attachDefaultListeners();
+  common.createNaClModule(name, tc, config, width, height);
 
   updateStatus('Page Loaded');
 }

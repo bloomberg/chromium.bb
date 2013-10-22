@@ -12,8 +12,8 @@ function domContentLoaded(name, tc, config, width, height) {
       function(bytes) {
         common.updateStatus(
             'Allocated ' + bytes + ' bytes of persistant storage.');
-        common.createNaClModule(name, tc, config, width, height);
         common.attachDefaultListeners();
+        common.createNaClModule(name, tc, config, width, height);
       },
       function(e) { alert('Failed to allocate space') });
 }
