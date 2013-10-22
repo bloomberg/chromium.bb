@@ -123,3 +123,10 @@ void TabModel::Observe(
       NOTREACHED();
   }
 }
+
+// TODO(kaznacheev) Make these two  methods pure as soon as they are
+// implemented in TabModelImpl.
+void TabModel::SetActiveIndex(int index) { }
+
+void TabModel::CloseTabAt(int index) { }
+

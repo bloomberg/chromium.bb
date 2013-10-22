@@ -15,9 +15,7 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
-#include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/devtools/devtools_adb_bridge.h"
 #include "chrome/browser/history/top_sites.h"
@@ -32,6 +30,7 @@
 #include "content/public/browser/devtools_target.h"
 #include "content/public/browser/favicon_status.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/content_switches.h"
@@ -45,6 +44,7 @@
 #include "webkit/common/user_agent/user_agent_util.h"
 
 using content::DevToolsAgentHost;
+using content::RenderViewHost;
 using content::WebContents;
 
 namespace {
@@ -56,36 +56,9 @@ const char kTetheringSocketName[] = "chrome_devtools_tethering_%d_%d";
 
 const char kTargetTypePage[] = "page";
 
-bool FindTab(const std::string& str_id,
-             TabModel** model_result,
-             int* index_result) {
-  int id;
-  if (!base::StringToInt(str_id, &id))
-    return false;
-
-  for (TabModelList::const_iterator iter = TabModelList::begin();
-      iter != TabModelList::end(); ++iter) {
-    TabModel* model = *iter;
-    for (int i = 0; i < model->GetTabCount(); ++i) {
-      TabAndroid* tab = model->GetTabAt(i);
-      if (id == tab->GetAndroidId()) {
-        *model_result = model;
-        *index_result = i;
-        return true;
-      }
-    }
-  }
-  return false;
-}
-
-
 class Target : public content::DevToolsTarget {
  public:
-  // Constructor for a tab with a valid WebContents.
-  Target(int id, WebContents* web_contents);
-
-  // Constructor for a tab unloaded from memory.
-  Target(int id, const string16& title, const GURL& url);
+  explicit Target(WebContents* web_contents);
 
   virtual std::string GetId() const OVERRIDE { return id_; }
   virtual std::string GetType() const OVERRIDE { return kTargetTypePage; }
@@ -96,12 +69,17 @@ class Target : public content::DevToolsTarget {
   virtual base::TimeTicks GetLastActivityTime() const OVERRIDE {
     return last_activity_time_;
   }
-  virtual bool IsAttached() const OVERRIDE;
-  virtual scoped_refptr<DevToolsAgentHost> GetAgentHost() const OVERRIDE;
+  virtual bool IsAttached() const OVERRIDE {
+    return agent_host_->IsAttached();
+  }
+  virtual scoped_refptr<DevToolsAgentHost> GetAgentHost() const OVERRIDE {
+    return agent_host_;
+  }
   virtual bool Activate() const OVERRIDE;
   virtual bool Close() const OVERRIDE;
 
  private:
+  scoped_refptr<DevToolsAgentHost> agent_host_;
   std::string id_;
   std::string title_;
   GURL url_;
@@ -109,8 +87,10 @@ class Target : public content::DevToolsTarget {
   base::TimeTicks last_activity_time_;
 };
 
-Target::Target(int id, WebContents* web_contents) {
-  id_ = base::IntToString(id);
+Target::Target(WebContents* web_contents) {
+  agent_host_ =
+      DevToolsAgentHost::GetOrCreateFor(web_contents->GetRenderViewHost());
+  id_ = agent_host_->GetId();
   title_ = UTF16ToUTF8(net::EscapeForHTML(web_contents->GetTitle()));
   url_ = web_contents->GetURL();
   content::NavigationController& controller = web_contents->GetController();
@@ -120,56 +100,22 @@ Target::Target(int id, WebContents* web_contents) {
   last_activity_time_ = web_contents->GetLastSelectedTime();
 }
 
-Target::Target(int id, const string16& title, const GURL& url) {
-  id_ = base::IntToString(id);
-  title_ = UTF16ToUTF8(net::EscapeForHTML(title));
-  url_ = url;
-}
-
-bool Target::IsAttached() const {
-  TabModel* model;
-  int index;
-  if (!FindTab(id_, &model, &index))
+bool Target::Activate() const {
+  RenderViewHost* rvh = agent_host_->GetRenderViewHost();
+  if (!rvh)
     return false;
-  WebContents* web_contents = model->GetWebContentsAt(index);
+  WebContents* web_contents = WebContents::FromRenderViewHost(rvh);
   if (!web_contents)
     return false;
-  return DevToolsAgentHost::IsDebuggerAttached(web_contents);
-}
-
-scoped_refptr<DevToolsAgentHost> Target::GetAgentHost() const {
-  TabModel* model;
-  int index;
-  if (!FindTab(id_, &model, &index))
-    return NULL;
-  WebContents* web_contents = model->GetWebContentsAt(index);
-  if (!web_contents) {
-    // The tab has been pushed out of memory, pull it back.
-    TabAndroid* tab = model->GetTabAt(index);
-    tab->RestoreIfNeeded();
-    web_contents = model->GetWebContentsAt(index);
-    if (!web_contents)
-      return NULL;
-  }
-  content::RenderViewHost* rvh = web_contents->GetRenderViewHost();
-  return rvh ? DevToolsAgentHost::GetOrCreateFor(rvh) : NULL;
-}
-
-bool Target::Activate() const {
-  TabModel* model;
-  int index;
-  if (!FindTab(id_, &model, &index))
-    return false;
-  model->SetActiveIndex(index);
+  web_contents->GetDelegate()->ActivateContents(web_contents);
   return true;
 }
 
 bool Target::Close() const {
-  TabModel* model;
-  int index;
-  if (!FindTab(id_, &model, &index))
+  RenderViewHost* rvh = agent_host_->GetRenderViewHost();
+  if (!rvh)
     return false;
-  model->CloseTabAt(index);
+  rvh->ClosePage();
   return true;
 }
 
@@ -223,32 +169,18 @@ class DevToolsServerDelegate : public content::DevToolsHttpHandlerDelegate {
         tab_model->CreateTabForTesting(GURL(content::kAboutBlankURL));
     if (!web_contents)
       return scoped_ptr<content::DevToolsTarget>();
-
-    for (int i = 0; i < tab_model->GetTabCount(); ++i) {
-      if (web_contents != tab_model->GetWebContentsAt(i))
-        continue;
-      TabAndroid* tab = tab_model->GetTabAt(i);
-      return scoped_ptr<content::DevToolsTarget>(
-          new Target(tab->GetAndroidId(), web_contents));
-    }
-
-    return scoped_ptr<content::DevToolsTarget>();
+    return scoped_ptr<content::DevToolsTarget>(new Target(web_contents));
   }
 
   virtual void EnumerateTargets(TargetCallback callback) OVERRIDE {
     TargetList targets;
-    for (TabModelList::const_iterator iter = TabModelList::begin();
-        iter != TabModelList::end(); ++iter) {
-      TabModel* model = *iter;
-      for (int i = 0; i < model->GetTabCount(); ++i) {
-        TabAndroid* tab = model->GetTabAt(i);
-        WebContents* web_contents = model->GetWebContentsAt(i);
-        targets.push_back(
-            web_contents ?
-                new Target(tab->GetAndroidId(), web_contents) :
-                new Target(
-                    tab->GetAndroidId(), tab->GetTitle(), tab->GetURL()));
-      }
+    std::vector<RenderViewHost*> rvh_list =
+        DevToolsAgentHost::GetValidRenderViewHosts();
+    for (std::vector<RenderViewHost*>::iterator it = rvh_list.begin();
+         it != rvh_list.end(); ++it) {
+      WebContents* web_contents = WebContents::FromRenderViewHost(*it);
+      if (web_contents)
+        targets.push_back(new Target(web_contents));
     }
     callback.Run(targets);
   }
