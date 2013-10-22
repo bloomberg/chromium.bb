@@ -313,6 +313,7 @@ GrantedFileEntry CreateFileEntry(
   policy->GrantReadFileSystem(renderer_id, result.filesystem_id);
   if (HasFileSystemWritePermission(extension)) {
     policy->GrantWriteFileSystem(renderer_id, result.filesystem_id);
+    policy->GrantDeleteFromFileSystem(renderer_id, result.filesystem_id);
     if (is_directory)
       policy->GrantCreateFileForFileSystem(renderer_id, result.filesystem_id);
   }

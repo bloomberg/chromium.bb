@@ -284,7 +284,7 @@ void FileAPIMessageFilter::OnMove(
     return;
   }
   if (!security_policy_->CanReadFileSystemFile(process_id_, src_url) ||
-      !security_policy_->CanWriteFileSystemFile(process_id_, src_url) ||
+      !security_policy_->CanDeleteFileSystemFile(process_id_, src_url) ||
       !security_policy_->CanCreateFileSystemFile(process_id_, dest_url)) {
     Send(new FileSystemMsg_DidFail(request_id,
                                    base::PLATFORM_FILE_ERROR_SECURITY));
@@ -326,7 +326,7 @@ void FileAPIMessageFilter::OnRemove(
   FileSystemURL url(context_->CrackURL(path));
   if (!ValidateFileSystemURL(request_id, url))
     return;
-  if (!security_policy_->CanWriteFileSystemFile(process_id_, url)) {
+  if (!security_policy_->CanDeleteFileSystemFile(process_id_, url)) {
     Send(new FileSystemMsg_DidFail(request_id,
                                    base::PLATFORM_FILE_ERROR_SECURITY));
     return;

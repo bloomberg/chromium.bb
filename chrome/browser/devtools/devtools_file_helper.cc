@@ -152,6 +152,7 @@ std::string RegisterFileSystem(WebContents* web_contents,
   policy->GrantReadFileSystem(renderer_id, file_system_id);
   policy->GrantWriteFileSystem(renderer_id, file_system_id);
   policy->GrantCreateFileForFileSystem(renderer_id, file_system_id);
+  policy->GrantDeleteFromFileSystem(renderer_id, file_system_id);
 
   // We only need file level access for reading FileEntries. Saving FileEntries
   // just needs the file system to have read/write access, which is granted

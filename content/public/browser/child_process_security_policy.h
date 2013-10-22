@@ -107,6 +107,12 @@ class ChildProcessSecurityPolicy {
   virtual void GrantCopyIntoFileSystem(int child_id,
                                        const std::string& filesystem_id) = 0;
 
+  // Grants permission to delete from filesystem |filesystem_id|. 'delete-from'
+  // is used to allow deleting files into the destination filesystem without
+  // granting more general create and write permissions.
+  virtual void GrantDeleteFromFileSystem(int child_id,
+                                         const std::string& filesystem_id) = 0;
+
   // Grants the child process the capability to access URLs of the provided
   // scheme.
   virtual void GrantScheme(int child_id, const std::string& scheme) = 0;
@@ -122,6 +128,10 @@ class ChildProcessSecurityPolicy {
   // Returns true if copy-into access has been granted to |filesystem_id|.
   virtual bool CanCopyIntoFileSystem(int child_id,
                                      const std::string& filesystem_id) = 0;
+
+  // Returns true if delete-from access has been granted to |filesystem_id|.
+  virtual bool CanDeleteFromFileSystem(int child_id,
+                                       const std::string& filesystem_id) = 0;
 };
 
 };  // namespace content

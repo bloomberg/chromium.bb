@@ -57,6 +57,9 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
   virtual void GrantCopyIntoFileSystem(
       int child_id,
       const std::string& filesystem_id) OVERRIDE;
+  virtual void GrantDeleteFromFileSystem(
+      int child_id,
+      const std::string& filesystem_id) OVERRIDE;
   virtual void GrantScheme(int child_id, const std::string& scheme) OVERRIDE;
   virtual bool CanReadFile(int child_id, const base::FilePath& file) OVERRIDE;
   virtual bool CanCreateReadWriteFile(int child_id,
@@ -68,6 +71,9 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
       const std::string& filesystem_id) OVERRIDE;
   virtual bool CanCopyIntoFileSystem(int child_id,
                                      const std::string& filesystem_id) OVERRIDE;
+  virtual bool CanDeleteFromFileSystem(
+      int child_id,
+      const std::string& filesystem_id) OVERRIDE;
 
   // Pseudo schemes are treated differently than other schemes because they
   // cannot be requested like normal URLs.  There is no mechanism for revoking
@@ -137,6 +143,8 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
                                         const fileapi::FileSystemURL& url);
   bool CanCopyIntoFileSystemFile(int child_id,
                                  const fileapi::FileSystemURL& url);
+  bool CanDeleteFileSystemFile(int child_id,
+                               const fileapi::FileSystemURL& url);
 
   // Returns true if the specified child_id has been granted WebUIBindings.
   // The browser should check this property before assuming the child process is

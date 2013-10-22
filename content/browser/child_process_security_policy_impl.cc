@@ -38,9 +38,10 @@ enum ChildProcessSecurityPermissions {
   WRITE_FILE_PERMISSION            = 1 << 1,
   CREATE_NEW_FILE_PERMISSION       = 1 << 2,
   CREATE_OVERWRITE_FILE_PERMISSION = 1 << 3,
+  DELETE_FILE_PERMISSION           = 1 << 4,
 
   // Used by Media Galleries API
-  COPY_INTO_FILE_PERMISSION        = 1 << 4,
+  COPY_INTO_FILE_PERMISSION        = 1 << 5,
 };
 
 // Used internally only. Bitmasks that are actually used by the Grant* and Can*
@@ -56,9 +57,11 @@ enum ChildProcessSecurityGrants {
                                  CREATE_OVERWRITE_FILE_PERMISSION |
                                  READ_FILE_PERMISSION |
                                  WRITE_FILE_PERMISSION |
-                                 COPY_INTO_FILE_PERMISSION,
+                                 COPY_INTO_FILE_PERMISSION |
+                                 DELETE_FILE_PERMISSION,
 
   COPY_INTO_FILE_GRANT         = COPY_INTO_FILE_PERMISSION,
+  DELETE_FILE_GRANT            = DELETE_FILE_PERMISSION,
 };
 
 }  // namespace
@@ -478,6 +481,11 @@ void ChildProcessSecurityPolicyImpl::GrantCopyIntoFileSystem(
   GrantPermissionsForFileSystem(child_id, filesystem_id, COPY_INTO_FILE_GRANT);
 }
 
+void ChildProcessSecurityPolicyImpl::GrantDeleteFromFileSystem(
+    int child_id, const std::string& filesystem_id) {
+  GrantPermissionsForFileSystem(child_id, filesystem_id, DELETE_FILE_GRANT);
+}
+
 void ChildProcessSecurityPolicyImpl::GrantSendMIDISysExMessage(int child_id) {
   base::AutoLock lock(lock_);
 
@@ -627,6 +635,12 @@ bool ChildProcessSecurityPolicyImpl::CanCopyIntoFileSystem(
                                      COPY_INTO_FILE_GRANT);
 }
 
+bool ChildProcessSecurityPolicyImpl::CanDeleteFromFileSystem(
+    int child_id, const std::string& filesystem_id) {
+  return HasPermissionsForFileSystem(child_id, filesystem_id,
+                                     DELETE_FILE_GRANT);
+}
+
 bool ChildProcessSecurityPolicyImpl::HasPermissionsForFile(
     int child_id, const base::FilePath& file, int permissions) {
   base::AutoLock lock(lock_);
@@ -714,6 +728,12 @@ bool ChildProcessSecurityPolicyImpl::CanCopyIntoFileSystemFile(
     int child_id,
     const fileapi::FileSystemURL& url) {
   return HasPermissionsForFileSystemFile(child_id, url, COPY_INTO_FILE_GRANT);
+}
+
+bool ChildProcessSecurityPolicyImpl::CanDeleteFileSystemFile(
+    int child_id,
+    const fileapi::FileSystemURL& url) {
+  return HasPermissionsForFileSystemFile(child_id, url, DELETE_FILE_GRANT);
 }
 
 bool ChildProcessSecurityPolicyImpl::HasWebUIBindings(int child_id) {
