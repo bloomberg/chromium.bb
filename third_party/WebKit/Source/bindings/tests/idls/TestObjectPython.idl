@@ -33,7 +33,7 @@ enum TestEnum {"", "EnumValue1", "EnumValue2", "EnumValue3"};
 interface TestObjectPython {
     // TestInterfaceEmpty is used as a stub interface type, for testing behavior
     // that should not depend on particular type (beyond "interface or not").
-    // readonly
+    // read only
     readonly attribute DOMString readonlyStringAttribute;
     readonly attribute TestInterfaceEmpty readonlyTestInterfaceEmptyAttribute;
     readonly attribute long readonlyLongAttribute;
@@ -91,7 +91,7 @@ interface TestObjectPython {
     attribute long? nullableLongAttribute;
     // Enumerations
     attribute TestEnum testEnumAttribute;
-    // Static attributes (Blink extension)
+    // Static attributes
     static attribute DOMString staticStringAttribute;
     static attribute long staticLongAttribute;
     // Miscellaneous special types
@@ -104,7 +104,7 @@ interface TestObjectPython {
     [ActivityLogging=SetterForAllWorlds] attribute long activityLoggingSetterForAllWorldsLongAttribute;
     [CachedAttribute=isValueDirty] attribute any cachedAttributeAnyAttribute;
     [CallWith=ExecutionContext] attribute any callWithExecutionContextAnyAttribute;
-    [CheckSecurityForNode] readonly attribute Document checkSecurityForNodeReadonlyDocumentAttribute;  // All uses are readonly
+    [CheckSecurityForNode] readonly attribute Document checkSecurityForNodeReadonlyDocumentAttribute;  // All uses are read only
     [Conditional=Condition] attribute long conditionalLongAttribute;
     [Conditional=Condition1&Condition2] attribute long conditionalAndLongAttribute;
     [Conditional=Condition1|Condition2] attribute long conditionalOrLongAttribute;
@@ -152,6 +152,7 @@ interface TestObjectPython {
     [Reflect=id] attribute DOMString reflectedId;
     [Reflect=name] attribute DOMString reflectedName;
     [Reflect=class] attribute DOMString reflectedClass;
+    [Replaceable] readonly attribute long replaceableLongAttribute;  // FIXME [Custom], [CustomGetter] ?, [CustomSetter] ?
     [RuntimeEnabled=FeatureName] attribute long runtimeEnabledLongAttribute;
     [Conditional=Condition, RuntimeEnabled=FeatureName] attribute long conditionalEnabledAtRuntimeLongAttribute;
     [SetterCallWith=ActiveWindow&FirstWindow] attribute DOMString setterCallWithActiveWindowAndFirstWindowStringAttribute;

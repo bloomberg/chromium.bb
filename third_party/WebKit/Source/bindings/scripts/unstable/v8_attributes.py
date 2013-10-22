@@ -47,20 +47,21 @@ def generate_attributes(interface):
         return attribute_contents
 
     includes = set()
-    contents = generate_attributes_common(interface)
-    contents['attributes'] = [generate_attribute(attribute) for attribute in interface.attributes]
-    contents['has_per_context_enabled_attributes'] = any(attribute['per_context_enabled_function_name'] for attribute in contents['attributes'])
-    contents['has_runtime_enabled_attributes'] = any(attribute['runtime_enabled_function_name'] for attribute in contents['attributes'])
+    attributes = [generate_attribute(attribute) for attribute in interface.attributes]
+    contents = {'attributes': attributes}
+    contents.update(generate_attributes_common(interface, attributes))
     return contents, includes
 
 
-def generate_attributes_common(interface):
-    attributes = interface.attributes
+def generate_attributes_common(interface, attributes):
     v8_class_name = v8_utilities.v8_class_name(interface)
     return {
+        'has_per_context_enabled_attributes': any(attribute['per_context_enabled_function_name'] for attribute in attributes),
+        'has_replaceable_attributes': any(attribute['is_replaceable'] for attribute in attributes),
+        'has_runtime_enabled_attributes': any(attribute['runtime_enabled_function_name'] for attribute in attributes),
+        'installed_attributes': '%sAttributes' % v8_class_name if attributes else '0',
         # Size 0 constant array is not allowed in VC++
         'number_of_attributes': 'WTF_ARRAY_LENGTH(%sAttributes)' % v8_class_name if attributes else '0',
-        'attribute_templates': '%sAttributes' % v8_class_name if attributes else '0',
     }
 
 
@@ -69,7 +70,7 @@ def generate_attribute_and_includes(interface, attribute):
     extended_attributes = attribute.extended_attributes
 
     has_custom_getter = has_extended_attribute(attribute, ('Custom', 'CustomGetter'))
-    has_setter = not attribute.is_read_only  # FIXME: support [PutForwards], [Reflect], and [Replaceable]
+    has_setter = not attribute.is_read_only
     has_custom_setter = has_setter and has_extended_attribute(attribute, ('Custom', 'CustomSetter'))
     includes = set()
     contents = {
@@ -88,6 +89,7 @@ def generate_attribute_and_includes(interface, attribute):
         'is_getter_raises_exception': has_extended_attribute(attribute, ('GetterRaisesException', 'RaisesException')),
         'is_keep_alive_for_gc': is_keep_alive_for_gc(attribute),
         'is_nullable': attribute.is_nullable,
+        'is_replaceable': 'Replaceable' in attribute.extended_attributes,
         'is_setter_raises_exception': has_extended_attribute(attribute, ('RaisesException', 'SetterRaisesException')),
         'is_static': attribute.is_static,
         'name': attribute.name,
@@ -309,9 +311,14 @@ def getter_callback_name(interface, attribute):
 
 
 def setter_callback_name(interface, attribute):
-    if attribute.is_read_only:
+    if (attribute.is_read_only and
+        'Replaceable' not in attribute.extended_attributes):
+        # FIXME: support [PutForwards]
         return '0'
-    return '%sV8Internal::%sAttributeSetterCallback' % (cpp_name(interface), attribute.name)
+    cpp_class_name = cpp_name(interface)
+    if 'Replaceable' in attribute.extended_attributes:  # FIXME: CustomSetter
+        return '{0}V8Internal::{0}ReplaceableAttributeSetterCallback'.format(cpp_class_name)
+    return '%sV8Internal::%sAttributeSetterCallback' % (cpp_class_name, attribute.name)
 
 
 # [DoNotCheckSecurity], [DoNotCheckSecurityOnGetter], [DoNotCheckSecurityOnSetter], [Unforgeable]

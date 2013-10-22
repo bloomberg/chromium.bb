@@ -70,13 +70,14 @@ template <typename T> void V8_USE(T) { }
 {# FIXME: merge these 2 for loops #}
 {% for world_suffix in attribute.world_suffixes %}
 {% if attribute.has_setter %}
-{% if not attribute.has_custom_setter %}
+{% if not (attribute.has_custom_setter or attribute.is_replaceable) %}
 {{attribute_setter(attribute, world_suffix)}}
 {% endif %}
 {{attribute_setter_callback(attribute, world_suffix)}}
 {% endif %}
 {% endfor %}
 {% endfor %}
+{% block replaceable_attribute_setter_and_callback %}{% endblock %}
 } // namespace {{cpp_class_name}}V8Internal
 
 {% block class_attributes %}{% endblock %}

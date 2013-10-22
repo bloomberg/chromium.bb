@@ -7,6 +7,23 @@
 
 
 {##############################################################################}
+{% block replaceable_attribute_setter_and_callback %}
+{% if has_replaceable_attributes %}
+static void {{interface_name}}ReplaceableAttributeSetter(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
+{
+    info.This()->ForceSet(name, jsValue);
+}
+
+static void {{interface_name}}ReplaceableAttributeSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
+{
+    {{interface_name}}V8Internal::{{interface_name}}ReplaceableAttributeSetter(name, jsValue, info);
+}
+
+{% endif %}
+{% endblock %}
+
+
+{##############################################################################}
 {% block class_attributes %}
 {# FIXME: rename to install_attributes and put into configure_class_template #}
 {% if attributes %}
@@ -34,7 +51,7 @@ static v8::Handle<v8::FunctionTemplate> Configure{{v8_class_name}}Template(v8::H
 
     v8::Local<v8::Signature> defaultSignature;
     defaultSignature = V8DOMConfiguration::installDOMClassTemplate(desc, "{{interface_name}}", v8::Local<v8::FunctionTemplate>(), {{v8_class_name}}::internalFieldCount,
-        {{attribute_templates}}, {{number_of_attributes}},
+        {{installed_attributes}}, {{number_of_attributes}},
         0, 0, isolate, currentWorldType);
     UNUSED_PARAM(defaultSignature);
     {% if constants or has_runtime_enabled_attributes %}
