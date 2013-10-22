@@ -164,7 +164,7 @@
             "toggleable": true,
             "items": [
               {
-                "title": "Filesystem and Sync Filesystem APIs",
+                "title": "Storage APIs",
                 "href": "/apps/app_storage.html"
               }
             ]
