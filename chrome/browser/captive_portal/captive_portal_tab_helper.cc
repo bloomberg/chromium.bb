@@ -98,6 +98,7 @@ void CaptivePortalTabHelper::DidStartProvisionalLoadForFrame(
 
 void CaptivePortalTabHelper::DidCommitProvisionalLoadForFrame(
     int64 frame_id,
+    const string16& frame_unique_name,
     bool is_main_frame,
     const GURL& url,
     content::PageTransition transition_type,
@@ -127,6 +128,7 @@ void CaptivePortalTabHelper::DidCommitProvisionalLoadForFrame(
 
 void CaptivePortalTabHelper::DidFailProvisionalLoad(
     int64 frame_id,
+    const string16& frame_unique_name,
     bool is_main_frame,
     const GURL& validated_url,
     int error_code,

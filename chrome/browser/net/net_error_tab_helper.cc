@@ -95,6 +95,7 @@ void NetErrorTabHelper::DidStartProvisionalLoadForFrame(
 
 void NetErrorTabHelper::DidCommitProvisionalLoadForFrame(
     int64 frame_id,
+    const string16& frame_unique_name,
     bool is_main_frame,
     const GURL& url,
     PageTransition transition_type,
@@ -120,6 +121,7 @@ void NetErrorTabHelper::DidCommitProvisionalLoadForFrame(
 
 void NetErrorTabHelper::DidFailProvisionalLoad(
     int64 frame_id,
+    const string16& frame_unique_name,
     bool is_main_frame,
     const GURL& validated_url,
     int error_code,

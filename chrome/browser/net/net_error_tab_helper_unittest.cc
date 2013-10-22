@@ -78,6 +78,7 @@ class NetErrorTabHelperTest : public testing::Test {
   void CommitProvisionalLoad(MainFrame main_frame) {
     tab_helper_.DidCommitProvisionalLoadForFrame(
         1,  // frame id
+        string16(),
         (main_frame == MAIN_FRAME),
         bogus_url_,  // url
         content::PAGE_TRANSITION_TYPED,
@@ -94,6 +95,7 @@ class NetErrorTabHelperTest : public testing::Test {
 
     tab_helper_.DidFailProvisionalLoad(
         1,  // frame id
+        string16(),
         (main_frame == MAIN_FRAME),
         bogus_url_,  // validated_url
         net_error,

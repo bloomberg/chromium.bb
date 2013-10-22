@@ -536,6 +536,7 @@ class CurrentHistoryCleaner : public content::WebContentsObserver {
   virtual void WebContentsDestroyed(content::WebContents* contents) OVERRIDE;
   virtual void DidCommitProvisionalLoadForFrame(
       int64 frame_id,
+      const string16& frame_unique_name,
       bool is_main_frame,
       const GURL& url,
       content::PageTransition transition_type,
@@ -559,6 +560,7 @@ CurrentHistoryCleaner::~CurrentHistoryCleaner() {
 
 void CurrentHistoryCleaner::DidCommitProvisionalLoadForFrame(
     int64 frame_id,
+    const string16& frame_unique_name,
     bool is_main_frame,
     const GURL& url,
     content::PageTransition transition_type,

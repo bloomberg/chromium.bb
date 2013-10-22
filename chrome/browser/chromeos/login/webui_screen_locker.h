@@ -19,7 +19,6 @@
 #include "chromeos/dbus/power_manager_client.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "content/public/browser/web_contents_observer.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
 
@@ -49,8 +48,7 @@ class WebUIScreenLocker : public WebUILoginView,
                           public LockWindow::Observer,
                           public ash::LockStateObserver,
                           public views::WidgetObserver,
-                          public PowerManagerClient::Observer,
-                          public content::WebContentsObserver {
+                          public PowerManagerClient::Observer {
  public:
   explicit WebUIScreenLocker(ScreenLocker* screen_locker);
 

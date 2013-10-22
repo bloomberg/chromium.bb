@@ -132,6 +132,7 @@ class InstantPage : public content::WebContentsObserver,
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual void DidCommitProvisionalLoadForFrame(
       int64 frame_id,
+      const string16& frame_unique_name,
       bool is_main_frame,
       const GURL& url,
       content::PageTransition transition_type,
@@ -141,6 +142,7 @@ class InstantPage : public content::WebContentsObserver,
       const content::FrameNavigateParams& params) OVERRIDE;
   virtual void DidFailProvisionalLoad(
       int64 frame_id,
+      const string16& frame_unique_name,
       bool is_main_frame,
       const GURL& validated_url,
       int error_code,

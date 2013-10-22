@@ -2336,6 +2336,7 @@ void WebContentsImpl::DidFailProvisionalLoadWithError(
   FOR_EACH_OBSERVER(WebContentsObserver,
                     observers_,
                     DidFailProvisionalLoad(params.frame_id,
+                                           params.frame_unique_name,
                                            params.is_main_frame,
                                            validated_url,
                                            params.error_code,
@@ -3102,8 +3103,13 @@ void WebContentsImpl::DidNavigate(
     }
     // Notify observers about the commit of the provisional load.
     FOR_EACH_OBSERVER(WebContentsObserver, observers_,
-                      DidCommitProvisionalLoadForFrame(params.frame_id,
-                      is_main_frame, params.url, transition_type, rvh));
+                      DidCommitProvisionalLoadForFrame(
+                          params.frame_id,
+                          params.frame_unique_name,
+                          is_main_frame,
+                          params.url,
+                          transition_type,
+                          rvh));
   }
 
   if (!did_navigate)

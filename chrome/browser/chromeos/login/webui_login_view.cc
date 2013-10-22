@@ -31,7 +31,6 @@
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_view_host.h"
-#include "content/public/browser/render_view_host_observer.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
@@ -60,39 +59,6 @@ const char kAccelNameRight[] = "right";
 const char kAccelNameDeviceRequisition[] = "device_requisition";
 const char kAccelNameDeviceRequisitionRemora[] = "device_requisition_remora";
 const char kAccelNameAppLaunchBailout[] = "app_launch_bailout";
-
-// Observes IPC messages from the FrameSniffer and notifies JS if error
-// appears.
-class SnifferObserver : public content::RenderViewHostObserver {
- public:
-  SnifferObserver(RenderViewHost* host, content::WebUI* webui)
-      : content::RenderViewHostObserver(host), webui_(webui) {
-    DCHECK(webui_);
-    Send(new ChromeViewMsg_StartFrameSniffer(routing_id(),
-                                             UTF8ToUTF16("gaia-frame")));
-  }
-
-  virtual ~SnifferObserver() {}
-
-  // IPC::Listener implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE {
-    bool handled = true;
-    IPC_BEGIN_MESSAGE_MAP(SnifferObserver, message)
-      IPC_MESSAGE_HANDLER(ChromeViewHostMsg_FrameLoadingError, OnError)
-      IPC_MESSAGE_UNHANDLED(handled = false)
-    IPC_END_MESSAGE_MAP()
-    return handled;
-  }
-
- private:
-  void OnError(int error) {
-    base::FundamentalValue error_value(error);
-    webui_->CallJavascriptFunction("login.GaiaSigninScreen.onFrameError",
-                                   error_value);
-  }
-
-  content::WebUI* webui_;
-};
 
 // A class to change arrow key traversal behavior when it's alive.
 class ScopedArrowKeyTraversal {
@@ -201,13 +167,10 @@ void WebUILoginView::Init() {
       SetDelegate(this);
 
   web_contents->SetDelegate(this);
+  WebContentsObserver::Observe(web_contents);
   renderer_preferences_util::UpdateFromSystemSettings(
       web_contents->GetMutableRendererPrefs(),
       signin_profile);
-
-  registrar_.Add(this,
-                 content::NOTIFICATION_WEB_CONTENTS_RENDER_VIEW_HOST_CREATED,
-                 content::Source<WebContents>(web_contents));
 }
 
 const char* WebUILoginView::GetClassName() const {
@@ -362,12 +325,6 @@ void WebUILoginView::Observe(int type,
       registrar_.RemoveAll();
       break;
     }
-    case content::NOTIFICATION_WEB_CONTENTS_RENDER_VIEW_HOST_CREATED: {
-      RenderViewHost* render_view_host =
-          content::Details<RenderViewHost>(details).ptr();
-      new SnifferObserver(render_view_host, GetWebUI());
-      break;
-    }
     default:
       NOTREACHED() << "Unexpected notification " << type;
   }
@@ -432,6 +389,22 @@ void WebUILoginView::RequestMediaAccessPermission(
     const content::MediaResponseCallback& callback) {
   if (MediaStreamInfoBarDelegate::Create(web_contents, request, callback))
     NOTREACHED() << "Media stream not allowed for WebUI";
+}
+
+void WebUILoginView::DidFailProvisionalLoad(
+    int64 frame_id,
+    const string16& frame_unique_name,
+    bool is_main_frame,
+    const GURL& validated_url,
+    int error_code,
+    const string16& error_description,
+    content::RenderViewHost* render_view_host) {
+  if (frame_unique_name != UTF8ToUTF16("gaia-frame"))
+    return;
+
+  base::FundamentalValue error_value(-error_code);
+  GetWebUI()->CallJavascriptFunction("login.GaiaSigninScreen.onFrameError",
+                                     error_value);
 }
 
 void WebUILoginView::OnLoginPromptVisible() {

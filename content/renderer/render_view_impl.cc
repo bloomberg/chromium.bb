@@ -2010,6 +2010,7 @@ void RenderViewImpl::UpdateURL(WebFrame* frame) {
   params.post_id = -1;
   params.page_id = page_id_;
   params.frame_id = frame->identifier();
+  params.frame_unique_name = frame->uniqueName();
   params.socket_address.set_host(response.remoteIPAddress().utf8());
   params.socket_address.set_port(response.remotePort());
   WebURLResponseExtraDataImpl* extra_data = GetExtraDataFromResponse(response);
@@ -3721,6 +3722,7 @@ void RenderViewImpl::didFailProvisionalLoad(WebFrame* frame,
 
   ViewHostMsg_DidFailProvisionalLoadWithError_Params params;
   params.frame_id = frame->identifier();
+  params.frame_unique_name = frame->uniqueName();
   params.is_main_frame = !frame->parent();
   params.error_code = error.reason;
   GetContentClient()->renderer()->GetNavigationErrorStrings(

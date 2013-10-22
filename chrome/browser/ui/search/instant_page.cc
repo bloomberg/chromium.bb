@@ -94,6 +94,7 @@ bool InstantPage::OnMessageReceived(const IPC::Message& message) {
 
 void InstantPage::DidCommitProvisionalLoadForFrame(
     int64 /* frame_id */,
+    const string16& frame_unique_name,
     bool is_main_frame,
     const GURL& url,
     content::PageTransition /* transition_type */,
@@ -114,6 +115,7 @@ void InstantPage::DidNavigateMainFrame(
 
 void InstantPage::DidFailProvisionalLoad(
     int64 /* frame_id */,
+    const string16& frame_unique_name,
     bool is_main_frame,
     const GURL& /* validated_url */,
     int /* error_code */,

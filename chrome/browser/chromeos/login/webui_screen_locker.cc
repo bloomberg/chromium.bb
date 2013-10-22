@@ -69,9 +69,6 @@ void WebUIScreenLocker::LockScreen() {
   LoadURL(GURL(kLoginURL));
   lock_window->Grab();
 
-  // Subscribe to crash events.
-  content::WebContentsObserver::Observe(GetWebContents());
-
   login_display_.reset(new WebUILoginDisplay(this));
   login_display_->set_background_bounds(bounds);
   login_display_->set_parent_window(GetNativeWindow());

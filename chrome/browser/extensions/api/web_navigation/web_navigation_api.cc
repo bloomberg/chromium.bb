@@ -406,6 +406,7 @@ void WebNavigationTabObserver::DidStartProvisionalLoadForFrame(
 
 void WebNavigationTabObserver::DidCommitProvisionalLoadForFrame(
     int64 frame_num,
+    const string16& frame_unique_name,
     bool is_main_frame,
     const GURL& url,
     content::PageTransition transition_type,
@@ -483,6 +484,7 @@ void WebNavigationTabObserver::DidCommitProvisionalLoadForFrame(
 
 void WebNavigationTabObserver::DidFailProvisionalLoad(
     int64 frame_num,
+    const string16& frame_unique_id,
     bool is_main_frame,
     const GURL& validated_url,
     int error_code,

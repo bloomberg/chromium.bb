@@ -33,7 +33,6 @@
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_state_handler_observer.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/render_view_host_observer.h"
 #include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
@@ -131,51 +130,6 @@ void GetDeviceInfo(const DictionaryValue& properties, DictionaryValue* value) {
 }
 
 }  // namespace
-
-// Observes IPC messages from the rederer and notifies JS if frame loading error
-// appears.
-class PortalFrameLoadObserver : public content::RenderViewHostObserver {
- public:
-  PortalFrameLoadObserver(const base::WeakPtr<MobileSetupUI>& parent,
-                          RenderViewHost* host)
-      : content::RenderViewHostObserver(host), parent_(parent) {
-    Send(new ChromeViewMsg_StartFrameSniffer(routing_id(),
-                                             UTF8ToUTF16("paymentForm")));
-  }
-
-  // IPC::Listener implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE {
-    bool handled = true;
-    IPC_BEGIN_MESSAGE_MAP(PortalFrameLoadObserver, message)
-      IPC_MESSAGE_HANDLER(ChromeViewHostMsg_FrameLoadingError, OnFrameLoadError)
-      IPC_MESSAGE_HANDLER(ChromeViewHostMsg_FrameLoadingCompleted,
-                          OnFrameLoadCompleted)
-      IPC_MESSAGE_UNHANDLED(handled = false)
-    IPC_END_MESSAGE_MAP()
-    return handled;
-  }
-
- private:
-  void OnFrameLoadError(int error) {
-    if (!parent_.get())
-      return;
-
-    base::FundamentalValue result_value(error);
-    parent_->web_ui()->CallJavascriptFunction(kJsPortalFrameLoadFailedCallback,
-                                              result_value);
-  }
-
-  void OnFrameLoadCompleted() {
-    if (!parent_.get())
-      return;
-
-    parent_->web_ui()->CallJavascriptFunction(
-        kJsPortalFrameLoadCompletedCallback);
-  }
-
-  base::WeakPtr<MobileSetupUI> parent_;
-  DISALLOW_COPY_AND_ASSIGN(PortalFrameLoadObserver);
-};
 
 class MobileSetupUIHTMLSource : public content::URLDataSource {
  public:
@@ -661,9 +615,36 @@ MobileSetupUI::MobileSetupUI(content::WebUI* web_ui)
   // Set up the chrome://mobilesetup/ source.
   Profile* profile = Profile::FromWebUI(web_ui);
   content::URLDataSource::Add(profile, html_source);
+
+  content::WebContentsObserver::Observe(web_ui->GetWebContents());
 }
 
-void MobileSetupUI::RenderViewCreated(RenderViewHost* host) {
-  // Destroyed by the corresponding RenderViewHost
-  new PortalFrameLoadObserver(AsWeakPtr(), host);
+void MobileSetupUI::DidCommitProvisionalLoadForFrame(
+    int64 frame_id,
+    const string16& frame_unique_name,
+    bool is_main_frame,
+    const GURL& url,
+    content::PageTransition transition_type,
+    content::RenderViewHost* render_view_host) {
+  if (frame_unique_name != UTF8ToUTF16("paymentForm"))
+    return;
+
+  web_ui()->CallJavascriptFunction(
+        kJsPortalFrameLoadCompletedCallback);
+}
+
+void MobileSetupUI::DidFailProvisionalLoad(
+    int64 frame_id,
+    const string16& frame_unique_name,
+    bool is_main_frame,
+    const GURL& validated_url,
+    int error_code,
+    const string16& error_description,
+    content::RenderViewHost* render_view_host) {
+  if (frame_unique_name != UTF8ToUTF16("paymentForm"))
+    return;
+
+  base::FundamentalValue result_value(-error_code);
+  web_ui()->CallJavascriptFunction(kJsPortalFrameLoadFailedCallback,
+                                   result_value);
 }

@@ -193,6 +193,7 @@ void PrerenderTabHelper::ProvisionalChangeToMainFrameUrl(
 
 void PrerenderTabHelper::DidCommitProvisionalLoadForFrame(
     int64 frame_id,
+    const string16& frame_unique_name,
     bool is_main_frame,
     const GURL& validated_url,
     content::PageTransition transition_type,

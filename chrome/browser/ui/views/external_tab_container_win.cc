@@ -1065,6 +1065,7 @@ bool ExternalTabContainerWin::OnMessageReceived(const IPC::Message& message) {
 
 void ExternalTabContainerWin::DidFailProvisionalLoad(
     int64 frame_id,
+    const string16& frame_unique_name,
     bool is_main_frame,
     const GURL& validated_url,
     int error_code,

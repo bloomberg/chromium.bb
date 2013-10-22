@@ -405,6 +405,8 @@ IPC_STRUCT_END()
 IPC_STRUCT_BEGIN(ViewHostMsg_DidFailProvisionalLoadWithError_Params)
   // The frame ID for the failure report.
   IPC_STRUCT_MEMBER(int64, frame_id)
+  // The WebFrame's uniqueName().
+  IPC_STRUCT_MEMBER(string16, frame_unique_name)
   // True if this is the top-most frame.
   IPC_STRUCT_MEMBER(bool, is_main_frame)
   // Error code as reported in the DidFailProvisionalLoad callback.
@@ -427,6 +429,9 @@ IPC_STRUCT_BEGIN_WITH_PARENT(ViewHostMsg_FrameNavigate_Params,
   // The frame ID for this navigation. The frame ID uniquely identifies the
   // frame the navigation happened in for a given renderer.
   IPC_STRUCT_MEMBER(int64, frame_id)
+
+  // The WebFrame's uniqueName().
+  IPC_STRUCT_MEMBER(string16, frame_unique_name)
 
   // Information regarding the security of the connection (empty if the
   // connection was not secure).
