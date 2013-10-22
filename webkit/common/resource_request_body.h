@@ -34,7 +34,6 @@ class WEBKIT_COMMON_EXPORT ResourceRequestBody
   void AppendFileRange(const base::FilePath& file_path,
                        uint64 offset, uint64 length,
                        const base::Time& expected_modification_time);
-  void AppendBlobDeprecated(const GURL& blob_url);
   void AppendBlob(const std::string& uuid);
   void AppendFileSystemFileRange(const GURL& url, uint64 offset, uint64 length,
                                  const base::Time& expected_modification_time);

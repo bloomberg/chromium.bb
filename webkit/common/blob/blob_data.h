@@ -36,12 +36,7 @@ class WEBKIT_STORAGE_COMMON_EXPORT BlobData
 
   void AppendFile(const base::FilePath& file_path, uint64 offset, uint64 length,
                   const base::Time& expected_modification_time);
-
-  // Note: Identifying blobs by url is being deprecated, but while transitioning
-  // there's a little of both going on in the project.
-  void AppendBlob(const GURL& blob_url, uint64 offset, uint64 length);
   void AppendBlob(const std::string& uuid, uint64 offset, uint64 length);
-
   void AppendFileSystemFile(const GURL& url, uint64 offset, uint64 length,
                             const base::Time& expected_modification_time);
 

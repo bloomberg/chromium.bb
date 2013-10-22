@@ -47,9 +47,6 @@ class WEBKIT_STORAGE_BROWSER_EXPORT BlobStorageContext
   bool RegisterPublicBlobURL(const GURL& url, const std::string& uuid);
   void RevokePublicBlobURL(const GURL& url);
 
-  // Temporary support for mapping oldstyle blobUrls to new style uuids.
-  std::string LookupUuidFromDeprecatedURL(const GURL& url);
-
  private:
   friend class BlobDataHandle;
   friend class BlobStorageHost;
@@ -82,11 +79,6 @@ class WEBKIT_STORAGE_BROWSER_EXPORT BlobStorageContext
   void IncrementBlobRefCount(const std::string& uuid);
   void DecrementBlobRefCount(const std::string& uuid);
 
-  // Temporary support for mapping old style blobUrls to new style uuids.
-  void DeprecatedRegisterPrivateBlobURL(const GURL& url,
-                                        const std::string& uuid);
-  void DeprecatedRevokePrivateBlobURL(const GURL& url);
-
   bool ExpandStorageItems(BlobData* target_blob_data,
                           BlobData* src_blob_data,
                           uint64 offset,
@@ -108,7 +100,6 @@ class WEBKIT_STORAGE_BROWSER_EXPORT BlobStorageContext
 
   BlobMap blob_map_;
   BlobURLMap public_blob_urls_;
-  BlobURLMap deprecated_blob_urls_;
 
   // Used to keep track of how much memory is being utitlized for blob data,
   // we count only the items of TYPE_DATA which are held in memory and not

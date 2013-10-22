@@ -177,7 +177,6 @@ bool FileAPIMessageFilter::OnMessageReceived(
     IPC_MESSAGE_HANDLER(FileSystemHostMsg_Exists, OnExists)
     IPC_MESSAGE_HANDLER(FileSystemHostMsg_ReadDirectory, OnReadDirectory)
     IPC_MESSAGE_HANDLER(FileSystemHostMsg_Write, OnWrite)
-    IPC_MESSAGE_HANDLER(FileSystemHostMsg_WriteDeprecated, OnWriteDeprecated)
     IPC_MESSAGE_HANDLER(FileSystemHostMsg_Truncate, OnTruncate)
     IPC_MESSAGE_HANDLER(FileSystemHostMsg_TouchFile, OnTouchFile)
     IPC_MESSAGE_HANDLER(FileSystemHostMsg_CancelWrite, OnCancel)
@@ -206,12 +205,6 @@ bool FileAPIMessageFilter::OnMessageReceived(
     IPC_MESSAGE_HANDLER(BlobHostMsg_RegisterPublicURL,
                         OnRegisterPublicBlobURL)
     IPC_MESSAGE_HANDLER(BlobHostMsg_RevokePublicURL, OnRevokePublicBlobURL)
-    IPC_MESSAGE_HANDLER(BlobHostMsg_DeprecatedRegisterBlobURL,
-                        OnDeprecatedRegisterBlobURL)
-    IPC_MESSAGE_HANDLER(BlobHostMsg_DeprecatedRevokeBlobURL,
-                        OnDeprecatedRevokeBlobURL)
-    IPC_MESSAGE_HANDLER(BlobHostMsg_DeprecatedCloneBlobURL,
-                        OnDeprecatedCloneBlobURL)
     IPC_MESSAGE_HANDLER(StreamHostMsg_StartBuilding, OnStartBuildingStream)
     IPC_MESSAGE_HANDLER(StreamHostMsg_AppendBlobDataItem,
                         OnAppendBlobDataItemToStream)
@@ -415,16 +408,6 @@ void FileAPIMessageFilter::OnReadDirectory(
   operations_[request_id] = operation_runner()->ReadDirectory(
       url, base::Bind(&FileAPIMessageFilter::DidReadDirectory,
                       this, request_id));
-}
-
-void FileAPIMessageFilter::OnWriteDeprecated(
-    int request_id,
-    const GURL& path,
-    const GURL& blob_url,
-    int64 offset) {
-  std::string uuid =
-      blob_storage_context_->context()->LookupUuidFromDeprecatedURL(blob_url);
-  OnWrite(request_id, path, uuid, offset);
 }
 
 void FileAPIMessageFilter::OnWrite(
@@ -702,23 +685,6 @@ void FileAPIMessageFilter::OnRegisterPublicBlobURL(
 void FileAPIMessageFilter::OnRevokePublicBlobURL(const GURL& public_url) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   ignore_result(blob_storage_host_->RevokePublicBlobURL(public_url));
-}
-
-void FileAPIMessageFilter::OnDeprecatedRegisterBlobURL(
-    const GURL& url, const std::string& uuid) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  blob_storage_host_->DeprecatedRegisterBlobURL(url, uuid);
-}
-
-void FileAPIMessageFilter::OnDeprecatedCloneBlobURL(
-    const GURL& url, const GURL& src_url) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  blob_storage_host_->DeprecatedCloneBlobURL(url, src_url);
-}
-
-void FileAPIMessageFilter::OnDeprecatedRevokeBlobURL(const GURL& url) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  blob_storage_host_->DeprecatedRevokeBlobURL(url);
 }
 
 void FileAPIMessageFilter::OnStartBuildingStream(

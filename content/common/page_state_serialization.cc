@@ -58,7 +58,6 @@ void AppendURLRangeToHttpBody(ExplodedHttpBody* http_body,
   http_body->elements.push_back(element);
 }
 
-#ifdef USE_BLOB_UUIDS
 void AppendBlobToHttpBody(ExplodedHttpBody* http_body,
                           const std::string& uuid) {
   ExplodedHttpBodyElement element;
@@ -66,15 +65,6 @@ void AppendBlobToHttpBody(ExplodedHttpBody* http_body,
   element.blob_uuid = uuid;
   http_body->elements.push_back(element);
 }
-#else
-void DeprecatedAppendBlobToHttpBody(ExplodedHttpBody* http_body,
-                                    const GURL& url) {
-  ExplodedHttpBodyElement element;
-  element.type = WebKit::WebHTTPBody::Element::TypeBlob;
-  element.deprecated_blob_url = url;
-  http_body->elements.push_back(element);
-}
-#endif
 
 //----------------------------------------------------------------------------
 
@@ -202,15 +192,7 @@ struct SerializeObject {
 // See ReadPageState.
 //
 const int kMinVersion = 11;
-#ifdef USE_BLOB_UUIDS
-// This is not used yet, if a version bump is needed in advance of
-// this becoming used, bump both values by one and fixup the comment
-// and change the test for '16' in ReadHttpBody().
-// -- michaeln
 const int kCurrentVersion = 16;
-#else
-const int kCurrentVersion = 15;
-#endif
 
 // A bunch of convenience functions to read/write to SerializeObjects.  The
 // de-serializers assume the input data will be in the correct format and fall
@@ -444,11 +426,7 @@ void WriteHttpBody(const ExplodedHttpBody& http_body, SerializeObject* obj) {
       WriteReal(element.file_modification_time, obj);
     } else {
       DCHECK(element.type == WebKit::WebHTTPBody::Element::TypeBlob);
-#ifdef USE_BLOB_UUIDS
       WriteStdString(element.blob_uuid, obj);
-#else
-      WriteGURL(element.deprecated_blob_url, obj);
-#endif
     }
   }
   WriteInteger64(http_body.identifier, obj);
@@ -488,17 +466,12 @@ void ReadHttpBody(SerializeObject* obj, ExplodedHttpBody* http_body) {
       AppendURLRangeToHttpBody(http_body, url, file_start, file_length,
                                file_modification_time);
     } else if (type == WebKit::WebHTTPBody::Element::TypeBlob) {
-#ifdef USE_BLOB_UUIDS
       if (obj->version >= 16) {
         std::string blob_uuid = ReadStdString(obj);
         AppendBlobToHttpBody(http_body, blob_uuid);
       } else {
         ReadGURL(obj); // Skip the obsolete blob url value.
       }
-#else
-      GURL blob_url = ReadGURL(obj);
-      DeprecatedAppendBlobToHttpBody(http_body, blob_url);
-#endif
     }
   }
   http_body->identifier = ReadInteger64(obj);

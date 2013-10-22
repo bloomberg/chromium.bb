@@ -32,14 +32,6 @@ class WebBlobRegistryImpl : public WebKit::WebBlobRegistry {
                                      const WebKit::WebString& uuid);
   virtual void revokePublicBlobURL(const WebKit::WebURL&);
 
-  // DEPRECATED
-  // TODO(michaeln): crbug/174200
-  virtual void registerBlobURL(const WebKit::WebURL& url,
-                               WebKit::WebBlobData& data);
-  virtual void registerBlobURL(const WebKit::WebURL& url,
-                               const WebKit::WebURL& src_url);
-  virtual void unregisterBlobURL(const WebKit::WebURL& url);
-
   // Additional support for Streams.
   virtual void registerStreamURL(const WebKit::WebURL& url,
                                  const WebKit::WebString& content_type);

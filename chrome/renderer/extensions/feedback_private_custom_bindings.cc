@@ -14,11 +14,7 @@ namespace {
 void GetBlobUuid(const v8::FunctionCallbackInfo<v8::Value> &args) {
   DCHECK(args.Length() == 1);
   WebKit::WebBlob blob = WebKit::WebBlob::fromV8Value(args[0]);
-#ifdef USE_BLOB_UUIDS
   args.GetReturnValue().Set(v8::String::New(blob.uuid().utf8().data()));
-#else
-  args.GetReturnValue().Set(v8::String::New(blob.url().spec().data()));
-#endif
 }
 
 }  // namespace

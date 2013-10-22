@@ -30,14 +30,6 @@ void WebFileWriterBase::truncate(long long length) {
   DoTruncate(path_, length);
 }
 
-void WebFileWriterBase::write(long long position,
-                              const WebKit::WebURL& blob_url) {
-  DCHECK_EQ(kOperationNone, operation_);
-  DCHECK_EQ(kCancelNotInProgress, cancel_state_);
-  operation_ = kOperationWrite;
-  DoWriteDeprecated(path_, blob_url, position);
-}
-
 void WebFileWriterBase::write(
       long long position,
       const WebKit::WebString& id) {

@@ -39,18 +39,6 @@ IPC_MESSAGE_CONTROL2(BlobHostMsg_RegisterPublicURL,
 IPC_MESSAGE_CONTROL1(BlobHostMsg_RevokePublicURL,
                      GURL)
 
-// Temporary support for mapping old style blobUrls to new style uuids.
-IPC_MESSAGE_CONTROL2(BlobHostMsg_DeprecatedRegisterBlobURL,
-                     GURL,
-                     std::string /* uuid */)
-IPC_MESSAGE_CONTROL2(BlobHostMsg_DeprecatedCloneBlobURL,
-                     GURL,
-                     GURL)
-IPC_MESSAGE_CONTROL1(BlobHostMsg_DeprecatedRevokeBlobURL,
-                     GURL)
-
-
-
 // Stream messages sent from the renderer to the browser.
 
 // Registers a stream as being built.

@@ -69,17 +69,10 @@ void WebBlobRegistryImpl::registerBlobData(
       case WebBlobData::Item::TypeBlob:
         if (data_item.length) {
           webkit_blob::BlobData::Item item;
-#ifdef USE_BLOB_UUIDS
           item.SetToBlobRange(
               data_item.blobUUID.utf8(),
               static_cast<uint64>(data_item.offset),
               static_cast<uint64>(data_item.length));
-#else
-          item.SetToBlobUrlRange(
-              data_item.blobURL,
-              static_cast<uint64>(data_item.offset),
-              static_cast<uint64>(data_item.length));
-#endif
           sender_->Send(
               new BlobHostMsg_AppendBlobDataItem(uuid_str, item));
         }
@@ -154,33 +147,6 @@ void WebBlobRegistryImpl::SendDataForBlob(const std::string& uuid_str,
     }
   }
 }
-
-// DEPRECATED, almost. Until blink is updated, we implement these older methods
-// in terms of our newer blob storage system. We create a uuid for each 'data'
-// we see and construct a mapping from the private blob urls we're given to
-// that uuid. The mapping is maintained in the browser process.
-//
-// Chromium is setup to speak in terms of old-style private blob urls or
-// new-style uuid identifiers. Once blink has been migrated support for
-// the old-style will be deleted. Search for the term deprecated.
-
-void WebBlobRegistryImpl::registerBlobURL(
-    const WebURL& url, WebBlobData& data) {
-  std::string uuid = base::GenerateGUID();
-  registerBlobData(WebKit::WebString::fromUTF8(uuid), data);
-  sender_->Send(new BlobHostMsg_DeprecatedRegisterBlobURL(url, uuid));
-  sender_->Send(new BlobHostMsg_DecrementRefCount(uuid));
-}
-
-void WebBlobRegistryImpl::registerBlobURL(
-    const WebURL& url, const WebURL& src_url) {
-  sender_->Send(new BlobHostMsg_DeprecatedCloneBlobURL(url, src_url));
-}
-
-void WebBlobRegistryImpl::unregisterBlobURL(const WebURL& url) {
-  sender_->Send(new BlobHostMsg_DeprecatedRevokeBlobURL(url));
-}
-
 
 // ------ streams stuff -----
 

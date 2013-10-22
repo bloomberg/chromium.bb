@@ -26,16 +26,6 @@ void DataElement::SetToFilePathRange(
   expected_modification_time_ = expected_modification_time;
 }
 
-void DataElement::SetToBlobUrlRange(
-    const GURL& blob_url,
-    uint64 offset, uint64 length) {
-  type_ = TYPE_BLOB;
-  blob_url_ = blob_url;
-  offset_ = offset;
-  length_ = length;
-  blob_uuid_.clear();
-}
-
 void DataElement::SetToBlobRange(
     const std::string& blob_uuid,
     uint64 offset, uint64 length) {
@@ -43,7 +33,6 @@ void DataElement::SetToBlobRange(
   blob_uuid_ = blob_uuid;
   offset_ = offset;
   length_ = length;
-  blob_url_ = GURL();
 }
 
 void DataElement::SetToFileSystemUrlRange(

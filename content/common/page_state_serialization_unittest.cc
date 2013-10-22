@@ -52,11 +52,7 @@ void ExpectEquality(const ExplodedHttpBodyElement& a,
   EXPECT_EQ(a.file_length, b.file_length);
   if (!(isnan(a.file_modification_time) && isnan(b.file_modification_time)))
     EXPECT_DOUBLE_EQ(a.file_modification_time, b.file_modification_time);
-#ifdef USE_BLOB_UUIDS
   EXPECT_EQ(a.blob_uuid, b.blob_uuid);
-#else
-  EXPECT_EQ(a.deprecated_blob_url, b.deprecated_blob_url);
-#endif
 }
 
 template <>

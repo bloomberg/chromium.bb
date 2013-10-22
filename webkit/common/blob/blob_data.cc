@@ -33,12 +33,6 @@ void BlobData::AppendFile(const base::FilePath& file_path,
                                    expected_modification_time);
 }
 
-void BlobData::AppendBlob(const GURL& blob_url, uint64 offset, uint64 length) {
-  DCHECK_GT(length, 0ul);
-  items_.push_back(Item());
-  items_.back().SetToBlobUrlRange(blob_url, offset, length);
-}
-
 void BlobData::AppendBlob(const std::string& uuid,
                           uint64 offset, uint64 length) {
   DCHECK_GT(length, 0ul);

@@ -23,11 +23,7 @@ struct CONTENT_EXPORT ExplodedHttpBodyElement {
   int64 file_start;
   int64 file_length;
   double file_modification_time;
-#ifdef USE_BLOB_UUIDS
   std::string blob_uuid;
-#else
-  GURL deprecated_blob_url;
-#endif
 
   ExplodedHttpBodyElement();
   ~ExplodedHttpBodyElement();

@@ -116,11 +116,6 @@ class CONTENT_EXPORT FileAPIMessageFilter : public BrowserMessageFilter {
                const GURL& path,
                const std::string& blob_uuid,
                int64 offset);
-  void OnWriteDeprecated(
-               int request_id,
-               const GURL& path,
-               const GURL& blob_url,
-               int64 offset);
   void OnTruncate(int request_id, const GURL& path, int64 length);
   void OnTouchFile(int request_id,
                    const GURL& path,
@@ -154,13 +149,6 @@ class CONTENT_EXPORT FileAPIMessageFilter : public BrowserMessageFilter {
   void OnDecrementBlobRefCount(const std::string& uuid);
   void OnRegisterPublicBlobURL(const GURL& public_url, const std::string& uuid);
   void OnRevokePublicBlobURL(const GURL& public_url);
-
-  // Extra methods to establish a mapping from old-style blobURLs to uuids,
-  // and to clone them. These won't be here for long, just during a
-  // transition period. See crbug/174200
-  void OnDeprecatedRegisterBlobURL(const GURL& url, const std::string& uuid);
-  void OnDeprecatedCloneBlobURL(const GURL& url, const GURL& existing_url);
-  void OnDeprecatedRevokeBlobURL(const GURL& url);
 
   // Handlers for StreamHostMsg_ family messages.
   //

@@ -74,13 +74,6 @@ BlobProtocolHandler::LookupBlobData(net::URLRequest* request) const {
   if (!context_.get())
     return NULL;
 
-  // Retain support for looking up based on deprecated blob urls for now.
-  // The FeedbackExtensionAPI relies on this.
-  scoped_ptr<BlobDataHandle> handle = context_->GetBlobDataFromUUID(
-      context_->LookupUuidFromDeprecatedURL(request->url()));
-  if (handle)
-    return handle->data();
-
   // Support looking up based on uuid, the FeedbackExtensionAPI relies on this.
   // TODO(michaeln): Replace this use case and others like it with a BlobReader
   // impl that does not depend on urlfetching to perform this function.
@@ -88,7 +81,7 @@ BlobProtocolHandler::LookupBlobData(net::URLRequest* request) const {
   if (!StartsWithASCII(request->url().spec(), kPrefix, true))
     return NULL;
   std::string uuid = request->url().spec().substr(kPrefix.length());
-  handle = context_->GetBlobDataFromUUID(uuid);
+  scoped_ptr<BlobDataHandle> handle = context_->GetBlobDataFromUUID(uuid);
   return handle.get() ? handle->data() : NULL;
 }
 

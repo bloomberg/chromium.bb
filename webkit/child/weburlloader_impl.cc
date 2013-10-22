@@ -434,11 +434,7 @@ void WebURLLoaderImpl::Context::Start(
           break;
         }
         case WebHTTPBody::Element::TypeBlob:
-#ifdef USE_BLOB_UUIDS
           request_body->AppendBlob(element.blobUUID.utf8());
-#else
-          request_body->AppendBlobDeprecated(GURL(element.blobURL));
-#endif
           break;
         default:
           NOTREACHED();

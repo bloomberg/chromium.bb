@@ -167,18 +167,6 @@ void ViewBlobInternalsJob::GenerateHTML(std::string* out) const {
       EndHTMLList(out);
     }
   }
-  if (!blob_storage_context_->deprecated_blob_urls_.empty()) {
-    AddHorizontalRule(out);
-    for (BlobStorageContext::BlobURLMap::const_iterator iter =
-             blob_storage_context_->deprecated_blob_urls_.begin();
-         iter != blob_storage_context_->deprecated_blob_urls_.end();
-         ++iter) {
-      AddHTMLBoldText(iter->first.spec(), out);
-      StartHTMLList(out);
-      AddHTMLListItem(kUUID, iter->second, out);
-      EndHTMLList(out);
-    }
-  }
 }
 
 void ViewBlobInternalsJob::GenerateHTMLForBlobData(const BlobData& blob_data,

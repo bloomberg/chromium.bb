@@ -70,11 +70,8 @@ void ResolveBlobReference(
     const ResourceRequestBody::Element& element,
     std::vector<const ResourceRequestBody::Element*>* resolved_elements) {
   DCHECK(blob_context);
-  std::string uuid = element.blob_uuid();
-  if (uuid.empty())
-    uuid = blob_context->LookupUuidFromDeprecatedURL(element.blob_url());
   scoped_ptr<webkit_blob::BlobDataHandle> handle =
-      blob_context->GetBlobDataFromUUID(uuid);
+      blob_context->GetBlobDataFromUUID(element.blob_uuid());
   DCHECK(handle);
   if (!handle)
     return;
