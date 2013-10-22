@@ -7,6 +7,8 @@
 #include <stdlib.h>
 #include <time.h>
 
+#include <algorithm>
+
 #include "testing/gtest/include/gtest/gtest.h"
 
 TEST(PageSetupTest, Random) {
