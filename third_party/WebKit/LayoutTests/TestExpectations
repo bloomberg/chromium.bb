@@ -658,8 +658,6 @@ crbug.com/252573 [ Mac Win ] fast/forms/empty-textarea-toggle-disabled.html [ Pa
 # Causes the test following it ( fast/loader/subresource-willSendRequest-null.html ) to Timeout.
 crbug.com/253619 fast/loader/subresource-load-failed-crash.html [ Skip ]
 
-crbug.com/256226 [ Debug ] webmidi/requestmidiaccess.html [ Crash Pass ]
-
 crbug.com/257325 [ Mac ] media/audio-repaint.html [ Pass ImageOnlyFailure ]
 
 crbug.com/264501 [ Debug ] xmlviewer/extensions-api.html [ Pass Crash ]
@@ -700,7 +698,6 @@ crbug.com/248938 [ SnowLeopard  Debug ] virtual/threaded/animations/animation-it
 crbug.com/281911 [ Debug ] virtual/web-animations-css/animations/animation-direction-normal.html [ ImageOnlyFailure Pass ]
 crbug.com/281911 [ XP Release ] virtual/web-animations-css/animations/animation-direction-normal.html [ ImageOnlyFailure Pass ]
 crbug.com/281915 [ Mac Release ] svg/custom/repaint-shadow.svg [ Failure Pass ]
-crbug.com/282079 [ Debug ] webmidi/requestmidiaccess-basic.html [ Crash Pass ]
 crbug.com/282081 [ Debug ] http/tests/security/contentSecurityPolicy/report-only-from-header.php [ Crash Pass ]
 crbug.com/282081 [ Win Release ] http/tests/security/contentSecurityPolicy/report-only-from-header.php [ Pass Timeout ]
 crbug.com/282082 inspector/debugger/live-edit.html [ Failure Timeout ]
@@ -892,3 +889,8 @@ crbug.com/308952 [ Win ] inspector/editor/text-editor-reveal-line.html [ Failure
 crbug.com/309369 perf/accessibility-title-ui-element.html [ Pass Timeout ]
 crbug.com/309370 [ Mac ] fast/css/font-face-html-as-svg.html [ Timeout ]
 crbug.com/310292 [ SnowLeopard ] http/tests/security/video-poster-cross-origin-crash.html [ Failure Pass ]
+
+crbug.com/256226 [ Debug ] webmidi/requestmidiaccess.html [ Crash Pass ]
+crbug.com/282079 [ Debug ] webmidi/requestmidiaccess-basic.html [ Crash Pass ]
+crbug.com/282079 [ Debug ] webmidi/requestmidiaccess-fail.html [ Crash Pass ]
+crbug.com/282079 [ Debug ] webmidi/permission.html [ Crash Pass ]
