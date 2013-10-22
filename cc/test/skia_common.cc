@@ -17,7 +17,7 @@ TestPixelRef::TestPixelRef(int width, int height)
 
 TestPixelRef::~TestPixelRef() {}
 
-SkFlattenable::Factory TestPixelRef::getFactory() { return NULL; }
+SkFlattenable::Factory TestPixelRef::getFactory() const { return NULL; }
 
 void* TestPixelRef::onLockPixels(SkColorTable** color_table) {
   return pixels_.get();
@@ -36,7 +36,7 @@ TestLazyPixelRef::TestLazyPixelRef(int width, int height)
 
 TestLazyPixelRef::~TestLazyPixelRef() {}
 
-SkFlattenable::Factory TestLazyPixelRef::getFactory() { return NULL; }
+SkFlattenable::Factory TestLazyPixelRef::getFactory() const { return NULL; }
 
 void* TestLazyPixelRef::onLockPixels(SkColorTable** color_table) {
   return pixels_.get();
