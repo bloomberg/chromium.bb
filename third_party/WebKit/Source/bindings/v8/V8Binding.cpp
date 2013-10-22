@@ -97,11 +97,6 @@ v8::Handle<v8::Value> throwTypeError(const String& message, v8::Isolate* isolate
     return V8ThrowException::throwTypeError(message, isolate);
 }
 
-v8::Handle<v8::Value> throwNotEnoughArgumentsError(v8::Isolate* isolate)
-{
-    return V8ThrowException::throwNotEnoughArgumentsError(isolate);
-}
-
 class ArrayBufferAllocator : public v8::ArrayBuffer::Allocator {
     virtual void* Allocate(size_t size) OVERRIDE
     {

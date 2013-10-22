@@ -31,6 +31,7 @@
 #include "config.h"
 #include "V8SVGLength.h"
 
+#include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/V8Binding.h"
 #include "core/dom/ExceptionCode.h"
@@ -82,7 +83,7 @@ void V8SVGLength::convertToSpecifiedUnitsMethodCustom(const v8::FunctionCallback
     }
 
     if (args.Length() < 1) {
-        throwNotEnoughArgumentsError(args.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToExecute("convertToSpecifiedUnits", "SVGLength", ExceptionMessages::notEnoughArguments(1, args.Length())), args.GetIsolate());
         return;
     }
 

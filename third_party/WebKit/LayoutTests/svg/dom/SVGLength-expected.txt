@@ -23,7 +23,7 @@ PASS length.convertToSpecifiedUnits(11) threw exception NotSupportedError: The i
 PASS length.convertToSpecifiedUnits('aString') threw exception NotSupportedError: The implementation did not support the requested type of object or operation..
 PASS length.convertToSpecifiedUnits(length) threw exception NotSupportedError: The implementation did not support the requested type of object or operation..
 PASS length.convertToSpecifiedUnits(svgElement) threw exception NotSupportedError: The implementation did not support the requested type of object or operation..
-PASS length.convertToSpecifiedUnits() threw exception TypeError: Not enough arguments.
+PASS length.convertToSpecifiedUnits() threw exception TypeError: Failed to execute 'convertToSpecifiedUnits' on 'SVGLength': 1 argument required, but only 0 present..
 PASS length.unitType is SVGLength.SVG_LENGTHTYPE_PX
 PASS length.value is 2
 PASS length.valueInSpecifiedUnits is 2

@@ -61,6 +61,7 @@
 #include "V8WebGLTexture.h"
 #include "V8WebGLUniformLocation.h"
 #include "V8WebGLVertexArrayObjectOES.h"
+#include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8HiddenPropertyName.h"
 #include "bindings/v8/custom/V8ArrayBufferViewCustom.h"
@@ -259,10 +260,10 @@ enum ObjectType {
     kBuffer, kRenderbuffer, kTexture, kVertexAttrib
 };
 
-static void getObjectParameter(const v8::FunctionCallbackInfo<v8::Value>& args, ObjectType objectType)
+static void getObjectParameter(const v8::FunctionCallbackInfo<v8::Value>& args, ObjectType objectType, const char* method)
 {
     if (args.Length() != 2) {
-        throwNotEnoughArgumentsError(args.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToExecute(method, "WebGLRenderingContext", ExceptionMessages::notEnoughArguments(2, args.Length())), args.GetIsolate());
         return;
     }
 
@@ -309,7 +310,7 @@ enum WhichProgramCall {
 void V8WebGLRenderingContext::getAttachedShadersMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     if (args.Length() < 1) {
-        throwNotEnoughArgumentsError(args.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToExecute("getAttachedShaders", "WebGLRenderingContext", ExceptionMessages::notEnoughArguments(1, args.Length())), args.GetIsolate());
         return;
     }
 
@@ -333,14 +334,14 @@ void V8WebGLRenderingContext::getAttachedShadersMethodCustom(const v8::FunctionC
 
 void V8WebGLRenderingContext::getBufferParameterMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    getObjectParameter(args, kBuffer);
+    getObjectParameter(args, kBuffer, "getBufferParameter");
 }
 
 void V8WebGLRenderingContext::getExtensionMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     WebGLRenderingContext* imp = V8WebGLRenderingContext::toNative(args.Holder());
     if (args.Length() < 1) {
-        throwNotEnoughArgumentsError(args.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToExecute("getExtension", "WebGLRenderingContext", ExceptionMessages::notEnoughArguments(1, args.Length())), args.GetIsolate());
         return;
     }
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, name, args[0]);
@@ -351,7 +352,7 @@ void V8WebGLRenderingContext::getExtensionMethodCustom(const v8::FunctionCallbac
 void V8WebGLRenderingContext::getFramebufferAttachmentParameterMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     if (args.Length() != 3) {
-        throwNotEnoughArgumentsError(args.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToExecute("getFramebufferAttachmentParameter", "WebGLRenderingContext", ExceptionMessages::notEnoughArguments(3, args.Length())), args.GetIsolate());
         return;
     }
 
@@ -366,7 +367,7 @@ void V8WebGLRenderingContext::getFramebufferAttachmentParameterMethodCustom(cons
 void V8WebGLRenderingContext::getParameterMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     if (args.Length() != 1) {
-        throwNotEnoughArgumentsError(args.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToExecute("getParameter", "WebGLRenderingContext", ExceptionMessages::notEnoughArguments(1, args.Length())), args.GetIsolate());
         return;
     }
 
@@ -379,7 +380,7 @@ void V8WebGLRenderingContext::getParameterMethodCustom(const v8::FunctionCallbac
 void V8WebGLRenderingContext::getProgramParameterMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     if (args.Length() != 2) {
-        throwNotEnoughArgumentsError(args.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToExecute("getProgramParameter", "WebGLRenderingContext", ExceptionMessages::notEnoughArguments(2, args.Length())), args.GetIsolate());
         return;
     }
 
@@ -396,13 +397,13 @@ void V8WebGLRenderingContext::getProgramParameterMethodCustom(const v8::Function
 
 void V8WebGLRenderingContext::getRenderbufferParameterMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    getObjectParameter(args, kRenderbuffer);
+    getObjectParameter(args, kRenderbuffer, "getRenderbufferParameter");
 }
 
 void V8WebGLRenderingContext::getShaderParameterMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     if (args.Length() != 2) {
-        throwNotEnoughArgumentsError(args.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToExecute("getShaderParameter", "WebGLRenderingContext", ExceptionMessages::notEnoughArguments(2, args.Length())), args.GetIsolate());
         return;
     }
 
@@ -434,13 +435,13 @@ void V8WebGLRenderingContext::getSupportedExtensionsMethodCustom(const v8::Funct
 
 void V8WebGLRenderingContext::getTexParameterMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    getObjectParameter(args, kTexture);
+    getObjectParameter(args, kTexture, "getTexParameter");
 }
 
 void V8WebGLRenderingContext::getUniformMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     if (args.Length() != 2) {
-        throwNotEnoughArgumentsError(args.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToExecute("getUniform", "WebGLRenderingContext", ExceptionMessages::notEnoughArguments(2, args.Length())), args.GetIsolate());
         return;
     }
 
@@ -464,7 +465,7 @@ void V8WebGLRenderingContext::getUniformMethodCustom(const v8::FunctionCallbackI
 
 void V8WebGLRenderingContext::getVertexAttribMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    getObjectParameter(args, kVertexAttrib);
+    getObjectParameter(args, kVertexAttrib, "getVertexAttrib");
 }
 
 enum FunctionToCall {
@@ -486,7 +487,7 @@ bool isFunctionToCallForAttribute(FunctionToCall functionToCall)
     return false;
 }
 
-static void vertexAttribAndUniformHelperf(const v8::FunctionCallbackInfo<v8::Value>& args, FunctionToCall functionToCall)
+static void vertexAttribAndUniformHelperf(const v8::FunctionCallbackInfo<v8::Value>& args, FunctionToCall functionToCall, const char* method)
 {
     // Forms:
     // * glUniform1fv(WebGLUniformLocation location, Array data);
@@ -507,7 +508,7 @@ static void vertexAttribAndUniformHelperf(const v8::FunctionCallbackInfo<v8::Val
     // * glVertexAttrib4fv(GLint index, Float32Array data);
 
     if (args.Length() != 2) {
-        throwNotEnoughArgumentsError(args.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToExecute(method, "WebGLRenderingContext", ExceptionMessages::notEnoughArguments(2, args.Length())), args.GetIsolate());
         return;
     }
 
@@ -571,7 +572,7 @@ static void vertexAttribAndUniformHelperf(const v8::FunctionCallbackInfo<v8::Val
     fastFree(data);
 }
 
-static void uniformHelperi(const v8::FunctionCallbackInfo<v8::Value>& args, FunctionToCall functionToCall)
+static void uniformHelperi(const v8::FunctionCallbackInfo<v8::Value>& args, FunctionToCall functionToCall, const char* method)
 {
     // Forms:
     // * glUniform1iv(GLUniformLocation location, Array data);
@@ -584,7 +585,7 @@ static void uniformHelperi(const v8::FunctionCallbackInfo<v8::Value>& args, Func
     // * glUniform4iv(GLUniformLocation location, Int32Array data);
 
     if (args.Length() != 2) {
-        throwNotEnoughArgumentsError(args.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToExecute(method, "WebGLRenderingContext", ExceptionMessages::notEnoughArguments(2, args.Length())), args.GetIsolate());
         return;
     }
 
@@ -634,45 +635,45 @@ static void uniformHelperi(const v8::FunctionCallbackInfo<v8::Value>& args, Func
 
 void V8WebGLRenderingContext::uniform1fvMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    vertexAttribAndUniformHelperf(args, kUniform1v);
+    vertexAttribAndUniformHelperf(args, kUniform1v, "uniform1fv");
 }
 
 void V8WebGLRenderingContext::uniform1ivMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    uniformHelperi(args, kUniform1v);
+    uniformHelperi(args, kUniform1v, "uniform1iv");
 }
 
 void V8WebGLRenderingContext::uniform2fvMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    vertexAttribAndUniformHelperf(args, kUniform2v);
+    vertexAttribAndUniformHelperf(args, kUniform2v, "uniform2fv");
 }
 
 void V8WebGLRenderingContext::uniform2ivMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    uniformHelperi(args, kUniform2v);
+    uniformHelperi(args, kUniform2v, "uniform2iv");
 }
 
 void V8WebGLRenderingContext::uniform3fvMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    vertexAttribAndUniformHelperf(args, kUniform3v);
+    vertexAttribAndUniformHelperf(args, kUniform3v, "uniform3fv");
 }
 
 void V8WebGLRenderingContext::uniform3ivMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    uniformHelperi(args, kUniform3v);
+    uniformHelperi(args, kUniform3v, "uniform3iv");
 }
 
 void V8WebGLRenderingContext::uniform4fvMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    vertexAttribAndUniformHelperf(args, kUniform4v);
+    vertexAttribAndUniformHelperf(args, kUniform4v, "uniform4fv");
 }
 
 void V8WebGLRenderingContext::uniform4ivMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    uniformHelperi(args, kUniform4v);
+    uniformHelperi(args, kUniform4v, "uniform4iv");
 }
 
-static void uniformMatrixHelper(const v8::FunctionCallbackInfo<v8::Value>& args, int matrixSize)
+static void uniformMatrixHelper(const v8::FunctionCallbackInfo<v8::Value>& args, int matrixSize, const char* method)
 {
     // Forms:
     // * glUniformMatrix2fv(GLint location, GLboolean transpose, Array data);
@@ -684,7 +685,7 @@ static void uniformMatrixHelper(const v8::FunctionCallbackInfo<v8::Value>& args,
     //
     // FIXME: need to change to accept Float32Array as well.
     if (args.Length() != 3) {
-        throwNotEnoughArgumentsError(args.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToExecute(method, "WebGLRenderingContext", ExceptionMessages::notEnoughArguments(2, args.Length())), args.GetIsolate());
         return;
     }
 
@@ -734,37 +735,37 @@ static void uniformMatrixHelper(const v8::FunctionCallbackInfo<v8::Value>& args,
 
 void V8WebGLRenderingContext::uniformMatrix2fvMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    uniformMatrixHelper(args, 2);
+    uniformMatrixHelper(args, 2, "uniformMatrix2fv");
 }
 
 void V8WebGLRenderingContext::uniformMatrix3fvMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    uniformMatrixHelper(args, 3);
+    uniformMatrixHelper(args, 3, "uniformMatrix3fv");
 }
 
 void V8WebGLRenderingContext::uniformMatrix4fvMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    uniformMatrixHelper(args, 4);
+    uniformMatrixHelper(args, 4, "uniformMatrix4fv");
 }
 
 void V8WebGLRenderingContext::vertexAttrib1fvMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    vertexAttribAndUniformHelperf(args, kVertexAttrib1v);
+    vertexAttribAndUniformHelperf(args, kVertexAttrib1v, "vertexAttrib1fv");
 }
 
 void V8WebGLRenderingContext::vertexAttrib2fvMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    vertexAttribAndUniformHelperf(args, kVertexAttrib2v);
+    vertexAttribAndUniformHelperf(args, kVertexAttrib2v, "vertexAttrib2fv");
 }
 
 void V8WebGLRenderingContext::vertexAttrib3fvMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    vertexAttribAndUniformHelperf(args, kVertexAttrib3v);
+    vertexAttribAndUniformHelperf(args, kVertexAttrib3v, "vertexAttrib3fv");
 }
 
 void V8WebGLRenderingContext::vertexAttrib4fvMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    vertexAttribAndUniformHelperf(args, kVertexAttrib4v);
+    vertexAttribAndUniformHelperf(args, kVertexAttrib4v, "vertexAttrib4fv");
 }
 
 } // namespace WebCore

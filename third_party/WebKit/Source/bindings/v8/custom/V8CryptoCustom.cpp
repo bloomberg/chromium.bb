@@ -25,6 +25,7 @@
 #include "config.h"
 #include "V8Crypto.h"
 
+#include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8Utilities.h"
@@ -41,7 +42,7 @@ namespace WebCore {
 void V8Crypto::getRandomValuesMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     if (args.Length() < 1) {
-        throwNotEnoughArgumentsError(args.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToExecute("getRandomValues", "Crypto", ExceptionMessages::notEnoughArguments(1, args.Length())), args.GetIsolate());
         return;
     }
 

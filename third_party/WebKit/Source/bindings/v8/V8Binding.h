@@ -70,9 +70,6 @@ namespace WebCore {
     v8::Handle<v8::Value> throwTypeError(v8::Isolate*);
     v8::Handle<v8::Value> throwTypeError(const String&, v8::Isolate*);
 
-    // A helper for throwing JavaScript TypeError for not enough arguments.
-    v8::Handle<v8::Value> throwNotEnoughArgumentsError(v8::Isolate*);
-
     v8::ArrayBuffer::Allocator* v8ArrayBufferAllocator();
 
     v8::Handle<v8::Value> toV8Sequence(v8::Handle<v8::Value>, uint32_t& length, v8::Isolate*);

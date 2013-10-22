@@ -36,6 +36,7 @@
 #include "V8FormData.h"
 #include "V8HTMLDocument.h"
 #include "V8Stream.h"
+#include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8Utilities.h"
@@ -164,7 +165,7 @@ void V8XMLHttpRequest::openMethodCustom(const v8::FunctionCallbackInfo<v8::Value
     // open(method, url, async, user, passwd)
 
     if (args.Length() < 2) {
-        throwNotEnoughArgumentsError(args.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToExecute("open", "XMLHttpRequest", ExceptionMessages::notEnoughArguments(2, args.Length())), args.GetIsolate());
         return;
     }
 

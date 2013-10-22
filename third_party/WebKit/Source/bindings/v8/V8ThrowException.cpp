@@ -118,12 +118,6 @@ v8::Handle<v8::Value> V8ThrowException::throwTypeError(const String& message, v8
     return V8ThrowException::throwError(exception, isolate);
 }
 
-v8::Handle<v8::Value> V8ThrowException::throwNotEnoughArgumentsError(v8::Isolate* isolate)
-{
-    v8::Handle<v8::Value> exception = V8ThrowException::createTypeError("Not enough arguments", isolate);
-    return V8ThrowException::throwError(exception, isolate);
-}
-
 v8::Handle<v8::Value> V8ThrowException::throwError(v8::Handle<v8::Value> exception, v8::Isolate* isolate)
 {
     if (!v8::V8::IsExecutionTerminating())

@@ -31,6 +31,7 @@
 #include "config.h"
 #include "V8MutationObserver.h"
 
+#include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8DOMWrapper.h"
 #include "bindings/v8/V8MutationCallback.h"
@@ -42,7 +43,7 @@ namespace WebCore {
 void V8MutationObserver::constructorCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     if (args.Length() < 1) {
-        throwNotEnoughArgumentsError(args.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToConstruct("MutationObserver", ExceptionMessages::notEnoughArguments(1, args.Length())), args.GetIsolate());
         return;
     }
 
