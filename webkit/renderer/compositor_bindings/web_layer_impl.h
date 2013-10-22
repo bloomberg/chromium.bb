@@ -103,6 +103,9 @@ class WebLayerImpl : public WebKit::WebLayer, public cc::LayerClient {
   virtual WebKit::WebSize maxScrollPosition() const;
   virtual void setScrollable(bool scrollable);
   virtual bool scrollable() const;
+  virtual void setUserScrollable(bool horizontal, bool vertical);
+  virtual bool userScrollableHorizontal() const;
+  virtual bool userScrollableVertical() const;
   virtual void setHaveWheelEventHandlers(bool have_wheel_event_handlers);
   virtual bool haveWheelEventHandlers() const;
   virtual void setShouldScrollOnMainThread(bool scroll_on_main);

@@ -374,6 +374,13 @@ class CC_EXPORT LayerImpl : LayerAnimationValueObserver {
   void SetScrollable(bool scrollable) { scrollable_ = scrollable; }
   bool scrollable() const { return scrollable_; }
 
+  void set_user_scrollable_horizontal(bool scrollable) {
+    user_scrollable_horizontal_ = scrollable;
+  }
+  void set_user_scrollable_vertical(bool scrollable) {
+    user_scrollable_vertical_ = scrollable;
+  }
+
   void ApplySentScrollDeltasFromAbortedCommit();
   void ApplyScrollDeltasSinceBeginFrame();
 
@@ -544,6 +551,8 @@ class CC_EXPORT LayerImpl : LayerAnimationValueObserver {
   bool scrollable_;
   bool should_scroll_on_main_thread_;
   bool have_wheel_event_handlers_;
+  bool user_scrollable_horizontal_;
+  bool user_scrollable_vertical_;
   Region non_fast_scrollable_region_;
   Region touch_event_handler_region_;
   SkColor background_color_;

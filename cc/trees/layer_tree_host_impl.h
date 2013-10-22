@@ -479,7 +479,7 @@ class CC_EXPORT LayerTreeHostImpl
       gfx::PointF device_viewport_point,
       InputHandler::ScrollInputType type,
       LayerImpl* layer_hit_by_point,
-      bool* scroll_on_main_thread);
+      bool* scroll_on_main_thread) const;
   float DeviceSpaceDistanceToLayer(gfx::PointF device_viewport_point,
                                    LayerImpl* layer_impl);
   void StartScrollbarAnimationRecursive(LayerImpl* layer, base::TimeTicks time);

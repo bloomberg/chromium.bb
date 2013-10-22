@@ -547,5 +547,19 @@ TEST_F(LayerImplScrollTest, ApplySentScrollsWithAcceptingDelegate) {
   EXPECT_VECTOR_EQ(gfx::Vector2d(), layer()->sent_scroll_delta());
 }
 
+TEST_F(LayerImplScrollTest, ScrollUserUnscrollableLayer) {
+  gfx::Vector2d max_scroll_offset(50, 80);
+  gfx::Vector2d scroll_offset(10, 5);
+  gfx::Vector2dF scroll_delta(20.5f, 8.5f);
+
+  layer()->set_user_scrollable_vertical(false);
+  layer()->SetMaxScrollOffset(max_scroll_offset);
+  layer()->SetScrollOffset(scroll_offset);
+  gfx::Vector2dF unscrolled = layer()->ScrollBy(scroll_delta);
+
+  EXPECT_VECTOR_EQ(gfx::Vector2dF(0, 8.5f), unscrolled);
+  EXPECT_VECTOR_EQ(gfx::Vector2dF(30.5f, 5), layer()->TotalScrollOffset());
+}
+
 }  // namespace
 }  // namespace cc

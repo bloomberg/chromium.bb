@@ -1911,7 +1911,7 @@ static LayerImpl* NextScrollLayer(LayerImpl* layer) {
 
 LayerImpl* LayerTreeHostImpl::FindScrollLayerForDeviceViewportPoint(
     gfx::PointF device_viewport_point, InputHandler::ScrollInputType type,
-    LayerImpl* layer_impl, bool* scroll_on_main_thread) {
+    LayerImpl* layer_impl, bool* scroll_on_main_thread) const {
   DCHECK(scroll_on_main_thread);
 
   // Walk up the hierarchy and look for a scrollable layer.

@@ -42,6 +42,8 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl, int id)
       scrollable_(false),
       should_scroll_on_main_thread_(false),
       have_wheel_event_handlers_(false),
+      user_scrollable_horizontal_(true),
+      user_scrollable_vertical_(true),
       background_color_(0),
       stacking_order_changed_(false),
       double_sided_(true),
@@ -341,6 +343,15 @@ void LayerImpl::SetSentScrollDelta(gfx::Vector2d sent_scroll_delta) {
 
 gfx::Vector2dF LayerImpl::ScrollBy(gfx::Vector2dF scroll) {
   DCHECK(scrollable());
+  gfx::Vector2dF scroll_hidden;
+  if (!user_scrollable_horizontal_) {
+    scroll_hidden.set_x(scroll.x());
+    scroll.set_x(0.f);
+  }
+  if (!user_scrollable_vertical_) {
+    scroll_hidden.set_y(scroll.y());
+    scroll.set_y(0.f);
+  }
 
   gfx::Vector2dF min_delta = -scroll_offset_;
   gfx::Vector2dF max_delta = max_scroll_offset_ - scroll_offset_;
@@ -348,7 +359,8 @@ gfx::Vector2dF LayerImpl::ScrollBy(gfx::Vector2dF scroll) {
   gfx::Vector2dF new_delta = (ScrollDelta() + scroll);
   new_delta.SetToMax(min_delta);
   new_delta.SetToMin(max_delta);
-  gfx::Vector2dF unscrolled = ScrollDelta() + scroll - new_delta;
+  gfx::Vector2dF unscrolled =
+      ScrollDelta() + scroll + scroll_hidden - new_delta;
   SetScrollDelta(new_delta);
   return unscrolled;
 }
@@ -449,6 +461,13 @@ InputHandler::ScrollStatus LayerImpl::TryScroll(
     return InputHandler::ScrollIgnored;
   }
 
+  if (!user_scrollable_horizontal_ && !user_scrollable_vertical_) {
+    TRACE_EVENT0("cc",
+                 "LayerImpl::TryScroll: Ignored. User gesture is not allowed"
+                 " to scroll this layer.");
+    return InputHandler::ScrollIgnored;
+  }
+
   return InputHandler::ScrollStarted;
 }
 
@@ -514,6 +533,8 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
   layer->SetTransform(transform_);
 
   layer->SetScrollable(scrollable_);
+  layer->set_user_scrollable_horizontal(user_scrollable_horizontal_);
+  layer->set_user_scrollable_vertical(user_scrollable_vertical_);
   layer->SetScrollOffsetAndDelta(
       scroll_offset_, layer->ScrollDelta() - layer->sent_scroll_delta());
   layer->SetSentScrollDelta(gfx::Vector2d());

@@ -251,6 +251,12 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   void SetScrollable(bool scrollable);
   bool scrollable() const { return scrollable_; }
 
+  void SetUserScrollable(bool horizontal, bool vertical);
+  bool user_scrollable_horizontal() const {
+    return user_scrollable_horizontal_;
+  }
+  bool user_scrollable_vertical() const { return user_scrollable_vertical_; }
+
   void SetShouldScrollOnMainThread(bool should_scroll_on_main_thread);
   bool should_scroll_on_main_thread() const {
     return should_scroll_on_main_thread_;
@@ -539,6 +545,8 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   bool scrollable_;
   bool should_scroll_on_main_thread_;
   bool have_wheel_event_handlers_;
+  bool user_scrollable_horizontal_;
+  bool user_scrollable_vertical_;
   Region non_fast_scrollable_region_;
   Region touch_event_handler_region_;
   gfx::PointF position_;

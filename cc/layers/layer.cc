@@ -41,6 +41,8 @@ Layer::Layer()
       scrollable_(false),
       should_scroll_on_main_thread_(false),
       have_wheel_event_handlers_(false),
+      user_scrollable_horizontal_(true),
+      user_scrollable_vertical_(true),
       anchor_point_(0.5f, 0.5f),
       background_color_(0),
       compositing_reasons_(kCompositingReasonUnknown),
@@ -646,6 +648,16 @@ void Layer::SetScrollable(bool scrollable) {
   SetNeedsCommit();
 }
 
+void Layer::SetUserScrollable(bool horizontal, bool vertical) {
+  DCHECK(IsPropertyChangeAllowed());
+  if (user_scrollable_horizontal_ == horizontal &&
+      user_scrollable_vertical_ == vertical)
+    return;
+  user_scrollable_horizontal_ = horizontal;
+  user_scrollable_vertical_ = vertical;
+  SetNeedsCommit();
+}
+
 void Layer::SetShouldScrollOnMainThread(bool should_scroll_on_main_thread) {
   DCHECK(IsPropertyChangeAllowed());
   if (should_scroll_on_main_thread_ == should_scroll_on_main_thread)
@@ -833,6 +845,8 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
   DCHECK(!(TransformIsAnimating() && layer->TransformIsAnimatingOnImplOnly()));
 
   layer->SetScrollable(scrollable_);
+  layer->set_user_scrollable_horizontal(user_scrollable_horizontal_);
+  layer->set_user_scrollable_vertical(user_scrollable_vertical_);
   layer->SetMaxScrollOffset(max_scroll_offset_);
 
   LayerImpl* scroll_parent = NULL;

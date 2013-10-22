@@ -759,6 +759,61 @@ TEST_F(LayerTreeHostImplTest, ScrollVerticallyByPageReturnsCorrectValue) {
       gfx::Point(), SCROLL_BACKWARD));
 }
 
+TEST_F(LayerTreeHostImplTest, ScrollWithUserUnscrollableLayers) {
+  LayerImpl* scroll_layer = SetupScrollAndContentsLayers(gfx::Size(200, 200));
+  host_impl_->SetViewportSize(gfx::Size(100, 100));
+
+  gfx::Size overflow_size(400, 400);
+  ASSERT_EQ(1u, scroll_layer->children().size());
+  LayerImpl* overflow = scroll_layer->children()[0];
+  overflow->SetBounds(overflow_size);
+  overflow->SetContentBounds(overflow_size);
+  overflow->SetScrollable(true);
+  overflow->SetMaxScrollOffset(gfx::Vector2d(overflow_size.width(),
+                                             overflow_size.height()));
+  overflow->SetScrollOffset(gfx::Vector2d());
+  overflow->SetPosition(gfx::PointF());
+  overflow->SetAnchorPoint(gfx::PointF());
+
+  InitializeRendererAndDrawFrame();
+  gfx::Point scroll_position(10, 10);
+
+  EXPECT_EQ(InputHandler::ScrollStarted,
+            host_impl_->ScrollBegin(scroll_position, InputHandler::Wheel));
+  EXPECT_VECTOR_EQ(gfx::Vector2dF(), scroll_layer->TotalScrollOffset());
+  EXPECT_VECTOR_EQ(gfx::Vector2dF(), overflow->TotalScrollOffset());
+
+  gfx::Vector2dF scroll_delta(10, 10);
+  host_impl_->ScrollBy(scroll_position, scroll_delta);
+  host_impl_->ScrollEnd();
+  EXPECT_VECTOR_EQ(gfx::Vector2dF(), scroll_layer->TotalScrollOffset());
+  EXPECT_VECTOR_EQ(gfx::Vector2dF(10, 10), overflow->TotalScrollOffset());
+
+  overflow->set_user_scrollable_horizontal(false);
+
+  EXPECT_EQ(InputHandler::ScrollStarted,
+            host_impl_->ScrollBegin(scroll_position, InputHandler::Wheel));
+  EXPECT_VECTOR_EQ(gfx::Vector2dF(), scroll_layer->TotalScrollOffset());
+  EXPECT_VECTOR_EQ(gfx::Vector2dF(10, 10), overflow->TotalScrollOffset());
+
+  host_impl_->ScrollBy(scroll_position, scroll_delta);
+  host_impl_->ScrollEnd();
+  EXPECT_VECTOR_EQ(gfx::Vector2dF(10, 0), scroll_layer->TotalScrollOffset());
+  EXPECT_VECTOR_EQ(gfx::Vector2dF(10, 20), overflow->TotalScrollOffset());
+
+  overflow->set_user_scrollable_vertical(false);
+
+  EXPECT_EQ(InputHandler::ScrollStarted,
+            host_impl_->ScrollBegin(scroll_position, InputHandler::Wheel));
+  EXPECT_VECTOR_EQ(gfx::Vector2dF(10, 0), scroll_layer->TotalScrollOffset());
+  EXPECT_VECTOR_EQ(gfx::Vector2dF(10, 20), overflow->TotalScrollOffset());
+
+  host_impl_->ScrollBy(scroll_position, scroll_delta);
+  host_impl_->ScrollEnd();
+  EXPECT_VECTOR_EQ(gfx::Vector2dF(20, 10), scroll_layer->TotalScrollOffset());
+  EXPECT_VECTOR_EQ(gfx::Vector2dF(10, 20), overflow->TotalScrollOffset());
+}
+
 TEST_F(LayerTreeHostImplTest,
        ClearRootRenderSurfaceAndHitTestTouchHandlerRegion) {
   SetupScrollAndContentsLayers(gfx::Size(100, 100));

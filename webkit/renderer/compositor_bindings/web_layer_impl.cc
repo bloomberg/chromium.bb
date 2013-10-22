@@ -251,6 +251,18 @@ void WebLayerImpl::setScrollable(bool scrollable) {
 
 bool WebLayerImpl::scrollable() const { return layer_->scrollable(); }
 
+void WebLayerImpl::setUserScrollable(bool horizontal, bool vertical) {
+  layer_->SetUserScrollable(horizontal, vertical);
+}
+
+bool WebLayerImpl::userScrollableHorizontal() const {
+  return layer_->user_scrollable_horizontal();
+}
+
+bool WebLayerImpl::userScrollableVertical() const {
+  return layer_->user_scrollable_vertical();
+}
+
 void WebLayerImpl::setHaveWheelEventHandlers(bool have_wheel_event_handlers) {
   layer_->SetHaveWheelEventHandlers(have_wheel_event_handlers);
 }
