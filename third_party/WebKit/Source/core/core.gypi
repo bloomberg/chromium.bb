@@ -1934,6 +1934,8 @@
             'dom/Range.cpp',
             'dom/RawDataDocumentParser.h',
             'dom/RequestAnimationFrameCallback.h',
+            'dom/SandboxFlags.h',
+            'dom/SandboxFlags.cpp',
             'dom/ScriptableDocumentParser.cpp',
             'dom/ScriptableDocumentParser.h',
             'dom/ScriptedAnimationController.cpp',

@@ -76,7 +76,9 @@ public:
 };
 
 ExecutionContext::ExecutionContext()
-    : m_circularSequentialID(0)
+    : m_client(0)
+    , m_sandboxFlags(SandboxNone)
+    , m_circularSequentialID(0)
     , m_inDispatchErrorEvent(false)
     , m_activeDOMObjectsAreSuspended(false)
     , m_activeDOMObjectsAreStopped(false)
@@ -377,6 +379,17 @@ ContextLifecycleNotifier* ExecutionContext::lifecycleNotifier()
 bool ExecutionContext::isIteratingOverObservers() const
 {
     return m_lifecycleNotifier && m_lifecycleNotifier->isIteratingOverObservers();
+}
+
+void ExecutionContext::enforceSandboxFlags(SandboxFlags mask)
+{
+    m_sandboxFlags |= mask;
+
+    // The SandboxOrigin is stored redundantly in the security origin.
+    if (isSandboxed(SandboxOrigin) && securityOrigin() && !securityOrigin()->isUnique()) {
+        setSecurityOrigin(SecurityOrigin::createUnique());
+        m_client->didUpdateSecurityOrigin();
+    }
 }
 
 } // namespace WebCore

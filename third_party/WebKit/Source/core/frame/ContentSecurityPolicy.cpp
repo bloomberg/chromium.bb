@@ -1292,7 +1292,7 @@ void CSPDirectiveList::applySandboxPolicy(const String& name, const String& sand
     }
     m_haveSandboxPolicy = true;
     String invalidTokens;
-    m_policy->enforceSandboxFlags(SecurityContext::parseSandboxPolicy(sandboxPolicy, invalidTokens));
+    m_policy->enforceSandboxFlags(parseSandboxPolicy(sandboxPolicy, invalidTokens));
     if (!invalidTokens.isNull())
         m_policy->reportInvalidSandboxFlags(invalidTokens);
 }
@@ -1673,7 +1673,8 @@ KURL ContentSecurityPolicy::completeURL(const String& url) const
 
 void ContentSecurityPolicy::enforceSandboxFlags(SandboxFlags mask) const
 {
-    m_executionContext->enforceSandboxFlags(mask);
+    if (m_executionContext->isDocument())
+        toDocument(m_executionContext)->enforceSandboxFlags(mask);
 }
 
 static String stripURLForUseInReport(Document* document, const KURL& url)

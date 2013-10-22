@@ -28,6 +28,7 @@
 #ifndef DocumentInit_h
 #define DocumentInit_h
 
+#include "core/dom/SandboxFlags.h"
 #include "core/dom/SecurityContext.h"
 #include "weborigin/KURL.h"
 #include "wtf/PassRefPtr.h"

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 Google Inc. All Rights Reserved.
+ * Copyright (C) 2013 Google Inc. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -24,44 +24,33 @@
  *
  */
 
-#include "config.h"
-#include "core/dom/SecurityContext.h"
+#ifndef SandboxFlags_h
+#define SandboxFlags_h
 
-#include "core/frame/ContentSecurityPolicy.h"
-#include "weborigin/SecurityOrigin.h"
+#include "wtf/Forward.h"
 
 namespace WebCore {
 
-SecurityContext::SecurityContext()
-    : m_haveInitializedSecurityOrigin(false)
-{
-}
+enum SandboxFlag {
+    // See http://www.whatwg.org/specs/web-apps/current-work/#attr-iframe-sandbox for a list of the sandbox flags.
+    SandboxNone = 0,
+    SandboxNavigation = 1,
+    SandboxPlugins = 1 << 1,
+    SandboxOrigin = 1 << 2,
+    SandboxForms = 1 << 3,
+    SandboxScripts = 1 << 4,
+    SandboxTopNavigation = 1 << 5,
+    SandboxPopups = 1 << 6, // See https://www.w3.org/Bugs/Public/show_bug.cgi?id=12393
+    SandboxAutomaticFeatures = 1 << 7,
+    SandboxSeamlessIframes = 1 << 8,
+    SandboxPointerLock = 1 << 9,
+    SandboxAll = -1 // Mask with all bits set to 1.
+};
 
-SecurityContext::~SecurityContext()
-{
-}
+typedef int SandboxFlags;
 
-void SecurityContext::setSecurityOrigin(PassRefPtr<SecurityOrigin> securityOrigin)
-{
-    m_securityOrigin = securityOrigin;
-    m_haveInitializedSecurityOrigin = true;
-}
-
-void SecurityContext::setContentSecurityPolicy(PassOwnPtr<ContentSecurityPolicy> contentSecurityPolicy)
-{
-    m_contentSecurityPolicy = contentSecurityPolicy;
-}
-
-bool SecurityContext::isSecureTransitionTo(const KURL& url) const
-{
-    // If we haven't initialized our security origin by now, this is probably
-    // a new window created via the API (i.e., that lacks an origin and lacks
-    // a place to inherit the origin from).
-    if (!haveInitializedSecurityOrigin())
-        return true;
-
-    RefPtr<SecurityOrigin> other = SecurityOrigin::create(url);
-    return securityOrigin()->canAccess(other.get());
-}
+SandboxFlags parseSandboxPolicy(const String& policy, String& invalidTokensErrorMessage);
 
 }
+
+#endif

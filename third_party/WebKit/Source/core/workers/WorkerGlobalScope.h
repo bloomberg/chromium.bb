@@ -153,6 +153,7 @@ namespace WebCore {
         virtual void addMessage(MessageSource, MessageLevel, const String& message, const String& sourceURL, unsigned lineNumber, ScriptState* = 0) OVERRIDE;
 
         virtual EventTarget* errorEventTarget() OVERRIDE;
+        virtual void didUpdateSecurityOrigin() OVERRIDE { }
 
         KURL m_url;
         String m_userAgent;

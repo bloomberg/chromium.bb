@@ -30,6 +30,7 @@
 
 #include "core/dom/ActiveDOMObject.h"
 #include "core/dom/ExecutionContextClient.h"
+#include "core/dom/SandboxFlags.h"
 #include "core/dom/SecurityContext.h"
 #include "core/events/ErrorEvent.h"
 #include "core/fetch/CrossOriginAccessControl.h"
@@ -115,6 +116,10 @@ public:
 
     void didChangeTimerAlignmentInterval();
 
+    SandboxFlags sandboxFlags() const { return m_sandboxFlags; }
+    bool isSandboxed(SandboxFlags mask) const { return m_sandboxFlags & mask; }
+    void enforceSandboxFlags(SandboxFlags mask);
+
 protected:
 
     ContextLifecycleNotifier* lifecycleNotifier();
@@ -135,6 +140,7 @@ private:
     void removeTimeoutByID(int timeoutID); // This makes underlying DOMTimer instance destructed.
 
     ExecutionContextClient* m_client;
+    SandboxFlags m_sandboxFlags;
     HashSet<MessagePort*> m_messagePorts;
 
     int m_circularSequentialID;

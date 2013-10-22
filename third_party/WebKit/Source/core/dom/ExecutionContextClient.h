@@ -65,7 +65,7 @@ public:
     virtual void logExceptionToConsole(const String& errorMessage, const String& sourceURL, int lineNumber, int columnNumber, PassRefPtr<ScriptCallStack>) = 0;
     virtual double timerAlignmentInterval() const = 0;
     virtual PassOwnPtr<LifecycleNotifier> createLifecycleNotifier() = 0;
-
+    virtual void didUpdateSecurityOrigin() = 0;
 protected:
     virtual ~ExecutionContextClient() { }
 };

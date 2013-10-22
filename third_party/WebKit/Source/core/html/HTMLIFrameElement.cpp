@@ -85,7 +85,7 @@ void HTMLIFrameElement::parseAttribute(const QualifiedName& name, const AtomicSt
         m_name = value;
     } else if (name == sandboxAttr) {
         String invalidTokens;
-        setSandboxFlags(value.isNull() ? SandboxNone : SecurityContext::parseSandboxPolicy(value, invalidTokens));
+        setSandboxFlags(value.isNull() ? SandboxNone : parseSandboxPolicy(value, invalidTokens));
         if (!invalidTokens.isNull())
             document().addConsoleMessage(OtherMessageSource, ErrorMessageLevel, "Error while parsing the 'sandbox' attribute: " + invalidTokens);
     } else if (name == seamlessAttr) {
