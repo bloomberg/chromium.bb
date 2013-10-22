@@ -35,7 +35,12 @@ class PeopleResult : public ChromeSearchResult {
   void OpenChat();
   void SendEmail();
 
-  bool IsChatAvailable();
+  // Check if we have any variant of the hangouts extension installed and
+  // waiting on the onHangoutRequested event (the hangouts extension can have
+  // a total of four possible id's, depending on which release type of it is
+  // installed). If so, set the hangouts_extension_id_ to the id of the
+  // extension that is waiting, or set it to an empty string if not.
+  void RefreshHangoutsExtensionId();
 
   Profile* profile_;
   scoped_ptr<Person> person_;
@@ -43,9 +48,8 @@ class PeopleResult : public ChromeSearchResult {
   gfx::ImageSkia image_;
   base::WeakPtrFactory<PeopleResult> weak_factory_;
 
-  // Caches whether or not the hangouts app is available for us to
-  // send chat/video reqeusts to.
-  bool is_chat_available_;
+  // Caches the id of the hangouts extension.
+  std::string hangouts_extension_id_;
 
   DISALLOW_COPY_AND_ASSIGN(PeopleResult);
 };

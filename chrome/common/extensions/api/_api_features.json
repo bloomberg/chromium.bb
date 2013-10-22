@@ -314,7 +314,13 @@
   "hangoutsPrivate": {
     "channel": "stable",
     "contexts": ["blessed_extension"],
-    "whitelist": ["eigpckmcflhchknfhifenfgmjncfgcak"]
+    "whitelist": [
+      // http://crbug.com/309737
+      "nckgahadagoaajjgafhacjanaoiihapd",
+      "ljclpkphhpbpinifbeabbhlfddcpfdde",
+      "ppleadejekpmccmnpjdimmlfljlkdfej",
+      "eggnbpckecmjlblplehfpjjdhhidfdoj"
+    ]
   },
   "history": {
     "dependencies": ["permission:history"],

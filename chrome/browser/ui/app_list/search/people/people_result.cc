@@ -35,7 +35,12 @@ const int kIconSize = 32;
 const char kImageSizePath[] = "s32-p/";
 const char kEmailUrlPrefix[] = "mailto:";
 
-const char kHangoutsExtensionId[] = "eigpckmcflhchknfhifenfgmjncfgcak";
+const char* const kHangoutsExtensionIds[] = {
+  "nckgahadagoaajjgafhacjanaoiihapd",
+  "ljclpkphhpbpinifbeabbhlfddcpfdde",
+  "ppleadejekpmccmnpjdimmlfljlkdfej",
+  "eggnbpckecmjlblplehfpjjdhhidfdoj"
+};
 
 // Add a query parameter to specify the size to fetch the image in. The
 // original profile image can be of an arbitrary size, we ask the server to
@@ -59,7 +64,7 @@ PeopleResult::PeopleResult(Profile* profile, scoped_ptr<Person> person)
   set_relevance(person_->interaction_rank);
   set_details(UTF8ToUTF16(person_->email));
 
-  is_chat_available_ = IsChatAvailable();
+  RefreshHangoutsExtensionId();
   SetDefaultActions();
 
   image_ = gfx::ImageSkia(
@@ -82,7 +87,7 @@ void PeopleResult::Open(int event_flags) {
 }
 
 void PeopleResult::InvokeAction(int action_index, int event_flags) {
-  if (!is_chat_available_) {
+  if (hangouts_extension_id_.empty()) {
     // If the hangouts app is not available, the only option we are showing
     // to the user is 'Send Email'.
     SendEmail();
@@ -119,7 +124,7 @@ void PeopleResult::SetDefaultActions() {
   Actions actions;
 
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
-  if (is_chat_available_) {
+  if (!hangouts_extension_id_.empty()) {
     actions.push_back(Action(
         *bundle.GetImageSkiaNamed(IDR_PEOPLE_SEARCH_ACTION_CHAT),
         *bundle.GetImageSkiaNamed(IDR_PEOPLE_SEARCH_ACTION_CHAT_HOVER),
@@ -158,7 +163,7 @@ void PeopleResult::OpenChat() {
   // See crbug.com/306672
   extensions::ExtensionSystem::Get(
       profile_)->event_router()->DispatchEventToExtension(
-          kHangoutsExtensionId, event.Pass());
+          hangouts_extension_id_, event.Pass());
 }
 
 void PeopleResult::SendEmail() {
@@ -170,12 +175,18 @@ void PeopleResult::SendEmail() {
   chrome::Navigate(&params);
 }
 
-bool PeopleResult::IsChatAvailable() {
+void PeopleResult::RefreshHangoutsExtensionId() {
   // TODO(rkc): Change this once we remove the hangoutsPrivate API.
   // See crbug.com/306672
-  return extensions::ExtensionSystem::Get(
-      profile_)->event_router()->ExtensionHasEventListener(
-          kHangoutsExtensionId, OnHangoutRequested::kEventName);
+  for (size_t i = 0; i < arraysize(kHangoutsExtensionIds); ++i) {
+    if (extensions::ExtensionSystem::Get(
+        profile_)->event_router()->ExtensionHasEventListener(
+            kHangoutsExtensionIds[i], OnHangoutRequested::kEventName)) {
+      hangouts_extension_id_ = kHangoutsExtensionIds[i];
+      return;
+    }
+  }
+  hangouts_extension_id_.clear();
 }
 
 ChromeSearchResultType PeopleResult::GetType() {
