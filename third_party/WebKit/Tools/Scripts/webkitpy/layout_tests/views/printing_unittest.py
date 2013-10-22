@@ -132,7 +132,7 @@ class  Testprinter(unittest.TestCase):
         printer.print_config('/tmp')
         self.assertIn("Using port 'test-mac-leopard'", err.getvalue())
         self.assertIn('Test configuration: <leopard, x86, release>', err.getvalue())
-        self.assertIn('Placing test results in /tmp', err.getvalue())
+        self.assertIn('View the test results at file:///tmp', err.getvalue())
         self.assertIn('Baseline search path: test-mac-leopard -> test-mac-snowleopard -> generic', err.getvalue())
         self.assertIn('Using Release build', err.getvalue())
         self.assertIn('Pixel tests enabled', err.getvalue())

@@ -77,7 +77,7 @@ class Printer(object):
     def print_config(self, results_directory):
         self._print_default("Using port '%s'" % self._port.name())
         self._print_default("Test configuration: %s" % self._port.test_configuration())
-        self._print_default("Placing test results in %s" % results_directory)
+        self._print_default("View the test results at file://%s/results.html" % results_directory)
 
         # FIXME: should these options be in printing_options?
         if self._options.new_baseline:
