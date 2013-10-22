@@ -485,7 +485,6 @@ void MediaSourcePlayer::MediaDecoderCallback(
     bool is_audio, MediaCodecStatus status,
     const base::TimeDelta& presentation_timestamp, size_t audio_output_bytes) {
   DVLOG(1) << __FUNCTION__ << ": " << is_audio << ", " << status;
-  DCHECK(!is_waiting_for_key_);
 
   // TODO(xhwang): Drop IntToString() when http://crbug.com/303899 is fixed.
   if (is_audio) {
