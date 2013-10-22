@@ -44,21 +44,22 @@ static bool verifyType(const String& type)
     return type == "offer" || type == "pranswer" || type == "answer";
 }
 
-PassRefPtr<RTCSessionDescription> RTCSessionDescription::create(const Dictionary& dictionary, ExceptionState& es)
+static String constructIllegalTypeExceptionMessage(const String& type)
+{
+    return "Illegal value of attribute 'type' : " + type;
+}
+
+PassRefPtr<RTCSessionDescription> RTCSessionDescription::create(const Dictionary& descriptionInitDict, ExceptionState& es)
 {
     String type;
-    bool ok = dictionary.get("type", type);
-    if (!ok || !verifyType(type)) {
-        es.throwUninformativeAndGenericDOMException(TypeMismatchError);
+    bool ok = descriptionInitDict.get("type", type);
+    if (ok && !verifyType(type)) {
+        es.throwDOMException(TypeMismatchError, constructIllegalTypeExceptionMessage(type));
         return 0;
     }
 
     String sdp;
-    ok = dictionary.get("sdp", sdp);
-    if (!ok || sdp.isEmpty()) {
-        es.throwUninformativeAndGenericDOMException(TypeMismatchError);
-        return 0;
-    }
+    descriptionInitDict.get("sdp", sdp);
 
     return adoptRef(new RTCSessionDescription(WebKit::WebRTCSessionDescription(type, sdp)));
 }
@@ -88,7 +89,7 @@ void RTCSessionDescription::setType(const String& type, ExceptionState& es)
     if (verifyType(type))
         m_webSessionDescription.setType(type);
     else
-        es.throwUninformativeAndGenericDOMException(TypeMismatchError);
+        es.throwDOMException(TypeMismatchError, constructIllegalTypeExceptionMessage(type));
 }
 
 String RTCSessionDescription::sdp()
@@ -96,7 +97,7 @@ String RTCSessionDescription::sdp()
     return m_webSessionDescription.sdp();
 }
 
-void RTCSessionDescription::setSdp(const String& sdp, ExceptionState& es)
+void RTCSessionDescription::setSdp(const String& sdp)
 {
     m_webSessionDescription.setSDP(sdp);
 }

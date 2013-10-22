@@ -25,6 +25,7 @@
 #include "config.h"
 #include "modules/mediastream/RTCDataChannel.h"
 
+#include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
 #include "core/events/Event.h"
 #include "core/dom/ExceptionCode.h"
@@ -38,6 +39,21 @@
 
 namespace WebCore {
 
+static void throwNotOpenException(ExceptionState& es)
+{
+    es.throwDOMException(InvalidStateError, "RTCDataChannel.readyState is not 'open'");
+}
+
+static void throwCouldNotSendDataException(ExceptionState& es)
+{
+    es.throwDOMException(NetworkError, "Could not send data");
+}
+
+static void throwNoBlobSupportException(ExceptionState& es)
+{
+    es.throwDOMException(NotSupportedError, ExceptionMessages::failedToExecute("send", "RTCDataChannel", "Blob support not implemented yet"));
+}
+
 PassRefPtr<RTCDataChannel> RTCDataChannel::create(ExecutionContext* context, PassOwnPtr<RTCDataChannelHandler> handler)
 {
     ASSERT(handler);
@@ -48,7 +64,7 @@ PassRefPtr<RTCDataChannel> RTCDataChannel::create(ExecutionContext* context, RTC
 {
     OwnPtr<RTCDataChannelHandler> handler = peerConnectionHandler->createDataChannel(label, init);
     if (!handler) {
-        es.throwUninformativeAndGenericDOMException(NotSupportedError);
+        es.throwDOMException(NotSupportedError, "RTCDataChannel is not supported");
         return 0;
     }
     return adoptRef(new RTCDataChannel(context, handler.release()));
@@ -147,29 +163,29 @@ String RTCDataChannel::binaryType() const
 void RTCDataChannel::setBinaryType(const String& binaryType, ExceptionState& es)
 {
     if (binaryType == "blob")
-        es.throwUninformativeAndGenericDOMException(NotSupportedError);
+        throwNoBlobSupportException(es);
     else if (binaryType == "arraybuffer")
         m_binaryType = BinaryTypeArrayBuffer;
     else
-        es.throwUninformativeAndGenericDOMException(TypeMismatchError);
+        es.throwDOMException(TypeMismatchError, "Unknown binary type : " + binaryType);
 }
 
 void RTCDataChannel::send(const String& data, ExceptionState& es)
 {
     if (m_readyState != ReadyStateOpen) {
-        es.throwUninformativeAndGenericDOMException(InvalidStateError);
+        throwNotOpenException(es);
         return;
     }
     if (!m_handler->sendStringData(data)) {
-        // FIXME: Decide what the right exception here is.
-        es.throwUninformativeAndGenericDOMException(SyntaxError);
+        // FIXME: This should not throw an exception but instead forcefully close the data channel.
+        throwCouldNotSendDataException(es);
     }
 }
 
 void RTCDataChannel::send(PassRefPtr<ArrayBuffer> prpData, ExceptionState& es)
 {
     if (m_readyState != ReadyStateOpen) {
-        es.throwUninformativeAndGenericDOMException(InvalidStateError);
+        throwNotOpenException(es);
         return;
     }
 
@@ -182,8 +198,8 @@ void RTCDataChannel::send(PassRefPtr<ArrayBuffer> prpData, ExceptionState& es)
     const char* dataPointer = static_cast<const char*>(data->data());
 
     if (!m_handler->sendRawData(dataPointer, dataLength)) {
-        // FIXME: Decide what the right exception here is.
-        es.throwUninformativeAndGenericDOMException(SyntaxError);
+        // FIXME: This should not throw an exception but instead forcefully close the data channel.
+        throwCouldNotSendDataException(es);
     }
 }
 
@@ -196,7 +212,7 @@ void RTCDataChannel::send(PassRefPtr<ArrayBufferView> data, ExceptionState& es)
 void RTCDataChannel::send(PassRefPtr<Blob> data, ExceptionState& es)
 {
     // FIXME: implement
-    es.throwUninformativeAndGenericDOMException(NotSupportedError);
+    throwNoBlobSupportException(es);
 }
 
 void RTCDataChannel::close()

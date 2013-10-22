@@ -52,7 +52,7 @@ public:
     void setType(const String&, ExceptionState&);
 
     String sdp();
-    void setSdp(const String&, ExceptionState&);
+    void setSdp(const String&);
 
     WebKit::WebRTCSessionDescription webSessionDescription();
 
