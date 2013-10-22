@@ -45,7 +45,6 @@
 #include "core/html/HTMLElement.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLOptGroupElement.h"
-#include "core/html/track/WebVTTElement.h"
 #include "core/rendering/style/RenderStyle.h"
 #include "core/svg/SVGElement.h"
 #include "wtf/HashSet.h"
@@ -223,13 +222,6 @@ bool SharedStyleFinder::canShareStyleWithElement(Element& candidate) const
         return false;
 
     if (candidate.isUnresolvedCustomElement() != element().isUnresolvedCustomElement())
-        return false;
-
-    // Deny sharing styles between WebVTT and non-WebVTT nodes.
-    if (candidate.isWebVTTElement() != element().isWebVTTElement())
-        return false;
-
-    if (candidate.isWebVTTElement() && element().isWebVTTElement() && toWebVTTElement(candidate).isPastNode() != toWebVTTElement(element()).isPastNode())
         return false;
 
     if (element().parentElement() != parent) {
