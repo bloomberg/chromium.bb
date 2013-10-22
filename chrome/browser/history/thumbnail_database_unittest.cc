@@ -42,10 +42,12 @@ const GURL kPageUrl1 = GURL("http://google.com/");
 const GURL kPageUrl2 = GURL("http://yahoo.com/");
 const GURL kPageUrl3 = GURL("http://www.google.com/");
 const GURL kPageUrl4 = GURL("http://www.google.com/blank.html");
+const GURL kPageUrl5 = GURL("http://www.bing.com/");
 
 const GURL kIconUrl1 = GURL("http://www.google.com/favicon.ico");
 const GURL kIconUrl2 = GURL("http://www.yahoo.com/favicon.ico");
 const GURL kIconUrl3 = GURL("http://www.google.com/touch.ico");
+const GURL kIconUrl5 = GURL("http://www.bing.com/favicon.ico");
 
 const gfx::Size kSmallSize = gfx::Size(16, 16);
 const gfx::Size kLargeSize = gfx::Size(32, 32);
@@ -358,43 +360,51 @@ TEST_F(ThumbnailDatabaseTest, RetainDataForPageUrls) {
 
   db.BeginTransaction();
 
-  std::vector<unsigned char> data(kBlob1, kBlob1 + sizeof(kBlob1));
-  scoped_refptr<base::RefCountedBytes> favicon(new base::RefCountedBytes(data));
+  // Build a database mapping kPageUrl1 -> kIconUrl1, kPageUrl2 ->
+  // kIconUrl2, kPageUrl3 -> kIconUrl1, and kPageUrl5 -> kIconUrl5.
+  // Then retain kPageUrl1, kPageUrl3, and kPageUrl5.  kPageUrl2
+  // should go away, but the others should be retained correctly.
 
-  GURL unkept_url("http://google.com/favicon2.ico");
-  chrome::FaviconID unkept_id = db.AddFavicon(unkept_url, chrome::FAVICON);
-  db.AddFaviconBitmap(unkept_id, favicon, base::Time::Now(), kSmallSize);
+  // TODO(shess): This would probably make sense as a golden file.
 
-  GURL kept_url("http://google.com/favicon.ico");
-  chrome::FaviconID kept_id = db.AddFavicon(kept_url, chrome::FAVICON);
-  db.AddFaviconBitmap(kept_id, favicon, base::Time::Now(), kLargeSize);
+  scoped_refptr<base::RefCountedStaticMemory> favicon1(
+      new base::RefCountedStaticMemory(kBlob1, sizeof(kBlob1)));
+  scoped_refptr<base::RefCountedStaticMemory> favicon2(
+      new base::RefCountedStaticMemory(kBlob2, sizeof(kBlob2)));
 
-  GURL unkept_page_url("http://chromium.org");
-  db.AddIconMapping(unkept_page_url, unkept_id);
-  db.AddIconMapping(unkept_page_url, kept_id);
+  chrome::FaviconID kept_id1 = db.AddFavicon(kIconUrl1, chrome::FAVICON);
+  db.AddFaviconBitmap(kept_id1, favicon1, base::Time::Now(), kLargeSize);
+  db.AddIconMapping(kPageUrl1, kept_id1);
+  db.AddIconMapping(kPageUrl3, kept_id1);
 
-  GURL kept_page_url("http://google.com");
-  db.AddIconMapping(kept_page_url, kept_id);
+  chrome::FaviconID unkept_id = db.AddFavicon(kIconUrl2, chrome::FAVICON);
+  db.AddFaviconBitmap(unkept_id, favicon1, base::Time::Now(), kLargeSize);
+  db.AddIconMapping(kPageUrl2, unkept_id);
+
+  chrome::FaviconID kept_id2 = db.AddFavicon(kIconUrl5, chrome::FAVICON);
+  db.AddFaviconBitmap(kept_id2, favicon2, base::Time::Now(), kLargeSize);
+  db.AddIconMapping(kPageUrl5, kept_id2);
 
   // RetainDataForPageUrls() uses schema manipulations for efficiency.
   // Grab a copy of the schema to make sure the final schema matches.
   const std::string original_schema = db.db_.GetSchema();
 
-  EXPECT_TRUE(db.RetainDataForPageUrls(std::vector<GURL>(1, kept_page_url)));
+  std::vector<GURL> pages_to_keep;
+  pages_to_keep.push_back(kPageUrl1);
+  pages_to_keep.push_back(kPageUrl3);
+  pages_to_keep.push_back(kPageUrl5);
+  EXPECT_TRUE(db.RetainDataForPageUrls(pages_to_keep));
 
-  // Only copied data should be left.
-  std::vector<IconMapping> icon_mappings;
-  EXPECT_TRUE(db.GetIconMappingsForPageURL(
-                  kept_page_url, chrome::FAVICON, &icon_mappings));
-  EXPECT_EQ(1u, icon_mappings.size());
-  EXPECT_EQ(kept_page_url, icon_mappings[0].page_url);
+  // Mappings from the retained urls should be left.
+  EXPECT_TRUE(CheckPageHasIcon(&db, kPageUrl1, chrome::FAVICON,
+                               kIconUrl1, kLargeSize, sizeof(kBlob1), kBlob1));
+  EXPECT_TRUE(CheckPageHasIcon(&db, kPageUrl3, chrome::FAVICON,
+                               kIconUrl1, kLargeSize, sizeof(kBlob1), kBlob1));
+  EXPECT_TRUE(CheckPageHasIcon(&db, kPageUrl5, chrome::FAVICON,
+                               kIconUrl5, kLargeSize, sizeof(kBlob2), kBlob2));
 
-  std::vector<FaviconBitmap> favicon_bitmaps;
-  EXPECT_TRUE(db.GetFaviconBitmaps(icon_mappings[0].icon_id, &favicon_bitmaps));
-  EXPECT_EQ(1u, favicon_bitmaps.size());
-  EXPECT_EQ(kLargeSize, favicon_bitmaps[0].pixel_size);
-
-  EXPECT_FALSE(db.GetFaviconIDForFaviconURL(unkept_url, false, NULL));
+  // The one not retained should be missing.
+  EXPECT_FALSE(db.GetFaviconIDForFaviconURL(kPageUrl2, false, NULL));
 
   // Schema should be the same.
   EXPECT_EQ(original_schema, db.db_.GetSchema());

@@ -1227,6 +1227,7 @@ bool ThumbnailDatabase::RetainDataForPageUrls(
       statement.BindString(0, URLDatabase::GURLToDatabaseURL(*i));
       if (!statement.Run())
         return false;
+      statement.Reset(true);
     }
   }
 
