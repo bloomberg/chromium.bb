@@ -1968,7 +1968,10 @@ bool RenderLayerCompositor::requiresCompositingForAnimation(RenderObject* render
 {
     if (!(m_compositingTriggers & ChromeClient::AnimationTrigger))
         return false;
-    return renderer->animation().isRunningAcceleratableAnimationOnRenderer(renderer);
+
+    return (renderer->animation().isRunningAnimationOnRenderer(renderer, CSSPropertyOpacity) && inCompositingMode())
+        || renderer->animation().isRunningAnimationOnRenderer(renderer, CSSPropertyWebkitFilter)
+        || renderer->animation().isRunningAnimationOnRenderer(renderer, CSSPropertyWebkitTransform);
 }
 
 bool RenderLayerCompositor::requiresCompositingForTransition(RenderObject* renderer) const
