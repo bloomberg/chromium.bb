@@ -71,7 +71,8 @@ std::string CaptivePortalStatusString(
 
 NetworkPortalDetectorImpl::NetworkPortalDetectorImpl(
     const scoped_refptr<net::URLRequestContextGetter>& request_context)
-    : test_url_(CaptivePortalDetector::kDefaultURL),
+    : state_(STATE_IDLE),
+      test_url_(CaptivePortalDetector::kDefaultURL),
       enabled_(false),
       weak_ptr_factory_(this),
       attempt_count_(0),
@@ -91,20 +92,12 @@ NetworkPortalDetectorImpl::NetworkPortalDetectorImpl(
   registrar_.Add(this,
                  chrome::NOTIFICATION_AUTH_CANCELLED,
                  content::NotificationService::AllSources());
-}
 
-NetworkPortalDetectorImpl::~NetworkPortalDetectorImpl() {
-}
-
-void NetworkPortalDetectorImpl::Init() {
-  DCHECK(CalledOnValidThread());
-
-  state_ = STATE_IDLE;
   NetworkHandler::Get()->network_state_handler()->AddObserver(
       this, FROM_HERE);
 }
 
-void NetworkPortalDetectorImpl::Shutdown() {
+NetworkPortalDetectorImpl::~NetworkPortalDetectorImpl() {
   DCHECK(CalledOnValidThread());
 
   detection_task_.Cancel();

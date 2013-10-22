@@ -10,7 +10,7 @@
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/login/wizard_in_process_browser_test.h"
 #include "chrome/browser/chromeos/net/network_portal_detector.h"
-#include "chrome/browser/chromeos/net/network_portal_detector_stub.h"
+#include "chrome/browser/chromeos/net/network_portal_detector_test_impl.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/fake_dbus_thread_manager.h"
 #include "chromeos/dbus/fake_update_engine_client.h"
@@ -37,7 +37,7 @@ class UpdateScreenTest : public WizardInProcessBrowserTest {
  public:
   UpdateScreenTest() : WizardInProcessBrowserTest("update"),
                        fake_update_engine_client_(NULL),
-                       network_portal_detector_stub_(NULL) {
+                       network_portal_detector_(NULL) {
   }
 
  protected:
@@ -53,9 +53,8 @@ class UpdateScreenTest : public WizardInProcessBrowserTest {
     // Setup network portal detector to return online state for both
     // ethernet and wifi networks. Ethernet is an active network by
     // default.
-    network_portal_detector_stub_ =
-        static_cast<NetworkPortalDetectorStub*>(
-            NetworkPortalDetector::GetInstance());
+    network_portal_detector_ = new NetworkPortalDetectorTestImpl();
+    NetworkPortalDetector::InitializeForTesting(network_portal_detector_);
     NetworkPortalDetector::CaptivePortalState online_state;
     online_state.status = NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE;
     online_state.response_code = 204;
@@ -87,27 +86,28 @@ class UpdateScreenTest : public WizardInProcessBrowserTest {
   }
 
   virtual void TearDownInProcessBrowserTestFixture() OVERRIDE {
+    NetworkPortalDetector::Shutdown();
     WizardInProcessBrowserTest::TearDownInProcessBrowserTestFixture();
     DBusThreadManager::Shutdown();
   }
 
   void SetDefaultNetworkPath(const std::string& service_path) {
-    DCHECK(network_portal_detector_stub_);
-    network_portal_detector_stub_->SetDefaultNetworkPathForTesting(
+    DCHECK(network_portal_detector_);
+    network_portal_detector_->SetDefaultNetworkPathForTesting(
         service_path);
   }
 
   void SetDetectionResults(
       const std::string& service_path,
       const NetworkPortalDetector::CaptivePortalState& state) {
-    DCHECK(network_portal_detector_stub_);
-    network_portal_detector_stub_->SetDetectionResultsForTesting(service_path,
-                                                                 state);
+    DCHECK(network_portal_detector_);
+    network_portal_detector_->SetDetectionResultsForTesting(service_path,
+                                                            state);
   }
 
   void NotifyPortalDetectionCompleted() {
-    DCHECK(network_portal_detector_stub_);
-    network_portal_detector_stub_->NotifyObserversForTesting();
+    DCHECK(network_portal_detector_);
+    network_portal_detector_->NotifyObserversForTesting();
   }
 
   FakeUpdateEngineClient* fake_update_engine_client_;
@@ -115,7 +115,7 @@ class UpdateScreenTest : public WizardInProcessBrowserTest {
   scoped_ptr<MockErrorScreenActor> mock_error_screen_actor_;
   scoped_ptr<MockErrorScreen> mock_error_screen_;
   UpdateScreen* update_screen_;
-  NetworkPortalDetectorStub* network_portal_detector_stub_;
+  NetworkPortalDetectorTestImpl* network_portal_detector_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(UpdateScreenTest);

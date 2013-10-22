@@ -620,9 +620,7 @@ void WizardController::PerformPostEulaActions() {
       NetworkStateHandler::kDefaultCheckPortalList);
   host_->CheckForAutoEnrollment();
   host_->PrewarmAuthentication();
-  NetworkPortalDetector* detector = NetworkPortalDetector::GetInstance();
-  if (NetworkPortalDetector::IsEnabledInCommandLine() && detector)
-    detector->Enable(true);
+  NetworkPortalDetector::Get()->Enable(true);
 }
 
 void WizardController::PerformPostUpdateActions() {

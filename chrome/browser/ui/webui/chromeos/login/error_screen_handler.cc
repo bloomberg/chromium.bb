@@ -27,22 +27,6 @@ const char kJsScreenPath[] = "login.ErrorMessageScreen";
 
 namespace chromeos {
 
-namespace {
-
-void EnableLazyDetection() {
-  NetworkPortalDetector* detector = NetworkPortalDetector::GetInstance();
-  if (NetworkPortalDetector::IsEnabledInCommandLine() && detector)
-    detector->EnableLazyDetection();
-}
-
-void DisableLazyDetection() {
-  NetworkPortalDetector* detector = NetworkPortalDetector::GetInstance();
-  if (NetworkPortalDetector::IsEnabledInCommandLine() && detector)
-    detector->DisableLazyDetection();
-}
-
-}  // namespace
-
 ErrorScreenHandler::ErrorScreenHandler(
     const scoped_refptr<NetworkStateInformer>& network_state_informer)
     : BaseScreenHandler(kJsScreenPath),
@@ -63,7 +47,7 @@ void ErrorScreenHandler::Show(OobeDisplay::Screen parent_screen,
   parent_screen_ = parent_screen;
   ShowScreen(OobeUI::kScreenErrorMessage, params);
   NetworkErrorShown();
-  EnableLazyDetection();
+  NetworkPortalDetector::Get()->EnableLazyDetection();
   LOG(WARNING) << "Offline message is displayed";
 }
 
@@ -73,7 +57,7 @@ void ErrorScreenHandler::Hide() {
   std::string screen_name;
   if (GetScreenName(parent_screen_, &screen_name))
     ShowScreen(screen_name.c_str(), NULL);
-  DisableLazyDetection();
+  NetworkPortalDetector::Get()->DisableLazyDetection();
   LOG(WARNING) << "Offline message is hidden";
 }
 

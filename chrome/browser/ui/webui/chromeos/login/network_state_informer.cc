@@ -41,10 +41,9 @@ NetworkStateInformer::State GetStateForDefaultNetwork() {
   if (!network)
     return NetworkStateInformer::OFFLINE;
 
-  if (NetworkPortalDetector::IsEnabledInCommandLine() &&
-      NetworkPortalDetector::GetInstance()) {
+  if (NetworkPortalDetector::Get()->IsEnabled()) {
     NetworkPortalDetector::CaptivePortalState state =
-        NetworkPortalDetector::GetInstance()->GetCaptivePortalState(network);
+        NetworkPortalDetector::Get()->GetCaptivePortalState(network);
     NetworkPortalDetector::CaptivePortalStatus status = state.status;
     if (status == NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_UNKNOWN &&
         NetworkState::StateIsConnecting(network->connection_state())) {
@@ -90,10 +89,7 @@ NetworkStateInformer::~NetworkStateInformer() {
     NetworkHandler::Get()->network_state_handler()->RemoveObserver(
         this, FROM_HERE);
   }
-  if (NetworkPortalDetector::IsEnabledInCommandLine() &&
-      NetworkPortalDetector::GetInstance()) {
-    NetworkPortalDetector::GetInstance()->RemoveObserver(this);
-  }
+  NetworkPortalDetector::Get()->RemoveObserver(this);
 }
 
 void NetworkStateInformer::Init() {
@@ -101,10 +97,7 @@ void NetworkStateInformer::Init() {
   NetworkHandler::Get()->network_state_handler()->AddObserver(
       this, FROM_HERE);
 
-  if (NetworkPortalDetector::IsEnabledInCommandLine() &&
-      NetworkPortalDetector::GetInstance()) {
-    NetworkPortalDetector::GetInstance()->AddAndFireObserver(this);
-  }
+  NetworkPortalDetector::Get()->AddAndFireObserver(this);
 
   registrar_.Add(this,
                  chrome::NOTIFICATION_LOGIN_PROXY_CHANGED,

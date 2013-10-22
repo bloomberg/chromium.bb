@@ -1,9 +1,9 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_NET_NETWORK_PORTAL_DETECTOR_STUB_H_
-#define CHROME_BROWSER_CHROMEOS_NET_NETWORK_PORTAL_DETECTOR_STUB_H_
+#ifndef CHROME_BROWSER_CHROMEOS_NET_NETWORK_PORTAL_DETECTOR_TEST_IMPL_H_
+#define CHROME_BROWSER_CHROMEOS_NET_NETWORK_PORTAL_DETECTOR_TEST_IMPL_H_
 
 #include <string>
 
@@ -16,10 +16,10 @@
 
 namespace chromeos {
 
-class NetworkPortalDetectorStub : public NetworkPortalDetector {
+class NetworkPortalDetectorTestImpl : public NetworkPortalDetector {
  public:
-  NetworkPortalDetectorStub();
-  virtual ~NetworkPortalDetectorStub();
+  NetworkPortalDetectorTestImpl();
+  virtual ~NetworkPortalDetectorTestImpl();
 
   void SetDefaultNetworkPathForTesting(const std::string& service_path);
   void SetDetectionResultsForTesting(const std::string& service_path,
@@ -27,8 +27,6 @@ class NetworkPortalDetectorStub : public NetworkPortalDetector {
   void NotifyObserversForTesting();
 
   // NetworkPortalDetector implementation:
-  virtual void Init() OVERRIDE;
-  virtual void Shutdown() OVERRIDE;
   virtual void AddObserver(Observer* observer) OVERRIDE;
   virtual void AddAndFireObserver(Observer* observer) OVERRIDE;
   virtual void RemoveObserver(Observer* observer) OVERRIDE;
@@ -49,9 +47,9 @@ class NetworkPortalDetectorStub : public NetworkPortalDetector {
   scoped_ptr<NetworkState> default_network_;
   CaptivePortalStateMap portal_state_map_;
 
-  DISALLOW_COPY_AND_ASSIGN(NetworkPortalDetectorStub);
+  DISALLOW_COPY_AND_ASSIGN(NetworkPortalDetectorTestImpl);
 };
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_NET_NETWORK_PORTAL_DETECTOR_STUB_H_
+#endif  // CHROME_BROWSER_CHROMEOS_NET_NETWORK_PORTAL_DETECTOR_TEST_IMPL_H_

@@ -240,7 +240,7 @@ std::string GetNetworkName(const std::string& service_path) {
 // Returns captive portal state for a network by its service path.
 NetworkPortalDetector::CaptivePortalState GetCaptivePortalState(
     const std::string& service_path) {
-  NetworkPortalDetector* detector = NetworkPortalDetector::GetInstance();
+  NetworkPortalDetector* detector = NetworkPortalDetector::Get();
   const NetworkState* network = NetworkHandler::Get()->network_state_handler()->
       GetNetworkState(service_path);
   if (!detector || !network)

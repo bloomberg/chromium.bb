@@ -15,7 +15,7 @@
 #include "chrome/browser/chromeos/login/login_manager_test.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/webui_login_view.h"
-#include "chrome/browser/chromeos/net/network_portal_detector_stub.h"
+#include "chrome/browser/chromeos/net/network_portal_detector_test_impl.h"
 #include "chrome/browser/chromeos/settings/stub_cros_settings_provider.h"
 #include "chrome/browser/managed_mode/managed_user_registration_utility.h"
 #include "chrome/browser/managed_mode/managed_user_registration_utility_stub.h"
@@ -46,7 +46,7 @@ class SupervisedUserTest : public chromeos::LoginManagerTest {
  protected:
   SupervisedUserTest() : LoginManagerTest(true),
                          mock_async_method_caller_(NULL),
-                         network_portal_detector_stub_(NULL),
+                         network_portal_detector_(NULL),
                          registration_utility_stub_(NULL) {
   }
 
@@ -70,15 +70,14 @@ class SupervisedUserTest : public chromeos::LoginManagerTest {
     // Setup network portal detector to return online state for both
     // ethernet and wifi networks. Ethernet is an active network by
     // default.
-    network_portal_detector_stub_ =
-        static_cast<NetworkPortalDetectorStub*>(
-            NetworkPortalDetector::GetInstance());
+    network_portal_detector_ = new NetworkPortalDetectorTestImpl();
+    NetworkPortalDetector::InitializeForTesting(network_portal_detector_);
     NetworkPortalDetector::CaptivePortalState online_state;
     online_state.status = NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE;
     online_state.response_code = 204;
-    network_portal_detector_stub_->SetDefaultNetworkPathForTesting(
+    network_portal_detector_->SetDefaultNetworkPathForTesting(
         kStubEthernetServicePath);
-    network_portal_detector_stub_->SetDetectionResultsForTesting(
+    network_portal_detector_->SetDetectionResultsForTesting(
         kStubEthernetServicePath, online_state);
   }
 
@@ -91,6 +90,10 @@ class SupervisedUserTest : public chromeos::LoginManagerTest {
     cryptohome::AsyncMethodCaller::Shutdown();
     mock_async_method_caller_ = NULL;
     LoginManagerTest::TearDown();
+  }
+
+  virtual void TearDownInProcessBrowserTestFixture() OVERRIDE {
+    NetworkPortalDetector::Shutdown();
   }
 
   void JSEval(const std::string& script) {
@@ -126,7 +129,7 @@ class SupervisedUserTest : public chromeos::LoginManagerTest {
 
  protected:
    cryptohome::MockAsyncMethodCaller* mock_async_method_caller_;
-   NetworkPortalDetectorStub* network_portal_detector_stub_;
+   NetworkPortalDetectorTestImpl* network_portal_detector_;
    ManagedUserRegistrationUtilityStub* registration_utility_stub_;
    scoped_ptr<ScopedTestingManagedUserRegistrationUtility> scoped_utility_;
 

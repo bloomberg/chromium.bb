@@ -50,7 +50,6 @@ class NetworkPortalDetectorImplTest
     profile_.reset(new TestingProfile());
     network_portal_detector_.reset(
         new NetworkPortalDetectorImpl(profile_->GetRequestContext()));
-    network_portal_detector_->Init();
     network_portal_detector_->Enable(false);
 
     set_detector(network_portal_detector_->captive_portal_detector_.get());
@@ -60,7 +59,7 @@ class NetworkPortalDetectorImplTest
   }
 
   virtual void TearDown() {
-    network_portal_detector_->Shutdown();
+    network_portal_detector_.reset();
     profile_.reset();
     NetworkHandler::Shutdown();
     DBusThreadManager::Shutdown();

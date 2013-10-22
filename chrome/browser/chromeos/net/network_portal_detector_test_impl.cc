@@ -1,19 +1,19 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/net/network_portal_detector_stub.h"
+#include "chrome/browser/chromeos/net/network_portal_detector_test_impl.h"
 
 #include "chromeos/network/network_state.h"
 
 namespace chromeos {
 
-NetworkPortalDetectorStub::NetworkPortalDetectorStub() {}
+NetworkPortalDetectorTestImpl::NetworkPortalDetectorTestImpl() {}
 
-NetworkPortalDetectorStub::~NetworkPortalDetectorStub() {
+NetworkPortalDetectorTestImpl::~NetworkPortalDetectorTestImpl() {
 }
 
-void NetworkPortalDetectorStub::SetDefaultNetworkPathForTesting(
+void NetworkPortalDetectorTestImpl::SetDefaultNetworkPathForTesting(
     const std::string& service_path) {
   if (service_path.empty())
     default_network_.reset();
@@ -21,14 +21,14 @@ void NetworkPortalDetectorStub::SetDefaultNetworkPathForTesting(
     default_network_.reset(new NetworkState(service_path));
 }
 
-void NetworkPortalDetectorStub::SetDetectionResultsForTesting(
+void NetworkPortalDetectorTestImpl::SetDetectionResultsForTesting(
     const std::string& service_path,
     const CaptivePortalState& state) {
   if (!service_path.empty())
     portal_state_map_[service_path] = state;
 }
 
-void NetworkPortalDetectorStub::NotifyObserversForTesting() {
+void NetworkPortalDetectorTestImpl::NotifyObserversForTesting() {
   CaptivePortalState state;
   if (default_network_ &&
       portal_state_map_.count(default_network_->path())) {
@@ -38,18 +38,12 @@ void NetworkPortalDetectorStub::NotifyObserversForTesting() {
                     OnPortalDetectionCompleted(default_network_.get(), state));
 }
 
-void NetworkPortalDetectorStub::Init() {
-}
-
-void NetworkPortalDetectorStub::Shutdown() {
-}
-
-void NetworkPortalDetectorStub::AddObserver(Observer* observer) {
+void NetworkPortalDetectorTestImpl::AddObserver(Observer* observer) {
   if (observer && !observers_.HasObserver(observer))
     observers_.AddObserver(observer);
 }
 
-void NetworkPortalDetectorStub::AddAndFireObserver(Observer* observer) {
+void NetworkPortalDetectorTestImpl::AddAndFireObserver(Observer* observer) {
   AddObserver(observer);
   if (!observer)
     return;
@@ -64,34 +58,34 @@ void NetworkPortalDetectorStub::AddAndFireObserver(Observer* observer) {
   }
 }
 
-void NetworkPortalDetectorStub::RemoveObserver(Observer* observer) {
+void NetworkPortalDetectorTestImpl::RemoveObserver(Observer* observer) {
   if (observer)
     observers_.RemoveObserver(observer);
 }
 
 NetworkPortalDetector::CaptivePortalState
-NetworkPortalDetectorStub::GetCaptivePortalState(
+NetworkPortalDetectorTestImpl::GetCaptivePortalState(
     const chromeos::NetworkState* network) {
   if (!network || !portal_state_map_.count(network->path()))
     return CaptivePortalState();
   return portal_state_map_[network->path()];
 }
 
-bool NetworkPortalDetectorStub::IsEnabled() {
+bool NetworkPortalDetectorTestImpl::IsEnabled() {
   return true;
 }
 
-void NetworkPortalDetectorStub::Enable(bool start_detection) {
+void NetworkPortalDetectorTestImpl::Enable(bool start_detection) {
 }
 
-bool NetworkPortalDetectorStub::StartDetectionIfIdle() {
+bool NetworkPortalDetectorTestImpl::StartDetectionIfIdle() {
   return false;
 }
 
-void NetworkPortalDetectorStub::EnableLazyDetection() {
+void NetworkPortalDetectorTestImpl::EnableLazyDetection() {
 }
 
-void NetworkPortalDetectorStub::DisableLazyDetection() {
+void NetworkPortalDetectorTestImpl::DisableLazyDetection() {
 }
 
 }  // namespace chromeos

@@ -115,8 +115,7 @@ UpdateScreen::UpdateScreen(
 
 UpdateScreen::~UpdateScreen() {
   DBusThreadManager::Get()->GetUpdateEngineClient()->RemoveObserver(this);
-  if (NetworkPortalDetector::GetInstance())
-    NetworkPortalDetector::GetInstance()->RemoveObserver(this);
+  NetworkPortalDetector::Get()->RemoveObserver(this);
   GetInstanceSet().erase(this);
   if (actor_)
     actor_->SetDelegate(NULL);
@@ -253,12 +252,11 @@ void UpdateScreen::OnPortalDetectionCompleted(
        state.status == NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_OFFLINE) &&
       is_first_detection_notification_) {
     is_first_detection_notification_ = false;
-    NetworkPortalDetector* detector = NetworkPortalDetector::GetInstance();
     base::MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(
             base::IgnoreResult(&NetworkPortalDetector::StartDetectionIfIdle),
-            base::Unretained(detector)));
+            base::Unretained(NetworkPortalDetector::Get())));
     return;
   }
   is_first_detection_notification_ = false;
@@ -284,12 +282,10 @@ void UpdateScreen::OnPortalDetectionCompleted(
 }
 
 void UpdateScreen::StartNetworkCheck() {
-  NetworkPortalDetector* detector = NetworkPortalDetector::GetInstance();
-
   // If portal detector is enabled and portal detection before AU is
   // allowed, initiate network state check. Otherwise, directly
   // proceed to update.
-  if (!NetworkPortalDetector::IsEnabledInCommandLine() || !detector ||
+  if (!NetworkPortalDetector::Get()->IsEnabled() ||
       !IsBlockingUpdateEnabledInCommandLine()) {
     StartUpdateCheck();
     return;
@@ -297,7 +293,7 @@ void UpdateScreen::StartNetworkCheck() {
   state_ = STATE_FIRST_PORTAL_CHECK;
   is_first_detection_notification_ = true;
   is_first_portal_notification_ = true;
-  detector->AddAndFireObserver(this);
+  NetworkPortalDetector::Get()->AddAndFireObserver(this);
 }
 
 void UpdateScreen::CancelUpdate() {
@@ -330,8 +326,7 @@ void UpdateScreen::PrepareToShow() {
 
 void UpdateScreen::ExitUpdate(UpdateScreen::ExitReason reason) {
   DBusThreadManager::Get()->GetUpdateEngineClient()->RemoveObserver(this);
-  if (NetworkPortalDetector::GetInstance())
-    NetworkPortalDetector::GetInstance()->RemoveObserver(this);
+  NetworkPortalDetector::Get()->RemoveObserver(this);
 
   switch (reason) {
     case REASON_UPDATE_CANCELED:
@@ -483,9 +478,7 @@ ErrorScreen* UpdateScreen::GetErrorScreen() {
 }
 
 void UpdateScreen::StartUpdateCheck() {
-  NetworkPortalDetector* detector = NetworkPortalDetector::GetInstance();
-  if (detector)
-    detector->RemoveObserver(this);
+  NetworkPortalDetector::Get()->RemoveObserver(this);
   if (state_ == STATE_ERROR)
     HideErrorMessage();
   state_ = STATE_UPDATE;

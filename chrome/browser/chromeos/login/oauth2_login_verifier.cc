@@ -62,7 +62,7 @@ void OAuth2LoginVerifier::VerifyProfileTokens(Profile* profile) {
   // portal.
   const NetworkState* default_network =
       NetworkHandler::Get()->network_state_handler()->DefaultNetwork();
-  NetworkPortalDetector* detector = NetworkPortalDetector::GetInstance();
+  NetworkPortalDetector* detector = NetworkPortalDetector::Get();
   NetworkPortalDetector::CaptivePortalState state =
       detector->GetCaptivePortalState(default_network);
   if (!default_network ||

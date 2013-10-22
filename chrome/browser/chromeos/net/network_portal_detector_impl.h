@@ -47,8 +47,6 @@ class NetworkPortalDetectorImpl
   virtual ~NetworkPortalDetectorImpl();
 
   // NetworkPortalDetector implementation:
-  virtual void Init() OVERRIDE;
-  virtual void Shutdown() OVERRIDE;
   virtual void AddObserver(Observer* observer) OVERRIDE;
   virtual void AddAndFireObserver(Observer* observer) OVERRIDE;
   virtual void RemoveObserver(Observer* observer) OVERRIDE;

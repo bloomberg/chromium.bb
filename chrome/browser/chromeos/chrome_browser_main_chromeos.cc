@@ -570,6 +570,26 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
     UserManager::Get()->RestoreActiveSessions();
   }
 
+  // Initialize the network portal detector for Chrome OS. The network
+  // portal detector starts to listen for notifications from
+  // NetworkStateHandler and initiates captive portal detection for
+  // active networks. Shoule be called before call to
+  // OptionallyRunChromeOSLoginManager, because it depends on
+  // NetworkPortalDetector.
+  NetworkPortalDetector::Initialize();
+  {
+    NetworkPortalDetector* detector = NetworkPortalDetector::Get();
+#if defined(GOOGLE_CHROME_BUILD)
+    bool is_official_build = true;
+#else
+    bool is_official_build = false;
+#endif
+    // Enable portal detector if EULA was previously accepted or if
+    // this is an unofficial build.
+    if (!is_official_build || StartupUtils::IsEulaAccepted())
+      detector->Enable(true);
+  }
+
   // Tests should be able to tune login manager before showing it.
   // Thus only show login manager in normal (non-testing) mode.
   if (!parameters().ui_task ||
@@ -587,23 +607,6 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
   }
 
   peripheral_battery_observer_.reset(new PeripheralBatteryObserver());
-
-  // Initialize the network portal detector for Chrome OS. The network portal
-  // detector starts to listen for notifications from NetworkStateHandler and
-  // initiates captive portal detection for active networks.
-  NetworkPortalDetector* detector = NetworkPortalDetector::GetInstance();
-  if (NetworkPortalDetector::IsEnabledInCommandLine() && detector) {
-    detector->Init();
-#if defined(GOOGLE_CHROME_BUILD)
-    bool is_official_build = true;
-#else
-    bool is_official_build = false;
-#endif
-    // Enable portal detector if EULA was previously accepted or if
-    // this is an unofficial build.
-    if (!is_official_build || StartupUtils::IsEulaAccepted())
-      detector->Enable(true);
-  }
 
   display_configuration_observer_.reset(
       new DisplayConfigurationObserver());
@@ -680,10 +683,6 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   if (NetworkChangeNotifierFactoryChromeos::GetInstance())
     NetworkChangeNotifierFactoryChromeos::GetInstance()->Shutdown();
 
-  NetworkPortalDetector* detector = NetworkPortalDetector::GetInstance();
-  if (NetworkPortalDetector::IsEnabledInCommandLine() && detector)
-    detector->Shutdown();
-
   // Destroy UI related classes before destroying services that they may
   // depend on.
   data_promo_notification_.reset();
@@ -749,6 +748,12 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   // PostMainMessageLoopRun, which also requires UserManager to live (see
   // http://crbug.com/243364).
   ChromeBrowserMainPartsLinux::PostMainMessageLoopRun();
+
+  // Called after
+  // ChromeBrowserMainPartsLinux::PostMainMessageLoopRun() to be
+  // executed after execution of chrome::CloseAsh(), because some
+  // parts of WebUI depends on NetworkPortalDetector.
+  NetworkPortalDetector::Shutdown();
 
   UserManager::Destroy();
 }

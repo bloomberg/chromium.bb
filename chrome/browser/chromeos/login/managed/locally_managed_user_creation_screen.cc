@@ -96,8 +96,7 @@ LocallyManagedUserCreationScreen::~LocallyManagedUserCreationScreen() {
     actor_->SetDelegate(NULL);
   if (image_decoder_.get())
     image_decoder_->set_delegate(NULL);
-  if (NetworkPortalDetector::GetInstance())
-    NetworkPortalDetector::GetInstance()->RemoveObserver(this);
+  NetworkPortalDetector::Get()->RemoveObserver(this);
 }
 
 void LocallyManagedUserCreationScreen::PrepareToShow() {
@@ -116,9 +115,8 @@ void LocallyManagedUserCreationScreen::Show() {
       actor_->ShowIntroPage();
   }
 
-  NetworkPortalDetector* detector = NetworkPortalDetector::GetInstance();
-  if (detector && !on_error_screen_)
-    detector->AddAndFireObserver(this);
+  if (!on_error_screen_)
+    NetworkPortalDetector::Get()->AddAndFireObserver(this);
   on_error_screen_ = false;
 }
 
@@ -161,9 +159,8 @@ void LocallyManagedUserCreationScreen::ShowInitialScreen() {
 void LocallyManagedUserCreationScreen::Hide() {
   if (actor_)
     actor_->Hide();
-  NetworkPortalDetector* detector = NetworkPortalDetector::GetInstance();
-  if (detector && !on_error_screen_)
-    detector->RemoveObserver(this);
+  if (!on_error_screen_)
+    NetworkPortalDetector::Get()->RemoveObserver(this);
 }
 
 std::string LocallyManagedUserCreationScreen::GetName() const {

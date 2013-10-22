@@ -8,7 +8,7 @@
 #include "base/logging.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/net/network_portal_detector_impl.h"
-#include "chrome/browser/chromeos/net/network_portal_detector_stub.h"
+#include "chrome/browser/chromeos/net/network_portal_detector_test_impl.h"
 #include "chrome/common/chrome_switches.h"
 #include "chromeos/chromeos_switches.h"
 
@@ -17,47 +17,82 @@ namespace chromeos {
 namespace {
 
 NetworkPortalDetector* g_network_portal_detector = NULL;
+bool g_network_portal_detector_set_for_testing = false;
 
 bool IsTestMode() {
   return CommandLine::ForCurrentProcess()->HasSwitch(::switches::kTestType);
 }
 
-}  // namespace
-
-NetworkPortalDetector::NetworkPortalDetector() {
+bool IsEnabledInCommandLine() {
+  return !CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableChromeCaptivePortalDetector);
 }
 
-NetworkPortalDetector::~NetworkPortalDetector() {
+// Stub implementation of NetworkPortalDetector.
+class NetworkPortalDetectorStubImpl : public NetworkPortalDetector {
+ protected:
+  // NetworkPortalDetector implementation:
+  virtual void AddObserver(Observer* /* observer */) OVERRIDE {}
+  virtual void AddAndFireObserver(Observer* observer) OVERRIDE {
+    if (observer)
+      observer->OnPortalDetectionCompleted(NULL, CaptivePortalState());
+  }
+  virtual void RemoveObserver(Observer* /* observer */) OVERRIDE {}
+  virtual CaptivePortalState GetCaptivePortalState(
+      const NetworkState* /* network */) OVERRIDE {
+    return CaptivePortalState();
+  }
+  virtual bool IsEnabled() OVERRIDE { return false; }
+  virtual void Enable(bool /* start_detection */) OVERRIDE {}
+  virtual bool StartDetectionIfIdle() OVERRIDE { return false; }
+  virtual void EnableLazyDetection() OVERRIDE {}
+  virtual void DisableLazyDetection() OVERRIDE {}
+};
+
+}  // namespace
+
+void NetworkPortalDetector::InitializeForTesting(
+    NetworkPortalDetector* network_portal_detector) {
+  CHECK(!g_network_portal_detector)
+      << "NetworkPortalDetector::InitializeForTesting() is called after "
+      << "Initialize()";
+  CHECK(network_portal_detector);
+  g_network_portal_detector = network_portal_detector;
+  g_network_portal_detector_set_for_testing = true;
 }
 
 // static
-NetworkPortalDetector* NetworkPortalDetector::CreateInstance() {
-  DCHECK(!g_network_portal_detector);
-  CHECK(NetworkPortalDetector::IsEnabledInCommandLine());
-  if (IsTestMode()) {
-    g_network_portal_detector = new NetworkPortalDetectorStub();
+void NetworkPortalDetector::Initialize() {
+  if (g_network_portal_detector_set_for_testing)
+    return;
+  CHECK(!g_network_portal_detector)
+      << "NetworkPortalDetector::Initialize() is called twice";
+  if (!IsEnabledInCommandLine() || IsTestMode()) {
+    g_network_portal_detector = new NetworkPortalDetectorStubImpl();
   } else {
     CHECK(g_browser_process);
     CHECK(g_browser_process->system_request_context());
     g_network_portal_detector = new NetworkPortalDetectorImpl(
         g_browser_process->system_request_context());
   }
-  return g_network_portal_detector;
 }
 
 // static
-NetworkPortalDetector* NetworkPortalDetector::GetInstance() {
-  if (!NetworkPortalDetector::IsEnabledInCommandLine())
-    return NULL;
-  if (!g_network_portal_detector)
-    return CreateInstance();
-  return g_network_portal_detector;
+void NetworkPortalDetector::Shutdown() {
+  CHECK(g_network_portal_detector || g_network_portal_detector_set_for_testing)
+      << "NetworkPortalDetectorImpl::Shutdown() is called "
+      << "without previous call to Initialize()";
+  if (g_network_portal_detector) {
+    delete g_network_portal_detector;
+    g_network_portal_detector = NULL;
+  }
 }
 
 // static
-bool NetworkPortalDetector::IsEnabledInCommandLine() {
-  return !CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableChromeCaptivePortalDetector);
+NetworkPortalDetector* NetworkPortalDetector::Get() {
+  CHECK(g_network_portal_detector)
+      << "NetworkPortalDetector::Get() called before Initialize()";
+  return g_network_portal_detector;
 }
 
 }  // namespace chromeos
