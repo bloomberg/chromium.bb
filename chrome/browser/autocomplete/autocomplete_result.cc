@@ -179,8 +179,18 @@ void AutocompleteResult::SortAndCull(const AutocompleteInput& input,
   matches_.resize(num_matches);
 
   default_match_ = matches_.begin();
-  DCHECK((default_match_ == matches_.end()) ||
-      default_match_->allowed_to_be_default_match);
+
+  if (default_match_ != matches_.end()) {
+    DCHECK(default_match_->allowed_to_be_default_match);
+    // We shouldn't get query matches for URL inputs, or non-query matches
+    // for query inputs.
+    if (AutocompleteMatch::IsSearchType(default_match_->type)) {
+      DCHECK_NE(AutocompleteInput::URL, input.type());
+    } else {
+      DCHECK_NE(AutocompleteInput::QUERY, input.type());
+      DCHECK_NE(AutocompleteInput::FORCED_QUERY, input.type());
+    }
+  }
 
   // Set the alternate nav URL.
   alternate_nav_url_ = (default_match_ == matches_.end()) ?
