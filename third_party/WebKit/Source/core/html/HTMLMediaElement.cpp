@@ -2876,6 +2876,7 @@ KURL HTMLMediaElement::selectNextSourceChild(ContentType* contentType, String* k
         if (node->parentNode() != this)
             continue;
 
+        UseCounter::count(document(), UseCounter::SourceElementCandidate);
         source = toHTMLSourceElement(node);
 
         // If candidate does not have a src attribute, or if its src attribute's value is the empty string ... jump down to the failed step below
@@ -2894,8 +2895,10 @@ KURL HTMLMediaElement::selectNextSourceChild(ContentType* contentType, String* k
             if (shouldLog)
                 LOG(Media, "HTMLMediaElement::selectNextSourceChild - 'media' is %s", source->media().utf8().data());
 #endif
-            if (!screenEval.eval(media.get()))
+            if (!screenEval.eval(media.get())) {
+                UseCounter::count(document(), UseCounter::SourceElementNonMatchingMedia);
                 goto check_again;
+            }
         }
 
         type = source->type();
