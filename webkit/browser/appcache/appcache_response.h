@@ -21,7 +21,7 @@ class IOBuffer;
 
 namespace appcache {
 
-class AppCacheService;
+class AppCacheStorage;
 
 static const int kUnkownResponseDataSize = -1;
 
@@ -31,7 +31,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT AppCacheResponseInfo
     : public base::RefCounted<AppCacheResponseInfo> {
  public:
   // AppCacheResponseInfo takes ownership of the http_info.
-  AppCacheResponseInfo(AppCacheService* service, const GURL& manifest_url,
+  AppCacheResponseInfo(AppCacheStorage* storage, const GURL& manifest_url,
                        int64 response_id, net::HttpResponseInfo* http_info,
                        int64 response_data_size);
 
@@ -50,7 +50,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT AppCacheResponseInfo
   const int64 response_id_;
   const scoped_ptr<net::HttpResponseInfo> http_response_info_;
   const int64 response_data_size_;
-  const AppCacheService* service_;
+  AppCacheStorage* storage_;
 };
 
 // A refcounted wrapper for HttpResponseInfo so we can apply the

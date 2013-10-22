@@ -70,7 +70,7 @@ void AppCacheStorage::ResponseInfoLoadTask::OnReadComplete(int result) {
   storage_->pending_info_loads_.erase(response_id_);
   scoped_refptr<AppCacheResponseInfo> info;
   if (result >= 0) {
-    info = new AppCacheResponseInfo(storage_->service(), manifest_url_,
+    info = new AppCacheResponseInfo(storage_, manifest_url_,
                                     response_id_,
                                     info_buffer_->http_info.release(),
                                     info_buffer_->response_data_size);

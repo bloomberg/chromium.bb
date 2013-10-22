@@ -225,8 +225,11 @@ AppCacheQuotaClient::GetServiceDeleteCallback() {
 }
 
 void AppCacheQuotaClient::NotifyAppCacheReady() {
-  appcache_is_ready_ = true;
-  ProcessPendingRequests();
+  // Can reoccur during reinitialization.
+  if (!appcache_is_ready_) {
+    appcache_is_ready_ = true;
+    ProcessPendingRequests();
+  }
 }
 
 void AppCacheQuotaClient::NotifyAppCacheDestroyed() {
