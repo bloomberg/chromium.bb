@@ -1045,7 +1045,6 @@ crbug.com/295605 [ Win Debug ] fast/dom/custom/document-register-reentrant-null-
 crbug.com/295605 [ Win Debug ] fast/dom/custom/document-register-reentrant-throwing-constructor.html [ Crash ]
 
 crbug.com/305345 fast/events/mouseover-mouseout.html [ Failure Pass ]
-crbug.com/306882 fast/forms/password/password-generation-appearance.html [ NeedsRebaseline ]
 
 # Rebaselining needed due to libpng update.
 crbug.com/303648 css2.1/20110323/inline-replaced-width-014.htm [ NeedsManualRebaseline ]
