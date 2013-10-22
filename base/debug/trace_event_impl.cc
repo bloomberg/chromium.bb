@@ -438,6 +438,18 @@ class TraceLog::OptionalAutoLock {
   DISALLOW_COPY_AND_ASSIGN(OptionalAutoLock);
 };
 
+// Use this function instead of TraceEventHandle constructor to keep the
+// overhead of ScopedTracer (trace_event.h) constructor minimum.
+void MakeHandle(uint32 chunk_seq, size_t chunk_index, size_t event_index,
+                TraceEventHandle* handle) {
+  DCHECK(chunk_seq);
+  DCHECK(chunk_index < (1u << 16));
+  DCHECK(event_index < (1u << 16));
+  handle->chunk_seq = chunk_seq;
+  handle->chunk_index = chunk_index;
+  handle->event_index = event_index;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 //
 // TraceEvent
@@ -1049,7 +1061,8 @@ TraceEvent* TraceLog::ThreadLocalEventBuffer::AddTraceEvent(
   size_t event_index;
   TraceEvent* trace_event = chunk_->AddTraceEvent(&event_index);
   if (trace_event && handle)
-    *handle = TraceEventHandle(chunk_->seq(), chunk_index_, event_index);
+    MakeHandle(chunk_->seq(), chunk_index_, event_index, handle);
+
   return trace_event;
 }
 
@@ -1484,8 +1497,8 @@ TraceEvent* TraceLog::AddEventToThreadSharedChunkWhileLocked(
   size_t event_index;
   TraceEvent* trace_event = thread_shared_chunk_->AddTraceEvent(&event_index);
   if (trace_event && handle) {
-    *handle = TraceEventHandle(thread_shared_chunk_->seq(),
-                               thread_shared_chunk_index_, event_index);
+    MakeHandle(thread_shared_chunk_->seq(), thread_shared_chunk_index_,
+               event_index, handle);
   }
   return trace_event;
 }
@@ -1716,7 +1729,7 @@ TraceEventHandle TraceLog::AddTraceEventWithThreadIdAndTimestamp(
     const unsigned long long* arg_values,
     const scoped_refptr<ConvertableToTraceFormat>* convertable_values,
     unsigned char flags) {
-  TraceEventHandle handle;
+  TraceEventHandle handle = { 0, 0, 0 };
   if (!*category_group_enabled)
     return handle;
 
@@ -2011,6 +2024,9 @@ TraceEvent* TraceLog::GetEventByHandle(TraceEventHandle handle) {
 
 TraceEvent* TraceLog::GetEventByHandleInternal(TraceEventHandle handle,
                                                OptionalAutoLock* lock) {
+  if (!handle.chunk_seq)
+    return NULL;
+
   if (thread_local_event_buffer_.Get()) {
     TraceEvent* trace_event =
         thread_local_event_buffer_.Get()->GetEventByHandle(handle);
