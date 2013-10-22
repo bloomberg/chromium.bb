@@ -332,7 +332,7 @@ RenderStyle* SharedStyleFinder::findSharedStyle()
     if (matchesRuleSet(m_siblingRuleSet) || matchesRuleSet(m_uncommonAttributeRuleSet))
         return 0;
     // Tracking child index requires unique style for each node. This may get set by the sibling rule match above.
-    if (element().parentElement()->childrenSupportStyleSharing())
+    if (!element().parentElement()->childrenSupportStyleSharing())
         return 0;
     STYLE_STATS_ADD_STYLE_SHARED();
     return shareElement->renderStyle();
