@@ -1457,8 +1457,9 @@ void InternetOptionsHandler::SetIPConfigProperties(
         shill::kStaticIPAddressProperty,
         address, shill_properties, &properties_to_set);
     int prefixlen = network_util::NetmaskToPrefixLength(netmask);
-    if (prefixlen > 0) {
-      LOG(ERROR) << "Invalid prefix length for: " << service_path;
+    if (prefixlen < 0) {
+      LOG(ERROR) << "Invalid prefix length for: " << service_path
+                 << " with netmask " << netmask;
       prefixlen = 0;
     }
     request_reconnect |= AddIntegerPropertyIfChanged(
