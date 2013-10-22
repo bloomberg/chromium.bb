@@ -16,7 +16,7 @@ group("root") {
     "//third_party/icu:icudata",
     "//third_party/leveldatabase",
     "//third_party/zlib",
-    "//third_party/WebKit/Source/wtf",
+    "//third_party/WebKit/Source/weborigin",
     "//skia",
     "//tools/gn",
     "//url",
