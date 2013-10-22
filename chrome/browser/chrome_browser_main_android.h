@@ -7,7 +7,9 @@
 
 #include "chrome/browser/chrome_browser_main.h"
 
+namespace breakpad {
 class CrashDumpManager;
+}
 
 class ChromeBrowserMainPartsAndroid : public ChromeBrowserMainParts {
  public:
@@ -24,7 +26,7 @@ class ChromeBrowserMainPartsAndroid : public ChromeBrowserMainParts {
 
  private:
   scoped_ptr<base::MessageLoop> main_message_loop_;
-  scoped_ptr<CrashDumpManager> crash_dump_manager_;
+  scoped_ptr<breakpad::CrashDumpManager> crash_dump_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainPartsAndroid);
 };

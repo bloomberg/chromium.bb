@@ -1,11 +1,11 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 // For linux_syscall_support.h. This makes it safe to call embedded system
 // calls when in seccomp mode.
 
-#include "chrome/app/breakpad_linux.h"
+#include "components/breakpad/app/breakpad_linux.h"
 
 #include <fcntl.h>
 #include <poll.h>
@@ -37,8 +37,8 @@
 #include "breakpad/src/client/linux/minidump_writer/directory_reader.h"
 #include "breakpad/src/common/linux/linux_libc_support.h"
 #include "breakpad/src/common/memory.h"
-#include "chrome/app/breakpad_linux_impl.h"
-#include "components/breakpad/breakpad_client.h"
+#include "components/breakpad/app/breakpad_client.h"
+#include "components/breakpad/app/breakpad_linux_impl.h"
 #include "content/public/common/content_descriptors.h"
 #include "content/public/common/content_switches.h"
 
@@ -71,6 +71,8 @@
 
 using google_breakpad::ExceptionHandler;
 using google_breakpad::MinidumpDescriptor;
+
+namespace breakpad {
 
 namespace {
 
@@ -209,11 +211,10 @@ void SetClientIdFromCommandLine(const CommandLine& command_line) {
       command_line.GetSwitchValueASCII(switches::kEnableCrashReporter);
   size_t separator = switch_value.find(",");
   if (separator != std::string::npos) {
-    breakpad::GetBreakpadClient()->SetClientID(
-        switch_value.substr(0, separator));
+    GetBreakpadClient()->SetClientID(switch_value.substr(0, separator));
     base::SetLinuxDistro(switch_value.substr(separator + 1));
   } else {
-    breakpad::GetBreakpadClient()->SetClientID(switch_value);
+    GetBreakpadClient()->SetClientID(switch_value);
   }
 }
 
@@ -634,9 +635,9 @@ void EnableCrashDumping(bool unattended) {
   PathService::Get(base::DIR_TEMP, &tmp_path);
 
   base::FilePath dumps_path(tmp_path);
-  if (breakpad::GetBreakpadClient()->GetCrashDumpLocation(&dumps_path)) {
-    base::FilePath logfile = dumps_path.Append(
-        breakpad::GetBreakpadClient()->GetReporterLogFilename());
+  if (GetBreakpadClient()->GetCrashDumpLocation(&dumps_path)) {
+    base::FilePath logfile =
+        dumps_path.Append(GetBreakpadClient()->GetReporterLogFilename());
     std::string logfile_str = logfile.value();
     const size_t crash_log_path_len = logfile_str.size() + 1;
     g_crash_log_path = new char[crash_log_path_len];
@@ -1166,8 +1167,7 @@ void HandleCrashDump(const BreakpadInfo& info) {
     std::string product_name;
     std::string version;
 
-    breakpad::GetBreakpadClient()->GetProductNameAndVersion(&product_name,
-                                                            &version);
+    GetBreakpadClient()->GetProductNameAndVersion(&product_name, &version);
 
     writer.AddBoundary();
     writer.AddPairString("prod", product_name.c_str());
@@ -1452,7 +1452,7 @@ void InitCrashReporter() {
   const std::string process_type =
       parsed_command_line.GetSwitchValueASCII(switches::kProcessType);
   if (process_type.empty()) {
-    EnableCrashDumping(breakpad::GetBreakpadClient()->IsRunningUnattended());
+    EnableCrashDumping(GetBreakpadClient()->IsRunningUnattended());
   } else if (process_type == switches::kRendererProcess ||
              process_type == switches::kPluginProcess ||
              process_type == switches::kPpapiPluginProcess ||
@@ -1478,14 +1478,14 @@ void InitCrashReporter() {
 
   SetProcessStartTime();
 
-  breakpad::GetBreakpadClient()->SetDumpWithoutCrashingFunction(&DumpProcess);
+  GetBreakpadClient()->SetDumpWithoutCrashingFunction(&DumpProcess);
 #if defined(ADDRESS_SANITIZER)
   // Register the callback for AddressSanitizer error reporting.
   __asan_set_error_report_callback(AsanLinuxBreakpadCallback);
 #endif
 
   g_crash_keys = new CrashKeyStorage;
-  breakpad::GetBreakpadClient()->RegisterCrashKeys();
+  GetBreakpadClient()->RegisterCrashKeys();
   base::debug::SetCrashKeyReportingFunctions(
       &SetCrashKeyValue, &ClearCrashKey);
 }
@@ -1497,8 +1497,8 @@ void InitNonBrowserCrashReporterForAndroid() {
     // On Android we need to provide a FD to the file where the minidump is
     // generated as the renderer and browser run with different UIDs
     // (preventing the browser from inspecting the renderer process).
-    int minidump_fd = base::GlobalDescriptors::GetInstance()->
-        MaybeGet(breakpad::GetBreakpadClient()->GetAndroidMinidumpDescriptor());
+    int minidump_fd = base::GlobalDescriptors::GetInstance()->MaybeGet(
+        GetBreakpadClient()->GetAndroidMinidumpDescriptor());
     if (minidump_fd == base::kInvalidPlatformFileValue) {
       NOTREACHED() << "Could not find minidump FD, crash reporting disabled.";
     } else {
@@ -1511,3 +1511,5 @@ void InitNonBrowserCrashReporterForAndroid() {
 bool IsCrashReporterEnabled() {
   return g_is_crash_reporter_enabled;
 }
+
+}  // namespace breakpad

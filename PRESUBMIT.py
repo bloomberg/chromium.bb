@@ -157,7 +157,7 @@ _BANNED_CPP_FUNCTIONS = (
       ),
       True,
       (
-        r"^components[\\\/]breakpad[\\\/]breakpad_mac\.mm$",
+        r"^components[\\\/]breakpad[\\\/]app[\\\/]breakpad_mac\.mm$",
         r"^content[\\\/]shell[\\\/]browser[\\\/]shell_browser_main\.cc$",
         r"^content[\\\/]shell[\\\/]browser[\\\/]shell_message_filter\.cc$",
         r"^net[\\\/]disk_cache[\\\/]cache_util\.cc$",

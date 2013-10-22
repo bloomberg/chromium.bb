@@ -59,7 +59,7 @@
 #include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/mac/cfbundle_blocker.h"
 #include "chrome/common/mac/objc_zombie.h"
-#include "components/breakpad/breakpad_mac.h"
+#include "components/breakpad/app/breakpad_mac.h"
 #include "grit/chromium_strings.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #endif
@@ -68,7 +68,7 @@
 #include <locale.h>
 #include <signal.h>
 #include "chrome/app/chrome_breakpad_client.h"
-#include "components/breakpad/breakpad_client.h"
+#include "components/breakpad/app/breakpad_client.h"
 #endif
 
 #if !defined(DISABLE_NACL) && defined(OS_LINUX)
@@ -98,7 +98,7 @@
 #endif
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
-#include "chrome/app/breakpad_linux.h"
+#include "components/breakpad/app/breakpad_linux.h"
 #endif
 
 #if !defined(CHROME_MULTIPLE_DLL_CHILD)
@@ -739,9 +739,9 @@ void ChromeMainDelegate::PreSandboxStartup() {
   // need to call InitCrashReporter() in RunZygote().
   if (!process_type.empty() && process_type != switches::kZygoteProcess) {
 #if defined(OS_ANDROID)
-    InitNonBrowserCrashReporterForAndroid();
+    breakpad::InitNonBrowserCrashReporterForAndroid();
 #else
-    InitCrashReporter();
+    breakpad::InitCrashReporter();
 #endif
   }
 #endif
@@ -845,7 +845,7 @@ void ChromeMainDelegate::ZygoteForked() {
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
   // Needs to be called after we have chrome::DIR_USER_DATA.  BrowserMain sets
   // this up for the browser process in a different manner.
-  InitCrashReporter();
+  breakpad::InitCrashReporter();
 
   // Reset the command line for the newly spawned process.
   crash_keys::SetSwitchesFromCommandLine(CommandLine::ForCurrentProcess());

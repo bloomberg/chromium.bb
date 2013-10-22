@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/breakpad/breakpad_win.h"
+#include "components/breakpad/app/breakpad_win.h"
 
 #include <windows.h>
 #include <shellapi.h>
@@ -29,8 +29,8 @@
 #include "base/win/registry.h"
 #include "base/win/win_util.h"
 #include "breakpad/src/client/windows/handler/exception_handler.h"
-#include "components/breakpad/breakpad_client.h"
-#include "components/breakpad/hard_error_handler_win.h"
+#include "components/breakpad/app/breakpad_client.h"
+#include "components/breakpad/app/hard_error_handler_win.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/result_codes.h"
 #include "sandbox/win/src/nt_internals.h"

@@ -19,7 +19,6 @@
 #include "base/prefs/pref_service.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/values.h"
-#include "chrome/app/breakpad_linux.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
@@ -58,6 +57,7 @@
 #include "chromeos/dbus/session_manager_client.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/settings/cros_settings_names.h"
+#include "components/breakpad/app/breakpad_linux.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -482,7 +482,7 @@ void WizardController::OnEulaAccepted() {
 #if defined(GOOGLE_CHROME_BUILD)
     // The crash reporter initialization needs IO to complete.
     base::ThreadRestrictions::ScopedAllowIO allow_io;
-    InitCrashReporter();
+    breakpad::InitCrashReporter();
 #endif
   }
 

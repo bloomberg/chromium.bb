@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CRASH_HANDLER_HOST_LINUX_H_
-#define CHROME_BROWSER_CRASH_HANDLER_HOST_LINUX_H_
+#ifndef COMPONENTS_BREAKPAD_BROWSER_CRASH_HANDLER_HOST_LINUX_H_
+#define COMPONENTS_BREAKPAD_BROWSER_CRASH_HANDLER_HOST_LINUX_H_
 
 #include <sys/types.h>
 
@@ -15,11 +15,13 @@
 #include "base/message_loop/message_loop.h"
 #include "base/threading/sequenced_worker_pool.h"
 
-struct BreakpadInfo;
-
 namespace base {
 class Thread;
 }
+
+namespace breakpad {
+
+struct BreakpadInfo;
 
 // This is the host for processes which run breakpad inside the sandbox on
 // Linux or Android. We perform the crash dump from the browser because it
@@ -90,4 +92,6 @@ class CrashHandlerHostLinux : public base::MessageLoopForIO::Watcher,
   DISALLOW_COPY_AND_ASSIGN(CrashHandlerHostLinux);
 };
 
-#endif  // CHROME_BROWSER_CRASH_HANDLER_HOST_LINUX_H_
+}  // namespace breakpad
+
+#endif  // COMPONENTS_BREAKPAD_BROWSER_CRASH_HANDLER_HOST_LINUX_H_

@@ -1,13 +1,15 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 // Public interface for enabling Breakpad on Linux systems.
 
-#ifndef CHROME_APP_BREAKPAD_LINUX_H_
-#define CHROME_APP_BREAKPAD_LINUX_H_
+#ifndef COMPONENTS_BREAKPAD_APP_BREAKPAD_LINUX_H_
+#define COMPONENTS_BREAKPAD_APP_BREAKPAD_LINUX_H_
 
 #include "build/build_config.h"
+
+namespace breakpad {
 
 // Turns on the crash reporter in any process.
 extern void InitCrashReporter();
@@ -22,4 +24,6 @@ extern void InitNonBrowserCrashReporterForAndroid();
 // whether InitCrashReporter() is called.
 bool IsCrashReporterEnabled();
 
-#endif  // CHROME_APP_BREAKPAD_LINUX_H_
+}  // namespace breakpad
+
+#endif  // COMPONENTS_BREAKPAD_APP_BREAKPAD_LINUX_H_

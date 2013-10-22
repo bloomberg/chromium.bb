@@ -9,12 +9,12 @@
 #include "base/command_line.h"
 #include "base/linux_util.h"
 #include "base/prefs/pref_service.h"
-#include "chrome/app/breakpad_linux.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/metrics/metrics_service.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/env_vars.h"
 #include "chrome/common/pref_names.h"
+#include "components/breakpad/app/breakpad_linux.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/settings/cros_settings.h"
@@ -122,7 +122,7 @@ void ChromeBrowserMainPartsLinux::PreProfileInit() {
 #endif
 
   if (IsCrashReportingEnabled(local_state()))
-    InitCrashReporter();
+    breakpad::InitCrashReporter();
 
   ChromeBrowserMainPartsPosix::PreProfileInit();
 }
@@ -131,5 +131,5 @@ void ChromeBrowserMainPartsLinux::PostProfileInit() {
   ChromeBrowserMainPartsPosix::PostProfileInit();
 
   g_browser_process->metrics_service()->RecordBreakpadRegistration(
-      IsCrashReporterEnabled());
+      breakpad::IsCrashReporterEnabled());
 }

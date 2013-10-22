@@ -152,7 +152,7 @@
 #elif defined(OS_MACOSX)
 #include "chrome/browser/chrome_browser_main_mac.h"
 #include "chrome/browser/spellchecker/spellcheck_message_filter_mac.h"
-#include "components/breakpad/breakpad_mac.h"
+#include "components/breakpad/app/breakpad_mac.h"
 #elif defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/chrome_browser_main_chromeos.h"
 #include "chrome/browser/chromeos/drive/file_system_backend_delegate.h"
@@ -164,11 +164,11 @@
 #elif defined(OS_LINUX)
 #include "chrome/browser/chrome_browser_main_linux.h"
 #elif defined(OS_ANDROID)
-#include "chrome/browser/android/crash_dump_manager.h"
 #include "chrome/browser/android/webapps/single_tab_mode_tab_helper.h"
 #include "chrome/browser/chrome_browser_main_android.h"
 #include "chrome/browser/media/encrypted_media_message_filter_android.h"
 #include "chrome/common/descriptors_android.h"
+#include "components/breakpad/browser/crash_dump_manager_android.h"
 #elif defined(OS_POSIX)
 #include "chrome/browser/chrome_browser_main_posix.h"
 #endif
@@ -176,8 +176,8 @@
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
 #include "base/debug/leak_annotations.h"
 #include "base/linux_util.h"
-#include "chrome/app/breakpad_linux.h"
-#include "chrome/browser/crash_handler_host_linux.h"
+#include "components/breakpad/app/breakpad_linux.h"
+#include "components/breakpad/browser/crash_handler_host_linux.h"
 #endif
 
 #if defined(ENABLE_CAPTIVE_PORTAL_DETECTION)
@@ -253,10 +253,6 @@ using extensions::APIPermission;
 using extensions::Extension;
 using extensions::Manifest;
 using message_center::NotifierId;
-
-#if defined(OS_MACOSX)
-using breakpad::IsCrashReporterEnabled;
-#endif
 
 namespace {
 
@@ -495,13 +491,15 @@ void FillFontFamilyMap(const PrefService* prefs,
 }
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
-CrashHandlerHostLinux* CreateCrashHandlerHost(const std::string& process_type) {
+breakpad::CrashHandlerHostLinux* CreateCrashHandlerHost(
+    const std::string& process_type) {
   base::FilePath dumps_path;
   PathService::Get(chrome::DIR_CRASH_DUMPS, &dumps_path);
   {
     ANNOTATE_SCOPED_MEMORY_LEAK;
-    CrashHandlerHostLinux* crash_handler = new CrashHandlerHostLinux(
-        process_type, dumps_path, getenv(env_vars::kHeadless) == NULL);
+    breakpad::CrashHandlerHostLinux* crash_handler =
+        new breakpad::CrashHandlerHostLinux(
+            process_type, dumps_path, getenv(env_vars::kHeadless) == NULL);
     crash_handler->StartUploaderThread();
     return crash_handler;
   }
@@ -509,7 +507,7 @@ CrashHandlerHostLinux* CreateCrashHandlerHost(const std::string& process_type) {
 
 int GetCrashSignalFD(const CommandLine& command_line) {
   if (command_line.HasSwitch(switches::kExtensionProcess)) {
-    static CrashHandlerHostLinux* crash_handler = NULL;
+    static breakpad::CrashHandlerHostLinux* crash_handler = NULL;
     if (!crash_handler)
       crash_handler = CreateCrashHandlerHost("extension");
     return crash_handler->GetDeathSignalSocket();
@@ -519,28 +517,28 @@ int GetCrashSignalFD(const CommandLine& command_line) {
       command_line.GetSwitchValueASCII(switches::kProcessType);
 
   if (process_type == switches::kRendererProcess) {
-    static CrashHandlerHostLinux* crash_handler = NULL;
+    static breakpad::CrashHandlerHostLinux* crash_handler = NULL;
     if (!crash_handler)
       crash_handler = CreateCrashHandlerHost(process_type);
     return crash_handler->GetDeathSignalSocket();
   }
 
   if (process_type == switches::kPluginProcess) {
-    static CrashHandlerHostLinux* crash_handler = NULL;
+    static breakpad::CrashHandlerHostLinux* crash_handler = NULL;
     if (!crash_handler)
       crash_handler = CreateCrashHandlerHost(process_type);
     return crash_handler->GetDeathSignalSocket();
   }
 
   if (process_type == switches::kPpapiPluginProcess) {
-    static CrashHandlerHostLinux* crash_handler = NULL;
+    static breakpad::CrashHandlerHostLinux* crash_handler = NULL;
     if (!crash_handler)
       crash_handler = CreateCrashHandlerHost(process_type);
     return crash_handler->GetDeathSignalSocket();
   }
 
   if (process_type == switches::kGpuProcess) {
-    static CrashHandlerHostLinux* crash_handler = NULL;
+    static breakpad::CrashHandlerHostLinux* crash_handler = NULL;
     if (!crash_handler)
       crash_handler = CreateCrashHandlerHost(process_type);
     return crash_handler->GetDeathSignalSocket();
@@ -1366,7 +1364,7 @@ std::string ChromeContentBrowserClient::GetCanonicalEncodingNameByAliasName(
 void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
     CommandLine* command_line, int child_process_id) {
 #if defined(OS_POSIX)
-  if (IsCrashReporterEnabled()) {
+  if (breakpad::IsCrashReporterEnabled()) {
     std::string enable_crash_reporter;
     GoogleUpdateSettings::GetMetricsId(&enable_crash_reporter);
 #if !defined(OS_MACOSX)
@@ -2530,8 +2528,9 @@ void ChromeContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
   mappings->push_back(FileDescriptorInfo(kAndroidUIResourcesPakDescriptor,
                                          FileDescriptor(f, true)));
 
-  if (IsCrashReporterEnabled()) {
-    f = CrashDumpManager::GetInstance()->CreateMinidumpFile(child_process_id);
+  if (breakpad::IsCrashReporterEnabled()) {
+    f = breakpad::CrashDumpManager::GetInstance()->CreateMinidumpFile(
+        child_process_id);
     if (f == base::kInvalidPlatformFileValue) {
       LOG(ERROR) << "Failed to create file for minidump, crash reporting will "
                  "be disabled for this process.";

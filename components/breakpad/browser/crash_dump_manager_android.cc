@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/android/crash_dump_manager.h"
+#include "components/breakpad/browser/crash_dump_manager_android.h"
 
 #include "base/bind.h"
 #include "base/file_util.h"
@@ -21,6 +21,8 @@
 #include "content/public/browser/render_process_host.h"
 
 using content::BrowserThread;
+
+namespace breakpad {
 
 // static
 CrashDumpManager* CrashDumpManager::instance_ = NULL;
@@ -167,3 +169,5 @@ void CrashDumpManager::OnChildExit(int child_process_id,
       BrowserThread::FILE, FROM_HERE,
       base::Bind(&CrashDumpManager::ProcessMinidump, minidump_path, pid));
 }
+
+}  // namespace breakpad

@@ -23,7 +23,7 @@
 #include "chrome/browser/metrics/metrics_service.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
-#include "components/breakpad/breakpad_mac.h"
+#include "components/breakpad/app/breakpad_mac.h"
 #include "content/public/common/main_function_params.h"
 #include "content/public/common/result_codes.h"
 #include "ui/base/l10n/l10n_util_mac.h"

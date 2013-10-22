@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "components/breakpad/breakpad_mac.h"
+#import "components/breakpad/app/breakpad_mac.h"
 
 #include <CoreFoundation/CoreFoundation.h>
 #import <Foundation/Foundation.h>
@@ -23,7 +23,7 @@
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_restrictions.h"
 #import "breakpad/src/client/mac/Framework/Breakpad.h"
-#include "components/breakpad/breakpad_client.h"
+#include "components/breakpad/app/breakpad_client.h"
 #include "content/public/common/content_switches.h"
 
 namespace breakpad {

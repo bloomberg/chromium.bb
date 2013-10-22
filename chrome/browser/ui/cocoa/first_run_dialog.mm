@@ -29,7 +29,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/installer/util/google_update_settings.h"
-#import "components/breakpad/breakpad_mac.h"
+#import "components/breakpad/app/breakpad_mac.h"
 #endif
 
 @interface FirstRunDialogController (PrivateMethods)

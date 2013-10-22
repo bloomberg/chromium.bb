@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_ANDROID_CRASH_DUMP_MANAGER_H_
-#define CHROME_BROWSER_ANDROID_CRASH_DUMP_MANAGER_H_
+#ifndef COMPONENTS_BREAKPAD_BROWSER_CRASH_DUMP_MANAGER_ANDROID_H_
+#define COMPONENTS_BREAKPAD_BROWSER_CRASH_DUMP_MANAGER_ANDROID_H_
 
 #include <map>
 
@@ -19,6 +19,8 @@ namespace content {
 class RenderProcessHost;
 }
 
+namespace breakpad {
+
 // This class manages the crash minidumps.
 // On Android, because of process isolation, each renderer process runs with a
 // different UID. As a result, we cannot generate the minidumps in the browser
@@ -31,9 +33,11 @@ class RenderProcessHost;
 class CrashDumpManager : public content::BrowserChildProcessObserver,
                          public content::NotificationObserver {
  public:
-  // This object is a singleton created and owned by the
-  // ChromeBrowserMainPartsAndroid.
+  // The embedder should create a single instance of the CrashDumpManager.
   static CrashDumpManager* GetInstance();
+
+  // Should be created on the UI thread.
+  explicit CrashDumpManager(const base::FilePath& crash_dump_dir);
 
   virtual ~CrashDumpManager();
 
@@ -42,11 +46,6 @@ class CrashDumpManager : public content::BrowserChildProcessObserver,
   int CreateMinidumpFile(int child_process_id);
 
  private:
-  friend class ChromeBrowserMainPartsAndroid;
-
-  // Should be created on the UI thread.
-  explicit CrashDumpManager(const base::FilePath& crash_dump_dir);
-
   typedef std::map<int, base::FilePath> ChildProcessIDToMinidumpPath;
 
   static void ProcessMinidump(const base::FilePath& minidump_path,
@@ -80,4 +79,6 @@ class CrashDumpManager : public content::BrowserChildProcessObserver,
   DISALLOW_COPY_AND_ASSIGN(CrashDumpManager);
 };
 
-#endif  // CHROME_BROWSER_ANDROID_CRASH_DUMP_MANAGER_H_
+}  // namespace breakpad
+
+#endif  // COMPONENTS_BREAKPAD_BROWSER_CRASH_DUMP_MANAGER_ANDROID_H_

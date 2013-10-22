@@ -103,8 +103,6 @@
         'browser/android/chromium_application.h',
         'browser/android/content_view_util.cc',
         'browser/android/content_view_util.h',
-        'browser/android/crash_dump_manager.cc',
-        'browser/android/crash_dump_manager.h',
         'browser/android/dev_tools_server.cc',
         'browser/android/dev_tools_server.h',
         'browser/android/favicon_helper.cc',
@@ -3043,23 +3041,12 @@
         }],
         ['os_posix == 1 and OS != "mac" and OS != "ios"', {
           'sources': [
-            'app/breakpad_linux.cc',
-            'app/breakpad_linux.h',
             'app/chrome_breakpad_client.cc',
             'app/chrome_breakpad_client.h',
-            'browser/crash_handler_host_linux.cc',
-            'browser/crash_handler_host_linux.h',
           ],
           'dependencies': [
-            '../breakpad/breakpad.gyp:breakpad_client',
             '../components/components.gyp:breakpad_component',
-            # make sure file_version_info_linux.h is generated first.
-            'common',
-          ],
-          'include_dirs': [
-            # breakpad_linux.cc uses generated file_version_info_linux.h.
-            '<(SHARED_INTERMEDIATE_DIR)',
-            '../breakpad/src',
+            '../components/components.gyp:breakpad_host',
           ],
         }],
         ['use_nss==1', {
@@ -3507,16 +3494,6 @@
               'browser/local_discovery/service_discovery_host_client.h',
             ]
         }]
-      ],
-      'target_conditions': [
-        # Need 'target_conditions' to override default filename_rules to include
-        # the files on Android.
-        ['OS=="android"', {
-          'sources/': [
-            ['include', '^app/breakpad_linux\\.cc$'],
-            ['include', '^browser/crash_handler_host_linux\\.cc$'],
-          ],
-        }],
       ],
     },
     {

@@ -31,7 +31,7 @@
 #include "chrome/installer/util/google_update_settings.h"
 #include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/util_constants.h"
-#include "components/breakpad/breakpad_win.h"
+#include "components/breakpad/app/breakpad_win.h"
 
 namespace {
 // The entry point signature of chrome.dll.

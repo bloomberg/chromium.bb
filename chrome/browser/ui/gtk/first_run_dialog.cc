@@ -10,7 +10,6 @@
 #include "base/i18n/rtl.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/app/breakpad_linux.h"
 #include "chrome/browser/first_run/first_run_dialog.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/process_singleton.h"
@@ -20,6 +19,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/installer/util/google_update_settings.h"
+#include "components/breakpad/app/breakpad_linux.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -164,7 +164,7 @@ void FirstRunDialog::OnResponseDialog(GtkWidget* widget, int response) {
   if (report_crashes_ &&
       gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(report_crashes_))) {
     if (GoogleUpdateSettings::SetCollectStatsConsent(true))
-      InitCrashReporter();
+      breakpad::InitCrashReporter();
   } else {
     GoogleUpdateSettings::SetCollectStatsConsent(false);
   }

@@ -1,0 +1,9 @@
+include_rules = [
+  "+sandbox",
+
+  "-content/public/common",
+  "+content/public/common/content_descriptors.h",
+  "+content/public/common/content_switches.h",
+  "+content/public/common/result_codes.h",
+  "+third_party/lss/linux_syscall_support.h",
+]

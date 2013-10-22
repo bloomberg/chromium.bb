@@ -8,10 +8,10 @@
 #include "base/debug/trace_event.h"
 #include "base/path_service.h"
 #include "cc/base/switches.h"
-#include "chrome/app/breakpad_linux.h"
-#include "chrome/browser/android/crash_dump_manager.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "components/breakpad/app/breakpad_linux.h"
+#include "components/breakpad/browser/crash_dump_manager_android.h"
 #include "content/public/browser/android/compositor.h"
 #include "content/public/common/main_function_params.h"
 #include "net/android/network_change_notifier_factory_android.h"
@@ -44,10 +44,10 @@ void ChromeBrowserMainPartsAndroid::PreProfileInit() {
           switches::kEnableCrashReporterForTesting);
 
   if (breakpad_enabled) {
-    InitCrashReporter();
+    breakpad::InitCrashReporter();
     base::FilePath crash_dump_dir;
     PathService::Get(chrome::DIR_CRASH_DUMPS, &crash_dump_dir);
-    crash_dump_manager_.reset(new CrashDumpManager(crash_dump_dir));
+    crash_dump_manager_.reset(new breakpad::CrashDumpManager(crash_dump_dir));
   }
 
   ChromeBrowserMainParts::PreProfileInit();
