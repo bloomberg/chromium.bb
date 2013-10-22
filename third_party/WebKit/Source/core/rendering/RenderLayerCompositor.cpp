@@ -57,6 +57,7 @@
 #include "core/rendering/RenderFullScreen.h"
 #include "core/rendering/RenderGeometryMap.h"
 #include "core/rendering/RenderIFrame.h"
+#include "core/rendering/RenderLayerStackingNode.h"
 #include "core/rendering/RenderReplica.h"
 #include "core/rendering/RenderVideo.h"
 #include "core/rendering/RenderView.h"
@@ -1433,9 +1434,9 @@ void RenderLayerCompositor::updateLayerTreeGeometry(RenderLayer* layer, int dept
 }
 
 // Recurs down the RenderLayer tree until its finds the compositing descendants of compositingAncestor and updates their geometry.
-void RenderLayerCompositor::updateCompositingDescendantGeometry(RenderLayer* compositingAncestor, RenderLayer* layer, bool compositedChildrenOnly)
+void RenderLayerCompositor::updateCompositingDescendantGeometry(RenderLayerStackingNode* compositingAncestor, RenderLayer* layer, bool compositedChildrenOnly)
 {
-    if (layer != compositingAncestor) {
+    if (layer->stackingNode() != compositingAncestor) {
         if (CompositedLayerMapping* compositedLayerMapping = layer->compositedLayerMapping()) {
             compositedLayerMapping->updateCompositedBounds();
 
@@ -2646,8 +2647,8 @@ static bool isRootmostFixedOrStickyLayer(RenderLayer* layer)
     if (layer->renderer()->style()->position() != FixedPosition)
         return false;
 
-    for (RenderLayer* stackingContainerLayer = layer->ancestorStackingContainerLayer(); stackingContainerLayer; stackingContainerLayer = stackingContainerLayer->ancestorStackingContainerLayer()) {
-        if (stackingContainerLayer->compositedLayerMapping() && stackingContainerLayer->renderer()->style()->position() == FixedPosition)
+    for (RenderLayerStackingNode* stackingContainerNode = layer->stackingNode()->ancestorStackingContainerNode(); stackingContainerNode; stackingContainerNode = stackingContainerNode->ancestorStackingContainerNode()) {
+        if (stackingContainerNode->layer()->compositedLayerMapping() && stackingContainerNode->layer()->renderer()->style()->position() == FixedPosition)
             return false;
     }
 

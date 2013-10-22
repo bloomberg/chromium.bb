@@ -719,13 +719,13 @@ void RenderLayer::updatePagination()
     }
 
     // If we're not normal flow, then we need to look for a multi-column object between us and our stacking container.
-    RenderLayer* ancestorStackingContainerLayer = this->ancestorStackingContainerLayer();
+    RenderLayerStackingNode* ancestorStackingContainerNode = m_stackingNode->ancestorStackingContainerNode();
     for (RenderLayer* curr = parent(); curr; curr = curr->parent()) {
         if (curr->renderer()->hasColumns()) {
             m_isPaginated = checkContainingBlockChainForPagination(renderer(), curr->renderBox());
             return;
         }
-        if (curr == ancestorStackingContainerLayer)
+        if (curr->stackingNode() == ancestorStackingContainerNode)
             return;
     }
 }
@@ -744,9 +744,9 @@ void RenderLayer::setHasVisibleContent()
         // We don't collect invisible layers in z-order lists if we are not in compositing mode.
         // As we became visible, we need to dirty our stacking containers ancestors to be properly
         // collected. FIXME: When compositing, we could skip this dirtying phase.
-        for (RenderLayer* sc = ancestorStackingContainerLayer(); sc; sc = sc->ancestorStackingContainerLayer()) {
-            sc->stackingNode()->dirtyZOrderLists();
-            if (sc->hasVisibleContent())
+        for (RenderLayerStackingNode* sc = m_stackingNode->ancestorStackingContainerNode(); sc; sc = sc->ancestorStackingContainerNode()) {
+            sc->dirtyZOrderLists();
+            if (sc->layer()->hasVisibleContent())
                 break;
         }
     }
@@ -916,15 +916,17 @@ void RenderLayer::updateDescendantDependentFlags()
 
 void RenderLayer::dirty3DTransformedDescendantStatus()
 {
-    RenderLayer* curr = ancestorStackingContainerLayer();
-    if (curr)
-        curr->m_3DTransformedDescendantStatusDirty = true;
+    RenderLayerStackingNode* stackingNode = m_stackingNode->ancestorStackingContainerNode();
+    if (!stackingNode)
+        return;
+
+    stackingNode->layer()->m_3DTransformedDescendantStatusDirty = true;
 
     // This propagates up through preserve-3d hierarchies to the enclosing flattening layer.
     // Note that preserves3D() creates stacking context, so we can just run up the stacking containers.
-    while (curr && curr->preserves3D()) {
-        curr->m_3DTransformedDescendantStatusDirty = true;
-        curr = curr->ancestorStackingContainerLayer();
+    while (stackingNode && stackingNode->layer()->preserves3D()) {
+        stackingNode->layer()->m_3DTransformedDescendantStatusDirty = true;
+        stackingNode = stackingNode->ancestorStackingContainerNode();
     }
 }
 
@@ -1087,32 +1089,6 @@ FloatPoint RenderLayer::perspectiveOrigin() const
                       floatValueForLength(style->perspectiveOriginY(), borderBox.height()));
 }
 
-RenderLayer* RenderLayer::ancestorStackingContainerLayer() const
-{
-    RenderLayer* ancestor = parent();
-    while (ancestor && !ancestor->stackingNode()->isStackingContainer())
-        ancestor = ancestor->parent();
-    return ancestor;
-}
-
-RenderLayerStackingNode* RenderLayer::ancestorStackingContainerNode() const
-{
-    RenderLayer* ancestor = ancestorStackingContainerLayer();
-    if (ancestor)
-        return ancestor->stackingNode();
-    return 0;
-}
-
-RenderLayerStackingNode* RenderLayer::ancestorStackingNode() const
-{
-    RenderLayer* ancestor = parent();
-    while (ancestor && !ancestor->stackingNode()->isStackingContext())
-        ancestor = ancestor->parent();
-    if (ancestor)
-        return ancestor->stackingNode();
-    return 0;
-}
-
 static inline bool isFixedPositionedContainer(RenderLayer* layer)
 {
     return layer->isRootLayer() || layer->hasTransform();
@@ -1146,7 +1122,7 @@ RenderLayer* RenderLayer::enclosingTransformedAncestor() const
 
 static inline const RenderLayer* compositingContainer(const RenderLayer* layer)
 {
-    return layer->stackingNode()->isNormalFlowOnly() ? layer->parent() : layer->ancestorStackingContainerLayer();
+    return layer->stackingNode()->isNormalFlowOnly() ? layer->parent() : (layer->stackingNode()->ancestorStackingContainerNode() ? layer->stackingNode()->ancestorStackingContainerNode()->layer() : 0);
 }
 
 // FIXME: having two different functions named enclosingCompositingLayer and enclosingCompositingLayerForRepaint
@@ -1420,7 +1396,7 @@ void RenderLayer::addChild(RenderLayer* child, RenderLayer* beforeChild)
         m_stackingNode->dirtyNormalFlowList();
 
     if (!child->stackingNode()->isNormalFlowOnly() || child->firstChild()) {
-        // Dirty the z-order list in which we are contained. The ancestorStackingContainerLayer() can be null in the
+        // Dirty the z-order list in which we are contained. The ancestorStackingContainerNode() can be null in the
         // case where we're building up generated content layers. This is ok, since the lists will start
         // off dirty in that case anyway.
         child->stackingNode()->dirtyStackingContainerZOrderLists();
@@ -1958,7 +1934,7 @@ void RenderLayer::updateCompositingLayersAfterScroll()
     if (compositor()->inCompositingMode()) {
         // Our stacking container is guaranteed to contain all of our descendants that may need
         // repositioning, so update compositing layers from there.
-        if (RenderLayer* compositingAncestor = ancestorStackingContainerLayer()->enclosingCompositingLayer()) {
+        if (RenderLayer* compositingAncestor = m_stackingNode->ancestorStackingContainerNode()->layer()->enclosingCompositingLayer()) {
             if (usesCompositedScrolling())
                 compositor()->updateCompositingLayers(CompositingUpdateOnCompositedScroll, compositingAncestor);
             else
@@ -2870,11 +2846,11 @@ void RenderLayer::paintPaginatedChildLayer(RenderLayer* childLayer, GraphicsCont
 {
     // We need to do multiple passes, breaking up our child layer into strips.
     Vector<RenderLayer*> columnLayers;
-    RenderLayer* ancestorLayer = m_stackingNode->isNormalFlowOnly() ? parent() : ancestorStackingContainerLayer();
+    RenderLayerStackingNode* ancestorNode = m_stackingNode->isNormalFlowOnly() ? parent()->stackingNode() : m_stackingNode->ancestorStackingContainerNode();
     for (RenderLayer* curr = childLayer->parent(); curr; curr = curr->parent()) {
         if (curr->renderer()->hasColumns() && checkContainingBlockChainForPagination(childLayer->renderer(), curr->renderBox()))
             columnLayers.append(curr);
-        if (curr == ancestorLayer)
+        if (curr->stackingNode() == ancestorNode)
             break;
     }
 
@@ -3454,11 +3430,11 @@ RenderLayer* RenderLayer::hitTestPaginatedChildLayer(RenderLayer* childLayer, Re
                                                      const LayoutRect& hitTestRect, const HitTestLocation& hitTestLocation, const HitTestingTransformState* transformState, double* zOffset)
 {
     Vector<RenderLayer*> columnLayers;
-    RenderLayer* ancestorLayer = m_stackingNode->isNormalFlowOnly() ? parent() : ancestorStackingContainerLayer();
+    RenderLayerStackingNode* ancestorNode = m_stackingNode->isNormalFlowOnly() ? parent()->stackingNode() : m_stackingNode->ancestorStackingContainerNode();
     for (RenderLayer* curr = childLayer->parent(); curr; curr = curr->parent()) {
         if (curr->renderer()->hasColumns() && checkContainingBlockChainForPagination(childLayer->renderer(), curr->renderBox()))
             columnLayers.append(curr);
-        if (curr == ancestorLayer)
+        if (curr->stackingNode() == ancestorNode)
             break;
     }
 
@@ -4276,7 +4252,7 @@ inline bool RenderLayer::needsCompositingLayersRebuiltForClip(const RenderStyle*
 inline bool RenderLayer::needsCompositingLayersRebuiltForOverflow(const RenderStyle* oldStyle, const RenderStyle* newStyle) const
 {
     ASSERT(newStyle);
-    return !compositedLayerMapping() && oldStyle && (oldStyle->overflowX() != newStyle->overflowX()) && ancestorStackingContainerLayer()->hasCompositingDescendant();
+    return !compositedLayerMapping() && oldStyle && (oldStyle->overflowX() != newStyle->overflowX()) && m_stackingNode->ancestorStackingContainerNode()->layer()->hasCompositingDescendant();
 }
 
 inline bool RenderLayer::needsCompositingLayersRebuiltForFilters(const RenderStyle* oldStyle, const RenderStyle* newStyle, bool didPaintWithFilters) const

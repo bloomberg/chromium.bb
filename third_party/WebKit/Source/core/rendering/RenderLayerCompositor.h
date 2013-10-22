@@ -36,6 +36,7 @@ namespace WebCore {
 class FixedPositionViewportConstraints;
 class GraphicsLayer;
 class RenderEmbeddedObject;
+class RenderLayerStackingNode;
 class RenderPart;
 class RenderVideo;
 class ScrollingCoordinator;
@@ -99,7 +100,7 @@ public:
     bool updateLayerCompositingState(RenderLayer*, CompositingChangeRepaint = CompositingChangeRepaintNow);
 
     // Update the geometry for compositing children of compositingAncestor.
-    void updateCompositingDescendantGeometry(RenderLayer* compositingAncestor, RenderLayer*, bool compositedChildrenOnly);
+    void updateCompositingDescendantGeometry(RenderLayerStackingNode* compositingAncestor, RenderLayer*, bool compositedChildrenOnly);
 
     // Whether layer's compositedLayerMapping needs a GraphicsLayer to do clipping by an ancestor (non-stacking-context parent with overflow).
     bool clippedByAncestor(const RenderLayer*) const;

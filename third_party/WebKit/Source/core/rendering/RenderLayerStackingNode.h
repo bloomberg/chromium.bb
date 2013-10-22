@@ -121,6 +121,15 @@ public:
 
     void updateStackingNodesAfterStyleChange(const RenderStyle* oldStyle);
 
+    RenderLayerStackingNode* ancestorStackingContainerNode() const;
+    RenderLayerStackingNode* ancestorStackingNode() const;
+
+    // Gets the enclosing stacking container for this node, possibly the node
+    // itself, if it is a stacking container.
+    RenderLayerStackingNode* enclosingStackingContainerNode() { return isStackingContainer() ? this : ancestorStackingContainerNode(); }
+
+    RenderLayer* layer() const { return m_layer; }
+
 #if !ASSERT_DISABLED
     bool layerListMutationAllowed() const { return m_layerListMutationAllowed; }
     void setLayerListMutationAllowed(bool flag) { m_layerListMutationAllowed = flag; }
@@ -165,7 +174,6 @@ private:
     bool isDirtyStackingContainer() const { return m_zOrderListsDirty && isStackingContainer(); }
 
     RenderLayerCompositor* compositor() const;
-    RenderLayer* layer() const { return m_layer; }
     // FIXME: Investigate changing this to Renderbox.
     RenderLayerModelObject* renderer() const;
 

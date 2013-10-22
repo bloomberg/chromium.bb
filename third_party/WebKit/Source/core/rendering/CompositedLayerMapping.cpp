@@ -391,14 +391,14 @@ void CompositedLayerMapping::updateAfterLayout(UpdateAfterLayoutFlags flags)
         // The solution is to update compositing children of this layer here,
         // via updateCompositingChildrenGeometry().
         updateCompositedBounds();
-        layerCompositor->updateCompositingDescendantGeometry(m_owningLayer, m_owningLayer, flags & CompositingChildrenOnly);
+        layerCompositor->updateCompositingDescendantGeometry(m_owningLayer->stackingNode(), m_owningLayer, flags & CompositingChildrenOnly);
 
         if (flags & IsUpdateRoot) {
             updateGraphicsLayerGeometry();
             layerCompositor->updateRootLayerPosition();
-            RenderLayer* stackingContainerLayer = m_owningLayer->enclosingStackingContainerLayer();
-            if (!layerCompositor->compositingLayersNeedRebuild() && stackingContainerLayer && (stackingContainerLayer != m_owningLayer))
-                layerCompositor->updateCompositingDescendantGeometry(stackingContainerLayer, stackingContainerLayer, flags & CompositingChildrenOnly);
+            RenderLayerStackingNode* stackingContainer = m_owningLayer->stackingNode()->enclosingStackingContainerNode();
+            if (!layerCompositor->compositingLayersNeedRebuild() && stackingContainer && (stackingContainer != m_owningLayer->stackingNode()))
+                layerCompositor->updateCompositingDescendantGeometry(stackingContainer, stackingContainer->layer(), flags & CompositingChildrenOnly);
         }
     }
 

@@ -203,14 +203,6 @@ public:
     RenderLayerStackingNode* stackingNode() { return m_stackingNode.get(); }
     const RenderLayerStackingNode* stackingNode() const { return m_stackingNode.get(); }
 
-    RenderLayer* ancestorStackingContainerLayer() const;
-    RenderLayerStackingNode* ancestorStackingContainerNode() const;
-    RenderLayerStackingNode* ancestorStackingNode() const;
-
-    // Gets the enclosing stacking container for this layer, possibly the layer
-    // itself, if it is a stacking container.
-    RenderLayer* enclosingStackingContainerLayer() { return m_stackingNode->isStackingContainer() ? this : ancestorStackingContainerLayer(); }
-
     bool subtreeIsInvisible() const { return !hasVisibleContent() && !hasVisibleDescendant(); }
 
     // FIXME: We should ASSERT(!m_visibleContentStatusDirty) here, but see https://bugs.webkit.org/show_bug.cgi?id=71044
