@@ -128,10 +128,15 @@ IN_PROC_BROWSER_TEST_F(BrowserActionInteractiveTest, TestOpenPopupIncognito) {
       chrome::GetActiveDesktop())->GetLastActive()).HasPopup());
 }
 
+#if defined(OS_LINUX)
+#define MAYBE_TestOpenPopupDoesNotCloseOtherPopups DISABLED_TestOpenPopupDoesNotCloseOtherPopups
+#else
+#define MAYBE_TestOpenPopupDoesNotCloseOtherPopups TestOpenPopupDoesNotCloseOtherPopups
+#endif
 // Tests if there is already a popup open (by a user click or otherwise), that
 // the openPopup API does not override it.
 IN_PROC_BROWSER_TEST_F(BrowserActionInteractiveTest,
-                       TestOpenPopupDoesNotCloseOtherPopups) {
+                       MAYBE_TestOpenPopupDoesNotCloseOtherPopups) {
   if (!ShouldRunPopupTest())
     return;
 
