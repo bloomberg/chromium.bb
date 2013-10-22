@@ -1795,18 +1795,18 @@ bool CompositedLayerMapping::startAnimation(double timeOffset, const CSSAnimatio
     // GraphicsLayer rejects any property of the animation, we have to remove the
     // animation and return false to indicate un-accelerated animation is required.
     if (hasTransform) {
-        if (!animations.m_transformAnimation || !m_graphicsLayer->addAnimation(animations.m_transformAnimation.get()))
+        if (!animations.m_transformAnimation || !m_graphicsLayer->addAnimation(animations.m_transformAnimation.release()))
             return false;
     }
     if (hasOpacity) {
-        if (!animations.m_opacityAnimation || !m_graphicsLayer->addAnimation(animations.m_opacityAnimation.get())) {
+        if (!animations.m_opacityAnimation || !m_graphicsLayer->addAnimation(animations.m_opacityAnimation.release())) {
             if (hasTransform)
                 m_graphicsLayer->removeAnimation(animationId);
             return false;
         }
     }
     if (hasFilter) {
-        if (!animations.m_filterAnimation || !m_graphicsLayer->addAnimation(animations.m_filterAnimation.get())) {
+        if (!animations.m_filterAnimation || !m_graphicsLayer->addAnimation(animations.m_filterAnimation.release())) {
             if (hasTransform || hasOpacity)
                 m_graphicsLayer->removeAnimation(animationId);
             return false;
@@ -1847,17 +1847,17 @@ bool CompositedLayerMapping::startTransition(double timeOffset, CSSPropertyID pr
     // Although KeyframeAnimation can have multiple properties of the animation, ImplicitAnimation (= Transition) has only one animation property.
     WebAnimations animations(m_animationProvider->startTransition(timeOffset, property, fromStyle,
         toStyle, m_owningLayer->hasTransform(), m_owningLayer->hasFilter(), boxSize, fromOpacity, toOpacity));
-    if (animations.m_transformAnimation && m_graphicsLayer->addAnimation(animations.m_transformAnimation.get())) {
+    if (animations.m_transformAnimation && m_graphicsLayer->addAnimation(animations.m_transformAnimation.release())) {
         // To ensure that the correct transform is visible when the animation ends, also set the final transform.
         updateTransform(toStyle);
         return true;
     }
-    if (animations.m_opacityAnimation && m_graphicsLayer->addAnimation(animations.m_opacityAnimation.get())) {
+    if (animations.m_opacityAnimation && m_graphicsLayer->addAnimation(animations.m_opacityAnimation.release())) {
         // To ensure that the correct opacity is visible when the animation ends, also set the final opacity.
         updateOpacity(toStyle);
         return true;
     }
-    if (animations.m_filterAnimation && m_graphicsLayer->addAnimation(animations.m_filterAnimation.get())) {
+    if (animations.m_filterAnimation && m_graphicsLayer->addAnimation(animations.m_filterAnimation.release())) {
         // To ensure that the correct filter is visible when the animation ends, also set the final filter.
         updateFilters(toStyle);
         ASSERT_NOT_REACHED(); // Chromium compositor cannot accelerate filter yet.

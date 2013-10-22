@@ -1023,14 +1023,15 @@ void GraphicsLayer::setContentsToMedia(WebLayer* layer)
     setContentsTo(ContentsLayerForVideo, layer);
 }
 
-bool GraphicsLayer::addAnimation(WebAnimation* animation)
+bool GraphicsLayer::addAnimation(PassOwnPtr<WebAnimation> popAnimation)
 {
+    OwnPtr<WebAnimation> animation(popAnimation);
     ASSERT(animation);
     platformLayer()->setAnimationDelegate(this);
 
     // Remove any existing animations with the same animation id and target property.
     platformLayer()->removeAnimation(animation->id(), animation->targetProperty());
-    return platformLayer()->addAnimation(animation);
+    return platformLayer()->addAnimation(animation.leakPtr());
 }
 
 void GraphicsLayer::pauseAnimation(int animationId, double timeOffset)

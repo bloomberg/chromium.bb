@@ -87,7 +87,6 @@ private:
     WebCore::Path m_path;
 
     RefPtr<WebCore::Node> m_node;
-    OwnPtr<WebAnimation> m_animation;
     WebViewImpl* m_owningWebViewImpl;
     WebCore::GraphicsLayer* m_currentGraphicsLayer;
 

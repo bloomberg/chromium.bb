@@ -225,7 +225,7 @@ public:
     // Return true if the animation is handled by the compositing system. If this returns
     // false, the animation will be run by AnimationController.
     // These methods handle both transitions and keyframe animations.
-    bool addAnimation(WebKit::WebAnimation*);
+    bool addAnimation(PassOwnPtr<WebKit::WebAnimation>);
     void pauseAnimation(int animationId, double /*timeOffset*/);
     void removeAnimation(int animationId);
 

@@ -94,7 +94,7 @@ TEST_F(GraphicsLayerTest, updateLayerPreserves3DWithAnimations)
     curve->add(WebFloatKeyframe(0.0, 0.0));
     OwnPtr<WebAnimation> floatAnimation(adoptPtr(Platform::current()->compositorSupport()->createAnimation(*curve, WebAnimation::TargetPropertyOpacity)));
     int animationId = floatAnimation->id();
-    ASSERT_TRUE(m_platformLayer->addAnimation(floatAnimation.get()));
+    ASSERT_TRUE(m_platformLayer->addAnimation(floatAnimation.leakPtr()));
 
     ASSERT_TRUE(m_platformLayer->hasActiveAnimation());
 
