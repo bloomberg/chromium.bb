@@ -8,7 +8,7 @@
  * Progress center panel.
  *
  * @param {HTMLElement} element DOM Element of the process center panel.
- * @param {function(number)} cancelCallback Callback to becalled with the ID of
+ * @param {function(string)} cancelCallback Callback to becalled with the ID of
  *     the progress item when the cancel button is clicked.
  * @constructor
  */
@@ -31,7 +31,6 @@ var ProgressCenterPanel = function(element, cancelCallback) {
   element.addEventListener('click', this.onClick_.bind(this));
   element.addEventListener(
       'webkitTransitionEnd', this.onItemTransitionEnd_.bind(this));
-
 };
 
 /**
@@ -80,7 +79,6 @@ ProgressCenterPanel.updateItemElement_ = function(element, item) {
         previousWidthRate > item.progressRateByPercent ? '0' : null;
     track.style.width = item.progressRateByPercent + '%';
   }, 0);
-  // track.style.transitionDuration = null;
   element.setAttribute('data-progress-id', item.id);
   element.setAttribute('data-progress-max', item.progressMax);
   element.setAttribute('data-progress-value', item.progressValue);
@@ -123,12 +121,12 @@ ProgressCenterPanel.prototype.reset = function() {
 
 /**
  * Gets an item element having the specified ID.
- * @param {number} id progress item ID.
+ * @param {string} id progress item ID.
  * @return {HTMLElement} Item element having the ID.
  * @private
  */
 ProgressCenterPanel.prototype.getItemElement_ = function(id) {
-  var query = 'li[data-progress-id="$ID"]'.replace('$ID', id);
+  var query = 'li[data-progress-id="' + id + '"]';
   return this.openView_.querySelector(query);
 };
 
@@ -193,6 +191,6 @@ ProgressCenterPanel.prototype.onClick_ = function(event) {
   else if ((event.target.classList.contains('toggle') &&
             this.closeView_.classList.contains('single')) ||
            event.target.classList.contains('cancel'))
-    this.cancelCallback_(parseInt(
-        event.target.parentNode.parentNode.getAttribute('data-progress-id')));
+    this.cancelCallback_(
+        event.target.parentNode.parentNode.getAttribute('data-progress-id'));
 };

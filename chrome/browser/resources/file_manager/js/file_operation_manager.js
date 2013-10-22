@@ -275,6 +275,8 @@ function FileOperationManager() {
   this.unloadTimeout_ = null;
 
   this.eventRouter_ = new FileOperationManager.EventRouter();
+
+  Object.seal(this);
 }
 
 /**
@@ -315,14 +317,16 @@ FileOperationManager.EventRouter.prototype.__proto__ = cr.EventTarget.prototype;
  *     "ERROR" or "CANCELLED". TODO(hidehiko): Use enum.
  * @param {Object} status Current FileOperationManager's status. See also
  *     FileOperationManager.getStatus().
+ * @param {string} taskId ID of task related with the event.
  * @param {FileOperationManager.Error=} opt_error The info for the error. This
  *     should be set iff the reason is "ERROR".
  */
 FileOperationManager.EventRouter.prototype.sendProgressEvent = function(
-    reason, status, opt_error) {
+    reason, status, taskId, opt_error) {
   var event = new Event('copy-progress');
   event.reason = reason;
   event.status = status;
+  event.taskId = taskId;
   if (opt_error)
     event.error = opt_error;
   this.dispatchEvent(event);
@@ -349,9 +353,10 @@ FileOperationManager.EventRouter.prototype.sendEntryChangedEvent = function(
  *     or "ERROR". TODO(hidehiko): Use enum.
  * @param {Array.<string>} urls An array of URLs which are affected by delete
  *     operation.
+ * @param {string} taskId ID of task related with the event.
  */
 FileOperationManager.EventRouter.prototype.sendDeleteEvent = function(
-    reason, urls) {
+    reason, urls, taskId) {
   var event = new Event('delete');
   event.reason = reason;
   event.urls = urls;
@@ -1083,9 +1088,10 @@ FileOperationManager.prototype.requestCancel = function(opt_callback) {
  * @private
  */
 FileOperationManager.prototype.doCancel_ = function() {
+  var taskId = this.copyTasks_[0].taskId;
   this.resetQueue_();
   this.cancelRequested_ = false;
-  this.eventRouter_.sendProgressEvent('CANCELLED', this.getStatus());
+  this.eventRouter_.sendProgressEvent('CANCELLED', this.getStatus(), taskId);
 };
 
 /**
@@ -1121,6 +1127,7 @@ FileOperationManager.prototype.paste = function(
     this.eventRouter_.sendProgressEvent(
         'ERROR',
         this.getStatus(),
+        this.generateTaskId_(null),
         new FileOperationManager.Error(
             util.FileOperationErrorType.FILESYSTEM_ERROR, error));
   }.bind(this);
@@ -1213,6 +1220,7 @@ FileOperationManager.prototype.queueCopy_ = function(
     task = new FileOperationManager.CopyTask(entries, targetDirEntry);
   }
 
+  task.taskId = this.generateTaskId_(this.copyTasks_);
   task.initialize(function() {
     this.copyTasks_.push(task);
     this.maybeScheduleCloseBackgroundPage_();
@@ -1223,7 +1231,9 @@ FileOperationManager.prototype.queueCopy_ = function(
     } else {
       // Force to update the progress of butter bar when there are new tasks
       // coming while servicing current task.
-      this.eventRouter_.sendProgressEvent('PROGRESS', this.getStatus());
+      this.eventRouter_.sendProgressEvent('PROGRESS',
+                                          this.getStatus(),
+                                          task.taskId);
     }
   }.bind(this));
 
@@ -1240,7 +1250,9 @@ FileOperationManager.prototype.serviceAllTasks_ = function() {
   var self = this;
 
   var onTaskProgress = function() {
-    self.eventRouter_.sendProgressEvent('PROGRESS', self.getStatus());
+    self.eventRouter_.sendProgressEvent('PROGRESS',
+                                        self.getStatus(),
+                                        self.copyTasks_[0].taskId);
   };
 
   var onEntryChanged = function(kind, entry) {
@@ -1248,9 +1260,13 @@ FileOperationManager.prototype.serviceAllTasks_ = function() {
   };
 
   var onTaskError = function(err) {
+    var taskId = self.copyTasks_[0].taskId;
     if (self.maybeCancel_())
       return;
-    self.eventRouter_.sendProgressEvent('ERROR', self.getStatus(), err);
+    self.eventRouter_.sendProgressEvent('ERROR',
+                                        self.getStatus(),
+                                        taskId,
+                                        err);
     self.resetQueue_();
   };
 
@@ -1259,12 +1275,15 @@ FileOperationManager.prototype.serviceAllTasks_ = function() {
       return;
 
     // The task at the front of the queue is completed. Pop it from the queue.
+    var taskId = self.copyTasks_[0].taskId;
     self.copyTasks_.shift();
     self.maybeScheduleCloseBackgroundPage_();
 
     if (!self.copyTasks_.length) {
       // All tasks have been serviced, clean up and exit.
-      self.eventRouter_.sendProgressEvent('SUCCESS', self.getStatus());
+      self.eventRouter_.sendProgressEvent('SUCCESS',
+                                          self.getStatus(),
+                                          taskId);
       self.resetQueue_();
       return;
     }
@@ -1273,14 +1292,18 @@ FileOperationManager.prototype.serviceAllTasks_ = function() {
     // right after one task finished in the queue. We treat all tasks as one
     // big task logically, so there is only one BEGIN/SUCCESS event pair for
     // these continuous tasks.
-    self.eventRouter_.sendProgressEvent('PROGRESS', self.getStatus());
+    self.eventRouter_.sendProgressEvent('PROGRESS',
+                                        self.getStatus(),
+                                        self.copyTasks_[0].taskId);
     self.copyTasks_[0].run(
         onEntryChanged, onTaskProgress, onTaskSuccess, onTaskError);
   };
 
   // If the queue size is 1 after pushing our task, it was empty before,
   // so we need to kick off queue processing and dispatch BEGIN event.
-  this.eventRouter_.sendProgressEvent('BEGIN', this.getStatus());
+  this.eventRouter_.sendProgressEvent('BEGIN',
+                                      this.getStatus(),
+                                      self.copyTasks_[0].taskId);
   this.copyTasks_[0].run(
       onEntryChanged, onTaskProgress, onTaskSuccess, onTaskError);
 };
@@ -1296,7 +1319,10 @@ FileOperationManager.DELETE_TIMEOUT = 30 * 1000;
  * @param {Array.<Entry>} entries The entries.
  */
 FileOperationManager.prototype.deleteEntries = function(entries) {
-  var task = { entries: entries };
+  var task = {
+    entries: entries,
+    taskId: this.generateTaskId_(this.deleteTasks_)
+  };
   this.deleteTasks_.push(task);
   this.maybeScheduleCloseBackgroundPage_();
   if (this.deleteTasks_.length == 1)
@@ -1320,10 +1346,12 @@ FileOperationManager.prototype.serviceAllDeleteTasks_ = function() {
   };
 
   var onTaskSuccess = function() {
-    var urls = getTaskUrls(this.deleteTasks_.shift());
+    var urls = getTaskUrls(this.deleteTasks_[0]);
+    var taskId = this.deleteTasks_[0].taskId;
+    this.deleteTasks_.shift();
     if (!this.deleteTasks_.length) {
       // All tasks have been serviced, clean up and exit.
-      this.eventRouter_.sendDeleteEvent('SUCCESS', urls);
+      this.eventRouter_.sendDeleteEvent('SUCCESS', urls, taskId);
       this.maybeScheduleCloseBackgroundPage_();
       return;
     }
@@ -1332,21 +1360,28 @@ FileOperationManager.prototype.serviceAllDeleteTasks_ = function() {
     // right after one task finished in the queue. We treat all tasks as one
     // big task logically, so there is only one BEGIN/SUCCESS event pair for
     // these continuous tasks.
-    this.eventRouter_.sendDeleteEvent('PROGRESS', urls);
+    this.eventRouter_.sendDeleteEvent('PROGRESS',
+                                      urls,
+                                      this.deleteTasks_[0].taskId);
 
     this.serviceDeleteTask_(this.deleteTasks_[0], onTaskSuccess, onTaskFailure);
   }.bind(this);
 
   var onTaskFailure = function(error) {
     var urls = getTaskUrls(this.deleteTasks_[0]);
+    var taskId = this.deleteTasks_[0].taskId;
     this.deleteTasks_ = [];
-    this.eventRouter_.sendDeleteEvent('ERROR', urls);
+    this.eventRouter_.sendDeleteEvent('ERROR',
+                                      urls,
+                                      taskId);
     this.maybeScheduleCloseBackgroundPage_();
   }.bind(this);
 
   // If the queue size is 1 after pushing our task, it was empty before,
   // so we need to kick off queue processing and dispatch BEGIN event.
-  this.eventRouter_.sendDeleteEvent('BEGIN', getTaskUrls(this.deleteTasks_[0]));
+  this.eventRouter_.sendDeleteEvent('BEGIN',
+                                    getTaskUrls(this.deleteTasks_[0]),
+                                    this.deleteTasks_[0].taskId);
   this.serviceDeleteTask_(this.deleteTasks_[0], onTaskSuccess, onTaskFailure);
 };
 
@@ -1409,6 +1444,7 @@ FileOperationManager.prototype.zipSelection = function(
   var self = this;
   var zipTask = new FileOperationManager.ZipTask(
       selectionEntries, dirEntry, dirEntry);
+  zipTask.taskId = this.generateTaskId_(this.copyTasks_);
   zipTask.zip = true;
   zipTask.initialize(function() {
     self.copyTasks_.push(zipTask);
@@ -1419,7 +1455,28 @@ FileOperationManager.prototype.zipSelection = function(
     } else {
       // Force to update the progress of butter bar when there are new tasks
       // coming while servicing current task.
-      self.eventRouter_.sendProgressEvent('PROGRESS', self.getStatus());
+      self.eventRouter_.sendProgressEvent('PROGRESS',
+                                          self.getStatus(),
+                                          self.copyTasks_[0].taskId);
     }
   });
+};
+
+/**
+ * Generates new task ID.
+ *
+ * TODO(hirono): Remove the queue argument. The ID should be generated
+ *     independenting on the queue.
+ * @param {Array.<FileOperationManager.Task>} queue Qeueu that the task is
+ *     inserted to.
+ * @return {string} New task ID.
+ * @private
+ */
+FileOperationManager.prototype.generateTaskId_ = function(queue) {
+  if (queue) {
+    queue.taskIdCounter = queue.taskIdCounter || 0;
+    if (!queue.length)
+      queue.taskIdCounter++;
+  }
+  return 'file-operation-' + queue.taskIdCounter;
 };

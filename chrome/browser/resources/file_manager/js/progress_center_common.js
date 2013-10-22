@@ -21,11 +21,6 @@ var ProgressItemContainer = Object.freeze({
  */
 var ProgressCenterEvent = Object.freeze({
   /**
-   * Background page notifies item added to application windows.
-   */
-  ITEM_ADDED: 'itemAdded',
-
-  /**
    * Background page notifies item update to application windows.
    */
   ITEM_UPDATED: 'itemUpdated',
@@ -55,7 +50,7 @@ var ProgressItemState = Object.freeze({
 var ProgressCenterItem = function() {
   /**
    * Item ID.
-   * @type {?number}
+   * @type {string}
    * @private
    */
   this.id_ = null;
@@ -108,7 +103,7 @@ var ProgressCenterItem = function() {
 ProgressCenterItem.prototype = {
   /**
    * Setter of Item ID.
-   * @param {number} value New value of ID.
+   * @param {string} value New value of ID.
    */
   set id(value) {
     if (!this.id_)
@@ -119,7 +114,7 @@ ProgressCenterItem.prototype = {
 
   /**
    * Getter of Item ID.
-   * @return {number} Item ID.
+   * @return {string} Item ID.
    */
   get id() {
     return this.id_;

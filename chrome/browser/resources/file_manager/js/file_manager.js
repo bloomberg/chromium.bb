@@ -784,13 +784,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
           this.backgroundPage_.progressCenter.getSummarizedItem());
     }
     this.backgroundPage_.progressCenter.addEventListener(
-        ProgressCenterEvent.ITEM_ADDED,
-        function(event) {
-          this.progressCenterPanel_.updateItem(
-              event.item,
-              this.backgroundPage_.progressCenter.getSummarizedItem());
-        }.bind(this));
-    this.backgroundPage_.progressCenter.addEventListener(
         ProgressCenterEvent.ITEM_UPDATED,
         function(event) {
           this.progressCenterPanel_.updateItem(
