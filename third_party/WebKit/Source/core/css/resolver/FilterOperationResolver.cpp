@@ -92,18 +92,10 @@ static bool sortParametersByNameComparator(const RefPtr<CustomFilterParameter>& 
     return codePointCompareLessThan(a->name(), b->name());
 }
 
-static StyleShader* cachedOrPendingStyleShaderFromValue(CSSShaderValue* value, StyleResolverState& state)
-{
-    StyleShader* shader = value->cachedOrPendingShader();
-    if (shader && shader->isPendingShader())
-        state.elementStyleResources().setHasPendingShaders(true);
-    return shader;
-}
-
-static StyleShader* styleShader(CSSValue* value, StyleResolverState& state)
+static StyleShader* styleShader(CSSValue* value)
 {
     if (value->isShaderValue())
-        return cachedOrPendingStyleShaderFromValue(toCSSShaderValue(value), state);
+        return toCSSShaderValue(value)->cachedOrPendingShader();
     return 0;
 }
 
@@ -236,10 +228,13 @@ static PassRefPtr<CustomFilterProgram> createCustomFilterProgram(CSSShaderValue*
     ResourceFetcher* fetcher = state.document().fetcher();
     KURL vertexShaderURL = vertexShader ? vertexShader->completeURL(fetcher) : KURL();
     KURL fragmentShaderURL = fragmentShader ? fragmentShader->completeURL(fetcher) : KURL();
-    RefPtr<StyleCustomFilterProgram> program = StyleCustomFilterProgram::create(vertexShaderURL, vertexShader ? styleShader(vertexShader, state) : 0,
-            fragmentShaderURL, fragmentShader ? styleShader(fragmentShader, state) : 0, programType, mixSettings, meshType);
-        // FIXME
-        // FIXME: Find out what the fixme above means.
+    // We re-resolve the custom filter style after the shaders are loaded.
+    // We always create a StyleCustomFilterProgram here, and later replace it with a program from the StyleCustomFilterProgramCache, if available.
+    StyleShader* styleVertexShader = vertexShader ? styleShader(vertexShader) : 0;
+    StyleShader* styleFragmentShader = fragmentShader ? styleShader(fragmentShader) : 0;
+    RefPtr<StyleCustomFilterProgram> program = StyleCustomFilterProgram::create(vertexShaderURL, styleVertexShader,
+        fragmentShaderURL, styleFragmentShader, programType, mixSettings, meshType);
+    state.elementStyleResources().setHasNewCustomFilterProgram(true);
     return program.release();
 }
 

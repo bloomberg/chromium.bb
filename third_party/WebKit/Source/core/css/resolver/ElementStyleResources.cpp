@@ -33,7 +33,7 @@
 namespace WebCore {
 
 ElementStyleResources::ElementStyleResources()
-    : m_hasPendingShaders(false)
+    : m_hasNewCustomFilterProgram(false)
     , m_deviceScaleFactor(1)
 {
 }

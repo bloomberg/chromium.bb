@@ -88,6 +88,14 @@ public:
         // so missing and canceled resources will have isLoaded set to true, even if they are not loaded yet.
         ASSERT(!m_vertexShader || m_vertexShader->isShaderResource());
         ASSERT(!m_fragmentShader || m_fragmentShader->isShaderResource());
+
+        // If we failed to create resources for the vertex shader or the
+        // fragment shader, they won't be set here.
+        // This can happen if the ResourceFetcher is no longer accepting fetch
+        // requests because the page is being torn down.
+        if (!m_vertexShader && !m_fragmentShader)
+            return false;
+
         ASSERT(m_cachedVertexShader.get() || m_cachedFragmentShader.get());
         return (!m_cachedVertexShader.get() || m_isVertexShaderLoaded)
             && (!m_cachedFragmentShader.get() || m_isFragmentShaderLoaded);
