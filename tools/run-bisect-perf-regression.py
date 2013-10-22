@@ -112,7 +112,7 @@ def _LoadConfigFile(path_to_file):
     print
     traceback.print_exc()
     print
-    return None
+    return {}
 
 
 def _OutputFailedResults(text_to_print):
@@ -363,19 +363,24 @@ def main():
     return _RunBisectionScript(config, opts.working_directory,
         path_to_current_directory, opts.path_to_goma)
   else:
-    path_to_perf_cfg = os.path.join(
-        os.path.abspath(os.path.dirname(sys.argv[0])), 'run-perf-test.cfg')
+    perf_cfg_files = ['run-perf-test.cfg', os.path.join('..', 'third_party',
+        'WebKit', 'Tools', 'run-perf-test.cfg')]
 
-    config = _LoadConfigFile(path_to_perf_cfg)
+    for current_perf_cfg_file in perf_cfg_files:
+      path_to_perf_cfg = os.path.join(
+          os.path.abspath(os.path.dirname(sys.argv[0])), current_perf_cfg_file)
 
-    if config:
-      return _SetupAndRunPerformanceTest(config, path_to_current_directory,
-          opts.path_to_goma)
-    else:
-      print 'Error: Could not load config file. Double check your changes to '\
-            'run-bisect-perf-regression.cfg for syntax errors.'
-      print
-      return 1
+      config = _LoadConfigFile(path_to_perf_cfg)
+      config_has_values = [v for v in config.values() if v]
+
+      if config and config_has_values:
+        return _SetupAndRunPerformanceTest(config, path_to_current_directory,
+            opts.path_to_goma)
+
+    print 'Error: Could not load config file. Double check your changes to '\
+          'run-bisect-perf-regression.cfg/run-perf-test.cfg for syntax errors.'
+    print
+    return 1
 
 
 if __name__ == '__main__':
