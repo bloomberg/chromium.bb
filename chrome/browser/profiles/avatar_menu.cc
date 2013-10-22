@@ -4,6 +4,7 @@
 
 #include "chrome/browser/profiles/avatar_menu.h"
 
+#include "ash/ash_switches.h"
 #include "base/bind.h"
 #include "base/i18n/case_conversion.h"
 #include "base/metrics/field_trial.h"
@@ -109,9 +110,10 @@ bool AvatarMenu::ShouldShowAvatarMenu() {
   // implementations.
   if (profiles::IsMultipleProfilesEnabled()) {
 #if defined(OS_CHROMEOS)
-    // On ChromeOS the menu will be always visible when it is possible to have
-    // two users logged in at the same time.
-    return ChromeShellDelegate::instance() &&
+    // On ChromeOS the menu will be shown in M-31 mode when it is possible to
+    // have two users logged in at the same time.
+    return ash::switches::UseFullMultiProfileMode() &&
+           ChromeShellDelegate::instance() &&
            ChromeShellDelegate::instance()->IsMultiProfilesEnabled();
 #else
     return profiles::IsNewProfileManagementEnabled() ||
