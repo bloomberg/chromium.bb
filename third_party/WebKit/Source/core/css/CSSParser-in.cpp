@@ -11812,7 +11812,7 @@ bool CSSParser::parseViewportShorthand(CSSPropertyID propId, CSSPropertyID first
 template <typename CharacterType>
 static CSSPropertyID cssPropertyID(const CharacterType* propertyName, unsigned length)
 {
-    char buffer[maxCSSPropertyNameLength + 1 + 1]; // 1 to turn "apple"/"khtml" into "webkit", 1 for null character
+    char buffer[maxCSSPropertyNameLength + 1]; // 1 for null character
 
     for (unsigned i = 0; i != length; ++i) {
         CharacterType c = propertyName[i];
@@ -11854,7 +11854,7 @@ CSSPropertyID cssPropertyID(const CSSParserString& string)
 template <typename CharacterType>
 static CSSValueID cssValueKeywordID(const CharacterType* valueKeyword, unsigned length)
 {
-    char buffer[maxCSSValueKeywordLength + 1 + 1]; // 1 to turn "apple"/"khtml" into "webkit", 1 for null character
+    char buffer[maxCSSValueKeywordLength + 1]; // 1 for null character
 
     for (unsigned i = 0; i != length; ++i) {
         CharacterType c = valueKeyword[i];
@@ -11863,16 +11863,6 @@ static CSSValueID cssValueKeywordID(const CharacterType* valueKeyword, unsigned 
         buffer[i] = WTF::toASCIILower(c);
     }
     buffer[length] = '\0';
-
-    if (buffer[0] == '-') {
-        // If the prefix is -apple- or -khtml-, change it to -webkit-.
-        // This makes the string one character longer.
-        if (hasPrefix(buffer, length, "-apple-") || hasPrefix(buffer, length, "-khtml-")) {
-            memmove(buffer + 7, buffer + 6, length + 1 - 6);
-            memcpy(buffer, "-webkit", 7);
-            ++length;
-        }
-    }
 
     const Value* hashTableEntry = findValue(buffer, length);
     return hashTableEntry ? static_cast<CSSValueID>(hashTableEntry->id) : CSSValueInvalid;

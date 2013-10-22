@@ -230,7 +230,7 @@ namespace WTF {
     }
 
 
-} // namespace khtml
+} // namespace WTF
 
 using WTF::HashCountedSet;
 

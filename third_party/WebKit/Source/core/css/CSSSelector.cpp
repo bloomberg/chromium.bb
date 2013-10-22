@@ -280,7 +280,6 @@ static HashMap<StringImpl*, CSSSelector::PseudoType>* nameToPseudoTypeMap()
     DEFINE_STATIC_LOCAL(AtomicString, valid, ("valid", AtomicString::ConstructFromLiteral));
     DEFINE_STATIC_LOCAL(AtomicString, invalid, ("invalid", AtomicString::ConstructFromLiteral));
     DEFINE_STATIC_LOCAL(AtomicString, drag, ("-webkit-drag", AtomicString::ConstructFromLiteral));
-    DEFINE_STATIC_LOCAL(AtomicString, dragAlias, ("-khtml-drag", AtomicString::ConstructFromLiteral)); // was documented with this name in Apple documentation, so keep an alia
     DEFINE_STATIC_LOCAL(AtomicString, empty, ("empty", AtomicString::ConstructFromLiteral));
     DEFINE_STATIC_LOCAL(AtomicString, enabled, ("enabled", AtomicString::ConstructFromLiteral));
     DEFINE_STATIC_LOCAL(AtomicString, firstChild, ("first-child", AtomicString::ConstructFromLiteral));
@@ -366,7 +365,6 @@ static HashMap<StringImpl*, CSSSelector::PseudoType>* nameToPseudoTypeMap()
         nameToPseudoType->set(valid.impl(), CSSSelector::PseudoValid);
         nameToPseudoType->set(invalid.impl(), CSSSelector::PseudoInvalid);
         nameToPseudoType->set(drag.impl(), CSSSelector::PseudoDrag);
-        nameToPseudoType->set(dragAlias.impl(), CSSSelector::PseudoDrag);
         nameToPseudoType->set(enabled.impl(), CSSSelector::PseudoEnabled);
         nameToPseudoType->set(empty.impl(), CSSSelector::PseudoEmpty);
         nameToPseudoType->set(firstChild.impl(), CSSSelector::PseudoFirstChild);
