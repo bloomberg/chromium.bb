@@ -31,6 +31,7 @@
 #include "config.h"
 #include "core/animation/DocumentTimeline.h"
 
+#include "core/animation/AnimationClock.h"
 #include "core/animation/Player.h"
 #include "core/dom/Document.h"
 #include "core/frame/FrameView.h"
@@ -43,8 +44,7 @@ PassRefPtr<DocumentTimeline> DocumentTimeline::create(Document* document)
 }
 
 DocumentTimeline::DocumentTimeline(Document* document)
-    : m_currentTime(nullValue())
-    , m_document(document)
+    : m_document(document)
     , m_zeroTimeAsPerfTime(nullValue())
 {
     ASSERT(document);
@@ -65,14 +65,8 @@ void DocumentTimeline::serviceAnimations(double monotonicAnimationStartTime)
 {
     {
         TRACE_EVENT0("webkit", "DocumentTimeline::serviceAnimations");
-        // FIXME: The below ASSERT fires on Windows when running chrome.exe.
-        // Does not fire with --single-process, or on Linux, or in
-        // content_shell.exe. The assert condition has been moved up into the
-        // outer 'if' to work around this. http://crbug.com/280439.
-        if (!isNull(m_zeroTimeAsPerfTime) && (m_currentTime <= monotonicAnimationStartTime - m_zeroTimeAsPerfTime)) {
-            ASSERT(m_currentTime <= monotonicAnimationStartTime - m_zeroTimeAsPerfTime);
-            m_currentTime = monotonicAnimationStartTime - m_zeroTimeAsPerfTime;
-        }
+
+        m_document->animationClock().updateTime(monotonicAnimationStartTime);
 
         double timeToNextEffect = -1;
         for (int i = m_players.size() - 1; i >= 0; --i) {
@@ -92,7 +86,11 @@ void DocumentTimeline::setZeroTimeAsPerfTime(double zeroTime)
     ASSERT(isNull(m_zeroTimeAsPerfTime));
     m_zeroTimeAsPerfTime = zeroTime;
     ASSERT(!isNull(m_zeroTimeAsPerfTime));
-    m_currentTime = 0;
+}
+
+double DocumentTimeline::currentTime()
+{
+    return m_document->animationClock().currentTime() - m_zeroTimeAsPerfTime;
 }
 
 void DocumentTimeline::pauseAnimationsForTesting(double pauseTime)
@@ -115,7 +113,7 @@ size_t DocumentTimeline::numberOfActiveAnimationsForTesting() const
 {
     // Includes all players whose directly associated timed items
     // are current or in effect.
-    return isNull(m_currentTime) ? 0 : m_players.size();
+    return isNull(m_zeroTimeAsPerfTime) ? 0 : m_players.size();
 }
 
 } // namespace

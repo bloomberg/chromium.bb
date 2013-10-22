@@ -220,7 +220,6 @@ crbug.com/258896 virtual/web-animations-css/animations/cross-fade-webkit-mask-bo
 crbug.com/258896 virtual/web-animations-css/animations/lineheight-animation.html [ Crash ]
 # These can't be rebaselined because the failure involves flaky output.
 crbug.com/258896 virtual/web-animations-css/animations/animation-direction-reverse-fill-mode.html [ Failure ]
-crbug.com/258896 virtual/web-animations-css/animations/change-keyframes-name.html [ Failure ]
 crbug.com/258896 virtual/web-animations-css/animations/fill-mode-iteration-count-non-integer.html [ Failure ]
 crbug.com/258896 virtual/web-animations-css/animations/fill-mode-reverse.html [ Failure ]
 crbug.com/258896 virtual/web-animations-css/animations/play-state.html [ Failure ]

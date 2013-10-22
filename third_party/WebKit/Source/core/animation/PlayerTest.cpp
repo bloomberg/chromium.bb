@@ -32,6 +32,7 @@
 #include "core/animation/Player.h"
 
 #include "core/animation/Animation.h"
+#include "core/animation/AnimationClock.h"
 #include "core/animation/DocumentTimeline.h"
 #include "core/dom/Document.h"
 #include "core/dom/QualifiedName.h"
@@ -48,6 +49,7 @@ protected:
     {
         document = Document::create();
         timeline = DocumentTimeline::create(document.get());
+        document->animationClock().updateTime(0);
         player = Player::create(timeline.get(), 0);
         timeline->setZeroTimeAsPerfTime(0);
     }
