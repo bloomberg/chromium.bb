@@ -569,15 +569,15 @@
               '-limm32.lib',
               '-loleacc.lib',
             ],
-            'msvs_settings': {
-              'VCLinkerTool': {
-                'DelayLoadDLLs': [
-                  'user32.dll',
-                ],
-              },
-              'VCCLCompilerTool': {
-                'ForcedIncludeFiles': [ 'build/intsafe_workaround.h' ],
-              },
+          },
+          'msvs_settings': {
+            'VCLinkerTool': {
+              'DelayLoadDLLs': [
+                'user32.dll',
+              ],
+            },
+            'VCCLCompilerTool': {
+              'ForcedIncludeFiles': [ 'build/intsafe_workaround.h' ],
             },
           },
           # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
