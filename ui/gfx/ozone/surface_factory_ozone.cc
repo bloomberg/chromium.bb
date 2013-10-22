@@ -6,6 +6,8 @@
 
 #include <stdlib.h>
 
+#include "ui/gfx/ozone/impl/software_surface_factory_ozone.h"
+
 namespace gfx {
 
 // static
@@ -42,7 +44,11 @@ SurfaceFactoryOzone::~SurfaceFactoryOzone() {
 }
 
 SurfaceFactoryOzone* SurfaceFactoryOzone::GetInstance() {
-  CHECK(impl_) << "SurfaceFactoryOzone accessed before constructed";
+  if (!impl_) {
+    LOG(WARNING) << "No SurfaceFactoryOzone implementation set. Using default "
+                    "gfx::SoftwareSurfaceFactoryOzone.";
+    impl_ = new SoftwareSurfaceFactoryOzone();
+  }
   return impl_;
 }
 

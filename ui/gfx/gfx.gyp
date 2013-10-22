@@ -135,6 +135,16 @@
         'matrix3_f.cc',
         'matrix3_f.h',
         'native_widget_types.h',
+        'ozone/impl/drm_skbitmap_ozone.cc',
+        'ozone/impl/drm_skbitmap_ozone.h',
+        'ozone/impl/drm_wrapper_ozone.cc',
+        'ozone/impl/drm_wrapper_ozone.h',
+        'ozone/impl/hardware_display_controller_ozone.cc',
+        'ozone/impl/hardware_display_controller_ozone.h',
+        'ozone/impl/software_surface_factory_ozone.cc',
+        'ozone/impl/software_surface_factory_ozone.h',
+        'ozone/impl/software_surface_ozone.cc',
+        'ozone/impl/software_surface_ozone.h',
         'ozone/surface_factory_ozone.cc',
         'ozone/surface_factory_ozone.h',
         'pango_util.cc',
@@ -355,6 +365,11 @@
         ['use_pango==1', {
           'dependencies': [
             '<(DEPTH)/build/linux/system.gyp:pangocairo',
+          ],
+        }],
+        ['use_ozone==1', {
+          'dependencies': [
+          '<(DEPTH)/build/linux/system.gyp:dridrm',
           ],
         }],
       ],

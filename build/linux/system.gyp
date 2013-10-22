@@ -869,5 +869,19 @@
         }],
       ],
     },
+    {
+      'target_name': 'dridrm',
+      'type': 'none',
+      'direct_dependent_settings': {
+        'cflags': [
+          '<!@(<(pkg-config) --cflags libdrm)',
+        ],
+      },
+      'link_settings': {
+        'libraries': [
+          '<!@(<(pkg-config) --libs-only-l libdrm)',
+        ],
+      },
+    },
   ],
 }

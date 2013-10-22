@@ -181,6 +181,9 @@
         'gfx/font_list_unittest.cc',
         'gfx/image/image_mac_unittest.mm',
         'gfx/image/image_util_unittest.cc',
+        'gfx/ozone/impl/hardware_display_controller_ozone_unittest.cc',
+        'gfx/ozone/impl/software_surface_factory_ozone_unittest.cc',
+        'gfx/ozone/impl/software_surface_ozone_unittest.cc',
         'gfx/platform_font_mac_unittest.mm',
         'gfx/render_text_unittest.cc',
         'gfx/sequential_id_generator_unittest.cc',
@@ -328,6 +331,11 @@
             'base/dialogs/select_file_dialog_win_unittest.cc',
             'base/dragdrop/os_exchange_data_win_unittest.cc',
             'gfx/screen_unittest.cc',
+          ],
+        }],
+        ['use_ozone==1', {
+          'dependencies': [
+          '<(DEPTH)/build/linux/system.gyp:dridrm',
           ],
         }],
         ['chromeos==1', {
