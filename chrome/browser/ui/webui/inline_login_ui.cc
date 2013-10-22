@@ -7,17 +7,24 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/signin_global_error.h"
 #include "chrome/browser/signin/signin_manager_cookie_helper.h"
+#include "chrome/browser/signin/signin_names_io_thread.h"
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/signin/token_service.h"
 #include "chrome/browser/signin/token_service_factory.h"
+#include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/sync/one_click_signin_sync_starter.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/storage_partition.h"
@@ -29,6 +36,7 @@
 #include "google_apis/gaia/gaia_urls.h"
 #include "grit/browser_resources.h"
 #include "net/base/escape.h"
+#include "net/base/url_util.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/oauth2_token_fetcher.h"
@@ -84,7 +92,7 @@ class InlineLoginUIOAuth2Delegate
 class InlineLoginUIHandler : public content::WebUIMessageHandler {
  public:
   explicit InlineLoginUIHandler(Profile* profile)
-      : profile_(profile), weak_factory_(this) {}
+      : profile_(profile), weak_factory_(this), choose_what_to_sync_(false) {}
   virtual ~InlineLoginUIHandler() {}
 
   // content::WebUIMessageHandler overrides:
@@ -119,20 +127,34 @@ class InlineLoginUIHandler : public content::WebUIMessageHandler {
         switches::kEnableInlineSignin);
     params.SetInteger("authMode",
         enable_inline ? kInlineAuthMode : kDefaultAuthMode);
-    // Set continueUrl param for the inline sign in flow. It should point to
-    // the oauth2 auth code URL so that later we can grab the auth code from
-    // the cookie jar of the embedded webview.
+
+    // Set parameters specific for inline signin flow.
+#if !defined(OS_CHROMEOS)
     if (enable_inline) {
+      // Set continueUrl param for the inline sign in flow. It should point to
+      // the oauth2 auth code URL so that later we can grab the auth code from
+      // the cookie jar of the embedded webview.
       std::string scope = net::EscapeUrlEncodedData(
           gaiaUrls->oauth1_login_scope(), true);
       std::string client_id = net::EscapeUrlEncodedData(
           gaiaUrls->oauth2_chrome_client_id(), true);
       std::string encoded_continue_params = base::StringPrintf(
           "?scope=%s&client_id=%s", scope.c_str(), client_id.c_str());
+
+      const GURL& current_url = web_ui()->GetWebContents()->GetURL();
+      signin::Source source = signin::GetSourceForPromoURL(current_url);
+      if (source != signin::SOURCE_UNKNOWN) {
+        params.SetString("service", "chromiumsync");
+        base::StringAppendF(
+            &encoded_continue_params, "&%s=%d", "source",
+            static_cast<int>(source));
+      }
+
       params.SetString("continueUrl",
           gaiaUrls->client_login_to_oauth2_url().Resolve(
               encoded_continue_params).spec());
     }
+#endif
 
     web_ui()->CallJavascriptFunction("inline.login.loadAuthExtension", params);
   }
@@ -160,6 +182,7 @@ class InlineLoginUIHandler : public content::WebUIMessageHandler {
       NOTREACHED();
       return;
     }
+    dict->GetBoolean("chooseWhatToSync", &choose_what_to_sync_);
 
     content::WebContents* web_contents = web_ui()->GetWebContents();
     content::StoragePartition* partition =
@@ -183,24 +206,85 @@ class InlineLoginUIHandler : public content::WebUIMessageHandler {
     net::CookieList::const_iterator it;
     for (it = cookie_list.begin(); it != cookie_list.end(); ++it) {
       if (it->Name() == "oauth_code") {
+        content::WebContents* contents = web_ui()->GetWebContents();
+        ProfileSyncService* sync_service =
+            ProfileSyncServiceFactory::GetForProfile(profile_);
+        const GURL& current_url = contents->GetURL();
+        signin::Source source = signin::GetSourceForPromoURL(current_url);
+
+        OneClickSigninSyncStarter::StartSyncMode start_mode =
+            source == signin::SOURCE_SETTINGS || choose_what_to_sync_ ?
+                (SigninGlobalError::GetForProfile(profile_)->HasMenuItem() &&
+                 sync_service && sync_service->HasSyncSetupCompleted()) ?
+                    OneClickSigninSyncStarter::SHOW_SETTINGS_WITHOUT_CONFIGURE :
+                    OneClickSigninSyncStarter::CONFIGURE_SYNC_FIRST :
+                OneClickSigninSyncStarter::SYNC_WITH_DEFAULT_SETTINGS;
+        OneClickSigninSyncStarter::ConfirmationRequired confirmation_required =
+            source == signin::SOURCE_SETTINGS ||
+            source == signin::SOURCE_WEBSTORE_INSTALL ||
+            choose_what_to_sync_?
+                OneClickSigninSyncStarter::NO_CONFIRMATION :
+                OneClickSigninSyncStarter::CONFIRM_AFTER_SIGNIN;
         // Call OneClickSigninSyncStarter to exchange oauth code for tokens.
         // OneClickSigninSyncStarter will delete itself once the job is done.
-        // TODO(guohui): should collect from user whether they want to use
-        // default sync settings or configure first.
         new OneClickSigninSyncStarter(
             profile_, NULL, "0" /* session_index 0 for the default user */,
             UTF16ToASCII(email), UTF16ToASCII(password), it->Value(),
-            OneClickSigninSyncStarter::SYNC_WITH_DEFAULT_SETTINGS,
-            web_ui()->GetWebContents(),
-            OneClickSigninSyncStarter::NO_CONFIRMATION,
-            OneClickSigninSyncStarter::Callback());
+            start_mode,
+            contents,
+            confirmation_required,
+            base::Bind(&InlineLoginUIHandler::SyncStarterCallback,
+                       weak_factory_.GetWeakPtr()));
+        break;
       }
     }
     web_ui()->CallJavascriptFunction("inline.login.closeDialog");
   }
 
+  void SyncStarterCallback(OneClickSigninSyncStarter::SyncSetupResult result) {
+    content::WebContents* contents = web_ui()->GetWebContents();
+    const GURL& current_url = contents->GetURL();
+    bool auto_close = signin::IsAutoCloseEnabledInURL(current_url);
+    signin::Source source = signin::GetSourceForPromoURL(current_url);
+    if (auto_close) {
+      base::MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(
+            &InlineLoginUIHandler::CloseTab, weak_factory_.GetWeakPtr()));
+    } else if (source != signin::SOURCE_UNKNOWN &&
+        source != signin::SOURCE_SETTINGS &&
+        source != signin::SOURCE_WEBSTORE_INSTALL) {
+      // Redirect to NTP/Apps page and display a confirmation bubble.
+      // TODO(guohui): should redirect to the given continue url for webstore
+      // install flows.
+      GURL url(source == signin::SOURCE_APPS_PAGE_LINK ?
+               chrome::kChromeUIAppsURL : chrome::kChromeUINewTabURL);
+      content::OpenURLParams params(url,
+                                    content::Referrer(),
+                                    CURRENT_TAB,
+                                    content::PAGE_TRANSITION_AUTO_TOPLEVEL,
+                                    false);
+      contents->OpenURL(params);
+    }
+  }
+
+  void CloseTab() {
+    content::WebContents* tab = web_ui()->GetWebContents();
+    Browser* browser = chrome::FindBrowserWithWebContents(tab);
+    if (browser) {
+      TabStripModel* tab_strip_model = browser->tab_strip_model();
+      if (tab_strip_model) {
+        int index = tab_strip_model->GetIndexOfWebContents(tab);
+        if (index != TabStripModel::kNoTab) {
+          tab_strip_model->ExecuteContextMenuCommand(
+              index, TabStripModel::CommandCloseTab);
+        }
+      }
+    }
+  }
   Profile* profile_;
   base::WeakPtrFactory<InlineLoginUIHandler> weak_factory_;
+  bool choose_what_to_sync_;
 #if defined(OS_CHROMEOS)
   scoped_ptr<chromeos::OAuth2TokenFetcher> oauth2_token_fetcher_;
   scoped_ptr<InlineLoginUIOAuth2Delegate> oauth2_delegate_;

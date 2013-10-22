@@ -56,6 +56,7 @@ cr.define('cr.login', function() {
     'gaiaUrl',       // Gaia url to use;
     'hl',            // Language code for the user interface;
     'email',         // Pre-fill the email field in Gaia UI;
+    'service',       // Name of Gaia service;
     'continueUrl'    // Continue url to use;
   ];
 
@@ -290,6 +291,7 @@ cr.define('cr.login', function() {
       if (e.origin == GAIA_ORIGIN && msg.method == 'attemptLogin') {
         this.email_ = msg.email;
         this.password_ = msg.password;
+        this.chooseWhatToSync_ = msg.chooseWhatToSync;
         return;
       }
 
@@ -305,7 +307,8 @@ cr.define('cr.login', function() {
         this.onAuthSuccess_({email: msg.email || this.email_,
                              password: msg.password || this.password_,
                              authCode: msg.authCode,
-                             useOffline: msg.method == 'offlineLogin'});
+                             useOffline: msg.method == 'offlineLogin',
+                             chooseWhatToSync: this.chooseWhatToSync_});
         return;
       }
 

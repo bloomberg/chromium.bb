@@ -28,10 +28,13 @@
       return;
     }
 
+    var checkboxElement = $('advanced-box');
+    var chooseWhatToSync = checkboxElement && checkboxElement.checked;
     var msg = {method: 'attemptLogin',
                email: gaiaLoginForm['Email'].value,
                password: gaiaLoginForm['Passwd'].value,
-               attemptToken: new Date().getTime()};
+               attemptToken: new Date().getTime(),
+               chooseWhatToSync: chooseWhatToSync};
 
     extWindow.postMessage(msg, 'chrome://inline-login');
     console.log('Credentials sent');

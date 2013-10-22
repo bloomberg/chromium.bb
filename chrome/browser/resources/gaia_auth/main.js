@@ -39,9 +39,9 @@ Authenticator.prototype = {
   samlSupportChannel_: null,
 
   GAIA_URL: 'https://accounts.google.com/',
-  GAIA_PAGE_PATH: 'ServiceLogin?service=chromeoslogin' +
-      '&skipvpage=true&sarp=1&rm=hide',
+  GAIA_PAGE_PATH: 'ServiceLogin?skipvpage=true&sarp=1&rm=hide',
   PARENT_PAGE: 'chrome://oobe/',
+  SERVICE_ID: 'chromeoslogin',
   CONTINUE_URL: Authenticator.THIS_EXTENSION_ORIGIN + '/success.html',
 
   initialize: function() {
@@ -50,7 +50,11 @@ Authenticator.prototype = {
     this.gaiaUrl_ = params.gaiaUrl || this.GAIA_URL;
     this.inputLang_ = params.hl;
     this.inputEmail_ = params.email;
+    this.service_ = params.service || this.SERVICE_ID;
     this.continueUrl_ = params.continueUrl || this.CONTINUE_URL;
+    this.continueUrlWithoutParams_ =
+        this.continueUrl_.substring(0, this.continueUrl_.indexOf('?')) ||
+        this.continueUrl_;
     this.inlineMode_ = params.inlineMode;
 
     document.addEventListener('DOMContentLoaded', this.onPageLoad.bind(this));
@@ -74,8 +78,9 @@ Authenticator.prototype = {
   getFrameUrl_: function() {
     var url = this.gaiaUrl_;
 
-    url += this.GAIA_PAGE_PATH + '&continue=' +
-        encodeURIComponent(this.continueUrl_);
+    url += this.GAIA_PAGE_PATH +
+        '&service=' + encodeURIComponent(this.service_) +
+        '&continue=' + encodeURIComponent(this.continueUrl_);
 
     if (this.inputLang_)
       url += '&hl=' + encodeURIComponent(this.inputLang_);
@@ -94,7 +99,8 @@ Authenticator.prototype = {
         gaiaFrame.contentWindow.postMessage('', gaiaFrame.src);
       });
       this.onLoginUILoaded();
-    } else if (gaiaFrame.src.lastIndexOf(this.continueUrl_, 0) == 0) {
+    } else if (gaiaFrame.src.lastIndexOf(
+        this.continueUrlWithoutParams_, 0) == 0) {
       // Detect when login is finished by the load stop event of the continue
       // URL. Cannot reuse the login complete flow in success.html, because
       // webview does not support extension pages yet.
