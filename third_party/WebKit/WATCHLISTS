@@ -173,6 +173,10 @@
       'filepath': 'Source/modules/geolocation/' \
                   '|LayoutTests/fast/dom/Geolocation/'
     },
+    'vibration': {
+      'filepath': 'Source/modules/vibration/' \
+                  '|LayoutTests/fast/dom/navigator-vibration'
+    },
   },
 
   'WATCHLISTS': {
@@ -247,6 +251,7 @@
     'webcomponents': [ 'webcomponents-bugzilla@chromium.org', 'dglazkov+blink@chromium.org' ],
     'mediastream': [ 'tommyw+watchlist@chromium.org' ],
     'geolocation': [ 'mvanouwerkerk@chromium.org' ],
+    'vibration': [ 'mvanouwerkerk@chromium.org' ],
     'spellcheck' : [ 'groby+blinkspell@chromium.org' ],
   },
 }
