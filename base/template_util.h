@@ -39,6 +39,9 @@ template <class T> struct is_non_const_reference : false_type {};
 template <class T> struct is_non_const_reference<T&> : true_type {};
 template <class T> struct is_non_const_reference<const T&> : false_type {};
 
+template <class T> struct is_const : false_type {};
+template <class T> struct is_const<const T> : true_type {};
+
 template <class T> struct is_void : false_type {};
 template <> struct is_void<void> : true_type {};
 
@@ -102,6 +105,12 @@ struct is_class
                         sizeof(internal::IsClassHelper::Test<T>(0)) ==
                             sizeof(internal::YesType)> {
 };
+
+template<bool B, class T = void>
+struct enable_if {};
+
+template<class T>
+struct enable_if<true, T> { typedef T type; };
 
 }  // namespace base
 
