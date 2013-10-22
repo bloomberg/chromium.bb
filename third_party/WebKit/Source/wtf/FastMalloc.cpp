@@ -300,14 +300,6 @@ extern "C"  const int jscore_fastmalloc_introspection = 0;
 #include <dispatch/dispatch.h>
 #endif
 
-#ifdef __has_include
-#if __has_include(<System/pthread_machdep.h>)
-
-#include <System/pthread_machdep.h>
-
-#endif
-#endif
-
 #ifndef PRIuS
 #define PRIuS "zu"
 #endif
@@ -317,13 +309,8 @@ extern "C"  const int jscore_fastmalloc_introspection = 0;
 // use a function pointer. But that's not necessarily faster on other platforms, and we had
 // problems with this technique on Windows, so we'll do this only on Mac OS X.
 #if OS(MACOSX)
-#if !USE(PTHREAD_GETSPECIFIC_DIRECT)
 static void* (*pthread_getspecific_function_pointer)(pthread_key_t) = pthread_getspecific;
 #define pthread_getspecific(key) pthread_getspecific_function_pointer(key)
-#else
-#define pthread_getspecific(key) _pthread_getspecific_direct(key)
-#define pthread_setspecific(key, val) _pthread_setspecific_direct(key, (val))
-#endif
 #endif
 
 #define DEFINE_VARIABLE(type, name, value, meaning) \
@@ -2547,13 +2534,6 @@ DWORD tlsIndex = TLS_OUT_OF_INDEXES;
 
 static ALWAYS_INLINE void setThreadHeap(TCMalloc_ThreadCache* heap)
 {
-#if USE(PTHREAD_GETSPECIFIC_DIRECT)
-    // Can't have two libraries both doing this in the same process,
-    // so check and make this crash right away.
-    if (pthread_getspecific(heap_key))
-        CRASH();
-#endif
-
     // Still do pthread_setspecific even if there's an alternate form
     // of thread-local storage in use, to benefit from the delete callback.
     pthread_setspecific(heap_key, heap);
@@ -3130,11 +3110,7 @@ inline TCMalloc_ThreadCache* TCMalloc_ThreadCache::GetCacheIfPresent() {
 
 void TCMalloc_ThreadCache::InitTSD() {
   ASSERT(!tsd_inited);
-#if USE(PTHREAD_GETSPECIFIC_DIRECT)
-  pthread_key_init_np(heap_key, DestroyThreadCache);
-#else
   pthread_key_create(&heap_key, DestroyThreadCache);
-#endif
 #if OS(WIN)
   tlsIndex = TlsAlloc();
 #endif
