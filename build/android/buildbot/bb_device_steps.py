@@ -436,13 +436,9 @@ def RunWebRTCNativeTests(options):
 def RunGPUTests(options):
   InstallApk(options, INSTRUMENTATION_TESTS['ContentShell'], False)
 
-  # Pixel tests require that the browser implements GrabWindowSnapshot and
-  # GrabViewSnapshot, which android-content-shell currently does not.
-  # (crbug.com/285932)
-
-  # bb_annotations.PrintNamedStep('gpu_tests')
-  # RunCmd(['content/test/gpu/run_gpu_test',
-  #         '--browser=android-content-shell', 'pixel'])
+  bb_annotations.PrintNamedStep('gpu_tests')
+  RunCmd(['content/test/gpu/run_gpu_test',
+          '--browser=android-content-shell', 'pixel'])
 
   bb_annotations.PrintNamedStep('webgl_conformance_tests')
   RunCmd(['content/test/gpu/run_gpu_test',
