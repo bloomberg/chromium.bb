@@ -152,6 +152,10 @@
 
 // ===== Begin Chrome-specific definitions =====
 
+#ifdef SK_DEBUG
+#define SK_REF_CNT_BASE_INCLUDE "sk_ref_cnt_base_debug.h"
+#endif
+
 #define SK_SCALAR_IS_FLOAT
 #undef SK_SCALAR_IS_FIXED
 
