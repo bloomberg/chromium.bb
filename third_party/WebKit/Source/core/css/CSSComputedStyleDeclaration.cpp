@@ -722,17 +722,18 @@ static PassRefPtr<CSSValueList> valueForBorderRadiusShorthand(const RenderStyle*
 
     list->append(horizontalRadii.release());
 
-    if (showVerticalTopLeft) {
-        RefPtr<CSSValueList> verticalRadii = CSSValueList::createSpaceSeparated();
-        verticalRadii->append(topLeftRadius->item(1));
-        if (showVerticalTopRight)
-            verticalRadii->append(topRightRadius->item(1));
-        if (showVerticalBottomRight)
-            verticalRadii->append(bottomRightRadius->item(1));
-        if (showVerticalBottomLeft)
-            verticalRadii->append(bottomLeftRadius->item(1));
+    RefPtr<CSSValueList> verticalRadii = CSSValueList::createSpaceSeparated();
+    verticalRadii->append(topLeftRadius->item(1));
+    if (showVerticalTopRight)
+        verticalRadii->append(topRightRadius->item(1));
+    if (showVerticalBottomRight)
+        verticalRadii->append(bottomRightRadius->item(1));
+    if (showVerticalBottomLeft)
+        verticalRadii->append(bottomLeftRadius->item(1));
+
+    if (!verticalRadii->equals(*toCSSValueList(list->item(0))))
         list->append(verticalRadii.release());
-    }
+
     return list.release();
 }
 
