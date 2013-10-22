@@ -100,7 +100,7 @@ public:
 
 protected:
     Document& document() const { return m_ownerNode->document(); }
-    Node* rootNode() const;
+    Node& rootNode() const;
     ContainerNode* rootContainerNode() const;
     bool overridesItemAfter() const { return m_overridesItemAfter; }
 

@@ -253,30 +253,30 @@ template <> inline bool isMatchingElement(const ClassNodeList* nodeList, Element
     return nodeList->nodeMatchesInlined(element);
 }
 
-static Node* previousNode(Node* base, Node* previous, bool onlyIncludeDirectChildren)
+static Node* previousNode(Node& base, Node& previous, bool onlyIncludeDirectChildren)
 {
-    return onlyIncludeDirectChildren ? previous->previousSibling() : NodeTraversal::previous(previous, base);
+    return onlyIncludeDirectChildren ? previous.previousSibling() : NodeTraversal::previous(&previous, &base);
 }
 
-static inline Node* lastDescendent(Node* node)
+static inline Node* lastDescendent(Node& node)
 {
-    node = node->lastChild();
-    for (Node* current = node; current; current = current->lastChild())
-        node = current;
-    return node;
+    Node* descendent = node.lastChild();
+    for (Node* current = descendent; current; current = current->lastChild())
+        descendent = current;
+    return descendent;
 }
 
-static Node* lastNode(Node* rootNode, bool onlyIncludeDirectChildren)
+static Node* lastNode(Node& rootNode, bool onlyIncludeDirectChildren)
 {
-    return onlyIncludeDirectChildren ? rootNode->lastChild() : lastDescendent(rootNode);
+    return onlyIncludeDirectChildren ? rootNode.lastChild() : lastDescendent(rootNode);
 }
 
 ALWAYS_INLINE Node* LiveNodeListBase::iterateForPreviousNode(Node* current) const
 {
     bool onlyIncludeDirectChildren = shouldOnlyIncludeDirectChildren();
     CollectionType collectionType = type();
-    Node* rootNode = this->rootNode();
-    for (; current; current = previousNode(rootNode, current, onlyIncludeDirectChildren)) {
+    Node& rootNode = this->rootNode();
+    for (; current; current = previousNode(rootNode, *current, onlyIncludeDirectChildren)) {
         if (isNodeList(collectionType)) {
             if (current->isElementNode() && isMatchingElement(static_cast<const LiveNodeList*>(this), toElement(current)))
                 return toElement(current);
@@ -292,7 +292,7 @@ ALWAYS_INLINE Node* LiveNodeListBase::itemBefore(Node* previous) const
 {
     Node* current;
     if (LIKELY(!!previous)) // Without this LIKELY, length() and item() can be 10% slower.
-        current = previousNode(rootNode(), previous, shouldOnlyIncludeDirectChildren());
+        current = previousNode(rootNode(), *previous, shouldOnlyIncludeDirectChildren());
     else
         current = lastNode(rootNode(), shouldOnlyIncludeDirectChildren());
 

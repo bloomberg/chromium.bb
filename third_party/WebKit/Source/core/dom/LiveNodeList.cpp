@@ -29,19 +29,19 @@
 
 namespace WebCore {
 
-Node* LiveNodeListBase::rootNode() const
+Node& LiveNodeListBase::rootNode() const
 {
     if (isRootedAtDocument() && m_ownerNode->inDocument())
-        return &m_ownerNode->document();
-    return m_ownerNode.get();
+        return m_ownerNode->document();
+    return *m_ownerNode;
 }
 
 ContainerNode* LiveNodeListBase::rootContainerNode() const
 {
-    Node* rootNode = this->rootNode();
-    if (!rootNode->isContainerNode())
+    Node& rootNode = this->rootNode();
+    if (!rootNode.isContainerNode())
         return 0;
-    return toContainerNode(rootNode);
+    return toContainerNode(&rootNode);
 }
 
 void LiveNodeListBase::invalidateCache() const
@@ -70,11 +70,11 @@ void LiveNodeListBase::invalidateIdNameCacheMaps() const
 
 Node* LiveNodeList::namedItem(const AtomicString& elementId) const
 {
-    Node* rootNode = this->rootNode();
+    Node& rootNode = this->rootNode();
 
-    if (rootNode->inDocument()) {
-        Element* element = rootNode->treeScope().getElementById(elementId);
-        if (element && nodeMatches(element) && element->isDescendantOf(rootNode))
+    if (rootNode.inDocument()) {
+        Element* element = rootNode.treeScope().getElementById(elementId);
+        if (element && nodeMatches(element) && element->isDescendantOf(&rootNode))
             return element;
         if (!element)
             return 0;
