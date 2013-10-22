@@ -1108,7 +1108,7 @@ PassRefPtr<DocumentFragment> Range::createContextualFragment(const String& marku
 
     Node* element = m_start.container()->isElementNode() ? m_start.container() : m_start.container()->parentNode();
     if (!element || !element->isHTMLElement()) {
-        es.throwUninformativeAndGenericDOMException(NotSupportedError);
+        es.throwDOMException(NotSupportedError, ExceptionMessages::failedToExecute("createContextualFragment", "Range", "The range's container must be an HTML element."));
         return 0;
     }
 

@@ -2,7 +2,7 @@ document.xmlEncoding : UTF-8
 document.xmlVersion : 1.0
 document.xmlStandalone : true
 document.readyState : loading
-div.innerHTML = threw exception: SyntaxError: An invalid or illegal string was specified.
+div.innerHTML = threw exception: SyntaxError: Failed to execute 'innerHTML' on 'Node': The provided markup is invalid XML, and therefore cannot be inserted into an XML document.
 document.xmlEncoding : UTF-8
 document.xmlVersion : 1.0
 document.xmlStandalone : true

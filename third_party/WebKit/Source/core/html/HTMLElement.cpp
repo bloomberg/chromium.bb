@@ -329,7 +329,7 @@ String HTMLElement::outerHTML() const
 
 void HTMLElement::setInnerHTML(const String& html, ExceptionState& es)
 {
-    if (RefPtr<DocumentFragment> fragment = createFragmentForInnerOuterHTML(html, this, AllowScriptingContent, es)) {
+    if (RefPtr<DocumentFragment> fragment = createFragmentForInnerOuterHTML(html, this, AllowScriptingContent, "innerHTML", es)) {
         ContainerNode* container = this;
         if (hasLocalName(templateTag))
             container = toHTMLTemplateElement(this)->content();
@@ -362,7 +362,7 @@ void HTMLElement::setOuterHTML(const String& html, ExceptionState& es)
     RefPtr<Node> prev = previousSibling();
     RefPtr<Node> next = nextSibling();
 
-    RefPtr<DocumentFragment> fragment = createFragmentForInnerOuterHTML(html, parent.get(), AllowScriptingContent, es);
+    RefPtr<DocumentFragment> fragment = createFragmentForInnerOuterHTML(html, parent.get(), AllowScriptingContent, "outerHTML", es);
     if (es.hadException())
         return;
 
@@ -575,7 +575,8 @@ void HTMLElement::insertAdjacentHTML(const String& where, const String& markup, 
     Element* contextElement = contextElementForInsertion(where, this, es);
     if (!contextElement)
         return;
-    RefPtr<DocumentFragment> fragment = createFragmentForInnerOuterHTML(markup, contextElement, AllowScriptingContent, es);
+
+    RefPtr<DocumentFragment> fragment = createFragmentForInnerOuterHTML(markup, contextElement, AllowScriptingContent, "insertAdjacentHTML", es);
     if (!fragment)
         return;
     insertAdjacent(where, fragment.get(), es);
