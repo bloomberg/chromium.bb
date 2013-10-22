@@ -10,6 +10,7 @@ import android.util.Log;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.HostDrivenTest;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.browser.identity.UniqueIdentificationGenerator;
 import org.chromium.chrome.browser.identity.UniqueIdentificationGeneratorFactory;
 import org.chromium.chrome.browser.identity.UuidBasedUniqueIdentificationGenerator;
@@ -90,7 +91,7 @@ public class SyncTest extends ChromiumTestShellTestBase {
         assertTrue("Couldn't get about info.", gotInfo);
     }
 
-    @HostDrivenTest
+    @DisabledTest
     public void testAboutSyncPageDisplaysCurrentSyncStatus() throws InterruptedException {
         setupTestAccountAndSignInToSync(FOREIGN_SESSION_TEST_MACHINE_ID);
 
