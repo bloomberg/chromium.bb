@@ -144,6 +144,35 @@ void ExtensionAppItem::UpdateIcon() {
   SetIcon(icon, !HasOverlay());
 }
 
+void ExtensionAppItem::Move(const ExtensionAppItem* prev,
+                            const ExtensionAppItem* next) {
+  if (!prev && !next)
+    return;  // No reordering necessary
+
+  ExtensionService* service =
+      extensions::ExtensionSystem::Get(profile_)->extension_service();
+  ExtensionSorting* sorting = service->extension_prefs()->extension_sorting();
+
+  syncer::StringOrdinal page;
+  std::string prev_id, next_id;
+  if (!prev) {
+    next_id = next->extension_id();
+    page = sorting->GetPageOrdinal(next_id);
+  } else if (!next) {
+    prev_id = prev->extension_id();
+    page = sorting->GetPageOrdinal(prev_id);
+  } else {
+    prev_id = prev->extension_id();
+    page = sorting->GetPageOrdinal(prev_id);
+    // Only set |next_id| if on the same page, otherwise just insert after prev.
+    if (page.Equals(sorting->GetPageOrdinal(next->extension_id())))
+      next_id = next->extension_id();
+  }
+  service->extension_prefs()->SetAppDraggedByUser(extension_id_);
+  sorting->SetPageOrdinal(extension_id_, page);
+  service->OnExtensionMoved(extension_id_, prev_id, next_id);
+}
+
 const Extension* ExtensionAppItem::GetExtension() const {
   const ExtensionService* service =
       extensions::ExtensionSystem::Get(profile_)->extension_service();

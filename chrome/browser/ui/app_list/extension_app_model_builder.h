@@ -29,7 +29,8 @@ class ImageSkia;
 
 // This class populates and maintains the given |model| with information from
 // |profile|.
-class ExtensionAppModelBuilder : public extensions::InstallObserver {
+class ExtensionAppModelBuilder : public extensions::InstallObserver,
+                                 public ui::ListModelObserver {
  public:
   ExtensionAppModelBuilder(Profile* profile,
                            app_list::AppListModel* model,
@@ -42,16 +43,14 @@ class ExtensionAppModelBuilder : public extensions::InstallObserver {
  private:
   typedef std::vector<ExtensionAppItem*> ExtensionAppList;
 
-  // Overridden from extensions::InstallObserver:
+  // extensions::InstallObserver
   virtual void OnBeginExtensionInstall(const std::string& extension_id,
                                        const std::string& extension_name,
                                        const gfx::ImageSkia& installing_icon,
                                        bool is_app,
                                        bool is_platform_app) OVERRIDE;
-
   virtual void OnDownloadProgress(const std::string& extension_id,
                                   int percent_downloaded) OVERRIDE;
-
   virtual void OnInstallFailure(const std::string& extension_id) OVERRIDE;
   virtual void OnExtensionInstalled(
       const extensions::Extension* extension) OVERRIDE {}
@@ -65,6 +64,12 @@ class ExtensionAppModelBuilder : public extensions::InstallObserver {
   virtual void OnAppInstalledToAppList(
       const std::string& extension_id) OVERRIDE;
   virtual void OnShutdown() OVERRIDE;
+
+  // ui::ListModelObserver
+  virtual void ListItemsAdded(size_t start, size_t count) OVERRIDE;
+  virtual void ListItemsRemoved(size_t start, size_t count) OVERRIDE;
+  virtual void ListItemMoved(size_t index, size_t target_index) OVERRIDE;
+  virtual void ListItemsChanged(size_t start, size_t count) OVERRIDE;
 
   // Adds apps in |extensions| to |apps|.
   void AddApps(const ExtensionSet* extensions, ExtensionAppList* apps);

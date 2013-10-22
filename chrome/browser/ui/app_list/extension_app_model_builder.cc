@@ -48,11 +48,13 @@ ExtensionAppModelBuilder::ExtensionAppModelBuilder(
       model_(model),
       highlighted_app_pending_(false),
       tracker_(NULL) {
+  model_->apps()->AddObserver(this);
   SwitchProfile(profile);  // Builds the model.
 }
 
 ExtensionAppModelBuilder::~ExtensionAppModelBuilder() {
   OnShutdown();
+  model_->apps()->RemoveObserver(this);
 }
 
 void ExtensionAppModelBuilder::OnBeginExtensionInstall(
@@ -238,4 +240,41 @@ void ExtensionAppModelBuilder::UpdateHighlight() {
     return;
   item->SetHighlighted(true);
   highlighted_app_pending_ = false;
+}
+
+void ExtensionAppModelBuilder::ListItemsAdded(size_t start, size_t count) {
+}
+
+void ExtensionAppModelBuilder::ListItemsRemoved(size_t start, size_t count) {
+}
+
+void ExtensionAppModelBuilder::ListItemMoved(size_t index,
+                                             size_t target_index) {
+  app_list::AppListModel::Apps* app_list = model_->apps();
+  app_list::AppListItemModel* item = app_list->GetItemAt(target_index);
+  if (item->GetAppType() != ExtensionAppItem::kAppType)
+    return;
+
+  ExtensionAppItem* prev = NULL;
+  for (size_t idx = target_index; idx > 1; --idx) {
+    app_list::AppListItemModel* item = app_list->GetItemAt(idx - 1);
+    if (item->GetAppType() == ExtensionAppItem::kAppType) {
+      prev = static_cast<ExtensionAppItem*>(item);
+      break;
+    }
+  }
+  ExtensionAppItem* next = NULL;
+  for (size_t idx = target_index; idx < app_list->item_count() - 1; ++idx) {
+    app_list::AppListItemModel* item = app_list->GetItemAt(idx + 1);
+    if (item->GetAppType() == ExtensionAppItem::kAppType) {
+      next = static_cast<ExtensionAppItem*>(item);
+      break;
+    }
+  }
+  if (prev || next)
+    static_cast<ExtensionAppItem*>(item)->Move(prev, next);
+}
+
+void ExtensionAppModelBuilder::ListItemsChanged(size_t start, size_t count) {
+  NOTREACHED();
 }
