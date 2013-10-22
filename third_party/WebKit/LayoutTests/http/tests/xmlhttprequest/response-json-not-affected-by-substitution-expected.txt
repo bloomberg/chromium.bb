@@ -1,0 +1,3 @@
+
+PASS Test setting the JSON object to undefined doesn't break XMLHttpRequest for responseType='json'. 
+
