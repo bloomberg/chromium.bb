@@ -695,7 +695,7 @@ camera.views.Camera.prototype.start_ = function() {
     var windowWidth = document.body.offsetWidth;
     var windowHeight = document.body.offsetHeight;
     var targetAspectRatio = width / height;
-    var targetWidth = Math.round(Math.min(width, screen.width / 2));
+    var targetWidth = Math.round(Math.min(width, screen.width * 0.8));
     var targetHeight = Math.round(targetWidth / targetAspectRatio);
     if (windowWidth == 640 && windowHeight == 360)
       chrome.app.window.current().resizeTo(targetWidth, targetHeight);
