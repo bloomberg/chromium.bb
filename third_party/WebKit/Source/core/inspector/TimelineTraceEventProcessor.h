@@ -197,6 +197,7 @@ private:
     void leaveLayerTask(TimelineThreadState&);
 
     void processBackgroundEvents();
+    void processBackgroundEventsTask();
     PassRefPtr<JSONObject> createRecord(const TraceEvent&, const String& recordType, PassRefPtr<JSONObject> data = 0);
 
     void registerHandler(const char* name, char, TraceEventHandler);
@@ -229,6 +230,8 @@ private:
     HandlersMap m_handlersByType;
     Mutex m_backgroundEventsMutex;
     Vector<TraceEvent> m_backgroundEvents;
+    double m_lastEventProcessingTime;
+    bool m_processEventsTaskInFlight;
 
     typedef HashMap<ThreadIdentifier, TimelineThreadState> ThreadStateMap;
     ThreadStateMap m_threadStates;

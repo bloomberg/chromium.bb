@@ -38,6 +38,7 @@
 #include "core/rendering/RenderImage.h"
 
 #include "wtf/CurrentTime.h"
+#include "wtf/Functional.h"
 #include "wtf/MainThread.h"
 #include "wtf/Vector.h"
 
@@ -156,6 +157,8 @@ TimelineTraceEventProcessor::TimelineTraceEventProcessor(WeakPtr<InspectorTimeli
     , m_layerId(0)
     , m_paintSetupStart(0)
     , m_paintSetupEnd(0)
+    , m_lastEventProcessingTime(0)
+    , m_processEventsTaskInFlight(false)
 {
     registerHandler(InstrumentationEvents::BeginFrame, TRACE_EVENT_PHASE_INSTANT, &TimelineTraceEventProcessor::onBeginFrame);
     registerHandler(InstrumentationEvents::UpdateLayer, TRACE_EVENT_PHASE_BEGIN, &TimelineTraceEventProcessor::onUpdateLayerBegin);
@@ -220,19 +223,28 @@ void TimelineTraceEventProcessor::processEventOnAnyThread(char phase, const char
     if (it == m_handlersByType.end())
         return;
 
-    TraceEvent event(WTF::monotonicallyIncreasingTime(), phase, name, id, currentThread(), numArgs, argNames, argTypes, argValues);
+    double timestamp = WTF::monotonicallyIncreasingTime();
+    TraceEvent event(timestamp, phase, name, id, currentThread(), numArgs, argNames, argTypes, argValues);
 
     if (!isMainThread()) {
         MutexLocker locker(m_backgroundEventsMutex);
+        const float eventProcessingThresholdInSeconds = 0.1;
         m_backgroundEvents.append(event);
+        if (!m_processEventsTaskInFlight && timestamp - m_lastEventProcessingTime > eventProcessingThresholdInSeconds) {
+            m_processEventsTaskInFlight = true;
+            callOnMainThread(bind(&TimelineTraceEventProcessor::processBackgroundEventsTask, this));
+        }
         return;
     }
+    processBackgroundEvents();
     (this->*(it->value))(event);
 }
 
 void TimelineTraceEventProcessor::onBeginFrame(const TraceEvent&)
 {
-    processBackgroundEvents();
+    // We don't handle BeginFrame explicitly now, but it still implicitly helps
+    // to pump the background events regularly (as opposed to posting a task),
+    // as this is only done upon events we recognize.
 }
 
 void TimelineTraceEventProcessor::onUpdateLayerBegin(const TraceEvent& event)
@@ -283,8 +295,7 @@ void TimelineTraceEventProcessor::onRasterTaskBegin(const TraceEvent& event)
         return;
     unsigned long long layerId = event.asUInt(InstrumentationEventArguments::LayerId);
     ASSERT(layerId);
-    RefPtr<JSONObject> record = createRecord(event, TimelineRecordType::Rasterize);
-    record->setObject("data", TimelineRecordFactory::createLayerData(m_layerToNodeMap.get(layerId)));
+    RefPtr<JSONObject> record = createRecord(event, TimelineRecordType::Rasterize, TimelineRecordFactory::createLayerData(m_layerToNodeMap.get(layerId)));
     state.recordStack.addScopedRecord(record.release());
 }
 
@@ -422,6 +433,9 @@ void TimelineTraceEventProcessor::processBackgroundEvents()
     Vector<TraceEvent> events;
     {
         MutexLocker locker(m_backgroundEventsMutex);
+        m_lastEventProcessingTime = WTF::monotonicallyIncreasingTime();
+        if (m_backgroundEvents.isEmpty())
+            return;
         events.reserveCapacity(m_backgroundEvents.capacity());
         m_backgroundEvents.swap(events);
     }
@@ -431,6 +445,12 @@ void TimelineTraceEventProcessor::processBackgroundEvents()
         ASSERT(it != m_handlersByType.end() && it->value);
         (this->*(it->value))(event);
     }
+}
+
+void TimelineTraceEventProcessor::processBackgroundEventsTask()
+{
+    m_processEventsTaskInFlight = false;
+    processBackgroundEvents();
 }
 
 } // namespace WebCore
