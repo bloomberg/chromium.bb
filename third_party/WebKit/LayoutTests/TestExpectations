@@ -374,9 +374,8 @@ webkit.org/b/95136 fast/css/sticky/sticky-left-percentage.html [ ImageOnlyFailur
 # Does not yet support new web notifications TestRunner API
 webkit.org/b/95506 http/tests/notifications [ Skip ]
 
-# Bug(fmalita): re-enable after rebaseline
-#webkit.org/b/96441 [ Win Debug ] fast/hidpi/gradient-with-scaled-ancestor.html [ ImageOnlyFailure ]
-#crbug.com/248155 [ Win Debug ] virtual/gpu/fast/hidpi/gradient-with-scaled-ancestor.html [ ImageOnlyFailure ]
+crbug.com/248155 [ Win Debug ] fast/hidpi/gradient-with-scaled-ancestor.html [ ImageOnlyFailure ]
+crbug.com/248155 [ Win Debug ] virtual/gpu/fast/hidpi/gradient-with-scaled-ancestor.html [ ImageOnlyFailure ]
 
 crbug.com/245611 [ Win ] fast/hidpi/image-set-as-background.html [ ImageOnlyFailure Pass ]
 crbug.com/245611 [ Win ] fast/hidpi/image-set-background-repeat-without-size.html [ ImageOnlyFailure Pass ]
@@ -898,3 +897,4 @@ crbug.com/282079 [ Debug ] webmidi/permission.html [ Crash Pass ]
 crbug.com/310323 [ Debug ] http/tests/plugins/third-party-cookie-accept-policy.html [ Crash Pass ]
 crbug.com/310323 [ Debug ] http/tests/security/contentSecurityPolicy/report-multiple-violations-02.html [ Crash Pass ]
 
+crbug.com/310327 [ Win Debug ] fast/dom/Geolocation/window-close-crash.html [ Crash ]
