@@ -77,7 +77,8 @@ public:
 
     int readServerHandshake(const char* header, size_t len);
     Mode mode() const;
-    String failureReason() const; // Returns a string indicating the reason of failure if mode() == Failed.
+    // Returns a string indicating the reason of failure if mode() == Failed.
+    String failureReason() const;
 
     String serverWebSocketProtocol() const;
     String serverSetCookie() const;
@@ -110,6 +111,10 @@ private:
 
     Mode m_mode;
 
+    // Stores a received server's handshake. The order of headers is not
+    // guaranteed to be preserved. Duplicated headers may be dropped. Values may
+    // be rebuilt after parsing, so they can be different from the original data
+    // received from the server.
     WebSocketHandshakeResponse m_response;
 
     String m_failureReason;
