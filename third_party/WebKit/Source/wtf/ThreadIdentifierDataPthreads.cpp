@@ -36,6 +36,7 @@
 
 #include "wtf/Assertions.h"
 #include "wtf/Threading.h"
+#include "wtf/WTF.h"
 
 #if OS(ANDROID)
 // PTHREAD_KEYS_MAX is not defined in bionic, so explicitly define it here.
@@ -77,6 +78,9 @@ void ThreadIdentifierData::initialize(ThreadIdentifier id)
 
 void ThreadIdentifierData::destruct(void* data)
 {
+    if (isShutdown())
+        return;
+
     ThreadIdentifierData* threadIdentifierData = static_cast<ThreadIdentifierData*>(data);
     ASSERT(threadIdentifierData);
 

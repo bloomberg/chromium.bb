@@ -44,6 +44,7 @@
 
 #include "wtf/Noncopyable.h"
 #include "wtf/StdLibExtras.h"
+#include "wtf/WTF.h"
 #include "wtf/WTFExport.h"
 
 #if USE(PTHREADS)
@@ -220,6 +221,9 @@ inline void ThreadSpecific<T>::set(T* ptr)
 template<typename T>
 inline void ThreadSpecific<T>::destroy(void* ptr)
 {
+    if (isShutdown())
+        return;
+
     Data* data = static_cast<Data*>(ptr);
 
 #if USE(PTHREADS)

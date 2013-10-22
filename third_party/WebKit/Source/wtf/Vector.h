@@ -25,10 +25,12 @@
 #include "wtf/FastAllocBase.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/NotFound.h"
+#include "wtf/PartitionAlloc.h"
 #include "wtf/QuantizedAllocation.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/UnusedParam.h"
 #include "wtf/VectorTraits.h"
+#include "wtf/WTF.h"
 #include <string.h>
 #include <utility>
 
@@ -260,7 +262,7 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
             RELEASE_ASSERT(newCapacity <= QuantizedAllocation::kMaxUnquantizedAllocation / sizeof(T));
             size_t sizeToAllocate = allocationSize(newCapacity);
             m_capacity = sizeToAllocate / sizeof(T);
-            m_buffer = static_cast<T*>(fastMalloc(sizeToAllocate));
+            m_buffer = static_cast<T*>(partitionAllocGeneric(Partitions::getBufferPartition(), sizeToAllocate));
         }
 
         size_t allocationSize(size_t capacity) const
@@ -326,7 +328,8 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
 
         void deallocateBuffer(T* bufferToDeallocate)
         {
-            fastFree(bufferToDeallocate);
+            if (LIKELY(bufferToDeallocate != 0))
+                partitionFreeGeneric(Partitions::getBufferPartition(), bufferToDeallocate);
         }
 
         void resetBufferPointer()
@@ -387,7 +390,7 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
         {
             if (LIKELY(bufferToDeallocate == inlineBuffer()))
                 return;
-            fastFree(bufferToDeallocate);
+            partitionFreeGeneric(Partitions::getBufferPartition(), bufferToDeallocate);
         }
 
         void resetBufferPointer()

@@ -27,7 +27,9 @@
 
 #include "wtf/LeakAnnotations.h"
 #include "wtf/MainThread.h"
+#include "wtf/PartitionAlloc.h"
 #include "wtf/StdLibExtras.h"
+#include "wtf/WTF.h"
 #include "wtf/text/AtomicString.h"
 #include "wtf/text/StringBuffer.h"
 #include "wtf/text/StringHash.h"
@@ -250,6 +252,17 @@ void StringStats::printStats()
 }
 #endif
 
+void* StringImpl::operator new(size_t size)
+{
+    ASSERT(size == sizeof(StringImpl));
+    return partitionAllocGeneric(Partitions::getBufferPartition(), size);
+}
+
+void StringImpl::operator delete(void* ptr)
+{
+    partitionFreeGeneric(Partitions::getBufferPartition(), ptr);
+}
+
 inline StringImpl::~StringImpl()
 {
     ASSERT(!isStatic());
@@ -278,10 +291,10 @@ PassRefPtr<StringImpl> StringImpl::createUninitialized(unsigned length, LChar*& 
     // heap allocation from this call.
     RELEASE_ASSERT(length <= ((std::numeric_limits<unsigned>::max() - sizeof(StringImpl)) / sizeof(LChar)));
     size_t size = sizeof(StringImpl) + length * sizeof(LChar);
-    StringImpl* string = static_cast<StringImpl*>(fastMalloc(size));
+    StringImpl* string = static_cast<StringImpl*>(partitionAllocGeneric(Partitions::getBufferPartition(), size));
 
     data = reinterpret_cast<LChar*>(string + 1);
-    return adoptRef(new (NotNull, string) StringImpl(length, Force8BitConstructor));
+    return adoptRef(new (string) StringImpl(length, Force8BitConstructor));
 }
 
 PassRefPtr<StringImpl> StringImpl::createUninitialized(unsigned length, UChar*& data)
@@ -296,10 +309,10 @@ PassRefPtr<StringImpl> StringImpl::createUninitialized(unsigned length, UChar*& 
     // heap allocation from this call.
     RELEASE_ASSERT(length <= ((std::numeric_limits<unsigned>::max() - sizeof(StringImpl)) / sizeof(UChar)));
     size_t size = sizeof(StringImpl) + length * sizeof(UChar);
-    StringImpl* string = static_cast<StringImpl*>(fastMalloc(size));
+    StringImpl* string = static_cast<StringImpl*>(partitionAllocGeneric(Partitions::getBufferPartition(), size));
 
     data = reinterpret_cast<UChar*>(string + 1);
-    return adoptRef(new (NotNull, string) StringImpl(length));
+    return adoptRef(new (string) StringImpl(length));
 }
 
 PassRefPtr<StringImpl> StringImpl::reallocate(PassRefPtr<StringImpl> originalString, unsigned length, LChar*& data)
@@ -312,14 +325,14 @@ PassRefPtr<StringImpl> StringImpl::reallocate(PassRefPtr<StringImpl> originalStr
         return empty();
     }
 
-    // Same as createUninitialized() except here we use fastRealloc.
+    // Same as createUninitialized() except here we use realloc.
     RELEASE_ASSERT(length <= ((std::numeric_limits<unsigned>::max() - sizeof(StringImpl)) / sizeof(LChar)));
     size_t size = sizeof(StringImpl) + length * sizeof(LChar);
     originalString->~StringImpl();
-    StringImpl* string = static_cast<StringImpl*>(fastRealloc(originalString.leakRef(), size));
+    StringImpl* string = static_cast<StringImpl*>(partitionReallocGeneric(Partitions::getBufferPartition(), originalString.leakRef(), size));
 
     data = reinterpret_cast<LChar*>(string + 1);
-    return adoptRef(new (NotNull, string) StringImpl(length, Force8BitConstructor));
+    return adoptRef(new (string) StringImpl(length, Force8BitConstructor));
 }
 
 PassRefPtr<StringImpl> StringImpl::reallocate(PassRefPtr<StringImpl> originalString, unsigned length, UChar*& data)
@@ -332,14 +345,14 @@ PassRefPtr<StringImpl> StringImpl::reallocate(PassRefPtr<StringImpl> originalStr
         return empty();
     }
 
-    // Same as createUninitialized() except here we use fastRealloc.
+    // Same as createUninitialized() except here we use realloc.
     RELEASE_ASSERT(length <= ((std::numeric_limits<unsigned>::max() - sizeof(StringImpl)) / sizeof(UChar)));
     size_t size = sizeof(StringImpl) + length * sizeof(UChar);
     originalString->~StringImpl();
-    StringImpl* string = static_cast<StringImpl*>(fastRealloc(originalString.leakRef(), size));
+    StringImpl* string = static_cast<StringImpl*>(partitionReallocGeneric(Partitions::getBufferPartition(), originalString.leakRef(), size));
 
     data = reinterpret_cast<UChar*>(string + 1);
-    return adoptRef(new (NotNull, string) StringImpl(length));
+    return adoptRef(new (string) StringImpl(length));
 }
 
 static Vector<StringImpl*>& staticStrings()
@@ -380,10 +393,10 @@ StringImpl* StringImpl::createStatic(const char* string, unsigned length, unsign
     RELEASE_ASSERT(length <= ((std::numeric_limits<unsigned>::max() - sizeof(StringImpl)) / sizeof(LChar)));
     size_t size = sizeof(StringImpl) + length * sizeof(LChar);
     WTF_ANNOTATE_SCOPED_MEMORY_LEAK;
-    StringImpl* impl = static_cast<StringImpl*>(fastMalloc(size));
+    StringImpl* impl = static_cast<StringImpl*>(partitionAllocGeneric(Partitions::getBufferPartition(), size));
 
     LChar* data = reinterpret_cast<LChar*>(impl + 1);
-    impl = new (NotNull, impl) StringImpl(length, hash, StaticString);
+    impl = new (impl) StringImpl(length, hash, StaticString);
     memcpy(data, string, length * sizeof(LChar));
 #ifndef NDEBUG
     impl->assertHashIsCorrect();

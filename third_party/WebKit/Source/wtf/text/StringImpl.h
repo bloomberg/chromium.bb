@@ -104,7 +104,6 @@ void removeStringForStats(StringImpl*);
 // https://docs.google.com/document/d/1kOCUlJdh2WJMJGDf-WoEQhmnjKLaOYRbiHz5TiGJl14/edit?usp=sharing
 class WTF_EXPORT StringImpl {
     WTF_MAKE_NONCOPYABLE(StringImpl);
-    WTF_MAKE_FAST_ALLOCATED;
     friend struct WTF::CStringTranslator;
     template<typename CharacterType> friend struct WTF::HashAndCharactersTranslator;
     friend struct WTF::HashAndUTF8CharactersTranslator;
@@ -114,6 +113,11 @@ class WTF_EXPORT StringImpl {
     friend struct WTF::UCharBufferTranslator;
 
 private:
+    // StringImpls are allocated out of the WTF buffer partition.
+    void* operator new(size_t);
+    void* operator new(size_t, void* ptr) { return ptr; };
+    void operator delete(void*);
+
     // Used to construct static strings, which have an special refCount that can never hit zero.
     // This means that the static string will never be destroyed, which is important because
     // static strings will be shared across threads & ref-counted in a non-threadsafe manner.
