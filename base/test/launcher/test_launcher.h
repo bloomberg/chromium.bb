@@ -24,6 +24,7 @@ class TestInfo;
 namespace base {
 
 struct LaunchOptions;
+class TestLauncher;
 
 // Constants for GTest command-line flags.
 extern const char kGTestFilterFlag[];
@@ -55,18 +56,11 @@ class TestLauncherDelegate {
   virtual bool ShouldRunTest(const testing::TestCase* test_case,
                              const testing::TestInfo* test_info) = 0;
 
-  // Called to make the delegate run specified test. After the delegate
-  // finishes running the test (can do so asynchronously and out-of-order)
-  // it must call |callback| regardless of test success.
-  typedef base::Callback<void(const TestResult& result)> TestResultCallback;
-  virtual void RunTest(const testing::TestCase* test_case,
-                       const testing::TestInfo* test_info,
-                       const TestResultCallback& callback) = 0;
-
-  // If the delegate is running tests asynchronously, it must finish
-  // running all pending tests and call their callbacks before returning
-  // from this method.
-  virtual void RunRemainingTests() = 0;
+  // Called to make the delegate run the specified tests. The delegate must
+  // call |test_launcher|'s OnTestFinished method once per every test in
+  // |test_names|, regardless of its success.
+  virtual void RunTests(TestLauncher* test_launcher,
+                        const std::vector<std::string>& test_names) = 0;
 
  protected:
   virtual ~TestLauncherDelegate();
@@ -80,6 +74,9 @@ class TestLauncher {
   // Runs the launcher. Must be called at most once.
   bool Run(int argc, char** argv) WARN_UNUSED_RESULT;
 
+  // Called when a test has finished running.
+  void OnTestFinished(const TestResult& result);
+
  private:
   bool Init() WARN_UNUSED_RESULT;
 
@@ -89,8 +86,6 @@ class TestLauncher {
   void RunTestIteration();
 
   void OnAllTestsStarted();
-
-  void OnTestFinished(const TestResult& result);
 
   TestLauncherDelegate* launcher_delegate_;
 

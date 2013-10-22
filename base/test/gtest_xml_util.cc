@@ -139,10 +139,14 @@ bool ProcessGTestOutput(const base::FilePath& output_file,
           // This is our custom extension that helps recognize which test was
           // running when the test binary crashed.
           TestResult result;
-          if (!xml_reader.NodeAttribute("classname", &result.test_case_name))
+
+          std::string test_case_name;
+          if (!xml_reader.NodeAttribute("classname", &test_case_name))
             return false;
-          if (!xml_reader.NodeAttribute("name", &result.test_name))
+          std::string test_name;
+          if (!xml_reader.NodeAttribute("name", &test_name))
             return false;
+          result.full_name = test_case_name + "." + test_name;
 
           result.elapsed_time = TimeDelta();
 
@@ -161,10 +165,14 @@ bool ProcessGTestOutput(const base::FilePath& output_file,
             break;
 
           TestResult result;
-          if (!xml_reader.NodeAttribute("classname", &result.test_case_name))
+
+          std::string test_case_name;
+          if (!xml_reader.NodeAttribute("classname", &test_case_name))
             return false;
-          if (!xml_reader.NodeAttribute("name", &result.test_name))
+          std::string test_name;
+          if (!xml_reader.NodeAttribute("name", &test_name))
             return false;
+          result.full_name = test_case_name + "." + test_name;
 
           std::string test_time_str;
           if (!xml_reader.NodeAttribute("time", &test_time_str))
@@ -176,8 +184,7 @@ bool ProcessGTestOutput(const base::FilePath& output_file,
           result.status = TestResult::TEST_SUCCESS;
 
           if (!results->empty() &&
-              results->at(results->size() - 1).GetFullName() ==
-                  result.GetFullName() &&
+              results->at(results->size() - 1).full_name == result.full_name &&
               results->at(results->size() - 1).status ==
                   TestResult::TEST_CRASH) {
             // Erase the fail-safe "crashed" result - now we know the test did

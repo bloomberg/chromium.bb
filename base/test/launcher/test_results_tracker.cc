@@ -69,9 +69,9 @@ TestResultsTracker::~TestResultsTracker() {
       const TestResult& result = i->second[j];
       fprintf(out_, "    <testcase name=\"%s\" status=\"run\" time=\"%.3f\""
               " classname=\"%s\">\n",
-              result.test_name.c_str(),
+              result.GetTestName().c_str(),
               result.elapsed_time.InSecondsF(),
-              result.test_case_name.c_str());
+              result.GetTestCaseName().c_str());
       if (result.status != TestResult::TEST_SUCCESS)
         fprintf(out_, "      <failure message=\"\" type=\"\"></failure>\n");
       fprintf(out_, "    </testcase>\n");
@@ -144,10 +144,10 @@ void TestResultsTracker::OnTestIterationStarting() {
 void TestResultsTracker::AddTestResult(const TestResult& result) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  per_iteration_data_[iteration_].results[result.test_case_name].push_back(
+  per_iteration_data_[iteration_].results[result.GetTestCaseName()].push_back(
       result);
   per_iteration_data_[iteration_].tests_by_status[result.status].push_back(
-      result.GetFullName());
+      result.full_name);
 }
 
 void TestResultsTracker::PrintSummaryOfCurrentIteration() const {
@@ -216,7 +216,7 @@ bool TestResultsTracker::SaveSummaryAsJSON(const FilePath& path) const {
         DictionaryValue* test_result_value = new DictionaryValue;
         current_iteration_data->Append(test_result_value);
 
-        test_result_value->SetString("full_name", test_result.GetFullName());
+        test_result_value->SetString("full_name", test_result.full_name);
         test_result_value->SetString("status", test_result.StatusAsString());
         test_result_value->SetInteger(
             "elapsed_time_ms", test_result.elapsed_time.InMilliseconds());
