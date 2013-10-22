@@ -147,13 +147,8 @@ public:
     bool hitTestOverflowControls(HitTestResult&, const IntPoint& localPoint);
     IntSize offsetFromResizeCorner(const IntPoint& absolutePoint) const;
 
-    void paintOverflowControls(GraphicsContext*, const IntPoint&, const IntRect& damageRect, bool paintingOverlayControls = false);
-    void paintScrollCorner(GraphicsContext*, const IntPoint&, const IntRect& damageRect);
-    void paintResizer(GraphicsContext*, const IntPoint&, const IntRect& damageRect);
-
     void updateScrollInfoAfterLayout();
 
-    bool scroll(ScrollDirection, ScrollGranularity, float multiplier = 1);
     void autoscroll(const IntPoint&);
 
     void resize(const PlatformEvent&, const LayoutSize&);
@@ -670,8 +665,6 @@ private:
     LayoutRect paintingExtent(const RenderLayer* rootLayer, const LayoutRect& paintDirtyRect, PaintBehavior);
 
     RenderLayer* enclosingTransformedAncestor() const;
-
-    void positionOverflowControls(const IntSize&);
 
     void updatePagination();
 

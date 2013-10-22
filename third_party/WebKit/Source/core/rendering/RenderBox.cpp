@@ -712,8 +712,8 @@ int RenderBox::instrinsicScrollbarLogicalWidth() const
 
 bool RenderBox::scrollImpl(ScrollDirection direction, ScrollGranularity granularity, float multiplier)
 {
-    RenderLayer* l = layer();
-    return l && l->scroll(direction, granularity, multiplier);
+    RenderLayer* layer = this->layer();
+    return layer && layer->scrollableArea() && layer->scrollableArea()->scroll(direction, granularity, multiplier);
 }
 
 bool RenderBox::scroll(ScrollDirection direction, ScrollGranularity granularity, float multiplier, Node** stopNode)

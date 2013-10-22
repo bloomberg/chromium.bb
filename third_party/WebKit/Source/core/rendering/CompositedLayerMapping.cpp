@@ -1738,8 +1738,8 @@ void CompositedLayerMapping::paintContents(const GraphicsLayer* graphicsLayer, G
         context.translate(-scrollCornerAndResizer.x(), -scrollCornerAndResizer.y());
         IntRect transformedClip = clip;
         transformedClip.moveBy(scrollCornerAndResizer.location());
-        m_owningLayer->paintScrollCorner(&context, IntPoint(), transformedClip);
-        m_owningLayer->paintResizer(&context, IntPoint(), transformedClip);
+        m_owningLayer->scrollableArea()->paintScrollCorner(&context, IntPoint(), transformedClip);
+        m_owningLayer->scrollableArea()->paintResizer(&context, IntPoint(), transformedClip);
         context.restore();
     }
 #ifndef NDEBUG

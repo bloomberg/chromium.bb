@@ -59,6 +59,7 @@
 #include "core/platform/graphics/GraphicsContextStateSaver.h"
 #include "core/platform/graphics/GraphicsLayer.h"
 #include "core/rendering/CompositedLayerMapping.h"
+#include "core/rendering/RenderGeometryMap.h"
 #include "core/rendering/RenderLayerCompositor.h"
 #include "core/rendering/RenderScrollbar.h"
 #include "core/rendering/RenderScrollbarPart.h"
@@ -844,6 +845,16 @@ int RenderLayerScrollableArea::horizontalScrollbarHeight(OverlayScrollbarSizeRel
     return m_hBar->height();
 }
 
+void RenderLayerScrollableArea::positionOverflowControls()
+{
+    RenderGeometryMap geometryMap(UseTransforms);
+    RenderView* view = m_box->view();
+    if (m_box->layer() != view->layer() && m_box->layer()->parent())
+        geometryMap.pushMappingsToAncestor(m_box->layer()->parent(), 0);
+
+    LayoutPoint offsetFromRoot = LayoutPoint(geometryMap.absolutePoint(FloatPoint()));
+    positionOverflowControls(toIntSize(roundedIntPoint(offsetFromRoot)));
+}
 
 void RenderLayerScrollableArea::positionOverflowControls(const IntSize& offsetFromRoot)
 {

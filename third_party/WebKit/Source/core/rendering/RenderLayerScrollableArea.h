@@ -145,6 +145,15 @@ public:
 
     IntSize adjustedScrollOffset() const { return IntSize(scrollXOffset(), scrollYOffset()); }
 
+    void paintResizer(GraphicsContext*, const IntPoint& paintOffset, const IntRect& damageRect);
+    void paintOverflowControls(GraphicsContext*, const IntPoint& paintOffset, const IntRect& damageRect, bool paintingOverlayControls);
+    void paintScrollCorner(GraphicsContext*, const IntPoint&, const IntRect& damageRect);
+
+    // If IntSize is not given, then we must incur additional overhead to instantiate a RenderGeometryMap
+    // and compute the correct offset ourselves.
+    void positionOverflowControls();
+    void positionOverflowControls(const IntSize& offsetFromRoot);
+
 private:
     bool hasHorizontalOverflow() const;
     bool hasVerticalOverflow() const;
@@ -169,17 +178,13 @@ private:
     void setHasHorizontalScrollbar(bool hasScrollbar);
     void setHasVerticalScrollbar(bool hasScrollbar);
 
-    void positionOverflowControls(const IntSize& offsetFromRoot);
     void updateScrollCornerStyle();
-    void paintOverflowControls(GraphicsContext*, const IntPoint& paintOffset, const IntRect& damageRect, bool paintingOverlayControls);
-    void paintScrollCorner(GraphicsContext*, const IntPoint&, const IntRect& damageRect);
     bool hitTestOverflowControls(HitTestResult&, const IntPoint& localPoint);
 
     // See comments on isPointInResizeControl.
     IntRect resizerCornerRect(const IntRect&, ResizerHitTestType) const;
     IntRect scrollCornerAndResizerRect() const;
     bool overflowControlsIntersectRect(const IntRect& localRect) const;
-    void paintResizer(GraphicsContext*, const IntPoint& paintOffset, const IntRect& damageRect);
     bool isPointInResizeControl(const IntPoint& absolutePoint, ResizerHitTestType) const;
     bool hitTestResizerInFragments(const LayerFragments&, const HitTestLocation&) const;
     void updateResizerAreaSet();

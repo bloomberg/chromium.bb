@@ -280,7 +280,7 @@ void RenderLayer::updateLayerPositions(RenderGeometryMap* geometryMap, UpdateLay
             // as canUseConvertToLayerCoords may be true for an ancestor layer.
             convertToLayerCoords(root(), offsetFromRoot);
         }
-        positionOverflowControls(toIntSize(roundedIntPoint(offsetFromRoot)));
+        scrollableArea()->positionOverflowControls(toIntSize(roundedIntPoint(offsetFromRoot)));
     }
 
     updateDescendantDependentFlags();
@@ -538,7 +538,7 @@ void RenderLayer::positionNewlyCreatedOverflowControls()
         geometryMap.pushMappingsToAncestor(parent(), 0);
 
     LayoutPoint offsetFromRoot = LayoutPoint(geometryMap.absolutePoint(FloatPoint()));
-    positionOverflowControls(toIntSize(roundedIntPoint(offsetFromRoot)));
+    scrollableArea()->positionOverflowControls(toIntSize(roundedIntPoint(offsetFromRoot)));
 }
 
 bool RenderLayer::hasBlendMode() const
@@ -2094,14 +2094,6 @@ void RenderLayer::updateScrollInfoAfterLayout()
         compositor()->setCompositingLayersNeedRebuild();
 }
 
-bool RenderLayer::scroll(ScrollDirection direction, ScrollGranularity granularity, float multiplier)
-{
-    if (ScrollableArea* scrollableArea = this->scrollableArea())
-        return scrollableArea->scroll(direction, granularity, multiplier);
-
-    return false;
-}
-
 void RenderLayer::paint(GraphicsContext* context, const LayoutRect& damageRect, PaintBehavior paintBehavior, RenderObject* paintingRoot, RenderRegion* region, PaintLayerFlags paintFlags)
 {
     OverlapTestRequestMap overlapTestRequests;
@@ -2836,8 +2828,8 @@ void RenderLayer::paintOverflowControlsForFragments(const LayerFragments& layerF
     for (size_t i = 0; i < layerFragments.size(); ++i) {
         const LayerFragment& fragment = layerFragments.at(i);
         clipToRect(localPaintingInfo.rootLayer, context, localPaintingInfo.paintDirtyRect, fragment.backgroundRect);
-        paintOverflowControls(context, roundedIntPoint(toPoint(fragment.layerBounds.location() - renderBoxLocation() + localPaintingInfo.subPixelAccumulation)),
-            pixelSnappedIntRect(fragment.backgroundRect.rect()), true);
+        if (RenderLayerScrollableArea* scrollableArea = this->scrollableArea())
+            scrollableArea->paintOverflowControls(context, roundedIntPoint(toPoint(fragment.layerBounds.location() - renderBoxLocation() + localPaintingInfo.subPixelAccumulation)), pixelSnappedIntRect(fragment.backgroundRect.rect()), true);
         restoreClip(context, localPaintingInfo.paintDirtyRect, fragment.backgroundRect);
     }
 }
@@ -4611,18 +4603,6 @@ IntRect RenderLayer::scrollCornerAndResizerRect() const
     return m_scrollableArea->scrollCornerAndResizerRect();
 }
 
-void RenderLayer::positionOverflowControls(const IntSize& offsetFromRoot)
-{
-    if (m_scrollableArea)
-        m_scrollableArea->positionOverflowControls(offsetFromRoot);
-}
-
-void RenderLayer::paintScrollCorner(GraphicsContext* context, const IntPoint& paintOffset, const IntRect& damageRect)
-{
-    if (m_scrollableArea)
-        m_scrollableArea->paintScrollCorner(context, paintOffset, damageRect);
-}
-
 bool RenderLayer::isPointInResizeControl(const IntPoint& absolutePoint, ResizerHitTestType resizerHitTestType) const
 {
     if (!m_scrollableArea)
@@ -4631,24 +4611,12 @@ bool RenderLayer::isPointInResizeControl(const IntPoint& absolutePoint, ResizerH
     return m_scrollableArea->isPointInResizeControl(absolutePoint, resizerHitTestType);
 }
 
-void RenderLayer::paintOverflowControls(GraphicsContext* context, const IntPoint& paintOffset, const IntRect& damageRect, bool paintingOverlayControls)
-{
-    if (m_scrollableArea)
-        return m_scrollableArea->paintOverflowControls(context, paintOffset, damageRect, paintingOverlayControls);
-}
-
 bool RenderLayer::hitTestOverflowControls(HitTestResult& result, const IntPoint& localPoint)
 {
     if (!m_scrollableArea)
         return false;
 
     return m_scrollableArea->hitTestOverflowControls(result, localPoint);
-}
-
-void RenderLayer::paintResizer(GraphicsContext* context, const IntPoint& paintOffset, const IntRect& damageRect)
-{
-    if (m_scrollableArea)
-        m_scrollableArea->paintResizer(context, paintOffset, damageRect);
 }
 
 } // namespace WebCore
