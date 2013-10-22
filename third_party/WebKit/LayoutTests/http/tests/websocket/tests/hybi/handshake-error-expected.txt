@@ -1,4 +1,4 @@
-CONSOLE ERROR: line 20: WebSocket connection to 'ws://127.0.0.1:8880/websocket/tests/hybi/handshake-error' failed: No response code found: ThisWillCauseHandshakeError
+CONSOLE ERROR: line 20: WebSocket connection to 'ws://127.0.0.1:8880/websocket/tests/hybi/handshake-error' failed: Error during WebSocket handshake: No response code found in status line: ThisWillCauseHandshakeError
 Handshake error test
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".

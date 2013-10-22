@@ -102,7 +102,7 @@ bool WebSocketExtensionDispatcher::processHeaderValue(const String& headerValue)
 
     // If we don't send Sec-WebSocket-Extensions header, the server should not return the header.
     if (!m_processors.size()) {
-        fail("Received unexpected Sec-WebSocket-Extensions header");
+        fail("Response must not include 'Sec-WebSocket-Extensions' header if not present in request: " + headerValue);
         return false;
     }
 
@@ -112,7 +112,7 @@ bool WebSocketExtensionDispatcher::processHeaderValue(const String& headerValue)
         String extensionToken;
         HashMap<String, String> extensionParameters;
         if (!parser.parseExtension(extensionToken, extensionParameters)) {
-            fail("Sec-WebSocket-Extensions header is invalid");
+            fail("Invalid 'Sec-WebSocket-Extensions' header");
             return false;
         }
 
@@ -124,13 +124,13 @@ bool WebSocketExtensionDispatcher::processHeaderValue(const String& headerValue)
                     appendAcceptedExtension(extensionToken, extensionParameters);
                     break;
                 }
-                fail(processor->failureReason());
+                fail("Error in " + extensionToken + ": " + processor->failureReason());
                 return false;
             }
         }
         // There is no extension which can process the response.
         if (index == m_processors.size()) {
-            fail("Received unexpected extension: " + extensionToken);
+            fail("Found an unsupported extension '" + extensionToken + "' in 'Sec-WebSocket-Extensions' header");
             return false;
         }
     }
