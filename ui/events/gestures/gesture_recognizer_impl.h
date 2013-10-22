@@ -62,7 +62,7 @@ class EVENTS_EXPORT GestureRecognizerImpl : public GestureRecognizer,
   virtual void RemoveGestureEventHelper(GestureEventHelper* helper) OVERRIDE;
 
   // Overridden from ui::GestureSequenceDelegate.
-  virtual void DispatchLongPressGestureEvent(GestureEvent* event) OVERRIDE;
+  virtual void DispatchPostponedGestureEvent(GestureEvent* event) OVERRIDE;
 
   // Convenience method to find the GestureEventHelper that can dispatch events
   // to a specific |consumer|.

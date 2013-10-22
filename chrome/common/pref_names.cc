@@ -2426,6 +2426,8 @@ const char kScrollPredictionSeconds[] =
     "gesture.scroll_prediction_seconds";
 const char kSemiLongPressTimeInSeconds[] =
     "gesture.semi_long_press_time_in_seconds";
+const char kShowPressDelayInMS[] =
+    "gesture.show_press_delay_in_ms";
 const char kTabScrubActivationDelayInMS[] =
     "gesture.tab_scrub_activation_delay_in_ms";
 const char kFlingAccelerationCurveCoefficient0[] =

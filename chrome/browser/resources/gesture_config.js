@@ -179,6 +179,11 @@ function GestureConfig() {
       step: 0.1
     },
     {
+      key: 'show_press_delay_in_ms',
+      label: 'Delay before show press event is fired',
+      units: 'milliseconds',
+    },
+    {
       key: 'max_seconds_between_double_click',
       label: 'Maximum Double Click Interval',
       units: 'seconds',

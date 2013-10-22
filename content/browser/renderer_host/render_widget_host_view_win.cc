@@ -951,7 +951,7 @@ bool RenderWidgetHostViewWin::CanDispatchToConsumer(
   return true;
 }
 
-void RenderWidgetHostViewWin::DispatchLongPressGestureEvent(
+void RenderWidgetHostViewWin::DispatchPostponedGestureEvent(
     ui::GestureEvent* event) {
   ForwardGestureEventToRenderer(event);
 }

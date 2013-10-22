@@ -222,12 +222,12 @@ void GestureRecognizerImpl::RemoveGestureEventHelper(
     helpers_.erase(it);
 }
 
-void GestureRecognizerImpl::DispatchLongPressGestureEvent(GestureEvent* event) {
+void GestureRecognizerImpl::DispatchPostponedGestureEvent(GestureEvent* event) {
   GestureConsumer* consumer = GetTargetForGestureEvent(event);
   if (consumer) {
     GestureEventHelper* helper = FindDispatchHelperForConsumer(consumer);
     if (helper)
-      helper->DispatchLongPressGestureEvent(event);
+      helper->DispatchPostponedGestureEvent(event);
   }
 }
 

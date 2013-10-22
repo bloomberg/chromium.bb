@@ -35,6 +35,7 @@ void AuraTestBase::SetUp() {
   // testing.
   ui::GestureConfiguration::set_long_press_time_in_seconds(1.0);
   ui::GestureConfiguration::set_semi_long_press_time_in_seconds(0.4);
+  ui::GestureConfiguration::set_show_press_delay_in_ms(5);
   ui::GestureConfiguration::set_max_distance_for_two_finger_tap_in_pixels(300);
   ui::GestureConfiguration::set_max_seconds_between_double_click(0.7);
   ui::GestureConfiguration::

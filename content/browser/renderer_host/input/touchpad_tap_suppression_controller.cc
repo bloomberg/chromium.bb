@@ -42,10 +42,7 @@ int TouchpadTapSuppressionController::MaxTapGapTimeInMs() {
 void TouchpadTapSuppressionController::DropStashedTapDown() {
 }
 
-void TouchpadTapSuppressionController::ForwardStashedTapDownForDeferral() {
-}
-
-void TouchpadTapSuppressionController::ForwardStashedTapDownSkipDeferral() {
+void TouchpadTapSuppressionController::ForwardStashedTapDown() {
 }
 
 }  // namespace content

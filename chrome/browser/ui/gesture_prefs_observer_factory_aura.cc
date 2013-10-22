@@ -291,6 +291,8 @@ void GesturePrefsObserver::Update() {
           prefs::kRailStartProportion));
   GestureConfiguration::set_scroll_prediction_seconds(
       prefs_->GetDouble(prefs::kScrollPredictionSeconds));
+  GestureConfiguration::set_show_press_delay_in_ms(
+      prefs_->GetInteger(prefs::kShowPressDelayInMS));
 
   UpdateOverscrollPrefs();
   UpdateImmersiveModePrefs();
@@ -505,6 +507,10 @@ void GesturePrefsObserverFactoryAura::RegisterProfilePrefs(
   registry->RegisterDoublePref(
       prefs::kScrollPredictionSeconds,
       GestureConfiguration::scroll_prediction_seconds(),
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterIntegerPref(
+      prefs::kShowPressDelayInMS,
+      GestureConfiguration::show_press_delay_in_ms(),
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 
   // Register for migration.

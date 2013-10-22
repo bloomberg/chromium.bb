@@ -234,7 +234,6 @@ extern const char kSpeechRecognitionWebserviceKey[];
 CONTENT_EXPORT extern const char kStatsCollectionController[];
 extern const char kTabCaptureDownscaleQuality[];
 extern const char kTabCaptureUpscaleQuality[];
-extern const char kTapDownDeferralTimeMs[];
 CONTENT_EXPORT extern const char kTestingFixedHttpPort[];
 CONTENT_EXPORT extern const char kTestingFixedHttpsPort[];
 CONTENT_EXPORT extern const char kTestSandbox[];

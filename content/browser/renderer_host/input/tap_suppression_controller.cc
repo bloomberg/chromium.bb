@@ -45,7 +45,7 @@ void TapSuppressionController::GestureFlingCancelAck(bool processed) {
         TRACE_EVENT0("browser",
                      "TapSuppressionController::GestureFlingCancelAck");
         StopTapDownTimer();
-        client_->ForwardStashedTapDownForDeferral();
+        client_->ForwardStashedTapDown();
         state_ = NOTHING;
       }  // Else waiting for the timer to release the stashed tap down.
       break;
@@ -140,7 +140,7 @@ void TapSuppressionController::TapDownTimerExpired() {
     case TAP_DOWN_STASHED:
       TRACE_EVENT0("browser",
                    "TapSuppressionController::TapDownTimerExpired");
-      client_->ForwardStashedTapDownSkipDeferral();
+      client_->ForwardStashedTapDown();
       state_ = NOTHING;
       break;
   }

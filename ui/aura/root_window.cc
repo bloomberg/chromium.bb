@@ -761,7 +761,7 @@ bool RootWindow::CanDispatchToConsumer(ui::GestureConsumer* consumer) {
   return (window && window->GetRootWindow() == this);
 }
 
-void RootWindow::DispatchLongPressGestureEvent(ui::GestureEvent* event) {
+void RootWindow::DispatchPostponedGestureEvent(ui::GestureEvent* event) {
   DispatchGestureEvent(event);
 }
 

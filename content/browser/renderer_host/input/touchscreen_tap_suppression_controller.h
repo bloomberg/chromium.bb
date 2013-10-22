@@ -47,8 +47,7 @@ class TouchscreenTapSuppressionController
   virtual int MaxCancelToDownTimeInMs() OVERRIDE;
   virtual int MaxTapGapTimeInMs() OVERRIDE;
   virtual void DropStashedTapDown() OVERRIDE;
-  virtual void ForwardStashedTapDownForDeferral() OVERRIDE;
-  virtual void ForwardStashedTapDownSkipDeferral() OVERRIDE;
+  virtual void ForwardStashedTapDown() OVERRIDE;
 
   GestureEventFilter* gesture_event_filter_;
   GestureEventWithLatencyInfo stashed_tap_down_;

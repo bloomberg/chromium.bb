@@ -260,7 +260,7 @@ class RenderWidgetHostViewWin
 
   // Overridden from ui::GestureEventHelper.
   virtual bool CanDispatchToConsumer(ui::GestureConsumer* consumer) OVERRIDE;
-  virtual void DispatchLongPressGestureEvent(ui::GestureEvent* event) OVERRIDE;
+  virtual void DispatchPostponedGestureEvent(ui::GestureEvent* event) OVERRIDE;
   virtual void DispatchCancelTouchEvent(ui::TouchEvent* event) OVERRIDE;
 
   // Overridden from ui::TextInputClient for Win8/metro TSF support.

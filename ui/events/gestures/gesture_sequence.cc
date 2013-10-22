@@ -398,7 +398,7 @@ GestureSequence::~GestureSequence() {
 GestureSequence::Gestures* GestureSequence::ProcessTouchEventForGesture(
     const TouchEvent& event,
     EventResult result) {
-  StopLongPressTimerIfRequired(event);
+  StopTimersIfRequired(event);
   last_touch_location_ = event.location();
   if (result & ER_CONSUMED)
     return NULL;
@@ -598,8 +598,10 @@ GestureSequence::Gestures* GestureSequence::ProcessTouchEventForGesture(
              << " State: " << state_
              << " touch id: " << event.touch_id();
 
-  if (last_state == GS_PENDING_SYNTHETIC_CLICK && state_ != last_state)
+  if (last_state == GS_PENDING_SYNTHETIC_CLICK && state_ != last_state) {
     GetLongPressTimer()->Stop();
+    GetShowPressTimer()->Stop();
+  }
 
   // The set of point_ids must be contiguous and include 0.
   // When a touch point is released, all points with ids greater than the
@@ -672,6 +674,12 @@ base::OneShotTimer<GestureSequence>* GestureSequence::GetLongPressTimer() {
   if (!long_press_timer_.get())
     long_press_timer_.reset(CreateTimer());
   return long_press_timer_.get();
+}
+
+base::OneShotTimer<GestureSequence>* GestureSequence::GetShowPressTimer() {
+  if (!show_press_timer_.get())
+    show_press_timer_.reset(CreateTimer());
+  return show_press_timer_.get();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -947,6 +955,10 @@ bool GestureSequence::Click(const TouchEvent& event,
       tap_count = 3;
     else if (point.IsInDoubleClickWindow(event))
       tap_count = 2;
+    if (tap_count == 1 && GetShowPressTimer()->IsRunning()) {
+      GetShowPressTimer()->Stop();
+      AppendShowPressGestureEvent();
+    }
     AppendClickGestureEvent(point, tap_count, gestures);
     return true;
   } else if (point.IsInsideManhattanSquare(event) &&
@@ -1005,6 +1017,14 @@ bool GestureSequence::TouchDown(const TouchEvent& event,
           GestureConfiguration::long_press_time_in_seconds() * 1000),
       this,
       &GestureSequence::AppendLongPressGestureEvent);
+
+  GetShowPressTimer()->Start(
+      FROM_HERE,
+      base::TimeDelta::FromMilliseconds(
+          GestureConfiguration::show_press_delay_in_ms()),
+      this,
+      &GestureSequence::AppendShowPressGestureEvent);
+
   return true;
 }
 
@@ -1058,7 +1078,18 @@ void GestureSequence::AppendLongPressGestureEvent() {
       flags_,
       base::Time::FromDoubleT(point->last_touch_time()),
       1 << point->touch_id()));
-  delegate_->DispatchLongPressGestureEvent(gesture.get());
+  delegate_->DispatchPostponedGestureEvent(gesture.get());
+}
+
+void GestureSequence::AppendShowPressGestureEvent() {
+  const GesturePoint* point = GetPointByPointId(0);
+  scoped_ptr<GestureEvent> gesture(CreateGestureEvent(
+      GestureEventDetails(ui::ET_GESTURE_SHOW_PRESS, 0, 0),
+      point->first_touch_position(),
+      flags_,
+      base::Time::FromDoubleT(point->last_touch_time()),
+      1 << point->touch_id()));
+  delegate_->DispatchPostponedGestureEvent(gesture.get());
 }
 
 void GestureSequence::AppendLongTapGestureEvent(const GesturePoint& point,
@@ -1245,16 +1276,19 @@ void GestureSequence::TwoFingerTapOrPinch(const TouchEvent& event,
 }
 
 
-void GestureSequence::StopLongPressTimerIfRequired(const TouchEvent& event) {
-  if (!GetLongPressTimer()->IsRunning() ||
+void GestureSequence::StopTimersIfRequired(const TouchEvent& event) {
+  if ((!GetLongPressTimer()->IsRunning() &&
+       !GetShowPressTimer()->IsRunning()) ||
       event.type() != ui::ET_TOUCH_MOVED)
     return;
 
-  // Since long press timer has been started, there should be a non-NULL point.
+  // Since a timer is running, there should be a non-NULL point.
   const GesturePoint* point = GetPointByPointId(0);
   if (!ui::gestures::IsInsideManhattanSquare(point->first_touch_position(),
-      event.location()))
+                                             event.location())) {
     GetLongPressTimer()->Stop();
+    GetShowPressTimer()->Stop();
+  }
 }
 
 }  // namespace ui

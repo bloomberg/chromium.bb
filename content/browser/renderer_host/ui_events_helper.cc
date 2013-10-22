@@ -166,6 +166,13 @@ WebKit::WebGestureEvent MakeWebGestureEventFromUIEvent(
       gesture_event.data.tapDown.height =
           event.details().bounding_box().height();
       break;
+    case ui::ET_GESTURE_SHOW_PRESS:
+      gesture_event.type = WebKit::WebInputEvent::GestureShowPress;
+      gesture_event.data.showPress.width =
+          event.details().bounding_box().width();
+      gesture_event.data.showPress.height =
+          event.details().bounding_box().height();
+      break;
     case ui::ET_GESTURE_TAP_CANCEL:
       gesture_event.type = WebKit::WebInputEvent::GestureTapCancel;
       break;

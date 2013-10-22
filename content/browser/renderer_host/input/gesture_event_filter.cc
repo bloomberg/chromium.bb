@@ -17,45 +17,11 @@ using WebKit::WebInputEvent;
 namespace content {
 namespace {
 
-// Default maximum time between the GestureRecognizer generating a
-// GestureTapDown and when it is forwarded to the renderer.
-#if !defined(OS_ANDROID)
-static const int kTapDownDeferralTimeMs = 150;
-#else
-// Android OS sends this gesture with a delay already.
-static const int kTapDownDeferralTimeMs = 0;
-#endif
-
 // Default debouncing interval duration: if a scroll is in progress, non-scroll
 // events during this interval are deferred to either its end or discarded on
 // receipt of another GestureScrollUpdate.
 static const int kDebouncingIntervalTimeMs = 30;
 
-// Sets |*value| to |switchKey| if it exists or sets it to |defaultValue|.
-static void GetParamHelper(int* value,
-                           int defaultValue,
-                           const char switchKey[]) {
-  if (*value < 0) {
-    *value = defaultValue;
-    CommandLine* command_line = CommandLine::ForCurrentProcess();
-    std::string command_line_param =
-        command_line->GetSwitchValueASCII(switchKey);
-    if (!command_line_param.empty()) {
-      int v;
-      if (base::StringToInt(command_line_param, &v))
-        *value = v;
-    }
-    DCHECK_GE(*value, 0);
-  }
-}
-
-static int GetTapDownDeferralTimeMs() {
-  static int tap_down_deferral_time_window = -1;
-  GetParamHelper(&tap_down_deferral_time_window,
-                 kTapDownDeferralTimeMs,
-                 switches::kTapDownDeferralTimeMs);
-  return tap_down_deferral_time_window;
-}
 }  // namespace
 
 GestureEventFilter::GestureEventFilter(
@@ -70,7 +36,6 @@ GestureEventFilter::GestureEventFilter(
            new TouchpadTapSuppressionController(touchpad_client)),
        touchscreen_tap_suppression_controller_(
            new TouchscreenTapSuppressionController(this)),
-       maximum_tap_gap_time_ms_(GetTapDownDeferralTimeMs()),
        debounce_interval_time_ms_(kDebouncingIntervalTimeMs) {
   DCHECK(client);
   DCHECK(touchpad_tap_suppression_controller_);
@@ -137,7 +102,6 @@ bool GestureEventFilter::ShouldForward(
       ShouldForwardForBounceReduction(gesture_event) &&
       ShouldForwardForGFCFiltering(gesture_event) &&
       ShouldForwardForTapSuppression(gesture_event) &&
-      ShouldForwardForTapDeferral(gesture_event) &&
       ShouldForwardForCoalescing(gesture_event);
 }
 
@@ -179,51 +143,6 @@ bool GestureEventFilter::ShouldForwardForTapSuppression(
   }
   NOTREACHED();
   return false;
-}
-
-bool GestureEventFilter::ShouldForwardForTapDeferral(
-    const GestureEventWithLatencyInfo& gesture_event) {
-  switch (gesture_event.event.type) {
-    case WebInputEvent::GestureTapDown:
-      // GestureTapDown is always paired with either a Tap, or TapCancel, so it
-      // should be impossible to have more than one outstanding at a time.
-      DCHECK_EQ(deferred_tap_down_event_.event.type, WebInputEvent::Undefined);
-      deferred_tap_down_event_ = gesture_event;
-      send_gtd_timer_.Start(
-          FROM_HERE,
-          base::TimeDelta::FromMilliseconds(maximum_tap_gap_time_ms_),
-          this,
-          &GestureEventFilter::SendGestureTapDownNow);
-      return false;
-    case WebInputEvent::GestureTapCancel:
-      if (deferred_tap_down_event_.event.type == WebInputEvent::Undefined) {
-        // The TapDown has already been put in the queue, must send the
-        // corresponding TapCancel as well.
-        return true;
-      }
-      // Cancelling a deferred TapDown, just drop them on the floor.
-      send_gtd_timer_.Stop();
-      deferred_tap_down_event_.event.type = WebInputEvent::Undefined;
-      return false;
-    case WebInputEvent::GestureTap:
-      send_gtd_timer_.Stop();
-      if (deferred_tap_down_event_.event.type != WebInputEvent::Undefined) {
-        ForwardGestureEventSkipDeferral(deferred_tap_down_event_);
-        deferred_tap_down_event_.event.type = WebInputEvent::Undefined;
-      }
-      return true;
-    case WebInputEvent::GestureFlingStart:
-    case WebInputEvent::GestureScrollBegin:
-    case WebInputEvent::GesturePinchBegin:
-      send_gtd_timer_.Stop();
-      deferred_tap_down_event_.event.type = WebInputEvent::Undefined;
-      return true;
-    default:
-      return true;
-  }
-
-  NOTREACHED();
-  return true;
 }
 
 bool GestureEventFilter::ShouldForwardForCoalescing(
@@ -330,25 +249,10 @@ bool GestureEventFilter::ShouldHandleEventNow() const {
   return coalesced_gesture_events_.size() == 1;
 }
 
-void GestureEventFilter::ForwardGestureEventForDeferral(
-    const GestureEventWithLatencyInfo& gesture_event) {
-  if (ShouldForwardForTapDeferral(gesture_event))
-    ForwardGestureEventSkipDeferral(gesture_event);
-}
-
-void GestureEventFilter::ForwardGestureEventSkipDeferral(
+void GestureEventFilter::ForwardGestureEvent(
     const GestureEventWithLatencyInfo& gesture_event) {
   if (ShouldForwardForCoalescing(gesture_event))
-      client_->SendGestureEventImmediately(gesture_event);
-}
-
-void GestureEventFilter::SendGestureTapDownNow() {
-  // We must not have already sent the deferred TapDown (if we did, we would
-  // have stopped the timer, which prevents this task from running - even if
-  // it's time had already elapsed).
-  DCHECK_EQ(deferred_tap_down_event_.event.type, WebInputEvent::GestureTapDown);
-  ForwardGestureEventSkipDeferral(deferred_tap_down_event_);
-  deferred_tap_down_event_.event.type = WebInputEvent::Undefined;
+    client_->SendGestureEventImmediately(gesture_event);
 }
 
 void GestureEventFilter::SendScrollEndingEventsNow() {
@@ -358,7 +262,6 @@ void GestureEventFilter::SendScrollEndingEventsNow() {
       it != debouncing_deferral_queue_.end(); it++) {
     if (ShouldForwardForGFCFiltering(*it) &&
         ShouldForwardForTapSuppression(*it) &&
-        ShouldForwardForTapDeferral(*it) &&
         ShouldForwardForCoalescing(*it)) {
       client_->SendGestureEventImmediately(*it);
     }
@@ -463,12 +366,19 @@ void GestureEventFilter::SendAsyncEvents() {
     if (!GestureEventFilter::IsGestureEventTypeAsync(gesture_event.event.type))
       return;
     coalesced_gesture_events_.pop_front();
+
+    // TODO - once Blink accepts tap down events correctly, re-enable tap
+    // down. See crbug.com/302752.
+    if (gesture_event.event.type == WebInputEvent::GestureTapDown)
+      continue;
+
     client_->SendGestureEventImmediately(gesture_event);
   }
 }
 
 bool GestureEventFilter::IsGestureEventTypeAsync(WebInputEvent::Type type) {
-  return type == WebInputEvent::GestureTapDown;
+  return type == WebInputEvent::GestureTapDown ||
+      type == WebInputEvent::GestureShowPress;
 }
 
 }  // namespace content

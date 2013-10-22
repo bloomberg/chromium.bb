@@ -233,10 +233,6 @@ class MockRenderWidgetHost : public RenderWidgetHostImpl {
     return gesture_event_filter()->coalesced_gesture_events_.at(i).event;
   }
 
-  bool shouldDeferTapDownEvents() const {
-    return gesture_event_filter()->maximum_tap_gap_time_ms_ != 0;
-  }
-
   bool ScrollingInProgress() const {
     return gesture_event_filter()->scrolling_in_progress_;
   }
@@ -253,10 +249,6 @@ class MockRenderWidgetHost : public RenderWidgetHostImpl {
     SetOverscrollControllerEnabled(true);
     overscroll_delegate_.reset(new TestOverscrollDelegate);
     overscroll_controller_->set_delegate(overscroll_delegate_.get());
-  }
-
-  void set_maximum_tap_gap_time_ms(int delay_ms) {
-    gesture_event_filter()->maximum_tap_gap_time_ms_ = delay_ms;
   }
 
   void set_debounce_interval_time_ms(int delay_ms) {

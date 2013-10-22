@@ -1306,6 +1306,9 @@ public class ContentViewCore
             case ContentViewGestureHandler.GESTURE_SHOW_PRESS_CANCEL:
                 nativeShowPressCancel(mNativeContentViewCore, timeMs, x, y);
                 return true;
+            case ContentViewGestureHandler.GESTURE_TAP_DOWN:
+                nativeTapDown(mNativeContentViewCore, timeMs, x, y);
+                return true;
             case ContentViewGestureHandler.GESTURE_DOUBLE_TAP:
                 nativeDoubleTap(mNativeContentViewCore, timeMs, x, y);
                 return true;
@@ -3215,6 +3218,9 @@ public class ContentViewCore
             int nativeContentViewCoreImpl, long timeMs, float x, float y);
 
     private native void nativeShowPressCancel(
+            int nativeContentViewCoreImpl, long timeMs, float x, float y);
+
+    private native void nativeTapDown(
             int nativeContentViewCoreImpl, long timeMs, float x, float y);
 
     private native void nativeDoubleTap(

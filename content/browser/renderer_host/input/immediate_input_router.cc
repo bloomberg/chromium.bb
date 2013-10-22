@@ -623,6 +623,9 @@ void ImmediateInputRouter::SimulateTouchGestureWithMouse(
         startX = x;
         startY = y;
         SendGestureEvent(MakeGestureEvent(
+            WebInputEvent::GestureShowPress, mouse_event.timeStampSeconds,
+            x, y, 0, event.latency));
+        SendGestureEvent(MakeGestureEvent(
             WebInputEvent::GestureTapDown, mouse_event.timeStampSeconds,
             x, y, 0, event.latency));
       }

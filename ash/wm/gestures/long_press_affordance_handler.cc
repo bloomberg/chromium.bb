@@ -272,6 +272,7 @@ void LongPressAffordanceHandler::ProcessEvent(aura::Window* target,
           event->root_location(), tap_down_location_))
         StopAnimation();
       break;
+    case ui::ET_GESTURE_SHOW_PRESS:
     case ui::ET_TOUCH_CANCELLED:
     case ui::ET_GESTURE_END:
       // We will stop the animation on TOUCH_RELEASED.

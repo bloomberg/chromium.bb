@@ -29,8 +29,7 @@ class MockTapSuppressionController : public TapSuppressionController,
     TAP_UP_FORWARDED                     = 1 << 4,
     TAP_CANCEL_SUPPRESSED                = 1 << 5,
     TAP_CANCEL_FORWARDED                 = 1 << 6,
-    TAP_DOWN_FORWARDED_FOR_DEFERRAL      = 1 << 7,
-    TAP_DOWN_FORWARDED_SKIPPING_DEFERRAL = 1 << 8,
+    STASHED_TAP_DOWN_FORWARDED           = 1 << 7,
   };
 
   MockTapSuppressionController()
@@ -127,12 +126,8 @@ class MockTapSuppressionController : public TapSuppressionController,
     last_actions_ |= TAP_DOWN_DROPPED;
   }
 
-  virtual void ForwardStashedTapDownForDeferral() OVERRIDE {
-    last_actions_ |= TAP_DOWN_FORWARDED_FOR_DEFERRAL;
-  }
-
-  virtual void ForwardStashedTapDownSkipDeferral() OVERRIDE {
-    last_actions_ |= TAP_DOWN_FORWARDED_SKIPPING_DEFERRAL;
+  virtual void ForwardStashedTapDown() OVERRIDE {
+    last_actions_ |= STASHED_TAP_DOWN_FORWARDED;
   }
 
   // Hiding some derived public methods
@@ -284,7 +279,7 @@ TEST_F(TapSuppressionControllerTest, GFCAckBeforeTapSufficientlyLateTapUp) {
   // Wait more than allowed delay between TapDown and TapUp, so they are not
   // considered a tap. This should release the previously suppressed TapDown.
   tap_suppression_controller_->AdvanceTime(TimeDelta::FromMilliseconds(13));
-  EXPECT_EQ(MockTapSuppressionController::TAP_DOWN_FORWARDED_SKIPPING_DEFERRAL,
+  EXPECT_EQ(MockTapSuppressionController::STASHED_TAP_DOWN_FORWARDED,
             tap_suppression_controller_->last_actions());
   EXPECT_EQ(MockTapSuppressionController::NOTHING,
             tap_suppression_controller_->state());
@@ -407,7 +402,7 @@ TEST_F(TapSuppressionControllerTest, GFCAckUnprocessedAfterTapFast) {
   // Send unprocessed GestureFlingCancel Ack. This should release the
   // previously suppressed TapDown.
   tap_suppression_controller_->SendGestureFlingCancelAck(false);
-  EXPECT_EQ(MockTapSuppressionController::TAP_DOWN_FORWARDED_FOR_DEFERRAL,
+  EXPECT_EQ(MockTapSuppressionController::STASHED_TAP_DOWN_FORWARDED,
             tap_suppression_controller_->last_actions());
   EXPECT_EQ(MockTapSuppressionController::NOTHING,
             tap_suppression_controller_->state());
@@ -530,7 +525,7 @@ TEST_F(TapSuppressionControllerTest, GFCAckAfterTapSufficientlyLateTapUp) {
   // Wait more than allowed delay between TapDown and TapUp, so they are not
   // considered as a tap. This should release the previously suppressed TapDown.
   tap_suppression_controller_->AdvanceTime(TimeDelta::FromMilliseconds(13));
-  EXPECT_EQ(MockTapSuppressionController::TAP_DOWN_FORWARDED_SKIPPING_DEFERRAL,
+  EXPECT_EQ(MockTapSuppressionController::STASHED_TAP_DOWN_FORWARDED,
             tap_suppression_controller_->last_actions());
   EXPECT_EQ(MockTapSuppressionController::NOTHING,
             tap_suppression_controller_->state());

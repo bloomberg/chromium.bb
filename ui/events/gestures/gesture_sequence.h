@@ -35,7 +35,7 @@ enum ScrollType {
 // have enough context to dispatch itself.
 class EVENTS_EXPORT GestureSequenceDelegate {
  public:
-  virtual void DispatchLongPressGestureEvent(GestureEvent* event) = 0;
+  virtual void DispatchPostponedGestureEvent(GestureEvent* event) = 0;
 
  protected:
   virtual ~GestureSequenceDelegate() {}
@@ -66,6 +66,7 @@ class EVENTS_EXPORT GestureSequence {
  protected:
   virtual base::OneShotTimer<GestureSequence>* CreateTimer();
   base::OneShotTimer<GestureSequence>* GetLongPressTimer();
+  base::OneShotTimer<GestureSequence>* GetShowPressTimer();
 
  private:
   // Recreates the axis-aligned bounding box that contains all the touch-points
@@ -105,6 +106,7 @@ class EVENTS_EXPORT GestureSequence {
   void AppendDoubleClickGestureEvent(const GesturePoint& point,
                                      Gestures* gestures);
   void AppendLongPressGestureEvent();
+  void AppendShowPressGestureEvent();
   void AppendLongTapGestureEvent(const GesturePoint& point,
                                  Gestures* gestures);
 
@@ -186,7 +188,7 @@ class EVENTS_EXPORT GestureSequence {
                            const GesturePoint& point,
                            Gestures* gestures);
 
-  void StopLongPressTimerIfRequired(const TouchEvent& event);
+  void StopTimersIfRequired(const TouchEvent& event);
 
   // Current state of gesture recognizer.
   GestureState state_;
@@ -222,6 +224,7 @@ class EVENTS_EXPORT GestureSequence {
 
   ScrollType scroll_type_;
   scoped_ptr<base::OneShotTimer<GestureSequence> > long_press_timer_;
+  scoped_ptr<base::OneShotTimer<GestureSequence> > show_press_timer_;
 
   GesturePoint points_[kMaxGesturePoints];
   int point_count_;

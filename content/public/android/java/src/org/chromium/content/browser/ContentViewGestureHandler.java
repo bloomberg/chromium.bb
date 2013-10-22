@@ -186,6 +186,7 @@ class ContentViewGestureHandler implements LongPressDelegate {
     static final int GESTURE_PINCH_END = 13;
     static final int GESTURE_SHOW_PRESS_CANCEL = 14;
     static final int GESTURE_LONG_TAP = 15;
+    static final int GESTURE_TAP_DOWN = 16;
 
     // These have to be kept in sync with content/port/common/input_event_ack_state.h
     static final int INPUT_EVENT_ACK_STATE_UNKNOWN = 0;
@@ -393,6 +394,7 @@ class ContentViewGestureHandler implements LongPressDelegate {
                         mLastRawY = e.getRawY();
                         mAccumulatedScrollErrorX = 0;
                         mAccumulatedScrollErrorY = 0;
+                        sendMotionEventAsGesture(GESTURE_TAP_DOWN, e, null);
                         // Return true to indicate that we want to handle touch
                         return true;
                     }

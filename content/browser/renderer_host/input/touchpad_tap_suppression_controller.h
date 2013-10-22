@@ -54,8 +54,7 @@ class TouchpadTapSuppressionController : public TapSuppressionControllerClient {
   virtual int MaxCancelToDownTimeInMs() OVERRIDE;
   virtual int MaxTapGapTimeInMs() OVERRIDE;
   virtual void DropStashedTapDown() OVERRIDE;
-  virtual void ForwardStashedTapDownForDeferral() OVERRIDE;
-  virtual void ForwardStashedTapDownSkipDeferral() OVERRIDE;
+  virtual void ForwardStashedTapDown() OVERRIDE;
 
   TouchpadTapSuppressionControllerClient* client_;
   MouseEventWithLatencyInfo stashed_mouse_down_;

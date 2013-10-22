@@ -815,10 +815,6 @@ const char kTabCaptureDownscaleQuality[]    = "tab-capture-downscale-quality";
 // Upscale defaults to "best".
 const char kTabCaptureUpscaleQuality[]      = "tab-capture-upscale-quality";
 
-// GestureTapDown events are deferred by this many miillseconds before
-// sending them to the renderer.
-const char kTapDownDeferralTimeMs[]         = "tap-down-deferral-time";
-
 // Allows for forcing socket connections to http/https to use fixed ports.
 const char kTestingFixedHttpPort[]          = "testing-fixed-http-port";
 const char kTestingFixedHttpsPort[]         = "testing-fixed-https-port";

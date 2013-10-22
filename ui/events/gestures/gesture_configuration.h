@@ -173,6 +173,12 @@ class EVENTS_EXPORT GestureConfiguration {
   static void set_scroll_prediction_seconds(double val) {
     scroll_prediction_seconds_ = val;
   }
+  static int show_press_delay_in_ms() {
+    return show_press_delay_in_ms_;
+  }
+  static int set_show_press_delay_in_ms(int val) {
+    return show_press_delay_in_ms_ = val;
+  }
   static void set_fling_acceleration_curve_coefficients(int i, float val) {
     fling_acceleration_curve_coefficients_[i] = val;
   }
@@ -240,6 +246,7 @@ class EVENTS_EXPORT GestureConfiguration {
   static double rail_break_proportion_;
   static double rail_start_proportion_;
   static double scroll_prediction_seconds_;
+  static int show_press_delay_in_ms_;
   static float fling_acceleration_curve_coefficients_[NumAccelParams];
   static float fling_velocity_cap_;
   // TODO(davemoore): Move into chrome/browser/ui.

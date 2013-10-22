@@ -40,6 +40,7 @@ double
 int GestureConfiguration::points_buffered_for_velocity_ = 8;
 double GestureConfiguration::rail_break_proportion_ = 15;
 double GestureConfiguration::rail_start_proportion_ = 2;
+int GestureConfiguration::show_press_delay_in_ms_ = 150;
 
 // Coefficients for a function that computes fling acceleration.
 // These are empirically determined defaults. Do not adjust without

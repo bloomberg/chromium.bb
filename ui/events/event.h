@@ -140,6 +140,7 @@ class EVENTS_EXPORT Event {
       case ET_GESTURE_LONG_PRESS:
       case ET_GESTURE_LONG_TAP:
       case ET_GESTURE_MULTIFINGER_SWIPE:
+      case ET_GESTURE_SHOW_PRESS:
         return true;
 
       case ET_SCROLL_FLING_CANCEL:
