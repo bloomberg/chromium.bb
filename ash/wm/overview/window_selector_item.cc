@@ -22,16 +22,16 @@ void WindowSelectorItem::SetBounds(aura::RootWindow* root_window,
     return;
   base::AutoReset<bool> auto_reset_in_bounds_update(&in_bounds_update_, true);
   root_window_ = root_window;
-  bounds_ = target_bounds;
+  target_bounds_ = target_bounds;
   SetItemBounds(root_window, target_bounds, true);
 }
 
 void WindowSelectorItem::RecomputeWindowTransforms() {
-  if (in_bounds_update_ || bounds_.IsEmpty())
+  if (in_bounds_update_ || target_bounds_.IsEmpty())
     return;
   DCHECK(root_window_);
   base::AutoReset<bool> auto_reset_in_bounds_update(&in_bounds_update_, true);
-  SetItemBounds(root_window_, bounds_, false);
+  SetItemBounds(root_window_, target_bounds_, false);
 }
 
 }  // namespace ash

@@ -33,11 +33,15 @@ class ScopedTransformOverviewWindow {
   // The duration of transitions used for window transforms.
   static const int kTransitionMilliseconds;
 
-  // Returns the transform necessary to fit |rect| into |bounds| preserving
-  // aspect ratio and centering.
-  static gfx::Transform GetTransformForRectPreservingAspectRatio(
+  // Returns |rect| having been shrunk to fit within |bounds| (preserving the
+  // aspect ratio).
+  static gfx::Rect ShrinkRectToFitPreservingAspectRatio(
       const gfx::Rect& rect,
       const gfx::Rect& bounds);
+
+  // Returns the transform turning |src_rect| into |dst_rect|.
+  static gfx::Transform GetTransformForRect(const gfx::Rect& src_rect,
+                                            const gfx::Rect& dst_rect);
 
   explicit ScopedTransformOverviewWindow(aura::Window* window);
   virtual ~ScopedTransformOverviewWindow();

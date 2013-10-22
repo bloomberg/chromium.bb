@@ -154,9 +154,11 @@ void WindowSelectorPanels::SetItemBounds(aura::RootWindow* root_window,
        iter != transform_windows_.end(); ++iter) {
     bounding_rect.Union((*iter)->GetBoundsInScreen());
   }
+  set_bounds(ScopedTransformOverviewWindow::
+      ShrinkRectToFitPreservingAspectRatio(bounding_rect, target_bounds));
   gfx::Transform bounding_transform =
-      ScopedTransformOverviewWindow::GetTransformForRectPreservingAspectRatio(
-          bounding_rect, target_bounds);
+      ScopedTransformOverviewWindow::GetTransformForRect(bounding_rect,
+                                                         bounds());
   for (WindowList::iterator iter = transform_windows_.begin();
        iter != transform_windows_.end(); ++iter) {
     gfx::Transform transform;

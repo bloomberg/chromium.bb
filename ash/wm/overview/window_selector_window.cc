@@ -49,10 +49,11 @@ void WindowSelectorWindow::PrepareForOverview() {
 void WindowSelectorWindow::SetItemBounds(aura::RootWindow* root_window,
                                          const gfx::Rect& target_bounds,
                                          bool animate) {
-  gfx::Rect bounding_rect = transform_window_.window()->GetBoundsInScreen();
+  gfx::Rect src_rect = transform_window_.GetBoundsInScreen();
+  set_bounds(ScopedTransformOverviewWindow::
+      ShrinkRectToFitPreservingAspectRatio(src_rect, target_bounds));
   transform_window_.SetTransform(root_window,
-      ScopedTransformOverviewWindow::GetTransformForRectPreservingAspectRatio(
-          transform_window_.GetBoundsInScreen(), target_bounds),
+      ScopedTransformOverviewWindow::GetTransformForRect(src_rect, bounds()),
       animate);
 }
 

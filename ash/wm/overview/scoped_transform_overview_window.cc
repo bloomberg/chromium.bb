@@ -289,21 +289,30 @@ void ScopedTransformOverviewWindow::OnWindowDestroyed() {
   window_ = NULL;
 }
 
-gfx::Transform ScopedTransformOverviewWindow::
-    GetTransformForRectPreservingAspectRatio(const gfx::Rect& rect,
-                                             const gfx::Rect& bounds) {
+gfx::Rect ScopedTransformOverviewWindow::ShrinkRectToFitPreservingAspectRatio(
+    const gfx::Rect& rect,
+    const gfx::Rect& bounds) {
   DCHECK(!rect.IsEmpty());
   DCHECK(!bounds.IsEmpty());
   float scale = std::min(1.0f,
       std::min(static_cast<float>(bounds.width()) / rect.width(),
                static_cast<float>(bounds.height()) / rect.height()));
+  return gfx::Rect(bounds.x() + 0.5 * (bounds.width() - scale * rect.width()),
+                   bounds.y() + 0.5 * (bounds.height() - scale * rect.height()),
+                   rect.width() * scale,
+                   rect.height() * scale);
+}
+
+gfx::Transform ScopedTransformOverviewWindow::GetTransformForRect(
+    const gfx::Rect& src_rect,
+    const gfx::Rect& dst_rect) {
+  DCHECK(!src_rect.IsEmpty());
+  DCHECK(!dst_rect.IsEmpty());
   gfx::Transform transform;
-  gfx::Vector2d offset(
-      0.5 * (bounds.width() - scale * rect.width()),
-      0.5 * (bounds.height() - scale * rect.height()));
-  transform.Translate(bounds.x() - rect.x() + offset.x(),
-                      bounds.y() - rect.y() + offset.y());
-  transform.Scale(scale, scale);
+  transform.Translate(dst_rect.x() - src_rect.x(),
+                      dst_rect.y() - src_rect.y());
+  transform.Scale(static_cast<float>(dst_rect.width()) / src_rect.width(),
+                  static_cast<float>(dst_rect.height()) / src_rect.height());
   return transform;
 }
 

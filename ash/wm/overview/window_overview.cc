@@ -27,13 +27,30 @@ namespace ash {
 
 namespace {
 
+// Conceptually the window overview is a table or grid of cells having this
+// fixed aspect ratio. The number of columns is determined by maximizing the
+// area of them based on the number of windows.
 const float kCardAspectRatio = 4.0f / 3.0f;
+
+// In the conceptual overview table, the window margin is the space reserved
+// around the window within the cell. This margin does not overlap so the
+// closest distance between adjacent windows will be twice this amount.
 const int kWindowMargin = 30;
+
+// The minimum number of cards along the major axis (i.e. horizontally on a
+// landscape orientation).
 const int kMinCardsMajor = 3;
+
+// The duration of transition animations on the overview selector.
 const int kOverviewSelectorTransitionMilliseconds = 100;
+
+// The color and opacity of the overview selector.
 const SkColor kWindowOverviewSelectionColor = SK_ColorBLACK;
 const float kWindowOverviewSelectionOpacity = 0.5f;
-const int kWindowOverviewSelectionPadding = 15;
+
+// The padding or amount of the window selector widget visible around the edges
+// of the currently selected window.
+const int kWindowOverviewSelectionPadding = 25;
 
 // A comparator for locating a given target window.
 struct WindowSelectorItemComparator
@@ -167,8 +184,8 @@ void WindowOverview::SetSelection(size_t index) {
         change -= windows;
     }
     if (selection_index_ < windows_->size() &&
-        (*windows_)[selection_index_]->bounds().y() !=
-            (*windows_)[index]->bounds().y() &&
+        (*windows_)[selection_index_]->target_bounds().y() !=
+            (*windows_)[index]->target_bounds().y() &&
         abs(change) == 1) {
       // The selection has changed forward or backwards by one with a change
       // in the height of the target. In this case create a new selection widget
@@ -177,7 +194,7 @@ void WindowOverview::SetSelection(size_t index) {
           selection_widget_->GetNativeWindow())->GetDisplayMatching(
               target_bounds);
       gfx::Vector2d fade_out_direction(
-          change * ((*windows_)[selection_index_]->bounds().width() +
+          change * ((*windows_)[selection_index_]->target_bounds().width() +
                     2 * kWindowMargin), 0);
       aura::Window* old_selection = selection_widget_->GetNativeWindow();
 
