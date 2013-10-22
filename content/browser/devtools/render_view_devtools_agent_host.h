@@ -20,6 +20,7 @@
 namespace content {
 
 class DevToolsTracingHandler;
+class PowerSaveBlockerImpl;
 class RendererOverridesHandler;
 class RenderViewHost;
 
@@ -81,6 +82,7 @@ class CONTENT_EXPORT RenderViewDevToolsAgentHost
   scoped_ptr<DevToolsAgentHostRvhObserver> rvh_observer_;
   scoped_ptr<RendererOverridesHandler> overrides_handler_;
   scoped_ptr<DevToolsTracingHandler> tracing_handler_;
+  scoped_ptr<PowerSaveBlockerImpl> power_save_blocker_;
   std::string state_;
   NotificationRegistrar registrar_;
 
