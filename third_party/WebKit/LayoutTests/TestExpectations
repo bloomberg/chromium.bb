@@ -789,7 +789,7 @@ Bug(jochen) fast/js/kde/inbuilt_function_tostring.html [ Pass Failure ]
 crbug.com/278497 [ Linux SnowLeopard Debug ] http/tests/security/contentSecurityPolicy/1.1/plugintypes-invalid.html [ Failure Pass  ]
 
 crbug.com/280658  [ Win7 ] inspector-protocol/layers/get-layers.html [ Pass Failure ]
-crbug.com/280342 [ Win Release ] http/tests/media/progress-events-generated-correctly.html [ Failure Pass ]
+crbug.com/280342 [ Linux Win ] http/tests/media/progress-events-generated-correctly.html [ Failure Pass ]
 crbug.com/280698 inspector/styles/multiple-imports-edit-crash.html [ Pass Failure ]
 crbug.com/248938 [ SnowLeopard  Debug ] virtual/threaded/animations/animation-iteration-event-destroy-renderer.html [ Pass Timeout ]
 crbug.com/281911 [ Debug ] virtual/web-animations-css/animations/animation-direction-normal.html [ ImageOnlyFailure Pass ]
