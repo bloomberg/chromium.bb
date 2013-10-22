@@ -124,12 +124,12 @@ class TestCastSocket : public CastSocket {
   MockSSLClientSocket* mock_ssl_socket_;
 
  protected:
-  virtual scoped_ptr<net::TCPClientSocket> CreateTCPSocket() OVERRIDE {
+  virtual scoped_ptr<net::TCPClientSocket> CreateTcpSocket() OVERRIDE {
     owns_tcp_socket_ = false;
     return scoped_ptr<net::TCPClientSocket>(mock_tcp_socket_);
   }
 
-  virtual scoped_ptr<net::SSLClientSocket> CreateSSLSocket() OVERRIDE {
+  virtual scoped_ptr<net::SSLClientSocket> CreateSslSocket() OVERRIDE {
     owns_ssl_socket_ = false;
     return scoped_ptr<net::SSLClientSocket>(mock_ssl_socket_);
   }
@@ -333,7 +333,7 @@ TEST_F(CastSocketTest, TestMaxTwoConnectAttempts) {
   // Expectations for the second connect call
   ExpectTCPConnect(&tcp_connect_callback2);
   ExpectSSLConnect(&ssl_connect_callback2);
-  EXPECT_CALL(handler_, OnConnectComplete(net::ERR_FAILED));
+  EXPECT_CALL(handler_, OnConnectComplete(net::ERR_CERT_AUTHORITY_INVALID));
 
   // Trigger callbacks for the first connect
   ssl_connect_callback1.Run(net::ERR_CERT_AUTHORITY_INVALID);
@@ -357,7 +357,7 @@ TEST_F(CastSocketTest, TestCertExtractionFailure) {
                               base::Unretained(&handler_)));
   connect_callback1.Run(net::OK);
 
-  EXPECT_CALL(handler_, OnConnectComplete(net::ERR_FAILED));
+  EXPECT_CALL(handler_, OnConnectComplete(net::ERR_CERT_AUTHORITY_INVALID));
 
   // Set cert extraction to fail
   socket_->SetExtractCertResult(false);

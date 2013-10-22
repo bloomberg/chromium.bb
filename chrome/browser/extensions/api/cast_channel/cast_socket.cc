@@ -7,6 +7,7 @@
 #include <string.h>
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/lazy_instance.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/sys_byteorder.h"
@@ -77,7 +78,7 @@ CastSocket::CastSocket(const std::string& owner_extension_id,
     read_callback_pending_(false),
     current_message_size_(0),
     net_log_(net_log),
-    connection_state_(CONN_STATE_NONE) {
+    next_state_(CONN_STATE_NONE) {
   DCHECK(net_log_);
   net_log_source_.type = net::NetLog::SOURCE_SOCKET;
   net_log_source_.id = net_log_->NextID();
@@ -108,7 +109,7 @@ bool CastSocket::ExtractPeerCert(std::string* cert) {
   return result;
 }
 
-scoped_ptr<net::TCPClientSocket> CastSocket::CreateTCPSocket() {
+scoped_ptr<net::TCPClientSocket> CastSocket::CreateTcpSocket() {
   net::AddressList addresses(ip_endpoint_);
   scoped_ptr<net::TCPClientSocket> tcp_socket(
       new net::TCPClientSocket(addresses, net_log_, net_log_source_));
@@ -117,7 +118,7 @@ scoped_ptr<net::TCPClientSocket> CastSocket::CreateTCPSocket() {
   return tcp_socket.Pass();
 }
 
-scoped_ptr<net::SSLClientSocket> CastSocket::CreateSSLSocket() {
+scoped_ptr<net::SSLClientSocket> CastSocket::CreateSslSocket() {
   net::SSLConfig ssl_config;
   // If a peer cert was extracted in a previous attempt to connect, then
   // whitelist that cert.
@@ -145,88 +146,10 @@ scoped_ptr<net::SSLClientSocket> CastSocket::CreateSSLSocket() {
       connection.Pass(), host_and_port, ssl_config, context);
 }
 
-void CastSocket::DoCreateAndConnectTCP() {
-  DCHECK_EQ(CONN_STATE_NONE, connection_state_);
-  connection_state_ = CONN_STATE_TCP_CONNECT_START;
-  tcp_socket_ = CreateTCPSocket();
-  int result = tcp_socket_->Connect(
-      base::Bind(&CastSocket::OnTCPConnectComplete, AsWeakPtr()));
-  if (result != net::ERR_IO_PENDING)
-    OnTCPConnectComplete(result);
-}
-
-void CastSocket::OnTCPConnectComplete(int result) {
-  DCHECK(CalledOnValidThread());
-  DVLOG(1) << "OnTCPConnectComplete result = " << result;
-  DCHECK_EQ(CONN_STATE_TCP_CONNECT_START, connection_state_);
-  if (result == net::OK)
-    connection_state_ = CONN_STATE_TCP_CONNECT_DONE;
-  else
-    connection_state_ = CONN_STATE_ERROR;
-  DoConnectFlow();
-}
-
-void CastSocket::DoCreateAndConnectSSL() {
-  DCHECK_EQ(CONN_STATE_TCP_CONNECT_DONE, connection_state_);
-  connection_state_ = CONN_STATE_SSL_CONNECT_START;
-
-  socket_ = CreateSSLSocket();
-  int result = socket_->Connect(
-      base::Bind(&CastSocket::OnSSLConnectComplete, AsWeakPtr()));
-  if (result != net::ERR_IO_PENDING)
-    OnSSLConnectComplete(result);
-}
-
-void CastSocket::OnSSLConnectComplete(int result) {
-  DCHECK(CalledOnValidThread());
-  DVLOG(1) << "OnSSLConnectComplete result = " << result;
-  DCHECK_EQ(CONN_STATE_SSL_CONNECT_START, connection_state_);
-  if (result == net::OK) {
-    connection_state_ = CONN_STATE_SSL_CONNECT_DONE;
-  } else if (result == net::ERR_CERT_AUTHORITY_INVALID &&
-             peer_cert_.empty() &&
-             ExtractPeerCert(&peer_cert_)) {
-    connection_state_ = CONN_STATE_NONE;
-  } else {
-    connection_state_ = CONN_STATE_ERROR;
-  }
-  DoConnectFlow();
-}
-
-void CastSocket::DoConnectFlow() {
-  switch (connection_state_) {
-    case CONN_STATE_NONE:
-      ready_state_ = READY_STATE_CONNECTING;
-      DoCreateAndConnectTCP();
-      break;
-    case CONN_STATE_TCP_CONNECT_DONE:
-      ready_state_ = READY_STATE_CONNECTING;
-      DoCreateAndConnectSSL();
-      break;
-    case CONN_STATE_SSL_CONNECT_DONE:
-      ready_state_ = READY_STATE_OPEN;
-      break;
-    case CONN_STATE_ERROR:
-      error_state_ = CHANNEL_ERROR_CONNECT_ERROR;
-      ready_state_ = READY_STATE_CLOSED;
-      break;
-    default:
-      NOTREACHED() << "BUG in CastSocket state machine code";
-      break;
-  }
-  // TODO(mfoltz,munjal): Authenticate the channel if is_secure_ == true.
-
-  if (ready_state_ == READY_STATE_OPEN) {
-    RunConnectCallback(net::OK);
-    ReadData();
-  } else if (ready_state_ == READY_STATE_CLOSED) {
-    RunConnectCallback(net::ERR_FAILED);
-  }
-}
-
-void CastSocket::RunConnectCallback(int result) {
-  connect_callback_.Run(result);
-  connect_callback_.Reset();
+void CastSocket::OnConnectComplete(int result) {
+  int rv = DoConnectLoop(result);
+  if (rv != net::ERR_IO_PENDING)
+    DoConnectCallback(rv);
 }
 
 void CastSocket::Connect(const net::CompletionCallback& callback) {
@@ -244,7 +167,93 @@ void CastSocket::Connect(const net::CompletionCallback& callback) {
     return;
   }
   connect_callback_ = callback;
-  DoConnectFlow();
+  next_state_ = CONN_STATE_TCP_CONNECT;
+  int rv = DoConnectLoop(net::OK);
+  if (rv != net::ERR_IO_PENDING)
+    DoConnectCallback(rv);
+}
+
+// This method performs the state machine transitions for connection flow.
+// There are two entry points to this method:
+// 1. public Connect method: this starts the flow
+// 2. OnConnectComplete: callback method called when an async operation
+//    is done. OnConnectComplete calls this method to continue the state
+//    machine transitions.
+int CastSocket::DoConnectLoop(int result) {
+  // Network operations can either finish sycnronously or asynchronously.
+  // This method executes the state machine transitions in a loop so that
+  // correct state transitions happen even when network operations finish
+  // synchronously.
+  int rv = result;
+  do {
+    ConnectionState state = next_state_;
+    // All the Do* methods do not set next_state_ in case of an
+    // error. So set next_state_ to NONE to figure out if the Do*
+    // method changed state or not.
+    next_state_ = CONN_STATE_NONE;
+    switch (state) {
+      case CONN_STATE_TCP_CONNECT:
+        rv = DoTcpConnect();
+        break;
+      case CONN_STATE_TCP_CONNECT_COMPLETE:
+        rv = DoTcpConnectComplete(rv);
+        break;
+      case CONN_STATE_SSL_CONNECT:
+        DCHECK_EQ(net::OK, rv);
+        rv = DoSslConnect();
+        break;
+      case CONN_STATE_SSL_CONNECT_COMPLETE:
+        rv = DoSslConnectComplete(rv);
+        break;
+      default:
+        NOTREACHED() << "BUG in CastSocket state machine code";
+        break;
+    }
+  } while (rv != net::ERR_IO_PENDING && next_state_ != CONN_STATE_NONE);
+  // Get out of the loop either when:
+  // a. A network operation is pending, OR
+  // b. The Do* method called did not change state
+
+  return rv;
+}
+
+int CastSocket::DoTcpConnect() {
+  next_state_ = CONN_STATE_TCP_CONNECT_COMPLETE;
+  tcp_socket_ = CreateTcpSocket();
+  return tcp_socket_->Connect(
+      base::Bind(&CastSocket::OnConnectComplete, AsWeakPtr()));
+}
+
+int CastSocket::DoTcpConnectComplete(int result) {
+  if (result == net::OK)
+    next_state_ = CONN_STATE_SSL_CONNECT;
+  return result;
+}
+
+int CastSocket::DoSslConnect() {
+  next_state_ = CONN_STATE_SSL_CONNECT_COMPLETE;
+  socket_ = CreateSslSocket();
+  return socket_->Connect(
+      base::Bind(&CastSocket::OnConnectComplete, AsWeakPtr()));
+}
+
+int CastSocket::DoSslConnectComplete(int result) {
+  // TODO(mfoltz,munjal): Authenticate the channel if is_secure_ == true.
+  if (result == net::ERR_CERT_AUTHORITY_INVALID &&
+             peer_cert_.empty() &&
+             ExtractPeerCert(&peer_cert_)) {
+    next_state_ = CONN_STATE_TCP_CONNECT;
+  }
+  return result;
+}
+
+void CastSocket::DoConnectCallback(int result) {
+  ready_state_ = (result == net::OK) ? READY_STATE_OPEN : READY_STATE_CLOSED;
+  error_state_ = (result == net::OK) ?
+      CHANNEL_ERROR_NONE : CHANNEL_ERROR_CONNECT_ERROR;
+  base::ResetAndReturn(&connect_callback_).Run(result);
+  if (result == net::OK)
+    ReadData();
 }
 
 void CastSocket::Close(const net::CompletionCallback& callback) {

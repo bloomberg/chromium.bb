@@ -67,7 +67,8 @@ class CastSocket : public ApiResource,
   // Creates a new CastSocket to |url|. |owner_extension_id| is the id of the
   // extension that opened the socket.
   CastSocket(const std::string& owner_extension_id,
-             const GURL& url, CastSocket::Delegate* delegate,
+             const GURL& url,
+             CastSocket::Delegate* delegate,
              net::NetLog* net_log);
   virtual ~CastSocket();
 
@@ -108,9 +109,9 @@ class CastSocket : public ApiResource,
 
  protected:
   // Creates an instance of TCPClientSocket.
-  virtual scoped_ptr<net::TCPClientSocket> CreateTCPSocket();
+  virtual scoped_ptr<net::TCPClientSocket> CreateTcpSocket();
   // Creates an instance of SSLClientSocket.
-  virtual scoped_ptr<net::SSLClientSocket> CreateSSLSocket();
+  virtual scoped_ptr<net::SSLClientSocket> CreateSslSocket();
   // Extracts peer certificate from SSLClientSocket instance when the socket
   // is in cert error state.
   // Returns whether certificate is successfully extracted.
@@ -125,11 +126,10 @@ class CastSocket : public ApiResource,
   // Internal connection states.
   enum ConnectionState {
     CONN_STATE_NONE,
-    CONN_STATE_TCP_CONNECT_START,
-    CONN_STATE_TCP_CONNECT_DONE,
-    CONN_STATE_SSL_CONNECT_START,
-    CONN_STATE_SSL_CONNECT_DONE,
-    CONN_STATE_ERROR,
+    CONN_STATE_TCP_CONNECT,
+    CONN_STATE_TCP_CONNECT_COMPLETE,
+    CONN_STATE_SSL_CONNECT,
+    CONN_STATE_SSL_CONNECT_COMPLETE,
   };
 
   /////////////////////////////////////////////////////////////////////////////
@@ -140,24 +140,27 @@ class CastSocket : public ApiResource,
   //    peer certificate from the error.
   // 4. Whitelist the peer certificate and try #1 and #2 again.
 
-  // Ties the connection flow together - proceeds to the next connection step.
-  void DoConnectFlow();
-  // Creates an instance of TCPClientSocket and connects to it.
-  void DoCreateAndConnectTCP();
-  // Called when the underlying TCP socket is connected.
-  void OnTCPConnectComplete(int result);
-  // Creates an instance of SSLClientSocket and connects to it.
-  void DoCreateAndConnectSSL();
-  // Called when the underlying SSL socket is connected.
-  void OnSSLConnectComplete(int result);
+  // Main method that performs connection state transitions.
+  int DoConnectLoop(int result);
+  // Each of the below Do* method is executed in the corresponding
+  // connection state. For e.g. when connection state is TCP_CONNECT
+  // DoTcpConnect is called, and so on.
+  int DoTcpConnect();
+  int DoTcpConnectComplete(int result);
+  int DoSslConnect();
+  int DoSslConnectComplete(int result);
+  int DoSslConnectRetry();
   /////////////////////////////////////////////////////////////////////////////
+
+  // Callback method for callbacks from underlying sockets.
+  void OnConnectComplete(int result);
+
+  // Runs the external connection callback and resets it.
+  void DoConnectCallback(int result);
 
   // Verifies that the URL is a valid cast:// or casts:// URL and sets url_ to
   // the result.
   bool ParseChannelUrl(const GURL& url);
-
-  // Runs the external connection callback and resets it.
-  void RunConnectCallback(int result);
 
   // Writes data to the socket from the WriteRequest at the head of the queue.
   // Calls OnWriteData() on completion.
@@ -220,8 +223,8 @@ class CastSocket : public ApiResource,
   // The NetLog source for this service.
   net::NetLog::Source net_log_source_;
 
-  // Connection flow state.
-  ConnectionState connection_state_;
+  // Next connection state to transition to.
+  ConnectionState next_state_;
   // Owned ptr to the underlying TCP socket.
   scoped_ptr<net::TCPClientSocket> tcp_socket_;
   // Owned ptr to the underlying SSL socket.
