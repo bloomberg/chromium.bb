@@ -18,6 +18,7 @@
         '../third_party/icu/icu.gyp:icui18n',
         '../third_party/icu/icu.gyp:icuuc',
         '../ui/gfx/gfx.gyp:gfx',
+        '../ui/ui.gyp:shell_dialogs',
         '../ui/ui.gyp:ui',
         '../url/url.gyp:url_lib',
       ],

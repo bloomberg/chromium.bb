@@ -189,11 +189,11 @@ PrintingContextWin::~PrintingContextWin() {
   ReleaseContext();
 }
 
-// TODO(vitalybuka): Implement as ui::BaseShellDialog crbug.com/180997.
 void PrintingContextWin::AskUserForSettings(
     gfx::NativeView view, int max_pages, bool has_selection,
     const PrintSettingsCallback& callback) {
   DCHECK(!in_print_job_);
+  // TODO(scottmg): Possibly this has to move into the threaded runner too?
   if (win8::IsSingleWindowMetroMode()) {
     // The system dialog can not be opened while running in Metro.
     // But we can programatically launch the Metro print device charm though.
@@ -226,40 +226,40 @@ void PrintingContextWin::AskUserForSettings(
   // - Cancel, the settings are not changed, the previous setting, if it was
   //   initialized before, are kept. CANCEL is returned.
   // On failure, the settings are reset and FAILED is returned.
-  PRINTDLGEX dialog_options = { sizeof(PRINTDLGEX) };
-  dialog_options.hwndOwner = window;
+  PRINTDLGEX* dialog_options =
+      reinterpret_cast<PRINTDLGEX*>(malloc(sizeof(PRINTDLGEX)));
+  ZeroMemory(dialog_options, sizeof(PRINTDLGEX));
+  dialog_options->lStructSize = sizeof(PRINTDLGEX);
+  dialog_options->hwndOwner = window;
   // Disable options we don't support currently.
   // TODO(maruel):  Reuse the previously loaded settings!
-  dialog_options.Flags = PD_RETURNDC | PD_USEDEVMODECOPIESANDCOLLATE  |
-                         PD_NOCURRENTPAGE | PD_HIDEPRINTTOFILE;
+  dialog_options->Flags = PD_RETURNDC | PD_USEDEVMODECOPIESANDCOLLATE |
+                          PD_NOCURRENTPAGE | PD_HIDEPRINTTOFILE;
   if (!has_selection)
-    dialog_options.Flags |= PD_NOSELECTION;
+    dialog_options->Flags |= PD_NOSELECTION;
 
-  PRINTPAGERANGE ranges[32];
-  dialog_options.nStartPage = START_PAGE_GENERAL;
+  const size_t max_page_ranges = 32;
+  PRINTPAGERANGE* ranges = new PRINTPAGERANGE[max_page_ranges];
+  dialog_options->lpPageRanges = ranges;
+  dialog_options->nStartPage = START_PAGE_GENERAL;
   if (max_pages) {
     // Default initialize to print all the pages.
     memset(ranges, 0, sizeof(ranges));
     ranges[0].nFromPage = 1;
     ranges[0].nToPage = max_pages;
-    dialog_options.nPageRanges = 1;
-    dialog_options.nMaxPageRanges = arraysize(ranges);
-    dialog_options.nMinPage = 1;
-    dialog_options.nMaxPage = max_pages;
-    dialog_options.lpPageRanges = ranges;
+    dialog_options->nPageRanges = 1;
+    dialog_options->nMaxPageRanges = max_page_ranges;
+    dialog_options->nMinPage = 1;
+    dialog_options->nMaxPage = max_pages;
   } else {
     // No need to bother, we don't know how many pages are available.
-    dialog_options.Flags |= PD_NOPAGENUMS;
+    dialog_options->Flags |= PD_NOPAGENUMS;
   }
 
-  HRESULT hr = (*print_dialog_func_)(&dialog_options);
-  if (hr != S_OK) {
-    ResetSettings();
-    callback.Run(FAILED);
-  }
-
-  // TODO(maruel):  Support PD_PRINTTOFILE.
-  callback.Run(ParseDialogResultEx(dialog_options));
+  callback_ = callback;
+  print_settings_dialog_ = new ui::PrintSettingsDialogWin(this);
+  print_settings_dialog_->GetPrintSettings(
+      print_dialog_func_, window, dialog_options);
 }
 
 PrintingContext::Result PrintingContextWin::UseDefaultSettings() {
@@ -563,6 +563,20 @@ void PrintingContextWin::ReleaseContext() {
 
 gfx::NativeDrawingContext PrintingContextWin::context() const {
   return context_;
+}
+
+void PrintingContextWin::PrintSettingsConfirmed(PRINTDLGEX* dialog_options) {
+  // TODO(maruel):  Support PD_PRINTTOFILE.
+  callback_.Run(ParseDialogResultEx(*dialog_options));
+  delete [] dialog_options->lpPageRanges;
+  free(dialog_options);
+}
+
+void PrintingContextWin::PrintSettingsCancelled(PRINTDLGEX* dialog_options) {
+  ResetSettings();
+  callback_.Run(FAILED);
+  delete [] dialog_options->lpPageRanges;
+  free(dialog_options);
 }
 
 // static
