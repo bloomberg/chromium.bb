@@ -27,7 +27,6 @@
 #include "config.h"
 #include "platform/Widget.h"
 
-#include "platform/HostWindow.h"
 #include "platform/geometry/IntRect.h"
 
 #include "wtf/Assertions.h"
@@ -44,12 +43,6 @@ Widget::Widget()
 Widget::~Widget()
 {
     ASSERT(!parent());
-}
-
-void Widget::setCursor(const Cursor& cursor)
-{
-    if (Widget* view = root())
-        view->hostWindow()->setCursor(cursor);
 }
 
 void Widget::setParent(Widget* widget)
@@ -69,14 +62,6 @@ Widget* Widget::root() const
         top = top->parent();
     if (top->isFrameView())
         return const_cast<Widget*>(static_cast<const Widget*>(top));
-    return 0;
-}
-
-HostWindow* Widget::hostWindow() const
-{
-    if (root())
-        root()->hostWindow();
-    ASSERT_NOT_REACHED();
     return 0;
 }
 

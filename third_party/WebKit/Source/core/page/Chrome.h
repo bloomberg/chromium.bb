@@ -67,12 +67,13 @@ public:
     virtual IntPoint screenToRootView(const IntPoint&) const OVERRIDE;
     virtual IntRect rootViewToScreen(const IntRect&) const OVERRIDE;
     virtual WebKit::WebScreenInfo screenInfo() const OVERRIDE;
-    virtual void setCursor(const Cursor&) OVERRIDE;
 
     virtual void scheduleAnimation() OVERRIDE;
 
     void contentsSizeChanged(Frame*, const IntSize&) const;
     void layoutUpdated(Frame*) const;
+
+    void setCursor(const Cursor&);
 
     void setWindowRect(const FloatRect&) const;
     FloatRect windowRect() const;

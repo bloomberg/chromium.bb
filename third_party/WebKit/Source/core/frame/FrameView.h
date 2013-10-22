@@ -277,6 +277,8 @@ public:
     virtual IntPoint lastKnownMousePosition() const;
     bool shouldSetCursor() const;
 
+    void setCursor(const Cursor&);
+
     virtual bool scrollbarsCanBeActive() const OVERRIDE;
 
     // FIXME: Remove this method once plugin loading is decoupled from layout.

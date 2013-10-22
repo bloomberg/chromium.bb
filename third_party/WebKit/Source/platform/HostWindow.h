@@ -60,9 +60,6 @@ public:
 
     virtual WebKit::WebScreenInfo screenInfo() const = 0;
 
-    // Request that the cursor change.
-    virtual void setCursor(const Cursor&) = 0;
-
     virtual void scheduleAnimation() = 0;
 };
 

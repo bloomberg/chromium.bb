@@ -35,7 +35,6 @@
 
 namespace WebCore {
 
-class Cursor;
 class Event;
 class GraphicsContext;
 class HostWindow;
@@ -75,8 +74,6 @@ public:
 
     virtual void setFocus(bool) { }
 
-    void setCursor(const Cursor&);
-
     virtual void show() { }
     virtual void hide() { }
     bool isSelfVisible() const { return m_selfVisible; } // Whether or not we have been explicitly marked as visible or not.
@@ -91,7 +88,7 @@ public:
     virtual bool isScrollbar() const { return false; }
     virtual bool isScrollView() const { return false; }
 
-    virtual HostWindow* hostWindow() const;
+    virtual HostWindow* hostWindow() const { ASSERT_NOT_REACHED(); return 0; }
     virtual void setParent(Widget*);
     Widget* parent() const { return m_parent; }
     Widget* root() const;

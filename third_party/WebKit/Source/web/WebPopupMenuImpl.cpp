@@ -380,10 +380,6 @@ WebScreenInfo WebPopupMenuImpl::screenInfo() const
     return WebScreenInfo();
 }
 
-void WebPopupMenuImpl::setCursor(const WebCore::Cursor&)
-{
-}
-
 //-----------------------------------------------------------------------------
 // WebCore::FramelessScrollViewClient
 

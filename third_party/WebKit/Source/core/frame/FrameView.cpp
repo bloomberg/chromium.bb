@@ -3436,6 +3436,14 @@ AXObjectCache* FrameView::axObjectCache() const
     return 0;
 }
 
+void FrameView::setCursor(const Cursor& cursor)
+{
+    Page* page = frame().page();
+    if (!page)
+        return;
+    page->chrome().setCursor(cursor);
+}
+
 bool FrameView::isMainFrame() const
 {
     return m_frame->page() && m_frame->page()->mainFrame() == m_frame;
