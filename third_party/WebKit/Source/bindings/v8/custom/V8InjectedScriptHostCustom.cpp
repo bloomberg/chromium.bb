@@ -211,8 +211,6 @@ void V8InjectedScriptHost::functionDetailsMethodCustom(const v8::FunctionCallbac
     if (inferredName->IsString() && v8::Handle<v8::String>::Cast(inferredName)->Length())
         result->Set(v8::String::NewSymbol("inferredName"), inferredName);
 
-    // FIXME: pass function displayName from V8 (crbug.com/17356).
-
     InjectedScriptHost* host = V8InjectedScriptHost::toNative(args.Holder());
     ScriptDebugServer& debugServer = host->scriptDebugServer();
     v8::Handle<v8::Value> scopes = debugServer.functionScopes(function);

@@ -312,24 +312,18 @@ DebuggerScript.isEvalCompilation = function(eventData)
 
 DebuggerScript._frameMirrorToJSCallFrame = function(frameMirror, callerFrame)
 {
-    // Get function name and display name.
-    var funcMirror;
-    var displayName;
+    // Get function name.
+    var func;
     try {
-        funcMirror = frameMirror.func();
-        if (funcMirror) {
-            var valueMirror = funcMirror.property("displayName").value();
-            if (valueMirror && valueMirror.isString())
-                displayName = valueMirror.value();
-        }
+        func = frameMirror.func();
     } catch(e) {
     }
     var functionName;
-    if (funcMirror)
-        functionName = displayName || funcMirror.name() || funcMirror.inferredName();
+    if (func)
+        functionName = func.name() || func.inferredName();
 
     // Get script ID.
-    var script = funcMirror.script();
+    var script = func.script();
     var sourceID = script && script.id();
 
     // Get location.
