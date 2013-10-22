@@ -795,6 +795,24 @@
     },
   ],
   'conditions': [
+    ['test_isolation_mode != "noop"', {
+      'targets': [
+	{
+	  'target_name': 'content_unittests_run',
+	  'type': 'none',
+	  'dependencies': [
+	    'content_unittests',
+	  ],
+	  'includes': [
+	    '../build/isolate.gypi',
+	    'content_unittests.isolate',
+	  ],
+	  'sources': [
+	    'content_unittests.isolate',
+	  ],
+	},
+      ],
+    }],
     ['OS!="ios"', {
       'targets': [
         {
