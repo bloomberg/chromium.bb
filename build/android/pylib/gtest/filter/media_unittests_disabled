@@ -6,6 +6,3 @@ CompositeFilterDeathTest.*
 
 # http://crbug.com/138833
 AesDecryptorTest.*
-
-# crbug.com/138930
-SkCanvasVideoRendererTest.*
