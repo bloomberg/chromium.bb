@@ -324,7 +324,8 @@ void ApplyWebPreferences(const WebPreferences& prefs, WebView* web_view) {
 #if defined(OS_ANDROID)
   settings->setAllowCustomScrollbarInMainFrame(false);
   settings->setTextAutosizingEnabled(prefs.text_autosizing_enabled);
-  settings->setTextAutosizingFontScaleFactor(prefs.font_scale_factor);
+  settings->setTextAutosizingFontScaleFactor(
+      prefs.text_autosizing_font_scale_factor);
   web_view->setIgnoreViewportTagScaleLimits(prefs.force_enable_zoom);
   settings->setAutoZoomFocusedNodeToLegibleScale(true);
   settings->setDoubleTapToZoomEnabled(prefs.double_tap_to_zoom_enabled);

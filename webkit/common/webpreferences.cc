@@ -123,7 +123,7 @@ WebPreferences::WebPreferences()
 #if defined(OS_ANDROID)
       ,
       text_autosizing_enabled(true),
-      font_scale_factor(1.0f),
+      text_autosizing_font_scale_factor(1.0f),
       force_enable_zoom(false),
       double_tap_to_zoom_enabled(true),
       user_gesture_required_for_media_playback(true),

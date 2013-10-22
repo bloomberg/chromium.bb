@@ -115,6 +115,15 @@ public class DeviceDisplayInfo {
       return getMetrics().density;
   }
 
+  /**
+   * @return Smallest screen size in density-independent pixels that the
+   *         application will see, regardless of orientation.
+   */
+  @CalledByNative
+  private int getSmallestDIPWidth() {
+      return mAppContext.getResources().getConfiguration().smallestScreenWidthDp;
+  }
+
   private Display getDisplay() {
       return mWinManager.getDefaultDisplay();
   }

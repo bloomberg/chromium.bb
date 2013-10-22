@@ -441,7 +441,11 @@ void PrefsTabHelper::RegisterProfilePrefs(
 #if defined(OS_ANDROID)
   registry->RegisterDoublePref(
       prefs::kWebKitFontScaleFactor,
-      pref_defaults.font_scale_factor,
+      1.0,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(
+      prefs::kWebKitFontScaleFactorQuirk,
+      true,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterBooleanPref(
       prefs::kWebKitForceEnableZoom,

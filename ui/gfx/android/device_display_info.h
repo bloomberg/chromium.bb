@@ -37,6 +37,9 @@ class GFX_EXPORT DeviceDisplayInfo {
   // (1.0 is 160dpi, 0.75 is 120dpi, 2.0 is 320dpi).
   double GetDIPScale();
 
+  // Smallest possible screen size in density-independent pixels.
+  int GetSmallestDIPWidth();
+
   // Registers methods with JNI and returns true if succeeded.
   static bool RegisterDeviceDisplayInfo(JNIEnv* env);
 

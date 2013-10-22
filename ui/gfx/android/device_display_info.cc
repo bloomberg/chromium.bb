@@ -58,6 +58,13 @@ double DeviceDisplayInfo::GetDIPScale() {
   return static_cast<double>(result);
 }
 
+int DeviceDisplayInfo::GetSmallestDIPWidth() {
+  JNIEnv* env = AttachCurrentThread();
+  jint result =
+      Java_DeviceDisplayInfo_getSmallestDIPWidth(env, j_device_info_.obj());
+  return static_cast<int>(result);
+}
+
 // static
 bool DeviceDisplayInfo::RegisterDeviceDisplayInfo(JNIEnv* env) {
   return RegisterNativesImpl(env);

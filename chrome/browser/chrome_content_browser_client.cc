@@ -186,6 +186,7 @@
 
 #if defined(OS_ANDROID)
 #include "ui/base/ui_base_paths.h"
+#include "ui/gfx/android/device_display_info.h"
 #endif
 
 #if defined(USE_NSS)
@@ -582,6 +583,7 @@ void HandleBlockedPopupOnUIThread(const BlockedWindowParams& params) {
 }
 
 #if defined(OS_ANDROID)
+
 void HandleSingleTabModeBlockOnUIThread(const BlockedWindowParams& params) {
   WebContents* web_contents =
       tab_util::GetWebContentsByID(params.render_process_id(),
@@ -591,6 +593,33 @@ void HandleSingleTabModeBlockOnUIThread(const BlockedWindowParams& params) {
 
   SingleTabModeTabHelper::FromWebContents(web_contents)->HandleOpenUrl(params);
 }
+
+float GetFontScaleMultiplier(const PrefService* prefs) {
+  if (prefs->GetBoolean(prefs::kWebKitFontScaleFactorQuirk)) {
+    // The value of kWebKitFontScaleFactor passed by Chrome for Android already
+    // includes the multiplier.
+    return 1.0f;
+  }
+
+  static const float kMinFSM = 1.05f;
+  static const int kWidthForMinFSM = 320;
+  static const float kMaxFSM = 1.3f;
+  static const int kWidthForMaxFSM = 800;
+
+  gfx::DeviceDisplayInfo info;
+  int minWidth = info.GetSmallestDIPWidth();
+
+  if (minWidth <= kWidthForMinFSM)
+    return kMinFSM;
+  if (minWidth >= kWidthForMaxFSM)
+    return kMaxFSM;
+
+  // The font scale multiplier varies linearly between kMinFSM and kMaxFSM.
+  float ratio = static_cast<float>(minWidth - kWidthForMinFSM) /
+      (kWidthForMaxFSM - kWidthForMinFSM);
+  return ratio * (kMaxFSM - kMinFSM) + kMinFSM;
+}
+
 #endif  // defined(OS_ANDROID)
 
 }  // namespace
@@ -2192,8 +2221,9 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
   web_prefs->allow_running_insecure_content =
       prefs->GetBoolean(prefs::kWebKitAllowRunningInsecureContent);
 #if defined(OS_ANDROID)
-  web_prefs->font_scale_factor =
-      static_cast<float>(prefs->GetDouble(prefs::kWebKitFontScaleFactor));
+  web_prefs->text_autosizing_font_scale_factor =
+      static_cast<float>(prefs->GetDouble(prefs::kWebKitFontScaleFactor)) *
+      GetFontScaleMultiplier(prefs);
   web_prefs->force_enable_zoom =
       prefs->GetBoolean(prefs::kWebKitForceEnableZoom);
 #endif
