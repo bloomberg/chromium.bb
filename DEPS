@@ -244,7 +244,7 @@ deps = {
     "/trunk/deps/cdm@229868",
 
   "src/third_party/mesa/src":
-    "/trunk/deps/third_party/mesa@210110",
+    "/trunk/deps/third_party/mesa@229994",
 
   "src/third_party/cld_2/src":
     (Var("googlecode_url") % "cld2") + "/trunk@84",
