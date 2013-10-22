@@ -220,6 +220,7 @@ public:
 
     bool scrollsWithRespectTo(Element*, Element*, ExceptionState&);
     bool isUnclippedDescendant(Element*, ExceptionState&);
+    bool needsCompositedScrolling(Element*, ExceptionState&);
 
     void setNeedsCompositedScrolling(Element*, unsigned value, ExceptionState&);
 

@@ -1,39 +1,39 @@
-iteration 0: PASS, does not have layer tree.
-iteration 1: PASS, does not have layer tree.
-iteration 2: PASS, does not have layer tree.
-iteration 3: PASS, does not have layer tree.
-iteration 4: PASS, has layer tree.
-iteration 5: PASS, does not have layer tree.
-iteration 6: PASS, has layer tree.
-iteration 7: PASS, does not have layer tree.
-iteration 8: PASS, has layer tree.
-iteration 9: PASS, does not have layer tree.
-iteration 10: PASS, does not have layer tree.
-iteration 11: PASS, has layer tree.
-iteration 12: PASS, has layer tree.
-iteration 13: PASS, has layer tree.
-iteration 14: PASS, has layer tree.
-iteration 15: PASS, has layer tree.
-iteration 16: PASS, has layer tree.
-iteration 17: PASS, does not have layer tree.
-iteration 18: PASS, does not have layer tree.
-iteration 19: PASS, has layer tree.
-iteration 20: PASS, has layer tree.
-iteration 21: PASS, has layer tree.
-iteration 22: PASS, has layer tree.
-iteration 23: PASS, has layer tree.
-iteration 24: PASS, has layer tree.
-iteration 25: PASS, does not have layer tree.
-iteration 26: PASS, does not have layer tree.
-iteration 27: PASS, has layer tree.
-iteration 28: PASS, has layer tree.
-iteration 29: PASS, has layer tree.
-iteration 30: PASS, has layer tree.
-iteration 31: PASS, has layer tree.
-iteration 32: PASS, has layer tree.
-iteration 33: PASS, has layer tree.
-iteration 34: PASS, has layer tree.
-iteration 35: PASS, does not have layer tree.
-iteration 36: PASS, has layer tree.
-iteration 37: PASS, has layer tree.
+iteration 0: PASS, container is not composited.
+iteration 1: PASS, container is not composited.
+iteration 2: PASS, container is not composited.
+iteration 3: PASS, container is not composited.
+iteration 4: PASS, container is composited.
+iteration 5: PASS, container is not composited.
+iteration 6: PASS, container is composited.
+iteration 7: PASS, container is not composited.
+iteration 8: PASS, container is composited.
+iteration 9: PASS, container is not composited.
+iteration 10: PASS, container is not composited.
+iteration 11: PASS, container is composited.
+iteration 12: PASS, container is composited.
+iteration 13: PASS, container is composited.
+iteration 14: PASS, container is composited.
+iteration 15: PASS, container is composited.
+iteration 16: PASS, container is composited.
+iteration 17: PASS, container is not composited.
+iteration 18: PASS, container is not composited.
+iteration 19: PASS, container is composited.
+iteration 20: PASS, container is composited.
+iteration 21: PASS, container is composited.
+iteration 22: PASS, container is composited.
+iteration 23: PASS, container is composited.
+iteration 24: PASS, container is composited.
+iteration 25: PASS, container is not composited.
+iteration 26: PASS, container is not composited.
+iteration 27: PASS, container is composited.
+iteration 28: PASS, container is composited.
+iteration 29: PASS, container is composited.
+iteration 30: PASS, container is composited.
+iteration 31: PASS, container is composited.
+iteration 32: PASS, container is composited.
+iteration 33: PASS, container is composited.
+iteration 34: PASS, container is composited.
+iteration 35: PASS, container is not composited.
+iteration 36: PASS, container is composited.
+iteration 37: PASS, container is composited.
 

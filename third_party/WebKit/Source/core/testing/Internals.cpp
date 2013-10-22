@@ -1733,6 +1733,30 @@ bool Internals::isUnclippedDescendant(Element* element, ExceptionState& es)
     return layer->isUnclippedDescendant();
 }
 
+bool Internals::needsCompositedScrolling(Element* element, ExceptionState& es)
+{
+    if (!element) {
+        es.throwUninformativeAndGenericDOMException(InvalidAccessError);
+        return 0;
+    }
+
+    element->document().updateLayout();
+
+    RenderObject* renderer = element->renderer();
+    if (!renderer || !renderer->isBox()) {
+        es.throwUninformativeAndGenericDOMException(InvalidAccessError);
+        return 0;
+    }
+
+    RenderLayer* layer = toRenderBox(renderer)->layer();
+    if (!layer) {
+        es.throwUninformativeAndGenericDOMException(InvalidAccessError);
+        return 0;
+    }
+
+    return layer->needsCompositedScrolling();
+}
+
 String Internals::layerTreeAsText(Document* document, unsigned flags, ExceptionState& es) const
 {
     if (!document || !document->frame()) {

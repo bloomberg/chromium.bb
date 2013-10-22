@@ -58,20 +58,23 @@
       document.body.offsetTop;
 
       if (window.internals) {
-        var layerTree = window.internals.layerTreeAsText(document);
+        var container = document.getElementById('container');
+        var containerOptedIn = window.internals.needsCompositedScrolling(container);
 
-        var passed = !layerTree == !expectedResult;
+        var passed = containerOptedIn === expectedResult;
         if (passed)
           write('Iteration ' + iteration.toString() + ': Passed')
         else
           write('Iteration ' + iteration.toString() + ': FAILED')
 
-        if (layerTree) {
-          write('Iteration ' + iteration.toString() + ', layer tree');
-          if (debugMode || !passed)
+        if (containerOptedIn) {
+          write('Iteration ' + iteration.toString() + ', container is composited');
+          if (debugMode || !passed) {
+              var layerTree = window.internals.layerTreeAsText(document);
               write(layerTree);
+          }
         } else
-          write('Iteration ' + iteration.toString() + ', no layer tree');
+          write('Iteration ' + iteration.toString() + ', container is not composited');
       }
       iteration++;
     }

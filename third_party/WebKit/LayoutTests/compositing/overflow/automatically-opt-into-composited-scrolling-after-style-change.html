@@ -68,16 +68,17 @@
       var result = document.getElementById('result');
       result.innerText += "iteration " + iteration + ": ";
 
-      var hasLayerTree = !!window.internals.layerTreeAsText(document);
-      if (hasLayerTree === expectedResult)
+      var container = document.getElementById('container');
+      var containerOptedIn = window.internals.needsCompositedScrolling(container);
+      if (containerOptedIn === expectedResult)
         result.innerText += "PASS, ";
       else
         result.innerText += "FAIL, ";
 
-      if (hasLayerTree)
-        result.innerText += "has layer tree.\n";
+      if (containerOptedIn)
+        result.innerText += "container is composited.\n";
       else
-        result.innerText += "does not have layer tree.\n";
+        result.innerText += "container is not composited.\n";
     }
 
     function writeDebug(iteration)
