@@ -543,7 +543,6 @@ class ContentViewGestureHandler implements LongPressDelegate {
 
                     @Override
                     public boolean onDoubleTapEvent(MotionEvent e) {
-                        if (isDoubleTapDisabled()) return false;
                         switch (e.getActionMasked()) {
                             case MotionEvent.ACTION_DOWN:
                                 sendShowPressCancelIfNecessary(e);
@@ -707,7 +706,7 @@ class ContentViewGestureHandler implements LongPressDelegate {
      *              to send. This argument is an optional and can be null.
      */
     void endDoubleTapDragIfNecessary(MotionEvent event) {
-        if (mDoubleTapMode == DOUBLE_TAP_MODE_DISABLED) return;
+        if (!isDoubleTapActive()) return;
         if (mDoubleTapMode == DOUBLE_TAP_MODE_DRAG_ZOOM) {
             if (event == null) event = obtainActionCancelMotionEvent();
             pinchEnd(event.getEventTime());
@@ -715,6 +714,7 @@ class ContentViewGestureHandler implements LongPressDelegate {
                     (int) event.getX(), (int) event.getY(), null);
         }
         mDoubleTapMode = DOUBLE_TAP_MODE_NONE;
+        updateDoubleTapListener();
     }
 
     /**
@@ -1224,8 +1224,7 @@ class ContentViewGestureHandler implements LongPressDelegate {
      * @param supportDoubleTap Whether double-tap gestures are supported.
      */
     public void updateDoubleTapSupport(boolean supportDoubleTap) {
-        assert (mDoubleTapMode == DOUBLE_TAP_MODE_DISABLED ||
-                mDoubleTapMode == DOUBLE_TAP_MODE_NONE);
+        assert !isDoubleTapActive();
         int doubleTapMode = supportDoubleTap ?
                 DOUBLE_TAP_MODE_NONE : DOUBLE_TAP_MODE_DISABLED;
         if (mDoubleTapMode == doubleTapMode) return;
@@ -1250,9 +1249,15 @@ class ContentViewGestureHandler implements LongPressDelegate {
                mHasFixedPageScale;
     }
 
+    private boolean isDoubleTapActive() {
+        return mDoubleTapMode != DOUBLE_TAP_MODE_DISABLED &&
+               mDoubleTapMode != DOUBLE_TAP_MODE_NONE;
+    }
+
     private void updateDoubleTapListener() {
         if (isDoubleTapDisabled()) {
-            endDoubleTapDragIfNecessary(null);
+            // Defer nulling the DoubleTapListener until the double tap gesture is complete.
+            if (isDoubleTapActive()) return;
             mGestureDetector.setOnDoubleTapListener(null);
         } else {
             mGestureDetector.setOnDoubleTapListener(mDoubleTapListener);
