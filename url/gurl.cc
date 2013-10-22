@@ -169,6 +169,9 @@ GURL::~GURL() {
 }
 
 GURL& GURL::operator=(const GURL& other) {
+  if (&other == this)
+    return *this;
+
   spec_ = other.spec_;
   is_valid_ = other.is_valid_;
   parsed_ = other.parsed_;

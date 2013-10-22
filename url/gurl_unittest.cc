@@ -487,3 +487,10 @@ TEST(GURLTest, IsStandard) {
   GURL c("foo://bar/baz");
   EXPECT_FALSE(c.IsStandard());
 }
+
+// This is a regression test for http://crbug.com/309975 .
+TEST(GURLTest, SelfAssignment) {
+  GURL a("filesystem:http://example.com/temporary/");
+  // This should not crash.
+  a = a;
+}
