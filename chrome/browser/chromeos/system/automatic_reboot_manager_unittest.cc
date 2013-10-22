@@ -33,9 +33,9 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chromeos/chromeos_paths.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/fake_dbus_thread_manager.h"
 #include "chromeos/dbus/fake_power_manager_client.h"
 #include "chromeos/dbus/fake_update_engine_client.h"
-#include "chromeos/dbus/mock_dbus_thread_manager_without_gmock.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
@@ -358,8 +358,7 @@ void AutomaticRebootManagerBasicTest::SetUp() {
 
   TestingBrowserProcess::GetGlobal()->SetLocalState(&local_state_);
   AutomaticRebootManager::RegisterPrefs(local_state_.registry());
-  MockDBusThreadManagerWithoutGMock* dbus_manager =
-      new MockDBusThreadManagerWithoutGMock;
+  FakeDBusThreadManager* dbus_manager = new FakeDBusThreadManager;
   DBusThreadManager::InitializeForTesting(dbus_manager);
   power_manager_client_ = dbus_manager->fake_power_manager_client();
   update_engine_client_ = dbus_manager->fake_update_engine_client();

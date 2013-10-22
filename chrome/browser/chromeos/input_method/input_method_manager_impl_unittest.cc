@@ -15,8 +15,8 @@
 #include "base/message_loop/message_loop.h"
 #include "chrome/browser/chromeos/input_method/mock_candidate_window_controller.h"
 #include "chrome/browser/chromeos/input_method/mock_ibus_controller.h"
+#include "chromeos/dbus/fake_dbus_thread_manager.h"
 #include "chromeos/dbus/ibus/mock_ibus_client.h"
-#include "chromeos/dbus/mock_dbus_thread_manager_without_gmock.h"
 #include "chromeos/ime/extension_ime_util.h"
 #include "chromeos/ime/fake_input_method_delegate.h"
 #include "chromeos/ime/mock_component_extension_ime_manager_delegate.h"
@@ -61,10 +61,10 @@ class InputMethodManagerImplTest :  public testing::Test {
     mock_ibus_daemon_controller_ = new chromeos::MockIBusDaemonController();
     chromeos::IBusDaemonController::InitializeForTesting(
         mock_ibus_daemon_controller_);
-    mock_dbus_thread_manager_ =
-        new chromeos::MockDBusThreadManagerWithoutGMock();
+    fake_dbus_thread_manager_ =
+        new chromeos::FakeDBusThreadManager();
     chromeos::DBusThreadManager::InitializeForTesting(
-        mock_dbus_thread_manager_);
+        fake_dbus_thread_manager_);
     delegate_ = new FakeInputMethodDelegate();
     manager_.reset(new InputMethodManagerImpl(
         scoped_ptr<InputMethodDelegate>(delegate_)));
@@ -151,9 +151,9 @@ class InputMethodManagerImplTest :  public testing::Test {
   // Helper function to initialize IBus bus connection for testing. Do not use
   // ibus related mocks before calling this function.
   void InitIBusBus() {
-    mock_dbus_thread_manager_->InitIBusBus("dummy address",
+    fake_dbus_thread_manager_->InitIBusBus("dummy address",
                                            base::Bind(&base::DoNothing));
-    mock_ibus_client_ = mock_dbus_thread_manager_->mock_ibus_client();
+    mock_ibus_client_ = fake_dbus_thread_manager_->mock_ibus_client();
     mock_ibus_daemon_controller_->EmulateConnect();
   }
 
@@ -164,7 +164,7 @@ class InputMethodManagerImplTest :  public testing::Test {
   MockIBusDaemonController* mock_ibus_daemon_controller_;
   scoped_ptr<MockIMEEngineHandler> mock_engine_handler_;
   MockIBusClient* mock_ibus_client_;
-  MockDBusThreadManagerWithoutGMock* mock_dbus_thread_manager_;
+  FakeDBusThreadManager* fake_dbus_thread_manager_;
   MockXKeyboard* xkeyboard_;
   base::MessageLoop message_loop_;
   MockComponentExtIMEManagerDelegate* mock_delegate_;

@@ -9,8 +9,8 @@
 #include "chrome/common/pref_names.h"
 
 #if defined(OS_CHROMEOS)
+#include "chromeos/dbus/fake_dbus_thread_manager.h"
 #include "chromeos/dbus/fake_update_engine_client.h"
-#include "chromeos/dbus/mock_dbus_thread_manager_without_gmock.h"
 
 using chromeos::UpdateEngineClient;
 #endif
@@ -31,11 +31,11 @@ class GetUpdateStatusApiTest : public ExtensionApiTest {
 
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
     ExtensionApiTest::SetUpInProcessBrowserTestFixture();
-    chromeos::MockDBusThreadManagerWithoutGMock* mock_dbus_thread_manager =
-        new chromeos::MockDBusThreadManagerWithoutGMock;
-    chromeos::DBusThreadManager::InitializeForTesting(mock_dbus_thread_manager);
+    chromeos::FakeDBusThreadManager* fake_dbus_thread_manager =
+        new chromeos::FakeDBusThreadManager;
+    chromeos::DBusThreadManager::InitializeForTesting(fake_dbus_thread_manager);
     fake_update_engine_client_ =
-        mock_dbus_thread_manager->fake_update_engine_client();
+        fake_dbus_thread_manager->fake_update_engine_client();
   }
 
   virtual void TearDownInProcessBrowserTestFixture() OVERRIDE {

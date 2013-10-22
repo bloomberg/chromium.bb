@@ -12,7 +12,7 @@
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chromeos/cryptohome/system_salt_getter.h"
-#include "chromeos/dbus/mock_dbus_thread_manager_without_gmock.h"
+#include "chromeos/dbus/fake_dbus_thread_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread.h"
 #include "google_apis/gaia/gaia_oauth_client.h"
@@ -101,9 +101,9 @@ class DeviceOAuth2TokenServiceTest : public testing::Test {
 
   virtual void SetUp() OVERRIDE {
     // TODO(xiyuan): Remove this when cleaning up the system salt load temp fix.
-    scoped_ptr<MockDBusThreadManagerWithoutGMock> mock_dbus_thread_manager(
-        new MockDBusThreadManagerWithoutGMock);
-    DBusThreadManager::InitializeForTesting(mock_dbus_thread_manager.release());
+    scoped_ptr<FakeDBusThreadManager> fake_dbus_thread_manager(
+        new FakeDBusThreadManager);
+    DBusThreadManager::InitializeForTesting(fake_dbus_thread_manager.release());
     SystemSaltGetter::Initialize();
   }
 

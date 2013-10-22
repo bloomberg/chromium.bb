@@ -16,7 +16,6 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/ibus/ibus_text.h"
 #include "chromeos/dbus/ibus/mock_ibus_client.h"
-#include "chromeos/dbus/mock_dbus_thread_manager_without_gmock.h"
 #include "chromeos/ime/ibus_bridge.h"
 #include "chromeos/ime/mock_ime_candidate_window_handler.h"
 #include "chromeos/ime/mock_ime_engine_handler.h"

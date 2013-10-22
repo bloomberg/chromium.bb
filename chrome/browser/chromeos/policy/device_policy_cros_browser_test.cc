@@ -15,8 +15,8 @@
 #include "chrome/browser/chromeos/policy/enterprise_install_attributes.h"
 #include "chrome/browser/policy/proto/chromeos/install_attributes.pb.h"
 #include "chromeos/chromeos_paths.h"
+#include "chromeos/dbus/fake_dbus_thread_manager.h"
 #include "chromeos/dbus/fake_session_manager_client.h"
-#include "chromeos/dbus/mock_dbus_thread_manager_without_gmock.h"
 #include "crypto/rsa_private_key.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -72,15 +72,15 @@ void DevicePolicyCrosTestHelper::InstallOwnerKey() {
 }
 
 DevicePolicyCrosBrowserTest::DevicePolicyCrosBrowserTest()
-    : mock_dbus_thread_manager_(
-        new chromeos::MockDBusThreadManagerWithoutGMock) {
+    : fake_dbus_thread_manager_(
+        new chromeos::FakeDBusThreadManager) {
 }
 
 DevicePolicyCrosBrowserTest::~DevicePolicyCrosBrowserTest() {
 }
 
 void DevicePolicyCrosBrowserTest::SetUpInProcessBrowserTestFixture() {
-  chromeos::DBusThreadManager::InitializeForTesting(mock_dbus_thread_manager_);
+  chromeos::DBusThreadManager::InitializeForTesting(fake_dbus_thread_manager_);
   InProcessBrowserTest::SetUpInProcessBrowserTestFixture();
 }
 

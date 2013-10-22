@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/dbus/mock_dbus_thread_manager_without_gmock.h"
+#include "chromeos/dbus/fake_dbus_thread_manager.h"
 
 #include "chromeos/dbus/dbus_thread_manager_observer.h"
 #include "chromeos/dbus/fake_bluetooth_adapter_client.h"
@@ -27,7 +27,7 @@
 
 namespace chromeos {
 
-MockDBusThreadManagerWithoutGMock::MockDBusThreadManagerWithoutGMock()
+FakeDBusThreadManager::FakeDBusThreadManager()
   : fake_bluetooth_adapter_client_(new FakeBluetoothAdapterClient()),
     fake_bluetooth_agent_manager_client_(new FakeBluetoothAgentManagerClient()),
     fake_bluetooth_device_client_(new FakeBluetoothDeviceClient()),
@@ -49,24 +49,24 @@ MockDBusThreadManagerWithoutGMock::MockDBusThreadManagerWithoutGMock()
       new PowerPolicyController(this, fake_power_manager_client_.get()));
 }
 
-MockDBusThreadManagerWithoutGMock::~MockDBusThreadManagerWithoutGMock() {
+FakeDBusThreadManager::~FakeDBusThreadManager() {
   FOR_EACH_OBSERVER(DBusThreadManagerObserver, observers_,
                     OnDBusThreadManagerDestroying(this));
 }
 
-void MockDBusThreadManagerWithoutGMock::AddObserver(
+void FakeDBusThreadManager::AddObserver(
     DBusThreadManagerObserver* observer) {
   DCHECK(observer);
   observers_.AddObserver(observer);
 }
 
-void MockDBusThreadManagerWithoutGMock::RemoveObserver(
+void FakeDBusThreadManager::RemoveObserver(
     DBusThreadManagerObserver* observer) {
   DCHECK(observer);
   observers_.RemoveObserver(observer);
 }
 
-void MockDBusThreadManagerWithoutGMock::InitIBusBus(
+void FakeDBusThreadManager::InitIBusBus(
     const std::string& ibus_address,
     const base::Closure& closure) {
   // Non-null bus address is used to ensure the connection to ibus-daemon.
@@ -76,152 +76,152 @@ void MockDBusThreadManagerWithoutGMock::InitIBusBus(
   mock_ibus_engine_factory_service_.reset(new MockIBusEngineFactoryService);
 }
 
-dbus::Bus* MockDBusThreadManagerWithoutGMock::GetSystemBus() {
+dbus::Bus* FakeDBusThreadManager::GetSystemBus() {
   return NULL;
 }
 
-dbus::Bus* MockDBusThreadManagerWithoutGMock::GetIBusBus() {
+dbus::Bus* FakeDBusThreadManager::GetIBusBus() {
   return ibus_bus_;
 }
 
 BluetoothAdapterClient*
-    MockDBusThreadManagerWithoutGMock::GetBluetoothAdapterClient() {
+    FakeDBusThreadManager::GetBluetoothAdapterClient() {
   return fake_bluetooth_adapter_client_.get();
 }
 
 BluetoothAgentManagerClient*
-    MockDBusThreadManagerWithoutGMock::GetBluetoothAgentManagerClient() {
+    FakeDBusThreadManager::GetBluetoothAgentManagerClient() {
   return fake_bluetooth_agent_manager_client_.get();
 }
 
 BluetoothDeviceClient*
-    MockDBusThreadManagerWithoutGMock::GetBluetoothDeviceClient() {
+    FakeDBusThreadManager::GetBluetoothDeviceClient() {
   return fake_bluetooth_device_client_.get();
 }
 
 BluetoothInputClient*
-    MockDBusThreadManagerWithoutGMock::GetBluetoothInputClient() {
+    FakeDBusThreadManager::GetBluetoothInputClient() {
   return fake_bluetooth_input_client_.get();
 }
 
 BluetoothProfileManagerClient*
-    MockDBusThreadManagerWithoutGMock::GetBluetoothProfileManagerClient() {
+    FakeDBusThreadManager::GetBluetoothProfileManagerClient() {
   return fake_bluetooth_profile_manager_client_.get();
 }
 
-CrasAudioClient* MockDBusThreadManagerWithoutGMock::GetCrasAudioClient() {
+CrasAudioClient* FakeDBusThreadManager::GetCrasAudioClient() {
   return NULL;
 }
 
-CrosDisksClient* MockDBusThreadManagerWithoutGMock::GetCrosDisksClient() {
+CrosDisksClient* FakeDBusThreadManager::GetCrosDisksClient() {
   return fake_cros_disks_client_.get();
 }
 
-CryptohomeClient* MockDBusThreadManagerWithoutGMock::GetCryptohomeClient() {
+CryptohomeClient* FakeDBusThreadManager::GetCryptohomeClient() {
   return fake_cryptohome_client_.get();
 }
 
-DebugDaemonClient* MockDBusThreadManagerWithoutGMock::GetDebugDaemonClient() {
+DebugDaemonClient* FakeDBusThreadManager::GetDebugDaemonClient() {
   NOTIMPLEMENTED();
   return NULL;
 }
 
 ShillDeviceClient*
-    MockDBusThreadManagerWithoutGMock::GetShillDeviceClient() {
+    FakeDBusThreadManager::GetShillDeviceClient() {
   return fake_shill_device_client_.get();
 }
 
 ShillIPConfigClient*
-    MockDBusThreadManagerWithoutGMock::GetShillIPConfigClient() {
+    FakeDBusThreadManager::GetShillIPConfigClient() {
   NOTIMPLEMENTED();
   return NULL;
 }
 
 ShillManagerClient*
-    MockDBusThreadManagerWithoutGMock::GetShillManagerClient() {
+    FakeDBusThreadManager::GetShillManagerClient() {
   return fake_shill_manager_client_.get();
 }
 
 ShillProfileClient*
-    MockDBusThreadManagerWithoutGMock::GetShillProfileClient() {
+    FakeDBusThreadManager::GetShillProfileClient() {
   NOTIMPLEMENTED();
   return NULL;
 }
 
 ShillServiceClient*
-    MockDBusThreadManagerWithoutGMock::GetShillServiceClient() {
+    FakeDBusThreadManager::GetShillServiceClient() {
   NOTIMPLEMENTED();
   return NULL;
 }
 
-GsmSMSClient* MockDBusThreadManagerWithoutGMock::GetGsmSMSClient() {
+GsmSMSClient* FakeDBusThreadManager::GetGsmSMSClient() {
   return fake_gsm_sms_client_.get();
 }
 
-ImageBurnerClient* MockDBusThreadManagerWithoutGMock::GetImageBurnerClient() {
+ImageBurnerClient* FakeDBusThreadManager::GetImageBurnerClient() {
   return fake_image_burner_client_.get();
 }
 
 IntrospectableClient*
-    MockDBusThreadManagerWithoutGMock::GetIntrospectableClient() {
+    FakeDBusThreadManager::GetIntrospectableClient() {
   NOTIMPLEMENTED();
   return NULL;
 }
 
 ModemMessagingClient*
-    MockDBusThreadManagerWithoutGMock::GetModemMessagingClient() {
+    FakeDBusThreadManager::GetModemMessagingClient() {
   NOTIMPLEMENTED();
   return NULL;
 }
 
 PermissionBrokerClient*
-    MockDBusThreadManagerWithoutGMock::GetPermissionBrokerClient() {
+    FakeDBusThreadManager::GetPermissionBrokerClient() {
   NOTIMPLEMENTED();
   return NULL;
 }
 
-PowerManagerClient* MockDBusThreadManagerWithoutGMock::GetPowerManagerClient() {
+PowerManagerClient* FakeDBusThreadManager::GetPowerManagerClient() {
   return fake_power_manager_client_.get();
 }
 
 PowerPolicyController*
-MockDBusThreadManagerWithoutGMock::GetPowerPolicyController() {
+FakeDBusThreadManager::GetPowerPolicyController() {
   return power_policy_controller_.get();
 }
 
 SessionManagerClient*
-    MockDBusThreadManagerWithoutGMock::GetSessionManagerClient() {
+    FakeDBusThreadManager::GetSessionManagerClient() {
   return fake_session_manager_client_.get();
 }
 
-SMSClient* MockDBusThreadManagerWithoutGMock::GetSMSClient() {
+SMSClient* FakeDBusThreadManager::GetSMSClient() {
   NOTIMPLEMENTED();
   return NULL;
 }
 
-SystemClockClient* MockDBusThreadManagerWithoutGMock::GetSystemClockClient() {
+SystemClockClient* FakeDBusThreadManager::GetSystemClockClient() {
   return fake_system_clock_client_.get();
 }
 
-UpdateEngineClient* MockDBusThreadManagerWithoutGMock::GetUpdateEngineClient() {
+UpdateEngineClient* FakeDBusThreadManager::GetUpdateEngineClient() {
   return fake_update_engine_client_.get();
 }
 
-IBusClient* MockDBusThreadManagerWithoutGMock::GetIBusClient() {
+IBusClient* FakeDBusThreadManager::GetIBusClient() {
   return mock_ibus_client_.get();
 }
 
 IBusEngineFactoryService*
-    MockDBusThreadManagerWithoutGMock::GetIBusEngineFactoryService() {
+    FakeDBusThreadManager::GetIBusEngineFactoryService() {
   return mock_ibus_engine_factory_service_.get();
 }
 
-IBusEngineService* MockDBusThreadManagerWithoutGMock::GetIBusEngineService(
+IBusEngineService* FakeDBusThreadManager::GetIBusEngineService(
     const dbus::ObjectPath& object_path) {
   return mock_ibus_engine_service_.get();
 }
 
-void MockDBusThreadManagerWithoutGMock::RemoveIBusEngineService(
+void FakeDBusThreadManager::RemoveIBusEngineService(
     const dbus::ObjectPath& object_path) {
 }
 

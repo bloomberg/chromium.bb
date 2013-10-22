@@ -407,6 +407,8 @@
       'sources': [
         'dbus/fake_cros_disks_client.cc',
         'dbus/fake_cros_disks_client.h',
+        'dbus/fake_dbus_thread_manager.cc',
+        'dbus/fake_dbus_thread_manager.h',
         'dbus/fake_power_manager_client.cc',
         'dbus/fake_power_manager_client.h',
         'dbus/fake_session_manager_client.cc',
@@ -415,8 +417,6 @@
         'dbus/fake_shill_manager_client.h',
         'dbus/fake_update_engine_client.cc',
         'dbus/fake_update_engine_client.h',
-        'dbus/mock_dbus_thread_manager_without_gmock.cc',
-        'dbus/mock_dbus_thread_manager_without_gmock.h',
         'dbus/ibus/mock_ibus_client.cc',
         'dbus/ibus/mock_ibus_client.h',
         'dbus/ibus/mock_ibus_engine_factory_service.cc',

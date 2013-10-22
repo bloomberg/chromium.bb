@@ -9,7 +9,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "chromeos/dbus/mock_dbus_thread_manager_without_gmock.h"
+#include "chromeos/dbus/fake_dbus_thread_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_utils.h"
@@ -37,9 +37,9 @@ class PeripheralBatteryObserverTest : public InProcessBrowserTest {
   virtual ~PeripheralBatteryObserverTest () {}
 
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
-    MockDBusThreadManagerWithoutGMock* mock_dbus_thread_manager =
-        new MockDBusThreadManagerWithoutGMock;
-    DBusThreadManager::InitializeForTesting(mock_dbus_thread_manager);
+    FakeDBusThreadManager* fake_dbus_thread_manager =
+        new FakeDBusThreadManager;
+    DBusThreadManager::InitializeForTesting(fake_dbus_thread_manager);
     InProcessBrowserTest::SetUpInProcessBrowserTestFixture();
   }
 

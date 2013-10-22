@@ -12,8 +12,8 @@
 #include "chrome/browser/chromeos/net/network_portal_detector.h"
 #include "chrome/browser/chromeos/net/network_portal_detector_stub.h"
 #include "chromeos/chromeos_switches.h"
+#include "chromeos/dbus/fake_dbus_thread_manager.h"
 #include "chromeos/dbus/fake_update_engine_client.h"
-#include "chromeos/dbus/mock_dbus_thread_manager_without_gmock.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -42,13 +42,13 @@ class UpdateScreenTest : public WizardInProcessBrowserTest {
 
  protected:
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
-    MockDBusThreadManagerWithoutGMock* mock_dbus_thread_manager =
-        new MockDBusThreadManagerWithoutGMock;
-    DBusThreadManager::InitializeForTesting(mock_dbus_thread_manager);
+    FakeDBusThreadManager* fake_dbus_thread_manager =
+        new FakeDBusThreadManager;
+    DBusThreadManager::InitializeForTesting(fake_dbus_thread_manager);
     WizardInProcessBrowserTest::SetUpInProcessBrowserTestFixture();
 
     fake_update_engine_client_
-        = mock_dbus_thread_manager->fake_update_engine_client();
+        = fake_dbus_thread_manager->fake_update_engine_client();
 
     // Setup network portal detector to return online state for both
     // ethernet and wifi networks. Ethernet is an active network by

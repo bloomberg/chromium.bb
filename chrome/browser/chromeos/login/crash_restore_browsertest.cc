@@ -14,8 +14,8 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/cryptohome_client.h"
+#include "chromeos/dbus/fake_dbus_thread_manager.h"
 #include "chromeos/dbus/fake_session_manager_client.h"
-#include "chromeos/dbus/mock_dbus_thread_manager_without_gmock.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -47,8 +47,8 @@ class CrashRestoreSimpleTest : public InProcessBrowserTest {
 
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
     // Redirect session_manager DBus calls to FakeSessionManagerClient.
-    MockDBusThreadManagerWithoutGMock* dbus_thread_manager =
-        new MockDBusThreadManagerWithoutGMock();
+    FakeDBusThreadManager* dbus_thread_manager =
+        new FakeDBusThreadManager();
     session_manager_client_ =
         dbus_thread_manager->fake_session_manager_client();
     DBusThreadManager::InitializeForTesting(dbus_thread_manager);

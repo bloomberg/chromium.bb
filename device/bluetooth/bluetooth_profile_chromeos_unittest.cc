@@ -6,7 +6,7 @@
 #include "chromeos/dbus/fake_bluetooth_device_client.h"
 #include "chromeos/dbus/fake_bluetooth_profile_manager_client.h"
 #include "chromeos/dbus/fake_bluetooth_profile_service_provider.h"
-#include "chromeos/dbus/mock_dbus_thread_manager_without_gmock.h"
+#include "chromeos/dbus/fake_dbus_thread_manager.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_adapter_chromeos.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
@@ -38,12 +38,11 @@ class BluetoothProfileChromeOSTest : public testing::Test {
         last_device_(NULL) {}
 
   virtual void SetUp() {
-    mock_dbus_thread_manager_ =
-        new MockDBusThreadManagerWithoutGMock();
-    DBusThreadManager::InitializeForTesting(mock_dbus_thread_manager_);
+    fake_dbus_thread_manager_ = new FakeDBusThreadManager();
+    DBusThreadManager::InitializeForTesting(fake_dbus_thread_manager_);
 
     fake_bluetooth_profile_manager_client_ =
-      mock_dbus_thread_manager_->fake_bluetooth_profile_manager_client();
+      fake_dbus_thread_manager_->fake_bluetooth_profile_manager_client();
 
     device::BluetoothAdapterFactory::GetAdapter(
         base::Bind(&BluetoothProfileChromeOSTest::AdapterCallback,
@@ -96,7 +95,7 @@ class BluetoothProfileChromeOSTest : public testing::Test {
   base::MessageLoop message_loop_;
 
   FakeBluetoothProfileManagerClient* fake_bluetooth_profile_manager_client_;
-  MockDBusThreadManagerWithoutGMock* mock_dbus_thread_manager_;
+  FakeDBusThreadManager* fake_dbus_thread_manager_;
   scoped_refptr<BluetoothAdapter> adapter_;
 
   unsigned int callback_count_;

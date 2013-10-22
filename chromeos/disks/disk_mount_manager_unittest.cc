@@ -5,7 +5,7 @@
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "chromeos/dbus/fake_cros_disks_client.h"
-#include "chromeos/dbus/mock_dbus_thread_manager_without_gmock.h"
+#include "chromeos/dbus/fake_dbus_thread_manager.h"
 #include "chromeos/disks/disk_mount_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -14,7 +14,7 @@ using chromeos::disks::DiskMountManager;
 using chromeos::CrosDisksClient;
 using chromeos::DBusThreadManager;
 using chromeos::FakeCrosDisksClient;
-using chromeos::MockDBusThreadManagerWithoutGMock;
+using chromeos::FakeDBusThreadManager;
 using testing::_;
 using testing::Field;
 using testing::InSequence;
@@ -121,11 +121,10 @@ class DiskMountManagerTest : public testing::Test {
   // Initializes disk mount manager disks and mount points.
   // Adds a test observer to the disk mount manager.
   virtual void SetUp() {
-    MockDBusThreadManagerWithoutGMock* mock_thread_manager =
-        new MockDBusThreadManagerWithoutGMock();
-    DBusThreadManager::InitializeForTesting(mock_thread_manager);
+    FakeDBusThreadManager* fake_thread_manager = new FakeDBusThreadManager();
+    DBusThreadManager::InitializeForTesting(fake_thread_manager);
 
-    fake_cros_disks_client_ = mock_thread_manager->fake_cros_disks_client();
+    fake_cros_disks_client_ = fake_thread_manager->fake_cros_disks_client();
 
     DiskMountManager::Initialize();
 
@@ -631,4 +630,3 @@ TEST_F(DiskMountManagerTest, Format_ConsecutiveFormatCalls) {
 }
 
 }  // namespace
-

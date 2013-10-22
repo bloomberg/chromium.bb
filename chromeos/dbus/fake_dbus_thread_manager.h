@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_DBUS_MOCK_DBUS_THREAD_MANAGER_WITHOUT_GMOCK_H_
-#define CHROMEOS_DBUS_MOCK_DBUS_THREAD_MANAGER_WITHOUT_GMOCK_H_
+#ifndef CHROMEOS_DBUS_FAKE_DBUS_THREAD_MANAGER_H_
+#define CHROMEOS_DBUS_FAKE_DBUS_THREAD_MANAGER_H_
 
 #include <string>
 
@@ -38,15 +38,12 @@ class MockIBusClient;
 class MockIBusEngineFactoryService;
 class MockIBusEngineService;
 
-// This class provides an another mock DBusThreadManager without gmock
-// dependency. This class is used for places where GMock is not allowed
-// (ex. ui/) or is not used.
-// TODO(haruki): Along with crbug.com/223061, we can rename this class to
-// clarify that this can also provides fakes and stubs.
-class MockDBusThreadManagerWithoutGMock : public DBusThreadManager {
+// This class provides a fake implementation of DBusThreadManager, which
+// hosts fake D-Bus clients.
+class FakeDBusThreadManager : public DBusThreadManager {
  public:
-  MockDBusThreadManagerWithoutGMock();
-  virtual ~MockDBusThreadManagerWithoutGMock();
+  FakeDBusThreadManager();
+  virtual ~FakeDBusThreadManager();
 
   virtual void AddObserver(DBusThreadManagerObserver* observer) OVERRIDE;
   virtual void RemoveObserver(DBusThreadManagerObserver* observer) OVERRIDE;
@@ -149,6 +146,7 @@ class MockDBusThreadManagerWithoutGMock : public DBusThreadManager {
     return fake_update_engine_client_.get();
   }
 
+  // TODO(komatsu): Remove IBus related code. crbug.com/275262
   MockIBusClient* mock_ibus_client() {
     return mock_ibus_client_.get();
   }
@@ -195,9 +193,9 @@ class MockDBusThreadManagerWithoutGMock : public DBusThreadManager {
   scoped_ptr<PowerPolicyController> power_policy_controller_;
   dbus::Bus* ibus_bus_;
 
-  DISALLOW_COPY_AND_ASSIGN(MockDBusThreadManagerWithoutGMock);
+  DISALLOW_COPY_AND_ASSIGN(FakeDBusThreadManager);
 };
 
 }  // namespace chromeos
 
-#endif  // CHROMEOS_DBUS_MOCK_DBUS_THREAD_MANAGER_WITHOUT_GMOCK_H_
+#endif  // CHROMEOS_DBUS_FAKE_DBUS_THREAD_MANAGER_H_

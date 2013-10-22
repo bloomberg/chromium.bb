@@ -27,7 +27,7 @@
 #include "chromeos/cryptohome/mock_async_method_caller.h"
 #include "chromeos/cryptohome/system_salt_getter.h"
 #include "chromeos/dbus/fake_cryptohome_client.h"
-#include "chromeos/dbus/mock_dbus_thread_manager_without_gmock.h"
+#include "chromeos/dbus/fake_dbus_thread_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "google_apis/gaia/mock_url_fetcher_factory.h"
 #include "net/base/net_errors.h"
@@ -54,7 +54,7 @@ class ParallelAuthenticatorTest : public testing::Test {
                 FakeCryptohomeClient::GetStubSystemSalt()))),
         user_manager_enabler_(new MockUserManager),
         mock_caller_(NULL),
-        mock_dbus_thread_manager_(new MockDBusThreadManagerWithoutGMock) {
+        fake_dbus_thread_manager_(new FakeDBusThreadManager) {
   }
 
   virtual ~ParallelAuthenticatorTest() {
@@ -67,8 +67,8 @@ class ParallelAuthenticatorTest : public testing::Test {
     mock_caller_ = new cryptohome::MockAsyncMethodCaller;
     cryptohome::AsyncMethodCaller::InitializeForTesting(mock_caller_);
 
-    // Ownership of mock_dbus_thread_manager_ is taken.
-    DBusThreadManager::InitializeForTesting(mock_dbus_thread_manager_);
+    // Ownership of fake_dbus_thread_manager_ is taken.
+    DBusThreadManager::InitializeForTesting(fake_dbus_thread_manager_);
     SystemSaltGetter::Initialize();
 
     auth_ = new ParallelAuthenticator(&consumer_);
@@ -200,7 +200,7 @@ class ParallelAuthenticatorTest : public testing::Test {
   MockConsumer consumer_;
   scoped_refptr<ParallelAuthenticator> auth_;
   scoped_ptr<TestAttemptState> state_;
-  MockDBusThreadManagerWithoutGMock* mock_dbus_thread_manager_;
+  FakeDBusThreadManager* fake_dbus_thread_manager_;
 };
 
 TEST_F(ParallelAuthenticatorTest, OnLoginSuccess) {
@@ -290,7 +290,7 @@ TEST_F(ParallelAuthenticatorTest, ResolveOwnerNeededFailedMount) {
   ExpectLoginFailure(failure);
 
   FakeCryptohomeClient* fake_cryptohome_client  =
-      mock_dbus_thread_manager_->fake_cryptohome_client();
+      fake_dbus_thread_manager_->fake_cryptohome_client();
   fake_cryptohome_client->set_unmount_result(true);
 
   CrosSettingsProvider* device_settings_provider;

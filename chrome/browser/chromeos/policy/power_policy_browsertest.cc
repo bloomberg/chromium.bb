@@ -44,9 +44,9 @@
 #include "chromeos/chromeos_paths.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/cryptohome_client.h"
+#include "chromeos/dbus/fake_dbus_thread_manager.h"
 #include "chromeos/dbus/fake_power_manager_client.h"
 #include "chromeos/dbus/fake_session_manager_client.h"
-#include "chromeos/dbus/mock_dbus_thread_manager_without_gmock.h"
 #include "chromeos/dbus/power_manager/policy.pb.h"
 #include "chromeos/dbus/power_policy_controller.h"
 #include "content/public/browser/notification_details.h"
@@ -158,7 +158,7 @@ void PowerPolicyBrowserTestBase::SetUpInProcessBrowserTestFixture() {
   MarkAsEnterpriseOwned();
 
   power_manager_client_ =
-      mock_dbus_thread_manager()->fake_power_manager_client();
+      fake_dbus_thread_manager()->fake_power_manager_client();
 }
 
 void PowerPolicyBrowserTestBase::SetUpOnMainThread() {

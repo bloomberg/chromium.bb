@@ -23,8 +23,8 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "chromeos/chromeos_switches.h"
+#include "chromeos/dbus/fake_dbus_thread_manager.h"
 #include "chromeos/dbus/fake_power_manager_client.h"
-#include "chromeos/dbus/mock_dbus_thread_manager_without_gmock.h"
 #include "chromeos/dbus/power_manager/policy.pb.h"
 #include "chromeos/dbus/power_policy_controller.h"
 #include "components/user_prefs/pref_registry_syncable.h"
@@ -51,7 +51,7 @@ class PowerPrefsTest : public testing::Test {
   bool GetCurrentAllowScreenWakeLocks() const;
 
   TestingProfileManager profile_manager_;
-  MockDBusThreadManagerWithoutGMock mock_dbus_thread_manager_;
+  FakeDBusThreadManager fake_dbus_thread_manager_;
   PowerPolicyController* power_policy_controller_;     // Not owned.
   FakePowerManagerClient* fake_power_manager_client_;  // Not owned.
 
@@ -63,9 +63,9 @@ class PowerPrefsTest : public testing::Test {
 PowerPrefsTest::PowerPrefsTest()
     : profile_manager_(TestingBrowserProcess::GetGlobal()),
       power_policy_controller_(
-          mock_dbus_thread_manager_.GetPowerPolicyController()),
+          fake_dbus_thread_manager_.GetPowerPolicyController()),
       fake_power_manager_client_(
-          mock_dbus_thread_manager_.fake_power_manager_client()) {
+          fake_dbus_thread_manager_.fake_power_manager_client()) {
 }
 
 void PowerPrefsTest::SetUp() {

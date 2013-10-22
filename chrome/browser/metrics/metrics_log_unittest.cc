@@ -38,7 +38,7 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/fake_user_manager.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
-#include "chromeos/dbus/mock_dbus_thread_manager_without_gmock.h"
+#include "chromeos/dbus/fake_dbus_thread_manager.h"
 #endif  // OS_CHROMEOS
 
 using base::TimeDelta;
@@ -176,10 +176,9 @@ class MetricsLogTest : public testing::Test {
 
   virtual void SetUp() OVERRIDE {
 #if defined(OS_CHROMEOS)
-    mock_dbus_thread_manager_ =
-        new chromeos::MockDBusThreadManagerWithoutGMock();
+    fake_dbus_thread_manager_ = new chromeos::FakeDBusThreadManager();
     chromeos::DBusThreadManager::InitializeForTesting(
-        mock_dbus_thread_manager_);
+        fake_dbus_thread_manager_);
 
     // Enable multi-profiles.
     CommandLine::ForCurrentProcess()->AppendSwitch(switches::kMultiProfiles);
@@ -208,7 +207,7 @@ class MetricsLogTest : public testing::Test {
   base::MessageLoop message_loop_;
 
 #if defined(OS_CHROMEOS)
-  chromeos::MockDBusThreadManagerWithoutGMock* mock_dbus_thread_manager_;
+  chromeos::FakeDBusThreadManager* fake_dbus_thread_manager_;
   scoped_ptr<base::FieldTrialList> field_trial_list_;
 #endif  // OS_CHROMEOS
 };

@@ -10,7 +10,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "chrome/browser/chromeos/policy/device_policy_builder.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "chromeos/dbus/mock_dbus_thread_manager_without_gmock.h"
+#include "chromeos/dbus/fake_dbus_thread_manager.h"
 
 namespace chromeos {
 class FakeSessionManagerClient;
@@ -64,12 +64,12 @@ class DevicePolicyCrosBrowserTest : public InProcessBrowserTest {
   // recently changed).
   void RefreshDevicePolicy();
 
-  chromeos::MockDBusThreadManagerWithoutGMock* mock_dbus_thread_manager() {
-    return mock_dbus_thread_manager_;
+  chromeos::FakeDBusThreadManager* fake_dbus_thread_manager() {
+    return fake_dbus_thread_manager_;
   }
 
   chromeos::FakeSessionManagerClient* session_manager_client() {
-    return mock_dbus_thread_manager_->fake_session_manager_client();
+    return fake_dbus_thread_manager_->fake_session_manager_client();
   }
 
   DevicePolicyBuilder* device_policy() { return test_helper_.device_policy(); }
@@ -77,8 +77,8 @@ class DevicePolicyCrosBrowserTest : public InProcessBrowserTest {
  private:
   DevicePolicyCrosTestHelper test_helper_;
 
-  // MockDBusThreadManagerWithoutGMock uses FakeSessionManagerClient.
-  chromeos::MockDBusThreadManagerWithoutGMock* mock_dbus_thread_manager_;
+  // FakeDBusThreadManager uses FakeSessionManagerClient.
+  chromeos::FakeDBusThreadManager* fake_dbus_thread_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(DevicePolicyCrosBrowserTest);
 };
