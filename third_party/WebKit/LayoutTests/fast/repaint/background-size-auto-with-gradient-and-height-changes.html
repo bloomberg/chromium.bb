@@ -6,13 +6,13 @@
 <style>
 #outer {
     padding-top: 200px;
-    /* background-size is implicitly set to initial via the background shorthand. */
-	background:-webkit-gradient(
-	    linear, 
-	    left top, 
-	    left bottom, 
-	    color-stop(0%, rgba(255,255,0,0)), color-stop(100%, rgba(0,0,0,1))
-	);
+    background: -webkit-gradient(
+        linear,
+        left top,
+        left bottom,
+        color-stop(0%, rgba(255,255,0,0)), color-stop(100%, rgba(0,0,0,1))
+    );
+    background-size: auto;
 }
 
 #inner {
@@ -21,17 +21,17 @@
 </style>
 
 <script>
-description("This test verifies that gradient background gets repainted properly after child box height change.");
+description('This test verifies that gradient background gets repainted properly after child box height change.');
 
 function start() {
-    window.setTimeout(function() { 
-        document.getElementById('inner').style.height = 300 + 'px'; 
+    window.setTimeout(function() {
+        document.getElementById('inner').style.height = '300px';
         window.setTimeout(logRepaints, 200);
-    }, 0); 
+    }, 0);
 
     if (!window.testRunner || !window.internals)
         return;
-        
+
     window.internals.startTrackingRepaints(document);
     window.testRunner.display();
 }
@@ -39,7 +39,7 @@ function start() {
 function logRepaints() {
     if (!window.internals)
         return;
-        
+
     repaintRects = window.internals.repaintRectsAsText(document);
     window.internals.stopTrackingRepaints(document);
     shouldNotBe("repaintRects.indexOf('500')", "-1");
