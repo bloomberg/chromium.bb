@@ -107,3 +107,6 @@ webexposed/stableOnly [ WontFix ]
 
 # We only run it through the virtual linux-subpixel test suite.
 platform/linux/fast/text/subpixel/chromium-linux-text-subpixel-positioning.html [ WontFix ]
+
+# We only run it through the virtual gpu test suite.
+fast/canvas/canvas-lost-gpu-context.html [ WontFix ]
