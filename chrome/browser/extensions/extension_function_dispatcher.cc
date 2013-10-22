@@ -32,7 +32,8 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
-#include "content/public/browser/render_view_host_observer.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/common/result_codes.h"
 #include "ipc/ipc_message.h"
@@ -145,30 +146,34 @@ void IOThreadResponseCallback(
 }  // namespace
 
 class ExtensionFunctionDispatcher::UIThreadResponseCallbackWrapper
-    : public content::RenderViewHostObserver {
+    : public content::WebContentsObserver {
  public:
   UIThreadResponseCallbackWrapper(
       const base::WeakPtr<ExtensionFunctionDispatcher>& dispatcher,
       RenderViewHost* render_view_host)
-      : content::RenderViewHostObserver(render_view_host),
+      : content::WebContentsObserver(
+            content::WebContents::FromRenderViewHost(render_view_host)),
         dispatcher_(dispatcher),
+        render_view_host_(render_view_host),
         weak_ptr_factory_(this) {
   }
 
   virtual ~UIThreadResponseCallbackWrapper() {
   }
 
-  // content::RenderViewHostObserver overrides.
-  virtual void RenderViewHostDestroyed(
+  // content::WebContentsObserver overrides.
+  virtual void RenderViewDeleted(
       RenderViewHost* render_view_host) OVERRIDE {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    if (render_view_host != render_view_host_)
+      return;
+
     if (dispatcher_.get()) {
       dispatcher_->ui_thread_response_callback_wrappers_
           .erase(render_view_host);
     }
 
-    // This call will delete |this|.
-    content::RenderViewHostObserver::RenderViewHostDestroyed(render_view_host);
+    delete this;
   }
 
   ExtensionFunction::ResponseCallback CreateCallback(int request_id) {
@@ -184,12 +189,13 @@ class ExtensionFunctionDispatcher::UIThreadResponseCallbackWrapper
                                     const base::ListValue& results,
                                     const std::string& error) {
     CommonResponseCallback(
-        render_view_host(), render_view_host()->GetRoutingID(),
-        render_view_host()->GetProcess()->GetHandle(), request_id, type,
+        render_view_host_, render_view_host_->GetRoutingID(),
+        render_view_host_->GetProcess()->GetHandle(), request_id, type,
         results, error);
   }
 
   base::WeakPtr<ExtensionFunctionDispatcher> dispatcher_;
+  content::RenderViewHost* render_view_host_;
   base::WeakPtrFactory<UIThreadResponseCallbackWrapper> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(UIThreadResponseCallbackWrapper);
