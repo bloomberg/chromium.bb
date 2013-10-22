@@ -312,6 +312,7 @@ input {
 }
 
 .ios-keyboard-visible #scrolling-container {
-  bottom: 0;
+  /* Should be 0, but that breaks scrolling -- see crbug.com/292715. */
+  bottom: -1px;
 }
 </if> /* is_ios */
