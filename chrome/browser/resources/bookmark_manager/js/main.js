@@ -153,6 +153,8 @@ function updateHash() {
  *     displayed specified folder.
  */
 function navigateTo(id, callback) {
+  updateHash(id);
+
   if (list.parentId == id) {
     callback();
     return;

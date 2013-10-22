@@ -45,7 +45,7 @@ cr.define('cr.ui', function() {
       menu.hidden = false;
       menu.contextElement = e.currentTarget;
 
-      // when the menu is shown we steal all keyboard events.
+      // When the menu is shown we steal a lot of events.
       var doc = menu.ownerDocument;
       var win = doc.defaultView;
       this.showingEvents_.add(doc, 'keydown', this, true);
