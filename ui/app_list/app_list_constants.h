@@ -35,6 +35,7 @@ APP_LIST_EXPORT extern const int kOverscrollPageTransitionDurationMs;
 
 APP_LIST_EXPORT extern const int kPreferredCols;
 APP_LIST_EXPORT extern const int kPreferredRows;
+APP_LIST_EXPORT extern const int kPreferredIconDimension;
 
 APP_LIST_EXPORT extern const ui::ResourceBundle::FontStyle kItemTextFontStyle;
 

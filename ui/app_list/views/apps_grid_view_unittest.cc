@@ -106,6 +106,7 @@ class AppsGridViewTest : public testing::Test {
     apps_grid_view_->SetLayout(kIconDimension, kCols, kRows);
     apps_grid_view_->SetBoundsRect(gfx::Rect(gfx::Size(kWidth, kHeight)));
     apps_grid_view_->SetModel(model_.get());
+    apps_grid_view_->SetApps(model_->apps());
 
     test_api_.reset(new AppsGridViewTestApi(apps_grid_view_.get()));
   }

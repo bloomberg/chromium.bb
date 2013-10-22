@@ -15,7 +15,7 @@ const int kIconDimension = 48;
 const size_t kNumTopApps = 4;
 const int kItemIconDimension = 16;
 
-// Genearats the folder icon with the top 4 child item icons laid in 2x2 tile.
+// Generates the folder icon with the top 4 child item icons laid in 2x2 tile.
 class FolderImageSource : public gfx::CanvasImageSource {
  public:
   typedef std::vector<gfx::ImageSkia> Icons;
@@ -45,11 +45,11 @@ class FolderImageSource : public gfx::CanvasImageSource {
   virtual void Draw(gfx::Canvas* canvas) OVERRIDE {
     // Draw folder circle.
     gfx::Point center = gfx::Point(size().width() / 2 , size().height() / 2);
-    const SkColor kCirclColor = SkColorSetRGB(0xE1, 0xE1, 0xE1);
+    const SkColor kCircleColor = SkColorSetRGB(0xE1, 0xE1, 0xE1);
     SkPaint paint;
     paint.setStyle(SkPaint::kFill_Style);
     paint.setAntiAlias(true);
-    paint.setColor(kCirclColor);
+    paint.setColor(kCircleColor);
     canvas->DrawCircle(center, size().width() / 2, paint);
 
     if (icons_.size() == 0)
@@ -144,8 +144,7 @@ std::string AppListFolderItem::GetSortOrder() const {
 }
 
 void AppListFolderItem::Activate(int event_flags) {
-  // TODO(stevenjb/jennyz): Implement.
-  VLOG(1) << "AppListFolderItem::Activate";
+  // Folder handling is implemented by the View, so do nothing.
 }
 
 // static
