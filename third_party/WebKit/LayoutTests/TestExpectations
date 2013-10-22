@@ -43,11 +43,6 @@ crbug.com/260129 [ Mac Release ] fast/events/scrollbar-double-click.html [ Failu
 crbug.com/259547 virtual/gpu/fast/canvas/canvas-blend-image.html [ Skip ]
 crbug.com/259547 virtual/gpu/fast/canvas/canvas-blend-solid.html [ Skip ]
 
-crbug.com/288574 fast/canvas/canvas-ellipse-circumference.html [ NeedsRebaseline ]
-crbug.com/288574 virtual/gpu/fast/canvas/canvas-ellipse-circumference.html [ NeedsRebaseline ]
-crbug.com/288574 fast/canvas/canvas-ellipse-circumference-fill.html [ NeedsRebaseline ]
-crbug.com/288574 virtual/gpu/fast/canvas/canvas-ellipse-circumference-fill.html [ NeedsRebaseline ]
-
 crbug.com/289002 http/tests/security/frame-loading-via-document-write.html [ Pass Failure ]
 
 # Unskip after implementing DRT support for setDefersLoading and goBack.
