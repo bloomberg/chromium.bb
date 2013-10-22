@@ -29,10 +29,12 @@ void HardwareDisplayControllerOzone::SetControllerInfo(
     DrmWrapperOzone* drm,
     uint32_t connector_id,
     uint32_t crtc_id,
+    uint32_t dpms_property_id,
     drmModeModeInfo mode) {
   drm_ = drm;
   connector_id_ = connector_id;
   crtc_id_ = crtc_id;
+  dpms_property_id_ = dpms_property_id;
   mode_ = mode;
   saved_crtc_ = drm_->GetCrtc(crtc_id_);
   state_ = UNINITIALIZED;
@@ -95,6 +97,11 @@ bool HardwareDisplayControllerOzone::SchedulePageFlip() {
     } else {
       state_ = INITIALIZED;
     }
+
+    if (dpms_property_id_)
+      drm_->ConnectorSetProperty(connector_id_,
+                                 dpms_property_id_,
+                                 DRM_MODE_DPMS_ON);
   }
 
   if (!drm_->PageFlip(crtc_id_,
@@ -104,6 +111,7 @@ bool HardwareDisplayControllerOzone::SchedulePageFlip() {
     LOG(ERROR) << "Cannot page flip: " << strerror(errno);
     return false;
   }
+
   return true;
 }
 

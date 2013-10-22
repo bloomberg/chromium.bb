@@ -23,30 +23,32 @@ const uint32_t kConnectorId = 1;
 // Mock CRTC ID.
 const uint32_t kCrtcId = 1;
 
+const uint32_t kDPMSPropertyId = 1;
+
 // The real DrmWrapper makes actual DRM calls which we can't use in unit tests.
 class MockDrmWrapperOzone : public gfx::DrmWrapperOzone {
  public:
   MockDrmWrapperOzone(int fd) : DrmWrapperOzone(""),
-                                get_crtc_call_count(0),
-                                free_crtc_call_count(0),
-                                restore_crtc_call_count(0),
-                                add_framebuffer_call_count(0),
-                                remove_framebuffer_call_count(0),
-                                set_crtc_expectation(true),
-                                add_framebuffer_expectation(true),
-                                page_flip_expectation(true) {
+                                get_crtc_call_count_(0),
+                                free_crtc_call_count_(0),
+                                restore_crtc_call_count_(0),
+                                add_framebuffer_call_count_(0),
+                                remove_framebuffer_call_count_(0),
+                                set_crtc_expectation_(true),
+                                add_framebuffer_expectation_(true),
+                                page_flip_expectation_(true) {
     fd_ = fd;
   }
 
   virtual ~MockDrmWrapperOzone() { fd_ = -1; }
 
   virtual drmModeCrtc* GetCrtc(uint32_t crtc_id) OVERRIDE {
-    get_crtc_call_count++;
+    get_crtc_call_count_++;
     return new drmModeCrtc;
   }
 
   virtual void FreeCrtc(drmModeCrtc* crtc) OVERRIDE {
-    free_crtc_call_count++;
+    free_crtc_call_count_++;
     delete crtc;
   }
 
@@ -54,11 +56,11 @@ class MockDrmWrapperOzone : public gfx::DrmWrapperOzone {
                        uint32_t framebuffer,
                        uint32_t* connectors,
                        drmModeModeInfo* mode) OVERRIDE {
-    return set_crtc_expectation;
+    return set_crtc_expectation_;
   }
 
   virtual bool SetCrtc(drmModeCrtc* crtc, uint32_t* connectors) OVERRIDE {
-    restore_crtc_call_count++;
+    restore_crtc_call_count_++;
     return true;
   }
 
@@ -68,63 +70,67 @@ class MockDrmWrapperOzone : public gfx::DrmWrapperOzone {
                               uint32_t stride,
                               uint32_t handle,
                               uint32_t* framebuffer) OVERRIDE {
-    add_framebuffer_call_count++;
-    return add_framebuffer_expectation;
+    add_framebuffer_call_count_++;
+    return add_framebuffer_expectation_;
   }
 
   virtual bool RemoveFramebuffer(uint32_t framebuffer) OVERRIDE {
-    remove_framebuffer_call_count++;
+    remove_framebuffer_call_count_++;
     return true;
   }
 
   virtual bool PageFlip(uint32_t crtc_id,
                         uint32_t framebuffer,
                         void* data) OVERRIDE {
-    return page_flip_expectation;
+    return page_flip_expectation_;
   }
 
+  virtual bool ConnectorSetProperty(uint32_t connector_id,
+                                    uint32_t property_id,
+                                    uint64_t value) OVERRIDE { return true; }
+
   int get_get_crtc_call_count() const {
-    return get_crtc_call_count;
+    return get_crtc_call_count_;
   }
 
   int get_free_crtc_call_count() const {
-    return free_crtc_call_count;
+    return free_crtc_call_count_;
   }
 
   int get_restore_crtc_call_count() const {
-    return restore_crtc_call_count;
+    return restore_crtc_call_count_;
   }
 
   int get_add_framebuffer_call_count() const {
-    return add_framebuffer_call_count;
+    return add_framebuffer_call_count_;
   }
 
   int get_remove_framebuffer_call_count() const {
-    return remove_framebuffer_call_count;
+    return remove_framebuffer_call_count_;
   }
 
   void set_set_crtc_expectation(bool state) {
-    set_crtc_expectation = state;
+    set_crtc_expectation_ = state;
   }
 
   void set_add_framebuffer_expectation(bool state) {
-    add_framebuffer_expectation = state;
+    add_framebuffer_expectation_ = state;
   }
 
   void set_page_flip_expectation(bool state) {
-    page_flip_expectation = state;
+    page_flip_expectation_ = state;
   }
 
  private:
-  int get_crtc_call_count;
-  int free_crtc_call_count;
-  int restore_crtc_call_count;
-  int add_framebuffer_call_count;
-  int remove_framebuffer_call_count;
+  int get_crtc_call_count_;
+  int free_crtc_call_count_;
+  int restore_crtc_call_count_;
+  int add_framebuffer_call_count_;
+  int remove_framebuffer_call_count_;
 
-  bool set_crtc_expectation;
-  bool add_framebuffer_expectation;
-  bool page_flip_expectation;
+  bool set_crtc_expectation_;
+  bool add_framebuffer_expectation_;
+  bool page_flip_expectation_;
 
   DISALLOW_COPY_AND_ASSIGN(MockDrmWrapperOzone);
 };
@@ -189,7 +195,7 @@ TEST_F(HardwareDisplayControllerOzoneTest, CheckInitialState) {
 TEST_F(HardwareDisplayControllerOzoneTest,
        CheckStateAfterControllerIsInitialized) {
   controller_->SetControllerInfo(
-      drm_.get(), kConnectorId, kCrtcId, kDefaultMode);
+      drm_.get(), kConnectorId, kCrtcId, kDPMSPropertyId, kDefaultMode);
 
   EXPECT_EQ(1, drm_->get_get_crtc_call_count());
   EXPECT_EQ(gfx::HardwareDisplayControllerOzone::UNINITIALIZED,
@@ -198,7 +204,7 @@ TEST_F(HardwareDisplayControllerOzoneTest,
 
 TEST_F(HardwareDisplayControllerOzoneTest, CheckStateAfterSurfaceIsBound) {
   controller_->SetControllerInfo(
-      drm_.get(), kConnectorId, kCrtcId, kDefaultMode);
+      drm_.get(), kConnectorId, kCrtcId, kDPMSPropertyId, kDefaultMode);
   scoped_ptr<gfx::SoftwareSurfaceOzone> surface(
       new MockSoftwareSurfaceOzone(controller_.get()));
 
@@ -214,7 +220,7 @@ TEST_F(HardwareDisplayControllerOzoneTest, CheckStateIfBindingFails) {
   drm_->set_add_framebuffer_expectation(false);
 
   controller_->SetControllerInfo(
-      drm_.get(), kConnectorId, kCrtcId, kDefaultMode);
+      drm_.get(), kConnectorId, kCrtcId, kDPMSPropertyId, kDefaultMode);
   scoped_ptr<gfx::SoftwareSurfaceOzone> surface(
       new MockSoftwareSurfaceOzone(controller_.get()));
 
@@ -228,7 +234,7 @@ TEST_F(HardwareDisplayControllerOzoneTest, CheckStateIfBindingFails) {
 
 TEST_F(HardwareDisplayControllerOzoneTest, CheckStateAfterPageFlip) {
   controller_->SetControllerInfo(
-      drm_.get(), kConnectorId, kCrtcId, kDefaultMode);
+      drm_.get(), kConnectorId, kCrtcId, kDPMSPropertyId, kDefaultMode);
   scoped_ptr<gfx::SoftwareSurfaceOzone> surface(
       new MockSoftwareSurfaceOzone(controller_.get()));
 
@@ -245,7 +251,7 @@ TEST_F(HardwareDisplayControllerOzoneTest, CheckStateIfModesetFails) {
   drm_->set_set_crtc_expectation(false);
 
   controller_->SetControllerInfo(
-      drm_.get(), kConnectorId, kCrtcId, kDefaultMode);
+      drm_.get(), kConnectorId, kCrtcId, kDPMSPropertyId, kDefaultMode);
   scoped_ptr<gfx::SoftwareSurfaceOzone> surface(
       new MockSoftwareSurfaceOzone(controller_.get()));
 
@@ -262,7 +268,7 @@ TEST_F(HardwareDisplayControllerOzoneTest, CheckStateIfPageFlipFails) {
   drm_->set_page_flip_expectation(false);
 
   controller_->SetControllerInfo(
-      drm_.get(), kConnectorId, kCrtcId, kDefaultMode);
+      drm_.get(), kConnectorId, kCrtcId, kDPMSPropertyId, kDefaultMode);
   scoped_ptr<gfx::SoftwareSurfaceOzone> surface(
       new MockSoftwareSurfaceOzone(controller_.get()));
 
@@ -277,7 +283,7 @@ TEST_F(HardwareDisplayControllerOzoneTest, CheckStateIfPageFlipFails) {
 
 TEST_F(HardwareDisplayControllerOzoneTest, CheckProperDestruction) {
   controller_->SetControllerInfo(
-      drm_.get(), kConnectorId, kCrtcId, kDefaultMode);
+      drm_.get(), kConnectorId, kCrtcId, kDPMSPropertyId, kDefaultMode);
   scoped_ptr<gfx::SoftwareSurfaceOzone> surface(
       new MockSoftwareSurfaceOzone(controller_.get()));
 

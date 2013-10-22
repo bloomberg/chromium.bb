@@ -83,4 +83,11 @@ bool DrmWrapperOzone::PageFlip(uint32_t crtc_id,
                           data);
 }
 
+bool DrmWrapperOzone::ConnectorSetProperty(uint32_t connector_id,
+                                           uint32_t property_id,
+                                           uint64_t value) {
+  CHECK(fd_ >= 0);
+  return !drmModeConnectorSetProperty(fd_, connector_id, property_id, value);
+}
+
 }  // namespace gfx

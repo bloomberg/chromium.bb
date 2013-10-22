@@ -25,6 +25,9 @@ const uint32_t kConnectorId = 1;
 // Mock CRTC ID.
 const uint32_t kCrtcId = 1;
 
+// Mock DPMS property ID.
+const uint32_t kDPMSPropertyId = 1;
+
 class MockDrmWrapperOzone : public gfx::DrmWrapperOzone {
  public:
   MockDrmWrapperOzone() : DrmWrapperOzone(""), id_(1) { fd_ = kFd; }
@@ -54,6 +57,9 @@ class MockDrmWrapperOzone : public gfx::DrmWrapperOzone {
                         void* data) OVERRIDE {
     return true;
   }
+  virtual bool ConnectorSetProperty(uint32_t connector_id,
+                                    uint32_t property_id,
+                                    uint64_t value) OVERRIDE { return true; }
 
  private:
   int id_;
@@ -127,7 +133,7 @@ void SoftwareSurfaceOzoneTest::SetUp() {
   drm_.reset(new MockDrmWrapperOzone());
   controller_.reset(new gfx::HardwareDisplayControllerOzone());
   controller_->SetControllerInfo(
-      drm_.get(), kConnectorId, kCrtcId, kDefaultMode);
+      drm_.get(), kConnectorId, kCrtcId, kDPMSPropertyId, kDefaultMode);
 
   surface_.reset(new MockSoftwareSurfaceOzone(controller_.get()));
 }

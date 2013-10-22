@@ -63,6 +63,12 @@ class DrmWrapperOzone {
   // will receive when processing the pageflip event.
   virtual bool PageFlip(uint32_t crtc_id, uint32_t framebuffer, void* data);
 
+  // Sets the value of property with ID |property_id| to |value|. The property
+  // is applied to the connector with ID |connector_id|.
+  virtual bool ConnectorSetProperty(uint32_t connector_id,
+                                    uint32_t property_id,
+                                    uint64_t value);
+
   int get_fd() const { return fd_; }
 
  protected:

@@ -110,6 +110,7 @@ class HardwareDisplayControllerOzone {
   void SetControllerInfo(DrmWrapperOzone* drm,
                          uint32_t connector_id,
                          uint32_t crtc_id,
+                         uint32_t dpms_property_id,
                          drmModeModeInfo mode);
 
   // Associate the HDCO with a surface implementation and initialize it.
@@ -150,6 +151,8 @@ class HardwareDisplayControllerOzone {
   uint32_t connector_id_;
 
   uint32_t crtc_id_;
+
+  uint32_t dpms_property_id_;
 
   // TODO(dnicoara) Need to store all the modes.
   drmModeModeInfo mode_;

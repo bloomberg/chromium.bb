@@ -26,6 +26,8 @@ const uint32_t kConnectorId = 1;
 // Mock CRTC ID.
 const uint32_t kCrtcId = 1;
 
+const uint32_t kDPMSPropertyId = 1;
+
 const gfx::AcceleratedWidget kDefaultWidgetHandle = 1;
 
 // The real DrmWrapper makes actual DRM calls which we can't use in unit tests.
@@ -76,6 +78,10 @@ class MockDrmWrapperOzone : public gfx::DrmWrapperOzone {
         ->SwapBuffers();
     return page_flip_expectation_;
   }
+
+  virtual bool ConnectorSetProperty(uint32_t connector_id,
+                                    uint32_t property_id,
+                                    uint64_t value) OVERRIDE { return true; }
 
   void set_add_framebuffer_expectation(bool state) {
     add_framebuffer_expectation_ = state;
@@ -171,6 +177,7 @@ class MockSoftwareSurfaceFactoryOzone
       controller->SetControllerInfo(drm,
                                     kConnectorId,
                                     kCrtcId,
+                                    kDPMSPropertyId,
                                     kDefaultMode);
       return true;
     } else {
