@@ -273,9 +273,8 @@ IN_PROC_BROWSER_TEST_F(PluginTest, MAYBE(SelfDeletePluginInNewStream)) {
   LoadAndWait(GetURL("self_delete_plugin_stream.html"));
 }
 
-// This test asserts on Mac in plugin_host in the NPNVWindowNPObject case.
-#if !(defined(OS_MACOSX) && !defined(NDEBUG))
-// If this test flakes use http://crbug.com/95558.
+// This test is a flaky assert on all platforms: http://crbug.com/95558
+#if !defined(NDEBUG)
 IN_PROC_BROWSER_TEST_F(PluginTest, MAYBE(DeletePluginInDeallocate)) {
   LoadAndWait(GetURL("plugin_delete_in_deallocate.html"));
 }
