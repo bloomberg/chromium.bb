@@ -58,7 +58,9 @@ def limits(cls):
   lims = {}
   for cl in cls:
     for k in cl.keys():
-      lims[k] = max(lims.get(k, 0), len(str(cl[k])))
+      # Use %s rather than str() to avoid codec issues.
+      # We also do this so we can format integers.
+      lims[k] = max(lims.get(k, 0), len('%s' % cl[k]))
   return lims
 
 
