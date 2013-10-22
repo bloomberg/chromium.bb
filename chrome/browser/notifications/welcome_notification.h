@@ -39,8 +39,14 @@ class WelcomeNotification {
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* prefs);
 
  private:
+
+  enum PopUpRequest {
+    POP_UP_HIDDEN = 0,
+    POP_UP_SHOWN = 1,
+  };
+
   // Unconditionally shows the welcome notification.
-  void ShowWelcomeNotification();
+  void ShowWelcomeNotification(PopUpRequest popUpRequest);
 
   // Hides the welcome notification.
   void HideWelcomeNotification();

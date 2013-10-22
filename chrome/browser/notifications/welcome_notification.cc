@@ -81,8 +81,19 @@ void WelcomeNotification::ShowWelcomeNotificationIfNecessary(
     const Notification& notification) {
   if (notification.notifier_id().id == kChromeNowExtensionID) {
     PrefService* pref_service = profile_->GetPrefs();
-    if (!pref_service->GetBoolean(prefs::kWelcomeNotificationDismissed))
-      ShowWelcomeNotification();
+    if (!pref_service->GetBoolean(prefs::kWelcomeNotificationDismissed)) {
+      PopUpRequest popUpRequest =
+          pref_service->GetBoolean(
+              prefs::kWelcomeNotificationPreviouslyPoppedUp)
+          ? POP_UP_HIDDEN
+          : POP_UP_SHOWN;
+      if (popUpRequest == POP_UP_SHOWN) {
+        pref_service->SetBoolean(
+            prefs::kWelcomeNotificationPreviouslyPoppedUp, true);
+      }
+
+      ShowWelcomeNotification(popUpRequest);
+    }
   }
 }
 
@@ -93,9 +104,13 @@ void WelcomeNotification::RegisterProfilePrefs(
       prefs::kWelcomeNotificationDismissed,
       false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  prefs->RegisterBooleanPref(
+      prefs::kWelcomeNotificationPreviouslyPoppedUp,
+      false,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
-void WelcomeNotification::ShowWelcomeNotification() {
+void WelcomeNotification::ShowWelcomeNotification(PopUpRequest popUpRequest) {
   message_center::RichNotificationData rich_notification_data;
   rich_notification_data.priority = 2;
 
@@ -117,6 +132,10 @@ void WelcomeNotification::ShowWelcomeNotification() {
             rich_notification_data,
             new WelcomeNotificationDelegate(
                 welcome_notification_id_, profile_)));
+
+    if (popUpRequest == POP_UP_HIDDEN)
+      message_center_notification->set_shown_as_popup(true);
+
     message_center_->AddNotification(message_center_notification.Pass());
   }
 }

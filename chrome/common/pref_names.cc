@@ -1208,10 +1208,6 @@ const char kMessageCenterDisabledSystemComponentIds[] =
 extern const char kMessageCenterEnabledSyncNotifierIds[] =
     "message_center.enabled_sync_notifier_ids";
 
-// Boolean pref indicating the welcome notification was dismissed by the user.
-extern const char kWelcomeNotificationDismissed[] =
-    "message_center.welcome_notification_dismissed";
-
 // List pref containing synced notification sending services that are currently
 // enabled.
 extern const char kEnabledSyncedNotificationSendingServices[] =
@@ -1226,6 +1222,14 @@ extern const char kInitializedSyncedNotificationSendingServices[] =
 // Notification feature.
 extern const char kSyncedNotificationFirstRun[] =
     "synced_notification.first_run";
+
+// Boolean pref indicating the welcome notification was dismissed by the user.
+extern const char kWelcomeNotificationDismissed[] =
+    "message_center.welcome_notification_dismissed";
+
+// Boolean pref indicating the welcome notification was previously popped up.
+extern const char kWelcomeNotificationPreviouslyPoppedUp[] =
+    "message_center.welcome_notification_previously_popped_up";
 
 // Dictionary pref that keeps track of per-extension settings. The keys are
 // extension ids.
