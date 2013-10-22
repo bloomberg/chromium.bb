@@ -1925,6 +1925,15 @@ menuitem#thumbnail-view[lead]:not([disabled]) {
   display: none;
 }
 
+#conflict-confirm-dialog .apply-all-line {
+  margin: 8px;
+  text-align: end;
+}
+
+#conflict-confirm-dialog input {
+  width: auto;
+}
+
 /* Progress center */
 
 #progress-center {

@@ -69,6 +69,12 @@ var FileManagerUI = function(element, dialogType) {
   this.suggestAppsDialog = null;
 
   /**
+   * Conflict dialog.
+   * @type {ConflictDialog}
+   */
+  this.conflictDialog = null;
+
+  /**
    * Search box.
    * @type {SearchBox}
    */
@@ -184,6 +190,7 @@ FileManagerUI.prototype.initDialogs = function() {
       new cr.filebrowser.DefaultActionDialog(this.element_);
   this.suggestAppsDialog = new SuggestAppsDialog(
       this.element_, appState.suggestAppsDialogState || {});
+  this.conflictDialog = new ConflictDialog(this.element_);
 };
 
 /**
