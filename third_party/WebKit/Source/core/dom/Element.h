@@ -472,7 +472,7 @@ public:
     virtual void didAddShadowRoot(ShadowRoot&);
     ShadowRoot* userAgentShadowRoot() const;
     ShadowRoot* ensureUserAgentShadowRoot();
-    virtual const AtomicString& shadowPseudoId() const { return !part().isEmpty() ? part() : pseudo(); }
+    const AtomicString& shadowPseudoId() const;
 
     RenderStyle* computedStyle(PseudoId = NOPSEUDO);
 
@@ -874,6 +874,15 @@ inline const AtomicString& Element::idForStyleResolution() const
 {
     ASSERT(hasID());
     return elementData()->idForStyleResolution();
+}
+
+inline const AtomicString& Element::shadowPseudoId() const
+{
+    // FIXME: We should remove both part() and pseudo(), neither are in the new spec.
+    const AtomicString& part = this->part();
+    if (!part.isEmpty())
+        return part;
+    return pseudo();
 }
 
 inline bool Element::isIdAttributeName(const QualifiedName& attributeName) const
