@@ -168,6 +168,7 @@ void DeviceLocalAccountPolicyServiceTestBase::SetUp() {
 }
 
 void DeviceLocalAccountPolicyServiceTestBase::TearDown() {
+  service_.reset();
   extension_cache_task_runner_->RunUntilIdle();
   chromeos::DeviceSettingsTestBase::TearDown();
 }
@@ -799,6 +800,7 @@ void DeviceLocalAccountPolicyProviderTest::SetUp() {
 void DeviceLocalAccountPolicyProviderTest::TearDown() {
   provider_->RemoveObserver(&provider_observer_);
   provider_->Shutdown();
+  provider_.reset();
   DeviceLocalAccountPolicyServiceTestBase::TearDown();
 }
 
