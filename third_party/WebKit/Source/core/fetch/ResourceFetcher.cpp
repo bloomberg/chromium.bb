@@ -1052,20 +1052,6 @@ void ResourceFetcher::decrementRequestCount(const Resource* res)
 
 void ResourceFetcher::preload(Resource::Type type, FetchRequest& request, const String& charset)
 {
-    bool delaySubresourceLoad = true;
-    delaySubresourceLoad = false;
-    if (delaySubresourceLoad) {
-        // FIXME: It seems wrong to poke body()->renderer() here.
-        bool hasRendering = m_document->body() && m_document->body()->renderer();
-        bool canBlockParser = type == Resource::Script || type == Resource::CSSStyleSheet;
-        if (!hasRendering && !canBlockParser) {
-            // Don't preload subresources that can't block the parser before we have something to draw.
-            // This helps prevent preloads from delaying first display when bandwidth is limited.
-            PendingPreload pendingPreload = { type, request, charset };
-            m_pendingPreloads.append(pendingPreload);
-            return;
-        }
-    }
     requestPreload(type, request, charset);
 }
 
