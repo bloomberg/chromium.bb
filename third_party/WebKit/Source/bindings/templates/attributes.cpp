@@ -136,6 +136,9 @@ static void {{attribute.name}}AttributeSetter{{world_suffix}}(v8::Local<v8::Stri
     if (!({{attribute.enum_validation_expression}}))
         return;
     {% endif %}
+    {% if attribute.is_reflect %}
+    CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
+    {% endif %}
     {% if attribute.is_setter_raises_exception %}
     ExceptionState es(info.GetIsolate());
     {% endif %}
@@ -172,6 +175,9 @@ static void {{attribute.name}}AttributeSetterCallback{{world_suffix}}(v8::Local<
         v8::Handle<v8::Value> loggerArg[] = { jsValue };
         contextData->activityLogger()->log("{{interface_name}}.{{attribute.name}}", 1, &loggerArg[0], "Setter");
     }
+    {% endif %}
+    {% if attribute.is_reflect %}
+    CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
     {% endif %}
     {% if attribute.has_custom_setter %}
     {{v8_class_name}}::{{attribute.name}}AttributeSetterCustom(name, jsValue, info);

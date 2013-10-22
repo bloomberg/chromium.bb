@@ -137,20 +137,21 @@ interface TestObjectPython {
     [ActivityLogging=GetterForAllWorlds, PerWorldBindings] attribute long activityLoggingGetterPerWorldBindingsLongAttribute;
     [ActivityLogging=GetterForIsolatedWorlds, PerWorldBindings] attribute long activityLoggingGetterForIsolatedWorldsPerWorldBindingsLongAttribute;
     [RaisesException] attribute long raisesExceptionLongAttribute;
-    [Reflect] readonly attribute TestInterface reflectReadonlyTestInterfaceAttribute;
-    [Reflect=reflectedNameAttribute] readonly attribute TestInterface reflectReflectedNameAttributeReadonlyTestAttribute;
-    // [Reflect] special types: special getters or range checking for unsigned
-    [Reflect] readonly attribute boolean reflectReadonlyBooleanAttribute;
-    [Reflect] readonly attribute long reflectReadonlyLongAttribute;
-    [Reflect] readonly attribute unsigned short reflectReadonlyUnsignedShortAttribute;
-    [Reflect] readonly attribute unsigned long reflectReadonlyUnsignedLongAttribute;
+    [Reflect] attribute TestInterface reflectTestInterfaceAttribute;
+    [Reflect=reflectedNameAttribute] attribute TestInterface reflectReflectedNameAttributeTestAttribute;
+    // [Reflect] special types: special getters, special setters, or range
+    // checking for unsigned
+    [Reflect] attribute boolean reflectBooleanAttribute;
+    [Reflect] attribute long reflectLongAttribute;
+    [Reflect] attribute unsigned short reflectUnsignedShortAttribute;
+    [Reflect] attribute unsigned long reflectUnsignedLongAttribute;
     // [Reflect] special names
-    [Reflect] readonly attribute DOMString id;
-    [Reflect] readonly attribute DOMString name;
-    [Reflect] readonly attribute DOMString class;
-    [Reflect=id] readonly attribute DOMString reflectedId;
-    [Reflect=name] readonly attribute DOMString reflectedName;
-    [Reflect=class] readonly attribute DOMString reflectedClass;
+    [Reflect] attribute DOMString id;
+    [Reflect] attribute DOMString name;
+    [Reflect] attribute DOMString class;
+    [Reflect=id] attribute DOMString reflectedId;
+    [Reflect=name] attribute DOMString reflectedName;
+    [Reflect=class] attribute DOMString reflectedClass;
     [RuntimeEnabled=FeatureName] attribute long runtimeEnabledLongAttribute;
     [Conditional=Condition, RuntimeEnabled=FeatureName] attribute long conditionalEnabledAtRuntimeLongAttribute;
     [SetterCallWith=ActiveWindow&FirstWindow] attribute DOMString setterCallWithActiveWindowAndFirstWindowStringAttribute;

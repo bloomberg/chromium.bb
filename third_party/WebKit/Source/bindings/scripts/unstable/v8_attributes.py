@@ -159,12 +159,8 @@ def generate_getter(interface, attribute, contents, includes):
 
 def getter_expression(interface, attribute, contents, includes):
     arguments = []
-    if 'Reflect' in attribute.extended_attributes:
-        getter_base_name = content_attribute_getter_base_name(attribute, includes, arguments)
-    else:
-        getter_base_name = uncapitalize(cpp_name(attribute))
-
-    getter_name = scoped_name(interface, attribute, getter_base_name)
+    this_getter_base_name = getter_base_name(attribute, includes, arguments)
+    getter_name = scoped_name(interface, attribute, this_getter_base_name)
 
     call_with = attribute.extended_attributes.get('CallWith')
     arguments.extend(v8_utilities.call_with_arguments(call_with, contents))
@@ -184,17 +180,17 @@ CONTENT_ATTRIBUTE_GETTER_NAMES = {
 }
 
 
-def content_attribute_getter_base_name(attribute, includes, arguments):
-    content_attribute_name = attribute.extended_attributes['Reflect'] or attribute.name.lower()
-    namespace = 'HTMLNames'  # FIXME: can be SVG too
-    includes.add('%s.h' % namespace)
+def getter_base_name(attribute, includes, arguments):
+    extended_attributes = attribute.extended_attributes
+    if 'Reflect' not in extended_attributes:
+        return uncapitalize(cpp_name(attribute))
 
+    content_attribute_name = extended_attributes['Reflect'] or attribute.name.lower()
     if content_attribute_name in ['class', 'id', 'name']:
         # Special-case for performance optimization.
         return 'get%sAttribute' % content_attribute_name.capitalize()
 
-    scoped_name = '%s::%sAttr' % (namespace, content_attribute_name)
-    arguments.append(scoped_name)
+    arguments.append(scoped_content_attribute_name(attribute, includes))
 
     idl_type = attribute.data_type
     if idl_type in CONTENT_ATTRIBUTE_GETTER_NAMES:
@@ -202,51 +198,6 @@ def content_attribute_getter_base_name(attribute, includes, arguments):
     if 'URL' in attribute.extended_attributes:
         return 'getURLAttribute'
     return 'fastGetAttribute'
-
-
-def generate_setter(interface, attribute, contents, includes):
-    idl_type = attribute.data_type
-    extended_attributes = attribute.extended_attributes
-    if v8_types.is_interface_type(idl_type) and not v8_types.array_type(idl_type):
-        cpp_value = 'WTF::getPtr(cppValue)'
-    else:
-        cpp_value = 'cppValue'
-    contents.update({
-        'cpp_setter': setter_expression(interface, attribute, contents, includes),
-        'enum_validation_expression': enum_validation_expression(idl_type),
-        'has_strict_type_checking': 'StrictTypeChecking' in extended_attributes and v8_types.is_interface_type(idl_type),
-        'v8_value_to_local_cpp_value': v8_types.v8_value_to_local_cpp_value(idl_type, extended_attributes, 'jsValue', 'cppValue', includes, 'info.GetIsolate()'),
-    })
-
-
-def setter_expression(interface, attribute, contents, includes):
-    call_with = attribute.extended_attributes.get('SetterCallWith') or attribute.extended_attributes.get('CallWith')
-    arguments = v8_utilities.call_with_arguments(call_with, contents)
-    idl_type = attribute.data_type
-    if idl_type == 'EventHandler':
-        # FIXME: move V8EventListenerList.h to INCLUDES_FOR_TYPE
-        includes.add('bindings/v8/V8EventListenerList.h')
-        # FIXME: pass the isolate instead of the isolated world
-        isolated_world = 'isolatedWorldForIsolate(info.GetIsolate())'
-        arguments.extend(['V8EventListenerList::getEventListener(jsValue, true, ListenerFindOrCreate)', isolated_world])
-        contents['event_handler_getter_expression'] = 'imp->%s(%s)' % (cpp_name(attribute), isolated_world)
-    elif v8_types.is_interface_type(idl_type) and not v8_types.array_type(idl_type):
-        # FIXME: should be able to eliminate WTF::getPtr in most or all cases
-        arguments.append('WTF::getPtr(cppValue)')
-    else:
-        arguments.append('cppValue')
-    if contents['is_setter_raises_exception']:
-        arguments.append('es')
-
-    setter_name = scoped_name(interface, attribute, 'set%s' % capitalize(cpp_name(attribute)))
-    return '%s(%s)' % (setter_name, ', '.join(arguments))
-
-
-def enum_validation_expression(idl_type):
-    if not v8_types.is_enum_type(idl_type):
-        return None
-    return ' || '.join(['string == "%s"' % enum_value
-                        for enum_value in v8_types.enum_values(idl_type)])
 
 
 def is_keep_alive_for_gc(attribute):
@@ -268,6 +219,83 @@ def is_keep_alive_for_gc(attribute):
              # FIXME: Remove these hard-coded hacks.
              idl_type in ['EventHandler', 'Promise', 'Window'] or
              idl_type.startswith('HTML'))))
+
+
+def generate_setter(interface, attribute, contents, includes):
+    idl_type = attribute.data_type
+    extended_attributes = attribute.extended_attributes
+    if v8_types.is_interface_type(idl_type) and not v8_types.array_type(idl_type):
+        cpp_value = 'WTF::getPtr(cppValue)'
+    else:
+        cpp_value = 'cppValue'
+    is_reflect = 'Reflect' in extended_attributes
+    if is_reflect:
+        includes.add('core/dom/custom/CustomElementCallbackDispatcher.h')
+    contents.update({
+        'cpp_setter': setter_expression(interface, attribute, contents, includes),
+        'enum_validation_expression': enum_validation_expression(idl_type),
+        'has_strict_type_checking': 'StrictTypeChecking' in extended_attributes and v8_types.is_interface_type(idl_type),
+        'is_reflect': is_reflect,
+        'v8_value_to_local_cpp_value': v8_types.v8_value_to_local_cpp_value(idl_type, extended_attributes, 'jsValue', 'cppValue', includes, 'info.GetIsolate()'),
+    })
+
+
+def setter_expression(interface, attribute, contents, includes):
+    call_with = attribute.extended_attributes.get('SetterCallWith') or attribute.extended_attributes.get('CallWith')
+    arguments = v8_utilities.call_with_arguments(call_with, contents)
+
+    this_setter_base_name = setter_base_name(attribute, includes, arguments)
+    setter_name = scoped_name(interface, attribute, this_setter_base_name)
+
+    idl_type = attribute.data_type
+    if idl_type == 'EventHandler':
+        # FIXME: move V8EventListenerList.h to INCLUDES_FOR_TYPE
+        includes.add('bindings/v8/V8EventListenerList.h')
+        # FIXME: pass the isolate instead of the isolated world
+        isolated_world = 'isolatedWorldForIsolate(info.GetIsolate())'
+        arguments.extend(['V8EventListenerList::getEventListener(jsValue, true, ListenerFindOrCreate)', isolated_world])
+        contents['event_handler_getter_expression'] = 'imp->%s(%s)' % (cpp_name(attribute), isolated_world)
+    elif v8_types.is_interface_type(idl_type) and not v8_types.array_type(idl_type):
+        # FIXME: should be able to eliminate WTF::getPtr in most or all cases
+        arguments.append('WTF::getPtr(cppValue)')
+    else:
+        arguments.append('cppValue')
+    if contents['is_setter_raises_exception']:
+        arguments.append('es')
+
+    return '%s(%s)' % (setter_name, ', '.join(arguments))
+
+
+CONTENT_ATTRIBUTE_SETTER_NAMES = {
+    'boolean': 'setBooleanAttribute',
+    'long': 'setIntegralAttribute',
+    'unsigned long': 'setUnsignedIntegralAttribute',
+}
+
+
+def setter_base_name(attribute, includes, arguments):
+    if 'Reflect' not in attribute.extended_attributes:
+        return 'set%s' % capitalize(cpp_name(attribute))
+    arguments.append(scoped_content_attribute_name(attribute, includes))
+
+    idl_type = attribute.data_type
+    if idl_type in CONTENT_ATTRIBUTE_SETTER_NAMES:
+        return CONTENT_ATTRIBUTE_SETTER_NAMES[idl_type]
+    return 'setAttribute'
+
+
+def enum_validation_expression(idl_type):
+    if not v8_types.is_enum_type(idl_type):
+        return None
+    return ' || '.join(['string == "%s"' % enum_value
+                        for enum_value in v8_types.enum_values(idl_type)])
+
+
+def scoped_content_attribute_name(attribute, includes):
+    content_attribute_name = attribute.extended_attributes['Reflect'] or attribute.name.lower()
+    namespace = 'HTMLNames'  # FIXME: can be SVG too
+    includes.add('%s.h' % namespace)
+    return '%s::%sAttr' % (namespace, content_attribute_name)
 
 
 def scoped_name(interface, attribute, base_name):
