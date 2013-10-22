@@ -1269,6 +1269,11 @@ void InspectorPageAgent::captureScreenshot(ErrorString*, const String*, const in
     // Handled on the browser level.
 }
 
+void InspectorPageAgent::canScreencast(ErrorString*, bool*)
+{
+    // Handled on the browser level.
+}
+
 void InspectorPageAgent::startScreencast(ErrorString*, const String*, const int*, const int*, const int*)
 {
     // Handled on the browser level.

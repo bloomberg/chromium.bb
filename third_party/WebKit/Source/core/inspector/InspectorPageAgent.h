@@ -117,6 +117,7 @@ public:
     virtual void setEmulatedMedia(ErrorString*, const String&);
     virtual void setForceCompositingMode(ErrorString*, bool force);
     virtual void captureScreenshot(ErrorString*, const String* format, const int* quality, const int* maxWidth, const int* maxHeight, String* data, double* deviceScaleFactor, double* pageScaleFactor, RefPtr<TypeBuilder::DOM::Rect>&);
+    virtual void canScreencast(ErrorString*, bool*);
     virtual void startScreencast(ErrorString*, const String* format, const int* quality, const int* maxWidth, const int* maxHeight);
     virtual void stopScreencast(ErrorString*);
     virtual void handleJavaScriptDialog(ErrorString*, bool accept, const String* promptText);
