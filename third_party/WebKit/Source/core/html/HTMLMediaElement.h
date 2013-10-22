@@ -124,7 +124,6 @@ public:
     double currentTime() const;
     void setCurrentTime(double, ExceptionState&);
     double initialTime() const;
-    double startTime() const;
     double duration() const;
     bool paused() const;
     double defaultPlaybackRate() const;
