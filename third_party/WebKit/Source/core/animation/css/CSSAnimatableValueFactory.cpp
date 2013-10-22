@@ -389,6 +389,8 @@ PassRefPtr<AnimatableValue> CSSAnimatableValueFactory::create(CSSPropertyID prop
         return AnimatableShapeValue::create(style->shapeInside());
     case CSSPropertyShapeOutside:
         return AnimatableShapeValue::create(style->shapeOutside());
+    case CSSPropertyShapeMargin:
+        return createFromLength(style->shapeMargin(), style);
     case CSSPropertyWebkitTextEmphasisColor:
         return createFromColor(property, style);
     case CSSPropertyWebkitTextStrokeColor:

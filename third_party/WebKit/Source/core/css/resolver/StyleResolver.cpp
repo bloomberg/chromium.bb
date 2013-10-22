@@ -1540,7 +1540,7 @@ CSSPropertyValue::CSSPropertyValue(CSSPropertyID id, const StylePropertySet& pro
 
 void StyleResolver::applyPropertiesToStyle(const CSSPropertyValue* properties, size_t count, RenderStyle* style)
 {
-    StyleResolverState state(document(), 0, style);
+    StyleResolverState state(document(), document().documentElement(), style);
     state.setStyle(style);
 
     state.fontBuilder().initForStyleResolve(document(), style, state.useSVGZoomRules());
