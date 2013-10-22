@@ -170,13 +170,6 @@ results.failureTypeList = function(failureBlob)
     return failureBlob.split(' ');
 };
 
-results.canRebaseline = function(failureTypeList)
-{
-    return failureTypeList.some(function(element) {
-        return results.failureTypeToExtensionList(element).length > 0;
-    });
-};
-
 results.directoryForBuilder = function(builderName)
 {
     return config.kPlatforms[config.currentPlatform].resultsDirectoryNameFromBuilderName(builderName);

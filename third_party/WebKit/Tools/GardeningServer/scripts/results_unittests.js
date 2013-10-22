@@ -455,15 +455,6 @@ test("failureTypeToExtensionList", 5, function() {
     deepEqual(results.failureTypeToExtensionList('TIMEOUT'), []);
 });
 
-test("canRebaseline", 6, function() {
-    ok(results.canRebaseline(['TEXT']));
-    ok(results.canRebaseline(['IMAGE+TEXT', 'CRASH']));
-    ok(results.canRebaseline(['IMAGE']));
-    ok(!results.canRebaseline(['CRASH']));
-    ok(!results.canRebaseline(['TIMEOUT']));
-    ok(!results.canRebaseline([]));
-});
-
 test("fetchResultsURLs", 5, function() {
     var simulator = new NetworkSimulator();
 
