@@ -79,6 +79,9 @@ public abstract class CommandLine {
     // Native switch - chrome_switches::kDisablePopupBlocking
     public static final String DISABLE_POPUP_BLOCKING = "disable-popup-blocking";
 
+    // Whether to disable the click delay by sending click events during double tap
+    public static final String DISABLE_CLICK_DELAY = "disable-click-delay";
+
     // Public abstract interface, implemented in derived classes.
     // All these methods reflect their native-side counterparts.
     /**

@@ -1805,6 +1805,16 @@ const Experiment kExperiments[] = {
     kOsAll,
     SINGLE_VALUE_TYPE(switches::kEnableServiceWorker)
   },
+#if defined(OS_ANDROID)
+  {
+    "disable-click-delay",
+    IDS_FLAGS_DISABLE_CLICK_DELAY_NAME,
+    IDS_FLAGS_DISABLE_CLICK_DELAY_DESCRIPTION,
+    kOsAndroid,
+    // Java-only switch: CommandLine.DISABLE_CLICK_DELAY
+    SINGLE_VALUE_TYPE("disable-click-delay")
+  },
+#endif
 };
 
 const Experiment* experiments = kExperiments;

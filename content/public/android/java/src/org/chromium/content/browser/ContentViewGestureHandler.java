@@ -18,6 +18,7 @@ import org.chromium.content.browser.third_party.GestureDetector.OnDoubleTapListe
 import org.chromium.content.browser.third_party.GestureDetector.OnGestureListener;
 import org.chromium.content.browser.LongPressDetector.LongPressDelegate;
 import org.chromium.content.browser.SnapScrollController;
+import org.chromium.content.common.CommandLine;
 import org.chromium.content.common.TraceEvent;
 
 import java.util.ArrayDeque;
@@ -165,6 +166,9 @@ class ContentViewGestureHandler implements LongPressDelegate {
     // Keeps track of the last long press event, if we end up opening a context menu, we would need
     // to potentially use the event to send GESUTRE_SHOW_PRESS_CANCEL to remove ::active styling
     private MotionEvent mLastLongPressEvent;
+
+    // Whether the click delay should always be disabled by sending clicks for double tap gestures.
+    private final boolean mDisableClickDelay;
 
     static final int GESTURE_SHOW_PRESSED_STATE = 0;
     static final int GESTURE_DOUBLE_TAP = 1;
@@ -350,6 +354,9 @@ class ContentViewGestureHandler implements LongPressDelegate {
                 inputEventDeliveryMode == ContentViewCore.INPUT_EVENTS_DELIVERED_AT_VSYNC;
         mPxToDp = 1.0f / context.getResources().getDisplayMetrics().density;
 
+        mDisableClickDelay = CommandLine.isInitialized() &&
+                CommandLine.getInstance().hasSwitch(CommandLine.DISABLE_CLICK_DELAY);
+
         initGestureDetectors(context);
     }
 
@@ -497,7 +504,7 @@ class ContentViewGestureHandler implements LongPressDelegate {
                                 }
                                 setClickXAndY((int) x, (int) y);
                                 return true;
-                            } else if (isDoubleTapDisabled()) {
+                            } else if (isDoubleTapDisabled() || mDisableClickDelay) {
                                 // If double tap has been disabled, there is no need to wait
                                 // for the double tap timeout.
                                 return onSingleTapConfirmed(e);

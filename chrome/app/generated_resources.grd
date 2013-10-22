@@ -6868,6 +6868,14 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_SERVICE_WORKER_DESCRIPTION" desc="Description for the flag to enable ServiceWorker.">
         ServiceWorker is a new kind of web worker that can intercept resource requests. See https://github.com/slightlyoff/ServiceWorker for more information.
       </message>
+      <if expr="is_android">
+        <message name="IDS_FLAGS_DISABLE_CLICK_DELAY_NAME" desc="Name of the flag to disable the click delay.">
+          Disable click delay.
+        </message>
+        <message name="IDS_FLAGS_DISABLE_CLICK_DELAY_DESCRIPTION" desc="Description of the flag to disable the click delay.">
+          Always send click events immediate upon a tap, even when it's part of a double-tap gesture.  This speeds up navigation and other tap actions by 300ms on most pages, but means links and buttons must be avoided when double tapping to zoom.
+        </message>
+      </if>
 
       <!-- Crashes -->
       <message name="IDS_CRASHES_TITLE" desc="Title for the chrome://crashes page.">
