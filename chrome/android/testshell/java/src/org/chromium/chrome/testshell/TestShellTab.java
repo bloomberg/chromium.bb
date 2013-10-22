@@ -66,8 +66,9 @@ public class TestShellTab extends TabBase {
     /**
      * Navigates this Tab's {@link ContentView} to a sanitized version of {@code url}.
      * @param url The potentially unsanitized URL to navigate to.
+     * @param postData Optional data to be sent via POST.
      */
-    public void loadUrlWithSanitization(String url) {
+    public void loadUrlWithSanitization(String url, byte[] postData) {
         if (url == null) return;
 
         // Sanitize the URL.
@@ -80,8 +81,20 @@ public class TestShellTab extends TabBase {
         if (TextUtils.equals(url, contentView.getUrl())) {
             contentView.reload();
         } else {
-            contentView.loadUrl(new LoadUrlParams(url));
+            if (postData == null) {
+                contentView.loadUrl(new LoadUrlParams(url));
+            } else {
+                contentView.loadUrl(LoadUrlParams.createLoadHttpPostParams(url, postData));
+            }
         }
+    }
+
+    /**
+     * Navigates this Tab's {@link ContentView} to a sanitized version of {@code url}.
+     * @param url The potentially unsanitized URL to navigate to.
+     */
+    public void loadUrlWithSanitization(String url) {
+        loadUrlWithSanitization(url, null);
     }
 
     @Override
