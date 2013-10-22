@@ -98,6 +98,11 @@ function populateDeviceLists(devices) {
   if (!devices)
     return;
 
+  if (window.modal) {
+    window.holdDevices = devices;
+    return;
+  }
+
   function alreadyDisplayed(element, data) {
     var json = JSON.stringify(data);
     if (element.cachedJSON == json)
@@ -539,6 +544,39 @@ function handleKey(event) {
   }
 }
 
+function setModal(dialog) {
+  dialog.deactivatedNodes = Array.prototype.filter.call(
+      document.querySelectorAll('*'),
+      function(n) {
+        return n != dialog && !dialog.contains(n) && n.tabIndex >= 0;
+      });
+
+  dialog.tabIndexes = dialog.deactivatedNodes.map(
+    function(n) { return n.getAttribute('tabindex'); });
+
+  dialog.deactivatedNodes.forEach(function(n) { n.tabIndex = -1; });
+  window.modal = dialog;
+}
+
+function unsetModal(dialog) {
+  for (var i = 0; i < dialog.deactivatedNodes.length; i++) {
+    var node = dialog.deactivatedNodes[i];
+    if (dialog.tabIndexes[i] === null)
+      node.removeAttribute('tabindex');
+    else
+      node.setAttribute('tabindex', tabIndexes[i]);
+  }
+
+  if (window.holdDevices) {
+    populateDeviceLists(window.holdDevices);
+    delete window.holdDevices;
+  }
+
+  delete dialog.deactivatedNodes;
+  delete dialog.tabIndexes;
+  delete window.modal;
+}
+
 function openPortForwardingConfig() {
   loadPortForwardingConfig(window.portForwardingConfig);
 
@@ -550,11 +588,14 @@ function openPortForwardingConfig() {
     freshPort.focus();
   else
     $('port-forwarding-config-done').focus();
+
+  setModal($('port-forwarding-overlay'));
 }
 
 function closePortForwardingConfig() {
   $('port-forwarding-overlay').classList.remove('open');
   document.removeEventListener('keyup', handleKey);
+  unsetModal($('port-forwarding-overlay'));
 }
 
 function loadPortForwardingConfig(config) {
