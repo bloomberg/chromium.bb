@@ -6,7 +6,10 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/command_line.h"
+#include "base/message_loop/message_loop.h"
 #include "base/strings/string_util.h"
+#include "chromeos/chromeos_switches.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "dbus/object_path.h"
@@ -20,6 +23,17 @@ namespace {
 const char kReleaseChannelDev[] = "dev-channel";
 const char kReleaseChannelBeta[] = "beta-channel";
 const char kReleaseChannelStable[] = "stable-channel";
+
+// Delay between successive state transitions during AU.
+const int kStateTransitionDefaultDelayMs = 3000;
+
+// Delay between successive notificatioins about downloading progress
+// during fake AU.
+const int kStateTransitionDownloadingDelayMs = 250;
+
+// Size of parts of a "new" image which are downloaded each
+// |kStateTransitionDownloadingDelayMs| during fake AU.
+const int64_t kDownloadSizeDelta = 1 << 19;
 
 // Returns UPDATE_STATUS_ERROR on error.
 UpdateEngineClient::UpdateStatusOperation UpdateStatusFromString(
@@ -342,8 +356,105 @@ class UpdateEngineClientStubImpl : public UpdateEngineClient {
                           const GetChannelCallback& callback) OVERRIDE {
     LOG(INFO) << "Requesting to get channel, get_current_channel="
               << get_current_channel;
-    callback.Run("beta-channel");
+    callback.Run(kReleaseChannelBeta);
   }
+};
+
+// The UpdateEngineClient implementation used on Linux desktop, which
+// tries to emulate real update engine client.
+class UpdateEngineClientFakeImpl : public UpdateEngineClientStubImpl {
+ public:
+  UpdateEngineClientFakeImpl() : weak_factory_(this) {
+  }
+
+  virtual ~UpdateEngineClientFakeImpl() {
+  }
+
+  // UpdateEngineClient implementation:
+  virtual void AddObserver(Observer* observer) OVERRIDE {
+    if (observer)
+      observers_.AddObserver(observer);
+  }
+
+  virtual void RemoveObserver(Observer* observer) OVERRIDE {
+    if (observer)
+      observers_.RemoveObserver(observer);
+  }
+
+  virtual bool HasObserver(Observer* observer) OVERRIDE {
+    return observers_.HasObserver(observer);
+  }
+
+  virtual void RequestUpdateCheck(
+      const UpdateCheckCallback& callback) OVERRIDE {
+    if (last_status_.status != UPDATE_STATUS_IDLE) {
+      callback.Run(UPDATE_RESULT_FAILED);
+      return;
+    }
+    callback.Run(UPDATE_RESULT_SUCCESS);
+    last_status_.status = UPDATE_STATUS_CHECKING_FOR_UPDATE;
+    last_status_.download_progress = 0.0;
+    last_status_.last_checked_time = 0;
+    last_status_.new_size = 0;
+    base::MessageLoop::current()->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(&UpdateEngineClientFakeImpl::StateTransition,
+                   weak_factory_.GetWeakPtr()),
+        base::TimeDelta::FromMilliseconds(kStateTransitionDefaultDelayMs));
+  }
+
+  virtual Status GetLastStatus() OVERRIDE { return last_status_; }
+
+ private:
+  void StateTransition() {
+    UpdateStatusOperation next_status = UPDATE_STATUS_ERROR;
+    int delay_ms = kStateTransitionDefaultDelayMs;
+    switch (last_status_.status) {
+      case UPDATE_STATUS_ERROR:
+      case UPDATE_STATUS_IDLE:
+      case UPDATE_STATUS_UPDATED_NEED_REBOOT:
+      case UPDATE_STATUS_REPORTING_ERROR_EVENT:
+        return;
+      case UPDATE_STATUS_CHECKING_FOR_UPDATE:
+        next_status = UPDATE_STATUS_UPDATE_AVAILABLE;
+        break;
+      case UPDATE_STATUS_UPDATE_AVAILABLE:
+        next_status = UPDATE_STATUS_DOWNLOADING;
+        break;
+      case UPDATE_STATUS_DOWNLOADING:
+        if (last_status_.download_progress >= 1.0) {
+          next_status = UPDATE_STATUS_VERIFYING;
+        } else {
+          next_status = UPDATE_STATUS_DOWNLOADING;
+          last_status_.download_progress += 0.01;
+          last_status_.new_size = kDownloadSizeDelta;
+          delay_ms = kStateTransitionDownloadingDelayMs;
+        }
+        break;
+      case UPDATE_STATUS_VERIFYING:
+        next_status = UPDATE_STATUS_FINALIZING;
+        break;
+      case UPDATE_STATUS_FINALIZING:
+        next_status = UPDATE_STATUS_IDLE;
+        break;
+    }
+    last_status_.status = next_status;
+    FOR_EACH_OBSERVER(Observer, observers_, UpdateStatusChanged(last_status_));
+    if (last_status_.status != UPDATE_STATUS_IDLE) {
+      base::MessageLoop::current()->PostDelayedTask(
+          FROM_HERE,
+          base::Bind(&UpdateEngineClientFakeImpl::StateTransition,
+                     weak_factory_.GetWeakPtr()),
+          base::TimeDelta::FromMilliseconds(delay_ms));
+    }
+  }
+
+  ObserverList<Observer> observers_;
+  Status last_status_;
+
+  base::WeakPtrFactory<UpdateEngineClientFakeImpl> weak_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(UpdateEngineClientFakeImpl);
 };
 
 UpdateEngineClient::UpdateEngineClient() {
@@ -364,7 +475,10 @@ UpdateEngineClient* UpdateEngineClient::Create(
   if (type == REAL_DBUS_CLIENT_IMPLEMENTATION)
     return new UpdateEngineClientImpl();
   DCHECK_EQ(STUB_DBUS_CLIENT_IMPLEMENTATION, type);
-  return new UpdateEngineClientStubImpl();
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kTestAutoUpdateUI))
+    return new UpdateEngineClientFakeImpl();
+  else
+    return new UpdateEngineClientStubImpl();
 }
 
 }  // namespace chromeos

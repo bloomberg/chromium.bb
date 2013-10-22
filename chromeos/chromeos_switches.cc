@@ -195,5 +195,8 @@ const char kEnableSamlSignin[]              = "enable-saml-signin";
 // Enables new first-run overlay UI.
 const char kEnableFirstRunUI[] = "enable-first-run-ui";
 
+// Enables testing for auto update UI.
+const char kTestAutoUpdateUI[] = "test-auto-update-ui";
+
 }  // namespace switches
 }  // namespace chromeos
