@@ -5,10 +5,7 @@
       'NAME' : 'input_event',
       'TYPE' : 'main',
       'SOURCES' : [
-        'custom_events.cc',
-        'custom_events.h',
         'input_event.cc',
-        'shared_queue.h',
       ],
       'LIBS': ['ppapi_cpp', 'ppapi', 'pthread']
     }

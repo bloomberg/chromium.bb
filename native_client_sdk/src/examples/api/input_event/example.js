@@ -8,19 +8,6 @@ function moduleDidLoad() {
 }
 
 // Called by the common.js module.
-function attachListeners() {
-  document.getElementById('killButton').addEventListener('click', cancelQueue);
-}
-
-// Called by the common.js module.
 function handleMessage(message) {
   common.logMessage(message.data);
-}
-
-function cancelQueue() {
-  if (common.naclModule == null) {
-    console.log('Module is not loaded.');
-    return;
-  }
-  common.naclModule.postMessage('CANCEL');
 }

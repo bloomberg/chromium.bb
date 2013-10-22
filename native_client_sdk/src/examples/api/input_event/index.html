@@ -11,28 +11,19 @@ found in the LICENSE file.
   <title>{{title}}</title>
   <script type="text/javascript" src="common.js"></script>
   <script type="text/javascript" src="example.js"></script>
+  <style>
+    #listener { float: left; padding-right: 8px; }
+  </style>
 </head>
 <body {{attrs}}>
   <h1>{{title}}</h1>
   <h2>Status: <code id="statusField">NO-STATUS</code></h2>
-  <p>The Input Events example shows how to handle input events in a
-     multi-threaded application.  The main thread converts input events to
-     non-pepper events and puts them on a queue. The worker thread pulls them
-     off of the queue, converts them to a string, and then uses
-     CallOnMainThread so that PostMessage can send the result of the worker
-     thread to the browser.</p>
-  <p>If you press the 'Kill worker thread and queue' button, then the main
-  thread (which puts events on the queue) will call CancelQueue, indicating
-  that the main thread will no longer put events on the queue.  When the worker
-  sees that the shared queue has been cancelled, the worker thread will
-  terminate.</p>
-
-  <button id="killButton">Kill worker thread and queue</button>
-
-  <!-- The NaCl plugin will be embedded inside the element with id "listener".
-      See common.js.-->
   <div id="listener"></div>
-  <h2>Events:</h2>
+  <p>This example shows how to handle input events.</p>
+  <p>Click or touch the box to the left to see the events being sent to the
+     NaCl module. When it has focus, the module will also accept keyboard
+     events.</p>
+  <h2 style="clear: left">Events:</h2>
   <pre id="log" style="font-weight: bold"></pre>
 </body>
 </html>
