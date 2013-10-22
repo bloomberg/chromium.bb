@@ -6,10 +6,12 @@
 <body>
 <script>
 
+shouldBe('Node.prototype.cloneNode.length', '0');
+
 var div = document.createElement('div');
 div.innerHTML = '<a></a>';
-shouldBeTrue('div.cloneNode().hasChildNodes()');
-shouldBe('div.cloneNode().childNodes.length', '1');
+shouldBeFalse('div.cloneNode().hasChildNodes()');
+shouldBe('div.cloneNode().childNodes.length', '0');
 
 </script>
 <script src="../js/resources/js-test-post.js"></script>
