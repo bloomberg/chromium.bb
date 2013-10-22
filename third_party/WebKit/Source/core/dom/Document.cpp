@@ -2334,7 +2334,7 @@ void Document::implicitClose()
     detachParser();
 
     Frame* f = frame();
-    if (f && f->script()->canExecuteScripts(NotAboutToExecuteScript)) {
+    if (f && f->script().canExecuteScripts(NotAboutToExecuteScript)) {
         ImageLoader::dispatchPendingBeforeLoadEvents();
         ImageLoader::dispatchPendingLoadEvents();
         ImageLoader::dispatchPendingErrorEvents();
@@ -2713,7 +2713,7 @@ void Document::disableEval(const String& errorMessage)
     if (!frame())
         return;
 
-    frame()->script()->disableEval(errorMessage);
+    frame()->script().disableEval(errorMessage);
 }
 
 bool Document::canNavigate(Frame* targetFrame)
@@ -3711,7 +3711,7 @@ void Document::addListenerTypeIfNeeded(const AtomicString& eventType)
     } else if (eventType == EventTypeNames::webkitTransitionEnd || eventType == EventTypeNames::transitionend) {
         addListenerType(TRANSITIONEND_LISTENER);
     } else if (eventType == EventTypeNames::beforeload) {
-        if (m_frame && m_frame->script()->shouldBypassMainWorldContentSecurityPolicy()) {
+        if (m_frame && m_frame->script().shouldBypassMainWorldContentSecurityPolicy()) {
             UseCounter::count(*this, UseCounter::BeforeLoadEventInIsolatedWorld);
         } else {
             UseCounter::count(*this, UseCounter::BeforeLoadEvent);
@@ -3819,7 +3819,7 @@ void Document::setDomain(const String& newDomain, ExceptionState& es)
     if (equalIgnoringCase(domain(), newDomain)) {
         securityOrigin()->setDomainFromDOM(newDomain);
         if (m_frame)
-            m_frame->script()->updateSecurityOrigin();
+            m_frame->script().updateSecurityOrigin();
         return;
     }
 
@@ -3849,7 +3849,7 @@ void Document::setDomain(const String& newDomain, ExceptionState& es)
 
     securityOrigin()->setDomainFromDOM(newDomain);
     if (m_frame)
-        m_frame->script()->updateSecurityOrigin();
+        m_frame->script().updateSecurityOrigin();
 }
 
 // http://www.whatwg.org/specs/web-apps/current-work/#dom-document-lastmodified
@@ -4552,7 +4552,7 @@ bool Document::allowInlineEventHandlers(Node* node, EventListener* listener, con
     // we also need to ask the owner document of the node.
     if (!m_frame)
         return false;
-    if (!m_frame->script()->canExecuteScripts(NotAboutToExecuteScript))
+    if (!m_frame->script().canExecuteScripts(NotAboutToExecuteScript))
         return false;
     if (node && node->document() != this && !node->document().allowInlineEventHandlers(node, listener, contextURL, contextLine))
         return false;
@@ -4569,7 +4569,7 @@ bool Document::allowExecutingScripts(Node* node)
         return false;
     if (!node->document().frame() && !node->document().import())
         return false;
-    if (!contextDocument().get()->frame()->script()->canExecuteScripts(AboutToExecuteScript))
+    if (!contextDocument().get()->frame()->script().canExecuteScripts(AboutToExecuteScript))
         return false;
     return true;
 }
@@ -4578,7 +4578,7 @@ void Document::didUpdateSecurityOrigin()
 {
     if (!m_frame)
         return;
-    m_frame->script()->updateSecurityOrigin();
+    m_frame->script().updateSecurityOrigin();
 }
 
 bool Document::isContextThread() const

@@ -75,7 +75,7 @@ void ScheduledAction::execute(ExecutionContext* context)
         Frame* frame = toDocument(context)->frame();
         if (!frame)
             return;
-        if (!frame->script()->canExecuteScripts(AboutToExecuteScript))
+        if (!frame->script().canExecuteScripts(AboutToExecuteScript))
             return;
         execute(frame);
     } else {
@@ -97,9 +97,9 @@ void ScheduledAction::execute(Frame* frame)
         v8::Context::Scope scope(context);
         Vector<v8::Handle<v8::Value> > args;
         createLocalHandlesForArgs(&args);
-        frame->script()->callFunction(m_function.newLocal(m_isolate), context->Global(), args.size(), args.data());
+        frame->script().callFunction(m_function.newLocal(m_isolate), context->Global(), args.size(), args.data());
     } else {
-        frame->script()->executeScriptAndReturnValue(context, ScriptSourceCode(m_code));
+        frame->script().executeScriptAndReturnValue(context, ScriptSourceCode(m_code));
     }
 
     // The frame might be invalid at this point because JavaScript could have released it.

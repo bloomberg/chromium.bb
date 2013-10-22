@@ -395,7 +395,7 @@ void HTMLFormElement::scheduleFormSubmission(PassRefPtr<FormSubmission> submissi
     if (protocolIsJavaScript(submission->action())) {
         if (!document().contentSecurityPolicy()->allowFormAction(KURL(submission->action())))
             return;
-        document().frame()->script()->executeScriptIfJavaScriptURL(submission->action());
+        document().frame()->script().executeScriptIfJavaScriptURL(submission->action());
         return;
     }
     submission->setReferrer(document().frame()->loader()->outgoingReferrer());

@@ -85,11 +85,11 @@ v8::Local<v8::Value> V8EventListener::callListenerFunction(ExecutionContext* con
     if (!frame)
         return v8::Local<v8::Value>();
 
-    if (!frame->script()->canExecuteScripts(AboutToExecuteScript))
+    if (!frame->script().canExecuteScripts(AboutToExecuteScript))
         return v8::Local<v8::Value>();
 
     v8::Handle<v8::Value> parameters[1] = { jsEvent };
-    return frame->script()->callFunction(handlerFunction, receiver, WTF_ARRAY_LENGTH(parameters), parameters);
+    return frame->script().callFunction(handlerFunction, receiver, WTF_ARRAY_LENGTH(parameters), parameters);
 }
 
 } // namespace WebCore

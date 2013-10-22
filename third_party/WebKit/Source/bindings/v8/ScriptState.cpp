@@ -110,7 +110,7 @@ void ScriptState::setEvalEnabled(bool enabled)
 ScriptState* mainWorldScriptState(Frame* frame)
 {
     v8::HandleScope handleScope(toIsolate(frame));
-    return ScriptState::forContext(frame->script()->mainWorldContext());
+    return ScriptState::forContext(frame->script().mainWorldContext());
 }
 
 ScriptState* scriptStateFromWorkerGlobalScope(WorkerGlobalScope* workerGlobalScope)

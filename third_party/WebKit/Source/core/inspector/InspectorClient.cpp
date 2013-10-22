@@ -47,10 +47,7 @@ bool InspectorClient::doDispatchMessageOnFrontendPage(Page* frontendPage, const 
     if (!frame)
         return false;
 
-    ScriptController* scriptController = frame->script();
-    if (!scriptController)
-        return false;
-    scriptController->executeScriptInMainWorld("InspectorFrontendAPI.dispatchMessageAsync(" + message + ");", ScriptController::ExecuteScriptWhenScriptsDisabled);
+    frame->script().executeScriptInMainWorld("InspectorFrontendAPI.dispatchMessageAsync(" + message + ");", ScriptController::ExecuteScriptWhenScriptsDisabled);
     return true;
 }
 

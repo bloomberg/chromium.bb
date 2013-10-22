@@ -726,7 +726,7 @@ NPObject* WebFrameImpl::windowObject() const
 {
     if (!frame())
         return 0;
-    return frame()->script()->windowScriptNPObject();
+    return frame()->script().windowScriptNPObject();
 }
 
 void WebFrameImpl::bindToWindowObject(const WebString& name, NPObject* object)
@@ -736,16 +736,16 @@ void WebFrameImpl::bindToWindowObject(const WebString& name, NPObject* object)
 
 void WebFrameImpl::bindToWindowObject(const WebString& name, NPObject* object, void*)
 {
-    if (!frame() || !frame()->script()->canExecuteScripts(NotAboutToExecuteScript))
+    if (!frame() || !frame()->script().canExecuteScripts(NotAboutToExecuteScript))
         return;
-    frame()->script()->bindToWindowObject(frame(), String(name), object);
+    frame()->script().bindToWindowObject(frame(), String(name), object);
 }
 
 void WebFrameImpl::executeScript(const WebScriptSource& source)
 {
     ASSERT(frame());
     TextPosition position(OrdinalNumber::fromOneBasedInt(source.startLine), OrdinalNumber::first());
-    frame()->script()->executeScriptInMainWorld(ScriptSourceCode(source.code, source.url, position));
+    frame()->script().executeScriptInMainWorld(ScriptSourceCode(source.code, source.url, position));
 }
 
 void WebFrameImpl::executeScriptInIsolatedWorld(int worldID, const WebScriptSource* sourcesIn, unsigned numSources, int extensionGroup)
@@ -760,7 +760,7 @@ void WebFrameImpl::executeScriptInIsolatedWorld(int worldID, const WebScriptSour
         sources.append(ScriptSourceCode(sourcesIn[i].code, sourcesIn[i].url, position));
     }
 
-    frame()->script()->executeScriptInIsolatedWorld(worldID, sources, extensionGroup, 0);
+    frame()->script().executeScriptInIsolatedWorld(worldID, sources, extensionGroup, 0);
 }
 
 void WebFrameImpl::setIsolatedWorldSecurityOrigin(int worldID, const WebSecurityOrigin& securityOrigin)
@@ -827,7 +827,7 @@ v8::Handle<v8::Value> WebFrameImpl::executeScriptAndReturnValue(const WebScriptS
     UserGestureIndicator gestureIndicator(DefinitelyProcessingNewUserGesture);
 
     TextPosition position(OrdinalNumber::fromOneBasedInt(source.startLine), OrdinalNumber::first());
-    return frame()->script()->executeScriptInMainWorldAndReturnValue(ScriptSourceCode(source.code, source.url, position)).v8Value();
+    return frame()->script().executeScriptInMainWorldAndReturnValue(ScriptSourceCode(source.code, source.url, position)).v8Value();
 }
 
 void WebFrameImpl::executeScriptInIsolatedWorld(int worldID, const WebScriptSource* sourcesIn, unsigned numSources, int extensionGroup, WebVector<v8::Local<v8::Value> >* results)
@@ -845,19 +845,20 @@ void WebFrameImpl::executeScriptInIsolatedWorld(int worldID, const WebScriptSour
 
     if (results) {
         Vector<ScriptValue> scriptResults;
-        frame()->script()->executeScriptInIsolatedWorld(worldID, sources, extensionGroup, &scriptResults);
+        frame()->script().executeScriptInIsolatedWorld(worldID, sources, extensionGroup, &scriptResults);
         WebVector<v8::Local<v8::Value> > v8Results(scriptResults.size());
         for (unsigned i = 0; i < scriptResults.size(); i++)
             v8Results[i] = v8::Local<v8::Value>::New(toIsolate(frame()), scriptResults[i].v8Value());
         results->swap(v8Results);
-    } else
-        frame()->script()->executeScriptInIsolatedWorld(worldID, sources, extensionGroup, 0);
+    } else {
+        frame()->script().executeScriptInIsolatedWorld(worldID, sources, extensionGroup, 0);
+    }
 }
 
 v8::Handle<v8::Value> WebFrameImpl::callFunctionEvenIfScriptDisabled(v8::Handle<v8::Function> function, v8::Handle<v8::Object> receiver, int argc, v8::Handle<v8::Value> argv[])
 {
     ASSERT(frame());
-    return frame()->script()->callFunction(function, receiver, argc, argv);
+    return frame()->script().callFunction(function, receiver, argc, argv);
 }
 
 v8::Local<v8::Context> WebFrameImpl::mainWorldScriptContext() const
@@ -2496,7 +2497,7 @@ void WebFrameImpl::loadJavaScriptURL(const KURL& url)
 
     String script = decodeURLEscapeSequences(url.string().substring(strlen("javascript:")));
     UserGestureIndicator gestureIndicator(DefinitelyProcessingNewUserGesture);
-    ScriptValue result = frame()->script()->executeScriptInMainWorldAndReturnValue(ScriptSourceCode(script));
+    ScriptValue result = frame()->script().executeScriptInMainWorldAndReturnValue(ScriptSourceCode(script));
 
     String scriptResult;
     if (!result.getString(scriptResult))

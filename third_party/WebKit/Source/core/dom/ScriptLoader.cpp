@@ -308,7 +308,7 @@ void ScriptLoader::executeScript(const ScriptSourceCode& sourceCode)
 
     Frame* frame = contextDocument->frame();
 
-    bool shouldBypassMainWorldContentSecurityPolicy = (frame && frame->script()->shouldBypassMainWorldContentSecurityPolicy()) || elementDocument->contentSecurityPolicy()->allowScriptNonce(m_element->fastGetAttribute(HTMLNames::nonceAttr));
+    bool shouldBypassMainWorldContentSecurityPolicy = (frame && frame->script().shouldBypassMainWorldContentSecurityPolicy()) || elementDocument->contentSecurityPolicy()->allowScriptNonce(m_element->fastGetAttribute(HTMLNames::nonceAttr));
 
     if (!m_isExternalScript && (!shouldBypassMainWorldContentSecurityPolicy && !elementDocument->contentSecurityPolicy()->allowInlineScript(elementDocument->url(), m_startLineNumber)))
         return;
@@ -331,7 +331,7 @@ void ScriptLoader::executeScript(const ScriptSourceCode& sourceCode)
         // Create a script from the script element node, using the script
         // block's source and the script block's type.
         // Note: This is where the script is compiled and actually executed.
-        frame->script()->executeScriptInMainWorld(sourceCode, corsCheck);
+        frame->script().executeScriptInMainWorld(sourceCode, corsCheck);
 
         if (isHTMLScriptLoader(m_element)) {
             ASSERT(contextDocument->currentScript() == m_element);

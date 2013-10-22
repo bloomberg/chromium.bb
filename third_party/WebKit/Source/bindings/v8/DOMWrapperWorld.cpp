@@ -163,9 +163,9 @@ PassRefPtr<DOMWrapperWorld> DOMWrapperWorld::ensureIsolatedWorld(int worldId, in
     return world.release();
 }
 
-v8::Handle<v8::Context> DOMWrapperWorld::context(ScriptController* controller)
+v8::Handle<v8::Context> DOMWrapperWorld::context(ScriptController& controller)
 {
-    return controller->windowShell(this)->context();
+    return controller.windowShell(this)->context();
 }
 
 typedef HashMap<int, RefPtr<SecurityOrigin> > IsolatedWorldSecurityOriginMap;

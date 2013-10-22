@@ -753,7 +753,7 @@ void InspectorPageAgent::getScriptExecutionStatus(ErrorString*, PageCommandHandl
     bool disabledInSettings = false;
     Frame* frame = mainFrame();
     if (frame) {
-        disabledByScriptController = !frame->script()->canExecuteScripts(NotAboutToExecuteScript);
+        disabledByScriptController = !frame->script().canExecuteScripts(NotAboutToExecuteScript);
         if (frame->settings())
             disabledInSettings = !frame->settings()->isScriptEnabled();
     }
@@ -800,11 +800,11 @@ void InspectorPageAgent::didClearWindowObjectInWorld(Frame* frame, DOMWrapperWor
         for (JSONObject::const_iterator it = scripts->begin(); it != end; ++it) {
             String scriptText;
             if (it->value->asString(&scriptText))
-                frame->script()->executeScriptInMainWorld(scriptText);
+                frame->script().executeScriptInMainWorld(scriptText);
         }
     }
     if (!m_scriptToEvaluateOnLoadOnce.isEmpty())
-        frame->script()->executeScriptInMainWorld(m_scriptToEvaluateOnLoadOnce);
+        frame->script().executeScriptInMainWorld(m_scriptToEvaluateOnLoadOnce);
 }
 
 void InspectorPageAgent::domContentLoadedEventFired(Frame* frame)

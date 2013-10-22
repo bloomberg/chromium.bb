@@ -63,7 +63,7 @@ InspectorFrontendClientImpl::~InspectorFrontendClientImpl()
 void InspectorFrontendClientImpl::windowObjectCleared()
 {
     v8::HandleScope handleScope(v8::Isolate::GetCurrent());
-    v8::Handle<v8::Context> frameContext = m_frontendPage->mainFrame() ? m_frontendPage->mainFrame()->script()->currentWorldContext() : v8::Local<v8::Context>();
+    v8::Handle<v8::Context> frameContext = m_frontendPage->mainFrame() ? m_frontendPage->mainFrame()->script().currentWorldContext() : v8::Local<v8::Context>();
     v8::Context::Scope contextScope(frameContext);
 
     if (m_frontendHost)
@@ -74,7 +74,7 @@ void InspectorFrontendClientImpl::windowObjectCleared()
 
     global->Set(v8::String::New("InspectorFrontendHost"), frontendHostObj);
 
-    ScriptController* scriptController = m_frontendPage->mainFrame() ? m_frontendPage->mainFrame()->script() : 0;
+    ScriptController* scriptController = m_frontendPage->mainFrame() ? &m_frontendPage->mainFrame()->script() : 0;
     if (scriptController) {
         String installLegacyOverrides =
             "" // Support for legacy front-ends (<M31). Do not add items here.

@@ -1884,7 +1884,7 @@ bool ContentSecurityPolicy::shouldBypassMainWorld(ExecutionContext* context)
     if (context && context->isDocument()) {
         Document* document = toDocument(context);
         if (document->frame())
-            return document->frame()->script()->shouldBypassMainWorldContentSecurityPolicy();
+            return document->frame()->script().shouldBypassMainWorldContentSecurityPolicy();
     }
     return false;
 }

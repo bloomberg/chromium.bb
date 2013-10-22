@@ -89,7 +89,7 @@ PassRefPtr<EventSource> EventSource::create(ExecutionContext* context, const Str
     bool shouldBypassMainWorldContentSecurityPolicy = false;
     if (context->isDocument()) {
         Document* document = toDocument(context);
-        shouldBypassMainWorldContentSecurityPolicy = document->frame()->script()->shouldBypassMainWorldContentSecurityPolicy();
+        shouldBypassMainWorldContentSecurityPolicy = document->frame()->script().shouldBypassMainWorldContentSecurityPolicy();
     }
     if (!shouldBypassMainWorldContentSecurityPolicy && !context->contentSecurityPolicy()->allowConnectToSource(fullURL)) {
         // We can safely expose the URL to JavaScript, as this exception is generate synchronously before any redirects take place.

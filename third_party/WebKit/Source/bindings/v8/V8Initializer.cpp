@@ -124,7 +124,7 @@ static void messageHandlerInMainThread(v8::Handle<v8::Message> message, v8::Hand
     // FIXME: Can we even get here during initialization now that we bail out when GetEntered returns an empty handle?
     DOMWrapperWorld* world = DOMWrapperWorld::current();
     Frame* frame = firstWindow->document()->frame();
-    if (world && frame && frame->script()->existingWindowShell(world))
+    if (world && frame && frame->script().existingWindowShell(world))
         V8ErrorHandler::storeExceptionOnErrorEventWrapper(event.get(), data, v8::Isolate::GetCurrent());
     firstWindow->document()->reportException(event.release(), callStack, corsStatus);
 }

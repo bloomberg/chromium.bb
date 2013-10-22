@@ -94,7 +94,7 @@ void HTMLFrameElementBase::openURL(bool lockBackForwardList)
         return;
     if (!contentFrame() || scriptURL.isEmpty())
         return;
-    contentFrame()->script()->executeScriptIfJavaScriptURL(scriptURL);
+    contentFrame()->script().executeScriptIfJavaScriptURL(scriptURL);
 }
 
 void HTMLFrameElementBase::parseAttribute(const QualifiedName& name, const AtomicString& value)

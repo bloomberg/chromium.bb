@@ -275,7 +275,7 @@ void FrameLoader::clear(ClearOptions options)
     if (options & ClearWindowProperties) {
         InspectorInstrumentation::frameWindowDiscarded(m_frame, m_frame->domWindow());
         m_frame->domWindow()->reset();
-        m_frame->script()->clearWindowShell();
+        m_frame->script().clearWindowShell();
     }
 
     m_frame->selection().prepareForDestruction();
@@ -292,9 +292,9 @@ void FrameLoader::clear(ClearOptions options)
     m_containsPlugins = false;
 
     if (options & ClearScriptObjects)
-        m_frame->script()->clearScriptObjects();
+        m_frame->script().clearScriptObjects();
 
-    m_frame->script()->enableEval();
+    m_frame->script().enableEval();
 
     m_frame->navigationScheduler().clear();
 
@@ -685,7 +685,7 @@ bool FrameLoader::prepareRequestForThisFrame(FrameLoadRequest& request)
         return true;
 
     KURL url = request.resourceRequest().url();
-    if (m_frame->script()->executeScriptIfJavaScriptURL(url))
+    if (m_frame->script().executeScriptIfJavaScriptURL(url))
         return false;
 
     if (!request.requester()->canDisplay(url)) {
@@ -1574,7 +1574,7 @@ void FrameLoader::dispatchDocumentElementAvailable()
 
 void FrameLoader::dispatchDidClearWindowObjectsInAllWorlds()
 {
-    if (!m_frame->script()->canExecuteScripts(NotAboutToExecuteScript))
+    if (!m_frame->script().canExecuteScripts(NotAboutToExecuteScript))
         return;
 
     Vector<RefPtr<DOMWrapperWorld> > worlds;
@@ -1585,7 +1585,7 @@ void FrameLoader::dispatchDidClearWindowObjectsInAllWorlds()
 
 void FrameLoader::dispatchDidClearWindowObjectInWorld(DOMWrapperWorld* world)
 {
-    if (!m_frame->script()->canExecuteScripts(NotAboutToExecuteScript) || !m_frame->script()->existingWindowShell(world))
+    if (!m_frame->script().canExecuteScripts(NotAboutToExecuteScript) || !m_frame->script().existingWindowShell(world))
         return;
 
     m_client->dispatchDidClearWindowObjectInWorld(world);

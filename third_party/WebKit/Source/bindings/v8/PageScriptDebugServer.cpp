@@ -90,8 +90,8 @@ PageScriptDebugServer::PageScriptDebugServer()
 
 void PageScriptDebugServer::addListener(ScriptDebugListener* listener, Page* page)
 {
-    ScriptController* scriptController = page->mainFrame()->script();
-    if (!scriptController->canExecuteScripts(NotAboutToExecuteScript))
+    ScriptController& scriptController = page->mainFrame()->script();
+    if (!scriptController.canExecuteScripts(NotAboutToExecuteScript))
         return;
 
     v8::HandleScope scope(m_isolate);
@@ -106,7 +106,7 @@ void PageScriptDebugServer::addListener(ScriptDebugListener* listener, Page* pag
     }
     m_listenersMap.set(page, listener);
 
-    V8WindowShell* shell = scriptController->existingWindowShell(mainThreadNormalWorld());
+    V8WindowShell* shell = scriptController.existingWindowShell(mainThreadNormalWorld());
     if (!shell || !shell->isContextInitialized())
         return;
     v8::Local<v8::Context> context = shell->context();

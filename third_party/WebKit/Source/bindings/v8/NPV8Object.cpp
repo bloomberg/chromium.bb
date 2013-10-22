@@ -257,7 +257,7 @@ bool _NPN_Invoke(NPP npp, NPObject* npObject, NPIdentifier methodName, const NPV
     // Call the function object.
     v8::Handle<v8::Function> function = v8::Handle<v8::Function>::Cast(functionObject);
     OwnPtr<v8::Handle<v8::Value>[]> argv = createValueListFromVariantArgs(arguments, argumentCount, npObject, isolate);
-    v8::Local<v8::Value> resultObject = frame->script()->callFunction(function, v8Object, argumentCount, argv.get());
+    v8::Local<v8::Value> resultObject = frame->script().callFunction(function, v8Object, argumentCount, argv.get());
 
     // If we had an error, return false.  The spec is a little unclear here, but says "Returns true if the method was
     // successfully invoked".  If we get an error return value, was that successfully invoked?
@@ -307,7 +307,7 @@ bool _NPN_InvokeDefault(NPP npp, NPObject* npObject, const NPVariant* arguments,
         ASSERT(frame);
 
         OwnPtr<v8::Handle<v8::Value>[]> argv = createValueListFromVariantArgs(arguments, argumentCount, npObject, isolate);
-        resultObject = frame->script()->callFunction(function, functionObject, argumentCount, argv.get());
+        resultObject = frame->script().callFunction(function, functionObject, argumentCount, argv.get());
     }
     // If we had an error, return false.  The spec is a little unclear here, but says "Returns true if the method was
     // successfully invoked".  If we get an error return value, was that successfully invoked?
@@ -355,7 +355,7 @@ bool _NPN_EvaluateHelper(NPP npp, bool popupsAllowed, NPObject* npObject, NPStri
     String script = String::fromUTF8(npScript->UTF8Characters, npScript->UTF8Length);
 
     UserGestureIndicator gestureIndicator(popupsAllowed ? DefinitelyProcessingNewUserGesture : PossiblyProcessingUserGesture);
-    v8::Local<v8::Value> v8result = frame->script()->executeScriptAndReturnValue(context, ScriptSourceCode(script, KURL(ParsedURLString, filename)));
+    v8::Local<v8::Value> v8result = frame->script().executeScriptAndReturnValue(context, ScriptSourceCode(script, KURL(ParsedURLString, filename)));
 
     if (v8result.IsEmpty())
         return false;
@@ -415,7 +415,7 @@ bool _NPN_SetProperty(NPP npp, NPObject* npObject, NPIdentifier propertyName, co
         ExceptionCatcher exceptionCatcher;
 
         v8::Handle<v8::Object> obj = v8::Local<v8::Object>::New(isolate, object->v8Object);
-        obj->Set(npIdentifierToV8Identifier(propertyName), convertNPVariantToV8Object(value, object->rootObject->frame()->script()->windowScriptNPObject(), context->GetIsolate()));
+        obj->Set(npIdentifierToV8Identifier(propertyName), convertNPVariantToV8Object(value, object->rootObject->frame()->script().windowScriptNPObject(), context->GetIsolate()));
         return true;
     }
 

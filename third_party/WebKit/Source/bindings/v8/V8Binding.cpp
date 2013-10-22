@@ -500,7 +500,7 @@ v8::Local<v8::Context> toV8Context(ExecutionContext* context, DOMWrapperWorld* w
     if (context->isDocument()) {
         ASSERT(world);
         if (Frame* frame = toDocument(context)->frame())
-            return frame->script()->windowShell(world)->context();
+            return frame->script().windowShell(world)->context();
     } else if (context->isWorkerGlobalScope()) {
         ASSERT(!world);
         if (WorkerScriptController* script = toWorkerGlobalScope(context)->script())
@@ -521,7 +521,7 @@ bool handleOutOfMemory()
     if (!frame)
         return true;
 
-    frame->script()->clearForOutOfMemory();
+    frame->script().clearForOutOfMemory();
     frame->loader()->client()->didExhaustMemoryAvailableForScript();
 
     if (Settings* settings = frame->settings())
@@ -606,7 +606,7 @@ v8::Isolate* toIsolate(ExecutionContext* context)
 
 v8::Isolate* toIsolate(Frame* frame)
 {
-    return frame->script()->isolate();
+    return frame->script().isolate();
 }
 
 } // namespace WebCore

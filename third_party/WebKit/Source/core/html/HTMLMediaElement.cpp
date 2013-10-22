@@ -2269,7 +2269,7 @@ bool HTMLMediaElement::controls() const
     Frame* frame = document().frame();
 
     // always show controls when scripting is disabled
-    if (frame && !frame->script()->canExecuteScripts(NotAboutToExecuteScript))
+    if (frame && !frame->script().canExecuteScripts(NotAboutToExecuteScript))
         return true;
 
     // Always show controls when in full screen mode.

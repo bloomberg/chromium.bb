@@ -45,7 +45,7 @@ class PageConsole;
 class ScriptPreprocessor {
     WTF_MAKE_NONCOPYABLE(ScriptPreprocessor);
 public:
-    ScriptPreprocessor(const ScriptSourceCode&, ScriptController*, PageConsole&);
+    ScriptPreprocessor(const ScriptSourceCode&, ScriptController&, PageConsole&);
     String preprocessSourceCode(const String& sourceCode, const String& sourceName);
     String preprocessSourceCode(const String& sourceCode, const String& sourceName, const String& functionName);
     bool isPreprocessing() { return m_isPreprocessing; }

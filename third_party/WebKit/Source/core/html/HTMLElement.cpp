@@ -772,7 +772,7 @@ bool HTMLElement::rendererIsNeeded(const RenderStyle& style)
 {
     if (hasLocalName(noscriptTag)) {
         Frame* frame = document().frame();
-        if (frame && frame->script()->canExecuteScripts(NotAboutToExecuteScript))
+        if (frame && frame->script().canExecuteScripts(NotAboutToExecuteScript))
             return false;
     } else if (hasLocalName(noembedTag)) {
         Frame* frame = document().frame();

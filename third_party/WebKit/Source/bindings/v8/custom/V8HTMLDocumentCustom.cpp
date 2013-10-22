@@ -85,7 +85,7 @@ void V8HTMLDocument::openMethodCustom(const v8::FunctionCallbackInfo<v8::Value>&
     if (args.Length() > 2) {
         if (RefPtr<Frame> frame = htmlDocument->frame()) {
             // Fetch the global object for the frame.
-            v8::Local<v8::Context> context = frame->script()->currentWorldContext();
+            v8::Local<v8::Context> context = frame->script().currentWorldContext();
             // Bail out if we cannot get the context.
             if (context.IsEmpty())
                 return;
@@ -102,7 +102,7 @@ void V8HTMLDocument::openMethodCustom(const v8::FunctionCallbackInfo<v8::Value>&
             for (int i = 0; i < args.Length(); i++)
                 params[i] = args[i];
 
-            v8SetReturnValue(args, frame->script()->callFunction(v8::Local<v8::Function>::Cast(function), global, args.Length(), params.get()));
+            v8SetReturnValue(args, frame->script().callFunction(v8::Local<v8::Function>::Cast(function), global, args.Length(), params.get()));
             return;
         }
     }

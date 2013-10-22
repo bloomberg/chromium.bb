@@ -212,9 +212,9 @@ bool V8WindowShell::initializeIfNeeded()
     }
 
     if (!isMainWorld) {
-        V8WindowShell* mainWindow = m_frame->script()->existingWindowShell(mainThreadNormalWorld());
+        V8WindowShell* mainWindow = m_frame->script().existingWindowShell(mainThreadNormalWorld());
         if (mainWindow && !mainWindow->context().IsEmpty())
-            setInjectedScriptContextDebugId(context, m_frame->script()->contextDebugId(mainWindow->context()));
+            setInjectedScriptContextDebugId(context, m_frame->script().contextDebugId(mainWindow->context()));
     }
 
     m_perContextData = V8PerContextData::create(context);

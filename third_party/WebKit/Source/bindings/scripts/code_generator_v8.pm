@@ -4865,7 +4865,7 @@ END
         return wrapper;
     if (!isolatedWorldForEnteredContext()) {
         if (Frame* frame = impl->frame())
-            frame->script()->windowShell(mainThreadNormalWorld())->updateDocumentWrapper(wrapper);
+            frame->script().windowShell(mainThreadNormalWorld())->updateDocumentWrapper(wrapper);
     }
 END
     }
@@ -4928,7 +4928,7 @@ END
         AddToImplIncludes("core/frame/Frame.h");
         $code .= <<END;
     if (Frame* frame = impl->frame()) {
-        if (frame->script()->initializeMainWorld()) {
+        if (frame->script().initializeMainWorld()) {
             // initializeMainWorld may have created a wrapper for the object, retry from the start.
             v8::Handle<v8::Object> wrapper = DOMDataStore::getWrapper<${v8ClassName}>(impl.get(), isolate);
             if (!wrapper.IsEmpty())

@@ -619,7 +619,7 @@ void InspectorIndexedDBAgent::requestDatabaseNames(ErrorString* errorString, con
 
     // FIXME: This should probably use ScriptState/ScriptScope instead of V8 API
     v8::HandleScope handleScope(toIsolate(frame));
-    v8::Handle<v8::Context> context = document->frame()->script()->mainWorldContext();
+    v8::Handle<v8::Context> context = document->frame()->script().mainWorldContext();
     ASSERT(!context.IsEmpty());
     v8::Context::Scope contextScope(context);
 
@@ -644,7 +644,7 @@ void InspectorIndexedDBAgent::requestDatabase(ErrorString* errorString, const St
 
     // FIXME: This should probably use ScriptState/ScriptScope instead of V8 API
     v8::HandleScope handleScope(toIsolate(frame));
-    v8::Handle<v8::Context> context = document->frame()->script()->mainWorldContext();
+    v8::Handle<v8::Context> context = document->frame()->script().mainWorldContext();
     ASSERT(!context.IsEmpty());
     v8::Context::Scope contextScope(context);
 
@@ -672,7 +672,7 @@ void InspectorIndexedDBAgent::requestData(ErrorString* errorString, const String
 
     // FIXME: This should probably use ScriptState/ScriptScope instead of V8 API
     v8::HandleScope handleScope(toIsolate(frame));
-    v8::Handle<v8::Context> context = document->frame()->script()->mainWorldContext();
+    v8::Handle<v8::Context> context = document->frame()->script().mainWorldContext();
     ASSERT(!context.IsEmpty());
     v8::Context::Scope contextScope(context);
 
@@ -776,7 +776,7 @@ void InspectorIndexedDBAgent::clearObjectStore(ErrorString* errorString, const S
 
     // FIXME: This should probably use ScriptState/ScriptScope instead of V8 API
     v8::HandleScope handleScope(toIsolate(frame));
-    v8::Handle<v8::Context> context = document->frame()->script()->mainWorldContext();
+    v8::Handle<v8::Context> context = document->frame()->script().mainWorldContext();
     ASSERT(!context.IsEmpty());
     v8::Context::Scope contextScope(context);
 

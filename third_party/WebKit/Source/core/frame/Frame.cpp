@@ -337,7 +337,7 @@ void Frame::willDetachPage()
     if (page() && page()->scrollingCoordinator() && m_view)
         page()->scrollingCoordinator()->willDestroyScrollableArea(m_view.get());
 
-    script()->clearScriptObjects();
+    script().clearScriptObjects();
 }
 
 void Frame::detachFromPage()

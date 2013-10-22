@@ -362,7 +362,7 @@ void XMLDocumentParser::append(PassRefPtr<StringImpl> inputSource)
     if (isStopped())
         return;
 
-    if (document()->frame() && document()->frame()->script()->canExecuteScripts(NotAboutToExecuteScript))
+    if (document()->frame() && document()->frame()->script().canExecuteScripts(NotAboutToExecuteScript))
         ImageLoader::dispatchPendingBeforeLoadEvents();
 }
 

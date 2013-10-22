@@ -421,7 +421,7 @@ void WebPluginContainerImpl::clearScriptObjects()
     Frame* frame = m_element->document().frame();
     if (!frame)
         return;
-    frame->script()->cleanupScriptObjectsForPlugin(this);
+    frame->script().cleanupScriptObjectsForPlugin(this);
 }
 
 NPObject* WebPluginContainerImpl::scriptableObjectForElement()
@@ -442,7 +442,7 @@ WebString WebPluginContainerImpl::executeScriptURL(const WebURL& url, bool popup
         kurl.string().substring(strlen("javascript:")));
 
     UserGestureIndicator gestureIndicator(popupsAllowed ? DefinitelyProcessingNewUserGesture : PossiblyProcessingUserGesture);
-    ScriptValue result = frame->script()->executeScriptInMainWorldAndReturnValue(ScriptSourceCode(script));
+    ScriptValue result = frame->script().executeScriptInMainWorldAndReturnValue(ScriptSourceCode(script));
 
     // Failure is reported as a null string.
     String resultStr;

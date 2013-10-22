@@ -293,31 +293,31 @@ TextPosition ScriptController::eventHandlerPosition() const
     return TextPosition::minimumPosition();
 }
 
-static inline v8::Local<v8::Context> contextForWorld(ScriptController* scriptController, DOMWrapperWorld* world)
+static inline v8::Local<v8::Context> contextForWorld(ScriptController& scriptController, DOMWrapperWorld* world)
 {
-    return scriptController->windowShell(world)->context();
+    return scriptController.windowShell(world)->context();
 }
 
 v8::Local<v8::Context> ScriptController::currentWorldContext()
 {
     if (!v8::Context::InContext())
-        return contextForWorld(this, mainThreadNormalWorld());
+        return contextForWorld(*this, mainThreadNormalWorld());
 
     v8::Handle<v8::Context> context = v8::Context::GetEntered();
     DOMWrapperWorld* isolatedWorld = DOMWrapperWorld::isolatedWorld(context);
     if (!isolatedWorld)
-        return contextForWorld(this, mainThreadNormalWorld());
+        return contextForWorld(*this, mainThreadNormalWorld());
 
     Frame* frame = toFrameIfNotDetached(context);
     if (m_frame == frame)
         return v8::Local<v8::Context>::New(m_isolate, context);
 
-    return contextForWorld(this, isolatedWorld);
+    return contextForWorld(*this, isolatedWorld);
 }
 
 v8::Local<v8::Context> ScriptController::mainWorldContext()
 {
-    return contextForWorld(this, mainThreadNormalWorld());
+    return contextForWorld(*this, mainThreadNormalWorld());
 }
 
 v8::Local<v8::Context> ScriptController::mainWorldContext(Frame* frame)

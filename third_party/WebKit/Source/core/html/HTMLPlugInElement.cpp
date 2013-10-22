@@ -124,7 +124,7 @@ SharedPersistent<v8::Object>* HTMLPlugInElement::pluginWrapper()
     // the cached allocated Bindings::Instance.  Not supporting this edge-case is OK.
     if (!m_pluginWrapper) {
         if (Widget* widget = pluginWidget())
-            m_pluginWrapper = frame->script()->createPluginWrapper(widget);
+            m_pluginWrapper = frame->script().createPluginWrapper(widget);
     }
     return m_pluginWrapper.get();
 }
@@ -247,7 +247,7 @@ NPObject* HTMLPlugInElement::getNPObject()
 {
     ASSERT(document().frame());
     if (!m_NPObject)
-        m_NPObject = document().frame()->script()->createScriptObjectForPluginElement(this);
+        m_NPObject = document().frame()->script().createScriptObjectForPluginElement(this);
     return m_NPObject;
 }
 

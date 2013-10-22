@@ -652,7 +652,7 @@ Page* InspectorOverlay::overlayPage()
     loader->activeDocumentLoader()->endWriting(writer);
     v8::Isolate* isolate = toIsolate(frame.get());
     v8::HandleScope handleScope(isolate);
-    v8::Handle<v8::Context> frameContext = frame->script()->currentWorldContext();
+    v8::Handle<v8::Context> frameContext = frame->script().currentWorldContext();
     v8::Context::Scope contextScope(frameContext);
     v8::Handle<v8::Value> overlayHostObj = toV8(m_overlayHost.get(), v8::Handle<v8::Object>(), isolate);
     v8::Handle<v8::Object> global = frameContext->Global();
@@ -687,7 +687,7 @@ void InspectorOverlay::evaluateInOverlay(const String& method, const String& arg
     RefPtr<JSONArray> command = JSONArray::create();
     command->pushString(method);
     command->pushString(argument);
-    overlayPage()->mainFrame()->script()->executeScriptInMainWorld("dispatch(" + command->toJSONString() + ")", ScriptController::ExecuteScriptWhenScriptsDisabled);
+    overlayPage()->mainFrame()->script().executeScriptInMainWorld("dispatch(" + command->toJSONString() + ")", ScriptController::ExecuteScriptWhenScriptsDisabled);
 }
 
 void InspectorOverlay::evaluateInOverlay(const String& method, PassRefPtr<JSONValue> argument)
@@ -695,7 +695,7 @@ void InspectorOverlay::evaluateInOverlay(const String& method, PassRefPtr<JSONVa
     RefPtr<JSONArray> command = JSONArray::create();
     command->pushString(method);
     command->pushValue(argument);
-    overlayPage()->mainFrame()->script()->executeScriptInMainWorld("dispatch(" + command->toJSONString() + ")", ScriptController::ExecuteScriptWhenScriptsDisabled);
+    overlayPage()->mainFrame()->script().executeScriptInMainWorld("dispatch(" + command->toJSONString() + ")", ScriptController::ExecuteScriptWhenScriptsDisabled);
 }
 
 void InspectorOverlay::onTimer(Timer<InspectorOverlay>*)

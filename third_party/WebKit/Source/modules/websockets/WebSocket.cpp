@@ -224,7 +224,7 @@ void WebSocket::connect(const String& url, const Vector<String>& protocols, Exce
     bool shouldBypassMainWorldContentSecurityPolicy = false;
     if (executionContext()->isDocument()) {
         Document* document = toDocument(executionContext());
-        shouldBypassMainWorldContentSecurityPolicy = document->frame()->script()->shouldBypassMainWorldContentSecurityPolicy();
+        shouldBypassMainWorldContentSecurityPolicy = document->frame()->script().shouldBypassMainWorldContentSecurityPolicy();
     }
     if (!shouldBypassMainWorldContentSecurityPolicy && !executionContext()->contentSecurityPolicy()->allowConnectToSource(m_url)) {
         m_state = CLOSED;

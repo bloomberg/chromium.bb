@@ -278,7 +278,7 @@ void WebDevToolsAgentImpl::didCreateScriptContext(WebFrameImpl* webframe, int wo
     if (worldId)
         return;
     if (WebCore::Frame* frame = webframe->frame())
-        frame->script()->setContextDebugId(m_hostId);
+        frame->script().setContextDebugId(m_hostId);
 }
 
 void WebDevToolsAgentImpl::webViewResized(const WebSize& size)

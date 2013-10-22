@@ -96,11 +96,11 @@ v8::Local<v8::Value> V8LazyEventListener::callListenerFunction(ExecutionContext*
     if (!frame)
         return v8::Local<v8::Value>();
 
-    if (!frame->script()->canExecuteScripts(AboutToExecuteScript))
+    if (!frame->script().canExecuteScripts(AboutToExecuteScript))
         return v8::Local<v8::Value>();
 
     v8::Handle<v8::Value> parameters[1] = { jsEvent };
-    return frame->script()->callFunction(handlerFunction, receiver, WTF_ARRAY_LENGTH(parameters), parameters);
+    return frame->script().callFunction(handlerFunction, receiver, WTF_ARRAY_LENGTH(parameters), parameters);
 }
 
 static void V8LazyEventListenerToString(const v8::FunctionCallbackInfo<v8::Value>& args)

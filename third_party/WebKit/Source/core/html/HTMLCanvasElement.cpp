@@ -112,7 +112,7 @@ void HTMLCanvasElement::parseAttribute(const QualifiedName& name, const AtomicSt
 RenderObject* HTMLCanvasElement::createRenderer(RenderStyle* style)
 {
     Frame* frame = document().frame();
-    if (frame && frame->script()->canExecuteScripts(NotAboutToExecuteScript)) {
+    if (frame && frame->script().canExecuteScripts(NotAboutToExecuteScript)) {
         m_rendererIsCanvas = true;
         return new RenderHTMLCanvas(this);
     }

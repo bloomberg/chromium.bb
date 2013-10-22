@@ -361,7 +361,7 @@ void DOMWindow::setDocument(PassRefPtr<Document> document)
     if (!m_frame)
         return;
 
-    m_frame->script()->updateDocument();
+    m_frame->script().updateDocument();
     m_document->updateViewportDescription();
 
     if (m_frame->page() && m_frame->view()) {
