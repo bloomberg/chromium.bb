@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/i18n/rtl.h"
 #include "base/strings/string_piece.h"
 #include "base/values.h"
 #include "grit/chromium_strings.h"
@@ -39,6 +40,7 @@ struct LazyDirectoryListerCacher {
     value.SetString("listingParsingErrorBoxText",
         l10n_util::GetStringFUTF16(IDS_DIRECTORY_LISTING_PARSING_ERROR_BOX_TEXT,
             l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
+    value.SetString("textdirection", base::i18n::IsRTL() ? "rtl" : "ltr");
     html_data = webui::GetI18nTemplateHtml(
         ResourceBundle::GetSharedInstance().GetRawDataResource(
             IDR_DIR_HEADER_HTML),
