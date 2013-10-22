@@ -122,8 +122,6 @@ move_pointer(struct wl_client *client, struct wl_resource *resource,
 	struct weston_seat *seat = get_seat(test);
 	struct weston_pointer *pointer = seat->pointer;
 
-	test->compositor->focus = 1;
-
 	notify_motion(seat, 100,
 		      wl_fixed_from_int(x) - pointer->x,
 		      wl_fixed_from_int(y) - pointer->y);
@@ -137,8 +135,6 @@ send_button(struct wl_client *client, struct wl_resource *resource,
 {
 	struct weston_test *test = wl_resource_get_user_data(resource);
 	struct weston_seat *seat = get_seat(test);
-
-	test->compositor->focus = 1;
 
 	notify_button(seat, 100, button, state);
 }
@@ -171,8 +167,6 @@ send_key(struct wl_client *client, struct wl_resource *resource,
 {
 	struct weston_test *test = wl_resource_get_user_data(resource);
 	struct weston_seat *seat = get_seat(test);
-
-	test->compositor->focus = 1;
 
 	notify_key(seat, 100, key, state, STATE_UPDATE_AUTOMATIC);
 }

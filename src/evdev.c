@@ -400,7 +400,7 @@ evdev_device_data(int fd, uint32_t mask, void *data)
 	int len;
 
 	ec = device->seat->compositor;
-	if (!ec->focus)
+	if (!ec->session_active)
 		return 1;
 
 	/* If the compositor is repainting, this function is called only once

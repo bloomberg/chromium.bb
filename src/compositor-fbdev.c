@@ -816,7 +816,6 @@ session_notify(struct wl_listener *listener, void *data)
 
 	if (compositor->base.session_active) {
 		weston_log("entering VT\n");
-		compositor->base.focus = 1;
 		compositor->base.state = compositor->prev_state;
 
 		wl_list_for_each(output, &compositor->base.output_list, link) {
@@ -834,7 +833,6 @@ session_notify(struct wl_listener *listener, void *data)
 			fbdev_output_disable(output);
 		}
 
-		compositor->base.focus = 0;
 		compositor->prev_state = compositor->base.state;
 		weston_compositor_offscreen(&compositor->base);
 
@@ -906,7 +904,6 @@ fbdev_compositor_create(struct wl_display *display, int *argc, char *argv[],
 	compositor->base.destroy = fbdev_compositor_destroy;
 	compositor->base.restore = fbdev_restore;
 
-	compositor->base.focus = 1;
 	compositor->prev_state = WESTON_COMPOSITOR_ACTIVE;
 	compositor->use_pixman = !param->use_gl;
 

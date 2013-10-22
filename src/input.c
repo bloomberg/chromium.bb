@@ -963,9 +963,7 @@ notify_pointer_focus(struct weston_seat *seat, struct weston_output *output,
 
 	if (output) {
 		move_pointer(seat, x, y);
-		compositor->focus = 1;
 	} else {
-		compositor->focus = 0;
 		/* FIXME: We should call weston_pointer_set_focus(seat,
 		 * NULL) here, but somehow that breaks re-entry... */
 	}

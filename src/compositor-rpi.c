@@ -671,7 +671,6 @@ session_notify(struct wl_listener *listener, void *data)
 
 	if (compositor->base.session_active) {
 		weston_log("activating session\n");
-		compositor->base.focus = 1;
 		compositor->base.state = compositor->prev_state;
 		weston_compositor_damage_all(&compositor->base);
 		wl_list_for_each(seat, &compositor->base.seat_list, link) {
@@ -685,7 +684,6 @@ session_notify(struct wl_listener *listener, void *data)
 			evdev_remove_devices(seat);
 		}
 
-		compositor->base.focus = 0;
 		compositor->prev_state = compositor->base.state;
 		weston_compositor_offscreen(&compositor->base);
 
@@ -762,7 +760,6 @@ rpi_compositor_create(struct wl_display *display, int *argc, char *argv[],
 	compositor->base.destroy = rpi_compositor_destroy;
 	compositor->base.restore = rpi_restore;
 
-	compositor->base.focus = 1;
 	compositor->prev_state = WESTON_COMPOSITOR_ACTIVE;
 	compositor->single_buffer = param->renderer.single_buffer;
 

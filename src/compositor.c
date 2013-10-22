@@ -1042,7 +1042,7 @@ weston_compositor_repick(struct weston_compositor *compositor)
 {
 	struct weston_seat *seat;
 
-	if (!compositor->focus)
+	if (!compositor->session_active)
 		return;
 
 	wl_list_for_each(seat, &compositor->seat_list, link)

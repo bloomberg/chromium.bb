@@ -591,8 +591,6 @@ struct weston_compositor {
 	struct weston_plane primary_plane;
 	uint32_t capabilities; /* combination of enum weston_capability */
 
-	uint32_t focus;
-
 	struct weston_renderer *renderer;
 
 	pixman_format_code_t read_format;

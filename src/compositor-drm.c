@@ -2364,7 +2364,6 @@ session_notify(struct wl_listener *listener, void *data)
 
 	if (ec->base.session_active) {
 		weston_log("activating session\n");
-		compositor->focus = 1;
 		compositor->state = ec->prev_state;
 		drm_compositor_set_modes(ec);
 		weston_compositor_damage_all(compositor);
@@ -2373,7 +2372,6 @@ session_notify(struct wl_listener *listener, void *data)
 		weston_log("deactivating session\n");
 		udev_input_disable(&ec->input);
 
-		compositor->focus = 0;
 		ec->prev_state = compositor->state;
 		weston_compositor_offscreen(compositor);
 
@@ -2671,8 +2669,6 @@ drm_compositor_create(struct wl_display *display,
 
 	ec->base.destroy = drm_destroy;
 	ec->base.restore = drm_restore;
-
-	ec->base.focus = 1;
 
 	ec->prev_state = WESTON_COMPOSITOR_ACTIVE;
 
