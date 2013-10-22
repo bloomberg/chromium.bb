@@ -3,6 +3,12 @@
 # found in the LICENSE file.
 
 {
+  'variables': {
+    # This turns on e.g. the filename-based detection of which
+    # platforms to include source files on (e.g. files ending in
+    # _mac.h or _mac.cc are only compiled on MacOSX).
+    'chromium_code': 1,
+   },
   'conditions': [
     ['android_webview_build == 0', {
       'targets': [
@@ -49,55 +55,55 @@
             '../testing/gtest.gyp:gtest',
 
             # Dependencies of autofill
-            'autofill_core_common',
+            'components.gyp:autofill_core_common',
 
             # Dependencies of auto_login_parser
-            'auto_login_parser',
+            'components.gyp:auto_login_parser',
 
             # Dependencies of browser_context_keyed_service
-            'browser_context_keyed_service',
+            'components.gyp:browser_context_keyed_service',
 
             # Dependencies of dom_distiller
-            'distilled_page_proto',
-            'dom_distiller_core',
+            'components.gyp:distilled_page_proto',
+            'components.gyp:dom_distiller_core',
 
             # Dependencies of encryptor
-            'encryptor',
+            'components.gyp:encryptor',
 
             # Dependencies of json_schema
-            'json_schema',
+            'components.gyp:json_schema',
 
             # Dependencies of intercept_navigation_resource_throttle_unittest.cc
             '../content/content_shell_and_tests.gyp:test_support_content',
             '../skia/skia.gyp:skia',
-            'navigation_interception',
+            'components.gyp:navigation_interception',
 
             # Dependencies of policy
-            'policy_component',
+            'components.gyp:policy_component',
 
             # Dependencies of precache
-            'precache_core',
-            'precache_core_proto',
+            'components.gyp:precache_core',
+            'components.gyp:precache_core_proto',
 
             # Dependencies of sessions
             '../third_party/protobuf/protobuf.gyp:protobuf_lite',
-            'sessions',
-            'sessions_test_support',
+            'components.gyp:sessions',
+            'components.gyp:sessions_test_support',
 
             # Dependencies of translate.
-            'translate_common',
-            'translate_language_detection',
+            'components.gyp:translate_common',
+            'components.gyp:translate_language_detection',
 
             # Dependencies of variations
-            'variations',
+            'components.gyp:variations',
 
             # Dependencies of visitedlink
-            'visitedlink_browser',
-            'visitedlink_renderer',
+            'components.gyp:visitedlink_browser',
+            'components.gyp:visitedlink_renderer',
             '../content/content_resources.gyp:content_resources',
 
-            'web_modal',
-            'web_modal_test_support',
+            'components.gyp:web_modal',
+            'components.gyp:web_modal_test_support',
           ],
           'conditions': [
             ['OS == "ios"', {
@@ -121,8 +127,8 @@
                 'web_modal/web_contents_modal_dialog_manager_unittest.cc',
               ],
               'dependencies!': [
-                'web_modal',
-                'web_modal_test_support',
+                'components.gyp:web_modal',
+                'components.gyp:web_modal_test_support',
               ],
             }],
             ['OS == "android" and gtest_target_type == "shared_library"', {
@@ -165,7 +171,7 @@
             '../content/content_shell_and_tests.gyp:test_support_content',
             '../testing/gtest.gyp:gtest',
             '../ui/compositor/compositor.gyp:compositor',
-            'visitedlink_browser',
+            'components.gyp:visitedlink_browser',
           ],
          'include_dirs': [
            '..',
