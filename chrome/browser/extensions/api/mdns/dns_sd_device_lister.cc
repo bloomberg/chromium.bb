@@ -4,17 +4,9 @@
 
 #include "chrome/browser/extensions/api/mdns/dns_sd_device_lister.h"
 
-#include <utility>
-
-#include "base/bind.h"
-#include "chrome/browser/local_discovery/service_discovery_shared_client.h"
 #include "chrome/common/extensions/api/mdns.h"
-#include "net/base/net_util.h"
 
 using local_discovery::ServiceDescription;
-using local_discovery::ServiceDiscoverySharedClient;
-using local_discovery::ServiceResolver;
-using local_discovery::ServiceWatcher;
 
 namespace extensions {
 
@@ -38,74 +30,40 @@ void FillServiceInfo(const ServiceDescription& service_description,
 }  // namespace
 
 DnsSdDeviceLister::DnsSdDeviceLister(
+    local_discovery::ServiceDiscoveryClient* service_discovery_client,
     DnsSdDelegate* delegate,
-    const std::string& service_type,
-    ServiceDiscoverySharedClient* service_discovery_client)
+    const std::string& service_type)
     : delegate_(delegate),
-      service_type_(service_type),
-      service_discovery_client_(service_discovery_client) {
+      device_lister_(this, service_discovery_client, service_type),
+      started_(false) {
 }
 
-DnsSdDeviceLister::~DnsSdDeviceLister() {}
+DnsSdDeviceLister::~DnsSdDeviceLister() {
+}
 
 void DnsSdDeviceLister::Discover(bool force_update) {
-  if (!service_discovery_client_)
-    return;
-
-  if (!service_watcher_.get()) {
-    service_watcher_ = service_discovery_client_->CreateServiceWatcher(
-        service_type_,
-        base::Bind(&DnsSdDeviceLister::OnServiceUpdated,
-                   base::Unretained(this)));
-    service_watcher_->Start();
+  if (!started_) {
+    device_lister_.Start();
+    started_ = true;
   }
-  service_watcher_->DiscoverNewServices(force_update);
+  device_lister_.DiscoverNewDevices(force_update);
 }
 
-void DnsSdDeviceLister::OnServiceUpdated(
-    ServiceWatcher::UpdateType update,
-    const std::string& service_name) {
-  // TODO(justinlin): Consolidate with PrivetDeviceListerImpl.
-  if (update != ServiceWatcher::UPDATE_REMOVED) {
-    bool added = (update == ServiceWatcher::UPDATE_ADDED);
-    std::pair<ServiceResolverMap::iterator, bool> insert_result =
-        resolvers_.insert(make_pair(service_name,
-                                    linked_ptr<ServiceResolver>(NULL)));
-
-    // If there is already a resolver working on this service, don't add one.
-    if (insert_result.second) {
-      scoped_ptr<ServiceResolver> resolver =
-          service_discovery_client_->CreateServiceResolver(
-          service_name, base::Bind(
-              &DnsSdDeviceLister::OnResolveComplete,
-              base::Unretained(this),
-              added));
-
-      insert_result.first->second.reset(resolver.release());
-      insert_result.first->second->StartResolving();
-    }
-  } else {
-    delegate_->ServiceRemoved(service_type_, service_name);
-  }
-}
-
-void DnsSdDeviceLister::OnResolveComplete(
+void DnsSdDeviceLister::OnDeviceChanged(
     bool added,
-    ServiceResolver::RequestStatus status,
     const ServiceDescription& service_description) {
-  // TODO(justinlin): Consolidate with PrivetDeviceListerImpl.
-  if (status != ServiceResolver::STATUS_SUCCESS) {
-    resolvers_.erase(service_description.service_name);
-
-    // TODO(noamsml): Add retry logic.
-    return;
-  }
-
   DnsSdService service;
   FillServiceInfo(service_description, &service);
+  delegate_->ServiceChanged(device_lister_.service_type(), added, service);
+}
 
-  resolvers_.erase(service_description.service_name);
-  delegate_->ServiceChanged(service_type_, added, service);
+void DnsSdDeviceLister::OnDeviceRemoved(const std::string& service_name) {
+  delegate_->ServiceRemoved(device_lister_.service_type(), service_name);
+}
+
+void DnsSdDeviceLister::OnDeviceCacheFlushed() {
+  delegate_->ServicesFlushed(device_lister_.service_type());
+  device_lister_.DiscoverNewDevices(false);
 }
 
 }  // namespace extensions

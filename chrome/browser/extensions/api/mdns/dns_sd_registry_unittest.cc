@@ -13,10 +13,10 @@ namespace extensions {
 
 class MockDnsSdDeviceLister : public DnsSdDeviceLister {
  public:
-  MockDnsSdDeviceLister() : DnsSdDeviceLister(NULL, "", NULL) {}
+  MockDnsSdDeviceLister() : DnsSdDeviceLister(NULL, NULL, "") {}
   virtual ~MockDnsSdDeviceLister() {}
 
-  virtual void Discover(bool forced) OVERRIDE {}
+  virtual void Discover(bool force_update) OVERRIDE {}
 };
 
 class TestDnsSdRegistry : public DnsSdRegistry {
@@ -43,8 +43,8 @@ class TestDnsSdRegistry : public DnsSdRegistry {
   virtual DnsSdDeviceLister* CreateDnsSdDeviceLister(
       DnsSdDelegate* delegate,
       const std::string& service_type,
-      local_discovery::ServiceDiscoverySharedClient*
-          discovery_client) OVERRIDE {
+      local_discovery::ServiceDiscoverySharedClient* discovery_client)
+          OVERRIDE {
     delegate_ = delegate;
     MockDnsSdDeviceLister* lister = new MockDnsSdDeviceLister();
     listers_[service_type] = lister;
@@ -172,5 +172,34 @@ TEST_F(DnsSdRegistryTest, AddMultipleServices) {
   registry_->GetDelegate()->ServiceChanged(service_type, true, service);
   registry_->GetDelegate()->ServiceChanged(service_type, true, service2);
 }
+
+// Tests adding multiple services and handling a flush event.
+TEST_F(DnsSdRegistryTest, FlushCache) {
+  testing::InSequence s;
+  const std::string service_type = "_testing._tcp.local";
+
+  DnsSdService service;
+  service.service_name = "_myDevice." + service_type;
+  service.ip_address = "192.168.0.100";
+
+  DnsSdService service2;
+  service.service_name = "_myDevice2." + service_type;
+  service.ip_address = "192.168.0.101";
+
+  DnsSdRegistry::DnsSdServiceList service_list;
+  EXPECT_CALL(observer_, OnDnsSdEvent(service_type, service_list));
+  service_list.push_back(service);
+  EXPECT_CALL(observer_, OnDnsSdEvent(service_type, service_list));
+  service_list.push_back(service2);
+  EXPECT_CALL(observer_, OnDnsSdEvent(service_type, service_list));
+  service_list.clear();
+  EXPECT_CALL(observer_, OnDnsSdEvent(service_type, service_list));
+
+  registry_->RegisterDnsSdListener(service_type);
+  registry_->GetDelegate()->ServiceChanged(service_type, true, service);
+  registry_->GetDelegate()->ServiceChanged(service_type, true, service2);
+  registry_->GetDelegate()->ServicesFlushed(service_type);
+}
+
 
 }  // namespace extensions

@@ -968,6 +968,8 @@
         'browser/local_discovery/service_discovery_client_mac.mm',
         'browser/local_discovery/service_discovery_client_mac_factory.h',
         'browser/local_discovery/service_discovery_client_mac_factory.mm',
+        'browser/local_discovery/service_discovery_device_lister.cc',
+        'browser/local_discovery/service_discovery_device_lister.h',
         'browser/local_discovery/service_discovery_shared_client.cc',
         'browser/local_discovery/service_discovery_shared_client.h',
         'browser/mac/dock.h',

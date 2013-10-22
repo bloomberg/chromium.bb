@@ -68,6 +68,7 @@ class DnsSdRegistry : public DnsSdDelegate {
     // Methods for adding, updating or removing services for this service type.
     bool UpdateService(bool added, const DnsSdService& service);
     bool RemoveService(const std::string& service_name);
+    bool ClearServices();
 
     const DnsSdRegistry::DnsSdServiceList& GetServiceList();
 
@@ -93,11 +94,13 @@ class DnsSdRegistry : public DnsSdDelegate {
                               const DnsSdService& service) OVERRIDE;
   virtual void ServiceRemoved(const std::string& service_type,
                               const std::string& service_name) OVERRIDE;
+  virtual void ServicesFlushed(const std::string& service_type) OVERRIDE;
 
   DnsSdServiceTypeDataMap service_data_map_;
 
  private:
   void DispatchApiEvent(const std::string& service_type);
+  bool IsRegistered(const std::string& service_type);
 
   scoped_refptr<local_discovery::ServiceDiscoverySharedClient>
       service_discovery_client_;

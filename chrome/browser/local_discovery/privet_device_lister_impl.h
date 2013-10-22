@@ -5,23 +5,22 @@
 #ifndef CHROME_BROWSER_LOCAL_DISCOVERY_PRIVET_DEVICE_LISTER_IMPL_H_
 #define CHROME_BROWSER_LOCAL_DISCOVERY_PRIVET_DEVICE_LISTER_IMPL_H_
 
-#include <map>
 #include <string>
 
-#include "base/callback.h"
-#include "base/memory/linked_ptr.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/local_discovery/privet_device_lister.h"
-#include "chrome/common/local_discovery/service_discovery_client.h"
+#include "chrome/browser/local_discovery/service_discovery_device_lister.h"
 
 namespace local_discovery {
 
-class PrivetDeviceListerImpl : public PrivetDeviceLister {
+class ServiceDiscoveryClient;
+
+class PrivetDeviceListerImpl : public PrivetDeviceLister,
+                               public ServiceDiscoveryDeviceLister::Delegate {
  public:
   PrivetDeviceListerImpl(
       ServiceDiscoveryClient* service_discovery_client,
       PrivetDeviceLister::Delegate* delegate,
-      std::string subtype);
+      const std::string& subtype);
 
   PrivetDeviceListerImpl(
       ServiceDiscoveryClient* service_discovery_client,
@@ -30,36 +29,18 @@ class PrivetDeviceListerImpl : public PrivetDeviceLister {
   virtual ~PrivetDeviceListerImpl();
 
   virtual void Start() OVERRIDE;
-
   virtual void DiscoverNewDevices(bool force_update) OVERRIDE;
 
- private:
-  typedef std::map<std::string, linked_ptr<ServiceResolver> >
-     ServiceResolverMap;
-
-  void OnServiceUpdated(ServiceWatcher::UpdateType update,
-                        const std::string& service_name);
-
-  void OnResolveComplete(
+ protected:
+  virtual void OnDeviceChanged(
       bool added,
-      ServiceResolver::RequestStatus status,
-      const ServiceDescription& description);
+      const ServiceDescription& service_description) OVERRIDE;
+  virtual void OnDeviceRemoved(const std::string& service_name) OVERRIDE;
+  virtual void OnDeviceCacheFlushed() OVERRIDE;
 
-  void FillDeviceDescription(const ServiceDescription& service_description,
-                             DeviceDescription* device_description);
-
-  DeviceDescription::ConnectionState ConnectionStateFromString(
-      const std::string& str);
-
-  // Create or recreate the service watcher
-  void CreateServiceWatcher();
-
+ private:
   PrivetDeviceLister::Delegate* delegate_;
-
-  ServiceDiscoveryClient* service_discovery_client_;
-  scoped_ptr<ServiceWatcher> service_watcher_;
-  ServiceResolverMap resolvers_;
-  std::string service_type_;
+  ServiceDiscoveryDeviceLister device_lister_;
 };
 
 }  // namespace local_discovery
