@@ -45,6 +45,12 @@ class CryptohomeClientImpl : public CryptohomeClient {
   }
 
   // CryptohomeClient override.
+  virtual void WaitForServiceToBeAvailable(
+      const WaitForServiceToBeAvailableCallback& callback) OVERRIDE {
+    proxy_->WaitForServiceToBeAvailable(callback);
+  }
+
+  // CryptohomeClient override.
   virtual void IsMounted(const BoolDBusMethodCallback& callback) OVERRIDE {
     dbus::MethodCall method_call(cryptohome::kCryptohomeInterface,
                                  cryptohome::kCryptohomeIsMounted);

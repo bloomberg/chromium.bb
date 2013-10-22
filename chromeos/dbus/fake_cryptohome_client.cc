@@ -13,7 +13,8 @@
 namespace chromeos {
 
 FakeCryptohomeClient::FakeCryptohomeClient()
-    : async_call_id_(1),
+    : service_is_available_(true),
+      async_call_id_(1),
       tpm_is_ready_counter_(0),
       unmount_result_(true),
       locked_(false),
@@ -34,6 +35,16 @@ void FakeCryptohomeClient::SetAsyncCallStatusHandlers(
 void FakeCryptohomeClient::ResetAsyncCallStatusHandlers() {
   async_call_status_handler_.Reset();
   async_call_status_data_handler_.Reset();
+}
+
+void FakeCryptohomeClient::WaitForServiceToBeAvailable(
+    const WaitForServiceToBeAvailableCallback& callback) {
+  if (service_is_available_) {
+    base::MessageLoop::current()->PostTask(FROM_HERE,
+                                           base::Bind(callback, true));
+  } else {
+    pending_wait_for_service_to_be_available_callbacks_.push_back(callback);
+  }
 }
 
 void FakeCryptohomeClient::IsMounted(
@@ -366,6 +377,16 @@ void FakeCryptohomeClient::TpmAttestationSetKeyPayload(
     const BoolDBusMethodCallback& callback) {
   base::MessageLoop::current()->PostTask(
       FROM_HERE, base::Bind(callback, DBUS_METHOD_CALL_SUCCESS, false));
+}
+
+void FakeCryptohomeClient::SetServiceIsAvailable(bool is_available) {
+  service_is_available_ = is_available;
+  if (is_available) {
+    std::vector<WaitForServiceToBeAvailableCallback> callbacks;
+    callbacks.swap(pending_wait_for_service_to_be_available_callbacks_);
+    for (size_t i = 0; i < callbacks.size(); ++i)
+      callbacks[i].Run(is_available);
+  }
 }
 
 // static

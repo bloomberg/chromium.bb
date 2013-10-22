@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
+#include "base/memory/weak_ptr.h"
 #include "chromeos/chromeos_export.h"
 
 namespace chromeos {
@@ -49,10 +50,16 @@ class CHROMEOS_EXPORT SystemSaltGetter {
   ~SystemSaltGetter();
 
  private:
+  // Used to implement GetSystemSalt().
+  void GetSystemSaltInternal(const GetSystemSaltCallback& callback,
+                             bool service_is_available);
+
   // Loads the system salt from cryptohome and caches it.
   void LoadSystemSalt();
 
   std::string system_salt_;
+
+  base::WeakPtrFactory<SystemSaltGetter> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SystemSaltGetter);
 };

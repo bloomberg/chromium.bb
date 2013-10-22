@@ -35,6 +35,9 @@ class CHROMEOS_EXPORT CryptohomeClient : public DBusClient {
       AsyncCallStatusWithDataHandler;
   // A callback to handle responses of AsyncXXX methods.
   typedef base::Callback<void(int async_id)> AsyncMethodCallback;
+  // A callback for WaitForServiceToBeAvailable().
+  typedef base::Callback<void(bool service_is_ready)>
+      WaitForServiceToBeAvailableCallback;
   // A callback to handle responses of Pkcs11GetTpmTokenInfo method.  The result
   // of the D-Bus call is in |call_status|.  On success, |label| holds the
   // PKCS #11 token label.  This is not useful in practice to identify a token
@@ -72,6 +75,10 @@ class CHROMEOS_EXPORT CryptohomeClient : public DBusClient {
 
   // Resets AsyncCallStatus signal handlers.
   virtual void ResetAsyncCallStatusHandlers() = 0;
+
+  // Runs the callback as soon as the service becomes available.
+  virtual void WaitForServiceToBeAvailable(
+      const WaitForServiceToBeAvailableCallback& callback) = 0;
 
   // Calls IsMounted method and returns true when the call succeeds.
   virtual void IsMounted(const BoolDBusMethodCallback& callback) = 0;

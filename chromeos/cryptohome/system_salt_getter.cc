@@ -19,7 +19,7 @@ SystemSaltGetter* g_system_salt_getter = NULL;
 
 }  // namespace
 
-SystemSaltGetter::SystemSaltGetter() {
+SystemSaltGetter::SystemSaltGetter() : weak_ptr_factory_(this) {
 }
 
 SystemSaltGetter::~SystemSaltGetter() {
@@ -27,9 +27,10 @@ SystemSaltGetter::~SystemSaltGetter() {
 
 void SystemSaltGetter::GetSystemSalt(
     const GetSystemSaltCallback& callback) {
-  // TODO(hashimoto): Stop using GetSystemSaltSynt(). crbug.com/141009
-  base::MessageLoopProxy::current()->PostTask(
-      FROM_HERE, base::Bind(callback, GetSystemSaltSync()));
+  DBusThreadManager::Get()->GetCryptohomeClient()->WaitForServiceToBeAvailable(
+      base::Bind(&SystemSaltGetter::GetSystemSaltInternal,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 callback));
 }
 
 std::string SystemSaltGetter::GetSystemSaltSync() {
@@ -39,6 +40,14 @@ std::string SystemSaltGetter::GetSystemSaltSync() {
 
 std::string SystemSaltGetter::GetCachedSystemSalt() {
   return system_salt_;
+}
+
+void SystemSaltGetter::GetSystemSaltInternal(
+    const GetSystemSaltCallback& callback,
+    bool service_is_available) {
+  LOG_IF(ERROR, !service_is_available) << "WaitForServiceToBeAvailable failed.";
+  // TODO(hashimoto): Stop using GetSystemSaltSync(). crbug.com/141009
+  callback.Run(GetSystemSaltSync());
 }
 
 void SystemSaltGetter::LoadSystemSalt() {
