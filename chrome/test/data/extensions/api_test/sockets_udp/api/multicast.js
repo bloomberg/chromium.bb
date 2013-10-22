@@ -120,10 +120,10 @@ function testMulticast() {
               address, kPort, function (result) {
             console.log("Sent bytes to socket:" +
                 " socketId=" + clientSocketId +
-               ", bytes=" + result.bytesWritten +
+               ", bytes=" + result.bytesSent +
                ", address=" + address +
                ", port=" + kPort);
-            chrome.test.assertTrue(result.bytesWritten >= 0,
+            chrome.test.assertTrue(result.resultCode >= 0,
                 "Send to failed. " + JSON.stringify(result));
             socket.close(clientSocketId, function() {});
           });

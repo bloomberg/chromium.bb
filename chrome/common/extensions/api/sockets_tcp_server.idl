@@ -103,7 +103,7 @@ namespace sockets.tcpServer {
     // The server socket identifier.
     long socketId;
 
-     // The result code returned from the underlying network call.
+    // The result code returned from the underlying network call.
     long resultCode;
   };
 

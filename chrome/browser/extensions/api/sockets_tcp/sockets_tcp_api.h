@@ -184,7 +184,7 @@ class SocketsTcpSendFunction : public TCPSocketAsyncApiFunction {
 
  private:
   void OnCompleted(int net_result);
-  void SetSendResult(int net_result, int bytes_written);
+  void SetSendResult(int net_result, int bytes_sent);
 
   scoped_ptr<sockets_tcp::Send::Params> params_;
   scoped_refptr<net::IOBuffer> io_buffer_;

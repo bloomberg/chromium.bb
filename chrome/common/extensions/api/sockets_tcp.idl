@@ -54,7 +54,7 @@ namespace sockets.tcp {
     long resultCode;
 
     // The number of bytes sent (if result == 0)
-    long? bytesWritten;
+    long? bytesSent;
   };
 
   // Callback from the <code>send</code> method.
@@ -170,7 +170,7 @@ namespace sockets.tcp {
     // Enables or disables the keep-alive functionality for a TCP connection.
     // |socketId| : The socket identifier.
     // |enable| : If true, enable keep-alive functionality.
-    // |delay| : Set the delay seconds between the last data packet read
+    // |delay| : Set the delay seconds between the last data packet received
     // and the first keepalive probe. Default is 0.
     // |callback| : Called when the setKeepAlive attempt is complete.
     static void setKeepAlive(long socketId,
@@ -211,7 +211,7 @@ namespace sockets.tcp {
 
     // Sends data on the given TCP socket.
     // |socketId| : The socket identifier.
-    // |data| : The data to write.
+    // |data| : The data to send.
     // |callback| : Called when the <code>send</code> operation completes.
     static void send(long socketId,
                      ArrayBuffer data,

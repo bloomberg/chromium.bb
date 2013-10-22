@@ -237,13 +237,13 @@ void SocketsUdpSendFunction::OnCompleted(int net_result) {
   }
 }
 
-void SocketsUdpSendFunction::SetSendResult(int net_result, int bytes_written) {
+void SocketsUdpSendFunction::SetSendResult(int net_result, int bytes_sent) {
   CHECK(net_result <= net::OK) << "Network status code must be < 0";
 
   sockets_udp::SendInfo send_info;
-  send_info.result = net_result;
+  send_info.result_code = net_result;
   if (net_result == net::OK) {
-    send_info.bytes_written.reset(new int(bytes_written));
+    send_info.bytes_sent.reset(new int(bytes_sent));
   }
 
   if (net_result != net::OK)

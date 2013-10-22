@@ -104,7 +104,7 @@ class SocketsUdpSendFunction : public UDPSocketExtensionWithDnsLookupFunction {
   virtual bool Prepare() OVERRIDE;
   virtual void AsyncWorkStart() OVERRIDE;
   void OnCompleted(int net_result);
-  void SetSendResult(int net_result, int bytes_written);
+  void SetSendResult(int net_result, int bytes_sent);
 
   // SocketExtensionWithDnsLookupFunction:
   virtual void AfterDnsLookup(int lookup_result) OVERRIDE;

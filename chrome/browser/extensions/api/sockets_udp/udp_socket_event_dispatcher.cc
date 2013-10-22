@@ -120,7 +120,7 @@ void UDPSocketEventDispatcher::ReceiveCallback(
     // potential infinite reads if we have a persistent network error.
     sockets_udp::ReceiveErrorInfo receive_error_info;
     receive_error_info.socket_id = params.socket_id;
-    receive_error_info.result = bytes_read;
+    receive_error_info.result_code = bytes_read;
     scoped_ptr<base::ListValue> args =
         sockets_udp::OnReceiveError::Create(receive_error_info);
     scoped_ptr<Event> event(

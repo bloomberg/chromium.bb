@@ -11,7 +11,7 @@ const request = "0100000005320000005hello";
 var expectedResponsePattern = /0100000005320000005.{11}/;
 
 var address;
-var bytesWritten = 0;
+var bytesSent = 0;
 var dataAsString;
 var dataRead = [];
 var port = -1;
@@ -228,11 +228,11 @@ var testSending = function() {
   }
 
   function onSendComplete(sendInfo) {
-    console.log("onSendComplete: " + sendInfo.bytesWritten + " bytes.");
+    console.log("onSendComplete: " + sendInfo.bytesSent + " bytes.");
     chrome.test.assertEq(0, sendInfo.resultCode, "Send failed.");
-    chrome.test.assertTrue(sendInfo.bytesWritten > 0,
+    chrome.test.assertTrue(sendInfo.bytesSent > 0,
         "Send didn't write bytes.");
-    bytesWritten += sendInfo.bytesWritten;
+    bytesSent += sendInfo.bytesSent;
   }
 
   function onSocketReceive(receiveInfo) {
@@ -257,7 +257,7 @@ var testSending = function() {
 
     console.log("onSocketReceiveError");
     chrome.test.fail("Receive error on socket " + receiveErrorInfo.socketId +
-      ": result code=" + receiveErrorInfo.result);
+      ": result code=" + receiveErrorInfo.resultCode);
   }
 
   function onCloseComplete() {

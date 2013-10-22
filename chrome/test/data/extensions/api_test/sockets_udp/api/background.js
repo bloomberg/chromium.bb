@@ -12,7 +12,7 @@ var expectedResponsePattern = /0100000005320000005.{11}/;
 
 const socket = chrome.sockets.udp;
 var address;
-var bytesWritten = 0;
+var bytesSent = 0;
 var dataAsString;
 var dataRead = [];
 var port = -1;
@@ -131,10 +131,9 @@ var testSending = function() {
             console.log(
                 "sending bytes to echo server: " + arrayBuffer.byteLength);
             socket.send(socketId, arrayBuffer, address, port,
-                function(writeInfo) {
-              chrome.test.assertEq(0, writeInfo.result);
-              chrome.test.assertEq(
-                  writeInfo.bytesWritten, arrayBuffer.byteLength);
+                function(sendInfo) {
+              chrome.test.assertEq(0, sendInfo.resultCode);
+              chrome.test.assertEq(sendInfo.bytesSent, arrayBuffer.byteLength);
             });
           });
         });
