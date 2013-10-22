@@ -5281,12 +5281,6 @@ void RenderViewImpl::OnSetRendererPrefs(
 #endif  // defined(TOOLKIT_GTK)
 
     if (webview()) {
-#if defined(TOOLKIT_GTK)
-      webview()->setScrollbarColors(
-          renderer_prefs.thumb_inactive_color,
-          renderer_prefs.thumb_active_color,
-          renderer_prefs.track_color);
-#endif  // defined(TOOLKIT_GTK)
       webview()->setSelectionColors(
           renderer_prefs.active_selection_bg_color,
           renderer_prefs.active_selection_fg_color,
