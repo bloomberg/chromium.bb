@@ -714,7 +714,7 @@ class Host_2 {
   // Must be called by the CDM if it returned kDeferredInitialization during
   // InitializeAudioDecoder() or InitializeVideoDecoder().
   virtual void OnDeferredInitializationDone(StreamType stream_type,
-                                            Status decoder_status);
+                                            Status decoder_status) = 0;
 
  protected:
   Host_2() {}
