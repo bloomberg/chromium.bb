@@ -2078,7 +2078,7 @@ void RenderWidgetHostViewAura::CopyFromCompositingSurfaceHasResultForVideo(
                                              video_frame->coded_size(),
                                              region_in_frame,
                                              true,
-                                             false));
+                                             true));
     yuv_readback_pipeline = rwhva->yuv_readback_pipeline_.get();
   }
 
