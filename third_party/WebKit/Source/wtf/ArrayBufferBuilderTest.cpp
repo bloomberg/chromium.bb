@@ -134,10 +134,11 @@ TEST(ArrayBufferBuilder, ToArrayBuffer)
     builder.append(data2, data2Size);
 
     const char expected[] = "HelloWorldGoodbyeWorld";
-    size_t expectedSize = sizeof(expected);
+    size_t expectedSize = sizeof(expected) - 1;
 
     RefPtr<ArrayBuffer> result = builder.toArrayBuffer();
     ASSERT_EQ(data1Size + data2Size, result->byteLength());
+    ASSERT_EQ(expectedSize, result->byteLength());
     EXPECT_EQ(0, memcmp(expected, result->data(), expectedSize));
 }
 
