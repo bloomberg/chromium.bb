@@ -63,7 +63,18 @@ GraphView.prototype.generateLines_ = function(models) {
     }
   }
 
-  // Enumerate all existing categories in tree format.
+  // TODO(dmikurube): Remove this function after adding "color" attribute
+  //     in each category.
+  function getHashColorCode(id) {
+    var color = 0;
+    for (var i = 0; i < id.length; ++i)
+      color = (color * 0x57 + id.charCodeAt(i)) & 0xffffff;
+    color = color.toString(16);
+    while (color.length < 6)
+      color = '0' + color;
+    return '#' + color;
+  }
+
   var categoryTree = {};
   models.forEach(function(model) {
     mergeCategoryTree(model, categoryTree);
@@ -78,9 +89,10 @@ GraphView.prototype.generateLines_ = function(models) {
 
   return Object.keys(categoryMap).map(function(id) {
     return {
+      color: getHashColorCode(id),
+      data: categoryMap[id].data,
       id: id,
-      label: categoryMap[id].name,
-      data: categoryMap[id].data
+      label: categoryMap[id].name
     };
   });
 };
