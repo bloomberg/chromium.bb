@@ -16,6 +16,7 @@
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/resource_metadata_storage.h"
+#include "chrome/browser/drive/drive_api_util.h"
 #include "chromeos/chromeos_constants.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -391,7 +392,8 @@ bool FileCache::ClearAll() {
 bool FileCache::Initialize() {
   AssertOnSequencedWorkerPool();
 
-  RenameCacheFilesToNewFormat();
+  if (!RenameCacheFilesToNewFormat())
+    return false;
 
   if (storage_->cache_file_scan_is_needed()) {
     CacheMap cache_map;
@@ -424,11 +426,8 @@ bool FileCache::CanonicalizeIDs(
   for (; !it->IsAtEnd(); it->Advance()) {
     const std::string id_canonicalized = id_canonicalizer.Run(it->GetID());
     if (id_canonicalized != it->GetID()) {
-      // Replace the existing entry and rename the file when needed.
-      const base::FilePath path_old = GetCacheFilePath(it->GetID());
-      const base::FilePath path_new = GetCacheFilePath(id_canonicalized);
+      // Replace the existing entry.
       if (!storage_->RemoveCacheEntry(it->GetID()) ||
-          (base::PathExists(path_old) && !base::Move(path_old, path_new)) ||
           !storage_->PutCacheEntry(id_canonicalized, it->GetValue()))
         return false;
     }
@@ -525,27 +524,25 @@ bool FileCache::HasEnoughSpaceFor(int64 num_bytes,
   return (free_space >= num_bytes);
 }
 
-void FileCache::RenameCacheFilesToNewFormat() {
-  // First, remove all files with multiple extensions just in case.
-  {
-    base::FileEnumerator enumerator(cache_file_directory_,
-                                    false,  // not recursive
-                                    base::FileEnumerator::FILES,
-                                    "*.*.*");
-    for (base::FilePath current = enumerator.Next(); !current.empty();
-         current = enumerator.Next())
-      base::DeleteFile(current, false /* recursive */);
+bool FileCache::RenameCacheFilesToNewFormat() {
+  base::FileEnumerator enumerator(cache_file_directory_,
+                                  false,  // not recursive
+                                  base::FileEnumerator::FILES);
+  for (base::FilePath current = enumerator.Next(); !current.empty();
+       current = enumerator.Next()) {
+    base::FilePath new_path = current.RemoveExtension();
+    if (!new_path.Extension().empty()) {
+      // Delete files with multiple extensions.
+      if (!base::DeleteFile(current, false /* recursive */))
+        return false;
+      continue;
+    }
+    const std::string& id = GetIdFromPath(new_path);
+    new_path = GetCacheFilePath(util::CanonicalizeResourceId(id));
+    if (new_path != current && !base::Move(current, new_path))
+      return false;
   }
-
-  // Rename files.
-  {
-    base::FileEnumerator enumerator(cache_file_directory_,
-                                    false,  // not recursive
-                                    base::FileEnumerator::FILES);
-    for (base::FilePath current = enumerator.Next(); !current.empty();
-         current = enumerator.Next())
-      base::Move(current, current.RemoveExtension());
-  }
+  return true;
 }
 
 }  // namespace internal

@@ -193,9 +193,9 @@ class FileCache {
   // bytes, while keeping kMinFreeSpace bytes on the disk.
   bool HasEnoughSpaceFor(int64 num_bytes, const base::FilePath& path);
 
-  // Renames cache files from old "id.md5" format to the new format.
+  // Renames cache files from old "prefix:id.md5" format to the new format.
   // TODO(hashimoto): Remove this method at some point.
-  void RenameCacheFilesToNewFormat();
+  bool RenameCacheFilesToNewFormat();
 
   const base::FilePath cache_file_directory_;
 
