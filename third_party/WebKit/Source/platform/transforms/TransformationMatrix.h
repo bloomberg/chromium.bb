@@ -26,6 +26,7 @@
 #ifndef TransformationMatrix_h
 #define TransformationMatrix_h
 
+#include "SkMatrix44.h"
 #include <string.h> //for memcpy
 #include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/FloatPoint3D.h"
@@ -324,6 +325,8 @@ public:
     // the front side of the layer). This function checks if the transformed layer's back
     // face would be visible to a camera looking along the negative z-axis in the target space.
     bool isBackFaceVisible() const;
+
+    static SkMatrix44 toSkMatrix44(const TransformationMatrix&);
 
 private:
     // multiply passed 2D point by matrix (assume z=0)

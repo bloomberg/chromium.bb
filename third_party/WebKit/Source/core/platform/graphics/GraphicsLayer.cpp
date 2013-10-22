@@ -32,13 +32,13 @@
 #include "core/platform/ScrollableArea.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/GraphicsLayerFactory.h"
-#include "core/platform/graphics/chromium/TransformSkMatrix44Conversions.h"
 #include "core/platform/graphics/filters/SkiaImageFilterBuilder.h"
 #include "core/platform/graphics/skia/NativeImageSkia.h"
 #include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/geometry/LayoutRect.h"
 #include "platform/text/TextStream.h"
+#include "platform/transforms/TransformationMatrix.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/HashMap.h"
 #include "wtf/HashSet.h"
@@ -818,13 +818,13 @@ void GraphicsLayer::setSize(const FloatSize& size)
 void GraphicsLayer::setTransform(const TransformationMatrix& transform)
 {
     m_transform = transform;
-    platformLayer()->setTransform(TransformSkMatrix44Conversions::convert(m_transform));
+    platformLayer()->setTransform(TransformationMatrix::toSkMatrix44(m_transform));
 }
 
 void GraphicsLayer::setChildrenTransform(const TransformationMatrix& transform)
 {
     m_childrenTransform = transform;
-    platformLayer()->setSublayerTransform(TransformSkMatrix44Conversions::convert(m_childrenTransform));
+    platformLayer()->setSublayerTransform(TransformationMatrix::toSkMatrix44(m_childrenTransform));
 }
 
 void GraphicsLayer::setPreserves3D(bool preserves3D)

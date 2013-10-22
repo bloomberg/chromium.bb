@@ -28,7 +28,6 @@
 
 #include "core/platform/animation/CSSAnimationData.h"
 #include "core/platform/animation/KeyframeValueList.h"
-#include "core/platform/graphics/chromium/TransformSkMatrix44Conversions.h"
 #include "core/platform/graphics/filters/FilterOperations.h"
 #include "core/platform/graphics/filters/SkiaImageFilterBuilder.h"
 #include "core/platform/graphics/transforms/InterpolatedTransformOperation.h"
@@ -42,6 +41,7 @@
 #include "core/platform/graphics/transforms/TranslateTransformOperation.h"
 #include "platform/LengthFunctions.h"
 #include "platform/geometry/FloatSize.h"
+#include "platform/transforms/TransformationMatrix.h"
 
 #include "public/platform/Platform.h"
 #include "public/platform/WebAnimation.h"
@@ -105,13 +105,13 @@ PassOwnPtr<WebTransformOperations> toWebTransformOperations(const TransformOpera
         case TransformOperation::Matrix: {
             MatrixTransformOperation* transform = static_cast<MatrixTransformOperation*>(transformOperations.operations()[j].get());
             TransformationMatrix m = transform->matrix();
-            webTransformOperations->appendMatrix(TransformSkMatrix44Conversions::convert(m));
+            webTransformOperations->appendMatrix(TransformationMatrix::toSkMatrix44(m));
             break;
         }
         case TransformOperation::Matrix3D: {
             Matrix3DTransformOperation* transform = static_cast<Matrix3DTransformOperation*>(transformOperations.operations()[j].get());
             TransformationMatrix m = transform->matrix();
-            webTransformOperations->appendMatrix(TransformSkMatrix44Conversions::convert(m));
+            webTransformOperations->appendMatrix(TransformationMatrix::toSkMatrix44(m));
             break;
         }
         case TransformOperation::Perspective: {
@@ -122,7 +122,7 @@ PassOwnPtr<WebTransformOperations> toWebTransformOperations(const TransformOpera
         case TransformOperation::Interpolated: {
             TransformationMatrix m;
             transformOperations.operations()[j]->apply(m, boxSize);
-            webTransformOperations->appendMatrix(TransformSkMatrix44Conversions::convert(m));
+            webTransformOperations->appendMatrix(TransformationMatrix::toSkMatrix44(m));
             break;
         }
         case TransformOperation::Identity:
