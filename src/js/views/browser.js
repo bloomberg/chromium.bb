@@ -152,8 +152,6 @@ camera.views.Browser.prototype.onBackgroundClicked_ = function(event) {
  * @private
  */
 camera.views.Browser.prototype.onPrintButtonClicked_ = function(event) {
-  // TODO(mtomasz): Implement a better printing.
-  // See: crbug.com/308389
   window.print();
 };
 
@@ -183,8 +181,7 @@ camera.views.Browser.prototype.onMouseWheel = function(event) {
  * @private
  */
 camera.views.Browser.prototype.onScrollEnded_ = function() {
-  var container = document.querySelector('#browser');
-  var center = container.scrollLeft + container.offsetWidth / 2;
+  var center = this.scroller_.scrollLeft + this.scroller_.clientWidth / 2;
 
   // Find the closest picture.
   var minDistance = -1;
@@ -352,15 +349,12 @@ camera.views.Browser.prototype.onKeyPressed = function(event) {
   var currentPicture = this.currentPicture_();
   switch (event.keyIdentifier) {
     case 'Right':
-      var index = (this.model_.currentIndex + this.model_.length - 1) %
-          this.model_.length;
-      this.model_.currentIndex = index;
+      this.model_.currentIndex = Math.max(0, this.model_.currentIndex - 1);
       event.preventDefault();
       break;
     case 'Left':
-      var index = (this.model_.currentIndex + this.model_.length + 1) %
-          this.model_.length;
-      this.model_.currentIndex = index;
+      this.model_.currentIndex =
+          Math.min(this.model_.length - 1, this.model_.currentIndex + 1);
       event.preventDefault();
       break;
     case 'End':

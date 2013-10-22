@@ -289,19 +289,14 @@ camera.views.Gallery.prototype.onKeyPressed = function(event) {
   var currentPicture = this.currentPicture_();
   switch (event.keyIdentifier) {
     case 'Right':
-      var index = (this.model_.currentIndex + this.model_.length - 1) %
-          this.model_.length;
-      this.model_.currentIndex = index;
+      this.model_.currentIndex = Math.max(0, this.model_.currentIndex - 1);
       break;
     case 'Left':
-      var index = (this.model_.currentIndex + this.model_.length + 1) %
-          this.model_.length;
-      this.model_.currentIndex = index;
+      this.model_.currentIndex =
+          Math.min(this.model_.length - 1, this.model_.currentIndex + 1);
       break;
     case 'Down':
-      for (var offset = 1; offset < this.model_.length; offset++) {
-        var index = (this.model_.currentIndex + this.model_.length - offset) %
-            this.model_.length;
+      for (var index = this.model_.currentIndex - 1; index >= 0; index--) {
         if (currentPicture.element.offsetLeft ==
             this.pictures_[index].element.offsetLeft) {
           this.model_.currentIndex = index;
@@ -311,9 +306,9 @@ camera.views.Gallery.prototype.onKeyPressed = function(event) {
       event.preventDefault();
       break;
     case 'Up':
-      for (var offset = 1; offset < this.model_.length; offset++) {
-        var index = (this.model_.currentIndex + this.model_.length + offset) %
-            this.model_.length;
+      for (var index = this.model_.currentIndex + 1;
+           index < this.model_.length;
+           index++) {
         if (currentPicture.element.offsetLeft ==
             this.pictures_[index].element.offsetLeft) {
           this.model_.currentIndex = index;

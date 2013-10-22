@@ -128,11 +128,10 @@ camera.util.ensureVisible = function(element, scroller, opt_mode) {
  *     SMOOTH.
  */
 camera.util.scrollToCenter = function(element, scroller, opt_mode) {
-  var parent = scroller.element;
   var scrollLeft = Math.round(element.offsetLeft + element.offsetWidth / 2 -
-    parent.offsetWidth / 2);
+    scroller.clientWidth / 2);
   var scrollTop = Math.round(element.offsetTop + element.offsetHeight / 2 -
-    parent.offsetHeight / 2);
+    scroller.clientHeight / 2);
 
   scroller.scrollTo(scrollLeft, scrollTop, opt_mode);
 };
@@ -260,7 +259,41 @@ camera.util.SmoothScroller.prototype = {
   get scrollTop() {
     // TODO(mtomasz): This does not reflect paddings nor margins.
     return -this.padder_.getBoundingClientRect().top;
+  },
+  get scrollWidth() {
+    // TODO(mtomasz): This does not reflect paddings nor margins.
+    return this.padder_.scrollWidth;
+  },
+  get scrollHeight() {
+    // TODO(mtomasz): This does not reflect paddings nor margins.
+    return this.padder_.scrollHeight;
+  },
+  get clientWidth() {
+    // TODO(mtomasz): This does not reflect paddings nor margins.
+    return this.padder_.clientWidth;
+  },
+  get clientHeight() {
+    // TODO(mtomasz): This does not reflect paddings nor margins.
+    return this.padder_.clientHeight;
   }
+};
+
+/**
+ * Flushes the CSS3 transition scroll to real scrollLeft/scrollTop attributes.
+ * @private
+ */
+camera.util.SmoothScroller.prototype.flushScroll_ = function() {
+  var scrollLeft = this.scrollLeft;
+  var scrollTop = this.scrollTop;
+
+  this.padder_.style.transition = '';
+  this.padder_.style.webkitTransform = '';
+
+  this.element_.scrollLeft = scrollLeft;
+  this.element_.scrollTop = scrollTop;
+
+  this.animationId_++;  // Invalidate the animation by increasing the id.
+  this.animating_ = false;
 };
 
 /**
@@ -275,20 +308,14 @@ camera.util.SmoothScroller.prototype.scrollTo = function(x, y, opt_mode) {
   var mode = opt_mode || camera.util.SmoothScroller.Mode.SMOOTH;
 
   // Limit to the allowed values.
-  var x = Math.max(
-      0, Math.min(x, this.element_.scrollWidth - this.element_.offsetWidth));
-  var y = Math.max(
-      0, Math.min(y, this.element_.scrollHeight - this.element_.offsetHeight));
+  var x = Math.max(0, Math.min(x, this.scrollWidth - this.clientWidth));
+  var y = Math.max(0, Math.min(y, this.scrollHeight - this.clientHeight));
 
   switch (mode) {
     case camera.util.SmoothScroller.Mode.INSTANT:
       // Cancel any current animations.
-      if (this.animating_) {
-        this.padder_.style.transition = '';
-        this.padder_.style.webkitTransform = '';
-        this.animationId_++;  // Invalidate the animation by increasing the id.
-        this.animating_ = false;
-      }
+      if (this.animating_)
+        this.flushScroll_();
 
       this.element_.scrollLeft = x;
       this.element_.scrollTop = y;
@@ -298,21 +325,20 @@ camera.util.SmoothScroller.prototype.scrollTo = function(x, y, opt_mode) {
       // Calculate translating offset using the accelerated CSS3 transform.
       var dx = x - this.element_.scrollLeft;
       var dy = y - this.element_.scrollTop;
-      this.padder_.style.transition = '-webkit-transform ' +
-          camera.util.SmoothScroller.DURATION + 'ms';
+
       var transformString =
           'translate(' + -dx + 'px, ' + -dy + 'px)';
 
-      // If nothing to scroll, then exit.
-      if (this.padder_.style.webkitTransform == transformString ||
-          (!dx && !dy)) {
+      if (this.padder_.style.webkitTransform == transformString)
         return;
-      }
-
-      this.animating_ = true;
 
       // Invalidate previous invocations.
       var currentAnimationId = ++this.animationId_;
+
+      // Start the accelerated animation.
+      this.animating_ = true;
+      this.padder_.style.transition = '-webkit-transform ' +
+          camera.util.SmoothScroller.DURATION + 'ms ease-out';
       this.padder_.style.webkitTransform = transformString;
 
       // Remove translation, and switch to scrollLeft/scrollTop when the
@@ -322,14 +348,9 @@ camera.util.SmoothScroller.prototype.scrollTo = function(x, y, opt_mode) {
           0,
           function() {
             // Check if the animation got invalidated by a later scroll.
-            if (currentAnimationId != this.animationId_)
-              return;
-            this.element_.scrollLeft = x;
-            this.element_.scrollTop = y;
-            this.padder_.style.transition = '';
-            this.padder_.style.webkitTransform = '';
-            this.animating_ = false;
-          }.bind(this));
+            if (currentAnimationId == this.animationId_)
+              this.flushScroll_();
+         }.bind(this));
       break;
   }
 };
@@ -603,8 +624,8 @@ camera.util.ScrollTracker.prototype.stop = function() {
  * @private
  */
 camera.util.ScrollTracker.prototype.probe_ = function() {
-  var scrollLeft = this.scroller_.element.scrollLeft;
-  var scrollTop = this.scroller_.element.scrollTop;
+  var scrollLeft = this.scroller_.scrollLeft;
+  var scrollTop = this.scroller_.scrollTop;
 
   if (scrollLeft != this.lastScrollPosition_[0] ||
       scrollTop != this.lastScrollPosition_[1] ||
