@@ -693,8 +693,7 @@ void UseCounter::count(CSSParserContext context, CSSPropertyID feature)
     ASSERT(feature <= lastCSSProperty);
     ASSERT(!isInternalProperty(feature));
 
-    // We don't count the UA style sheet in our statistics.
-    if (context.mode == UASheetMode)
+    if (!isUseCounterEnabledForMode(context.mode))
         return;
 
     m_CSSFeatureBits.quickSet(feature);

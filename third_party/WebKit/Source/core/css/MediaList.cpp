@@ -74,7 +74,7 @@ PassRefPtr<MediaQuerySet> MediaQuerySet::create(const String& mediaString)
     if (mediaString.isEmpty())
         return MediaQuerySet::create();
 
-    CSSParser parser(CSSStrictMode);
+    CSSParser parser(HTMLStandardMode);
     return parser.parseMediaQueryList(mediaString);
 }
 

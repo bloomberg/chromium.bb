@@ -37,29 +37,55 @@ namespace WebCore {
 
 class Document;
 
+// Must not grow beyond 3 bytes, due to packing in StylePropertySet.
 enum CSSParserMode {
-    CSSQuirksMode,
-    CSSStrictMode,
-    // SVG should always be in strict mode. For SVG attributes, the rules differ to strict sometimes.
+    HTMLStandardMode,
+    HTMLQuirksMode,
+    // HTML attributes are parsed in quirks mode but also allows internal properties and values.
+    HTMLAttributeMode,
+    // SVG attributes are parsed in quirks mode but rules differ slightly.
     SVGAttributeMode,
-    // CSS attribute are parsed in quirks mode. They also allow internal only properties and values.
-    CSSAttributeMode,
-    // User agent style sheet should always be in strict mode. Enables internal
-    // only properties and values.
-    UASheetMode,
-    // Parsing @viewport descriptors. Always strict. Set as mode on StylePropertySet
-    // to make sure CSSOM modifications use CSSParser::parseViewportProperty.
-    ViewportMode
+    // @viewport rules are parsed in standards mode but CSSOM modifications (via StylePropertySet)
+    // must call parseViewportProperties so needs a special mode.
+    CSSViewportRuleMode,
+    // User agent stylesheets are parsed in standards mode but also allows internal properties and values.
+    UASheetMode
 };
 
-inline CSSParserMode strictToCSSParserMode(bool inStrictMode)
+inline bool isQuirksModeBehavior(CSSParserMode mode)
 {
-    return inStrictMode ? CSSStrictMode : CSSQuirksMode;
+    return mode == HTMLQuirksMode; // || mode == HTMLAttributeMode;
 }
 
-inline bool isStrictParserMode(CSSParserMode cssParserMode)
+inline bool isUASheetBehavior(CSSParserMode mode)
 {
-    return cssParserMode != CSSQuirksMode;
+    return mode == UASheetMode;
+}
+
+inline bool isInternalPropertyAndValueParsingEnabledForMode(CSSParserMode mode)
+{
+    return mode == HTMLAttributeMode || mode == UASheetMode;
+}
+
+inline bool isUnitLessLengthParsingEnabledForMode(CSSParserMode mode)
+{
+    return mode == HTMLQuirksMode || mode == HTMLAttributeMode || mode == SVGAttributeMode;
+}
+
+inline bool isCSSViewportParsingEnabledForMode(CSSParserMode mode)
+{
+    return mode == CSSViewportRuleMode;
+}
+
+inline bool isSVGNumberParsingEnabledForMode(CSSParserMode mode)
+{
+    return mode == SVGAttributeMode;
+}
+
+inline bool isUseCounterEnabledForMode(CSSParserMode mode)
+{
+    // We don't count the UA style sheet in our statistics.
+    return mode != UASheetMode;
 }
 
 struct CSSParserContext {

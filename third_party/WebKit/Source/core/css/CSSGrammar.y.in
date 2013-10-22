@@ -1294,7 +1294,7 @@ specifier:
     IDSEL {
         $$ = parser->createFloatingSelector();
         $$->setMatch(CSSSelector::Id);
-        if (parser->m_context.mode == CSSQuirksMode)
+        if (isQuirksModeBehavior(parser->m_context.mode))
             parser->tokenToLowerCase($1);
         $$->setValue($1);
     }
@@ -1304,7 +1304,7 @@ specifier:
         } else {
             $$ = parser->createFloatingSelector();
             $$->setMatch(CSSSelector::Id);
-            if (parser->m_context.mode == CSSQuirksMode)
+            if (isQuirksModeBehavior(parser->m_context.mode))
                 parser->tokenToLowerCase($1);
             $$->setValue($1);
         }
@@ -1318,7 +1318,7 @@ class:
     '.' IDENT {
         $$ = parser->createFloatingSelector();
         $$->setMatch(CSSSelector::Class);
-        if (parser->m_context.mode == CSSQuirksMode)
+        if (isQuirksModeBehavior(parser->m_context.mode))
             parser->tokenToLowerCase($2);
         $$->setValue($2);
     }

@@ -57,7 +57,7 @@ static PassRefPtr<CSSValue> parseCSSValue(const String& s, CSSPropertyID propert
     if (s.isEmpty())
         return 0;
     RefPtr<MutableStylePropertySet> parsedStyle = MutableStylePropertySet::create();
-    CSSParser::parseValue(parsedStyle.get(), propertyID, s, true, CSSStrictMode, 0);
+    CSSParser::parseValue(parsedStyle.get(), propertyID, s, true, HTMLStandardMode, 0);
     return parsedStyle->getPropertyCSSValue(propertyID);
 }
 

@@ -69,7 +69,7 @@ MutableStylePropertySet::MutableStylePropertySet(CSSParserMode cssParserMode)
 }
 
 MutableStylePropertySet::MutableStylePropertySet(const CSSProperty* properties, unsigned length)
-    : StylePropertySet(CSSStrictMode)
+    : StylePropertySet(HTMLStandardMode)
 {
     m_propertyVector.reserveInitialCapacity(length);
     for (unsigned i = 0; i < length; ++i)

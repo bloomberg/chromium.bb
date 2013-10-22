@@ -41,7 +41,7 @@ namespace WebKit {
 
 WebString canonicalizeSelector(WebString webSelector, WebSelectorType restriction)
 {
-    CSSParserContext context(CSSStrictMode);
+    CSSParserContext context(HTMLStandardMode);
     CSSParser parser(context);
     CSSSelectorList selectorList;
     parser.parseSelector(webSelector, selectorList);

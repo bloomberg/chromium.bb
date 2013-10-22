@@ -177,7 +177,7 @@ PassRefPtr<StylePropertySet> computePresentationAttributeStyle(Element& element)
         style = cacheIterator->value->value;
         cacheCleaner.didHitPresentationAttributeCache();
     } else {
-        style = MutableStylePropertySet::create(element.isSVGElement() ? SVGAttributeMode : CSSAttributeMode);
+        style = MutableStylePropertySet::create(element.isSVGElement() ? SVGAttributeMode : HTMLAttributeMode);
         unsigned size = element.attributeCount();
         for (unsigned i = 0; i < size; ++i) {
             const Attribute* attribute = element.attributeItem(i);

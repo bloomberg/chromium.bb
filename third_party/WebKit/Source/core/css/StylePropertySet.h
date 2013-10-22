@@ -176,7 +176,7 @@ inline const StylePropertyMetadata* ImmutableStylePropertySet::metadataArray() c
 class MutableStylePropertySet : public StylePropertySet {
 public:
     ~MutableStylePropertySet() { }
-    static PassRefPtr<MutableStylePropertySet> create(CSSParserMode = CSSQuirksMode);
+    static PassRefPtr<MutableStylePropertySet> create(CSSParserMode = HTMLQuirksMode);
     static PassRefPtr<MutableStylePropertySet> create(const CSSProperty* properties, unsigned count);
 
     unsigned propertyCount() const { return m_propertyVector.size(); }
