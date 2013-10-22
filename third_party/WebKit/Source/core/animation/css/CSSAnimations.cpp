@@ -477,10 +477,6 @@ bool CSSAnimations::isAnimatableProperty(CSSPropertyID property)
     case CSSPropertyColor:
     case CSSPropertyFill:
     case CSSPropertyFillOpacity:
-    // FIXME: Shorthands should not be present in this list, but
-    // CSSPropertyAnimation implements animation of flex directly and
-    // makes use of this method.
-    case CSSPropertyFlex:
     case CSSPropertyFlexBasis:
     case CSSPropertyFlexGrow:
     case CSSPropertyFlexShrink:
@@ -536,10 +532,6 @@ bool CSSAnimations::isAnimatableProperty(CSSPropertyID property)
     case CSSPropertyWebkitColumnRuleWidth:
     case CSSPropertyWebkitColumnWidth:
     case CSSPropertyWebkitFilter:
-    // FIXME: Shorthands should not be present in this list, but
-    // CSSPropertyAnimation implements animation of -webkit-mask-box-image
-    // directly and makes use of this method.
-    case CSSPropertyWebkitMaskBoxImage:
     case CSSPropertyWebkitMaskBoxImageOutset:
     case CSSPropertyWebkitMaskBoxImageSlice:
     case CSSPropertyWebkitMaskBoxImageSource:
@@ -565,6 +557,12 @@ bool CSSAnimations::isAnimatableProperty(CSSPropertyID property)
     case CSSPropertyZIndex:
     case CSSPropertyZoom:
         return true;
+    // FIXME: Shorthands should not be present in this list, but
+    // CSSPropertyAnimation implements animation of these shorthands
+    // directly and makes use of this method.
+    case CSSPropertyFlex:
+    case CSSPropertyWebkitMaskBoxImage:
+        return !RuntimeEnabledFeatures::webAnimationsCSSEnabled();
     default:
         return false;
     }
@@ -577,10 +575,6 @@ const StylePropertyShorthand& CSSAnimations::animatableProperties()
     if (properties.isEmpty()) {
         for (int i = firstCSSProperty; i < lastCSSProperty; ++i) {
             CSSPropertyID id = convertToCSSPropertyID(i);
-            // FIXME: This is the only shorthand marked as animatable,
-            // it'll be removed from the list once we switch to the new implementation.
-            if (id == CSSPropertyFlex)
-                continue;
             if (isAnimatableProperty(id))
                 properties.append(id);
         }
