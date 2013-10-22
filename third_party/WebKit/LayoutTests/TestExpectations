@@ -119,9 +119,6 @@ crbug.com/260351 [ Linux ] plugins/mouse-click-plugin-clears-selection.html [ Im
 # SVG TESTS
 # -----------------------------------------------------------------
 
-# Only flaky on Linux. Looks like slight pixel differences in text-on-a-path.
-crbug.com/250897 [ Linux ] svg/batik/text/smallFonts.svg [ ImageOnlyFailure Pass ]
-
 # Flaky mostly on XP, where the <use> batiklogo.svg doesn't arrive in time to get rendered.
 crbug.com/258991 [ XP ] svg/batik/text/verticalTextOnPath.svg [ Failure Pass ]
 crbug.com/258991 [ XP ] svg/batik/text/textLayout.svg [ Failure Pass ]
