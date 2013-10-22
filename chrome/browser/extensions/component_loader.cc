@@ -506,11 +506,13 @@ void ComponentLoader::AddDefaultComponentExtensionsWithBackgroundPages(
   std::string enable_prefix(kEnablePrefix);
   std::string field_trial_result =
       base::FieldTrialList::FindFullName(kFieldTrialName);
-  if ((field_trial_result.compare(
+  if (((field_trial_result.compare(
           0,
           enable_prefix.length(),
-          enable_prefix) == 0) ||
-      CommandLine::ForCurrentProcess()->HasSwitch(
+          enable_prefix) == 0) &&
+      !CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableGoogleNowIntegration)) ||
+       CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableGoogleNowIntegration)) {
     Add(IDR_GOOGLE_NOW_MANIFEST,
         base::FilePath(FILE_PATH_LITERAL("google_now")));

@@ -109,6 +109,7 @@ extern const char kDisableExtensionsFileAccessCheck[];
 extern const char kDisableExtensionsHttpThrottling[];
 extern const char kDisableExtensionsResourceWhitelist[];
 extern const char kDisableExtensions[];
+extern const char kDisableGoogleNowIntegration[];
 extern const char kDisableImprovedDownloadProtection[];
 extern const char kDisableInstantExtendedAPI[];
 extern const char kDisableIPv6[];

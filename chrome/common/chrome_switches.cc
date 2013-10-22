@@ -359,6 +359,9 @@ const char kDisableExtensionsHttpThrottling[] =
 const char kDisableExtensionsResourceWhitelist[] =
     "disable-extensions-resource-whitelist";
 
+// Disables Google Now integration.
+const char kDisableGoogleNowIntegration[] = "disable-google-now-integration";
+
 // Disable Instant extended API.
 const char kDisableInstantExtendedAPI[]     = "disable-instant-extended-api";
 
