@@ -146,6 +146,7 @@ private:
     int numVisibleItems() const;
     int numItems() const;
     LayoutUnit listHeight() const;
+    int scrollbarLeft() const;
     void paintScrollbar(PaintInfo&, const LayoutPoint&);
     void paintItemForeground(PaintInfo&, const LayoutPoint&, int listIndex);
     void paintItemBackground(PaintInfo&, const LayoutPoint&, int listIndex);
