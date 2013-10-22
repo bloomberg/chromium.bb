@@ -116,10 +116,15 @@ void TCPSocketEventDispatcher::ReadCallback(
     scoped_refptr<net::IOBuffer> io_buffer) {
   DCHECK(BrowserThread::CurrentlyOn(params.thread_id));
 
-  // Note: if "bytes_read" < 0, there was a network error, and "bytes_read" is
-  // a value from "net::ERR_".
+  // If |bytes_read| == 0, the connection has been closed by the peer.
+  // If |bytes_read| < 0, there was a network error, and |bytes_read| is a value
+  // from "net::ERR_".
 
-  if (bytes_read >= 0) {
+  if (bytes_read == 0) {
+    bytes_read = net::ERR_CONNECTION_CLOSED;
+  }
+
+  if (bytes_read > 0) {
     // Dispatch "onReceive" event.
     sockets_tcp::ReceiveInfo receive_info;
     receive_info.socket_id = params.socket_id;
