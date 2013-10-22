@@ -331,9 +331,6 @@
           ],
         }],
         ['OS=="win"', {
-          'defines': [
-            '__PRETTY_FUNCTION__=__FUNCTION__',
-          ],
           # In generated bindings code: 'switch contains default but no case'.
           # Disable c4267 warnings until we fix size_t to int truncations.
           'msvs_disabled_warnings': [ 4065, 4267 ],
@@ -507,13 +504,6 @@
                   '<(category_whitelist_regex)',
                 ],
               },
-            ],
-          },
-        }],
-        ['OS=="win"', {
-          'direct_dependent_settings': {
-            'defines': [
-              '__PRETTY_FUNCTION__=__FUNCTION__',
             ],
           },
         }],

@@ -52,9 +52,6 @@
           ],
         }],
         ['OS=="win"', {
-          'defines': [
-            '__PRETTY_FUNCTION__=__FUNCTION__',
-          ],
           'sources/': [
             ['exclude', 'Posix\\.cpp$'],
           ],
