@@ -74,6 +74,12 @@ class NaClBrowserDelegate {
   // TODO(jvoung): Add the progress callback as well.
   virtual void TryInstallPnacl(
       const base::Callback<void(bool)>& installed) = 0;
+
+  // Set match patterns which will be checked before enabling debug stub.
+  virtual void SetDebugPatterns(std::string debug_patterns) = 0;
+
+  // Returns whether NaCl application with this manifest URL should be debugged.
+  virtual bool URLMatchesDebugPatterns(const GURL& manifest_url) = 0;
 };
 
 #endif  // COMPONENTS_NACL_COMMON_NACL_BROWSER_DELEGATE_H_

@@ -60,12 +60,6 @@ class NaClBrowser {
   // IRT file handle, only available when IsReady().
   base::PlatformFile IrtFile() const;
 
-  // Set match patterns which will be checked before enabling debug stub.
-  void SetDebugPatterns(std::string debug_patterns);
-
-  // Returns whether NaCl application with this manifest URL should be debugged.
-  bool URLMatchesDebugPatterns(GURL manifest_url);
-
   // Methods for testing GDB debug stub in browser. If test adds debug stub
   // port listener, Chrome will allocate a currently-unused TCP port number for
   // debug stub server instead of a fixed one.
@@ -169,8 +163,6 @@ class NaClBrowser {
   base::PlatformFile irt_platform_file_;
   base::FilePath irt_filepath_;
   NaClResourceState irt_state_;
-  std::vector<URLPattern> debug_patterns_;
-  bool inverse_debug_patterns_;
   NaClValidationCache validation_cache_;
   NaClValidationCache off_the_record_validation_cache_;
   base::FilePath validation_cache_file_path_;

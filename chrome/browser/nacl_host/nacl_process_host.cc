@@ -329,7 +329,7 @@ void NaClProcessHost::EarlyStartup() {
   UMA_HISTOGRAM_BOOLEAN(
       "NaCl.enable-nacl-debug",
       cmd->HasSwitch(switches::kEnableNaClDebug));
-  NaClBrowser::GetInstance()->SetDebugPatterns(
+  NaClBrowser::GetDelegate()->SetDebugPatterns(
       cmd->GetSwitchValueASCII(switches::kNaClDebugMask));
 }
 
@@ -701,7 +701,7 @@ bool NaClProcessHost::StartNaClExecution() {
   params.version = NaClBrowser::GetDelegate()->GetVersionString();
   params.enable_exception_handling = enable_exception_handling_;
   params.enable_debug_stub = enable_debug_stub_ &&
-      NaClBrowser::GetInstance()->URLMatchesDebugPatterns(manifest_url_);
+      NaClBrowser::GetDelegate()->URLMatchesDebugPatterns(manifest_url_);
   // Enable PPAPI proxy channel creation only for renderer processes.
   params.enable_ipc_proxy = enable_ppapi_proxy();
   params.uses_irt = uses_irt_;

@@ -5,6 +5,7 @@
 #include "chrome/browser/nacl_host/nacl_browser_delegate_impl.h"
 
 #include "base/path_service.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/component_updater/pnacl/pnacl_component_installer.h"
@@ -20,13 +21,15 @@
 #include "chrome/common/logging_chrome.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/common/constants.h"
+#include "extensions/common/url_pattern.h"
 #include "ppapi/c/private/ppb_nacl_private.h"
 
 using extensions::SharedModuleInfo;
 
 NaClBrowserDelegateImpl::NaClBrowserDelegateImpl(
     ExtensionInfoMap* extension_info_map)
-    : extension_info_map_(extension_info_map) {
+    : extension_info_map_(extension_info_map),
+      inverse_debug_patterns_(false) {
 }
 
 NaClBrowserDelegateImpl::~NaClBrowserDelegateImpl() {
@@ -83,6 +86,51 @@ void NaClBrowserDelegateImpl::TryInstallPnacl(
     pci->RequestFirstInstall(installed);
   else
     installed.Run(false);
+}
+
+void NaClBrowserDelegateImpl::SetDebugPatterns(std::string debug_patterns) {
+  if (!debug_patterns.empty() && debug_patterns[0] == '!') {
+    inverse_debug_patterns_ = true;
+    debug_patterns.erase(0, 1);
+  }
+  if (debug_patterns.empty()) {
+    return;
+  }
+  std::vector<std::string> patterns;
+  base::SplitString(debug_patterns, ',', &patterns);
+  for (std::vector<std::string>::iterator iter = patterns.begin();
+       iter != patterns.end(); ++iter) {
+    URLPattern pattern;
+    if (pattern.Parse(*iter) == URLPattern::PARSE_SUCCESS) {
+      // If URL pattern has scheme equal to *, Parse method resets valid
+      // schemes mask to http and https only, so we need to reset it after
+      // Parse to include chrome-extension scheme that can be used by NaCl
+      // manifest files.
+      pattern.SetValidSchemes(URLPattern::SCHEME_ALL);
+      debug_patterns_.push_back(pattern);
+    }
+  }
+}
+
+bool NaClBrowserDelegateImpl::URLMatchesDebugPatterns(
+    const GURL& manifest_url) {
+  // Empty patterns are forbidden so we ignore them.
+  if (debug_patterns_.empty()) {
+    return true;
+  }
+  bool matches = false;
+  for (std::vector<URLPattern>::iterator iter = debug_patterns_.begin();
+       iter != debug_patterns_.end(); ++iter) {
+    if (iter->MatchesURL(manifest_url)) {
+      matches = true;
+      break;
+    }
+  }
+  if (inverse_debug_patterns_) {
+    return !matches;
+  } else {
+    return matches;
+  }
 }
 
 // This function is security sensitive.  Be sure to check with a security

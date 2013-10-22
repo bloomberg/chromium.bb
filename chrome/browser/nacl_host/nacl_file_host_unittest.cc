@@ -66,6 +66,13 @@ class TestNaClBrowserDelegate : public NaClBrowserDelegate {
     return false;
   }
 
+  virtual void SetDebugPatterns(std::string debug_patterns) OVERRIDE {
+  }
+
+  virtual bool URLMatchesDebugPatterns(const GURL& manifest_url) OVERRIDE {
+    return false;
+  }
+
   virtual void TryInstallPnacl(
       const base::Callback<void(bool)>& installed) OVERRIDE {
     installed.Run(should_pnacl_install_succeed_);

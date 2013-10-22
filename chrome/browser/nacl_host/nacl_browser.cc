@@ -11,12 +11,10 @@
 #include "base/path_service.h"
 #include "base/pickle.h"
 #include "base/rand_util.h"
-#include "base/strings/string_split.h"
 #include "base/time/time.h"
 #include "base/win/windows_version.h"
 #include "build/build_config.h"
 #include "content/public/browser/browser_thread.h"
-#include "extensions/common/url_pattern.h"
 #include "url/gurl.h"
 
 namespace {
@@ -158,8 +156,6 @@ NaClBrowser::NaClBrowser()
       irt_platform_file_(base::kInvalidPlatformFileValue),
       irt_filepath_(),
       irt_state_(NaClResourceUninitialized),
-      debug_patterns_(),
-      inverse_debug_patterns_(false),
       validation_cache_file_path_(),
       validation_cache_is_enabled_(
           CheckEnvVar("NACL_VALIDATION_CACHE",
@@ -290,50 +286,6 @@ void NaClBrowser::OnIrtOpened(base::PlatformFileError error_code,
   }
   irt_state_ = NaClResourceReady;
   CheckWaiting();
-}
-
-void NaClBrowser::SetDebugPatterns(std::string debug_patterns) {
-  if (!debug_patterns.empty() && debug_patterns[0] == '!') {
-    inverse_debug_patterns_ = true;
-    debug_patterns.erase(0, 1);
-  }
-  if (debug_patterns.empty()) {
-    return;
-  }
-  std::vector<std::string> patterns;
-  base::SplitString(debug_patterns, ',', &patterns);
-  for (std::vector<std::string>::iterator iter = patterns.begin();
-       iter != patterns.end(); ++iter) {
-    URLPattern pattern;
-    if (pattern.Parse(*iter) == URLPattern::PARSE_SUCCESS) {
-      // If URL pattern has scheme equal to *, Parse method resets valid
-      // schemes mask to http and https only, so we need to reset it after
-      // Parse to include chrome-extension scheme that can be used by NaCl
-      // manifest files.
-      pattern.SetValidSchemes(URLPattern::SCHEME_ALL);
-      debug_patterns_.push_back(pattern);
-    }
-  }
-}
-
-bool NaClBrowser::URLMatchesDebugPatterns(GURL manifest_url) {
-  // Empty patterns are forbidden so we ignore them.
-  if (debug_patterns_.empty()) {
-    return true;
-  }
-  bool matches = false;
-  for (std::vector<URLPattern>::iterator iter = debug_patterns_.begin();
-       iter != debug_patterns_.end(); ++iter) {
-    if (iter->MatchesURL(manifest_url)) {
-      matches = true;
-      break;
-    }
-  }
-  if (inverse_debug_patterns_) {
-    return !matches;
-  } else {
-    return matches;
-  }
 }
 
 void NaClBrowser::FireGdbDebugStubPortOpened(int port) {

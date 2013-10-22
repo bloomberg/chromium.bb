@@ -29,9 +29,13 @@ class NaClBrowserDelegateImpl : public NaClBrowserDelegate {
   virtual bool MapUrlToLocalFilePath(const GURL& url,
                                      bool is_blocking,
                                      base::FilePath* file_path) OVERRIDE;
+  virtual void SetDebugPatterns(std::string debug_patterns) OVERRIDE;
+  virtual bool URLMatchesDebugPatterns(const GURL& manifest_url) OVERRIDE;
 
  private:
   scoped_refptr<ExtensionInfoMap> extension_info_map_;
+  std::vector<URLPattern> debug_patterns_;
+  bool inverse_debug_patterns_;
   DISALLOW_COPY_AND_ASSIGN(NaClBrowserDelegateImpl);
 };
 
