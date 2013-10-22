@@ -332,6 +332,12 @@
           # C4324 is structure was padded due to __declspec(align()), which is
           # uninteresting.
           'msvs_disabled_warnings': [ 4267, 4324 ],
+
+          'msvs_settings': {
+            'VCCLCompilerTool': {
+              'ForcedIncludeFiles': [ 'build/intsafe_workaround.h' ],
+            },
+          },
         }],
         ['OS=="android"', {
           'sources!': [

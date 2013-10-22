@@ -670,6 +670,11 @@
             'test/test_metro_viewer_process_host.cc',
             'test/test_metro_viewer_process_host.h',
           ],
+          'msvs_settings': {
+            'VCCLCompilerTool': {
+              'ForcedIncludeFiles': [ 'build/intsafe_workaround.h' ],
+            },
+          },
         }],
       ],
     },
