@@ -608,6 +608,7 @@ void ProfileManager::Observe(
     case chrome::NOTIFICATION_CLOSE_ALL_BROWSERS_REQUEST: {
       // Ignore any browsers closing from now on.
       closing_all_browsers_ = true;
+      save_active_profiles = true;
       break;
     }
     case chrome::NOTIFICATION_BROWSER_CLOSE_CANCELLED: {
@@ -672,7 +673,9 @@ void ProfileManager::Observe(
     std::vector<Profile*>::const_iterator it;
     for (it = active_profiles_.begin(); it != active_profiles_.end(); ++it) {
       std::string profile_path = (*it)->GetPath().BaseName().MaybeAsASCII();
-      if (profile_paths.find(profile_path) == profile_paths.end()) {
+      // Some profiles might become ephemeral after they are created.
+      if (!(*it)->GetPrefs()->GetBoolean(prefs::kForceEphemeralProfiles) &&
+          profile_paths.find(profile_path) == profile_paths.end()) {
         profile_paths.insert(profile_path);
         profile_list->Append(new StringValue(profile_path));
       }

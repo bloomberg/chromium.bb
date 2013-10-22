@@ -635,7 +635,7 @@ TEST_F(ProfileManagerTest, EphemeralProfilesDontEndUpAsLastProfile) {
   Profile* last_used_profile = profile_manager->GetLastUsedProfile();
   EXPECT_NE(profile, last_used_profile);
 
-  // Create a browser for profile2.
+  // Create a browser for the profile.
   Browser::CreateParams profile_params(profile, chrome::GetActiveDesktop());
   scoped_ptr<Browser> browser(
       chrome::CreateBrowserWithTestWindowForParams(&profile_params));
@@ -653,7 +653,10 @@ TEST_F(ProfileManagerTest, EphemeralProfilesDontEndUpAsLastOpenedAtShutdown) {
   dest_path1 = dest_path1.Append(FILE_PATH_LITERAL("Normal Profile"));
 
   base::FilePath dest_path2 = temp_dir_.path();
-  dest_path2 = dest_path2.Append(FILE_PATH_LITERAL("Ephemeral Profile"));
+  dest_path2 = dest_path2.Append(FILE_PATH_LITERAL("Ephemeral Profile 1"));
+
+  base::FilePath dest_path3 = temp_dir_.path();
+  dest_path3 = dest_path3.Append(FILE_PATH_LITERAL("Ephemeral Profile 2"));
 
   ProfileManager* profile_manager = g_browser_process->profile_manager();
 
@@ -663,11 +666,16 @@ TEST_F(ProfileManagerTest, EphemeralProfilesDontEndUpAsLastOpenedAtShutdown) {
   ASSERT_TRUE(normal_profile);
 
   // Add one ephemeral profile which should not end up in this list.
-  TestingProfile* ephemeral_profile =
+  TestingProfile* ephemeral_profile1 =
       static_cast<TestingProfile*>(profile_manager->GetProfile(dest_path2));
-  ASSERT_TRUE(ephemeral_profile);
-  ephemeral_profile->GetPrefs()->SetBoolean(prefs::kForceEphemeralProfiles,
-                                            true);
+  ASSERT_TRUE(ephemeral_profile1);
+  ephemeral_profile1->GetPrefs()->SetBoolean(prefs::kForceEphemeralProfiles,
+                                             true);
+
+  // Add second ephemeral profile but don't mark it as such yet.
+  TestingProfile* ephemeral_profile2 =
+      static_cast<TestingProfile*>(profile_manager->GetProfile(dest_path3));
+  ASSERT_TRUE(ephemeral_profile2);
 
   // Create a browser for profile1.
   Browser::CreateParams profile1_params(normal_profile,
@@ -675,16 +683,26 @@ TEST_F(ProfileManagerTest, EphemeralProfilesDontEndUpAsLastOpenedAtShutdown) {
   scoped_ptr<Browser> browser1(
       chrome::CreateBrowserWithTestWindowForParams(&profile1_params));
 
-  // Create a browser for the ephemeral profile.
-  Browser::CreateParams profile2_params(ephemeral_profile,
+  // Create browsers for the ephemeral profile.
+  Browser::CreateParams profile2_params(ephemeral_profile1,
                                         chrome::GetActiveDesktop());
   scoped_ptr<Browser> browser2(
       chrome::CreateBrowserWithTestWindowForParams(&profile2_params));
 
+  Browser::CreateParams profile3_params(ephemeral_profile2,
+                                        chrome::GetActiveDesktop());
+  scoped_ptr<Browser> browser3(
+      chrome::CreateBrowserWithTestWindowForParams(&profile3_params));
+
   std::vector<Profile*> last_opened_profiles =
       profile_manager->GetLastOpenedProfiles();
-  ASSERT_EQ(1U, last_opened_profiles.size());
+  ASSERT_EQ(2U, last_opened_profiles.size());
   EXPECT_EQ(normal_profile, last_opened_profiles[0]);
+  EXPECT_EQ(ephemeral_profile2, last_opened_profiles[1]);
+
+  // Mark the second profile ephemeral.
+  ephemeral_profile2->GetPrefs()->SetBoolean(prefs::kForceEphemeralProfiles,
+                                             true);
 
   // Simulate a shutdown.
   content::NotificationService::current()->Notify(
@@ -693,6 +711,7 @@ TEST_F(ProfileManagerTest, EphemeralProfilesDontEndUpAsLastOpenedAtShutdown) {
       content::NotificationService::NoDetails());
   browser1.reset();
   browser2.reset();
+  browser3.reset();
 
   last_opened_profiles = profile_manager->GetLastOpenedProfiles();
   ASSERT_EQ(1U, last_opened_profiles.size());

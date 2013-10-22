@@ -193,6 +193,8 @@ TEST_F(BrowserListTest, MAYBE_AttemptRestart) {
   testing_pref_service.registry()->RegisterBooleanPref(
       prefs::kRestartLastSessionOnShutdown,
       false);
+  testing_pref_service.registry()->RegisterListPref(
+      prefs::kProfilesLastActive);
 
   TestingBrowserProcess* testing_browser_process =
       TestingBrowserProcess::GetGlobal();
