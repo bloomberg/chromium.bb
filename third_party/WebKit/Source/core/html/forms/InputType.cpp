@@ -199,6 +199,11 @@ bool InputType::appendFormData(FormDataList& encoding, bool) const
     return true;
 }
 
+String InputType::resultForDialogSubmit() const
+{
+    return element().fastGetAttribute(valueAttr);
+}
+
 double InputType::valueAsDate() const
 {
     return DateComponents::invalidMilliseconds();

@@ -188,7 +188,7 @@ PassRefPtr<FormSubmission> FormSubmission::create(HTMLFormElement* form, const A
     }
 
     if (copiedAttributes.method() == DialogMethod)
-        return adoptRef(new FormSubmission(submitButton->fastGetAttribute(valueAttr)));
+        return adoptRef(new FormSubmission(submitButton->resultForDialogSubmit()));
 
     Document& document = form->document();
     KURL actionURL = document.completeURL(copiedAttributes.action().isEmpty() ? document.url().string() : copiedAttributes.action());

@@ -3,15 +3,15 @@ Tests form submission with method=dialog
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-clicking outer-submit-empty-string
+Clicking outer-submit-empty-string
 PASS outer; dialog.open is false
-PASS outer; dialog.returnValue is expectedValue
+PASS outer; dialog.returnValue is ""
 PASS inner; dialog.open is true
 PASS inner; dialog.returnValue is "init"
 PASS host; dialog.open is true
 PASS host; dialog.returnValue is "init"
 
-clicking outer-submit-no-value
+Clicking outer-submit-no-value
 PASS outer; dialog.open is false
 PASS outer; dialog.returnValue is "init"
 PASS inner; dialog.open is true
@@ -19,23 +19,23 @@ PASS inner; dialog.returnValue is "init"
 PASS host; dialog.open is true
 PASS host; dialog.returnValue is "init"
 
-clicking inner-submit-yes
+Clicking inner-submit-yes
 PASS outer; dialog.open is true
 PASS outer; dialog.returnValue is "init"
 PASS inner; dialog.open is false
-PASS inner; dialog.returnValue is expectedValue
+PASS inner; dialog.returnValue is "Yes"
 PASS host; dialog.open is true
 PASS host; dialog.returnValue is "init"
 
-clicking inner-submit-no
+Clicking inner-submit-no
 PASS outer; dialog.open is true
 PASS outer; dialog.returnValue is "init"
 PASS inner; dialog.open is false
-PASS inner; dialog.returnValue is expectedValue
+PASS inner; dialog.returnValue is "No"
 PASS host; dialog.open is true
 PASS host; dialog.returnValue is "init"
 
-clicking no-dialog-ancestor-1
+Clicking no-dialog-ancestor-1
 PASS outer; dialog.open is true
 PASS outer; dialog.returnValue is "init"
 PASS inner; dialog.open is true
@@ -43,7 +43,7 @@ PASS inner; dialog.returnValue is "init"
 PASS host; dialog.open is true
 PASS host; dialog.returnValue is "init"
 
-clicking no-dialog-ancestor-2
+Clicking no-dialog-ancestor-2
 PASS outer; dialog.open is true
 PASS outer; dialog.returnValue is "init"
 PASS inner; dialog.open is true
@@ -51,18 +51,44 @@ PASS inner; dialog.returnValue is "init"
 PASS host; dialog.open is true
 PASS host; dialog.returnValue is "init"
 
-clicking host-submit-yes
+Clicking host-submit-yes
 PASS outer; dialog.open is true
 PASS outer; dialog.returnValue is "init"
 PASS inner; dialog.open is true
 PASS inner; dialog.returnValue is "init"
 PASS host; dialog.open is false
-PASS host; dialog.returnValue is expectedValue
+PASS host; dialog.returnValue is "Yes"
 
-clicking a button in a closed dialog
+Clicking a button in a closed dialog
 PASS dialog.open is false
 PASS dialog.returnValue is "init"
+
+Activating an image button by click()
+PASS outer; dialog.open is true
+PASS outer; dialog.returnValue is "init"
+PASS inner; dialog.open is false
+PASS inner; dialog.returnValue is "0,0"
+PASS host; dialog.open is true
+PASS host; dialog.returnValue is "init"
+
+Activating an image button by keyboard
+PASS outer; dialog.open is true
+PASS outer; dialog.returnValue is "init"
+PASS inner; dialog.open is false
+PASS inner; dialog.returnValue is "0,0"
+PASS host; dialog.open is true
+PASS host; dialog.returnValue is "init"
+
+Clicking an image button
+PASS outer; dialog.open is true
+PASS outer; dialog.returnValue is "init"
+PASS inner; dialog.open is false
+PASS inner; dialog.returnValue is "10,5"
+PASS host; dialog.open is true
+PASS host; dialog.returnValue is "init"
 PASS successfullyParsed is true
 
 TEST COMPLETE
+
+
   

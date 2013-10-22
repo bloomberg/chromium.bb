@@ -47,6 +47,7 @@ private:
     virtual const AtomicString& formControlType() const OVERRIDE;
     virtual bool isFormDataAppendable() const OVERRIDE;
     virtual bool appendFormData(FormDataList&, bool) const OVERRIDE;
+    virtual String resultForDialogSubmit() const OVERRIDE;
     virtual bool supportsValidation() const OVERRIDE;
     virtual RenderObject* createRenderer(RenderStyle*) const OVERRIDE;
     virtual void handleDOMActivateEvent(Event*) OVERRIDE;

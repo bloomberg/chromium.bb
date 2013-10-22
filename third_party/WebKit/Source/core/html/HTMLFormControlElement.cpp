@@ -312,6 +312,11 @@ bool HTMLFormControlElement::isRequired() const
     return m_isRequired;
 }
 
+String HTMLFormControlElement::resultForDialogSubmit()
+{
+    return fastGetAttribute(valueAttr);
+}
+
 static void updateFromElementCallback(Node* node)
 {
     ASSERT_ARG(node, node->isElementNode());

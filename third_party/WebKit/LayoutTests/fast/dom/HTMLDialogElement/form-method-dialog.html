@@ -2,6 +2,14 @@
 <html>
 <head>
 <script src="../../js/resources/js-test-pre.js"></script>
+<style>
+/* Position on an integer offset to avoid rounding errors during the test to click on a coordinate. */
+#inner-submit-image {
+    position: fixed;
+    top: 50px;
+    left: 50px;
+}
+</style>
 </head>
 <body>
 <dialog id="outer">
@@ -12,6 +20,8 @@
         <form method="dialog">
             <input id="inner-submit-yes" type="submit" value="Yes">
             <input id="inner-submit-no" type="submit" value="No">
+            <input id="inner-submit-image" type="image"
+                   src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAANcAAACuCAIAAAAqMg/rAAAAAXNSR0IArs4c6QAAAU9JREFUeNrt0jERAAAIxDDAv+dHAxNLIqHXTlLwaiTAheBCXAguxIXgQlwILsSF4EJcCC7EheBCXAguxIXgQlwILsSF4EJcCC7EheBCXAguxIXgQlwILsSF4EJcCC7EheBCXAguxIXgQlwILsSF4EJcCC7EheBCXAguxIXgQlwILsSF4EJcCC7EheBCXAguxIXgQlwILsSF4EJcCC7EheBCXAguxIXgQlwILsSF4EJcCC7EheBCXAguxIXgQlwILsSF4EJcCC7EheBCXAguxIXgQlwILsSF4EJcCC7EheBCXAguxIXgQlwILsSF4EJcCC7EheBCXAguxIXgQlwILsSFEuBCcCEuBBfiQnAhLgQX4kJwIS4EF+JCcCEuBBfiQnAhLgQX4kJwIS4EF+JCcCEuBBfiQnAhLgQX4kJwIS4EF+JCcCEuBBfiQnAhLoSDBZXqBFnkRyeqAAAAAElFTkSuQmCC">
         </form>
     </dialog>
     <form>
@@ -42,11 +52,8 @@ function closeDialogs()
     }
 }
 
-function checkDialogs(button, targetDialog)
+function checkDialogs(button, targetDialog, expectedResult)
 {
-    expectedValue = null;
-    if (button.hasAttribute('value'))
-        expectedValue = button.value;
     dialogs = document.querySelectorAll('dialog');
     for (var i = 0; i < dialogs.length; ++i) {
         dialog = dialogs[i];
@@ -55,8 +62,8 @@ function checkDialogs(button, targetDialog)
         else
             shouldBeTrue(dialog.id + '; dialog.open');
 
-        if (dialog == targetDialog && expectedValue !== null)
-            shouldBe(dialog.id + '; dialog.returnValue', 'expectedValue');
+        if (dialog == targetDialog && expectedResult !== null)
+            shouldBeEqualToString(dialog.id + '; dialog.returnValue', expectedResult);
         else
             shouldBeEqualToString(dialog.id + '; dialog.returnValue', 'init');
     }
@@ -69,12 +76,73 @@ function $(id)
 
 function testClosedDialog()
 {
+    debug('Clicking a button in a closed dialog');
+    closeDialogs();
     button = $('outer-submit-empty-string');
     dialog = $('outer');
     dialog.returnValue = 'init';
     button.click();
     shouldBeFalse('dialog.open');
     shouldBeEqualToString('dialog.returnValue', 'init');
+    debug('');
+}
+
+function testClickMethodOnImageButton()
+{
+    debug('Activating an image button by click()');
+    openDialogs();
+
+    var image = $('inner-submit-image');
+    image.click();
+    checkDialogs(image, $('inner'), '0,0');
+    debug('');
+}
+
+function testKeyboardActivatingImageButton()
+{
+    debug('Activating an image button by keyboard');
+    openDialogs();
+    var image = $('inner-submit-image');
+    var inner = $('inner');
+
+    inner.addEventListener('close', function f() {
+        inner.removeEventListener('close', f);
+        checkDialogs(image, $('inner'), '0,0');
+        debug('');
+        testClickingImageButton();
+    });
+
+    if (!window.eventSender) {
+        debug('This test requires eventSender.');
+        return;
+    }
+    image.focus();
+    eventSender.keyDown(' ');
+}
+
+function testClickingImageButton()
+{
+    debug('Clicking an image button');
+    openDialogs();
+    var image = $('inner-submit-image');
+    var inner = $('inner');
+    var x = image.getBoundingClientRect().left + 10;
+    var y = image.getBoundingClientRect().top + 5;
+
+    inner.addEventListener('close', function f() {
+      inner.removeEventListener('close', f);
+      checkDialogs(image, inner, '10,5');
+      if (window.testRunner)
+          testRunner.notifyDone();
+    });
+
+    if (!window.eventSender) {
+        debug('This test requires eventSender');
+        return;
+    }
+    eventSender.mouseMoveTo(x, y);
+    eventSender.mouseDown();
+    eventSender.mouseUp();
 }
 
 function test()
@@ -88,29 +156,33 @@ function test()
        '</form>';
 
     var tests = [
-        { button: $('outer-submit-empty-string'), targetDialog: $('outer') },
-        { button: $('outer-submit-no-value'), targetDialog: $('outer') },
-        { button: $('inner-submit-yes'), targetDialog: $('inner') },
-        { button: $('inner-submit-no'), targetDialog: $('inner') },
+        { button: $('outer-submit-empty-string'), targetDialog: $('outer'), result: '' },
+        { button: $('outer-submit-no-value'), targetDialog: $('outer'), result: null },
+        { button: $('inner-submit-yes'), targetDialog: $('inner'), result: 'Yes' },
+        { button: $('inner-submit-no'), targetDialog: $('inner'), result: 'No' },
         { button: $('no-dialog-ancestor-1'), targetDialog: null },
         { button: $('no-dialog-ancestor-2'), targetDialog: null },
-        { button: host.shadowRoot.querySelector('#host-submit-yes'), targetDialog: $('host') }
+        { button: host.shadowRoot.querySelector('#host-submit-yes'), targetDialog: $('host'), result: 'Yes' }
     ];
+
     for (var i = 0; i < tests.length; ++i) {
         var button = tests[i].button;
-        var targetDialog = tests[i].targetDialog;
         openDialogs();
-        debug('clicking ' + button.id);
+        debug('Clicking ' + button.id);
         button.click();
-        checkDialogs(button, targetDialog);
+        checkDialogs(button, tests[i].targetDialog, tests[i].result);
         debug('');
     }
 
-    closeDialogs();
-    debug('clicking a button in a closed dialog');
     testClosedDialog();
+    testClickMethodOnImageButton();
+
+    // The tests involving eventSender seem to need to be async.
+    testKeyboardActivatingImageButton();
 }
 
+if (window.testRunner)
+    testRunner.waitUntilDone();
 test();
 </script>
 <script src="../../js/resources/js-test-post.js"></script>

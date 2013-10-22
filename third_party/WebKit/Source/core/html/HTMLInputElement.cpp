@@ -839,6 +839,11 @@ bool HTMLInputElement::appendFormData(FormDataList& encoding, bool multipart)
     return m_inputType->isFormDataAppendable() && m_inputType->appendFormData(encoding, multipart);
 }
 
+String HTMLInputElement::resultForDialogSubmit()
+{
+    return m_inputType->resultForDialogSubmit();
+}
+
 void HTMLInputElement::resetImpl()
 {
     if (m_inputType->storesValueSeparateFromAttribute())

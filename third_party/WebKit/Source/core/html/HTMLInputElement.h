@@ -329,7 +329,8 @@ private:
 
     virtual void attach(const AttachContext& = AttachContext()) OVERRIDE;
 
-    virtual bool appendFormData(FormDataList&, bool);
+    virtual bool appendFormData(FormDataList&, bool) OVERRIDE;
+    virtual String resultForDialogSubmit() OVERRIDE;
 
     virtual bool isSuccessfulSubmitButton() const;
 

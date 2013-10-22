@@ -34,6 +34,7 @@
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/rendering/RenderImage.h"
 #include "wtf/PassOwnPtr.h"
+#include "wtf/text/StringBuilder.h"
 
 namespace WebCore {
 
@@ -78,6 +79,15 @@ bool ImageInputType::appendFormData(FormDataList& encoding, bool) const
     if (!element().value().isEmpty())
         encoding.appendData(name, element().value());
     return true;
+}
+
+String ImageInputType::resultForDialogSubmit() const
+{
+    StringBuilder result;
+    result.appendNumber(m_clickLocation.x());
+    result.append(",");
+    result.appendNumber(m_clickLocation.y());
+    return result.toString();
 }
 
 bool ImageInputType::supportsValidation() const
