@@ -60,6 +60,8 @@ public:
 
     static PassRefPtr<MediaStreamDescriptor> create(const String& id, const MediaStreamComponentVector& audioComponents, const MediaStreamComponentVector& videoComponents);
 
+    virtual ~MediaStreamDescriptor();
+
     MediaStreamDescriptorClient* client() const { return m_client; }
     void setClient(MediaStreamDescriptorClient* client) { m_client = client; }
 

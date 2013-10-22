@@ -127,5 +127,14 @@ MediaStreamDescriptor::MediaStreamDescriptor(const String& id, const MediaStream
     }
 }
 
+MediaStreamDescriptor::~MediaStreamDescriptor()
+{
+    for (MediaStreamComponentVector::iterator iter = m_audioComponents.begin(); iter != m_audioComponents.end(); ++iter)
+        (*iter)->setStream(0);
+
+    for (MediaStreamComponentVector::iterator iter = m_videoComponents.begin(); iter != m_videoComponents.end(); ++iter)
+        (*iter)->setStream(0);
+}
+
 } // namespace WebCore
 

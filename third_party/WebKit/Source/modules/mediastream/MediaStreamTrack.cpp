@@ -163,7 +163,11 @@ void MediaStreamTrack::sourceChangedState()
 
 void MediaStreamTrack::didEndTrack()
 {
-    MediaStreamDescriptorClient* client = m_component->stream()->client();
+    MediaStreamDescriptor* stream = m_component->stream();
+    if (!stream)
+        return;
+
+    MediaStreamDescriptorClient* client = stream->client();
     if (!client)
         return;
 

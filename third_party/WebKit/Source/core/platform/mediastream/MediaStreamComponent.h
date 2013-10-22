@@ -59,7 +59,7 @@ public:
     static PassRefPtr<MediaStreamComponent> create(MediaStreamDescriptor*, PassRefPtr<MediaStreamSource>);
 
     MediaStreamDescriptor* stream() const { return m_stream; }
-    void setStream(MediaStreamDescriptor* stream) { ASSERT(!m_stream && stream); m_stream = stream; }
+    void setStream(MediaStreamDescriptor* stream) { m_stream = stream; }
 
     MediaStreamSource* source() const { return m_source.get(); }
 
