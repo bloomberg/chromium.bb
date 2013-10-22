@@ -446,7 +446,6 @@ bool ShouldBeOpenedWithBrowser(const std::string& extension_id,
           (action_id == "view-pdf" ||
            action_id == "view-swf" ||
            action_id == "view-in-browser" ||
-           action_id == "install-crx" ||
            action_id == "open-hosted-generic" ||
            action_id == "open-hosted-gdoc" ||
            action_id == "open-hosted-gsheet" ||

@@ -244,9 +244,6 @@ FileTasks.prototype.processTasks_ = function(tasks) {
       } else if (taskParts[2] == 'view-in-browser') {
         task.iconType = 'generic';
         task.title = loadTimeData.getString('ACTION_VIEW');
-      } else if (taskParts[2] == 'install-crx') {
-        task.iconType = 'generic';
-        task.title = loadTimeData.getString('INSTALL_CRX');
       }
     }
 

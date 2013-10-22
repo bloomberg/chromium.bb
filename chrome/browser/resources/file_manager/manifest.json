@@ -120,14 +120,6 @@
       ]
     },
     {
-      "id": "install-crx",
-      "default_title": "__MSG_INSTALL_CRX__",
-      "default_icon": "images/filetype_generic.png",
-      "file_filters": [
-        "filesystem:*.crx"
-      ]
-    },
-    {
       "id": "gallery",
       "default_title": "__MSG_OPEN_ACTION__",
       "default_icon": "images/filetype_image.png",

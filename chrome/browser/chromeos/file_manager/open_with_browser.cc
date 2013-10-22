@@ -10,14 +10,8 @@
 #include "base/path_service.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/drive/drive.pb.h"
-#include "chrome/browser/chromeos/drive/file_system.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/extensions/api/file_handlers/app_file_handler_util.h"
-#include "chrome/browser/extensions/crx_installer.h"
-#include "chrome/browser/extensions/extension_install_prompt.h"
-#include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/plugins/plugin_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -42,7 +36,6 @@ namespace file_manager {
 namespace util {
 namespace {
 
-const base::FilePath::CharType kCRXExtension[] = FILE_PATH_LITERAL(".crx");
 const base::FilePath::CharType kPdfExtension[] = FILE_PATH_LITERAL(".pdf");
 const base::FilePath::CharType kSwfExtension[] = FILE_PATH_LITERAL(".swf");
 
@@ -126,36 +119,6 @@ void OpenNewTab(Profile* profile, const GURL& url) {
   browser->window()->Show();
 }
 
-void InstallCRX(Profile* profile, const base::FilePath& file_path) {
-  DCHECK(profile);
-
-  ExtensionService* service =
-      extensions::ExtensionSystem::Get(profile)->extension_service();
-  CHECK(service);
-
-  scoped_refptr<extensions::CrxInstaller> installer(
-      extensions::CrxInstaller::Create(
-          service,
-          scoped_ptr<ExtensionInstallPrompt>(new ExtensionInstallPrompt(
-              profile, NULL, NULL))));
-  installer->set_error_on_unsupported_requirements(true);
-  installer->set_is_gallery_install(false);
-  installer->set_allow_silent_install(false);
-  installer->InstallCrx(file_path);
-}
-
-// Called when a crx file on Drive was downloaded.
-void OnCRXDownloadCallback(Profile* profile,
-                           drive::FileError error,
-                           const base::FilePath& file,
-                           scoped_ptr<drive::ResourceEntry> entry) {
-  DCHECK(profile);
-
-  if (error != drive::FILE_ERROR_OK)
-    return;
-  InstallCRX(profile, file);
-}
-
 // Reads the alternate URL from a GDoc file. When it fails, returns a file URL
 // for |file_path| as fallback.
 // Note that an alternate url is a URL to open a hosted document.
@@ -200,21 +163,6 @@ bool OpenFileWithBrowser(Profile* profile, const base::FilePath& file_path) {
           FROM_HERE,
           base::Bind(&ReadUrlFromGDocOnBlockingPool, file_path),
           base::Bind(&OpenNewTab, profile));
-    }
-    return true;
-  }
-
-  if (file_path.MatchesExtension(kCRXExtension)) {
-    if (drive::util::IsUnderDriveMountPoint(file_path)) {
-      drive::FileSystemInterface* file_system =
-          drive::util::GetFileSystemByProfile(profile);
-      if (!file_system)
-        return false;
-      file_system->GetFileByPath(
-          drive::util::ExtractDrivePath(file_path),
-          base::Bind(&OnCRXDownloadCallback, profile));
-    } else {
-      InstallCRX(profile, file_path);
     }
     return true;
   }

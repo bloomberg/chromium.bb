@@ -9,7 +9,6 @@
 
 #include "base/files/file_path.h"
 
-class Browser;
 class Profile;
 
 namespace file_manager {
@@ -21,7 +20,6 @@ namespace util {
 // - If there is no active browser window, open it.
 // - If the file is a Drive hosted document, the hosted document will be
 //   opened in the browser by extracting the right URL for the file.
-// - If the file is a CRX file, the CRX file will be installed.
 // - If the file is on Drive, the file will be downloaded from Drive as
 //   needed.
 //
