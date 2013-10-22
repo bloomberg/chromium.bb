@@ -373,8 +373,6 @@ public:
     void addCompressedTextureFormat(GC3Denum);
     void removeAllCompressedTextureFormats();
 
-    PassRefPtr<Image> drawImageIntoBuffer(Image*, int width, int height, int deviceScaleFactor);
-
     PassRefPtr<Image> videoFrameToImage(HTMLVideoElement*, BackingStoreCopy);
 
     WebGLRenderbuffer* ensureEmulatedStencilBuffer(GC3Denum target, WebGLRenderbuffer*);
@@ -464,7 +462,7 @@ public:
         OwnPtr<OwnPtr<ImageBuffer>[]> m_buffers;
         int m_capacity;
     };
-    LRUImageBufferCache m_generatedImageCache;
+    LRUImageBufferCache m_videoCache;
 
     GC3Dint m_maxTextureSize;
     GC3Dint m_maxCubeMapTextureSize;
