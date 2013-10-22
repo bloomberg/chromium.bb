@@ -11,21 +11,14 @@ function requestUploads() {
 
 /**
  * Callback from backend with the list of uploads. Builds the UI.
- * @param {boolean} enabled Whether or not uploading is enabled.
  * @param {array} uploads The list of uploads.
  * @param {string} version The browser version.
  */
-function updateWebRtcLogsList(enabled, uploads, version) {
+function updateWebRtcLogsList(uploads, version) {
   $('log-banner').textContent = loadTimeData.getStringF('webrtcLogCountFormat',
                                                         uploads.length);
 
   var logSection = $('log-list');
-
-  $('enabled-mode').hidden = !enabled;
-  $('disabled-mode').hidden = enabled;
-
-  if (!enabled)
-    return;
 
   // Clear any previous list.
   logSection.textContent = '';

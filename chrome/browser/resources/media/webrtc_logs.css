@@ -41,8 +41,3 @@ html[dir=rtl] h1 {
 #log-list > div:not(:last-child) {
   border-bottom: 1px solid #bbb;
 }
-
-#disabled-mode h2 {
-  color: rgb(141, 51, 42);
-  font-size: 125%;
-}

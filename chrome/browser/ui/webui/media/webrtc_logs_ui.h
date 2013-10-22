@@ -17,9 +17,6 @@ class WebRtcLogsUI : public content::WebUIController {
  public:
   explicit WebRtcLogsUI(content::WebUI* web_ui);
 
-  // Whether WebRTC logs UI has been enabled.
-  static bool WebRtcLogsUIEnabled();
-
  private:
   DISALLOW_COPY_AND_ASSIGN(WebRtcLogsUI);
 };

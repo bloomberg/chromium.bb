@@ -6911,12 +6911,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_WEBRTC_LOGS_NO_LOGS_MESSAGE" desc="The explanatory message for chrome://webrtc-logs when there are no uploaded logs">
         You have no recently uploaded WebRTC logs.
       </message>
-      <message name="IDS_WEBRTC_LOGS_DISABLED_HEADER" desc="The header for chrome://webrtc-logs when uploading is disabled">
-        Log capturing and uploading is disabled.
-      </message>
-      <message name="IDS_WEBRTC_LOGS_DISABLED_MESSAGE" desc="The explanatory message for chrome://webrtc-logs when uploading is disabled">
-        This page only shows information on your recently uploaded WebRTC logs if you <ph name="BEGIN_LINK">&lt;a href="https://www.google.com/support/chrome/bin/answer.py?answer=96817"&gt;</ph>enable crash reporting<ph name="END_LINK">&lt;/a&gt;</ph>.
-      </message>
 
       <!-- Custom dictionary page -->
       <message name="IDS_LANGUAGE_DICTIONARY_OVERLAY_TITLE" desc="Title for the chrome://settings/editDictionary page, where a user can add and remove words in the dictionary used for spelling">

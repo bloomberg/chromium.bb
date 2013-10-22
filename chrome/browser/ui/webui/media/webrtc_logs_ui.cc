@@ -54,9 +54,6 @@ content::WebUIDataSource* CreateWebRtcLogsUIHTMLSource() {
   source->AddLocalizedString("bugLinkText", IDS_WEBRTC_LOGS_BUG_LINK_LABEL);
   source->AddLocalizedString("noLogsMessage",
                              IDS_WEBRTC_LOGS_NO_LOGS_MESSAGE);
-  source->AddLocalizedString("disabledHeader", IDS_WEBRTC_LOGS_DISABLED_HEADER);
-  source->AddLocalizedString("disabledMessage",
-                             IDS_WEBRTC_LOGS_DISABLED_MESSAGE);
   source->SetJsonPath("strings.js");
   source->AddResourcePath("webrtc_logs.js", IDR_WEBRTC_LOGS_JS);
   source->SetDefaultResource(IDR_WEBRTC_LOGS_HTML);
@@ -120,7 +117,7 @@ void WebRtcLogsDOMHandler::RegisterMessages() {
 }
 
 void WebRtcLogsDOMHandler::HandleRequestWebRtcLogs(const ListValue* args) {
-  if (!WebRtcLogsUI::WebRtcLogsUIEnabled() || list_available_)
+  if (list_available_)
     UpdateUI();
   else
     js_request_pending_ = true;
@@ -133,28 +130,22 @@ void WebRtcLogsDOMHandler::OnUploadListAvailable() {
 }
 
 void WebRtcLogsDOMHandler::UpdateUI() {
-  bool webrtc_logs_enabled = WebRtcLogsUI::WebRtcLogsUIEnabled();
+  std::vector<WebRtcLogUploadList::UploadInfo> uploads;
+  upload_list_->GetUploads(50, &uploads);
+
   ListValue upload_list;
-
-  if (webrtc_logs_enabled) {
-    std::vector<WebRtcLogUploadList::UploadInfo> uploads;
-    upload_list_->GetUploads(50, &uploads);
-
-    for (std::vector<WebRtcLogUploadList::UploadInfo>::iterator i =
-         uploads.begin(); i != uploads.end(); ++i) {
-      DictionaryValue* upload = new DictionaryValue();
-      upload->SetString("id", i->id);
-      upload->SetString("time", base::TimeFormatFriendlyDateAndTime(i->time));
-      upload_list.Append(upload);
-    }
+  for (std::vector<WebRtcLogUploadList::UploadInfo>::iterator i =
+       uploads.begin(); i != uploads.end(); ++i) {
+    DictionaryValue* upload = new DictionaryValue();
+    upload->SetString("id", i->id);
+    upload->SetString("time", base::TimeFormatFriendlyDateAndTime(i->time));
+    upload_list.Append(upload);
   }
-
-  base::FundamentalValue enabled(webrtc_logs_enabled);
 
   const chrome::VersionInfo version_info;
   base::StringValue version(version_info.Version());
 
-  web_ui()->CallJavascriptFunction("updateWebRtcLogsList", enabled, upload_list,
+  web_ui()->CallJavascriptFunction("updateWebRtcLogsList", upload_list,
                                    version);
 }
 
@@ -172,25 +163,4 @@ WebRtcLogsUI::WebRtcLogsUI(content::WebUI* web_ui) : WebUIController(web_ui) {
 
   // Set up the chrome://webrtc-logs/ source.
   content::WebUIDataSource::Add(profile, CreateWebRtcLogsUIHTMLSource());
-}
-
-// static
-bool WebRtcLogsUI::WebRtcLogsUIEnabled() {
-#if defined(GOOGLE_CHROME_BUILD)
-#if defined(OS_CHROMEOS)
-  bool reporting_enabled = false;
-  chromeos::CrosSettings::Get()->GetBoolean(chromeos::kStatsReportingPref,
-                                            &reporting_enabled);
-  return reporting_enabled;
-#elif defined(OS_ANDROID)
-  // Android has it's own setings for metrics / crash uploading.
-  PrefService* prefs = g_browser_process->local_state();
-  return prefs->GetBoolean(prefs::kCrashReportingEnabled);
-#else
-  PrefService* prefs = g_browser_process->local_state();
-  return prefs->GetBoolean(prefs::kMetricsReportingEnabled);
-#endif
-#else
-  return false;
-#endif
 }
