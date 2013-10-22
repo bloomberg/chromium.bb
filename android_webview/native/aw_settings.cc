@@ -300,6 +300,7 @@ void AwSettings::PopulateWebPreferences(WebPreferences* web_prefs) {
   web_prefs->support_deprecated_target_density_dpi = support_quirks;
   web_prefs->use_legacy_background_size_shorthand_behavior = support_quirks;
   web_prefs->viewport_meta_layout_size_quirk = support_quirks;
+  web_prefs->viewport_meta_merge_content_quirk = support_quirks;
   web_prefs->viewport_meta_zero_values_quirk = support_quirks;
   web_prefs->ignore_main_frame_overflow_hidden_quirk = support_quirks;
   web_prefs->report_screen_size_in_physical_pixels_quirk = support_quirks;

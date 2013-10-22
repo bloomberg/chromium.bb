@@ -162,4 +162,61 @@ public class AwViewportTest extends AwTestBase {
                 "matchMedia(\"screen and (device-height:" + (int)screenHeight + "px)\").matches");
         assertEquals("true", deviceHeightEqualsScreenHeight);
     }
+
+    @MediumTest
+    @Feature({"AndroidWebView"})
+    public void testMetaMergeContentQuirk() throws Throwable {
+        final TestAwContentsClient contentClient = new TestAwContentsClient();
+        final AwTestContainerView testContainerView =
+                createAwTestContainerViewOnMainSync(contentClient);
+        final AwContents awContents = testContainerView.getAwContents();
+        AwSettings settings = getAwSettingsOnUiThread(awContents);
+        CallbackHelper onPageFinishedHelper = contentClient.getOnPageFinishedHelper();
+
+        final int pageWidth = 3000;
+        final float pageScale = 1.0f;
+        final String page = String.format("<html><head>" +
+                "<meta name='viewport' content='width=%d' />" +
+                "<meta name='viewport' content='initial-scale=%.1f' />" +
+                "<meta name='viewport' content='user-scalable=0' />" +
+                "</head><body onload='document.title=document.body.clientWidth'></body></html>",
+                pageWidth, pageScale);
+
+        settings.setJavaScriptEnabled(true);
+        settings.setUseWideViewPort(true);
+        settings.setBuiltInZoomControls(true);
+        settings.setSupportZoom(true);
+
+        loadDataSync(awContents, onPageFinishedHelper, page, "text/html", false);
+        int width = Integer.parseInt(getTitleOnUiThread(awContents));
+        assertEquals(pageWidth, width);
+        assertEquals(pageScale, getScaleOnUiThread(awContents));
+        assertEquals(false, canZoomInOnUiThread(awContents));
+        assertEquals(false, canZoomOutOnUiThread(awContents));
+    }
+
+    @MediumTest
+    @Feature({"AndroidWebView"})
+    public void testMetaMergeContentQuirkOverrides() throws Throwable {
+        final TestAwContentsClient contentClient = new TestAwContentsClient();
+        final AwTestContainerView testContainerView =
+                createAwTestContainerViewOnMainSync(contentClient);
+        final AwContents awContents = testContainerView.getAwContents();
+        AwSettings settings = getAwSettingsOnUiThread(awContents);
+        CallbackHelper onPageFinishedHelper = contentClient.getOnPageFinishedHelper();
+
+        final int pageWidth = 3000;
+        final String page = String.format("<html><head>" +
+                "<meta name='viewport' content='width=device-width' />" +
+                "<meta name='viewport' content='width=%d' />" +
+                "</head><body onload='document.title=document.body.clientWidth'></body></html>",
+                pageWidth);
+
+        settings.setJavaScriptEnabled(true);
+        settings.setUseWideViewPort(true);
+
+        loadDataSync(awContents, onPageFinishedHelper, page, "text/html", false);
+        int width = Integer.parseInt(getTitleOnUiThread(awContents));
+        assertEquals(pageWidth, width);
+    }
 }

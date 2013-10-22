@@ -73,24 +73,6 @@ public class AwZoomTest extends AwTestBase {
         });
     }
 
-    private boolean canZoomInOnUiThread() throws Throwable {
-        return runTestOnUiThreadAndGetResult(new Callable<Boolean>() {
-            @Override
-            public Boolean call() throws Exception {
-                return mAwContents.canZoomIn();
-            }
-        });
-    }
-
-    private boolean canZoomOutOnUiThread() throws Throwable {
-        return runTestOnUiThreadAndGetResult(new Callable<Boolean>() {
-            @Override
-            public Boolean call() throws Exception {
-                return mAwContents.canZoomOut();
-            }
-        });
-    }
-
     private View getZoomControlsOnUiThread() throws Throwable {
         return runTestOnUiThreadAndGetResult(new Callable<View>() {
             @Override
@@ -155,7 +137,8 @@ public class AwZoomTest extends AwTestBase {
                 @Override
                 public boolean isSatisfied() {
                     try {
-                        return !canZoomInOnUiThread() && !canZoomOutOnUiThread();
+                        return !canZoomInOnUiThread(mAwContents) &&
+                                !canZoomOutOnUiThread(mAwContents);
                     } catch (Throwable t) {
                         t.printStackTrace();
                         fail("Failed to query canZoomIn/Out: " + t.toString());
@@ -171,18 +154,18 @@ public class AwZoomTest extends AwTestBase {
                 getZoomableHtml(), "text/html", false);
         mContentsClient.getOnScaleChangedHelper().waitForCallback(onScaleChangedCallCount);
         getAwSettingsOnUiThread(mAwContents).setSupportZoom(supportZoom);
-        assertTrue("Should be able to zoom in", canZoomInOnUiThread());
-        assertFalse("Should not be able to zoom out", canZoomOutOnUiThread());
+        assertTrue("Should be able to zoom in", canZoomInOnUiThread(mAwContents));
+        assertFalse("Should not be able to zoom out", canZoomOutOnUiThread(mAwContents));
 
-        while (canZoomInOnUiThread()) {
+        while (canZoomInOnUiThread(mAwContents)) {
             assertTrue(zoomInOnUiThreadAndWait());
         }
-        assertTrue("Should be able to zoom out", canZoomOutOnUiThread());
+        assertTrue("Should be able to zoom out", canZoomOutOnUiThread(mAwContents));
 
-        while (canZoomOutOnUiThread()) {
+        while (canZoomOutOnUiThread(mAwContents)) {
             assertTrue(zoomOutOnUiThreadAndWait());
         }
-        assertTrue("Should be able to zoom in", canZoomInOnUiThread());
+        assertTrue("Should be able to zoom in", canZoomInOnUiThread(mAwContents));
     }
 
     /*
@@ -238,7 +221,7 @@ public class AwZoomTest extends AwTestBase {
                 getZoomableHtml(), "text/html", false);
         mContentsClient.getOnScaleChangedHelper().waitForCallback(onScaleChangedCallCount);
         // It must be possible to zoom in (or zoom out) for zoom controls to be shown
-        assertTrue("Should be able to zoom in", canZoomInOnUiThread());
+        assertTrue("Should be able to zoom in", canZoomInOnUiThread(mAwContents));
 
         assertTrue(webSettings.supportZoom());
         webSettings.setBuiltInZoomControls(true);

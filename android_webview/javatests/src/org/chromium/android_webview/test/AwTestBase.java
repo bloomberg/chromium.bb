@@ -370,4 +370,28 @@ public class AwTestBase
             }
         });
     }
+
+    /**
+     * Returns whether a user can zoom the page in.
+     */
+    protected boolean canZoomInOnUiThread(final AwContents awContents) throws Throwable {
+        return runTestOnUiThreadAndGetResult(new Callable<Boolean>() {
+            @Override
+            public Boolean call() throws Exception {
+                return awContents.canZoomIn();
+            }
+        });
+    }
+
+    /**
+     * Returns whether a user can zoom the page out.
+     */
+    protected boolean canZoomOutOnUiThread(final AwContents awContents) throws Throwable {
+        return runTestOnUiThreadAndGetResult(new Callable<Boolean>() {
+            @Override
+            public Boolean call() throws Exception {
+                return awContents.canZoomOut();
+            }
+        });
+    }
 }

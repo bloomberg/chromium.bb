@@ -133,6 +133,7 @@ WebPreferences::WebPreferences()
       wide_viewport_quirk(false),
       use_wide_viewport(true),
       viewport_meta_layout_size_quirk(false),
+      viewport_meta_merge_content_quirk(false),
       viewport_meta_zero_values_quirk(false),
       ignore_main_frame_overflow_hidden_quirk(false),
       report_screen_size_in_physical_pixels_quirk(false)
