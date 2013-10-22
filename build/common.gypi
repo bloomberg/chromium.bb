@@ -353,7 +353,7 @@
       #   0: Don't specify the version. This option is for the Finch testing.
       #   1: Use only CLD1.
       #   2: Use only CLD2.
-      'cld_version%': 0,
+      'cld_version%': 2,
 
       # Enable spell checker.
       'enable_spellcheck%': 1,
