@@ -196,8 +196,11 @@ class ResourceProviderContext : public TestWebGraphicsContext3D {
     CheckTextureIsBound(target);
     ASSERT_EQ(static_cast<unsigned>(GL_TEXTURE_2D), target);
     ASSERT_FALSE(level);
-    ASSERT_EQ(GLDataFormat(BoundTexture(target)->format), format);
     ASSERT_EQ(static_cast<unsigned>(GL_UNSIGNED_BYTE), type);
+    {
+      base::AutoLock lock_for_texture_access(namespace_->lock);
+      ASSERT_EQ(GLDataFormat(BoundTexture(target)->format), format);
+    }
     ASSERT_TRUE(pixels);
     SetPixels(xoffset, yoffset, width, height, pixels);
   }
@@ -205,6 +208,7 @@ class ResourceProviderContext : public TestWebGraphicsContext3D {
   virtual void texParameteri(WGC3Denum target, WGC3Denum param, WGC3Dint value)
       OVERRIDE {
     CheckTextureIsBound(target);
+    base::AutoLock lock_for_texture_access(namespace_->lock);
     scoped_refptr<TestTexture> texture = BoundTexture(target);
     if (param != GL_TEXTURE_MIN_FILTER)
       return;
@@ -224,6 +228,7 @@ class ResourceProviderContext : public TestWebGraphicsContext3D {
     // haven't waited on that sync point.
     scoped_ptr<PendingProduceTexture> pending(new PendingProduceTexture);
     memcpy(pending->mailbox, mailbox, sizeof(pending->mailbox));
+    base::AutoLock lock_for_texture_access(namespace_->lock);
     pending->texture = BoundTexture(target);
     pending_produce_textures_.push_back(pending.Pass());
   }
@@ -231,14 +236,15 @@ class ResourceProviderContext : public TestWebGraphicsContext3D {
   virtual void consumeTextureCHROMIUM(WGC3Denum target,
                                       const WGC3Dbyte* mailbox) OVERRIDE {
     CheckTextureIsBound(target);
+    base::AutoLock lock_for_texture_access(namespace_->lock);
     scoped_refptr<TestTexture> texture =
         shared_data_->ConsumeTexture(mailbox, last_waited_sync_point_);
-    base::AutoLock lock(namespace_->lock);
     namespace_->textures.Replace(BoundTextureId(target), texture);
   }
 
   void GetPixels(gfx::Size size, ResourceFormat format, uint8_t* pixels) {
     CheckTextureIsBound(GL_TEXTURE_2D);
+    base::AutoLock lock_for_texture_access(namespace_->lock);
     scoped_refptr<TestTexture> texture = BoundTexture(GL_TEXTURE_2D);
     ASSERT_EQ(texture->size, size);
     ASSERT_EQ(texture->format, format);
@@ -247,11 +253,13 @@ class ResourceProviderContext : public TestWebGraphicsContext3D {
 
   WGC3Denum GetTextureFilter() {
     CheckTextureIsBound(GL_TEXTURE_2D);
+    base::AutoLock lock_for_texture_access(namespace_->lock);
     return BoundTexture(GL_TEXTURE_2D)->filter;
   }
 
   scoped_refptr<TestTexture> BoundTexture(WGC3Denum target) {
-    base::AutoLock lock(namespace_->lock);
+    // The caller is expected to lock the namespace for texture access.
+    namespace_->lock.AssertAcquired();
     return namespace_->textures.TextureForId(BoundTextureId(target));
   }
 
@@ -276,6 +284,7 @@ class ResourceProviderContext : public TestWebGraphicsContext3D {
         texture_format = BGRA_8888;
         break;
     }
+    base::AutoLock lock_for_texture_access(namespace_->lock);
     BoundTexture(GL_TEXTURE_2D)->Reallocate(size, texture_format);
   }
 
@@ -285,6 +294,7 @@ class ResourceProviderContext : public TestWebGraphicsContext3D {
                  int height,
                  const void* pixels) {
     CheckTextureIsBound(GL_TEXTURE_2D);
+    base::AutoLock lock_for_texture_access(namespace_->lock);
     scoped_refptr<TestTexture> texture = BoundTexture(GL_TEXTURE_2D);
     ASSERT_TRUE(texture->data.get());
     ASSERT_TRUE(xoffset >= 0 && xoffset + width <= texture->size.width());
