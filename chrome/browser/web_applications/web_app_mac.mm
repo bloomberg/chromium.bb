@@ -135,12 +135,17 @@ bool AddGfxImageToIconFamily(IconFamilyHandle icon_family,
 
 base::FilePath GetWritableApplicationsDirectory() {
   base::FilePath path;
-  if (base::mac::GetLocalDirectory(NSApplicationDirectory, &path) &&
-      base::PathIsWritable(path)) {
-    return path;
+  if (base::mac::GetUserDirectory(NSApplicationDirectory, &path)) {
+    if (!base::DirectoryExists(path)) {
+      if (!file_util::CreateDirectory(path))
+        return base::FilePath();
+
+      // Create a zero-byte ".localized" file to inherit localizations from OSX
+      // for folders that have special meaning.
+      file_util::WriteFile(path.Append(".localized"), NULL, 0);
+    }
+    return base::PathIsWritable(path) ? path : base::FilePath();
   }
-  if (base::mac::GetUserDirectory(NSApplicationDirectory, &path))
-    return path;
   return base::FilePath();
 }
 
