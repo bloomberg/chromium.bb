@@ -10,7 +10,7 @@ var div = document.querySelector('#test');
 var log;
 
 shouldThrow('div.style.var.forEach()', '"TypeError: Failed to execute \'forEach\' on \'CSSVariablesMap\': 1 argument required, but only 0 present."');
-shouldThrow('div.style.var.forEach("Not a function.")', '"TypeError: Type error"');
+shouldThrow('div.style.var.forEach("Not a function.")', '"TypeError: Failed to execute \'forEach\' on \'CSSVariablesMap\': The callback provided as parameter 1 is not a function."');
 
 debug('\nTest calling forEach without thisArg specified:');
 log = [];

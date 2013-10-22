@@ -4,7 +4,7 @@ PASS: Failed to execute 'openDatabaseSync' on 'WorkerGlobalScope': 4 arguments r
 PASS: undefined
 PASS: undefined
 PASS: undefined
-PASS: Type error
+PASS: Failed to execute 'openDatabaseSync' on 'WorkerGlobalScope': The callback provided as parameter 5 is not a function.
 PASS: openDatabaseSync() succeeded.
 PASS: openDatabaseSync() succeeded.
 PASS: calling openDatabaseSync() with a creation callback succeeded.

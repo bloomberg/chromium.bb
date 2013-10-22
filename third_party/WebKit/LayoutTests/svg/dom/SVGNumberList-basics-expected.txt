@@ -9,9 +9,9 @@ PASS text1.rotate.baseVal.numberOfItems is 3
 PASS text1.rotate.animVal.numberOfItems is 3
 
 Test uncommon arguments for initialize()
-PASS text1.rotate.baseVal.initialize(30) threw exception TypeError: Type error.
-PASS text1.rotate.baseVal.initialize('aString') threw exception TypeError: Type error.
-PASS text1.rotate.baseVal.initialize(text1) threw exception TypeError: Type error.
+PASS text1.rotate.baseVal.initialize(30) threw exception TypeError: Failed to execute 'initialize' on 'SVGNumberList': parameter 1 is not of type 'SVGNumber'..
+PASS text1.rotate.baseVal.initialize('aString') threw exception TypeError: Failed to execute 'initialize' on 'SVGNumberList': parameter 1 is not of type 'SVGNumber'..
+PASS text1.rotate.baseVal.initialize(text1) threw exception TypeError: Failed to execute 'initialize' on 'SVGNumberList': parameter 1 is not of type 'SVGNumber'..
 PASS text1.rotate.baseVal.initialize(null) threw exception TypeError: Type error.
 
 Test uncommon arguments for getItem()
@@ -49,9 +49,9 @@ PASS text1.rotate.baseVal.getItem(0).value is 90
 PASS text1.rotate.baseVal.getItem(1).value is 180
 PASS text1.rotate.baseVal.getItem(2).value is 270
 PASS text1.getAttribute('rotate') is "90 180 270"
-PASS text1.rotate.baseVal.insertItemBefore(30, 0) threw exception TypeError: Type error.
-PASS text1.rotate.baseVal.insertItemBefore('aString', 0) threw exception TypeError: Type error.
-PASS text1.rotate.baseVal.insertItemBefore(text1, 0) threw exception TypeError: Type error.
+PASS text1.rotate.baseVal.insertItemBefore(30, 0) threw exception TypeError: Failed to execute 'insertItemBefore' on 'SVGNumberList': parameter 1 is not of type 'SVGNumber'..
+PASS text1.rotate.baseVal.insertItemBefore('aString', 0) threw exception TypeError: Failed to execute 'insertItemBefore' on 'SVGNumberList': parameter 1 is not of type 'SVGNumber'..
+PASS text1.rotate.baseVal.insertItemBefore(text1, 0) threw exception TypeError: Failed to execute 'insertItemBefore' on 'SVGNumberList': parameter 1 is not of type 'SVGNumber'..
 PASS text1.rotate.baseVal.insertItemBefore(null, 0) threw exception TypeError: Type error.
 
 Set rotate='1 2 3 4' for text1
@@ -68,9 +68,9 @@ PASS text1.rotate.baseVal.replaceItem(30) threw exception TypeError: Failed to e
 PASS text1.rotate.baseVal.replaceItem('aString') threw exception TypeError: Failed to execute 'replaceItem' on 'SVGNumberList': 2 arguments required, but only 1 present..
 PASS text1.rotate.baseVal.replaceItem(text1) threw exception TypeError: Failed to execute 'replaceItem' on 'SVGNumberList': 2 arguments required, but only 1 present..
 PASS text1.rotate.baseVal.replaceItem(null) threw exception TypeError: Failed to execute 'replaceItem' on 'SVGNumberList': 2 arguments required, but only 1 present..
-PASS text1.rotate.baseVal.replaceItem(30, 0) threw exception TypeError: Type error.
-PASS text1.rotate.baseVal.replaceItem('aString', 0) threw exception TypeError: Type error.
-PASS text1.rotate.baseVal.replaceItem(text1, 0) threw exception TypeError: Type error.
+PASS text1.rotate.baseVal.replaceItem(30, 0) threw exception TypeError: Failed to execute 'replaceItem' on 'SVGNumberList': parameter 1 is not of type 'SVGNumber'..
+PASS text1.rotate.baseVal.replaceItem('aString', 0) threw exception TypeError: Failed to execute 'replaceItem' on 'SVGNumberList': parameter 1 is not of type 'SVGNumber'..
+PASS text1.rotate.baseVal.replaceItem(text1, 0) threw exception TypeError: Failed to execute 'replaceItem' on 'SVGNumberList': parameter 1 is not of type 'SVGNumber'..
 PASS text1.rotate.baseVal.replaceItem(null, 0) threw exception TypeError: Type error.
 PASS text1.rotate.baseVal.replaceItem(text1.rotate.baseVal.getItem(0), 0) is text1.rotate.baseVal.getItem(0)
 PASS text1.rotate.baseVal.numberOfItems is 4
@@ -115,9 +115,9 @@ PASS text1.rotate.baseVal.getItem(0).value is 4
 PASS text1.getAttribute('rotate') is "4"
 
 Test uncommon arguments for appendItem()
-PASS text1.rotate.baseVal.appendItem(30) threw exception TypeError: Type error.
-PASS text1.rotate.baseVal.appendItem('aString') threw exception TypeError: Type error.
-PASS text1.rotate.baseVal.appendItem(text1) threw exception TypeError: Type error.
+PASS text1.rotate.baseVal.appendItem(30) threw exception TypeError: Failed to execute 'appendItem' on 'SVGNumberList': parameter 1 is not of type 'SVGNumber'..
+PASS text1.rotate.baseVal.appendItem('aString') threw exception TypeError: Failed to execute 'appendItem' on 'SVGNumberList': parameter 1 is not of type 'SVGNumber'..
+PASS text1.rotate.baseVal.appendItem(text1) threw exception TypeError: Failed to execute 'appendItem' on 'SVGNumberList': parameter 1 is not of type 'SVGNumber'..
 PASS text1.rotate.baseVal.appendItem(null) threw exception TypeError: Type error.
 
 Testing animVal clear throws

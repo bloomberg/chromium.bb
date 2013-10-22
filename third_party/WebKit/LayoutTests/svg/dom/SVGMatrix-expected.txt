@@ -91,10 +91,10 @@ PASS matrix.f is 0
 
 Check calling 'multiply' with invalid arguments
 PASS matrix.multiply() threw exception TypeError: Failed to execute 'multiply' on 'SVGMatrix': 1 argument required, but only 0 present..
-PASS matrix.multiply(true) threw exception TypeError: Type error.
-PASS matrix.multiply(2) threw exception TypeError: Type error.
-PASS matrix.multiply('aString') threw exception TypeError: Type error.
-PASS matrix.multiply(svgElement) threw exception TypeError: Type error.
+PASS matrix.multiply(true) threw exception TypeError: Failed to execute 'multiply' on 'SVGMatrix': parameter 1 is not of type 'SVGMatrix'..
+PASS matrix.multiply(2) threw exception TypeError: Failed to execute 'multiply' on 'SVGMatrix': parameter 1 is not of type 'SVGMatrix'..
+PASS matrix.multiply('aString') threw exception TypeError: Failed to execute 'multiply' on 'SVGMatrix': parameter 1 is not of type 'SVGMatrix'..
+PASS matrix.multiply(svgElement) threw exception TypeError: Failed to execute 'multiply' on 'SVGMatrix': parameter 1 is not of type 'SVGMatrix'..
 
 Check calling 'translate' with invalid arguments
 PASS matrix.translate() threw exception TypeError: Failed to execute 'translate' on 'SVGMatrix': 2 arguments required, but only 0 present..

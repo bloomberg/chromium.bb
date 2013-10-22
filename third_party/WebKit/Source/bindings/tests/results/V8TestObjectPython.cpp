@@ -3028,7 +3028,7 @@ static void strictTypeCheckingTestInterfaceAttributeAttributeGetterCallback(v8::
 static void strictTypeCheckingTestInterfaceAttributeAttributeSetter(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     if (!isUndefinedOrNull(jsValue) && !V8TestInterface::HasInstance(jsValue, info.GetIsolate(), worldType(info.GetIsolate()))) {
-        throwTypeError(info.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToSet("strictTypeCheckingTestInterfaceAttribute", "TestObjectPython", "The provided value is not of type 'TestInterface'."), info.GetIsolate());
         return;
     }
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());

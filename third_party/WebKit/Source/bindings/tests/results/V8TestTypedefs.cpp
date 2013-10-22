@@ -474,7 +474,7 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& args)
     }
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, hello, args[0]);
     if (args.Length() <= 1 || !args[1]->IsFunction()) {
-        throwTypeError(args.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToExecute("Constructor", "TestTypedefs", "The callback provided as parameter 2 is not a function."), args.GetIsolate());
         return;
     }
     RefPtr<TestCallback> testCallback = V8TestCallback::create(args[1], getExecutionContext());

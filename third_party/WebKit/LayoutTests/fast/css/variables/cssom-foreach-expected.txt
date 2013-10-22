@@ -4,7 +4,7 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 
 
 PASS div.style.var.forEach() threw exception TypeError: Failed to execute 'forEach' on 'CSSVariablesMap': 1 argument required, but only 0 present..
-PASS div.style.var.forEach("Not a function.") threw exception TypeError: Type error.
+PASS div.style.var.forEach("Not a function.") threw exception TypeError: Failed to execute 'forEach' on 'CSSVariablesMap': The callback provided as parameter 1 is not a function..
 
 Test calling forEach without thisArg specified:
 PASS log[0] is "[object CSSVariablesMap], a: apple, this == [object Window]"
