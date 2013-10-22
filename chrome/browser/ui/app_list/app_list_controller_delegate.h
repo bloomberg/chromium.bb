@@ -67,9 +67,11 @@ class AppListControllerDelegate {
   virtual void OnCloseExtensionPrompt() {}
 
   // Whether the controller supports a Create Shortcuts flow.
-  virtual bool CanDoCreateShortcutsFlow(bool is_platform_app) = 0;
-  virtual void DoCreateShortcutsFlow(Profile* profile,
-                                     const std::string& extension_id);
+  virtual bool CanDoCreateShortcutsFlow();
+
+  // Show the dialog to create shortcuts. Call only if
+  // CanDoCreateShortcutsFlow() returns true.
+  void DoCreateShortcutsFlow(Profile* profile, const std::string& extension_id);
 
   // Handle the "create window" context menu items of Chrome App.
   // |incognito| is true to create an incognito window.

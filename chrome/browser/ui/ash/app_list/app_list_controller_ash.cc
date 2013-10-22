@@ -41,11 +41,6 @@ AppListControllerDelegate::Pinnable
       PIN_FIXED;
 }
 
-bool AppListControllerDelegateAsh::CanDoCreateShortcutsFlow(
-    bool is_platform_app) {
-  return false;
-}
-
 void AppListControllerDelegateAsh::CreateNewWindow(Profile* profile,
                                                    bool incognito) {
   if (incognito)

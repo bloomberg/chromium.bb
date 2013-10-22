@@ -89,10 +89,7 @@ class AppListControllerDelegateCocoa : public AppListControllerDelegate {
   virtual void DismissView() OVERRIDE;
   virtual gfx::NativeWindow GetAppListWindow() OVERRIDE;
   virtual Pinnable GetPinnable() OVERRIDE;
-  virtual bool CanDoCreateShortcutsFlow(bool is_platform_app) OVERRIDE;
   virtual void CreateNewWindow(Profile* profile, bool incognito) OVERRIDE;
-  virtual void DoCreateShortcutsFlow(Profile* profile,
-                                     const std::string& extension_id) OVERRIDE;
   virtual void ActivateApp(Profile* profile,
                            const extensions::Extension* extension,
                            AppListSource source,
@@ -214,24 +211,6 @@ gfx::NativeWindow AppListControllerDelegateCocoa::GetAppListWindow() {
 AppListControllerDelegate::Pinnable
     AppListControllerDelegateCocoa::GetPinnable() {
   return NO_PIN;
-}
-
-bool AppListControllerDelegateCocoa::CanDoCreateShortcutsFlow(
-    bool is_platform_app) {
-  return false;
-}
-
-void AppListControllerDelegateCocoa::DoCreateShortcutsFlow(
-    Profile* profile, const std::string& extension_id) {
-  ExtensionService* service =
-      extensions::ExtensionSystem::Get(profile)->extension_service();
-  DCHECK(service);
-  const extensions::Extension* extension =
-      service->GetInstalledExtension(extension_id);
-  DCHECK(extension);
-
-  web_app::UpdateShortcutInfoAndIconForApp(
-      *extension, profile, base::Bind(&CreateShortcutsInDefaultLocation));
 }
 
 void AppListControllerDelegateCocoa::CreateNewWindow(

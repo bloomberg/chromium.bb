@@ -4,8 +4,6 @@
 
 #include "chrome/browser/ui/views/app_list/win/app_list_controller_delegate_win.h"
 
-#include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/ui/app_list/app_list_icon_win.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_dialogs.h"
@@ -60,29 +58,8 @@ void AppListControllerDelegateWin::OnCloseExtensionPrompt() {
   service_->set_can_close(true);
 }
 
-bool AppListControllerDelegateWin::CanDoCreateShortcutsFlow(
-    bool is_platform_app) {
+bool AppListControllerDelegateWin::CanDoCreateShortcutsFlow() {
   return true;
-}
-
-void AppListControllerDelegateWin::DoCreateShortcutsFlow(
-    Profile* profile,
-    const std::string& extension_id) {
-  ExtensionService* service =
-      extensions::ExtensionSystem::Get(profile)->extension_service();
-  DCHECK(service);
-  const extensions::Extension* extension = service->GetInstalledExtension(
-      extension_id);
-  DCHECK(extension);
-
-  gfx::NativeWindow parent_hwnd = GetAppListWindow();
-  if (!parent_hwnd)
-    return;
-  OnShowExtensionPrompt();
-  chrome::ShowCreateChromeAppShortcutsDialog(
-      parent_hwnd, profile, extension,
-      base::Bind(&AppListControllerDelegateWin::OnCloseExtensionPrompt,
-                 base::Unretained(this)));
 }
 
 void AppListControllerDelegateWin::CreateNewWindow(Profile* profile,

@@ -189,7 +189,7 @@ ui::MenuModel* AppContextMenu::GetMenuModel() {
               IDS_APP_LIST_CONTEXT_MENU_PIN);
     }
 
-    if (controller_->CanDoCreateShortcutsFlow(is_platform_app_)) {
+    if (controller_->CanDoCreateShortcutsFlow()) {
       menu_model_->AddItemWithStringId(CREATE_SHORTCUTS,
                                        IDS_NEW_TAB_APP_CREATE_SHORTCUT);
     }

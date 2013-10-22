@@ -31,9 +31,7 @@ class AppListControllerDelegateWin : public AppListControllerDelegate {
   virtual Pinnable GetPinnable() OVERRIDE;
   virtual void OnShowExtensionPrompt() OVERRIDE;
   virtual void OnCloseExtensionPrompt() OVERRIDE;
-  virtual bool CanDoCreateShortcutsFlow(bool is_platform_app) OVERRIDE;
-  virtual void DoCreateShortcutsFlow(Profile* profile,
-                                     const std::string& extension_id) OVERRIDE;
+  virtual bool CanDoCreateShortcutsFlow() OVERRIDE;
   virtual void CreateNewWindow(Profile* profile, bool incognito) OVERRIDE;
   virtual void ActivateApp(Profile* profile,
                            const extensions::Extension* extension,
