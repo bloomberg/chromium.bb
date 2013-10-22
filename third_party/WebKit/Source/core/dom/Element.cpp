@@ -1578,9 +1578,11 @@ StyleRecalcChange Element::recalcOwnStyle(StyleRecalcChange change)
     if (RenderObject* renderer = this->renderer()) {
         if (localChange != NoChange || pseudoStyleCacheIsInvalid(oldStyle.get(), newStyle.get()) || (change == Force && renderer->requiresForcedStyleRecalcPropagation()) || shouldNotifyRendererWithIdenticalStyles()) {
             renderer->setAnimatableStyle(newStyle.get());
-        } else if (needsStyleRecalc()) {
+        } else {
             // Although no change occurred, we use the new style so that the cousin style sharing code won't get
             // fooled into believing this style is the same.
+            // FIXME: We may be able to remove this hack, see discussion in
+            // https://codereview.chromium.org/30453002/
             renderer->setStyleInternal(newStyle.get());
         }
     }
