@@ -282,26 +282,6 @@ TEST(WTF_PartitionAlloc, FreePageListPageTransitions)
     ++numToFillFreeListPage;
     OwnPtr<WTF::PartitionPageHeader*[]> pages = adoptArrayPtr(new WTF::PartitionPageHeader*[numToFillFreeListPage]);
 
-    // To get this test to work reliably, we need to pre-allocate a contiguous
-    // super page region. If we don't, mapping collisions could fragment the
-    // super page span and this messes up our expectations of the contents of
-    // the metadata bucket.
-    EXPECT_EQ(0, root->nextSuperPage);
-    EXPECT_EQ(0, root->totalSizeOfSuperPages);
-    // The +4 is because we'll need two partition pages for the free list pages
-    // and two partition pages for the different-sized bucket.
-    size_t superPageSize = (numToFillFreeListPage + 4) * WTF::kPartitionPageSize;
-    // Make sure it's rounded up!
-    superPageSize += WTF::kSuperPageOffsetMask;
-    superPageSize &= WTF::kSuperPageBaseMask;
-    char* superPageAddress = reinterpret_cast<char*>(WTF::allocSuperPages(0, superPageSize));
-    root->nextSuperPage = superPageAddress;
-    root->totalSizeOfSuperPages = superPageSize;
-    root->nextPartitionPage = root->nextSuperPage;
-    root->nextPartitionPageEnd = root->nextPartitionPage + superPageSize;
-    root->firstExtent.superPageBase = root->nextSuperPage;
-    root->firstExtent.superPagesEnd = root->nextSuperPage + superPageSize;
-
     size_t i;
     for (i = 0; i < numToFillFreeListPage; ++i) {
         pages[i] = GetFullPage(kTestAllocSize);
@@ -352,10 +332,7 @@ TEST(WTF_PartitionAlloc, FreePageListPageTransitions)
     }
     EXPECT_EQ(pages[numToFillFreeListPage - 1], bucket->currPage);
 
-    // We don't do an orderly shutdown because we hacked the super pages in
-    // manually.
-    WTF::freeSuperPages(superPageAddress, superPageSize);
-    root->initialized = false;
+    TestShutdown();
 }
 
 // Test a large series of allocations that cross more than one underlying
