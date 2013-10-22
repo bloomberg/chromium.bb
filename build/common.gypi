@@ -63,6 +63,8 @@
     # Version of the mac sdk to use.
     'mac_sdk%': '10.6',
 
+    'mac_deployment_target%': '10.6',
+
     # NOTE: end adapted from them chrome common.gypi file for arm
 
     # Doing this in a sub-dict so that it can be referred to below.
@@ -589,7 +591,7 @@
             ['nacl_standalone==1', {
               # If part of the Chromium build, use the Chromium default.
               # Otherwise, when building standalone, use this.
-              'MACOSX_DEPLOYMENT_TARGET': '<(mac_sdk)', # -mmacosx-version-min
+              'MACOSX_DEPLOYMENT_TARGET': '<(mac_deployment_target)', # -mmacosx-version-min
               'SDKROOT': 'macosx<(mac_sdk)',            # -isysroot
             }],
           ],
@@ -615,6 +617,9 @@
                 '-fdiagnostics-show-option',
               ],
             },
+          }],
+          ['nacl_standalone==1 and target_arch=="x64"', {
+            'xcode_settings': {'ARCHS': ['x86_64']},
           }],
           ['nacl_standalone==1', {
             'target_conditions': [
