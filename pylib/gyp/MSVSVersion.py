@@ -249,7 +249,7 @@ def _CreateVersion(name, path, sdk_based=False):
                                   path=path,
                                   sdk_based=sdk_based),
       '2010e': VisualStudioVersion('2010e',
-                                   'Visual Studio 2010',
+                                   'Visual C++ Express 2010',
                                    solution_version='11.00',
                                    project_version='4.0',
                                    flat_sln=True,
