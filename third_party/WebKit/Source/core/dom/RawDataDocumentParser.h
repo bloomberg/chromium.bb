@@ -54,8 +54,6 @@ private:
 
     virtual void insert(const SegmentedString&)
     {
-        // <https://bugs.webkit.org/show_bug.cgi?id=25397>: JS code can always call document.write, we need to handle it.
-        ASSERT_NOT_REACHED();
     }
 
     virtual void append(PassRefPtr<StringImpl>)
