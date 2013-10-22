@@ -278,23 +278,29 @@ void RenderBox::styleDidChange(StyleDifference diff, const RenderStyle* oldStyle
     if (isRoot() || isBody())
         document().view()->recalculateScrollbarOverlayStyle();
 
-    updateShapeOutsideInfoAfterStyleChange(style()->shapeOutside(), oldStyle ? oldStyle->shapeOutside() : 0);
+    updateShapeOutsideInfoAfterStyleChange(*style(), oldStyle);
     updateGridPositionAfterStyleChange(oldStyle);
 }
 
-void RenderBox::updateShapeOutsideInfoAfterStyleChange(const ShapeValue* shapeOutside, const ShapeValue* oldShapeOutside)
+void RenderBox::updateShapeOutsideInfoAfterStyleChange(const RenderStyle& style, const RenderStyle* oldStyle)
 {
+    const ShapeValue* shapeOutside = style.shapeOutside();
+    const ShapeValue* oldShapeOutside = oldStyle ? oldStyle->shapeOutside() : RenderStyle::initialShapeOutside();
+
+    Length shapeMargin = style.shapeMargin();
+    Length oldShapeMargin = oldStyle ? oldStyle->shapeMargin() : RenderStyle::initialShapeMargin();
+
     // FIXME: A future optimization would do a deep comparison for equality. (bug 100811)
-    if (shapeOutside == oldShapeOutside)
+    if (shapeOutside == oldShapeOutside && shapeMargin == oldShapeMargin)
         return;
 
-    if (shapeOutside) {
-        ShapeOutsideInfo* shapeOutsideInfo = ShapeOutsideInfo::ensureInfo(this);
-        shapeOutsideInfo->dirtyShapeSize();
-    } else {
+    if (!shapeOutside)
         ShapeOutsideInfo::removeInfo(this);
-    }
-    markShapeOutsideDependentsForLayout();
+    else
+        ShapeOutsideInfo::ensureInfo(this)->dirtyShapeSize();
+
+    if (shapeOutside || shapeOutside != oldShapeOutside)
+        markShapeOutsideDependentsForLayout();
 }
 
 void RenderBox::updateGridPositionAfterStyleChange(const RenderStyle* oldStyle)
