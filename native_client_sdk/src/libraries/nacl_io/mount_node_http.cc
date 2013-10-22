@@ -275,6 +275,10 @@ MountNodeHttp::MountNodeHttp(Mount* mount,
       cache_content_(cache_content),
       has_cached_size_(false) {}
 
+void MountNodeHttp::SetMode(int mode) {
+  stat_.st_mode = mode;
+}
+
 Error MountNodeHttp::OpenUrl(const char* method,
                              StringMap_t* request_headers,
                              PP_Resource* out_loader,

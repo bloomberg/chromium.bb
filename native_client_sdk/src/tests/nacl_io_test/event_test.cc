@@ -271,23 +271,25 @@ TEST_F(SelectPollTest, PollMemPipe) {
   // Both FDs for regular files should be read/write but not exception.
   fds[0] = kp->open("/test.txt", O_CREAT | O_WRONLY);
   fds[1] = kp->open("/test.txt", O_RDONLY);
+  ASSERT_GT(fds[0], -1);
+  ASSERT_GT(fds[1], -1);
 
   SetFDs(fds, 2);
 
-  EXPECT_EQ(2, kp->poll(pollfds, 2, 0));
-  EXPECT_EQ(POLLIN | POLLOUT, pollfds[0].revents);
-  EXPECT_EQ(POLLIN | POLLOUT, pollfds[1].revents);
+  ASSERT_EQ(2, kp->poll(pollfds, 2, 0));
+  ASSERT_EQ(POLLIN | POLLOUT, pollfds[0].revents);
+  ASSERT_EQ(POLLIN | POLLOUT, pollfds[1].revents);
   CloseFDs(fds, 2);
 
   // The write FD should select for write-only, read FD should not select
-  EXPECT_EQ(0, kp->pipe(fds));
+  ASSERT_EQ(0, kp->pipe(fds));
   SetFDs(fds, 2);
 
-  EXPECT_EQ(2, kp->poll(pollfds, 2, 0));
+  ASSERT_EQ(2, kp->poll(pollfds, 2, 0));
   // TODO(noelallen) fix poll based on open mode
   // EXPECT_EQ(0, pollfds[0].revents);
   // Bug 291018
-  EXPECT_EQ(POLLOUT, pollfds[1].revents);
+  ASSERT_EQ(POLLOUT, pollfds[1].revents);
 
   CloseFDs(fds, 2);
 }
@@ -298,9 +300,11 @@ TEST_F(SelectPollTest, SelectMemPipe) {
   // Both FDs for regular files should be read/write but not exception.
   fds[0] = kp->open("/test.txt", O_CREAT | O_WRONLY);
   fds[1] = kp->open("/test.txt", O_RDONLY);
+  ASSERT_GT(fds[0], -1);
+  ASSERT_GT(fds[1], -1);
   SetFDs(fds, 2);
 
-  EXPECT_EQ(4, kp->select(fds[1] + 1, &rd_set, &wr_set, &ex_set, &tv));
+  ASSERT_EQ(4, kp->select(fds[1] + 1, &rd_set, &wr_set, &ex_set, &tv));
   EXPECT_NE(0, FD_ISSET(fds[0], &rd_set));
   EXPECT_NE(0, FD_ISSET(fds[1], &rd_set));
   EXPECT_NE(0, FD_ISSET(fds[0], &wr_set));
@@ -311,10 +315,10 @@ TEST_F(SelectPollTest, SelectMemPipe) {
   CloseFDs(fds, 2);
 
   // The write FD should select for write-only, read FD should not select
-  EXPECT_EQ(0, kp->pipe(fds));
+  ASSERT_EQ(0, kp->pipe(fds));
   SetFDs(fds, 2);
 
-  EXPECT_EQ(2, kp->select(fds[1] + 1, &rd_set, &wr_set, &ex_set, &tv));
+  ASSERT_EQ(2, kp->select(fds[1] + 1, &rd_set, &wr_set, &ex_set, &tv));
   EXPECT_EQ(0, FD_ISSET(fds[0], &rd_set));
   EXPECT_EQ(0, FD_ISSET(fds[1], &rd_set));
   // TODO(noelallen) fix poll based on open mode

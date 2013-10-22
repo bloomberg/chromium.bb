@@ -110,7 +110,7 @@ class UrandomNode : public MountNode {
 };
 
 RealNode::RealNode(Mount* mount, int fd) : MountNode(mount), fd_(fd) {
-  stat_.st_mode = S_IFCHR;
+  SetType(S_IFCHR);
 }
 
 Error RealNode::Read(const HandleAttr& attr,
@@ -186,7 +186,7 @@ Error ConsoleNode::Write(const HandleAttr& attr,
   return 0;
 }
 
-ZeroNode::ZeroNode(Mount* mount) : MountNode(mount) { stat_.st_mode = S_IFCHR; }
+ZeroNode::ZeroNode(Mount* mount) : MountNode(mount) { SetType(S_IFCHR); }
 
 Error ZeroNode::Read(const HandleAttr& attr,
                      void* buf,
@@ -206,7 +206,7 @@ Error ZeroNode::Write(const HandleAttr& attr,
 }
 
 UrandomNode::UrandomNode(Mount* mount) : MountNode(mount) {
-  stat_.st_mode = S_IFCHR;
+  SetType(S_IFCHR);
 #if defined(__native_client__)
   size_t result = nacl_interface_query(
       NACL_IRT_RANDOM_v0_1, &random_interface_, sizeof(random_interface_));

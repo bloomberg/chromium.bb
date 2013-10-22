@@ -157,11 +157,11 @@ Error MountHtml5Fs::Init(int dev, StringMap_t& args, PepperInterface* ppapi) {
     filesystem_open_error_ = PPErrorToErrno(result);
 
     return filesystem_open_error_;
-  } else {
-    // We have to assume the call to Open will succeed; there is no better
-    // result to return here.
-    return 0;
   }
+
+  // We have to assume the call to Open will succeed; there is no better
+  // result to return here.
+  return 0;
 }
 
 void MountHtml5Fs::Destroy() {

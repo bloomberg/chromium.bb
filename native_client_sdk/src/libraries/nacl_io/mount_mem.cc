@@ -29,7 +29,7 @@ Error MountMem::Init(int dev, StringMap_t& args, PepperInterface* ppapi) {
     return error;
 
   root_.reset(new MountNodeDir(this));
-  error = root_->Init(S_IREAD | S_IWRITE | S_IEXEC);
+  error = root_->Init(0);
   if (error) {
     root_.reset(NULL);
     return error;
@@ -93,14 +93,15 @@ Error MountMem::Access(const Path& path, int a_mode) {
   return 0;
 }
 
-Error MountMem::Open(const Path& path, int flags, ScopedMountNode* out_node) {
+Error MountMem::Open(const Path& path, int open_flags,
+                     ScopedMountNode* out_node) {
   out_node->reset(NULL);
   ScopedMountNode node;
 
   Error error = FindNode(path, 0, &node);
   if (error) {
     // If the node does not exist and we can't create it, fail
-    if ((flags & O_CREAT) == 0)
+    if ((open_flags & O_CREAT) == 0)
       return ENOENT;
 
     // Now first find the parent directory to see if we can add it
@@ -110,7 +111,7 @@ Error MountMem::Open(const Path& path, int flags, ScopedMountNode* out_node) {
       return error;
 
     node.reset(new MountNodeMem(this));
-    error = node->Init(OpenFlagsToPermission(flags));
+    error = node->Init(open_flags);
     if (error)
       return error;
 
@@ -123,18 +124,12 @@ Error MountMem::Open(const Path& path, int flags, ScopedMountNode* out_node) {
   }
 
   // Directories can only be opened read-only.
-  if (node->IsaDir() && (flags & 3) != O_RDONLY)
+  if (node->IsaDir() && (open_flags & 3) != O_RDONLY)
     return EISDIR;
 
   // If we were expected to create it exclusively, fail
-  if (flags & O_EXCL)
+  if (open_flags & O_EXCL)
     return EEXIST;
-
-  // Verify we got the requested permissions.
-  int req_mode = OpenFlagsToPermission(flags);
-  int obj_mode = node->GetMode() & (S_IREAD | S_IWRITE);
-  if ((obj_mode & req_mode) != req_mode)
-    return EACCES;
 
   *out_node = node;
   return 0;
@@ -166,7 +161,7 @@ Error MountMem::Mkdir(const Path& path, int mode) {
   // it will get ref counted again.  In either case, release the
   // recount we have on exit.
   node.reset(new MountNodeDir(this));
-  error = node->Init(S_IREAD | S_IWRITE | S_IEXEC);
+  error = node->Init(0);
   if (error)
     return error;
 

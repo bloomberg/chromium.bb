@@ -25,7 +25,9 @@ MountNodeDir::MountNodeDir(Mount* mount)
     : MountNode(mount),
       cache_(stat_.st_ino, kParentDirIno),
       cache_built_(false) {
-  stat_.st_mode |= (S_IFDIR | S_IREAD | S_IWRITE | S_IEXEC);
+  SetType(S_IFDIR);
+  // Directories are raadable, writable and executable by default.
+  stat_.st_mode |= S_IRALL | S_IWALL | S_IXALL;
 }
 
 MountNodeDir::~MountNodeDir() {

@@ -39,19 +39,6 @@ Error Mount::OpenResource(const Path& path, ScopedMountNode* out_node) {
   return EINVAL;
 }
 
-int Mount::OpenFlagsToPermission(int open_flags) {
-  int out;
-  switch (open_flags & 3) {
-    case O_RDONLY:
-      out = S_IREAD;
-    case O_WRONLY:
-      out = S_IWRITE;
-    case O_RDWR:
-      out = S_IREAD | S_IWRITE;
-  }
-  return out;
-}
-
 void Mount::OnNodeCreated(MountNode* node) {
   node->stat_.st_ino = inode_pool_.Acquire();
   node->stat_.st_dev = dev_;

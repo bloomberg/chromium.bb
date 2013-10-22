@@ -76,6 +76,8 @@ class KernelHandle : public sdk_util::RefObject {
 
   const HandleAttr& Attr() { return handle_attr_; }
 
+  int OpenMode() { return handle_attr_.flags & 3; }
+
 private:
   // Returns the MountNodeSocket* if this node is a socket otherwise returns
   // NULL.

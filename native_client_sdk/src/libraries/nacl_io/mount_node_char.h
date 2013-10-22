@@ -12,7 +12,7 @@ namespace nacl_io {
 class MountNodeCharDevice : public MountNode {
  public:
   explicit MountNodeCharDevice(Mount* mount) : MountNode(mount) {
-    stat_.st_mode = S_IFCHR;
+    SetType(S_IFCHR);
   }
 };
 

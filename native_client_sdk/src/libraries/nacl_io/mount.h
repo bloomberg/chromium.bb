@@ -69,9 +69,6 @@ class Mount : public sdk_util::RefObject {
   virtual Error Rmdir(const Path& path) = 0;
   virtual Error Remove(const Path& path) = 0;
 
-  // Convert from R,W,R/W open flags to STAT permissions.
-  static int OpenFlagsToPermission(int open_flags);
-
   // Assumes that |node| is non-NULL.
   void OnNodeCreated(MountNode* node);
 

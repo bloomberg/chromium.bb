@@ -79,19 +79,19 @@ TEST_F(KernelProxyTest, FileLeak) {
   MountMem* mount = (MountMem*)kp_.RootMount();
   ScopedMountNode root;
 
-  EXPECT_EQ(0, mount->Open(Path("/"), O_RDONLY, &root));
-  EXPECT_EQ(0, root->ChildCount());
+  ASSERT_EQ(0, mount->Open(Path("/"), O_RDONLY, &root));
+  ASSERT_EQ(0, root->ChildCount());
 
   for (int file_num = 0; file_num < 4096; file_num++) {
     sprintf(filename, "/foo%i.tmp", file_num++);
     FILE* f = fopen(filename, "w");
-    EXPECT_NE((FILE*)0, f);
-    EXPECT_EQ(1, root->ChildCount());
-    EXPECT_EQ(buffer_size, fwrite(garbage, 1, buffer_size, f));
+    ASSERT_NE((FILE*)NULL, f);
+    ASSERT_EQ(1, root->ChildCount());
+    ASSERT_EQ(buffer_size, fwrite(garbage, 1, buffer_size, f));
     fclose(f);
-    EXPECT_EQ(0, remove(filename));
+    ASSERT_EQ(0, remove(filename));
   }
-  EXPECT_EQ(0, root->ChildCount());
+  ASSERT_EQ(0, root->ChildCount());
 }
 
 TEST_F(KernelProxyTest, WorkingDirectory) {
@@ -157,12 +157,12 @@ TEST_F(KernelProxyTest, MemMountIO) {
   EXPECT_EQ(ENOENT, errno);
 
   // Create bar "/foo/bar"
-  fd1 = ki_open("/foo/bar", O_RDONLY | O_CREAT);
-  EXPECT_NE(-1, fd1);
+  fd1 = ki_open("/foo/bar", O_RDWR | O_CREAT);
+  ASSERT_NE(-1, fd1);
 
   // Open (optionally create) bar "/foo/bar"
-  fd2 = ki_open("/foo/bar", O_RDONLY | O_CREAT);
-  EXPECT_NE(-1, fd2);
+  fd2 = ki_open("/foo/bar", O_RDWR | O_CREAT);
+  ASSERT_NE(-1, fd2);
 
   // Fail to exclusively create bar "/foo/bar"
   EXPECT_EQ(-1, ki_open("/foo/bar", O_RDONLY | O_CREAT | O_EXCL));
@@ -173,30 +173,27 @@ TEST_F(KernelProxyTest, MemMountIO) {
   EXPECT_EQ(5, ki_write(fd2, "WORLD", 5));
   EXPECT_EQ(5, ki_write(fd1, "HELLO", 5));
 
-  fd3 = ki_open("/foo/bar", O_WRONLY);
-  EXPECT_NE(-1, fd3);
+  fd3 = ki_open("/foo/bar", O_RDONLY);
+  ASSERT_NE(-1, fd3);
 
   len = ki_read(fd3, text, sizeof(text));
-  if (len > 0)
-    text[len] = 0;
-  EXPECT_EQ(5, len);
+  ASSERT_EQ(5, len);
+  text[len] = 0;
   EXPECT_STREQ("HELLO", text);
   EXPECT_EQ(0, ki_close(fd1));
   EXPECT_EQ(0, ki_close(fd2));
 
   fd1 = ki_open("/foo/bar", O_WRONLY | O_APPEND);
-  EXPECT_NE(-1, fd1);
+  ASSERT_NE(-1, fd1);
   EXPECT_EQ(5, ki_write(fd1, "WORLD", 5));
 
   len = ki_read(fd3, text, sizeof(text));
-  if (len >= 0)
-    text[len] = 0;
-
-  EXPECT_EQ(5, len);
+  ASSERT_EQ(5, len);
+  text[len] = 0;
   EXPECT_STREQ("WORLD", text);
 
   fd2 = ki_open("/foo/bar", O_RDONLY);
-  EXPECT_NE(-1, fd2);
+  ASSERT_NE(-1, fd2);
   len = ki_read(fd2, text, sizeof(text));
   if (len > 0)
     text[len] = 0;
@@ -206,6 +203,7 @@ TEST_F(KernelProxyTest, MemMountIO) {
 
 TEST_F(KernelProxyTest, MemMountLseek) {
   int fd = ki_open("/foo", O_CREAT | O_RDWR);
+  ASSERT_GT(fd, -1);
   EXPECT_EQ(9, ki_write(fd, "Some text", 9));
 
   EXPECT_EQ(9, ki_lseek(fd, 0, SEEK_CUR));
@@ -225,10 +223,12 @@ TEST_F(KernelProxyTest, MemMountLseek) {
 
 TEST_F(KernelProxyTest, CloseTwice) {
   int fd = ki_open("/foo", O_CREAT | O_RDWR);
+  ASSERT_GT(fd, -1);
+
   EXPECT_EQ(9, ki_write(fd, "Some text", 9));
 
   int fd2 = ki_dup(fd);
-  EXPECT_NE(-1, fd2);
+  ASSERT_GT(fd2, -1);
 
   EXPECT_EQ(0, ki_close(fd));
   EXPECT_EQ(0, ki_close(fd2));
@@ -236,32 +236,33 @@ TEST_F(KernelProxyTest, CloseTwice) {
 
 TEST_F(KernelProxyTest, MemMountDup) {
   int fd = ki_open("/foo", O_CREAT | O_RDWR);
+  ASSERT_GT(fd, -1);
 
   int dup_fd = ki_dup(fd);
-  EXPECT_NE(-1, dup_fd);
+  ASSERT_NE(-1, dup_fd);
 
-  EXPECT_EQ(9, ki_write(fd, "Some text", 9));
-  EXPECT_EQ(9, ki_lseek(fd, 0, SEEK_CUR));
-  EXPECT_EQ(9, ki_lseek(dup_fd, 0, SEEK_CUR));
+  ASSERT_EQ(9, ki_write(fd, "Some text", 9));
+  ASSERT_EQ(9, ki_lseek(fd, 0, SEEK_CUR));
+  ASSERT_EQ(9, ki_lseek(dup_fd, 0, SEEK_CUR));
 
   int dup2_fd = 123;
-  EXPECT_EQ(dup2_fd, ki_dup2(fd, dup2_fd));
-  EXPECT_EQ(9, ki_lseek(dup2_fd, 0, SEEK_CUR));
+  ASSERT_EQ(dup2_fd, ki_dup2(fd, dup2_fd));
+  ASSERT_EQ(9, ki_lseek(dup2_fd, 0, SEEK_CUR));
 
   int new_fd = ki_open("/bar", O_CREAT | O_RDWR);
 
-  EXPECT_EQ(fd, ki_dup2(new_fd, fd));
+  ASSERT_EQ(fd, ki_dup2(new_fd, fd));
   // fd, new_fd -> "/bar"
   // dup_fd, dup2_fd -> "/foo"
 
   // We should still be able to write to dup_fd (i.e. it should not be closed).
-  EXPECT_EQ(4, ki_write(dup_fd, "more", 4));
+  ASSERT_EQ(4, ki_write(dup_fd, "more", 4));
 
-  EXPECT_EQ(0, ki_close(dup2_fd));
+  ASSERT_EQ(0, ki_close(dup2_fd));
   // fd, new_fd -> "/bar"
   // dup_fd -> "/foo"
 
-  EXPECT_EQ(dup_fd, ki_dup2(fd, dup_fd));
+  ASSERT_EQ(dup_fd, ki_dup2(fd, dup_fd));
   // fd, new_fd, dup_fd -> "/bar"
 }
 
@@ -404,29 +405,29 @@ class KernelProxyMMapTest : public ::testing::Test {
 }  // namespace
 
 TEST_F(KernelProxyMMapTest, MMap) {
-  EXPECT_EQ(0, ki_umount("/"));
-  EXPECT_EQ(0, ki_mount("", "/", "mmapfs", 0, NULL));
+  ASSERT_EQ(0, ki_umount("/"));
+  ASSERT_EQ(0, ki_mount("", "/", "mmapfs", 0, NULL));
   int fd = ki_open("/file", O_RDWR | O_CREAT);
-  EXPECT_NE(-1, fd);
+  ASSERT_NE(-1, fd);
 
   void* addr1 = ki_mmap(NULL, 0x800, PROT_READ, MAP_PRIVATE, fd, 0);
-  EXPECT_EQ(reinterpret_cast<void*>(0x1000), addr1);
-  EXPECT_EQ(1, g_MMapCount);
+  ASSERT_EQ(reinterpret_cast<void*>(0x1000), addr1);
+  ASSERT_EQ(1, g_MMapCount);
 
   void* addr2 = ki_mmap(NULL, 0x800, PROT_READ, MAP_PRIVATE, fd, 0);
-  EXPECT_EQ(reinterpret_cast<void*>(0x2000), addr2);
-  EXPECT_EQ(2, g_MMapCount);
+  ASSERT_EQ(reinterpret_cast<void*>(0x2000), addr2);
+  ASSERT_EQ(2, g_MMapCount);
 
   void* addr3 = ki_mmap(NULL, 0x800, PROT_READ, MAP_PRIVATE, fd, 0);
-  EXPECT_EQ(reinterpret_cast<void*>(0x3000), addr3);
-  EXPECT_EQ(3, g_MMapCount);
+  ASSERT_EQ(reinterpret_cast<void*>(0x3000), addr3);
+  ASSERT_EQ(3, g_MMapCount);
 
   ki_close(fd);
 
   // We no longer track mmap'd regions, so munmap is a no-op.
-  EXPECT_EQ(0, ki_munmap(reinterpret_cast<void*>(0x1000), 0x2800));
+  ASSERT_EQ(0, ki_munmap(reinterpret_cast<void*>(0x1000), 0x2800));
   // We don't track regions, so the mmap count hasn't changed.
-  EXPECT_EQ(3, g_MMapCount);
+  ASSERT_EQ(3, g_MMapCount);
 }
 
 namespace {

@@ -39,6 +39,10 @@ MountNodeSocket* KernelHandle::socket_node() {
 Error KernelHandle::Init(int open_flags) {
   handle_attr_.flags = open_flags;
 
+  if (!node_->CanOpen(open_flags)) {
+    return EACCES;
+  }
+
   if (open_flags & O_APPEND) {
     Error error = node_->GetSize(&handle_attr_.offs);
     if (error)
@@ -92,6 +96,8 @@ Error KernelHandle::Seek(off_t offset, int whence, off_t* out_offset) {
 
 Error KernelHandle::Read(void* buf, size_t nbytes, int* cnt) {
   AUTO_LOCK(handle_lock_);
+  if (OpenMode() == O_WRONLY)
+    return EACCES;
   Error error = node_->Read(handle_attr_, buf, nbytes, cnt);
   if (0 == error)
     handle_attr_.offs += *cnt;
@@ -100,6 +106,8 @@ Error KernelHandle::Read(void* buf, size_t nbytes, int* cnt) {
 
 Error KernelHandle::Write(const void* buf, size_t nbytes, int* cnt) {
   AUTO_LOCK(handle_lock_);
+  if (OpenMode() == O_RDONLY)
+    return EACCES;
   Error error = node_->Write(handle_attr_, buf, nbytes, cnt);
   if (0 == error)
     handle_attr_.offs += *cnt;

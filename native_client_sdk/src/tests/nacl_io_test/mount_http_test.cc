@@ -28,7 +28,6 @@ using ::testing::Return;
 using ::testing::SetArgPointee;
 using ::testing::StrEq;
 
-
 class MountHttpMock : public MountHttp {
  public:
   MountHttpMock(StringMap_t map, PepperInterfaceMock* ppapi) {
@@ -164,10 +163,10 @@ TEST_F(MountHttpTest, ParseManifest) {
   EXPECT_FALSE(bar->GetStat(&sbar));
 
   EXPECT_EQ(123, sfoo.st_size);
-  EXPECT_EQ(S_IFREG | S_IREAD, sfoo.st_mode);
+  EXPECT_EQ(S_IFREG | S_IRALL, sfoo.st_mode);
 
   EXPECT_EQ(234, sbar.st_size);
-  EXPECT_EQ(S_IFREG | S_IREAD | S_IWRITE, sbar.st_mode);
+  EXPECT_EQ(S_IFREG | S_IRALL | S_IWALL, sbar.st_mode);
 }
 
 

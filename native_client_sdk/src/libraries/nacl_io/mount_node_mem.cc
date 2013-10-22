@@ -25,7 +25,7 @@ const size_t kMaxResizeIncrement = 16 * 1024 * 1024;
 
 MountNodeMem::MountNodeMem(Mount* mount)
     : MountNode(mount) {
-  stat_.st_mode |= S_IFREG;
+  SetType(S_IFREG);
 }
 
 MountNodeMem::~MountNodeMem() {}

@@ -262,7 +262,7 @@ MountNodeHtml5Fs::MountNodeHtml5Fs(Mount* mount, PP_Resource fileref_resource)
       fileio_resource_(0) {}
 
 Error MountNodeHtml5Fs::Init(int open_flags) {
-  Error error = MountNode::Init(Mount::OpenFlagsToPermission(open_flags));
+  Error error = MountNode::Init(open_flags);
   if (error)
     return error;
 

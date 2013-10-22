@@ -25,7 +25,7 @@ MountNodeSocket::MountNodeSocket(Mount* mount)
       remote_addr_(0),
       socket_flags_(0),
       last_errno_(0) {
-  stat_.st_mode |= S_IFSOCK;
+  SetType(S_IFSOCK);
 }
 
 MountNodeSocket::MountNodeSocket(Mount* mount, PP_Resource socket)
@@ -35,7 +35,7 @@ MountNodeSocket::MountNodeSocket(Mount* mount, PP_Resource socket)
       remote_addr_(0),
       socket_flags_(0),
       last_errno_(0) {
-  stat_.st_mode |= S_IFSOCK;
+  SetType(S_IFSOCK);
   mount_->ppapi()->AddRefResource(socket_resource_);
 }
 

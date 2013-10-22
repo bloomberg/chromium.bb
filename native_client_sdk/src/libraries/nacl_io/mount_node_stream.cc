@@ -24,7 +24,7 @@ MountNodeStream::MountNodeStream(Mount* mnt)
 }
 
 Error MountNodeStream::Init(int open_flags) {
-  MountNode::Init(Mount::OpenFlagsToPermission(open_flags));
+  MountNode::Init(open_flags);
   if (open_flags & O_NONBLOCK)
     SetStreamFlags(SSF_NON_BLOCK);
 

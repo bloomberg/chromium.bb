@@ -37,6 +37,7 @@ class MountNodeHttp : public MountNode {
   virtual Error GetSize(size_t* out_size);
 
   void SetCachedSize(off_t size);
+  void SetMode(int mode);
 
  protected:
   MountNodeHttp(Mount* mount, const std::string& url, bool cache_content);

@@ -4,6 +4,7 @@
 
 #include "nacl_io/mount_node.h"
 
+#include <assert.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <poll.h>
@@ -28,6 +29,7 @@ MountNode::MountNode(Mount* mount) : mount_(mount) {
   memset(&stat_, 0, sizeof(stat_));
   stat_.st_gid = GRP_ID;
   stat_.st_uid = USR_ID;
+  stat_.st_mode = S_IRALL | S_IWALL;
 
   // Mount should normally never be NULL, but may be null in tests.
   // If NULL, at least set the inode to a valid (nonzero) value.
@@ -39,8 +41,7 @@ MountNode::MountNode(Mount* mount) : mount_(mount) {
 
 MountNode::~MountNode() {}
 
-Error MountNode::Init(int mode) {
-  stat_.st_mode |= mode;
+Error MountNode::Init(int open_flags) {
   return 0;
 }
 
@@ -57,6 +58,19 @@ uint32_t MountNode::GetEventStatus() {
     return GetEventEmitter()->GetEventStatus();
 
   return POLLIN | POLLOUT;
+}
+
+bool MountNode::CanOpen(int open_flags) {
+  switch (open_flags & 3) {
+    case O_RDONLY:
+      return (stat_.st_mode & S_IRALL) != 0;
+    case O_WRONLY:
+      return (stat_.st_mode & S_IWALL) != 0;
+    case O_RDWR:
+      return (stat_.st_mode & S_IRALL) != 0 && (stat_.st_mode & S_IWALL) != 0;
+  }
+
+  return false;
 }
 
 Error MountNode::FSync() { return 0; }
@@ -164,6 +178,12 @@ Error MountNode::GetSize(size_t* out_size) {
 }
 
 int MountNode::GetType() { return stat_.st_mode & S_IFMT; }
+
+void MountNode::SetType(int type) {
+  assert((type & ~S_IFMT) == 0);
+  stat_.st_mode &= ~S_IFMT;
+  stat_.st_mode |= type;
+}
 
 bool MountNode::IsaDir() { return (stat_.st_mode & S_IFDIR) != 0; }
 

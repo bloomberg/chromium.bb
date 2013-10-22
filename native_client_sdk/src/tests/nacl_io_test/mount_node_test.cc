@@ -67,11 +67,11 @@ TEST(MountNodeTest, File) {
   size_t result_size = 0;
   int result_bytes = 0;
 
-  EXPECT_EQ(0, file.Init(S_IREAD | S_IWRITE));
+  EXPECT_EQ(0, file.Init(0));
 
   // Test properties
   EXPECT_EQ(0, file.GetLinks());
-  EXPECT_EQ(S_IREAD | S_IWRITE, file.GetMode());
+  EXPECT_EQ(S_IRALL | S_IWALL, file.GetMode());
   EXPECT_EQ(S_IFREG, file.GetType());
   EXPECT_FALSE(file.IsaDir());
   EXPECT_TRUE(file.IsaFile());
@@ -166,20 +166,20 @@ TEST(MountNodeTest, Fcntl) {
   ScopedMount mnt(new MockMount());
   ScopedMountNode file(node);
   KernelHandle handle(mnt, file);
-  ASSERT_EQ(0, handle.Init(O_CREAT|O_APPEND));
+  ASSERT_EQ(0, handle.Init(O_CREAT | O_APPEND));
 
   // Test F_GETFL
-  ASSERT_EQ(0, node->Init(S_IREAD | S_IWRITE));
+  ASSERT_EQ(0, node->Init(0));
   int flags = 0;
   ASSERT_EQ(0, handle.Fcntl(F_GETFL, &flags));
-  ASSERT_EQ(O_CREAT|O_APPEND, flags);
+  ASSERT_EQ(O_CREAT | O_APPEND, flags);
 
   // Test F_SETFL
   // Test adding of O_NONBLOCK
-  flags = O_NONBLOCK|O_APPEND;
+  flags = O_NONBLOCK | O_APPEND;
   ASSERT_EQ(0, handle.Fcntl(F_SETFL, NULL, flags));
   ASSERT_EQ(0, handle.Fcntl(F_GETFL, &flags));
-  ASSERT_EQ(O_CREAT|O_APPEND|O_NONBLOCK, flags);
+  ASSERT_EQ(O_CREAT | O_APPEND | O_NONBLOCK, flags);
 
   // Clearing of O_APPEND should generate EPERM;
   flags = O_NONBLOCK;
@@ -193,12 +193,12 @@ TEST(MountNodeTest, Directory) {
   size_t result_size = 0;
   int result_bytes = 0;
 
-  root.Init(S_IREAD | S_IWRITE);
+  root.Init(0);
 
   // Test properties
   EXPECT_EQ(0, root.GetLinks());
   // Directories are always executable.
-  EXPECT_EQ(S_IREAD | S_IWRITE | S_IEXEC, root.GetMode());
+  EXPECT_EQ(S_IRALL | S_IWALL | S_IXALL, root.GetMode());
   EXPECT_EQ(S_IFDIR, root.GetType());
   EXPECT_TRUE(root.IsaDir());
   EXPECT_FALSE(root.IsaFile());
@@ -215,7 +215,7 @@ TEST(MountNodeTest, Directory) {
 
   // Test directory operations
   MockNode* raw_file = new MockNode;
-  EXPECT_EQ(0, raw_file->Init(S_IREAD | S_IWRITE));
+  EXPECT_EQ(0, raw_file->Init(0));
   ScopedMountNode file(raw_file);
 
   EXPECT_EQ(0, root.RefCount());
@@ -277,4 +277,42 @@ TEST(MountNodeTest, Directory) {
 
   file.reset();
   EXPECT_EQ(1, s_AllocNum);
+}
+
+TEST(MountNodeTest, OpenMode) {
+  MockNode* node = new MockNode();
+  ScopedMount mnt(new MockMount());
+  ScopedMountNode file(node);
+
+  const char write_buf[] = "hello world";
+  char read_buf[10];
+  int byte_count = 0;
+
+  // Write some data to the file
+  {
+    KernelHandle handle(mnt, file);
+    ASSERT_EQ(0, handle.Init(O_CREAT | O_WRONLY));
+    ASSERT_EQ(0, handle.Write(write_buf, strlen(write_buf), &byte_count));
+    ASSERT_EQ(byte_count, strlen(write_buf));
+  }
+
+  // Reading from the O_WRONLY handle should be impossible
+  {
+    byte_count = 0;
+    KernelHandle handle(mnt, file);
+    ASSERT_EQ(0, handle.Init(O_WRONLY));
+    ASSERT_EQ(EACCES, handle.Read(read_buf, 10, &byte_count));
+    ASSERT_EQ(0, handle.Write(write_buf, strlen(write_buf), &byte_count));
+    ASSERT_EQ(byte_count, strlen(write_buf));
+  }
+
+  // Writing to a O_RDONLY handle should fail
+  {
+    byte_count = 0;
+    KernelHandle handle(mnt, file);
+    ASSERT_EQ(0, handle.Init(O_RDONLY));
+    ASSERT_EQ(EACCES, handle.Write(write_buf, strlen(write_buf), &byte_count));
+    ASSERT_EQ(0, handle.Read(read_buf, sizeof(read_buf), &byte_count));
+    ASSERT_EQ(byte_count, sizeof(read_buf));
+  }
 }

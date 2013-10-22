@@ -184,4 +184,3 @@ TEST_F(KernelObjectTest, FreeAndReassignFD) {
   EXPECT_EQ(3, raw_handle->RefCount());
   EXPECT_EQ(raw_handle, handle.get());
 }
-

@@ -18,6 +18,10 @@
 #include "sdk_util/scoped_ref.h"
 #include "sdk_util/simple_lock.h"
 
+#define S_IRALL (S_IRUSR | S_IRGRP | S_IROTH)
+#define S_IWALL (S_IWUSR | S_IWGRP | S_IWOTH)
+#define S_IXALL (S_IXUSR | S_IXGRP | S_IXOTH)
+
 namespace nacl_io {
 
 class Mount;
@@ -34,11 +38,13 @@ class MountNode : public sdk_util::RefObject {
   virtual ~MountNode();
 
  protected:
-  // Initialize with stat mode flags
-  virtual Error Init(int mode);
+  virtual Error Init(int open_flags);
   virtual void Destroy();
 
  public:
+  // Return true if the node permissions match the given open mode.
+  virtual bool CanOpen(int open_flags);
+
   // Returns the emitter for this Node if it has one, if not, assume this
   // object can not block.
   virtual EventEmitter* GetEventEmitter();
@@ -86,6 +92,7 @@ class MountNode : public sdk_util::RefObject {
   virtual int GetLinks();
   virtual int GetMode();
   virtual int GetType();
+  virtual void SetType(int type);
   // Assume that |out_size| is non-NULL.
   virtual Error GetSize(size_t* out_size);
   virtual bool IsaDir();

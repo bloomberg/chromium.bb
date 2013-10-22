@@ -233,45 +233,45 @@ TEST_F(MountHtml5FsTest, OpenForCreate) {
 
 TEST_F(MountHtml5FsTest, Read) {
   const char contents[] = "contents";
-  EXPECT_TRUE(
+  ASSERT_TRUE(
       ppapi_html5_.filesystem_template()->AddFile("/file", contents, NULL));
-  EXPECT_TRUE(ppapi_html5_.filesystem_template()->AddDirectory("/dir", NULL));
+  ASSERT_TRUE(ppapi_html5_.filesystem_template()->AddDirectory("/dir", NULL));
   StringMap_t map;
   ScopedRef<MountHtml5FsForTesting> mnt(
       new MountHtml5FsForTesting(map, &ppapi_));
 
   ScopedMountNode node;
-  EXPECT_EQ(0, mnt->Open(Path("/file"), O_RDONLY, &node));
+  ASSERT_EQ(0, mnt->Open(Path("/file"), O_RDONLY, &node));
 
   char buffer[10] = {0};
   int bytes_read = 0;
   HandleAttr attr;
-  EXPECT_EQ(0, node->Read(attr, &buffer[0], sizeof(buffer), &bytes_read));
-  EXPECT_EQ(strlen(contents), bytes_read);
-  EXPECT_STREQ(contents, buffer);
+  ASSERT_EQ(0, node->Read(attr, &buffer[0], sizeof(buffer), &bytes_read));
+  ASSERT_EQ(strlen(contents), bytes_read);
+  ASSERT_STREQ(contents, buffer);
 
   // Read nothing past the end of the file.
   attr.offs = 100;
-  EXPECT_EQ(0, node->Read(attr, &buffer[0], sizeof(buffer), &bytes_read));
-  EXPECT_EQ(0, bytes_read);
+  ASSERT_EQ(0, node->Read(attr, &buffer[0], sizeof(buffer), &bytes_read));
+  ASSERT_EQ(0, bytes_read);
 
   // Read part of the data.
   attr.offs = 4;
-  EXPECT_EQ(0, node->Read(attr, &buffer[0], sizeof(buffer), &bytes_read));
+  ASSERT_EQ(0, node->Read(attr, &buffer[0], sizeof(buffer), &bytes_read));
   ASSERT_EQ(strlen(contents) - 4, bytes_read);
   buffer[bytes_read] = 0;
-  EXPECT_STREQ("ents", buffer);
+  ASSERT_STREQ("ents", buffer);
 
   // Writing should fail.
   int bytes_written = 1;  // Set to a non-zero value.
   attr.offs = 0;
-  EXPECT_EQ(EACCES, node->Write(attr, &buffer[0], sizeof(buffer),
+  ASSERT_EQ(EACCES, node->Write(attr, &buffer[0], sizeof(buffer),
                                 &bytes_written));
-  EXPECT_EQ(0, bytes_written);
+  ASSERT_EQ(0, bytes_written);
 
   // Reading from a directory should fail.
-  EXPECT_EQ(0, mnt->Open(Path("/dir"), O_RDONLY, &node));
-  EXPECT_EQ(EISDIR, node->Read(attr, &buffer[0], sizeof(buffer), &bytes_read));
+  ASSERT_EQ(0, mnt->Open(Path("/dir"), O_RDONLY, &node));
+  ASSERT_EQ(EISDIR, node->Read(attr, &buffer[0], sizeof(buffer), &bytes_read));
 }
 
 TEST_F(MountHtml5FsTest, Write) {
@@ -343,7 +343,9 @@ TEST_F(MountHtml5FsTest, GetStat) {
 
   struct stat statbuf;
   EXPECT_EQ(0, node->GetStat(&statbuf));
-  EXPECT_EQ(S_IFREG | S_IWRITE | S_IREAD, statbuf.st_mode);
+  EXPECT_EQ(S_IFREG, statbuf.st_mode & S_IFMT);
+  EXPECT_EQ(S_IRUSR | S_IRGRP | S_IROTH |
+            S_IWUSR | S_IWGRP | S_IWOTH, statbuf.st_mode & ~S_IFMT);
   EXPECT_EQ(strlen(contents), statbuf.st_size);
   EXPECT_EQ(access_time, statbuf.st_atime);
   EXPECT_EQ(creation_time, statbuf.st_ctime);
@@ -360,7 +362,9 @@ TEST_F(MountHtml5FsTest, GetStat) {
   // GetStat on a directory...
   EXPECT_EQ(0, mnt->Open(Path("/dir"), O_RDONLY, &node));
   EXPECT_EQ(0, node->GetStat(&statbuf));
-  EXPECT_EQ(S_IFDIR | S_IWRITE | S_IREAD, statbuf.st_mode);
+  EXPECT_EQ(S_IFDIR, statbuf.st_mode & S_IFMT);
+  EXPECT_EQ(S_IRUSR | S_IRGRP | S_IROTH |
+            S_IWUSR | S_IWGRP | S_IWOTH, statbuf.st_mode & ~S_IFMT);
   EXPECT_EQ(0, statbuf.st_size);
   EXPECT_EQ(access_time, statbuf.st_atime);
   EXPECT_EQ(creation_time, statbuf.st_ctime);

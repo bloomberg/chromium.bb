@@ -55,9 +55,7 @@ TEST(MountTest, Sanity) {
 
   // Create a file
   EXPECT_EQ(0, mnt.Open(Path("/foo"), O_RDWR | O_CREAT, &file));
-  EXPECT_NE(NULL_NODE, file.get());
-  if (file == NULL)
-    return;
+  ASSERT_NE(NULL_NODE, file.get());
 
   // We now have a directory and a file.  The file has a two references
   // one returned to the test, one for the name->inode map.
@@ -75,14 +73,12 @@ TEST(MountTest, Sanity) {
   // Open the root directory, should not create a new file
   EXPECT_EQ(0, mnt.Open(Path("/"), O_RDONLY, &root));
   EXPECT_EQ(2, mnt.num_nodes());
-  EXPECT_NE(NULL_NODE, root.get());
-  if (NULL != root) {
-    struct dirent dirs[4];
-    int len;
-    EXPECT_EQ(0, root->GetDents(0, dirs, sizeof(dirs), &len));
-    // 3 == "foo", ".", ".."
-    EXPECT_EQ(3 * sizeof(struct dirent), len);
-  }
+  ASSERT_NE(NULL_NODE, root.get());
+  struct dirent dirs[4];
+  int len;
+  EXPECT_EQ(0, root->GetDents(0, dirs, sizeof(dirs), &len));
+  // 3 == "foo", ".", ".."
+  EXPECT_EQ(3 * sizeof(struct dirent), len);
 
   // Fail to re-create the same file
   EXPECT_EQ(EEXIST,
@@ -136,9 +132,7 @@ TEST(MountTest, Sanity) {
 
   // Create a file (exclusively)
   EXPECT_EQ(0, mnt.Open(Path("/foo/bar"), O_RDWR | O_CREAT | O_EXCL, &file));
-  EXPECT_NE(NULL_NODE, file.get());
-  if (NULL == file)
-    return;
+  ASSERT_NE(NULL_NODE, file.get());
   EXPECT_EQ(2, file->RefCount());
   EXPECT_EQ(3, mnt.num_nodes());
 
