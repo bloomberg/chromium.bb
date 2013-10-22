@@ -3547,7 +3547,6 @@ void HTMLMediaElement::setClosedCaptionsVisible(bool closedCaptionVisible)
 
 unsigned HTMLMediaElement::webkitAudioDecodedByteCount() const
 {
-    UseCounter::count(document(), UseCounter::PrefixedAudioDecodedByteCount);
     if (!m_player)
         return 0;
     return m_player->audioDecodedByteCount();
@@ -3555,7 +3554,6 @@ unsigned HTMLMediaElement::webkitAudioDecodedByteCount() const
 
 unsigned HTMLMediaElement::webkitVideoDecodedByteCount() const
 {
-    UseCounter::count(document(), UseCounter::PrefixedVideoDecodedByteCount);
     if (!m_player)
         return 0;
     return m_player->videoDecodedByteCount();

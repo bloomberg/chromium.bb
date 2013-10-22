@@ -32,21 +32,21 @@
     readonly attribute unsigned long videoHeight;
     [Reflect, TreatNullAs=NullString, URL] attribute DOMString poster;
 
-    readonly attribute boolean webkitSupportsFullscreen;
-    readonly attribute boolean webkitDisplayingFullscreen;
+    [MeasureAs=PrefixedVideoSupportsFullscreen] readonly attribute boolean webkitSupportsFullscreen;
+    [MeasureAs=PrefixedVideoDisplayingFullscreen] readonly attribute boolean webkitDisplayingFullscreen;
 
-    [RaisesException, PerWorldBindings, ActivityLogging=AccessForAllWorlds] void webkitEnterFullscreen();
-    void webkitExitFullscreen();
+    [MeasureAs=PrefixedVideoEnterFullscreen, RaisesException, PerWorldBindings, ActivityLogging=AccessForAllWorlds] void webkitEnterFullscreen();
+    [MeasureAs=PrefixedVideoExitFullscreen] void webkitExitFullscreen();
 
     // Note the different capitalization of the "S" in FullScreen.
-    [RaisesException, PerWorldBindings, ActivityLogging=AccessForAllWorlds] void webkitEnterFullScreen();
-    void webkitExitFullScreen();
+    [MeasureAs=PrefixedVideoEnterFullScreen, ImplementedAs=webkitEnterFullscreen, RaisesException, PerWorldBindings, ActivityLogging=AccessForAllWorlds] void webkitEnterFullScreen();
+    [MeasureAs=PrefixedVideoExitFullScreen, ImplementedAs=webkitExitFullscreen] void webkitExitFullScreen();
 
     // The number of frames that have been decoded and made available for
     // playback.
-    readonly attribute unsigned long webkitDecodedFrameCount;
+    [MeasureAs=PrefixedVideoDecodedFrameCount] readonly attribute unsigned long webkitDecodedFrameCount;
 
     // The number of decoded frames that have been dropped by the player
     // for performance reasons during playback.
-    readonly attribute unsigned long webkitDroppedFrameCount;
+    [MeasureAs=PrefixedVideoDroppedFrameCount] readonly attribute unsigned long webkitDroppedFrameCount;
 };

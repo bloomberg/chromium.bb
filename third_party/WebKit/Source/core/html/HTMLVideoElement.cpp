@@ -219,10 +219,8 @@ bool HTMLVideoElement::hasAvailableVideoFrame() const
     return player()->hasVideo() && player()->readyState() >= MediaPlayer::HaveCurrentData;
 }
 
-void HTMLVideoElement::webkitEnterFullscreen(ExceptionState& es, UseCounter::Feature feature)
+void HTMLVideoElement::webkitEnterFullscreen(ExceptionState& es)
 {
-    UseCounter::count(document(), feature);
-
     if (isFullscreen())
         return;
 
@@ -236,22 +234,19 @@ void HTMLVideoElement::webkitEnterFullscreen(ExceptionState& es, UseCounter::Fea
     enterFullscreen();
 }
 
-void HTMLVideoElement::webkitExitFullscreen(UseCounter::Feature feature)
+void HTMLVideoElement::webkitExitFullscreen()
 {
-    UseCounter::count(document(), feature);
     if (isFullscreen())
         exitFullscreen();
 }
 
 bool HTMLVideoElement::webkitSupportsFullscreen()
 {
-    UseCounter::count(document(), UseCounter::PrefixedVideoSupportsFullscreen);
     return supportsFullscreen();
 }
 
 bool HTMLVideoElement::webkitDisplayingFullscreen()
 {
-    UseCounter::count(document(), UseCounter::PrefixedVideoDisplayingFullscreen);
     return isFullscreen();
 }
 
@@ -264,8 +259,6 @@ void HTMLVideoElement::didMoveToNewDocument(Document& oldDocument)
 
 unsigned HTMLVideoElement::webkitDecodedFrameCount() const
 {
-    UseCounter::count(document(), UseCounter::PrefixedVideoDecodedFrameCount);
-
     if (!player())
         return 0;
 
@@ -274,8 +267,6 @@ unsigned HTMLVideoElement::webkitDecodedFrameCount() const
 
 unsigned HTMLVideoElement::webkitDroppedFrameCount() const
 {
-    UseCounter::count(document(), UseCounter::PrefixedVideoDroppedFrameCount);
-
     if (!player())
         return 0;
 

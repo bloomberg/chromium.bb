@@ -27,7 +27,6 @@
 #define HTMLVideoElement_h
 
 #include "core/html/HTMLMediaElement.h"
-#include "core/page/UseCounter.h"
 
 namespace WebCore {
 
@@ -46,17 +45,10 @@ public:
     unsigned videoHeight() const;
 
     // Fullscreen
-    void webkitEnterFullscreen(ExceptionState&, UseCounter::Feature);
-    void webkitExitFullscreen(UseCounter::Feature);
-    void webkitEnterFullscreen(ExceptionState& es) { webkitEnterFullscreen(es, UseCounter::PrefixedVideoEnterFullscreen); }
-    void webkitExitFullscreen() { webkitExitFullscreen(UseCounter::PrefixedVideoExitFullscreen); }
+    void webkitEnterFullscreen(ExceptionState&);
+    void webkitExitFullscreen();
     bool webkitSupportsFullscreen();
     bool webkitDisplayingFullscreen();
-
-    // FIXME: Maintain "FullScreen" capitalization scheme for backwards compatibility.
-    // https://bugs.webkit.org/show_bug.cgi?id=36081
-    void webkitEnterFullScreen(ExceptionState& es) { webkitEnterFullscreen(es, UseCounter::PrefixedVideoEnterFullScreen); }
-    void webkitExitFullScreen() { webkitExitFullscreen(UseCounter::PrefixedVideoExitFullScreen); }
 
     // Statistics
     unsigned webkitDecodedFrameCount() const;
