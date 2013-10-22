@@ -21,6 +21,8 @@ class GL_EXPORT GLImageEGL : public GLImage {
   virtual gfx::Size GetSize() OVERRIDE;
   virtual bool BindTexImage() OVERRIDE;
   virtual void ReleaseTexImage() OVERRIDE;
+  virtual void WillUseTexImage() OVERRIDE;
+  virtual void DidUseTexImage() OVERRIDE;
 
  protected:
   virtual ~GLImageEGL();
@@ -28,6 +30,7 @@ class GL_EXPORT GLImageEGL : public GLImage {
  private:
   EGLImageKHR egl_image_;
   gfx::Size size_;
+  bool in_use_;
 
   DISALLOW_COPY_AND_ASSIGN(GLImageEGL);
 };

@@ -2416,7 +2416,28 @@ TEST_P(ResourceProviderTest, Image_GLTexture) {
   EXPECT_CALL(*context, bindTexImage2DCHROMIUM(GL_TEXTURE_2D, kImageId))
       .Times(1)
       .RetiresOnSaturation();
+  {
+    ResourceProvider::ScopedSamplerGL lock_gl(
+        resource_provider.get(), id, GL_TEXTURE_2D, GL_LINEAR);
+    EXPECT_EQ(kTextureId, lock_gl.texture_id());
+  }
+
+  EXPECT_CALL(*context, mapImageCHROMIUM(kImageId, GL_READ_WRITE))
+      .WillOnce(Return(dummy_mapped_buffer_address))
+      .RetiresOnSaturation();
+  resource_provider->MapImage(id);
+
+  EXPECT_CALL(*context, unmapImageCHROMIUM(kImageId))
+      .Times(1)
+      .RetiresOnSaturation();
+  resource_provider->UnmapImage(id);
+
+  EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, kTextureId)).Times(1)
+      .RetiresOnSaturation();
   EXPECT_CALL(*context, releaseTexImage2DCHROMIUM(GL_TEXTURE_2D, kImageId))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*context, bindTexImage2DCHROMIUM(GL_TEXTURE_2D, kImageId))
       .Times(1)
       .RetiresOnSaturation();
   EXPECT_CALL(*context, deleteTexture(kTextureId))

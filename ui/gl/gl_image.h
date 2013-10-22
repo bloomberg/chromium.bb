@@ -33,6 +33,12 @@ class GL_EXPORT GLImage : public base::RefCounted<GLImage> {
   // Release image from texture currently bound to GL_TEXTURE_2D target.
   virtual void ReleaseTexImage();
 
+  // Called before the texture is used for drawing.
+  virtual void WillUseTexImage();
+
+  // Called after the texture has been used for drawing.
+  virtual void DidUseTexImage();
+
   // Create a GL image for a window.
   static scoped_refptr<GLImage> CreateGLImage(gfx::PluginWindowHandle window);
 

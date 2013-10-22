@@ -111,6 +111,8 @@ ResourceProvider::Resource::Resource()
       original_filter(0),
       filter(0),
       image_id(0),
+      bound_image_id(0),
+      dirty_image(false),
       texture_pool(0),
       wrap_mode(0),
       lost(false),
@@ -150,6 +152,8 @@ ResourceProvider::Resource::Resource(unsigned texture_id,
       original_filter(filter),
       filter(filter),
       image_id(0),
+      bound_image_id(0),
+      dirty_image(false),
       texture_pool(texture_pool),
       wrap_mode(wrap_mode),
       lost(false),
@@ -185,6 +189,8 @@ ResourceProvider::Resource::Resource(uint8_t* pixels,
       original_filter(filter),
       filter(filter),
       image_id(0),
+      bound_image_id(0),
+      dirty_image(false),
       texture_pool(0),
       wrap_mode(wrap_mode),
       lost(false),
@@ -695,7 +701,6 @@ ResourceProvider::ScopedSamplerGL::ScopedSamplerGL(
 }
 
 ResourceProvider::ScopedSamplerGL::~ScopedSamplerGL() {
-  resource_provider_->UnbindForSampling(resource_id_, target_, unit_);
 }
 
 ResourceProvider::ScopedWriteLockGL::ScopedWriteLockGL(
@@ -1343,23 +1348,14 @@ void ResourceProvider::BindForSampling(ResourceProvider::ResourceId resource_id,
     resource->filter = filter;
   }
 
-  if (resource->image_id)
+  if (resource->image_id && resource->dirty_image) {
+    // Release image currently bound to texture.
+    if (resource->bound_image_id)
+      context3d->releaseTexImage2DCHROMIUM(target, resource->bound_image_id);
     context3d->bindTexImage2DCHROMIUM(target, resource->image_id);
-}
-
-void ResourceProvider::UnbindForSampling(
-    ResourceProvider::ResourceId resource_id, GLenum target, GLenum unit) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  ResourceMap::iterator it = resources_.find(resource_id);
-  DCHECK(it != resources_.end());
-  Resource* resource = &it->second;
-
-  if (!resource->image_id)
-    return;
-
-  WebGraphicsContext3D* context3d = Context3d();
-  ScopedSetActiveTexture scoped_active_tex(context3d, unit);
-  context3d->releaseTexImage2DCHROMIUM(target, resource->image_id);
+    resource->bound_image_id = resource->image_id;
+    resource->dirty_image = false;
+  }
 }
 
 void ResourceProvider::BeginSetPixels(ResourceId id) {
@@ -1596,6 +1592,8 @@ void ResourceProvider::ReleaseImage(ResourceId id) {
   DCHECK(context3d);
   context3d->destroyImageCHROMIUM(resource->image_id);
   resource->image_id = 0;
+  resource->bound_image_id = 0;
+  resource->dirty_image = false;
   resource->allocated = false;
 }
 
@@ -1627,6 +1625,7 @@ void ResourceProvider::UnmapImage(ResourceId id) {
     WebGraphicsContext3D* context3d = Context3d();
     DCHECK(context3d);
     context3d->unmapImageCHROMIUM(resource->image_id);
+    resource->dirty_image = true;
   }
 }
 
