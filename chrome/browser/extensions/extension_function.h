@@ -19,7 +19,6 @@
 #include "chrome/browser/extensions/extension_info_map.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/render_view_host_observer.h"
 #include "content/public/common/console_message_level.h"
 #include "ipc/ipc_message.h"
 
@@ -368,23 +367,7 @@ class UIThreadExtensionFunction : public ExtensionFunction {
   Profile* profile_;
 
  private:
-  // Helper class to track the lifetime of ExtensionFunction's RenderViewHost
-  // pointer and NULL it out when it dies. It also allows us to filter IPC
-  // messages coming from the RenderViewHost.
-  class RenderViewHostTracker : public content::RenderViewHostObserver {
-   public:
-    explicit RenderViewHostTracker(UIThreadExtensionFunction* function);
-
-   private:
-    // content::RenderViewHostObserver:
-    virtual void RenderViewHostDestroyed(
-        content::RenderViewHost* render_view_host) OVERRIDE;
-    virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
-
-    UIThreadExtensionFunction* function_;
-
-    DISALLOW_COPY_AND_ASSIGN(RenderViewHostTracker);
-  };
+  class RenderViewHostTracker;
 
   virtual void Destruct() const OVERRIDE;
 

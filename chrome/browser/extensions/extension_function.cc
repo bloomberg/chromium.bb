@@ -21,9 +21,12 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_observer.h"
 
 using content::BrowserThread;
 using content::RenderViewHost;
+using content::WebContents;
 using extensions::ExtensionAPI;
 using extensions::Feature;
 
@@ -32,25 +35,36 @@ void ExtensionFunctionDeleteTraits::Destruct(const ExtensionFunction* x) {
   x->Destruct();
 }
 
-UIThreadExtensionFunction::RenderViewHostTracker::RenderViewHostTracker(
-    UIThreadExtensionFunction* function)
-    : content::RenderViewHostObserver(function->render_view_host()),
-      function_(function) {
-}
+// Helper class to track the lifetime of ExtensionFunction's RenderViewHost
+// pointer and NULL it out when it dies. It also allows us to filter IPC
+// messages coming from the RenderViewHost.
+class UIThreadExtensionFunction::RenderViewHostTracker
+    : public content::WebContentsObserver {
+ public:
+  explicit RenderViewHostTracker(UIThreadExtensionFunction* function)
+      : content::WebContentsObserver(
+            WebContents::FromRenderViewHost(function->render_view_host())),
+        function_(function) {
+  }
 
-void UIThreadExtensionFunction::RenderViewHostTracker::RenderViewHostDestroyed(
-    RenderViewHost* render_view_host) {
-  // Overidding the default behavior of RenderViewHostObserver which is to
-  // delete this. In our case, we'll be deleted when the
-  // UIThreadExtensionFunction that contains us goes away.
+ private:
+  // content::WebContentsObserver:
+  virtual void RenderViewDeleted(
+      content::RenderViewHost* render_view_host) OVERRIDE {
+    if (render_view_host != function_->render_view_host())
+      return;
 
-  function_->SetRenderViewHost(NULL);
-}
+    function_->SetRenderViewHost(NULL);
+  }
 
-bool UIThreadExtensionFunction::RenderViewHostTracker::OnMessageReceived(
-    const IPC::Message& message) {
-  return function_->OnMessageReceivedFromRenderView(message);
-}
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE {
+    return function_->OnMessageReceivedFromRenderView(message);
+  }
+
+  UIThreadExtensionFunction* function_;
+
+  DISALLOW_COPY_AND_ASSIGN(RenderViewHostTracker);
+};
 
 ExtensionFunction::ExtensionFunction()
     : request_id_(-1),
