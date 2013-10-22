@@ -85,12 +85,6 @@ void NinjaTargetWriter::RunAndWriteFile(const Target* target) {
                        static_cast<int>(contents.size()));
 }
 
-void NinjaTargetWriter::WriteEnvironment() {
-  // TODO(brettw) have a better way to do the environment setup on Windows.
-  if (target_->settings()->IsWin())
-    out_ << "arch = environment.x86\n";
-}
-
 const Toolchain* NinjaTargetWriter::GetToolchain() const {
   return target_->settings()->toolchain();
 }

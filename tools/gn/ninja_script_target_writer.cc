@@ -22,8 +22,6 @@ NinjaScriptTargetWriter::~NinjaScriptTargetWriter() {
 }
 
 void NinjaScriptTargetWriter::Run() {
-  WriteEnvironment();
-
   FileTemplate args_template(target_->script_values().args());
   std::string custom_rule_name = WriteRuleDefinition(args_template);
   std::string implicit_deps = GetSourcesImplicitDeps();

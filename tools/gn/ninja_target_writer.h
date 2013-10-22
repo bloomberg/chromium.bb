@@ -27,8 +27,6 @@ class NinjaTargetWriter {
   virtual void Run() = 0;
 
  protected:
-  void WriteEnvironment();
-
   // Returns the toolchain associated with the target.
   const Toolchain* GetToolchain() const;
 

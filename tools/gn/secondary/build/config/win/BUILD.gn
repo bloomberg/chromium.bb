@@ -3,7 +3,12 @@
 # found in the LICENSE file.
 
 declare_args() {
+  # Full path to the Windows SDK, not including a backslash at the end.
   windows_sdk_path = "C:\Program Files (x86)\Windows Kits\8.0"
+
+  # Full path to the Visual Studio installation, not including a backslash
+  # at the end.
+  visual_studio_path = "C:\Program Files (x86)\Microsoft Visual Studio 10.0"
 }
 
 # Compiler setup for the Windows SDK. Applied to all targets.
@@ -25,10 +30,15 @@ config("sdk") {
     "WINVER=0x0602",
   ]
 
+  # The Windows SDK include directories must be first. They both have a sal.h,
+  # and the SDK one is newer and the SDK uses some newer features from it not
+  # present in the Visual Studio one.
   include_dirs = [
     "$windows_sdk_path\Include\shared",
     "$windows_sdk_path\Include\um",
     "$windows_sdk_path\Include\winrt",
+    "$visual_studio_path\VC\include",
+    "$visual_studio_path\VC\atlmfc\include",
   ]
 }
 
@@ -39,14 +49,21 @@ config("sdk_link") {
 
   if (is_64bit) {
     ldflags = [ "/MACHINE:X64" ]
-    libs = [ "$windows_sdk_path\Lib\win8\um\x64" ]
+    lib_dirs = [
+      "$windows_sdk_path\Lib\win8\um\x64",
+      "$visual_studio_path\VC\lib\amd64",
+      "$visual_studio_path\VC\atlmfc\lib\amd64",
+    ]
   } else {
     ldflags = [
       "/MACHINE:X86",
       "/SAFESEH",  # Not compatible with x64 so use only for x86.
     ]
-    lib_dirs = [ "$windows_sdk_path\Lib\win8\um\x86" ]
-
+    lib_dirs = [
+      "$windows_sdk_path\Lib\win8\um\x86",
+      "$visual_studio_path\VC\lib",
+      "$visual_studio_path\VC\atlmfc\lib",
+    ]
     #if (!is_asan) {  TODO(brettw) Address Sanitizer
     #  ldflags += "/largeaddressaware"
     #}

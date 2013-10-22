@@ -4,6 +4,7 @@
 
 #include "tools/gn/build_settings.h"
 
+#include "base/file_util.h"
 #include "tools/gn/filesystem_utils.h"
 
 BuildSettings::BuildSettings()
@@ -45,6 +46,9 @@ void BuildSettings::SetSecondarySourcePath(const SourceDir& d) {
 void BuildSettings::SetBuildDir(const SourceDir& d) {
   build_dir_ = d;
   build_to_source_dir_string_ = InvertDir(d);
+
+  DCHECK(!root_path_.empty());
+  file_util::CreateDirectory(build_dir_.Resolve(root_path_));
 }
 
 base::FilePath BuildSettings::GetFullPath(const SourceFile& file) const {

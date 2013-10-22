@@ -95,8 +95,6 @@ NinjaBinaryTargetWriter::~NinjaBinaryTargetWriter() {
 }
 
 void NinjaBinaryTargetWriter::Run() {
-  WriteEnvironment();
-
   WriteCompilerVars();
 
   std::vector<OutputFile> obj_files;
