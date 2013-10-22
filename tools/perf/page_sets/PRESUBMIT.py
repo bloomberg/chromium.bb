@@ -27,7 +27,8 @@ def _SyncFilesToCloud(input_api, output_api):
   hashes_in_cloud_storage += cloud_storage.List(cloud_storage.PUBLIC_BUCKET)
 
   results = []
-  for hash_path in input_api.AbsoluteLocalPaths():
+  for affected_file in input_api.AffectedFiles(include_deletes=False):
+    hash_path = affected_file.AbsoluteLocalPath()
     file_path, extension = os.path.splitext(hash_path)
     if extension != '.sha1':
       continue
@@ -54,9 +55,9 @@ def _SyncFilesToCloud(input_api, output_api):
 
     try:
       cloud_storage.Insert(cloud_storage.INTERNAL_BUCKET, file_hash, file_path)
-    except cloud_storage.CloudStorageError:
+    except cloud_storage.CloudStorageError, e:
       results.append(output_api.PresubmitError(
-          'Unable to upload to Cloud Storage: %s' % hash_path))
+          'Unable to upload to Cloud Storage: %s\n\n%s' % (hash_path, e)))
 
   return results
 
