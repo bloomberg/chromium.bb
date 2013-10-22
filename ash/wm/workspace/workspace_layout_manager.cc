@@ -71,7 +71,7 @@ WorkspaceLayoutManager::WorkspaceLayoutManager(aura::Window* window)
     : BaseLayoutManager(window->GetRootWindow()),
       shelf_(NULL),
       window_(window),
-      work_area_(ScreenAsh::GetDisplayWorkAreaBoundsInParent(
+      work_area_in_parent_(ScreenAsh::GetDisplayWorkAreaBoundsInParent(
           window->parent())) {
 }
 
@@ -127,9 +127,10 @@ void WorkspaceLayoutManager::SetChildBounds(
   if (!SetMaximizedOrFullscreenBounds(wm::GetWindowState(child))) {
     // Non-maximized/full-screen windows have their size constrained to the
     // work-area.
-    child_bounds.set_width(std::min(work_area_.width(), child_bounds.width()));
+    child_bounds.set_width(std::min(work_area_in_parent_.width(),
+                                    child_bounds.width()));
     child_bounds.set_height(
-        std::min(work_area_.height(), child_bounds.height()));
+        std::min(work_area_in_parent_.height(), child_bounds.height()));
     SetChildBoundsDirect(child, child_bounds);
   }
   UpdateDesktopVisibility();
@@ -138,7 +139,7 @@ void WorkspaceLayoutManager::SetChildBounds(
 void WorkspaceLayoutManager::OnDisplayWorkAreaInsetsChanged() {
   const gfx::Rect work_area(ScreenAsh::GetDisplayWorkAreaBoundsInParent(
       window_->parent()));
-  if (work_area != work_area_) {
+  if (work_area != work_area_in_parent_) {
     AdjustAllWindowsBoundsForWorkAreaChange(
         ADJUST_WINDOW_WORK_AREA_INSETS_CHANGED);
   }
@@ -203,7 +204,8 @@ void WorkspaceLayoutManager::ShowStateChanged(
 
 void WorkspaceLayoutManager::AdjustAllWindowsBoundsForWorkAreaChange(
     AdjustWindowReason reason) {
-  work_area_ = ScreenAsh::GetDisplayWorkAreaBoundsInParent(window_->parent());
+  work_area_in_parent_ =
+      ScreenAsh::GetDisplayWorkAreaBoundsInParent(window_->parent());
   BaseLayoutManager::AdjustAllWindowsBoundsForWorkAreaChange(reason);
 }
 
@@ -233,10 +235,11 @@ void WorkspaceLayoutManager::AdjustWindowBoundsForWorkAreaChange(
     case ADJUST_WINDOW_DISPLAY_SIZE_CHANGED:
       // The work area may be smaller than the full screen.  Put as much of the
       // window as possible within the display area.
-      bounds.AdjustToFit(work_area_);
+      bounds.AdjustToFit(work_area_in_parent_);
       break;
     case ADJUST_WINDOW_WORK_AREA_INSETS_CHANGED:
-      ash::wm::AdjustBoundsToEnsureMinimumWindowVisibility(work_area_, &bounds);
+      ash::wm::AdjustBoundsToEnsureMinimumWindowVisibility(
+          work_area_in_parent_, &bounds);
       break;
   }
   if (window_state->window()->bounds() != bounds)
@@ -267,8 +270,8 @@ void WorkspaceLayoutManager::AdjustWindowBoundsWhenAdded(
   // be further shrunk by the docked area. The logic ensures 30%
   // visibility which should be enough to see where the window gets
   // moved.
-  gfx::Rect display_area =
-      Shell::GetScreen()->GetDisplayNearestWindow(window).bounds();
+  gfx::Rect display_area = ScreenAsh::GetDisplayBoundsInParent(window);
+
   ash::wm::AdjustBoundsToEnsureWindowVisibility(
       display_area, min_width, min_height, &bounds);
   if (window->bounds() != bounds)
@@ -296,13 +299,13 @@ void WorkspaceLayoutManager::UpdateBoundsFromShowState(
       if (window_state->HasRestoreBounds()) {
         bounds_in_parent = window_state->GetRestoreBoundsInParent();
         ash::wm::AdjustBoundsToEnsureMinimumWindowVisibility(
-            work_area_, &bounds_in_parent);
+            work_area_in_parent_, &bounds_in_parent);
       } else {
         // Minimized windows have no restore bounds.
         // Use the current bounds instead.
         bounds_in_parent = window->bounds();
         ash::wm::AdjustBoundsToEnsureMinimumWindowVisibility(
-            work_area_, &bounds_in_parent);
+            work_area_in_parent_, &bounds_in_parent);
         // Don't start animation if the bounds didn't change.
         if (bounds_in_parent == window->bounds())
           bounds_in_parent.SetRect(0, 0, 0, 0);

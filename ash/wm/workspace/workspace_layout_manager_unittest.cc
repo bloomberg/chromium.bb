@@ -4,6 +4,8 @@
 
 #include "ash/wm/workspace/workspace_layout_manager.h"
 
+#include "ash/display/display_layout.h"
+#include "ash/display/display_manager.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_ash.h"
 #include "ash/shelf/shelf_layout_manager.h"
@@ -89,6 +91,25 @@ TEST_F(WorkspaceLayoutManagerTest, RestoreFromMinimizeKeepsRestore) {
       Shell::GetPrimaryRootWindow()->bounds().Intersects(window->bounds()));
 }
 
+TEST_F(WorkspaceLayoutManagerTest, KeepMinimumVisibilityInDisplays) {
+  UpdateDisplay("300x400,400x500");
+  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
+
+  DisplayLayout layout(DisplayLayout::TOP, 0);
+  Shell::GetInstance()->display_manager()->
+      SetLayoutForCurrentDisplays(layout);
+  EXPECT_EQ("0,-500 400x500", root_windows[1]->GetBoundsInScreen().ToString());
+
+  scoped_ptr<aura::Window> window1(
+      CreateTestWindowInShellWithBounds(gfx::Rect(10, -400, 200, 200)));
+  EXPECT_EQ("10,-400 200x200", window1->GetBoundsInScreen().ToString());
+
+  // Make sure the caption is visible.
+  scoped_ptr<aura::Window> window2(
+      CreateTestWindowInShellWithBounds(gfx::Rect(10, -600, 200, 200)));
+  EXPECT_EQ("10,-500 200x200", window2->GetBoundsInScreen().ToString());
+}
+
 TEST_F(WorkspaceLayoutManagerTest, KeepRestoredWindowInDisplay) {
   if (!SupportsHostWindowResize())
     return;
@@ -102,7 +123,8 @@ TEST_F(WorkspaceLayoutManagerTest, KeepRestoredWindowInDisplay) {
   window_state->Restore();
   EXPECT_TRUE(
       Shell::GetPrimaryRootWindow()->bounds().Intersects(window->bounds()));
-  EXPECT_EQ("-20,-30 30x40", window->bounds().ToString());
+  // Y bounds should not be negative.
+  EXPECT_EQ("-20,0 30x40", window->bounds().ToString());
 
   // Minimized -> Normal transition.
   window->SetBounds(gfx::Rect(-100, -100, 30, 40));
@@ -113,7 +135,8 @@ TEST_F(WorkspaceLayoutManagerTest, KeepRestoredWindowInDisplay) {
   window->Show();
   EXPECT_TRUE(
       Shell::GetPrimaryRootWindow()->bounds().Intersects(window->bounds()));
-  EXPECT_EQ("-20,-30 30x40", window->bounds().ToString());
+  // Y bounds should not be negative.
+  EXPECT_EQ("-20,0 30x40", window->bounds().ToString());
 
   // Fullscreen -> Normal transition.
   window->SetBounds(gfx::Rect(0, 0, 30, 40));  // reset bounds.
@@ -124,7 +147,8 @@ TEST_F(WorkspaceLayoutManagerTest, KeepRestoredWindowInDisplay) {
   window_state->Restore();
   EXPECT_TRUE(
       Shell::GetPrimaryRootWindow()->bounds().Intersects(window->bounds()));
-  EXPECT_EQ("-20,-30 30x40", window->bounds().ToString());
+  // Y bounds should not be negative.
+  EXPECT_EQ("-20,0 30x40", window->bounds().ToString());
 }
 
 TEST_F(WorkspaceLayoutManagerTest, MaximizeInDisplayToBeRestored) {

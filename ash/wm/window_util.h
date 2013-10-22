@@ -50,14 +50,16 @@ ASH_EXPORT void CenterWindow(aura::Window* window);
 // Change the availability of animation to the fullscreen of the |window|.
 ASH_EXPORT void SetAnimateToFullscreen(aura::Window* window, bool animate);
 
-// Move the given bounds inside the given |visible_area|, including a
-// safety margin given by |kMinimumOnScreenArea|.
+// Move the given bounds inside the given |visible_area| in parent coordinates,
+// including a safety margin given by |kMinimumOnScreenArea|.
+// This also ensures that the top of the bounds is visible.
 ASH_EXPORT void AdjustBoundsToEnsureMinimumWindowVisibility(
     const gfx::Rect& visible_area,
     gfx::Rect* bounds);
 
-// Move the given bounds inside the given |visible_area|, including a
-// safety margin given by |min_width| and |min_height|.
+// Move the given bounds inside the given |visible_area| in parent coordinates,
+// including a safety margin given by |min_width| and |min_height|.
+// This also ensures that the top of the bounds is visible.
 ASH_EXPORT void AdjustBoundsToEnsureWindowVisibility(
     const gfx::Rect& visible_area,
     int min_width,

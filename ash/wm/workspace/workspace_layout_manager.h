@@ -92,7 +92,7 @@ class ASH_EXPORT WorkspaceLayoutManager : public BaseLayoutManager {
 
   // The work area. Cached to avoid unnecessarily moving windows during a
   // workspace switch.
-  gfx::Rect work_area_;
+  gfx::Rect work_area_in_parent_;
 
   DISALLOW_COPY_AND_ASSIGN(WorkspaceLayoutManager);
 };

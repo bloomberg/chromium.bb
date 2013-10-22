@@ -92,6 +92,8 @@ void AdjustBoundsToEnsureWindowVisibility(const gfx::Rect& visible_area,
   } else if (bounds->bottom() - min_height < 0) {
     bounds->set_y(min_height - bounds->height());
   }
+  if (bounds->y() < 0)
+    bounds->set_y(0);
 }
 
 bool MoveWindowToEventRoot(aura::Window* window, const ui::Event& event) {

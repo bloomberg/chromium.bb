@@ -271,7 +271,7 @@ DisplayIdPair DisplayManager::GetCurrentDisplayIdPair() const {
     int64 mirrored_id = mirrored_display().id();
     return std::make_pair(displays_[0].id(), mirrored_id);
   } else {
-    CHECK_LE(2u, displays_.size());
+    CHECK_GE(2u, displays_.size());
     int64 id_at_zero = displays_[0].id();
     if (id_at_zero == gfx::Display::InternalDisplayId() ||
         id_at_zero == first_display_id()) {
