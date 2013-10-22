@@ -254,6 +254,10 @@ MessageBundle* CreateManifestBundle() {
   name_tree->SetString("message", "name");
   catalog->Set("name", name_tree);
 
+  base::DictionaryValue* short_name_tree = new base::DictionaryValue();
+  short_name_tree->SetString("message", "short_name");
+  catalog->Set("short_name", short_name_tree);
+
   base::DictionaryValue* description_tree = new base::DictionaryValue();
   description_tree->SetString("message", "description");
   catalog->Set("description", description_tree);
@@ -522,6 +526,40 @@ TEST(ExtensionL10nUtil, LocalizeManifestWithNameDescriptionCommandDescription) {
   EXPECT_EQ("second command", result);
 
   EXPECT_TRUE(error.empty());
+}
+
+TEST(ExtensionL10nUtil, LocalizeManifestWithShortName) {
+  base::DictionaryValue manifest;
+  manifest.SetString(keys::kName, "extension name");
+  manifest.SetString(keys::kShortName, "__MSG_short_name__");
+
+  std::string error;
+  scoped_ptr<MessageBundle> messages(CreateManifestBundle());
+
+  EXPECT_TRUE(
+      extension_l10n_util::LocalizeManifest(*messages, &manifest, &error));
+  EXPECT_TRUE(error.empty());
+
+  std::string result;
+  ASSERT_TRUE(manifest.GetString(keys::kShortName, &result));
+  EXPECT_EQ("short_name", result);
+}
+
+TEST(ExtensionL10nUtil, LocalizeManifestWithBadShortName) {
+  base::DictionaryValue manifest;
+  manifest.SetString(keys::kName, "extension name");
+  manifest.SetString(keys::kShortName, "__MSG_short_name_bad__");
+
+  std::string error;
+  scoped_ptr<MessageBundle> messages(CreateManifestBundle());
+
+  EXPECT_FALSE(
+      extension_l10n_util::LocalizeManifest(*messages, &manifest, &error));
+  EXPECT_FALSE(error.empty());
+
+  std::string result;
+  ASSERT_TRUE(manifest.GetString(keys::kShortName, &result));
+  EXPECT_EQ("__MSG_short_name_bad__", result);
 }
 
 // Try with NULL manifest.

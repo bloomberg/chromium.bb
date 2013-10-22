@@ -122,6 +122,10 @@ bool LocalizeManifest(const extensions::MessageBundle& messages,
     return false;
   }
 
+  // Initialize short name.
+  if (!LocalizeManifestValue(keys::kShortName, messages, manifest, error))
+    return false;
+
   // Initialize description.
   if (!LocalizeManifestValue(keys::kDescription, messages, manifest, error))
     return false;
