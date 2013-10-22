@@ -119,13 +119,7 @@ class WebrtcApprtcBrowserTest : public WebRtcTestBase {
   base::ProcessHandle dev_appserver_;
 };
 
-#if defined (OS_WIN) || defined(OS_MACOSX)
-#define MAYBE_MANUAL_WorksOnApprtc DISABLED_MANUAL_WorksOnApprtc
-#else
-#define MAYBE_MANUAL_WorksOnApprtc MANUAL_WorksOnApprtc
-#endif
-
-IN_PROC_BROWSER_TEST_F(WebrtcApprtcBrowserTest, MAYBE_MANUAL_WorksOnApprtc) {
+IN_PROC_BROWSER_TEST_F(WebrtcApprtcBrowserTest, MANUAL_WorksOnApprtc) {
   ASSERT_TRUE(LaunchApprtcInstanceOnLocalhost());
   while (!LocalApprtcInstanceIsUp())
     LOG(INFO) << "Waiting for AppRTC to come up...";
