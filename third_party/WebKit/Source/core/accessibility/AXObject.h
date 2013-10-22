@@ -606,6 +606,9 @@ inline int AXObject::lineForPosition(const VisiblePosition&) const { return -1; 
 inline void AXObject::updateBackingStore() { }
 #endif
 
+#define DEFINE_AX_OBJECT_TYPE_CASTS(thisType, predicate) \
+    DEFINE_TYPE_CASTS(thisType, AXObject, object, object->predicate, object.predicate)
+
 } // namespace WebCore
 
 #endif // AXObject_h

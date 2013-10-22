@@ -65,20 +65,7 @@ private:
     virtual bool computeAccessibilityIsIgnored() const OVERRIDE;
 };
 
-inline AXTableColumn* toAXTableColumn(AXObject* object)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!object || object->isTableCol());
-    return static_cast<AXTableColumn*>(object);
-}
-
-inline const AXTableColumn* toAXTableColumn(const AXObject* object)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!object || object->isTableCol());
-    return static_cast<const AXTableColumn*>(object);
-}
-
-// This will catch anyone doing an unnecessary cast.
-void toAXTableColumn(const AXTableColumn*);
+DEFINE_AX_OBJECT_TYPE_CASTS(AXTableColumn, isTableCol());
 
 } // namespace WebCore
 

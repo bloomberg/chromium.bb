@@ -64,20 +64,7 @@ private:
     RefPtr<Scrollbar> m_scrollbar;
 };
 
-inline AXScrollbar* toAXScrollbar(AXObject* object)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!object || object->isAXScrollbar());
-    return static_cast<AXScrollbar*>(object);
-}
-
-inline const AXScrollbar* toAXScrollbar(const AXObject* object)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!object || object->isAXScrollbar());
-    return static_cast<const AXScrollbar*>(object);
-}
-
-// This will catch anyone doing an unnecessary cast.
-void toAXScrollbar(const AXScrollbar*);
+DEFINE_AX_OBJECT_TYPE_CASTS(AXScrollbar, isAXScrollbar());
 
 } // namespace WebCore
 

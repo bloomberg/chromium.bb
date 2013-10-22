@@ -75,20 +75,7 @@ private:
     virtual bool isImageMapLink() const OVERRIDE { return true; }
 };
 
-inline AXImageMapLink* toAXImageMapLink(AXObject* object)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!object || object->isImageMapLink());
-    return static_cast<AXImageMapLink*>(object);
-}
-
-inline const AXImageMapLink* toAXImageMapLink(const AXObject* object)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!object || object->isImageMapLink());
-    return static_cast<const AXImageMapLink*>(object);
-}
-
-// This will catch anyone doing an unnecessary cast.
-void toAXImageMapLink(const AXImageMapLink*);
+DEFINE_AX_OBJECT_TYPE_CASTS(AXImageMapLink, isImageMapLink());
 
 } // namespace WebCore
 

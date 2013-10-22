@@ -213,20 +213,7 @@ private:
     float stepValueForRange() const;
 };
 
-inline AXNodeObject* toAXNodeObject(AXObject* object)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!object || object->isAXNodeObject());
-    return static_cast<AXNodeObject*>(object);
-}
-
-inline const AXNodeObject* toAXNodeObject(const AXObject* object)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!object || object->isAXNodeObject());
-    return static_cast<const AXNodeObject*>(object);
-}
-
-// This will catch anyone doing an unnecessary cast.
-void toAXNodeObject(const AXNodeObject*);
+DEFINE_AX_OBJECT_TYPE_CASTS(AXNodeObject, isAXNodeObject());
 
 } // namespace WebCore
 

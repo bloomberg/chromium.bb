@@ -55,11 +55,7 @@ private:
     virtual bool computeAccessibilityIsIgnored() const OVERRIDE;
 };
 
-inline AXMockObject* toAXMockObject(AXObject* object)
-{
-    ASSERT(!object || object->isMockObject());
-    return static_cast<AXMockObject*>(object);
-}
+DEFINE_AX_OBJECT_TYPE_CASTS(AXMockObject, isMockObject());
 
 } // namespace WebCore
 

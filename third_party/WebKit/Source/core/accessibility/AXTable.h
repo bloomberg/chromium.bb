@@ -89,11 +89,7 @@ protected:
     virtual bool computeAccessibilityIsIgnored() const OVERRIDE;
 };
 
-inline AXTable* toAXTable(AXObject* object)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!object || object->isAXTable());
-    return static_cast<AXTable*>(object);
-}
+DEFINE_AX_OBJECT_TYPE_CASTS(AXTable, isAXTable());
 
 } // namespace WebCore
 

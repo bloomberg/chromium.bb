@@ -231,20 +231,7 @@ private:
     int indexForVisiblePosition(const VisiblePosition&) const;
 };
 
-inline AXRenderObject* toAXRenderObject(AXObject* object)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!object || object->isAXRenderObject());
-    return static_cast<AXRenderObject*>(object);
-}
-
-inline const AXRenderObject* toAXRenderObject(const AXObject* object)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!object || object->isAXRenderObject());
-    return static_cast<const AXRenderObject*>(object);
-}
-
-// This will catch anyone doing an unnecessary cast.
-void toAXRenderObject(const AXRenderObject*);
+DEFINE_AX_OBJECT_TYPE_CASTS(AXRenderObject, isAXRenderObject());
 
 } // namespace WebCore
 

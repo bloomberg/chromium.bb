@@ -70,17 +70,8 @@ private:
     virtual LayoutRect elementRect() const OVERRIDE;
 };
 
-inline AXSpinButton* toAXSpinButton(AXObject* object)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!object || object->isNativeSpinButton());
-    return static_cast<AXSpinButton*>(object);
-}
-
-inline AXSpinButtonPart* toAXSpinButtonPart(AXObject* object)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!object || object->isSpinButtonPart());
-    return static_cast<AXSpinButtonPart*>(object);
-}
+DEFINE_AX_OBJECT_TYPE_CASTS(AXSpinButton, isNativeSpinButton());
+DEFINE_AX_OBJECT_TYPE_CASTS(AXSpinButtonPart, isSpinButtonPart());
 
 } // namespace WebCore
 

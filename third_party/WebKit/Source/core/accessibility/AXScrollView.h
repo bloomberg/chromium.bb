@@ -81,14 +81,7 @@ private:
     bool m_childrenDirty;
 };
 
-inline AXScrollView* toAXScrollView(AXObject* object)
-{
-    ASSERT(!object || object->isAXScrollView());
-    if (!object->isAXScrollView())
-        return 0;
-
-    return static_cast<AXScrollView*>(object);
-}
+DEFINE_AX_OBJECT_TYPE_CASTS(AXScrollView, isAXScrollView());
 
 } // namespace WebCore
 

@@ -55,11 +55,7 @@ private:
     virtual void childrenChanged() OVERRIDE;
 };
 
-inline AXMenuList* toAXMenuList(AXObject* object)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!object || object->isMenuList());
-    return static_cast<AXMenuList*>(object);
-}
+DEFINE_AX_OBJECT_TYPE_CASTS(AXMenuList, isMenuList());
 
 } // namespace WebCore
 

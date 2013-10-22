@@ -50,11 +50,7 @@ private:
     virtual bool isAXSVGRoot() const OVERRIDE { return true; }
 };
 
-inline AXSVGRoot* toAXSVGRoot(AXObject* object)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!object || object->isAXSVGRoot());
-    return static_cast<AXSVGRoot*>(object);
-}
+DEFINE_AX_OBJECT_TYPE_CASTS(AXSVGRoot, isAXSVGRoot());
 
 } // namespace WebCore
 

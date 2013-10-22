@@ -75,20 +75,7 @@ private:
     AXObject* listBoxOptionAXObject(HTMLElement*) const;
 };
 
-inline AXListBoxOption* toAXListBoxOption(AXObject* object)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!object || object->isListBoxOption());
-    return static_cast<AXListBoxOption*>(object);
-}
-
-inline const AXListBoxOption* toAXListBoxOption(const AXObject* object)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!object || object->isListBoxOption());
-    return static_cast<const AXListBoxOption*>(object);
-}
-
-// This will catch anyone doing an unnecessary cast.
-void toAXListBoxOption(const AXListBoxOption*);
+DEFINE_AX_OBJECT_TYPE_CASTS(AXListBoxOption, isListBoxOption());
 
 } // namespace WebCore
 

@@ -61,20 +61,7 @@ private:
     RefPtr<HTMLElement> m_element;
 };
 
-inline AXMenuListOption* toAXMenuListOption(AXObject* object)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!object || object->isMenuListOption());
-    return static_cast<AXMenuListOption*>(object);
-}
-
-inline const AXMenuListOption* toAXMenuListOption(const AXObject* object)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!object || object->isMenuListOption());
-    return static_cast<const AXMenuListOption*>(object);
-}
-
-// This will catch anyone doing an unnecessary cast.
-void toAXMenuListOption(const AXMenuListOption*);
+DEFINE_AX_OBJECT_TYPE_CASTS(AXMenuListOption, isMenuListOption());
 
 } // namespace WebCore
 
