@@ -250,14 +250,14 @@ camera.HorizontalScrollBar.prototype = {
  * @override
  */
 camera.HorizontalScrollBar.prototype.getClientTotal = function() {
-  return this.scroller.element.clientWidth;
+  return this.scroller.clientWidth;
 };
 
 /**
  * @override
  */
 camera.HorizontalScrollBar.prototype.getScrollTotal = function() {
-  return this.scroller.element.scrollWidth;
+  return this.scroller.scrollWidth;
 };
 
 /**
@@ -320,14 +320,14 @@ camera.VerticalScrollBar.prototype = {
  * @override
  */
 camera.VerticalScrollBar.prototype.getClientTotal = function() {
-  return this.scroller.element.clientHeight;
+  return this.scroller.clientHeight;
 };
 
 /**
  * @override
  */
 camera.VerticalScrollBar.prototype.getScrollTotal = function() {
-  return this.scroller.element.scrollHeight;
+  return this.scroller.scrollHeight;
 };
 
 /**
