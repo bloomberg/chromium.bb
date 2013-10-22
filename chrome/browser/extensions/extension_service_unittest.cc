@@ -3782,6 +3782,12 @@ TEST_F(ExtensionServiceTest, ManagementPolicyRequiresEnable) {
   EXPECT_EQ(0u, service_->disabled_extensions()->size());
 }
 
+// Flaky on windows; http://crbug.com/309833
+#if defined(OS_WIN)
+#define MAYBE_ExternalExtensionAutoAcknowledgement DISABLED_ExternalExtensionAutoAcknowledgement
+#else
+#define MAYBE_ExternalExtensionAutoAcknowledgement ExternalExtensionAutoAcknowledgement
+#endif
 TEST_F(ExtensionServiceTest, ExternalExtensionAutoAcknowledgement) {
   InitializeEmptyExtensionService();
   set_extensions_enabled(true);
