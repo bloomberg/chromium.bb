@@ -92,6 +92,9 @@ TEST_F(WorkspaceLayoutManagerTest, RestoreFromMinimizeKeepsRestore) {
 }
 
 TEST_F(WorkspaceLayoutManagerTest, KeepMinimumVisibilityInDisplays) {
+  if (!SupportsMultipleDisplays())
+    return;
+
   UpdateDisplay("300x400,400x500");
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
 
