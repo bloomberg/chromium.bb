@@ -4,7 +4,7 @@
 Running
 #######
 
-.. contents:: Table Of Contents
+.. contents::
   :local:
   :backlinks: none
   :depth: 2
@@ -14,6 +14,27 @@ Introduction
 
 This document describes how to run Native Client applications during
 development.
+
+The workflow for PNaCl applications is straightfoward and will only be discussed
+briefly. For NaCl applications distributed through the web-store, there is a
+number of options and these will be discussed more in-depth.
+
+Portable Native Client (PNaCl) applications
+===========================================
+
+Running PNaCl applications from the open web is enabled in Chrome version 31 and
+above; therefore, no special provisions are required to run and test such
+applications locally. An application that uses a PNaCl module can be tested
+similarly to any other web application that only consists of HTML, CSS and
+JavaScript.
+
+To better simulate a production environment, it's recommended to start a local
+web server to serve the application's files. The NaCl SDK comes with a simple
+local server built in, and the process of using it to run PNaCl applications is
+described in :ref:`the tutorial <tutorial_step_2>`.
+
+Native Client applications and the Chrome Web Store
+===================================================
 
 Before reading about how to run Native Client applications, it's important to
 understand a little bit about how Native Client applications are distributed.
@@ -43,42 +64,67 @@ below. Each technique has certain requirements (NaCl flag, web server, and/or
 CWS metadata); these are explained in the :ref:`Requirements <requirements>`
 section below.
 
-+-----------+----------------------+---------------------+-----------------------+-------------+
-| Technique | Requires NaCl flag   | Requires web server | Requires CWS metadata | Description |
-+===========+======================+=====================+=======================+=============+
-| 1         | local server         |                     |                       |             |
-+-----------+----------------------+---------------------+-----------------------+-------------+
-| 2         | packaged application |                     |                       |             |
-|           | loaded as an         |                     |                       |             |
-|           | unpacked extension   |                     |                       |             |
-+-----------+----------------------+---------------------+-----------------------+-------------+
-| 3         | hosted application   |                     |                       |             |
-|           | loaded as an unpacked|                     |                       |             |
-|           | extension            |                     |                       |             |
-+-----------+----------------------+---------------------+-----------------------+-------------+
-| 4         | Chrome Web Store     |                     |                       |             |
-|           | application with     |                     |                       |             |
-|           | trusted testers      |                     |                       |             |
-+-----------+----------------------+---------------------+-----------------------+-------------+
+.. list-table::
+   :header-rows: 1
 
-Which of the above techniques you use to run your application during
-development is largely a matter of personal preference (i.e., would you rather
-start a local server or create CWS metadata?). As a general rule, once you have
-an idea of how you plan to distribute your application, you should use the
-corresponding technique during development (technique # 2 for packaged
-applications and extensions; technique # 3 for hosted applications). Choosing a
-distribution option depends on a number of factors such as application size,
-application start-up time, hosting costs, offline functionality, etc. (see
-:doc:`Distributing Your Application <../distributing>` for details), but you
-don't need to make a decision about how to distribute your application at the
-outset.
+   * - #
+     - Technique
+     - Requires NaCl flag
+     - Requires Web Server
+     - Requires CWS Metadata
+     - Description
+   * - 1
+     - Local server
+     - |CHK|
+     - |CHK|
+     -
+     - Run a local server and simply point your browser to your application on
+       the server.
+   * - 2
+     - Packaged application loaded as an unpacked extension
+     -
+     -
+     - |CHK|
+     - Load your packaged application into Chrome as an unpacked extension and
+       run it without a server. An unpacked extension is simply an application
+       whose source and metadata files are located in a plain (unzipped) folder
+       on your development machine. The CWS manifest file (explained below) must
+       specify a ``local_path`` field.
+   * - 3
+     - Hosted application loaded as an unpacked extension
+     -
+     - |CHK|
+     - |CHK|
+     - Load your hosted application into Chrome as an unpacked extension and run
+       it from a server (which can be a local server). The CWS manifest file
+       must specify a ``web_url`` field.
+   * - 4
+     - CWS application with untrusted testers
+     -
+     -
+     - |CHK|
+     - This is the standard technique for distributing a packaged or hosted
+       application in the CWS, but you can limit the application to a few
+       trusted testers. This technique requires a server if your application is
+       a hosted application.
+
+.. |CHK| image:: /images/check-red.png
+
+Which of the above techniques you use to run your application during development
+is largely a matter of personal preference (i.e., would you rather start a local
+server or create CWS metadata?). As a general rule, once you have an idea of how
+you plan to distribute your application, you should use the corresponding
+technique during development. Choosing a distribution option depends on a number
+of factors such as application size, application start-up time, hosting costs,
+offline functionality, etc. (see :doc:`Distributing Your Application
+<../distributing>` for details), but you don't need to make a decision about how
+to distribute your application at the outset.
 
 The next two sections of this document describe a couple of prerequisites for
-running applications during development (using the correct version of Chrome
-and turning off the Chrome cache), and explain the three requirements listed in
-the table above (NaCl flag, web server, and CWS metadata). The subsequent
-sections of the document provide instructions for how to use each of the four
-techniques.
+running applications during development, and explain the three requirements
+listed in the table above (NaCl flag, web server, and CWS metadata). The
+subsequent sections of the document provide instructions for how to use each of
+the four techniques.
 
 Prerequisites
 =============
@@ -91,28 +137,17 @@ correct version of Chrome. Each version of Chrome supports a corresponding
 version of the Pepper API. You (and your users) must use a version of Chrome
 that is equal to or higher than the version of the Pepper API that your
 application uses. For example, if you compiled your application using the
-``pepper_28`` bundle, your application uses the Pepper 28 API, and you must run
-the application in Chrome 28 or higher. To check which version of Chrome you're
-using, type ``about:chrome`` or ``about:version`` in the Chrome address bar
-(the latter address shows additional information such as the Chrome command
-line and profile path).
-
-If your application requires a minimum version of Chrome, you are encouraged to
-include code in the application to check that the user's browser is compatible
-with the application. For sample code that checks the user's browser version,
-refer to the ``load_progress`` example in the Native Client SDK.
+``pepper_31`` bundle, your application uses the Pepper 31 API, and you must run
+the application in Chrome 31 or higher. To check which version of Chrome you're
+using, type ``about:version`` in the Chrome address bar.
 
 Chrome Cache
 ------------
 
-Chrome caches resources aggressively. You should disable Chrome's cache
-whenever you are developing a Native Client application in order to make sure
-Chrome loads new versions of your application. To disable the cache:
-
-#. Open Chrome's developer tools by clicking the menu icon |menu-icon| and
-   choosing **Tools > Developer tools**.
-#. Click the gear icon  in the bottom right corner of the Chrome window.
-#. Under the "General" settings, check the box next to "Disable cache".
+Chrome caches resources aggressively. You should disable Chrome's cache whenever
+you are developing a Native Client application in order to make sure Chrome
+loads new versions of your application. Follow the instructions :ref:`in the
+tutorial <tutorial_step_3>`.
 
 .. _requirements:
 
@@ -136,9 +171,9 @@ Client flag in Chrome as follows:
 #. If the link below "Native Client" says "Enable":
 
    * Click the "Enable" link.
-   * Scroll down to the bottom of the page and click the "Relaunch Now" button.
-     **Native Client will not be enabled until you relaunch your browser**. All
-     browser windows will restart when you relaunch Chrome.
+   * Click the "Relaunch Now" button in the bottom of the screen. **Native
+     Client will not be enabled until you relaunch your browser**. All browser
+     windows will restart when you relaunch Chrome.
 
 If you enable the Native Client flag and still can't run applications from
 outside the Chrome Web Store, you may need to enable the Native Client plugin:
@@ -149,7 +184,6 @@ outside the Chrome Web Store, you may need to enable the Native Client plugin:
    the Native Client plugin. You do not need to relaunch Chrome after enabling
    the Native Client plugin.
 
-
 .. _web_server:
 
 Web server
@@ -158,27 +192,22 @@ Web server
 For security reasons, Native Client applications must come from a server (you
 can't simply drag HTML files into your browser). The Native Client SDK comes
 with a lightweight Python web server that you can run to serve your application
-locally. The server is included in the ``examples`` directory in the SDK
-bundles (e.g., ``pepper_28/examples``). Here is how to run the server:
+locally. The server can be invoked from a Makefile. Here is how to run the
+server:
 
-* Windows::
+.. naclcode::
+  :prettyprint: 0
 
-    cd examples
-    httpd.cmd
+  $ cd examples
+  $ make serve
 
-* Mac, Linux::
+By default, the server listens for requests on port 5103. You can use the server
+to run most applications under the ``examples`` directory where you started the
+server. For example, to run the ``flock`` example in the SDK, start the server
+and point your browser to http://localhost:5103/demo/flock/.
 
-    cd examples
-    python httpd.py
-
-By default, the server listens for requests on port 5103. To use a different
-port, simply specify a different port number, e.g.: ``python httpd.py 5104``.
-
-You can use the server to run any application under the ``examples`` directory
-where you started the server. For example, to run the
-``hello_world_interactive`` example in the SDK, start the server as described
-above and point your browser to
-http://localhost:5103/hello_world_interactive/hello_world.html.
+Some of the applications need special flags to Chrome, and must be run with the
+``make run`` command. See :ref:`run_sdk_examples` for more details.
 
 .. _metadata:
 
@@ -186,17 +215,19 @@ Chrome Web Store metadata
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Applications published in the Chrome Web Store must be accompanied by CWS
-metadata—specifically, a Chrome Web Store manifest file named
+metadata; specifically, a Chrome Web Store manifest file named
 ``manifest.json``, and at least one icon.
 
-Below is an example of a CWS manifest file for a **hosted application**::
+Below is an example of a CWS manifest file for a **hosted application**:
+
+.. naclcode::
 
   {
     "name": "My NaCl App",
     "description": "Simple game implemented using Native Client",
     "version": "0.1",
     "icons": {
-      "128": "nacl_icon_128.jpg"
+      "128": "icon128.png"
     },
     "app": {
       "urls": [
@@ -210,15 +241,17 @@ Below is an example of a CWS manifest file for a **hosted application**::
 
 
 For a **packaged application**, you can omit the urls field, and replace the
-``web_url`` field with a ``local_path`` field, as shown below::
+``web_url`` field with a ``local_path`` field, as shown below:
+
+.. naclcode::
 
   {
     "name": "My NaCl App",
     "description": "Simple game implemented using Native Client",
     "version": "0.1",
     "icons": {
-      "16": "nacl_icon_16.jpg",
-      "128": "nacl_icon_128.jpg"
+      "16": "icon16.png",
+      "128": "icon128.png"
     },
     "app": {
       "launch": {
@@ -230,11 +263,18 @@ For a **packaged application**, you can omit the urls field, and replace the
 You must put the ``manifest.json`` file in the same directory as your
 application's main HTML page.
 
-If you don't have icons for your application, you can use the following icons
-as placeholders: nacl_icon_16.jpg and nacl_icon_128.jpg. Put the icons in the
-same directory as the CWS manifest file.
+If you don't have icons for your application, you can use the following icons as
+placeholders:
 
-For more information about CWS manifest files and application icons, see:
+|ICON16|
+
+|ICON128|
+
+.. |ICON16| image:: /images/icon16.png
+.. |ICON128| image:: /images/icon128.png
+
+Put the icons in the same directory as the CWS manifest file. For more
+information about CWS manifest files and application icons, see:
 
 * `Chrome Web Store Tutorial: Getting Started
   <https://developers.google.com/chrome/web-store/docs/get_started_simple>`_
@@ -249,7 +289,7 @@ To run your application from a local server:
 * Enable the :ref:`Native Client flag <flag>` in Chrome.
 * Start a :ref:`local web server <web_server>`.
 * Put your application under the examples directory in the SDK bundle you are
-  using (e.g., in the directory ``pepper_28/examples/my_app``).
+  using (e.g., in the directory ``pepper_31/examples/my_app``).
 * Access your application on the local server by typing the location of its
   HTML file in Chrome, e.g.:
   ``http://localhost:5103/my_app/my_app_main_page.html``.
@@ -259,7 +299,7 @@ To run your application from a local server:
 
   **Note:** You don't have to use a local web server---you can use another
   server if you already have one running. You must still enable the Native
-  Client flag in order to run your application from your server.
+  Client flag in order to run your application from the server.
 
 Technique 2: Packaged application loaded as an unpacked extension
 =================================================================
@@ -297,9 +337,10 @@ application into Chrome (including troubleshooting information), see the
 `Chrome Web Store Tutorial: Getting Started
 <https://developers.google.com/chrome/web-store/docs/get_started_simple>`_.
 
+See also :ref:`run_sdk_examples_as_packaged`.
+
 Technique 3: Hosted application loaded as an unpacked extension
 ===============================================================
-
 
 For development purposes, Chrome lets you load a hosted application as an
 unpacked extension. To load and run your hosted application as an unpacked
@@ -315,7 +356,7 @@ extension:
    * If you're using the local server included with the Native Client SDK,
      simply put your application under the ``examples`` directory in the SDK
      bundle you are using (e.g., in the directory
-     ``pepper_28/examples/my_app``).
+     ``pepper_31/examples/my_app``).
 #. Create a Chrome Web Store manifest file and one or more icons for your
    application.
 
@@ -360,7 +401,8 @@ is how to do so:
      your application, as described above under :ref:`Chrome Web Store metadata
      <metadata>`. Note that packaged applications must have at least two icons
      (a 16x16 icon and a 128x128 icon).
-   * You also need to create the following additional assets before you can publish your application:
+   * You also need to create the following additional assets before you can
+     publish your application:
 
      * a screenshot (size must be 640x400 or 1280x800)
      * a promotional image called a "small tile" (size must be 440x280)

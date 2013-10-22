@@ -94,7 +94,7 @@ toolchains are located in directories named
 * *<architecture>* is your target architecture (x86 or arm)
 * *<library>* is the C library you are compiling with (newlib or glibc)
 
-The compilers, linkers, and other tools are located in the ``bin/`` 
+The compilers, linkers, and other tools are located in the ``bin/``
 subdirectory in each toolchain. For example, the tools in the Windows SDK
 for PNaCl has a C++ compiler in ``toolchain/win_pnacl/bin/pnacl-clang++``.
 As another example, the GCC-based C++ compiler that targets the x86 and uses the

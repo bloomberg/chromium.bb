@@ -159,6 +159,8 @@ For details on how to use ``make``, see the `GNU 'make' Manual
 use the SDK toolchain itself, see :doc:`Building Native Client Modules
 <../devguide/devcycle/building>`.
 
+.. _run_sdk_examples:
+
 Run the SDK examples
 --------------------
 
@@ -202,6 +204,7 @@ You can run via a different toolchain or configuration by using the
 
   $ make run TOOLCHAIN=pnacl CONFIG=Debug
 
+.. _run_sdk_examples_as_packaged:
 
 Run the SDK examples as packaged apps
 -------------------------------------
