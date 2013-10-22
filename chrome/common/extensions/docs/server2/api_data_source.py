@@ -13,86 +13,8 @@ import third_party.json_schema_compiler.json_parse as json_parse
 import third_party.json_schema_compiler.model as model
 import third_party.json_schema_compiler.idl_schema as idl_schema
 import third_party.json_schema_compiler.idl_parser as idl_parser
+from schema_util import RemoveNoDocs, DetectInlineableTypes, InlineDocs
 from third_party.handlebar import Handlebar
-
-
-def _RemoveNoDocs(item):
-  if json_parse.IsDict(item):
-    if item.get('nodoc', False):
-      return True
-    for key, value in item.items():
-      if _RemoveNoDocs(value):
-        del item[key]
-  elif type(item) == list:
-    to_remove = []
-    for i in item:
-      if _RemoveNoDocs(i):
-        to_remove.append(i)
-    for i in to_remove:
-      item.remove(i)
-  return False
-
-
-def _DetectInlineableTypes(schema):
-  '''Look for documents that are only referenced once and mark them as inline.
-  Actual inlining is done by _InlineDocs.
-  '''
-  if not schema.get('types'):
-    return
-
-  ignore = frozenset(('value', 'choices'))
-  refcounts = defaultdict(int)
-  # Use an explicit stack instead of recursion.
-  stack = [schema]
-
-  while stack:
-    node = stack.pop()
-    if isinstance(node, list):
-      stack.extend(node)
-    elif isinstance(node, Mapping):
-      if '$ref' in node:
-        refcounts[node['$ref']] += 1
-      stack.extend(v for k, v in node.iteritems() if k not in ignore)
-
-  for type_ in schema['types']:
-    if not 'noinline_doc' in type_:
-      if refcounts[type_['id']] == 1:
-        type_['inline_doc'] = True
-
-
-def _InlineDocs(schema):
-  '''Replace '$ref's that refer to inline_docs with the json for those docs.
-  '''
-  types = schema.get('types')
-  if types is None:
-    return
-
-  inline_docs = {}
-  types_without_inline_doc = []
-
-  # Gather the types with inline_doc.
-  for type_ in types:
-    if type_.get('inline_doc'):
-      inline_docs[type_['id']] = type_
-      for k in ('description', 'id', 'inline_doc'):
-        type_.pop(k, None)
-    else:
-      types_without_inline_doc.append(type_)
-  schema['types'] = types_without_inline_doc
-
-  def apply_inline(node):
-    if isinstance(node, list):
-      for i in node:
-        apply_inline(i)
-    elif isinstance(node, Mapping):
-      ref = node.get('$ref')
-      if ref and ref in inline_docs:
-        node.update(inline_docs[ref])
-        del node['$ref']
-      for k, v in node.iteritems():
-        apply_inline(v)
-
-  apply_inline(schema)
 
 
 def _CreateId(node, prefix):
@@ -154,12 +76,12 @@ class _JSCModel(object):
     self._template_data_source = template_data_source
     self._add_rules_schema_function = add_rules_schema_function
     clean_json = copy.deepcopy(json)
-    if _RemoveNoDocs(clean_json):
+    if RemoveNoDocs(clean_json):
       self._namespace = None
     else:
       if idl:
-        _DetectInlineableTypes(clean_json)
-      _InlineDocs(clean_json)
+        DetectInlineableTypes(clean_json)
+      InlineDocs(clean_json)
       self._namespace = model.Namespace(clean_json, clean_json['namespace'])
 
   def _FormatDescription(self, description):

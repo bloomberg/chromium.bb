@@ -11,9 +11,6 @@ import unittest
 
 from api_data_source import (_JSCModel,
                              _FormatValue,
-                             _RemoveNoDocs,
-                             _DetectInlineableTypes,
-                             _InlineDocs,
                              _GetAddRulesDefinitionFromEvents)
 from branch_utility import ChannelInfo
 from collections import namedtuple
@@ -156,10 +153,6 @@ class APIDataSourceTest(unittest.TestCase):
                       _MakeLink('ref_test.html#type-type2', 'type2')),
         _GetType(dict_, 'type3')['description'])
 
-  def testRemoveNoDocs(self):
-    d = self._LoadJSON('nodoc_test.json')
-    _RemoveNoDocs(d)
-    self.assertEquals(self._LoadJSON('expected_nodoc.json'), d)
 
   def testGetApiAvailability(self):
     model = _JSCModel(self._LoadJSON('test_file.json')[0],
@@ -240,101 +233,6 @@ class APIDataSourceTest(unittest.TestCase):
     ]
     self.assertEquals(json.dumps(model._GetIntroTableList()),
                       json.dumps(expected_list))
-
-  def testInlineDocs(self):
-    schema = {
-      "namespace": "storage",
-      "properties": {
-        "key2": {
-          "description": "second key",
-          "$ref": "Key"
-        },
-        "key1": {
-          "description": "first key",
-          "$ref": "Key"
-        }
-      },
-      "types": [
-        {
-          "inline_doc": True,
-          "type": "string",
-          "id": "Key",  # Should be inlined into both properties and be removed
-                        # from types.
-          "description": "This is a key.",  # This description should disappear.
-          "marker": True  # This should appear three times in the output.
-        },
-        {
-          "items": {
-            "$ref": "Key"
-          },
-          "type": "array",
-          "id": "KeyList",
-          "description": "A list of keys"
-        }
-      ]
-    }
-
-    expected_schema = {
-      "namespace": "storage",
-      "properties": {
-        "key2": {
-          "marker": True,
-          "type": "string",
-          "description": "second key"
-        },
-        "key1": {
-          "marker": True,
-          "type": "string",
-          "description": "first key"
-        }
-      },
-      "types": [
-        {
-          "items": {
-            "marker": True,
-            "type": "string"
-          },
-          "type": "array",
-          "id": "KeyList",
-          "description": "A list of keys"
-        }
-      ]
-    }
-
-    inlined_schema = deepcopy(schema)
-    _InlineDocs(inlined_schema)
-    self.assertEqual(expected_schema, inlined_schema)
-
-  def testDetectInline(self):
-    schema = {
-      "types": [
-        {
-          "id": "Key",
-          "items": {
-            "$ref": "Value"
-          }
-        },
-        {
-          "id": "Value",
-          "marker": True
-        }
-      ]
-    }
-
-    expected_schema = {
-      "types": [
-        {
-          "id": "Key",
-          "items": {
-            "marker": True,
-          }
-        }
-      ]
-    }
-
-    _DetectInlineableTypes(schema)
-    _InlineDocs(schema)
-    self.assertEqual(expected_schema, schema)
 
   def testGetAddRulesDefinitionFromEvents(self):
     events = {}

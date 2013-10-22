@@ -4,32 +4,39 @@
 
 import sys
 
+import schema_util
 from file_system import FileNotFoundError
 from future import Gettable, Future
+from third_party.json_schema_compiler import json_parse
+from third_party.json_schema_compiler.memoize import memoize
 
 
 class _CacheEntry(object):
   def __init__(self, cache_data, version):
+
     self._cache_data = cache_data
     self.version = version
 
+
 class CompiledFileSystem(object):
-  """This class caches FileSystem data that has been processed.
-  """
+  '''This class caches FileSystem data that has been processed.
+  '''
+
   class Factory(object):
-    """A class to build a CompiledFileSystem backed by |file_system|.
-    """
+    '''A class to build a CompiledFileSystem backed by |file_system|.
+    '''
+
     def __init__(self, object_store_creator):
       self._object_store_creator = object_store_creator
 
     def Create(self, file_system, populate_function, cls, category=None):
-      """Creates a CompiledFileSystem view over |file_system| that populates
+      '''Creates a CompiledFileSystem view over |file_system| that populates
       its cache by calling |populate_function| with (path, data), where |data|
       is the data that was fetched from |path| in |file_system|.
 
       The namespace for the compiled file system is derived similar to
       ObjectStoreCreator: from |cls| along with an optional |category|.
-      """
+      '''
       assert isinstance(cls, type)
       assert not cls.__name__[0].islower()  # guard against non-class types
       full_name = [cls.__name__, file_system.GetIdentity()]
@@ -42,6 +49,27 @@ class CompiledFileSystem(object):
                                 populate_function,
                                 create_object_store('file'),
                                 create_object_store('list'))
+
+    @memoize
+    def ForJson(self, file_system):
+      '''A CompiledFileSystem specifically for parsing JSON configuration data.
+      These are memoized over file systems tied to different branches.
+      '''
+      return self.Create(file_system,
+                         lambda _, data: json_parse.Parse(data),
+                         CompiledFileSystem,
+                         category='json')
+
+    @memoize
+    def ForApiSchema(self, file_system):
+      '''Creates a CompiledFileSystem for parsing raw JSON or IDL API schema
+      data and formatting it so that it can be used by other classes, such
+      as Model and APISchemaGraph.
+      '''
+      return self.Create(file_system,
+                         schema_util.ProcessSchema,
+                         CompiledFileSystem,
+                         category='api-schema')
 
   def __init__(self,
                file_system,
@@ -109,11 +137,11 @@ class CompiledFileSystem(object):
     return Future(delegate=Gettable(resolve))
 
   def GetFromFile(self, path, binary=False):
-    """Calls |populate_function| on the contents of the file at |path|.  If
+    '''Calls |populate_function| on the contents of the file at |path|.  If
     |binary| is True then the file will be read as binary - but this will only
     apply for the first time the file is fetched; if already cached, |binary|
     will be ignored.
-    """
+    '''
     try:
       version = self._file_system.Stat(path).version
     except FileNotFoundError:
@@ -131,9 +159,9 @@ class CompiledFileSystem(object):
     return Future(delegate=Gettable(resolve))
 
   def GetFromFileListing(self, path):
-    """Calls |populate_function| on the listing of the files at |path|.
+    '''Calls |populate_function| on the listing of the files at |path|.
     Assumes that the path given is to a directory.
-    """
+    '''
     if not path.endswith('/'):
       path += '/'
 

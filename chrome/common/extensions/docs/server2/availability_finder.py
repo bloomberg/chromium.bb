@@ -2,27 +2,26 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from collections import Mapping
 import os
+from collections import Mapping
 
 from api_schema_graph import APISchemaGraph
 from branch_utility import BranchUtility
-from compiled_file_system import CompiledFileSystem
+from file_system import FileNotFoundError
 from svn_constants import API_PATH
-from third_party.json_schema_compiler import idl_schema, idl_parser, json_parse
-from third_party.json_schema_compiler.json_parse import OrderedDict
+from third_party.json_schema_compiler import idl_schema, idl_parser
 from third_party.json_schema_compiler.model import UnixName
 
 
 _EXTENSION_API = 'extension_api.json'
 
 
-def _GetChannelFromFeatures(api_name, file_system, path):
+def _GetChannelFromFeatures(api_name, json_fs, path):
   '''Finds API channel information within _features.json files at the given
-  |path| for the given |file_system|. Returns None if channel information for
-  the API cannot be located.
+  |path| for the given |json_fs|. Returns None if channel information for the
+  API cannot be located.
   '''
-  feature = file_system.GetFromFile(path).Get().get(api_name)
+  feature = json_fs.GetFromFile(path).Get().get(api_name)
 
   if feature is None:
     return None
@@ -34,78 +33,77 @@ def _GetChannelFromFeatures(api_name, file_system, path):
   return BranchUtility.NewestChannel(entry.get('channel') for entry in feature)
 
 
-def _GetChannelFromApiFeatures(api_name, file_system):
-  return _GetChannelFromFeatures(
-      api_name,
-      file_system,
-      '%s/_api_features.json' % API_PATH)
+def _GetChannelFromApiFeatures(api_name, json_fs):
+  return _GetChannelFromFeatures(api_name,
+                                 json_fs,
+                                 '%s/_api_features.json' % API_PATH)
 
 
-def _GetChannelFromManifestFeatures(api_name, file_system):
-  return _GetChannelFromFeatures(
-      UnixName(api_name), #_manifest_features uses unix_style API names
-      file_system,
-      '%s/_manifest_features.json' % API_PATH)
+def _GetChannelFromManifestFeatures(api_name, json_fs):
+  return _GetChannelFromFeatures(#_manifest_features uses unix_style API names
+                                 UnixName(api_name),
+                                 json_fs,
+                                 '%s/_manifest_features.json' % API_PATH)
 
 
-def _GetChannelFromPermissionFeatures(api_name, file_system):
-  return _GetChannelFromFeatures(
-      api_name,
-      file_system,
-      '%s/_permission_features.json' % API_PATH)
+def _GetChannelFromPermissionFeatures(api_name, json_fs):
+  return _GetChannelFromFeatures(api_name,
+                                 json_fs,
+                                 '%s/_permission_features.json' % API_PATH)
 
 
-def _GetApiSchemaFilename(api_name, file_system):
+def _GetApiSchemaFilename(api_name, schema_fs):
   '''Gets the name of the file which contains the schema for |api_name| in
-  |file_system|, or None if the API is not found. Note that this may be the
+  |schema_fs|, or None if the API is not found. Note that this may be the
   single _EXTENSION_API file which all APIs share in older versions of Chrome.
   '''
   def under_api_path(path):
     return '%s/%s' % (API_PATH, path)
 
-  file_names = file_system.ReadSingle(under_api_path('')).Get()
-
-  if _EXTENSION_API in file_names:
-    # Prior to Chrome version 18, extension_api.json contained all API schema
+  try:
+    # Prior to Chrome version 18, _EXTENSION_API contained all API schema
     # data, which replaced the current implementation of individual API files.
     # We're forced to parse this (very large) file to determine if the API
     # exists in it.
-    #
-    # TODO(epeterson) Avoid doing unnecessary work by re-parsing.
-    # See http://crbug.com/295812.
-    extension_api_json = json_parse.Parse(
-        file_system.ReadSingle('%s/%s'% (API_PATH, _EXTENSION_API)).Get())
+    extension_api_path = under_api_path(_EXTENSION_API)
+    extension_api_json = schema_fs.GetFromFile(extension_api_path).Get()
     if any(api['namespace'] == api_name for api in extension_api_json):
-      return under_api_path(_EXTENSION_API)
+      return extension_api_path
     return None
+  except FileNotFoundError:
+    pass
 
-  api_file_names = [
-      file_name for file_name in file_names
-      if os.path.splitext(file_name)[0] in (api_name, UnixName(api_name))]
-  assert len(api_file_names) < 2
-  return under_api_path(api_file_names[0]) if api_file_names else None
+  for file_name in (api_name, UnixName(api_name)):
+    # From Chrome version 19 and onwards, each API schema is contained within
+    # an individual file.
+    for ext in ('json', 'idl'):
+      try:
+        api_file_name = under_api_path('%s.%s' % (file_name, ext))
+        schema_fs.GetFromFile(api_file_name).Get()
+        return api_file_name
+      except FileNotFoundError:
+        # The current format of the API filename does not exist in this
+        # filesystem.
+        pass
+  # API schema data could not be found in _EXTENSION_API or in a standalone
+  # schema file.
+  return None
 
 
-def _HasApiSchema(api_name, file_system):
-  return _GetApiSchemaFilename(api_name, file_system) is not None
+def _HasApiSchema(api_name, schema_fs):
+  return _GetApiSchemaFilename(api_name, schema_fs) is not None
 
 
-def _GetApiSchema(api_name, file_system):
-  '''Searches |file_system| for |api_name|'s API schema data, and parses and
-  returns it if found.
+def _GetApiSchema(api_name, schema_fs):
+  '''Searches |schema_fs| for |api_name|'s API schema data, and processes
+  and returns it if found.
   '''
-  api_file_name = _GetApiSchemaFilename(api_name, file_system)
-  if api_file_name is None:
+  file_name = _GetApiSchemaFilename(api_name, schema_fs)
+  if file_name is None:
     return None
 
-  api_file_text = file_system.ReadSingle(api_file_name).Get()
-  if api_file_name == _EXTENSION_API:
-    matching_schemas = [api for api in json_parse.Parse(api_file_text)
-                        if api['namespace'] == api_name]
-  elif api_file_name.endswith('.idl'):
-    matching_schemas = idl_parser.IDLParser().ParseData(api_file_text)
-  else:
-    matching_schemas = json_parse.Parse(api_file_text)
+  matching_schemas = [api for api in schema_fs.GetFromFile(file_name).Get()
+                      if api['namespace'] == api_name]
   # There should only be a single matching schema per file.
   assert len(matching_schemas) == 1
   return matching_schemas
@@ -117,18 +115,20 @@ class AvailabilityFinder(object):
   '''
 
   def __init__(self,
-               file_system_iterator,
-               object_store_creator,
                branch_utility,
-               host_file_system):
+               compiled_fs_factory,
+               file_system_iterator,
+               host_file_system,
+               object_store_creator):
+    self._branch_utility = branch_utility
+    self._compiled_fs_factory = compiled_fs_factory
     self._file_system_iterator = file_system_iterator
+    self._host_file_system = host_file_system
     self._object_store_creator = object_store_creator
     def create_object_store(category):
       return object_store_creator.Create(AvailabilityFinder, category=category)
     self._top_level_object_store = create_object_store('top_level')
     self._node_level_object_store = create_object_store('node_level')
-    self._branch_utility = branch_utility
-    self._host_file_system = host_file_system
 
   def _CheckStableAvailability(self, api_name, file_system, version):
     '''Checks for availability of an API, |api_name|, on the stable channel.
@@ -139,44 +139,38 @@ class AvailabilityFinder(object):
       # SVN data isn't available below version 5.
       return False
     available_channel = None
-    fs_factory = CompiledFileSystem.Factory(self._object_store_creator)
-    features_fs = fs_factory.Create(file_system,
-                                    lambda _, json: json_parse.Parse(json),
-                                    AvailabilityFinder,
-                                    category='features')
+    json_fs = self._compiled_fs_factory.ForJson(file_system)
     if version >= 28:
       # The _api_features.json file first appears in version 28 and should be
       # the most reliable for finding API availability.
-      available_channel = _GetChannelFromApiFeatures(api_name, features_fs)
+      available_channel = _GetChannelFromApiFeatures(api_name, json_fs)
     if version >= 20:
       # The _permission_features.json and _manifest_features.json files are
       # present in Chrome 20 and onwards. Use these if no information could be
       # found using _api_features.json.
       available_channel = available_channel or (
-          _GetChannelFromPermissionFeatures(api_name, features_fs)
-          or _GetChannelFromManifestFeatures(api_name, features_fs))
+          _GetChannelFromPermissionFeatures(api_name, json_fs)
+          or _GetChannelFromManifestFeatures(api_name, json_fs))
       if available_channel is not None:
         return available_channel == 'stable'
     if version >= 5:
       # Fall back to a check for file system existence if the API is not
       # stable in any of the _features.json files, or if the _features files
       # do not exist (version 19 and earlier).
-      return _HasApiSchema(api_name, file_system)
+      return _HasApiSchema(api_name,
+                           self._compiled_fs_factory.ForApiSchema(file_system))
 
   def _CheckChannelAvailability(self, api_name, file_system, channel_name):
-    '''Searches through the _features files in a given |file_system| and
-    determines whether or not an API is available on the given channel,
-    |channel_name|.
+    '''Searches through the _features files in a given |file_system|, falling
+    back to checking the file system for API schema existence, to determine
+    whether or not an API is available on the given channel, |channel_name|.
     '''
-    fs_factory = CompiledFileSystem.Factory(self._object_store_creator)
-    features_fs = fs_factory.Create(file_system,
-                                    lambda _, json: json_parse.Parse(json),
-                                    AvailabilityFinder,
-                                    category='features')
-    available_channel = (_GetChannelFromApiFeatures(api_name, features_fs)
-        or _GetChannelFromPermissionFeatures(api_name, features_fs)
-        or _GetChannelFromManifestFeatures(api_name, features_fs))
-    if available_channel is None and _HasApiSchema(api_name, file_system):
+    json_fs = self._compiled_fs_factory.ForJson(file_system)
+    schema_fs = self._compiled_fs_factory.ForApiSchema(file_system)
+    available_channel = (_GetChannelFromApiFeatures(api_name, json_fs)
+        or _GetChannelFromPermissionFeatures(api_name, json_fs)
+        or _GetChannelFromManifestFeatures(api_name, json_fs))
+    if available_channel is None and _HasApiSchema(api_name, schema_fs):
       # If an API is not represented in any of the _features files, but exists
       # in the filesystem, then assume it is available in this version.
       # The windows API is an example of this.
@@ -210,7 +204,10 @@ class AvailabilityFinder(object):
       return availability
 
     def check_api_availability(file_system, channel_info):
-      return self._CheckApiAvailability(api_name, file_system, channel_info)
+      return self._CheckApiAvailability(
+          api_name,
+          file_system,
+          channel_info)
 
     availability = self._file_system_iterator.Descending(
         self._branch_utility.GetChannelInfo('dev'),
@@ -229,12 +226,14 @@ class AvailabilityFinder(object):
     if availability_graph is not None:
       return availability_graph
 
+    def get_schema(api_name, file_system):
+      return _GetApiSchema(api_name,
+                           self._compiled_fs_factory.ForApiSchema(file_system))
 
     availability_graph = APISchemaGraph()
-    trunk_graph = APISchemaGraph(_GetApiSchema(api_name,
-                                               self._host_file_system))
+    trunk_graph = APISchemaGraph(get_schema(api_name, self._host_file_system))
     def update_availability_graph(file_system, channel_info):
-      version_graph = APISchemaGraph(_GetApiSchema(api_name, file_system))
+      version_graph = APISchemaGraph(get_schema(api_name, file_system))
       # Keep track of any new schema elements from this version by adding
       # them to |availability_graph|.
       #
