@@ -62,13 +62,6 @@ camera.View.prototype.onResize = function() {
 };
 
 /**
- * Processes mouse wheel events.
- * @param {Event} event Mouse wheel event.
- */
-camera.View.prototype.onMouseWheel = function(event) {
-};
-
-/**
  * Handles enters the view.
  */
 camera.View.prototype.onEnter = function() {
