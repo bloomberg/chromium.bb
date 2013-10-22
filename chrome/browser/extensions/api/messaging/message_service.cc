@@ -14,6 +14,7 @@
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/messaging/extension_message_port.h"
+#include "chrome/browser/extensions/api/messaging/incognito_connectability.h"
 #include "chrome/browser/extensions/api/messaging/native_message_port.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
@@ -209,16 +210,7 @@ void MessageService::OpenChannelToExtension(
     return;
   }
 
-  ExtensionService* extension_service =
-      ExtensionSystem::Get(profile)->extension_service();
-
-  if (profile->IsOffTheRecord() &&
-      !extension_util::IsIncognitoEnabled(target_extension_id,
-                                          extension_service)) {
-    DispatchOnDisconnect(
-        source, receiver_port_id, kReceivingEndDoesntExistError);
-    return;
-  }
+  bool is_web_connection = false;
 
   if (source_extension_id != target_extension_id) {
     // It's an external connection. Check the externally_connectable manifest
@@ -234,6 +226,7 @@ void MessageService::OpenChannelToExtension(
       if (source_extension_id.empty()) {
         // No source extension ID so the source was a web page. Check that the
         // URL matches.
+        is_web_connection = true;
         is_externally_connectable =
             externally_connectable->matches.MatchesURL(source_url);
         // Only include the TLS channel ID for externally connected web pages.
@@ -261,14 +254,35 @@ void MessageService::OpenChannelToExtension(
     }
   }
 
+  ExtensionService* extension_service =
+      ExtensionSystem::Get(profile)->extension_service();
+  WebContents* source_contents = tab_util::GetWebContentsByID(
+      source_process_id, source_routing_id);
+
+  if (profile->IsOffTheRecord() &&
+      !extension_util::IsIncognitoEnabled(target_extension_id,
+                                          extension_service)) {
+    // Give the user a chance to accept an incognito connection if they haven't
+    // already - but only for spanning-mode incognito. We don't want the
+    // complication of spinning up an additional process here which might need
+    // to do some setup that we're not expecting.
+    if (!is_web_connection ||
+        IncognitoInfo::IsSplitMode(target_extension) ||
+        !IncognitoConnectability::Get(profile)->Query(target_extension,
+                                                      source_contents,
+                                                      source_url)) {
+      DispatchOnDisconnect(
+          source, receiver_port_id, kReceivingEndDoesntExistError);
+      return;
+    }
+  }
+
   // Note: we use the source's profile here. If the source is an incognito
   // process, we will use the incognito EPM to find the right extension process,
   // which depends on whether the extension uses spanning or split mode.
   MessagePort* receiver = new ExtensionMessagePort(
       GetExtensionProcess(profile, target_extension_id), MSG_ROUTING_CONTROL,
       target_extension_id);
-  WebContents* source_contents = tab_util::GetWebContentsByID(
-      source_process_id, source_routing_id);
 
   // Include info about the opener's tab (if it was a tab).
   scoped_ptr<base::DictionaryValue> source_tab;

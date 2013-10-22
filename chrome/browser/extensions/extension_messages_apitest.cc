@@ -13,6 +13,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/extensions/api/messaging/incognito_connectability.h"
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_prefs.h"
@@ -586,26 +587,74 @@ IN_PROC_BROWSER_TEST_F(ExternallyConnectableMessagingTest,
             CanConnectAndSendMessages(not_connectable->id()));
 }
 
-// Tests connection from incognito tabs. Spanning mode only.
+// Tests connection from incognito tabs when the user denies the connection
+// request. Spanning mode only.
 //
 // TODO(kalman): ensure that we exercise split vs spanning incognito logic
 // somewhere. This is a test that should be shared with the content script logic
 // so it's not really our specific concern for web connectable.
-IN_PROC_BROWSER_TEST_F(ExternallyConnectableMessagingTest, FromIncognito) {
+//
+// TODO(kalman): test messages from incognito extensions too.
+IN_PROC_BROWSER_TEST_F(ExternallyConnectableMessagingTest, FromIncognitoDeny) {
   InitializeTestServer();
 
   const Extension* chromium_connectable = LoadChromiumConnectableExtension();
+  const std::string& id = chromium_connectable->id();
 
   Browser* incognito_browser = ui_test_utils::OpenURLOffTheRecord(
       profile()->GetOffTheRecordProfile(),
       chromium_org_url());
 
-  // No connection because incognito enabled hasn't been set.
-  const std::string& id = chromium_connectable->id();
-  EXPECT_EQ(COULD_NOT_ESTABLISH_CONNECTION_ERROR,
-            CanConnectAndSendMessages(incognito_browser, id));
+  // No connection because incognito-enabled hasn't been set for the extension,
+  // and the user denied our interactive request.
+  {
+    IncognitoConnectability::ScopedAlertTracker alert_tracker(
+        IncognitoConnectability::ScopedAlertTracker::ALWAYS_DENY);
 
-  // Then yes.
+    EXPECT_EQ(COULD_NOT_ESTABLISH_CONNECTION_ERROR,
+              CanConnectAndSendMessages(incognito_browser, id));
+    EXPECT_EQ(1, alert_tracker.GetAndResetAlertCount());
+
+    // Try again. User has already denied.
+    EXPECT_EQ(COULD_NOT_ESTABLISH_CONNECTION_ERROR,
+              CanConnectAndSendMessages(incognito_browser, id));
+    EXPECT_EQ(0, alert_tracker.GetAndResetAlertCount());
+  }
+
+  // Allowing the extension in incognito mode will bypass the deny.
+  ExtensionPrefs::Get(profile())->SetIsIncognitoEnabled(id, true);
+  EXPECT_EQ(OK, CanConnectAndSendMessages(incognito_browser, id));
+}
+
+// Tests connection from incognito tabs when the user accepts the connection
+// request. Spanning mode only.
+//
+// TODO(kalman): see comment above about split mode.
+IN_PROC_BROWSER_TEST_F(ExternallyConnectableMessagingTest, FromIncognitoAllow) {
+  InitializeTestServer();
+
+  const Extension* chromium_connectable = LoadChromiumConnectableExtension();
+  const std::string& id = chromium_connectable->id();
+
+  Browser* incognito_browser = ui_test_utils::OpenURLOffTheRecord(
+      profile()->GetOffTheRecordProfile(),
+      chromium_org_url());
+
+  // Connection allowed even with incognito disabled, because the user accepted
+  // the interactive request.
+  {
+    IncognitoConnectability::ScopedAlertTracker alert_tracker(
+        IncognitoConnectability::ScopedAlertTracker::ALWAYS_ALLOW);
+
+    EXPECT_EQ(OK, CanConnectAndSendMessages(incognito_browser, id));
+    EXPECT_EQ(1, alert_tracker.GetAndResetAlertCount());
+
+    // Try again. User has already allowed.
+    EXPECT_EQ(OK, CanConnectAndSendMessages(incognito_browser, id));
+    EXPECT_EQ(0, alert_tracker.GetAndResetAlertCount());
+  }
+
+  // Allowing the extension in incognito mode will continue to allow.
   ExtensionPrefs::Get(profile())->SetIsIncognitoEnabled(id, true);
   EXPECT_EQ(OK, CanConnectAndSendMessages(incognito_browser, id));
 }

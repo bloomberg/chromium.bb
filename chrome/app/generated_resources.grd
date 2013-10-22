@@ -4024,10 +4024,10 @@ Make sure you do not expose any sensitive information.
         The extension "<ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph>" was automatically removed.
       </message>
       <message name="IDS_APP_ALERT_ITEM_EXTERNAL" desc="A statement that an external packaged app has been newly installed. End users have no idea what an 'external' app is, so we simply call them apps.">
-        The app "<ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph>" has been added.
+        The app "<ph name="EXTENSION_NAME">$1<ex>Gmail</ex></ph>" has been added.
       </message>
       <message name="IDS_APP_ALERT_ITEM_BLACKLISTED" desc="A statement that a packaged app has been newly blacklisted. http://www.google.com/support/chrome/bin/answer.py?hl=en&amp;answer=1210215 contains the language on which we're basing the phrasing.">
-        The app "<ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph>" was automatically removed.
+        The app "<ph name="EXTENSION_NAME">$1<ex>Gmail</ex></ph>" was automatically removed.
       </message>
       <message name="IDS_EXTENSION_ALERT_ITEM_OK" desc="The title of the default button acknowledging the information presented.">
         OK
@@ -4037,6 +4037,12 @@ Make sure you do not expose any sensitive information.
       </message>
 
       <!-- Extension/App install dialog strings -->
+      <message name="IDS_EXTENSION_PROMPT_APP_CONNECT_FROM_INCOGNITO" desc="Shown when a website tries to connect to an app from incognito mode, prompting the user to allow or deny the request.">
+        Allow <ph name="ORIGIN">$1<ex>http://www.google.com</ex></ph> to communicate with the app "<ph name="EXTENSION_NAME">$2<ex>Gmail</ex></ph>"?
+      </message>
+      <message name="IDS_EXTENSION_PROMPT_EXTENSION_CONNECT_FROM_INCOGNITO" desc="Shown when a website tries to connect to an extension from incognito mode, prompting the user to allow or deny the request.">
+        Allow <ph name="ORIGIN">$1<ex>http://www.google.com</ex></ph> to communicate with the extension "<ph name="EXTENSION_NAME">$2<ex>Gmail Checker</ex></ph>"?
+      </message>
       <message name="IDS_EXTENSION_PROMPT_WILL_HAVE_ACCESS_TO" desc="Second line in the content area of the extension or app installation prompt. Note that the exact wording is important. This should mean that the extension or app _can_ access the listed privileges, but not necessarily that it will or needs to.">
         It can:
       </message>
