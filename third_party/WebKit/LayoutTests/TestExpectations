@@ -677,8 +677,6 @@ crbug.com/253619 fast/loader/subresource-load-failed-crash.html [ Skip ]
 
 crbug.com/257325 [ Mac ] media/audio-repaint.html [ Pass ImageOnlyFailure ]
 
-crbug.com/264501 [ Debug ] xmlviewer/extensions-api.html [ Pass Crash ]
-
 crbug.com/265650 [ SnowLeopard Debug ] compositing/repaint/transform-style-change.html [ Pass ImageOnlyFailure ]
 
 crbug.com/266754 fast/ruby/ruby-svg-crash.html [ ImageOnlyFailure Pass ]
