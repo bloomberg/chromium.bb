@@ -80,6 +80,25 @@ class ConvertableToTraceFormat : public RefCounted<ConvertableToTraceFormat> {
 };
 
 struct TraceEventHandle {
+  TraceEventHandle()
+      : chunk_seq(0),
+        chunk_index(0),
+        event_index(0) {
+  }
+
+  TraceEventHandle(uint32 a_chunk_seq,
+                   size_t a_chunk_index,
+                   size_t a_event_index)
+      : chunk_seq(a_chunk_seq),
+        chunk_index(static_cast<uint16>(a_chunk_index)),
+        event_index(static_cast<uint16>(a_event_index)) {
+    DCHECK(chunk_seq);
+    DCHECK(a_chunk_index < (1u << 16));
+    DCHECK(a_event_index < (1u << 16));
+  }
+
+  bool IsNull() const { return chunk_seq == 0; }
+
   uint32 chunk_seq;
   uint16 chunk_index;
   uint16 event_index;
