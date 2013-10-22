@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <style>
+            #content { -webkit-flow-into: flow; }
+            #region { -webkit-flow-from: flow; position: absolute; bottom: 0px; right: 0px; width: 100px; background-color: green; max-height: 100px; }
+            #reference { position: absolute; bottom: 0px; right: 0px; width: 100px; background-color: red; height: 100px; }
+        </style>
+    </head>
+    <script src="../../../resources/check-layout.js"></script>
+    <body onload="checkLayout('#region')">
+        <p>Test that an auto-height region, absolutely positioned with bottom 0, is correctly sized and positioned when the region has max-height defined.</p>
+        <p>On success you should see PASS below and a green rectangle in the lower right corner.</p>
+        <div id="content">
+            <div style="width: 100px; height: 50px;"></div>
+            <div style="width: 100px; height: 50px;"></div>
+            <div style="width: 100px; height: 50px;"></div>
+        </div>
+        <div id="reference"></div>
+        <div id="region" data-total-y=0></div>
+        <script>
+            var referenceOffsetTop = document.getElementById('reference').offsetTop;
+            document.getElementById("region").setAttribute("data-total-y", referenceOffsetTop);
+        </script>
+    </body>
+</html>

@@ -953,7 +953,7 @@ crbug.com/298039 [ Mac ] virtual/gpu/compositedscrolling/overflow/clear-scroll-p
 
 crbug.com/300025 [ Win7 Debug ] virtual/implsidepainting/inspector/timeline/timeline-decode-resize.html [ Timeout Pass ]
 
-crbug.com/304993 fast/regions/autoheight-regions-mark.html [ Failure Pass ]
+crbug.com/304993 fast/regions/auto-size/autoheight-regions-mark.html [ Failure Pass ]
 
 # This test is flaky on all platforms, and has image failures most of the time on
 # WebKit Win7 (dbg)
