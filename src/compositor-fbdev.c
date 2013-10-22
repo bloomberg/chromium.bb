@@ -196,7 +196,7 @@ fbdev_output_repaint_pixman(struct weston_output *base, pixman_region32_t *damag
 	                             1000000 / output->mode.refresh);
 }
 
-static void
+static int
 fbdev_output_repaint(struct weston_output *base, pixman_region32_t *damage)
 {
 	struct fbdev_output *output = to_fbdev_output(base);
@@ -214,6 +214,8 @@ fbdev_output_repaint(struct weston_output *base, pixman_region32_t *damage)
 		wl_event_source_timer_update(output->finish_frame_timer,
 	                             1000000 / output->mode.refresh);
 	}
+
+	return 0;
 }
 
 static int

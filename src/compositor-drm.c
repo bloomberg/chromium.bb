@@ -576,7 +576,7 @@ drm_output_set_gamma(struct weston_output *output_base,
 		weston_log("set gamma failed: %m\n");
 }
 
-static void
+static int
 drm_output_repaint(struct weston_output *output_base,
 		   pixman_region32_t *damage)
 {
@@ -588,12 +588,12 @@ drm_output_repaint(struct weston_output *output_base,
 	int ret = 0;
 
 	if (output->destroy_pending)
-		return;
+		return -1;
 
 	if (!output->next)
 		drm_output_render(output, damage);
 	if (!output->next)
-		return;
+		return -1;
 
 	mode = container_of(output->base.current_mode, struct drm_mode, base);
 	if (!output->current) {
@@ -603,7 +603,7 @@ drm_output_repaint(struct weston_output *output_base,
 				     &mode->mode_info);
 		if (ret) {
 			weston_log("set mode failed: %m\n");
-			return;
+			goto err_pageflip;
 		}
 		output_base->set_dpms(output_base, WESTON_DPMS_ON);
 	}
@@ -612,7 +612,7 @@ drm_output_repaint(struct weston_output *output_base,
 			    output->next->fb_id,
 			    DRM_MODE_PAGE_FLIP_EVENT, output) < 0) {
 		weston_log("queueing pageflip failed: %m\n");
-		return;
+		goto err_pageflip;
 	}
 
 	output->page_flip_pending = 1;
@@ -664,7 +664,15 @@ drm_output_repaint(struct weston_output *output_base,
 		output->vblank_pending = 1;
 	}
 
-	return;
+	return 0;
+
+err_pageflip:
+	if (output->next) {
+		drm_output_release_fb(output, output->next);
+		output->next = NULL;
+	}
+
+	return -1;
 }
 
 static void

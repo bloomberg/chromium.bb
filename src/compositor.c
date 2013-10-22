@@ -1365,7 +1365,7 @@ weston_compositor_build_surface_list(struct weston_compositor *compositor)
 	}
 }
 
-static void
+static int
 weston_output_repaint(struct weston_output *output, uint32_t msecs)
 {
 	struct weston_compositor *ec = output->compositor;
@@ -1374,6 +1374,7 @@ weston_output_repaint(struct weston_output *output, uint32_t msecs)
 	struct weston_frame_callback *cb, *cnext;
 	struct wl_list frame_callback_list;
 	pixman_region32_t output_damage;
+	int r;
 
 	/* Rebuild the surface list and update surface transforms up front. */
 	weston_compositor_build_surface_list(ec);
@@ -1404,7 +1405,7 @@ weston_output_repaint(struct weston_output *output, uint32_t msecs)
 	if (output->dirty)
 		weston_output_update_matrix(output);
 
-	output->repaint(output, &output_damage);
+	r = output->repaint(output, &output_damage);
 
 	pixman_region32_fini(&output_damage);
 
@@ -1422,6 +1423,8 @@ weston_output_repaint(struct weston_output *output, uint32_t msecs)
 		animation->frame_counter++;
 		animation->frame(animation, output, msecs);
 	}
+
+	return r;
 }
 
 static int
@@ -1440,15 +1443,16 @@ weston_output_finish_frame(struct weston_output *output, uint32_t msecs)
 	struct weston_compositor *compositor = output->compositor;
 	struct wl_event_loop *loop =
 		wl_display_get_event_loop(compositor->wl_display);
-	int fd;
+	int fd, r;
 
 	output->frame_time = msecs;
 
 	if (output->repaint_needed &&
 	    compositor->state != WESTON_COMPOSITOR_SLEEPING &&
 	    compositor->state != WESTON_COMPOSITOR_OFFSCREEN) {
-		weston_output_repaint(output, msecs);
-		return;
+		r = weston_output_repaint(output, msecs);
+		if (!r)
+			return;
 	}
 
 	output->repaint_scheduled = 0;

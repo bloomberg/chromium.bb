@@ -219,7 +219,7 @@ struct weston_output {
 	struct wl_list mode_list;
 
 	void (*start_repaint_loop)(struct weston_output *output);
-	void (*repaint)(struct weston_output *output,
+	int (*repaint)(struct weston_output *output,
 			pixman_region32_t *damage);
 	void (*destroy)(struct weston_output *output);
 	void (*assign_planes)(struct weston_output *output);

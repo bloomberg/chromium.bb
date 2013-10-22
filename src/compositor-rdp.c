@@ -302,7 +302,7 @@ rdp_output_start_repaint_loop(struct weston_output *output)
 	weston_output_finish_frame(output, msec);
 }
 
-static void
+static int
 rdp_output_repaint(struct weston_output *output_base, pixman_region32_t *damage)
 {
 	struct rdp_output *output = container_of(output_base, struct rdp_output, base);
@@ -324,6 +324,7 @@ rdp_output_repaint(struct weston_output *output_base, pixman_region32_t *damage)
 				 &ec->primary_plane.damage, damage);
 
 	wl_event_source_timer_update(output->finish_frame_timer, 16);
+	return 0;
 }
 
 static void

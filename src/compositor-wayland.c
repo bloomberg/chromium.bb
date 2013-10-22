@@ -212,7 +212,7 @@ wayland_output_start_repaint_loop(struct weston_output *output_base)
 	wl_surface_commit(output->parent.surface);
 }
 
-static void
+static int
 wayland_output_repaint(struct weston_output *output_base,
 		       pixman_region32_t *damage)
 {
@@ -227,7 +227,7 @@ wayland_output_repaint(struct weston_output *output_base,
 
 	pixman_region32_subtract(&ec->primary_plane.damage,
 				 &ec->primary_plane.damage, damage);
-
+	return 0;
 }
 
 static void

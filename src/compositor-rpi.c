@@ -223,7 +223,7 @@ rpi_output_start_repaint_loop(struct weston_output *output)
 	weston_output_finish_frame(output, time);
 }
 
-static void
+static int
 rpi_output_repaint(struct weston_output *base, pixman_region32_t *damage)
 {
 	struct rpi_output *output = to_rpi_output(base);
@@ -247,6 +247,7 @@ rpi_output_repaint(struct weston_output *base, pixman_region32_t *damage)
 	/* schedule callback to rpi_output_update_complete() */
 	rpi_dispmanx_update_submit(update, output);
 	DBG("frame update submitted\n");
+	return 0;
 }
 
 static void

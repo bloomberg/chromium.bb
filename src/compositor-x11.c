@@ -326,7 +326,7 @@ x11_output_start_repaint_loop(struct weston_output *output)
 	weston_output_finish_frame(output, msec);
 }
 
-static void
+static int
 x11_output_repaint_gl(struct weston_output *output_base,
 		      pixman_region32_t *damage)
 {
@@ -339,6 +339,7 @@ x11_output_repaint_gl(struct weston_output *output_base,
 				 &ec->primary_plane.damage, damage);
 
 	wl_event_source_timer_update(output->finish_frame_timer, 10);
+	return 0;
 }
 
 static void
@@ -446,7 +447,7 @@ set_clip_for_output(struct weston_output *output_base, pixman_region32_t *region
 }
 
 
-static void
+static int
 x11_output_repaint_shm(struct weston_output *output_base,
 		       pixman_region32_t *damage)
 {
@@ -477,6 +478,7 @@ x11_output_repaint_shm(struct weston_output *output_base,
 	}
 
 	wl_event_source_timer_update(output->finish_frame_timer, 10);
+	return 0;
 }
 
 static int
