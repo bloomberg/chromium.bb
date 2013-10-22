@@ -86,6 +86,19 @@ class WEBKIT_CHILD_EXPORT WebKitPlatformSupportImpl :
       const unsigned char* arg_types,
       const unsigned long long* arg_values,
       unsigned char flags);
+  // Temporary during migration blink to new trace event API.
+  // https://code.google.com/p/trace-viewer/issues/detail?id=487.
+  virtual TraceEventHandle addTraceEventNew(
+      char phase,
+      const unsigned char* category_group_enabled,
+      const char* name,
+      unsigned long long id,
+      int num_args,
+      const char** arg_names,
+      const unsigned char* arg_types,
+      const unsigned long long* arg_values,
+      unsigned char flags);
+  virtual void updateTraceEventDuration(TraceEventHandle);
   virtual WebKit::WebData loadResource(const char* name);
   virtual WebKit::WebString queryLocalizedString(
       WebKit::WebLocalizedString::Name name);
