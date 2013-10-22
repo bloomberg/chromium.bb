@@ -88,7 +88,8 @@ public:
     bool isImageSet() const { return m_imageSet; }
     bool isXPositionSet() const { return m_xPosSet; }
     bool isYPositionSet() const { return m_yPosSet; }
-    bool isBackgroundOriginSet() const { return m_backgroundOriginSet; }
+    bool isBackgroundXOriginSet() const { return m_backgroundXOriginSet; }
+    bool isBackgroundYOriginSet() const { return m_backgroundYOriginSet; }
     bool isAttachmentSet() const { return m_attachmentSet; }
     bool isClipSet() const { return m_clipSet; }
     bool isOriginSet() const { return m_originSet; }
@@ -100,10 +101,10 @@ public:
     bool isMaskSourceTypeSet() const { return m_maskSourceTypeSet; }
 
     void setImage(PassRefPtr<StyleImage> i) { m_image = i; m_imageSet = true; }
-    void setXPosition(Length l) { m_xPosition = l; m_xPosSet = true; }
-    void setYPosition(Length l) { m_yPosition = l; m_yPosSet = true; }
-    void setBackgroundXOrigin(BackgroundEdgeOrigin o) { m_backgroundXOrigin = o; m_backgroundOriginSet = true; }
-    void setBackgroundYOrigin(BackgroundEdgeOrigin o) { m_backgroundYOrigin = o; m_backgroundOriginSet = true; }
+    void setXPosition(Length position) { m_xPosition = position; m_xPosSet = true; m_backgroundXOriginSet = false; m_backgroundXOrigin = LeftEdge; }
+    void setYPosition(Length position) { m_yPosition = position; m_yPosSet = true; m_backgroundYOriginSet = false; m_backgroundYOrigin = TopEdge; }
+    void setBackgroundXOrigin(BackgroundEdgeOrigin origin) { m_backgroundXOrigin = origin; m_backgroundXOriginSet = true; }
+    void setBackgroundYOrigin(BackgroundEdgeOrigin origin) { m_backgroundYOrigin = origin; m_backgroundYOriginSet = true; }
     void setAttachment(EFillAttachment attachment) { m_attachment = attachment; m_attachmentSet = true; }
     void setClip(EFillBox b) { m_clip = b; m_clipSet = true; }
     void setOrigin(EFillBox b) { m_origin = b; m_originSet = true; }
@@ -120,12 +121,12 @@ public:
     void clearXPosition()
     {
         m_xPosSet = false;
-        m_backgroundOriginSet = false;
+        m_backgroundXOriginSet = false;
     }
     void clearYPosition()
     {
         m_yPosSet = false;
-        m_backgroundOriginSet = false;
+        m_backgroundYOriginSet = false;
     }
 
     void clearAttachment() { m_attachmentSet = false; }
@@ -215,6 +216,8 @@ private:
     unsigned m_sizeType : 2; // EFillSizeType
     unsigned m_blendMode : 5; // BlendMode
     unsigned m_maskSourceType : 1; // EMaskSourceType
+    unsigned m_backgroundXOrigin : 2; // BackgroundEdgeOrigin
+    unsigned m_backgroundYOrigin : 2; // BackgroundEdgeOrigin
 
     unsigned m_imageSet : 1;
     unsigned m_attachmentSet : 1;
@@ -224,9 +227,8 @@ private:
     unsigned m_repeatYSet : 1;
     unsigned m_xPosSet : 1;
     unsigned m_yPosSet : 1;
-    unsigned m_backgroundOriginSet : 1;
-    unsigned m_backgroundXOrigin : 2; // BackgroundEdgeOrigin
-    unsigned m_backgroundYOrigin : 2; // BackgroundEdgeOrigin
+    unsigned m_backgroundXOriginSet : 1;
+    unsigned m_backgroundYOriginSet : 1;
     unsigned m_compositeSet : 1;
     unsigned m_blendModeSet : 1;
     unsigned m_maskSourceTypeSet : 1;
