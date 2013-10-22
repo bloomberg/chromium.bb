@@ -246,11 +246,8 @@ bool TraceMemoryController::IsTimerRunningForTest() const {
 // static
 bool ScopedTraceMemory::enabled_ = false;
 
-ScopedTraceMemory::ScopedTraceMemory(const char* category, const char* name) {
-  // Not enabled indicates that the trace system isn't running, so don't
-  // record anything.
-  if (!enabled_)
-    return;
+void ScopedTraceMemory::Initialize(const char* category, const char* name) {
+  DCHECK(enabled_);
   // Get our thread's copy of the stack.
   TraceMemoryStack* trace_memory_stack = GetTraceMemoryStack();
   const size_t index = trace_memory_stack->scope_depth;
@@ -264,11 +261,8 @@ ScopedTraceMemory::ScopedTraceMemory(const char* category, const char* name) {
   trace_memory_stack->scope_depth++;
 }
 
-ScopedTraceMemory::~ScopedTraceMemory() {
-  // Not enabled indicates that the trace system isn't running, so don't
-  // record anything.
-  if (!enabled_)
-    return;
+void ScopedTraceMemory::Destroy() {
+  DCHECK(enabled_);
   // Get our thread's copy of the stack.
   TraceMemoryStack* trace_memory_stack = GetTraceMemoryStack();
   // The tracing system can be turned on with ScopedTraceMemory objects

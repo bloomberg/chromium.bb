@@ -94,8 +94,16 @@ class BASE_EXPORT ScopedTraceMemory {
 
   // Memory for |category| and |name| must be static, for example, literal
   // strings in a TRACE_EVENT macro.
-  ScopedTraceMemory(const char* category, const char* name);
-  ~ScopedTraceMemory();
+  ScopedTraceMemory(const char* category, const char* name) {
+    if (!enabled_)
+      return;
+    Initialize(category, name);
+  }
+  ~ScopedTraceMemory() {
+    if (!enabled_)
+      return;
+    Destroy();
+  }
 
   // Enables the storing of trace names on a per-thread stack.
   static void set_enabled(bool enabled) { enabled_ = enabled; }
@@ -107,6 +115,9 @@ class BASE_EXPORT ScopedTraceMemory {
   static ScopeData GetScopeDataForTest(int stack_index);
 
  private:
+  void Initialize(const char* category, const char* name);
+  void Destroy();
+
   static bool enabled_;
   DISALLOW_COPY_AND_ASSIGN(ScopedTraceMemory);
 };
