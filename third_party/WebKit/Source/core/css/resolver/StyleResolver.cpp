@@ -192,7 +192,11 @@ void StyleResolver::appendAuthorStyleSheets(unsigned firstNew, const Vector<RefP
             continue;
 
         StyleSheetContents* sheet = cssSheet->contents();
-        ScopedStyleResolver* resolver = ensureScopedStyleResolver(ScopedStyleResolver::scopingNodeFor(cssSheet));
+        const ContainerNode* scopingNode = ScopedStyleResolver::scopingNodeFor(cssSheet);
+        if (!scopingNode && cssSheet->ownerNode() && cssSheet->ownerNode()->isInShadowTree())
+            continue;
+
+        ScopedStyleResolver* resolver = ensureScopedStyleResolver(scopingNode);
         ASSERT(resolver);
         resolver->addRulesFromSheet(sheet, *m_medium, this);
         m_inspectorCSSOMWrappers.collectFromStyleSheetIfNeeded(cssSheet);
