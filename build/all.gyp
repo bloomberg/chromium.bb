@@ -193,6 +193,11 @@
             '../ui/app_list/app_list.gyp:*',
           ],
         }],
+        ['OS!="android" and OS!="ios"', {
+          'dependencies': [
+            '../google_apis/gcm/gcm.gyp:*',
+          ],
+        }],
       ],
     }, # target_name: All
     {
@@ -335,6 +340,11 @@
         ['test_isolation_mode != "noop"', {
           'dependencies': [
             'chromium_swarm_tests',
+          ],
+        }],
+        ['OS!="android" and OS!="ios"', {
+          'dependencies': [
+            '../google_apis/gcm/gcm.gyp:gcm_unit_tests',
           ],
         }],
       ],
@@ -580,6 +590,7 @@
             '../content/content_shell_and_tests.gyp:content_browsertests',
             '../content/content_shell_and_tests.gyp:content_unittests',
             '../device/device_tests.gyp:device_unittests',
+            '../google_apis/gcm/gcm.gyp:gcm_unit_tests',
             '../gpu/gpu.gyp:gpu_unittests',
             '../ipc/ipc.gyp:ipc_tests',
             '../jingle/jingle.gyp:jingle_unittests',
@@ -613,6 +624,7 @@
             '../content/content_shell_and_tests.gyp:content_browsertests',
             '../content/content_shell_and_tests.gyp:content_unittests',
             '../device/device_tests.gyp:device_unittests',
+            '../google_apis/gcm/gcm.gyp:gcm_unit_tests',
             '../gpu/gpu.gyp:gpu_unittests',
             '../ipc/ipc.gyp:ipc_tests',
             '../jingle/jingle.gyp:jingle_unittests',
@@ -671,6 +683,7 @@
             '../jingle/jingle.gyp:jingle_unittests',
             '../media/media.gyp:media_unittests',
             '../net/net.gyp:net_unittests',
+            '../google_apis/gcm/gcm.gyp:gcm_unit_tests',
             '../printing/printing.gyp:printing_unittests',
             '../remoting/remoting.gyp:remoting_unittests',
             '../sql/sql.gyp:sql_unittests',
@@ -711,6 +724,7 @@
             '../chrome_frame/chrome_frame.gyp:npchrome_frame',
             '../courgette/courgette.gyp:courgette_unittests',
             '../device/device_tests.gyp:device_unittests',
+            '../google_apis/gcm/gcm.gyp:gcm_unit_tests',
             '../gpu/gpu.gyp:gpu_unittests',
             '../ipc/ipc.gyp:ipc_tests',
             '../jingle/jingle.gyp:jingle_unittests',
@@ -801,6 +815,7 @@
             '../jingle/jingle.gyp:jingle_unittests',
             '../media/media.gyp:media_unittests',
             '../net/net.gyp:net_unittests',
+            '../google_apis/gcm/gcm.gyp:gcm_unit_tests',
             '../printing/printing.gyp:printing_unittests',
             '../remoting/remoting.gyp:remoting_unittests',
             '../sql/sql.gyp:sql_unittests',
