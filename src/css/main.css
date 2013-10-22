@@ -3,6 +3,7 @@ html {
 }
 
 body {
+  -webkit-app-region: drag;
   -webkit-box-align: center;
   background: black;
   bottom: 0;
@@ -15,6 +16,7 @@ body {
 }
 
 .scrollbar-track {
+  -webkit-app-region: no-drag;
   padding: 2px;
   position: fixed;
 }
@@ -64,11 +66,11 @@ body .scrollbar-track .scrollbar-thumb:active {
 }
 
 button {
+  -webkit-app-region: no-drag;
   outline: none;
 }
 
 #header {
-  -webkit-app-region: drag;
   -webkit-box-pack: end;
   display: -webkit-box;
   left: 0;
@@ -312,6 +314,7 @@ canvas {
 }
 
 #effects li {
+  -webkit-app-region: no-drag;
   -webkit-box-align: center;
   -webkit-box-orient: vertical;
   -webkit-box-pack: center;
@@ -470,12 +473,19 @@ body.browser #picture-preview {
   width: 170px;
 }
 
+body.gallery #gallery img {
+  -webkit-app-region: no-drag;
+}
+
 #gallery img.selected {
   -webkit-transform: scale(1.2);
   border-color: rgb(66, 129, 244);
 }
 
 #browser {
+  /* TODO(mtomasz): Consider making the browser moveable, which is non trivial
+     because the onclick handler is used to close the view. */
+  -webkit-app-region: no-drag;
   background: rgba(0, 0, 0, 0.8);
   visibility: hidden;
 }
@@ -493,6 +503,7 @@ body.browser #browser {
 }
 
 #browser img {
+  -webkit-app-region: no-drag;
   border: 10px solid white;
   display: -webkit-box;
   pointer-events: auto;
