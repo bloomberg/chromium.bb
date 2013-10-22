@@ -2393,16 +2393,16 @@ def MakeMacEnv():
       PLUGIN_SUFFIX = '.bundle',
   )
 
-  if platform.mac_ver()[0].startswith('10.8'):
-    mac_env.Append(
-        CCFLAGS=['-mmacosx-version-min=10.7'],
-        LINKFLAGS=['-mmacosx-version-min=10.7'],
-        CPPDEFINES=[['MAC_OS_X_VERSION_MIN_REQUIRED', 'MAC_OS_X_VERSION_10_7']])
-  else:
-    mac_env.Append(
-        CCFLAGS=['-mmacosx-version-min=10.5'],
-        LINKFLAGS=['-mmacosx-version-min=10.5'],
-        CPPDEFINES=[['MAC_OS_X_VERSION_MIN_REQUIRED', 'MAC_OS_X_VERSION_10_5']])
+  # This should be kept in synch with mac_sdk in build/common.gypi,
+  # which in turn should be kept in synch with mac_deployment_target
+  # in chromium/src/build/common.gypi.
+  mac_sdk = '10.6'
+
+  mac_env.Append(
+      CCFLAGS=['-mmacosx-version-min=' + mac_sdk],
+      LINKFLAGS=['-mmacosx-version-min=' + mac_sdk],
+      CPPDEFINES=[['MAC_OS_X_VERSION_MIN_REQUIRED',
+                   'MAC_OS_X_VERSION_' + '_'.join(mac_sdk.split('.'))]])
 
   subarch_flag = '-m%s' % mac_env['BUILD_SUBARCH']
   mac_env.Append(
