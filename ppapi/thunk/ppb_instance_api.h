@@ -173,7 +173,7 @@ class PPB_Instance_API {
                             const PP_DecryptedFrameInfo* frame_info) = 0;
   virtual void DeliverSamples(PP_Instance instance,
                               PP_Resource audio_frames,
-                              const PP_DecryptedBlockInfo* block_info) = 0;
+                              const PP_DecryptedSampleInfo* sample_info) = 0;
 
   // URLUtil.
   virtual PP_Var ResolveRelativeToDocument(

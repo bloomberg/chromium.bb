@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // From private/ppb_content_decryptor_private.idl,
-//   modified Tue Sep 17 11:31:05 2013.
+//   modified Thu Oct 10 14:49:51 2013.
 
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/private/ppb_content_decryptor_private.h"
@@ -123,14 +123,14 @@ void DeliverFrame(PP_Instance instance,
 void DeliverSamples(
     PP_Instance instance,
     PP_Resource audio_frames,
-    const struct PP_DecryptedBlockInfo* decrypted_block_info) {
+    const struct PP_DecryptedSampleInfo* decrypted_sample_info) {
   VLOG(4) << "PPB_ContentDecryptor_Private::DeliverSamples()";
   EnterInstance enter(instance);
   if (enter.failed())
     return;
   enter.functions()->DeliverSamples(instance,
                                     audio_frames,
-                                    decrypted_block_info);
+                                    decrypted_sample_info);
 }
 
 const PPB_ContentDecryptor_Private_0_7

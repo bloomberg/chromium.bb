@@ -218,6 +218,27 @@ PP_DecryptorStreamType MediaDecryptorStreamTypeToPpStreamType(
   }
 }
 
+media::SampleFormat PpDecryptedSampleFormatToMediaSampleFormat(
+    PP_DecryptedSampleFormat result) {
+  switch (result) {
+    case PP_DECRYPTEDSAMPLEFORMAT_U8:
+      return media::kSampleFormatU8;
+    case PP_DECRYPTEDSAMPLEFORMAT_S16:
+      return media::kSampleFormatS16;
+    case PP_DECRYPTEDSAMPLEFORMAT_S32:
+      return media::kSampleFormatS32;
+    case PP_DECRYPTEDSAMPLEFORMAT_F32:
+      return media::kSampleFormatF32;
+    case PP_DECRYPTEDSAMPLEFORMAT_PLANAR_S16:
+      return media::kSampleFormatPlanarS16;
+    case PP_DECRYPTEDSAMPLEFORMAT_PLANAR_F32:
+      return media::kSampleFormatPlanarF32;
+    default:
+      NOTREACHED();
+      return media::kUnknownSampleFormat;
+  }
+}
+
 }  // namespace
 
 ContentDecryptorDelegate::ContentDecryptorDelegate(
@@ -232,10 +253,8 @@ ContentDecryptorDelegate::ContentDecryptorDelegate(
       pending_video_decoder_init_request_id_(0),
       pending_audio_decode_request_id_(0),
       pending_video_decode_request_id_(0),
-      audio_sample_format_(media::kUnknownSampleFormat),
       audio_samples_per_second_(0),
       audio_channel_count_(0),
-      audio_bytes_per_frame_(0),
       weak_ptr_factory_(this) {
   weak_this_ = weak_ptr_factory_.GetWeakPtr();
 }
@@ -405,10 +424,8 @@ bool ContentDecryptorDelegate::InitializeAudioDecoder(
   pp_decoder_config.samples_per_second = decoder_config.samples_per_second();
   pp_decoder_config.request_id = next_decryption_request_id_++;
 
-  audio_sample_format_ = decoder_config.sample_format();
   audio_samples_per_second_ = pp_decoder_config.samples_per_second;
   audio_channel_count_ = pp_decoder_config.channel_count;
-  audio_bytes_per_frame_ = decoder_config.bytes_per_frame();
 
   scoped_refptr<PPB_Buffer_Impl> extra_data_resource;
   if (!MakeBufferResource(pp_instance_,
@@ -852,12 +869,12 @@ void ContentDecryptorDelegate::DeliverFrame(
 
 void ContentDecryptorDelegate::DeliverSamples(
     PP_Resource audio_frames,
-    const PP_DecryptedBlockInfo* block_info) {
-  DCHECK(block_info);
+    const PP_DecryptedSampleInfo* sample_info) {
+  DCHECK(sample_info);
 
-  FreeBuffer(block_info->tracking_info.buffer_id);
+  FreeBuffer(sample_info->tracking_info.buffer_id);
 
-  const uint32_t request_id = block_info->tracking_info.request_id;
+  const uint32_t request_id = sample_info->tracking_info.request_id;
   DVLOG(2) << "DeliverSamples() - request_id: " << request_id;
 
   // If the request ID is not valid or does not match what's saved, do nothing.
@@ -874,15 +891,19 @@ void ContentDecryptorDelegate::DeliverSamples(
   const media::Decryptor::AudioBuffers empty_frames;
 
   media::Decryptor::Status status =
-      PpDecryptResultToMediaDecryptorStatus(block_info->result);
+      PpDecryptResultToMediaDecryptorStatus(sample_info->result);
   if (status != media::Decryptor::kSuccess) {
     audio_decode_cb.Run(status, empty_frames);
     return;
   }
 
+  media::SampleFormat sample_format =
+      PpDecryptedSampleFormatToMediaSampleFormat(sample_info->format);
+
   media::Decryptor::AudioBuffers audio_frame_list;
   if (!DeserializeAudioFrames(audio_frames,
-                              block_info->data_size,
+                              sample_info->data_size,
+                              sample_format,
                               &audio_frame_list)) {
     NOTREACHED() << "CDM did not serialize the buffer correctly.";
     audio_decode_cb.Run(media::Decryptor::kError, empty_frames);
@@ -995,6 +1016,7 @@ void ContentDecryptorDelegate::SetBufferToFreeInTrackingInfo(
 bool ContentDecryptorDelegate::DeserializeAudioFrames(
     PP_Resource audio_frames,
     size_t data_size,
+    media::SampleFormat sample_format,
     media::Decryptor::AudioBuffers* frames) {
   DCHECK(frames);
   EnterResourceNoLock<PPB_Buffer_API> enter(audio_frames, true);
@@ -1012,6 +1034,13 @@ bool ContentDecryptorDelegate::DeserializeAudioFrames(
   const uint8* cur = static_cast<uint8*>(mapper.data());
   size_t bytes_left = data_size;
 
+  const int audio_bytes_per_frame =
+      media::SampleFormatToBytesPerChannel(sample_format) *
+      audio_channel_count_;
+
+  // Allocate space for the channel pointers given to AudioBuffer.
+  std::vector<const uint8*> channel_ptrs(
+      audio_channel_count_, static_cast<const uint8*>(NULL));
   do {
     int64 timestamp = 0;
     int64 frame_size = -1;
@@ -1034,13 +1063,18 @@ bool ContentDecryptorDelegate::DeserializeAudioFrames(
       return false;
     }
 
-    const uint8* data[] = {cur};
-    int frame_count = frame_size / audio_bytes_per_frame_;
+    // Setup channel pointers.  AudioBuffer::CopyFrom() will only use the first
+    // one in the case of interleaved data.
+    const int size_per_channel = frame_size / audio_channel_count_;
+    for (int i = 0; i < audio_channel_count_; ++i)
+      channel_ptrs[i] = cur + i * size_per_channel;
+
+    const int frame_count = frame_size / audio_bytes_per_frame;
     scoped_refptr<media::AudioBuffer> frame = media::AudioBuffer::CopyFrom(
-        audio_sample_format_,
+        sample_format,
         audio_channel_count_,
         frame_count,
-        data,
+        &channel_ptrs[0],
         base::TimeDelta::FromMicroseconds(timestamp),
         base::TimeDelta::FromMicroseconds(audio_samples_per_second_ /
                                           frame_count));

@@ -675,7 +675,7 @@ void PPB_Instance_Proxy::DeliverFrame(PP_Instance instance,
 void PPB_Instance_Proxy::DeliverSamples(
     PP_Instance instance,
     PP_Resource decrypted_samples,
-    const PP_DecryptedBlockInfo* block_info) {
+    const PP_DecryptedSampleInfo* sample_info) {
   PP_Resource host_resource = 0;
   if (decrypted_samples != 0) {
     ResourceTracker* tracker = PpapiGlobals::Get()->GetResourceTracker();
@@ -689,8 +689,8 @@ void PPB_Instance_Proxy::DeliverSamples(
     host_resource = object->host_resource().host_resource();
   }
 
-  std::string serialized_block_info;
-  if (!SerializeBlockInfo(*block_info, &serialized_block_info)) {
+  std::string serialized_sample_info;
+  if (!SerializeBlockInfo(*sample_info, &serialized_sample_info)) {
     NOTREACHED();
     return;
   }
@@ -699,7 +699,7 @@ void PPB_Instance_Proxy::DeliverSamples(
       new PpapiHostMsg_PPBInstance_DeliverSamples(API_ID_PPB_INSTANCE,
                                                   instance,
                                                   host_resource,
-                                                  serialized_block_info));
+                                                  serialized_sample_info));
 }
 #endif  // !defined(OS_NACL)
 
@@ -1165,16 +1165,16 @@ void PPB_Instance_Proxy::OnHostMsgDeliverFrame(
 void PPB_Instance_Proxy::OnHostMsgDeliverSamples(
     PP_Instance instance,
     PP_Resource audio_frames,
-    const std::string& serialized_block_info) {
+    const std::string& serialized_sample_info) {
   if (!dispatcher()->permissions().HasPermission(PERMISSION_PRIVATE))
     return;
-  PP_DecryptedBlockInfo block_info;
-  if (!DeserializeBlockInfo(serialized_block_info, &block_info))
+  PP_DecryptedSampleInfo sample_info;
+  if (!DeserializeBlockInfo(serialized_sample_info, &sample_info))
     return;
 
   EnterInstanceNoLock enter(instance);
   if (enter.succeeded())
-    enter.functions()->DeliverSamples(instance, audio_frames, &block_info);
+    enter.functions()->DeliverSamples(instance, audio_frames, &sample_info);
 }
 
 void PPB_Instance_Proxy::OnHostMsgSetCursor(

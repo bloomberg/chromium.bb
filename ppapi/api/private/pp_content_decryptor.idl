@@ -140,6 +140,20 @@ enum PP_DecryptedFrameFormat {
 };
 
 /**
+ * <code>PP_DecryptedSampleFormat</code> contains audio sample formats.
+ */
+[assert_size(4)]
+enum PP_DecryptedSampleFormat {
+  PP_DECRYPTEDSAMPLEFORMAT_UNKNOWN = 0,
+  PP_DECRYPTEDSAMPLEFORMAT_U8 = 1,
+  PP_DECRYPTEDSAMPLEFORMAT_S16 = 2,
+  PP_DECRYPTEDSAMPLEFORMAT_S32 = 3,
+  PP_DECRYPTEDSAMPLEFORMAT_F32 = 4,
+  PP_DECRYPTEDSAMPLEFORMAT_PLANAR_S16 = 5,
+  PP_DECRYPTEDSAMPLEFORMAT_PLANAR_F32 = 6
+};
+
+/**
  * The <code>PP_DecryptResult</code> enum contains decryption and decoding
  * result constants.
  */
@@ -230,6 +244,40 @@ struct PP_DecryptedFrameInfo {
 
   /**
    * Information needed by the client to track the decrypted frame.
+   */
+  PP_DecryptTrackingInfo tracking_info;
+};
+
+/**
+ * <code>PP_DecryptedSampleInfo</code> contains the result of the
+ * decrypt and decode operation on the associated samples, information required
+ * to access the sample data in buffer, and tracking info.
+ */
+[assert_size(32)]
+struct PP_DecryptedSampleInfo {
+  /**
+   * Result of the decrypt and decode operation.
+   */
+  PP_DecryptResult result;
+
+  /**
+   * Format of the decrypted samples.
+   */
+  PP_DecryptedSampleFormat format;
+
+  /**
+   * Size in bytes of decrypted samples.
+   */
+  uint32_t data_size;
+
+  /**
+   * 4-byte padding to make the size of <code>PP_DecryptedSampleInfo</code>
+   * a multiple of 8 bytes. The value of this field should not be used.
+   */
+  uint32_t padding;
+
+  /**
+   * Information needed by the client to track the decrypted samples.
    */
   PP_DecryptTrackingInfo tracking_info;
 };

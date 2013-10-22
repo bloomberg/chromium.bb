@@ -2523,9 +2523,9 @@ static void Pnacl_M31_PPB_ContentDecryptor_Private_DeliverFrame(PP_Instance inst
   iface->DeliverFrame(instance, decrypted_frame, decrypted_frame_info);
 }
 
-static void Pnacl_M31_PPB_ContentDecryptor_Private_DeliverSamples(PP_Instance instance, PP_Resource audio_frames, const struct PP_DecryptedBlockInfo* decrypted_block_info) {
+static void Pnacl_M31_PPB_ContentDecryptor_Private_DeliverSamples(PP_Instance instance, PP_Resource audio_frames, const struct PP_DecryptedSampleInfo* decrypted_sample_info) {
   const struct PPB_ContentDecryptor_Private_0_7 *iface = Pnacl_WrapperInfo_PPB_ContentDecryptor_Private_0_7.real_iface;
-  iface->DeliverSamples(instance, audio_frames, decrypted_block_info);
+  iface->DeliverSamples(instance, audio_frames, decrypted_sample_info);
 }
 
 /* End wrapper methods for PPB_ContentDecryptor_Private_0_7 */
@@ -4800,7 +4800,7 @@ struct PPB_ContentDecryptor_Private_0_7 Pnacl_Wrappers_PPB_ContentDecryptor_Priv
     .DecoderDeinitializeDone = (void (*)(PP_Instance instance, PP_DecryptorStreamType decoder_type, uint32_t request_id))&Pnacl_M31_PPB_ContentDecryptor_Private_DecoderDeinitializeDone,
     .DecoderResetDone = (void (*)(PP_Instance instance, PP_DecryptorStreamType decoder_type, uint32_t request_id))&Pnacl_M31_PPB_ContentDecryptor_Private_DecoderResetDone,
     .DeliverFrame = (void (*)(PP_Instance instance, PP_Resource decrypted_frame, const struct PP_DecryptedFrameInfo* decrypted_frame_info))&Pnacl_M31_PPB_ContentDecryptor_Private_DeliverFrame,
-    .DeliverSamples = (void (*)(PP_Instance instance, PP_Resource audio_frames, const struct PP_DecryptedBlockInfo* decrypted_block_info))&Pnacl_M31_PPB_ContentDecryptor_Private_DeliverSamples
+    .DeliverSamples = (void (*)(PP_Instance instance, PP_Resource audio_frames, const struct PP_DecryptedSampleInfo* decrypted_sample_info))&Pnacl_M31_PPB_ContentDecryptor_Private_DeliverSamples
 };
 
 struct PPB_Ext_CrxFileSystem_Private_0_1 Pnacl_Wrappers_PPB_Ext_CrxFileSystem_Private_0_1 = {

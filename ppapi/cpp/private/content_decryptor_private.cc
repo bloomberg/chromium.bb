@@ -330,12 +330,12 @@ void ContentDecryptor_Private::DeliverFrame(
 
 void ContentDecryptor_Private::DeliverSamples(
     pp::Buffer_Dev audio_frames,
-    const PP_DecryptedBlockInfo& decrypted_block_info) {
+    const PP_DecryptedSampleInfo& decrypted_sample_info) {
   if (has_interface<PPB_ContentDecryptor_Private>()) {
     get_interface<PPB_ContentDecryptor_Private>()->DeliverSamples(
         associated_instance_.pp_instance(),
         audio_frames.pp_resource(),
-        &decrypted_block_info);
+        &decrypted_sample_info);
   }
 }
 

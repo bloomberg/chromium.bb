@@ -470,9 +470,10 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   virtual void DeliverFrame(PP_Instance instance,
                             PP_Resource decrypted_frame,
                             const PP_DecryptedFrameInfo* frame_info) OVERRIDE;
-  virtual void DeliverSamples(PP_Instance instance,
-                              PP_Resource audio_frames,
-                              const PP_DecryptedBlockInfo* block_info) OVERRIDE;
+  virtual void DeliverSamples(
+      PP_Instance instance,
+      PP_Resource audio_frames,
+      const PP_DecryptedSampleInfo* sample_info) OVERRIDE;
 
   // Reset this instance as proxied. Assigns the instance a new module, resets
   // cached interfaces to point to the out-of-process proxy and re-sends

@@ -12,7 +12,8 @@
 [generate_thunk]
 
 label Chrome {
-  M31 = 0.7
+  M31 = 0.7,
+  M32 = 0.8
 };
 
 /**
@@ -228,12 +229,12 @@ interface PPB_ContentDecryptor_Private {
    * <code>PPB_Buffer_Dev</code> resource that contains a decrypted buffer
    * of decoded audio samples.
    *
-   * @param[in] decrypted_block_info A <code>PP_DecryptedBlockInfo</code> that
-   * contains the tracking info and result code associated with the
-   * <code>decrypted_block</code>.
+   * @param[in] decrypted_sample_info A <code>PP_DecryptedSampleInfo</code> that
+   * contains the tracking info and result code associated with the decrypted
+   * samples.
    */
   void DeliverSamples(
       [in] PP_Instance instance,
       [in] PP_Resource audio_frames,
-      [in] PP_DecryptedBlockInfo decrypted_block_info);
+      [in] PP_DecryptedSampleInfo decrypted_sample_info);
 };

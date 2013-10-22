@@ -103,7 +103,7 @@ class ContentDecryptorDelegate {
   void DeliverFrame(PP_Resource decrypted_frame,
                     const PP_DecryptedFrameInfo* frame_info);
   void DeliverSamples(PP_Resource audio_frames,
-                      const PP_DecryptedBlockInfo* block_info);
+                      const PP_DecryptedSampleInfo* sample_info);
 
  private:
   // Cancels the pending decrypt-and-decode callback for |stream_type|.
@@ -132,6 +132,7 @@ class ContentDecryptorDelegate {
   // buffers in |frames|. Returns true upon success.
   bool DeserializeAudioFrames(PP_Resource audio_frames,
                               size_t data_size,
+                              media::SampleFormat sample_format,
                               media::Decryptor::AudioBuffers* frames);
 
   const PP_Instance pp_instance_;
@@ -178,10 +179,8 @@ class ContentDecryptorDelegate {
   std::queue<uint32_t> free_buffers_;
 
   // Keep track of audio parameters.
-  media::SampleFormat audio_sample_format_;
   int audio_samples_per_second_;
   int audio_channel_count_;
-  int audio_bytes_per_frame_;
 
   base::WeakPtr<ContentDecryptorDelegate> weak_this_;
   base::WeakPtrFactory<ContentDecryptorDelegate> weak_ptr_factory_;

@@ -94,7 +94,7 @@ class ContentDecryptor_Private {
   // provided to DecryptAndDecode() when it calls this method. The browser will
   // reuse the buffer in a subsequent DecryptAndDecode() call.
   void DeliverSamples(pp::Buffer_Dev audio_frames,
-                      const PP_DecryptedBlockInfo& decrypted_block_info);
+                      const PP_DecryptedSampleInfo& decrypted_sample_info);
 
  private:
   InstanceHandle associated_instance_;

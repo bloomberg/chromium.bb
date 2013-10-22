@@ -2276,8 +2276,8 @@ void PepperPluginInstanceImpl::DeliverFrame(
 void PepperPluginInstanceImpl::DeliverSamples(
     PP_Instance instance,
     PP_Resource audio_frames,
-    const PP_DecryptedBlockInfo* block_info) {
-  content_decryptor_delegate_->DeliverSamples(audio_frames, block_info);
+    const PP_DecryptedSampleInfo* sample_info) {
+  content_decryptor_delegate_->DeliverSamples(audio_frames, sample_info);
 }
 
 void PepperPluginInstanceImpl::NumberOfFindResultsChanged(

@@ -229,10 +229,10 @@ CdmWrapper* CdmWrapper::Create(const char* key_system,
 }
 
 // When updating the CdmAdapter, ensure you've updated the CdmWrapper to contain
-// stub implementations for new or modified methods which the older CDM
-// interface does not have.
-COMPILE_ASSERT(cdm::ContentDecryptionModule_2::kVersion ==
-                   cdm::ContentDecryptionModule::kVersion,
+// stub implementations for new or modified methods that the older CDM interface
+// does not have.
+COMPILE_ASSERT(cdm::ContentDecryptionModule::kVersion ==
+                   cdm::ContentDecryptionModule_2::kVersion,
                ensure_cdm_wrapper_templates_have_old_version_support);
 
 }  // namespace media

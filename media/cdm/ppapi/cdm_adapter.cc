@@ -107,6 +107,26 @@ PP_DecryptedFrameFormat CdmVideoFormatToPpDecryptedFrameFormat(
   }
 }
 
+PP_DecryptedSampleFormat CdmAudioFormatToPpDecryptedSampleFormat(
+    cdm::AudioFormat format) {
+  switch (format) {
+    case cdm::kAudioFormatU8:
+      return PP_DECRYPTEDSAMPLEFORMAT_U8;
+    case cdm::kAudioFormatS16:
+      return PP_DECRYPTEDSAMPLEFORMAT_S16;
+    case cdm::kAudioFormatS32:
+      return PP_DECRYPTEDSAMPLEFORMAT_S32;
+    case cdm::kAudioFormatF32:
+      return PP_DECRYPTEDSAMPLEFORMAT_F32;
+    case cdm::kAudioFormatPlanarS16:
+      return PP_DECRYPTEDSAMPLEFORMAT_PLANAR_S16;
+    case cdm::kAudioFormatPlanarF32:
+      return PP_DECRYPTEDSAMPLEFORMAT_PLANAR_F32;
+    default:
+      return PP_DECRYPTEDSAMPLEFORMAT_UNKNOWN;
+  }
+}
+
 cdm::AudioDecoderConfig::AudioCodec PpAudioCodecToCdmAudioCodec(
     PP_AudioCodec codec) {
   switch (codec) {
@@ -675,30 +695,32 @@ void CdmAdapter::DeliverSamples(int32_t result,
                                 const PP_DecryptTrackingInfo& tracking_info) {
   PP_DCHECK(result == PP_OK);
 
-  PP_DecryptedBlockInfo decrypted_block_info;
-  decrypted_block_info.tracking_info = tracking_info;
-  decrypted_block_info.tracking_info.timestamp = 0;
-  decrypted_block_info.tracking_info.buffer_id = 0;
-  decrypted_block_info.data_size = 0;
-  decrypted_block_info.result = CdmStatusToPpDecryptResult(status);
+  PP_DecryptedSampleInfo decrypted_sample_info;
+  decrypted_sample_info.tracking_info = tracking_info;
+  decrypted_sample_info.tracking_info.timestamp = 0;
+  decrypted_sample_info.tracking_info.buffer_id = 0;
+  decrypted_sample_info.data_size = 0;
+  decrypted_sample_info.result = CdmStatusToPpDecryptResult(status);
 
   pp::Buffer_Dev buffer;
 
-  if (decrypted_block_info.result == PP_DECRYPTRESULT_SUCCESS) {
+  if (decrypted_sample_info.result == PP_DECRYPTRESULT_SUCCESS) {
     PP_DCHECK(audio_frames.get() && audio_frames->FrameBuffer());
     if (!audio_frames.get() || !audio_frames->FrameBuffer()) {
       PP_NOTREACHED();
-      decrypted_block_info.result = PP_DECRYPTRESULT_DECRYPT_ERROR;
+      decrypted_sample_info.result = PP_DECRYPTRESULT_DECRYPT_ERROR;
     } else {
       PpbBuffer* ppb_buffer =
           static_cast<PpbBuffer*>(audio_frames->FrameBuffer());
       buffer = ppb_buffer->buffer_dev();
-      decrypted_block_info.tracking_info.buffer_id = ppb_buffer->buffer_id();
-      decrypted_block_info.data_size = ppb_buffer->Size();
+      decrypted_sample_info.tracking_info.buffer_id = ppb_buffer->buffer_id();
+      decrypted_sample_info.data_size = ppb_buffer->Size();
+      decrypted_sample_info.format =
+          CdmAudioFormatToPpDecryptedSampleFormat(audio_frames->Format());
     }
   }
 
-  pp::ContentDecryptor_Private::DeliverSamples(buffer, decrypted_block_info);
+  pp::ContentDecryptor_Private::DeliverSamples(buffer, decrypted_sample_info);
 }
 
 bool CdmAdapter::IsValidVideoFrame(const LinkedVideoFrame& video_frame) {

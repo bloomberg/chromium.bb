@@ -136,11 +136,11 @@ void* CreateCdmInstance(
     return NULL;
   }
 
-  if (cdm_interface_version != cdm::ContentDecryptionModule_1::kVersion)
+  if (cdm_interface_version != cdm::ContentDecryptionModule_2::kVersion)
     return NULL;
 
   cdm::Host* host = static_cast<cdm::Host*>(
-      get_cdm_host_func(cdm::ContentDecryptionModule_1::kVersion, user_data));
+      get_cdm_host_func(cdm::ContentDecryptionModule_2::kVersion, user_data));
   if (!host)
     return NULL;
 
@@ -417,7 +417,7 @@ cdm::Status ClearKeyCdm::DecryptAndDecodeFrame(
 
 cdm::Status ClearKeyCdm::DecryptAndDecodeSamples(
     const cdm::InputBuffer& encrypted_buffer,
-    cdm::AudioFrames_1* audio_frames) {
+    cdm::AudioFrames* audio_frames) {
   DVLOG(1) << "DecryptAndDecodeSamples()";
 
   scoped_refptr<media::DecoderBuffer> buffer;
@@ -499,6 +499,16 @@ cdm::Status ClearKeyCdm::DecryptToMediaDecoderBuffer(
   DCHECK_EQ(status, media::Decryptor::kSuccess);
   return cdm::kSuccess;
 }
+
+void ClearKeyCdm::OnPlatformChallengeResponse(
+    const cdm::PlatformChallengeResponse& response) {
+  NOTIMPLEMENTED();
+}
+
+void ClearKeyCdm::OnQueryOutputProtectionStatus(
+    uint32_t link_mask, uint32_t output_protection_mask) {
+  NOTIMPLEMENTED();
+};
 
 #if defined(CLEAR_KEY_CDM_USE_FAKE_AUDIO_DECODER)
 int64 ClearKeyCdm::CurrentTimeStampInMicroseconds() const {

@@ -146,9 +146,10 @@ class PPB_Instance_Proxy : public InterfaceProxy,
   virtual void DeliverFrame(PP_Instance instance,
                             PP_Resource decrypted_frame,
                             const PP_DecryptedFrameInfo* frame_info) OVERRIDE;
-  virtual void DeliverSamples(PP_Instance instance,
-                              PP_Resource audio_frames,
-                              const PP_DecryptedBlockInfo* block_info) OVERRIDE;
+  virtual void DeliverSamples(
+      PP_Instance instance,
+      PP_Resource audio_frames,
+      const PP_DecryptedSampleInfo* sample_info) OVERRIDE;
 #endif  // !defined(OS_NACL)
 
   static const ApiID kApiID = API_ID_PPB_INSTANCE;
@@ -253,7 +254,7 @@ class PPB_Instance_Proxy : public InterfaceProxy,
   virtual void OnHostMsgDeliverSamples(
       PP_Instance instance,
       PP_Resource audio_frames,
-      const std::string& serialized_block_info);
+      const std::string& serialized_sample_info);
 #endif  // !defined(OS_NACL)
 
   // Host -> Plugin message handlers.

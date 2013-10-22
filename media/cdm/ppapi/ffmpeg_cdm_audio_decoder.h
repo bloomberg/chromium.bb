@@ -49,7 +49,7 @@ class FFmpegCdmAudioDecoder {
   cdm::Status DecodeBuffer(const uint8_t* compressed_buffer,
                            int32_t compressed_buffer_size,
                            int64_t timestamp,
-                           cdm::AudioFrames_1* decoded_frames);
+                           cdm::AudioFrames* decoded_frames);
 
  private:
   void ResetTimestampState();
@@ -68,7 +68,6 @@ class FFmpegCdmAudioDecoder {
   scoped_ptr_malloc<AVFrame, ScopedPtrAVFreeFrame> av_frame_;
 
   // Audio format.
-  int bits_per_channel_;
   int samples_per_second_;
   int channels_;
 
@@ -79,10 +78,6 @@ class FFmpegCdmAudioDecoder {
   scoped_ptr<AudioTimestampHelper> output_timestamp_helper_;
   int bytes_per_frame_;
   base::TimeDelta last_input_timestamp_;
-
-  // We may need to convert the audio data coming out of FFmpeg from planar
-  // float to integer.
-  scoped_ptr<AudioBus> converter_bus_;
 
   // Number of output sample bytes to drop before generating output buffers.
   // This is required for handling negative timestamps when decoding Vorbis

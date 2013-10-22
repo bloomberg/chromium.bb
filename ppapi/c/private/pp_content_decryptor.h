@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From private/pp_content_decryptor.idl modified Tue Dec  4 16:42:46 2012. */
+/* From private/pp_content_decryptor.idl modified Mon Oct 21 18:38:44 2013. */
 
 #ifndef PPAPI_C_PRIVATE_PP_CONTENT_DECRYPTOR_H_
 #define PPAPI_C_PRIVATE_PP_CONTENT_DECRYPTOR_H_
@@ -153,6 +153,20 @@ typedef enum {
 PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_DecryptedFrameFormat, 4);
 
 /**
+ * <code>PP_DecryptedSampleFormat</code> contains audio sample formats.
+ */
+typedef enum {
+  PP_DECRYPTEDSAMPLEFORMAT_UNKNOWN = 0,
+  PP_DECRYPTEDSAMPLEFORMAT_U8 = 1,
+  PP_DECRYPTEDSAMPLEFORMAT_S16 = 2,
+  PP_DECRYPTEDSAMPLEFORMAT_S32 = 3,
+  PP_DECRYPTEDSAMPLEFORMAT_F32 = 4,
+  PP_DECRYPTEDSAMPLEFORMAT_PLANAR_S16 = 5,
+  PP_DECRYPTEDSAMPLEFORMAT_PLANAR_F32 = 6
+} PP_DecryptedSampleFormat;
+PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_DecryptedSampleFormat, 4);
+
+/**
  * The <code>PP_DecryptResult</code> enum contains decryption and decoding
  * result constants.
  */
@@ -259,6 +273,36 @@ struct PP_DecryptedFrameInfo {
   struct PP_DecryptTrackingInfo tracking_info;
 };
 PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_DecryptedFrameInfo, 56);
+
+/**
+ * <code>PP_DecryptedSampleInfo</code> contains the result of the
+ * decrypt and decode operation on the associated samples, information required
+ * to access the sample data in buffer, and tracking info.
+ */
+struct PP_DecryptedSampleInfo {
+  /**
+   * Result of the decrypt and decode operation.
+   */
+  PP_DecryptResult result;
+  /**
+   * Format of the decrypted samples.
+   */
+  PP_DecryptedSampleFormat format;
+  /**
+   * Size in bytes of decrypted samples.
+   */
+  uint32_t data_size;
+  /**
+   * 4-byte padding to make the size of <code>PP_DecryptedSampleInfo</code>
+   * a multiple of 8 bytes. The value of this field should not be used.
+   */
+  uint32_t padding;
+  /**
+   * Information needed by the client to track the decrypted samples.
+   */
+  struct PP_DecryptTrackingInfo tracking_info;
+};
+PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_DecryptedSampleInfo, 32);
 /**
  * @}
  */

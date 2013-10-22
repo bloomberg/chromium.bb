@@ -28,7 +28,7 @@ class DecoderBuffer;
 class FFmpegCdmAudioDecoder;
 
 // Clear key implementation of the cdm::ContentDecryptionModule interface.
-class ClearKeyCdm : public cdm::ContentDecryptionModule_1 {
+class ClearKeyCdm : public cdm::ContentDecryptionModule_2 {
  public:
   explicit ClearKeyCdm(cdm::Host* host);
   virtual ~ClearKeyCdm();
@@ -56,8 +56,12 @@ class ClearKeyCdm : public cdm::ContentDecryptionModule_1 {
       cdm::VideoFrame* video_frame) OVERRIDE;
   virtual cdm::Status DecryptAndDecodeSamples(
       const cdm::InputBuffer& encrypted_buffer,
-      cdm::AudioFrames_1* audio_frames) OVERRIDE;
+      cdm::AudioFrames* audio_frames) OVERRIDE;
   virtual void Destroy() OVERRIDE;
+  virtual void OnPlatformChallengeResponse(
+      const cdm::PlatformChallengeResponse& response) OVERRIDE;
+  virtual void OnQueryOutputProtectionStatus(
+      uint32_t link_mask, uint32_t output_protection_mask) OVERRIDE;
 
  private:
   // TODO(xhwang): After we removed DecryptorClient. We probably can also remove

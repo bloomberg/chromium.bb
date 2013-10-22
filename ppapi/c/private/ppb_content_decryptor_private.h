@@ -4,7 +4,7 @@
  */
 
 /* From private/ppb_content_decryptor_private.idl,
- *   modified Tue Sep 17 11:31:05 2013.
+ *   modified Thu Oct 10 14:49:51 2013.
  */
 
 #ifndef PPAPI_C_PRIVATE_PPB_CONTENT_DECRYPTOR_PRIVATE_H_
@@ -234,14 +234,14 @@ struct PPB_ContentDecryptor_Private_0_7 {
    * <code>PPB_Buffer_Dev</code> resource that contains a decrypted buffer
    * of decoded audio samples.
    *
-   * @param[in] decrypted_block_info A <code>PP_DecryptedBlockInfo</code> that
-   * contains the tracking info and result code associated with the
-   * <code>decrypted_block</code>.
+   * @param[in] decrypted_sample_info A <code>PP_DecryptedSampleInfo</code> that
+   * contains the tracking info and result code associated with the decrypted
+   * samples.
    */
   void (*DeliverSamples)(
       PP_Instance instance,
       PP_Resource audio_frames,
-      const struct PP_DecryptedBlockInfo* decrypted_block_info);
+      const struct PP_DecryptedSampleInfo* decrypted_sample_info);
 };
 
 typedef struct PPB_ContentDecryptor_Private_0_7 PPB_ContentDecryptor_Private;
