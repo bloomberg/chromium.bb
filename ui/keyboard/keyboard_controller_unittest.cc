@@ -128,24 +128,27 @@ class TestTextInputClient : public ui::TextInputClient {
     return ui::TEXT_INPUT_MODE_DEFAULT;
   }
   virtual bool CanComposeInline() const OVERRIDE { return false; }
-  virtual gfx::Rect GetCaretBounds() OVERRIDE { return gfx::Rect(); }
+  virtual gfx::Rect GetCaretBounds() const OVERRIDE { return gfx::Rect(); }
 
-  virtual bool GetCompositionCharacterBounds(uint32 index,
-                                             gfx::Rect* rect) OVERRIDE {
+  virtual bool GetCompositionCharacterBounds(
+      uint32 index,
+      gfx::Rect* rect) const OVERRIDE {
     return false;
   }
-  virtual bool HasCompositionText() OVERRIDE { return false; }
-  virtual bool GetTextRange(gfx::Range* range) OVERRIDE { return false; }
-  virtual bool GetCompositionTextRange(gfx::Range* range) OVERRIDE {
+  virtual bool HasCompositionText() const OVERRIDE { return false; }
+  virtual bool GetTextRange(gfx::Range* range) const OVERRIDE { return false; }
+  virtual bool GetCompositionTextRange(gfx::Range* range) const OVERRIDE {
     return false;
   }
-  virtual bool GetSelectionRange(gfx::Range* range) OVERRIDE { return false; }
+  virtual bool GetSelectionRange(gfx::Range* range) const OVERRIDE {
+    return false;
+  }
   virtual bool SetSelectionRange(const gfx::Range& range) OVERRIDE {
     return false;
   }
   virtual bool DeleteRange(const gfx::Range& range) OVERRIDE { return false; }
   virtual bool GetTextFromRange(const gfx::Range& range,
-                                base::string16* text) OVERRIDE {
+                                base::string16* text) const OVERRIDE {
     return false;
   }
   virtual void OnInputMethodChanged() OVERRIDE {}

@@ -45,28 +45,29 @@ bool DummyTextInputClient::CanComposeInline() const {
   return false;
 }
 
-gfx::Rect DummyTextInputClient::GetCaretBounds() {
+gfx::Rect DummyTextInputClient::GetCaretBounds() const {
   return gfx::Rect();
 }
 
-bool DummyTextInputClient::GetCompositionCharacterBounds(uint32 index,
-                                                         gfx::Rect* rect) {
+bool DummyTextInputClient::GetCompositionCharacterBounds(
+    uint32 index,
+    gfx::Rect* rect) const {
   return false;
 }
 
-bool DummyTextInputClient::HasCompositionText() {
+bool DummyTextInputClient::HasCompositionText() const {
   return false;
 }
 
-bool DummyTextInputClient::GetTextRange(gfx::Range* range) {
+bool DummyTextInputClient::GetTextRange(gfx::Range* range) const {
   return false;
 }
 
-bool DummyTextInputClient::GetCompositionTextRange(gfx::Range* range) {
+bool DummyTextInputClient::GetCompositionTextRange(gfx::Range* range) const {
   return false;
 }
 
-bool DummyTextInputClient::GetSelectionRange(gfx::Range* range) {
+bool DummyTextInputClient::GetSelectionRange(gfx::Range* range) const {
   return false;
 }
 
@@ -79,7 +80,7 @@ bool DummyTextInputClient::DeleteRange(const gfx::Range& range) {
 }
 
 bool DummyTextInputClient::GetTextFromRange(const gfx::Range& range,
-                                            string16* text) {
+                                            string16* text) const {
   return false;
 }
 

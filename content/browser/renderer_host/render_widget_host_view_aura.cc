@@ -2326,7 +2326,8 @@ bool RenderWidgetHostViewAura::CanComposeInline() const {
   return can_compose_inline_;
 }
 
-gfx::Rect RenderWidgetHostViewAura::ConvertRectToScreen(const gfx::Rect& rect) {
+gfx::Rect RenderWidgetHostViewAura::ConvertRectToScreen(
+    const gfx::Rect& rect) const {
   gfx::Point origin = rect.origin();
   gfx::Point end = gfx::Point(rect.right(), rect.bottom());
 
@@ -2346,7 +2347,7 @@ gfx::Rect RenderWidgetHostViewAura::ConvertRectToScreen(const gfx::Rect& rect) {
 }
 
 gfx::Rect RenderWidgetHostViewAura::ConvertRectFromScreen(
-    const gfx::Rect& rect) {
+    const gfx::Rect& rect) const {
   gfx::Point origin = rect.origin();
   gfx::Point end = gfx::Point(rect.right(), rect.bottom());
 
@@ -2365,14 +2366,15 @@ gfx::Rect RenderWidgetHostViewAura::ConvertRectFromScreen(
   return rect;
 }
 
-gfx::Rect RenderWidgetHostViewAura::GetCaretBounds() {
+gfx::Rect RenderWidgetHostViewAura::GetCaretBounds() const {
   const gfx::Rect rect =
       gfx::UnionRects(selection_anchor_rect_, selection_focus_rect_);
   return ConvertRectToScreen(rect);
 }
 
-bool RenderWidgetHostViewAura::GetCompositionCharacterBounds(uint32 index,
-                                                             gfx::Rect* rect) {
+bool RenderWidgetHostViewAura::GetCompositionCharacterBounds(
+    uint32 index,
+    gfx::Rect* rect) const {
   DCHECK(rect);
   if (index >= composition_character_bounds_.size())
     return false;
@@ -2380,23 +2382,24 @@ bool RenderWidgetHostViewAura::GetCompositionCharacterBounds(uint32 index,
   return true;
 }
 
-bool RenderWidgetHostViewAura::HasCompositionText() {
+bool RenderWidgetHostViewAura::HasCompositionText() const {
   return has_composition_text_;
 }
 
-bool RenderWidgetHostViewAura::GetTextRange(gfx::Range* range) {
+bool RenderWidgetHostViewAura::GetTextRange(gfx::Range* range) const {
   range->set_start(selection_text_offset_);
   range->set_end(selection_text_offset_ + selection_text_.length());
   return true;
 }
 
-bool RenderWidgetHostViewAura::GetCompositionTextRange(gfx::Range* range) {
+bool RenderWidgetHostViewAura::GetCompositionTextRange(
+    gfx::Range* range) const {
   // TODO(suzhe): implement this method when fixing http://crbug.com/55130.
   NOTIMPLEMENTED();
   return false;
 }
 
-bool RenderWidgetHostViewAura::GetSelectionRange(gfx::Range* range) {
+bool RenderWidgetHostViewAura::GetSelectionRange(gfx::Range* range) const {
   range->set_start(selection_range_.start());
   range->set_end(selection_range_.end());
   return true;
@@ -2416,7 +2419,7 @@ bool RenderWidgetHostViewAura::DeleteRange(const gfx::Range& range) {
 
 bool RenderWidgetHostViewAura::GetTextFromRange(
     const gfx::Range& range,
-    string16* text) {
+    string16* text) const {
   gfx::Range selection_text_range(selection_text_offset_,
       selection_text_offset_ + selection_text_.length());
 

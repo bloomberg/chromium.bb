@@ -152,7 +152,7 @@ bool InputMethodBridge::CanComposeInline() const {
   return client ? client->CanComposeInline() : true;
 }
 
-gfx::Rect InputMethodBridge::GetCaretBounds() {
+gfx::Rect InputMethodBridge::GetCaretBounds() const {
   TextInputClient* client = GetTextInputClient();
   if (!client)
     return gfx::Rect();
@@ -161,7 +161,7 @@ gfx::Rect InputMethodBridge::GetCaretBounds() {
 }
 
 bool InputMethodBridge::GetCompositionCharacterBounds(uint32 index,
-                                                      gfx::Rect* rect) {
+                                                      gfx::Rect* rect) const {
   DCHECK(rect);
   TextInputClient* client = GetTextInputClient();
   if (!client)
@@ -170,22 +170,22 @@ bool InputMethodBridge::GetCompositionCharacterBounds(uint32 index,
   return client->GetCompositionCharacterBounds(index, rect);
 }
 
-bool InputMethodBridge::HasCompositionText() {
+bool InputMethodBridge::HasCompositionText() const {
   TextInputClient* client = GetTextInputClient();
   return client ? client->HasCompositionText() : false;
 }
 
-bool InputMethodBridge::GetTextRange(gfx::Range* range) {
+bool InputMethodBridge::GetTextRange(gfx::Range* range) const {
   TextInputClient* client = GetTextInputClient();
   return client ?  client->GetTextRange(range) : false;
 }
 
-bool InputMethodBridge::GetCompositionTextRange(gfx::Range* range) {
+bool InputMethodBridge::GetCompositionTextRange(gfx::Range* range) const {
   TextInputClient* client = GetTextInputClient();
   return client ? client->GetCompositionTextRange(range) : false;
 }
 
-bool InputMethodBridge::GetSelectionRange(gfx::Range* range) {
+bool InputMethodBridge::GetSelectionRange(gfx::Range* range) const {
   TextInputClient* client = GetTextInputClient();
   return client ? client->GetSelectionRange(range) : false;
 }
@@ -200,8 +200,8 @@ bool InputMethodBridge::DeleteRange(const gfx::Range& range) {
   return client ? client->DeleteRange(range) : false;
 }
 
-bool InputMethodBridge::GetTextFromRange(
-    const gfx::Range& range, string16* text) {
+bool InputMethodBridge::GetTextFromRange(const gfx::Range& range,
+                                         string16* text) const {
   TextInputClient* client = GetTextInputClient();
   return client ? client->GetTextFromRange(range, text) : false;
 }

@@ -263,17 +263,17 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   virtual ui::TextInputType GetTextInputType() const OVERRIDE;
   virtual ui::TextInputMode GetTextInputMode() const OVERRIDE;
   virtual bool CanComposeInline() const OVERRIDE;
-  virtual gfx::Rect GetCaretBounds() OVERRIDE;
+  virtual gfx::Rect GetCaretBounds() const OVERRIDE;
   virtual bool GetCompositionCharacterBounds(uint32 index,
-                                             gfx::Rect* rect) OVERRIDE;
-  virtual bool HasCompositionText() OVERRIDE;
-  virtual bool GetTextRange(gfx::Range* range) OVERRIDE;
-  virtual bool GetCompositionTextRange(gfx::Range* range) OVERRIDE;
-  virtual bool GetSelectionRange(gfx::Range* range) OVERRIDE;
+                                             gfx::Rect* rect) const OVERRIDE;
+  virtual bool HasCompositionText() const OVERRIDE;
+  virtual bool GetTextRange(gfx::Range* range) const OVERRIDE;
+  virtual bool GetCompositionTextRange(gfx::Range* range) const OVERRIDE;
+  virtual bool GetSelectionRange(gfx::Range* range) const OVERRIDE;
   virtual bool SetSelectionRange(const gfx::Range& range) OVERRIDE;
   virtual bool DeleteRange(const gfx::Range& range) OVERRIDE;
   virtual bool GetTextFromRange(const gfx::Range& range,
-                                string16* text) OVERRIDE;
+                                string16* text) const OVERRIDE;
   virtual void OnInputMethodChanged() OVERRIDE;
   virtual bool ChangeTextDirectionAndLayoutAlignment(
       base::i18n::TextDirection direction) OVERRIDE;
@@ -491,10 +491,10 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   void ApplyEventFilterForPopupExit(ui::MouseEvent* event);
 
   // Converts |rect| from window coordinate to screen coordinate.
-  gfx::Rect ConvertRectToScreen(const gfx::Rect& rect);
+  gfx::Rect ConvertRectToScreen(const gfx::Rect& rect) const;
 
   // Converts |rect| from screen coordinate to window coordinate.
-  gfx::Rect ConvertRectFromScreen(const gfx::Rect& rect);
+  gfx::Rect ConvertRectFromScreen(const gfx::Rect& rect) const;
 
   typedef base::Callback<void(bool, const scoped_refptr<ui::Texture>&)>
       BufferPresentedCallback;

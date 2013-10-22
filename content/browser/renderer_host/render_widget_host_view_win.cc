@@ -1067,7 +1067,7 @@ bool RenderWidgetHostViewWin::CanComposeInline() const {
   return false;
 }
 
-gfx::Rect RenderWidgetHostViewWin::GetCaretBounds() {
+gfx::Rect RenderWidgetHostViewWin::GetCaretBounds() const {
   if (!base::win::IsTSFAwareRequired()) {
     NOTREACHED();
     return gfx::Rect(0, 0, 0, 0);
@@ -1078,7 +1078,7 @@ gfx::Rect RenderWidgetHostViewWin::GetCaretBounds() {
 }
 
 bool RenderWidgetHostViewWin::GetCompositionCharacterBounds(
-    uint32 index, gfx::Rect* rect) {
+    uint32 index, gfx::Rect* rect) const {
   if (!base::win::IsTSFAwareRequired()) {
     NOTREACHED();
     return false;
@@ -1092,7 +1092,7 @@ bool RenderWidgetHostViewWin::GetCompositionCharacterBounds(
   return true;
 }
 
-bool RenderWidgetHostViewWin::HasCompositionText() {
+bool RenderWidgetHostViewWin::HasCompositionText() const {
   if (!base::win::IsTSFAwareRequired()) {
     NOTREACHED();
     return false;
@@ -1102,7 +1102,7 @@ bool RenderWidgetHostViewWin::HasCompositionText() {
   return false;
 }
 
-bool RenderWidgetHostViewWin::GetTextRange(gfx::Range* range) {
+bool RenderWidgetHostViewWin::GetTextRange(gfx::Range* range) const {
   if (!base::win::IsTSFAwareRequired()) {
     NOTREACHED();
     return false;
@@ -1112,7 +1112,7 @@ bool RenderWidgetHostViewWin::GetTextRange(gfx::Range* range) {
   return false;
 }
 
-bool RenderWidgetHostViewWin::GetCompositionTextRange(gfx::Range* range) {
+bool RenderWidgetHostViewWin::GetCompositionTextRange(gfx::Range* range) const {
   if (!base::win::IsTSFAwareRequired()) {
     NOTREACHED();
     return false;
@@ -1122,7 +1122,7 @@ bool RenderWidgetHostViewWin::GetCompositionTextRange(gfx::Range* range) {
   return false;
 }
 
-bool RenderWidgetHostViewWin::GetSelectionRange(gfx::Range* range) {
+bool RenderWidgetHostViewWin::GetSelectionRange(gfx::Range* range) const {
   if (!base::win::IsTSFAwareRequired()) {
     NOTREACHED();
     return false;
@@ -1153,7 +1153,7 @@ bool RenderWidgetHostViewWin::DeleteRange(const gfx::Range& range) {
 }
 
 bool RenderWidgetHostViewWin::GetTextFromRange(const gfx::Range& range,
-                                               string16* text) {
+                                               string16* text) const {
   if (!base::win::IsTSFAwareRequired()) {
     NOTREACHED();
     return false;

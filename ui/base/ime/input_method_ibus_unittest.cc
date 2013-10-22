@@ -367,30 +367,33 @@ class InputMethodIBusTest : public internal::InputMethodDelegate,
   virtual bool CanComposeInline() const OVERRIDE {
     return can_compose_inline_;
   }
-  virtual gfx::Rect GetCaretBounds() OVERRIDE {
+  virtual gfx::Rect GetCaretBounds() const OVERRIDE {
     return caret_bounds_;
   }
   virtual bool GetCompositionCharacterBounds(uint32 index,
-                                             gfx::Rect* rect) OVERRIDE {
+                                             gfx::Rect* rect) const OVERRIDE {
     return false;
   }
-  virtual bool HasCompositionText() OVERRIDE {
+  virtual bool HasCompositionText() const OVERRIDE {
     CompositionText empty;
     return composition_text_ != empty;
   }
-  virtual bool GetTextRange(gfx::Range* range) OVERRIDE {
+  virtual bool GetTextRange(gfx::Range* range) const OVERRIDE {
     *range = text_range_;
     return true;
   }
-  virtual bool GetCompositionTextRange(gfx::Range* range) OVERRIDE { return false; }
-  virtual bool GetSelectionRange(gfx::Range* range) OVERRIDE {
+  virtual bool GetCompositionTextRange(gfx::Range* range) const OVERRIDE {
+    return false;
+  }
+  virtual bool GetSelectionRange(gfx::Range* range) const OVERRIDE {
     *range = selection_range_;
     return true;
   }
 
   virtual bool SetSelectionRange(const gfx::Range& range) OVERRIDE { return false; }
   virtual bool DeleteRange(const gfx::Range& range) OVERRIDE { return false; }
-  virtual bool GetTextFromRange(const gfx::Range& range, string16* text) OVERRIDE {
+  virtual bool GetTextFromRange(const gfx::Range& range,
+                                string16* text) const OVERRIDE {
     *text = surrounding_text_.substr(range.GetMin(), range.length());
     return true;
   }

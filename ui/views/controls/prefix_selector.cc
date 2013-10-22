@@ -71,7 +71,7 @@ bool PrefixSelector::CanComposeInline() const {
   return false;
 }
 
-gfx::Rect PrefixSelector::GetCaretBounds() {
+gfx::Rect PrefixSelector::GetCaretBounds() const {
   gfx::Rect rect(prefix_delegate_->GetVisibleBounds().origin(), gfx::Size());
   // TextInputClient::GetCaretBounds is expected to return a value in screen
   // coordinates.
@@ -80,28 +80,28 @@ gfx::Rect PrefixSelector::GetCaretBounds() {
 }
 
 bool PrefixSelector::GetCompositionCharacterBounds(uint32 index,
-                                                   gfx::Rect* rect) {
+                                                   gfx::Rect* rect) const {
   // TextInputClient::GetCompositionCharacterBounds is expected to fill |rect|
   // in screen coordinates and GetCaretBounds returns screen coordinates.
   *rect = GetCaretBounds();
   return false;
 }
 
-bool PrefixSelector::HasCompositionText() {
+bool PrefixSelector::HasCompositionText() const {
   return false;
 }
 
-bool PrefixSelector::GetTextRange(gfx::Range* range) {
+bool PrefixSelector::GetTextRange(gfx::Range* range) const {
   *range = gfx::Range();
   return false;
 }
 
-bool PrefixSelector::GetCompositionTextRange(gfx::Range* range) {
+bool PrefixSelector::GetCompositionTextRange(gfx::Range* range) const {
   *range = gfx::Range();
   return false;
 }
 
-bool PrefixSelector::GetSelectionRange(gfx::Range* range) {
+bool PrefixSelector::GetSelectionRange(gfx::Range* range) const {
   *range = gfx::Range();
   return false;
 }
@@ -115,7 +115,7 @@ bool PrefixSelector::DeleteRange(const gfx::Range& range) {
 }
 
 bool PrefixSelector::GetTextFromRange(const gfx::Range& range,
-                                        string16* text) {
+                                        string16* text) const {
   return false;
 }
 

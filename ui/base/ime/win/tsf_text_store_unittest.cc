@@ -35,15 +35,15 @@ class MockTextInputClient : public TextInputClient {
   MOCK_CONST_METHOD0(GetTextInputType, ui::TextInputType());
   MOCK_CONST_METHOD0(GetTextInputMode, ui::TextInputMode());
   MOCK_CONST_METHOD0(CanComposeInline, bool());
-  MOCK_METHOD0(GetCaretBounds, gfx::Rect());
-  MOCK_METHOD2(GetCompositionCharacterBounds, bool(uint32, gfx::Rect*));
-  MOCK_METHOD0(HasCompositionText, bool());
-  MOCK_METHOD1(GetTextRange, bool(gfx::Range*));
-  MOCK_METHOD1(GetCompositionTextRange, bool(gfx::Range*));
-  MOCK_METHOD1(GetSelectionRange, bool(gfx::Range*));
+  MOCK_CONST_METHOD0(GetCaretBounds, gfx::Rect());
+  MOCK_CONST_METHOD2(GetCompositionCharacterBounds, bool(uint32, gfx::Rect*));
+  MOCK_CONST_METHOD0(HasCompositionText, bool());
+  MOCK_CONST_METHOD1(GetTextRange, bool(gfx::Range*));
+  MOCK_CONST_METHOD1(GetCompositionTextRange, bool(gfx::Range*));
+  MOCK_CONST_METHOD1(GetSelectionRange, bool(gfx::Range*));
   MOCK_METHOD1(SetSelectionRange, bool(const gfx::Range&));
   MOCK_METHOD1(DeleteRange, bool(const gfx::Range&));
-  MOCK_METHOD2(GetTextFromRange, bool(const gfx::Range&, string16*));
+  MOCK_CONST_METHOD2(GetTextFromRange, bool(const gfx::Range&, string16*));
   MOCK_METHOD0(OnInputMethodChanged, void());
   MOCK_METHOD1(ChangeTextDirectionAndLayoutAlignment,
                bool(base::i18n::TextDirection));
