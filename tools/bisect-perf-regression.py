@@ -35,6 +35,7 @@ An example usage (using git hashes):
 
 """
 
+import copy
 import datetime
 import errno
 import imp
@@ -1235,7 +1236,8 @@ class BisectPerformanceMetrics(object):
       return False
     return True
 
-  def RunPerformanceTestAndParseResults(self, command_to_run, metric):
+  def RunPerformanceTestAndParseResults(self, command_to_run, metric,
+      reset_on_first_run=False, upload_on_last_run=False, results_label=None):
     """Runs a performance test on the current revision by executing the
     'command_to_run' and parses the results.
 
@@ -1261,10 +1263,11 @@ class BisectPerformanceMetrics(object):
 
     # If running a telemetry test for cros, insert the remote ip, and
     # identity parameters.
-    if self.opts.target_platform == 'cros':
-      if 'tools/perf/run_' in args[0]:
-        args.append('--remote=%s' % self.opts.cros_remote_ip)
-        args.append('--identity=%s' % CROS_TEST_KEY_PATH)
+    is_telemetry = ('tools/perf/run_' in command_to_run or
+        'tools\\perf\\run_' in command_to_run)
+    if self.opts.target_platform == 'cros' and is_telemetry:
+      args.append('--remote=%s' % self.opts.cros_remote_ip)
+      args.append('--identity=%s' % CROS_TEST_KEY_PATH)
 
     cwd = os.getcwd()
     os.chdir(self.src_cwd)
@@ -1272,10 +1275,19 @@ class BisectPerformanceMetrics(object):
     start_time = time.time()
 
     metric_values = []
+    output_of_all_runs = ''
     for i in xrange(self.opts.repeat_test_count):
       # Can ignore the return code since if the tests fail, it won't return 0.
       try:
-        (output, return_code) = RunProcessAndRetrieveOutput(args)
+        current_args = copy.copy(args)
+        if is_telemetry:
+          if i == 0 and reset_on_first_run:
+            current_args.append('--reset-results')
+          elif i == self.opts.repeat_test_count - 1 and upload_on_last_run:
+            current_args.append('--upload-results')
+          if results_label:
+            current_args.append('--results-label=%s' % results_label)
+        (output, return_code) = RunProcessAndRetrieveOutput(current_args)
       except OSError, e:
         if e.errno == errno.ENOENT:
           err_text  = ("Something went wrong running the performance test. "
@@ -1289,6 +1301,7 @@ class BisectPerformanceMetrics(object):
           return (err_text, -1)
         raise
 
+      output_of_all_runs += output
       if self.opts.output_buildbot_annotations:
         print output
 
@@ -1318,10 +1331,10 @@ class BisectPerformanceMetrics(object):
       print 'Results of performance test: %12f %12f' % (
           truncated_mean, standard_err)
       print
-      return (values, 0)
+      return (values, 0, output_of_all_runs)
     else:
       return ('Invalid metric specified, or no values returned from '
-          'performance test.', -1)
+          'performance test.', -1, output_of_all_runs)
 
   def FindAllRevisionsToSync(self, revision, depot):
     """Finds all dependant revisions and depots that need to be synced for a
@@ -2718,9 +2731,9 @@ class BisectOptions(object):
     opts = BisectOptions()
 
     for k, v in values.iteritems():
-      assert hasattr(opts, name_to_attr[k]), 'Invalid %s attribute in '\
-          'BisectOptions.' % name_to_attr[k]
-      setattr(opts, name_to_attr[k], v)
+      assert hasattr(opts, k), 'Invalid %s attribute in '\
+          'BisectOptions.' % k
+      setattr(opts, k, v)
 
     metric_values = opts.metric.split('/')
     if len(metric_values) != 2:

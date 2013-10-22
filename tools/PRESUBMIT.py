@@ -2,21 +2,23 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Top-level presubmit script for bisect trybot.
+"""Top-level presubmit script for bisect/perf trybot.
 
 See http://dev.chromium.org/developers/how-tos/depottools/presubmit-scripts for
 details on the presubmit API built into gcl.
 """
 
 import imp
+import os
 
-def _ExamineBisectConfigFile(input_api, output_api):
+def _ExamineConfigFiles(input_api):
   for f in input_api.AffectedFiles():
-    if not f.LocalPath().endswith('run-bisect-perf-regression.cfg'):
+    if (not f.LocalPath().endswith('run-bisect-perf-regression.cfg') and
+        not f.LocalPath().endswith('run-perf-test.cfg')):
       continue
 
     try:
-      cfg_file = imp.load_source('config', 'run-bisect-perf-regression.cfg')
+      cfg_file = imp.load_source('config', os.path.basename(f.LocalPath()))
 
       for k, v in cfg_file.config.iteritems():
         if v:
@@ -27,7 +29,7 @@ def _ExamineBisectConfigFile(input_api, output_api):
   return None
 
 def _CheckNoChangesToBisectConfigFile(input_api, output_api):
-  results = _ExamineBisectConfigFile(input_api, output_api)
+  results = _ExamineConfigFiles(input_api)
   if results:
     return [output_api.PresubmitError(
         'The bisection config file should only contain a config dict with '

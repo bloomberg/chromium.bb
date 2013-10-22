@@ -89,6 +89,19 @@ def OutputAnnotationStepClosed():
   sys.stdout.flush()
 
 
+def OutputAnnotationStepLink(label, url):
+  """Outputs appropriate annotation to print a link.
+
+  Args:
+    label: The name to print.
+    url: The url to print.
+  """
+  print
+  print '@@@STEP_LINK@%s@%s@@@' % (label, url)
+  print
+  sys.stdout.flush()
+
+
 def CreateAndChangeToSourceDirectory(working_directory):
   """Creates a directory 'bisect' as a subdirectory of 'working_directory'.  If
   the function is successful, the current working directory will change to that
