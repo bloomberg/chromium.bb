@@ -139,6 +139,15 @@
                     ]
                 },
                 {
+                    type: 'HTMLAudioElement',
+                    elementToUse: document.createElement('audio'),
+                    attributes: [
+                        {name: 'mediaGroup', expectedNull: ''},
+                        {name: 'preload', expectedNull: 'auto'},
+                        {name: 'src', expectedNull: ''}
+                    ]
+                },
+                {
                     type: 'HTMLBaseElement',
                     elementToUse: document.createElement('base'),
                     attributes: [
@@ -483,6 +492,15 @@
                     ]
                 },
                 {
+                    type: 'HTMLSourceElement',
+                    elementToUse: document.createElement('source'),
+                    attributes: [
+                        {name: 'media', expectedNull: 'null'},
+                        {name: 'src', expectedNull: ''},
+                        {name: 'type', expectedNull: 'null'}
+                    ]
+                },
+                {
                     type: 'HTMLStyleElement',
                     elementToUse: document.createElement('style'),
                     attributes: [
@@ -579,10 +597,30 @@
                     ]
                 },
                 {
+                    type: 'HTMLTrackElement',
+                    elementToUse: document.createElement('track'),
+                    attributes: [
+                        {name: 'kind', expectedNull: 'subtitles'},
+                        {name: 'label', expectedNull: 'null'},
+                        {name: 'src', expectedNull: ''},
+                        {name: 'srclang', expectedNull: 'null'}
+                    ]
+                },
+                {
                     type: 'HTMLUListElement',
                     elementToUse: document.createElement('ul'),
                     attributes: [
                         {name: 'type', expectedNull: ''}
+                    ]
+                },
+                {
+                    type: 'HTMLVideoElement',
+                    elementToUse: document.createElement('video'),
+                    attributes: [
+                        {name: 'mediaGroup', expectedNull: ''},
+                        {name: 'poster', expectedNull: ''},
+                        {name: 'preload', expectedNull: 'auto'},
+                        {name: 'src', expectedNull: ''}
                     ]
                 }
             ];

@@ -44,6 +44,10 @@ TEST SUCCEEDED: The value was the empty string. [tested HTMLAreaElement.href]
 TEST SUCCEEDED: The value was the empty string. [tested HTMLAreaElement.shape]
 TEST SUCCEEDED: The value was the empty string. [tested HTMLAreaElement.target]
 
+TEST SUCCEEDED: The value was the empty string. [tested HTMLAudioElement.mediaGroup]
+TEST SUCCEEDED: The value was the string 'auto'. [tested HTMLAudioElement.preload]
+TEST SUCCEEDED: The value was the empty string. [tested HTMLAudioElement.src]
+
 TEST SUCCEEDED: The value was the empty string. [tested HTMLBaseElement.target]
 
 TEST SUCCEEDED: The value was the empty string. [tested HTMLBlockquoteElement.cite]
@@ -201,6 +205,10 @@ TEST SUCCEEDED: The value was the empty string. [tested HTMLScriptElement.type]
 TEST SUCCEEDED: The value was the empty string. [tested HTMLSelectElement.value]
 TEST SUCCEEDED: The value was the empty string. [tested HTMLSelectElement.name]
 
+TEST SUCCEEDED: The value was the string 'null'. [tested HTMLSourceElement.media]
+TEST SUCCEEDED: The value was the empty string. [tested HTMLSourceElement.src]
+TEST SUCCEEDED: The value was the string 'null'. [tested HTMLSourceElement.type]
+
 TEST SUCCEEDED: The value was the empty string. [tested HTMLStyleElement.media]
 TEST SUCCEEDED: The value was the empty string. [tested HTMLStyleElement.type]
 
@@ -252,6 +260,16 @@ TEST SUCCEEDED: The value was the empty string. [tested HTMLTextAreaElement.valu
 
 TEST SUCCEEDED: The value was the empty string. [tested HTMLTitleElement.text]
 
+TEST SUCCEEDED: The value was the string 'subtitles'. [tested HTMLTrackElement.kind]
+TEST SUCCEEDED: The value was the string 'null'. [tested HTMLTrackElement.label]
+TEST SUCCEEDED: The value was the empty string. [tested HTMLTrackElement.src]
+TEST SUCCEEDED: The value was the string 'null'. [tested HTMLTrackElement.srclang]
+
 TEST SUCCEEDED: The value was the empty string. [tested HTMLUListElement.type]
+
+TEST SUCCEEDED: The value was the empty string. [tested HTMLVideoElement.mediaGroup]
+TEST SUCCEEDED: The value was the empty string. [tested HTMLVideoElement.poster]
+TEST SUCCEEDED: The value was the string 'auto'. [tested HTMLVideoElement.preload]
+TEST SUCCEEDED: The value was the empty string. [tested HTMLVideoElement.src]
 
 
