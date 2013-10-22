@@ -18,6 +18,7 @@
 
 class PasswordStore;
 class PasswordStoreConsumer;
+class PasswordSyncableService;
 class Task;
 
 namespace autofill {
@@ -133,10 +134,15 @@ class PasswordStore
 
  protected:
   friend class base::RefCountedThreadSafe<PasswordStore>;
+  // Sync's interaction with password store needs to be syncrhonous.
+  // Since the synchronous methods are private these classes are made
+  // as friends. This can be fixed by moving the private impl to a new
+  // class. See http://crbug.com/307750
   friend class browser_sync::PasswordChangeProcessor;
   friend class browser_sync::PasswordDataTypeController;
   friend class browser_sync::PasswordModelAssociator;
   friend class browser_sync::PasswordModelWorker;
+  friend class PasswordSyncableService;
   friend void passwords_helper::AddLogin(PasswordStore*,
                                          const autofill::PasswordForm&);
   friend void passwords_helper::RemoveLogin(PasswordStore*,
