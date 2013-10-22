@@ -11,4 +11,5 @@ curl "http://example.org/path" -H "Content-Type: application/binary" --data-bina
 curl "http://example.org/path" -H "Content-Type: application/binary" --data-binary "ÿ	܀" --compressed
 curl "http://labs.ft.com/?querystring=\[\]\{\}" --compressed
 curl "http://example.org/path" -H "Content-Type: application/binary" --data-binary ""%"PATH"%"$PATH" --compressed
+curl "http://example.org/path" --compressed
 

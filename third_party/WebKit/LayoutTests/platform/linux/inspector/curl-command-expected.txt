@@ -9,4 +9,5 @@ curl 'http://example.org/path' -H 'Content-Type: application/binary' --data-bina
 curl 'http://example.org/path' -H 'Content-Type: application/binary' --data-binary $'\x7f\x80\x90\xff\x09\u0700' --compressed
 curl 'http://labs.ft.com/?querystring=\[\]\{\}' --compressed
 curl 'http://example.org/path' -H 'Content-Type: application/binary' --data-binary '%PATH%$PATH' --compressed
+curl 'http://example.org/path' --compressed
 

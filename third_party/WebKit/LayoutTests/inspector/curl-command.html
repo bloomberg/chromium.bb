@@ -38,6 +38,7 @@ var test = function()
     dumpRequest({"Content-Type": "application/binary"}, "\x7F\x80\x90\xFF\u0009\u0700");
     dumpRequest({}, "", "http://labs.ft.com/?querystring=[]{}");  // Character range symbols must be escaped (http://crbug.com/265449).
     dumpRequest({"Content-Type": "application/binary"}, "%PATH%$PATH");
+    dumpRequest({":host": "h", "version": "v"});
 
     InspectorTest.completeTest();
 }
