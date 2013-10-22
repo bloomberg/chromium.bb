@@ -1230,11 +1230,6 @@ void RenderLayerCompositor::frameViewDidChangeSize()
 
         frameViewDidScroll();
         updateOverflowControlsLayers();
-
-#if USE(RUBBER_BANDING)
-        if (m_layerForOverhangAreas)
-            m_layerForOverhangAreas->setSize(frameView->frameRect().size());
-#endif
     }
 }
 
@@ -2198,11 +2193,6 @@ void RenderLayerCompositor::paintContents(const GraphicsLayer* graphicsLayer, Gr
         transformedClip.moveBy(scrollCorner.location());
         m_renderView->frameView()->paintScrollCorner(&context, transformedClip);
         context.restore();
-#if USE(RUBBER_BANDING)
-    } else if (graphicsLayer == layerForOverhangAreas()) {
-        ScrollView* view = m_renderView->frameView();
-        view->calculateAndPaintOverhangBackground(&context, clip);
-#endif
     }
 }
 
@@ -2326,15 +2316,6 @@ void RenderLayerCompositor::updateOverflowControlsLayers()
 {
 #if USE(RUBBER_BANDING)
     if (requiresOverhangLayers()) {
-        if (!m_layerForOverhangAreas) {
-            m_layerForOverhangAreas = GraphicsLayer::create(graphicsLayerFactory(), this);
-            m_layerForOverhangAreas->setDrawsContent(false);
-            m_layerForOverhangAreas->setSize(m_renderView->frameView()->frameRect().size());
-
-            // We want the overhang areas layer to be positioned below the frame contents,
-            // so insert it below the clip layer.
-            m_overflowControlsHostLayer->addChildBelow(m_layerForOverhangAreas.get(), m_containerLayer.get());
-        }
         if (!m_layerForOverhangShadow) {
             m_layerForOverhangShadow = GraphicsLayer::create(graphicsLayerFactory(), this);
             ScrollbarTheme::theme()->setUpOverhangShadowLayer(m_layerForOverhangShadow.get());
@@ -2342,10 +2323,6 @@ void RenderLayerCompositor::updateOverflowControlsLayers()
             m_scrollLayer->addChild(m_layerForOverhangShadow.get());
         }
     } else {
-        if (m_layerForOverhangAreas) {
-            m_layerForOverhangAreas->removeFromParent();
-            m_layerForOverhangAreas = nullptr;
-        }
         if (m_layerForOverhangShadow) {
             m_layerForOverhangShadow->removeFromParent();
             m_layerForOverhangShadow = nullptr;
@@ -2458,10 +2435,6 @@ void RenderLayerCompositor::destroyRootLayer()
     detachRootLayer();
 
 #if USE(RUBBER_BANDING)
-    if (m_layerForOverhangAreas) {
-        m_layerForOverhangAreas->removeFromParent();
-        m_layerForOverhangAreas = nullptr;
-    }
     if (m_layerForOverhangShadow) {
         m_layerForOverhangShadow->removeFromParent();
         m_layerForOverhangShadow = nullptr;
@@ -2761,9 +2734,7 @@ String RenderLayerCompositor::debugName(const GraphicsLayer* graphicsLayer)
     if (graphicsLayer == m_rootContentLayer.get()) {
         name = "Content Root Layer";
 #if USE(RUBBER_BANDING)
-    } else if (graphicsLayer == m_layerForOverhangAreas.get()) {
-        name = "Overhang Areas Layer";
-    } else if (graphicsLayer == m_layerForOverhangAreas.get()) {
+    } else if (graphicsLayer == m_layerForOverhangShadow.get()) {
         name = "Overhang Areas Shadow";
 #endif
     } else if (graphicsLayer == m_overflowControlsHostLayer.get()) {

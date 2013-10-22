@@ -415,9 +415,6 @@ private:
     virtual GraphicsLayer* layerForHorizontalScrollbar() const OVERRIDE;
     virtual GraphicsLayer* layerForVerticalScrollbar() const OVERRIDE;
     virtual GraphicsLayer* layerForScrollCorner() const OVERRIDE;
-#if USE(RUBBER_BANDING)
-    virtual GraphicsLayer* layerForOverhangAreas() const OVERRIDE;
-#endif
 
     void sendResizeEventIfNeeded();
 

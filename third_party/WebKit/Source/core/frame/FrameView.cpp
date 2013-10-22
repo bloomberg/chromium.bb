@@ -772,16 +772,6 @@ GraphicsLayer* FrameView::layerForScrollCorner() const
     return renderView->compositor()->layerForScrollCorner();
 }
 
-#if USE(RUBBER_BANDING)
-GraphicsLayer* FrameView::layerForOverhangAreas() const
-{
-    RenderView* renderView = this->renderView();
-    if (!renderView)
-        return 0;
-    return renderView->compositor()->layerForOverhangAreas();
-}
-#endif // USE(RUBBER_BANDING)
-
 bool FrameView::hasCompositedContent() const
 {
     if (RenderView* renderView = this->renderView())

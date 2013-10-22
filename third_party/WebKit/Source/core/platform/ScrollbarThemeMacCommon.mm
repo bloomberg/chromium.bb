@@ -180,12 +180,23 @@ void ScrollbarThemeMacCommon::paintGivenTickmarks(GraphicsContext* context, Scro
     }
 }
 
+PassRefPtr<Image> ScrollbarThemeMacCommon::getOverhangImage()
+{
+    return Image::loadPlatformResource("overhangPattern");
+}
+
 void ScrollbarThemeMacCommon::paintOverhangBackground(ScrollView* view, GraphicsContext* context, const IntRect& horizontalOverhangRect, const IntRect& verticalOverhangRect, const IntRect& dirtyRect)
 {
     const bool hasHorizontalOverhang = !horizontalOverhangRect.isEmpty();
     const bool hasVerticalOverhang = !verticalOverhangRect.isEmpty();
 
     GraphicsContextStateSaver stateSaver(*context);
+
+    if (!m_overhangPattern) {
+        // Lazily load the linen pattern image used for overhang drawing.
+        RefPtr<Image> patternImage = Image::loadPlatformResource("overhangPattern");
+        m_overhangPattern = Pattern::create(patternImage, true, true);
+    }
     context->setFillPattern(m_overhangPattern);
     if (hasHorizontalOverhang)
         context->fillRect(intersection(horizontalOverhangRect, dirtyRect));
@@ -341,10 +352,6 @@ ScrollbarThemeMacCommon::ScrollbarThemeMacCommon()
 
     // Load the shadow for the overhang.
     m_overhangShadow = Image::loadPlatformResource("overhangShadow");
-
-    // Load the linen pattern image used for overhang drawing.
-    RefPtr<Image> patternImage = Image::loadPlatformResource("overhangPattern");
-    m_overhangPattern = Pattern::create(patternImage, true, true);
 }
 
 ScrollbarThemeMacCommon::~ScrollbarThemeMacCommon()

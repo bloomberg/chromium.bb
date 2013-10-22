@@ -48,6 +48,7 @@ public:
     virtual void paintOverhangShadows(ScrollView*, GraphicsContext*, const IntRect& horizontalOverhangArea, const IntRect& verticalOverhangArea, const IntRect& dirtyRect) OVERRIDE;
     virtual void paintTickmarks(GraphicsContext*, ScrollbarThemeClient*, const IntRect&) OVERRIDE;
 
+    virtual PassRefPtr<Image> getOverhangImage() OVERRIDE;
     virtual void setUpOverhangShadowLayer(GraphicsLayer*) OVERRIDE;
     virtual void updateOverhangShadowLayer(GraphicsLayer* shadowLayer, GraphicsLayer* rootContentLayer) OVERRIDE;
 

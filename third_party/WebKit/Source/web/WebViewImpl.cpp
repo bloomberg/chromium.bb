@@ -115,6 +115,7 @@
 #include "core/platform/Cursor.h"
 #include "core/platform/DragData.h"
 #include "core/platform/PopupMenuClient.h"
+#include "core/platform/ScrollbarTheme.h"
 #include "core/platform/chromium/ChromiumDataObject.h"
 #include "core/platform/chromium/KeyboardCodes.h"
 #include "core/platform/graphics/Color.h"
@@ -3914,6 +3915,11 @@ void WebViewImpl::setIsAcceleratedCompositingActive(bool active)
             m_layerTreeView->setPageScaleFactorAndLimits(pageScaleFactor(), minimumPageScaleFactor(), maximumPageScaleFactor());
             m_layerTreeView->setBackgroundColor(backgroundColor());
             m_layerTreeView->setHasTransparentBackground(isTransparent());
+#if USE(RUBBER_BANDING)
+            RefPtr<Image> overhangImage = ScrollbarTheme::theme()->getOverhangImage();
+            if (overhangImage)
+                m_layerTreeView->setOverhangBitmap(overhangImage->nativeImageForCurrentFrame()->bitmap());
+#endif
             updateLayerTreeViewport();
             m_client->didActivateCompositor(0);
             m_isAcceleratedCompositingActive = true;

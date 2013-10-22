@@ -88,6 +88,7 @@ public:
     virtual void paintOverhangShadows(ScrollView*, GraphicsContext*, const IntRect&, const IntRect&, const IntRect&) { }
 
 #if USE(RUBBER_BANDING)
+    virtual PassRefPtr<Image> getOverhangImage() { return PassRefPtr<Image>(); }
     virtual void setUpOverhangShadowLayer(GraphicsLayer*) { }
     virtual void updateOverhangShadowLayer(GraphicsLayer* shadowLayer, GraphicsLayer* rootContentLayer) { }
 #endif
