@@ -365,6 +365,7 @@ TEST_F(ProfileSyncServicePreferenceTest, ModelAssociationCloudHasData) {
   }
 
   PreferenceValues cloud_data;
+  STLValueDeleter<PreferenceValues> cloud_data_deleter(&cloud_data);
   cloud_data[prefs::kHomePage] = Value::CreateStringValue(example_url1_);
   ListValue* urls_to_restore = new ListValue;
   urls_to_restore->Append(Value::CreateStringValue(example_url1_));
@@ -400,7 +401,6 @@ TEST_F(ProfileSyncServicePreferenceTest, ModelAssociationCloudHasData) {
   EXPECT_EQ(non_default_charset_value_, string_value);
   EXPECT_EQ(non_default_charset_value_,
             prefs_->GetString(prefs::kDefaultCharset));
-  STLDeleteValues(&cloud_data);
 }
 
 TEST_F(ProfileSyncServicePreferenceTest,
@@ -418,6 +418,7 @@ TEST_F(ProfileSyncServicePreferenceTest,
   }
 
   PreferenceValues cloud_data;
+  STLValueDeleter<PreferenceValues> cloud_data_deleter(&cloud_data);
   cloud_data[prefs::kHomePage] = Value::CreateStringValue(example_url1_);
   ListValue* urls_to_restore = new ListValue;
   urls_to_restore->Append(Value::CreateStringValue(example_url1_));
@@ -453,7 +454,6 @@ TEST_F(ProfileSyncServicePreferenceTest,
   ASSERT_TRUE(value.get());
   EXPECT_TRUE(GetPreferenceValue(prefs::kURLsToRestoreOnStartupOld).
               Equals(expected_urls.get()));
-  STLDeleteValues(&cloud_data);
 }
 
 TEST_F(ProfileSyncServicePreferenceTest,
@@ -471,6 +471,7 @@ TEST_F(ProfileSyncServicePreferenceTest,
   }
 
   PreferenceValues cloud_data;
+  STLValueDeleter<PreferenceValues> cloud_data_deleter(&cloud_data);
   cloud_data[prefs::kHomePage] = Value::CreateStringValue(example_url1_);
   ListValue* urls_to_restore = new ListValue;
   urls_to_restore->Append(Value::CreateStringValue(example_url1_));
@@ -508,7 +509,6 @@ TEST_F(ProfileSyncServicePreferenceTest,
   ASSERT_FALSE(value.get());
   EXPECT_TRUE(GetPreferenceValue(prefs::kURLsToRestoreOnStartupOld).
               Equals(expected_urls.get()));
-  STLDeleteValues(&cloud_data);
 }
 
 TEST_F(ProfileSyncServicePreferenceTest,
@@ -530,6 +530,7 @@ TEST_F(ProfileSyncServicePreferenceTest,
   }
 
   PreferenceValues cloud_data;
+  STLValueDeleter<PreferenceValues> cloud_data_deleter(&cloud_data);
   cloud_data[prefs::kHomePage] = Value::CreateStringValue(example_url1_);
 
   AddPreferenceEntriesHelper helper(this, cloud_data);
@@ -559,7 +560,6 @@ TEST_F(ProfileSyncServicePreferenceTest,
   ASSERT_FALSE(value.get());
   EXPECT_FALSE(GetPreferenceValue(prefs::kURLsToRestoreOnStartupOld).
                Equals(expected_urls.get()));
-  STLDeleteValues(&cloud_data);
 }
 
 TEST_F(ProfileSyncServicePreferenceTest, FailModelAssociation) {
@@ -712,10 +712,11 @@ TEST_F(ProfileSyncServicePreferenceTest, ManagedListPreferences) {
 
   // Set a cloud version.
   PreferenceValues cloud_data;
-  scoped_ptr<ListValue> urls_to_restore(new ListValue);
+  STLValueDeleter<PreferenceValues> cloud_data_deleter(&cloud_data);
+  ListValue* urls_to_restore = new ListValue;
   urls_to_restore->Append(Value::CreateStringValue(example_url1_));
   urls_to_restore->Append(Value::CreateStringValue(example_url2_));
-  cloud_data[prefs::kURLsToRestoreOnStartup] = urls_to_restore.get();
+  cloud_data[prefs::kURLsToRestoreOnStartup] = urls_to_restore;
 
   // Start sync and verify the synced value didn't get merged.
   AddPreferenceEntriesHelper helper(this, cloud_data);
