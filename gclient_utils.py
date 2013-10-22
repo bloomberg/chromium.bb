@@ -484,7 +484,7 @@ def CheckCallAndFilter(args, stdout=None, filter_fn=None,
       break
     print ("WARNING: subprocess '%s' in %s failed; will retry after a short "
            'nap...' % (' '.join('"%s"' % x for x in args), run_cwd))
-    sys.sleep(sleep_interval)
+    time.sleep(sleep_interval)
     sleep_interval *= 2
   raise subprocess2.CalledProcessError(
       rv, args, kwargs.get('cwd', None), None, None)
