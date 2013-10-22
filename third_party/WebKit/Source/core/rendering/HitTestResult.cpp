@@ -304,8 +304,7 @@ KURL HitTestResult::absoluteImageURL() const
         || m_innerNonSharedNode->hasTagName(objectTag)
         || m_innerNonSharedNode->hasTagName(SVGNames::imageTag)
        ) {
-        Element* element = toElement(m_innerNonSharedNode.get());
-        urlString = element->imageSourceURL();
+        urlString = toElement(m_innerNonSharedNode)->imageSourceURL();
     } else
         return KURL();
 

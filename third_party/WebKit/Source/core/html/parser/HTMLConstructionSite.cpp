@@ -640,7 +640,7 @@ void HTMLConstructionSite::insertTextNode(const String& string, WhitespaceMode w
 
         ASSERT(breakIndex > currentPosition);
         ASSERT(breakIndex - currentPosition == substring.length());
-        ASSERT(toText(task.child.get())->length() == substring.length());
+        ASSERT(toText(task.child)->length() == substring.length());
         currentPosition = breakIndex;
     }
 }

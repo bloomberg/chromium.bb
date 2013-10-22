@@ -932,6 +932,7 @@ inline bool operator!=(const Node& a, const RefPtr<Node>& b) { return !(a == b);
 
 
 #define DEFINE_NODE_TYPE_CASTS(thisType, predicate) \
+    template<typename T> inline thisType* to##thisType(const RefPtr<T>& node) { return to##thisType(node.get()); } \
     DEFINE_TYPE_CASTS(thisType, Node, node, node->predicate, node.predicate)
 
 } // namespace WebCore

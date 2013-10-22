@@ -504,13 +504,13 @@ void Node::normalize()
     while (node) {
         NodeType type = node->nodeType();
         if (type == ELEMENT_NODE)
-            toElement(node.get())->normalizeAttributes();
+            toElement(node)->normalizeAttributes();
 
         if (node == this)
             break;
 
         if (type == TEXT_NODE)
-            node = toText(node.get())->mergeNextSiblingNodesIfPossible();
+            node = toText(node)->mergeNextSiblingNodesIfPossible();
         else
             node = NodeTraversal::nextPostOrder(node.get());
     }

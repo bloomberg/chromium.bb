@@ -1025,7 +1025,7 @@ void Range::insertNode(PassRefPtr<Node> prpNewNode, ExceptionState& es)
     RefPtr<Node> container;
     if (startIsText) {
         container = m_start.container();
-        RefPtr<Text> newText = toText(container.get())->splitText(m_start.offset(), es);
+        RefPtr<Text> newText = toText(container)->splitText(m_start.offset(), es);
         if (es.hadException())
             return;
 
@@ -1442,7 +1442,7 @@ void Range::surroundContents(PassRefPtr<Node> passNewParent, ExceptionState& es)
     }
 
     while (Node* n = newParent->firstChild()) {
-        toContainerNode(newParent.get())->removeChild(n, es);
+        toContainerNode(newParent)->removeChild(n, es);
         if (es.hadException())
             return;
     }

@@ -992,7 +992,7 @@ void CompositeEditCommand::cloneParagraphUnderNewElement(Position& start, Positi
         for (size_t i = ancestors.size(); i != 0; --i) {
             Node* item = ancestors[i - 1].get();
             RefPtr<Node> child = item->cloneNode(isTableElement(item));
-            appendNode(child, toElement(lastNode.get()));
+            appendNode(child, toElement(lastNode));
             lastNode = child.release();
         }
     }
@@ -1287,12 +1287,12 @@ bool CompositeEditCommand::breakOutOfEmptyListItem()
     if (!newBlock)
         newBlock = createDefaultParagraphElement(document());
 
-    RefPtr<Node> previousListNode = emptyListItem->isElementNode() ? toElement(emptyListItem.get())->previousElementSibling(): emptyListItem->previousSibling();
-    RefPtr<Node> nextListNode = emptyListItem->isElementNode() ? toElement(emptyListItem.get())->nextElementSibling(): emptyListItem->nextSibling();
+    RefPtr<Node> previousListNode = emptyListItem->isElementNode() ? toElement(emptyListItem)->previousElementSibling(): emptyListItem->previousSibling();
+    RefPtr<Node> nextListNode = emptyListItem->isElementNode() ? toElement(emptyListItem)->nextElementSibling(): emptyListItem->nextSibling();
     if (isListItem(nextListNode.get()) || isListElement(nextListNode.get())) {
         // If emptyListItem follows another list item or nested list, split the list node.
         if (isListItem(previousListNode.get()) || isListElement(previousListNode.get()))
-            splitElement(toElement(listNode.get()), emptyListItem);
+            splitElement(toElement(listNode), emptyListItem);
 
         // If emptyListItem is followed by other list item or nested list, then insert newBlock before the list node.
         // Because we have splitted the element, emptyListItem is the first element in the list node.

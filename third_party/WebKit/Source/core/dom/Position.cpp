@@ -161,7 +161,7 @@ Text* Position::containerText() const
 {
     switch (anchorType()) {
     case PositionIsOffsetInAnchor:
-        return m_anchorNode && m_anchorNode->isTextNode() ? toText(m_anchorNode.get()) : 0;
+        return m_anchorNode && m_anchorNode->isTextNode() ? toText(m_anchorNode) : 0;
     case PositionIsBeforeAnchor:
     case PositionIsAfterAnchor:
         return 0;

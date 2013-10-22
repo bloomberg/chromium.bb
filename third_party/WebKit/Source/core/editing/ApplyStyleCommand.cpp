@@ -1029,8 +1029,8 @@ void ApplyStyleCommand::pushDownInlineStyleAroundNode(EditingStyle* style, Node*
         NodeVector currentChildren;
         getChildNodes(current.get(), currentChildren);
         RefPtr<Element> styledElement;
-        if (current->isStyledElement() && isStyledInlineElementToRemove(toElement(current.get()))) {
-            styledElement = toElement(current.get());
+        if (current->isStyledElement() && isStyledInlineElementToRemove(toElement(current))) {
+            styledElement = toElement(current);
             elementsToPushDown.append(styledElement);
         }
 
@@ -1353,14 +1353,14 @@ void ApplyStyleCommand::surroundNodeRangeWithElement(PassRefPtr<Node> passedStar
     RefPtr<Node> nextSibling = element->nextSibling();
     RefPtr<Node> previousSibling = element->previousSibling();
     if (nextSibling && nextSibling->isElementNode() && nextSibling->rendererIsEditable()
-        && areIdenticalElements(element.get(), toElement(nextSibling.get())))
-        mergeIdenticalElements(element.get(), toElement(nextSibling.get()));
+        && areIdenticalElements(element.get(), toElement(nextSibling)))
+        mergeIdenticalElements(element.get(), toElement(nextSibling));
 
     if (previousSibling && previousSibling->isElementNode() && previousSibling->rendererIsEditable()) {
         Node* mergedElement = previousSibling->nextSibling();
         if (mergedElement->isElementNode() && mergedElement->rendererIsEditable()
-            && areIdenticalElements(toElement(previousSibling.get()), toElement(mergedElement)))
-            mergeIdenticalElements(toElement(previousSibling.get()), toElement(mergedElement));
+            && areIdenticalElements(toElement(previousSibling), toElement(mergedElement)))
+            mergeIdenticalElements(toElement(previousSibling), toElement(mergedElement));
     }
 
     // FIXME: We should probably call updateStartEnd if the start or end was in the node

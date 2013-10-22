@@ -366,7 +366,7 @@ bool FocusController::advanceFocusInDocumentOrder(FocusDirection direction, bool
         // FIXME: May need a way to focus a document here.
         return false;
 
-    Element* element = toElement(node.get());
+    Element* element = toElement(node);
     if (element->isFrameOwnerElement() && (!element->isPluginElement() || !element->isKeyboardFocusable())) {
         // We focus frames rather than frame owners.
         // FIXME: We should not focus frames that have no scrollbars, as focusing them isn't useful to the user.

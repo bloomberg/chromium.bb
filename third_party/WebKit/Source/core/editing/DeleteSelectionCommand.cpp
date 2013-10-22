@@ -430,7 +430,7 @@ void DeleteSelectionCommand::makeStylingElementsDirectChildrenOfEditableRootToPr
     RefPtr<Node> node = range->firstNode();
     while (node && node != range->pastLastNode()) {
         RefPtr<Node> nextNode = NodeTraversal::next(node.get());
-        if ((node->hasTagName(styleTag) && !(toElement(node.get())->hasAttribute(scopedAttr))) || node->hasTagName(linkTag)) {
+        if ((node->hasTagName(styleTag) && !(toElement(node)->hasAttribute(scopedAttr))) || node->hasTagName(linkTag)) {
             nextNode = NodeTraversal::nextSkippingChildren(node.get());
             RefPtr<ContainerNode> rootEditableElement = node->rootEditableElement();
             if (rootEditableElement.get()) {
@@ -499,7 +499,7 @@ void DeleteSelectionCommand::handleGeneralDelete()
         if (startOffset > 0) {
             if (startNode->isTextNode()) {
                 // in a text node that needs to be trimmed
-                Text* text = toText(node.get());
+                Text* text = toText(node);
                 deleteTextFromNode(text, startOffset, text->length() - startOffset);
                 node = NodeTraversal::next(node.get());
             } else {

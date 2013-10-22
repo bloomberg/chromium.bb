@@ -2066,7 +2066,7 @@ bool EventHandler::dispatchMouseEvent(const AtomicString& eventType, Node* targe
 
     Element* element = 0;
     if (m_nodeUnderMouse)
-        element = m_nodeUnderMouse->isElementNode() ? toElement(m_nodeUnderMouse.get()) : m_nodeUnderMouse->parentOrShadowHostElement();
+        element = m_nodeUnderMouse->isElementNode() ? toElement(m_nodeUnderMouse) : m_nodeUnderMouse->parentOrShadowHostElement();
     for (; element; element = element->parentOrShadowHostElement()) {
         if (element->isFocusable() && element->focused())
             return !swallowEvent;

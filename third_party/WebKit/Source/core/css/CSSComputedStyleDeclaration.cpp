@@ -1636,7 +1636,7 @@ Node* CSSComputedStyleDeclaration::styledNode() const
     if (!m_node)
         return 0;
     if (m_node->isElementNode()) {
-        if (PseudoElement* element = toElement(m_node.get())->pseudoElement(m_pseudoElementSpecifier))
+        if (PseudoElement* element = toElement(m_node)->pseudoElement(m_pseudoElementSpecifier))
             return element;
     }
     return m_node.get();

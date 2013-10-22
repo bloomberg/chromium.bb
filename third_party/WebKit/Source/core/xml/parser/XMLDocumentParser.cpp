@@ -1030,7 +1030,7 @@ void XMLDocumentParser::endElementNs()
     RefPtr<ContainerNode> n = m_currentNode;
     n->finishParsingChildren();
 
-    if (!scriptingContentIsAllowed(parserContentPolicy()) && n->isElementNode() && toScriptLoaderIfPossible(toElement(n.get()))) {
+    if (!scriptingContentIsAllowed(parserContentPolicy()) && n->isElementNode() && toScriptLoaderIfPossible(toElement(n))) {
         popCurrentNode();
         n->remove(IGNORE_EXCEPTION);
         return;
@@ -1041,7 +1041,7 @@ void XMLDocumentParser::endElementNs()
         return;
     }
 
-    Element* element = toElement(n.get());
+    Element* element = toElement(n);
 
     // The element's parent may have already been removed from document.
     // Parsing continues in this case, but scripts aren't executed.
