@@ -7,8 +7,12 @@
 #include "base/bind.h"
 #include "base/file_util.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "chrome/browser/google_apis/drive_api_parser.h"
+#include "chrome/browser/google_apis/gdata_wapi_parser.h"
 #include "chrome/browser/sync_file_system/drive_backend_v1/api_util.h"
+#include "chrome/browser/sync_file_system/sync_file_system_test_util.h"
 #include "chrome/browser/sync_file_system/sync_status_code.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -16,6 +20,7 @@
 
 #define FPL(path) FILE_PATH_LITERAL(path)
 
+using google_apis::AboutResource;
 using google_apis::GDataErrorCode;
 using google_apis::ResourceEntry;
 using google_apis::ResourceList;
@@ -24,16 +29,6 @@ namespace sync_file_system {
 namespace drive_backend {
 
 namespace {
-
-void ResourceEntryResultCallback(GDataErrorCode* error_out,
-                                 scoped_ptr<ResourceEntry>* entry_out,
-                                 GDataErrorCode error,
-                                 scoped_ptr<ResourceEntry> entry) {
-  ASSERT_TRUE(error_out);
-  ASSERT_TRUE(entry_out);
-  *error_out = error;
-  *entry_out = entry.Pass();
-}
 
 void UploadResultCallback(GDataErrorCode* error_out,
                           scoped_ptr<ResourceEntry>* entry_out,
@@ -44,22 +39,6 @@ void UploadResultCallback(GDataErrorCode* error_out,
   ASSERT_TRUE(entry_out);
   *error_out = error;
   *entry_out = entry.Pass();
-}
-
-void ResourceListResultCallback(GDataErrorCode* error_out,
-                                scoped_ptr<ResourceList>* list_out,
-                                GDataErrorCode error,
-                                scoped_ptr<ResourceList> list) {
-  ASSERT_TRUE(error_out);
-  ASSERT_TRUE(list_out);
-  *error_out = error;
-  *list_out = list.Pass();
-}
-
-void GDataErrorResultCallback(GDataErrorCode* error_out,
-                              GDataErrorCode error) {
-  ASSERT_TRUE(error_out);
-  *error_out = error;
 }
 
 void DownloadResultCallback(GDataErrorCode* error_out,
@@ -95,8 +74,8 @@ GDataErrorCode FakeDriveServiceHelper::AddOrphanedFolder(
   error = google_apis::GDATA_OTHER_ERROR;
   fake_drive_service_->RemoveResourceFromDirectory(
       root_folder_id, *folder_id,
-      base::Bind(&GDataErrorResultCallback, &error));
-  FlushMessageLoop();
+      CreateResultReceiver(&error));
+  base::RunLoop().RunUntilIdle();
 
   if (error != google_apis::HTTP_SUCCESS)
     return error;
@@ -113,8 +92,8 @@ GDataErrorCode FakeDriveServiceHelper::AddFolder(
   scoped_ptr<ResourceEntry> folder;
   fake_drive_service_->AddNewDirectory(
       parent_folder_id, title,
-      base::Bind(&ResourceEntryResultCallback, &error, &folder));
-  FlushMessageLoop();
+      CreateResultReceiver(&error, &folder));
+  base::RunLoop().RunUntilIdle();
 
   if (error == google_apis::HTTP_CREATED)
     *folder_id = folder->resource_id();
@@ -136,7 +115,7 @@ GDataErrorCode FakeDriveServiceHelper::AddFile(
       "application/octet-stream",
       base::Bind(&UploadResultCallback, &error, &file),
       google_apis::ProgressCallback());
-  FlushMessageLoop();
+  base::RunLoop().RunUntilIdle();
 
   if (error == google_apis::HTTP_SUCCESS)
     *file_id = file->resource_id();
@@ -155,7 +134,7 @@ GDataErrorCode FakeDriveServiceHelper::UpdateFile(
       std::string(),  // etag
       base::Bind(&UploadResultCallback, &error, &file),
       google_apis::ProgressCallback());
-  FlushMessageLoop();
+  base::RunLoop().RunUntilIdle();
   return error;
 }
 
@@ -165,8 +144,8 @@ GDataErrorCode FakeDriveServiceHelper::RemoveResource(
   fake_drive_service_->DeleteResource(
       file_id,
       std::string(),  // etag
-      base::Bind(&GDataErrorResultCallback, &error));
-  FlushMessageLoop();
+      CreateResultReceiver(&error));
+  base::RunLoop().RunUntilIdle();
   return error;
 }
 
@@ -176,8 +155,8 @@ GDataErrorCode FakeDriveServiceHelper::GetSyncRootFolderID(
   scoped_ptr<ResourceList> resource_list;
   fake_drive_service_->SearchByTitle(
       APIUtil::GetSyncRootDirectoryName(), std::string(),
-      base::Bind(&ResourceListResultCallback, &error, &resource_list));
-  FlushMessageLoop();
+      CreateResultReceiver(&error, &resource_list));
+  base::RunLoop().RunUntilIdle();
   if (error != google_apis::HTTP_SUCCESS)
     return error;
 
@@ -200,8 +179,8 @@ GDataErrorCode FakeDriveServiceHelper::ListFilesInFolder(
   scoped_ptr<ResourceList> list;
   fake_drive_service_->GetResourceListInDirectory(
       folder_id,
-      base::Bind(&ResourceListResultCallback, &error, &list));
-  FlushMessageLoop();
+      CreateResultReceiver(&error, &list));
+  base::RunLoop().RunUntilIdle();
   if (error != google_apis::HTTP_SUCCESS)
     return error;
 
@@ -216,8 +195,8 @@ GDataErrorCode FakeDriveServiceHelper::SearchByTitle(
   scoped_ptr<ResourceList> list;
   fake_drive_service_->SearchByTitle(
       title, folder_id,
-      base::Bind(&ResourceListResultCallback, &error, &list));
-  FlushMessageLoop();
+      CreateResultReceiver(&error, &list));
+  base::RunLoop().RunUntilIdle();
   if (error != google_apis::HTTP_SUCCESS)
     return error;
 
@@ -230,8 +209,8 @@ GDataErrorCode FakeDriveServiceHelper::GetResourceEntry(
   GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
   fake_drive_service_->GetResourceEntry(
       file_id,
-      base::Bind(&ResourceEntryResultCallback, &error, entry));
-  FlushMessageLoop();
+      CreateResultReceiver(&error, entry));
+  base::RunLoop().RunUntilIdle();
   return error;
 }
 
@@ -253,12 +232,21 @@ GDataErrorCode FakeDriveServiceHelper::ReadFile(
       base::Bind(&DownloadResultCallback, &error),
       google_apis::GetContentCallback(),
       google_apis::ProgressCallback());
-  FlushMessageLoop();
+  base::RunLoop().RunUntilIdle();
   if (error != google_apis::HTTP_SUCCESS)
     return error;
 
   return base::ReadFileToString(temp_file, file_content)
       ? google_apis::HTTP_SUCCESS : google_apis::GDATA_FILE_ERROR;
+}
+
+GDataErrorCode FakeDriveServiceHelper::GetAboutResource(
+    scoped_ptr<AboutResource>* about_resource) {
+  GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
+  fake_drive_service_->GetAboutResource(
+      CreateResultReceiver(&error, about_resource));
+  base::RunLoop().RunUntilIdle();
+  return error;
 }
 
 GDataErrorCode FakeDriveServiceHelper::CompleteListing(
@@ -281,8 +269,8 @@ GDataErrorCode FakeDriveServiceHelper::CompleteListing(
     list.reset();
     fake_drive_service_->GetRemainingFileList(
         next_feed,
-        base::Bind(&ResourceListResultCallback, &error, &list));
-    FlushMessageLoop();
+        CreateResultReceiver(&error, &list));
+    base::RunLoop().RunUntilIdle();
     if (error != google_apis::HTTP_SUCCESS)
       return error;
   }
@@ -301,12 +289,6 @@ base::FilePath FakeDriveServiceHelper::WriteToTempFile(
   EXPECT_EQ(static_cast<int>(content.size()),
             file_util::WriteFile(temp_file, content.data(), content.size()));
   return temp_file;
-}
-
-void FakeDriveServiceHelper::FlushMessageLoop() {
-  base::MessageLoop::current()->RunUntilIdle();
-  content::BrowserThread::GetBlockingPool()->FlushForTesting();
-  base::MessageLoop::current()->RunUntilIdle();
 }
 
 }  // namespace drive_backend

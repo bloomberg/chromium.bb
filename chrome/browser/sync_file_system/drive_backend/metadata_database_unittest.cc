@@ -139,7 +139,7 @@ void ExpectEquivalentSets(const Container& left, const Container& right) {
 class MetadataDatabaseTest : public testing::Test {
  public:
   MetadataDatabaseTest()
-      : next_change_id_(kInitialChangeID + 1),
+      : current_change_id_(kInitialChangeID),
         next_tracker_id_(kSyncRootTrackerID + 1),
         next_file_id_number_(1),
         next_md5_sequence_number_(1) {}
@@ -392,7 +392,7 @@ class MetadataDatabaseTest : public testing::Test {
                                    FileMetadata* file) {
     FileDetails* details = file->mutable_details();
     details->set_title(new_title);
-    details->set_change_id(next_change_id_++);
+    details->set_change_id(++current_change_id_);
   }
 
   void ApplyReorganizeChangeToMetadata(const std::string& new_parent,
@@ -400,14 +400,14 @@ class MetadataDatabaseTest : public testing::Test {
     FileDetails* details = file->mutable_details();
     details->clear_parent_folder_ids();
     details->add_parent_folder_ids(new_parent);
-    details->set_change_id(next_change_id_++);
+    details->set_change_id(++current_change_id_);
   }
 
   void ApplyContentChangeToMetadata(FileMetadata* file) {
     FileDetails* details = file->mutable_details();
     details->set_md5(
         "md5_value_" + base::Int64ToString(next_md5_sequence_number_++));
-    details->set_change_id(next_change_id_++);
+    details->set_change_id(++current_change_id_);
   }
 
   void PushToChangeList(scoped_ptr<google_apis::ChangeResource> change,
@@ -586,7 +586,7 @@ class MetadataDatabaseTest : public testing::Test {
 
   scoped_ptr<MetadataDatabase> metadata_database_;
 
-  int64 next_change_id_;
+  int64 current_change_id_;
   int64 next_tracker_id_;
   int64 next_file_id_number_;
   int64 next_md5_sequence_number_;

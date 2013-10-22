@@ -57,6 +57,8 @@ class FakeDriveServiceHelper {
   google_apis::GDataErrorCode ReadFile(
       const std::string& file_id,
       std::string* file_content);
+  google_apis::GDataErrorCode GetAboutResource(
+      scoped_ptr<google_apis::AboutResource>* about_resource);
 
   base::FilePath base_dir_path() { return base_dir_.path(); }
 
@@ -68,7 +70,6 @@ class FakeDriveServiceHelper {
   void Initialize();
 
   base::FilePath WriteToTempFile(const std::string& content);
-  void FlushMessageLoop();
 
   base::ScopedTempDir base_dir_;
   base::FilePath temp_dir_;
