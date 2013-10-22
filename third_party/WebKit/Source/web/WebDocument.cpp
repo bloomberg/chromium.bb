@@ -92,6 +92,11 @@ WebString WebDocument::contentLanguage() const
     return constUnwrap<Document>()->contentLanguage();
 }
 
+WebString WebDocument::referrer() const
+{
+    return constUnwrap<Document>()->referrer();
+}
+
 WebURL WebDocument::openSearchDescriptionURL() const
 {
     return const_cast<Document*>(constUnwrap<Document>())->openSearchDescriptionURL();
