@@ -236,8 +236,6 @@ camera.Tracker.prototype.detect = function() {
       this.face_.targetWidth = result[0].width / this.input_.width;
       this.face_.targetHeight = result[0].height / this.input_.height;
       this.face_.targetConfidence = 1;
-    } else {
-      this.face_.targetConfidence = 0;
     }
     this.busy_ = false;
   }.bind(this));
