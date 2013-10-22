@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/api/cast_channel/cast_channel_api.h"
 
+#include "base/json/json_writer.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/cast_channel/cast_socket.h"
@@ -30,11 +31,20 @@ using cast_channel::ReadyState;
 using content::BrowserThread;
 
 namespace {
-const long kUnknownChannelId = -1;
+
+// T is an extension dictionary (MessageInfo or ChannelInfo)
+template <class T>
+std::string ParamToString(const T& info) {
+  scoped_ptr<base::DictionaryValue> dict = info.ToValue();
+  std::string out;
+  base::JSONWriter::Write(dict.get(), &out);
+  return out;
+}
+
 }  // namespace
 
 CastChannelAPI::CastChannelAPI(Profile* profile)
-    : profile_(profile) {
+  : profile_(profile) {
   DCHECK(profile_);
 }
 
@@ -75,6 +85,8 @@ void CastChannelAPI::OnMessage(const CastSocket* socket,
   socket->FillChannelInfo(&channel_info);
   scoped_ptr<base::ListValue> results =
     OnMessage::Create(channel_info, message_info);
+  DVLOG(1) << "Sending message " << ParamToString(message_info)
+           << " to channel " << ParamToString(channel_info);
   scoped_ptr<Event> event(new Event(OnMessage::kEventName, results.Pass()));
   extensions::ExtensionSystem::Get(profile_)->event_router()->
     DispatchEventToExtension(socket->owner_extension_id(), event.Pass());
@@ -83,8 +95,7 @@ void CastChannelAPI::OnMessage(const CastSocket* socket,
 CastChannelAPI::~CastChannelAPI() {}
 
 CastChannelAsyncApiFunction::CastChannelAsyncApiFunction()
-  : socket_(NULL), channel_id_(kUnknownChannelId), manager_(NULL),
-    error_(cast_channel::CHANNEL_ERROR_NONE) { }
+  : manager_(NULL), error_(cast_channel::CHANNEL_ERROR_NONE) { }
 
 CastChannelAsyncApiFunction::~CastChannelAsyncApiFunction() { }
 
@@ -97,36 +108,52 @@ bool CastChannelAsyncApiFunction::Respond() {
   return error_ != cast_channel::CHANNEL_ERROR_NONE;
 }
 
-ApiResourceManager<api::cast_channel::CastSocket>*
-CastChannelAsyncApiFunction::GetSocketManager() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  return manager_;
-}
-
-CastSocket* CastChannelAsyncApiFunction::GetSocket(long channel_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  DCHECK(!socket_);
-  DCHECK_EQ(channel_id_, kUnknownChannelId);
-  CastSocket* socket = GetSocketManager()->Get(extension_->id(), channel_id);
-  if (socket) {
-    socket_ = socket;
-    channel_id_ = channel_id;
+CastSocket* CastChannelAsyncApiFunction::GetSocketOrCompleteWithError(
+    int channel_id) {
+  CastSocket* socket = GetSocket(channel_id);
+  if (!socket) {
+    SetResultFromError(cast_channel::CHANNEL_ERROR_INVALID_CHANNEL_ID);
+    AsyncWorkCompleted();
   }
   return socket;
 }
 
-void CastChannelAsyncApiFunction::RemoveSocketIfError() {
-  if (error_ != cast_channel::CHANNEL_ERROR_NONE)
-    RemoveSocket();
+int CastChannelAsyncApiFunction::AddSocket(CastSocket* socket) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(socket);
+  DCHECK(manager_);
+  return manager_->Add(socket);
 }
 
-void CastChannelAsyncApiFunction::RemoveSocket() {
+void CastChannelAsyncApiFunction::RemoveSocket(int channel_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  DCHECK(socket_);
-  DCHECK(channel_id_ != kUnknownChannelId);
-  GetSocketManager()->Remove(extension_->id(), channel_id_);
-  channel_id_ = kUnknownChannelId;
-  socket_ = NULL;
+  DCHECK(manager_);
+  manager_->Remove(extension_->id(), channel_id);
+}
+
+void CastChannelAsyncApiFunction::SetResultFromSocket(int channel_id) {
+  CastSocket* socket = GetSocket(channel_id);
+  DCHECK(socket);
+  ChannelInfo channel_info;
+  socket->FillChannelInfo(&channel_info);
+  error_ = socket->error_state();
+  SetResultFromChannelInfo(channel_info);
+}
+
+void CastChannelAsyncApiFunction::SetResultFromError(ChannelError error) {
+  ChannelInfo channel_info;
+  channel_info.channel_id = -1;
+  channel_info.url = "";
+  channel_info.ready_state = cast_channel::READY_STATE_CLOSED;
+  channel_info.error_state = error;
+  SetResultFromChannelInfo(channel_info);
+  error_ = error;
+}
+
+CastSocket* CastChannelAsyncApiFunction::GetSocket(int channel_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(manager_);
+  return manager_->Get(extension_->id(), channel_id);
 }
 
 void CastChannelAsyncApiFunction::SetResultFromChannelInfo(
@@ -135,26 +162,8 @@ void CastChannelAsyncApiFunction::SetResultFromChannelInfo(
   SetResult(channel_info.ToValue().release());
 }
 
-void CastChannelAsyncApiFunction::SetResultFromSocket() {
-  DCHECK(socket_);
-  ChannelInfo channel_info;
-  socket_->FillChannelInfo(&channel_info);
-  error_ = socket_->error_state();
-  SetResultFromChannelInfo(channel_info);
-}
-
-void CastChannelAsyncApiFunction::SetResultFromError(
-    const std::string& url, ChannelError error) {
-  ChannelInfo channel_info;
-  channel_info.channel_id = channel_id_;
-  channel_info.url = url;
-  channel_info.ready_state = cast_channel::READY_STATE_CLOSED;
-  channel_info.error_state = error;
-  SetResultFromChannelInfo(channel_info);
-  error_ = error;
-}
-
-CastChannelOpenFunction::CastChannelOpenFunction() { }
+CastChannelOpenFunction::CastChannelOpenFunction()
+  : new_channel_id_(0) { }
 
 CastChannelOpenFunction::~CastChannelOpenFunction() { }
 
@@ -171,21 +180,16 @@ bool CastChannelOpenFunction::Prepare() {
 
 void CastChannelOpenFunction::AsyncWorkStart() {
   DCHECK(api_);
-  socket_ = new CastSocket(extension_->id(), GURL(params_->url),
-                           api_, g_browser_process->net_log());
-  socket_->Connect(base::Bind(&CastChannelOpenFunction::OnOpen, this));
+  CastSocket* socket = new CastSocket(extension_->id(), GURL(params_->url),
+                                      api_, g_browser_process->net_log());
+  int new_channel_id = AddSocket(socket);
+  socket->set_id(new_channel_id);
+  socket->Connect(base::Bind(&CastChannelOpenFunction::OnOpen, this));
 }
 
 void CastChannelOpenFunction::OnOpen(int result) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  if (result == net::OK) {
-    socket_->set_id(GetSocketManager()->Add(socket_));
-    SetResultFromSocket();
-  } else {
-    SetResultFromError(params_->url,
-                       cast_channel::CHANNEL_ERROR_CONNECT_ERROR);
-  }
-  RemoveSocketIfError();
+  SetResultFromSocket(new_channel_id_);
   AsyncWorkCompleted();
 }
 
@@ -200,25 +204,20 @@ bool CastChannelSendFunction::Prepare() {
 }
 
 void CastChannelSendFunction::AsyncWorkStart() {
-  if (!GetSocket(params_->channel.channel_id)) {
-    SetResultFromError("",
-                       cast_channel::CHANNEL_ERROR_INVALID_CHANNEL_ID);
-    AsyncWorkCompleted();
-    return;
-  }
-  socket_->SendMessage(params_->message,
-                       base::Bind(&CastChannelSendFunction::OnSend, this));
+  CastSocket* socket = GetSocketOrCompleteWithError(
+      params_->channel.channel_id);
+  if (socket)
+    socket->SendMessage(params_->message,
+                        base::Bind(&CastChannelSendFunction::OnSend, this));
 }
 
 void CastChannelSendFunction::OnSend(int result) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (result < 0) {
-    SetResultFromError("",
-                       cast_channel::CHANNEL_ERROR_SOCKET_ERROR);
+    SetResultFromError(cast_channel::CHANNEL_ERROR_SOCKET_ERROR);
   } else {
-    SetResultFromSocket();
+    SetResultFromSocket(params_->channel.channel_id);
   }
-  RemoveSocketIfError();
   AsyncWorkCompleted();
 }
 
@@ -233,23 +232,21 @@ bool CastChannelCloseFunction::Prepare() {
 }
 
 void CastChannelCloseFunction::AsyncWorkStart() {
-  if (!GetSocket(params_->channel.channel_id)) {
-    SetResultFromError("", cast_channel::CHANNEL_ERROR_INVALID_CHANNEL_ID);
-    AsyncWorkCompleted();
-    return;
-  }
-  socket_->Close(base::Bind(&CastChannelCloseFunction::OnClose, this));
+  CastSocket* socket = GetSocketOrCompleteWithError(
+      params_->channel.channel_id);
+  if (socket)
+    socket->Close(base::Bind(&CastChannelCloseFunction::OnClose, this));
 }
 
 void CastChannelCloseFunction::OnClose(int result) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DVLOG(1) << "CastChannelCloseFunction::OnClose result = " << result;
   if (result < 0) {
-    SetResultFromError("", cast_channel::CHANNEL_ERROR_SOCKET_ERROR);
-    RemoveSocketIfError();
+    SetResultFromError(cast_channel::CHANNEL_ERROR_SOCKET_ERROR);
   } else {
-    SetResultFromSocket();
-    RemoveSocket();
+    int channel_id = params_->channel.channel_id;
+    SetResultFromSocket(channel_id);
+    RemoveSocket(channel_id);
   }
   AsyncWorkCompleted();
 }

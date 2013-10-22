@@ -261,7 +261,7 @@ void CastSocket::Close(const net::CompletionCallback& callback) {
 void CastSocket::SendMessage(const MessageInfo& message,
                              const net::CompletionCallback& callback) {
   DCHECK(CalledOnValidThread());
-  DVLOG(1) << "Send::ReadyState " << ready_state_;
+  DVLOG(1) << "Send ReadyState " << ready_state_;
   int result = net::ERR_FAILED;
   if (ready_state_ != READY_STATE_OPEN) {
     callback.Run(result);

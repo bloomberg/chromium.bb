@@ -63,40 +63,38 @@ class CastChannelAsyncApiFunction : public AsyncApiFunction {
   virtual bool PrePrepare() OVERRIDE;
   virtual bool Respond() OVERRIDE;
 
-  ApiResourceManager<cast_channel::CastSocket>*
-      GetSocketManager();
+  // Returns the socket corresponding to |channel_id| if one exists.  Otherwise,
+  // sets the function result with CHANNEL_ERROR_INVALID_CHANNEL_ID, completes
+  // the function, and returns null.
+  cast_channel::CastSocket* GetSocketOrCompleteWithError(int channel_id);
 
-  // Returns the socket corresponding to |channel_id| if one exists.  If found,
-  // sets |socket_| and |channel_id_|.
-  cast_channel::CastSocket* GetSocket(long channel_id);
+  // Adds |socket| to |manager_| and returns the new channel_id.  |manager_|
+  // assumes ownership of |socket|.
+  int AddSocket(cast_channel::CastSocket* socket);
 
-  // Sets the ChannelInfo result from the state of the CastSocket used by the
-  // function.
-  void SetResultFromSocket();
+  // Removes the CastSocket corresponding to |channel_id| from the resource
+  // manager.
+  void RemoveSocket(int channel_id);
 
-  // Sets the ChannelInfo result from |url| and |error|, when there is no
-  // CastSocket associated with the function.
-  void SetResultFromError(const std::string& url,
-                          cast_channel::ChannelError error);
+  // Sets the function result to a ChannelInfo obtained from the state of the
+  // CastSocket corresponding to |channel_id|.
+  void SetResultFromSocket(int channel_id);
 
-  // Destroys the CastSocket used by the function.
-  void RemoveSocket();
-
-  // Destroys the CastSocket used by the function, but only when an error
-  // has occurred..
-  void RemoveSocketIfError();
-
-  // The socket being used by the function.  Set lazily.
-  cast_channel::CastSocket* socket_;
-
-  // The id of the socket being used by the function.  Set lazily.
-  long channel_id_;
+  // Sets the function result to a ChannelInfo with |error|.
+  void SetResultFromError(cast_channel::ChannelError error);
 
  private:
+  // Returns the socket corresponding to |channel_id| if one exists, or null
+  // otherwise.
+  cast_channel::CastSocket* GetSocket(int channel_id);
+
+  // Sets the function result from |channel_info|.
   void SetResultFromChannelInfo(
       const cast_channel::ChannelInfo& channel_info);
 
+  // The API resource manager for CastSockets.
   ApiResourceManager<cast_channel::CastSocket>* manager_;
+
   // The result of the function.
   cast_channel::ChannelError error_;
 };
@@ -119,7 +117,8 @@ class CastChannelOpenFunction : public CastChannelAsyncApiFunction {
   void OnOpen(int result);
 
   scoped_ptr<cast_channel::Open::Params> params_;
-  // Ptr to the API object.
+  // The id of the newly opened socket.
+  int new_channel_id_;
   CastChannelAPI* api_;
 
   DISALLOW_COPY_AND_ASSIGN(CastChannelOpenFunction);
