@@ -1,4 +1,0 @@
-
-Target
-
-This test is successful if the box labelled "Target" has a transparent green rectangle centered on it.

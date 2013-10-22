@@ -2,13 +2,14 @@
 <html>
 <head>
 <script src="../../fast/js/resources/js-test-pre.js"></script>
+<link rel="stylesheet" type="text/css" href="resources/link-highlight-style.css">
 </head>
 <body onload="runTest();">
 <div style="-webkit-transform: translateZ(0); position: relative; left: 10; top: 40">
-<a href="" id="targetLink" style="-webkit-tap-highlight-color: rgba(0, 255, 0, 0.5)">Long Target<br>Link.</a>
+<a class="opaqueHighlight" href="" id="targetLink">Long Target<br>Link.</a>
 </div>
 <div style="position: relative; left: 10; top: 70">
-This test is successful if "Long Target Link" above is covered in two transparent green rectangles with square corners.
+This test is successful if "Long Target Link" above is covered in two green rectangles with square corners.
 </div>
 <script>
 function runTest() {
