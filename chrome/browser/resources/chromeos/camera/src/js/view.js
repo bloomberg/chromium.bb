@@ -24,6 +24,12 @@ camera.View = function(context, router) {
   this.active_ = false;
 
   /**
+   * @type {boolean}
+   * @private
+   */
+  this.entered_ = false;
+
+  /**
    * @type {camera.View.Context}
    * @private
    */
@@ -37,6 +43,9 @@ camera.View = function(context, router) {
 };
 
 camera.View.prototype = {
+  get entered() {
+    return this.entered_;
+  },
   get active() {
     return this.active_;
   },
@@ -63,14 +72,27 @@ camera.View.prototype.onResize = function() {
 
 /**
  * Handles enters the view.
+ * @param {Object=} opt_arguments Optional arguments.
  */
-camera.View.prototype.onEnter = function() {
+camera.View.prototype.onEnter = function(opt_arguments) {
 };
 
 /**
  * Handles leaving the view.
  */
 camera.View.prototype.onLeave = function() {
+};
+
+/**
+ * Handles activating the view.
+ */
+camera.View.prototype.onActivate = function() {
+};
+
+/**
+ * Handles inactivating the view.
+ */
+camera.View.prototype.onInactivate = function() {
 };
 
 /**
@@ -83,18 +105,35 @@ camera.View.prototype.initialize = function(callback) {
 
 /**
  * Enters the view.
+ * @param {Object=} opt_arguments Optional arguments.
  */
-camera.View.prototype.enter = function() {
-  this.active_ = true;
-  this.onEnter();
+camera.View.prototype.enter = function(opt_arguments) {
+  this.entered_ = true;
+  this.onEnter(opt_arguments);
 };
 
 /**
  * Leaves the view.
  */
 camera.View.prototype.leave = function() {
-  this.active_ = false;
+  this.entered_ = false;
   this.onLeave();
+};
+
+/**
+ * Activates the view.
+ */
+camera.View.prototype.activate = function() {
+  this.active_ = true;
+  this.onActivate();
+};
+
+/**
+ * Inactivates the view.
+ */
+camera.View.prototype.inactivate = function() {
+  this.active_ = false;
+  this.onInactivate();
 };
 
 /**
