@@ -158,15 +158,14 @@ bool SharedStyleFinder::sharingCandidateHasIdenticalStyleAffectingAttributes(Ele
 
 bool SharedStyleFinder::canShareStyleWithElement(Element& candidate) const
 {
+    ASSERT(candidate.supportsStyleSharing());
     if (element() == candidate)
         return false;
-    Element* parent = candidate.parentElement();
+    Element& parent = *candidate.parentElement();
     RenderStyle* style = candidate.renderStyle();
     if (!style)
         return false;
-    if (!parent)
-        return false;
-    if (element().parentElement()->renderStyle() != parent->renderStyle())
+    if (element().parentElement()->renderStyle() != parent.renderStyle())
         return false;
     if (style->unique())
         return false;
@@ -174,34 +173,16 @@ bool SharedStyleFinder::canShareStyleWithElement(Element& candidate) const
         return false;
     if (candidate.tagQName() != element().tagQName())
         return false;
-    if (candidate.inlineStyle())
-        return false;
     if (candidate.needsStyleRecalc())
-        return false;
-    if (candidate.isSVGElement() && toSVGElement(candidate).animatedSMILStyleProperties())
         return false;
     if (candidate.isLink() != element().isLink())
         return false;
-    if (candidate.hovered() != element().hovered())
-        return false;
-    if (candidate.active() != element().active())
-        return false;
-    if (candidate.focused() != element().focused())
-        return false;
     if (candidate.shadowPseudoId() != element().shadowPseudoId())
-        return false;
-    if (candidate == document().cssTarget())
         return false;
     if (!sharingCandidateHasIdenticalStyleAffectingAttributes(candidate))
         return false;
     if (candidate.additionalPresentationAttributeStyle() != element().additionalPresentationAttributeStyle())
         return false;
-    if (candidate.hasID() && m_features.idsInRules.contains(candidate.idForStyleResolution().impl()))
-        return false;
-    if (candidate.hasScopedHTMLStyleChild())
-        return false;
-    if (candidate.shadow() && candidate.shadow()->containsActiveStyles())
-        return 0;
 
     bool isControl = candidate.isFormControlElement();
 
@@ -214,10 +195,6 @@ bool SharedStyleFinder::canShareStyleWithElement(Element& candidate) const
     if (style->transitions() || style->animations())
         return false;
 
-    // FIXME: This line is surprisingly hot, we may wish to inline hasDirectionAuto into StyleResolver.
-    if (candidate.isHTMLElement() && toHTMLElement(candidate).hasDirectionAuto())
-        return false;
-
     if (candidate.isLink() && m_context.elementLinkState() != style->insideLink())
         return false;
 
@@ -225,17 +202,15 @@ bool SharedStyleFinder::canShareStyleWithElement(Element& candidate) const
         return false;
 
     if (element().parentElement() != parent) {
-        if (!parent->isStyledElement())
+        if (!parent.isStyledElement())
             return false;
-        if (parent->hasScopedHTMLStyleChild())
+        if (parent.hasScopedHTMLStyleChild())
             return false;
-        if (parent->inlineStyle())
+        if (parent.inlineStyle())
             return false;
-        if (parent->isSVGElement() && toSVGElement(parent)->animatedSMILStyleProperties())
+        if (parent.isSVGElement() && toSVGElement(parent).animatedSMILStyleProperties())
             return false;
-        if (parent->hasID() && m_features.idsInRules.contains(parent->idForStyleResolution().impl()))
-            return false;
-        if (!parent->childrenSupportStyleSharing())
+        if (parent.hasID() && m_features.idsInRules.contains(parent.idForStyleResolution().impl()))
             return false;
     }
 
