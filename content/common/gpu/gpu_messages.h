@@ -27,6 +27,7 @@
 #include "media/video/video_decode_accelerator.h"
 #include "media/video/video_encode_accelerator.h"
 #include "ui/events/latency_info.h"
+#include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/size.h"
 #include "ui/gl/gpu_preference.h"
@@ -548,7 +549,7 @@ IPC_MESSAGE_ROUTED0(GpuCommandBufferMsg_Rescheduled)
 IPC_MESSAGE_ROUTED1(GpuCommandBufferMsg_ConsoleMsg,
                     GPUCommandBufferConsoleMessage /* msg */)
 
-// Register an existing shared memory transfer buffer. Returns an id that can be
+// Register an existing shared memory transfer buffer. The id that can be
 // used to identify the transfer buffer from a command buffer.
 IPC_MESSAGE_ROUTED3(GpuCommandBufferMsg_RegisterTransferBuffer,
                     int32 /* id */,
@@ -636,6 +637,19 @@ IPC_MESSAGE_ROUTED1(GpuCommandBufferMsg_SignalSyncPointAck,
 IPC_MESSAGE_ROUTED2(GpuCommandBufferMsg_SignalQuery,
                     uint32 /* query */,
                     uint32 /* signal_id */)
+
+// Register an existing gpu memory buffer. The id that can be
+// used to identify the gpu memory buffer from a command buffer.
+IPC_MESSAGE_ROUTED5(GpuCommandBufferMsg_RegisterGpuMemoryBuffer,
+                    int32 /* id */,
+                    gfx::GpuMemoryBufferHandle /* gpu_memory_buffer */,
+                    uint32 /* width */,
+                    uint32 /* height */,
+                    uint32 /* internalformat */)
+
+// Destroy a previously created gpu memory buffer.
+IPC_MESSAGE_ROUTED1(GpuCommandBufferMsg_DestroyGpuMemoryBuffer,
+                    int32 /* id */)
 
 //------------------------------------------------------------------------------
 // Accelerated Video Decoder Messages

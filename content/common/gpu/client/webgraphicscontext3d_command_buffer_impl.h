@@ -640,6 +640,15 @@ class WebGraphicsContext3DCommandBufferImpl
       WGC3Denum type, WGC3Dintptr offset, WGC3Dsizei primcount);
   virtual void vertexAttribDivisorANGLE(WGC3Duint index, WGC3Duint divisor);
 
+  // GL_CHROMIUM_map_image
+  virtual WGC3Duint createImageCHROMIUM(
+      WGC3Dsizei width, WGC3Dsizei height, WGC3Denum internalformat);
+  virtual void destroyImageCHROMIUM(WGC3Duint image_id);
+  virtual void getImageParameterivCHROMIUM(
+      WGC3Duint image_id, WGC3Denum pname, WGC3Dint* params);
+  virtual void* mapImageCHROMIUM(WGC3Duint image_id, WGC3Denum access);
+  virtual void unmapImageCHROMIUM(WGC3Duint image_id);
+
   virtual GrGLInterface* createGrGLInterface();
 
  private:

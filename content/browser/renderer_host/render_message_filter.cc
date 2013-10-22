@@ -398,6 +398,8 @@ bool RenderMessageFilter::OnMessageReceived(const IPC::Message& message,
                         OnCheckNotificationPermission)
     IPC_MESSAGE_HANDLER(ChildProcessHostMsg_SyncAllocateSharedMemory,
                         OnAllocateSharedMemory)
+    IPC_MESSAGE_HANDLER(ChildProcessHostMsg_SyncAllocateGpuMemoryBuffer,
+                        OnAllocateGpuMemoryBuffer)
 #if defined(OS_POSIX) && !defined(TOOLKIT_GTK) && !defined(OS_ANDROID)
     IPC_MESSAGE_HANDLER(ViewHostMsg_AllocTransportDIB, OnAllocTransportDIB)
     IPC_MESSAGE_HANDLER(ViewHostMsg_FreeTransportDIB, OnFreeTransportDIB)
@@ -1165,4 +1167,23 @@ void RenderMessageFilter::OnWebAudioMediaCodec(
       true);
 }
 #endif
+
+void RenderMessageFilter::OnAllocateGpuMemoryBuffer(
+    uint32 buffer_size,
+    gfx::GpuMemoryBufferHandle* handle) {
+  // TODO(reveman): Implement allocation of real GpuMemoryBuffer.
+  // Currently this function creates a fake GpuMemoryBuffer that is
+  // backed by shared memory and requires an upload before it can
+  // be used as a texture. The plan is to instead have this function
+  // allocate a real GpuMemoryBuffer in whatever form is supported
+  // by platform and drivers.
+  //
+  // Note: |buffer_size| likely needs to be replaced by a more
+  // specific buffer description but is enough for the shared memory
+  // backed GpuMemoryBuffer currently returned.
+  handle->type = gfx::SHARED_MEMORY_BUFFER;
+  ChildProcessHostImpl::AllocateSharedMemory(
+      buffer_size, PeerHandle(), &handle->handle);
+}
+
 }  // namespace content

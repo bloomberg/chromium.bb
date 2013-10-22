@@ -367,7 +367,7 @@ void CommandBufferProxyImpl::SetContextLostReason(
 }
 
 bool CommandBufferProxyImpl::SupportsGpuMemoryBuffer() {
-  return false;
+  return true;
 }
 
 gfx::GpuMemoryBuffer* CommandBufferProxyImpl::CreateGpuMemoryBuffer(
@@ -375,12 +375,58 @@ gfx::GpuMemoryBuffer* CommandBufferProxyImpl::CreateGpuMemoryBuffer(
     size_t height,
     unsigned internalformat,
     int32* id) {
-  NOTREACHED();
-  return NULL;
+  *id = -1;
+
+  if (last_state_.error != gpu::error::kNoError)
+    return NULL;
+
+  int32 new_id = channel_->ReserveGpuMemoryBufferId();
+  DCHECK(gpu_memory_buffers_.find(new_id) == gpu_memory_buffers_.end());
+
+  scoped_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer(
+      channel_->factory()->AllocateGpuMemoryBuffer(width,
+                                                   height,
+                                                   internalformat));
+  if (!gpu_memory_buffer)
+    return NULL;
+
+  DCHECK(GpuChannelHost::IsValidGpuMemoryBuffer(
+             gpu_memory_buffer->GetHandle()));
+
+  // This handle is owned by the GPU process and must be passed to it or it
+  // will leak. In otherwords, do not early out on error between here and the
+  // sending of the RegisterGpuMemoryBuffer IPC below.
+  gfx::GpuMemoryBufferHandle handle =
+      channel_->ShareGpuMemoryBufferToGpuProcess(
+          gpu_memory_buffer->GetHandle());
+
+  if (!Send(new GpuCommandBufferMsg_RegisterGpuMemoryBuffer(
+                route_id_,
+                new_id,
+                handle,
+                width,
+                height,
+                internalformat))) {
+    return NULL;
+  }
+
+  *id = new_id;
+  gpu_memory_buffers_[new_id] = gpu_memory_buffer.release();
+  return gpu_memory_buffers_[new_id];
 }
 
 void CommandBufferProxyImpl::DestroyGpuMemoryBuffer(int32 id) {
-  NOTREACHED();
+  if (last_state_.error != gpu::error::kNoError)
+    return;
+
+  // Remove the gpu memory buffer from the client side cache.
+  GpuMemoryBufferMap::iterator it = gpu_memory_buffers_.find(id);
+  if (it != gpu_memory_buffers_.end()) {
+    delete it->second;
+    gpu_memory_buffers_.erase(it);
+  }
+
+  Send(new GpuCommandBufferMsg_DestroyGpuMemoryBuffer(route_id_, id));
 }
 
 int CommandBufferProxyImpl::GetRouteID() const {

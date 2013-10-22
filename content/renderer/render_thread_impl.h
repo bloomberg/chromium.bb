@@ -364,6 +364,10 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
       int32 image_id,
       const CreateImageCallback& callback) OVERRIDE;
   virtual void DeleteImage(int32 image_id, int32 sync_point) OVERRIDE;
+  virtual scoped_ptr<gfx::GpuMemoryBuffer> AllocateGpuMemoryBuffer(
+      size_t width,
+      size_t height,
+      unsigned internalformat) OVERRIDE;
 
   void Init();
 

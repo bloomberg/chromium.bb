@@ -147,6 +147,11 @@ void WebGraphicsContext3DCommandBufferImpl::name(t1 a1, t2 a2, t3 a3) { \
   gl_->glname(a1, a2, a3);                                              \
 }
 
+#define DELEGATE_TO_GL_3R(name, glname, t1, t2, t3, rt)                 \
+rt WebGraphicsContext3DCommandBufferImpl::name(t1 a1, t2 a2, t3 a3) {   \
+  return gl_->glname(a1, a2, a3);                                       \
+}
+
 #define DELEGATE_TO_GL_4(name, glname, t1, t2, t3, t4)                  \
 void WebGraphicsContext3DCommandBufferImpl::name(t1 a1, t2 a2, t3 a3,   \
                                                  t4 a4) {               \
@@ -1524,6 +1529,20 @@ void WebGraphicsContext3DCommandBufferImpl::drawElementsInstancedANGLE(
 
 DELEGATE_TO_GL_2(vertexAttribDivisorANGLE, VertexAttribDivisorANGLE, WGC3Duint,
                  WGC3Duint)
+
+DELEGATE_TO_GL_3R(createImageCHROMIUM, CreateImageCHROMIUM,
+                  WGC3Dsizei, WGC3Dsizei, WGC3Denum,
+                  WGC3Duint);
+
+DELEGATE_TO_GL_1(destroyImageCHROMIUM, DestroyImageCHROMIUM, WGC3Duint);
+
+DELEGATE_TO_GL_3(getImageParameterivCHROMIUM, GetImageParameterivCHROMIUM,
+                 WGC3Duint, WGC3Denum, GLint*);
+
+DELEGATE_TO_GL_2R(mapImageCHROMIUM, MapImageCHROMIUM,
+                  WGC3Duint, WGC3Denum, void*);
+
+DELEGATE_TO_GL_1(unmapImageCHROMIUM, UnmapImageCHROMIUM, WGC3Duint);
 
 GrGLInterface* WebGraphicsContext3DCommandBufferImpl::createGrGLInterface() {
   return webkit::gpu::CreateCommandBufferSkiaGLBinding();

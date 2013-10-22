@@ -38,6 +38,10 @@ class CONTENT_EXPORT BrowserGpuChannelHostFactory
   virtual void DeleteImage(int32 image_idu, int32 sync_point) OVERRIDE;
   virtual GpuChannelHost* EstablishGpuChannelSync(
       CauseForGpuLaunch cause_for_gpu_launch) OVERRIDE;
+  virtual scoped_ptr<gfx::GpuMemoryBuffer> AllocateGpuMemoryBuffer(
+      size_t width,
+      size_t height,
+      unsigned internalformat) OVERRIDE;
 
   // Specify a task runner and callback to be used for a set of messages. The
   // callback will be set up on the current GpuProcessHost, identified by

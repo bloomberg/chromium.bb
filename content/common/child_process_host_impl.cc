@@ -247,6 +247,8 @@ bool ChildProcessHostImpl::OnMessageReceived(const IPC::Message& msg) {
                           OnShutdownRequest)
       IPC_MESSAGE_HANDLER(ChildProcessHostMsg_SyncAllocateSharedMemory,
                           OnAllocateSharedMemory)
+      IPC_MESSAGE_HANDLER(ChildProcessHostMsg_SyncAllocateGpuMemoryBuffer,
+                          OnAllocateGpuMemoryBuffer)
       IPC_MESSAGE_UNHANDLED(handled = false)
     IPC_END_MESSAGE_MAP()
 
@@ -291,6 +293,13 @@ void ChildProcessHostImpl::OnAllocateSharedMemory(
 void ChildProcessHostImpl::OnShutdownRequest() {
   if (delegate_->CanShutdown())
     Send(new ChildProcessMsg_Shutdown());
+}
+
+void ChildProcessHostImpl::OnAllocateGpuMemoryBuffer(
+    uint32 buffer_size,
+    gfx::GpuMemoryBufferHandle* handle) {
+  handle->type = gfx::SHARED_MEMORY_BUFFER;
+  AllocateSharedMemory(buffer_size, peer_handle_, &handle->handle);
 }
 
 }  // namespace content

@@ -22,6 +22,10 @@ namespace base {
 class FilePath;
 }
 
+namespace gfx {
+struct GpuMemoryBufferHandle;
+}
+
 namespace content {
 class ChildProcessHostDelegate;
 
@@ -75,6 +79,8 @@ class CONTENT_EXPORT ChildProcessHostImpl : public ChildProcessHost,
   void OnShutdownRequest();
   void OnAllocateSharedMemory(uint32 buffer_size,
                               base::SharedMemoryHandle* handle);
+  void OnAllocateGpuMemoryBuffer(uint32 buffer_size,
+                                 gfx::GpuMemoryBufferHandle* handle);
 
   ChildProcessHostDelegate* delegate_;
   base::ProcessHandle peer_handle_;

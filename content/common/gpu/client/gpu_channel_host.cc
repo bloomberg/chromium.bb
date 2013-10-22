@@ -46,6 +46,17 @@ scoped_refptr<GpuChannelHost> GpuChannelHost::Create(
   return host;
 }
 
+// static
+bool GpuChannelHost::IsValidGpuMemoryBuffer(
+    gfx::GpuMemoryBufferHandle handle) {
+  switch (handle.type) {
+    case gfx::SHARED_MEMORY_BUFFER:
+      return true;
+    default:
+      return false;
+  }
+}
+
 GpuChannelHost::GpuChannelHost(GpuChannelHostFactory* factory,
                                int gpu_host_id,
                                int client_id,
@@ -55,6 +66,7 @@ GpuChannelHost::GpuChannelHost(GpuChannelHostFactory* factory,
       gpu_host_id_(gpu_host_id),
       gpu_info_(gpu_info) {
   next_transfer_buffer_id_.GetNext();
+  next_gpu_memory_buffer_id_.GetNext();
 }
 
 void GpuChannelHost::Connect(const IPC::ChannelHandle& channel_handle) {
@@ -283,6 +295,25 @@ bool GpuChannelHost::GenerateMailboxNames(unsigned num,
 
 int32 GpuChannelHost::ReserveTransferBufferId() {
   return next_transfer_buffer_id_.GetNext();
+}
+
+gfx::GpuMemoryBufferHandle GpuChannelHost::ShareGpuMemoryBufferToGpuProcess(
+    gfx::GpuMemoryBufferHandle source_handle) {
+  switch (source_handle.type) {
+    case gfx::SHARED_MEMORY_BUFFER: {
+      gfx::GpuMemoryBufferHandle handle;
+      handle.type = gfx::SHARED_MEMORY_BUFFER;
+      handle.handle = ShareToGpuProcess(source_handle.handle);
+      return handle;
+    }
+    default:
+      NOTREACHED();
+      return gfx::GpuMemoryBufferHandle();
+  }
+}
+
+int32 GpuChannelHost::ReserveGpuMemoryBufferId() {
+  return next_gpu_memory_buffer_id_.GetNext();
 }
 
 GpuChannelHost::~GpuChannelHost() {

@@ -26,6 +26,8 @@
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/service/gl_context_virtual.h"
 #include "gpu/command_buffer/service/gl_state_restorer_impl.h"
+#include "gpu/command_buffer/service/gpu_control_service.h"
+#include "gpu/command_buffer/service/image_manager.h"
 #include "gpu/command_buffer/service/logger.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
 #include "gpu/command_buffer/service/query_manager.h"
@@ -223,6 +225,10 @@ bool GpuCommandBufferStub::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(
         GpuCommandBufferMsg_SetClientHasMemoryAllocationChangedCallback,
         OnSetClientHasMemoryAllocationChangedCallback)
+    IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_RegisterGpuMemoryBuffer,
+                        OnRegisterGpuMemoryBuffer);
+    IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_DestroyGpuMemoryBuffer,
+                        OnDestroyGpuMemoryBuffer);
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -402,6 +408,12 @@ void GpuCommandBufferStub::OnInitialize(
     OnInitializeFailed(reply_message);
     return;
   }
+
+  gpu_control_.reset(
+      new gpu::GpuControlService(context_group_->image_manager(),
+                                 NULL,
+                                 context_group_->mailbox_manager(),
+                                 NULL));
 
   decoder_.reset(::gpu::gles2::GLES2Decoder::Create(context_group_.get()));
 
@@ -846,6 +858,28 @@ void GpuCommandBufferStub::OnSetClientHasMemoryAllocationChangedCallback(
   } else {
     memory_manager_client_state_.reset();
   }
+}
+
+void GpuCommandBufferStub::OnRegisterGpuMemoryBuffer(
+    int32 id,
+    gfx::GpuMemoryBufferHandle gpu_memory_buffer,
+    uint32 width,
+    uint32 height,
+    uint32 internalformat) {
+  TRACE_EVENT0("gpu", "GpuCommandBufferStub::OnRegisterGpuMemoryBuffer");
+  if (gpu_control_) {
+    gpu_control_->RegisterGpuMemoryBuffer(id,
+                                          gpu_memory_buffer,
+                                          width,
+                                          height,
+                                          internalformat);
+  }
+}
+
+void GpuCommandBufferStub::OnDestroyGpuMemoryBuffer(int32 id) {
+  TRACE_EVENT0("gpu", "GpuCommandBufferStub::OnDestroyGpuMemoryBuffer");
+  if (gpu_control_)
+    gpu_control_->DestroyGpuMemoryBuffer(id);
 }
 
 void GpuCommandBufferStub::SendConsoleMessage(

@@ -24,6 +24,7 @@
 #include "ipc/ipc_sender.h"
 #include "media/base/video_decoder_config.h"
 #include "ui/events/latency_info.h"
+#include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/size.h"
 #include "ui/gl/gl_surface.h"
@@ -31,6 +32,7 @@
 #include "url/gurl.h"
 
 namespace gpu {
+class GpuControlService;
 struct Mailbox;
 namespace gles2 {
 class ImageManager;
@@ -181,6 +183,13 @@ class GpuCommandBufferStub
   void OnReceivedClientManagedMemoryStats(const GpuManagedMemoryStats& stats);
   void OnSetClientHasMemoryAllocationChangedCallback(bool has_callback);
 
+  void OnRegisterGpuMemoryBuffer(int32 id,
+                                 gfx::GpuMemoryBufferHandle gpu_memory_buffer,
+                                 uint32 width,
+                                 uint32 height,
+                                 uint32 internalformat);
+  void OnDestroyGpuMemoryBuffer(int32 id);
+
   void OnCommandProcessed();
   void OnParseError();
   void OnSetLatencyInfo(const ui::LatencyInfo& latency_info);
@@ -223,6 +232,7 @@ class GpuCommandBufferStub
   scoped_ptr<gpu::gles2::GLES2Decoder> decoder_;
   scoped_ptr<gpu::GpuScheduler> scheduler_;
   scoped_refptr<gfx::GLSurface> surface_;
+  scoped_ptr<gpu::GpuControlService> gpu_control_;
 
   scoped_ptr<GpuMemoryManagerClientState> memory_manager_client_state_;
   // The last memory allocation received from the GpuMemoryManager (used to

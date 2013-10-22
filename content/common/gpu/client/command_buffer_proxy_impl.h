@@ -16,7 +16,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "content/common/gpu/gpu_memory_allocation.h"
-#include "content/common/gpu/gpu_memory_allocation.h"
 #include "gpu/command_buffer/common/command_buffer.h"
 #include "gpu/command_buffer/common/command_buffer_shared.h"
 #include "gpu/command_buffer/common/gpu_control.h"
@@ -28,6 +27,10 @@ struct GPUCommandBufferConsoleMessage;
 
 namespace base {
 class SharedMemory;
+}
+
+namespace gfx {
+class GpuMemoryBuffer;
 }
 
 namespace gpu {
@@ -145,6 +148,7 @@ class CommandBufferProxyImpl
  private:
   typedef std::map<int32, gpu::Buffer> TransferBufferMap;
   typedef base::hash_map<uint32, base::Closure> SignalTaskMap;
+  typedef std::map<int32, gfx::GpuMemoryBuffer*> GpuMemoryBufferMap;
 
   // Send an IPC message over the GPU channel. This is private to fully
   // encapsulate the channel; all callers of this function must explicitly
@@ -201,6 +205,9 @@ class CommandBufferProxyImpl
   // Tasks to be invoked in SignalSyncPoint responses.
   uint32 next_signal_id_;
   SignalTaskMap signal_tasks_;
+
+  // Local cache of id to gpu memory buffer mapping.
+  GpuMemoryBufferMap gpu_memory_buffers_;
 
   DISALLOW_COPY_AND_ASSIGN(CommandBufferProxyImpl);
 };

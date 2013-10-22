@@ -9,8 +9,9 @@
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/gpu/gpu_surface_tracker.h"
-#include "content/common/gpu/gpu_messages.h"
 #include "content/common/child_process_host_impl.h"
+#include "content/common/gpu/client/gpu_memory_buffer_impl.h"
+#include "content/common/gpu/gpu_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_client.h"
 #include "ipc/ipc_forwarding_message_filter.h"
@@ -282,6 +283,27 @@ GpuChannelHost* BrowserGpuChannelHostFactory::EstablishGpuChannelSync(
       this, request.gpu_host_id, gpu_client_id_,
       request.gpu_info, request.channel_handle);
   return gpu_channel_.get();
+}
+
+scoped_ptr<gfx::GpuMemoryBuffer>
+    BrowserGpuChannelHostFactory::AllocateGpuMemoryBuffer(
+        size_t width,
+        size_t height,
+        unsigned internalformat) {
+  if (!GpuMemoryBufferImpl::IsFormatValid(internalformat))
+    return scoped_ptr<gfx::GpuMemoryBuffer>();
+
+  size_t size = width * height *
+      GpuMemoryBufferImpl::BytesPerPixel(internalformat);
+  scoped_ptr<base::SharedMemory> shm(new base::SharedMemory());
+  if (!shm->CreateAnonymous(size))
+    return scoped_ptr<gfx::GpuMemoryBuffer>();
+
+  return make_scoped_ptr<gfx::GpuMemoryBuffer>(
+      new GpuMemoryBufferImpl(shm.Pass(),
+                              width,
+                              height,
+                              internalformat));
 }
 
 // static
