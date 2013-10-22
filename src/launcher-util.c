@@ -409,9 +409,9 @@ weston_launcher_connect(struct weston_compositor *compositor, int tty,
 void
 weston_launcher_destroy(struct weston_launcher *launcher)
 {
-	if (launcher->logind)
+	if (launcher->logind) {
 		weston_logind_destroy(launcher->logind);
-	if (launcher->fd != -1) {
+	} else if (launcher->fd != -1) {
 		close(launcher->fd);
 		wl_event_source_remove(launcher->source);
 	} else {
