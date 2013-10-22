@@ -2365,10 +2365,6 @@ session_notify(struct wl_listener *listener, void *data)
 	if (ec->base.session_active) {
 		weston_log("activating session\n");
 		compositor->focus = 1;
-		if (ec->base.launcher == NULL && drmSetMaster(ec->drm.fd)) {
-			weston_log("failed to set master: %m\n");
-			wl_display_terminate(compositor->wl_display);
-		}
 		compositor->state = ec->prev_state;
 		drm_compositor_set_modes(ec);
 		weston_compositor_damage_all(compositor);
@@ -2402,9 +2398,6 @@ session_notify(struct wl_listener *listener, void *data)
 					sprite->plane_id,
 					output->crtc_id, 0, 0,
 					0, 0, 0, 0, 0, 0, 0, 0);
-
-		if (ec->base.launcher == NULL && drmDropMaster(ec->drm.fd) < 0)
-			weston_log("failed to drop master: %m\n");
 	};
 }
 
