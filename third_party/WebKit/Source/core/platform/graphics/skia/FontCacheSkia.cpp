@@ -32,11 +32,12 @@
 
 #include "SkFontMgr.h"
 #include "SkTypeface.h"
-#include "platform/NotImplemented.h"
+#include "core/platform/graphics/AlternateFontFamily.h"
 #include "core/platform/graphics/Font.h"
 #include "core/platform/graphics/FontCache.h"
 #include "core/platform/graphics/FontDescription.h"
 #include "core/platform/graphics/SimpleFontData.h"
+#include "platform/NotImplemented.h"
 #include "wtf/Assertions.h"
 #include "wtf/text/AtomicString.h"
 #include "wtf/text/CString.h"
@@ -95,7 +96,11 @@ PassRefPtr<SimpleFontData> FontCache::getSimilarFontPlatformData(const Font& fon
 
 PassRefPtr<SimpleFontData> FontCache::getLastResortFallbackFont(const FontDescription& description, ShouldRetain shouldRetain)
 {
-    const FontPlatformData* fontPlatformData = getFallbackFontData(description);
+    const AtomicString fallbackFontFamily = getFallbackFontFamily(description);
+    const FontPlatformData* fontPlatformData = 0;
+    if (!fallbackFontFamily.isEmpty())
+        fontPlatformData = getFontResourcePlatformData(description, fallbackFontFamily);
+
     if (!fontPlatformData) {
         // we should at least have Arial; this is the SkFontHost_fontconfig last resort fallback
         DEFINE_STATIC_LOCAL(const AtomicString, arialStr, ("Arial", AtomicString::ConstructFromLiteral));

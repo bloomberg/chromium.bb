@@ -31,7 +31,9 @@
 #include "core/platform/graphics/FontCache.h"
 
 #include "FontFamilyNames.h"
+
 #include "RuntimeEnabledFeatures.h"
+#include "core/platform/graphics/AlternateFontFamily.h"
 #include "core/platform/graphics/Font.h"
 #include "core/platform/graphics/FontCacheKey.h"
 #include "core/platform/graphics/FontDescription.h"
@@ -67,74 +69,6 @@ FontCache::FontCache()
 typedef HashMap<FontCacheKey, OwnPtr<FontPlatformData>, FontCacheKeyHash, FontCacheKeyTraits> FontPlatformDataCache;
 
 static FontPlatformDataCache* gFontPlatformDataCache = 0;
-
-// We currently do not support bitmap fonts on windows (with GDI_FONTS_ON_WINDOWS enabled).
-// Instead of trying to construct a bitmap font and then going down the fallback path map
-// certain common bitmap fonts to their truetype equivalent up front. This also allows the
-// GDI_FONTS_ON_WINDOWS disabled code path to match our current behavior.
-static const AtomicString& alternateFamilyNameAvoidingBitmapFonts(const AtomicString& familyName)
-{
-#if OS(WIN)
-    // On Windows, 'Courier New' (truetype font) is always present and
-    // 'Courier' is a bitmap font. On Mac on the other hand 'Courier' is
-    // a truetype font. Thus pages asking for Courier are better of
-    // using 'Courier New' on windows.
-    DEFINE_STATIC_LOCAL(AtomicString, courier, ("Courier", AtomicString::ConstructFromLiteral));
-    DEFINE_STATIC_LOCAL(AtomicString, courierNew, ("Courier New", AtomicString::ConstructFromLiteral));
-    if (equalIgnoringCase(familyName, courier))
-        return courierNew;
-
-    // Alias 'MS Sans Serif' (bitmap font) -> 'Microsoft Sans Serif'
-    // (truetype font).
-    DEFINE_STATIC_LOCAL(AtomicString, msSans, ("MS Sans Serif", AtomicString::ConstructFromLiteral));
-    DEFINE_STATIC_LOCAL(AtomicString, microsoftSans, ("Microsoft Sans Serif", AtomicString::ConstructFromLiteral));
-    if (equalIgnoringCase(familyName, msSans))
-        return microsoftSans;
-
-    // Alias 'MS Serif' (bitmap) -> 'Times New Roman' (truetype font).
-    // There's no 'Microsoft Sans Serif-equivalent' for Serif.
-    DEFINE_STATIC_LOCAL(AtomicString, msSerif, ("MS Serif", AtomicString::ConstructFromLiteral));
-    DEFINE_STATIC_LOCAL(AtomicString, timesNewRoman, ("Times New Roman", AtomicString::ConstructFromLiteral));
-    if (equalIgnoringCase(familyName, msSerif))
-        return timesNewRoman;
-#endif
-
-    return emptyAtom;
-}
-
-static const AtomicString& alternateFamilyName(const AtomicString& familyName)
-{
-    // Alias Courier <-> Courier New
-    DEFINE_STATIC_LOCAL(AtomicString, courier, ("Courier", AtomicString::ConstructFromLiteral));
-    DEFINE_STATIC_LOCAL(AtomicString, courierNew, ("Courier New", AtomicString::ConstructFromLiteral));
-    if (equalIgnoringCase(familyName, courier))
-        return courierNew;
-#if !OS(WIN)
-    // On Windows, Courier New (truetype font) is always present and
-    // Courier is a bitmap font. So, we don't want to map Courier New to
-    // Courier.
-    if (equalIgnoringCase(familyName, courierNew))
-        return courier;
-#endif
-
-    // Alias Times and Times New Roman.
-    DEFINE_STATIC_LOCAL(AtomicString, times, ("Times", AtomicString::ConstructFromLiteral));
-    DEFINE_STATIC_LOCAL(AtomicString, timesNewRoman, ("Times New Roman", AtomicString::ConstructFromLiteral));
-    if (equalIgnoringCase(familyName, times))
-        return timesNewRoman;
-    if (equalIgnoringCase(familyName, timesNewRoman))
-        return times;
-
-    // Alias Arial and Helvetica
-    DEFINE_STATIC_LOCAL(AtomicString, arial, ("Arial", AtomicString::ConstructFromLiteral));
-    DEFINE_STATIC_LOCAL(AtomicString, helvetica, ("Helvetica", AtomicString::ConstructFromLiteral));
-    if (equalIgnoringCase(familyName, arial))
-        return helvetica;
-    if (equalIgnoringCase(familyName, helvetica))
-        return arial;
-
-    return emptyAtom;
-}
 
 FontPlatformData* FontCache::getFontResourcePlatformData(const FontDescription& fontDescription,
     const AtomicString& passedFamilyName, bool checkingAlternateName)
@@ -523,29 +457,6 @@ void FontCache::invalidate()
         clients[i]->fontCacheInvalidated();
 
     purgeInactiveFontData();
-}
-
-const FontPlatformData* FontCache::getFallbackFontData(const FontDescription& description)
-{
-    DEFINE_STATIC_LOCAL(const AtomicString, sansStr, ("Sans", AtomicString::ConstructFromLiteral));
-    DEFINE_STATIC_LOCAL(const AtomicString, serifStr, ("Serif", AtomicString::ConstructFromLiteral));
-    DEFINE_STATIC_LOCAL(const AtomicString, monospaceStr, ("Monospace", AtomicString::ConstructFromLiteral));
-
-    FontPlatformData* fontPlatformData = 0;
-    switch (description.genericFamily()) {
-    case FontDescription::SerifFamily:
-        fontPlatformData = getFontResourcePlatformData(description, serifStr);
-        break;
-    case FontDescription::MonospaceFamily:
-        fontPlatformData = getFontResourcePlatformData(description, monospaceStr);
-        break;
-    case FontDescription::SansSerifFamily:
-    default:
-        fontPlatformData = getFontResourcePlatformData(description, sansStr);
-        break;
-    }
-
-    return fontPlatformData;
 }
 
 } // namespace WebCore
