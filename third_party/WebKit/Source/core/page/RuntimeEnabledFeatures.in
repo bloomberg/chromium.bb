@@ -15,7 +15,7 @@
 // condition=ENABLE_NAME is used for wrapping features in compile-time
 // #if ENABLE(FEATURE) guards.  These are deprecated and should all be removed.
 
-AnimatedWebP status=experimental
+AnimatedWebP status=stable
 ApplicationCache status=stable
 AuthorShadowDOMForAnyElement
 Crypto status=experimental
