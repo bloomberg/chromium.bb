@@ -15,7 +15,7 @@ ApiResource::ApiResource(const std::string& owner_extension_id)
 ApiResource::~ApiResource() {
 }
 
-bool ApiResource::persistent() const {
+bool ApiResource::IsPersistent() const {
     return true;  // backward-compatible behavior.
 }
 

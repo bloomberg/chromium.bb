@@ -322,8 +322,8 @@ ResumableTCPSocket::ResumableTCPSocket(net::TCPClientSocket* tcp_client_socket,
       paused_(false) {
 }
 
-bool ResumableTCPSocket::persistent() const {
-  return persistent_;
+bool ResumableTCPSocket::IsPersistent() const {
+  return persistent();
 }
 
 ResumableTCPServerSocket::ResumableTCPServerSocket(
@@ -333,8 +333,8 @@ ResumableTCPServerSocket::ResumableTCPServerSocket(
       paused_(false) {
 }
 
-bool ResumableTCPServerSocket::persistent() const {
-  return persistent_;
+bool ResumableTCPServerSocket::IsPersistent() const {
+  return persistent();
 }
 
 }  // namespace extensions

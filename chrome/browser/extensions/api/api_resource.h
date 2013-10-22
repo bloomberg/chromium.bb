@@ -23,7 +23,9 @@ class ApiResource {
     return owner_extension_id_;
   }
 
-  virtual bool persistent() const;
+  // If this method returns |true|, the resource remains open when the
+  // owning extension is suspended due to inactivity.
+  virtual bool IsPersistent() const;
 
   static const content::BrowserThread::ID kThreadId =
       content::BrowserThread::IO;

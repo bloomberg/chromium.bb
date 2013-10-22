@@ -81,14 +81,17 @@ class ResumableUDPSocket : public UDPSocket {
  public:
   explicit ResumableUDPSocket(const std::string& owner_extension_id);
 
-  const std::string& name() const;
-  void set_name(const std::string& name);
+  // Overriden from ApiResource
+  virtual bool IsPersistent() const OVERRIDE;
 
-  virtual bool persistent() const OVERRIDE;
-  void set_persistent(bool persistent);
+  const std::string& name() const { return name_; }
+  void set_name(const std::string& name) { name_ = name; }
 
-  int buffer_size() const;
-  void set_buffer_size(int buffer_size);
+  bool persistent() const { return persistent_; }
+  void set_persistent(bool persistent) { persistent_ = persistent; }
+
+  int buffer_size() const { return buffer_size_; }
+  void set_buffer_size(int buffer_size) { buffer_size_ = buffer_size; }
 
  private:
   friend class ApiResourceManager<ResumableUDPSocket>;
@@ -96,8 +99,12 @@ class ResumableUDPSocket : public UDPSocket {
     return "ResumableUDPSocketManager";
   }
 
+  // Application-defined string - see sockets_udp.idl.
   std::string name_;
+  // Flag indicating whether the socket is left open when the application is
+  // suspended - see sockets_udp.idl.
   bool persistent_;
+  // The size of the buffer used to receive data - see sockets_udp.idl.
   int buffer_size_;
 };
 

@@ -299,28 +299,8 @@ ResumableUDPSocket::ResumableUDPSocket(const std::string& owner_extension_id)
       buffer_size_(0) {
 }
 
-const std::string& ResumableUDPSocket::name() const {
-  return name_;
-}
-
-void ResumableUDPSocket::set_name(const std::string& name) {
-  name_ = name;
-}
-
-bool ResumableUDPSocket::persistent() const {
-  return persistent_;
-}
-
-void ResumableUDPSocket::set_persistent(bool persistent) {
-  persistent_ = persistent;
-}
-
-int ResumableUDPSocket::buffer_size() const {
-  return buffer_size_;
-}
-
-void ResumableUDPSocket::set_buffer_size(int buffer_size) {
-  buffer_size_ = buffer_size;
+bool ResumableUDPSocket::IsPersistent() const {
+  return persistent();
 }
 
 }  // namespace extensions

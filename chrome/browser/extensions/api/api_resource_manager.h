@@ -288,7 +288,7 @@ class ApiResourceManager : public ProfileKeyedAPI,
         } else {
           linked_ptr<T> ptr = api_resource_map_[*it];
           T* resource = ptr.get();
-          erase = (resource && !resource->persistent());
+          erase = (resource && !resource->IsPersistent());
         }
 
         if (erase) {

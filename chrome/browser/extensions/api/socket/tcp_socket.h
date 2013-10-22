@@ -106,11 +106,13 @@ class ResumableTCPSocket : public TCPSocket {
                               const std::string& owner_extension_id,
                               bool is_connected);
 
+  // Overriden from ApiResource
+  virtual bool IsPersistent() const OVERRIDE;
+
   const std::string& name() const { return name_; }
   void set_name(const std::string& name) { name_ = name; }
 
-  // Overriden from ApiResource
-  virtual bool persistent() const OVERRIDE;
+  bool persistent() const { return persistent_;  }
   void set_persistent(bool persistent) { persistent_ = persistent; }
 
   int buffer_size() const { return buffer_size_; }
@@ -128,7 +130,7 @@ class ResumableTCPSocket : public TCPSocket {
   // Application-defined string - see sockets_tcp.idl.
   std::string name_;
   // Flag indicating whether the socket is left open when the application is
-  // suspended - see sockets_tcp.idl..
+  // suspended - see sockets_tcp.idl.
   bool persistent_;
   // The size of the buffer used to receive data - see sockets_tcp.idl.
   int buffer_size_;
@@ -144,10 +146,13 @@ class ResumableTCPServerSocket : public TCPSocket {
  public:
   explicit ResumableTCPServerSocket(const std::string& owner_extension_id);
 
+  // Overriden from ApiResource
+  virtual bool IsPersistent() const OVERRIDE;
+
   const std::string& name() const { return name_; }
   void set_name(const std::string& name) { name_ = name; }
 
-  virtual bool persistent() const OVERRIDE;
+  bool persistent() const { return persistent_; }
   void set_persistent(bool persistent) { persistent_ = persistent; }
 
   bool paused() const { return paused_; }
