@@ -1613,13 +1613,6 @@ IPC_MESSAGE_ROUTED2(ViewHostMsg_DidRunInsecureContent,
                     std::string  /* security_origin */,
                     GURL         /* target URL */)
 
-// Sent when the renderer starts a provisional load for a frame.
-IPC_MESSAGE_ROUTED4(ViewHostMsg_DidStartProvisionalLoadForFrame,
-                    int64 /* frame_id */,
-                    int64 /* parent_frame_id */,
-                    bool /* true if it is the main frame */,
-                    GURL /* url */)
-
 IPC_MESSAGE_ROUTED5(ViewHostMsg_DidFailLoadWithError,
                     int64 /* frame_id */,
                     GURL /* validated_url */,
