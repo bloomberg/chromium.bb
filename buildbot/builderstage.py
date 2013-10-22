@@ -122,7 +122,8 @@ class BuilderStage(object):
     """
     return validation_pool.ValidationPool.ConstructDashboardURL(
         self._build_config['overlays'], self._options.remote_trybot,
-        self._build_config['name'], self._options.buildnumber, stage=stage)
+        os.environ.get('BUILDBOT_BUILDERNAME', self._build_config['name']),
+        self._options.buildnumber, stage=stage)
 
   def _ExtractOverlays(self):
     """Extracts list of overlays into class."""
