@@ -105,18 +105,14 @@ void RenderSVGModelObject::addLayerHitTestRects(LayerHitTestRects&, const Render
     // We don't walk into SVG trees at all - just report their container.
 }
 
-void RenderSVGModelObject::styleWillChange(StyleDifference diff, const RenderStyle* newStyle)
+void RenderSVGModelObject::styleDidChange(StyleDifference diff, const RenderStyle* oldStyle)
 {
     if (diff == StyleDifferenceLayout) {
         setNeedsBoundariesUpdate();
-        if (newStyle->hasTransform())
+        if (style()->hasTransform())
             setNeedsTransformUpdate();
     }
-    RenderObject::styleWillChange(diff, newStyle);
-}
 
-void RenderSVGModelObject::styleDidChange(StyleDifference diff, const RenderStyle* oldStyle)
-{
     RenderObject::styleDidChange(diff, oldStyle);
     SVGResourcesCache::clientStyleChanged(this, diff, style());
 }

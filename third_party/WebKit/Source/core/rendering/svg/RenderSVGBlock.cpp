@@ -89,15 +89,11 @@ void RenderSVGBlock::willBeDestroyed()
     RenderBlock::willBeDestroyed();
 }
 
-void RenderSVGBlock::styleWillChange(StyleDifference diff, const RenderStyle* newStyle)
+void RenderSVGBlock::styleDidChange(StyleDifference diff, const RenderStyle* oldStyle)
 {
     if (diff == StyleDifferenceLayout)
         setNeedsBoundariesUpdate();
-    RenderBlock::styleWillChange(diff, newStyle);
-}
 
-void RenderSVGBlock::styleDidChange(StyleDifference diff, const RenderStyle* oldStyle)
-{
     RenderBlock::styleDidChange(diff, oldStyle);
     SVGResourcesCache::clientStyleChanged(this, diff, style());
 }
