@@ -66,7 +66,7 @@ assertIterationTime('1s', [
 
 
 log('\nZero duration:')
-assertIterationTime('', [
+assertIterationTime('none', [
   {is: null, at: -1},
   {is: null, at: 0},
   {is: null, at: 1},
@@ -92,7 +92,7 @@ assertIterationTime('backwards', [
 
 
 log('\nZero duration + reverse direction:')
-assertIterationTime('reverse', [
+assertIterationTime('none reverse', [
   {is: null, at: -1},
   {is: null, at: 0},
   {is: null, at: 1},
@@ -118,51 +118,52 @@ assertIterationTime('backwards reverse', [
 
 
 log('\nZero iterations:')
-assertIterationTime('1s linear none 0', [
+assertIterationTime('1s 0s 0 none', [
   {is: null, at: -1},
   {is: null, at: 0},
   {is: null, at: 0.5},
   {is: null, at: 2},
 ]);
 
-assertIterationTime('1s both 0', [
+assertIterationTime('1s 0s 0 both', [
   {is: 0, at: -1},
   {is: 0, at: 0},
   {is: 0, at: 2},
 ]);
 
-assertIterationTime('1s forwards 0', [
+assertIterationTime('1s 0s 0 forwards', [
   {is: null, at: -1},
   {is: 0, at: 0},
   {is: 0, at: 2},
 ]);
 
-assertIterationTime('1s backwards 0', [
+assertIterationTime('1s 0s 0 backwards', [
   {is: 0, at: -1},
   {is: null, at: 0},
   {is: null, at: 2},
 ]);
+
 
 log('\nZero iterations, zero duration:')
-assertIterationTime('none 0', [
+assertIterationTime('0s 0s 0 none', [
   {is: null, at: -1},
   {is: null, at: 0},
   {is: null, at: 2},
 ]);
 
-assertIterationTime('both 0', [
+assertIterationTime('0s 0s 0 both', [
   {is: 0, at: -1},
   {is: 0, at: 0},
   {is: 0, at: 1},
 ]);
 
-assertIterationTime('forwards 0', [
+assertIterationTime('0s 0s 0 forwards', [
   {is: null, at: -1},
   {is: 0, at: 0},
   {is: 0, at: 1},
 ]);
 
-assertIterationTime('backwards 0', [
+assertIterationTime('0s 0s 0 backwards', [
   {is: 0, at: -1},
   {is: null, at: 0},
   {is: null, at: 1},
