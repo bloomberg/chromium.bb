@@ -177,6 +177,7 @@ tableLayout
 textAlign
 textAnchor
 textDecoration
+textIndent
 textLineThroughColor
 textLineThroughMode
 textLineThroughStyle
