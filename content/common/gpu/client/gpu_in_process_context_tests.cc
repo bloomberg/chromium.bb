@@ -14,13 +14,16 @@
 
 namespace {
 
+using webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl;
+
 class ContextTestBase : public testing::Test {
  public:
   virtual void SetUp() {
     WebKit::WebGraphicsContext3D::Attributes attributes;
-    context_ = webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl::
+    context_ = WebGraphicsContext3DInProcessCommandBufferImpl::
         CreateOffscreenContext(attributes);
     context_->makeContextCurrent();
+    context_support_ = context_->GetContextSupport();
   }
 
   virtual void TearDown() {
@@ -28,7 +31,8 @@ class ContextTestBase : public testing::Test {
   }
 
  protected:
-  scoped_ptr<WebKit::WebGraphicsContext3D> context_;
+  scoped_ptr<WebGraphicsContext3DInProcessCommandBufferImpl> context_;
+  gpu::ContextSupport* context_support_;
 };
 
 }  // namespace

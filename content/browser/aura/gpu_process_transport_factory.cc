@@ -363,7 +363,8 @@ GLHelper* GpuProcessTransportFactory::GetGLHelper() {
     scoped_refptr<cc::ContextProvider> provider =
         SharedMainThreadContextProvider();
     if (provider.get())
-      gl_helper_.reset(new GLHelper(provider->Context3d()));
+      gl_helper_.reset(new GLHelper(provider->Context3d(),
+                                    provider->ContextSupport()));
   }
   return gl_helper_.get();
 }

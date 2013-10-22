@@ -11,6 +11,7 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
+#include "cc/debug/test_context_support.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
 
@@ -73,33 +74,16 @@ TestWebGraphicsContext3D::TestWebGraphicsContext3D()
       max_texture_size_(2048),
       width_(0),
       height_(0),
+      test_support_(NULL),
       bound_buffer_(0),
       weak_ptr_factory_(this) {
   CreateNamespace();
   test_capabilities_.swapbuffers_complete_callback = true;
 }
 
-TestWebGraphicsContext3D::TestWebGraphicsContext3D(
-    const WebGraphicsContext3D::Attributes& attributes)
-    : FakeWebGraphicsContext3D(),
-      context_id_(s_context_id++),
-      attributes_(attributes),
-      times_make_current_succeeds_(-1),
-      times_bind_texture_succeeds_(-1),
-      times_end_query_succeeds_(-1),
-      times_gen_mailbox_succeeds_(-1),
-      context_lost_(false),
-      times_map_image_chromium_succeeds_(-1),
-      times_map_buffer_chromium_succeeds_(-1),
-      context_lost_callback_(NULL),
-      swap_buffers_callback_(NULL),
-      max_texture_size_(2048),
-      width_(0),
-      height_(0),
-      bound_buffer_(0),
-      weak_ptr_factory_(this) {
-  CreateNamespace();
-  test_capabilities_.swapbuffers_complete_callback = true;
+TestWebGraphicsContext3D::~TestWebGraphicsContext3D() {
+  base::AutoLock lock(g_shared_namespace_lock.Get());
+  namespace_ = NULL;
 }
 
 void TestWebGraphicsContext3D::CreateNamespace() {
@@ -114,15 +98,6 @@ void TestWebGraphicsContext3D::CreateNamespace() {
   } else {
     namespace_ = new Namespace;
   }
-}
-
-TestWebGraphicsContext3D::~TestWebGraphicsContext3D() {
-  for (size_t i = 0; i < sync_point_callbacks_.size(); ++i) {
-    if (sync_point_callbacks_[i] != NULL)
-      delete sync_point_callbacks_[i];
-  }
-  base::AutoLock lock(g_shared_namespace_lock.Get());
-  namespace_ = NULL;
 }
 
 bool TestWebGraphicsContext3D::makeContextCurrent() {
@@ -398,13 +373,13 @@ void TestWebGraphicsContext3D::loseContextCHROMIUM(WGC3Denum current,
 void TestWebGraphicsContext3D::signalSyncPoint(
     unsigned sync_point,
     WebGraphicsSyncPointCallback* callback) {
-  sync_point_callbacks_.push_back(callback);
+  NOTREACHED();
 }
 
 void TestWebGraphicsContext3D::signalQuery(
     WebKit::WebGLId query,
     WebGraphicsSyncPointCallback* callback) {
-  sync_point_callbacks_.push_back(callback);
+  NOTREACHED();
 }
 
 void TestWebGraphicsContext3D::setSwapBuffersCompleteCallbackCHROMIUM(
@@ -414,38 +389,21 @@ void TestWebGraphicsContext3D::setSwapBuffersCompleteCallbackCHROMIUM(
 }
 
 void TestWebGraphicsContext3D::prepareTexture() {
+  // TODO(jamesr): This should implemented as ContextSupport::SwapBuffers().
   if (swap_buffers_callback_) {
     base::MessageLoop::current()->PostTask(
         FROM_HERE, base::Bind(&TestWebGraphicsContext3D::SwapBuffersComplete,
                               weak_ptr_factory_.GetWeakPtr()));
   }
-  CallAllSyncPointCallbacks();
+  test_support_->CallAllSyncPointCallbacks();
 }
 
 void TestWebGraphicsContext3D::finish() {
-  CallAllSyncPointCallbacks();
+  test_support_->CallAllSyncPointCallbacks();
 }
 
 void TestWebGraphicsContext3D::flush() {
-  CallAllSyncPointCallbacks();
-}
-
-static void CallAndDestroy(
-    WebKit::WebGraphicsContext3D::WebGraphicsSyncPointCallback* callback) {
-  if (!callback)
-    return;
-  callback->onSyncPointReached();
-  delete callback;
-}
-
-void TestWebGraphicsContext3D::CallAllSyncPointCallbacks() {
-  for (size_t i = 0; i < sync_point_callbacks_.size(); ++i) {
-    base::MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(&CallAndDestroy,
-                   sync_point_callbacks_[i]));
-  }
-  sync_point_callbacks_.clear();
+  test_support_->CallAllSyncPointCallbacks();
 }
 
 void TestWebGraphicsContext3D::SwapBuffersComplete() {

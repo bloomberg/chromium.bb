@@ -32,12 +32,12 @@
 #include "cc/quads/texture_draw_quad.h"
 #include "cc/resources/layer_quad.h"
 #include "cc/resources/scoped_resource.h"
-#include "cc/resources/sync_point_helper.h"
 #include "cc/resources/texture_mailbox_deleter.h"
 #include "cc/trees/damage_tracker.h"
 #include "cc/trees/proxy.h"
 #include "cc/trees/single_thread_proxy.h"
 #include "gpu/GLES2/gl2extchromium.h"
+#include "gpu/command_buffer/client/context_support.h"
 #include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
@@ -162,6 +162,7 @@ GLRenderer::GLRenderer(RendererClient* client,
       offscreen_framebuffer_id_(0),
       shared_geometry_quad_(gfx::RectF(-0.5f, -0.5f, 1.0f, 1.0f)),
       context_(output_surface->context_provider()->Context3d()),
+      context_support_(output_surface->context_provider()->ContextSupport()),
       texture_mailbox_deleter_(texture_mailbox_deleter),
       is_backbuffer_discarded_(false),
       discard_backbuffer_when_not_visible_(false),
@@ -174,6 +175,7 @@ GLRenderer::GLRenderer(RendererClient* client,
       highp_threshold_cache_(0),
       on_demand_tile_raster_resource_id_(0) {
   DCHECK(context_);
+  DCHECK(context_support_);
 }
 
 bool GLRenderer::Initialize() {
@@ -1079,7 +1081,7 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
   // Flush the compositor context before the filter bitmap goes out of
   // scope, so the draw gets processed before the filter texture gets deleted.
   if (filter_bitmap.getTexture())
-    context_->flush();
+    GLC(context_, context_->flush());
 }
 
 struct SolidColorProgramUniforms {
@@ -2056,8 +2058,8 @@ void GLRenderer::CopyTextureToFramebuffer(const DrawingFrame* frame,
 }
 
 void GLRenderer::Finish() {
-  TRACE_EVENT0("cc", "GLRenderer::finish");
-  context_->finish();
+  TRACE_EVENT0("cc", "GLRenderer::Finish");
+  GLC(context_, context_->finish());
 }
 
 void GLRenderer::SwapBuffers() {
@@ -2336,10 +2338,7 @@ void GLRenderer::DoGetFramebufferPixels(
   if (is_async) {
     GLC(context_, context_->endQueryEXT(
         GL_ASYNC_PIXEL_PACK_COMPLETED_CHROMIUM));
-    SyncPointHelper::SignalQuery(
-        context_,
-        query,
-        finished_callback);
+    context_support_->SignalQuery(query, finished_callback);
   } else {
     resource_provider_->Finish();
     finished_callback.Run();

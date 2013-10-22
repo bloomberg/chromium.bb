@@ -139,7 +139,8 @@ void CmdBufferImageTransportFactory::AcquireTexture(
 
 GLHelper* CmdBufferImageTransportFactory::GetGLHelper() {
   if (!gl_helper_)
-    gl_helper_.reset(new GLHelper(context_.get()));
+    gl_helper_.reset(new GLHelper(context_.get(),
+                                  context_->GetContextSupport()));
 
   return gl_helper_.get();
 }

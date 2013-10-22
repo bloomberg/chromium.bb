@@ -121,8 +121,7 @@ class ResourceProviderContext : public TestWebGraphicsContext3D {
  public:
   static scoped_ptr<ResourceProviderContext> Create(
       ContextSharedData* shared_data) {
-    return make_scoped_ptr(
-        new ResourceProviderContext(Attributes(), shared_data));
+    return make_scoped_ptr(new ResourceProviderContext(shared_data));
   }
 
   virtual unsigned insertSyncPoint() OVERRIDE {
@@ -261,10 +260,8 @@ class ResourceProviderContext : public TestWebGraphicsContext3D {
   }
 
  protected:
-  ResourceProviderContext(const Attributes& attrs,
-                          ContextSharedData* shared_data)
-      : TestWebGraphicsContext3D(attrs),
-        shared_data_(shared_data),
+  explicit ResourceProviderContext(ContextSharedData* shared_data)
+      : shared_data_(shared_data),
         last_waited_sync_point_(0) {}
 
  private:

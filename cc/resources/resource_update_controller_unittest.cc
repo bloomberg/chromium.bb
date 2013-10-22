@@ -39,8 +39,8 @@ class WebGraphicsContext3DForUploadTest : public TestWebGraphicsContext3D {
     test_capabilities_.shallow_flush = true;
   }
 
-  virtual void flush(void) OVERRIDE;
-  virtual void shallowFlushCHROMIUM(void) OVERRIDE;
+  virtual void flush() OVERRIDE;
+  virtual void shallowFlushCHROMIUM() OVERRIDE;
   virtual void texSubImage2D(
       WGC3Denum target,
       WGC3Dint level,
@@ -214,9 +214,9 @@ class ResourceUpdateControllerTest : public Test {
   int num_total_flushes_;
 };
 
-void WebGraphicsContext3DForUploadTest::flush(void) { test_->OnFlush(); }
+void WebGraphicsContext3DForUploadTest::flush() { test_->OnFlush(); }
 
-void WebGraphicsContext3DForUploadTest::shallowFlushCHROMIUM(void) {
+void WebGraphicsContext3DForUploadTest::shallowFlushCHROMIUM() {
   test_->OnFlush();
 }
 

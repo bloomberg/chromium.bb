@@ -69,11 +69,6 @@ class GLES2_IMPL_EXPORT GLInProcessContext {
 
   virtual void SetContextLostCallback(const base::Closure& callback) = 0;
 
-  virtual void SignalSyncPoint(unsigned sync_point,
-                               const base::Closure& callback) = 0;
-
-  virtual void SignalQuery(unsigned query, const base::Closure& callback) = 0;
-
   // Allows direct access to the GLES2 implementation so a GLInProcessContext
   // can be used without making it current.
   virtual gles2::GLES2Implementation* GetImplementation() = 0;

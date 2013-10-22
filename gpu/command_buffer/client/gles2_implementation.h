@@ -14,9 +14,11 @@
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "gles2_impl_export.h"
 #include "gpu/command_buffer/client/buffer_tracker.h"
 #include "gpu/command_buffer/client/client_context_state.h"
+#include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_cmd_helper.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_tracker.h"
@@ -113,7 +115,9 @@ class VertexArrayObjectManager;
 // be had by changing your code to use command buffers directly by using the
 // GLES2CmdHelper but that entails changing your code to use and deal with
 // shared memory and synchronization issues.
-class GLES2_IMPL_EXPORT GLES2Implementation : public GLES2Interface {
+class GLES2_IMPL_EXPORT GLES2Implementation
+    : public GLES2Interface,
+      NON_EXPORTED_BASE(public ContextSupport) {
  public:
   enum MappedMemoryLimit {
     kNoLimit = MappedMemoryManager::kNoLimit,
@@ -219,9 +223,14 @@ class GLES2_IMPL_EXPORT GLES2Implementation : public GLES2Interface {
       GLuint program, GLuint index, GLsizei bufsize, GLsizei* length,
       GLint* size, GLenum* type, char* name);
 
-
   void FreeUnusedSharedMemory();
   void FreeEverything();
+
+  // ContextSupport implementation.
+  virtual void SignalSyncPoint(uint32 sync_point,
+                               const base::Closure& callback) OVERRIDE;
+  virtual void SignalQuery(uint32 query,
+                           const base::Closure& callback) OVERRIDE;
 
   void SetErrorMessageCallback(ErrorMessageCallback* callback) {
     error_message_callback_ = callback;
@@ -558,6 +567,8 @@ class GLES2_IMPL_EXPORT GLES2Implementation : public GLES2Interface {
   // for error checking.
   bool MustBeContextLost();
 
+  void RunIfContextNotLost(const base::Closure& callback);
+
   bool GetBoundPixelTransferBuffer(
       GLenum target, const char* function_name, GLuint* buffer_id);
   BufferTracker::Buffer* GetBoundPixelUnpackTransferBufferIfValid(
@@ -676,6 +687,8 @@ class GLES2_IMPL_EXPORT GLES2Implementation : public GLES2Interface {
   scoped_ptr<std::string> current_trace_name_;
 
   GpuControl* gpu_control_;
+
+  base::WeakPtrFactory<GLES2Implementation> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(GLES2Implementation);
 };

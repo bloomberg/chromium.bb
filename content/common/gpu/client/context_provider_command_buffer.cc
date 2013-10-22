@@ -158,6 +158,10 @@ ContextProviderCommandBuffer::Context3d() {
   return context3d_.get();
 }
 
+gpu::ContextSupport* ContextProviderCommandBuffer::ContextSupport() {
+  return context3d_->GetContextSupport();
+}
+
 class GrContext* ContextProviderCommandBuffer::GrContext() {
   DCHECK(context3d_);
   DCHECK(lost_context_callback_proxy_);  // Is bound to thread.

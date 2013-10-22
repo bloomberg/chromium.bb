@@ -15,6 +15,8 @@
 #include "webkit/common/gpu/webkit_gpu_export.h"
 
 namespace gpu {
+class ContextSupport;
+
 namespace gles2 {
 class GLES2Implementation;
 }
@@ -545,6 +547,8 @@ class WEBKIT_GPU_EXPORT WebGraphicsContext3DInProcessCommandBufferImpl
   virtual void loseContextCHROMIUM(WGC3Denum current, WGC3Denum other);
 
   virtual GrGLInterface* createGrGLInterface();
+
+  ::gpu::ContextSupport* GetContextSupport();
 
  private:
   WebGraphicsContext3DInProcessCommandBufferImpl(

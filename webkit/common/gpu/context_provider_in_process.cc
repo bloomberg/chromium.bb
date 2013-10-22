@@ -11,6 +11,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "cc/output/managed_memory_policy.h"
+#include "gpu/command_buffer/client/gles2_implementation.h"
 #include "webkit/common/gpu/grcontext_for_webgraphicscontext3d.h"
 #include "webkit/common/gpu/managed_memory_policy_convert.h"
 
@@ -175,6 +176,14 @@ WebKit::WebGraphicsContext3D* ContextProviderInProcess::Context3d() {
   DCHECK(context_thread_checker_.CalledOnValidThread());
 
   return context3d_.get();
+}
+
+::gpu::ContextSupport* ContextProviderInProcess::ContextSupport() {
+  DCHECK(context3d_);
+  DCHECK(lost_context_callback_proxy_);  // Is bound to thread.
+  DCHECK(context_thread_checker_.CalledOnValidThread());
+
+  return context3d_->GetContextSupport();
 }
 
 class GrContext* ContextProviderInProcess::GrContext() {

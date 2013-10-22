@@ -11,7 +11,6 @@
 #include "cc/output/compositor_frame_metadata.h"
 #include "cc/resources/prioritized_resource_manager.h"
 #include "cc/resources/resource_provider.h"
-#include "cc/resources/sync_point_helper.h"
 #include "cc/test/fake_impl_proxy.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
 #include "cc/test/fake_output_surface.h"
@@ -21,6 +20,7 @@
 #include "cc/test/render_pass_test_common.h"
 #include "cc/test/render_pass_test_utils.h"
 #include "gpu/GLES2/gl2extchromium.h"
+#include "gpu/command_buffer/client/context_support.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/khronos/GLES2/gl2.h"
@@ -1808,21 +1808,23 @@ class GLRendererTestSyncPoint : public GLRendererPixelTest {
 TEST_F(GLRendererTestSyncPoint, SignalSyncPointOnLostContext) {
   int sync_point_callback_count = 0;
   int other_callback_count = 0;
-  unsigned sync_point =
-      output_surface_->context_provider()->Context3d()->insertSyncPoint();
+  WebKit::WebGraphicsContext3D* context3d =
+      output_surface_->context_provider()->Context3d();
+  gpu::ContextSupport* context_support =
+      output_surface_->context_provider()->ContextSupport();
 
-  output_surface_->context_provider()->Context3d()->loseContextCHROMIUM(
-      GL_GUILTY_CONTEXT_RESET_ARB, GL_INNOCENT_CONTEXT_RESET_ARB);
+  uint32 sync_point = context3d->insertSyncPoint();
 
-  SyncPointHelper::SignalSyncPoint(
-      output_surface_->context_provider()->Context3d(),
-      sync_point,
-      base::Bind(&SyncPointCallback, &sync_point_callback_count));
+  context3d->loseContextCHROMIUM(GL_GUILTY_CONTEXT_RESET_ARB,
+                                 GL_INNOCENT_CONTEXT_RESET_ARB);
+
+  context_support->SignalSyncPoint(
+      sync_point, base::Bind(&SyncPointCallback, &sync_point_callback_count));
   EXPECT_EQ(0, sync_point_callback_count);
   EXPECT_EQ(0, other_callback_count);
 
   // Make the sync point happen.
-  output_surface_->context_provider()->Context3d()->finish();
+  context3d->finish();
   // Post a task after the sync point.
   base::MessageLoop::current()->PostTask(
       FROM_HERE,
@@ -1838,18 +1840,21 @@ TEST_F(GLRendererTestSyncPoint, SignalSyncPointOnLostContext) {
 TEST_F(GLRendererTestSyncPoint, SignalSyncPoint) {
   int sync_point_callback_count = 0;
   int other_callback_count = 0;
-  unsigned sync_point =
-      output_surface_->context_provider()->Context3d()->insertSyncPoint();
 
-  SyncPointHelper::SignalSyncPoint(
-      output_surface_->context_provider()->Context3d(),
-      sync_point,
-      base::Bind(&SyncPointCallback, &sync_point_callback_count));
+  WebKit::WebGraphicsContext3D* context3d =
+      output_surface_->context_provider()->Context3d();
+  gpu::ContextSupport* context_support =
+      output_surface_->context_provider()->ContextSupport();
+
+  uint32 sync_point = context3d->insertSyncPoint();
+
+  context_support->SignalSyncPoint(
+      sync_point, base::Bind(&SyncPointCallback, &sync_point_callback_count));
   EXPECT_EQ(0, sync_point_callback_count);
   EXPECT_EQ(0, other_callback_count);
 
   // Make the sync point happen.
-  output_surface_->context_provider()->Context3d()->finish();
+  context3d->finish();
   // Post a task after the sync point.
   base::MessageLoop::current()->PostTask(
       FROM_HERE,

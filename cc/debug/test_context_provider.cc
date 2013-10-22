@@ -75,6 +75,7 @@ TestContextProvider::TestContextProvider(
   DCHECK(main_thread_checker_.CalledOnValidThread());
   DCHECK(context3d_);
   context_thread_checker_.DetachFromThread();
+  context3d_->set_test_support(&support_);
 }
 
 TestContextProvider::~TestContextProvider() {
@@ -119,6 +120,14 @@ WebKit::WebGraphicsContext3D* TestContextProvider::Context3d() {
   DCHECK(context_thread_checker_.CalledOnValidThread());
 
   return context3d_.get();
+}
+
+gpu::ContextSupport* TestContextProvider::ContextSupport() {
+  DCHECK(context3d_);
+  DCHECK(bound_);
+  DCHECK(context_thread_checker_.CalledOnValidThread());
+
+  return &support_;
 }
 
 class GrContext* TestContextProvider::GrContext() {

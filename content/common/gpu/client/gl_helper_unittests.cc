@@ -43,6 +43,7 @@ namespace content {
 
 using WebKit::WebGLId;
 using WebKit::WebGraphicsContext3D;
+using webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl;
 
 content::GLHelper::ScalerQuality kQualities[] = {
   content::GLHelper::SCALER_QUALITY_BEST,
@@ -60,10 +61,11 @@ class GLHelperTest : public testing::Test {
  protected:
   virtual void SetUp() {
     WebGraphicsContext3D::Attributes attributes;
-    context_ = webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl::
+    context_ = WebGraphicsContext3DInProcessCommandBufferImpl::
         CreateOffscreenContext(attributes);
     context_->makeContextCurrent();
-    helper_.reset(new content::GLHelper(context_.get()));
+    context_support_ = context_->GetContextSupport();
+    helper_.reset(new content::GLHelper(context_.get(), context_support_));
     helper_scaling_.reset(new content::GLHelperScaling(
         context_.get(),
         helper_.get()));
@@ -1108,7 +1110,8 @@ class GLHelperTest : public testing::Test {
                    "8x1 -> 1x1 bilinear4 X\n");
   }
 
-  scoped_ptr<WebKit::WebGraphicsContext3D> context_;
+  scoped_ptr<WebGraphicsContext3DInProcessCommandBufferImpl> context_;
+  gpu::ContextSupport* context_support_;
   scoped_ptr<content::GLHelper> helper_;
   scoped_ptr<content::GLHelperScaling> helper_scaling_;
   std::deque<GLHelperScaling::ScaleOp> x_ops_, y_ops_;

@@ -78,7 +78,8 @@ scoped_refptr<ui::Texture> NoTransportImageTransportFactory::CreateOwnedTexture(
 GLHelper* NoTransportImageTransportFactory::GetGLHelper() {
   if (!gl_helper_) {
     context_provider_ = context_factory_->SharedMainThreadContextProvider();
-    gl_helper_.reset(new GLHelper(context_provider_->Context3d()));
+    gl_helper_.reset(new GLHelper(context_provider_->Context3d(),
+                                  context_provider_->ContextSupport()));
   }
   return gl_helper_.get();
 }

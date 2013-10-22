@@ -22,6 +22,7 @@
 
 namespace gpu {
 
+class ContextSupport;
 class TransferBuffer;
 
 namespace gles2 {
@@ -113,6 +114,8 @@ class WebGraphicsContext3DCommandBufferImpl
   CommandBufferProxyImpl* GetCommandBufferProxy() {
     return command_buffer_.get();
   }
+
+  CONTENT_EXPORT gpu::ContextSupport* GetContextSupport();
 
   gpu::gles2::GLES2Implementation* GetImplementation() {
     return real_gl_.get();

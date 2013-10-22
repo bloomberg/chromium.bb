@@ -549,6 +549,11 @@ int WebGraphicsContext3DCommandBufferImpl::GetContextID() {
   return command_buffer_->GetRouteID();
 }
 
+gpu::ContextSupport*
+WebGraphicsContext3DCommandBufferImpl::GetContextSupport() {
+  return real_gl_.get();
+}
+
 void WebGraphicsContext3DCommandBufferImpl::prepareTexture() {
   TRACE_EVENT1("gpu",
                 "WebGraphicsContext3DCommandBufferImpl::SwapBuffers",
@@ -1431,34 +1436,16 @@ void WebGraphicsContext3DCommandBufferImpl::shallowFinishCHROMIUM() {
 
 DELEGATE_TO_GL_1(waitSyncPoint, WaitSyncPointCHROMIUM, GLuint)
 
-static void SignalSyncPointCallback(
-    scoped_ptr<
-      WebKit::WebGraphicsContext3D::WebGraphicsSyncPointCallback> callback) {
-  callback->onSyncPointReached();
-}
-
 void WebGraphicsContext3DCommandBufferImpl::signalSyncPoint(
     unsigned sync_point,
     WebGraphicsSyncPointCallback* callback) {
-  // Take ownership of the callback.
-  scoped_ptr<WebGraphicsSyncPointCallback> own_callback(callback);
-  command_buffer_->SignalSyncPoint(
-      sync_point,
-      base::Bind(&SignalSyncPointCallback, base::Passed(&own_callback)));
+  NOTREACHED();
 }
 
 void WebGraphicsContext3DCommandBufferImpl::signalQuery(
     unsigned query,
     WebGraphicsSyncPointCallback* callback) {
-  // Take ownership of the callback.
-  scoped_ptr<WebGraphicsSyncPointCallback> own_callback(callback);
-  // Flush any pending commands to make sure that the the query
-  // has actually been created/started before we try to attach
-  // a callback to it.
-  gl_->Flush();
-  command_buffer_->SignalQuery(
-      query,
-      base::Bind(&SignalSyncPointCallback, base::Passed(&own_callback)));
+  NOTREACHED();
 }
 
 void WebGraphicsContext3DCommandBufferImpl::loseContextCHROMIUM(

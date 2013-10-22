@@ -111,7 +111,8 @@ GLES2Implementation::GLES2Implementation(
       use_count_(0),
       current_query_(NULL),
       error_message_callback_(NULL),
-      gpu_control_(gpu_control) {
+      gpu_control_(gpu_control),
+      weak_ptr_factory_(this) {
   GPU_DCHECK(helper);
   GPU_DCHECK(transfer_buffer);
   GPU_DCHECK(gpu_control);
@@ -309,6 +310,31 @@ void GLES2Implementation::FreeEverything() {
   helper_->FreeRingBuffer();
 }
 
+void GLES2Implementation::RunIfContextNotLost(const base::Closure& callback) {
+  if (!helper_->IsContextLost())
+    callback.Run();
+}
+
+void GLES2Implementation::SignalSyncPoint(uint32 sync_point,
+                                          const base::Closure& callback) {
+  gpu_control_->SignalSyncPoint(
+      sync_point,
+      base::Bind(&GLES2Implementation::RunIfContextNotLost,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 callback));
+}
+
+void GLES2Implementation::SignalQuery(uint32 query,
+                                      const base::Closure& callback) {
+  // Flush previously entered commands to ensure ordering with any
+  // glBeginQueryEXT() calls that may have been put into the context.
+  ShallowFlushCHROMIUM();
+  gpu_control_->SignalQuery(
+      query,
+      base::Bind(&GLES2Implementation::RunIfContextNotLost,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 callback));
+}
 void GLES2Implementation::WaitForCmd() {
   TRACE_EVENT0("gpu", "GLES2::WaitForCmd");
   helper_->CommandBufferHelper::Finish();

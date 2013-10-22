@@ -62,10 +62,6 @@ class GLInProcessContextImpl
 
   // GLInProcessContext implementation:
   virtual void SetContextLostCallback(const base::Closure& callback) OVERRIDE;
-  virtual void SignalSyncPoint(unsigned sync_point,
-                               const base::Closure& callback) OVERRIDE;
-  virtual void SignalQuery(unsigned query, const base::Closure& callback)
-      OVERRIDE;
   virtual gles2::GLES2Implementation* GetImplementation() OVERRIDE;
 
 #if defined(OS_ANDROID)
@@ -111,14 +107,6 @@ GLInProcessContextImpl::~GLInProcessContextImpl() {
   Destroy();
 }
 
-void GLInProcessContextImpl::SignalSyncPoint(unsigned sync_point,
-                                             const base::Closure& callback) {
-  DCHECK(!callback.is_null());
-  base::Closure wrapped_callback = base::Bind(
-      &GLInProcessContextImpl::OnSignalSyncPoint, AsWeakPtr(), callback);
-  command_buffer_->SignalSyncPoint(sync_point, wrapped_callback);
-}
-
 gles2::GLES2Implementation* GLInProcessContextImpl::GetImplementation() {
   return gles2_implementation_.get();
 }
@@ -133,12 +121,6 @@ void GLInProcessContextImpl::OnContextLost() {
   if (!context_lost_callback_.is_null()) {
     context_lost_callback_.Run();
   }
-}
-
-void GLInProcessContextImpl::OnSignalSyncPoint(const base::Closure& callback) {
-  // TODO: Should it always trigger callbacks?
-  if (!context_lost_)
-    callback.Run();
 }
 
 bool GLInProcessContextImpl::Initialize(
@@ -284,15 +266,6 @@ void GLInProcessContextImpl::Destroy() {
   transfer_buffer_.reset();
   gles2_helper_.reset();
   command_buffer_.reset();
-}
-
-void GLInProcessContextImpl::SignalQuery(
-    unsigned query,
-    const base::Closure& callback) {
-  // Flush previously entered commands to ensure ordering with any
-  // glBeginQueryEXT() calls that may have been put into the context.
-  gles2_implementation_->ShallowFlushCHROMIUM();
-  command_buffer_->SignalQuery(query, callback);
 }
 
 #if defined(OS_ANDROID)

@@ -1132,6 +1132,11 @@ GrGLInterface* WebGraphicsContext3DInProcessCommandBufferImpl::
   return CreateCommandBufferSkiaGLBinding();
 }
 
+::gpu::ContextSupport*
+WebGraphicsContext3DInProcessCommandBufferImpl::GetContextSupport() {
+  return gl_;
+}
+
 void WebGraphicsContext3DInProcessCommandBufferImpl::OnContextLost() {
   // TODO(kbr): improve the precision here.
   context_lost_reason_ = GL_UNKNOWN_CONTEXT_RESET_ARB;
@@ -1183,17 +1188,13 @@ unsigned WebGraphicsContext3DInProcessCommandBufferImpl::insertSyncPoint() {
 void WebGraphicsContext3DInProcessCommandBufferImpl::signalSyncPoint(
     unsigned sync_point,
     WebGraphicsSyncPointCallback* callback) {
-  // Take ownership of the callback.
-  context_->SignalSyncPoint(
-      sync_point, base::Bind(&OnSignalSyncPoint, base::Owned(callback)));
+  NOTREACHED();
 }
 
 void WebGraphicsContext3DInProcessCommandBufferImpl::signalQuery(
     unsigned query,
     WebGraphicsSyncPointCallback* callback) {
-  // Take ownership of the callback.
-  context_->SignalQuery(query,
-                        base::Bind(&OnSignalSyncPoint, base::Owned(callback)));
+  NOTREACHED();
 }
 
 void WebGraphicsContext3DInProcessCommandBufferImpl::loseContextCHROMIUM(

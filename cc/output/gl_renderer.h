@@ -427,6 +427,7 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
   scoped_ptr<SolidColorProgramAA> solid_color_program_aa_;
 
   WebKit::WebGraphicsContext3D* context_;
+  gpu::ContextSupport* context_support_;
 
   skia::RefPtr<GrContext> gr_context_;
   skia::RefPtr<SkCanvas> sk_canvas_;

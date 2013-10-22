@@ -23,6 +23,7 @@
 #include "third_party/khronos/GLES2/gl2.h"
 
 namespace cc {
+class TestContextSupport;
 
 class CC_EXPORT TestWebGraphicsContext3D : public FakeWebGraphicsContext3D {
  public:
@@ -106,7 +107,6 @@ class CC_EXPORT TestWebGraphicsContext3D : public FakeWebGraphicsContext3D {
   virtual void loseContextCHROMIUM(WebKit::WGC3Denum current,
                                    WebKit::WGC3Denum other);
 
-  // Takes ownership of the |callback|.
   virtual void signalSyncPoint(unsigned sync_point,
                                WebGraphicsSyncPointCallback* callback);
   virtual void signalQuery(WebKit::WebGLId query,
@@ -212,6 +212,10 @@ class CC_EXPORT TestWebGraphicsContext3D : public FakeWebGraphicsContext3D {
   size_t GetTransferBufferMemoryUsedBytes() const;
   void SetMaxTransferBufferUsageBytes(size_t max_transfer_buffer_usage_bytes);
 
+  void set_test_support(TestContextSupport* test_support) {
+    test_support_ = test_support;
+  }
+
  protected:
   struct TextureTargets {
     TextureTargets();
@@ -268,8 +272,6 @@ class CC_EXPORT TestWebGraphicsContext3D : public FakeWebGraphicsContext3D {
   };
 
   TestWebGraphicsContext3D();
-  TestWebGraphicsContext3D(
-      const WebKit::WebGraphicsContext3D::Attributes& attributes);
 
   void CallAllSyncPointCallbacks();
   void SwapBuffersComplete();
@@ -294,6 +296,7 @@ class CC_EXPORT TestWebGraphicsContext3D : public FakeWebGraphicsContext3D {
   int max_texture_size_;
   int width_;
   int height_;
+  TestContextSupport* test_support_;
 
   unsigned bound_buffer_;
   TextureTargets texture_targets_;

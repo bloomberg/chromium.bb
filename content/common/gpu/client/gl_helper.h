@@ -18,6 +18,7 @@ class Size;
 }
 
 namespace gpu {
+class ContextSupport;
 struct Mailbox;
 }
 
@@ -193,7 +194,8 @@ class ReadbackYUVInterface;
 // interfaces.
 class CONTENT_EXPORT GLHelper {
  public:
-  explicit GLHelper(WebKit::WebGraphicsContext3D* context);
+  GLHelper(WebKit::WebGraphicsContext3D* context,
+           gpu::ContextSupport* context_support);
   ~GLHelper();
 
   enum ScalerQuality {
@@ -361,6 +363,7 @@ class CONTENT_EXPORT GLHelper {
   void InitScalerImpl();
 
   WebKit::WebGraphicsContext3D* context_;
+  gpu::ContextSupport* context_support_;
   scoped_ptr<CopyTextureToImpl> copy_texture_to_impl_;
   scoped_ptr<GLHelperScaling> scaler_impl_;
 

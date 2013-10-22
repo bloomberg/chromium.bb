@@ -12,17 +12,20 @@
 
 namespace {
 
+using content::WebGraphicsContext3DCommandBufferImpl;
+
 class ContextTestBase : public content::ContentBrowserTest {
  public:
   virtual void SetUpOnMainThread() OVERRIDE {
     CHECK(content::BrowserGpuChannelHostFactory::instance());
     context_.reset(
-        content::WebGraphicsContext3DCommandBufferImpl::CreateOffscreenContext(
+        WebGraphicsContext3DCommandBufferImpl::CreateOffscreenContext(
             content::BrowserGpuChannelHostFactory::instance(),
             WebKit::WebGraphicsContext3D::Attributes(),
             GURL()));
     CHECK(context_.get());
     context_->makeContextCurrent();
+    context_support_ = context_->GetContextSupport();
     ContentBrowserTest::SetUpOnMainThread();
   }
 
@@ -33,7 +36,8 @@ class ContextTestBase : public content::ContentBrowserTest {
   }
 
  protected:
-  scoped_ptr<WebKit::WebGraphicsContext3D> context_;
+  scoped_ptr<WebGraphicsContext3DCommandBufferImpl> context_;
+  gpu::ContextSupport* context_support_;
 };
 
 }  // namespace

@@ -15,8 +15,8 @@
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
-#include "cc/resources/sync_point_helper.h"
 #include "content/common/gpu/client/gl_helper_scaling.h"
+#include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_util.h"
@@ -111,8 +111,10 @@ class GLHelper::CopyTextureToImpl :
       public base::SupportsWeakPtr<GLHelper::CopyTextureToImpl> {
  public:
   CopyTextureToImpl(WebGraphicsContext3D* context,
+                    gpu::ContextSupport* context_support,
                     GLHelper* helper)
       : context_(context),
+        context_support_(context_support),
         helper_(helper),
         flush_(context),
         max_draw_buffers_(0) {
@@ -314,6 +316,7 @@ class GLHelper::CopyTextureToImpl :
   static const float kRGBtoVColorWeights[];
 
   WebGraphicsContext3D* context_;
+  gpu::ContextSupport* context_support_;
   GLHelper* helper_;
 
   // A scoped flush that will ensure all resource deletions are flushed when
@@ -400,8 +403,7 @@ void GLHelper::CopyTextureToImpl::ReadbackAsync(
                        GL_RGBA, GL_UNSIGNED_BYTE, NULL);
   context_->endQueryEXT(GL_ASYNC_PIXEL_PACK_COMPLETED_CHROMIUM);
   context_->bindBuffer(GL_PIXEL_PACK_TRANSFER_BUFFER_CHROMIUM, 0);
-  cc::SyncPointHelper::SignalQuery(
-      context_,
+  context_support_->SignalQuery(
       request->query,
       base::Bind(&CopyTextureToImpl::ReadbackDone, AsWeakPtr(), request));
 }
@@ -547,8 +549,10 @@ void GLHelper::CopyTextureToImpl::CancelRequests() {
   }
 }
 
-GLHelper::GLHelper(WebKit::WebGraphicsContext3D* context)
-    : context_(context) {
+GLHelper::GLHelper(WebKit::WebGraphicsContext3D* context,
+                   gpu::ContextSupport* context_support)
+    : context_(context),
+      context_support_(context_support) {
 }
 
 GLHelper::~GLHelper() {
@@ -638,7 +642,8 @@ WebGLId GLHelper::CompileShaderFromSource(
 void GLHelper::InitCopyTextToImpl() {
   // Lazily initialize |copy_texture_to_impl_|
   if (!copy_texture_to_impl_)
-    copy_texture_to_impl_.reset(new CopyTextureToImpl(context_, this));
+    copy_texture_to_impl_.reset(
+        new CopyTextureToImpl(context_, context_support_, this));
 }
 
 void GLHelper::InitScalerImpl() {
