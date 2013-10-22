@@ -83,18 +83,10 @@ void PasswordInputType::createShadowSubtree()
     BaseTextInputType::createShadowSubtree();
     if (!isPasswordGenerationEnabled())
         return;
-    ShadowRoot* root = element().userAgentShadowRoot();
-    RefPtr<HTMLDivElement> wrapper = HTMLDivElement::create(element().document());
-    wrapper->setInlineStyleProperty(CSSPropertyDisplay, CSSValueFlex);
-    wrapper->setInlineStyleProperty(CSSPropertyAlignItems, CSSValueCenter);
-    ASSERT(root->childNodeCount() == 1);
-    root->firstElementChild()->setInlineStyleProperty(CSSPropertyFlexGrow, 1.0, CSSPrimitiveValue::CSS_NUMBER);
-    wrapper->appendChild(root->firstElementChild());
     m_generatorButton = PasswordGeneratorButtonElement::create(element().document());
     if (!isPasswordGenerationDecorationEnabled())
         m_generatorButton->setInlineStyleProperty(CSSPropertyDisplay, CSSValueNone);
-    wrapper->appendChild(m_generatorButton.get());
-    element().userAgentShadowRoot()->appendChild(wrapper);
+    containerElement()->appendChild(m_generatorButton.get());
 }
 
 void PasswordInputType::destroyShadowSubtree()

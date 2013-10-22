@@ -667,7 +667,7 @@ crbug.com/254332 [ XP ] fast/forms/submit/submit-focus-by-mouse.html [ ImageOnly
 crbug.com/256506 [ Win7 Debug ] crypto/worker-random-values-limits.html [ Pass Crash ]
 
 crbug.com/244266 [ Win Debug ] virtual/threaded/animations/animation-controller-drt-api.html [ Failure Pass ]
-
+crbug.com/245445 fast/forms/password/password-generation-appearance.html [ NeedsRebaseline ]
 crbug.com/252038 editing/selection/fake-doubleclick.html [ Pass Failure ]
 
 crbug.com/252573 [ Mac Win ] fast/forms/empty-textarea-toggle-disabled.html [ Pass Timeout ]
