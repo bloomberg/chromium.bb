@@ -70,6 +70,7 @@ PinchViewports::PinchViewports(WebViewImpl* owner)
     m_innerViewportContainerLayer->setMasksToBounds(false);
 
     m_innerViewportScrollLayer->platformLayer()->setScrollable(true);
+    m_innerViewportScrollLayer->platformLayer()->setUserScrollable(true, true);
 
     m_innerViewportContainerLayer->addChild(m_pageScaleLayer.get());
     m_pageScaleLayer->addChild(m_innerViewportScrollLayer.get());

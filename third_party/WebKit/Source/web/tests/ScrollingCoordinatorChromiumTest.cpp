@@ -303,6 +303,8 @@ TEST_F(ScrollingCoordinatorChromiumTest, overflowScrolling)
 
     WebLayer* webScrollLayer = compositedLayerMapping->scrollingContentsLayer()->platformLayer();
     ASSERT_TRUE(webScrollLayer->scrollable());
+    ASSERT_TRUE(webScrollLayer->userScrollableHorizontal());
+    ASSERT_TRUE(webScrollLayer->userScrollableVertical());
 
 #if OS(ANDROID)
     // Now verify we've attached impl-side scrollbars onto the scrollbar layers
@@ -311,6 +313,60 @@ TEST_F(ScrollingCoordinatorChromiumTest, overflowScrolling)
     ASSERT_TRUE(compositedLayerMapping->layerForVerticalScrollbar());
     ASSERT_TRUE(compositedLayerMapping->layerForVerticalScrollbar()->hasContentsLayer());
 #endif
+}
+
+TEST_F(ScrollingCoordinatorChromiumTest, overflowHidden)
+{
+    registerMockedHttpURLLoad("overflow-hidden.html");
+    navigateTo(m_baseURL + "overflow-hidden.html");
+
+    // Verify the properties of the accelerated scrolling element starting from the RenderObject
+    // all the way to the WebLayer.
+    Element* overflowElement = m_webViewImpl->mainFrameImpl()->frame()->document()->getElementById("unscrollable-y");
+    ASSERT(overflowElement);
+
+    RenderObject* renderer = overflowElement->renderer();
+    ASSERT_TRUE(renderer->isBoxModelObject());
+    ASSERT_TRUE(renderer->hasLayer());
+
+    RenderLayer* layer = toRenderBoxModelObject(renderer)->layer();
+    ASSERT_TRUE(layer->usesCompositedScrolling());
+    ASSERT_EQ(PaintsIntoOwnBacking, layer->compositingState());
+
+    CompositedLayerMapping* compositedLayerMapping = layer->compositedLayerMapping();
+    ASSERT_TRUE(compositedLayerMapping->hasScrollingLayer());
+    ASSERT(compositedLayerMapping->scrollingContentsLayer());
+
+    GraphicsLayer* graphicsLayer = compositedLayerMapping->scrollingContentsLayer();
+    ASSERT_EQ(layer->scrollableArea(), graphicsLayer->scrollableArea());
+
+    WebLayer* webScrollLayer = compositedLayerMapping->scrollingContentsLayer()->platformLayer();
+    ASSERT_TRUE(webScrollLayer->scrollable());
+    ASSERT_TRUE(webScrollLayer->userScrollableHorizontal());
+    ASSERT_FALSE(webScrollLayer->userScrollableVertical());
+
+    overflowElement = m_webViewImpl->mainFrameImpl()->frame()->document()->getElementById("unscrollable-x");
+    ASSERT(overflowElement);
+
+    renderer = overflowElement->renderer();
+    ASSERT_TRUE(renderer->isBoxModelObject());
+    ASSERT_TRUE(renderer->hasLayer());
+
+    layer = toRenderBoxModelObject(renderer)->layer();
+    ASSERT_TRUE(layer->usesCompositedScrolling());
+    ASSERT_EQ(PaintsIntoOwnBacking, layer->compositingState());
+
+    compositedLayerMapping = layer->compositedLayerMapping();
+    ASSERT_TRUE(compositedLayerMapping->hasScrollingLayer());
+    ASSERT(compositedLayerMapping->scrollingContentsLayer());
+
+    graphicsLayer = compositedLayerMapping->scrollingContentsLayer();
+    ASSERT_EQ(layer->scrollableArea(), graphicsLayer->scrollableArea());
+
+    webScrollLayer = compositedLayerMapping->scrollingContentsLayer()->platformLayer();
+    ASSERT_TRUE(webScrollLayer->scrollable());
+    ASSERT_FALSE(webScrollLayer->userScrollableHorizontal());
+    ASSERT_TRUE(webScrollLayer->userScrollableVertical());
 }
 
 TEST_F(ScrollingCoordinatorChromiumTest, iframeScrolling)

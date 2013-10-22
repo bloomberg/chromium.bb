@@ -179,6 +179,10 @@ public:
     virtual void setScrollable(bool) = 0;
     virtual bool scrollable() const = 0;
 
+    virtual void setUserScrollable(bool horizontal, bool vertical) = 0;
+    virtual bool userScrollableHorizontal() const = 0;
+    virtual bool userScrollableVertical() const = 0;
+
     virtual void setHaveWheelEventHandlers(bool) = 0;
     virtual bool haveWheelEventHandlers() const = 0;
 

@@ -322,6 +322,9 @@ bool ScrollingCoordinator::scrollableAreaScrollLayerDidChange(ScrollableArea* sc
         webLayer->setScrollable(true);
         webLayer->setScrollPosition(IntPoint(scrollableArea->scrollPosition() - scrollableArea->minimumScrollPosition()));
         webLayer->setMaxScrollPosition(IntSize(scrollableArea->scrollSize(HorizontalScrollbar), scrollableArea->scrollSize(VerticalScrollbar)));
+        bool canScrollX = scrollableArea->userInputScrollable(HorizontalScrollbar);
+        bool canScrollY = scrollableArea->userInputScrollable(VerticalScrollbar);
+        webLayer->setUserScrollable(canScrollX, canScrollY);
     }
     if (WebScrollbarLayer* scrollbarLayer = getWebScrollbarLayer(scrollableArea, HorizontalScrollbar)) {
         GraphicsLayer* horizontalScrollbarLayer = horizontalScrollbarLayerForScrollableArea(scrollableArea);
