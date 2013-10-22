@@ -747,9 +747,8 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   virtual void ManageBluetoothDevices() OVERRIDE {
     content::RecordAction(
         content::UserMetricsAction("ShowBluetoothSettingsPage"));
-    std::string sub_page = std::string(chrome::kSearchSubPage) + "#" +
-        l10n_util::GetStringUTF8(IDS_OPTIONS_SETTINGS_SECTION_TITLE_BLUETOOTH);
-    chrome::ShowSettingsSubPage(GetAppropriateBrowser(), sub_page);
+    chrome::ShowSettingsSubPage(GetAppropriateBrowser(),
+                                chrome::kBluetoothAddDeviceSubPage);
   }
 
   virtual void ToggleBluetooth() OVERRIDE {
