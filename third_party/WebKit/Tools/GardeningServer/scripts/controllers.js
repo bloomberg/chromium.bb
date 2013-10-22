@@ -51,7 +51,7 @@ function rebaselineWithStatusUpdates(failureInfoList, resultsByTest)
             }
         }
     });
-    
+
     if (failuresToRebaseline.length) {
         checkout.rebaseline(failuresToRebaseline, function() {
             statusView.addFinalMessage(id, 'Rebaseline done! Please land with "webkit-patch land-cowhand".');
@@ -59,6 +59,8 @@ function rebaselineWithStatusUpdates(failureInfoList, resultsByTest)
             statusView.addMessage(id, failureInfo.testName + ' on ' + ui.displayNameForBuilder(failureInfo.builderName));
         }, function() {
             statusView.addFinalMessage(id, kCheckoutUnavailableMessage);
+        }, function(failureInfo) {
+            statusView.addMessage(id, 'Skipping rebaseline for ' + failureInfo.testName + ' on ' + ui.displayNameForBuilder(failureInfo.builderName) + ' because we only rebaseline from release bots.');
         });
     } else {
         statusView.addFinalMessage(id, 'No non-reftests left to rebaseline!')

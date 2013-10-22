@@ -78,14 +78,18 @@ checkout.rollout = function(revision, reason, callback, checkoutUnavailable)
     }, checkoutUnavailable);
 };
 
-checkout.rebaseline = function(failureInfoList, callback, progressCallback, checkoutUnavailable)
+checkout.rebaseline = function(failureInfoList, callback, progressCallback, checkoutUnavailable, debugBotsCallback)
 {
     callIfCheckoutAvailable(function() {
         var tests = {};
         for (var i = 0; i < failureInfoList.length; i++) {
             var failureInfo = failureInfoList[i];
+            if (failureInfo.builderName.indexOf('dbg') != -1) {
+                debugBotsCallback(failureInfo);
+                continue;
+            }
             tests[failureInfo.testName] = tests[failureInfo.testName] || {};
-            tests[failureInfo.testName][failureInfo.builderName] = 
+            tests[failureInfo.testName][failureInfo.builderName] =
                 base.uniquifyArray(base.flattenArray(failureInfo.failureTypeList.map(results.failureTypeToExtensionList)));
         }
         net.post('/rebaselineall', JSON.stringify(tests), function() { callback() });

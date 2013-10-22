@@ -97,6 +97,8 @@ test("rebaseline", 3, function() {
             equals(failureInfo.testName, kExpectedTestNameProgressStack.pop());
         }, function() {
             ok(false, 'Checkout should be available.');
+        }, function() {
+            ok(false, 'There are no debug bots in the list');
         });
     });
 
@@ -104,12 +106,40 @@ test("rebaseline", 3, function() {
         ["/rebaselineall",
          JSON.stringify({
              "another/test.svg": {
-                 "WebKit Linux": ["png"], 
+                 "WebKit Linux": ["png"],
                  "WebKit Mac10.6": ["png","txt"]},
              "fast/test.html": {
                  "Webkit Win7": ["txt","png"]
              }})]
     ]);
+});
+
+test("rebaseline-debug-bot", 3, function() {
+    var simulator = new NetworkSimulator();
+    simulator.post = function(url, body, callback)
+    {
+        simulator.scheduleCallback(callback);
+    };
+    simulator.ajax = function(options)
+    {
+        simulator.scheduleCallback(options.success);
+    };
+
+    simulator.runTest(function() {
+        checkout.rebaseline([{
+            'builderName': 'WebKit Linux (dbg)',
+            'testName': 'another/test.svg',
+            'failureTypeList': ['IMAGE'],
+        }], function() {
+            ok(true);
+        }, function(failureInfo) {
+            ok(false);
+        }, function() {
+            ok(false, 'Checkout should be available.');
+        }, function(failureInfo) {
+            ok(true);
+        });
+    });
 });
 
 })();
