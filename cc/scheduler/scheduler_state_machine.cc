@@ -39,7 +39,8 @@ SchedulerStateMachine::SchedulerStateMachine(const SchedulerSettings& settings)
       pending_tree_is_ready_for_activation_(false),
       active_tree_needs_first_draw_(false),
       draw_if_possible_failed_(false),
-      did_create_and_initialize_first_output_surface_(false) {}
+      did_create_and_initialize_first_output_surface_(false),
+      smoothness_takes_priority_(false) {}
 
 const char* SchedulerStateMachine::OutputSurfaceStateToString(
     OutputSurfaceState state) {
@@ -255,6 +256,8 @@ scoped_ptr<base::Value> SchedulerStateMachine::AsValue() const  {
   minor_state->SetBoolean("draw_if_possible_failed", draw_if_possible_failed_);
   minor_state->SetBoolean("did_create_and_initialize_first_output_surface",
                           did_create_and_initialize_first_output_surface_);
+  minor_state->SetBoolean("smoothness_takes_priority",
+                          smoothness_takes_priority_);
   state->Set("minor_state", minor_state.release());
 
   return state.PassAs<base::Value>();
@@ -896,12 +899,19 @@ bool SchedulerStateMachine::ShouldTriggerBeginImplFrameDeadlineEarly() const {
   if (active_tree_needs_first_draw_)
     return true;
 
+  if (!needs_redraw_)
+    return false;
+
   // This is used to prioritize impl-thread draws when the main thread isn't
   // producing anything, e.g., after an aborted commit. We also check that we
   // don't have a pending tree -- otherwise we should give it a chance to
   // activate.
   // TODO(skyostil): Revisit this when we have more accurate deadline estimates.
-  if (commit_state_ == COMMIT_STATE_IDLE && needs_redraw_ && !has_pending_tree_)
+  if (commit_state_ == COMMIT_STATE_IDLE && !has_pending_tree_)
+    return true;
+
+  // Prioritize impl-thread draws in smoothness mode.
+  if (smoothness_takes_priority_)
     return true;
 
   return false;
@@ -933,6 +943,11 @@ void SchedulerStateMachine::SetNeedsManageTiles() {
 void SchedulerStateMachine::SetSwapUsedIncompleteTile(
     bool used_incomplete_tile) {
   swap_used_incomplete_tile_ = used_incomplete_tile;
+}
+
+void SchedulerStateMachine::SetSmoothnessTakesPriority(
+    bool smoothness_takes_priority) {
+  smoothness_takes_priority_ = smoothness_takes_priority;
 }
 
 void SchedulerStateMachine::DidDrawIfPossibleCompleted(bool success) {

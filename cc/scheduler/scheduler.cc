@@ -78,6 +78,11 @@ void Scheduler::SetSwapUsedIncompleteTile(bool used_incomplete_tile) {
   ProcessScheduledActions();
 }
 
+void Scheduler::SetSmoothnessTakesPriority(bool smoothness_takes_priority) {
+  state_machine_.SetSmoothnessTakesPriority(smoothness_takes_priority);
+  ProcessScheduledActions();
+}
+
 void Scheduler::SetMainThreadNeedsLayerTextures() {
   state_machine_.SetMainThreadNeedsLayerTextures();
   ProcessScheduledActions();

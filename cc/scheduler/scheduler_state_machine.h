@@ -171,6 +171,10 @@ class CC_EXPORT SchedulerStateMachine {
   // with a low resolution or checkerboarded tile.
   void SetSwapUsedIncompleteTile(bool used_incomplete_tile);
 
+  // Indicates whether to prioritize animation smoothness over new content
+  // activation.
+  void SetSmoothnessTakesPriority(bool smoothness_takes_priority);
+
   // Indicates whether ACTION_DRAW_AND_SWAP_IF_POSSIBLE drew to the screen.
   void DidDrawIfPossibleCompleted(bool success);
 
@@ -283,6 +287,7 @@ class CC_EXPORT SchedulerStateMachine {
   bool active_tree_needs_first_draw_;
   bool draw_if_possible_failed_;
   bool did_create_and_initialize_first_output_surface_;
+  bool smoothness_takes_priority_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SchedulerStateMachine);

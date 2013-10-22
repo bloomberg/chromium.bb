@@ -1522,6 +1522,8 @@ void ThreadProxy::RenewTreePriority() {
     priority = NEW_CONTENT_TAKES_PRIORITY;
 
   layer_tree_host_impl_->SetTreePriority(priority);
+  scheduler_on_impl_thread_->SetSmoothnessTakesPriority(
+      priority == SMOOTHNESS_TAKES_PRIORITY);
 
   // Notify the the client of this compositor via the output surface.
   // TODO(epenner): Route this to compositor-thread instead of output-surface
