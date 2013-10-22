@@ -698,7 +698,7 @@
     "dependencies": ["permission:webrtc"],
     "contexts": ["blessed_extension"]
   },
-  "webrtc.udpTransport": {
+  "webrtc.castUdpTransport": {
     "dependencies": ["permission:webrtc"],
     "contexts": ["blessed_extension"]
   },

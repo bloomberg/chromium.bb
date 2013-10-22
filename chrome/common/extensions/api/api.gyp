@@ -154,8 +154,8 @@
           ['enable_webrtc==1', {
             'schema_files': [
               'webrtc_cast_send_transport.idl',
+              'webrtc_cast_udp_transport.idl',
               'webrtc_logging_private.idl',
-              'webrtc_udp_transport.idl',
             ],
           }],
         ],

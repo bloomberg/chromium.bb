@@ -4,7 +4,7 @@
 
 // Custom binding for the webrtc custom transport API.
 
-var binding = require('binding').Binding.create('webrtc.udpTransport');
+var binding = require('binding').Binding.create('webrtc.castUdpTransport');
 
 binding.registerCustomHook(function(bindingsAPI, extensionId) {
   var apiFunctions = bindingsAPI.apiFunctions;

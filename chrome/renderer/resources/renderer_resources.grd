@@ -91,7 +91,7 @@ without changes to the corresponding grd file. fb9 -->
         <include name="IDR_WEB_REQUEST_CUSTOM_BINDINGS_JS" file="extensions\web_request_custom_bindings.js" type="BINDATA" />
         <include name="IDR_WEB_REQUEST_INTERNAL_CUSTOM_BINDINGS_JS" file="extensions\web_request_internal_custom_bindings.js" type="BINDATA" />
         <include name="IDR_WEBRTC_CAST_SEND_TRANSPORT_CUSTOM_BINDINGS_JS" file="extensions\webrtc_cast_send_transport_custom_bindings.js" type="BINDATA" />
-        <include name="IDR_WEBRTC_UDP_TRANSPORT_CUSTOM_BINDINGS_JS" file="extensions\webrtc_udp_transport_custom_bindings.js" type="BINDATA" />
+        <include name="IDR_WEBRTC_CAST_UDP_TRANSPORT_CUSTOM_BINDINGS_JS" file="extensions\webrtc_cast_udp_transport_custom_bindings.js" type="BINDATA" />
         <include name="IDR_WEBSTORE_CUSTOM_BINDINGS_JS" file="extensions\webstore_custom_bindings.js" type="BINDATA" />
         <include name="IDR_WEB_VIEW_DENY_JS" file="extensions\web_view_deny.js" type="BINDATA" />
         <include name="IDR_WEB_VIEW_EXPERIMENTAL_JS" file="extensions\web_view_experimental.js" type="BINDATA" />

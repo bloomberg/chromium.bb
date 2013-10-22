@@ -965,8 +965,8 @@ void Dispatcher::PopulateSourceMap() {
                              IDR_WEB_REQUEST_INTERNAL_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("webrtc.castSendTransport",
                              IDR_WEBRTC_CAST_SEND_TRANSPORT_CUSTOM_BINDINGS_JS);
-  source_map_.RegisterSource("webrtc.udpTransport",
-                             IDR_WEBRTC_UDP_TRANSPORT_CUSTOM_BINDINGS_JS);
+  source_map_.RegisterSource("webrtc.castUdpTransport",
+                             IDR_WEBRTC_CAST_UDP_TRANSPORT_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("webstore", IDR_WEBSTORE_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("windowControls", IDR_WINDOW_CONTROLS_JS);
   source_map_.RegisterSource("binding", IDR_BINDING_JS);

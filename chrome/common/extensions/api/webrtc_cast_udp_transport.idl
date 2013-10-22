@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// The <code>chrome.webrtc.udpTransport</code> API creates a UDP transport
-// for outer transport to send and receive data. This API is not useful when
-// standalone since it does not have send and receive methods. It should be
-// used as an inner transport for other transports such as castSendTransport.
-namespace webrtc.udpTransport {
+// The <code>chrome.webrtc.castUdpTransport</code> API creates a UDP
+// transport for outer transport to send and receive data. This API is not
+// useful when standalone since it does not have send and receive methods.
+// It should be used as an inner transport for other transports such as
+// castSendTransport.
+namespace webrtc.castUdpTransport {
   // The UDP socket address and port.
   dictionary UdpParams {
     DOMString address;
