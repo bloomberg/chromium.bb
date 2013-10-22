@@ -131,8 +131,6 @@ class TabCapturePerformanceTest
       command_line->AppendSwitch(switches::kDisableAcceleratedCompositing);
       command_line->AppendSwitch(switches::kDisableExperimentalWebGL);
       command_line->AppendSwitch(switches::kDisableAccelerated2dCanvas);
-      command_line->AppendSwitch(switches::kDisableGpu);
-      command_line->AppendSwitch(switches::kEnableSoftwareCompositing);
     } else {
       command_line->AppendSwitch(switches::kForceCompositingMode);
     }
@@ -218,13 +216,7 @@ class TabCapturePerformanceTest
                                    "frame_time");
     EXPECT_TRUE(sw_frames || gpu_frames);
     EXPECT_NE(sw_frames, gpu_frames);
-
-    // In aura, even software mode generates TestFrameTickGPU events.
-    // For now, we just trust that when we asked for software mode,
-    // we get software mode.
-#if !defined(USE_AURA)
     EXPECT_EQ(gpu_frames, HasFlag(kUseGpu));
-#endif
 
     // This prints out the average time between capture events.
     // As the capture frame rate is capped at 30fps, this score
@@ -238,7 +230,16 @@ class TabCapturePerformanceTest
 
 }  // namespace
 
-IN_PROC_BROWSER_TEST_P(TabCapturePerformanceTest, Performance) {
+
+// This does not work on Aura and Mac GPU bots yet
+// http://crbug.com/308236
+#if defined(USE_AURA) || defined(OS_MACOSX)
+#define MAYBE_Performance DISABLED_Performance
+#else
+#define MAYBE_Performance Performance
+#endif
+
+IN_PROC_BROWSER_TEST_P(TabCapturePerformanceTest, MAYBE_Performance) {
   RunTest("TabCapturePerformance");
 }
 
