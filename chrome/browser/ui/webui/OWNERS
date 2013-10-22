@@ -8,6 +8,7 @@ nkostylev@chromium.org
 pam@chromium.org
 xiyuan@chromium.org
 
+per-file inspect_ui*=kaznacheev@chromium.org
 per-file inspect_ui*=pfeldman@chromium.org
 per-file sync_setup_handler*=atwilson@chromium.org
 per-file sync_setup_handler*=rogerta@chromium.org
