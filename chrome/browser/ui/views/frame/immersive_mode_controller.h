@@ -59,9 +59,6 @@ class ImmersiveModeController {
 
   class Delegate {
    public:
-    // Returns the bookmark bar, or NULL if the window does not support one.
-    virtual BookmarkBarView* GetBookmarkBar() = 0;
-
     // Returns the browser's FullscreenController.
     virtual FullscreenController* GetFullscreenController() = 0;
 

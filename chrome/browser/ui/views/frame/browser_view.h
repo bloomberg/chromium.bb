@@ -424,7 +424,6 @@ class BrowserView : public BrowserWindow,
   virtual gfx::Size GetMinimumSize() OVERRIDE;
 
   // ImmersiveModeController::Delegate overrides:
-  virtual BookmarkBarView* GetBookmarkBar() OVERRIDE;
   virtual FullscreenController* GetFullscreenController() OVERRIDE;
   virtual void FullscreenStateChanged() OVERRIDE;
   virtual void SetImmersiveStyle(bool immersive) OVERRIDE;

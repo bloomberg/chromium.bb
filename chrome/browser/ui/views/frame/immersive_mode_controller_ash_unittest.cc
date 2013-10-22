@@ -40,7 +40,6 @@ class MockImmersiveModeControllerDelegate
   bool immersive_style() const { return immersive_style_; }
 
   // ImmersiveModeController::Delegate overrides:
-  virtual BookmarkBarView* GetBookmarkBar() OVERRIDE { return NULL; }
   virtual FullscreenController* GetFullscreenController() OVERRIDE {
     return NULL;
   }

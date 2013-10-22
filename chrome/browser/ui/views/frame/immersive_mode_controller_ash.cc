@@ -361,7 +361,7 @@ void ImmersiveModeControllerAsh::SetEnabled(bool enabled) {
     top_edge_hover_timer_.Stop();
     // Snap immediately to the closed state.
     reveal_state_ = CLOSED;
-    EnablePaintToLayer(false);
+    top_container_->SetPaintToLayer(false);
     delegate_->SetImmersiveStyle(false);
     SetRenderWindowTopInsetsForTouch(0);
 
@@ -964,7 +964,7 @@ void ImmersiveModeControllerAsh::MaybeStartReveal(Animate animate) {
   reveal_state_ = SLIDING_OPEN;
   if (previous_reveal_state == CLOSED) {
     // Turn on layer painting so that we can overlap the web contents.
-    EnablePaintToLayer(true);
+    top_container_->SetPaintToLayer(true);
 
     // Ensure window caption buttons are updated and the view bounds are
     // computed at normal (non-immersive-style) size. The layout call moves the
@@ -993,25 +993,6 @@ void ImmersiveModeControllerAsh::MaybeStartReveal(Animate animate) {
 
   if (previous_reveal_state == CLOSED)
      FOR_EACH_OBSERVER(Observer, observers_, OnImmersiveRevealStarted());
-}
-
-void ImmersiveModeControllerAsh::EnablePaintToLayer(bool enable) {
-  top_container_->SetPaintToLayer(enable);
-
-  // Views software compositing is not fully layer aware. If the bookmark bar
-  // is detached while the top container layer slides on or off the screen,
-  // the pixels that become exposed are the remnants of the last software
-  // composite of the BrowserView, not the freshly-exposed bookmark bar.
-  // Force the bookmark bar to paint to a layer so the views composite
-  // properly. The infobar container does not need this treatment because
-  // BrowserView::PaintChildren() always draws it last when it is visible.
-  BookmarkBarView* bookmark_bar = delegate_->GetBookmarkBar();
-  if (!bookmark_bar)
-    return;
-  if (enable && bookmark_bar->IsDetached())
-    bookmark_bar->SetPaintToLayer(true);
-  else
-    bookmark_bar->SetPaintToLayer(false);
 }
 
 void ImmersiveModeControllerAsh::LayoutBrowserRootView() {
@@ -1050,10 +1031,6 @@ void ImmersiveModeControllerAsh::MaybeEndReveal(Animate animate) {
   reveal_state_ = SLIDING_CLOSED;
   int duration_ms = GetAnimationDuration(animate);
   if (duration_ms > 0) {
-    // The bookmark bar may have become detached during the reveal so ensure
-    // layers are available. This is a no-op for the top container.
-    EnablePaintToLayer(true);
-
     animation_->SetSlideDuration(duration_ms);
     animation_->Hide();
   } else {
@@ -1066,7 +1043,7 @@ void ImmersiveModeControllerAsh::OnSlideClosedAnimationCompleted() {
   DCHECK_EQ(SLIDING_CLOSED, reveal_state_);
   reveal_state_ = CLOSED;
   // Layers aren't needed after animation completes.
-  EnablePaintToLayer(false);
+  top_container_->SetPaintToLayer(false);
   // Update tabstrip for closed state.
   delegate_->SetImmersiveStyle(true);
   SetRenderWindowTopInsetsForTouch(kNearTopContainerDistance);

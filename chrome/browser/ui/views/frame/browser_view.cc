@@ -1867,10 +1867,6 @@ void BrowserView::OnOmniboxPopupShownOrHidden() {
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserView, ImmersiveModeController::Delegate overrides:
 
-BookmarkBarView* BrowserView::GetBookmarkBar() {
-  return bookmark_bar_view_.get();
-}
-
 FullscreenController* BrowserView::GetFullscreenController() {
   // Cannot be injected into ImmersiveModeController because it is constructed
   // after BrowserView.
