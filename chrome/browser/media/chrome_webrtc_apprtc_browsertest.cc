@@ -129,6 +129,9 @@ IN_PROC_BROWSER_TEST_F(WebrtcApprtcBrowserTest, MANUAL_WorksOnApprtc) {
 
   chrome::AddBlankTabAt(browser(), -1, true);
   content::WebContents* left_tab = OpenPageAndAcceptUserMedia(room_url);
+  // TODO(phoglund): Remove when this bug gets fixed:
+  // http://code.google.com/p/webrtc/issues/detail?id=1742
+  SleepInJavascript(left_tab, 5000);
   chrome::AddBlankTabAt(browser(), -1, true);
   content::WebContents* right_tab = OpenPageAndAcceptUserMedia(room_url);
 
