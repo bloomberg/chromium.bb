@@ -754,7 +754,7 @@ int32_t RTCVideoDecoder::RecordInitDecodeUMA(int32_t status) {
   // Logging boolean is enough to know if HW decoding has been used. Also,
   // InitDecode is less likely to return an error so enum is not used here.
   bool sample = (status == WEBRTC_VIDEO_CODEC_OK) ? true : false;
-  UMA_HISTOGRAM_BOOLEAN("Media.RTCVideoDecoderInitDecodeStatus", sample);
+  UMA_HISTOGRAM_BOOLEAN("Media.RTCVideoDecoderInitDecodeSuccess", sample);
   return status;
 }
 

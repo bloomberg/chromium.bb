@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_vector.h"
 #include "base/message_loop/message_loop_proxy.h"
+#include "base/metrics/histogram.h"
 #include "base/synchronization/waitable_event.h"
 #include "content/renderer/media/renderer_gpu_video_accelerator_factories.h"
 #include "media/base/bitstream_buffer.h"
@@ -512,6 +513,7 @@ int32_t RTCVideoEncoder::InitEncode(const webrtc::VideoCodec* codec_settings,
 
   // webrtc::VideoEncoder expects this call to be synchronous.
   initialization_waiter.Wait();
+  RecordInitEncodeUMA(initialization_retval);
   return initialization_retval;
 }
 
@@ -650,6 +652,16 @@ void RTCVideoEncoder::NotifyError(int32_t error) {
   gpu_factories_->GetMessageLoop()->PostTask(
       FROM_HERE, base::Bind(&RTCVideoEncoder::Impl::Destroy, impl_));
   impl_ = NULL;
+}
+
+void RTCVideoEncoder::RecordInitEncodeUMA(int32_t init_retval) {
+  UMA_HISTOGRAM_BOOLEAN("Media.RTCVideoEncoderInitEncodeSuccess",
+                        init_retval == WEBRTC_VIDEO_CODEC_OK);
+  if (init_retval == WEBRTC_VIDEO_CODEC_OK) {
+    UMA_HISTOGRAM_ENUMERATION("Media.RTCVideoEncoderProfile",
+                              video_codec_profile_,
+                              media::VIDEO_CODEC_PROFILE_MAX);
+  }
 }
 
 }  // namespace content

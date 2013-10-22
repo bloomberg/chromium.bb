@@ -69,6 +69,8 @@ class CONTENT_EXPORT RTCVideoEncoder
 
   void NotifyError(int32_t error);
 
+  void RecordInitEncodeUMA(int32_t init_retval);
+
   base::ThreadChecker thread_checker_;
 
   // The video codec type, as reported to WebRTC.

@@ -6126,7 +6126,28 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="Media.RTCVideoDecoderInitDecodeStatus" enum="BooleanSuccess">
+  <obsolete>
+    Renamed to Media.RTCVideoDecoderInitDecodeSuccess.
+  </obsolete>
   <summary>Results of attempts to RTCVideoDecoder::InitDecode().</summary>
+</histogram>
+
+<histogram name="Media.RTCVideoDecoderInitDecodeSuccess" enum="BooleanSuccess">
+  <summary>
+    Indicates whether we were successful in initializing hardware video decoder
+    for use in the RTC pipeline.
+  </summary>
+</histogram>
+
+<histogram name="Media.RTCVideoEncoderInitEncodeSuccess" enum="BooleanSuccess">
+  <summary>
+    Indicates whether we were successful in initializing hardware video encoder
+    for use in the RTC pipeline.
+  </summary>
+</histogram>
+
+<histogram name="Media.RTCVideoEncoderProfile" enum="VideoCodecProfile">
+  <summary>Video codec profile used in RTC video encoder.</summary>
 </histogram>
 
 <histogram name="Media.TimeToPipelineStarted" units="ms">
