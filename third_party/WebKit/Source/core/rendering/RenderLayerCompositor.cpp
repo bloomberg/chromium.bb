@@ -1968,10 +1968,7 @@ bool RenderLayerCompositor::requiresCompositingForAnimation(RenderObject* render
 {
     if (!(m_compositingTriggers & ChromeClient::AnimationTrigger))
         return false;
-
-    if (AnimationController* animController = renderer->animation())
-        return animController->isRunningAcceleratableAnimationOnRenderer(renderer);
-    return false;
+    return renderer->animation().isRunningAcceleratableAnimationOnRenderer(renderer);
 }
 
 bool RenderLayerCompositor::requiresCompositingForTransition(RenderObject* renderer) const
@@ -2158,11 +2155,7 @@ bool RenderLayerCompositor::isRunningAcceleratedTransformAnimation(RenderObject*
 {
     if (!(m_compositingTriggers & ChromeClient::AnimationTrigger))
         return false;
-
-    if (AnimationController* animController = renderer->animation())
-        return animController->isRunningAnimationOnRenderer(renderer, CSSPropertyWebkitTransform);
-
-    return false;
+    return renderer->animation().isRunningAnimationOnRenderer(renderer, CSSPropertyWebkitTransform);
 }
 
 // If an element has negative z-index children, those children render in front of the

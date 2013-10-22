@@ -512,11 +512,11 @@ void CompositedLayerMapping::updateGraphicsLayerGeometry()
 
     // Set transform property, if it is not animating. We have to do this here because the transform
     // is affected by the layer dimensions.
-    if (!renderer()->animation()->isRunningAcceleratedAnimationOnRenderer(renderer(), CSSPropertyWebkitTransform))
+    if (!renderer()->animation().isRunningAcceleratedAnimationOnRenderer(renderer(), CSSPropertyWebkitTransform))
         updateTransform(renderer()->style());
 
     // Set opacity, if it is not animating.
-    if (!renderer()->animation()->isRunningAcceleratedAnimationOnRenderer(renderer(), CSSPropertyOpacity))
+    if (!renderer()->animation().isRunningAcceleratedAnimationOnRenderer(renderer(), CSSPropertyOpacity))
         updateOpacity(renderer()->style());
 
     if (RuntimeEnabledFeatures::cssCompositingEnabled())
@@ -1883,7 +1883,7 @@ void CompositedLayerMapping::transitionFinished(CSSPropertyID property)
 
 void CompositedLayerMapping::notifyAnimationStarted(const GraphicsLayer*, double time)
 {
-    renderer()->animation()->notifyAnimationStarted(renderer(), time);
+    renderer()->animation().notifyAnimationStarted(renderer(), time);
 }
 
 // This is used for the 'freeze' API, for testing only.

@@ -2028,7 +2028,7 @@ void FrameView::serviceScriptedAnimations(double monotonicAnimationStartTime)
     for (RefPtr<Frame> frame = m_frame; frame; frame = frame->tree()->traverseNext()) {
         frame->view()->serviceScrollAnimations();
         if (!RuntimeEnabledFeatures::webAnimationsCSSEnabled())
-            frame->animation()->serviceAnimations();
+            frame->animation().serviceAnimations();
         if (RuntimeEnabledFeatures::webAnimationsEnabled())
             frame->document()->timeline()->serviceAnimations(monotonicAnimationStartTime);
     }

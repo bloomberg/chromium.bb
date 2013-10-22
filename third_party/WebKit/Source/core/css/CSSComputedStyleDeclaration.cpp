@@ -1624,9 +1624,9 @@ PassRefPtr<RenderStyle> CSSComputedStyleDeclaration::computeRenderStyle(CSSPrope
         AnimationUpdateBlock animationUpdateBlock(renderer->animation());
         if (m_pseudoElementSpecifier && !styledNode->isPseudoElement()) {
             // FIXME: This cached pseudo style will only exist if the animation has been run at least once.
-            return renderer->animation()->getAnimatedStyleForRenderer(renderer)->getCachedPseudoStyle(m_pseudoElementSpecifier);
+            return renderer->animation().getAnimatedStyleForRenderer(renderer)->getCachedPseudoStyle(m_pseudoElementSpecifier);
         }
-        return renderer->animation()->getAnimatedStyleForRenderer(renderer);
+        return renderer->animation().getAnimatedStyleForRenderer(renderer);
     }
     return styledNode->computedStyle(styledNode->isPseudoElement() ? NOPSEUDO : m_pseudoElementSpecifier);
 }

@@ -1774,7 +1774,7 @@ void RenderObject::handleDynamicFloatPositionChange()
 void RenderObject::setAnimatableStyle(PassRefPtr<RenderStyle> style)
 {
     if (!isText() && style && !RuntimeEnabledFeatures::webAnimationsCSSEnabled()) {
-        setStyle(animation()->updateAnimations(this, style.get()));
+        setStyle(animation().updateAnimations(this, style.get()));
         return;
     }
     setStyle(style);
@@ -2563,7 +2563,7 @@ void RenderObject::willBeDestroyed()
     if (Frame* frame = this->frame()) {
         if (frame->page())
             frame->page()->stopAutoscrollIfNeeded(this);
-        frame->animation()->cancelAnimations(this);
+        frame->animation().cancelAnimations(this);
     }
 
     // For accessibility management, notify the parent of the imminent change to its child set.
@@ -3130,7 +3130,7 @@ void RenderObject::adjustRectForOutlineAndShadow(LayoutRect& rect) const
     rect.inflate(outlineSize);
 }
 
-AnimationController* RenderObject::animation() const
+AnimationController& RenderObject::animation() const
 {
     return frame()->animation();
 }

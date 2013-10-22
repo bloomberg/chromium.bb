@@ -101,7 +101,7 @@ namespace WebCore {
         NavigationScheduler* navigationScheduler() const;
         FrameSelection& selection() const;
         FrameTree* tree() const;
-        AnimationController* animation() const;
+        AnimationController& animation() const;
         InputMethodController& inputMethodController() const;
         FetchContext& fetchContext() const { return loader()->fetchContext(); }
         ScriptController* script();
@@ -242,9 +242,9 @@ namespace WebCore {
         return *m_spellChecker;
     }
 
-    inline AnimationController* Frame::animation() const
+    inline AnimationController& Frame::animation() const
     {
-        return m_animationController.get();
+        return *m_animationController;
     }
 
     inline InputMethodController& Frame::inputMethodController() const

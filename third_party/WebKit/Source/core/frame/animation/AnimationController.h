@@ -77,11 +77,17 @@ private:
 
 class AnimationUpdateBlock {
 public:
-    AnimationUpdateBlock(AnimationController* animationController)
+    explicit AnimationUpdateBlock(AnimationController* animationController)
         : m_animationController(animationController)
     {
         if (m_animationController)
             m_animationController->beginAnimationUpdate();
+    }
+
+    explicit AnimationUpdateBlock(AnimationController& animationController)
+        : m_animationController(&animationController)
+    {
+        m_animationController->beginAnimationUpdate();
     }
 
     ~AnimationUpdateBlock()
