@@ -19,6 +19,15 @@ namespace notifications {
     progress
   };
 
+  enum PermissionLevel {
+    // User has elected to show notifications from the app or extension.
+    // This is the default at install time.
+    granted,
+
+    // User has elected not to show notifications from the app or extension.
+    denied
+  };
+
   dictionary NotificationItem {
     // Title of one item of a list notification.
     DOMString title;
@@ -93,6 +102,8 @@ namespace notifications {
 
   callback GetAllCallback = void (object notifications);
 
+  callback PermissionLevelCallback = void (PermissionLevel level);
+
   interface Functions {
     // Creates and displays a notification having the contents in |options|,
     // identified by the id |notificationId|. If |notificationId| is empty,
@@ -119,6 +130,10 @@ namespace notifications {
     // |callback| is executed with the set of notification_ids currently in
     // the system.
     static void getAll(GetAllCallback callback);
+
+    // Retrieves whether the user has enabled notifications from this app
+    // or extension.
+    static void getPermissionLevel(PermissionLevelCallback callback);
   };
 
   interface Events {
@@ -130,6 +145,9 @@ namespace notifications {
 
     // The user pressed a button in the notification.
     static void onButtonClicked(DOMString notificationId, long buttonIndex);
+
+    // The user changes the permission level.
+    static void onPermissionLevelChanged(PermissionLevel level);
   };
 
 };

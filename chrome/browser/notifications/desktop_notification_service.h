@@ -195,6 +195,10 @@ class DesktopNotificationService : public BrowserContextKeyedService,
   // Called when the enabled_sync_notifier_id pref has been changed.
   void OnEnabledSyncNotifierIdsChanged();
 
+  void FirePermissionLevelChangedEvent(
+      const message_center::NotifierId& notifier_id,
+      bool enabled);
+
   // content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,

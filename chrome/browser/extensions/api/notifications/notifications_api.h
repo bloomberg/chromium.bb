@@ -33,7 +33,13 @@ class NotificationsApiFunction : public ApiFunction {
                           api::notifications::NotificationOptions* options,
                           Notification* notification);
 
-  bool IsNotificationsApiEnabled();
+  bool IsNotificationsApiEnabled() const;
+
+  bool AreExtensionNotificationsAllowed() const;
+
+  // Returns true if the API function is still allowed to run even when the
+  // notifications for a notifier have been disabled.
+  virtual bool CanRunWhileDisabled() const;
 
   // Called inside of RunImpl.
   virtual bool RunNotificationsApi() = 0;
@@ -49,7 +55,7 @@ class NotificationsCreateFunction : public NotificationsApiFunction {
  public:
   NotificationsCreateFunction();
 
-  // UIThreadExtensionFunction:
+  // NotificationsApiFunction:
   virtual bool RunNotificationsApi() OVERRIDE;
 
  protected:
@@ -65,7 +71,7 @@ class NotificationsUpdateFunction : public NotificationsApiFunction {
  public:
   NotificationsUpdateFunction();
 
-  // UIThreadExtensionFunction:
+  // NotificationsApiFunction:
   virtual bool RunNotificationsApi() OVERRIDE;
 
  protected:
@@ -81,7 +87,7 @@ class NotificationsClearFunction : public NotificationsApiFunction {
  public:
   NotificationsClearFunction();
 
-  // UIThreadExtensionFunction:
+  // NotificationsApiFunction:
   virtual bool RunNotificationsApi() OVERRIDE;
 
  protected:
@@ -97,7 +103,7 @@ class NotificationsGetAllFunction : public NotificationsApiFunction {
  public:
   NotificationsGetAllFunction();
 
-  // UIThreadExtensionFunction:
+  // NotificationsApiFunction:
   virtual bool RunNotificationsApi() OVERRIDE;
 
  protected:
@@ -105,6 +111,23 @@ class NotificationsGetAllFunction : public NotificationsApiFunction {
 
  private:
   DECLARE_EXTENSION_FUNCTION("notifications.getAll", NOTIFICATIONS_GET_ALL)
+};
+
+class NotificationsGetPermissionLevelFunction :
+    public NotificationsApiFunction {
+ public:
+  NotificationsGetPermissionLevelFunction();
+
+  // NotificationsApiFunction:
+  virtual bool CanRunWhileDisabled() const OVERRIDE;
+  virtual bool RunNotificationsApi() OVERRIDE;
+
+ protected:
+  virtual ~NotificationsGetPermissionLevelFunction();
+
+ private:
+  DECLARE_EXTENSION_FUNCTION("notifications.getPermissionLevel",
+                             NOTIFICATIONS_GET_ALL)
 };
 
 }  // namespace extensions

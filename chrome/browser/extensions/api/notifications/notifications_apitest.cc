@@ -14,6 +14,7 @@
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_switches.h"
 #include "ui/message_center/message_center_util.h"
+#include "ui/message_center/notifier_settings.h"
 
 using extensions::Extension;
 
@@ -698,5 +699,107 @@ IN_PROC_BROWSER_TEST_F(NotificationsApiTest, TestPartialUpdate) {
     bool copy_bool_value = false;
     ASSERT_TRUE(result->GetAsBoolean(&copy_bool_value));
     ASSERT_TRUE(copy_bool_value);
+  }
+}
+
+// MessaceCenter-specific test.
+#if defined(RUN_MESSAGE_CENTER_TESTS)
+#define MAYBE_TestGetPermissionLevel TestGetPermissionLevel
+#else
+#define MAYBE_TestGetPermissionLevel DISABLED_TestGetPermissionLevel
+#endif
+
+IN_PROC_BROWSER_TEST_F(NotificationsApiTest, MAYBE_TestGetPermissionLevel) {
+  scoped_refptr<Extension> empty_extension(utils::CreateEmptyExtension());
+
+  // Get permission level for the extension whose notifications are enabled.
+  {
+    scoped_refptr<extensions::NotificationsGetPermissionLevelFunction>
+        notification_function(
+            new extensions::NotificationsGetPermissionLevelFunction());
+
+    notification_function->set_extension(empty_extension.get());
+    notification_function->set_has_callback(true);
+
+    scoped_ptr<base::Value> result(utils::RunFunctionAndReturnSingleResult(
+        notification_function.get(),
+        "[]",
+        browser(),
+        utils::NONE));
+
+    EXPECT_EQ(base::Value::TYPE_STRING, result->GetType());
+    std::string permission_level;
+    EXPECT_TRUE(result->GetAsString(&permission_level));
+    EXPECT_EQ("granted", permission_level);
+  }
+
+  // Get permission level for the extension whose notifications are disabled.
+  {
+    scoped_refptr<extensions::NotificationsGetPermissionLevelFunction>
+        notification_function(
+            new extensions::NotificationsGetPermissionLevelFunction());
+
+    notification_function->set_extension(empty_extension.get());
+    notification_function->set_has_callback(true);
+
+    message_center::NotifierId notifier_id(
+        message_center::NotifierId::APPLICATION,
+        empty_extension->id());
+    message_center::Notifier notifier(notifier_id, string16(), true);
+    g_browser_process->message_center()->GetNotifierSettingsProvider()->
+        SetNotifierEnabled(notifier, false);
+
+    scoped_ptr<base::Value> result(utils::RunFunctionAndReturnSingleResult(
+        notification_function.get(),
+        "[]",
+        browser(),
+        utils::NONE));
+
+    EXPECT_EQ(base::Value::TYPE_STRING, result->GetType());
+    std::string permission_level;
+    EXPECT_TRUE(result->GetAsString(&permission_level));
+    EXPECT_EQ("denied", permission_level);
+  }
+}
+
+// MessaceCenter-specific test.
+#if defined(RUN_MESSAGE_CENTER_TESTS)
+#define MAYBE_TestOnPermissionLevelChanged TestOnPermissionLevelChanged
+#else
+#define MAYBE_TestOnPermissionLevelChanged DISABLED_TestOnPermissionLevelChanged
+#endif
+
+IN_PROC_BROWSER_TEST_F(NotificationsApiTest,
+                       MAYBE_TestOnPermissionLevelChanged) {
+  const extensions::Extension* extension =
+      LoadExtensionAndWait("notifications/api/permission");
+  ASSERT_TRUE(extension) << message_;
+
+  // Test permission level changing from granted to denied.
+  {
+    ResultCatcher catcher;
+
+    message_center::NotifierId notifier_id(
+        message_center::NotifierId::APPLICATION,
+        extension->id());
+    message_center::Notifier notifier(notifier_id, string16(), true);
+    g_browser_process->message_center()->GetNotifierSettingsProvider()->
+        SetNotifierEnabled(notifier, false);
+
+    EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
+  }
+
+  // Test permission level changing from denied to granted.
+  {
+    ResultCatcher catcher;
+
+    message_center::NotifierId notifier_id(
+        message_center::NotifierId::APPLICATION,
+        extension->id());
+    message_center::Notifier notifier(notifier_id, string16(), false);
+    g_browser_process->message_center()->GetNotifierSettingsProvider()->
+        SetNotifierEnabled(notifier, true);
+
+    EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
   }
 }

@@ -12,6 +12,8 @@
 #include "chrome/browser/content_settings/content_settings_details.h"
 #include "chrome/browser/content_settings/content_settings_provider.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
+#include "chrome/browser/extensions/api/notifications/notifications_api.h"
+#include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_info_map.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
@@ -587,6 +589,7 @@ void DesktopNotificationService::SetNotifierEnabled(
       pref_name = prefs::kMessageCenterDisabledExtensionIds;
       add_new_item = !enabled;
       id.reset(new base::StringValue(notifier_id.id));
+      FirePermissionLevelChangedEvent(notifier_id, enabled);
       break;
     case NotifierId::SYSTEM_COMPONENT:
 #if defined(OS_CHROMEOS)
@@ -681,4 +684,20 @@ void DesktopNotificationService::Observe(
     return;
 
   SetNotifierEnabled(notifier_id, true);
+}
+
+void DesktopNotificationService::FirePermissionLevelChangedEvent(
+    const NotifierId& notifier_id, bool enabled) {
+  DCHECK_EQ(NotifierId::APPLICATION, notifier_id.type);
+  extensions::api::notifications::PermissionLevel permission =
+      enabled ? extensions::api::notifications::PERMISSION_LEVEL_GRANTED
+              : extensions::api::notifications::PERMISSION_LEVEL_DENIED;
+  scoped_ptr<base::ListValue> args(new base::ListValue());
+  args->Append(new base::StringValue(
+      extensions::api::notifications::ToString(permission)));
+  scoped_ptr<extensions::Event> event(new extensions::Event(
+      extensions::api::notifications::OnPermissionLevelChanged::kEventName,
+      args.Pass()));
+  extensions::ExtensionSystem::Get(profile_)->event_router()->
+      DispatchEventToExtension(notifier_id.id, event.Pass());
 }

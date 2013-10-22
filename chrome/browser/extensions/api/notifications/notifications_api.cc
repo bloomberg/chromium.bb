@@ -447,11 +447,19 @@ bool NotificationsApiFunction::UpdateNotification(
   return true;
 }
 
-bool NotificationsApiFunction::IsNotificationsApiEnabled() {
+bool NotificationsApiFunction::AreExtensionNotificationsAllowed() const {
   DesktopNotificationService* service =
       DesktopNotificationServiceFactory::GetForProfile(profile());
   return service->IsNotifierEnabled(message_center::NotifierId(
-      message_center::NotifierId::APPLICATION, extension_->id()));
+             message_center::NotifierId::APPLICATION, extension_->id()));
+}
+
+bool NotificationsApiFunction::IsNotificationsApiEnabled() const {
+  return CanRunWhileDisabled() || AreExtensionNotificationsAllowed();
+}
+
+bool NotificationsApiFunction::CanRunWhileDisabled() const {
+  return false;
 }
 
 bool NotificationsApiFunction::RunImpl() {
@@ -596,6 +604,28 @@ bool NotificationsGetAllFunction::RunNotificationsApi() {
   }
 
   SetResult(result.release());
+  SendResponse(true);
+
+  return true;
+}
+
+NotificationsGetPermissionLevelFunction::
+NotificationsGetPermissionLevelFunction() {}
+
+NotificationsGetPermissionLevelFunction::
+~NotificationsGetPermissionLevelFunction() {}
+
+bool NotificationsGetPermissionLevelFunction::CanRunWhileDisabled() const {
+  return true;
+}
+
+bool NotificationsGetPermissionLevelFunction::RunNotificationsApi() {
+  api::notifications::PermissionLevel result =
+      AreExtensionNotificationsAllowed()
+          ? api::notifications::PERMISSION_LEVEL_GRANTED
+          : api::notifications::PERMISSION_LEVEL_DENIED;
+
+  SetResult(new base::StringValue(api::notifications::ToString(result)));
   SendResponse(true);
 
   return true;
