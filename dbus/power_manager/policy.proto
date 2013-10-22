@@ -122,12 +122,19 @@ message PowerManagementPolicy {
   // |screen_dim_ms| delay leaves delays unchanged.
   optional double user_activity_screen_dim_delay_factor = 9;
 
+  // If true, instructs the power manager not to perform any
+  // delay-triggered actions while in a user session until user activity
+  // has been observed. After activity is seen, the inactivity timeout
+  // starts. The actions are deferred again after a new session starts.
+  // Note that this has no immediate effect if activity has already been
+  // seen within an already-started session (activity that took place
+  // before the policy change is honored) and also that it has no effect at
+  // the login screen.
+  optional bool wait_for_initial_user_activity = 12;
+
   // Human-readable description of the factors contributing to this policy.
   // Logged by the power manager to aid in debugging.
   optional string reason = 8;
 
-  // DEPRECATED: Use |presentation_screen_dim_delay_factor| instead.
-  optional double presentation_idle_delay_factor = 7;
-
-  // Next ID to use: 12
+  // Next ID to use: 13
 }
