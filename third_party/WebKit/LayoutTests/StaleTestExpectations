@@ -1,0 +1,86 @@
+# This file is for TestExpectations entries whose bugs haven't had any activity in 3 months.
+# Only virtual tests or platform/configuration-specific lines should be moved here. The tests for stale
+# cross-platform lines should just be deleted.
+#
+# Feel free to take ownership of any of these lines and get the test passing.
+
+webkit.org/b/109400 [ Win ] http/tests/css/css-image-loading.html [ Skip ]
+
+# Overflowing LayoutUnits cause RenderGeometryMap assertions
+webkit.org/b/67434 [ Debug ] fast/overflow/overflow-height-float-not-removed-crash.html [ Skip ]
+webkit.org/b/67434 [ Debug ] fast/overflow/overflow-height-float-not-removed-crash2.html [ Skip ]
+webkit.org/b/67434 [ Debug ] fast/overflow/overflow-height-float-not-removed-crash3.html [ Skip ]
+webkit.org/b/67434 [ Debug ] fast/block/float/overhanging-tall-block.html [ Skip ]
+
+webkit.org/b/75186 [ Linux ] http/tests/inspector-enabled/dedicated-workers-list.html [ Skip ]
+webkit.org/b/48655 [ Debug ] plugins/js-from-destroy.html [ Skip ]
+webkit.org/b/60118 [ Win Debug ] svg/dom/SVGScriptElement/script-set-href.svg [ Skip ]
+
+# Failing since added by r108699
+webkit.org/b/79454 [ Linux ] svg/text/text-viewbox-rescale.html [ Skip ]
+
+webkit.org/b/82509 [ Linux ] svg/text/append-text-node-to-tspan.html [ Skip ]
+
+# Clipping differences between Chromium platforms. Needs investigation.
+webkit.org/b/98599 [ Linux Win ] css3/masking/clip-path-reference-userSpaceOnUse.html [ Skip ]
+
+webkit.org/b/110296 [ Linux ] fast/multicol/newmulticol/column-rules-fixed-height.html [ Skip ]
+webkit.org/b/91429 [ Debug ] fast/frames/calculate-round.html [ Skip ]
+
+# These have been flaky for as long as we have test history.
+webkit.org/b/52063 [ Win ] http/tests/navigation/ping-cross-origin.html [ Skip ]
+
+# These were flaky, now failing more consistently after r75169.
+webkit.org/b/52061 [ Linux Release ] transitions/change-values-during-transition.html [ Skip ]
+
+webkit.org/b/56702 [ Win ] http/tests/navigation/ping-cross-origin-from-https.html [ Skip ]
+
+webkit.org/b/74746 [ Win ] http/tests/xmlhttprequest/workers/methods.html [ Skip ]
+
+# New reftest failing on Win7.
+webkit.org/b/76050 [ Win7 ] fast/text/font-kerning.html [ Skip ]
+
+webkit.org/b/81145 [ SnowLeopard Lion ] fast/frames/invalid.html [ Skip ]
+webkit.org/b/81145 [ Lion ] fast/writing-mode/broken-ideograph-small-caps.html [ Skip ]
+webkit.org/b/81145 [ Lion ] fast/writing-mode/broken-ideographic-font.html [ Skip ]
+webkit.org/b/81145 [ Lion ] fast/writing-mode/japanese-rl-text-with-broken-font.html [ Skip ]
+webkit.org/b/82297 [ Lion MountainLion Retina ] fast/events/platform-wheelevent-paging-x-in-scrolling-page.html [ Skip ]
+webkit.org/b/82297 [ Lion MountainLion Retina ] fast/events/platform-wheelevent-paging-xy-in-scrolling-page.html [ Skip ]
+webkit.org/b/82297 [ Lion MountainLion Retina ] fast/events/platform-wheelevent-paging-y-in-scrolling-page.html [ Skip ]
+webkit.org/b/ [ Win7 ] http/tests/xmlhttprequest/redirect-cross-origin-post.html [ Skip ]
+webkit.org/b/83647 [ Linux Win ] fast/multicol/cell-shrinkback.html [ Skip ]
+webkit.org/b/86114 [ Debug ] animations/combo-transform-translate+scale.html [ Skip ]
+
+# Ref-tests can't have platform specific results.
+webkit.org/b/87175 [ Win Linux ] fast/regions/floats-basic-in-variable-width-regions.html [ Skip ]
+webkit.org/b/87175 [ Win Linux ] fast/regions/overflow-in-uniform-regions.html [ Skip ]
+
+# Fails since creation in 122663
+webkit.org/b/91372 [ Win ] css2.1/20110323/vertical-align-boxes-001.htm [ Skip ]
+
+# Added by bug 89826
+webkit.org/b/94003 [ Win ] fast/css/word-spacing-characters-complex-text.html [ Skip ]
+
+webkit.org/b/94017 [ Win ] css2.1/20110323/c541-word-sp-000.htm [ Skip ]
+
+# Failing due to sub-pixel layout.
+webkit.org/b/95136 [ Linux Win ] fast/css/sticky/sticky-writing-mode-vertical-lr.html [ Skip ]
+webkit.org/b/95136 [ Linux Win ] fast/css/sticky/sticky-writing-mode-vertical-rl.html [ Skip ]
+
+webkit.org/b/97296 [ Win ] fast/text/international/hebrew-selection.html [ Skip ]
+webkit.org/b/98811 [ Mac ] fast/transforms/transformed-focused-text-input.html [ Skip ]
+webkit.org/b/99604 [ Win ] http/tests/workers/text-encoding.html [ Skip ]
+
+# This ref-test doesn't work on Chromium Mac ("Test" is offset).
+webkit.org/b/101093 [ Mac ] fast/sub-pixel/float-wrap-zoom.html [ Skip ]
+
+webkit.org/b/78830 [ Win Linux ] svg/repaint/image-with-clip-path.svg [ Skip ]
+webkit.org/b/100023 [ Mac ] fast/sub-pixel/file-upload-control-at-fractional-offset.html [ Skip ]
+webkit.org/b/104489 [ Win ] http/tests/w3c/webperf/submission/Intel/user-timing/test_user_timing_mark.html [ Skip ]
+webkit.org/b/104489 [ Win ] http/tests/w3c/webperf/submission/Intel/user-timing/test_user_timing_clearMarks.html [ Skip ]
+webkit.org/b/104489 [ Win ] http/tests/w3c/webperf/submission/Intel/user-timing/test_user_timing_measure_associate_with_navigation_timing.html [ Skip ]
+webkit.org/b/104489 [ Win ] http/tests/w3c/webperf/submission/Google/resource-timing/html/test_resource_attribute_order.html [ Skip ]
+webkit.org/b/104489 [ Win ] http/tests/w3c/webperf/submission/Google/resource-timing/html/test_resource_script_types.html [ Skip ]
+
+webkit.org/b/112980 [ Win Mac ] fast/frames/seamless/seamless-form-post-override.html [ Skip ]
+webkit.org/b/112610 [ Win ] fast/text/word-space-with-kerning-3.html [ Skip ]

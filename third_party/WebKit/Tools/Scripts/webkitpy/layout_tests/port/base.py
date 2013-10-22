@@ -1201,6 +1201,7 @@ class Port(object):
         paths = []
         paths.append(self.path_from_chromium_base('skia', 'skia_test_expectations.txt'))
         paths.append(self._filesystem.join(self.layout_tests_dir(), 'NeverFixTests'))
+        paths.append(self._filesystem.join(self.layout_tests_dir(), 'StaleTestExpectations'))
         paths.append(self._filesystem.join(self.layout_tests_dir(), 'SlowTests'))
 
         builder_name = self.get_option('builder_name', 'DUMMY_BUILDER_NAME')
