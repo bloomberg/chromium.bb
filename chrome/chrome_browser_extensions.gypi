@@ -276,6 +276,8 @@
         'browser/extensions/api/history/history_api.cc',
         'browser/extensions/api/i18n/i18n_api.cc',
         'browser/extensions/api/i18n/i18n_api.h',
+        'browser/extensions/api/identity/account_tracker.cc',
+        'browser/extensions/api/identity/account_tracker.h',
         'browser/extensions/api/identity/experimental_identity_api.cc',
         'browser/extensions/api/identity/experimental_identity_api.h',
         'browser/extensions/api/identity/experimental_web_auth_flow.cc',

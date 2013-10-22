@@ -31,11 +31,17 @@ bool FakeProfileOAuth2TokenService::RefreshTokenIsAvailable(
 
 void FakeProfileOAuth2TokenService::IssueRefreshToken(
     const std::string& token) {
+  IssueRefreshTokenForUser("account_id", token);
+}
+
+void FakeProfileOAuth2TokenService::IssueRefreshTokenForUser(
+    const std::string& account_id,
+    const std::string& token) {
   refresh_token_ = token;
   if (refresh_token_.empty())
-    FireRefreshTokenRevoked("account_id");
+    FireRefreshTokenRevoked(account_id);
   else
-    FireRefreshTokenAvailable("account_id");
+    FireRefreshTokenAvailable(account_id);
   // TODO(atwilson): Maybe we should also call FireRefreshTokensLoaded() here?
 }
 
@@ -79,6 +85,7 @@ void FakeProfileOAuth2TokenService::CompleteRequests(
     const base::Time& expiration) {
   std::vector<FakeProfileOAuth2TokenService::PendingRequest> requests =
       GetPendingRequests();
+
   // Walk the requests and notify the callbacks.
   for (std::vector<PendingRequest>::iterator it = pending_requests_.begin();
        it != pending_requests_.end(); ++it) {

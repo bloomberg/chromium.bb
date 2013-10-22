@@ -71,6 +71,11 @@ class FakeProfileOAuth2TokenService
   // OnRefreshTokenRevoked().
   void IssueRefreshToken(const std::string& token);
 
+  // TODO(fgorski,rogerta): Merge with UpdateCredentials when this class fully
+  // supports multiple accounts.
+  void IssueRefreshTokenForUser(const std::string& account_id,
+                                const std::string& token);
+
   // Gets a list of active requests (can be used by tests to validate that the
   // correct request has been issued).
   std::vector<PendingRequest> GetPendingRequests();

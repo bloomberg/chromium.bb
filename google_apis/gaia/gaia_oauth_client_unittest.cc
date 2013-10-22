@@ -130,6 +130,7 @@ const std::string kTestAccessToken = "1/fFAGRNJru1FTz70BzhT3Zg";
 const std::string kTestRefreshToken =
     "1/6BMfW9j53gdGImsixUH6kU5RsR4zwI9lUVX-tqf8JXQ";
 const std::string kTestUserEmail = "a_user@gmail.com";
+const std::string kTestUserId = "8675309";
 const int kTestExpiresIn = 3920;
 
 const std::string kDummyGetTokensResult =
@@ -143,6 +144,9 @@ const std::string kDummyRefreshTokenResult =
 
 const std::string kDummyUserInfoResult =
   "{\"email\":\"" + kTestUserEmail + "\"}";
+
+const std::string kDummyUserIdResult =
+  "{\"id\":\"" + kTestUserId + "\"}";
 
 const std::string kDummyTokenInfoResult =
   "{\"issued_to\": \"1234567890.apps.googleusercontent.com\","
@@ -186,6 +190,7 @@ class MockGaiaOAuthClientDelegate : public gaia::GaiaOAuthClient::Delegate {
   MOCK_METHOD2(OnRefreshTokenResponse, void(const std::string& access_token,
                                             int expires_in_seconds));
   MOCK_METHOD1(OnGetUserEmailResponse, void(const std::string& user_email));
+  MOCK_METHOD1(OnGetUserIdResponse, void(const std::string& user_id));
   MOCK_METHOD0(OnOAuthError, void());
   MOCK_METHOD1(OnNetworkError, void(int response_code));
 
@@ -309,6 +314,17 @@ TEST_F(GaiaOAuthClientTest, GetUserEmail) {
 
   GaiaOAuthClient auth(GetRequestContext());
   auth.GetUserEmail("access_token", 1, &delegate);
+}
+
+TEST_F(GaiaOAuthClientTest, GetUserId) {
+  MockGaiaOAuthClientDelegate delegate;
+  EXPECT_CALL(delegate, OnGetUserIdResponse(kTestUserId)).Times(1);
+
+  MockOAuthFetcherFactory factory;
+  factory.set_results(kDummyUserIdResult);
+
+  GaiaOAuthClient auth(GetRequestContext());
+  auth.GetUserId("access_token", 1, &delegate);
 }
 
 TEST_F(GaiaOAuthClientTest, GetTokenInfo) {

@@ -655,19 +655,12 @@ const base::Time& IdentityTokenCacheValue::expiration_time() const {
 
 IdentityAPI::IdentityAPI(Profile* profile)
     : profile_(profile),
-      error_(GoogleServiceAuthError::NONE),
-      initialized_(false) {
+      account_tracker_(profile),
+      identity_event_router_(profile) {
+  account_tracker_.AddObserver(this);
 }
 
-IdentityAPI::~IdentityAPI() {
-}
-
-void IdentityAPI::Initialize() {
-  SigninGlobalError::GetForProfile(profile_)->AddProvider(this);
-  ProfileOAuth2TokenServiceFactory::GetForProfile(profile_)->AddObserver(this);
-
-  initialized_ = true;
-}
+IdentityAPI::~IdentityAPI() {}
 
 IdentityMintRequestQueue* IdentityAPI::mint_queue() {
     return &mint_queue_;
@@ -715,19 +708,14 @@ const IdentityAPI::CachedTokens& IdentityAPI::GetAllCachedTokens() {
 }
 
 void IdentityAPI::ReportAuthError(const GoogleServiceAuthError& error) {
-  error_ = error;
-  SigninGlobalError::GetForProfile(profile_)->AuthStatusChanged();
+  ProfileOAuth2TokenService* token_service =
+      ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
+  account_tracker_.ReportAuthError(token_service->GetPrimaryAccountId(), error);
 }
 
 void IdentityAPI::Shutdown() {
-  if (!initialized_)
-    return;
-
-  SigninGlobalError::GetForProfile(profile_)->RemoveProvider(this);
-  ProfileOAuth2TokenServiceFactory::GetForProfile(profile_)->
-      RemoveObserver(this);
-
-  initialized_ = false;
+  account_tracker_.RemoveObserver(this);
+  account_tracker_.Shutdown();
 }
 
 static base::LazyInstance<ProfileKeyedAPIFactory<IdentityAPI> >
@@ -738,24 +726,18 @@ ProfileKeyedAPIFactory<IdentityAPI>* IdentityAPI::GetFactoryInstance() {
   return &g_factory.Get();
 }
 
-std::string IdentityAPI::GetAccountId() const {
-  return ProfileOAuth2TokenServiceFactory::GetForProfile(profile_)->
-      GetPrimaryAccountId();
-}
+void IdentityAPI::OnAccountAdded(const AccountIds& ids) {}
 
-GoogleServiceAuthError IdentityAPI::GetAuthStatus() const {
-  return error_;
-}
+void IdentityAPI::OnAccountRemoved(const AccountIds& ids) {}
 
-void IdentityAPI::OnRefreshTokenAvailable(const std::string& account_id) {
-  error_ = GoogleServiceAuthError::AuthErrorNone();
+void IdentityAPI::OnAccountSignInChanged(const AccountIds& ids,
+                                         bool is_signed_in) {
+  identity_event_router_.DispatchSignInEvent(ids.gaia, ids.email, is_signed_in);
 }
 
 template <>
 void ProfileKeyedAPIFactory<IdentityAPI>::DeclareFactoryDependencies() {
   DependsOn(ExtensionSystemFactory::GetInstance());
-  // Need dependency on ProfileOAuth2TokenServiceFactory because it owns
-  // the SigninGlobalError instance.
   DependsOn(ProfileOAuth2TokenServiceFactory::GetInstance());
 }
 
