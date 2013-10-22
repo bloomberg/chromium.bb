@@ -47,10 +47,21 @@ void ImportNetworksForUser(const chromeos::User* user,
                            std::string* error);
 
 // Looks up the policy for |guid| for the current active user and sets
-// |onc_source| accordingly.
+// |global_config| (if not NULL) and |onc_source| (if not NULL) accordingly. If
+// |guid| is empty, returns NULL and sets the |global_config| and |onc_source|
+// if a policy is found.
 const base::DictionaryValue* FindPolicyForActiveUser(
     const std::string& guid,
     ::onc::ONCSource* onc_source);
+
+// Returns the global network configuration section of the active user's network
+// policy (if |for_active_user| is true) or of the device policy.
+const base::DictionaryValue* GetGlobalConfigFromPolicy(bool for_active_user);
+
+// Convenvience function to retrieve the "AllowOnlyPolicyNetworksToAutoconnect"
+// setting from the global network configuration (see
+// GetGlobalConfigFromPolicy).
+bool PolicyAllowsOnlyPolicyNetworksToAutoconnect(bool for_active_user);
 
 // Returns the effective (user or device) policy for network |favorite|. Both
 // |profile_prefs| and |local_state_prefs| might be NULL. Returns NULL if no

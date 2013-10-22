@@ -543,16 +543,30 @@ base::DictionaryValue* BuildIPInfoDictionary(
   return ip_info_dict.release();
 }
 
-static bool CanForgetNetworkType(const std::string& type) {
+bool CanForgetNetworkType(const std::string& type) {
   return type == shill::kTypeWifi ||
          type == shill::kTypeWimax ||
          type == shill::kTypeVPN;
 }
 
-static bool CanAddNetworkType(const std::string& type) {
+bool CanAddNetworkType(const std::string& type) {
   return type == shill::kTypeWifi ||
          type == shill::kTypeVPN ||
          type == shill::kTypeCellular;
+}
+
+// Decorate dictionary |value_dict| with policy information from |ui_data|.
+void DecorateValueDictionary(const NetworkPropertyUIData& ui_data,
+                             const base::Value& value,
+                             base::DictionaryValue* value_dict) {
+  const base::Value* recommended_value = ui_data.default_value();
+  if (ui_data.IsManaged())
+    value_dict->SetString(kTagControlledBy, kTagPolicy);
+  else if (recommended_value && recommended_value->Equals(&value))
+    value_dict->SetString(kTagControlledBy, kTagRecommended);
+
+  if (recommended_value)
+    value_dict->Set(kTagRecommendedValue, recommended_value->DeepCopy());
 }
 
 // Decorate pref value as CoreOptionsHandler::CreateValueForPref() does and
@@ -564,15 +578,34 @@ void SetValueDictionary(base::DictionaryValue* settings,
   base::DictionaryValue* dict = new base::DictionaryValue();
   // DictionaryValue::Set() takes ownership of |value|.
   dict->Set(kTagValue, value);
-  const base::Value* recommended_value = ui_data.default_value();
-  if (ui_data.IsManaged())
-    dict->SetString(kTagControlledBy, kTagPolicy);
-  else if (recommended_value && recommended_value->Equals(value))
-    dict->SetString(kTagControlledBy, kTagRecommended);
-
-  if (recommended_value)
-    dict->Set(kTagRecommendedValue, recommended_value->DeepCopy());
   settings->Set(key, dict);
+  DecorateValueDictionary(ui_data, *value, dict);
+}
+
+// Creates a decorated dictionary like SetValueDictionary does, but extended for
+// the Autoconnect property, which respects additionally global network policy.
+void SetAutoconnectValueDictionary(bool network_is_private,
+                                   ::onc::ONCSource onc_source,
+                                   bool current_autoconnect,
+                                   const NetworkPropertyUIData& ui_data,
+                                   base::DictionaryValue* settings) {
+  base::DictionaryValue* dict = new base::DictionaryValue();
+  base::Value* value = new base::FundamentalValue(current_autoconnect);
+  // DictionaryValue::Set() takes ownership of |value|.
+  dict->Set(kTagValue, value);
+  settings->Set(kTagAutoConnect, dict);
+  if (onc_source != ::onc::ONC_SOURCE_USER_POLICY &&
+      onc_source != ::onc::ONC_SOURCE_DEVICE_POLICY) {
+    // Autoconnect can be controlled by the GlobalNetworkConfiguration of the
+    // ONC policy.
+    bool only_policy_autoconnect =
+        onc::PolicyAllowsOnlyPolicyNetworksToAutoconnect(network_is_private);
+    if (only_policy_autoconnect) {
+      dict->SetString(kTagControlledBy, kTagPolicy);
+      return;
+    }
+  }
+  DecorateValueDictionary(ui_data, *value, dict);
 }
 
 std::string CopyStringFromDictionary(const base::DictionaryValue& source,
@@ -1584,9 +1617,11 @@ void InternetOptionsHandler::PopulateDictionaryDetailsCallback(
   bool auto_connect = false;
   shill_properties.GetBooleanWithoutPathExpansion(
       shill::kAutoConnectProperty, &auto_connect);
-  SetValueDictionary(&dictionary, kTagAutoConnect,
-                     new base::FundamentalValue(auto_connect),
-                     auto_connect_ui_data);
+  SetAutoconnectValueDictionary(network->IsPrivate(),
+                                onc_source,
+                                auto_connect,
+                                auto_connect_ui_data,
+                                &dictionary);
 
   PopulateConnectionDetails(network, shill_properties, &dictionary);
 

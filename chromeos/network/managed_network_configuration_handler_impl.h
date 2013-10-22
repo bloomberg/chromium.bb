@@ -79,6 +79,9 @@ class CHROMEOS_EXPORT ManagedNetworkConfigurationHandlerImpl
       const std::string& guid,
       onc::ONCSource* onc_source) const OVERRIDE;
 
+  virtual const base::DictionaryValue* GetGlobalConfigFromPolicy(
+      const std::string userhash) const OVERRIDE;
+
   virtual const base::DictionaryValue* FindPolicyByGuidAndProfile(
       const std::string& guid,
       const std::string& profile_path) const OVERRIDE;

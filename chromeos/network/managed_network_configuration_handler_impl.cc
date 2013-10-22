@@ -552,6 +552,15 @@ ManagedNetworkConfigurationHandlerImpl::FindPolicyByGUID(
 }
 
 const base::DictionaryValue*
+ManagedNetworkConfigurationHandlerImpl::GetGlobalConfigFromPolicy(
+    const std::string userhash) const {
+  const Policies* policies = GetPoliciesForUser(userhash);
+  if (!policies)
+    return NULL;
+
+  return &policies->global_network_config;
+}
+const base::DictionaryValue*
 ManagedNetworkConfigurationHandlerImpl::FindPolicyByGuidAndProfile(
     const std::string& guid,
     const std::string& profile_path) const {

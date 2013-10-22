@@ -248,6 +248,33 @@ const base::DictionaryValue* FindPolicyForActiveUser(
       FindPolicyByGUID(username_hash, guid, onc_source);
 }
 
+const base::DictionaryValue* GetGlobalConfigFromPolicy(bool for_active_user) {
+  std::string username_hash;
+  if (for_active_user) {
+    const User* user = UserManager::Get()->GetActiveUser();
+    if (!user) {
+      LOG(ERROR) << "No user logged in yet.";
+      return NULL;
+    }
+    username_hash = user->username_hash();
+  }
+  return NetworkHandler::Get()->managed_network_configuration_handler()->
+      GetGlobalConfigFromPolicy(username_hash);
+}
+
+bool PolicyAllowsOnlyPolicyNetworksToAutoconnect(bool for_active_user) {
+  const base::DictionaryValue* global_config =
+      GetGlobalConfigFromPolicy(for_active_user);
+  if (!global_config)
+    return false;  // By default, all networks are allowed to autoconnect.
+
+  bool only_policy_autoconnect = false;
+  global_config->GetBooleanWithoutPathExpansion(
+      ::onc::global_network_config::kAllowOnlyPolicyNetworksToAutoconnect,
+      &only_policy_autoconnect);
+  return only_policy_autoconnect;
+}
+
 namespace {
 
 const base::DictionaryValue* GetNetworkConfigByGUID(

@@ -10,6 +10,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/enrollment_dialog_view.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
+#include "chrome/browser/chromeos/net/onc_utils.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chromeos/login/login_state.h"
 #include "chromeos/network/network_configuration_handler.h"
@@ -158,6 +159,14 @@ bool WimaxConfigView::Login() {
 
   const bool share_default = true;
   bool share_network = GetShareNetwork(share_default);
+
+  bool only_policy_autoconnect =
+      onc::PolicyAllowsOnlyPolicyNetworksToAutoconnect(!share_network);
+  if (only_policy_autoconnect) {
+    properties.SetBooleanWithoutPathExpansion(shill::kAutoConnectProperty,
+                                              false);
+  }
+
   ash::network_connect::ConfigureNetworkAndConnect(
       service_path_, properties, share_network);
   return true;  // dialog will be closed
@@ -192,11 +201,11 @@ void WimaxConfigView::Init() {
   DCHECK(wimax && wimax->type() == shill::kTypeWimax);
 
   WifiConfigView::ParseWiFiEAPUIProperty(
-      &save_credentials_ui_data_, wimax, onc::eap::kSaveCredentials);
+      &save_credentials_ui_data_, wimax, ::onc::eap::kSaveCredentials);
   WifiConfigView::ParseWiFiEAPUIProperty(
-      &identity_ui_data_, wimax, onc::eap::kIdentity);
+      &identity_ui_data_, wimax, ::onc::eap::kIdentity);
   WifiConfigView::ParseWiFiUIProperty(
-      &passphrase_ui_data_, wimax, onc::wifi::kPassphrase);
+      &passphrase_ui_data_, wimax, ::onc::wifi::kPassphrase);
 
   views::GridLayout* layout = views::GridLayout::CreatePanel(this);
   SetLayoutManager(layout);

@@ -648,9 +648,19 @@ void WifiConfigView::OnCertificatesLoaded(bool initial_load) {
 
 bool WifiConfigView::Login() {
   const bool share_default = true;
+
+  // Set configuration properties.
+  base::DictionaryValue properties;
+  bool share_network = GetShareNetwork(share_default);
+
+  bool only_policy_autoconnect =
+      onc::PolicyAllowsOnlyPolicyNetworksToAutoconnect(!share_network);
+  if (only_policy_autoconnect) {
+    properties.SetBooleanWithoutPathExpansion(shill::kAutoConnectProperty,
+                                              false);
+  }
+
   if (service_path_.empty()) {
-    // Set configuration properties.
-    base::DictionaryValue properties;
     properties.SetStringWithoutPathExpansion(
         shill::kTypeProperty, shill::kTypeWifi);
     shill_property_util::SetSSID(GetSsid(), &properties);
@@ -686,8 +696,8 @@ bool WifiConfigView::Login() {
         shill::kSecurityProperty, security);
 
     // Configure and connect to network.
-    bool shared = GetShareNetwork(share_default);
-    ash::network_connect::CreateConfigurationAndConnect(&properties, shared);
+    ash::network_connect::CreateConfigurationAndConnect(&properties,
+                                                        share_network);
   } else {
     const NetworkState* wifi = NetworkHandler::Get()->network_state_handler()->
         GetNetworkState(service_path_);
@@ -697,7 +707,6 @@ bool WifiConfigView::Login() {
       NET_LOG_ERROR("Network not found", service_path_);
       return true;  // Close dialog
     }
-    base::DictionaryValue properties;
     if (eap_method_combobox_) {
       // Visible 802.1X EAP Wi-Fi connection.
       SetEapProperties(&properties);
@@ -711,7 +720,6 @@ bool WifiConfigView::Login() {
             shill::kPassphraseProperty, passphrase);
       }
     }
-    bool share_network = GetShareNetwork(share_default);
     ash::network_connect::ConfigureNetworkAndConnect(
         service_path_, properties, share_network);
   }

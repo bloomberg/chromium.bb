@@ -121,6 +121,11 @@ class CHROMEOS_EXPORT ManagedNetworkConfigurationHandler {
       const std::string& guid,
       ::onc::ONCSource* onc_source) const = 0;
 
+  // Returns the global configuration of the policy of user |userhash| or device
+  // policy if |userhash| is empty.
+  virtual const base::DictionaryValue* GetGlobalConfigFromPolicy(
+      const std::string userhash) const = 0;
+
   // Returns the policy with |guid| for profile |profile_path|. If such
   // doesn't exist, returns NULL.
   virtual const base::DictionaryValue* FindPolicyByGuidAndProfile(
