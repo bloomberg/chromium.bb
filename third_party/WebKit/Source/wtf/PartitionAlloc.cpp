@@ -37,9 +37,10 @@
 #include <stdio.h>
 #endif
 
-// A super page is at least 4 partition pages in order to make re-entrancy considerations simpler in partitionAllocPage().
 COMPILE_ASSERT(WTF::kPartitionPageSize * 4 <= WTF::kSuperPageSize, ok_partition_page_size);
 COMPILE_ASSERT(!(WTF::kSuperPageSize % WTF::kPartitionPageSize), ok_partition_page_multiple);
+// Four sub-partition pages gives us room to hack out a still-guard-paged piece // of metadata in the middle of a guard partition page.
+COMPILE_ASSERT(WTF::kSubPartitionPageSize * 4 <= WTF::kPartitionPageSize, ok_sub_partition_page_size);
 COMPILE_ASSERT(!(WTF::kPartitionPageSize % WTF::kSubPartitionPageSize), ok_sub_partition_page_multiple);
 COMPILE_ASSERT(sizeof(WTF::PartitionPageHeader) <= WTF::kPartitionPageHeaderSize, PartitionPageHeader_not_too_big);
 COMPILE_ASSERT(!(WTF::kPartitionPageHeaderSize % sizeof(void*)), PartitionPageHeader_size_should_be_multiple_of_pointer_size);
@@ -181,7 +182,10 @@ static ALWAYS_INLINE PartitionPageHeader* partitionAllocPage(PartitionRoot* root
     }
     root->nextPartitionPageEnd = superPage + kSuperPageSize;
     if (needsGuard) {
-        setSystemPagesInaccessible(superPage, kPartitionPageSize);
+        // Leave a writeable hole in the middle of the guard partition page.
+        // We'll only fault it if we need to create a new super page extent, in which case it will used to maintain a singly linked list of super page extents.
+        setSystemPagesInaccessible(superPage, kSubPartitionPageSize);
+        setSystemPagesInaccessible(superPage + (kPartitionPageSize - kSubPartitionPageSize), kSubPartitionPageSize);
         ret += kPartitionPageSize;
     }
     root->nextPartitionPage = ret + kPartitionPageSize;
@@ -192,12 +196,7 @@ static ALWAYS_INLINE PartitionPageHeader* partitionAllocPage(PartitionRoot* root
     if (UNLIKELY(needsGuard)) {
         if (currentExtent->superPageBase) {
             // We already have a super page, so need to allocate metadata in the linked list.
-            // It should be fine to re-enter the allocator here because:
-            // - A fresh partition page is still available, even if we already consumed a guard page and one partition page from the new super page.
-            // - Partition page metadata is consistent at this time.
-            // - We ASSERT that no surprising state change occurs.
-            PartitionSuperPageExtentEntry* newEntry = reinterpret_cast<PartitionSuperPageExtentEntry*>(partitionBucketAlloc(&root->buckets()[kInternalMetadataBucket]));
-            ASSERT(root->currentExtent == currentExtent);
+            PartitionSuperPageExtentEntry* newEntry = reinterpret_cast<PartitionSuperPageExtentEntry*>(currentExtent->superPageBase + kSubPartitionPageSize);
             newEntry->next = 0;
             currentExtent->next = newEntry;
             currentExtent = newEntry;
@@ -365,7 +364,6 @@ void* partitionAllocSlowPath(PartitionBucket* bucket)
         bucket->freePages = pagelist->next;
     } else {
         // Fourth. If we get here, we need a brand new page.
-        // TODO: investigate to see if there is a re-entrancy concern.
         newPage = partitionAllocPage(bucket->root);
     }
 

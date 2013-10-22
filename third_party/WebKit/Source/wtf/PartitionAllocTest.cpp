@@ -276,7 +276,7 @@ TEST(WTF_PartitionAlloc, FreePageListPageTransitions)
     size_t bucketIdx = kTestAllocSize >> WTF::kBucketShift;
     WTF::PartitionBucket* bucket = root->buckets() + bucketIdx;
 
-    size_t numToFillFreeListPage = (WTF::kPartitionPageSize - WTF::kPartitionPageHeaderSize) / sizeof(WTF::PartitionMetadataBucketEntrySize);
+    size_t numToFillFreeListPage = (WTF::kPartitionPageSize - WTF::kPartitionPageHeaderSize) / sizeof(WTF::PartitionFreepagelistEntry);
     // The +1 is because we need to account for the fact that the current page
     // never gets thrown on the freelist.
     ++numToFillFreeListPage;

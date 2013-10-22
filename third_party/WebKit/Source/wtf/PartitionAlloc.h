@@ -169,14 +169,6 @@ struct PartitionSuperPageExtentEntry {
     PartitionSuperPageExtentEntry* next;
 };
 
-// This is used for sizeof() purposes only; we allocate both of these object
-// types out of the same fixed-sized bucket, so it has to accomodate the
-// large of the two. We're fine with wasting the space for the smaller.
-union PartitionMetadataBucketEntrySize {
-    PartitionFreepagelistEntry entryType1;
-    PartitionSuperPageExtentEntry entryType2;
-};
-
 // Never instantiate a PartitionRoot directly, instead use PartitionAlloc.
 struct PartitionRoot {
     int lock;
@@ -228,7 +220,7 @@ ALWAYS_INLINE size_t partitionBucketSize(const PartitionBucket* bucket)
     size_t index = bucket - &root->buckets()[0];
     size_t size;
     if (UNLIKELY(index == kInternalMetadataBucket))
-        size = sizeof(PartitionMetadataBucketEntrySize);
+        size = sizeof(PartitionFreepagelistEntry);
     else
         size = index << kBucketShift;
     return size;
