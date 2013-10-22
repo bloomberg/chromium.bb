@@ -43,22 +43,11 @@ crbug.com/259547 virtual/gpu/fast/canvas/canvas-blend-solid.html [ Skip ]
 
 crbug.com/289002 http/tests/security/frame-loading-via-document-write.html [ Pass Failure ]
 
-# Unskip after implementing DRT support for setDefersLoading and goBack.
-webkit.org/b/60877 loader/navigation-while-deferring-loads.html [ Skip ]
-webkit.org/b/60877 loader/load-defer-resume-crash.html [ Skip ]
-
 # 'ex' unit length is different among platforms.
 crbug.com/31488 [ Linux Mac ] fast/css3-text/css3-text-indent/getComputedStyle/getComputedStyle-text-indent.html [ Failure ]
 
-# CSS3 Text Decoration shorthand runtime feature flag is not enabled by default.
-webkit.org/b/112755 fast/css3-text/css3-text-decoration/getComputedStyle/getComputedStyle-text-decoration-shorthand-ordering.html [ Skip ]
-webkit.org/b/112755 fast/css3-text/css3-text-decoration/getComputedStyle/getComputedStyle-text-decoration-shorthand.html [ Skip ]
-webkit.org/b/112755 fast/css3-text/css3-text-decoration/repaint/repaint-text-decoration-line.html [ ImageOnlyFailure ]
-
 # We expect V8 to crash in an orderly fashion instead of throwing a JavaScript out-of-memory error.
 webkit.org/b/103348 fast/js/string-replacement-outofmemory.html [ Crash ]
-
-webkit.org/b/112923 fast/forms/calendar-picker/calendar-picker-appearance-month-popup.html [ ImageOnlyFailure Pass ]
 
 # Skipped until/unless color-correction is reimplemented.
 crbug.com/28005 fast/css/parsing-color-correction.html [ Skip ]
@@ -77,9 +66,6 @@ crbug.com/30536 [ Win ] http/tests/xmlhttprequest/methods-async.html [ Skip ]
 # error in the header of the following test.
 crbug.com/24197 fast/css/disabled-author-styles.html [ Skip ]
 
-# Test itself passes, but causes subsequent tests to fail.
-webkit.org/b/83260 fast/text/international/embed-bidi-style-in-isolate-crash.html [ Skip ]
-
 # -----------------------------------------------------------------
 # Inspector tests
 # -----------------------------------------------------------------
@@ -94,9 +80,6 @@ crbug.com/67662 http/tests/inspector/console-websocket-error.html [ Failure Time
 crbug.com/233124 http/tests/inspector/network/network-size.html [ Skip ]
 crbug.com/233124 http/tests/inspector/network/network-size-chunked.html [ Skip ]
 crbug.com/233124 http/tests/inspector/network/network-size-sync.html [ Skip ]
-
-# PageAgent can not getCookies from DumpRenderTree.
-webkit.org/b/65770 http/tests/inspector/resource-main-cookies.php [ Skip ]
 
 webkit.org/b/74654 http/tests/inspector/network/network-worker.html [ Skip ]
 
@@ -148,25 +131,8 @@ crbug.com/258991 [ XP ] svg/batik/paints/patternRegions-positioned-objects.svg [
 crbug.com/258991 [ XP ] svg/batik/paints/patternRegionA.svg [ Failure Pass ]
 crbug.com/258991 [ XP ] svg/batik/paints/patternRegions.svg [ Failure Pass ]
 
-# The test needs fixing. Flakiness is common across all Mac platforms, not just chromium.
-webkit.org/b/25817 svg/dom/SVGScriptElement/script-load-and-error-events.svg [ Failure Pass ]
-webkit.org/b/106598 svg/dom/SVGScriptElement/script-onerror-bubbling.svg [ Pass Timeout ]
-
-webkit.org/b/78830 svg/custom/mask-invalidation.svg [ ImageOnlyFailure Pass ]
-
 # Text::inDocument() returns false but should not.
 crbug.com/264138 dom/xhtml/level3/core/nodecomparedocumentposition38.xhtml [ Failure ]
-
-# These require more investigation. There is a small change, probably two pixels, in the filter offset
-# when comparing the former and new results. This may be due to bad test design or may be revealing a bug
-# in the code.
-webkit.org/b/80517 svg/dynamic-updates/SVGFESpecularLightingElement-remove-lightSource.html [ ImageOnlyFailure Pass ]
-
-webkit.org/b/81243 svg/repaint/repainting-after-animation-element-removal.svg [ ImageOnlyFailure Pass ]
-
-webkit.org/b/99893 svg/animations/mozilla/animateMotion-mpath-targetChange-1.svg [ ImageOnlyFailure ]
-
-webkit.org/b/93589 svg/dom/SVGScriptElement/script-change-externalResourcesRequired-while-loading.svg [ Pass Timeout ]
 
 # -----------------------------------------------------------------
 # End SVG TESTS
@@ -239,9 +205,6 @@ crbug.com/305070 [ Debug ] virtual/threaded/animations/interpolation/svg-stroke-
 # This test is slow due to Mesa slowness.
 crbug.com/244481 virtual/gpu/canvas/philip/tests/2d.shadow.blur.low.html [ Skip ]
 
-webkit.org/b/92287 fast/canvas/webgl/context-creation-and-destruction.html [ Failure ]
-webkit.org/b/92287 virtual/gpu/fast/canvas/webgl/context-creation-and-destruction.html [ Failure ]
-
 # WebGL not yet supported by the software compositor.
 crbug.com/151713 virtual/softwarecompositing/draws-content/webgl-simple-background.html [ ImageOnlyFailure ]
 
@@ -249,8 +212,6 @@ crbug.com/151713 virtual/softwarecompositing/draws-content/webgl-simple-backgrou
 crbug.com/14009 [ Win ] http/tests/misc/dns-prefetch-control.html [ Pass Timeout ]
 
 crbug.com/250935 [ Win ] fast/multicol/shrink-to-column-height-for-pagination.html [ ImageOnlyFailure Pass ]
-
-webkit.org/b/111141 fast/regions/seamless-iframe-flowed-into-regions.html [ ImageOnlyFailure ]
 
 # Unexpected gray
 crbug.com/23476 [ Mac ] fast/frames/inline-object-inside-frameset.html [ Failure ImageOnlyFailure ]
@@ -271,24 +232,6 @@ crbug.com/2844 http/tests/appcache/idempotent-update.html [ Failure Pass ]
 
 # This test fails because there is no setAppCacheMaximumSize API yet.
 crbug.com/2844 http/tests/appcache/max-size.html [ Skip ]
-
-# LayoutTestController::clearApplicationCacheForOrigin isn't implemented
-webkit.org/b/ http/tests/appcache/origin-delete.html [ Skip ]
-# LayoutTestController::getOriginsWithApplicationCache isn't implemented
-webkit.org/b/ http/tests/appcache/origins-with-appcache.html [ Skip ]
-# LayoutTestController::applicationCacheDiskUsageForOrigin isn't implemented - https://bugs.webkit.org/show_bug.cgi?id=57127
-webkit.org/b/ http/tests/appcache/origin-usage.html [ Skip ]
-
-# LayoutTestController::setAutomaticLinkDetectionEnabled isn't implemented
-webkit.org/b/85463 editing/inserting/smart-link-when-caret-is-moved-before-URL.html [ Skip ]
-webkit.org/b/85463 editing/inserting/typing-space-to-trigger-smart-link.html [ Skip ]
-
-# Chromium DumpRenderTree does not have support for visited links.
-# It always return false in response to isLinkVisited().
-webkit.org/b/111031 fast/history/visited-link-background-color.html [ ImageOnlyFailure ]
-
-# Chromium does not support cancel for notifications permissions.
-webkit.org/b/42798 fast/notifications/notifications-cancel-request-permission.html [ Pass Timeout ]
 
 # Test introduced in r64817
 crbug.com/51571 [ Win ] http/tests/misc/bad-charset-alias.html [ Pass Timeout ]
@@ -360,41 +303,12 @@ crbug.com/82881 http/tests/appcache/interrupted-update.html [ Failure Pass ]
 # Random timeouts and failures going back a week.
 crbug.com/83290 [ Win ] http/tests/misc/link-rel-prefetch-and-subresource.html [ Pass Timeout ]
 
-# CSS Regions tests for region styling and scoped styles
-webkit.org/b/49142 fast/regions/style-scoped/style-scoped-in-flow-override-region-styling-multiple-regions.html [ ImageOnlyFailure ]
-
 # CSS Regions tests for <dialog>
 crbug.com/244792 [ Mac ] fast/regions/dialog-fragmentation.html [ ImageOnlyFailure ]
-
-webkit.org/b/66419 http/tests/misc/authentication-redirect-1/authentication-sent-to-redirect-cross-origin.html [ Failure Timeout ]
-webkit.org/b/66419 http/tests/misc/authentication-redirect-2/authentication-sent-to-redirect-same-origin.html [ Failure Timeout ]
-webkit.org/b/66419 http/tests/misc/authentication-redirect-3/authentication-sent-to-redirect-same-origin-with-location-credentials.html [ Failure Timeout ]
-
-# SVG painting in high DPI mode is broken in DRT.
-webkit.org/b/92511 svg/as-image/animated-svg-repaints-completely-in-hidpi.html [ ImageOnlyFailure Pass ]
 
 # These tests time out 50% of the time.
 crbug.com/259546 fast/loader/display-image-unset-can-block-image-and-can-reload-in-place.html [ Skip ]
 crbug.com/259546 fast/loader/images-enabled-unset-can-block-image-and-can-reload-in-place.html [ Skip ]
-
-# Opera-submitted tests to W3C for <track>, a lot of failures still.
-webkit.org/b/103926 media/track/opera/idl/media-idl-tests.html [ Failure Timeout ]
-webkit.org/b/103926 media/track/opera/interfaces/HTMLElement/HTMLTrackElement/src.html [ Failure Pass ]
-webkit.org/b/103926 media/track/opera/interfaces/TextTrack/activeCues.html [ Skip ]
-webkit.org/b/103926 [ Release ] media/track/opera/track/webvtt/parsing-cue-data/tests/entities.html [ Failure Pass ]
-webkit.org/b/103926 [ Debug ] media/track/opera/track/webvtt/parsing-cue-data/tests/entities.html [ Crash ]
-webkit.org/b/103926 media/track/opera/track/webvtt/parsing-cue-data/tests/tags.html [ Failure Pass ]
-webkit.org/b/103926 media/track/opera/track/webvtt/rendering/adhoc/12345_timestamps.html [ ImageOnlyFailure Failure Pass ]
-webkit.org/b/103926 media/track/opera/track/webvtt/parsing-cue-data/tests/timestamps.html [ Failure Pass ]
-webkit.org/b/103926 media/track/opera/track/webvtt/parsing-cue-data/tests/tree-building.html [ Failure Pass ]
-webkit.org/b/103926 media/track/opera/track/webvtt/rendering/adhoc/cue_font_size_transition.html [ ImageOnlyFailure Pass ]
-webkit.org/b/103926 media/track/opera/track/webvtt/rendering/adhoc/voice_with_evil_timestamp.html [ ImageOnlyFailure Pass ]
-
-webkit.org/b/111612 animations/animation-delay-changed.html [ Failure Pass ]
-
-webkit.org/b/72761 accessibility/anonymous-render-block-in-continuation-causes-crash.html [ Pass Timeout ]
-
-webkit.org/b/73766 css3/unicode-bidi-isolate-aharon-failing.html [ ImageOnlyFailure ]
 
 # Crashes due to an OOM error on V8.
 crbug.com/108832 fast/js/array-splice.html [ Crash ]
@@ -438,13 +352,9 @@ webkit.org/b/87652 http/tests/appcache/load-from-appcache-defer-resume-crash.htm
 
 webkit.org/b/88939 fast/events/before-unload-adopt-subframe-to-outside.html [ Failure Pass ]
 
-webkit.org/b/89702 virtual/softwarecompositing/scaling/tiled-layer-recursion.html [ ImageOnlyFailure Pass ]
-
 webkit.org/b/90746 fast/multicol/column-span-parent-continuation-crash.html [ Pass Timeout ]
 
 webkit.org/b/90980 fast/forms/textarea/textarea-state-restore.html [ Failure Pass Timeout ]
-
-webkit.org/b/91183 http/tests/w3c/webperf/approved/HighResolutionTime/test_cross_frame_start.html [ Failure Pass ]
 
 # started failing around Chrome r207326 to r207404, but only on main waterfall
 # Flakes also on the V8 waterfall on Win7.
@@ -503,9 +413,6 @@ crbug.com/230708 media/track/track-in-band.html [ Skip ]
 crbug.com/230708 media/track/track-in-band-cues-added-once.html [ Skip ]
 crbug.com/230708 media/track/track-in-band-style.html [ Skip ]
 
-
-webkit.org/b/106238 svg/dynamic-updates/SVGUseElement-dom-href1-attr.html [ ImageOnlyFailure Pass ]
-webkit.org/b/106238 svg/dynamic-updates/SVGUseElement-svgdom-href1-prop.html [ ImageOnlyFailure Pass ]
 webkit.org/b/106249 fast/speech/scripted/navigate-away.html [ Failure Pass ]
 
 webkit.org/b/106426 inspector/geolocation-error.html [ Failure Pass ]
@@ -529,7 +436,6 @@ crbug.com/192172 [ Debug ] virtual/softwarecompositing/rtl/rtl-iframe-fixed-over
 
 webkit.org/b/112629 http/tests/xmlhttprequest/send-array-buffer.html [ Failure Pass ]
 webkit.org/b/112643 http/tests/history/redirect-js-location-0-seconds.html [ Failure Pass ]
-webkit.org/b/112980 http/tests/navigation/lockedhistory-iframe.html [ Failure Pass ]
 webkit.org/b/112980 http/tests/navigation/changing-frame-hierarchy-in-onload.html [ Failure Pass ]
 
 webkit.org/b/113555 fast/forms/state-restore-per-form.html [ Pass Timeout ]
@@ -637,7 +543,6 @@ crbug.com/248938 [ Mac Linux ] virtual/threaded/animations/missing-values-first-
 crbug.com/248938 virtual/threaded/animations/animation-direction-normal.html [ Pass ImageOnlyFailure Timeout ]
 crbug.com/248938 virtual/threaded/animations/play-state.html [ Pass Failure ]
 crbug.com/248938 virtual/threaded/animations/combo-transform-translate+scale.html [ Pass Failure ]
-crbug.com/248938 virtual/threaded/animations/animation-delay-changed.html [ Pass Failure ]
 crbug.com/248938 virtual/threaded/animations/change-one-anim.html [ Pass Failure ]
 crbug.com/248938 virtual/threaded/transitions/transition-end-event-nested.html [ Pass Failure ]
 crbug.com/248938 virtual/threaded/transitions/interrupted-all-transition.html [ Pass Failure ]
@@ -939,7 +844,6 @@ crbug.com/303648 fast/css/color-correction.html [ NeedsManualRebaseline ]
 # Android virtual suite shares the same expectation.
 crbug.com/100798 [ Debug ] virtual/android/fullscreen/full-screen-iframe-allowed.html [ Failure Pass ]
 crbug.com/100798 [ Debug ] virtual/android/fullscreen/full-screen-iframe-allowed-prefixed.html [ Failure Pass ]
-webkit.org/b/90704 virtual/android/fullscreen/exit-full-screen-iframe.html [ Failure Pass ]
 crbug.com/243782 virtual/android/fullscreen/full-screen-remove-ancestor.html [ Pass Timeout ]
 crbug.com/246077 virtual/android/fullscreen/full-screen-render-inline.html [ ImageOnlyFailure ]
 

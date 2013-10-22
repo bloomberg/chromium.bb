@@ -84,3 +84,9 @@ webkit.org/b/104489 [ Win ] http/tests/w3c/webperf/submission/Google/resource-ti
 
 webkit.org/b/112980 [ Win Mac ] fast/frames/seamless/seamless-form-post-override.html [ Skip ]
 webkit.org/b/112610 [ Win ] fast/text/word-space-with-kerning-3.html [ Skip ]
+
+webkit.org/b/78830 [ Mac ] svg/custom/mask-invalidation.svg [ Skip ]
+webkit.org/b/42798 [ XP ] fast/notifications/notifications-cancel-request-permission.html [ Skip ]
+webkit.org/b/91183 [ Win ] http/tests/w3c/webperf/approved/HighResolutionTime/test_cross_frame_start.html [ Skip ]
+webkit.org/b/106238 [ Mac ] svg/dynamic-updates/SVGUseElement-dom-href1-attr.html [ Skip ]
+webkit.org/b/106238 [ Mac ] svg/dynamic-updates/SVGUseElement-svgdom-href1-prop.html [ Skip ]
