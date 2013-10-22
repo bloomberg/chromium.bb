@@ -78,8 +78,6 @@ TEST(ResourceEntryConversionTest, ConvertToResourceEntry_File) {
   EXPECT_EQ("audio/mpeg",
             entry.file_specific_info().content_mime_type());
   EXPECT_FALSE(entry.file_specific_info().is_hosted_document());
-  EXPECT_EQ("",
-            entry.file_specific_info().thumbnail_url());
   EXPECT_EQ("https://file_link_alternate/",
             entry.file_specific_info().alternate_url());
 
@@ -162,8 +160,6 @@ TEST(ResourceEntryConversionTest,
   EXPECT_EQ("text/html",
             entry.file_specific_info().content_mime_type());
   EXPECT_TRUE(entry.file_specific_info().is_hosted_document());
-  EXPECT_EQ("https://3_document_thumbnail_link/",
-            entry.file_specific_info().thumbnail_url());
   EXPECT_EQ("https://3_document_alternate_link/",
             entry.file_specific_info().alternate_url());
 
@@ -316,8 +312,6 @@ TEST(ResourceEntryConversionTest,
   EXPECT_EQ("text/html",
             entry.file_specific_info().content_mime_type());
   EXPECT_TRUE(entry.file_specific_info().is_hosted_document());
-  EXPECT_EQ("",
-            entry.file_specific_info().thumbnail_url());
   EXPECT_EQ("https://alternate/document%3Adeleted_in_root_id/edit",
             entry.file_specific_info().alternate_url());
 

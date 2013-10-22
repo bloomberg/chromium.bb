@@ -23,10 +23,7 @@ message PlatformFileInfoProto {
 
 // File specific info, which is a part of ResourceEntry.
 message FileSpecificInfo {
-  // This URL points to a thumbnail image. The thumbnail URL is not permanent
-  // as it's not protected by authentication. See crbug.com/127697 for how
-  // stale thumbnail URLs are handled.
-  optional string thumbnail_url = 1;
+  // The argument with ID 1 (thumbnail_url) had been used, but got deleted.
 
   // This URL is used for opening hosted documents with Google Drive's web
   // interface.

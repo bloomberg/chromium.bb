@@ -101,11 +101,6 @@ bool ConvertToResourceEntry(const google_apis::ResourceEntry& input,
     file_specific_info->set_content_mime_type(input.content_mime_type());
     file_specific_info->set_is_hosted_document(input.is_hosted_document());
 
-    const google_apis::Link* thumbnail_link =
-        input.GetLinkByType(google_apis::Link::LINK_THUMBNAIL);
-    if (thumbnail_link)
-      file_specific_info->set_thumbnail_url(thumbnail_link->href().spec());
-
     const google_apis::Link* alternate_link =
         input.GetLinkByType(google_apis::Link::LINK_ALTERNATE);
     if (alternate_link)

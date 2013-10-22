@@ -257,13 +257,6 @@ class FileSystem : public FileSystemInterface,
       google_apis::GDataErrorCode status,
       const GURL& share_url);
 
-  // Reloads the metadata for the directory to refresh stale thumbnail URLs.
-  void RefreshDirectory(const base::FilePath& directory_path);
-  void RefreshDirectoryAfterGetResourceEntry(
-      const base::FilePath& directory_path,
-      FileError error,
-      scoped_ptr<ResourceEntry> entry);
-
   // Used to get Drive related preferences.
   PrefService* pref_service_;
 

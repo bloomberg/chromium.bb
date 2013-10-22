@@ -159,8 +159,6 @@ std::string FormatEntry(const base::FilePath& path,
   if (entry.has_file_specific_info()) {
     const drive::FileSpecificInfo& file_specific_info =
         entry.file_specific_info();
-    StringAppendF(&out, "    thumbnail_url: %s\n",
-                  file_specific_info.thumbnail_url().c_str());
     StringAppendF(&out, "    alternate_url: %s\n",
                   file_specific_info.alternate_url().c_str());
     StringAppendF(&out, "    content_mime_type: %s\n",

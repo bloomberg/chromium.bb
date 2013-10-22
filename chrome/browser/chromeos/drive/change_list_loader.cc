@@ -389,19 +389,6 @@ void ChangeListLoader::LoadIfNeeded(
   Load(directory_fetch_info, callback);
 }
 
-void ChangeListLoader::LoadDirectoryFromServer(
-    const std::string& directory_resource_id,
-    const FileOperationCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  scheduler_->GetAboutResource(
-      base::Bind(&ChangeListLoader::LoadDirectoryFromServerAfterGetAbout,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 directory_resource_id,
-                 callback));
-}
-
 void ChangeListLoader::Load(const DirectoryFetchInfo& directory_fetch_info,
                             const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -675,25 +662,6 @@ void ChangeListLoader::LoadChangeListFromServerAfterUpdate() {
   FOR_EACH_OBSERVER(ChangeListLoaderObserver,
                     observers_,
                     OnLoadFromServerComplete());
-}
-
-void ChangeListLoader::LoadDirectoryFromServerAfterGetAbout(
-    const std::string& directory_resource_id,
-    const FileOperationCallback& callback,
-    google_apis::GDataErrorCode status,
-    scoped_ptr<google_apis::AboutResource> about_resource) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  if (GDataToFileError(status) == FILE_ERROR_OK) {
-    DCHECK(about_resource);
-    last_known_remote_changestamp_ = about_resource->largest_change_id();
-    root_folder_id_ = about_resource->root_folder_id();
-  }
-
-  DoLoadDirectoryFromServer(
-      DirectoryFetchInfo(directory_resource_id, last_known_remote_changestamp_),
-      callback);
 }
 
 void ChangeListLoader::CheckChangestampAndLoadDirectoryIfNeeded(
