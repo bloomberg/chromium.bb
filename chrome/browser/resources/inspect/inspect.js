@@ -505,7 +505,7 @@ function initSettings() {
   $('port-forwarding-config-close').addEventListener(
       'click', closePortForwardingConfig);
   $('port-forwarding-config-done').addEventListener(
-      'click', commitPortForwardingConfig);
+      'click', commitPortForwardingConfig.bind(true));
 }
 
 function enableDiscoverUsbDevices(event) {
@@ -522,17 +522,19 @@ function handleKey(event) {
       if (event.target.nodeName == 'INPUT') {
         var line = event.target.parentNode;
         if (!line.classList.contains('fresh') ||
-            line.classList.contains('empty'))
-          commitPortForwardingConfig();
-        else
+            line.classList.contains('empty')) {
+          commitPortForwardingConfig(true);
+        } else {
           commitFreshLineIfValid(true /* select new line */);
+          commitPortForwardingConfig(false);
+        }
       } else {
-        commitPortForwardingConfig();
+        commitPortForwardingConfig(true);
       }
       break;
 
     case 27:
-      closePortForwardingConfig();
+      commitPortForwardingConfig(true);
       break;
   }
 }
@@ -563,25 +565,28 @@ function loadPortForwardingConfig(config) {
   list.appendChild(createEmptyConfigLine());
 }
 
-function commitPortForwardingConfig() {
-  if (document.querySelector(
-      '.port-forwarding-pair:not(.fresh) input.invalid'))
-    return;
+function commitPortForwardingConfig(closeConfig) {
+  if (closeConfig)
+    closePortForwardingConfig();
 
-  if (document.querySelector(
-      '.port-forwarding-pair.fresh:not(.empty) input.invalid'))
-    return;
-
-  closePortForwardingConfig();
   commitFreshLineIfValid();
   var lines = document.querySelectorAll('.port-forwarding-pair');
   var config = {};
   for (var i = 0; i != lines.length; i++) {
     var line = lines[i];
-    var portInput = line.querySelector('.port:not(.invalid)');
-    var locationInput = line.querySelector('.location:not(.invalid)');
-    if (portInput && locationInput)
-      config[portInput.value] = locationInput.value;
+    var portInput = line.querySelector('.port');
+    var locationInput = line.querySelector('.location');
+
+    var port = portInput.classList.contains('invalid') ?
+               portInput.lastValidValue :
+               portInput.value;
+
+    var location = locationInput.classList.contains('invalid') ?
+                   locationInput.lastValidValue :
+                   locationInput.value;
+
+    if (port && location)
+      config[port] = location;
   }
   chrome.send('set-port-forwarding-config', [config]);
 }
@@ -679,6 +684,7 @@ function createConfigField(value, className, hint, validate) {
   input.type = 'text';
   input.placeholder = hint;
   input.value = value;
+  input.lastValidValue = value;
 
   function checkInput() {
     if (validate(input))
@@ -693,6 +699,11 @@ function createConfigField(value, className, hint, validate) {
   input.addEventListener('keyup', checkInput);
   input.addEventListener('focus', function() {
     selectLine(input.parentNode);
+  });
+
+  input.addEventListener('blur', function() {
+    if (validate(input))
+      input.lastValidValue = input.value;
   });
 
   return input;
