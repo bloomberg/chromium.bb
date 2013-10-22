@@ -91,7 +91,7 @@ function updateFileSystemContents(directoryContentsAsText) {
  */
 function updateCacheContents(cacheEntry) {
   var tr = document.createElement('tr');
-  tr.appendChild(createElementFromText('td', cacheEntry.resource_id));
+  tr.appendChild(createElementFromText('td', cacheEntry.local_id));
   tr.appendChild(createElementFromText('td', cacheEntry.md5));
   tr.appendChild(createElementFromText('td', cacheEntry.is_present));
   tr.appendChild(createElementFromText('td', cacheEntry.is_pinned));
