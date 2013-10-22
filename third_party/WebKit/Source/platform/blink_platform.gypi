@@ -198,6 +198,8 @@
       'exported/WebAudioDevice.cpp',
       'exported/WebBlobData.cpp',
       'exported/WebData.cpp',
+      'exported/WebActiveGestureAnimation.cpp',
+      'exported/WebActiveGestureAnimation.h',
       'exported/WebHTTPBody.cpp',
       'exported/WebHTTPLoadInfo.cpp',
       'exported/WebSocketStreamError.cpp',

@@ -3520,8 +3520,6 @@
             '<(SHARED_INTERMEDIATE_DIR)/blink/InternalSettingsGenerated.h',
         ],
         'webcore_platform_support_files': [
-            'platform/chromium/support/WebActiveGestureAnimation.cpp',
-            'platform/chromium/support/WebActiveGestureAnimation.h',
             'platform/chromium/support/WebArrayBuffer.cpp',
             'platform/chromium/support/WebCrypto.cpp',
             'platform/chromium/support/WebCryptoAlgorithm.cpp',

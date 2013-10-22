@@ -23,41 +23,45 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebActiveGestureAnimation_h
-#define WebActiveGestureAnimation_h
+#include "config.h"
+#include "platform/exported/WebActiveGestureAnimation.h"
 
-#include "wtf/Noncopyable.h"
-#include "wtf/OwnPtr.h"
-#include "wtf/PassOwnPtr.h"
+#include "public/platform/WebGestureCurve.h"
+#include "public/platform/WebGestureCurveTarget.h"
 
 namespace WebKit {
 
-class WebGestureCurve;
-class WebGestureCurveTarget;
+PassOwnPtr<WebActiveGestureAnimation> WebActiveGestureAnimation::createAtAnimationStart(PassOwnPtr<WebGestureCurve> curve, WebGestureCurveTarget* target)
+{
+    return adoptPtr(new WebActiveGestureAnimation(curve, target, 0, true));
+}
 
-// Implements a gesture animation (fling scroll, etc.) using a curve with a generic interface
-// to define the animation parameters as a function of time, and applies the animation
-// to a target, again via a generic interface. It is assumed that animate() is called
-// on a more-or-less regular basis by the owner.
-class WebActiveGestureAnimation {
-    WTF_MAKE_NONCOPYABLE(WebActiveGestureAnimation);
-public:
-    static PassOwnPtr<WebActiveGestureAnimation> createAtAnimationStart(PassOwnPtr<WebGestureCurve>, WebGestureCurveTarget*);
-    static PassOwnPtr<WebActiveGestureAnimation> createWithTimeOffset(PassOwnPtr<WebGestureCurve>, WebGestureCurveTarget*, double startTime);
-    ~WebActiveGestureAnimation();
+PassOwnPtr<WebActiveGestureAnimation> WebActiveGestureAnimation::createWithTimeOffset(PassOwnPtr<WebGestureCurve> curve, WebGestureCurveTarget* target, double startTime)
+{
+    return adoptPtr(new WebActiveGestureAnimation(curve, target, startTime, false));
+}
 
-    bool animate(double time);
+WebActiveGestureAnimation::~WebActiveGestureAnimation()
+{
+}
 
-private:
-    // Assumes a valid WebGestureCurveTarget that outlives the animation.
-    WebActiveGestureAnimation(PassOwnPtr<WebGestureCurve>, WebGestureCurveTarget*, double startTime, bool waitingForFirstTick);
+WebActiveGestureAnimation::WebActiveGestureAnimation(PassOwnPtr<WebGestureCurve> curve, WebGestureCurveTarget* target, double startTime, bool waitingForFirstTick)
+    : m_startTime(startTime)
+    , m_waitingForFirstTick(waitingForFirstTick)
+    , m_curve(curve)
+    , m_target(target)
+{
+}
 
-    double m_startTime;
-    bool m_waitingForFirstTick;
-    OwnPtr<WebGestureCurve> m_curve;
-    WebGestureCurveTarget* m_target;
-};
+bool WebActiveGestureAnimation::animate(double time)
+{
+    if (m_waitingForFirstTick) {
+        m_startTime = time;
+        m_waitingForFirstTick = false;
+    }
+    // All WebGestureCurves assume zero-based time, so we subtract
+    // the animation start time before passing to the curve.
+    return m_curve->apply(time - m_startTime, m_target);
+}
 
 } // namespace WebKit
-
-#endif
