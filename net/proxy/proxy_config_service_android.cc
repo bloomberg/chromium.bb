@@ -18,6 +18,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "jni/ProxyChangeListener_jni.h"
 #include "net/base/host_port_pair.h"
 #include "net/proxy/proxy_config.h"
@@ -159,6 +160,16 @@ std::string GetJavaProperty(const std::string& property) {
       std::string() : ConvertJavaStringToUTF8(env, result.obj());
 }
 
+void CreateStaticProxyConfig(const std::string& host, int port,
+                             ProxyConfig* config) {
+  if (port != 0) {
+    std::string rules = base::StringPrintf("%s:%d", host.c_str(), port);
+    config->proxy_rules().ParseFromString(rules);
+  } else {
+    *config = ProxyConfig::CreateDirect();
+  }
+}
+
 }  // namespace
 
 class ProxyConfigServiceAndroid::Delegate
@@ -237,6 +248,17 @@ class ProxyConfigServiceAndroid::Delegate
             &Delegate::SetNewConfigOnNetworkThread, this, proxy_config));
   }
 
+  // Called on the JNI thread.
+  void ProxySettingsChangedTo(const std::string& host, int port) {
+    DCHECK(OnJNIThread());
+    ProxyConfig proxy_config;
+    CreateStaticProxyConfig(host, port, &proxy_config);
+    network_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(
+            &Delegate::SetNewConfigOnNetworkThread, this, proxy_config));
+  }
+
  private:
   friend class base::RefCountedThreadSafe<Delegate>;
 
@@ -245,7 +267,13 @@ class ProxyConfigServiceAndroid::Delegate
     explicit JNIDelegateImpl(Delegate* delegate) : delegate_(delegate) {}
 
     // ProxyConfigServiceAndroid::JNIDelegate overrides.
-    virtual void ProxySettingsChanged(JNIEnv*, jobject) OVERRIDE {
+    virtual void ProxySettingsChangedTo(JNIEnv* env, jobject jself,
+                                      jstring jhost, jint jport) OVERRIDE {
+      std::string host = ConvertJavaStringToUTF8(env, jhost);
+      delegate_->ProxySettingsChangedTo(host, jport);
+    }
+
+    virtual void ProxySettingsChanged(JNIEnv* env, jobject self) OVERRIDE {
       delegate_->ProxySettingsChanged();
     }
 
