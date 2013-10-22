@@ -5,7 +5,7 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 
 
 name = "utf-8"
-FAIL new TextDecoder("unicode-1-1-utf-8").encoding should be utf-8. Threw exception TypeError: Type error
+PASS new TextDecoder("unicode-1-1-utf-8").encoding is "utf-8"
 PASS new TextDecoder("utf-8").encoding is "utf-8"
 PASS new TextDecoder("utf8").encoding is "utf-8"
 
@@ -20,8 +20,8 @@ PASS new TextDecoder("csisolatin2").encoding is "iso-8859-2"
 PASS new TextDecoder("iso-8859-2").encoding is "iso-8859-2"
 PASS new TextDecoder("iso-ir-101").encoding is "iso-8859-2"
 PASS new TextDecoder("iso8859-2").encoding is "iso-8859-2"
-FAIL new TextDecoder("iso88592").encoding should be iso-8859-2. Threw exception TypeError: Type error
-FAIL new TextDecoder("iso_8859-2").encoding should be iso-8859-2. Threw exception TypeError: Type error
+PASS new TextDecoder("iso88592").encoding is "iso-8859-2"
+PASS new TextDecoder("iso_8859-2").encoding is "iso-8859-2"
 PASS new TextDecoder("iso_8859-2:1987").encoding is "iso-8859-2"
 PASS new TextDecoder("l2").encoding is "iso-8859-2"
 PASS new TextDecoder("latin2").encoding is "iso-8859-2"
@@ -31,8 +31,8 @@ PASS new TextDecoder("csisolatin3").encoding is "iso-8859-3"
 PASS new TextDecoder("iso-8859-3").encoding is "iso-8859-3"
 PASS new TextDecoder("iso-ir-109").encoding is "iso-8859-3"
 PASS new TextDecoder("iso8859-3").encoding is "iso-8859-3"
-FAIL new TextDecoder("iso88593").encoding should be iso-8859-3. Threw exception TypeError: Type error
-FAIL new TextDecoder("iso_8859-3").encoding should be iso-8859-3. Threw exception TypeError: Type error
+PASS new TextDecoder("iso88593").encoding is "iso-8859-3"
+PASS new TextDecoder("iso_8859-3").encoding is "iso-8859-3"
 PASS new TextDecoder("iso_8859-3:1988").encoding is "iso-8859-3"
 PASS new TextDecoder("l3").encoding is "iso-8859-3"
 PASS new TextDecoder("latin3").encoding is "iso-8859-3"
@@ -42,8 +42,8 @@ PASS new TextDecoder("csisolatin4").encoding is "iso-8859-4"
 PASS new TextDecoder("iso-8859-4").encoding is "iso-8859-4"
 PASS new TextDecoder("iso-ir-110").encoding is "iso-8859-4"
 PASS new TextDecoder("iso8859-4").encoding is "iso-8859-4"
-FAIL new TextDecoder("iso88594").encoding should be iso-8859-4. Threw exception TypeError: Type error
-FAIL new TextDecoder("iso_8859-4").encoding should be iso-8859-4. Threw exception TypeError: Type error
+PASS new TextDecoder("iso88594").encoding is "iso-8859-4"
+PASS new TextDecoder("iso_8859-4").encoding is "iso-8859-4"
 PASS new TextDecoder("iso_8859-4:1988").encoding is "iso-8859-4"
 PASS new TextDecoder("l4").encoding is "iso-8859-4"
 PASS new TextDecoder("latin4").encoding is "iso-8859-4"
@@ -54,15 +54,15 @@ PASS new TextDecoder("cyrillic").encoding is "iso-8859-5"
 PASS new TextDecoder("iso-8859-5").encoding is "iso-8859-5"
 PASS new TextDecoder("iso-ir-144").encoding is "iso-8859-5"
 PASS new TextDecoder("iso8859-5").encoding is "iso-8859-5"
-FAIL new TextDecoder("iso88595").encoding should be iso-8859-5. Threw exception TypeError: Type error
-FAIL new TextDecoder("iso_8859-5").encoding should be iso-8859-5. Threw exception TypeError: Type error
+PASS new TextDecoder("iso88595").encoding is "iso-8859-5"
+PASS new TextDecoder("iso_8859-5").encoding is "iso-8859-5"
 PASS new TextDecoder("iso_8859-5:1988").encoding is "iso-8859-5"
 
 name = "iso-8859-6"
 PASS new TextDecoder("arabic").encoding is "iso-8859-6"
 PASS new TextDecoder("asmo-708").encoding is "iso-8859-6"
-FAIL new TextDecoder("csiso88596e").encoding should be iso-8859-6. Threw exception TypeError: Type error
-FAIL new TextDecoder("csiso88596i").encoding should be iso-8859-6. Threw exception TypeError: Type error
+PASS new TextDecoder("csiso88596e").encoding is "iso-8859-6"
+PASS new TextDecoder("csiso88596i").encoding is "iso-8859-6"
 PASS new TextDecoder("csisolatinarabic").encoding is "iso-8859-6"
 PASS new TextDecoder("ecma-114").encoding is "iso-8859-6"
 PASS new TextDecoder("iso-8859-6").encoding is "iso-8859-6"
@@ -70,8 +70,8 @@ PASS new TextDecoder("iso-8859-6-e").encoding is "iso-8859-6"
 PASS new TextDecoder("iso-8859-6-i").encoding is "iso-8859-6"
 PASS new TextDecoder("iso-ir-127").encoding is "iso-8859-6"
 PASS new TextDecoder("iso8859-6").encoding is "iso-8859-6"
-FAIL new TextDecoder("iso88596").encoding should be iso-8859-6. Threw exception TypeError: Type error
-FAIL new TextDecoder("iso_8859-6").encoding should be iso-8859-6. Threw exception TypeError: Type error
+PASS new TextDecoder("iso88596").encoding is "iso-8859-6"
+PASS new TextDecoder("iso_8859-6").encoding is "iso-8859-6"
 PASS new TextDecoder("iso_8859-6:1987").encoding is "iso-8859-6"
 
 name = "iso-8859-7"
@@ -83,21 +83,21 @@ PASS new TextDecoder("greek8").encoding is "iso-8859-7"
 PASS new TextDecoder("iso-8859-7").encoding is "iso-8859-7"
 PASS new TextDecoder("iso-ir-126").encoding is "iso-8859-7"
 PASS new TextDecoder("iso8859-7").encoding is "iso-8859-7"
-FAIL new TextDecoder("iso88597").encoding should be iso-8859-7. Threw exception TypeError: Type error
-FAIL new TextDecoder("iso_8859-7").encoding should be iso-8859-7. Threw exception TypeError: Type error
+PASS new TextDecoder("iso88597").encoding is "iso-8859-7"
+PASS new TextDecoder("iso_8859-7").encoding is "iso-8859-7"
 PASS new TextDecoder("iso_8859-7:1987").encoding is "iso-8859-7"
 PASS new TextDecoder("sun_eu_greek").encoding is "iso-8859-7"
 
 name = "iso-8859-8"
-FAIL new TextDecoder("csiso88598e").encoding should be iso-8859-8. Threw exception TypeError: Type error
+PASS new TextDecoder("csiso88598e").encoding is "iso-8859-8"
 PASS new TextDecoder("csisolatinhebrew").encoding is "iso-8859-8"
 PASS new TextDecoder("hebrew").encoding is "iso-8859-8"
 PASS new TextDecoder("iso-8859-8").encoding is "iso-8859-8"
 PASS new TextDecoder("iso-8859-8-e").encoding is "iso-8859-8"
 PASS new TextDecoder("iso-ir-138").encoding is "iso-8859-8"
 PASS new TextDecoder("iso8859-8").encoding is "iso-8859-8"
-FAIL new TextDecoder("iso88598").encoding should be iso-8859-8. Threw exception TypeError: Type error
-FAIL new TextDecoder("iso_8859-8").encoding should be iso-8859-8. Threw exception TypeError: Type error
+PASS new TextDecoder("iso88598").encoding is "iso-8859-8"
+PASS new TextDecoder("iso_8859-8").encoding is "iso-8859-8"
 PASS new TextDecoder("iso_8859-8:1988").encoding is "iso-8859-8"
 PASS new TextDecoder("visual").encoding is "iso-8859-8"
 
@@ -111,26 +111,26 @@ PASS new TextDecoder("csisolatin6").encoding is "iso-8859-10"
 PASS new TextDecoder("iso-8859-10").encoding is "iso-8859-10"
 PASS new TextDecoder("iso-ir-157").encoding is "iso-8859-10"
 PASS new TextDecoder("iso8859-10").encoding is "iso-8859-10"
-FAIL new TextDecoder("iso885910").encoding should be iso-8859-10. Threw exception TypeError: Type error
+PASS new TextDecoder("iso885910").encoding is "iso-8859-10"
 PASS new TextDecoder("l6").encoding is "iso-8859-10"
 PASS new TextDecoder("latin6").encoding is "iso-8859-10"
 
 name = "iso-8859-13"
 PASS new TextDecoder("iso-8859-13").encoding is "iso-8859-13"
 PASS new TextDecoder("iso8859-13").encoding is "iso-8859-13"
-FAIL new TextDecoder("iso885913").encoding should be iso-8859-13. Threw exception TypeError: Type error
+PASS new TextDecoder("iso885913").encoding is "iso-8859-13"
 
 name = "iso-8859-14"
 PASS new TextDecoder("iso-8859-14").encoding is "iso-8859-14"
 PASS new TextDecoder("iso8859-14").encoding is "iso-8859-14"
-FAIL new TextDecoder("iso885914").encoding should be iso-8859-14. Threw exception TypeError: Type error
+PASS new TextDecoder("iso885914").encoding is "iso-8859-14"
 
 name = "iso-8859-15"
 PASS new TextDecoder("csisolatin9").encoding is "iso-8859-15"
 PASS new TextDecoder("iso-8859-15").encoding is "iso-8859-15"
 PASS new TextDecoder("iso8859-15").encoding is "iso-8859-15"
-FAIL new TextDecoder("iso885915").encoding should be iso-8859-15. Threw exception TypeError: Type error
-FAIL new TextDecoder("iso_8859-15").encoding should be iso-8859-15. Threw exception TypeError: Type error
+PASS new TextDecoder("iso885915").encoding is "iso-8859-15"
+PASS new TextDecoder("iso_8859-15").encoding is "iso-8859-15"
 PASS new TextDecoder("l9").encoding is "iso-8859-15"
 
 name = "iso-8859-16"
@@ -141,7 +141,7 @@ PASS new TextDecoder("cskoi8r").encoding is "koi8-r"
 PASS new TextDecoder("koi").encoding is "koi8-r"
 PASS new TextDecoder("koi8").encoding is "koi8-r"
 PASS new TextDecoder("koi8-r").encoding is "koi8-r"
-FAIL new TextDecoder("koi8_r").encoding should be koi8-r. Threw exception TypeError: Type error
+PASS new TextDecoder("koi8_r").encoding is "koi8-r"
 
 name = "koi8-u"
 PASS new TextDecoder("koi8-u").encoding is "koi8-u"
@@ -156,7 +156,7 @@ name = "windows-874"
 PASS new TextDecoder("dos-874").encoding is "windows-874"
 PASS new TextDecoder("iso-8859-11").encoding is "windows-874"
 PASS new TextDecoder("iso8859-11").encoding is "windows-874"
-FAIL new TextDecoder("iso885911").encoding should be windows-874. Threw exception TypeError: Type error
+PASS new TextDecoder("iso885911").encoding is "windows-874"
 PASS new TextDecoder("tis-620").encoding is "windows-874"
 PASS new TextDecoder("windows-874").encoding is "windows-874"
 
@@ -180,19 +180,19 @@ PASS new TextDecoder("ibm819").encoding is "windows-1252"
 PASS new TextDecoder("iso-8859-1").encoding is "windows-1252"
 PASS new TextDecoder("iso-ir-100").encoding is "windows-1252"
 PASS new TextDecoder("iso8859-1").encoding is "windows-1252"
-FAIL new TextDecoder("iso88591").encoding should be windows-1252. Threw exception TypeError: Type error
-FAIL new TextDecoder("iso_8859-1").encoding should be windows-1252. Threw exception TypeError: Type error
+PASS new TextDecoder("iso88591").encoding is "windows-1252"
+PASS new TextDecoder("iso_8859-1").encoding is "windows-1252"
 PASS new TextDecoder("iso_8859-1:1987").encoding is "windows-1252"
 PASS new TextDecoder("l1").encoding is "windows-1252"
 PASS new TextDecoder("latin1").encoding is "windows-1252"
 PASS new TextDecoder("us-ascii").encoding is "windows-1252"
 PASS new TextDecoder("windows-1252").encoding is "windows-1252"
-FAIL new TextDecoder("x-cp1252").encoding should be windows-1252. Threw exception TypeError: Type error
+PASS new TextDecoder("x-cp1252").encoding is "windows-1252"
 
 name = "windows-1253"
 PASS new TextDecoder("cp1253").encoding is "windows-1253"
 PASS new TextDecoder("windows-1253").encoding is "windows-1253"
-FAIL new TextDecoder("x-cp1253").encoding should be windows-1253. Threw exception TypeError: Type error
+PASS new TextDecoder("x-cp1253").encoding is "windows-1253"
 
 name = "windows-1254"
 PASS new TextDecoder("cp1254").encoding is "windows-1254"
@@ -200,33 +200,33 @@ PASS new TextDecoder("csisolatin5").encoding is "windows-1254"
 PASS new TextDecoder("iso-8859-9").encoding is "windows-1254"
 PASS new TextDecoder("iso-ir-148").encoding is "windows-1254"
 PASS new TextDecoder("iso8859-9").encoding is "windows-1254"
-FAIL new TextDecoder("iso88599").encoding should be windows-1254. Threw exception TypeError: Type error
-FAIL new TextDecoder("iso_8859-9").encoding should be windows-1254. Threw exception TypeError: Type error
+PASS new TextDecoder("iso88599").encoding is "windows-1254"
+PASS new TextDecoder("iso_8859-9").encoding is "windows-1254"
 PASS new TextDecoder("iso_8859-9:1989").encoding is "windows-1254"
 PASS new TextDecoder("l5").encoding is "windows-1254"
 PASS new TextDecoder("latin5").encoding is "windows-1254"
 PASS new TextDecoder("windows-1254").encoding is "windows-1254"
-FAIL new TextDecoder("x-cp1254").encoding should be windows-1254. Threw exception TypeError: Type error
+PASS new TextDecoder("x-cp1254").encoding is "windows-1254"
 
 name = "windows-1255"
 PASS new TextDecoder("cp1255").encoding is "windows-1255"
 PASS new TextDecoder("windows-1255").encoding is "windows-1255"
-FAIL new TextDecoder("x-cp1255").encoding should be windows-1255. Threw exception TypeError: Type error
+PASS new TextDecoder("x-cp1255").encoding is "windows-1255"
 
 name = "windows-1256"
 PASS new TextDecoder("cp1256").encoding is "windows-1256"
 PASS new TextDecoder("windows-1256").encoding is "windows-1256"
-FAIL new TextDecoder("x-cp1256").encoding should be windows-1256. Threw exception TypeError: Type error
+PASS new TextDecoder("x-cp1256").encoding is "windows-1256"
 
 name = "windows-1257"
 PASS new TextDecoder("cp1257").encoding is "windows-1257"
 PASS new TextDecoder("windows-1257").encoding is "windows-1257"
-FAIL new TextDecoder("x-cp1257").encoding should be windows-1257. Threw exception TypeError: Type error
+PASS new TextDecoder("x-cp1257").encoding is "windows-1257"
 
 name = "windows-1258"
 PASS new TextDecoder("cp1258").encoding is "windows-1258"
 PASS new TextDecoder("windows-1258").encoding is "windows-1258"
-FAIL new TextDecoder("x-cp1258").encoding should be windows-1258. Threw exception TypeError: Type error
+PASS new TextDecoder("x-cp1258").encoding is "windows-1258"
 
 name = "x-mac-cyrillic"
 PASS new TextDecoder("x-mac-cyrillic").encoding is "x-mac-cyrillic"
@@ -235,9 +235,9 @@ PASS new TextDecoder("x-mac-ukrainian").encoding is "x-mac-cyrillic"
 name = "gbk"
 PASS new TextDecoder("chinese").encoding is "gbk"
 PASS new TextDecoder("csgb2312").encoding is "gbk"
-FAIL new TextDecoder("csiso58gb231280").encoding should be gbk. Threw exception TypeError: Type error
+PASS new TextDecoder("csiso58gb231280").encoding is "gbk"
 PASS new TextDecoder("gb2312").encoding is "gbk"
-FAIL new TextDecoder("gb_2312").encoding should be gbk. Threw exception TypeError: Type error
+PASS new TextDecoder("gb_2312").encoding is "gbk"
 PASS new TextDecoder("gb_2312-80").encoding is "gbk"
 PASS new TextDecoder("gbk").encoding is "gbk"
 PASS new TextDecoder("iso-ir-58").encoding is "gbk"

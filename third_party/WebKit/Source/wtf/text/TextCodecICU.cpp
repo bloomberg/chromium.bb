@@ -178,6 +178,46 @@ void TextCodecICU::registerEncodingNames(EncodingNameRegistrar registrar)
     registrar("ISO8859-15", "ISO-8859-15");
     // Not registering ISO8859-16, because Firefox (as of version 3.6.6) doesn't know this particular alias,
     // and because older versions of ICU don't support ISO-8859-16 encoding at all.
+
+    // Additional aliases present in the WHATWG Encoding Standard (http://encoding.spec.whatwg.org/)
+    // and Firefox (24), but not in ICU 4.6.
+    registrar("csiso58gb231280", "GBK");
+    registrar("csiso88596e", "ISO-8859-6");
+    registrar("csiso88596i", "ISO-8859-6");
+    registrar("csiso88598e", "ISO-8859-8");
+    registrar("gb_2312", "GBK");
+    registrar("iso88591", "windows-1252");
+    registrar("iso88592", "ISO-8859-2");
+    registrar("iso88593", "ISO-8859-3");
+    registrar("iso88594", "ISO-8859-4");
+    registrar("iso88595", "ISO-8859-5");
+    registrar("iso88596", "ISO-8859-6");
+    registrar("iso88597", "ISO-8859-7");
+    registrar("iso88598", "ISO-8859-8");
+    registrar("iso88599", "windows-1254");
+    registrar("iso885910", "ISO-8859-10");
+    registrar("iso885911", "windows-874");
+    registrar("iso885913", "ISO-8859-13");
+    registrar("iso885914", "ISO-8859-14");
+    registrar("iso885915", "ISO-8859-15");
+    registrar("iso_8859-1", "windows-1252");
+    registrar("iso_8859-2", "ISO-8859-2");
+    registrar("iso_8859-3", "ISO-8859-3");
+    registrar("iso_8859-4", "ISO-8859-4");
+    registrar("iso_8859-5", "ISO-8859-5");
+    registrar("iso_8859-6", "ISO-8859-6");
+    registrar("iso_8859-7", "ISO-8859-7");
+    registrar("iso_8859-8", "ISO-8859-8");
+    registrar("iso_8859-9", "windows-1254");
+    registrar("iso_8859-15", "ISO-8859-15");
+    registrar("koi8_r", "KOI8-R");
+    registrar("x-cp1252", "windows-1252");
+    registrar("x-cp1253", "windows-1253");
+    registrar("x-cp1254", "windows-1254");
+    registrar("x-cp1255", "windows-1255");
+    registrar("x-cp1256", "windows-1256");
+    registrar("x-cp1257", "windows-1257");
+    registrar("x-cp1258", "windows-1258");
 }
 
 void TextCodecICU::registerCodecs(TextCodecRegistrar registrar)

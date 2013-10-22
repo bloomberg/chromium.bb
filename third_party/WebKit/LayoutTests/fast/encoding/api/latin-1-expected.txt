@@ -25,9 +25,9 @@ PASS decoder.decode(array) is windows1252.decode(array)
 decoder = new TextDecoder("iso8859-1")
 PASS decoder.decode(array) is windows1252.decode(array)
 decoder = new TextDecoder("iso88591")
-FAIL decoder = new TextDecoder("iso88591") threw exception TypeError: Type error
+PASS decoder.decode(array) is windows1252.decode(array)
 decoder = new TextDecoder("iso_8859-1")
-FAIL decoder = new TextDecoder("iso_8859-1") threw exception TypeError: Type error
+PASS decoder.decode(array) is windows1252.decode(array)
 decoder = new TextDecoder("iso_8859-1:1987")
 PASS decoder.decode(array) is windows1252.decode(array)
 decoder = new TextDecoder("l1")
@@ -37,7 +37,7 @@ PASS decoder.decode(array) is windows1252.decode(array)
 decoder = new TextDecoder("us-ascii")
 PASS decoder.decode(array) is windows1252.decode(array)
 decoder = new TextDecoder("x-cp1252")
-FAIL decoder = new TextDecoder("x-cp1252") threw exception TypeError: Type error
+PASS decoder.decode(array) is windows1252.decode(array)
 PASS successfullyParsed is true
 
 TEST COMPLETE

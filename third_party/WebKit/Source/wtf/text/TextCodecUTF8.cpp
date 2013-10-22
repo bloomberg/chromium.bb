@@ -56,6 +56,10 @@ void TextCodecUTF8::registerEncodingNames(EncodingNameRegistrar registrar)
     registrar("unicode20utf8", "UTF-8");
     registrar("utf8", "UTF-8");
     registrar("x-unicode20utf8", "UTF-8");
+
+    // Additional aliases present in the WHATWG Encoding Standard (http://encoding.spec.whatwg.org/)
+    // and Firefox (24), but not in ICU 4.6.
+    registrar("unicode-1-1-utf-8", "UTF-8");
 }
 
 void TextCodecUTF8::registerCodecs(TextCodecRegistrar registrar)
