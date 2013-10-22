@@ -583,7 +583,12 @@ TEST_F(WebFrameCSSCallbackTest, MultiSelector)
     EXPECT_THAT(matchedSelectors(), testing::ElementsAre("span", "span, p"));
 }
 
+// Flaky on MacOS https://code.google.com/p/chromium/issues/detail?id=310361
+#if OS(MACOSX)
+TEST_F(WebFrameCSSCallbackTest, DISABLED_InvalidSelector)
+#else
 TEST_F(WebFrameCSSCallbackTest, InvalidSelector)
+#endif
 {
     loadHTML("<p><span></span></p>");
 
