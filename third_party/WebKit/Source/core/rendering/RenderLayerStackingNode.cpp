@@ -80,7 +80,7 @@ bool RenderLayerStackingNode::isStackingContext(const RenderStyle* style) const
 // Helper for the sorting of layers by z-index.
 static inline bool compareZIndex(RenderLayer* first, RenderLayer* second)
 {
-    return first->zIndex() < second->zIndex();
+    return first->stackingNode()->zIndex() < second->stackingNode()->zIndex();
 }
 
 RenderLayerCompositor* RenderLayerStackingNode::compositor() const
@@ -277,7 +277,7 @@ void RenderLayerStackingNode::collectLayers(bool includeHiddenLayers,
     bool includeHiddenLayer = includeHiddenLayers || (layer()->hasVisibleContent() || (layer()->hasVisibleDescendant() && isStacking));
     if (includeHiddenLayer && !isNormalFlow && !layer()->isOutOfFlowRenderFlowThread()) {
         // Determine which buffer the child should be in.
-        OwnPtr<Vector<RenderLayer*> >& buffer = (layer()->zIndex() >= 0) ? posBuffer : negBuffer;
+        OwnPtr<Vector<RenderLayer*> >& buffer = (zIndex() >= 0) ? posBuffer : negBuffer;
 
         // Create the buffer if it doesn't exist yet.
         if (!buffer)
@@ -318,7 +318,7 @@ void RenderLayerStackingNode::updateStackingNodesAfterStyleChange(const RenderSt
     // FIXME: RenderLayer already handles visibility changes through our visiblity dirty bits. This logic could
     // likely be folded along with the rest.
     bool isStackingContext = this->isStackingContext();
-    if (isStackingContext == wasStackingContext && oldVisibility == renderer()->style()->visibility() && oldZIndex == renderer()->style()->zIndex())
+    if (isStackingContext == wasStackingContext && oldVisibility == renderer()->style()->visibility() && oldZIndex == zIndex())
         return;
 
     dirtyStackingContainerZOrderLists();

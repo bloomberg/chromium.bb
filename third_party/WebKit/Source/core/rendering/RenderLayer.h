@@ -279,8 +279,6 @@ public:
     void convertToLayerCoords(const RenderLayer* ancestorLayer, LayoutPoint& location) const;
     void convertToLayerCoords(const RenderLayer* ancestorLayer, LayoutRect&) const;
 
-    int zIndex() const { return renderer()->style()->zIndex(); }
-
     enum PaintLayerFlag {
         PaintLayerHaveTransparency = 1,
         PaintLayerAppliedTransform = 1 << 1,

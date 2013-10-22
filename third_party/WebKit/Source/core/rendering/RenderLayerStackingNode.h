@@ -62,6 +62,8 @@ class RenderLayerStackingNode {
 public:
     explicit RenderLayerStackingNode(RenderLayer*);
 
+    int zIndex() const { return renderer()->style()->zIndex(); }
+
     // A stacking context is a layer that has a non-auto z-index.
     bool isStackingContext() const { return isStackingContext(renderer()->style()); }
 
