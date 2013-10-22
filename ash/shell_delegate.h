@@ -142,9 +142,6 @@ class ASH_EXPORT ShellDelegate {
   // Invoked when the user uses Shift+F4 to toggle the window fullscreen state.
   virtual void ToggleFullscreen() = 0;
 
-  // Invoked when the user uses F4 to toggle window maximized state.
-  virtual void ToggleMaximized() = 0;
-
   // Invoked when an accelerator is used to open the file manager.
   virtual void OpenFileManager() = 0;
 

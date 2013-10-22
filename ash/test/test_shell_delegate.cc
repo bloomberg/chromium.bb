@@ -68,12 +68,6 @@ void TestShellDelegate::NewTab() {
 void TestShellDelegate::NewWindow(bool incognito) {
 }
 
-void TestShellDelegate::ToggleMaximized() {
-  wm::WindowState* window_state = wm::GetActiveWindowState();
-  if (window_state)
-    window_state->ToggleMaximized();
-}
-
 void TestShellDelegate::ToggleFullscreen() {
 }
 

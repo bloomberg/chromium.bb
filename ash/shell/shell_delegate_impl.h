@@ -36,7 +36,6 @@ class ShellDelegateImpl : public ash::ShellDelegate {
   virtual void NewTab() OVERRIDE;
   virtual void NewWindow(bool incognito) OVERRIDE;
   virtual void ToggleFullscreen() OVERRIDE;
-  virtual void ToggleMaximized() OVERRIDE;
   virtual void OpenFileManager() OVERRIDE;
   virtual void OpenCrosh() OVERRIDE;
   virtual void RestoreTab() OVERRIDE;

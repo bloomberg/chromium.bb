@@ -6,6 +6,7 @@
 
 #include "apps/shell_window.h"
 #include "apps/ui/native_app_window.h"
+#include "ash/accelerators/accelerator_commands.h"
 #include "ash/ash_switches.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
@@ -39,6 +40,9 @@ bool IsInImmersiveFullscreen(BrowserWindow* browser_window) {
 
 typedef InProcessBrowserTest ChromeShellDelegateBrowserTest;
 
+// TODO(oshima): Move these tests to ash once ToggleFullscreen is moved
+// to ash. crbug.com/309837.
+
 // Confirm that toggling window miximized works properly
 IN_PROC_BROWSER_TEST_F(ChromeShellDelegateBrowserTest, ToggleMaximized) {
   ash::ShellDelegate* shell_delegate = ash::Shell::GetInstance()->delegate();
@@ -46,23 +50,23 @@ IN_PROC_BROWSER_TEST_F(ChromeShellDelegateBrowserTest, ToggleMaximized) {
   ash::wm::WindowState* window_state = ash::wm::GetActiveWindowState();
   ASSERT_TRUE(window_state);
 
-  // When not in fullscreen, ShellDelegate::ToggleMaximized toggles Maximized.
+  // When not in fullscreen, accelerators::ToggleMaximized toggles Maximized.
   EXPECT_FALSE(window_state->IsMaximized());
-  shell_delegate->ToggleMaximized();
+  ash::accelerators::ToggleMaximized();
   EXPECT_TRUE(window_state->IsMaximized());
-  shell_delegate->ToggleMaximized();
+  ash::accelerators::ToggleMaximized();
   EXPECT_FALSE(window_state->IsMaximized());
 
-  // When in fullscreen ShellDelegate::ToggleMaximized gets out of fullscreen.
+  // When in fullscreen accelerators::ToggleMaximized gets out of fullscreen.
   EXPECT_FALSE(window_state->IsFullscreen());
   Browser* browser = chrome::FindBrowserWithWindow(window_state->window());
   ASSERT_TRUE(browser);
   chrome::ToggleFullscreenMode(browser);
   EXPECT_TRUE(window_state->IsFullscreen());
-  shell_delegate->ToggleMaximized();
+  ash::accelerators::ToggleMaximized();
   EXPECT_FALSE(window_state->IsFullscreen());
   EXPECT_FALSE(window_state->IsMaximized());
-  shell_delegate->ToggleMaximized();
+  ash::accelerators::ToggleMaximized();
   EXPECT_FALSE(window_state->IsFullscreen());
   EXPECT_TRUE(window_state->IsMaximized());
 }

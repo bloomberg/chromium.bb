@@ -846,7 +846,7 @@ bool AcceleratorController::PerformAction(int action,
       return true;
     }
     case TOGGLE_MAXIMIZED: {
-      shell->delegate()->ToggleMaximized();
+      accelerators::ToggleMaximized();
       return true;
     }
     case WINDOW_POSITION_CENTER: {

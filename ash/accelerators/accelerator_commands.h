@@ -17,6 +17,10 @@ namespace accelerators {
 // restored.
 ASH_EXPORT bool ToggleMinimized();
 
+// Toggles the maxmized state. If the window is in fulllscreen, it exits
+// fullscreen mode.
+ASH_EXPORT void ToggleMaximized();
+
 }  // namespace accelerators
 }  // namespace ash
 

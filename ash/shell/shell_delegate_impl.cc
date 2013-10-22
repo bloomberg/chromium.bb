@@ -78,10 +78,7 @@ void ShellDelegateImpl::NewWindow(bool incognito) {
 }
 
 void ShellDelegateImpl::ToggleFullscreen() {
-  ToggleMaximized();
-}
-
-void ShellDelegateImpl::ToggleMaximized() {
+  // TODO(oshima): Remove this when crbug.com/309837 is implemented.
   wm::WindowState* window_state = wm::GetActiveWindowState();
   if (window_state)
     window_state->ToggleMaximized();
