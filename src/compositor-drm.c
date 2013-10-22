@@ -674,7 +674,7 @@ drm_output_start_repaint_loop(struct weston_output *output_base)
 	struct drm_compositor *compositor = (struct drm_compositor *)
 		output_base->compositor;
 	uint32_t fb_id;
-
+	uint32_t msec;
 	struct timespec ts;
 
 	if (output->destroy_pending)
@@ -682,12 +682,7 @@ drm_output_start_repaint_loop(struct weston_output *output_base)
 
 	if (!output->current) {
 		/* We can't page flip if there's no mode set */
-		uint32_t msec;
-
-		clock_gettime(compositor->clock, &ts);
-		msec = ts.tv_sec * 1000 + ts.tv_nsec / 1000000;
-		weston_output_finish_frame(output_base, msec);
-		return;
+		goto finish_frame;
 	}
 
 	fb_id = output->current->fb_id;
@@ -695,8 +690,16 @@ drm_output_start_repaint_loop(struct weston_output *output_base)
 	if (drmModePageFlip(compositor->drm.fd, output->crtc_id, fb_id,
 			    DRM_MODE_PAGE_FLIP_EVENT, output) < 0) {
 		weston_log("queueing pageflip failed: %m\n");
-		return;
+		goto finish_frame;
 	}
+
+	return;
+
+finish_frame:
+	/* if we cannot page-flip, immediately finish frame */
+	clock_gettime(compositor->clock, &ts);
+	msec = ts.tv_sec * 1000 + ts.tv_nsec / 1000000;
+	weston_output_finish_frame(output_base, msec);
 }
 
 static void
