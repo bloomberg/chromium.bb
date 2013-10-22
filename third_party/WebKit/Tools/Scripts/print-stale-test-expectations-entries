@@ -1,0 +1,110 @@
+#!/usr/bin/python
+#
+# Copyright (C) 2013 Google Inc. All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are
+# met:
+#
+#     * Redistributions of source code must retain the above copyright
+# notice, this list of conditions and the following disclaimer.
+#     * Redistributions in binary form must reproduce the above
+# copyright notice, this list of conditions and the following disclaimer
+# in the documentation and/or other materials provided with the
+# distribution.
+#     * Neither the name of Google Inc. nor the names of its
+# contributors may be used to endorse or promote products derived from
+# this software without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+# A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+# OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+"""Prints lists of bug numbers / tests whose bugs haven't been modified recently."""
+
+import datetime
+import json
+import optparse
+import sys
+import time
+import urllib2
+
+from webkitpy.common.host import Host
+from webkitpy.layout_tests.port.base import Port
+from webkitpy.layout_tests.models import test_expectations
+from webkitpy.layout_tests.models.test_expectations import TestExpectations
+
+google_code_url = 'https://www.googleapis.com/projecthosting/v2/projects/chromium/issues/%s?key=%s'
+crbug_prefix = 'crbug.com/'
+
+class StaleTestPrinter(object):
+    def __init__(self, options):
+        self._api_key = options.api_key
+        self._days = options.days
+
+    def is_stale(self, bug_number):
+        url = google_code_url % (bug_number, self._api_key)
+        response = urllib2.urlopen(url)
+        parsed = json.loads(response.read())
+        last_updated = parsed['updated']
+        parsed_time = datetime.datetime.strptime(last_updated.split(".")[0]+"UTC", "%Y-%m-%dT%H:%M:%S%Z")
+        time_delta = datetime.datetime.now() - parsed_time
+        return time_delta.days > 90
+
+    def print_stale_tests(self):
+        host = Host()
+        # Given that we use include_overrides=False and model_all_expectations=True when
+        # constructing the TestExpectations object, it doesn't matter which Port object we use.
+        port = host.port_factory.get()
+        expectations_model = TestExpectations(port, include_overrides=False, model_all_expectations=True).model()
+
+        tests = expectations_model.get_tests_with_timeline(test_expectations.NOW)
+        for test in tests:
+            line = expectations_model.get_expectation_line(test)
+            bugs = line.bugs
+            is_bug_stale = True
+            for bug in bugs:
+                if not bug.startswith(crbug_prefix):
+                    continue
+
+                bug_number = bug.split('/')[1]
+                try:
+                    if not self.is_stale(bug_number):
+                        is_bug_stale = False
+                        break;
+                except urllib2.HTTPError as error:
+                    if error.code == 404:
+                        print '%s%s does not exist.' % (crbug_prefix, bug_number)
+                    elif error.code == 403:
+                        print '%s%s is not accessible. Not able to tell if it\'s stale.' % (crbug_prefix, bug_number)
+                        is_bug_stale = False
+                    else:
+                        raise error
+
+            if is_bug_stale:
+                 print " ".join(bugs), test
+
+def main(argv):
+    option_parser = optparse.OptionParser()
+    option_parser.add_option('--api-key', help='API Key. See https://developers.google.com/explorer-help/#ApiKey'),
+    option_parser.add_option('--days', type='int', default=90, help='Number of days to consider a bug stale.'),
+    options, args = option_parser.parse_args(argv)
+
+    if not options.api_key:
+        print '--api-key is required. See https://developers.google.com/explorer-help/#ApiKey for setting one up.'
+        return 1
+
+    printer = StaleTestPrinter(options)
+    printer.print_stale_tests()
+    return 0
+
+if __name__ == '__main__':
+    sys.exit(main(sys.argv[1:]))
