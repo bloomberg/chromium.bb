@@ -52,6 +52,10 @@ using content::WebContents;
 // TODO(suzhe): http://crbug.com/60973
 #define MAYBE_FocusTraversal DISABLED_FocusTraversal
 #define MAYBE_FocusTraversalOnInterstitial DISABLED_FocusTraversalOnInterstitial
+#elif defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_AURA)
+// TODO(erg): http://crbug.com/163931
+#define MAYBE_FocusTraversal DISABLED_FocusTraversal
+#define MAYBE_FocusTraversalOnInterstitial DISABLED_FocusTraversalOnInterstitial
 #elif defined(OS_WIN) || defined(OS_CHROMEOS)
 // http://crbug.com/109770 and http://crbug.com/62544
 #define MAYBE_FocusTraversal FocusTraversal
@@ -414,8 +418,15 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest,
   EXPECT_TRUE(focused_browser->window()->IsActive());
 }
 
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_AURA)
+// TODO(erg): http://crbug.com/163931
+#define MAYBE_LocationBarLockFocus DISABLED_LocationBarLockFocus
+#else
+#define MAYBE_LocationBarLockFocus LocationBarLockFocus
+#endif
+
 // Page cannot steal focus when focus is on location bar.
-IN_PROC_BROWSER_TEST_F(BrowserFocusTest, LocationBarLockFocus) {
+IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_LocationBarLockFocus) {
   ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
@@ -800,8 +811,15 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, DISABLED_TabInitialFocus) {
   EXPECT_TRUE(IsViewFocused(VIEW_ID_OMNIBOX));
 }
 
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_AURA)
+// TODO(erg): http://crbug.com/163931
+#define MAYBE_FocusOnReload DISABLED_FocusOnReload
+#else
+#define MAYBE_FocusOnReload FocusOnReload
+#endif
+
 // Tests that focus goes where expected when using reload.
-IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FocusOnReload) {
+IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_FocusOnReload) {
   ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
@@ -920,7 +938,14 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest,
   EXPECT_FALSE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_OMNIBOX));
 }
 
-IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FocusOnNavigate) {
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_AURA)
+// TODO(erg): http://crbug.com/163931
+#define MAYBE_FocusOnNavigate DISABLED_FocusOnNavigate
+#else
+#define MAYBE_FocusOnNavigate FocusOnNavigate
+#endif
+
+IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_FocusOnNavigate) {
   // Needed on Mac.
   ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
   // Load the NTP.

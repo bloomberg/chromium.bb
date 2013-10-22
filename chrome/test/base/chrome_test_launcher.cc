@@ -42,6 +42,9 @@
 #if defined(USE_AURA)
 #include "ui/aura/test/ui_controls_factory_aura.h"
 #include "ui/base/test/ui_controls_aura.h"
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#include "ui/views/test/ui_controls_factory_desktop_aurax11.h"
+#endif
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -124,20 +127,6 @@ class ChromeTestLauncherDelegate : public content::TestLauncherDelegate {
 };
 
 int main(int argc, char** argv) {
-// http://crbug.com/163931 Disabled until interactive_ui_tests ready on Linux
-// Aura.
-#if defined(OS_LINUX) && defined(USE_AURA) && !defined(OS_CHROMEOS)
-  base::FilePath bin_dir;
-  CHECK(file_util::ReadSymbolicLink(
-      base::FilePath(base::kProcSelfExe), &bin_dir));
-  std::string filename = bin_dir.value();
-  // http://crbug.com/154081: early exit until interactive_ui_tests are green.
-  if (EndsWith(filename, "interactive_ui_tests", false)) {
-    LOG(INFO) << "interactive_ui_tests on Linux Aura are not ready yet.";
-    return 0;
-  }
-#endif
-
 #if defined(OS_MACOSX)
   chrome_browser_application_mac::RegisterBrowserCrApp();
 #endif
@@ -150,8 +139,14 @@ int main(int argc, char** argv) {
 #if defined(OS_CHROMEOS)
   ui_controls::InstallUIControlsAura(ash::test::CreateAshUIControls());
 #elif defined(USE_AURA)
+
+#if defined(OS_LINUX)
+  ui_controls::InstallUIControlsAura(
+    views::test::CreateUIControlsDesktopAura());
+#else
   // TODO(win_ash): when running interactive_ui_tests for Win Ash, use above.
   ui_controls::InstallUIControlsAura(aura::test::CreateUIControlsAura(NULL));
+#endif
 #endif
 
 #endif

@@ -70,7 +70,9 @@ class TestingPageNavigator : public PageNavigator {
 };
 
 // TODO(jschuh): Fix bookmark DND tests on Win64. crbug.com/244605
-#if defined(OS_WIN) && defined(ARCH_CPU_X86_64)
+// TODO(erg): Fix bookmark DBD tests on linux_aura. crbug.com/163931
+#if (defined(OS_WIN) && defined(ARCH_CPU_X86_64)) || \
+  (defined(OS_LINUX) && defined(USE_AURA))
 #define MAYBE(x) DISABLED_##x
 #else
 #define MAYBE(x) x
@@ -345,7 +347,14 @@ class BookmarkBarViewTest2 : public BookmarkBarViewEventTestBase {
   }
 };
 
-VIEW_TEST(BookmarkBarViewTest2, HideOnDesktopClick)
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_AURA)
+// TODO(erg): linux_aura bringup: http://crbug.com/163931
+#define MAYBE_HideOnDesktopClick DISABLED_HideOnDesktopClick
+#else
+#define MAYBE_HideOnDesktopClick HideOnDesktopClick
+#endif
+
+VIEW_TEST(BookmarkBarViewTest2, MAYBE_HideOnDesktopClick)
 
 // Brings up menu. Moves over child to make sure submenu appears, moves over
 // another child and make sure next menu appears.
@@ -1074,7 +1083,15 @@ class BookmarkBarViewTest11 : public BookmarkBarViewEventTestBase {
   ContextMenuNotificationObserver observer_;
 };
 
-VIEW_TEST(BookmarkBarViewTest11, CloseMenuAfterClosingContextMenu)
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_AURA)
+// TODO(erg): linux_aura bringup: http://crbug.com/163931
+#define MAYBE_CloseMenuAfterClosingContextMenu \
+  DISABLED_CloseMenuAfterClosingContextMenu
+#else
+#define MAYBE_CloseMenuAfterClosingContextMenu CloseMenuAfterClosingContextMenu
+#endif
+
+VIEW_TEST(BookmarkBarViewTest11, MAYBE_CloseMenuAfterClosingContextMenu)
 
 // Tests showing a modal dialog from a context menu.
 class BookmarkBarViewTest12 : public BookmarkBarViewEventTestBase {
@@ -1159,7 +1176,14 @@ class BookmarkBarViewTest12 : public BookmarkBarViewEventTestBase {
   }
 };
 
-VIEW_TEST(BookmarkBarViewTest12, CloseWithModalDialog)
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_AURA)
+// TODO(erg): linux_aura bringup: http://crbug.com/163931
+#define MAYBE_CloseWithModalDialog DISABLED_CloseWithModalDialog
+#else
+#define MAYBE_CloseWithModalDialog CloseWithModalDialog
+#endif
+
+VIEW_TEST(BookmarkBarViewTest12, MAYBE_CloseWithModalDialog)
 
 // Tests clicking on the separator of a context menu (this is for coverage of
 // bug 17862).
@@ -1394,7 +1418,14 @@ class BookmarkBarViewTest16 : public BookmarkBarViewEventTestBase {
   }
 };
 
-VIEW_TEST(BookmarkBarViewTest16, DeleteMenu)
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+// TODO(erg): linux_aura bringup: http://crbug.com/163931
+#define MAYBE_DeleteMenu DISABLED_DeleteMenu
+#else
+#define MAYBE_DeleteMenu DeleteMenu
+#endif
+
+VIEW_TEST(BookmarkBarViewTest16, MAYBE_DeleteMenu)
 
 // Makes sure right clicking on an item while a context menu is already showing
 // doesn't crash and works.
@@ -1475,7 +1506,14 @@ class BookmarkBarViewTest17 : public BookmarkBarViewEventTestBase {
   ContextMenuNotificationObserver observer_;
 };
 
-VIEW_TEST(BookmarkBarViewTest17, ContextMenus3)
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_AURA)
+// TODO(erg): linux_aura bringup: http://crbug.com/163931
+#define MAYBE_ContextMenus3 DISABLED_ContextMenus3
+#else
+#define MAYBE_ContextMenus3 ContextMenus3
+#endif
+
+VIEW_TEST(BookmarkBarViewTest17, MAYBE_ContextMenus3)
 
 // Verifies sibling menus works. Clicks on the 'other bookmarks' folder, then
 // moves the mouse over the first item on the bookmark bar and makes sure the
@@ -1524,7 +1562,16 @@ class BookmarkBarViewTest18 : public BookmarkBarViewEventTestBase {
   }
 };
 
-VIEW_TEST(BookmarkBarViewTest18, BookmarkBarViewTest18_SiblingMenu)
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+// TODO(erg): linux_aura bringup: http://crbug.com/163931
+#define MAYBE_BookmarkBarViewTest18_SiblingMenu \
+  DISABLED_BookmarkBarViewTest18_SiblingMenu
+#else
+#define MAYBE_BookmarkBarViewTest18_SiblingMenu \
+  BookmarkBarViewTest18_SiblingMenu
+#endif
+
+VIEW_TEST(BookmarkBarViewTest18, MAYBE_BookmarkBarViewTest18_SiblingMenu)
 
 // Verifies mousing over an already open sibling menu doesn't prematurely cancel
 // the menu.
@@ -1699,6 +1746,9 @@ class BookmarkBarViewTest20 : public BookmarkBarViewEventTestBase {
 };
 
 #if defined(OS_WIN) && !defined(USE_AURA)
+#define MAYBE_ContextMenuExitTest DISABLED_ContextMenuExitTest
+#elif defined(OS_LINUX) && !defined(OS_CHROMEOS)
+// TODO(erg): linux_aura bringup: http://crbug.com/163931
 #define MAYBE_ContextMenuExitTest DISABLED_ContextMenuExitTest
 #else
 #define MAYBE_ContextMenuExitTest ContextMenuExitTest

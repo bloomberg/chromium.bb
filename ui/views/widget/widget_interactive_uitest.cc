@@ -693,9 +693,18 @@ class MouseEventTrackingWidget : public Widget {
 
 }  // namespace
 
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_AURA)
+// TODO(erg): linux_aura bringup: http://crbug.com/163931
+#define MAYBE_MouseEventDispatchedToRightWindow \
+  DISABLED_MouseEventDispatchedToRightWindow
+#else
+#define MAYBE_MouseEventDispatchedToRightWindow \
+  MouseEventDispatchedToRightWindow
+#endif
+
 // Verifies if a mouse event is received on a widget that doesn't have capture
 // it is correctly processed by the widget that doesn't have capture.
-TEST_F(WidgetCaptureTest, MouseEventDispatchedToRightWindow) {
+TEST_F(WidgetCaptureTest, MAYBE_MouseEventDispatchedToRightWindow) {
   MouseEventTrackingWidget widget1;
   Widget::InitParams params1 =
       CreateParams(views::Widget::InitParams::TYPE_WINDOW);

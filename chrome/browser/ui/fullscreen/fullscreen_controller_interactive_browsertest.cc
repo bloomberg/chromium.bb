@@ -655,10 +655,18 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
   ASSERT_TRUE(IsFullscreenForTabOrPending());
 }
 
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_AURA)
+// TODO(erg): linux_aura bringup: http://crbug.com/163931
+#define MAYBE_MouseLockSilentAfterTargetUnlock \
+  DISABLED_MouseLockSilentAfterTargetUnlock
+#else
+#define MAYBE_MouseLockSilentAfterTargetUnlock MouseLockSilentAfterTargetUnlock
+#endif
+
 // Tests mouse lock can be exited and re-entered by an application silently
 // with no UI distraction for users.
 IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
-                       MouseLockSilentAfterTargetUnlock) {
+                       MAYBE_MouseLockSilentAfterTargetUnlock) {
   ASSERT_TRUE(test_server()->Start());
   ui_test_utils::NavigateToURL(browser(),
                                test_server()->GetURL(kFullscreenMouseLockHTML));
@@ -726,9 +734,12 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
   ASSERT_TRUE(IsMouseLocked());
 }
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) || \
+  (defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_AURA))
 // These tests are very flaky on Vista.
 // http://crbug.com/158762
+// These are flaky on linux_aura.
+// http://crbug.com/163931
 #define MAYBE_TestTabExitsMouseLockOnNavigation \
     DISABLED_TestTabExitsMouseLockOnNavigation
 #define MAYBE_TestTabExitsMouseLockOnGoBack \

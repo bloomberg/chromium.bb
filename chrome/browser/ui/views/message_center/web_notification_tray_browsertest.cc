@@ -100,8 +100,16 @@ class WebNotificationTrayTest : public InProcessBrowserTest {
 
 }  // namespace
 
+
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_AURA)
+// TODO(erg): linux_aura bringup: http://crbug.com/163931
+#define MAYBE_WebNotifications DISABLED_WebNotifications
+#else
+#define MAYBE_WebNotifications WebNotifications
+#endif
+
 // TODO(dewittj): More exhaustive testing.
-IN_PROC_BROWSER_TEST_F(WebNotificationTrayTest, WebNotifications) {
+IN_PROC_BROWSER_TEST_F(WebNotificationTrayTest, MAYBE_WebNotifications) {
   message_center::MessageCenter* message_center =
       message_center::MessageCenter::Get();
 

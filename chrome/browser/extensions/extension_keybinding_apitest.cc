@@ -192,17 +192,31 @@ IN_PROC_BROWSER_TEST_F(ScriptBadgesCommandsApiTest, DISABLED_ScriptBadge) {
   }
 }
 
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_AURA)
+// TODO(erg): linux_aura bringup: http://crbug.com/163931
+#define MAYBE_SynthesizedCommand DISABLED_SynthesizedCommand
+#else
+#define MAYBE_SynthesizedCommand SynthesizedCommand
+#endif
+
 // This test validates that the getAll query API function returns registered
 // commands as well as synthesized ones and that inactive commands (like the
 // synthesized ones are in nature) have no shortcuts.
-IN_PROC_BROWSER_TEST_F(CommandsApiTest, SynthesizedCommand) {
+IN_PROC_BROWSER_TEST_F(CommandsApiTest, MAYBE_SynthesizedCommand) {
   ASSERT_TRUE(test_server()->Start());
   ASSERT_TRUE(RunExtensionTest("keybinding/synthesized")) << message_;
 }
 
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_AURA)
+// TODO(erg): linux_aura bringup: http://crbug.com/163931
+#define MAYBE_DontOverwriteSystemShortcuts DISABLED_DontOverwriteSystemShortcuts
+#else
+#define MAYBE_DontOverwriteSystemShortcuts DontOverwriteSystemShortcuts
+#endif
+
 // This test validates that an extension cannot request a shortcut that is
 // already in use by Chrome.
-IN_PROC_BROWSER_TEST_F(CommandsApiTest, DontOverwriteSystemShortcuts) {
+IN_PROC_BROWSER_TEST_F(CommandsApiTest, MAYBE_DontOverwriteSystemShortcuts) {
   ASSERT_TRUE(test_server()->Start());
 
   ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));

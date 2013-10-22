@@ -90,8 +90,15 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, CrashEscHandlers) {
       browser(), ui::VKEY_ESCAPE, false, false, false, false));
 }
 
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_AURA)
+// TODO(erg): linux_aura bringup: http://crbug.com/163931
+#define MAYBE_FocusRestore DISABLED_FocusRestore
+#else
+#define MAYBE_FocusRestore FocusRestore
+#endif
+
 // Flaky because the test server fails to start? See: http://crbug.com/96594.
-IN_PROC_BROWSER_TEST_F(FindInPageTest, FocusRestore) {
+IN_PROC_BROWSER_TEST_F(FindInPageTest, MAYBE_FocusRestore) {
   ASSERT_TRUE(test_server()->Start());
 
   GURL url = test_server()->GetURL("title1.html");
@@ -138,7 +145,14 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, FocusRestore) {
   EXPECT_TRUE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_OMNIBOX));
 }
 
-IN_PROC_BROWSER_TEST_F(FindInPageTest, SelectionRestoreOnTabSwitch) {
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_AURA)
+// TODO(erg): linux_aura bringup: http://crbug.com/163931
+#define MAYBE_SelectionRestoreOnTabSwitch DISABLED_SelectionRestoreOnTabSwitch
+#else
+#define MAYBE_SelectionRestoreOnTabSwitch SelectionRestoreOnTabSwitch
+#endif
+
+IN_PROC_BROWSER_TEST_F(FindInPageTest, MAYBE_SelectionRestoreOnTabSwitch) {
   ASSERT_TRUE(test_server()->Start());
 
   // Make sure Chrome is in the foreground, otherwise sending input
@@ -209,8 +223,15 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, SelectionRestoreOnTabSwitch) {
   EXPECT_EQ(ASCIIToUTF16("de"), GetFindBarSelectedText());
 }
 
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_AURA)
+// TODO(erg): linux_aura bringup: http://crbug.com/163931
+#define MAYBE_FocusRestoreOnTabSwitch DISABLED_FocusRestoreOnTabSwitch
+#else
+#define MAYBE_FocusRestoreOnTabSwitch FocusRestoreOnTabSwitch
+#endif
+
 // Flaky because the test server fails to start? See: http://crbug.com/96594.
-IN_PROC_BROWSER_TEST_F(FindInPageTest, FocusRestoreOnTabSwitch) {
+IN_PROC_BROWSER_TEST_F(FindInPageTest, MAYBE_FocusRestoreOnTabSwitch) {
   ASSERT_TRUE(test_server()->Start());
 
   // First we navigate to our test page (tab A).
@@ -322,7 +343,8 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, PrepopulateRespectBlank) {
 
 // Flaky on Win. http://crbug.com/92467
 // Flaky on ChromeOS. http://crbug.com/118216
-#if defined(OS_WIN) || defined(OS_CHROMEOS)
+// Flaky on linux aura. http://crbug.com/163931
+#if defined(TOOLKIT_VIEWS)
 #define MAYBE_PasteWithoutTextChange DISABLED_PasteWithoutTextChange
 #else
 #define MAYBE_PasteWithoutTextChange PasteWithoutTextChange

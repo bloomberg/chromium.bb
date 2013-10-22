@@ -130,13 +130,20 @@ class ConstrainedWindowViewTest : public InProcessBrowserTest {
   }
 };
 
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_AURA)
+// TODO(erg): linux_aura bringup: http://crbug.com/163931
+#define MAYBE_FocusTest DISABLED_FocusTest
+#else
+#define MAYBE_FocusTest FocusTest
+#endif
+
 // Tests the following:
 //
 // *) Initially focused view in a constrained dialog receives focus reliably.
 //
 // *) Constrained windows that are queued don't register themselves as
 //    accelerator targets until they are displayed.
-IN_PROC_BROWSER_TEST_F(ConstrainedWindowViewTest, FocusTest) {
+IN_PROC_BROWSER_TEST_F(ConstrainedWindowViewTest, MAYBE_FocusTest) {
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(web_contents != NULL);
@@ -218,9 +225,16 @@ IN_PROC_BROWSER_TEST_F(ConstrainedWindowViewTest, FocusTest) {
   EXPECT_FALSE(web_contents_modal_dialog_manager->IsDialogActive());
 }
 
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_AURA)
+// TODO(erg): linux_aura bringup: http://crbug.com/163931
+#define MAYBE_TabCloseTest DISABLED_TabCloseTest
+#else
+#define MAYBE_TabCloseTest TabCloseTest
+#endif
+
 // Tests that the constrained window is closed properly when its tab is
 // closed.
-IN_PROC_BROWSER_TEST_F(ConstrainedWindowViewTest, TabCloseTest) {
+IN_PROC_BROWSER_TEST_F(ConstrainedWindowViewTest, MAYBE_TabCloseTest) {
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(web_contents != NULL);
@@ -248,9 +262,16 @@ IN_PROC_BROWSER_TEST_F(ConstrainedWindowViewTest, TabCloseTest) {
   EXPECT_TRUE(test_dialog->done());
 }
 
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_AURA)
+// TODO(erg): linux_aura bringup: http://crbug.com/163931
+#define MAYBE_TabSwitchTest DISABLED_TabSwitchTest
+#else
+#define MAYBE_TabSwitchTest TabSwitchTest
+#endif
+
 // Tests that the constrained window is hidden when an other tab is selected and
 // shown when its tab is selected again.
-IN_PROC_BROWSER_TEST_F(ConstrainedWindowViewTest, TabSwitchTest) {
+IN_PROC_BROWSER_TEST_F(ConstrainedWindowViewTest, MAYBE_TabSwitchTest) {
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(web_contents != NULL);
@@ -415,7 +436,8 @@ IN_PROC_BROWSER_TEST_F(ConstrainedWindowViewTest,
 
 // Fails flakily (once per 10-20 runs) on Win Aura only. http://crbug.com/177482
 // Also fails on CrOS.
-#if defined(OS_WIN) || defined(OS_CHROMEOS)
+// Also fails on linux_aura (http://crbug.com/163931)
+#if defined(TOOLKIT_VIEWS)
 #define MAYBE_EscapeCloseConstrainedWindow DISABLED_EscapeCloseConstrainedWindow
 #else
 #define MAYBE_EscapeCloseConstrainedWindow EscapeCloseConstrainedWindow

@@ -313,6 +313,43 @@
             'test/base/view_event_test_base.h',
           ],
         }],
+        ['OS=="linux" and use_aura==1 and chromeos==0', {
+          'sources!': [
+            # TODO(port): Disable all the interactive panel tests. All of this
+            # is currently very flaky.
+            'browser/ui/panels/base_panel_browser_test.cc',
+            'browser/ui/panels/base_panel_browser_test.h',
+            'browser/ui/panels/detached_panel_browsertest.cc',
+            'browser/ui/panels/docked_panel_browsertest.cc',
+            'browser/ui/panels/panel_browsertest.cc',
+            'browser/ui/panels/panel_drag_browsertest.cc',
+            'browser/ui/panels/panel_resize_browsertest.cc',
+            'browser/ui/panels/stacked_panel_browsertest.cc',
+            'browser/ui/views/panels/panel_view_browsertest.cc',
+            # TODO(port): These tests fail because they don't have a Screen,
+            # but expect one.
+            'browser/notifications/desktop_notifications_unittest.cc',
+            'browser/notifications/desktop_notifications_unittest.h',
+            'browser/notifications/notification_browsertest.cc',
+            # TODO(port): I have no idea about the crashes in here; there's
+            # nothing obviously wrong. It doesn't run on gtk today, either.
+            'browser/ui/views/button_dropdown_test.cc',
+            'browser/ui/views/tabs/tab_drag_controller_interactive_uitest.cc',
+            # TODO(port): Everything here times out. Attempts have been made to
+            # fix the individual failures, but each time I disable a test from
+            # these suites, it seems like one or another starts timing out too.
+            'browser/apps/web_view_interactive_browsertest.cc',
+            'browser/autofill/autofill_interactive_uitest.cc',
+            'browser/extensions/api/extension_action/browser_action_interactive_test.cc',
+            'browser/extensions/api/omnibox/omnibox_api_interactive_test.cc',
+            'browser/ui/omnibox/omnibox_view_browsertest.cc',
+            'browser/extensions/api/tabs/tabs_interactive_test.cc',
+            'browser/ui/search/instant_extended_interactive_uitest.cc',
+            'browser/ui/startup/startup_browser_creator_interactive_uitest.cc',
+            'browser/ui/views/keyboard_access_browsertest.cc',
+            'browser/ui/views/omnibox/omnibox_view_views_browsertest.cc',
+          ],
+        }],
         ['use_ash==1', {
           'sources': [
             '../ash/drag_drop/drag_drop_interactive_uitest.cc',

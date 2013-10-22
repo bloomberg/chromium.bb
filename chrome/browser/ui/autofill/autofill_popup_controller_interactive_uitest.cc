@@ -121,10 +121,18 @@ IN_PROC_BROWSER_TEST_F(AutofillPopupControllerBrowserTest,
 }
 #endif // !defined(OS_MACOSX)
 
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_AURA)
+// TODO(erg): linux_aura bringup: http://crbug.com/163931
+#define MAYBE_DeleteDelegateBeforePopupHidden \
+  DISABLED_DeleteDelegateBeforePopupHidden
+#else
+#define MAYBE_DeleteDelegateBeforePopupHidden DeleteDelegateBeforePopupHidden
+#endif
+
 // This test checks that the browser doesn't crash if the delegate is deleted
 // before the popup is hidden.
 IN_PROC_BROWSER_TEST_F(AutofillPopupControllerBrowserTest,
-                       DeleteDelegateBeforePopupHidden){
+                       MAYBE_DeleteDelegateBeforePopupHidden){
   GenerateTestAutofillPopup(autofill_external_delegate_.get());
 
   // Delete the external delegate here so that is gets deleted before popup is

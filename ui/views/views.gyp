@@ -632,6 +632,8 @@
         'test/test_views_delegate.h',
         'test/test_widget_observer.cc',
         'test/test_widget_observer.h',
+        'test/ui_controls_factory_desktop_aurax11.cc',
+        'test/ui_controls_factory_desktop_aurax11.h',
         'test/views_test_base.cc',
         'test/views_test_base.h',
         'test/widget_test.cc',
@@ -639,6 +641,12 @@
         'widget/root_view_test_helper.h',
       ],
       'conditions': [
+        ['chromeos==1', {
+          'sources!': [
+            'test/ui_controls_factory_desktop_aurax11.cc',
+            'test/ui_controls_factory_desktop_aurax11.h',
+          ],
+        }],
         ['use_aura==1', {
           'dependencies': [
             '../aura/aura.gyp:aura_test_support',
