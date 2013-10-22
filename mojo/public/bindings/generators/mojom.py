@@ -45,7 +45,7 @@ PRIMITIVES = [
   FLOAT,
   DOUBLE,
   STRING,
-  # TODO(davemoore): Add HANDLE.
+  // TODO(davemoore): Add HANDLE.
 ]
 
 

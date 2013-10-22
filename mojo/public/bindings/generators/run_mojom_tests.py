@@ -24,7 +24,6 @@ def main(args):
   errors = 0
   errors += TestMojom('mojom_tests.py', ['--test'])
   errors += TestMojom('mojom_data_tests.py', ['--test'])
-  errors += TestMojom('mojom_pack_tests.py', ['--test'])
 
   if errors:
     print '\nFailed tests.'
