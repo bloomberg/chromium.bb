@@ -161,7 +161,7 @@ interface TestObjectPython {
     [TreatNullAs=NullString] attribute DOMString treatNullAsNullStringStringAttribute;
     [TreatReturnedNullStringAs=Null] attribute DOMString treatReturnedNullStringAsNullStringAttribute;
     [TreatReturnedNullStringAs=Undefined] attribute DOMString treatReturnedNullStringAsUndefinedStringAttribute;
-    [Reflect, URL] readonly attribute DOMString urlReadonlyStringAttribute;
-    [Reflect=ReflectUrlAttribute, URL] readonly attribute DOMString urlReadonlyStringAttribute;
+    [Reflect, URL] attribute DOMString urlStringAttribute;
+    [Reflect=ReflectUrlAttribute, URL] attribute DOMString urlStringAttribute;
     [Unforgeable] attribute long unforgeableLongAttribute;
 };
