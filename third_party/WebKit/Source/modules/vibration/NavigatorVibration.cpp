@@ -48,30 +48,30 @@ NavigatorVibration::~NavigatorVibration()
 
 bool NavigatorVibration::vibrate(const VibrationPattern& pattern)
 {
-    size_t length = pattern.size();
+    VibrationPattern sanitized = pattern;
+    size_t length = sanitized.size();
 
-    // If the pattern is too long then abort.
-    if (length > kVibrationPatternLengthMax)
-        return false;
-
-    // If any pattern entry is too long then abort.
-    for (size_t i = 0; i < length; ++i) {
-        if (pattern[i] > WebKit::kVibrationDurationMax)
-            return false;
+    // If the pattern is too long then truncate it.
+    if (length > kVibrationPatternLengthMax) {
+        sanitized.shrink(kVibrationPatternLengthMax);
+        length = kVibrationPatternLengthMax;
     }
 
-    // Cancelling clears the pattern so do this before setting the new pattern.
+    // If any pattern entry is too long then truncate it.
+    for (size_t i = 0; i < length; ++i) {
+        if (sanitized[i] > WebKit::kVibrationDurationMax)
+            sanitized[i] = WebKit::kVibrationDurationMax;
+    }
+
+    // If the last item in the pattern is a pause then discard it.
+    if (length && !(length % 2))
+        sanitized.removeLast();
+
+    // Cancelling clears the stored pattern so do it before setting the new one.
     if (m_isVibrating)
         cancelVibration();
 
-    // If the last item in the pattern is a pause then discard it.
-    if (length && !(length % 2)) {
-        VibrationPattern tempPattern = pattern;
-        tempPattern.removeLast();
-        m_pattern = tempPattern;
-    } else {
-        m_pattern = pattern;
-    }
+    m_pattern = sanitized;
 
     if (m_timerStart.isActive())
         m_timerStart.stop();
