@@ -5,13 +5,8 @@
 #ifndef COMPONENTS_DOM_DISTILLER_CORE_ARTICLE_ENTRY_H_
 #define COMPONENTS_DOM_DISTILLER_CORE_ARTICLE_ENTRY_H_
 
-#include "sync/api/sync_data.h"
 #include "sync/protocol/article_specifics.pb.h"
 #include "sync/protocol/sync.pb.h"
-
-namespace syncer {
-class SyncChange;
-}
 
 namespace dom_distiller {
 
@@ -24,11 +19,6 @@ bool AreEntriesEqual(const ArticleEntry& left, const ArticleEntry& right);
 
 sync_pb::EntitySpecifics SpecificsFromEntry(const ArticleEntry& entry);
 ArticleEntry EntryFromSpecifics(const sync_pb::EntitySpecifics& specifics);
-
-ArticleEntry GetEntryFromChange(const syncer::SyncChange& change);
-std::string GetEntryIdFromSyncData(const syncer::SyncData& data);
-syncer::SyncData CreateLocalData(const ArticleEntry& entry);
-
 
 }  // namespace dom_distiller
 

@@ -34,19 +34,10 @@ namespace {
 
 const ModelType kDomDistillerModelType = syncer::ARTICLES;
 
-typedef base::hash_map<std::string, ArticleEntry> EntryMap;
+typedef DomDistillerStore::EntryMap EntryMap;
 
 void AddEntry(const ArticleEntry& e, EntryMap* map) {
   (*map)[e.entry_id()] = e;
-}
-
-std::vector<ArticleEntry> EntryMapToList(const EntryMap& entries) {
-  std::vector<ArticleEntry> entry_list;
-  for (EntryMap::const_iterator it = entries.begin(); it != entries.end();
-       ++it) {
-    entry_list.push_back(it->second);
-  }
-  return entry_list;
 }
 
 class FakeDB : public DomDistillerDatabaseInterface {
@@ -143,7 +134,7 @@ class FakeSyncChangeProcessor : public syncer::SyncChangeProcessor {
     for (SyncChangeList::const_iterator it = changes.begin();
          it != changes.end();
          ++it) {
-      AddEntry(GetEntryFromChange(*it), model_);
+      AddEntry(DomDistillerStore::GetEntryFromChange(*it), model_);
     }
     return SyncError();
   }
@@ -212,7 +203,7 @@ class DomDistillerStoreTest : public testing::Test {
     fake_db_ = new FakeDB(&db_model_);
     store_.reset(new DomDistillerStore(
         scoped_ptr<DomDistillerDatabaseInterface>(fake_db_),
-        EntryMapToList(store_model_),
+        store_model_,
         db_dir_));
   }
 
@@ -457,7 +448,7 @@ TEST_F(DomDistillerStoreTest, TestSyncMergeWithSecondDomDistillerStore) {
   FakeDB* other_fake_db = new FakeDB(&other_db_model);
   scoped_ptr<DomDistillerStore> owned_other_store(new DomDistillerStore(
       scoped_ptr<DomDistillerDatabaseInterface>(other_fake_db),
-      std::vector<ArticleEntry>(),
+      EntryMap(),
       base::FilePath(FILE_PATH_LITERAL("/fake/other/path"))));
   DomDistillerStore* other_store = owned_other_store.get();
   other_fake_db->InitCallback(true);

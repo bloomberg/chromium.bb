@@ -82,8 +82,6 @@
             'dom_distiller/core/dom_distiller_constants.h',
             'dom_distiller/core/dom_distiller_database.cc',
             'dom_distiller/core/dom_distiller_database.h',
-            'dom_distiller/core/dom_distiller_model.cc',
-            'dom_distiller/core/dom_distiller_model.h',
             'dom_distiller/core/dom_distiller_service.cc',
             'dom_distiller/core/dom_distiller_service.h',
             'dom_distiller/core/dom_distiller_store.cc',
