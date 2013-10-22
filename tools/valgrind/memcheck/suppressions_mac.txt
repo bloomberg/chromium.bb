@@ -1317,32 +1317,6 @@
    fun:-[NSTrackableOutlineView dealloc]
 }
 {
-   bug_79655a
-   Memcheck:Unaddressable
-   ...
-   fun:dlopen
-   fun:_ZN20IOSurfaceSupportImplC2Ev
-   fun:_ZN20IOSurfaceSupportImplC1Ev
-   fun:_ZN22DefaultSingletonTraitsI20IOSurfaceSupportImplE3NewEv
-   fun:_ZN9SingletonI20IOSurfaceSupportImpl22DefaultSingletonTraitsIS0_ES0_E3getEv
-   fun:_ZN20IOSurfaceSupportImpl11GetInstanceEv
-   fun:_ZN16IOSurfaceSupport10InitializeEv
-   fun:_ZN15WebContentsImpl14GetWebkitPrefsEv
-}
-{
-   bug_79655b
-   Memcheck:Leak
-   ...
-   fun:dlopen
-   fun:_ZN20IOSurfaceSupportImplC2Ev
-   fun:_ZN20IOSurfaceSupportImplC1Ev
-   fun:_ZN22DefaultSingletonTraitsI20IOSurfaceSupportImplE3NewEv
-   fun:_ZN9SingletonI20IOSurfaceSupportImpl22DefaultSingletonTraitsIS0_ES0_E3getEv
-   fun:_ZN20IOSurfaceSupportImpl11GetInstanceEv
-   fun:_ZN16IOSurfaceSupport10InitializeEv
-   fun:_ZN15WebContentsImpl14GetWebkitPrefsEv
-}
-{
    bug_79994
    Memcheck:Uninitialized
    ...
