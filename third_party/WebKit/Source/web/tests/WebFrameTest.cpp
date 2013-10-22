@@ -499,7 +499,7 @@ TEST_F(WebFrameCSSCallbackTest, DISABLED_CatchesAttributeChange)
     EXPECT_THAT(matchedSelectors(), testing::ElementsAre("span[attr=\"value\"]"));
 }
 
-TEST_F(WebFrameCSSCallbackTest, DisplayNone)
+TEST_F(WebFrameCSSCallbackTest, DISABLED_DisplayNone)
 {
     loadHTML("<div style='display:none'><span></span></div>");
 
