@@ -825,13 +825,6 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kDisableInfobarForProtectedMediaIdentifier)
   },
   {
-    "enable-mediadrm",
-    IDS_FLAGS_ENABLE_MEDIADRM_NAME,
-    IDS_FLAGS_ENABLE_MEDIADRM_DESCRIPTION,
-    kOsAndroid,
-    SINGLE_VALUE_TYPE(switches::kEnableMediaDrm)
-  },
-  {
     "mediadrm-enable-non-compositing",
     IDS_FLAGS_MEDIADRM_ENABLE_NON_COMPOSITING_NAME,
     IDS_FLAGS_MEDIADRM_ENABLE_NON_COMPOSITING_DESCRIPTION,

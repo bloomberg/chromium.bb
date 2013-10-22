@@ -1058,7 +1058,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kDisableWebRTC,
     switches::kEnableSpeechRecognition,
     switches::kHideScrollbars,
-    switches::kEnableMediaDrm,
     switches::kMediaDrmEnableNonCompositing,
     switches::kNetworkCountryIso,
 #endif

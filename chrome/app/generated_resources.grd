@@ -6265,12 +6265,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_FLAGS_DISABLE_INFOBAR_FOR_PROTECTED_MEDIA_IDENTIFIER_DESCRIPTION" desc="Description for the flag to disable infobar popup for protected media identifier.">
           Disable infobar popup by default when accessing the protected media identifier.
         </message>
-        <message name="IDS_FLAGS_ENABLE_MEDIADRM_NAME" desc="Title for the flag to enable MediaDrm for encrypted content.">
-          Enable MediaDrm.
-        </message>
-        <message name="IDS_FLAGS_ENABLE_MEDIADRM_DESCRIPTION" desc="Description for the flag to enable MediaDrm for encrypted content.">
-          Enable MediaDrm by default for Encrypted Media Extensions.
-        </message>
         <message name="IDS_FLAGS_MEDIADRM_ENABLE_NON_COMPOSITING_NAME" desc="Title for the flag to enable non-conmpositing decoding in MediaDrm for encrypted content.">
           Enable non-compositing decoding.
         </message>
