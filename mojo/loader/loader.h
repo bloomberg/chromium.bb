@@ -17,6 +17,7 @@ namespace loader {
 class Loader {
  public:
   Loader(base::SingleThreadTaskRunner* network_runner,
+         base::SingleThreadTaskRunner* file_runner,
          base::FilePath base_path);
   ~Loader();
 

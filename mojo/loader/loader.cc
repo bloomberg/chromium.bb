@@ -40,7 +40,9 @@ JobImpl::~JobImpl() {
 }
 
 void JobImpl::OnURLFetchComplete(const net::URLFetcher* source) {
-  delegate_->DidCompleteLoad(source->GetURL());
+  base::FilePath app_path;
+  source->GetResponseAsFilePath(true, &app_path);
+  delegate_->DidCompleteLoad(source->GetURL(), app_path);
 }
 
 scoped_ptr<base::Thread> CreateIOThread(const char* name) {
@@ -55,13 +57,16 @@ scoped_ptr<base::Thread> CreateIOThread(const char* name) {
 
 class Loader::Data {
  public:
+  scoped_refptr<base::SingleThreadTaskRunner> file_runner;
   scoped_ptr<base::Thread> cache_thread;
   scoped_refptr<URLRequestContextGetter> url_request_context_getter;
 };
 
 Loader::Loader(base::SingleThreadTaskRunner* network_runner,
+               base::SingleThreadTaskRunner* file_runner,
                base::FilePath base_path)
     : data_(new Data()) {
+  data_->file_runner = file_runner;
   data_->cache_thread = CreateIOThread("cache_thread");
   data_->url_request_context_getter = new URLRequestContextGetter(
       base_path, network_runner, data_->cache_thread->message_loop_proxy());
@@ -73,6 +78,7 @@ Loader::~Loader() {
 scoped_ptr<Job> Loader::Load(const GURL& app_url, Job::Delegate* delegate) {
   JobImpl* job = new JobImpl(app_url, delegate);
   job->fetcher()->SetRequestContext(data_->url_request_context_getter.get());
+  job->fetcher()->SaveResponseToTemporaryFile(data_->file_runner.get());
   job->fetcher()->Start();
   return make_scoped_ptr(static_cast<Job*>(job));
 }

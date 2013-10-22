@@ -7,6 +7,10 @@
 
 #include "url/gurl.h"
 
+namespace base {
+class FilePath;
+}
+
 namespace mojo {
 namespace loader {
 
@@ -15,7 +19,8 @@ class Job {
  public:
   class Delegate {
    public:
-    virtual void DidCompleteLoad(const GURL& app_url) = 0;
+    virtual void DidCompleteLoad(const GURL& app_url,
+                                 const base::FilePath& app_path) = 0;
 
    protected:
     virtual ~Delegate();

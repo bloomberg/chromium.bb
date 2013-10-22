@@ -12,10 +12,12 @@ namespace shell {
 
 TaskRunners::TaskRunners(base::SingleThreadTaskRunner* ui_runner)
     : ui_runner_(ui_runner),
-      io_thread_(new base::Thread("io_thread")) {
+      io_thread_(new base::Thread("io_thread")),
+      file_thread_(new base::Thread("file_thread")) {
   base::Thread::Options options;
   options.message_loop_type = base::MessageLoop::TYPE_IO;
   io_thread_->StartWithOptions(options);
+  file_thread_->Start();
 }
 
 TaskRunners::~TaskRunners() {

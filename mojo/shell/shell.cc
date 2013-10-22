@@ -7,11 +7,13 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
+#include "mojo/loader/loader.h"
 #include "mojo/shell/app_container.h"
 #include "mojo/shell/storage.h"
 #include "mojo/shell/switches.h"
 #include "mojo/shell/task_runners.h"
 #include "mojo/system/core_impl.h"
+#include "url/gurl.h"
 
 int main(int argc, char** argv) {
   base::AtExitManager at_exit;
@@ -31,9 +33,17 @@ int main(int argc, char** argv) {
     return 0;
   }
 
+  mojo::loader::Loader loader(task_runners.io_runner(),
+                              task_runners.file_runner(),
+                              storage.profile_path());
+
   scoped_ptr<mojo::shell::AppContainer> container(
       new mojo::shell::AppContainer);
-  container->LaunchApp(command_line.GetSwitchValuePath(switches::kApp));
+
+  scoped_ptr<mojo::loader::Job> job = loader.Load(
+    GURL(command_line.GetSwitchValueASCII(switches::kApp)),
+    container.get());
+
   message_loop.Run();
   return 0;
 }

@@ -26,9 +26,14 @@ class TaskRunners {
     return io_thread_->message_loop_proxy();
   }
 
+  base::SingleThreadTaskRunner* file_runner() const {
+    return file_thread_->message_loop_proxy();
+  }
+
  private:
   scoped_refptr<base::SingleThreadTaskRunner> ui_runner_;
   scoped_ptr<base::Thread> io_thread_;
+  scoped_ptr<base::Thread> file_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(TaskRunners);
 };

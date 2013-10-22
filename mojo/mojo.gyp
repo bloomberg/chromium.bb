@@ -136,6 +136,7 @@
       'dependencies': [
         '../base/base.gyp:base',
         '../net/net.gyp:net',
+        '../url/url.gyp:url_lib',
         'mojo_system',
       ],
       'sources': [

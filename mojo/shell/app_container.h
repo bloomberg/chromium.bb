@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "mojo/loader/job.h"
 #include "mojo/public/system/core.h"
 
 namespace base {
@@ -19,14 +20,16 @@ namespace mojo {
 namespace shell {
 
 // A container class that runs an app on its own thread.
-class AppContainer {
+class AppContainer : public loader::Job::Delegate {
  public:
   AppContainer();
-  ~AppContainer();
-
-  void LaunchApp(const base::FilePath& app_path);
+  virtual ~AppContainer();
 
  private:
+  // From loader::Job::Delegate
+  virtual void DidCompleteLoad(const GURL& app_url,
+                               const base::FilePath& app_path) OVERRIDE;
+
   void AppCompleted();
 
   scoped_ptr<base::Thread> thread_;

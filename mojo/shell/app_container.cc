@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/callback_forward.h"
+#include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/native_library.h"
 #include "base/thread_task_runner_handle.h"
@@ -45,6 +46,7 @@ void LaunchAppOnThread(
 
 completed:
   base::UnloadNativeLibrary(app_library);
+  base::DeleteFile(app_path, false);
   Close(app_handle);
 }
 
@@ -55,7 +57,8 @@ AppContainer::AppContainer()
 AppContainer::~AppContainer() {
 }
 
-void AppContainer::LaunchApp(const base::FilePath& app_path) {
+void AppContainer::DidCompleteLoad(const GURL& app_url,
+                                   const base::FilePath& app_path) {
   Handle app_handle;
   MojoResult result = CreateMessagePipe(&shell_handle_, &app_handle);
   if (result < MOJO_RESULT_OK) {
