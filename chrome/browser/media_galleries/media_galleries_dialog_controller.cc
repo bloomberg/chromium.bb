@@ -106,8 +106,6 @@ string16 MediaGalleriesDialogController::GetSubtext() const {
   int id;
   if (has_read_permission && has_copy_to_permission)
     id = IDS_MEDIA_GALLERIES_DIALOG_SUBTEXT_READ_WRITE;
-  else if (has_copy_to_permission)
-    id = IDS_MEDIA_GALLERIES_DIALOG_SUBTEXT_WRITE_ONLY;
   else
     id = IDS_MEDIA_GALLERIES_DIALOG_SUBTEXT_READ_ONLY;
 
