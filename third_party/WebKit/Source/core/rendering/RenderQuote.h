@@ -60,14 +60,7 @@ private:
     String m_text;
 };
 
-inline RenderQuote* toRenderQuote(RenderObject* object)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!object || object->isQuote());
-    return static_cast<RenderQuote*>(object);
-}
-
-// This will catch anyone doing an unnecessary cast.
-void toRenderQuote(const RenderQuote*);
+DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderQuote, isQuote());
 
 } // namespace WebCore
 

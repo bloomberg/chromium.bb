@@ -185,33 +185,7 @@ protected:
     friend class MarginInfo;
 };
 
-inline RenderBlockFlow& toRenderBlockFlow(RenderObject& object)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(object.isRenderBlockFlow());
-    return static_cast<RenderBlockFlow&>(object);
-}
-
-inline const RenderBlockFlow& toRenderBlockFlow(const RenderObject& object)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(object.isRenderBlockFlow());
-    return static_cast<const RenderBlockFlow&>(object);
-}
-
-inline RenderBlockFlow* toRenderBlockFlow(RenderObject* object)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!object || object->isRenderBlockFlow());
-    return static_cast<RenderBlockFlow*>(object);
-}
-
-inline const RenderBlockFlow* toRenderBlockFlow(const RenderObject* object)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!object || object->isRenderBlockFlow());
-    return static_cast<const RenderBlockFlow*>(object);
-}
-
-// This will catch anyone doing an unnecessary cast.
-void toRenderBlockFlow(const RenderBlockFlow*);
-void toRenderBlockFlow(const RenderBlockFlow&);
+DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderBlockFlow, isRenderBlockFlow());
 
 } // namespace WebCore
 

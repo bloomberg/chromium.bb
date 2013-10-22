@@ -105,20 +105,7 @@ private:
     EMarqueeDirection m_direction : 4;
 };
 
-inline RenderMarquee* toRenderMarquee(RenderObject* renderer)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!renderer || renderer->isMarquee());
-    return static_cast<RenderMarquee*>(renderer);
-}
-
-inline const RenderMarquee* toRenderMarquee(const RenderObject* renderer)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!renderer || renderer->isMarquee());
-    return static_cast<const RenderMarquee*>(renderer);
-}
-
-// Catch unneeded cast.
-void toRenderMarquee(const RenderMarquee*);
+DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderMarquee, isMarquee());
 
 } // namespace WebCore
 

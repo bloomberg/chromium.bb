@@ -141,14 +141,7 @@ private:
     bool m_popupIsVisible;
 };
 
-inline RenderMenuList* toRenderMenuList(RenderObject* object)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!object || object->isMenuList());
-    return static_cast<RenderMenuList*>(object);
-}
-
-// This will catch anyone doing an unnecessary cast.
-void toRenderMenuList(const RenderMenuList*);
+DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderMenuList, isMenuList());
 
 }
 

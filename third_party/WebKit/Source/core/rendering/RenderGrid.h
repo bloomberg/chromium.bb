@@ -157,20 +157,7 @@ private:
     bool m_gridItemOverflowGridArea;
 };
 
-inline RenderGrid* toRenderGrid(RenderObject* object)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!object || object->isRenderGrid());
-    return static_cast<RenderGrid*>(object);
-}
-
-inline const RenderGrid* toRenderGrid(const RenderObject* object)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!object || object->isRenderGrid());
-    return static_cast<const RenderGrid*>(object);
-}
-
-// Catch unneeded cast.
-void toRenderGrid(const RenderGrid*);
+DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderGrid, isRenderGrid());
 
 } // namespace WebCore
 

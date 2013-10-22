@@ -49,14 +49,7 @@ private:
     double valueRatio() const;
 };
 
-inline RenderMeter* toRenderMeter(RenderObject* object)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!object || object->isMeter());
-    return static_cast<RenderMeter*>(object);
-}
-
-// This will catch anyone doing an unnecessary cast.
-void toRenderMeter(const RenderMeter*);
+DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderMeter, isMeter());
 
 } // namespace WebCore
 

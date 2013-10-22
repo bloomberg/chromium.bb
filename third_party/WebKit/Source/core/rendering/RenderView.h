@@ -309,20 +309,7 @@ private:
     unsigned m_renderCounterCount;
 };
 
-inline RenderView* toRenderView(RenderObject* object)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!object || object->isRenderView());
-    return static_cast<RenderView*>(object);
-}
-
-inline const RenderView* toRenderView(const RenderObject* object)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!object || object->isRenderView());
-    return static_cast<const RenderView*>(object);
-}
-
-// This will catch anyone doing an unnecessary cast.
-void toRenderView(const RenderView*);
+DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderView, isRenderView());
 
 // Stack-based class to assist with LayoutState push/pop
 class LayoutStateMaintainer {

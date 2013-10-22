@@ -720,20 +720,7 @@ private:
     static bool s_hadOverflowClip;
 };
 
-inline RenderBox* toRenderBox(RenderObject* object)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!object || object->isBox());
-    return static_cast<RenderBox*>(object);
-}
-
-inline const RenderBox* toRenderBox(const RenderObject* object)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!object || object->isBox());
-    return static_cast<const RenderBox*>(object);
-}
-
-// This will catch anyone doing an unnecessary cast.
-void toRenderBox(const RenderBox*);
+DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderBox, isBox());
 
 inline RenderBox* RenderBox::previousSiblingBox() const
 {

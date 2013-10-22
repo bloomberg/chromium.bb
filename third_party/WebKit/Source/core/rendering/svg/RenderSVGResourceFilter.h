@@ -89,17 +89,7 @@ private:
     FilterMap m_filter;
 };
 
-inline RenderSVGResourceFilter* toRenderSVGResourceFilter(RenderObject* object)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!object || object->isSVGResourceFilter());
-    return static_cast<RenderSVGResourceFilter*>(object);
-}
-
-inline RenderSVGResourceFilter* toRenderSVGResourceFilter(RenderSVGResourceContainer* resource)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!resource || resource->resourceType() == FilterResourceType);
-    return static_cast<RenderSVGResourceFilter*>(resource);
-}
+DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderSVGResourceFilter, isSVGResourceFilter());
 
 }
 

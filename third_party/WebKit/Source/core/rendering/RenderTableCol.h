@@ -103,20 +103,7 @@ private:
     unsigned m_span;
 };
 
-inline RenderTableCol* toRenderTableCol(RenderObject* object)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!object || object->isRenderTableCol());
-    return static_cast<RenderTableCol*>(object);
-}
-
-inline const RenderTableCol* toRenderTableCol(const RenderObject* object)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!object || object->isRenderTableCol());
-    return static_cast<const RenderTableCol*>(object);
-}
-
-// This will catch anyone doing an unnecessary cast.
-void toRenderTableCol(const RenderTableCol*);
+DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderTableCol, isRenderTableCol());
 
 }
 

@@ -42,14 +42,7 @@ private:
     Path m_layoutPath;
 };
 
-inline RenderSVGTextPath* toRenderSVGTextPath(RenderObject* object)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!object || object->isSVGTextPath());
-    return static_cast<RenderSVGTextPath*>(object);
-}
-
-// This will catch anyone doing an unnecessary cast.
-void toRenderSVGTextPath(const RenderSVGTextPath*);
+DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderSVGTextPath, isSVGTextPath());
 
 }
 

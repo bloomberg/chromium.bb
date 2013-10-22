@@ -52,14 +52,7 @@ private:
     SliderThumbElement* sliderThumbElement() const;
 };
 
-inline RenderSlider* toRenderSlider(RenderObject* object)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!object || object->isSlider());
-    return static_cast<RenderSlider*>(object);
-}
-
-// This will catch anyone doing an unnecessary cast.
-void toRenderSlider(const RenderSlider*);
+DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderSlider, isSlider());
 
 } // namespace WebCore
 

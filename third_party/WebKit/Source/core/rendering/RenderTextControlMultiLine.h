@@ -48,14 +48,7 @@ private:
     virtual RenderObject* layoutSpecialExcludedChild(bool relayoutChildren, SubtreeLayoutScope&);
 };
 
-inline RenderTextControlMultiLine* toRenderTextControlMultiLine(RenderObject* object)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!object || object->isTextArea());
-    return static_cast<RenderTextControlMultiLine*>(object);
-}
-
-// This will catch anyone doing an unnecessary cast.
-void toRenderTextControlMultiLine(const RenderTextControlMultiLine*);
+DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderTextControlMultiLine, isTextArea());
 
 }
 

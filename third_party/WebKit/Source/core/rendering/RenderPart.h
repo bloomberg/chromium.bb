@@ -51,14 +51,7 @@ private:
     virtual const char* renderName() const { return "RenderPart"; }
 };
 
-inline RenderPart* toRenderPart(RenderObject* object)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!object || object->isRenderPart());
-    return static_cast<RenderPart*>(object);
-}
-
-// This will catch anyone doing an unnecessary cast.
-void toRenderPart(const RenderPart*);
+DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderPart, isRenderPart());
 
 }
 

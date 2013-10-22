@@ -45,14 +45,7 @@ private:
     virtual void viewCleared();
 };
 
-inline RenderFrame* toRenderFrame(RenderObject* object)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!object || object->isFrame());
-    return static_cast<RenderFrame*>(object);
-}
-
-// This will catch anyone doing an unnecessary cast.
-void toRenderFrame(const RenderFrame*);
+DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderFrame, isFrame());
 
 } // namespace WebCore
 

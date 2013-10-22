@@ -332,20 +332,7 @@ private:
                             Color, EBorderStyle, BackgroundBleedAvoidance, bool includeLogicalLeftEdge, bool includeLogicalRightEdge);
 };
 
-inline RenderBoxModelObject* toRenderBoxModelObject(RenderObject* object)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!object || object->isBoxModelObject());
-    return static_cast<RenderBoxModelObject*>(object);
-}
-
-inline const RenderBoxModelObject* toRenderBoxModelObject(const RenderObject* object)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!object || object->isBoxModelObject());
-    return static_cast<const RenderBoxModelObject*>(object);
-}
-
-// This will catch anyone doing an unnecessary cast.
-void toRenderBoxModelObject(const RenderBoxModelObject*);
+DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderBoxModelObject, isBoxModelObject());
 
 } // namespace WebCore
 

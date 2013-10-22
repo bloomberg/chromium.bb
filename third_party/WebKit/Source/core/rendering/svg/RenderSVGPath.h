@@ -53,11 +53,7 @@ private:
     Vector<FloatPoint> m_zeroLengthLinecapLocations;
 };
 
-inline RenderSVGPath* toRenderSVGPath(RenderObject* object)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!object || object->isSVGPath());
-    return static_cast<RenderSVGPath*>(object);
-}
+DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderSVGPath, isSVGPath());
 
 }
 

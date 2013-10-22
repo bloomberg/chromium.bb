@@ -44,14 +44,7 @@ private:
     Element* cancelButtonElement() const;
 };
 
-inline RenderSearchField* toRenderSearchField(RenderObject* object)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!object || object->isTextField());
-    return static_cast<RenderSearchField*>(object);
-}
-
-// This will catch anyone doing an unnecessary cast.
-void toRenderSearchField(const RenderSearchField*);
+DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderSearchField, isTextField());
 
 }
 

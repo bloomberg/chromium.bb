@@ -96,20 +96,7 @@ Renderer* getRenderSVGResourceById(Document& document, const AtomicString& id)
     return 0;
 }
 
-inline RenderSVGResourceContainer* toRenderSVGResourceContainer(RenderObject* object)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!object || object->isSVGResourceContainer());
-    return static_cast<RenderSVGResourceContainer*>(object);
-}
-
-inline const RenderSVGResourceContainer* toRenderSVGResourceContainer(const RenderObject* object)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!object || object->isSVGResourceContainer());
-    return static_cast<const RenderSVGResourceContainer*>(object);
-}
-
-// This will catch anyone doing an unnecessary cast.
-void toRenderSVGResourceContainer(const RenderSVGResourceContainer*);
+DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderSVGResourceContainer, isSVGResourceContainer());
 
 }
 

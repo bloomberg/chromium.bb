@@ -86,20 +86,7 @@ private:
     RenderListItem* m_listItem;
 };
 
-inline RenderListMarker* toRenderListMarker(RenderObject* object)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!object || object->isListMarker());
-    return static_cast<RenderListMarker*>(object);
-}
-
-inline const RenderListMarker* toRenderListMarker(const RenderObject* object)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!object || object->isListMarker());
-    return static_cast<const RenderListMarker*>(object);
-}
-
-// This will catch anyone doing an unnecessary cast.
-void toRenderListMarker(const RenderListMarker*);
+DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderListMarker, isListMarker());
 
 } // namespace WebCore
 

@@ -77,20 +77,7 @@ private:
     static bool s_layerWasSelfPainting;
 };
 
-inline RenderLayerModelObject* toRenderLayerModelObject(RenderObject* object)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!object || object->isLayerModelObject());
-    return static_cast<RenderLayerModelObject*>(object);
-}
-
-inline const RenderLayerModelObject* toRenderLayerModelObject(const RenderObject* object)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!object || object->isLayerModelObject());
-    return static_cast<const RenderLayerModelObject*>(object);
-}
-
-// This will catch anyone doing an unnecessary cast.
-void toRenderLayerModelObject(const RenderLayerModelObject*);
+DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderLayerModelObject, isLayerModelObject());
 
 } // namespace WebCore
 

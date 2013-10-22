@@ -291,20 +291,7 @@ private:
 
 };
 
-inline RenderFlowThread* toRenderFlowThread(RenderObject* object)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!object || object->isRenderFlowThread());
-    return static_cast<RenderFlowThread*>(object);
-}
-
-inline const RenderFlowThread* toRenderFlowThread(const RenderObject* object)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!object || object->isRenderFlowThread());
-    return static_cast<const RenderFlowThread*>(object);
-}
-
-// This will catch anyone doing an unnecessary cast.
-void toRenderFlowThread(const RenderFlowThread*);
+DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderFlowThread, isRenderFlowThread());
 
 class CurrentRenderFlowThreadMaintainer {
     WTF_MAKE_NONCOPYABLE(CurrentRenderFlowThreadMaintainer);

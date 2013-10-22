@@ -84,14 +84,7 @@ private:
     LayoutUnit m_desiredInnerTextLogicalHeight;
 };
 
-inline RenderTextControlSingleLine* toRenderTextControlSingleLine(RenderObject* object)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!object || object->isTextField());
-    return static_cast<RenderTextControlSingleLine*>(object);
-}
-
-// This will catch anyone doing an unnecessary cast.
-void toRenderTextControlSingleLine(const RenderTextControlSingleLine*);
+DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderTextControlSingleLine, isTextField());
 
 // ----------------------------
 

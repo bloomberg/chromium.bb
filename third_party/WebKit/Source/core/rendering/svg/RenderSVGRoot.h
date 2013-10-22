@@ -119,20 +119,7 @@ private:
     bool m_needsBoundariesOrTransformUpdate : 1;
 };
 
-inline RenderSVGRoot* toRenderSVGRoot(RenderObject* object)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!object || object->isSVGRoot());
-    return static_cast<RenderSVGRoot*>(object);
-}
-
-inline const RenderSVGRoot* toRenderSVGRoot(const RenderObject* object)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!object || object->isSVGRoot());
-    return static_cast<const RenderSVGRoot*>(object);
-}
-
-// This will catch anyone doing an unnecessary cast.
-void toRenderSVGRoot(const RenderSVGRoot*);
+DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderSVGRoot, isSVGRoot());
 
 } // namespace WebCore
 

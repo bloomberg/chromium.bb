@@ -1383,6 +1383,9 @@ inline void adjustFloatRectForAbsoluteZoom(FloatRect& rect, RenderObject* render
         rect.scale(1 / zoom, 1 / zoom);
 }
 
+#define DEFINE_RENDER_OBJECT_TYPE_CASTS(thisType, predicate) \
+    DEFINE_TYPE_CASTS(thisType, RenderObject, object, object->predicate, object.predicate)
+
 } // namespace WebCore
 
 #ifndef NDEBUG

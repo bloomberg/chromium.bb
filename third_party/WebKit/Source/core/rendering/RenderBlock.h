@@ -879,20 +879,7 @@ private:
     static bool s_canPropagateFloatIntoSibling;
 };
 
-inline RenderBlock* toRenderBlock(RenderObject* object)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!object || object->isRenderBlock());
-    return static_cast<RenderBlock*>(object);
-}
-
-inline const RenderBlock* toRenderBlock(const RenderObject* object)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!object || object->isRenderBlock());
-    return static_cast<const RenderBlock*>(object);
-}
-
-// This will catch anyone doing an unnecessary cast.
-void toRenderBlock(const RenderBlock*);
+DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderBlock, isRenderBlock());
 
 } // namespace WebCore
 

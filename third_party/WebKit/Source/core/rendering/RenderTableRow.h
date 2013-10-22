@@ -115,20 +115,7 @@ private:
     unsigned m_rowIndex : 31;
 };
 
-inline RenderTableRow* toRenderTableRow(RenderObject* object)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!object || object->isTableRow());
-    return static_cast<RenderTableRow*>(object);
-}
-
-inline const RenderTableRow* toRenderTableRow(const RenderObject* object)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!object || object->isTableRow());
-    return static_cast<const RenderTableRow*>(object);
-}
-
-// This will catch anyone doing an unnecessary cast.
-void toRenderTableRow(const RenderTableRow*);
+DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderTableRow, isTableRow());
 
 } // namespace WebCore
 

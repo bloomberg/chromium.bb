@@ -287,20 +287,7 @@ private:
     int m_intrinsicPaddingAfter;
 };
 
-inline RenderTableCell* toRenderTableCell(RenderObject* object)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!object || object->isTableCell());
-    return static_cast<RenderTableCell*>(object);
-}
-
-inline const RenderTableCell* toRenderTableCell(const RenderObject* object)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!object || object->isTableCell());
-    return static_cast<const RenderTableCell*>(object);
-}
-
-// This will catch anyone doing an unnecessary cast.
-void toRenderTableCell(const RenderTableCell*);
+DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderTableCell, isTableCell());
 
 } // namespace WebCore
 

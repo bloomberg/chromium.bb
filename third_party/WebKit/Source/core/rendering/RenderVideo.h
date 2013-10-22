@@ -79,20 +79,7 @@ private:
     LayoutSize m_cachedImageSize;
 };
 
-inline RenderVideo* toRenderVideo(RenderObject* object)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!object || object->isVideo());
-    return static_cast<RenderVideo*>(object);
-}
-
-inline const RenderVideo* toRenderVideo(const RenderObject* object)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!object || object->isVideo());
-    return static_cast<const RenderVideo*>(object);
-}
-
-// This will catch anyone doing an unnecessary cast.
-void toRenderVideo(const RenderVideo*);
+DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderVideo, isVideo());
 
 } // namespace WebCore
 
