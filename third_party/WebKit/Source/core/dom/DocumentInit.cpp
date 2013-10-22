@@ -95,7 +95,7 @@ Frame* DocumentInit::ownerFrame() const
     if (!m_frame)
         return 0;
 
-    Frame* ownerFrame = m_frame->tree()->parent();
+    Frame* ownerFrame = m_frame->tree().parent();
     if (!ownerFrame)
         ownerFrame = m_frame->loader()->opener();
     return ownerFrame;

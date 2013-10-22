@@ -69,7 +69,7 @@ inline PassRefPtr<TextResourceDecoder> TextResourceDecoderBuilder::createDecoder
 inline void TextResourceDecoderBuilder::setupEncoding(TextResourceDecoder* decoder, Document* document)
 {
     Frame* frame = document->frame();
-    Frame* parentFrame = frame ? frame->tree()->parent() : 0;
+    Frame* parentFrame = frame ? frame->tree().parent() : 0;
 
     if (!m_encoding.isEmpty())
         decoder->setEncoding(m_encoding, m_encodingWasChosenByUser ? TextResourceDecoder::UserChosenEncoding : TextResourceDecoder::EncodingFromHTTPHeader);

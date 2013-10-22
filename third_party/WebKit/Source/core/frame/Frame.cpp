@@ -86,7 +86,7 @@ static inline Frame* parentFromOwnerElement(HTMLFrameOwnerElement* ownerElement)
 
 static inline float parentPageZoomFactor(Frame* frame)
 {
-    Frame* parent = frame->tree()->parent();
+    Frame* parent = frame->tree().parent();
     if (!parent)
         return 1;
     return parent->pageZoomFactor();
@@ -94,7 +94,7 @@ static inline float parentPageZoomFactor(Frame* frame)
 
 static inline float parentTextZoomFactor(Frame* frame)
 {
-    Frame* parent = frame->tree()->parent();
+    Frame* parent = frame->tree().parent();
     if (!parent)
         return 1;
     return parent->textZoomFactor();
@@ -241,7 +241,7 @@ void Frame::setPrinting(bool printing, const FloatSize& pageSize, const FloatSiz
     }
 
     // Subframes of the one we're printing don't lay out to the page size.
-    for (RefPtr<Frame> child = tree()->firstChild(); child; child = child->tree()->nextSibling())
+    for (RefPtr<Frame> child = tree().firstChild(); child; child = child->tree().nextSibling())
         child->setPrinting(printing, FloatSize(), FloatSize(), 0, shouldAdjustViewSize);
 }
 
@@ -249,7 +249,7 @@ bool Frame::shouldUsePrintingLayout() const
 {
     // Only top frame being printed should be fit to page size.
     // Subframes should be constrained by parents only.
-    return document()->printing() && (!tree()->parent() || !tree()->parent()->document()->printing());
+    return document()->printing() && (!tree().parent() || !tree().parent()->document()->printing());
 }
 
 FloatSize Frame::resizePageRectsKeepingRatio(const FloatSize& originalSize, const FloatSize& expectedSize)
@@ -310,7 +310,7 @@ void Frame::dispatchVisibilityStateChangeEvent()
         document()->dispatchVisibilityStateChangeEvent();
 
     Vector<RefPtr<Frame> > childFrames;
-    for (Frame* child = tree()->firstChild(); child; child = child->tree()->nextSibling())
+    for (Frame* child = tree().firstChild(); child; child = child->tree().nextSibling())
         childFrames.append(child);
 
     for (size_t i = 0; i < childFrames.size(); ++i)
@@ -322,7 +322,7 @@ void Frame::willDetachPage()
     // We should never be detatching the page during a Layout.
     RELEASE_ASSERT(!m_view || !m_view->isInLayout());
 
-    if (Frame* parent = tree()->parent())
+    if (Frame* parent = tree().parent())
         parent->loader()->checkLoadComplete();
 
     HashSet<FrameDestructionObserver*>::iterator stop = m_destructionObservers.end();
@@ -530,7 +530,7 @@ void Frame::setPageAndTextZoomFactors(float pageZoomFactor, float textZoomFactor
 
     document->recalcStyle(Force);
 
-    for (RefPtr<Frame> child = tree()->firstChild(); child; child = child->tree()->nextSibling())
+    for (RefPtr<Frame> child = tree().firstChild(); child; child = child->tree().nextSibling())
         child->setPageAndTextZoomFactors(m_pageZoomFactor, m_textZoomFactor);
 
     if (FrameView* view = this->view()) {
@@ -541,7 +541,7 @@ void Frame::setPageAndTextZoomFactors(float pageZoomFactor, float textZoomFactor
 
 void Frame::deviceOrPageScaleFactorChanged()
 {
-    for (RefPtr<Frame> child = tree()->firstChild(); child; child = child->tree()->nextSibling())
+    for (RefPtr<Frame> child = tree().firstChild(); child; child = child->tree().nextSibling())
         child->deviceOrPageScaleFactorChanged();
 }
 
@@ -551,7 +551,7 @@ void Frame::notifyChromeClientWheelEventHandlerCountChanged() const
     ASSERT(m_page && m_page->mainFrame() == this);
 
     unsigned count = 0;
-    for (const Frame* frame = this; frame; frame = frame->tree()->traverseNext()) {
+    for (const Frame* frame = this; frame; frame = frame->tree().traverseNext()) {
         if (frame->document())
             count += WheelController::from(frame->document())->wheelEventHandlerCount();
     }
@@ -566,7 +566,7 @@ bool Frame::isURLAllowed(const KURL& url) const
     if (m_page->subframeCount() >= Page::maxNumberOfFrames)
         return false;
     bool foundSelfReference = false;
-    for (const Frame* frame = this; frame; frame = frame->tree()->parent()) {
+    for (const Frame* frame = this; frame; frame = frame->tree().parent()) {
         if (equalIgnoringFragmentIdentifier(frame->document()->url(), url)) {
             if (foundSelfReference)
                 return false;

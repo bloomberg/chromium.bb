@@ -1013,7 +1013,7 @@ int DOMWindow::innerHeight() const
         return 0;
 
     // FIXME: This is potentially too much work. We really only need to know the dimensions of the parent frame's renderer.
-    if (Frame* parent = m_frame->tree()->parent())
+    if (Frame* parent = m_frame->tree().parent())
         parent->document()->updateLayoutIgnorePendingStylesheets();
 
     return view->mapFromLayoutToCSSUnits(static_cast<int>(view->visibleContentRect(ScrollableArea::IncludeScrollbars).height()));
@@ -1029,7 +1029,7 @@ int DOMWindow::innerWidth() const
         return 0;
 
     // FIXME: This is potentially too much work. We really only need to know the dimensions of the parent frame's renderer.
-    if (Frame* parent = m_frame->tree()->parent())
+    if (Frame* parent = m_frame->tree().parent())
         parent->document()->updateLayoutIgnorePendingStylesheets();
 
     return view->mapFromLayoutToCSSUnits(static_cast<int>(view->visibleContentRect(ScrollableArea::IncludeScrollbars).width()));
@@ -1101,7 +1101,7 @@ unsigned DOMWindow::length() const
     if (!isCurrentlyDisplayedInFrame())
         return 0;
 
-    return m_frame->tree()->scopedChildCount();
+    return m_frame->tree().scopedChildCount();
 }
 
 String DOMWindow::name() const
@@ -1109,7 +1109,7 @@ String DOMWindow::name() const
     if (!m_frame)
         return String();
 
-    return m_frame->tree()->name();
+    return m_frame->tree().name();
 }
 
 void DOMWindow::setName(const String& string)
@@ -1117,7 +1117,7 @@ void DOMWindow::setName(const String& string)
     if (!m_frame)
         return;
 
-    m_frame->tree()->setName(string);
+    m_frame->tree().setName(string);
     m_frame->loader()->client()->didChangeName(string);
 }
 
@@ -1176,7 +1176,7 @@ DOMWindow* DOMWindow::parent() const
     if (!m_frame)
         return 0;
 
-    Frame* parent = m_frame->tree()->parent();
+    Frame* parent = m_frame->tree().parent();
     if (parent)
         return parent->domWindow();
 
@@ -1192,7 +1192,7 @@ DOMWindow* DOMWindow::top() const
     if (!page)
         return 0;
 
-    return m_frame->tree()->top()->domWindow();
+    return m_frame->tree().top()->domWindow();
 }
 
 Document* DOMWindow::document() const
@@ -1683,7 +1683,7 @@ PassRefPtr<DOMWindow> DOMWindow::open(const String& urlString, const AtomicStrin
     if (!firstWindow->allowPopUp()) {
         // Because FrameTree::find() returns true for empty strings, we must check for empty frame names.
         // Otherwise, illegitimate window.open() calls with no name will pass right through the popup blocker.
-        if (frameName.isEmpty() || !m_frame->tree()->find(frameName))
+        if (frameName.isEmpty() || !m_frame->tree().find(frameName))
             return 0;
     }
 
@@ -1691,9 +1691,9 @@ PassRefPtr<DOMWindow> DOMWindow::open(const String& urlString, const AtomicStrin
     // In those cases, we schedule a location change right now and return early.
     Frame* targetFrame = 0;
     if (frameName == "_top")
-        targetFrame = m_frame->tree()->top();
+        targetFrame = m_frame->tree().top();
     else if (frameName == "_parent") {
-        if (Frame* parent = m_frame->tree()->parent())
+        if (Frame* parent = m_frame->tree().parent())
             targetFrame = parent;
         else
             targetFrame = m_frame;
@@ -1755,7 +1755,7 @@ DOMWindow* DOMWindow::anonymousIndexedGetter(uint32_t index)
     if (!frame)
         return 0;
 
-    Frame* child = frame->tree()->scopedChild(index);
+    Frame* child = frame->tree().scopedChild(index);
     if (child)
         return child->domWindow();
 

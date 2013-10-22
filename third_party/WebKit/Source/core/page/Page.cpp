@@ -73,7 +73,7 @@ void Page::networkStateChanged(bool online)
     // Get all the frames of all the pages in all the page groups
     HashSet<Page*>::iterator end = allPages->end();
     for (HashSet<Page*>::iterator it = allPages->begin(); it != end; ++it) {
-        for (Frame* frame = (*it)->mainFrame(); frame; frame = frame->tree()->traverseNext())
+        for (Frame* frame = (*it)->mainFrame(); frame; frame = frame->tree().traverseNext())
             frames.append(frame);
         InspectorInstrumentation::networkStateChanged(*it, online);
     }
@@ -142,7 +142,7 @@ Page::~Page()
     clearPageGroup();
     allPages->remove(this);
 
-    for (Frame* frame = mainFrame(); frame; frame = frame->tree()->traverseNext()) {
+    for (Frame* frame = mainFrame(); frame; frame = frame->tree().traverseNext()) {
         frame->willDetachPage();
         frame->detachFromPage();
     }
@@ -319,13 +319,13 @@ void Page::scheduleForcedStyleRecalcForAllPages()
         return;
     HashSet<Page*>::iterator end = allPages->end();
     for (HashSet<Page*>::iterator it = allPages->begin(); it != end; ++it)
-        for (Frame* frame = (*it)->mainFrame(); frame; frame = frame->tree()->traverseNext())
+        for (Frame* frame = (*it)->mainFrame(); frame; frame = frame->tree().traverseNext())
             frame->document()->setNeedsStyleRecalc();
 }
 
 void Page::setNeedsRecalcStyleInAllFrames()
 {
-    for (Frame* frame = mainFrame(); frame; frame = frame->tree()->traverseNext())
+    for (Frame* frame = mainFrame(); frame; frame = frame->tree().traverseNext())
         frame->document()->styleResolverChanged(RecalcStyleDeferred);
 }
 
@@ -349,7 +349,7 @@ void Page::refreshPlugins(bool reload)
         if (!reload)
             continue;
 
-        for (Frame* frame = (*it)->mainFrame(); frame; frame = frame->tree()->traverseNext()) {
+        for (Frame* frame = (*it)->mainFrame(); frame; frame = frame->tree().traverseNext()) {
             if (frame->loader()->containsPlugins())
                 framesNeedingReload.append(frame);
         }
@@ -371,8 +371,8 @@ PluginData* Page::pluginData() const
 static Frame* incrementFrame(Frame* curr, bool forward, bool wrapFlag)
 {
     return forward
-        ? curr->tree()->traverseNextWithWrap(wrapFlag)
-        : curr->tree()->traversePreviousWithWrap(wrapFlag);
+        ? curr->tree().traverseNextWithWrap(wrapFlag)
+        : curr->tree().traversePreviousWithWrap(wrapFlag);
 }
 
 void Page::unmarkAllTextMatches()
@@ -393,7 +393,7 @@ void Page::setDefersLoading(bool defers)
         return;
 
     m_defersLoading = defers;
-    for (Frame* frame = mainFrame(); frame; frame = frame->tree()->traverseNext())
+    for (Frame* frame = mainFrame(); frame; frame = frame->tree().traverseNext())
         frame->loader()->setDefersLoading(defers);
 }
 
@@ -461,7 +461,7 @@ void Page::userStyleSheetLocationChanged()
             m_userStyleSheet = String::fromUTF8(styleSheetAsUTF8.data(), styleSheetAsUTF8.size());
     }
 
-    for (Frame* frame = mainFrame(); frame; frame = frame->tree()->traverseNext()) {
+    for (Frame* frame = mainFrame(); frame; frame = frame->tree().traverseNext()) {
         if (frame->document())
             frame->document()->styleEngine()->updatePageUserSheet();
     }
@@ -483,7 +483,7 @@ void Page::allVisitedStateChanged(PageGroup* group)
         Page* page = *it;
         if (page->m_group != group)
             continue;
-        for (Frame* frame = page->m_mainFrame.get(); frame; frame = frame->tree()->traverseNext())
+        for (Frame* frame = page->m_mainFrame.get(); frame; frame = frame->tree().traverseNext())
             frame->document()->visitedLinkState()->invalidateStyleForAllLinks();
     }
 }
@@ -499,7 +499,7 @@ void Page::visitedStateChanged(PageGroup* group, LinkHash linkHash)
         Page* page = *it;
         if (page->m_group != group)
             continue;
-        for (Frame* frame = page->m_mainFrame.get(); frame; frame = frame->tree()->traverseNext())
+        for (Frame* frame = page->m_mainFrame.get(); frame; frame = frame->tree().traverseNext())
             frame->document()->visitedLinkState()->invalidateStyleForLink(linkHash);
     }
 }
@@ -517,7 +517,7 @@ void Page::setTimerAlignmentInterval(double interval)
         return;
 
     m_timerAlignmentInterval = interval;
-    for (Frame* frame = mainFrame(); frame; frame = frame->tree()->traverseNextWithWrap(false)) {
+    for (Frame* frame = mainFrame(); frame; frame = frame->tree().traverseNextWithWrap(false)) {
         if (frame->document())
             frame->document()->didChangeTimerAlignmentInterval();
     }
@@ -530,7 +530,7 @@ double Page::timerAlignmentInterval() const
 
 void Page::dnsPrefetchingStateChanged()
 {
-    for (Frame* frame = mainFrame(); frame; frame = frame->tree()->traverseNext())
+    for (Frame* frame = mainFrame(); frame; frame = frame->tree().traverseNext())
         frame->document()->initDNSPrefetch();
 }
 
@@ -540,7 +540,7 @@ void Page::checkSubframeCountConsistency() const
     ASSERT(m_subframeCount >= 0);
 
     int subframeCount = 0;
-    for (Frame* frame = mainFrame(); frame; frame = frame->tree()->traverseNext())
+    for (Frame* frame = mainFrame(); frame; frame = frame->tree().traverseNext())
         ++subframeCount;
 
     ASSERT(m_subframeCount + 1 == subframeCount);

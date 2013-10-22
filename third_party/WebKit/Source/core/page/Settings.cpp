@@ -44,7 +44,7 @@ namespace WebCore {
 
 static void setImageLoadingSettings(Page* page)
 {
-    for (Frame* frame = page->mainFrame(); frame; frame = frame->tree()->traverseNext()) {
+    for (Frame* frame = page->mainFrame(); frame; frame = frame->tree().traverseNext()) {
         frame->document()->fetcher()->setImagesEnabled(page->settings().areImagesEnabled());
         frame->document()->fetcher()->setAutoLoadImages(page->settings().loadsImagesAutomatically());
     }
@@ -263,7 +263,7 @@ void Settings::setTextAutosizingFontScaleFactor(float fontScaleFactor)
     m_textAutosizingFontScaleFactor = fontScaleFactor;
 
     // FIXME: I wonder if this needs to traverse frames like in WebViewImpl::resize, or whether there is only one document per Settings instance?
-    for (Frame* frame = m_page->mainFrame(); frame; frame = frame->tree()->traverseNext())
+    for (Frame* frame = m_page->mainFrame(); frame; frame = frame->tree().traverseNext())
         frame->document()->textAutosizer()->recalculateMultipliers();
 
     m_page->setNeedsRecalcStyleInAllFrames();

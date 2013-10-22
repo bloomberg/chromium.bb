@@ -97,7 +97,7 @@ void TouchController::didRemoveTouchEventHandler(Document* document, Node* handl
         scrollingCoordinator->touchEventTargetRectsDidChange(document);
     if (m_touchEventTargets->size())
         return;
-    for (const Frame* frame = page->mainFrame(); frame; frame = frame->tree()->traverseNext()) {
+    for (const Frame* frame = page->mainFrame(); frame; frame = frame->tree().traverseNext()) {
         if (frame->document() && TouchController::from(frame->document())->hasTouchEventHandlers())
             return;
     }

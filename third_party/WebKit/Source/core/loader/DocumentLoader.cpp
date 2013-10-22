@@ -440,7 +440,7 @@ void DocumentLoader::willSendRequest(ResourceRequest& newRequest, const Resource
     if (newRequest.cachePolicy() == UseProtocolCachePolicy && isRedirectAfterPost(newRequest, redirectResponse))
         newRequest.setCachePolicy(ReloadIgnoringCacheData);
 
-    Frame* parent = m_frame->tree()->parent();
+    Frame* parent = m_frame->tree().parent();
     if (parent) {
         if (!parent->loader()->mixedContentChecker()->canRunInsecureContent(parent->document()->securityOrigin(), newRequest.url())) {
             cancelMainResourceLoad(ResourceError::cancelledError(newRequest.url()));
@@ -721,14 +721,14 @@ void DocumentLoader::addAllArchiveResources(MHTMLArchive* archive)
 
 void DocumentLoader::prepareSubframeArchiveLoadIfNeeded()
 {
-    if (!m_frame->tree()->parent())
+    if (!m_frame->tree().parent())
         return;
 
-    ArchiveResourceCollection* parentCollection = m_frame->tree()->parent()->loader()->documentLoader()->m_archiveResourceCollection.get();
+    ArchiveResourceCollection* parentCollection = m_frame->tree().parent()->loader()->documentLoader()->m_archiveResourceCollection.get();
     if (!parentCollection)
         return;
 
-    m_archive = parentCollection->popSubframeArchive(m_frame->tree()->uniqueName(), m_request.url());
+    m_archive = parentCollection->popSubframeArchive(m_frame->tree().uniqueName(), m_request.url());
 
     if (!m_archive)
         return;

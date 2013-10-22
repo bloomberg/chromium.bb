@@ -348,8 +348,8 @@ typedef HashMap<const RenderLayer*, Vector<const Frame*> > LayerFrameMap;
 static void makeLayerChildFrameMap(const Frame* currentFrame, LayerFrameMap* map)
 {
     map->clear();
-    const FrameTree* tree = currentFrame->tree();
-    for (const Frame* child = tree->firstChild(); child; child = child->tree()->nextSibling()) {
+    const FrameTree& tree = currentFrame->tree();
+    for (const Frame* child = tree.firstChild(); child; child = child->tree().nextSibling()) {
         const RenderLayer* containingLayer = child->ownerRenderer()->enclosingLayer();
         LayerFrameMap::iterator iter = map->find(containingLayer);
         if (iter == map->end())
@@ -632,8 +632,8 @@ Region ScrollingCoordinator::computeShouldHandleScrollGestureOnMainThreadRegion(
         }
     }
 
-    FrameTree* tree = frame->tree();
-    for (Frame* subFrame = tree->firstChild(); subFrame; subFrame = subFrame->tree()->nextSibling())
+    const FrameTree& tree = frame->tree();
+    for (Frame* subFrame = tree.firstChild(); subFrame; subFrame = subFrame->tree().nextSibling())
         shouldHandleScrollGestureOnMainThreadRegion.unite(computeShouldHandleScrollGestureOnMainThreadRegion(subFrame, offset));
 
     return shouldHandleScrollGestureOnMainThreadRegion;
@@ -700,7 +700,7 @@ unsigned ScrollingCoordinator::computeCurrentWheelEventHandlerCount()
 {
     unsigned wheelEventHandlerCount = 0;
 
-    for (Frame* frame = m_page->mainFrame(); frame; frame = frame->tree()->traverseNext()) {
+    for (Frame* frame = m_page->mainFrame(); frame; frame = frame->tree().traverseNext()) {
         if (frame->document())
             wheelEventHandlerCount += WheelController::from(frame->document())->wheelEventHandlerCount();
     }

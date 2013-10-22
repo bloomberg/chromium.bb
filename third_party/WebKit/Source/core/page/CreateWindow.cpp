@@ -66,7 +66,7 @@ static Frame* createWindow(Frame* openerFrame, Frame* lookupFrame, const FrameLo
 
     if (openerFrame->settings() && !openerFrame->settings()->supportsMultipleWindows()) {
         created = false;
-        return openerFrame->tree()->top();
+        return openerFrame->tree().top();
     }
 
     Page* oldPage = openerFrame->page();
@@ -82,7 +82,7 @@ static Frame* createWindow(Frame* openerFrame, Frame* lookupFrame, const FrameLo
     frame->loader()->forceSandboxFlags(openerFrame->document()->sandboxFlags());
 
     if (request.frameName() != "_blank")
-        frame->tree()->setName(request.frameName());
+        frame->tree().setName(request.frameName());
 
     page->chrome().setWindowFeatures(features);
 

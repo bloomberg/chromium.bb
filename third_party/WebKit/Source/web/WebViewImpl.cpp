@@ -1543,7 +1543,7 @@ bool WebViewImpl::propagateScroll(ScrollDirection scrollDirection,
     Frame* currentFrame = frame;
     while (!scrollHandled && currentFrame) {
         scrollHandled = currentFrame->view()->scroll(scrollDirection, scrollGranularity);
-        currentFrame = currentFrame->tree()->parent();
+        currentFrame = currentFrame->tree().parent();
     }
     return scrollHandled;
 }
@@ -2578,7 +2578,7 @@ WebFrame* WebViewImpl::findFrameByName(
     if (!relativeToFrame)
         relativeToFrame = mainFrame();
     Frame* frame = toWebFrameImpl(relativeToFrame)->frame();
-    frame = frame->tree()->find(name);
+    frame = frame->tree().find(name);
     return WebFrameImpl::fromFrame(frame);
 }
 
@@ -3295,7 +3295,7 @@ void WebViewImpl::dragTargetDrop(const WebPoint& clientPoint,
 void WebViewImpl::spellingMarkers(WebVector<uint32_t>* markers)
 {
     Vector<uint32_t> result;
-    for (Frame* frame = m_page->mainFrame(); frame; frame = frame->tree()->traverseNext()) {
+    for (Frame* frame = m_page->mainFrame(); frame; frame = frame->tree().traverseNext()) {
         const Vector<DocumentMarker*>& documentMarkers = frame->document()->markers()->markers();
         for (size_t i = 0; i < documentMarkers.size(); ++i)
             result.append(documentMarkers[i]->hash());
@@ -3534,7 +3534,7 @@ void WebViewImpl::setIsTransparent(bool isTransparent)
     Frame* frame = m_page->mainFrame();
     while (frame) {
         frame->view()->setTransparent(isTransparent);
-        frame = frame->tree()->traverseNext();
+        frame = frame->tree().traverseNext();
     }
 
     // Future frames check this to know whether to be transparent.

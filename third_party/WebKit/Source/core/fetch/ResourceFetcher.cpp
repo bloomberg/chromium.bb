@@ -366,7 +366,7 @@ bool ResourceFetcher::checkInsecureContent(Resource::Type type, const KURL& url,
         }
     } else if (treatment == TreatAsPassiveContent) {
         if (Frame* f = frame()) {
-            Frame* top = f->tree()->top();
+            Frame* top = f->tree().top();
             if (!top->loader()->mixedContentChecker()->canDisplayInsecureContent(top->document()->securityOrigin(), url))
                 return false;
         }
@@ -632,7 +632,7 @@ void ResourceFetcher::determineTargetType(ResourceRequest& request, Resource::Ty
 
     switch (type) {
     case Resource::MainResource:
-        if (frame()->tree()->parent())
+        if (frame()->tree().parent())
             targetType = ResourceRequest::TargetIsSubframe;
         else
             targetType = ResourceRequest::TargetIsMainFrame;

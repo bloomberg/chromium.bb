@@ -388,7 +388,7 @@ void V8Window::namedPropertyGetterCustom(v8::Local<v8::String> name, const v8::P
 
     // Search sub-frames.
     AtomicString propName = toWebCoreAtomicString(name);
-    Frame* child = frame->tree()->scopedChild(propName);
+    Frame* child = frame->tree().scopedChild(propName);
     if (child) {
         v8SetReturnValueFast(info, child->domWindow(), window);
         return;
@@ -455,7 +455,7 @@ bool V8Window::namedSecurityCheckCustom(v8::Local<v8::Object> host, v8::Local<v8
         DEFINE_STATIC_LOCAL(AtomicString, nameOfProtoProperty, ("__proto__", AtomicString::ConstructFromLiteral));
 
         String name = toWebCoreString(key.As<v8::String>());
-        Frame* childFrame = target->tree()->scopedChild(name);
+        Frame* childFrame = target->tree().scopedChild(name);
         // Notice that we can't call HasRealNamedProperty for ACCESS_HAS
         // because that would generate infinite recursion.
         if (type == v8::ACCESS_HAS && childFrame)
@@ -494,7 +494,7 @@ bool V8Window::indexedSecurityCheckCustom(v8::Local<v8::Object> host, uint32_t i
     if (target->loader()->stateMachine()->isDisplayingInitialEmptyDocument())
         target->loader()->didAccessInitialDocument();
 
-    Frame* childFrame =  target->tree()->scopedChild(index);
+    Frame* childFrame =  target->tree().scopedChild(index);
 
     // Notice that we can't call HasRealNamedProperty for ACCESS_HAS
     // because that would generate infinite recursion.

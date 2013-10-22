@@ -693,7 +693,7 @@ Vector<String> Internals::formControlStateOfPreviousHistoryItem(ExceptionState& 
         es.throwUninformativeAndGenericDOMException(InvalidAccessError);
         return Vector<String>();
     }
-    String uniqueName = frame()->tree()->uniqueName();
+    String uniqueName = frame()->tree().uniqueName();
     if (mainItem->target() != uniqueName && !mainItem->childItemWithTarget(uniqueName)) {
         es.throwUninformativeAndGenericDOMException(InvalidAccessError);
         return Vector<String>();
@@ -708,7 +708,7 @@ void Internals::setFormControlStateOfPreviousHistoryItem(const Vector<String>& s
         es.throwUninformativeAndGenericDOMException(InvalidAccessError);
         return;
     }
-    String uniqueName = frame()->tree()->uniqueName();
+    String uniqueName = frame()->tree().uniqueName();
     if (mainItem->target() == uniqueName)
         mainItem->setDocumentState(state);
     else if (HistoryItem* subItem = mainItem->childItemWithTarget(uniqueName))
@@ -1617,7 +1617,7 @@ unsigned Internals::numberOfScrollableAreas(Document* document, ExceptionState&)
     if (frame->view()->scrollableAreas())
         count += frame->view()->scrollableAreas()->size();
 
-    for (Frame* child = frame->tree()->firstChild(); child; child = child->tree()->nextSibling()) {
+    for (Frame* child = frame->tree().firstChild(); child; child = child->tree().nextSibling()) {
         if (child->view() && child->view()->scrollableAreas())
             count += child->view()->scrollableAreas()->size();
     }

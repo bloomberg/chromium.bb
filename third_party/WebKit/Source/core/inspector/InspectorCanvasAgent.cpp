@@ -325,7 +325,7 @@ void InspectorCanvasAgent::didCommitLoad(Frame*, DocumentLoader* loader)
                 String frameId = m_pageAgent->frameId(frame);
                 m_frontend->traceLogsRemoved(&frameId, 0);
             }
-            frame = frame->tree()->traverseNext();
+            frame = frame->tree().traverseNext();
         }
     }
 }

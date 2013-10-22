@@ -310,7 +310,7 @@ bool NavigationScheduler::mustLockBackForwardList(Frame* targetFrame)
     // Navigation of a subframe during loading of an ancestor frame does not create a new back/forward item.
     // The definition of "during load" is any time before all handlers for the load event have been run.
     // See https://bugs.webkit.org/show_bug.cgi?id=14957 for the original motivation for this.
-    return targetFrame->tree()->parent() && !targetFrame->tree()->parent()->loader()->allAncestorsAreComplete();
+    return targetFrame->tree().parent() && !targetFrame->tree().parent()->loader()->allAncestorsAreComplete();
 }
 
 void NavigationScheduler::scheduleLocationChange(SecurityOrigin* securityOrigin, const String& url, const String& referrer, bool lockBackForwardList)

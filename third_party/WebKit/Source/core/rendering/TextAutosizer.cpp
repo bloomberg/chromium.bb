@@ -187,7 +187,7 @@ bool TextAutosizer::processSubtree(RenderObject* layoutRoot)
     // Largest area of block that can be visible at once (assuming the main
     // frame doesn't get scaled to less than overview scale), in CSS pixels.
     windowInfo.minLayoutSize = mainFrame->view()->layoutSize();
-    for (Frame* frame = m_document->frame(); frame; frame = frame->tree()->parent())
+    for (Frame* frame = m_document->frame(); frame; frame = frame->tree().parent())
         windowInfo.minLayoutSize = windowInfo.minLayoutSize.shrunkTo(frame->view()->layoutSize());
 
     // The layoutRoot could be neither a container nor a cluster, so walk up the tree till we find each of these.

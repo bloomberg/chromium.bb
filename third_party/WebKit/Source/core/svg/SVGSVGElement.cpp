@@ -183,13 +183,12 @@ float SVGSVGElement::currentScale() const
     if (!frame)
         return 1;
 
-    FrameTree* frameTree = frame->tree();
-    ASSERT(frameTree);
+    const FrameTree& frameTree = frame->tree();
 
     // The behaviour of currentScale() is undefined, when we're dealing with non-standalone SVG documents.
     // If the svg is embedded, the scaling is handled by the host renderer, so when asking from inside
     // the SVG document, a scale value of 1 seems reasonable, as it doesn't know anything about the parent scale.
-    return frameTree->parent() ? 1 : frame->pageZoomFactor();
+    return frameTree.parent() ? 1 : frame->pageZoomFactor();
 }
 
 void SVGSVGElement::setCurrentScale(float scale)
@@ -201,13 +200,12 @@ void SVGSVGElement::setCurrentScale(float scale)
     if (!frame)
         return;
 
-    FrameTree* frameTree = frame->tree();
-    ASSERT(frameTree);
+    const FrameTree& frameTree = frame->tree();
 
     // The behaviour of setCurrentScale() is undefined, when we're dealing with non-standalone SVG documents.
     // We choose the ignore this call, it's pretty useless to support calling setCurrentScale() from within
     // an embedded SVG document, for the same reasons as in currentScale() - needs resolution by SVG WG.
-    if (frameTree->parent())
+    if (frameTree.parent())
         return;
 
     frame->setPageZoomFactor(scale);

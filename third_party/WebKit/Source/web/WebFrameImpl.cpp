@@ -241,8 +241,8 @@ static void frameContentAsPlainText(size_t maxChars, Frame* frame, StringBuilder
     const size_t frameSeparatorLength = WTF_ARRAY_LENGTH(frameSeparator);
 
     // Recursively walk the children.
-    FrameTree* frameTree = frame->tree();
-    for (Frame* curChild = frameTree->firstChild(); curChild; curChild = curChild->tree()->nextSibling()) {
+    const FrameTree& frameTree = frame->tree();
+    for (Frame* curChild = frameTree.firstChild(); curChild; curChild = curChild->tree().nextSibling()) {
         // Ignore the text of non-visible frames.
         RenderView* contentRenderer = curChild->contentRenderer();
         RenderPart* ownerRenderer = curChild->ownerRenderer();
@@ -529,17 +529,17 @@ void WebFrameImpl::close()
 
 WebString WebFrameImpl::uniqueName() const
 {
-    return frame()->tree()->uniqueName();
+    return frame()->tree().uniqueName();
 }
 
 WebString WebFrameImpl::assignedName() const
 {
-    return frame()->tree()->name();
+    return frame()->tree().name();
 }
 
 void WebFrameImpl::setName(const WebString& name)
 {
-    frame()->tree()->setName(name);
+    frame()->tree().setName(name);
 }
 
 long long WebFrameImpl::embedderIdentifier() const
@@ -632,63 +632,63 @@ WebFrame* WebFrameImpl::parent() const
 {
     if (!frame())
         return 0;
-    return fromFrame(frame()->tree()->parent());
+    return fromFrame(frame()->tree().parent());
 }
 
 WebFrame* WebFrameImpl::top() const
 {
     if (!frame())
         return 0;
-    return fromFrame(frame()->tree()->top());
+    return fromFrame(frame()->tree().top());
 }
 
 WebFrame* WebFrameImpl::firstChild() const
 {
     if (!frame())
         return 0;
-    return fromFrame(frame()->tree()->firstChild());
+    return fromFrame(frame()->tree().firstChild());
 }
 
 WebFrame* WebFrameImpl::lastChild() const
 {
     if (!frame())
         return 0;
-    return fromFrame(frame()->tree()->lastChild());
+    return fromFrame(frame()->tree().lastChild());
 }
 
 WebFrame* WebFrameImpl::nextSibling() const
 {
     if (!frame())
         return 0;
-    return fromFrame(frame()->tree()->nextSibling());
+    return fromFrame(frame()->tree().nextSibling());
 }
 
 WebFrame* WebFrameImpl::previousSibling() const
 {
     if (!frame())
         return 0;
-    return fromFrame(frame()->tree()->previousSibling());
+    return fromFrame(frame()->tree().previousSibling());
 }
 
 WebFrame* WebFrameImpl::traverseNext(bool wrap) const
 {
     if (!frame())
         return 0;
-    return fromFrame(frame()->tree()->traverseNextWithWrap(wrap));
+    return fromFrame(frame()->tree().traverseNextWithWrap(wrap));
 }
 
 WebFrame* WebFrameImpl::traversePrevious(bool wrap) const
 {
     if (!frame())
         return 0;
-    return fromFrame(frame()->tree()->traversePreviousWithWrap(wrap));
+    return fromFrame(frame()->tree().traversePreviousWithWrap(wrap));
 }
 
 WebFrame* WebFrameImpl::findChildByName(const WebString& name) const
 {
     if (!frame())
         return 0;
-    return fromFrame(frame()->tree()->child(name));
+    return fromFrame(frame()->tree().child(name));
 }
 
 WebFrame* WebFrameImpl::findChildByExpression(const WebString& xpath) const
@@ -1832,7 +1832,7 @@ bool WebFrameImpl::isActiveMatchFrameValid() const
 {
     WebFrameImpl* mainFrameImpl = viewImpl()->mainFrameImpl();
     WebFrameImpl* activeMatchFrame = mainFrameImpl->activeMatchFrame();
-    return activeMatchFrame && activeMatchFrame->m_activeMatch && activeMatchFrame->frame()->tree()->isDescendantOf(mainFrameImpl->frame());
+    return activeMatchFrame && activeMatchFrame->m_activeMatch && activeMatchFrame->frame()->tree().isDescendantOf(mainFrameImpl->frame());
 }
 
 void WebFrameImpl::updateFindMatchRects()
@@ -2173,9 +2173,9 @@ PassRefPtr<Frame> WebFrameImpl::createChildFrame(const FrameLoadRequest& request
     RefPtr<Frame> childFrame = Frame::create(frame()->page(), ownerElement, &webframe->m_frameLoaderClient);
     webframe->setWebCoreFrame(childFrame.get());
 
-    childFrame->tree()->setName(request.frameName());
+    childFrame->tree().setName(request.frameName());
 
-    frame()->tree()->appendChild(childFrame);
+    frame()->tree().appendChild(childFrame);
 
     // FIXME: Remove once all embedders return non-null from createChildFrame().
     if (mustCallDidCreateFrame)
@@ -2192,7 +2192,7 @@ PassRefPtr<Frame> WebFrameImpl::createChildFrame(const FrameLoadRequest& request
     // NOTE: m_client will be null if this frame has been detached.
     // (b:791612)
     childFrame->init(); // create an empty document
-    if (!childFrame->tree()->parent())
+    if (!childFrame->tree().parent())
         return 0;
 
     HistoryItem* parentItem = frame()->loader()->history()->currentItem();
@@ -2200,7 +2200,7 @@ PassRefPtr<Frame> WebFrameImpl::createChildFrame(const FrameLoadRequest& request
     // If we're moving in the back/forward list, we might want to replace the content
     // of this child frame with whatever was there at that point.
     if (parentItem && parentItem->children().size() && isBackForwardLoadType(frame()->loader()->loadType()) && !frame()->document()->loadEventFinished())
-        childItem = parentItem->childItemWithTarget(childFrame->tree()->uniqueName());
+        childItem = parentItem->childItemWithTarget(childFrame->tree().uniqueName());
 
     if (childItem)
         childFrame->loader()->loadHistoryItem(childItem);
@@ -2211,7 +2211,7 @@ PassRefPtr<Frame> WebFrameImpl::createChildFrame(const FrameLoadRequest& request
     // onload, so it is possible for the frame to have already been destroyed by
     // script in the page.
     // NOTE: m_client will be null if this frame has been detached.
-    if (!childFrame->tree()->parent())
+    if (!childFrame->tree().parent())
         return 0;
 
     return childFrame.release();

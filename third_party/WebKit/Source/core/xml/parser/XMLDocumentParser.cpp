@@ -110,7 +110,7 @@ static inline bool hasNoStyleInformation(Document* document)
     if (!document->frame() || !document->frame()->page())
         return false;
 
-    if (document->frame()->tree()->parent())
+    if (document->frame()->tree().parent())
         return false; // This document is not in a top frame
 
     return true;

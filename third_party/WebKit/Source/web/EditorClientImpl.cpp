@@ -139,7 +139,7 @@ void EditorClientImpl::toggleContinuousSpellChecking()
     if (isContinuousSpellCheckingEnabled()) {
         m_spellCheckThisFieldStatus = SpellCheckForcedOff;
         if (Page* page = m_webView->page()) {
-            for (Frame* frame = page->mainFrame(); frame && frame->document(); frame = frame->tree()->traverseNext()) {
+            for (Frame* frame = page->mainFrame(); frame && frame->document(); frame = frame->tree().traverseNext()) {
                 frame->document()->markers()->removeMarkers(DocumentMarker::MisspellingMarkers());
             }
         }

@@ -95,7 +95,7 @@ void SpellChecker::toggleContinuousSpellChecking()
     editorClient().toggleContinuousSpellChecking();
     if (isContinuousSpellCheckingEnabled())
         return;
-    for (Frame* frame = m_frame.page()->mainFrame(); frame && frame->document(); frame = frame->tree()->traverseNext()) {
+    for (Frame* frame = m_frame.page()->mainFrame(); frame && frame->document(); frame = frame->tree().traverseNext()) {
         for (Node* node = frame->document()->rootNode(); node; node = NodeTraversal::next(node)) {
             node->setAlreadySpellChecked(false);
         }

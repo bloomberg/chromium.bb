@@ -429,7 +429,7 @@ void FrameView::setFrameRect(const IntRect& newRect)
     if (newRect.width() != oldRect.width()) {
         Page* page = m_frame->page();
         if (isMainFrame() && page->settings().textAutosizingEnabled()) {
-            for (Frame* frame = page->mainFrame(); frame; frame = frame->tree()->traverseNext())
+            for (Frame* frame = page->mainFrame(); frame; frame = frame->tree().traverseNext())
                 m_frame->document()->textAutosizer()->recalculateMultipliers();
         }
     }
@@ -1250,7 +1250,7 @@ bool FrameView::useSlowRepaintsIfNotOverlapped() const
 
 void FrameView::updateCanBlitOnScrollRecursively()
 {
-    for (Frame* frame = m_frame.get(); frame; frame = frame->tree()->traverseNext(m_frame.get())) {
+    for (Frame* frame = m_frame.get(); frame; frame = frame->tree().traverseNext(m_frame.get())) {
         if (FrameView* view = frame->view())
             view->setCanBlitOnScroll(!view->useSlowRepaints());
     }
@@ -1852,7 +1852,7 @@ void FrameView::doDeferredRepaints()
 bool FrameView::shouldUseLoadTimeDeferredRepaintDelay() const
 {
     // Don't defer after the initial load of the page has been completed.
-    if (m_frame->tree()->top()->document()->loadEventFinished())
+    if (m_frame->tree().top()->document()->loadEventFinished())
         return false;
     Document* document = m_frame->document();
     if (!document)
@@ -2025,7 +2025,7 @@ void FrameView::unscheduleRelayout()
 
 void FrameView::serviceScriptedAnimations(double monotonicAnimationStartTime)
 {
-    for (RefPtr<Frame> frame = m_frame; frame; frame = frame->tree()->traverseNext()) {
+    for (RefPtr<Frame> frame = m_frame; frame; frame = frame->tree().traverseNext()) {
         frame->view()->serviceScrollAnimations();
         if (!RuntimeEnabledFeatures::webAnimationsCSSEnabled())
             frame->animation().serviceAnimations();
@@ -2034,7 +2034,7 @@ void FrameView::serviceScriptedAnimations(double monotonicAnimationStartTime)
     }
 
     Vector<RefPtr<Document> > documents;
-    for (Frame* frame = m_frame.get(); frame; frame = frame->tree()->traverseNext())
+    for (Frame* frame = m_frame.get(); frame; frame = frame->tree().traverseNext())
         documents.append(frame->document());
 
     for (size_t i = 0; i < documents.size(); ++i)
@@ -2080,7 +2080,7 @@ void FrameView::setBaseBackgroundColor(const Color& backgroundColor)
 
 void FrameView::updateBackgroundRecursively(const Color& backgroundColor, bool transparent)
 {
-    for (Frame* frame = m_frame.get(); frame; frame = frame->tree()->traverseNext(m_frame.get())) {
+    for (Frame* frame = m_frame.get(); frame; frame = frame->tree().traverseNext(m_frame.get())) {
         if (FrameView* view = frame->view()) {
             view->setTransparent(transparent);
             view->setBaseBackgroundColor(backgroundColor);
@@ -2852,7 +2852,7 @@ FrameView* FrameView::parentFrameView() const
     if (!parent())
         return 0;
 
-    if (Frame* parentFrame = m_frame->tree()->parent())
+    if (Frame* parentFrame = m_frame->tree().parent())
         return parentFrame->view();
 
     return 0;
@@ -3313,7 +3313,7 @@ void FrameView::setTracksRepaints(bool trackRepaints)
     if (trackRepaints == m_isTrackingRepaints)
         return;
 
-    for (Frame* frame = m_frame->tree()->top(); frame; frame = frame->tree()->traverseNext()) {
+    for (Frame* frame = m_frame->tree().top(); frame; frame = frame->tree().traverseNext()) {
         if (RenderView* renderView = frame->contentRenderer())
             renderView->compositor()->setTracksRepaints(trackRepaints);
     }
