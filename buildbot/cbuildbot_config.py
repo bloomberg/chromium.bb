@@ -1260,7 +1260,6 @@ internal_paladin.add_config('fox_wtm2-paladin',
 internal_paladin.add_config('leon-paladin',
   boards=['leon'],
   paladin_builder_name='leon paladin',
-  important=False,
 )
 
 internal_paladin.add_config('link-paladin',
@@ -1544,7 +1543,6 @@ _release.add_config('leon-release',
   boards=['leon'],
   hw_tests=[],
   vm_tests=None,
-  important=False,
 )
 
 _release.add_config('link-release',
