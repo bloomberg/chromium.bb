@@ -54,6 +54,13 @@ camera.views.Browser = function(context, router) {
   this.scrollBar_ = new camera.HorizontalScrollBar(this.scroller_);
 
   /**
+   * Makes the gallery scrollable by dragging with mouse.
+   * @type {camera.util.MouseScroller}
+   * @private
+   */
+  this.mouseScroller_ = new camera.util.MouseScroller(this.scroller_);
+
+  /**
    * Monitores when scrolling is ended.
    * @type {camera.util.ScrollTracker}
    * @private

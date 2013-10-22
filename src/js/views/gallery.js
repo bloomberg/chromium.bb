@@ -48,6 +48,13 @@ camera.views.Gallery = function(context, router) {
       document.querySelector('#gallery .padder'));
 
   /**
+   * Makes the gallery scrollable by dragging with mouse.
+   * @type {camera.util.MouseScroller}
+   * @private
+   */
+  this.mouseScroller_ = new camera.util.MouseScroller(this.scroller_);
+
+  /**
    * @type {camera.VerticalScrollBar}
    * @private
    */
