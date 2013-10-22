@@ -248,6 +248,8 @@ class CONTENT_EXPORT RenderWidget
   // For unit tests.
   friend class RenderWidgetTest;
 
+  class ResizingModeSelector;
+
   enum ResizeAck {
     SEND_RESIZE_ACK,
     NO_RESIZE_ACK,

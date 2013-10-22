@@ -308,6 +308,30 @@ void RenderWidget::ScreenMetricsEmulator::OnShowContextMenu(
   params->y *= scale_;
 }
 
+// RenderWidget::ResizingModeSelector ------------------------------------------
+
+class RenderWidget::ResizingModeSelector {
+ public:
+  static bool ShouldAbortOnResize(RenderWidget* widget,
+                                  const ViewMsg_Resize_Params& params);
+  static bool IsLegacyMode();
+};
+
+bool RenderWidget::ResizingModeSelector::ShouldAbortOnResize(
+    RenderWidget* widget,
+    const ViewMsg_Resize_Params& params) {
+  return RenderThreadImpl::current() &&
+      RenderThreadImpl::current()->layout_test_mode() &&
+      params.is_fullscreen == widget->is_fullscreen_ &&
+      params.screen_info.deviceScaleFactor ==
+        widget->screen_info_.deviceScaleFactor;
+}
+
+bool RenderWidget::ResizingModeSelector::IsLegacyMode() {
+  return RenderThreadImpl::current() && // Will be NULL during unit tests.
+      RenderThreadImpl::current()->layout_test_mode();
+}
+
 // RenderWidget ---------------------------------------------------------------
 
 RenderWidget::RenderWidget(WebKit::WebPopupType popup_type,
@@ -627,8 +651,7 @@ void RenderWidget::Resize(const gfx::Size& new_size,
                           const gfx::Rect& resizer_rect,
                           bool is_fullscreen,
                           ResizeAck resize_ack) {
-  if (!RenderThreadImpl::current() ||  // Will be NULL during unit tests.
-      !RenderThreadImpl::current()->layout_test_mode()) {
+  if (!ResizingModeSelector::IsLegacyMode()) {
     // A resize ack shouldn't be requested if we have not ACK'd the previous
     // one.
     DCHECK(resize_ack != SEND_RESIZE_ACK || !next_paint_is_resize_ack());
@@ -667,14 +690,12 @@ void RenderWidget::Resize(const gfx::Size& new_size,
     // send an ACK if we are resized to a non-empty rect.
     webwidget_->resize(new_size);
 
-    if (!RenderThreadImpl::current() ||  // Will be NULL during unit tests.
-        !RenderThreadImpl::current()->layout_test_mode()) {
+    if (!ResizingModeSelector::IsLegacyMode()) {
       // Resize should have caused an invalidation of the entire view.
       DCHECK(new_size.IsEmpty() || is_accelerated_compositing_active_ ||
              paint_aggregator_.HasPendingUpdate());
     }
-  } else if (!RenderThreadImpl::current() ||  // Will be NULL during unit tests.
-             !RenderThreadImpl::current()->layout_test_mode()) {
+  } else if (!ResizingModeSelector::IsLegacyMode()) {
     resize_ack = NO_RESIZE_ACK;
   }
 
@@ -726,6 +747,9 @@ void RenderWidget::OnCreatingNewAck() {
 }
 
 void RenderWidget::OnResize(const ViewMsg_Resize_Params& params) {
+  if (ResizingModeSelector::ShouldAbortOnResize(this, params))
+    return;
+
   if (screen_metrics_emulator_) {
     screen_metrics_emulator_->OnResizeMessage(params);
     return;
@@ -1714,7 +1738,7 @@ void RenderWidget::didAutoResize(const WebSize& new_size) {
     // with invalid damage rects.
     paint_aggregator_.ClearPendingUpdate();
 
-    if (RenderThreadImpl::current()->layout_test_mode()) {
+    if (ResizingModeSelector::IsLegacyMode()) {
       WebRect new_pos(rootWindowRect().x,
                       rootWindowRect().y,
                       new_size.width,
@@ -1725,7 +1749,7 @@ void RenderWidget::didAutoResize(const WebSize& new_size) {
 
     AutoResizeCompositor();
 
-    if (!RenderThreadImpl::current()->layout_test_mode())
+    if (!ResizingModeSelector::IsLegacyMode())
       need_update_rect_for_auto_resize_ = true;
   }
 }
@@ -1977,7 +2001,7 @@ void RenderWidget::setWindowRect(const WebRect& rect) {
         (pos.y - popup_view_origin_for_emulation_.y()) * scale;
   }
 
-  if (!RenderThreadImpl::current()->layout_test_mode()) {
+  if (!ResizingModeSelector::IsLegacyMode()) {
     if (did_show_) {
       Send(new ViewHostMsg_RequestMove(routing_id_, pos));
       SetPendingWindowRect(pos);
