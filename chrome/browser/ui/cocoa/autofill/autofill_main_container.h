@@ -30,6 +30,7 @@ namespace autofill {
  @private
   base::scoped_nsobject<GTMWidthBasedTweaker> buttonContainer_;
   base::scoped_nsobject<NSButton> saveInChromeCheckbox_;
+  base::scoped_nsobject<NSImageView> saveInChromeTooltip_;
   base::scoped_nsobject<AutofillDetailsContainer> detailsContainer_;
   base::scoped_nsobject<HyperlinkTextView> legalDocumentsView_;
   base::scoped_nsobject<AutofillNotificationContainer> notificationContainer_;

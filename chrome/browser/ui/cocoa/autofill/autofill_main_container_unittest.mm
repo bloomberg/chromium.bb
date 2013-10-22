@@ -40,10 +40,11 @@ TEST_F(AutofillMainContainerTest, SubViews) {
   bool hasTextView = false;
   bool hasDetailsContainer = false;
   bool hasCheckbox = false;
+  bool hasCheckboxTooltip = false;
   int hasNotificationContainer = false;
 
   // Should have account chooser, button strip, and details section.
-  EXPECT_EQ(5U, [[[container_ view] subviews] count]);
+  EXPECT_EQ(6U, [[[container_ view] subviews] count]);
   for (NSView* view in [[container_ view] subviews]) {
     NSArray* subviews = [view subviews];
     if ([view isKindOfClass:[NSScrollView class]]) {
@@ -54,6 +55,8 @@ TEST_F(AutofillMainContainerTest, SubViews) {
       EXPECT_TRUE(
           [[subviews objectAtIndex:1] isKindOfClass:[NSButton class]]);
       hasButtons = true;
+    } else if ([view isKindOfClass:[NSImageView class]]) {
+      hasCheckboxTooltip = true;
     } else if ([view isKindOfClass:[NSTextView class]]) {
       hasTextView = true;
     } else if ([view isKindOfClass:[NSButton class]] &&
@@ -71,6 +74,7 @@ TEST_F(AutofillMainContainerTest, SubViews) {
   EXPECT_TRUE(hasDetailsContainer);
   EXPECT_TRUE(hasNotificationContainer);
   EXPECT_TRUE(hasCheckbox);
+  EXPECT_TRUE(hasCheckboxTooltip);
 }
 
 // Ensure the default state of the "Save in Chrome" checkbox is controlled by
