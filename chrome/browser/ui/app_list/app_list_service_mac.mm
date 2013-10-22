@@ -81,7 +81,7 @@ const CGFloat kDistanceMovedOnShow = 20;
 
 class AppListControllerDelegateCocoa : public AppListControllerDelegate {
  public:
-  AppListControllerDelegateCocoa();
+  explicit AppListControllerDelegateCocoa(AppListServiceMac* service);
   virtual ~AppListControllerDelegateCocoa();
 
  private:
@@ -100,6 +100,8 @@ class AppListControllerDelegateCocoa : public AppListControllerDelegate {
                          int event_flags) OVERRIDE;
   virtual void ShowForProfileByPath(
       const base::FilePath& profile_path) OVERRIDE;
+
+  AppListServiceMac* service_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListControllerDelegateCocoa);
 };
@@ -196,16 +198,18 @@ NSRunningApplication* ActiveApplicationNotChrome() {
   return nil;
 }
 
-AppListControllerDelegateCocoa::AppListControllerDelegateCocoa() {}
+AppListControllerDelegateCocoa::AppListControllerDelegateCocoa(
+    AppListServiceMac* service)
+    : service_(service) {}
 
 AppListControllerDelegateCocoa::~AppListControllerDelegateCocoa() {}
 
 void AppListControllerDelegateCocoa::DismissView() {
-  AppListServiceMac::GetInstance()->DismissAppList();
+  service_->DismissAppList();
 }
 
 gfx::NativeWindow AppListControllerDelegateCocoa::GetAppListWindow() {
-  return AppListServiceMac::GetInstance()->GetAppListWindow();
+  return service_->GetAppListWindow();
 }
 
 AppListControllerDelegate::Pinnable
@@ -252,9 +256,8 @@ void AppListControllerDelegateCocoa::LaunchApp(
 
 void AppListControllerDelegateCocoa::ShowForProfileByPath(
     const base::FilePath& profile_path) {
-  AppListService* service = AppListServiceMac::GetInstance();
-  service->SetProfilePath(profile_path);
-  service->Show();
+  service_->SetProfilePath(profile_path);
+  service_->Show();
 }
 
 enum DockLocation {
@@ -435,7 +438,7 @@ void AppListServiceMac::CreateForProfile(Profile* requested_profile) {
   scoped_ptr<app_list::AppListViewDelegate> delegate(
       new AppListViewDelegate(
           scoped_ptr<AppListControllerDelegate>(
-              new AppListControllerDelegateCocoa()), profile()));
+              new AppListControllerDelegateCocoa(this)), profile()));
   [[window_controller_ appListViewController] setDelegate:delegate.Pass()];
 }
 
@@ -495,7 +498,7 @@ NSWindow* AppListServiceMac::GetAppListWindow() {
 }
 
 AppListControllerDelegate* AppListServiceMac::CreateControllerDelegate() {
-  return new AppListControllerDelegateCocoa();
+  return new AppListControllerDelegateCocoa(this);
 }
 
 void AppListServiceMac::OnShimLaunch(apps::AppShimHandler::Host* host,
