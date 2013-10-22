@@ -11,6 +11,7 @@
 #include "net/android/keystore.h"
 #include "net/android/network_change_notifier_android.h"
 #include "net/android/network_library.h"
+#include "net/android/x509_util.h"
 #include "net/proxy/proxy_config_service_android.h"
 
 namespace net {
@@ -23,6 +24,7 @@ static base::android::RegistrationMethod kNetRegisteredMethods[] = {
   { "NetworkChangeNotifierAndroid",
     net::NetworkChangeNotifierAndroid::Register },
   { "ProxyConfigService", net::ProxyConfigServiceAndroid::Register },
+  { "X509Util", net::RegisterX509Util },
 };
 
 bool RegisterJni(JNIEnv* env) {

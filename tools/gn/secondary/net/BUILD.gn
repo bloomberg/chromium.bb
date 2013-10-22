@@ -26,6 +26,8 @@ component("net") {
     "android/network_change_notifier_factory_android.h",
     "android/network_library.cc",
     "android/network_library.h",
+    "android/x509_util.cc",
+    "android/x509_util.h",
     "base/address_family.h",
     "base/address_list.cc",
     "base/address_list.h",

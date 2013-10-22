@@ -71,6 +71,11 @@ public class X509UtilTest extends InstrumentationTestCase {
         return bytes;
     }
 
+    @Override
+    public void setUp() {
+        X509Util.setDisableCertificateObservationForTest(true);
+    }
+
     @MediumTest
     public void testEkusVerified() throws GeneralSecurityException, IOException {
         X509Util.addTestRootCertificate(pemToDer(CERTS_DIRECTORY + BAD_EKU_TEST_ROOT));

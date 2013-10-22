@@ -78,6 +78,12 @@ class NET_EXPORT CertDatabase {
   void SetMessageLoopForKeychainEvents();
 #endif
 
+#if defined(OS_ANDROID)
+  // On android, the system database is used. When the system notifies the
+  // application that the certificates changed, the observers must be notified.
+  void OnAndroidKeyChainChanged();
+#endif
+
  private:
   friend struct DefaultSingletonTraits<CertDatabase>;
 

@@ -36,4 +36,9 @@ int CertDatabase::AddUserCert(X509Certificate* cert) {
   return ERR_NOT_IMPLEMENTED;
 }
 
+void CertDatabase::OnAndroidKeyChainChanged() {
+  observer_list_->Notify(&Observer::OnCertTrustChanged,
+                         scoped_refptr<X509Certificate>());
+}
+
 }  // namespace net
