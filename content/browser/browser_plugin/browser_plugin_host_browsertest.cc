@@ -21,8 +21,8 @@
 #include "content/common/view_messages.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
-#include "content/public/browser/render_view_host_observer.h"
 #include "content/public/browser/render_widget_host_view.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/drop_data.h"
 #include "content/public/common/url_constants.h"
@@ -179,16 +179,15 @@ class TestShortHangTimeoutGuestFactory : public TestBrowserPluginHostFactory {
 
 // A transparent observer that can be used to verify that a RenderViewHost
 // received a specific message.
-class RenderViewHostMessageObserver : public RenderViewHostObserver {
+class MessageObserver : public WebContentsObserver {
  public:
-  RenderViewHostMessageObserver(RenderViewHost* host,
-                                uint32 message_id)
-      : RenderViewHostObserver(host),
+  MessageObserver(WebContents* web_contents, uint32 message_id)
+      : WebContentsObserver(web_contents),
         message_id_(message_id),
         message_received_(false) {
   }
 
-  virtual ~RenderViewHostMessageObserver() {}
+  virtual ~MessageObserver() {}
 
   void WaitUntilMessageReceived() {
     if (message_received_)
@@ -216,7 +215,7 @@ class RenderViewHostMessageObserver : public RenderViewHostObserver {
   uint32 message_id_;
   bool message_received_;
 
-  DISALLOW_COPY_AND_ASSIGN(RenderViewHostMessageObserver);
+  DISALLOW_COPY_AND_ASSIGN(MessageObserver);
 };
 
 class BrowserPluginHostTest : public ContentBrowserTest {
@@ -519,8 +518,8 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, AcceptTouchEvents) {
 
   // Install the touch handler in the guest. This should cause the embedder to
   // start listening for touch events too.
-  RenderViewHostMessageObserver observer(rvh,
-      ViewHostMsg_HasTouchEventHandlers::ID);
+  MessageObserver observer(test_embedder()->web_contents(),
+                           ViewHostMsg_HasTouchEventHandlers::ID);
   ExecuteSyncJSFunction(test_guest()->web_contents()->GetRenderViewHost(),
                         "InstallTouchHandler();");
   observer.WaitUntilMessageReceived();
