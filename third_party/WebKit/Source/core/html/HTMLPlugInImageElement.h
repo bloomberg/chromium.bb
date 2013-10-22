@@ -40,11 +40,6 @@ enum PluginCreationOption {
     CreateOnlyNonNetscapePlugins,
 };
 
-enum PreferPlugInsForImagesOption {
-    ShouldPreferPlugInsForImages,
-    ShouldNotPreferPlugInsForImages
-};
-
 // Base class for HTMLObjectElement and HTMLEmbedElement
 class HTMLPlugInImageElement : public HTMLPlugInElement {
 public:
@@ -68,8 +63,6 @@ public:
         return mimeType;
     }
 
-    bool shouldPreferPlugInsForImages() const { return m_shouldPreferPlugInsForImages; }
-
     // Public for FrameView::addWidgetToUpdate()
     bool needsWidgetUpdate() const { return m_needsWidgetUpdate; }
     void setNeedsWidgetUpdate(bool needsWidgetUpdate) { m_needsWidgetUpdate = needsWidgetUpdate; }
@@ -77,11 +70,7 @@ public:
 protected:
     HTMLPlugInImageElement(const QualifiedName& tagName, Document&, bool createdByParser, PreferPlugInsForImagesOption);
 
-    bool isImageType();
-
     OwnPtr<HTMLImageLoader> m_imageLoader;
-    String m_serviceType;
-    String m_url;
     KURL m_loadedUrl;
 
     static void updateWidgetCallback(Node*);
@@ -114,7 +103,6 @@ private:
     virtual bool isPlugInImageElement() const OVERRIDE { return true; }
 
     bool m_needsWidgetUpdate;
-    bool m_shouldPreferPlugInsForImages;
     bool m_createdDuringUserGesture;
 };
 

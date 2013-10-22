@@ -29,8 +29,10 @@
 #include "bindings/v8/npruntime_impl.h"
 #include "core/dom/Document.h"
 #include "core/events/Event.h"
+#include "core/loader/FrameLoaderClient.h"
 #include "core/page/EventHandler.h"
 #include "core/frame/Frame.h"
+#include "core/platform/MIMETypeFromURL.h"
 #include "core/plugins/PluginView.h"
 #include "core/rendering/RenderEmbeddedObject.h"
 #include "core/rendering/RenderWidget.h"
@@ -42,11 +44,12 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-HTMLPlugInElement::HTMLPlugInElement(const QualifiedName& tagName, Document& doc)
+HTMLPlugInElement::HTMLPlugInElement(const QualifiedName& tagName, Document& doc, PreferPlugInsForImagesOption preferPlugInsForImagesOption)
     : HTMLFrameOwnerElement(tagName, doc)
     , m_NPObject(0)
     , m_isCapturingMouseEvents(false)
     , m_inBeforeLoadEventHandler(false)
+    , m_shouldPreferPlugInsForImages(preferPlugInsForImagesOption == ShouldPreferPlugInsForImages)
     , m_displayState(Playing)
 {
 }
@@ -246,6 +249,19 @@ NPObject* HTMLPlugInElement::getNPObject()
     if (!m_NPObject)
         m_NPObject = document().frame()->script()->createScriptObjectForPluginElement(this);
     return m_NPObject;
+}
+
+bool HTMLPlugInElement::isImageType()
+{
+    if (m_serviceType.isEmpty() && protocolIs(m_url, "data"))
+        m_serviceType = mimeTypeFromDataURL(m_url);
+
+    if (Frame* frame = document().frame()) {
+        KURL completedURL = document().completeURL(m_url);
+        return frame->loader()->client()->objectContentType(completedURL, m_serviceType, shouldPreferPlugInsForImages()) == ObjectContentImage;
+    }
+
+    return Image::supportsType(m_serviceType);
 }
 
 }

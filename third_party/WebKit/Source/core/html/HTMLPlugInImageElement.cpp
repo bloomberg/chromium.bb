@@ -31,7 +31,6 @@
 #include "core/page/Page.h"
 #include "core/page/Settings.h"
 #include "platform/Logging.h"
-#include "core/platform/MIMETypeFromURL.h"
 #include "core/platform/MIMETypeRegistry.h"
 #include "core/platform/graphics/Image.h"
 #include "core/plugins/PluginData.h"
@@ -54,13 +53,12 @@ static const float sizingFullPageAreaRatioThreshold = 0.96;
 static const float autostartSoonAfterUserGestureThreshold = 5.0;
 
 HTMLPlugInImageElement::HTMLPlugInImageElement(const QualifiedName& tagName, Document& document, bool createdByParser, PreferPlugInsForImagesOption preferPlugInsForImagesOption)
-    : HTMLPlugInElement(tagName, document)
+    : HTMLPlugInElement(tagName, document, preferPlugInsForImagesOption)
     // m_needsWidgetUpdate(!createdByParser) allows HTMLObjectElement to delay
     // widget updates until after all children are parsed.  For HTMLEmbedElement
     // this delay is unnecessary, but it is simpler to make both classes share
     // the same codepath in this class.
     , m_needsWidgetUpdate(!createdByParser)
-    , m_shouldPreferPlugInsForImages(preferPlugInsForImagesOption == ShouldPreferPlugInsForImages)
     , m_createdDuringUserGesture(UserGestureIndicator::processingUserGesture())
 {
     setHasCustomStyleCallbacks();
@@ -82,19 +80,6 @@ RenderEmbeddedObject* HTMLPlugInImageElement::renderEmbeddedObject() const
     if (!renderer() || !renderer()->isEmbeddedObject())
         return 0;
     return toRenderEmbeddedObject(renderer());
-}
-
-bool HTMLPlugInImageElement::isImageType()
-{
-    if (m_serviceType.isEmpty() && protocolIs(m_url, "data"))
-        m_serviceType = mimeTypeFromDataURL(m_url);
-
-    if (Frame* frame = document().frame()) {
-        KURL completedURL = document().completeURL(m_url);
-        return frame->loader()->client()->objectContentType(completedURL, m_serviceType, shouldPreferPlugInsForImages()) == ObjectContentImage;
-    }
-
-    return Image::supportsType(m_serviceType);
 }
 
 // We don't use m_url, as it may not be the final URL that the object loads,

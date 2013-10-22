@@ -34,6 +34,11 @@ class RenderEmbeddedObject;
 class RenderWidget;
 class Widget;
 
+enum PreferPlugInsForImagesOption {
+    ShouldPreferPlugInsForImages,
+    ShouldNotPreferPlugInsForImages
+};
+
 class HTMLPlugInElement : public HTMLFrameOwnerElement {
 public:
     virtual ~HTMLPlugInElement();
@@ -68,7 +73,7 @@ public:
     virtual void removeAllEventListeners() OVERRIDE FINAL;
 
 protected:
-    HTMLPlugInElement(const QualifiedName& tagName, Document&);
+    HTMLPlugInElement(const QualifiedName& tagName, Document&, PreferPlugInsForImagesOption);
 
     virtual void detach(const AttachContext& = AttachContext()) OVERRIDE;
     virtual bool isPresentationAttribute(const QualifiedName&) const OVERRIDE;
@@ -80,6 +85,12 @@ protected:
 
     // Create or update the RenderWidget and return it, triggering layout if necessary.
     virtual RenderWidget* renderWidgetForJSBindings() const;
+
+    bool isImageType();
+    bool shouldPreferPlugInsForImages() const { return m_shouldPreferPlugInsForImages; }
+
+    String m_serviceType;
+    String m_url;
 
 private:
     virtual bool areAuthorShadowsAllowed() const OVERRIDE { return false; }
@@ -99,6 +110,7 @@ private:
     NPObject* m_NPObject;
     bool m_isCapturingMouseEvents;
     bool m_inBeforeLoadEventHandler;
+    bool m_shouldPreferPlugInsForImages;
     DisplayState m_displayState;
 };
 
