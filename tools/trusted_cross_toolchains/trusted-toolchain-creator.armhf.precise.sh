@@ -13,19 +13,19 @@
 #@ So there is a one-time step required for all machines using this TC.
 #@ Which is especially true for build-bots:
 #@
-#@  tools/trusted_cross_toolchains/trusted-toolchain-creator.armel.precise.sh  InstallCrossArmBasePackages
+#@  tools/trusted_cross_toolchains/trusted-toolchain-creator.armhf.precise.sh  InstallCrossArmBasePackages
 #@
 #@
 #@  Generally this script is invoked as:
-#@  tools/trusted_cross_toolchains/trusted-toolchain-creator.armel.precise.sh <mode> <args>*
+#@  tools/trusted_cross_toolchains/trusted-toolchain-creator.armhf.precise.sh <mode> <args>*
 #@  Available modes are shown below.
 #@
 #@ This Toolchain was tested with Ubuntu Precise
 #@
 #@ Usage of this TC:
-#@  compile: arm-linux-gnueabi-gcc -march=armv7-a -isystem ${JAIL}/usr/include
-#@  link:    arm-linux-gnueabi-gcc -L${JAIL}/usr/lib -L${JAIL}/usr/lib/arm-linux-gnueabi
-#@                                 -L${JAIL}/lib -L${JAIL}/lib/arm-linux-gnueabi
+#@  compile: arm-linux-gnueabihf-gcc -march=armv7-a -isystem ${JAIL}/usr/include
+#@  link:    arm-linux-gnueabihf-gcc -L${JAIL}/usr/lib -L${JAIL}/usr/lib/arm-linux-gnueabihf
+#@                                 -L${JAIL}/lib -L${JAIL}/lib/arm-linux-gnueabihf
 #@
 #@ Usage of QEMU
 #@  TBD
@@ -44,7 +44,7 @@ readonly SCRIPT_DIR=$(dirname $0)
 # this where we create the ARMEL "jail"
 readonly INSTALL_ROOT=$(pwd)/toolchain/linux_arm-trusted
 
-readonly TMP=/tmp/armel-crosstool-precise
+readonly TMP=/tmp/armhf-crosstool-precise
 
 readonly REQUIRED_TOOLS="wget"
 
@@ -56,30 +56,30 @@ readonly MAKE_OPTS="-j8"
 
 # this where we get the cross toolchain from for the manual install:
 readonly CROSS_ARM_TC_REPO=http://archive.ubuntu.com/ubuntu
-# this is where we get all the armel packages from
+# this is where we get all the armhf packages from
 readonly ARMEL_REPO=http://ports.ubuntu.com/ubuntu-ports
 
-readonly PACKAGE_LIST="${ARMEL_REPO}/dists/precise/main/binary-armel/Packages.bz2"
-readonly PACKAGE_LIST2="${ARMEL_REPO}/dists/precise-security/main/binary-armel/Packages.bz2"
+readonly PACKAGE_LIST="${ARMEL_REPO}/dists/precise/main/binary-armhf/Packages.bz2"
+readonly PACKAGE_LIST2="${ARMEL_REPO}/dists/precise-security/main/binary-armhf/Packages.bz2"
 
 # Packages for the host system
 # NOTE: at one point we should get rid of the 4.5 packages
 readonly CROSS_ARM_TC_PACKAGES="\
-  libc6-armel-cross \
-  libc6-dev-armel-cross \
-  libgcc1-armel-cross \
-  libgomp1-armel-cross \
-  linux-libc-dev-armel-cross \
-  libgcc1-dbg-armel-cross \
-  libgomp1-dbg-armel-cross \
-  binutils-arm-linux-gnueabi \
-  cpp-arm-linux-gnueabi \
-  gcc-arm-linux-gnueabi \
-  g++-arm-linux-gnueabi \
-  cpp-4.5-arm-linux-gnueabi \
-  gcc-4.5-arm-linux-gnueabi \
-  g++-4.5-arm-linux-gnueabi \
-  libmudflap0-dbg-armel-cross
+  libc6-armhf-cross \
+  libc6-dev-armhf-cross \
+  libgcc1-armhf-cross \
+  libgomp1-armhf-cross \
+  linux-libc-dev-armhf-cross \
+  libgcc1-dbg-armhf-cross \
+  libgomp1-dbg-armhf-cross \
+  binutils-arm-linux-gnueabihf \
+  cpp-arm-linux-gnueabihf \
+  gcc-arm-linux-gnueabihf \
+  g++-arm-linux-gnueabihf \
+  cpp-4.5-arm-linux-gnueabihf \
+  gcc-4.5-arm-linux-gnueabihf \
+  g++-4.5-arm-linux-gnueabihf \
+  libmudflap0-dbg-armhf-cross
 "
 
 # Jail packages: these are good enough for native client
@@ -103,7 +103,7 @@ readonly ARMEL_BASE_PACKAGES="\
 # Additional jail packages needed to build chrome
 # NOTE: the package listing here should be updated using the
 # GeneratePackageListXXX() functions below
-readonly ARMEL_BASE_DEP_LIST="${SCRIPT_DIR}/packagelist.precise.armel.base"
+readonly ARMEL_BASE_DEP_LIST="${SCRIPT_DIR}/packagelist.precise.armhf.base"
 readonly ARMEL_BASE_DEP_FILES="$(cat ${ARMEL_BASE_DEP_LIST})"
 
 readonly ARMEL_EXTRA_PACKAGES="\
@@ -126,6 +126,7 @@ readonly ARMEL_EXTRA_PACKAGES="\
   libdbus-1-dev \
   libexpat1 \
   libexpat1-dev \
+  libffi6 \
   libfontconfig1 \
   libfontconfig1-dev \
   libfreetype6 \
@@ -230,7 +231,7 @@ readonly ARMEL_EXTRA_PACKAGES="\
 
 # NOTE: the package listing here should be updated using the
 # GeneratePackageListXXX() functions below
-readonly ARMEL_EXTRA_DEP_LIST="${SCRIPT_DIR}/packagelist.precise.armel.extra"
+readonly ARMEL_EXTRA_DEP_LIST="${SCRIPT_DIR}/packagelist.precise.armhf.extra"
 readonly ARMEL_EXTRA_DEP_FILES="$(cat ${ARMEL_EXTRA_DEP_LIST})"
 
 ######################################################################
@@ -350,7 +351,7 @@ InstallTrustedLinkerScript() {
   # to move the sel_ldr and other images "out of the way"
   Banner "installing trusted linker script to ${trusted_ld_script}"
 
-  arm-linux-gnueabi-ld  --verbose |\
+  arm-linux-gnueabihf-ld  --verbose |\
       grep -A 10000 "=======" |\
       grep -v "=======" |\
       sed -e 's/00008000/70000000/g' > ${trusted_ld_script}
@@ -361,28 +362,31 @@ HacksAndPatches() {
   Banner "Misc Hacks & Patches"
   # these are linker scripts with absolute pathnames in them
   # which we rewrite here
-  lscripts="${rel_path}/usr/lib/arm-linux-gnueabi/libpthread.so \
-            ${rel_path}/usr/lib/arm-linux-gnueabi/libc.so"
+  lscripts="${rel_path}/usr/lib/arm-linux-gnueabihf/libpthread.so \
+            ${rel_path}/usr/lib/arm-linux-gnueabihf/libc.so"
 
   SubBanner "Rewriting Linker Scripts"
-  sed -i -e 's|/usr/lib/arm-linux-gnueabi/||g'  ${lscripts}
-  sed -i -e 's|/lib/arm-linux-gnueabi/||g' ${lscripts}
+  echo $PWD
+  echo $PWD
+  echo $PWD
+  sed -i -e 's|/usr/lib/arm-linux-gnueabihf/||g' ${lscripts}
+  sed -i -e 's|/lib/arm-linux-gnueabihf/||g' ${lscripts}
 
   # This is for chrome's ./build/linux/pkg-config-wrapper
   # which overwrites PKG_CONFIG_PATH internally
   SubBanner "Package Configs Symlink"
   mkdir -p ${rel_path}/usr/share
-  ln -s ../lib/arm-linux-gnueabi/pkgconfig ${rel_path}/usr/share/pkgconfig
+  ln -s ../lib/arm-linux-gnueabihf/pkgconfig ${rel_path}/usr/share/pkgconfig
 }
 
 
 InstallMissingArmLibrariesAndHeadersIntoJail() {
   Banner "Install Libs And Headers Into Jail"
 
-  mkdir -p ${TMP}/armel-packages
+  mkdir -p ${TMP}/armhf-packages
   mkdir -p ${INSTALL_ROOT}
   for file in $@ ; do
-    local package="${TMP}/armel-packages/${file##*/}"
+    local package="${TMP}/armhf-packages/${file##*/}"
     Banner "installing ${file}"
     DownloadOrCopy ${ARMEL_REPO}/pool/${file} ${package}
     SubBanner "extracting to ${INSTALL_ROOT}"
@@ -408,7 +412,7 @@ CleanupJailSymlinks() {
     fi
     echo "${link}: ${target}"
     case "${link}" in
-      usr/lib/arm-linux-gnueabi/*)
+      usr/lib/arm-linux-gnueabihf/*)
         # Relativize the symlink.
         ln -snfv "../../..${target}" "${link}"
         ;;
@@ -425,7 +429,7 @@ CleanupJailSymlinks() {
     # in Ubuntu. See /usr/lib/x86_64-linux-gnu/libnss_db.so on a
     # precise desktop.
     # TODO(sbc): remove this exception if/when Ubuntu fixes this link.
-    if [ "${link}" == "usr/lib/arm-linux-gnueabi/libnss_db.so" ] ; then
+    if [ "${link}" == "usr/lib/arm-linux-gnueabihf/libnss_db.so" ] ; then
       echo "ignoring known bad link: ${link}"
     elif [ ! -r "${link}" ]; then
       echo "ERROR: FOUND BAD LINK ${link}"
@@ -514,7 +518,7 @@ BuildJail() {
   CleanupJailSymlinks
   InstallTrustedLinkerScript
   HacksAndPatches
-  BuildAndInstallQemu
+  #BuildAndInstallQemu
   CreateTarBall $1
 }
 
@@ -544,7 +548,7 @@ GeneratePackageList() {
 #@
 #@ UpdatePackageLists
 #@
-#@     Regenerate the armel package lists such that they contain an up-to-date
+#@     Regenerate the armhf package lists such that they contain an up-to-date
 #@     list of URLs within the ubuntu archive.
 #@
 UpdatePackageLists() {
