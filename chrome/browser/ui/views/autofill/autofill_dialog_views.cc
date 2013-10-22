@@ -536,7 +536,7 @@ void AutofillDialogViews::ErrorBubble::UpdatePosition() {
   if (!anchor_->GetVisibleBounds().IsEmpty()) {
     SizeToContents();
     widget_->SetVisibilityChangedAnimationsEnabled(true);
-    widget_->Show();
+    widget_->ShowInactive();
   } else {
     widget_->SetVisibilityChangedAnimationsEnabled(false);
     widget_->Hide();
