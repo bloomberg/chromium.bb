@@ -62,7 +62,9 @@ def Compile(options):
   if options.experimental:
     for compile_target in EXPERIMENTAL_TARGETS:
       bb_annotations.PrintNamedStep('Experimental Compile %s' % compile_target)
-      RunCmd(cmd + ['--build-args=%s' % compile_target], flunk_on_failure=False)
+      RunCmd(cmd + ['--build-args=%s' % compile_target],
+             flunk_on_failure=False,
+             cwd=constants.DIR_SOURCE_ROOT)
 
 
 def ZipBuild(options):
@@ -72,7 +74,7 @@ def ZipBuild(options):
       '--src-dir', constants.DIR_SOURCE_ROOT,
       '--build-dir', SrcPath('out'),
       '--exclude-files', 'lib.target,gen,android_webview,jingle_unittests']
-      + bb_utils.EncodeProperties(options))
+      + bb_utils.EncodeProperties(options), cwd=constants.DIR_SOURCE_ROOT)
 
 
 def ExtractBuild(options):
@@ -81,7 +83,7 @@ def ExtractBuild(options):
       [os.path.join(SLAVE_SCRIPTS_DIR, 'extract_build.py'),
        '--build-dir', SrcPath('build'), '--build-output-dir',
        SrcPath('out')] + bb_utils.EncodeProperties(options),
-       warning_code=1)
+       warning_code=1, cwd=constants.DIR_SOURCE_ROOT)
 
 
 def FindBugs(options):
