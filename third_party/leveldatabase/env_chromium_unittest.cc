@@ -88,9 +88,10 @@ TEST(ChromiumEnv, DirectorySyncing) {
 
   std::string manifest_file_name =
       FilePathToString(dir_path.Append(FILE_PATH_LITERAL("MANIFEST-001")));
-  WritableFile* manifest_file;
-  Status s = env.NewWritableFile(manifest_file_name, &manifest_file);
+  WritableFile* manifest_file_ptr;
+  Status s = env.NewWritableFile(manifest_file_name, &manifest_file_ptr);
   EXPECT_TRUE(s.ok());
+  scoped_ptr<WritableFile> manifest_file(manifest_file_ptr);
   manifest_file->Append(data);
   EXPECT_EQ(0, env.directory_syncs());
   manifest_file->Append(data);
@@ -98,9 +99,10 @@ TEST(ChromiumEnv, DirectorySyncing) {
 
   std::string sst_file_name =
       FilePathToString(dir_path.Append(FILE_PATH_LITERAL("000003.sst")));
-  WritableFile* sst_file;
-  s = env.NewWritableFile(sst_file_name, &sst_file);
+  WritableFile* sst_file_ptr;
+  s = env.NewWritableFile(sst_file_name, &sst_file_ptr);
   EXPECT_TRUE(s.ok());
+  scoped_ptr<WritableFile> sst_file(sst_file_ptr);
   sst_file->Append(data);
   EXPECT_EQ(0, env.directory_syncs());
 
@@ -159,9 +161,9 @@ TEST(ChromiumEnv, BackupTables) {
   EXPECT_EQ(ldb_files, bak_files);
   base::FilePath ldb_file;
   EXPECT_TRUE(GetFirstLDBFile(dir, &ldb_file));
+  delete db;
   EXPECT_TRUE(base::DeleteFile(ldb_file, false));
   EXPECT_EQ(ldb_files - 1, CountFilesWithExtension(dir, FPL(".ldb")));
-  delete db;
 
   // The ldb file deleted above should be restored in Open.
   status = leveldb::DB::Open(options, dir.AsUTF8Unsafe(), &db);
