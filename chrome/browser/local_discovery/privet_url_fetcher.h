@@ -54,7 +54,6 @@ class PrivetURLFetcher : public net::URLFetcherDelegate {
 
  private:
   scoped_ptr<net::URLFetcher> url_fetcher_;
-  std::string privet_access_token_;
   Delegate* delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(PrivetURLFetcher);
