@@ -401,7 +401,7 @@ void HTMLFormElement::scheduleFormSubmission(PassRefPtr<FormSubmission> submissi
     submission->setReferrer(document().frame()->loader()->outgoingReferrer());
     submission->setOrigin(document().frame()->loader()->outgoingOrigin());
 
-    document().frame()->navigationScheduler()->scheduleFormSubmission(submission);
+    document().frame()->navigationScheduler().scheduleFormSubmission(submission);
 }
 
 void HTMLFormElement::reset()

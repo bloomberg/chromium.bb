@@ -151,7 +151,7 @@ Frame* createWindow(const String& urlString, const AtomicString& frameName, cons
         FrameLoadRequest request(activeWindow->document()->securityOrigin(), ResourceRequest(completedURL, referrer));
         newFrame->loader()->load(request);
     } else if (!urlString.isEmpty()) {
-        newFrame->navigationScheduler()->scheduleLocationChange(activeWindow->document()->securityOrigin(), completedURL.string(), referrer, false);
+        newFrame->navigationScheduler().scheduleLocationChange(activeWindow->document()->securityOrigin(), completedURL.string(), referrer, false);
     }
     return newFrame;
 }

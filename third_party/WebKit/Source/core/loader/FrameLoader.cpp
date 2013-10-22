@@ -206,7 +206,7 @@ void FrameLoader::setDefersLoading(bool defers)
     history()->setDefersLoading(defers);
 
     if (!defers) {
-        m_frame->navigationScheduler()->startTimer();
+        m_frame->navigationScheduler().startTimer();
         startCheckCompleteTimer();
     }
 }
@@ -230,7 +230,7 @@ void FrameLoader::stopLoading()
     }
 
     // FIXME: This will cancel redirection timer, which really needs to be restarted when restoring the frame from b/f cache.
-    m_frame->navigationScheduler()->cancel();
+    m_frame->navigationScheduler().cancel();
 }
 
 bool FrameLoader::closeURL()
@@ -258,7 +258,7 @@ void FrameLoader::didExplicitOpen()
     // from a subsequent window.document.open / window.document.write call.
     // Canceling redirection here works for all cases because document.open
     // implicitly precedes document.write.
-    m_frame->navigationScheduler()->cancel();
+    m_frame->navigationScheduler().cancel();
 }
 
 void FrameLoader::clear(ClearOptions options)
@@ -296,7 +296,7 @@ void FrameLoader::clear(ClearOptions options)
 
     m_frame->script()->enableEval();
 
-    m_frame->navigationScheduler()->clear();
+    m_frame->navigationScheduler().clear();
 
     m_checkTimer.stop();
     m_shouldCallCheckCompleted = false;
@@ -440,7 +440,7 @@ void FrameLoader::checkCompleted()
     if (m_frame->document()->loadEventStillNeeded())
         m_frame->document()->implicitClose();
 
-    m_frame->navigationScheduler()->startTimer();
+    m_frame->navigationScheduler().startTimer();
 
     completed();
     if (m_frame->page())
@@ -605,7 +605,7 @@ void FrameLoader::completed()
     RefPtr<Frame> protect(m_frame);
 
     for (Frame* descendant = m_frame->tree().traverseNext(m_frame); descendant; descendant = descendant->tree().traverseNext(m_frame))
-        descendant->navigationScheduler()->startTimer();
+        descendant->navigationScheduler().startTimer();
 
     if (Frame* parent = m_frame->tree().parent())
         parent->loader()->checkCompleted();
@@ -910,7 +910,7 @@ void FrameLoader::commitProvisionalLoad()
     history()->updateForCommit();
     m_client->transitionToCommittedForNewPage();
 
-    m_frame->navigationScheduler()->cancel();
+    m_frame->navigationScheduler().cancel();
     m_frame->editor().clearLastEditCommand();
 
     // If we are still in the process of initializing an empty document then
@@ -1373,7 +1373,7 @@ void FrameLoader::loadWithNavigationAction(const ResourceRequest& request, const
 
     if (isLoadingMainFrame())
         m_frame->page()->inspectorController().resume();
-    m_frame->navigationScheduler()->cancel();
+    m_frame->navigationScheduler().cancel();
 
     m_provisionalDocumentLoader = m_policyDocumentLoader.release();
     m_loadType = type;

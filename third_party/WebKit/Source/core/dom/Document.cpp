@@ -2310,7 +2310,7 @@ void Document::implicitClose()
 {
     ASSERT(!inStyleRecalc());
 
-    bool wasLocationChangePending = frame() && frame()->navigationScheduler()->locationChangePending();
+    bool wasLocationChangePending = frame() && frame()->navigationScheduler().locationChangePending();
     bool doload = !parsing() && m_parser && !processingLoadEvent() && !wasLocationChangePending;
 
     // If the load was blocked because of a pending location change and the location change triggers a same document
@@ -2368,7 +2368,7 @@ void Document::implicitClose()
     // fires. This will improve onload scores, and other browsers do it.
     // If they wanna cheat, we can too. -dwh
 
-    if (frame()->navigationScheduler()->locationChangePending() && elapsedTime() < cLayoutScheduleThreshold) {
+    if (frame()->navigationScheduler().locationChangePending() && elapsedTime() < cLayoutScheduleThreshold) {
         // Just bail out. Before or during the onload we were shifted to another page.
         // The old i-Bench suite does this. When this happens don't bother painting or laying out.
         m_loadEventProgress = LoadEventCompleted;
@@ -2905,7 +2905,7 @@ void Document::maybeHandleHttpRefresh(const String& content, HttpRefreshType htt
         addConsoleMessage(SecurityMessageSource, ErrorMessageLevel, message);
         return;
     }
-    m_frame->navigationScheduler()->scheduleRedirect(delay, refreshURL);
+    m_frame->navigationScheduler().scheduleRedirect(delay, refreshURL);
 }
 
 void Document::processHttpEquivSetCookie(const String& content)
@@ -2932,7 +2932,7 @@ void Document::processHttpEquivXFrameOptions(const String& content)
         // Stopping the loader isn't enough, as we're already parsing the document; to honor the header's
         // intent, we must navigate away from the possibly partially-rendered document to a location that
         // doesn't inherit the parent's SecurityOrigin.
-        frame->navigationScheduler()->scheduleLocationChange(securityOrigin(), SecurityOrigin::urlWithUniqueSecurityOrigin(), String());
+        frame->navigationScheduler().scheduleLocationChange(securityOrigin(), SecurityOrigin::urlWithUniqueSecurityOrigin(), String());
         addConsoleMessageWithRequestIdentifier(SecurityMessageSource, ErrorMessageLevel, message, requestIdentifier);
     }
 }

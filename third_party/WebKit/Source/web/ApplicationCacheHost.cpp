@@ -109,7 +109,7 @@ void ApplicationCacheHost::selectCacheWithManifest(const KURL& manifestURL)
             // during navigation.
             // see WebCore::ApplicationCacheGroup::selectCache()
             Frame* frame = m_documentLoader->frame();
-            frame->navigationScheduler()->scheduleLocationChange(frame->document()->securityOrigin(),
+            frame->navigationScheduler().scheduleLocationChange(frame->document()->securityOrigin(),
                 frame->document()->url(), frame->document()->referrer());
         }
     }

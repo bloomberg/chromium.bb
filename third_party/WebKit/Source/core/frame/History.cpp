@@ -111,7 +111,7 @@ void History::go(int distance)
     if (!m_frame)
         return;
 
-    m_frame->navigationScheduler()->scheduleHistoryNavigation(distance);
+    m_frame->navigationScheduler().scheduleHistoryNavigation(distance);
 }
 
 void History::go(ExecutionContext* context, int distance)
@@ -127,7 +127,7 @@ void History::go(ExecutionContext* context, int distance)
     if (!activeDocument->canNavigate(m_frame))
         return;
 
-    m_frame->navigationScheduler()->scheduleHistoryNavigation(distance);
+    m_frame->navigationScheduler().scheduleHistoryNavigation(distance);
 }
 
 KURL History::urlForState(const String& urlString)
