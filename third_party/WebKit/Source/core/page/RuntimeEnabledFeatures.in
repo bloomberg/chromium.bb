@@ -78,6 +78,10 @@ PagePopup status=stable
 PartialLayout status=experimental
 PathOpsSVGClipping
 PeerConnection depends_on=MediaStream, status=stable
+// Implementation of this feature varies by platform for now.
+// Bug to track removal once completed everywhere:
+//   http://crbug.com/308649
+PointerEventsMaxTouchPoints status=experimental
 ProgrammaticScrollNotifications status=test
 Promise status=experimental
 Quota status=stable

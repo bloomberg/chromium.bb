@@ -1,0 +1,12 @@
+<html>
+<script src="../js/resources/js-test-pre.js"></script>
+<script>
+description('This tests that the maxTouchPoints setting is plumbed through to the navigator object.');
+
+window.internals.settings.setMaxTouchPoints(37);
+shouldBe('navigator.maxTouchPoints', '37');
+</script>
+<script src="../js/resources/js-test-post.js"></script>
+<body>
+</body>
+</html>

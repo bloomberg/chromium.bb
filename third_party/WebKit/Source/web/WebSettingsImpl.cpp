@@ -337,6 +337,11 @@ void WebSettingsImpl::setMainFrameClipsContent(bool enabled)
     m_settings->setMainFrameClipsContent(enabled);
 }
 
+void WebSettingsImpl::setMaxTouchPoints(int maxTouchPoints)
+{
+    m_settings->setMaxTouchPoints(maxTouchPoints);
+}
+
 void WebSettingsImpl::setEditableLinkBehaviorNeverLive()
 {
     // FIXME: If you ever need more behaviors than this, then we should probably

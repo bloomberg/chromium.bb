@@ -115,6 +115,7 @@ public:
     virtual void setLoadWithOverviewMode(bool);
     virtual void setLocalStorageEnabled(bool);
     virtual void setMainFrameClipsContent(bool);
+    virtual void setMaxTouchPoints(int);
     virtual void setMediaPlaybackRequiresUserGesture(bool);
     virtual void setMediaFullscreenRequiresUserGesture(bool);
     virtual void setMemoryInfoEnabled(bool);

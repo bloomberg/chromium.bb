@@ -155,6 +155,12 @@ shouldRespectImageOrientation initial=false
 deviceSupportsTouch initial=false
 deviceSupportsMouse initial=true
 
+# This value indicates the number of simultaneous multi-touch points supported
+# by the currently connected screen/digitizer that supports the most points.
+# From Pointer Events spec:
+#   http://www.w3.org/TR/pointerevents/#widl-Navigator-maxTouchPoints
+maxTouchPoints type=int, initial=0
+
 # Whether touch gestures should be "fuzzed" to nearest touch targets.
 # It's expected that this is enabled everywhere by default, but it may be
 # disabled for testing purposes as the algorithm is not yet perfect.
