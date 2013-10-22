@@ -386,21 +386,6 @@ protected:
     void (RenderStyle::*m_setter)(T);
 };
 
-class NonNegativeLengthWrapper : public PropertyWrapper<Length> {
-public:
-    NonNegativeLengthWrapper(CSSPropertyID prop, Length (RenderStyle::*getter)() const, void (RenderStyle::*setter)(Length))
-    : PropertyWrapper<Length>(prop, getter, setter)
-    {
-    }
-
-    virtual void blend(const AnimationBase* anim, RenderStyle* dst, const RenderStyle* a, const RenderStyle* b, double progress) const
-    {
-        Length from = (a->*PropertyWrapperGetter<Length>::m_getter)();
-        Length to = (b->*PropertyWrapperGetter<Length>::m_getter)();
-        (dst->*PropertyWrapper<Length>::m_setter)(to.blend(from, progress, ValueRangeNonNegative));
-    }
-};
-
 template <typename T>
 class RefCountedPropertyWrapper : public PropertyWrapperGetter<T*> {
 public:
@@ -1169,7 +1154,6 @@ void CSSPropertyAnimation::ensurePropertyMap()
 
     gPropertyWrappers->append(new PropertyWrapperShape(CSSPropertyShapeInside, &RenderStyle::shapeInside, &RenderStyle::setShapeInside));
     gPropertyWrappers->append(new PropertyWrapperShape(CSSPropertyShapeOutside, &RenderStyle::shapeOutside, &RenderStyle::setShapeOutside));
-    gPropertyWrappers->append(new NonNegativeLengthWrapper(CSSPropertyShapeMargin, &RenderStyle::shapeMargin, &RenderStyle::setShapeMargin));
 
     gPropertyWrappers->append(new PropertyWrapperVisitedAffectedColor(CSSPropertyWebkitColumnRuleColor, MaybeInvalidColor, &RenderStyle::columnRuleColor, &RenderStyle::setColumnRuleColor, &RenderStyle::visitedLinkColumnRuleColor, &RenderStyle::setVisitedLinkColumnRuleColor));
     gPropertyWrappers->append(new PropertyWrapperVisitedAffectedColor(CSSPropertyWebkitTextStrokeColor, MaybeInvalidColor, &RenderStyle::textStrokeColor, &RenderStyle::setTextStrokeColor, &RenderStyle::visitedLinkTextStrokeColor, &RenderStyle::setVisitedLinkTextStrokeColor));

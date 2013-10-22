@@ -504,9 +504,6 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
     case CSSPropertyShapeOutside:
         style->setShapeOutside(toAnimatableShapeValue(value)->shapeValue());
         return;
-    case CSSPropertyShapeMargin:
-        style->setShapeMargin(animatableValueToLength(value, state, NonNegativeValues));
-        return;
     case CSSPropertyWebkitTextEmphasisColor:
         style->setTextEmphasisColor(toAnimatableColor(value)->color());
         style->setVisitedLinkTextEmphasisColor(toAnimatableColor(value)->visitedLinkColor());
