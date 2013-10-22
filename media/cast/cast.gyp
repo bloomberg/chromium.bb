@@ -31,7 +31,6 @@
             'cast_config',
             'cast_receiver.gyp:cast_receiver',
             'cast_sender.gyp:cast_sender',
-            'logging/logging.gyp:cast_logging',
             '<(DEPTH)/base/base.gyp:run_all_unittests',
             '<(DEPTH)/net/net.gyp:net',
             '<(DEPTH)/testing/gmock.gyp:gmock',
