@@ -682,7 +682,17 @@ bool IsURLAllowedInIncognito(const GURL& url,
 #if defined(ENABLE_ENHANCED_BOOKMARKS)
        url.host() == chrome::kChromeUIEnhancedBookmarksHost ||
 #endif
-       url.host() == chrome::kChromeUIUberHost)) {
+       url.host() == chrome::kChromeUIUberHost ||
+       url.host() == chrome::kChromeUIThumbnailHost ||
+       url.host() == chrome::kChromeUIThumbnailHost2 ||
+       url.host() == chrome::kChromeUIThumbnailListHost)) {
+    return false;
+  }
+
+  if (url.scheme() == chrome::kChromeSearchScheme &&
+      (url.host() == chrome::kChromeUIThumbnailHost ||
+       url.host() == chrome::kChromeUIThumbnailHost2 ||
+       url.host() == chrome::kChromeUIThumbnailListHost)) {
     return false;
   }
 
