@@ -20,6 +20,7 @@
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/controls/menu/submenu_view.h"
 #include "ui/views/controls/prefix_selector.h"
+#include "ui/views/ime/input_method.h"
 #include "ui/views/mouse_constants.h"
 #include "ui/views/widget/widget.h"
 
@@ -306,11 +307,13 @@ void Combobox::OnPaint(gfx::Canvas* canvas) {
 }
 
 void Combobox::OnFocus() {
+  GetInputMethod()->OnFocus();
   text_border_->set_has_focus(true);
   View::OnFocus();
 }
 
 void Combobox::OnBlur() {
+  GetInputMethod()->OnBlur();
   if (selector_)
     selector_->OnViewBlur();
   text_border_->set_has_focus(false);

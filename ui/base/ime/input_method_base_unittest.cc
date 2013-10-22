@@ -226,6 +226,13 @@ TEST(InputMethodBaseTest, SetFocusedTextInputClient) {
   }
 
   {
+    SCOPED_TRACE("Redundant focus events must be ignored");
+    verifier.ExpectClientDoesNotChange();
+    input_method.SetFocusedTextInputClient(&text_input_client_1st);
+    verifier.Verify();
+  }
+
+  {
     SCOPED_TRACE("Focus from 1st to 2nd TextInputClient");
 
     ASSERT_EQ(&text_input_client_1st, input_method.GetTextInputClient());
@@ -246,6 +253,12 @@ TEST(InputMethodBaseTest, SetFocusedTextInputClient) {
     verifier.Verify();
   }
 
+  {
+    SCOPED_TRACE("Redundant focus events must be ignored");
+    verifier.ExpectClientDoesNotChange();
+    input_method.SetFocusedTextInputClient(NULL);
+    verifier.Verify();
+  }
 }
 
 TEST(InputMethodBaseTest, DetachTextInputClient) {
