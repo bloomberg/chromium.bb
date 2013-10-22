@@ -4516,7 +4516,7 @@ private:
 
 // Test which ensures that the first navigation in a subframe will always
 // result in history entry being replaced and not a new one added.
-TEST_F(WebFrameTest, FirstFrameNavigationReplacesHistory)
+TEST_F(WebFrameTest, DISABLED_FirstFrameNavigationReplacesHistory)
 {
     registerMockedHttpURLLoad("history.html");
     registerMockedHttpURLLoad("find.html");
