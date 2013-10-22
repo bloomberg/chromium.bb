@@ -49,12 +49,10 @@ specific_include_rules = {
   ],
 
   r"configuration_policy_handler\.h": [
-    "+chrome/browser/prefs/incognito_mode_prefs.h",
     "+chrome/common/content_settings.h",
   ],
 
   r"configuration_policy_pref_store_unittest\.cc": [
-    "+chrome/browser/prefs/incognito_mode_prefs.h",
     "+chrome/common/content_settings.h",
     "+chrome/common/pref_names.h",
   ],

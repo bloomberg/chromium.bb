@@ -15,6 +15,7 @@
 #include "chrome/browser/policy/configuration_policy_handler.h"
 #include "chrome/browser/policy/policy_error_map.h"
 #include "chrome/browser/policy/policy_map.h"
+#include "chrome/browser/profiles/incognito_mode_policy_handler.h"
 #include "chrome/browser/search_engines/default_search_policy_handler.h"
 #include "chrome/common/pref_names.h"
 #include "components/policy/core/common/policy_pref_names.h"
@@ -461,8 +462,7 @@ ConfigurationPolicyHandlerList::ConfigurationPolicyHandlerList() {
   handlers_.push_back(new DefaultSearchPolicyHandler());
   handlers_.push_back(new FileSelectionDialogsHandler(
       prefs::kAllowFileSelectionDialogs, prefs::kPromptForDownload));
-  handlers_.push_back(
-      new IncognitoModePolicyHandler(prefs::kIncognitoModeAvailability));
+  handlers_.push_back(new IncognitoModePolicyHandler());
   handlers_.push_back(
       new JavascriptPolicyHandler(prefs::kManagedDefaultJavaScriptSetting));
   handlers_.push_back(new ProxyPolicyHandler());

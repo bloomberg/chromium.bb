@@ -15,7 +15,6 @@
 #include "chrome/browser/policy/external_data_fetcher.h"
 #include "chrome/browser/policy/policy_map.h"
 #include "chrome/browser/policy/policy_service_impl.h"
-#include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/pref_names.h"
 #include "components/policy/core/common/policy_pref_names.h"
@@ -358,99 +357,6 @@ INSTANTIATE_TEST_CASE_P(
                       policy_prefs::kUserPolicyRefreshRate),
         PolicyAndPref(key::kMaxConnectionsPerProxy,
                       prefs::kMaxConnectionsPerProxy)));
-
-// Tests Incognito mode availability preference setting.
-class ConfigurationPolicyPrefStoreIncognitoModeTest
-    : public ConfigurationPolicyPrefStoreTest {
- protected:
-  static const int kIncognitoModeAvailabilityNotSet = -1;
-
-  enum ObsoleteIncognitoEnabledValue {
-    INCOGNITO_ENABLED_UNKNOWN,
-    INCOGNITO_ENABLED_TRUE,
-    INCOGNITO_ENABLED_FALSE
-  };
-
-  void SetPolicies(ObsoleteIncognitoEnabledValue incognito_enabled,
-                   int availability) {
-    PolicyMap policy;
-    if (incognito_enabled != INCOGNITO_ENABLED_UNKNOWN) {
-      policy.Set(key::kIncognitoEnabled, POLICY_LEVEL_MANDATORY,
-                 POLICY_SCOPE_USER,
-                 base::Value::CreateBooleanValue(
-                     incognito_enabled == INCOGNITO_ENABLED_TRUE),
-                 NULL);
-    }
-    if (availability >= 0) {
-      policy.Set(key::kIncognitoModeAvailability, POLICY_LEVEL_MANDATORY,
-                 POLICY_SCOPE_USER,
-                 base::Value::CreateIntegerValue(availability),
-                 NULL);
-    }
-    UpdateProviderPolicy(policy);
-  }
-
-  void VerifyValues(IncognitoModePrefs::Availability availability) {
-    const base::Value* value = NULL;
-    EXPECT_TRUE(store_->GetValue(prefs::kIncognitoModeAvailability, &value));
-    EXPECT_TRUE(base::FundamentalValue(availability).Equals(value));
-  }
-};
-
-// The following testcases verify that if the obsolete IncognitoEnabled
-// policy is not set, the IncognitoModeAvailability values should be copied
-// from IncognitoModeAvailability policy to pref "as is".
-TEST_F(ConfigurationPolicyPrefStoreIncognitoModeTest,
-       NoObsoletePolicyAndIncognitoEnabled) {
-  SetPolicies(INCOGNITO_ENABLED_UNKNOWN, IncognitoModePrefs::ENABLED);
-  VerifyValues(IncognitoModePrefs::ENABLED);
-}
-
-TEST_F(ConfigurationPolicyPrefStoreIncognitoModeTest,
-       NoObsoletePolicyAndIncognitoDisabled) {
-  SetPolicies(INCOGNITO_ENABLED_UNKNOWN, IncognitoModePrefs::DISABLED);
-  VerifyValues(IncognitoModePrefs::DISABLED);
-}
-
-TEST_F(ConfigurationPolicyPrefStoreIncognitoModeTest,
-       NoObsoletePolicyAndIncognitoForced) {
-  SetPolicies(INCOGNITO_ENABLED_UNKNOWN, IncognitoModePrefs::FORCED);
-  VerifyValues(IncognitoModePrefs::FORCED);
-}
-
-TEST_F(ConfigurationPolicyPrefStoreIncognitoModeTest,
-       NoObsoletePolicyAndNoIncognitoAvailability) {
-  SetPolicies(INCOGNITO_ENABLED_UNKNOWN, kIncognitoModeAvailabilityNotSet);
-  const base::Value* value = NULL;
-  EXPECT_FALSE(store_->GetValue(prefs::kIncognitoModeAvailability, &value));
-}
-
-// Checks that if the obsolete IncognitoEnabled policy is set, if sets
-// the IncognitoModeAvailability preference only in case
-// the IncognitoModeAvailability policy is not specified.
-TEST_F(ConfigurationPolicyPrefStoreIncognitoModeTest,
-       ObsoletePolicyDoesNotAffectAvailabilityEnabled) {
-  SetPolicies(INCOGNITO_ENABLED_FALSE, IncognitoModePrefs::ENABLED);
-  VerifyValues(IncognitoModePrefs::ENABLED);
-}
-
-TEST_F(ConfigurationPolicyPrefStoreIncognitoModeTest,
-       ObsoletePolicyDoesNotAffectAvailabilityForced) {
-  SetPolicies(INCOGNITO_ENABLED_TRUE, IncognitoModePrefs::FORCED);
-  VerifyValues(IncognitoModePrefs::FORCED);
-}
-
-TEST_F(ConfigurationPolicyPrefStoreIncognitoModeTest,
-       ObsoletePolicySetsPreferenceToEnabled) {
-  SetPolicies(INCOGNITO_ENABLED_TRUE, kIncognitoModeAvailabilityNotSet);
-  VerifyValues(IncognitoModePrefs::ENABLED);
-}
-
-TEST_F(ConfigurationPolicyPrefStoreIncognitoModeTest,
-       ObsoletePolicySetsPreferenceToDisabled) {
-  SetPolicies(INCOGNITO_ENABLED_FALSE, kIncognitoModeAvailabilityNotSet);
-  VerifyValues(IncognitoModePrefs::DISABLED);
-}
 
 // Test cases for the Sync policy setting.
 class ConfigurationPolicyPrefStoreSyncTest

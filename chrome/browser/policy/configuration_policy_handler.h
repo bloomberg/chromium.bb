@@ -11,7 +11,6 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
-#include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/common/content_settings.h"
 
 class PrefValueMap;
@@ -292,26 +291,6 @@ class FileSelectionDialogsHandler : public TypeCheckingPolicyHandler {
   const char* allow_dialogs_pref_name_;
   const char* prompt_for_download_pref_name_;
   DISALLOW_COPY_AND_ASSIGN(FileSelectionDialogsHandler);
-};
-
-// ConfigurationPolicyHandler for the incognito mode policies.
-class IncognitoModePolicyHandler : public ConfigurationPolicyHandler {
- public:
-  explicit IncognitoModePolicyHandler(const char* pref_name);
-  virtual ~IncognitoModePolicyHandler();
-
-  // ConfigurationPolicyHandler methods:
-  virtual bool CheckPolicySettings(const PolicyMap& policies,
-                                   PolicyErrorMap* errors) OVERRIDE;
-  virtual void ApplyPolicySettings(const PolicyMap& policies,
-                                   PrefValueMap* prefs) OVERRIDE;
-
- private:
-  IncognitoModePrefs::Availability GetAvailabilityValueAsEnum(
-      const Value* availability);
-
-  const char* pref_name_;
-  DISALLOW_COPY_AND_ASSIGN(IncognitoModePolicyHandler);
 };
 
 // Handles JavaScript policies.

@@ -1756,6 +1756,8 @@
         'browser/profiles/gaia_info_update_service_factory.h',
         'browser/profiles/incognito_helpers.cc',
         'browser/profiles/incognito_helpers.h',
+        'browser/profiles/incognito_mode_policy_handler.cc',
+        'browser/profiles/incognito_mode_policy_handler.h',
         'browser/profiles/off_the_record_profile_impl.cc',
         'browser/profiles/off_the_record_profile_impl.h',
         'browser/profiles/off_the_record_profile_io_data.cc',
