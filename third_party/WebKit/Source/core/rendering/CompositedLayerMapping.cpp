@@ -1341,10 +1341,10 @@ static bool hasVisibleNonCompositingDescendant(RenderLayer* parent)
     LayerListMutationDetector mutationChecker(parent->stackingNode());
 #endif
 
-    if (Vector<RenderLayer*>* normalFlowList = parent->stackingNode()->normalFlowList()) {
+    if (Vector<RenderLayerStackingNode*>* normalFlowList = parent->stackingNode()->normalFlowList()) {
         size_t listSize = normalFlowList->size();
         for (size_t i = 0; i < listSize; ++i) {
-            RenderLayer* curLayer = normalFlowList->at(i);
+            RenderLayer* curLayer = normalFlowList->at(i)->layer();
             if (!curLayer->compositedLayerMapping()
                 && (curLayer->hasVisibleContent() || hasVisibleNonCompositingDescendant(curLayer)))
                 return true;
@@ -1356,20 +1356,20 @@ static bool hasVisibleNonCompositingDescendant(RenderLayer* parent)
             return false;
 
         // Use the m_hasCompositingDescendant bit to optimize?
-        if (Vector<RenderLayer*>* negZOrderList = parent->stackingNode()->negZOrderList()) {
+        if (Vector<RenderLayerStackingNode*>* negZOrderList = parent->stackingNode()->negZOrderList()) {
             size_t listSize = negZOrderList->size();
             for (size_t i = 0; i < listSize; ++i) {
-                RenderLayer* curLayer = negZOrderList->at(i);
+                RenderLayer* curLayer = negZOrderList->at(i)->layer();
                 if (!curLayer->compositedLayerMapping()
                     && (curLayer->hasVisibleContent() || hasVisibleNonCompositingDescendant(curLayer)))
                     return true;
             }
         }
 
-        if (Vector<RenderLayer*>* posZOrderList = parent->stackingNode()->posZOrderList()) {
+        if (Vector<RenderLayerStackingNode*>* posZOrderList = parent->stackingNode()->posZOrderList()) {
             size_t listSize = posZOrderList->size();
             for (size_t i = 0; i < listSize; ++i) {
-                RenderLayer* curLayer = posZOrderList->at(i);
+                RenderLayer* curLayer = posZOrderList->at(i)->layer();
                 if (!curLayer->compositedLayerMapping()
                     && (curLayer->hasVisibleContent() || hasVisibleNonCompositingDescendant(curLayer)))
                     return true;

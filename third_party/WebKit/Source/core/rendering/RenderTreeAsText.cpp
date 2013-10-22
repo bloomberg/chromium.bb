@@ -674,7 +674,8 @@ static void writeLayers(TextStream& ts, const RenderLayer* rootLayer, RenderLaye
     l->stackingNode()->updateLayerListsIfNeeded();
 
     bool shouldPaint = (behavior & RenderAsTextShowAllLayers) ? true : l->intersectsDamageRect(layerBounds, damageRect.rect(), rootLayer);
-    Vector<RenderLayer*>* negList = l->stackingNode()->negZOrderList();
+
+    Vector<RenderLayerStackingNode*>* negList = l->stackingNode()->negZOrderList();
     bool paintsBackgroundSeparately = negList && negList->size() > 0;
     if (shouldPaint && paintsBackgroundSeparately)
         write(ts, *l, layerBounds, damageRect.rect(), clipRectToApply.rect(), outlineRect.rect(), LayerPaintPhaseBackground, indent, behavior);
@@ -687,13 +688,13 @@ static void writeLayers(TextStream& ts, const RenderLayer* rootLayer, RenderLaye
             ++currIndent;
         }
         for (unsigned i = 0; i != negList->size(); ++i)
-            writeLayers(ts, rootLayer, negList->at(i), paintDirtyRect, currIndent, behavior);
+            writeLayers(ts, rootLayer, negList->at(i)->layer(), paintDirtyRect, currIndent, behavior);
     }
 
     if (shouldPaint)
         write(ts, *l, layerBounds, damageRect.rect(), clipRectToApply.rect(), outlineRect.rect(), paintsBackgroundSeparately ? LayerPaintPhaseForeground : LayerPaintPhaseAll, indent, behavior);
 
-    if (Vector<RenderLayer*>* normalFlowList = l->stackingNode()->normalFlowList()) {
+    if (Vector<RenderLayerStackingNode*>* normalFlowList = l->stackingNode()->normalFlowList()) {
         int currIndent = indent;
         if (behavior & RenderAsTextShowLayerNesting) {
             writeIndent(ts, indent);
@@ -701,10 +702,10 @@ static void writeLayers(TextStream& ts, const RenderLayer* rootLayer, RenderLaye
             ++currIndent;
         }
         for (unsigned i = 0; i != normalFlowList->size(); ++i)
-            writeLayers(ts, rootLayer, normalFlowList->at(i), paintDirtyRect, currIndent, behavior);
+            writeLayers(ts, rootLayer, normalFlowList->at(i)->layer(), paintDirtyRect, currIndent, behavior);
     }
 
-    if (Vector<RenderLayer*>* posList = l->stackingNode()->posZOrderList()) {
+    if (Vector<RenderLayerStackingNode*>* posList = l->stackingNode()->posZOrderList()) {
         int currIndent = indent;
         if (behavior & RenderAsTextShowLayerNesting) {
             writeIndent(ts, indent);
@@ -712,7 +713,7 @@ static void writeLayers(TextStream& ts, const RenderLayer* rootLayer, RenderLaye
             ++currIndent;
         }
         for (unsigned i = 0; i != posList->size(); ++i)
-            writeLayers(ts, rootLayer, posList->at(i), paintDirtyRect, currIndent, behavior);
+            writeLayers(ts, rootLayer, posList->at(i)->layer(), paintDirtyRect, currIndent, behavior);
     }
 
     // Altough the RenderFlowThread requires a layer, it is not collected by its parent,

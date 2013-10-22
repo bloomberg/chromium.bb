@@ -78,9 +78,9 @@ bool RenderLayerStackingNode::isStackingContext(const RenderStyle* style) const
 }
 
 // Helper for the sorting of layers by z-index.
-static inline bool compareZIndex(RenderLayer* first, RenderLayer* second)
+static inline bool compareZIndex(RenderLayerStackingNode* first, RenderLayerStackingNode* second)
 {
-    return first->stackingNode()->zIndex() < second->stackingNode()->zIndex();
+    return first->zIndex() < second->zIndex();
 }
 
 RenderLayerCompositor* RenderLayerStackingNode::compositor() const
@@ -98,7 +98,7 @@ void RenderLayerStackingNode::dirtyNormalFlowListCanBePromotedToStackingContaine
         return;
 
     for (size_t index = 0; index < normalFlowList()->size(); ++index)
-        normalFlowList()->at(index)->stackingNode()->dirtyNormalFlowListCanBePromotedToStackingContainer();
+        normalFlowList()->at(index)->dirtyNormalFlowListCanBePromotedToStackingContainer();
 }
 
 void RenderLayerStackingNode::dirtySiblingStackingNodeCanBePromotedToStackingContainer()
@@ -109,14 +109,14 @@ void RenderLayerStackingNode::dirtySiblingStackingNodeCanBePromotedToStackingCon
 
     if (!stackingNode->zOrderListsDirty() && stackingNode->posZOrderList()) {
         for (size_t index = 0; index < stackingNode->posZOrderList()->size(); ++index)
-            stackingNode->posZOrderList()->at(index)->stackingNode()->setDescendantsAreContiguousInStackingOrderDirty(true);
+            stackingNode->posZOrderList()->at(index)->setDescendantsAreContiguousInStackingOrderDirty(true);
     }
 
     stackingNode->dirtyNormalFlowListCanBePromotedToStackingContainer();
 
     if (!stackingNode->zOrderListsDirty() && stackingNode->negZOrderList()) {
         for (size_t index = 0; index < stackingNode->negZOrderList()->size(); ++index)
-            stackingNode->negZOrderList()->at(index)->stackingNode()->setDescendantsAreContiguousInStackingOrderDirty(true);
+            stackingNode->negZOrderList()->at(index)->setDescendantsAreContiguousInStackingOrderDirty(true);
     }
 }
 
@@ -186,14 +186,14 @@ void RenderLayerStackingNode::rebuildZOrderLists()
     m_zOrderListsDirty = false;
 }
 
-void RenderLayerStackingNode::rebuildZOrderLists(OwnPtr<Vector<RenderLayer*> >& posZOrderList,
-    OwnPtr<Vector<RenderLayer*> >& negZOrderList, const RenderLayer* layerToForceAsStackingContainer,
+void RenderLayerStackingNode::rebuildZOrderLists(OwnPtr<Vector<RenderLayerStackingNode*> >& posZOrderList,
+    OwnPtr<Vector<RenderLayerStackingNode*> >& negZOrderList, const RenderLayerStackingNode* nodeToForceAsStackingContainer,
     CollectLayersBehavior collectLayersBehavior)
 {
     bool includeHiddenLayers = compositor()->inCompositingMode();
     for (RenderLayer* child = layer()->firstChild(); child; child = child->nextSibling()) {
         if (!layer()->reflection() || layer()->reflectionLayer() != child)
-            child->stackingNode()->collectLayers(includeHiddenLayers, posZOrderList, negZOrderList, layerToForceAsStackingContainer, collectLayersBehavior);
+            child->stackingNode()->collectLayers(includeHiddenLayers, posZOrderList, negZOrderList, nodeToForceAsStackingContainer, collectLayersBehavior);
     }
 
     // Sort the two lists.
@@ -213,8 +213,8 @@ void RenderLayerStackingNode::rebuildZOrderLists(OwnPtr<Vector<RenderLayer*> >& 
                 RenderLayer* layer = toRenderLayerModelObject(child)->layer();
                 // Create the buffer if it doesn't exist yet.
                 if (!posZOrderList)
-                    posZOrderList = adoptPtr(new Vector<RenderLayer*>);
-                posZOrderList->append(layer);
+                    posZOrderList = adoptPtr(new Vector<RenderLayerStackingNode*>);
+                posZOrderList->append(layer->stackingNode());
             }
         }
     }
@@ -231,8 +231,8 @@ void RenderLayerStackingNode::updateNormalFlowList()
         // Ignore non-overflow layers and reflections.
         if (child->stackingNode()->isNormalFlowOnly() && (!layer()->reflection() || layer()->reflectionLayer() != child)) {
             if (!m_normalFlowList)
-                m_normalFlowList = adoptPtr(new Vector<RenderLayer*>);
-            m_normalFlowList->append(child);
+                m_normalFlowList = adoptPtr(new Vector<RenderLayerStackingNode*>);
+            m_normalFlowList->append(child->stackingNode());
         }
     }
 
@@ -240,8 +240,8 @@ void RenderLayerStackingNode::updateNormalFlowList()
 }
 
 void RenderLayerStackingNode::collectLayers(bool includeHiddenLayers,
-    OwnPtr<Vector<RenderLayer*> >& posBuffer, OwnPtr<Vector<RenderLayer*> >& negBuffer,
-    const RenderLayer* layerToForceAsStackingContainer, CollectLayersBehavior collectLayersBehavior)
+    OwnPtr<Vector<RenderLayerStackingNode*> >& posBuffer, OwnPtr<Vector<RenderLayerStackingNode*> >& negBuffer,
+    const RenderLayerStackingNode* nodeToForceAsStackingContainer, CollectLayersBehavior collectLayersBehavior)
 {
     if (layer()->isInTopLayer())
         return;
@@ -253,8 +253,8 @@ void RenderLayerStackingNode::collectLayers(bool includeHiddenLayers,
 
     switch (collectLayersBehavior) {
     case ForceLayerToStackingContainer:
-        ASSERT(layerToForceAsStackingContainer);
-        if (layer() == layerToForceAsStackingContainer) {
+        ASSERT(nodeToForceAsStackingContainer);
+        if (this == nodeToForceAsStackingContainer) {
             isStacking = true;
             isNormalFlow = false;
         } else {
@@ -263,7 +263,7 @@ void RenderLayerStackingNode::collectLayers(bool includeHiddenLayers,
         }
         break;
     case OverflowScrollCanBeStackingContainers:
-        ASSERT(!layerToForceAsStackingContainer);
+        ASSERT(!nodeToForceAsStackingContainer);
         isStacking = isStackingContainer();
         isNormalFlow = isNormalFlowOnly();
         break;
@@ -277,14 +277,14 @@ void RenderLayerStackingNode::collectLayers(bool includeHiddenLayers,
     bool includeHiddenLayer = includeHiddenLayers || (layer()->hasVisibleContent() || (layer()->hasVisibleDescendant() && isStacking));
     if (includeHiddenLayer && !isNormalFlow && !layer()->isOutOfFlowRenderFlowThread()) {
         // Determine which buffer the child should be in.
-        OwnPtr<Vector<RenderLayer*> >& buffer = (zIndex() >= 0) ? posBuffer : negBuffer;
+        OwnPtr<Vector<RenderLayerStackingNode*> >& buffer = (zIndex() >= 0) ? posBuffer : negBuffer;
 
         // Create the buffer if it doesn't exist yet.
         if (!buffer)
-            buffer = adoptPtr(new Vector<RenderLayer*>);
+            buffer = adoptPtr(new Vector<RenderLayerStackingNode*>);
 
         // Append ourselves at the end of the appropriate buffer.
-        buffer->append(layer());
+        buffer->append(this);
     }
 
     // Recur into our children to collect more layers, but only if we don't establish
@@ -293,7 +293,7 @@ void RenderLayerStackingNode::collectLayers(bool includeHiddenLayers,
         for (RenderLayer* child = layer()->firstChild(); child; child = child->nextSibling()) {
             // Ignore reflections.
             if (!layer()->reflection() || layer()->reflectionLayer() != child)
-                child->stackingNode()->collectLayers(includeHiddenLayers, posBuffer, negBuffer, layerToForceAsStackingContainer, collectLayersBehavior);
+                child->stackingNode()->collectLayers(includeHiddenLayers, posBuffer, negBuffer, nodeToForceAsStackingContainer, collectLayersBehavior);
         }
     }
 }
@@ -393,10 +393,10 @@ void RenderLayerStackingNode::updateDescendantsAreContiguousInStackingOrder()
     if (!stackingNode)
         return;
 
-    OwnPtr<Vector<RenderLayer*> > posZOrderListBeforePromote = adoptPtr(new Vector<RenderLayer*>);
-    OwnPtr<Vector<RenderLayer*> > negZOrderListBeforePromote = adoptPtr(new Vector<RenderLayer*>);
-    OwnPtr<Vector<RenderLayer*> > posZOrderListAfterPromote = adoptPtr(new Vector<RenderLayer*>);
-    OwnPtr<Vector<RenderLayer*> > negZOrderListAfterPromote = adoptPtr(new Vector<RenderLayer*>);
+    OwnPtr<Vector<RenderLayerStackingNode*> > posZOrderListBeforePromote = adoptPtr(new Vector<RenderLayerStackingNode*>);
+    OwnPtr<Vector<RenderLayerStackingNode*> > negZOrderListBeforePromote = adoptPtr(new Vector<RenderLayerStackingNode*>);
+    OwnPtr<Vector<RenderLayerStackingNode*> > posZOrderListAfterPromote = adoptPtr(new Vector<RenderLayerStackingNode*>);
+    OwnPtr<Vector<RenderLayerStackingNode*> > negZOrderListAfterPromote = adoptPtr(new Vector<RenderLayerStackingNode*>);
 
     collectBeforePromotionZOrderList(stackingNode, posZOrderListBeforePromote, negZOrderListBeforePromote);
     collectAfterPromotionZOrderList(stackingNode, posZOrderListAfterPromote, negZOrderListAfterPromote);
@@ -406,29 +406,29 @@ void RenderLayerStackingNode::updateDescendantsAreContiguousInStackingOrder()
     m_descendantsAreContiguousInStackingOrderDirty = false;
     m_descendantsAreContiguousInStackingOrder = false;
 
-    const RenderLayer* layerAfterPromote = 0;
-    for (size_t i = 0; i < maxIndex && layerAfterPromote != currentLayer; ++i) {
-        const RenderLayer* layerBeforePromote = i < negZOrderListBeforePromote->size()
+    const RenderLayerStackingNode* nodeAfterPromote = 0;
+    for (size_t i = 0; i < maxIndex && nodeAfterPromote != this; ++i) {
+        const RenderLayerStackingNode* nodeBeforePromote = i < negZOrderListBeforePromote->size()
             ? negZOrderListBeforePromote->at(i)
             : posZOrderListBeforePromote->at(i - negZOrderListBeforePromote->size());
-        layerAfterPromote = i < negZOrderListAfterPromote->size()
+        nodeAfterPromote = i < negZOrderListAfterPromote->size()
             ? negZOrderListAfterPromote->at(i)
             : posZOrderListAfterPromote->at(i - negZOrderListAfterPromote->size());
 
-        if (layerBeforePromote != layerAfterPromote && (layerAfterPromote != currentLayer || renderer()->hasBackground()))
+        if (nodeBeforePromote != nodeAfterPromote && (nodeAfterPromote != this || renderer()->hasBackground()))
             return;
     }
 
-    layerAfterPromote = 0;
-    for (size_t i = 0; i < maxIndex && layerAfterPromote != currentLayer; ++i) {
-        const RenderLayer* layerBeforePromote = i < posZOrderListBeforePromote->size()
+    nodeAfterPromote = 0;
+    for (size_t i = 0; i < maxIndex && nodeAfterPromote != this; ++i) {
+        const RenderLayerStackingNode* nodeBeforePromote = i < posZOrderListBeforePromote->size()
             ? posZOrderListBeforePromote->at(posZOrderListBeforePromote->size() - i - 1)
             : negZOrderListBeforePromote->at(negZOrderListBeforePromote->size() + posZOrderListBeforePromote->size() - i - 1);
-        layerAfterPromote = i < posZOrderListAfterPromote->size()
+        nodeAfterPromote = i < posZOrderListAfterPromote->size()
             ? posZOrderListAfterPromote->at(posZOrderListAfterPromote->size() - i - 1)
             : negZOrderListAfterPromote->at(negZOrderListAfterPromote->size() + posZOrderListAfterPromote->size() - i - 1);
 
-        if (layerBeforePromote != layerAfterPromote && layerAfterPromote != currentLayer)
+        if (nodeBeforePromote != nodeAfterPromote && nodeAfterPromote != this)
             return;
     }
 
@@ -436,9 +436,9 @@ void RenderLayerStackingNode::updateDescendantsAreContiguousInStackingOrder()
 }
 
 void RenderLayerStackingNode::collectBeforePromotionZOrderList(RenderLayerStackingNode* ancestorStackingNode,
-    OwnPtr<Vector<RenderLayer*> >& posZOrderList, OwnPtr<Vector<RenderLayer*> >& negZOrderList)
+    OwnPtr<Vector<RenderLayerStackingNode*> >& posZOrderList, OwnPtr<Vector<RenderLayerStackingNode*> >& negZOrderList)
 {
-    ancestorStackingNode->rebuildZOrderLists(posZOrderList, negZOrderList, layer(), OnlyStackingContextsCanBeStackingContainers);
+    ancestorStackingNode->rebuildZOrderLists(posZOrderList, negZOrderList, this, OnlyStackingContextsCanBeStackingContainers);
 
     const RenderLayer* currentLayer = layer();
     const RenderLayer* positionedAncestor = currentLayer->parent();
@@ -448,30 +448,30 @@ void RenderLayerStackingNode::collectBeforePromotionZOrderList(RenderLayerStacki
         positionedAncestor = 0;
 
     if (!posZOrderList)
-        posZOrderList = adoptPtr(new Vector<RenderLayer*>());
-    else if (posZOrderList->find(currentLayer) != kNotFound)
+        posZOrderList = adoptPtr(new Vector<RenderLayerStackingNode*>());
+    else if (posZOrderList->find(this) != kNotFound)
         return;
 
-    // The current layer will appear in the z-order lists after promotion, so
+    // The current node will appear in the z-order lists after promotion, so
     // for a meaningful comparison, we must insert it in the z-order lists
     // before promotion if it does not appear there already.
     if (!positionedAncestor) {
-        posZOrderList->prepend(layer());
+        posZOrderList->prepend(this);
         return;
     }
 
     for (size_t index = 0; index < posZOrderList->size(); index++) {
-        if (posZOrderList->at(index) == positionedAncestor) {
-            posZOrderList->insert(index + 1, layer());
+        if (posZOrderList->at(index)->layer() == positionedAncestor) {
+            posZOrderList->insert(index + 1, this);
             return;
         }
     }
 }
 
 void RenderLayerStackingNode::collectAfterPromotionZOrderList(RenderLayerStackingNode* ancestorStackingNode,
-    OwnPtr<Vector<RenderLayer*> >& posZOrderList, OwnPtr<Vector<RenderLayer*> >& negZOrderList)
+    OwnPtr<Vector<RenderLayerStackingNode*> >& posZOrderList, OwnPtr<Vector<RenderLayerStackingNode*> >& negZOrderList)
 {
-    ancestorStackingNode->rebuildZOrderLists(posZOrderList, negZOrderList, layer(), ForceLayerToStackingContainer);
+    ancestorStackingNode->rebuildZOrderLists(posZOrderList, negZOrderList, this, ForceLayerToStackingContainer);
 }
 
 // Compute what positive and negative z-order lists would look like before and
@@ -504,8 +504,8 @@ void RenderLayerStackingNode::collectAfterPromotionZOrderList(RenderLayerStackin
 //
 void RenderLayerStackingNode::computePaintOrderList(PaintOrderListType type, Vector<RefPtr<Node> >& list)
 {
-    OwnPtr<Vector<RenderLayer*> > posZOrderList;
-    OwnPtr<Vector<RenderLayer*> > negZOrderList;
+    OwnPtr<Vector<RenderLayerStackingNode*> > posZOrderList;
+    OwnPtr<Vector<RenderLayerStackingNode*> > negZOrderList;
 
     RenderLayerStackingNode* stackingNode = ancestorStackingNode();
     if (!stackingNode)

@@ -762,28 +762,28 @@ void RenderLayerCompositor::addToOverlapMapRecursive(OverlapMap& overlapMap, Ren
 #endif
 
     if (layer->stackingNode()->isStackingContainer()) {
-        if (Vector<RenderLayer*>* negZOrderList = layer->stackingNode()->negZOrderList()) {
+        if (Vector<RenderLayerStackingNode*>* negZOrderList = layer->stackingNode()->negZOrderList()) {
             size_t listSize = negZOrderList->size();
             for (size_t i = 0; i < listSize; ++i) {
-                RenderLayer* curLayer = negZOrderList->at(i);
+                RenderLayer* curLayer = negZOrderList->at(i)->layer();
                 addToOverlapMapRecursive(overlapMap, curLayer, layer);
             }
         }
     }
 
-    if (Vector<RenderLayer*>* normalFlowList = layer->stackingNode()->normalFlowList()) {
+    if (Vector<RenderLayerStackingNode*>* normalFlowList = layer->stackingNode()->normalFlowList()) {
         size_t listSize = normalFlowList->size();
         for (size_t i = 0; i < listSize; ++i) {
-            RenderLayer* curLayer = normalFlowList->at(i);
+            RenderLayer* curLayer = normalFlowList->at(i)->layer();
             addToOverlapMapRecursive(overlapMap, curLayer, layer);
         }
     }
 
     if (layer->stackingNode()->isStackingContainer()) {
-        if (Vector<RenderLayer*>* posZOrderList = layer->stackingNode()->posZOrderList()) {
+        if (Vector<RenderLayerStackingNode*>* posZOrderList = layer->stackingNode()->posZOrderList()) {
             size_t listSize = posZOrderList->size();
             for (size_t i = 0; i < listSize; ++i) {
-                RenderLayer* curLayer = posZOrderList->at(i);
+                RenderLayer* curLayer = posZOrderList->at(i)->layer();
                 addToOverlapMapRecursive(overlapMap, curLayer, layer);
             }
         }
@@ -907,10 +907,10 @@ void RenderLayerCompositor::computeCompositingRequirements(RenderLayer* ancestor
     bool willHaveForegroundLayer = false;
 
     if (layer->stackingNode()->isStackingContainer()) {
-        if (Vector<RenderLayer*>* negZOrderList = layer->stackingNode()->negZOrderList()) {
+        if (Vector<RenderLayerStackingNode*>* negZOrderList = layer->stackingNode()->negZOrderList()) {
             size_t listSize = negZOrderList->size();
             for (size_t i = 0; i < listSize; ++i) {
-                RenderLayer* curLayer = negZOrderList->at(i);
+                RenderLayer* curLayer = negZOrderList->at(i)->layer();
                 computeCompositingRequirements(layer, curLayer, overlapMap, childRecursionData, layersChanged, anyDescendantHas3DTransform, unclippedDescendants);
 
                 // If we have to make a layer for this child, make one now so we can have a contents layer
@@ -956,19 +956,19 @@ void RenderLayerCompositor::computeCompositingRequirements(RenderLayer* ancestor
         childRecursionData.m_testingOverlap = true;
     }
 
-    if (Vector<RenderLayer*>* normalFlowList = layer->stackingNode()->normalFlowList()) {
+    if (Vector<RenderLayerStackingNode*>* normalFlowList = layer->stackingNode()->normalFlowList()) {
         size_t listSize = normalFlowList->size();
         for (size_t i = 0; i < listSize; ++i) {
-            RenderLayer* curLayer = normalFlowList->at(i);
+            RenderLayer* curLayer = normalFlowList->at(i)->layer();
             computeCompositingRequirements(layer, curLayer, overlapMap, childRecursionData, layersChanged, anyDescendantHas3DTransform, unclippedDescendants);
         }
     }
 
     if (layer->stackingNode()->isStackingContainer()) {
-        if (Vector<RenderLayer*>* posZOrderList = layer->stackingNode()->posZOrderList()) {
+        if (Vector<RenderLayerStackingNode*>* posZOrderList = layer->stackingNode()->posZOrderList()) {
             size_t listSize = posZOrderList->size();
             for (size_t i = 0; i < listSize; ++i) {
-                RenderLayer* curLayer = posZOrderList->at(i);
+                RenderLayer* curLayer = posZOrderList->at(i)->layer();
                 computeCompositingRequirements(layer, curLayer, overlapMap, childRecursionData, layersChanged, anyDescendantHas3DTransform, unclippedDescendants);
             }
         }
@@ -1149,10 +1149,10 @@ void RenderLayerCompositor::rebuildCompositingLayerTree(RenderLayer* layer, Vect
 #endif
 
     if (layer->stackingNode()->isStackingContainer()) {
-        if (Vector<RenderLayer*>* negZOrderList = layer->stackingNode()->negZOrderList()) {
+        if (Vector<RenderLayerStackingNode*>* negZOrderList = layer->stackingNode()->negZOrderList()) {
             size_t listSize = negZOrderList->size();
             for (size_t i = 0; i < listSize; ++i) {
-                RenderLayer* curLayer = negZOrderList->at(i);
+                RenderLayer* curLayer = negZOrderList->at(i)->layer();
                 rebuildCompositingLayerTree(curLayer, childList, depth + 1);
             }
         }
@@ -1162,19 +1162,19 @@ void RenderLayerCompositor::rebuildCompositingLayerTree(RenderLayer* layer, Vect
             childList.append(currentCompositedLayerMapping->foregroundLayer());
     }
 
-    if (Vector<RenderLayer*>* normalFlowList = layer->stackingNode()->normalFlowList()) {
+    if (Vector<RenderLayerStackingNode*>* normalFlowList = layer->stackingNode()->normalFlowList()) {
         size_t listSize = normalFlowList->size();
         for (size_t i = 0; i < listSize; ++i) {
-            RenderLayer* curLayer = normalFlowList->at(i);
+            RenderLayer* curLayer = normalFlowList->at(i)->layer();
             rebuildCompositingLayerTree(curLayer, childList, depth + 1);
         }
     }
 
     if (layer->stackingNode()->isStackingContainer()) {
-        if (Vector<RenderLayer*>* posZOrderList = layer->stackingNode()->posZOrderList()) {
+        if (Vector<RenderLayerStackingNode*>* posZOrderList = layer->stackingNode()->posZOrderList()) {
             size_t listSize = posZOrderList->size();
             for (size_t i = 0; i < listSize; ++i) {
-                RenderLayer* curLayer = posZOrderList->at(i);
+                RenderLayer* curLayer = posZOrderList->at(i)->layer();
                 rebuildCompositingLayerTree(curLayer, childList, depth + 1);
             }
         }
@@ -1406,24 +1406,24 @@ void RenderLayerCompositor::updateLayerTreeGeometry(RenderLayer* layer, int dept
 #endif
 
     if (layer->stackingNode()->isStackingContainer()) {
-        if (Vector<RenderLayer*>* negZOrderList = layer->stackingNode()->negZOrderList()) {
+        if (Vector<RenderLayerStackingNode*>* negZOrderList = layer->stackingNode()->negZOrderList()) {
             size_t listSize = negZOrderList->size();
             for (size_t i = 0; i < listSize; ++i)
-                updateLayerTreeGeometry(negZOrderList->at(i), depth + 1);
+                updateLayerTreeGeometry(negZOrderList->at(i)->layer(), depth + 1);
         }
     }
 
-    if (Vector<RenderLayer*>* normalFlowList = layer->stackingNode()->normalFlowList()) {
+    if (Vector<RenderLayerStackingNode*>* normalFlowList = layer->stackingNode()->normalFlowList()) {
         size_t listSize = normalFlowList->size();
         for (size_t i = 0; i < listSize; ++i)
-            updateLayerTreeGeometry(normalFlowList->at(i), depth + 1);
+            updateLayerTreeGeometry(normalFlowList->at(i)->layer(), depth + 1);
     }
 
     if (layer->stackingNode()->isStackingContainer()) {
-        if (Vector<RenderLayer*>* posZOrderList = layer->stackingNode()->posZOrderList()) {
+        if (Vector<RenderLayerStackingNode*>* posZOrderList = layer->stackingNode()->posZOrderList()) {
             size_t listSize = posZOrderList->size();
             for (size_t i = 0; i < listSize; ++i)
-                updateLayerTreeGeometry(posZOrderList->at(i), depth + 1);
+                updateLayerTreeGeometry(posZOrderList->at(i)->layer(), depth + 1);
         }
     }
 }
@@ -1457,24 +1457,24 @@ void RenderLayerCompositor::updateCompositingDescendantGeometry(RenderLayerStack
 #endif
 
     if (layer->stackingNode()->isStackingContainer()) {
-        if (Vector<RenderLayer*>* negZOrderList = layer->stackingNode()->negZOrderList()) {
+        if (Vector<RenderLayerStackingNode*>* negZOrderList = layer->stackingNode()->negZOrderList()) {
             size_t listSize = negZOrderList->size();
             for (size_t i = 0; i < listSize; ++i)
-                updateCompositingDescendantGeometry(compositingAncestor, negZOrderList->at(i), compositedChildrenOnly);
+                updateCompositingDescendantGeometry(compositingAncestor, negZOrderList->at(i)->layer(), compositedChildrenOnly);
         }
     }
 
-    if (Vector<RenderLayer*>* normalFlowList = layer->stackingNode()->normalFlowList()) {
+    if (Vector<RenderLayerStackingNode*>* normalFlowList = layer->stackingNode()->normalFlowList()) {
         size_t listSize = normalFlowList->size();
         for (size_t i = 0; i < listSize; ++i)
-            updateCompositingDescendantGeometry(compositingAncestor, normalFlowList->at(i), compositedChildrenOnly);
+            updateCompositingDescendantGeometry(compositingAncestor, normalFlowList->at(i)->layer(), compositedChildrenOnly);
     }
 
     if (layer->stackingNode()->isStackingContainer()) {
-        if (Vector<RenderLayer*>* posZOrderList = layer->stackingNode()->posZOrderList()) {
+        if (Vector<RenderLayerStackingNode*>* posZOrderList = layer->stackingNode()->posZOrderList()) {
             size_t listSize = posZOrderList->size();
             for (size_t i = 0; i < listSize; ++i)
-                updateCompositingDescendantGeometry(compositingAncestor, posZOrderList->at(i), compositedChildrenOnly);
+                updateCompositingDescendantGeometry(compositingAncestor, posZOrderList->at(i)->layer(), compositedChildrenOnly);
         }
     }
 }
@@ -1500,10 +1500,10 @@ void RenderLayerCompositor::recursiveRepaintLayer(RenderLayer* layer, const IntR
 #endif
 
     if (layer->hasCompositingDescendant()) {
-        if (Vector<RenderLayer*>* negZOrderList = layer->stackingNode()->negZOrderList()) {
+        if (Vector<RenderLayerStackingNode*>* negZOrderList = layer->stackingNode()->negZOrderList()) {
             size_t listSize = negZOrderList->size();
             for (size_t i = 0; i < listSize; ++i) {
-                RenderLayer* curLayer = negZOrderList->at(i);
+                RenderLayer* curLayer = negZOrderList->at(i)->layer();
                 if (rect) {
                     IntRect childRect(*rect);
                     curLayer->convertToPixelSnappedLayerCoords(layer, childRect);
@@ -1513,10 +1513,10 @@ void RenderLayerCompositor::recursiveRepaintLayer(RenderLayer* layer, const IntR
             }
         }
 
-        if (Vector<RenderLayer*>* posZOrderList = layer->stackingNode()->posZOrderList()) {
+        if (Vector<RenderLayerStackingNode*>* posZOrderList = layer->stackingNode()->posZOrderList()) {
             size_t listSize = posZOrderList->size();
             for (size_t i = 0; i < listSize; ++i) {
-                RenderLayer* curLayer = posZOrderList->at(i);
+                RenderLayer* curLayer = posZOrderList->at(i)->layer();
                 if (rect) {
                     IntRect childRect(*rect);
                     curLayer->convertToPixelSnappedLayerCoords(layer, childRect);
@@ -1526,10 +1526,10 @@ void RenderLayerCompositor::recursiveRepaintLayer(RenderLayer* layer, const IntR
             }
         }
     }
-    if (Vector<RenderLayer*>* normalFlowList = layer->stackingNode()->normalFlowList()) {
+    if (Vector<RenderLayerStackingNode*>* normalFlowList = layer->stackingNode()->normalFlowList()) {
         size_t listSize = normalFlowList->size();
         for (size_t i = 0; i < listSize; ++i) {
-            RenderLayer* curLayer = normalFlowList->at(i);
+            RenderLayer* curLayer = normalFlowList->at(i)->layer();
             if (rect) {
                 IntRect childRect(*rect);
                 curLayer->convertToPixelSnappedLayerCoords(layer, childRect);
@@ -2582,29 +2582,29 @@ bool RenderLayerCompositor::layerHas3DContent(const RenderLayer* layer) const
 #endif
 
     if (stackingNode->isStackingContainer()) {
-        if (Vector<RenderLayer*>* negZOrderList = stackingNode->negZOrderList()) {
+        if (Vector<RenderLayerStackingNode*>* negZOrderList = stackingNode->negZOrderList()) {
             size_t listSize = negZOrderList->size();
             for (size_t i = 0; i < listSize; ++i) {
-                RenderLayer* curLayer = negZOrderList->at(i);
+                RenderLayer* curLayer = negZOrderList->at(i)->layer();
                 if (layerHas3DContent(curLayer))
                     return true;
             }
         }
 
-        if (Vector<RenderLayer*>* posZOrderList = stackingNode->posZOrderList()) {
+        if (Vector<RenderLayerStackingNode*>* posZOrderList = stackingNode->posZOrderList()) {
             size_t listSize = posZOrderList->size();
             for (size_t i = 0; i < listSize; ++i) {
-                RenderLayer* curLayer = posZOrderList->at(i);
+                RenderLayer* curLayer = posZOrderList->at(i)->layer();
                 if (layerHas3DContent(curLayer))
                     return true;
             }
         }
     }
 
-    if (Vector<RenderLayer*>* normalFlowList = stackingNode->normalFlowList()) {
+    if (Vector<RenderLayerStackingNode*>* normalFlowList = stackingNode->normalFlowList()) {
         size_t listSize = normalFlowList->size();
         for (size_t i = 0; i < listSize; ++i) {
-            RenderLayer* curLayer = normalFlowList->at(i);
+            RenderLayer* curLayer = normalFlowList->at(i)->layer();
             if (layerHas3DContent(curLayer))
                 return true;
         }

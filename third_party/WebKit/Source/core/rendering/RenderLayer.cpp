@@ -940,15 +940,15 @@ bool RenderLayer::update3DTransformedDescendantStatus()
 
         // Transformed or preserve-3d descendants can only be in the z-order lists, not
         // in the normal flow list, so we only need to check those.
-        if (Vector<RenderLayer*>* positiveZOrderList = m_stackingNode->posZOrderList()) {
+        if (Vector<RenderLayerStackingNode*>* positiveZOrderList = m_stackingNode->posZOrderList()) {
             for (unsigned i = 0; i < positiveZOrderList->size(); ++i)
-                m_has3DTransformedDescendant |= positiveZOrderList->at(i)->update3DTransformedDescendantStatus();
+                m_has3DTransformedDescendant |= positiveZOrderList->at(i)->layer()->update3DTransformedDescendantStatus();
         }
 
         // Now check our negative z-index children.
-        if (Vector<RenderLayer*>* negativeZOrderList = m_stackingNode->negZOrderList()) {
+        if (Vector<RenderLayerStackingNode*>* negativeZOrderList = m_stackingNode->negZOrderList()) {
             for (unsigned i = 0; i < negativeZOrderList->size(); ++i)
-                m_has3DTransformedDescendant |= negativeZOrderList->at(i)->update3DTransformedDescendantStatus();
+                m_has3DTransformedDescendant |= negativeZOrderList->at(i)->layer()->update3DTransformedDescendantStatus();
         }
 
         m_3DTransformedDescendantStatusDirty = false;
@@ -2537,7 +2537,7 @@ void RenderLayer::paintLayerByApplyingTransform(GraphicsContext* context, const 
     paintLayerContentsAndReflection(context, transformedPaintingInfo, paintFlags);
 }
 
-void RenderLayer::paintList(Vector<RenderLayer*>* list, GraphicsContext* context, const LayerPaintingInfo& paintingInfo, PaintLayerFlags paintFlags)
+void RenderLayer::paintList(Vector<RenderLayerStackingNode*>* list, GraphicsContext* context, const LayerPaintingInfo& paintingInfo, PaintLayerFlags paintFlags)
 {
     if (!list)
         return;
@@ -2550,7 +2550,7 @@ void RenderLayer::paintList(Vector<RenderLayer*>* list, GraphicsContext* context
 #endif
 
     for (size_t i = 0; i < list->size(); ++i) {
-        RenderLayer* childLayer = list->at(i);
+        RenderLayer* childLayer = list->at(i)->layer();
         if (!childLayer->isPaginated())
             childLayer->paintLayer(context, paintingInfo, paintFlags);
         else
@@ -3377,7 +3377,7 @@ bool RenderLayer::hitTestContents(const HitTestRequest& request, HitTestResult& 
     return true;
 }
 
-RenderLayer* RenderLayer::hitTestList(Vector<RenderLayer*>* list, RenderLayer* rootLayer,
+RenderLayer* RenderLayer::hitTestList(Vector<RenderLayerStackingNode*>* list, RenderLayer* rootLayer,
                                       const HitTestRequest& request, HitTestResult& result,
                                       const LayoutRect& hitTestRect, const HitTestLocation& hitTestLocation,
                                       const HitTestingTransformState* transformState,
@@ -3393,7 +3393,7 @@ RenderLayer* RenderLayer::hitTestList(Vector<RenderLayer*>* list, RenderLayer* r
 
     RenderLayer* resultLayer = 0;
     for (int i = list->size() - 1; i >= 0; --i) {
-        RenderLayer* childLayer = list->at(i);
+        RenderLayer* childLayer = list->at(i)->layer();
         RenderLayer* hitLayer = 0;
         HitTestResult tempResult(result.hitTestLocation());
         if (childLayer->isPaginated())
@@ -3914,10 +3914,10 @@ IntRect RenderLayer::calculateLayerBounds(const RenderLayer* ancestorLayer, cons
     // FIXME: Descendants that are composited should not necessarily be skipped, if they don't paint into their own
     // separate backing. Instead, they ought to contribute to the bounds of the layer we're trying to compute.
     // This applies to all z-order lists below.
-    if (Vector<RenderLayer*>* negZOrderList = m_stackingNode->negZOrderList()) {
+    if (Vector<RenderLayerStackingNode*>* negZOrderList = m_stackingNode->negZOrderList()) {
         size_t listSize = negZOrderList->size();
         for (size_t i = 0; i < listSize; ++i) {
-            RenderLayer* curLayer = negZOrderList->at(i);
+            RenderLayer* curLayer = negZOrderList->at(i)->layer();
             if (flags & IncludeCompositedDescendants || !curLayer->compositedLayerMapping()) {
                 IntRect childUnionBounds = curLayer->calculateLayerBounds(this, 0, descendantFlags);
                 unionBounds.unite(childUnionBounds);
@@ -3925,10 +3925,10 @@ IntRect RenderLayer::calculateLayerBounds(const RenderLayer* ancestorLayer, cons
         }
     }
 
-    if (Vector<RenderLayer*>* posZOrderList = m_stackingNode->posZOrderList()) {
+    if (Vector<RenderLayerStackingNode*>* posZOrderList = m_stackingNode->posZOrderList()) {
         size_t listSize = posZOrderList->size();
         for (size_t i = 0; i < listSize; ++i) {
-            RenderLayer* curLayer = posZOrderList->at(i);
+            RenderLayer* curLayer = posZOrderList->at(i)->layer();
             if (flags & IncludeCompositedDescendants || !curLayer->compositedLayerMapping()) {
                 IntRect childUnionBounds = curLayer->calculateLayerBounds(this, 0, descendantFlags);
                 unionBounds.unite(childUnionBounds);
@@ -3936,10 +3936,10 @@ IntRect RenderLayer::calculateLayerBounds(const RenderLayer* ancestorLayer, cons
         }
     }
 
-    if (Vector<RenderLayer*>* normalFlowList = m_stackingNode->normalFlowList()) {
+    if (Vector<RenderLayerStackingNode*>* normalFlowList = m_stackingNode->normalFlowList()) {
         size_t listSize = normalFlowList->size();
         for (size_t i = 0; i < listSize; ++i) {
-            RenderLayer* curLayer = normalFlowList->at(i);
+            RenderLayer* curLayer = normalFlowList->at(i)->layer();
             if (flags & IncludeCompositedDescendants || !curLayer->compositedLayerMapping()) {
                 IntRect curAbsBounds = curLayer->calculateLayerBounds(this, 0, descendantFlags);
                 unionBounds.unite(curAbsBounds);
@@ -4064,13 +4064,13 @@ bool RenderLayer::backgroundIsKnownToBeOpaqueInRect(const LayoutRect& localRect)
         || listBackgroundIsKnownToBeOpaqueInRect(m_stackingNode->normalFlowList(), localRect);
 }
 
-bool RenderLayer::listBackgroundIsKnownToBeOpaqueInRect(const Vector<RenderLayer*>* list, const LayoutRect& localRect) const
+bool RenderLayer::listBackgroundIsKnownToBeOpaqueInRect(const Vector<RenderLayerStackingNode*>* list, const LayoutRect& localRect) const
 {
     if (!list || list->isEmpty())
         return false;
 
-    for (Vector<RenderLayer*>::const_reverse_iterator iter = list->rbegin(); iter != list->rend(); ++iter) {
-        const RenderLayer* childLayer = *iter;
+    for (Vector<RenderLayerStackingNode*>::const_reverse_iterator iter = list->rbegin(); iter != list->rend(); ++iter) {
+        const RenderLayer* childLayer = (*iter)->layer();
         if (childLayer->compositedLayerMapping())
             continue;
 
