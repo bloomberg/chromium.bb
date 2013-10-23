@@ -340,7 +340,7 @@ TEST_F(ClientSideDetectionHostTest, OnPhishingDetectionDoneInvalidVerdict) {
 }
 
 #if defined(OS_WIN)
-// Fails on Blink canary bots: http://crbug.com/310423
+// Fails on Blink canary bots: http://crbug.com/299149
 TEST_F(ClientSideDetectionHostTest,
        DISABLED_OnPhishingDetectionDoneNotPhishing) {
 #else
@@ -377,7 +377,12 @@ TEST_F(ClientSideDetectionHostTest, OnPhishingDetectionDoneNotPhishing) {
   EXPECT_TRUE(Mock::VerifyAndClear(ui_manager_.get()));
 }
 
+#if defined(OS_WIN)
+// Fails on Blink canary bots: http://crbug.com/299149
+TEST_F(ClientSideDetectionHostTest, DISABLED_OnPhishingDetectionDoneDisabled) {
+#else
 TEST_F(ClientSideDetectionHostTest, OnPhishingDetectionDoneDisabled) {
+#endif
   // Case 2: client thinks the page is phishing and so does the server but
   // showing the interstitial is disabled => no interstitial is shown.
   MockBrowserFeatureExtractor* mock_extractor = new MockBrowserFeatureExtractor(
