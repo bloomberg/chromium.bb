@@ -61,6 +61,7 @@ class RenderLayerStackingNode {
     WTF_MAKE_NONCOPYABLE(RenderLayerStackingNode);
 public:
     explicit RenderLayerStackingNode(RenderLayer*);
+    ~RenderLayerStackingNode();
 
     int zIndex() const { return renderer()->style()->zIndex(); }
 
@@ -158,6 +159,14 @@ private:
         OwnPtr<Vector<RenderLayerStackingNode*> >&, const RenderLayerStackingNode* nodeToForceAsStackingContainer = 0,
         CollectLayersBehavior = OverflowScrollCanBeStackingContainers);
 
+#if !ASSERT_DISABLED
+    bool isInStackingParentZOrderLists() const;
+    bool isInStackingParentNormalFlowList() const;
+    void updateStackingParentForZOrderLists(RenderLayerStackingNode* stackingParent);
+    void updateStackingParentForNormalFlowList(RenderLayerStackingNode* stackingParent);
+    void setStackingParent(RenderLayerStackingNode* stackingParent) { m_stackingParent = stackingParent; }
+#endif
+
     bool shouldBeNormalFlowOnly() const;
     bool shouldBeNormalFlowOnlyIgnoringCompositedScrolling() const;
 
@@ -205,12 +214,17 @@ private:
 
 #if !ASSERT_DISABLED
     unsigned m_layerListMutationAllowed : 1;
+    RenderLayerStackingNode* m_stackingParent;
 #endif
 };
 
 inline void RenderLayerStackingNode::clearZOrderLists()
 {
     ASSERT(!isStackingContainer());
+
+#if !ASSERT_DISABLED
+    updateStackingParentForZOrderLists(0);
+#endif
 
     m_posZOrderList.clear();
     m_negZOrderList.clear();

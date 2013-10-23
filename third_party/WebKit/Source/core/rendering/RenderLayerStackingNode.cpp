@@ -63,6 +63,7 @@ RenderLayerStackingNode::RenderLayerStackingNode(RenderLayer* layer)
     , m_needsToBeStackingContainerHasBeenRecorded(false)
 #if !ASSERT_DISABLED
     , m_layerListMutationAllowed(true)
+    , m_stackingParent(0)
 #endif
 {
     m_isNormalFlowOnly = shouldBeNormalFlowOnly();
@@ -70,6 +71,19 @@ RenderLayerStackingNode::RenderLayerStackingNode(RenderLayer* layer)
     // Non-stacking containers should have empty z-order lists. As this is already the case,
     // there is no need to dirty / recompute these lists.
     m_zOrderListsDirty = isStackingContainer();
+}
+
+RenderLayerStackingNode::~RenderLayerStackingNode()
+{
+#if !ASSERT_DISABLED
+    if (!renderer()->documentBeingDestroyed()) {
+        ASSERT(!isInStackingParentZOrderLists());
+        ASSERT(!isInStackingParentNormalFlowList());
+
+        updateStackingParentForZOrderLists(0);
+        updateStackingParentForNormalFlowList(0);
+    }
+#endif
 }
 
 bool RenderLayerStackingNode::isStackingContext(const RenderStyle* style) const
@@ -125,6 +139,10 @@ void RenderLayerStackingNode::dirtyZOrderLists()
     ASSERT(m_layerListMutationAllowed);
     ASSERT(isStackingContainer());
 
+#if !ASSERT_DISABLED
+    updateStackingParentForZOrderLists(0);
+#endif
+
     if (m_posZOrderList)
         m_posZOrderList->clear();
     if (m_negZOrderList)
@@ -167,6 +185,10 @@ void RenderLayerStackingNode::dirtyNormalFlowList()
 {
     ASSERT(m_layerListMutationAllowed);
 
+#if !ASSERT_DISABLED
+    updateStackingParentForNormalFlowList(0);
+#endif
+
     if (m_normalFlowList)
         m_normalFlowList->clear();
     m_normalFlowListDirty = true;
@@ -183,6 +205,11 @@ void RenderLayerStackingNode::rebuildZOrderLists()
     ASSERT(m_layerListMutationAllowed);
     ASSERT(isDirtyStackingContainer());
     rebuildZOrderLists(m_posZOrderList, m_negZOrderList);
+
+#if !ASSERT_DISABLED
+    updateStackingParentForZOrderLists(this);
+#endif
+
     m_zOrderListsDirty = false;
 }
 
@@ -235,6 +262,10 @@ void RenderLayerStackingNode::updateNormalFlowList()
             m_normalFlowList->append(child->stackingNode());
         }
     }
+
+#if !ASSERT_DISABLED
+    updateStackingParentForNormalFlowList(this);
+#endif
 
     m_normalFlowListDirty = false;
 }
@@ -297,6 +328,51 @@ void RenderLayerStackingNode::collectLayers(bool includeHiddenLayers,
         }
     }
 }
+
+#if !ASSERT_DISABLED
+bool RenderLayerStackingNode::isInStackingParentZOrderLists() const
+{
+    if (!m_stackingParent || m_stackingParent->zOrderListsDirty())
+        return false;
+
+    if (m_stackingParent->posZOrderList() && m_stackingParent->posZOrderList()->find(this) != kNotFound)
+        return true;
+
+    if (m_stackingParent->negZOrderList() && m_stackingParent->negZOrderList()->find(this) != kNotFound)
+        return true;
+
+    return false;
+}
+
+bool RenderLayerStackingNode::isInStackingParentNormalFlowList() const
+{
+    if (!m_stackingParent || m_stackingParent->normalFlowListDirty())
+        return false;
+
+    return (m_stackingParent->normalFlowList() && m_stackingParent->normalFlowList()->find(this) != kNotFound);
+}
+
+void RenderLayerStackingNode::updateStackingParentForZOrderLists(RenderLayerStackingNode* stackingParent)
+{
+    if (m_posZOrderList) {
+        for (size_t i = 0; i < m_posZOrderList->size(); ++i)
+            m_posZOrderList->at(i)->setStackingParent(stackingParent);
+    }
+
+    if (m_negZOrderList) {
+        for (size_t i = 0; i < m_negZOrderList->size(); ++i)
+            m_negZOrderList->at(i)->setStackingParent(stackingParent);
+    }
+}
+
+void RenderLayerStackingNode::updateStackingParentForNormalFlowList(RenderLayerStackingNode* stackingParent)
+{
+    if (m_normalFlowList) {
+        for (size_t i = 0; i < m_normalFlowList->size(); ++i)
+            m_normalFlowList->at(i)->setStackingParent(stackingParent);
+    }
+}
+#endif
 
 void RenderLayerStackingNode::updateLayerListsIfNeeded()
 {
