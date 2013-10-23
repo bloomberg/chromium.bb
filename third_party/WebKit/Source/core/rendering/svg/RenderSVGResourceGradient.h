@@ -50,7 +50,6 @@ public:
 
     virtual bool applyResource(RenderObject*, RenderStyle*, GraphicsContext*&, unsigned short resourceMode) OVERRIDE FINAL;
     virtual void postApplyResource(RenderObject*, GraphicsContext*&, unsigned short resourceMode, const Path*, const RenderSVGShape*) OVERRIDE FINAL;
-    virtual FloatRect resourceBoundingBox(RenderObject*) OVERRIDE FINAL { return FloatRect(); }
 
 protected:
     void addStops(GradientData*, const Vector<Gradient::ColorStop>&) const;
