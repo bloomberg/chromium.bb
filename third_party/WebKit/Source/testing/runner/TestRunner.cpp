@@ -203,6 +203,7 @@ TestRunner::TestRunner(TestInterfaces* interfaces)
     bindMethod("setPageVisibility", &TestRunner::setPageVisibility);
     bindMethod("setTextDirection", &TestRunner::setTextDirection);
     bindMethod("textSurroundingNode", &TestRunner::textSurroundingNode);
+    bindMethod("useUnfortunateSynchronousResizeMode", &TestRunner::useUnfortunateSynchronousResizeMode);
     bindMethod("disableAutoResizeMode", &TestRunner::disableAutoResizeMode);
     bindMethod("enableAutoResizeMode", &TestRunner::enableAutoResizeMode);
     bindMethod("setMockDeviceMotion", &TestRunner::setMockDeviceMotion);
@@ -390,6 +391,7 @@ void TestRunner::reset()
         m_delegate->setDeviceScaleFactor(1);
         m_delegate->setAcceptAllCookies(false);
         m_delegate->setLocale("");
+        m_delegate->useUnfortunateSynchronousResizeMode(false);
         m_delegate->disableAutoResizeMode(WebSize());
         m_delegate->deleteAllCookies();
     }
@@ -1480,6 +1482,12 @@ void TestRunner::dumpResourceRequestPriorities(const CppArgumentList& arguments,
 {
     m_shouldDumpResourcePriorities = true;
     result->setNull();
+}
+
+void TestRunner::useUnfortunateSynchronousResizeMode(const CppArgumentList& arguments, CppVariant* result)
+{
+    result->setNull();
+    m_delegate->useUnfortunateSynchronousResizeMode(true);
 }
 
 void TestRunner::enableAutoResizeMode(const CppArgumentList& arguments, CppVariant* result)

@@ -102,6 +102,14 @@ public:
     // Resizes the WebView to the given size.
     virtual void setClientWindowRect(const WebKit::WebRect&) = 0;
 
+    // Enables or disables synchronous resize mode. When enabled, all window-sizing machinery is
+    // short-circuited inside the renderer. This mode is necessary for some tests that were written
+    // before browsers had multi-process architecture and rely on window resizes to happen synchronously.
+    // The function has "unfortunate" it its name because we must strive to remove all tests
+    // that rely on this... well, unfortunate behavior. See http://crbug.com/309760 for the plan.
+    // FIXME: Turn this into a pure virtual once the implementation lands in Chromium.
+    virtual void useUnfortunateSynchronousResizeMode(bool) { }
+
     // Controls auto resize mode.
     virtual void enableAutoResizeMode(const WebKit::WebSize& minSize, const WebKit::WebSize& maxSize) { }
     virtual void disableAutoResizeMode(const WebKit::WebSize&) { }
