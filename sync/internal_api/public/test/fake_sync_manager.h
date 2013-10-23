@@ -92,7 +92,6 @@ class FakeSyncManager : public SyncManager {
       Encryptor* encryptor,
       scoped_ptr<UnrecoverableErrorHandler> unrecoverable_error_handler,
       ReportUnrecoverableErrorFunction report_unrecoverable_error_function,
-      bool use_oauth2_token,
       CancelationSignal* cancelation_signal) OVERRIDE;
   virtual void ThrowUnrecoverableError() OVERRIDE;
   virtual ModelTypeSet InitialSyncEndedTypes() OVERRIDE;

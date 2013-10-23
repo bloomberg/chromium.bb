@@ -355,7 +355,6 @@ void SyncManagerImpl::Init(
     Encryptor* encryptor,
     scoped_ptr<UnrecoverableErrorHandler> unrecoverable_error_handler,
     ReportUnrecoverableErrorFunction report_unrecoverable_error_function,
-    bool use_oauth2_token,
     CancelationSignal* cancelation_signal) {
   CHECK(!initialized_);
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -421,7 +420,7 @@ void SyncManagerImpl::Init(
   }
 
   connection_manager_.reset(new SyncAPIServerConnectionManager(
-      sync_server_and_path, port, use_ssl, use_oauth2_token,
+      sync_server_and_path, port, use_ssl,
       post_factory.release(), cancelation_signal));
   connection_manager_->set_client_id(directory()->cache_guid());
   connection_manager_->AddListener(this);

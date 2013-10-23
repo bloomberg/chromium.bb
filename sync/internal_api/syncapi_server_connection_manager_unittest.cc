@@ -74,7 +74,7 @@ TEST(SyncAPIServerConnectionManagerTest, VeryEarlyAbortPost) {
   CancelationSignal signal;
   signal.Signal();
   SyncAPIServerConnectionManager server(
-      "server", 0, true, false, new BlockingHttpPostFactory(), &signal);
+      "server", 0, true, new BlockingHttpPostFactory(), &signal);
 
   ServerConnectionManager::PostBufferParams params;
   ScopedServerStatusWatcher watcher(&server, &params.response);
@@ -91,7 +91,7 @@ TEST(SyncAPIServerConnectionManagerTest, VeryEarlyAbortPost) {
 TEST(SyncAPIServerConnectionManagerTest, EarlyAbortPost) {
   CancelationSignal signal;
   SyncAPIServerConnectionManager server(
-      "server", 0, true, false, new BlockingHttpPostFactory(), &signal);
+      "server", 0, true, new BlockingHttpPostFactory(), &signal);
 
   ServerConnectionManager::PostBufferParams params;
   ScopedServerStatusWatcher watcher(&server, &params.response);
@@ -109,7 +109,7 @@ TEST(SyncAPIServerConnectionManagerTest, EarlyAbortPost) {
 TEST(SyncAPIServerConnectionManagerTest, AbortPost) {
   CancelationSignal signal;
   SyncAPIServerConnectionManager server(
-      "server", 0, true, false, new BlockingHttpPostFactory(), &signal);
+      "server", 0, true, new BlockingHttpPostFactory(), &signal);
 
   ServerConnectionManager::PostBufferParams params;
   ScopedServerStatusWatcher watcher(&server, &params.response);

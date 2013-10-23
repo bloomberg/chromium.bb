@@ -402,8 +402,7 @@ void SyncBackendHost::Initialize(
       scoped_ptr<InternalComponentsFactory>(
           new InternalComponentsFactoryImpl(factory_switches)).Pass(),
       unrecoverable_error_handler.Pass(),
-      report_unrecoverable_error_function,
-      !cl->HasSwitch(switches::kSyncDisableOAuth2Token)));
+      report_unrecoverable_error_function));
   InitCore(init_opts.Pass());
 }
 
@@ -869,8 +868,7 @@ SyncBackendHost::DoInitializeOptions::DoInitializeOptions(
     scoped_ptr<InternalComponentsFactory> internal_components_factory,
     scoped_ptr<syncer::UnrecoverableErrorHandler> unrecoverable_error_handler,
     syncer::ReportUnrecoverableErrorFunction
-        report_unrecoverable_error_function,
-    bool use_oauth2_token)
+        report_unrecoverable_error_function)
     : sync_loop(sync_loop),
       registrar(registrar),
       routing_info(routing_info),
@@ -889,8 +887,7 @@ SyncBackendHost::DoInitializeOptions::DoInitializeOptions(
       internal_components_factory(internal_components_factory.Pass()),
       unrecoverable_error_handler(unrecoverable_error_handler.Pass()),
       report_unrecoverable_error_function(
-          report_unrecoverable_error_function),
-      use_oauth2_token(use_oauth2_token) {
+          report_unrecoverable_error_function) {
 }
 
 SyncBackendHost::DoInitializeOptions::~DoInitializeOptions() {}
@@ -1161,7 +1158,6 @@ void SyncBackendHost::Core::DoInitialize(
                       &encryptor_,
                       options->unrecoverable_error_handler.Pass(),
                       options->report_unrecoverable_error_function,
-                      options->use_oauth2_token,
                       &stop_syncing_signal_);
 
   // |sync_manager_| may end up being NULL here in tests (in

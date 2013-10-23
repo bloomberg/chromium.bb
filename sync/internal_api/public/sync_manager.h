@@ -324,7 +324,6 @@ class SYNC_EXPORT SyncManager : public syncer::InvalidationHandler {
       Encryptor* encryptor,
       scoped_ptr<UnrecoverableErrorHandler> unrecoverable_error_handler,
       ReportUnrecoverableErrorFunction report_unrecoverable_error_function,
-      bool use_oauth2_token,
       CancelationSignal* cancelation_signal) = 0;
 
   // Throw an unrecoverable error from a transaction (mostly used for

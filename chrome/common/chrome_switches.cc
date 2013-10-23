@@ -1433,10 +1433,6 @@ const char kSyncTrySsltcpFirstForXmpp[]     = "sync-try-ssltcp-first-for-xmpp";
 // occur.
 const char kSyncEnableDeferredStartup[]     = "sync-enable-deferred-startup";
 
-// Disables use of OAuth2 token in sync components and reverts behavior to
-// ClientLogin token.
-const char kSyncDisableOAuth2Token[]         = "sync-disable-oauth2-token";
-
 // Enables feature to avoid unnecessary GetUpdate requests.
 const char kSyncEnableGetUpdateAvoidance[]   =
     "sync-enable-get-update-avoidance";

@@ -174,7 +174,6 @@ ProfileSyncService::ProfileSyncService(
       auto_start_enabled_(start_behavior == AUTO_START),
       configure_status_(DataTypeManager::UNKNOWN),
       setup_in_progress_(false),
-      use_oauth2_token_(false),
       oauth2_token_service_(oauth2_token_service),
       request_access_token_backoff_(&kRequestAccessTokenBackoffPolicy),
       weak_factory_(this) {
@@ -208,22 +207,10 @@ bool ProfileSyncService::IsSyncEnabledAndLoggedIn() {
 }
 
 bool ProfileSyncService::IsOAuthRefreshTokenAvailable() {
-  // Function name doesn't reflect which token is checked. Function checks
-  // refresh token when use_oauth2_token_ is true (all platforms except android)
-  // and sync token otherwise (for android).
-  // TODO(pavely): Remove "else" part once use_oauth2_token_ is gone.
-  if (use_oauth2_token_) {
-    if (!oauth2_token_service_)
-      return false;
-    return oauth2_token_service_->RefreshTokenIsAvailable(
-        oauth2_token_service_->GetPrimaryAccountId());
-  } else {
-    TokenService* token_service = TokenServiceFactory::GetForProfile(profile_);
-    if (!token_service)
-      return false;
-
-    return token_service->HasTokenForService(GaiaConstants::kSyncService);
-  }
+  if (!oauth2_token_service_)
+    return false;
+  return oauth2_token_service_->RefreshTokenIsAvailable(
+      oauth2_token_service_->GetPrimaryAccountId());
 }
 
 void ProfileSyncService::Initialize() {
@@ -306,14 +293,12 @@ void ProfileSyncService::TryStart() {
     return;
   }
 
-  if (use_oauth2_token_) {
-    // If we got here then tokens are loaded and user logged in and sync is
-    // enabled. If OAuth refresh token is not available then something is wrong.
-    // When PSS requests access token, OAuth2TokenService will return error and
-    // PSS will show error to user asking to reauthenticate.
-    UMA_HISTOGRAM_BOOLEAN("Sync.RefreshTokenAvailable",
-        IsOAuthRefreshTokenAvailable());
-  }
+  // If we got here then tokens are loaded and user logged in and sync is
+  // enabled. If OAuth refresh token is not available then something is wrong.
+  // When PSS requests access token, OAuth2TokenService will return error and
+  // PSS will show error to user asking to reauthenticate.
+  UMA_HISTOGRAM_BOOLEAN("Sync.RefreshTokenAvailable",
+      IsOAuthRefreshTokenAvailable());
 
   // If sync setup has completed we always start the backend. If the user is in
   // the process of setting up now, we should start the backend to download
@@ -481,24 +466,13 @@ void ProfileSyncService::InitSettings() {
       }
     }
   }
-
-  use_oauth2_token_ = !command_line.HasSwitch(
-      switches::kSyncDisableOAuth2Token);
 }
 
 SyncCredentials ProfileSyncService::GetCredentials() {
   SyncCredentials credentials;
   credentials.email = GetEffectiveUsername();
   DCHECK(!credentials.email.empty());
-  if (use_oauth2_token_) {
-    credentials.sync_token = access_token_;
-  } else {
-    TokenService* service = TokenServiceFactory::GetForProfile(profile_);
-    if (service->HasTokenForService(GaiaConstants::kSyncService)) {
-      credentials.sync_token = service->GetTokenForService(
-          GaiaConstants::kSyncService);
-    }
-  }
+  credentials.sync_token = access_token_;
 
   if (credentials.sync_token.empty())
     credentials.sync_token = "credentials_lost";
@@ -1106,12 +1080,6 @@ void ProfileSyncService::UpdateAuthErrorState(const AuthError& error) {
   is_auth_in_progress_ = false;
   last_auth_error_ = error;
 
-  // Fan the notification out to interested UI-thread components. Notify the
-  // SigninGlobalError first so it reflects the latest auth state before we
-  // notify observers.
-  if (profile_ && !use_oauth2_token_)
-    SigninGlobalError::GetForProfile(profile_)->AuthStatusChanged();
-
   NotifyObservers();
 }
 
@@ -1139,7 +1107,7 @@ AuthError ConnectionStatusToAuthError(
 
 void ProfileSyncService::OnConnectionStatusChange(
     syncer::ConnectionStatus status) {
-  if (use_oauth2_token_ && status == syncer::CONNECTION_AUTH_ERROR) {
+  if (status == syncer::CONNECTION_AUTH_ERROR) {
     // Sync server returned error indicating that access token is invalid. It
     // could be either expired or access is revoked. Let's request another
     // access token and if access is revoked then request for token will fail

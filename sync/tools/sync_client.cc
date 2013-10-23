@@ -371,7 +371,7 @@ int SyncClientMain(int argc, char* argv[]) {
                     &null_encryptor,
                     scoped_ptr<UnrecoverableErrorHandler>(
                         new LoggingUnrecoverableErrorHandler).Pass(),
-                    &LogUnrecoverableErrorContext, false,
+                    &LogUnrecoverableErrorContext,
                     &scm_cancelation_signal);
   // TODO(akalin): Avoid passing in model parameters multiple times by
   // organizing handling of model types.

@@ -835,7 +835,6 @@ class SyncManagerTest : public testing::Test,
         scoped_ptr<UnrecoverableErrorHandler>(
             new TestUnrecoverableErrorHandler).Pass(),
         NULL,
-        false,
         &cancelation_signal_);
 
     sync_manager_.GetEncryptionHandler()->AddObserver(&encryption_observer_);

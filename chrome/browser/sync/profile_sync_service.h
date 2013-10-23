@@ -955,11 +955,6 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   //     * If sync is reenabled, PSS passes ownership to new backend.
   scoped_ptr<base::Thread> sync_thread_;
 
-  // Specifies whenever to use oauth2 access token or ClientLogin token in
-  // communications with sync and xmpp servers.
-  // TODO(pavely): Remove once android is converted to oauth2 tokens.
-  bool use_oauth2_token_;
-
   // ProfileSyncService uses this service to get access tokens.
   ProfileOAuth2TokenService* oauth2_token_service_;
 

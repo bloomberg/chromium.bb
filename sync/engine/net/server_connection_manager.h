@@ -167,12 +167,10 @@ class SYNC_EXPORT_PRIVATE ServerConnectionManager : public CancelationObserver {
 
     void GetServerParams(std::string* server,
                          int* server_port,
-                         bool* use_ssl,
-                         bool* use_oauth2_token) const {
+                         bool* use_ssl) const {
       server->assign(scm_->sync_server_);
       *server_port = scm_->sync_server_port_;
       *use_ssl = scm_->use_ssl_;
-      *use_oauth2_token = scm_->use_oauth2_token_;
     }
 
     std::string buffer_;
@@ -186,7 +184,6 @@ class SYNC_EXPORT_PRIVATE ServerConnectionManager : public CancelationObserver {
   ServerConnectionManager(const std::string& server,
                           int port,
                           bool use_ssl,
-                          bool use_oauth2_token,
                           CancelationSignal* cancelation_signal);
 
   virtual ~ServerConnectionManager();
@@ -291,11 +288,6 @@ class SYNC_EXPORT_PRIVATE ServerConnectionManager : public CancelationObserver {
 
   // Indicates whether or not requests should be made using HTTPS.
   bool use_ssl_;
-
-  // Indicates if token should be handled as OAuth2 token. Connection should set
-  // auth header appropriately.
-  // TODO(pavely): Remove once sync on android switches to oauth2 tokens.
-  bool use_oauth2_token_;
 
   // The paths we post to.
   std::string proto_sync_path_;

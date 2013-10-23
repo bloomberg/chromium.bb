@@ -35,7 +35,7 @@ static char kCacheGuid[] = "kqyg7097kro6GSUod+GSg==";
 
 MockConnectionManager::MockConnectionManager(syncable::Directory* directory,
                                              CancelationSignal* signal)
-    : ServerConnectionManager("unused", 0, false, false, signal),
+    : ServerConnectionManager("unused", 0, false, signal),
       server_reachable_(true),
       conflict_all_commits_(false),
       conflict_n_commits_(0),

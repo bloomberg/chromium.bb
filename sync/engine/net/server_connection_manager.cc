@@ -178,12 +178,10 @@ ServerConnectionManager::ServerConnectionManager(
     const string& server,
     int port,
     bool use_ssl,
-    bool use_oauth2_token,
     CancelationSignal* cancelation_signal)
     : sync_server_(server),
       sync_server_port_(port),
       use_ssl_(use_ssl),
-      use_oauth2_token_(use_oauth2_token),
       proto_sync_path_(kSyncServerSyncPath),
       server_status_(HttpResponse::NONE),
       terminated_(false),
