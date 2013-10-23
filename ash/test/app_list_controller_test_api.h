@@ -9,7 +9,6 @@
 
 namespace app_list {
 class AppListView;
-class AppsGridView;
 }
 
 namespace ash {
@@ -24,9 +23,6 @@ namespace test {
 class AppListControllerTestApi {
  public:
   explicit AppListControllerTestApi(Shell* shell);
-
-  // Gets the root level apps grid view.
-  app_list::AppsGridView* GetRootGridView();
 
   app_list::AppListView* view();
 

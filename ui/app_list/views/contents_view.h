@@ -23,11 +23,9 @@ namespace app_list {
 
 class AppsGridView;
 class ApplicationDragAndDropHost;
-class AppListFolderItem;
 class AppListMainView;
 class AppListModel;
 class AppListViewDelegate;
-class AppsContainerView;
 class PaginationModel;
 
 // A view to manage sub views under the search box (apps grid view + page
@@ -51,11 +49,8 @@ class ContentsView : public views::View {
       ApplicationDragAndDropHost* drag_and_drop_host);
 
   void ShowSearchResults(bool show);
-  void ShowFolderContent(AppListFolderItem* folder);
 
   void Prerender();
-
-  AppsContainerView* apps_container_view() { return apps_container_view_; }
 
  private:
   enum ShowState {
@@ -85,7 +80,7 @@ class ContentsView : public views::View {
   ShowState show_state_;
   PaginationModel* pagination_model_;  // Owned by AppListController.
 
-  AppsContainerView* apps_container_view_; // Owned by the views hierarchy.
+  AppsGridView* apps_grid_view_;  // Owned by the view.
 
   scoped_ptr<views::ViewModel> view_model_;
   scoped_ptr<views::BoundsAnimator> bounds_animator_;

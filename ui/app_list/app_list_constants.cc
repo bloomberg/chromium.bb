@@ -36,7 +36,6 @@ const int kOverscrollPageTransitionDurationMs = 50;
 // Preferred number of columns and rows in apps grid.
 const int kPreferredCols = 4;
 const int kPreferredRows = 4;
-const int kPreferredIconDimension = 48;
 
 // Font style for app item labels.
 const ui::ResourceBundle::FontStyle kItemTextFontStyle =

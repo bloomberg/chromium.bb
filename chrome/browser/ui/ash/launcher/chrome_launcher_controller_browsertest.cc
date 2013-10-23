@@ -15,7 +15,6 @@
 #include "ash/shelf/shelf_util.h"
 #include "ash/shelf/shelf_view.h"
 #include "ash/shell.h"
-#include "ash/test/app_list_controller_test_api.h"
 #include "ash/test/launcher_test_api.h"
 #include "ash/test/shelf_view_test_api.h"
 #include "ash/test/shell_test_api.h"
@@ -1564,8 +1563,7 @@ IN_PROC_BROWSER_TEST_F(LauncherAppBrowserTest, DragAndDrop) {
 
   EXPECT_TRUE(service->IsAppListVisible());
   app_list::AppsGridView* grid_view =
-      ash::test::AppListControllerTestApi(ash::Shell::GetInstance()).
-          GetRootGridView();
+      app_list::AppsGridView::GetLastGridViewForTest();
   ASSERT_TRUE(grid_view);
   ASSERT_TRUE(grid_view->has_drag_and_drop_host_for_test());
 
@@ -1781,8 +1779,7 @@ IN_PROC_BROWSER_TEST_F(LauncherAppBrowserTest, ClickItem) {
 
   EXPECT_TRUE(service->IsAppListVisible());
   app_list::AppsGridView* grid_view =
-      ash::test::AppListControllerTestApi(ash::Shell::GetInstance()).
-          GetRootGridView();
+      app_list::AppsGridView::GetLastGridViewForTest();
   ASSERT_TRUE(grid_view);
   const views::ViewModel* vm_grid = grid_view->view_model_for_test();
   EXPECT_EQ(2, vm_grid->view_size());

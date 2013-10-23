@@ -12,7 +12,6 @@
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_util.h"
 #include "ui/app_list/app_list_constants.h"
-#include "ui/app_list/app_list_folder_item.h"
 #include "ui/app_list/app_list_item_model.h"
 #include "ui/app_list/app_list_model.h"
 #include "ui/app_list/app_list_view_delegate.h"
@@ -191,11 +190,7 @@ void AppListMainView::OnItemIconLoaded(IconLoader* loader) {
 }
 
 void AppListMainView::ActivateApp(AppListItemModel* item, int event_flags) {
-  // TODO(jennyz): Activate the folder via AppListModel notification.
-  if (item->GetAppType() == AppListFolderItem::kAppType)
-    contents_view_->ShowFolderContent(static_cast<AppListFolderItem*>(item));
-  else
-    item->Activate(event_flags);
+  item->Activate(event_flags);
 }
 
 void AppListMainView::GetShortcutPathForApp(
