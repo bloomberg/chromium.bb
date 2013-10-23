@@ -33,6 +33,8 @@
         'android/gfx_jni_registrar.h',
         'android/java_bitmap.cc',
         'android/java_bitmap.h',
+        'android/shared_device_display_info.cc',
+        'android/shared_device_display_info.h',
         'animation/animation.cc',
         'animation/animation.h',
         'animation/animation_container.cc',

@@ -8,7 +8,6 @@
 #include <jni.h>
 #include <string>
 
-#include "base/android/scoped_java_ref.h"
 #include "base/basictypes.h"
 #include "ui/gfx/gfx_export.h"
 
@@ -40,12 +39,7 @@ class GFX_EXPORT DeviceDisplayInfo {
   // Smallest possible screen size in density-independent pixels.
   int GetSmallestDIPWidth();
 
-  // Registers methods with JNI and returns true if succeeded.
-  static bool RegisterDeviceDisplayInfo(JNIEnv* env);
-
  private:
-  base::android::ScopedJavaGlobalRef<jobject> j_device_info_;
-
   DISALLOW_COPY_AND_ASSIGN(DeviceDisplayInfo);
 };
 

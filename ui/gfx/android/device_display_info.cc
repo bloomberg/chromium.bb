@@ -4,70 +4,39 @@
 
 #include "ui/gfx/android/device_display_info.h"
 
-#include "base/android/jni_android.h"
-#include "base/android/jni_string.h"
 #include "base/logging.h"
-#include "jni/DeviceDisplayInfo_jni.h"
-
-using base::android::AttachCurrentThread;
-using base::android::ScopedJavaLocalRef;
+#include "ui/gfx/android/shared_device_display_info.h"
 
 namespace gfx {
 
 DeviceDisplayInfo::DeviceDisplayInfo() {
-  JNIEnv* env = AttachCurrentThread();
-  j_device_info_.Reset(Java_DeviceDisplayInfo_create(env,
-      base::android::GetApplicationContext()));
 }
 
 DeviceDisplayInfo::~DeviceDisplayInfo() {
 }
 
 int DeviceDisplayInfo::GetDisplayHeight() {
-  JNIEnv* env = AttachCurrentThread();
-  jint result =
-      Java_DeviceDisplayInfo_getDisplayHeight(env, j_device_info_.obj());
-  return static_cast<int>(result);
+  return SharedDeviceDisplayInfo::GetInstance()->GetDisplayHeight();
 }
 
 int DeviceDisplayInfo::GetDisplayWidth() {
-  JNIEnv* env = AttachCurrentThread();
-  jint result =
-      Java_DeviceDisplayInfo_getDisplayWidth(env, j_device_info_.obj());
-  return static_cast<int>(result);
+  return SharedDeviceDisplayInfo::GetInstance()->GetDisplayWidth();
 }
 
 int DeviceDisplayInfo::GetBitsPerPixel() {
-  JNIEnv* env = AttachCurrentThread();
-  jint result =
-      Java_DeviceDisplayInfo_getBitsPerPixel(env, j_device_info_.obj());
-  return static_cast<int>(result);
+  return SharedDeviceDisplayInfo::GetInstance()->GetBitsPerPixel();
 }
 
 int DeviceDisplayInfo::GetBitsPerComponent() {
-  JNIEnv* env = AttachCurrentThread();
-  jint result =
-      Java_DeviceDisplayInfo_getBitsPerComponent(env, j_device_info_.obj());
-  return static_cast<int>(result);
+  return SharedDeviceDisplayInfo::GetInstance()->GetBitsPerComponent();
 }
 
 double DeviceDisplayInfo::GetDIPScale() {
-  JNIEnv* env = AttachCurrentThread();
-  jdouble result =
-      Java_DeviceDisplayInfo_getDIPScale(env, j_device_info_.obj());
-  return static_cast<double>(result);
+  return SharedDeviceDisplayInfo::GetInstance()->GetDIPScale();
 }
 
 int DeviceDisplayInfo::GetSmallestDIPWidth() {
-  JNIEnv* env = AttachCurrentThread();
-  jint result =
-      Java_DeviceDisplayInfo_getSmallestDIPWidth(env, j_device_info_.obj());
-  return static_cast<int>(result);
-}
-
-// static
-bool DeviceDisplayInfo::RegisterDeviceDisplayInfo(JNIEnv* env) {
-  return RegisterNativesImpl(env);
+  return SharedDeviceDisplayInfo::GetInstance()->GetSmallestDIPWidth();
 }
 
 }  // namespace gfx
