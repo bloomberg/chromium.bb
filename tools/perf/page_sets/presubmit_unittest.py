@@ -46,9 +46,6 @@ class OutputAPIStub(object):
 
 class PresubmitTest(unittest.TestCase):
   def setUp(self):
-    self._original_import = PRESUBMIT._ImportCloudStorage # pylint:disable=W0212
-    PRESUBMIT._ImportCloudStorage = lambda: None
-
     success_file_hash = 'da39a3ee5e6b4b0d3255bfef95601890afd80709'
 
     self._stubs = system_stub.Override(
@@ -76,7 +73,6 @@ class PresubmitTest(unittest.TestCase):
     }
 
   def tearDown(self):
-    PRESUBMIT._ImportCloudStorage = self._original_import
     self._stubs.Restore()
 
   def assertResultCount(self, results, expected_errors, expected_notifications):

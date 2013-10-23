@@ -7,16 +7,13 @@ import re
 import sys
 
 
-def _ImportCloudStorage():
-  # Because this script will be called from a magic PRESUBMIT demon,
-  # avoid angering it; don't pollute its sys.path.
-  old_sys_path = sys.path
-  try:
-    sys.path = [os.path.join(os.pardir, os.pardir, 'telemetry')] + sys.path
-    from telemetry.page import cloud_storage
-    return cloud_storage
-  finally:
-    sys.path = old_sys_path
+# Avoid leaking changes to global sys.path.
+_old_sys_path = sys.path
+try:
+  sys.path.append(os.path.join(os.pardir, os.pardir, 'telemetry'))
+  from telemetry.page import cloud_storage
+finally:
+  sys.path = _old_sys_path
 
 
 def _SyncFilesToCloud(input_api, output_api):
@@ -24,8 +21,6 @@ def _SyncFilesToCloud(input_api, output_api):
 
   It validates all the hashes and skips upload if not necessary.
   """
-  cloud_storage = _ImportCloudStorage()
-
   # Look in both buckets, in case the user uploaded the file manually. But this
   # script focuses on WPR archives, so it only uploads to the internal bucket.
   hashes_in_cloud_storage = cloud_storage.List(cloud_storage.INTERNAL_BUCKET)
