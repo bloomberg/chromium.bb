@@ -64,7 +64,7 @@ void GeolocationController::addObserver(Geolocation* observer, bool enableHighAc
     if (m_client) {
         if (enableHighAccuracy)
             m_client->setEnableHighAccuracy(true);
-        if (wasEmpty && page()->visibilityState() == PageVisibilityStateVisible)
+        if (wasEmpty && page() && page()->visibilityState() == PageVisibilityStateVisible)
             m_client->startUpdating();
     }
 }
@@ -135,7 +135,7 @@ void GeolocationController::pageVisibilityChanged()
     if (m_observers.isEmpty() || !m_client)
         return;
 
-    if (page()->visibilityState() == PageVisibilityStateVisible)
+    if (page() && page()->visibilityState() == PageVisibilityStateVisible)
         m_client->startUpdating();
     else
         m_client->stopUpdating();

@@ -796,6 +796,4 @@ crbug.com/282079 [ Debug ] webmidi/permission.html [ Crash Pass ]
 crbug.com/310323 [ Debug ] http/tests/plugins/third-party-cookie-accept-policy.html [ Crash Pass ]
 crbug.com/310323 [ Debug ] http/tests/security/contentSecurityPolicy/report-multiple-violations-02.html [ Crash Pass ]
 
-crbug.com/310327 [ Win Debug ] fast/dom/Geolocation/window-close-crash.html [ Crash ]
-
 crbug.com/310547 fast/dom/HTMLDialogElement/form-method-dialog.html [ Pass Timeout ]
