@@ -69,21 +69,6 @@ chrome.test.runTests([
     });
   },
 
-  function supportsMediaConstraints() {
-    tabCapture.capture({video: true, audio: true,
-                        videoConstraints: {
-                            mandatory: {
-                              maxWidth: 1000,
-                              minWidth: 300
-                            }
-                        }
-                       }, function(stream) {
-                          chrome.test.assertTrue(!!stream);
-                          stream.stop();
-                          chrome.test.succeed();
-                       });
-  },
-
   function onlyVideo() {
     tabCapture.capture({video: true}, function(stream) {
       chrome.test.assertTrue(!!stream);

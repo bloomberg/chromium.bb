@@ -29,6 +29,7 @@ namespace tabCapture {
   // http://dev.w3.org/2011/webrtc/editor/getusermedia.html
   dictionary MediaStreamConstraint {
     object mandatory;
+    object? _optional;
   };
 
   // Whether we are requesting tab video and/or audio and the

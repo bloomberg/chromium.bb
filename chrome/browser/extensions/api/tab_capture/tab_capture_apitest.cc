@@ -300,3 +300,14 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_CaptureInSplitIncognitoMode) {
                                   kFlagEnableIncognito | kFlagUseIncognito))
       << message_;
 }
+
+#if defined(OS_WIN)
+#define MAYBE_Constraints DISABLED_Constraints
+#else
+#define MAYBE_Constraints Constraints
+#endif
+IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_Constraints) {
+  AddExtensionToCommandLineWhitelist();
+  ASSERT_TRUE(RunExtensionSubtest("tab_capture/experimental",
+                                  "constraints.html")) << message_;
+}
