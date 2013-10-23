@@ -213,6 +213,8 @@ Visit.prototype.getResultDOM = function(propertyBag) {
 
   if (isMobileVersion()) {
     var removeButton = createElementWithClassName('button', 'remove-entry');
+    removeButton.setAttribute('aria-label',
+                              loadTimeData.getString('removeFromHistory'));
     removeButton.classList.add('custom-appearance');
     removeButton.addEventListener('click', function(e) {
       self.removeFromHistory();
