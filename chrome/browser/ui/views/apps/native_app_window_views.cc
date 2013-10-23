@@ -169,6 +169,9 @@ void NativeAppWindowViews::InitializeDefaultWindow(
   // TODO(erg): Conceptually, these are toplevel windows, but we theoretically
   // could plumb context through to here in some cases.
   init_params.top_level = true;
+  init_params.opacity = create_params.transparent_background
+                            ? views::Widget::InitParams::TRANSLUCENT_WINDOW
+                            : views::Widget::InitParams::INFER_OPACITY;
   init_params.keep_on_top = create_params.always_on_top;
   gfx::Rect window_bounds = create_params.bounds;
   bool position_specified =
