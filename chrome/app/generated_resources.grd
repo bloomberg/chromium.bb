@@ -1848,10 +1848,12 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
                desc="Prompt text for the confirmation dialog asking whether the user really meant to keep a dangerous download">
         This might hurt. Don't say we didn't warn you...
       </message>
-      <message name="IDS_PROMPT_CONFIRM_KEEP_MALICIOUS_DOWNLOAD"
-               desc="Prompt text for the confirmation dialog asking whether the user really meant to keep a malicious download">
+      <message name="IDS_PROMPT_CONFIRM_KEEP_MALICIOUS_DOWNLOAD_LEAD"
+               desc="Lead prompt text for the confirmation dialog asking whether the user really meant to keep a malicious download">
         This file will harm your computer.
-
+      </message>
+      <message name="IDS_PROMPT_CONFIRM_KEEP_MALICIOUS_DOWNLOAD_BODY"
+               desc="Body prompt text for the confirmation dialog asking whether the user really meant to keep a malicious download">
 Even if you have downloaded files from this website before, the website might have been hacked. Instead of recovering this file, you can retry the download later.
       </message>
       <message name="IDS_CONFIRM_DOWNLOAD_AGAIN"

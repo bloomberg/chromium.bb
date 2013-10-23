@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/metrics/field_trial.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
 #include "chrome/browser/ui/tab_modal_confirm_dialog.h"
@@ -17,6 +18,10 @@
 #include "ui/base/l10n/l10n_util.h"
 
 namespace {
+
+// TODO(wittman): Create a native web contents modal dialog implementation of
+// this dialog for non-Views platforms, to support bold formatting of the
+// message lead.
 
 // Implements DownloadDangerPrompt using a TabModalConfirmDialog.
 class DownloadDangerPromptImpl : public DownloadDangerPrompt,
@@ -140,7 +145,10 @@ string16 DownloadDangerPromptImpl::GetMessage() {
       case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT:
       case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_HOST: {
         return l10n_util::GetStringUTF16(
-            IDS_PROMPT_CONFIRM_KEEP_MALICIOUS_DOWNLOAD);
+            IDS_PROMPT_CONFIRM_KEEP_MALICIOUS_DOWNLOAD_LEAD) +
+            ASCIIToUTF16("\n\n") +
+            l10n_util::GetStringUTF16(
+                IDS_PROMPT_CONFIRM_KEEP_MALICIOUS_DOWNLOAD_BODY);
       }
       default: {
         return l10n_util::GetStringUTF16(
@@ -208,6 +216,7 @@ void DownloadDangerPromptImpl::RunDone(Action action) {
 
 }  // namespace
 
+#if !(defined(OS_WIN) || defined(USE_AURA))
 // static
 DownloadDangerPrompt* DownloadDangerPrompt::Create(
     content::DownloadItem* item,
@@ -220,3 +229,4 @@ DownloadDangerPrompt* DownloadDangerPrompt::Create(
   TabModalConfirmDialog::Create(prompt, web_contents);
   return prompt;
 }
+#endif
