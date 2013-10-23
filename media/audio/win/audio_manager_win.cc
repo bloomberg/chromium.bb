@@ -355,7 +355,8 @@ AudioOutputStream* AudioManagerWin::MakeLowLatencyOutputStream(
 
   if (!CoreAudioUtil::IsSupported()) {
     // Fall back to Windows Wave implementation on Windows XP or lower.
-    DLOG_IF(ERROR, !device_id.empty())
+    DLOG_IF(ERROR, !device_id.empty() &&
+        device_id != AudioManagerBase::kDefaultDeviceId)
         << "Opening by device id not supported by PCMWaveOutAudioOutputStream";
     DVLOG(1) << "Using WaveOut since WASAPI requires at least Vista.";
     return new PCMWaveOutAudioOutputStream(
@@ -365,12 +366,19 @@ AudioOutputStream* AudioManagerWin::MakeLowLatencyOutputStream(
   // TODO(rtoy): support more than stereo input.
   if (params.input_channels() > 0) {
     DVLOG(1) << "WASAPIUnifiedStream is created.";
-    DLOG_IF(ERROR, !device_id.empty())
+    DLOG_IF(ERROR, !device_id.empty() &&
+        device_id != AudioManagerBase::kDefaultDeviceId)
         << "Opening by device id not supported by WASAPIUnifiedStream";
     return new WASAPIUnifiedStream(this, params, input_device_id);
   }
 
-  return new WASAPIAudioOutputStream(this, device_id, params, eConsole);
+  // Pass an empty string to indicate that we want the default device
+  // since we consistently only check for an empty string in
+  // WASAPIAudioOutputStream.
+  return new WASAPIAudioOutputStream(this,
+      device_id == AudioManagerBase::kDefaultDeviceId ?
+          std::string() : device_id,
+      params, eConsole);
 }
 
 // Factory for the implementations of AudioInputStream for AUDIO_PCM_LINEAR
@@ -454,14 +462,14 @@ AudioParameters AudioManagerWin::GetPreferredOutputStreamParameters(
       // hardware (preferred) layout. We do this extra check to avoid the
       // CoreAudioUtil::IsChannelLayoutSupported() overhead in most cases.
       if (input_params.channel_layout() != channel_layout) {
-        // TODO(henrika): Use |output_device_id| here.
-        // Internally, IsChannelLayoutSupported does many of the operations
-        // that have already been done such as opening up a client and fetching
-        // the WAVEFORMATPCMEX format.  Ideally we should only do that once and
-        // do it for the requested device.  Then here, we can check the layout
-        // from the data we already hold.
+        // TODO(henrika): Internally, IsChannelLayoutSupported does many of the
+        // operations that have already been done such as opening up a client
+        // and fetching the WAVEFORMATPCMEX format.  Ideally we should only do
+        // that once.  Then here, we can check the layout from the data we
+        // already hold.
         if (CoreAudioUtil::IsChannelLayoutSupported(
-                eRender, eConsole, input_params.channel_layout())) {
+                output_device_id, eRender, eConsole,
+                input_params.channel_layout())) {
           // Open up using the same channel layout as the source if it is
           // supported by the hardware.
           channel_layout = input_params.channel_layout();

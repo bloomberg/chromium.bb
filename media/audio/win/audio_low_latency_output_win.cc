@@ -25,23 +25,6 @@ using base::win::ScopedCoMem;
 
 namespace media {
 
-typedef uint32 ChannelConfig;
-
-// Retrieves an integer mask which corresponds to the channel layout the
-// audio engine uses for its internal processing/mixing of shared-mode
-// streams. This mask indicates which channels are present in the multi-
-// channel stream. The least significant bit corresponds with the Front Left
-// speaker, the next least significant bit corresponds to the Front Right
-// speaker, and so on, continuing in the order defined in KsMedia.h.
-// See http://msdn.microsoft.com/en-us/library/windows/hardware/ff537083(v=vs.85).aspx
-// for more details.
-static ChannelConfig GetChannelConfig() {
-  WAVEFORMATPCMEX format;
-  return SUCCEEDED(CoreAudioUtil::GetDefaultSharedModeMixFormat(
-                   eRender, eConsole, &format)) ?
-                   static_cast<int>(format.dwChannelMask) : 0;
-}
-
 // Compare two sets of audio parameters and return true if they are equal.
 // Note that bits_per_sample() is excluded from this comparison since Core
 // Audio can deal with most bit depths. As an example, if the native/mixing
@@ -55,59 +38,12 @@ static bool CompareAudioParametersNoBitDepthOrChannels(
           a.frames_per_buffer() == b.frames_per_buffer());
 }
 
-// Converts Microsoft's channel configuration to ChannelLayout.
-// This mapping is not perfect but the best we can do given the current
-// ChannelLayout enumerator and the Windows-specific speaker configurations
-// defined in ksmedia.h. Don't assume that the channel ordering in
-// ChannelLayout is exactly the same as the Windows specific configuration.
-// As an example: KSAUDIO_SPEAKER_7POINT1_SURROUND is mapped to
-// CHANNEL_LAYOUT_7_1 but the positions of Back L, Back R and Side L, Side R
-// speakers are different in these two definitions.
-static ChannelLayout ChannelConfigToChannelLayout(ChannelConfig config) {
-  switch (config) {
-    case KSAUDIO_SPEAKER_DIRECTOUT:
-      return CHANNEL_LAYOUT_NONE;
-    case KSAUDIO_SPEAKER_MONO:
-      return CHANNEL_LAYOUT_MONO;
-    case KSAUDIO_SPEAKER_STEREO:
-      return CHANNEL_LAYOUT_STEREO;
-    case KSAUDIO_SPEAKER_QUAD:
-      return CHANNEL_LAYOUT_QUAD;
-    case KSAUDIO_SPEAKER_SURROUND:
-      return CHANNEL_LAYOUT_4_0;
-    case KSAUDIO_SPEAKER_5POINT1:
-      return CHANNEL_LAYOUT_5_1_BACK;
-    case KSAUDIO_SPEAKER_5POINT1_SURROUND:
-      return CHANNEL_LAYOUT_5_1;
-    case KSAUDIO_SPEAKER_7POINT1:
-      return CHANNEL_LAYOUT_7_1_WIDE;
-    case KSAUDIO_SPEAKER_7POINT1_SURROUND:
-      return CHANNEL_LAYOUT_7_1;
-    default:
-      VLOG(1) << "Unsupported channel layout: " << config;
-      return CHANNEL_LAYOUT_UNSUPPORTED;
-  }
-}
-
 // static
 AUDCLNT_SHAREMODE WASAPIAudioOutputStream::GetShareMode() {
   const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
   if (cmd_line->HasSwitch(switches::kEnableExclusiveAudio))
     return AUDCLNT_SHAREMODE_EXCLUSIVE;
   return AUDCLNT_SHAREMODE_SHARED;
-}
-
-// static
-int WASAPIAudioOutputStream::HardwareChannelCount() {
-  WAVEFORMATPCMEX format;
-  return SUCCEEDED(CoreAudioUtil::GetDefaultSharedModeMixFormat(
-      eRender, eConsole, &format)) ?
-      static_cast<int>(format.Format.nChannels) : 0;
-}
-
-// static
-ChannelLayout WASAPIAudioOutputStream::HardwareChannelLayout() {
-  return ChannelConfigToChannelLayout(GetChannelConfig());
 }
 
 // static
@@ -187,7 +123,7 @@ WASAPIAudioOutputStream::WASAPIAudioOutputStream(AudioManagerWin* manager,
 
   // Add the parts which are unique to WAVE_FORMAT_EXTENSIBLE.
   format_.Samples.wValidBitsPerSample = params.bits_per_sample();
-  format_.dwChannelMask = GetChannelConfig();
+  format_.dwChannelMask = CoreAudioUtil::GetChannelConfig(device_id, eRender);
   format_.SubFormat = KSDATAFORMAT_SUBTYPE_PCM;
 
   // Store size (in different units) of audio packets which we expect to

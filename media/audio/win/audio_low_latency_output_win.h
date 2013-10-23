@@ -138,17 +138,6 @@ class MEDIA_EXPORT WASAPIAudioOutputStream :
   virtual void SetVolume(double volume) OVERRIDE;
   virtual void GetVolume(double* volume) OVERRIDE;
 
-  // Retrieves the number of channels the audio engine uses for its internal
-  // processing/mixing of shared-mode streams for the default endpoint device.
-  static int HardwareChannelCount();
-
-  // Retrieves the channel layout the audio engine uses for its internal
-  // processing/mixing of shared-mode streams for the default endpoint device.
-  // Note that we convert an internal channel layout mask (see ChannelMask())
-  // into a Chrome-specific channel layout enumerator in this method, hence
-  // the match might not be perfect.
-  static ChannelLayout HardwareChannelLayout();
-
   // Retrieves the sample rate the audio engine uses for its internal
   // processing/mixing of shared-mode streams.  To fetch the settings for the
   // default device, pass an empty string as the |device_id|.

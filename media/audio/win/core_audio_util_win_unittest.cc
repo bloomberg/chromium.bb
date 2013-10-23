@@ -274,7 +274,7 @@ TEST_F(CoreAudioUtilWinTest, IsChannelLayoutSupported) {
   EXPECT_TRUE(SUCCEEDED(hr));
   EXPECT_TRUE(mix_params.IsValid());
   EXPECT_TRUE(CoreAudioUtil::IsChannelLayoutSupported(
-      eRender, eConsole, mix_params.channel_layout()));
+      std::string(), eRender, eConsole, mix_params.channel_layout()));
 
   // Check if it is possible to modify the channel layout to stereo for a
   // device which reports that it prefers to be openen up in an other
@@ -284,7 +284,7 @@ TEST_F(CoreAudioUtilWinTest, IsChannelLayoutSupported) {
     // TODO(henrika): it might be too pessimistic to assume false as return
     // value here.
     EXPECT_FALSE(CoreAudioUtil::IsChannelLayoutSupported(
-        eRender, eConsole, channel_layout));
+        std::string(), eRender, eConsole, channel_layout));
   }
 }
 
