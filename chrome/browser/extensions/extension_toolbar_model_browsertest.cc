@@ -107,7 +107,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionToolbarModelTest, Basic) {
   EXPECT_EQ(NULL, ExtensionAt(0));
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionToolbarModelTest, ReorderAndReinsert) {
+#if defined(OS_MACOSX)
+// Flaky on Mac 10.8 Blink canary bots: http://crbug.com/166580
+#define MAYBE_ReorderAndReinsert DISABLED_ReorderAndReinsert
+#else
+#define MAYBE_ReorderAndReinsert ReorderAndReinsert
+#endif
+IN_PROC_BROWSER_TEST_F(ExtensionToolbarModelTest, MAYBE_ReorderAndReinsert) {
   // Load an extension with a browser action.
   base::FilePath extension_a_path(test_data_dir_.AppendASCII("api_test")
                                           .AppendASCII("browser_action")
