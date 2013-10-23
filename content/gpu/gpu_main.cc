@@ -191,13 +191,13 @@ int GpuMain(const MainFunctionParams& parameters) {
   DCHECK(command_line.HasSwitch(switches::kGpuVendorID) &&
          command_line.HasSwitch(switches::kGpuDeviceID) &&
          command_line.HasSwitch(switches::kGpuDriverVersion));
-  bool success = base::HexStringToInt(
+  bool success = base::HexStringToUInt(
       command_line.GetSwitchValueASCII(switches::kGpuVendorID),
-      reinterpret_cast<int*>(&(gpu_info.gpu.vendor_id)));
+      &gpu_info.gpu.vendor_id);
   DCHECK(success);
-  success = base::HexStringToInt(
+  success = base::HexStringToUInt(
       command_line.GetSwitchValueASCII(switches::kGpuDeviceID),
-      reinterpret_cast<int*>(&(gpu_info.gpu.device_id)));
+      &gpu_info.gpu.device_id);
   DCHECK(success);
   gpu_info.driver_vendor =
       command_line.GetSwitchValueASCII(switches::kGpuDriverVendor);

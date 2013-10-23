@@ -101,6 +101,12 @@ BASE_EXPORT bool HexStringToInt(const StringPiece& input, int* output);
 
 // Best effort conversion, see StringToInt above for restrictions.
 // Will only successful parse hex values that will fit into |output|, i.e.
+// 0x00000000 < |input| < 0xFFFFFFFF.
+// The string is not required to start with 0x.
+BASE_EXPORT bool HexStringToUInt(const StringPiece& input, uint32* output);
+
+// Best effort conversion, see StringToInt above for restrictions.
+// Will only successful parse hex values that will fit into |output|, i.e.
 // -0x8000000000000000 < |input| < 0x7FFFFFFFFFFFFFFF.
 BASE_EXPORT bool HexStringToInt64(const StringPiece& input, int64* output);
 

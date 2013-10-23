@@ -837,15 +837,13 @@ bool GpuControlList::GpuControlListEntry::SetOsInfo(
 bool GpuControlList::GpuControlListEntry::SetVendorId(
     const std::string& vendor_id_string) {
   vendor_id_ = 0;
-  return base::HexStringToInt(vendor_id_string,
-                              reinterpret_cast<int*>(&vendor_id_));
+  return base::HexStringToUInt(vendor_id_string, &vendor_id_);
 }
 
 bool GpuControlList::GpuControlListEntry::AddDeviceId(
     const std::string& device_id_string) {
   uint32 device_id = 0;
-  if (base::HexStringToInt(device_id_string,
-                           reinterpret_cast<int*>(&device_id))) {
+  if (base::HexStringToUInt(device_id_string, &device_id)) {
     device_id_list_.push_back(device_id);
     return true;
   }

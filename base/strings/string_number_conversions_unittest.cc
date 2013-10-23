@@ -458,6 +458,66 @@ TEST(StringNumberConversionsTest, HexStringToInt) {
   EXPECT_EQ(0xc0ffee, output);
 }
 
+TEST(StringNumberConversionsTest, HexStringToUInt) {
+  static const struct {
+    std::string input;
+    uint32 output;
+    bool success;
+  } cases[] = {
+    {"0", 0, true},
+    {"42", 0x42, true},
+    {"-42", 0, false},
+    {"+42", 0x42, true},
+    {"7fffffff", INT_MAX, true},
+    {"-80000000", 0, false},
+    {"ffffffff", 0xffffffff, true},
+    {"DeadBeef", 0xdeadbeef, true},
+    {"0x42", 0x42, true},
+    {"-0x42", 0, false},
+    {"+0x42", 0x42, true},
+    {"0x7fffffff", INT_MAX, true},
+    {"-0x80000000", 0, false},
+    {"0xffffffff", kuint32max, true},
+    {"0XDeadBeef", 0xdeadbeef, true},
+    {"0x7fffffffffffffff", kuint32max, false},  // Overflow test.
+    {"-0x8000000000000000", 0, false},
+    {"0x8000000000000000", kuint32max, false},  // Overflow test.
+    {"-0x8000000000000001", 0, false},
+    {"0xFFFFFFFFFFFFFFFF", kuint32max, false},  // Overflow test.
+    {"FFFFFFFFFFFFFFFF", kuint32max, false},  // Overflow test.
+    {"0x0000000000000000", 0, true},
+    {"0000000000000000", 0, true},
+    {"1FFFFFFFFFFFFFFFF", kuint32max, false}, // Overflow test.
+    {"0x0f", 0x0f, true},
+    {"0f", 0x0f, true},
+    {" 45", 0x45, false},
+    {"\t\n\v\f\r 0x45", 0x45, false},
+    {" 45", 0x45, false},
+    {"45 ", 0x45, false},
+    {"45:", 0x45, false},
+    {"efgh", 0xef, false},
+    {"0xefgh", 0xef, false},
+    {"hgfe", 0, false},
+    {"-", 0, false},
+    {"", 0, false},
+    {"0x", 0, false},
+  };
+
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
+    uint32 output = 0;
+    EXPECT_EQ(cases[i].success, HexStringToUInt(cases[i].input, &output));
+    EXPECT_EQ(cases[i].output, output);
+  }
+  // One additional test to verify that conversion of numbers in strings with
+  // embedded NUL characters.  The NUL and extra data after it should be
+  // interpreted as junk after the number.
+  const char input[] = "0xc0ffee\09";
+  std::string input_string(input, arraysize(input) - 1);
+  uint32 output;
+  EXPECT_FALSE(HexStringToUInt(input_string, &output));
+  EXPECT_EQ(0xc0ffeeU, output);
+}
+
 TEST(StringNumberConversionsTest, HexStringToInt64) {
   static const struct {
     std::string input;

@@ -449,8 +449,7 @@ bool GPUTestExpectationsParser::UpdateTestConfig(
   DCHECK(config);
   uint32 device_id = 0;
   if (config->gpu_device_id() != 0 ||
-      !base::HexStringToInt(gpu_device_id,
-                            reinterpret_cast<int*>(&device_id)) ||
+      !base::HexStringToUInt(gpu_device_id, &device_id) ||
       device_id == 0) {
     PushErrorMessage(kErrorMessage[kErrorEntryWithGpuDeviceIdConflicts],
                      line_number);
