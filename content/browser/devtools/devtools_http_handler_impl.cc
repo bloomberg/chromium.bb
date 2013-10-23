@@ -32,6 +32,7 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/url_constants.h"
 #include "grit/devtools_resources_map.h"
+#include "net/base/escape.h"
 #include "net/base/io_buffer.h"
 #include "net/base/ip_endpoint.h"
 #include "net/server/http_server_request_info.h"
@@ -738,7 +739,8 @@ base::DictionaryValue* DevToolsHttpHandlerImpl::SerializeTarget(
   std::string id = target.GetId();
   dictionary->SetString(kTargetIdField, id);
   dictionary->SetString(kTargetTypeField, target.GetType());
-  dictionary->SetString(kTargetTitleField, target.GetTitle());
+  dictionary->SetString(kTargetTitleField,
+                        net::EscapeForHTML(target.GetTitle()));
   dictionary->SetString(kTargetDescriptionField, target.GetDescription());
 
   GURL url = target.GetUrl();

@@ -21,7 +21,6 @@
 #include "content/public/common/url_constants.h"
 #include "content/shell/browser/shell.h"
 #include "grit/shell_resources.h"
-#include "net/base/escape.h"
 #include "net/socket/tcp_listen_socket.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -102,7 +101,7 @@ Target::Target(WebContents* web_contents) {
   agent_host_ =
       DevToolsAgentHost::GetOrCreateFor(web_contents->GetRenderViewHost());
   id_ = agent_host_->GetId();
-  title_ = UTF16ToUTF8(net::EscapeForHTML(web_contents->GetTitle()));
+  title_ = UTF16ToUTF8(web_contents->GetTitle());
   url_ = web_contents->GetURL();
   content::NavigationController& controller = web_contents->GetController();
   content::NavigationEntry* entry = controller.GetActiveEntry();

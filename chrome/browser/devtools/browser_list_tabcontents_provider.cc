@@ -30,7 +30,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
 #include "grit/devtools_discovery_page_resources.h"
-#include "net/base/escape.h"
 #include "net/socket/tcp_listen_socket.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -101,7 +100,7 @@ Target::Target(WebContents* web_contents, bool is_tab) {
   id_ = agent_host_->GetId();
   type_ = is_tab ? kTargetTypePage : kTargetTypeOther;
   description_ = GetExtensionName(web_contents);
-  title_ = UTF16ToUTF8(net::EscapeForHTML(web_contents->GetTitle()));
+  title_ = UTF16ToUTF8(web_contents->GetTitle());
   url_ = web_contents->GetURL();
   content::NavigationController& controller = web_contents->GetController();
   content::NavigationEntry* entry = controller.GetActiveEntry();
@@ -163,7 +162,7 @@ WorkerTarget::WorkerTarget(const content::WorkerService::WorkerInfo& worker) {
   agent_host_ =
       DevToolsAgentHost::GetForWorker(worker.process_id, worker.route_id);
   id_ = agent_host_->GetId();
-  title_ = UTF16ToUTF8(net::EscapeForHTML(worker.name));
+  title_ = UTF16ToUTF8(worker.name);
   description_ =
       base::StringPrintf("Worker pid:%d", base::GetProcId(worker.handle));
   url_ = worker.url;

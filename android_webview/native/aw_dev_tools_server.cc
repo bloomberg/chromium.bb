@@ -17,7 +17,6 @@
 #include "content/public/browser/devtools_target.h"
 #include "content/public/browser/web_contents.h"
 #include "jni/AwDevToolsServer_jni.h"
-#include "net/base/escape.h"
 #include "net/socket/unix_domain_socket_posix.h"
 #include "webkit/common/user_agent/user_agent_util.h"
 
@@ -71,7 +70,7 @@ Target::Target(WebContents* web_contents) {
       DevToolsAgentHost::GetOrCreateFor(web_contents->GetRenderViewHost());
   id_ = agent_host_->GetId();
   description_ = GetViewDescription(web_contents);
-  title_ = UTF16ToUTF8(net::EscapeForHTML(web_contents->GetTitle()));
+  title_ = UTF16ToUTF8(web_contents->GetTitle());
   url_ = web_contents->GetURL();
   last_activity_time_ = web_contents->GetLastSelectedTime();
 }

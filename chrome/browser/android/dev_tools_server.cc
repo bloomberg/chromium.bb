@@ -37,7 +37,6 @@
 #include "content/public/common/url_constants.h"
 #include "grit/devtools_discovery_page_resources.h"
 #include "jni/DevToolsServer_jni.h"
-#include "net/base/escape.h"
 #include "net/socket/unix_domain_socket_posix.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -91,7 +90,7 @@ Target::Target(WebContents* web_contents) {
   agent_host_ =
       DevToolsAgentHost::GetOrCreateFor(web_contents->GetRenderViewHost());
   id_ = agent_host_->GetId();
-  title_ = UTF16ToUTF8(net::EscapeForHTML(web_contents->GetTitle()));
+  title_ = UTF16ToUTF8(web_contents->GetTitle());
   url_ = web_contents->GetURL();
   content::NavigationController& controller = web_contents->GetController();
   content::NavigationEntry* entry = controller.GetActiveEntry();
