@@ -58,7 +58,7 @@ namespace WebCore {
     class WorkerNavigator;
     class WorkerThread;
 
-    class WorkerGlobalScope : public RefCounted<WorkerGlobalScope>, public ScriptWrappable, public ExecutionContext, public ExecutionContextClient, public WorkerSupplementable, public EventTargetWithInlineData {
+    class WorkerGlobalScope : public RefCounted<WorkerGlobalScope>, public ScriptWrappable, public SecurityContext, public ExecutionContext, public ExecutionContextClient, public WorkerSupplementable, public EventTargetWithInlineData {
         REFCOUNTED_EVENT_TARGET(WorkerGlobalScope);
     public:
         virtual ~WorkerGlobalScope();
@@ -98,6 +98,7 @@ namespace WebCore {
 
         // ExecutionContextClient
         virtual WorkerEventQueue* eventQueue() const OVERRIDE;
+        virtual SecurityContext& securityContext() OVERRIDE { return *this; }
 
         virtual bool isContextThread() const OVERRIDE;
         virtual bool isJSExecutionForbidden() const OVERRIDE;
@@ -134,6 +135,9 @@ namespace WebCore {
         double timeOrigin() const { return m_timeOrigin; }
 
         WorkerClients* clients() { return m_workerClients.get(); }
+
+        using SecurityContext::securityOrigin;
+        using SecurityContext::contentSecurityPolicy;
 
     protected:
         WorkerGlobalScope(const KURL&, const String& userAgent, WorkerThread*, double timeOrigin, PassOwnPtr<WorkerClients>);

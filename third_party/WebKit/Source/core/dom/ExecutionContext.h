@@ -56,10 +56,11 @@ class EventTarget;
 class ExecutionContextTask;
 class MessagePort;
 class PublicURLManager;
+class SecurityOrigin;
 class ScriptCallStack;
 class ScriptState;
 
-class ExecutionContext : public LifecycleContext, public SecurityContext {
+class ExecutionContext : public LifecycleContext {
 public:
     ExecutionContext();
     virtual ~ExecutionContext();
@@ -70,6 +71,8 @@ public:
     bool isWorkerGlobalScope() { return m_client && m_client->isWorkerGlobalScope(); }
     bool isJSExecutionForbidden() { return m_client && m_client->isJSExecutionForbidden(); }
     EventQueue* eventQueue() const;
+    SecurityOrigin* securityOrigin() const;
+    ContentSecurityPolicy* contentSecurityPolicy() const;
     const KURL& url() const;
     KURL completeURL(const String& url) const;
     void userEventWasHandled();

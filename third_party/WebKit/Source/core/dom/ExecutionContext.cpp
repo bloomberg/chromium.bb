@@ -296,9 +296,20 @@ void ExecutionContext::didChangeTimerAlignmentInterval()
 
 EventQueue* ExecutionContext::eventQueue() const
 {
-    if (!m_client)
-        return 0;
+    RELEASE_ASSERT(m_client);
     return m_client->eventQueue();
+}
+
+SecurityOrigin* ExecutionContext::securityOrigin() const
+{
+    RELEASE_ASSERT(m_client);
+    return m_client->securityContext().securityOrigin();
+}
+
+ContentSecurityPolicy* ExecutionContext::contentSecurityPolicy() const
+{
+    RELEASE_ASSERT(m_client);
+    return m_client->securityContext().contentSecurityPolicy();
 }
 
 const KURL& ExecutionContext::url() const
@@ -338,8 +349,7 @@ void ExecutionContext::disableEval(const String& errorMessage)
 
 DOMWindow* ExecutionContext::executingWindow() const
 {
-    if (!m_client)
-        return 0;
+    RELEASE_ASSERT(m_client);
     return m_client->executingWindow();
 }
 
@@ -366,8 +376,7 @@ void ExecutionContext::postTask(PassOwnPtr<ExecutionContextTask> task)
 
 PassOwnPtr<LifecycleNotifier> ExecutionContext::createLifecycleNotifier()
 {
-    if (!m_client)
-        return PassOwnPtr<LifecycleNotifier>();
+    RELEASE_ASSERT(m_client);
     return m_client->createLifecycleNotifier();
 }
 
@@ -385,9 +394,10 @@ void ExecutionContext::enforceSandboxFlags(SandboxFlags mask)
 {
     m_sandboxFlags |= mask;
 
+    RELEASE_ASSERT(m_client);
     // The SandboxOrigin is stored redundantly in the security origin.
-    if (isSandboxed(SandboxOrigin) && securityOrigin() && !securityOrigin()->isUnique()) {
-        setSecurityOrigin(SecurityOrigin::createUnique());
+    if (isSandboxed(SandboxOrigin) && m_client->securityContext().securityOrigin() && !m_client->securityContext().securityOrigin()->isUnique()) {
+        m_client->securityContext().setSecurityOrigin(SecurityOrigin::createUnique());
         m_client->didUpdateSecurityOrigin();
     }
 }

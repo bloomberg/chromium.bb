@@ -212,7 +212,7 @@ enum DocumentClass {
 
 typedef unsigned char DocumentClassFlags;
 
-class Document : public ContainerNode, public TreeScope, public ExecutionContext, public ExecutionContextClient, public DocumentSupplementable {
+class Document : public ContainerNode, public TreeScope, public SecurityContext, public ExecutionContext, public ExecutionContextClient, public DocumentSupplementable {
 public:
     static PassRefPtr<Document> create(const DocumentInit& initializer = DocumentInit())
     {
@@ -228,6 +228,8 @@ public:
 
     using ContainerNode::ref;
     using ContainerNode::deref;
+    using SecurityContext::securityOrigin;
+    using SecurityContext::contentSecurityPolicy;
 
     virtual bool canContainRangeEndPoint() const { return true; }
 
@@ -1088,6 +1090,7 @@ private:
     friend class IgnoreDestructiveWriteCountIncrementer;
 
     ScriptedAnimationController& ensureScriptedAnimationController();
+    virtual SecurityContext& securityContext() OVERRIDE { return *this; }
     virtual EventQueue* eventQueue() const FINAL;
 
     void updateDistributionIfNeeded();
