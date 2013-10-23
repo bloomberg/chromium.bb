@@ -105,7 +105,10 @@ void InspectorCSSOMWrappers::collectFromStyleSheets(const Vector<RefPtr<CSSStyle
 
 void InspectorCSSOMWrappers::collectFromStyleEngine(StyleEngine* styleSheetCollection)
 {
-    collectFromStyleSheets(styleSheetCollection->activeAuthorStyleSheets());
+    Vector<const Vector<RefPtr<CSSStyleSheet> >*> activeAuthorStyleSheets;
+    styleSheetCollection->getActiveAuthorStyleSheets(activeAuthorStyleSheets);
+    for (size_t i = 0; i < activeAuthorStyleSheets.size(); ++i)
+        collectFromStyleSheets(*activeAuthorStyleSheets[i]);
     collect(styleSheetCollection->pageUserSheet());
     collectFromStyleSheets(styleSheetCollection->documentUserStyleSheets());
 }

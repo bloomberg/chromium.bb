@@ -878,15 +878,19 @@ void InspectorCSSAgent::wasEnabled(PassRefPtr<EnableCallback> callback)
         return;
     }
 
-    // Re-read stylesheets, we know for sure we have content for all of them.
     Vector<InspectorStyleSheet*> styleSheets;
     collectAllStyleSheets(styleSheets);
     for (size_t i = 0; i < styleSheets.size(); ++i)
         m_frontend->styleSheetAdded(styleSheets.at(i)->buildObjectForStyleSheetInfo());
+
+    // More styleSheetAdded events will be generated below.
+    m_instrumentingAgents->setInspectorCSSAgent(this);
+    Vector<Document*> documents = m_domAgent->documents();
+    for (Vector<Document*>::iterator it = documents.begin(); it != documents.end(); ++it)
+        (*it)->styleEngine()->updateActiveStyleSheets(FullStyleUpdate);
+
     if (callback)
         callback->sendSuccess();
-
-    m_instrumentingAgents->setInspectorCSSAgent(this);
 }
 
 void InspectorCSSAgent::disable(ErrorString*)
