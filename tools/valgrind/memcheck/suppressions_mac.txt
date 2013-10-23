@@ -103,18 +103,6 @@
 # 2. Intentional unit test errors, stuff that is somehow a false positive
 # in our own code, or stuff that is so trivial it's not worth fixing.
 {
-   # Plugins are deliberately not unloaded (on shutdown) on the Mac, in order to
-   # prevent crashes for those that don't unload cleanly.
-   plugin_unload
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN4base17LoadNativeLibraryE*
-   fun:_ZN6webkit5npapi9PluginLib4LoadEv
-   fun:_ZN6webkit5npapi9PluginLib13NP_InitializeEv
-   fun:_ZN6webkit5npapi21WebPluginDelegateImpl6CreateE*
-   fun:_ZN19TestWebViewDelegate20CreatePluginDelegateE*
-}
-{
    # Mac Sandbox test cases are registered in a global map.  This code is only
    # used in the unit test binary.
    Mac_Sandbox_Intentional_Leak1
@@ -128,41 +116,11 @@
    fun:_ZN4dyld24initializeMainExecutableEv
 }
 {
-   # The ConfirmQuitPanelController animates out and releases itself. And
-   # CocoaTest::TearDown() still sees this window and deques events for it,
-   # but one of those events creates this TSM Context that gets leaked.
-   # See http://crbug.com/61816 for more details.
-   # ut*AllSelectedIMInDoc = fun:utOpenActivateAllSelectedIMInDoc or
-   #                         fun:utDeactivateAllSelectedIMInDoc
-   Mac_Animated_Window_Close_ProcessNotification_Event
-   Memcheck:Leak
-   fun:malloc_zone_malloc
-   fun:_CFRuntimeCreateInstance
-   fun:__CFDictionaryInit
-   fun:ut*AllSelectedIMInDoc
-   ...
-   fun:My*ctivateTSMDocument
-}
-{
    # __cxa_get_globals leaks a structure when called for the first time
    __cxa_get_globals one-time leak
    Memcheck:Leak
    ...
    fun:__cxa_get_globals
-}
-{
-   bug_93711_a - intentional
-   Memcheck:Param
-   msync(start)
-   fun:msync$UNIX2003
-   fun:mach_override_ptr
-}
-{
-   bug_93711_b - likely induced by an intentional memory error
-   Memcheck:Leak
-   fun:malloc
-   fun:allocateBranchIsland
-   fun:mach_override_ptr
 }
 {
    # Intentional leak of a time-based self-deleting object.

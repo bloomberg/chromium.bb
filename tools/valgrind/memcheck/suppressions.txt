@@ -288,31 +288,6 @@
    fun:_ZN4base12_GLOBAL__N_169MessageLoopProxyTest_PostTaskAndReply_DeadReplyLoopDoesNotDelete_Test8TestBodyEv
 }
 {
-   logging::InitLogging never frees filename. It would be hard to free properly.
-   Memcheck:Leak
-   ...
-   fun:_ZN7logging11InitLoggingEPKcNS_18LoggingDestinationENS_15LogLockingStateENS_20OldFileDeletionStateE
-}
-{
-   Linux tests don't bother to undo net::SpawnedTestServer::LoadTestRootCert().
-   Memcheck:Leak
-   ...
-   fun:_ZN3net10SpawnedTestServer16LoadTestRootCertEv
-}
-{
-   # uitest's ResourceDispatcherTest.CrossSiteAfterCrash crashes on purpose
-   Intentional_crash
-   Memcheck:Unaddressable
-   fun:_ZN12AboutHandler10AboutCrashEv
-}
-{
-   Intentional_browser_test_crash
-   Memcheck:Unaddressable
-   fun:_ZL18CrashIntentionallyv
-   fun:_ZL19MaybeHandleDebugURLRK4GURL
-   fun:_ZN14RenderViewImpl10OnNavigateERK23ViewMsg_Navigate_Params
-}
-{
    # Non-joinable thread doesn't clean up all state on program exit
    # very common in ui tests
    bug_16096 (WontFix)
@@ -335,58 +310,12 @@
    fun:_ZN7WebCore8SVGNames4initEv
 }
 {
-   intentional_BrowserThreadTest_NotReleasedIfTargetThreadNonExistent_Test_leak
-   Memcheck:Leak
-   fun:_Znw*
-   fun:*BrowserThreadTest_NotReleasedIfTargetThreadNonExistent_Test8TestBodyEv
-}
-{
    # This is an on demand initialization which is done and then intentionally
    # kept around (not freed) while the process is running.
    intentional_WebCore_XMLNames_init_leak
    Memcheck:Leak
    ...
    fun:_ZN7WebCore8XMLNames4initEv
-}
-{
-   # This is WebKit wide theading initialization which is intentionally kept
-   # around (not freed) while the process is running.
-   intentional_WTF_ThreadIdentifierData_initialize_leak
-   Memcheck:Leak
-   ...
-   fun:_ZN3WTF20ThreadIdentifierData10initializeEj
-}
-{
-   # This is WebKit wide theading initialization which is intentionally kept
-   # around (not freed) while the process is running.
-   intentional_WTF_wtfThreadData_leak
-   Memcheck:Leak
-   ...
-   fun:_ZN3WTF13wtfThreadDataEv
-}
-{
-   # Intentional crash test
-   intentional_RendererCrashTest
-   Memcheck:Unaddressable
-   fun:_Z*33HandleRendererErrorTestParametersRK11CommandLine
-   fun:_Z12RendererMainRKN7content18MainFunctionParams*
-}
-{
-   # PR_GetCurrentThread allocates a PRThread structure and stores it in
-   # thread-specific data.  The PRThread structure is freed by the
-   # PR_DetachThread call in CertVerifierWorker::Run or when the thread
-   # terminates.  Since we do not shut down worker threads, the PRThread
-   # structure created for a worker thread may be leaked at Chrome shutdown
-   # if the worker thread did not make it to the PR_DetachThread call.
-   bug_32624 (Intentional)
-   Memcheck:Leak
-   fun:calloc
-   fun:PR_Calloc
-   fun:PR_GetCurrentThread
-   ...
-   fun:_ZNK3net15X509Certificate14VerifyInternalERKSsiPNS_16CertVerifyResultE
-   fun:_ZNK3net15X509Certificate6VerifyERKSsiPNS_16CertVerifyResultE
-   fun:_ZN3net18CertVerifierWorker3RunEv
 }
 {
    # Intentionally leaking NSS to prevent shutdown crashes
@@ -403,20 +332,6 @@
    fun:_ZN3net10FileStreamC1EPNS_6NetLogE
 }
 {
-   Tasks posted to WorkerPool can leak by design
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN4base8internal20PostTaskAndReplyImpl16PostTaskAndReplyERKN15tracked_objects8LocationERKNS_8CallbackIFvvEEESA_
-   fun:_ZN4base10WorkerPool16PostTaskAndReplyERKN15tracked_objects8LocationERKNS_8CallbackIFvvEEES9_b
-}
-{
-   bug_61585b (Intentional)
-   Memcheck:Leak
-   fun:malloc
-   fun:PL_ArenaAllocate
-   fun:PORT_ArenaAlloc*
-}
-{
    # Histograms are used on un-joined threads, and can't be deleted atexit.
    Histograms via FactoryGet including Linear Custom Boolean and Basic
    Memcheck:Leak
@@ -425,42 +340,11 @@
    fun:_ZN4base*Histogram10FactoryGet*
 }
 {
-   # Histograms are used on un-joined threads, and can't be deleted atexit.
-   Histograms via FactoryGet including Stats for disk_cache
-   Memcheck:Leak
-   fun:_Znw*
-   ...
-   fun:_ZN10disk_cache14StatsHistogram10FactoryGet*
-}
-{
-   Intentional leak for Histogram (in StatisticsRecorderTest, NotInitialized).
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN4base42StatisticsRecorderTest_NotInitialized_Test8TestBodyEv
-}
-{
    Intentional leak for SampleMap (stores SparseHistogram counts).
    Memcheck:Leak
    ...
    fun:_ZN4base9SampleMap10AccumulateEii
    fun:_ZN4base15SparseHistogram3AddEi
-}
-{
-   Intentional leak for list<const BucketRanges*>(in StatisticsRecorderTest, RegisterBucketRanges).
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN4base18StatisticsRecorder31RegisterOrDeleteDuplicateRangesEPKNS_12BucketRangesE
-   fun:_ZN4base48StatisticsRecorderTest_RegisterBucketRanges_Test8TestBodyEv
-}
-{
-   # See http://code.google.com/p/chromium/issues/detail?id=70062#c8
-   bug_70062 (Intentional)
-   Memcheck:Leak
-   ...
-   fun:InitSessionCacheLocks
-   fun:initSessionCacheLocksLazily
-   ...
-   fun:ssl_InitSessionCacheLocks
 }
 {
    bug_73299 (Intentional)
@@ -487,62 +371,11 @@
    fun:_ZN10disk_cache9BackendIO16ExecuteOperationEv
 }
 {
-   bug_87500_b (Intentional)
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN4base4Bind*TaskClosureAdapterEFvvEPS2_EENS_8internal20InvokerStorageHolderINS6_15InvokerStorage1IT_T0_EEEES9_RKSA_
-   fun:_ZN4base11MessageLoop15PostDelayedTaskERKN15tracked_objects8LocationEP4Taskx
-   fun:_ZN4base20MessageLoopProxyImpl14PostTaskHelperERKN15tracked_objects8LocationEP4Taskxb
-   fun:_ZN4base20MessageLoopProxyImpl8PostTaskERKN15tracked_objects8LocationEP4Task
-   fun:_ZN10disk_cache10InFlightIO12OnIOCompleteEPNS_12BackgroundIOE
-}
-{
-   bug_87500_c (Intentional)
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN3net9HttpCache*EntryERKSsPPNS0_11ActiveEntryEPNS0_11TransactionE
-   fun:_ZN3net9HttpCache11Transaction13Do*EntryEv
-   fun:_ZN3net9HttpCache11Transaction6DoLoopEi
-   fun:_ZN3net9HttpCache11Transaction12OnIOCompleteEi
-}
-{
-   Intentional, see http://codereview.chromium.org/7670025
-   Memcheck:Param
-   msync(start)
-   fun:msync$UNIX2003
-   fun:mach_override_ptr
-   fun:_ZN4base33EnableTerminationOnHeapCorruptionEv
-}
-{
-   # Intentional - data is stored in thread-local storage for an unjoined
-   # worker thread, and so can occasionally leak. See crbug.com/89553 for
-   # additional info
-   bug_89553
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN12_GLOBAL__N_111DnsReloader11MaybeReloadEv
-}
-{
    bug_79322 (Intentional)
    Memcheck:Leak
    fun:_Znw*
    ...
    fun:_ZN4base*StatisticsRecorderTest_*_Test8TestBodyEv
-}
-{
-   # This test simulates a ppapi plugin that fails to decrement a reference
-   # count. In that case, the ppapi runtime will clean up its internal data
-   # structures, but intentionally does not delete the plugin object's
-   # desctructor, because we don't want them to have the opportunity to do
-   # anything at that part of shutdown.
-   bug_145710 (Intentional)
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN12TestInstance27TestLeakedObjectDestructorsEv
-   fun:_ZN12TestInstance8RunTestsERKSs
-   fun:_ZN15TestingInstance12ExecuteTestsEi
-   fun:_ZN2pp25CompletionCallbackFactoryI15TestingInstanceNS_22ThreadSafeThreadTraitsEE11Dispatcher0IMS1_FviEEclEPS1_i
-   fun:_ZN2pp25CompletionCallbackFactoryI15TestingInstanceNS_22ThreadSafeThreadTraitsEE12CallbackDataINS3_11Dispatcher0IMS1_FviEEEE5ThunkEPvi
 }
 {
    intentional_see_bug_156466
