@@ -153,6 +153,7 @@
           }],
           ['enable_webrtc==1', {
             'schema_files': [
+              'webrtc_audio_private.idl',
               'webrtc_cast_send_transport.idl',
               'webrtc_cast_udp_transport.idl',
               'webrtc_logging_private.idl',

@@ -10,6 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/synchronization/waitable_event.h"
+#include "media/audio/audio_manager_base.h"
 #include "media/audio/audio_output_controller.h"
 #include "media/audio/audio_parameters.h"
 #include "media/base/audio_bus.h"
@@ -216,6 +217,19 @@ class AudioOutputControllerTest : public testing::Test {
     controller_->StopDiverting();
   }
 
+  void SwitchDevice(bool diverting) {
+    if (!diverting) {
+      // Expect the current stream to close and a new stream to start
+      // playing if not diverting. When diverting, nothing happens
+      // until diverting is stopped.
+      EXPECT_CALL(mock_event_handler_, OnPlaying())
+          .WillOnce(SignalEvent(&play_event_));
+    }
+
+    controller_->SwitchOutputDevice(AudioManagerBase::kDefaultDeviceName,
+                                    base::Bind(&base::DoNothing));
+  }
+
   void Close() {
     EXPECT_CALL(mock_sync_reader_, Close());
 
@@ -314,6 +328,18 @@ TEST_F(AudioOutputControllerTest, PlayDeviceChangeClose) {
   Close();
 }
 
+TEST_F(AudioOutputControllerTest, PlaySwitchDeviceClose) {
+  Create(kSamplesPerPacket);
+  WaitForCreate();
+  Play();
+  WaitForPlay();
+  WaitForReads();
+  SwitchDevice(false);
+  WaitForPlay();
+  WaitForReads();
+  Close();
+}
+
 TEST_F(AudioOutputControllerTest, PlayDivertRevertClose) {
   Create(kSamplesPerPacket);
   WaitForCreate();
@@ -322,6 +348,22 @@ TEST_F(AudioOutputControllerTest, PlayDivertRevertClose) {
   WaitForReads();
   DivertWhilePlaying();
   WaitForPlay();
+  ReadDivertedAudioData();
+  RevertWhilePlaying();
+  WaitForPlay();
+  WaitForReads();
+  Close();
+}
+
+TEST_F(AudioOutputControllerTest, PlayDivertSwitchDeviceRevertClose) {
+  Create(kSamplesPerPacket);
+  WaitForCreate();
+  Play();
+  WaitForPlay();
+  WaitForReads();
+  DivertWhilePlaying();
+  WaitForPlay();
+  SwitchDevice(true);
   ReadDivertedAudioData();
   RevertWhilePlaying();
   WaitForPlay();

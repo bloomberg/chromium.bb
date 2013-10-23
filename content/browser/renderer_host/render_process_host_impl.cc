@@ -588,12 +588,15 @@ void RenderProcessHostImpl::CreateMessageFilters() {
       media_stream_manager,
       BrowserMainLoop::GetInstance()->audio_mirroring_manager(),
       BrowserMainLoop::GetInstance()->user_input_monitor()));
-  AddFilter(new AudioRendererHost(
+  // The AudioRendererHost needs to be available for lookup, so it's
+  // stashed in a member variable.
+  audio_renderer_host_ = new AudioRendererHost(
       GetID(),
       audio_manager,
       BrowserMainLoop::GetInstance()->audio_mirroring_manager(),
       media_internals,
-      media_stream_manager));
+      media_stream_manager);
+  AddFilter(audio_renderer_host_);
   AddFilter(
       new MIDIHost(GetID(), BrowserMainLoop::GetInstance()->midi_manager()));
   AddFilter(new MIDIDispatcherHost(GetID(), browser_context));
@@ -1779,6 +1782,11 @@ void RenderProcessHostImpl::OnProcessLaunched() {
     Send(queued_messages_.front());
     queued_messages_.pop();
   }
+}
+
+scoped_refptr<AudioRendererHost>
+RenderProcessHostImpl::audio_renderer_host() const {
+  return audio_renderer_host_;
 }
 
 void RenderProcessHostImpl::OnUserMetricsRecordAction(

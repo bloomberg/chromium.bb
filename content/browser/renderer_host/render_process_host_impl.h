@@ -33,6 +33,7 @@ class Size;
 }
 
 namespace content {
+class AudioRendererHost;
 class BrowserDemuxerAndroid;
 class GpuMessageFilter;
 class MessagePortMessageFilter;
@@ -125,6 +126,8 @@ class CONTENT_EXPORT RenderProcessHostImpl
 
   // ChildProcessLauncher::Client implementation.
   virtual void OnProcessLaunched() OVERRIDE;
+
+  scoped_refptr<AudioRendererHost> audio_renderer_host() const;
 
   // Tells the ResourceDispatcherHost to resume a deferred navigation without
   // transferring it to a new renderer process.
@@ -337,6 +340,8 @@ class CONTENT_EXPORT RenderProcessHostImpl
 
   // Forwards power state messages to the renderer process.
   PowerMonitorMessageBroadcaster power_monitor_broadcaster_;
+
+  scoped_refptr<AudioRendererHost> audio_renderer_host_;
 
 #if defined(OS_ANDROID)
   scoped_refptr<BrowserDemuxerAndroid> browser_demuxer_android_;

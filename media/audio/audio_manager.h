@@ -62,10 +62,16 @@ class MEDIA_EXPORT AudioManager {
   // which must initially be empty. It is not guaranteed that all the
   // devices in the list support all formats and sample rates for
   // recording.
+  //
+  // Not threadsafe; in production this should only be called from the
+  // Audio IO thread (see GetMessageLoop).
   virtual void GetAudioInputDeviceNames(AudioDeviceNames* device_names) = 0;
 
   // Appends a list of available output devices to |device_names|,
   // which must initially be empty.
+  //
+  // Not threadsafe; in production this should only be called from the
+  // Audio IO thread (see GetMessageLoop).
   virtual void GetAudioOutputDeviceNames(AudioDeviceNames* device_names) = 0;
 
   // Factory for all the supported stream formats. |params| defines parameters

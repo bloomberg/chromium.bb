@@ -5,6 +5,8 @@
 #ifndef CONTENT_PUBLIC_BROWSER_RENDER_VIEW_HOST_H_
 #define CONTENT_PUBLIC_BROWSER_RENDER_VIEW_HOST_H_
 
+#include <list>
+
 #include "base/callback_forward.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/render_widget_host.h"
@@ -23,6 +25,10 @@ class Point;
 namespace base {
 class FilePath;
 class Value;
+}
+
+namespace media {
+class AudioOutputController;
 }
 
 namespace ui {
@@ -272,6 +278,16 @@ class CONTENT_EXPORT RenderViewHost : virtual public RenderWidgetHost {
 
   // Informs the renderer process of a change in timezone.
   virtual void NotifyTimezoneChange() = 0;
+
+  // Retrieves the list of AudioOutputController objects associated
+  // with this object and passes it to the callback you specify, on
+  // the same thread on which you called the method.
+  typedef std::list<scoped_refptr<media::AudioOutputController> >
+      AudioOutputControllerList;
+  typedef base::Callback<void(const AudioOutputControllerList&)>
+      GetAudioOutputControllersCallback;
+  virtual void GetAudioOutputControllers(
+      const GetAudioOutputControllersCallback& callback) const = 0;
 
 #if defined(OS_ANDROID)
   // Selects and zooms to the find result nearest to the point (x,y)

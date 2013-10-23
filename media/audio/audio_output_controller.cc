@@ -8,6 +8,7 @@
 #include "base/debug/trace_event.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
+#include "base/task_runner_util.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -109,6 +110,24 @@ void AudioOutputController::Close(const base::Closure& closed_task) {
 void AudioOutputController::SetVolume(double volume) {
   message_loop_->PostTask(FROM_HERE, base::Bind(
       &AudioOutputController::DoSetVolume, this, volume));
+}
+
+void AudioOutputController::GetOutputDeviceId(
+    base::Callback<void(const std::string&)> callback) const {
+  base::PostTaskAndReplyWithResult(
+      message_loop_.get(),
+      FROM_HERE,
+      base::Bind(&AudioOutputController::DoGetOutputDeviceId, this),
+      callback);
+}
+
+void AudioOutputController::SwitchOutputDevice(
+    const std::string& output_device_id, const base::Closure& callback) {
+  message_loop_->PostTaskAndReply(
+      FROM_HERE,
+      base::Bind(&AudioOutputController::DoSwitchOutputDevice, this,
+                 output_device_id),
+      callback);
 }
 
 void AudioOutputController::DoCreate(bool is_for_device_change) {
@@ -259,6 +278,28 @@ void AudioOutputController::DoSetVolume(double volume) {
     default:
       return;
   }
+}
+
+std::string AudioOutputController::DoGetOutputDeviceId() const {
+  DCHECK(message_loop_->BelongsToCurrentThread());
+  return output_device_id_;
+}
+
+void AudioOutputController::DoSwitchOutputDevice(
+    const std::string& output_device_id) {
+  DCHECK(message_loop_->BelongsToCurrentThread());
+
+  if (state_ == kClosed)
+    return;
+
+  output_device_id_ = output_device_id;
+
+  // If output is currently diverted, we must not call OnDeviceChange
+  // since it would break the diverted setup. Once diversion is
+  // finished using StopDiverting() the output will switch to the new
+  // device ID.
+  if (stream_ != diverting_to_stream_)
+    OnDeviceChange();
 }
 
 void AudioOutputController::DoReportError() {

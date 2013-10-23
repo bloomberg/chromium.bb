@@ -604,6 +604,8 @@
         'browser/extensions/api/web_request/web_request_permissions.h',
         'browser/extensions/api/web_request/web_request_time_tracker.cc',
         'browser/extensions/api/web_request/web_request_time_tracker.h',
+        'browser/extensions/api/webrtc_audio_private/webrtc_audio_private_api.cc',
+        'browser/extensions/api/webrtc_audio_private/webrtc_audio_private_api.h',
         'browser/extensions/api/webrtc_logging_private/webrtc_logging_private_api.cc',
         'browser/extensions/api/webrtc_logging_private/webrtc_logging_private_api.h',
         'browser/extensions/api/webstore_private/webstore_private_api.cc',

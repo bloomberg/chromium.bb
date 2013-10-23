@@ -18,6 +18,7 @@
 #include "content/common/media/audio_messages.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/media_observer.h"
+#include "content/public/common/content_switches.h"
 #include "media/audio/audio_manager_base.h"
 #include "media/audio/shared_memory_util.h"
 #include "media/base/audio_bus.h"
@@ -106,6 +107,7 @@ AudioRendererHost::AudioEntry::~AudioEntry() {}
 
 ///////////////////////////////////////////////////////////////////////////////
 // AudioRendererHost implementations.
+
 AudioRendererHost::AudioRendererHost(
     int render_process_id,
     media::AudioManager* audio_manager,
@@ -123,6 +125,17 @@ AudioRendererHost::AudioRendererHost(
 
 AudioRendererHost::~AudioRendererHost() {
   DCHECK(audio_entries_.empty());
+}
+
+void AudioRendererHost::GetOutputControllers(
+    int render_view_id,
+    const RenderViewHost::GetAudioOutputControllersCallback& callback) const {
+  BrowserThread::PostTaskAndReplyWithResult(
+      BrowserThread::IO,
+      FROM_HERE,
+      base::Bind(&AudioRendererHost::DoGetOutputControllers, this,
+                 render_view_id),
+      callback);
 }
 
 void AudioRendererHost::OnChannelClosing() {
@@ -237,6 +250,21 @@ void AudioRendererHost::DoCompleteCreation(int stream_id) {
       foreign_memory_handle,
       foreign_socket_handle,
       media::PacketSizeInBytes(entry->shared_memory()->requested_size())));
+}
+
+RenderViewHost::AudioOutputControllerList
+AudioRendererHost::DoGetOutputControllers(int render_view_id) const {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  RenderViewHost::AudioOutputControllerList controllers;
+  AudioEntryMap::const_iterator it = audio_entries_.begin();
+  for (; it != audio_entries_.end(); ++it) {
+    AudioEntry* entry = it->second;
+    if (entry->render_view_id() == render_view_id)
+      controllers.push_back(entry->controller());
+  }
+
+  return controllers;
 }
 
 void AudioRendererHost::DoNotifyAudioPowerLevel(int stream_id,

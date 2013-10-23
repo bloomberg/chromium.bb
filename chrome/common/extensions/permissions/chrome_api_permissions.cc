@@ -239,6 +239,8 @@ std::vector<APIPermissionInfo*> ChromeAPIPermissions::GetAllPermissions()
     { APIPermission::kEnterprisePlatformKeysPrivate,
       "enterprise.platformKeysPrivate",
       APIPermissionInfo::kFlagCannotBeOptional },
+    { APIPermission::kWebrtcAudioPrivate, "webrtcAudioPrivate",
+      APIPermissionInfo::kFlagCannotBeOptional },
     { APIPermission::kWebrtcLoggingPrivate, "webrtcLoggingPrivate",
       APIPermissionInfo::kFlagCannotBeOptional },
     { APIPermission::kPrincipalsPrivate, "principalsPrivate",

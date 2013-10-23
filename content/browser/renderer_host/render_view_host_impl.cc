@@ -29,6 +29,7 @@
 #include "content/browser/host_zoom_map_impl.h"
 #include "content/browser/renderer_host/dip_util.h"
 #include "content/browser/renderer_host/frame_tree.h"
+#include "content/browser/renderer_host/media/audio_renderer_host.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/common/accessibility_messages.h"
@@ -1806,6 +1807,13 @@ void RenderViewHostImpl::UpdateWebkitPreferences(const WebPreferences& prefs) {
 
 void RenderViewHostImpl::NotifyTimezoneChange() {
   Send(new ViewMsg_TimezoneChange(GetRoutingID()));
+}
+
+void RenderViewHostImpl::GetAudioOutputControllers(
+    const GetAudioOutputControllersCallback& callback) const {
+  AudioRendererHost* audio_host =
+      static_cast<RenderProcessHostImpl*>(GetProcess())->audio_renderer_host();
+  audio_host->GetOutputControllers(GetRoutingID(), callback);
 }
 
 void RenderViewHostImpl::ClearFocusedNode() {
