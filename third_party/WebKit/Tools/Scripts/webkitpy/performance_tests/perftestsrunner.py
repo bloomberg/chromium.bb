@@ -183,7 +183,7 @@ class PerfTestsRunner(object):
             def write_throttled_update(self, msg):
                 pass
 
-        if not self._port.check_build(needs_http=needs_http, printer=FakePrinter()):
+        if self._port.check_build(needs_http=needs_http, printer=FakePrinter()):
             _log.error("Build not up to date for %s" % self._port._path_to_driver())
             return self.EXIT_CODE_BAD_BUILD
 

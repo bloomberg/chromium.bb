@@ -150,9 +150,11 @@ class Manager(object):
 
     def _set_up_run(self, test_names):
         self._printer.write_update("Checking build ...")
-        if self._options.build and not self._port.check_build(self.needs_servers(test_names), self._printer):
-            _log.error("Build check failed")
-            return False
+        if self._options.build:
+            exit_code = self._port.check_build(self.needs_servers(test_names), self._printer)
+            if exit_code:
+                _log.error("Build check failed")
+                return exit_code
 
         # This must be started before we check the system dependencies,
         # since the helper may do things to make the setup correct.
@@ -163,9 +165,10 @@ class Manager(object):
         # Check that the system dependencies (themes, fonts, ...) are correct.
         if not self._options.nocheck_sys_deps:
             self._printer.write_update("Checking system dependencies ...")
-            if not self._port.check_sys_deps(self.needs_servers(test_names)):
+            exit_code = self._port.check_sys_deps(self.needs_servers(test_names))
+            if exit_code:
                 self._port.stop_helper()
-                return False
+                return exit_code
 
         if self._options.clobber_old_results:
             self._clobber_old_results()
@@ -174,7 +177,7 @@ class Manager(object):
         self._port.host.filesystem.maybe_make_directory(self._results_directory)
 
         self._port.setup_test_run()
-        return True
+        return test_run_results.OK_EXIT_STATUS
 
     def run(self, args):
         """Run the tests and return a RunDetails object with the results."""
@@ -197,8 +200,9 @@ class Manager(object):
             _log.critical('No tests to run.')
             return test_run_results.RunDetails(exit_code=test_run_results.NO_TESTS_EXIT_STATUS)
 
-        if not self._set_up_run(tests_to_run):
-            return test_run_results.RunDetails(exit_code=test_run_results.UNEXPECTED_ERROR_EXIT_STATUS)
+        exit_code = self._set_up_run(tests_to_run)
+        if exit_code:
+            return test_run_results.RunDetails(exit_code=exit_code)
 
         # Don't retry failures if an explicit list of tests was passed in.
         if self._options.retry_failures is None:

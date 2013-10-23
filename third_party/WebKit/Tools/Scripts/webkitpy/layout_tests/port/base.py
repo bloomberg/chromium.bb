@@ -56,6 +56,7 @@ from webkitpy.common.system.path import cygpath
 from webkitpy.common.system.systemhost import SystemHost
 from webkitpy.common.webkit_finder import WebKitFinder
 from webkitpy.layout_tests.layout_package.bot_test_expectations import BotTestExpectationsFactory
+from webkitpy.layout_tests.models import test_run_results
 from webkitpy.layout_tests.models.test_configuration import TestConfiguration
 from webkitpy.layout_tests.port import config as port_config
 from webkitpy.layout_tests.port import driver
@@ -330,7 +331,7 @@ class Port(object):
         dump_render_tree_binary_path = self._path_to_driver()
         result = self._check_file_exists(dump_render_tree_binary_path,
                                          'test driver') and result
-        if result and self.get_option('build'):
+        if not result and self.get_option('build'):
             result = self._check_driver_build_up_to_date(
                 self.get_option('configuration'))
         else:
@@ -349,7 +350,7 @@ class Port(object):
         self._pretty_patch_available = self.check_pretty_patch()
         self._wdiff_available = self.check_wdiff()
 
-        return result
+        return test_run_results.OK_EXIT_STATUS if result else test_run_results.UNEXPECTED_ERROR_EXIT_STATUS
 
     def _check_driver(self):
         driver_path = self._path_to_driver()
@@ -381,8 +382,8 @@ class Port(object):
             _log.error('To override, invoke with --nocheck-sys-deps')
             _log.error('')
             _log.error(output)
-            return False
-        return True
+            return test_run_results.SYS_DEPS_EXIT_STATUS
+        return test_run_results.OK_EXIT_STATUS
 
     def check_image_diff(self, override_step=None, logging=True):
         """This routine is used to check whether image_diff binary exists."""

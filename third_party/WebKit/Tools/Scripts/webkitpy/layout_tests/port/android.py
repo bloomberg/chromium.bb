@@ -37,6 +37,7 @@ import time
 
 from multiprocessing.pool import ThreadPool
 
+from webkitpy.common.system.executive import ScriptError
 from webkitpy.layout_tests.models import test_run_results
 from webkitpy.layout_tests.port import base
 from webkitpy.layout_tests.port import linux
@@ -449,8 +450,11 @@ class AndroidPort(base.Port):
         return self._host_port.check_wdiff(logging)
 
     def check_build(self, needs_http, printer):
-        result = super(AndroidPort, self).check_build(needs_http, printer)
-        result = self._check_file_exists(self.path_to_md5sum(), 'md5sum utility') and result
+        exit_status = super(AndroidPort, self).check_build(needs_http, printer)
+        if exit_status:
+            return exit_status
+
+        result = self._check_file_exists(self.path_to_md5sum(), 'md5sum utility')
         result = self._check_file_exists(self.path_to_md5sum_host(), 'md5sum host utility') and result
         result = self._check_file_exists(self.path_to_forwarder(), 'forwarder utility') and result
 
@@ -471,16 +475,13 @@ class AndroidPort(base.Port):
                 for pid in pids:
                     self._executive.run_command(['taskset', '-p', '-c', '0', str(pid)])
 
-        if result:
-            # FIXME: We should figure out how to handle failures here better.
-            self._check_devices(printer)
-
         if not result:
             _log.error('For complete Android build requirements, please see:')
             _log.error('')
             _log.error('    http://code.google.com/p/chromium/wiki/AndroidBuildInstructions')
+            return test_run_results.UNEXPECTED_ERROR_EXIT_STATUS
 
-        return result
+        return self._check_devices(printer)
 
     def _check_devices(self, printer):
         # Printer objects aren't threadsafe, so we need to protect calls to them.
@@ -508,10 +509,14 @@ class AndroidPort(base.Port):
             log_safely("preparing device", throttled=False)
             try:
                 d._setup_test(log_safely)
+                log_safely("device prepared", throttled=False)
+            except ScriptError as e:
+                lock.acquire()
+                _log.warning("[%s] failed to prepare_device: %s" % (serial, str(e)))
+                lock.release()
             except KeyboardInterrupt:
                 if pool:
                     pool.terminate()
-            log_safely("device prepared", throttled=False)
 
         # FIXME: It would be nice if we knew how many workers we needed.
         num_workers = self.default_child_processes()
@@ -527,6 +532,11 @@ class AndroidPort(base.Port):
                 raise
         else:
             setup_device(0)
+
+        if not self._devices.prepared_devices():
+            _log.error('Could not prepare any devices for testing.')
+            return test_run_results.NO_DEVICES_EXIT_STATUS
+        return test_run_results.OK_EXIT_STATUS
 
     def setup_test_run(self):
         super(AndroidPort, self).setup_test_run()
@@ -549,8 +559,8 @@ class AndroidPort(base.Port):
                     break
             if not exists:
                 _log.error('You are missing %s under %s. Try installing %s. See build instructions.' % (font_file, font_dirs, package))
-                return False
-        return True
+                return test_run_results.SYS_DEPS_EXIT_STATUS
+        return test_run_results.OK_EXIT_STATUS
 
     def requires_http_server(self):
         """Chromium Android runs tests on devices, and uses the HTTP server to

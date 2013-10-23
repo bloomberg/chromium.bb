@@ -34,6 +34,7 @@ import time
 from webkitpy.layout_tests.port import Port, Driver, DriverOutput
 from webkitpy.layout_tests.port.base import VirtualTestSuite
 from webkitpy.layout_tests.models.test_configuration import TestConfiguration
+from webkitpy.layout_tests.models import test_run_results
 from webkitpy.common.system.filesystem_mock import MockFileSystem
 from webkitpy.common.system.crashlogs import CrashLogs
 
@@ -438,10 +439,10 @@ class TestPort(Port):
         return 0
 
     def check_build(self, needs_http, printer):
-        return True
+        return test_run_results.OK_EXIT_STATUS
 
     def check_sys_deps(self, needs_http):
-        return True
+        return test_run_results.OK_EXIT_STATUS
 
     def default_configuration(self):
         return 'Release'

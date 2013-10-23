@@ -40,6 +40,7 @@ from webkitpy.common.system.executive_mock import MockExecutive, MockExecutive2
 from webkitpy.common.system.filesystem_mock import MockFileSystem
 from webkitpy.common.system.outputcapture import OutputCapture
 from webkitpy.common.system.systemhost_mock import MockSystemHost
+from webkitpy.layout_tests.models import test_run_results
 from webkitpy.layout_tests.port.base import Port, TestConfiguration
 from webkitpy.layout_tests.port.server_process_mock import MockServerProcess
 from webkitpy.layout_tests.servers import http_server_base
@@ -322,9 +323,9 @@ class PortTestCase(unittest.TestCase):
     def test_check_sys_deps(self):
         port = self.make_port()
         port._executive = MockExecutive2(exit_code=0)
-        self.assertTrue(port.check_sys_deps(needs_http=False))
+        self.assertEqual(port.check_sys_deps(needs_http=False), test_run_results.OK_EXIT_STATUS)
         port._executive = MockExecutive2(exit_code=1, output='testing output failure')
-        self.assertFalse(port.check_sys_deps(needs_http=False))
+        self.assertEqual(port.check_sys_deps(needs_http=False), test_run_results.SYS_DEPS_EXIT_STATUS)
 
     def test_expectations_ordering(self):
         port = self.make_port()
