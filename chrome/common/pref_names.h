@@ -834,9 +834,6 @@ extern const char kShelfChromeIconIndex[];
 extern const char kPinnedLauncherApps[];
 extern const char kShowLogoutButtonInTray[];
 extern const char kShelfPreferences[];
-
-extern const char kImmersiveModeRevealDelayMs[];
-extern const char kImmersiveModeRevealXThresholdPixels[];
 #endif
 
 #if defined(USE_AURA)

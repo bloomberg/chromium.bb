@@ -61,10 +61,6 @@ const char kAshDisableAutoMaximizing[] = "ash-disable-auto-maximizing";
 const char kAshDisableDisplayChangeLimiter[] =
     "ash-disable-display-change-limiter";
 
-// Disable immersive fullscreen mode, regardless of default setting.
-const char kAshDisableImmersiveFullscreen[] =
-    "ash-disable-immersive-fullscreen";
-
 #if defined(OS_CHROMEOS)
 // Disable compositor based mirroring.
 const char kAshDisableSoftwareMirroring[] = "ash-disable-software-mirroring";
@@ -109,9 +105,6 @@ const char kAshDisableDragOffShelf[] = "ash-disable-drag-off-shelf";
 const char kAshEnableFullMultiProfileMode[] =
     "ash-enable-full-multi-profile-mode";
 #endif
-
-// Enable immersive fullscreen mode, regardless of default setting.
-const char kAshEnableImmersiveFullscreen[] = "ash-enable-immersive-fullscreen";
 
 #if defined(OS_LINUX)
 // Enable memory monitoring.

@@ -18,7 +18,6 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/immersive_fullscreen_configuration.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "ui/aura/client/aura_constants.h"
 
@@ -86,8 +85,7 @@ IN_PROC_BROWSER_TEST_F(ChromeShellDelegateBrowserTest, ToggleFullscreen) {
 
   shell_delegate->ToggleFullscreen();
   EXPECT_TRUE(browser_window->IsFullscreen());
-  EXPECT_EQ(IsInImmersiveFullscreen(browser_window),
-      ImmersiveFullscreenConfiguration::UseImmersiveFullscreen());
+  EXPECT_TRUE(IsInImmersiveFullscreen(browser_window));
 
   shell_delegate->ToggleFullscreen();
   EXPECT_FALSE(browser_window->IsMaximized());

@@ -16,7 +16,6 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/fullscreen/fullscreen_controller.h"
 #include "chrome/browser/ui/fullscreen/fullscreen_controller_test.h"
-#include "chrome/browser/ui/immersive_fullscreen_configuration.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/top_container_view.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
@@ -59,12 +58,7 @@ class ImmersiveModeControllerAshTest : public InProcessBrowserTest {
   ImmersiveModeControllerAsh* controller() { return controller_; }
 
   // content::BrowserTestBase overrides:
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    ImmersiveFullscreenConfiguration::EnableImmersiveFullscreenForTest();
-  }
-
   virtual void SetUpOnMainThread() OVERRIDE {
-    ASSERT_TRUE(ImmersiveFullscreenConfiguration::UseImmersiveFullscreen());
     browser_view_ = static_cast<BrowserView*>(browser()->window());
     controller_ = static_cast<ImmersiveModeControllerAsh*>(
         browser_view_->immersive_mode_controller());

@@ -46,7 +46,6 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window_state.h"
-#include "chrome/browser/ui/immersive_fullscreen_configuration.h"
 #include "chrome/browser/ui/ntp_background_util.h"
 #include "chrome/browser/ui/omnibox/omnibox_popup_model.h"
 #include "chrome/browser/ui/omnibox/omnibox_popup_view.h"
@@ -2353,9 +2352,15 @@ void BrowserView::ProcessFullscreen(bool fullscreen,
 }
 
 bool BrowserView::ShouldUseImmersiveFullscreenForUrl(const GURL& url) const {
+#if defined(OS_CHROMEOS)
+  // Kiosk mode needs the whole screen.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kKioskMode))
+    return false;
   bool is_browser_fullscreen = url.is_empty();
-  return ImmersiveFullscreenConfiguration::UseImmersiveFullscreen() &&
-      is_browser_fullscreen && IsBrowserTypeNormal();
+  return is_browser_fullscreen && IsBrowserTypeNormal();
+#else
+  return false;
+#endif
 }
 
 void BrowserView::LoadAccelerators() {

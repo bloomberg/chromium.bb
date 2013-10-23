@@ -13,7 +13,6 @@
 #include "base/command_line.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/ui/fullscreen/fullscreen_controller.h"
-#include "chrome/browser/ui/immersive_fullscreen_configuration.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view.h"
 #include "chrome/browser/ui/views/frame/top_container_view.h"
 #include "content/public/browser/notification_service.h"
@@ -47,6 +46,15 @@ const int kAnimationOffsetY = 3;
 // happened.
 const int kRevealSlowAnimationDurationMs = 400;
 const int kRevealFastAnimationDurationMs = 200;
+
+// The delay in milliseconds between the mouse stopping at the top edge of the
+// screen and the top-of-window views revealing.
+const int kMouseRevealDelayMs = 200;
+
+// The maximum amount of pixels that the cursor can move for the cursor to be
+// considered "stopped". This allows the user to reveal the top-of-window views
+// without holding the cursor completely still.
+const int kMouseRevealXThresholdPixels = 3;
 
 // How many pixels a gesture can start away from |top_container_| when in
 // closed state and still be considered near it. This is needed to overcome
@@ -721,8 +729,7 @@ void ImmersiveModeControllerAsh::UpdateTopEdgeHoverTimer(
   // |hit_bounds_in_screen| is short.)
   if (top_edge_hover_timer_.IsRunning() &&
       abs(location_in_screen.x() - mouse_x_when_hit_top_in_screen_) <=
-          ImmersiveFullscreenConfiguration::
-              immersive_mode_reveal_x_threshold_pixels())
+          kMouseRevealXThresholdPixels)
     return;
 
   // Start the reveal if the cursor doesn't move for some amount of time.
@@ -731,8 +738,7 @@ void ImmersiveModeControllerAsh::UpdateTopEdgeHoverTimer(
   // Timer is stopped when |this| is destroyed, hence Unretained() is safe.
   top_edge_hover_timer_.Start(
       FROM_HERE,
-      base::TimeDelta::FromMilliseconds(
-          ImmersiveFullscreenConfiguration::immersive_mode_reveal_delay_ms()),
+      base::TimeDelta::FromMilliseconds(kMouseRevealDelayMs),
       base::Bind(&ImmersiveModeControllerAsh::AcquireLocatedEventRevealedLock,
                  base::Unretained(this)));
 }

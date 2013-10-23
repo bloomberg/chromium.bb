@@ -58,8 +58,6 @@ const char* kWhitelist[] = {
   prefs::kOverscrollVerticalThresholdStart,
   prefs::kOverscrollHorizontalResistThreshold,
   prefs::kOverscrollVerticalResistThreshold,
-  prefs::kImmersiveModeRevealDelayMs,
-  prefs::kImmersiveModeRevealXThresholdPixels,
   prefs::kFlingCurveTouchscreenAlpha,
   prefs::kFlingCurveTouchscreenBeta,
   prefs::kFlingCurveTouchscreenGamma,

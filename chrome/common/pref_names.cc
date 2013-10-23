@@ -2377,12 +2377,6 @@ const char kShowLogoutButtonInTray[] = "show_logout_button_in_tray";
 // its value is a dictionary whose keys are kShelfAlignment and
 // kShelfAutoHideBehavior.
 const char kShelfPreferences[] = "shelf_preferences";
-
-// Tuning for immersive fullscreen.
-const char kImmersiveModeRevealDelayMs[] =
-    "immersive_mode.reveal_delay_ms";
-const char kImmersiveModeRevealXThresholdPixels[] =
-    "immersive_mode.reveal_x_threshold_pixels";
 #endif
 
 #if defined(USE_AURA)

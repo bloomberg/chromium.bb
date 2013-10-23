@@ -6320,12 +6320,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_DND_APPLIST_TO_LAUNCHER_DESCRIPTION" desc="Description for the flag to disable drag and drop opertions from the app list menu to the launcher.">
         Disallow drag and drop from the app list menu to the shelf.
       </message>
-      <message name="IDS_FLAGS_ASH_IMMERSIVE_FULLSCREEN_NAME" desc="Title for the flag for immersive fullscreen mode.">
-        Immersive fullscreen
-      </message>
-      <message name="IDS_FLAGS_ASH_IMMERSIVE_FULLSCREEN_DESCRIPTION" desc="Description for the flag for immersive fullscreen mode.">
-        Enables "immersive fullscreen" where the tab strip at the top and the app shelf at the bottom are still accessible in fullscreen.
-      </message>
       <message name="IDS_FLAGS_ENABLE_MEMORY_MONITOR_NAME" desc="Title for the flag to enable advanced gestures.">
         Enable memory monitor
       </message>

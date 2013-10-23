@@ -1192,13 +1192,6 @@ const Experiment kExperiments[] = {
     kOsCrOS,
     SINGLE_VALUE_TYPE(ash::switches::kAshDisableDragAndDropAppListToLauncher),
   },
-  { "ash-immersive-fullscreen-2",
-    IDS_FLAGS_ASH_IMMERSIVE_FULLSCREEN_NAME,
-    IDS_FLAGS_ASH_IMMERSIVE_FULLSCREEN_DESCRIPTION,
-    kOsCrOS,
-    ENABLE_DISABLE_VALUE_TYPE(ash::switches::kAshEnableImmersiveFullscreen,
-                              ash::switches::kAshDisableImmersiveFullscreen),
-  },
 #if defined(OS_LINUX)
   { "ash-enable-memory-monitor",
       IDS_FLAGS_ENABLE_MEMORY_MONITOR_NAME,

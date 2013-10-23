@@ -12,7 +12,6 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/fullscreen/fullscreen_controller.h"
 #include "chrome/browser/ui/fullscreen/fullscreen_controller_test.h"
-#include "chrome/browser/ui/immersive_fullscreen_configuration.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller_ash.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -97,9 +96,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewAshTest,
   EXPECT_TRUE(frame_view->ShouldPaint());
 
   // No painting should occur in non-immersive fullscreen. (We enter into tab
-  // fullscreen here because tab fullscreen is non-immersive even when
-  // ImmersiveFullscreenConfiguration::UseImmersiveFullscreen()) returns
-  // true.
+  // fullscreen here because tab fullscreen is non-immersive even on ChromeOS).
   {
     // NOTIFICATION_FULLSCREEN_CHANGED is sent asynchronously.
     scoped_ptr<FullscreenNotificationObserver> waiter(
@@ -127,9 +124,6 @@ IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewAshTest,
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewAshTest, ImmersiveFullscreen) {
-  if (!ImmersiveFullscreenConfiguration::UseImmersiveFullscreen())
-    return;
-
   // We know we're using Views, so static cast.
   BrowserView* browser_view = static_cast<BrowserView*>(browser()->window());
   Widget* widget = browser_view->GetWidget();
