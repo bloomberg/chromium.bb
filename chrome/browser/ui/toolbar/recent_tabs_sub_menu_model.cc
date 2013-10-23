@@ -579,21 +579,24 @@ void RecentTabsSubMenuModel::AddDeviceFavicon(
 }
 
 void RecentTabsSubMenuModel::AddTabFavicon(int command_id, const GURL& url) {
+  bool is_local_tab = command_id < kFirstOtherDevicesTabCommandId;
   int index_in_menu = GetIndexOfCommandId(command_id);
 
-  // If tab has synced favicon, use it.
-  // Note that currently, other devices' tabs only have favicons if
-  // --sync-tab-favicons switch is on; according to zea@, this flag is now
-  // automatically enabled for iOS and android, and they're looking into
-  // enabling it for other platforms.
-  browser_sync::SessionModelAssociator* associator = GetModelAssociator();
-  scoped_refptr<base::RefCountedMemory> favicon_png;
-  if (associator &&
-      associator->GetSyncedFaviconForPageURL(url.spec(), &favicon_png)) {
-    gfx::Image image = gfx::Image::CreateFrom1xPNGBytes(favicon_png->front(),
-                                                        favicon_png->size());
-    SetIcon(index_in_menu, image);
-    return;
+  if (!is_local_tab) {
+    // If tab has synced favicon, use it.
+    // Note that currently, other devices' tabs only have favicons if
+    // --sync-tab-favicons switch is on; according to zea@, this flag is now
+    // automatically enabled for iOS and android, and they're looking into
+    // enabling it for other platforms.
+    browser_sync::SessionModelAssociator* associator = GetModelAssociator();
+    scoped_refptr<base::RefCountedMemory> favicon_png;
+    if (associator &&
+        associator->GetSyncedFaviconForPageURL(url.spec(), &favicon_png)) {
+      gfx::Image image = gfx::Image::CreateFrom1xPNGBytes(favicon_png->front(),
+                                                          favicon_png->size());
+      SetIcon(index_in_menu, image);
+      return;
+    }
   }
 
   // Otherwise, start to fetch the favicon from local history asynchronously.
@@ -613,9 +616,8 @@ void RecentTabsSubMenuModel::AddTabFavicon(int command_id, const GURL& url) {
       base::Bind(&RecentTabsSubMenuModel::OnFaviconDataAvailable,
                  weak_ptr_factory_.GetWeakPtr(),
                  command_id),
-      command_id >= kFirstOtherDevicesTabCommandId ?
-          &other_devices_tab_cancelable_task_tracker_ :
-          &local_tab_cancelable_task_tracker_);
+      is_local_tab ? &local_tab_cancelable_task_tracker_ :
+                     &other_devices_tab_cancelable_task_tracker_);
 }
 
 void RecentTabsSubMenuModel::OnFaviconDataAvailable(
