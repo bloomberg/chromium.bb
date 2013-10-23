@@ -43,7 +43,7 @@
     list the res folders in project.library.res.folder.path and the
     corresponding java packages in project.library.packages, which must be
     semicolon-delimited while ADDITIONAL_RES_PACKAGES is space-delimited, hence
-    the javascript task.
+    the replacestring filterchain task.
   -->
   <path id="project.library.res.folder.path">
     <filelist files="${ADDITIONAL_RES_DIRS}"/>
@@ -51,10 +51,15 @@
   <path id="project.library.bin.r.file.path">
     <filelist files="${ADDITIONAL_R_TEXT_FILES}"/>
   </path>
-  <script language="javascript">
-    var before = project.getProperty("ADDITIONAL_RES_PACKAGES");
-    project.setProperty("project.library.packages", before.replaceAll(" ", ";"));
-  </script>
+
+  <loadresource property="project.library.packages">
+    <propertyresource name="ADDITIONAL_RES_PACKAGES"/>
+    <filterchain>
+      <replacestring from=" " to=";"/>
+    </filterchain>
+  </loadresource>
+  <!-- Set to empty if not set by the loadresource above -->
+  <property name="project.library.packages" value=""/>
 
   <path id="project.library.manifest.file.path">
     <filelist files="${LIBRARY_MANIFEST_PATHS}"/>
