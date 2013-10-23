@@ -31,12 +31,17 @@
 #include "config.h"
 #include "modules/websockets/NewWebSocketChannelImpl.h"
 
+#include "bindings/v8/ScriptCallStackFactory.h"
 #include "core/dom/ContextLifecycleObserver.h"
+#include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/fileapi/Blob.h"
 #include "core/fileapi/FileError.h"
 #include "core/fileapi/FileReaderLoader.h"
 #include "core/fileapi/FileReaderLoaderClient.h"
+#include "core/inspector/InspectorInstrumentation.h"
+#include "core/inspector/ScriptCallStack.h"
+#include "core/loader/UniqueIdentifier.h"
 #include "modules/websockets/WebSocketChannel.h"
 #include "modules/websockets/WebSocketChannelClient.h"
 #include "platform/Logging.h"
@@ -49,8 +54,6 @@
 #include "wtf/ArrayBuffer.h"
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
-
-// FIXME: We should implement Inspector notification.
 
 using WebKit::WebSocketHandle;
 
@@ -259,13 +262,18 @@ NewWebSocketChannelImpl::NewWebSocketChannelImpl(ExecutionContext* context, WebS
     : ContextLifecycleObserver(context)
     , m_handle(adoptPtr(WebKit::Platform::current()->createWebSocketHandle()))
     , m_client(client)
+    , m_identifier(0)
     , m_resumer(adoptPtr(new Resumer(this)))
     , m_isSuspended(false)
     , m_sendingQuota(0)
     , m_receivedDataSizeForFlowControl(receivedDataSizeForFlowControlHighWaterMark * 2) // initial quota
     , m_bufferedAmount(0)
     , m_sentSizeOfTopMessage(0)
+    , m_sourceURLAtConnection(sourceURL)
+    , m_lineNumberAtConnection(lineNumber)
 {
+    if (context->isDocument() && toDocument(context)->page())
+        m_identifier = createUniqueIdentifier();
 }
 
 NewWebSocketChannelImpl::~NewWebSocketChannelImpl()
@@ -289,6 +297,13 @@ void NewWebSocketChannelImpl::connect(const KURL& url, const String& protocol)
     String origin = executionContext()->securityOrigin()->toString();
     m_handle->connect(url, webProtocols, origin, this);
     flowControlIfNecessary();
+    if (m_identifier)
+        InspectorInstrumentation::didCreateWebSocket(document(), m_identifier, url, protocol);
+    RefPtr<ScriptCallStack> callStack = createScriptCallStack(1, true);
+    if (callStack && callStack->size()) {
+        m_sourceURLAtConnection = callStack->at(0).sourceURL();
+        m_lineNumberAtConnection = callStack->at(0).lineNumber();
+    }
 }
 
 String NewWebSocketChannelImpl::subprotocol()
@@ -306,6 +321,13 @@ String NewWebSocketChannelImpl::extensions()
 WebSocketChannel::SendResult NewWebSocketChannelImpl::send(const String& message)
 {
     LOG(Network, "NewWebSocketChannelImpl %p sendText(%s)", this, message.utf8().data());
+    if (m_identifier) {
+        // FIXME: Change the inspector API to show the entire message instead
+        // of individual frames.
+        CString data = message.utf8();
+        WebSocketFrame frame(WebSocketFrame::OpCodeText, data.data(), data.length(), WebSocketFrame::Final | WebSocketFrame::Masked);
+        InspectorInstrumentation::didSendWebSocketFrame(document(), m_identifier, frame);
+    }
     m_messages.append(Message(message));
     sendInternal();
     return SendSuccess;
@@ -314,6 +336,15 @@ WebSocketChannel::SendResult NewWebSocketChannelImpl::send(const String& message
 WebSocketChannel::SendResult NewWebSocketChannelImpl::send(PassRefPtr<BlobDataHandle> blobDataHandle)
 {
     LOG(Network, "NewWebSocketChannelImpl %p sendBlob(%s, %s, %llu)", this, blobDataHandle->uuid().utf8().data(), blobDataHandle->type().utf8().data(), blobDataHandle->size());
+    if (m_identifier) {
+        // FIXME: Change the inspector API to show the entire message instead
+        // of individual frames.
+        // FIXME: We can't access the data here.
+        // Since Binary data are not displayed in Inspector, this does not
+        // affect actual behavior.
+        WebSocketFrame frame(WebSocketFrame::OpCodeBinary, "", 0, WebSocketFrame::Final | WebSocketFrame::Masked);
+        InspectorInstrumentation::didSendWebSocketFrame(document(), m_identifier, frame);
+    }
     m_messages.append(Message(blobDataHandle));
     sendInternal();
     return SendSuccess;
@@ -322,6 +353,12 @@ WebSocketChannel::SendResult NewWebSocketChannelImpl::send(PassRefPtr<BlobDataHa
 WebSocketChannel::SendResult NewWebSocketChannelImpl::send(const ArrayBuffer& buffer, unsigned byteOffset, unsigned byteLength)
 {
     LOG(Network, "NewWebSocketChannelImpl %p sendArrayBuffer(%p, %u, %u)", this, buffer.data(), byteOffset, byteLength);
+    if (m_identifier) {
+        // FIXME: Change the inspector API to show the entire message instead
+        // of individual frames.
+        WebSocketFrame frame(WebSocketFrame::OpCodeBinary, static_cast<const char*>(buffer.data()) + byteOffset, byteLength, WebSocketFrame::Final | WebSocketFrame::Masked);
+        InspectorInstrumentation::didSendWebSocketFrame(document(), m_identifier, frame);
+    }
     // buffer.slice copies its contents.
     m_messages.append(buffer.slice(byteOffset, byteOffset + byteLength));
     sendInternal();
@@ -345,6 +382,12 @@ void NewWebSocketChannelImpl::fail(const String& reason, MessageLevel level, con
 {
     LOG(Network, "NewWebSocketChannelImpl %p fail(%s)", this, reason.utf8().data());
     // m_handle and m_client can be null here.
+
+    if (m_identifier)
+        InspectorInstrumentation::didReceiveWebSocketFrameError(document(), m_identifier, reason);
+    const String message = "WebSocket connection to '" + m_url.elidedString() + "' failed: " + reason;
+    executionContext()->addConsoleMessage(JSMessageSource, level, message, sourceURL, lineNumber);
+
     if (m_client)
         m_client->didReceiveMessageError();
     if (m_isSuspended) {
@@ -358,11 +401,22 @@ void NewWebSocketChannelImpl::fail(const String& reason, MessageLevel level, con
 void NewWebSocketChannelImpl::disconnect()
 {
     LOG(Network, "NewWebSocketChannelImpl %p disconnect()", this);
+    if (m_identifier)
+        InspectorInstrumentation::didCloseWebSocket(document(), m_identifier);
     abortAsyncOperations();
     if (m_handle)
         m_handle->close(CloseEventCodeAbnormalClosure, "");
     m_handle.clear();
     m_client = 0;
+    m_identifier = 0;
+}
+
+Document* NewWebSocketChannelImpl::document()
+{
+    ASSERT(m_identifier);
+    ExecutionContext* context = executionContext();
+    ASSERT(context->isDocument());
+    return toDocument(context);
 }
 
 void NewWebSocketChannelImpl::suspend()
@@ -389,6 +443,13 @@ void NewWebSocketChannelImpl::handleTextMessage(Vector<char>* messageData)
     ASSERT(m_client);
     ASSERT(!m_isSuspended);
     ASSERT(messageData);
+    if (m_identifier) {
+        // FIXME: Change the inspector API to show the entire message instead
+        // of individual frames.
+        WebSocketFrame frame(WebSocketFrame::OpCodeText, messageData->data(), messageData->size(), WebSocketFrame::Final);
+        InspectorInstrumentation::didReceiveWebSocketFrame(document(), m_identifier, frame);
+    }
+
     String message = String::fromUTF8(messageData->data(), messageData->size());
     // For consistency with handleBinaryMessage, we clear |messageData|.
     messageData->clear();
@@ -405,6 +466,13 @@ void NewWebSocketChannelImpl::handleBinaryMessage(Vector<char>* messageData)
     ASSERT(m_client);
     ASSERT(!m_isSuspended);
     ASSERT(messageData);
+    if (m_identifier) {
+        // FIXME: Change the inspector API to show the entire message instead
+        // of individual frames.
+        WebSocketFrame frame(WebSocketFrame::OpCodeBinary, messageData->data(), messageData->size(), WebSocketFrame::Final);
+        InspectorInstrumentation::didReceiveWebSocketFrame(document(), m_identifier, frame);
+    }
+
     OwnPtr<Vector<char> > binaryData = adoptPtr(new Vector<char>);
     messageData->swap(*binaryData);
     m_client->didReceiveBinaryData(binaryData.release());
@@ -432,7 +500,6 @@ void NewWebSocketChannelImpl::handleDidClose(unsigned short code, const String& 
     client->didClose(m_bufferedAmount, status, code, reason);
     // client->didClose may delete this object.
 }
-
 
 NewWebSocketChannelImpl::Message::Message(const String& text)
     : type(MessageTypeText)
@@ -518,6 +585,10 @@ void NewWebSocketChannelImpl::didConnect(WebSocketHandle* handle, bool fail, con
         // failAsError may delete this object.
         return;
     }
+    // FIXME: We should have Request / Response information to be output.
+    // InspectorInstrumentation::willSendWebSocketHandshakeRequest(document(), m_identifier, "");
+    // InspectorInstrumentation::didReceiveWebSocketHandshakeResponse(document(), m_identifier, "");
+
     m_subprotocol = selectedProtocol;
     m_extensions = extensions;
     if (m_isSuspended)
@@ -547,6 +618,7 @@ void NewWebSocketChannelImpl::didReceiveData(WebSocketHandle* handle, bool fin, 
         ASSERT(!m_receivingMessageData.isEmpty());
         break;
     }
+
     m_receivingMessageData.append(data, size);
     m_receivedDataSizeForFlowControl += size;
     flowControlIfNecessary();
@@ -575,6 +647,11 @@ void NewWebSocketChannelImpl::didClose(WebSocketHandle* handle, unsigned short c
     LOG(Network, "NewWebSocketChannelImpl %p didClose(%p, %u, %s)", this, handle, code, String(reason).utf8().data());
     ASSERT(m_handle);
     m_handle.clear();
+    if (m_identifier) {
+        InspectorInstrumentation::didCloseWebSocket(document(), m_identifier);
+        m_identifier = 0;
+    }
+
     // FIXME: Maybe we should notify an error to m_client for some didClose messages.
     if (m_isSuspended) {
         m_resumer->append(PendingEvent(code, reason));
