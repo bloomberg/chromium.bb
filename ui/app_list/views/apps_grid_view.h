@@ -78,6 +78,9 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   // Sets |model| to use. Note this does not take ownership of |model|.
   void SetModel(AppListModel* model);
 
+  // Set |apps| to renders. Note this does not take ownership of |apps|.
+  void SetApps(AppListModel::Apps* apps);
+
   void SetSelectedView(views::View* view);
   void ClearSelectedView(views::View* view);
   bool IsSelectedView(const views::View* view) const;
@@ -130,9 +133,6 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
 
   // Stops the timer that triggers a page flip during a drag.
   void StopPageFlipTimer();
-
-  // Get the last grid view which was created.
-  static AppsGridView* GetLastGridViewForTest();
 
   // Return the view model for test purposes.
   const views::ViewModel* view_model_for_test() const { return &view_model_; }
@@ -272,6 +272,7 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   void SetViewHidden(views::View* view, bool hide, bool immediate);
 
   AppListModel* model_;  // Owned by AppListView.
+  AppListModel::Apps* apps_;  // Not owned.
   AppsGridViewDelegate* delegate_;
   PaginationModel* pagination_model_;  // Owned by AppListController.
   PageSwitcher* page_switcher_view_;  // Owned by views hierarchy.

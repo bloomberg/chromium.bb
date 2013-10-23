@@ -69,9 +69,6 @@ const int kPrerenderPages = 1;
 // The drag and drop proxy should get scaled by this factor.
 const float kDragAndDropProxyScale = 1.5f;
 
-// For testing we remember the last created grid view.
-AppsGridView* last_created_grid_view_for_test = NULL;
-
 // RowMoveAnimationDelegate is used when moving an item into a different row.
 // Before running the animation, the item's layer is re-created and kept in
 // the original position, then the item is moved to just before its target
@@ -237,6 +234,7 @@ AppsGridView::AppsGridView(AppsGridViewDelegate* delegate,
                            PaginationModel* pagination_model,
                            content::WebContents* start_page_contents)
     : model_(NULL),
+      apps_(NULL),
       delegate_(delegate),
       pagination_model_(pagination_model),
       page_switcher_view_(new PageSwitcher(pagination_model)),
@@ -252,7 +250,6 @@ AppsGridView::AppsGridView(AppsGridViewDelegate* delegate,
       page_flip_target_(-1),
       page_flip_delay_in_ms_(kPageFlipDelayInMs),
       bounds_animator_(this) {
-  last_created_grid_view_for_test = this;
   pagination_model_->AddObserver(this);
   AddChildView(page_switcher_view_);
 
@@ -272,11 +269,12 @@ AppsGridView::~AppsGridView() {
   if (drag_view_)
     EndDrag(true);
 
-  if (model_) {
+  if (model_)
     model_->RemoveObserver(this);
-    model_->apps()->RemoveObserver(this);
-  }
   pagination_model_->RemoveObserver(this);
+
+  if (apps_)
+    apps_->RemoveObserver(this);
 }
 
 void AppsGridView::SetLayout(int icon_size, int cols, int rows_per_page) {
@@ -291,16 +289,22 @@ void AppsGridView::SetLayout(int icon_size, int cols, int rows_per_page) {
 }
 
 void AppsGridView::SetModel(AppListModel* model) {
-  if (model_) {
+  if (model_)
     model_->RemoveObserver(this);
-    model_->apps()->RemoveObserver(this);
-  }
 
   model_ = model;
-  if (model_) {
+  if (model_)
     model_->AddObserver(this);
-    model_->apps()->AddObserver(this);
-  }
+
+  Update();
+}
+
+void AppsGridView::SetApps(AppListModel::Apps* apps) {
+  if (apps_)
+    apps_->RemoveObserver(this);
+
+  apps_ = apps;
+  apps_->AddObserver(this);
   Update();
 }
 
@@ -625,17 +629,14 @@ void AppsGridView::ViewHierarchyChanged(
   }
 }
 
-// static
-AppsGridView* AppsGridView::GetLastGridViewForTest() {
-  return last_created_grid_view_for_test;
-}
-
 void AppsGridView::Update() {
   DCHECK(!selected_view_ && !drag_view_);
+  if (!apps_)
+    return;
 
   view_model_.Clear();
-  if (model_ && model_->apps()->item_count())
-    ListItemsAdded(0, model_->apps()->item_count());
+  if (apps_ && apps_->item_count())
+    ListItemsAdded(0, apps_->item_count());
 }
 
 void AppsGridView::UpdatePaging() {
@@ -648,7 +649,7 @@ void AppsGridView::UpdatePaging() {
 
 void AppsGridView::UpdatePulsingBlockViews() {
   const int available_slots =
-      tiles_per_page() - model_->apps()->item_count() % tiles_per_page();
+      tiles_per_page() - apps_->item_count() % tiles_per_page();
   const int desired = model_->status() == AppListModel::STATUS_SYNCING ?
       available_slots : 0;
 
@@ -670,9 +671,9 @@ void AppsGridView::UpdatePulsingBlockViews() {
 }
 
 views::View* AppsGridView::CreateViewForItemAtIndex(size_t index) {
-  DCHECK_LT(index, model_->apps()->item_count());
+  DCHECK_LT(index, apps_->item_count());
   AppListItemView* view = new AppListItemView(this,
-                                              model_->apps()->GetItemAt(index));
+                                              apps_->GetItemAt(index));
   view->SetIconSize(icon_size_);
 #if defined(USE_AURA)
   view->SetPaintToLayer(true);
@@ -1107,10 +1108,10 @@ void AppsGridView::MoveItemInModel(views::View* item_view,
   if (target_model_index == current_model_index)
     return;
 
-  model_->apps()->RemoveObserver(this);
-  model_->apps()->Move(current_model_index, target_model_index);
+  apps_->RemoveObserver(this);
+  apps_->Move(current_model_index, target_model_index);
   view_model_.Move(current_model_index, target_model_index);
-  model_->apps()->AddObserver(this);
+  apps_->AddObserver(this);
 
   if (pagination_model_->selected_page() != target.page)
     pagination_model_->SelectPage(target.page, false);

@@ -11,6 +11,7 @@
 #include "ui/app_list/app_list_view_delegate.h"
 #include "ui/app_list/pagination_model.h"
 #include "ui/app_list/views/app_list_main_view.h"
+#include "ui/app_list/views/apps_container_view.h"
 #include "ui/app_list/views/apps_grid_view.h"
 #include "ui/app_list/views/search_result_list_view.h"
 #include "ui/events/event.h"
@@ -22,10 +23,8 @@ namespace app_list {
 
 namespace {
 
-const int kPreferredIconDimension = 48;
-
 // Indexes of interesting views in ViewModel of ContentsView.
-const int kIndexAppsGrid = 0;
+const int kIndexAppsContainer = 0;
 const int kIndexSearchResults = 1;
 
 const int kMinMouseWheelToSwitchPage = 20;
@@ -34,9 +33,8 @@ const int kMinHorizVelocityToSwitchPage = 800;
 
 const double kFinishTransitionThreshold = 0.33;
 
-// Helpers to get certain child view from |model|.
-AppsGridView* GetAppsGridView(views::ViewModel* model) {
-  return static_cast<AppsGridView*>(model->view_at(kIndexAppsGrid));
+AppsContainerView* GetAppsContainerView(views::ViewModel* model) {
+  return static_cast<AppsContainerView*>(model->view_at(kIndexAppsContainer));
 }
 
 SearchResultListView* GetSearchResultListView(views::ViewModel* model) {
@@ -59,20 +57,16 @@ ContentsView::ContentsView(AppListMainView* app_list_main_view,
       kPageTransitionDurationInMs,
       kOverscrollPageTransitionDurationMs);
 
-  apps_grid_view_ = new AppsGridView(
-      app_list_main_view, pagination_model, start_page_contents);
-  apps_grid_view_->SetLayout(kPreferredIconDimension,
-                             kPreferredCols,
-                             kPreferredRows);
-  AddChildView(apps_grid_view_);
-  view_model_->Add(apps_grid_view_, kIndexAppsGrid);
+  apps_container_view_ = new AppsContainerView(
+      app_list_main_view, pagination_model, model, start_page_contents);
+  AddChildView(apps_container_view_);
+  view_model_->Add(apps_container_view_, kIndexAppsContainer);
 
   SearchResultListView* search_results_view = new SearchResultListView(
       app_list_main_view);
   AddChildView(search_results_view);
   view_model_->Add(search_results_view, kIndexSearchResults);
 
-  GetAppsGridView(view_model_.get())->SetModel(model);
   GetSearchResultListView(view_model_.get())->SetResults(model->results());
 }
 
@@ -80,13 +74,14 @@ ContentsView::~ContentsView() {
 }
 
 void ContentsView::CancelDrag() {
-  if (apps_grid_view_ && apps_grid_view_->has_dragged_view())
-    apps_grid_view_->EndDrag(true);
+  if (apps_container_view_->apps_grid_view()->has_dragged_view())
+    apps_container_view_->apps_grid_view()->EndDrag(true);
 }
 
 void ContentsView::SetDragAndDropHostOfCurrentAppList(
     ApplicationDragAndDropHost* drag_and_drop_host) {
-  apps_grid_view_->SetDragAndDropHostOfCurrentAppList(drag_and_drop_host);
+  apps_container_view_->apps_grid_view()->
+      SetDragAndDropHostOfCurrentAppList(drag_and_drop_host);
 }
 
 void ContentsView::SetShowState(ShowState show_state) {
@@ -114,7 +109,7 @@ void ContentsView::CalculateIdealBounds() {
   if (rect.IsEmpty())
     return;
 
-  gfx::Rect grid_frame(rect);
+  gfx::Rect container_frame(rect);
   gfx::Rect results_frame(rect);
 
   // Offsets apps grid and result list based on |show_state_|.
@@ -126,14 +121,14 @@ void ContentsView::CalculateIdealBounds() {
       results_frame.Offset(0, -contents_area_height);
       break;
     case SHOW_SEARCH_RESULTS:
-      grid_frame.Offset(0, contents_area_height);
+      container_frame.Offset(0, contents_area_height);
       break;
     default:
       NOTREACHED() << "Unknown show_state_ " << show_state_;
       break;
   }
 
-  view_model_->set_ideal_bounds(kIndexAppsGrid, grid_frame);
+  view_model_->set_ideal_bounds(kIndexAppsContainer, container_frame);
   view_model_->set_ideal_bounds(kIndexSearchResults, results_frame);
 }
 
@@ -149,19 +144,23 @@ void ContentsView::ShowSearchResults(bool show) {
   SetShowState(show ? SHOW_SEARCH_RESULTS : SHOW_APPS);
 }
 
+void ContentsView::ShowFolderContent(AppListFolderItem* item) {
+  apps_container_view_->ShowActiveFolder(item);
+}
+
 void ContentsView::Prerender() {
   const int selected_page = std::max(0, pagination_model_->selected_page());
-  GetAppsGridView(view_model_.get())->Prerender(selected_page);
+  apps_container_view_->apps_grid_view()->Prerender(selected_page);
 }
 
 gfx::Size ContentsView::GetPreferredSize() {
-  const gfx::Size grid_size =
-      GetAppsGridView(view_model_.get())->GetPreferredSize();
+  const gfx::Size container_size = GetAppsContainerView(view_model_.get())->
+      apps_grid_view()->GetPreferredSize();
   const gfx::Size results_size =
       GetSearchResultListView(view_model_.get())->GetPreferredSize();
 
-  int width = std::max(grid_size.width(), results_size.width());
-  int height = std::max(grid_size.height(), results_size.height());
+  int width = std::max(container_size.width(), results_size.width());
+  int height = std::max(container_size.height(), results_size.height());
   return gfx::Size(width, height);
 }
 
@@ -173,7 +172,7 @@ void ContentsView::Layout() {
 bool ContentsView::OnKeyPressed(const ui::KeyEvent& event) {
   switch (show_state_) {
     case SHOW_APPS:
-      return GetAppsGridView(view_model_.get())->OnKeyPressed(event);
+      return GetAppsContainerView(view_model_.get())->OnKeyPressed(event);
     case SHOW_SEARCH_RESULTS:
       return GetSearchResultListView(view_model_.get())->OnKeyPressed(event);
     default:

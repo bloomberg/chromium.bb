@@ -104,6 +104,7 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDelegateView,
 #endif
 
   AppListModel* model() { return model_.get(); }
+  AppListMainView* app_list_main_view() { return app_list_main_view_; }
 
  private:
   void InitAsBubbleInternal(gfx::NativeView parent,
