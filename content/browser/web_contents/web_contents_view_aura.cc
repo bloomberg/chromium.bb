@@ -1354,6 +1354,14 @@ void WebContentsViewAura::TakeFocus(bool reverse) {
 ////////////////////////////////////////////////////////////////////////////////
 // WebContentsViewAura, OverscrollControllerDelegate implementation:
 
+gfx::Rect WebContentsViewAura::GetVisibleBounds() const {
+  RenderWidgetHostView* rwhv = web_contents_->GetRenderWidgetHostView();
+  if (!rwhv || !rwhv->IsShowing())
+    return gfx::Rect();
+
+  return rwhv->GetViewBounds();
+}
+
 void WebContentsViewAura::OnOverscrollUpdate(float delta_x, float delta_y) {
   if (current_overscroll_gesture_ == OVERSCROLL_NONE)
     return;

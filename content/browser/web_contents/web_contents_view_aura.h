@@ -145,6 +145,7 @@ class CONTENT_EXPORT WebContentsViewAura
   virtual void TakeFocus(bool reverse) OVERRIDE;
 
   // Overridden from OverscrollControllerDelegate:
+  virtual gfx::Rect GetVisibleBounds() const OVERRIDE;
   virtual void OnOverscrollUpdate(float delta_x, float delta_y) OVERRIDE;
   virtual void OnOverscrollComplete(OverscrollMode overscroll_mode) OVERRIDE;
   virtual void OnOverscrollModeChange(OverscrollMode old_mode,

@@ -58,8 +58,9 @@ namespace content {
 
 class TestOverscrollDelegate : public OverscrollControllerDelegate {
  public:
-  TestOverscrollDelegate()
-      : current_mode_(OVERSCROLL_NONE),
+  explicit TestOverscrollDelegate(RenderWidgetHostView* view)
+      : view_(view),
+        current_mode_(OVERSCROLL_NONE),
         completed_mode_(OVERSCROLL_NONE),
         delta_x_(0.f),
         delta_y_(0.f) {
@@ -80,6 +81,10 @@ class TestOverscrollDelegate : public OverscrollControllerDelegate {
 
  private:
   // Overridden from OverscrollControllerDelegate:
+  virtual gfx::Rect GetVisibleBounds() const OVERRIDE {
+    return view_->IsShowing() ? view_->GetViewBounds() : gfx::Rect();
+  }
+
   virtual void OnOverscrollUpdate(float delta_x, float delta_y) OVERRIDE {
     delta_x_ = delta_x;
     delta_y_ = delta_y;
@@ -98,6 +103,7 @@ class TestOverscrollDelegate : public OverscrollControllerDelegate {
     delta_x_ = delta_y_ = 0.f;
   }
 
+  RenderWidgetHostView* view_;
   OverscrollMode current_mode_;
   OverscrollMode completed_mode_;
   float delta_x_;
@@ -247,7 +253,7 @@ class MockRenderWidgetHost : public RenderWidgetHostImpl {
 
   void SetupForOverscrollControllerTest() {
     SetOverscrollControllerEnabled(true);
-    overscroll_delegate_.reset(new TestOverscrollDelegate);
+    overscroll_delegate_.reset(new TestOverscrollDelegate(GetView()));
     overscroll_controller_->set_delegate(overscroll_delegate_.get());
   }
 

@@ -414,7 +414,7 @@ void RenderWidgetHostImpl::SetOverscrollControllerEnabled(bool enabled) {
   if (!enabled)
     overscroll_controller_.reset();
   else if (!overscroll_controller_)
-    overscroll_controller_.reset(new OverscrollController(this));
+    overscroll_controller_.reset(new OverscrollController());
 }
 
 void RenderWidgetHostImpl::SuppressNextCharEvents() {

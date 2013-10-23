@@ -17,7 +17,6 @@ namespace content {
 
 class MockRenderWidgetHost;
 class OverscrollControllerDelegate;
-class RenderWidgetHostImpl;
 
 // Indicates the direction that the scroll is heading in relative to the screen,
 // with the top being NORTH.
@@ -36,10 +35,7 @@ enum OverscrollMode {
 // status accordingly.
 class OverscrollController {
  public:
-  // Creates an overscroll controller for the specified RenderWidgetHost.
-  // The RenderWidgetHost owns this overscroll controller.
-  // TODO(jdduke): crbug.com/306194 - Take an OverscrollControllerClient.
-  explicit OverscrollController(RenderWidgetHostImpl* widget_host);
+  OverscrollController();
   virtual ~OverscrollController();
 
   // The result of |DispatchEvent()|, indicating either how the event was
@@ -113,9 +109,6 @@ class OverscrollController {
   // Sets the overscroll mode (and triggers callback in the delegate when
   // appropriate).
   void SetOverscrollMode(OverscrollMode new_mode);
-
-  // The RenderWidgetHost that owns this overscroll controller.
-  RenderWidgetHostImpl* render_widget_host_;
 
   // The current state of overscroll gesture.
   OverscrollMode overscroll_mode_;

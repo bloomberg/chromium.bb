@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "content/browser/renderer_host/overscroll_controller.h"
+#include "ui/gfx/rect.h"
 
 namespace content {
 
@@ -17,6 +18,10 @@ class OverscrollControllerDelegate {
  public:
   OverscrollControllerDelegate() {}
   virtual ~OverscrollControllerDelegate() {}
+
+  // Get the bounds of the view corresponding to the delegate. Overscroll-ending
+  // events will only be processed if the visible bounds are non-empty.
+  virtual gfx::Rect GetVisibleBounds() const = 0;
 
   // This is called for each update in the overscroll amount.
   virtual void OnOverscrollUpdate(float delta_x, float delta_y) = 0;

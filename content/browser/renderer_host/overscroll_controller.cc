@@ -4,19 +4,16 @@
 
 #include "content/browser/renderer_host/overscroll_controller.h"
 
+#include "base/logging.h"
 #include "content/browser/renderer_host/overscroll_controller_delegate.h"
-#include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/public/browser/overscroll_configuration.h"
-#include "content/public/browser/render_widget_host_view.h"
 
 using WebKit::WebInputEvent;
 
 namespace content {
 
-OverscrollController::OverscrollController(
-    RenderWidgetHostImpl* render_widget_host)
-    : render_widget_host_(render_widget_host),
-      overscroll_mode_(OVERSCROLL_NONE),
+OverscrollController::OverscrollController()
+    : overscroll_mode_(OVERSCROLL_NONE),
       scroll_state_(STATE_UNKNOWN),
       overscroll_delta_x_(0.f),
       overscroll_delta_y_(0.f),
@@ -145,11 +142,8 @@ bool OverscrollController::DispatchEventCompletesAction (
       event.type != WebKit::WebInputEvent::GestureFlingStart)
     return false;
 
-  RenderWidgetHostView* view = render_widget_host_->GetView();
-  if (!view->IsShowing())
-    return false;
-
-  const gfx::Rect& bounds = view->GetViewBounds();
+  DCHECK(delegate_);
+  gfx::Rect bounds = delegate_->GetVisibleBounds();
   if (bounds.IsEmpty())
     return false;
 
