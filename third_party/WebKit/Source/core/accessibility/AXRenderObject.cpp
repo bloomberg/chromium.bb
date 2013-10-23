@@ -40,6 +40,7 @@
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/editing/FrameSelection.h"
 #include "core/editing/RenderedPosition.h"
+#include "core/editing/TextIterator.h"
 #include "core/editing/VisibleUnits.h"
 #include "core/editing/htmlediting.h"
 #include "core/frame/Frame.h"
@@ -1160,7 +1161,7 @@ String AXRenderObject::textUnderElement() const
                 if (frame->document() != node->document())
                     return String();
 
-                return plainText(rangeOfContents(node).get(), textIteratorBehaviorForTextRange());
+                return plainText(rangeOfContents(node).get(), TextIteratorIgnoresStyleVisibility);
             }
         }
 

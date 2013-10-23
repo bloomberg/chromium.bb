@@ -30,7 +30,6 @@
 #ifndef AXObject_h
 #define AXObject_h
 
-#include "core/editing/TextIterator.h"
 #include "core/editing/VisiblePosition.h"
 #include "platform/geometry/FloatQuad.h"
 #include "platform/geometry/LayoutRect.h"
@@ -514,7 +513,6 @@ public:
     const AtomicString& getAttribute(const QualifiedName&) const;
 
     // Selected text.
-    TextIteratorBehavior textIteratorBehaviorForTextRange() const;
     virtual PlainTextRange selectedTextRange() const { return PlainTextRange(); }
     unsigned selectionStart() const { return selectedTextRange().start; }
     unsigned selectionEnd() const { return selectedTextRange().length; }

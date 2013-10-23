@@ -635,11 +635,6 @@ const AtomicString& AXObject::getAttribute(const QualifiedName& attribute) const
     return element->fastGetAttribute(attribute);
 }
 
-TextIteratorBehavior AXObject::textIteratorBehaviorForTextRange() const
-{
-    return TextIteratorIgnoresStyleVisibility;
-}
-
 bool AXObject::press() const
 {
     Element* actionElem = actionElement();
