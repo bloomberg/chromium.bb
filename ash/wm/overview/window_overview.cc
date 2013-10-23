@@ -134,6 +134,7 @@ WindowOverview::WindowOverview(WindowSelector* window_selector,
       windows_->front()->GetRootWindow());
   if (cursor_client_) {
     cursor_client_->SetCursor(ui::kCursorPointer);
+    cursor_client_->ShowCursor();
     // TODO(flackr): Only prevent cursor changes for windows in the overview.
     // This will be easier to do without exposing the overview mode code if the
     // cursor changes are moved to ToplevelWindowEventHandler::HandleMouseMoved
