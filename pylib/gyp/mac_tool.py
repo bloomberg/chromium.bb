@@ -202,8 +202,9 @@ class MacTool(object):
     return subprocess.call(cmd_list)
 
   def ExecFilterLibtool(self, *cmd_list):
-    """Calls libtool and filters out 'libtool: file: foo.o has no symbols'."""
-    libtool_re = re.compile(r'^libtool: file: .* has no symbols$')
+    """Calls libtool and filters out '/path/to/libtool: file: foo.o has no
+    symbols'."""
+    libtool_re = re.compile(r'^.*libtool: file: .* has no symbols$')
     libtoolout = subprocess.Popen(cmd_list, stderr=subprocess.PIPE)
     _, err = libtoolout.communicate()
     for line in err.splitlines():
