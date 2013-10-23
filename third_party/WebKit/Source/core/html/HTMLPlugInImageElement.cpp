@@ -53,12 +53,7 @@ static const float sizingFullPageAreaRatioThreshold = 0.96;
 static const float autostartSoonAfterUserGestureThreshold = 5.0;
 
 HTMLPlugInImageElement::HTMLPlugInImageElement(const QualifiedName& tagName, Document& document, bool createdByParser, PreferPlugInsForImagesOption preferPlugInsForImagesOption)
-    : HTMLPlugInElement(tagName, document, preferPlugInsForImagesOption)
-    // m_needsWidgetUpdate(!createdByParser) allows HTMLObjectElement to delay
-    // widget updates until after all children are parsed.  For HTMLEmbedElement
-    // this delay is unnecessary, but it is simpler to make both classes share
-    // the same codepath in this class.
-    , m_needsWidgetUpdate(!createdByParser)
+    : HTMLPlugInElement(tagName, document, createdByParser, preferPlugInsForImagesOption)
     , m_createdDuringUserGesture(UserGestureIndicator::processingUserGesture())
 {
     setHasCustomStyleCallbacks();
@@ -66,11 +61,6 @@ HTMLPlugInImageElement::HTMLPlugInImageElement(const QualifiedName& tagName, Doc
 
 HTMLPlugInImageElement::~HTMLPlugInImageElement()
 {
-}
-
-void HTMLPlugInImageElement::setDisplayState(DisplayState state)
-{
-    HTMLPlugInElement::setDisplayState(state);
 }
 
 RenderEmbeddedObject* HTMLPlugInImageElement::renderEmbeddedObject() const

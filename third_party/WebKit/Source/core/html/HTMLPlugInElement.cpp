@@ -44,11 +44,16 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-HTMLPlugInElement::HTMLPlugInElement(const QualifiedName& tagName, Document& doc, PreferPlugInsForImagesOption preferPlugInsForImagesOption)
+HTMLPlugInElement::HTMLPlugInElement(const QualifiedName& tagName, Document& doc, bool createdByParser, PreferPlugInsForImagesOption preferPlugInsForImagesOption)
     : HTMLFrameOwnerElement(tagName, doc)
     , m_NPObject(0)
     , m_isCapturingMouseEvents(false)
     , m_inBeforeLoadEventHandler(false)
+    // m_needsWidgetUpdate(!createdByParser) allows HTMLObjectElement to delay
+    // widget updates until after all children are parsed. For HTMLEmbedElement
+    // this delay is unnecessary, but it is simpler to make both classes share
+    // the same codepath in this class.
+    , m_needsWidgetUpdate(!createdByParser)
     , m_shouldPreferPlugInsForImages(preferPlugInsForImagesOption == ShouldPreferPlugInsForImages)
     , m_displayState(Playing)
 {
@@ -262,6 +267,14 @@ bool HTMLPlugInElement::isImageType()
     }
 
     return Image::supportsType(m_serviceType);
+}
+
+const String HTMLPlugInElement::loadedMimeType() const
+{
+    String mimeType = serviceType();
+    if (mimeType.isEmpty())
+        mimeType = mimeTypeFromURL(m_loadedUrl);
+    return mimeType;
 }
 
 }

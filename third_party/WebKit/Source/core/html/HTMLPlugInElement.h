@@ -39,6 +39,11 @@ enum PreferPlugInsForImagesOption {
     ShouldNotPreferPlugInsForImages
 };
 
+enum PluginCreationOption {
+    CreateAnyWidgetType,
+    CreateOnlyNonNetscapePlugins,
+};
+
 class HTMLPlugInElement : public HTMLFrameOwnerElement {
 public:
     virtual ~HTMLPlugInElement();
@@ -55,7 +60,7 @@ public:
         Playing
     };
     DisplayState displayState() const { return m_displayState; }
-    virtual void setDisplayState(DisplayState state) { m_displayState = state; }
+    void setDisplayState(DisplayState state) { m_displayState = state; }
 
     NPObject* getNPObject();
 
@@ -72,8 +77,19 @@ public:
 
     virtual void removeAllEventListeners() OVERRIDE FINAL;
 
+    const String& serviceType() const { return m_serviceType; }
+    const String& url() const { return m_url; }
+    const KURL& loadedUrl() const { return m_loadedUrl; }
+    const String loadedMimeType() const;
+
+    // Public for FrameView::addWidgetToUpdate()
+    bool needsWidgetUpdate() const { return m_needsWidgetUpdate; }
+    void setNeedsWidgetUpdate(bool needsWidgetUpdate) { m_needsWidgetUpdate = needsWidgetUpdate; }
+
+    virtual void updateWidget(PluginCreationOption) = 0;
+
 protected:
-    HTMLPlugInElement(const QualifiedName& tagName, Document&, PreferPlugInsForImagesOption);
+    HTMLPlugInElement(const QualifiedName& tagName, Document&, bool createdByParser, PreferPlugInsForImagesOption);
 
     virtual void detach(const AttachContext& = AttachContext()) OVERRIDE;
     virtual bool isPresentationAttribute(const QualifiedName&) const OVERRIDE;
@@ -91,6 +107,7 @@ protected:
 
     String m_serviceType;
     String m_url;
+    KURL m_loadedUrl;
 
 private:
     virtual bool areAuthorShadowsAllowed() const OVERRIDE { return false; }
@@ -110,6 +127,7 @@ private:
     NPObject* m_NPObject;
     bool m_isCapturingMouseEvents;
     bool m_inBeforeLoadEventHandler;
+    bool m_needsWidgetUpdate;
     bool m_shouldPreferPlugInsForImages;
     DisplayState m_displayState;
 };

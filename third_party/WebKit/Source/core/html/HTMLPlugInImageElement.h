@@ -23,7 +23,6 @@
 
 #include "core/html/HTMLPlugInElement.h"
 
-#include "core/platform/MIMETypeFromURL.h"
 #include "core/rendering/style/RenderStyle.h"
 #include "wtf/OwnPtr.h"
 
@@ -35,11 +34,6 @@ class Image;
 class MouseEvent;
 class Widget;
 
-enum PluginCreationOption {
-    CreateAnyWidgetType,
-    CreateOnlyNonNetscapePlugins,
-};
-
 // Base class for HTMLObjectElement and HTMLEmbedElement
 class HTMLPlugInImageElement : public HTMLPlugInElement {
 public:
@@ -47,31 +41,10 @@ public:
 
     RenderEmbeddedObject* renderEmbeddedObject() const;
 
-    virtual void setDisplayState(DisplayState) OVERRIDE;
-
-    virtual void updateWidget(PluginCreationOption) = 0;
-
-    const String& serviceType() const { return m_serviceType; }
-    const String& url() const { return m_url; }
-    const KURL& loadedUrl() const { return m_loadedUrl; }
-
-    const String loadedMimeType() const
-    {
-        String mimeType = serviceType();
-        if (mimeType.isEmpty())
-            mimeType = mimeTypeFromURL(m_loadedUrl);
-        return mimeType;
-    }
-
-    // Public for FrameView::addWidgetToUpdate()
-    bool needsWidgetUpdate() const { return m_needsWidgetUpdate; }
-    void setNeedsWidgetUpdate(bool needsWidgetUpdate) { m_needsWidgetUpdate = needsWidgetUpdate; }
-
 protected:
     HTMLPlugInImageElement(const QualifiedName& tagName, Document&, bool createdByParser, PreferPlugInsForImagesOption);
 
     OwnPtr<HTMLImageLoader> m_imageLoader;
-    KURL m_loadedUrl;
 
     static void updateWidgetCallback(Node*);
     virtual void attach(const AttachContext& = AttachContext()) OVERRIDE;
@@ -102,7 +75,6 @@ private:
 
     virtual bool isPlugInImageElement() const OVERRIDE { return true; }
 
-    bool m_needsWidgetUpdate;
     bool m_createdDuringUserGesture;
 };
 
