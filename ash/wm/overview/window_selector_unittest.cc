@@ -47,6 +47,20 @@ class NonActivatableActivationDelegate
   }
 };
 
+bool IsWindowAbove(aura::Window* w1, aura::Window* w2) {
+  aura::Window* parent = w1->parent();
+  DCHECK_EQ(parent, w2->parent());
+  for (aura::Window::Windows::const_iterator iter = parent->children().begin();
+       iter != parent->children().end(); ++iter) {
+    if (*iter == w1)
+      return false;
+    if (*iter == w2)
+      return true;
+  }
+  NOTREACHED();
+  return false;
+}
+
 }  // namespace
 
 class WindowSelectorTest : public test::AshTestBase {
@@ -307,6 +321,59 @@ TEST_F(WindowSelectorTest, BasicCycle) {
   EXPECT_FALSE(wm::IsActiveWindow(window1.get()));
   EXPECT_FALSE(wm::IsActiveWindow(window2.get()));
   EXPECT_TRUE(wm::IsActiveWindow(window3.get()));
+}
+
+// Tests that cycling through windows preserves the window stacking order.
+TEST_F(WindowSelectorTest, CyclePreservesStackingOrder) {
+  gfx::Rect bounds(0, 0, 400, 400);
+  scoped_ptr<aura::Window> window1(CreateWindow(bounds));
+  scoped_ptr<aura::Window> window2(CreateWindow(bounds));
+  scoped_ptr<aura::Window> window3(CreateWindow(bounds));
+  wm::ActivateWindow(window3.get());
+  wm::ActivateWindow(window2.get());
+  wm::ActivateWindow(window1.get());
+  // Window order from top to bottom is 1, 2, 3.
+  EXPECT_TRUE(IsWindowAbove(window1.get(), window2.get()));
+  EXPECT_TRUE(IsWindowAbove(window2.get(), window3.get()));
+
+  // On window 2.
+  Cycle(WindowSelector::FORWARD);
+  EXPECT_TRUE(IsWindowAbove(window2.get(), window1.get()));
+  EXPECT_TRUE(IsWindowAbove(window1.get(), window3.get()));
+
+  // On window 3.
+  Cycle(WindowSelector::FORWARD);
+  EXPECT_TRUE(IsWindowAbove(window3.get(), window1.get()));
+  EXPECT_TRUE(IsWindowAbove(window1.get(), window2.get()));
+
+  // Back on window 1.
+  Cycle(WindowSelector::FORWARD);
+  EXPECT_TRUE(IsWindowAbove(window1.get(), window2.get()));
+  EXPECT_TRUE(IsWindowAbove(window2.get(), window3.get()));
+  StopCycling();
+}
+
+// Tests that cycling through windows shows and minimizes windows as they
+// are passed.
+TEST_F(WindowSelectorTest, CyclePreservesMinimization) {
+  gfx::Rect bounds(0, 0, 400, 400);
+  scoped_ptr<aura::Window> window1(CreateWindow(bounds));
+  scoped_ptr<aura::Window> window2(CreateWindow(bounds));
+  wm::ActivateWindow(window2.get());
+  wm::GetWindowState(window2.get())->Minimize();
+  wm::ActivateWindow(window1.get());
+  EXPECT_TRUE(wm::IsWindowMinimized(window2.get()));
+
+  // On window 2.
+  Cycle(WindowSelector::FORWARD);
+  EXPECT_FALSE(wm::IsWindowMinimized(window2.get()));
+
+  // Back on window 1.
+  Cycle(WindowSelector::FORWARD);
+  EXPECT_TRUE(wm::IsWindowMinimized(window2.get()));
+
+  StopCycling();
+  EXPECT_TRUE(wm::IsWindowMinimized(window2.get()));
 }
 
 // Tests beginning cycling while in overview mode.

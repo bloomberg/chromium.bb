@@ -30,6 +30,7 @@ namespace internal {
 class WindowSelectorTest;
 }
 
+class ScopedShowWindow;
 class WindowOverview;
 class WindowSelectorDelegate;
 class WindowSelectorItem;
@@ -111,6 +112,10 @@ class ASH_EXPORT WindowSelector
   // An event handler listening for the release of the alt key during alt-tab
   // cycling.
   scoped_ptr<ui::EventHandler> event_handler_;
+
+  // The currently selected window being shown (temporarily brought to the front
+  // of the stacking order and made visible).
+  scoped_ptr<ScopedShowWindow> showing_window_;
 
   base::DelayTimer<WindowSelector> start_overview_timer_;
   scoped_ptr<WindowOverview> window_overview_;
