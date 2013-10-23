@@ -241,4 +241,28 @@ TEST_F(StickyKeysTest, NonTargetModifierTest) {
   EXPECT_EQ(StickyKeysHandler::LOCKED, sticky_key.current_state());
 }
 
+TEST_F(StickyKeysTest, NormalShortcutTest) {
+  // Sticky keys should not be enabled if we perform a normal shortcut.
+  scoped_ptr<ui::KeyEvent> ev;
+  MockStickyKeysHandlerDelegate* mock_delegate =
+      new MockStickyKeysHandlerDelegate();
+  StickyKeysHandler sticky_key(ui::EF_CONTROL_DOWN, mock_delegate);
+
+  EXPECT_EQ(StickyKeysHandler::DISABLED, sticky_key.current_state());
+
+  // Perform ctrl+n shortcut.
+  ev.reset(GenerateKey(true, ui::VKEY_CONTROL));
+  sticky_key.HandleKeyEvent(ev.get());
+  ev.reset(GenerateKey(true, ui::VKEY_N));
+  sticky_key.HandleKeyEvent(ev.get());
+  ev.reset(GenerateKey(false, ui::VKEY_N));
+  sticky_key.HandleKeyEvent(ev.get());
+  EXPECT_EQ(StickyKeysHandler::DISABLED, sticky_key.current_state());
+
+  // Sticky keys should not be enabled afterwards.
+  ev.reset(GenerateKey(false, ui::VKEY_CONTROL));
+  sticky_key.HandleKeyEvent(ev.get());
+  EXPECT_EQ(StickyKeysHandler::DISABLED, sticky_key.current_state());
+}
+
 }  // namespace ash

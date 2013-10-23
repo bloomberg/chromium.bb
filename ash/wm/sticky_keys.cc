@@ -75,6 +75,7 @@ StickyKeysHandler::StickyKeysHandler(ui::EventFlags target_modifier_flag,
     : modifier_flag_(target_modifier_flag),
       current_state_(DISABLED),
       keyevent_from_myself_(false),
+      preparing_to_enable_(false),
       delegate_(delegate) {
 }
 
@@ -133,11 +134,19 @@ StickyKeysHandler::KeyEventType
 bool StickyKeysHandler::HandleDisabledState(ui::KeyEvent* event) {
   switch (TranslateKeyEvent(event)) {
     case TARGET_MODIFIER_UP:
-      current_state_ = ENABLED;
-      modifier_up_event_.reset(event->Copy());
-      return true;
+      if (preparing_to_enable_) {
+        preparing_to_enable_ = false;
+        current_state_ = ENABLED;
+        modifier_up_event_.reset(event->Copy());
+        return true;
+      }
+      return false;
     case TARGET_MODIFIER_DOWN:
+      preparing_to_enable_ = true;
+      return false;
     case NORMAL_KEY_DOWN:
+      preparing_to_enable_ = false;
+      return false;
     case NORMAL_KEY_UP:
     case OTHER_MODIFIER_DOWN:
     case OTHER_MODIFIER_UP:
