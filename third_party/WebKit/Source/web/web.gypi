@@ -126,7 +126,6 @@
       'WebDOMFileSystem.cpp',
       'WebDOMMessageEvent.cpp',
       'WebDOMMouseEvent.cpp',
-      'WebDOMMutationEvent.cpp',
       'WebDOMProgressEvent.cpp',
       'WebDOMResourceProgressEvent.cpp',
       'WebDataSourceImpl.cpp',

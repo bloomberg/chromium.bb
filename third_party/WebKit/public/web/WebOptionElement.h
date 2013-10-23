@@ -58,8 +58,6 @@ public:
 
     BLINK_EXPORT int index() const;
     BLINK_EXPORT WebString text() const;
-    BLINK_EXPORT bool defaultSelected() const;
-    BLINK_EXPORT void setDefaultSelected(bool);
     BLINK_EXPORT WebString label() const;
     BLINK_EXPORT bool isEnabled() const;
 

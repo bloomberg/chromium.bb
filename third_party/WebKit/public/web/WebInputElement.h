@@ -85,8 +85,6 @@ namespace WebKit {
         BLINK_EXPORT void setEditingValue(const WebString&);
         BLINK_EXPORT void setSuggestedValue(const WebString&);
         BLINK_EXPORT WebString suggestedValue() const;
-        BLINK_EXPORT void setPlaceholder(const WebString&);
-        BLINK_EXPORT WebString placeholder() const;
         BLINK_EXPORT void setSelectionRange(int, int);
         BLINK_EXPORT int selectionStart() const;
         BLINK_EXPORT int selectionEnd() const;

@@ -98,12 +98,6 @@ WebString WebNode::nodeValue() const
     return m_private->nodeValue();
 }
 
-bool WebNode::setNodeValue(const WebString& value)
-{
-    m_private->setNodeValue(value);
-    return true;
-}
-
 WebDocument WebNode::document() const
 {
     return WebDocument(&m_private->document());

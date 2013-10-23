@@ -66,7 +66,6 @@ struct WebRect;
         BLINK_EXPORT WebString getAttribute(const WebString&) const;
         BLINK_EXPORT bool setAttribute(const WebString& name, const WebString& value);
         BLINK_EXPORT WebString innerText();
-        BLINK_EXPORT WebDocument document() const;
         BLINK_EXPORT void requestFullScreen();
         BLINK_EXPORT WebString attributeLocalName(unsigned index) const;
         BLINK_EXPORT WebString attributeValue(unsigned index) const;

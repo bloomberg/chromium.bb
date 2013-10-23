@@ -150,11 +150,6 @@ void WebElement::requestFullScreen()
     unwrap<Element>()->webkitRequestFullScreen(Element::ALLOW_KEYBOARD_INPUT);
 }
 
-WebDocument WebElement::document() const
-{
-    return WebDocument(&constUnwrap<Element>()->document());
-}
-
 WebRect WebElement::boundsInViewportSpace()
 {
     return unwrap<Element>()->boundsInRootViewSpace();

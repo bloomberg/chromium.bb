@@ -62,16 +62,6 @@ WebString WebOptionElement::text() const
     return constUnwrap<HTMLOptionElement>()->text();
 }
 
-bool WebOptionElement::defaultSelected() const
-{
-    return constUnwrap<HTMLOptionElement>()->hasAttribute(selectedAttr);
-}
-
-void WebOptionElement::setDefaultSelected(bool newSelected)
-{
-    unwrap<HTMLOptionElement>()->setAttribute(selectedAttr, newSelected ? "" : 0);
-}
-
 WebString WebOptionElement::label() const
 {
     return constUnwrap<HTMLOptionElement>()->label();

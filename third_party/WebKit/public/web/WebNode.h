@@ -96,7 +96,6 @@ public:
     BLINK_EXPORT WebNode parentNode() const;
     BLINK_EXPORT WebString nodeName() const;
     BLINK_EXPORT WebString nodeValue() const;
-    BLINK_EXPORT bool setNodeValue(const WebString&);
     BLINK_EXPORT WebDocument document() const;
     BLINK_EXPORT WebNode firstChild() const;
     BLINK_EXPORT WebNode lastChild() const;
