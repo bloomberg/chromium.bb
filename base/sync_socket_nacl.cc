@@ -64,11 +64,11 @@ CancelableSyncSocket::CancelableSyncSocket(Handle handle)
 }
 
 size_t CancelableSyncSocket::Send(const void* buffer, size_t length) {
-  return Send(buffer, length);
+  return SyncSocket::Send(buffer, length);
 }
 
 bool CancelableSyncSocket::Shutdown() {
-  return Close();
+  return SyncSocket::Close();
 }
 
 // static
