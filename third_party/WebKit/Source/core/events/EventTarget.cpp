@@ -34,6 +34,7 @@
 
 #include "RuntimeEnabledFeatures.h"
 #include "bindings/v8/DOMWrapperWorld.h"
+#include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
 #include "core/events/Event.h"
 #include "core/dom/ExceptionCode.h"
@@ -156,8 +157,16 @@ bool EventTarget::clearAttributeEventListener(const AtomicString& eventType, DOM
 
 bool EventTarget::dispatchEvent(PassRefPtr<Event> event, ExceptionState& es)
 {
-    if (!event || event->type().isEmpty() || event->isBeingDispatched()) {
-        es.throwUninformativeAndGenericDOMException(InvalidStateError);
+    if (!event) {
+        es.throwDOMException(InvalidStateError, ExceptionMessages::failedToExecute("dispatchEvent", "EventTarget", "The event provided is null."));
+        return false;
+    }
+    if (event->type().isEmpty()) {
+        es.throwDOMException(InvalidStateError, ExceptionMessages::failedToExecute("dispatchEvent", "EventTarget", "The event provided is uninitialized."));
+        return false;
+    }
+    if (event->isBeingDispatched()) {
+        es.throwDOMException(InvalidStateError, ExceptionMessages::failedToExecute("dispatchEvent", "EventTarget", "The event is already being dispatched."));
         return false;
     }
 
