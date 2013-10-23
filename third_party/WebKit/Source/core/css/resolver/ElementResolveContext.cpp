@@ -31,7 +31,7 @@ namespace WebCore {
 
 ElementResolveContext::ElementResolveContext(Element& element)
     : m_element(&element)
-    , m_elementLinkState(element.document().visitedLinkState()->determineLinkState(element))
+    , m_elementLinkState(element.document().visitedLinkState().determineLinkState(element))
     , m_distributedToInsertionPoint(false)
     , m_resetStyleInheritance(false)
 {

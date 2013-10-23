@@ -651,7 +651,7 @@ public:
     int elapsedTime() const;
 
     TextLinkColors& textLinkColors() { return m_textLinkColors; }
-    VisitedLinkState* visitedLinkState() const { return m_visitedLinkState.get(); }
+    VisitedLinkState& visitedLinkState() const { return *m_visitedLinkState; }
 
     MouseEventWithHitTestResults prepareMouseEvent(const HitTestRequest&, const LayoutPoint&, const PlatformMouseEvent&);
 
@@ -1241,7 +1241,7 @@ private:
     OwnPtr<FormController> m_formController;
 
     TextLinkColors m_textLinkColors;
-    OwnPtr<VisitedLinkState> m_visitedLinkState;
+    const OwnPtr<VisitedLinkState> m_visitedLinkState;
 
     bool m_loadingSheet;
     bool m_visuallyOrdered;

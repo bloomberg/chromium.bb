@@ -484,7 +484,7 @@ void Page::allVisitedStateChanged(PageGroup* group)
         if (page->m_group != group)
             continue;
         for (Frame* frame = page->m_mainFrame.get(); frame; frame = frame->tree().traverseNext())
-            frame->document()->visitedLinkState()->invalidateStyleForAllLinks();
+            frame->document()->visitedLinkState().invalidateStyleForAllLinks();
     }
 }
 
@@ -500,7 +500,7 @@ void Page::visitedStateChanged(PageGroup* group, LinkHash linkHash)
         if (page->m_group != group)
             continue;
         for (Frame* frame = page->m_mainFrame.get(); frame; frame = frame->tree().traverseNext())
-            frame->document()->visitedLinkState()->invalidateStyleForLink(linkHash);
+            frame->document()->visitedLinkState().invalidateStyleForLink(linkHash);
     }
 }
 
