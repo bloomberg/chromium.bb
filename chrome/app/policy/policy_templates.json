@@ -118,7 +118,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 245
+#   For your editing convenience: highest ID currently used: 246
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -3372,6 +3372,44 @@
       If the user has enabled sync all this data is preserved in his sync profile just like with regular profiles. Incognito mode is also available if not explicitly disabled by policy.
 
       If the policy is set to disabled or left not set signing in leads to regular profiles.'''
+    },
+    {
+      'name': 'AutoCleanUpStrategy',
+      'type': 'string-enum',
+      'schema': {
+        'type': 'string',
+        'enum': [
+          'remove-lru',
+        ],
+      },
+      'items': [
+        {
+          'name': 'RemoveLRU',
+          'value': 'remove-lru',
+          'caption': '''Least recently used users are removed until there is enough free space''',
+        },
+        {
+          'name': 'RemoveLRUIfDormant',
+          'value': 'remove-lru-if-dormant',
+          'caption': '''Least recently used users who have not logged in within last 3 months are removed until there is enough free space''',
+        },
+      ],
+      'supported_on': ['chrome_os:32-'],
+      'device_only': True,
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': False,
+      },
+      'example_value': 'remove-lru',
+      'id': 246,
+      'caption': '''Selects the strategy used to free up disk space during automatic clean-up''',
+      'desc': '''Controls the automatic clean-up behavior on <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> devices. Automatic clean-up is triggered when the amount of free disk space reaches a critical level to recover some disk space.
+
+      If this policy is set to 'RemoveLRU', the automatic clean-up will keep removing users from the device in least-recently-logged-in order until there is enough free space.
+
+      If this policy is set to 'RemoveLRUIfDormant', the automatic clean-up will keep removing users who have not logged in for at least 3 months in least-recently-logged-in order until there is enough free space.
+
+      If this policy is not set, automatic clean-up uses the default built-in strategy. Currently, it is the 'RemoveLRUIfDormant' strategy.'''
     },
     {
       'name': 'ReportDeviceVersionInfo',

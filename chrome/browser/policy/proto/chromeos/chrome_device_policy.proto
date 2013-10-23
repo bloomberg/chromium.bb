@@ -534,6 +534,12 @@ message LoginScreenPowerManagementProto {
   optional string login_screen_power_management = 1;
 }
 
+message AutoCleanupSettigsProto {
+  // Configures strategy for automatic clean-up process that is run when device
+  // runs out of free disk space. One of "remove-lru", "remove-lru-if-dormant".
+  optional string clean_up_strategy = 1;
+}
+
 message ChromeDeviceSettingsProto {
   optional DevicePolicyRefreshRateProto device_policy_refresh_rate = 1;
   optional UserWhitelistProto user_whitelist = 2;
@@ -565,4 +571,5 @@ message ChromeDeviceSettingsProto {
   optional SupervisedUsersSettingsProto supervised_users_settings = 28;
   optional LoginScreenPowerManagementProto login_screen_power_management = 29;
   optional SystemUse24HourClockProto use_24hour_clock = 30;
+  optional AutoCleanupSettigsProto auto_clean_up_settings = 31;
 }

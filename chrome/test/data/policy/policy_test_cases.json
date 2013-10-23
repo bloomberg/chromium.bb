@@ -2101,6 +2101,9 @@
   "SupervisedUserCreationEnabled": {
   },
 
+  "AutoCleanUpStrategy": {
+  },
+
   "----- Chrome Frame policies -------------------------------------------": {},
 
   "ChromeFrameRendererSettings": {

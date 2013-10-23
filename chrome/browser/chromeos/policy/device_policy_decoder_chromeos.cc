@@ -675,6 +675,18 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
                     NULL);
     }
   }
+  if (policy.has_auto_clean_up_settings()) {
+    const em::AutoCleanupSettigsProto& container(
+        policy.auto_clean_up_settings());
+    if (container.has_clean_up_strategy()) {
+      policies->Set(key::kAutoCleanUpStrategy,
+                    POLICY_LEVEL_MANDATORY,
+                    POLICY_SCOPE_MACHINE,
+                    Value::CreateStringValue(
+                        container.clean_up_strategy()),
+                    NULL);
+    }
+  }
 }
 
 }  // namespace
