@@ -102,6 +102,26 @@
   "errorMsgNoWebGLHint": {
     "message": "Your computer may have an incompatible graphics card, or old drivers.",
     "description": "Hint shown below the main error message, when WebGL is not detected."
+  },
+  "galleryButton": {
+    "message": "Go to gallery",
+    "description": "Label for the gallery button."
+  },
+  "deleteButton": {
+    "message": "Delete",
+    "description": "Label for the delete button."
+  },
+  "exportButton": {
+    "message": "Save to disk",
+    "description": "Label for the exporting button."
+  },
+  "printButton": {
+    "message": "Print",
+    "description": "Label for the printing button."
+  },
+  "backButton": {
+    "message": "Go back",
+    "description": "Label for the back button."
   }
 }
 
