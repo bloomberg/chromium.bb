@@ -45,8 +45,12 @@ void DnsSdDeviceLister::Discover(bool force_update) {
   if (!started_) {
     device_lister_.Start();
     started_ = true;
+    VLOG(1) << "Started device lister for service type "
+             << device_lister_.service_type();
   }
   device_lister_.DiscoverNewDevices(force_update);
+  VLOG(1) << "Discovery new devices for service type "
+           << device_lister_.service_type();
 }
 
 void DnsSdDeviceLister::OnDeviceChanged(

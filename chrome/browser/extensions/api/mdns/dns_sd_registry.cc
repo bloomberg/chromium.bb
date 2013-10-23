@@ -47,16 +47,17 @@ int DnsSdRegistry::ServiceTypeData::GetListenerCount() {
 
 bool DnsSdRegistry::ServiceTypeData::UpdateService(
       bool added, const DnsSdService& service) {
-  if (added) {
-    service_list_.push_back(service);
-  } else {
-    DnsSdRegistry::DnsSdServiceList::iterator it =
-        std::find_if(service_list_.begin(),
-                     service_list_.end(),
-                     IsSameServiceName(service));
-    if (it == service_list_.end())
-      return false;
+  DnsSdRegistry::DnsSdServiceList::iterator it =
+      std::find_if(service_list_.begin(),
+                   service_list_.end(),
+                   IsSameServiceName(service));
+  if (it != service_list_.end()) {
+    // If added == true, but we still found the service in our cache, then just
+    // update the existing entry, but this should not happen!
+    DCHECK(!added);
     *it = service;
+  } else if (added) {
+    service_list_.push_back(service);
   }
   return true;
 };
@@ -148,11 +149,12 @@ void DnsSdRegistry::ServiceChanged(const std::string& service_type,
   if (!IsRegistered(service_type))
     return;
 
+  VLOG(1) << "Service changed: " << service.service_name;
   if (service_data_map_[service_type]->UpdateService(added, service)) {
     DispatchApiEvent(service_type);
   } else {
-    DVLOG(1) << "Failed to find existing service to update: "
-             << service.service_name;
+    VLOG(1) << "Failed to find existing service to update: "
+            << service.service_name;
   }
 }
 
@@ -161,10 +163,11 @@ void DnsSdRegistry::ServiceRemoved(const std::string& service_type,
   if (!IsRegistered(service_type))
     return;
 
+  VLOG(1) << "Removing service: " << service_name;
   if (service_data_map_[service_type]->RemoveService(service_name)) {
     DispatchApiEvent(service_type);
   } else {
-    DVLOG(1) << "Failed to remove service: " << service_name;
+    VLOG(1) << "Failed to remove service: " << service_name;
   }
 }
 

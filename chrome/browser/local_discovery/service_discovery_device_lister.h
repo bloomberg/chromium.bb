@@ -10,6 +10,7 @@
 
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/common/local_discovery/service_discovery_client.h"
 
 namespace local_discovery {
@@ -44,6 +45,7 @@ class ServiceDiscoveryDeviceLister {
 
   void OnResolveComplete(
       bool added,
+      std::string service_name,
       ServiceResolver::RequestStatus status,
       const ServiceDescription& description);
 
@@ -56,6 +58,10 @@ class ServiceDiscoveryDeviceLister {
 
   scoped_ptr<ServiceWatcher> service_watcher_;
   ServiceResolverMap resolvers_;
+
+  base::WeakPtrFactory<ServiceDiscoveryDeviceLister> weak_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(ServiceDiscoveryDeviceLister);
 };
 
 }  // namespace local_discovery
