@@ -371,7 +371,7 @@ weston_view_create(struct weston_surface *surface)
 	wl_list_init(&view->link);
 	wl_list_init(&view->layer_link);
 
-	view->plane = &surface->compositor->primary_plane;
+	view->plane = NULL;
 
 	pixman_region32_init(&view->clip);
 
@@ -610,8 +610,9 @@ weston_view_damage_below(struct weston_view *view)
 	pixman_region32_init(&damage);
 	pixman_region32_subtract(&damage, &view->transform.boundingbox,
 				 &view->clip);
-	pixman_region32_union(&view->plane->damage,
-			      &view->plane->damage, &damage);
+	if (view->plane)
+		pixman_region32_union(&view->plane->damage,
+				      &view->plane->damage, &damage);
 	pixman_region32_fini(&damage);
 }
 
@@ -1147,6 +1148,7 @@ weston_view_unmap(struct weston_view *view)
 
 	weston_view_damage_below(view);
 	view->output = NULL;
+	view->plane = NULL;
 	wl_list_remove(&view->layer_link);
 	wl_list_init(&view->layer_link);
 	wl_list_remove(&view->link);
@@ -2844,12 +2846,15 @@ idle_handler(void *data)
 }
 
 WL_EXPORT void
-weston_plane_init(struct weston_plane *plane, int32_t x, int32_t y)
+weston_plane_init(struct weston_plane *plane,
+			struct weston_compositor *ec,
+			int32_t x, int32_t y)
 {
 	pixman_region32_init(&plane->damage);
 	pixman_region32_init(&plane->clip);
 	plane->x = x;
 	plane->y = y;
+	plane->compositor = ec;
 
 	/* Init the link so that the call to wl_list_remove() when releasing
 	 * the plane without ever stacking doesn't lead to a crash */
@@ -2859,8 +2864,15 @@ weston_plane_init(struct weston_plane *plane, int32_t x, int32_t y)
 WL_EXPORT void
 weston_plane_release(struct weston_plane *plane)
 {
+	struct weston_view *view;
+
 	pixman_region32_fini(&plane->damage);
 	pixman_region32_fini(&plane->clip);
+
+	wl_list_for_each(view, &plane->compositor->view_list, link) {
+		if (view->plane == plane)
+			view->plane = NULL;
+	}
 
 	wl_list_remove(&plane->link);
 }
@@ -3256,7 +3268,7 @@ weston_compositor_init(struct weston_compositor *ec,
 	wl_list_init(&ec->axis_binding_list);
 	wl_list_init(&ec->debug_binding_list);
 
-	weston_plane_init(&ec->primary_plane, 0, 0);
+	weston_plane_init(&ec->primary_plane, ec, 0, 0);
 	weston_compositor_stack_plane(ec, &ec->primary_plane, NULL);
 
 	s = weston_config_get_section(ec->config, "keyboard", NULL, NULL);

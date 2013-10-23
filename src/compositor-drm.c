@@ -2012,8 +2012,8 @@ create_output_for_connector(struct drm_compositor *ec,
 	output->base.gamma_size = output->original_crtc->gamma_size;
 	output->base.set_gamma = drm_output_set_gamma;
 
-	weston_plane_init(&output->cursor_plane, 0, 0);
-	weston_plane_init(&output->fb_plane, 0, 0);
+	weston_plane_init(&output->cursor_plane, &ec->base, 0, 0);
+	weston_plane_init(&output->fb_plane, &ec->base, 0, 0);
 
 	weston_compositor_stack_plane(&ec->base, &output->cursor_plane, NULL);
 	weston_compositor_stack_plane(&ec->base, &output->fb_plane,
@@ -2088,7 +2088,7 @@ create_sprites(struct drm_compositor *ec)
 		memcpy(sprite->formats, plane->formats,
 		       plane->count_formats * sizeof(plane->formats[0]));
 		drmModeFreePlane(plane);
-		weston_plane_init(&sprite->plane, 0, 0);
+		weston_plane_init(&sprite->plane, &ec->base, 0, 0);
 		weston_compositor_stack_plane(&ec->base, &sprite->plane,
 					      &ec->base.primary_plane);
 

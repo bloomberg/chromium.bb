@@ -505,6 +505,7 @@ struct weston_layer {
 };
 
 struct weston_plane {
+	struct weston_compositor *compositor;
 	pixman_region32_t damage;
 	pixman_region32_t clip;
 	int32_t x, y;
@@ -961,7 +962,9 @@ void
 weston_layer_init(struct weston_layer *layer, struct wl_list *below);
 
 void
-weston_plane_init(struct weston_plane *plane, int32_t x, int32_t y);
+weston_plane_init(struct weston_plane *plane,
+			struct weston_compositor *ec,
+			int32_t x, int32_t y);
 void
 weston_plane_release(struct weston_plane *plane);
 
