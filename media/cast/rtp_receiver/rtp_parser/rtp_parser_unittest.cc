@@ -71,7 +71,6 @@ class RtpParserTest : public ::testing::Test {
   virtual ~RtpParserTest() {}
 
   virtual void SetUp() {
-    cast_header_.InitRTPVideoHeaderCast();
     cast_header_.is_reference = true;
     cast_header_.reference_frame_id = kRefFrameId;
     packet_builder_.SetSsrc(kTestSsrc);

@@ -64,14 +64,15 @@ bool Vp8Decoder::Decode(const EncodedVideoFrame& input_image,
          decoded_frame->y_plane.length);
 
   decoded_frame->u_plane.stride = img->stride[VPX_PLANE_U];
-  decoded_frame->u_plane.length = img->stride[VPX_PLANE_U] * img->d_h;
+  decoded_frame->u_plane.length = img->stride[VPX_PLANE_U] * (img->d_h + 1) / 2;
   decoded_frame->u_plane.data = new uint8[decoded_frame->u_plane.length];
   memcpy(decoded_frame->u_plane.data, img->planes[VPX_PLANE_U],
          decoded_frame->u_plane.length);
 
   decoded_frame->v_plane.stride = img->stride[VPX_PLANE_V];
-  decoded_frame->v_plane.length = img->stride[VPX_PLANE_V] * img->d_h;
+  decoded_frame->v_plane.length = img->stride[VPX_PLANE_V] * (img->d_h + 1) / 2;
   decoded_frame->v_plane.data = new uint8[decoded_frame->v_plane.length];
+
   memcpy(decoded_frame->v_plane.data, img->planes[VPX_PLANE_V],
          decoded_frame->v_plane.length);
 

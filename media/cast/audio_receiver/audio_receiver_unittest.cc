@@ -16,7 +16,6 @@
 namespace media {
 namespace cast {
 
-static const int kPacketSize = 1500;
 static const int64 kStartMillisecond = GG_INT64_C(12345678900000);
 
 class TestAudioEncoderCallback :
@@ -88,7 +87,7 @@ class AudioReceiverTest : public ::testing::Test {
   virtual ~AudioReceiverTest() {}
 
   virtual void SetUp() {
-    payload_.assign(kPacketSize, 0);
+    payload_.assign(kIpPacketSize, 0);
     rtp_header_.is_key_frame = true;
     rtp_header_.frame_id = 0;
     rtp_header_.packet_id = 0;
@@ -111,6 +110,7 @@ class AudioReceiverTest : public ::testing::Test {
 
 TEST_F(AudioReceiverTest, GetOnePacketEncodedframe) {
   Configure(true);
+  EXPECT_CALL(mock_transport_, SendRtcpPacket(testing::_)).Times(1);
 
   receiver_->IncomingParsedRtpPacket(payload_.data(),
       payload_.size(), rtp_header_);

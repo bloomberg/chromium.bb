@@ -30,7 +30,8 @@ class VideoDecoderTest : public ::testing::Test {
   VideoReceiverConfig config_;
 };
 
-TEST_F(VideoDecoderTest, SizeZero) {
+// TODO(pwestin): EXPECT_DEATH tests can not pass valgrind.
+TEST_F(VideoDecoderTest, DISABLED_SizeZero) {
   EncodedVideoFrame encoded_frame;
   I420VideoFrame video_frame;
   base::TimeTicks render_time;
@@ -41,7 +42,8 @@ TEST_F(VideoDecoderTest, SizeZero) {
      "Empty video frame");
 }
 
-TEST_F(VideoDecoderTest, InvalidCodec) {
+// TODO(pwestin): EXPECT_DEATH tests can not pass valgrind.
+TEST_F(VideoDecoderTest, DISABLED_InvalidCodec) {
   EncodedVideoFrame encoded_frame;
   I420VideoFrame video_frame;
   base::TimeTicks render_time;

@@ -16,7 +16,7 @@ namespace cast {
 const uint8 kRtpMarkerBitMask = 0x80;
 
 struct RtpCastHeader {
-  void InitRTPVideoHeaderCast() {
+  RtpCastHeader() {
     is_key_frame = false;
     frame_id = 0;
     packet_id = 0;
