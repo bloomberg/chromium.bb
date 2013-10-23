@@ -7,6 +7,7 @@
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/wm/coordinate_conversion.h"
+#include "ui/aura/client/window_tree_client.h"
 #include "ui/aura/root_window.h"
 #include "ui/events/event.h"
 #include "ui/gfx/screen.h"
@@ -22,7 +23,7 @@ aura::Window* CreateCaptureWindow(aura::RootWindow* context_root,
   aura::Window* window = new aura::Window(delegate);
   window->SetType(aura::client::WINDOW_TYPE_NORMAL);
   window->Init(ui::LAYER_NOT_DRAWN);
-  window->SetDefaultParentByRootWindow(context_root, gfx::Rect());
+  aura::client::ParentWindowWithContext(window, context_root, gfx::Rect());
   window->Show();
   DCHECK(window->bounds().size().IsEmpty());
   return window;

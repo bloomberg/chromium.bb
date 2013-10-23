@@ -14,7 +14,6 @@
 #include "ui/aura/client/activation_client.h"
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/client/focus_client.h"
-#include "ui/aura/client/stacking_client.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window_tracker.h"
 #include "ui/compositor/dip_util.h"

@@ -20,7 +20,7 @@ MinimalShell::MinimalShell(const gfx::Size& default_window_size) {
       aura::RootWindow::CreateParams(
           gfx::Rect(default_window_size))));
   root_window_->Init();
-  aura::client::SetStackingClient(root_window_.get(), this);
+  aura::client::SetWindowTreeClient(root_window_.get(), this);
 
   focus_client_.reset(new aura::test::TestFocusClient);
   aura::client::SetFocusClient(root_window_.get(), focus_client_.get());

@@ -56,7 +56,7 @@ class ScreenPositionControllerTest : public test::AshTestBase {
     window_.reset(new aura::Window(&window_delegate_));
     window_->SetType(aura::client::WINDOW_TYPE_NORMAL);
     window_->Init(ui::LAYER_NOT_DRAWN);
-    SetDefaultParentByPrimaryRootWindow(window_.get());
+    ParentWindowInPrimaryRootWindow(window_.get());
     window_->set_id(1);
   }
 

@@ -9,7 +9,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "ui/aura/client/stacking_client.h"
+#include "ui/aura/client/window_tree_client.h"
 
 namespace aura{
 class RootWindow;
@@ -21,12 +21,12 @@ namespace internal {
 class AlwaysOnTopController;
 }
 
-class ASH_EXPORT StackingController : public aura::client::StackingClient {
+class ASH_EXPORT StackingController : public aura::client::WindowTreeClient {
  public:
   StackingController();
   virtual ~StackingController();
 
-  // Overridden from aura::client::StackingClient:
+  // Overridden from aura::client::WindowTreeClient:
   virtual aura::Window* GetDefaultParent(aura::Window* context,
                                          aura::Window* window,
                                          const gfx::Rect& bounds) OVERRIDE;

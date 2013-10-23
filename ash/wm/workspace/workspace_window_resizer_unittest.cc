@@ -119,25 +119,25 @@ class WorkspaceWindowResizerTest : public test::AshTestBase {
     window_.reset(new aura::Window(&delegate_));
     window_->SetType(aura::client::WINDOW_TYPE_NORMAL);
     window_->Init(ui::LAYER_NOT_DRAWN);
-    SetDefaultParentByPrimaryRootWindow(window_.get());
+    ParentWindowInPrimaryRootWindow(window_.get());
     window_->set_id(1);
 
     window2_.reset(new aura::Window(&delegate2_));
     window2_->SetType(aura::client::WINDOW_TYPE_NORMAL);
     window2_->Init(ui::LAYER_NOT_DRAWN);
-    SetDefaultParentByPrimaryRootWindow(window2_.get());
+    ParentWindowInPrimaryRootWindow(window2_.get());
     window2_->set_id(2);
 
     window3_.reset(new aura::Window(&delegate3_));
     window3_->SetType(aura::client::WINDOW_TYPE_NORMAL);
     window3_->Init(ui::LAYER_NOT_DRAWN);
-    SetDefaultParentByPrimaryRootWindow(window3_.get());
+    ParentWindowInPrimaryRootWindow(window3_.get());
     window3_->set_id(3);
 
     window4_.reset(new aura::Window(&delegate4_));
     window4_->SetType(aura::client::WINDOW_TYPE_NORMAL);
     window4_->Init(ui::LAYER_NOT_DRAWN);
-    SetDefaultParentByPrimaryRootWindow(window4_.get());
+    ParentWindowInPrimaryRootWindow(window4_.get());
     window4_->set_id(4);
   }
 

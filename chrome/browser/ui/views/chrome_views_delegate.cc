@@ -243,7 +243,7 @@ void ChromeViewsDelegate::OnBeforeWidgetInit(
     params->context = ash::Shell::GetPrimaryRootWindow();
 #elif defined(USE_AURA)
   // While the majority of the time, context wasn't plumbed through due to the
-  // existence of a global StackingClient, if this window is a toplevel, it's
+  // existence of a global WindowTreeClient, if this window is a toplevel, it's
   // possible that there is no contextual state that we can use.
   if (params->parent == NULL && params->context == NULL && params->top_level) {
     // We need to make a decision about where to place this window based on the

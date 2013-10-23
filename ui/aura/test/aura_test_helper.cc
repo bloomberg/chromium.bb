@@ -16,7 +16,7 @@
 #include "ui/aura/test/env_test_helper.h"
 #include "ui/aura/test/test_focus_client.h"
 #include "ui/aura/test/test_screen.h"
-#include "ui/aura/test/test_stacking_client.h"
+#include "ui/aura/test/test_window_tree_client.h"
 #include "ui/base/ime/dummy_input_method.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/layer_animator.h"
@@ -79,7 +79,7 @@ void AuraTestHelper::SetUp() {
 
   focus_client_.reset(new TestFocusClient);
   client::SetFocusClient(root_window_.get(), focus_client_.get());
-  stacking_client_.reset(new TestStackingClient(root_window_.get()));
+  stacking_client_.reset(new TestWindowTreeClient(root_window_.get()));
   activation_client_.reset(
       new client::DefaultActivationClient(root_window_.get()));
   capture_client_.reset(new client::DefaultCaptureClient(root_window_.get()));

@@ -50,7 +50,7 @@ TEST_F(StackingControllerTest, TransientParent) {
   scoped_ptr<Window> w1(CreateTestWindow());
   w2->AddTransientChild(w1.get());
   w1->SetBounds(gfx::Rect(10, 11, 250, 251));
-  SetDefaultParentByPrimaryRootWindow(w1.get());
+  ParentWindowInPrimaryRootWindow(w1.get());
   w1->Show();
   wm::ActivateWindow(w1.get());
 

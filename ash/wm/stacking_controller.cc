@@ -67,7 +67,7 @@ StackingController::~StackingController() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// StackingController, aura::StackingClient implementation:
+// StackingController, aura::client::WindowTreeClient implementation:
 
 aura::Window* StackingController::GetDefaultParent(aura::Window* context,
                                                    aura::Window* window,

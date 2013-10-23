@@ -9,7 +9,7 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/client/focus_client.h"
-#include "ui/aura/client/stacking_client.h"
+#include "ui/aura/client/window_tree_client.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/root_window_host.h"
 #include "ui/aura/window.h"
@@ -132,18 +132,19 @@ class DesktopNativeWidgetTopLevelHandler : public aura::WindowObserver {
   DISALLOW_COPY_AND_ASSIGN(DesktopNativeWidgetTopLevelHandler);
 };
 
-class DesktopNativeWidgetAuraStackingClient :
-    public aura::client::StackingClient {
+class DesktopNativeWidgetAuraWindowTreeClient :
+    public aura::client::WindowTreeClient {
  public:
-  explicit DesktopNativeWidgetAuraStackingClient(aura::RootWindow* root_window)
+  explicit DesktopNativeWidgetAuraWindowTreeClient(
+      aura::RootWindow* root_window)
       : root_window_(root_window) {
-    aura::client::SetStackingClient(root_window_, this);
+    aura::client::SetWindowTreeClient(root_window_, this);
   }
-  virtual ~DesktopNativeWidgetAuraStackingClient() {
-    aura::client::SetStackingClient(root_window_, NULL);
+  virtual ~DesktopNativeWidgetAuraWindowTreeClient() {
+    aura::client::SetWindowTreeClient(root_window_, NULL);
   }
 
-  // Overridden from client::StackingClient:
+  // Overridden from client::WindowTreeClient:
   virtual aura::Window* GetDefaultParent(aura::Window* context,
                                          aura::Window* window,
                                          const gfx::Rect& bounds) OVERRIDE {
@@ -166,7 +167,7 @@ class DesktopNativeWidgetAuraStackingClient :
  private:
   aura::RootWindow* root_window_;
 
-  DISALLOW_COPY_AND_ASSIGN(DesktopNativeWidgetAuraStackingClient);
+  DISALLOW_COPY_AND_ASSIGN(DesktopNativeWidgetAuraWindowTreeClient);
 };
 
 }  // namespace
@@ -232,7 +233,7 @@ void DesktopNativeWidgetAura::OnHostClosed() {
 
   root_window_event_filter_->RemoveHandler(input_method_event_filter_.get());
 
-  stacking_client_.reset();  // Uses root_window_ at destruction.
+  window_tree_client_.reset();  // Uses root_window_ at destruction.
 
   capture_client_.reset();  // Uses root_window_ at destruction.
 
@@ -352,8 +353,8 @@ void DesktopNativeWidgetAura::InitNativeWidget(
 
   root_window_->AddRootWindowObserver(this);
 
-  stacking_client_.reset(
-      new DesktopNativeWidgetAuraStackingClient(root_window_.get()));
+  window_tree_client_.reset(
+      new DesktopNativeWidgetAuraWindowTreeClient(root_window_.get()));
   drop_helper_.reset(new DropHelper(
       static_cast<internal::RootView*>(GetWidget()->GetRootView())));
   aura::client::SetDragDropDelegate(content_window_, this);

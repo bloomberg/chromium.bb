@@ -48,14 +48,14 @@ class DragWindowResizerTest : public test::AshTestBase {
     window_.reset(new aura::Window(&delegate_));
     window_->SetType(aura::client::WINDOW_TYPE_NORMAL);
     window_->Init(ui::LAYER_NOT_DRAWN);
-    SetDefaultParentByPrimaryRootWindow(window_.get());
+    ParentWindowInPrimaryRootWindow(window_.get());
     window_->set_id(1);
 
     always_on_top_window_.reset(new aura::Window(&delegate2_));
     always_on_top_window_->SetType(aura::client::WINDOW_TYPE_NORMAL);
     always_on_top_window_->SetProperty(aura::client::kAlwaysOnTopKey, true);
     always_on_top_window_->Init(ui::LAYER_NOT_DRAWN);
-    SetDefaultParentByPrimaryRootWindow(always_on_top_window_.get());
+    ParentWindowInPrimaryRootWindow(always_on_top_window_.get());
     always_on_top_window_->set_id(2);
 
     system_modal_window_.reset(new aura::Window(&delegate3_));
@@ -63,26 +63,26 @@ class DragWindowResizerTest : public test::AshTestBase {
     system_modal_window_->SetProperty(aura::client::kModalKey,
                                       ui::MODAL_TYPE_SYSTEM);
     system_modal_window_->Init(ui::LAYER_NOT_DRAWN);
-    SetDefaultParentByPrimaryRootWindow(system_modal_window_.get());
+    ParentWindowInPrimaryRootWindow(system_modal_window_.get());
     system_modal_window_->set_id(3);
 
     transient_child_ = new aura::Window(&delegate4_);
     transient_child_->SetType(aura::client::WINDOW_TYPE_NORMAL);
     transient_child_->Init(ui::LAYER_NOT_DRAWN);
-    SetDefaultParentByPrimaryRootWindow(transient_child_);
+    ParentWindowInPrimaryRootWindow(transient_child_);
     transient_child_->set_id(4);
 
     transient_parent_.reset(new aura::Window(&delegate5_));
     transient_parent_->SetType(aura::client::WINDOW_TYPE_NORMAL);
     transient_parent_->Init(ui::LAYER_NOT_DRAWN);
-    SetDefaultParentByPrimaryRootWindow(transient_parent_.get());
+    ParentWindowInPrimaryRootWindow(transient_parent_.get());
     transient_parent_->AddTransientChild(transient_child_);
     transient_parent_->set_id(5);
 
     panel_window_.reset(new aura::Window(&delegate6_));
     panel_window_->SetType(aura::client::WINDOW_TYPE_PANEL);
     panel_window_->Init(ui::LAYER_NOT_DRAWN);
-    SetDefaultParentByPrimaryRootWindow(panel_window_.get());
+    ParentWindowInPrimaryRootWindow(panel_window_.get());
   }
 
   virtual void TearDown() OVERRIDE {
@@ -227,7 +227,7 @@ TEST_F(DragWindowResizerTest, WindowDragWithMultiDisplaysActiveRoot) {
   scoped_ptr<aura::Window> window(new aura::Window(&delegate));
   window->SetType(aura::client::WINDOW_TYPE_NORMAL);
   window->Init(ui::LAYER_TEXTURED);
-  SetDefaultParentByPrimaryRootWindow(window.get());
+  ParentWindowInPrimaryRootWindow(window.get());
   window->SetBoundsInScreen(gfx::Rect(0, 0, 50, 60),
                             Shell::GetScreen()->GetPrimaryDisplay());
   window->Show();

@@ -37,7 +37,7 @@ class WorkspaceEventHandlerTest : public test::AshTestBase {
     aura::Window* window = new aura::Window(delegate);
     window->SetType(aura::client::WINDOW_TYPE_NORMAL);
     window->Init(ui::LAYER_TEXTURED);
-    SetDefaultParentByPrimaryRootWindow(window);
+    ParentWindowInPrimaryRootWindow(window);
     window->SetBounds(bounds);
     window->Show();
     return window;

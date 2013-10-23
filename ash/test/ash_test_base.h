@@ -87,7 +87,7 @@ class AshTestBase : public testing::Test {
       const gfx::Rect& bounds);
 
   // Attach |window| to the current shell's root window.
-  void SetDefaultParentByPrimaryRootWindow(aura::Window* window);
+  void ParentWindowInPrimaryRootWindow(aura::Window* window);
 
   // Returns the EventGenerator that uses screen coordinates and works
   // across multiple displays. It createse a new generator if it

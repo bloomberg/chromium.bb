@@ -20,6 +20,7 @@
 #include "content/public/test/web_contents_tester.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/screen_position_client.h"
+#include "ui/aura/client/window_tree_client.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/event_generator.h"
 #include "ui/aura/test/test_window_delegate.h"
@@ -249,7 +250,7 @@ aura::Window* AshTestBase::CreateTestWindowInShellWithDelegateAndType(
   window->Show();
 
   if (bounds.IsEmpty()) {
-    SetDefaultParentByPrimaryRootWindow(window);
+    ParentWindowInPrimaryRootWindow(window);
   } else {
     gfx::Display display =
         Shell::GetScreen()->GetDisplayMatching(bounds);
@@ -258,15 +259,15 @@ aura::Window* AshTestBase::CreateTestWindowInShellWithDelegateAndType(
     gfx::Point origin = bounds.origin();
     wm::ConvertPointFromScreen(root, &origin);
     window->SetBounds(gfx::Rect(origin, bounds.size()));
-    window->SetDefaultParentByRootWindow(root, bounds);
+    aura::client::ParentWindowWithContext(window, root, bounds);
   }
   window->SetProperty(aura::client::kCanMaximizeKey, true);
   return window;
 }
 
-void AshTestBase::SetDefaultParentByPrimaryRootWindow(aura::Window* window) {
-  window->SetDefaultParentByRootWindow(
-      Shell::GetPrimaryRootWindow(), gfx::Rect());
+void AshTestBase::ParentWindowInPrimaryRootWindow(aura::Window* window) {
+  aura::client::ParentWindowWithContext(
+      window, Shell::GetPrimaryRootWindow(), gfx::Rect());
 }
 
 void AshTestBase::RunAllPendingInMessageLoop() {

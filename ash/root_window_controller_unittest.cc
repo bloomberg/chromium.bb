@@ -17,6 +17,7 @@
 #include "base/command_line.h"
 #include "ui/aura/client/focus_change_observer.h"
 #include "ui/aura/client/focus_client.h"
+#include "ui/aura/client/window_tree_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/event_generator.h"
@@ -573,8 +574,8 @@ TEST_F(RootWindowControllerTest, DontDeleteWindowsNotOwnedByParent) {
   window1->set_owned_by_parent(false);
   observer1.SetWindow(window1);
   window1->Init(ui::LAYER_NOT_DRAWN);
-  window1->SetDefaultParentByRootWindow(
-      Shell::GetInstance()->GetPrimaryRootWindow(), gfx::Rect());
+  aura::client::ParentWindowWithContext(
+      window1, Shell::GetInstance()->GetPrimaryRootWindow(), gfx::Rect());
 
   DestroyedWindowObserver observer2;
   aura::Window* window2 = new aura::Window(NULL);

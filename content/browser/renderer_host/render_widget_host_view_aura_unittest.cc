@@ -25,6 +25,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/aura/client/window_tree_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/root_window.h"
@@ -136,8 +137,9 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
     parent_view_ = static_cast<RenderWidgetHostViewAura*>(
         RenderWidgetHostView::CreateViewForWidget(parent_host_));
     parent_view_->InitAsChild(NULL);
-    parent_view_->GetNativeView()->SetDefaultParentByRootWindow(
-        aura_test_helper_->root_window(), gfx::Rect());
+    aura::client::ParentWindowWithContext(parent_view_->GetNativeView(),
+                                          aura_test_helper_->root_window(),
+                                          gfx::Rect());
 
     widget_host_ = new RenderWidgetHostImpl(
         &delegate_, process_host, MSG_ROUTING_NONE, false);
@@ -465,8 +467,10 @@ TEST_F(RenderWidgetHostViewAuraTest, TouchEventSyncAsync) {
 
 TEST_F(RenderWidgetHostViewAuraTest, PhysicalBackingSizeWithScale) {
   view_->InitAsChild(NULL);
-  view_->GetNativeView()->SetDefaultParentByRootWindow(
-      parent_view_->GetNativeView()->GetRootWindow(), gfx::Rect());
+  aura::client::ParentWindowWithContext(
+      view_->GetNativeView(),
+      parent_view_->GetNativeView()->GetRootWindow(),
+      gfx::Rect());
   sink_->ClearMessages();
   view_->SetSize(gfx::Size(100, 100));
   EXPECT_EQ("100x100", view_->GetPhysicalBackingSize().ToString());
@@ -523,8 +527,10 @@ TEST_F(RenderWidgetHostViewAuraTest, PhysicalBackingSizeWithScale) {
 // to the renderer at the correct times.
 TEST_F(RenderWidgetHostViewAuraTest, CursorVisibilityChange) {
   view_->InitAsChild(NULL);
-  view_->GetNativeView()->SetDefaultParentByRootWindow(
-      parent_view_->GetNativeView()->GetRootWindow(), gfx::Rect());
+  aura::client::ParentWindowWithContext(
+      view_->GetNativeView(),
+      parent_view_->GetNativeView()->GetRootWindow(),
+      gfx::Rect());
   view_->SetSize(gfx::Size(100, 100));
 
   aura::test::TestCursorClient cursor_client(
@@ -699,8 +705,10 @@ TEST_F(RenderWidgetHostViewAuraTest, SwapNotifiesWindow) {
   gfx::Rect view_rect(view_size);
 
   view_->InitAsChild(NULL);
-  view_->GetNativeView()->SetDefaultParentByRootWindow(
-      parent_view_->GetNativeView()->GetRootWindow(), gfx::Rect());
+  aura::client::ParentWindowWithContext(
+      view_->GetNativeView(),
+      parent_view_->GetNativeView()->GetRootWindow(),
+      gfx::Rect());
   view_->SetSize(view_size);
   view_->WasShown();
 
@@ -787,8 +795,10 @@ TEST_F(RenderWidgetHostViewAuraTest, SkippedDelegatedFrames) {
   gfx::Size frame_size = view_rect.size();
 
   view_->InitAsChild(NULL);
-  view_->GetNativeView()->SetDefaultParentByRootWindow(
-      parent_view_->GetNativeView()->GetRootWindow(), gfx::Rect());
+  aura::client::ParentWindowWithContext(
+      view_->GetNativeView(),
+      parent_view_->GetNativeView()->GetRootWindow(),
+      gfx::Rect());
   view_->SetSize(view_rect.size());
 
   MockWindowObserver observer;
@@ -858,8 +868,10 @@ TEST_F(RenderWidgetHostViewAuraTest, OutputSurfaceIdChange) {
   gfx::Size frame_size = view_rect.size();
 
   view_->InitAsChild(NULL);
-  view_->GetNativeView()->SetDefaultParentByRootWindow(
-      parent_view_->GetNativeView()->GetRootWindow(), gfx::Rect());
+  aura::client::ParentWindowWithContext(
+      view_->GetNativeView(),
+      parent_view_->GetNativeView()->GetRootWindow(),
+      gfx::Rect());
   view_->SetSize(view_rect.size());
 
   MockWindowObserver observer;

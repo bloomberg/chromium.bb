@@ -13,8 +13,8 @@
 #include "ui/aura/client/drag_drop_client.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/client/screen_position_client.h"
-#include "ui/aura/client/stacking_client.h"
 #include "ui/aura/client/window_move_client.h"
+#include "ui/aura/client/window_tree_client.h"
 #include "ui/aura/client/window_types.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
@@ -152,8 +152,8 @@ void NativeWidgetAura::InitNativeWidget(const Widget::InitParams& params) {
   if (parent) {
     parent->AddChild(window_);
   } else {
-    window_->SetDefaultParentByRootWindow(context->GetRootWindow(),
-                                          window_bounds);
+    aura::client::ParentWindowWithContext(
+        window_, context->GetRootWindow(), window_bounds);
   }
 
   // Wait to set the bounds until we have a parent. That way we can know our
@@ -1109,7 +1109,7 @@ void NativeWidgetPrivate::ReparentNativeView(gfx::NativeView native_view,
   } else {
     // The following looks weird, but it's the equivalent of what aura has
     // always done. (The previous behaviour of aura::Window::SetParent() used
-    // NULL as a special value that meant ask the StackingClient where things
+    // NULL as a special value that meant ask the WindowTreeClient where things
     // should go.)
     //
     // This probably isn't strictly correct, but its an invariant that a Window
@@ -1119,8 +1119,8 @@ void NativeWidgetPrivate::ReparentNativeView(gfx::NativeView native_view,
     // matches our previous behaviour; the global stacking client would almost
     // always reattach the window to the same RootWindow.
     aura::RootWindow* root_window = native_view->GetRootWindow();
-    native_view->SetDefaultParentByRootWindow(
-        root_window, root_window->GetBoundsInScreen());
+    aura::client::ParentWindowWithContext(
+        native_view, root_window, root_window->GetBoundsInScreen());
   }
 
   // And now, notify them that they have a brand new parent.

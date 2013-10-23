@@ -23,6 +23,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/aura/client/activation_client.h"
 #include "ui/aura/client/focus_client.h"
+#include "ui/aura/client/window_tree_client.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
@@ -111,7 +112,7 @@ void UndockWindow(aura::Window* window) {
   window->layer()->GetAnimator()->StopAnimating();
   gfx::Rect previous_bounds = window->bounds();
   aura::Window* previous_parent = window->parent();
-  window->SetDefaultParentByRootWindow(window->GetRootWindow(), gfx::Rect());
+  aura::client::ParentWindowWithContext(window, window, gfx::Rect());
   if (window->parent() != previous_parent)
     wm::ReparentTransientChildrenOfChild(window->parent(), window);
   // Animate maximize animation from previous window bounds.

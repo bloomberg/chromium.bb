@@ -565,7 +565,7 @@ RootWindowController::RootWindowController(aura::RootWindow* root_window)
   screen_dimmer_.reset(new ScreenDimmer(root_window));
 
   stacking_controller_.reset(new StackingController);
-  aura::client::SetStackingClient(root_window, stacking_controller_.get());
+  aura::client::SetWindowTreeClient(root_window, stacking_controller_.get());
   capture_client_.reset(new views::corewm::ScopedCaptureClient(root_window));
 }
 

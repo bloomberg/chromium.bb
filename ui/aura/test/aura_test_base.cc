@@ -4,9 +4,10 @@
 
 #include "ui/aura/test/aura_test_base.h"
 
+#include "ui/aura/client/window_tree_client.h"
+#include "ui/aura/root_window.h"
 #include "ui/aura/test/aura_test_helper.h"
 #include "ui/aura/test/test_window_delegate.h"
-#include "ui/aura/window.h"
 #include "ui/base/ime/input_method_initializer.h"
 #include "ui/events/gestures/gesture_configuration.h"
 
@@ -100,17 +101,17 @@ Window* AuraTestBase::CreateTransientChild(int id, Window* parent) {
   window->set_id(id);
   window->SetType(aura::client::WINDOW_TYPE_NORMAL);
   window->Init(ui::LAYER_TEXTURED);
-  window->SetDefaultParentByRootWindow(root_window(), gfx::Rect());
+  aura::client::ParentWindowWithContext(window, root_window(), gfx::Rect());
   parent->AddTransientChild(window);
   return window;
 }
 
-void AuraTestBase::SetDefaultParentByPrimaryRootWindow(aura::Window* window) {
-  window->SetDefaultParentByRootWindow(root_window(), gfx::Rect());
-}
-
 void AuraTestBase::RunAllPendingInMessageLoop() {
   helper_->RunAllPendingInMessageLoop();
+}
+
+void AuraTestBase::ParentWindow(Window* window) {
+  client::ParentWindowWithContext(window, root_window(), gfx::Rect());
 }
 
 }  // namespace test

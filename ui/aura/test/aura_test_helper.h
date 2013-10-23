@@ -30,7 +30,7 @@ class DefaultCaptureClient;
 class FocusClient;
 }
 namespace test {
-class TestStackingClient;
+class TestWindowTreeClient;
 
 // A helper class owned by tests that does common initialization required for
 // Aura use. This class creates a root window with clients and other objects
@@ -60,7 +60,7 @@ class AuraTestHelper {
   bool teardown_called_;
   bool owns_root_window_;
   scoped_ptr<RootWindow> root_window_;
-  scoped_ptr<TestStackingClient> stacking_client_;
+  scoped_ptr<TestWindowTreeClient> stacking_client_;
   scoped_ptr<client::DefaultActivationClient> activation_client_;
   scoped_ptr<client::DefaultCaptureClient> capture_client_;
   scoped_ptr<ui::InputMethod> test_input_method_;

@@ -7,7 +7,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "ui/aura/client/stacking_client.h"
+#include "ui/aura/client/window_tree_client.h"
 
 namespace aura {
 class RootWindow;
@@ -36,14 +36,14 @@ namespace shell {
 // Creates a minimal environment for running the shell. We can't pull in all of
 // ash here, but we can create attach several of the same things we'd find in
 // the ash parts of the code.
-class MinimalShell : public aura::client::StackingClient {
+class MinimalShell : public aura::client::WindowTreeClient {
  public:
   explicit MinimalShell(const gfx::Size& default_window_size);
   virtual ~MinimalShell();
 
   aura::RootWindow* root_window() { return root_window_.get(); }
 
-  // Overridden from client::StackingClient:
+  // Overridden from client::WindowTreeClient:
   virtual aura::Window* GetDefaultParent(aura::Window* context,
                                          aura::Window* window,
                                          const gfx::Rect& bounds) OVERRIDE;

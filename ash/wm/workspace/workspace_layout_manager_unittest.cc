@@ -287,7 +287,7 @@ TEST_F(WorkspaceLayoutManagerTest, DontClobberRestoreBounds) {
   // NOTE: for this test to exercise the failure the observer needs to be added
   // before the parent set. This mimics what BrowserFrameAsh does.
   window->AddObserver(&window_observer);
-  SetDefaultParentByPrimaryRootWindow(window.get());
+  ParentWindowInPrimaryRootWindow(window.get());
   window->Show();
 
   wm::WindowState* window_state = wm::GetWindowState(window.get());

@@ -15,8 +15,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/client/focus_change_observer.h"
-#include "ui/aura/client/stacking_client.h"
 #include "ui/aura/client/visibility_client.h"
+#include "ui/aura/client/window_tree_client.h"
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/root_window_host.h"
@@ -65,11 +65,6 @@ class WindowTest : public AuraTestBase {
     AuraTestBase::TearDown();
     ui::GestureConfiguration::
         set_max_separation_for_gesture_touches_in_pixels(max_separation_);
-  }
-
-  // Adds |window| to |root_window_|, through the StackingClient.
-  void SetDefaultParentByPrimaryRootWindow(aura::Window* window) {
-    window->SetDefaultParentByRootWindow(root_window(), gfx::Rect());
   }
 
  private:
@@ -480,7 +475,7 @@ TEST_F(WindowTest, HitTest) {
   w1.Init(ui::LAYER_TEXTURED);
   w1.SetBounds(gfx::Rect(10, 20, 50, 60));
   w1.Show();
-  SetDefaultParentByPrimaryRootWindow(&w1);
+  ParentWindow(&w1);
 
   // Points are in the Window's coordinates.
   EXPECT_TRUE(w1.HitTest(gfx::Point(1, 1)));
@@ -512,7 +507,7 @@ TEST_F(WindowTest, HitTestMask) {
   w1.Init(ui::LAYER_NOT_DRAWN);
   w1.SetBounds(gfx::Rect(10, 20, 50, 60));
   w1.Show();
-  SetDefaultParentByPrimaryRootWindow(&w1);
+  ParentWindow(&w1);
 
   // Points inside the mask.
   EXPECT_TRUE(w1.HitTest(gfx::Point(5, 6)));  // top-left
@@ -2645,7 +2640,7 @@ TEST_F(WindowTest, RootWindowAttachment) {
   w1->Init(ui::LAYER_NOT_DRAWN);
   w1->AddObserver(&observer);
 
-  SetDefaultParentByPrimaryRootWindow(w1.get());
+  ParentWindow(w1.get());
   EXPECT_EQ(1, observer.added_count());
   EXPECT_EQ(0, observer.removed_count());
 
@@ -2665,7 +2660,7 @@ TEST_F(WindowTest, RootWindowAttachment) {
   EXPECT_EQ(0, observer.added_count());
   EXPECT_EQ(0, observer.removed_count());
 
-  SetDefaultParentByPrimaryRootWindow(w1.get());
+  ParentWindow(w1.get());
   EXPECT_EQ(1, observer.added_count());
   EXPECT_EQ(0, observer.removed_count());
 
@@ -2691,7 +2686,7 @@ TEST_F(WindowTest, RootWindowAttachment) {
   EXPECT_EQ(0, observer.added_count());
   EXPECT_EQ(0, observer.removed_count());
 
-  SetDefaultParentByPrimaryRootWindow(w1.get());
+  ParentWindow(w1.get());
   EXPECT_EQ(2, observer.added_count());
   EXPECT_EQ(0, observer.removed_count());
 

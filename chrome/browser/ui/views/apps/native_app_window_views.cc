@@ -48,6 +48,7 @@
 #include "ash/wm/window_state.h"
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/aura/client/window_tree_client.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #endif
@@ -290,8 +291,9 @@ void NativeAppWindowViews::InitializePanelWindow(
                             preferred_size_.height());
     aura::Window* native_window = GetNativeWindow();
     ash::wm::GetWindowState(native_window)->set_panel_attached(false);
-    native_window->SetDefaultParentByRootWindow(
-        native_window->GetRootWindow(), native_window->GetBoundsInScreen());
+    aura::client::ParentWindowWithContext(native_window,
+                                          native_window->GetRootWindow(),
+                                          native_window->GetBoundsInScreen());
     window_->SetBounds(window_bounds);
   }
 #else

@@ -40,6 +40,7 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/drag_drop_client.h"
 #include "ui/aura/client/drag_drop_delegate.h"
+#include "ui/aura/client/window_tree_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/root_window_observer.h"
@@ -1156,8 +1157,8 @@ void WebContentsViewAura::CreateView(
     // explicitly add this WebContentsViewAura to their tree after they create
     // us.
     if (root_window) {
-      window_->SetDefaultParentByRootWindow(
-          root_window, root_window->GetBoundsInScreen());
+      aura::client::ParentWindowWithContext(
+          window_.get(), root_window, root_window->GetBoundsInScreen());
     }
   }
   window_->layer()->SetMasksToBounds(true);

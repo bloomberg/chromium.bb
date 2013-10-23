@@ -19,7 +19,7 @@
 namespace aura {
 class RootWindow;
 namespace client {
-class StackingClient;
+class WindowTreeClient;
 }
 }
 
@@ -258,7 +258,7 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
 
   internal::NativeWidgetDelegate* native_widget_delegate_;
 
-  scoped_ptr<aura::client::StackingClient> stacking_client_;
+  scoped_ptr<aura::client::WindowTreeClient> window_tree_client_;
 
   // Toplevel event filter which dispatches to other event filters.
   corewm::CompoundEventFilter* root_window_event_filter_;

@@ -17,7 +17,6 @@
 #include "ui/aura/client/event_client.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/client/screen_position_client.h"
-#include "ui/aura/client/stacking_client.h"
 #include "ui/aura/client/visibility_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/layout_manager.h"
@@ -289,19 +288,6 @@ void Window::SchedulePaintInRect(const gfx::Rect& rect) {
     FOR_EACH_OBSERVER(
         WindowObserver, observers_, OnWindowPaintScheduled(this, rect));
   }
-}
-
-void Window::SetDefaultParentByRootWindow(RootWindow* root_window,
-                                          const gfx::Rect& bounds_in_screen) {
-  DCHECK(root_window);
-
-  // Stacking clients are mandatory on RootWindow objects.
-  client::StackingClient* client = client::GetStackingClient(root_window);
-  DCHECK(client);
-
-  aura::Window* default_parent = client->GetDefaultParent(
-      root_window, this, bounds_in_screen);
-  default_parent->AddChild(this);
 }
 
 void Window::StackChildAtTop(Window* child) {

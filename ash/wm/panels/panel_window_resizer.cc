@@ -17,6 +17,7 @@
 #include "ash/wm/window_util.h"
 #include "base/memory/weak_ptr.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/aura/client/window_tree_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
@@ -195,10 +196,11 @@ void PanelWindowResizer::StartedDragging() {
     wm::GetWindowState(GetTarget())->set_panel_attached(true);
     // We use root window coordinates to ensure that during the drag the panel
     // is reparented to a container in the root window that has that window.
-    GetTarget()->SetDefaultParentByRootWindow(
-        GetTarget()->GetRootWindow(),
-        GetTarget()->GetRootWindow()->GetBoundsInScreen());
-    wm::ReparentTransientChildrenOfChild(GetTarget()->parent(), GetTarget());
+    aura::Window* target = GetTarget();
+    aura::RootWindow* target_root = target->GetRootWindow();
+    aura::client::ParentWindowWithContext(
+        target, target_root, target_root->GetBoundsInScreen());
+    wm::ReparentTransientChildrenOfChild(target->parent(), target);
   }
 }
 
@@ -209,10 +211,11 @@ void PanelWindowResizer::FinishDragging() {
     wm::GetWindowState(GetTarget())->set_panel_attached(should_attach_);
     // We use last known location to ensure that after the drag the panel
     // is reparented to a container in the root window that has that location.
-    GetTarget()->SetDefaultParentByRootWindow(
-        GetTarget()->GetRootWindow(),
-        gfx::Rect(last_location_, gfx::Size()));
-    wm::ReparentTransientChildrenOfChild(GetTarget()->parent(), GetTarget());
+    aura::Window* target = GetTarget();
+    aura::RootWindow* target_root = target->GetRootWindow();
+    aura::client::ParentWindowWithContext(
+        target, target_root, gfx::Rect(last_location_, gfx::Size()));
+    wm::ReparentTransientChildrenOfChild(target->parent(), GetTarget());
   }
 
   // If we started the drag in one root window and moved into another root

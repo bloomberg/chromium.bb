@@ -27,6 +27,7 @@
 
 #if defined(USE_AURA)
 #include "ui/aura/client/aura_constants.h"
+#include "ui/aura/client/window_tree_client.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window.h"
@@ -1142,8 +1143,10 @@ class DesktopAuraTopLevelWindowTest
       owned_window_->SetType(aura::client::WINDOW_TYPE_MENU);
     }
     owned_window_->Init(ui::LAYER_TEXTURED);
-    owned_window_->SetDefaultParentByRootWindow(
-        widget_.GetNativeView()->GetRootWindow(), gfx::Rect(0, 0, 1900, 1600));
+    aura::client::ParentWindowWithContext(
+        owned_window_,
+        widget_.GetNativeView()->GetRootWindow(),
+        gfx::Rect(0, 0, 1900, 1600));
     owned_window_->Show();
     owned_window_->AddObserver(this);
 

@@ -22,6 +22,7 @@
 #include "base/command_line.h"
 #include "base/memory/weak_ptr.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/aura/client/window_tree_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
@@ -270,7 +271,7 @@ void DockedWindowResizer::FinishedDragging() {
       wm::ReparentChildWithTransientChildren(dock_container, window);
     } else if (window->parent()->id() == kShellWindowId_DockedContainer) {
       // Reparent the window back to workspace.
-      // We need to be careful to give SetDefaultParentByRootWindow location in
+      // We need to be careful to give ParentWindowWithContext a location in
       // the right root window (matching the logic in DragWindowResizer) based
       // on which root window a mouse pointer is in. We want to undock into the
       // right screen near the edge of a multiscreen setup (based on where the
@@ -278,8 +279,7 @@ void DockedWindowResizer::FinishedDragging() {
       gfx::Rect near_last_location(last_location_, gfx::Size());
       // Reparenting will cause Relayout and possible dock shrinking.
       aura::Window* previous_parent = window->parent();
-      window->SetDefaultParentByRootWindow(window->GetRootWindow(),
-                                           near_last_location);
+      aura::client::ParentWindowWithContext(window, window, near_last_location);
       if (window->parent() != previous_parent)
         wm::ReparentTransientChildrenOfChild(window->parent(), window);
     }

@@ -25,6 +25,7 @@
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/aura/client/activation_client.h"
 #include "ui/aura/client/focus_client.h"
+#include "ui/aura/client/window_tree_client.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
@@ -352,9 +353,8 @@ void PanelLayoutManager::OnWindowAddedToLayout(aura::Window* child) {
     // back to appropriate container and ignore it.
     // TODO(varkha): Updating bounds during a drag can cause problems and a more
     // general solution is needed. See http://crbug.com/251813 .
-    child->SetDefaultParentByRootWindow(
-        child->GetRootWindow(),
-        child->GetRootWindow()->GetBoundsInScreen());
+    aura::client::ParentWindowWithContext(
+        child, child, child->GetRootWindow()->GetBoundsInScreen());
     wm::ReparentTransientChildrenOfChild(child->parent(), child);
     DCHECK(child->parent()->id() != kShellWindowId_PanelContainer);
     return;

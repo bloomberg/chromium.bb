@@ -95,7 +95,7 @@ class WorkspaceControllerTest : public test::AshTestBase {
     window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
     window->SetType(aura::client::WINDOW_TYPE_NORMAL);
     window->Init(ui::LAYER_TEXTURED);
-    SetDefaultParentByPrimaryRootWindow(window);
+    ParentWindowInPrimaryRootWindow(window);
     return window;
   }
 
@@ -241,7 +241,7 @@ TEST_F(WorkspaceControllerTest, ChangeBoundsOfNormalWindow) {
 TEST_F(WorkspaceControllerTest, SnapToGrid) {
   scoped_ptr<Window> w1(CreateTestWindowUnparented());
   w1->SetBounds(gfx::Rect(1, 6, 25, 30));
-  SetDefaultParentByPrimaryRootWindow(w1.get());
+  ParentWindowInPrimaryRootWindow(w1.get());
   // We are not aligning this anymore this way. When the window gets shown
   // the window is expected to be handled differently, but this cannot be
   // tested with this test. So the result of this test should be that the
@@ -661,7 +661,7 @@ TEST_F(WorkspaceControllerTest, DontCrashOnChangeAndActivate) {
   // window active.
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
 
-  SetDefaultParentByPrimaryRootWindow(w1.get());
+  ParentWindowInPrimaryRootWindow(w1.get());
   delegate.set_window(w1.get());
   w1->Show();
 }
@@ -679,7 +679,7 @@ TEST_F(WorkspaceControllerTest, TransientParent) {
   scoped_ptr<Window> w1(CreateTestWindowUnparented());
   Shell::GetInstance()->GetPrimaryRootWindow()->AddTransientChild(w1.get());
   w1->SetBounds(gfx::Rect(10, 11, 250, 251));
-  SetDefaultParentByPrimaryRootWindow(w1.get());
+  ParentWindowInPrimaryRootWindow(w1.get());
   w1->Show();
   wm::ActivateWindow(w1.get());
 
@@ -703,7 +703,7 @@ TEST_F(WorkspaceControllerTest, TrackedByWorkspace) {
   scoped_ptr<Window> w2(CreateTestWindowUnparented());
   w2->SetBounds(gfx::Rect(1, 6, 25, 30));
   w2->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_FULLSCREEN);
-  SetDefaultParentByPrimaryRootWindow(w2.get());
+  ParentWindowInPrimaryRootWindow(w2.get());
   w2->Show();
   wm::GetWindowState(w2.get())->SetTrackedByWorkspace(false);
   wm::ActivateWindow(w2.get());
@@ -1163,7 +1163,7 @@ TEST_F(WorkspaceControllerTest, VerifyLayerOrdering) {
           gfx::Rect(5, 6, 7, 8),
           NULL));
   browser->SetName("browser");
-  SetDefaultParentByPrimaryRootWindow(browser.get());
+  ParentWindowInPrimaryRootWindow(browser.get());
   browser->Show();
   wm::ActivateWindow(browser.get());
 
@@ -1179,7 +1179,7 @@ TEST_F(WorkspaceControllerTest, VerifyLayerOrdering) {
           gfx::Rect(5, 6, 7, 8),
           NULL);
   browser->AddTransientChild(status_bubble);
-  SetDefaultParentByPrimaryRootWindow(status_bubble);
+  ParentWindowInPrimaryRootWindow(status_bubble);
   status_bubble->SetName("status_bubble");
 
   scoped_ptr<Window> app(
@@ -1189,7 +1189,7 @@ TEST_F(WorkspaceControllerTest, VerifyLayerOrdering) {
           gfx::Rect(5, 6, 7, 8),
           NULL));
   app->SetName("app");
-  SetDefaultParentByPrimaryRootWindow(app.get());
+  ParentWindowInPrimaryRootWindow(app.get());
 
   aura::Window* parent = browser->parent();
 
@@ -1282,7 +1282,7 @@ TEST_F(WorkspaceControllerTest, DragFullscreenNonTrackedWindow) {
                                                aura::client::WINDOW_TYPE_NORMAL,
                                                gfx::Rect(5, 6, 7, 8),
                                                NULL));
-  SetDefaultParentByPrimaryRootWindow(w1.get());
+  ParentWindowInPrimaryRootWindow(w1.get());
   w1->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_FULLSCREEN);
   w1->Show();
   wm::ActivateWindow(w1.get());
@@ -1331,7 +1331,7 @@ TEST_F(WorkspaceControllerTest, DragMaximizedNonTrackedWindow) {
                                                aura::client::WINDOW_TYPE_NORMAL,
                                                gfx::Rect(5, 6, 7, 8),
                                                NULL));
-  SetDefaultParentByPrimaryRootWindow(w1.get());
+  ParentWindowInPrimaryRootWindow(w1.get());
   w1->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
   w1->Show();
   wm::ActivateWindow(w1.get());
@@ -1373,7 +1373,7 @@ TEST_F(WorkspaceControllerTest, SwitchFromModal) {
   scoped_ptr<Window> modal_window(CreateTestWindowUnparented());
   modal_window->SetBounds(gfx::Rect(10, 11, 21, 22));
   modal_window->SetProperty(aura::client::kModalKey, ui::MODAL_TYPE_SYSTEM);
-  SetDefaultParentByPrimaryRootWindow(modal_window.get());
+  ParentWindowInPrimaryRootWindow(modal_window.get());
   modal_window->Show();
   wm::ActivateWindow(modal_window.get());
 

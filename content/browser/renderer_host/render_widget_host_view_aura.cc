@@ -53,8 +53,8 @@
 #include "ui/aura/client/cursor_client_observer.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/client/screen_position_client.h"
-#include "ui/aura/client/stacking_client.h"
 #include "ui/aura/client/tooltip_client.h"
+#include "ui/aura/client/window_tree_client.h"
 #include "ui/aura/client/window_types.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
@@ -646,9 +646,9 @@ void RenderWidgetHostViewAura::InitAsPopup(
   window_->SetName("RenderWidgetHostViewAura");
 
   aura::RootWindow* root = popup_parent_host_view_->window_->GetRootWindow();
-  window_->SetDefaultParentByRootWindow(root, bounds_in_screen);
+  aura::client::ParentWindowWithContext(window_, root, bounds_in_screen);
 
-  // TODO(erg): While I could make sure details of the StackingClient are
+  // TODO(erg): While I could make sure details of the WindowTreeClient are
   // hidden behind aura, hiding the details of the ScreenPositionClient will
   // take another effort.
   aura::client::ScreenPositionClient* screen_position_client =
@@ -684,7 +684,7 @@ void RenderWidgetHostViewAura::InitAsFullscreen(
     parent = reference_window->GetRootWindow();
     bounds = display.bounds();
   }
-  window_->SetDefaultParentByRootWindow(parent, bounds);
+  aura::client::ParentWindowWithContext(window_, parent, bounds);
   Show();
   Focus();
 }
