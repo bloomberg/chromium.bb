@@ -1062,13 +1062,13 @@ TEST_F(ShelfViewTest, LauncherItemStatusPlatformApp) {
 
 // Confirm that launcher item bounds are correctly updated on shelf changes.
 TEST_F(ShelfViewTest, LauncherItemBoundsCheck) {
-  internal::ShelfLayoutManager* shelf_layout_manager =
-      Shell::GetPrimaryRootWindowController()->shelf()->shelf_layout_manager();
   VerifyLauncherItemBoundsAreValid();
-  shelf_layout_manager->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
+  shelf_view_->shelf_layout_manager()->SetAutoHideBehavior(
+      SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
   test_api_->RunMessageLoopUntilAnimationsDone();
   VerifyLauncherItemBoundsAreValid();
-  shelf_layout_manager->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
+  shelf_view_->shelf_layout_manager()->SetAutoHideBehavior(
+      SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
   test_api_->RunMessageLoopUntilAnimationsDone();
   VerifyLauncherItemBoundsAreValid();
 }

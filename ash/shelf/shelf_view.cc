@@ -415,7 +415,8 @@ ShelfView::ShelfView(LauncherModel* model,
       drag_and_drop_launcher_id_(0),
       dragged_off_shelf_(false),
       snap_back_from_rip_off_view_(NULL),
-      item_manager_(Shell::GetInstance()->launcher_item_delegate_manager()) {
+      item_manager_(Shell::GetInstance()->launcher_item_delegate_manager()),
+      layout_manager_(shelf_layout_manager) {
   DCHECK(model_);
   bounds_animator_.reset(new views::BoundsAnimator(this));
   bounds_animator_->AddObserver(this);
@@ -461,14 +462,13 @@ void ShelfView::OnShelfAlignmentChanged() {
     // TODO: remove when AppIcon is a Launcher Button.
     if (TYPE_APP_LIST == model_->items()[i].type &&
         !ash::switches::UseAlternateShelfLayout()) {
-      ShelfLayoutManager* shelf = tooltip_->shelf_layout_manager();
       static_cast<AppListButton*>(view_model_->view_at(i))->SetImageAlignment(
-          shelf->SelectValueForShelfAlignment(
+          layout_manager_->SelectValueForShelfAlignment(
               views::ImageButton::ALIGN_CENTER,
               views::ImageButton::ALIGN_LEFT,
               views::ImageButton::ALIGN_RIGHT,
               views::ImageButton::ALIGN_CENTER),
-          shelf->SelectValueForShelfAlignment(
+          layout_manager_->SelectValueForShelfAlignment(
               views::ImageButton::ALIGN_TOP,
               views::ImageButton::ALIGN_MIDDLE,
               views::ImageButton::ALIGN_MIDDLE,
@@ -517,19 +517,21 @@ void ShelfView::UpdatePanelIconPosition(LauncherID id,
 
   gfx::Point midpoint_in_view(GetMirroredXInView(midpoint.x()),
                               midpoint.y());
-  ShelfLayoutManager* shelf = tooltip_->shelf_layout_manager();
   int target_index = current_index;
   while (target_index > first_panel_index &&
-         shelf->PrimaryAxisValue(view_model_->ideal_bounds(target_index).x(),
-                                 view_model_->ideal_bounds(target_index).y()) >
-         shelf->PrimaryAxisValue(midpoint_in_view.x(), midpoint_in_view.y())) {
+         layout_manager_->PrimaryAxisValue(
+             view_model_->ideal_bounds(target_index).x(),
+             view_model_->ideal_bounds(target_index).y()) >
+         layout_manager_->PrimaryAxisValue(midpoint_in_view.x(),
+                                           midpoint_in_view.y())) {
     --target_index;
   }
   while (target_index < view_model_->view_size() - 1 &&
-         shelf->PrimaryAxisValue(
+         layout_manager_->PrimaryAxisValue(
              view_model_->ideal_bounds(target_index).right(),
              view_model_->ideal_bounds(target_index).bottom()) <
-         shelf->PrimaryAxisValue(midpoint_in_view.x(), midpoint_in_view.y())) {
+         layout_manager_->PrimaryAxisValue(midpoint_in_view.x(),
+                                           midpoint_in_view.y())) {
     ++target_index;
   }
   if (current_index != target_index)
@@ -709,9 +711,7 @@ void ShelfView::LayoutToIdealBounds() {
 }
 
 void ShelfView::CalculateIdealBounds(IdealBounds* bounds) {
-  ShelfLayoutManager* shelf = tooltip_->shelf_layout_manager();
-
-  int available_size = shelf->PrimaryAxisValue(width(), height());
+  int available_size = layout_manager_->PrimaryAxisValue(width(), height());
   DCHECK(model_->item_count() == view_model_->view_size());
   if (!available_size)
     return;
@@ -723,16 +723,16 @@ void ShelfView::CalculateIdealBounds(IdealBounds* bounds) {
   // coordinate and secondary coordinate based on the dynamic edge of the
   // launcher (eg top edge on bottom-aligned launcher).
   int inset = ash::switches::UseAlternateShelfLayout() ? 0 : leading_inset();
-  int x = shelf->SelectValueForShelfAlignment(inset, 0, 0, inset);
-  int y = shelf->SelectValueForShelfAlignment(0, inset, inset, 0);
+  int x = layout_manager_->SelectValueForShelfAlignment(inset, 0, 0, inset);
+  int y = layout_manager_->SelectValueForShelfAlignment(0, inset, inset, 0);
 
   int button_size = ash::switches::UseAlternateShelfLayout() ?
       kButtonSize : kLauncherPreferredSize;
   int button_spacing = ash::switches::UseAlternateShelfLayout() ?
       kAlternateButtonSpacing : kButtonSpacing;
 
-  int w = shelf->PrimaryAxisValue(button_size, width());
-  int h = shelf->PrimaryAxisValue(height(), button_size);
+  int w = layout_manager_->PrimaryAxisValue(button_size, width());
+  int h = layout_manager_->PrimaryAxisValue(height(), button_size);
   for (int i = 0; i < view_model_->view_size(); ++i) {
     if (i < first_visible_index_) {
       view_model_->set_ideal_bounds(i, gfx::Rect(x, y, 0, 0));
@@ -741,8 +741,8 @@ void ShelfView::CalculateIdealBounds(IdealBounds* bounds) {
 
     view_model_->set_ideal_bounds(i, gfx::Rect(x, y, w, h));
     if (i != last_button_index) {
-      x = shelf->PrimaryAxisValue(x + w + button_spacing, x);
-      y = shelf->PrimaryAxisValue(y, y + h + button_spacing);
+      x = layout_manager_->PrimaryAxisValue(x + w + button_spacing, x);
+      y = layout_manager_->PrimaryAxisValue(y, y + h + button_spacing);
     }
   }
 
@@ -763,26 +763,26 @@ void ShelfView::CalculateIdealBounds(IdealBounds* bounds) {
   if (!ash::switches::UseAlternateShelfLayout()) {
     if (view_model_->view_size() > 0) {
       view_model_->set_ideal_bounds(0, gfx::Rect(gfx::Size(
-          shelf->PrimaryAxisValue(inset + w, w),
-          shelf->PrimaryAxisValue(h, inset + h))));
+          layout_manager_->PrimaryAxisValue(inset + w, w),
+          layout_manager_->PrimaryAxisValue(h, inset + h))));
     }
   }
 
   // Right aligned icons.
   int end_position = available_size - button_spacing;
-  x = shelf->PrimaryAxisValue(end_position, 0);
-  y = shelf->PrimaryAxisValue(0, end_position);
+  x = layout_manager_->PrimaryAxisValue(end_position, 0);
+  y = layout_manager_->PrimaryAxisValue(0, end_position);
   for (int i = view_model_->view_size() - 1;
        i >= first_panel_index; --i) {
-    x = shelf->PrimaryAxisValue(x - w - button_spacing, x);
-    y = shelf->PrimaryAxisValue(y, y - h - button_spacing);
+    x = layout_manager_->PrimaryAxisValue(x - w - button_spacing, x);
+    y = layout_manager_->PrimaryAxisValue(y, y - h - button_spacing);
     view_model_->set_ideal_bounds(i, gfx::Rect(x, y, w, h));
-    end_position = shelf->PrimaryAxisValue(x, y);
+    end_position = layout_manager_->PrimaryAxisValue(x, y);
   }
 
   // Icons on the left / top are guaranteed up to kLeftIconProportion of
   // the available space.
-  int last_icon_position = shelf->PrimaryAxisValue(
+  int last_icon_position = layout_manager_->PrimaryAxisValue(
       view_model_->ideal_bounds(last_button_index).right(),
       view_model_->ideal_bounds(last_button_index).bottom())
       + button_size + inset;
@@ -794,9 +794,9 @@ void ShelfView::CalculateIdealBounds(IdealBounds* bounds) {
   else
     end_position = std::max(end_position, reserved_icon_space);
 
-  bounds->overflow_bounds.set_size(gfx::Size(
-      shelf->PrimaryAxisValue(w, width()),
-      shelf->PrimaryAxisValue(height(), h)));
+  bounds->overflow_bounds.set_size(
+      gfx::Size(layout_manager_->PrimaryAxisValue(w, width()),
+                layout_manager_->PrimaryAxisValue(height(), h)));
 
   if (ash::switches::UseAlternateShelfLayout()) {
     last_visible_index_ = DetermineLastVisibleIndex(
@@ -833,17 +833,17 @@ void ShelfView::CalculateIdealBounds(IdealBounds* bounds) {
   if (show_overflow) {
     DCHECK_NE(0, view_model_->view_size());
     if (last_visible_index_ == -1) {
-      x = shelf->SelectValueForShelfAlignment(inset, 0, 0, inset);
-      y = shelf->SelectValueForShelfAlignment(0, inset, inset, 0);
+      x = layout_manager_->SelectValueForShelfAlignment(inset, 0, 0, inset);
+      y = layout_manager_->SelectValueForShelfAlignment(0, inset, inset, 0);
     } else if (last_visible_index_ == last_button_index
         && !ash::switches::UseAlternateShelfLayout()) {
       x = view_model_->ideal_bounds(last_visible_index_).x();
       y = view_model_->ideal_bounds(last_visible_index_).y();
     } else {
-      x = shelf->PrimaryAxisValue(
+      x = layout_manager_->PrimaryAxisValue(
           view_model_->ideal_bounds(last_visible_index_).right(),
           view_model_->ideal_bounds(last_visible_index_).x());
-      y = shelf->PrimaryAxisValue(
+      y = layout_manager_->PrimaryAxisValue(
           view_model_->ideal_bounds(last_visible_index_).y(),
           view_model_->ideal_bounds(last_visible_index_).bottom());
     }
@@ -857,8 +857,8 @@ void ShelfView::CalculateIdealBounds(IdealBounds* bounds) {
       // Position app list after overflow button.
       gfx::Rect app_list_bounds = view_model_->ideal_bounds(last_button_index);
 
-      x = shelf->PrimaryAxisValue(x + w + button_spacing, x);
-      y = shelf->PrimaryAxisValue(y, y + h + button_spacing);
+      x = layout_manager_->PrimaryAxisValue(x + w + button_spacing, x);
+      y = layout_manager_->PrimaryAxisValue(y, y + h + button_spacing);
       app_list_bounds.set_x(x);
       app_list_bounds.set_y(y);
       view_model_->set_ideal_bounds(last_button_index, app_list_bounds);
@@ -872,11 +872,9 @@ void ShelfView::CalculateIdealBounds(IdealBounds* bounds) {
 }
 
 int ShelfView::DetermineLastVisibleIndex(int max_value) const {
-  ShelfLayoutManager* shelf = tooltip_->shelf_layout_manager();
-
   int index = model_->FirstPanelIndex() - 1;
   while (index >= 0 &&
-         shelf->PrimaryAxisValue(
+         layout_manager_->PrimaryAxisValue(
              view_model_->ideal_bounds(index).right(),
              view_model_->ideal_bounds(index).bottom()) > max_value) {
     index--;
@@ -885,11 +883,9 @@ int ShelfView::DetermineLastVisibleIndex(int max_value) const {
 }
 
 int ShelfView::DetermineFirstVisiblePanelIndex(int min_value) const {
-  ShelfLayoutManager* shelf = tooltip_->shelf_layout_manager();
-
   int index = model_->FirstPanelIndex();
   while (index < view_model_->view_size() &&
-         shelf->PrimaryAxisValue(
+         layout_manager_->PrimaryAxisValue(
              view_model_->ideal_bounds(index).right(),
              view_model_->ideal_bounds(index).bottom()) < min_value) {
     ++index;
@@ -944,14 +940,13 @@ views::View* ShelfView::CreateViewForItem(const LauncherItem& item) {
       } else {
         // TODO(dave): turn this into a LauncherButton too.
         AppListButton* button = new AppListButton(this, this);
-        ShelfLayoutManager* shelf = tooltip_->shelf_layout_manager();
         button->SetImageAlignment(
-            shelf->SelectValueForShelfAlignment(
+            layout_manager_->SelectValueForShelfAlignment(
                 views::ImageButton::ALIGN_CENTER,
                 views::ImageButton::ALIGN_LEFT,
                 views::ImageButton::ALIGN_RIGHT,
                 views::ImageButton::ALIGN_CENTER),
-            shelf->SelectValueForShelfAlignment(
+            layout_manager_->SelectValueForShelfAlignment(
                 views::ImageButton::ALIGN_TOP,
                 views::ImageButton::ALIGN_MIDDLE,
                 views::ImageButton::ALIGN_MIDDLE,
@@ -1041,8 +1036,7 @@ void ShelfView::ContinueDrag(const ui::LocatedEvent& event) {
       last_drag_index > last_visible_index_)
     last_drag_index = last_visible_index_;
   int x = 0, y = 0;
-  ShelfLayoutManager* shelf = tooltip_->shelf_layout_manager();
-  if (shelf->IsHorizontalAlignment()) {
+  if (layout_manager_->IsHorizontalAlignment()) {
     x = std::max(view_model_->ideal_bounds(indices.first).x(),
                      drag_point.x() - drag_offset_);
     x = std::min(view_model_->ideal_bounds(last_drag_index).right() -
@@ -1065,7 +1059,7 @@ void ShelfView::ContinueDrag(const ui::LocatedEvent& event) {
   int target_index =
       views::ViewModelUtils::DetermineMoveIndex(
           *view_model_, drag_view_,
-          shelf->IsHorizontalAlignment() ?
+          layout_manager_->IsHorizontalAlignment() ?
               views::ViewModelUtils::HORIZONTAL :
               views::ViewModelUtils::VERTICAL,
           x, y);
@@ -1261,15 +1255,13 @@ void ShelfView::UpdateFirstButtonPadding() {
   if (ash::switches::UseAlternateShelfLayout())
     return;
 
-  ShelfLayoutManager* shelf = tooltip_->shelf_layout_manager();
-
   // Creates an empty border for first launcher button to make included leading
   // inset act as the button's padding. This is only needed on button creation
   // and when shelf alignment changes.
   if (view_model_->view_size() > 0) {
     view_model_->view_at(0)->set_border(views::Border::CreateEmptyBorder(
-        shelf->PrimaryAxisValue(0, leading_inset()),
-        shelf->PrimaryAxisValue(leading_inset(), 0),
+        layout_manager_->PrimaryAxisValue(0, leading_inset()),
+        layout_manager_->PrimaryAxisValue(leading_inset(), 0),
         0,
         0));
   }
@@ -1357,8 +1349,7 @@ gfx::Size ShelfView::GetPreferredSize() {
   IdealBounds ideal_bounds;
   CalculateIdealBounds(&ideal_bounds);
 
-  ShelfLayoutManager* shelf = tooltip_->shelf_layout_manager();
-  const int preferred_size = shelf->GetPreferredShelfSize();
+  const int preferred_size = layout_manager_->GetPreferredShelfSize();
 
   const int app_list_index = view_model_->view_size() - 1;
   const int last_button_index = is_overflow_mode() ?
@@ -1368,7 +1359,7 @@ gfx::Size ShelfView::GetPreferredSize() {
           view_model_->view_at(last_button_index)->bounds() :
           gfx::Rect(gfx::Size(preferred_size, preferred_size));
 
-  if (shelf->IsHorizontalAlignment()) {
+  if (layout_manager_->IsHorizontalAlignment()) {
     return gfx::Size(last_button_bounds.right() + leading_inset(),
                      preferred_size);
   }
@@ -1551,19 +1542,16 @@ void ShelfView::PointerPressedOnButton(views::View* view,
   if (view_model_->view_size() <= 1 || !item_delegate->IsDraggable())
     return;  // View is being deleted or not draggable, ignore request.
 
-  ShelfLayoutManager* shelf = tooltip_->shelf_layout_manager();
-
   drag_view_ = view;
-  drag_offset_ = shelf->PrimaryAxisValue(event.x(), event.y());
+  drag_offset_ = layout_manager_->PrimaryAxisValue(event.x(), event.y());
 }
 
 void ShelfView::PointerDraggedOnButton(views::View* view,
                                        Pointer pointer,
                                        const ui::LocatedEvent& event) {
-  ShelfLayoutManager* shelf = tooltip_->shelf_layout_manager();
   if (!dragging() && drag_view_ &&
-      shelf->PrimaryAxisValue(abs(event.x() - drag_offset_),
-                              abs(event.y() - drag_offset_)) >=
+      layout_manager_->PrimaryAxisValue(abs(event.x() - drag_offset_),
+                                        abs(event.y() - drag_offset_)) >=
       kMinimumDragDistance) {
     PrepareForDrag(pointer, event);
   }

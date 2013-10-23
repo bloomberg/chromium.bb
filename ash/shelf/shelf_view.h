@@ -63,6 +63,8 @@ class ASH_EXPORT ShelfView : public views::View,
 
   ShelfTooltipManager* tooltip_manager() { return tooltip_.get(); }
 
+  ShelfLayoutManager* shelf_layout_manager() { return layout_manager_; }
+
   LauncherModel* model() { return model_; }
 
   void Init();
@@ -411,6 +413,9 @@ class ASH_EXPORT ShelfView : public views::View,
 
   // Holds LauncherItemDelegateManager.
   LauncherItemDelegateManager* item_manager_;
+
+  // Holds ShelfLayoutManager.
+  ShelfLayoutManager* layout_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(ShelfView);
 };
