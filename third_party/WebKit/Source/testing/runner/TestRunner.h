@@ -252,9 +252,6 @@ private:
     // Forwards the setValueForUser() call to the element.
     void setValueForUser(const CppArgumentList&, CppVariant*);
 
-    void enableFixedLayoutMode(const CppArgumentList&, CppVariant*);
-    void setFixedLayoutSize(const CppArgumentList&, CppVariant*);
-
     void selectionAsMarkup(const CppArgumentList&, CppVariant*);
 
     // Enables or disables subpixel positioning (i.e. fractional X positions for

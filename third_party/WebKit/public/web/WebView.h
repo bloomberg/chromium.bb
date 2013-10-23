@@ -299,13 +299,8 @@ public:
 
     // Fixed Layout --------------------------------------------------------
 
-    // In fixed layout mode, the layout of the page is independent of the
-    // view port size, given by WebWidget::size().
-
-    virtual bool isFixedLayoutModeEnabled() const = 0;
-    virtual void enableFixedLayoutMode(bool enable) = 0;
-
-    virtual WebSize fixedLayoutSize() const = 0;
+    // Locks main frame's layout size to specified size. Passing WebSize(0, 0)
+    // removes the lock.
     virtual void setFixedLayoutSize(const WebSize&) = 0;
 
 

@@ -234,12 +234,6 @@ public:
 
     virtual void setFixedLayoutSize(const WebSize&);
 
-    // DEPRECATED: Will be removed soon.
-    // See https://codereview.chromium.org/23819019/
-    virtual bool isFixedLayoutModeEnabled() const { return true; }
-    virtual void enableFixedLayoutMode(bool) { }
-    virtual WebSize fixedLayoutSize() const { return WebSize(); }
-
     virtual void enableAutoResizeMode(
         const WebSize& minSize,
         const WebSize& maxSize);

@@ -196,8 +196,6 @@ TestRunner::TestRunner(TestInterfaces* interfaces)
     bindMethod("startSpeechInput", &TestRunner::startSpeechInput);
     bindMethod("findString", &TestRunner::findString);
     bindMethod("setValueForUser", &TestRunner::setValueForUser);
-    bindMethod("enableFixedLayoutMode", &TestRunner::enableFixedLayoutMode);
-    bindMethod("setFixedLayoutSize", &TestRunner::setFixedLayoutSize);
     bindMethod("selectionAsMarkup", &TestRunner::selectionAsMarkup);
     bindMethod("setTextSubpixelPositioning", &TestRunner::setTextSubpixelPositioning);
     bindMethod("setPageVisibility", &TestRunner::setPageVisibility);
@@ -1381,25 +1379,6 @@ void TestRunner::setValueForUser(const CppArgumentList& arguments, CppVariant* r
         return;
 
     input->setValue(cppVariantToWebString(arguments[1]), true);
-}
-
-void TestRunner::enableFixedLayoutMode(const CppArgumentList& arguments, CppVariant* result)
-{
-    result->setNull();
-    if (arguments.size() <  1 || !arguments[0].isBool())
-        return;
-    bool enableFixedLayout = arguments[0].toBoolean();
-    m_webView->enableFixedLayoutMode(enableFixedLayout);
-}
-
-void TestRunner::setFixedLayoutSize(const CppArgumentList& arguments, CppVariant* result)
-{
-    result->setNull();
-    if (arguments.size() <  2 || !arguments[0].isNumber() || !arguments[1].isNumber())
-        return;
-    int width = arguments[0].toInt32();
-    int height = arguments[1].toInt32();
-    m_webView->setFixedLayoutSize(WebSize(width, height));
 }
 
 void TestRunner::selectionAsMarkup(const CppArgumentList& arguments, CppVariant* result)
