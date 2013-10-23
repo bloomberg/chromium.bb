@@ -17,6 +17,8 @@ class DesktopFocusRules : public corewm::BaseFocusRules {
  private:
   // Overridden from corewm::BaseFocusRules:
   virtual bool SupportsChildActivation(aura::Window* window) const OVERRIDE;
+  virtual bool IsWindowConsideredVisibleForActivation(
+      aura::Window* window) const OVERRIDE;
   virtual aura::Window* GetToplevelWindow(aura::Window* window) const OVERRIDE;
   virtual aura::Window* GetNextActivatableWindow(
       aura::Window* window) const OVERRIDE;

@@ -164,7 +164,6 @@ aura::RootWindow* DesktopRootWindowHostWin::Init(
                                                        GetHWND()));
   aura::client::SetDragDropClient(root_window_, drag_drop_client_.get());
 
-  focus_client_->FocusWindow(content_window_);
   root_window_->SetProperty(kContentWindowForRootWindow, content_window_);
 
   aura::client::SetAnimationHost(content_window_, this);
@@ -174,10 +173,6 @@ aura::RootWindow* DesktopRootWindowHostWin::Init(
       !views::corewm::WindowAnimationsDisabled(content_window_);
 
   return root_window_;
-}
-
-void DesktopRootWindowHostWin::InitFocus(aura::Window* window) {
-  focus_client_->FocusWindow(window);
 }
 
 scoped_ptr<corewm::Tooltip> DesktopRootWindowHostWin::CreateTooltip() {
@@ -395,6 +390,10 @@ void DesktopRootWindowHostWin::OnNativeWidgetFocus() {
 }
 
 void DesktopRootWindowHostWin::OnNativeWidgetBlur() {
+}
+
+bool DesktopRootWindowHostWin::IsAnimatingClosed() const {
+  return pending_close_;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
