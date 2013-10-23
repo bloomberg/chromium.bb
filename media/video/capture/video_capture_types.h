@@ -51,15 +51,18 @@ class MEDIA_EXPORT VideoCaptureFormat {
   VideoCaptureResolutionType frame_size_type;
 };
 
-// Parameters for starting video capture and device information.
-class MEDIA_EXPORT VideoCaptureParams : public VideoCaptureFormat {
+// Parameters for starting video capture.
+class MEDIA_EXPORT VideoCaptureParams {
  public:
   VideoCaptureParams();
-  // TODO(mcasas): http://crbug.com/297597, investigate if session_id is in use.
+  // Identifies which device is to be started.
   VideoCaptureSessionId session_id;
+
+  // Requests a resolution and format at which the capture will occur.
+  VideoCaptureFormat requested_format;
 };
 
-// Capabilities describe the format a camera capture video in.
+// Capabilities describe the format a camera captures video in.
 class MEDIA_EXPORT VideoCaptureCapability : public VideoCaptureFormat {
  public:
   VideoCaptureCapability();

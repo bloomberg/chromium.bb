@@ -40,7 +40,8 @@ const int kFrameRate = 30;
 
 class MockDeviceClient : public media::VideoCaptureDevice::Client {
  public:
-  MOCK_METHOD0(ReserveOutputBuffer, scoped_refptr<media::VideoFrame>());
+  MOCK_METHOD1(ReserveOutputBuffer,
+               scoped_refptr<media::VideoFrame>(const gfx::Size& size));
   MOCK_METHOD0(OnError, void());
   MOCK_METHOD1(OnFrameInfo, void(const media::VideoCaptureCapability& info));
   MOCK_METHOD1(OnFrameInfoChanged,

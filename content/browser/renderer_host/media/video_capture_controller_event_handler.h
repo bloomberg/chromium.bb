@@ -8,10 +8,7 @@
 #include "base/memory/shared_memory.h"
 #include "base/time/time.h"
 #include "content/common/content_export.h"
-
-namespace media {
-class VideoCaptureCapability;
-}
+#include "media/video/capture/video_capture_types.h"
 
 namespace content {
 
@@ -36,22 +33,19 @@ class CONTENT_EXPORT VideoCaptureControllerEventHandler {
   // A buffer has been newly created.
   virtual void OnBufferCreated(const VideoCaptureControllerID& id,
                                base::SharedMemoryHandle handle,
-                               int length, int buffer_id) = 0;
+                               int length,
+                               int buffer_id) = 0;
+
+  // A previously created buffer has been freed and will no longer be used.
+  virtual void OnBufferDestroyed(const VideoCaptureControllerID& id,
+                                 int buffer_id) = 0;
 
   // A buffer has been filled with I420 video.
-  virtual void OnBufferReady(const VideoCaptureControllerID& id,
-                             int buffer_id,
-                             base::Time timestamp) = 0;
-
-  // The frame resolution the VideoCaptureDevice capture video in.
-  virtual void OnFrameInfo(const VideoCaptureControllerID& id,
-                           const media::VideoCaptureCapability& format) = 0;
-
-  // The frame resolution the VideoCaptureDevice capture video in.
-  virtual void OnFrameInfoChanged(const VideoCaptureControllerID& id,
-                                  int width,
-                                  int height,
-                                  int frame_rate) {};
+  virtual void OnBufferReady(
+      const VideoCaptureControllerID& id,
+      int buffer_id,
+      base::Time timestamp,
+      const media::VideoCaptureFormat& format) = 0;
 
   // The capture session has ended and no more frames will be sent.
   virtual void OnEnded(const VideoCaptureControllerID& id) = 0;

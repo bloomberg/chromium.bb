@@ -45,35 +45,23 @@ class MEDIA_EXPORT VideoCapture {
         VideoCapture* capture,
         const scoped_refptr<media::VideoFrame>& frame) = 0;
 
-    // Notify client about device info.
-    virtual void OnDeviceInfoReceived(
-        VideoCapture* capture,
-        const VideoCaptureParams& device_info) = 0;
-
-    // Notify client about the newly changed device info.
-    virtual void OnDeviceInfoChanged(
-        VideoCapture* capture,
-        const VideoCaptureParams& device_info) {};
-
    protected:
     virtual ~EventHandler() {}
   };
 
   VideoCapture() {}
 
-  // Request video capture to start capturing with |capability|.
+  // Request video capture to start capturing with |params|.
   // Also register |handler| with video capture for event handling.
   // |handler| must remain valid until it has received |OnRemoved()|.
   virtual void StartCapture(EventHandler* handler,
-                            const VideoCaptureCapability& capability) = 0;
+                            const VideoCaptureParams& params) = 0;
 
   // Request video capture to stop capturing for client |handler|.
   // |handler| must remain valid until it has received |OnRemoved()|.
   virtual void StopCapture(EventHandler* handler) = 0;
 
   virtual bool CaptureStarted() = 0;
-  virtual int CaptureWidth() = 0;
-  virtual int CaptureHeight() = 0;
   virtual int CaptureFrameRate() = 0;
 
  protected:

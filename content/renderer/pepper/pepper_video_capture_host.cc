@@ -118,6 +118,10 @@ void PepperVideoCaptureHost::OnError(media::VideoCapture* capture,
                                      int error_code) {
   // Today, the media layer only sends "1" as an error.
   DCHECK(error_code == 1);
+  PostErrorReply();
+}
+
+void PepperVideoCaptureHost::PostErrorReply() {
   // It either comes because some error was detected while starting (e.g. 2
   // conflicting "master" resolution), or because the browser failed to start
   // the capture.
@@ -133,6 +137,12 @@ void PepperVideoCaptureHost::OnFrameReady(
     media::VideoCapture* capture,
     const scoped_refptr<media::VideoFrame>& frame) {
   DCHECK(frame.get());
+
+  if (alloc_size_ != frame->coded_size()) {
+    AllocBuffers(frame->coded_size(), capture->CaptureFrameRate());
+    alloc_size_ = frame->coded_size();
+  }
+
   for (uint32_t i = 0; i < buffers_.size(); ++i) {
     if (!buffers_[i].in_use) {
       DCHECK_EQ(frame->format(), media::VideoFrame::I420);
@@ -165,13 +175,13 @@ void PepperVideoCaptureHost::OnFrameReady(
   }
 }
 
-void PepperVideoCaptureHost::OnDeviceInfoReceived(
-    media::VideoCapture* capture,
-    const media::VideoCaptureParams& device_info) {
+void PepperVideoCaptureHost::AllocBuffers(
+    const gfx::Size& resolution,
+    int frame_rate) {
   PP_VideoCaptureDeviceInfo_Dev info = {
-    static_cast<uint32_t>(device_info.width),
-    static_cast<uint32_t>(device_info.height),
-    static_cast<uint32_t>(device_info.frame_rate)
+    static_cast<uint32_t>(resolution.width()),
+    static_cast<uint32_t>(resolution.height()),
+    static_cast<uint32_t>(frame_rate)
   };
   ReleaseBuffers();
 
@@ -246,7 +256,7 @@ void PepperVideoCaptureHost::OnDeviceInfoReceived(
     // capture.
     SetStatus(PP_VIDEO_CAPTURE_STATUS_STOPPING, true);
     platform_video_capture_->StopCapture(this);
-    OnError(capture, PP_ERROR_NOMEMORY);
+    PostErrorReply();
     return;
   }
 
@@ -292,7 +302,7 @@ int32_t PepperVideoCaptureHost::OnStartCapture(
 
   // It's safe to call this regardless it's capturing or not, because
   // PepperPlatformVideoCapture maintains the state.
-  platform_video_capture_->StartCapture(this, capability_);
+  platform_video_capture_->StartCapture(this, video_capture_params_);
   return PP_OK;
 }
 
@@ -358,12 +368,11 @@ void PepperVideoCaptureHost::SetRequestedInfo(
   // Clamp the buffer count to between 1 and |kMaxBuffers|.
   buffer_count_hint_ = std::min(std::max(buffer_count, 1U), kMaxBuffers);
 
-  capability_.width = device_info.width;
-  capability_.height = device_info.height;
-  capability_.frame_rate = device_info.frames_per_second;
-  capability_.expected_capture_delay = 0;  // Ignored.
-  capability_.color = media::PIXEL_FORMAT_I420;
-  capability_.interlaced = false;  // Ignored.
+  video_capture_params_.requested_format =
+      media::VideoCaptureFormat(device_info.width,
+                                device_info.height,
+                                device_info.frames_per_second,
+                                media::ConstantResolutionVideoCaptureDevice);
 }
 
 void PepperVideoCaptureHost::DetachPlatformVideoCapture() {

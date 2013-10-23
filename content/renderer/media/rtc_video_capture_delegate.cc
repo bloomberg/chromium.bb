@@ -26,7 +26,7 @@ RtcVideoCaptureDelegate::~RtcVideoCaptureDelegate() {
 }
 
 void RtcVideoCaptureDelegate::StartCapture(
-    const media::VideoCaptureCapability& capability,
+    const media::VideoCaptureParams& params,
     const FrameCapturedCallback& captured_callback,
     const StateChangeCallback& state_callback) {
   DVLOG(3) << " RtcVideoCaptureDelegate::StartCapture ";
@@ -39,7 +39,7 @@ void RtcVideoCaptureDelegate::StartCapture(
   // Increase the reference count to ensure we are not deleted until
   // The we are unregistered in RtcVideoCaptureDelegate::OnRemoved.
   AddRef();
-  capture_engine_->StartCapture(this, capability);
+  capture_engine_->StartCapture(this, params);
 }
 
 void RtcVideoCaptureDelegate::StopCapture() {
@@ -90,16 +90,6 @@ void RtcVideoCaptureDelegate::OnFrameReady(
                  this,
                  capture,
                  frame));
-}
-
-void RtcVideoCaptureDelegate::OnDeviceInfoReceived(
-    media::VideoCapture* capture,
-    const media::VideoCaptureParams& device_info) {
-}
-
-void RtcVideoCaptureDelegate::OnDeviceInfoChanged(
-    media::VideoCapture* capture,
-    const media::VideoCaptureParams& device_info) {
 }
 
 void RtcVideoCaptureDelegate::OnFrameReadyOnCaptureThread(

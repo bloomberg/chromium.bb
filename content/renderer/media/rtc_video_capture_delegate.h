@@ -36,7 +36,7 @@ class RtcVideoCaptureDelegate
   RtcVideoCaptureDelegate(const media::VideoCaptureSessionId id,
                           VideoCaptureImplManager* vc_manager);
 
-  void StartCapture(const media::VideoCaptureCapability& capability,
+  void StartCapture(const media::VideoCaptureParams& params,
                     const FrameCapturedCallback& captured_callback,
                     const StateChangeCallback& state_callback);
   void StopCapture();
@@ -51,12 +51,6 @@ class RtcVideoCaptureDelegate
   virtual void OnFrameReady(
       media::VideoCapture* capture,
       const scoped_refptr<media::VideoFrame>& frame) OVERRIDE;
-  virtual void OnDeviceInfoReceived(
-      media::VideoCapture* capture,
-      const media::VideoCaptureParams& device_info) OVERRIDE;
-  virtual void OnDeviceInfoChanged(
-      media::VideoCapture* capture,
-      const media::VideoCaptureParams& device_info) OVERRIDE;
 
  private:
   friend class base::RefCountedThreadSafe<RtcVideoCaptureDelegate>;

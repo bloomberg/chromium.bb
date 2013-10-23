@@ -311,18 +311,14 @@ class StubClient : public media::VideoCaptureDevice::Client {
              const base::Closure& error_callback)
       : color_callback_(color_callback),
         error_callback_(error_callback) {
-    buffer_pool_ = new VideoCaptureBufferPool(
-        media::VideoFrame::AllocationSize(media::VideoFrame::I420,
-                                          gfx::Size(kTestWidth, kTestHeight)),
-        2);
-    EXPECT_TRUE(buffer_pool_->Allocate());
+    buffer_pool_ = new VideoCaptureBufferPool(2);
   }
   virtual ~StubClient() {}
 
-  virtual scoped_refptr<media::VideoFrame> ReserveOutputBuffer() OVERRIDE {
-    return buffer_pool_->ReserveI420VideoFrame(gfx::Size(kTestWidth,
-                                                         kTestHeight),
-                                               0);
+  virtual scoped_refptr<media::VideoFrame> ReserveOutputBuffer(
+      const gfx::Size& size) OVERRIDE {
+    int buffer_id_to_drop = VideoCaptureBufferPool::kInvalidId;  // Ignored.
+    return buffer_pool_->ReserveI420VideoFrame(size, 0, &buffer_id_to_drop);
   }
 
   virtual void OnIncomingCapturedFrame(
@@ -358,10 +354,7 @@ class StubClient : public media::VideoCaptureDevice::Client {
   }
 
   virtual void OnFrameInfo(const media::VideoCaptureCapability& info) OVERRIDE {
-    EXPECT_EQ(kTestWidth, info.width);
-    EXPECT_EQ(kTestHeight, info.height);
     EXPECT_EQ(kTestFramesPerSecond, info.frame_rate);
-    EXPECT_EQ(media::PIXEL_FORMAT_I420, info.color);
   }
 
  private:

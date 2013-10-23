@@ -60,7 +60,7 @@ bool VideoCaptureMessageFilter::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(VideoCaptureMsg_BufferReady, OnBufferReceived)
     IPC_MESSAGE_HANDLER(VideoCaptureMsg_StateChanged, OnDeviceStateChanged)
     IPC_MESSAGE_HANDLER(VideoCaptureMsg_NewBuffer, OnBufferCreated)
-    IPC_MESSAGE_HANDLER(VideoCaptureMsg_DeviceInfo, OnDeviceInfoReceived)
+    IPC_MESSAGE_HANDLER(VideoCaptureMsg_FreeBuffer, OnBufferDestroyed)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -68,8 +68,6 @@ bool VideoCaptureMessageFilter::OnMessageReceived(const IPC::Message& message) {
 
 void VideoCaptureMessageFilter::OnFilterAdded(IPC::Channel* channel) {
   DVLOG(1) << "VideoCaptureMessageFilter::OnFilterAdded()";
-  // Captures the message loop proxy for IPC.
-  message_loop_proxy_ = base::MessageLoopProxy::current();
   channel_ = channel;
 
   for (Delegates::iterator it = pending_delegates_.begin();
@@ -119,7 +117,8 @@ void VideoCaptureMessageFilter::OnBufferCreated(
 void VideoCaptureMessageFilter::OnBufferReceived(
     int device_id,
     int buffer_id,
-    base::Time timestamp) {
+    base::Time timestamp,
+    const media::VideoCaptureFormat& format) {
   Delegate* delegate = find_delegate(device_id);
   if (!delegate) {
     DLOG(WARNING) << "OnBufferReceived: Got video frame buffer for a "
@@ -131,7 +130,20 @@ void VideoCaptureMessageFilter::OnBufferReceived(
     return;
   }
 
-  delegate->OnBufferReceived(buffer_id, timestamp);
+  delegate->OnBufferReceived(buffer_id, timestamp, format);
+}
+
+void VideoCaptureMessageFilter::OnBufferDestroyed(
+    int device_id,
+    int buffer_id) {
+  Delegate* delegate = find_delegate(device_id);
+  if (!delegate) {
+    DLOG(WARNING) << "OnBufferDestroyed: Instructed to free buffer for a "
+        "non-existent or removed video capture.";
+    return;
+  }
+
+  delegate->OnBufferDestroyed(buffer_id);
 }
 
 void VideoCaptureMessageFilter::OnDeviceStateChanged(
@@ -144,18 +156,6 @@ void VideoCaptureMessageFilter::OnDeviceStateChanged(
     return;
   }
   delegate->OnStateChanged(state);
-}
-
-void VideoCaptureMessageFilter::OnDeviceInfoReceived(
-    int device_id,
-    const media::VideoCaptureParams& params) {
-  Delegate* delegate = find_delegate(device_id);
-  if (!delegate) {
-    DLOG(WARNING) << "OnDeviceInfoReceived: Got video capture event for a "
-        "non-existent or removed video capture.";
-    return;
-  }
-  delegate->OnDeviceInfoReceived(params);
 }
 
 }  // namespace content

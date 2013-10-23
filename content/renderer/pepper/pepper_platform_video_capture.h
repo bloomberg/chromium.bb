@@ -42,11 +42,9 @@ class PepperPlatformVideoCapture
   // media::VideoCapture implementation.
   virtual void StartCapture(
       media::VideoCapture::EventHandler* handler,
-      const media::VideoCaptureCapability& capability) OVERRIDE;
+      const media::VideoCaptureParams& params) OVERRIDE;
   virtual void StopCapture(media::VideoCapture::EventHandler* handler) OVERRIDE;
   virtual bool CaptureStarted() OVERRIDE;
-  virtual int CaptureWidth() OVERRIDE;
-  virtual int CaptureHeight() OVERRIDE;
   virtual int CaptureFrameRate() OVERRIDE;
 
   // media::VideoCapture::EventHandler implementation
@@ -58,9 +56,6 @@ class PepperPlatformVideoCapture
   virtual void OnFrameReady(
       VideoCapture* capture,
       const scoped_refptr<media::VideoFrame>& frame) OVERRIDE;
-  virtual void OnDeviceInfoReceived(
-      VideoCapture* capture,
-      const media::VideoCaptureParams& device_info) OVERRIDE;
 
  protected:
   friend class base::RefCounted<PepperPlatformVideoCapture>;

@@ -6,8 +6,8 @@
 // interfaces for clients to Start/Stop capture. It also communicates to clients
 // when buffer is ready, state of capture device is changed.
 
-// VideoCaptureImpl is also a delegate of VideoCaptureMessageFilter which
-// relays operation of capture device to browser process and receives response
+// VideoCaptureImpl is also a delegate of VideoCaptureMessageFilter which relays
+// operation of a capture device to the browser process and receives responses
 // from browser process.
 
 // The media::VideoCapture and VideoCaptureMessageFilter::Delegate are
@@ -52,22 +52,21 @@ class CONTENT_EXPORT VideoCaptureImpl
   // media::VideoCapture interface.
   virtual void StartCapture(
       media::VideoCapture::EventHandler* handler,
-      const media::VideoCaptureCapability& capability) OVERRIDE;
+      const media::VideoCaptureParams& params) OVERRIDE;
   virtual void StopCapture(media::VideoCapture::EventHandler* handler) OVERRIDE;
   virtual bool CaptureStarted() OVERRIDE;
-  virtual int CaptureWidth() OVERRIDE;
-  virtual int CaptureHeight() OVERRIDE;
   virtual int CaptureFrameRate() OVERRIDE;
 
   // VideoCaptureMessageFilter::Delegate interface.
   virtual void OnBufferCreated(base::SharedMemoryHandle handle,
-                               int length, int buffer_id) OVERRIDE;
-  virtual void OnBufferReceived(int buffer_id, base::Time timestamp) OVERRIDE;
+                               int length,
+                               int buffer_id) OVERRIDE;
+  virtual void OnBufferDestroyed(int buffer_id) OVERRIDE;
+  virtual void OnBufferReceived(
+      int buffer_id,
+      base::Time timestamp,
+      const media::VideoCaptureFormat& format) OVERRIDE;
   virtual void OnStateChanged(VideoCaptureState state) OVERRIDE;
-  virtual void OnDeviceInfoReceived(
-      const media::VideoCaptureParams& device_info) OVERRIDE;
-  virtual void OnDeviceInfoChanged(
-      const media::VideoCaptureParams& device_info) OVERRIDE;
   virtual void OnDelegateAdded(int32 device_id) OVERRIDE;
 
   // Stop/resume delivering video frames to clients, based on flag |suspend|.
@@ -80,28 +79,29 @@ class CONTENT_EXPORT VideoCaptureImpl
 
   class ClientBuffer;
   typedef std::map<media::VideoCapture::EventHandler*,
-                   media::VideoCaptureCapability> ClientInfo;
+                   media::VideoCaptureParams> ClientInfo;
 
-  VideoCaptureImpl(media::VideoCaptureSessionId id,
+  VideoCaptureImpl(media::VideoCaptureSessionId session_id,
                    base::MessageLoopProxy* capture_message_loop_proxy,
                    VideoCaptureMessageFilter* filter);
   virtual ~VideoCaptureImpl();
 
   void DoStartCaptureOnCaptureThread(
       media::VideoCapture::EventHandler* handler,
-      const media::VideoCaptureCapability& capability);
+      const media::VideoCaptureParams& params);
   void DoStopCaptureOnCaptureThread(media::VideoCapture::EventHandler* handler);
   void DoBufferCreatedOnCaptureThread(base::SharedMemoryHandle handle,
-                                      int length, int buffer_id);
-  void DoBufferReceivedOnCaptureThread(int buffer_id, base::Time timestamp);
+                                      int length,
+                                      int buffer_id);
+  void DoBufferDestroyedOnCaptureThread(int buffer_id);
+  void DoBufferReceivedOnCaptureThread(
+      int buffer_id,
+      base::Time timestamp,
+      const media::VideoCaptureFormat& format);
   void DoClientBufferFinishedOnCaptureThread(
       int buffer_id,
       const scoped_refptr<ClientBuffer>& buffer);
   void DoStateChangedOnCaptureThread(VideoCaptureState state);
-  void DoDeviceInfoReceivedOnCaptureThread(
-      const media::VideoCaptureParams& device_info);
-  void DoDeviceInfoChangedOnCaptureThread(
-      const media::VideoCaptureParams& device_info);
   void DoDelegateAddedOnCaptureThread(int32 device_id);
 
   void DoSuspendCaptureOnCaptureThread(bool suspend);
@@ -124,6 +124,7 @@ class CONTENT_EXPORT VideoCaptureImpl
   const scoped_refptr<base::MessageLoopProxy> capture_message_loop_proxy_;
   const scoped_refptr<base::MessageLoopProxy> io_message_loop_proxy_;
   int device_id_;
+  const int session_id_;
 
   // Buffers available for sending to the client.
   typedef std::map<int32, scoped_refptr<ClientBuffer> > ClientBufferMap;
@@ -138,15 +139,12 @@ class CONTENT_EXPORT VideoCaptureImpl
   ClientInfo clients_pending_on_filter_;
   ClientInfo clients_pending_on_restart_;
 
-  media::VideoPixelFormat video_type_;
-
-  // Member capture_format_ represents the video format requested by the client
-  // to this class via DoStartCaptureOnCaptureThread.
-  media::VideoCaptureCapability capture_format_;
+  // Member params_ represents the video format requested by the
+  // client to this class via DoStartCaptureOnCaptureThread.
+  media::VideoCaptureParams params_;
 
   // The device's video capture format sent from browser process side.
-  media::VideoCaptureParams device_info_;
-  bool device_info_available_;
+  media::VideoCaptureFormat last_frame_format_;
 
   bool suspended_;
   VideoCaptureState state_;

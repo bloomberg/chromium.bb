@@ -49,18 +49,15 @@ class MockFrameObserver : public VideoCaptureControllerEventHandler {
 
   virtual void OnBufferCreated(const VideoCaptureControllerID& id,
                                base::SharedMemoryHandle handle,
-                               int length, int buffer_id) OVERRIDE {};
-  virtual void OnBufferReady(const VideoCaptureControllerID& id,
-                             int buffer_id,
-                             base::Time timestamp) OVERRIDE {};
-  virtual void OnFrameInfo(
+                               int length, int buffer_id) OVERRIDE {}
+  virtual void OnBufferDestroyed(const VideoCaptureControllerID& id,
+                               int buffer_id) OVERRIDE {}
+  virtual void OnBufferReady(
       const VideoCaptureControllerID& id,
-      const media::VideoCaptureCapability& format) OVERRIDE {};
-  virtual void OnFrameInfoChanged(const VideoCaptureControllerID& id,
-                                  int width,
-                                  int height,
-                                  int frame_rate) OVERRIDE {};
-  virtual void OnEnded(const VideoCaptureControllerID& id) OVERRIDE {};
+      int buffer_id,
+      base::Time timestamp,
+      const media::VideoCaptureFormat& format) OVERRIDE {}
+  virtual void OnEnded(const VideoCaptureControllerID& id) OVERRIDE {}
 
   void OnGotControllerCallback(VideoCaptureControllerID) {}
 };
@@ -103,9 +100,8 @@ class VideoCaptureManagerTest : public testing::Test {
   VideoCaptureControllerID StartClient(int session_id, bool expect_success) {
     media::VideoCaptureParams params;
     params.session_id = session_id;
-    params.width = 320;
-    params.height = 240;
-    params.frame_rate = 30;
+    params.requested_format = media::VideoCaptureFormat(
+        320, 240, 30, media::ConstantResolutionVideoCaptureDevice);
 
     VideoCaptureControllerID client_id(next_client_id_++);
     base::RunLoop run_loop;

@@ -125,16 +125,17 @@ class MEDIA_EXPORT VideoCaptureDevice {
     // Reserve an output buffer into which a video frame can be captured
     // directly. If all buffers are currently busy, returns NULL.
     //
-    // The returned VideoFrames will always be allocated with a YV12 format. The
-    // size will match that specified by an earlier call to OnFrameInfo. It is
-    // the VideoCaptureDevice's responsibility to obey whatever stride and
-    // memory layout are indicated on the returned VideoFrame object.
+    // The returned VideoFrames will always be allocated with a YV12 format and
+    // have dimensions matching |size|. It is the VideoCaptureDevice's
+    // responsibility to obey whatever stride and memory layout are indicated on
+    // the returned VideoFrame object.
     //
     // The output buffer stays reserved for use by the calling
     // VideoCaptureDevice until either the last reference to the VideoFrame is
     // released, or until the buffer is passed back to the Client's
     // OnIncomingCapturedFrame() method.
-    virtual scoped_refptr<media::VideoFrame> ReserveOutputBuffer() = 0;
+    virtual scoped_refptr<media::VideoFrame> ReserveOutputBuffer(
+        const gfx::Size& size) = 0;
 
     // Captured a new video frame as a raw buffer. The size, color format, and
     // layout are taken from the parameters specified by an earlier call to

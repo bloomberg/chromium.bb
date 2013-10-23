@@ -14,6 +14,16 @@
 #define IPC_MESSAGE_START VideoCaptureMsgStart
 
 IPC_ENUM_TRAITS(content::VideoCaptureState)
+IPC_ENUM_TRAITS_MAX_VALUE(media::VideoCaptureResolutionType,
+                          media::MaxVideoCaptureResolutionType - 1)
+
+IPC_STRUCT_TRAITS_BEGIN(media::VideoCaptureParams)
+  IPC_STRUCT_TRAITS_MEMBER(session_id)
+  IPC_STRUCT_TRAITS_MEMBER(requested_format)
+IPC_STRUCT_TRAITS_END()
+
+// TODO(nick): device_id in these messages is basically just a route_id. We
+// should shift to IPC_MESSAGE_ROUTED and use MessageRouter in the filter impls.
 
 // Notify the renderer process about the state update such as
 // Start/Pause/Stop.
@@ -28,27 +38,24 @@ IPC_MESSAGE_CONTROL4(VideoCaptureMsg_NewBuffer,
                      int /* length */,
                      int /* buffer_id */)
 
+// Tell the renderer process that it should release a buffer previously
+// allocated by VideoCaptureMsg_NewBuffer.
+IPC_MESSAGE_CONTROL2(VideoCaptureMsg_FreeBuffer,
+                     int /* device id */,
+                     int /* buffer_id */)
+
 // Tell the renderer process that a buffer is available from video capture.
-IPC_MESSAGE_CONTROL3(VideoCaptureMsg_BufferReady,
+IPC_MESSAGE_CONTROL4(VideoCaptureMsg_BufferReady,
                      int /* device id */,
                      int /* buffer_id */,
-                     base::Time /* timestamp */)
+                     base::Time /* timestamp */,
+                     media::VideoCaptureFormat /* resolution */)
 
-// Tell the renderer process the width, height and frame rate the camera use.
-IPC_MESSAGE_CONTROL2(VideoCaptureMsg_DeviceInfo,
-                     int /* device_id */,
-                     media::VideoCaptureParams)
-
-// Tell the renderer process the newly changed width, height and frame rate
-// the video capture device will use.
-IPC_MESSAGE_CONTROL2(VideoCaptureMsg_DeviceInfoChanged,
-                     int /* device_id */,
-                     media::VideoCaptureParams)
-
-// Start the video capture specified by |device_id|.
+// Start a video capture as |device_id|, a new id picked by the renderer
+// process. The session to be started is determined by |params.session_id|.
 IPC_MESSAGE_CONTROL2(VideoCaptureHostMsg_Start,
                      int /* device_id */,
-                     media::VideoCaptureParams)
+                     media::VideoCaptureParams /* params */)
 
 // Pause the video capture specified by |device_id|.
 IPC_MESSAGE_CONTROL1(VideoCaptureHostMsg_Pause,
@@ -58,8 +65,8 @@ IPC_MESSAGE_CONTROL1(VideoCaptureHostMsg_Pause,
 IPC_MESSAGE_CONTROL1(VideoCaptureHostMsg_Stop,
                      int /* device_id */)
 
-// Tell the browser process that the video frame buffer |handle| is ready for
-// device |device_id| to fill up.
+// Tell the browser process that the renderer has finished reading from
+// a buffer previously delivered by VideoCaptureMsg_BufferReady.
 IPC_MESSAGE_CONTROL2(VideoCaptureHostMsg_BufferReady,
                      int /* device_id */,
                      int /* buffer_id */)

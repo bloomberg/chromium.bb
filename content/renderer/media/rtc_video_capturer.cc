@@ -29,24 +29,25 @@ cricket::CaptureState RtcVideoCapturer::Start(
     return cricket::CS_FAILED;
   }
 
-  media::VideoCaptureCapability cap;
-  cap.width = capture_format.width;
-  cap.height = capture_format.height;
-  cap.frame_rate = capture_format.framerate();
-  cap.color = media::PIXEL_FORMAT_I420;
+  media::VideoCaptureParams request;
+  request.requested_format =
+      media::VideoCaptureFormat(capture_format.width,
+                                capture_format.height,
+                                capture_format.framerate(),
+                                media::ConstantResolutionVideoCaptureDevice);
 
   SetCaptureFormat(&capture_format);
 
   state_ = VIDEO_CAPTURE_STATE_STARTED;
   first_frame_timestamp_ = media::kNoTimestamp();
   delegate_->StartCapture(
-      cap,
+      request,
       base::Bind(&RtcVideoCapturer::OnFrameCaptured, base::Unretained(this)),
       base::Bind(&RtcVideoCapturer::OnStateChange, base::Unretained(this)));
   // Update the desired aspect ratio so that later the video frame can be
   // cropped to meet the requirement if the camera returns a different
-  // resolution than the |cap|.
-  UpdateAspectRatio(cap.width, cap.height);
+  // resolution than the |request|.
+  UpdateAspectRatio(capture_format.width, capture_format.height);
   return cricket::CS_STARTING;
 }
 

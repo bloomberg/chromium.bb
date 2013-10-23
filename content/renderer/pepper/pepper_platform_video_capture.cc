@@ -46,7 +46,7 @@ PepperPlatformVideoCapture::PepperPlatformVideoCapture(
 
 void PepperPlatformVideoCapture::StartCapture(
     media::VideoCapture::EventHandler* handler,
-    const media::VideoCaptureCapability& capability) {
+    const media::VideoCaptureParams& params) {
   DCHECK(handler == handler_);
 
   if (unbalanced_start_)
@@ -55,7 +55,7 @@ void PepperPlatformVideoCapture::StartCapture(
   if (video_capture_) {
     unbalanced_start_ = true;
     AddRef();  // Will be balanced in OnRemoved().
-    video_capture_->StartCapture(handler_proxy_.get(), capability);
+    video_capture_->StartCapture(handler_proxy_.get(), params);
   }
 }
 
@@ -73,14 +73,6 @@ void PepperPlatformVideoCapture::StopCapture(
 
 bool PepperPlatformVideoCapture::CaptureStarted() {
   return handler_proxy_->state().started;
-}
-
-int PepperPlatformVideoCapture::CaptureWidth() {
-  return handler_proxy_->state().width;
-}
-
-int PepperPlatformVideoCapture::CaptureHeight() {
-  return handler_proxy_->state().height;
 }
 
 int PepperPlatformVideoCapture::CaptureFrameRate() {
@@ -144,13 +136,6 @@ void PepperPlatformVideoCapture::OnFrameReady(
     const scoped_refptr<media::VideoFrame>& frame) {
   if (handler_)
     handler_->OnFrameReady(capture, frame);
-}
-
-void PepperPlatformVideoCapture::OnDeviceInfoReceived(
-    VideoCapture* capture,
-    const media::VideoCaptureParams& device_info) {
-  if (handler_)
-    handler_->OnDeviceInfoReceived(capture, device_info);
 }
 
 PepperPlatformVideoCapture::~PepperPlatformVideoCapture() {

@@ -11,7 +11,7 @@
 
 namespace media {
 class AudioParameters;
-class VideoCaptureParams;
+class VideoCaptureFormat;
 }
 
 namespace IPC {
@@ -25,13 +25,12 @@ struct CONTENT_EXPORT ParamTraits<media::AudioParameters> {
 };
 
 template <>
-struct CONTENT_EXPORT ParamTraits<media::VideoCaptureParams> {
-  typedef media::VideoCaptureParams param_type;
+struct CONTENT_EXPORT ParamTraits<media::VideoCaptureFormat> {
+  typedef media::VideoCaptureFormat param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, PickleIterator* iter, param_type* r);
   static void Log(const param_type& p, std::string* l);
 };
-
 
 } // namespace IPC
 

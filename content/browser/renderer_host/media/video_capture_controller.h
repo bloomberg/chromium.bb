@@ -55,7 +55,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/process/process.h"
-#include "base/synchronization/lock.h"
 #include "content/browser/renderer_host/media/video_capture_buffer_pool.h"
 #include "content/browser/renderer_host/media/video_capture_controller_event_handler.h"
 #include "content/common/content_export.h"
@@ -78,10 +77,9 @@ class CONTENT_EXPORT VideoCaptureController {
   // instance.
   scoped_ptr<media::VideoCaptureDevice::Client> NewDeviceClient();
 
-  // Start video capturing and try to use the resolution specified in
-  // |params|.
-  // When capturing starts, the |event_handler| will receive an OnFrameInfo()
-  // call informing it of the resolution that was actually picked by the device.
+  // Start video capturing and try to use the resolution specified in |params|.
+  // Buffers will be shared to the client as necessary. The client will continue
+  // to receive frames from the device until RemoveClient() is called.
   void AddClient(const VideoCaptureControllerID& id,
                  VideoCaptureControllerEventHandler* event_handler,
                  base::ProcessHandle render_process,
@@ -115,16 +113,11 @@ class CONTENT_EXPORT VideoCaptureController {
   // Worker functions on IO thread. Called by the VideoCaptureDeviceClient.
   void DoIncomingCapturedFrameOnIOThread(
       const scoped_refptr<media::VideoFrame>& captured_frame,
+      int frame_rate,
       base::Time timestamp);
-  void DoFrameInfoOnIOThread(
-      const media::VideoCaptureCapability& frame_info,
-      const scoped_refptr<VideoCaptureBufferPool>& buffer_pool);
-  void DoFrameInfoChangedOnIOThread(const media::VideoCaptureCapability& info);
   void DoErrorOnIOThread();
   void DoDeviceStoppedOnIOThread();
-
-  // Send frame info and init buffers to |client|.
-  void SendFrameInfoAndBuffers(ControllerClient* client);
+  void DoBufferDestroyedOnIOThread(int buffer_id_to_drop);
 
   // Find a client of |id| and |handler| in |clients|.
   ControllerClient* FindClient(
@@ -138,16 +131,10 @@ class CONTENT_EXPORT VideoCaptureController {
       const ControllerClients& clients);
 
   // The pool of shared-memory buffers used for capturing.
-  scoped_refptr<VideoCaptureBufferPool> buffer_pool_;
+  const scoped_refptr<VideoCaptureBufferPool> buffer_pool_;
 
   // All clients served by this controller.
   ControllerClients controller_clients_;
-
-  // The parameter that currently used for the capturing.
-  media::VideoCaptureParams current_params_;
-
-  // Tracks the current frame format.
-  media::VideoCaptureCapability frame_info_;
 
   // Takes on only the states 'STARTED' and 'ERROR'. 'ERROR' is an absorbing
   // state which stops the flow of data to clients.

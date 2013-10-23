@@ -183,20 +183,20 @@ void VideoCaptureManager::DoStartDeviceOnDeviceThread(
 }
 
 void VideoCaptureManager::StartCaptureForClient(
-    const media::VideoCaptureParams& capture_params,
+    const media::VideoCaptureParams& params,
     base::ProcessHandle client_render_process,
     VideoCaptureControllerID client_id,
     VideoCaptureControllerEventHandler* client_handler,
     const DoneCB& done_cb) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DVLOG(1) << "VideoCaptureManager::StartCaptureForClient, ("
-         << capture_params.width
-         << ", " << capture_params.height
-         << ", " << capture_params.frame_rate
-         << ", #" << capture_params.session_id
+         << params.requested_format.width
+         << ", " << params.requested_format.height
+         << ", " << params.requested_format.frame_rate
+         << ", #" << params.session_id
          << ")";
 
-  DeviceEntry* entry = GetOrCreateDeviceEntry(capture_params.session_id);
+  DeviceEntry* entry = GetOrCreateDeviceEntry(params.session_id);
   if (!entry) {
     done_cb.Run(base::WeakPtr<VideoCaptureController>());
     return;
@@ -210,11 +210,12 @@ void VideoCaptureManager::StartCaptureForClient(
              << entry->stream_type << ", id = " << entry->id << ")";
 
     media::VideoCaptureCapability params_as_capability;
-    params_as_capability.width = capture_params.width;
-    params_as_capability.height = capture_params.height;
-    params_as_capability.frame_rate = capture_params.frame_rate;
-    params_as_capability.session_id = capture_params.session_id;
-    params_as_capability.frame_size_type = capture_params.frame_size_type;
+    params_as_capability.session_id = params.session_id;
+    params_as_capability.width = params.requested_format.width;
+    params_as_capability.height = params.requested_format.height;
+    params_as_capability.frame_rate = params.requested_format.frame_rate;
+    params_as_capability.frame_size_type =
+        params.requested_format.frame_size_type;
 
     device_loop_->PostTask(FROM_HERE, base::Bind(
         &VideoCaptureManager::DoStartDeviceOnDeviceThread, this,
@@ -226,7 +227,7 @@ void VideoCaptureManager::StartCaptureForClient(
   entry->video_capture_controller->AddClient(client_id,
                                              client_handler,
                                              client_render_process,
-                                             capture_params);
+                                             params);
 }
 
 void VideoCaptureManager::StopCaptureForClient(

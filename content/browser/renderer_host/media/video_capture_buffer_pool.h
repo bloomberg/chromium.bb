@@ -5,6 +5,8 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_MEDIA_VIDEO_CAPTURE_BUFFER_POOL_H_
 #define CONTENT_BROWSER_RENDERER_HOST_MEDIA_VIDEO_CAPTURE_BUFFER_POOL_H_
 
+#include <map>
+
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_vector.h"
@@ -25,43 +27,49 @@ namespace content {
 // A thread-safe class that does the bookkeeping and lifetime management for a
 // pool of shared-memory pixel buffers cycled between an in-process producer
 // (e.g. a VideoCaptureDevice) and a set of out-of-process consumers. The pool
-// is intended to be allocated and orchestrated by a VideoCaptureController, but
-// is designed to outlive the controller if necessary.
+// is intended to be orchestrated by a VideoCaptureController, but is designed
+// to outlive the controller if necessary.
 //
-// Buffers are identified by an int value called |buffer_id|. Callers may depend
-// on the buffer IDs being dense in the range [0, count()), so long as the
-// Allocate() step succeeded. -1 is never a valid ID, and is returned by some
-// methods to indicate failure. Producers get a buffer by calling
-// ReserveForProducer(), and may pass on their ownership to the consumer by
-// calling HoldForConsumers(), or drop the buffer (without further processing)
-// by calling ReserveForProducer(). Consumers signal that they are done with the
-// buffer by calling RelinquishConsumerHold().
+// Producers get a buffer by calling ReserveForProducer(), and may pass on their
+// ownership to the consumer by calling HoldForConsumers(), or drop the buffer
+// (without further processing) by calling RelinquishProducerReservation().
+// Consumers signal that they are done with the buffer by calling
+// RelinquishConsumerHold().
+//
+// Buffers are allocated on demand, but there will never be more than |count|
+// buffers in existence at any time. Buffers are identified by an int value
+// called |buffer_id|. -1 (kInvalidId) is never a valid ID, and is returned by
+// some methods to indicate failure. The active set of buffer ids may change
+// over the lifetime of the buffer pool, as existing buffers are freed and
+// reallocated at larger size. When reallocation occurs, new buffer IDs will
+// circulate.
 class CONTENT_EXPORT VideoCaptureBufferPool
     : public base::RefCountedThreadSafe<VideoCaptureBufferPool> {
  public:
-  VideoCaptureBufferPool(size_t size, int count);
-
-  // One-time initialization to allocate the shared memory buffers. Returns true
-  // on success.
-  bool Allocate();
+  static const int kInvalidId;
+  explicit VideoCaptureBufferPool(int count);
 
   // One-time (per client/per-buffer) initialization to share a particular
-  // buffer to a process.
+  // buffer to a process. The size of the allocation is returned as
+  // |memory_size|.
   base::SharedMemoryHandle ShareToProcess(int buffer_id,
-                                          base::ProcessHandle process_handle);
+                                          base::ProcessHandle process_handle,
+                                          size_t* memory_size);
 
-  // Get the shared memory handle for a particular buffer index.
-  base::SharedMemoryHandle GetHandle(int buffer_id);
-
-  // Get the mapped buffer memory for a particular buffer index.
-  void* GetMemory(int buffer_id);
-
-  // Locate the index of a buffer (if any) that's not in use by the producer or
-  // consumers, and reserve it. The buffer remains reserved (and writable by the
+  // Reserve or allocate a buffer of at least |size| bytes and return its id.
+  // This will fail (returning kInvalidId) if the pool already is at its |count|
+  // limit of the number of allocations, and all allocated buffers are in use by
+  // the producer and/or consumers.
+  //
+  // If successful, the reserved buffer remains reserved (and writable by the
   // producer) until ownership is transferred either to the consumer via
   // HoldForConsumers(), or back to the pool with
   // RelinquishProducerReservation().
-  int ReserveForProducer();
+  //
+  // On occasion, this call will decide to free an old buffer to make room for a
+  // new allocation at a larger size. If so, the ID of the destroyed buffer is
+  // returned via |buffer_id_to_drop|.
+  int ReserveForProducer(size_t size, int* buffer_id_to_drop);
 
   // Indicate that a buffer held for the producer should be returned back to the
   // pool without passing on to the consumer. This effectively is the opposite
@@ -79,19 +87,20 @@ class CONTENT_EXPORT VideoCaptureBufferPool
   void RelinquishConsumerHold(int buffer_id, int num_clients);
 
   // Detect whether a particular SharedMemoryHandle is exported by a buffer that
-  // belongs to this pool -- that is, whether it was allocated by an earlier
-  // call to ReserveForProducer(). If so, return its buffer_id (a value on the
-  // range [0, count())). If not, return -1, indicating the buffer is not
-  // recognized (it may be a valid frame, but we didn't allocate it).
+  // belongs to this pool -- that is, whether it was reserved by an earlier call
+  // to ReserveForProducer(). If so, return its buffer_id. If not, return
+  // kInvalidId, indicating the buffer is not recognized (it may be a valid
+  // frame, but we didn't allocate it).
   int RecognizeReservedBuffer(base::SharedMemoryHandle maybe_belongs_to_pool);
 
-  // Utility functions to return a buffer wrapped in a useful type.
-  scoped_refptr<media::VideoFrame> ReserveI420VideoFrame(const gfx::Size& size,
-                                                         int rotation);
+  // Return a buffer wrapped in a useful type. If a reallocation occurred, the
+  // ID of the destroyed buffer is returned via |buffer_id_to_drop|.
+  scoped_refptr<media::VideoFrame> ReserveI420VideoFrame(
+      const gfx::Size& size,
+      int rotation,
+      int* buffer_id_to_drop);
 
   int count() const { return count_; }
-  size_t GetMemorySize() const;
-  bool IsAnyBufferHeldForConsumers();
 
  private:
   friend class base::RefCountedThreadSafe<VideoCaptureBufferPool>;
@@ -104,6 +113,9 @@ class CONTENT_EXPORT VideoCaptureBufferPool
     base::SharedMemory shared_memory;
 
     // Rotation in degrees of the buffer.
+    //
+    // TODO(jiayl): Move this out of this class. Clients can track rotation
+    // state themselves by means of a map keyed by buffer_id.
     int rotation;
 
     // Tracks whether this buffer is currently referenced by the producer.
@@ -113,20 +125,25 @@ class CONTENT_EXPORT VideoCaptureBufferPool
     int consumer_hold_count;
   };
 
+  typedef std::map<int, Buffer*> BufferMap;
+
   virtual ~VideoCaptureBufferPool();
 
-  int ReserveForProducerInternal();
+  int ReserveForProducerInternal(size_t size, int* buffer_id_to_drop);
 
-  bool IsAllocated() const;
+  Buffer* GetBuffer(int buffer_id);
 
-  // Protects |buffers_| and contents thereof.
+  // The max number of buffers that the pool is allowed to have at any moment.
+  const int count_;
+
+  // Protects everything below it.
   base::Lock lock_;
 
-  // The buffers, indexed by |buffer_id|. Element 0 is always NULL.
-  ScopedVector<Buffer> buffers_;
+  // The ID of the next buffer.
+  int next_buffer_id_;
 
-  const size_t size_;
-  const int count_;
+  // The buffers, indexed by |buffer_id|.
+  BufferMap buffers_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(VideoCaptureBufferPool);
 };

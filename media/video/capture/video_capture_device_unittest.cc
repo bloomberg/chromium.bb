@@ -64,7 +64,8 @@ namespace media {
 
 class MockClient : public media::VideoCaptureDevice::Client {
  public:
-  MOCK_METHOD0(ReserveOutputBuffer, scoped_refptr<media::VideoFrame>());
+  MOCK_METHOD1(ReserveOutputBuffer,
+      scoped_refptr<media::VideoFrame>(const gfx::Size&));
   MOCK_METHOD0(OnErr, void());
   MOCK_METHOD1(OnFrameInfo, void(const VideoCaptureCapability&));
   MOCK_METHOD1(OnFrameInfoChanged, void(const VideoCaptureCapability&));

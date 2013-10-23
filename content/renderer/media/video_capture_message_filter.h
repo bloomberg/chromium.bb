@@ -13,7 +13,6 @@
 #include <map>
 
 #include "base/memory/shared_memory.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "content/common/content_export.h"
 #include "content/common/media/video_capture.h"
 #include "ipc/ipc_channel_proxy.h"
@@ -28,24 +27,19 @@ class CONTENT_EXPORT VideoCaptureMessageFilter
    public:
     // Called when a video frame buffer is created in the browser process.
     virtual void OnBufferCreated(base::SharedMemoryHandle handle,
-                                 int length, int buffer_id) = 0;
+                                 int length,
+                                 int buffer_id) = 0;
+
+    virtual void OnBufferDestroyed(int buffer_id) = 0;
 
     // Called when a video frame buffer is received from the browser process.
-    virtual void OnBufferReceived(int buffer_id, base::Time timestamp) = 0;
+    virtual void OnBufferReceived(int buffer_id,
+                                  base::Time timestamp,
+                                  const media::VideoCaptureFormat& format) = 0;
 
     // Called when state of a video capture device has changed in the browser
     // process.
     virtual void OnStateChanged(VideoCaptureState state) = 0;
-
-    // Called when device info is received from video capture device in the
-    // browser process.
-    virtual void OnDeviceInfoReceived(
-        const media::VideoCaptureParams& device_info) = 0;
-
-    // Called when newly changed device info is received from video capture
-    // device in the browser process.
-    virtual void OnDeviceInfoChanged(
-        const media::VideoCaptureParams& device_info) {};
 
     // Called when the delegate has been added to filter's delegate list.
     // |device_id| is the device id for the delegate.
@@ -76,25 +70,26 @@ class CONTENT_EXPORT VideoCaptureMessageFilter
   virtual ~VideoCaptureMessageFilter();
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(VideoCaptureMessageFilterTest, Basic);
-  FRIEND_TEST_ALL_PREFIXES(VideoCaptureMessageFilterTest, Delegates);
-
   typedef std::map<int32, Delegate*> Delegates;
 
   // Receive a newly created buffer from browser process.
   void OnBufferCreated(int device_id,
                        base::SharedMemoryHandle handle,
-                       int length, int buffer_id);
+                       int length,
+                       int buffer_id);
 
-  // Receive a buffer from browser process.
-  void OnBufferReceived(int device_id, int buffer_id, base::Time timestamp);
+  // Release a buffer received by OnBufferCreated.
+  void OnBufferDestroyed(int device_id,
+                         int buffer_id);
+
+  // Receive a filled buffer from browser process.
+  void OnBufferReceived(int device_id,
+                        int buffer_id,
+                        base::Time timestamp,
+                        const media::VideoCaptureFormat& format);
 
   // State of browser process' video capture device has changed.
   void OnDeviceStateChanged(int device_id, VideoCaptureState state);
-
-  // Receive device info from browser process.
-  void OnDeviceInfoReceived(int device_id,
-                            const media::VideoCaptureParams& params);
 
   // Finds the delegate associated with |device_id|, NULL if not found.
   Delegate* find_delegate(int device_id) const;
@@ -105,8 +100,6 @@ class CONTENT_EXPORT VideoCaptureMessageFilter
   int32 last_device_id_;
 
   IPC::Channel* channel_;
-
-  scoped_refptr<base::MessageLoopProxy> message_loop_proxy_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoCaptureMessageFilter);
 };
