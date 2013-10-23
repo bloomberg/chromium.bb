@@ -19,12 +19,6 @@
 #include "ipc/ipc_sync_channel.h"
 #include "third_party/WebKit/public/web/WebKit.h"
 
-#if defined(TOOLKIT_GTK)
-#include <gtk/gtk.h>
-
-#include "ui/gfx/gtk_util.h"
-#endif
-
 namespace content {
 
 namespace {
@@ -131,19 +125,6 @@ void UtilityThreadImpl::OnBatchModeFinished() {
 void UtilityThreadImpl::OnLoadPlugins(
     const std::vector<base::FilePath>& plugin_paths) {
   PluginList* plugin_list = PluginList::Singleton();
-
-  // On Linux, some plugins expect the browser to have loaded glib/gtk. Do that
-  // before attempting to call into the plugin.
-  // g_thread_init API is deprecated since glib 2.31.0, please see release note:
-  // http://mail.gnome.org/archives/gnome-announce-list/2011-October/msg00041.html
-#if defined(TOOLKIT_GTK)
-#if !(GLIB_CHECK_VERSION(2, 31, 0))
-  if (!g_thread_get_initialized()) {
-    g_thread_init(NULL);
-  }
-#endif
-  gfx::GtkInitFromCommandLine(*CommandLine::ForCurrentProcess());
-#endif
 
   std::vector<WebPluginInfo> plugins;
   // TODO(bauerb): If we restart loading plug-ins, we might mess up the logic in

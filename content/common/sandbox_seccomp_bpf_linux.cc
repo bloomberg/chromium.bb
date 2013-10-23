@@ -1964,6 +1964,8 @@ Sandbox::EvaluateSyscall GetProcessSyscallPolicy(
   }
 
   if (process_type == switches::kUtilityProcess) {
+    // TODO(jorgelo): review sandbox initialization in utility_main.cc if we
+    // change this policy.
     return BlacklistDebugAndNumaPolicy;
   }
 
