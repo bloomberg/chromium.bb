@@ -530,7 +530,7 @@ void MessageService::CloseChannelImpl(
 }
 
 void MessageService::PostMessage(
-    int source_port_id, const std::string& message) {
+    int source_port_id, const Message& message) {
   int channel_id = GET_CHANNEL_ID(source_port_id);
   MessageChannelMap::iterator iter = channels_.find(channel_id);
   if (iter == channels_.end()) {
@@ -545,7 +545,7 @@ void MessageService::PostMessage(
 
 void MessageService::PostMessageFromNativeProcess(int port_id,
                                                   const std::string& message) {
-  PostMessage(port_id, message);
+  PostMessage(port_id, Message(message, false /* user_gesture */));
 }
 
 void MessageService::Observe(int type,
@@ -593,7 +593,7 @@ void MessageService::OnProcessClosed(content::RenderProcessHost* process) {
 
 void MessageService::EnqueuePendingMessage(int source_port_id,
                                            int channel_id,
-                                           const std::string& message) {
+                                           const Message& message) {
   PendingTlsChannelIdMap::iterator pending_for_tls_channel_id =
       pending_tls_channel_id_channels_.find(channel_id);
   if (pending_for_tls_channel_id != pending_tls_channel_id_channels_.end()) {
@@ -611,7 +611,7 @@ void MessageService::EnqueuePendingMessage(int source_port_id,
 void MessageService::EnqueuePendingMessageForLazyBackgroundLoad(
     int source_port_id,
     int channel_id,
-    const std::string& message) {
+    const Message& message) {
   PendingLazyBackgroundPageChannelMap::iterator pending =
       pending_lazy_background_page_channels_.find(channel_id);
   if (pending != pending_lazy_background_page_channels_.end()) {
@@ -624,7 +624,7 @@ void MessageService::EnqueuePendingMessageForLazyBackgroundLoad(
 
 void MessageService::DispatchMessage(int source_port_id,
                                      MessageChannel* channel,
-                                     const std::string& message) {
+                                     const Message& message) {
   // Figure out which port the ID corresponds to.
   int dest_port_id = GET_OPPOSITE_PORT_ID(source_port_id);
   MessagePort* port = IS_OPENER_PORT_ID(dest_port_id) ?

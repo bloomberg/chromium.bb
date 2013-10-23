@@ -12,6 +12,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/extensions/api/messaging/message.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
@@ -281,7 +282,7 @@ void ExtensionHelper::OnExtensionDispatchOnConnect(
 }
 
 void ExtensionHelper::OnExtensionDeliverMessage(int target_id,
-                                                const std::string& message) {
+                                                const Message& message) {
   MessagingBindings::DeliverMessage(dispatcher_->v8_context_set().GetAll(),
                                         target_id,
                                         message,

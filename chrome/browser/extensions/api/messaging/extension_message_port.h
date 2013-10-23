@@ -31,7 +31,7 @@ class ExtensionMessagePort : public MessageService::MessagePort {
       const std::string& tls_channel_id) OVERRIDE;
   virtual void DispatchOnDisconnect(int source_port_id,
                                     const std::string& error_message) OVERRIDE;
-  virtual void DispatchOnMessage(const std::string& message,
+  virtual void DispatchOnMessage(const Message& message,
                                  int target_port_id) OVERRIDE;
   virtual void IncrementLazyKeepaliveCount() OVERRIDE;
   virtual void DecrementLazyKeepaliveCount() OVERRIDE;

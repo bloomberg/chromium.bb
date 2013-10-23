@@ -13,6 +13,7 @@
 #include "base/lazy_instance.h"
 #include "base/message_loop/message_loop.h"
 #include "base/values.h"
+#include "chrome/common/extensions/api/messaging/message.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/extensions/manifest_handlers/externally_connectable.h"
 #include "chrome/common/extensions/message_bundle.h"
@@ -28,6 +29,8 @@
 #include "content/public/renderer/v8_value_converter.h"
 #include "grit/renderer_resources.h"
 #include "third_party/WebKit/public/web/WebScopedMicrotaskSuppression.h"
+#include "third_party/WebKit/public/web/WebScopedUserGesture.h"
+#include "third_party/WebKit/public/web/WebUserGestureIndicator.h"
 #include "v8/include/v8.h"
 
 // Message passing API example (in a content script):
@@ -112,7 +115,10 @@ class ExtensionImpl : public extensions::ChromeV8Extension {
     }
 
     renderview->Send(new ExtensionHostMsg_PostMessage(
-        renderview->GetRoutingID(), port_id, *v8::String::AsciiValue(args[1])));
+        renderview->GetRoutingID(), port_id,
+        extensions::Message(
+            *v8::String::AsciiValue(args[1]),
+            WebKit::WebUserGestureIndicator::isProcessingUserGesture())));
   }
 
   // Forcefully disconnects a port.
@@ -314,8 +320,12 @@ void MessagingBindings::DispatchOnConnect(
 void MessagingBindings::DeliverMessage(
     const ChromeV8ContextSet::ContextSet& contexts,
     int target_port_id,
-    const std::string& message,
+    const Message& message,
     content::RenderView* restrict_to_render_view) {
+  scoped_ptr<WebKit::WebScopedUserGesture> web_user_gesture;
+  if (message.user_gesture)
+    web_user_gesture.reset(new WebKit::WebScopedUserGesture);
+
   v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
 
   // TODO(kalman): pass in the full ChromeV8ContextSet; call ForEach.
@@ -343,7 +353,8 @@ void MessagingBindings::DeliverMessage(
       continue;
 
     std::vector<v8::Handle<v8::Value> > arguments;
-    arguments.push_back(v8::String::New(message.c_str(), message.size()));
+    arguments.push_back(v8::String::New(message.data.c_str(),
+                                        message.data.size()));
     arguments.push_back(port_id_handle);
     (*it)->module_system()->CallModuleMethod("messaging",
                                              "dispatchOnMessage",

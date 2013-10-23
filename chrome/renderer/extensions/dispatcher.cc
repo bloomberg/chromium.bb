@@ -18,6 +18,7 @@
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/crash_keys.h"
 #include "chrome/common/extensions/api/extension_api.h"
+#include "chrome/common/extensions/api/messaging/message.h"
 #include "chrome/common/extensions/background_info.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_messages.h"
@@ -92,6 +93,7 @@
 #include "third_party/WebKit/public/web/WebRuntimeFeatures.h"
 #include "third_party/WebKit/public/web/WebScopedUserGesture.h"
 #include "third_party/WebKit/public/web/WebSecurityPolicy.h"
+#include "third_party/WebKit/public/web/WebUserGestureIndicator.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -157,6 +159,49 @@ class TestFeaturesNativeHandler : public ObjectBackedNativeHandler {
         content::V8ValueConverter::create());
     args.GetReturnValue().Set(
         converter->ToV8Value(value, context()->v8_context()));
+  }
+};
+
+class UserGesturesNativeHandler : public ObjectBackedNativeHandler {
+ public:
+  explicit UserGesturesNativeHandler(ChromeV8Context* context)
+      : ObjectBackedNativeHandler(context) {
+    RouteFunction("IsProcessingUserGesture",
+        base::Bind(&UserGesturesNativeHandler::IsProcessingUserGesture,
+                   base::Unretained(this)));
+    RouteFunction("RunWithUserGesture",
+        base::Bind(&UserGesturesNativeHandler::RunWithUserGesture,
+                   base::Unretained(this)));
+    RouteFunction("RunWithoutUserGesture",
+        base::Bind(&UserGesturesNativeHandler::RunWithoutUserGesture,
+                   base::Unretained(this)));
+  }
+
+ private:
+  void IsProcessingUserGesture(
+      const v8::FunctionCallbackInfo<v8::Value>& args) {
+    args.GetReturnValue().Set(v8::Boolean::New(
+        WebKit::WebUserGestureIndicator::isProcessingUserGesture()));
+  }
+
+  void RunWithUserGesture(
+      const v8::FunctionCallbackInfo<v8::Value>& args) {
+    WebKit::WebScopedUserGesture user_gesture;
+    CHECK_EQ(args.Length(), 1);
+    CHECK(args[0]->IsFunction());
+    v8::Handle<v8::Value> no_args;
+    context()->CallFunction(v8::Handle<v8::Function>::Cast(args[0]),
+                            0, &no_args);
+  }
+
+  void RunWithoutUserGesture(
+      const v8::FunctionCallbackInfo<v8::Value>& args) {
+    WebKit::WebUserGestureIndicator::consumeUserGesture();
+    CHECK_EQ(args.Length(), 1);
+    CHECK(args[0]->IsFunction());
+    v8::Handle<v8::Value> no_args;
+    context()->CallFunction(v8::Handle<v8::Function>::Cast(args[0]),
+                            0, &no_args);
   }
 };
 
@@ -539,7 +584,7 @@ void Dispatcher::OnDispatchOnConnect(
 }
 
 void Dispatcher::OnDeliverMessage(int target_port_id,
-                                  const std::string& message) {
+                                  const Message& message) {
   MessagingBindings::DeliverMessage(
       v8_context_set_.GetAll(),
       target_port_id,
@@ -1076,6 +1121,8 @@ void Dispatcher::DidCreateScriptContext(
       scoped_ptr<NativeHandler>(new V8ContextNativeHandler(context, this)));
   module_system->RegisterNativeHandler("test_features",
       scoped_ptr<NativeHandler>(new TestFeaturesNativeHandler(context)));
+  module_system->RegisterNativeHandler("user_gestures",
+      scoped_ptr<NativeHandler>(new UserGesturesNativeHandler(context)));
 
   int manifest_version = extension ? extension->manifest_version() : 1;
   bool send_request_disabled =

@@ -309,6 +309,37 @@
             "items": {"type": "string"}
           }
         ]
+      },
+      {
+        "name": "isProcessingUserGesture",
+        "type": "function",
+        "nocompile": true,
+        "parameters": []
+      },
+      {
+        "name": "runWithUserGesture",
+        "type": "function",
+        "description": "Runs the callback in the context of a user gesture.",
+        "nocompile": true,
+        "parameters": [
+          {
+            "type": "function",
+            "name": "callback",
+            "parameters": []
+          }
+        ]
+      },
+      {
+        "name": "runWithoutUserGesture",
+        "type": "function",
+        "nocompile": true,
+        "parameters": [
+          {
+            "type": "function",
+            "name": "callback",
+            "parameters": []
+          }
+        ]
       }
     ],
     "events": [

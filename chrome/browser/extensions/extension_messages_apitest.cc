@@ -850,5 +850,50 @@ IN_PROC_BROWSER_TEST_F(ExternallyConnectableMessagingWithTlsChannelIdTest,
   EXPECT_EQ(expected_tls_channel_id_value, tls_channel_id);
 }
 
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MessagingUserGesture) {
+  const char kManifest[] = "{"
+                          "  \"name\": \"user_gesture\","
+                          "  \"version\": \"1.0\","
+                          "  \"background\": {"
+                          "    \"scripts\": [\"background.js\"]"
+                          "  },"
+                          "  \"manifest_version\": 2"
+                          "}";
+
+  TestExtensionDir receiver_dir;
+  receiver_dir.WriteManifest(kManifest);
+  receiver_dir.WriteFile(FILE_PATH_LITERAL("background.js"),
+      "chrome.runtime.onMessageExternal.addListener(\n"
+      "    function(msg, sender, reply) {\n"
+      "      reply({result:chrome.test.isProcessingUserGesture()});\n"
+      "    });");
+  const Extension* receiver = LoadExtension(receiver_dir.unpacked_path());
+  ASSERT_TRUE(receiver);
+
+  TestExtensionDir sender_dir;
+  sender_dir.WriteManifest(kManifest);
+  sender_dir.WriteFile(FILE_PATH_LITERAL("background.js"), "");
+  const Extension* sender = LoadExtension(sender_dir.unpacked_path());
+  ASSERT_TRUE(sender);
+
+  EXPECT_EQ("false",
+      ExecuteScriptInBackgroundPage(sender->id(),
+                                    base::StringPrintf(
+          "chrome.test.runWithoutUserGesture(function() {\n"
+          "  chrome.runtime.sendMessage('%s', {}, function(response)  {\n"
+          "    window.domAutomationController.send('' + response.result);\n"
+          "  });\n"
+          "});", receiver->id().c_str())));
+
+  EXPECT_EQ("true",
+      ExecuteScriptInBackgroundPage(sender->id(),
+                                    base::StringPrintf(
+          "chrome.test.runWithUserGesture(function() {\n"
+          "  chrome.runtime.sendMessage('%s', {}, function(response)  {\n"
+          "    window.domAutomationController.send('' + response.result);\n"
+          "  });\n"
+          "});", receiver->id().c_str())));
+}
+
 }  // namespace
 };  // namespace extensions

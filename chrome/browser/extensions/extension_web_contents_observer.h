@@ -12,6 +12,7 @@ class Profile;
 
 namespace extensions {
 class Extension;
+struct Message;
 
 // A web contents observer that's used for WebContents in renderer and extension
 // processes.
@@ -30,7 +31,7 @@ class ExtensionWebContentsObserver
       content::RenderViewHost* render_view_host) OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
-  void OnPostMessage(int port_id, const std::string& message);
+  void OnPostMessage(int port_id, const Message& message);
 
   // Gets the extension or app (if any) that is associated with a RVH.
   const Extension* GetExtension(content::RenderViewHost* render_view_host);

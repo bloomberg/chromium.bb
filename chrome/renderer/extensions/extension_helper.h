@@ -29,6 +29,7 @@ class ListValue;
 
 namespace extensions {
 class Dispatcher;
+struct Message;
 
 // RenderView-level plumbing for extension features.
 class ExtensionHelper
@@ -87,7 +88,7 @@ class ExtensionHelper
       const ExtensionMsg_ExternalConnectionInfo& info,
       const std::string& tls_channel_id);
   void OnExtensionDeliverMessage(int target_port_id,
-                                 const std::string& message);
+                                 const Message& message);
   void OnExtensionDispatchOnDisconnect(int port_id,
                                        const std::string& error_message);
   void OnExecuteCode(const ExtensionMsg_ExecuteCode_Params& params);

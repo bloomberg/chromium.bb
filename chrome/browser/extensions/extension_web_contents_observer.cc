@@ -8,6 +8,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/extensions/api/messaging/message.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/child_process_security_policy.h"
@@ -100,7 +101,7 @@ bool ExtensionWebContentsObserver::OnMessageReceived(
 }
 
 void ExtensionWebContentsObserver::OnPostMessage(int port_id,
-                                                 const std::string& message) {
+                                                 const Message& message) {
   MessageService* message_service = MessageService::Get(profile_);
   if (message_service) {
     message_service->PostMessage(port_id, message);

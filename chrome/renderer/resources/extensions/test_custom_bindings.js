@@ -12,6 +12,7 @@ var GetExtensionAPIDefinitionsForTest =
     requireNative('apiDefinitions').GetExtensionAPIDefinitionsForTest;
 var GetAvailability = requireNative('v8_context').GetAvailability;
 var GetAPIFeatures = requireNative('test_features').GetAPIFeatures;
+var userGestures = requireNative('user_gestures');
 
 binding.registerCustomHook(function(api) {
   var chromeTest = api.compiledApi;
@@ -325,6 +326,20 @@ binding.registerCustomHook(function(api) {
 
   apiFunctions.setHandleRequest('getApiFeatures', function() {
     return GetAPIFeatures();
+  });
+
+  apiFunctions.setHandleRequest('isProcessingUserGesture', function() {
+    return userGestures.IsProcessingUserGesture();
+  });
+
+  apiFunctions.setHandleRequest('runWithUserGesture', function(callback) {
+    chromeTest.assertEq(typeof(callback), 'function');
+    return userGestures.RunWithUserGesture(callback);
+  });
+
+  apiFunctions.setHandleRequest('runWithoutUserGesture', function(callback) {
+    chromeTest.assertEq(typeof(callback), 'function');
+    return userGestures.RunWithoutUserGesture(callback);
   });
 });
 

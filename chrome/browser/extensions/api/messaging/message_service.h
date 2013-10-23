@@ -16,6 +16,7 @@
 #include "chrome/browser/extensions/api/messaging/message_property_provider.h"
 #include "chrome/browser/extensions/api/messaging/native_message_process_host.h"
 #include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
+#include "chrome/common/extensions/api/messaging/message.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
@@ -85,7 +86,7 @@ class MessageService : public ProfileKeyedAPI,
                                       const std::string& error_message) {}
 
     // Dispatch a message to this end of the communication.
-    virtual void DispatchOnMessage(const std::string& message,
+    virtual void DispatchOnMessage(const Message& message,
                                    int target_port_id) = 0;
 
     // MessagPorts that target extensions will need to adjust their keepalive
@@ -149,7 +150,7 @@ class MessageService : public ProfileKeyedAPI,
 
   // Enqueues a message on a pending channel, or sends a message to the given
   // port if the channel isn't pending.
-  void PostMessage(int port_id, const std::string& message);
+  void PostMessage(int port_id, const Message& message);
 
   // NativeMessageProcessHost::Client
   virtual void PostMessageFromNativeProcess(
@@ -164,7 +165,7 @@ class MessageService : public ProfileKeyedAPI,
   // A map of channel ID to its channel object.
   typedef std::map<int, MessageChannel*> MessageChannelMap;
 
-  typedef std::pair<int, std::string> PendingMessage;
+  typedef std::pair<int, Message> PendingMessage;
   typedef std::vector<PendingMessage> PendingMessagesQueue;
   // A set of channel IDs waiting for TLS channel IDs to complete opening,
   // and any pending messages queued to be sent on those channels.
@@ -202,16 +203,16 @@ class MessageService : public ProfileKeyedAPI,
 
   // Enqueues a message on a pending channel.
   void EnqueuePendingMessage(int port_id, int channel_id,
-                             const std::string& message);
+                             const Message& message);
 
   // Enqueues a message on a channel pending on a lazy background page load.
   void EnqueuePendingMessageForLazyBackgroundLoad(int port_id,
                                                   int channel_id,
-                                                  const std::string& message);
+                                                  const Message& message);
 
   // Immediately sends a message to the given port.
   void DispatchMessage(int port_id, MessageChannel* channel,
-                       const std::string& message);
+                       const Message& message);
 
   // Potentially registers a pending task with the LazyBackgroundTaskQueue
   // to open a channel. Returns true if a task was queued.
@@ -235,7 +236,7 @@ class MessageService : public ProfileKeyedAPI,
       CloseChannel(port_id, error_message);
   }
   void PendingLazyBackgroundPagePostMessage(int port_id,
-                                            const std::string& message,
+                                            const Message& message,
                                             extensions::ExtensionHost* host) {
     if (host)
       PostMessage(port_id, message);
