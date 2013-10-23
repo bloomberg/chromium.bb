@@ -238,7 +238,7 @@ static bool IsBoringSwitch(const std::string& flag) {
          StartsWithASCII(flag, "--plugin-path=", true) ||
 
          // This is too big so we end up truncating it anyway.
-         StartsWithASCII(flag, "--force-fieldtest=", true) ||
+         StartsWithASCII(flag, "--force-fieldtrials=", true) ||
 
          // These surround the flags that were added by about:flags, it lets
          // you distinguish which flags were added manually via the command
