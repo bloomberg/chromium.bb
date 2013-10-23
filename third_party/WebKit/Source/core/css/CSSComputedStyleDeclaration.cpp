@@ -65,6 +65,7 @@
 #include "core/rendering/style/CounterContent.h"
 #include "core/rendering/style/CursorList.h"
 #include "core/rendering/style/RenderStyle.h"
+#include "core/rendering/style/ShadowList.h"
 #include "core/rendering/style/ShapeValue.h"
 #include "platform/fonts/FontFeatureSettings.h"
 #include "wtf/text/StringBuilder.h"
@@ -656,7 +657,7 @@ static PassRefPtr<CSSValue> valueForPositionOffset(RenderStyle* style, CSSProper
     return zoomAdjustedPixelValueForLength(l, style);
 }
 
-PassRefPtr<CSSPrimitiveValue> CSSComputedStyleDeclaration::currentColorOrValidColor(RenderStyle* style, const Color& color) const
+PassRefPtr<CSSPrimitiveValue> CSSComputedStyleDeclaration::currentColorOrValidColor(const RenderStyle* style, const Color& color) const
 {
     // This function does NOT look at visited information, so that computed style doesn't expose that.
     if (!color.isValid())
@@ -926,8 +927,8 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::valueForFilter(const RenderObj
             DropShadowFilterOperation* dropShadowOperation = static_cast<DropShadowFilterOperation*>(filterOperation);
             filterValue = CSSFilterValue::create(CSSFilterValue::DropShadowFilterOperation);
             // We want our computed style to look like that of a text shadow (has neither spread nor inset style).
-            OwnPtr<ShadowData> shadow = ShadowData::create(dropShadowOperation->location(), dropShadowOperation->stdDeviation(), 0, Normal, dropShadowOperation->color());
-            filterValue->append(valueForShadow(shadow.get(), CSSPropertyTextShadow, style));
+            ShadowData shadow(dropShadowOperation->location(), dropShadowOperation->stdDeviation(), 0, Normal, dropShadowOperation->color());
+            filterValue->append(valueForShadowData(shadow, style, false));
             break;
         }
         case FilterOperation::VALIDATED_CUSTOM:
@@ -1315,21 +1316,26 @@ bool CSSComputedStyleDeclaration::useFixedFontDefaultSize() const
     return style->fontDescription().useFixedDefaultSize();
 }
 
-PassRefPtr<CSSValue> CSSComputedStyleDeclaration::valueForShadow(const ShadowData* shadow, CSSPropertyID propertyID, const RenderStyle* style) const
+PassRefPtr<CSSValue> CSSComputedStyleDeclaration::valueForShadowData(const ShadowData& shadow, const RenderStyle* style, bool useSpread) const
 {
-    if (!shadow)
+    RefPtr<CSSPrimitiveValue> x = zoomAdjustedPixelValue(shadow.x(), style);
+    RefPtr<CSSPrimitiveValue> y = zoomAdjustedPixelValue(shadow.y(), style);
+    RefPtr<CSSPrimitiveValue> blur = zoomAdjustedPixelValue(shadow.blur(), style);
+    RefPtr<CSSPrimitiveValue> spread = useSpread ? zoomAdjustedPixelValue(shadow.spread(), style) : PassRefPtr<CSSPrimitiveValue>();
+    RefPtr<CSSPrimitiveValue> shadowStyle = shadow.style() == Normal ? PassRefPtr<CSSPrimitiveValue>() : cssValuePool().createIdentifierValue(CSSValueInset);
+    RefPtr<CSSPrimitiveValue> color = currentColorOrValidColor(style, shadow.color());
+    return CSSShadowValue::create(x.release(), y.release(), blur.release(), spread.release(), shadowStyle.release(), color.release());
+}
+
+PassRefPtr<CSSValue> CSSComputedStyleDeclaration::valueForShadowList(const ShadowList* shadowList, const RenderStyle* style, bool useSpread) const
+{
+    if (!shadowList)
         return cssValuePool().createIdentifierValue(CSSValueNone);
 
     RefPtr<CSSValueList> list = CSSValueList::createCommaSeparated();
-    for (const ShadowData* s = shadow; s; s = s->next()) {
-        RefPtr<CSSPrimitiveValue> x = zoomAdjustedPixelValue(s->x(), style);
-        RefPtr<CSSPrimitiveValue> y = zoomAdjustedPixelValue(s->y(), style);
-        RefPtr<CSSPrimitiveValue> blur = zoomAdjustedPixelValue(s->blur(), style);
-        RefPtr<CSSPrimitiveValue> spread = propertyID == CSSPropertyTextShadow ? PassRefPtr<CSSPrimitiveValue>() : zoomAdjustedPixelValue(s->spread(), style);
-        RefPtr<CSSPrimitiveValue> style = propertyID == CSSPropertyTextShadow || s->style() == Normal ? PassRefPtr<CSSPrimitiveValue>() : cssValuePool().createIdentifierValue(CSSValueInset);
-        RefPtr<CSSPrimitiveValue> color = cssValuePool().createColorValue(s->color().rgb());
-        list->prepend(CSSShadowValue::create(x.release(), y.release(), blur.release(), spread.release(), style.release(), color.release()));
-    }
+    size_t shadowCount = shadowList->shadows().size();
+    for (size_t i = 0; i < shadowCount; ++i)
+        list->append(valueForShadowData(shadowList->shadows()[i], style, useSpread));
     return list.release();
 }
 
@@ -1898,7 +1904,7 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
             return valueForReflection(style->boxReflect(), style.get());
         case CSSPropertyBoxShadow:
         case CSSPropertyWebkitBoxShadow:
-            return valueForShadow(style->boxShadow(), propertyID, style.get());
+            return valueForShadowList(style->boxShadow(), style.get(), true);
         case CSSPropertyCaptionSide:
             return cssValuePool().createValue(style->captionSide());
         case CSSPropertyClear:
@@ -2315,7 +2321,7 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
             return textIndent.release();
         }
         case CSSPropertyTextShadow:
-            return valueForShadow(style->textShadow(), propertyID, style.get());
+            return valueForShadowList(style->textShadow(), style.get(), false);
         case CSSPropertyTextRendering:
             return cssValuePool().createValue(style->fontDescription().textRenderingMode());
         case CSSPropertyTextOverflow:

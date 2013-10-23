@@ -37,7 +37,7 @@ namespace WebCore {
 
 class CursorList;
 class QuotesData;
-class ShadowData;
+class ShadowList;
 class StyleImage;
 
 // This struct is for rarely used inherited CSS3, CSS2, and WebKit-specific properties.
@@ -67,7 +67,7 @@ public:
     Color visitedLinkTextFillColor;
     Color visitedLinkTextEmphasisColor;
 
-    OwnPtr<ShadowData> textShadow; // Our text shadow information for shadowed text drawing.
+    RefPtr<ShadowList> textShadow; // Our text shadow information for shadowed text drawing.
     AtomicString highlight; // Apple-specific extension for custom highlight rendering.
 
     RefPtr<CursorList> cursorData;

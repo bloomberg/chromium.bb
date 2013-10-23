@@ -26,7 +26,7 @@
 #include "core/rendering/style/QuotesData.h"
 #include "core/rendering/style/RenderStyle.h"
 #include "core/rendering/style/RenderStyleConstants.h"
-#include "core/rendering/style/ShadowData.h"
+#include "core/rendering/style/ShadowList.h"
 #include "core/rendering/style/StyleImage.h"
 
 namespace WebCore {
@@ -107,7 +107,7 @@ StyleRareInheritedData::StyleRareInheritedData(const StyleRareInheritedData& o)
     , visitedLinkTextStrokeColor(o.visitedLinkTextStrokeColor)
     , visitedLinkTextFillColor(o.visitedLinkTextFillColor)
     , visitedLinkTextEmphasisColor(o.visitedLinkTextEmphasisColor)
-    , textShadow(cloneShadow(o.textShadow))
+    , textShadow(o.textShadow)
     , highlight(o.highlight)
     , cursorData(o.cursorData)
     , indent(o.indent)

@@ -23,6 +23,7 @@
 
 #include "core/rendering/svg/RenderSVGBlock.h"
 
+#include "core/rendering/style/ShadowList.h"
 #include "core/rendering/svg/SVGResourcesCache.h"
 #include "core/svg/SVGElement.h"
 
@@ -37,7 +38,7 @@ LayoutRect RenderSVGBlock::visualOverflowRect() const
 {
     LayoutRect borderRect = borderBoxRect();
 
-    if (const ShadowData* textShadow = style()->textShadow())
+    if (const ShadowList* textShadow = style()->textShadow())
         textShadow->adjustRectForShadow(borderRect);
 
     return borderRect;

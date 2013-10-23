@@ -43,6 +43,7 @@
 #include "core/rendering/RenderNamedFlowThread.h"
 #include "core/rendering/RenderRegion.h"
 #include "core/rendering/RenderView.h"
+#include "core/rendering/style/ShadowList.h"
 #include "platform/geometry/TransformState.h"
 #include "wtf/CurrentTime.h"
 
@@ -511,13 +512,17 @@ RoundedRect RenderBoxModelObject::backgroundRoundedRectAdjustedForBleedAvoidance
 
 static void applyBoxShadowForBackground(GraphicsContext* context, const RenderObject* renderer)
 {
-    const ShadowData* boxShadow = renderer->style()->boxShadow();
-    while (boxShadow->style() != Normal)
-        boxShadow = boxShadow->next();
-
-    FloatSize shadowOffset(boxShadow->x(), boxShadow->y());
-    context->setShadow(shadowOffset, boxShadow->blur(), renderer->resolveColor(boxShadow->color()),
-        DrawLooper::ShadowRespectsTransforms, DrawLooper::ShadowIgnoresAlpha);
+    const ShadowList* shadowList = renderer->style()->boxShadow();
+    ASSERT(shadowList);
+    for (size_t i = shadowList->shadows().size(); i--; ) {
+        const ShadowData& boxShadow = shadowList->shadows()[i];
+        if (boxShadow.style() != Normal)
+            continue;
+        FloatSize shadowOffset(boxShadow.x(), boxShadow.y());
+        context->setShadow(shadowOffset, boxShadow.blur(), renderer->resolveColor(boxShadow.color()),
+            DrawLooper::ShadowRespectsTransforms, DrawLooper::ShadowIgnoresAlpha);
+        return;
+    }
 }
 
 void RenderBoxModelObject::paintFillLayerExtended(const PaintInfo& paintInfo, const Color& color, const FillLayer* bgLayer, const LayoutRect& rect,
@@ -2428,16 +2433,22 @@ bool RenderBoxModelObject::boxShadowShouldBeAppliedToBackground(BackgroundBleedA
     if (style()->hasAppearance())
         return false;
 
+    const ShadowList* shadowList = style()->boxShadow();
+    if (!shadowList)
+        return false;
+
     bool hasOneNormalBoxShadow = false;
-    for (const ShadowData* currentShadow = style()->boxShadow(); currentShadow; currentShadow = currentShadow->next()) {
-        if (currentShadow->style() != Normal)
+    size_t shadowCount = shadowList->shadows().size();
+    for (size_t i = 0; i < shadowCount; ++i) {
+        const ShadowData& currentShadow = shadowList->shadows()[i];
+        if (currentShadow.style() != Normal)
             continue;
 
         if (hasOneNormalBoxShadow)
             return false;
         hasOneNormalBoxShadow = true;
 
-        if (currentShadow->spread())
+        if (currentShadow.spread())
             return false;
     }
 
@@ -2496,20 +2507,23 @@ void RenderBoxModelObject::paintBoxShadow(const PaintInfo& info, const LayoutRec
     bool hasOpaqueBackground = s->visitedDependentColor(CSSPropertyBackgroundColor).isValid() && s->visitedDependentColor(CSSPropertyBackgroundColor).alpha() == 255;
 
     GraphicsContextStateSaver stateSaver(*context, false);
-    for (const ShadowData* shadow = s->boxShadow(); shadow; shadow = shadow->next()) {
-        if (shadow->style() != shadowStyle)
+
+    const ShadowList* shadowList = s->boxShadow();
+    for (size_t i = shadowList->shadows().size(); i--; ) {
+        const ShadowData& shadow = shadowList->shadows()[i];
+        if (shadow.style() != shadowStyle)
             continue;
 
-        IntSize shadowOffset(shadow->x(), shadow->y());
-        int shadowBlur = shadow->blur();
-        int shadowSpread = shadow->spread();
+        IntSize shadowOffset(shadow.x(), shadow.y());
+        int shadowBlur = shadow.blur();
+        int shadowSpread = shadow.spread();
 
         if (shadowOffset.isZero() && !shadowBlur && !shadowSpread)
             continue;
 
-        const Color& shadowColor = resolveColor(shadow->color());
+        const Color& shadowColor = resolveColor(shadow.color());
 
-        if (shadow->style() == Normal) {
+        if (shadow.style() == Normal) {
             RoundedRect fillRect = border;
             fillRect.inflate(shadowSpread);
             if (fillRect.isEmpty())

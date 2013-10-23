@@ -43,7 +43,7 @@ namespace WebCore {
 
 class ContentData;
 class CSSAnimationDataList;
-class ShadowData;
+class ShadowList;
 class StyleDeprecatedFlexibleBoxData;
 class StyleFilterData;
 class StyleFlexibleBoxData;
@@ -114,7 +114,7 @@ public:
     OwnPtr<ContentData> m_content;
     OwnPtr<CounterDirectiveMap> m_counterDirectives;
 
-    OwnPtr<ShadowData> m_boxShadow;  // For box-shadow decorations.
+    RefPtr<ShadowList> m_boxShadow;
 
     RefPtr<StyleReflection> m_boxReflect;
 

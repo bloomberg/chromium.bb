@@ -26,10 +26,7 @@
 #define ShadowData_h
 
 #include "core/platform/graphics/Color.h"
-#include "platform/geometry/FloatRect.h"
-#include "platform/geometry/LayoutRect.h"
-#include "wtf/OwnPtr.h"
-#include "wtf/PassOwnPtr.h"
+#include "platform/geometry/IntPoint.h"
 
 namespace WebCore {
 
@@ -39,15 +36,13 @@ enum ShadowStyle { Normal, Inset };
 class ShadowData {
     WTF_MAKE_FAST_ALLOCATED;
 public:
-    static PassOwnPtr<ShadowData> create() { return adoptPtr(new ShadowData); }
-    static PassOwnPtr<ShadowData> create(const IntPoint& location, int blur, int spread, ShadowStyle style, const Color& color)
+    ShadowData(const IntPoint& location, int blur, int spread, ShadowStyle style, const Color& color)
+        : m_location(location)
+        , m_blur(blur)
+        , m_spread(spread)
+        , m_color(color)
+        , m_style(style)
     {
-        return adoptPtr(new ShadowData(location, blur, spread, style, color));
-    }
-    // This clones the whole ShadowData linked list.
-    PassOwnPtr<ShadowData> clone() const
-    {
-        return adoptPtr(new ShadowData(*this));
     }
 
     bool operator==(const ShadowData&) const;
@@ -61,49 +56,13 @@ public:
     ShadowStyle style() const { return m_style; }
     const Color& color() const { return m_color; }
 
-    const ShadowData* next() const { return m_next.get(); }
-    void setNext(PassOwnPtr<ShadowData> shadow) { m_next = shadow; }
-
-    void adjustRectForShadow(LayoutRect&, int additionalOutlineSize = 0) const;
-    void adjustRectForShadow(FloatRect&, int additionalOutlineSize = 0) const;
-
 private:
-    ShadowData()
-        : m_blur(0)
-        , m_spread(0)
-        , m_style(Normal)
-    {
-    }
-
-    ShadowData(const IntPoint& location, int blur, int spread, ShadowStyle style, const Color& color)
-        : m_location(location)
-        , m_blur(blur)
-        , m_spread(spread)
-        , m_color(color)
-        , m_style(style)
-    {
-    }
-
-    ShadowData(const ShadowData&);
-
     IntPoint m_location;
     int m_blur;
     int m_spread;
     Color m_color;
     ShadowStyle m_style;
-    OwnPtr<ShadowData> m_next;
 };
-
-// Helper method to handle nullptr, otherwise all callers need an ugly ternary.
-inline PassOwnPtr<ShadowData> cloneShadow(const ShadowData* shadow)
-{
-    return shadow ? shadow->clone() : nullptr;
-}
-
-inline PassOwnPtr<ShadowData> cloneShadow(const OwnPtr<ShadowData>& shadow)
-{
-    return cloneShadow(shadow.get());
-}
 
 } // namespace WebCore
 

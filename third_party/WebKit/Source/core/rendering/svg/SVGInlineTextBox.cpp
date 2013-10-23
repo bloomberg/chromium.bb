@@ -30,6 +30,7 @@
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/InlineFlowBox.h"
 #include "core/rendering/PointerEventsHitRules.h"
+#include "core/rendering/style/ShadowList.h"
 #include "core/rendering/svg/RenderSVGInlineText.h"
 #include "core/rendering/svg/RenderSVGResource.h"
 #include "core/rendering/svg/RenderSVGResourceSolidColor.h"
@@ -622,10 +623,10 @@ void SVGInlineTextBox::paintTextWithShadows(GraphicsContext* context, RenderStyl
     ASSERT(scalingFactor);
 
     const Font& scaledFont = textRenderer->scaledFont();
-    const ShadowData* shadow = style->textShadow();
+    const ShadowList* shadowList = style->textShadow();
 
     // Text shadows are disabled when printing. http://crbug.com/258321
-    bool hasShadow = shadow && !context->printing();
+    bool hasShadow = shadowList && !context->printing();
 
     FloatPoint textOrigin(fragment.x, fragment.y);
     FloatSize textSize(fragment.width, fragment.height);
@@ -639,11 +640,12 @@ void SVGInlineTextBox::paintTextWithShadows(GraphicsContext* context, RenderStyl
 
     if (hasShadow) {
         DrawLooper drawLooper;
-        do {
-            FloatSize offset(shadow->x(), shadow->y());
-            drawLooper.addShadow(offset, shadow->blur(), shadow->color(),
+        for (size_t i = shadowList->shadows().size(); i--; ) {
+            const ShadowData& shadow = shadowList->shadows()[i];
+            FloatSize offset(shadow.x(), shadow.y());
+            drawLooper.addShadow(offset, shadow.blur(), shadow.color(),
                 DrawLooper::ShadowRespectsTransforms, DrawLooper::ShadowRespectsAlpha);
-        } while ((shadow = shadow->next()));
+        }
         drawLooper.addUnmodifiedContent();
         context->setDrawLooper(drawLooper);
     }

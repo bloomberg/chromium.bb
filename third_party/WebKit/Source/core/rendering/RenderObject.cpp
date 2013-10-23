@@ -76,6 +76,7 @@
 #include "core/rendering/RenderView.h"
 #include "core/rendering/style/ContentData.h"
 #include "core/rendering/style/CursorList.h"
+#include "core/rendering/style/ShadowList.h"
 #include "core/rendering/svg/SVGRenderSupport.h"
 #include "platform/Partitions.h"
 #include "platform/geometry/FloatQuad.h"
@@ -3120,7 +3121,7 @@ int RenderObject::nextOffset(int current) const
 void RenderObject::adjustRectForOutlineAndShadow(LayoutRect& rect) const
 {
     int outlineSize = outlineStyleForRepaint()->outlineSize();
-    if (const ShadowData* boxShadow = style()->boxShadow()) {
+    if (const ShadowList* boxShadow = style()->boxShadow()) {
         boxShadow->adjustRectForShadow(rect, outlineSize);
         return;
     }

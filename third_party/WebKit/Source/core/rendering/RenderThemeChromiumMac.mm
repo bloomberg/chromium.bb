@@ -53,6 +53,7 @@
 #import "core/rendering/RenderProgress.h"
 #import "core/rendering/RenderSlider.h"
 #import "core/rendering/RenderView.h"
+#import "core/rendering/style/ShadowList.h"
 #import "platform/LayoutTestSupport.h"
 #import "platform/SharedBuffer.h"
 #import "platform/text/PlatformLocale.h"

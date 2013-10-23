@@ -43,7 +43,6 @@
 #include "core/rendering/style/OutlineValue.h"
 #include "core/rendering/style/RenderStyleConstants.h"
 #include "core/rendering/style/SVGRenderStyle.h"
-#include "core/rendering/style/ShadowData.h"
 #include "core/rendering/style/ShapeValue.h"
 #include "core/rendering/style/StyleBackgroundData.h"
 #include "core/rendering/style/StyleBoxData.h"
@@ -98,7 +97,7 @@ class Font;
 class FontMetrics;
 class IntRect;
 class Pair;
-class ShadowData;
+class ShadowList;
 class StyleImage;
 class StyleInheritedData;
 class StyleResolver;
@@ -117,6 +116,7 @@ class RenderStyle: public RefCounted<RenderStyle> {
     friend class CSSComputedStyleDeclaration; // Ignores visited styles, so needs to be able to see unvisited info.
     friend class PropertyWrapperMaybeInvalidColor; // Used by CSS animations. We can't allow them to animate based off visited colors.
     friend class StyleBuilderFunctions; // Sets color styles
+    friend class StyleBuilderConverter; // Reads unvisited color style for shadow currentColor
     friend class StyleBuilder; // FIXME: Revove this! StyleBuilder::oldApplyProperty reads color().
     friend class StyleResolver; // Sets members directly.
     friend class CachedUAStyle; // Saves Border/Background information for later comparison.
@@ -709,7 +709,7 @@ public:
         return m_background->outline().offset();
     }
 
-    const ShadowData* textShadow() const { return rareInheritedData->textShadow.get(); }
+    ShadowList* textShadow() const { return rareInheritedData->textShadow.get(); }
     void getTextShadowExtent(LayoutUnit& top, LayoutUnit& right, LayoutUnit& bottom, LayoutUnit& left) const { getShadowExtent(textShadow(), top, right, bottom, left); }
     void getTextShadowHorizontalExtent(LayoutUnit& left, LayoutUnit& right) const { getShadowHorizontalExtent(textShadow(), left, right); }
     void getTextShadowVerticalExtent(LayoutUnit& top, LayoutUnit& bottom) const { getShadowVerticalExtent(textShadow(), top, bottom); }
@@ -765,7 +765,7 @@ public:
     const GridPosition& gridRowStart() const { return rareNonInheritedData->m_gridItem->m_gridRowStart; }
     const GridPosition& gridRowEnd() const { return rareNonInheritedData->m_gridItem->m_gridRowEnd; }
 
-    const ShadowData* boxShadow() const { return rareNonInheritedData->m_boxShadow.get(); }
+    ShadowList* boxShadow() const { return rareNonInheritedData->m_boxShadow.get(); }
     void getBoxShadowExtent(LayoutUnit& top, LayoutUnit& right, LayoutUnit& bottom, LayoutUnit& left) const { getShadowExtent(boxShadow(), top, right, bottom, left); }
     LayoutBoxExtent getBoxShadowInsetExtent() const { return getShadowInsetExtent(boxShadow()); }
     void getBoxShadowHorizontalExtent(LayoutUnit& left, LayoutUnit& right) const { getShadowHorizontalExtent(boxShadow(), left, right); }
@@ -1192,7 +1192,7 @@ public:
 
     // CSS3 Setters
     void setOutlineOffset(int v) { SET_VAR(m_background, m_outline.m_offset, v); }
-    void setTextShadow(PassOwnPtr<ShadowData>, bool add = false);
+    void setTextShadow(PassRefPtr<ShadowList>);
     void setTextStrokeColor(const Color& c) { SET_VAR(rareInheritedData, textStrokeColor, c); }
     void setTextStrokeWidth(float w) { SET_VAR(rareInheritedData, textStrokeWidth, w); }
     void setTextFillColor(const Color& c) { SET_VAR(rareInheritedData, textFillColor, c); }
@@ -1208,7 +1208,7 @@ public:
     void setBoxOrdinalGroup(unsigned int og) { SET_VAR(rareNonInheritedData.access()->m_deprecatedFlexibleBox, ordinal_group, og); }
     void setBoxOrient(EBoxOrient o) { SET_VAR(rareNonInheritedData.access()->m_deprecatedFlexibleBox, orient, o); }
     void setBoxPack(EBoxPack p) { SET_VAR(rareNonInheritedData.access()->m_deprecatedFlexibleBox, pack, p); }
-    void setBoxShadow(PassOwnPtr<ShadowData>, bool add = false);
+    void setBoxShadow(PassRefPtr<ShadowList>);
     void setBoxReflect(PassRefPtr<StyleReflection> reflect) { if (rareNonInheritedData->m_boxReflect != reflect) rareNonInheritedData.access()->m_boxReflect = reflect; }
     void setBoxSizing(EBoxSizing s) { SET_VAR(m_box, m_boxSizing, s); }
     void setFlexGrow(float f) { SET_VAR(rareNonInheritedData.access()->m_flexibleBox, m_flexGrow, f); }
@@ -1642,6 +1642,8 @@ public:
     static PrintColorAdjust initialPrintColorAdjust() { return PrintColorAdjustEconomy; }
     static TouchAction initialTouchAction() { return TouchActionAuto; }
     static TouchActionDelay initialTouchActionDelay() { return TouchActionDelayScript; }
+    static ShadowList* initialBoxShadow() { return 0; }
+    static ShadowList* initialTextShadow() { return 0; }
 
     // The initial value is 'none' for grid tracks.
     static Vector<GridTrackSize> initialGridDefinitionColumns() { return Vector<GridTrackSize>(); }
@@ -1705,15 +1707,15 @@ private:
     void setVisitedLinkTextStrokeColor(const Color& v) { SET_VAR(rareInheritedData, visitedLinkTextStrokeColor, v); }
 
     void inheritUnicodeBidiFrom(const RenderStyle* parent) { noninherited_flags._unicodeBidi = parent->noninherited_flags._unicodeBidi; }
-    void getShadowExtent(const ShadowData*, LayoutUnit& top, LayoutUnit& right, LayoutUnit& bottom, LayoutUnit& left) const;
-    LayoutBoxExtent getShadowInsetExtent(const ShadowData*) const;
-    void getShadowHorizontalExtent(const ShadowData*, LayoutUnit& left, LayoutUnit& right) const;
-    void getShadowVerticalExtent(const ShadowData*, LayoutUnit& top, LayoutUnit& bottom) const;
-    void getShadowInlineDirectionExtent(const ShadowData* shadow, LayoutUnit& logicalLeft, LayoutUnit& logicalRight) const
+    void getShadowExtent(const ShadowList*, LayoutUnit& top, LayoutUnit& right, LayoutUnit& bottom, LayoutUnit& left) const;
+    LayoutBoxExtent getShadowInsetExtent(const ShadowList*) const;
+    void getShadowHorizontalExtent(const ShadowList*, LayoutUnit& left, LayoutUnit& right) const;
+    void getShadowVerticalExtent(const ShadowList*, LayoutUnit& top, LayoutUnit& bottom) const;
+    void getShadowInlineDirectionExtent(const ShadowList* shadow, LayoutUnit& logicalLeft, LayoutUnit& logicalRight) const
     {
         return isHorizontalWritingMode() ? getShadowHorizontalExtent(shadow, logicalLeft, logicalRight) : getShadowVerticalExtent(shadow, logicalLeft, logicalRight);
     }
-    void getShadowBlockDirectionExtent(const ShadowData* shadow, LayoutUnit& logicalTop, LayoutUnit& logicalBottom) const
+    void getShadowBlockDirectionExtent(const ShadowList* shadow, LayoutUnit& logicalTop, LayoutUnit& logicalBottom) const
     {
         return isHorizontalWritingMode() ? getShadowVerticalExtent(shadow, logicalTop, logicalBottom) : getShadowHorizontalExtent(shadow, logicalTop, logicalBottom);
     }

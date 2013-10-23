@@ -43,6 +43,7 @@ class RenderObject;
 class RenderStyle;
 class SVGPaint;
 class ShadowData;
+class ShadowList;
 class StylePropertySet;
 class StylePropertyShorthand;
 
@@ -127,8 +128,9 @@ private:
 
     virtual bool cssPropertyMatches(CSSPropertyID, const CSSValue*) const OVERRIDE;
 
-    PassRefPtr<CSSValue> valueForShadow(const ShadowData*, CSSPropertyID, const RenderStyle*) const;
-    PassRefPtr<CSSPrimitiveValue> currentColorOrValidColor(RenderStyle*, const Color&) const;
+    PassRefPtr<CSSValue> valueForShadowData(const ShadowData&, const RenderStyle*, bool useSpread) const;
+    PassRefPtr<CSSValue> valueForShadowList(const ShadowList*, const RenderStyle*, bool useSpread) const;
+    PassRefPtr<CSSPrimitiveValue> currentColorOrValidColor(const RenderStyle*, const Color&) const;
     PassRefPtr<SVGPaint> adjustSVGPaintForCurrentColor(PassRefPtr<SVGPaint>, RenderStyle*) const;
 
     PassRefPtr<CSSValue> valueForFilter(const RenderObject*, const RenderStyle*) const;

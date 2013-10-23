@@ -30,6 +30,7 @@
 #include "core/css/CSSValue.h"
 #include "core/css/resolver/StyleResolverState.h"
 #include "core/rendering/RenderView.h"
+#include "core/rendering/style/ShadowList.h"
 #include "core/svg/SVGLength.h"
 #include "platform/LengthSize.h"
 
@@ -47,6 +48,7 @@ public:
     static Length convertLengthMaxSizing(StyleResolverState&, CSSValue*);
     static LengthPoint convertLengthPoint(StyleResolverState&, CSSValue*);
     static LengthSize convertRadius(StyleResolverState&, CSSValue*);
+    static PassRefPtr<ShadowList> convertShadow(StyleResolverState&, CSSValue*);
     static float convertSpacing(StyleResolverState&, CSSValue*);
     template <CSSValueID IdForNone> static AtomicString convertString(StyleResolverState&, CSSValue*);
 };

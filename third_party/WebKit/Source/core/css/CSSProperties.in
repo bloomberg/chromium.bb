@@ -39,6 +39,7 @@ border-top-right-radius type_name=LengthSize, initial=initialBorderRadius, conve
 border-top-style type_name=EBorderStyle, initial=initialBorderStyle
 border-top-width type_name=unsigned, initial=initialBorderWidth, converter=convertLineWidth<unsigned>
 bottom type_name=Length, initial=initialOffset, converter=convertLengthOrAuto
+box-shadow converter=convertShadow
 box-sizing
 caption-side
 clear
@@ -124,6 +125,7 @@ text-indent custom_all
 text-justify type_name=TextJustify
 text-overflow type_name=TextOverflow
 text-rendering custom_all
+text-shadow converter=convertShadow
 text-transform
 top type_name=Length, initial=initialOffset, converter=convertLengthOrAuto
 touch-action type_name=TouchAction, initial=initialTouchAction
@@ -169,6 +171,7 @@ z-index type_name=int, custom_all
 -webkit-box-ordinal-group type_name=unsigned int
 -webkit-box-orient
 -webkit-box-pack
+-webkit-box-shadow use_handlers_for=CSSPropertyBoxShadow
 -webkit-clip-path custom_value
 -webkit-column-axis type_name=ColumnAxis
 -webkit-column-break-after type_name=EPageBreak, initial=initialPageBreak

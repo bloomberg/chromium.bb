@@ -79,7 +79,6 @@
 #include "core/rendering/style/RenderStyleConstants.h"
 #include "core/rendering/style/SVGRenderStyle.h"
 #include "core/rendering/style/SVGRenderStyleDefs.h"
-#include "core/rendering/style/ShadowData.h"
 #include "core/rendering/style/StyleGeneratedImage.h"
 #include "core/svg/SVGColor.h"
 #include "core/svg/SVGPaint.h"
@@ -894,6 +893,37 @@ LengthSize StyleBuilderConverter::convertRadius(StyleResolverState& state, CSSVa
     return LengthSize(radiusWidth, radiusHeight);
 }
 
+PassRefPtr<ShadowList> StyleBuilderConverter::convertShadow(StyleResolverState& state, CSSValue* value)
+{
+    if (value->isPrimitiveValue()) {
+        ASSERT(toCSSPrimitiveValue(value)->getValueID() == CSSValueNone);
+        return PassRefPtr<ShadowList>();
+    }
+
+    const CSSValueList* valueList = toCSSValueList(value);
+    size_t shadowCount = valueList->length();
+    float zoom = state.style()->effectiveZoom();
+    ShadowDataVector shadows;
+    for (size_t i = 0; i < shadowCount; ++i) {
+        const CSSShadowValue* item = toCSSShadowValue(valueList->item(i));
+        int x = item->x->computeLength<int>(state.style(), state.rootElementStyle(), zoom);
+        int y = item->y->computeLength<int>(state.style(), state.rootElementStyle(), zoom);
+        int blur = item->blur ? item->blur->computeLength<int>(state.style(), state.rootElementStyle(), zoom) : 0;
+        int spread = item->spread ? item->spread->computeLength<int>(state.style(), state.rootElementStyle(), zoom) : 0;
+        ShadowStyle shadowStyle = item->style && item->style->getValueID() == CSSValueInset ? Inset : Normal;
+        Color color;
+        if (item->color)
+            color = state.document().textLinkColors().colorFromPrimitiveValue(item->color.get(), state.style()->visitedDependentColor(CSSPropertyColor));
+        else
+            color = state.style()->color();
+
+        if (!color.isValid())
+            color = Color::transparent;
+        shadows.append(ShadowData(IntPoint(x, y), blur, spread, shadowStyle, color));
+    }
+    return ShadowList::adopt(shadows);
+}
+
 float StyleBuilderConverter::convertSpacing(StyleResolverState& state, CSSValue* value)
 {
     CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
@@ -1485,46 +1515,6 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolverState& state,
         break;
 
     // CSS3 Properties
-    case CSSPropertyTextShadow:
-    case CSSPropertyBoxShadow:
-    case CSSPropertyWebkitBoxShadow: {
-        if (isInherit) {
-            if (id == CSSPropertyTextShadow)
-                return state.style()->setTextShadow(cloneShadow(state.parentStyle()->textShadow()));
-            return state.style()->setBoxShadow(cloneShadow(state.parentStyle()->boxShadow()));
-        }
-        if (isInitial || primitiveValue) // initial | none
-            return id == CSSPropertyTextShadow ? state.style()->setTextShadow(nullptr) : state.style()->setBoxShadow(nullptr);
-
-        if (!value->isValueList())
-            return;
-
-        for (CSSValueListIterator i = value; i.hasMore(); i.advance()) {
-            CSSValue* currValue = i.value();
-            if (!currValue->isShadowValue())
-                continue;
-            CSSShadowValue* item = toCSSShadowValue(currValue);
-            int x = item->x->computeLength<int>(state.style(), state.rootElementStyle(), zoomFactor);
-            int y = item->y->computeLength<int>(state.style(), state.rootElementStyle(), zoomFactor);
-            int blur = item->blur ? item->blur->computeLength<int>(state.style(), state.rootElementStyle(), zoomFactor) : 0;
-            int spread = item->spread ? item->spread->computeLength<int>(state.style(), state.rootElementStyle(), zoomFactor) : 0;
-            ShadowStyle shadowStyle = item->style && item->style->getValueID() == CSSValueInset ? Inset : Normal;
-            Color color;
-            if (item->color)
-                color = state.document().textLinkColors().colorFromPrimitiveValue(item->color.get(), state.style()->visitedDependentColor(CSSPropertyColor));
-            else if (state.style())
-                color = state.style()->color();
-
-            if (!color.isValid())
-                color = Color::transparent;
-            OwnPtr<ShadowData> shadow = ShadowData::create(IntPoint(x, y), blur, spread, shadowStyle, color);
-            if (id == CSSPropertyTextShadow)
-                state.style()->setTextShadow(shadow.release(), i.index()); // add to the list if this is not the first entry
-            else
-                state.style()->setBoxShadow(shadow.release(), i.index()); // add to the list if this is not the first entry
-        }
-        return;
-    }
     case CSSPropertyWebkitBoxReflect: {
         HANDLE_INHERIT_AND_INITIAL(boxReflect, BoxReflect)
         if (primitiveValue) {
@@ -1929,6 +1919,7 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolverState& state,
     case CSSPropertyBorderTopStyle:
     case CSSPropertyBorderTopWidth:
     case CSSPropertyBottom:
+    case CSSPropertyBoxShadow:
     case CSSPropertyBoxSizing:
     case CSSPropertyCaptionSide:
     case CSSPropertyClear:
@@ -1998,6 +1989,7 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolverState& state,
     case CSSPropertyTextJustify:
     case CSSPropertyTextOverflow:
     case CSSPropertyTextRendering:
+    case CSSPropertyTextShadow:
     case CSSPropertyTextTransform:
     case CSSPropertyTop:
     case CSSPropertyTouchAction:
@@ -2034,6 +2026,7 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolverState& state,
     case CSSPropertyWebkitBoxOrdinalGroup:
     case CSSPropertyWebkitBoxOrient:
     case CSSPropertyWebkitBoxPack:
+    case CSSPropertyWebkitBoxShadow:
     case CSSPropertyWebkitColumnAxis:
     case CSSPropertyWebkitColumnBreakAfter:
     case CSSPropertyWebkitColumnBreakBefore:
