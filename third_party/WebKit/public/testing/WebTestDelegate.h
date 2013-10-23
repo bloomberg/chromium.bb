@@ -111,8 +111,8 @@ public:
     virtual void useUnfortunateSynchronousResizeMode(bool) { }
 
     // Controls auto resize mode.
-    virtual void enableAutoResizeMode(const WebKit::WebSize& minSize, const WebKit::WebSize& maxSize) { }
-    virtual void disableAutoResizeMode(const WebKit::WebSize&) { }
+    virtual void enableAutoResizeMode(const WebKit::WebSize& minSize, const WebKit::WebSize& maxSize) = 0;
+    virtual void disableAutoResizeMode(const WebKit::WebSize&) = 0;
 
     // Opens and closes the inspector.
     virtual void showDevTools() = 0;
