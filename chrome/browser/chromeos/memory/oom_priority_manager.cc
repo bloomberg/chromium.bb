@@ -169,13 +169,9 @@ OomPriorityManager::TabStats::~TabStats() {
 
 OomPriorityManager::OomPriorityManager()
     : focused_tab_pid_(0),
+      low_memory_listener_(new LowMemoryListener(this)),
       discard_count_(0),
       recent_tab_discard_(false) {
-  // We only need the low memory observer if we want to discard tabs.
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kNoDiscardTabs))
-    low_memory_listener_.reset(new LowMemoryListener(this));
-
   registrar_.Add(this,
       content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
       content::NotificationService::AllBrowserContextsAndSources());

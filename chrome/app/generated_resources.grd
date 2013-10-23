@@ -6450,12 +6450,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_SPELLCHECK_AUTOCORRECT_DESCRIPTION" desc="Description for the flag to force synchronous spellchecking.">
         Turn on autocorrection of text while typing. Synchronous spellchecking is not compatible with this feature.
       </message>
-      <message name="IDS_FLAGS_NO_DISCARD_TABS_NAME" desc="Name for the flag to disable the tab discarding feature.">
-        Don't discard tabs.
-      </message>
-      <message name="IDS_FLAGS_NO_DISCARD_TABS_DESCRIPTION" desc="Description for the flag to disable the tab discarding feature.">
-        Turns off tab discarding, a feature that discards infrequently used tabs under low memory conditions.
-      </message>
       <message name="IDS_FLAGS_DOCKED_WINDOWS_NAME" desc="Name for the flag to enable docked windows feature.">
         Enable docking of windows near screen edges.
       </message>

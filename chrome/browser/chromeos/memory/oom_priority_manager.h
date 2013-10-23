@@ -143,8 +143,7 @@ class OomPriorityManager : public content::NotificationObserver,
   ProcessScoreMap pid_to_oom_score_;
   base::ProcessHandle focused_tab_pid_;
 
-  // Observer for the kernel low memory signal.  NULL if tab discarding is
-  // disabled.
+  // Observer for the kernel low memory signal.
   scoped_ptr<LowMemoryListener> low_memory_listener_;
 
   // Wall-clock time when the priority manager started running.
@@ -168,6 +167,6 @@ class OomPriorityManager : public content::NotificationObserver,
   DISALLOW_COPY_AND_ASSIGN(OomPriorityManager);
 };
 
-}  // namespace chrome
+}  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_MEMORY_OOM_PRIORITY_MANAGER_H_

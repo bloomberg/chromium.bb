@@ -995,13 +995,6 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(chromeos::switches::kEnableBackgroundLoader)
   },
   {
-    "no-discard-tabs",
-    IDS_FLAGS_NO_DISCARD_TABS_NAME,
-    IDS_FLAGS_NO_DISCARD_TABS_DESCRIPTION,
-    kOsCrOS,
-    SINGLE_VALUE_TYPE(chromeos::switches::kNoDiscardTabs)
-  },
-  {
     "ash-enable-docked-windows",
     IDS_FLAGS_DOCKED_WINDOWS_NAME,
     IDS_FLAGS_DOCKED_WINDOWS_DESCRIPTION,

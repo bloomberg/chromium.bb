@@ -166,11 +166,6 @@ const char kLoginUser[]                     = "login-user";
 // Enables natural scroll by default.
 const char kNaturalScrollDefault[]          = "enable-natural-scroll-default";
 
-// Disables tab discard in low memory conditions, a feature which silently
-// closes inactive tabs to free memory and to attempt to avoid the kernel's
-// out-of-memory process killer.
-const char kNoDiscardTabs[]                 = "no-discard-tabs";
-
 // Skips all other OOBE pages after user login.
 const char kOobeSkipPostLogin[]             = "oobe-skip-postlogin";
 
