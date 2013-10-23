@@ -434,7 +434,9 @@ bool ExceptionHandler::GenerateDump(CrashContext *context) {
   if (IsOutOfProcess())
     return crash_generation_client_->RequestDump(context, sizeof(*context));
 
-  static const unsigned kChildStackSize = 8000;
+  // Allocating too much stack isn't a problem, and better to err on the side
+  // of caution than smash it into random locations.
+  static const unsigned kChildStackSize = 16000;
   PageAllocator allocator;
   uint8_t* stack = (uint8_t*) allocator.Alloc(kChildStackSize);
   if (!stack)
