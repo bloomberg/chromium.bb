@@ -275,6 +275,12 @@ def _RunBisectionScript(config, working_directory, path_to_file, path_to_goma):
   Returns:
     0 on success, otherwise 1.
   """
+  bisect_utils.OutputAnnotationStepStart('Config')
+  print
+  for k, v in config.iteritems():
+    print '  %s : %s' % (k, v)
+  print
+  bisect_utils.OutputAnnotationStepClosed()
 
   cmd = ['python', os.path.join(path_to_file, 'bisect-perf-regression.py'),
          '-c', config['command'],
