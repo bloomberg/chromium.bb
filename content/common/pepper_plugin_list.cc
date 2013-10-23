@@ -4,7 +4,9 @@
 
 #include "content/common/pepper_plugin_list.h"
 
+#include "base/basictypes.h"
 #include "base/command_line.h"
+#include "base/file_util.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -16,8 +18,23 @@
 namespace content {
 namespace {
 
+// The maximum number of plugins allowed to be registered from command line.
+const size_t kMaxPluginsToRegisterFromCommandLine = 64;
+
 // Appends any plugins from the command line to the given vector.
 void ComputePluginsFromCommandLine(std::vector<PepperPluginInfo>* plugins) {
+  // On Linux, once we're sandboxed, we can't know if a plugin is available or
+  // not. But (on Linux) this function is always called once before we're
+  // sandboxed. So when this function is called for the first time we set a
+  // flag if the plugin file is available. Then we can skip the check on file
+  // existence in subsequent calls if the flag is set.
+  // NOTE: In theory we could have unlimited number of plugins registered in
+  // command line. But in practice, 64 plugins should be more than enough.
+  static uint64 skip_file_check_flags = 0;
+  COMPILE_ASSERT(
+      kMaxPluginsToRegisterFromCommandLine <= sizeof(skip_file_check_flags) * 8,
+      max_plugins_to_register_from_command_line_exceeds_limit);
+
   bool out_of_process = true;
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kPpapiInProcess))
     out_of_process = false;
@@ -36,7 +53,16 @@ void ComputePluginsFromCommandLine(std::vector<PepperPluginInfo>* plugins) {
   //    *1( LWS + ";" + LWS + <mime-type> )
   std::vector<std::string> modules;
   base::SplitString(value, ',', &modules);
-  for (size_t i = 0; i < modules.size(); ++i) {
+
+  size_t plugins_to_register = modules.size();
+  if (plugins_to_register > kMaxPluginsToRegisterFromCommandLine) {
+    DLOG(WARNING) << plugins_to_register << " pepper plugins registered from"
+        << " command line which exceeds the limit (maximum "
+        << kMaxPluginsToRegisterFromCommandLine << " plugins allowed)";
+    plugins_to_register = kMaxPluginsToRegisterFromCommandLine;
+  }
+
+  for (size_t i = 0; i < plugins_to_register; ++i) {
     std::vector<std::string> parts;
     base::SplitString(modules[i], ';', &parts);
     if (parts.size() < 2) {
@@ -57,6 +83,17 @@ void ComputePluginsFromCommandLine(std::vector<PepperPluginInfo>* plugins) {
 #else
     plugin.path = base::FilePath(name_parts[0]);
 #endif
+
+    uint64 index_mask = 1ULL << i;
+    if (!(skip_file_check_flags & index_mask)) {
+      if (base::PathExists(plugin.path)) {
+        skip_file_check_flags |= index_mask;
+      } else {
+        DLOG(ERROR) << "Plugin doesn't exist:" << plugin.path.MaybeAsASCII();
+        continue;
+      }
+    }
+
     if (name_parts.size() > 1)
       plugin.name = name_parts[1];
     if (name_parts.size() > 2)
