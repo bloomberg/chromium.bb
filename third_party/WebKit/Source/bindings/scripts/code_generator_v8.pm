@@ -4075,20 +4075,22 @@ END
             AddToImplIncludes("bindings/v8/SerializedScriptValue.h");
         }
 
-        GenerateNormalAttributeGetter($attribute, $interface, "");
-        GenerateNormalAttributeGetterCallback($attribute, $interface, "");
-        if ($attrExt->{"PerWorldBindings"}) {
-            GenerateNormalAttributeGetter($attribute, $interface, "ForMainWorld");
-            GenerateNormalAttributeGetterCallback($attribute, $interface, "ForMainWorld");
-        }
+        my $isReplaceable = 0;
         if (!HasCustomSetter($attribute) && !$attrExt->{"PutForwards"} && $attrExt->{"Replaceable"}) {
+            $isReplaceable = 1;
             $hasReplaceable = 1;
-        } elsif (!IsReadonly($attribute)) {
-            GenerateNormalAttributeSetter($attribute, $interface, "");
-            GenerateNormalAttributeSetterCallback($attribute, $interface, "");
-            if ($attrExt->{"PerWorldBindings"}) {
-              GenerateNormalAttributeSetter($attribute, $interface, "ForMainWorld");
-              GenerateNormalAttributeSetterCallback($attribute, $interface, "ForMainWorld");
+        }
+
+        my @worldSuffixes = ("");
+        if ($attrExt->{"PerWorldBindings"}) {
+            push(@worldSuffixes, "ForMainWorld");
+        }
+        foreach my $worldSuffix (@worldSuffixes) {
+            GenerateNormalAttributeGetter($attribute, $interface, $worldSuffix);
+            GenerateNormalAttributeGetterCallback($attribute, $interface, $worldSuffix);
+            if (!$isReplaceable && !IsReadonly($attribute)) {
+                GenerateNormalAttributeSetter($attribute, $interface, $worldSuffix);
+                GenerateNormalAttributeSetterCallback($attribute, $interface, $worldSuffix);
             }
         }
     }

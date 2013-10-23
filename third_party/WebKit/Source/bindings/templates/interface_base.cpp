@@ -66,9 +66,6 @@ template <typename T> void V8_USE(T) { }
 {{attribute_getter(attribute, world_suffix)}}
 {% endif %}
 {{attribute_getter_callback(attribute, world_suffix)}}
-{% endfor %}
-{# FIXME: merge these 2 for loops #}
-{% for world_suffix in attribute.world_suffixes %}
 {% if not (attribute.is_read_only or attribute.has_custom_setter) %}
 {{attribute_setter(attribute, world_suffix)}}
 {% endif %}
