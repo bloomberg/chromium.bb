@@ -48,7 +48,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionInstallDialogControllerTest, BasicTest) {
   EXPECT_FALSE([window isVisible]);
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionInstallDialogControllerTest, Permissions) {
+IN_PROC_BROWSER_TEST_F(ExtensionInstallDialogControllerTest,
+                       DISABLED_Permissions) {
   content::WebContents* tab = browser()->tab_strip_model()->GetWebContentsAt(0);
   ExtensionInstallPrompt::ShowParams show_params(tab);
 
