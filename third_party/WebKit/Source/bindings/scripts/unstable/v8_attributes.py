@@ -70,8 +70,10 @@ def generate_attribute_and_includes(interface, attribute):
     extended_attributes = attribute.extended_attributes
 
     has_custom_getter = has_extended_attribute(attribute, ('Custom', 'CustomGetter'))
-    has_setter = not attribute.is_read_only
-    has_custom_setter = has_setter and has_extended_attribute(attribute, ('Custom', 'CustomSetter'))
+    is_replaceable = 'Replaceable' in attribute.extended_attributes
+    has_custom_setter = (
+            (not attribute.is_read_only or is_replaceable) and
+            has_extended_attribute(attribute, ('Custom', 'CustomSetter')))
     includes = set()
     contents = {
         'access_control_list': access_control_list(attribute),
@@ -84,12 +86,12 @@ def generate_attribute_and_includes(interface, attribute):
         'getter_callback_name_for_main_world': getter_callback_name_for_main_world(interface, attribute),
         'has_custom_getter': has_custom_getter,
         'has_custom_setter': has_custom_setter,
-        'has_setter': has_setter,
         'idl_type': idl_type,
         'is_getter_raises_exception': has_extended_attribute(attribute, ('GetterRaisesException', 'RaisesException')),
         'is_keep_alive_for_gc': is_keep_alive_for_gc(attribute),
         'is_nullable': attribute.is_nullable,
-        'is_replaceable': 'Replaceable' in attribute.extended_attributes,
+        'is_read_only': attribute.is_read_only,
+        'is_replaceable': is_replaceable,
         'is_setter_raises_exception': has_extended_attribute(attribute, ('RaisesException', 'SetterRaisesException')),
         'is_static': attribute.is_static,
         'name': attribute.name,
@@ -103,7 +105,7 @@ def generate_attribute_and_includes(interface, attribute):
     }
     if not has_custom_getter:
         generate_getter(interface, attribute, contents, includes)
-    if has_setter and not has_custom_setter:
+    if not (attribute.is_read_only or has_custom_setter):
         generate_setter(interface, attribute, contents, includes)
 
     return contents, includes
@@ -316,7 +318,11 @@ def setter_callback_name(interface, attribute):
         # FIXME: support [PutForwards]
         return '0'
     cpp_class_name = cpp_name(interface)
-    if 'Replaceable' in attribute.extended_attributes:  # FIXME: CustomSetter
+    if ('Replaceable' in attribute.extended_attributes and
+        not has_extended_attribute(attribute, ('Custom', 'CustomSetter'))):
+        # Non-custom replaceable attributes have a single interface-level
+        # setter callback (rather than individual attribute-level callbacks),
+        # but custom replaceable attributes have individual callbacks, as usual.
         return '{0}V8Internal::{0}ReplaceableAttributeSetterCallback'.format(cpp_class_name)
     return '%sV8Internal::%sAttributeSetterCallback' % (cpp_class_name, attribute.name)
 

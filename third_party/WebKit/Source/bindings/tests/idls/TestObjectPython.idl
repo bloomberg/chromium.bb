@@ -152,7 +152,9 @@ interface TestObjectPython {
     [Reflect=id] attribute DOMString reflectedId;
     [Reflect=name] attribute DOMString reflectedName;
     [Reflect=class] attribute DOMString reflectedClass;
-    [Replaceable] readonly attribute long replaceableLongAttribute;  // FIXME [Custom], [CustomGetter] ?, [CustomSetter] ?
+    [Replaceable] readonly attribute long replaceableReadonlyLongAttribute;
+    [Custom, Replaceable] readonly attribute long customReplaceableReadonlyLongAttribute;
+    [CustomSetter, Replaceable] readonly attribute long customSetterReplaceableReadonlyLongAttribute;
     [RuntimeEnabled=FeatureName] attribute long runtimeEnabledLongAttribute;
     [Conditional=Condition, RuntimeEnabled=FeatureName] attribute long conditionalEnabledAtRuntimeLongAttribute;
     [SetterCallWith=ActiveWindow&FirstWindow] attribute DOMString setterCallWithActiveWindowAndFirstWindowStringAttribute;

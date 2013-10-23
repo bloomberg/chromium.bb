@@ -69,10 +69,10 @@ template <typename T> void V8_USE(T) { }
 {% endfor %}
 {# FIXME: merge these 2 for loops #}
 {% for world_suffix in attribute.world_suffixes %}
-{% if attribute.has_setter %}
-{% if not (attribute.has_custom_setter or attribute.is_replaceable) %}
+{% if not (attribute.is_read_only or attribute.has_custom_setter) %}
 {{attribute_setter(attribute, world_suffix)}}
 {% endif %}
+{% if not attribute.is_read_only or attribute.has_custom_setter %}{# Separate check needed for [Custom(Setter), Replaceable], which are read only but have a setter callback #}
 {{attribute_setter_callback(attribute, world_suffix)}}
 {% endif %}
 {% endfor %}
