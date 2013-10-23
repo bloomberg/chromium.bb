@@ -258,6 +258,10 @@ class GpuBenchmarkingWrapper : public v8::Extension {
           "  native function GetRenderingStats();"
           "  return GetRenderingStats();"
           "};"
+          "chrome.gpuBenchmarking.gpuRenderingStats = function() {"
+          "  native function GetGpuRenderingStats();"
+          "  return GetGpuRenderingStats();"
+          "};"
           "chrome.gpuBenchmarking.printToSkPicture = function(dirname) {"
           "  native function PrintToSkPicture();"
           "  return PrintToSkPicture(dirname);"
@@ -313,6 +317,8 @@ class GpuBenchmarkingWrapper : public v8::Extension {
       return v8::FunctionTemplate::New(SetRasterizeOnlyVisibleContent);
     if (name->Equals(v8::String::New("GetRenderingStats")))
       return v8::FunctionTemplate::New(GetRenderingStats);
+    if (name->Equals(v8::String::New("GetGpuRenderingStats")))
+      return v8::FunctionTemplate::New(GetGpuRenderingStats);
     if (name->Equals(v8::String::New("PrintToSkPicture")))
       return v8::FunctionTemplate::New(PrintToSkPicture);
     if (name->Equals(v8::String::New("BeginSmoothScroll")))
@@ -369,6 +375,23 @@ class GpuBenchmarkingWrapper : public v8::Extension {
     stats.rendering_stats.EnumerateFields(&enumerator);
     gpu_stats.EnumerateFields(&enumerator);
     browser_stats.EnumerateFields(&enumerator);
+
+    args.GetReturnValue().Set(stats_object);
+  }
+
+  static void GetGpuRenderingStats(
+      const v8::FunctionCallbackInfo<v8::Value>& args) {
+
+    GpuBenchmarkingContext context;
+    if (!context.Init(false))
+      return;
+
+    content::GpuRenderingStats gpu_stats;
+    context.render_view_impl()->GetGpuRenderingStats(&gpu_stats);
+
+    v8::Handle<v8::Object> stats_object = v8::Object::New();
+    RenderingStatsEnumerator enumerator(stats_object);
+    gpu_stats.EnumerateFields(&enumerator);
 
     args.GetReturnValue().Set(stats_object);
   }

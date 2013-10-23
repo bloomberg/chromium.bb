@@ -21,6 +21,7 @@ struct CONTENT_EXPORT GpuRenderingStats {
   base::TimeDelta total_texture_upload_time;
   base::TimeDelta global_total_processing_commands_time;
   base::TimeDelta total_processing_commands_time;
+  int64 global_video_memory_bytes_allocated;
   // Note: when adding new members, please remember to update enumerateFields
   // in gpu_rendering_stats.cc.
 

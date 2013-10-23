@@ -961,6 +961,11 @@ void GpuChannel::OnCollectRenderingStatsForSurface(
       stats->total_processing_commands_time += total_processing_commands_time;
     }
   }
+
+  GPUVideoMemoryUsageStats usage_stats;
+  gpu_channel_manager_->gpu_memory_manager()->GetVideoMemoryUsageStats(
+      &usage_stats);
+  stats->global_video_memory_bytes_allocated = usage_stats.bytes_allocated;
 }
 
 void GpuChannel::MessageProcessed() {

@@ -27,6 +27,8 @@ void GpuRenderingStats::EnumerateFields(
       global_total_processing_commands_time);
   enumerator->AddTimeDeltaInSecondsF("totalProcessingCommandsTimeInSeconds",
                                      total_processing_commands_time);
+  enumerator->AddInt64("globalVideoMemoryBytesAllocated",
+                       global_video_memory_bytes_allocated);
 }
 
 }  // namespace content
