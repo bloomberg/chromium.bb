@@ -80,19 +80,16 @@ void AddInstallIcon(const WebElement& link,
   if (!url.is_valid())
     return;
 
-  if (!link.hasAttribute("sizes"))
-    return;
-
+  WebApplicationInfo::IconInfo icon_info;
   bool is_any = false;
   std::vector<gfx::Size> icon_sizes;
-  if (!ParseIconSizes(link.getAttribute("sizes"), &icon_sizes, &is_any) ||
-      is_any ||
-      icon_sizes.size() != 1) {
-    return;
+  if (link.hasAttribute("sizes") &&
+      ParseIconSizes(link.getAttribute("sizes"), &icon_sizes, &is_any) &&
+      !is_any &&
+      icon_sizes.size() == 1) {
+    icon_info.width = icon_sizes[0].width();
+    icon_info.height = icon_sizes[0].height();
   }
-  WebApplicationInfo::IconInfo icon_info;
-  icon_info.width = icon_sizes[0].width();
-  icon_info.height = icon_sizes[0].height();
   icon_info.url = url;
   icons->push_back(icon_info);
 }
