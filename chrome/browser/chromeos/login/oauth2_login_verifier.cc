@@ -63,11 +63,10 @@ void OAuth2LoginVerifier::VerifyProfileTokens(Profile* profile) {
   const NetworkState* default_network =
       NetworkHandler::Get()->network_state_handler()->DefaultNetwork();
   NetworkPortalDetector* detector = NetworkPortalDetector::Get();
-  NetworkPortalDetector::CaptivePortalState state =
-      detector->GetCaptivePortalState(default_network);
   if (!default_network ||
       default_network->connection_state() == shill::kStatePortal ||
-      state.status != NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE) {
+      (detector && detector->GetCaptivePortalState(default_network).status !=
+           NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE)) {
     // If network is offline, defer the token fetching until online.
     VLOG(1) << "Network is offline.  Deferring OAuth2 access token fetch.";
     BrowserThread::PostDelayedTask(
