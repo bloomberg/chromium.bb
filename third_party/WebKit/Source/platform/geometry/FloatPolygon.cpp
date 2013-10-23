@@ -28,7 +28,7 @@
  */
 
 #include "config.h"
-#include "core/platform/graphics/FloatPolygon.h"
+#include "platform/geometry/FloatPolygon.h"
 
 #include "wtf/MathExtras.h"
 

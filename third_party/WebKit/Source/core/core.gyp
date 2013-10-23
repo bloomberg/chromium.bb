@@ -807,16 +807,6 @@
         }],
       ],
     },
-    {
-      'target_name': 'webcore_platform_geometry',
-      'type': 'static_library',
-      'dependencies': [
-        'webcore_prerequisites',
-      ],
-      'sources': [
-        '<@(webcore_platform_geometry_files)',
-      ],
-    },
     # The *NEON.cpp files fail to compile when -mthumb is passed. Force
     # them to build in ARM mode.
     # See https://bugs.webkit.org/show_bug.cgi?id=62916.
@@ -994,7 +984,6 @@
         'webcore_dom',
         'webcore_html',
         'webcore_platform',
-        'webcore_platform_geometry',
         'webcore_remaining',
         'webcore_rendering',
         'webcore_svg',

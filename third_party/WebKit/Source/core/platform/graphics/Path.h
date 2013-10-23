@@ -29,8 +29,8 @@
 #ifndef Path_h
 #define Path_h
 
-#include "core/platform/graphics/WindRule.h"
 #include "platform/geometry/RoundedRect.h"
+#include "platform/graphics/WindRule.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "wtf/FastAllocBase.h"
 #include "wtf/Forward.h"

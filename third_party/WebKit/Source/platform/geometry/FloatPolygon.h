@@ -30,10 +30,10 @@
 #ifndef FloatPolygon_h
 #define FloatPolygon_h
 
-#include "core/platform/graphics/WindRule.h"
 #include "platform/PODIntervalTree.h"
 #include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/FloatRect.h"
+#include "platform/graphics/WindRule.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/Vector.h"
@@ -47,7 +47,7 @@ class FloatPolygonEdge;
 template <class> struct ValueToString;
 #endif
 
-class FloatPolygon {
+class PLATFORM_EXPORT FloatPolygon {
 public:
     FloatPolygon(PassOwnPtr<Vector<FloatPoint> > vertices, WindRule fillRule);
 
@@ -80,7 +80,7 @@ private:
 
 };
 
-class VertexPair {
+class PLATFORM_EXPORT VertexPair {
 public:
     virtual ~VertexPair() { }
 
@@ -96,7 +96,7 @@ public:
     bool intersection(const VertexPair&, FloatPoint&) const;
 };
 
-class FloatPolygonEdge : public VertexPair {
+class PLATFORM_EXPORT FloatPolygonEdge : public VertexPair {
     friend class FloatPolygon;
 public:
     virtual const FloatPoint& vertex1() const OVERRIDE

@@ -3039,9 +3039,6 @@
             'platform/mock/ScrollbarThemeOverlayMock.h',
             'platform/text/RegularExpression.cpp',
         ],
-        'webcore_platform_geometry_files': [
-            'platform/graphics/FloatPolygon.cpp',
-        ],
         'webcore_svg_files': [
             'rendering/style/SVGRenderStyle.cpp',
             'rendering/style/SVGRenderStyleDefs.cpp',
