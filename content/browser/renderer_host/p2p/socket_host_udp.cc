@@ -175,7 +175,7 @@ void P2PSocketHostUdp::Send(const net::IPEndPoint& to,
   }
 
   if (!ContainsKey(connected_peers_, to)) {
-    P2PSocketHost::StunMessageType type;
+    P2PSocketHost::StunMessageType type = P2PSocketHost::StunMessageType();
     bool stun = GetStunPacketType(&*data.begin(), data.size(), &type);
     if (!stun || type == STUN_DATA_INDICATION) {
       LOG(ERROR) << "Page tried to send a data packet to " << to.ToString()
