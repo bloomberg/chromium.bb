@@ -235,7 +235,6 @@
       },
       "stress_memory": [
         { "action": "click_element", "text": "About" },
-        { "action": "wait", "condition": "navigate" },
         { "action": "wait", "condition": "element", "text": "The Audacity of Hope" },
         { "action": "click_element", "text": "The Audacity of Hope" },
         { "action": "wait", "condition": "navigate" },
@@ -244,7 +243,6 @@
         { "action": "wait", "condition": "navigate" },
         { "action": "wait", "condition": "element", "text": "About" },
         { "action": "click_element", "text": "About" },
-        { "action": "wait", "condition": "navigate" },
         { "action": "wait", "condition": "element", "text": "Elected to U.S. Senate" },
         { "action": "click_element", "text": "Elected to U.S. Senate" },
         { "action": "wait", "condition": "navigate" },
