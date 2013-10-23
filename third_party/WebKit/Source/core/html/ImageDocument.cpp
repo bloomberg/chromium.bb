@@ -127,7 +127,7 @@ size_t ImageDocumentParser::appendBytes(const char* data, size_t length)
 
     Frame* frame = document()->frame();
     Settings* settings = frame->settings();
-    if (!frame->loader()->client()->allowImage(!settings || settings->areImagesEnabled(), document()->url()))
+    if (!frame->loader().client()->allowImage(!settings || settings->areImagesEnabled(), document()->url()))
         return 0;
 
     document()->cachedImage()->appendData(data, length);
@@ -140,7 +140,7 @@ void ImageDocumentParser::finish()
     if (!isStopped() && document()->imageElement()) {
         ImageResource* cachedImage = document()->cachedImage();
         cachedImage->finish();
-        cachedImage->setResponse(document()->frame()->loader()->documentLoader()->response());
+        cachedImage->setResponse(document()->frame()->loader().documentLoader()->response());
 
         // Report the natural image size in the page title, regardless of zoom level.
         // At a zoom level of 1 the image is guaranteed to have an integer size.
@@ -184,8 +184,8 @@ void ImageDocument::createDocumentStructure()
     appendChild(rootElement);
     rootElement->insertedByParser();
 
-    if (frame() && frame()->loader())
-        frame()->loader()->dispatchDocumentElementAvailable();
+    if (frame())
+        frame()->loader().dispatchDocumentElementAvailable();
 
     RefPtr<HTMLHeadElement> head = HTMLHeadElement::create(*this);
     RefPtr<HTMLMetaElement> meta = HTMLMetaElement::create(*this);

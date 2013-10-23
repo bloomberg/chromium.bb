@@ -70,7 +70,7 @@ SerializedScriptValue* History::stateInternal() const
     if (!m_frame)
         return 0;
 
-    if (HistoryItem* historyItem = m_frame->loader()->history()->currentItem())
+    if (HistoryItem* historyItem = m_frame->loader().history()->currentItem())
         return historyItem->stateObject();
 
     return 0;
@@ -153,7 +153,7 @@ void History::stateObjectAdded(PassRefPtr<SerializedScriptValue> data, const Str
         es.throwSecurityError("A history state object with URL '" + fullURL.elidedString() + "' cannot be created in a document with origin '" + m_frame->document()->securityOrigin()->toString() + "'.");
         return;
     }
-    m_frame->loader()->updateForSameDocumentNavigation(fullURL, sameDocumentNavigationSource, data, FrameLoader::DoNotUpdateBackForwardList);
+    m_frame->loader().updateForSameDocumentNavigation(fullURL, sameDocumentNavigationSource, data, FrameLoader::DoNotUpdateBackForwardList);
 }
 
 } // namespace WebCore

@@ -522,7 +522,7 @@ bool handleOutOfMemory()
         return true;
 
     frame->script().clearForOutOfMemory();
-    frame->loader()->client()->didExhaustMemoryAvailableForScript();
+    frame->loader().client()->didExhaustMemoryAvailableForScript();
 
     if (Settings* settings = frame->settings())
         settings->setScriptEnabled(false);

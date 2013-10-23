@@ -77,7 +77,7 @@ void CSSSelectorWatch::callbackSelectorChangeTimerFired(Timer<CSSSelectorWatch>*
         Vector<String> removedSelectors;
         copyToVector(m_addedSelectors, addedSelectors);
         copyToVector(m_removedSelectors, removedSelectors);
-        m_document.frame()->loader()->client()->selectorMatchChanged(addedSelectors, removedSelectors);
+        m_document.frame()->loader().client()->selectorMatchChanged(addedSelectors, removedSelectors);
     }
     m_addedSelectors.clear();
     m_removedSelectors.clear();

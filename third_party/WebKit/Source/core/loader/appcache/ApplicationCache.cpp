@@ -57,9 +57,9 @@ void ApplicationCache::willDestroyGlobalObjectInFrame()
 
 ApplicationCacheHost* ApplicationCache::applicationCacheHost() const
 {
-    if (!m_frame || !m_frame->loader()->documentLoader())
+    if (!m_frame || !m_frame->loader().documentLoader())
         return 0;
-    return m_frame->loader()->documentLoader()->applicationCacheHost();
+    return m_frame->loader().documentLoader()->applicationCacheHost();
 }
 
 unsigned short ApplicationCache::status() const

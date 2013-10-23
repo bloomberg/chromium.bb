@@ -65,7 +65,7 @@ const String &DOMMimeType::description() const
 
 PassRefPtr<DOMPlugin> DOMMimeType::enabledPlugin() const
 {
-    if (!m_frame || !m_frame->page() || !m_frame->page()->mainFrame()->loader()->allowPlugins(NotAboutToInstantiatePlugin))
+    if (!m_frame || !m_frame->page() || !m_frame->page()->mainFrame()->loader().allowPlugins(NotAboutToInstantiatePlugin))
         return 0;
 
     return DOMPlugin::create(m_pluginData.get(), m_frame, m_pluginData->mimePluginIndices()[m_index]);

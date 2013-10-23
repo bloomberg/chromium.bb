@@ -1008,7 +1008,7 @@ void XMLDocumentParser::startElementNs(const AtomicString& localName, const Atom
         toHTMLHtmlElement(newElement)->insertedByParser();
 
     if (!m_parsingFragment && isFirstElement && document()->frame())
-        document()->frame()->loader()->dispatchDocumentElementAvailable();
+        document()->frame()->loader().dispatchDocumentElementAvailable();
 }
 
 void XMLDocumentParser::endElementNs()

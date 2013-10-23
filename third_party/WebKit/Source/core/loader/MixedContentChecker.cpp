@@ -46,7 +46,7 @@ MixedContentChecker::MixedContentChecker(Frame* frame)
 
 FrameLoaderClient* MixedContentChecker::client() const
 {
-    return m_frame->loader()->client();
+    return m_frame->loader().client();
 }
 
 // static

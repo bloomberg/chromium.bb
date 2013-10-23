@@ -1439,9 +1439,9 @@ TEST_F(WebFrameTest, pageScaleFactorWrittenToHistoryItem)
     webViewHelper.webView()->layout();
 
     webViewHelper.webView()->setPageScaleFactor(3, WebPoint());
-    webViewHelper.webViewImpl()->page()->mainFrame()->loader()->history()->saveDocumentAndScrollState();
+    webViewHelper.webViewImpl()->page()->mainFrame()->loader().history()->saveDocumentAndScrollState();
     webViewHelper.webView()->setPageScaleFactor(1, WebPoint());
-    webViewHelper.webViewImpl()->page()->mainFrame()->loader()->history()->restoreScrollPositionAndViewState();
+    webViewHelper.webViewImpl()->page()->mainFrame()->loader().history()->restoreScrollPositionAndViewState();
     EXPECT_EQ(3, webViewHelper.webView()->pageScaleFactor());
 }
 
@@ -4354,7 +4354,7 @@ TEST_F(WebFrameTest, SimulateFragmentAnchorMiddleClick)
         document->domWindow(), 0, 0, 0, 0, 0, 0, 0, false, false, false, false, 1, 0, 0);
     WebCore::FrameLoadRequest frameRequest(document->securityOrigin(), WebCore::ResourceRequest(destination));
     frameRequest.setTriggeringEvent(event);
-    webViewHelper.webViewImpl()->page()->mainFrame()->loader()->load(frameRequest);
+    webViewHelper.webViewImpl()->page()->mainFrame()->loader().load(frameRequest);
 }
 
 TEST_F(WebFrameTest, BackToReload)
@@ -4409,7 +4409,7 @@ public:
 
     virtual void willSendRequest(WebFrame* frame, unsigned, WebURLRequest&, const WebURLResponse&)
     {
-        if (toWebFrameImpl(frame)->frame()->loader()->loadType() == WebCore::FrameLoadTypeSame)
+        if (toWebFrameImpl(frame)->frame()->loader().loadType() == WebCore::FrameLoadTypeSame)
             m_frameLoadTypeSameSeen = true;
     }
 
@@ -4428,7 +4428,7 @@ TEST_F(WebFrameTest, NavigateToSame)
     EXPECT_FALSE(client.frameLoadTypeSameSeen());
 
     WebCore::FrameLoadRequest frameRequest(0, WebCore::ResourceRequest(webViewHelper.webViewImpl()->page()->mainFrame()->document()->url()));
-    webViewHelper.webViewImpl()->page()->mainFrame()->loader()->load(frameRequest);
+    webViewHelper.webViewImpl()->page()->mainFrame()->loader().load(frameRequest);
     Platform::current()->unitTestSupport()->serveAsynchronousMockedRequests();
 
     EXPECT_TRUE(client.frameLoadTypeSameSeen());

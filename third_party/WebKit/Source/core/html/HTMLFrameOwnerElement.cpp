@@ -82,7 +82,7 @@ void HTMLFrameOwnerElement::disconnectContentFrame()
     // see if this behavior is really needed as Gecko does not allow this.
     if (Frame* frame = contentFrame()) {
         RefPtr<Frame> protect(frame);
-        frame->loader()->frameDetached();
+        frame->loader().frameDetached();
         frame->disconnectOwnerElement();
     }
 }
@@ -127,7 +127,7 @@ bool HTMLFrameOwnerElement::loadOrRedirectSubframe(const KURL& url, const Atomic
 {
     RefPtr<Frame> parentFrame = document().frame();
     if (contentFrame()) {
-        contentFrame()->navigationScheduler().scheduleLocationChange(document().securityOrigin(), url.string(), parentFrame->loader()->outgoingReferrer(), lockBackForwardList);
+        contentFrame()->navigationScheduler().scheduleLocationChange(document().securityOrigin(), url.string(), parentFrame->loader().outgoingReferrer(), lockBackForwardList);
         return true;
     }
 
@@ -139,11 +139,11 @@ bool HTMLFrameOwnerElement::loadOrRedirectSubframe(const KURL& url, const Atomic
     if (!SubframeLoadingDisabler::canLoadFrame(this))
         return false;
 
-    String referrer = SecurityPolicy::generateReferrerHeader(document().referrerPolicy(), url, parentFrame->loader()->outgoingReferrer());
-    RefPtr<Frame> childFrame = parentFrame->loader()->client()->createFrame(url, frameName, referrer, this);
+    String referrer = SecurityPolicy::generateReferrerHeader(document().referrerPolicy(), url, parentFrame->loader().outgoingReferrer());
+    RefPtr<Frame> childFrame = parentFrame->loader().client()->createFrame(url, frameName, referrer, this);
 
     if (!childFrame)  {
-        parentFrame->loader()->checkCompleted();
+        parentFrame->loader().checkCompleted();
         return false;
     }
 
@@ -153,7 +153,7 @@ bool HTMLFrameOwnerElement::loadOrRedirectSubframe(const KURL& url, const Atomic
     // actually completed below. (Note that we set m_isComplete to false even for synchronous
     // loads, so that checkCompleted() below won't bail early.)
     // FIXME: Can we remove this entirely? m_isComplete normally gets set to false when a load is committed.
-    childFrame->loader()->started();
+    childFrame->loader().started();
 
     RenderObject* renderObject = renderer();
     FrameView* view = childFrame->view();
@@ -169,8 +169,8 @@ bool HTMLFrameOwnerElement::loadOrRedirectSubframe(const KURL& url, const Atomic
     // FIXME: In this case the Frame will have finished loading before
     // it's being added to the child list. It would be a good idea to
     // create the child first, then invoke the loader separately.
-    if (childFrame->loader()->state() == FrameStateComplete && !childFrame->loader()->policyDocumentLoader())
-        childFrame->loader()->checkCompleted();
+    if (childFrame->loader().state() == FrameStateComplete && !childFrame->loader().policyDocumentLoader())
+        childFrame->loader().checkCompleted();
     return true;
 }
 

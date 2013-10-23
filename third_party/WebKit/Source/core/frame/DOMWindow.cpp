@@ -788,7 +788,7 @@ void DOMWindow::postMessageTimerFired(PassOwnPtr<PostMessageTimer> t)
     // Give the embedder a chance to intercept this postMessage because this
     // DOMWindow might be a proxy for another in browsers that support
     // postMessage calls across WebKit instances.
-    if (m_frame->loader()->client()->willCheckAndDispatchMessageEvent(timer->targetOrigin(), event.get()))
+    if (m_frame->loader().client()->willCheckAndDispatchMessageEvent(timer->targetOrigin(), event.get()))
         return;
 
     event->entangleMessagePorts(document());
@@ -885,7 +885,7 @@ void DOMWindow::close(ExecutionContext* context)
     if (!(page->openedByDOM() || page->backForward().backForwardListCount() <= 1 || allowScriptsToCloseWindows))
         return;
 
-    if (!m_frame->loader()->shouldClose())
+    if (!m_frame->loader().shouldClose())
         return;
 
     page->chrome().closeWindowSoon();
@@ -900,7 +900,7 @@ void DOMWindow::print()
     if (!page)
         return;
 
-    if (m_frame->loader()->activeDocumentLoader()->isLoading()) {
+    if (m_frame->loader().activeDocumentLoader()->isLoading()) {
         m_shouldPrintWhenFinishedLoading = true;
         return;
     }
@@ -912,7 +912,7 @@ void DOMWindow::stop()
 {
     if (!m_frame)
         return;
-    m_frame->loader()->stopAllLoaders();
+    m_frame->loader().stopAllLoaders();
 }
 
 void DOMWindow::alert(const String& message)
@@ -1118,7 +1118,7 @@ void DOMWindow::setName(const String& string)
         return;
 
     m_frame->tree().setName(string);
-    m_frame->loader()->client()->didChangeName(string);
+    m_frame->loader().client()->didChangeName(string);
 }
 
 void DOMWindow::setStatus(const String& string)
@@ -1164,7 +1164,7 @@ DOMWindow* DOMWindow::opener() const
     if (!m_frame)
         return 0;
 
-    Frame* opener = m_frame->loader()->opener();
+    Frame* opener = m_frame->loader().opener();
     if (!opener)
         return 0;
 
@@ -1482,10 +1482,10 @@ bool DOMWindow::removeEventListener(const AtomicString& eventType, EventListener
 void DOMWindow::dispatchLoadEvent()
 {
     RefPtr<Event> loadEvent(Event::create(EventTypeNames::load));
-    if (m_frame && m_frame->loader()->documentLoader() && !m_frame->loader()->documentLoader()->timing()->loadEventStart()) {
+    if (m_frame && m_frame->loader().documentLoader() && !m_frame->loader().documentLoader()->timing()->loadEventStart()) {
         // The DocumentLoader (and thus its DocumentLoadTiming) might get destroyed while dispatching
         // the event, so protect it to prevent writing the end time into freed memory.
-        RefPtr<DocumentLoader> documentLoader = m_frame->loader()->documentLoader();
+        RefPtr<DocumentLoader> documentLoader = m_frame->loader().documentLoader();
         DocumentLoadTiming* timing = documentLoader->timing();
         timing->markLoadEventStart();
         dispatchEvent(loadEvent, document());
@@ -1570,7 +1570,7 @@ void DOMWindow::setLocation(const String& urlString, DOMWindow* activeWindow, DO
     // We want a new history item if we are processing a user gesture.
     m_frame->navigationScheduler().scheduleLocationChange(activeDocument->securityOrigin(),
         // FIXME: What if activeDocument()->frame() is 0?
-        completedURL, activeDocument->frame()->loader()->outgoingReferrer(),
+        completedURL, activeDocument->frame()->loader().outgoingReferrer(),
         locking != LockHistoryBasedOnGestureState);
 }
 
@@ -1715,7 +1715,7 @@ PassRefPtr<DOMWindow> DOMWindow::open(const String& urlString, const AtomicStrin
         targetFrame->navigationScheduler().scheduleLocationChange(
             activeDocument->securityOrigin(),
             completedURL,
-            firstFrame->loader()->outgoingReferrer(),
+            firstFrame->loader().outgoingReferrer(),
             false);
         return targetFrame->domWindow();
     }

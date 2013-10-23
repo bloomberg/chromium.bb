@@ -96,7 +96,7 @@ FrameLoader* DocumentLoader::frameLoader() const
 {
     if (!m_frame)
         return 0;
-    return m_frame->loader();
+    return &m_frame->loader();
 }
 
 ResourceLoader* DocumentLoader::mainResourceLoader() const
@@ -128,7 +128,7 @@ unsigned long DocumentLoader::mainResourceIdentifier() const
 
 Document* DocumentLoader::document() const
 {
-    if (m_frame && m_frame->loader()->documentLoader() == this)
+    if (m_frame && m_frame->loader().documentLoader() == this)
         return m_frame->document();
     return 0;
 }
@@ -226,7 +226,7 @@ void DocumentLoader::stopLoading()
         Document* doc = m_frame->document();
 
         if (loading || doc->parsing())
-            m_frame->loader()->stopLoading();
+            m_frame->loader().stopLoading();
     }
 
     clearArchiveResources();
@@ -442,7 +442,7 @@ void DocumentLoader::willSendRequest(ResourceRequest& newRequest, const Resource
 
     Frame* parent = m_frame->tree().parent();
     if (parent) {
-        if (!parent->loader()->mixedContentChecker()->canRunInsecureContent(parent->document()->securityOrigin(), newRequest.url())) {
+        if (!parent->loader().mixedContentChecker()->canRunInsecureContent(parent->document()->securityOrigin(), newRequest.url())) {
             cancelMainResourceLoad(ResourceError::cancelledError(newRequest.url()));
             return;
         }
@@ -724,7 +724,7 @@ void DocumentLoader::prepareSubframeArchiveLoadIfNeeded()
     if (!m_frame->tree().parent())
         return;
 
-    ArchiveResourceCollection* parentCollection = m_frame->tree().parent()->loader()->documentLoader()->m_archiveResourceCollection.get();
+    ArchiveResourceCollection* parentCollection = m_frame->tree().parent()->loader().documentLoader()->m_archiveResourceCollection.get();
     if (!parentCollection)
         return;
 
@@ -897,12 +897,12 @@ PassRefPtr<DocumentWriter> DocumentLoader::createWriterFor(Frame* frame, const D
     RefPtr<Document> document = DOMImplementation::createDocument(mimeType, frame, url, frame->inViewSourceMode());
     if (document->isPluginDocument() && document->isSandboxed(SandboxPlugins))
         document = SinkDocument::create(DocumentInit(url, frame));
-    bool shouldReuseDefaultView = frame->loader()->stateMachine()->isDisplayingInitialEmptyDocument() && frame->document()->isSecureTransitionTo(url);
+    bool shouldReuseDefaultView = frame->loader().stateMachine()->isDisplayingInitialEmptyDocument() && frame->document()->isSecureTransitionTo(url);
 
     ClearOptions options = 0;
     if (!shouldReuseDefaultView)
         options = ClearWindowProperties | ClearScriptObjects;
-    frame->loader()->clear(options);
+    frame->loader().clear(options);
 
     if (frame->document())
         frame->document()->prepareForDestruction();
@@ -910,7 +910,7 @@ PassRefPtr<DocumentWriter> DocumentLoader::createWriterFor(Frame* frame, const D
     if (!shouldReuseDefaultView)
         frame->setDOMWindow(DOMWindow::create(frame));
 
-    frame->loader()->setOutgoingReferrer(url);
+    frame->loader().setOutgoingReferrer(url);
     frame->domWindow()->setDocument(document);
 
     if (ownerDocument) {
@@ -918,7 +918,7 @@ PassRefPtr<DocumentWriter> DocumentLoader::createWriterFor(Frame* frame, const D
         document->setSecurityOrigin(ownerDocument->securityOrigin());
     }
 
-    frame->loader()->didBeginDocument(dispatch);
+    frame->loader().didBeginDocument(dispatch);
 
     return DocumentWriter::create(document.get(), mimeType, encoding, userChosen);
 }
@@ -935,7 +935,7 @@ String DocumentLoader::mimeType() const
 // This is the <iframe src="javascript:'html'"> case.
 void DocumentLoader::replaceDocument(const String& source, Document* ownerDocument)
 {
-    m_frame->loader()->stopAllLoaders();
+    m_frame->loader().stopAllLoaders();
     m_writer = createWriterFor(m_frame, ownerDocument, m_frame->document()->url(), mimeType(), m_writer ? m_writer->encoding() : "",  m_writer ? m_writer->encodingWasChosenByUser() : false, true);
     if (!source.isNull())
         m_writer->appendReplacingData(source);

@@ -280,10 +280,10 @@ void Page::goToItem(HistoryItem* item)
     // being deref()-ed. Make sure we can still use it with HistoryController::goToItem later.
     RefPtr<HistoryItem> protector(item);
 
-    if (m_mainFrame->loader()->history()->shouldStopLoadingForHistoryItem(item))
-        m_mainFrame->loader()->stopAllLoaders();
+    if (m_mainFrame->loader().history()->shouldStopLoadingForHistoryItem(item))
+        m_mainFrame->loader().stopAllLoaders();
 
-    m_mainFrame->loader()->history()->goToItem(item);
+    m_mainFrame->loader().history()->goToItem(item);
 }
 
 void Page::clearPageGroup()
@@ -350,18 +350,18 @@ void Page::refreshPlugins(bool reload)
             continue;
 
         for (Frame* frame = (*it)->mainFrame(); frame; frame = frame->tree().traverseNext()) {
-            if (frame->loader()->containsPlugins())
+            if (frame->loader().containsPlugins())
                 framesNeedingReload.append(frame);
         }
     }
 
     for (size_t i = 0; i < framesNeedingReload.size(); ++i)
-        framesNeedingReload[i]->loader()->reload();
+        framesNeedingReload[i]->loader().reload();
 }
 
 PluginData* Page::pluginData() const
 {
-    if (!mainFrame()->loader()->allowPlugins(NotAboutToInstantiatePlugin))
+    if (!mainFrame()->loader().allowPlugins(NotAboutToInstantiatePlugin))
         return 0;
     if (!m_pluginData)
         m_pluginData = PluginData::create(this);
@@ -394,7 +394,7 @@ void Page::setDefersLoading(bool defers)
 
     m_defersLoading = defers;
     for (Frame* frame = mainFrame(); frame; frame = frame->tree().traverseNext())
-        frame->loader()->setDefersLoading(defers);
+        frame->loader().setDefersLoading(defers);
 }
 
 void Page::setPageScaleFactor(float scale, const IntPoint& origin)

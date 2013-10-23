@@ -47,7 +47,7 @@ static WebKit::WebCookieJar* toCookieJar(const Document* document)
 {
     if (!document || !document->frame())
         return 0;
-    WebKit::WebCookieJar* cookieJar = document->frame()->loader()->client()->cookieJar();
+    WebKit::WebCookieJar* cookieJar = document->frame()->loader().client()->cookieJar();
     // FIXME: DRT depends on being able to get a cookie jar from Platform rather than
     // FrameLoaderClient. Delete this when DRT is deleted.
     if (!cookieJar)

@@ -154,7 +154,7 @@ RTCPeerConnection::RTCPeerConnection(ExecutionContext* context, PassRefPtr<RTCCo
         return;
     }
 
-    document->frame()->loader()->client()->dispatchWillStartUsingPeerConnectionHandler(m_peerHandler.get());
+    document->frame()->loader().client()->dispatchWillStartUsingPeerConnectionHandler(m_peerHandler.get());
 
     if (!m_peerHandler->initialize(configuration, constraints)) {
         es.throwUninformativeAndGenericDOMException(NotSupportedError);

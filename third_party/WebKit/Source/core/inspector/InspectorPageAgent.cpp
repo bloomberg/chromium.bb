@@ -444,7 +444,7 @@ void InspectorPageAgent::reload(ErrorString*, const bool* const optionalIgnoreCa
 {
     m_pendingScriptToEvaluateOnLoadOnce = optionalScriptToEvaluateOnLoad ? *optionalScriptToEvaluateOnLoad : "";
     m_pendingScriptPreprocessor = optionalScriptPreprocessor ? *optionalScriptPreprocessor : "";
-    m_page->mainFrame()->loader()->reload(optionalIgnoreCache && *optionalIgnoreCache ? EndToEndReload : NormalReload);
+    m_page->mainFrame()->loader().reload(optionalIgnoreCache && *optionalIgnoreCache ? EndToEndReload : NormalReload);
 }
 
 void InspectorPageAgent::navigate(ErrorString*, const String& url)
@@ -452,7 +452,7 @@ void InspectorPageAgent::navigate(ErrorString*, const String& url)
     UserGestureIndicator indicator(DefinitelyProcessingNewUserGesture);
     Frame* frame = m_page->mainFrame();
     FrameLoadRequest request(frame->document()->securityOrigin(), ResourceRequest(frame->document()->completeURL(url)));
-    frame->loader()->load(request);
+    frame->loader().load(request);
 }
 
 void InspectorPageAgent::getNavigationHistory(ErrorString*, int*, RefPtr<TypeBuilder::Array<TypeBuilder::Page::NavigationEntry> >&)
@@ -523,7 +523,7 @@ static Vector<KURL> allResourcesURLsForFrame(Frame* frame)
 {
     Vector<KURL> result;
 
-    result.append(urlWithoutFragment(frame->loader()->documentLoader()->url()));
+    result.append(urlWithoutFragment(frame->loader().documentLoader()->url()));
 
     Vector<Resource*> allResources = cachedResourcesForFrame(frame);
     for (Vector<Resource*>::const_iterator it = allResources.begin(); it != allResources.end(); ++it)
@@ -598,7 +598,7 @@ void InspectorPageAgent::searchInResource(ErrorString*, const String& frameId, c
     Frame* frame = frameForId(frameId);
     KURL kurl(ParsedURLString, url);
 
-    FrameLoader* frameLoader = frame ? frame->loader() : 0;
+    FrameLoader* frameLoader = frame ? &frame->loader() : 0;
     DocumentLoader* loader = frameLoader ? frameLoader->documentLoader() : 0;
     if (!loader)
         return;
@@ -936,8 +936,7 @@ String InspectorPageAgent::resourceSourceMapURL(const String& url)
 // static
 DocumentLoader* InspectorPageAgent::assertDocumentLoader(ErrorString* errorString, Frame* frame)
 {
-    FrameLoader* frameLoader = frame->loader();
-    DocumentLoader* documentLoader = frameLoader ? frameLoader->documentLoader() : 0;
+    DocumentLoader* documentLoader = frame->loader().documentLoader();
     if (!documentLoader)
         *errorString = "No documentLoader for given frame found";
     return documentLoader;
@@ -1034,9 +1033,9 @@ PassRefPtr<TypeBuilder::Page::Frame> InspectorPageAgent::buildObjectForFrame(Fra
 {
     RefPtr<TypeBuilder::Page::Frame> frameObject = TypeBuilder::Page::Frame::create()
         .setId(frameId(frame))
-        .setLoaderId(loaderId(frame->loader()->documentLoader()))
+        .setLoaderId(loaderId(frame->loader().documentLoader()))
         .setUrl(urlWithoutFragment(frame->document()->url()).string())
-        .setMimeType(frame->loader()->documentLoader()->responseMIMEType())
+        .setMimeType(frame->loader().documentLoader()->responseMIMEType())
         .setSecurityOrigin(frame->document()->securityOrigin()->toRawString());
     if (frame->tree().parent())
         frameObject->setParentId(frameId(frame->tree().parent()));

@@ -144,7 +144,7 @@ PassRefPtr<Frame> Frame::create(Page* page, HTMLFrameOwnerElement* ownerElement,
 Frame::~Frame()
 {
     setView(0);
-    loader()->clear(ClearScriptObjects | ClearWindowObject);
+    loader().clear(ClearScriptObjects | ClearWindowObject);
 
     // FIXME: We should not be doing all this work inside the destructor
 
@@ -323,7 +323,7 @@ void Frame::willDetachPage()
     RELEASE_ASSERT(!m_view || !m_view->isInLayout());
 
     if (Frame* parent = tree().parent())
-        parent->loader()->checkLoadComplete();
+        parent->loader().checkLoadComplete();
 
     HashSet<FrameDestructionObserver*>::iterator stop = m_destructionObservers.end();
     for (HashSet<FrameDestructionObserver*>::iterator it = m_destructionObservers.begin(); it != stop; ++it)

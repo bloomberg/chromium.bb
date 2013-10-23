@@ -74,7 +74,7 @@ WebServiceWorkerProvider* NavigatorServiceWorker::ensureProvider()
     if (!m_provider) {
         Frame* frame = m_navigator->frame();
 
-        FrameLoaderClient* client = frame->loader()->client();
+        FrameLoaderClient* client = frame->loader().client();
         // FIXME: This is temporarily hooked up here until we hook up to the loading process.
         m_provider = client->createServiceWorkerProvider(nullptr);
     }

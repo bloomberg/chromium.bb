@@ -433,21 +433,21 @@ void HTMLAnchorElement::handleClick(Event* event)
 
     ResourceRequest request(completedURL);
     if (prefetchEventHandler()->hasIssuedPreconnect())
-        frame->loader()->client()->dispatchWillRequestAfterPreconnect(request);
+        frame->loader().client()->dispatchWillRequestAfterPreconnect(request);
     if (hasAttribute(downloadAttr)) {
         if (!hasRel(RelationNoReferrer)) {
-            String referrer = SecurityPolicy::generateReferrerHeader(document().referrerPolicy(), completedURL, frame->loader()->outgoingReferrer());
+            String referrer = SecurityPolicy::generateReferrerHeader(document().referrerPolicy(), completedURL, frame->loader().outgoingReferrer());
             if (!referrer.isEmpty())
                 request.setHTTPReferrer(referrer);
         }
 
-        frame->loader()->client()->loadURLExternally(request, NavigationPolicyDownload, fastGetAttribute(downloadAttr));
+        frame->loader().client()->loadURLExternally(request, NavigationPolicyDownload, fastGetAttribute(downloadAttr));
     } else {
         FrameLoadRequest frameRequest(document().securityOrigin(), request, target());
         frameRequest.setTriggeringEvent(event);
         if (hasRel(RelationNoReferrer))
             frameRequest.setShouldSendReferrer(NeverSendReferrer);
-        frame->loader()->load(frameRequest);
+        frame->loader().load(frameRequest);
     }
 }
 

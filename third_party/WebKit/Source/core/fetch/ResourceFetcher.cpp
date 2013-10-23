@@ -361,13 +361,13 @@ bool ResourceFetcher::checkInsecureContent(Resource::Type type, const KURL& url,
     }
     if (treatment == TreatAsActiveContent) {
         if (Frame* f = frame()) {
-            if (!f->loader()->mixedContentChecker()->canRunInsecureContent(m_document->securityOrigin(), url))
+            if (!f->loader().mixedContentChecker()->canRunInsecureContent(m_document->securityOrigin(), url))
                 return false;
         }
     } else if (treatment == TreatAsPassiveContent) {
         if (Frame* f = frame()) {
             Frame* top = f->tree().top();
-            if (!top->loader()->mixedContentChecker()->canDisplayInsecureContent(top->document()->securityOrigin(), url))
+            if (!top->loader().mixedContentChecker()->canDisplayInsecureContent(top->document()->securityOrigin(), url))
                 return false;
         }
     } else {
@@ -433,8 +433,8 @@ bool ResourceFetcher::canRequest(Resource::Type type, const KURL& url, const Res
 
         if (frame()) {
             Settings* settings = frame()->settings();
-            if (!frame()->loader()->client()->allowScriptFromSource(!settings || settings->isScriptEnabled(), url)) {
-                frame()->loader()->client()->didNotAllowScript();
+            if (!frame()->loader().client()->allowScriptFromSource(!settings || settings->isScriptEnabled(), url)) {
+                frame()->loader().client()->didNotAllowScript();
                 return false;
             }
         }
@@ -512,7 +512,7 @@ bool ResourceFetcher::shouldLoadNewResource() const
         return false;
     if (!m_documentLoader)
         return true;
-    return m_documentLoader == frame()->loader()->activeDocumentLoader();
+    return m_documentLoader == frame()->loader().activeDocumentLoader();
 }
 
 bool ResourceFetcher::resourceNeedsLoad(Resource* resource, const FetchRequest& request, RevalidationPolicy policy)
@@ -544,7 +544,7 @@ ResourcePtr<Resource> ResourceFetcher::requestResource(Resource::Type type, Fetc
         return 0;
 
     if (Frame* f = frame())
-        f->loader()->client()->dispatchWillRequestResource(&request);
+        f->loader().client()->dispatchWillRequestResource(&request);
 
     // See if we can use an existing resource from the cache.
     ResourcePtr<Resource> resource = memoryCache()->resourceForURL(url);
@@ -679,7 +679,7 @@ void ResourceFetcher::determineTargetType(ResourceRequest& request, Resource::Ty
 ResourceRequestCachePolicy ResourceFetcher::resourceRequestCachePolicy(const ResourceRequest& request, Resource::Type type)
 {
     if (type == Resource::MainResource) {
-        FrameLoadType frameLoadType = frame()->loader()->loadType();
+        FrameLoadType frameLoadType = frame()->loader().loadType();
         bool isReload = frameLoadType == FrameLoadTypeReload || frameLoadType == FrameLoadTypeReloadFromOrigin;
         if (request.httpMethod() == "POST" && frameLoadType == FrameLoadTypeBackForward)
             return ReturnCacheDataDontLoad;
@@ -930,7 +930,7 @@ void ResourceFetcher::setImagesEnabled(bool enable)
 
 bool ResourceFetcher::clientDefersImage(const KURL& url) const
 {
-    return frame() && !frame()->loader()->client()->allowImage(m_imagesEnabled, url);
+    return frame() && !frame()->loader().client()->allowImage(m_imagesEnabled, url);
 }
 
 bool ResourceFetcher::shouldDeferImageLoad(const KURL& url) const
@@ -980,7 +980,7 @@ void ResourceFetcher::didLoadResource(Resource* resource)
     }
 
     if (frame())
-        frame()->loader()->loadDone();
+        frame()->loader().loadDone();
     performPostLoadActions();
 
     if (!m_garbageCollectDocumentResourcesTimer.isActive())
@@ -1194,7 +1194,7 @@ void ResourceFetcher::subresourceLoaderFinishedLoadingOnePart(ResourceLoader* lo
     if (m_loaders)
         m_loaders->remove(loader);
     if (Frame* frame = this->frame())
-        return frame->loader()->checkLoadComplete(m_documentLoader);
+        return frame->loader().checkLoadComplete(m_documentLoader);
 }
 
 void ResourceFetcher::didInitializeResourceLoader(ResourceLoader* loader)
@@ -1213,7 +1213,7 @@ void ResourceFetcher::willTerminateResourceLoader(ResourceLoader* loader)
         return;
     m_loaders->remove(loader);
     if (Frame* frame = this->frame())
-        frame->loader()->checkLoadComplete(m_documentLoader);
+        frame->loader().checkLoadComplete(m_documentLoader);
 }
 
 void ResourceFetcher::willStartLoadingResource(ResourceRequest& request)

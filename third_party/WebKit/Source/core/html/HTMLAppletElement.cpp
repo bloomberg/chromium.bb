@@ -168,15 +168,15 @@ void HTMLAppletElement::updateWidget(PluginCreationOption)
     }
 
     RefPtr<Widget> widget;
-    if (frame->loader()->allowPlugins(AboutToInstantiatePlugin))
-        widget = frame->loader()->client()->createJavaAppletWidget(roundedIntSize(LayoutSize(contentWidth, contentHeight)), this, baseURL, paramNames, paramValues);
+    if (frame->loader().allowPlugins(AboutToInstantiatePlugin))
+        widget = frame->loader().client()->createJavaAppletWidget(roundedIntSize(LayoutSize(contentWidth, contentHeight)), this, baseURL, paramNames, paramValues);
 
     if (!widget) {
         if (!renderer->showsUnavailablePluginIndicator())
             renderer->setPluginUnavailabilityReason(RenderEmbeddedObject::PluginMissing);
         return;
     }
-    frame->loader()->setContainsPlugins();
+    frame->loader().setContainsPlugins();
     renderer->setWidget(widget);
 }
 

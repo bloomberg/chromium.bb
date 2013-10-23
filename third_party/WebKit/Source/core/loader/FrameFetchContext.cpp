@@ -57,14 +57,14 @@ void FrameFetchContext::addAdditionalRequestHeaders(Document& document, Resource
 {
     bool isMainResource = type == Resource::MainResource;
 
-    FrameLoader* frameLoader = m_frame->loader();
+    FrameLoader& frameLoader = m_frame->loader();
 
     if (!isMainResource) {
         String outgoingReferrer;
         String outgoingOrigin;
         if (request.httpReferrer().isNull()) {
-            outgoingReferrer = frameLoader->outgoingReferrer();
-            outgoingOrigin = frameLoader->outgoingOrigin();
+            outgoingReferrer = frameLoader.outgoingReferrer();
+            outgoingOrigin = frameLoader.outgoingOrigin();
         } else {
             outgoingReferrer = request.httpReferrer();
             outgoingOrigin = SecurityOrigin::createFromString(outgoingReferrer)->toString();
@@ -79,15 +79,15 @@ void FrameFetchContext::addAdditionalRequestHeaders(Document& document, Resource
         FrameLoader::addHTTPOriginIfNeeded(request, outgoingOrigin);
     }
 
-    frameLoader->addExtraFieldsToRequest(request);
+    frameLoader.addExtraFieldsToRequest(request);
 }
 
 CachePolicy FrameFetchContext::cachePolicy(Resource::Type type) const
 {
     if (type != Resource::MainResource)
-        return m_frame->loader()->subresourceCachePolicy();
+        return m_frame->loader().subresourceCachePolicy();
 
-    if (m_frame->loader()->loadType() == FrameLoadTypeReloadFromOrigin || m_frame->loader()->loadType() == FrameLoadTypeReload)
+    if (m_frame->loader().loadType() == FrameLoadTypeReloadFromOrigin || m_frame->loader().loadType() == FrameLoadTypeReload)
         return CachePolicyReload;
     return CachePolicyVerify;
 
@@ -99,24 +99,24 @@ CachePolicy FrameFetchContext::cachePolicy(Resource::Type type) const
 // cannot see imported documents.
 inline DocumentLoader* FrameFetchContext::ensureLoader(DocumentLoader* loader)
 {
-    return loader ? loader : m_frame->loader()->activeDocumentLoader();
+    return loader ? loader : m_frame->loader().activeDocumentLoader();
 }
 
 void FrameFetchContext::dispatchDidChangeResourcePriority(unsigned long identifier, ResourceLoadPriority loadPriority)
 {
-    m_frame->loader()->client()->dispatchDidChangeResourcePriority(identifier, loadPriority);
+    m_frame->loader().client()->dispatchDidChangeResourcePriority(identifier, loadPriority);
 }
 
 void FrameFetchContext::dispatchWillSendRequest(DocumentLoader* loader, unsigned long identifier, ResourceRequest& request, const ResourceResponse& redirectResponse, const FetchInitiatorInfo& initiatorInfo)
 {
-    m_frame->loader()->applyUserAgent(request);
-    m_frame->loader()->client()->dispatchWillSendRequest(loader, identifier, request, redirectResponse);
+    m_frame->loader().applyUserAgent(request);
+    m_frame->loader().client()->dispatchWillSendRequest(loader, identifier, request, redirectResponse);
     InspectorInstrumentation::willSendRequest(m_frame, identifier, ensureLoader(loader), request, redirectResponse, initiatorInfo);
 }
 
 void FrameFetchContext::dispatchDidLoadResourceFromMemoryCache(const ResourceRequest& request, const ResourceResponse& response)
 {
-    m_frame->loader()->client()->dispatchDidLoadResourceFromMemoryCache(request, response);
+    m_frame->loader().client()->dispatchDidLoadResourceFromMemoryCache(request, response);
 }
 
 void FrameFetchContext::dispatchDidReceiveResponse(DocumentLoader* loader, unsigned long identifier, const ResourceResponse& r, ResourceLoader* resourceLoader)
@@ -124,7 +124,7 @@ void FrameFetchContext::dispatchDidReceiveResponse(DocumentLoader* loader, unsig
     if (Page* page = m_frame->page())
         page->progress().incrementProgress(identifier, r);
     InspectorInstrumentationCookie cookie = InspectorInstrumentation::willReceiveResourceResponse(m_frame, identifier, r);
-    m_frame->loader()->client()->dispatchDidReceiveResponse(loader, identifier, r);
+    m_frame->loader().client()->dispatchDidReceiveResponse(loader, identifier, r);
     InspectorInstrumentation::didReceiveResourceResponse(cookie, identifier, ensureLoader(loader), r, resourceLoader);
 }
 
@@ -139,7 +139,7 @@ void FrameFetchContext::dispatchDidFinishLoading(DocumentLoader* loader, unsigne
 {
     if (Page* page = m_frame->page())
         page->progress().completeProgress(identifier);
-    m_frame->loader()->client()->dispatchDidFinishLoading(loader, identifier);
+    m_frame->loader().client()->dispatchDidFinishLoading(loader, identifier);
 
     InspectorInstrumentation::didFinishLoading(m_frame, identifier, ensureLoader(loader), finishTime);
 }

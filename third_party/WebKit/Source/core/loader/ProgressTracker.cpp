@@ -111,7 +111,7 @@ void ProgressTracker::progressStarted(Frame* frame)
         m_progressValue = initialProgressValue;
         m_originatingProgressFrame = frame;
 
-        m_originatingProgressFrame->loader()->client()->postProgressStartedNotification();
+        m_originatingProgressFrame->loader().client()->postProgressStartedNotification();
     }
     m_numProgressTrackedFrames++;
     InspectorInstrumentation::frameStartedLoading(frame);
@@ -138,11 +138,11 @@ void ProgressTracker::finalProgressComplete()
     // with final progress value.
     if (!m_finalProgressChangedSent) {
         m_progressValue = 1;
-        frame->loader()->client()->postProgressEstimateChangedNotification();
+        frame->loader().client()->postProgressEstimateChangedNotification();
     }
 
     reset();
-    frame->loader()->client()->postProgressFinishedNotification();
+    frame->loader().client()->postProgressFinishedNotification();
     InspectorInstrumentation::frameStoppedLoading(frame.get());
 }
 
@@ -186,7 +186,7 @@ void ProgressTracker::incrementProgress(unsigned long identifier, const char*, i
         item->estimatedLength = item->bytesReceived * 2;
     }
 
-    int numPendingOrLoadingRequests = frame->loader()->numPendingOrLoadingRequests(true);
+    int numPendingOrLoadingRequests = frame->loader().numPendingOrLoadingRequests(true);
     estimatedBytesForPendingRequests = progressItemDefaultEstimatedLength * numPendingOrLoadingRequests;
     remainingBytes = ((m_totalPageAndResourceBytesToLoad + estimatedBytesForPendingRequests) - m_totalBytesReceived);
     if (remainingBytes > 0)  // Prevent divide by 0.
@@ -216,7 +216,7 @@ void ProgressTracker::incrementProgress(unsigned long identifier, const char*, i
             if (m_progressValue == 1)
                 m_finalProgressChangedSent = true;
 
-            frame->loader()->client()->postProgressEstimateChangedNotification();
+            frame->loader().client()->postProgressEstimateChangedNotification();
 
             m_lastNotifiedProgressValue = m_progressValue;
             m_lastNotifiedProgressTime = now;

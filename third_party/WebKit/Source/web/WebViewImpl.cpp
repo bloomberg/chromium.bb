@@ -1640,7 +1640,7 @@ void WebViewImpl::close()
         // Initiate shutdown for the entire frameset.  This will cause a lot of
         // notifications to be sent.
         if (m_page->mainFrame())
-            m_page->mainFrame()->loader()->frameDetached();
+            m_page->mainFrame()->loader().frameDetached();
 
         m_page.clear();
     }
@@ -2528,7 +2528,7 @@ void WebViewImpl::setPageEncoding(const WebString& encodingName)
     String newEncodingName;
     if (!encodingName.isEmpty())
         newEncodingName = encodingName;
-    m_page->mainFrame()->loader()->reload(NormalReload, KURL(), newEncodingName);
+    m_page->mainFrame()->loader().reload(NormalReload, KURL(), newEncodingName);
 }
 
 bool WebViewImpl::dispatchBeforeUnloadEvent()
@@ -2540,13 +2540,13 @@ bool WebViewImpl::dispatchBeforeUnloadEvent()
     if (!frame)
         return true;
 
-    return frame->loader()->shouldClose();
+    return frame->loader().shouldClose();
 }
 
 void WebViewImpl::dispatchUnloadEvent()
 {
     // Run unload handlers.
-    m_page->mainFrame()->loader()->closeURL();
+    m_page->mainFrame()->loader().closeURL();
 }
 
 WebFrame* WebViewImpl::mainFrame()
@@ -3052,8 +3052,8 @@ void WebViewImpl::resetScrollAndScaleState()
 
     // Clear out the values for the current history item. This will prevent the history item from clobbering the
     // value determined during page scale initialization, which may be less than 1.
-    page()->mainFrame()->loader()->history()->saveDocumentAndScrollState();
-    page()->mainFrame()->loader()->history()->clearScrollPositionAndViewState();
+    page()->mainFrame()->loader().history()->saveDocumentAndScrollState();
+    page()->mainFrame()->loader().history()->clearScrollPositionAndViewState();
     m_pageScaleConstraintsSet.setNeedsReset(true);
 
     // Clobber saved scales and scroll offsets.

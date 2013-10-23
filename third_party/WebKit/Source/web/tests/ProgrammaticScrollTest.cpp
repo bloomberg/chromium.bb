@@ -59,7 +59,7 @@ TEST_F(ProgrammaticScrollTest, RestoreScrollPositionAndViewStateWithScale)
 
     WebViewImpl* webViewImpl = toWebViewImpl(webView);
     FrameView* frameView = webViewImpl->mainFrameImpl()->frameView();
-    HistoryController* history = webViewImpl->page()->mainFrame()->loader()->history();
+    HistoryController* history = webViewImpl->page()->mainFrame()->loader().history();
 
     // Scale and scroll the page and save that state. Then scale and scroll again and restore.
     webViewImpl->setPageScaleFactor(2.0f, WebPoint(0, 200));
@@ -87,7 +87,7 @@ TEST_F(ProgrammaticScrollTest, RestoreScrollPositionAndViewStateWithoutScale)
 
     WebViewImpl* webViewImpl = toWebViewImpl(webView);
     FrameView* frameView = webViewImpl->mainFrameImpl()->frameView();
-    HistoryController* history = webViewImpl->page()->mainFrame()->loader()->history();
+    HistoryController* history = webViewImpl->page()->mainFrame()->loader().history();
 
     // Scale and scroll the page and save that state, but then set scale to zero. Then scale and
     // scroll again and restore.

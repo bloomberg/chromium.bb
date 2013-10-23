@@ -524,7 +524,7 @@ PassOwnPtr<WebGLRenderingContext> WebGLRenderingContext::create(HTMLCanvasElemen
 
     // The FrameLoaderClient might block creation of a new WebGL context despite the page settings; in
     // particular, if WebGL contexts were lost one or more times via the GL_ARB_robustness extension.
-    if (!frame->loader()->client()->allowWebGL(settings && settings->webGLEnabled())) {
+    if (!frame->loader().client()->allowWebGL(settings && settings->webGLEnabled())) {
         canvas->dispatchEvent(WebGLContextEvent::create(EventTypeNames::webglcontextcreationerror, false, true, "Web page was not allowed to create a WebGL context."));
         return nullptr;
     }
@@ -4157,7 +4157,7 @@ void WebGLRenderingContext::loseContextImpl(WebGLRenderingContext::LostContextMo
         // Inform the embedder that a lost context was received. In response, the embedder might
         // decide to take action such as asking the user for permission to use WebGL again.
         if (Frame* frame = canvas()->document().frame())
-            frame->loader()->client()->didLoseWebGLContext(m_context->extensions()->getGraphicsResetStatusARB());
+            frame->loader().client()->didLoseWebGLContext(m_context->extensions()->getGraphicsResetStatusARB());
     }
 
     // Make absolutely sure we do not refer to an already-deleted texture or framebuffer.
@@ -5389,7 +5389,7 @@ void WebGLRenderingContext::maybeRestoreContext(Timer<WebGLRenderingContext>*)
 
     Settings* settings = frame->settings();
 
-    if (!frame->loader()->client()->allowWebGL(settings && settings->webGLEnabled()))
+    if (!frame->loader().client()->allowWebGL(settings && settings->webGLEnabled()))
         return;
 
     // Reset the context attributes back to the requested attributes and re-apply restrictions

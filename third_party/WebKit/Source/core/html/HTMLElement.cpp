@@ -776,7 +776,7 @@ bool HTMLElement::rendererIsNeeded(const RenderStyle& style)
             return false;
     } else if (hasLocalName(noembedTag)) {
         Frame* frame = document().frame();
-        if (frame && frame->loader()->allowPlugins(NotAboutToInstantiatePlugin))
+        if (frame && frame->loader().allowPlugins(NotAboutToInstantiatePlugin))
             return false;
     }
     return Element::rendererIsNeeded(style);

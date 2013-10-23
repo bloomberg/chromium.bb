@@ -38,7 +38,7 @@ HTMLParserOptions::HTMLParserOptions(Document* document)
 {
     Frame* frame = document ? document->frame() : 0;
     scriptEnabled = frame && frame->script().canExecuteScripts(NotAboutToExecuteScript);
-    pluginsEnabled = frame && frame->loader()->allowPlugins(NotAboutToInstantiatePlugin);
+    pluginsEnabled = frame && frame->loader().allowPlugins(NotAboutToInstantiatePlugin);
 
     Settings* settings = document ? document->settings() : 0;
     // We force the main-thread parser for about:blank, javascript: and data: urls for compatibility

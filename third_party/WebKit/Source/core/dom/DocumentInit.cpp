@@ -66,7 +66,7 @@ bool DocumentInit::shouldSetURL() const
 bool DocumentInit::shouldTreatURLAsSrcdocDocument() const
 {
     ASSERT(m_frame);
-    return m_frame->loader()->shouldTreatURLAsSrcdocDocument(m_url);
+    return m_frame->loader().shouldTreatURLAsSrcdocDocument(m_url);
 }
 
 Frame* DocumentInit::frameForSecurityContext() const
@@ -81,7 +81,7 @@ Frame* DocumentInit::frameForSecurityContext() const
 SandboxFlags DocumentInit::sandboxFlags() const
 {
     ASSERT(frameForSecurityContext());
-    return frameForSecurityContext()->loader()->effectiveSandboxFlags();
+    return frameForSecurityContext()->loader().effectiveSandboxFlags();
 }
 
 Settings* DocumentInit::settings() const
@@ -97,7 +97,7 @@ Frame* DocumentInit::ownerFrame() const
 
     Frame* ownerFrame = m_frame->tree().parent();
     if (!ownerFrame)
-        ownerFrame = m_frame->loader()->opener();
+        ownerFrame = m_frame->loader().opener();
     return ownerFrame;
 }
 

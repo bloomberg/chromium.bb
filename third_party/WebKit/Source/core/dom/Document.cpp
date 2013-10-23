@@ -472,7 +472,7 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
     if (m_frame) {
         provideContextFeaturesToDocumentFrom(this, m_frame->page());
 
-        m_fetcher = m_frame->loader()->activeDocumentLoader()->fetcher();
+        m_fetcher = m_frame->loader().activeDocumentLoader()->fetcher();
     }
 
     if (!m_fetcher)
@@ -1307,7 +1307,7 @@ void Document::updateTitle(const String& title)
 
     if (!m_frame || oldTitle == m_title)
         return;
-    m_frame->loader()->client()->dispatchDidReceiveTitle(m_title);
+    m_frame->loader().client()->dispatchDidReceiveTitle(m_title);
 }
 
 void Document::setTitle(const String& title)
@@ -2172,8 +2172,8 @@ void Document::open(Document* ownerDocument)
             }
         }
 
-        if (m_frame->loader()->state() == FrameStateProvisional)
-            m_frame->loader()->stopAllLoaders();
+        if (m_frame->loader().state() == FrameStateProvisional)
+            m_frame->loader().stopAllLoaders();
     }
 
     removeAllEventListeners();
@@ -2182,7 +2182,7 @@ void Document::open(Document* ownerDocument)
         parser->setWasCreatedByScript(true);
 
     if (m_frame)
-        m_frame->loader()->didExplicitOpen();
+        m_frame->loader().didExplicitOpen();
     if (m_loadEventProgress != LoadEventInProgress && m_loadEventProgress != UnloadEventInProgress)
         m_loadEventProgress = LoadEventNotRun;
 }
@@ -2304,7 +2304,7 @@ void Document::explicitClose()
         return;
     }
 
-    m_frame->loader()->checkCompleted();
+    m_frame->loader().checkCompleted();
 }
 
 void Document::implicitClose()
@@ -2355,7 +2355,7 @@ void Document::implicitClose()
     enqueuePopstateEvent(m_pendingStateObject ? m_pendingStateObject.release() : SerializedScriptValue::nullValue());
 
     if (frame()) {
-        frame()->loader()->client()->dispatchDidHandleOnloadEvents();
+        frame()->loader().client()->dispatchDidHandleOnloadEvents();
         loader()->applicationCacheHost()->stopDeferringEvents();
     }
 
@@ -2465,7 +2465,7 @@ void Document::dispatchUnloadEvents()
             // The DocumentLoader (and thus its DocumentLoadTiming) might get destroyed
             // while dispatching the event, so protect it to prevent writing the end
             // time into freed memory.
-            RefPtr<DocumentLoader> documentLoader =  m_frame->loader()->provisionalDocumentLoader();
+            RefPtr<DocumentLoader> documentLoader =  m_frame->loader().provisionalDocumentLoader();
             m_loadEventProgress = UnloadEventInProgress;
             RefPtr<Event> unloadEvent(Event::create(EventTypeNames::unload));
             if (documentLoader && !documentLoader->timing()->unloadEventStart() && !documentLoader->timing()->unloadEventEnd()) {
@@ -2486,8 +2486,8 @@ void Document::dispatchUnloadEvents()
         return;
 
     // Don't remove event listeners from a transitional empty document (see https://bugs.webkit.org/show_bug.cgi?id=28716 for more information).
-    bool keepEventListeners = m_frame->loader()->stateMachine()->isDisplayingInitialEmptyDocument() && m_frame->loader()->provisionalDocumentLoader()
-        && isSecureTransitionTo(m_frame->loader()->provisionalDocumentLoader()->url());
+    bool keepEventListeners = m_frame->loader().stateMachine()->isDisplayingInitialEmptyDocument() && m_frame->loader().provisionalDocumentLoader()
+        && isSecureTransitionTo(m_frame->loader().provisionalDocumentLoader()->url());
     if (!keepEventListeners)
         removeAllEventListeners();
 }
@@ -2706,7 +2706,7 @@ void Document::processBaseElement()
 
 String Document::userAgent(const KURL& url) const
 {
-    return frame() ? frame()->loader()->userAgent(url) : String();
+    return frame() ? frame()->loader().userAgent(url) : String();
 }
 
 void Document::disableEval(const String& errorMessage)
@@ -2766,10 +2766,10 @@ bool Document::canNavigate(Frame* targetFrame)
     // and/or "parent" relation). Requiring some sort of relation prevents a
     // document from navigating arbitrary, unrelated top-level frames.
     if (!targetFrame->tree().parent()) {
-        if (targetFrame == m_frame->loader()->opener())
+        if (targetFrame == m_frame->loader().opener())
             return true;
 
-        if (canAccessAncestor(securityOrigin(), targetFrame->loader()->opener()))
+        if (canAccessAncestor(securityOrigin(), targetFrame->loader().opener()))
             return true;
     }
 
@@ -2925,11 +2925,11 @@ void Document::processHttpEquivXFrameOptions(const String& content)
     if (!frame)
         return;
 
-    FrameLoader* frameLoader = frame->loader();
+    FrameLoader& frameLoader = frame->loader();
     unsigned long requestIdentifier = loader()->mainResourceIdentifier();
-    if (frameLoader->shouldInterruptLoadForXFrameOptions(content, url(), requestIdentifier)) {
+    if (frameLoader.shouldInterruptLoadForXFrameOptions(content, url(), requestIdentifier)) {
         String message = "Refused to display '" + url().elidedString() + "' in a frame because it set 'X-Frame-Options' to '" + content + "'.";
-        frameLoader->stopAllLoaders();
+        frameLoader.stopAllLoaders();
         // Stopping the loader isn't enough, as we're already parsing the document; to honor the header's
         // intent, we must navigate away from the possibly partially-rendered document to a location that
         // doesn't inherit the parent's SecurityOrigin.
@@ -4123,7 +4123,7 @@ KURL Document::openSearchDescriptionURL()
         return KURL();
 
     // FIXME: Why do we need to wait for FrameStateComplete?
-    if (frame()->loader()->state() != FrameStateComplete)
+    if (frame()->loader().state() != FrameStateComplete)
         return KURL();
 
     if (!head())
@@ -4359,7 +4359,7 @@ void Document::finishedParsing()
         // See https://bugs.webkit.org/show_bug.cgi?id=36864 starting around comment 35.
         updateStyleIfNeeded();
 
-        f->loader()->finishedParsing();
+        f->loader().finishedParsing();
 
         InspectorInstrumentation::domContentLoadedEventFired(f.get());
     }
@@ -4892,7 +4892,7 @@ void Document::decrementLoadEventDelayCount()
 void Document::loadEventDelayTimerFired(Timer<Document>*)
 {
     if (frame())
-        frame()->loader()->checkCompleted();
+        frame()->loader().checkCompleted();
 }
 
 ScriptedAnimationController& Document::ensureScriptedAnimationController()
@@ -5022,7 +5022,7 @@ DocumentLoader* Document::loader() const
     if (!m_frame)
         return 0;
 
-    DocumentLoader* loader = m_frame->loader()->documentLoader();
+    DocumentLoader* loader = m_frame->loader().documentLoader();
     if (!loader)
         return 0;
 
@@ -5091,7 +5091,7 @@ void Document::decrementActiveParserCount()
     // http/tests/security/feed-urls-from-remote.html to timeout on Mac WK1
     // see http://webkit.org/b/110554 and http://webkit.org/b/110401
     loader()->checkLoadComplete();
-    frame()->loader()->checkLoadComplete();
+    frame()->loader().checkLoadComplete();
 }
 
 void Document::setContextFeatures(PassRefPtr<ContextFeatures> features)

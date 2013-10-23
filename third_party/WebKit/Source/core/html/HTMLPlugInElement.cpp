@@ -314,7 +314,7 @@ bool HTMLPlugInElement::isImageType()
 
     if (Frame* frame = document().frame()) {
         KURL completedURL = document().completeURL(m_url);
-        return frame->loader()->client()->objectContentType(completedURL, m_serviceType, shouldPreferPlugInsForImages()) == ObjectContentImage;
+        return frame->loader().client()->objectContentType(completedURL, m_serviceType, shouldPreferPlugInsForImages()) == ObjectContentImage;
     }
 
     return Image::supportsType(m_serviceType);

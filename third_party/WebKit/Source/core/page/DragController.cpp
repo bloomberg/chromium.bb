@@ -265,7 +265,7 @@ bool DragController::performDrag(DragData* dragData)
     if (operationForLoad(dragData) == DragOperationNone)
         return false;
 
-    m_page->mainFrame()->loader()->load(FrameLoadRequest(0, ResourceRequest(dragData->asURL())));
+    m_page->mainFrame()->loader().load(FrameLoadRequest(0, ResourceRequest(dragData->asURL())));
     return true;
 }
 

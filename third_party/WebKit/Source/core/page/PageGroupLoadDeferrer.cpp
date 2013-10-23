@@ -45,7 +45,7 @@ PageGroupLoadDeferrer::PageGroupLoadDeferrer(Page* page, bool deferSelf)
 
                 // Ensure that we notify the client if the initial empty document is accessed before showing anything
                 // modal, to prevent spoofs while the modal window or sheet is visible.
-                otherPage->mainFrame()->loader()->notifyIfInitialDocumentAccessed();
+                otherPage->mainFrame()->loader().notifyIfInitialDocumentAccessed();
 
                 // This code is not logically part of load deferring, but we do not want JS code executed beneath modal
                 // windows or sheets, which is exactly when PageGroupLoadDeferrer is used.

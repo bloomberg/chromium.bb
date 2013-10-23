@@ -217,7 +217,7 @@ void V8Window::openerAttributeSetterCustom(v8::Local<v8::String> name, v8::Local
         // imp->frame() cannot be null,
         // otherwise, SameOrigin check would have failed.
         ASSERT(imp->frame());
-        imp->frame()->loader()->setOpener(0);
+        imp->frame()->loader().setOpener(0);
     }
 
     // Delete the accessor from this object.
@@ -453,8 +453,8 @@ bool V8Window::namedSecurityCheckCustom(v8::Local<v8::Object> host, v8::Local<v8
         return false;
 
     // Notify the loader's client if the initial document has been accessed.
-    if (target->loader()->stateMachine()->isDisplayingInitialEmptyDocument())
-        target->loader()->didAccessInitialDocument();
+    if (target->loader().stateMachine()->isDisplayingInitialEmptyDocument())
+        target->loader().didAccessInitialDocument();
 
     if (key->IsString()) {
         DEFINE_STATIC_LOCAL(AtomicString, nameOfProtoProperty, ("__proto__", AtomicString::ConstructFromLiteral));
@@ -496,8 +496,8 @@ bool V8Window::indexedSecurityCheckCustom(v8::Local<v8::Object> host, uint32_t i
         return false;
 
     // Notify the loader's client if the initial document has been accessed.
-    if (target->loader()->stateMachine()->isDisplayingInitialEmptyDocument())
-        target->loader()->didAccessInitialDocument();
+    if (target->loader().stateMachine()->isDisplayingInitialEmptyDocument())
+        target->loader().didAccessInitialDocument();
 
     Frame* childFrame =  target->tree().scopedChild(index);
 

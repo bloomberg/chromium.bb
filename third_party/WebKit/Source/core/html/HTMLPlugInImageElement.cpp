@@ -83,9 +83,8 @@ bool HTMLPlugInImageElement::wouldLoadAsNetscapePlugin(const String& url, const 
     if (!url.isEmpty())
         completedURL = document().completeURL(url);
 
-    FrameLoader* frameLoader = document().frame()->loader();
-    ASSERT(frameLoader);
-    if (frameLoader->client()->objectContentType(completedURL, serviceType, shouldPreferPlugInsForImages()) == ObjectContentNetscapePlugin)
+    FrameLoader& frameLoader = document().frame()->loader();
+    if (frameLoader.client()->objectContentType(completedURL, serviceType, shouldPreferPlugInsForImages()) == ObjectContentNetscapePlugin)
         return true;
     return false;
 }
@@ -154,7 +153,7 @@ bool HTMLPlugInImageElement::loadPlugin(const KURL& url, const String& mimeType,
 {
     Frame* frame = document().frame();
 
-    if (!frame->loader()->allowPlugins(AboutToInstantiatePlugin))
+    if (!frame->loader().allowPlugins(AboutToInstantiatePlugin))
         return false;
 
     if (!pluginIsLoadable(url, mimeType))
@@ -171,8 +170,8 @@ bool HTMLPlugInImageElement::loadPlugin(const KURL& url, const String& mimeType,
     m_loadedUrl = url;
 
     IntSize contentSize = roundedIntSize(LayoutSize(renderer->contentWidth(), renderer->contentHeight()));
-    bool loadManually = document().isPluginDocument() && !frame->loader()->containsPlugins() && toPluginDocument(document()).shouldLoadPluginManually();
-    RefPtr<Widget> widget = frame->loader()->client()->createPlugin(contentSize, this, url, paramNames, paramValues, mimeType, loadManually);
+    bool loadManually = document().isPluginDocument() && !frame->loader().containsPlugins() && toPluginDocument(document()).shouldLoadPluginManually();
+    RefPtr<Widget> widget = frame->loader().client()->createPlugin(contentSize, this, url, paramNames, paramValues, mimeType, loadManually);
 
     if (!widget) {
         if (!renderer->showsUnavailablePluginIndicator())
@@ -181,7 +180,7 @@ bool HTMLPlugInImageElement::loadPlugin(const KURL& url, const String& mimeType,
     }
 
     renderer->setWidget(widget);
-    frame->loader()->setContainsPlugins();
+    frame->loader().setContainsPlugins();
     setNeedsStyleRecalc(LocalStyleChange, StyleChangeFromRenderer);
     return true;
 }
@@ -197,7 +196,7 @@ bool HTMLPlugInImageElement::shouldUsePlugin(const KURL& url, const String& mime
             return true;
     }
 
-    ObjectContentType objectType = document().frame()->loader()->client()->objectContentType(url, mimeType, shouldPreferPlugInsForImages());
+    ObjectContentType objectType = document().frame()->loader().client()->objectContentType(url, mimeType, shouldPreferPlugInsForImages());
     // If an object's content can't be handled and it has no fallback, let
     // it be handled as a plugin to show the broken plugin icon.
     useFallback = objectType == ObjectContentNone && hasFallback;
@@ -234,7 +233,7 @@ bool HTMLPlugInImageElement::pluginIsLoadable(const KURL& url, const String& mim
         return false;
     }
 
-    if (frame->loader() && !frame->loader()->mixedContentChecker()->canRunInsecureContent(document().securityOrigin(), url))
+    if (!frame->loader().mixedContentChecker()->canRunInsecureContent(document().securityOrigin(), url))
         return false;
     return true;
 }

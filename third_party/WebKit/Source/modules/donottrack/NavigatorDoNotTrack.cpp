@@ -70,7 +70,7 @@ String NavigatorDoNotTrack::doNotTrack(Navigator* navigator)
 
 String NavigatorDoNotTrack::doNotTrack()
 {
-    return frame() ? frame()->loader()->client()->doNotTrackValue() : String();
+    return frame() ? frame()->loader().client()->doNotTrackValue() : String();
 }
 
 } // namespace WebCore

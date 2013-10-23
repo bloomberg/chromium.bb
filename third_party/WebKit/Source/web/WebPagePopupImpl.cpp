@@ -212,9 +212,9 @@ bool WebPagePopupImpl::initializePage()
 
     DOMWindowPagePopup::install(frame->domWindow(), m_popupClient);
 
-    DocumentWriter* writer = frame->loader()->activeDocumentLoader()->beginWriting("text/html", "UTF-8");
+    DocumentWriter* writer = frame->loader().activeDocumentLoader()->beginWriting("text/html", "UTF-8");
     m_popupClient->writeDocument(*writer);
-    frame->loader()->activeDocumentLoader()->endWriting(writer);
+    frame->loader().activeDocumentLoader()->endWriting(writer);
     return true;
 }
 
@@ -224,7 +224,7 @@ void WebPagePopupImpl::destroyPage()
         return;
 
     if (m_page->mainFrame())
-        m_page->mainFrame()->loader()->frameDetached();
+        m_page->mainFrame()->loader().frameDetached();
 
     m_page.clear();
 }
@@ -317,7 +317,7 @@ void WebPagePopupImpl::closePopup()
 {
     if (m_page) {
         m_page->clearPageGroup();
-        m_page->mainFrame()->loader()->stopAllLoaders();
+        m_page->mainFrame()->loader().stopAllLoaders();
         DOMWindowPagePopup::uninstall(m_page->mainFrame()->domWindow());
     }
     m_closing = true;

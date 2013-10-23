@@ -140,7 +140,7 @@ void retrieveResourcesForFrame(Frame* frame,
                                Vector<KURL>* frameURLs,
                                Vector<KURL>* resourceURLs)
 {
-    KURL frameURL = frame->loader()->documentLoader()->request().url();
+    KURL frameURL = frame->loader().documentLoader()->request().url();
 
     // If the frame's URL is invalid, ignore it, it is not retrievable.
     if (!frameURL.isValid())

@@ -99,7 +99,7 @@ void V8WindowShell::disposeContext()
         return;
 
     v8::HandleScope handleScope(m_isolate);
-    m_frame->loader()->client()->willReleaseScriptContext(m_context.newLocal(m_isolate), m_world->worldId());
+    m_frame->loader().client()->willReleaseScriptContext(m_context.newLocal(m_isolate), m_world->worldId());
 
     m_context.clear();
 
@@ -251,7 +251,7 @@ bool V8WindowShell::initializeIfNeeded()
             InspectorInstrumentation::didCreateIsolatedContext(m_frame, scriptState, origin);
         }
     }
-    m_frame->loader()->client()->didCreateScriptContext(context, m_world->extensionGroup(), m_world->worldId());
+    m_frame->loader().client()->didCreateScriptContext(context, m_world->extensionGroup(), m_world->worldId());
     return true;
 }
 
@@ -259,7 +259,7 @@ void V8WindowShell::createContext()
 {
     // The activeDocumentLoader pointer could be 0 during frame shutdown.
     // FIXME: Can we remove this check?
-    if (!m_frame->loader()->activeDocumentLoader())
+    if (!m_frame->loader().activeDocumentLoader())
         return;
 
     // Create a new environment using an empty template for the shadow
@@ -283,7 +283,7 @@ void V8WindowShell::createContext()
     for (size_t i = 0; i < extensions.size(); ++i) {
         // Ensure our date extension is always allowed.
         if (extensions[i] != DateExtension::get()
-            && !m_frame->loader()->client()->allowScriptExtension(extensions[i]->name(), extensionGroup, worldId))
+            && !m_frame->loader().client()->allowScriptExtension(extensions[i]->name(), extensionGroup, worldId))
             continue;
 
         extensionNames[index++] = extensions[i]->name();
@@ -394,7 +394,7 @@ void V8WindowShell::setSecurityToken()
     // are in the initial empty document, so that we can do a full canAccess
     // check in those cases.
     if (!origin->domainWasSetInDOM()
-        && !m_frame->loader()->stateMachine()->isDisplayingInitialEmptyDocument())
+        && !m_frame->loader().stateMachine()->isDisplayingInitialEmptyDocument())
         token = document->securityOrigin()->toString();
 
     // An empty or "null" token means we always have to call

@@ -157,7 +157,7 @@ void WebHelperPluginImpl::closeHelperPlugin()
 {
     if (m_page) {
         m_page->clearPageGroup();
-        m_page->mainFrame()->loader()->stopAllLoaders();
+        m_page->mainFrame()->loader().stopAllLoaders();
     }
 
     // We must destroy the page now in case the host page is being destroyed, in
@@ -223,11 +223,11 @@ bool WebHelperPluginImpl::initializePage(const String& pluginType, const WebDocu
     // The page's main frame was set in initializeFrame() as a result of the above call.
     Frame* frame = m_page->mainFrame();
     ASSERT(frame);
-    frame->loader()->forceSandboxFlags(SandboxAll & ~SandboxPlugins);
+    frame->loader().forceSandboxFlags(SandboxAll & ~SandboxPlugins);
     frame->setView(FrameView::create(frame));
     // No need to set a size or make it not transparent.
 
-    writeDocument(pluginType, hostDocument, frame->loader()->activeDocumentLoader());
+    writeDocument(pluginType, hostDocument, frame->loader().activeDocumentLoader());
 
     return true;
 }
@@ -238,7 +238,7 @@ void WebHelperPluginImpl::destroyPage()
         return;
 
     if (m_page->mainFrame())
-        m_page->mainFrame()->loader()->frameDetached();
+        m_page->mainFrame()->loader().frameDetached();
 
     m_page.clear();
 }

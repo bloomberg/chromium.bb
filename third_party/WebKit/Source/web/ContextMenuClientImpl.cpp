@@ -87,7 +87,7 @@ namespace WebKit {
 static WebURL urlFromFrame(Frame* frame)
 {
     if (frame) {
-        DocumentLoader* dl = frame->loader()->documentLoader();
+        DocumentLoader* dl = frame->loader().documentLoader();
         if (dl) {
             WebDataSource* ds = WebDataSourceImpl::fromDocumentLoader(dl);
             if (ds)
@@ -288,7 +288,7 @@ void ContextMenuClientImpl::showContextMenu(const WebCore::ContextMenu* defaultM
     data.pageURL = urlFromFrame(m_webView->mainFrameImpl()->frame());
     if (selectedFrame != m_webView->mainFrameImpl()->frame()) {
         data.frameURL = urlFromFrame(selectedFrame);
-        RefPtr<HistoryItem> historyItem = selectedFrame->loader()->history()->currentItem();
+        RefPtr<HistoryItem> historyItem = selectedFrame->loader().history()->currentItem();
         if (historyItem)
             data.frameHistoryItem = WebHistoryItem(historyItem);
     }
@@ -354,7 +354,7 @@ void ContextMenuClientImpl::showContextMenu(const WebCore::ContextMenu* defaultM
 #endif // OS(MACOSX)
 
     // Now retrieve the security info.
-    DocumentLoader* dl = selectedFrame->loader()->documentLoader();
+    DocumentLoader* dl = selectedFrame->loader().documentLoader();
     WebDataSource* ds = WebDataSourceImpl::fromDocumentLoader(dl);
     if (ds)
         data.securityInfo = ds->response().securityInfo();

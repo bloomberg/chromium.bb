@@ -279,7 +279,7 @@ bool HTMLFormElement::prepareForSubmission(Event* event)
     StringPairVector controlNamesAndValues;
     getTextFieldValues(controlNamesAndValues);
     RefPtr<FormState> formState = FormState::create(this, controlNamesAndValues, &document(), NotSubmittedByJavaScript);
-    frame->loader()->client()->dispatchWillSendSubmitEvent(formState.release());
+    frame->loader().client()->dispatchWillSendSubmitEvent(formState.release());
 
     if (dispatchEvent(Event::createCancelableBubble(EventTypeNames::submit)))
         m_shouldSubmit = true;
@@ -398,8 +398,8 @@ void HTMLFormElement::scheduleFormSubmission(PassRefPtr<FormSubmission> submissi
         document().frame()->script().executeScriptIfJavaScriptURL(submission->action());
         return;
     }
-    submission->setReferrer(document().frame()->loader()->outgoingReferrer());
-    submission->setOrigin(document().frame()->loader()->outgoingOrigin());
+    submission->setReferrer(document().frame()->loader().outgoingReferrer());
+    submission->setOrigin(document().frame()->loader().outgoingOrigin());
 
     document().frame()->navigationScheduler().scheduleFormSubmission(submission);
 }
@@ -439,7 +439,7 @@ void HTMLFormElement::requestAutocomplete()
     StringPairVector controlNamesAndValues;
     getTextFieldValues(controlNamesAndValues);
     RefPtr<FormState> formState = FormState::create(this, controlNamesAndValues, &document(), SubmittedByJavaScript);
-    frame->loader()->client()->didRequestAutocomplete(formState.release());
+    frame->loader().client()->didRequestAutocomplete(formState.release());
 }
 
 void HTMLFormElement::finishRequestAutocomplete(AutocompleteResult result)

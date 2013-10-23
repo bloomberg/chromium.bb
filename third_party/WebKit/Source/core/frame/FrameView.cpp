@@ -2237,11 +2237,11 @@ void FrameView::performPostLayoutTasks()
     if (m_nestedLayoutCount <= 1) {
         if (m_firstLayoutCallbackPending) {
             m_firstLayoutCallbackPending = false;
-            m_frame->loader()->didFirstLayout();
+            m_frame->loader().didFirstLayout();
         }
 
         // Ensure that we always send this eventually.
-        if (!m_frame->document()->parsing() && m_frame->loader()->stateMachine()->committedFirstRealDocumentLoad())
+        if (!m_frame->document()->parsing() && m_frame->loader().stateMachine()->committedFirstRealDocumentLoad())
             m_isVisuallyNonEmpty = true;
 
         // If the layout was done with pending sheets, we are not in fact visually non-empty yet.
@@ -2249,7 +2249,7 @@ void FrameView::performPostLayoutTasks()
             m_firstVisuallyNonEmptyLayoutCallbackPending = false;
             // FIXME: This callback is probably not needed, but is currently used
             // by android for setting the background color.
-            m_frame->loader()->client()->dispatchDidFirstVisuallyNonEmptyLayout();
+            m_frame->loader().client()->dispatchDidFirstVisuallyNonEmptyLayout();
         }
     }
 
@@ -2518,7 +2518,7 @@ void FrameView::scrollTo(const IntSize& newOffset)
     ScrollView::scrollTo(newOffset);
     if (offset != scrollOffset())
         scrollPositionChanged();
-    frame().loader()->client()->didChangeScrollOffset();
+    frame().loader().client()->didChangeScrollOffset();
 }
 
 void FrameView::invalidateScrollbarRect(Scrollbar* scrollbar, const IntRect& rect)
@@ -2633,7 +2633,7 @@ void FrameView::updateScrollableAreaSet()
 
 bool FrameView::shouldSuspendScrollAnimations() const
 {
-    return m_frame->loader()->state() != FrameStateComplete;
+    return m_frame->loader().state() != FrameStateComplete;
 }
 
 void FrameView::scrollbarStyleChanged(int newStyle, bool forceUpdate)

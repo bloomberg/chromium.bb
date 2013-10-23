@@ -719,7 +719,7 @@ TEST_F(WebViewTest, HistoryResetScrollAndScaleState)
     EXPECT_EQ(2.0f, webViewImpl->pageScaleFactor());
     EXPECT_EQ(116, webViewImpl->mainFrame()->scrollOffset().width);
     EXPECT_EQ(84, webViewImpl->mainFrame()->scrollOffset().height);
-    webViewImpl->page()->mainFrame()->loader()->history()->saveDocumentAndScrollState();
+    webViewImpl->page()->mainFrame()->loader().history()->saveDocumentAndScrollState();
 
     // Confirm that restoring the page state restores the parameters.
     webViewImpl->setPageScaleFactor(1.5f, WebPoint(16, 24));
@@ -730,11 +730,11 @@ TEST_F(WebViewTest, HistoryResetScrollAndScaleState)
     // wasScrolledByUser flag on the main frame, and prevent restoreScrollPositionAndViewState
     // from restoring the scrolling position.
     webViewImpl->page()->mainFrame()->view()->setWasScrolledByUser(false);
-    webViewImpl->page()->mainFrame()->loader()->history()->restoreScrollPositionAndViewState();
+    webViewImpl->page()->mainFrame()->loader().history()->restoreScrollPositionAndViewState();
     EXPECT_EQ(2.0f, webViewImpl->pageScaleFactor());
     EXPECT_EQ(116, webViewImpl->mainFrame()->scrollOffset().width);
     EXPECT_EQ(84, webViewImpl->mainFrame()->scrollOffset().height);
-    webViewImpl->page()->mainFrame()->loader()->history()->saveDocumentAndScrollState();
+    webViewImpl->page()->mainFrame()->loader().history()->saveDocumentAndScrollState();
 
     // Confirm that resetting the page state resets the saved scroll position.
     // The HistoryController treats a page scale factor of 0.0f as special and avoids
@@ -743,7 +743,7 @@ TEST_F(WebViewTest, HistoryResetScrollAndScaleState)
     EXPECT_EQ(1.0f, webViewImpl->pageScaleFactor());
     EXPECT_EQ(0, webViewImpl->mainFrame()->scrollOffset().width);
     EXPECT_EQ(0, webViewImpl->mainFrame()->scrollOffset().height);
-    webViewImpl->page()->mainFrame()->loader()->history()->restoreScrollPositionAndViewState();
+    webViewImpl->page()->mainFrame()->loader().history()->restoreScrollPositionAndViewState();
     EXPECT_EQ(1.0f, webViewImpl->pageScaleFactor());
     EXPECT_EQ(0, webViewImpl->mainFrame()->scrollOffset().width);
     EXPECT_EQ(0, webViewImpl->mainFrame()->scrollOffset().height);
@@ -1187,7 +1187,7 @@ TEST_F(WebViewTest, FocusExistingFrameOnNavigate)
     WebURLRequest webURLRequest;
     webURLRequest.initialize();
     WebCore::FrameLoadRequest request(0, webURLRequest.toResourceRequest(), WTF::String("_blank"));
-    webViewImpl->page()->mainFrame()->loader()->load(request);
+    webViewImpl->page()->mainFrame()->loader().load(request);
     ASSERT_TRUE(client.createdWebView());
     EXPECT_FALSE(client.didFocusCalled());
 
@@ -1195,7 +1195,7 @@ TEST_F(WebViewTest, FocusExistingFrameOnNavigate)
     WebURLRequest webURLRequestWithTargetStart;
     webURLRequestWithTargetStart.initialize();
     WebCore::FrameLoadRequest requestWithTargetStart(0, webURLRequestWithTargetStart.toResourceRequest(), WTF::String("_start"));
-    toWebViewImpl(client.createdWebView())->page()->mainFrame()->loader()->load(requestWithTargetStart);
+    toWebViewImpl(client.createdWebView())->page()->mainFrame()->loader().load(requestWithTargetStart);
     EXPECT_TRUE(client.didFocusCalled());
 
     m_webViewHelper.reset(); // Remove dependency on locally scoped client.

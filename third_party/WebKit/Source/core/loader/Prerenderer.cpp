@@ -82,7 +82,7 @@ PassRefPtr<Prerender> Prerenderer::render(PrerenderClient* prerenderClient, cons
     if (!document()->frame())
         return 0;
 
-    const String referrer = SecurityPolicy::generateReferrerHeader(referrerPolicy, url, document()->frame()->loader()->outgoingReferrer());
+    const String referrer = SecurityPolicy::generateReferrerHeader(referrerPolicy, url, document()->frame()->loader().outgoingReferrer());
 
     RefPtr<Prerender> prerender = Prerender::create(prerenderClient, url, referrer, referrerPolicy);
 

@@ -691,7 +691,7 @@ void Internals::selectColorInColorChooser(Element* element, const String& colorV
 
 Vector<String> Internals::formControlStateOfPreviousHistoryItem(ExceptionState& es)
 {
-    HistoryItem* mainItem = frame()->loader()->history()->previousItem();
+    HistoryItem* mainItem = frame()->loader().history()->previousItem();
     if (!mainItem) {
         es.throwUninformativeAndGenericDOMException(InvalidAccessError);
         return Vector<String>();
@@ -706,7 +706,7 @@ Vector<String> Internals::formControlStateOfPreviousHistoryItem(ExceptionState& 
 
 void Internals::setFormControlStateOfPreviousHistoryItem(const Vector<String>& state, ExceptionState& es)
 {
-    HistoryItem* mainItem = frame()->loader()->history()->previousItem();
+    HistoryItem* mainItem = frame()->loader().history()->previousItem();
     if (!mainItem) {
         es.throwUninformativeAndGenericDOMException(InvalidAccessError);
         return;
@@ -2058,8 +2058,8 @@ PassRefPtr<TypeConversions> Internals::typeConversions() const
 
 Vector<String> Internals::getReferencedFilePaths() const
 {
-    frame()->loader()->history()->saveDocumentAndScrollState();
-    return FormController::getReferencedFilePaths(frame()->loader()->history()->currentItem()->documentState());
+    frame()->loader().history()->saveDocumentAndScrollState();
+    return FormController::getReferencedFilePaths(frame()->loader().history()->currentItem()->documentState());
 }
 
 void Internals::startTrackingRepaints(Document* document, ExceptionState& es)
@@ -2214,7 +2214,7 @@ PassRefPtr<SerializedScriptValue> Internals::deserializeBuffer(PassRefPtr<ArrayB
 
 void Internals::forceReload(bool endToEnd)
 {
-    frame()->loader()->reload(endToEnd ? EndToEndReload : NormalReload);
+    frame()->loader().reload(endToEnd ? EndToEndReload : NormalReload);
 }
 
 PassRefPtr<ClientRect> Internals::selectionBounds(ExceptionState& es)

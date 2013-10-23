@@ -78,7 +78,7 @@ void MediaDocumentParser::createDocumentStructure()
     document()->appendChild(rootElement);
 
     if (document()->frame())
-        document()->frame()->loader()->dispatchDocumentElementAvailable();
+        document()->frame()->loader().dispatchDocumentElementAvailable();
 
     RefPtr<HTMLHeadElement> head = HTMLHeadElement::create(*document());
     RefPtr<HTMLMetaElement> meta = HTMLMetaElement::create(*document());

@@ -80,7 +80,7 @@ void InspectorApplicationCacheAgent::enable(ErrorString*)
 
 void InspectorApplicationCacheAgent::updateApplicationCacheStatus(Frame* frame)
 {
-    DocumentLoader* documentLoader = frame->loader()->documentLoader();
+    DocumentLoader* documentLoader = frame->loader().documentLoader();
     if (!documentLoader)
         return;
 
@@ -103,7 +103,7 @@ void InspectorApplicationCacheAgent::getFramesWithManifests(ErrorString*, RefPtr
 
     Frame* mainFrame = m_pageAgent->mainFrame();
     for (Frame* frame = mainFrame; frame; frame = frame->tree().traverseNext(mainFrame)) {
-        DocumentLoader* documentLoader = frame->loader()->documentLoader();
+        DocumentLoader* documentLoader = frame->loader().documentLoader();
         if (!documentLoader)
             continue;
 

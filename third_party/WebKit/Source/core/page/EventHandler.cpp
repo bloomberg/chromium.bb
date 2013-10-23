@@ -3417,7 +3417,7 @@ void EventHandler::defaultBackspaceEventHandler(KeyboardEvent* event)
     Page* page = m_frame->page();
     if (!page)
         return;
-    bool handledEvent = page->mainFrame()->loader()->client()->navigateBackForward(event->shiftKey() ? 1 : -1);
+    bool handledEvent = page->mainFrame()->loader().client()->navigateBackForward(event->shiftKey() ? 1 : -1);
     if (handledEvent)
         event->setDefaultHandled();
 }

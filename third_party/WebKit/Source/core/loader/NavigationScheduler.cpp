@@ -113,7 +113,7 @@ protected:
         FrameLoadRequest request(m_securityOrigin.get(), ResourceRequest(KURL(ParsedURLString, m_url), m_referrer), "_self");
         request.setLockBackForwardList(lockBackForwardList());
         request.setClientRedirect(true);
-        frame->loader()->load(request);
+        frame->loader().load(request);
     }
 
     virtual void didStartTimer(Frame* frame, Timer<NavigationScheduler>* timer)
@@ -123,7 +123,7 @@ protected:
         m_haveToldClient = true;
 
         OwnPtr<UserGestureIndicator> gestureIndicator = createUserGestureIndicator();
-        if (frame->loader()->history()->currentItemShouldBeReplaced())
+        if (frame->loader().history()->currentItemShouldBeReplaced())
             setLockBackForwardList(true);
     }
 
@@ -146,7 +146,7 @@ public:
         clearUserGesture();
     }
 
-    virtual bool shouldStartTimer(Frame* frame) { return frame->loader()->allAncestorsAreComplete(); }
+    virtual bool shouldStartTimer(Frame* frame) { return frame->loader().allAncestorsAreComplete(); }
 
     virtual void fire(Frame* frame)
     {
@@ -156,7 +156,7 @@ public:
         if (equalIgnoringFragmentIdentifier(frame->document()->url(), request.resourceRequest().url()))
             request.resourceRequest().setCachePolicy(ReloadIgnoringCacheData);
         request.setClientRedirect(true);
-        frame->loader()->load(request);
+        frame->loader().load(request);
     }
 };
 
@@ -179,7 +179,7 @@ public:
         FrameLoadRequest request(securityOrigin(), ResourceRequest(KURL(ParsedURLString, url()), referrer(), ReloadIgnoringCacheData), "_self");
         request.setLockBackForwardList(lockBackForwardList());
         request.setClientRedirect(true);
-        frame->loader()->load(request);
+        frame->loader().load(request);
     }
 };
 
@@ -200,12 +200,12 @@ public:
             frameRequest.setLockBackForwardList(lockBackForwardList());
             // Special case for go(0) from a frame -> reload only the frame
             // To follow Firefox and IE's behavior, history reload can only navigate the self frame.
-            frame->loader()->load(frameRequest);
+            frame->loader().load(frameRequest);
             return;
         }
         // go(i!=0) from a frame navigates into the history of the frame only,
         // in both IE and NS (but not in Mozilla). We can't easily do that.
-        frame->page()->mainFrame()->loader()->client()->navigateBackForward(m_historySteps);
+        frame->page()->mainFrame()->loader().client()->navigateBackForward(m_historySteps);
     }
 
 private:
@@ -230,7 +230,7 @@ public:
         frameRequest.setLockBackForwardList(lockBackForwardList());
         frameRequest.setTriggeringEvent(m_submission->event());
         frameRequest.setFormState(m_submission->state());
-        frame->loader()->load(frameRequest);
+        frame->loader().load(frameRequest);
     }
 
     virtual void didStartTimer(Frame* frame, Timer<NavigationScheduler>* timer)
@@ -240,7 +240,7 @@ public:
         m_haveToldClient = true;
 
         OwnPtr<UserGestureIndicator> gestureIndicator = createUserGestureIndicator();
-        if (frame->loader()->history()->currentItemShouldBeReplaced())
+        if (frame->loader().history()->currentItemShouldBeReplaced())
             setLockBackForwardList(true);
     }
 
@@ -310,7 +310,7 @@ bool NavigationScheduler::mustLockBackForwardList(Frame* targetFrame)
     // Navigation of a subframe during loading of an ancestor frame does not create a new back/forward item.
     // The definition of "during load" is any time before all handlers for the load event have been run.
     // See https://bugs.webkit.org/show_bug.cgi?id=14957 for the original motivation for this.
-    return targetFrame->tree().parent() && !targetFrame->tree().parent()->loader()->allAncestorsAreComplete();
+    return targetFrame->tree().parent() && !targetFrame->tree().parent()->loader().allAncestorsAreComplete();
 }
 
 void NavigationScheduler::scheduleLocationChange(SecurityOrigin* securityOrigin, const String& url, const String& referrer, bool lockBackForwardList)
@@ -322,8 +322,6 @@ void NavigationScheduler::scheduleLocationChange(SecurityOrigin* securityOrigin,
 
     lockBackForwardList = lockBackForwardList || mustLockBackForwardList(m_frame);
 
-    FrameLoader* loader = m_frame->loader();
-
     // If the URL we're going to navigate to is the same as the current one, except for the
     // fragment part, we don't need to schedule the location change. We'll skip this
     // optimization for cross-origin navigations to minimize the navigator's ability to
@@ -334,7 +332,7 @@ void NavigationScheduler::scheduleLocationChange(SecurityOrigin* securityOrigin,
             FrameLoadRequest request(securityOrigin, ResourceRequest(m_frame->document()->completeURL(url), referrer), "_self");
             request.setLockBackForwardList(lockBackForwardList);
             request.setClientRedirect(true);
-            loader->load(request);
+            m_frame->loader().load(request);
             return;
         }
     }
@@ -363,7 +361,7 @@ void NavigationScheduler::scheduleRefresh()
     if (url.isEmpty())
         return;
 
-    schedule(adoptPtr(new ScheduledRefresh(m_frame->document()->securityOrigin(), url.string(), m_frame->loader()->outgoingReferrer())));
+    schedule(adoptPtr(new ScheduledRefresh(m_frame->document()->securityOrigin(), url.string(), m_frame->loader().outgoingReferrer())));
 }
 
 void NavigationScheduler::scheduleHistoryNavigation(int steps)

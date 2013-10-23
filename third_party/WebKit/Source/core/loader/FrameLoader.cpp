@@ -179,7 +179,7 @@ FrameLoader::~FrameLoader()
 
     HashSet<Frame*>::iterator end = m_openedFrames.end();
     for (HashSet<Frame*>::iterator it = m_openedFrames.begin(); it != end; ++it)
-        (*it)->loader()->m_opener = 0;
+        (*it)->loader().m_opener = 0;
 
     m_client->frameLoaderDestroyed();
 }
@@ -391,7 +391,7 @@ void FrameLoader::loadDone()
 bool FrameLoader::allChildrenAreComplete() const
 {
     for (Frame* child = m_frame->tree().firstChild(); child; child = child->tree().nextSibling()) {
-        if (!child->loader()->m_isComplete)
+        if (!child->loader().m_isComplete)
             return false;
     }
     return true;
@@ -488,7 +488,7 @@ String FrameLoader::outgoingReferrer() const
         // because they need to be contained in iframes with the srcdoc.
         ASSERT(frame);
     }
-    return frame->loader()->m_outgoingReferrer;
+    return frame->loader().m_outgoingReferrer;
 }
 
 String FrameLoader::outgoingOrigin() const
@@ -507,9 +507,9 @@ void FrameLoader::setOpener(Frame* opener)
         m_client->didDisownOpener();
 
     if (m_opener)
-        m_opener->loader()->m_openedFrames.remove(m_frame);
+        m_opener->loader().m_openedFrames.remove(m_frame);
     if (opener)
-        opener->loader()->m_openedFrames.add(m_frame);
+        opener->loader().m_openedFrames.add(m_frame);
     m_opener = opener;
 
     if (m_frame->document())
@@ -608,7 +608,7 @@ void FrameLoader::completed()
         descendant->navigationScheduler().startTimer();
 
     if (Frame* parent = m_frame->tree().parent())
-        parent->loader()->checkCompleted();
+        parent->loader().checkCompleted();
 
     if (m_frame->view())
         m_frame->view()->maintainScrollPositionAtAnchor(0);
@@ -617,7 +617,7 @@ void FrameLoader::completed()
 void FrameLoader::started()
 {
     for (Frame* frame = m_frame; frame; frame = frame->tree().parent())
-        frame->loader()->m_isComplete = false;
+        frame->loader().m_isComplete = false;
 }
 
 void FrameLoader::prepareForHistoryNavigation()
@@ -733,7 +733,7 @@ void FrameLoader::load(const FrameLoadRequest& passedRequest)
     RefPtr<Frame> targetFrame = findFrameForNavigation(request.frameName(), request.formState() ? request.formState()->sourceDocument() : m_frame->document());
     if (targetFrame && targetFrame != m_frame) {
         request.setFrameName("_self");
-        targetFrame->loader()->load(request);
+        targetFrame->loader().load(request);
         if (Page* page = targetFrame->page())
             page->chrome().focus();
         return;
@@ -819,7 +819,7 @@ void FrameLoader::stopAllLoaders()
     m_inStopAllLoaders = true;
 
     for (RefPtr<Frame> child = m_frame->tree().firstChild(); child; child = child->tree().nextSibling())
-        child->loader()->stopAllLoaders();
+        child->loader().stopAllLoaders();
     if (m_provisionalDocumentLoader)
         m_provisionalDocumentLoader->stopLoading();
     if (m_documentLoader)
@@ -930,7 +930,7 @@ void FrameLoader::closeOldDataSources()
     // If so, add helpers for postorder traversal, and use them. If not, then lets not
     // use a recursive algorithm here.
     for (Frame* child = m_frame->tree().firstChild(); child; child = child->tree().nextSibling())
-        child->loader()->closeOldDataSources();
+        child->loader().closeOldDataSources();
 
     if (m_documentLoader)
         m_client->dispatchWillClose();
@@ -946,14 +946,14 @@ bool FrameLoader::subframeIsLoading() const
 {
     // It's most likely that the last added frame is the last to load so we walk backwards.
     for (Frame* child = m_frame->tree().lastChild(); child; child = child->tree().previousSibling()) {
-        FrameLoader* childLoader = child->loader();
-        DocumentLoader* documentLoader = childLoader->documentLoader();
+        const FrameLoader& childLoader = child->loader();
+        DocumentLoader* documentLoader = childLoader.documentLoader();
         if (documentLoader && documentLoader->isLoadingInAPISense())
             return true;
-        documentLoader = childLoader->provisionalDocumentLoader();
+        documentLoader = childLoader.provisionalDocumentLoader();
         if (documentLoader && documentLoader->isLoadingInAPISense())
             return true;
-        documentLoader = childLoader->policyDocumentLoader();
+        documentLoader = childLoader.policyDocumentLoader();
         if (documentLoader)
             return true;
     }
@@ -974,7 +974,7 @@ CachePolicy FrameLoader::subresourceCachePolicy() const
         return CachePolicyReload;
 
     if (Frame* parentFrame = m_frame->tree().parent()) {
-        CachePolicy parentCachePolicy = parentFrame->loader()->subresourceCachePolicy();
+        CachePolicy parentCachePolicy = parentFrame->loader().subresourceCachePolicy();
         if (parentCachePolicy != CachePolicyVerify)
             return parentCachePolicy;
     }
@@ -1054,7 +1054,7 @@ void FrameLoader::detachChildren()
         childrenToDetach.append(child);
     FrameVector::iterator end = childrenToDetach.end();
     for (FrameVector::iterator it = childrenToDetach.begin(); it != end; it++)
-        (*it)->loader()->detachFromParent();
+        (*it)->loader().detachFromParent();
 }
 
 void FrameLoader::closeAndRemoveChild(Frame* child)
@@ -1083,7 +1083,7 @@ void FrameLoader::checkLoadComplete()
             frames.append(frame);
         // To process children before their parents, iterate the vector backwards.
         for (size_t i = frames.size(); i; --i)
-            frames[i - 1]->loader()->checkLoadCompleteForThisFrame();
+            frames[i - 1]->loader().checkLoadCompleteForThisFrame();
     }
 }
 
@@ -1142,8 +1142,8 @@ void FrameLoader::detachFromParent()
     m_progressTracker.clear();
 
     if (Frame* parent = m_frame->tree().parent()) {
-        parent->loader()->closeAndRemoveChild(m_frame);
-        parent->loader()->scheduleCheckCompleted();
+        parent->loader().closeAndRemoveChild(m_frame);
+        parent->loader().scheduleCheckCompleted();
     } else {
         m_frame->setView(0);
         m_frame->willDetachPage();
@@ -1350,7 +1350,7 @@ void FrameLoader::loadWithNavigationAction(const ResourceRequest& request, const
     m_policyDocumentLoader->setIsClientRedirect(m_startingClientRedirect);
 
     if (Frame* parent = m_frame->tree().parent())
-        m_policyDocumentLoader->setOverrideEncoding(parent->loader()->documentLoader()->overrideEncoding());
+        m_policyDocumentLoader->setOverrideEncoding(parent->loader().documentLoader()->overrideEncoding());
     else if (!overrideEncoding.isEmpty())
         m_policyDocumentLoader->setOverrideEncoding(overrideEncoding);
     else if (m_documentLoader)
@@ -1431,13 +1431,13 @@ void FrameLoader::checkNewWindowPolicyAndContinue(PassRefPtr<FormState> formStat
     mainFrame->page()->setOpenedByDOM();
     mainFrame->page()->chrome().show(navigationPolicy);
     if (!m_suppressOpenerInNewFrame) {
-        mainFrame->loader()->setOpener(frame.get());
+        mainFrame->loader().setOpener(frame.get());
         mainFrame->document()->setReferrerPolicy(frame->document()->referrerPolicy());
     }
 
     // FIXME: We can't just send our NavigationAction to the new FrameLoader's loadWithNavigationAction(), we need to
     // create a new one with a default NavigationType and no triggering event. We should figure out why.
-    mainFrame->loader()->loadWithNavigationAction(action.resourceRequest(), NavigationAction(action.resourceRequest()), FrameLoadTypeStandard, formState, SubstituteData());
+    mainFrame->loader().loadWithNavigationAction(action.resourceRequest(), NavigationAction(action.resourceRequest()), FrameLoadTypeStandard, formState, SubstituteData());
 }
 
 void FrameLoader::applyUserAgent(ResourceRequest& request)

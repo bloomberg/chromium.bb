@@ -687,7 +687,7 @@ ObjectContentType FrameLoaderClientImpl::objectContentType(
 PassOwnPtr<WebPluginLoadObserver> FrameLoaderClientImpl::pluginLoadObserver()
 {
     WebDataSourceImpl* ds = WebDataSourceImpl::fromDocumentLoader(
-        m_webFrame->frame()->loader()->activeDocumentLoader());
+        m_webFrame->frame()->loader().activeDocumentLoader());
     if (!ds) {
         // We can arrive here if a popstate event handler detaches this frame.
         // FIXME: Remove this code once http://webkit.org/b/36202 is fixed.

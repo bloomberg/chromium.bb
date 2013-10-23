@@ -271,9 +271,10 @@ V8WindowShell* ScriptController::windowShell(DOMWrapperWorld* world)
     if (!shell->isContextInitialized() && shell->initializeIfNeeded()) {
         if (world->isMainWorld()) {
             // FIXME: Remove this if clause. See comment with existingWindowShellWorkaroundWorld().
-            m_frame->loader()->dispatchDidClearWindowObjectInWorld(existingWindowShellWorkaroundWorld());
-        } else
-            m_frame->loader()->dispatchDidClearWindowObjectInWorld(world);
+            m_frame->loader().dispatchDidClearWindowObjectInWorld(existingWindowShellWorkaroundWorld());
+        } else {
+            m_frame->loader().dispatchDidClearWindowObjectInWorld(world);
+        }
     }
     return shell;
 }
@@ -545,7 +546,7 @@ int ScriptController::contextDebugId(v8::Handle<v8::Context> context)
 void ScriptController::updateDocument()
 {
     // For an uninitialized main window shell, do not incur the cost of context initialization during FrameLoader::init().
-    if ((!m_windowShell->isContextInitialized() || !m_windowShell->isGlobalInitialized()) && m_frame->loader()->stateMachine()->creatingInitialEmptyDocument())
+    if ((!m_windowShell->isContextInitialized() || !m_windowShell->isGlobalInitialized()) && m_frame->loader().stateMachine()->creatingInitialEmptyDocument())
         return;
 
     if (!initializeMainWorld())
@@ -577,9 +578,9 @@ bool ScriptController::canExecuteScripts(ReasonForCallingCanExecuteScripts reaso
     }
 
     Settings* settings = m_frame->settings();
-    const bool allowed = m_frame->loader()->client()->allowScript(settings && settings->isScriptEnabled());
+    const bool allowed = m_frame->loader().client()->allowScript(settings && settings->isScriptEnabled());
     if (!allowed && reason == AboutToExecuteScript)
-        m_frame->loader()->client()->didNotAllowScript();
+        m_frame->loader().client()->didNotAllowScript();
     return allowed;
 }
 
@@ -656,8 +657,8 @@ ScriptValue ScriptController::evaluateScriptInMainWorld(const ScriptSourceCode& 
         return ScriptValue();
 
     RefPtr<Frame> protect(m_frame);
-    if (m_frame->loader()->stateMachine()->isDisplayingInitialEmptyDocument())
-        m_frame->loader()->didAccessInitialDocument();
+    if (m_frame->loader().stateMachine()->isDisplayingInitialEmptyDocument())
+        m_frame->loader().didAccessInitialDocument();
 
     OwnPtr<ScriptSourceCode> maybeProcessedSourceCode =  InspectorInstrumentation::preprocess(m_frame, sourceCode);
     const ScriptSourceCode& sourceCodeToCompile = maybeProcessedSourceCode ? *maybeProcessedSourceCode : sourceCode;

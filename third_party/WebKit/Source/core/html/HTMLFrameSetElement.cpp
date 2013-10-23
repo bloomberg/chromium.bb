@@ -200,7 +200,7 @@ Node::InsertionNotificationRequest HTMLFrameSetElement::insertedInto(ContainerNo
 {
     if (insertionPoint->inDocument() && document().frame()) {
         // A document using <frameset> likely won't literally have a body, but as far as the client is concerned, the frameset is effectively the body.
-        document().frame()->loader()->client()->dispatchWillInsertBody();
+        document().frame()->loader().client()->dispatchWillInsertBody();
     }
     return HTMLElement::insertedInto(insertionPoint);
 }

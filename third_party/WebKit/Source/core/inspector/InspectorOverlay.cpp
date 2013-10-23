@@ -643,13 +643,13 @@ Page* InspectorOverlay::overlayPage()
     RefPtr<Frame> frame = Frame::create(m_overlayPage.get(), 0, dummyFrameLoaderClient);
     frame->setView(FrameView::create(frame.get()));
     frame->init();
-    FrameLoader* loader = frame->loader();
+    FrameLoader& loader = frame->loader();
     frame->view()->setCanHaveScrollbars(false);
     frame->view()->setTransparent(true);
-    ASSERT(loader->activeDocumentLoader());
-    DocumentWriter* writer = loader->activeDocumentLoader()->beginWriting("text/html", "UTF-8");
+    ASSERT(loader.activeDocumentLoader());
+    DocumentWriter* writer = loader.activeDocumentLoader()->beginWriting("text/html", "UTF-8");
     writer->addData(reinterpret_cast<const char*>(InspectorOverlayPage_html), sizeof(InspectorOverlayPage_html));
-    loader->activeDocumentLoader()->endWriting(writer);
+    loader.activeDocumentLoader()->endWriting(writer);
     v8::Isolate* isolate = toIsolate(frame.get());
     v8::HandleScope handleScope(isolate);
     v8::Handle<v8::Context> frameContext = frame->script().currentWorldContext();
