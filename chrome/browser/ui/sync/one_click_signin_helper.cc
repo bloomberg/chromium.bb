@@ -14,6 +14,7 @@
 #include "base/callback_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
@@ -353,6 +354,17 @@ void RedirectToNtpOrAppsPage(content::WebContents* contents,
   contents->OpenURL(params);
 }
 
+void RedirectToNtpOrAppsPageWithIds(int child_id,
+                                    int route_id,
+                                    signin::Source source) {
+  content::WebContents* web_contents = tab_util::GetWebContentsByID(child_id,
+                                                                    route_id);
+  if (!web_contents)
+    return;
+
+  RedirectToNtpOrAppsPage(web_contents, source);
+}
+
 // If the |source| is not settings page/webstore, redirects to
 // the NTP/Apps page.
 void RedirectToNtpOrAppsPageIfNecessary(content::WebContents* contents,
@@ -414,17 +426,21 @@ void StartExplicitSync(const StartSyncArgs& args,
     // the action is CREATE_NEW_USER because the "Create new user" page might
     // be opened in a different tab that is already showing settings.
     //
-    // Don't redirect when this callback is called while there is a navigation
-    // in progress. Otherwise, there would be 2 nested navigations and a crash
-    // would occur (crbug.com/293261).
-    //
-    // Also, don't redirect when the visible URL is not a blank page: if the
+    // Don't redirect when the visible URL is not a blank page: if the
     // source is SOURCE_WEBSTORE_INSTALL, |contents| might be showing an app
     // page that shouldn't be hidden.
-    if (!contents->IsLoading() &&
-        signin::IsContinueUrlForWebBasedSigninFlow(
+    //
+    // If redirecting, don't do so immediately, otherwise there may be 2 nested
+    // navigations and a crash would occur (crbug.com/293261).  Post the task
+    // to the current thread instead.
+    if (signin::IsContinueUrlForWebBasedSigninFlow(
             contents->GetVisibleURL())) {
-      RedirectToNtpOrAppsPage(contents, args.source);
+      base::MessageLoopProxy::current()->PostNonNestableTask(
+          FROM_HERE,
+          base::Bind(RedirectToNtpOrAppsPageWithIds,
+                     contents->GetRenderProcessHost()->GetID(),
+                     contents->GetRoutingID(),
+                     args.source));
     }
     if (action == ConfirmEmailDialogDelegate::CREATE_NEW_USER) {
       chrome::ShowSettingsSubPage(args.browser,
