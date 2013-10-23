@@ -263,26 +263,29 @@ cr.define('options', function() {
       commandClear.addEventListener('click', this.handleClear_.bind(this));
 
       if (command.scope_ui_visible) {
-        var commandScope = node.querySelector('.command-scope');
-        commandScope.hidden = false;
-        commandScope.id = this.createElementId_(
-            'toggleCommandScope', command.extension_id, command.command_name);
-        if (command.global) {
-          // TODO(finnur): Use another icon, this is just a placeholder.
-          commandScope.src = 'chrome://theme/IDR_ACCESSED_COOKIES';
-          commandScope.title =
-              loadTimeData.getString('extensionCommandsGlobalTooltip');
+        var select = node.querySelector('.command-scope');
+        select.id = this.createElementId_(
+            'setCommandScope', command.extension_id, command.command_name);
+        select.hidden = false;
+        // Add the 'In Chrome' option.
+        var option = document.createElement('option');
+        option.textContent = loadTimeData.getString('extensionCommandsRegular');
+        select.appendChild(option);
+        if (command.extension_action) {
+          // Extension actions cannot be global, so we might as well disable the
+          // combo box, to signify that.
+          select.disabled = true;
         } else {
-          commandScope.src = 'chrome://theme/IDR_PRODUCT_LOGO_16';
-          var tooltip = command.extension_action ?
-              'extensionCommandsNotGlobalPermanentTooltip' :
-              'extensionCommandsNotGlobalTooltip';
-          commandScope.title = loadTimeData.getString(tooltip);
+          // Add the 'Global' option.
+          option = document.createElement('option');
+          option.textContent =
+              loadTimeData.getString('extensionCommandsGlobal');
+          select.appendChild(option);
+          select.selectedIndex = command.global ? 1 : 0;
         }
-        if (!command.extension_action) {
-          commandScope.addEventListener(
-              'click', this.handleToggleCommandScope_.bind(this));
-        }
+
+        select.addEventListener(
+            'click', this.handleSetCommandScope_.bind(this));
       }
 
       this.appendChild(node);
@@ -446,14 +449,16 @@ cr.define('options', function() {
     },
 
     /**
-     * A handler for the toggling the scope of the command.
+     * A handler for the setting the scope of the command.
      * @param {Event} event The mouse event to consider.
      * @private
      */
-    handleToggleCommandScope_: function(event) {
-      var parsed = this.parseElementId_('toggleCommandScope', event.target.id);
-      chrome.send('toggleCommandScope',
-          [parsed.extensionId, parsed.commandName]);
+    handleSetCommandScope_: function(event) {
+      var parsed = this.parseElementId_('setCommandScope', event.target.id);
+      var element = document.getElementById(
+          'setCommandScope-' + parsed.extensionId + '-' + parsed.commandName);
+      chrome.send('setCommandScope',
+          [parsed.extensionId, parsed.commandName, element.selectedIndex == 1]);
     },
 
     /**

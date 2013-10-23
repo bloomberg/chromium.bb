@@ -4905,14 +4905,11 @@ Make sure you do not expose any sensitive information.
       <message name="IDS_EXTENSION_COMMANDS_GENERIC_ACTIVATE" desc="The generic 'activate extension' text used as description for some commands.">
         Activate the extension
       </message>
-      <message name="IDS_EXTENSION_COMMANDS_GLOBAL" desc="The tooltip for commands that are global in nature.">
-        This keyboard shortcut is active at all times (not just when Chrome has focus). Click to change.
+      <message name="IDS_EXTENSION_COMMANDS_GLOBAL" desc="The text in the select box for commands that are global in nature (the shortcut works when Chrome does not have focus).">
+        Global
       </message>
-      <message name="IDS_EXTENSION_COMMANDS_NOT_GLOBAL" desc="The tooltip for commands that are not global in nature.">
-        This keyboard shortcut is only active when Chrome has focus. Click to change.
-      </message>
-      <message name="IDS_EXTENSION_COMMANDS_NOT_GLOBAL_PERMANENT" desc="The tooltip for commands that are not global in nature and never can be.">
-        This keyboard shortcut is only active when Chrome has focus.
+      <message name="IDS_EXTENSION_COMMANDS_NOT_GLOBAL" desc="The text in the select box for commands that are not global in nature (the shortcut works only when Chrome has focus).">
+        In Chrome
       </message>
 
       <message name="IDS_EXTENSION_PACK_DIALOG_TITLE" desc="Title of pack extension dialog">

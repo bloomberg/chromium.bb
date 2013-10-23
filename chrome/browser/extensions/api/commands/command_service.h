@@ -137,9 +137,12 @@ class CommandService : public ProfileKeyedAPI,
                              const std::string& command_name,
                              const std::string& keystroke);
 
-  // Toggles the scope of the keybinding.
-  void ToggleScope(const std::string& extension_id,
-                   const std::string& command_name);
+  // Set the scope of the keybinding. If |global| is true, the keybinding works
+  // even when Chrome does not have focus. If the scope requested is already
+  // set, the function returns false, otherwise true.
+  bool SetScope(const std::string& extension_id,
+                const std::string& command_name,
+                bool global);
 
   // Finds the command with the name |command_name| within an extension with id
   // |extension_id| . Returns an empty Command object (with keycode

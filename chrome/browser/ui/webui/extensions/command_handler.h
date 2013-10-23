@@ -62,7 +62,7 @@ class CommandHandler : public content::WebUIMessageHandler,
 
   // Handles requests from javascript to change the scope of a particular
   // keyboard shortcut for a given extension command.
-  void HandleToggleCommandScope(const base::ListValue* args);
+  void HandleSetCommandScope(const base::ListValue* args);
 
   // Handles requests from javascript to temporarily disable general Chrome
   // shortcut handling while the web page is capturing which shortcut to use.

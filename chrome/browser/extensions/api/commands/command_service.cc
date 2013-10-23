@@ -250,15 +250,19 @@ void CommandService::UpdateKeybindingPrefs(const std::string& extension_id,
                     true, command.global());
 }
 
-void CommandService::ToggleScope(const std::string& extension_id,
-                                 const std::string& command_name) {
+bool CommandService::SetScope(const std::string& extension_id,
+                              const std::string& command_name,
+                              bool global) {
   extensions::Command command = FindCommandByName(extension_id, command_name);
+  if (global == command.global())
+    return false;
 
   // Pre-existing shortcuts must be removed before proceeding because the
   // handlers for global and non-global extensions are not one and the same.
   RemoveKeybindingPrefs(extension_id, command_name);
   AddKeybindingPref(command.accelerator(), extension_id,
-                    command_name, true, !command.global());
+                    command_name, true, global);
+  return true;
 }
 
 Command CommandService::FindCommandByName(

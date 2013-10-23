@@ -37,12 +37,10 @@ void CommandHandler::GetLocalizedValues(content::WebUIDataSource* source) {
       l10n_util::GetStringUTF16(IDS_EXTENSION_TYPE_SHORTCUT));
   source->AddString("extensionCommandsDelete",
       l10n_util::GetStringUTF16(IDS_EXTENSION_DELETE_SHORTCUT));
-  source->AddString("extensionCommandsGlobalTooltip",
+  source->AddString("extensionCommandsGlobal",
       l10n_util::GetStringUTF16(IDS_EXTENSION_COMMANDS_GLOBAL));
-  source->AddString("extensionCommandsNotGlobalTooltip",
+  source->AddString("extensionCommandsRegular",
       l10n_util::GetStringUTF16(IDS_EXTENSION_COMMANDS_NOT_GLOBAL));
-  source->AddString("extensionCommandsNotGlobalPermanentTooltip",
-      l10n_util::GetStringUTF16(IDS_EXTENSION_COMMANDS_NOT_GLOBAL_PERMANENT));
   source->AddString("ok", l10n_util::GetStringUTF16(IDS_OK));
 }
 
@@ -61,8 +59,8 @@ void CommandHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("setExtensionCommandShortcut",
       base::Bind(&CommandHandler::HandleSetExtensionCommandShortcut,
       base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("toggleCommandScope",
-      base::Bind(&CommandHandler::HandleToggleCommandScope,
+  web_ui()->RegisterMessageCallback("setCommandScope",
+      base::Bind(&CommandHandler::HandleSetCommandScope,
       base::Unretained(this)));
 }
 
@@ -105,21 +103,22 @@ void CommandHandler::HandleSetExtensionCommandShortcut(
   UpdateCommandDataOnPage();
 }
 
-void CommandHandler::HandleToggleCommandScope(
+void CommandHandler::HandleSetCommandScope(
     const base::ListValue* args) {
   std::string extension_id;
   std::string command_name;
+  bool global;
   if (!args->GetString(0, &extension_id) ||
-      !args->GetString(1, &command_name)) {
+      !args->GetString(1, &command_name) ||
+      !args->GetBoolean(2, &global)) {
     NOTREACHED();
     return;
   }
 
   Profile* profile = Profile::FromWebUI(web_ui());
   CommandService* command_service = CommandService::Get(profile);
-  command_service->ToggleScope(extension_id, command_name);
-
-  UpdateCommandDataOnPage();
+  if (command_service->SetScope(extension_id, command_name, global))
+    UpdateCommandDataOnPage();
 }
 
 void CommandHandler::HandleSetShortcutHandlingSuspended(const ListValue* args) {
