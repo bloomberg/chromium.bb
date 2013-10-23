@@ -200,7 +200,7 @@ void Frame::setView(PassRefPtr<FrameView> view)
     if (m_view)
         m_view->unscheduleRelayout();
 
-    eventHandler()->clear();
+    eventHandler().clear();
 
     m_view = view;
 
@@ -379,7 +379,7 @@ String Frame::selectedTextForClipboard() const
 
 VisiblePosition Frame::visiblePositionForPoint(const IntPoint& framePoint)
 {
-    HitTestResult result = eventHandler()->hitTestResultAtPoint(framePoint);
+    HitTestResult result = eventHandler().hitTestResultAtPoint(framePoint);
     Node* node = result.innerNonSharedNode();
     if (!node)
         return VisiblePosition();
@@ -401,7 +401,7 @@ Document* Frame::documentAtPoint(const IntPoint& point)
     HitTestResult result = HitTestResult(pt);
 
     if (contentRenderer())
-        result = eventHandler()->hitTestResultAtPoint(pt, HitTestRequest::ReadOnly | HitTestRequest::Active | HitTestRequest::DisallowShadowContent);
+        result = eventHandler().hitTestResultAtPoint(pt, HitTestRequest::ReadOnly | HitTestRequest::Active | HitTestRequest::DisallowShadowContent);
     return result.innerNode() ? &result.innerNode()->document() : 0;
 }
 

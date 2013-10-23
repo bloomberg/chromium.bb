@@ -187,32 +187,32 @@ bool PageWidgetDelegate::handleInputEvent(Page* page, PageWidgetEventHandler& ha
 
 void PageWidgetEventHandler::handleMouseMove(Frame& mainFrame, const WebMouseEvent& event)
 {
-    mainFrame.eventHandler()->handleMouseMoveEvent(PlatformMouseEventBuilder(mainFrame.view(), event));
+    mainFrame.eventHandler().handleMouseMoveEvent(PlatformMouseEventBuilder(mainFrame.view(), event));
 }
 
 void PageWidgetEventHandler::handleMouseLeave(Frame& mainFrame, const WebMouseEvent& event)
 {
-    mainFrame.eventHandler()->handleMouseLeaveEvent(PlatformMouseEventBuilder(mainFrame.view(), event));
+    mainFrame.eventHandler().handleMouseLeaveEvent(PlatformMouseEventBuilder(mainFrame.view(), event));
 }
 
 void PageWidgetEventHandler::handleMouseDown(Frame& mainFrame, const WebMouseEvent& event)
 {
-    mainFrame.eventHandler()->handleMousePressEvent(PlatformMouseEventBuilder(mainFrame.view(), event));
+    mainFrame.eventHandler().handleMousePressEvent(PlatformMouseEventBuilder(mainFrame.view(), event));
 }
 
 void PageWidgetEventHandler::handleMouseUp(Frame& mainFrame, const WebMouseEvent& event)
 {
-    mainFrame.eventHandler()->handleMouseReleaseEvent(PlatformMouseEventBuilder(mainFrame.view(), event));
+    mainFrame.eventHandler().handleMouseReleaseEvent(PlatformMouseEventBuilder(mainFrame.view(), event));
 }
 
 bool PageWidgetEventHandler::handleMouseWheel(Frame& mainFrame, const WebMouseWheelEvent& event)
 {
-    return mainFrame.eventHandler()->handleWheelEvent(PlatformWheelEventBuilder(mainFrame.view(), event));
+    return mainFrame.eventHandler().handleWheelEvent(PlatformWheelEventBuilder(mainFrame.view(), event));
 }
 
 bool PageWidgetEventHandler::handleTouchEvent(Frame& mainFrame, const WebTouchEvent& event)
 {
-    return mainFrame.eventHandler()->handleTouchEvent(PlatformTouchEventBuilder(mainFrame.view(), event));
+    return mainFrame.eventHandler().handleTouchEvent(PlatformTouchEventBuilder(mainFrame.view(), event));
 }
 
 }

@@ -269,8 +269,7 @@ void InspectorInputAgent::dispatchTouchEvent(ErrorString* error, const String& t
         event.append(point);
     }
 
-    EventHandler* handler = m_page->mainFrame()->eventHandler();
-    handler->handleTouchEvent(event);
+    m_page->mainFrame()->eventHandler().handleTouchEvent(event);
 }
 
 void InspectorInputAgent::dispatchGestureEvent(ErrorString*, const String& type, int x, int y, const double* timestamp, const int* deltaX, const int* deltaY, const double* scale)

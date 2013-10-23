@@ -1298,7 +1298,7 @@ void HTMLSelectElement::listBoxDefaultEventHandler(Event* event)
 #endif
             }
             if (Frame* frame = document().frame())
-                frame->eventHandler()->setMouseDownMayStartAutoscroll();
+                frame->eventHandler().setMouseDownMayStartAutoscroll();
 
             event->setDefaultHandled();
         }

@@ -221,7 +221,7 @@ void DragController::dragExited(DragData* dragData)
         ClipboardAccessPolicy policy = (!m_documentUnderMouse || m_documentUnderMouse->securityOrigin()->isLocal()) ? ClipboardReadable : ClipboardTypesReadable;
         RefPtr<Clipboard> clipboard = createDraggingClipboard(policy, dragData);
         clipboard->setSourceOperation(dragData->draggingSourceOperationMask());
-        mainFrame->eventHandler()->cancelDragAndDrop(createMouseEvent(dragData), clipboard.get());
+        mainFrame->eventHandler().cancelDragAndDrop(createMouseEvent(dragData), clipboard.get());
         clipboard->setAccessPolicy(ClipboardNumb);    // invalidate clipboard here for security
     }
     mouseMovedIntoDocument(0);
@@ -246,7 +246,7 @@ bool DragController::performDrag(DragData* dragData)
             // Sending an event can result in the destruction of the view and part.
             RefPtr<Clipboard> clipboard = createDraggingClipboard(ClipboardReadable, dragData);
             clipboard->setSourceOperation(dragData->draggingSourceOperationMask());
-            preventedDefault = mainFrame->eventHandler()->performDragAndDrop(createMouseEvent(dragData), clipboard.get());
+            preventedDefault = mainFrame->eventHandler().performDragAndDrop(createMouseEvent(dragData), clipboard.get());
             clipboard->setAccessPolicy(ClipboardNumb); // Invalidate clipboard here for security
         }
         if (preventedDefault) {
@@ -528,7 +528,7 @@ bool DragController::concludeEditDrag(DragData* dragData)
 
     if (rootEditableElement) {
         if (Frame* frame = rootEditableElement->document().frame())
-            frame->eventHandler()->updateDragStateAfterEditDragIfNeeded(rootEditableElement.get());
+            frame->eventHandler().updateDragStateAfterEditDragIfNeeded(rootEditableElement.get());
     }
 
     return true;
@@ -546,7 +546,7 @@ bool DragController::canProcessDrag(DragData* dragData)
     if (!m_page->mainFrame()->contentRenderer())
         return false;
 
-    result = m_page->mainFrame()->eventHandler()->hitTestResultAtPoint(point);
+    result = m_page->mainFrame()->eventHandler().hitTestResultAtPoint(point);
 
     if (!result.innerNonSharedNode())
         return false;
@@ -601,7 +601,7 @@ bool DragController::tryDHTMLDrag(DragData* dragData, DragOperation& operation)
     clipboard->setSourceOperation(srcOpMask);
 
     PlatformMouseEvent event = createMouseEvent(dragData);
-    if (!mainFrame->eventHandler()->updateDragAndDrop(event, clipboard.get())) {
+    if (!mainFrame->eventHandler().updateDragAndDrop(event, clipboard.get())) {
         clipboard->setAccessPolicy(ClipboardNumb);    // invalidate clipboard here for security
         return false;
     }
@@ -697,7 +697,7 @@ bool DragController::populateDragClipboard(Frame* src, const DragState& state, c
     if (!src->view() || !src->contentRenderer())
         return false;
 
-    HitTestResult hitTestResult = src->eventHandler()->hitTestResultAtPoint(dragOrigin, HitTestRequest::ReadOnly | HitTestRequest::Active);
+    HitTestResult hitTestResult = src->eventHandler().hitTestResultAtPoint(dragOrigin, HitTestRequest::ReadOnly | HitTestRequest::Active);
     // FIXME: Can this even happen? I guess it's possible, but should verify
     // with a layout test.
     if (!state.m_dragSrc->contains(hitTestResult.innerNode())) {
@@ -817,7 +817,7 @@ bool DragController::startDrag(Frame* src, const DragState& state, const Platfor
     if (!src->view() || !src->contentRenderer())
         return false;
 
-    HitTestResult hitTestResult = src->eventHandler()->hitTestResultAtPoint(dragOrigin);
+    HitTestResult hitTestResult = src->eventHandler().hitTestResultAtPoint(dragOrigin);
     if (!state.m_dragSrc->contains(hitTestResult.innerNode()))
         // The original node being dragged isn't under the drag origin anymore... maybe it was
         // hidden or moved out from under the cursor. Regardless, we don't want to start a drag on

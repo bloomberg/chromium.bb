@@ -524,7 +524,7 @@ void WebViewImpl::handleMouseDown(Frame& mainFrame, const WebMouseEvent& event)
     if (event.button == WebMouseEvent::ButtonLeft) {
         IntPoint point(event.x, event.y);
         point = m_page->mainFrame()->view()->windowToContents(point);
-        HitTestResult result(m_page->mainFrame()->eventHandler()->hitTestResultAtPoint(point));
+        HitTestResult result(m_page->mainFrame()->eventHandler().hitTestResultAtPoint(point));
         Node* hitNode = result.innerNonSharedNode();
 
         // Take capture on a mouse down on a plugin so we can send it mouse events.
@@ -586,7 +586,7 @@ void WebViewImpl::mouseContextMenu(const WebMouseEvent& event)
 #endif
 
     m_contextMenuAllowed = true;
-    targetFrame->eventHandler()->sendContextMenuEvent(pme);
+    targetFrame->eventHandler().sendContextMenuEvent(pme);
     m_contextMenuAllowed = false;
     // Actually showing the context menu is handled by the ContextMenuClient
     // implementation...
@@ -661,7 +661,7 @@ bool WebViewImpl::handleGestureEvent(const WebGestureEvent& event)
     // Special handling for slow-path fling gestures, which have no PlatformGestureEvent equivalent.
     switch (eventType) {
     case WebInputEvent::GestureFlingStart: {
-        if (mainFrameImpl()->frame()->eventHandler()->isScrollbarHandlingGestures()) {
+        if (mainFrameImpl()->frame()->eventHandler().isScrollbarHandlingGestures()) {
             m_client->didHandleGestureEvent(event, eventCancelled);
             return eventSwallowed;
         }
@@ -754,7 +754,7 @@ bool WebViewImpl::handleGestureEvent(const WebGestureEvent& event)
             }
         }
 
-        eventSwallowed = mainFrameImpl()->frame()->eventHandler()->handleGestureEvent(platformEvent);
+        eventSwallowed = mainFrameImpl()->frame()->eventHandler().handleGestureEvent(platformEvent);
 
         if (m_selectPopup && m_selectPopup == selectPopup) {
             // That tap triggered a select popup which is the same as the one that
@@ -775,14 +775,14 @@ bool WebViewImpl::handleGestureEvent(const WebGestureEvent& event)
         m_client->cancelScheduledContentIntents();
         m_page->contextMenuController().clearContextMenu();
         m_contextMenuAllowed = true;
-        eventSwallowed = mainFrameImpl()->frame()->eventHandler()->handleGestureEvent(platformEvent);
+        eventSwallowed = mainFrameImpl()->frame()->eventHandler().handleGestureEvent(platformEvent);
         m_contextMenuAllowed = false;
 
         break;
     }
     case WebInputEvent::GestureShowPress: {
         m_client->cancelScheduledContentIntents();
-        eventSwallowed = mainFrameImpl()->frame()->eventHandler()->handleGestureEvent(platformEvent);
+        eventSwallowed = mainFrameImpl()->frame()->eventHandler().handleGestureEvent(platformEvent);
         break;
     }
     case WebInputEvent::GestureDoubleTap:
@@ -804,7 +804,7 @@ bool WebViewImpl::handleGestureEvent(const WebGestureEvent& event)
     case WebInputEvent::GestureTapUnconfirmed:
     case WebInputEvent::GesturePinchEnd:
     case WebInputEvent::GesturePinchUpdate: {
-        eventSwallowed = mainFrameImpl()->frame()->eventHandler()->handleGestureEvent(platformEvent);
+        eventSwallowed = mainFrameImpl()->frame()->eventHandler().handleGestureEvent(platformEvent);
         break;
     }
     default:
@@ -940,10 +940,6 @@ bool WebViewImpl::handleKeyEvent(const WebKeyboardEvent& event)
     if (!frame)
         return false;
 
-    EventHandler* handler = frame->eventHandler();
-    if (!handler)
-        return keyEventDefault(event);
-
 #if !OS(MACOSX)
     const WebInputEvent::Type contextMenuTriggeringEventType =
 #if OS(WIN)
@@ -962,7 +958,7 @@ bool WebViewImpl::handleKeyEvent(const WebKeyboardEvent& event)
 
     PlatformKeyboardEventBuilder evt(event);
 
-    if (handler->keyEvent(evt)) {
+    if (frame->eventHandler().keyEvent(evt)) {
         if (WebInputEvent::RawKeyDown == event.type) {
             // Suppress the next keypress event unless the focused node is a plug-in node.
             // (Flash needs these keypress events to handle non-US keyboards.)
@@ -1049,16 +1045,14 @@ bool WebViewImpl::handleCharEvent(const WebKeyboardEvent& event)
     if (!frame)
         return suppress;
 
-    EventHandler* handler = frame->eventHandler();
-    if (!handler)
-        return suppress || keyEventDefault(event);
+    EventHandler& handler = frame->eventHandler();
 
     PlatformKeyboardEventBuilder evt(event);
     if (!evt.isCharacterKey())
         return true;
 
     // Accesskeys are triggered by char events and can't be suppressed.
-    if (handler->handleAccessKey(evt))
+    if (handler.handleAccessKey(evt))
         return true;
 
     // Safari 3.1 does not pass off windows system key messages (WM_SYSCHAR) to
@@ -1068,7 +1062,7 @@ bool WebViewImpl::handleCharEvent(const WebKeyboardEvent& event)
     if (evt.isSystemKey())
         return false;
 
-    if (!suppress && !handler->keyEvent(evt))
+    if (!suppress && !handler.keyEvent(evt))
         return keyEventDefault(event);
 
     return true;
@@ -1082,7 +1076,7 @@ WebRect WebViewImpl::computeBlockBounds(const WebRect& rect, bool ignoreClipping
     // Use the rect-based hit test to find the node.
     IntPoint point = mainFrameImpl()->frameView()->windowToContents(IntPoint(rect.x, rect.y));
     HitTestRequest::HitTestRequestType hitType = HitTestRequest::ReadOnly | HitTestRequest::Active | HitTestRequest::DisallowShadowContent | (ignoreClipping ? HitTestRequest::IgnoreClipping : 0);
-    HitTestResult result = mainFrameImpl()->frame()->eventHandler()->hitTestResultAtPoint(point, hitType, IntSize(rect.width, rect.height));
+    HitTestResult result = mainFrameImpl()->frame()->eventHandler().hitTestResultAtPoint(point, hitType, IntSize(rect.width, rect.height));
 
     Node* node = result.innerNonSharedNode();
     if (!node)
@@ -1212,7 +1206,7 @@ static bool invokesHandCursor(Node* node, bool shiftKey, Frame* frame)
 
     ECursor cursor = node->renderer()->style()->cursor();
     return cursor == CURSOR_POINTER
-        || (cursor == CURSOR_AUTO && frame->eventHandler()->useHandCursor(node, node->isLink(), shiftKey));
+        || (cursor == CURSOR_AUTO && frame->eventHandler().useHandCursor(node, node->isLink(), shiftKey));
 }
 
 Node* WebViewImpl::bestTapNode(const PlatformGestureEvent& tapEvent)
@@ -1223,10 +1217,10 @@ Node* WebViewImpl::bestTapNode(const PlatformGestureEvent& tapEvent)
     Node* bestTouchNode = 0;
 
     IntPoint touchEventLocation(tapEvent.position());
-    m_page->mainFrame()->eventHandler()->adjustGesturePosition(tapEvent, touchEventLocation);
+    m_page->mainFrame()->eventHandler().adjustGesturePosition(tapEvent, touchEventLocation);
 
     IntPoint hitTestPoint = m_page->mainFrame()->view()->windowToContents(touchEventLocation);
-    HitTestResult result = m_page->mainFrame()->eventHandler()->hitTestResultAtPoint(hitTestPoint, HitTestRequest::TouchEvent | HitTestRequest::DisallowShadowContent);
+    HitTestResult result = m_page->mainFrame()->eventHandler().hitTestResultAtPoint(hitTestPoint, HitTestRequest::TouchEvent | HitTestRequest::DisallowShadowContent);
     bestTouchNode = result.targetNode();
 
     Node* firstUncontainedNode = 0;
@@ -1401,7 +1395,7 @@ bool WebViewImpl::sendContextMenuEvent(const WebKeyboardEvent& event)
 
     m_contextMenuAllowed = true;
     Frame* focusedFrame = page()->focusController().focusedOrMainFrame();
-    bool handled = focusedFrame->eventHandler()->sendContextMenuEventForKey();
+    bool handled = focusedFrame->eventHandler().sendContextMenuEventForKey();
     m_contextMenuAllowed = false;
     return handled;
 }
@@ -1527,7 +1521,7 @@ bool WebViewImpl::propagateScroll(ScrollDirection scrollDirection,
     if (!frame)
         return false;
 
-    bool scrollHandled = frame->eventHandler()->scrollOverflow(scrollDirection, scrollGranularity);
+    bool scrollHandled = frame->eventHandler().scrollOverflow(scrollDirection, scrollGranularity);
     Frame* currentFrame = frame;
     while (!scrollHandled && currentFrame) {
         scrollHandled = currentFrame->view()->scroll(scrollDirection, scrollGranularity);
@@ -1701,7 +1695,7 @@ void WebViewImpl::resize(const WebSize& newSize)
     m_size = newSize;
 
     bool shouldAnchorAndRescaleViewport = settings()->viewportEnabled() && oldSize.width && oldContentsWidth && newSize.width != oldSize.width;
-    ViewportAnchor viewportAnchor(mainFrameImpl()->frame()->eventHandler());
+    ViewportAnchor viewportAnchor(&mainFrameImpl()->frame()->eventHandler());
     if (shouldAnchorAndRescaleViewport) {
         viewportAnchor.setAnchor(view->visibleContentRect(),
                                  FloatSize(viewportAnchorXCoord, viewportAnchorYCoord));
@@ -1798,7 +1792,7 @@ void WebViewImpl::animate(double monotonicFrameBeginTime)
                 IntSize(), 0, false, false, false, false,
                 0, 0, 0, 0);
 
-            mainFrameImpl()->frame()->eventHandler()->handleGestureScrollEnd(endScrollEvent);
+            mainFrameImpl()->frame()->eventHandler().handleGestureScrollEnd(endScrollEvent);
         }
     }
 
@@ -3184,7 +3178,7 @@ void WebViewImpl::dragSourceEndedAt(
                            screenPoint,
                            LeftButton, PlatformEvent::MouseMoved, 0, false, false, false,
                            false, 0);
-    m_page->mainFrame()->eventHandler()->dragSourceEndedAt(pme,
+    m_page->mainFrame()->eventHandler().dragSourceEndedAt(pme,
         static_cast<DragOperation>(operation));
 }
 
@@ -3326,7 +3320,7 @@ void WebViewImpl::sendResizeEventAndRepaint()
     // to the embedder. This method and all callers may be wrong. -- eseidel.
     if (mainFrameImpl()->frameView()) {
         // Enqueues the resize event.
-        mainFrameImpl()->frame()->eventHandler()->sendResizeEvent();
+        mainFrameImpl()->frame()->eventHandler().sendResizeEvent();
     }
 
     if (m_client) {
@@ -3510,7 +3504,7 @@ void WebViewImpl::showContextMenu()
     page()->contextMenuController().clearContextMenu();
     m_contextMenuAllowed = true;
     if (Frame* focusedFrame = page()->focusController().focusedOrMainFrame())
-        focusedFrame->eventHandler()->sendContextMenuEventForKey();
+        focusedFrame->eventHandler().sendContextMenuEventForKey();
     m_contextMenuAllowed = false;
 }
 
@@ -3739,7 +3733,7 @@ Element* WebViewImpl::focusedElement()
 HitTestResult WebViewImpl::hitTestResultForWindowPos(const IntPoint& pos)
 {
     IntPoint docPoint(m_page->mainFrame()->view()->windowToContents(pos));
-    return m_page->mainFrame()->eventHandler()->hitTestResultAtPoint(docPoint, HitTestRequest::ReadOnly | HitTestRequest::Active | HitTestRequest::DisallowShadowContent);
+    return m_page->mainFrame()->eventHandler().hitTestResultAtPoint(docPoint, HitTestRequest::ReadOnly | HitTestRequest::Active | HitTestRequest::DisallowShadowContent);
 }
 
 void WebViewImpl::setTabsToLinks(bool enable)

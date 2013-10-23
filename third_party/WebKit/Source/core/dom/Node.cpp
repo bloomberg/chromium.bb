@@ -2345,7 +2345,7 @@ void Node::defaultEventHandler(Event* event)
     if (eventType == EventTypeNames::keydown || eventType == EventTypeNames::keypress) {
         if (event->isKeyboardEvent()) {
             if (Frame* frame = document().frame())
-                frame->eventHandler()->defaultKeyboardEventHandler(toKeyboardEvent(event));
+                frame->eventHandler().defaultKeyboardEventHandler(toKeyboardEvent(event));
         }
     } else if (eventType == EventTypeNames::click) {
         int detail = event->isUIEvent() ? static_cast<UIEvent*>(event)->detail() : 0;
@@ -2357,7 +2357,7 @@ void Node::defaultEventHandler(Event* event)
     } else if (eventType == EventTypeNames::textInput) {
         if (event->hasInterface(EventNames::TextEvent)) {
             if (Frame* frame = document().frame())
-                frame->eventHandler()->defaultTextInputEventHandler(toTextEvent(event));
+                frame->eventHandler().defaultTextInputEventHandler(toTextEvent(event));
         }
 #if OS(WIN)
     } else if (eventType == EventTypeNames::mousedown && event->isMouseEvent()) {
@@ -2372,7 +2372,7 @@ void Node::defaultEventHandler(Event* event)
 
             if (renderer) {
                 if (Frame* frame = document().frame())
-                    frame->eventHandler()->startPanScrolling(renderer);
+                    frame->eventHandler().startPanScrolling(renderer);
             }
         }
 #endif
@@ -2385,9 +2385,10 @@ void Node::defaultEventHandler(Event* event)
         while (startNode && !startNode->renderer())
             startNode = startNode->parentOrShadowHostNode();
 
-        if (startNode && startNode->renderer())
+        if (startNode && startNode->renderer()) {
             if (Frame* frame = document().frame())
-                frame->eventHandler()->defaultWheelEventHandler(startNode, wheelEvent);
+                frame->eventHandler().defaultWheelEventHandler(startNode, wheelEvent);
+        }
     } else if (event->type() == EventTypeNames::webkitEditableContentChanged) {
         dispatchInputEvent();
     }

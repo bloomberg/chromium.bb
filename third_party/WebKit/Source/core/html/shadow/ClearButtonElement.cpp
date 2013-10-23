@@ -55,7 +55,7 @@ void ClearButtonElement::detach(const AttachContext& context)
 {
     if (m_capturing) {
         if (Frame* frame = document().frame())
-            frame->eventHandler()->setCapturingMouseEventsNode(0);
+            frame->eventHandler().setCapturingMouseEventsNode(0);
     }
     HTMLDivElement::detach(context);
 }
@@ -66,7 +66,7 @@ void ClearButtonElement::releaseCapture()
         return;
 
     if (Frame* frame = document().frame()) {
-        frame->eventHandler()->setCapturingMouseEventsNode(0);
+        frame->eventHandler().setCapturingMouseEventsNode(0);
         m_capturing = false;
     }
 }
@@ -88,7 +88,7 @@ void ClearButtonElement::defaultEventHandler(Event* event)
     if (event->type() == EventTypeNames::mousedown && event->isMouseEvent() && toMouseEvent(event)->button() == LeftButton) {
         if (renderer() && renderer()->visibleToHitTesting()) {
             if (Frame* frame = document().frame()) {
-                frame->eventHandler()->setCapturingMouseEventsNode(this);
+                frame->eventHandler().setCapturingMouseEventsNode(this);
                 m_capturing = true;
             }
         }
@@ -98,7 +98,7 @@ void ClearButtonElement::defaultEventHandler(Event* event)
     if (event->type() == EventTypeNames::mouseup && event->isMouseEvent() && toMouseEvent(event)->button() == LeftButton) {
         if (m_capturing) {
             if (Frame* frame = document().frame()) {
-                frame->eventHandler()->setCapturingMouseEventsNode(0);
+                frame->eventHandler().setCapturingMouseEventsNode(0);
                 m_capturing = false;
             }
             if (hovered()) {

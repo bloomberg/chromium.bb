@@ -1336,7 +1336,7 @@ IntSize FrameView::scrollOffsetForFixedPosition() const
 
 IntPoint FrameView::lastKnownMousePosition() const
 {
-    return m_frame->eventHandler()->lastKnownMousePosition();
+    return m_frame->eventHandler().lastKnownMousePosition();
 }
 
 bool FrameView::shouldSetCursor() const
@@ -1625,8 +1625,8 @@ void FrameView::setLayoutSize(const IntSize& size)
 
 void FrameView::scrollPositionChanged()
 {
-    m_frame->eventHandler()->sendScrollEvent();
-    m_frame->eventHandler()->dispatchFakeMouseMoveEventSoon();
+    m_frame->eventHandler().sendScrollEvent();
+    m_frame->eventHandler().dispatchFakeMouseMoveEventSoon();
 
     if (RenderView* renderView = this->renderView()) {
         if (renderView->usesCompositing())
@@ -2295,7 +2295,7 @@ void FrameView::sendResizeEventIfNeeded()
     if (!shouldSendResizeEvent)
         return;
 
-    m_frame->eventHandler()->sendResizeEvent();
+    m_frame->eventHandler().sendResizeEvent();
 
     if (isMainFrame())
         InspectorInstrumentation::didResizeMainFrame(m_frame->page());

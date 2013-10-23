@@ -850,7 +850,7 @@ void DOMWindow::focus(ExecutionContext* context)
     if (!m_frame)
         return;
 
-    m_frame->eventHandler()->focusDocumentView();
+    m_frame->eventHandler().focusDocumentView();
 }
 
 void DOMWindow::blur()

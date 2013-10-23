@@ -866,7 +866,7 @@ void RenderBox::panScroll(const IntPoint& sourcePoint)
     if (!frame)
         return;
 
-    IntPoint lastKnownMousePosition = frame->eventHandler()->lastKnownMousePosition();
+    IntPoint lastKnownMousePosition = frame->eventHandler().lastKnownMousePosition();
 
     // We need to check if the last known mouse position is out of the window. When the mouse is out of the window, the position is incoherent
     static IntPoint previousMousePosition;

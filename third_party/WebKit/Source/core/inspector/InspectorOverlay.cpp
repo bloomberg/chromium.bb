@@ -281,7 +281,7 @@ bool InspectorOverlay::handleGestureEvent(const PlatformGestureEvent& event)
     if (isEmpty())
         return false;
 
-    return overlayPage()->mainFrame()->eventHandler()->handleGestureEvent(event);
+    return overlayPage()->mainFrame()->eventHandler().handleGestureEvent(event);
 }
 
 bool InspectorOverlay::handleMouseEvent(const PlatformMouseEvent& event)
@@ -289,17 +289,17 @@ bool InspectorOverlay::handleMouseEvent(const PlatformMouseEvent& event)
     if (isEmpty())
         return false;
 
-    EventHandler* eventHandler = overlayPage()->mainFrame()->eventHandler();
+    EventHandler& eventHandler = overlayPage()->mainFrame()->eventHandler();
     bool result;
     switch (event.type()) {
     case PlatformEvent::MouseMoved:
-        result = eventHandler->handleMouseMoveEvent(event);
+        result = eventHandler.handleMouseMoveEvent(event);
         break;
     case PlatformEvent::MousePressed:
-        result = eventHandler->handleMousePressEvent(event);
+        result = eventHandler.handleMousePressEvent(event);
         break;
     case PlatformEvent::MouseReleased:
-        result = eventHandler->handleMouseReleaseEvent(event);
+        result = eventHandler.handleMouseReleaseEvent(event);
         break;
     default:
         return false;
@@ -314,7 +314,7 @@ bool InspectorOverlay::handleTouchEvent(const PlatformTouchEvent& event)
     if (isEmpty())
         return false;
 
-    return overlayPage()->mainFrame()->eventHandler()->handleTouchEvent(event);
+    return overlayPage()->mainFrame()->eventHandler().handleTouchEvent(event);
 }
 
 void InspectorOverlay::drawOutline(GraphicsContext* context, const LayoutRect& rect, const Color& color)

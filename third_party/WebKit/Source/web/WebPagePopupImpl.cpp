@@ -279,7 +279,7 @@ bool WebPagePopupImpl::handleGestureEvent(const WebGestureEvent& event)
     if (m_closing || !m_page || !m_page->mainFrame() || !m_page->mainFrame()->view())
         return false;
     Frame& frame = *m_page->mainFrame();
-    return frame.eventHandler()->handleGestureEvent(PlatformGestureEventBuilder(frame.view(), event));
+    return frame.eventHandler().handleGestureEvent(PlatformGestureEventBuilder(frame.view(), event));
 }
 
 bool WebPagePopupImpl::handleInputEvent(const WebInputEvent& event)
@@ -293,7 +293,7 @@ bool WebPagePopupImpl::handleKeyEvent(const PlatformKeyboardEvent& event)
 {
     if (m_closing || !m_page->mainFrame() || !m_page->mainFrame()->view())
         return false;
-    return m_page->mainFrame()->eventHandler()->keyEvent(event);
+    return m_page->mainFrame()->eventHandler().keyEvent(event);
 }
 
 void WebPagePopupImpl::setFocus(bool enable)

@@ -880,7 +880,7 @@ HitTestResult EventHandler::hitTestResultAtPoint(const LayoutPoint& point, HitTe
             FrameView* mainView = mainFrame->view();
             if (frameView && mainView) {
                 IntPoint mainFramePoint = mainView->rootViewToContents(frameView->contentsToRootView(roundedIntPoint(point)));
-                return mainFrame->eventHandler()->hitTestResultAtPoint(mainFramePoint, hitType, padding);
+                return mainFrame->eventHandler().hitTestResultAtPoint(mainFramePoint, hitType, padding);
             }
         }
     }
@@ -977,7 +977,7 @@ bool EventHandler::scrollRecursively(ScrollDirection direction, ScrollGranularit
     frame = frame->tree().parent();
     if (!frame)
         return false;
-    return frame->eventHandler()->scrollRecursively(direction, granularity, m_frame->ownerElement());
+    return frame->eventHandler().scrollRecursively(direction, granularity, m_frame->ownerElement());
 }
 
 bool EventHandler::logicalScrollRecursively(ScrollLogicalDirection direction, ScrollGranularity granularity, Node* startingNode)
@@ -1001,7 +1001,7 @@ bool EventHandler::logicalScrollRecursively(ScrollLogicalDirection direction, Sc
     if (!frame)
         return false;
 
-    return frame->eventHandler()->logicalScrollRecursively(direction, granularity, m_frame->ownerElement());
+    return frame->eventHandler().logicalScrollRecursively(direction, granularity, m_frame->ownerElement());
 }
 
 IntPoint EventHandler::lastKnownMousePosition() const
@@ -1307,7 +1307,7 @@ bool EventHandler::handleMousePressEvent(const PlatformMouseEvent& mouseEvent)
         return true;
 
     UserGestureIndicator gestureIndicator(DefinitelyProcessingUserGesture);
-    m_frame->tree().top()->eventHandler()->m_lastMouseDownUserGestureToken = gestureIndicator.currentToken();
+    m_frame->tree().top()->eventHandler().m_lastMouseDownUserGestureToken = gestureIndicator.currentToken();
 
     cancelFakeMouseMoveEvent();
     if (m_eventHandlerWillResetCapturingMouseEventsNode)
@@ -1344,7 +1344,7 @@ bool EventHandler::handleMousePressEvent(const PlatformMouseEvent& mouseEvent)
     if (subframe && passMousePressEventToSubframe(mev, subframe.get())) {
         // Start capturing future events for this frame.  We only do this if we didn't clear
         // the m_mousePressed flag, which may happen if an AppKit widget entered a modal event loop.
-        m_capturesDragging = subframe->eventHandler()->capturesDragging();
+        m_capturesDragging = subframe->eventHandler().capturesDragging();
         if (m_mousePressed && m_capturesDragging) {
             m_capturingMouseEventsNode = mev.targetNode();
             m_eventHandlerWillResetCapturingMouseEventsNode = true;
@@ -1645,8 +1645,8 @@ bool EventHandler::handleMouseReleaseEvent(const PlatformMouseEvent& mouseEvent)
 
     OwnPtr<UserGestureIndicator> gestureIndicator;
 
-    if (m_frame->tree().top()->eventHandler()->m_lastMouseDownUserGestureToken)
-        gestureIndicator = adoptPtr(new UserGestureIndicator(m_frame->tree().top()->eventHandler()->m_lastMouseDownUserGestureToken.release()));
+    if (m_frame->tree().top()->eventHandler().m_lastMouseDownUserGestureToken)
+        gestureIndicator = adoptPtr(new UserGestureIndicator(m_frame->tree().top()->eventHandler().m_lastMouseDownUserGestureToken.release()));
     else
         gestureIndicator = adoptPtr(new UserGestureIndicator(DefinitelyProcessingUserGesture));
 
@@ -1835,7 +1835,7 @@ bool EventHandler::updateDragAndDrop(const PlatformMouseEvent& event, Clipboard*
         Frame* targetFrame;
         if (targetIsFrame(newTarget.get(), targetFrame)) {
             if (targetFrame)
-                accept = targetFrame->eventHandler()->updateDragAndDrop(event, clipboard);
+                accept = targetFrame->eventHandler().updateDragAndDrop(event, clipboard);
         } else if (newTarget) {
             // As per section 7.9.4 of the HTML 5 spec., we must always fire a drag event before firing a dragenter, dragleave, or dragover event.
             if (dragState().m_dragSrc) {
@@ -1849,7 +1849,7 @@ bool EventHandler::updateDragAndDrop(const PlatformMouseEvent& event, Clipboard*
 
         if (targetIsFrame(m_dragTarget.get(), targetFrame)) {
             if (targetFrame)
-                accept = targetFrame->eventHandler()->updateDragAndDrop(event, clipboard);
+                accept = targetFrame->eventHandler().updateDragAndDrop(event, clipboard);
         } else if (m_dragTarget)
             dispatchDragEvent(EventTypeNames::dragleave, m_dragTarget.get(), event, clipboard);
 
@@ -1862,7 +1862,7 @@ bool EventHandler::updateDragAndDrop(const PlatformMouseEvent& event, Clipboard*
         Frame* targetFrame;
         if (targetIsFrame(newTarget.get(), targetFrame)) {
             if (targetFrame)
-                accept = targetFrame->eventHandler()->updateDragAndDrop(event, clipboard);
+                accept = targetFrame->eventHandler().updateDragAndDrop(event, clipboard);
         } else if (newTarget) {
             // Note, when dealing with sub-frames, we may need to fire only a dragover event as a drag event may have been fired earlier.
             if (!m_shouldOnlyFireDragOverEvent && dragState().m_dragSrc) {
@@ -1885,7 +1885,7 @@ void EventHandler::cancelDragAndDrop(const PlatformMouseEvent& event, Clipboard*
     Frame* targetFrame;
     if (targetIsFrame(m_dragTarget.get(), targetFrame)) {
         if (targetFrame)
-            targetFrame->eventHandler()->cancelDragAndDrop(event, clipboard);
+            targetFrame->eventHandler().cancelDragAndDrop(event, clipboard);
     } else if (m_dragTarget.get()) {
         if (dragState().m_dragSrc)
             dispatchDragSrcEvent(EventTypeNames::drag, event);
@@ -1900,7 +1900,7 @@ bool EventHandler::performDragAndDrop(const PlatformMouseEvent& event, Clipboard
     bool preventedDefault = false;
     if (targetIsFrame(m_dragTarget.get(), targetFrame)) {
         if (targetFrame)
-            preventedDefault = targetFrame->eventHandler()->performDragAndDrop(event, clipboard);
+            preventedDefault = targetFrame->eventHandler().performDragAndDrop(event, clipboard);
     } else if (m_dragTarget.get())
         preventedDefault = dispatchDragEvent(EventTypeNames::drop, m_dragTarget.get(), event, clipboard);
     clearDragState();
@@ -2389,7 +2389,7 @@ bool EventHandler::handleGestureLongPress(const PlatformGestureEvent& gestureEve
     IntPoint adjustedPoint = gestureEvent.position();
     adjustGesturePosition(gestureEvent, adjustedPoint);
     RefPtr<Frame> subframe = getSubFrameForGestureEvent(adjustedPoint, gestureEvent);
-    if (subframe && subframe->eventHandler()->handleGestureLongPress(gestureEvent))
+    if (subframe && subframe->eventHandler().handleGestureLongPress(gestureEvent))
         return true;
 
     m_longTapShouldInvokeContextMenu = false;
@@ -2438,7 +2438,7 @@ bool EventHandler::handleGestureLongTap(const PlatformGestureEvent& gestureEvent
     IntPoint adjustedPoint = gestureEvent.position();
     adjustGesturePosition(gestureEvent, adjustedPoint);
     RefPtr<Frame> subframe = getSubFrameForGestureEvent(adjustedPoint, gestureEvent);
-    if (subframe && subframe->eventHandler()->handleGestureLongTap(gestureEvent))
+    if (subframe && subframe->eventHandler().handleGestureLongTap(gestureEvent))
         return true;
 #if !OS(ANDROID)
     if (m_longTapShouldInvokeContextMenu) {
@@ -2489,7 +2489,7 @@ bool EventHandler::passGestureEventToWidget(const PlatformGestureEvent& gestureE
     if (!widget->isFrameView())
         return false;
 
-    return toFrameView(widget)->frame().eventHandler()->handleGestureEvent(gestureEvent);
+    return toFrameView(widget)->frame().eventHandler().handleGestureEvent(gestureEvent);
 }
 
 bool EventHandler::passGestureEventToWidgetIfPossible(const PlatformGestureEvent& gestureEvent, RenderObject* renderer)
@@ -3812,7 +3812,7 @@ bool EventHandler::passMousePressEventToSubframe(MouseEventWithHitTestResults& m
         m_frame->selection().setSelection(newSelection);
     }
 
-    subframe->eventHandler()->handleMousePressEvent(mev.event());
+    subframe->eventHandler().handleMousePressEvent(mev.event());
     return true;
 }
 
@@ -3820,13 +3820,13 @@ bool EventHandler::passMouseMoveEventToSubframe(MouseEventWithHitTestResults& me
 {
     if (m_mouseDownMayStartDrag && !m_mouseDownWasInSubframe)
         return false;
-    subframe->eventHandler()->handleMouseMoveOrLeaveEvent(mev.event(), hoveredNode);
+    subframe->eventHandler().handleMouseMoveOrLeaveEvent(mev.event(), hoveredNode);
     return true;
 }
 
 bool EventHandler::passMouseReleaseEventToSubframe(MouseEventWithHitTestResults& mev, Frame* subframe)
 {
-    subframe->eventHandler()->handleMouseReleaseEvent(mev.event());
+    subframe->eventHandler().handleMouseReleaseEvent(mev.event());
     return true;
 }
 
@@ -3842,7 +3842,7 @@ bool EventHandler::passWheelEventToWidget(const PlatformWheelEvent& wheelEvent, 
     if (!widget->isFrameView())
         return false;
 
-    return toFrameView(widget)->frame().eventHandler()->handleWheelEvent(wheelEvent);
+    return toFrameView(widget)->frame().eventHandler().handleWheelEvent(wheelEvent);
 }
 
 bool EventHandler::passWidgetMouseDownEventToWidget(const MouseEventWithHitTestResults& event)

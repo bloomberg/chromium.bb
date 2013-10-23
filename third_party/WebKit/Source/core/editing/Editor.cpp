@@ -813,7 +813,7 @@ void Editor::clear()
 
 bool Editor::insertText(const String& text, Event* triggeringEvent)
 {
-    return m_frame.eventHandler()->handleTextInputEvent(text, triggeringEvent);
+    return m_frame.eventHandler().handleTextInputEvent(text, triggeringEvent);
 }
 
 bool Editor::insertTextWithoutSendingTextEvent(const String& text, bool selectInsertedText, TextEvent* triggeringEvent)

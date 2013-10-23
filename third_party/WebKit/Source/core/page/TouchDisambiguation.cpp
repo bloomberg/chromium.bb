@@ -97,7 +97,7 @@ void findGoodTouchTargets(const IntRect& touchBox, Frame* mainFrame, Vector<IntR
     IntPoint touchPoint = touchBox.center();
     IntPoint contentsPoint = mainFrame->view()->windowToContents(touchPoint);
 
-    HitTestResult result = mainFrame->eventHandler()->hitTestResultAtPoint(contentsPoint, HitTestRequest::ReadOnly | HitTestRequest::Active | HitTestRequest::DisallowShadowContent, IntSize(touchPointPadding, touchPointPadding));
+    HitTestResult result = mainFrame->eventHandler().hitTestResultAtPoint(contentsPoint, HitTestRequest::ReadOnly | HitTestRequest::Active | HitTestRequest::DisallowShadowContent, IntSize(touchPointPadding, touchPointPadding));
     const ListHashSet<RefPtr<Node> >& hitResults = result.rectBasedTestResult();
 
     // Blacklist nodes that are container of disambiguated nodes.

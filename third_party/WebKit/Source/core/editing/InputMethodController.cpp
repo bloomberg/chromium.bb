@@ -111,7 +111,7 @@ void InputMethodController::clear()
 
 bool InputMethodController::insertTextForConfirmedComposition(const String& text)
 {
-    return m_frame.eventHandler()->handleTextInputEvent(text, 0, TextEventInputComposition);
+    return m_frame.eventHandler().handleTextInputEvent(text, 0, TextEventInputComposition);
 }
 
 void InputMethodController::selectComposition() const

@@ -98,7 +98,7 @@ RenderLayerScrollableArea::~RenderLayerScrollableArea()
 {
     if (inResizeMode() && !m_box->documentBeingDestroyed()) {
         if (Frame* frame = m_box->frame())
-            frame->eventHandler()->resizeLayerDestroyed();
+            frame->eventHandler().resizeLayerDestroyed();
     }
 
     if (Frame* frame = m_box->frame()) {
@@ -364,7 +364,7 @@ void RenderLayerScrollableArea::setScrollOffset(const IntPoint& newScrollOffset)
         FloatQuad quadForFakeMouseMoveEvent = FloatQuad(layer()->repainter().repaintRect());
         if (repaintContainer)
             quadForFakeMouseMoveEvent = repaintContainer->localToAbsoluteQuad(quadForFakeMouseMoveEvent);
-        frame->eventHandler()->dispatchFakeMouseMoveEventSoonInQuad(quadForFakeMouseMoveEvent);
+        frame->eventHandler().dispatchFakeMouseMoveEventSoonInQuad(quadForFakeMouseMoveEvent);
     }
 
     bool requiresRepaint = true;
@@ -436,7 +436,7 @@ IntSize RenderLayerScrollableArea::overhangAmount() const
 
 IntPoint RenderLayerScrollableArea::lastKnownMousePosition() const
 {
-    return m_box->frame() ? m_box->frame()->eventHandler()->lastKnownMousePosition() : IntPoint();
+    return m_box->frame() ? m_box->frame()->eventHandler().lastKnownMousePosition() : IntPoint();
 }
 
 bool RenderLayerScrollableArea::shouldSuspendScrollAnimations() const
@@ -1223,7 +1223,7 @@ void RenderLayerScrollableArea::resize(const PlatformEvent& evt, const LayoutSiz
 
     switch (evt.type()) {
     case PlatformEvent::MouseMoved:
-        if (!document.frame()->eventHandler()->mousePressed())
+        if (!document.frame()->eventHandler().mousePressed())
             return;
         pos = static_cast<const PlatformMouseEvent*>(&evt)->position();
         break;

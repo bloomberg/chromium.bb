@@ -119,7 +119,7 @@ void AutoscrollController::updateAutoscrollRenderer()
     RenderObject* renderer = m_autoscrollRenderer;
 
 #if OS(WIN)
-    HitTestResult hitTest = renderer->frame()->eventHandler()->hitTestResultAtPoint(m_panScrollStartPos, HitTestRequest::ReadOnly | HitTestRequest::Active | HitTestRequest::DisallowShadowContent);
+    HitTestResult hitTest = renderer->frame()->eventHandler().hitTestResultAtPoint(m_panScrollStartPos, HitTestRequest::ReadOnly | HitTestRequest::Active | HitTestRequest::DisallowShadowContent);
 
     if (Node* nodeAtPoint = hitTest.innerNode())
         renderer = nodeAtPoint->renderer();
@@ -221,19 +221,19 @@ void AutoscrollController::autoscrollTimerFired(Timer<AutoscrollController>*)
         return;
     }
 
-    EventHandler* eventHandler = m_autoscrollRenderer->frame()->eventHandler();
+    EventHandler& eventHandler = m_autoscrollRenderer->frame()->eventHandler();
     switch (m_autoscrollType) {
     case AutoscrollForDragAndDrop:
         if (WTF::currentTime() - m_dragAndDropAutoscrollStartTime > autoscrollDelay)
             m_autoscrollRenderer->autoscroll(m_dragAndDropAutoscrollReferencePosition);
         break;
     case AutoscrollForSelection:
-        if (!eventHandler->mousePressed()) {
+        if (!eventHandler.mousePressed()) {
             stopAutoscrollTimer();
             return;
         }
-        eventHandler->updateSelectionForMouseDrag();
-        m_autoscrollRenderer->autoscroll(eventHandler->lastKnownMousePosition());
+        eventHandler.updateSelectionForMouseDrag();
+        m_autoscrollRenderer->autoscroll(eventHandler.lastKnownMousePosition());
         break;
     case NoAutoscroll:
         break;
@@ -245,7 +245,7 @@ void AutoscrollController::autoscrollTimerFired(Timer<AutoscrollController>*)
             return;
         }
         if (FrameView* view = m_autoscrollRenderer->frame()->view())
-            updatePanScrollState(view, eventHandler->lastKnownMousePosition());
+            updatePanScrollState(view, eventHandler.lastKnownMousePosition());
         m_autoscrollRenderer->panScroll(m_panScrollStartPos);
         break;
 #endif

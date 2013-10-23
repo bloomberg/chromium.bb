@@ -1145,7 +1145,7 @@ PassRefPtr<DOMPoint> Internals::touchPositionAdjustedToBestClickableNode(long x,
     Node* targetNode;
     IntPoint adjustedPoint;
 
-    bool foundNode = document->frame()->eventHandler()->bestClickableNodeForTouchPoint(point, radius, adjustedPoint, targetNode);
+    bool foundNode = document->frame()->eventHandler().bestClickableNodeForTouchPoint(point, radius, adjustedPoint, targetNode);
     if (foundNode)
         return DOMPoint::create(adjustedPoint.x(), adjustedPoint.y());
 
@@ -1166,7 +1166,7 @@ Node* Internals::touchNodeAdjustedToBestClickableNode(long x, long y, long width
 
     Node* targetNode;
     IntPoint adjustedPoint;
-    document->frame()->eventHandler()->bestClickableNodeForTouchPoint(point, radius, adjustedPoint, targetNode);
+    document->frame()->eventHandler().bestClickableNodeForTouchPoint(point, radius, adjustedPoint, targetNode);
     return targetNode;
 }
 
@@ -1185,7 +1185,7 @@ PassRefPtr<DOMPoint> Internals::touchPositionAdjustedToBestContextMenuNode(long 
     Node* targetNode = 0;
     IntPoint adjustedPoint;
 
-    bool foundNode = document->frame()->eventHandler()->bestContextMenuNodeForTouchPoint(point, radius, adjustedPoint, targetNode);
+    bool foundNode = document->frame()->eventHandler().bestContextMenuNodeForTouchPoint(point, radius, adjustedPoint, targetNode);
     if (foundNode)
         return DOMPoint::create(adjustedPoint.x(), adjustedPoint.y());
 
@@ -1206,7 +1206,7 @@ Node* Internals::touchNodeAdjustedToBestContextMenuNode(long x, long y, long wid
 
     Node* targetNode = 0;
     IntPoint adjustedPoint;
-    document->frame()->eventHandler()->bestContextMenuNodeForTouchPoint(point, radius, adjustedPoint, targetNode);
+    document->frame()->eventHandler().bestContextMenuNodeForTouchPoint(point, radius, adjustedPoint, targetNode);
     return targetNode;
 }
 
@@ -1224,7 +1224,7 @@ PassRefPtr<ClientRect> Internals::bestZoomableAreaForTouchPoint(long x, long y, 
 
     Node* targetNode;
     IntRect zoomableArea;
-    bool foundNode = document->frame()->eventHandler()->bestZoomableAreaForTouchPoint(point, radius, zoomableArea, targetNode);
+    bool foundNode = document->frame()->eventHandler().bestZoomableAreaForTouchPoint(point, radius, zoomableArea, targetNode);
     if (foundNode)
         return ClientRect::create(zoomableArea);
 
@@ -2170,7 +2170,7 @@ String Internals::getCurrentCursorInfo(Document* document, ExceptionState& es)
         return String();
     }
 
-    Cursor cursor = document->frame()->eventHandler()->currentMouseCursor();
+    Cursor cursor = document->frame()->eventHandler().currentMouseCursor();
 
     StringBuilder result;
     result.append("type=");
