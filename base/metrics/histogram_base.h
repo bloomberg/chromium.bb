@@ -6,6 +6,7 @@
 #define BASE_METRICS_HISTOGRAM_BASE_H_
 
 #include <string>
+#include <vector>
 
 #include "base/atomicops.h"
 #include "base/base_export.h"
@@ -42,10 +43,6 @@ std::string HistogramTypeToString(HistogramType type);
 // Returns NULL if the pickled data has problems.
 BASE_EXPORT_PRIVATE HistogramBase* DeserializeHistogramInfo(
     PickleIterator* iter);
-
-// Create or find existing histogram and add the samples from pickle.
-// Silently returns when seeing any data problem in the pickle.
-BASE_EXPORT void DeserializeHistogramAndAddSamples(PickleIterator* iter);
 
 ////////////////////////////////////////////////////////////////////////////////
 

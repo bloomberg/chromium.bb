@@ -85,6 +85,8 @@ class BASE_EXPORT StatisticsRecorder {
   friend class HistogramTest;
   friend class SparseHistogramTest;
   friend class StatisticsRecorderTest;
+  FRIEND_TEST_ALL_PREFIXES(HistogramDeltaSerializationTest,
+                           DeserializeHistogramAndAddSamples);
 
   // The constructor just initializes static members. Usually client code should
   // use Initialize to do this. But in test code, you can friend this class and

@@ -61,40 +61,6 @@ TEST_F(HistogramBaseTest, DeserializeHistogram) {
   EXPECT_EQ(HistogramBase::kUmaTargetedHistogramFlag, deserialized->flags());
 }
 
-TEST_F(HistogramBaseTest, DeserializeHistogramAndAddSamples) {
-  HistogramBase* histogram = Histogram::FactoryGet(
-      "TestHistogram", 1, 1000, 10, HistogramBase::kIPCSerializationSourceFlag);
-  histogram->Add(1);
-  histogram->Add(10);
-  histogram->Add(100);
-  histogram->Add(1000);
-
-  Pickle pickle;
-  ASSERT_TRUE(histogram->SerializeInfo(&pickle));
-  histogram->SnapshotSamples()->Serialize(&pickle);
-
-  PickleIterator iter(pickle);
-  DeserializeHistogramAndAddSamples(&iter);
-
-  // The histogram has kIPCSerializationSourceFlag. So samples will be ignored.
-  scoped_ptr<HistogramSamples> snapshot(histogram->SnapshotSamples());
-  EXPECT_EQ(1, snapshot->GetCount(1));
-  EXPECT_EQ(1, snapshot->GetCount(10));
-  EXPECT_EQ(1, snapshot->GetCount(100));
-  EXPECT_EQ(1, snapshot->GetCount(1000));
-
-  // Clear kIPCSerializationSourceFlag to emulate multi-process usage.
-  histogram->ClearFlags(HistogramBase::kIPCSerializationSourceFlag);
-  PickleIterator iter2(pickle);
-  DeserializeHistogramAndAddSamples(&iter2);
-
-  scoped_ptr<HistogramSamples> snapshot2(histogram->SnapshotSamples());
-  EXPECT_EQ(2, snapshot2->GetCount(1));
-  EXPECT_EQ(2, snapshot2->GetCount(10));
-  EXPECT_EQ(2, snapshot2->GetCount(100));
-  EXPECT_EQ(2, snapshot2->GetCount(1000));
-}
-
 TEST_F(HistogramBaseTest, DeserializeLinearHistogram) {
   HistogramBase* histogram = LinearHistogram::FactoryGet(
       "TestHistogram", 1, 1000, 10,

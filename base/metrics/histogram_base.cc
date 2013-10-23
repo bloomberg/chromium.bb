@@ -58,20 +58,6 @@ HistogramBase* DeserializeHistogramInfo(PickleIterator* iter) {
   }
 }
 
-void DeserializeHistogramAndAddSamples(PickleIterator* iter) {
-  HistogramBase* histogram = DeserializeHistogramInfo(iter);
-  if (!histogram)
-    return;
-
-  if (histogram->flags() & base::HistogramBase::kIPCSerializationSourceFlag) {
-    DVLOG(1) << "Single process mode, histogram observed and not copied: "
-             << histogram->histogram_name();
-    return;
-  }
-  histogram->AddSamplesFromPickle(iter);
-}
-
-
 const HistogramBase::Sample HistogramBase::kSampleType_MAX = INT_MAX;
 
 HistogramBase::HistogramBase(const std::string& name)

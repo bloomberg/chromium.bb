@@ -8,6 +8,7 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
+#include "base/metrics/histogram_delta_serialization.h"
 #include "base/pickle.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
@@ -268,16 +269,10 @@ void HistogramSynchronizer::OnHistogramDataCollected(
     const std::vector<std::string>& pickled_histograms) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
+  base::HistogramDeltaSerialization::DeserializeAndAddSamples(
+      pickled_histograms);
+
   RequestContext* request = RequestContext::GetRequestContext(sequence_number);
-
-  for (std::vector<std::string>::const_iterator it = pickled_histograms.begin();
-       it < pickled_histograms.end();
-       ++it) {
-    Pickle pickle(it->data(), it->size());
-    PickleIterator iter(pickle);
-    base::DeserializeHistogramAndAddSamples(&iter);
-  }
-
   if (!request)
     return;
 

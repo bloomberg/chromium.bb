@@ -339,6 +339,8 @@
           'metrics/histogram.h',
           'metrics/histogram_base.cc',
           'metrics/histogram_base.h',
+          'metrics/histogram_delta_serialization.cc',
+          'metrics/histogram_delta_serialization.h',
           'metrics/histogram_flattener.h',
           'metrics/histogram_samples.cc',
           'metrics/histogram_samples.h',
