@@ -1510,9 +1510,9 @@ void BackwardsCharacterIterator::advance(int count)
 
     for (m_textIterator.advance(); !atEnd(); m_textIterator.advance()) {
         int runLength = m_textIterator.length();
-        if (!runLength)
+        if (!runLength) {
             m_atBreak = true;
-        else {
+        } else {
             if (count < runLength) {
                 m_runOffset = count;
                 m_offset += count;
