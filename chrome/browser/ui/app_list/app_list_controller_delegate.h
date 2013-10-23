@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "chrome/browser/extensions/extension_prefs.h"
 #include "ui/gfx/native_widget_types.h"
 
 class Profile;
@@ -97,6 +98,27 @@ class AppListControllerDelegate {
   virtual bool ShouldShowUserIcon();
 
   static std::string AppListSourceToString(AppListSource source);
+
+  // Uninstall the app identified by |app_id| from |profile|.
+  void UninstallApp(Profile* profile, const std::string& app_id);
+
+  // Shows the user the webstore site for the given app.
+  void ShowAppInWebStore(Profile* profile,
+                         const std::string& app_id,
+                         bool is_search_result);
+
+  // Shows the user the options page for the app.
+  void ShowExtensionOptions(Profile* profile, const std::string& app_id);
+
+  // Gets/sets the launch type for an app.
+  // The launch type specifies whether a hosted app should launch as a separate
+  // window, fullscreened or as a tab.
+  extensions::ExtensionPrefs::LaunchType GetExtensionLaunchType(
+      Profile* profile, const std::string& app_id);
+  virtual void SetExtensionLaunchType(
+      Profile* profile,
+      const std::string& extension_id,
+      extensions::ExtensionPrefs::LaunchType launch_type);
 };
 
 #endif  // CHROME_BROWSER_UI_APP_LIST_APP_LIST_CONTROLLER_DELEGATE_H_

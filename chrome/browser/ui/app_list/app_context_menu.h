@@ -38,9 +38,6 @@ class AppContextMenu : public ui::SimpleMenuModel::Delegate {
 
  private:
   const extensions::Extension* GetExtension() const;
-  void ShowExtensionOptions();
-  void ShowExtensionDetails();
-  void StartExtensionUninstall();
 
   // ui::SimpleMenuModel::Delegate overrides:
   virtual bool IsItemForCommandIdDynamic(int command_id) const OVERRIDE;

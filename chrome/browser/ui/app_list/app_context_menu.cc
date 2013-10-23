@@ -9,19 +9,16 @@
 #include "chrome/browser/extensions/context_menu_matcher.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
-#include "chrome/browser/extensions/extension_uninstall_dialog.h"
 #include "chrome/browser/extensions/management_policy.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_context_menu_delegate.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
-#include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
 #include "content/public/common/context_menu_params.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
-#include "net/base/url_util.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(USE_ASH)
@@ -51,82 +48,6 @@ enum CommandId {
   LAUNCH_TYPE_WINDOW,
   LAUNCH_TYPE_LAST,
 };
-
-// ExtensionUninstaller runs the extension uninstall flow. It shows the
-// extension uninstall dialog and wait for user to confirm or cancel the
-// uninstall.
-class ExtensionUninstaller : public ExtensionUninstallDialog::Delegate {
- public:
-  ExtensionUninstaller(Profile* profile,
-                       const std::string& extension_id,
-                       AppListControllerDelegate* controller)
-      : profile_(profile),
-        app_id_(extension_id),
-        controller_(controller) {
-  }
-
-  void Run() {
-    const Extension* extension =
-        extensions::ExtensionSystem::Get(profile_)->extension_service()->
-            GetInstalledExtension(app_id_);
-    if (!extension) {
-      CleanUp();
-      return;
-    }
-    controller_->OnShowExtensionPrompt();
-    dialog_.reset(ExtensionUninstallDialog::Create(profile_, NULL, this));
-    dialog_->ConfirmUninstall(extension);
-  }
-
- private:
-  // Overridden from ExtensionUninstallDialog::Delegate:
-  virtual void ExtensionUninstallAccepted() OVERRIDE {
-    ExtensionService* service =
-        extensions::ExtensionSystem::Get(profile_)->extension_service();
-    const Extension* extension = service->GetInstalledExtension(app_id_);
-    if (extension) {
-      service->UninstallExtension(app_id_,
-                                  false, /* external_uninstall*/
-                                  NULL);
-    }
-    controller_->OnCloseExtensionPrompt();
-    CleanUp();
-  }
-
-  virtual void ExtensionUninstallCanceled() OVERRIDE {
-    controller_->OnCloseExtensionPrompt();
-    CleanUp();
-  }
-
-  void CleanUp() {
-    delete this;
-  }
-
-  Profile* profile_;
-  std::string app_id_;
-  AppListControllerDelegate* controller_;
-  scoped_ptr<ExtensionUninstallDialog> dialog_;
-
-  DISALLOW_COPY_AND_ASSIGN(ExtensionUninstaller);
-};
-
-extensions::ExtensionPrefs::LaunchType GetExtensionLaunchType(
-    Profile* profile,
-    const Extension* extension) {
-  ExtensionService* service =
-      extensions::ExtensionSystem::Get(profile)->extension_service();
-  return service->extension_prefs()->
-      GetLaunchType(extension, extensions::ExtensionPrefs::LAUNCH_DEFAULT);
-}
-
-void SetExtensionLaunchType(
-    Profile* profile,
-    const std::string& extension_id,
-    extensions::ExtensionPrefs::LaunchType launch_type) {
-  ExtensionService* service =
-      extensions::ExtensionSystem::Get(profile)->extension_service();
-  service->extension_prefs()->SetLaunchType(extension_id, launch_type);
-}
 
 bool MenuItemHasLauncherContext(const extensions::MenuItem* item) {
   return item->contexts().Contains(extensions::MenuItem::LAUNCHER);
@@ -249,47 +170,6 @@ const Extension* AppContextMenu::GetExtension() const {
   return extension;
 }
 
-void AppContextMenu::ShowExtensionOptions() {
-  const Extension* extension = GetExtension();
-  if (!extension)
-    return;
-
-  chrome::NavigateParams params(
-      profile_,
-      extensions::ManifestURL::GetOptionsPage(extension),
-      content::PAGE_TRANSITION_LINK);
-  chrome::Navigate(&params);
-}
-
-void AppContextMenu::ShowExtensionDetails() {
-  const Extension* extension = GetExtension();
-  if (!extension)
-    return;
-
-  const GURL url = extensions::ManifestURL::GetDetailsURL(extension);
-  DCHECK_NE(url, GURL::EmptyGURL());
-
-  const std::string source = AppListControllerDelegate::AppListSourceToString(
-      is_search_result_ ?
-          AppListControllerDelegate::LAUNCH_FROM_APP_LIST_SEARCH :
-          AppListControllerDelegate::LAUNCH_FROM_APP_LIST);
-  chrome::NavigateParams params(
-      profile_,
-      net::AppendQueryParameter(url,
-                                extension_urls::kWebstoreSourceField,
-                                source),
-      content::PAGE_TRANSITION_LINK);
-  chrome::Navigate(&params);
-}
-
-void AppContextMenu::StartExtensionUninstall() {
-  // ExtensionUninstall deletes itself when done or aborted.
-  ExtensionUninstaller* uninstaller = new ExtensionUninstaller(profile_,
-                                                               app_id_,
-                                                               controller_);
-  uninstaller->Run();
-}
-
 bool AppContextMenu::IsItemForCommandIdDynamic(int command_id) const {
   return command_id == TOGGLE_PIN || command_id == LAUNCH_NEW;
 }
@@ -318,8 +198,8 @@ string16 AppContextMenu::GetLabelForCommandId(int command_id) const {
 
 bool AppContextMenu::IsCommandIdChecked(int command_id) const {
   if (command_id >= LAUNCH_TYPE_START && command_id < LAUNCH_TYPE_LAST) {
-    return static_cast<int>(GetExtensionLaunchType(profile_, GetExtension())) +
-        LAUNCH_TYPE_START == command_id;
+    return static_cast<int>(controller_->GetExtensionLaunchType(
+        profile_, app_id_)) + LAUNCH_TYPE_START == command_id;
   } else if (command_id >= IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST &&
              command_id <= IDC_EXTENSIONS_CONTEXT_CUSTOM_LAST) {
     return extension_menu_items_->IsCommandIdChecked(command_id);
@@ -388,20 +268,20 @@ void AppContextMenu::ExecuteCommand(int command_id, int event_flags) {
     // LAUNCH_REGULAR.
     if (CommandLine::ForCurrentProcess()->HasSwitch(
         switches::kEnableStreamlinedHostedApps)) {
-      launch_type = GetExtensionLaunchType(profile_, GetExtension()) ==
+      launch_type = controller_->GetExtensionLaunchType(profile_, app_id_) ==
                             extensions::ExtensionPrefs::LAUNCH_REGULAR
                         ? extensions::ExtensionPrefs::LAUNCH_WINDOW
                         : extensions::ExtensionPrefs::LAUNCH_REGULAR;
     }
-    SetExtensionLaunchType(profile_,
-                           app_id_,
-                           launch_type);
+    controller_->SetExtensionLaunchType(profile_,
+                                        app_id_,
+                                        launch_type);
   } else if (command_id == OPTIONS) {
-    ShowExtensionOptions();
+    controller_->ShowExtensionOptions(profile_, app_id_);
   } else if (command_id == UNINSTALL) {
-    StartExtensionUninstall();
+    controller_->UninstallApp(profile_, app_id_);
   } else if (command_id == DETAILS) {
-    ShowExtensionDetails();
+    controller_->ShowAppInWebStore(profile_, app_id_, is_search_result_);
   } else if (command_id >= IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST &&
              command_id <= IDC_EXTENSIONS_CONTEXT_CUSTOM_LAST) {
     extension_menu_items_->ExecuteCommand(command_id, NULL,

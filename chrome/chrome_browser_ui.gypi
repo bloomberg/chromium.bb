@@ -150,6 +150,8 @@
         'browser/ui/app_list/extension_app_item.h',
         'browser/ui/app_list/extension_app_model_builder.cc',
         'browser/ui/app_list/extension_app_model_builder.h',
+        'browser/ui/app_list/extension_uninstaller.cc',
+        'browser/ui/app_list/extension_uninstaller.h',
         'browser/ui/app_list/keep_alive_service.h',
         'browser/ui/app_list/keep_alive_service_impl.cc',
         'browser/ui/app_list/keep_alive_service_impl.h',
