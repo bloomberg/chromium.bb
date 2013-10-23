@@ -21,5 +21,17 @@ void ChromiumApplication::OpenProtectedContentSettings() {
       base::android::GetApplicationContext());
 }
 
+void ChromiumApplication::ShowSyncSettings() {
+  Java_ChromiumApplication_showSyncSettings(
+      base::android::AttachCurrentThread(),
+      base::android::GetApplicationContext());
+}
+
+void ChromiumApplication::ShowTermsOfServiceDialog() {
+  Java_ChromiumApplication_showTermsOfServiceDialog(
+      base::android::AttachCurrentThread(),
+      base::android::GetApplicationContext());
+}
+
 }  // namespace android
 }  // namespace chrome

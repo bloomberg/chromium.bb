@@ -89,12 +89,6 @@ class TabAndroid : public CoreTabHelperDelegate,
   // Called when a bookmark node should be edited.
   virtual void EditBookmark(int64 node_id, bool is_folder) = 0;
 
-  // Called to show the sync settings menu.
-  virtual void ShowSyncSettings() = 0;
-
-  // Called to show a dialog with the terms of service.
-  virtual void ShowTermsOfService() = 0;
-
   // Called to determine if chrome://welcome should contain links to the terms
   // of service and the privacy notice.
   virtual bool ShouldWelcomePageLinkToTermsOfService() = 0;

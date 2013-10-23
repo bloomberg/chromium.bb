@@ -17,4 +17,10 @@ public abstract class ChromiumApplication extends ContentApplication {
      */
     @CalledByNative
     protected abstract void openProtectedContentSettings();
+
+    @CalledByNative
+    protected abstract void showSyncSettings();
+
+    @CalledByNative
+    protected abstract void showTermsOfServiceDialog();
 }

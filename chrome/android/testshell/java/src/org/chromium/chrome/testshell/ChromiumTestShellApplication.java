@@ -6,6 +6,7 @@ package org.chromium.chrome.testshell;
 
 import android.content.Intent;
 
+import org.chromium.base.CalledByNative;
 import org.chromium.base.PathUtils;
 import org.chromium.chrome.browser.ChromiumApplication;
 import org.chromium.chrome.browser.UmaUtils;
@@ -69,5 +70,13 @@ public class ChromiumTestShellApplication extends ChromiumApplication {
 
     @Override
     protected void openProtectedContentSettings() {
+    }
+
+    @Override
+    protected void showSyncSettings() {
+    }
+
+    @Override
+    protected void showTermsOfServiceDialog() {
     }
 }

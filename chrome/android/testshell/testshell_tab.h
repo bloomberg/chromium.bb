@@ -59,8 +59,6 @@ class TestShellTab : public TabAndroid {
                                      int b_value) OVERRIDE;
   virtual void EditBookmark(int64 node_id, bool is_folder) OVERRIDE;
 
-  virtual void ShowSyncSettings() OVERRIDE;
-  virtual void ShowTermsOfService() OVERRIDE;
   virtual bool ShouldWelcomePageLinkToTermsOfService() OVERRIDE;
   virtual void OnNewTabPageReady() OVERRIDE;
 

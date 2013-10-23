@@ -22,6 +22,12 @@ class ChromiumApplication {
   // Opens a protected content settings page, if available.
   static void OpenProtectedContentSettings();
 
+  // Opens the sync settings page.
+  static void ShowSyncSettings();
+
+  // Shows a dialog with the terms of service.
+  static void ShowTermsOfServiceDialog();
+
  private:
   ChromiumApplication() {}
   ~ChromiumApplication() {}

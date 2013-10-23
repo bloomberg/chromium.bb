@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/values.h"
-#include "chrome/browser/android/tab_android.h"
+#include "chrome/browser/android/chromium_application.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "content/public/browser/web_ui.h"
@@ -46,11 +46,11 @@ void WelcomeHandler::HandleUpdateSyncFooterVisibility(const ListValue* args) {
 }
 
 void WelcomeHandler::HandleShowSyncSettings(const ListValue* args) {
-  TabAndroid::FromWebContents(web_ui()->GetWebContents())->ShowSyncSettings();
+  chrome::android::ChromiumApplication::ShowSyncSettings();
 }
 
 void WelcomeHandler::HandleShowTermsOfService(const ListValue* args) {
-  TabAndroid::FromWebContents(web_ui()->GetWebContents())->ShowTermsOfService();
+  chrome::android::ChromiumApplication::ShowTermsOfServiceDialog();
 }
 
 void WelcomeHandler::OnStateChanged() {
