@@ -119,6 +119,37 @@ static Node* determineScopingNodeForStyleScoped(HTMLStyleElement* ownerElement, 
     return ownerElement->isRegisteredInShadowRoot() ? ownerElement->containingShadowRoot()->shadowHost() : ownerElement->parentNode();
 }
 
+static bool ruleAdditionMightRequireDocumentStyleRecalc(StyleRuleBase* rule)
+{
+    // This funciton is conservative. We only return false when we know that
+    // the added @rule can't require style recalcs.
+    switch (rule->type()) {
+    case StyleRule::Import: // Whatever we import should do its own analysis, we don't need to invalidate the document here!
+    case StyleRule::Keyframes: // Keyframes never cause style invalidations and are handled during sheet insertion.
+    case StyleRule::Page: // Page rules apply only during printing, we force a full-recalc before printing.
+        return false;
+
+    case StyleRule::Media: // If the media rule doesn't apply, we could avoid recalc.
+    case StyleRule::FontFace: // If the fonts aren't in use, we could avoid recalc.
+    case StyleRule::Supports: // If we evaluated the supports-clause we could avoid recalc.
+    case StyleRule::Viewport: // If the viewport doesn't match, we could avoid recalcing.
+    // FIXME: Unclear if any of the rest need to cause style recalc:
+    case StyleRule::Region:
+    case StyleRule::Filter:
+    case StyleRule::HostInternal:
+        return true;
+
+    // These should all be impossible to reach:
+    case StyleRule::Unknown:
+    case StyleRule::Charset:
+    case StyleRule::Keyframe:
+    case StyleRule::Style:
+        break;
+    }
+    ASSERT_NOT_REACHED();
+    return true;
+}
+
 void StyleInvalidationAnalysis::analyzeStyleSheet(StyleSheetContents* styleSheetContents)
 {
     ASSERT(!styleSheetContents->isLoading());
@@ -145,9 +176,11 @@ void StyleInvalidationAnalysis::analyzeStyleSheet(StyleSheetContents* styleSheet
     for (unsigned i = 0; i < rules.size(); i++) {
         StyleRuleBase* rule = rules[i].get();
         if (!rule->isStyleRule()) {
-            // FIXME: Media rules and maybe some others could be allowed.
-            m_dirtiesAllStyle = true;
-            return;
+            if (ruleAdditionMightRequireDocumentStyleRecalc(rule)) {
+                m_dirtiesAllStyle = true;
+                return;
+            }
+            continue;
         }
         StyleRule* styleRule = toStyleRule(rule);
         if (!determineSelectorScopes(styleRule->selectorList(), m_idScopes, m_classScopes)) {
