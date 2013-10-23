@@ -92,20 +92,11 @@ void LayerAnimationController::RemoveAnimation(
   UpdateActivation(NormalActivation);
 }
 
-// According to render layer backing, these are for testing only.
+// For testing only.
 void LayerAnimationController::SuspendAnimations(double monotonic_time) {
   for (size_t i = 0; i < active_animations_.size(); ++i) {
     if (!active_animations_[i]->is_finished())
       active_animations_[i]->SetRunState(Animation::Paused, monotonic_time);
-  }
-}
-
-// Looking at GraphicsLayerCA, this appears to be the analog to
-// SuspendAnimations, which is for testing.
-void LayerAnimationController::ResumeAnimations(double monotonic_time) {
-  for (size_t i = 0; i < active_animations_.size(); ++i) {
-    if (active_animations_[i]->run_state() == Animation::Paused)
-      active_animations_[i]->SetRunState(Animation::Running, monotonic_time);
   }
 }
 

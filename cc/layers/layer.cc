@@ -1028,11 +1028,6 @@ void Layer::SuspendAnimations(double monotonic_time) {
   SetNeedsCommit();
 }
 
-void Layer::ResumeAnimations(double monotonic_time) {
-  layer_animation_controller_->ResumeAnimations(monotonic_time);
-  SetNeedsCommit();
-}
-
 void Layer::SetLayerAnimationControllerForTest(
     scoped_refptr<LayerAnimationController> controller) {
   layer_animation_controller_->RemoveValueObserver(this);

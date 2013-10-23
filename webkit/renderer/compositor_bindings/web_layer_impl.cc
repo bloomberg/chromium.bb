@@ -219,10 +219,6 @@ void WebLayerImpl::suspendAnimations(double monotonic_time) {
   layer_->SuspendAnimations(monotonic_time);
 }
 
-void WebLayerImpl::resumeAnimations(double monotonic_time) {
-  layer_->ResumeAnimations(monotonic_time);
-}
-
 bool WebLayerImpl::hasActiveAnimation() { return layer_->HasActiveAnimation(); }
 
 void WebLayerImpl::setForceRenderSurface(bool force_render_surface) {

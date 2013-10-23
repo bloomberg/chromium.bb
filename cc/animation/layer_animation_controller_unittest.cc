@@ -138,18 +138,6 @@ TEST(LayerAnimationControllerTest, SyncPauseAndResume) {
   EXPECT_EQ(Animation::Paused,
             controller_impl->GetAnimation(group_id,
                                           Animation::Opacity)->run_state());
-
-  // Resume the main-thread animation.
-  controller->ResumeAnimations(2.0);
-  EXPECT_EQ(Animation::Running,
-            controller->GetAnimation(group_id,
-                                     Animation::Opacity)->run_state());
-
-  // The pause run state change should make it to the impl thread controller.
-  controller->PushAnimationUpdatesTo(controller_impl.get());
-  EXPECT_EQ(Animation::Running,
-            controller_impl->GetAnimation(group_id,
-                                          Animation::Opacity)->run_state());
 }
 
 TEST(LayerAnimationControllerTest, DoNotSyncFinishedAnimation) {
