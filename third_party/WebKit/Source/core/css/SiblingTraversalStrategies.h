@@ -98,14 +98,8 @@ inline int DOMSiblingTraversalStrategy::countElementsOfTypeBefore(Element* eleme
 inline int DOMSiblingTraversalStrategy::countElementsAfter(Element* element) const
 {
     int count = 0;
-    for (const Element* sibling = element->nextElementSibling(); sibling; sibling = sibling->nextElementSibling()) {
-        unsigned index = sibling->childIndex();
-        if (index) {
-            count += index;
-            break;
-        }
+    for (const Element* sibling = element->nextElementSibling(); sibling; sibling = sibling->nextElementSibling())
         ++count;
-    }
 
     return count;
 }
