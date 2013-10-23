@@ -1005,7 +1005,7 @@ void XMLDocumentParser::startElementNs(const AtomicString& localName, const Atom
         pushCurrentNode(newElement.get());
 
     if (isHTMLHtmlElement(newElement.get()))
-        toHTMLHtmlElement(newElement.get())->insertedByParser();
+        toHTMLHtmlElement(newElement)->insertedByParser();
 
     if (!m_parsingFragment && isFirstElement && document()->frame())
         document()->frame()->loader()->dispatchDocumentElementAvailable();

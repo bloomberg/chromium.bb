@@ -51,11 +51,7 @@ inline bool isHTMLHtmlElement(const Element* element)
     return element->hasTagName(HTMLNames::htmlTag);
 }
 
-inline HTMLHtmlElement* toHTMLHtmlElement(Node* node)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!node || isHTMLHtmlElement(node));
-    return static_cast<HTMLHtmlElement*>(node);
-}
+DEFINE_NODE_TYPE_CASTS(HTMLHtmlElement, hasTagName(HTMLNames::htmlTag));
 
 } // namespace
 

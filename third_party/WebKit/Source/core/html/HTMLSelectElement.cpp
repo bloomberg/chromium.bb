@@ -447,7 +447,7 @@ void HTMLSelectElement::setLength(unsigned newLen, ExceptionState& es)
         do {
             RefPtr<Element> option = document().createElement(optionTag, false);
             ASSERT(option);
-            add(toHTMLElement(option.get()), 0, es);
+            add(toHTMLElement(option), 0, es);
             if (es.hadException())
                 break;
         } while (++diff);

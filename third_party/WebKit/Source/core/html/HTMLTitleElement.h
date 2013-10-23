@@ -51,11 +51,7 @@ inline bool isHTMLTitleElement(const Element* element)
     return element->hasTagName(HTMLNames::titleTag);
 }
 
-inline HTMLTitleElement* toHTMLTitleElement(Node* node)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!node || isHTMLTitleElement(node));
-    return static_cast<HTMLTitleElement*>(node);
-}
+DEFINE_NODE_TYPE_CASTS(HTMLTitleElement, hasTagName(HTMLNames::titleTag));
 
 } //namespace
 

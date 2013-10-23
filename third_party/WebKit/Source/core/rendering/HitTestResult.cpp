@@ -255,12 +255,12 @@ String HitTestResult::altDisplayString() const
         return String();
 
     if (m_innerNonSharedNode->hasTagName(imgTag)) {
-        HTMLImageElement* image = toHTMLImageElement(m_innerNonSharedNode.get());
+        HTMLImageElement* image = toHTMLImageElement(m_innerNonSharedNode);
         return image->getAttribute(altAttr);
     }
 
     if (m_innerNonSharedNode->hasTagName(inputTag)) {
-        HTMLInputElement* input = toHTMLInputElement(m_innerNonSharedNode.get());
+        HTMLInputElement* input = toHTMLInputElement(m_innerNonSharedNode);
         return input->alt();
     }
 
@@ -353,7 +353,7 @@ bool HitTestResult::isLiveLink() const
         return false;
 
     if (isHTMLAnchorElement(m_innerURLElement.get()))
-        return toHTMLAnchorElement(m_innerURLElement.get())->isLiveLink();
+        return toHTMLAnchorElement(m_innerURLElement)->isLiveLink();
 
     if (m_innerURLElement->hasTagName(SVGNames::aTag))
         return m_innerURLElement->isLink();
@@ -405,7 +405,7 @@ bool HitTestResult::isContentEditable() const
         return true;
 
     if (m_innerNonSharedNode->hasTagName(inputTag))
-        return toHTMLInputElement(m_innerNonSharedNode.get())->isTextField();
+        return toHTMLInputElement(m_innerNonSharedNode)->isTextField();
 
     return m_innerNonSharedNode->rendererIsEditable();
 }

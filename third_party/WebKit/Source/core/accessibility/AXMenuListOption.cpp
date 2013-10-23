@@ -51,7 +51,7 @@ bool AXMenuListOption::isEnabled() const
 {
     // isDisabledFormControl() returns true if the parent <select> element is disabled,
     // which we don't want.
-    return !toHTMLOptionElement(m_element.get())->ownElementDisabled();
+    return !toHTMLOptionElement(m_element)->ownElementDisabled();
 }
 
 bool AXMenuListOption::isVisible() const
@@ -72,7 +72,7 @@ bool AXMenuListOption::isOffScreen() const
 
 bool AXMenuListOption::isSelected() const
 {
-    return toHTMLOptionElement(m_element.get())->selected();
+    return toHTMLOptionElement(m_element)->selected();
 }
 
 void AXMenuListOption::setSelected(bool b)
@@ -80,7 +80,7 @@ void AXMenuListOption::setSelected(bool b)
     if (!canSetSelectedAttribute())
         return;
 
-    toHTMLOptionElement(m_element.get())->setSelected(b);
+    toHTMLOptionElement(m_element)->setSelected(b);
 }
 
 bool AXMenuListOption::canSetSelectedAttribute() const
@@ -106,7 +106,7 @@ LayoutRect AXMenuListOption::elementRect() const
 
 String AXMenuListOption::stringValue() const
 {
-    return toHTMLOptionElement(m_element.get())->text();
+    return toHTMLOptionElement(m_element)->text();
 }
 
 } // namespace WebCore

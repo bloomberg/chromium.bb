@@ -3448,7 +3448,7 @@ void WebViewImpl::applyAutofillSuggestions(
         return;
     }
 
-    HTMLInputElement* inputElem = toHTMLInputElement(element.get());
+    HTMLInputElement* inputElem = toHTMLInputElement(element);
 
     // The first time the Autofill popup is shown we'll create the client and
     // the popup.
