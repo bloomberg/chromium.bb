@@ -10,6 +10,7 @@
 #include "base/format_macros.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
+#include "base/synchronization/waitable_event.h"
 
 namespace {
 
@@ -57,6 +58,20 @@ void WriteEvent(
   write(g_atrace_fd, out.c_str(), out.size());
 }
 
+void NoOpOutputCallback(base::WaitableEvent* complete_event,
+                        const scoped_refptr<base::RefCountedString>&,
+                        bool has_more_events) {
+  if (!has_more_events)
+    complete_event->Signal();
+}
+
+void EndChromeTracing(base::debug::TraceLog* trace_log,
+                      base::WaitableEvent* complete_event) {
+  trace_log->SetDisabled();
+  // Delete the buffered trace events as they have been sent to atrace.
+  trace_log->Flush(base::Bind(&NoOpOutputCallback, complete_event));
+}
+
 }  // namespace
 
 namespace base {
@@ -91,9 +106,16 @@ void TraceLog::StopATrace() {
 
   close(g_atrace_fd);
   g_atrace_fd = -1;
-  SetDisabled();
-  // Delete the buffered trace events as they have been sent to atrace.
-  Flush(OutputCallback());
+
+  // TraceLog::Flush() requires the current thread to have a message loop, but
+  // this thread called from Java may not have one, so flush in another thread.
+  Thread end_chrome_tracing_thread("end_chrome_tracing");
+  WaitableEvent complete_event(false, false);
+  end_chrome_tracing_thread.Start();
+  end_chrome_tracing_thread.message_loop()->PostTask(
+      FROM_HERE, base::Bind(&EndChromeTracing, Unretained(this),
+                            Unretained(&complete_event)));
+  complete_event.Wait();
 }
 
 void TraceEvent::SendToATrace() {
