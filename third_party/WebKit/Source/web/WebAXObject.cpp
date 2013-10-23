@@ -664,7 +664,7 @@ void WebAXObject::setSelectedTextRange(int selectionStart, int selectionEnd) con
     if (isDetached())
         return;
 
-    m_private->setSelectedTextRange(PlainTextRange(selectionStart, selectionEnd - selectionStart));
+    m_private->setSelectedTextRange(AXObject::PlainTextRange(selectionStart, selectionEnd - selectionStart));
 }
 
 WebString WebAXObject::stringValue() const
@@ -1026,7 +1026,7 @@ void WebAXObject::wordBoundaries(WebVector<int>& starts, WebVector<int>& ends) c
     if (isDetached())
         return;
 
-    Vector<PlainTextRange> words;
+    Vector<AXObject::PlainTextRange> words;
     m_private->wordBoundaries(words);
 
     WebVector<int> startsWebVector(words.size());

@@ -249,27 +249,27 @@ enum AccessibilityTextDirection {
     AccessibilityTextDirectionBottomToTop
 };
 
-struct PlainTextRange {
-
-    unsigned start;
-    unsigned length;
-
-    PlainTextRange()
-        : start(0)
-        , length(0)
-    { }
-
-    PlainTextRange(unsigned s, unsigned l)
-        : start(s)
-        , length(l)
-    { }
-
-    bool isNull() const { return !start && !length; }
-};
-
 class AXObject : public RefCounted<AXObject> {
 public:
     typedef Vector<RefPtr<AXObject> > AccessibilityChildrenVector;
+
+    struct PlainTextRange {
+
+        unsigned start;
+        unsigned length;
+
+        PlainTextRange()
+            : start(0)
+            , length(0)
+        { }
+
+        PlainTextRange(unsigned s, unsigned l)
+            : start(s)
+            , length(l)
+        { }
+
+        bool isNull() const { return !start && !length; }
+    };
 
 protected:
     AXObject();
@@ -514,8 +514,6 @@ public:
 
     // Selected text.
     virtual PlainTextRange selectedTextRange() const { return PlainTextRange(); }
-    unsigned selectionStart() const { return selectedTextRange().start; }
-    unsigned selectionEnd() const { return selectedTextRange().length; }
     virtual String selectedText() const { return String(); }
 
     // Modify or take an action on an object.
