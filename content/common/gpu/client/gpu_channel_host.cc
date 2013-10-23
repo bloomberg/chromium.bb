@@ -316,6 +316,8 @@ int32 GpuChannelHost::ReserveGpuMemoryBufferId() {
   return next_gpu_memory_buffer_id_.GetNext();
 }
 
+bool GpuChannelHost::IsMainThread() { return factory_->IsMainThread(); }
+
 GpuChannelHost::~GpuChannelHost() {
   // channel_ must be destroyed on the main thread.
   if (!factory_->IsMainThread())

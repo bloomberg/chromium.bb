@@ -25,7 +25,9 @@
 #include "content/child/webmessageportchannel_impl.h"
 #include "content/common/file_utilities_messages.h"
 #include "content/common/gpu/client/context_provider_command_buffer.h"
+#include "content/common/gpu/client/gpu_channel_host.h"
 #include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
+#include "content/common/gpu/gpu_process_launch_causes.h"
 #include "content/common/mime_registry_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/common/content_switches.h"
@@ -936,8 +938,14 @@ bool RendererWebKitPlatformSupportImpl::processMemorySizesInBytes(
 WebKit::WebGraphicsContext3D*
 RendererWebKitPlatformSupportImpl::createOffscreenGraphicsContext3D(
     const WebKit::WebGraphicsContext3D::Attributes& attributes) {
+  if (!RenderThreadImpl::current())
+    return NULL;
+
+  scoped_refptr<GpuChannelHost> gpu_channel_host(
+      RenderThreadImpl::current()->EstablishGpuChannelSync(
+          CAUSE_FOR_GPU_LAUNCH_WEBGRAPHICSCONTEXT3DCOMMANDBUFFERIMPL_INITIALIZE));
   return WebGraphicsContext3DCommandBufferImpl::CreateOffscreenContext(
-      RenderThreadImpl::current(),
+      gpu_channel_host.get(),
       attributes,
       GURL(attributes.topDocumentURL));
 }

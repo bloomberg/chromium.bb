@@ -72,7 +72,6 @@ class CONTENT_EXPORT GpuChannelHostFactory {
   virtual scoped_ptr<base::SharedMemory> AllocateSharedMemory(size_t size) = 0;
   virtual int32 CreateViewCommandBuffer(
       int32 surface_id, const GPUCreateCommandBufferConfig& init_params) = 0;
-  virtual GpuChannelHost* EstablishGpuChannelSync(CauseForGpuLaunch) = 0;
   virtual void CreateImage(
       gfx::PluginWindowHandle window,
       int32 image_id,
@@ -179,6 +178,9 @@ class GpuChannelHost : public IPC::Sender,
 
   // Reserve one unused gpu memory buffer ID.
   int32 ReserveGpuMemoryBufferId();
+
+  // TODO(sievers): Remove this.
+  bool IsMainThread();
 
  private:
   friend class base::RefCountedThreadSafe<GpuChannelHost>;

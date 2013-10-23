@@ -5,6 +5,8 @@
 #ifndef CONTENT_BROWSER_GPU_BROWSER_GPU_CHANNEL_HOST_FACTORY_H_
 #define CONTENT_BROWSER_GPU_BROWSER_GPU_CHANNEL_HOST_FACTORY_H_
 
+#include <vector>
+
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/process/process.h"
@@ -17,7 +19,7 @@ namespace content {
 class CONTENT_EXPORT BrowserGpuChannelHostFactory
     : public GpuChannelHostFactory {
  public:
-  static void Initialize();
+  static void Initialize(bool establish_gpu_channel);
   static void Terminate();
   static BrowserGpuChannelHostFactory* instance() { return instance_; }
 
@@ -36,8 +38,6 @@ class CONTENT_EXPORT BrowserGpuChannelHostFactory
       int32 image_id,
       const CreateImageCallback& callback) OVERRIDE;
   virtual void DeleteImage(int32 image_idu, int32 sync_point) OVERRIDE;
-  virtual GpuChannelHost* EstablishGpuChannelSync(
-      CauseForGpuLaunch cause_for_gpu_launch) OVERRIDE;
   virtual scoped_ptr<gfx::GpuMemoryBuffer> AllocateGpuMemoryBuffer(
       size_t width,
       size_t height,
@@ -52,6 +52,11 @@ class CONTENT_EXPORT BrowserGpuChannelHostFactory
       const base::Callback<void(const IPC::Message&)>& handler,
       base::TaskRunner* target_task_runner);
   int GpuProcessHostId() { return gpu_host_id_; }
+  GpuChannelHost* EstablishGpuChannelSync(
+      CauseForGpuLaunch cause_for_gpu_launch);
+  void EstablishGpuChannel(CauseForGpuLaunch cause_for_gpu_launch,
+                           const base::Closure& callback);
+  GpuChannelHost* GetGpuChannel();
 
  private:
   struct CreateRequest {
@@ -62,20 +67,42 @@ class CONTENT_EXPORT BrowserGpuChannelHostFactory
     int32 route_id;
   };
 
-  struct EstablishRequest {
-    explicit EstablishRequest(CauseForGpuLaunch);
+  class EstablishRequest : public base::RefCountedThreadSafe<EstablishRequest> {
+   public:
+    explicit EstablishRequest(CauseForGpuLaunch cause,
+                              int gpu_client_id,
+                              int gpu_host_id);
+    void Wait();
+    void Cancel();
+
+    int gpu_host_id() { return gpu_host_id_; }
+    IPC::ChannelHandle& channel_handle() { return channel_handle_; }
+    gpu::GPUInfo gpu_info() { return gpu_info_; }
+
+   private:
+    friend class base::RefCountedThreadSafe<EstablishRequest>;
     ~EstablishRequest();
-    base::WaitableEvent event;
-    CauseForGpuLaunch cause_for_gpu_launch;
-    int gpu_host_id;
-    bool reused_gpu_process;
-    IPC::ChannelHandle channel_handle;
-    gpu::GPUInfo gpu_info;
+    void EstablishOnIO();
+    void OnEstablishedOnIO(const IPC::ChannelHandle& channel_handle,
+                           const gpu::GPUInfo& gpu_info);
+    void FinishOnIO();
+    void FinishOnMain();
+
+    base::WaitableEvent event_;
+    CauseForGpuLaunch cause_for_gpu_launch_;
+    int gpu_client_id_;
+    int gpu_host_id_;
+    bool reused_gpu_process_;
+    IPC::ChannelHandle channel_handle_;
+    gpu::GPUInfo gpu_info_;
+    bool finished_;
+    scoped_refptr<base::MessageLoopProxy> main_loop_;
   };
 
-  BrowserGpuChannelHostFactory();
+  explicit BrowserGpuChannelHostFactory(bool establish_gpu_channel);
   virtual ~BrowserGpuChannelHostFactory();
 
+  void GpuChannelEstablished();
   void CreateViewCommandBufferOnIO(
       CreateRequest* request,
       int32 surface_id,
@@ -90,11 +117,6 @@ class CONTENT_EXPORT BrowserGpuChannelHostFactory
   static void OnImageCreated(
       const CreateImageCallback& callback, const gfx::Size size);
   void DeleteImageOnIO(int32 image_id, int32 sync_point);
-  void EstablishGpuChannelOnIO(EstablishRequest* request);
-  void GpuChannelEstablishedOnIO(
-      EstablishRequest* request,
-      const IPC::ChannelHandle& channel_handle,
-      const gpu::GPUInfo& gpu_info);
   static void AddFilterOnIO(
       int gpu_host_id,
       scoped_refptr<IPC::ChannelProxy::MessageFilter> filter);
@@ -103,6 +125,8 @@ class CONTENT_EXPORT BrowserGpuChannelHostFactory
   scoped_ptr<base::WaitableEvent> shutdown_event_;
   scoped_refptr<GpuChannelHost> gpu_channel_;
   int gpu_host_id_;
+  scoped_refptr<EstablishRequest> pending_request_;
+  std::vector<base::Closure> established_callbacks_;
 
   static BrowserGpuChannelHostFactory* instance_;
 

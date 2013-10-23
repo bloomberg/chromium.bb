@@ -46,6 +46,7 @@
 #include "content/common/gpu/client/gpu_channel_host.h"
 #include "content/common/gpu/client/gpu_memory_buffer_impl.h"
 #include "content/common/gpu/gpu_messages.h"
+#include "content/common/gpu/gpu_process_launch_causes.h"
 #include "content/common/resource_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/common/content_constants.h"
@@ -870,24 +871,28 @@ scoped_refptr<RendererGpuVideoAcceleratorFactories>
 RenderThreadImpl::GetGpuFactories() {
   DCHECK(IsMainThread());
 
+  scoped_refptr<GpuChannelHost> gpu_channel_host = GetGpuChannel();
   const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
   scoped_refptr<RendererGpuVideoAcceleratorFactories> gpu_factories;
   if (!cmd_line->HasSwitch(switches::kDisableAcceleratedVideoDecode)) {
     if (!gpu_va_context_provider_ ||
         gpu_va_context_provider_->DestroyedOnMainThread()) {
+      if (!gpu_channel_host) {
+        gpu_channel_host = EstablishGpuChannelSync(
+            CAUSE_FOR_GPU_LAUNCH_WEBGRAPHICSCONTEXT3DCOMMANDBUFFERIMPL_INITIALIZE);
+      }
       gpu_va_context_provider_ = ContextProviderCommandBuffer::Create(
           make_scoped_ptr(
               WebGraphicsContext3DCommandBufferImpl::CreateOffscreenContext(
-                  this,
+                  gpu_channel_host.get(),
                   WebKit::WebGraphicsContext3D::Attributes(),
                   GURL("chrome://gpu/RenderThreadImpl::GetGpuVDAContext3D"))),
           "GPU-VideoAccelerator-Offscreen");
     }
   }
-  GpuChannelHost* gpu_channel_host = GetGpuChannel();
   if (gpu_channel_host) {
     gpu_factories = new RendererGpuVideoAcceleratorFactories(
-        gpu_channel_host, gpu_va_context_provider_);
+        gpu_channel_host.get(), gpu_va_context_provider_);
   }
   return gpu_factories;
 }
@@ -901,9 +906,11 @@ RenderThreadImpl::CreateOffscreenContext3d() {
   attributes.antialias = false;
   attributes.noAutomaticFlushes = true;
 
+  scoped_refptr<GpuChannelHost> gpu_channel_host(EstablishGpuChannelSync(
+      CAUSE_FOR_GPU_LAUNCH_WEBGRAPHICSCONTEXT3DCOMMANDBUFFERIMPL_INITIALIZE));
   return make_scoped_ptr(
       WebGraphicsContext3DCommandBufferImpl::CreateOffscreenContext(
-          this,
+          gpu_channel_host.get(),
           attributes,
           GURL("chrome://gpu/RenderThreadImpl::CreateOffscreenContext3d")));
 }

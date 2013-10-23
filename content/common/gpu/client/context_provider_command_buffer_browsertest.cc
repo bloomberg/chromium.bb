@@ -12,11 +12,27 @@ namespace content {
 namespace {
 
 class ContextProviderCommandBufferBrowserTest : public ContentBrowserTest {
+ public:
+  virtual void SetUpOnMainThread() OVERRIDE {
+    if (!GetFactory())
+      BrowserGpuChannelHostFactory::Initialize(true);
+
+    CHECK(GetFactory());
+    ContentBrowserTest::SetUpOnMainThread();
+  }
+
  protected:
+  BrowserGpuChannelHostFactory* GetFactory() {
+    return BrowserGpuChannelHostFactory::instance();
+  }
+
   scoped_ptr<WebGraphicsContext3DCommandBufferImpl> CreateContext3d() {
+    scoped_refptr<GpuChannelHost> gpu_channel_host(
+        GetFactory()->EstablishGpuChannelSync(
+            CAUSE_FOR_GPU_LAUNCH_WEBGRAPHICSCONTEXT3DCOMMANDBUFFERIMPL_INITIALIZE));
     scoped_ptr<WebGraphicsContext3DCommandBufferImpl> context(
         WebGraphicsContext3DCommandBufferImpl::CreateOffscreenContext(
-            BrowserGpuChannelHostFactory::instance(),
+            gpu_channel_host.get(),
             WebKit::WebGraphicsContext3D::Attributes(),
             GURL("chrome://gpu/ContextProviderCommandBufferTest")));
     return context.Pass();

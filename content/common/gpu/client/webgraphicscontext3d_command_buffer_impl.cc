@@ -25,7 +25,6 @@
 #include "base/synchronization/lock.h"
 #include "content/common/gpu/client/gpu_channel_host.h"
 #include "content/common/gpu/gpu_memory_allocation.h"
-#include "content/common/gpu/gpu_process_launch_causes.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
 #include "gpu/GLES2/gl2extchromium.h"
@@ -218,16 +217,25 @@ void WebGraphicsContext3DErrorMessageCallback::OnErrorMessage(
   graphics_context_->OnErrorMessage(msg, id);
 }
 
+WebGraphicsContext3DCommandBufferImpl::SharedMemoryLimits::SharedMemoryLimits()
+    : command_buffer_size(kDefaultCommandBufferSize),
+      start_transfer_buffer_size(kDefaultStartTransferBufferSize),
+      min_transfer_buffer_size(kDefaultMinTransferBufferSize),
+      max_transfer_buffer_size(kDefaultMaxTransferBufferSize),
+      mapped_memory_reclaim_limit(gpu::gles2::GLES2Implementation::kNoLimit) {}
+
 WebGraphicsContext3DCommandBufferImpl::WebGraphicsContext3DCommandBufferImpl(
     int surface_id,
     const GURL& active_url,
-    GpuChannelHostFactory* factory,
-    const base::WeakPtr<WebGraphicsContext3DSwapBuffersClient>& swap_client)
+    GpuChannelHost* host,
+    const base::WeakPtr<WebGraphicsContext3DSwapBuffersClient>& swap_client,
+    const Attributes& attributes,
+    bool bind_generates_resources,
+    const SharedMemoryLimits& limits)
     : initialize_failed_(false),
-      factory_(factory),
       visible_(false),
       free_command_buffer_when_invisible_(false),
-      host_(NULL),
+      host_(host),
       surface_id_(surface_id),
       active_url_(active_url),
       swap_client_(swap_client),
@@ -235,18 +243,16 @@ WebGraphicsContext3DCommandBufferImpl::WebGraphicsContext3DCommandBufferImpl(
       context_lost_reason_(GL_NO_ERROR),
       error_message_callback_(0),
       swapbuffers_complete_callback_(0),
-      gpu_preference_(gfx::PreferIntegratedGpu),
+      attributes_(attributes),
+      gpu_preference_(attributes.preferDiscreteGPU ? gfx::PreferDiscreteGpu
+                                                   : gfx::PreferIntegratedGpu),
       weak_ptr_factory_(this),
       initialized_(false),
       gl_(NULL),
       frame_number_(0),
-      bind_generates_resources_(false),
+      bind_generates_resources_(bind_generates_resources),
       use_echo_for_swap_ack_(true),
-      command_buffer_size_(0),
-      start_transfer_buffer_size_(0),
-      min_transfer_buffer_size_(0),
-      max_transfer_buffer_size_(0),
-      mapped_memory_limit_(gpu::gles2::GLES2Implementation::kNoLimit),
+      mem_limits_(limits),
       flush_id_(0) {
 #if (defined(OS_MACOSX) || defined(OS_WIN)) && !defined(USE_AURA)
   // Get ViewMsg_SwapBuffers_ACK from browser for single-threaded path.
@@ -267,54 +273,6 @@ WebGraphicsContext3DCommandBufferImpl::
     g_all_shared_contexts.Pointer()->erase(this);
   }
   Destroy();
-}
-
-bool WebGraphicsContext3DCommandBufferImpl::InitializeWithDefaultBufferSizes(
-    const WebGraphicsContext3D::Attributes& attributes,
-    bool bind_generates_resources,
-    CauseForGpuLaunch cause) {
-  return Initialize(attributes,
-                    bind_generates_resources,
-                    cause,
-                    kDefaultCommandBufferSize,
-                    kDefaultStartTransferBufferSize,
-                    kDefaultMinTransferBufferSize,
-                    kDefaultMaxTransferBufferSize,
-                    gpu::gles2::GLES2Implementation::kNoLimit);
-}
-
-bool WebGraphicsContext3DCommandBufferImpl::Initialize(
-    const WebGraphicsContext3D::Attributes& attributes,
-    bool bind_generates_resources,
-    CauseForGpuLaunch cause,
-    size_t command_buffer_size,
-    size_t start_transfer_buffer_size,
-    size_t min_transfer_buffer_size,
-    size_t max_transfer_buffer_size,
-    size_t mapped_memory_limit) {
-  TRACE_EVENT0("gpu", "WebGfxCtx3DCmdBfrImpl::initialize");
-
-  attributes_ = attributes;
-  bind_generates_resources_ = bind_generates_resources;
-  DCHECK(!command_buffer_);
-
-  if (!factory_)
-    return false;
-
-  if (attributes.preferDiscreteGPU)
-    gpu_preference_ = gfx::PreferDiscreteGpu;
-
-  host_ = factory_->EstablishGpuChannelSync(cause);
-  if (!host_.get())
-    return false;
-
-  command_buffer_size_ = command_buffer_size;
-  start_transfer_buffer_size_ = start_transfer_buffer_size;
-  min_transfer_buffer_size_ = min_transfer_buffer_size;
-  max_transfer_buffer_size_ = max_transfer_buffer_size;
-  mapped_memory_limit_ = mapped_memory_limit;
-
-  return true;
 }
 
 bool WebGraphicsContext3DCommandBufferImpl::MaybeInitializeGL() {
@@ -444,7 +402,7 @@ bool WebGraphicsContext3DCommandBufferImpl::CreateContext(
 
   // Create the GLES2 helper, which writes the command buffer protocol.
   gles2_helper_.reset(new gpu::gles2::GLES2CmdHelper(command_buffer_.get()));
-  if (!gles2_helper_->Initialize(command_buffer_size_))
+  if (!gles2_helper_->Initialize(mem_limits_.command_buffer_size))
     return false;
 
   if (attributes_.noAutomaticFlushes)
@@ -483,10 +441,10 @@ bool WebGraphicsContext3DCommandBufferImpl::CreateContext(
   }
 
   if (!real_gl_->Initialize(
-      start_transfer_buffer_size_,
-      min_transfer_buffer_size_,
-      max_transfer_buffer_size_,
-      mapped_memory_limit_)) {
+      mem_limits_.start_transfer_buffer_size,
+      mem_limits_.min_transfer_buffer_size,
+      mem_limits_.max_transfer_buffer_size,
+      mem_limits_.mapped_memory_reclaim_limit)) {
     return false;
   }
 
@@ -1279,7 +1237,7 @@ void WebGraphicsContext3DCommandBufferImpl::deleteTexture(WebGLId texture) {
 }
 
 bool WebGraphicsContext3DCommandBufferImpl::ShouldUseSwapClient() {
-  return factory_ && factory_->IsMainThread() && swap_client_.get();
+  return host_ && host_->IsMainThread() && swap_client_.get();
 }
 
 void WebGraphicsContext3DCommandBufferImpl::OnSwapBuffersComplete() {
@@ -1377,20 +1335,19 @@ bool WebGraphicsContext3DCommandBufferImpl::IsCommandBufferContextLost() {
 // static
 WebGraphicsContext3DCommandBufferImpl*
 WebGraphicsContext3DCommandBufferImpl::CreateOffscreenContext(
-    GpuChannelHostFactory* factory,
+    GpuChannelHost* host,
     const WebGraphicsContext3D::Attributes& attributes,
     const GURL& active_url) {
-  if (!factory)
+  if (!host)
     return NULL;
   base::WeakPtr<WebGraphicsContext3DSwapBuffersClient> null_client;
-  scoped_ptr<WebGraphicsContext3DCommandBufferImpl> context(
-      new WebGraphicsContext3DCommandBufferImpl(
-          0, active_url, factory, null_client));
-  CauseForGpuLaunch cause =
-      CAUSE_FOR_GPU_LAUNCH_WEBGRAPHICSCONTEXT3DCOMMANDBUFFERIMPL_INITIALIZE;
-  if (context->InitializeWithDefaultBufferSizes(attributes, false, cause))
-    return context.release();
-  return NULL;
+  return new WebGraphicsContext3DCommandBufferImpl(0,
+                                                   active_url,
+                                                   host,
+                                                   null_client,
+                                                   attributes,
+                                                   false,
+                                                   SharedMemoryLimits());
 }
 
 void WebGraphicsContext3DCommandBufferImpl::
