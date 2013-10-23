@@ -1082,6 +1082,7 @@
         'browser/do_not_track_browsertest.cc',
         'browser/download/download_browsertest.cc',
         'browser/download/download_danger_prompt_browsertest.cc',
+        'browser/download/download_started_animation_browsertest.cc',
         'browser/download/save_page_browsertest.cc',
         'browser/drive/fake_drive_service.cc',
         'browser/drive/fake_drive_service.h',

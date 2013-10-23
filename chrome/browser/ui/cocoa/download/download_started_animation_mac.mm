@@ -13,11 +13,6 @@
 
 #include "base/logging.h"
 #import "chrome/browser/ui/cocoa/animatable_image.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
-#include "content/public/browser/notification_source.h"
-#include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "grit/theme_resources.h"
@@ -29,72 +24,21 @@
 
 class DownloadAnimationWebObserver;
 
-using content::WebContents;
-
 // A class for managing the Core Animation download animation.
 // Should be instantiated using +startAnimationWithWebContents:.
 @interface DownloadStartedAnimationMac : NSObject {
  @private
-  // The observer for the WebContents we are drawing on.
-  scoped_ptr<DownloadAnimationWebObserver> observer_;
   CGFloat imageWidth_;
   AnimatableImage* animation_;
 };
 
-+ (void)startAnimationWithWebContents:(WebContents*)webContents;
-
-// Called by the Observer if the tab is hidden or closed.
-- (void)closeAnimation;
++ (void)startAnimationWithWebContents:(content::WebContents*)webContents;
 
 @end
 
-// A helper class to monitor tab hidden and closed notifications. If we receive
-// such a notification, we stop the animation.
-class DownloadAnimationWebObserver : public content::NotificationObserver {
- public:
-  DownloadAnimationWebObserver(DownloadStartedAnimationMac* owner,
-                               WebContents* web_contents)
-      : owner_(owner),
-        web_contents_(web_contents) {
-    registrar_.Add(this,
-                   content::NOTIFICATION_WEB_CONTENTS_VISIBILITY_CHANGED,
-                   content::Source<WebContents>(web_contents_));
-    registrar_.Add(this,
-                   content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
-                   content::Source<WebContents>(web_contents_));
-  }
-
-  // Runs when a tab is hidden or destroyed. Let our owner know we should end
-  // the animation.
-  virtual void Observe(
-      int type,
-      const content::NotificationSource& source,
-      const content::NotificationDetails& details) OVERRIDE {
-    if (type == content::NOTIFICATION_WEB_CONTENTS_VISIBILITY_CHANGED) {
-      bool visible = *content::Details<bool>(details).ptr();
-      if (visible)
-        return;
-    }
-    // This ends up deleting us.
-    [owner_ closeAnimation];
-  }
-
- private:
-  // The object we need to inform when we get a notification. Weak.
-  DownloadStartedAnimationMac* owner_;
-
-  // The tab we are observing. Weak.
-  WebContents* web_contents_;
-
-  // Used for registering to receive notifications and automatic clean up.
-  content::NotificationRegistrar registrar_;
-
-  DISALLOW_COPY_AND_ASSIGN(DownloadAnimationWebObserver);
-};
-
 @implementation DownloadStartedAnimationMac
 
-- (id)initWithWebContents:(WebContents*)webContents {
+- (id)initWithWebContents:(content::WebContents*)webContents {
   if ((self = [super init])) {
     // Load the image of the download arrow.
     ResourceBundle& bundle = ResourceBundle::GetSharedInstance();
@@ -144,12 +88,10 @@ class DownloadAnimationWebObserver : public content::NotificationObserver {
     [animation_ setEndOpacity:0.4];
     [animation_ setDuration:0.6];
 
-    observer_.reset(new DownloadAnimationWebObserver(self, webContents));
-
     // Set up to get notified about resize events on the parent window.
     NSNotificationCenter* center = [NSNotificationCenter defaultCenter];
     [center addObserver:self
-               selector:@selector(parentWindowChanged:)
+               selector:@selector(parentWindowDidResize:)
                    name:NSWindowDidResizeNotification
                  object:parentWindow];
     // When the animation window closes, it needs to be removed from the
@@ -157,7 +99,12 @@ class DownloadAnimationWebObserver : public content::NotificationObserver {
     [center addObserver:self
                selector:@selector(windowWillClose:)
                    name:NSWindowWillCloseNotification
-                object:animation_];
+                 object:animation_];
+    // If the parent window closes, shut everything down too.
+    [center addObserver:self
+               selector:@selector(windowWillClose:)
+                   name:NSWindowWillCloseNotification
+                 object:parentWindow];
   }
   return self;
 }
@@ -168,7 +115,7 @@ class DownloadAnimationWebObserver : public content::NotificationObserver {
 }
 
 // Called when the parent window is resized.
-- (void)parentWindowChanged:(NSNotification*)notification {
+- (void)parentWindowDidResize:(NSNotification*)notification {
   NSWindow* parentWindow = [animation_ parentWindow];
   DCHECK([[notification object] isEqual:parentWindow]);
   NSRect parentFrame = [parentWindow frame];
@@ -177,18 +124,13 @@ class DownloadAnimationWebObserver : public content::NotificationObserver {
   [animation_ setFrame:frame display:YES];
 }
 
-- (void)closeAnimation {
-  [animation_ close];
-}
-
 // When the animation closes, release self.
 - (void)windowWillClose:(NSNotification*)notification {
-  DCHECK([[notification object] isEqual:animation_]);
   [[animation_ parentWindow] removeChildWindow:animation_];
   [self release];
 }
 
-+ (void)startAnimationWithWebContents:(WebContents*)contents {
++ (void)startAnimationWithWebContents:(content::WebContents*)contents {
   // Will be deleted when the animation window closes.
   DownloadStartedAnimationMac* controller =
       [[self alloc] initWithWebContents:contents];
@@ -196,13 +138,13 @@ class DownloadAnimationWebObserver : public content::NotificationObserver {
   if (!controller)
     return;
 
-  // The |animation_| releases itself when done.
+  // The |controller| releases itself when done.
   [controller->animation_ startAnimation];
 }
 
 @end
 
-void DownloadStartedAnimation::Show(WebContents* web_contents) {
+void DownloadStartedAnimation::Show(content::WebContents* web_contents) {
   DCHECK(web_contents);
 
   // Will be deleted when the animation is complete.

@@ -1148,12 +1148,6 @@ void WebContentsImpl::WasShown() {
   FOR_EACH_OBSERVER(WebContentsObserver, observers_, WasShown());
 
   should_normally_be_visible_ = true;
-
-  // TODO(avi): Remove. http://crbug.com/170921
-  NotificationService::current()->Notify(
-      NOTIFICATION_WEB_CONTENTS_VISIBILITY_CHANGED,
-      Source<WebContents>(this),
-      Details<const bool>(&should_normally_be_visible_));
 }
 
 void WebContentsImpl::WasHidden() {
@@ -1175,12 +1169,6 @@ void WebContentsImpl::WasHidden() {
   FOR_EACH_OBSERVER(WebContentsObserver, observers_, WasHidden());
 
   should_normally_be_visible_ = false;
-
-  // TODO(avi): Remove. http://crbug.com/170921
-  NotificationService::current()->Notify(
-      NOTIFICATION_WEB_CONTENTS_VISIBILITY_CHANGED,
-      Source<WebContents>(this),
-      Details<const bool>(&should_normally_be_visible_));
 }
 
 bool WebContentsImpl::NeedToFireBeforeUnload() {
