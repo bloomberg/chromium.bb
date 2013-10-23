@@ -2620,3 +2620,13 @@
    fun:_ZN7content20P2PSocketHostTcpBase4SendERKN3net10IPEndPointERKSt6vectorIcSaIcEEy
    fun:_ZN7content*P2PSocketHost*
 }
+{
+   bug_310351
+   Memcheck:Leak
+   ...
+   fun:_ZN3WTF12PthreadStatenwEm
+   fun:_ZN3WTFL35establishIdentifierForPthreadHandleERKP17_opaque_pthread_t
+   fun:_ZN3WTF13currentThreadEv
+   fun:_ZN3WTF20initializeMainThreadEPFvPFvPvES0_E
+   ...
+}
