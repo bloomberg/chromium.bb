@@ -250,7 +250,7 @@ void StartupAppLauncher::BeginInstall() {
            <<  net::NetworkChangeNotifier::GetConnectionType();
 
   if (IsAppInstalled(profile_, app_id_)) {
-    OnReadyToLaunch();
+    EnsureSystemSaltIsLoaded();
     return;
   }
 
@@ -271,7 +271,7 @@ void StartupAppLauncher::InstallCallback(bool success,
     BrowserThread::PostTask(
         BrowserThread::UI,
         FROM_HERE,
-        base::Bind(&StartupAppLauncher::OnReadyToLaunch,
+        base::Bind(&StartupAppLauncher::EnsureSystemSaltIsLoaded,
                    AsWeakPtr()));
     return;
   }
@@ -280,18 +280,17 @@ void StartupAppLauncher::InstallCallback(bool success,
   OnLaunchFailure(KioskAppLaunchError::UNABLE_TO_INSTALL);
 }
 
-void StartupAppLauncher::OnReadyToLaunch() {
+void StartupAppLauncher::EnsureSystemSaltIsLoaded() {
   // Defer app launch until system salt is loaded to make sure that identity
   // api works with the enterprise kiosk app.
-  // TODO(xiyuan): Use async GetSystemSalt after merging to M31.
-  const std::string system_salt = SystemSaltGetter::Get()->GetSystemSaltSync();
+  SystemSaltGetter::Get()->GetSystemSalt(
+      base::Bind(&StartupAppLauncher::OnReadyToLaunch, AsWeakPtr()));
+}
+
+void StartupAppLauncher::OnReadyToLaunch(const std::string& system_salt) {
   if (system_salt.empty()) {
-    const int64 kRequestSystemSaltDelayMs = 500;
-    BrowserThread::PostDelayedTask(
-        BrowserThread::UI,
-        FROM_HERE,
-        base::Bind(&StartupAppLauncher::OnReadyToLaunch, AsWeakPtr()),
-        base::TimeDelta::FromMilliseconds(kRequestSystemSaltDelayMs));
+    LOG(ERROR) << "Could not load system salt.";
+    OnLaunchFailure(KioskAppLaunchError::CRYPTOHOMED_NOT_RUNNING);
     return;
   }
 

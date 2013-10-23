@@ -78,7 +78,8 @@ class StartupAppLauncher
 
   void BeginInstall();
   void InstallCallback(bool success, const std::string& error);
-  void OnReadyToLaunch();
+  void EnsureSystemSaltIsLoaded();
+  void OnReadyToLaunch(const std::string& system_salt);
 
   void InitializeTokenService();
   void InitializeNetwork();
