@@ -159,9 +159,6 @@ public:
     virtual void deviceOrPageScaleFactorChanged() const { }
     virtual void layoutUpdated(Frame*) const { }
 
-    // didProgrammaticallyScroll should be called whenever a Frame is programmatically scrolled.
-    virtual void didProgrammaticallyScroll(Frame*, const IntPoint& newScrollPosition) const { }
-
     virtual void mouseDidMoveOverElement(const HitTestResult&, unsigned modifierFlags) = 0;
 
     virtual void setToolTip(const String&, TextDirection) = 0;

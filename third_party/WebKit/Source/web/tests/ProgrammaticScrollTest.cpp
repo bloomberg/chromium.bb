@@ -2,7 +2,6 @@
 
 #include <gtest/gtest.h>
 #include "FrameTestHelpers.h"
-#include "RuntimeEnabledFeatures.h"
 #include "URLTestHelpers.h"
 #include "WebFrame.h"
 #include "WebFrameClient.h"
@@ -12,7 +11,6 @@
 #include "WebScriptSource.h"
 #include "WebSettings.h"
 #include "WebView.h"
-#include "WebViewClient.h"
 #include "WebViewImpl.h"
 #include "core/frame/FrameView.h"
 #include "core/rendering/RenderView.h"
@@ -34,11 +32,6 @@ public:
     {
     }
 
-    virtual void SetUp()
-    {
-        RuntimeEnabledFeatures::setProgrammaticScrollNotificationsEnabled(true);
-    }
-
     virtual void TearDown()
     {
         Platform::current()->unitTestSupport()->unregisterAllMockedURLs();
@@ -55,115 +48,12 @@ protected:
     MockWebFrameClient m_mockWebFrameClient;
 };
 
-class TestProgrammaticScrollClient : public WebViewClient {
-public:
-    TestProgrammaticScrollClient()
-    {
-        reset();
-    }
-    void reset()
-    {
-        m_eventReceived = false;
-    }
-    bool eventReceived() const { return m_eventReceived; }
-
-    // WebWidgetClient:
-    virtual void didProgrammaticallyScroll(const WebPoint&) OVERRIDE
-    {
-        m_eventReceived = true;
-    }
-
-private:
-    bool m_eventReceived;
-};
-
-TEST_F(ProgrammaticScrollTest, UserScroll)
-{
-    registerMockedHttpURLLoad("short_scroll.html");
-    TestProgrammaticScrollClient client;
-
-    FrameTestHelpers::WebViewHelper webViewHelper;
-    WebView* webView = webViewHelper.initializeAndLoad(m_baseURL + "short_scroll.html", false, 0, &client);
-    webView->resize(WebSize(1000, 1000));
-    webView->layout();
-
-    EXPECT_FALSE(client.eventReceived());
-
-    // Non zero page scale and scroll.
-    toWebViewImpl(webView)->applyScrollAndScale(WebSize(9, 13), 2.0f);
-    EXPECT_FALSE(client.eventReceived());
-}
-
-TEST_F(ProgrammaticScrollTest, ProgrammaticScroll)
-{
-    registerMockedHttpURLLoad("long_scroll.html");
-    TestProgrammaticScrollClient client;
-
-    FrameTestHelpers::WebViewHelper webViewHelper;
-    WebView* webView = webViewHelper.initializeAndLoad(m_baseURL + "long_scroll.html", true, 0, &client);
-    webView->resize(WebSize(1000, 1000));
-    webView->layout();
-
-    WebFrameImpl* frameImpl = toWebViewImpl(webView)->mainFrameImpl();
-    FrameView* frameView = frameImpl->frameView();
-
-    // Slow scroll path.
-    frameView->setCanBlitOnScroll(false);
-    EXPECT_FALSE(client.eventReceived());
-    frameImpl->executeScript(WebScriptSource("window.scrollTo(0, 20);"));
-    EXPECT_TRUE(client.eventReceived());
-    client.reset();
-    frameImpl->executeScript(WebScriptSource("window.scrollBy(0, 0);"));
-    EXPECT_FALSE(client.eventReceived());
-    client.reset();
-
-    // Fast scroll path.
-    frameImpl->frameView()->setCanBlitOnScroll(true);
-    EXPECT_FALSE(client.eventReceived());
-    frameImpl->executeScript(WebScriptSource("window.scrollTo(0, 21);"));
-    EXPECT_TRUE(client.eventReceived());
-    client.reset();
-    frameImpl->executeScript(WebScriptSource("window.scrollBy(0, 0);"));
-    EXPECT_FALSE(client.eventReceived());
-    client.reset();
-}
-
-TEST_F(ProgrammaticScrollTest, UserScrollOnMainThread)
-{
-    registerMockedHttpURLLoad("long_scroll.html");
-    TestProgrammaticScrollClient client;
-
-    FrameTestHelpers::WebViewHelper webViewHelper;
-    WebView* webView = webViewHelper.initializeAndLoad(m_baseURL + "long_scroll.html", true, 0, &client);
-    webView->resize(WebSize(1000, 1000));
-    webView->layout();
-
-    WebGestureEvent gesture;
-    gesture.type = WebInputEvent::GestureScrollBegin;
-    webView->handleInputEvent(gesture);
-    FrameTestHelpers::runPendingTasks();
-    EXPECT_FALSE(client.eventReceived());
-
-    gesture.type = WebInputEvent::GestureScrollUpdate;
-    gesture.data.scrollUpdate.deltaY = 40;
-    webView->handleInputEvent(gesture);
-    FrameTestHelpers::runPendingTasks();
-    EXPECT_FALSE(client.eventReceived());
-
-    gesture.type = WebInputEvent::GestureScrollEnd;
-    gesture.data.scrollUpdate.deltaY = 0;
-    webView->handleInputEvent(gesture);
-    FrameTestHelpers::runPendingTasks();
-    EXPECT_FALSE(client.eventReceived());
-}
-
 TEST_F(ProgrammaticScrollTest, RestoreScrollPositionAndViewStateWithScale)
 {
     registerMockedHttpURLLoad("long_scroll.html");
-    TestProgrammaticScrollClient client;
 
     FrameTestHelpers::WebViewHelper webViewHelper;
-    WebView* webView = webViewHelper.initializeAndLoad(m_baseURL + "long_scroll.html", true, 0, &client);
+    WebView* webView = webViewHelper.initializeAndLoad(m_baseURL + "long_scroll.html", true, 0, 0);
     webView->resize(WebSize(1000, 1000));
     webView->layout();
 
@@ -184,16 +74,14 @@ TEST_F(ProgrammaticScrollTest, RestoreScrollPositionAndViewStateWithScale)
     EXPECT_EQ(2.0f, webViewImpl->pageScaleFactor());
     EXPECT_EQ(200, webViewImpl->mainFrameImpl()->scrollOffset().height);
     EXPECT_TRUE(frameView->wasScrolledByUser());
-    EXPECT_FALSE(client.eventReceived());
 }
 
 TEST_F(ProgrammaticScrollTest, RestoreScrollPositionAndViewStateWithoutScale)
 {
     registerMockedHttpURLLoad("long_scroll.html");
-    TestProgrammaticScrollClient client;
 
     FrameTestHelpers::WebViewHelper webViewHelper;
-    WebView* webView = webViewHelper.initializeAndLoad(m_baseURL + "long_scroll.html", true, 0, &client);
+    WebView* webView = webViewHelper.initializeAndLoad(m_baseURL + "long_scroll.html", true, 0, 0);
     webView->resize(WebSize(1000, 1000));
     webView->layout();
 
@@ -217,7 +105,6 @@ TEST_F(ProgrammaticScrollTest, RestoreScrollPositionAndViewStateWithoutScale)
     EXPECT_EQ(3.0f, webViewImpl->pageScaleFactor());
     EXPECT_EQ(400, webViewImpl->mainFrameImpl()->scrollOffset().height);
     EXPECT_TRUE(frameView->wasScrolledByUser());
-    EXPECT_FALSE(client.eventReceived());
 }
 
 }

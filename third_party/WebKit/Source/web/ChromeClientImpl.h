@@ -122,7 +122,6 @@ public:
     virtual WebScreenInfo screenInfo() const;
     virtual void contentsSizeChanged(WebCore::Frame*, const WebCore::IntSize&) const;
     virtual void deviceOrPageScaleFactorChanged() const;
-    virtual void didProgrammaticallyScroll(WebCore::Frame*, const WebCore::IntPoint&) const;
     virtual void layoutUpdated(WebCore::Frame*) const;
     virtual void mouseDidMoveOverElement(
         const WebCore::HitTestResult& result, unsigned modifierFlags);

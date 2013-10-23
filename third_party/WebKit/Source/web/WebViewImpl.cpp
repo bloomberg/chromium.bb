@@ -4045,11 +4045,6 @@ bool WebViewImpl::detectContentOnTouch(const WebPoint& position)
     return true;
 }
 
-void WebViewImpl::didProgrammaticallyScroll(const WebCore::IntPoint& scrollPoint)
-{
-    m_client->didProgrammaticallyScroll(scrollPoint);
-}
-
 void WebViewImpl::setVisibilityState(WebPageVisibilityState visibilityState,
                                      bool isInitialState) {
     if (!page())

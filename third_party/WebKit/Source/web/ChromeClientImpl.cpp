@@ -553,13 +553,6 @@ void ChromeClientImpl::deviceOrPageScaleFactorChanged() const
     m_webView->deviceOrPageScaleFactorChanged();
 }
 
-void ChromeClientImpl::didProgrammaticallyScroll(Frame* frame, const IntPoint& scrollPoint) const
-{
-    ASSERT(frame->view()->inProgrammaticScroll());
-    if (frame->page()->mainFrame() == frame)
-        m_webView->didProgrammaticallyScroll(scrollPoint);
-}
-
 void ChromeClientImpl::layoutUpdated(Frame* frame) const
 {
     m_webView->layoutUpdated(WebFrameImpl::fromFrame(frame));
