@@ -69,10 +69,16 @@ bool IndentOutdentCommand::tryIndentingAsListItem(const Position& start, const P
     RefPtr<Element> previousList = selectedListItem->previousElementSibling();
     RefPtr<Element> nextList = selectedListItem->nextElementSibling();
 
+    // We should calculate visible range in list item because inserting new
+    // list element will change visibility of list item, e.g. :first-child
+    // CSS selector.
+    VisiblePosition startOfMove(start);
+    VisiblePosition endOfMove(end);
+
     RefPtr<Element> newList = document().createElement(listNode->tagQName(), false);
     insertNodeBefore(newList, selectedListItem.get());
 
-    moveParagraphWithClones(start, end, newList.get(), selectedListItem.get());
+    moveParagraphWithClones(startOfMove, endOfMove, newList.get(), selectedListItem.get());
 
     if (canMergeLists(previousList.get(), newList.get()))
         mergeIdenticalElements(previousList.get(), newList.get());
