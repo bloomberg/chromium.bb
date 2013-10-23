@@ -178,11 +178,12 @@ private:
     bool m_hasAutofocused : 1;
 };
 
-inline HTMLFormControlElement* toHTMLFormControlElement(Node* node)
+inline bool isHTMLFormControlElement(const Node& node)
 {
-    ASSERT_WITH_SECURITY_IMPLICATION(!node || (node->isElementNode() && toElement(node)->isFormControlElement()));
-    return static_cast<HTMLFormControlElement*>(node);
+    return node.isElementNode() && toElement(node).isFormControlElement();
 }
+
+DEFINE_NODE_TYPE_CASTS_WITH_FUNCTION(HTMLFormControlElement);
 
 inline HTMLFormControlElement* toHTMLFormControlElement(FormAssociatedElement* control)
 {

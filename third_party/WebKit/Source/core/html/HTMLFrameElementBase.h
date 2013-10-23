@@ -77,11 +77,12 @@ private:
     int m_marginHeight;
 };
 
-inline HTMLFrameElementBase* toHTMLFrameElementBase(Node* node)
+inline bool isHTMLFrameElementBase(const Node& node)
 {
-    ASSERT_WITH_SECURITY_IMPLICATION(!node || (node->isElementNode() && toElement(node)->isFrameElementBase()));
-    return static_cast<HTMLFrameElementBase*>(node);
+    return node.isElementNode() && toElement(node).isFrameElementBase();
 }
+
+DEFINE_NODE_TYPE_CASTS_WITH_FUNCTION(HTMLFrameElementBase);
 
 } // namespace WebCore
 

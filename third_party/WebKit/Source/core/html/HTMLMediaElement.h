@@ -598,11 +598,12 @@ inline bool isHTMLMediaElement(Node* node)
     return node && node->isElementNode() && toElement(node)->isMediaElement();
 }
 
-inline HTMLMediaElement* toHTMLMediaElement(Node* node)
+inline bool isHTMLMediaElement(const Node& node)
 {
-    ASSERT_WITH_SECURITY_IMPLICATION(!node || isHTMLMediaElement(node));
-    return static_cast<HTMLMediaElement*>(node);
+    return node.isElementNode() && toElement(node).isMediaElement();
 }
+
+DEFINE_NODE_TYPE_CASTS_WITH_FUNCTION(HTMLMediaElement);
 
 } //namespace
 

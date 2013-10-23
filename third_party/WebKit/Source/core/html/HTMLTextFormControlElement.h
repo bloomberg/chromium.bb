@@ -142,11 +142,12 @@ inline bool isHTMLTextFormControlElement(const Node* node)
     return node->isElementNode() && toElement(node)->isTextFormControl();
 }
 
-inline HTMLTextFormControlElement* toHTMLTextFormControlElement(Node* node)
+inline bool isHTMLTextFormControlElement(const Node& node)
 {
-    ASSERT_WITH_SECURITY_IMPLICATION(!node || isHTMLTextFormControlElement(node));
-    return static_cast<HTMLTextFormControlElement*>(node);
+    return node.isElementNode() && toElement(node).isTextFormControl();
 }
+
+DEFINE_NODE_TYPE_CASTS_WITH_FUNCTION(HTMLTextFormControlElement);
 
 HTMLTextFormControlElement* enclosingTextFormControl(const Position&);
 
