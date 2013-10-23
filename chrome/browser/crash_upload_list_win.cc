@@ -16,6 +16,7 @@ void CrashUploadListWin::LoadUploadList() {
   std::vector<uint8> buffer(1024);
   HANDLE event_log = OpenEventLog(NULL, L"Application");
   if (event_log) {
+    ClearUploads();
     while (true) {
       DWORD bytes_read;
       DWORD bytes_needed;

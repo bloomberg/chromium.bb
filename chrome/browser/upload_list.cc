@@ -54,13 +54,17 @@ void UploadList::LoadUploadList() {
     base::ReadFileToString(upload_log_path_, &contents);
     std::vector<std::string> log_entries;
     base::SplitStringAlongWhitespace(contents, &log_entries);
-    uploads_.clear();
+    ClearUploads();
     ParseLogEntries(log_entries);
   }
 }
 
 void UploadList::AppendUploadInfo(const UploadInfo& info) {
   uploads_.push_back(info);
+}
+
+void UploadList::ClearUploads() {
+  uploads_.clear();
 }
 
 void UploadList::ParseLogEntries(

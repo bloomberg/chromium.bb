@@ -65,6 +65,9 @@ class UploadList : public base::RefCountedThreadSafe<UploadList> {
   // Adds |info| to |uploads_|.
   void AppendUploadInfo(const UploadInfo& info);
 
+  // Clear |uploads_|.
+  void ClearUploads();
+
  private:
   friend class base::RefCountedThreadSafe<UploadList>;
   FRIEND_TEST_ALL_PREFIXES(UploadListTest, ParseLogEntries);
