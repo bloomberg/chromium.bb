@@ -21,30 +21,36 @@ AudioOutputDispatcherImpl::AudioOutputDispatcherImpl(
     const std::string& output_device_id,
     const std::string& input_device_id,
     const base::TimeDelta& close_delay)
-    : AudioOutputDispatcher(audio_manager,
-                            params,
-                            output_device_id,
-                            input_device_id),
-      idle_proxies_(0),
+    : AudioOutputDispatcher(audio_manager, params, output_device_id,
+          input_device_id),
+      pause_delay_(base::TimeDelta::FromMicroseconds(
+          2 * params.frames_per_buffer() * base::Time::kMicrosecondsPerSecond /
+          static_cast<float>(params.sample_rate()))),
+      paused_proxies_(0),
+      weak_this_(this),
       close_timer_(FROM_HERE,
                    close_delay,
                    this,
-                   &AudioOutputDispatcherImpl::CloseIdleStreams) {}
+                   &AudioOutputDispatcherImpl::ClosePendingStreams) {
+}
 
 AudioOutputDispatcherImpl::~AudioOutputDispatcherImpl() {
-  DCHECK_EQ(idle_proxies_, 0u);
   DCHECK(proxy_to_physical_map_.empty());
   DCHECK(idle_streams_.empty());
+  DCHECK(pausing_streams_.empty());
 }
 
 bool AudioOutputDispatcherImpl::OpenStream() {
   DCHECK(message_loop_->BelongsToCurrentThread());
 
-  // Ensure that there is at least one open stream.
-  if (idle_streams_.empty() && !CreateAndOpenStream())
-    return false;
+  paused_proxies_++;
 
-  ++idle_proxies_;
+  // Ensure that there is at least one open stream.
+  if (idle_streams_.empty() && !CreateAndOpenStream()) {
+    paused_proxies_--;
+    return false;
+  }
+
   close_timer_.Reset();
   return true;
 }
@@ -58,18 +64,23 @@ bool AudioOutputDispatcherImpl::StartStream(
     return false;
 
   AudioOutputStream* physical_stream = idle_streams_.back();
+  DCHECK(physical_stream);
   idle_streams_.pop_back();
 
-  DCHECK_GT(idle_proxies_, 0u);
-  --idle_proxies_;
+  DCHECK_GT(paused_proxies_, 0u);
+  --paused_proxies_;
+
+  close_timer_.Reset();
+
+  // Schedule task to allocate streams for other proxies if we need to.
+  message_loop_->PostTask(FROM_HERE, base::Bind(
+      &AudioOutputDispatcherImpl::OpenTask, weak_this_.GetWeakPtr()));
 
   double volume = 0;
   stream_proxy->GetVolume(&volume);
   physical_stream->SetVolume(volume);
   physical_stream->Start(callback);
   proxy_to_physical_map_[stream_proxy] = physical_stream;
-
-  close_timer_.Reset();
   return true;
 }
 
@@ -82,10 +93,17 @@ void AudioOutputDispatcherImpl::StopStream(AudioOutputProxy* stream_proxy) {
   proxy_to_physical_map_.erase(it);
 
   physical_stream->Stop();
-  ++idle_proxies_;
-  idle_streams_.push_back(physical_stream);
 
-  close_timer_.Reset();
+  ++paused_proxies_;
+
+  pausing_streams_.push_front(physical_stream);
+
+  // Don't recycle stream until two buffers worth of time has elapsed.
+  message_loop_->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&AudioOutputDispatcherImpl::StopStreamTask,
+                 weak_this_.GetWeakPtr()),
+      pause_delay_);
 }
 
 void AudioOutputDispatcherImpl::StreamVolumeSet(AudioOutputProxy* stream_proxy,
@@ -98,30 +116,54 @@ void AudioOutputDispatcherImpl::StreamVolumeSet(AudioOutputProxy* stream_proxy,
   }
 }
 
+void AudioOutputDispatcherImpl::StopStreamTask() {
+  DCHECK(message_loop_->BelongsToCurrentThread());
+
+  if (pausing_streams_.empty())
+    return;
+
+  AudioOutputStream* stream = pausing_streams_.back();
+  pausing_streams_.pop_back();
+  idle_streams_.push_back(stream);
+  close_timer_.Reset();
+}
+
 void AudioOutputDispatcherImpl::CloseStream(AudioOutputProxy* stream_proxy) {
   DCHECK(message_loop_->BelongsToCurrentThread());
 
-  DCHECK_GT(idle_proxies_, 0u);
-  --idle_proxies_;
-
-  // Leave a single stream running until the close timer fires to help cycle
-  // time when streams are opened and closed repeatedly.
-  static const size_t kStreamKeepAliveCount = 1;
-  if (idle_streams_.size() > kStreamKeepAliveCount) {
-    for (size_t i = kStreamKeepAliveCount; i < idle_streams_.size(); ++i)
-      idle_streams_[i]->Close();
-    idle_streams_.erase(idle_streams_.begin() + kStreamKeepAliveCount,
-                        idle_streams_.end());
+  while (!pausing_streams_.empty()) {
+    idle_streams_.push_back(pausing_streams_.back());
+    pausing_streams_.pop_back();
   }
-  close_timer_.Reset();
+
+  DCHECK_GT(paused_proxies_, 0u);
+  paused_proxies_--;
+
+  while (idle_streams_.size() > paused_proxies_) {
+    idle_streams_.back()->Close();
+    idle_streams_.pop_back();
+  }
 }
 
 void AudioOutputDispatcherImpl::Shutdown() {
   DCHECK(message_loop_->BelongsToCurrentThread());
 
-  // Close all idle streams immediately.  The |close_timer_| will handle
-  // invalidating any outstanding tasks upon its destruction.
-  CloseIdleStreams();
+  // Cancel any pending tasks to close paused streams or create new ones.
+  weak_this_.InvalidateWeakPtrs();
+
+  // No AudioOutputProxy objects should hold a reference to us when we get
+  // to this stage.
+  DCHECK(HasOneRef()) << "Only the AudioManager should hold a reference";
+
+  AudioOutputStreamList::iterator it = idle_streams_.begin();
+  for (; it != idle_streams_.end(); ++it)
+    (*it)->Close();
+  idle_streams_.clear();
+
+  it = pausing_streams_.begin();
+  for (; it != pausing_streams_.end(); ++it)
+    (*it)->Close();
+  pausing_streams_.clear();
 }
 
 bool AudioOutputDispatcherImpl::CreateAndOpenStream() {
@@ -135,16 +177,29 @@ bool AudioOutputDispatcherImpl::CreateAndOpenStream() {
     stream->Close();
     return false;
   }
-
   idle_streams_.push_back(stream);
   return true;
 }
 
-void AudioOutputDispatcherImpl::CloseIdleStreams() {
+void AudioOutputDispatcherImpl::OpenTask() {
   DCHECK(message_loop_->BelongsToCurrentThread());
-  for (size_t i = 0; i < idle_streams_.size(); ++i)
-    idle_streams_[i]->Close();
-  idle_streams_.clear();
+  // Make sure that we have at least one stream allocated if there
+  // are paused streams.
+  if (paused_proxies_ > 0 && idle_streams_.empty() &&
+      pausing_streams_.empty()) {
+    CreateAndOpenStream();
+  }
+
+  close_timer_.Reset();
+}
+
+// This method is called by |close_timer_|.
+void AudioOutputDispatcherImpl::ClosePendingStreams() {
+  DCHECK(message_loop_->BelongsToCurrentThread());
+  while (!idle_streams_.empty()) {
+    idle_streams_.back()->Close();
+    idle_streams_.pop_back();
+  }
 }
 
 }  // namespace media
