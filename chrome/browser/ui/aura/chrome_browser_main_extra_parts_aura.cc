@@ -48,6 +48,13 @@ ChromeBrowserMainExtraPartsAura::ChromeBrowserMainExtraPartsAura() {
 ChromeBrowserMainExtraPartsAura::~ChromeBrowserMainExtraPartsAura() {
 }
 
+void ChromeBrowserMainExtraPartsAura::PreEarlyInitialization() {
+#if !defined(USE_ASH) && defined(OS_LINUX) && defined(USE_X11)
+  // TODO(erg): Refactor this into a dlopen call when we add a GTK3 port.
+  views::LinuxUI::SetInstance(BuildGtk2UI());
+#endif
+}
+
 void ChromeBrowserMainExtraPartsAura::ToolkitInitialized() {
 #if !defined(OS_CHROMEOS)
 #if defined(USE_ASH)
@@ -57,8 +64,7 @@ void ChromeBrowserMainExtraPartsAura::ToolkitInitialized() {
 #endif
 
 #if !defined(USE_ASH) && defined(OS_LINUX) && defined(USE_X11)
-  // TODO(erg): Refactor this into a dlopen call when we add a GTK3 port.
-  views::LinuxUI::SetInstance(BuildGtk2UI());
+  views::LinuxUI::instance()->Initialize();
 #endif
 }
 

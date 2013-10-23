@@ -294,7 +294,9 @@ namespace libgtk2ui {
 
 Gtk2UI::Gtk2UI() {
   GtkInitFromCommandLine(*CommandLine::ForCurrentProcess());
+}
 
+void Gtk2UI::Initialize() {
   // Create our fake widgets.
   fake_window_ = gtk_window_new(GTK_WINDOW_TOPLEVEL);
   fake_frame_ = chrome_gtk_frame_new();

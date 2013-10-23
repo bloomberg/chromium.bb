@@ -45,6 +45,8 @@ class VIEWS_EXPORT LinuxUI : public ui::LinuxShellDialog {
   // running with the "--ash" flag.)
   static LinuxUI* instance();
 
+  virtual void Initialize() = 0;
+
   // Returns an themed image per theme_provider.h
   virtual bool UseNativeTheme() const = 0;
   virtual gfx::Image GetThemeImageNamed(int id) const = 0;

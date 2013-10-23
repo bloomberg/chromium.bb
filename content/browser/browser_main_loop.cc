@@ -345,6 +345,29 @@ void BrowserMainLoop::EarlyInitialization() {
   }
 #endif
 
+  // Due to bugs in GLib we need to initialize GLib/GTK before we start threads;
+  // see crbug.com/309093. Sandbox setup spawns sub-processes and a thread
+  // running waitpid().
+#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
+  // g_type_init will be deprecated in 2.36. 2.35 is the development
+  // version for 2.36, hence do not call g_type_init starting 2.35.
+  // http://developer.gnome.org/gobject/unstable/gobject-Type-Information.html#g-type-init
+#if !GLIB_CHECK_VERSION(2, 35, 0)
+  // GLib type system initialization. Needed at least for gconf,
+  // used in net/proxy/proxy_config_service_linux.cc. Most likely
+  // this is superfluous as gtk_init() ought to do this. It's
+  // definitely harmless, so retained as a reminder of this
+  // requirement for gconf.
+  g_type_init();
+#endif
+
+#if !defined(USE_AURA)
+  gfx::GtkInitFromCommandLine(parsed_command_line_);
+#endif
+
+  SetUpGLibLogHandler();
+#endif
+
   if (parts_)
     parts_->PreEarlyInitialization();
 
@@ -1008,25 +1031,7 @@ void BrowserMainLoop::InitializeToolkit() {
   // are no #else branches on any #ifs.
   // TODO(stevenjb): Move platform specific code into platform specific Parts
   // (Need to add InitializeToolkit stage to BrowserParts).
-#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
-  // g_type_init will be deprecated in 2.36. 2.35 is the development
-  // version for 2.36, hence do not call g_type_init starting 2.35.
-  // http://developer.gnome.org/gobject/unstable/gobject-Type-Information.html#g-type-init
-#if !GLIB_CHECK_VERSION(2, 35, 0)
-  // Glib type system initialization. Needed at least for gconf,
-  // used in net/proxy/proxy_config_service_linux.cc. Most likely
-  // this is superfluous as gtk_init() ought to do this. It's
-  // definitely harmless, so retained as a reminder of this
-  // requirement for gconf.
-  g_type_init();
-#endif
-
-#if !defined(USE_AURA)
-  gfx::GtkInitFromCommandLine(parsed_command_line_);
-#endif
-
-  SetUpGLibLogHandler();
-#endif
+  // See also GTK setup in EarlyInitialization, above, and associated comments.
 
 #if defined(TOOLKIT_GTK)
   // It is important for this to happen before the first run dialog, as it

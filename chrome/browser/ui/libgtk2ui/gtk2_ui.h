@@ -47,6 +47,7 @@ class Gtk2UI : public views::LinuxUI {
       ui::SelectFilePolicy* policy) const OVERRIDE;
 
   // ui::LinuxUI:
+  virtual void Initialize() OVERRIDE;
   virtual bool UseNativeTheme() const OVERRIDE;
   virtual gfx::Image GetThemeImageNamed(int id) const OVERRIDE;
   virtual bool GetColor(int id, SkColor* color) const OVERRIDE;
