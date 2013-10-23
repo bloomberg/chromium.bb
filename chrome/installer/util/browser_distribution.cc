@@ -265,8 +265,9 @@ string16 BrowserDistribution::GetVersionKey() {
   return L"Software\\Chromium";
 }
 
-bool BrowserDistribution::CanSetAsDefault() {
-  return true;
+BrowserDistribution::DefaultBrowserControlPolicy
+    BrowserDistribution::GetDefaultBrowserControlPolicy() {
+  return DEFAULT_BROWSER_FULL_CONTROL;
 }
 
 bool BrowserDistribution::CanCreateDesktopShortcuts() {

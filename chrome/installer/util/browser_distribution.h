@@ -40,6 +40,12 @@ class BrowserDistribution {
     // TODO(calamity): add SUBFOLDER_APPS when refactoring chrome app dir code.
   };
 
+  enum DefaultBrowserControlPolicy {
+    DEFAULT_BROWSER_UNSUPPORTED,
+    DEFAULT_BROWSER_OS_CONTROL_ONLY,
+    DEFAULT_BROWSER_FULL_CONTROL
+  };
+
   virtual ~BrowserDistribution() {}
 
   static BrowserDistribution* GetDistribution();
@@ -129,8 +135,9 @@ class BrowserDistribution {
 
   virtual string16 GetVersionKey();
 
-  // Returns true if this distribution can be set as the default browser.
-  virtual bool CanSetAsDefault();
+  // Returns an enum specifying the different ways in which this distribution
+  // is allowed to be set as default.
+  virtual DefaultBrowserControlPolicy GetDefaultBrowserControlPolicy();
 
   virtual bool CanCreateDesktopShortcuts();
 

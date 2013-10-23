@@ -82,7 +82,8 @@ void UninstallView::SetupControls() {
   // be set programatically as default, neither can any other browser (for
   // instance because the OS doesn't permit that).
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-  if (dist->CanSetAsDefault() &&
+  if (dist->GetDefaultBrowserControlPolicy() !=
+          BrowserDistribution::DEFAULT_BROWSER_UNSUPPORTED &&
       ShellIntegration::GetDefaultBrowser() == ShellIntegration::IS_DEFAULT &&
       (ShellIntegration::CanSetAsDefaultBrowser() !=
           ShellIntegration::SET_DEFAULT_INTERACTIVE)) {

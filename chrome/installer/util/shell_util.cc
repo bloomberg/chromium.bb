@@ -1695,8 +1695,11 @@ string16 ShellUtil::BuildAppModelId(
 }
 
 ShellUtil::DefaultState ShellUtil::GetChromeDefaultState() {
-  if (!BrowserDistribution::GetDistribution()->CanSetAsDefault())
+  BrowserDistribution* distribution = BrowserDistribution::GetDistribution();
+  if (distribution->GetDefaultBrowserControlPolicy() ==
+      BrowserDistribution::DEFAULT_BROWSER_UNSUPPORTED) {
     return NOT_DEFAULT;
+  }
   // When we check for default browser we don't necessarily want to count file
   // type handlers and icons as having changed the default browser status,
   // since the user may have changed their shell settings to cause HTML files
@@ -1712,8 +1715,12 @@ ShellUtil::DefaultState ShellUtil::GetChromeDefaultState() {
 
 ShellUtil::DefaultState ShellUtil::GetChromeDefaultProtocolClientState(
     const string16& protocol) {
-  if (!BrowserDistribution::GetDistribution()->CanSetAsDefault())
+  BrowserDistribution* distribution = BrowserDistribution::GetDistribution();
+  if (distribution->GetDefaultBrowserControlPolicy() ==
+      BrowserDistribution::DEFAULT_BROWSER_UNSUPPORTED) {
     return NOT_DEFAULT;
+  }
+
   if (protocol.empty())
     return UNKNOWN_DEFAULT;
 
@@ -1732,8 +1739,11 @@ bool ShellUtil::MakeChromeDefault(BrowserDistribution* dist,
                                   bool elevate_if_not_admin) {
   DCHECK(!(shell_change & ShellUtil::SYSTEM_LEVEL) || IsUserAnAdmin());
 
-  if (!dist->CanSetAsDefault())
+  BrowserDistribution* distribution = BrowserDistribution::GetDistribution();
+  if (distribution->GetDefaultBrowserControlPolicy() !=
+      BrowserDistribution::DEFAULT_BROWSER_FULL_CONTROL) {
     return false;
+  }
 
   // Windows 8 does not permit making a browser default just like that.
   // This process needs to be routed through the system's UI. Use
@@ -1796,8 +1806,10 @@ bool ShellUtil::MakeChromeDefault(BrowserDistribution* dist,
 bool ShellUtil::ShowMakeChromeDefaultSystemUI(BrowserDistribution* dist,
                                               const string16& chrome_exe) {
   DCHECK_GE(base::win::GetVersion(), base::win::VERSION_WIN8);
-  if (!dist->CanSetAsDefault())
+  if (dist->GetDefaultBrowserControlPolicy() !=
+      BrowserDistribution::DEFAULT_BROWSER_FULL_CONTROL) {
     return false;
+  }
 
   if (!RegisterChromeBrowser(dist, chrome_exe, string16(), true))
       return false;
@@ -1822,8 +1834,10 @@ bool ShellUtil::ShowMakeChromeDefaultSystemUI(BrowserDistribution* dist,
 bool ShellUtil::MakeChromeDefaultProtocolClient(BrowserDistribution* dist,
                                                 const string16& chrome_exe,
                                                 const string16& protocol) {
-  if (!dist->CanSetAsDefault())
+  if (dist->GetDefaultBrowserControlPolicy() !=
+      BrowserDistribution::DEFAULT_BROWSER_FULL_CONTROL) {
     return false;
+  }
 
   if (!RegisterChromeForProtocol(dist, chrome_exe, string16(), protocol, true))
     return false;
@@ -1869,8 +1883,10 @@ bool ShellUtil::ShowMakeChromeDefaultProtocolClientSystemUI(
     const string16& chrome_exe,
     const string16& protocol) {
   DCHECK_GE(base::win::GetVersion(), base::win::VERSION_WIN8);
-  if (!dist->CanSetAsDefault())
+  if (dist->GetDefaultBrowserControlPolicy() !=
+      BrowserDistribution::DEFAULT_BROWSER_FULL_CONTROL) {
     return false;
+  }
 
   if (!RegisterChromeForProtocol(dist, chrome_exe, string16(), protocol, true))
     return false;
@@ -1898,8 +1914,10 @@ bool ShellUtil::RegisterChromeBrowser(BrowserDistribution* dist,
                                       const string16& chrome_exe,
                                       const string16& unique_suffix,
                                       bool elevate_if_not_admin) {
-  if (!dist->CanSetAsDefault())
+  if (dist->GetDefaultBrowserControlPolicy() ==
+      BrowserDistribution::DEFAULT_BROWSER_UNSUPPORTED) {
     return false;
+  }
 
   CommandLine& command_line = *CommandLine::ForCurrentProcess();
 
@@ -1988,8 +2006,10 @@ bool ShellUtil::RegisterChromeForProtocol(BrowserDistribution* dist,
                                           const string16& unique_suffix,
                                           const string16& protocol,
                                           bool elevate_if_not_admin) {
-  if (!dist->CanSetAsDefault())
+  if (dist->GetDefaultBrowserControlPolicy() ==
+      BrowserDistribution::DEFAULT_BROWSER_UNSUPPORTED) {
     return false;
+  }
 
   string16 suffix;
   if (!unique_suffix.empty()) {

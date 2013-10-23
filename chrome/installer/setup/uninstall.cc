@@ -800,7 +800,8 @@ bool DeleteChromeRegistrationKeys(const InstallerState& installer_state,
                                   const string16& browser_entry_suffix,
                                   InstallStatus* exit_code) {
   DCHECK(exit_code);
-  if (!dist->CanSetAsDefault()) {
+  if (dist->GetDefaultBrowserControlPolicy() ==
+      BrowserDistribution::DEFAULT_BROWSER_UNSUPPORTED) {
     // We should have never set those keys.
     return true;
   }

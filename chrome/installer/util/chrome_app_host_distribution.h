@@ -54,7 +54,7 @@ class ChromeAppHostDistribution : public BrowserDistribution {
 
   virtual string16 GetVersionKey() OVERRIDE;
 
-  virtual bool CanSetAsDefault() OVERRIDE;
+  virtual DefaultBrowserControlPolicy GetDefaultBrowserControlPolicy() OVERRIDE;
 
   virtual bool CanCreateDesktopShortcuts() OVERRIDE;
 

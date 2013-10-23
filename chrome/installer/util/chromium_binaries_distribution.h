@@ -49,7 +49,7 @@ class ChromiumBinariesDistribution : public BrowserDistribution {
 
   virtual string16 GetVersionKey() OVERRIDE;
 
-  virtual bool CanSetAsDefault() OVERRIDE;
+  virtual DefaultBrowserControlPolicy GetDefaultBrowserControlPolicy() OVERRIDE;
 
   virtual bool GetChromeChannel(string16* channel) OVERRIDE;
 

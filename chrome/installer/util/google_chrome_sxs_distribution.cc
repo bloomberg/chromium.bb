@@ -75,8 +75,9 @@ string16 GoogleChromeSxSDistribution::GetUninstallRegPath() {
       installer::kSxSSuffix);
 }
 
-bool GoogleChromeSxSDistribution::CanSetAsDefault() {
-  return false;
+BrowserDistribution::DefaultBrowserControlPolicy
+    GoogleChromeSxSDistribution::GetDefaultBrowserControlPolicy() {
+  return DEFAULT_BROWSER_OS_CONTROL_ONLY;
 }
 
 int GoogleChromeSxSDistribution::GetIconIndex(ShortcutType shortcut_type) {

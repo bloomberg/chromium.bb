@@ -27,7 +27,7 @@ class GoogleChromeSxSDistribution : public GoogleChromeDistribution {
   virtual string16 GetBrowserProgIdDesc() OVERRIDE;
   virtual string16 GetInstallSubDir() OVERRIDE;
   virtual string16 GetUninstallRegPath() OVERRIDE;
-  virtual bool CanSetAsDefault() OVERRIDE;
+  virtual DefaultBrowserControlPolicy GetDefaultBrowserControlPolicy() OVERRIDE;
   virtual bool GetChromeChannel(string16* channel) OVERRIDE;
   virtual bool GetCommandExecuteImplClsid(
       string16* handler_class_uuid) OVERRIDE;

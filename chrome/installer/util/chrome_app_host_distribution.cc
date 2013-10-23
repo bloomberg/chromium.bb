@@ -130,8 +130,9 @@ string16 ChromeAppHostDistribution::GetVersionKey() {
   return key;
 }
 
-bool ChromeAppHostDistribution::CanSetAsDefault() {
-  return false;
+BrowserDistribution::DefaultBrowserControlPolicy
+    ChromeAppHostDistribution::GetDefaultBrowserControlPolicy() {
+  return DEFAULT_BROWSER_UNSUPPORTED;
 }
 
 bool ChromeAppHostDistribution::CanCreateDesktopShortcuts() {

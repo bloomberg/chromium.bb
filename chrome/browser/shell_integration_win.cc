@@ -192,7 +192,9 @@ ShellIntegration::DefaultWebClientState
 
 ShellIntegration::DefaultWebClientSetPermission
     ShellIntegration::CanSetAsDefaultBrowser() {
-  if (!BrowserDistribution::GetDistribution()->CanSetAsDefault())
+  BrowserDistribution* distribution = BrowserDistribution::GetDistribution();
+  if (distribution->GetDefaultBrowserControlPolicy() !=
+          BrowserDistribution::DEFAULT_BROWSER_FULL_CONTROL)
     return SET_DEFAULT_NOT_ALLOWED;
 
   if (ShellUtil::CanMakeChromeDefaultUnattended())

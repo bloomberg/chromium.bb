@@ -850,13 +850,6 @@ void BrowserOptionsHandler::CheckAutoLaunchCallback(
 }
 
 void BrowserOptionsHandler::UpdateDefaultBrowserState() {
-  // Check for side-by-side first.
-  if (ShellIntegration::CanSetAsDefaultBrowser() ==
-          ShellIntegration::SET_DEFAULT_NOT_ALLOWED) {
-    SetDefaultBrowserUIString(IDS_OPTIONS_DEFAULTBROWSER_SXS);
-    return;
-  }
-
 #if defined(OS_MACOSX)
   ShellIntegration::DefaultWebClientState state =
       ShellIntegration::GetDefaultBrowser();
@@ -907,14 +900,21 @@ int BrowserOptionsHandler::StatusStringIdForState(
 void BrowserOptionsHandler::SetDefaultWebClientUIState(
     ShellIntegration::DefaultWebClientUIState state) {
   int status_string_id;
-  if (state == ShellIntegration::STATE_IS_DEFAULT)
+
+  if (state == ShellIntegration::STATE_IS_DEFAULT) {
     status_string_id = IDS_OPTIONS_DEFAULTBROWSER_DEFAULT;
-  else if (state == ShellIntegration::STATE_NOT_DEFAULT)
-    status_string_id = IDS_OPTIONS_DEFAULTBROWSER_NOTDEFAULT;
-  else if (state == ShellIntegration::STATE_UNKNOWN)
+  } else if (state == ShellIntegration::STATE_NOT_DEFAULT) {
+    if (ShellIntegration::CanSetAsDefaultBrowser() ==
+            ShellIntegration::SET_DEFAULT_NOT_ALLOWED) {
+      status_string_id = IDS_OPTIONS_DEFAULTBROWSER_SXS;
+    } else {
+      status_string_id = IDS_OPTIONS_DEFAULTBROWSER_NOTDEFAULT;
+    }
+  } else if (state == ShellIntegration::STATE_UNKNOWN) {
     status_string_id = IDS_OPTIONS_DEFAULTBROWSER_UNKNOWN;
-  else
+  } else {
     return;  // Still processing.
+  }
 
   SetDefaultBrowserUIString(status_string_id);
 }

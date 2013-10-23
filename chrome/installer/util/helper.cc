@@ -45,8 +45,11 @@ base::FilePath GetChromeInstallPath(bool system_install,
 
 void GetChromeUserDataPaths(BrowserDistribution* dist,
                             std::vector<base::FilePath>* paths) {
-  const bool has_metro_data = dist->CanSetAsDefault() &&
-      base::win::GetVersion() >= base::win::VERSION_WIN8;
+  const bool has_metro_data =
+      base::win::GetVersion() >= base::win::VERSION_WIN8 &&
+      dist->GetDefaultBrowserControlPolicy() !=
+          BrowserDistribution::DEFAULT_BROWSER_UNSUPPORTED;
+
   base::FilePath data_dir(GetChromeInstallBasePath(false, dist,
                                                    kInstallUserDataDir));
   if (data_dir.empty()) {

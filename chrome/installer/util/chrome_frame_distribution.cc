@@ -131,8 +131,9 @@ int ChromeFrameDistribution::GetIconIndex(ShortcutType shortcut_type) {
   }
 }
 
-bool ChromeFrameDistribution::CanSetAsDefault() {
-  return false;
+BrowserDistribution::DefaultBrowserControlPolicy
+    ChromeFrameDistribution::GetDefaultBrowserControlPolicy() {
+  return DEFAULT_BROWSER_UNSUPPORTED;
 }
 
 bool ChromeFrameDistribution::CanCreateDesktopShortcuts() {

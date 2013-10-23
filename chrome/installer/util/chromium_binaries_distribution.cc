@@ -100,8 +100,9 @@ string16 ChromiumBinariesDistribution::GetVersionKey() {
   return string16(L"Software\\").append(kChromiumBinariesName);
 }
 
-bool ChromiumBinariesDistribution::CanSetAsDefault() {
-  return false;
+BrowserDistribution::DefaultBrowserControlPolicy
+    ChromiumBinariesDistribution::GetDefaultBrowserControlPolicy() {
+  return DEFAULT_BROWSER_UNSUPPORTED;
 }
 
 int ChromiumBinariesDistribution::GetIconIndex(ShortcutType shortcut_type) {
