@@ -643,12 +643,31 @@ class BuildSpecsManager(object):
       raise GenerateBuildSpecException(last_error)
 
   @staticmethod
-  def _GetStatusUrl(builder, version):
-    """Get the status URL in Google Storage for a given builder / version."""
-    return os.path.join(BUILD_STATUS_URL, version, builder)
+  def _GetStatusUrl(builder, version, step_name=None):
+    """Get the status URL in Google Storage for a given builder / version.
 
-  def _UploadStatus(self, version, status, message=None, fail_if_exists=False):
+    Returns:
+      A gs url of the form gs://chromeos-manifest-versions/builder-status/
+                           version/[partial/step_name/]builder
+      Returns None if any of the arguments besides step_name are None.
+    """
+    if step_name:
+      step_path = 'partial/%s' % step_name
+    else:
+      step_path = ''
+    try:
+      return os.path.join(BUILD_STATUS_URL, version, step_path, builder)
+    except AttributeError:
+      # Thrown if any of the arguments to os.path.join are None
+      return None
+
+
+  def _UploadStatus(self, version, status, message=None, fail_if_exists=False,
+                    step_name=None):
     """Upload build status to Google Storage.
+
+    Does nothing if a status url cannot be constructed, for instance if
+    version or self.build_name is None.
 
     Args:
       version: Version number to use. Must be a string.
@@ -656,7 +675,10 @@ class BuildSpecsManager(object):
       message: Additional message explaining the status.
       fail_if_exists: If set, fail if the status already exists.
     """
-    url = BuildSpecsManager._GetStatusUrl(self.build_name, version)
+    url = BuildSpecsManager._GetStatusUrl(self.build_name, version, step_name)
+
+    if not url:
+      return
 
     # Pickle the dictionary needed to create a BuilderStatus object.
     data = cPickle.dumps(dict(status=status, message=message))
@@ -669,14 +691,15 @@ class BuildSpecsManager(object):
     ctx = gs.GSContext(dry_run=self.dry_run)
     ctx.Copy('-', url, input=data, version=gs_version)
 
-  def UploadStatus(self, success, message=None):
+  def UploadStatus(self, success, message=None, step_name=None):
     """Uploads the status of the build for the current build spec.
     Args:
       success: True for success, False for failure
       message: Message accompanied with change in status.
     """
     status = BuilderStatus.GetCompletedStatus(success)
-    self._UploadStatus(self.current_version, status, message=message)
+    self._UploadStatus(self.current_version, status, message=message,
+                       step_name=step_name)
 
   def SetInFlight(self, version):
     """Marks the buildspec as inflight in Google Storage."""
