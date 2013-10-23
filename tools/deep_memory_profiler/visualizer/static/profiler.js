@@ -138,13 +138,32 @@ Profiler.prototype.getCurSubById = function(id) {
 Profiler.prototype.setSub = function(sub) {
   var selected = this.selected_;
   var path = selected.split(',');
-  var key = path[path.length-1];
+  var key = path[path.length - 1];
 
   // Add sub breakdown to template.
   var models = this.getModelsbyId(selected);
   var subTmpl = sub.split(',');
   subTmpl.push({});
   models[0].template[2][key] = subTmpl;
+
+  // Recalculate new template.
+  this.reparse();
+};
+
+/**
+ * Remove children of figured node and reparse whole tree.
+ * @param {string} id World-breakdown like 'vm-map'.
+ */
+Profiler.prototype.unsetSub = function(id) {
+  var models = this.getModelsbyId(id);
+  if (!('template' in models[0]))
+    return;
+
+  var path = id.split(',');
+  var key = path[path.length - 1];
+  if (!(key in models[0].template[2]))
+    return;
+  delete (models[0].template[2][key]);
 
   // Recalculate new template.
   this.reparse();

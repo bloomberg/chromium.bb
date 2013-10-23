@@ -48,25 +48,26 @@ MenuView.prototype.redraw_ = function(models) {
     }
   }
 
-  function merge(left, right) {
-    if (!('children' in right) && 'children' in left)
+  function merge(origin, target) {
+    if (!('children' in origin))
       return;
-    if ('children' in right && !('children' in left))
-      left.children = right.children;
-    if ('children' in right && 'children' in left) {
-      right.children.forEach(function(child) {
-        // Find child with the same label in right tree.
-        var index = left.children.reduce(function(previous, current, index) {
-          if (child.label === current.label)
-            return index;
-          return previous;
-        }, -1);
-        if (index === -1)
-          left.children.push(child);
-        else
-          merge(left.children[index], child);
-      });
+    if (!('children' in target)) {
+      target.children = origin.children;
+      return;
     }
+
+    origin.children.forEach(function(child) {
+      // Find child with the same label in target tree.
+      var index = target.children.reduce(function(previous, current, index) {
+        if (child.label === current.label)
+        return index;
+        return previous;
+      }, -1);
+      if (index === -1)
+        target.children.push(child);
+      else
+        merge(child, target.children[index]);
+    });
   }
 
   var self = this;
@@ -79,7 +80,7 @@ MenuView.prototype.redraw_ = function(models) {
     if (!union)
       union = data;
     else
-      merge(union, data);
+      merge(data, union);
   });
 
   // Draw breakdown menu.
@@ -93,9 +94,14 @@ MenuView.prototype.redraw_ = function(models) {
       }
     });
 
-    // Delegate click event to profiler.
+    // Delegate events
     this.$tree_.bind('tree.click', function(event) {
       event.preventDefault();
+      self.profiler_.setSelected(event.node.id);
+    });
+    this.$tree_.bind('tree.close', function(event) {
+      event.preventDefault();
+      self.profiler_.unsetSub(event.node.id);
       self.profiler_.setSelected(event.node.id);
     });
   } else {
