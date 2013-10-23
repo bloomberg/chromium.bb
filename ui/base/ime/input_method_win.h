@@ -47,6 +47,8 @@ class UI_EXPORT InputMethodWin : public InputMethodBase {
                  LPARAM lparam,
                  BOOL* handled);
   // For both WM_DEADCHAR and WM_SYSDEADCHAR
+  // TODO(yukawa): Stop handling WM_DEADCHAR and WM_SYSDEADCHAR when non-Aura
+  // build is deprecated.
   LRESULT OnDeadChar(UINT message, WPARAM wparam, LPARAM lparam, BOOL* handled);
 
   LRESULT OnDocumentFeed(RECONVERTSTRING* reconv);
