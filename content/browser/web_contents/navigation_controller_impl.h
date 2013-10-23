@@ -12,6 +12,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "content/browser/ssl/ssl_manager.h"
+#include "content/browser/web_contents/navigation_controller_delegate.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_type.h"
 
@@ -20,7 +21,6 @@ struct ViewHostMsg_FrameNavigate_Params;
 namespace content {
 class NavigationEntryImpl;
 class RenderViewHost;
-class WebContentsImpl;
 class WebContentsScreenshotManager;
 class SiteInstance;
 struct LoadCommittedDetails;
@@ -29,7 +29,7 @@ class CONTENT_EXPORT NavigationControllerImpl
     : public NON_EXPORTED_BASE(NavigationController) {
  public:
   NavigationControllerImpl(
-      WebContentsImpl* web_contents,
+      NavigationControllerDelegate* delegate,
       BrowserContext* browser_context);
   virtual ~NavigationControllerImpl();
 
@@ -114,10 +114,8 @@ class CONTENT_EXPORT NavigationControllerImpl
       SiteInstance* instance,
       int32 page_id) const;
 
-  // WebContentsImpl -----------------------------------------------------------
-
-  WebContentsImpl* web_contents() const {
-    return web_contents_;
+  NavigationControllerDelegate* delegate() const {
+    return delegate_;
   }
 
   // For use by WebContentsImpl ------------------------------------------------
@@ -204,9 +202,11 @@ class CONTENT_EXPORT NavigationControllerImpl
   // that.
   void SetScreenshotManager(WebContentsScreenshotManager* manager);
 
+  // Discards only the pending entry.
+  void DiscardPendingEntry();
+
  private:
   friend class RestoreHelper;
-  friend class WebContentsImpl;  // For invoking OnReservedPageIDRange.
 
   FRIEND_TEST_ALL_PREFIXES(NavigationControllerTest,
                            PurgeScreenshot);
@@ -293,9 +293,6 @@ class CONTENT_EXPORT NavigationControllerImpl
   // Discards both the pending and transient entries.
   void DiscardNonCommittedEntriesInternal();
 
-  // Discards only the pending entry.
-  void DiscardPendingEntry();
-
   // Discards only the transient entry.
   void DiscardTransientEntry();
 
@@ -358,9 +355,9 @@ class CONTENT_EXPORT NavigationControllerImpl
   // after the transient entry will become invalid if you navigate forward.
   int transient_entry_index_;
 
-  // The WebContents associated with the controller. Possibly NULL during
+  // The delegate associated with the controller. Possibly NULL during
   // setup.
-  WebContentsImpl* web_contents_;
+  NavigationControllerDelegate* delegate_;
 
   // The max restored page ID in this controller, if it was restored.  We must
   // store this so that WebContentsImpl can tell any renderer in charge of one

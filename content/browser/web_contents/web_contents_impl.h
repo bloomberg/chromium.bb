@@ -18,6 +18,7 @@
 #include "content/browser/renderer_host/frame_tree.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
+#include "content/browser/web_contents/navigation_controller_delegate.h"
 #include "content/browser/web_contents/navigation_controller_impl.h"
 #include "content/browser/web_contents/render_view_host_manager.h"
 #include "content/common/content_export.h"
@@ -76,7 +77,8 @@ class CONTENT_EXPORT WebContentsImpl
       public RenderViewHostDelegate,
       public RenderWidgetHostDelegate,
       public RenderViewHostManager::Delegate,
-      public NotificationObserver {
+      public NotificationObserver,
+      public NON_EXPORTED_BASE(NavigationControllerDelegate) {
  public:
   virtual ~WebContentsImpl();
 
@@ -111,32 +113,6 @@ class CONTENT_EXPORT WebContentsImpl
 
   // Returns the SavePackage which manages the page saving job. May be NULL.
   SavePackage* save_package() const { return save_package_.get(); }
-
-  // Updates the max page ID for the current SiteInstance in this
-  // WebContentsImpl to be at least |page_id|.
-  void UpdateMaxPageID(int32 page_id);
-
-  // Updates the max page ID for the given SiteInstance in this WebContentsImpl
-  // to be at least |page_id|.
-  void UpdateMaxPageIDForSiteInstance(SiteInstance* site_instance,
-                                      int32 page_id);
-
-  // Copy the current map of SiteInstance ID to max page ID from another tab.
-  // This is necessary when this tab adopts the NavigationEntries from
-  // |web_contents|.
-  void CopyMaxPageIDsFrom(WebContentsImpl* web_contents);
-
-  // Called by the NavigationController to cause the WebContentsImpl to navigate
-  // to the current pending entry. The NavigationController should be called
-  // back with RendererDidNavigate on success or DiscardPendingEntry on failure.
-  // The callbacks can be inside of this function, or at some future time.
-  //
-  // The entry has a PageID of -1 if newly created (corresponding to navigation
-  // to a new URL).
-  //
-  // If this method returns false, then the navigation is discarded (equivalent
-  // to calling DiscardPendingEntry on the NavigationController).
-  bool NavigateToPendingEntry(NavigationController::ReloadType reload_type);
 
   // Called by InterstitialPageImpl when it creates a RenderViewHost.
   void RenderViewForInterstitialPageCreated(RenderViewHost* render_view_host);
@@ -187,10 +163,6 @@ class CONTENT_EXPORT WebContentsImpl
 
   // Invoked when visible SSL state (as defined by SSLStatus) changes.
   void DidChangeVisibleSSLState();
-
-  // Invoked before a form repost warning is shown.
-  void NotifyBeforeFormRepostWarningShow();
-
 
   // Informs the render view host and the BrowserPluginEmbedder, if present, of
   // a Drag Source End.
@@ -510,6 +482,53 @@ class CONTENT_EXPORT WebContentsImpl
                        const NotificationSource& source,
                        const NotificationDetails& details) OVERRIDE;
 
+  // NavigationControllerDelegate ----------------------------------------------
+
+  virtual WebContents* GetWebContents() OVERRIDE;
+  virtual void NotifyNavigationEntryCommitted(
+      const LoadCommittedDetails& load_details) OVERRIDE;
+
+  // Invoked before a form repost warning is shown.
+  virtual void NotifyBeforeFormRepostWarningShow() OVERRIDE;
+
+  // Activate this WebContents and show a form repost warning.
+  virtual void ActivateAndShowRepostFormWarningDialog() OVERRIDE;
+
+  // Updates the max page ID for the current SiteInstance in this
+  // WebContentsImpl to be at least |page_id|.
+  virtual void UpdateMaxPageID(int32 page_id) OVERRIDE;
+
+  // Updates the max page ID for the given SiteInstance in this WebContentsImpl
+  // to be at least |page_id|.
+  virtual void UpdateMaxPageIDForSiteInstance(SiteInstance* site_instance,
+                                              int32 page_id) OVERRIDE;
+
+  // Copy the current map of SiteInstance ID to max page ID from another tab.
+  // This is necessary when this tab adopts the NavigationEntries from
+  // |web_contents|.
+  virtual void CopyMaxPageIDsFrom(WebContents* web_contents) OVERRIDE;
+
+  // Called by the NavigationController to cause the WebContentsImpl to navigate
+  // to the current pending entry. The NavigationController should be called
+  // back with RendererDidNavigate on success or DiscardPendingEntry on failure.
+  // The callbacks can be inside of this function, or at some future time.
+  //
+  // The entry has a PageID of -1 if newly created (corresponding to navigation
+  // to a new URL).
+  //
+  // If this method returns false, then the navigation is discarded (equivalent
+  // to calling DiscardPendingEntry on the NavigationController).
+  virtual bool NavigateToPendingEntry(
+      NavigationController::ReloadType reload_type) OVERRIDE;
+
+  // Sets the history for this WebContentsImpl to |history_length| entries, and
+  // moves the current page_id to the last entry in the list if it's valid.
+  // This is mainly used when a prerendered page is swapped into the current
+  // tab. The method is virtual for testing.
+  virtual void SetHistoryLengthAndPrune(
+      const SiteInstance* site_instance,
+      int merge_history_length,
+      int32 minimum_page_id) OVERRIDE;
 
  private:
   friend class NavigationControllerImpl;
@@ -693,15 +712,6 @@ class CONTENT_EXPORT WebContentsImpl
   bool NavigateToEntry(const NavigationEntryImpl& entry,
                        NavigationController::ReloadType reload_type);
 
-  // Sets the history for this WebContentsImpl to |history_length| entries, and
-  // moves the current page_id to the last entry in the list if it's valid.
-  // This is mainly used when a prerendered page is swapped into the current
-  // tab. The method is virtual for testing.
-  virtual void SetHistoryLengthAndPrune(
-      const SiteInstance* site_instance,
-      int merge_history_length,
-      int32 minimum_page_id);
-
   // Recursively creates swapped out RenderViews for this tab's opener chain
   // (including this tab) in the given SiteInstance, allowing other tabs to send
   // cross-process JavaScript calls to their opener(s).  Returns the route ID of
@@ -739,7 +749,6 @@ class CONTENT_EXPORT WebContentsImpl
   // Helper functions for sending notifications.
   void NotifySwapped(RenderViewHost* old_host, RenderViewHost* new_host);
   void NotifyDisconnected();
-  void NotifyNavigationEntryCommitted(const LoadCommittedDetails& load_details);
 
   void SetEncoding(const std::string& encoding);
 

@@ -207,10 +207,12 @@ void SSLManager::UpdateEntry(NavigationEntryImpl* entry) {
 
   SSLStatus original_ssl_status = entry->GetSSL();  // Copy!
 
-  policy()->UpdateEntry(entry, controller_->web_contents());
+  WebContentsImpl* contents =
+      static_cast<WebContentsImpl*>(controller_->delegate()->GetWebContents());
+  policy()->UpdateEntry(entry, contents);
 
   if (!entry->GetSSL().Equals(original_ssl_status))
-    controller_->web_contents()->DidChangeVisibleSSLState();
+    contents->DidChangeVisibleSSLState();
 }
 
 }  // namespace content

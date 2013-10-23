@@ -1135,6 +1135,7 @@
     'browser/web_contents/drag_utils_gtk.h',
     'browser/web_contents/interstitial_page_impl.cc',
     'browser/web_contents/interstitial_page_impl.h',
+    'browser/web_contents/navigation_controller_delegate.h',
     'browser/web_contents/navigation_controller_impl.cc',
     'browser/web_contents/navigation_controller_impl.h',
     'browser/web_contents/navigation_entry_impl.cc',

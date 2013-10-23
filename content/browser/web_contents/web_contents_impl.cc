@@ -1010,8 +1010,9 @@ void WebContentsImpl::UpdateMaxPageIDForSiteInstance(
     max_page_ids_[site_instance->GetId()] = page_id;
 }
 
-void WebContentsImpl::CopyMaxPageIDsFrom(WebContentsImpl* web_contents) {
-  max_page_ids_ = web_contents->max_page_ids_;
+void WebContentsImpl::CopyMaxPageIDsFrom(WebContents* web_contents) {
+  WebContentsImpl* contents = static_cast<WebContentsImpl*>(web_contents);
+  max_page_ids_ = contents->max_page_ids_;
 }
 
 SiteInstance* WebContentsImpl::GetSiteInstance() const {
@@ -1216,6 +1217,10 @@ void WebContentsImpl::Observe(int type,
     default:
       NOTREACHED();
   }
+}
+
+WebContents* WebContentsImpl::GetWebContents() {
+  return this;
 }
 
 void WebContentsImpl::Init(const WebContents::CreateParams& params) {
@@ -2680,6 +2685,13 @@ void WebContentsImpl::DidChangeVisibleSSLState() {
 void WebContentsImpl::NotifyBeforeFormRepostWarningShow() {
   FOR_EACH_OBSERVER(WebContentsObserver, observers_,
                     BeforeFormRepostWarningShow());
+}
+
+
+void WebContentsImpl::ActivateAndShowRepostFormWarningDialog() {
+  Activate();
+  if (delegate_)
+    delegate_->ShowRepostFormWarningDialog(this);
 }
 
 // Notifies the RenderWidgetHost instance about the fact that the page is

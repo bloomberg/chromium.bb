@@ -81,7 +81,7 @@ void WebContentsScreenshotManager::TakeScreenshot() {
     return;
 
   RenderViewHost* render_view_host =
-      owner_->web_contents()->GetRenderViewHost();
+      owner_->delegate()->GetRenderViewHost();
   if (!static_cast<RenderViewHostImpl*>
       (render_view_host)->overscroll_controller()) {
     return;
