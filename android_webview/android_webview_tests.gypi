@@ -14,7 +14,7 @@
       'variables': {
         'apk_name': 'AndroidWebView',
         'java_in_dir': 'test/shell',
-        'native_lib_target': 'libwebviewchromium',
+        'native_lib_target': 'libstandalonelibwebviewchromium',
         'resource_dir': 'test/shell/res',
         'additional_input_paths': [
           '<(PRODUCT_DIR)/android_webview_apk/assets/webviewchromium.pak',

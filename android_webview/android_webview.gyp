@@ -17,6 +17,11 @@
         'android_webview_common',
       ],
       'conditions': [
+        # Avoid clashes between the versions of this library built with
+        # android_webview_build==1 by using a different name prefix.
+        [ 'android_webview_build==0', {
+          'product_prefix': 'libstandalone',
+        }],
         # The general approach is to allow the executable target to choose
         # the allocator, but as in the WebView case we are building a library
         # only, put the dependency on the allocator here
