@@ -110,7 +110,7 @@ deps = {
     'src/third_party/speex':
         Var('git_url') + '/chromium/deps/speex.git@f448dfcceac99e0a771feaeedf447523b3fd26e1',
     'src/third_party/swig/Lib':
-        Var('git_url') + '/chromium/deps/swig/Lib.git@549f0b084ad9c40ef42d111303d831eb8d91252e',
+        Var('git_url') + '/chromium/deps/swig/Lib.git@f2a695d52e61e6a8d967731434f165ed400f0d69',
     'src/third_party/trace-viewer':
         Var('git_url') + '/external/trace-viewer.git@4f179283ae6325f9bc2899ca8bcfbfeccc211614',
     'src/third_party/usrsctp/usrsctplib':
