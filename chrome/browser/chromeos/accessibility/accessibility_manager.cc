@@ -266,10 +266,12 @@ AccessibilityManager::AccessibilityManager()
       spoken_feedback_pref_handler_(prefs::kSpokenFeedbackEnabled),
       high_contrast_pref_handler_(prefs::kHighContrastEnabled),
       autoclick_pref_handler_(prefs::kAutoclickEnabled),
+      autoclick_delay_pref_handler_(prefs::kAutoclickDelayMs),
       large_cursor_enabled_(false),
       sticky_keys_enabled_(false),
       spoken_feedback_enabled_(false),
       high_contrast_enabled_(false),
+      autoclick_delay_ms_(ash::AutoclickController::kDefaultAutoclickDelayMs),
       spoken_feedback_notification_(ash::A11Y_NOTIFICATION_NONE) {
 
   notification_registrar_.Add(this,
@@ -576,6 +578,33 @@ void AccessibilityManager::UpdateAutoclickFromPref() {
 #endif
 }
 
+void AccessibilityManager::SetAutoclickDelay(int delay_ms) {
+  if (!profile_)
+    return;
+
+  PrefService* pref_service = profile_->GetPrefs();
+  pref_service->SetInteger(prefs::kAutoclickDelayMs, delay_ms);
+  pref_service->CommitPendingWrite();
+}
+
+int AccessibilityManager::GetAutoclickDelay() const {
+  return autoclick_delay_ms_;
+}
+
+void AccessibilityManager::UpdateAutoclickDelayFromPref() {
+  int autoclick_delay_ms =
+      profile_->GetPrefs()->GetInteger(prefs::kAutoclickDelayMs);
+
+  if (autoclick_delay_ms == autoclick_delay_ms_)
+    return;
+  autoclick_delay_ms_ = autoclick_delay_ms;
+
+#if defined(USE_ASH)
+  ash::Shell::GetInstance()->autoclick_controller()->SetAutoclickDelay(
+      autoclick_delay_ms_);
+#endif
+}
+
 void AccessibilityManager::SetProfile(Profile* profile) {
   pref_change_registrar_.reset();
   local_state_pref_change_registrar_.reset();
@@ -604,6 +633,10 @@ void AccessibilityManager::SetProfile(Profile* profile) {
         prefs::kAutoclickEnabled,
         base::Bind(&AccessibilityManager::UpdateAutoclickFromPref,
                    base::Unretained(this)));
+    pref_change_registrar_->Add(
+        prefs::kAutoclickDelayMs,
+        base::Bind(&AccessibilityManager::UpdateAutoclickDelayFromPref,
+                   base::Unretained(this)));
 
     local_state_pref_change_registrar_.reset(new PrefChangeRegistrar);
     local_state_pref_change_registrar_->Init(g_browser_process->local_state());
@@ -622,6 +655,7 @@ void AccessibilityManager::SetProfile(Profile* profile) {
   spoken_feedback_pref_handler_.HandleProfileChanged(profile_, profile);
   high_contrast_pref_handler_.HandleProfileChanged(profile_, profile);
   autoclick_pref_handler_.HandleProfileChanged(profile_, profile);
+  autoclick_delay_pref_handler_.HandleProfileChanged(profile_, profile);
 
   profile_ = profile;
   UpdateLargeCursorFromPref();
@@ -629,6 +663,7 @@ void AccessibilityManager::SetProfile(Profile* profile) {
   UpdateSpokenFeedbackFromPref();
   UpdateHighContrastFromPref();
   UpdateAutoclickFromPref();
+  UpdateAutoclickDelayFromPref();
 }
 
 void AccessibilityManager::SetProfileForTest(Profile* profile) {

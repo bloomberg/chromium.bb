@@ -100,6 +100,12 @@ class AccessibilityManager : public content::NotificationObserver {
   // Returns true if autoclick is enabled.
   bool IsAutoclickEnabled();
 
+  // Set the delay for autoclicking after stopping the cursor in milliseconds.
+  void SetAutoclickDelay(int delay_ms);
+
+  // Returns the autoclick delay in milliseconds.
+  int GetAutoclickDelay() const;
+
   void SetProfileForTest(Profile* profile);
 
  protected:
@@ -118,6 +124,7 @@ class AccessibilityManager : public content::NotificationObserver {
   void UpdateSpokenFeedbackFromPref();
   void UpdateHighContrastFromPref();
   void UpdateAutoclickFromPref();
+  void UpdateAutoclickDelayFromPref();
   void LocalePrefChanged();
 
   void SetProfile(Profile* profile);
@@ -145,12 +152,14 @@ class AccessibilityManager : public content::NotificationObserver {
   PrefHandler spoken_feedback_pref_handler_;
   PrefHandler high_contrast_pref_handler_;
   PrefHandler autoclick_pref_handler_;
+  PrefHandler autoclick_delay_pref_handler_;
 
   bool large_cursor_enabled_;
   bool sticky_keys_enabled_;
   bool spoken_feedback_enabled_;
   bool high_contrast_enabled_;
   bool autoclick_enabled_;
+  int autoclick_delay_ms_;
 
   ash::AccessibilityNotificationVisibility spoken_feedback_notification_;
 

@@ -31,6 +31,8 @@ namespace {
 
 const char kTestUserName[] = "owner@invalid.domain";
 
+const int kTestAutoclickDelayMs = 2000;
+
 // Test user name for locally managed user. The domain part must be matched
 // with UserManager::kLocallyManagedUserDomain.
 const char kTestLocallyManagedUserName[] = "test@locally-managed.localhost";
@@ -123,6 +125,14 @@ bool IsAutoclickEnabled() {
   return AccessibilityManager::Get()->IsAutoclickEnabled();
 }
 
+void SetAutoclickDelay(int delay_ms) {
+  return AccessibilityManager::Get()->SetAutoclickDelay(delay_ms);
+}
+
+int GetAutoclickDelay() {
+  return AccessibilityManager::Get()->GetAutoclickDelay();
+}
+
 Profile* GetProfile() {
   Profile* profile = ProfileManager::GetDefaultProfileOrOffTheRecord();
   DCHECK(profile);
@@ -149,6 +159,10 @@ void SetAutoclickEnabledPref(bool enabled) {
   GetPrefs()->SetBoolean(prefs::kAutoclickEnabled, enabled);
 }
 
+void SetAutoclickDelayPref(int delay_ms) {
+  GetPrefs()->SetInteger(prefs::kAutoclickDelayMs, delay_ms);
+}
+
 bool GetLargeCursorEnabledFromPref() {
   return GetPrefs()->GetBoolean(prefs::kLargeCursorEnabled);
 }
@@ -165,11 +179,15 @@ bool GetAutoclickEnabledFromPref() {
   return GetPrefs()->GetBoolean(prefs::kAutoclickEnabled);
 }
 
+int GetAutoclickDelayFromPref() {
+  return GetPrefs()->GetInteger(prefs::kAutoclickDelayMs);
+}
+
 }  // anonymouse namespace
 
 class AccessibilityManagerTest : public InProcessBrowserTest {
  protected:
-  AccessibilityManagerTest() {}
+  AccessibilityManagerTest() : default_autoclick_delay_(0) {}
   virtual ~AccessibilityManagerTest() {}
 
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
@@ -182,7 +200,12 @@ class AccessibilityManagerTest : public InProcessBrowserTest {
     // Sets the login-screen profile.
     AccessibilityManager::Get()->
         SetProfileForTest(ProfileHelper::GetSigninProfile());
+    default_autoclick_delay_ = GetAutoclickDelay();
   }
+
+  int default_autoclick_delay() const { return default_autoclick_delay_; }
+
+  int default_autoclick_delay_;
 
   content::NotificationRegistrar registrar_;
   DISALLOW_COPY_AND_ASSIGN(AccessibilityManagerTest);
@@ -194,6 +217,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityManagerTest, Login) {
   EXPECT_FALSE(IsSpokenFeedbackEnabled());
   EXPECT_FALSE(IsHighContrastEnabled());
   EXPECT_FALSE(IsAutoclickEnabled());
+  EXPECT_EQ(default_autoclick_delay(), GetAutoclickDelay());
 
   // Logs in.
   UserManager::Get()->UserLoggedIn(kTestUserName, kTestUserName, true);
@@ -203,6 +227,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityManagerTest, Login) {
   EXPECT_FALSE(IsSpokenFeedbackEnabled());
   EXPECT_FALSE(IsHighContrastEnabled());
   EXPECT_FALSE(IsAutoclickEnabled());
+  EXPECT_EQ(default_autoclick_delay(), GetAutoclickDelay());
 
   UserManager::Get()->SessionStarted();
 
@@ -211,6 +236,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityManagerTest, Login) {
   EXPECT_FALSE(IsSpokenFeedbackEnabled());
   EXPECT_FALSE(IsHighContrastEnabled());
   EXPECT_FALSE(IsAutoclickEnabled());
+  EXPECT_EQ(default_autoclick_delay(), GetAutoclickDelay());
 
   // Enables large cursor.
   SetLargeCursorEnabled(true);
@@ -231,6 +257,10 @@ IN_PROC_BROWSER_TEST_F(AccessibilityManagerTest, Login) {
   SetAutoclickEnabled(true);
   // Confirms that autoclick is enabled.
   EXPECT_TRUE(IsAutoclickEnabled());
+
+  // Test that autoclick delay is set properly.
+  SetAutoclickDelay(kTestAutoclickDelayMs);
+  EXPECT_EQ(kTestAutoclickDelayMs, GetAutoclickDelay());
 }
 
 IN_PROC_BROWSER_TEST_F(AccessibilityManagerTest, TypePref) {
@@ -243,6 +273,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityManagerTest, TypePref) {
   EXPECT_FALSE(IsSpokenFeedbackEnabled());
   EXPECT_FALSE(IsHighContrastEnabled());
   EXPECT_FALSE(IsAutoclickEnabled());
+  EXPECT_EQ(default_autoclick_delay(), GetAutoclickDelay());
 
   // Sets the pref as true to enable the large cursor.
   SetLargeCursorEnabledPref(true);
@@ -263,6 +294,11 @@ IN_PROC_BROWSER_TEST_F(AccessibilityManagerTest, TypePref) {
   SetAutoclickEnabledPref(true);
   // Confirms that autoclick is enabled.
   EXPECT_TRUE(IsAutoclickEnabled());
+
+  // Set autoclick delay pref.
+  SetAutoclickDelayPref(kTestAutoclickDelayMs);
+  // Confirm that the correct value is set.
+  EXPECT_EQ(kTestAutoclickDelayMs, GetAutoclickDelay());
 
   SetLargeCursorEnabledPref(false);
   EXPECT_FALSE(IsLargeCursorEnabled());
@@ -297,6 +333,11 @@ IN_PROC_BROWSER_TEST_F(AccessibilityManagerTest, ResumeSavedPref) {
   SetAutoclickEnabledPref(true);
   EXPECT_FALSE(IsAutoclickEnabled());
 
+  // Sets the autoclick delay pref before login but the
+  // initial value should not change.
+  SetAutoclickDelayPref(kTestAutoclickDelayMs);
+  EXPECT_EQ(default_autoclick_delay(), GetAutoclickDelay());
+
   // Logs in.
   UserManager::Get()->SessionStarted();
 
@@ -305,6 +346,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityManagerTest, ResumeSavedPref) {
   EXPECT_TRUE(IsSpokenFeedbackEnabled());
   EXPECT_TRUE(IsHighContrastEnabled());
   EXPECT_TRUE(IsAutoclickEnabled());
+  EXPECT_EQ(kTestAutoclickDelayMs, GetAutoclickDelay());
 }
 
 IN_PROC_BROWSER_TEST_F(AccessibilityManagerTest,
@@ -426,6 +468,9 @@ IN_PROC_BROWSER_TEST_P(AccessibilityManagerUserTypeTest,
   // Enables autoclick.
   SetAutoclickEnabled(true);
   EXPECT_TRUE(IsAutoclickEnabled());
+  // Set autoclick delay.
+  SetAutoclickDelay(kTestAutoclickDelayMs);
+  EXPECT_EQ(kTestAutoclickDelayMs, GetAutoclickDelay());
 
   // Logs in.
   const char* user_name = GetParam();
@@ -436,6 +481,7 @@ IN_PROC_BROWSER_TEST_P(AccessibilityManagerUserTypeTest,
   EXPECT_TRUE(IsSpokenFeedbackEnabled());
   EXPECT_TRUE(IsHighContrastEnabled());
   EXPECT_TRUE(IsAutoclickEnabled());
+  EXPECT_EQ(kTestAutoclickDelayMs, GetAutoclickDelay());
 
   UserManager::Get()->SessionStarted();
 
@@ -444,12 +490,14 @@ IN_PROC_BROWSER_TEST_P(AccessibilityManagerUserTypeTest,
   EXPECT_TRUE(IsSpokenFeedbackEnabled());
   EXPECT_TRUE(IsHighContrastEnabled());
   EXPECT_TRUE(IsAutoclickEnabled());
+  EXPECT_EQ(kTestAutoclickDelayMs, GetAutoclickDelay());
 
   // Confirms that the prefs have been copied to the user's profile.
   EXPECT_TRUE(GetLargeCursorEnabledFromPref());
   EXPECT_TRUE(GetSpokenFeedbackEnabledFromPref());
   EXPECT_TRUE(GetHighContrastEnabledFromPref());
   EXPECT_TRUE(GetAutoclickEnabledFromPref());
+  EXPECT_EQ(kTestAutoclickDelayMs, GetAutoclickDelayFromPref());
 }
 
 }  // namespace chromeos
