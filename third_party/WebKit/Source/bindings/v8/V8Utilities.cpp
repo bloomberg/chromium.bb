@@ -149,10 +149,8 @@ void transferHiddenDependency(v8::Handle<v8::Object> object, EventListener* oldV
                 removeHiddenDependency(object, oldListenerObject, cacheIndex, isolate);
         }
     }
-    // Non-callable input should be treated as null
-    if (!newValue->IsNull() && !newValue->IsFunction())
-        newValue = v8::Null(isolate);
-    if (!newValue->IsNull() && !newValue->IsUndefined())
+    // Non-callable input is treated as null and ignored
+    if (newValue->IsFunction())
         createHiddenDependency(object, newValue, cacheIndex, isolate);
 }
 

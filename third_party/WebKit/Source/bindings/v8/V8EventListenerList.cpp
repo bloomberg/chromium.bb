@@ -43,8 +43,12 @@ PassRefPtr<EventListener> V8EventListenerList::getEventListener(v8::Local<v8::Va
     if (context.IsEmpty())
         return 0;
     v8::Isolate* isolate = context->GetIsolate();
-    if (lookup == ListenerFindOnly)
-        return V8EventListenerList::findWrapper(value, isAttribute, isolate);
+    if (lookup == ListenerFindOnly) {
+        // Used by EventTarget::removeEventListener, specifically
+        // EventTargetV8Internal::removeEventListenerMethod
+        ASSERT(!isAttribute);
+        return V8EventListenerList::findWrapper(value, isolate);
+    }
     if (V8DOMWrapper::isWrapperOfType(toInnerGlobalObject(context), &V8Window::info))
         return V8EventListenerList::findOrCreateWrapper<V8EventListener>(value, isAttribute, isolate);
     return V8EventListenerList::findOrCreateWrapper<V8WorkerGlobalScopeEventListener>(value, isAttribute, isolate);
