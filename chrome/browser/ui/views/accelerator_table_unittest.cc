@@ -56,6 +56,10 @@ TEST(AcceleratorTableTest, CheckDuplicatedAcceleratorsAsh) {
     const ash::AcceleratorData& ash_entry = ash::kAcceleratorData[i];
     if (!ash_entry.trigger_on_press)
       continue;  // kAcceleratorMap does not have any release accelerators.
+    // The shortcut to toggle minimized state is defined on both ends
+    // by design. (see crbug.com/309915 and CL)
+    if (ash_entry.action == ash::WINDOW_MINIMIZE)
+      continue;
     AcceleratorMapping entry;
     entry.keycode = ash_entry.keycode;
     entry.modifiers = ash_entry.modifiers;
