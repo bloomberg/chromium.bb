@@ -37,16 +37,15 @@ class PpbBuffer : public cdm::Buffer {
   // cdm::Buffer implementation.
   virtual void Destroy() OVERRIDE { delete this; }
 
-  virtual int32_t Capacity() const OVERRIDE { return buffer_.size(); }
+  virtual uint32_t Capacity() const OVERRIDE { return buffer_.size(); }
 
   virtual uint8_t* Data() OVERRIDE {
     return static_cast<uint8_t*>(buffer_.data());
   }
 
-  virtual void SetSize(int32_t size) OVERRIDE {
-    PP_DCHECK(size >= 0);
+  virtual void SetSize(uint32_t size) OVERRIDE {
     PP_DCHECK(size < Capacity());
-    if (size < 0 || size > Capacity()) {
+    if (size > Capacity()) {
       size_ = 0;
       return;
     }
@@ -54,7 +53,7 @@ class PpbBuffer : public cdm::Buffer {
     size_ = size;
   }
 
-  virtual int32_t Size() const OVERRIDE { return size_; }
+  virtual uint32_t Size() const OVERRIDE { return size_; }
 
   pp::Buffer_Dev buffer_dev() const { return buffer_; }
 
@@ -69,7 +68,7 @@ class PpbBuffer : public cdm::Buffer {
 
   pp::Buffer_Dev buffer_;
   uint32_t buffer_id_;
-  int32_t size_;
+  uint32_t size_;
 
   DISALLOW_COPY_AND_ASSIGN(PpbBuffer);
 };
@@ -81,7 +80,7 @@ class PpbBufferAllocator {
         next_buffer_id_(1) {}
   ~PpbBufferAllocator() {}
 
-  cdm::Buffer* Allocate(int32_t capacity);
+  cdm::Buffer* Allocate(uint32_t capacity);
 
   // Releases the buffer with |buffer_id|. A buffer can be recycled after
   // it is released.
@@ -89,10 +88,10 @@ class PpbBufferAllocator {
 
  private:
   typedef std::map<uint32_t, pp::Buffer_Dev> AllocatedBufferMap;
-  typedef std::multimap<int, std::pair<uint32_t, pp::Buffer_Dev> >
+  typedef std::multimap<uint32_t, std::pair<uint32_t, pp::Buffer_Dev> >
       FreeBufferMap;
 
-  pp::Buffer_Dev AllocateNewBuffer(int capacity);
+  pp::Buffer_Dev AllocateNewBuffer(uint32_t capacity);
 
   pp::Instance* const instance_;
   uint32_t next_buffer_id_;
@@ -143,22 +142,21 @@ class VideoFrameImpl : public cdm::VideoFrame {
   virtual cdm::Buffer* FrameBuffer() OVERRIDE { return frame_buffer_; }
 
   virtual void SetPlaneOffset(cdm::VideoFrame::VideoPlane plane,
-                              int32_t offset) OVERRIDE {
-    PP_DCHECK(0 <= plane && plane < kMaxPlanes);
-    PP_DCHECK(offset >= 0);
+                              uint32_t offset) OVERRIDE {
+    PP_DCHECK(plane < kMaxPlanes);
     plane_offsets_[plane] = offset;
   }
-  virtual int32_t PlaneOffset(VideoPlane plane) OVERRIDE {
-    PP_DCHECK(0 <= plane && plane < kMaxPlanes);
+  virtual uint32_t PlaneOffset(VideoPlane plane) OVERRIDE {
+    PP_DCHECK(plane < kMaxPlanes);
     return plane_offsets_[plane];
   }
 
-  virtual void SetStride(VideoPlane plane, int32_t stride) OVERRIDE {
-    PP_DCHECK(0 <= plane && plane < kMaxPlanes);
+  virtual void SetStride(VideoPlane plane, uint32_t stride) OVERRIDE {
+    PP_DCHECK(plane < kMaxPlanes);
     strides_[plane] = stride;
   }
-  virtual int32_t Stride(VideoPlane plane) OVERRIDE {
-    PP_DCHECK(0 <= plane && plane < kMaxPlanes);
+  virtual uint32_t Stride(VideoPlane plane) OVERRIDE {
+    PP_DCHECK(plane < kMaxPlanes);
     return strides_[plane];
   }
 
@@ -178,12 +176,12 @@ class VideoFrameImpl : public cdm::VideoFrame {
   PpbBuffer* frame_buffer_;
 
   // Array of data pointers to each plane in the video frame buffer.
-  int32_t plane_offsets_[kMaxPlanes];
+  uint32_t plane_offsets_[kMaxPlanes];
 
   // Array of strides for each plane, typically greater or equal to the width
   // of the surface divided by the horizontal sampling period.  Note that
   // strides can be negative.
-  int32_t strides_[kMaxPlanes];
+  uint32_t strides_[kMaxPlanes];
 
   // Presentation timestamp in microseconds.
   int64_t timestamp_;

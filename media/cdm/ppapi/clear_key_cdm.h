@@ -35,13 +35,16 @@ class ClearKeyCdm : public cdm::ContentDecryptionModule_2 {
 
   // ContentDecryptionModule implementation.
   virtual cdm::Status GenerateKeyRequest(
-      const char* type, int type_size,
-      const uint8_t* init_data, int init_data_size) OVERRIDE;
-  virtual cdm::Status AddKey(const char* session_id, int session_id_size,
-                             const uint8_t* key, int key_size,
-                             const uint8_t* key_id, int key_id_size) OVERRIDE;
+      const char* type, uint32_t type_size,
+      const uint8_t* init_data, uint32_t init_data_size) OVERRIDE;
+  virtual cdm::Status AddKey(const char* session_id,
+                             uint32_t session_id_size,
+                             const uint8_t* key,
+                             uint32_t key_size,
+                             const uint8_t* key_id,
+                             uint32_t key_id_size) OVERRIDE;
   virtual cdm::Status CancelKeyRequest(const char* session_id,
-                                       int session_id_size) OVERRIDE;
+                                       uint32_t session_id_size) OVERRIDE;
   virtual void TimerExpired(void* context) OVERRIDE;
   virtual cdm::Status Decrypt(const cdm::InputBuffer& encrypted_buffer,
                               cdm::DecryptedBlock* decrypted_block) OVERRIDE;

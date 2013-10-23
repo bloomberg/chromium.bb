@@ -20,10 +20,10 @@
 
 namespace media {
 
-cdm::Buffer* PpbBufferAllocator::Allocate(int32_t capacity) {
+cdm::Buffer* PpbBufferAllocator::Allocate(uint32_t capacity) {
   PP_DCHECK(pp::Module::Get()->core()->IsMainThread());
 
-  if (capacity <= 0)
+  if (!capacity)
     return NULL;
 
   pp::Buffer_Dev buffer;
@@ -64,19 +64,19 @@ void PpbBufferAllocator::Release(uint32_t buffer_id) {
   allocated_buffers_.erase(found);
 }
 
-pp::Buffer_Dev PpbBufferAllocator::AllocateNewBuffer(int32_t capacity) {
+pp::Buffer_Dev PpbBufferAllocator::AllocateNewBuffer(uint32_t capacity) {
   // Always pad new allocated buffer so that we don't need to reallocate
   // buffers frequently if requested sizes fluctuate slightly.
-  static const int kBufferPadding = 512;
+  static const uint32_t kBufferPadding = 512;
 
   // Maximum number of free buffers we can keep when allocating new buffers.
-  static const int kFreeLimit = 3;
+  static const uint32_t kFreeLimit = 3;
 
   // Destroy the smallest buffer before allocating a new bigger buffer if the
   // number of free buffers exceeds a limit. This mechanism helps avoid ending
   // up with too many small buffers, which could happen if the size to be
   // allocated keeps increasing.
-  if (free_buffers_.size() >= static_cast<uint32_t>(kFreeLimit))
+  if (free_buffers_.size() >= kFreeLimit)
     free_buffers_.erase(free_buffers_.begin());
 
   // Creation of pp::Buffer_Dev is expensive! It involves synchronous IPC calls.
@@ -88,7 +88,7 @@ VideoFrameImpl::VideoFrameImpl()
     : format_(cdm::kUnknownVideoFormat),
       frame_buffer_(NULL),
       timestamp_(0) {
-  for (int32_t i = 0; i < kMaxPlanes; ++i) {
+  for (uint32_t i = 0; i < kMaxPlanes; ++i) {
     plane_offsets_[i] = 0;
     strides_[i] = 0;
   }

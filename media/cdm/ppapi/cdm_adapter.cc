@@ -46,8 +46,7 @@ void ConfigureInputBuffer(
 
   input_buffer->data = static_cast<uint8_t*>(encrypted_buffer.data());
   input_buffer->data_size = encrypted_block_info.data_size;
-  PP_DCHECK(encrypted_buffer.size() >=
-            static_cast<uint32_t>(input_buffer->data_size));
+  PP_DCHECK(encrypted_buffer.size() >= input_buffer->data_size);
   input_buffer->data_offset = encrypted_block_info.data_offset;
 
   PP_DCHECK(encrypted_block_info.key_id_size <=
@@ -283,12 +282,12 @@ void CdmAdapter::AddKey(const std::string& session_id,
   }
 
   const uint8_t* key_ptr = static_cast<const uint8_t*>(key.Map());
-  int key_size = key.ByteLength();
+  const uint32_t key_size = key.ByteLength();
   const uint8_t* init_data_ptr = static_cast<const uint8_t*>(init_data.Map());
-  int init_data_size = init_data.ByteLength();
+  const uint32_t init_data_size = init_data.ByteLength();
   PP_DCHECK(!init_data_ptr == !init_data_size);
 
-  if (!key_ptr || key_size <= 0) {
+  if (!key_ptr || !key_size) {
     SendUnknownKeyError(key_system_, session_id);
     return;
   }
@@ -364,8 +363,7 @@ void CdmAdapter::InitializeAudioDecoder(
     cdm_decoder_config.samples_per_second = decoder_config.samples_per_second;
     cdm_decoder_config.extra_data =
         static_cast<uint8_t*>(extra_data_buffer.data());
-    cdm_decoder_config.extra_data_size =
-        static_cast<int32_t>(extra_data_buffer.size());
+    cdm_decoder_config.extra_data_size = extra_data_buffer.size();
     status = cdm_->InitializeAudioDecoder(cdm_decoder_config);
   }
 
@@ -392,8 +390,7 @@ void CdmAdapter::InitializeVideoDecoder(
     cdm_decoder_config.coded_size.height = decoder_config.height;
     cdm_decoder_config.extra_data =
         static_cast<uint8_t*>(extra_data_buffer.data());
-    cdm_decoder_config.extra_data_size =
-        static_cast<int32_t>(extra_data_buffer.size());
+    cdm_decoder_config.extra_data_size = extra_data_buffer.size();
     status = cdm_->InitializeVideoDecoder(cdm_decoder_config);
   }
 
@@ -481,7 +478,7 @@ void CdmAdapter::DecryptAndDecode(
   }
 }
 
-cdm::Buffer* CdmAdapter::Allocate(int32_t capacity) {
+cdm::Buffer* CdmAdapter::Allocate(uint32_t capacity) {
   return allocator_.Allocate(capacity);
 }
 
@@ -505,9 +502,9 @@ double CdmAdapter::GetCurrentWallTimeInSeconds() {
 }
 
 void CdmAdapter::SendKeyMessage(
-    const char* session_id, int32_t session_id_length,
-    const char* message, int32_t message_length,
-    const char* default_url, int32_t default_url_length) {
+    const char* session_id, uint32_t session_id_length,
+    const char* message, uint32_t message_length,
+    const char* default_url, uint32_t default_url_length) {
   PP_DCHECK(!key_system_.empty());
   PostOnMain(callback_factory_.NewCallback(
       &CdmAdapter::KeyMessage,
@@ -518,7 +515,7 @@ void CdmAdapter::SendKeyMessage(
 }
 
 void CdmAdapter::SendKeyError(const char* session_id,
-                              int32_t session_id_length,
+                              uint32_t session_id_length,
                               cdm::MediaKeyError error_code,
                               uint32_t system_code) {
   SendKeyErrorInternal(key_system_,
@@ -733,7 +730,7 @@ bool CdmAdapter::IsValidVideoFrame(const LinkedVideoFrame& video_frame) {
 
   PpbBuffer* ppb_buffer = static_cast<PpbBuffer*>(video_frame->FrameBuffer());
 
-  for (int i = 0; i < cdm::VideoFrame::kMaxPlanes; ++i) {
+  for (uint32_t i = 0; i < cdm::VideoFrame::kMaxPlanes; ++i) {
     int plane_height = (i == cdm::VideoFrame::kYPlane) ?
         video_frame->Size().height : (video_frame->Size().height + 1) / 2;
     cdm::VideoFrame::VideoPlane plane =
@@ -747,9 +744,14 @@ bool CdmAdapter::IsValidVideoFrame(const LinkedVideoFrame& video_frame) {
   return true;
 }
 
+void CdmAdapter::OnDeferredInitializationDone(cdm::StreamType stream_type,
+                                              cdm::Status decoder_status) {
+  PP_NOTREACHED();
+}
+
 void CdmAdapter::SendPlatformChallenge(
-    const char* service_id, int32_t service_id_length,
-    const char* challenge, int32_t challenge_length) {
+    const char* service_id, uint32_t service_id_length,
+    const char* challenge, uint32_t challenge_length) {
 #if defined(OS_CHROMEOS)
   PP_DCHECK(!challenge_in_progress_);
 
@@ -832,13 +834,13 @@ void CdmAdapter::SendPlatformChallengeDone(int32_t result) {
 
   cdm::PlatformChallengeResponse response = {
     static_cast<uint8_t*>(signed_data_var.Map()),
-    static_cast<int32_t>(signed_data_var.ByteLength()),
+    signed_data_var.ByteLength(),
 
     static_cast<uint8_t*>(signed_data_signature_var.Map()),
-    static_cast<int32_t>(signed_data_signature_var.ByteLength()),
+    signed_data_signature_var.ByteLength(),
 
     reinterpret_cast<const uint8_t*>(platform_key_certificate_string.c_str()),
-    static_cast<int32_t>(platform_key_certificate_string.length())
+    static_cast<uint32_t>(platform_key_certificate_string.length())
   };
   cdm_->OnPlatformChallengeResponse(response);
 

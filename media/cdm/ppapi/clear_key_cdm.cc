@@ -74,7 +74,7 @@ const char kHeartBeatHeader[] = "HEARTBEAT";
 static scoped_refptr<media::DecoderBuffer> CopyDecoderBufferFrom(
     const cdm::InputBuffer& input_buffer) {
   if (!input_buffer.data) {
-    DCHECK_EQ(input_buffer.data_size, 0);
+    DCHECK(!input_buffer.data_size);
     return media::DecoderBuffer::CreateEOSBuffer();
   }
 
@@ -83,7 +83,7 @@ static scoped_refptr<media::DecoderBuffer> CopyDecoderBufferFrom(
       media::DecoderBuffer::CopyFrom(input_buffer.data, input_buffer.data_size);
 
   std::vector<media::SubsampleEntry> subsamples;
-  for (int32_t i = 0; i < input_buffer.num_subsamples; ++i) {
+  for (uint32_t i = 0; i < input_buffer.num_subsamples; ++i) {
     media::SubsampleEntry subsample;
     subsample.clear_bytes = input_buffer.subsamples[i].clear_bytes;
     subsample.cypher_bytes = input_buffer.subsamples[i].cipher_bytes;
@@ -127,7 +127,7 @@ void DeinitializeCdmModule() {
 
 void* CreateCdmInstance(
     int cdm_interface_version,
-    const char* key_system, int key_system_size,
+    const char* key_system, uint32_t key_system_size,
     GetCdmHostFunc get_cdm_host_func, void* user_data) {
   DVLOG(1) << "CreateCdmInstance()";
 
@@ -139,8 +139,9 @@ void* CreateCdmInstance(
   if (cdm_interface_version != cdm::ContentDecryptionModule_2::kVersion)
     return NULL;
 
-  cdm::Host* host = static_cast<cdm::Host*>(
-      get_cdm_host_func(cdm::ContentDecryptionModule_2::kVersion, user_data));
+  cdm::ContentDecryptionModule_2::Host* host =
+      static_cast<cdm::ContentDecryptionModule_2::Host*>(get_cdm_host_func(
+          cdm::ContentDecryptionModule_2::Host::kVersion, user_data));
   if (!host)
     return NULL;
 
@@ -203,9 +204,10 @@ ClearKeyCdm::ClearKeyCdm(cdm::Host* host)
 
 ClearKeyCdm::~ClearKeyCdm() {}
 
-cdm::Status ClearKeyCdm::GenerateKeyRequest(const char* type, int type_size,
+cdm::Status ClearKeyCdm::GenerateKeyRequest(const char* type,
+                                            uint32_t type_size,
                                             const uint8_t* init_data,
-                                            int init_data_size) {
+                                            uint32_t init_data_size) {
   DVLOG(1) << "GenerateKeyRequest()";
   base::AutoLock auto_lock(client_lock_);
   ScopedResetter<Client> auto_resetter(&client_);
@@ -230,11 +232,11 @@ cdm::Status ClearKeyCdm::GenerateKeyRequest(const char* type, int type_size,
 }
 
 cdm::Status ClearKeyCdm::AddKey(const char* session_id,
-                                int session_id_size,
+                                uint32_t session_id_size,
                                 const uint8_t* key,
-                                int key_size,
+                                uint32_t key_size,
                                 const uint8_t* key_id,
-                                int key_id_size) {
+                                uint32_t key_id_size) {
   DVLOG(1) << "AddKey()";
   base::AutoLock auto_lock(client_lock_);
   ScopedResetter<Client> auto_resetter(&client_);
@@ -253,7 +255,7 @@ cdm::Status ClearKeyCdm::AddKey(const char* session_id,
 }
 
 cdm::Status ClearKeyCdm::CancelKeyRequest(const char* session_id,
-                                          int session_id_size) {
+                                          uint32_t session_id_size) {
   DVLOG(1) << "CancelKeyRequest()";
   base::AutoLock auto_lock(client_lock_);
   ScopedResetter<Client> auto_resetter(&client_);

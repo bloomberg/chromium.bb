@@ -79,15 +79,15 @@ class CdmAdapter : public pp::Instance,
       const PP_EncryptedBlockInfo& encrypted_block_info) OVERRIDE;
 
   // cdm::Host implementation.
-  virtual cdm::Buffer* Allocate(int32_t capacity) OVERRIDE;
+  virtual cdm::Buffer* Allocate(uint32_t capacity) OVERRIDE;
   virtual void SetTimer(int64_t delay_ms, void* context) OVERRIDE;
   virtual double GetCurrentWallTimeInSeconds() OVERRIDE;
   virtual void SendKeyMessage(
-      const char* session_id, int32_t session_id_length,
-      const char* message, int32_t message_length,
-      const char* default_url, int32_t default_url_length) OVERRIDE;
+      const char* session_id, uint32_t session_id_length,
+      const char* message, uint32_t message_length,
+      const char* default_url, uint32_t default_url_length) OVERRIDE;
   virtual void SendKeyError(const char* session_id,
-                            int32_t session_id_length,
+                            uint32_t session_id_length,
                             cdm::MediaKeyError error_code,
                             uint32_t system_code) OVERRIDE;
   virtual void GetPrivateData(int32_t* instance,
@@ -95,11 +95,14 @@ class CdmAdapter : public pp::Instance,
 
   // cdm::Host_2 implementation.
   virtual void SendPlatformChallenge(
-      const char* service_id, int32_t service_id_length,
-      const char* challenge, int32_t challenge_length) OVERRIDE;
+      const char* service_id, uint32_t service_id_length,
+      const char* challenge, uint32_t challenge_length) OVERRIDE;
   virtual void EnableOutputProtection(
       uint32_t desired_protection_mask) OVERRIDE;
   virtual void QueryOutputProtectionStatus() OVERRIDE;
+  virtual void OnDeferredInitializationDone(
+      cdm::StreamType stream_type,
+      cdm::Status decoder_status) OVERRIDE;
 
  private:
   struct SessionInfo {
