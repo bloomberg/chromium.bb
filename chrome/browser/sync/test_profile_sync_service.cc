@@ -7,35 +7,24 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
-#include "chrome/browser/sync/glue/data_type_controller.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
 #include "chrome/browser/sync/profile_sync_components_factory.h"
 #include "chrome/browser/sync/test/test_http_bridge_factory.h"
-#include "sync/internal_api/public/sessions/sync_session_snapshot.h"
-#include "sync/internal_api/public/test/test_user_share.h"
+#include "sync/internal_api/public/test/sync_manager_factory_for_profile_sync_test.h"
 #include "sync/internal_api/public/user_share.h"
 #include "sync/js/js_reply_handler.h"
 #include "sync/protocol/encryption.pb.h"
-#include "sync/syncable/directory.h"
 
 using syncer::InternalComponentsFactory;
 using syncer::ModelSafeRoutingInfo;
 using syncer::TestInternalComponentsFactory;
-using syncer::sessions::ModelNeutralState;
-using syncer::sessions::SyncSessionSnapshot;
 using syncer::UserShare;
-using syncer::syncable::Directory;
-using syncer::DEVICE_INFO;
-using syncer::EXPERIMENTS;
-using syncer::NIGORI;
-using syncer::PRIORITY_PREFERENCES;
 
 namespace browser_sync {
 
 SyncBackendHostForProfileSyncTest::SyncBackendHostForProfileSyncTest(
     Profile* profile,
     const base::WeakPtr<SyncPrefs>& sync_prefs,
-    syncer::TestIdFactory& id_factory,
     base::Closure& callback,
     bool set_initial_sync_ended_on_init,
     bool synchronous_init,
@@ -43,7 +32,6 @@ SyncBackendHostForProfileSyncTest::SyncBackendHostForProfileSyncTest(
     syncer::StorageOption storage_option)
     : browser_sync::SyncBackendHost(
         profile->GetDebugName(), profile, sync_prefs),
-      id_factory_(id_factory),
       callback_(callback),
       fail_initial_download_(fail_initial_download),
       set_initial_sync_ended_on_init_(set_initial_sync_ended_on_init),
@@ -65,6 +53,10 @@ scoped_ptr<syncer::HttpPostProviderFactory> MakeTestHttpBridgeFactory() {
 void SyncBackendHostForProfileSyncTest::InitCore(
     scoped_ptr<DoInitializeOptions> options) {
   options->http_bridge_factory = MakeTestHttpBridgeFactory();
+  options->sync_manager_factory.reset(
+      new syncer::SyncManagerFactoryForProfileSyncTest(
+          callback_,
+          set_initial_sync_ended_on_init_));
   options->credentials.email = "testuser@gmail.com";
   options->credentials.sync_token = "token";
   options->restored_key_for_bootstrapping = "";
@@ -121,70 +113,27 @@ void SyncBackendHostForProfileSyncTest::RequestConfigureSyncer(
       ready_task);
 }
 
-void SyncBackendHostForProfileSyncTest
-    ::HandleSyncManagerInitializationOnFrontendLoop(
-    const syncer::WeakHandle<syncer::JsBackend>& js_backend,
-    const syncer::WeakHandle<syncer::DataTypeDebugInfoListener>&
-        debug_info_listener,
-    syncer::ModelTypeSet restored_types) {
-  // Here's our opportunity to pretend to do things that the SyncManager would
-  // normally do during initialization, but can't because this is a test.
-  // Set up any nodes the test wants around before model association.
-  if (!callback_.is_null()) {
-    callback_.Run();
-  }
-
-  // Pretend we downloaded initial updates and set initial sync ended bits
-  // if we were asked to.
-  if (set_initial_sync_ended_on_init_) {
-    UserShare* user_share = GetUserShare();
-    Directory* directory = user_share->directory.get();
-
-    if (!directory->InitialSyncEndedForType(NIGORI)) {
-      syncer::TestUserShare::CreateRoot(NIGORI, user_share);
-
-      // A side effect of adding the NIGORI node (normally done by the
-      // syncer) is a decryption attempt, which will fail the first time.
-    }
-
-    if (!directory->InitialSyncEndedForType(DEVICE_INFO)) {
-      syncer::TestUserShare::CreateRoot(DEVICE_INFO, user_share);
-    }
-
-    if (!directory->InitialSyncEndedForType(EXPERIMENTS)) {
-      syncer::TestUserShare::CreateRoot(EXPERIMENTS, user_share);
-    }
-
-    if (!directory->InitialSyncEndedForType(PRIORITY_PREFERENCES)) {
-      syncer::TestUserShare::CreateRoot(PRIORITY_PREFERENCES, user_share);
-    }
-
-    restored_types = syncer::ModelTypeSet::All();
-  }
-
-  initial_download_closure_ = base::Bind(
-      &SyncBackendHostForProfileSyncTest::ContinueInitialization,
-      weak_ptr_factory_.GetWeakPtr(),
-      js_backend,
-      debug_info_listener,
-      restored_types);
+void
+SyncBackendHostForProfileSyncTest::HandleInitializationSuccessOnFrontendLoop(
+    const syncer::WeakHandle<syncer::JsBackend> js_backend,
+    const syncer::WeakHandle<syncer::DataTypeDebugInfoListener>
+    debug_info_listener) {
   if (fail_initial_download_) {
-    frontend()->OnSyncConfigureRetry();
+    // We interrupt this successful init to bring you a simulated failure.
+    initial_download_closure_ = base::Bind(
+        &SyncBackendHostForProfileSyncTest::
+            HandleInitializationSuccessOnFrontendLoop,
+        weak_ptr_factory_.GetWeakPtr(),
+        js_backend,
+        debug_info_listener);
+    HandleControlTypesDownloadRetry();
     if (synchronous_init_)
       base::MessageLoop::current()->Quit();
   } else {
-    initial_download_closure_.Run();
-    initial_download_closure_.Reset();
+    SyncBackendHost::HandleInitializationSuccessOnFrontendLoop(
+        js_backend,
+        debug_info_listener);
   }
-}
-
-void SyncBackendHostForProfileSyncTest::ContinueInitialization(
-    const syncer::WeakHandle<syncer::JsBackend>& js_backend,
-    const syncer::WeakHandle<syncer::DataTypeDebugInfoListener>&
-        debug_info_listener,
-    syncer::ModelTypeSet restored_types) {
-  SyncBackendHost::HandleSyncManagerInitializationOnFrontendLoop(
-      js_backend, debug_info_listener, restored_types);
 }
 
 }  // namespace browser_sync
@@ -313,7 +262,6 @@ void TestProfileSyncService::CreateBackend() {
   backend_.reset(new browser_sync::SyncBackendHostForProfileSyncTest(
       profile(),
       sync_prefs_.AsWeakPtr(),
-      id_factory_,
       callback_,
       set_initial_sync_ended_on_init_,
       synchronous_backend_initialization_,

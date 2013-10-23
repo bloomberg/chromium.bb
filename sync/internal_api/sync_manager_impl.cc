@@ -409,12 +409,7 @@ void SyncManagerImpl::Init(
 
   DVLOG(1) << "Username: " << username;
   if (!OpenDirectory(username)) {
-    FOR_EACH_OBSERVER(SyncManager::Observer, observers_,
-                      OnInitializationComplete(
-                          MakeWeakHandle(weak_ptr_factory_.GetWeakPtr()),
-                          MakeWeakHandle(
-                              debug_info_event_listener_.GetWeakPtr()),
-                          false, ModelTypeSet()));
+    NotifyInitializationFailure();
     LOG(ERROR) << "Sync manager initialization failed!";
     return;
   }
@@ -461,11 +456,23 @@ void SyncManagerImpl::Init(
 
   UpdateCredentials(credentials);
 
+  NotifyInitializationSuccess();
+}
+
+void SyncManagerImpl::NotifyInitializationSuccess() {
   FOR_EACH_OBSERVER(SyncManager::Observer, observers_,
                     OnInitializationComplete(
                         MakeWeakHandle(weak_ptr_factory_.GetWeakPtr()),
                         MakeWeakHandle(debug_info_event_listener_.GetWeakPtr()),
                         true, InitialSyncEndedTypes()));
+}
+
+void SyncManagerImpl::NotifyInitializationFailure() {
+  FOR_EACH_OBSERVER(SyncManager::Observer, observers_,
+                    OnInitializationComplete(
+                        MakeWeakHandle(weak_ptr_factory_.GetWeakPtr()),
+                        MakeWeakHandle(debug_info_event_listener_.GetWeakPtr()),
+                        false, ModelTypeSet()));
 }
 
 void SyncManagerImpl::OnPassphraseRequired(

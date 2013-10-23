@@ -180,6 +180,11 @@ class SYNC_EXPORT_PRIVATE SyncManagerImpl :
 
   bool GetHasInvalidAuthTokenForTest() const;
 
+ protected:
+  // Helper functions.  Virtual for testing.
+  virtual void NotifyInitializationSuccess();
+  virtual void NotifyInitializationFailure();
+
  private:
   friend class SyncManagerTest;
   FRIEND_TEST_ALL_PREFIXES(SyncManagerTest, NudgeDelayTest);

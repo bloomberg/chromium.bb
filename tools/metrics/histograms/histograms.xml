@@ -17971,6 +17971,14 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Sync.BackendInitializeRestoreState"
+    enum="SyncBackendInitializeRestoreState">
+  <summary>
+    Compares sync's has_setup_completed pref against the set of types actually
+    restored from the sync DB.  Mismatches should be rare.
+  </summary>
+</histogram>
+
 <histogram name="Sync.RefreshTokenAvailable" enum="BooleanSuccess">
   <summary>
     Whether OAuth2 refresh token was available at the time when
@@ -27498,6 +27506,13 @@ other types of suffix sets.
   <int value="1" label="Failure"/>
   <int value="2" label="Cancelled"/>
   <int value="3" label="Attempted"/>
+</enum>
+
+<enum name="SyncBackendInitializeRestoreState" type="int">
+  <int value="0" label="Expected restored types and found some"/>
+  <int value="1" label="Expected restored types but found none"/>
+  <int value="2" label="Did not expect restored types and found none"/>
+  <int value="3" label="Did not expect restored types but found some"/>
 </enum>
 
 <enum name="SyncedNotificationActionType" type="int">

@@ -44,7 +44,6 @@ class SyncBackendHostForProfileSyncTest : public SyncBackendHost {
   SyncBackendHostForProfileSyncTest(
       Profile* profile,
       const base::WeakPtr<SyncPrefs>& sync_prefs,
-      syncer::TestIdFactory& id_factory,
       base::Closure& callback,
       bool set_initial_sync_ended_on_init,
       bool synchronous_init,
@@ -69,25 +68,16 @@ class SyncBackendHostForProfileSyncTest : public SyncBackendHost {
                                 syncer::ModelTypeSet)>& ready_task,
       const base::Closure& retry_callback) OVERRIDE;
 
-  virtual void HandleSyncManagerInitializationOnFrontendLoop(
-      const syncer::WeakHandle<syncer::JsBackend>& js_backend,
-      const syncer::WeakHandle<syncer::DataTypeDebugInfoListener>&
-          debug_info_listener,
-      syncer::ModelTypeSet restored_types) OVERRIDE;
-
-  static void SetHistoryServiceExpectations(ProfileMock* profile);
+  virtual void HandleInitializationSuccessOnFrontendLoop(
+    const syncer::WeakHandle<syncer::JsBackend> js_backend,
+    const syncer::WeakHandle<syncer::DataTypeDebugInfoListener>
+        debug_info_listener) OVERRIDE;
 
  protected:
   virtual void InitCore(scoped_ptr<DoInitializeOptions> options) OVERRIDE;
 
  private:
-  void ContinueInitialization(
-      const syncer::WeakHandle<syncer::JsBackend>& js_backend,
-      const syncer::WeakHandle<syncer::DataTypeDebugInfoListener>&
-          debug_info_listener,
-      syncer::ModelTypeSet restored_types);
 
-  syncer::TestIdFactory& id_factory_;
 
   // Invoked at the start of HandleSyncManagerInitializationOnFrontendLoop.
   // Allows extra initialization work to be performed before the backend comes

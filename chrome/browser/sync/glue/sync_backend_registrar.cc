@@ -104,9 +104,7 @@ SyncBackendRegistrar::SyncBackendRegistrar(
 }
 
 void SyncBackendRegistrar::SetInitialTypes(syncer::ModelTypeSet initial_types) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   base::AutoLock lock(lock_);
-
 
   // This function should be called only once, shortly after construction. The
   // routing info at that point is expected to be empty.

@@ -384,14 +384,16 @@ class SyncBackendHost
       const base::Callback<void(syncer::ModelTypeSet,
                                 syncer::ModelTypeSet)>& ready_task);
 
-  // Called when the SyncManager has been constructed and initialized.
-  // Stores |js_backend| and |debug_info_listener| on the UI thread for
-  // consumption when initialization is complete.
-  virtual void HandleSyncManagerInitializationOnFrontendLoop(
-      const syncer::WeakHandle<syncer::JsBackend>& js_backend,
-      const syncer::WeakHandle<syncer::DataTypeDebugInfoListener>&
-          debug_info_listener,
-      syncer::ModelTypeSet restored_types);
+  // Reports backend initialization success.  Includes some objects from sync
+  // manager initialization to be passed back to the UI thread.
+  virtual void HandleInitializationSuccessOnFrontendLoop(
+    const syncer::WeakHandle<syncer::JsBackend> js_backend,
+    const syncer::WeakHandle<syncer::DataTypeDebugInfoListener>
+        debug_info_listener);
+
+  // Downloading of control types failed and will be retried. Invokes the
+  // frontend's sync configure retry method.
+  void HandleControlTypesDownloadRetry();
 
   SyncFrontend* frontend() { return frontend_; }
 
@@ -417,15 +419,8 @@ class SyncBackendHost
   // Note: it is illegal to call this before the backend is initialized.
   void AddExperimentalTypes();
 
-  // Downloading of control types failed and will be retried. Invokes the
-  // frontend's sync configure retry method.
-  void HandleControlTypesDownloadRetry();
-
-  // InitializationComplete passes through the SyncBackendHost to forward
-  // on to |frontend_|, and so that tests can intercept here if they need to
-  // set up initial conditions.
-  void HandleInitializationCompletedOnFrontendLoop(
-      bool success);
+  // Handles backend initialization failure.
+  void HandleInitializationFailureOnFrontendLoop();
 
   // Called from Core::OnSyncCycleCompleted to handle updating frontend
   // thread components.
@@ -446,7 +441,7 @@ class SyncBackendHost
       syncer::BootstrapTokenType token_type);
 
   // For convenience, checks if initialization state is INITIALIZED.
-  bool initialized() const { return initialization_state_ == INITIALIZED; }
+  bool initialized() const { return initialized_; }
 
   // Let the front end handle the actionable error event.
   void HandleActionableErrorEventOnFrontendLoop(
@@ -533,7 +528,7 @@ class SyncBackendHost
   // sync loop.
   scoped_refptr<Core> core_;
 
-  InitializationState initialization_state_;
+  bool initialized_;
 
   const base::WeakPtr<SyncPrefs> sync_prefs_;
 
@@ -566,13 +561,6 @@ class SyncBackendHost
 
   // UI-thread cache of the last SyncSessionSnapshot received from syncapi.
   syncer::sessions::SyncSessionSnapshot last_snapshot_;
-
-  // Temporary holder of sync manager's initialization results. Set by
-  // HandleSyncManagerInitializationOnFrontendLoop, and consumed when we pass
-  // it via OnBackendInitialized in the final state of
-  // HandleInitializationCompletedOnFrontendLoop.
-  syncer::WeakHandle<syncer::JsBackend> js_backend_;
-  syncer::WeakHandle<syncer::DataTypeDebugInfoListener> debug_info_listener_;
 
   invalidation::InvalidationService* invalidator_;
   bool invalidation_handler_registered_;
