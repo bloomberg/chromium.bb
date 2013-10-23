@@ -12,9 +12,16 @@ class SmoothnessTop25(test.Test):
   http://www.chromium.org/developers/design-documents/rendering-benchmarks"""
   test = smoothness.Smoothness
   page_set = 'page_sets/top_25.json'
-  options = {'report_all_results': False}
 
 
 class SmoothnessToughCanvasCases(test.Test):
   test = smoothness.Smoothness
   page_set = 'page_sets/tough_canvas_cases.json'
+
+
+class SmoothnessKeyMobileSites(test.Test):
+  """Measures rendering statistics while scrolling down the key mobile sites.
+
+  http://www.chromium.org/developers/design-documents/rendering-benchmarks"""
+  test = smoothness.Smoothness
+  page_set = 'page_sets/key_mobile_sites.json'
