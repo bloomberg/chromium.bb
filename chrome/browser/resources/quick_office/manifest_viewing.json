@@ -5,7 +5,7 @@
       "scripts/background/register.js"
     ]
   },
-  "content_security_policy": "default-src 'self'; connect-src blob: chrome-extension:; style-src 'self' 'unsafe-inline' chrome-extension:; img-src 'self' blob: data:; frame-src chrome-extension:; script-src 'self'",
+  "content_security_policy": "default-src 'self'; connect-src https://www.google-analytics.com/ blob: chrome-extension:; style-src 'self' 'unsafe-inline' chrome-extension:; img-src 'self' blob: data:; frame-src chrome-extension:; script-src 'self'",
   "default_locale": "en",
   "description": "Chrome Office Viewer (Beta)",
   "file_browser_handlers": [
@@ -62,7 +62,9 @@
     "fileBrowserHandler",
     "fileSystem",
     "fileSystem.write",
+    "https://www.google-analytics.com/",
     "metricsPrivate",
+    "storage",
     "streamsPrivate",
     "unlimitedStorage"
   ],
@@ -80,7 +82,7 @@
       "sub_package_path": "_platform_specific/arm/"
     }
   ],
-  "version": "31.91.1417.13",
+  "version": "32.92.1530.4",
   "web_accessible_resources": [
     "views/qowt.html"
   ]
