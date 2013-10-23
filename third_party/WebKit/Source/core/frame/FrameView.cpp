@@ -2019,8 +2019,12 @@ void FrameView::serviceScriptedAnimations(double monotonicAnimationStartTime)
         frame->view()->serviceScrollAnimations();
         if (!RuntimeEnabledFeatures::webAnimationsCSSEnabled())
             frame->animation().serviceAnimations();
-        if (RuntimeEnabledFeatures::webAnimationsEnabled())
+        if (RuntimeEnabledFeatures::webAnimationsEnabled()) {
             frame->document()->timeline()->serviceAnimations(monotonicAnimationStartTime);
+            frame->document()->transitionTimeline()->serviceAnimations(monotonicAnimationStartTime);
+            frame->document()->timeline()->dispatchEvents();
+            frame->document()->transitionTimeline()->dispatchEvents();
+        }
     }
 
     Vector<RefPtr<Document> > documents;

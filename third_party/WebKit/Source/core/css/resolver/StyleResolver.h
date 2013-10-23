@@ -310,7 +310,7 @@ private:
     template <StyleApplicationPass pass>
     void applyProperties(StyleResolverState&, const StylePropertySet* properties, StyleRule*, bool isImportant, bool inheritedOnly, PropertyWhitelistType = PropertyWhitelistNone);
     template <StyleApplicationPass pass>
-    bool applyAnimatedProperties(StyleResolverState&, const DocumentTimeline*);
+    bool applyAnimatedProperties(StyleResolverState&, const AnimationEffect::CompositableValueMap&);
     void matchPageRules(MatchResult&, RuleSet*, bool isLeftPage, bool isFirstPage, const String& pageName);
     void matchPageRulesForList(Vector<StyleRulePage*>& matchedRules, const Vector<StyleRulePage*>&, bool isLeftPage, bool isFirstPage, const String& pageName);
     void collectViewportRules();

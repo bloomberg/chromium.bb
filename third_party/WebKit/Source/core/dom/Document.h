@@ -1042,6 +1042,7 @@ public:
 
     AnimationClock& animationClock() { return *m_animationClock; }
     DocumentTimeline* timeline() const { return m_timeline.get(); }
+    DocumentTimeline* transitionTimeline() const { return m_transitionTimeline.get(); }
 
     void addToTopLayer(Element*, const Element* before = 0);
     void removeFromTopLayer(Element*);
@@ -1384,6 +1385,7 @@ private:
 
     OwnPtr<AnimationClock> m_animationClock;
     RefPtr<DocumentTimeline> m_timeline;
+    RefPtr<DocumentTimeline> m_transitionTimeline;
 
     RefPtr<Document> m_templateDocument;
     Document* m_templateDocumentHost; // Manually managed weakref (backpointer from m_templateDocument).

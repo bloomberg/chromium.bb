@@ -31,7 +31,7 @@
 #ifndef DocumentTimeline_h
 #define DocumentTimeline_h
 
-#include "core/animation/ActiveAnimations.h"
+#include "core/animation/AnimationEffect.h"
 #include "core/animation/Player.h"
 #include "core/dom/Element.h"
 #include "core/events/Event.h"
@@ -51,27 +51,25 @@ public:
     static PassRefPtr<DocumentTimeline> create(Document*);
     void serviceAnimations(double);
     PassRefPtr<Player> play(TimedItem*);
-    // Called from setReadyState() in Document.cpp to set m_zeroTimeAsPerfTime to
-    // performance.timing.domInteractive.
-    void setZeroTimeAsPerfTime(double);
+    // Called from setReadyState() in Document.cpp to set m_zeroTime to
+    // performance.timing.domInteractive
+    void setZeroTime(double);
     double currentTime();
     void pauseAnimationsForTesting(double);
     size_t numberOfActiveAnimationsForTesting() const;
-    AnimationStack* animationStack(const Element* element) const
-    {
-        if (ActiveAnimations* animations = element->activeAnimations())
-            return &animations->defaultStack();
-        return 0;
-    }
+
     void addEventToDispatch(EventTarget* target, PassRefPtr<Event> event)
     {
         m_events.append(EventToDispatch(target, event));
     }
 
-private:
-    DocumentTimeline(Document*);
     void dispatchEvents();
-    double m_zeroTimeAsPerfTime;
+
+protected:
+    DocumentTimeline(Document*);
+
+private:
+    double m_zeroTime;
     Document* m_document;
     Vector<RefPtr<Player> > m_players;
 

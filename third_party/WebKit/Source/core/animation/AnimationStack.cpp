@@ -28,51 +28,45 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef AnimationClock_h
-#define AnimationClock_h
+#include "config.h"
+#include "core/animation/AnimationStack.h"
 
-#include "wtf/CurrentTime.h"
-#include "wtf/PassOwnPtr.h"
+#include "core/animation/css/CSSAnimations.h"
 
 namespace WebCore {
 
-class AnimationClock {
-public:
-    static PassOwnPtr<AnimationClock> create(WTF::TimeFunction monotonicallyIncreasingTime = WTF::monotonicallyIncreasingTime)
-    {
-        return adoptPtr(new AnimationClock(monotonicallyIncreasingTime));
+namespace {
+
+void copyToCompositableValueMap(const AnimationEffect::CompositableValueMap* source, AnimationEffect::CompositableValueMap& target)
+{
+    if (!source)
+        return;
+    for (AnimationEffect::CompositableValueMap::const_iterator iter = source->begin(); iter != source->end(); ++iter)
+        target.set(iter->key, iter->value);
+}
+
+} // namespace
+
+AnimationEffect::CompositableValueMap AnimationStack::compositableValues(const AnimationStack* animationStack, const Vector<InertAnimation*>& newAnimations, const HashSet<const Player*> cancelledPlayers, Animation::Priority priority)
+{
+    AnimationEffect::CompositableValueMap result;
+
+    if (animationStack) {
+        const Vector<Animation*>& animations = animationStack->m_activeAnimations;
+        for (size_t i = 0; i < animations.size(); ++i) {
+            Animation* animation = animations[i];
+            if (animation->priority() != priority)
+                continue;
+            if (cancelledPlayers.contains(animation->player()))
+                continue;
+            copyToCompositableValueMap(animation->compositableValues(), result);
+        }
     }
 
-    void updateTime(double time)
-    {
-        ASSERT(m_time <= time);
-        m_time = time;
-        m_frozen = true;
-    }
+    for (size_t i = 0; i < newAnimations.size(); ++i)
+        copyToCompositableValueMap(newAnimations[i]->sample().get(), result);
 
-    double currentTime()
-    {
-        if (!m_frozen)
-            updateTime(monotonicallyIncreasingTime());
-        return m_time;
-    }
-
-    void unfreeze() { m_frozen = false; }
-
-    void resetTimeForTesting() { m_time = 0; m_frozen = true; }
-
-private:
-    AnimationClock(WTF::TimeFunction monotonicallyIncreasingTime)
-        : monotonicallyIncreasingTime(monotonicallyIncreasingTime)
-        , m_time(0)
-        , m_frozen(false)
-    {
-    }
-    WTF::TimeFunction monotonicallyIncreasingTime;
-    double m_time;
-    bool m_frozen;
-};
+    return result;
+}
 
 } // namespace WebCore
-
-#endif // AnimationClock_h

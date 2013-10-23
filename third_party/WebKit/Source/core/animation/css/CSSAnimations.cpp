@@ -279,7 +279,7 @@ void CSSAnimations::maybeApplyPendingUpdate(Element* element)
             const InertAnimation* inertAnimation = animationsIter->get();
             // The event delegate is set on the the first animation only. We
             // rely on the behavior of OwnPtr::release() to achieve this.
-            RefPtr<Animation> animation = Animation::create(element, inertAnimation->effect(), inertAnimation->specified(), eventDelegate.release());
+            RefPtr<Animation> animation = Animation::create(element, inertAnimation->effect(), inertAnimation->specified(), Animation::DefaultPriority, eventDelegate.release());
             players.add(element->document().timeline()->play(animation.get()));
         }
         m_animations.set(iter->name, players);
@@ -287,7 +287,7 @@ void CSSAnimations::maybeApplyPendingUpdate(Element* element)
 
     for (HashSet<CSSPropertyID>::iterator iter = update->cancelledTransitions().begin(); iter != update->cancelledTransitions().end(); ++iter) {
         ASSERT(m_transitions.contains(*iter));
-        m_transitions.take(*iter).player->cancel();
+        m_transitions.take(*iter).transition->player()->cancel();
     }
 
     for (size_t i = 0; i < update->newTransitions().size(); ++i) {
@@ -300,9 +300,9 @@ void CSSAnimations::maybeApplyPendingUpdate(Element* element)
         CSSPropertyID id = newTransition.id;
         InertAnimation* inertAnimation = newTransition.animation.get();
         OwnPtr<TransitionEventDelegate> eventDelegate = adoptPtr(new TransitionEventDelegate(element, id));
-        RefPtr<Animation> transition = Animation::create(element, inertAnimation->effect(), inertAnimation->specified(), eventDelegate.release());
-        // FIXME: Transitions need to be added to a separate timeline.
-        runningTransition.player = element->document().timeline()->play(transition.get());
+        RefPtr<Animation> transition = Animation::create(element, inertAnimation->effect(), inertAnimation->specified(), Animation::TransitionPriority, eventDelegate.release());
+        element->document().transitionTimeline()->play(transition.get());
+        runningTransition.transition = transition.get();
         m_transitions.set(id, runningTransition);
     }
 }
@@ -360,7 +360,7 @@ void CSSAnimations::calculateTransitionUpdate(CSSAnimationUpdate* update, const 
 
     if (transitions) {
         for (TransitionMap::const_iterator iter = transitions->begin(); iter != transitions->end(); ++iter) {
-            const TimedItem* timedItem = iter->value.player->source();
+            const TimedItem* timedItem = iter->value.transition;
             CSSPropertyID id = iter->key;
             if (timedItem->phase() == TimedItem::PhaseAfter || !listedProperties.contains(id))
                 update->cancelTransition(id);
@@ -377,11 +377,53 @@ void CSSAnimations::cancel()
     }
 
     for (TransitionMap::iterator iter = m_transitions.begin(); iter != m_transitions.end(); ++iter)
-        iter->value.player->cancel();
+        iter->value.transition->player()->cancel();
 
     m_animations.clear();
     m_transitions.clear();
     m_pendingUpdate = nullptr;
+}
+
+AnimationEffect::CompositableValueMap CSSAnimations::compositableValuesForAnimations(const Element* element, const CSSAnimationUpdate* update)
+{
+    ActiveAnimations* activeAnimations = element->activeAnimations();
+    AnimationStack* animationStack = activeAnimations ? &activeAnimations->defaultStack() : 0;
+
+    Vector<InertAnimation*> newAnimations;
+    HashSet<const Player*> cancelledPlayers;
+    if (update) {
+        for (size_t i = 0; i < update->newTransitions().size(); ++i)
+            newAnimations.append(update->newTransitions()[i].animation.get());
+        if (!update->cancelledTransitions().isEmpty()) {
+            const TransitionMap& transitionMap = activeAnimations->cssAnimations().m_transitions;
+            for (HashSet<CSSPropertyID>::iterator iter = update->cancelledTransitions().begin(); iter != update->cancelledTransitions().end(); ++iter) {
+                ASSERT(transitionMap.contains(*iter));
+                cancelledPlayers.add(transitionMap.get(*iter).transition->player());
+            }
+        }
+    }
+
+    return AnimationStack::compositableValues(animationStack, newAnimations, cancelledPlayers, Animation::TransitionPriority);
+}
+
+AnimationEffect::CompositableValueMap CSSAnimations::compositableValuesForTransitions(const Element* element, const CSSAnimationUpdate* update)
+{
+    ActiveAnimations* activeAnimations = element->activeAnimations();
+    AnimationStack* animationStack = activeAnimations ? &activeAnimations->defaultStack() : 0;
+
+    Vector<InertAnimation*> newAnimations;
+    if (update) {
+        for (size_t i = 0; i < update->newAnimations().size(); ++i) {
+            HashSet<RefPtr<InertAnimation> > animations = update->newAnimations()[i].animations;
+            for (HashSet<RefPtr<InertAnimation> >::const_iterator animationsIter = animations.begin(); animationsIter != animations.end(); ++animationsIter)
+                newAnimations.append(animationsIter->get());
+        }
+    }
+
+    DEFINE_STATIC_LOCAL(HashSet<const Player*>, emptyCancelledPlayers, ());
+    const HashSet<const Player*>& cancelledPlayers = update ? update->cancelledAnimationPlayers() : emptyCancelledPlayers;
+
+    return AnimationStack::compositableValues(animationStack, newAnimations, cancelledPlayers, Animation::DefaultPriority);
 }
 
 void CSSAnimations::AnimationEventDelegate::maybeDispatch(Document::ListenerType listenerType, const AtomicString& eventName, double elapsedTime)
@@ -436,7 +478,7 @@ void CSSAnimations::TransitionEventDelegate::onEventCondition(const TimedItem* t
         double elapsedTime = timing.iterationDuration;
         const AtomicString& eventType = EventTypeNames::transitionend;
         String pseudoElement = PseudoElement::pseudoElementNameForEvents(m_target->pseudoId());
-        m_target->document().timeline()->addEventToDispatch(m_target, TransitionEvent::create(eventType, propertyName, elapsedTime, pseudoElement));
+        m_target->document().transitionTimeline()->addEventToDispatch(m_target, TransitionEvent::create(eventType, propertyName, elapsedTime, pseudoElement));
     }
 }
 

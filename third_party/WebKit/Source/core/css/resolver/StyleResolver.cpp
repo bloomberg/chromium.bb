@@ -33,6 +33,7 @@
 #include "HTMLNames.h"
 #include "RuntimeEnabledFeatures.h"
 #include "StylePropertyShorthand.h"
+#include "core/animation/ActiveAnimations.h"
 #include "core/animation/AnimatableLength.h"
 #include "core/animation/AnimatableValue.h"
 #include "core/animation/Animation.h"
@@ -1191,64 +1192,24 @@ PassRefPtr<CSSRuleList> StyleResolver::pseudoStyleRulesForElement(Element* e, Ps
 // this is mostly boring stuff on how to apply a certain rule to the renderstyle...
 
 template <StyleResolver::StyleApplicationPass pass>
-bool StyleResolver::applyAnimatedProperties(StyleResolverState& state, const DocumentTimeline* timeline)
+bool StyleResolver::applyAnimatedProperties(StyleResolverState& state, const AnimationEffect::CompositableValueMap& compositableValues)
 {
     ASSERT(RuntimeEnabledFeatures::webAnimationsCSSEnabled());
     ASSERT(pass != VariableDefinitions);
     ASSERT(pass != AnimationProperties);
-    const Element* element = state.element();
-    const CSSAnimationUpdate* update = state.animationUpdate();
-    AnimationStack* animationStack = timeline->animationStack(element);
     bool didApply = false;
 
-    if (animationStack) {
-        const Vector<Animation*>& animations = animationStack->activeAnimations(element);
-        for (size_t i = 0; i < animations.size(); ++i) {
-            RefPtr<Animation> animation = animations.at(i);
-            if (update && update->isCancelledAnimation(animation->player()))
-                continue;
-            const AnimationEffect::CompositableValueMap* compositableValues = animation->compositableValues();
-            for (AnimationEffect::CompositableValueMap::const_iterator iter = compositableValues->begin(); iter != compositableValues->end(); ++iter) {
-                CSSPropertyID property = iter->key;
-                if (!isPropertyForPass<pass>(property))
-                    continue;
-                RELEASE_ASSERT_WITH_MESSAGE(!iter->value->dependsOnUnderlyingValue(), "Web Animations not yet implemented: An interface for compositing onto the underlying value.");
-                RefPtr<AnimatableValue> animatableValue = iter->value->compositeOnto(0);
-                if (pass == HighPriorityProperties && property == CSSPropertyLineHeight)
-                    state.setLineHeightValue(toAnimatableLength(animatableValue.get())->toCSSValue().get());
-                else
-                    AnimatedStyleBuilder::applyProperty(property, state, animatableValue.get());
-                didApply = true;
-            }
-        }
-    }
-
-    if (!update)
-        return didApply;
-
-    // FIXME: Remove this repetition by incorporating a merge of newAnimations with AnimationStack.
-    // Then resolve the stack before calling applyAnimatedProperties, eg.
-    //     CompositableValueMap* resolved = timeline->animationStack()->resolveWith(newAnimations);
-    //     applyAnimatedProperties(state, resolved);
-    const Vector<CSSAnimationUpdate::NewAnimation>& newAnimations = update->newAnimations();
-    for (size_t i = 0; i < newAnimations.size(); ++i) {
-        const HashSet<RefPtr<InertAnimation> >& animations = newAnimations.at(i).animations;
-        for (HashSet<RefPtr<InertAnimation> >::const_iterator animationsIter = animations.begin(); animationsIter != animations.end(); ++animationsIter) {
-            OwnPtr<AnimationEffect::CompositableValueMap> compositableValues = (*animationsIter)->sample();
-            if (!compositableValues)
-                continue;
-            for (AnimationEffect::CompositableValueMap::const_iterator iter = compositableValues->begin(); iter != compositableValues->end(); ++iter) {
-                CSSPropertyID property = iter->key;
-                if (!isPropertyForPass<pass>(property))
-                    continue;
-                RefPtr<AnimatableValue> animatableValue = iter->value->compositeOnto(AnimatableValue::neutralValue());
-                if (pass == HighPriorityProperties && property == CSSPropertyLineHeight)
-                    state.setLineHeightValue(toAnimatableLength(animatableValue.get())->toCSSValue().get());
-                else
-                    AnimatedStyleBuilder::applyProperty(property, state, animatableValue.get());
-                didApply = true;
-            }
-        }
+    for (AnimationEffect::CompositableValueMap::const_iterator iter = compositableValues.begin(); iter != compositableValues.end(); ++iter) {
+        CSSPropertyID property = iter->key;
+        if (!isPropertyForPass<pass>(property))
+            continue;
+        RELEASE_ASSERT_WITH_MESSAGE(!iter->value->dependsOnUnderlyingValue(), "Web Animations not yet implemented: An interface for compositing onto the underlying value.");
+        RefPtr<AnimatableValue> animatableValue = iter->value->compositeOnto(0);
+        if (pass == HighPriorityProperties && property == CSSPropertyLineHeight)
+            state.setLineHeightValue(toAnimatableLength(animatableValue.get())->toCSSValue().get());
+        else
+            AnimatedStyleBuilder::applyProperty(property, state, animatableValue.get());
+        didApply = true;
     }
     return didApply;
 }
@@ -1501,19 +1462,23 @@ void StyleResolver::applyMatchedProperties(StyleResolverState& state, const Matc
 
     if (RuntimeEnabledFeatures::webAnimationsEnabled() && !applyInheritedOnly) {
         state.setAnimationUpdate(CSSAnimations::calculateUpdate(state.element(), state.style(), this));
+        const AnimationEffect::CompositableValueMap& compositableValuesForAnimations = CSSAnimations::compositableValuesForAnimations(state.element(), state.animationUpdate());
+        const AnimationEffect::CompositableValueMap& compositableValuesForTransitions = CSSAnimations::compositableValuesForTransitions(state.element(), state.animationUpdate());
         // Apply animated properties, then reapply any rules marked important.
-        if (applyAnimatedProperties<HighPriorityProperties>(state, element->document().timeline())) {
+        if (applyAnimatedProperties<HighPriorityProperties>(state, compositableValuesForAnimations)) {
             bool important = true;
             applyMatchedProperties<HighPriorityProperties>(state, matchResult, important, matchResult.ranges.firstAuthorRule, matchResult.ranges.lastAuthorRule, applyInheritedOnly);
             applyMatchedProperties<HighPriorityProperties>(state, matchResult, important, matchResult.ranges.firstUserRule, matchResult.ranges.lastUserRule, applyInheritedOnly);
             applyMatchedProperties<HighPriorityProperties>(state, matchResult, important, matchResult.ranges.firstUARule, matchResult.ranges.lastUARule, applyInheritedOnly);
         }
-        if (applyAnimatedProperties<LowPriorityProperties>(state, element->document().timeline())) {
+        applyAnimatedProperties<HighPriorityProperties>(state, compositableValuesForTransitions);
+        if (applyAnimatedProperties<LowPriorityProperties>(state, compositableValuesForAnimations)) {
             bool important = true;
             applyMatchedProperties<LowPriorityProperties>(state, matchResult, important, matchResult.ranges.firstAuthorRule, matchResult.ranges.lastAuthorRule, applyInheritedOnly);
             applyMatchedProperties<LowPriorityProperties>(state, matchResult, important, matchResult.ranges.firstUserRule, matchResult.ranges.lastUserRule, applyInheritedOnly);
             applyMatchedProperties<LowPriorityProperties>(state, matchResult, important, matchResult.ranges.firstUARule, matchResult.ranges.lastUARule, applyInheritedOnly);
         }
+        applyAnimatedProperties<LowPriorityProperties>(state, compositableValuesForTransitions);
     }
 
     // Start loading resources referenced by this style.

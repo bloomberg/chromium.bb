@@ -409,9 +409,10 @@ unsigned short Internals::compareTreeScopePosition(const Node* node1, const Node
 unsigned Internals::numberOfActiveAnimations() const
 {
     Frame* contextFrame = frame();
+    Document* document = contextFrame->document();
     if (RuntimeEnabledFeatures::webAnimationsCSSEnabled())
-        return contextFrame->document()->timeline()->numberOfActiveAnimationsForTesting();
-    return contextFrame->animation().numberOfActiveAnimations(contextFrame->document());
+        return document->timeline()->numberOfActiveAnimationsForTesting() + document->transitionTimeline()->numberOfActiveAnimationsForTesting();
+    return contextFrame->animation().numberOfActiveAnimations(document);
 }
 
 void Internals::pauseAnimations(double pauseTime, ExceptionState& es)
@@ -421,10 +422,12 @@ void Internals::pauseAnimations(double pauseTime, ExceptionState& es)
         return;
     }
 
-    if (RuntimeEnabledFeatures::webAnimationsCSSEnabled())
+    if (RuntimeEnabledFeatures::webAnimationsCSSEnabled()) {
         frame()->document()->timeline()->pauseAnimationsForTesting(pauseTime);
-    else
+        frame()->document()->transitionTimeline()->pauseAnimationsForTesting(pauseTime);
+    } else {
         frame()->animation().pauseAnimationsForTesting(pauseTime);
+    }
 }
 
 bool Internals::hasShadowInsertionPoint(const Node* root, ExceptionState& es) const

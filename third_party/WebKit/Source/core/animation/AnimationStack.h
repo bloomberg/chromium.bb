@@ -31,14 +31,14 @@
 #ifndef AnimationStack_h
 #define AnimationStack_h
 
-#include "wtf/HashMap.h"
-#include "wtf/RefPtr.h"
+#include "core/animation/Animation.h"
+#include "core/animation/AnimationEffect.h"
+#include "wtf/HashSet.h"
 #include "wtf/Vector.h"
 
 namespace WebCore {
 
-class Element;
-class Animation;
+class InertAnimation;
 
 class AnimationStack {
 
@@ -51,8 +51,7 @@ public:
         m_activeAnimations.remove(position);
     }
     bool isEmpty() const { return m_activeAnimations.isEmpty(); }
-    // FIXME: This should be PassRefPtr<CompositableValue> composite(Element*, CSSPropertyId)
-    const Vector<Animation*>& activeAnimations(const Element* element) const { return m_activeAnimations; }
+    static AnimationEffect::CompositableValueMap compositableValues(const AnimationStack*, const Vector<InertAnimation*>& newAnimations, const HashSet<const Player*> cancelledPlayers, Animation::Priority);
 
 private:
     Vector<Animation*> m_activeAnimations;

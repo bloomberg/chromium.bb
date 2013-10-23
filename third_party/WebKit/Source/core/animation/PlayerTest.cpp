@@ -48,10 +48,10 @@ protected:
     virtual void SetUp()
     {
         document = Document::create();
+        document->animationClock().resetTimeForTesting();
         timeline = DocumentTimeline::create(document.get());
-        document->animationClock().updateTime(0);
         player = Player::create(timeline.get(), 0);
-        timeline->setZeroTimeAsPerfTime(0);
+        timeline->setZeroTime(0);
     }
 
     bool updateTimeline(double time, double* timeToEffectChange = 0)

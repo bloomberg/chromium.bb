@@ -50,10 +50,10 @@ protected:
     virtual void SetUp()
     {
         document = Document::create();
+        document->animationClock().resetTimeForTesting();
         element = Element::create(nullQName() , document.get());
         timeline = DocumentTimeline::create(document.get());
-        timeline->setZeroTimeAsPerfTime(0);
-        document->animationClock().updateTime(0);
+        timeline->setZeroTime(0);
         ASSERT_EQ(0, timeline->currentTime());
     }
 
@@ -88,7 +88,7 @@ TEST_F(CoreAnimationDocumentTimelineTest, ZeroTimeAsPerfTime)
     timeline->serviceAnimations(200);
     EXPECT_TRUE(isNull(timeline->currentTime()));
 
-    timeline->setZeroTimeAsPerfTime(300);
+    timeline->setZeroTime(300);
     document->animationClock().updateTime(300);
     timeline->serviceAnimations(300);
     EXPECT_EQ(0, timeline->currentTime());

@@ -42,7 +42,9 @@ class Element;
 class Animation FINAL : public TimedItem {
 
 public:
-    static PassRefPtr<Animation> create(PassRefPtr<Element>, PassRefPtr<AnimationEffect>, const Timing&, PassOwnPtr<EventDelegate> = nullptr);
+    enum Priority { DefaultPriority, TransitionPriority };
+
+    static PassRefPtr<Animation> create(PassRefPtr<Element>, PassRefPtr<AnimationEffect>, const Timing&, Priority = DefaultPriority, PassOwnPtr<EventDelegate> = nullptr);
 
     const AnimationEffect::CompositableValueMap* compositableValues() const
     {
@@ -51,6 +53,7 @@ public:
     }
 
     const AnimationEffect* effect() const { return m_effect.get(); }
+    Priority priority() const { return m_priority; }
 
 protected:
     virtual void applyEffects(bool previouslyInEffect);
@@ -60,13 +63,15 @@ protected:
     virtual double calculateTimeToEffectChange(double inheritedTime, double activeTime, Phase) const OVERRIDE FINAL;
 
 private:
-    Animation(PassRefPtr<Element>, PassRefPtr<AnimationEffect>, const Timing&, PassOwnPtr<EventDelegate>);
+    Animation(PassRefPtr<Element>, PassRefPtr<AnimationEffect>, const Timing&, Priority, PassOwnPtr<EventDelegate>);
 
     RefPtr<Element> m_target;
     RefPtr<AnimationEffect> m_effect;
 
     bool m_activeInAnimationStack;
     OwnPtr<AnimationEffect::CompositableValueMap> m_compositableValues;
+
+    Priority m_priority;
 };
 
 } // namespace WebCore

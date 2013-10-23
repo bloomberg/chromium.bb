@@ -85,6 +85,7 @@ public:
         newTransition.animation = animation;
         m_newTransitions.append(newTransition);
     }
+    bool isCancelledTransition(CSSPropertyID id) const { return m_cancelledTransitions.contains(id); }
     void cancelTransition(CSSPropertyID id) { m_cancelledTransitions.add(id); }
 
     struct NewAnimation {
@@ -93,6 +94,7 @@ public:
     };
     const Vector<NewAnimation>& newAnimations() const { return m_newAnimations; }
     const Vector<AtomicString>& cancelledAnimationNames() const { return m_cancelledAnimationNames; }
+    const HashSet<const Player*>& cancelledAnimationPlayers() const { return m_cancelledAnimationPlayers; }
 
     struct NewTransition {
         CSSPropertyID id;
@@ -136,6 +138,9 @@ public:
     void maybeApplyPendingUpdate(Element*);
     bool isEmpty() const { return m_animations.isEmpty() && m_transitions.isEmpty() && !m_pendingUpdate; }
     void cancel();
+
+    static AnimationEffect::CompositableValueMap compositableValuesForAnimations(const Element*, const CSSAnimationUpdate*);
+    static AnimationEffect::CompositableValueMap compositableValuesForTransitions(const Element*, const CSSAnimationUpdate*);
 private:
     // Note that a single animation name may map to multiple players due to
     // the way in which we split up animations with incomplete keyframes.
@@ -143,7 +148,7 @@ private:
     // ParGroup to drive multiple animations from a single Player.
     typedef HashMap<AtomicString, HashSet<RefPtr<Player> > > AnimationMap;
     struct RunningTransition {
-        RefPtr<Player> player;
+        Animation* transition; // The TransitionTimeline keeps the Players alive
         const AnimatableValue* from;
         const AnimatableValue* to;
     };

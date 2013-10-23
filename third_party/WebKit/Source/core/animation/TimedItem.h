@@ -82,6 +82,7 @@ public:
     double activeDuration() const { return ensureCalculated().activeDuration; }
     double timeFraction() const { return ensureCalculated().timeFraction; }
     const Player* player() const { return m_player; }
+    Player* player() { return m_player; }
 
     const Timing& specified() const { return m_specified; }
 

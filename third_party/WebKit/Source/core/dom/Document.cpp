@@ -44,6 +44,7 @@
 #include "core/accessibility/AXObjectCache.h"
 #include "core/animation/AnimationClock.h"
 #include "core/animation/DocumentTimeline.h"
+#include "core/animation/css/TransitionTimeline.h"
 #include "core/css/CSSDefaultStyleSheets.h"
 #include "core/css/CSSFontSelector.h"
 #include "core/css/CSSStyleDeclaration.h"
@@ -461,6 +462,7 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
 #endif
     , m_animationClock(AnimationClock::create())
     , m_timeline(DocumentTimeline::create(this))
+    , m_transitionTimeline(TransitionTimeline::create(this))
     , m_templateDocumentHost(0)
     , m_fonts(0)
     , m_didAssociateFormControlsTimer(this, &Document::didAssociateFormControlsTimerFired)
@@ -1092,7 +1094,7 @@ void Document::setReadyState(ReadyState readyState)
         if (!m_documentTiming.domLoading) {
             m_documentTiming.domLoading = monotonicallyIncreasingTime();
             if (RuntimeEnabledFeatures::webAnimationsEnabled())
-                m_timeline->setZeroTimeAsPerfTime(m_documentTiming.domLoading);
+                m_timeline->setZeroTime(m_documentTiming.domLoading);
         }
         break;
     case Interactive:

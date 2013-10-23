@@ -28,51 +28,21 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef AnimationClock_h
-#define AnimationClock_h
+#ifndef TransitionTimeline_h
+#define TransitionTimeline_h
 
-#include "wtf/CurrentTime.h"
-#include "wtf/PassOwnPtr.h"
+#include "core/animation/DocumentTimeline.h"
 
 namespace WebCore {
 
-class AnimationClock {
+class TransitionTimeline FINAL : public DocumentTimeline {
 public:
-    static PassOwnPtr<AnimationClock> create(WTF::TimeFunction monotonicallyIncreasingTime = WTF::monotonicallyIncreasingTime)
-    {
-        return adoptPtr(new AnimationClock(monotonicallyIncreasingTime));
-    }
-
-    void updateTime(double time)
-    {
-        ASSERT(m_time <= time);
-        m_time = time;
-        m_frozen = true;
-    }
-
-    double currentTime()
-    {
-        if (!m_frozen)
-            updateTime(monotonicallyIncreasingTime());
-        return m_time;
-    }
-
-    void unfreeze() { m_frozen = false; }
-
-    void resetTimeForTesting() { m_time = 0; m_frozen = true; }
+    static PassRefPtr<TransitionTimeline> create(Document*);
 
 private:
-    AnimationClock(WTF::TimeFunction monotonicallyIncreasingTime)
-        : monotonicallyIncreasingTime(monotonicallyIncreasingTime)
-        , m_time(0)
-        , m_frozen(false)
-    {
-    }
-    WTF::TimeFunction monotonicallyIncreasingTime;
-    double m_time;
-    bool m_frozen;
+    TransitionTimeline(Document*);
 };
 
 } // namespace WebCore
 
-#endif // AnimationClock_h
+#endif

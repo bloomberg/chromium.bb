@@ -31,6 +31,7 @@
 #include "config.h"
 #include "core/animation/DocumentTimeline.h"
 
+#include "core/animation/ActiveAnimations.h"
 #include "core/animation/AnimationClock.h"
 #include "core/animation/Player.h"
 #include "core/dom/Document.h"
@@ -45,7 +46,7 @@ PassRefPtr<DocumentTimeline> DocumentTimeline::create(Document* document)
 
 DocumentTimeline::DocumentTimeline(Document* document)
     : m_document(document)
-    , m_zeroTimeAsPerfTime(nullValue())
+    , m_zeroTime(nullValue())
 {
     ASSERT(document);
 }
@@ -63,34 +64,30 @@ PassRefPtr<Player> DocumentTimeline::play(TimedItem* child)
 
 void DocumentTimeline::serviceAnimations(double monotonicAnimationStartTime)
 {
-    {
-        TRACE_EVENT0("webkit", "DocumentTimeline::serviceAnimations");
+    TRACE_EVENT0("webkit", "DocumentTimeline::serviceAnimations");
 
-        m_document->animationClock().updateTime(monotonicAnimationStartTime);
+    m_document->animationClock().updateTime(monotonicAnimationStartTime);
 
-        double timeToNextEffect = -1;
-        for (int i = m_players.size() - 1; i >= 0; --i) {
-            if (!m_players[i]->update(&timeToNextEffect))
-                m_players.remove(i);
-        }
-
-        if (m_document->view() && !m_players.isEmpty())
-            m_document->view()->scheduleAnimation();
+    double timeToNextEffect = -1;
+    for (int i = m_players.size() - 1; i >= 0; --i) {
+        if (!m_players[i]->update(&timeToNextEffect))
+            m_players.remove(i);
     }
 
-    dispatchEvents();
+    if (m_document->view() && !m_players.isEmpty())
+        m_document->view()->scheduleAnimation();
 }
 
-void DocumentTimeline::setZeroTimeAsPerfTime(double zeroTime)
+void DocumentTimeline::setZeroTime(double zeroTime)
 {
-    ASSERT(isNull(m_zeroTimeAsPerfTime));
-    m_zeroTimeAsPerfTime = zeroTime;
-    ASSERT(!isNull(m_zeroTimeAsPerfTime));
+    ASSERT(isNull(m_zeroTime));
+    m_zeroTime = zeroTime;
+    ASSERT(!isNull(m_zeroTime));
 }
 
 double DocumentTimeline::currentTime()
 {
-    return m_document->animationClock().currentTime() - m_zeroTimeAsPerfTime;
+    return m_document->animationClock().currentTime() - m_zeroTime;
 }
 
 void DocumentTimeline::pauseAnimationsForTesting(double pauseTime)
@@ -113,7 +110,7 @@ size_t DocumentTimeline::numberOfActiveAnimationsForTesting() const
 {
     // Includes all players whose directly associated timed items
     // are current or in effect.
-    return isNull(m_zeroTimeAsPerfTime) ? 0 : m_players.size();
+    return isNull(m_zeroTime) ? 0 : m_players.size();
 }
 
 } // namespace

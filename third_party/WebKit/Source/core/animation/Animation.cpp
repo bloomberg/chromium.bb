@@ -31,22 +31,23 @@
 #include "config.h"
 #include "core/animation/Animation.h"
 
-#include "core/animation/DocumentTimeline.h"
+#include "core/animation/ActiveAnimations.h"
 #include "core/animation/Player.h"
 #include "core/dom/Element.h"
 
 namespace WebCore {
 
-PassRefPtr<Animation> Animation::create(PassRefPtr<Element> target, PassRefPtr<AnimationEffect> effect, const Timing& timing, PassOwnPtr<EventDelegate> eventDelegate)
+PassRefPtr<Animation> Animation::create(PassRefPtr<Element> target, PassRefPtr<AnimationEffect> effect, const Timing& timing, Priority priority, PassOwnPtr<EventDelegate> eventDelegate)
 {
-    return adoptRef(new Animation(target, effect, timing, eventDelegate));
+    return adoptRef(new Animation(target, effect, timing, priority, eventDelegate));
 }
 
-Animation::Animation(PassRefPtr<Element> target, PassRefPtr<AnimationEffect> effect, const Timing& timing, PassOwnPtr<EventDelegate> eventDelegate)
+Animation::Animation(PassRefPtr<Element> target, PassRefPtr<AnimationEffect> effect, const Timing& timing, Priority priority, PassOwnPtr<EventDelegate> eventDelegate)
     : TimedItem(timing, eventDelegate)
     , m_target(target)
     , m_effect(effect)
     , m_activeInAnimationStack(false)
+    , m_priority(priority)
 {
 }
 
