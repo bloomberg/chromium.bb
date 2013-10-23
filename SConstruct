@@ -537,12 +537,6 @@ else:
 # Allow variadic macros
 werror_flags = werror_flags + ['-Wno-variadic-macros']
 
-# Clang Bug:
-# array-bounds detection gives false positive on valid code in GLibC.
-# BUG= http://llvm.org/bugs/show_bug.cgi?id=11536
-if pre_base_env.Bit('bitcode') and pre_base_env.Bit('nacl_glibc'):
-  werror_flags += ['-Wno-array-bounds']
-
 if pre_base_env.Bit('clang'):
   # Allow 'default' label in switch even when all enumeration cases
   # have been covered.
@@ -2852,16 +2846,6 @@ if nacl_env.Bit('target_arm') and not nacl_env.Bit('bitcode'):
   # See https://code.google.com/p/chromium/issues/detail?id=132339
   nacl_env.Append(CCFLAGS=['-Wno-unused-local-typedefs'])
 
-# Bitcode files are assumed to be x86-32 and that causes
-# problems when (bitcode) linking against native x86-64 libs
-# BUG: http://code.google.com/p/nativeclient/issues/detail?id=2420
-# BUG: http://code.google.com/p/nativeclient/issues/detail?id=2447
-if (nacl_env.Bit('nacl_glibc') and
-    nacl_env.Bit('bitcode') and
-    nacl_env.Bit('pnacl_generate_pexe') and
-    nacl_env.Bit('target_x86_64')):
-  raise UserError('pnacl x86-64 does not support pnacl_generate_pexe=1')
-
 # This is the address at which a user executable is expected to place its
 # data segment in order to be compatible with the integrated runtime (IRT)
 # library.  This address should not be changed lightly.
@@ -3020,7 +3004,7 @@ def GetLinkerScriptBaseName(env):
 
 if (nacl_env.Bit('nacl_glibc') and
     nacl_env.Bit('nacl_static_link')):
-  if nacl_env.Bit('bitcode') or nacl_env.IsNewLinker():
+  if nacl_env.IsNewLinker():
     nacl_env.Append(LINKFLAGS=['-static'])
   else:
     # The "-lc" is necessary because libgcc_eh depends on libc but for
