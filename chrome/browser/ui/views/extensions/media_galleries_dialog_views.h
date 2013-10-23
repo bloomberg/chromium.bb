@@ -21,17 +21,15 @@ class Widget;
 // The media galleries configuration view for Views. It will immediately show
 // upon construction.
 class MediaGalleriesDialogViews : public MediaGalleriesDialog,
-                                  public views::DialogDelegate,
-                                  public views::ButtonListener {
+                                  public views::ButtonListener,
+                                  public views::DialogDelegate {
  public:
   explicit MediaGalleriesDialogViews(
       MediaGalleriesDialogController* controller);
   virtual ~MediaGalleriesDialogViews();
 
   // MediaGalleriesDialog implementation:
-  virtual void UpdateGallery(const MediaGalleryPrefInfo& gallery,
-                             bool permitted) OVERRIDE;
-  virtual void ForgetGallery(MediaGalleryPrefId gallery) OVERRIDE;
+  virtual void UpdateGalleries() OVERRIDE;
 
   // views::DialogDelegate implementation:
   virtual string16 GetWindowTitle() const OVERRIDE;
@@ -55,6 +53,7 @@ class MediaGalleriesDialogViews : public MediaGalleriesDialog,
 
  private:
   typedef std::map<MediaGalleryPrefId, views::Checkbox*> CheckboxMap;
+  typedef std::map<views::Checkbox*, MediaGalleryPrefInfo> NewCheckboxMap;
 
   void InitChildViews();
 
@@ -75,6 +74,8 @@ class MediaGalleriesDialogViews : public MediaGalleriesDialog,
 
   // A map from media gallery ID to views::Checkbox view.
   CheckboxMap checkbox_map_;
+
+  NewCheckboxMap new_checkbox_map_;
 
   // Pointer to the button to add a new gallery. Owned by parent in
   // the dialog views tree.

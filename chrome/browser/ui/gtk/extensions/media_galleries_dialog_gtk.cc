@@ -60,6 +60,7 @@ MediaGalleriesDialogGtk::~MediaGalleriesDialogGtk() {
 void MediaGalleriesDialogGtk::InitWidgets() {
   gtk_util::RemoveAllChildren(contents_.get());
   checkbox_map_.clear();
+  new_checkbox_map_.clear();
   confirm_ = NULL;
 
   GtkWidget* header = gtk_util::LeftAlignMisc(gtk_label_new(
@@ -161,9 +162,7 @@ void MediaGalleriesDialogGtk::InitWidgets() {
   gtk_widget_show_all(contents_.get());
 }
 
-void MediaGalleriesDialogGtk::UpdateGallery(
-    const MediaGalleryPrefInfo& gallery,
-    bool permitted) {
+void MediaGalleriesDialogGtk::UpdateGalleries() {
   InitWidgets();
 }
 
@@ -183,7 +182,10 @@ void MediaGalleriesDialogGtk::UpdateGalleryInContainer(
   gtk_box_pack_start(GTK_BOX(hbox), details_label, FALSE, FALSE, 0);
 
   gtk_widget_show(hbox);
-  checkbox_map_[gallery.pref_id] = widget;
+  if (gallery.pref_id != kInvalidMediaGalleryPrefId)
+    checkbox_map_[gallery.pref_id] = widget;
+  else
+    new_checkbox_map_[widget] = gallery;
 
   std::string tooltip_text = UTF16ToUTF8(gallery.GetGalleryTooltip());
   gtk_widget_set_tooltip_text(widget, tooltip_text.c_str());
@@ -192,18 +194,6 @@ void MediaGalleriesDialogGtk::UpdateGalleryInContainer(
   std::string label = UTF16ToUTF8(gallery.GetGalleryDisplayName());
   // TODO(gbillock): Would be nice to add middle elide behavior here.
   gtk_button_set_label(GTK_BUTTON(widget), label.c_str());
-}
-
-void MediaGalleriesDialogGtk::ForgetGallery(MediaGalleryPrefId gallery) {
-  for (CheckboxMap::iterator iter = checkbox_map_.begin();
-       iter != checkbox_map_.end(); ++iter) {
-    if (iter->first == gallery) {
-      GtkWidget* checkbox = iter->second;
-      checkbox_map_.erase(iter);
-      gtk_widget_destroy(gtk_widget_get_parent(checkbox));
-      return;
-    }
-  }
 }
 
 void MediaGalleriesDialogGtk::OnToggled(GtkWidget* widget) {
@@ -216,6 +206,16 @@ void MediaGalleriesDialogGtk::OnToggled(GtkWidget* widget) {
       controller_->DidToggleGalleryId(
           iter->first,
           gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)));
+      return;
+    }
+  }
+  for (NewCheckboxMap::const_iterator iter = new_checkbox_map_.begin();
+       iter != new_checkbox_map_.end(); ++iter) {
+    if (iter->first == widget) {
+      controller_->DidToggleNewGallery(
+          iter->second,
+          gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)));
+      return;
     }
   }
 }

@@ -135,18 +135,18 @@ TEST_F(MediaGalleriesDialogTest, UpdateAdds) {
   MediaGalleryPrefInfo gallery1 = MakePrefInfoForTesting(1);
   attached_permissions.push_back(
       MediaGalleriesDialogController::GalleryPermission(gallery1, true));
-  dialog.UpdateGallery(gallery1, true);
+  dialog.UpdateGalleries();
   EXPECT_EQ(1U, dialog.checkbox_map_.size());
 
   MediaGalleryPrefInfo gallery2 = MakePrefInfoForTesting(2);
   attached_permissions.push_back(
       MediaGalleriesDialogController::GalleryPermission(gallery2, true));
-  dialog.UpdateGallery(gallery2, true);
+  dialog.UpdateGalleries();
   EXPECT_EQ(2U, dialog.checkbox_map_.size());
 
   attached_permissions.push_back(
       MediaGalleriesDialogController::GalleryPermission(gallery2, false));
-  dialog.UpdateGallery(gallery2, false);
+  dialog.UpdateGalleries();
   EXPECT_EQ(2U, dialog.checkbox_map_.size());
 }
 
@@ -169,16 +169,16 @@ TEST_F(MediaGalleriesDialogTest, ForgetDeletes) {
   MediaGalleryPrefInfo gallery1 = MakePrefInfoForTesting(1);
   attached_permissions.push_back(
       MediaGalleriesDialogController::GalleryPermission(gallery1, true));
-  dialog.UpdateGallery(gallery1, true);
+  dialog.UpdateGalleries();
   EXPECT_EQ(1U, dialog.checkbox_map_.size());
 
   MediaGalleryPrefInfo gallery2 = MakePrefInfoForTesting(2);
   attached_permissions.push_back(
       MediaGalleriesDialogController::GalleryPermission(gallery2, true));
-  dialog.UpdateGallery(gallery2, true);
+  dialog.UpdateGalleries();
   EXPECT_EQ(2U, dialog.checkbox_map_.size());
 
-  dialog.ForgetGallery(gallery2.pref_id);
   attached_permissions.pop_back();
+  dialog.UpdateGalleries();
   EXPECT_EQ(1U, dialog.checkbox_map_.size());
 }

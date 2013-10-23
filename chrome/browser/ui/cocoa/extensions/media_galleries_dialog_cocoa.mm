@@ -255,7 +255,7 @@ void MediaGalleriesDialogCocoa::OnCheckboxToggled(NSButton* checkbox) {
   [[[alert_ buttons] objectAtIndex:0] setEnabled:YES];
 
   const MediaGalleriesDialogController::GalleryPermissionsVector&
-  attached_permissions = controller_->AttachedPermissions();
+      attached_permissions = controller_->AttachedPermissions();
   for (MediaGalleriesDialogController::GalleryPermissionsVector::
        const_reverse_iterator iter = attached_permissions.rbegin();
        iter != attached_permissions.rend(); iter++) {
@@ -338,13 +338,7 @@ void MediaGalleriesDialogCocoa::UpdateGalleryCheckbox(
   [checkbox_container_ addSubview:details];
 }
 
-void MediaGalleriesDialogCocoa::UpdateGallery(
-    const MediaGalleryPrefInfo& gallery,
-    bool permitted) {
-  InitDialogControls();
-}
-
-void MediaGalleriesDialogCocoa::ForgetGallery(MediaGalleryPrefId gallery) {
+void MediaGalleriesDialogCocoa::UpdateGalleries() {
   InitDialogControls();
 }
 

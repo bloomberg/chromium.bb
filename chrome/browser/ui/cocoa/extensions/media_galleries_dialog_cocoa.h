@@ -37,9 +37,7 @@ class MediaGalleriesDialogCocoa : public ConstrainedWindowMacDelegate,
   void OnCheckboxToggled(NSButton* checkbox);
 
   // MediaGalleriesDialog implementation:
-  virtual void UpdateGallery(const MediaGalleryPrefInfo& gallery,
-                             bool permitted) OVERRIDE;
-  virtual void ForgetGallery(MediaGalleryPrefId gallery) OVERRIDE;
+  virtual void UpdateGalleries() OVERRIDE;
 
   // ConstrainedWindowMacDelegate implementation.
   virtual void OnConstrainedWindowClosed(

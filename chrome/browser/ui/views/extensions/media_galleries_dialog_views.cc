@@ -150,6 +150,7 @@ void MediaGalleriesDialogViews::InitChildViews() {
 
   // Add attached galleries checkboxes.
   checkbox_map_.clear();
+  new_checkbox_map_.clear();
   GalleryPermissionsVector permissions = controller_->AttachedPermissions();
   for (GalleryPermissionsVector::const_iterator iter = permissions.begin();
        iter != permissions.end(); ++iter) {
@@ -203,14 +204,7 @@ void MediaGalleriesDialogViews::InitChildViews() {
                   dialog_content_width, kScrollAreaHeight);
 }
 
-void MediaGalleriesDialogViews::UpdateGallery(
-    const MediaGalleryPrefInfo& gallery,
-    bool permitted) {
-  InitChildViews();
-  contents_->Layout();
-}
-
-void MediaGalleriesDialogViews::ForgetGallery(MediaGalleryPrefId gallery) {
+void MediaGalleriesDialogViews::UpdateGalleries() {
   InitChildViews();
   contents_->Layout();
 }
@@ -225,7 +219,8 @@ bool MediaGalleriesDialogViews::AddOrUpdateGallery(
   string16 details = gallery.GetGalleryAdditionalDetails();
 
   CheckboxMap::iterator iter = checkbox_map_.find(gallery.pref_id);
-  if (iter != checkbox_map_.end()) {
+  if (iter != checkbox_map_.end() &&
+      gallery.pref_id != kInvalidMediaGalleryPrefId) {
     views::Checkbox* checkbox = iter->second;
     checkbox->SetChecked(permitted);
     checkbox->SetText(label);
@@ -237,8 +232,6 @@ bool MediaGalleriesDialogViews::AddOrUpdateGallery(
     views::Label* secondary_text =
         static_cast<views::Label*>(checkbox_view->child_at(1));
     secondary_text->SetText(details);
-
-    // Why is this returning false? Looks like that will mean it doesn't paint.
     return false;
   }
 
@@ -269,7 +262,10 @@ bool MediaGalleriesDialogViews::AddOrUpdateGallery(
   container->AddChildView(checkbox_view);
 
   checkbox->SetChecked(permitted);
-  checkbox_map_[gallery.pref_id] = checkbox;
+  if (gallery.pref_id != kInvalidMediaGalleryPrefId)
+    checkbox_map_[gallery.pref_id] = checkbox;
+  else
+    new_checkbox_map_[checkbox] = gallery;
 
   return true;
 }
@@ -361,6 +357,12 @@ void MediaGalleriesDialogViews::ButtonPressed(views::Button* sender,
       controller_->DidToggleGalleryId(iter->first,
                                       iter->second->checked());
       return;
+    }
+  }
+  for (NewCheckboxMap::const_iterator iter = new_checkbox_map_.begin();
+       iter != new_checkbox_map_.end(); ++iter) {
+    if (sender == iter->first) {
+      controller_->DidToggleNewGallery(iter->second, iter->first->checked());
     }
   }
 }

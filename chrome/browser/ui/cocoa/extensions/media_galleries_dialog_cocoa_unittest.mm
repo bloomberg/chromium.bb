@@ -117,7 +117,7 @@ TEST_F(MediaGalleriesDialogTest, ToggleCheckboxes) {
   EXPECT_EQ([checkbox state], NSOnState);
 }
 
-// Tests that UpdateGallery will add a new checkbox, but only if it refers to
+// Tests that UpdateGalleries will add a new checkbox, but only if it refers to
 // a gallery that the dialog hasn't seen before.
 TEST_F(MediaGalleriesDialogTest, UpdateAdds) {
   NiceMock<MediaGalleriesDialogControllerMock> controller(dummy_extension());
@@ -141,7 +141,7 @@ TEST_F(MediaGalleriesDialogTest, UpdateAdds) {
   attached_permissions.push_back(
       MediaGalleriesDialogController::GalleryPermission(
           MakePrefInfoForTesting(1), true));
-  dialog->UpdateGallery(MakePrefInfoForTesting(1), true);
+  dialog->UpdateGalleries();
   EXPECT_EQ(1U, [dialog->checkboxes_ count]);
 
   // The checkbox container should be taller.
@@ -152,7 +152,7 @@ TEST_F(MediaGalleriesDialogTest, UpdateAdds) {
   attached_permissions.push_back(
       MediaGalleriesDialogController::GalleryPermission(
           MakePrefInfoForTesting(2), true));
-  dialog->UpdateGallery(MakePrefInfoForTesting(2), true);
+  dialog->UpdateGalleries();
   EXPECT_EQ(2U, [dialog->checkboxes_ count]);
 
   // The checkbox container should be taller.
@@ -161,7 +161,7 @@ TEST_F(MediaGalleriesDialogTest, UpdateAdds) {
   old_container_height = new_container_height;
 
   attached_permissions[1].allowed = false;
-  dialog->UpdateGallery(MakePrefInfoForTesting(2), false);
+  dialog->UpdateGalleries();
   EXPECT_EQ(2U, [dialog->checkboxes_ count]);
 
   // The checkbox container height should not have changed.
@@ -189,17 +189,17 @@ TEST_F(MediaGalleriesDialogTest, ForgetDeletes) {
   attached_permissions.push_back(
       MediaGalleriesDialogController::GalleryPermission(
           MakePrefInfoForTesting(1), true));
-  dialog->UpdateGallery(MakePrefInfoForTesting(1), true);
+  dialog->UpdateGalleries();
   attached_permissions.push_back(
       MediaGalleriesDialogController::GalleryPermission(
           MakePrefInfoForTesting(2), true));
-  dialog->UpdateGallery(MakePrefInfoForTesting(2), true);
+  dialog->UpdateGalleries();
   EXPECT_EQ(2U, [dialog->checkboxes_ count]);
   CGFloat old_container_height = NSHeight([dialog->checkbox_container_ frame]);
 
   // Remove a gallery.
   attached_permissions.erase(attached_permissions.begin());
-  dialog->ForgetGallery(1);
+  dialog->UpdateGalleries();
   EXPECT_EQ(1U, [dialog->checkboxes_ count]);
 
   // The checkbox container should be shorter.
