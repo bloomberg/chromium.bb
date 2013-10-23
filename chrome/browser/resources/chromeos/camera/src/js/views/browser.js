@@ -151,7 +151,8 @@ camera.views.Browser.prototype.onResize = function() {
  * @private
  */
 camera.views.Browser.prototype.onBackgroundClicked_ = function(event) {
-  this.router.back();
+  if (event.target == document.querySelector('#browser'))
+    this.router.back();
 };
 
 /**
@@ -401,11 +402,15 @@ camera.views.Browser.prototype.addPictureToDOM_ = function(picture) {
   // Add to the collection.
   this.pictures_.push(new camera.views.Gallery.DOMPicture(picture, img));
 
-  // Add handlers.
   img.addEventListener('click', function(event) {
-    // TODO(mtomasz): Implement exporting and zoom-in.
+    // If scrolled while clicking, then discard this selection, since another
+    // one will be choosen in the onScrollEnded handler.
+    if (this.scrollTracker_.scrolling &&
+        Math.abs(this.scrollTracker_.delta[0]) > 16) {
+      return;
+    }
+
     this.model_.currentIndex = this.model_.pictures.indexOf(picture);
-    event.stopPropagation();
   }.bind(this));
 };
 

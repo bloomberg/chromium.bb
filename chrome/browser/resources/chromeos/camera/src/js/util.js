@@ -98,23 +98,22 @@ camera.util.waitForTransitionCompletion = function(
  *     SMOOTH.
  */
 camera.util.ensureVisible = function(element, scroller, opt_mode) {
-  var parent = scroller.element;
-  var scrollLeft = parent.scrollLeft;
-  var scrollTop = parent.scrollTop;
+  var scrollLeft = scroller.scrollLeft;
+  var scrollTop = scroller.scrollTop;
 
-  if (element.offsetTop < parent.scrollTop)
+  if (element.offsetTop < scroller.scrollTop)
     scrollTop = Math.round(element.offsetTop - element.offsetHeight * 0.5);
   if (element.offsetTop + element.offsetHeight >
-      scrollTop + parent.offsetHeight) {
+      scrollTop + scroller.clientHeight) {
     scrollTop = Math.round(element.offsetTop + element.offsetHeight * 1.5 -
-        parent.offsetHeight);
+        scroller.clientHeight);
   }
-  if (element.offsetLeft < parent.scrollLeft)
+  if (element.offsetLeft < scroller.scrollLeft)
     scrollLeft = Math.round(element.offsetLeft - element.offsetWidth * 0.5);
   if (element.offsetLeft + element.offsetWidth >
-      scrollLeft + parent.offsetWidth) {
+      scrollLeft + scroller.clientWidth) {
     scrollLeft = Math.round(element.offsetLeft + element.offsetWidth * 1.5 -
-        parent.offsetWidth);
+        scroller.clientWidth);
   }
   scroller.scrollTo(scrollLeft, scrollTop, opt_mode);
 };
@@ -270,11 +269,11 @@ camera.util.SmoothScroller.prototype = {
   },
   get clientWidth() {
     // TODO(mtomasz): This does not reflect paddings nor margins.
-    return this.padder_.clientWidth;
+    return this.element_.clientWidth;
   },
   get clientHeight() {
     // TODO(mtomasz): This does not reflect paddings nor margins.
-    return this.padder_.clientHeight;
+    return this.element_.clientHeight;
   }
 };
 
@@ -543,6 +542,12 @@ camera.util.ScrollTracker = function(scroller, onScrollStarted, onScrollEnded) {
    * @type {Array.<number>}
    * @private
    */
+  this.startScrollPosition_ = [0, 0];
+
+  /**
+   * @type {Array.<number>}
+   * @private
+   */
   this.lastScrollPosition_ = [0, 0];
 
   /**
@@ -572,8 +577,21 @@ camera.util.ScrollTracker = function(scroller, onScrollStarted, onScrollEnded) {
 };
 
 camera.util.ScrollTracker.prototype = {
+  /**
+   * @return {boolean} Whether scrolling is being performed or not.
+   */
   get scrolling() {
     return this.scrolling_;
+  },
+
+  /**
+   * @return {Array.<number>} Returns distance of the last detected scroll.
+   */
+  get delta() {
+    return [
+      this.startScrollPosition_[0] - this.lastScrollPosition_[0],
+      this.startScrollPosition_[1] - this.lastScrollPosition_[1]
+    ]
   }
 };
 
@@ -646,8 +664,10 @@ camera.util.ScrollTracker.prototype.probe_ = function() {
       this.scroller_.animating;
 
   if (scrollChanged) {
-    if (!this.scrolling_)
+    if (!this.scrolling_) {
+      this.startScrollPosition_ = [scrollLeft, scrollTop];
       this.onScrollStarted_();
+    }
     this.scrolling_ = true;
   } else {
     if (!this.mousePressed_ && !this.touchPressed_ && this.scrolling_) {
