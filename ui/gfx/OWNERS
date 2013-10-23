@@ -18,3 +18,6 @@ per-file screen*=oshima@chromium.org
 per-file transform*=shawnsingh@chromium.org
 per-file transform*=vollick@chromium.org
 per-file interpolated_transform*=vollick@chromium.org
+
+# If you're doing structural changes get a review from one of the OWNERS.
+per-file *.gyp*=*
