@@ -699,10 +699,8 @@ bool WebViewImpl::handleGestureEvent(const WebGestureEvent& event)
     switch (eventType) {
     case WebInputEvent::GestureShowPress:
         // Queue a highlight animation, then hand off to regular handler.
-#if OS(LINUX) || OS(ANDROID)
         if (settingsImpl()->gestureTapHighlightEnabled())
             enableTapHighlightAtPoint(platformEvent);
-#endif
         break;
     case WebInputEvent::GestureTapCancel:
     case WebInputEvent::GestureTap:

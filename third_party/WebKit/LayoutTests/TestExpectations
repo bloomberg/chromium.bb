@@ -384,6 +384,10 @@ crbug.com/231721 [ Win ] svg/custom/invisible-text-after-scrolling.xhtml [ Pass 
 # The image output is wrong (some red dots can be seen).
 crbug.com/232061 [ Linux ] fast/text/zero-font-size-2.html [ ImageOnlyFailure ]
 
+Bug(bokan) [ Win ] compositing/gestures/gesture-tapHighlight-pixel-rotated-link.html [ NeedsRebaseline ]
+Bug(bokan) [ Win ] compositing/gestures/gesture-tapHighlight-pixel-rotated-div.html [ NeedsRebaseline ]
+Bug(bokan) [ Win ] compositing/gestures/gesture-tapHighlight-pixel-transparent.html [ NeedsRebaseline ]
+
 crbug.com/233223 http/tests/history/redirect-js-location-href-0-seconds.html [ Failure Pass ]
 
 crbug.com/234069 [ Mac Release ] fast/events/touch/gesture/long-press-drag-drop-touch-editing-combined.html [ Failure Pass ]
