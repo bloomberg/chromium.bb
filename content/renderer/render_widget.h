@@ -293,6 +293,7 @@ class CONTENT_EXPORT RenderWidget
   void AnimationCallback();
   void AnimateIfNeeded();
   void InvalidationCallback();
+  void FlushPendingInputEventAck();
   void DoDeferredUpdateAndSendInputAck();
   void DoDeferredUpdate();
   void DoDeferredClose();
@@ -711,6 +712,9 @@ class CONTENT_EXPORT RenderWidget
   gfx::Rect window_screen_rect_;
 
   scoped_ptr<IPC::Message> pending_input_event_ack_;
+
+  // The time spent in input handlers this frame. Used to throttle input acks.
+  base::TimeDelta total_input_handling_time_this_frame_;
 
   // Indicates if the next sequence of Char events should be suppressed or not.
   bool suppress_next_char_events_;
