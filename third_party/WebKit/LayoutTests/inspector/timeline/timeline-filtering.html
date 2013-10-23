@@ -66,7 +66,7 @@ function test()
     dumpRecords();
 
     InspectorTest.addResult("Filtered by 'bar':");
-    panel.performFilter("bar");
+    panel._textFilter.setValue("bar");
     dumpRecords();
 
     InspectorTest.addResult("Collapsed 'bar04' and 'foo13':");
@@ -83,7 +83,7 @@ function test()
     dumpRecords();
 
     InspectorTest.addResult("Filtered by 'foo':");
-    panel.performFilter("foo");
+    panel._textFilter.setValue("foo");
     dumpRecords();
 
     InspectorTest.completeTest();

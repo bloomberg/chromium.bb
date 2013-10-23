@@ -11,14 +11,12 @@ function test() {
     {
         InspectorTest.addResult("");
         InspectorTest.addResult((toggle ? "Toggled '" : "Clicked '") + buttonName + "' button.");
-        target._toggleTypeFilter(buttonName, toggle);
-        var filter = target._typeFilter;
+        target._resourceTypeFilterUI._toggleTypeFilter(buttonName, toggle);
         var results = [];
         var request = new WebInspector.NetworkRequest("", "", "", "", "");
         for (var typeId in types) {
             var type = WebInspector.resourceTypes[typeId];
-            request.type = type;
-            results.push(type.name() + ": " + filter(request));
+            results.push(type.name() + ": " + target._resourceTypeFilterUI.accept(type.name()));
         }
         InspectorTest.addResult("Filter: " + results.join(", "));
     }

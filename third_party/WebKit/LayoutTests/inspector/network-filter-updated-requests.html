@@ -7,7 +7,7 @@ function test() {
     var target = panel._networkLogView;
     var types = WebInspector.resourceTypes;
 
-    target._toggleTypeFilter(types.XHR.name(), false);
+    target._resourceTypeFilterUI._toggleTypeFilter(types.XHR.name(), false);
     InspectorTest.addResult("Clicked '" + types.XHR.name() + "' button.");
 
     var requestFoo = new WebInspector.NetworkRequest("", "", "", "", "");
