@@ -47,6 +47,7 @@ class FakePictureLayerImpl : public PictureLayerImpl {
 
   PictureLayerImpl* twin_layer() { return twin_layer_; }
   PictureLayerTilingSet* tilings() { return tilings_.get(); }
+  PicturePileImpl* pile() { return pile_.get(); }
   size_t append_quads_count() { return append_quads_count_; }
 
   const Region& invalidation() const { return invalidation_; }
