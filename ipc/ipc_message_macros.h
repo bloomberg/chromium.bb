@@ -996,8 +996,8 @@
                               ipc_message__.type())
 
 #define IPC_END_MESSAGE_MAP() \
-    DCHECK(msg_is_ok__); \
   } \
+  DCHECK(msg_is_ok__); \
 }
 
 #define IPC_END_MESSAGE_MAP_EX() \
