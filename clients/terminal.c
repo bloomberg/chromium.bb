@@ -38,6 +38,8 @@
 #include <wchar.h>
 #include <locale.h>
 
+#include <linux/input.h>
+
 #include <wayland-client.h>
 
 #include "../shared/config-parser.h"
@@ -2211,38 +2213,54 @@ close_handler(struct window *window, void *data)
 	terminal_destroy(terminal);
 }
 
+static void
+terminal_copy(struct terminal *terminal, struct input *input)
+{
+	terminal->selection =
+		display_create_data_source(terminal->display);
+	wl_data_source_offer(terminal->selection,
+			     "text/plain;charset=utf-8");
+	wl_data_source_add_listener(terminal->selection,
+				    &data_source_listener, terminal);
+	input_set_selection(input, terminal->selection,
+			    display_get_serial(terminal->display));
+}
+
+static void
+terminal_paste(struct terminal *terminal, struct input *input)
+{
+	input_receive_selection_data_to_fd(input,
+					   "text/plain;charset=utf-8",
+					   terminal->master);
+
+}
+
+static void
+terminal_new_instance(struct terminal *terminal)
+{
+	struct terminal *new_terminal;
+
+	new_terminal = terminal_create(terminal->display);
+	if (terminal_run(new_terminal, option_shell))
+		terminal_destroy(new_terminal);
+}
+
 static int
 handle_bound_key(struct terminal *terminal,
 		 struct input *input, uint32_t sym, uint32_t time)
 {
-	struct terminal *new_terminal;
-
 	switch (sym) {
 	case XKB_KEY_X:
 		/* Cut selection; terminal doesn't do cut, fall
 		 * through to copy. */
 	case XKB_KEY_C:
-		terminal->selection =
-			display_create_data_source(terminal->display);
-		wl_data_source_offer(terminal->selection,
-				     "text/plain;charset=utf-8");
-		wl_data_source_add_listener(terminal->selection,
-					    &data_source_listener, terminal);
-		input_set_selection(input, terminal->selection,
-				    display_get_serial(terminal->display));
+		terminal_copy(terminal, input);
 		return 1;
 	case XKB_KEY_V:
-		input_receive_selection_data_to_fd(input,
-						   "text/plain;charset=utf-8",
-						   terminal->master);
-
+		terminal_paste(terminal, input);
 		return 1;
-
 	case XKB_KEY_N:
-		new_terminal = terminal_create(terminal->display);
-		if (terminal_run(new_terminal, option_shell))
-			terminal_destroy(new_terminal);
-
+		terminal_new_instance(terminal);
 		return 1;
 
 	case XKB_KEY_Up:
@@ -2630,6 +2648,40 @@ recompute_selection(struct terminal *terminal)
 }
 
 static void
+menu_func(struct window *window, struct input *input, int index, void *data)
+{
+	struct terminal *terminal = data;
+
+	fprintf(stderr, "picked entry %d\n", index);
+
+	switch (index) {
+	case 0:
+		terminal_new_instance(terminal);
+		break;
+	case 1:
+		terminal_copy(terminal, input);
+		break;
+	case 2:
+		terminal_paste(terminal, input);
+		break;
+	}
+}
+
+static void
+show_menu(struct terminal *terminal, struct input *input, uint32_t time)
+{
+	int32_t x, y;
+	static const char *entries[] = {
+		"Open Terminal", "Copy", "Paste"
+	};
+
+	input_get_position(input, &x, &y);
+	window_show_menu(terminal->display, input, time, terminal->window,
+			 x - 10, y - 10, menu_func,
+			 entries, ARRAY_LENGTH(entries));
+}
+
+static void
 button_handler(struct widget *widget,
 	       struct input *input, uint32_t time,
 	       uint32_t button,
@@ -2638,7 +2690,7 @@ button_handler(struct widget *widget,
 	struct terminal *terminal = data;
 
 	switch (button) {
-	case 272:
+	case BTN_LEFT:
 		if (state == WL_POINTER_BUTTON_STATE_PRESSED) {
 
 			if (time - terminal->button_time < 500)
@@ -2660,6 +2712,11 @@ button_handler(struct widget *widget,
 		} else {
 			terminal->dragging = SELECT_NONE;
 		}
+		break;
+
+	case BTN_RIGHT:
+		if (state == WL_POINTER_BUTTON_STATE_PRESSED)
+			show_menu(terminal, input, time);
 		break;
 	}
 }

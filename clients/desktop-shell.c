@@ -142,7 +142,7 @@ sigchild_handler(int s)
 }
 
 static void
-menu_func(struct window *window, int index, void *data)
+menu_func(struct window *window, struct input *input, int index, void *data)
 {
 	printf("Selected index %d from a panel menu.\n", index);
 }

@@ -2263,7 +2263,8 @@ frame_get_pointer_image_for_location(struct window_frame *frame,
 }
 
 static void
-frame_menu_func(struct window *window, int index, void *data)
+frame_menu_func(struct window *window,
+		struct input *input, int index, void *data)
 {
 	struct display *display;
 
@@ -4377,7 +4378,7 @@ menu_button_handler(struct widget *widget,
 	    (menu->release_count > 0 || time - menu->time > 500)) {
 		/* Either relase after press-drag-release or
 		 * click-motion-click. */
-		menu->func(menu->window->parent, 
+		menu->func(menu->window->parent, input,
 			   menu->current, menu->window->parent->user_data);
 		input_ungrab(input);
 		menu_destroy(menu);
