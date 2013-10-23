@@ -63,7 +63,7 @@ void createHiddenDependency(v8::Handle<v8::Object> object, v8::Local<v8::Value> 
     cacheArray->Set(v8::Integer::New(cacheArray->Length(), isolate), value);
 }
 
-bool extractTransferables(v8::Local<v8::Value> value, MessagePortArray& ports, ArrayBufferArray& arrayBuffers, v8::Isolate* isolate)
+bool extractTransferables(v8::Local<v8::Value> value, MessagePortArray& ports, ArrayBufferArray& arrayBuffers, bool& notASequence, v8::Isolate* isolate)
 {
     if (isUndefinedOrNull(value)) {
         ports.resize(0);
@@ -76,7 +76,7 @@ bool extractTransferables(v8::Local<v8::Value> value, MessagePortArray& ports, A
         v8::Local<v8::Array> array = v8::Local<v8::Array>::Cast(value);
         length = array->Length();
     } else {
-        if (toV8Sequence(value, length, isolate).IsEmpty())
+        if (toV8Sequence(value, length, &notASequence, isolate).IsEmpty())
             return false;
     }
 

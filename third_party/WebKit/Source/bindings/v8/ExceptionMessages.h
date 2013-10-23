@@ -43,6 +43,7 @@ public:
     static String failedToSet(const String& property, const String& type, const String& detail);
     static String failedToDelete(const String& property, const String& type, const String& detail);
 
+    static String notASequenceType(const String& argument);
     static String notEnoughArguments(unsigned expected, unsigned providedleastNumMandatoryParams);
 };
 

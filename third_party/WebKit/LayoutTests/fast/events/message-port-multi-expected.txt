@@ -8,7 +8,7 @@ PASS channel.port1.postMessage("entangled port", [channel.port2]) threw exceptio
 PASS channel.port1.postMessage("null port", [channel3.port1, null, channel3.port2]) threw exception DataCloneError: An object could not be cloned..
 PASS channel.port1.postMessage("notAPort", [channel3.port1, {}, channel3.port2]) threw exception DataCloneError: An object could not be cloned..
 PASS channel.port1.postMessage("duplicate port", [channel3.port1, channel3.port1]) threw exception DataCloneError: An object could not be cloned..
-PASS channel.port1.postMessage("notAnArray", channel3.port1) threw exception TypeError: Type error.
+PASS channel.port1.postMessage("notAnArray", channel3.port1) threw exception TypeError: Failed to execute 'postMessage' on 'MessagePort': Second argument is neither an array, nor does it have indexed properties..
 PASS channel.port1.postMessage("notASequence", [{length: 3}]) threw exception DataCloneError: An object could not be cloned..
 PASS channel.port1.postMessage("largeSequence", largePortArray) threw exception DataCloneError: An object could not be cloned..
 PASS event.ports is non-null and zero length when no port sent

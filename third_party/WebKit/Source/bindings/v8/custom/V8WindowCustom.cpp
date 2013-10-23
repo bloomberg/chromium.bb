@@ -34,6 +34,7 @@
 #include "V8HTMLCollection.h"
 #include "V8Node.h"
 #include "bindings/v8/BindingSecurity.h"
+#include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ScheduledAction.h"
 #include "bindings/v8/ScriptController.h"
@@ -262,8 +263,12 @@ void V8Window::postMessageMethodCustom(const v8::FunctionCallbackInfo<v8::Value>
             targetOriginArgIndex = 2;
             transferablesArgIndex = 1;
         }
-        if (!extractTransferables(args[transferablesArgIndex], portArray, arrayBufferArray, args.GetIsolate()))
+        bool notASequence = false;
+        if (!extractTransferables(args[transferablesArgIndex], portArray, arrayBufferArray, notASequence, args.GetIsolate())) {
+            if (notASequence)
+                throwTypeError(ExceptionMessages::failedToExecute("postMessage", "Window", ExceptionMessages::notASequenceType(transferablesArgIndex == 1 ? "Second" : "Third")), args.GetIsolate());
             return;
+        }
     }
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<WithUndefinedOrNullCheck>, targetOrigin, args[targetOriginArgIndex]);
 

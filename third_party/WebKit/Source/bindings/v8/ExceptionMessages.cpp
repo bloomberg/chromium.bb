@@ -58,6 +58,11 @@ String ExceptionMessages::failedToDelete(const String& property, const String& t
     return "Failed to delete the '" + property + "' property from '" + type + "': " + detail;
 }
 
+String ExceptionMessages::notASequenceType(const String& argument)
+{
+    return argument + " argument is neither an array, nor does it have indexed properties.";
+}
+
 String ExceptionMessages::notEnoughArguments(unsigned expected, unsigned provided)
 {
     return String::number(expected) + " argument" + (expected > 1 ? "s" : "") + " required, but only " + String::number(provided) + " present.";
