@@ -360,6 +360,7 @@
       'testing/ArenaTestHelpers.h',
       'testing/TreeTestHelpers.cpp',
       'testing/TreeTestHelpers.h',
+      'text/BidiResolverTest.cpp',
       'text/DateTimeFormatTest.cpp',
     ],
   },
