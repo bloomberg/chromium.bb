@@ -2384,3 +2384,18 @@
    fun:_ZN3WTF20initializeMainThreadEPFvPFvPvES0_E
    ...
 }
+{
+   bug_310761_a
+   Memcheck:Leak
+   fun:malloc
+   fun:_NPN_Get*Identifier
+   fun:_ZN6WebKit11WebBindings*get*Identifier*
+}
+{
+   bug_310761_b
+   Memcheck:Leak
+   fun:malloc
+   fun:_ZN3WTF10fastMallocEm
+   fun:_ZN7WebCore*TerminatedArrayBuilder*
+   fun:_ZN7WebCore7RuleSet19compactPendingRules*
+}
