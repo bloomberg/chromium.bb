@@ -158,6 +158,7 @@ def setup_buildbot_context(context):
   context['clang'] = False
   context['asan'] = False
   context['use_glibc'] = False
+  context['use_breakpad_tools'] = False
   context['max_jobs'] = int(os.environ.get('PNACL_CONCURRENCY', 4))
 
 def main():
