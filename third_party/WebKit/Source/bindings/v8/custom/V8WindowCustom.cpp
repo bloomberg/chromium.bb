@@ -244,7 +244,7 @@ void V8Window::postMessageMethodCustom(const v8::FunctionCallbackInfo<v8::Value>
 
     // If called directly by WebCore we don't have a calling context.
     if (!source) {
-        throwTypeError(args.GetIsolate());
+        throwUninformativeAndGenericTypeError(args.GetIsolate());
         return;
     }
 

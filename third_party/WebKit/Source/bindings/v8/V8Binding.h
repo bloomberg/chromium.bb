@@ -67,8 +67,10 @@ namespace WebCore {
     v8::Handle<v8::Value> throwError(v8::Handle<v8::Value>, v8::Isolate*);
 
     // A helper for throwing JavaScript TypeError.
-    v8::Handle<v8::Value> throwTypeError(v8::Isolate*);
     v8::Handle<v8::Value> throwTypeError(const String&, v8::Isolate*);
+
+    // FIXME: Remove this once we kill its callers.
+    v8::Handle<v8::Value> throwUninformativeAndGenericTypeError(v8::Isolate*);
 
     v8::ArrayBuffer::Allocator* v8ArrayBufferAllocator();
 
@@ -519,7 +521,7 @@ namespace WebCore {
             if (notASequence)
                 *notASequence = true;
             else
-                throwTypeError(isolate);
+                throwUninformativeAndGenericTypeError(isolate);
             return v8Undefined();
         }
 
@@ -536,7 +538,7 @@ namespace WebCore {
             if (notASequence)
                 *notASequence = true;
             else
-                throwTypeError(isolate);
+                throwUninformativeAndGenericTypeError(isolate);
             return v8Undefined();
         }
 

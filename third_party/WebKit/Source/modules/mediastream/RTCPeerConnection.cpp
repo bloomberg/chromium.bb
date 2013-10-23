@@ -505,7 +505,7 @@ PassRefPtr<RTCDTMFSender> RTCPeerConnection::createDTMFSender(PassRefPtr<MediaSt
     }
 
     if (!prpTrack) {
-        es.throwTypeError();
+        es.throwUninformativeAndGenericTypeError();
         return 0;
     }
 

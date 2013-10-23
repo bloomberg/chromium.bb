@@ -87,7 +87,7 @@ v8::Handle<v8::Value> throwError(v8::Handle<v8::Value> exception, v8::Isolate* i
     return V8ThrowException::throwError(exception, isolate);
 }
 
-v8::Handle<v8::Value> throwTypeError(v8::Isolate* isolate)
+v8::Handle<v8::Value> throwUninformativeAndGenericTypeError(v8::Isolate* isolate)
 {
     return V8ThrowException::throwTypeError(String(), isolate);
 }

@@ -63,7 +63,7 @@ SVGPathSegListPropertyTearOff::PassListItemType SVGPathSegListPropertyTearOff::r
 {
     // Not specified, but FF/Opera do it this way, and it's just sane.
     if (!passNewItem) {
-        es.throwTypeError();
+        es.throwUninformativeAndGenericTypeError();
         return 0;
     }
 

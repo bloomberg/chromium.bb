@@ -72,7 +72,7 @@ public:
     {
         // Not specified, but FF/Opera do it this way, and it's just sane.
         if (!passNewItem) {
-            es.throwTypeError();
+            es.throwUninformativeAndGenericTypeError();
             return 0;
         }
 
@@ -87,7 +87,7 @@ public:
     {
         // Not specified, but FF/Opera do it this way, and it's just sane.
         if (!passNewItem) {
-            es.throwTypeError();
+            es.throwUninformativeAndGenericTypeError();
             return 0;
         }
 
@@ -103,7 +103,7 @@ public:
     {
         // Not specified, but FF/Opera do it this way, and it's just sane.
         if (!passNewItem) {
-            es.throwTypeError();
+            es.throwUninformativeAndGenericTypeError();
             return 0;
         }
 

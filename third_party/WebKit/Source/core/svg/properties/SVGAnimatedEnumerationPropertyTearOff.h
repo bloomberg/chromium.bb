@@ -33,7 +33,7 @@ public:
     {
         // All SVG enumeration values, that are allowed to be set via SVG DOM start with 1, 0 corresponds to unknown and is not settable through SVG DOM.
         if (!property || property > SVGPropertyTraits<EnumType>::highestEnumValue()) {
-            es.throwTypeError();
+            es.throwUninformativeAndGenericTypeError();
             return;
         }
         SVGAnimatedStaticPropertyTearOff<unsigned>::setBaseVal(property, es);

@@ -392,7 +392,7 @@ PassRefPtr<IDBIndex> IDBObjectStore::createIndex(ExecutionContext* context, cons
         return 0;
     }
     if (name.isNull()) {
-        es.throwTypeError();
+        es.throwUninformativeAndGenericTypeError();
         return 0;
     }
     if (containsIndex(name)) {

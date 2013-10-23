@@ -44,7 +44,7 @@ PassRefPtr<TextDecoder> TextDecoder::create(const String& label, const Dictionar
 
     WTF::TextEncoding encoding(encodingLabel);
     if (!encoding.isValid()) {
-        es.throwTypeError();
+        es.throwUninformativeAndGenericTypeError();
         return 0;
     }
 

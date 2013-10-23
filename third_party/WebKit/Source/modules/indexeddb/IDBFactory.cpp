@@ -88,7 +88,7 @@ PassRefPtr<IDBOpenDBRequest> IDBFactory::open(ExecutionContext* context, const S
 {
     IDB_TRACE("IDBFactory::open");
     if (!version) {
-        es.throwTypeError();
+        es.throwUninformativeAndGenericTypeError();
         return 0;
     }
     return openInternal(context, name, version, es);
@@ -99,7 +99,7 @@ PassRefPtr<IDBOpenDBRequest> IDBFactory::openInternal(ExecutionContext* context,
     HistogramSupport::histogramEnumeration("WebCore.IndexedDB.FrontEndAPICalls", IDBOpenCall, IDBMethodsMax);
     ASSERT(version >= 1 || version == IDBDatabaseMetadata::NoIntVersion);
     if (name.isNull()) {
-        es.throwTypeError();
+        es.throwUninformativeAndGenericTypeError();
         return 0;
     }
     if (!isContextValid(context))
@@ -127,7 +127,7 @@ PassRefPtr<IDBOpenDBRequest> IDBFactory::deleteDatabase(ExecutionContext* contex
     IDB_TRACE("IDBFactory::deleteDatabase");
     HistogramSupport::histogramEnumeration("WebCore.IndexedDB.FrontEndAPICalls", IDBDeleteDatabaseCall, IDBMethodsMax);
     if (name.isNull()) {
-        es.throwTypeError();
+        es.throwUninformativeAndGenericTypeError();
         return 0;
     }
     if (!isContextValid(context))

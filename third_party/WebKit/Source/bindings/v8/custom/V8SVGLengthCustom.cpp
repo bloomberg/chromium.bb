@@ -61,7 +61,7 @@ void V8SVGLength::valueAttributeSetterCustom(v8::Local<v8::String> name, v8::Loc
     }
 
     if (!isUndefinedOrNull(value) && !value->IsNumber() && !value->IsBoolean()) {
-        throwTypeError(info.GetIsolate());
+        throwUninformativeAndGenericTypeError(info.GetIsolate());
         return;
     }
 

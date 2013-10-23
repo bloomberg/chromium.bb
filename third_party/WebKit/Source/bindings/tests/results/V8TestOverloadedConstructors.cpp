@@ -131,7 +131,7 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& args)
         throwTypeError(ExceptionMessages::failedToConstruct("TestOverloadedConstructors", ExceptionMessages::notEnoughArguments(1, args.Length())), args.GetIsolate());
         return;
     }
-    throwTypeError(args.GetIsolate());
+    throwUninformativeAndGenericTypeError(args.GetIsolate());
     return;
 }
 

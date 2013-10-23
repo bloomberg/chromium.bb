@@ -303,7 +303,7 @@ IndexedDB::TransactionMode IDBTransaction::stringToMode(const String& modeString
     if (modeString == IDBTransaction::modeReadWrite())
         return IndexedDB::TransactionReadWrite;
 
-    es.throwTypeError();
+    es.throwUninformativeAndGenericTypeError();
     return IndexedDB::TransactionReadOnly;
 }
 

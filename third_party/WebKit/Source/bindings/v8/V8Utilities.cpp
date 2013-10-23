@@ -116,7 +116,7 @@ bool getMessagePortArray(v8::Local<v8::Value> value, MessagePortArray& ports, v8
         return true;
     }
     if (!value->IsArray()) {
-        throwTypeError(isolate);
+        throwUninformativeAndGenericTypeError(isolate);
         return false;
     }
     bool success = false;

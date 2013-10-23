@@ -45,13 +45,13 @@ PassRefPtr<TextEncoder> TextEncoder::create(const String& utfLabel, ExceptionSta
 
     WTF::TextEncoding encoding(encodingLabel);
     if (!encoding.isValid()) {
-        es.throwTypeError();
+        es.throwUninformativeAndGenericTypeError();
         return 0;
     }
 
     String name(encoding.name());
     if (name != "UTF-8" && name != "UTF-16LE" && name != "UTF-16BE") {
-        es.throwTypeError();
+        es.throwUninformativeAndGenericTypeError();
         return 0;
     }
 

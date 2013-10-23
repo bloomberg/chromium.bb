@@ -89,7 +89,7 @@ ScriptPromise ImageBitmapFactories::createImageBitmap(EventTarget* eventTarget, 
     ASSERT(eventTarget->toDOMWindow());
 
     if (!image) {
-        es.throwTypeError();
+        es.throwUninformativeAndGenericTypeError();
         return ScriptPromise();
     }
     if (!image->cachedImage()) {
@@ -129,7 +129,7 @@ ScriptPromise ImageBitmapFactories::createImageBitmap(EventTarget* eventTarget, 
     ASSERT(eventTarget->toDOMWindow());
 
     if (!video) {
-        es.throwTypeError();
+        es.throwUninformativeAndGenericTypeError();
         return ScriptPromise();
     }
     if (!video->player()) {
@@ -181,7 +181,7 @@ ScriptPromise ImageBitmapFactories::createImageBitmap(EventTarget* eventTarget, 
     ASSERT(eventTarget->toDOMWindow());
 
     if (!canvas) {
-        es.throwTypeError();
+        es.throwUninformativeAndGenericTypeError();
         return ScriptPromise();
     }
     if (!canvas->originClean()) {
@@ -242,7 +242,7 @@ ScriptPromise ImageBitmapFactories::createImageBitmap(EventTarget* eventTarget, 
 ScriptPromise ImageBitmapFactories::createImageBitmap(EventTarget* eventTarget, ImageData* data, int sx, int sy, int sw, int sh, ExceptionState& es)
 {
     if (!data) {
-        es.throwTypeError();
+        es.throwUninformativeAndGenericTypeError();
         return ScriptPromise();
     }
     if (!sw || !sh) {
@@ -261,7 +261,7 @@ ScriptPromise ImageBitmapFactories::createImageBitmap(EventTarget* eventTarget, 
 ScriptPromise ImageBitmapFactories::createImageBitmap(EventTarget* eventTarget, ImageBitmap* bitmap, int sx, int sy, int sw, int sh, ExceptionState& es)
 {
     if (!bitmap) {
-        es.throwTypeError();
+        es.throwUninformativeAndGenericTypeError();
         return ScriptPromise();
     }
     if (!sw || !sh) {

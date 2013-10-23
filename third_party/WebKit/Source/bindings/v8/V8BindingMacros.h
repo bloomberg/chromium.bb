@@ -66,7 +66,7 @@ namespace WebCore {
             }                                                     \
         }                                                         \
         if (UNLIKELY(!ok)) {                                      \
-            throwTypeError(isolate);                              \
+            throwUninformativeAndGenericTypeError(isolate);       \
             return;                                               \
         }                                                         \
     }

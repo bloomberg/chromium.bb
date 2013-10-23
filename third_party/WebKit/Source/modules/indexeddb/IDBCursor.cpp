@@ -162,7 +162,7 @@ void IDBCursor::advance(unsigned long count, ExceptionState& es)
     }
 
     if (!count) {
-        es.throwTypeError();
+        es.throwUninformativeAndGenericTypeError();
         return;
     }
 
@@ -368,7 +368,7 @@ IndexedDB::CursorDirection IDBCursor::stringToDirection(const String& directionS
     if (directionString == IDBCursor::directionPrevUnique())
         return IndexedDB::CursorPrevNoDuplicate;
 
-    es.throwTypeError();
+    es.throwUninformativeAndGenericTypeError();
     return IndexedDB::CursorNext;
 }
 

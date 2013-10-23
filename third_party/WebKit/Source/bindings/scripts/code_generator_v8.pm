@@ -1938,7 +1938,7 @@ END
     if ($returnSvgNativeType) {
         $code .= <<END;
     if (!$expression) {
-        throwTypeError(info.GetIsolate());
+        throwUninformativeAndGenericTypeError(info.GetIsolate());
         return;
     }
 END
@@ -2146,7 +2146,7 @@ END
         $code .= "    }\n";
     }
     $code .= <<END;
-    throwTypeError(args.GetIsolate());
+    throwUninformativeAndGenericTypeError(args.GetIsolate());
 END
     $code .= "}\n\n";
     $code .= "#endif // ${conditionalString}\n\n" if $conditionalString;
@@ -2587,7 +2587,7 @@ END
         $code .= "    }\n";
     }
     $code .= <<END;
-    throwTypeError(args.GetIsolate());
+    throwUninformativeAndGenericTypeError(args.GetIsolate());
     return;
 END
     $code .= "}\n\n";
@@ -5072,7 +5072,7 @@ sub GenerateFunctionCallString
             push @arguments, "$paramName->propertyReference()";
             $code .= <<END;
     if (!$paramName) {
-        throwTypeError(args.GetIsolate());
+        throwUninformativeAndGenericTypeError(args.GetIsolate());
         return;
     }
 END
