@@ -71,7 +71,9 @@ class FileIO : public Resource {
   /// @param[in] result_buf The <code>PP_FileInfo</code> structure representing
   /// all information about the file.
   /// @param[in] cc A <code>CompletionCallback</code> to be called upon
-  /// completion of Query().
+  /// completion of Query(). <code>result_buf</code> must remain valid until
+  /// after the callback runs. If you pass a blocking callback,
+  /// <code>result_buf</code> must remain valid until after Query() returns.
   ///
   /// @return An int32_t containing an error code from
   /// <code>pp_errors.h</code>.
@@ -138,7 +140,9 @@ class FileIO : public Resource {
   /// @param[in] bytes_to_read The number of bytes to read from
   /// <code>offset</code>.
   /// @param[in] cc A <code>CompletionCallback</code> to be called upon
-  /// completion of Read().
+  /// completion of Read(). <code>buffer</code> must remain valid until after
+  /// the callback runs. If you pass a blocking callback, <code>buffer</code>
+  /// must remain valid until after Read() returns.
   ///
   /// @return An The number of bytes read an error code from
   /// <code>pp_errors.h</code>. If the return value is 0, then end-of-file was

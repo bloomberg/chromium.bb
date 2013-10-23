@@ -9,7 +9,7 @@
  *
  * This function will be called reentrantly. This means that if you call a
  * function PPB_Foo.GetData(&array_output), GetData will call your
- * GetDataBuffer function before it returns. 
+ * GetDataBuffer function before it returns.
  *
  * This function will be called even when returning 0-length arrays, so be sure
  * your implementation can support that. You can return NULL for 0 length
@@ -34,7 +34,10 @@
  * @param element_size The size of each element in bytes.
  *
  * @return Returns a pointer to the allocated memory. On failure, returns null.
- * You can also return null if the element_count is 0.
+ * You can also return null if the element_count is 0. When a non-null value is
+ * returned, the buffer must remain valid until after the callback runs. If used
+ * with a blocking callback, the buffer must remain valid until after the
+ * function returns. The plugin can then free any memory that it allocated.
  */
 typedef mem_t PP_ArrayOutput_GetDataBuffer([inout] mem_t user_data,
                                            [in] uint32_t element_count,
@@ -78,7 +81,7 @@ typedef mem_t PP_ArrayOutput_GetDataBuffer([inout] mem_t user_data,
 [passByValue]
 struct PP_ArrayOutput {
   /**
-   * A pointer to the allocation function that the browser implements.
+   * A pointer to the allocation function that the browser will call.
    */
   PP_ArrayOutput_GetDataBuffer GetDataBuffer;
 

@@ -138,21 +138,33 @@ int32_t FileIOResource::Query(PP_FileInfo* info,
     return PP_ERROR_FAILED;
 
   state_manager_.SetPendingOperation(FileIOStateManager::OPERATION_EXCLUSIVE);
-  scoped_refptr<QueryOp> query_op(new QueryOp(file_handle_));
 
   // If the callback is blocking, perform the task on the calling thread.
   if (callback->is_blocking()) {
-    int32_t result;
+    int32_t result = PP_ERROR_FAILED;
+    base::PlatformFileInfo file_info;
+    // The plugin could release its reference to this instance when we release
+    // the proxy lock below.
+    scoped_refptr<FileIOResource> protect(this);
     {
       // Release the proxy lock while making a potentially slow file call.
       ProxyAutoUnlock unlock;
-      result = query_op->DoWork();
+      if (base::GetPlatformFileInfo(file_handle_->raw_handle(), &file_info))
+        result = PP_OK;
     }
-    return OnQueryComplete(query_op, info, result);
+    if (result == PP_OK) {
+      // This writes the file info into the plugin's PP_FileInfo struct.
+      ppapi::PlatformFileInfoToPepperFileInfo(file_info,
+                                              file_system_type_,
+                                              info);
+    }
+    state_manager_.SetOperationFinished();
+    return result;
   }
 
   // For the non-blocking case, post a task to the file thread and add a
   // completion task to write the result.
+  scoped_refptr<QueryOp> query_op(new QueryOp(file_handle_));
   base::PostTaskAndReplyWithResult(
       PpapiGlobals::Get()->GetFileTaskRunner(),
       FROM_HERE,
@@ -316,19 +328,28 @@ int32_t FileIOResource::ReadValidated(int64_t offset,
   state_manager_.SetPendingOperation(FileIOStateManager::OPERATION_READ);
 
   bytes_to_read = std::min(bytes_to_read, kMaxReadSize);
-  scoped_refptr<ReadOp> read_op(
-      new ReadOp(file_handle_, offset, bytes_to_read));
   if (callback->is_blocking()) {
-    int32_t result;
-    {
+    char* buffer = static_cast<char*>(
+        array_output.GetDataBuffer(array_output.user_data, bytes_to_read, 1));
+    int32_t result = PP_ERROR_FAILED;
+    // The plugin could release its reference to this instance when we release
+    // the proxy lock below.
+    scoped_refptr<FileIOResource> protect(this);
+    if (buffer) {
       // Release the proxy lock while making a potentially slow file call.
       ProxyAutoUnlock unlock;
-      result = read_op->DoWork();
+      result = base::ReadPlatformFile(
+          file_handle_->raw_handle(), offset, buffer, bytes_to_read);
+      if (result < 0)
+        result = PP_ERROR_FAILED;
     }
-    return OnReadComplete(read_op, array_output, result);
+    state_manager_.SetOperationFinished();
+    return result;
   }
 
   // For the non-blocking case, post a task to the file thread.
+  scoped_refptr<ReadOp> read_op(
+      new ReadOp(file_handle_, offset, bytes_to_read));
   base::PostTaskAndReplyWithResult(
       PpapiGlobals::Get()->GetFileTaskRunner(),
       FROM_HERE,
