@@ -96,8 +96,7 @@ void ContainerNode::parserTakeAllChildrenFrom(ContainerNode* oldParent)
 
 ContainerNode::~ContainerNode()
 {
-    if (Document* document = documentInternal())
-        willBeDeletedFrom(document);
+    willBeDeletedFromDocument();
     removeDetachedChildren();
 }
 

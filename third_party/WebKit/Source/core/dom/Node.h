@@ -163,7 +163,6 @@ public:
     static void dumpStatistics();
 
     virtual ~Node();
-    void willBeDeletedFrom(Document*);
 
     // DOM methods & attributes for Node
 
@@ -791,6 +790,8 @@ protected:
     virtual void didMoveToNewDocument(Document& oldDocument);
 
     virtual void addSubresourceAttributeURLs(ListHashSet<KURL>&) const { }
+
+    void willBeDeletedFromDocument();
 
     bool hasRareData() const { return getFlag(HasRareDataFlag); }
 

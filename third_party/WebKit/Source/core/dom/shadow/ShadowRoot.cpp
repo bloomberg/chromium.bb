@@ -87,11 +87,11 @@ ShadowRoot::~ShadowRoot()
 
     documentInternal()->styleEngine()->didRemoveShadowRoot(this);
 
-    // We cannot let ContainerNode destructor call willBeDeletedFrom()
+    // We cannot let ContainerNode destructor call willBeDeletedFromDocument()
     // for this ShadowRoot instance because TreeScope destructor
     // clears Node::m_treeScope thus ContainerNode is no longer able
     // to access it Document reference after that.
-    willBeDeletedFrom(documentInternal());
+    willBeDeletedFromDocument();
 
     // We must remove all of our children first before the TreeScope destructor
     // runs so we don't go through TreeScopeAdopter for each child with a

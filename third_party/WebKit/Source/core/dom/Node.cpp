@@ -293,10 +293,8 @@ Node::~Node()
 
     RELEASE_ASSERT(!renderer());
 
-    if (!isContainerNode()) {
-        if (Document* document = documentInternal())
-            willBeDeletedFrom(document);
-    }
+    if (!isContainerNode())
+        willBeDeletedFromDocument();
 
     if (m_previous)
         m_previous->setNextSibling(0);
@@ -308,18 +306,19 @@ Node::~Node()
     InspectorCounters::decrementCounter(InspectorCounters::NodeCounter);
 }
 
-void Node::willBeDeletedFrom(Document* document)
+void Node::willBeDeletedFromDocument()
 {
+    Document* document = documentInternal();
+    if (!document)
+        return;
+
     if (hasEventTargetData()) {
-        if (document)
-            document->didRemoveEventTargetNode(this);
+        document->didRemoveEventTargetNode(this);
         clearEventTargetData();
     }
 
-    if (document) {
-        if (AXObjectCache* cache = document->existingAXObjectCache())
-            cache->remove(this);
-    }
+    if (AXObjectCache* cache = document->existingAXObjectCache())
+        cache->remove(this);
 }
 
 NodeRareData* Node::rareData() const
