@@ -89,6 +89,8 @@ class ASH_EXPORT MouseCursorEventFilter : public ui::EventHandler {
   // The root window in which the dragging started.
   const aura::RootWindow* drag_source_root_;
 
+  float scale_when_drag_started_;
+
   // Shows the area where a window can be dragged in to/out from
   // another display.
   scoped_ptr<SharedDisplayEdgeIndicator> shared_display_edge_indicator_;

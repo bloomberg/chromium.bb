@@ -40,6 +40,7 @@ MouseCursorEventFilter::MouseCursorEventFilter()
     : mouse_warp_mode_(WARP_ALWAYS),
       was_mouse_warped_(false),
       drag_source_root_(NULL),
+      scale_when_drag_started_(1.0f),
       shared_display_edge_indicator_(new SharedDisplayEdgeIndicator) {
 }
 
@@ -74,6 +75,13 @@ void MouseCursorEventFilter::HideSharedEdgeIndicator() {
 }
 
 void MouseCursorEventFilter::OnMouseEvent(ui::MouseEvent* event) {
+  if (event->type() == ui::ET_MOUSE_PRESSED) {
+    aura::Window* target = static_cast<aura::Window*>(event->target());
+    scale_when_drag_started_ = ui::GetDeviceScaleFactor(target->layer());
+  } else if (event->type() == ui::ET_MOUSE_RELEASED) {
+    scale_when_drag_started_ = 1.0f;
+  }
+
   // Handle both MOVED and DRAGGED events here because when the mouse pointer
   // enters the other root window while dragging, the underlying window system
   // (at least X11) stops generating a ui::ET_MOUSE_MOVED event.
@@ -108,8 +116,6 @@ bool MouseCursorEventFilter::WarpMouseCursorIfNecessary(
     return false;
   }
 
-  const float scale_at_target = ui::GetDeviceScaleFactor(target_root->layer());
-
   aura::RootWindow* root_at_point = wm::GetRootWindowAt(point_in_screen);
   gfx::Point point_in_root = point_in_screen;
   wm::ConvertPointFromScreen(root_at_point, &point_in_root);
@@ -117,26 +123,26 @@ bool MouseCursorEventFilter::WarpMouseCursorIfNecessary(
   int offset_x = 0;
   int offset_y = 0;
 
-  const float scale_at_point = ui::GetDeviceScaleFactor(root_at_point->layer());
-  // If the window is dragged from 2x display to 1x display, the
-  // pointer location is rounded by the source scale factor (2x) so
-  // it will never reach the edge (which is odd). Shrink by scale
-  // factor instead.  Only integral scale factor is supported.
-  int shrink =
-      target_root != root_at_point && scale_at_target != scale_at_point ?
-      static_cast<int>(scale_at_target) : 1;
+  // If the window is dragged between 2x display and 1x display,
+  // staring from 2x display, pointer location is rounded by the
+  // source scale factor (2x) so it will never reach the edge (which
+  // is odd). Shrink by scale factor of the display where the dragging
+  // started instead.  Only integral scale factor is supported for now.
+  int shrink = scale_when_drag_started_;
   // Make the bounds inclusive to detect the edge.
   root_bounds.Inset(0, 0, shrink, shrink);
+  gfx::Rect src_indicator_bounds = src_indicator_bounds_;
+  src_indicator_bounds.Inset(-shrink, -shrink, -shrink, -shrink);
 
   if (point_in_root.x() <= root_bounds.x()) {
     // Use -2, not -1, to avoid infinite loop of pointer warp.
-    offset_x = -2 * scale_at_target;
+    offset_x = -2 * scale_when_drag_started_;
   } else if (point_in_root.x() >= root_bounds.right()) {
-    offset_x = 2 * scale_at_target;
+    offset_x = 2 * scale_when_drag_started_;
   } else if (point_in_root.y() <= root_bounds.y()) {
-    offset_y = -2 * scale_at_target;
+    offset_y = -2 * scale_when_drag_started_;
   } else if (point_in_root.y() >= root_bounds.bottom()) {
-    offset_y = 2 * scale_at_target;
+    offset_y = 2 * scale_when_drag_started_;
   } else {
     return false;
   }
@@ -149,7 +155,7 @@ bool MouseCursorEventFilter::WarpMouseCursorIfNecessary(
   // or the mouse pointer is in the destination root.
   if (mouse_warp_mode_ == WARP_DRAG &&
       dst_root != drag_source_root_ &&
-      !src_indicator_bounds_.Contains(point_in_screen)) {
+      !src_indicator_bounds.Contains(point_in_screen)) {
     return false;
   }
 

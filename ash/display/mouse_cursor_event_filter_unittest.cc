@@ -48,6 +48,26 @@ class MouseCursorEventFilterTest : public test::AshTestBase {
     return is_warped;
   }
 
+  bool WarpMouseCursorIfNecessaryWithDragRoot(
+      aura::RootWindow* drag_source_root,
+      aura::RootWindow* target_root,
+      gfx::Point point_in_screen) {
+    gfx::Point location = drag_source_root->bounds().CenterPoint();
+    ui::MouseEvent pressed(ui::ET_MOUSE_PRESSED, location,
+                           location, 0);
+    ui::Event::DispatcherApi(&pressed).set_target(drag_source_root);
+    event_filter()->OnMouseEvent(&pressed);
+    bool is_warped = event_filter()->WarpMouseCursorIfNecessary(
+        target_root, point_in_screen);
+    event_filter()->reset_was_mouse_warped_for_test();
+
+    ui::MouseEvent released(ui::ET_MOUSE_RELEASED, location,
+                           location, 0);
+    ui::Event::DispatcherApi(&released).set_target(drag_source_root);
+    event_filter()->OnMouseEvent(&released);
+    return is_warped;
+  }
+
  private:
   MouseCursorEventFilter* event_filter_;
 
@@ -144,19 +164,32 @@ TEST_F(MouseCursorEventFilterTest, WarpMouseDifferentScaleDisplays) {
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
   aura::Env::GetInstance()->set_last_mouse_location(gfx::Point(900, 123));
 
-  // This emulates the dragging back to the 2nd display, which has
+  // This emulates the dragging to the 2nd display, which has
   // higher scale factor, by having 2nd display's root as target
   // but have the edge of 1st display.
-  EXPECT_TRUE(WarpMouseCursorIfNecessary(root_windows[1],
-                                         gfx::Point(498, 123)));
+  EXPECT_TRUE(WarpMouseCursorIfNecessaryWithDragRoot(
+      root_windows[1], root_windows[1], gfx::Point(498, 123)));
   EXPECT_EQ("502,123",
             aura::Env::GetInstance()->last_mouse_location().ToString());
 
   // Touch the edge of 2nd display again and make sure it warps to
   // 1st dislay.
-  EXPECT_TRUE(WarpMouseCursorIfNecessary(root_windows[1],
-                                         gfx::Point(500, 123)));
+  EXPECT_TRUE(WarpMouseCursorIfNecessaryWithDragRoot(
+      root_windows[1], root_windows[1], gfx::Point(500, 123)));
   EXPECT_EQ("496,123",
+            aura::Env::GetInstance()->last_mouse_location().ToString());
+
+  // Draging back from 1x to 2x.
+  EXPECT_TRUE(WarpMouseCursorIfNecessaryWithDragRoot(
+      root_windows[1], root_windows[0], gfx::Point(500, 123)));
+  EXPECT_EQ("496,123",
+            aura::Env::GetInstance()->last_mouse_location().ToString());
+
+  UpdateDisplay("500x500*2,600x600");
+  // Draging back from 1x to 2x.
+  EXPECT_TRUE(WarpMouseCursorIfNecessaryWithDragRoot(
+      root_windows[0], root_windows[1], gfx::Point(250, 123)));
+  EXPECT_EQ("246,123",
             aura::Env::GetInstance()->last_mouse_location().ToString());
 }
 
