@@ -152,7 +152,6 @@ class MockPrinter {
 
   // Used for displaying headers and footers.
   bool display_header_footer_;
-  string16 date_;
   string16 title_;
   string16 url_;
 

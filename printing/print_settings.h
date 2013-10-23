@@ -109,7 +109,6 @@ class PRINTING_EXPORT PrintSettings {
   void SetOrientation(bool landscape);
 
   // Strings to be printed as headers and footers if requested by the user.
-  base::string16 date;
   base::string16 title;
   base::string16 url;
 

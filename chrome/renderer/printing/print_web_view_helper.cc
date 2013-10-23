@@ -1483,8 +1483,8 @@ bool PrintWebViewHelper::UpdatePrintSettings(
     // Header/Footer: Set |header_footer_info_|.
     if (settings.params.display_header_footer) {
       header_footer_info_.reset(new base::DictionaryValue());
-      header_footer_info_->SetString(kSettingHeaderFooterDate,
-                                     settings.params.date);
+      header_footer_info_->SetDouble(kSettingHeaderFooterDate,
+                                     base::Time::Now().ToJsTime());
       header_footer_info_->SetString(kSettingHeaderFooterURL,
                                      settings.params.url);
       header_footer_info_->SetString(kSettingHeaderFooterTitle,

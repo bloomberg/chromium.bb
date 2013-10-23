@@ -132,7 +132,6 @@ void PrintSettings::Clear() {
   max_shrink = 2.;
   desired_dpi = 72;
   selection_only = false;
-  date = base::string16();
   title = base::string16();
   url = base::string16();
   display_header_footer = false;

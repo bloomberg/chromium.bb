@@ -8,7 +8,6 @@
 #include <cmath>
 #include <string>
 
-#include "base/i18n/time_formatting.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
@@ -33,7 +32,6 @@ void PrintSettingsInitializer::InitHeaderFooterStrings(
   if (!print_settings->display_header_footer)
     return;
 
-  base::string16 date = base::TimeFormatShortDateNumeric(base::Time::Now());
   base::string16 title;
   base::string16 url;
   if (!job_settings.GetString(kSettingHeaderFooterTitle, &title) ||
@@ -41,7 +39,6 @@ void PrintSettingsInitializer::InitHeaderFooterStrings(
     NOTREACHED();
   }
 
-  print_settings->date = date;
   print_settings->title = title;
   const gfx::FontList& default_fonts =
       ui::ResourceBundle::GetSharedInstance().GetFontList(

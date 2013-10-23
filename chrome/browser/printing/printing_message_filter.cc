@@ -82,7 +82,6 @@ void RenderParamsFromPrintSettings(const printing::PrintSettings& settings,
   params->supports_alpha_blend = settings.supports_alpha_blend();
   params->should_print_backgrounds = settings.should_print_backgrounds;
   params->display_header_footer = settings.display_header_footer;
-  params->date = settings.date;
   params->title = settings.title;
   params->url = settings.url;
 }

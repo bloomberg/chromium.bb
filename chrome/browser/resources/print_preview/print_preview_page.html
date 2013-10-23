@@ -73,8 +73,10 @@ function setup(options) {
                                 options['bottomMargin']);
   footer.style.height = pixels(options['bottomMargin']);
 
-  document.querySelector('#date span').innerText = options['date'];
+  document.querySelector('#date span').innerText =
+      new Date(options['date']).toLocaleDateString();
   document.querySelector('#title span').innerText = options['title'];
+
   document.querySelector('#url span').innerText = options['url'];
   document.querySelector('#page_number span').innerText = options['pageNumber'];
 
