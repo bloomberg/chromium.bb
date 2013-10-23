@@ -19,7 +19,6 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Message;
-import android.os.Process;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -516,11 +515,20 @@ public class AwContents {
             InternalAccessDelegate internalAccessAdapter, AwContentsClient contentsClient,
             boolean isAccessFromFileURLsGrantedByDefault, AwLayoutSizer layoutSizer,
             boolean supportsLegacyQuirks) {
+        this(browserContext, containerView, internalAccessAdapter, contentsClient,
+                layoutSizer, new AwSettings(containerView.getContext(),
+                        isAccessFromFileURLsGrantedByDefault, supportsLegacyQuirks));
+    }
+
+    public AwContents(AwBrowserContext browserContext, ViewGroup containerView,
+            InternalAccessDelegate internalAccessAdapter, AwContentsClient contentsClient,
+            AwLayoutSizer layoutSizer, AwSettings settings) {
         mBrowserContext = browserContext;
         mContainerView = containerView;
         mInternalAccessAdapter = internalAccessAdapter;
         mContentsClient = contentsClient;
         mLayoutSizer = layoutSizer;
+        mSettings = settings;
         mDIPScale = DeviceDisplayInfo.create(mContainerView.getContext()).getDIPScale();
         mLayoutSizer.setDelegate(new AwLayoutSizerDelegate());
         mLayoutSizer.setDIPScale(mDIPScale);
@@ -530,10 +538,6 @@ public class AwContents {
         mIoThreadClient = new IoThreadClientImpl();
         mInterceptNavigationDelegate = new InterceptNavigationDelegateImpl();
 
-        boolean hasInternetPermission = mContainerView.getContext().checkPermission(
-                    android.Manifest.permission.INTERNET,
-                    Process.myPid(),
-                    Process.myUid()) == PackageManager.PERMISSION_GRANTED;
         AwSettings.ZoomSupportChangeListener zoomListener =
                 new AwSettings.ZoomSupportChangeListener() {
                     @Override
@@ -543,11 +547,11 @@ public class AwContents {
                     }
 
                 };
-        mSettings = new AwSettings(mContainerView.getContext(), hasInternetPermission, zoomListener,
-                isAccessFromFileURLsGrantedByDefault, mDIPScale, supportsLegacyQuirks);
+        mSettings.setZoomListener(zoomListener);
         mDefaultVideoPosterRequestHandler = new DefaultVideoPosterRequestHandler(mContentsClient);
         mSettings.setDefaultVideoPosterURL(
                 mDefaultVideoPosterRequestHandler.getDefaultVideoPosterURL());
+        mSettings.setDIPScale(mDIPScale);
         mScrollOffsetManager = new AwScrollOffsetManager(new AwScrollOffsetManagerDelegate(),
                 new OverScroller(mContainerView.getContext()));
 
@@ -555,7 +559,7 @@ public class AwContents {
         setScrollBarStyle(mInternalAccessAdapter.super_getScrollBarStyle());
         mContainerView.addOnLayoutChangeListener(new AwLayoutChangeListener());
 
-        setNewAwContents(nativeInit(browserContext));
+        setNewAwContents(nativeInit(mBrowserContext));
 
         onVisibilityChanged(mContainerView, mContainerView.getVisibility());
         onWindowVisibilityChanged(mContainerView.getWindowVisibility());
