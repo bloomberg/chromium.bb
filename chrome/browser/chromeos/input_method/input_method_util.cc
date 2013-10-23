@@ -59,9 +59,9 @@ const struct {
   // For traditional Chinese input methods
   { "mozc-chewing", "\xe9\x85\xb7" },  // U+9177
   { "_comp_ime_ekbifjdfhkmdeeajnolmgdlmkllopefizh-hant-t-i0-und",
-    "\xe9\x85\xb7" },  // U+9177
+    "\xE6\xB3\xA8" },  // U+6CE8
   { "_comp_ime_goedamlknlnjaengojinmfgpmdjmkooozh-hant-t-i0-und",
-    "\xe9\x85\xb7" },  // U+9177
+    "\xE6\xB3\xA8" },  // U+6CE8
   { "m17n:zh:cangjie", "\xe5\x80\x89" },  // U+5009
   { "_comp_ime_aeebooiibjahgpgmhkeocbeekccfknbjzh-hant-t-i0-cangjie-1987",
     "\xe5\x80\x89" },  // U+5009
