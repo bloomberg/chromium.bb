@@ -36,7 +36,6 @@
 
 """Support for check-webkit-style."""
 
-import codecs
 import math  # for log
 import os
 import os.path
@@ -48,9 +47,6 @@ import unicodedata
 
 from webkitpy.common.memoized import memoized
 from webkitpy.common.system.filesystem import FileSystem
-
-# The key to use to provide a class to fake loading a header file.
-INCLUDE_IO_INJECTION_KEY = 'include_header_io'
 
 # Headers that we consider STL headers.
 _STL_HEADERS = frozenset([
@@ -120,12 +116,6 @@ _CONFIG_HEADER = 0
 _PRIMARY_HEADER = 1
 _OTHER_HEADER = 2
 _MOC_HEADER = 3
-
-
-# A dictionary of items customize behavior for unit test. For example,
-# INCLUDE_IO_INJECTION_KEY allows providing a custom io class which allows
-# for faking a header file.
-_unit_test_config = {}
 
 
 # The regexp compilation caching is inlined in all regexp functions for
@@ -3467,14 +3457,13 @@ def check_for_toFoo_definition(filename, pattern, error):
 
         return matches
 
-    def check_in_mock_header(filename, matches=None, io=codecs):
+    def check_in_mock_header(filename, matches=None):
         if not filename == 'Foo.h':
             return False
 
-        io = _unit_test_config.get(INCLUDE_IO_INJECTION_KEY, codecs)
         header_file = None
         try:
-            header_file = io.open(filename, 'r', 'utf8', 'replace')
+            header_file = CppChecker.fs.read_text_file(filename)
         except IOError:
             return False
         line_number = 0
@@ -3731,7 +3720,7 @@ def files_belong_to_same_module(filename_cpp, filename_h):
     return files_belong_to_same_module, common_path
 
 
-def update_include_state(filename, include_state, io=codecs):
+def update_include_state(filename, include_state):
     """Fill up the include_state with new includes found from the file.
 
     Args:
@@ -3742,10 +3731,9 @@ def update_include_state(filename, include_state, io=codecs):
     Returns:
       True if a header was succesfully added. False otherwise.
     """
-    io = _unit_test_config.get(INCLUDE_IO_INJECTION_KEY, codecs)
     header_file = None
     try:
-        header_file = io.open(filename, 'r', 'utf8', 'replace')
+        header_file = CppChecker.fs.read_text_file(filename)
     except IOError:
         return False
     line_number = 0
@@ -4013,8 +4001,10 @@ class CppChecker(object):
         'whitespace/todo',
         ])
 
+    fs = None
+
     def __init__(self, file_path, file_extension, handle_style_error,
-                 min_confidence):
+                 min_confidence, fs=None):
         """Create a CppChecker instance.
 
         Args:
@@ -4026,6 +4016,7 @@ class CppChecker(object):
         self.file_path = file_path
         self.handle_style_error = handle_style_error
         self.min_confidence = min_confidence
+        CppChecker.fs = fs or FileSystem()
 
     # Useful for unit testing.
     def __eq__(self, other):
@@ -4052,9 +4043,6 @@ class CppChecker(object):
 
 
 # FIXME: Remove this function (requires refactoring unit tests).
-def process_file_data(filename, file_extension, lines, error, min_confidence, unit_test_config):
-    global _unit_test_config
-    _unit_test_config = unit_test_config
-    checker = CppChecker(filename, file_extension, error, min_confidence)
+def process_file_data(filename, file_extension, lines, error, min_confidence, fs=None):
+    checker = CppChecker(filename, file_extension, error, min_confidence, fs)
     checker.check(lines)
-    _unit_test_config = {}

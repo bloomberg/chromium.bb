@@ -35,7 +35,6 @@
 
 # FIXME: Add a good test that tests UpdateIncludeState.
 
-import codecs
 import os
 import random
 import re
@@ -43,6 +42,7 @@ import webkitpy.thirdparty.unittest2 as unittest
 import cpp as cpp_style
 from cpp import CppChecker
 from ..filter import FilterConfiguration
+from webkitpy.common.system.filesystem import FileSystem
 
 # This class works as an error collector and replaces cpp_style.Error
 # function for the unit tests.  We also verify each category we see
@@ -97,17 +97,6 @@ class ErrorCollector:
             if category not in self._seen_style_categories:
                 import sys
                 sys.exit('FATAL ERROR: There are no tests for category "%s"' % category)
-
-
-# This class is a lame mock of codecs. We do not verify filename, mode, or
-# encoding, but for the current use case it is not needed.
-class MockIo:
-    def __init__(self, mock_file):
-        self.mock_file = mock_file
-
-    def open(self, unused_filename, unused_mode, unused_encoding, _):  # NOLINT
-        # (lint doesn't like open as a method name)
-        return self.mock_file
 
 
 class CppFunctionsTest(unittest.TestCase):
@@ -246,16 +235,16 @@ class CppStyleTestBase(unittest.TestCase):
 
     # Helper function to avoid needing to explicitly pass confidence
     # in all the unit test calls to cpp_style.process_file_data().
-    def process_file_data(self, filename, file_extension, lines, error, unit_test_config={}):
+    def process_file_data(self, filename, file_extension, lines, error, fs=None):
         """Call cpp_style.process_file_data() with the min_confidence."""
         return cpp_style.process_file_data(filename, file_extension, lines,
-                                           error, self.min_confidence, unit_test_config)
+                                           error, self.min_confidence, fs)
 
-    def perform_lint(self, code, filename, basic_error_rules, unit_test_config={}, lines_to_check=None):
+    def perform_lint(self, code, filename, basic_error_rules, fs=None, lines_to_check=None):
         error_collector = ErrorCollector(self.assertTrue, FilterConfiguration(basic_error_rules), lines_to_check)
         lines = code.split('\n')
         extension = filename.split('.')[1]
-        self.process_file_data(filename, extension, lines, error_collector, unit_test_config)
+        self.process_file_data(filename, extension, lines, error_collector, fs)
         return error_collector.results()
 
     # Perform lint on single line of input and return the error message.
@@ -304,17 +293,15 @@ class CppStyleTestBase(unittest.TestCase):
         return self.perform_lint(code, 'test.cpp', basic_error_rules)
 
     # Only include what you use errors.
-    def perform_include_what_you_use(self, code, filename='foo.h', io=codecs):
+    def perform_include_what_you_use(self, code, filename='foo.h', fs=None):
         basic_error_rules = ('-',
                              '+build/include_what_you_use')
-        unit_test_config = {cpp_style.INCLUDE_IO_INJECTION_KEY: io}
-        return self.perform_lint(code, filename, basic_error_rules, unit_test_config)
+        return self.perform_lint(code, filename, basic_error_rules, fs)
 
-    def perform_avoid_static_cast_of_objects(self, code, filename='foo.cpp', io=codecs):
+    def perform_avoid_static_cast_of_objects(self, code, filename='foo.cpp', fs=None):
         basic_error_rules = ('-',
                              '+runtime/casting')
-        unit_test_config = {cpp_style.INCLUDE_IO_INJECTION_KEY: io}
-        return self.perform_lint(code, filename, basic_error_rules, unit_test_config)
+        return self.perform_lint(code, filename, basic_error_rules, fs)
 
     # Perform lint and compare the error message with "expected_message".
     def assert_lint(self, code, expected_message, file_name='foo.cpp'):
@@ -773,21 +760,41 @@ class CppStyleTest(CppStyleTestBase):
     # Tests for static_cast readability.
     def test_static_cast_on_objects_with_toFoo(self):
         mock_header_contents = ['inline Foo* toFoo(Bar* bar)']
-        message = self.perform_avoid_static_cast_of_objects(
-            'Foo* x = static_cast<Foo*>(bar);',
-            filename='casting.cpp',
-            io=MockIo(mock_header_contents))
-        self.assertEqual(message, 'static_cast of class objects is not allowed. Use toFoo defined in Foo.h.'
-                                  '  [runtime/casting] [4]')
+        fs = FileSystem()
+        orig_read_text_file_fn = fs.read_text_file
+
+        def mock_read_text_file_fn(path):
+            return mock_header_contents
+
+        try:
+            fs.read_text_file = mock_read_text_file_fn
+            message = self.perform_avoid_static_cast_of_objects(
+                'Foo* x = static_cast<Foo*>(bar);',
+                filename='casting.cpp',
+                fs=fs)
+            self.assertEqual(message, 'static_cast of class objects is not allowed. Use toFoo defined in Foo.h.'
+                                      '  [runtime/casting] [4]')
+        finally:
+            fs.read_text_file = orig_read_text_file_fn
 
     def test_static_cast_on_objects_without_toFoo(self):
         mock_header_contents = ['inline FooBar* toFooBar(Bar* bar)']
-        message = self.perform_avoid_static_cast_of_objects(
-            'Foo* x = static_cast<Foo*>(bar);',
-            filename='casting.cpp',
-            io=MockIo(mock_header_contents))
-        self.assertEqual(message, 'static_cast of class objects is not allowed. Add toFoo in Foo.h and use it instead.'
-                                  '  [runtime/casting] [4]')
+        fs = FileSystem()
+        orig_read_text_file_fn = fs.read_text_file
+
+        def mock_read_text_file_fn(path):
+            return mock_header_contents
+
+        try:
+            fs.read_text_file = mock_read_text_file_fn
+            message = self.perform_avoid_static_cast_of_objects(
+                'Foo* x = static_cast<Foo*>(bar);',
+                filename='casting.cpp',
+                fs=fs)
+            self.assertEqual(message, 'static_cast of class objects is not allowed. Add toFoo in Foo.h and use it instead.'
+                                      '  [runtime/casting] [4]')
+        finally:
+            fs.read_text_file = orig_read_text_file_fn
 
     # We cannot test this functionality because of difference of
     # function definitions.  Anyway, we may never enable this.
@@ -1014,43 +1021,53 @@ class CppStyleTest(CppStyleTestBase):
 
         # Test the UpdateIncludeState code path.
         mock_header_contents = ['#include "blah/foo.h"', '#include "blah/bar.h"']
-        message = self.perform_include_what_you_use(
-            '#include "config.h"\n'
-            '#include "blah/a.h"\n',
-            filename='blah/a.cpp',
-            io=MockIo(mock_header_contents))
-        self.assertEqual(message, '')
+        fs = FileSystem()
+        orig_read_text_file_fn = fs.read_text_file
 
-        mock_header_contents = ['#include <set>']
-        message = self.perform_include_what_you_use(
-            '''#include "config.h"
-               #include "blah/a.h"
+        def mock_read_text_file_fn(path):
+            return mock_header_contents
 
-               std::set<int> foo;''',
-            filename='blah/a.cpp',
-            io=MockIo(mock_header_contents))
-        self.assertEqual(message, '')
+        try:
+            fs.read_text_file = mock_read_text_file_fn
+            message = self.perform_include_what_you_use(
+                '#include "config.h"\n'
+                '#include "blah/a.h"\n',
+                filename='blah/a.cpp',
+                fs=fs)
+            self.assertEqual(message, '')
 
-        # If there's just a .cpp and the header can't be found then it's ok.
-        message = self.perform_include_what_you_use(
-            '''#include "config.h"
-               #include "blah/a.h"
+            mock_header_contents = ['#include <set>']
+            message = self.perform_include_what_you_use(
+                '''#include "config.h"
+                   #include "blah/a.h"
 
-               std::set<int> foo;''',
-            filename='blah/a.cpp')
-        self.assertEqual(message, '')
+                   std::set<int> foo;''',
+                filename='blah/a.cpp',
+                fs=fs)
+            self.assertEqual(message, '')
 
-        # Make sure we find the headers with relative paths.
-        mock_header_contents = ['']
-        message = self.perform_include_what_you_use(
-            '''#include "config.h"
-               #include "%s%sa.h"
+            # If there's just a .cpp and the header can't be found then it's ok.
+            message = self.perform_include_what_you_use(
+                '''#include "config.h"
+                   #include "blah/a.h"
 
-               std::set<int> foo;''' % (os.path.basename(os.getcwd()), os.path.sep),
-            filename='a.cpp',
-            io=MockIo(mock_header_contents))
-        self.assertEqual(message, 'Add #include <set> for set<>  '
-                                   '[build/include_what_you_use] [4]')
+                   std::set<int> foo;''',
+                filename='blah/a.cpp')
+            self.assertEqual(message, '')
+
+            # Make sure we find the headers with relative paths.
+            mock_header_contents = ['']
+            message = self.perform_include_what_you_use(
+                '''#include "config.h"
+                   #include "%s%sa.h"
+
+                   std::set<int> foo;''' % (os.path.basename(os.getcwd()), os.path.sep),
+                filename='a.cpp',
+                fs=fs)
+            self.assertEqual(message, 'Add #include <set> for set<>  '
+                                       '[build/include_what_you_use] [4]')
+        finally:
+            fs.read_text_file = orig_read_text_file_fn
 
     def test_files_belong_to_same_module(self):
         f = cpp_style.files_belong_to_same_module
