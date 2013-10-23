@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/safe_numerics.h"
 #include "base/strings/string_util.h"
+#include "base/time/time.h"
 #include "net/base/big_endian.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_log.h"
@@ -26,6 +27,9 @@ namespace {
 const int kDefaultSendQuotaLowWaterMark = 1 << 16;
 const int kDefaultSendQuotaHighWaterMark = 1 << 17;
 const size_t kWebSocketCloseCodeLength = 2;
+// This timeout is based on TCPMaximumSegmentLifetime * 2 from
+// MainThreadWebSocketChannel.cpp in Blink.
+const int kClosingHandshakeTimeoutSeconds = 2 * 2 * 60;
 
 }  // namespace
 
@@ -89,6 +93,7 @@ WebSocketChannel::WebSocketChannel(
       send_quota_low_water_mark_(kDefaultSendQuotaLowWaterMark),
       send_quota_high_water_mark_(kDefaultSendQuotaHighWaterMark),
       current_send_quota_(0),
+      timeout_(base::TimeDelta::FromSeconds(kClosingHandshakeTimeoutSeconds)),
       closing_code_(0),
       state_(FRESHLY_CONSTRUCTED) {}
 
@@ -96,6 +101,9 @@ WebSocketChannel::~WebSocketChannel() {
   // The stream may hold a pointer to read_frames_, and so it needs to be
   // destroyed first.
   stream_.reset();
+  // The timer may have a callback pointing back to us, so stop it just in case
+  // someone decides to run the event loop from their destructor.
+  timer_.Stop();
 }
 
 void WebSocketChannel::SendAddChannelRequest(
@@ -181,7 +189,6 @@ void WebSocketChannel::StartClosingHandshake(uint16 code,
     return;
   }
   // TODO(ricea): Validate |code|? Check that |reason| is valid UTF-8?
-  // TODO(ricea): There should be a timeout for the closing handshake.
   SendClose(code, reason);  // Sets state_ to SEND_CLOSED
 }
 
@@ -190,10 +197,13 @@ void WebSocketChannel::SendAddChannelRequestForTesting(
     const std::vector<std::string>& requested_subprotocols,
     const GURL& origin,
     const WebSocketStreamFactory& factory) {
-  SendAddChannelRequestWithFactory(socket_url,
-                                   requested_subprotocols,
-                                   origin,
-                                   factory);
+  SendAddChannelRequestWithFactory(
+      socket_url, requested_subprotocols, origin, factory);
+}
+
+void WebSocketChannel::SetClosingHandshakeTimeoutForTesting(
+    base::TimeDelta delay) {
+  timeout_ = delay;
 }
 
 void WebSocketChannel::SendAddChannelRequestWithFactory(
@@ -482,6 +492,10 @@ void WebSocketChannel::HandleFrame(const WebSocketFrameHeader::OpCode opcode,
           break;
 
         case SEND_CLOSED:
+          // Give them another few minutes to actually close the connection.
+          DCHECK(timer_.IsRunning());
+          timer_.Reset();
+
           state_ = CLOSE_WAIT;
           // From RFC6455 section 7.1.5: "Each endpoint
           // will see the status code sent by the other end as _The WebSocket
@@ -577,6 +591,12 @@ void WebSocketChannel::SendClose(uint16 code, const std::string& reason) {
     std::copy(
         reason.begin(), reason.end(), body->data() + kWebSocketCloseCodeLength);
   }
+  // This use of base::Unretained() is safe because we stop the timer in the
+  // destructor.
+  timer_.Start(
+      FROM_HERE,
+      timeout_,
+      base::Bind(&WebSocketChannel::CloseTimeout, base::Unretained(this)));
   SendIOBuffer(true, WebSocketFrameHeader::kOpCodeClose, body, size);
   state_ = (state_ == CONNECTED) ? SEND_CLOSED : CLOSE_WAIT;
 }
@@ -615,6 +635,17 @@ void WebSocketChannel::ParseClose(const scoped_refptr<IOBuffer>& buffer,
   // "Security Considerations" from RFC3629.
   if (IsStringUTF8(text)) {
     reason->swap(text);
+  }
+}
+
+void WebSocketChannel::CloseTimeout() {
+  stream_->Close();
+  // TODO(ricea): This becomes a DCHECK() once
+  // https://codereview.chromium.org/26544003/ has landed.
+  if (state_ != CLOSED) {
+    state_ = CLOSED;
+    event_interface_->OnDropChannel(kWebSocketErrorAbnormalClosure,
+                                    "Abnormal Closure");
   }
 }
 

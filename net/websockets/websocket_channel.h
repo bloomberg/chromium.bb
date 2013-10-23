@@ -12,6 +12,8 @@
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
+#include "base/time/time.h"
+#include "base/timer/timer.h"
 #include "net/base/net_export.h"
 #include "net/websockets/websocket_frame.h"
 #include "net/websockets/websocket_stream.h"
@@ -92,6 +94,11 @@ class NET_EXPORT WebSocketChannel {
       const std::vector<std::string>& requested_protocols,
       const GURL& origin,
       const WebSocketStreamFactory& factory);
+
+  // The default timout for the closing handshake is a sensible value (see
+  // kClosingHandshakeTimeoutSeconds in websocket_channel.cc). However, we can
+  // set it to a very small value for testing purposes.
+  void SetClosingHandshakeTimeoutForTesting(base::TimeDelta delay);
 
  private:
   // The object passes through a linear progression of states from
@@ -209,6 +216,10 @@ class NET_EXPORT WebSocketChannel {
                   uint16* code,
                   std::string* reason);
 
+  // Called if the closing handshake times out. Closes the connection and
+  // informs the |event_interface_| if appropriate.
+  void CloseTimeout();
+
   // The URL of the remote server.
   GURL socket_url_;
 
@@ -247,6 +258,12 @@ class NET_EXPORT WebSocketChannel {
   // The current amount of quota that the renderer has available for sending
   // on this logical channel (quota units).
   int current_send_quota_;
+
+  // Timer for the closing handshake.
+  base::OneShotTimer<WebSocketChannel> timer_;
+
+  // Timeout for the closing handshake.
+  base::TimeDelta timeout_;
 
   // Storage for the status code and reason from the time the Close frame
   // arrives until the connection is closed and they are passed to

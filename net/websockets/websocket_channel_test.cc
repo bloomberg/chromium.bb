@@ -20,6 +20,7 @@
 #include "base/safe_numerics.h"
 #include "base/strings/string_piece.h"
 #include "net/base/net_errors.h"
+#include "net/base/test_completion_callback.h"
 #include "net/url_request/url_request_context.h"
 #include "net/websockets/websocket_errors.h"
 #include "net/websockets/websocket_event_interface.h"
@@ -84,6 +85,8 @@ std::ostream& operator<<(std::ostream& os,
 
 namespace {
 
+using ::base::TimeDelta;
+
 using ::testing::AnyNumber;
 using ::testing::InSequence;
 using ::testing::MockFunction;
@@ -115,6 +118,10 @@ const size_t kDefaultInitialQuota = 1 << 17;
 // quota refresh. TODO(ricea): Change this if kDefaultSendQuotaHighWaterMark or
 // kDefaultSendQuotaLowWaterMark change.
 const size_t kDefaultQuotaRefreshTrigger = (1 << 16) + 1;
+
+// TestTimeouts::tiny_timeout() is 100ms! I could run halfway around the world
+// in that time! I would like my tests to run a bit quicker.
+const int kVeryTinyTimeoutMillis = 1;
 
 // This mock is for testing expectations about how the EventInterface is used.
 class MockWebSocketEventInterface : public WebSocketEventInterface {
@@ -352,6 +359,21 @@ template <size_t N>
     const InitFrame (&frames)[N]) {
   return ::testing::MakeMatcher(new EqualsFramesMatcher<N>(&frames));
 }
+
+// TestClosure works like TestCompletionCallback, but doesn't take an argument.
+class TestClosure {
+ public:
+  base::Closure closure() { return base::Bind(callback_.callback(), OK); }
+
+  void WaitForResult() { callback_.WaitForResult(); }
+
+ private:
+  // Delegate to TestCompletionCallback for the implementation.
+  TestCompletionCallback callback_;
+};
+
+// A GoogleMock action to run a Closure.
+ACTION_P(InvokeClosure, closure) { closure.Run(); }
 
 // A FakeWebSocketStream whose ReadFrames() function returns data.
 class ReadableFakeWebSocketStream : public FakeWebSocketStream {
@@ -1366,6 +1388,69 @@ TEST_F(WebSocketChannelEventInterfaceTest, AsyncProtocolErrorGivesStatus1002) {
   base::MessageLoop::current()->RunUntilIdle();
 }
 
+// The closing handshake times out and sends an OnDropChannel event if no
+// response to the client Close message is received.
+TEST_F(WebSocketChannelEventInterfaceTest,
+       ClientInitiatedClosingHandshakeTimesOut) {
+  scoped_ptr<ReadableFakeWebSocketStream> stream(
+      new ReadableFakeWebSocketStream);
+  stream->PrepareReadFramesError(ReadableFakeWebSocketStream::SYNC,
+                                 ERR_IO_PENDING);
+  set_stream(stream.Pass());
+  EXPECT_CALL(*event_interface_, OnAddChannelResponse(false, _));
+  EXPECT_CALL(*event_interface_, OnFlowControl(_));
+  // This checkpoint object verifies that the OnDropChannel message comes after
+  // the timeout.
+  MockFunction<void(int)> checkpoint;
+  TestClosure completion;
+  {
+    InSequence s;
+    EXPECT_CALL(checkpoint, Call(1));
+    EXPECT_CALL(*event_interface_,
+                OnDropChannel(kWebSocketErrorAbnormalClosure, _))
+        .WillOnce(InvokeClosure(completion.closure()));
+  }
+  CreateChannelAndConnectSuccessfully();
+  // OneShotTimer is not very friendly to testing; there is no apparent way to
+  // set an expectation on it. Instead the tests need to infer that the timeout
+  // was fired by the behaviour of the WebSocketChannel object.
+  channel_->SetClosingHandshakeTimeoutForTesting(
+      TimeDelta::FromMilliseconds(kVeryTinyTimeoutMillis));
+  channel_->StartClosingHandshake(kWebSocketNormalClosure, "");
+  checkpoint.Call(1);
+  completion.WaitForResult();
+}
+
+// The closing handshake times out and sends an OnDropChannel event if a Close
+// message is received but the connection isn't closed by the remote host.
+TEST_F(WebSocketChannelEventInterfaceTest,
+       ServerInitiatedClosingHandshakeTimesOut) {
+  scoped_ptr<ReadableFakeWebSocketStream> stream(
+      new ReadableFakeWebSocketStream);
+  static const InitFrame frames[] = {
+      {FINAL_FRAME, WebSocketFrameHeader::kOpCodeClose,
+       NOT_MASKED,  CLOSE_DATA(NORMAL_CLOSURE, "OK")}};
+  stream->PrepareReadFrames(ReadableFakeWebSocketStream::ASYNC, OK, frames);
+  set_stream(stream.Pass());
+  EXPECT_CALL(*event_interface_, OnAddChannelResponse(false, _));
+  EXPECT_CALL(*event_interface_, OnFlowControl(_));
+  MockFunction<void(int)> checkpoint;
+  TestClosure completion;
+  {
+    InSequence s;
+    EXPECT_CALL(checkpoint, Call(1));
+    EXPECT_CALL(*event_interface_, OnClosingHandshake());
+    EXPECT_CALL(*event_interface_,
+                OnDropChannel(kWebSocketErrorAbnormalClosure, _))
+        .WillOnce(InvokeClosure(completion.closure()));
+  }
+  CreateChannelAndConnectSuccessfully();
+  channel_->SetClosingHandshakeTimeoutForTesting(
+      TimeDelta::FromMilliseconds(kVeryTinyTimeoutMillis));
+  checkpoint.Call(1);
+  completion.WaitForResult();
+}
+
 // RFC6455 5.1 "a client MUST mask all frames that it sends to the server".
 // WebSocketChannel actually only sets the mask bit in the header, it doesn't
 // perform masking itself (not all transports actually use masking).
@@ -1731,6 +1816,123 @@ TEST_F(WebSocketChannelStreamTest, ProtocolError) {
   EXPECT_CALL(*mock_stream_, Close());
 
   CreateChannelAndConnectSuccessfully();
+}
+
+// Set the closing handshake timeout to a very tiny value before connecting.
+class WebSocketChannelStreamTimeoutTest : public WebSocketChannelStreamTest {
+ protected:
+  WebSocketChannelStreamTimeoutTest() {}
+
+  virtual void CreateChannelAndConnectSuccessfully() OVERRIDE {
+    set_stream(mock_stream_.Pass());
+    CreateChannelAndConnect();
+    channel_->SetClosingHandshakeTimeoutForTesting(
+        TimeDelta::FromMilliseconds(kVeryTinyTimeoutMillis));
+    connect_data_.factory.connect_delegate->OnSuccess(stream_.Pass());
+  }
+};
+
+// In this case the server initiates the closing handshake with a Close
+// message. WebSocketChannel responds with a matching Close message, and waits
+// for the server to close the TCP/IP connection. The server never closes the
+// connection, so the closing handshake times out and WebSocketChannel closes
+// the connection itself.
+TEST_F(WebSocketChannelStreamTimeoutTest, ServerInitiatedCloseTimesOut) {
+  static const InitFrame frames[] = {
+      {FINAL_FRAME, WebSocketFrameHeader::kOpCodeClose,
+       NOT_MASKED,  CLOSE_DATA(NORMAL_CLOSURE, "OK")}};
+  static const InitFrame expected[] = {
+      {FINAL_FRAME, WebSocketFrameHeader::kOpCodeClose,
+       MASKED,      CLOSE_DATA(NORMAL_CLOSURE, "OK")}};
+  EXPECT_CALL(*mock_stream_, GetSubProtocol()).Times(AnyNumber());
+  EXPECT_CALL(*mock_stream_, ReadFrames(_, _))
+      .WillOnce(ReturnFrames(&frames))
+      .WillRepeatedly(Return(ERR_IO_PENDING));
+  MockFunction<void(int)> checkpoint;
+  TestClosure completion;
+  {
+    InSequence s;
+    EXPECT_CALL(*mock_stream_, WriteFrames(EqualsFrames(expected), _))
+        .WillOnce(Return(OK));
+    EXPECT_CALL(checkpoint, Call(1));
+    EXPECT_CALL(*mock_stream_, Close())
+        .WillOnce(InvokeClosure(completion.closure()));
+  }
+
+  CreateChannelAndConnectSuccessfully();
+  checkpoint.Call(1);
+  completion.WaitForResult();
+}
+
+// In this case the client initiates the closing handshake by sending a Close
+// message. WebSocketChannel waits for a Close message in response from the
+// server. The server never responds to the Close message, so the closing
+// handshake times out and WebSocketChannel closes the connection.
+TEST_F(WebSocketChannelStreamTimeoutTest, ClientInitiatedCloseTimesOut) {
+  static const InitFrame expected[] = {
+      {FINAL_FRAME, WebSocketFrameHeader::kOpCodeClose,
+       MASKED,      CLOSE_DATA(NORMAL_CLOSURE, "OK")}};
+  EXPECT_CALL(*mock_stream_, GetSubProtocol()).Times(AnyNumber());
+  EXPECT_CALL(*mock_stream_, ReadFrames(_, _))
+      .WillRepeatedly(Return(ERR_IO_PENDING));
+  TestClosure completion;
+  {
+    InSequence s;
+    EXPECT_CALL(*mock_stream_, WriteFrames(EqualsFrames(expected), _))
+        .WillOnce(Return(OK));
+    EXPECT_CALL(*mock_stream_, Close())
+        .WillOnce(InvokeClosure(completion.closure()));
+  }
+
+  CreateChannelAndConnectSuccessfully();
+  channel_->StartClosingHandshake(kWebSocketNormalClosure, "OK");
+  completion.WaitForResult();
+}
+
+// In this case the client initiates the closing handshake and the server
+// responds with a matching Close message. WebSocketChannel waits for the server
+// to close the TCP/IP connection, but it never does. The closing handshake
+// times out and WebSocketChannel closes the connection.
+TEST_F(WebSocketChannelStreamTimeoutTest, ConnectionCloseTimesOut) {
+  static const InitFrame expected[] = {
+      {FINAL_FRAME, WebSocketFrameHeader::kOpCodeClose,
+       MASKED,      CLOSE_DATA(NORMAL_CLOSURE, "OK")}};
+  static const InitFrame frames[] = {
+      {FINAL_FRAME, WebSocketFrameHeader::kOpCodeClose,
+       NOT_MASKED,  CLOSE_DATA(NORMAL_CLOSURE, "OK")}};
+  EXPECT_CALL(*mock_stream_, GetSubProtocol()).Times(AnyNumber());
+  TestClosure completion;
+  ScopedVector<WebSocketFrame>* read_frames = NULL;
+  CompletionCallback read_callback;
+  {
+    InSequence s;
+    // Copy the arguments to ReadFrames so that the test can call the callback
+    // after it has send the close message.
+    EXPECT_CALL(*mock_stream_, ReadFrames(_, _))
+        .WillOnce(DoAll(SaveArg<0>(&read_frames),
+                        SaveArg<1>(&read_callback),
+                        Return(ERR_IO_PENDING)));
+    // The first real event that happens is the client sending the Close
+    // message.
+    EXPECT_CALL(*mock_stream_, WriteFrames(EqualsFrames(expected), _))
+        .WillOnce(Return(OK));
+    // The |read_frames| callback is called (from this test case) at this
+    // point. ReadFrames is called again by WebSocketChannel, waiting for
+    // ERR_CONNECTION_CLOSED.
+    EXPECT_CALL(*mock_stream_, ReadFrames(_, _))
+        .WillOnce(Return(ERR_IO_PENDING));
+    // The timeout happens and so WebSocketChannel closes the stream.
+    EXPECT_CALL(*mock_stream_, Close())
+        .WillOnce(InvokeClosure(completion.closure()));
+  }
+
+  CreateChannelAndConnectSuccessfully();
+  channel_->StartClosingHandshake(kWebSocketNormalClosure, "OK");
+  ASSERT_TRUE(read_frames);
+  // Provide the "Close" message from the server.
+  *read_frames = CreateFrameVector(frames);
+  read_callback.Run(OK);
+  completion.WaitForResult();
 }
 
 }  // namespace
