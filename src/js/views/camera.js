@@ -720,13 +720,16 @@ camera.views.Camera.prototype.start_ = function() {
     // Set the default dimensions to at most half of the available width
     // and to the compatible aspect ratio. 640/360 dimensions are used to
     // detect that the window has never been opened.
-    var windowWidth = document.body.offsetWidth;
-    var windowHeight = document.body.offsetHeight;
+    var bounds = chrome.app.window.current().getBounds();
     var targetAspectRatio = width / height;
     var targetWidth = Math.round(Math.min(width, screen.width * 0.8));
     var targetHeight = Math.round(targetWidth / targetAspectRatio);
-    if (windowWidth == 640 && windowHeight == 360)
+    if (bounds.width == 640 && bounds.height == 360) {
       chrome.app.window.current().resizeTo(targetWidth, targetHeight);
+      chrome.app.window.current().moveTo(
+          bounds.left - (targetWidth - bounds.width) / 2,
+          bounds.top - (targetHeight - bounds.height) / 2);
+    }
     if (!this.shownAtStartup_)
       chrome.app.window.current().show();
     // Show tools after some small delay to make it more visible.
