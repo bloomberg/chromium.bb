@@ -10,9 +10,10 @@ var arrayLikeWithAccessors = {
     get 0() { foo.bar = 1; },
     get 1() { throw new Error("arrayLikeWithAccessors"); },
     set 3() {},
-    get 5() { return "[property5]"; },
-    6: 6,
-    get 7() { return 77; },
+    4: {foo: 1, bar: 2},
+    get 5() { return {afoo: 3, abar: 4}; },
+    6: [1, 2],
+    get 7() { return [3, 4]; },
     8: "value8",
     get 9() { return NaN; }
 };
@@ -21,10 +22,11 @@ var objectWithAccessors = {
     get 0() { baz.baz = 3; },
     get 1() { throw new Error("objectWithAccessors"); },
     set 3() {},
-    get 5() { return "{property5}"; },
-    6: 6,
-    get 7() { return 7788; },
-    8: "value8",
+    4: {foo: 1, bar: 2},
+    get 5() { return {afoo: 3, abar: 4}; },
+    6: [1, 2],
+    get 7() { return [3, 4]; },
+    8: function func8() {},
     get 9() { return -Infinity; }
 };
 
