@@ -195,6 +195,12 @@ class ASH_EXPORT ShellDelegate {
   // Returns if Large Cursor is enabled or not.
   virtual bool IsLargeCursorEnabled() const = 0;
 
+  // Invoked to enable autoclick.
+  virtual void SetAutoclickEnabled(bool enabled) = 0;
+
+  // Returns if autoclick is enabled or not.
+  virtual bool IsAutoclickEnabled() const = 0;
+
   // Returns true if the user want to show accesibility menu even when all the
   // accessibility features are disabled.
   virtual bool ShouldAlwaysShowAccessibilityMenu() const = 0;

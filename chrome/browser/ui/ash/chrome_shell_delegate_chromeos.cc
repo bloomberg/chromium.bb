@@ -182,6 +182,16 @@ bool ChromeShellDelegate::IsLargeCursorEnabled() const {
   return chromeos::AccessibilityManager::Get()->IsLargeCursorEnabled();
 }
 
+void ChromeShellDelegate::SetAutoclickEnabled(bool enabled) {
+  DCHECK(chromeos::AccessibilityManager::Get());
+  return chromeos::AccessibilityManager::Get()->EnableAutoclick(enabled);
+}
+
+bool ChromeShellDelegate::IsAutoclickEnabled() const {
+  DCHECK(chromeos::AccessibilityManager::Get());
+  return chromeos::AccessibilityManager::Get()->IsAutoclickEnabled();
+}
+
 ash::CapsLockDelegate* ChromeShellDelegate::CreateCapsLockDelegate() {
   chromeos::input_method::XKeyboard* xkeyboard =
       chromeos::input_method::InputMethodManager::Get()->GetXKeyboard();

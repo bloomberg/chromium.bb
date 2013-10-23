@@ -36,6 +36,7 @@ enum AccessibilityState {
   A11Y_HIGH_CONTRAST    = 1 << 1,
   A11Y_SCREEN_MAGNIFIER = 1 << 2,
   A11Y_LARGE_CURSOR     = 1 << 3,
+  A11Y_AUTOCLICK        = 1 << 4,
 };
 
 uint32 GetAccessibilityState() {
@@ -49,6 +50,8 @@ uint32 GetAccessibilityState() {
     state |= A11Y_SCREEN_MAGNIFIER;
   if (shell_delegate->IsLargeCursorEnabled())
     state |= A11Y_LARGE_CURSOR;
+  if (shell_delegate->IsAutoclickEnabled())
+    state |= A11Y_AUTOCLICK;
   return state;
 }
 
@@ -112,10 +115,12 @@ AccessibilityDetailedView::AccessibilityDetailedView(
         large_cursor_view_(NULL),
         help_view_(NULL),
         settings_view_(NULL),
+        autoclick_view_(NULL),
         spoken_feedback_enabled_(false),
         high_contrast_enabled_(false),
         screen_magnifier_enabled_(false),
         large_cursor_enabled_(false),
+        autoclick_enabled_(false),
         login_(login) {
 
   Reset();
@@ -161,6 +166,16 @@ void AccessibilityDetailedView::AppendAccessibilityList() {
           IDS_ASH_STATUS_TRAY_ACCESSIBILITY_SCREEN_MAGNIFIER),
       screen_magnifier_enabled_ ? gfx::Font::BOLD : gfx::Font::NORMAL,
       screen_magnifier_enabled_);
+
+  // Don't show autoclick option at login screen.
+  if (login_ != user::LOGGED_IN_NONE) {
+    autoclick_enabled_ = shell_delegate->IsAutoclickEnabled();
+    autoclick_view_ = AddScrollListItem(
+        bundle.GetLocalizedString(
+            IDS_ASH_STATUS_TRAY_ACCESSIBILITY_AUTOCLICK),
+        autoclick_enabled_ ? gfx::Font::BOLD : gfx::Font::NORMAL,
+        autoclick_enabled_);
+  }
 }
 
 void AccessibilityDetailedView::AppendHelpEntries() {
@@ -221,6 +236,8 @@ void AccessibilityDetailedView::OnViewClicked(views::View* sender) {
   } else if (large_cursor_view_ && sender == large_cursor_view_) {
     shell_delegate->
         SetLargeCursorEnabled(!shell_delegate->IsLargeCursorEnabled());
+  } else if (autoclick_view_ && sender == autoclick_view_) {
+    shell_delegate->SetAutoclickEnabled(!shell_delegate->IsAutoclickEnabled());
   }
 }
 
@@ -334,7 +351,7 @@ void TrayAccessibility::OnAccessibilityModeChanged(
   SetTrayIconVisible(GetInitialVisibility());
 
   uint32 accessibility_state = GetAccessibilityState();
-  if ((notify == ash::A11Y_NOTIFICATION_SHOW)&&
+  if ((notify == ash::A11Y_NOTIFICATION_SHOW) &&
       !(previous_accessibility_state_ & A11Y_SPOKEN_FEEDBACK) &&
       (accessibility_state & A11Y_SPOKEN_FEEDBACK)) {
     // Shows popup if |notify| is true and the spoken feedback is being enabled.

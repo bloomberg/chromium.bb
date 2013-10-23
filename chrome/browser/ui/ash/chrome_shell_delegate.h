@@ -64,6 +64,8 @@ class ChromeShellDelegate : public ash::ShellDelegate,
   virtual ash::MagnifierType GetMagnifierType() const OVERRIDE;
   virtual void SetLargeCursorEnabled(bool enabled) OVERRIDE;
   virtual bool IsLargeCursorEnabled() const OVERRIDE;
+  virtual void SetAutoclickEnabled(bool enabled) OVERRIDE;
+  virtual bool IsAutoclickEnabled() const OVERRIDE;
   virtual bool ShouldAlwaysShowAccessibilityMenu() const OVERRIDE;
   virtual void SilenceSpokenFeedback() const OVERRIDE;
   virtual app_list::AppListViewDelegate* CreateAppListViewDelegate() OVERRIDE;

@@ -32,6 +32,7 @@ TestShellDelegate::TestShellDelegate()
       screen_magnifier_enabled_(false),
       screen_magnifier_type_(kDefaultMagnifierType),
       large_cursor_enabled_(false),
+      autoclick_enabled_(false),
       num_exit_requests_(0),
       multi_profiles_enabled_(false),
       test_session_state_delegate_(NULL) {
@@ -135,6 +136,14 @@ void TestShellDelegate::SetLargeCursorEnabled(bool enabled) {
 
 bool TestShellDelegate::IsLargeCursorEnabled() const {
   return large_cursor_enabled_;
+}
+
+void TestShellDelegate::SetAutoclickEnabled(bool enabled) {
+  autoclick_enabled_ = enabled;
+}
+
+bool TestShellDelegate::IsAutoclickEnabled() const {
+  return autoclick_enabled_;
 }
 
 bool TestShellDelegate::ShouldAlwaysShowAccessibilityMenu() const {

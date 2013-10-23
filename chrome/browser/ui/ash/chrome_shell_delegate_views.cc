@@ -62,6 +62,13 @@ bool ChromeShellDelegate::IsLargeCursorEnabled() const {
   return false;
 }
 
+void ChromeShellDelegate::SetAutoclickEnabled(bool enabled) {
+}
+
+bool ChromeShellDelegate::IsAutoclickEnabled() const {
+  return false;
+}
+
 bool ChromeShellDelegate::IsHighContrastEnabled() const {
   return false;
 }

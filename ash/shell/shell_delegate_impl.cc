@@ -33,7 +33,8 @@ ShellDelegateImpl::ShellDelegateImpl()
       high_contrast_enabled_(false),
       screen_magnifier_enabled_(false),
       screen_magnifier_type_(kDefaultMagnifierType),
-      large_cursor_enabled_(false) {
+      large_cursor_enabled_(false),
+      autoclick_enabled_(false) {
 }
 
 ShellDelegateImpl::~ShellDelegateImpl() {
@@ -147,6 +148,14 @@ void ShellDelegateImpl::SetLargeCursorEnabled(bool enabled) {
 
 bool ShellDelegateImpl::IsLargeCursorEnabled() const {
   return large_cursor_enabled_;
+}
+
+void ShellDelegateImpl::SetAutoclickEnabled(bool enabled) {
+  autoclick_enabled_ = enabled;
+}
+
+bool ShellDelegateImpl::IsAutoclickEnabled() const {
+  return autoclick_enabled_;
 }
 
 bool ShellDelegateImpl::ShouldAlwaysShowAccessibilityMenu() const {

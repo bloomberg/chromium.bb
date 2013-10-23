@@ -55,6 +55,8 @@ class ShellDelegateImpl : public ash::ShellDelegate {
   virtual MagnifierType GetMagnifierType() const OVERRIDE;
   virtual void SetLargeCursorEnabled(bool enabled) OVERRIDE;
   virtual bool IsLargeCursorEnabled() const OVERRIDE;
+  virtual void SetAutoclickEnabled(bool enabled) OVERRIDE;
+  virtual bool IsAutoclickEnabled() const OVERRIDE;
   virtual bool ShouldAlwaysShowAccessibilityMenu() const OVERRIDE;
   virtual void SilenceSpokenFeedback() const OVERRIDE;
   virtual app_list::AppListViewDelegate* CreateAppListViewDelegate() OVERRIDE;
@@ -88,6 +90,7 @@ class ShellDelegateImpl : public ash::ShellDelegate {
   bool screen_magnifier_enabled_;
   MagnifierType screen_magnifier_type_;
   bool large_cursor_enabled_;
+  bool autoclick_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellDelegateImpl);
 };
