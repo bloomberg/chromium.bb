@@ -298,6 +298,7 @@ FontPlatformData::~FontPlatformData()
 
 String FontPlatformData::fontFamilyName() const
 {
+#if ENABLE(GDI_FONTS_ON_WINDOWS)
     HWndDC dc(0);
     HGDIOBJ oldFont = static_cast<HFONT>(SelectObject(dc, hfont()));
     WCHAR name[LF_FACESIZE];
@@ -306,6 +307,14 @@ String FontPlatformData::fontFamilyName() const
         resultLength--; // ignore the null terminator
     SelectObject(dc, oldFont);
     return String(name, resultLength);
+#else
+    // FIXME: This returns the requested name, perhaps a better solution would be to
+    // return the list of names provided by SkTypeface::createFamilyNameIterator.
+    ASSERT(typeface());
+    SkString familyName;
+    typeface()->getFamilyName(&familyName);
+    return String::fromUTF8(familyName.c_str());
+#endif
 }
 
 bool FontPlatformData::isFixedPitch() const
