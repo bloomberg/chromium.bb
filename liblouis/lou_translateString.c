@@ -45,7 +45,8 @@ static int compbrlEnd = 0;
 int EXPORT_CALL
 lou_translateString (const char *tableList, const widechar
 		     * inbufx,
-		     int *inlen, widechar * outbuf, int *outlen, char
+		     int *inlen, widechar * outbuf, int *outlen, 
+		     formtype
 		     *typeform, char *spacing, int mode)
 {
   return
@@ -57,7 +58,7 @@ int EXPORT_CALL
 lou_translate (const char *tableList, const widechar
 	       * inbufx,
 	       int *inlen, widechar * outbuf, int *outlen,
-	       char *typeform, char *spacing, int *outputPos,
+	       formtype *typeform, char *spacing, int *outputPos,
 	       int *inputPos, int *cursorPos, int modex)
 {
   return trace_translate (tableList, inbufx, inlen, outbuf, outlen,
@@ -68,7 +69,7 @@ lou_translate (const char *tableList, const widechar
 int
 trace_translate (const char *tableList, const widechar * inbufx,
 		 int *inlen, widechar * outbuf, int *outlen,
-		 char *typeform, char *spacing, int *outputPos,
+		 formtype *typeform, char *spacing, int *outputPos,
 		 int *inputPos, int *cursorPos,
 		 const TranslationTableRule ** rules, int *rulesLen,
 		 int modex)
@@ -278,7 +279,7 @@ int EXPORT_CALL
 lou_translatePrehyphenated (const char *tableList,
 			    const widechar * inbufx, int *inlen,
 			    widechar * outbuf, int *outlen,
-			    char *typeform, char *spacing,
+			    formtype *typeform, char *spacing,
 			    int *outputPos, int *inputPos, int *cursorPos,
 			    char *inputHyphens, char *outputHyphens,
 			    int modex)
