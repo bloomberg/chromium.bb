@@ -23,27 +23,14 @@ var appWindows = {};
 var queue = new AsyncUtil.Queue();
 
 /**
- * @return {Array.<DOMWindow>} Array of content windows for all currently open
- *   app windows.
- */
-function getContentWindows() {
-  var views = [];
-  for (var key in appWindows) {
-    if (appWindows.hasOwnProperty(key))
-      views.push(appWindows[key].contentWindow);
-  }
-  return views;
-}
-
-/**
  * Type of a Files.app's instance launch.
  * @enum {number}
  */
-var LaunchType = {
+var LaunchType = Object.freeze({
   ALWAYS_CREATE: 0,
   FOCUS_ANY_OR_CREATE: 1,
   FOCUS_SAME_OR_CREATE: 2
-};
+});
 
 /**
  * Wrapper for an app window.
@@ -58,13 +45,16 @@ var LaunchType = {
  *
  * @param {string} url App window content url.
  * @param {string} id App window id.
- * @param {Object|function()} options Options object or a function to create it.
+ * @param {Object} options Options object to create it.
  * @constructor
  */
 function AppWindowWrapper(url, id, options) {
   this.url_ = url;
   this.id_ = id;
-  this.options_ = options;
+  // Do deep copy for the template of options to assign own ID to the option
+  // params.
+  this.options_ = JSON.parse(JSON.stringify(options));
+  this.options_.id = url; // This is to make Chrome reuse window geometries.
   this.window_ = null;
   this.appState_ = null;
   this.openingOrOpened_ = false;
@@ -112,13 +102,6 @@ AppWindowWrapper.prototype.launch = function(appState, opt_callback) {
   // Save application state.
   this.appState_ = appState;
 
-  // Window options.
-  var options = this.options_;
-  if (typeof options == 'function')
-    options = options();
-  options.id = this.url_;  // This is to make Chrome reuse window geometries.
-  options.singleton = false;
-
   // Get similar windows, it means with the same initial url, eg. different
   // main windows of Files.app.
   var similarWindows = this.getSimilarWindows_();
@@ -145,7 +128,7 @@ AppWindowWrapper.prototype.launch = function(appState, opt_callback) {
 
   // Closure creating the window, once all preprocessing tasks are finished.
   this.queue.run(function(nextStep) {
-    chrome.app.window.create(this.url_, options, function(appWindow) {
+    chrome.app.window.create(this.url_, this.options_, function(appWindow) {
       this.window_ = appWindow;
       nextStep();
     }.bind(this));
@@ -275,21 +258,22 @@ var FILES_ID_PATTERN = new RegExp('^' + FILES_ID_PREFIX + '(\\d*)$');
 var nextFileManagerWindowID = 0;
 
 /**
- * @return {Object} File manager window create options.
+ * File manager window create options.
+ * @type {Object}
+ * @const
  */
-function createFileManagerOptions() {
-  return {
-    defaultLeft: Math.round(window.screen.availWidth * 0.1),
-    defaultTop: Math.round(window.screen.availHeight * 0.1),
-    defaultWidth: Math.round(window.screen.availWidth * 0.8),
-    defaultHeight: Math.round(window.screen.availHeight * 0.8),
-    minWidth: 320,
-    minHeight: 240,
-    frame: 'none',
-    hidden: true,
-    transparentBackground: true
-  };
-}
+var FILE_MANAGER_WINDOW_CREATE_OPTIONS = Object.freeze({
+  defaultLeft: Math.round(window.screen.availWidth * 0.1),
+  defaultTop: Math.round(window.screen.availHeight * 0.1),
+  defaultWidth: Math.round(window.screen.availWidth * 0.8),
+  defaultHeight: Math.round(window.screen.availHeight * 0.8),
+  minWidth: 320,
+  minHeight: 240,
+  frame: 'none',
+  hidden: true,
+  transparentBackground: true,
+  singleton: false
+});
 
 /**
  * @param {Object=} opt_appState App state.
@@ -368,7 +352,7 @@ function launchFileManager(opt_appState, opt_id, opt_type, opt_callback) {
     var appWindow = new AppWindowWrapper(
         'main.html',
         appId,
-        createFileManagerOptions);
+        FILE_MANAGER_WINDOW_CREATE_OPTIONS);
     appWindow.launch(opt_appState || {}, function() {
       if (opt_callback)
         opt_callback(appId);
@@ -460,23 +444,22 @@ function onExecute(action, details) {
 }
 
 /**
- * @return {Object} Audio player window create options.
+ * Audio player window create options.
+ * @type {Object}
+ * @const
  */
-function createAudioPlayerOptions() {
-  var WIDTH = 280;
-  var HEIGHT = 35 + 58;
-  return {
-    type: 'panel',
-    hidden: true,
-    minHeight: HEIGHT,
-    minWidth: WIDTH,
-    height: HEIGHT,
-    width: WIDTH
-  };
-}
+var AUDIO_PLAYER_CREATE_OPTIONS = Object.freeze({
+  type: 'panel',
+  hidden: true,
+  minHeight: 35 + 58,
+  minWidth: 280,
+  height: 35 + 58,
+  width: 280,
+  singleton: false
+});
 
 var audioPlayer = new SingletonAppWindowWrapper('mediaplayer.html',
-                                                createAudioPlayerOptions);
+                                                AUDIO_PLAYER_CREATE_OPTIONS);
 
 /**
  * Launch the audio player.
