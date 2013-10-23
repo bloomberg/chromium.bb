@@ -64,7 +64,7 @@ const size_t kTraceEventBatchChunks = 1000 / kTraceBufferChunkSize;
 // Can store results for 30 seconds with 1 ms sampling interval.
 const size_t kMonitorTraceEventBufferChunks = 30000 / kTraceBufferChunkSize;
 
-const int kThreadFlushTimeoutMs = 1000;
+const int kThreadFlushTimeoutMs = 3000;
 
 #define MAX_CATEGORY_GROUPS 100
 
@@ -966,10 +966,6 @@ class TraceLog::ThreadLocalEventBuffer
 
   void FlushWhileLocked();
 
-  void CheckGeneration() const {
-    DCHECK(trace_log_->CheckGeneration(generation_));
-  }
-
   void CheckThisIsCurrentBuffer() const {
     DCHECK(trace_log_->thread_local_event_buffer_.Get() == this);
   }
@@ -1003,9 +999,6 @@ TraceLog::ThreadLocalEventBuffer::ThreadLocalEventBuffer(TraceLog* trace_log)
 TraceLog::ThreadLocalEventBuffer::~ThreadLocalEventBuffer() {
   CheckThisIsCurrentBuffer();
   MessageLoop::current()->RemoveDestructionObserver(this);
-
-  if (!trace_log_->CheckGeneration(generation_))
-    return;
 
   // Zero event_count_ happens in either of the following cases:
   // - no event generated for the thread;
@@ -1060,7 +1053,6 @@ void TraceLog::ThreadLocalEventBuffer::ReportOverhead(
   if (!g_category_group_enabled[g_category_trace_event_overhead])
     return;
 
-  CheckGeneration();
   CheckThisIsCurrentBuffer();
 
   event_count_++;
@@ -1089,7 +1081,12 @@ void TraceLog::ThreadLocalEventBuffer::WillDestroyCurrentMessageLoop() {
 void TraceLog::ThreadLocalEventBuffer::FlushWhileLocked() {
   trace_log_->lock_.AssertAcquired();
   DCHECK(chunk_);
-  trace_log_->logged_events_->ReturnChunk(chunk_index_, chunk_.Pass());
+  if (trace_log_->CheckGeneration(generation_)) {
+    // Return the chunk to the buffer only if the generation matches,
+    trace_log_->logged_events_->ReturnChunk(chunk_index_, chunk_.Pass());
+  }
+  // Otherwise this method may be called from the destructor, or TraceLog will
+  // find the generation mismatch and delete this buffer soon.
 }
 
 TraceLog::NotificationHelper::NotificationHelper(TraceLog* trace_log)
@@ -1628,12 +1625,10 @@ void TraceLog::FlushCurrentThread(int generation) {
   // This will flush the thread local buffer.
   delete thread_local_event_buffer_.Get();
 
-  {
-    AutoLock lock(lock_);
-    if (!CheckGeneration(generation) || !flush_message_loop_proxy_ ||
-        thread_message_loops_.size())
-      return;
-  }
+  AutoLock lock(lock_);
+  if (!CheckGeneration(generation) || !flush_message_loop_proxy_ ||
+      thread_message_loops_.size())
+    return;
 
   flush_message_loop_proxy_->PostTask(
       FROM_HERE,

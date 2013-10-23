@@ -90,6 +90,19 @@ class TraceEventTestFixture : public testing::Test {
     flush_complete_event.Wait();
   }
 
+  // Used when testing thread-local buffers which requires the thread initiating
+  // flush to have a message loop.
+  void EndTraceAndFlushInThreadWithMessageLoop() {
+    WaitableEvent flush_complete_event(false, false);
+    Thread flush_thread("flush");
+    flush_thread.Start();
+    flush_thread.message_loop()->PostTask(FROM_HERE,
+      base::Bind(&TraceEventTestFixture::EndTraceAndFlushAsync,
+                 base::Unretained(this),
+                 &flush_complete_event));
+    flush_complete_event.Wait();
+  }
+
   void EndTraceAndFlushAsync(WaitableEvent* flush_complete_event) {
     while (TraceLog::GetInstance()->IsEnabled())
       TraceLog::GetInstance()->SetDisabled();
@@ -1380,14 +1393,7 @@ TEST_F(TraceEventTestFixture, DataCapturedManyThreads) {
     delete task_complete_events[i];
   }
 
-  WaitableEvent flush_complete_event(false, false);
-  Thread flush_thread("flush");
-  flush_thread.Start();
-  flush_thread.message_loop()->PostTask(FROM_HERE,
-    base::Bind(&TraceEventTestFixture::EndTraceAndFlushAsync,
-               base::Unretained(this),
-               &flush_complete_event));
-  flush_complete_event.Wait();
+  EndTraceAndFlushInThreadWithMessageLoop();
   ValidateInstantEventPresentOnEveryThread(trace_parsed_,
                                            num_threads, num_events);
 
@@ -2288,6 +2294,52 @@ TEST_F(TraceEventTestFixture, SetCurrentThreadBlocksMessageLoopAfterTracing) {
 
   task_stop_event.Signal();
   thread.Stop();
+}
+
+TEST_F(TraceEventTestFixture, ThreadOnceBlocking) {
+  BeginTrace();
+
+  Thread thread("1");
+  WaitableEvent task_complete_event(false, false);
+  thread.Start();
+
+  thread.message_loop()->PostTask(
+      FROM_HERE, Bind(&TraceWithAllMacroVariants, &task_complete_event));
+  task_complete_event.Wait();
+  task_complete_event.Reset();
+
+  WaitableEvent task_start_event(false, false);
+  WaitableEvent task_stop_event(false, false);
+  thread.message_loop()->PostTask(
+      FROM_HERE, Bind(&BlockUntilStopped, &task_start_event, &task_stop_event));
+  task_start_event.Wait();
+
+  // The thread will timeout in this flush.
+  EndTraceAndFlushInThreadWithMessageLoop();
+  Clear();
+
+  // Let the thread's message loop continue to spin.
+  task_stop_event.Signal();
+
+  // The following sequence ensures that the FlushCurrentThread task has been
+  // executed in the thread before continuing.
+  task_start_event.Reset();
+  task_stop_event.Reset();
+  thread.message_loop()->PostTask(
+      FROM_HERE, Bind(&BlockUntilStopped, &task_start_event, &task_stop_event));
+  task_start_event.Wait();
+  task_stop_event.Signal();
+  Clear();
+
+  // TraceLog should discover the generation mismatch and recover the thread
+  // local buffer for the thread without any error.
+  BeginTrace();
+  thread.message_loop()->PostTask(
+      FROM_HERE, Bind(&TraceWithAllMacroVariants, &task_complete_event));
+  task_complete_event.Wait();
+  task_complete_event.Reset();
+  EndTraceAndFlushInThreadWithMessageLoop();
+  ValidateAllTraceMacrosCreatedData(trace_parsed_);
 }
 
 }  // namespace debug
