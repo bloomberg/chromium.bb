@@ -69,9 +69,27 @@
         <!-- get the project manifest package -->
         <xpath input="${out.manifest.abs.file}"
                 expression="/manifest/@package" output="project.app.package" />
-        <property name="create.test.jar.file"
-          location="${CREATE_TEST_JAR_PATH}" />
-        <script language="javascript" src="${create.test.jar.file}"/>
+        <loadresource property="project.app.packagepath">
+          <propertyresource name="project.app.package"/>
+          <filterchain>
+            <replacestring from="." to="/"/>
+          </filterchain>
+        </loadresource>
+        <property name="create.test.jar.exclusions" value="${project.app.packagepath}/R.class ${project.app.packagepath}/R$*.class ${project.app.packagepath}/Manifest.class ${project.app.packagepath}/Manifest$*.class ${project.app.packagepath}/BuildConfig.class"/>
+        <jar destfile="${TEST_JAR_PATH}"
+             excludes="${create.test.jar.exclusions}"
+             duplicate="preserve"
+             >
+          <restrict>
+            <name name="**/*.class"/>
+            <archives>
+              <zips>
+                <path refid="javac.custom.classpath"/>
+              </zips>
+            </archives>
+          </restrict>
+          <fileset dir="${out.dir}/classes"/>
+        </jar>
       </then>
     </if>
     <if>
