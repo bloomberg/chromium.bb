@@ -30,6 +30,7 @@ struct NPObject;
 
 namespace WebCore {
 
+class HTMLImageLoader;
 class RenderEmbeddedObject;
 class RenderWidget;
 class Widget;
@@ -91,7 +92,7 @@ public:
 protected:
     HTMLPlugInElement(const QualifiedName& tagName, Document&, bool createdByParser, PreferPlugInsForImagesOption);
 
-    virtual void detach(const AttachContext& = AttachContext()) OVERRIDE;
+    virtual void didMoveToNewDocument(Document& oldDocument) OVERRIDE;
     virtual bool isPresentationAttribute(const QualifiedName&) const OVERRIDE;
     virtual void collectStyleForPresentationAttribute(const QualifiedName&, const AtomicString&, MutableStylePropertySet*) OVERRIDE;
 
@@ -104,14 +105,17 @@ protected:
 
     bool isImageType();
     bool shouldPreferPlugInsForImages() const { return m_shouldPreferPlugInsForImages; }
+    RenderEmbeddedObject* renderEmbeddedObject() const;
 
     String m_serviceType;
     String m_url;
     KURL m_loadedUrl;
+    OwnPtr<HTMLImageLoader> m_imageLoader;
 
 private:
     virtual bool areAuthorShadowsAllowed() const OVERRIDE { return false; }
-
+    virtual void attach(const AttachContext& = AttachContext()) OVERRIDE;
+    virtual void detach(const AttachContext& = AttachContext()) OVERRIDE;
     virtual void defaultEventHandler(Event*);
 
     // Return any existing RenderWidget without triggering relayout, or 0 if it doesn't yet exist.
@@ -122,6 +126,8 @@ private:
 
     virtual bool isKeyboardFocusable() const OVERRIDE;
     virtual bool isPluginElement() const;
+    static void updateWidgetCallback(Node*);
+    void updateWidgetIfNecessary();
 
     mutable RefPtr<SharedPersistent<v8::Object> > m_pluginWrapper;
     NPObject* m_NPObject;

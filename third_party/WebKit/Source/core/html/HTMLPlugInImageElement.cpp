@@ -21,8 +21,6 @@
 #include "config.h"
 #include "core/html/HTMLPlugInImageElement.h"
 
-#include "core/dom/PostAttachCallbacks.h"
-#include "core/html/HTMLImageLoader.h"
 #include "core/html/PluginDocument.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
@@ -61,15 +59,6 @@ HTMLPlugInImageElement::HTMLPlugInImageElement(const QualifiedName& tagName, Doc
 
 HTMLPlugInImageElement::~HTMLPlugInImageElement()
 {
-}
-
-RenderEmbeddedObject* HTMLPlugInImageElement::renderEmbeddedObject() const
-{
-    // HTMLObjectElement and HTMLEmbedElement may return arbitrary renderers
-    // when using fallback content.
-    if (!renderer() || !renderer()->isEmbeddedObject())
-        return 0;
-    return toRenderEmbeddedObject(renderer());
 }
 
 // We don't use m_url, as it may not be the final URL that the object loads,
@@ -125,46 +114,6 @@ void HTMLPlugInImageElement::willRecalcStyle(StyleRecalcChange)
         reattach();
 }
 
-void HTMLPlugInImageElement::attach(const AttachContext& context)
-{
-    bool isImage = isImageType();
-
-    if (!isImage)
-        PostAttachCallbacks::queueCallback(HTMLPlugInImageElement::updateWidgetCallback, this);
-
-    HTMLPlugInElement::attach(context);
-
-    if (isImage && renderer() && !useFallbackContent()) {
-        if (!m_imageLoader)
-            m_imageLoader = adoptPtr(new HTMLImageLoader(this));
-        m_imageLoader->updateFromElement();
-    }
-}
-
-void HTMLPlugInImageElement::detach(const AttachContext& context)
-{
-    // FIXME: Because of the insanity that is HTMLPlugInImageElement::recalcStyle,
-    // we can end up detaching during an attach() call, before we even have a
-    // renderer.  In that case, don't mark the widget for update.
-    if (confusingAndOftenMisusedAttached() && renderer() && !useFallbackContent())
-        // Update the widget the next time we attach (detaching destroys the plugin).
-        setNeedsWidgetUpdate(true);
-    HTMLPlugInElement::detach(context);
-}
-
-void HTMLPlugInImageElement::updateWidgetIfNecessary()
-{
-    document().updateStyleIfNeeded();
-
-    if (!needsWidgetUpdate() || useFallbackContent() || isImageType())
-        return;
-
-    if (!renderEmbeddedObject() || renderEmbeddedObject()->showsUnavailablePluginIndicator())
-        return;
-
-    updateWidget(CreateOnlyNonNetscapePlugins);
-}
-
 void HTMLPlugInImageElement::finishParsingChildren()
 {
     HTMLPlugInElement::finishParsingChildren();
@@ -174,18 +123,6 @@ void HTMLPlugInImageElement::finishParsingChildren()
     setNeedsWidgetUpdate(true);
     if (inDocument())
         setNeedsStyleRecalc();
-}
-
-void HTMLPlugInImageElement::didMoveToNewDocument(Document& oldDocument)
-{
-    if (m_imageLoader)
-        m_imageLoader->elementDidMoveToNewDocument();
-    HTMLPlugInElement::didMoveToNewDocument(oldDocument);
-}
-
-void HTMLPlugInImageElement::updateWidgetCallback(Node* n)
-{
-    toHTMLPlugInImageElement(n)->updateWidgetIfNecessary();
 }
 
 bool HTMLPlugInImageElement::requestObject(const String& url, const String& mimeType, const Vector<String>& paramNames, const Vector<String>& paramValues)

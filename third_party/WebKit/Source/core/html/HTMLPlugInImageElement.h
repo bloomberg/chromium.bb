@@ -28,7 +28,6 @@
 
 namespace WebCore {
 
-class HTMLImageLoader;
 class FrameLoader;
 class Image;
 class MouseEvent;
@@ -39,21 +38,11 @@ class HTMLPlugInImageElement : public HTMLPlugInElement {
 public:
     virtual ~HTMLPlugInImageElement();
 
-    RenderEmbeddedObject* renderEmbeddedObject() const;
-
 protected:
     HTMLPlugInImageElement(const QualifiedName& tagName, Document&, bool createdByParser, PreferPlugInsForImagesOption);
 
-    OwnPtr<HTMLImageLoader> m_imageLoader;
-
-    static void updateWidgetCallback(Node*);
-    virtual void attach(const AttachContext& = AttachContext()) OVERRIDE;
-    virtual void detach(const AttachContext& = AttachContext()) OVERRIDE;
-
     bool allowedToLoadFrameURL(const String& url);
     bool wouldLoadAsNetscapePlugin(const String& url, const String& serviceType);
-
-    virtual void didMoveToNewDocument(Document& oldDocument) OVERRIDE;
 
     bool requestObject(const String& url, const String& mimeType, const Vector<String>& paramNames, const Vector<String>& paramValues);
     bool shouldUsePlugin(const KURL&, const String& mimeType, bool hasFallback, bool& useFallback);
@@ -63,8 +52,6 @@ private:
     virtual void willRecalcStyle(StyleRecalcChange) OVERRIDE FINAL;
 
     virtual void finishParsingChildren();
-
-    void updateWidgetIfNecessary();
 
     void swapRendererTimerFired(Timer<HTMLPlugInImageElement>*);
 

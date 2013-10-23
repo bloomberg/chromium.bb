@@ -28,7 +28,9 @@
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/npruntime_impl.h"
 #include "core/dom/Document.h"
+#include "core/dom/PostAttachCallbacks.h"
 #include "core/events/Event.h"
+#include "core/html/HTMLImageLoader.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/page/EventHandler.h"
 #include "core/frame/Frame.h"
@@ -96,8 +98,57 @@ void HTMLPlugInElement::removeAllEventListeners()
     }
 }
 
+void HTMLPlugInElement::didMoveToNewDocument(Document& oldDocument)
+{
+    if (m_imageLoader)
+        m_imageLoader->elementDidMoveToNewDocument();
+    HTMLFrameOwnerElement::didMoveToNewDocument(oldDocument);
+}
+
+void HTMLPlugInElement::attach(const AttachContext& context)
+{
+    bool isImage = isImageType();
+
+    if (!isImage)
+        PostAttachCallbacks::queueCallback(HTMLPlugInElement::updateWidgetCallback, this);
+
+    HTMLFrameOwnerElement::attach(context);
+
+    if (isImage && renderer() && !useFallbackContent()) {
+        if (!m_imageLoader)
+            m_imageLoader = adoptPtr(new HTMLImageLoader(this));
+        m_imageLoader->updateFromElement();
+    }
+}
+
+void HTMLPlugInElement::updateWidgetCallback(Node* n)
+{
+    toHTMLPlugInElement(n)->updateWidgetIfNecessary();
+}
+
+void HTMLPlugInElement::updateWidgetIfNecessary()
+{
+    document().updateStyleIfNeeded();
+
+    if (!needsWidgetUpdate() || useFallbackContent() || isImageType())
+        return;
+    if (!renderEmbeddedObject() || renderEmbeddedObject()->showsUnavailablePluginIndicator())
+        return;
+
+    updateWidget(CreateOnlyNonNetscapePlugins);
+}
+
 void HTMLPlugInElement::detach(const AttachContext& context)
 {
+    // FIXME: Because of the insanity that is HTMLPlugInImageElement::
+    // recalcStyle, we can end up detaching during an attach() call, before we
+    // even have a renderer. In that case, don't mark the widget for update.
+    if (confusingAndOftenMisusedAttached() && renderer() && !useFallbackContent()) {
+        // Update the widget the next time we attach (detaching destroys the
+        // plugin).
+        setNeedsWidgetUpdate(true);
+    }
+
     resetInstance();
 
     if (m_isCapturingMouseEvents) {
@@ -275,6 +326,15 @@ const String HTMLPlugInElement::loadedMimeType() const
     if (mimeType.isEmpty())
         mimeType = mimeTypeFromURL(m_loadedUrl);
     return mimeType;
+}
+
+RenderEmbeddedObject* HTMLPlugInElement::renderEmbeddedObject() const
+{
+    // HTMLObjectElement and HTMLEmbedElement may return arbitrary renderers
+    // when using fallback content.
+    if (!renderer() || !renderer()->isEmbeddedObject())
+        return 0;
+    return toRenderEmbeddedObject(renderer());
 }
 
 }
