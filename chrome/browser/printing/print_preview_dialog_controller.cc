@@ -127,13 +127,15 @@ void PrintPreviewDialogDelegate::GetDialogSize(gfx::Size* size) const {
   const int kBorder = 25;
   *size = kMinDialogSize;
 
+  web_modal::WebContentsModalDialogHost* host = NULL;
   Browser* browser = chrome::FindBrowserWithWebContents(initiator_);
-  if (browser) {
-    web_modal::WebContentsModalDialogHost* host =
-        browser->window()->GetWebContentsModalDialogHost();
-    if (host)
-      size->SetToMax(host->GetMaximumDialogSize());
-  }
+  if (browser)
+    host = browser->window()->GetWebContentsModalDialogHost();
+
+  if (host)
+    size->SetToMax(host->GetMaximumDialogSize());
+  else
+    size->SetToMax(initiator_->GetView()->GetContainerSize());
   size->Enlarge(-2 * kBorder, -kBorder);
 
 #if defined(OS_MACOSX)
