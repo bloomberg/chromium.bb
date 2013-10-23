@@ -381,8 +381,6 @@ TEST_F(
       // the new group from the server.
 
       // Setup and expectations.
-      Date.now = function() { return 500; };
-
       var serverResponse = {
         groups: {
           GROUP1: {},
@@ -407,8 +405,7 @@ TEST_F(
 
       var expectedUpdatedGroups = {
         GROUP1: {
-          cards: [],
-          nextPollTime: Date.now()
+          cards: []
         },
         GROUP2: {
           cards: ['c2'],
