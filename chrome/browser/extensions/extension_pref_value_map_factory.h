@@ -11,9 +11,11 @@
 class ExtensionPrefValueMap;
 class Profile;
 
+// The usual factory boilerplate for ExtensionPrefValueMap.
 class ExtensionPrefValueMapFactory : public BrowserContextKeyedServiceFactory {
  public:
-  static ExtensionPrefValueMap* GetForProfile(Profile* profile);
+  static ExtensionPrefValueMap* GetForBrowserContext(
+      content::BrowserContext* context);
 
   static ExtensionPrefValueMapFactory* GetInstance();
 
@@ -24,7 +26,7 @@ class ExtensionPrefValueMapFactory : public BrowserContextKeyedServiceFactory {
   virtual ~ExtensionPrefValueMapFactory();
 
   virtual BrowserContextKeyedService* BuildServiceInstanceFor(
-      content::BrowserContext* profile) const OVERRIDE;
+      content::BrowserContext* context) const OVERRIDE;
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_PREF_VALUE_MAP_FACTORY_H_

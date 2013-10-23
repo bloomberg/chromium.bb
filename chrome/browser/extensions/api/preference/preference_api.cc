@@ -520,7 +520,7 @@ ExtensionPrefs* PreferenceAPI::extension_prefs() {
 }
 
 ExtensionPrefValueMap* PreferenceAPI::extension_pref_value_map() {
-  return ExtensionPrefValueMapFactory::GetForProfile(profile_);
+  return ExtensionPrefValueMapFactory::GetForBrowserContext(profile_);
 }
 
 template <>

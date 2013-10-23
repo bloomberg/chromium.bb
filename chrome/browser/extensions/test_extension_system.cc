@@ -62,7 +62,7 @@ ExtensionPrefs* TestExtensionSystem::CreateExtensionPrefs(
   ExtensionPrefs* extension_prefs = ExtensionPrefs::Create(
       profile_->GetPrefs(),
       install_directory,
-      ExtensionPrefValueMapFactory::GetForProfile(profile_),
+      ExtensionPrefValueMapFactory::GetForBrowserContext(profile_),
       extensions_disabled);
     ExtensionPrefsFactory::GetInstance()->SetInstanceForTesting(
         profile_,

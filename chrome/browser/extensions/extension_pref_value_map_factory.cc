@@ -18,10 +18,10 @@ ExtensionPrefValueMapFactory::~ExtensionPrefValueMapFactory() {
 }
 
 // static
-ExtensionPrefValueMap* ExtensionPrefValueMapFactory::GetForProfile(
-    Profile* profile) {
+ExtensionPrefValueMap* ExtensionPrefValueMapFactory::GetForBrowserContext(
+    content::BrowserContext* context) {
   return static_cast<ExtensionPrefValueMap*>(
-      GetInstance()->GetServiceForBrowserContext(profile, true));
+      GetInstance()->GetServiceForBrowserContext(context, true));
 }
 
 // static
@@ -31,6 +31,6 @@ ExtensionPrefValueMapFactory* ExtensionPrefValueMapFactory::GetInstance() {
 
 BrowserContextKeyedService*
 ExtensionPrefValueMapFactory::BuildServiceInstanceFor(
-    content::BrowserContext* profile) const {
+    content::BrowserContext* context) const {
   return new ExtensionPrefValueMap();
 }

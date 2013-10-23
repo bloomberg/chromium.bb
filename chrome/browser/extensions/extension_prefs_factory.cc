@@ -52,7 +52,7 @@ BrowserContextKeyedService* ExtensionPrefsFactory::BuildServiceInstanceFor(
   return ExtensionPrefs::Create(
       profile->GetPrefs(),
       profile->GetPath().AppendASCII(extensions::kInstallDirectoryName),
-      ExtensionPrefValueMapFactory::GetForProfile(profile),
+      ExtensionPrefValueMapFactory::GetForBrowserContext(profile),
       extensions_disabled);
 }
 

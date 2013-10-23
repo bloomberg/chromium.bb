@@ -450,7 +450,7 @@ ProfileImpl::ProfileImpl(
         profile_policy_connector_->policy_service(),
         managed_user_settings,
         new ExtensionPrefStore(
-            ExtensionPrefValueMapFactory::GetForProfile(this), false),
+            ExtensionPrefValueMapFactory::GetForBrowserContext(this), false),
         pref_registry_,
         async_prefs));
     // Register on BrowserContext.
@@ -672,7 +672,7 @@ ProfileImpl::~ProfileImpl() {
     ProfileDestroyer::DestroyOffTheRecordProfileNow(
         off_the_record_profile_.get());
   } else {
-    ExtensionPrefValueMapFactory::GetForProfile(this)->
+    ExtensionPrefValueMapFactory::GetForBrowserContext(this)->
         ClearAllIncognitoSessionOnlyPreferences();
   }
 
@@ -725,7 +725,7 @@ Profile* ProfileImpl::GetOffTheRecordProfile() {
 
 void ProfileImpl::DestroyOffTheRecordProfile() {
   off_the_record_profile_.reset();
-  ExtensionPrefValueMapFactory::GetForProfile(this)->
+  ExtensionPrefValueMapFactory::GetForBrowserContext(this)->
       ClearAllIncognitoSessionOnlyPreferences();
 }
 
@@ -854,7 +854,7 @@ PrefService* ProfileImpl::GetOffTheRecordPrefs() {
     // stores a reference so that we do not leak memory here.
     otr_prefs_.reset(prefs_->CreateIncognitoPrefService(
         new ExtensionPrefStore(
-            ExtensionPrefValueMapFactory::GetForProfile(this), true)));
+            ExtensionPrefValueMapFactory::GetForBrowserContext(this), true)));
   }
   return otr_prefs_.get();
 }
