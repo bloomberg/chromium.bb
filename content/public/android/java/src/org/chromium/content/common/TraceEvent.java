@@ -11,6 +11,8 @@ import android.os.SystemClock;
 import android.util.Log;
 import android.util.Printer;
 
+import org.chromium.base.ThreadUtils;
+
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
@@ -26,7 +28,7 @@ public class TraceEvent {
     private static volatile boolean sEnabled = false;
 
     /**
-     * A class that records, traces and logs statistics about the main Looper.
+     * A class that records, traces and logs statistics about the UI thead's Looper.
      * The output of this class can be used in a number of interesting ways:
      * <p>
      * <ol><li>
@@ -233,7 +235,7 @@ public class TraceEvent {
     public static synchronized void setEnabled(boolean enabled) {
         if (sEnabled == enabled) return;
         sEnabled = enabled;
-        Looper.getMainLooper().setMessageLogging(
+        ThreadUtils.getUiThreadLooper().setMessageLogging(
                 enabled ? LooperMonitor.getInstance() : null);
     }
 

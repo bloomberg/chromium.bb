@@ -7,6 +7,7 @@ package org.chromium.android_webview.test;
 import android.graphics.Bitmap;
 import android.graphics.Picture;
 import android.net.http.SslError;
+import android.os.Looper;
 import android.os.Message;
 import android.view.KeyEvent;
 import android.view.View;
@@ -20,12 +21,21 @@ import org.chromium.android_webview.AwHttpAuthHandler;
 import org.chromium.android_webview.InterceptedRequestData;
 import org.chromium.android_webview.JsPromptResultReceiver;
 import org.chromium.android_webview.JsResultReceiver;
+import org.chromium.base.ThreadUtils;
 
 /**
  * As a convience for tests that only care about specefic callbacks, this class provides
  * empty implementations of all abstract methods.
  */
 public class NullContentsClient extends AwContentsClient {
+    public NullContentsClient() {
+        this(ThreadUtils.getUiThreadLooper());
+    }
+
+    public NullContentsClient(Looper looper) {
+        super(looper);  // "...beams are gonna blind me".
+    }
+
     @Override
     public boolean shouldOverrideUrlLoading(String url) {
         return false;

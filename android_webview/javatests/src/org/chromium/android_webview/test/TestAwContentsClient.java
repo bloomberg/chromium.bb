@@ -12,6 +12,7 @@ import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnEval
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnPageFinishedHelper;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnPageStartedHelper;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnReceivedErrorHelper;
+import org.chromium.base.ThreadUtils;
 
 class TestAwContentsClient extends NullContentsClient {
     private String mUpdatedTitle;
@@ -24,6 +25,7 @@ class TestAwContentsClient extends NullContentsClient {
     private final PictureListenerHelper mPictureListenerHelper;
 
     public TestAwContentsClient() {
+        super(ThreadUtils.getUiThreadLooper());
         mOnPageStartedHelper = new OnPageStartedHelper();
         mOnPageFinishedHelper = new OnPageFinishedHelper();
         mOnReceivedErrorHelper = new OnReceivedErrorHelper();
