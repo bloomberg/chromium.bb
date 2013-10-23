@@ -39,7 +39,7 @@ from in_file import InFile
 
 def _symbol(entry):
     # FIXME: Remove this special case for the ugly x-webkit-foo attributes.
-    if entry['name'].startswith('x-'):
+    if entry['name'].startswith('x-webkit-'):
         return entry['name'].replace('-', '')[1:]
     return entry['name'].replace('-', '_')
 

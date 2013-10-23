@@ -5,9 +5,7 @@
 #define V8{{namespace}}ElementWrapperFactory_h
 
 #include "V8{{namespace}}Element.h"
-{%- if fallback_interface %}
-#include "V8{{fallback_interface}}.h"
-{%- endif %}
+#include "V8{{fallback_js_interface}}.h"
 #include <v8.h>
 
 namespace WebCore {
@@ -21,12 +19,10 @@ inline v8::Handle<v8::Object> createV8{{namespace}}DirectWrapper({{namespace}}El
 {
     return V8{{namespace}}Element::createWrapper(element, creationContext, isolate);
 }
-{%- if fallback_interface %}
-inline v8::Handle<v8::Object> createV8{{namespace}}FallbackWrapper({{fallback_interface}}* element, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+inline v8::Handle<v8::Object> createV8{{namespace}}FallbackWrapper({{fallback_js_interface}}* element, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
-    return V8{{fallback_interface}}::createWrapper(element, creationContext, isolate);
+    return V8{{fallback_js_interface}}::createWrapper(element, creationContext, isolate);
 }
-{%- endif %}
 
 }
 

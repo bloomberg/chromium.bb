@@ -7,7 +7,7 @@
 #include "RuntimeEnabledFeatures.h"
 #include "{{namespace}}Names.h"
 {%- for tag in tags|sort %}
-#include "core/{{namespace|lower}}/{{tag|interface}}.h"
+#include "core/{{namespace|lower}}/{{tag.interface}}.h"
 {%- endfor %}
 {%- if fallback_interface %}
 #include "core/{{namespace|lower}}/{{fallback_interface}}.h"
@@ -23,13 +23,25 @@ namespace WebCore {
 
 using namespace {{namespace}}Names;
 
-typedef PassRefPtr<{{namespace}}Element> (*ConstructorFunction)(const QualifiedName&, Document&, HTMLFormElement*, bool createdByParser);
+typedef PassRefPtr<{{namespace}}Element> (*ConstructorFunction)(const QualifiedName&,
+                                                                Document&,
+                                                                {%- if namespace == 'HTML' %}
+                                                                HTMLFormElement*,
+                                                                {%- endif %}
+                                                                bool createdByParser);
+
 typedef HashMap<StringImpl*, ConstructorFunction> FunctionMap;
 
 static FunctionMap* g_constructors = 0;
 
 {%- for tag in tags|sort if not tag.mapToTagName and not tag.noConstructor %}
-static PassRefPtr<{{namespace}}Element> {{tag|symbol}}Constructor(const QualifiedName& tagName, Document& document, HTMLFormElement* formElement, bool createdByParser)
+static PassRefPtr<{{namespace}}Element> {{tag|symbol}}Constructor(
+    const QualifiedName& tagName,
+    Document& document,
+{%- if namespace == 'HTML' %}
+    HTMLFormElement* formElement,
+{%- endif %}
+    bool createdByParser)
 {
 {%- if tag.wrapperOnlyIfMediaIsAvailable %}
     Settings* settings = document.settings();
@@ -40,8 +52,8 @@ static PassRefPtr<{{namespace}}Element> {{tag|symbol}}Constructor(const Qualifie
     if (!ContextFeatures::{{tag.contextConditional}}Enabled(&document))
         return 0;
 {%- endif %}
-    return {{tag|interface}}::create(tagName, document
-{%- if tag.constructorNeedsFormElement %}, formElement{% endif -%}
+    return {{tag.interface}}::create(tagName, document
+{%- if namespace == 'HTML' and tag.constructorNeedsFormElement %}, formElement{% endif -%}
 {%- if tag.constructorNeedsCreatedByParser %}, createdByParser{% endif -%}
     );
 }
@@ -68,7 +80,13 @@ static void createFunctionMap()
 {%- endfor %}
 }
 
-PassRefPtr<{{namespace}}Element> {{namespace}}ElementFactory::create{{namespace}}Element(const QualifiedName& qName, Document* document, HTMLFormElement* formElement, bool createdByParser)
+PassRefPtr<{{namespace}}Element> {{namespace}}ElementFactory::create{{namespace}}Element(
+    const QualifiedName& qName,
+    Document* document,
+{%- if namespace == 'HTML' %}
+    HTMLFormElement* formElement,
+{%- endif %}
+    bool createdByParser)
 {
     if (!document)
         return 0;
@@ -82,7 +100,10 @@ PassRefPtr<{{namespace}}Element> {{namespace}}ElementFactory::create{{namespace}
     if (!g_constructors)
         createFunctionMap();
     if (ConstructorFunction function = g_constructors->get(qName.localName().impl())) {
-        if (PassRefPtr<{{namespace}}Element> element = function(qName, *document, formElement, createdByParser))
+        if (PassRefPtr<{{namespace}}Element> element = function(qName,
+                                                                *document,
+                                                                {%- if namespace == 'HTML' %}formElement,{% endif %}
+                                                                createdByParser))
             return element;
     }
 

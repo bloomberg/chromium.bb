@@ -16,9 +16,7 @@ animateTransform
 set
 circle
 clipPath
-#if 0
-color_profile
-#endif
+# color-profile
 cursor
 defs
 desc
@@ -51,11 +49,11 @@ feTurbulence
 filter
 #if ENABLE_SVG_FONTS
 font
-font_face
-font_face_format
-font_face_name
-font_face_src
-font_face_uri
+font-face
+font-face-format
+font-face-name
+font-face-src
+font-face-uri
 #endif
 foreignObject
 g
@@ -71,7 +69,7 @@ marker
 mask
 metadata
 #if ENABLE_SVG_FONTS
-missing_glyph
+missing-glyph
 #endif
 mpath interfaceName=SVGMPathElement
 path

@@ -30,7 +30,7 @@ import os.path
 import re
 
 
-ACRONYMS = ['CSS', 'HTML', 'IME', 'JS', 'SVG', 'URL', 'WOFF', 'XML', 'XSLT']
+ACRONYMS = ['CSS', 'FE', 'HTML', 'IME', 'JS', 'SVG', 'URL', 'WOFF', 'XML', 'XSLT']
 
 
 def lower_first(name):
@@ -40,14 +40,14 @@ def lower_first(name):
     """
     for acronym in ACRONYMS:
         if name.startswith(acronym):
-            return name.replace(acronym, acronym.lower())
+            return name.replace(acronym, acronym.lower(), 1)
     return name[0].lower() + name[1:]
 
 
 def upper_first(name):
     for acronym in ACRONYMS:
         if name.startswith(acronym.lower()):
-            return name.replace(acronym.lower(), acronym)
+            return name.replace(acronym.lower(), acronym, 1)
     return name[0].upper() + name[1:]
 
 

@@ -12,13 +12,21 @@ namespace WebCore {
 class Element;
 class Document;
 class QualifiedName;
+
+{%- if namespace == 'HTML'  %}
 class HTMLFormElement;
+{%- endif %}
 
 class {{namespace}}Element;
 
 class {{namespace}}ElementFactory {
 public:
-    static PassRefPtr<{{namespace}}Element> create{{namespace}}Element(const QualifiedName&, Document*, HTMLFormElement* = 0, bool createdByParser = true);
+    static PassRefPtr<{{namespace}}Element> create{{namespace}}Element(const QualifiedName&,
+                                                                       Document*,
+                                                                       {%- if namespace == 'HTML' %}
+                                                                       HTMLFormElement* = 0,
+                                                                       {%- endif %}
+                                                                       bool createdByParser = true);
 };
 
 } // WebCore

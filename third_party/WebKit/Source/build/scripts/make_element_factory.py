@@ -36,26 +36,6 @@ import name_utilities
 from make_qualified_names import MakeQualifiedNamesWriter
 
 
-def _interface(tag):
-    if tag['interfaceName']:
-        return tag['interfaceName']
-    name = name_utilities.upper_first(tag['name'])
-    # FIXME: We shouldn't hard-code HTML here.
-    if name == 'HTML':
-        name = 'Html'
-    return 'HTML%sElement' % name
-
-
-def _js_interface(tag):
-    if tag['JSInterfaceName']:
-        return tag['JSInterfaceName']
-    return _interface(tag)
-
-
-def _has_js_interface(tag):
-    return not tag['mapToTagName'] and not tag['noConstructor'] and _js_interface(tag) != 'HTMLElement'
-
-
 class MakeElementFactoryWriter(MakeQualifiedNamesWriter):
     defaults = dict(MakeQualifiedNamesWriter.default_parameters, **{
         'JSInterfaceName': None,
@@ -68,13 +48,10 @@ class MakeElementFactoryWriter(MakeQualifiedNamesWriter):
         'wrapperOnlyIfMediaIsAvailable': None,
     })
     default_parameters = dict(MakeQualifiedNamesWriter.default_parameters, **{
-        'fallbackInterfaceName': None,
+        'fallbackInterfaceName': '',
+        'fallbackJSInterfaceName': '',
     })
-    filters = dict(MakeQualifiedNamesWriter.filters, **{
-        'interface': _interface,
-        'js_interface': _js_interface,
-        'has_js_interface': _has_js_interface,
-    })
+    filters = MakeQualifiedNamesWriter.filters
 
     def __init__(self, in_file_paths, enabled_conditions):
         super(MakeElementFactoryWriter, self).__init__(in_file_paths, enabled_conditions)
@@ -89,11 +66,17 @@ class MakeElementFactoryWriter(MakeQualifiedNamesWriter):
             ('V8' + self.namespace + 'ElementWrapperFactory.cpp'): self.generate_wrapper_factory_implementation,
         })
 
+        fallback_interface = self.tags_in_file.parameters['fallbackInterfaceName'].strip('"')
+        fallback_js_interface = self.tags_in_file.parameters['fallbackJSInterfaceName'].strip('"') or fallback_interface
+
         for tag in self._template_context['tags']:
-            tag['js_interface'] = _js_interface(tag) if _has_js_interface(tag) else None
+            tag['has_js_interface'] = self._has_js_interface(tag)
+            tag['js_interface'] = self._js_interface(tag)
+            tag['interface'] = self._interface(tag)
 
         self._template_context.update({
-            'fallback_interface': self.tags_in_file.parameters['fallbackInterfaceName'].strip('"'),
+            'fallback_interface': fallback_interface,
+            'fallback_js_interface': fallback_js_interface,
         })
 
     @template_expander.use_jinja('ElementFactory.h.tmpl', filters=filters)
@@ -111,6 +94,27 @@ class MakeElementFactoryWriter(MakeQualifiedNamesWriter):
     @template_expander.use_jinja('ElementWrapperFactory.cpp.tmpl', filters=filters)
     def generate_wrapper_factory_implementation(self):
         return self._template_context
+
+    def _interface(self, tag):
+        if tag['interfaceName']:
+            return tag['interfaceName']
+        name = name_utilities.upper_first(tag['name'])
+        # FIXME: We shouldn't hard-code HTML here.
+        if name == 'HTML':
+            name = 'Html'
+        dash = name.find('-')
+        while dash != -1:
+            name = name[:dash] + name[dash + 1].upper() + name[dash + 2:]
+            dash = name.find('-')
+        return '%s%sElement' % (self.namespace, name)
+
+    def _js_interface(self, tag):
+        if tag['JSInterfaceName']:
+            return tag['JSInterfaceName']
+        return self._interface(tag)
+
+    def _has_js_interface(self, tag):
+        return not tag['mapToTagName'] and not tag['noConstructor'] and self._js_interface(tag) != ('%sElement' % self.namespace)
 
 
 if __name__ == "__main__":
