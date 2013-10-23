@@ -9,13 +9,12 @@
 # ANDROID_SDK_BUILD=1 will then be defined and used in the rest of the setup to
 # specifiy build type.
 
-# TODO(ilevy): Figure out the right check here. This breaks the webkit build as
-# is since it's sourced from another script:
-# http://build.webkit.org/builders/Chromium%20Android%20Release/builds/34681
-#if [ "$_" == "$0" ]; then
-#  echo "ERROR: envsetup must be sourced."
-#  exit 1
-#fi
+# Make sure we're being sourced (possibly by another script). Check for bash
+# since zsh sets $0 when sourcing.
+if [[ -n "$BASH_VERSION" && "${BASH_SOURCE:-$0}" == "$0" ]]; then
+  echo "ERROR: envsetup must be sourced."
+  exit 1
+fi
 
 # Source functions script.  The file is in the same directory as this script.
 SCRIPT_DIR="$(dirname "${BASH_SOURCE:-$0}")"
