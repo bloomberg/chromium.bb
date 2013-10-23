@@ -20,8 +20,7 @@ function test()
 {
     function runEventsSanityCheck(events)
     {
-        var phaseBegin = 0;
-        var phaseEnd = 0;
+        var phaseComplete = 0;
         var knownEvents = {};
         var processes = {};
         var threads = {};
@@ -33,24 +32,21 @@ function test()
 
         for (var i = 0; i < events.length; ++i) {
             var event = events[i];
-            if (event.ph === "B")
-                ++phaseBegin;
-            else if (event.ph === "E")
-                ++phaseEnd;
+            if (event.ph === "X")
+                ++phaseComplete;
             if (event.name in knownEvents)
                 ++knownEvents[event.name];
             processes[event.pid] = (processes[event.pid] || 0) + 1;
             threads[event.tid] = (threads[event.tid] || 0) + 1;
         }
-        InspectorTest.assertGreaterOrEqual(events.length, 200, "Too few trace events recorded");
+        InspectorTest.assertGreaterOrEqual(events.length, 100, "Too few trace events recorded");
         InspectorTest.assertGreaterOrEqual(knownEvents["MessageLoop::PostTask"], 20, "Too few MessageLoop::PostTask");
         InspectorTest.assertGreaterOrEqual(knownEvents["v8.callFunction"], 10, "Too few v8.callFunction");
         InspectorTest.assertGreaterOrEqual(knownEvents["Document::recalcStyle"], 1, "Too few Document::recalcStyle");
         InspectorTest.assertGreaterOrEqual(knownEvents["FrameView::layout"], 1, "Too few FrameView::layout");
-        InspectorTest.assertGreaterOrEqual(phaseBegin, 50, "Too few begin events");
+        InspectorTest.assertGreaterOrEqual(phaseComplete, 50, "Too few begin events");
         InspectorTest.assertGreaterOrEqual(Object.keys(processes).length, 2, "Too few processes");
         InspectorTest.assertGreaterOrEqual(Object.keys(threads).length, 4, "Too few threads");
-        InspectorTest.assertTrue(Math.abs(phaseBegin - phaseEnd) < 30, "Begin/end events not balanced");
         InspectorTest.addResult("Event sanity test done");
     }
 

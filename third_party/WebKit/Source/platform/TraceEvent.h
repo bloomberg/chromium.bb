@@ -505,7 +505,7 @@
     WebCore::EventTracer::getTraceCategoryEnabledFlag
 
 // Add a trace event to the platform tracing system.
-// void TRACE_EVENT_API_ADD_TRACE_EVENT(
+// WebCore::TraceEvent::TraceEventHandle TRACE_EVENT_API_ADD_TRACE_EVENT(
 //                    char phase,
 //                    const unsigned char* category_enabled,
 //                    const char* name,
@@ -517,6 +517,12 @@
 //                    unsigned char flags)
 #define TRACE_EVENT_API_ADD_TRACE_EVENT \
     WebCore::EventTracer::addTraceEvent
+
+// Set the duration field of a COMPLETE trace event.
+// void TRACE_EVENT_API_UPDATE_TRACE_EVENT_DURATION(
+//     WebCore::TraceEvent::TraceEventHandle handle)
+#define TRACE_EVENT_API_UPDATE_TRACE_EVENT_DURATION \
+    WebCore::EventTracer::updateTraceEventDuration
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -532,22 +538,24 @@
 
 // Implementation detail: internal macro to create static category.
 // - WTF_ANNOTATE_BENIGN_RACE, see Thread Safety above.
+
 #define INTERNAL_TRACE_EVENT_GET_CATEGORY_INFO(category) \
-    static const unsigned char* INTERNALTRACEEVENTUID(catstatic) = 0; \
-    WTF_ANNOTATE_BENIGN_RACE(&INTERNALTRACEEVENTUID(catstatic), \
+    static const unsigned char* INTERNALTRACEEVENTUID(categoryGroupEnabled) = 0; \
+    WTF_ANNOTATE_BENIGN_RACE(&INTERNALTRACEEVENTUID(categoryGroupEnabled), \
                              "trace_event category"); \
-    if (!INTERNALTRACEEVENTUID(catstatic)) \
-      INTERNALTRACEEVENTUID(catstatic) = \
-          TRACE_EVENT_API_GET_CATEGORY_ENABLED(category);
+    if (!INTERNALTRACEEVENTUID(categoryGroupEnabled)) { \
+        INTERNALTRACEEVENTUID(categoryGroupEnabled) = \
+            TRACE_EVENT_API_GET_CATEGORY_ENABLED(category); \
+    }
 
 // Implementation detail: internal macro to create static category and add
 // event if the category is enabled.
 #define INTERNAL_TRACE_EVENT_ADD(phase, category, name, flags, ...) \
     do { \
         INTERNAL_TRACE_EVENT_GET_CATEGORY_INFO(category); \
-        if (*INTERNALTRACEEVENTUID(catstatic)) { \
+        if (*INTERNALTRACEEVENTUID(categoryGroupEnabled)) { \
             WebCore::TraceEvent::addTraceEvent( \
-                phase, INTERNALTRACEEVENTUID(catstatic), name, \
+                phase, INTERNALTRACEEVENTUID(categoryGroupEnabled), name, \
                 WebCore::TraceEvent::noEventId, flags, ##__VA_ARGS__); \
         } \
     } while (0)
@@ -557,16 +565,16 @@
 // ends.
 #define INTERNAL_TRACE_EVENT_ADD_SCOPED(category, name, ...) \
     INTERNAL_TRACE_EVENT_GET_CATEGORY_INFO(category); \
-    WebCore::TraceEvent::TraceEndOnScopeClose \
-        INTERNALTRACEEVENTUID(profileScope); \
-    if (*INTERNALTRACEEVENTUID(catstatic)) { \
-      WebCore::TraceEvent::addTraceEvent( \
-          TRACE_EVENT_PHASE_BEGIN, \
-          INTERNALTRACEEVENTUID(catstatic), \
-          name, WebCore::TraceEvent::noEventId, \
-          TRACE_EVENT_FLAG_NONE, ##__VA_ARGS__); \
-      INTERNALTRACEEVENTUID(profileScope).initialize( \
-          INTERNALTRACEEVENTUID(catstatic), name); \
+    WebCore::TraceEvent::ScopedTracer INTERNALTRACEEVENTUID(scopedTracer); \
+    if (*INTERNALTRACEEVENTUID(categoryGroupEnabled)) { \
+        WebCore::TraceEvent::TraceEventHandle h = \
+            WebCore::TraceEvent::addTraceEvent( \
+                TRACE_EVENT_PHASE_COMPLETE, \
+                INTERNALTRACEEVENTUID(categoryGroupEnabled), \
+                name, WebCore::TraceEvent::noEventId, \
+                TRACE_EVENT_FLAG_NONE, ##__VA_ARGS__); \
+        INTERNALTRACEEVENTUID(scopedTracer).initialize( \
+            INTERNALTRACEEVENTUID(categoryGroupEnabled), h); \
     }
 
 // Implementation detail: internal macro to create static category and add
@@ -575,12 +583,12 @@
                                          ...) \
     do { \
         INTERNAL_TRACE_EVENT_GET_CATEGORY_INFO(category); \
-        if (*INTERNALTRACEEVENTUID(catstatic)) { \
+        if (*INTERNALTRACEEVENTUID(categoryGroupEnabled)) { \
             unsigned char traceEventFlags = flags | TRACE_EVENT_FLAG_HAS_ID; \
             WebCore::TraceEvent::TraceID traceEventTraceID( \
                 id, &traceEventFlags); \
             WebCore::TraceEvent::addTraceEvent( \
-                phase, INTERNALTRACEEVENTUID(catstatic), \
+                phase, INTERNALTRACEEVENTUID(categoryGroupEnabled), \
                 name, traceEventTraceID.data(), traceEventFlags, \
                 ##__VA_ARGS__); \
         } \
@@ -594,6 +602,7 @@
 // Phase indicates the nature of an event entry. E.g. part of a begin/end pair.
 #define TRACE_EVENT_PHASE_BEGIN    ('B')
 #define TRACE_EVENT_PHASE_END      ('E')
+#define TRACE_EVENT_PHASE_COMPLETE ('X')
 #define TRACE_EVENT_PHASE_INSTANT  ('I')
 #define TRACE_EVENT_PHASE_ASYNC_BEGIN ('S')
 #define TRACE_EVENT_PHASE_ASYNC_STEP  ('T')
@@ -740,9 +749,8 @@ INTERNAL_DECLARE_SET_TRACE_VALUE(const TraceStringWithCopy&, m_string,
 #undef INTERNAL_DECLARE_SET_TRACE_VALUE_INT
 
 // WTF::String version of setTraceValue so that trace arguments can be strings.
-static inline void setTraceValue(const WTF::CString& arg,
-                                 unsigned char* type,
-                                 unsigned long long* value) {
+static inline void setTraceValue(const WTF::CString& arg, unsigned char* type, unsigned long long* value)
+{
     TraceValueUnion typeValue;
     typeValue.m_string = arg.data();
     *type = TRACE_VALUE_TYPE_COPY_STRING;
@@ -754,45 +762,51 @@ static inline void setTraceValue(const WTF::CString& arg,
 // store pointers to the internal c_str and pass through to the tracing API, the
 // arg values must live throughout these procedures.
 
-static inline void addTraceEvent(char phase,
-                                const unsigned char* categoryEnabled,
-                                const char* name,
-                                unsigned long long id,
-                                unsigned char flags) {
-    TRACE_EVENT_API_ADD_TRACE_EVENT(
+static inline TraceEventHandle addTraceEvent(
+    char phase,
+    const unsigned char* categoryEnabled,
+    const char* name,
+    unsigned long long id,
+    unsigned char flags)
+{
+    return TRACE_EVENT_API_ADD_TRACE_EVENT(
         phase, categoryEnabled, name, id,
         zeroNumArgs, 0, 0, 0,
         flags);
 }
 
 template<class ARG1_TYPE>
-static inline void addTraceEvent(char phase,
-                                const unsigned char* categoryEnabled,
-                                const char* name,
-                                unsigned long long id,
-                                unsigned char flags,
-                                const char* arg1Name,
-                                const ARG1_TYPE& arg1Val) {
+static inline TraceEventHandle addTraceEvent(
+    char phase,
+    const unsigned char* categoryEnabled,
+    const char* name,
+    unsigned long long id,
+    unsigned char flags,
+    const char* arg1Name,
+    const ARG1_TYPE& arg1Val)
+{
     const int numArgs = 1;
     unsigned char argTypes[1];
     unsigned long long argValues[1];
     setTraceValue(arg1Val, &argTypes[0], &argValues[0]);
-    TRACE_EVENT_API_ADD_TRACE_EVENT(
+    return TRACE_EVENT_API_ADD_TRACE_EVENT(
         phase, categoryEnabled, name, id,
         numArgs, &arg1Name, argTypes, argValues,
         flags);
 }
 
 template<class ARG1_TYPE, class ARG2_TYPE>
-static inline void addTraceEvent(char phase,
-                                const unsigned char* categoryEnabled,
-                                const char* name,
-                                unsigned long long id,
-                                unsigned char flags,
-                                const char* arg1Name,
-                                const ARG1_TYPE& arg1Val,
-                                const char* arg2Name,
-                                const ARG2_TYPE& arg2Val) {
+static inline TraceEventHandle addTraceEvent(
+    char phase,
+    const unsigned char* categoryEnabled,
+    const char* name,
+    unsigned long long id,
+    unsigned char flags,
+    const char* arg1Name,
+    const ARG1_TYPE& arg1Val,
+    const char* arg2Name,
+    const ARG2_TYPE& arg2Val)
+{
     const int numArgs = 2;
     const char* argNames[2] = { arg1Name, arg2Name };
     unsigned char argTypes[2];
@@ -806,47 +820,32 @@ static inline void addTraceEvent(char phase,
 }
 
 // Used by TRACE_EVENTx macro. Do not use directly.
-class TraceEndOnScopeClose {
+class ScopedTracer {
 public:
     // Note: members of m_data intentionally left uninitialized. See initialize.
-    TraceEndOnScopeClose() : m_pdata(0) { }
-    ~TraceEndOnScopeClose()
+    ScopedTracer() : m_pdata(0) { }
+    ~ScopedTracer()
     {
-        if (m_pdata)
-            addEventIfEnabled();
+        if (m_pdata && *m_pdata->categoryGroupEnabled)
+            TRACE_EVENT_API_UPDATE_TRACE_EVENT_DURATION(m_pdata->eventHandle);
     }
 
-    void initialize(const unsigned char* categoryEnabled,
-                    const char* name)
+    void initialize(const unsigned char* categoryGroupEnabled, TraceEventHandle eventHandle)
     {
-        m_data.categoryEnabled = categoryEnabled;
-        m_data.name = name;
+        m_data.categoryGroupEnabled = categoryGroupEnabled;
+        m_data.eventHandle = eventHandle;
         m_pdata = &m_data;
     }
 
 private:
-    // Add the end event if the category is still enabled.
-    void addEventIfEnabled()
-    {
-        // Only called when m_pdata is non-null.
-        if (*m_pdata->categoryEnabled) {
-            TRACE_EVENT_API_ADD_TRACE_EVENT(
-                TRACE_EVENT_PHASE_END,
-                m_pdata->categoryEnabled,
-                m_pdata->name, noEventId,
-                zeroNumArgs, 0, 0, 0,
-                TRACE_EVENT_FLAG_NONE);
-        }
-    }
-
     // This Data struct workaround is to avoid initializing all the members
     // in Data during construction of this object, since this object is always
     // constructed, even when tracing is disabled. If the members of Data were
     // members of this class instead, compiler warnings occur about potential
     // uninitialized accesses.
     struct Data {
-        const unsigned char* categoryEnabled;
-        const char* name;
+        const unsigned char* categoryGroupEnabled;
+        TraceEventHandle eventHandle;
     };
     Data* m_pdata;
     Data m_data;

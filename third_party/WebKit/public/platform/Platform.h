@@ -493,17 +493,6 @@ public:
     //     matching with other events of the same name.
     //   - MANGLE_ID (0x4): specify this flag if the id parameter is the value
     //     of a pointer.
-    virtual void addTraceEvent(
-        char phase,
-        const unsigned char* categoryEnabledFlag,
-        const char* name,
-        unsigned long long id,
-        int numArgs,
-        const char** argNames,
-        const unsigned char* argTypes,
-        const unsigned long long* argValues,
-        unsigned char flags) { }
-
     virtual TraceEventHandle addTraceEventNew(
         char phase,
         const unsigned char* categoryEnabledFlag,

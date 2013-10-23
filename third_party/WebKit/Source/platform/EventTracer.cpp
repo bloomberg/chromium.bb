@@ -32,9 +32,12 @@
 #include "platform/EventTracer.h"
 
 #include "public/platform/Platform.h"
+#include "wtf/Assertions.h"
 #include <stdio.h>
 
 namespace WebCore {
+
+COMPILE_ASSERT(sizeof(WebKit::Platform::TraceEventHandle) == sizeof(TraceEvent::TraceEventHandle), TraceEventHandle_types_must_be_compatible);
 
 // The dummy variable is needed to avoid a crash when someone updates the state variables
 // before EventTracer::initialize() is called.
@@ -60,11 +63,16 @@ const unsigned char* EventTracer::getTraceCategoryEnabledFlag(const char* catego
     return WebKit::Platform::current()->getTraceCategoryEnabledFlag(categoryName);
 }
 
-void EventTracer::addTraceEvent(char phase, const unsigned char* categoryEnabledFlag,
+TraceEvent::TraceEventHandle EventTracer::addTraceEvent(char phase, const unsigned char* categoryEnabledFlag,
     const char* name, unsigned long long id, int numArgs, const char** argNames,
     const unsigned char* argTypes, const unsigned long long* argValues, unsigned char flags)
 {
-    return WebKit::Platform::current()->addTraceEvent(phase, categoryEnabledFlag, name, id, numArgs, argNames, argTypes, argValues, flags);
+    return WebKit::Platform::current()->addTraceEventNew(phase, categoryEnabledFlag, name, id, numArgs, argNames, argTypes, argValues, flags);
+}
+
+void EventTracer::updateTraceEventDuration(TraceEvent::TraceEventHandle handle)
+{
+    WebKit::Platform::current()->updateTraceEventDuration(handle);
 }
 
 } // namespace WebCore
