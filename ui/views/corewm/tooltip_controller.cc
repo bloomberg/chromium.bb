@@ -88,6 +88,10 @@ void TooltipController::OnKeyEvent(ui::KeyEvent* event) {
 void TooltipController::OnMouseEvent(ui::MouseEvent* event) {
   aura::Window* target = static_cast<aura::Window*>(event->target());
   switch (event->type()) {
+    case ui::ET_MOUSE_CAPTURE_CHANGED:
+      // On windows we can get a capture changed without an exit. We need to
+      // reset state when this happens else the tooltip may incorrectly show.
+      // Fall through to setting target to NULL.
     case ui::ET_MOUSE_EXITED:
       target = NULL;
       // Fall through.
@@ -116,7 +120,6 @@ void TooltipController::OnMouseEvent(ui::MouseEvent* event) {
       }
       tooltip_->Hide();
       break;
-    case ui::ET_MOUSE_CAPTURE_CHANGED:
     case ui::ET_MOUSEWHEEL:
       // Hide the tooltip for click, release, drag, wheel events.
       if (tooltip_->IsVisible())

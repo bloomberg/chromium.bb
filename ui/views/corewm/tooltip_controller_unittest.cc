@@ -326,6 +326,25 @@ TEST_F(TooltipControllerTest, HideOnExit) {
   EXPECT_FALSE(helper_->IsTooltipVisible());
 }
 
+// Verifies when capture is released the TooltipController resets state.
+TEST_F(TooltipControllerTest, CloseOnCaptureLost) {
+  view_->GetWidget()->SetCapture(view_);
+  view_->set_tooltip_text(ASCIIToUTF16("Tooltip Text"));
+  generator_->MoveMouseToCenterOf(GetWindow());
+  string16 expected_tooltip = ASCIIToUTF16("Tooltip Text");
+  EXPECT_EQ(expected_tooltip, aura::client::GetTooltipText(GetWindow()));
+  EXPECT_EQ(string16(), helper_->GetTooltipText());
+  EXPECT_EQ(GetWindow(), helper_->GetTooltipWindow());
+
+  // Fire tooltip timer so tooltip becomes visible.
+  helper_->FireTooltipTimer();
+
+  EXPECT_TRUE(helper_->IsTooltipVisible());
+  view_->GetWidget()->ReleaseCapture();
+  EXPECT_FALSE(helper_->IsTooltipVisible());
+  EXPECT_TRUE(helper_->GetTooltipWindow() == NULL);
+}
+
 #if !defined(OS_CHROMEOS)
 // This test creates two top level windows and verifies that the tooltip
 // displays correctly when mouse moves are dispatched to these windows.
