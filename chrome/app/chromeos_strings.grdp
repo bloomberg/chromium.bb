@@ -3140,7 +3140,7 @@ Battery full
     Mirror monitors
   </message>
   <message name="IDS_KEYBOARD_OVERLAY_NEW_INCOGNITO_WINDOW" desc="The text in the keyboard overlay to explain the shortcut.">
-    New Incognito window
+    New incognito window
   </message>
   <message name="IDS_KEYBOARD_OVERLAY_NEW_TAB" desc="The text in the keyboard overlay to explain the shortcut.">
     New tab
@@ -3165,6 +3165,9 @@ Battery full
   </message>
   <message name="IDS_KEYBOARD_OVERLAY_OPEN_FILE_MANAGER" desc="The text in the keyboard overlay to explain the shortcut (Open the file manager).">
     Open file manager
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_OPEN_GOOGLE_CLOUD_PRINT" desc="The text in the keyboard overlay to explain the shortcut (Opens the 'Google Cloud Print' dialog).">
+    Open Google Cloud Print
   </message>
   <message name="IDS_KEYBOARD_OVERLAY_PAGE_DOWN" desc="The text in the keyboard overlay to explain the shortcut (Page down).">
     Page down

@@ -179,6 +179,8 @@ struct I18nContentToMessage {
   { "keyboardOverlayOpenAddressInNewTab",
     IDS_KEYBOARD_OVERLAY_OPEN_ADDRESS_IN_NEW_TAB },
   { "keyboardOverlayOpenFileManager", IDS_KEYBOARD_OVERLAY_OPEN_FILE_MANAGER },
+  { "keyboardOverlayOpenGoogleCloudPrint",
+    IDS_KEYBOARD_OVERLAY_OPEN_GOOGLE_CLOUD_PRINT },
   { "keyboardOverlayPageDown", IDS_KEYBOARD_OVERLAY_PAGE_DOWN },
   { "keyboardOverlayPageUp", IDS_KEYBOARD_OVERLAY_PAGE_UP },
   { "keyboardOverlayPaste", IDS_KEYBOARD_OVERLAY_PASTE },
