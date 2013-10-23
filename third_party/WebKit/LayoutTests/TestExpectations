@@ -9,8 +9,6 @@ crbug.com/247466 [ Debug ] inspector/debugger/xhr-breakpoints.html [ Skip ]
 crbug.com/247466 [ Debug ] inspector/debugger/script-formatter-breakpoints.html [ Skip ]
 crbug.com/247466 [ Win Debug ] inspector/profiler/heap-snapshot-comparison-expansion-preserved-when-sorting.html [ Skip ]
 crbug.com/249087 [ Win Debug ] inspector/debugger/debugger-activation-crash2.html [ Pass Failure ]
-crbug.com/254988 [ Debug ] inspector/debugger/debugger-breakpoints-not-activated-on-reload.html [ Crash Pass ]
-crbug.com/254988 [ Win Debug ] inspector/debugger/callstack-placards-discarded.html [ Crash Pass ]
 crbug.com/247466 [ Debug ] inspector/debugger/set-breakpoint.html [ Skip ]
 crbug.com/247466 [ Debug ] inspector/debugger/script-formatter-console.html [ Skip ]
 crbug.com/247466 [ Debug ] inspector/debugger/script-formatter-search.html [ Skip ]
@@ -35,8 +33,6 @@ crbug.com/239554 http/tests/security/frameNavigation/opener.html [ Pass Timeout 
 crbug.com/305303 http/tests/security/mixedContent/insecure-sync-post-xhr-allowed.html [ Failure Pass ]
 crbug.com/305303 http/tests/security/mixedContent/insecure-sync-post-xhr-blocked.html [ Failure Pass ]
 crbug.com/305303 http/tests/security/mixedContent/insecure-xhr-in-main-frame.html [ Failure Pass ]
-
-crbug.com/260129 [ Mac Release ] fast/events/scrollbar-double-click.html [ Failure Pass ]
 
 crbug.com/259547 virtual/gpu/fast/canvas/canvas-blend-image.html [ Skip ]
 crbug.com/259547 virtual/gpu/fast/canvas/canvas-blend-solid.html [ Skip ]
@@ -238,7 +234,6 @@ Bug(nbarth) [ Release ] perf/htmlcollection-backwards-iteration.html [ Failure P
 Bug(nbarth) [ Release ] perf/htmlcollection-last-item.html [ Failure Pass ]
 Bug(nbarth) [ Release ] perf/mouse-event.html [ Failure ]
 Bug(nbarth) [ Release ] perf/object-keys.html [ Failure Pass ]
-Bug(nbarth) [ Release ] perf/set-attribute.html [ Failure Pass Timeout ]
 Bug(nbarth) [ Release ] perf/show-hide-table-rows.html [ Failure ] # Should be [ Failure Timeout ]?
 Bug(nbarth) [ Release ] perf/svg-path-appenditem.html [ Failure Pass ]
 Bug(nbarth) [ Release ] perf/table-rows-length-caching.html [ Failure Pass ]
@@ -303,11 +298,6 @@ crbug.com/259546 fast/loader/images-enabled-unset-can-block-image-and-can-reload
 
 # Crashes due to an OOM error on V8.
 crbug.com/108832 fast/js/array-splice.html [ Crash ]
-
-# Transform (rotation) seems to be flakily applied.
-crbug.com/244884 fast/layers/no-clipping-overflow-hidden-added-after-transform.html [ ImageOnlyFailure Pass ]
-crbug.com/244884 fast/layers/no-clipping-overflow-hidden-added-after-transition.html [ ImageOnlyFailure Pass ]
-crbug.com/244884 fast/layers/no-clipping-overflow-hidden-hardware-acceleration.html [ ImageOnlyFailure Pass ]
 
 # started failing around Chrome r207326 to r207404, but only on main waterfall
 # Flakes also on the V8 waterfall on Win7.
@@ -414,8 +404,6 @@ crbug.com/143475 [ Win ] http/tests/xmlhttprequest/xmlhttprequest-50ms-download-
 crbug.com/86338 fast/loader/file-protocol-fragment.html [ Failure Pass ]
 crbug.com/225184 [ Debug ] scrollingcoordinator/non-fast-scrollable-region-scaled-iframe.html [ ImageOnlyFailure Pass ]
 
-crbug.com/88588 [ Debug ] fast/lists/inlineBoxWrapperNullCheck.html [ Failure Pass ]
-
 crbug.com/252344 http/tests/history/redirect-js-document-location-0-seconds.html [ Failure Pass ]
 
 crbug.com/231357 [ SnowLeopard Lion Win Linux Debug ] compositing/video-page-visibility.html [ ImageOnlyFailure ]
@@ -430,12 +418,6 @@ crbug.com/237270 http/tests/images/png-partial-load.html [ Pass Timeout ]
 crbug.com/237270 http/tests/images/png-partial-load-no-alpha.html [ Pass Timeout ]
 
 crbug.com/240632 fast/loader/javascript-url-iframe-remove-on-navigate.html [ Skip ]
-
-# These need to be rebaselined after http://crrev.com/24090003 lands.
-Bug(ajuma) [ Android Linux Win ] virtual/softwarecompositing/culling/filter-occlusion-alpha.html [ Pass ImageOnlyFailure ]
-Bug(ajuma) [ Android Linux Win ] virtual/softwarecompositing/culling/filter-occlusion-alpha-large.html [ Pass ImageOnlyFailure ]
-Bug(ajuma) [ Android Linux Win ] virtual/softwarecompositing/culling/filter-occlusion-blur.html [ Pass ImageOnlyFailure ]
-Bug(ajuma) [ Android Linux Win ] virtual/softwarecompositing/culling/filter-occlusion-blur-large.html [ Pass ImageOnlyFailure ]
 
 # Appcache is generally flaky on Windows.
 crbug.com/241576 [ XP ] http/tests/appcache [ Pass Timeout ]
@@ -498,8 +480,6 @@ crbug.com/248938 virtual/threaded/transitions/transition-end-event-unprefixed-03
 crbug.com/248938 virtual/threaded/transitions/transition-end-event-unprefixed-04.html [ Pass Failure ]
 crbug.com/248938 virtual/threaded/transitions/transition-end-event-window.html [ Pass Failure ]
 
-crbug.com/255726 [ Debug ] compositing/contents-opaque/visibility-hidden.html [ Pass Failure ]
-
 crbug.com/260660 [ Linux ] fast/canvas/webgl/array-large-array-tests.html [ Crash ]
 crbug.com/260660 [ Linux ] virtual/gpu/fast/canvas/webgl/array-large-array-tests.html [ Crash ]
 
@@ -507,7 +487,6 @@ crbug.com/260660 [ Linux ] virtual/gpu/fast/canvas/webgl/array-large-array-tests
 crbug.com/178745 [ Debug ] plugins/open-and-close-window-with-plugin.html [ Crash ]
 crbug.com/223583 http/tests/filesystem/no-cache-filesystem-url.html [ Skip ]
 crbug.com/231863 compositing/visibility/visibility-composited-animation.html [ Pass ImageOnlyFailure ]
-crbug.com/231866 [ Lion ] fast/backgrounds/animated-gif-as-background.html [ Pass ImageOnlyFailure ]
 crbug.com/231880 fast/dom/Window/open-window-min-size.html [ Failure Pass ]
 crbug.com/235449 fast/loader/stateobjects/state-attribute-history-getter.html [ Failure Pass ]
 crbug.com/235448 fast/loader/stateobjects/popstate-fires-on-history-traversal.html [ Failure Pass ]
@@ -568,8 +547,6 @@ crbug.com/248067 fast/workers/shared-worker-storagequota-query-usage.html [ Pass
 crbug.com/248067 [ Release ] fast/workers/worker-storagequota-query-usage.html [ Pass Failure ]
 crbug.com/248067 storage/storageinfo-query-usage.html [ Pass Failure ]
 crbug.com/248067 [ Linux Mac Win ] storage/storagequota-query-usage.html [ Pass Failure ]
-crbug.com/248121 fast/events/frame-scroll-fake-mouse-move.html [ Pass Failure ]
-crbug.com/248121 fast/events/overflow-scroll-fake-mouse-move.html [ Pass Failure ]
 crbug.com/248128 inspector/console/console-url-and-line.html [ Pass Failure ]
 
 crbug.com/254332 [ SnowLeopard Debug ] fast/forms/checkbox/checkbox-focus-by-mouse-then-keydown.html [ ImageOnlyFailure Pass ]
