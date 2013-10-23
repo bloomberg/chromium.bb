@@ -40,7 +40,7 @@
 #include "WebWorkerBase.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/workers/WorkerLoaderProxy.h"
-#include "core/workers/WorkerObjectProxy.h"
+#include "core/workers/WorkerReportingProxy.h"
 #include "core/workers/WorkerThread.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefPtr.h"
@@ -61,7 +61,7 @@ class WebSharedWorkerClient;
 // When the WebCore::SharedWorker object wants to call WebCore::WorkerReportingProxy, this class will
 // convert to Chrome data types first and then call the supplied WebCommonWorkerClient.
 class WebSharedWorkerImpl
-    : public WebCore::WorkerObjectProxy
+    : public WebCore::WorkerReportingProxy
     , public WebCore::WorkerLoaderProxy
     , public WebWorkerBase
     , public WebFrameClient
@@ -69,9 +69,7 @@ class WebSharedWorkerImpl
 public:
     explicit WebSharedWorkerImpl(WebSharedWorkerClient*);
 
-    virtual void postMessageToWorkerObject(
-        PassRefPtr<WebCore::SerializedScriptValue>,
-        PassOwnPtr<WebCore::MessagePortChannelArray>);
+    // WebCore::WorkerReportingProxy methods:
     virtual void postExceptionToWorkerObject(
         const WTF::String&, int, int, const WTF::String&);
     virtual void postConsoleMessageToWorkerObject(
@@ -79,10 +77,9 @@ public:
         const WTF::String&, int, const WTF::String&);
     virtual void postMessageToPageInspector(const WTF::String&);
     virtual void updateInspectorStateCookie(const WTF::String&);
-    virtual void confirmMessageFromWorkerObject(bool);
-    virtual void reportPendingActivity(bool);
     virtual void workerGlobalScopeClosed();
     virtual void workerGlobalScopeDestroyed();
+
     virtual WebView* view() const { return m_webView; }
 
     // WebCore::WorkerLoaderProxy methods:

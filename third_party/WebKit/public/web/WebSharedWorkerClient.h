@@ -45,37 +45,6 @@ class WebWorker;
 // the Worker object, unless noted.
 class WebSharedWorkerClient : public WebCommonWorkerClient {
 public:
-    virtual void postMessageToWorkerObject(
-        const WebString&,
-        const WebMessagePortChannelArray&) = 0;
-
-    virtual void confirmMessageFromWorkerObject(bool hasPendingActivity) = 0;
-    virtual void reportPendingActivity(bool hasPendingActivity) = 0;
-
-    virtual void postExceptionToWorkerObject(
-        const WebString& errorString, int lineNumber,
-        const WebString& sourceURL) = 0;
-
-    // FIXME: the two below are for compatibility only and should be removed
-    // once Chromium is updated to remove message destination parameter
-    // <http://webkit.org/b/37155> and the message type parameter
-    // <http://webkit.org/b/66371>.
-    virtual void postConsoleMessageToWorkerObject(int, int sourceIdentifier, int, int messageLevel,
-                                                  const WebString& message, int lineNumber, const WebString& sourceURL) = 0;
-    virtual void postConsoleMessageToWorkerObject(int sourceIdentifier, int, int messageLevel,
-                                                  const WebString& message, int lineNumber, const WebString& sourceURL)
-    {
-        postConsoleMessageToWorkerObject(0, sourceIdentifier, 0, messageLevel,
-                                         message, lineNumber, sourceURL);
-    }
-
-    virtual void postConsoleMessageToWorkerObject(int sourceIdentifier, int messageLevel,
-                                                  const WebString& message, int lineNumber, const WebString& sourceURL)
-    {
-        postConsoleMessageToWorkerObject(0, sourceIdentifier, messageLevel,
-                                         message, lineNumber, sourceURL);
-    }
-
     virtual void workerContextClosed() = 0;
     virtual void workerContextDestroyed() = 0;
 

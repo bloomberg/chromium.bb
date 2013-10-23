@@ -158,52 +158,14 @@ WebApplicationCacheHost* WebSharedWorkerImpl::createApplicationCacheHost(WebFram
     return 0;
 }
 
-// WorkerObjectProxy -----------------------------------------------------------
-
-void WebSharedWorkerImpl::postMessageToWorkerObject(PassRefPtr<SerializedScriptValue> message,
-                                                    PassOwnPtr<MessagePortChannelArray> channels)
-{
-    WebWorkerBase::dispatchTaskToMainThread(createCallbackTask(&postMessageTask, AllowCrossThreadAccess(this),
-                                                message->toWireString(), channels));
-}
-
-void WebSharedWorkerImpl::postMessageTask(ExecutionContext* context,
-                                          WebSharedWorkerImpl* thisPtr,
-                                          String message,
-                                          PassOwnPtr<MessagePortChannelArray> channels)
-{
-    if (!thisPtr->client())
-        return;
-
-    WebMessagePortChannelArray webChannels(channels ? channels->size() : 0);
-    for (size_t i = 0; i < webChannels.size(); ++i)
-        webChannels[i] = (*channels)[i]->webChannelRelease();
-
-    thisPtr->client()->postMessageToWorkerObject(message, webChannels);
-}
+// WorkerReportingProxy --------------------------------------------------------
 
 void WebSharedWorkerImpl::postExceptionToWorkerObject(const String& errorMessage,
                                                       int lineNumber,
                                                       int columnNumber,
                                                       const String& sourceURL)
 {
-    WebWorkerBase::dispatchTaskToMainThread(
-        createCallbackTask(&postExceptionTask, AllowCrossThreadAccess(this),
-                           errorMessage, lineNumber,
-                           sourceURL));
-}
-
-void WebSharedWorkerImpl::postExceptionTask(ExecutionContext* context,
-                                            WebSharedWorkerImpl* thisPtr,
-                                            const String& errorMessage,
-                                            int lineNumber, const String& sourceURL)
-{
-    if (!thisPtr->client())
-        return;
-
-    thisPtr->client()->postExceptionToWorkerObject(errorMessage,
-                                                   lineNumber,
-                                                   sourceURL);
+    // Not suppported in SharedWorker.
 }
 
 void WebSharedWorkerImpl::postConsoleMessageToWorkerObject(MessageSource source,
@@ -212,20 +174,7 @@ void WebSharedWorkerImpl::postConsoleMessageToWorkerObject(MessageSource source,
                                                            int lineNumber,
                                                            const String& sourceURL)
 {
-    WebWorkerBase::dispatchTaskToMainThread(createCallbackTask(&postConsoleMessageTask, AllowCrossThreadAccess(this), source, level, message, lineNumber, sourceURL));
-}
-
-void WebSharedWorkerImpl::postConsoleMessageTask(ExecutionContext* context,
-                                                 WebSharedWorkerImpl* thisPtr,
-                                                 int source,
-                                                 int level,
-                                                 const String& message,
-                                                 int lineNumber,
-                                                 const String& sourceURL)
-{
-    if (!thisPtr->client())
-        return;
-    thisPtr->client()->postConsoleMessageToWorkerObject(source, level, message, lineNumber, sourceURL);
+    // Not supported in SharedWorker.
 }
 
 void WebSharedWorkerImpl::postMessageToPageInspector(const String& message)
@@ -250,37 +199,6 @@ void WebSharedWorkerImpl::updateInspectorStateCookieTask(ExecutionContext*, WebS
     if (!thisPtr->client())
         return;
     thisPtr->client()->saveDevToolsAgentState(cookie);
-}
-
-void WebSharedWorkerImpl::confirmMessageFromWorkerObject(bool hasPendingActivity)
-{
-    WebWorkerBase::dispatchTaskToMainThread(createCallbackTask(&confirmMessageTask, AllowCrossThreadAccess(this),
-                                            hasPendingActivity));
-}
-
-void WebSharedWorkerImpl::confirmMessageTask(ExecutionContext* context,
-                                             WebSharedWorkerImpl* thisPtr,
-                                             bool hasPendingActivity)
-{
-    if (!thisPtr->client())
-        return;
-    thisPtr->client()->confirmMessageFromWorkerObject(hasPendingActivity);
-}
-
-void WebSharedWorkerImpl::reportPendingActivity(bool hasPendingActivity)
-{
-    WebWorkerBase::dispatchTaskToMainThread(createCallbackTask(&reportPendingActivityTask,
-                                            AllowCrossThreadAccess(this),
-                                            hasPendingActivity));
-}
-
-void WebSharedWorkerImpl::reportPendingActivityTask(ExecutionContext* context,
-                                                    WebSharedWorkerImpl* thisPtr,
-                                                    bool hasPendingActivity)
-{
-    if (!thisPtr->client())
-        return;
-    thisPtr->client()->reportPendingActivity(hasPendingActivity);
 }
 
 void WebSharedWorkerImpl::workerGlobalScopeClosed()
