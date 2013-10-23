@@ -702,7 +702,9 @@ or verify this branch is set up to track another (via the --track argument to
       if self.rietveld_server:
         RunGit(['config', self._RietveldServer(), self.rietveld_server])
     else:
-      RunGit(['config', '--unset', self._IssueSetting()])
+      current_issue = self.GetIssue()
+      if current_issue:
+        RunGit(['config', '--unset', self._IssueSetting()])
       self.issue = None
       self.SetPatchset(None)
 
