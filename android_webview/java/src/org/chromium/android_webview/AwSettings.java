@@ -4,6 +4,7 @@
 
 package org.chromium.android_webview;
 
+import android.content.pm.PackageManager;
 import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
@@ -81,6 +82,7 @@ public class AwSettings {
     private boolean mMediaPlaybackRequiresUserGesture = true;
     private String mDefaultVideoPosterURL;
     private float mInitialPageScalePercent = 0;
+    private boolean mSpatialNavigationEnabled;  // Default depends on device features.
 
     private final boolean mSupportLegacyQuirks;
 
@@ -192,6 +194,10 @@ public class AwSettings {
 
             mUserAgent = LazyDefaultUserAgent.sInstance;
             onGestureZoomSupportChanged(supportsGestureZoomLocked());
+
+            // Best-guess a sensible initial value based on the features supported on the device.
+            mSpatialNavigationEnabled = !context.getPackageManager().hasSystemFeature(
+                    PackageManager.FEATURE_TOUCHSCREEN);
 
             // Respect the system setting for password echoing.
             mPasswordEchoEnabled = Settings.System.getInt(context.getContentResolver(),
@@ -339,6 +345,20 @@ public class AwSettings {
     @CalledByNative
     private float getInitialPageScalePercentLocked() {
         return mInitialPageScalePercent;
+    }
+
+    void setSpatialNavigationEnabled(boolean enable) {
+        synchronized (mAwSettingsLock) {
+            if (mSpatialNavigationEnabled != enable) {
+                mSpatialNavigationEnabled = enable;
+                mEventHandler.updateWebkitPreferencesLocked();
+            }
+        }
+    }
+
+    @CalledByNative
+    private boolean getSpatialNavigationLocked() {
+        return mSpatialNavigationEnabled;
     }
 
     /**
@@ -1067,7 +1087,7 @@ public class AwSettings {
     }
 
     @CalledByNative
-    private boolean getPasswordEchoEnabled() {
+    private boolean getPasswordEchoEnabledLocked() {
         return mPasswordEchoEnabled;
     }
 

@@ -306,7 +306,9 @@ void AwSettings::PopulateWebPreferences(WebPreferences* web_prefs) {
   web_prefs->report_screen_size_in_physical_pixels_quirk = support_quirks;
 
   web_prefs->password_echo_enabled =
-      Java_AwSettings_getPasswordEchoEnabled(env, obj);
+      Java_AwSettings_getPasswordEchoEnabledLocked(env, obj);
+  web_prefs->spatial_navigation_enabled =
+      Java_AwSettings_getSpatialNavigationLocked(env, obj);
 }
 
 static jint Init(JNIEnv* env,

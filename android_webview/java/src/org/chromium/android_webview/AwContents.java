@@ -1223,10 +1223,27 @@ public class AwContents {
         return mContentViewCore.onKeyUp(keyCode, event);
     }
 
+    private boolean isDpadEvent(KeyEvent event) {
+        if (event.getAction() == KeyEvent.ACTION_DOWN) {
+            switch (event.getKeyCode()) {
+                case KeyEvent.KEYCODE_DPAD_CENTER:
+                case KeyEvent.KEYCODE_DPAD_DOWN:
+                case KeyEvent.KEYCODE_DPAD_UP:
+                case KeyEvent.KEYCODE_DPAD_LEFT:
+                case KeyEvent.KEYCODE_DPAD_RIGHT:
+                    return true;
+            }
+        }
+        return false;
+    }
+
     /**
      * @see android.webkit.WebView#dispatchKeyEvent(KeyEvent)
      */
     public boolean dispatchKeyEvent(KeyEvent event) {
+        if (isDpadEvent(event)) {
+            mSettings.setSpatialNavigationEnabled(true);
+        }
         return mContentViewCore.dispatchKeyEvent(event);
     }
 
@@ -1484,6 +1501,10 @@ public class AwContents {
      */
     public boolean onTouchEvent(MotionEvent event) {
         if (mNativeAwContents == 0) return false;
+
+        if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
+            mSettings.setSpatialNavigationEnabled(false);
+        }
 
         mScrollOffsetManager.setProcessingTouchEvent(true);
         boolean rv = mContentViewCore.onTouchEvent(event);

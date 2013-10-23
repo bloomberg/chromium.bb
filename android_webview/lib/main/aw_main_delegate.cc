@@ -72,9 +72,6 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
   // File system API not supported (requires some new API; internal bug 6930981)
   cl->AppendSwitch(switches::kDisableFileSystem);
 
-  // Enable D-PAD navigation for application compatibility.
-  cl->AppendSwitch(switches::kEnableSpatialNavigation);
-
   // Disable compositor touch hit testing for now to mitigate risk of bugs.
   cl->AppendSwitch(cc::switches::kDisableCompositorTouchHitTesting);
 
