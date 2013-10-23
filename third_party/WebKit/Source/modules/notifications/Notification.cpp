@@ -87,14 +87,14 @@ Notification::Notification(ExecutionContext* context, const String& title)
     : ActiveDOMObject(context)
     , m_title(title)
     , m_state(Idle)
-    , m_taskTimer(adoptPtr(new Timer<Notification>(this, &Notification::taskTimerFired)))
+    , m_asyncRunner(adoptPtr(new AsyncMethodRunner<Notification>(this, &Notification::showSoon)))
 {
     ScriptWrappable::init(this);
 
     m_notificationClient = NotificationController::clientFrom(toDocument(context)->page());
     ASSERT(m_notificationClient);
 
-    m_taskTimer->startOneShot(0);
+    m_asyncRunner->runAsync();
 }
 
 Notification::~Notification()
@@ -207,10 +207,9 @@ void Notification::dispatchErrorEvent()
     dispatchEvent(Event::create(EventTypeNames::error));
 }
 
-void Notification::taskTimerFired(Timer<Notification>* timer)
+void Notification::showSoon()
 {
     ASSERT(executionContext()->isDocument());
-    ASSERT_UNUSED(timer, timer == m_taskTimer.get());
     show();
 }
 

@@ -182,7 +182,7 @@ XMLHttpRequest::XMLHttpRequest(ExecutionContext* context, PassRefPtr<SecurityOri
     , m_exceptionCode(0)
     , m_progressEventThrottle(this)
     , m_responseTypeCode(ResponseTypeDefault)
-    , m_protectionTimer(this, &XMLHttpRequest::dropProtection)
+    , m_dropProtectionRunner(this, &XMLHttpRequest::dropProtection)
     , m_securityOrigin(securityOrigin)
 {
     initializeXMLHttpRequestStaticData();
@@ -1004,12 +1004,10 @@ void XMLHttpRequest::handleDidCancel()
 
 void XMLHttpRequest::dropProtectionSoon()
 {
-    if (m_protectionTimer.isActive())
-        return;
-    m_protectionTimer.startOneShot(0);
+    m_dropProtectionRunner.runAsync();
 }
 
-void XMLHttpRequest::dropProtection(Timer<XMLHttpRequest>*)
+void XMLHttpRequest::dropProtection()
 {
     unsetPendingActivity(this);
 }

@@ -140,7 +140,7 @@ WebSocket::WebSocket(ExecutionContext* context)
     , m_subprotocol("")
     , m_extensions("")
     , m_stopped(false)
-    , m_timerForDeferredDropProtection(this, &WebSocket::dropProtection)
+    , m_dropProtectionRunner(this, &WebSocket::dropProtection)
 {
     ScriptWrappable::init(this);
 }
@@ -478,7 +478,7 @@ void WebSocket::resume()
         m_channel->resume();
 }
 
-void WebSocket::dropProtection(Timer<WebSocket>*)
+void WebSocket::dropProtection()
 {
     unsetPendingActivity(this);
 }
@@ -505,9 +505,7 @@ void WebSocket::stop()
     // instances. Deleting this WebSocket instance synchronously leads to
     // ContextLifecycleNotifier::removeObserver() call which is prohibited
     // to be called during iteration. Defer it.
-    if (m_timerForDeferredDropProtection.isActive())
-        return;
-    m_timerForDeferredDropProtection.startOneShot(0);
+    m_dropProtectionRunner.runAsync();
 }
 
 void WebSocket::didConnect()

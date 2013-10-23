@@ -67,13 +67,13 @@ SourceBuffer::SourceBuffer(PassOwnPtr<SourceBufferPrivate> sourceBufferPrivate, 
     , m_timestampOffset(0)
     , m_appendWindowStart(0)
     , m_appendWindowEnd(std::numeric_limits<double>::infinity())
-    , m_appendBufferTimer(this, &SourceBuffer::appendBufferTimerFired)
-    , m_removeTimer(this, &SourceBuffer::removeTimerFired)
+    , m_appendBufferAsyncPartRunner(this, &SourceBuffer::appendBufferAsyncPart)
+    , m_removeAsyncPartRunner(this, &SourceBuffer::removeAsyncPart)
     , m_pendingRemoveStart(-1)
     , m_pendingRemoveEnd(-1)
     , m_streamMaxSizeValid(false)
     , m_streamMaxSize(0)
-    , m_appendStreamTimer(this, &SourceBuffer::appendStreamTimerFired)
+    , m_appendStreamAsyncPartRunner(this, &SourceBuffer::appendStreamAsyncPart)
 {
     ASSERT(m_private);
     ASSERT(m_source);
@@ -303,7 +303,7 @@ void SourceBuffer::remove(double start, double end, ExceptionState& es)
     // 8. Return control to the caller and run the rest of the steps asynchronously.
     m_pendingRemoveStart = start;
     m_pendingRemoveEnd = end;
-    m_removeTimer.startOneShot(0);
+    m_removeAsyncPartRunner.runAsync();
 }
 
 void SourceBuffer::abortIfUpdating()
@@ -326,14 +326,14 @@ void SourceBuffer::abortIfUpdating()
     }
 
     // 3.1. Abort the buffer append and stream append loop algorithms if they are running.
-    m_appendBufferTimer.stop();
+    m_appendBufferAsyncPartRunner.stop();
     m_pendingAppendData.clear();
 
-    m_removeTimer.stop();
+    m_removeAsyncPartRunner.stop();
     m_pendingRemoveStart = -1;
     m_pendingRemoveEnd = -1;
 
-    m_appendStreamTimer.stop();
+    m_appendStreamAsyncPartRunner.stop();
     clearAppendStreamState();
 
     // 3.2. Set the updating attribute to false.
@@ -365,11 +365,25 @@ bool SourceBuffer::hasPendingActivity() const
     return m_source;
 }
 
+void SourceBuffer::suspend()
+{
+    m_appendBufferAsyncPartRunner.suspend();
+    m_removeAsyncPartRunner.suspend();
+    m_appendStreamAsyncPartRunner.suspend();
+}
+
+void SourceBuffer::resume()
+{
+    m_appendBufferAsyncPartRunner.resume();
+    m_removeAsyncPartRunner.resume();
+    m_appendStreamAsyncPartRunner.resume();
+}
+
 void SourceBuffer::stop()
 {
-    m_appendBufferTimer.stop();
-    m_removeTimer.stop();
-    m_appendStreamTimer.stop();
+    m_appendBufferAsyncPartRunner.stop();
+    m_removeAsyncPartRunner.stop();
+    m_appendStreamAsyncPartRunner.stop();
 }
 
 ExecutionContext* SourceBuffer::executionContext() const
@@ -427,12 +441,12 @@ void SourceBuffer::appendBufferInternal(const unsigned char* data, unsigned size
     scheduleEvent(EventTypeNames::updatestart);
 
     // 10. Asynchronously run the buffer append algorithm.
-    m_appendBufferTimer.startOneShot(0);
+    m_appendBufferAsyncPartRunner.runAsync();
 
     TRACE_EVENT_ASYNC_STEP0("media", "SourceBuffer::appendBuffer", this, "waiting");
 }
 
-void SourceBuffer::appendBufferTimerFired(Timer<SourceBuffer>*)
+void SourceBuffer::appendBufferAsyncPart()
 {
     ASSERT(m_updating);
 
@@ -464,7 +478,7 @@ void SourceBuffer::appendBufferTimerFired(Timer<SourceBuffer>*)
     TRACE_EVENT_ASYNC_END0("media", "SourceBuffer::appendBuffer", this);
 }
 
-void SourceBuffer::removeTimerFired(Timer<SourceBuffer>*)
+void SourceBuffer::removeAsyncPart()
 {
     ASSERT(m_updating);
     ASSERT(m_pendingRemoveStart >= 0);
@@ -526,10 +540,10 @@ void SourceBuffer::appendStreamInternal(PassRefPtr<Stream> stream, ExceptionStat
     stream->neuter();
     m_loader = adoptPtr(new FileReaderLoader(FileReaderLoader::ReadByClient, this));
     m_stream = stream;
-    m_appendStreamTimer.startOneShot(0);
+    m_appendStreamAsyncPartRunner.runAsync();
 }
 
-void SourceBuffer::appendStreamTimerFired(Timer<SourceBuffer>*)
+void SourceBuffer::appendStreamAsyncPart()
 {
     ASSERT(m_updating);
     ASSERT(m_loader);
@@ -576,7 +590,7 @@ void SourceBuffer::appendStreamDone(bool success)
     }
 
     // Section 3.5.6 Stream Append Loop
-    // Steps 1-11 are handled by appendStreamTimerFired(), |m_loader|, and |m_private|.
+    // Steps 1-11 are handled by appendStreamAsyncPart(), |m_loader|, and |m_private|.
     // 12. Loop Done: Set the updating attribute to false.
     m_updating = false;
 

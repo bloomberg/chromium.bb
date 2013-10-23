@@ -138,7 +138,7 @@ FontFaceSet::FontFaceSet(Document* document)
     : ActiveDOMObject(document)
     , m_loadingCount(0)
     , m_shouldFireDoneEvent(false)
-    , m_timer(this, &FontFaceSet::timerFired)
+    , m_asyncRunner(this, &FontFaceSet::handlePendingEventsAndPromises)
 {
     suspendIfNeeded();
 }
@@ -169,6 +169,13 @@ AtomicString FontFaceSet::status() const
     return (m_loadingCount > 0 || m_shouldFireDoneEvent) ? loading : loaded;
 }
 
+void FontFaceSet::handlePendingEventsAndPromisesSoon()
+{
+    // setPendingActivity() is unnecessary because m_asyncRunner will be
+    // automatically stopped on destruction.
+    m_asyncRunner.runAsync();
+}
+
 void FontFaceSet::didLayout()
 {
     Document* d = document();
@@ -178,11 +185,10 @@ void FontFaceSet::didLayout()
         return;
     if (m_loadingCount || (!m_shouldFireDoneEvent && m_readyResolvers.isEmpty()))
         return;
-    if (!m_timer.isActive())
-        m_timer.startOneShot(0);
+    handlePendingEventsAndPromisesSoon();
 }
 
-void FontFaceSet::timerFired(Timer<FontFaceSet>*)
+void FontFaceSet::handlePendingEventsAndPromises()
 {
     firePendingEvents();
     resolvePendingLoadPromises();
@@ -192,8 +198,7 @@ void FontFaceSet::timerFired(Timer<FontFaceSet>*)
 void FontFaceSet::scheduleEvent(PassRefPtr<Event> event)
 {
     m_pendingEvents.append(event);
-    if (!m_timer.isActive())
-        m_timer.startOneShot(0);
+    handlePendingEventsAndPromisesSoon();
 }
 
 void FontFaceSet::firePendingEvents()
@@ -207,11 +212,25 @@ void FontFaceSet::firePendingEvents()
         dispatchEvent(pendingEvents[index].release());
 }
 
+void FontFaceSet::suspend()
+{
+    m_asyncRunner.suspend();
+}
+
+void FontFaceSet::resume()
+{
+    m_asyncRunner.resume();
+}
+
+void FontFaceSet::stop()
+{
+    m_asyncRunner.stop();
+}
+
 void FontFaceSet::scheduleResolve(LoadFontPromiseResolver* resolver)
 {
     m_pendingLoadResolvers.append(resolver);
-    if (!m_timer.isActive())
-        m_timer.startOneShot(0);
+    handlePendingEventsAndPromisesSoon();
 }
 
 void FontFaceSet::resolvePendingLoadPromises()
@@ -260,8 +279,7 @@ void FontFaceSet::queueDoneEvent(FontFace* fontFace)
     if (!m_loadingCount) {
         ASSERT(!m_shouldFireDoneEvent);
         m_shouldFireDoneEvent = true;
-        if (!m_timer.isActive())
-            m_timer.startOneShot(0);
+        handlePendingEventsAndPromisesSoon();
     }
 }
 
@@ -270,8 +288,7 @@ ScriptPromise FontFaceSet::ready()
     ScriptPromise promise = ScriptPromise::createPending(executionContext());
     OwnPtr<FontsReadyPromiseResolver> resolver = FontsReadyPromiseResolver::create(promise, executionContext());
     m_readyResolvers.append(resolver.release());
-    if (!m_timer.isActive())
-        m_timer.startOneShot(0);
+    handlePendingEventsAndPromisesSoon();
     return promise;
 }
 

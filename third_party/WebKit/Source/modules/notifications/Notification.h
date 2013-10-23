@@ -38,8 +38,8 @@
 #include "core/events/ThreadLocalEventNames.h"
 #include "core/loader/ThreadableLoaderClient.h"
 #include "modules/notifications/NotificationClient.h"
+#include "platform/AsyncMethodRunner.h"
 #include "platform/SharedBuffer.h"
-#include "platform/Timer.h"
 #include "platform/text/TextDirection.h"
 #include "weborigin/KURL.h"
 #include "wtf/OwnPtr.h"
@@ -142,7 +142,7 @@ private:
     void startLoadingIcon();
     void finishLoadingIcon();
 
-    void taskTimerFired(Timer<Notification>*);
+    void showSoon();
 
     // Text notifications.
     KURL m_icon;
@@ -163,7 +163,7 @@ private:
 
     NotificationClient* m_notificationClient;
 
-    OwnPtr<Timer<Notification> > m_taskTimer;
+    OwnPtr<AsyncMethodRunner<Notification> > m_asyncRunner;
 };
 
 } // namespace WebCore

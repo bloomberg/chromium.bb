@@ -38,7 +38,7 @@
 #include "core/events/ThreadLocalEventNames.h"
 #include "modules/websockets/WebSocketChannel.h"
 #include "modules/websockets/WebSocketChannelClient.h"
-#include "platform/Timer.h"
+#include "platform/AsyncMethodRunner.h"
 #include "weborigin/KURL.h"
 #include "wtf/Forward.h"
 #include "wtf/OwnPtr.h"
@@ -126,9 +126,9 @@ private:
     // not.
     void closeInternal(int, const String&, ExceptionState&);
 
-    // Calls unsetPendingActivity(). Used for m_timerForDeferredDropProtection
-    // to drop the reference for protection asynchronously.
-    void dropProtection(Timer<WebSocket>*);
+    // Calls unsetPendingActivity(). Used with m_dropProtectionRunner to drop
+    // the reference for protection asynchronously.
+    void dropProtection();
 
     size_t getFramingOverhead(size_t payloadSize);
 
@@ -160,7 +160,7 @@ private:
     // stop() to prevent dispatchEvent() from being called in such handlers.
     bool m_stopped;
 
-    Timer<WebSocket> m_timerForDeferredDropProtection;
+    AsyncMethodRunner<WebSocket> m_dropProtectionRunner;
 };
 
 } // namespace WebCore

@@ -32,7 +32,7 @@
 #include "core/events/EventListener.h"
 #include "core/events/EventTarget.h"
 #include "core/events/ThreadLocalEventNames.h"
-#include "platform/Timer.h"
+#include "platform/AsyncMethodRunner.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
@@ -86,6 +86,11 @@ public:
     void loadError(FontFace*);
     void scheduleResolve(LoadFontPromiseResolver*);
 
+    // ActiveDOMObject
+    virtual void suspend() OVERRIDE;
+    virtual void resume() OVERRIDE;
+    virtual void stop() OVERRIDE;
+
 private:
     class FontLoadHistogram {
     public:
@@ -106,7 +111,8 @@ private:
     void resolvePendingLoadPromises();
     void fireDoneEventIfPossible();
     bool resolveFontStyle(const String&, Font&);
-    void timerFired(Timer<FontFaceSet>*);
+    void handlePendingEventsAndPromisesSoon();
+    void handlePendingEventsAndPromises();
 
     unsigned m_loadingCount;
     Vector<RefPtr<Event> > m_pendingEvents;
@@ -115,7 +121,9 @@ private:
     FontFaceArray m_loadedFonts;
     FontFaceArray m_failedFonts;
     bool m_shouldFireDoneEvent;
-    Timer<FontFaceSet> m_timer;
+
+    AsyncMethodRunner<FontFaceSet> m_asyncRunner;
+
     FontLoadHistogram m_histogram;
 };
 

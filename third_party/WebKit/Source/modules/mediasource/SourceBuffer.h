@@ -36,7 +36,7 @@
 #include "core/events/EventTarget.h"
 #include "core/fileapi/FileReaderLoaderClient.h"
 #include "core/platform/graphics/SourceBufferPrivate.h"
-#include "platform/Timer.h"
+#include "platform/AsyncMethodRunner.h"
 #include "weborigin/KURL.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
@@ -82,6 +82,8 @@ public:
 
     // ActiveDOMObject interface
     virtual bool hasPendingActivity() const OVERRIDE;
+    virtual void suspend() OVERRIDE;
+    virtual void resume() OVERRIDE;
     virtual void stop() OVERRIDE;
 
     // EventTarget interface
@@ -95,12 +97,12 @@ private:
     void scheduleEvent(const AtomicString& eventName);
 
     void appendBufferInternal(const unsigned char*, unsigned, ExceptionState&);
-    void appendBufferTimerFired(Timer<SourceBuffer>*);
+    void appendBufferAsyncPart();
 
-    void removeTimerFired(Timer<SourceBuffer>*);
+    void removeAsyncPart();
 
     void appendStreamInternal(PassRefPtr<Stream>, ExceptionState&);
-    void appendStreamTimerFired(Timer<SourceBuffer>*);
+    void appendStreamAsyncPart();
     void appendStreamDone(bool success);
     void clearAppendStreamState();
 
@@ -120,15 +122,15 @@ private:
     double m_appendWindowEnd;
 
     Vector<unsigned char> m_pendingAppendData;
-    Timer<SourceBuffer> m_appendBufferTimer;
+    AsyncMethodRunner<SourceBuffer> m_appendBufferAsyncPartRunner;
 
     double m_pendingRemoveStart;
     double m_pendingRemoveEnd;
-    Timer<SourceBuffer> m_removeTimer;
+    AsyncMethodRunner<SourceBuffer> m_removeAsyncPartRunner;
 
     bool m_streamMaxSizeValid;
     unsigned long long m_streamMaxSize;
-    Timer<SourceBuffer> m_appendStreamTimer;
+    AsyncMethodRunner<SourceBuffer> m_appendStreamAsyncPartRunner;
     RefPtr<Stream> m_stream;
     OwnPtr<FileReaderLoader> m_loader;
 };

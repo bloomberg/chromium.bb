@@ -39,7 +39,7 @@
 #include "core/platform/mediastream/RTCPeerConnectionHandlerClient.h"
 #include "modules/mediastream/MediaStream.h"
 #include "modules/mediastream/RTCIceCandidate.h"
-#include "platform/Timer.h"
+#include "platform/AsyncMethodRunner.h"
 #include "wtf/RefCounted.h"
 
 namespace WebCore {
@@ -126,6 +126,8 @@ public:
     virtual ExecutionContext* executionContext() const OVERRIDE;
 
     // ActiveDOMObject
+    virtual void suspend() OVERRIDE;
+    virtual void resume() OVERRIDE;
     virtual void stop() OVERRIDE;
     virtual bool hasPendingActivity() const OVERRIDE { return !m_stopped; }
 
@@ -134,7 +136,7 @@ private:
 
     static PassRefPtr<RTCConfiguration> parseConfiguration(const Dictionary& configuration, ExceptionState&);
     void scheduleDispatchEvent(PassRefPtr<Event>);
-    void scheduledEventTimerFired(Timer<RTCPeerConnection>*);
+    void dispatchScheduledEvent();
     bool hasLocalStreamWithTrackId(const String& trackId);
 
     void changeSignalingState(SignalingState);
@@ -152,7 +154,7 @@ private:
 
     OwnPtr<RTCPeerConnectionHandler> m_peerHandler;
 
-    Timer<RTCPeerConnection> m_scheduledEventTimer;
+    AsyncMethodRunner<RTCPeerConnection> m_dispatchScheduledEventRunner;
     Vector<RefPtr<Event> > m_scheduledEvents;
 
     bool m_stopped;
