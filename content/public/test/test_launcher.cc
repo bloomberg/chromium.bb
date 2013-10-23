@@ -103,26 +103,33 @@ class WrapperTestLauncherDelegate : public base::TestLauncherDelegate {
       const testing::TestInfo* test_info) OVERRIDE;
   virtual bool ShouldRunTest(const testing::TestCase* test_case,
                              const testing::TestInfo* test_info) OVERRIDE;
-  virtual void RunTests(base::TestLauncher* test_launcher,
-                        const std::vector<std::string>& test_names) OVERRIDE;
-  virtual size_t RetryTests(
-      base::TestLauncher* test_launcher,
-      const std::vector<std::string>& test_names) OVERRIDE;
+  virtual void RunTest(
+      const testing::TestCase* test_case,
+      const testing::TestInfo* test_info,
+      const base::TestLauncherDelegate::TestResultCallback& callback) OVERRIDE;
+  virtual void RunRemainingTests() OVERRIDE;
 
  private:
-  void DoRunTest(base::TestLauncher* test_launcher,
-                 const std::string& test_name);
+  struct TestInfo {
+    std::string GetFullName() const { return test_case_name + "." + test_name; }
 
-  // Launches test named |test_name| using parallel launcher,
+    std::string test_case_name;
+    std::string test_name;
+    std::vector<base::TestLauncherDelegate::TestResultCallback> callbacks;
+  };
+
+  // Launches test from |test_info| using |command_line| and parallel launcher.
+  void DoRunTest(const TestInfo& test_info, const CommandLine& command_line);
+
+  // Launches test named |test_name| using |command_line| and parallel launcher,
   // given result of PRE_ test |pre_test_result|.
-  void RunDependentTest(base::TestLauncher* test_launcher,
-                        const std::string test_name,
+  void RunDependentTest(const std::string test_name,
+                        const CommandLine& command_line,
                         const base::TestResult& pre_test_result);
 
   // Callback to receive result of a test.
   void GTestCallback(
-      base::TestLauncher* test_launcher,
-      const std::string& test_name,
+      const TestInfo& test_info,
       int exit_code,
       const base::TimeDelta& elapsed_time,
       bool was_timeout,
@@ -139,19 +146,10 @@ class WrapperTestLauncherDelegate : public base::TestLauncherDelegate {
 
   base::ParallelTestLauncher parallel_launcher_;
 
-  // Store dependent test name (map is indexed by full test name).
-  typedef std::map<std::string, std::string> DependentTestMap;
-  DependentTestMap dependent_test_map_;
-  DependentTestMap reverse_dependent_test_map_;
-
-  // Store unique data directory prefix for test names (without PRE_ prefixes).
-  // PRE_ tests and tests that depend on them must share the same
-  // data directory. Using test name as directory name leads to too long
-  // names (exceeding UNIX_PATH_MAX, which creates a problem with
-  // process_singleton_linux). Create a randomly-named temporary directory
-  // and keep track of the names so that PRE_ tests can still re-use them.
-  typedef std::map<std::string, base::FilePath> UserDataDirMap;
-  UserDataDirMap user_data_dir_map_;
+  // Store all tests to run before running any of them to properly
+  // handle PRE_ tests. The map is indexed by test full name (e.g. "A.B").
+  typedef std::map<std::string, TestInfo> TestInfoMap;
+  TestInfoMap tests_to_run_;
 
   // Temporary directory for user data directories.
   base::ScopedTempDir temp_dir_;
@@ -160,8 +158,7 @@ class WrapperTestLauncherDelegate : public base::TestLauncherDelegate {
 };
 
 void WrapperTestLauncherDelegate::OnTestIterationStarting() {
-  dependent_test_map_.clear();
-  user_data_dir_map_.clear();
+  tests_to_run_.clear();
 }
 
 std::string WrapperTestLauncherDelegate::GetTestNameForFiltering(
@@ -191,112 +188,74 @@ bool WrapperTestLauncherDelegate::ShouldRunTest(
   return true;
 }
 
-void WrapperTestLauncherDelegate::RunTests(
-    base::TestLauncher* test_launcher,
-    const std::vector<std::string>& test_names) {
-  // List of tests we can kick off right now, depending on no other tests.
-  std::vector<std::string> tests_to_run_now;
+void WrapperTestLauncherDelegate::RunTest(
+    const testing::TestCase* test_case,
+    const testing::TestInfo* test_info,
+    const base::TestLauncherDelegate::TestResultCallback& callback) {
+  TestInfo run_test_info;
+  run_test_info.test_case_name = test_case->name();
+  run_test_info.test_name = test_info->name();
+  run_test_info.callbacks.push_back(callback);
 
-  std::set<std::string> test_names_set(test_names.begin(), test_names.end());
-
-  for (size_t i = 0; i < test_names.size(); i++) {
-    std::string full_name(test_names[i]);
-
-    // Make sure PRE_ tests and tests that depend on them share the same
-    // data directory - based it on the test name without prefixes.
-    std::string test_name_no_pre(RemoveAnyPrePrefixes(full_name));
-    if (!ContainsKey(user_data_dir_map_, test_name_no_pre)) {
-      base::FilePath temp_dir;
-      CHECK(file_util::CreateTemporaryDirInDir(
-                temp_dir_.path(), FILE_PATH_LITERAL("d"), &temp_dir));
-      user_data_dir_map_[test_name_no_pre] = temp_dir;
-    }
-
-    size_t dot_pos = full_name.find('.');
-    CHECK_NE(dot_pos, std::string::npos);
-    std::string test_case_name = full_name.substr(0, dot_pos);
-    std::string test_name = full_name.substr(dot_pos + 1);
-    std::string pre_test_name(
-        test_case_name + "." + kPreTestPrefix + test_name);
-    if (ContainsKey(test_names_set, pre_test_name)) {
-      DCHECK(!ContainsKey(dependent_test_map_, pre_test_name));
-      dependent_test_map_[pre_test_name] = full_name;
-
-      DCHECK(!ContainsKey(reverse_dependent_test_map_, full_name));
-      reverse_dependent_test_map_[full_name] = pre_test_name;
-    } else {
-      tests_to_run_now.push_back(full_name);
-    }
-  }
-
-  for (size_t i = 0; i < tests_to_run_now.size(); i++)
-    DoRunTest(test_launcher, tests_to_run_now[i]);
+  DCHECK(!ContainsKey(tests_to_run_, run_test_info.GetFullName()));
+  tests_to_run_[run_test_info.GetFullName()] = run_test_info;
 }
 
-size_t WrapperTestLauncherDelegate::RetryTests(
-    base::TestLauncher* test_launcher,
-    const std::vector<std::string>& test_names) {
+void WrapperTestLauncherDelegate::RunRemainingTests() {
+  // PRE_ tests and tests that depend on them must share the same
+  // data directory. Using test name as directory name leads to too long
+  // names (exceeding UNIX_PATH_MAX, which creates a problem with
+  // process_singleton_linux). Create a randomly-named temporary directory
+  // and keep track of the names so that PRE_ tests can still re-use them.
+  std::map<std::string, base::FilePath> temp_directories;
+
   // List of tests we can kick off right now, depending on no other tests.
-  std::vector<std::string> tests_to_run_now;
+  std::vector<std::pair<std::string, CommandLine> > tests_to_run_now;
 
-  // We retry at least the tests requested to retry.
-  std::set<std::string> test_names_set(test_names.begin(), test_names.end());
-
-  // In the face of PRE_ tests, we need to retry the entire chain of tests,
-  // from the very first one.
-  for (size_t i = 0; i < test_names.size(); i++) {
-    std::string test_name(test_names[i]);
-    while (ContainsKey(reverse_dependent_test_map_, test_name)) {
-      test_name = reverse_dependent_test_map_[test_name];
-      test_names_set.insert(test_name);
-    }
-  }
-
-  // Discard user data directories from any previous runs. Start with
-  // fresh state.
-  user_data_dir_map_.clear();
-
-  for (std::set<std::string>::const_iterator i = test_names_set.begin();
-       i != test_names_set.end();
+  for (TestInfoMap::iterator i = tests_to_run_.begin();
+       i != tests_to_run_.end();
        ++i) {
-    std::string full_name(*i);
+    const TestInfo& test_info = i->second;
 
     // Make sure PRE_ tests and tests that depend on them share the same
     // data directory - based it on the test name without prefixes.
-    std::string test_name_no_pre(RemoveAnyPrePrefixes(full_name));
-    if (!ContainsKey(user_data_dir_map_, test_name_no_pre)) {
+    std::string test_name_no_pre(RemoveAnyPrePrefixes(test_info.GetFullName()));
+    if (!ContainsKey(temp_directories, test_name_no_pre)) {
       base::FilePath temp_dir;
       CHECK(file_util::CreateTemporaryDirInDir(
                 temp_dir_.path(), FILE_PATH_LITERAL("d"), &temp_dir));
-      user_data_dir_map_[test_name_no_pre] = temp_dir;
+      temp_directories[test_name_no_pre] = temp_dir;
     }
 
-    size_t dot_pos = full_name.find('.');
-    CHECK_NE(dot_pos, std::string::npos);
-    std::string test_case_name = full_name.substr(0, dot_pos);
-    std::string test_name = full_name.substr(dot_pos + 1);
+    CommandLine new_cmd_line(*CommandLine::ForCurrentProcess());
+    CHECK(launcher_delegate_->AdjustChildProcessCommandLine(
+              &new_cmd_line, temp_directories[test_name_no_pre]));
+
     std::string pre_test_name(
-        test_case_name + "." + kPreTestPrefix + test_name);
-    if (!ContainsKey(test_names_set, pre_test_name))
-      tests_to_run_now.push_back(full_name);
+        test_info.test_case_name + "." + kPreTestPrefix + test_info.test_name);
+    if (ContainsKey(tests_to_run_, pre_test_name)) {
+      tests_to_run_[pre_test_name].callbacks.push_back(
+          base::Bind(&WrapperTestLauncherDelegate::RunDependentTest,
+                     base::Unretained(this),
+                     test_info.GetFullName(),
+                     new_cmd_line));
+    } else {
+      tests_to_run_now.push_back(
+          std::make_pair(test_info.GetFullName(), new_cmd_line));
+    }
   }
 
-  for (size_t i = 0; i < tests_to_run_now.size(); i++)
-    DoRunTest(test_launcher, tests_to_run_now[i]);
-
-  return test_names_set.size();
+  for (size_t i = 0; i < tests_to_run_now.size(); i++) {
+    const TestInfo& test_info = tests_to_run_[tests_to_run_now[i].first];
+    const CommandLine& cmd_line = tests_to_run_now[i].second;
+    DoRunTest(test_info, cmd_line);
+  }
 }
 
-void WrapperTestLauncherDelegate::DoRunTest(base::TestLauncher* test_launcher,
-                                            const std::string& test_name) {
-  std::string test_name_no_pre(RemoveAnyPrePrefixes(test_name));
-
-  CommandLine cmd_line(*CommandLine::ForCurrentProcess());
-  CHECK(launcher_delegate_->AdjustChildProcessCommandLine(
-            &cmd_line, user_data_dir_map_[test_name_no_pre]));
-
-  CommandLine new_cmd_line(cmd_line.GetProgram());
-  CommandLine::SwitchMap switches = cmd_line.GetSwitches();
+void WrapperTestLauncherDelegate::DoRunTest(const TestInfo& test_info,
+                                            const CommandLine& command_line) {
+  CommandLine new_cmd_line(command_line.GetProgram());
+  CommandLine::SwitchMap switches = command_line.GetSwitches();
 
   // Strip out gtest_output flag because otherwise we would overwrite results
   // of the other tests.
@@ -310,10 +269,17 @@ void WrapperTestLauncherDelegate::DoRunTest(base::TestLauncher* test_launcher,
   // Always enable disabled tests.  This method is not called with disabled
   // tests unless this flag was specified to the browser test executable.
   new_cmd_line.AppendSwitch("gtest_also_run_disabled_tests");
-  new_cmd_line.AppendSwitchASCII("gtest_filter", test_name);
+  new_cmd_line.AppendSwitchASCII(
+      "gtest_filter",
+      test_info.test_case_name + "." + test_info.test_name);
   new_cmd_line.AppendSwitch(kSingleProcessTestsFlag);
 
   char* browser_wrapper = getenv("BROWSER_WRAPPER");
+
+  // PRE_ tests and tests that depend on them should share the sequence token
+  // name, so that they are run serially.
+  std::string test_name_no_pre = RemoveAnyPrePrefixes(
+      test_info.test_case_name + "." + test_info.test_name);
 
   parallel_launcher_.LaunchChildGTestProcess(
       new_cmd_line,
@@ -321,41 +287,37 @@ void WrapperTestLauncherDelegate::DoRunTest(base::TestLauncher* test_launcher,
       TestTimeouts::action_max_timeout(),
       base::Bind(&WrapperTestLauncherDelegate::GTestCallback,
                  base::Unretained(this),
-                 test_launcher,
-                 test_name));
+                 test_info));
 }
 
 void WrapperTestLauncherDelegate::RunDependentTest(
-    base::TestLauncher* test_launcher,
     const std::string test_name,
+    const CommandLine& command_line,
     const base::TestResult& pre_test_result) {
+  const TestInfo& test_info = tests_to_run_[test_name];
   if (pre_test_result.status == base::TestResult::TEST_SUCCESS) {
     // Only run the dependent test if PRE_ test succeeded.
-    DoRunTest(test_launcher, test_name);
+    DoRunTest(test_info, command_line);
   } else {
     // Otherwise skip the test.
     base::TestResult test_result;
-    test_result.full_name = test_name;
+    test_result.test_case_name = test_info.test_case_name;
+    test_result.test_name = test_info.test_name;
     test_result.status = base::TestResult::TEST_SKIPPED;
-    test_launcher->OnTestFinished(test_result);
-
-    if (ContainsKey(dependent_test_map_, test_name)) {
-      RunDependentTest(test_launcher,
-                       dependent_test_map_[test_name],
-                       test_result);
-    }
+    for (size_t i = 0; i < test_info.callbacks.size(); i++)
+      test_info.callbacks[i].Run(test_result);
   }
 }
 
 void WrapperTestLauncherDelegate::GTestCallback(
-    base::TestLauncher* test_launcher,
-    const std::string& test_name,
+    const TestInfo& test_info,
     int exit_code,
     const base::TimeDelta& elapsed_time,
     bool was_timeout,
     const std::string& output) {
   base::TestResult result;
-  result.full_name = test_name;
+  result.test_case_name = test_info.test_case_name;
+  result.test_name = test_info.test_name;
 
   // TODO(phajdan.jr): Recognize crashes.
   if (exit_code == 0)
@@ -372,10 +334,8 @@ void WrapperTestLauncherDelegate::GTestCallback(
   fprintf(stdout, "%s", output.c_str());
   fflush(stdout);
 
-  if (ContainsKey(dependent_test_map_, test_name))
-    RunDependentTest(test_launcher, dependent_test_map_[test_name], result);
-
-  test_launcher->OnTestFinished(result);
+  for (size_t i = 0; i < test_info.callbacks.size(); i++)
+    test_info.callbacks[i].Run(result);
   parallel_launcher_.ResetOutputWatchdog();
 }
 

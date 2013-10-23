@@ -35,16 +35,4 @@ std::string TestResult::StatusAsString() const {
   return std::string();
 }
 
-std::string TestResult::GetTestName() const {
-  size_t dot_pos = full_name.find('.');
-  CHECK_NE(dot_pos, std::string::npos);
-  return full_name.substr(dot_pos + 1);
-}
-
-std::string TestResult::GetTestCaseName() const {
-  size_t dot_pos = full_name.find('.');
-  CHECK_NE(dot_pos, std::string::npos);
-  return full_name.substr(0, dot_pos);
-}
-
 }  // namespace base
