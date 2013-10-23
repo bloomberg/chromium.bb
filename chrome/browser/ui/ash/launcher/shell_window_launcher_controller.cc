@@ -11,6 +11,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/shell_window_launcher_item_controller.h"
+#include "chrome/browser/ui/host_desktop.h"
 #include "ui/aura/client/activation_client.h"
 
 using apps::ShellWindow;
@@ -21,6 +22,11 @@ std::string GetAppLauncherId(ShellWindow* shell_window) {
   if (shell_window->window_type_is_panel())
     return base::StringPrintf("panel:%d", shell_window->session_id().id());
   return shell_window->extension()->id();
+}
+
+bool ControlsWindow(aura::Window* window) {
+  return chrome::GetHostDesktopTypeForNativeWindow(window) ==
+      chrome::HOST_DESKTOP_TYPE_ASH;
 }
 
 }  // namespace
@@ -55,6 +61,9 @@ ShellWindowLauncherController::~ShellWindowLauncherController() {
 void ShellWindowLauncherController::OnShellWindowAdded(
     ShellWindow* shell_window) {
   aura::Window* window = shell_window->GetNativeWindow();
+  if (!ControlsWindow(window))
+    return;
+
   // Get the app's launcher identifier and add an entry to the map.
   DCHECK(window_to_app_launcher_id_map_.find(window) ==
          window_to_app_launcher_id_map_.end());
@@ -97,6 +106,9 @@ void ShellWindowLauncherController::OnShellWindowAdded(
 
 void ShellWindowLauncherController::OnShellWindowIconChanged(
     ShellWindow* shell_window) {
+  if (!ControlsWindow(shell_window->GetNativeWindow()))
+    return;
+
   const std::string app_launcher_id = GetAppLauncherId(shell_window);
   AppControllerMap::iterator iter = app_controller_map_.find(app_launcher_id);
   if (iter == app_controller_map_.end())
@@ -117,6 +129,9 @@ void ShellWindowLauncherController::OnShellWindowRemoved(
 // destroys ShellWindow, so both |window| and the associated ShellWindow
 // are valid here.
 void ShellWindowLauncherController::OnWindowDestroying(aura::Window* window) {
+  if (!ControlsWindow(window))
+    return;
+
   WindowToAppLauncherIdMap::iterator iter1 =
       window_to_app_launcher_id_map_.find(window);
   DCHECK(iter1 != window_to_app_launcher_id_map_.end());
