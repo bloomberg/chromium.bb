@@ -600,10 +600,12 @@ def _main():
 
   options, args = parser.parse_args()
 
-  # bake target into build_dir.
-  assert not options.build_dir.endswith(options.target)
-  options.build_dir = os.path.join(os.path.abspath(options.build_dir),
-                                   options.target)
+  # Bake target into build_dir.
+  if options.target and options.build_dir:
+    assert (options.target !=
+            os.path.basename(os.path.dirname(options.build_dir)))
+    options.build_dir = os.path.join(os.path.abspath(options.build_dir),
+                                     options.target)
 
   if options.verbose:
     logging_utils.config_root(logging.DEBUG)
