@@ -107,6 +107,23 @@
   }
 }
 
+- (NSRect)drawTitle:(NSAttributedString*)title
+          withFrame:(NSRect)frame
+             inView:(NSView*)controlView {
+  if (invalid_) {
+    // Draw with a color that has high contrast against the custom background.
+    NSMutableAttributedString* coloredTitle =
+        [[[NSMutableAttributedString alloc] initWithAttributedString:title]
+            autorelease];
+    [coloredTitle addAttribute:NSForegroundColorAttributeName
+                         value:[NSColor whiteColor]
+                         range:NSMakeRange(0, [title length])];
+    return [super drawTitle:coloredTitle withFrame:frame inView:controlView];
+  } else {
+    return [super drawTitle:title withFrame:frame inView:controlView];
+  }
+}
+
 - (NSString*)fieldValue {
   if (![self selectedItem])
     return defaultValue_;
