@@ -185,27 +185,27 @@ void FontBuilder::setFontFamilyValue(CSSValue* value, float effectiveZoom)
                 face = settings->standardFontFamily();
                 break;
             case CSSValueSerif:
-                face = serifFamily;
+                face = FontFamilyNames::webkit_serif;
                 scope.fontDescription().setGenericFamily(FontDescription::SerifFamily);
                 break;
             case CSSValueSansSerif:
-                face = sansSerifFamily;
+                face = FontFamilyNames::webkit_sans_serif;
                 scope.fontDescription().setGenericFamily(FontDescription::SansSerifFamily);
                 break;
             case CSSValueCursive:
-                face = cursiveFamily;
+                face = FontFamilyNames::webkit_cursive;
                 scope.fontDescription().setGenericFamily(FontDescription::CursiveFamily);
                 break;
             case CSSValueFantasy:
-                face = fantasyFamily;
+                face = FontFamilyNames::webkit_fantasy;
                 scope.fontDescription().setGenericFamily(FontDescription::FantasyFamily);
                 break;
             case CSSValueMonospace:
-                face = monospaceFamily;
+                face = FontFamilyNames::webkit_monospace;
                 scope.fontDescription().setGenericFamily(FontDescription::MonospaceFamily);
                 break;
             case CSSValueWebkitPictograph:
-                face = pictographFamily;
+                face = FontFamilyNames::webkit_pictograph;
                 scope.fontDescription().setGenericFamily(FontDescription::PictographFamily);
                 break;
             default:

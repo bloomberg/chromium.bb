@@ -17,18 +17,23 @@ namespace {{namespace}}Names {
 using namespace WTF;
 
 {%- for entry in entries|sort %}
-DEFINE_GLOBAL(AtomicString, {{entry|cpp_name}})
+{%- if export %}
+DEFINE_GLOBAL(AtomicString, {{entry|symbol}}Storage)
+{{export}} const AtomicString& {{entry|symbol}} = *reinterpret_cast<const AtomicString*>(&{{entry|symbol}}Storage);
+{%- else %}
+DEFINE_GLOBAL(AtomicString, {{entry|symbol}})
+{%- endif %}
 {%- endfor %}
 
 void init()
 {
 {%- for entry in entries|sort %}
-    StringImpl* {{entry|cpp_name}}Impl = StringImpl::createStatic("{{entry|cpp_name}}", {{entry|cpp_name|length}}, {{entry|cpp_name|hash}});
+    StringImpl* {{entry|symbol}}Impl = StringImpl::createStatic("{{entry|cpp_name}}", {{entry|cpp_name|length}}, {{entry|cpp_name|hash}});
 {%- endfor %}
 
 
 {%- for entry in entries|sort %}
-    new ((void*)&{{entry|cpp_name}}) AtomicString({{entry|cpp_name}}Impl);
+    new ((void*)&{{entry|symbol}}) AtomicString({{entry|symbol}}Impl);
 {%- endfor %}
 }
 

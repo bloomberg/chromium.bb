@@ -395,7 +395,7 @@ PassRefPtr<FontData> FontCache::getFontData(const Font& font, int& familyIndex, 
 
         if (fontSelector) {
             // Try the user's preferred standard font.
-            if (RefPtr<FontData> data = fontSelector->getFontData(font.fontDescription(), standardFamily))
+            if (RefPtr<FontData> data = fontSelector->getFontData(font.fontDescription(), FontFamilyNames::webkit_standard))
                 return data.release();
         }
 

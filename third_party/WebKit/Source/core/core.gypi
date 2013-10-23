@@ -3609,40 +3609,6 @@
             'platform/testing/FakeWebGraphicsContext3D.h',
             'rendering/RenderOverflowTest.cpp',
         ],
-        'scripts_for_in_files': [
-            # jinja2/__init__.py contains version string, so sufficient as
-            # dependency for whole jinja2 package
-            '<(DEPTH)/third_party/jinja2/__init__.py',
-            '<(DEPTH)/third_party/markupsafe/__init__.py',  # jinja2 dep
-            '../build/scripts/hasher.py',
-            '../build/scripts/in_file.py',
-            '../build/scripts/in_generator.py',
-            '../build/scripts/license.py',
-            '../build/scripts/name_macros.py',
-            '../build/scripts/name_utilities.py',
-            '../build/scripts/template_expander.py',
-            '../build/scripts/templates/macros.tmpl',
-        ],
-        'make_names_files': [
-            '<@(scripts_for_in_files)',
-            '../build/scripts/make_names.py',
-            '../build/scripts/templates/MakeNames.cpp.tmpl',
-            '../build/scripts/templates/MakeNames.h.tmpl',
-        ],
-        'make_qualified_names_files': [
-            '<@(scripts_for_in_files)',
-            '../build/scripts/make_qualified_names.py',
-            '../build/scripts/templates/MakeQualifiedNames.cpp.tmpl',
-            '../build/scripts/templates/MakeQualifiedNames.h.tmpl',
-        ],
-        'make_element_factory_files': [
-            '<@(make_qualified_names_files)',
-            '../build/scripts/make_element_factory.py',
-            '../build/scripts/templates/ElementFactory.cpp.tmpl',
-            '../build/scripts/templates/ElementFactory.h.tmpl',
-            '../build/scripts/templates/ElementWrapperFactory.cpp.tmpl',
-            '../build/scripts/templates/ElementWrapperFactory.h.tmpl',
-        ],
         'conditions': [
             ['OS=="win"', {
                 # Using native perl rather than cygwin perl cuts execution time

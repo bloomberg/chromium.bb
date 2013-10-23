@@ -33,6 +33,7 @@
     'core.gypi',
     '../bindings/bindings.gypi',
     '../build/features.gypi',
+    '../build/scripts/scripts.gypi',
   ],
 
   'targets': [

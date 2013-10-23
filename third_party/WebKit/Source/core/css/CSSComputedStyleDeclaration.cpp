@@ -1346,17 +1346,17 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
 
 static CSSValueID identifierForFamily(const AtomicString& family)
 {
-    if (family == cursiveFamily)
+    if (family == FontFamilyNames::webkit_cursive)
         return CSSValueCursive;
-    if (family == fantasyFamily)
+    if (family == FontFamilyNames::webkit_fantasy)
         return CSSValueFantasy;
-    if (family == monospaceFamily)
+    if (family == FontFamilyNames::webkit_monospace)
         return CSSValueMonospace;
-    if (family == pictographFamily)
+    if (family == FontFamilyNames::webkit_pictograph)
         return CSSValueWebkitPictograph;
-    if (family == sansSerifFamily)
+    if (family == FontFamilyNames::webkit_sans_serif)
         return CSSValueSansSerif;
-    if (family == serifFamily)
+    if (family == FontFamilyNames::webkit_serif)
         return CSSValueSerif;
     return CSSValueInvalid;
 }

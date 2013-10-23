@@ -31,6 +31,7 @@
 {
   'includes': [
     '../build/features.gypi',
+    '../build/scripts/scripts.gypi',
   ],
 
   'targets': [
@@ -42,9 +43,7 @@
         {
           'action_name': 'FontFamilyNames',
           'inputs': [
-            '../build/scripts/Hasher.pm',
-            '../build/scripts/StaticString.pm',
-            '../build/scripts/make_names.pl',
+            '<@(make_names_files)',
             'graphics/fonts/FontFamilyNames.in',
           ],
           'outputs': [
@@ -53,14 +52,11 @@
           ],
           'action': [
             'python',
-            '../build/scripts/action_makenames.py',
-            '<@(_outputs)',
-            '--',
-            '<@(_inputs)',
-            '--',
-            '--fonts',
+            '../build/scripts/make_names.py',
+            'graphics/fonts/FontFamilyNames.in',
+            '--output_dir',
+            '<(SHARED_INTERMEDIATE_DIR)/blink',
           ],
-          'msvs_cygwin_shell': 1,
         },
       ]
     },

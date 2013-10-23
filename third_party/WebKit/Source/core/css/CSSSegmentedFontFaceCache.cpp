@@ -47,9 +47,6 @@
 
 namespace WebCore {
 
-using namespace FontFamilyNames;
-
-
 CSSSegmentedFontFaceCache::CSSSegmentedFontFaceCache()
     : m_version(0)
 {
@@ -115,19 +112,19 @@ static PassRefPtr<FontData> fontDataForGenericFamily(Settings* settings, const F
 #if OS(ANDROID)
     genericFamily = FontCache::getGenericFamilyNameForScript(familyName, script);
 #else
-    if (familyName == serifFamily)
+    if (familyName == FontFamilyNames::webkit_serif)
         genericFamily = settings->serifFontFamily(script);
-    else if (familyName == sansSerifFamily)
+    else if (familyName == FontFamilyNames::webkit_sans_serif)
         genericFamily = settings->sansSerifFontFamily(script);
-    else if (familyName == cursiveFamily)
+    else if (familyName == FontFamilyNames::webkit_cursive)
         genericFamily = settings->cursiveFontFamily(script);
-    else if (familyName == fantasyFamily)
+    else if (familyName == FontFamilyNames::webkit_fantasy)
         genericFamily = settings->fantasyFontFamily(script);
-    else if (familyName == monospaceFamily)
+    else if (familyName == FontFamilyNames::webkit_monospace)
         genericFamily = settings->fixedFontFamily(script);
-    else if (familyName == pictographFamily)
+    else if (familyName == FontFamilyNames::webkit_pictograph)
         genericFamily = settings->pictographFontFamily(script);
-    else if (familyName == standardFamily)
+    else if (familyName == FontFamilyNames::webkit_standard)
         genericFamily = settings->standardFontFamily(script);
 #endif
 

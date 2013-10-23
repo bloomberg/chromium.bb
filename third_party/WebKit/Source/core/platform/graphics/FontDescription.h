@@ -41,8 +41,6 @@
 
 namespace WebCore {
 
-using namespace FontFamilyNames;
-
 enum FontWeight {
     FontWeight100,
     FontWeight200,
@@ -117,7 +115,7 @@ public:
     GenericFamilyType genericFamily() const { return static_cast<GenericFamilyType>(m_genericFamily); }
     bool usePrinterFont() const { return m_usePrinterFont; }
     // only use fixed default size when there is only one font family, and that family is "monospace"
-    bool useFixedDefaultSize() const { return genericFamily() == MonospaceFamily && !family().next() && family().family() == monospaceFamily; }
+    bool useFixedDefaultSize() const { return genericFamily() == MonospaceFamily && !family().next() && family().family() == FontFamilyNames::webkit_monospace; }
     Kerning kerning() const { return static_cast<Kerning>(m_kerning); }
     LigaturesState commonLigaturesState() const { return static_cast<LigaturesState>(m_commonLigaturesState); }
     LigaturesState discretionaryLigaturesState() const { return static_cast<LigaturesState>(m_discretionaryLigaturesState); }

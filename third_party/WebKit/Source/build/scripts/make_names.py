@@ -34,6 +34,12 @@ import in_generator
 import template_expander
 import name_utilities
 
+def _symbol(entry):
+    # FIXME: Remove this special case for the ugly x-webkit-foo attributes.
+    if entry['name'].startswith('-webkit-'):
+        return entry['name'].replace('-', '_')[1:]
+    return name_utilities.cpp_name(entry)
+
 
 class MakeNamesWriter(in_generator.Writer):
     defaults = {
@@ -43,23 +49,31 @@ class MakeNamesWriter(in_generator.Writer):
     }
     default_parameters = {
         'namespace': '',
+        'export': '',
     }
     filters = {
+        'cpp_name': name_utilities.cpp_name,
         'hash': hasher.hash,
         'script_name': name_utilities.script_name,
-        'cpp_name': name_utilities.cpp_name,
+        'symbol': _symbol,
         'to_macro_style': name_utilities.to_macro_style,
     }
 
     def __init__(self, in_file_path, enabled_conditions):
         super(MakeNamesWriter, self).__init__(in_file_path, enabled_conditions)
+
         namespace = self.in_file.parameters['namespace'].strip('"')
+        export = self.in_file.parameters['export'].strip('"')
+
+        assert namespace, 'A namespace is required.'
+
         self._outputs = {
-            (namespace + "Names.h"): self.generate_header,
-            (namespace + "Names.cpp"): self.generate_implementation,
+            (namespace + 'Names.h'): self.generate_header,
+            (namespace + 'Names.cpp'): self.generate_implementation,
         }
         self._template_context = {
             'namespace': namespace,
+            'export': export,
             'entries': self.in_file.name_dictionaries,
         }
 

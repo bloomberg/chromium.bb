@@ -1,7 +1,10 @@
-cursiveFamily="-webkit-cursive"
-fantasyFamily="-webkit-fantasy"
-monospaceFamily="-webkit-monospace"
-sansSerifFamily="-webkit-sans-serif"
-serifFamily="-webkit-serif"
-pictographFamily="-webkit-pictograph"
-standardFamily="-webkit-standard"
+namespace="FontFamily"
+export="PLATFORM_EXPORT"
+
+-webkit-cursive
+-webkit-fantasy
+-webkit-monospace
+-webkit-sans-serif
+-webkit-serif
+-webkit-pictograph
+-webkit-standard
