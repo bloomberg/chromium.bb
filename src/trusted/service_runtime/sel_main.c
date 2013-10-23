@@ -156,11 +156,14 @@ static void PrintUsage(void) {
           " -F fuzz testing; quit after loading NaCl app\n"
           " -g enable gdb debug stub.  Not secure on x86-64 Windows.\n"
           " -l <file>  write log output to the given file\n"
+          " -q quiet; suppress diagnostic/warning messages at startup\n"
           " -Q disable platform qualification (dangerous!)\n"
           " -s safely stub out non-validating instructions\n"
           " -S enable signal handling.  Not supported on Windows.\n"
           " -E <name=value>|<name> set an environment variable\n"
           " -Z use fixed feature x86 CPU mode\n"
+          "\n"
+          " (For full effect, put -l and -q at the beginning.)\n"
           );  /* easier to add new flags/lines */
 }
 
@@ -201,8 +204,8 @@ int NaClSelLdrMain(int argc, char **argv) {
   int                           ret_code;
   struct DynArray               env_vars;
 
-  char                          *log_file = NULL;
   int                           verbosity = 0;
+  int                           quiet = 0;
   int                           fuzzing_quit_after_load = 0;
   int                           debug_mode_bypass_acl_checks = 0;
   int                           debug_mode_ignore_validator = 0;
@@ -266,10 +269,11 @@ int NaClSelLdrMain(int argc, char **argv) {
 #if NACL_LINUX
                        "+D:z:"
 #endif
-                       "aB:ceE:f:Fgh:i:l:Qr:RsSvw:X:Z")) != -1) {
+                       "aB:ceE:f:Fgh:i:l:qQr:RsSvw:X:Z")) != -1) {
     switch (opt) {
       case 'a':
-        fprintf(stderr, "DEBUG MODE ENABLED (bypass acl)\n");
+        if (!quiet)
+          fprintf(stderr, "DEBUG MODE ENABLED (bypass acl)\n");
         debug_mode_bypass_acl_checks = 1;
         break;
       case 'B':
@@ -347,11 +351,23 @@ int NaClSelLdrMain(int argc, char **argv) {
         redir_qend = &entry->next;
         break;
       case 'l':
-        log_file = optarg;
+        if (NULL != optarg) {
+          /*
+           * change stdout/stderr to log file now, so that subsequent error
+           * messages will go there.  unfortunately, error messages that
+           * result from getopt processing -- usually out-of-memory, which
+           * shouldn't happen -- won't show up.
+           */
+          NaClLogSetFile(optarg);
+        }
+        break;
+      case 'q':
+        quiet = 1;
         break;
       case 'Q':
-        fprintf(stderr, "PLATFORM QUALIFICATION DISABLED BY -Q - "
-                "Native Client's sandbox will be unreliable!\n");
+        if (!quiet)
+          fprintf(stderr, "PLATFORM QUALIFICATION DISABLED BY -Q - "
+                  "Native Client's sandbox will be unreliable!\n");
         skip_qualification = 1;
         break;
       case 'R':
@@ -405,10 +421,13 @@ int NaClSelLdrMain(int argc, char **argv) {
     }
   }
 
-  if (debug_mode_ignore_validator == 1)
-    fprintf(stderr, "DEBUG MODE ENABLED (ignore validator)\n");
-  else if (debug_mode_ignore_validator > 1)
-    fprintf(stderr, "DEBUG MODE ENABLED (skip validator)\n");
+  if (debug_mode_ignore_validator == 1) {
+    if (!quiet)
+      fprintf(stderr, "DEBUG MODE ENABLED (ignore validator)\n");
+  } else if (debug_mode_ignore_validator > 1) {
+    if (!quiet)
+      fprintf(stderr, "DEBUG MODE ENABLED (skip validator)\n");
+  }
 
   if (verbosity) {
     int         ix;
@@ -424,16 +443,6 @@ int NaClSelLdrMain(int argc, char **argv) {
 
   if (debug_mode_bypass_acl_checks) {
     NaClInsecurelyBypassAllAclChecks();
-  }
-
-  /*
-   * change stdout/stderr to log file now, so that subsequent error
-   * messages will go there.  unfortunately, error messages that
-   * result from getopt processing -- usually out-of-memory, which
-   * shouldn't happen -- won't show up.
-   */
-  if (NULL != log_file) {
-    NaClLogSetFile(log_file);
   }
 
   if (rpc_supplies_nexe) {
@@ -518,8 +527,9 @@ int NaClSelLdrMain(int argc, char **argv) {
    */
   if (!skip_qualification &&
       getenv("NACL_DANGEROUS_SKIP_QUALIFICATION_TEST") != NULL) {
-    fprintf(stderr, "PLATFORM QUALIFICATION DISABLED BY ENVIRONMENT - "
-            "Native Client's sandbox will be unreliable!\n");
+    if (!quiet)
+      fprintf(stderr, "PLATFORM QUALIFICATION DISABLED BY ENVIRONMENT - "
+              "Native Client's sandbox will be unreliable!\n");
     skip_qualification = 1;
   }
 
@@ -529,10 +539,11 @@ int NaClSelLdrMain(int argc, char **argv) {
     if (LOAD_OK != pq_error) {
       errcode = pq_error;
       nap->module_load_status = pq_error;
-      fprintf(stderr, "Error while loading \"%s\": %s\n",
-              NULL != nacl_file ? nacl_file
-                                : "(no file, to-be-supplied-via-RPC)",
-              NaClErrorString(errcode));
+      if (!quiet)
+        fprintf(stderr, "Error while loading \"%s\": %s\n",
+                NULL != nacl_file ? nacl_file
+                                  : "(no file, to-be-supplied-via-RPC)",
+                NaClErrorString(errcode));
     }
   }
 
@@ -573,7 +584,7 @@ int NaClSelLdrMain(int argc, char **argv) {
     if (LOAD_OK == errcode) {
       NaClLog(2, "Loading nacl file %s (non-RPC)\n", nacl_file);
       errcode = NaClAppLoadFileFromFilename(nap, nacl_file);
-      if (LOAD_OK != errcode) {
+      if (LOAD_OK != errcode && !quiet) {
         fprintf(stderr, "Error while loading \"%s\": %s\n",
                 nacl_file,
                 NaClErrorString(errcode));
