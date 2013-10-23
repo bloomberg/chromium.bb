@@ -29,7 +29,7 @@
     </thead>
     <tbody id=prerender-view-active-table>
       <tr jsselect="active">
-        <td><a jsvalues=".href:url" jscontent="url" target="_blank"></a></td>
+        <td jscontent="url"></td>
         <td jscontent="duration"></td>
         <td jscontent="is_loaded"></td>
       </tr>
@@ -48,7 +48,7 @@
     <tbody id=prerender-view-history-table>
       <tr jsselect="$this.history" jsvalues=".className: final_status.toLowerCase()">
         <td jscontent="origin"></td>
-        <td><a jsvalues=".href:url" jscontent="url" target="_blank"></a></td>
+        <td jscontent="url"></td>
         <td jscontent="final_status"></td>
         <td jscontent="timeutil.dateToString(new Date(parseInt(end_time)))"></td>
       </tr>
