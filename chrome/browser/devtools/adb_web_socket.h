@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_DEVTOOLS_ADB_WEB_SOCKET_H_
 #define CHROME_BROWSER_DEVTOOLS_ADB_WEB_SOCKET_H_
 
-#include "chrome/browser/devtools/devtools_adb_bridge.h"
+#include "chrome/browser/devtools/android_device.h"
 
 class AdbWebSocket : public base::RefCountedThreadSafe<AdbWebSocket> {
  public:
@@ -20,7 +20,7 @@ class AdbWebSocket : public base::RefCountedThreadSafe<AdbWebSocket> {
     virtual ~Delegate() {}
   };
 
-  AdbWebSocket(scoped_refptr<DevToolsAdbBridge::AndroidDevice> device,
+  AdbWebSocket(scoped_refptr<AndroidDevice> device,
                const std::string& socket_name,
                const std::string& url,
                base::MessageLoop* adb_message_loop,
@@ -48,7 +48,7 @@ class AdbWebSocket : public base::RefCountedThreadSafe<AdbWebSocket> {
   void OnFrameRead(const std::string& message);
   void OnSocketClosed(bool closed_by_device);
 
-  scoped_refptr<DevToolsAdbBridge::AndroidDevice> device_;
+  scoped_refptr<AndroidDevice> device_;
   std::string socket_name_;
   std::string url_;
   base::MessageLoop* adb_message_loop_;

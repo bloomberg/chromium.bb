@@ -50,7 +50,7 @@ class PortForwardingController : public BrowserContextKeyedService {
   class Connection;
   typedef std::map<std::string, Connection* > Registry;
 
-  scoped_refptr<DevToolsAdbBridge::RefCountedAdbThread> adb_thread_;
+  scoped_refptr<RefCountedAdbThread> adb_thread_;
   PrefService* pref_service_;
   Registry registry_;
 

@@ -11,7 +11,8 @@
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/devtools/adb/android_usb_device.h"
+#include "chrome/browser/devtools/android_device.h"
+#include "chrome/browser/devtools/refcounted_adb_thread.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service_factory.h"
 #include "content/public/browser/browser_thread.h"
@@ -39,9 +40,6 @@ class Profile;
 // The format used for constructing DevTools server socket names.
 extern const char kDevToolsChannelNameFormat[];
 
-typedef base::Callback<void(int, const std::string&)> CommandCallback;
-typedef base::Callback<void(int result, net::StreamSocket*)> SocketCallback;
-
 class DevToolsAdbBridge
     : public base::RefCountedThreadSafe<
           DevToolsAdbBridge,
@@ -49,10 +47,12 @@ class DevToolsAdbBridge
  public:
   typedef base::Callback<void(int result,
                               const std::string& response)> Callback;
+  typedef std::vector<scoped_refptr<AndroidDeviceProvider> > DeviceProviders;
+
 
   class Wrapper : public BrowserContextKeyedService {
    public:
-    explicit Wrapper(Profile* profile);
+    Wrapper();
     virtual ~Wrapper();
 
     DevToolsAdbBridge* Get();
@@ -80,12 +80,9 @@ class DevToolsAdbBridge
     DISALLOW_COPY_AND_ASSIGN(Factory);
   };
 
-  class AndroidDevice;
-  class RefCountedAdbThread;
-
   class RemotePage : public base::RefCounted<RemotePage> {
    public:
-    RemotePage(scoped_refptr<DevToolsAdbBridge::RefCountedAdbThread> adb_thread,
+    RemotePage(scoped_refptr<RefCountedAdbThread> adb_thread,
                scoped_refptr<AndroidDevice> device,
                const std::string& socket,
                const base::DictionaryValue& value);
@@ -111,14 +108,14 @@ class DevToolsAdbBridge
     friend class base::RefCounted<RemotePage>;
     virtual ~RemotePage();
 
-    void RequestActivate(const CommandCallback& callback);
+    void RequestActivate(const AndroidDevice::CommandCallback& callback);
 
     void InspectOnHandlerThread(
         Profile* profile, int result, const std::string& response);
 
     void InspectOnUIThread(Profile* profile);
 
-    scoped_refptr<DevToolsAdbBridge::RefCountedAdbThread> adb_thread_;
+    scoped_refptr<RefCountedAdbThread> adb_thread_;
     scoped_refptr<AndroidDevice> device_;
     std::string socket_;
     std::string id_;
@@ -137,7 +134,7 @@ class DevToolsAdbBridge
   class RemoteBrowser : public base::RefCounted<RemoteBrowser> {
    public:
     RemoteBrowser(
-        scoped_refptr<DevToolsAdbBridge::RefCountedAdbThread> adb_thread,
+        scoped_refptr<RefCountedAdbThread> adb_thread,
         scoped_refptr<AndroidDevice> device,
         const std::string& socket);
 
@@ -168,7 +165,7 @@ class DevToolsAdbBridge
     void PageCreatedOnUIThread(
         const std::string& response, const std::string& url);
 
-    scoped_refptr<DevToolsAdbBridge::RefCountedAdbThread> adb_thread_;
+    scoped_refptr<RefCountedAdbThread> adb_thread_;
     scoped_refptr<AndroidDevice> device_;
     const std::string socket_;
     std::string product_;
@@ -209,48 +206,6 @@ class DevToolsAdbBridge
 
   typedef std::vector<scoped_refptr<RemoteDevice> > RemoteDevices;
 
-  class AndroidDevice : public base::RefCounted<AndroidDevice> {
-   public:
-    AndroidDevice(const std::string& serial, bool is_connected);
-
-    virtual void RunCommand(const std::string& command,
-                            const CommandCallback& callback) = 0;
-    virtual void OpenSocket(const std::string& socket_name,
-                            const SocketCallback& callback) = 0;
-    void HttpQuery(const std::string& la_name,
-                   const std::string& request,
-                   const CommandCallback& callback);
-    void HttpUpgrade(const std::string& la_name,
-                     const std::string& request,
-                     const SocketCallback& callback);
-
-    std::string serial() { return serial_; }
-    bool is_connected() { return is_connected_; }
-
-    std::string model() { return model_; }
-    void set_model(const std::string& model) { model_ = model; }
-
-   protected:
-    friend class base::RefCounted<AndroidDevice>;
-    virtual ~AndroidDevice();
-
-   private:
-    void OnHttpSocketOpened(const std::string& request,
-                            const CommandCallback& callback,
-                            int result,
-                            net::StreamSocket* socket);
-    void OnHttpSocketOpened2(const std::string& request,
-                             const SocketCallback& callback,
-                             int result,
-                             net::StreamSocket* socket);
-
-    std::string serial_;
-    bool is_connected_;
-    std::string model_;
-
-    DISALLOW_COPY_AND_ASSIGN(AndroidDevice);
-  };
-
   typedef std::vector<scoped_refptr<AndroidDevice> > AndroidDevices;
   typedef base::Callback<void(const AndroidDevices&)> AndroidDevicesCallback;
 
@@ -261,27 +216,12 @@ class DevToolsAdbBridge
     virtual ~Listener() {}
   };
 
-  class RefCountedAdbThread : public base::RefCounted<RefCountedAdbThread> {
-   public:
-    static scoped_refptr<RefCountedAdbThread> GetInstance();
-    base::MessageLoop* message_loop();
-
-   private:
-    friend class base::RefCounted<RefCountedAdbThread>;
-    static DevToolsAdbBridge::RefCountedAdbThread* instance_;
-    static void StopThread(base::Thread* thread);
-
-    RefCountedAdbThread();
-    virtual ~RefCountedAdbThread();
-    base::Thread* thread_;
-  };
-
-  explicit DevToolsAdbBridge(Profile* profile);
+  DevToolsAdbBridge();
   void AddListener(Listener* listener);
   void RemoveListener(Listener* listener);
-  void CountDevices(const base::Callback<void(int)>& callback);
-  void set_discover_usb_devices(bool enabled) {
-    discover_usb_devices_ = enabled;
+
+  void set_device_providers(DeviceProviders device_providers) {
+    device_providers_ = device_providers;
   }
 
  private:
@@ -294,13 +234,11 @@ class DevToolsAdbBridge
   void RequestRemoteDevices();
   void ReceivedRemoteDevices(RemoteDevices* devices);
 
-  Profile* profile_;
   scoped_refptr<RefCountedAdbThread> adb_thread_;
   bool has_message_loop_;
-  scoped_ptr<crypto::RSAPrivateKey> rsa_key_;
   typedef std::vector<Listener*> Listeners;
   Listeners listeners_;
-  bool discover_usb_devices_;
+  DeviceProviders device_providers_;
   DISALLOW_COPY_AND_ASSIGN(DevToolsAdbBridge);
 };
 

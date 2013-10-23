@@ -272,9 +272,9 @@ class PortForwardingController::Connection
           content::BrowserThread::DeleteOnUIThread> {
  public:
   Connection(Registry* registry,
-             scoped_refptr<DevToolsAdbBridge::AndroidDevice> device,
+             scoped_refptr<AndroidDevice> device,
              const std::string& socket,
-             scoped_refptr<DevToolsAdbBridge::RefCountedAdbThread> adb_thread,
+             scoped_refptr<RefCountedAdbThread> adb_thread,
              PrefService* pref_service);
 
   const PortStatusMap& GetPortStatusMap();
@@ -317,8 +317,8 @@ class PortForwardingController::Connection
   virtual bool ProcessIncomingMessage(const std::string& message) OVERRIDE;
 
   PortForwardingController::Registry* registry_;
-  scoped_refptr<DevToolsAdbBridge::AndroidDevice> device_;
-  scoped_refptr<DevToolsAdbBridge::RefCountedAdbThread> adb_thread_;
+  scoped_refptr<AndroidDevice> device_;
+  scoped_refptr<RefCountedAdbThread> adb_thread_;
   PrefChangeRegistrar pref_change_registrar_;
   scoped_refptr<AdbWebSocket> web_socket_;
   int command_id_;
@@ -332,9 +332,9 @@ class PortForwardingController::Connection
 
 PortForwardingController::Connection::Connection(
     Registry* registry,
-    scoped_refptr<DevToolsAdbBridge::AndroidDevice> device,
+    scoped_refptr<AndroidDevice> device,
     const std::string& socket,
-    scoped_refptr<DevToolsAdbBridge::RefCountedAdbThread> adb_thread,
+    scoped_refptr<RefCountedAdbThread> adb_thread,
     PrefService* pref_service)
     : registry_(registry),
       device_(device),
@@ -579,7 +579,7 @@ bool PortForwardingController::Connection::ProcessIncomingMessage(
 }
 
 PortForwardingController::PortForwardingController(PrefService* pref_service)
-    : adb_thread_(DevToolsAdbBridge::RefCountedAdbThread::GetInstance()),
+    : adb_thread_(RefCountedAdbThread::GetInstance()),
       pref_service_(pref_service) {
 }
 

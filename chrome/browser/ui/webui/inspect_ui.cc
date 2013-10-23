@@ -793,7 +793,16 @@ void InspectUI::UpdateDiscoverUsbDevicesEnabled() {
   if (adb_bridge) {
     bool enabled = false;
     value->GetAsBoolean(&enabled);
-    adb_bridge->set_discover_usb_devices(enabled);
+
+    DevToolsAdbBridge::DeviceProviders device_providers;
+    device_providers.push_back(AndroidDeviceProvider::GetAdbDeviceProvider());
+
+    if (enabled) {
+      device_providers.push_back(
+          AndroidDeviceProvider::GetUsbDeviceProvider(profile));
+    }
+
+    adb_bridge->set_device_providers(device_providers);
   }
 }
 

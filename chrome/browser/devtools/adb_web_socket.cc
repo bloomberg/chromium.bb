@@ -24,7 +24,7 @@ static const char kWebSocketUpgradeRequest[] = "GET %s HTTP/1.1\r\n"
     "\r\n";
 
 AdbWebSocket::AdbWebSocket(
-    scoped_refptr<DevToolsAdbBridge::AndroidDevice> device,
+    scoped_refptr<AndroidDevice> device,
     const std::string& socket_name,
     const std::string& url,
     base::MessageLoop* adb_message_loop,
