@@ -567,7 +567,8 @@ TEST_F(WebFrameCSSCallbackTest, Reparenting)
     EXPECT_THAT(matchedSelectors(), testing::ElementsAre("span"));
 }
 
-TEST_F(WebFrameCSSCallbackTest, MultiSelector)
+// Flaky: crbug.com/310440
+TEST_F(WebFrameCSSCallbackTest, DISABLED_MultiSelector)
 {
     loadHTML("<span></span>");
 
