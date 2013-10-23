@@ -26,14 +26,14 @@ TEST_F(PlatformAppsManifestTest, PlatformApps) {
   scoped_refptr<Extension> extension =
       LoadAndExpectSuccess("init_valid_platform_app.json");
   EXPECT_TRUE(AppIsolationInfo::HasIsolatedStorage(extension.get()));
-  EXPECT_TRUE(IncognitoInfo::IsSplitMode(extension.get()));
+  EXPECT_FALSE(IncognitoInfo::IsSplitMode(extension.get()));
 
   extension =
       LoadAndExpectSuccess("init_valid_platform_app_no_manifest_version.json");
   EXPECT_EQ(2, extension->manifest_version());
 
   extension = LoadAndExpectSuccess("incognito_valid_platform_app.json");
-  EXPECT_TRUE(IncognitoInfo::IsSplitMode(extension.get()));
+  EXPECT_FALSE(IncognitoInfo::IsSplitMode(extension.get()));
 
   Testcase error_testcases[] = {
     Testcase("init_invalid_platform_app_2.json",
