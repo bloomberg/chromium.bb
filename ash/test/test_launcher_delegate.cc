@@ -6,7 +6,6 @@
 
 #include "ash/launcher/launcher_item_delegate_manager.h"
 #include "ash/launcher/launcher_model.h"
-#include "ash/shelf/shelf_util.h"
 #include "ash/shell.h"
 #include "ash/test/test_launcher_item_delegate.h"
 #include "base/strings/string_util.h"

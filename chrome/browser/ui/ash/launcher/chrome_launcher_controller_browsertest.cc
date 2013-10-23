@@ -12,7 +12,7 @@
 #include "ash/launcher/launcher.h"
 #include "ash/launcher/launcher_button.h"
 #include "ash/launcher/launcher_model.h"
-#include "ash/shelf/shelf_util.h"
+#include "ash/launcher/launcher_model_util.h"
 #include "ash/shelf/shelf_view.h"
 #include "ash/shell.h"
 #include "ash/test/app_list_controller_test_api.h"
@@ -269,11 +269,7 @@ class LauncherAppBrowserTest : public ExtensionBrowserTest {
 
   // Get the index of an item which has the given type.
   int GetIndexOfLauncherItemType(ash::LauncherItemType type) {
-    for (int i = 0; i < model_->item_count(); i++) {
-      if (model_->items()[i].type == type)
-        return i;
-    }
-    return -1;
+    return ash::GetLauncherItemIndexForType(type, *model_);
   }
 
   // Try to rip off |item_index|.
@@ -1031,7 +1027,7 @@ IN_PROC_BROWSER_TEST_F(LauncherAppBrowserTest, Navigation) {
 IN_PROC_BROWSER_TEST_F(LauncherAppBrowserTest, TabDragAndDrop) {
   TabStripModel* tab_strip_model1 = browser()->tab_strip_model();
   EXPECT_EQ(1, tab_strip_model1->count());
-  int browser_index = ash::GetBrowserItemIndex(*model_);
+  int browser_index = GetIndexOfLauncherItemType(ash::TYPE_BROWSER_SHORTCUT);
   EXPECT_TRUE(browser_index >= 0);
   EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
 
@@ -1174,7 +1170,7 @@ IN_PROC_BROWSER_TEST_F(LauncherAppBrowserTest, RefocusFilterLaunch) {
 IN_PROC_BROWSER_TEST_F(LauncherAppBrowserTest, ActivationStateCheck) {
   TabStripModel* tab_strip = browser()->tab_strip_model();
   // Get the browser item index
-  int browser_index = ash::GetBrowserItemIndex(*controller_->model());
+  int browser_index = GetIndexOfLauncherItemType(ash::TYPE_BROWSER_SHORTCUT);
   EXPECT_TRUE(browser_index >= 0);
 
   // Even though we are just comming up, the browser should be active.
@@ -1838,7 +1834,7 @@ IN_PROC_BROWSER_TEST_F(LauncherAppBrowserTest, MatchingLauncherIDandActiveTab) {
 
   aura::Window* window = browser()->window()->GetNativeWindow();
 
-  int browser_index = ash::GetBrowserItemIndex(*model_);
+  int browser_index = GetIndexOfLauncherItemType(ash::TYPE_BROWSER_SHORTCUT);
   ash::LauncherID browser_id = model_->items()[browser_index].id;
   EXPECT_EQ(browser_id, controller_->GetIDByWindow(window));
 
