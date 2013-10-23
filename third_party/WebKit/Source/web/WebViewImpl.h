@@ -298,9 +298,6 @@ public:
         int separatorIndex);
     virtual void hidePopups();
     virtual void selectAutofillSuggestionAtIndex(unsigned listIndex);
-    virtual void setScrollbarColors(unsigned inactiveColor,
-                                    unsigned activeColor,
-                                    unsigned trackColor);
     virtual void setSelectionColors(unsigned activeBackgroundColor,
                                     unsigned activeForegroundColor,
                                     unsigned inactiveBackgroundColor,

@@ -462,10 +462,6 @@ public:
 
     // Custom colors -------------------------------------------------------
 
-    virtual void setScrollbarColors(unsigned inactiveColor,
-                                    unsigned activeColor,
-                                    unsigned trackColor) = 0;
-
     virtual void setSelectionColors(unsigned activeBackgroundColor,
                                     unsigned activeForegroundColor,
                                     unsigned inactiveBackgroundColor,

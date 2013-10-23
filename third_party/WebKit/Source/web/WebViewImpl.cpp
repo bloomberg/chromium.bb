@@ -3560,12 +3560,6 @@ void WebViewImpl::setWindowFeatures(const WebWindowFeatures& features)
     m_page->chrome().setWindowFeatures(features);
 }
 
-// FIXME: remove this api. See: https://codereview.chromium.org/17279002/.
-void WebViewImpl::setScrollbarColors(unsigned inactiveColor,
-                                     unsigned activeColor,
-                                     unsigned trackColor) {
-}
-
 void WebViewImpl::setSelectionColors(unsigned activeBackgroundColor,
                                      unsigned activeForegroundColor,
                                      unsigned inactiveBackgroundColor,
