@@ -1256,6 +1256,13 @@ const Experiment kExperiments[] = {
                               autofill::switches::kDisablePasswordGeneration)
   },
   {
+    "enable-password-manager-reauthentication",
+    IDS_FLAGS_PASSWORD_MANAGER_REAUTHENTICATION_NAME,
+    IDS_FLAGS_PASSWORD_MANAGER_REAUTHENTICATION_DESCRIPTION,
+    kOsMac,
+    SINGLE_VALUE_TYPE(switches::kEnablePasswordManagerReauthentication)
+  },
+  {
     "enable-people-search",
     IDS_FLAGS_ENABLE_PEOPLE_SEARCH_NAME,
     IDS_FLAGS_ENABLE_PEOPLE_SEARCH_DESCRIPTION,

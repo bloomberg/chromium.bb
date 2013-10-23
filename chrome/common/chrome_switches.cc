@@ -554,6 +554,11 @@ const char kEnableAuthNegotiatePort[]       = "enable-auth-negotiate-port";
 const char kEnablePasswordAutofillPublicSuffixDomainMatching[] =
     "enable-password-autofill-public-suffix-domain-matching";
 
+// Enable the setting to prompt the user for their OS account password before
+// revealing plaintext passwords in the password manager.
+const char kEnablePasswordManagerReauthentication[] =
+    "enable-password-manager-reauthentication";
+
 // Enables the pre- and auto-login features. When a user signs in to sync, the
 // browser's cookie jar is pre-filled with GAIA cookies. When the user visits a
 // GAIA login page, an info bar can help the user login.

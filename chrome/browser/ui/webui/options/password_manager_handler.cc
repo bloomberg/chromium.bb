@@ -5,13 +5,17 @@
 #include "chrome/browser/ui/webui/options/password_manager_handler.h"
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/password_manager/password_manager_util.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "components/autofill/core/common/password_form.h"
@@ -28,8 +32,9 @@ namespace options {
 
 PasswordManagerHandler::PasswordManagerHandler()
     : populater_(this),
-      exception_populater_(this),
-      is_user_authenticated_(false) {
+      exception_populater_(this) {
+  require_reauthentication_ = CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnablePasswordManagerReauthentication);
 }
 
 PasswordManagerHandler::~PasswordManagerHandler() {
@@ -157,9 +162,11 @@ void PasswordManagerHandler::RequestShowPassword(const ListValue* args) {
     return;
   }
 
-  if (!is_user_authenticated_) {
-    // TODO(dubroy): Insert actual authentication code here.
-    is_user_authenticated_ = true;
+  if (IsAuthenticationRequired()) {
+    if (password_manager_util::AuthenticateUser())
+      last_authentication_time_ = base::TimeTicks::Now();
+    else
+      return;
   }
 
   // Call back the front end to reveal the password.
@@ -178,7 +185,7 @@ void PasswordManagerHandler::SetPasswordList() {
     InitializeHandler();
 
   ListValue entries;
-  bool show_passwords = *show_passwords_ && is_user_authenticated_;
+  bool show_passwords = *show_passwords_ && !require_reauthentication_;
   string16 placeholder(ASCIIToUTF16("        "));
   for (size_t i = 0; i < password_list_.size(); ++i) {
     ListValue* entry = new ListValue();
@@ -208,6 +215,12 @@ void PasswordManagerHandler::SetPasswordExceptionList() {
 
   web_ui()->CallJavascriptFunction("PasswordManager.setPasswordExceptionsList",
                                    entries);
+}
+
+bool PasswordManagerHandler::IsAuthenticationRequired() {
+  base::TimeDelta delta = base::TimeDelta::FromSeconds(60);
+  return require_reauthentication_ &&
+      (base::TimeTicks::Now() - last_authentication_time_) > delta;
 }
 
 PasswordManagerHandler::ListPopulater::ListPopulater(
