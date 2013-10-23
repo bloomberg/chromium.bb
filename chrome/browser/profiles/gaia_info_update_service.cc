@@ -67,9 +67,9 @@ bool GAIAInfoUpdateService::ShouldUseGAIAProfileInfo(Profile* profile) {
   if (!profile->GetOriginalProfile()->IsSyncAccessible())
     return false;
 
-  // To enable this feature for testing pass "--gaia-profile-info".
+  // To enable this feature for testing pass "--google-profile-info".
   if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kGaiaProfileInfo)) {
+      switches::kGoogleProfileInfo)) {
     return true;
   }
 

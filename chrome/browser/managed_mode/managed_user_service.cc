@@ -623,7 +623,7 @@ void ManagedUserService::RegisterAndInitSync(
                  weak_ptr_factory_.GetWeakPtr(), callback, custodian_profile));
 
   // Fetch the custodian's profile information, to store the name.
-  // TODO(pamg): If --gaia-profile-info (keyword: switches::kGaiaProfileInfo)
+  // TODO(pamg): If --google-profile-info (flag: switches::kGoogleProfileInfo)
   // is ever enabled, take the name from the ProfileInfoCache instead.
   CustodianProfileDownloaderService* profile_downloader_service =
       CustodianProfileDownloaderServiceFactory::GetForProfile(

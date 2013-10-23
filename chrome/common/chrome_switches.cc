@@ -871,14 +871,14 @@ const char kForceVariationIds[]             = "force-variation-ids";
 // testing the cloud policy framework.
 const char kForceLoadCloudPolicy[]          = "force-load-cloud-policy";
 
-// Enables using GAIA information to populate profile name and icon.
-const char kGaiaProfileInfo[]               = "gaia-profile-info";
-
 // Enables setting global commands through the Extensions Commands API.
 const char kGlobalCommands[]                = "global-commands";
 
 // Specifies an alternate URL to use for speaking to Google. Useful for testing.
 const char kGoogleBaseURL[]                 = "google-base-url";
+
+// Enables using GAIA information to populate profile name and icon.
+const char kGoogleProfileInfo[]             = "google-profile-info";
 
 // Specifies an alternate URL to use for retrieving the search domain for
 // Google. Useful for testing.

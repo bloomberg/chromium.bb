@@ -1670,11 +1670,11 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnableInlineSignin)
   },
   {
-    "enable-gaia-profile-info",
-    IDS_FLAGS_ENABLE_GAIA_PROFILE_INFO_NAME,
-    IDS_FLAGS_ENABLE_GAIA_PROFILE_INFO_DESCRIPTION,
+    "enable-google-profile-info",
+    IDS_FLAGS_ENABLE_GOOGLE_PROFILE_INFO_NAME,
+    IDS_FLAGS_ENABLE_GOOGLE_PROFILE_INFO_DESCRIPTION,
     kOsMac | kOsWin | kOsLinux,
-    SINGLE_VALUE_TYPE(switches::kGaiaProfileInfo)
+    SINGLE_VALUE_TYPE(switches::kGoogleProfileInfo)
   },
   {
     "disable-app-launcher",
