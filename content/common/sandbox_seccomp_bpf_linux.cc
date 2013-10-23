@@ -1919,11 +1919,6 @@ void WarmupPolicy(Sandbox::EvaluateSyscall policy,
     // Create a new broker process.
     InitGpuBrokerProcess(policy, broker_process);
 
-    // Preload the GL libraries. These are in the read whitelist but we have to
-    // preload them anyways to work around ld.so bugs. See crbug.com/268439.
-    dlopen(kLibGlesPath, RTLD_NOW|RTLD_GLOBAL|RTLD_NODELETE);
-    dlopen(kLibEglPath, RTLD_NOW|RTLD_GLOBAL|RTLD_NODELETE);
-
     // Preload the Tegra libraries.
     dlopen("/usr/lib/libnvrm.so", RTLD_NOW|RTLD_GLOBAL|RTLD_NODELETE);
     dlopen("/usr/lib/libnvrm_graphics.so", RTLD_NOW|RTLD_GLOBAL|RTLD_NODELETE);
