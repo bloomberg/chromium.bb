@@ -161,12 +161,63 @@ TEST_F(TrayPowerTest, UpdateNotificationState) {
   EXPECT_FALSE(UpdateNotificationState(charging));
   EXPECT_EQ(TrayPower::NOTIFICATION_NONE, notification_state());
 
-  // Critical low battery notification.
+  // When the rounded minutes-to-empty are above the threshold, no notification
+  // should be shown.
+  PowerSupplyProperties low = DefaultPowerSupplyProperties();
+  low.set_battery_time_to_empty_sec(TrayPower::kLowPowerMinutes * 60 + 30);
+  EXPECT_FALSE(UpdateNotificationState(low));
+  EXPECT_EQ(TrayPower::NOTIFICATION_NONE, notification_state());
+
+  // When the rounded value matches the threshold, the notification should
+  // appear.
+  low.set_battery_time_to_empty_sec(TrayPower::kLowPowerMinutes * 60 + 29);
+  EXPECT_TRUE(UpdateNotificationState(low));
+  EXPECT_EQ(TrayPower::NOTIFICATION_LOW_POWER, notification_state());
+
+  // It should persist at lower values.
+  low.set_battery_time_to_empty_sec(TrayPower::kLowPowerMinutes * 60 - 20);
+  EXPECT_FALSE(UpdateNotificationState(low));
+  EXPECT_EQ(TrayPower::NOTIFICATION_LOW_POWER, notification_state());
+
+  // The critical low battery notification should be shown when the rounded
+  // value is at the lower threshold.
   PowerSupplyProperties critical = DefaultPowerSupplyProperties();
-  critical.set_battery_time_to_empty_sec(60);
-  critical.set_battery_percent(2.0);
+  critical.set_battery_time_to_empty_sec(TrayPower::kCriticalMinutes * 60 + 29);
   EXPECT_TRUE(UpdateNotificationState(critical));
   EXPECT_EQ(TrayPower::NOTIFICATION_CRITICAL, notification_state());
+
+  // The notification should be dismissed when the no-warning threshold is
+  // reached.
+  PowerSupplyProperties safe = DefaultPowerSupplyProperties();
+  safe.set_battery_time_to_empty_sec(TrayPower::kNoWarningMinutes * 60 - 29);
+  EXPECT_FALSE(UpdateNotificationState(safe));
+  EXPECT_EQ(TrayPower::NOTIFICATION_NONE, notification_state());
+
+  // Test that rounded percentages are used when a USB charger is connected.
+  PowerSupplyProperties low_usb = DefaultPowerSupplyProperties();
+  low_usb.set_external_power(
+      power_manager::PowerSupplyProperties_ExternalPower_USB);
+  low_usb.set_battery_percent(TrayPower::kLowPowerPercentage + 0.5);
+  EXPECT_FALSE(UpdateNotificationState(low_usb));
+  EXPECT_EQ(TrayPower::NOTIFICATION_NONE, notification_state());
+
+  low_usb.set_battery_percent(TrayPower::kLowPowerPercentage + 0.49);
+  EXPECT_TRUE(UpdateNotificationState(low_usb));
+  EXPECT_EQ(TrayPower::NOTIFICATION_LOW_POWER, notification_state());
+
+  PowerSupplyProperties critical_usb = DefaultPowerSupplyProperties();
+  critical_usb.set_external_power(
+      power_manager::PowerSupplyProperties_ExternalPower_USB);
+  critical_usb.set_battery_percent(TrayPower::kCriticalPercentage + 0.2);
+  EXPECT_TRUE(UpdateNotificationState(critical_usb));
+  EXPECT_EQ(TrayPower::NOTIFICATION_CRITICAL, notification_state());
+
+  PowerSupplyProperties safe_usb = DefaultPowerSupplyProperties();
+  safe_usb.set_external_power(
+      power_manager::PowerSupplyProperties_ExternalPower_USB);
+  safe_usb.set_battery_percent(TrayPower::kNoWarningPercentage - 0.1);
+  EXPECT_FALSE(UpdateNotificationState(safe_usb));
+  EXPECT_EQ(TrayPower::NOTIFICATION_NONE, notification_state());
 }
 
 }  // namespace internal

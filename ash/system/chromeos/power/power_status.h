@@ -62,6 +62,9 @@ class ASH_EXPORT PowerStatus : public chromeos::PowerManagerClient::Observer {
   static bool ShouldDisplayBatteryTime(const base::TimeDelta& time);
 
   // Copies the hour and minute components of |time| to |hours| and |minutes|.
+  // The minute component is rounded rather than truncated: a |time| value
+  // corresponding to 92 seconds will produce a |minutes| value of 2, for
+  // example.
   static void SplitTimeIntoHoursAndMinutes(const base::TimeDelta& time,
                                            int* hours,
                                            int* minutes);

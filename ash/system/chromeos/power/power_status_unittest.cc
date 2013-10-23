@@ -129,6 +129,17 @@ TEST_F(PowerStatusTest, SplitTimeIntoHoursAndMinutes) {
       base::TimeDelta::FromSeconds(7 * 3600 + 23 * 60), &hours, &minutes);
   EXPECT_EQ(7, hours);
   EXPECT_EQ(23, minutes);
+
+  // Check that minutes are rounded.
+  PowerStatus::SplitTimeIntoHoursAndMinutes(
+      base::TimeDelta::FromSeconds(2 * 3600 + 3 * 60 + 30), &hours, &minutes);
+  EXPECT_EQ(2, hours);
+  EXPECT_EQ(4, minutes);
+
+  PowerStatus::SplitTimeIntoHoursAndMinutes(
+      base::TimeDelta::FromSeconds(2 * 3600 + 3 * 60 + 29), &hours, &minutes);
+  EXPECT_EQ(2, hours);
+  EXPECT_EQ(3, minutes);
 }
 
 }  // namespace internal

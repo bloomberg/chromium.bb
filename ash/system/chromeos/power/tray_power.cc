@@ -34,19 +34,6 @@ using message_center::Notification;
 
 namespace ash {
 namespace internal {
-
-namespace {
-// Notification times.
-const int kCriticalSeconds = 5 * 60;
-const int kLowPowerSeconds = 15 * 60;
-const int kNoWarningSeconds = 30 * 60;
-// Notification in battery percentage.
-const double kCriticalPercentage = 5.0;
-const double kLowPowerPercentage = 10.0;
-const double kNoWarningPercentage = 15.0;
-
-}  // namespace
-
 namespace tray {
 
 // This view is used only for the tray.
@@ -107,6 +94,13 @@ class PowerNotificationView : public TrayNotificationView {
 }  // namespace tray
 
 using tray::PowerNotificationView;
+
+const int TrayPower::kCriticalMinutes = 5;
+const int TrayPower::kLowPowerMinutes = 15;
+const int TrayPower::kNoWarningMinutes = 30;
+const int TrayPower::kCriticalPercentage = 5;
+const int TrayPower::kLowPowerPercentage = 10;
+const int TrayPower::kNoWarningPercentage = 15;
 
 TrayPower::TrayPower(SystemTray* system_tray, MessageCenter* message_center)
     : SystemTrayItem(system_tray),
@@ -235,27 +229,29 @@ bool TrayPower::UpdateNotificationState() {
 }
 
 bool TrayPower::UpdateNotificationStateForRemainingTime() {
-  const int remaining_seconds =
-      PowerStatus::Get()->GetBatteryTimeToEmpty().InSeconds();
+  // The notification includes a rounded minutes value, so round the estimate
+  // received from the power manager to match.
+  const int remaining_minutes = static_cast<int>(
+      PowerStatus::Get()->GetBatteryTimeToEmpty().InSecondsF() / 60.0 + 0.5);
 
-  if (remaining_seconds >= kNoWarningSeconds) {
+  if (remaining_minutes >= kNoWarningMinutes) {
     notification_state_ = NOTIFICATION_NONE;
     return false;
   }
 
   switch (notification_state_) {
     case NOTIFICATION_NONE:
-      if (remaining_seconds <= kCriticalSeconds) {
+      if (remaining_minutes <= kCriticalMinutes) {
         notification_state_ = NOTIFICATION_CRITICAL;
         return true;
       }
-      if (remaining_seconds <= kLowPowerSeconds) {
+      if (remaining_minutes <= kLowPowerMinutes) {
         notification_state_ = NOTIFICATION_LOW_POWER;
         return true;
       }
       return false;
     case NOTIFICATION_LOW_POWER:
-      if (remaining_seconds <= kCriticalSeconds) {
+      if (remaining_minutes <= kCriticalMinutes) {
         notification_state_ = NOTIFICATION_CRITICAL;
         return true;
       }
@@ -268,9 +264,12 @@ bool TrayPower::UpdateNotificationStateForRemainingTime() {
 }
 
 bool TrayPower::UpdateNotificationStateForRemainingPercentage() {
-  const double remaining_percentage = PowerStatus::Get()->GetBatteryPercent();
+  // The notification includes a rounded percentage, so round the value received
+  // from the power manager to match.
+  const int remaining_percentage =
+      PowerStatus::Get()->GetRoundedBatteryPercent();
 
-  if (remaining_percentage > kNoWarningPercentage) {
+  if (remaining_percentage >= kNoWarningPercentage) {
     notification_state_ = NOTIFICATION_NONE;
     return false;
   }

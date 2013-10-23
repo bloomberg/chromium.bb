@@ -41,6 +41,16 @@ class ASH_EXPORT TrayPower : public SystemTrayItem,
     NOTIFICATION_CRITICAL,
   };
 
+  // Time-based notification thresholds when on battery power.
+  static const int kCriticalMinutes;
+  static const int kLowPowerMinutes;
+  static const int kNoWarningMinutes;
+
+  // Percentage-based notification thresholds when using a low-power charger.
+  static const int kCriticalPercentage;
+  static const int kLowPowerPercentage;
+  static const int kNoWarningPercentage;
+
   TrayPower(SystemTray* system_tray,
             message_center::MessageCenter* message_center);
   virtual ~TrayPower();
