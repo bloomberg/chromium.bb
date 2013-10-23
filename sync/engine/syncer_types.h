@@ -45,26 +45,6 @@ enum UpdateAttemptResponse {
   CONFLICT_SIMPLE
 };
 
-enum ServerUpdateProcessingResult {
-  // Success. Update applied and stored in SERVER_* fields or dropped if
-  // irrelevant.
-  SUCCESS_PROCESSED,
-
-  // Success. Update details stored in SERVER_* fields, but wasn't applied.
-  SUCCESS_STORED,
-
-  // Update is illegally inconsistent with earlier updates. e.g. A bookmark
-  // becoming a folder.
-  FAILED_INCONSISTENT,
-
-  // Update is illegal when considered alone. e.g. broken UTF-8 in the name.
-  FAILED_CORRUPT,
-
-  // Only used by VerifyUpdate. Indicates that an update is valid. As
-  // VerifyUpdate cannot return SUCCESS_STORED, we reuse the value.
-  SUCCESS_VALID = SUCCESS_STORED
-};
-
 // Different results from the verify phase will yield different methods of
 // processing in the ProcessUpdates phase. The SKIP result means the entry
 // doesn't go to the ProcessUpdates phase.

@@ -930,7 +930,7 @@ class SyncDataModel(object):
     # tombstone.  A sync server must track deleted IDs forever, since it does
     # not keep track of client knowledge (there's no deletion ACK event).
     if entry.deleted:
-      def MakeTombstone(id_string):
+      def MakeTombstone(id_string, datatype):
         """Make a tombstone entry that will replace the entry being deleted.
 
         Args:
@@ -939,13 +939,11 @@ class SyncDataModel(object):
           A new SyncEntity reflecting the fact that the entry is deleted.
         """
         # Only the ID, version and deletion state are preserved on a tombstone.
-        # TODO(nick): Does the production server not preserve the type?  Not
-        # doing so means that tombstones cannot be filtered based on
-        # requested_types at GetUpdates time.
         tombstone = sync_pb2.SyncEntity()
         tombstone.id_string = id_string
         tombstone.deleted = True
         tombstone.name = ''
+        tombstone.specifics.CopyFrom(GetDefaultEntitySpecifics(datatype))
         return tombstone
 
       def IsChild(child_id):
@@ -968,10 +966,12 @@ class SyncDataModel(object):
 
       # Mark all children that were identified as deleted.
       for child_id in child_ids:
-        self._SaveEntry(MakeTombstone(child_id))
+        datatype = GetEntryType(self._entries[child_id])
+        self._SaveEntry(MakeTombstone(child_id, datatype))
 
       # Delete entry itself.
-      entry = MakeTombstone(entry.id_string)
+      datatype = GetEntryType(self._entries[entry.id_string])
+      entry = MakeTombstone(entry.id_string, datatype)
     else:
       # Comments in sync.proto detail how the representation of positional
       # ordering works.

@@ -431,6 +431,9 @@ void MockConnectionManager::AddUpdateTombstone(const syncable::Id& id) {
   ent->set_version(0);
   ent->set_name("");
   ent->set_deleted(true);
+
+  // Make sure we can still extract the ModelType from this tombstone.
+  ent->mutable_specifics()->mutable_bookmark();
 }
 
 void MockConnectionManager::SetLastUpdateDeleted() {

@@ -96,34 +96,49 @@ SyncerError ProcessUpdatesCommand::ExecuteImpl(SyncSession* session) {
   sessions::StatusController* status = session->mutable_status_controller();
   const sync_pb::GetUpdatesResponse& updates =
       status->updates_response().get_updates();
-  int update_count = updates.entries().size();
-
   ModelTypeSet requested_types = GetRoutingInfoTypes(
       session->context()->routing_info());
 
+  TypeSyncEntityMap updates_by_type;
+
+  PartitionUpdatesByType(updates, &updates_by_type);
+
+  int update_count = updates.entries().size();
+  status->increment_num_updates_downloaded_by(update_count);
+
   DVLOG(1) << update_count << " entries to verify";
-  for (int i = 0; i < update_count; i++) {
-    const sync_pb::SyncEntity& update = updates.entries(i);
-
-    VerifyResult verify_result = VerifyUpdate(
-        &trans, update, requested_types, session->context()->routing_info());
-    status->increment_num_updates_downloaded_by(1);
-    if (!UpdateContainsNewVersion(&trans, update))
-      status->increment_num_reflected_updates_downloaded_by(1);
-    if (update.deleted())
-      status->increment_num_tombstone_updates_downloaded_by(1);
-
-    if (verify_result != VERIFY_SUCCESS && verify_result != VERIFY_UNDELETE)
-      continue;
-
-    ServerUpdateProcessingResult process_result =
-       ProcessUpdate(update, dir->GetCryptographer(&trans), &trans);
-
-    DCHECK(process_result == SUCCESS_PROCESSED ||
-           process_result == SUCCESS_STORED);
+  for (TypeSyncEntityMap::iterator it = updates_by_type.begin();
+       it != updates_by_type.end(); ++it) {
+    for (SyncEntityList::iterator update_it = it->second.begin();
+         update_it != it->second.end(); ++update_it) {
+      if (!UpdateContainsNewVersion(&trans, **update_it))
+        status->increment_num_reflected_updates_downloaded_by(1);
+      if ((*update_it)->deleted())
+        status->increment_num_tombstone_updates_downloaded_by(1);
+      VerifyResult verify_result = VerifyUpdate(
+          &trans,
+          **update_it,
+          requested_types,
+          session->context()->routing_info());
+      if (verify_result != VERIFY_SUCCESS && verify_result != VERIFY_UNDELETE)
+        continue;
+      ProcessUpdate(**update_it, dir->GetCryptographer(&trans), &trans);
+    }
   }
 
   return SYNCER_OK;
+}
+
+void ProcessUpdatesCommand::PartitionUpdatesByType(
+    const sync_pb::GetUpdatesResponse& updates,
+    TypeSyncEntityMap* updates_by_type) {
+  int update_count = updates.entries().size();
+  for (int i = 0; i < update_count; ++i) {
+    const sync_pb::SyncEntity& update = updates.entries(i);
+    ModelType type = GetModelType(update);
+    DCHECK(IsRealDataType(type));
+    (*updates_by_type)[type].push_back(&update);
+  }
 }
 
 namespace {
@@ -225,7 +240,7 @@ bool ReverifyEntry(syncable::ModelNeutralWriteTransaction* trans,
 }  // namespace
 
 // Process a single update. Will avoid touching global state.
-ServerUpdateProcessingResult ProcessUpdatesCommand::ProcessUpdate(
+void ProcessUpdatesCommand::ProcessUpdate(
     const sync_pb::SyncEntity& update,
     const Cryptographer* cryptographer,
     syncable::ModelNeutralWriteTransaction* const trans) {
@@ -238,7 +253,7 @@ ServerUpdateProcessingResult ProcessUpdatesCommand::ProcessUpdate(
 
   // FindLocalEntryToUpdate has veto power.
   if (local_id.IsNull()) {
-    return SUCCESS_PROCESSED;  // The entry has become irrelevant.
+    return;  // The entry has become irrelevant.
   }
 
   CreateNewEntry(trans, local_id);
@@ -250,7 +265,7 @@ ServerUpdateProcessingResult ProcessUpdatesCommand::ProcessUpdate(
   // We need to run the Verify checks again; the world could have changed
   // since we last verified.
   if (!ReverifyEntry(trans, update, &target_entry)) {
-    return SUCCESS_PROCESSED;  // The entry has become irrelevant.
+    return;  // The entry has become irrelevant.
   }
 
   // If we're repurposing an existing local entry with a new server ID,
@@ -327,7 +342,7 @@ ServerUpdateProcessingResult ProcessUpdatesCommand::ProcessUpdate(
 
   UpdateServerFieldsFromUpdate(&target_entry, update, name);
 
-  return SUCCESS_PROCESSED;
+  return;
 }
 
 }  // namespace syncer
