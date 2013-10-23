@@ -250,21 +250,6 @@ enum AccessibilityTextDirection {
     AccessibilityTextDirectionBottomToTop
 };
 
-struct VisiblePositionRange {
-
-    VisiblePosition start;
-    VisiblePosition end;
-
-    VisiblePositionRange() { }
-
-    VisiblePositionRange(const VisiblePosition& s, const VisiblePosition& e)
-        : start(s)
-        , end(e)
-    { }
-
-    bool isNull() const { return start.isNull() || end.isNull(); }
-};
-
 struct PlainTextRange {
 
     unsigned start;
@@ -563,8 +548,6 @@ public:
     virtual void updateAccessibilityRole() { }
 
     // Text metrics. Most of these should be deprecated, needs major cleanup.
-    virtual VisiblePositionRange visiblePositionRange() const { return VisiblePositionRange(); }
-    virtual IntRect boundsForVisiblePositionRange(const VisiblePositionRange&) const { return IntRect(); }
     virtual VisiblePosition visiblePositionForIndex(int) const { return VisiblePosition(); }
     int lineForPosition(const VisiblePosition&) const;
     virtual int index(const VisiblePosition&) const { return -1; }
