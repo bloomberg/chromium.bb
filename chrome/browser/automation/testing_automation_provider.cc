@@ -161,10 +161,6 @@
 #include <mach/mach_vm.h>
 #endif
 
-#if !defined(NO_TCMALLOC) && (defined(OS_LINUX) || defined(OS_CHROMEOS))
-#include "third_party/tcmalloc/chromium/src/gperftools/heap-profiler.h"
-#endif  // !defined(NO_TCMALLOC) && (defined(OS_LINUX) || defined(OS_CHROMEOS))
-
 using automation_util::SendErrorIfModalDialogActive;
 using content::BrowserChildProcessHostIterator;
 using content::BrowserContext;

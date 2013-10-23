@@ -1,5 +1,6 @@
 include_rules = [
   "+apps",
+  "+ash",
   "+chrome/app",
   "+chrome/installer",
   "+chromeos",
@@ -12,12 +13,14 @@ include_rules = [
   "+components/navigation_interception",
   "+components/navigation_metrics",
   "+components/policy",
+  "+components/sessions",
   "+components/startup_metric_utils",
   "+components/translate/common",
   "+components/user_prefs",
   "+components/webdata",
   "+components/web_modal",
   "+content/public/browser",
+  "+content/test/net",
   "+device/bluetooth",
   "+device/media_transfer_protocol",
   "+extensions/browser",
@@ -27,7 +30,9 @@ include_rules = [
   "+google_update",
   "+grit",  # For generated headers
   "+installer_util_strings",  # For generated headers
+  "+jni",
   "+media/base",  # For media switches
+  "+native_client/src/shared/imc",
   "+policy",  # For generated headers and source
   "+ppapi/c",  # For various types.
   "+ppapi/host",
@@ -42,6 +47,11 @@ include_rules = [
   "+sync/protocol",  # Sync protobuf files.
   "+third_party/cros_system_api",
   "+win8/util",
+
+  # chrome only needs switches from cc. All usage of the compositor is from
+  # content. Definitely don't include generic stuff from cc/base here, if this
+  # is needed these files need to move to base/
+  "+cc/base/switches.h",
 
   # Unsafe to use from //chrome, see http://goo.gl/QQG5wo
   "-content/public/test/test_browser_context.h",

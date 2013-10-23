@@ -16,6 +16,7 @@ include_rules = [
   "+content/public/browser/browser_main_runner.h",
   "+content/public/browser/render_process_host.h",
   "+grit",  # For generated headers
+  "+native_client/src/trusted/service_runtime/osx",
   "+policy",  # For generated headers and source
   "+sandbox",
   "+tools/memory_watcher",

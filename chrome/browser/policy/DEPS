@@ -9,6 +9,7 @@ include_rules = [
   "-chromeos",
   "-content",
   "+chrome/browser/policy",
+  "+components/json_schema",
 ]
 
 specific_include_rules = {
