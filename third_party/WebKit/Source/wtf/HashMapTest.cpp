@@ -28,6 +28,8 @@
 #include "wtf/HashMap.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
 #include <gtest/gtest.h>
 
 namespace {
@@ -132,6 +134,31 @@ TEST(WTF, HashMapWithOwnPtrAsValue)
 
     ownCounter1.clear();
     ASSERT_EQ(2, destructNumber);
+}
+
+
+class DummyRefCounted: public WTF::RefCounted<DummyRefCounted> {
+public:
+    DummyRefCounted(bool& isDeleted) : m_isDeleted(isDeleted) { m_isDeleted = false; }
+    ~DummyRefCounted() { m_isDeleted = true; }
+
+private:
+    bool& m_isDeleted;
+};
+
+TEST(WTF, HashMapWithRefPtrAsKey)
+{
+    bool isDeleted;
+    RefPtr<DummyRefCounted> ptr = adoptRef(new DummyRefCounted(isDeleted));
+    HashMap<RefPtr<DummyRefCounted>, int> map;
+    map.add(ptr, 1);
+    ASSERT_EQ(1, map.get(ptr));
+
+    ptr.clear();
+    ASSERT_FALSE(isDeleted);
+
+    map.clear();
+    ASSERT_TRUE(isDeleted);
 }
 
 } // namespace
