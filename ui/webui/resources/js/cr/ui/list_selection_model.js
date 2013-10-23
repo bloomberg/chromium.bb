@@ -304,7 +304,6 @@ cr.define('cr.ui', function() {
       if (!this.changeCount_ && !this.independentLeadItem_ &&
           !this.getIndexSelected(index)) {
         var index2 = this.getNearestSelectedIndex_(index);
-        console.log(index + ' -> ' + index2);
         index = index2;
       }
       return index;
