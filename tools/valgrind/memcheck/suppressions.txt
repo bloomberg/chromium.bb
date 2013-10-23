@@ -38,26 +38,6 @@
    fun:FcConfigAppFontAddFile
 }
 {
-   # See also http://www.gnome.org/~johan/gtk.suppression
-   # (which has a smattering of similar pango suppressions)
-   pango_font_leak_todo
-   Memcheck:Leak
-   ...
-   fun:FcFontRenderPrepare
-   obj:*
-   fun:pango_font_map_load_fontset
-}
-{
-   pango_font_leak_todo_2
-   Memcheck:Leak
-   fun:malloc
-   fun:g_malloc
-   fun:g_strdup
-   fun:pango_script_get_sample_language
-   ...
-   fun:pango_font_get_metrics
-}
-{
    pango_font_leak_todo_3
    Memcheck:Leak
    ...
@@ -110,15 +90,6 @@
    fun:FcPatternObjectAddWithBinding
 }
 {
-   # Another permutation of previous leak.
-   fontconfig_bug_8428_2
-   Memcheck:Leak
-   ...
-   fun:realloc
-   fun:FcPatternObjectInsertElt
-   fun:FcPatternObjectAdd
-}
-{
    bug_18590 (Third Party)
    Memcheck:Leak
    ...
@@ -130,95 +101,11 @@
    fun:FcConfigValues
 }
 {
-   bug_18590a (Third Party)
-   Memcheck:Leak
-   fun:malloc
-   fun:FcConfigValues
-   fun:FcConfigSubstituteWithPat
-   fun:*SkFontConfigInterfaceDirect*match*
-}
-{
-   bug_46177_a (Third Party)
-   Memcheck:Leak
-   ...
-   fun:FcCharSetOperate
-   fun:FcFontSetSort
-   fun:FcFontSort
-   ...
-   fun:pango_layout_get_pixel_size
-}
-{
-   bug_46177_b (Third Party)
-   Memcheck:Leak
-   ...
-   fun:FcCharSetFindLeafCreate
-   fun:FcCharSetAddLeaf
-   fun:FcCharSetOperate
-   fun:FcFontSetSort
-   fun:FcFontSort
-   ...
-   fun:pango_layout_get_iter
-}
-{
-   bug_46177_c (Third Party)
-   Memcheck:Leak
-   ...
-   fun:FcCharSetFindLeafCreate
-   fun:FcCharSetAddLeaf
-   fun:FcCharSetOperate
-   fun:FcFontSetSort
-   fun:FcFontSort
-   ...
-   fun:pango_layout_line_get_extents
-}
-{
-   bug_46177_d (Third Party)
-   Memcheck:Leak
-   fun:malloc
-   fun:FcFontSetCreate
-   fun:FcFontSetSort
-   fun:FcFontSort
-}
-{
-   bug_46177_e (Third Party)
-   Memcheck:Leak
-   ...
-   fun:FcCharSetFindLeafCreate
-   fun:FcCharSetAddChar
-}
-{
-   bug_181572 (Skia -- global cache of typefaces)
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN10SkFontHost14CreateTypefaceEPK10SkTypefacePKcNS0_5StyleE
-   fun:_ZN10SkTypeface14CreateFromNameEPKcNS_5StyleE
-}
-{
-   dlopen invalid read, probably a bug in glibc.  TODO(dkegel): file glibc bug
-   Memcheck:Uninitialized
-   ...
-   fun:dlopen@@GLIBC_2.1
-   fun:PR_LoadLibraryWithFlags
-}
-{
-   dlopen leak on error. See http://sourceware.org/bugzilla/show_bug.cgi?id=12878.
-   Memcheck:Leak
-   fun:calloc
-   fun:_dlerror_run
-   fun:dlopen@@GLIBC_2.1
-}
-{
    dlopen leak on error. Chromium issues 268368,273385. See http://sourceware.org/bugzilla/show_bug.cgi?id=12878.
    Memcheck:Leak
    fun:calloc
    fun:_dlerror_run
    fun:dlopen@@GLIBC_2.2.5
-}
-{
-   glibc leak.  See also http://sources.redhat.com/bugzilla/show_bug.cgi?id=2451
-   Memcheck:Leak
-   fun:malloc
-   fun:_dl_map_object_from_fd
 }
 {
    Pure NSS leak, does not involve glibc.  TODO(dkegel): track down and fix or file bug.
@@ -297,34 +184,6 @@
    epoll_wait(epfd)
    fun:syscall
    fun:event_base_loop
-}
-{
-   # "The section of the SQLite library identified works exactly as it should."
-   # http://www.sqlite.org/cvstrac/tktview?tn=536,39
-   # http://www.sqlite.org/cvstrac/tktview?tn=694,39
-   # http://www.sqlite.org/cvstrac/tktview?tn=964,39
-   # This looks like a case where an entire page was allocated, the header and
-   # perhaps some data was written, but the entire buffer was not written to.
-   # The SQLite authors aren't very interested in adding code to clear buffers
-   # for no reason other than pleasing valgrind, but a patch might be accepted
-   # under a macro like SQLITE_SECURE_DELETE which could be construed to apply
-   # to cases like this. (Note that we compile with SQLITE_SECURE_DELETE.)
-   bug_20653a (Third Party)
-   Memcheck:Param
-   write(buf)
-   ...
-   fun:sqlite3OsWrite
-   fun:pager_write_pagelist
-}
-{
-   bug_20653b (Third Party)
-   Memcheck:Param
-   write(buf)
-   ...
-   fun:*Write
-   fun:sqlite3OsWrite
-   ...
-   fun:pager_write
 }
 {
    # array of weak references freed but not processed?

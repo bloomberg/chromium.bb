@@ -29,87 +29,11 @@
    ...
 }
 {
-   # Mac system library bug?  See http://crbug.com/11327
-   bug_11327
-   Memcheck:Uninitialized
-   fun:_ZN19AudioConverterChain5ResetEv
-   fun:AudioConverterReset
-   obj:/System/Library/Components/CoreAudio.component/Contents/MacOS/CoreAudio
-}
-{
-   # Mac system library bug?  See http://crbug.com/11327
-   bug_11327b
-   Memcheck:Uninitialized
-   fun:AUNetSendEntry
-   fun:AUNetSendEntry
-   obj:/System/Library/Components/CoreAudio.component/Contents/MacOS/CoreAudio
-}
-{
-   # Filed with Apple as rdar://6915060; see http://crbug.com/11270
-   bug_11270
-   Memcheck:Leak
-   fun:calloc
-   fun:CMSSetLabCLUT
-}
-{
-   # Mac leak in CMOpenOrNewAccess in unit_tests PlatformCanvas_SkLayer_Test,
-   # ToolbarControllerTest_FocusLocation_Test. See http://crbug.com/11333.
-   bug_11333
-   Memcheck:Leak
-   fun:malloc
-   fun:stdSmartNewPtr
-   fun:stdSmartNewHandle
-   fun:IOCreateAndOpen
-   fun:ScratchInit
-   fun:CMOpenOrNewAccess
-}
-{
-   # suddenly very common as of 6 aug 2009
-   bug_11333b
-   Memcheck:Leak
-   fun:malloc
-   fun:stdSmartNewPtr
-   fun:stdSmartNewHandle
-   fun:IOCreateAndOpen
-   fun:ScratchInit
-   fun:CMNewAccessFromAnother
-}
-{
-   # Tiny one-time leak, widely seen by valgind users; everyone suppresses this.
-   # See related discussion at http://gcc.gnu.org/bugzilla/show_bug.cgi?id=39366
-   plugin_bundle_global_leak
-   Memcheck:Leak
-   fun:malloc
-   fun:__cxa_get_globals
-   fun:__cxa_allocate_exception
-   fun:_ZN4dyld4loadEPKcRKNS_11LoadContextE
-   fun:dlopen
-   fun:dlopen
-   fun:_CFBundleDlfcnCheckLoaded
-}
-{
    bug_18215
    Memcheck:Uninitialized
    fun:_DPSNextEvent
    fun:-[NSApplication nextEventMatchingMask:untilDate:inMode:dequeue:]
    fun:-[NSApplication run]
-}
-{
-   bug_18223
-   Memcheck:Uninitialized
-   fun:_ZNK8Security12UnixPlusPlus17StaticForkMonitorclEv
-   fun:_ZN12ocspdGlobals10serverPortEv
-}
-{
-   # Filed with Apple as rdar://7255382
-   bug_20459a
-   Memcheck:Leak
-   ...
-   fun:_CFRuntimeCreateInstance
-   fun:CFRunLoopSourceCreate
-   fun:CFMachPortCreateRunLoopSource
-   fun:_ZN8Security12MachPlusPlus10CFAutoPort6enableEv
-   fun:_ZN8Security14SecurityServer14ThreadNotifierC2Ev
 }
 {
    # Also filed with Apple as rdar://7255382
@@ -121,64 +45,6 @@
    fun:CFArrayCreateMutableCopy
    ...
    fun:_ZN8Security12KeychainCore5Trust8evaluate*
-}
-# See description of bug_20653a/b in suppressions.txt.
-{
-   bug_20653a_mac
-   Memcheck:Param
-   write(buf)
-   fun:write$UNIX2003
-   fun:pager_write_pagelist
-}
-{
-   bug_20653b_mac
-   Memcheck:Param
-   write(buf)
-   fun:write$UNIX2003
-   ...
-   fun:pager_write
-}
-
-# See http://www.openradar.me/8287193
-{
-   Invalid redzone accesses in DKeyHas8Words
-   Memcheck:Unaddressable
-   fun:DKeyHas8Words
-}
-
-# See https://bugs.kde.org/show_bug.cgi?id=188572
-# This suppression is missing in Valgrind on Mac 10.6
-# TODO(glider): remove it once it arrives in the trunk.
-{
-   Unavoidable leak in setenv()
-   Memcheck:Leak
-   fun:malloc_zone_malloc
-   fun:__setenv
-   fun:setenv$UNIX2003
-}
-{
-   # Reported to Apple as rdar://6915429
-   bug_12525
-   Memcheck:Leak
-   ...
-   fun:-[CIContextImpl render:toBitmap:rowBytes:bounds:format:colorSpace:]
-}
-{
-   bug_69436
-   Memcheck:Leak
-   ...
-   fun:-[CIKernel initWithCString:noCopy:]
-   ...
-   fun:-[NSPopUpButtonCell _drawIndicatorWithFrame:inView:]
-}
-{
-   # Capturer on Mac uses OpenGL driver, which triggers several warnings.
-   # The check has to be quite generic, as different hardware graphics cards
-   # will cause different sets of warnings.
-   bug_75037
-   Memcheck:Uninitialized
-   ...
-   fun:_ZN8remoting*CapturerMac*
 }
 {
    # See also http://openradar.appspot.com/radar?id=1235407

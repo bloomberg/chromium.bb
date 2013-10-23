@@ -16,17 +16,6 @@
 #-----------------------------------------------------------------------
 
 # 1. Third party stuff we have no control over.
-{
-   # The InvalidRead error in rc4_wordconv is intentional.
-   # https://bugzilla.mozilla.org/show_bug.cgi?id=341127
-   # TODO(wtc): This invalid read has been fixed in NSS 3.15.  Remove this
-   # suppression when the system NSS libraries in Linux distributions are
-   # version 3.15 or later.
-   bug_43113 (Intentional)
-   Memcheck:Unaddressable
-   fun:rc4_wordconv
-   fun:RC4_Encrypt
-}
 
 # 2. Intentional unit test errors, stuff that is somehow a false positive
 # in our own code, or stuff that is so trivial it's not worth fixing.
