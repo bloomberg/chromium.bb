@@ -194,7 +194,7 @@ void CommandBufferProxyImpl::Flush(int32 put_offset) {
   if (last_state_.error != gpu::error::kNoError)
     return;
 
-  TRACE_EVENT1("gpu",
+  TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("gpu.debug"),
                "CommandBufferProxyImpl::Flush",
                "put_offset",
                put_offset);
