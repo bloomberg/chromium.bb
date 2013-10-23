@@ -13,6 +13,12 @@ class NSString;
 
 namespace dock {
 
+enum AddIconStatus {
+  IconAddFailure,
+  IconAddSuccess,
+  IconAlreadyPresent
+};
+
 // Adds an icon to the Dock pointing to |installed_path| if one is not already
 // present. |dmg_app_path| is the path to the install source. Its tile will be
 // removed if present. If any changes are made to the Dock's configuration,
@@ -49,7 +55,7 @@ namespace dock {
 // additional properties on the dock tile added to the Dock's plist, this
 // is not done. Upon relaunch, Dock.app will determine the correct values for
 // the properties it requires and add them to its configuration.
-void AddIcon(NSString* installed_path, NSString* dmg_app_path);
+AddIconStatus AddIcon(NSString* installed_path, NSString* dmg_app_path);
 
 }  // namespace dock
 

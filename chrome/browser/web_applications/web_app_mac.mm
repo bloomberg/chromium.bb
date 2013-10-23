@@ -495,8 +495,18 @@ bool WebAppShortcutCreator::CreateShortcuts(
   if (success_count != paths.size())
     return false;
 
-  if (creation_locations.in_quick_launch_bar && path_to_add_to_dock)
-    dock::AddIcon(path_to_add_to_dock, nil);
+  if (creation_locations.in_quick_launch_bar && path_to_add_to_dock) {
+    switch (dock::AddIcon(path_to_add_to_dock, nil)) {
+      case dock::IconAddFailure:
+        // If adding the icon failed, instead reveal the Finder window.
+        RevealAppShimInFinder();
+        break;
+      case dock::IconAddSuccess:
+      case dock::IconAlreadyPresent:
+        break;
+    }
+    return true;
+  }
 
   if (creation_reason == SHORTCUT_CREATION_BY_USER)
     RevealAppShimInFinder();

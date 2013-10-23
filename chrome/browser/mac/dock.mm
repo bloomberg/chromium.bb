@@ -98,8 +98,11 @@ NSMutableArray* PersistentAppPaths(NSArray* persistent_apps) {
 
     NSDictionary* file_data = [tile_data objectForKey:kDockFileDataKey];
     if (![file_data isKindOfClass:[NSDictionary class]]) {
-      LOG(ERROR) << "file_data not NSDictionary";
-      return nil;
+      // Some apps (e.g. Dashboard) have no file data, but instead have a
+      // special value for the tile-type key. For these, add an empty string to
+      // align indexes with the source array.
+      [app_paths addObject:@""];
+      continue;
     }
 
     NSURL* url = NSURLCreateFromDictionary(file_data);
@@ -140,7 +143,7 @@ void Restart() {
 
 }  // namespace
 
-void AddIcon(NSString* installed_path, NSString* dmg_app_path) {
+AddIconStatus AddIcon(NSString* installed_path, NSString* dmg_app_path) {
   // ApplicationServices.framework/Frameworks/HIServices.framework contains an
   // undocumented function, CoreDockAddFileToDock, that is able to add items
   // to the Dock "live" without requiring a Dock restart. Under the hood, it
@@ -164,7 +167,7 @@ void AddIcon(NSString* installed_path, NSString* dmg_app_path) {
       [user_defaults persistentDomainForName:kDockDomain];
   if (![dock_plist_const isKindOfClass:[NSDictionary class]]) {
     LOG(ERROR) << "dock_plist_const not NSDictionary";
-    return;
+    return IconAddFailure;
   }
   NSMutableDictionary* dock_plist =
       [NSMutableDictionary dictionaryWithDictionary:dock_plist_const];
@@ -174,14 +177,14 @@ void AddIcon(NSString* installed_path, NSString* dmg_app_path) {
       [dock_plist objectForKey:kDockPersistentAppsKey];
   if (![persistent_apps_const isKindOfClass:[NSArray class]]) {
     LOG(ERROR) << "persistent_apps_const not NSArray";
-    return;
+    return IconAddFailure;
   }
   NSMutableArray* persistent_apps =
       [NSMutableArray arrayWithArray:persistent_apps_const];
 
   NSMutableArray* persistent_app_paths = PersistentAppPaths(persistent_apps);
   if (!persistent_app_paths) {
-    return;
+    return IconAddFailure;
   }
 
   NSUInteger already_installed_app_index = NSNotFound;
@@ -300,7 +303,7 @@ void AddIcon(NSString* installed_path, NSString* dmg_app_path) {
     NSDictionary* url_dict = NSURLCopyDictionary(url);
     if (!url_dict) {
       LOG(ERROR) << "couldn't create url_dict";
-      return;
+      return IconAddFailure;
     }
 
     NSDictionary* new_tile_data =
@@ -322,7 +325,7 @@ void AddIcon(NSString* installed_path, NSString* dmg_app_path) {
   if (!made_change) {
     // If no changes were made, there's no point in rewriting the Dock's
     // plist or restarting the Dock.
-    return;
+    return IconAlreadyPresent;
   }
 
   // Rewrite the plist.
@@ -330,6 +333,7 @@ void AddIcon(NSString* installed_path, NSString* dmg_app_path) {
   [user_defaults setPersistentDomain:dock_plist forName:kDockDomain];
 
   Restart();
+  return IconAddSuccess;
 }
 
 }  // namespace dock
