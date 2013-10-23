@@ -414,7 +414,13 @@ TEST_F(ClientSideDetectionHostTest, OnPhishingDetectionDoneDisabled) {
   EXPECT_TRUE(Mock::VerifyAndClear(ui_manager_.get()));
 }
 
+#if defined(OS_WIN)
+// Fails on Blink canary bots: http://crbug.com/299149
+TEST_F(ClientSideDetectionHostTest,
+       DISABLED_OnPhishingDetectionDoneShowInterstitial) {
+#else
 TEST_F(ClientSideDetectionHostTest, OnPhishingDetectionDoneShowInterstitial) {
+#endif
   // Case 3: client thinks the page is phishing and so does the server.
   // We show an interstitial.
   MockBrowserFeatureExtractor* mock_extractor = new MockBrowserFeatureExtractor(
@@ -464,7 +470,13 @@ TEST_F(ClientSideDetectionHostTest, OnPhishingDetectionDoneShowInterstitial) {
                  ui_manager_, resource.callback));
 }
 
+#if defined(OS_WIN)
+// Fails on Blink canary bots: http://crbug.com/299149
+TEST_F(ClientSideDetectionHostTest,
+       DISABLED_OnPhishingDetectionDoneMultiplePings) {
+#else
 TEST_F(ClientSideDetectionHostTest, OnPhishingDetectionDoneMultiplePings) {
+#endif
   // Case 4 & 5: client thinks a page is phishing then navigates to
   // another page which is also considered phishing by the client
   // before the server responds with a verdict.  After a while the
@@ -551,8 +563,14 @@ TEST_F(ClientSideDetectionHostTest, OnPhishingDetectionDoneMultiplePings) {
                  ui_manager_, resource.callback));
 }
 
+#if defined(OS_WIN)
+// Fails on Blink canary bots: http://crbug.com/299149
+TEST_F(ClientSideDetectionHostTest,
+       DISABLED_OnPhishingDetectionDoneVerdictNotPhishing) {
+#else
 TEST_F(ClientSideDetectionHostTest,
        OnPhishingDetectionDoneVerdictNotPhishing) {
+#endif
   // Case 6: renderer sends a verdict string that isn't phishing.
   MockBrowserFeatureExtractor* mock_extractor = new MockBrowserFeatureExtractor(
       web_contents(),
@@ -569,8 +587,14 @@ TEST_F(ClientSideDetectionHostTest,
   EXPECT_TRUE(Mock::VerifyAndClear(mock_extractor));
 }
 
+#if defined(OS_WIN)
+// Fails on Blink canary bots: http://crbug.com/299149
+TEST_F(ClientSideDetectionHostTest,
+       DISABLED_OnPhishingDetectionDoneVerdictNotPhishingButSBMatch) {
+#else
 TEST_F(ClientSideDetectionHostTest,
        OnPhishingDetectionDoneVerdictNotPhishingButSBMatch) {
+#endif
   // Case 7: renderer sends a verdict string that isn't phishing but the URL
   // was on the regular phishing or malware lists.
   GURL url("http://not-phishing.com/");
