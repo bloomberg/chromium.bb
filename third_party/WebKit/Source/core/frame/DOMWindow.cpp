@@ -541,6 +541,7 @@ History* DOMWindow::history() const
 
 BarProp* DOMWindow::locationbar() const
 {
+    UseCounter::count(this, UseCounter::BarPropLocationbar);
     if (!isCurrentlyDisplayedInFrame())
         return 0;
     if (!m_locationbar)
@@ -550,6 +551,7 @@ BarProp* DOMWindow::locationbar() const
 
 BarProp* DOMWindow::menubar() const
 {
+    UseCounter::count(this, UseCounter::BarPropMenubar);
     if (!isCurrentlyDisplayedInFrame())
         return 0;
     if (!m_menubar)
@@ -559,6 +561,7 @@ BarProp* DOMWindow::menubar() const
 
 BarProp* DOMWindow::personalbar() const
 {
+    UseCounter::count(this, UseCounter::BarPropPersonalbar);
     if (!isCurrentlyDisplayedInFrame())
         return 0;
     if (!m_personalbar)
@@ -568,6 +571,7 @@ BarProp* DOMWindow::personalbar() const
 
 BarProp* DOMWindow::scrollbars() const
 {
+    UseCounter::count(this, UseCounter::BarPropScrollbars);
     if (!isCurrentlyDisplayedInFrame())
         return 0;
     if (!m_scrollbars)
@@ -577,6 +581,7 @@ BarProp* DOMWindow::scrollbars() const
 
 BarProp* DOMWindow::statusbar() const
 {
+    UseCounter::count(this, UseCounter::BarPropStatusbar);
     if (!isCurrentlyDisplayedInFrame())
         return 0;
     if (!m_statusbar)
@@ -586,6 +591,7 @@ BarProp* DOMWindow::statusbar() const
 
 BarProp* DOMWindow::toolbar() const
 {
+    UseCounter::count(this, UseCounter::BarPropToolbar);
     if (!isCurrentlyDisplayedInFrame())
         return 0;
     if (!m_toolbar)
