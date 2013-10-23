@@ -116,12 +116,6 @@ ActivityLog::Entry* ActivityLog::PushBack() {
   return &buffer_[TailIdx()];
 }
 
-namespace {
-const char kEntryPadding[] = "   ";
-const char kSubEntryPadding[] = "     ";
-const char kSubSubEntryPadding[] = "      ";
-}
-
 ::Value* ActivityLog::EncodeHardwareProperties() const {
   DictionaryValue* ret = new DictionaryValue;
   ret->Set(kKeyHardwarePropLeft, new FundamentalValue(hwprops_.left));
