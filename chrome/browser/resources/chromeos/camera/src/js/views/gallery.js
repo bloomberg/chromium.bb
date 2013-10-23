@@ -225,11 +225,18 @@ camera.views.Gallery.prototype.deleteSelection_ = function() {
   if (!this.currentPicture_())
     return;
 
-  this.model_.deletePicture(this.currentPicture_().picture,
-      function() {},
-      function() {
-        // TODO(mtomasz): Handle errors.
-      });
+  this.router.navigate(camera.Router.ViewIdentifier.DIALOG, {
+    type: camera.views.Dialog.Type.CONFIRMATION,
+    message: chrome.i18n.getMessage('deleteConfirmationMsg')
+  }, function(result) {
+    if (!result.isPositive)
+      return;
+    this.model_.deletePicture(this.currentPicture_().picture,
+        function() {},
+        function() {
+          // TODO(mtomasz): Handle errors.
+        });
+  }.bind(this));
 };
 
 /**

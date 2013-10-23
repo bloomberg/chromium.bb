@@ -63,6 +63,7 @@ SRC_RESOURCES= \
 	src/js/view.js \
 	src/js/views/browser.js \
 	src/js/views/camera.js \
+	src/js/views/dialog.js \
 	src/js/views/gallery.js \
 	src/sounds/shutter.ogg \
 	src/views/main.html \

@@ -364,11 +364,20 @@ camera.views.Browser.prototype.onKeyPressed = function(event) {
       event.preventDefault();
       break;
     case 'U+007F':
-      this.model_.deletePicture(currentPicture.picture,
-                function() {},
-                function() {
-                  // TODO(mtomasz): Handle errors.
-                });
+      // TODO(mtomasz): Make Gallery and Browser views extend a intermediate
+      // Gallery view class to avoid duplicating code like this.
+      this.router.navigate(camera.Router.ViewIdentifier.DIALOG, {
+        type: camera.views.Dialog.Type.CONFIRMATION,
+        message: chrome.i18n.getMessage('deleteConfirmationMsg')
+      }, function(result) {
+        if (!result.isPositive)
+          return;
+        this.model_.deletePicture(this.currentPicture_().picture,
+            function() {},
+            function() {
+              // TODO(mtomasz): Handle errors.
+            });
+      }.bind(this));
       break;
     case 'Enter':
       this.exportSelection_();

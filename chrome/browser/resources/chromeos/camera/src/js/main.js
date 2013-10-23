@@ -55,6 +55,12 @@ camera.Camera = function() {
   this.browserView_ = new camera.views.Browser(this.context_, this.router_);
 
   /**
+   * @type {camera.views.Dialog}
+   * @private
+   */
+  this.dialogView_ = new camera.views.Dialog(this.context_, this.router_);
+
+  /**
    * @type {?number}
    * @private
    */
@@ -206,6 +212,9 @@ camera.Camera.prototype = {
   },
   get browserView() {
     return this.browserView_;
+  },
+  get dialogView() {
+    return this.dialogView_;
   }
 };
 
@@ -219,6 +228,7 @@ camera.Camera.prototype.start = function() {
   queue.run(this.cameraView_.initialize.bind(this.cameraView_));
   queue.run(this.galleryView_.initialize.bind(this.galleryView_));
   queue.run(this.browserView_.initialize.bind(this.browserView_));
+  queue.run(this.dialogView_.initialize.bind(this.dialogView_));
 
   // Display the camera view after initializing.
   queue.run(function(callback) {
@@ -248,6 +258,9 @@ camera.Camera.prototype.navigateById_ = function(
       break;
     case camera.Router.ViewIdentifier.BROWSER:
       this.viewsStack_.push(this.browserView_, opt_arguments, opt_callback);
+      break;
+    case camera.Router.ViewIdentifier.DIALOG:
+      this.viewsStack_.push(this.dialogView_, opt_arguments, opt_callback);
       break;
   }
 };
