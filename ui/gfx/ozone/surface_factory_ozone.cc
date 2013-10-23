@@ -6,6 +6,8 @@
 
 #include <stdlib.h>
 
+#include "base/command_line.h"
+#include "ui/gfx/ozone/impl/file_surface_factory_ozone.h"
 #include "ui/gfx/ozone/impl/software_surface_factory_ozone.h"
 
 namespace gfx {
@@ -45,9 +47,18 @@ SurfaceFactoryOzone::~SurfaceFactoryOzone() {
 
 SurfaceFactoryOzone* SurfaceFactoryOzone::GetInstance() {
   if (!impl_) {
-    LOG(WARNING) << "No SurfaceFactoryOzone implementation set. Using default "
-                    "gfx::SoftwareSurfaceFactoryOzone.";
-    impl_ = new SoftwareSurfaceFactoryOzone();
+    const char kOzoneFileSurface[] = "ozone-dump-file";
+    CommandLine* cmd = CommandLine::ForCurrentProcess();
+    if (cmd->HasSwitch(kOzoneFileSurface)) {
+      base::FilePath location = cmd->GetSwitchValuePath(kOzoneFileSurface);
+      if (location.empty())
+        location = base::FilePath("/dev/null");
+      impl_ = new FileSurfaceFactoryOzone(location);
+    } else {
+      LOG(WARNING) << "No SurfaceFactoryOzone implementation set. Using default"
+                      " gfx::SoftwareSurfaceFactoryOzone.";
+      impl_ = new SoftwareSurfaceFactoryOzone();
+    }
   }
   return impl_;
 }

@@ -141,6 +141,8 @@
         'ozone/impl/drm_skbitmap_ozone.h',
         'ozone/impl/drm_wrapper_ozone.cc',
         'ozone/impl/drm_wrapper_ozone.h',
+        'ozone/impl/file_surface_factory_ozone.cc',
+        'ozone/impl/file_surface_factory_ozone.h',
         'ozone/impl/hardware_display_controller_ozone.cc',
         'ozone/impl/hardware_display_controller_ozone.h',
         'ozone/impl/software_surface_factory_ozone.cc',
