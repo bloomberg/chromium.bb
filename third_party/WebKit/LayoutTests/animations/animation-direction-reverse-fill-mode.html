@@ -35,6 +35,12 @@
       -webkit-animation-fill-mode: both;
     }
     #both_iterating {
+      background-color: cyan;
+      -webkit-animation-fill-mode: both;
+      -webkit-animation-iteration-count: 2;
+      -webkit-animation-direction: alternate;
+    }
+    #both_iterating_reverse {
       background-color: #999;
       -webkit-animation-fill-mode: both;
       -webkit-animation-iteration-count: 2;
@@ -43,15 +49,16 @@
   </style>
   <script src="resources/animation-test-helpers.js"></script>
   <script type="text/javascript" charset="utf-8">
-    const numAnims = 5;
+    const numAnims = 6;
     var animsFinished = 0;
     const allowance = 5;
     const expectedValues = [
-      {id: "none",           start: 100, end: 100},
-      {id: "backwards",      start: 300, end: 100},
-      {id: "forwards",       start: 100, end: 200},
-      {id: "both",           start: 300, end: 200},
-      {id: "both_iterating", start: 300, end: 300}
+      {id: "none",                   start: 100, end: 100},
+      {id: "backwards",              start: 300, end: 100},
+      {id: "forwards",               start: 100, end: 200},
+      {id: "both",                   start: 300, end: 200},
+      {id: "both_iterating",         start: 200, end: 200},
+      {id: "both_iterating_reverse", start: 300, end: 300}
     ];
     var result = "";
 
@@ -119,6 +126,9 @@
 </div>
 <div id="both_iterating" class="box">
   Both iterating
+</div>
+<div id="both_iterating_reverse" class="box">
+  Both iterating reverse
 </div>
 <div id="result">
 </div>
