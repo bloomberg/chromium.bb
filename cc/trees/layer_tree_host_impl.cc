@@ -280,7 +280,7 @@ void LayerTreeHostImpl::CommitComplete() {
     // Impl-side painting needs an update immediately post-commit to have the
     // opportunity to create tilings.  Other paths can call UpdateDrawProperties
     // more lazily when needed prior to drawing.
-    pending_tree()->ApplyScrollDeltasSinceBeginFrame();
+    pending_tree()->ApplyScrollDeltasSinceBeginMainFrame();
     pending_tree_->set_needs_update_draw_properties();
     pending_tree_->UpdateDrawProperties();
     // Start working on newly created tiles immediately if needed.
@@ -1208,8 +1208,8 @@ void LayerTreeHostImpl::SetNeedsRedrawRect(gfx::Rect damage_rect) {
   client_->SetNeedsRedrawRectOnImplThread(damage_rect);
 }
 
-void LayerTreeHostImpl::BeginFrame(const BeginFrameArgs& args) {
-  client_->BeginFrameOnImplThread(args);
+void LayerTreeHostImpl::BeginImplFrame(const BeginFrameArgs& args) {
+  client_->BeginImplFrame(args);
 }
 
 void LayerTreeHostImpl::OnSwapBuffersComplete() {
@@ -1396,9 +1396,9 @@ bool LayerTreeHostImpl::SwapBuffers(const LayerTreeHostImpl::FrameData& frame) {
   return true;
 }
 
-void LayerTreeHostImpl::SetNeedsBeginFrame(bool enable) {
+void LayerTreeHostImpl::SetNeedsBeginImplFrame(bool enable) {
   if (output_surface_)
-    output_surface_->SetNeedsBeginFrame(enable);
+    output_surface_->SetNeedsBeginImplFrame(enable);
 }
 
 gfx::SizeF LayerTreeHostImpl::UnscaledScrollableViewportSize() const {
@@ -1707,14 +1707,14 @@ bool LayerTreeHostImpl::InitializeRenderer(
                             GetRendererCapabilities().using_map_image);
   }
 
-  // Setup BeginFrameEmulation if it's not supported natively
-  if (!settings_.begin_frame_scheduling_enabled) {
+  // Setup BeginImplFrameEmulation if it's not supported natively
+  if (!settings_.begin_impl_frame_scheduling_enabled) {
     const base::TimeDelta display_refresh_interval =
       base::TimeDelta::FromMicroseconds(
           base::Time::kMicrosecondsPerSecond /
           settings_.refresh_rate);
 
-    output_surface->InitializeBeginFrameEmulation(
+    output_surface->InitializeBeginImplFrameEmulation(
         proxy_->ImplThreadTaskRunner(),
         settings_.throttle_frame_production,
         display_refresh_interval);

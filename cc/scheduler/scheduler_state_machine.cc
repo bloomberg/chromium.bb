@@ -823,7 +823,7 @@ bool SchedulerStateMachine::BeginImplFrameNeededToDraw() const {
 // These are cases where we are very likely to draw soon, but might not
 // actually have a new frame to draw when we receive the next BeginImplFrame.
 // Proactively requesting the BeginImplFrame helps hide the round trip latency
-// of the SetNeedsBeginFrame request that has to go to the Browser.
+// of the SetNeedsBeginImplFrame request that has to go to the Browser.
 bool SchedulerStateMachine::ProactiveBeginImplFrameWanted() const {
   // The output surface is the provider of BeginImplFrames,
   // so we are not going to get them even if we ask for them.
@@ -850,9 +850,10 @@ bool SchedulerStateMachine::ProactiveBeginImplFrameWanted() const {
     return true;
 
   // If we just swapped, it's likely that we are going to produce another
-  // frame soon. This helps avoid negative glitches in our SetNeedsBeginFrame
-  // requests, which may propagate to the BeginImplFrame provider and get
-  // sampled at an inopportune time, delaying the next BeginImplFrame.
+  // frame soon. This helps avoid negative glitches in our
+  // SetNeedsBeginImplFrame requests, which may propagate to the BeginImplFrame
+  // provider and get sampled at an inopportune time, delaying the next
+  // BeginImplFrame.
   if (last_frame_number_swap_performed_ == current_frame_number_)
     return true;
 

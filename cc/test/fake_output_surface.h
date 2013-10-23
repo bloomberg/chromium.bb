@@ -94,9 +94,9 @@ class FakeOutputSurface : public OutputSurface {
 
   virtual void SwapBuffers(CompositorFrame* frame) OVERRIDE;
 
-  virtual void SetNeedsBeginFrame(bool enable) OVERRIDE;
-  bool needs_begin_frame() const {
-    return needs_begin_frame_;
+  virtual void SetNeedsBeginImplFrame(bool enable) OVERRIDE;
+  bool needs_begin_impl_frame() const {
+    return needs_begin_impl_frame_;
   }
 
   void set_forced_draw_to_software_device(bool forced) {
@@ -140,12 +140,12 @@ class FakeOutputSurface : public OutputSurface {
       scoped_ptr<SoftwareOutputDevice> software_device,
       bool delegated_rendering);
 
-  void OnBeginFrame();
+  void OnBeginImplFrame();
 
   OutputSurfaceClient* client_;
   CompositorFrame last_sent_frame_;
   size_t num_sent_frames_;
-  bool needs_begin_frame_;
+  bool needs_begin_impl_frame_;
   bool forced_draw_to_software_device_;
   bool has_external_stencil_test_;
   TransferableResourceArray resources_held_by_parent_;

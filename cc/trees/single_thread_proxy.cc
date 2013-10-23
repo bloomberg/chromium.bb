@@ -455,7 +455,7 @@ bool SingleThreadProxy::CommitAndComposite(
                             device_viewport_damage_rect,
                             for_readback,
                             frame);
-  layer_tree_host_->DidBeginFrame();
+  layer_tree_host_->DidBeginMainFrame();
   return result;
 }
 

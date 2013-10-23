@@ -261,8 +261,8 @@ void LayerTreeHost::AcquireLayerTextures() {
   proxy_->AcquireLayerTextures();
 }
 
-void LayerTreeHost::DidBeginFrame() {
-  client_->DidBeginFrame();
+void LayerTreeHost::DidBeginMainFrame() {
+  client_->DidBeginMainFrame();
 }
 
 void LayerTreeHost::UpdateClientAnimations(base::TimeTicks frame_begin_time) {

@@ -385,7 +385,7 @@ void LayerImpl::ApplySentScrollDeltasFromAbortedCommit() {
   sent_scroll_delta_ = gfx::Vector2d();
 }
 
-void LayerImpl::ApplyScrollDeltasSinceBeginFrame() {
+void LayerImpl::ApplyScrollDeltasSinceBeginMainFrame() {
   // Only the pending tree can have missing scrolls.
   DCHECK(layer_tree_impl()->IsPendingTree());
   if (!scrollable())

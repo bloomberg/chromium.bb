@@ -15,7 +15,7 @@ class FakeLayerTreeHostImplClient : public LayerTreeHostImplClient {
   // LayerTreeHostImplClient implementation.
   virtual void DidLoseOutputSurfaceOnImplThread() OVERRIDE {}
   virtual void OnSwapBuffersCompleteOnImplThread() OVERRIDE {}
-  virtual void BeginFrameOnImplThread(const BeginFrameArgs& args)
+  virtual void BeginImplFrame(const BeginFrameArgs& args)
       OVERRIDE {}
   virtual void OnCanDrawStateChanged(bool can_draw) OVERRIDE {}
   virtual void NotifyReadyToActivate() OVERRIDE {}

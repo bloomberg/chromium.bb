@@ -77,7 +77,7 @@ CompositorOutputSurface::CompositorOutputSurface(
 
 CompositorOutputSurface::~CompositorOutputSurface() {
   DCHECK(CalledOnValidThread());
-  SetNeedsBeginFrame(false);
+  SetNeedsBeginImplFrame(false);
   if (!HasClient())
     return;
   UpdateSmoothnessTakesPriority(false);
@@ -144,7 +144,7 @@ void CompositorOutputSurface::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_SwapCompositorFrameAck, OnSwapAck);
     IPC_MESSAGE_HANDLER(ViewMsg_ReclaimCompositorResources, OnReclaimResources);
 #if defined(OS_ANDROID)
-    IPC_MESSAGE_HANDLER(ViewMsg_BeginFrame, OnBeginFrame);
+    IPC_MESSAGE_HANDLER(ViewMsg_BeginFrame, OnBeginImplFrame);
 #endif
   IPC_END_MESSAGE_MAP()
 }
@@ -156,16 +156,16 @@ void CompositorOutputSurface::OnUpdateVSyncParameters(
 }
 
 #if defined(OS_ANDROID)
-void CompositorOutputSurface::SetNeedsBeginFrame(bool enable) {
+void CompositorOutputSurface::SetNeedsBeginImplFrame(bool enable) {
   DCHECK(CalledOnValidThread());
-  if (needs_begin_frame_ != enable)
+  if (needs_begin_impl_frame_ != enable)
     Send(new ViewHostMsg_SetNeedsBeginFrame(routing_id_, enable));
-  OutputSurface::SetNeedsBeginFrame(enable);
+  OutputSurface::SetNeedsBeginImplFrame(enable);
 }
 
-void CompositorOutputSurface::OnBeginFrame(const cc::BeginFrameArgs& args) {
+void CompositorOutputSurface::OnBeginImplFrame(const cc::BeginFrameArgs& args) {
   DCHECK(CalledOnValidThread());
-  BeginFrame(args);
+  BeginImplFrame(args);
 }
 #endif  // defined(OS_ANDROID)
 

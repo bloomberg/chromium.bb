@@ -16,7 +16,7 @@ LayerTreeSettings::LayerTreeSettings()
     : impl_side_painting(false),
       allow_antialiasing(true),
       throttle_frame_production(true),
-      begin_frame_scheduling_enabled(false),
+      begin_impl_frame_scheduling_enabled(false),
       deadline_scheduling_enabled(false),
       using_synchronous_renderer_compositor(false),
       per_tile_painting_enabled(false),

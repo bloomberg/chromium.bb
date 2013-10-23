@@ -143,8 +143,8 @@ class CC_EXPORT LayerTreeHost : NON_EXPORTED_BASE(public RateLimiterClient) {
   }
 
   // LayerTreeHost interface to Proxy.
-  void WillBeginFrame() { client_->WillBeginFrame(); }
-  void DidBeginFrame();
+  void WillBeginMainFrame() { client_->WillBeginMainFrame(); }
+  void DidBeginMainFrame();
   void UpdateClientAnimations(base::TimeTicks monotonic_frame_begin_time);
   void AnimateLayers(base::TimeTicks monotonic_frame_begin_time);
   void DidStopFlinging();

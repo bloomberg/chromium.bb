@@ -59,7 +59,7 @@ class LayerTreeHostImplClient {
  public:
   virtual void DidLoseOutputSurfaceOnImplThread() = 0;
   virtual void OnSwapBuffersCompleteOnImplThread() = 0;
-  virtual void BeginFrameOnImplThread(const BeginFrameArgs& args) = 0;
+  virtual void BeginImplFrame(const BeginFrameArgs& args) = 0;
   virtual void OnCanDrawStateChanged(bool can_draw) = 0;
   virtual void NotifyReadyToActivate() = 0;
   virtual void SetNeedsRedrawOnImplThread() = 0;
@@ -221,7 +221,7 @@ class CC_EXPORT LayerTreeHostImpl
       scoped_refptr<ContextProvider> offscreen_context_provider) OVERRIDE;
   virtual void ReleaseGL() OVERRIDE;
   virtual void SetNeedsRedrawRect(gfx::Rect rect) OVERRIDE;
-  virtual void BeginFrame(const BeginFrameArgs& args) OVERRIDE;
+  virtual void BeginImplFrame(const BeginFrameArgs& args) OVERRIDE;
   virtual void SetExternalDrawConstraints(
       const gfx::Transform& transform,
       gfx::Rect viewport,
@@ -260,7 +260,7 @@ class CC_EXPORT LayerTreeHostImpl
   const RendererCapabilities& GetRendererCapabilities() const;
 
   virtual bool SwapBuffers(const FrameData& frame);
-  void SetNeedsBeginFrame(bool enable);
+  void SetNeedsBeginImplFrame(bool enable);
   void DidModifyTilePriorities();
 
   void Readback(void* pixels, gfx::Rect rect_in_device_viewport);

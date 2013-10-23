@@ -69,7 +69,7 @@ class ThreadProxy : public Proxy,
   // LayerTreeHostImplClient implementation
   virtual void DidLoseOutputSurfaceOnImplThread() OVERRIDE;
   virtual void OnSwapBuffersCompleteOnImplThread() OVERRIDE;
-  virtual void BeginFrameOnImplThread(const BeginFrameArgs& args) OVERRIDE;
+  virtual void BeginImplFrame(const BeginFrameArgs& args) OVERRIDE;
   virtual void OnCanDrawStateChanged(bool can_draw) OVERRIDE;
   virtual void NotifyReadyToActivate() OVERRIDE;
   virtual void SetNeedsRedrawOnImplThread() OVERRIDE;
@@ -119,9 +119,9 @@ class ThreadProxy : public Proxy,
   ThreadProxy(LayerTreeHost* layer_tree_host,
               scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner);
 
-  struct BeginFrameAndCommitState {
-    BeginFrameAndCommitState();
-    ~BeginFrameAndCommitState();
+  struct BeginMainFrameAndCommitState {
+    BeginMainFrameAndCommitState();
+    ~BeginMainFrameAndCommitState();
 
     base::TimeTicks monotonic_frame_begin_time;
     scoped_ptr<ScrollAndScaleSet> scroll_info;
@@ -131,8 +131,8 @@ class ThreadProxy : public Proxy,
   };
 
   // Called on main thread.
-  void BeginFrameOnMainThread(
-      scoped_ptr<BeginFrameAndCommitState> begin_frame_state);
+  void BeginMainFrame(
+      scoped_ptr<BeginMainFrameAndCommitState> begin_main_frame_state);
   void DidCommitAndDrawFrame();
   void DidCompleteSwapBuffers();
   void SetAnimationEvents(scoped_ptr<AnimationEventsVector> queue,
@@ -150,13 +150,13 @@ class ThreadProxy : public Proxy,
   struct SchedulerStateRequest;
 
   void ForceCommitForReadbackOnImplThread(
-      CompletionEvent* begin_frame_sent_completion,
+      CompletionEvent* begin_main_frame_sent_completion,
       ReadbackRequest* request);
   void StartCommitOnImplThread(
       CompletionEvent* completion,
       ResourceUpdateQueue* queue,
       scoped_refptr<cc::ContextProvider> offscreen_context_provider);
-  void BeginFrameAbortedByMainThreadOnImplThread(bool did_handle);
+  void BeginMainFrameAbortedOnImplThread(bool did_handle);
   void RequestReadbackOnImplThread(ReadbackRequest* request);
   void FinishAllRenderingOnImplThread(CompletionEvent* completion);
   void InitializeImplOnImplThread(CompletionEvent* completion);
@@ -200,7 +200,7 @@ class ThreadProxy : public Proxy,
   bool commit_requested_;
   // Set by SetNeedsCommit and SetNeedsAnimate.
   bool commit_request_sent_to_impl_thread_;
-  // Set by BeginFrameOnMainThread
+  // Set by BeginMainFrame
   bool created_offscreen_context_provider_;
   base::CancelableClosure output_surface_creation_callback_;
   LayerTreeHost* layer_tree_host_;
@@ -226,7 +226,7 @@ class ThreadProxy : public Proxy,
   // Set when the main thread is waiting on a
   // ScheduledActionSendBeginMainFrame to be issued.
   CompletionEvent*
-      begin_frame_sent_to_main_thread_completion_event_on_impl_thread_;
+      begin_main_frame_sent_completion_event_on_impl_thread_;
 
   // Set when the main thread is waiting on a readback.
   ReadbackRequest* readback_request_on_impl_thread_;
@@ -248,7 +248,7 @@ class ThreadProxy : public Proxy,
   bool next_frame_is_newly_committed_frame_on_impl_thread_;
 
   bool throttle_frame_production_;
-  bool begin_frame_scheduling_enabled_;
+  bool begin_impl_frame_scheduling_enabled_;
   bool using_synchronous_renderer_compositor_;
 
   bool inside_draw_;
@@ -257,19 +257,19 @@ class ThreadProxy : public Proxy,
 
   bool defer_commits_;
   bool input_throttled_until_commit_;
-  scoped_ptr<BeginFrameAndCommitState> pending_deferred_commit_;
+  scoped_ptr<BeginMainFrameAndCommitState> pending_deferred_commit_;
 
   base::TimeTicks smoothness_takes_priority_expiration_time_;
   bool renew_tree_priority_on_impl_thread_pending_;
 
   RollingTimeDeltaHistory draw_duration_history_;
-  RollingTimeDeltaHistory begin_frame_to_commit_duration_history_;
+  RollingTimeDeltaHistory begin_main_frame_to_commit_duration_history_;
   RollingTimeDeltaHistory commit_to_activate_duration_history_;
 
   // Used for computing samples added to
-  // begin_frame_to_commit_draw_duration_history_ and
+  // begin_main_frame_to_commit_duration_history_ and
   // activation_duration_history_.
-  base::TimeTicks begin_frame_sent_to_main_thread_time_;
+  base::TimeTicks begin_main_frame_sent_time_;
   base::TimeTicks commit_complete_time_;
 
   base::WeakPtr<ThreadProxy> main_thread_weak_ptr_;

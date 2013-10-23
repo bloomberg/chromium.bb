@@ -74,9 +74,9 @@ class LayerTreeHostImplForTesting : public LayerTreeHostImpl {
         block_notify_ready_to_activate_for_testing_(false),
         notify_ready_to_activate_was_blocked_(false) {}
 
-  virtual void BeginFrame(const BeginFrameArgs& args) OVERRIDE {
+  virtual void BeginImplFrame(const BeginFrameArgs& args) OVERRIDE {
     test_hooks_->WillBeginImplFrameOnThread(this, args);
-    LayerTreeHostImpl::BeginFrame(args);
+    LayerTreeHostImpl::BeginImplFrame(args);
     test_hooks_->DidBeginImplFrameOnThread(this, args);
   }
 
@@ -251,9 +251,13 @@ class LayerTreeHostClientForTesting : public LayerTreeHostClient {
   }
   virtual ~LayerTreeHostClientForTesting() {}
 
-  virtual void WillBeginFrame() OVERRIDE { test_hooks_->WillBeginFrame(); }
+  virtual void WillBeginMainFrame() OVERRIDE {
+    test_hooks_->WillBeginMainFrame();
+  }
 
-  virtual void DidBeginFrame() OVERRIDE { test_hooks_->DidBeginFrame(); }
+  virtual void DidBeginMainFrame() OVERRIDE {
+    test_hooks_->DidBeginMainFrame();
+  }
 
   virtual void Animate(double monotonic_time) OVERRIDE {
     test_hooks_->Animate(base::TimeTicks::FromInternalValue(
@@ -603,7 +607,7 @@ void LayerTreeTest::RunTest(bool threaded,
 
   delegating_renderer_ = delegating_renderer;
 
-  // Spend less time waiting for BeginFrame because the output is
+  // Spend less time waiting for BeginImplFrame because the output is
   // mocked out.
   settings_.refresh_rate = 200.0;
   if (impl_side_painting) {

@@ -59,7 +59,7 @@ class SynchronousCompositorOutputSurface
   virtual bool ForcedDrawToSoftwareDevice() const OVERRIDE;
   virtual bool BindToClient(cc::OutputSurfaceClient* surface_client) OVERRIDE;
   virtual void Reshape(gfx::Size size, float scale_factor) OVERRIDE;
-  virtual void SetNeedsBeginFrame(bool enable) OVERRIDE;
+  virtual void SetNeedsBeginImplFrame(bool enable) OVERRIDE;
   virtual void SwapBuffers(cc::CompositorFrame* frame) OVERRIDE;
 
   // Partial SynchronousCompositor API implementation.
@@ -80,7 +80,7 @@ class SynchronousCompositorOutputSurface
   friend class SoftwareDevice;
 
   // Private OutputSurface overrides.
-  virtual void PostCheckForRetroactiveBeginFrame() OVERRIDE;
+  virtual void PostCheckForRetroactiveBeginImplFrame() OVERRIDE;
 
   void InvokeComposite(const gfx::Transform& transform,
                        gfx::Rect viewport,
@@ -90,7 +90,7 @@ class SynchronousCompositorOutputSurface
   SynchronousCompositorOutputSurfaceDelegate* GetDelegate();
 
   int routing_id_;
-  bool needs_begin_frame_;
+  bool needs_begin_impl_frame_;
   bool invoking_composite_;
   bool did_swap_buffer_;
 

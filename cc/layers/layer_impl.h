@@ -382,7 +382,7 @@ class CC_EXPORT LayerImpl : LayerAnimationValueObserver {
   }
 
   void ApplySentScrollDeltasFromAbortedCommit();
-  void ApplyScrollDeltasSinceBeginFrame();
+  void ApplyScrollDeltasSinceBeginMainFrame();
 
   void SetShouldScrollOnMainThread(bool should_scroll_on_main_thread) {
     should_scroll_on_main_thread_ = should_scroll_on_main_thread;

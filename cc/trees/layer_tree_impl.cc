@@ -271,17 +271,17 @@ void LayerTreeImpl::ApplySentScrollAndScaleDeltasFromAbortedCommit() {
       root_layer(), base::Bind(&ApplySentScrollDeltasFromAbortedCommitTo));
 }
 
-static void ApplyScrollDeltasSinceBeginFrameTo(LayerImpl* layer) {
-  layer->ApplyScrollDeltasSinceBeginFrame();
+static void ApplyScrollDeltasSinceBeginMainFrameTo(LayerImpl* layer) {
+  layer->ApplyScrollDeltasSinceBeginMainFrame();
 }
 
-void LayerTreeImpl::ApplyScrollDeltasSinceBeginFrame() {
+void LayerTreeImpl::ApplyScrollDeltasSinceBeginMainFrame() {
   DCHECK(IsPendingTree());
   if (!root_layer())
     return;
 
   LayerTreeHostCommon::CallFunctionForSubtree(
-      root_layer(), base::Bind(&ApplyScrollDeltasSinceBeginFrameTo));
+      root_layer(), base::Bind(&ApplyScrollDeltasSinceBeginMainFrameTo));
 }
 
 void LayerTreeImpl::SetViewportLayersFromIds(

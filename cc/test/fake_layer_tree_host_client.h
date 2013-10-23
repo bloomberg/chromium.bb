@@ -24,8 +24,8 @@ class FakeLayerTreeHostClient : public LayerTreeHostClient {
   explicit FakeLayerTreeHostClient(RendererOptions options);
   virtual ~FakeLayerTreeHostClient();
 
-  virtual void WillBeginFrame() OVERRIDE {}
-  virtual void DidBeginFrame() OVERRIDE {}
+  virtual void WillBeginMainFrame() OVERRIDE {}
+  virtual void DidBeginMainFrame() OVERRIDE {}
   virtual void Animate(double frame_begin_time) OVERRIDE {}
   virtual void Layout() OVERRIDE {}
   virtual void ApplyScrollAndScale(gfx::Vector2d scroll_delta,

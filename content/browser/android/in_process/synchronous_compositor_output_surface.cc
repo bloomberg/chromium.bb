@@ -104,7 +104,7 @@ SynchronousCompositorOutputSurface::SynchronousCompositorOutputSurface(
     : cc::OutputSurface(
           scoped_ptr<cc::SoftwareOutputDevice>(new SoftwareDevice(this))),
       routing_id_(routing_id),
-      needs_begin_frame_(false),
+      needs_begin_impl_frame_(false),
       invoking_composite_(false),
       did_swap_buffer_(false),
       current_sw_canvas_(NULL),
@@ -158,14 +158,14 @@ void SynchronousCompositorOutputSurface::Reshape(
   // Intentional no-op: surface size is controlled by the embedder.
 }
 
-void SynchronousCompositorOutputSurface::SetNeedsBeginFrame(
+void SynchronousCompositorOutputSurface::SetNeedsBeginImplFrame(
     bool enable) {
   DCHECK(CalledOnValidThread());
-  cc::OutputSurface::SetNeedsBeginFrame(enable);
-  needs_begin_frame_ = enable;
+  cc::OutputSurface::SetNeedsBeginImplFrame(enable);
+  needs_begin_impl_frame_ = enable;
   SynchronousCompositorOutputSurfaceDelegate* delegate = GetDelegate();
   if (delegate)
-    delegate->SetContinuousInvalidate(needs_begin_frame_);
+    delegate->SetContinuousInvalidate(needs_begin_impl_frame_);
 }
 
 void SynchronousCompositorOutputSurface::SwapBuffers(
@@ -264,8 +264,8 @@ void SynchronousCompositorOutputSurface::InvokeComposite(
       adjusted_transform, viewport, clip, valid_for_tile_management);
   SetNeedsRedrawRect(gfx::Rect(viewport.size()));
 
-  if (needs_begin_frame_)
-    BeginFrame(cc::BeginFrameArgs::CreateForSynchronousCompositor());
+  if (needs_begin_impl_frame_)
+    BeginImplFrame(cc::BeginFrameArgs::CreateForSynchronousCompositor());
 
   // After software draws (which might move the viewport arbitrarily), restore
   // the previous hardware viewport to allow CC's tile manager to prioritize
@@ -283,8 +283,9 @@ void SynchronousCompositorOutputSurface::InvokeComposite(
     OnSwapBuffersComplete();
 }
 
-void SynchronousCompositorOutputSurface::PostCheckForRetroactiveBeginFrame() {
-  // Synchronous compositor cannot perform retroactive begin frames, so
+void
+SynchronousCompositorOutputSurface::PostCheckForRetroactiveBeginImplFrame() {
+  // Synchronous compositor cannot perform retroactive BeginImplFrames, so
   // intentionally no-op here.
 }
 

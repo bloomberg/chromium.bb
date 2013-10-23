@@ -104,7 +104,7 @@ scoped_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
 
   settings.throttle_frame_production =
       !cmd->HasSwitch(switches::kDisableGpuVsync);
-  settings.begin_frame_scheduling_enabled =
+  settings.begin_impl_frame_scheduling_enabled =
       cmd->HasSwitch(switches::kEnableBeginFrameScheduling);
   settings.deadline_scheduling_enabled =
       cmd->HasSwitch(switches::kEnableDeadlineScheduling) &&
@@ -585,12 +585,12 @@ void RenderWidgetCompositor::setShowScrollBottleneckRects(bool show) {
   layer_tree_host_->SetDebugState(debug_state);
 }
 
-void RenderWidgetCompositor::WillBeginFrame() {
+void RenderWidgetCompositor::WillBeginMainFrame() {
   widget_->InstrumentWillBeginFrame();
   widget_->willBeginCompositorFrame();
 }
 
-void RenderWidgetCompositor::DidBeginFrame() {
+void RenderWidgetCompositor::DidBeginMainFrame() {
   widget_->InstrumentDidBeginFrame();
 }
 

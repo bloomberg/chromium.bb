@@ -2482,15 +2482,16 @@ class LayerTreeHostTestLCDNotification : public LayerTreeHostTest {
 
 SINGLE_THREAD_TEST_F(LayerTreeHostTestLCDNotification);
 
-// Verify that the BeginFrame notification is used to initiate rendering.
-class LayerTreeHostTestBeginFrameNotification : public LayerTreeHostTest {
+// Verify that the BeginImplFrame notification is used to initiate rendering.
+class LayerTreeHostTestBeginImplFrameNotification : public LayerTreeHostTest {
  public:
   virtual void InitializeSettings(LayerTreeSettings* settings) OVERRIDE {
-    settings->begin_frame_scheduling_enabled = true;
+    settings->begin_impl_frame_scheduling_enabled = true;
   }
 
   virtual void BeginTest() OVERRIDE {
-    // This will trigger a SetNeedsBeginFrame which will trigger a BeginFrame.
+    // This will trigger a SetNeedsBeginImplFrame which will trigger a
+    // BeginImplFrame.
     PostSetNeedsCommitToMainThread();
   }
 
@@ -2508,24 +2509,24 @@ class LayerTreeHostTestBeginFrameNotification : public LayerTreeHostTest {
   base::TimeTicks frame_time_;
 };
 
-MULTI_THREAD_TEST_F(LayerTreeHostTestBeginFrameNotification);
+MULTI_THREAD_TEST_F(LayerTreeHostTestBeginImplFrameNotification);
 
-class LayerTreeHostTestBeginFrameNotificationShutdownWhileEnabled
+class LayerTreeHostTestBeginImplFrameNotificationShutdownWhileEnabled
     : public LayerTreeHostTest {
  public:
   virtual void InitializeSettings(LayerTreeSettings* settings) OVERRIDE {
-    settings->begin_frame_scheduling_enabled = true;
+    settings->begin_impl_frame_scheduling_enabled = true;
     settings->using_synchronous_renderer_compositor = true;
   }
 
   virtual void BeginTest() OVERRIDE { PostSetNeedsCommitToMainThread(); }
 
   virtual void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
-    // The BeginFrame notification is turned off now but will get enabled
+    // The BeginImplFrame notification is turned off now but will get enabled
     // once we return. End test while it's enabled.
     ImplThreadTaskRunner()->PostTask(
         FROM_HERE,
-        base::Bind(&LayerTreeHostTestBeginFrameNotification::EndTest,
+        base::Bind(&LayerTreeHostTestBeginImplFrameNotification::EndTest,
                    base::Unretained(this)));
   }
 
@@ -2533,7 +2534,7 @@ class LayerTreeHostTestBeginFrameNotificationShutdownWhileEnabled
 };
 
 MULTI_THREAD_TEST_F(
-    LayerTreeHostTestBeginFrameNotificationShutdownWhileEnabled);
+    LayerTreeHostTestBeginImplFrameNotificationShutdownWhileEnabled);
 
 class LayerTreeHostTestAbortedCommitDoesntStall : public LayerTreeHostTest {
  protected:
@@ -2541,7 +2542,7 @@ class LayerTreeHostTestAbortedCommitDoesntStall : public LayerTreeHostTest {
       : commit_count_(0), commit_complete_count_(0) {}
 
   virtual void InitializeSettings(LayerTreeSettings* settings) OVERRIDE {
-    settings->begin_frame_scheduling_enabled = true;
+    settings->begin_impl_frame_scheduling_enabled = true;
   }
 
   virtual void BeginTest() OVERRIDE { PostSetNeedsCommitToMainThread(); }
@@ -4709,7 +4710,7 @@ MULTI_THREAD_TEST_F(LayerTreeHostTestUpdateLayerInEmptyViewport);
 class LayerTreeHostTestAbortEvictedTextures : public LayerTreeHostTest {
  public:
   LayerTreeHostTestAbortEvictedTextures()
-      : num_will_begin_frames_(0), num_impl_commits_(0) {}
+      : num_will_begin_main_frames_(0), num_impl_commits_(0) {}
 
  protected:
   virtual void SetupTree() OVERRIDE {
@@ -4723,9 +4724,9 @@ class LayerTreeHostTestAbortEvictedTextures : public LayerTreeHostTest {
 
   virtual void BeginTest() OVERRIDE { PostSetNeedsCommitToMainThread(); }
 
-  virtual void WillBeginFrame() OVERRIDE {
-    num_will_begin_frames_++;
-    switch (num_will_begin_frames_) {
+  virtual void WillBeginMainFrame() OVERRIDE {
+    num_will_begin_main_frames_++;
+    switch (num_will_begin_main_frames_) {
       case 2:
         // Send a redraw to the compositor thread.  This will (wrongly) be
         // ignored unless aborting resets the texture state.
@@ -4755,12 +4756,12 @@ class LayerTreeHostTestAbortEvictedTextures : public LayerTreeHostTest {
 
   virtual void AfterTest() OVERRIDE {
     // Ensure that the commit was truly aborted.
-    EXPECT_EQ(2, num_will_begin_frames_);
+    EXPECT_EQ(2, num_will_begin_main_frames_);
     EXPECT_EQ(1, num_impl_commits_);
   }
 
  private:
-  int num_will_begin_frames_;
+  int num_will_begin_main_frames_;
   int num_impl_commits_;
 };
 

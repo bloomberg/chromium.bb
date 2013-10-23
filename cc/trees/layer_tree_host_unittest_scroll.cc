@@ -172,8 +172,8 @@ class LayerTreeHostScrollTestScrollAbortedCommit
         impl_scroll_(-3, 2),
         second_main_scroll_(14, -3),
         impl_scale_(2.f),
-        num_will_begin_frames_(0),
-        num_did_begin_frames_(0),
+        num_will_begin_main_frames_(0),
+        num_did_begin_main_frames_(0),
         num_will_commits_(0),
         num_did_commits_(0),
         num_impl_commits_(0),
@@ -194,10 +194,10 @@ class LayerTreeHostScrollTestScrollAbortedCommit
     layer_tree_host()->SetPageScaleFactorAndLimits(1.f, 0.01f, 100.f);
   }
 
-  virtual void WillBeginFrame() OVERRIDE {
-    num_will_begin_frames_++;
+  virtual void WillBeginMainFrame() OVERRIDE {
+    num_will_begin_main_frames_++;
     Layer* root_scroll_layer = layer_tree_host()->root_layer()->children()[0];
-    switch (num_will_begin_frames_) {
+    switch (num_will_begin_main_frames_) {
       case 1:
         // This will not be aborted because of the initial prop changes.
         EXPECT_EQ(0, num_impl_scrolls_);
@@ -239,7 +239,7 @@ class LayerTreeHostScrollTestScrollAbortedCommit
     }
   }
 
-  virtual void DidBeginFrame() OVERRIDE { num_did_begin_frames_++; }
+  virtual void DidBeginMainFrame() OVERRIDE { num_did_begin_main_frames_++; }
 
   virtual void WillCommit() OVERRIDE { num_will_commits_++; }
 
@@ -317,8 +317,8 @@ class LayerTreeHostScrollTestScrollAbortedCommit
   virtual void AfterTest() OVERRIDE {
     EXPECT_EQ(3, num_impl_scrolls_);
     // Verify that the embedder sees aborted commits as real commits.
-    EXPECT_EQ(4, num_will_begin_frames_);
-    EXPECT_EQ(4, num_did_begin_frames_);
+    EXPECT_EQ(4, num_will_begin_main_frames_);
+    EXPECT_EQ(4, num_did_begin_main_frames_);
     EXPECT_EQ(4, num_will_commits_);
     EXPECT_EQ(4, num_did_commits_);
     // ...but the compositor thread only sees two real ones.
@@ -330,8 +330,8 @@ class LayerTreeHostScrollTestScrollAbortedCommit
   gfx::Vector2d impl_scroll_;
   gfx::Vector2d second_main_scroll_;
   float impl_scale_;
-  int num_will_begin_frames_;
-  int num_did_begin_frames_;
+  int num_will_begin_main_frames_;
+  int num_did_begin_main_frames_;
   int num_will_commits_;
   int num_did_commits_;
   int num_impl_commits_;

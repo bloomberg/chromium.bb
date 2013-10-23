@@ -13,7 +13,7 @@ namespace cc {
 class FakeOutputSurfaceClient : public OutputSurfaceClient {
  public:
   FakeOutputSurfaceClient()
-      : begin_frame_count_(0),
+      : begin_impl_frame_count_(0),
         deferred_initialize_result_(true),
         deferred_initialize_called_(false),
         did_lose_output_surface_called_(false),
@@ -24,7 +24,7 @@ class FakeOutputSurfaceClient : public OutputSurfaceClient {
       scoped_refptr<ContextProvider> offscreen_context_provider) OVERRIDE;
   virtual void ReleaseGL() OVERRIDE {}
   virtual void SetNeedsRedrawRect(gfx::Rect damage_rect) OVERRIDE {}
-  virtual void BeginFrame(const BeginFrameArgs& args) OVERRIDE;
+  virtual void BeginImplFrame(const BeginFrameArgs& args) OVERRIDE;
   virtual void OnSwapBuffersComplete() OVERRIDE {}
   virtual void ReclaimResources(const CompositorFrameAck* ack) OVERRIDE {}
   virtual void DidLoseOutputSurface() OVERRIDE;
@@ -37,8 +37,8 @@ class FakeOutputSurfaceClient : public OutputSurfaceClient {
   virtual void SetDiscardBackBufferWhenNotVisible(bool discard) OVERRIDE;
   virtual void SetTreeActivationCallback(const base::Closure&) OVERRIDE {}
 
-  int begin_frame_count() {
-    return begin_frame_count_;
+  int begin_impl_frame_count() {
+    return begin_impl_frame_count_;
   }
 
   void set_deferred_initialize_result(bool result) {
@@ -60,7 +60,7 @@ class FakeOutputSurfaceClient : public OutputSurfaceClient {
   }
 
  private:
-  int begin_frame_count_;
+  int begin_impl_frame_count_;
   bool deferred_initialize_result_;
   bool deferred_initialize_called_;
   bool did_lose_output_surface_called_;
