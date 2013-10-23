@@ -10,45 +10,17 @@
 
 #define IPC_MESSAGE_START DeviceOrientationMsgStart
 
-// Messages sent from the renderer to the browser.
-
-// Asks the browser process to start polling, and return a shared memory
-// handle that will hold the data from the hardware. See
-// device_orientation_hardware_buffer.h for a description of how synchronization
-// is handled. The number of Starts should match the number of Stops.
+// Asks the browser process to activate Device Orientation sensors if necessary.
 IPC_MESSAGE_CONTROL0(DeviceOrientationHostMsg_StartPolling)
+
+// The browser process asynchronously returns the shared memory handle that will
+// hold the data from the hardware sensors.
+// See device_orientation_hardware_buffer.h for a description of how
+// synchronization is handled.
 IPC_MESSAGE_CONTROL1(DeviceOrientationMsg_DidStartPolling,
                      base::SharedMemoryHandle /* handle */)
 
+// Notifies the browser process that the renderer process is not using the
+// Device Orientation data anymore. The number of Starts should match the
+// number of Stops.
 IPC_MESSAGE_CONTROL0(DeviceOrientationHostMsg_StopPolling)
-
-// TODO(timvolodine): remove the methods below once the shared memory
-// Device Orientation is implemented.
-
-IPC_STRUCT_BEGIN(DeviceOrientationMsg_Updated_Params)
-  // These fields have the same meaning as in content::Orientation.
-  IPC_STRUCT_MEMBER(bool, can_provide_alpha)
-  IPC_STRUCT_MEMBER(double, alpha)
-  IPC_STRUCT_MEMBER(bool, can_provide_beta)
-  IPC_STRUCT_MEMBER(double, beta)
-  IPC_STRUCT_MEMBER(bool, can_provide_gamma)
-  IPC_STRUCT_MEMBER(double, gamma)
-  IPC_STRUCT_MEMBER(bool, can_provide_absolute)
-  IPC_STRUCT_MEMBER(bool, absolute)
-IPC_STRUCT_END()
-
-// Messages sent from the browser to the renderer.
-
-// Notification that the device's orientation has changed.
-IPC_MESSAGE_ROUTED1(DeviceOrientationMsg_Updated,
-                    DeviceOrientationMsg_Updated_Params)
-
-// Messages sent from the renderer to the browser.
-
-// A RenderView requests to start receiving device orientation updates.
-IPC_MESSAGE_CONTROL1(DeviceOrientationHostMsg_StartUpdating,
-                     int /* render_view_id */)
-
-// A RenderView requests to stop receiving device orientation updates.
-IPC_MESSAGE_CONTROL1(DeviceOrientationHostMsg_StopUpdating,
-                     int /* render_view_id */)
