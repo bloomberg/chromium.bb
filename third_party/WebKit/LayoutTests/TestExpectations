@@ -465,7 +465,7 @@ crbug.com/241576 [ Win7 ] http/tests/appcache/video.html [ Pass Timeout ]
 
 crbug.com/244921 http/tests/navigation/back-twice-without-commit.html [ Failure Pass ]
 
-crbug.com/248938 virtual/threaded/animations/animation-direction-reverse.html [ Pass Failure ]
+crbug.com/248938 virtual/threaded/animations/animation-direction-reverse-fill-mode-pause.html [ Pass Failure ]
 crbug.com/248938 virtual/threaded/animations/change-keyframes.html [ Pass Failure ]
 crbug.com/248938 virtual/threaded/animations/missing-values-last-keyframe.html [ Pass ImageOnlyFailure ]
 crbug.com/248938 virtual/threaded/animations/dynamic-stylesheet-loading.html [ Pass Failure ]
