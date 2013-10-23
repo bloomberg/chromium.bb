@@ -4,7 +4,7 @@
 <script src="../../js/resources/js-test-pre.js"></script>
 <style>
 /* Position on an integer offset to avoid rounding errors during the test to click on a coordinate. */
-#inner-submit-image {
+#image {
     position: fixed;
     top: 50px;
     left: 50px;
@@ -20,7 +20,7 @@
         <form method="dialog">
             <input id="inner-submit-yes" type="submit" value="Yes">
             <input id="inner-submit-no" type="submit" value="No">
-            <input id="inner-submit-image" type="image"
+            <input id="image" type="image"
                    src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAANcAAACuCAIAAAAqMg/rAAAAAXNSR0IArs4c6QAAAU9JREFUeNrt0jERAAAIxDDAv+dHAxNLIqHXTlLwaiTAheBCXAguxIXgQlwILsSF4EJcCC7EheBCXAguxIXgQlwILsSF4EJcCC7EheBCXAguxIXgQlwILsSF4EJcCC7EheBCXAguxIXgQlwILsSF4EJcCC7EheBCXAguxIXgQlwILsSF4EJcCC7EheBCXAguxIXgQlwILsSF4EJcCC7EheBCXAguxIXgQlwILsSF4EJcCC7EheBCXAguxIXgQlwILsSF4EJcCC7EheBCXAguxIXgQlwILsSF4EJcCC7EheBCXAguxIXgQlwILsSF4EJcCC7EheBCXAguxIXgQlwILsSFEuBCcCEuBBfiQnAhLgQX4kJwIS4EF+JCcCEuBBfiQnAhLgQX4kJwIS4EF+JCcCEuBBfiQnAhLgQX4kJwIS4EF+JCcCEuBBfiQnAhLoSDBZXqBFnkRyeqAAAAAElFTkSuQmCC">
         </form>
     </dialog>
@@ -34,6 +34,8 @@
     <input id="no-dialog-ancestor-2" formmethod="dialog" type="submit" value="I also don't submit">
 </form>
 <script>
+window.jsTestIsAsync = true;
+
 function openDialogs()
 {
     var dialogs = document.querySelectorAll('dialog');
@@ -91,51 +93,54 @@ function testClickMethodOnImageButton()
 {
     debug('Activating an image button by click()');
     openDialogs();
+    $('inner').addEventListener('close', testClickMethodOnImageButtonClose);
+    $('image').click();
+}
 
-    var image = $('inner-submit-image');
-    image.click();
-    checkDialogs(image, $('inner'), '0,0');
+function testClickMethodOnImageButtonClose()
+{
+    var image = $('image');
+    var inner = $('inner');
+    inner.removeEventListener('close', testClickMethodOnImageButtonClose);
+    checkDialogs(image, inner, '0,0');
     debug('');
+    setTimeout(testKeyboardActivatingImageButton, 0);
 }
 
 function testKeyboardActivatingImageButton()
 {
     debug('Activating an image button by keyboard');
     openDialogs();
-    var image = $('inner-submit-image');
-    var inner = $('inner');
-
-    inner.addEventListener('close', function f() {
-        inner.removeEventListener('close', f);
-        checkDialogs(image, $('inner'), '0,0');
-        debug('');
-        testClickingImageButton();
-    });
-
+    $('inner').addEventListener('close', testKeyboardActivatingImageButtonClose);
     if (!window.eventSender) {
         debug('This test requires eventSender.');
         return;
     }
-    image.focus();
+    $('image').focus();
     eventSender.keyDown(' ');
+}
+
+function testKeyboardActivatingImageButtonClose()
+{
+    var image = $('image');
+    var inner = $('inner');
+
+    inner.removeEventListener('close', testKeyboardActivatingImageButtonClose);
+    checkDialogs(image, inner, '0,0');
+    debug('');
+    setTimeout(testClickingImageButton, 0);
 }
 
 function testClickingImageButton()
 {
     debug('Clicking an image button');
     openDialogs();
-    var image = $('inner-submit-image');
+    var image = $('image');
     var inner = $('inner');
     var x = image.getBoundingClientRect().left + 10;
     var y = image.getBoundingClientRect().top + 5;
 
-    inner.addEventListener('close', function f() {
-      inner.removeEventListener('close', f);
-      checkDialogs(image, inner, '10,5');
-      if (window.testRunner)
-          testRunner.notifyDone();
-    });
-
+    inner.addEventListener('close', testClickingImageButtonClose);
     if (!window.eventSender) {
         debug('This test requires eventSender');
         return;
@@ -143,6 +148,16 @@ function testClickingImageButton()
     eventSender.mouseMoveTo(x, y);
     eventSender.mouseDown();
     eventSender.mouseUp();
+}
+
+function testClickingImageButtonClose()
+{
+    var image = $('image');
+    var inner = $('inner');
+
+    inner.removeEventListener('close', testClickingImageButtonClose);
+    checkDialogs(image, inner, '10,5');
+    finishJSTest();
 }
 
 function test()
@@ -175,14 +190,11 @@ function test()
     }
 
     testClosedDialog();
-    testClickMethodOnImageButton();
 
-    // The tests involving eventSender seem to need to be async.
-    testKeyboardActivatingImageButton();
+    // The tests involving image button seem to need to be async.
+    testClickMethodOnImageButton();
 }
 
-if (window.testRunner)
-    testRunner.waitUntilDone();
 test();
 </script>
 <script src="../../js/resources/js-test-post.js"></script>
