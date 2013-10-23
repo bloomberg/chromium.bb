@@ -33,15 +33,14 @@
 
 namespace WebCore {
 
-PassRefPtr<InertAnimation> InertAnimation::create(PassRefPtr<AnimationEffect> effect, const Timing& timing, bool paused)
+PassRefPtr<InertAnimation> InertAnimation::create(PassRefPtr<AnimationEffect> effect, const Timing& timing)
 {
-    return adoptRef(new InertAnimation(effect, timing, paused));
+    return adoptRef(new InertAnimation(effect, timing));
 }
 
-InertAnimation::InertAnimation(PassRefPtr<AnimationEffect> effect, const Timing& timing, bool paused)
+InertAnimation::InertAnimation(PassRefPtr<AnimationEffect> effect, const Timing& timing)
     : TimedItem(timing)
     , m_effect(effect)
-    , m_paused(paused)
 {
 }
 
