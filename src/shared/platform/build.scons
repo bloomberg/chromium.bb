@@ -20,8 +20,9 @@ time_slop_args = []
 # On Linux the older scheduler implementation did not account properly
 # for the time process spent waiting on the futex in thread join. This
 # affects the CLOCK_PROCESS/THREAD_CPUTIME_ID clock test and we therefore
-# disable this test on older kernels.
-cputime_test_enabled = True
+# disable this test on older kernels.  In a coverage build, the test
+# becomes unreasonably slow.
+cputime_test_enabled = not env.Bit('coverage_enabled')
 
 if env.Bit('windows'):
   platform_inputs += [
