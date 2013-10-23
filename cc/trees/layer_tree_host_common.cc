@@ -1093,7 +1093,7 @@ struct SubtreeGlobals {
   int max_texture_size;
   float device_scale_factor;
   float page_scale_factor;
-  LayerType* page_scale_application_layer;
+  const LayerType* page_scale_application_layer;
   bool can_adjust_raster_scales;
   bool can_render_to_separate_surface;
 };

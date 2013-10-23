@@ -36,7 +36,7 @@ class CC_EXPORT LayerTreeHostCommon {
                         const gfx::Transform& device_transform,
                         float device_scale_factor,
                         float page_scale_factor,
-                        LayerType* page_scale_application_layer,
+                        const LayerType* page_scale_application_layer,
                         int max_texture_size,
                         bool can_use_lcd_text,
                         bool can_render_to_separate_surface,
@@ -59,7 +59,7 @@ class CC_EXPORT LayerTreeHostCommon {
     const gfx::Transform& device_transform;
     float device_scale_factor;
     float page_scale_factor;
-    LayerType* page_scale_application_layer;
+    const LayerType* page_scale_application_layer;
     int max_texture_size;
     bool can_use_lcd_text;
     bool can_render_to_separate_surface;

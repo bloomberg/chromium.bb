@@ -260,6 +260,7 @@
         'test/cc_test_suite.cc',
         'test/lap_timer.cc',
         'test/run_all_unittests.cc',
+        'trees/layer_tree_host_common_perftest.cc',
         'trees/layer_tree_host_perftest.cc',
       ],
       'include_dirs': [
