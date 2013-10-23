@@ -267,8 +267,7 @@ void PrivetNotificationService::PrivetNotify(bool has_multiple,
         ui::ResourceBundle::GetSharedInstance().GetImageNamed(
             IDR_LOCAL_DISCOVERY_CLOUDPRINT_ICON),
         WebKit::WebTextDirectionDefault,
-        message_center::NotifierId(
-            message_center::NotifierId::SYSTEM_COMPONENT),
+        message_center::NotifierId(GURL(kPrivetNotificationOriginUrl)),
         product_name,
         UTF8ToUTF16(kPrivetNotificationID),
         rich_notification_data,
