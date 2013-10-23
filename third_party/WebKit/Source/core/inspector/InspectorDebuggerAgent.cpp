@@ -75,7 +75,7 @@ static const char skipAllPausesExpiresOnReload[] = "skipAllPausesExpiresOnReload
 
 static const int numberOfStepsBeforeStepOut = 10;
 
-const char* InspectorDebuggerAgent::backtraceObjectGroup = "backtrace";
+const char InspectorDebuggerAgent::backtraceObjectGroup[] = "backtrace";
 
 static String breakpointIdSuffix(InspectorDebuggerAgent::BreakpointSource source)
 {

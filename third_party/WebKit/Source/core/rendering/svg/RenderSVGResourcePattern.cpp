@@ -30,7 +30,7 @@
 
 namespace WebCore {
 
-RenderSVGResourceType RenderSVGResourcePattern::s_resourceType = PatternResourceType;
+const RenderSVGResourceType RenderSVGResourcePattern::s_resourceType = PatternResourceType;
 
 RenderSVGResourcePattern::RenderSVGResourcePattern(SVGPatternElement* node)
     : RenderSVGResourceContainer(node)

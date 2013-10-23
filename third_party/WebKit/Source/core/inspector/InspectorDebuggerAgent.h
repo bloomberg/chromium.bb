@@ -68,7 +68,7 @@ public:
         MonitorCommandBreakpointSource
     };
 
-    static const char* backtraceObjectGroup;
+    static const char backtraceObjectGroup[];
 
     virtual ~InspectorDebuggerAgent();
 

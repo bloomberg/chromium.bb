@@ -118,7 +118,7 @@ static bool didExtendTextCodecMaps;
 static HashSet<const char*>* japaneseEncodings;
 static HashSet<const char*>* nonBackslashEncodings;
 
-static const char* const textEncodingNameBlacklist[] = { "UTF-7" };
+static const char textEncodingNameBlacklist[][6] = { "UTF-7" };
 
 #if ERROR_DISABLED
 

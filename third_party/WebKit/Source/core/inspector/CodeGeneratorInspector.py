@@ -1281,8 +1281,8 @@ class TypeBindings:
                                     for prop_data in resolve_data.main_properties + resolve_data.optional_properties:
                                         prop_name = prop_data.p["name"]
                                         prop_field_name = Capitalizer.lower_camel_case_to_upper(prop_name)
-                                        writer.newline("    static const char* %s;\n" % (prop_field_name))
-                                        cpp_writer.newline("const char* %s%s::%s = \"%s\";\n" % (helper.full_name_prefix_for_impl, class_name, prop_field_name, prop_name))
+                                        writer.newline("    static const char %s[];\n" % (prop_field_name))
+                                        cpp_writer.newline("const char %s%s::%s[] = \"%s\";\n" % (helper.full_name_prefix_for_impl, class_name, prop_field_name, prop_name))
 
 
                                 writer.newline("};\n\n")

@@ -32,7 +32,7 @@
 
 namespace WebCore {
 
-PLATFORM_EXPORT extern const char* const errorDomainWebKitInternal; // Used for errors that won't be exposed to clients.
+PLATFORM_EXPORT extern const char errorDomainWebKitInternal[]; // Used for errors that won't be exposed to clients.
 
 class PLATFORM_EXPORT ResourceError {
 public:

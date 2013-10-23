@@ -39,7 +39,7 @@ public:
     virtual FloatRect resourceBoundingBox(RenderObject*) { return FloatRect(); }
 
     virtual RenderSVGResourceType resourceType() const { return s_resourceType; }
-    static RenderSVGResourceType s_resourceType;
+    static const RenderSVGResourceType s_resourceType;
 
     const Color& color() const { return m_color; }
     void setColor(const Color& color) { m_color = color; }

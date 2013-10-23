@@ -61,7 +61,7 @@ public:
     SVGMarkerUnitsType markerUnits() const { return toSVGMarkerElement(element())->markerUnitsCurrentValue(); }
 
     virtual RenderSVGResourceType resourceType() const { return s_resourceType; }
-    static RenderSVGResourceType s_resourceType;
+    static const RenderSVGResourceType s_resourceType;
 
 private:
     // Generates a transformation matrix usable to render marker content. Handles scaling the marker content

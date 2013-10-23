@@ -30,7 +30,7 @@
 
 namespace WebCore {
 
-RenderSVGResourceType RenderSVGResourceSolidColor::s_resourceType = SolidColorResourceType;
+const RenderSVGResourceType RenderSVGResourceSolidColor::s_resourceType = SolidColorResourceType;
 
 RenderSVGResourceSolidColor::RenderSVGResourceSolidColor()
 {
