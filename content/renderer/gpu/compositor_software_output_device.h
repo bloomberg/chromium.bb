@@ -49,6 +49,7 @@ private:
 
     void* memory() const { return mem_->memory(); }
     base::SharedMemoryHandle handle() const { return mem_->handle(); }
+    base::SharedMemory* shared_memory() const { return mem_.get(); }
 
     bool free() const { return free_; }
     void SetFree(bool free) { free_ = free; }

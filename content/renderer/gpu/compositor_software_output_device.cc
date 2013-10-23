@@ -201,6 +201,9 @@ void CompositorSoftwareOutputDevice::EndPaint(
   frame_data->size = viewport_size_;
   frame_data->damage_rect = damage_rect_;
   frame_data->handle = buffer->handle();
+
+  CHECK_LE(static_cast<size_t>(frame_data->size.GetArea()) * 4,
+           buffer->shared_memory()->mapped_size());
 }
 
 void CompositorSoftwareOutputDevice::ReclaimSoftwareFrame(unsigned id) {

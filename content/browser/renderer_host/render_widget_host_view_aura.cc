@@ -1585,10 +1585,28 @@ void RenderWidgetHostViewAura::SwapSoftwareFrame(
       new base::SharedMemory(frame_data->handle, true));
 #endif
 
-  if (!shared_memory->Map(size_in_bytes)) {
+#ifdef OS_WIN
+  if (!shared_memory->Map(0)) {
+    DLOG(ERROR) << "Unable to map renderer memory.";
+    RecordAction(UserMetricsAction("BadMessageTerminate_RWHVA1"));
     host_->GetProcess()->ReceivedBadMessage();
     return;
   }
+
+  if (shared_memory->mapped_size() < size_in_bytes) {
+    DLOG(ERROR) << "Shared memory too small for given rectangle";
+    RecordAction(UserMetricsAction("BadMessageTerminate_RWHVA2"));
+    host_->GetProcess()->ReceivedBadMessage();
+    return;
+  }
+#else
+  if (!shared_memory->Map(size_in_bytes)) {
+    DLOG(ERROR) << "Unable to map renderer memory.";
+    RecordAction(UserMetricsAction("BadMessageTerminate_RWHVA1"));
+    host_->GetProcess()->ReceivedBadMessage();
+    return;
+  }
+#endif
 
   if (last_swapped_surface_size_ != frame_size) {
     DLOG_IF(ERROR, damage_rect != gfx::Rect(frame_size))
