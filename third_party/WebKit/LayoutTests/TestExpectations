@@ -318,61 +318,15 @@ crbug.com/244884 fast/layers/no-clipping-overflow-hidden-added-after-transform.h
 crbug.com/244884 fast/layers/no-clipping-overflow-hidden-added-after-transition.html [ ImageOnlyFailure Pass ]
 crbug.com/244884 fast/layers/no-clipping-overflow-hidden-hardware-acceleration.html [ ImageOnlyFailure Pass ]
 
-webkit.org/b/91946 fast/events/rtl-scrollbar.html [ Failure Pass ]
-
-# IETC grid layout
-webkit.org/b/83912 ietestcenter/css3/grid/grid-items-002.htm [ ImageOnlyFailure ]
-webkit.org/b/83913 ietestcenter/css3/grid/grid-items-003.htm [ ImageOnlyFailure ]
-# IETC multi-column
-webkit.org/b/84759 ietestcenter/css3/multicolumn/column-containing-block-001.htm [ ImageOnlyFailure ]
-webkit.org/b/84760 ietestcenter/css3/multicolumn/column-containing-block-002.htm [ ImageOnlyFailure ]
-webkit.org/b/84761 ietestcenter/css3/multicolumn/column-filling-001.htm [ ImageOnlyFailure ]
-webkit.org/b/84770 ietestcenter/css3/multicolumn/column-width-applies-to-007.htm [ ImageOnlyFailure ]
-webkit.org/b/84771 ietestcenter/css3/multicolumn/column-width-applies-to-009.htm [ ImageOnlyFailure ]
-webkit.org/b/84772 ietestcenter/css3/multicolumn/column-width-applies-to-010.htm [ ImageOnlyFailure ]
-webkit.org/b/84773 ietestcenter/css3/multicolumn/column-width-applies-to-012.htm [ ImageOnlyFailure ]
-webkit.org/b/84777 ietestcenter/css3/multicolumn/column-width-applies-to-015.htm [ ImageOnlyFailure ]
-
-# IETC flexbox failures
-webkit.org/b/85211 ietestcenter/css3/flexbox/flexbox-align-stretch-001.htm [ ImageOnlyFailure ]
-webkit.org/b/85212 ietestcenter/css3/flexbox/flexbox-layout-002.htm [ ImageOnlyFailure ]
-# IETC namespace failures
-webkit.org/b/86142 ietestcenter/css3/namespaces/syntax-021.xml [ ImageOnlyFailure ]
-
-# Skip it because it seems its frame loading notifications leak to the next test.
-webkit.org/b/85949 http/tests/loading/post-in-iframe-with-back-navigation.html [ Skip ]
-
-webkit.org/b/92279 http/tests/inspector/resource-har-pages.html [ Failure Pass ]
-
-# See http://crbug.com/244285 for the crash instance.
-webkit.org/b/87321 fast/history/history-subframe-with-name.html [ Failure Pass Crash ]
-
-# Requires setUseDeferredFrameLoading() API from LayoutTestController.
-webkit.org/b/87652 http/tests/appcache/load-from-appcache-defer-resume-crash.html [ Skip ]
-
-webkit.org/b/88939 fast/events/before-unload-adopt-subframe-to-outside.html [ Failure Pass ]
-
-webkit.org/b/90746 fast/multicol/column-span-parent-continuation-crash.html [ Pass Timeout ]
-
-webkit.org/b/90980 fast/forms/textarea/textarea-state-restore.html [ Failure Pass Timeout ]
-
 # started failing around Chrome r207326 to r207404, but only on main waterfall
 # Flakes also on the V8 waterfall on Win7.
 Bug(senorblanco) [ Win ] http/tests/w3c/webperf/submission/Google/HighResolutionTime/worker-dedicated-basic.html [ Failure Pass ]
-
-webkit.org/b/92027 fast/performance/performance-now-timestamps.html [ Failure Pass ]
 
 crbug.com/240374 compositing/overlap-blending/reflection-opacity-huge.html [ ImageOnlyFailure ]
 crbug.com/240374 virtual/softwarecompositing/overlap-blending/reflection-opacity-huge.html [ ImageOnlyFailure ]
 crbug.com/240374 compositing/overlap-blending/children-opacity-huge.html [ ImageOnlyFailure ]
 crbug.com/240374 compositing/overlap-blending/children-opacity-no-overlap.html [ ImageOnlyFailure ]
 crbug.com/240374 virtual/softwarecompositing/overlap-blending/preserves3d-opacity.html [ ImageOnlyFailure ]
-
-# Failing due to sub-pixel layout.
-webkit.org/b/95136 fast/css/sticky/sticky-left-percentage.html [ ImageOnlyFailure ]
-
-# Does not yet support new web notifications TestRunner API
-webkit.org/b/95506 http/tests/notifications [ Skip ]
 
 crbug.com/248155 [ Win Debug ] fast/hidpi/gradient-with-scaled-ancestor.html [ ImageOnlyFailure ]
 crbug.com/248155 [ Win Debug ] virtual/gpu/fast/hidpi/gradient-with-scaled-ancestor.html [ ImageOnlyFailure ]
@@ -395,10 +349,6 @@ crbug.com/306222 fast/hidpi/image-srcset-relative-svg-canvas.html [ Skip ]
 crbug.com/306222 virtual/gpu/fast/hidpi/image-srcset-relative-svg-canvas.html [ Skip ]
 crbug.com/306222 fast/hidpi/image-srcset-relative-svg-canvas-2x.html [ Skip ]
 crbug.com/306222 virtual/gpu/fast/hidpi/image-srcset-relative-svg-canvas-2x.html [ Skip ]
-
-webkit.org/b/97179 http/tests/css/link-css-disabled-value-with-slow-loading-sheet.html [ Failure Pass ]
-
-webkit.org/b/98275 media/event-queue-crash.html [ Skip ]
 
 crbug.com/304953 fast/css/font-face-download-error.html [ Pass Timeout ]
 
@@ -430,12 +380,6 @@ crbug.com/230708 media/track/track-in-band.html [ Skip ]
 crbug.com/230708 media/track/track-in-band-cues-added-once.html [ Skip ]
 crbug.com/230708 media/track/track-in-band-style.html [ Skip ]
 
-webkit.org/b/106249 fast/speech/scripted/navigate-away.html [ Failure Pass ]
-
-webkit.org/b/106426 inspector/geolocation-error.html [ Failure Pass ]
-webkit.org/b/106426 inspector/geolocation-success.html [ Failure Pass ]
-webkit.org/b/106426 inspector/geolocation-watchPosition.html [ Failure Pass ]
-
 crbug.com/239549 inspector-protocol/heap-profiler/heap-snapshot-with-detached-dom-tree.html [ Failure Pass ]
 
 # Tests failing since applyPageScaleFactorInCompositor enabled
@@ -451,29 +395,7 @@ crbug.com/192172 [ Debug ] virtual/softwarecompositing/rtl/rtl-iframe-fixed-over
 crbug.com/192172 [ Debug ] compositing/rtl/rtl-iframe-fixed-overflow.html [ Failure Pass ]
 crbug.com/192172 [ Debug ] virtual/softwarecompositing/rtl/rtl-iframe-fixed-overflow.html [ Failure Pass ]
 
-webkit.org/b/112629 http/tests/xmlhttprequest/send-array-buffer.html [ Failure Pass ]
-webkit.org/b/112643 http/tests/history/redirect-js-location-0-seconds.html [ Failure Pass ]
-webkit.org/b/112980 http/tests/navigation/changing-frame-hierarchy-in-onload.html [ Failure Pass ]
-
-webkit.org/b/113555 fast/forms/state-restore-per-form.html [ Pass Timeout ]
-
 crbug.com/239811 crbug.com/229113 http/tests/history/redirect-js-location-assign-0-seconds.html [ Failure Pass ]
-
-# pending functional patch and per-port verification
-webkit.org/b/109954 css3/line-break/line-break-auto-hyphens.html [ ImageOnlyFailure ]
-webkit.org/b/109954 css3/line-break/line-break-auto-half-kana.html [ ImageOnlyFailure ]
-webkit.org/b/109954 css3/line-break/line-break-loose-iteration-marks.html [ ImageOnlyFailure ]
-webkit.org/b/109954 css3/line-break/line-break-auto-sound-marks.html [ ImageOnlyFailure ]
-webkit.org/b/109954 css3/line-break/line-break-loose-prefixes.html [ ImageOnlyFailure ]
-webkit.org/b/109954 css3/line-break/line-break-loose-hyphens.html [ ImageOnlyFailure ]
-webkit.org/b/109954 css3/line-break/line-break-normal-sound-marks.html [ ImageOnlyFailure ]
-webkit.org/b/109954 css3/line-break/line-break-strict-sound-marks.html [ ImageOnlyFailure ]
-webkit.org/b/109954 css3/line-break/line-break-loose-inseparables.html [ ImageOnlyFailure ]
-webkit.org/b/109954 css3/line-break/line-break-strict-half-kana.html [ ImageOnlyFailure ]
-webkit.org/b/109954 css3/line-break/line-break-loose-sound-marks.html [ ImageOnlyFailure ]
-webkit.org/b/109954 css3/line-break/line-break-normal-hyphens.html [ ImageOnlyFailure ]
-webkit.org/b/109954 [ Mac ] css3/line-break/line-break-loose-postfixes.html [ ImageOnlyFailure ]
-webkit.org/b/109954 [ Mac ] css3/line-break/line-break-loose-centered.html [ ImageOnlyFailure ]
 
 crbug.com/231721 [ Win ] svg/custom/invisible-text-after-scrolling.xhtml [ Pass Timeout ]
 
@@ -498,7 +420,6 @@ crbug.com/251129 [ Linux Win Debug ] http/tests/history/redirect-js-form-submit-
 crbug.com/143475 [ Win ] http/tests/xmlhttprequest/xmlhttprequest-50ms-download-dispatch.html [ Failure Pass Timeout ]
 
 crbug.com/86338 fast/loader/file-protocol-fragment.html [ Failure Pass ]
-webkit.org/b/81697 fast/notifications/notifications-request-permission.html [ Failure Pass ]
 crbug.com/225184 [ Debug ] scrollingcoordinator/non-fast-scrollable-region-scaled-iframe.html [ ImageOnlyFailure Pass ]
 
 crbug.com/88588 [ Debug ] fast/lists/inlineBoxWrapperNullCheck.html [ Failure Pass ]
@@ -608,7 +529,6 @@ crbug.com/243593 [ Win ] fast/media/color-does-not-include-alpha.html [ Failure 
 crbug.com/243596 [ Win ] inspector-protocol/input/dispatchMouseEvent.html [ Failure ]
 crbug.com/243599 [ Debug ] http/tests/plugins/interrupted-get-url.html [ Crash Pass ]
 crbug.com/243649 [ Mac ] transitions/cancel-transition.html [ Failure Pass ]
-crbug.com/243683 [ Linux Mac Win ] http/tests/css/link-css-disabled-value-with-slow-loading-sheet-in-error.html [ Pass Failure ]
 crbug.com/243725 http/tests/w3c/webperf/submission/Google/resource-timing/html/test_resource_cached.html [ Failure Pass ]
 crbug.com/243732 [ Mac ] transforms/3d/point-mapping/3d-point-mapping-3.html [ ImageOnlyFailure Pass ]
 crbug.com/243736 storage/websql/quota-tracking.html [ Failure Pass ]
