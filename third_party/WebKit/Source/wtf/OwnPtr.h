@@ -22,11 +22,9 @@
 #ifndef WTF_OwnPtr_h
 #define WTF_OwnPtr_h
 
-#include "wtf/Assertions.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/NullPtr.h"
 #include "wtf/OwnPtrCommon.h"
-#include "wtf/TypeTraits.h"
 #include <algorithm>
 
 namespace WTF {
