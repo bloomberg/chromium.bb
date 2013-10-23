@@ -64,5 +64,12 @@ leak:StatusIconGtk::UpdatePlatformContextMenu
 leak:GlobalMenuBar::GlobalMenuBar
 leak:BookmarkBubbleGtk::InitFolderComboModel
 leak:TranslateInfoBarBase::CreateLanguageCombobox
+leak:GtkNativeViewManager
+leak:_gdk_x11_window_get_toplevel
+
+# Infobar-related leaks in browser tests. Retriage them once
+# http://crbug.com/62154 is fixed.
+leak:chrome::ShowBadFlagsPrompt
+leak:TranslateInfoBarDelegate::Create
 
 # PLEASE DO NOT ADD NEW SUPPRESSIONS HERE. See the comment above.
