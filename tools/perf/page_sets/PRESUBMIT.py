@@ -7,19 +7,24 @@ import re
 import sys
 
 
-def _SyncFilesToCloud(input_api, output_api):
-  """Searches for .sha1 files and uploads them to Cloud Storage.
-
-  It validates all the hashes and skips upload if not necessary.
-  """
+def _ImportCloudStorage():
   # Because this script will be called from a magic PRESUBMIT demon,
   # avoid angering it; don't pollute its sys.path.
   old_sys_path = sys.path
   try:
     sys.path = [os.path.join(os.pardir, os.pardir, 'telemetry')] + sys.path
     from telemetry.page import cloud_storage
+    return cloud_storage
   finally:
     sys.path = old_sys_path
+
+
+def _SyncFilesToCloud(input_api, output_api):
+  """Searches for .sha1 files and uploads them to Cloud Storage.
+
+  It validates all the hashes and skips upload if not necessary.
+  """
+  cloud_storage = _ImportCloudStorage()
 
   # Look in both buckets, in case the user uploaded the file manually. But this
   # script focuses on WPR archives, so it only uploads to the internal bucket.
@@ -55,6 +60,8 @@ def _SyncFilesToCloud(input_api, output_api):
 
     try:
       cloud_storage.Insert(cloud_storage.INTERNAL_BUCKET, file_hash, file_path)
+      results.append(output_api.PresubmitNotifyResult(
+          'Uploaded file to Cloud Storage: %s' % hash_path))
     except cloud_storage.CloudStorageError, e:
       results.append(output_api.PresubmitError(
           'Unable to upload to Cloud Storage: %s\n\n%s' % (hash_path, e)))
@@ -62,7 +69,9 @@ def _SyncFilesToCloud(input_api, output_api):
   return results
 
 
+def CheckChangeOnUpload(input_api, output_api):
+  return _SyncFilesToCloud(input_api, output_api)
+
+
 def CheckChangeOnCommit(input_api, output_api):
-  results = []
-  results += _SyncFilesToCloud(input_api, output_api)
-  return results
+  return _SyncFilesToCloud(input_api, output_api)
