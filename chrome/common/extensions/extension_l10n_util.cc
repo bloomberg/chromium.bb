@@ -215,6 +215,18 @@ bool LocalizeManifest(const extensions::MessageBundle& messages,
     }
   }
 
+  // Initialize search_provider fields.
+  base::DictionaryValue* search_provider = NULL;
+  if (manifest->GetDictionary(keys::kSearchProvider, &search_provider)) {
+    for (DictionaryValue::Iterator iter(*search_provider); !iter.IsAtEnd();
+        iter.Advance()) {
+      key.assign(base::StringPrintf("%s.%s", keys::kSearchProvider,
+                                    iter.key().c_str()));
+      if (!LocalizeManifestValue(key, messages, manifest, error))
+        return false;
+    }
+  }
+
   // Add current locale key to the manifest, so we can overwrite prefs
   // with new manifest when chrome locale changes.
   manifest->SetString(keys::kCurrentLocale, CurrentLocaleOrDefault());

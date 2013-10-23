@@ -292,6 +292,10 @@ MessageBundle* CreateManifestBundle() {
   second_command_description_tree->SetString("message", "second command");
   catalog->Set("second_command_description", second_command_description_tree);
 
+  base::DictionaryValue* url_country_tree = new base::DictionaryValue();
+  url_country_tree->SetString("message", "de");
+  catalog->Set("country", url_country_tree);
+
   std::vector<linked_ptr<base::DictionaryValue> > catalogs;
   catalogs.push_back(catalog);
 
@@ -560,6 +564,52 @@ TEST(ExtensionL10nUtil, LocalizeManifestWithBadShortName) {
   std::string result;
   ASSERT_TRUE(manifest.GetString(keys::kShortName, &result));
   EXPECT_EQ("__MSG_short_name_bad__", result);
+}
+
+TEST(ExtensionL10nUtil, LocalizeManifestWithSearchProviderMsgs) {
+  base::DictionaryValue manifest;
+  manifest.SetString(keys::kName, "__MSG_name__");
+  manifest.SetString(keys::kDescription, "__MSG_description__");
+
+  base::DictionaryValue* search_provider = new base::DictionaryValue;
+  search_provider->SetString("name", "__MSG_country__");
+  search_provider->SetString("keyword", "__MSG_omnibox_keyword__");
+  search_provider->SetString("search_url", "http://www.foo.__MSG_country__");
+  search_provider->SetString("favicon_url", "http://www.foo.__MSG_country__");
+  search_provider->SetString("suggest_url", "http://www.foo.__MSG_country__");
+  manifest.Set(keys::kSearchProvider, search_provider);
+
+  std::string error;
+  scoped_ptr<MessageBundle> messages(CreateManifestBundle());
+
+  EXPECT_TRUE(
+      extension_l10n_util::LocalizeManifest(*messages, &manifest, &error));
+
+  std::string result;
+  ASSERT_TRUE(manifest.GetString(keys::kName, &result));
+  EXPECT_EQ("name", result);
+
+  ASSERT_TRUE(manifest.GetString(keys::kDescription, &result));
+  EXPECT_EQ("description", result);
+
+  std::string key_prefix(keys::kSearchProvider);
+  key_prefix += '.';
+  ASSERT_TRUE(manifest.GetString(key_prefix + "name", &result));
+  EXPECT_EQ("de", result);
+
+  ASSERT_TRUE(manifest.GetString(key_prefix + "keyword", &result));
+  EXPECT_EQ("omnibox keyword", result);
+
+  ASSERT_TRUE(manifest.GetString(key_prefix + "search_url", &result));
+  EXPECT_EQ("http://www.foo.de", result);
+
+  ASSERT_TRUE(manifest.GetString(key_prefix + "favicon_url", &result));
+  EXPECT_EQ("http://www.foo.de", result);
+
+  ASSERT_TRUE(manifest.GetString(key_prefix + "suggest_url", &result));
+  EXPECT_EQ("http://www.foo.de", result);
+
+  EXPECT_TRUE(error.empty());
 }
 
 // Try with NULL manifest.

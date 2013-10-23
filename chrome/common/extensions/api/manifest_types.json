@@ -39,6 +39,95 @@
         }
       },
       {
+        "id": "ChromeSettingsOverrides",
+        "type": "object",
+        "description": "Chrome settings which can be overriden by an extension.",
+        "properties": {
+          "homepage": {
+            "description": "New value for the homepage.",
+            "optional": true,
+            "type": "string"
+          },
+          "search_provider": {
+            "type": "object",
+            "description": "A search engine",
+            "optional": true,
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "Name of the search engine displayed to user."
+              },
+              "keyword": {
+                "type": "string",
+                "description": "Omnibox keyword for the search engine."
+              },
+              "favicon_url": {
+                "type": "string",
+                "description": "An icon URL for the search engine."
+              },
+              "search_url": {
+                "type": "string",
+                "description": "An search URL used by the search engine."
+              },
+              "encoding": {
+                "type": "string",
+                "description": "Encoding of the search term."
+              },
+              "suggest_url": {
+                "type": "string",
+                "optional": true,
+                "description": "If omitted, this engine does not support suggestions."
+              },
+              "instant_url": {
+                "type": "string",
+                "optional": true,
+                "description": "If omitted, this engine does not support instant."
+              },
+              "image_url": {
+                "type": "string",
+                "optional": true,
+                "description": "If omitted, this engine does not support image search."
+              },
+              "search_url_post_params": {
+                "type": "string",
+                "optional": true,
+                "description": "The string of post parameters to search_url"
+              },
+              "suggest_url_post_params": {
+                "type": "string",
+                "optional": true,
+                "description": "The string of post parameters to suggest_url"
+              },
+              "instant_url_post_params": {
+                "type": "string",
+                "optional": true,
+                "description": "The string of post parameters to instant_url"
+              },
+              "image_url_post_params": {
+                "type": "string",
+                "optional": true,
+                "description": "The string of post parameters to image_url"
+              },
+              "alternate_urls": {
+                "type": "array",
+                "items": { "type": "string" },
+                "optional": true,
+                "description": "A list of URL patterns that can be used, in addition to |search_url|."
+              },
+              "is_default": {
+                "type": "boolean",
+                "description": "Specifies if the search provider should be default."
+              }
+            }
+          },
+          "startup_page": {
+            "description": "A new startup page to be added to the list.",
+            "optional": true,
+            "type": "string"
+          }
+        }
+      },
+      {
         "id": "sockets",
         "type": "object",
         "description": "The <code>sockets</code> manifest property declares which sockets operations an app can issue.",
