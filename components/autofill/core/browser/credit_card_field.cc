@@ -95,7 +95,7 @@ FormField* CreditCardField::Parse(AutofillScanner* scanner) {
     }
 
     if (LowerCaseEqualsASCII(scanner->Cursor()->form_control_type, "month")) {
-      credit_card_field->expiration_month_ = scanner->Cursor();
+      credit_card_field->expiration_date_ = scanner->Cursor();
       scanner->Advance();
     } else {
       // First try to parse split month/year expiration fields.
@@ -170,10 +170,7 @@ FormField* CreditCardField::Parse(AutofillScanner* scanner) {
   if ((credit_card_field->number_ || credit_card_field->verification_) &&
       (credit_card_field->expiration_date_ ||
        (credit_card_field->expiration_month_ &&
-        (credit_card_field->expiration_year_ ||
-         (LowerCaseEqualsASCII(
-             credit_card_field->expiration_month_->form_control_type,
-             "month")))))) {
+        credit_card_field->expiration_year_))) {
     return credit_card_field.release();
   }
 

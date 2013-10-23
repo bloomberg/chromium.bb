@@ -483,8 +483,10 @@ void AutofillManager::OnFillAutofillFormData(int query_id,
     for (std::vector<FormFieldData>::iterator iter = result.fields.begin();
          iter != result.fields.end(); ++iter) {
       if ((*iter) == field) {
-        data_model->FillFormField(
-            *autofill_field, variant, app_locale_, &(*iter));
+        base::string16 value = data_model->GetInfoForVariant(
+            autofill_field->Type(), variant, app_locale_);
+        AutofillField::FillFormField(*autofill_field, value, app_locale_,
+                                     &(*iter));
         // Mark the cached field as autofilled, so that we can detect when a
         // user edits an autofilled field (for metrics).
         autofill_field->is_autofilled = true;
@@ -518,10 +520,10 @@ void AutofillManager::OnFillAutofillFormData(int query_id,
           field_group_type == initiating_group_type) {
         use_variant = variant;
       }
-      data_model->FillFormField(*cached_field,
-                                use_variant,
-                                app_locale_,
-                                &result.fields[i]);
+      base::string16 value = data_model->GetInfoForVariant(
+          cached_field->Type(), use_variant, app_locale_);
+      AutofillField::FillFormField(*cached_field, value, app_locale_,
+                                   &result.fields[i]);
       // Mark the cached field as autofilled, so that we can detect when a user
       // edits an autofilled field (for metrics).
       form_structure->field(i)->is_autofilled = true;

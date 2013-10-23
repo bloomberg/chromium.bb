@@ -59,12 +59,6 @@ class CreditCard : public AutofillDataModel {
                        const base::string16& value,
                        const std::string& app_locale) OVERRIDE;
 
-  // AutofillDataModel:
-  virtual void FillFormField(const AutofillField& field,
-                             size_t variant,
-                             const std::string& app_locale,
-                             FormFieldData* field_data) const OVERRIDE;
-
   // Credit card preview summary, for example: ******1234, Exp: 01/2020
   const base::string16 Label() const;
 

@@ -54,10 +54,10 @@ class AutofillProfile : public AutofillDataModel {
                        const std::string& app_locale) OVERRIDE;
 
   // AutofillDataModel:
-  virtual void FillFormField(const AutofillField& field,
-                             size_t variant,
-                             const std::string& app_locale,
-                             FormFieldData* field_data) const OVERRIDE;
+  virtual base::string16 GetInfoForVariant(
+      const AutofillType& type,
+      size_t variant,
+      const std::string& app_locale) const OVERRIDE;
 
   // Multi-value equivalents to |GetInfo| and |SetInfo|.
   void SetRawMultiInfo(ServerFieldType type,
@@ -67,15 +67,6 @@ class AutofillProfile : public AutofillDataModel {
   void GetMultiInfo(const AutofillType& type,
                     const std::string& app_locale,
                     std::vector<base::string16>* values) const;
-
-  // Set |field_data|'s value for phone number based on contents of |this|.
-  // The |field| specifies the type of the phone and whether this is a
-  // phone prefix or suffix.  The |variant| parameter specifies which value in a
-  // multi-valued profile.
-  void FillPhoneNumberField(const AutofillField& field,
-                            size_t variant,
-                            const std::string& app_locale,
-                            FormFieldData* field_data) const;
 
   // The user-visible label of the profile, generated in relation to other
   // profiles. Shows at least 2 fields that differentiate profile from other
@@ -153,8 +144,6 @@ class AutofillProfile : public AutofillDataModel {
   typedef std::vector<const FormGroup*> FormGroupList;
 
   // FormGroup:
-  virtual bool FillCountrySelectControl(const std::string& app_locale,
-                                        FormFieldData* field) const OVERRIDE;
   virtual void GetSupportedTypes(
       ServerFieldTypeSet* supported_types) const OVERRIDE;
 

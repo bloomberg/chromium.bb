@@ -26,10 +26,6 @@ class TestAutofillDataModel : public AutofillDataModel {
                           const base::string16& value) OVERRIDE {}
   virtual void GetSupportedTypes(
       ServerFieldTypeSet* supported_types) const OVERRIDE {}
-  virtual void FillFormField(const AutofillField& field,
-                             size_t variant,
-                             const std::string& app_locale,
-                             FormFieldData* field_data) const OVERRIDE {}
 
   DISALLOW_COPY_AND_ASSIGN(TestAutofillDataModel);
 };

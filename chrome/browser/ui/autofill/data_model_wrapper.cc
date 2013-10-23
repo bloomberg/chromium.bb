@@ -13,11 +13,11 @@
 #include "components/autofill/content/browser/wallet/wallet_address.h"
 #include "components/autofill/content/browser/wallet/wallet_items.h"
 #include "components/autofill/core/browser/autofill_data_model.h"
+#include "components/autofill/core/browser/autofill_field.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/form_structure.h"
-#include "components/autofill/core/browser/validation.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
 
@@ -60,7 +60,9 @@ bool DataModelWrapper::FillFormStructure(
     AutofillField* field = form_structure->field(i);
     for (size_t j = 0; j < inputs.size(); ++j) {
       if (compare.Run(inputs[j], *field)) {
-        FillFormField(field);
+        AutofillField::FillFormField(*field, GetInfo(field->Type()),
+                                     g_browser_process->GetApplicationLocale(),
+                                     field);
         filled_something = true;
         break;
       }
@@ -70,10 +72,6 @@ bool DataModelWrapper::FillFormStructure(
 }
 
 DataModelWrapper::DataModelWrapper() {}
-
-void DataModelWrapper::FillFormField(AutofillField* field) const {
-  field->value = GetInfo(field->Type());
-}
 
 base::string16 DataModelWrapper::GetAddressDisplayText(
     const base::string16& separator) {
@@ -107,8 +105,6 @@ base::string16 EmptyDataModelWrapper::GetInfo(const AutofillType& type) const {
   return base::string16();
 }
 
-void EmptyDataModelWrapper::FillFormField(AutofillField* field) const {}
-
 // AutofillProfileWrapper
 
 AutofillProfileWrapper::AutofillProfileWrapper(const AutofillProfile* profile)
@@ -126,12 +122,17 @@ AutofillProfileWrapper::AutofillProfileWrapper(
 
 AutofillProfileWrapper::~AutofillProfileWrapper() {}
 
-base::string16 AutofillProfileWrapper::GetInfo(const AutofillType& type)
-    const {
+base::string16 AutofillProfileWrapper::GetInfo(const AutofillType& type) const {
+  // Requests for the user's credit card are filled from the billing address,
+  // but the AutofillProfile class doesn't know how to fill credit card
+  // fields. So, request for the corresponding profile type instead.
+  AutofillType effective_type = type;
+  if (type.GetStorableType() == CREDIT_CARD_NAME)
+    effective_type = AutofillType(NAME_BILLING_FULL);
+
+  size_t variant = GetVariantForType(effective_type);
   const std::string& app_locale = g_browser_process->GetApplicationLocale();
-  std::vector<base::string16> values;
-  profile_->GetMultiInfo(type, app_locale, &values);
-  return values[GetVariantForType(type)];
+  return profile_->GetInfoForVariant(effective_type, variant, app_locale);
 }
 
 base::string16 AutofillProfileWrapper::GetInfoForDisplay(
@@ -155,29 +156,6 @@ base::string16 AutofillProfileWrapper::GetInfoForDisplay(
   }
 
   return DataModelWrapper::GetInfoForDisplay(type);
-}
-
-void AutofillProfileWrapper::FillFormField(AutofillField* field) const {
-  if (field->Type().GetStorableType() == CREDIT_CARD_NAME) {
-    // Cache the field's true type.
-    HtmlFieldType original_type = field->html_type();
-
-    // Requests for the user's credit card are filled from the billing address,
-    // but the AutofillProfile class doesn't know how to fill credit card
-    // fields. So, temporarily set the type to the corresponding profile type.
-    field->SetHtmlType(HTML_TYPE_NAME, field->html_mode());
-
-    profile_->FillFormField(
-        *field, GetVariantForType(field->Type()),
-        g_browser_process->GetApplicationLocale(), field);
-
-    // Restore the field's true type.
-    field->SetHtmlType(original_type, field->html_mode());
-  } else {
-    profile_->FillFormField(
-        *field, GetVariantForType(field->Type()),
-        g_browser_process->GetApplicationLocale(), field);
-  }
 }
 
 size_t AutofillProfileWrapper::GetVariantForType(const AutofillType& type)
@@ -236,11 +214,6 @@ bool AutofillCreditCardWrapper::GetDisplayText(
 
   *vertically_compact = *horizontally_compact = card_->TypeAndLastFourDigits();
   return true;
-}
-
-void AutofillCreditCardWrapper::FillFormField(AutofillField* field) const {
-  card_->FillFormField(
-      *field, 0, g_browser_process->GetApplicationLocale(), field);
 }
 
 // WalletAddressWrapper

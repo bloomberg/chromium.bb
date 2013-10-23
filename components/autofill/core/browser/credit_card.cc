@@ -534,31 +534,6 @@ bool CreditCard::UpdateFromImportedCard(const CreditCard& imported_card,
   return true;
 }
 
-void CreditCard::FillFormField(const AutofillField& field,
-                               size_t /*variant*/,
-                               const std::string& app_locale,
-                               FormFieldData* field_data) const {
-  DCHECK_EQ(CREDIT_CARD, field.Type().group());
-  DCHECK(field_data);
-
-  if (field_data->form_control_type == "select-one") {
-    FillSelectControl(field.Type(), app_locale, field_data);
-  } else if (field_data->form_control_type == "month") {
-    // HTML5 input="month" consists of year-month.
-    base::string16 year =
-        GetInfo(AutofillType(CREDIT_CARD_EXP_4_DIGIT_YEAR), app_locale);
-    base::string16 month =
-        GetInfo(AutofillType(CREDIT_CARD_EXP_MONTH), app_locale);
-    if (!year.empty() && !month.empty()) {
-      // Fill the value only if |this| includes both year and month
-      // information.
-      field_data->value = year + ASCIIToUTF16("-") + month;
-    }
-  } else {
-    field_data->value = GetInfo(field.Type(), app_locale);
-  }
-}
-
 int CreditCard::Compare(const CreditCard& credit_card) const {
   // The following CreditCard field types are the only types we store in the
   // WebDB so far, so we're only concerned with matching these types in the

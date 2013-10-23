@@ -7,13 +7,12 @@
 
 #include <string>
 
-#include "components/autofill/core/browser/field_types.h"
+#include "base/strings/string16.h"
 #include "components/autofill/core/browser/form_group.h"
 
 namespace autofill {
 
-class AutofillField;
-struct FormFieldData;
+class AutofillType;
 
 // This class is an interface for the primary data models that back Autofill.
 // The information in objects of this class is managed by the
@@ -23,18 +22,13 @@ class AutofillDataModel : public FormGroup {
   AutofillDataModel(const std::string& guid, const std::string& origin);
   virtual ~AutofillDataModel();
 
-  // Set |field_data|'s value based on |field| and contents of |this| (using
-  // data variant |variant|).
-  virtual void FillFormField(const AutofillField& field,
-                             size_t variant,
-                             const std::string& app_locale,
-                             FormFieldData* field_data) const = 0;
-
-  // Fills in select control with data matching |type| from |this|.
-  // Public for testing purposes.
-  void FillSelectControl(const AutofillType& type,
-                         const std::string& app_locale,
-                         FormFieldData* field_data) const;
+  // Returns the string that should be auto-filled into a text field given the
+  // |type| of that field, localized to the given |app_locale| if appropriate.
+  // If the data model supports multiple values for the given |type|, returns
+  // the |variant|th value for the |type|.
+  virtual base::string16 GetInfoForVariant(const AutofillType& type,
+                                           size_t variant,
+                                           const std::string& app_locale) const;
 
   // Returns true if the data in this model was entered directly by the user,
   // rather than automatically aggregated.
@@ -45,12 +39,6 @@ class AutofillDataModel : public FormGroup {
 
   std::string origin() const { return origin_; }
   void set_origin(const std::string& origin) { origin_ = origin; }
-
- protected:
-  // Fills in a select control for a country from data in |this|. Returns true
-  // for success.
-  virtual bool FillCountrySelectControl(const std::string& app_locale,
-                                        FormFieldData* field_data) const;
 
  private:
   // A globally unique ID for this object.

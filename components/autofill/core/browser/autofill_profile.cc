@@ -309,6 +309,22 @@ bool AutofillProfile::SetInfo(const AutofillType& type,
       form_group->SetInfo(type, CollapseWhitespace(value, false), app_locale);
 }
 
+base::string16 AutofillProfile::GetInfoForVariant(
+    const AutofillType& type,
+    size_t variant,
+    const std::string& app_locale) const {
+  std::vector<base::string16> values;
+  GetMultiInfo(type, app_locale, &values);
+
+  if (variant >= values.size()) {
+    // If the variant is unavailable, bail. This case is reachable, for
+    // example if Sync updates a profile during the filling process.
+    return base::string16();
+  }
+
+  return values[variant];
+}
+
 void AutofillProfile::SetRawMultiInfo(
     ServerFieldType type,
     const std::vector<base::string16>& values) {
@@ -350,58 +366,6 @@ void AutofillProfile::GetMultiInfo(const AutofillType& type,
                                    const std::string& app_locale,
                                    std::vector<base::string16>* values) const {
   GetMultiInfoImpl(type, app_locale, values);
-}
-
-void AutofillProfile::FillFormField(const AutofillField& field,
-                                    size_t variant,
-                                    const std::string& app_locale,
-                                    FormFieldData* field_data) const {
-  AutofillType type = field.Type();
-  DCHECK_NE(CREDIT_CARD, type.group());
-  DCHECK(field_data);
-
-  if (type.GetStorableType() == PHONE_HOME_NUMBER) {
-    FillPhoneNumberField(field, variant, app_locale, field_data);
-  } else if (field_data->form_control_type == "select-one") {
-    FillSelectControl(type, app_locale, field_data);
-  } else {
-    std::vector<base::string16> values;
-    GetMultiInfo(type, app_locale, &values);
-    if (variant >= values.size()) {
-      // If the variant is unavailable, bail.  This case is reachable, for
-      // example if Sync updates a profile during the filling process.
-      return;
-    }
-
-    field_data->value = values[variant];
-  }
-}
-
-void AutofillProfile::FillPhoneNumberField(const AutofillField& field,
-                                           size_t variant,
-                                           const std::string& app_locale,
-                                           FormFieldData* field_data) const {
-  std::vector<base::string16> values;
-  GetMultiInfo(field.Type(), app_locale, &values);
-  DCHECK(variant < values.size());
-
-  // If we are filling a phone number, check to see if the size field
-  // matches the "prefix" or "suffix" sizes and fill accordingly.
-  base::string16 number = values[variant];
-  if (number.length() ==
-          PhoneNumber::kPrefixLength + PhoneNumber::kSuffixLength) {
-    if (field.phone_part() == AutofillField::PHONE_PREFIX ||
-        field_data->max_length == PhoneNumber::kPrefixLength) {
-      number = number.substr(PhoneNumber::kPrefixOffset,
-                             PhoneNumber::kPrefixLength);
-    } else if (field.phone_part() == AutofillField::PHONE_SUFFIX ||
-               field_data->max_length == PhoneNumber::kSuffixLength) {
-      number = number.substr(PhoneNumber::kSuffixOffset,
-                             PhoneNumber::kSuffixLength);
-    }
-  }
-
-  field_data->value = number;
 }
 
 const base::string16 AutofillProfile::Label() const {
@@ -659,28 +623,6 @@ void AutofillProfile::GetSupportedTypes(
   FormGroupList info = FormGroups();
   for (FormGroupList::const_iterator it = info.begin(); it != info.end(); ++it)
     (*it)->GetSupportedTypes(supported_types);
-}
-
-bool AutofillProfile::FillCountrySelectControl(
-    const std::string& app_locale,
-    FormFieldData* field_data) const {
-  std::string country_code = UTF16ToASCII(GetRawInfo(ADDRESS_HOME_COUNTRY));
-
-  DCHECK_EQ(field_data->option_values.size(),
-            field_data->option_contents.size());
-  for (size_t i = 0; i < field_data->option_values.size(); ++i) {
-    // Canonicalize each <option> value to a country code, and compare to the
-    // target country code.
-    base::string16 value = field_data->option_values[i];
-    base::string16 contents = field_data->option_contents[i];
-    if (country_code == AutofillCountry::GetCountryCode(value, app_locale) ||
-        country_code == AutofillCountry::GetCountryCode(contents, app_locale)) {
-      field_data->value = value;
-      return true;
-    }
-  }
-
-  return false;
 }
 
 void AutofillProfile::GetMultiInfoImpl(

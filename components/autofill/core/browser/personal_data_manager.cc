@@ -291,7 +291,7 @@ bool PersonalDataManager::ImportFormData(
 
     if (group == CREDIT_CARD) {
       if (LowerCaseEqualsASCII(field->form_control_type, "month")) {
-        DCHECK_EQ(CREDIT_CARD_EXP_MONTH, server_field_type);
+        DCHECK_EQ(CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR, server_field_type);
         local_imported_credit_card->SetInfoForMonthInputType(value);
       } else {
         local_imported_credit_card->SetInfo(field_type, value, app_locale_);

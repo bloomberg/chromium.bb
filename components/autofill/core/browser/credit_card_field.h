@@ -27,15 +27,7 @@ class CreditCardField : public FormField {
   virtual bool ClassifyField(ServerFieldTypeMap* map) const OVERRIDE;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(CreditCardFieldTest, ParseMiniumCreditCard);
-  FRIEND_TEST_ALL_PREFIXES(CreditCardFieldTest, ParseFullCreditCard);
-  FRIEND_TEST_ALL_PREFIXES(CreditCardFieldTest, ParseCreditCardType);
-  FRIEND_TEST_ALL_PREFIXES(CreditCardFieldTest, ParseExpMonthYear);
-  FRIEND_TEST_ALL_PREFIXES(CreditCardFieldTest, ParseExpMonthYear2);
-  FRIEND_TEST_ALL_PREFIXES(CreditCardFieldTest, ParseExpField);
-  FRIEND_TEST_ALL_PREFIXES(CreditCardFieldTest, ParseExpField2DigitYear);
-  FRIEND_TEST_ALL_PREFIXES(CreditCardFieldTest,
-                           ParseCreditCardHolderNameWithCCFullName);
+  friend class CreditCardFieldTest;
 
   CreditCardField();
 

@@ -72,9 +72,6 @@ class DataModelWrapper {
  protected:
   DataModelWrapper();
 
-  // Fills in |field| with data from the model.
-  virtual void FillFormField(AutofillField* field) const;
-
  private:
   // Formats address data into a single string using |separator| between
   // fields.
@@ -93,8 +90,6 @@ class EmptyDataModelWrapper : public DataModelWrapper {
   virtual base::string16 GetInfo(const AutofillType& type) const OVERRIDE;
 
  protected:
-  virtual void FillFormField(AutofillField* field) const OVERRIDE;
-
   DISALLOW_COPY_AND_ASSIGN(EmptyDataModelWrapper);
 };
 
@@ -112,8 +107,6 @@ class AutofillProfileWrapper : public DataModelWrapper {
       OVERRIDE;
 
  protected:
-  virtual void FillFormField(AutofillField* field) const OVERRIDE;
-
   // Returns the variant that should be used when dealing with an element that
   // has the given |type|.
   size_t GetVariantForType(const AutofillType& type) const;
@@ -153,8 +146,6 @@ class AutofillCreditCardWrapper : public DataModelWrapper {
                               base::string16* horizontally_compact) OVERRIDE;
 
  private:
-  virtual void FillFormField(AutofillField* field) const OVERRIDE;
-
   const CreditCard* card_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillCreditCardWrapper);

@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/format_macros.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_field.h"
 #include "components/autofill/core/browser/autofill_type.h"
@@ -11,6 +13,22 @@
 
 namespace autofill {
 namespace {
+
+// Returns a FormFieldData object corresponding to a <select> field populated
+// with the given |options|.
+FormFieldData GenerateSelectFieldWithOptions(const char* const* options,
+                                             size_t options_size) {
+  std::vector<base::string16> options16(options_size);
+  for (size_t i = 0; i < options_size; ++i) {
+    options16[i] = ASCIIToUTF16(options[i]);
+  }
+
+  FormFieldData form_field;
+  form_field.form_control_type = "select-one";
+  form_field.option_values = options16;
+  form_field.option_contents = options16;
+  return form_field;
+}
 
 TEST(AutofillFieldTest, Type) {
   AutofillField field;
@@ -93,6 +111,242 @@ TEST(AutofillFieldTest, IsFieldFillable) {
   field.set_heuristic_type(NAME_FIRST);
   field.set_server_type(NAME_LAST);
   EXPECT_TRUE(field.IsFieldFillable());
+}
+
+TEST(AutofillFieldTest, FillPhoneNumber) {
+  AutofillField field;
+  field.SetHtmlType(HTML_TYPE_TEL_LOCAL_PREFIX, HtmlFieldMode());
+
+  // Fill with a non-phone number; should fill normally.
+  AutofillField::FillFormField(field, ASCIIToUTF16("Oh hai"), "en-US", &field);
+  EXPECT_EQ(ASCIIToUTF16("Oh hai"), field.value);
+
+  // Fill with a phone number; should fill just the prefix.
+  AutofillField::FillFormField(field, ASCIIToUTF16("5551234"), "en-US", &field);
+  EXPECT_EQ(ASCIIToUTF16("555"), field.value);
+
+  // Now reset the type, and set a max-length instead.
+  field.SetHtmlType(HTML_TYPE_UNKNOWN, HtmlFieldMode());
+  field.set_heuristic_type(PHONE_HOME_NUMBER);
+  field.max_length = 4;
+
+  // Fill with a phone-number; should fill just the suffix.
+  AutofillField::FillFormField(field, ASCIIToUTF16("5551234"), "en-US", &field);
+  EXPECT_EQ(ASCIIToUTF16("1234"), field.value);
+}
+
+TEST(AutofillFieldTest, FillSelectControlByValue) {
+  const char* const kOptions[] = {
+    "Eenie", "Meenie", "Miney", "Mo",
+  };
+  AutofillField field(
+      GenerateSelectFieldWithOptions(kOptions, arraysize(kOptions)),
+      base::string16());
+
+  // Set semantically empty contents for each option, so that only the values
+  // can be used for matching.
+  for (size_t i = 0; i < field.option_contents.size(); ++i) {
+    field.option_contents[i] = ASCIIToUTF16(base::StringPrintf("%" PRIuS, i));
+  }
+
+  AutofillField::FillFormField(field, ASCIIToUTF16("Meenie"), "en-US",
+                               &field);
+  EXPECT_EQ(ASCIIToUTF16("Meenie"), field.value);
+}
+
+TEST(AutofillFieldTest, FillSelectControlByContents) {
+  const char* const kOptions[] = {
+    "Eenie", "Meenie", "Miney", "Mo",
+  };
+  AutofillField field(
+      GenerateSelectFieldWithOptions(kOptions, arraysize(kOptions)),
+      base::string16());
+
+  // Set semantically empty values for each option, so that only the contents
+  // can be used for matching.
+  for (size_t i = 0; i < field.option_values.size(); ++i) {
+    field.option_values[i] = ASCIIToUTF16(base::StringPrintf("%" PRIuS, i));
+  }
+
+  AutofillField::FillFormField(field, ASCIIToUTF16("Miney"), "en-US",
+                               &field);
+  EXPECT_EQ(ASCIIToUTF16("2"), field.value);  // Corresponds to "Miney".
+}
+
+TEST(AutofillFieldTest, FillSelectControlWithFullCountryNames) {
+  const char* const kCountries[] = {
+    "Albania", "Canada"
+  };
+  AutofillField field(
+      GenerateSelectFieldWithOptions(kCountries, arraysize(kCountries)),
+      base::string16());
+  field.set_heuristic_type(ADDRESS_HOME_COUNTRY);
+
+  AutofillField::FillFormField(field, ASCIIToUTF16("CA"), "en-US", &field);
+  EXPECT_EQ(ASCIIToUTF16("Canada"), field.value);
+}
+
+TEST(AutofillFieldTest, FillSelectControlWithAbbreviatedCountryNames) {
+  const char* const kCountries[] = {
+    "AL", "CA"
+  };
+  AutofillField field(
+      GenerateSelectFieldWithOptions(kCountries, arraysize(kCountries)),
+      base::string16());
+  field.set_heuristic_type(ADDRESS_HOME_COUNTRY);
+
+  AutofillField::FillFormField(field, ASCIIToUTF16("Canada"), "en-US", &field);
+  EXPECT_EQ(ASCIIToUTF16("CA"), field.value);
+}
+
+TEST(AutofillFieldTest, FillSelectControlWithFullStateNames) {
+  const char* const kStates[] = {
+    "Alabama", "California"
+  };
+  AutofillField field(
+      GenerateSelectFieldWithOptions(kStates, arraysize(kStates)),
+      base::string16());
+  field.set_heuristic_type(ADDRESS_HOME_STATE);
+
+  AutofillField::FillFormField(field, ASCIIToUTF16("CA"), "en-US", &field);
+  EXPECT_EQ(ASCIIToUTF16("California"), field.value);
+}
+
+TEST(AutofillFieldTest, FillSelectControlWithWithAbbreviateStateNames) {
+  const char* const kStates[] = {
+    "AL", "CA"
+  };
+  AutofillField field(
+      GenerateSelectFieldWithOptions(kStates, arraysize(kStates)),
+      base::string16());
+  field.set_heuristic_type(ADDRESS_HOME_STATE);
+
+  AutofillField::FillFormField(field, ASCIIToUTF16("California"), "en-US",
+                               &field);
+  EXPECT_EQ(ASCIIToUTF16("CA"), field.value);
+}
+
+TEST(AutofillFieldTest, FillSelectControlWithNumericMonth) {
+  const char* const kMonthsNumeric[] = {
+    "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12",
+  };
+  AutofillField field(
+      GenerateSelectFieldWithOptions(kMonthsNumeric, arraysize(kMonthsNumeric)),
+      base::string16());
+  field.set_heuristic_type(CREDIT_CARD_EXP_MONTH);
+
+  // Try with a leading zero.
+  AutofillField::FillFormField(field, ASCIIToUTF16("03"), "en-US", &field);
+  EXPECT_EQ(ASCIIToUTF16("03"), field.value);
+
+  // Try without a leading zero.
+  AutofillField::FillFormField(field, ASCIIToUTF16("4"), "en-US", &field);
+  EXPECT_EQ(ASCIIToUTF16("04"), field.value);
+
+  // Try a two-digit month.
+  AutofillField::FillFormField(field, ASCIIToUTF16("11"), "en-US", &field);
+  EXPECT_EQ(ASCIIToUTF16("11"), field.value);
+}
+
+TEST(AutofillFieldTest, FillSelectControlWithAbbreviatedMonthName) {
+  const char* const kMonthsAbbreviated[] = {
+    "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+  };
+  AutofillField field(
+      GenerateSelectFieldWithOptions(
+          kMonthsAbbreviated, arraysize(kMonthsAbbreviated)),
+      base::string16());
+  field.set_heuristic_type(CREDIT_CARD_EXP_MONTH);
+
+  AutofillField::FillFormField(field, ASCIIToUTF16("04"), "en-US", &field);
+  EXPECT_EQ(ASCIIToUTF16("Apr"), field.value);
+}
+
+TEST(AutofillFieldTest, FillSelectControlWithFullMonthName) {
+  const char* const kMonthsFull[] = {
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December",
+  };
+  AutofillField field(
+      GenerateSelectFieldWithOptions(kMonthsFull, arraysize(kMonthsFull)),
+      base::string16());
+  field.set_heuristic_type(CREDIT_CARD_EXP_MONTH);
+
+  AutofillField::FillFormField(field, ASCIIToUTF16("04"), "en-US", &field);
+  EXPECT_EQ(ASCIIToUTF16("April"), field.value);
+}
+
+TEST(AutofillFieldTest, FillSelectControlWithNumericMonthSansLeadingZero) {
+  const char* const kMonthsNumeric[] = {
+    "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12",
+  };
+  AutofillField field(
+      GenerateSelectFieldWithOptions(kMonthsNumeric, arraysize(kMonthsNumeric)),
+      base::string16());
+  field.set_heuristic_type(CREDIT_CARD_EXP_MONTH);
+
+  AutofillField::FillFormField(field, ASCIIToUTF16("04"), "en-US", &field);
+  EXPECT_EQ(ASCIIToUTF16("4"), field.value);
+}
+
+TEST(AutofillFieldTest, FillSelectControlWithTwoDigitCreditCardYear) {
+  const char* const kYears[] = {
+    "12", "13", "14", "15", "16", "17", "18", "19"
+  };
+  AutofillField field(GenerateSelectFieldWithOptions(kYears, arraysize(kYears)),
+                      base::string16());
+  field.set_heuristic_type(CREDIT_CARD_EXP_2_DIGIT_YEAR);
+
+  AutofillField::FillFormField(field, ASCIIToUTF16("2017"), "en-US", &field);
+  EXPECT_EQ(ASCIIToUTF16("17"), field.value);
+}
+
+TEST(AutofillFieldTest, FillSelectControlWithCreditCardType) {
+  const char* const kCreditCardTypes[] = {
+    "Visa", "Master Card", "AmEx", "discover"
+  };
+  AutofillField field(
+      GenerateSelectFieldWithOptions(
+          kCreditCardTypes, arraysize(kCreditCardTypes)),
+      base::string16());
+  field.set_heuristic_type(CREDIT_CARD_TYPE);
+
+  // Normal case:
+  AutofillField::FillFormField(field, ASCIIToUTF16("Visa"), "en-US", &field);
+  EXPECT_EQ(ASCIIToUTF16("Visa"), field.value);
+
+  // Filling should be able to handle intervening whitespace:
+  AutofillField::FillFormField(field, ASCIIToUTF16("MasterCard"), "en-US",
+                               &field);
+  EXPECT_EQ(ASCIIToUTF16("Master Card"), field.value);
+
+  // American Express is sometimes abbreviated as AmEx:
+  AutofillField::FillFormField(field, ASCIIToUTF16("American Express"), "en-US",
+                               &field);
+  EXPECT_EQ(ASCIIToUTF16("AmEx"), field.value);
+
+  // Case insensitivity:
+  AutofillField::FillFormField(field, ASCIIToUTF16("Discover"), "en-US",
+                               &field);
+  EXPECT_EQ(ASCIIToUTF16("discover"), field.value);
+}
+
+TEST(AutofillFieldTest, FillMonthControl) {
+  AutofillField field;
+  field.form_control_type = "month";
+
+  // Try a month with two digits.
+  AutofillField::FillFormField(field, ASCIIToUTF16("12/2017"), "en-US", &field);
+  EXPECT_EQ(ASCIIToUTF16("2017-12"), field.value);
+
+  // Try a month with a leading zero.
+  AutofillField::FillFormField(field, ASCIIToUTF16("03/2019"), "en-US", &field);
+  EXPECT_EQ(ASCIIToUTF16("2019-03"), field.value);
+
+  // Try a month without a leading zero.
+  AutofillField::FillFormField(field, ASCIIToUTF16("4/2018"), "en-US", &field);
+  EXPECT_EQ(ASCIIToUTF16("2018-04"), field.value);
 }
 
 }  // namespace
