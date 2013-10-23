@@ -86,6 +86,13 @@ struct input_panel_surface {
 	uint32_t panel;
 };
 
+struct shell_output {
+	struct desktop_shell  *shell;
+	struct weston_output  *output;
+	struct wl_listener    destroy_listener;
+	struct wl_list        link;
+};
+
 struct desktop_shell {
 	struct weston_compositor *compositor;
 
@@ -165,6 +172,9 @@ struct desktop_shell {
 	uint32_t binding_modifier;
 	enum animation_type win_animation_type;
 	enum animation_type startup_animation_type;
+
+	struct wl_listener output_create_listener;
+	struct wl_list output_list;
 };
 
 enum shell_surface_type {
@@ -4616,11 +4626,66 @@ workspace_move_surface_down_binding(struct weston_seat *seat, uint32_t time,
 }
 
 static void
+handle_output_destroy(struct wl_listener *listener, void *data)
+{
+	struct shell_output *output_listener =
+		container_of(listener, struct shell_output, destroy_listener);
+
+	wl_list_remove(&output_listener->destroy_listener.link);
+	wl_list_remove(&output_listener->link);
+	free(output_listener);
+}
+
+static void
+create_shell_output(struct desktop_shell *shell,
+					struct weston_output *output)
+{
+	struct shell_output *shell_output;
+
+	shell_output = zalloc(sizeof *shell_output);
+	if (shell_output == NULL)
+		return;
+
+	shell_output->output = output;
+	shell_output->shell = shell;
+	shell_output->destroy_listener.notify = handle_output_destroy;
+	wl_signal_add(&output->destroy_signal,
+		      &shell_output->destroy_listener);
+	wl_list_insert(shell->output_list.prev, &output->link);
+}
+
+static void
+handle_output_create(struct wl_listener *listener, void *data)
+{
+	struct desktop_shell *shell =
+		container_of(listener, struct desktop_shell, output_create_listener);
+	struct weston_output *output = (struct weston_output *)data;
+
+	create_shell_output(shell, output);
+}
+
+static void
+setup_output_destroy_handler(struct weston_compositor *ec,
+							struct desktop_shell *shell)
+{
+	struct weston_output *output;
+
+	wl_list_init(&shell->output_list);
+	wl_list_for_each(output, &ec->output_list, link)
+		create_shell_output(shell, output);
+
+	shell->output_create_listener.notify = handle_output_create;
+	wl_signal_add(&ec->output_created_signal,
+				&shell->output_create_listener);
+}
+
+static void
 shell_destroy(struct wl_listener *listener, void *data)
 {
 	struct desktop_shell *shell =
 		container_of(listener, struct desktop_shell, destroy_listener);
 	struct workspace **ws;
+	struct shell_output *shell_output, *tmp;
 
 	if (shell->child.client)
 		wl_client_destroy(shell->child.client);
@@ -4629,6 +4694,14 @@ shell_destroy(struct wl_listener *listener, void *data)
 	wl_list_remove(&shell->wake_listener.link);
 	wl_list_remove(&shell->show_input_panel_listener.link);
 	wl_list_remove(&shell->hide_input_panel_listener.link);
+
+	wl_list_for_each_safe(shell_output, tmp, &shell->output_list, link) {
+		wl_list_remove(&shell_output->destroy_listener.link);
+		wl_list_remove(&shell_output->link);
+		free(shell_output);
+	}
+
+	wl_list_remove(&shell->output_create_listener.link);
 
 	wl_array_for_each(ws, &shell->workspaces.array)
 		workspace_destroy(*ws);
@@ -4806,6 +4879,8 @@ module_init(struct weston_compositor *ec,
 		return -1;
 
 	shell->child.deathstamp = weston_compositor_get_time();
+
+	setup_output_destroy_handler(ec, shell);
 
 	loop = wl_display_get_event_loop(ec->wl_display);
 	wl_event_loop_add_idle(loop, launch_desktop_shell_process, shell);
