@@ -117,6 +117,7 @@ struct display {
 
 	display_output_handler_t output_configure_handler;
 	display_global_handler_t global_handler;
+	display_global_handler_t global_handler_remove;
 
 	void *user_data;
 
@@ -339,6 +340,7 @@ struct input {
 struct output {
 	struct display *display;
 	struct wl_output *output;
+	uint32_t server_output_id;
 	struct rectangle allocation;
 	struct wl_list link;
 	int transform;
@@ -4606,6 +4608,7 @@ display_add_output(struct display *d, uint32_t id)
 	output->scale = 1;
 	output->output =
 		wl_registry_bind(d->registry, id, &wl_output_interface, 2);
+	output->server_output_id = id;
 	wl_list_insert(d->output_list.prev, &output->link);
 
 	wl_output_add_listener(output->output, &output_listener, output);
@@ -4622,6 +4625,19 @@ output_destroy(struct output *output)
 	free(output);
 }
 
+static void
+display_destroy_output(struct display *d, uint32_t id)
+{
+	struct output *output;
+
+	wl_list_for_each(output, &d->output_list, link) {
+		if (output->server_output_id == id) {
+			output_destroy(output);
+			break;
+		}
+	}
+}
+
 void
 display_set_global_handler(struct display *display,
 			   display_global_handler_t handler)
@@ -4636,6 +4652,15 @@ display_set_global_handler(struct display *display,
 		display->global_handler(display,
 					global->name, global->interface,
 					global->version, display->user_data);
+}
+
+void
+display_set_global_handler_remove(struct display *display,
+			   display_global_handler_t remove_handler)
+{
+	display->global_handler_remove = remove_handler;
+	if (!remove_handler)
+		return;
 }
 
 void
@@ -4872,9 +4897,15 @@ registry_handle_global_remove(void *data, struct wl_registry *registry,
 		if (global->name != name)
 			continue;
 
-		/* XXX: Should destroy bound globals, and call
-		 * the counterpart of display::global_handler
-		 */
+		if (strcmp(global->interface, "wl_output") == 0)
+			display_destroy_output(d, name);
+
+		/* XXX: Should destroy remaining bound globals */
+
+		if (d->global_handler_remove)
+			d->global_handler_remove(d, name, global->interface,
+					global->version, d->user_data);
+
 		wl_list_remove(&global->link);
 		free(global->interface);
 		free(global);

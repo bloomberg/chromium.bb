@@ -104,6 +104,9 @@ typedef void (*display_global_handler_t)(struct display *display,
 void
 display_set_global_handler(struct display *display,
 			   display_global_handler_t handler);
+void
+display_set_global_handler_remove(struct display *display,
+			   display_global_handler_t remove_handler);
 void *
 display_bind(struct display *display, uint32_t name,
 	     const struct wl_interface *interface, uint32_t version);
