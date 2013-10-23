@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "2.24",
+  "version": "2.25",
   "entries": [
     {
       "id": 1,
@@ -606,6 +606,18 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
       },
       "features": [
         "unfold_short_circuit_as_ternary_operation"
+      ]
+    },
+    {
+      "id": 46,
+      "description": "Using D3D11 causes browser crashes on certain Intel GPUs.",
+      "cr_bugs": [310808],
+      "os": {
+        "type": "win"
+      },
+      "vendor_id": "0x8086",
+      "features": [
+        "disable_d3d11"
       ]
     }
   ]
