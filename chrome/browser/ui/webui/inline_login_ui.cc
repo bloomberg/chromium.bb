@@ -177,11 +177,11 @@ class InlineLoginUIHandler : public content::WebUIMessageHandler {
     string16 email;
     string16 password;
     if (!args->GetDictionary(0, &dict) || !dict ||
-        !dict->GetString("email", &email) ||
-        !dict->GetString("password", &password)) {
+        !dict->GetString("email", &email)) {
       NOTREACHED();
       return;
     }
+    dict->GetString("password", &password);
     dict->GetBoolean("chooseWhatToSync", &choose_what_to_sync_);
 
     content::WebContents* web_contents = web_ui()->GetWebContents();
