@@ -38,13 +38,11 @@ bool LoginStateNotificationBlockerChromeOS::ShouldShowNotificationAsPopup(
   if (ash::system_notifier::ShouldAlwaysShowPopups(notifier_id))
     return true;
 
-  if (!locked_)
-    return true;
-
   ash::user::LoginStatus login_status =
       ash::Shell::GetInstance()->system_tray_delegate()->GetUserLoginStatus();
   return login_status != ash::user::LOGGED_IN_NONE &&
-      login_status != ash::user::LOGGED_IN_LOCKED;
+      login_status != ash::user::LOGGED_IN_LOCKED &&
+      !locked_;
 }
 
 void LoginStateNotificationBlockerChromeOS::OnLoginStateChanged(
