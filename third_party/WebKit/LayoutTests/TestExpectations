@@ -357,8 +357,6 @@ crbug.com/133097 [ Mac ] fast/events/scale-and-scroll-iframe-body.html [ NeedsRe
 crbug.com/133097 [ Mac ] fast/events/scale-and-scroll-iframe-window.html [ NeedsRebaseline ]
 crbug.com/133097 [ Mac ] fast/frames/frame-set-rotation-hit.html [ NeedsRebaseline ]
 crbug.com/133097 [ Mac ] fast/frames/frame-set-scaling-hit.html [ NeedsRebaseline ]
-crbug.com/133097 [ Mac ] fast/repaint/background-scaling.html [ NeedsRebaseline ]
-crbug.com/133097 [ Mac ] fast/repaint/scale-page-shrink.html [ NeedsRebaseline ]
 crbug.com/133097 [ Mac ] virtual/gpu/compositedscrolling/scrollbars/custom-scrollbar-with-incomplete-style.html [ NeedsRebaseline ]
 
 crbug.com/237003 [ Win Mac Debug ] http/tests/w3c/webperf/submission/Google/resource-timing/html/test_resource_iframe_self_navigation.html [ Failure Pass ]
@@ -798,3 +796,9 @@ crbug.com/310323 [ Debug ] http/tests/security/contentSecurityPolicy/report-mult
 crbug.com/310327 [ Win Debug ] fast/dom/Geolocation/window-close-crash.html [ Crash ]
 
 crbug.com/310547 fast/dom/HTMLDialogElement/form-method-dialog.html [ Pass Timeout ]
+
+# Flaky http://crbug.com/310679 - no point in rebaselining yet
+#crbug.com/133097 [ Mac ] fast/repaint/background-scaling.html [ NeedsRebaseline ]
+#crbug.com/133097 [ Mac ] fast/repaint/scale-page-shrink.html [ NeedsRebaseline ]
+crbug.com/310679 [ Mac ] fast/repaint/background-scaling.html [ ImageOnlyFailure Pass ]
+crbug.com/310679 [ Mac ] fast/repaint/scale-page-shrink.html [ ImageOnlyFailure Pass ]
