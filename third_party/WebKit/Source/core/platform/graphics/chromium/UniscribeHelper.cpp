@@ -80,6 +80,27 @@ static void loadOpenTypeFunctions()
     gOpenTypeFunctionsLoaded = true;
 }
 
+enum {
+    FontStyleNormal = 0,
+    FontStyleBold = 1,
+    FontStyleItalic = 2,
+    FontStyleUnderlined = 4
+};
+
+int getStyleFromLogfont(const LOGFONT* logfont)
+{
+    // FIXME: consider defining UNDEFINED or INVALID for style and
+    //                  returning it when logfont is 0
+    if (!logfont) {
+        ASSERT_NOT_REACHED();
+        return FontStyleNormal;
+    }
+    return (logfont->lfItalic ? FontStyleItalic : FontStyleNormal) |
+        (logfont->lfUnderline ? FontStyleUnderlined : FontStyleNormal) |
+        (logfont->lfWeight >= 700 ? FontStyleBold : FontStyleNormal);
+}
+
+
 // HFONT is the 'incarnation' of 'everything' about font, but it's an opaque
 // handle and we can't directly query it to make a new HFONT sharing
 // its characteristics (height, style, etc) except for family name.
@@ -585,6 +606,124 @@ void UniscribeHelper::fillRuns()
         m_runs.resize(m_runs.size() * 2);
         m_scriptTags.resize(m_runs.size());
     }
+}
+
+const int kUndefinedAscent = std::numeric_limits<int>::min();
+
+// Given an HFONT, return the ascent. If GetTextMetrics fails,
+// kUndefinedAscent is returned, instead.
+int getAscent(HFONT hfont)
+{
+    HWndDC dc(0);
+    HGDIOBJ oldFont = SelectObject(dc, hfont);
+    TEXTMETRIC tm;
+    BOOL gotMetrics = GetTextMetrics(dc, &tm);
+    SelectObject(dc, oldFont);
+    return gotMetrics ? tm.tmAscent : kUndefinedAscent;
+}
+
+const WORD kUnsupportedGlyph = 0xffff;
+
+WORD getSpaceGlyph(HFONT hfont)
+{
+    HWndDC dc(0);
+    HGDIOBJ oldFont = SelectObject(dc, hfont);
+    WCHAR space = L' ';
+    WORD spaceGlyph = kUnsupportedGlyph;
+    GetGlyphIndices(dc, &space, 1, &spaceGlyph, GGI_MARK_NONEXISTING_GLYPHS);
+    SelectObject(dc, oldFont);
+    return spaceGlyph;
+}
+
+struct ShaperFontData {
+    ShaperFontData()
+        : hfont(0)
+        , ascent(kUndefinedAscent)
+        , scriptCache(0)
+        , spaceGlyph(0)
+    {
+    }
+
+    HFONT hfont;
+    int ascent;
+    mutable SCRIPT_CACHE scriptCache;
+    WORD spaceGlyph;
+};
+
+// Again, using hash_map does not earn us much here. page_cycler_test intl2
+// gave us a 'better' result with map than with hash_map even though they're
+// well-within 1-sigma of each other so that the difference is not significant.
+// On the other hand, some pages in intl2 seem to take longer to load with map
+// in the 1st pass. Need to experiment further.
+typedef HashMap<String, ShaperFontData> ShaperFontDataCache;
+
+// Derive a new HFONT by replacing lfFaceName of LOGFONT with |family|,
+// calculate the ascent for the derived HFONT, and initialize SCRIPT_CACHE
+// in ShaperFontData.
+// |style| is only used for cache key generation. |style| is
+// bit-wise OR of BOLD(1), UNDERLINED(2) and ITALIC(4) and
+// should match what's contained in LOGFONT. It should be calculated
+// by calling GetStyleFromLogFont.
+// Returns false if the font is not accessible, in which case |ascent| field
+// of |ShaperFontData| is set to kUndefinedAscent.
+// Be aware that this is not thread-safe.
+// FIXME: Instead of having three out params, we'd better have one
+// (|*ShaperFontData|), but somehow it mysteriously messes up the layout for
+// certain complex script pages (e.g. hi.wikipedia.org) and also crashes
+// at the start-up if recently visited page list includes pages with complex
+// scripts in their title. Moreover, somehow the very first-pass of
+// intl2 page-cycler test is noticeably slower with one out param than
+// the current version although the subsequent 9 passes take about the
+// same time.
+// Be aware that this is not thread-safe.
+static bool getDerivedFontData(const UChar* family, int style, LOGFONT* logfont,
+    int* ascent, HFONT* hfont, SCRIPT_CACHE** scriptCache, WORD* spaceGlyph)
+{
+    ASSERT(logfont);
+    ASSERT(family);
+    ASSERT(*family);
+
+    // It does not matter that we leak font data when we exit.
+    static ShaperFontDataCache* gFontDataCache = 0;
+    if (!gFontDataCache)
+        gFontDataCache = new ShaperFontDataCache();
+
+    // FIXME: This comes up pretty high in the profile so that
+    // we need to measure whether using SHA256 (after coercing all the
+    // fields to char*) is faster than String::format.
+    String fontKey = String::format("%1d:%d:%ls", style, logfont->lfHeight, family);
+    ShaperFontDataCache::iterator iter = gFontDataCache->find(fontKey);
+    ShaperFontData* derived;
+    if (iter == gFontDataCache->end()) {
+        ASSERT(wcslen(family) < LF_FACESIZE);
+        wcscpy_s(logfont->lfFaceName, LF_FACESIZE, family);
+        // FIXME: CreateFontIndirect always comes up with
+        // a font even if there's no font matching the name. Need to
+        // check it against what we actually want (as is done in
+        // FontCacheWin.cpp)
+        ShaperFontDataCache::AddResult entry = gFontDataCache->add(fontKey, ShaperFontData());
+        derived = &entry.iterator->value;
+        derived->hfont = CreateFontIndirect(logfont);
+        // GetAscent may return kUndefinedAscent, but we still want to
+        // cache it so that we won't have to call CreateFontIndirect once
+        // more for HFONT next time.
+        derived->ascent = getAscent(derived->hfont);
+        derived->spaceGlyph = getSpaceGlyph(derived->hfont);
+    } else {
+        derived = &iter->value;
+        // Last time, getAscent or getSpaceGlyph failed so that only HFONT was
+        // cached. Try once more assuming that TryPreloadFont
+        // was called by a caller between calls.
+        if (kUndefinedAscent == derived->ascent)
+            derived->ascent = getAscent(derived->hfont);
+        if (kUnsupportedGlyph == derived->spaceGlyph)
+            derived->spaceGlyph = getSpaceGlyph(derived->hfont);
+    }
+    *hfont = derived->hfont;
+    *ascent = derived->ascent;
+    *scriptCache = &(derived->scriptCache);
+    *spaceGlyph = derived->spaceGlyph;
+    return *ascent != kUndefinedAscent && *spaceGlyph != kUnsupportedGlyph;
 }
 
 bool UniscribeHelper::shape(const UChar* input,

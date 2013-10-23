@@ -235,55 +235,6 @@ UScriptCode getScript(int ucs4)
     return script;
 }
 
-const int kUndefinedAscent = std::numeric_limits<int>::min();
-
-// Given an HFONT, return the ascent. If GetTextMetrics fails,
-// kUndefinedAscent is returned, instead.
-int getAscent(HFONT hfont)
-{
-    HWndDC dc(0);
-    HGDIOBJ oldFont = SelectObject(dc, hfont);
-    TEXTMETRIC tm;
-    BOOL gotMetrics = GetTextMetrics(dc, &tm);
-    SelectObject(dc, oldFont);
-    return gotMetrics ? tm.tmAscent : kUndefinedAscent;
-}
-
-const WORD kUnsupportedGlyph = 0xffff;
-
-WORD getSpaceGlyph(HFONT hfont)
-{
-    HWndDC dc(0);
-    HGDIOBJ oldFont = SelectObject(dc, hfont);
-    WCHAR space = L' ';
-    WORD spaceGlyph = kUnsupportedGlyph;
-    GetGlyphIndices(dc, &space, 1, &spaceGlyph, GGI_MARK_NONEXISTING_GLYPHS);
-    SelectObject(dc, oldFont);
-    return spaceGlyph;
-}
-
-struct FontData {
-    FontData()
-        : hfont(0)
-        , ascent(kUndefinedAscent)
-        , scriptCache(0)
-        , spaceGlyph(0)
-    {
-    }
-
-    HFONT hfont;
-    int ascent;
-    mutable SCRIPT_CACHE scriptCache;
-    WORD spaceGlyph;
-};
-
-// Again, using hash_map does not earn us much here.  page_cycler_test intl2
-// gave us a 'better' result with map than with hash_map even though they're
-// well-within 1-sigma of each other so that the difference is not significant.
-// On the other hand, some pages in intl2 seem to take longer to load with map
-// in the 1st pass. Need to experiment further.
-typedef HashMap<String, FontData> FontDataCache;
-
 } // namespace
 
 // FIXME: this is font fallback code version 0.1
@@ -385,75 +336,6 @@ const UChar* getFallbackFamily(const UChar* characters,
     if (scriptChecked)
         *scriptChecked = script;
     return family;
-}
-
-// Be aware that this is not thread-safe.
-bool getDerivedFontData(const UChar* family,
-                        int style,
-                        LOGFONT* logfont,
-                        int* ascent,
-                        HFONT* hfont,
-                        SCRIPT_CACHE** scriptCache,
-                        WORD* spaceGlyph)
-{
-    ASSERT(logfont);
-    ASSERT(family);
-    ASSERT(*family);
-
-    // It does not matter that we leak font data when we exit.
-    static FontDataCache* gFontDataCache = 0;
-    if (!gFontDataCache)
-        gFontDataCache = new FontDataCache();
-
-    // FIXME: This comes up pretty high in the profile so that
-    // we need to measure whether using SHA256 (after coercing all the
-    // fields to char*) is faster than String::format.
-    String fontKey = String::format("%1d:%d:%ls", style, logfont->lfHeight, family);
-    FontDataCache::iterator iter = gFontDataCache->find(fontKey);
-    FontData* derived;
-    if (iter == gFontDataCache->end()) {
-        ASSERT(wcslen(family) < LF_FACESIZE);
-        wcscpy_s(logfont->lfFaceName, LF_FACESIZE, family);
-        // FIXME: CreateFontIndirect always comes up with
-        // a font even if there's no font matching the name. Need to
-        // check it against what we actually want (as is done in
-        // FontCacheWin.cpp)
-        FontDataCache::AddResult entry = gFontDataCache->add(fontKey, FontData());
-        derived = &entry.iterator->value;
-        derived->hfont = CreateFontIndirect(logfont);
-        // GetAscent may return kUndefinedAscent, but we still want to
-        // cache it so that we won't have to call CreateFontIndirect once
-        // more for HFONT next time.
-        derived->ascent = getAscent(derived->hfont);
-        derived->spaceGlyph = getSpaceGlyph(derived->hfont);
-    } else {
-        derived = &iter->value;
-        // Last time, getAscent or getSpaceGlyph failed so that only HFONT was
-        // cached. Try once more assuming that TryPreloadFont
-        // was called by a caller between calls.
-        if (kUndefinedAscent == derived->ascent)
-            derived->ascent = getAscent(derived->hfont);
-        if (kUnsupportedGlyph == derived->spaceGlyph)
-            derived->spaceGlyph = getSpaceGlyph(derived->hfont);
-    }
-    *hfont = derived->hfont;
-    *ascent = derived->ascent;
-    *scriptCache = &(derived->scriptCache);
-    *spaceGlyph = derived->spaceGlyph;
-    return *ascent != kUndefinedAscent && *spaceGlyph != kUnsupportedGlyph;
-}
-
-int getStyleFromLogfont(const LOGFONT* logfont)
-{
-    // FIXME: consider defining UNDEFINED or INVALID for style and
-    //                  returning it when logfont is 0
-    if (!logfont) {
-        ASSERT_NOT_REACHED();
-        return FontStyleNormal;
-    }
-    return (logfont->lfItalic ? FontStyleItalic : FontStyleNormal) |
-           (logfont->lfUnderline ? FontStyleUnderlined : FontStyleNormal) |
-           (logfont->lfWeight >= 700 ? FontStyleBold : FontStyleNormal);
 }
 
 } // namespace WebCore

@@ -121,6 +121,9 @@ public:
     String description() const;
 #endif
 
+    // FIXME: Only used by Uniscribe, should be protected by a
+    // ENABLE(GDI_FONTS_ON_WINDOWS) macro once we have an abstraction layer
+    // for complex text shaping.
     SCRIPT_FONTPROPERTIES* scriptFontProperties() const;
     SCRIPT_CACHE* scriptCache() const { return &m_scriptCache; }
 
