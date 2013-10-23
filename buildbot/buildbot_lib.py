@@ -378,7 +378,6 @@ class Step(object):
         raise StopBuild()
     else:
       self.status.ReportPass(self.name)
-      print '@@@STEP_SUCCESS@@@'
 
     # Suppress any exception that occurred.
     return True
