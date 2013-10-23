@@ -38,6 +38,7 @@ class FloatingObject;
 class RenderBlock;
 class RenderObject;
 class RenderRubyRun;
+class RenderBlockFlow;
 
 struct LineSegment;
 
@@ -45,7 +46,7 @@ enum IndentTextOrNot { DoNotIndentText, IndentText };
 
 class LineWidth {
 public:
-    LineWidth(RenderBlock&, bool isFirstLine, IndentTextOrNot shouldIndentText);
+    LineWidth(RenderBlockFlow&, bool isFirstLine, IndentTextOrNot shouldIndentText);
 
     bool fitsOnLine() const { return currentWidth() <= m_availableWidth; }
     bool fitsOnLine(float extra) const { return currentWidth() + extra <= m_availableWidth; }
@@ -70,7 +71,7 @@ public:
 private:
     void computeAvailableWidthFromLeftAndRight();
 
-    RenderBlock& m_block;
+    RenderBlockFlow& m_block;
     float m_uncommittedWidth;
     float m_committedWidth;
     float m_overhangWidth; // The amount by which |m_availableWidth| has been inflated to account for possible contraction due to ruby overhang.

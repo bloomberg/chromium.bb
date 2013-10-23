@@ -25,6 +25,7 @@
 
 #include "core/rendering/BidiRun.h"
 #include "core/rendering/RenderBlock.h"
+#include "core/rendering/RenderBlockFlow.h"
 #include "core/rendering/RenderText.h"
 #include "wtf/StdLibExtras.h"
 
@@ -539,7 +540,7 @@ inline void InlineBidiResolver::appendRun()
             if (isolateTracker.inIsolate())
                 isolateTracker.addFakeRunIfNecessary(obj, start, *this);
             else
-                RenderBlock::appendRunsForObject(m_runs, start, obj->length(), obj, *this);
+                RenderBlockFlow::appendRunsForObject(m_runs, start, obj->length(), obj, *this);
             // FIXME: start/obj should be an InlineIterator instead of two separate variables.
             start = 0;
             obj = bidiNextSkippingEmptyInlines(m_sor.root(), obj, &isolateTracker);
@@ -555,7 +556,7 @@ inline void InlineBidiResolver::appendRun()
             if (isolateTracker.inIsolate())
                 isolateTracker.addFakeRunIfNecessary(obj, start, *this);
             else
-                RenderBlock::appendRunsForObject(m_runs, start, end, obj, *this);
+                RenderBlockFlow::appendRunsForObject(m_runs, start, end, obj, *this);
         }
 
         m_eor.increment();

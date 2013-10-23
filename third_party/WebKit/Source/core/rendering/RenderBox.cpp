@@ -172,22 +172,18 @@ void RenderBox::removeFloatingOrPositionedChildFromBlockLists()
         return;
 
     if (isFloating()) {
-        RenderBlock* parentBlock = 0;
+        RenderBlockFlow* parentBlockFlow = 0;
         for (RenderObject* curr = parent(); curr && !curr->isRenderView(); curr = curr->parent()) {
-            if (curr->isRenderBlock()) {
-                RenderBlock* currBlock = toRenderBlock(curr);
-                if (!parentBlock || currBlock->containsFloat(this))
-                    parentBlock = currBlock;
+            if (curr->isRenderBlockFlow()) {
+                RenderBlockFlow* currBlockFlow = toRenderBlockFlow(curr);
+                if (!parentBlockFlow || currBlockFlow->containsFloat(this))
+                    parentBlockFlow = currBlockFlow;
             }
         }
 
-        if (parentBlock) {
-            RenderObject* parent = parentBlock->parent();
-            if (parent && parent->isFlexibleBoxIncludingDeprecated())
-                parentBlock = toRenderBlock(parent);
-
-            parentBlock->markSiblingsWithFloatsForLayout(this);
-            parentBlock->markAllDescendantsWithFloatsForLayout(this, false);
+        if (parentBlockFlow) {
+            parentBlockFlow->markSiblingsWithFloatsForLayout(this);
+            parentBlockFlow->markAllDescendantsWithFloatsForLayout(this, false);
         }
     }
 
