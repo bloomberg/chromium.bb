@@ -120,8 +120,16 @@ void RootView::DispatchKeyEvent(ui::KeyEvent* event) {
   // keyboard.
   if (v && v->enabled() && ((event->key_code() == ui::VKEY_APPS) ||
      (event->key_code() == ui::VKEY_F10 && event->IsShiftDown()))) {
-    v->ShowContextMenu(v->GetKeyboardContextMenuLocation(),
-                       ui::MENU_SOURCE_KEYBOARD);
+    // Showing the context menu outside the visible bounds may result in a
+    // context menu appearing over a completely different window. Constrain
+    // location to visible bounds so this doesn't happen.
+    gfx::Rect visible_bounds(v->ConvertRectToWidget(v->GetVisibleBounds()));
+    visible_bounds.Offset(
+        widget_->GetClientAreaBoundsInScreen().OffsetFromOrigin());
+    gfx::Rect keyboard_loc(v->GetKeyboardContextMenuLocation(),
+                           gfx::Size(1, 1));
+    keyboard_loc.AdjustToFit(visible_bounds);
+    v->ShowContextMenu(keyboard_loc.origin(), ui::MENU_SOURCE_KEYBOARD);
     event->StopPropagation();
     return;
   }
