@@ -34,6 +34,7 @@
         'chromeos/lib/machine_id_chromeos.cc',
         'chromeos/lib/rlz_value_store_chromeos.cc',
         'chromeos/lib/rlz_value_store_chromeos.h',
+        'ios/lib/machine_id_ios.cc',
         'lib/assert.cc',
         'lib/assert.h',
         'lib/crc32.h',
@@ -95,6 +96,15 @@
               'RLZ_NETWORK_IMPLEMENTATION_WIN_INET',
             ],
           },
+        }],
+      ],
+      'target_conditions': [
+        # Need 'target_conditions' to override default filename_rules to include
+        # the files on iOS.
+        ['OS=="ios"', {
+          'sources/': [
+            ['include', '^mac/lib/rlz_value_store_mac\\.'],
+          ],
         }],
       ],
       # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
