@@ -183,13 +183,16 @@ void RendererOverridesHandler::InnerSwapCompositorFrame() {
     return;
   }
 
+  RenderViewHost* host = agent_->GetRenderViewHost();
+  if (!host->GetView())
+    return;
+
   last_frame_time_ = base::TimeTicks::Now();
   std::string format;
   int quality = kDefaultScreenshotQuality;
   double scale = 1;
   ParseCaptureParameters(screencast_command_.get(), &format, &quality, &scale);
 
-  RenderViewHost* host = agent_->GetRenderViewHost();
   RenderWidgetHostViewPort* view_port =
       RenderWidgetHostViewPort::FromRWHV(host->GetView());
 
@@ -227,14 +230,13 @@ void RendererOverridesHandler::ParseCaptureParameters(
   }
 
   RenderViewHost* host = agent_->GetRenderViewHost();
-  if (host->GetView()) {
-    gfx::Rect view_bounds = host->GetView()->GetViewBounds();
-    float device_sf = last_compositor_frame_metadata_.device_scale_factor;
-    if (max_width > 0)
-      *scale = std::min(*scale, max_width / view_bounds.width() / device_sf);
-    if (max_height > 0)
-      *scale = std::min(*scale, max_height / view_bounds.height() / device_sf);
-  }
+  CHECK(host->GetView());
+  gfx::Rect view_bounds = host->GetView()->GetViewBounds();
+  float device_sf = last_compositor_frame_metadata_.device_scale_factor;
+  if (max_width > 0)
+    *scale = std::min(*scale, max_width / view_bounds.width() / device_sf);
+  if (max_height > 0)
+    *scale = std::min(*scale, max_height / view_bounds.height() / device_sf);
 
   if (format->empty())
     *format = kPng;
@@ -422,12 +424,15 @@ RendererOverridesHandler::PageNavigateToHistoryEntry(
 scoped_refptr<DevToolsProtocol::Response>
 RendererOverridesHandler::PageCaptureScreenshot(
     scoped_refptr<DevToolsProtocol::Command> command) {
+  RenderViewHost* host = agent_->GetRenderViewHost();
+  if (!host->GetView())
+    return command->InternalErrorResponse("Unable to access the view");
+
   std::string format;
   int quality = kDefaultScreenshotQuality;
   double scale = 1;
   ParseCaptureParameters(command.get(), &format, &quality, &scale);
 
-  RenderViewHost* host = agent_->GetRenderViewHost();
   gfx::Rect view_bounds = host->GetView()->GetViewBounds();
   gfx::Size snapshot_size = gfx::ToFlooredSize(
       gfx::ScaleSize(view_bounds.size(), scale));
