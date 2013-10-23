@@ -49,7 +49,6 @@ public class TranslateInfoBar extends TwoButtonInfoBar implements SubPanelListen
     private TranslateSubPanel mSubPanel;
     private final boolean mShouldShowNeverBar;
     private final TranslateInfoBarDelegate mTranslateDelegate;
-    private final int mNativeInfoBarPtr;
 
     public TranslateInfoBar(int nativeInfoBarPtr, TranslateInfoBarDelegate delegate,
             int infoBarType, int sourceLanguageIndex, int targetLanguageIndex,
@@ -62,7 +61,6 @@ public class TranslateInfoBar extends TwoButtonInfoBar implements SubPanelListen
         mInfoBarType = infoBarType;
         mShouldShowNeverBar = shouldShowNeverBar;
         mOptionsPanelViewType = NO_PANEL;
-        mNativeInfoBarPtr = nativeInfoBarPtr;
         setNativeInfoBar(nativeInfoBarPtr);
     }
 

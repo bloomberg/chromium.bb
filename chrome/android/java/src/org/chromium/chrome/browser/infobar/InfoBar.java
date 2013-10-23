@@ -53,8 +53,9 @@ public abstract class InfoBar implements InfoBarView {
     private boolean mIsDismissed;
     private boolean mControlsEnabled;
 
-    // TODO(miguelg) make it private and enforce it in the Confirm and Translate
-    // infobars.
+    // This cannot be private until the swap in place infrastructure is
+    // improved since subclasses need to access a possibly replaced native
+    // pointer.
     protected int mNativeInfoBarPtr;
 
     // Used by tests to reference infobars.
