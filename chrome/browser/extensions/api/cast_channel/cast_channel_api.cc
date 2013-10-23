@@ -182,8 +182,8 @@ void CastChannelOpenFunction::AsyncWorkStart() {
   DCHECK(api_);
   CastSocket* socket = new CastSocket(extension_->id(), GURL(params_->url),
                                       api_, g_browser_process->net_log());
-  int new_channel_id = AddSocket(socket);
-  socket->set_id(new_channel_id);
+  new_channel_id_ = AddSocket(socket);
+  socket->set_id(new_channel_id_);
   socket->Connect(base::Bind(&CastChannelOpenFunction::OnOpen, this));
 }
 
