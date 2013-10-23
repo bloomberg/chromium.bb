@@ -34,7 +34,6 @@
 #include "core/rendering/LayoutIndicator.h"
 #include "core/rendering/PaintPhase.h"
 #include "core/rendering/RenderObjectChildList.h"
-#include "core/rendering/RenderingNodeProxy.h"
 #include "core/rendering/ScrollBehavior.h"
 #include "core/rendering/SubtreeLayoutScope.h"
 #include "core/rendering/style/RenderStyle.h"
@@ -390,7 +389,7 @@ public:
 
     virtual bool isRenderScrollbarPart() const { return false; }
 
-    bool isRoot() const { return document().documentElement() == m_nodeProxy.unsafeNode(); }
+    bool isRoot() const { return document().documentElement() == m_node; }
     bool isBody() const;
     bool isHR() const;
     bool isLegend() const;
@@ -602,7 +601,7 @@ public:
     // Returns true if this renderer is rooted, and optionally returns the hosting view (the root of the hierarchy).
     bool isRooted(RenderView** = 0) const;
 
-    Node* node() const { return isAnonymous() ? 0 : m_nodeProxy.unsafeNode(); }
+    Node* node() const { return isAnonymous() ? 0 : m_node; }
     Node* nonPseudoNode() const
     {
         ASSERT(!LayoutIndicator::inLayout());
@@ -610,14 +609,14 @@ public:
     }
 
     // FIXME: Why does RenderWidget need this?
-    void clearNode() { m_nodeProxy.clear(); }
+    void clearNode() { m_node = 0; }
 
     // Returns the styled node that caused the generation of this renderer.
     // This is the same as node() except for renderers of :before and :after
     // pseudo elements for which their parent node is returned.
     Node* generatingNode() const { return isPseudoElement() ? node()->parentOrShadowHostNode() : node(); }
 
-    Document& document() const { return m_nodeProxy.unsafeNode()->document(); }
+    Document& document() const { return m_node->document(); }
     Frame* frame() const { return document().frame(); }
 
     bool hasOutlineAnnotation() const;
@@ -1029,7 +1028,7 @@ protected:
     virtual void insertedIntoTree();
     virtual void willBeRemovedFromTree();
 
-    void setDocumentForAnonymous(Document* document) { ASSERT(isAnonymous()); m_nodeProxy.set(document); }
+    void setDocumentForAnonymous(Document* document) { ASSERT(isAnonymous()); m_node = document; }
 
     // Add hit-test rects for the render tree rooted at this node to the provided collection on a
     // per-RenderLayer basis.
@@ -1067,7 +1066,7 @@ private:
 
     RefPtr<RenderStyle> m_style;
 
-    RenderingNodeProxy m_nodeProxy;
+    Node* m_node;
 
     RenderObject* m_parent;
     RenderObject* m_previous;

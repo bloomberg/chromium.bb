@@ -1540,8 +1540,6 @@
             'rendering/RenderWordBreak.h',
             'rendering/RenderingConfiguration.cpp',
             'rendering/RenderingConfiguration.h',
-            'rendering/RenderingNodeProxy.cpp',
-            'rendering/RenderingNodeProxy.h',
             'rendering/RootInlineBox.cpp',
             'rendering/ScrollBehavior.cpp',
             'rendering/SubtreeLayoutScope.cpp',
