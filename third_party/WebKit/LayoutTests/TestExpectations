@@ -714,10 +714,6 @@ crbug.com/295605 [ Win Debug ] fast/dom/custom/document-register-reentrant-throw
 
 crbug.com/309675 compositing/gestures/gesture-tapHighlight-simple-longPress.html [ ImageOnlyFailure ]
 
-Bug(bokan) compositing/gestures/gesture-tapHighlight-pixel-rotated-div.html [ NeedsRebaseline ]
-Bug(bokan) compositing/gestures/gesture-tapHighlight-pixel-rotated-link.html [ NeedsRebaseline ]
-Bug(bokan) compositing/gestures/gesture-tapHighlight-pixel-transparent.html [ NeedsRebaseline ]
-
 crbug.com/305345 fast/events/mouseover-mouseout.html [ Failure Pass ]
 
 # Rebaselining needed due to libpng update.
