@@ -8,19 +8,29 @@
 #include "base/basictypes.h"
 #include "base/system_monitor/system_monitor.h"
 
+namespace {
+class DeviceMonitorMacImpl;
+}
+
 namespace content {
 
+// Class to track audio/video devices removal or addition via callback to
+// base::SystemMonitor ProcessDevicesChanged(). A single object of this class
+// is created from the browser main process and lives as long as this one.
 class DeviceMonitorMac {
  public:
   DeviceMonitorMac();
   ~DeviceMonitorMac();
 
- private:
-  // Forward the notifications to system monitor.
+  // Method called by the internal DeviceMonitorMacImpl object
+  // |device_monitor_impl_| when a device of type |type| has been added to or
+  // removed from the system. This code executes in the notification thread
+  // (QTKit or AVFoundation).
   void NotifyDeviceChanged(base::SystemMonitor::DeviceType type);
 
-  class QTMonitorImpl;
-  scoped_ptr<DeviceMonitorMac::QTMonitorImpl> qt_monitor_;
+ private:
+  scoped_ptr<DeviceMonitorMacImpl> device_monitor_impl_;
+
   DISALLOW_COPY_AND_ASSIGN(DeviceMonitorMac);
 };
 
