@@ -1403,8 +1403,7 @@ ErrorCode RestrictSocketcallCommand(Sandbox* sandbox) {
 }
 #endif
 
-// TODO(jorgelo): using ENOENT here is a temporary fix. crbug.com/270326
-const int kFSDeniedErrno = ENOENT;
+const int kFSDeniedErrno = EPERM;
 
 ErrorCode BaselinePolicy(Sandbox* sandbox, int sysno) {
   if (IsBaselinePolicyAllowed(sysno)) {
