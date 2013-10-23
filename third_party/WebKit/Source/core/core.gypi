@@ -1856,6 +1856,8 @@
             'dom/DOMURLUtilsReadOnly.h',
             'dom/Element.cpp',
             'dom/Element.h',
+            'dom/ElementData.cpp',
+            'dom/ElementData.h',
             'dom/ElementRareData.cpp',
             'dom/ElementRareData.h',
             'dom/ElementTraversal.h',
