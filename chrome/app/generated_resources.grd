@@ -8590,7 +8590,7 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
         Adding your printers to Google Cloud Print allows you to print from
         anywhere, to anywhere. Share your printers with whoever you choose and
         print to them from Chrome, your phone, tablet, PC, or any other
-        web-connected device. <ph name="START_LINK">$1</ph>Learn more<ph name="END_LINK">$2</ph>
+        web-connected device.
       </message>
       <message name="IDS_PRINT_PREVIEW_NO_DESTS_PROMO_ADD_PRINTER_BUTTON_LABEL" desc="Label of button to setup Google Cloud Print printers.">
         Add a printer

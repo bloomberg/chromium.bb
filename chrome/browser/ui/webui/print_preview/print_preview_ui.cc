@@ -238,6 +238,9 @@ content::WebUIDataSource* CreatePrintPreviewUISource() {
       l10n_util::GetStringFUTF16(
         IDS_PRINT_PREVIEW_PRINT_WITH_CLOUD_PRINT_WAIT,
         l10n_util::GetStringUTF16(IDS_GOOGLE_CLOUD_PRINT)));
+  source->AddString(
+      "noDestsPromoLearnMoreUrl",
+      chrome::kCloudPrintNoDestinationsLearnMoreURL);
   source->AddLocalizedString("pageRangeInstruction",
                              IDS_PRINT_PREVIEW_PAGE_RANGE_INSTRUCTION);
   source->AddLocalizedString("copiesInstruction",
@@ -309,6 +312,8 @@ content::WebUIDataSource* CreatePrintPreviewUISource() {
                              IDS_PRINT_PREVIEW_NO_DESTS_PROMO_BODY);
   source->AddLocalizedString("noDestsPromoGcpDesc",
                              IDS_PRINT_PREVIEW_NO_DESTS_GCP_DESC);
+  source->AddLocalizedString("learnMore",
+                             IDS_LEARN_MORE);
   source->AddLocalizedString(
       "noDestsPromoAddPrinterButtonLabel",
       IDS_PRINT_PREVIEW_NO_DESTS_PROMO_ADD_PRINTER_BUTTON_LABEL);

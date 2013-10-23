@@ -267,7 +267,7 @@ span.jumping-dots > span:nth-child(3) {
 }
 
 /* TODO(estade): unfork this code. */
-.button-strip {
+#print-header .button-strip {
 <if expr="not pp_ifdef('toolkit_views')">
   -webkit-box-direction: reverse;
 </if>
@@ -276,7 +276,7 @@ span.jumping-dots > span:nth-child(3) {
   display: -webkit-box;
 }
 
-#print-preview .button-strip button {
+#print-header .button-strip button {
   -webkit-margin-start: 9px;
   display: block;
 }

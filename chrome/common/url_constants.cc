@@ -490,6 +490,9 @@ const char kCloudPrintLearnMoreURL[] =
     "https://support.google.com/chrome/?p=settings_cloud_print";
 #endif
 
+const char kCloudPrintNoDestinationsLearnMoreURL[] =
+    "https://www.google.com/cloudprint/learn/";
+
 const char kAppLauncherHelpURL[] =
     "https://support.google.com/chrome_webstore/?p=cws_app_launcher";
 

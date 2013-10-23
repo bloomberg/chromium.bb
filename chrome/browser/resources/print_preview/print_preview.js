@@ -364,14 +364,6 @@ cr.define('print_preview', function() {
       this.otherOptionsSettings_.decorate($('other-options-settings'));
       this.previewArea_.decorate($('preview-area'));
 
-      // Set some of the parameterized text in the no-destinations promotion.
-      var noDestsPromoGcpDescription =
-          this.getChildElement('#no-destinations-promo .gcp-description');
-      noDestsPromoGcpDescription.innerHTML = localStrings.getStringF(
-          'noDestsPromoGcpDesc',
-          '<a target="_blank" href="http://www.google.com/cloudprint/learn/">',
-          '</a>');
-
       setIsVisible($('open-pdf-in-preview-link'), cr.isMac);
     },
 

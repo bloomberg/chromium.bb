@@ -487,6 +487,9 @@ extern const char kDriveScheme[];
 // "Learn more" URL for the Cloud Print section under Options.
 extern const char kCloudPrintLearnMoreURL[];
 
+// "Learn more" URL for the Cloud Print Preview No Destinations Promotion.
+extern const char kCloudPrintNoDestinationsLearnMoreURL[];
+
 // Parameters that get appended to force SafeSearch.
 extern const char kSafeSearchSafeParameter[];
 extern const char kSafeSearchSsuiParameter[];
