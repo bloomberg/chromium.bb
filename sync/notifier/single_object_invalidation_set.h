@@ -10,16 +10,13 @@
 #include "base/memory/scoped_ptr.h"
 #include "sync/base/sync_export.h"
 #include "sync/internal_api/public/base/invalidation.h"
+#include "sync/notifier/invalidation_util.h"
 
 namespace base {
 class ListValue;
 }  // namespace base
 
 namespace syncer {
-
-struct InvalidationVersionLessThan {
-  bool operator()(const Invalidation& a, const Invalidation& b);
-};
 
 // Holds a list of invalidations that all share the same Object ID.
 //

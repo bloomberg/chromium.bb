@@ -13,6 +13,7 @@
 #include "google/cacheinvalidation/include/types.h"
 #include "sync/base/sync_export.h"
 #include "sync/internal_api/public/base/ack_handle.h"
+#include "sync/internal_api/public/util/weak_handle.h"
 
 namespace syncer {
 
@@ -30,6 +31,7 @@ class SYNC_EXPORT Invalidation {
       int64 version,
       const std::string& payload);
   static Invalidation InitUnknownVersion(const invalidation::ObjectId& id);
+  static Invalidation InitFromDroppedInvalidation(const Invalidation& dropped);
   static scoped_ptr<Invalidation> InitFromValue(
       const base::DictionaryValue& value);
 
@@ -48,7 +50,18 @@ class SYNC_EXPORT Invalidation {
   const std::string& payload() const;
 
   const AckHandle& ack_handle() const;
+
+  // TODO(rlarocque): Remove this method and use AckHandlers instead.
   void set_ack_handle(const AckHandle& ack_handle);
+
+  void set_ack_handler(syncer::WeakHandle<AckHandler> ack_handler);
+
+  // True if this class has a valid AckHandler.
+  bool SupportsAcknowledgement() const;
+
+  // TODO(rlarocque): Re-enable these when we switch to AckHandlers.
+  // void Acknowledge() const;
+  // void Drop(DroppedInvalidationTracker* tracker) const;
 
   scoped_ptr<base::DictionaryValue> ToValue() const;
   std::string ToString() const;
@@ -76,6 +89,7 @@ class SYNC_EXPORT Invalidation {
 
   // A locally generated unique ID used to manage local acknowledgements.
   AckHandle ack_handle_;
+  syncer::WeakHandle<AckHandler> ack_handler_;
 };
 
 }  // namespace syncer

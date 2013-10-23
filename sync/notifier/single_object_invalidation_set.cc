@@ -9,25 +9,6 @@
 
 namespace syncer {
 
-bool InvalidationVersionLessThan::operator()(
-    const Invalidation& a,
-    const Invalidation& b) {
-  DCHECK(a.object_id() == b.object_id())
-      << "a: " << ObjectIdToString(a.object_id()) << ", "
-      << "b: " << ObjectIdToString(a.object_id());
-
-  if (a.is_unknown_version() && !b.is_unknown_version())
-    return true;
-
-  if (!a.is_unknown_version() && b.is_unknown_version())
-    return false;
-
-  if (a.is_unknown_version() && b.is_unknown_version())
-    return false;
-
-  return a.version() < b.version();
-}
-
 SingleObjectInvalidationSet::SingleObjectInvalidationSet() {}
 
 SingleObjectInvalidationSet::~SingleObjectInvalidationSet() {}

@@ -32,9 +32,16 @@ SYNC_EXPORT_PRIVATE void PrintTo(const invalidation::ObjectId& id,
 
 namespace syncer {
 
+class Invalidation;
+
 struct SYNC_EXPORT ObjectIdLessThan {
   bool operator()(const invalidation::ObjectId& lhs,
                   const invalidation::ObjectId& rhs) const;
+};
+
+struct InvalidationVersionLessThan {
+  bool operator()(const syncer::Invalidation& a,
+                  const syncer::Invalidation& b) const;
 };
 
 typedef std::set<invalidation::ObjectId, ObjectIdLessThan> ObjectIdSet;

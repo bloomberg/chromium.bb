@@ -28,6 +28,8 @@
     'notifier/invalidation_state_tracker.h',
     'notifier/invalidation_util.cc',
     'notifier/invalidation_util.h',
+    'notifier/unacked_invalidation_set.cc',
+    'notifier/unacked_invalidation_set.h',
     'notifier/invalidator.h',
     'notifier/invalidator_registrar.cc',
     'notifier/invalidator_registrar.h',

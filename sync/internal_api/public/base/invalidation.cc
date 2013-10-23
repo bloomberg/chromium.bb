@@ -19,6 +19,7 @@ const char kObjectIdKey[] = "objectId";
 const char kIsUnknownVersionKey[] = "isUnknownVersion";
 const char kVersionKey[] = "version";
 const char kPayloadKey[] = "payload";
+const int64 kInvalidVersion = -1;
 }
 
 Invalidation Invalidation::Init(
@@ -30,7 +31,14 @@ Invalidation Invalidation::Init(
 
 Invalidation Invalidation::InitUnknownVersion(
     const invalidation::ObjectId& id) {
-  return Invalidation(id, true, -1, std::string(), AckHandle::CreateUnique());
+  return Invalidation(id, true, kInvalidVersion,
+                      std::string(), AckHandle::CreateUnique());
+}
+
+Invalidation Invalidation::InitFromDroppedInvalidation(
+    const Invalidation& dropped) {
+  return Invalidation(dropped.id_, true, kInvalidVersion,
+                      std::string(), dropped.ack_handle_);
 }
 
 scoped_ptr<Invalidation> Invalidation::InitFromValue(
@@ -52,7 +60,7 @@ scoped_ptr<Invalidation> Invalidation::InitFromValue(
     return scoped_ptr<Invalidation>(new Invalidation(
         id,
         true,
-        -1,
+        kInvalidVersion,
         std::string(),
         AckHandle::CreateUnique()));
   } else {
@@ -104,6 +112,28 @@ const AckHandle& Invalidation::ack_handle() const {
 void Invalidation::set_ack_handle(const AckHandle& ack_handle) {
   ack_handle_ = ack_handle;
 }
+
+void Invalidation::set_ack_handler(syncer::WeakHandle<AckHandler> handler) {
+  ack_handler_ = handler;
+}
+
+bool Invalidation::SupportsAcknowledgement() const {
+  return ack_handler_.IsInitialized();
+}
+
+// void Invalidation::Acknowledge() const {
+//   if (SupportsAcknowledgement()) {
+//     ack_handler_.Call(FROM_HERE,
+//                       &AckHandler::Acknowledge,
+//                       id_,
+//                       ack_handle_);
+//   }
+// }
+
+// void Invalidation::Drop(DroppedInvalidationTracker* tracker) const {
+//   DCHECK(tracker->object_id() == object_id());
+//   tracker->Drop(ack_handler_, ack_handle_);
+// }
 
 bool Invalidation::Equals(const Invalidation& other) const {
   return id_ == other.id_

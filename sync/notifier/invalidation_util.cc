@@ -12,6 +12,7 @@
 #include "base/values.h"
 #include "google/cacheinvalidation/include/types.h"
 #include "google/cacheinvalidation/types.pb.h"
+#include "sync/internal_api/public/base/invalidation.h"
 
 namespace invalidation {
 void PrintTo(const invalidation::ObjectId& id, std::ostream* os) {
@@ -25,6 +26,25 @@ bool ObjectIdLessThan::operator()(const invalidation::ObjectId& lhs,
                                   const invalidation::ObjectId& rhs) const {
   return (lhs.source() < rhs.source()) ||
          (lhs.source() == rhs.source() && lhs.name() < rhs.name());
+}
+
+bool InvalidationVersionLessThan::operator()(
+    const Invalidation& a,
+    const Invalidation& b) const {
+  DCHECK(a.object_id() == b.object_id())
+      << "a: " << ObjectIdToString(a.object_id()) << ", "
+      << "b: " << ObjectIdToString(a.object_id());
+
+  if (a.is_unknown_version() && !b.is_unknown_version())
+    return true;
+
+  if (!a.is_unknown_version() && b.is_unknown_version())
+    return false;
+
+  if (a.is_unknown_version() && b.is_unknown_version())
+    return false;
+
+  return a.version() < b.version();
 }
 
 bool RealModelTypeToObjectId(ModelType model_type,
