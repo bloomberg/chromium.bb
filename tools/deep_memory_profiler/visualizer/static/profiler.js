@@ -186,8 +186,7 @@ Profiler.prototype.accumulate_ = function(
   var worldName = template[0];
   var breakdownName = template[1];
   var categories = snapshot.worlds[worldName].breakdown[breakdownName];
-  // Make deep copy of localUnits.
-  var remainderUnits = localUnits.slice(0);
+  var matchedUnitsSet = {};
   var model = {
     name: name || worldName + '-' + breakdownName,
     time: snapshot.time,
@@ -201,7 +200,9 @@ Profiler.prototype.accumulate_ = function(
 
     // Filter units.
     var matchedUnits = intersection(category.units, localUnits);
-    remainderUnits = difference(remainderUnits, matchedUnits);
+    matchedUnits.forEach(function(unit) {
+      matchedUnitsSet[unit] = unit;
+    });
 
     // Accumulate categories.
     var size = matchedUnits.reduce(function(previous, current) {
@@ -279,6 +280,12 @@ Profiler.prototype.accumulate_ = function(
       }
     }
   });
+
+  var remainderUnits = localUnits.reduce(function(previous, current) {
+    if (!(current in matchedUnitsSet))
+      previous.push(current);
+    return previous;
+  }, []);
 
   return {
     model: model,
