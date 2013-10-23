@@ -29,16 +29,17 @@
 """This file returns a list of all the IDL files that contain a partial interface."""
 
 import re
-import sys
 
-partial_interface_regex = re.compile(r'partial\s+interface\s+(\w+).+\]', re.M | re.S)
+PARTIAL_INTERFACE_RE = re.compile(r'partial\s+interface\s+(\w+)\s[^{]*\{',
+                                  re.MULTILINE)
+
+
+def contains_partial_interface(filename):
+    with open(filename) as f:
+        return bool(re.search(PARTIAL_INTERFACE_RE, f.read()))
 
 
 def DoMain(filenames):
-    partial_files = set()
-    for filename in filenames:
-        with open(filename) as f:
-            match = re.search(partial_interface_regex, f.read())
-            if match:
-                partial_files.add(filename)
-    return '\n'.join(partial_files)
+    partial_interface_filenames = [filename for filename in filenames
+                                   if contains_partial_interface(filename)]
+    return '\n'.join(partial_interface_filenames)

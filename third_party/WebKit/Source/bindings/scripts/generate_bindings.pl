@@ -88,16 +88,18 @@ if ($interfaceDependenciesFile) {
     }
     close FH;
 
-    # $additionalIdlFiles is list of IDL files which should not be included in
-    # DerivedSources*.cpp (i.e. they are not described in the interface
-    # dependencies file) but should generate .h and .cpp files.
+    # $additionalIdlFiles is for IDL files not listed in the interface
+    # dependencies file, namely generated IDL files for interfaces
+    # (not partial interfaces), so we need to generate .h and .cpp files.
     if (!$idlFound and $additionalIdlFiles) {
         my @idlFiles = shellwords($additionalIdlFiles);
         $idlFound = grep { $_ and basename($_) eq basename($targetIdlFile) } @idlFiles;
     }
 
     if (!$idlFound) {
-        # We generate empty .h and .cpp files just to tell build scripts that .h and .cpp files are created.
+        # IDL files for dependencies (partial interfaces and interfaces
+        # implemented elsewhere). We generate empty .h and .cpp files just to
+        # tell build scripts that outputs have been created.
         generateEmptyHeaderAndCpp($targetInterfaceName, $outputDirectory);
         exit 0;
     }
