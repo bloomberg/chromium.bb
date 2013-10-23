@@ -73,6 +73,20 @@ class WebrtcBrowserTest: public ContentBrowserTest {
     TitleWatcher title_watcher(shell()->web_contents(), expected_title16);
     EXPECT_EQ(expected_title16, title_watcher.WaitAndGetTitle());
   }
+
+  std::string NavigateAndGetLocalDtlsFingerprint() {
+    GURL url(embedded_test_server()->GetURL("/media/peerconnection-call.html"));
+    NavigateToURL(shell(), url);
+
+    EXPECT_TRUE(ExecuteJavascript("callWithDataOnly()"));
+    EXPECT_TRUE(ExecuteJavascript("extractLocalDtlsFingerprint()"));
+    ExpectTitle("OK");
+
+    std::string fingerprint;
+    EXPECT_TRUE(ExecuteScriptAndExtractString(
+        shell()->web_contents(), "getLocalDtlsFingerprint()", &fingerprint));
+    return fingerprint;
+  }
 };
 
 // These tests will all make a getUserMedia call with different constraints and
@@ -416,6 +430,16 @@ IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, AddTwoMediaStreamsToOnePC) {
   EXPECT_TRUE(
       ExecuteJavascript("addTwoMediaStreamsToOneConnection();"));
   ExpectTitle("OK");
+}
+
+// Verifies that the DTLS fingerprint remains the same after page reload.
+IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, DtlsCertificateCached) {
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  std::string fp1 = NavigateAndGetLocalDtlsFingerprint();
+  ASSERT_FALSE(fp1.empty());
+  std::string fp2 = NavigateAndGetLocalDtlsFingerprint();
+  ASSERT_FALSE(fp2.empty());
+  EXPECT_EQ(fp1, fp2);
 }
 
 }  // namespace content
