@@ -161,19 +161,6 @@ class FakeWebSocketStream : public WebSocketStream {
                       const std::string& extensions)
       : protocol_(protocol), extensions_(extensions) {}
 
-  virtual int SendHandshakeRequest(
-      const GURL& url,
-      const HttpRequestHeaders& headers,
-      HttpResponseInfo* response_info,
-      const CompletionCallback& callback) OVERRIDE {
-    return ERR_IO_PENDING;
-  }
-
-  virtual int ReadHandshakeResponse(
-      const CompletionCallback& callback) OVERRIDE {
-    return ERR_IO_PENDING;
-  }
-
   virtual int ReadFrames(ScopedVector<WebSocketFrame>* frames,
                          const CompletionCallback& callback) OVERRIDE {
     return ERR_IO_PENDING;
@@ -607,12 +594,6 @@ class MockWebSocketStream : public WebSocketStream {
   MOCK_CONST_METHOD0(GetSubProtocol, std::string());
   MOCK_CONST_METHOD0(GetExtensions, std::string());
   MOCK_METHOD0(AsWebSocketStream, WebSocketStream*());
-  MOCK_METHOD4(SendHandshakeRequest,
-               int(const GURL& url,
-                   const HttpRequestHeaders& headers,
-                   HttpResponseInfo* response_info,
-                   const CompletionCallback& callback));
-  MOCK_METHOD1(ReadHandshakeResponse, int(const CompletionCallback& callback));
 };
 
 struct ArgumentCopyingWebSocketStreamFactory {

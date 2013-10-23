@@ -57,22 +57,60 @@ class UseAlternateProtocolsScopedSetter {
   bool use_alternate_protocols_;
 };
 
-class MockWebSocketStream : public WebSocketStreamBase {
+class MockWebSocketHandshakeStream : public WebSocketStreamBase {
  public:
   enum StreamType {
     kStreamTypeBasic,
     kStreamTypeSpdy,
   };
 
-  explicit MockWebSocketStream(StreamType type) : type_(type) {}
+  explicit MockWebSocketHandshakeStream(StreamType type) : type_(type) {}
 
-  virtual ~MockWebSocketStream() {}
-
-  virtual WebSocketStream* AsWebSocketStream() OVERRIDE { return NULL; }
+  virtual ~MockWebSocketHandshakeStream() {}
 
   StreamType type() const {
     return type_;
   }
+
+  // HttpStreamBase methods
+  virtual int InitializeStream(const HttpRequestInfo* request_info,
+                               RequestPriority priority,
+                               const BoundNetLog& net_log,
+                               const CompletionCallback& callback) OVERRIDE {
+    return ERR_IO_PENDING;
+  }
+  virtual int SendRequest(const HttpRequestHeaders& request_headers,
+                          HttpResponseInfo* response,
+                          const CompletionCallback& callback) OVERRIDE {
+    return ERR_IO_PENDING;
+  }
+  virtual int ReadResponseHeaders(const CompletionCallback& callback) OVERRIDE {
+    return ERR_IO_PENDING;
+  }
+  virtual const HttpResponseInfo* GetResponseInfo() const OVERRIDE {
+    return NULL;
+  }
+  virtual int ReadResponseBody(IOBuffer* buf,
+                               int buf_len,
+                               const CompletionCallback& callback) OVERRIDE {
+    return ERR_IO_PENDING;
+  }
+  virtual void Close(bool not_reusable) OVERRIDE {}
+  virtual bool IsResponseBodyComplete() const OVERRIDE { return false; }
+  virtual bool CanFindEndOfResponse() const OVERRIDE { return false; }
+  virtual bool IsConnectionReused() const OVERRIDE { return false; }
+  virtual void SetConnectionReused() OVERRIDE {}
+  virtual bool IsConnectionReusable() const OVERRIDE { return false; }
+  virtual bool GetLoadTimingInfo(LoadTimingInfo* load_timing_info) const
+      OVERRIDE {
+    return false;
+  }
+  virtual void GetSSLInfo(SSLInfo* ssl_info) OVERRIDE {}
+  virtual void GetSSLCertRequestInfo(
+      SSLCertRequestInfo* cert_request_info) OVERRIDE {}
+  virtual bool IsSpdyHttpStream() const OVERRIDE { return false; }
+  virtual void Drain(HttpNetworkSession* session) OVERRIDE {}
+  virtual void SetPriority(RequestPriority priority) OVERRIDE {}
 
  private:
   const StreamType type_;
@@ -128,10 +166,9 @@ class StreamRequestWaiter : public HttpStreamRequest::Delegate {
     used_proxy_info_ = used_proxy_info;
   }
 
-  virtual void OnWebSocketStreamReady(
-      const SSLConfig& used_ssl_config,
-      const ProxyInfo& used_proxy_info,
-      WebSocketStreamBase* stream) OVERRIDE {
+  virtual void OnWebSocketStreamReady(const SSLConfig& used_ssl_config,
+                                      const ProxyInfo& used_proxy_info,
+                                      WebSocketStreamBase* stream) OVERRIDE {
     stream_done_ = true;
     if (waiting_for_stream_)
       base::MessageLoop::current()->Quit();
@@ -182,8 +219,8 @@ class StreamRequestWaiter : public HttpStreamRequest::Delegate {
     return stream_.get();
   }
 
-  MockWebSocketStream* websocket_stream() {
-    return static_cast<MockWebSocketStream*>(websocket_stream_.get());
+  MockWebSocketHandshakeStream* websocket_stream() {
+    return static_cast<MockWebSocketHandshakeStream*>(websocket_stream_.get());
   }
 
   bool stream_done() const { return stream_done_; }
@@ -199,12 +236,14 @@ class StreamRequestWaiter : public HttpStreamRequest::Delegate {
   DISALLOW_COPY_AND_ASSIGN(StreamRequestWaiter);
 };
 
-class WebSocketSpdyStream : public MockWebSocketStream {
+class WebSocketSpdyHandshakeStream : public MockWebSocketHandshakeStream {
  public:
-  explicit WebSocketSpdyStream(const base::WeakPtr<SpdySession>& spdy_session)
-      : MockWebSocketStream(kStreamTypeSpdy), spdy_session_(spdy_session) {}
+  explicit WebSocketSpdyHandshakeStream(
+      const base::WeakPtr<SpdySession>& spdy_session)
+      : MockWebSocketHandshakeStream(kStreamTypeSpdy),
+        spdy_session_(spdy_session) {}
 
-  virtual ~WebSocketSpdyStream() {}
+  virtual ~WebSocketSpdyHandshakeStream() {}
 
   SpdySession* spdy_session() { return spdy_session_.get(); }
 
@@ -212,12 +251,13 @@ class WebSocketSpdyStream : public MockWebSocketStream {
   base::WeakPtr<SpdySession> spdy_session_;
 };
 
-class WebSocketBasicStream : public MockWebSocketStream {
+class WebSocketBasicHandshakeStream : public MockWebSocketHandshakeStream {
  public:
-  explicit WebSocketBasicStream(ClientSocketHandle* connection)
-      : MockWebSocketStream(kStreamTypeBasic), connection_(connection) {}
+  explicit WebSocketBasicHandshakeStream(ClientSocketHandle* connection)
+      : MockWebSocketHandshakeStream(kStreamTypeBasic),
+        connection_(connection) {}
 
-  virtual ~WebSocketBasicStream() {
+  virtual ~WebSocketBasicHandshakeStream() {
     connection_->socket()->Disconnect();
   }
 
@@ -233,13 +273,13 @@ class WebSocketStreamFactory : public WebSocketStreamBase::Factory {
 
   virtual WebSocketStreamBase* CreateBasicStream(ClientSocketHandle* connection,
                                                  bool using_proxy) OVERRIDE {
-    return new WebSocketBasicStream(connection);
+    return new WebSocketBasicHandshakeStream(connection);
   }
 
   virtual WebSocketStreamBase* CreateSpdyStream(
       const base::WeakPtr<SpdySession>& spdy_session,
       bool use_relative_url) OVERRIDE {
-    return new WebSocketSpdyStream(spdy_session);
+    return new WebSocketSpdyHandshakeStream(spdy_session);
   }
 };
 
@@ -865,7 +905,7 @@ TEST_P(HttpStreamFactoryTest, RequestHttpStreamOverProxy) {
   EXPECT_FALSE(waiter.used_proxy_info().is_direct());
 }
 
-TEST_P(HttpStreamFactoryTest, RequestWebSocketBasicStream) {
+TEST_P(HttpStreamFactoryTest, RequestWebSocketBasicHandshakeStream) {
   SpdySessionDependencies session_deps(
       GetParam(), ProxyService::CreateDirect());
 
@@ -898,7 +938,7 @@ TEST_P(HttpStreamFactoryTest, RequestWebSocketBasicStream) {
   EXPECT_TRUE(waiter.stream_done());
   EXPECT_TRUE(NULL == waiter.stream());
   ASSERT_TRUE(NULL != waiter.websocket_stream());
-  EXPECT_EQ(MockWebSocketStream::kStreamTypeBasic,
+  EXPECT_EQ(MockWebSocketHandshakeStream::kStreamTypeBasic,
             waiter.websocket_stream()->type());
   EXPECT_EQ(0, GetSocketPoolGroupCount(
       session->GetTransportSocketPool(HttpNetworkSession::NORMAL_SOCKET_POOL)));
@@ -912,7 +952,7 @@ TEST_P(HttpStreamFactoryTest, RequestWebSocketBasicStream) {
   EXPECT_TRUE(waiter.used_proxy_info().is_direct());
 }
 
-TEST_P(HttpStreamFactoryTest, RequestWebSocketBasicStreamOverSSL) {
+TEST_P(HttpStreamFactoryTest, RequestWebSocketBasicHandshakeStreamOverSSL) {
   SpdySessionDependencies session_deps(
       GetParam(), ProxyService::CreateDirect());
 
@@ -949,7 +989,7 @@ TEST_P(HttpStreamFactoryTest, RequestWebSocketBasicStreamOverSSL) {
   EXPECT_TRUE(waiter.stream_done());
   EXPECT_TRUE(NULL == waiter.stream());
   ASSERT_TRUE(NULL != waiter.websocket_stream());
-  EXPECT_EQ(MockWebSocketStream::kStreamTypeBasic,
+  EXPECT_EQ(MockWebSocketHandshakeStream::kStreamTypeBasic,
             waiter.websocket_stream()->type());
   EXPECT_EQ(0, GetSocketPoolGroupCount(
       session->GetTransportSocketPool(HttpNetworkSession::NORMAL_SOCKET_POOL)));
@@ -963,7 +1003,7 @@ TEST_P(HttpStreamFactoryTest, RequestWebSocketBasicStreamOverSSL) {
   EXPECT_TRUE(waiter.used_proxy_info().is_direct());
 }
 
-TEST_P(HttpStreamFactoryTest, RequestWebSocketBasicStreamOverProxy) {
+TEST_P(HttpStreamFactoryTest, RequestWebSocketBasicHandshakeStreamOverProxy) {
   SpdySessionDependencies session_deps(
       GetParam(), ProxyService::CreateFixed("myproxy:8888"));
 
@@ -997,7 +1037,7 @@ TEST_P(HttpStreamFactoryTest, RequestWebSocketBasicStreamOverProxy) {
   EXPECT_TRUE(waiter.stream_done());
   EXPECT_TRUE(NULL == waiter.stream());
   ASSERT_TRUE(NULL != waiter.websocket_stream());
-  EXPECT_EQ(MockWebSocketStream::kStreamTypeBasic,
+  EXPECT_EQ(MockWebSocketHandshakeStream::kStreamTypeBasic,
             waiter.websocket_stream()->type());
   EXPECT_EQ(0, GetSocketPoolGroupCount(
       session->GetTransportSocketPool(
@@ -1072,7 +1112,7 @@ TEST_P(HttpStreamFactoryTest, RequestSpdyHttpStream) {
   EXPECT_TRUE(waiter.used_proxy_info().is_direct());
 }
 
-TEST_P(HttpStreamFactoryTest, RequestWebSocketSpdyStream) {
+TEST_P(HttpStreamFactoryTest, RequestWebSocketSpdyHandshakeStream) {
   SpdySessionDependencies session_deps(GetParam(),
                                        ProxyService::CreateDirect());
 
@@ -1110,7 +1150,7 @@ TEST_P(HttpStreamFactoryTest, RequestWebSocketSpdyStream) {
   waiter1.WaitForStream();
   EXPECT_TRUE(waiter1.stream_done());
   ASSERT_TRUE(NULL != waiter1.websocket_stream());
-  EXPECT_EQ(MockWebSocketStream::kStreamTypeSpdy,
+  EXPECT_EQ(MockWebSocketHandshakeStream::kStreamTypeSpdy,
             waiter1.websocket_stream()->type());
   EXPECT_TRUE(NULL == waiter1.stream());
 
@@ -1127,14 +1167,14 @@ TEST_P(HttpStreamFactoryTest, RequestWebSocketSpdyStream) {
   waiter2.WaitForStream();
   EXPECT_TRUE(waiter2.stream_done());
   ASSERT_TRUE(NULL != waiter2.websocket_stream());
-  EXPECT_EQ(MockWebSocketStream::kStreamTypeSpdy,
+  EXPECT_EQ(MockWebSocketHandshakeStream::kStreamTypeSpdy,
             waiter2.websocket_stream()->type());
   EXPECT_TRUE(NULL == waiter2.stream());
   EXPECT_NE(waiter2.websocket_stream(), waiter1.websocket_stream());
-  EXPECT_EQ(static_cast<WebSocketSpdyStream*>(waiter2.websocket_stream())->
-            spdy_session(),
-            static_cast<WebSocketSpdyStream*>(waiter1.websocket_stream())->
-            spdy_session());
+  EXPECT_EQ(static_cast<WebSocketSpdyHandshakeStream*>(
+                waiter2.websocket_stream())->spdy_session(),
+            static_cast<WebSocketSpdyHandshakeStream*>(
+                waiter1.websocket_stream())->spdy_session());
 
   EXPECT_EQ(0, GetSocketPoolGroupCount(
       session->GetTransportSocketPool(HttpNetworkSession::NORMAL_SOCKET_POOL)));
@@ -1201,7 +1241,7 @@ TEST_P(HttpStreamFactoryTest, OrphanedWebSocketStream) {
   EXPECT_TRUE(waiter.stream_done());
   EXPECT_TRUE(NULL == waiter.stream());
   ASSERT_TRUE(NULL != waiter.websocket_stream());
-  EXPECT_EQ(MockWebSocketStream::kStreamTypeSpdy,
+  EXPECT_EQ(MockWebSocketHandshakeStream::kStreamTypeSpdy,
             waiter.websocket_stream()->type());
 
   // Make sure that there was an alternative connection

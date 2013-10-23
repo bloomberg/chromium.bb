@@ -19,8 +19,6 @@ namespace net {
 class ClientSocketHandle;
 class DrainableIOBuffer;
 class GrowableIOBuffer;
-class HttpRequestHeaders;
-class HttpResponseInfo;
 class IOBufferWithSize;
 struct WebSocketFrame;
 struct WebSocketFrameChunk;
@@ -51,16 +49,6 @@ class NET_EXPORT_PRIVATE WebSocketBasicStream : public WebSocketStream {
   virtual std::string GetSubProtocol() const OVERRIDE;
 
   virtual std::string GetExtensions() const OVERRIDE;
-
-  // Writes WebSocket handshake request HTTP-style to the connection. Adds
-  // "Sec-WebSocket-Key" header; this should not be included in |headers|.
-  virtual int SendHandshakeRequest(const GURL& url,
-                                   const HttpRequestHeaders& headers,
-                                   HttpResponseInfo* response_info,
-                                   const CompletionCallback& callback) OVERRIDE;
-
-  virtual int ReadHandshakeResponse(
-      const CompletionCallback& callback) OVERRIDE;
 
   ////////////////////////////////////////////////////////////////////////////
   // Methods for testing only.

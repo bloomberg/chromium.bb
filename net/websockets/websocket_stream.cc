@@ -27,6 +27,4 @@ scoped_ptr<WebSocketStreamRequest> WebSocketStream::CreateAndConnectStream(
   return make_scoped_ptr(new WebSocketStreamRequest());
 }
 
-WebSocketStream* WebSocketStream::AsWebSocketStream() { return this; }
-
 }  // namespace net

@@ -21,9 +21,6 @@ class GURL;
 
 namespace net {
 
-class HttpRequestHeaders;
-class HttpResponseInfo;
-
 // WebSocketDeflateStream is a WebSocketStream subclass.
 // WebSocketDeflateStream is for permessage-deflate WebSocket extension[1].
 //
@@ -41,12 +38,6 @@ class NET_EXPORT_PRIVATE WebSocketDeflateStream : public WebSocketStream {
   virtual void Close() OVERRIDE;
   virtual std::string GetSubProtocol() const OVERRIDE;
   virtual std::string GetExtensions() const OVERRIDE;
-  virtual int SendHandshakeRequest(const GURL& url,
-                                   const HttpRequestHeaders& headers,
-                                   HttpResponseInfo* response_info,
-                                   const CompletionCallback& callback) OVERRIDE;
-  virtual int ReadHandshakeResponse(const CompletionCallback& callback)
-      OVERRIDE;
 
  private:
   enum ReadingState {

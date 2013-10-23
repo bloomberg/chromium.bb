@@ -14,15 +14,12 @@
 #include "base/memory/scoped_vector.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_export.h"
-#include "net/websockets/websocket_stream_base.h"
 
 class GURL;
 
 namespace net {
 
 class BoundNetLog;
-class HttpRequestHeaders;
-class HttpResponseInfo;
 class URLRequestContext;
 struct WebSocketFrame;
 
@@ -49,7 +46,7 @@ class NET_EXPORT_PRIVATE WebSocketStreamRequest {
 // |callback| will be called when the operation is finished. Non-null |callback|
 // must be provided to these functions.
 
-class NET_EXPORT_PRIVATE WebSocketStream : public WebSocketStreamBase {
+class NET_EXPORT_PRIVATE WebSocketStream {
  public:
   // A concrete object derived from ConnectDelegate is supplied by the caller to
   // CreateAndConnectStream() to receive the result of the connection.
@@ -155,40 +152,6 @@ class NET_EXPORT_PRIVATE WebSocketStream : public WebSocketStreamBase {
   // RFC6455 section 9.1 for the exact format specification. If no
   // extensions were negotiated, the empty string is returned.
   virtual std::string GetExtensions() const = 0;
-
-  // TODO(yutak): Add following interfaces:
-  // - RenewStreamForAuth for authentication (is this necessary?)
-  // - GetSSLInfo, GetSSLCertRequestInfo for SSL
-
-  // WebSocketStreamBase derived functions
-  virtual WebSocketStream* AsWebSocketStream() OVERRIDE;
-
-  ////////////////////////////////////////////////////////////////////////////
-  // Methods used during the stream handshake. These must not be called once a
-  // WebSocket protocol stream has been established (ie. after the
-  // SuccessCallback or FailureCallback has been called.)
-
-  // Writes WebSocket handshake request to the underlying socket. Must be called
-  // before ReadHandshakeResponse().
-  //
-  // |callback| will only be called if this method returns ERR_IO_PENDING.
-  //
-  // |response_info| must remain valid until the callback from
-  // ReadHandshakeResponse has been called.
-  //
-  // TODO(ricea): This function is only used during the handshake and is
-  // probably only applicable to certain subclasses of WebSocketStream. Move it
-  // somewhere else? Also applies to ReadHandshakeResponse.
-  virtual int SendHandshakeRequest(const GURL& url,
-                                   const HttpRequestHeaders& headers,
-                                   HttpResponseInfo* response_info,
-                                   const CompletionCallback& callback) = 0;
-
-  // Reads WebSocket handshake response from the underlying socket. Must be
-  // called after SendHandshakeRequest() completes.
-  //
-  // |callback| will only be called if this method returns ERR_IO_PENDING.
-  virtual int ReadHandshakeResponse(const CompletionCallback& callback) = 0;
 
  protected:
   WebSocketStream();

@@ -15,7 +15,6 @@
 #include "net/base/completion_callback.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
-#include "net/http/http_request_headers.h"
 #include "net/websockets/websocket_deflater.h"
 #include "net/websockets/websocket_frame.h"
 #include "net/websockets/websocket_inflater.h"
@@ -23,19 +22,15 @@
 #include "net/websockets/websocket_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "url/gurl.h"
 
 namespace net {
-
-class HttpResponseInfo;
-
 namespace {
 
-typedef testing::MockFunction<void(int)> MockCallback;  // NOLINT
-using testing::_;
-using testing::InSequence;
-using testing::Invoke;
-using testing::Return;
+typedef ::testing::MockFunction<void(int)> MockCallback;  // NOLINT
+using ::testing::_;
+using ::testing::InSequence;
+using ::testing::Invoke;
+using ::testing::Return;
 
 typedef uint32_t FrameFlag;
 const FrameFlag kNoFlag = 0;
@@ -104,11 +99,6 @@ class MockWebSocketStream : public WebSocketStream {
   MOCK_METHOD0(Close, void());
   MOCK_CONST_METHOD0(GetSubProtocol, std::string());
   MOCK_CONST_METHOD0(GetExtensions, std::string());
-  MOCK_METHOD4(SendHandshakeRequest, int(const GURL& url,
-                                         const HttpRequestHeaders& headers,
-                                         HttpResponseInfo* response_info,
-                                         const CompletionCallback& callback));
-  MOCK_METHOD1(ReadHandshakeResponse, int(const CompletionCallback& callback));
 };
 
 class WebSocketDeflateStreamTest : public ::testing::Test {

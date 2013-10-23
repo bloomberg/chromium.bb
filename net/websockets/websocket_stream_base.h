@@ -9,39 +9,39 @@
 // Since net/http can be built without linking net/websockets code,
 // this file should not depend on net/websockets.
 
-#include <base/basictypes.h>
+#include "base/basictypes.h"
+#include "base/memory/weak_ptr.h"
+#include "net/http/http_stream_base.h"
 
 namespace net {
 
 class ClientSocketHandle;
 class SpdySession;
-class WebSocketStream;
 
-// WebSocketStreamBase is the base class of WebSocketStream.
-// net/http code uses this interface to handle WebSocketStream.
-class NET_EXPORT WebSocketStreamBase {
+// WebSocketStreamBase is the base class of WebSocketBasicHandshakeStream.
+// net/http code uses this interface to handle WebSocketBasicHandshakeStream
+// when it needs to be treated differently from HttpStreamBase.
+class NET_EXPORT WebSocketStreamBase : public HttpStreamBase {
  public:
   class Factory {
    public:
     virtual ~Factory() {}
 
-    // Create a WebSocketBasicStream.
-    // This function (or the returned object) takes the ownership
-    // of |connection|.
+    // Create a WebSocketBasicHandshakeStream. This function (or the returned
+    // object) takes the ownership of |connection|. This is called after the
+    // underlying connection has been established but before any handshake data
+    // has been transferred.
     virtual WebSocketStreamBase* CreateBasicStream(
         ClientSocketHandle* connection,
         bool using_proxy) = 0;
 
-    // Create a WebSocketSpdyStream.
+    // Create a WebSocketSpdyHandshakeStream (unimplemented as of October 2013)
     virtual WebSocketStreamBase* CreateSpdyStream(
         const base::WeakPtr<SpdySession>& session,
         bool use_relative_url) = 0;
   };
 
   virtual ~WebSocketStreamBase() {}
-
-  // Return this object as a WebSocketStream.
-  virtual WebSocketStream* AsWebSocketStream() = 0;
 
  protected:
   WebSocketStreamBase() {}

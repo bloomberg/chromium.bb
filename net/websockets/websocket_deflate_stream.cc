@@ -72,9 +72,7 @@ int WebSocketDeflateStream::WriteFrames(ScopedVector<WebSocketFrame>* frames,
   return stream_->WriteFrames(frames, callback);
 }
 
-void WebSocketDeflateStream::Close() {
-  stream_->Close();
-}
+void WebSocketDeflateStream::Close() { stream_->Close(); }
 
 std::string WebSocketDeflateStream::GetSubProtocol() const {
   return stream_->GetSubProtocol();
@@ -82,23 +80,6 @@ std::string WebSocketDeflateStream::GetSubProtocol() const {
 
 std::string WebSocketDeflateStream::GetExtensions() const {
   return stream_->GetExtensions();
-}
-
-int WebSocketDeflateStream::SendHandshakeRequest(
-    const GURL& url,
-    const HttpRequestHeaders& headers,
-    HttpResponseInfo* response_info,
-    const CompletionCallback& callback) {
-  // TODO(yhirano) handshake related functions will be moved to somewhere.
-  NOTIMPLEMENTED();
-  return OK;
-}
-
-int WebSocketDeflateStream::ReadHandshakeResponse(
-    const CompletionCallback& callback) {
-  // TODO(yhirano) handshake related functions will be moved to somewhere.
-  NOTIMPLEMENTED();
-  return OK;
 }
 
 void WebSocketDeflateStream::OnReadComplete(
@@ -143,9 +124,8 @@ int WebSocketDeflateStream::Deflate(ScopedVector<WebSocketFrame>* frames) {
       current_writing_opcode_ = WebSocketFrameHeader::kOpCodeContinuation;
     } else {
       DCHECK_EQ(WRITING_COMPRESSED_MESSAGE, writing_state_);
-      if (frame->data &&
-          !deflater_.AddBytes(frame->data->data(),
-                              frame->header.payload_length)) {
+      if (frame->data && !deflater_.AddBytes(frame->data->data(),
+                                             frame->header.payload_length)) {
         DVLOG(1) << "WebSocket protocol error. "
                  << "deflater_.AddBytes() returns an error.";
         return ERR_WS_PROTOCOL_ERROR;
@@ -217,9 +197,8 @@ int WebSocketDeflateStream::Inflate(ScopedVector<WebSocketFrame>* frames) {
       frames_to_output.push_back(frame.release());
     } else {
       DCHECK_EQ(reading_state_, READING_COMPRESSED_MESSAGE);
-      if (frame->data &&
-          !inflater_.AddBytes(frame->data->data(),
-                              frame->header.payload_length)) {
+      if (frame->data && !inflater_.AddBytes(frame->data->data(),
+                                             frame->header.payload_length)) {
         DVLOG(1) << "WebSocket protocol error. "
                  << "inflater_.AddBytes() returns an error.";
         return ERR_WS_PROTOCOL_ERROR;

@@ -50,8 +50,7 @@ int CalculateSerializedSizeAndTurnOnMaskBit(
   const int kMaximumTotalSize = std::numeric_limits<int>::max();
 
   int total_size = 0;
-  for (WebSocketFrameIterator it = frames->begin();
-       it != frames->end(); ++it) {
+  for (WebSocketFrameIterator it = frames->begin(); it != frames->end(); ++it) {
     WebSocketFrame* frame = *it;
     // Force the masked bit on.
     frame->header.masked = true;
@@ -137,8 +136,7 @@ int WebSocketBasicStream::WriteFrames(ScopedVector<WebSocketFrame>* frames,
 
   char* dest = combined_buffer->data();
   int remaining_size = total_size;
-  for (WebSocketFrameIterator it = frames->begin();
-       it != frames->end(); ++it) {
+  for (WebSocketFrameIterator it = frames->begin(); it != frames->end(); ++it) {
     WebSocketFrame* frame = *it;
     WebSocketMaskingKey mask = generate_websocket_masking_key_();
     int result =
@@ -172,22 +170,6 @@ std::string WebSocketBasicStream::GetSubProtocol() const {
 }
 
 std::string WebSocketBasicStream::GetExtensions() const { return extensions_; }
-
-int WebSocketBasicStream::SendHandshakeRequest(
-    const GURL& url,
-    const HttpRequestHeaders& headers,
-    HttpResponseInfo* response_info,
-    const CompletionCallback& callback) {
-  // TODO(ricea): Implement handshake-related functionality.
-  NOTREACHED();
-  return ERR_NOT_IMPLEMENTED;
-}
-
-int WebSocketBasicStream::ReadHandshakeResponse(
-    const CompletionCallback& callback) {
-  NOTREACHED();
-  return ERR_NOT_IMPLEMENTED;
-}
 
 /*static*/
 scoped_ptr<WebSocketBasicStream>
