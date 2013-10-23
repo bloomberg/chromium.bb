@@ -5,10 +5,13 @@
 #ifndef CONTENT_SHELL_ANDROID_SHELL_DESCRIPTORS_H_
 #define CONTENT_SHELL_ANDROID_SHELL_DESCRIPTORS_H_
 
+#include "content/public/common/content_descriptors.h"
+
 // This is a list of global descriptor keys to be used with the
 // base::GlobalDescriptors object (see base/posix/global_descriptors.h)
 enum {
-  kShellPakDescriptor = 1,
+  kShellPakDescriptor = kContentIPCDescriptorMax + 1,
+  kAndroidMinidumpDescriptor,
 };
 
 #endif  // CONTENT_SHELL_ANDROID_SHELL_DESCRIPTORS_H_

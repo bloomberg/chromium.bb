@@ -18,6 +18,9 @@ const char kContentBrowserTest[] = "browser-test";
 // Makes Content Shell use the given path for its data directory.
 const char kContentShellDataPath[] = "data-path";
 
+// The directory breakpad should store minidumps in.
+const char kCrashDumpsDir[] = "crash-dumps-dir";
+
 // Request pages to be dumped as text once they finished loading.
 const char kDumpRenderTree[] = "dump-render-tree";
 

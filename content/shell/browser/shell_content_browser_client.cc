@@ -4,6 +4,7 @@
 
 #include "content/shell/browser/shell_content_browser_client.h"
 
+#include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
@@ -146,6 +147,12 @@ void ShellContentBrowserClient::AppendExtraCommandLineSwitches(
     command_line->AppendSwitch(switches::kExposeInternalsForTesting);
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kStableReleaseMode))
     command_line->AppendSwitch(switches::kStableReleaseMode);
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableCrashReporter)) {
+    command_line->AppendSwitch(switches::kEnableCrashReporter);
+  }
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kCrashDumpsDir))
+    command_line->AppendSwitch(switches::kCrashDumpsDir);
 }
 
 void ShellContentBrowserClient::OverrideWebkitPrefs(

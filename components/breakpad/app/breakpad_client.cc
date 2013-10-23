@@ -50,7 +50,7 @@ bool BreakpadClient::ShouldShowRestartDialog(base::string16* title,
 }
 
 bool BreakpadClient::AboutToRestart() {
-  return true;
+  return false;
 }
 
 bool BreakpadClient::GetDeferredUploadsSupported(bool is_per_usr_install) {
@@ -58,7 +58,7 @@ bool BreakpadClient::GetDeferredUploadsSupported(bool is_per_usr_install) {
 }
 
 bool BreakpadClient::GetIsPerUserInstall(const base::FilePath& exe_path) {
-  return false;
+  return true;
 }
 
 bool BreakpadClient::GetShouldDumpLargerDumps(bool is_per_user_install) {
@@ -100,7 +100,7 @@ size_t BreakpadClient::RegisterCrashKeys() {
 }
 
 bool BreakpadClient::IsRunningUnattended() {
-  return false;
+  return true;
 }
 
 #if defined(OS_WIN) || defined(OS_MACOSX)

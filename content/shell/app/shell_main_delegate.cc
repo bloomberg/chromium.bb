@@ -4,8 +4,10 @@
 
 #include "content/shell/app/shell_main_delegate.h"
 
+#include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "cc/base/switches.h"
@@ -13,6 +15,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/layouttest_support.h"
+#include "content/shell/app/shell_breakpad_client.h"
 #include "content/shell/app/webkit_test_platform_support.h"
 #include "content/shell/browser/shell_browser_main.h"
 #include "content/shell/browser/shell_content_browser_client.h"
@@ -52,6 +55,9 @@
 #endif
 
 namespace {
+
+base::LazyInstance<content::ShellBreakpadClient>::Leaky
+    g_shell_breakpad_client = LAZY_INSTANCE_INITIALIZER;
 
 #if defined(OS_WIN)
 // If "Content Shell" doesn't show up in your list of trace providers in
@@ -174,6 +180,10 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
 }
 
 void ShellMainDelegate::PreSandboxStartup() {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableCrashReporter)) {
+    breakpad::SetBreakpadClient(g_shell_breakpad_client.Pointer());
+  }
   InitializeResourceBundle();
 }
 

@@ -22,6 +22,8 @@ include_rules = [
 
   # For WebTestRunner library
   "+third_party/WebKit/public/testing",
+
+  "+components/breakpad",
 ]
 
 specific_include_rules = {
