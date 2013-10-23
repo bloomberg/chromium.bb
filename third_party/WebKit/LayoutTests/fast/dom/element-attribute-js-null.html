@@ -24,7 +24,14 @@
             return "the string '" + result + "'";
         }
 
-        function nullTestElementAttribute(elementType, element, attr, expected)
+        function resolve(url)
+        {
+            var a = document.createElement('a');
+            a.href = url;
+            return a.href;
+        }
+
+        function nullTestElementAttribute(elementType, element, attr, expected, isUrl)
         {
             var exceptionThrown;
             try {
@@ -41,6 +48,8 @@
             } else {
                 if (expected === 'exception')
                     result = "<span class='fail'>TEST FAILED:</span> An exception should have been thrown.";
+                else if (isUrl && element[attr] === resolve(expected))
+                    result = "<span class='pass'>TEST SUCCEEDED:</span> The value was " + resultStringifier(expected) + " resolved as a URL.";
                 else if (element[attr] === expected)
                     result = "<span class='pass'>TEST SUCCEEDED:</span> The value was " + resultStringifier(expected) + ".";
                 else
@@ -142,9 +151,9 @@
                     type: 'HTMLAudioElement',
                     elementToUse: document.createElement('audio'),
                     attributes: [
-                        {name: 'mediaGroup', expectedNull: ''},
+                        {name: 'mediaGroup', expectedNull: 'null'},
                         {name: 'preload', expectedNull: 'auto'},
-                        {name: 'src', expectedNull: ''}
+                        {name: 'src', expectedNull: 'null', isUrl: true}
                     ]
                 },
                 {
@@ -496,7 +505,7 @@
                     elementToUse: document.createElement('source'),
                     attributes: [
                         {name: 'media', expectedNull: 'null'},
-                        {name: 'src', expectedNull: ''},
+                        {name: 'src', expectedNull: 'null', isUrl:true},
                         {name: 'type', expectedNull: 'null'}
                     ]
                 },
@@ -602,7 +611,7 @@
                     attributes: [
                         {name: 'kind', expectedNull: 'subtitles'},
                         {name: 'label', expectedNull: 'null'},
-                        {name: 'src', expectedNull: ''},
+                        {name: 'src', expectedNull: 'null', isUrl:true},
                         {name: 'srclang', expectedNull: 'null'}
                     ]
                 },
@@ -617,10 +626,10 @@
                     type: 'HTMLVideoElement',
                     elementToUse: document.createElement('video'),
                     attributes: [
-                        {name: 'mediaGroup', expectedNull: ''},
-                        {name: 'poster', expectedNull: ''},
+                        {name: 'mediaGroup', expectedNull: 'null'},
+                        {name: 'poster', expectedNull: 'null', isUrl:true},
                         {name: 'preload', expectedNull: 'auto'},
-                        {name: 'src', expectedNull: ''}
+                        {name: 'src', expectedNull: 'null', isUrl: true}
                     ]
                 }
             ];
@@ -630,7 +639,7 @@
                 var elementToUse = listing[element].elementToUse;
                 var attrs = listing[element].attributes;
                 for (attr in attrs) {
-                    nullTestElementAttribute(type, elementToUse, attrs[attr].name, attrs[attr].expectedNull);
+                    nullTestElementAttribute(type, elementToUse, attrs[attr].name, attrs[attr].expectedNull, attrs[attr].isUrl);
                 }
                 printOut('');
             }

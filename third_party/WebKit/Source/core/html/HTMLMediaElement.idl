@@ -32,7 +32,7 @@
     readonly attribute MediaError error;
 
     // network state
-    [Reflect, TreatNullAs=NullString, URL] attribute DOMString src;
+    [Reflect, URL] attribute DOMString src;
     [URL] readonly attribute DOMString currentSrc;
 
     const unsigned short NETWORK_EMPTY = 0;
@@ -70,7 +70,7 @@
     void pause();
 
     // media controller
-    [Reflect, TreatNullAs=NullString] attribute DOMString mediaGroup;
+    [Reflect] attribute DOMString mediaGroup;
     [CustomSetter] attribute MediaController controller;
 
     // controls
