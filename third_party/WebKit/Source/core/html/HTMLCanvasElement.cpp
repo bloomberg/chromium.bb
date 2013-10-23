@@ -497,8 +497,11 @@ void HTMLCanvasElement::createImageBuffer()
         return;
 
     RenderingMode renderingMode = shouldAccelerate(bufferSize) ? Accelerated : UnacceleratedNonPlatformBuffer;
+    int msaaSampleCount = 0;
+    if (renderingMode == Accelerated && document().settings()->antialiased2dCanvasEnabled())
+        msaaSampleCount = document().settings()->accelerated2dCanvasMSAASampleCount();
     OpacityMode opacityMode = !m_context || m_context->hasAlpha() ? NonOpaque : Opaque;
-    m_imageBuffer = ImageBuffer::create(size(), m_deviceScaleFactor, renderingMode, opacityMode);
+    m_imageBuffer = ImageBuffer::create(size(), m_deviceScaleFactor, renderingMode, opacityMode, msaaSampleCount);
     if (!m_imageBuffer)
         return;
     setExternallyAllocatedMemory(4 * width() * height());

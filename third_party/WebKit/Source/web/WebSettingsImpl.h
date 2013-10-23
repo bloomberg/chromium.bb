@@ -49,6 +49,7 @@ public:
     virtual bool touchEditingEnabled() const;
     virtual bool viewportEnabled() const;
     virtual void setAccelerated2dCanvasEnabled(bool);
+    virtual void setAccelerated2dCanvasMSAASampleCount(int);
     virtual void setAcceleratedCompositingEnabled(bool);
     virtual void setAcceleratedCompositingFor3DTransformsEnabled(bool);
     virtual void setAcceleratedCompositingForAnimationEnabled(bool);

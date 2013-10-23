@@ -45,7 +45,7 @@ using testing::Test;
 class FakeCanvas2DLayerBridge : public Canvas2DLayerBridge {
 public:
     FakeCanvas2DLayerBridge(PassRefPtr<GraphicsContext3D> context, PassRefPtr<SkDeferredCanvas> canvas)
-        : Canvas2DLayerBridge(context, canvas, NonOpaque)
+        : Canvas2DLayerBridge(context, canvas, 0, NonOpaque)
         , m_freeableBytes(0)
         , m_freeMemoryIfPossibleCount(0)
         , m_flushCount(0)

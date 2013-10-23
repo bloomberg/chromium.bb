@@ -511,6 +511,11 @@ void WebSettingsImpl::setAccelerated2dCanvasEnabled(bool enabled)
     m_settings->setAccelerated2dCanvasEnabled(enabled);
 }
 
+void WebSettingsImpl::setAccelerated2dCanvasMSAASampleCount(int count)
+{
+    m_settings->setAccelerated2dCanvasMSAASampleCount(count);
+}
+
 void WebSettingsImpl::setAntialiased2dCanvasEnabled(bool enabled)
 {
     m_settings->setAntialiased2dCanvasEnabled(enabled);

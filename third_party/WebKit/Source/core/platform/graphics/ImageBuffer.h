@@ -85,10 +85,10 @@ class ImageBuffer {
     WTF_MAKE_NONCOPYABLE(ImageBuffer); WTF_MAKE_FAST_ALLOCATED;
 public:
     // Will return a null pointer on allocation failure.
-    static PassOwnPtr<ImageBuffer> create(const IntSize& size, float resolutionScale = 1, RenderingMode renderingMode = Unaccelerated, OpacityMode opacityMode = NonOpaque)
+    static PassOwnPtr<ImageBuffer> create(const IntSize& size, float resolutionScale = 1, RenderingMode renderingMode = Unaccelerated, OpacityMode opacityMode = NonOpaque, int acceleratedMSAASampleCount = 0)
     {
         bool success = false;
-        OwnPtr<ImageBuffer> buf = adoptPtr(new ImageBuffer(size, resolutionScale, renderingMode, opacityMode, success));
+        OwnPtr<ImageBuffer> buf = adoptPtr(new ImageBuffer(size, resolutionScale, renderingMode, opacityMode, acceleratedMSAASampleCount, success));
         if (!success)
             return nullptr;
         return buf.release();
@@ -148,7 +148,7 @@ private:
 
     // This constructor will place its success into the given out-variable
     // so that create() knows when it should return failure.
-    ImageBuffer(const IntSize&, float resolutionScale, RenderingMode, OpacityMode, bool& success);
+    ImageBuffer(const IntSize&, float resolutionScale, RenderingMode, OpacityMode, int acceleratedSampleCount, bool& success);
     ImageBuffer(const IntSize&, float resolutionScale, const GraphicsContext*, bool hasAlpha, bool& success);
 };
 

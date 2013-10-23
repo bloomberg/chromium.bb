@@ -64,13 +64,13 @@ using namespace std;
 
 namespace WebCore {
 
-static PassRefPtr<SkCanvas> createAcceleratedCanvas(const IntSize& size, Canvas2DLayerBridgePtr* outLayerBridge, OpacityMode opacityMode)
+static PassRefPtr<SkCanvas> createAcceleratedCanvas(const IntSize& size, Canvas2DLayerBridgePtr* outLayerBridge, OpacityMode opacityMode, int msaaSampleCount)
 {
     RefPtr<GraphicsContext3D> context3D = SharedGraphicsContext3D::get();
     if (!context3D)
         return 0;
     Canvas2DLayerBridge::OpacityMode bridgeOpacityMode = opacityMode == Opaque ? Canvas2DLayerBridge::Opaque : Canvas2DLayerBridge::NonOpaque;
-    *outLayerBridge = Canvas2DLayerBridge::create(context3D.release(), size, bridgeOpacityMode);
+    *outLayerBridge = Canvas2DLayerBridge::create(context3D.release(), size, bridgeOpacityMode, msaaSampleCount);
     // If canvas buffer allocation failed, debug build will have asserted
     // For release builds, we must verify whether the device has a render target
     return (*outLayerBridge) ? (*outLayerBridge)->getCanvas() : 0;
@@ -122,13 +122,13 @@ ImageBuffer::ImageBuffer(const IntSize& size, float resolutionScale, const Graph
     success = true;
 }
 
-ImageBuffer::ImageBuffer(const IntSize& size, float resolutionScale, RenderingMode renderingMode, OpacityMode opacityMode, bool& success)
+ImageBuffer::ImageBuffer(const IntSize& size, float resolutionScale, RenderingMode renderingMode, OpacityMode opacityMode, int acceleratedSampleCount, bool& success)
     : m_size(size)
     , m_logicalSize(size)
     , m_resolutionScale(resolutionScale)
 {
     if (renderingMode == Accelerated) {
-        m_canvas = createAcceleratedCanvas(size, &m_layerBridge, opacityMode);
+        m_canvas = createAcceleratedCanvas(size, &m_layerBridge, opacityMode, acceleratedSampleCount);
         if (!m_canvas)
             renderingMode = UnacceleratedNonPlatformBuffer;
     }

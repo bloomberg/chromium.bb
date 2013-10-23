@@ -61,7 +61,7 @@ public:
     }
 protected:
     FakeCanvas2DLayerBridge(PassRefPtr<GraphicsContext3D> context, PassRefPtr<SkDeferredCanvas> canvas, OpacityMode opacityMode) :
-        Canvas2DLayerBridge(context, canvas, opacityMode)
+        Canvas2DLayerBridge(context, canvas, 0, opacityMode)
     { }
 };
 

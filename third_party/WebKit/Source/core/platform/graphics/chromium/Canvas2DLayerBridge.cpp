@@ -59,7 +59,7 @@ Canvas2DLayerBridgePtr& Canvas2DLayerBridgePtr::operator=(const PassRefPtr<Canva
     return *this;
 }
 
-static SkSurface* createSurface(GraphicsContext3D* context3D, const IntSize& size)
+static SkSurface* createSurface(GraphicsContext3D* context3D, const IntSize& size, int msaaSampleCount)
 {
     ASSERT(!context3D->webContext()->isContextLost());
     GrContext* gr = context3D->grContext();
@@ -71,24 +71,25 @@ static SkSurface* createSurface(GraphicsContext3D* context3D, const IntSize& siz
     info.fHeight = size.height();
     info.fColorType = SkImage::kPMColor_ColorType;
     info.fAlphaType = kPremul_SkAlphaType;
-    return SkSurface::NewRenderTarget(gr, info);
+    return SkSurface::NewRenderTarget(gr, info,  msaaSampleCount);
 }
 
-PassRefPtr<Canvas2DLayerBridge> Canvas2DLayerBridge::create(PassRefPtr<GraphicsContext3D> context, const IntSize& size, OpacityMode opacityMode)
+PassRefPtr<Canvas2DLayerBridge> Canvas2DLayerBridge::create(PassRefPtr<GraphicsContext3D> context, const IntSize& size, OpacityMode opacityMode, int msaaSampleCount)
 {
     TRACE_EVENT_INSTANT0("test_gpu", "Canvas2DLayerBridgeCreation");
-    SkAutoTUnref<SkSurface> surface(createSurface(context.get(), size));
+    SkAutoTUnref<SkSurface> surface(createSurface(context.get(), size, msaaSampleCount));
     if (!surface.get()) {
         return PassRefPtr<Canvas2DLayerBridge>();
     }
     RefPtr<SkDeferredCanvas> canvas = adoptRef(SkDeferredCanvas::Create(surface.get()));
-    RefPtr<Canvas2DLayerBridge> layerBridge = adoptRef(new Canvas2DLayerBridge(context, canvas.release(), opacityMode));
+    RefPtr<Canvas2DLayerBridge> layerBridge = adoptRef(new Canvas2DLayerBridge(context, canvas.release(), msaaSampleCount, opacityMode));
     return layerBridge.release();
 }
 
-Canvas2DLayerBridge::Canvas2DLayerBridge(PassRefPtr<GraphicsContext3D> context, PassRefPtr<SkDeferredCanvas> canvas, OpacityMode opacityMode)
+Canvas2DLayerBridge::Canvas2DLayerBridge(PassRefPtr<GraphicsContext3D> context, PassRefPtr<SkDeferredCanvas> canvas, int msaaSampleCount, OpacityMode opacityMode)
     : m_canvas(canvas)
     , m_context(context)
+    , m_msaaSampleCount(msaaSampleCount)
     , m_bytesAllocated(0)
     , m_didRecordDrawCommand(false)
     , m_surfaceIsValid(true)
@@ -257,7 +258,7 @@ bool Canvas2DLayerBridge::isValid()
         } else {
             m_context = sharedContext;
             IntSize size(m_canvas->getTopDevice()->width(), m_canvas->getTopDevice()->height());
-            SkAutoTUnref<SkSurface> surface(createSurface(m_context.get(), size));
+            SkAutoTUnref<SkSurface> surface(createSurface(m_context.get(), size, m_msaaSampleCount));
             if (surface.get()) {
                 m_canvas->setSurface(surface.get());
                 m_surfaceIsValid = true;
