@@ -219,6 +219,7 @@ RendererWebKitPlatformSupportImpl::RendererWebKitPlatformSupportImpl()
     sync_message_filter_ = ChildThread::current()->sync_message_filter();
     thread_safe_sender_ = ChildThread::current()->thread_safe_sender();
     quota_message_filter_ = ChildThread::current()->quota_message_filter();
+    blob_registry_.reset(new WebBlobRegistryImpl(thread_safe_sender_));
   }
 }
 
@@ -844,9 +845,7 @@ void RendererWebKitPlatformSupportImpl::screenColorProfile(
 //------------------------------------------------------------------------------
 
 WebBlobRegistry* RendererWebKitPlatformSupportImpl::blobRegistry() {
-  // thread_safe_sender_ can be NULL when running some tests.
-  if (!blob_registry_.get() && thread_safe_sender_.get())
-    blob_registry_.reset(new WebBlobRegistryImpl(thread_safe_sender_.get()));
+  // blob_registry_ can be NULL when running some tests.
   return blob_registry_.get();
 }
 

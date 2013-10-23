@@ -83,6 +83,8 @@ WorkerWebKitPlatformSupportImpl::WorkerWebKitPlatformSupportImpl(
       child_thread_loop_(base::MessageLoopProxy::current()),
       sync_message_filter_(sync_message_filter),
       quota_message_filter_(quota_message_filter) {
+  if (sender)
+    blob_registry_.reset(new WebBlobRegistryImpl(sender));
 }
 
 WorkerWebKitPlatformSupportImpl::~WorkerWebKitPlatformSupportImpl() {
@@ -275,8 +277,6 @@ WebString WorkerWebKitPlatformSupportImpl::mimeTypeFromFile(
 }
 
 WebBlobRegistry* WorkerWebKitPlatformSupportImpl::blobRegistry() {
-  if (!blob_registry_.get() && thread_safe_sender_.get())
-    blob_registry_.reset(new WebBlobRegistryImpl(thread_safe_sender_.get()));
   return blob_registry_.get();
 }
 
