@@ -52,7 +52,7 @@ FillLayer::FillLayer(EFillLayerType type)
     , m_repeatX(FillLayer::initialFillRepeatX(type))
     , m_repeatY(FillLayer::initialFillRepeatY(type))
     , m_composite(FillLayer::initialFillComposite(type))
-    , m_sizeType(FillLayer::initialFillSizeType(type))
+    , m_sizeType(SizeNone) // SizeNone indicates size is unset.
     , m_blendMode(FillLayer::initialFillBlendMode(type))
     , m_maskSourceType(FillLayer::initialFillMaskSourceType(type))
     , m_imageSet(false)

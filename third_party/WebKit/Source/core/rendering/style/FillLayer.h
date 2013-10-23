@@ -183,7 +183,7 @@ public:
     static EFillRepeat initialFillRepeatY(EFillLayerType) { return RepeatFill; }
     static CompositeOperator initialFillComposite(EFillLayerType) { return CompositeSourceOver; }
     static BlendMode initialFillBlendMode(EFillLayerType) { return BlendModeNormal; }
-    static EFillSizeType initialFillSizeType(EFillLayerType) { return SizeNone; }
+    static EFillSizeType initialFillSizeType(EFillLayerType) { return SizeLength; }
     static LengthSize initialFillSizeLength(EFillLayerType) { return LengthSize(); }
     static FillSize initialFillSize(EFillLayerType type) { return FillSize(initialFillSizeType(type), initialFillSizeLength(type)); }
     static Length initialFillXPosition(EFillLayerType) { return Length(0.0, Percent); }
