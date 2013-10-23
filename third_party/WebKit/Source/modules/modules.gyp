@@ -50,5 +50,21 @@
     ],
     # Disable c4267 warnings until we fix size_t to int truncations.
     'msvs_disabled_warnings': [ 4267, 4334, ]
+  },
+  {
+    'target_name': 'modules_test_support',
+    'type': 'static_library',
+    'dependencies': [
+      '../config.gyp:config',
+      '../core/core.gyp:webcore',
+    ],
+    'defines': [
+      'BLINK_IMPLEMENTATION=1',
+      'INSIDE_BLINK',
+    ],
+    'sources': [
+      '<@(modules_testing_support_files)',
+    ],
+
   }],
 }

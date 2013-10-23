@@ -775,6 +775,13 @@
       'websockets/WorkerThreadableWebSocketChannel.cpp',
       'websockets/WorkerThreadableWebSocketChannel.h',
     ],
+    'modules_testing_support_idl_files' : [
+      'vibration/testing/InternalsVibration.idl',
+    ],
+    'modules_testing_support_files': [
+      'vibration/testing/InternalsVibration.cpp',
+      'vibration/testing/InternalsVibration.h',
+    ],
     'modules_unittest_files': [
       'indexeddb/IDBDatabaseTest.cpp',
       'indexeddb/IDBKeyPathTest.cpp',

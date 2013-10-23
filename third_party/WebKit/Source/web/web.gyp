@@ -79,6 +79,7 @@
                     'dependencies': [
                         '../core/core.gyp:webcore_derived',
                         '../core/core.gyp:webcore_test_support',
+                        '../modules/modules.gyp:modules_test_support',
                         '<(DEPTH)/base/base.gyp:test_support_base',
                         '<(DEPTH)/testing/gmock.gyp:gmock',
                         '<(DEPTH)/testing/gtest.gyp:gtest',
@@ -250,6 +251,7 @@
                     'type': 'static_library',
                     'dependencies': [
                         '../core/core.gyp:webcore_test_support',
+                        '../modules/modules.gyp:modules_test_support',
                         '../wtf/wtf.gyp:wtf',
                         '<(DEPTH)/skia/skia.gyp:skia',
                     ],
