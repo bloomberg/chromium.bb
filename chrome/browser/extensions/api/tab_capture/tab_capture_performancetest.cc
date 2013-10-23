@@ -128,9 +128,7 @@ class TabCapturePerformanceTest
     command_line->AppendSwitch(switches::kDisableTestCompositor);
 
     if (!HasFlag(kUseGpu)) {
-      command_line->AppendSwitch(switches::kDisableAcceleratedCompositing);
-      command_line->AppendSwitch(switches::kDisableExperimentalWebGL);
-      command_line->AppendSwitch(switches::kDisableAccelerated2dCanvas);
+      command_line->AppendSwitch(switches::kDisableGpu);
     } else {
       command_line->AppendSwitch(switches::kForceCompositingMode);
     }
@@ -216,7 +214,6 @@ class TabCapturePerformanceTest
                                    "frame_time");
     EXPECT_TRUE(sw_frames || gpu_frames);
     EXPECT_NE(sw_frames, gpu_frames);
-    EXPECT_EQ(gpu_frames, HasFlag(kUseGpu));
 
     // This prints out the average time between capture events.
     // As the capture frame rate is capped at 30fps, this score
@@ -230,16 +227,7 @@ class TabCapturePerformanceTest
 
 }  // namespace
 
-
-// This does not work on Aura and Mac GPU bots yet
-// http://crbug.com/308236
-#if defined(USE_AURA) || defined(OS_MACOSX)
-#define MAYBE_Performance DISABLED_Performance
-#else
-#define MAYBE_Performance Performance
-#endif
-
-IN_PROC_BROWSER_TEST_P(TabCapturePerformanceTest, MAYBE_Performance) {
+IN_PROC_BROWSER_TEST_P(TabCapturePerformanceTest, Performance) {
   RunTest("TabCapturePerformance");
 }
 

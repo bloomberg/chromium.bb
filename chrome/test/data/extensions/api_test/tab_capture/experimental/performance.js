@@ -35,6 +35,11 @@ function TestStream(stream) {
     // Run for 10 seconds.
     if (new Date().getTime() - start_time > 10000) {
       chrome.test.succeed();
+      // Note that the API testing framework might not terminate if we keep
+      // animating and capturing, so we have to make sure that we stop doing
+      // that here.
+      stream.stop();
+      return;
     }
     requestAnimationFrame(draw);
     frame = frame + 1;
