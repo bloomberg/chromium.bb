@@ -54,7 +54,7 @@ public:
     void cancel();
     double currentTime() const;
     void setCurrentTime(double);
-    bool paused() const { return !isNull(m_pauseStartTime); }
+    bool paused() const { return !m_isPausedForTesting && pausedInternal(); }
     void setPaused(bool);
     double playbackRate() const { return m_playbackRate; }
     void setPlaybackRate(double);
@@ -63,11 +63,19 @@ public:
     DocumentTimeline* timeline() { return m_timeline; }
     TimedItem* source() { return m_content.get(); }
 
+    // Pausing via this method is not reflected in the value returned by
+    // paused() and must never overlap with pausing via setPaused().
+    void pauseForTesting();
+    // Reflects all pausing, including via pauseForTesting().
+    bool pausedInternal() const { return !isNull(m_pauseStartTime); }
+
 private:
     Player(DocumentTimeline*, TimedItem*);
     static double effectiveTime(double time) { return isNull(time) ? 0 : time; }
     inline double pausedTimeDrift() const;
     inline double currentTimeBeforeDrift() const;
+
+    void setPausedImpl(bool);
 
     double m_pauseStartTime;
     double m_playbackRate;
@@ -76,6 +84,7 @@ private:
 
     RefPtr<TimedItem> m_content;
     DocumentTimeline* const m_timeline;
+    bool m_isPausedForTesting;
 };
 
 } // namespace

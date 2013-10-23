@@ -93,7 +93,7 @@ double DocumentTimeline::currentTime()
 void DocumentTimeline::pauseAnimationsForTesting(double pauseTime)
 {
     for (size_t i = 0; i < m_players.size(); i++) {
-        m_players[i]->setPaused(true);
+        m_players[i]->pauseForTesting();
         m_players[i]->setCurrentTime(pauseTime);
     }
 }

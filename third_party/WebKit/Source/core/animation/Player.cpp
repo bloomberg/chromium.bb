@@ -50,6 +50,7 @@ Player::Player(DocumentTimeline* timeline, TimedItem* content)
     , m_startTime(effectiveTime(timeline->currentTime()))
     , m_content(content)
     , m_timeline(timeline)
+    , m_isPausedForTesting(false)
 {
     ASSERT(m_startTime >= 0);
     if (m_content)
@@ -70,13 +71,13 @@ double Player::currentTimeBeforeDrift() const
 
 double Player::pausedTimeDrift() const
 {
-    ASSERT(paused());
+    ASSERT(pausedInternal());
     return currentTimeBeforeDrift() - m_pauseStartTime;
 }
 
 double Player::timeDrift() const
 {
-    return paused() ? pausedTimeDrift() : m_timeDrift;
+    return pausedInternal() ? pausedTimeDrift() : m_timeDrift;
 }
 
 double Player::currentTime() const
@@ -111,7 +112,7 @@ void Player::cancel()
 
 void Player::setCurrentTime(double seekTime)
 {
-    if (paused())
+    if (pausedInternal())
         m_pauseStartTime = seekTime;
     else
         m_timeDrift = currentTimeBeforeDrift() - seekTime;
@@ -119,9 +120,22 @@ void Player::setCurrentTime(double seekTime)
     update();
 }
 
+void Player::pauseForTesting()
+{
+    ASSERT(!paused());
+    m_isPausedForTesting = true;
+    setPausedImpl(true);
+}
+
 void Player::setPaused(bool newValue)
 {
-    if (paused() == newValue)
+    ASSERT(!m_isPausedForTesting);
+    setPausedImpl(newValue);
+}
+
+void Player::setPausedImpl(bool newValue)
+{
+    if (pausedInternal() == newValue)
         return;
 
     if (newValue)
