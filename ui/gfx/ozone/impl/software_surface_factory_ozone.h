@@ -37,6 +37,8 @@ class SoftwareSurfaceFactoryOzone : public SurfaceFactoryOzone {
 
   virtual bool SchedulePageFlip(gfx::AcceleratedWidget w) OVERRIDE;
 
+  virtual SkCanvas* GetCanvasForWidget(gfx::AcceleratedWidget w) OVERRIDE;
+
   virtual gfx::VSyncProvider* GetVSyncProvider(
       gfx::AcceleratedWidget w) OVERRIDE;
 

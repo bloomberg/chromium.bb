@@ -183,8 +183,7 @@ gfx::AcceleratedWidget SoftwareSurfaceFactoryOzone::RealizeAcceleratedWidget(
     return gfx::kNullAcceleratedWidget;
   }
 
-  return reinterpret_cast<gfx::AcceleratedWidget>(
-      controller_->get_surface()->GetDrawableForWidget());
+  return reinterpret_cast<gfx::AcceleratedWidget>(controller_->get_surface());
 }
 
 bool SoftwareSurfaceFactoryOzone::LoadEGLGLES2Bindings() {
@@ -227,6 +226,12 @@ bool SoftwareSurfaceFactoryOzone::SchedulePageFlip(gfx::AcceleratedWidget w) {
   WaitForPageFlipEvent(drm_->get_fd());
 
   return true;
+}
+
+SkCanvas* SoftwareSurfaceFactoryOzone::GetCanvasForWidget(
+    gfx::AcceleratedWidget w) {
+  CHECK(state_ == INITIALIZED);
+  return reinterpret_cast<SoftwareSurfaceOzone*>(w)->GetDrawableForWidget();
 }
 
 gfx::VSyncProvider* SoftwareSurfaceFactoryOzone::GetVSyncProvider(
