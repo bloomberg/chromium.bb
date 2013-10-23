@@ -469,12 +469,18 @@ class XcodeSettings(object):
     if self._Test('CLANG_ENABLE_OBJC_ARC', 'YES', default='NO'):
       flags.append('-fobjc-arc')
 
+  def _AddObjectiveCMissingPropertySynthesisFlags(self, flags):
+    if self._Test('CLANG_WARN_OBJC_MISSING_PROPERTY_SYNTHESIS',
+                  'YES', default='NO'):
+      flags.append('-Wobjc-missing-property-synthesis')
+
   def GetCflagsObjC(self, configname):
     """Returns flags that need to be added to .m compilations."""
     self.configname = configname
     cflags_objc = []
     self._AddObjectiveCGarbageCollectionFlags(cflags_objc)
     self._AddObjectiveCARCFlags(cflags_objc)
+    self._AddObjectiveCMissingPropertySynthesisFlags(cflags_objc)
     self.configname = None
     return cflags_objc
 
@@ -484,6 +490,7 @@ class XcodeSettings(object):
     cflags_objcc = []
     self._AddObjectiveCGarbageCollectionFlags(cflags_objcc)
     self._AddObjectiveCARCFlags(cflags_objcc)
+    self._AddObjectiveCMissingPropertySynthesisFlags(cflags_objcc)
     if self._Test('GCC_OBJC_CALL_CXX_CDTORS', 'YES', default='NO'):
       cflags_objcc.append('-fobjc-call-cxx-cdtors')
     self.configname = None
