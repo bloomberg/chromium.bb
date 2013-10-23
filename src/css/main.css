@@ -63,7 +63,7 @@ body .scrollbar-track .scrollbar-thumb:active {
   width: 8px;
 }
 
-button {
+button:empty {
   outline: none;
 }
 
@@ -519,10 +519,11 @@ body.browser #browser {
 
 #browser img {
   border: 10px solid white;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
   display: -webkit-box;
+  margin: 4%;
   pointer-events: auto;
   transition: -webkit-transform 200ms;
-  margin: 4%;
   width: 72%;
 }
 
@@ -619,5 +620,55 @@ body.expanded #tooltip.visible {
   -webkit-transform: translateY(0);
   transition: opacity 500ms 500ms, -webkit-transform 500ms 500ms;
   opacity: 1;
+}
+
+#dialog {
+  -webkit-box-align: center;
+  -webkit-box-pack: center;
+  background: rgba(0, 0, 0, 0.8);
+  bottom: 0;
+  display: -webkit-box;
+  left: 0;
+  opacity: 1;
+  position: absolute;
+  right: 0;
+  top: 0;
+  transition: opacity 200ms;
+  z-index: 1;
+}
+
+body:not(.dialog) #dialog {
+  opacity: 0;
+  pointer-events: none;
+}
+
+#dialog #dialog-popup {
+  -webkit-transform: translateY(20px);
+  -webkit-box-orient: vertical;
+  background: white;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+  padding: 20px;
+  display: -webkit-box;
+  transition: -webkit-transform 200ms;
+}
+
+body.dialog #dialog #dialog-popup {
+  -webkit-transform: translateY(0);
+}
+
+#dialog #dialog-msg {
+  font-size: 120%;
+  padding: 20px 0;
+}
+
+#dialog #dialog-buttons {
+  -webkit-box-align: center;
+  -webkit-box-orient: horizontal;
+  -webkit-box-pack: end;
+  display: -webkit-box;
+}
+
+#dialog #dialog-buttons button {
+  padding: 5px 20px;
 }
 

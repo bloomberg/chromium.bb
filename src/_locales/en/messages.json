@@ -134,6 +134,22 @@
   "backButton": {
     "message": "Go back",
     "description": "Label for the back button."
+  },
+  "dialogYesButton": {
+    "message": "Yes",
+    "description": "Label for the accepting button in the confirmation dialog."
+  },
+  "dialogNoButton": {
+    "message": "No",
+    "description": "Label for the dismissing button in the confirmation dialog."
+  },
+  "dialogOKButton": {
+    "message": "OK",
+    "description": "Label for the OK button in the alert dialog."
+  },
+  "deleteConfirmationMsg": {
+    "message": "Do you really want to remove this picture from the gallery?",
+    "description": "Confirmation message before removing a picture from the gallery."
   }
 }
 
