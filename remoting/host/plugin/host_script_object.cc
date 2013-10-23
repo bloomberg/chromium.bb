@@ -93,122 +93,15 @@ const char* kSupportedFeatures = "pairingRegistry";
 
 }  // namespace
 
-// Internal implementation of the plugin's It2Me host function.
-class HostNPScriptObject::It2MeImpl
-    : public base::RefCountedThreadSafe<It2MeImpl>,
-      public HostStatusObserver {
- public:
-  It2MeImpl(
-      scoped_ptr<ChromotingHostContext> context,
-      scoped_refptr<base::SingleThreadTaskRunner> plugin_task_runner,
-      base::WeakPtr<HostNPScriptObject> script_object,
-      const XmppSignalStrategy::XmppServerConfig& xmpp_server_config,
-      const std::string& directory_bot_jid);
-
-  // Methods called by the script object, from the plugin thread.
-
-  // Creates It2Me host structures and starts the host.
-  void Connect();
-
-  // Disconnects the host, ready for tear-down.
-  // Also called internally, from the network thread.
-  void Disconnect();
-
-  // Request a NAT policy notification.
-  void RequestNatPolicy();
-
-  // remoting::HostStatusObserver implementation.
-  virtual void OnAccessDenied(const std::string& jid) OVERRIDE;
-  virtual void OnClientAuthenticated(const std::string& jid) OVERRIDE;
-  virtual void OnClientDisconnected(const std::string& jid) OVERRIDE;
-
- private:
-  friend class base::RefCountedThreadSafe<It2MeImpl>;
-
-  virtual ~It2MeImpl();
-
-  // Updates state of the host. Can be called only on the network thread.
-  void SetState(State state);
-
-  // Returns true if the host is connected.
-  bool IsConnected() const;
-
-  // Called by Connect() to check for policies and start connection process.
-  void ReadPolicyAndConnect();
-
-  // Called by ReadPolicyAndConnect once policies have been read.
-  void FinishConnect();
-
-  // Called when the support host registration completes.
-  void OnReceivedSupportID(bool success,
-                           const std::string& support_id,
-                           const base::TimeDelta& lifetime);
-
-  // Shuts down |host_| on the network thread and posts ShutdownOnUiThread()
-  // to shut down UI thread resources.
-  void ShutdownOnNetworkThread();
-
-  // Shuts down |desktop_environment_factory_| and |policy_watcher_| on
-  // the UI thread.
-  void ShutdownOnUiThread();
-
-  // Called when initial policies are read, and when they change.
-  void OnPolicyUpdate(scoped_ptr<base::DictionaryValue> policies);
-
-  // Handlers for NAT traversal and host domain policies.
-  void UpdateNatPolicy(bool nat_traversal_enabled);
-  void UpdateHostDomainPolicy(const std::string& host_domain);
-
-  // Caller supplied fields.
-  scoped_ptr<ChromotingHostContext> host_context_;
-  scoped_refptr<base::SingleThreadTaskRunner> plugin_task_runner_;
-  base::WeakPtr<HostNPScriptObject> script_object_;
-  XmppSignalStrategy::XmppServerConfig xmpp_server_config_;
-  std::string directory_bot_jid_;
-
-  State state_;
-
-  scoped_refptr<RsaKeyPair> host_key_pair_;
-  scoped_ptr<SignalStrategy> signal_strategy_;
-  scoped_ptr<RegisterSupportHostRequest> register_request_;
-  scoped_ptr<LogToServer> log_to_server_;
-  scoped_ptr<DesktopEnvironmentFactory> desktop_environment_factory_;
-  scoped_ptr<HostEventLogger> host_event_logger_;
-
-  scoped_ptr<ChromotingHost> host_;
-  int failed_login_attempts_;
-
-  scoped_ptr<policy_hack::PolicyWatcher> policy_watcher_;
-
-  // Host the current nat traversal policy setting.
-  bool nat_traversal_enabled_;
-
-  // The host domain policy setting.
-  std::string required_host_domain_;
-
-  // Indicates whether or not a policy has ever been read. This is to ensure
-  // that on startup, we do not accidentally start a connection before we have
-  // queried our policy restrictions.
-  bool policy_received_;
-
-  // On startup, it is possible to have Connect() called before the policy read
-  // is completed.  Rather than just failing, we thunk the connection call so
-  // it can be executed after at least one successful policy read. This
-  // variable contains the thunk if it is necessary.
-  base::Closure pending_connect_;
-
-  DISALLOW_COPY_AND_ASSIGN(It2MeImpl);
-};
-
-HostNPScriptObject::It2MeImpl::It2MeImpl(
+It2MeImpl::It2MeImpl(
     scoped_ptr<ChromotingHostContext> host_context,
     scoped_refptr<base::SingleThreadTaskRunner> plugin_task_runner,
-    base::WeakPtr<HostNPScriptObject> script_object,
+    base::WeakPtr<It2MeImpl::Observer> observer,
     const XmppSignalStrategy::XmppServerConfig& xmpp_server_config,
     const std::string& directory_bot_jid)
   : host_context_(host_context.Pass()),
     plugin_task_runner_(plugin_task_runner),
-    script_object_(script_object),
+    observer_(observer),
     xmpp_server_config_(xmpp_server_config),
     directory_bot_jid_(directory_bot_jid),
     state_(kDisconnected),
@@ -218,7 +111,7 @@ HostNPScriptObject::It2MeImpl::It2MeImpl(
   DCHECK(plugin_task_runner_->BelongsToCurrentThread());
 }
 
-void HostNPScriptObject::It2MeImpl::Connect() {
+void It2MeImpl::Connect() {
   if (!host_context_->ui_task_runner()->BelongsToCurrentThread()) {
     DCHECK(plugin_task_runner_->BelongsToCurrentThread());
     host_context_->ui_task_runner()->PostTask(
@@ -242,7 +135,7 @@ void HostNPScriptObject::It2MeImpl::Connect() {
       FROM_HERE, base::Bind(&It2MeImpl::ReadPolicyAndConnect, this));
 }
 
-void HostNPScriptObject::It2MeImpl::Disconnect() {
+void It2MeImpl::Disconnect() {
   if (!host_context_->network_task_runner()->BelongsToCurrentThread()) {
     DCHECK(plugin_task_runner_->BelongsToCurrentThread());
     host_context_->network_task_runner()->PostTask(
@@ -282,7 +175,7 @@ void HostNPScriptObject::It2MeImpl::Disconnect() {
   }
 }
 
-void HostNPScriptObject::It2MeImpl::RequestNatPolicy() {
+void It2MeImpl::RequestNatPolicy() {
   if (!host_context_->network_task_runner()->BelongsToCurrentThread()) {
     DCHECK(plugin_task_runner_->BelongsToCurrentThread());
     host_context_->network_task_runner()->PostTask(
@@ -294,7 +187,7 @@ void HostNPScriptObject::It2MeImpl::RequestNatPolicy() {
     UpdateNatPolicy(nat_traversal_enabled_);
 }
 
-void HostNPScriptObject::It2MeImpl::ReadPolicyAndConnect() {
+void It2MeImpl::ReadPolicyAndConnect() {
   DCHECK(host_context_->network_task_runner()->BelongsToCurrentThread());
 
   SetState(kStarting);
@@ -310,7 +203,7 @@ void HostNPScriptObject::It2MeImpl::ReadPolicyAndConnect() {
   }
 }
 
-void HostNPScriptObject::It2MeImpl::FinishConnect() {
+void It2MeImpl::FinishConnect() {
   DCHECK(host_context_->network_task_runner()->BelongsToCurrentThread());
 
   if (state_ != kStarting) {
@@ -399,7 +292,7 @@ void HostNPScriptObject::It2MeImpl::FinishConnect() {
   return;
 }
 
-void HostNPScriptObject::It2MeImpl::ShutdownOnNetworkThread() {
+void It2MeImpl::ShutdownOnNetworkThread() {
   DCHECK(host_context_->network_task_runner()->BelongsToCurrentThread());
   DCHECK(state_ == kDisconnecting || state_ == kDisconnected);
 
@@ -418,7 +311,7 @@ void HostNPScriptObject::It2MeImpl::ShutdownOnNetworkThread() {
       FROM_HERE, base::Bind(&It2MeImpl::ShutdownOnUiThread, this));
 }
 
-void HostNPScriptObject::It2MeImpl::ShutdownOnUiThread() {
+void It2MeImpl::ShutdownOnUiThread() {
   DCHECK(host_context_->ui_task_runner()->BelongsToCurrentThread());
 
   // Destroy the DesktopEnvironmentFactory, to free thread references.
@@ -433,7 +326,7 @@ void HostNPScriptObject::It2MeImpl::ShutdownOnUiThread() {
   }
 }
 
-void HostNPScriptObject::It2MeImpl::OnAccessDenied(const std::string& jid) {
+void It2MeImpl::OnAccessDenied(const std::string& jid) {
   DCHECK(host_context_->network_task_runner()->BelongsToCurrentThread());
 
   ++failed_login_attempts_;
@@ -442,7 +335,7 @@ void HostNPScriptObject::It2MeImpl::OnAccessDenied(const std::string& jid) {
   }
 }
 
-void HostNPScriptObject::It2MeImpl::OnClientAuthenticated(
+void It2MeImpl::OnClientAuthenticated(
     const std::string& jid) {
   DCHECK(host_context_->network_task_runner()->BelongsToCurrentThread());
 
@@ -468,25 +361,20 @@ void HostNPScriptObject::It2MeImpl::OnClientAuthenticated(
 
   // Pass the client user name to the script object before changing state.
   plugin_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&HostNPScriptObject::StoreClientUsername,
-                            script_object_, client_username));
+      FROM_HERE, base::Bind(&It2MeImpl::Observer::OnClientAuthenticated,
+                            observer_, client_username));
 
   SetState(kConnected);
 }
 
-void HostNPScriptObject::It2MeImpl::OnClientDisconnected(
+void It2MeImpl::OnClientDisconnected(
     const std::string& jid) {
   DCHECK(host_context_->network_task_runner()->BelongsToCurrentThread());
-
-  // Pass the client user name to the script object before changing state.
-  plugin_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&HostNPScriptObject::StoreClientUsername,
-                            script_object_, std::string()));
 
   Disconnect();
 }
 
-void HostNPScriptObject::It2MeImpl::OnPolicyUpdate(
+void It2MeImpl::OnPolicyUpdate(
     scoped_ptr<base::DictionaryValue> policies) {
   DCHECK(host_context_->network_task_runner()->BelongsToCurrentThread());
 
@@ -509,7 +397,7 @@ void HostNPScriptObject::It2MeImpl::OnPolicyUpdate(
   }
 }
 
-void HostNPScriptObject::It2MeImpl::UpdateNatPolicy(
+void It2MeImpl::UpdateNatPolicy(
     bool nat_traversal_enabled) {
   DCHECK(host_context_->network_task_runner()->BelongsToCurrentThread());
 
@@ -525,11 +413,11 @@ void HostNPScriptObject::It2MeImpl::UpdateNatPolicy(
 
   // Notify the web-app of the policy setting.
   plugin_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&HostNPScriptObject::NotifyNatPolicyChanged,
-                            script_object_, nat_traversal_enabled_));
+      FROM_HERE, base::Bind(&It2MeImpl::Observer::OnNatPolicyChanged,
+                            observer_, nat_traversal_enabled_));
 }
 
-void HostNPScriptObject::It2MeImpl::UpdateHostDomainPolicy(
+void It2MeImpl::UpdateHostDomainPolicy(
     const std::string& host_domain) {
   DCHECK(host_context_->network_task_runner()->BelongsToCurrentThread());
 
@@ -543,13 +431,13 @@ void HostNPScriptObject::It2MeImpl::UpdateHostDomainPolicy(
   required_host_domain_ = host_domain;
 }
 
-HostNPScriptObject::It2MeImpl::~It2MeImpl() {
+It2MeImpl::~It2MeImpl() {
   // Check that resources that need to be torn down on the UI thread are gone.
   DCHECK(!desktop_environment_factory_.get());
   DCHECK(!policy_watcher_.get());
 }
 
-void HostNPScriptObject::It2MeImpl::SetState(State state) {
+void It2MeImpl::SetState(It2MeHostState state) {
   DCHECK(host_context_->network_task_runner()->BelongsToCurrentThread());
 
   switch (state_) {
@@ -593,16 +481,16 @@ void HostNPScriptObject::It2MeImpl::SetState(State state) {
 
   // Post a state-change notification to the web-app.
   plugin_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&HostNPScriptObject::NotifyStateChanged,
-                            script_object_, state));
+      FROM_HERE, base::Bind(&It2MeImpl::Observer::OnStateChanged,
+                            observer_, state));
 }
 
-bool HostNPScriptObject::It2MeImpl::IsConnected() const {
+bool It2MeImpl::IsConnected() const {
   return state_ == kRequestedAccessCode || state_ == kReceivedAccessCode ||
       state_ == kConnected;
 }
 
-void HostNPScriptObject::It2MeImpl::OnReceivedSupportID(
+void It2MeImpl::OnReceivedSupportID(
     bool success,
     const std::string& support_id,
     const base::TimeDelta& lifetime) {
@@ -632,8 +520,8 @@ void HostNPScriptObject::It2MeImpl::OnReceivedSupportID(
 
   // Pass the Access Code to the script object before changing state.
   plugin_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&HostNPScriptObject::StoreAccessCode,
-                            script_object_, access_code, lifetime));
+      FROM_HERE, base::Bind(&It2MeImpl::Observer::OnStoreAccessCode,
+                            observer_, access_code, lifetime));
 
   SetState(kReceivedAccessCode);
 }
@@ -1426,10 +1314,13 @@ bool HostNPScriptObject::StopDaemon(const NPVariant* args,
   return true;
 }
 
-void HostNPScriptObject::NotifyStateChanged(State state) {
+void HostNPScriptObject::OnStateChanged(It2MeHostState state) {
   DCHECK(plugin_task_runner_->BelongsToCurrentThread());
 
   state_ = state;
+
+  if (state_ == kDisconnected)
+    client_username_.clear();
 
   if (on_state_changed_func_.get()) {
     NPVariant state_var;
@@ -1438,7 +1329,7 @@ void HostNPScriptObject::NotifyStateChanged(State state) {
   }
 }
 
-void HostNPScriptObject::NotifyNatPolicyChanged(bool nat_traversal_enabled) {
+void HostNPScriptObject::OnNatPolicyChanged(bool nat_traversal_enabled) {
   DCHECK(plugin_task_runner_->BelongsToCurrentThread());
 
   if (on_nat_traversal_policy_changed_func_.get()) {
@@ -1450,8 +1341,8 @@ void HostNPScriptObject::NotifyNatPolicyChanged(bool nat_traversal_enabled) {
 }
 
 // Stores the Access Code for the web-app to query.
-void HostNPScriptObject::StoreAccessCode(const std::string& access_code,
-                                         base::TimeDelta access_code_lifetime) {
+void HostNPScriptObject::OnStoreAccessCode(
+    const std::string& access_code, base::TimeDelta access_code_lifetime) {
   DCHECK(plugin_task_runner_->BelongsToCurrentThread());
 
   access_code_ = access_code;
@@ -1459,7 +1350,7 @@ void HostNPScriptObject::StoreAccessCode(const std::string& access_code,
 }
 
 // Stores the client user's name for the web-app to query.
-void HostNPScriptObject::StoreClientUsername(
+void HostNPScriptObject::OnClientAuthenticated(
     const std::string& client_username) {
   DCHECK(plugin_task_runner_->BelongsToCurrentThread());
 
