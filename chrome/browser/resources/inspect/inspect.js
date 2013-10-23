@@ -431,10 +431,14 @@ function addWebViewThumbnail(row, webview, screenWidth, screenHeight) {
   var thumbnail = document.createElement('div');
   thumbnail.className = 'webview-thumbnail';
   var thumbnailWidth = 3 * screenRectWidth;
+  var thumbnailHeight = 60;
   thumbnail.style.width = thumbnailWidth + 'px';
+  thumbnail.style.height = thumbnailHeight + 'px';
 
   var screenRect = document.createElement('div');
   screenRect.className = 'screen-rect';
+  screenRect.style.left = screenRectWidth + 'px';
+  screenRect.style.top = (thumbnailHeight - screenRectHeight) / 2 + 'px';
   screenRect.style.width = screenRectWidth + 'px';
   screenRect.style.height = screenRectHeight + 'px';
   thumbnail.appendChild(screenRect);
@@ -462,6 +466,7 @@ function addTargetToList(data, list, properties) {
   row.className = 'row';
 
   var subrowBox = document.createElement('div');
+  subrowBox.className = 'subrow-box';
   row.appendChild(subrowBox);
 
   var subrow = document.createElement('div');

@@ -17,7 +17,7 @@ img {
   height: 16px;
   padding-left: 2px;
   padding-right: 5px;
-  position: absolute;
+  vertical-align: top;
   width: 16px;
 }
 
@@ -139,10 +139,13 @@ img {
 }
 
 .row {
-  -webkit-flex-direction: row;
-  display: -webkit-flex;
   padding: 6px 0;
   position: relative;
+}
+
+.subrow-box {
+  display: inline-block;
+  vertical-align: top;
 }
 
 .subrow {
@@ -154,23 +157,17 @@ img {
   margin-right: 0.5em;
 }
 
-.subrow.main {
-  margin-left: 21px;
-}
-
 .webview-thumbnail {
-  -webkit-box-align: center;
-  -webkit-box-orient: horizontal;
-  -webkit-box-pack: center;
-  display: -webkit-box;
-  height: 60px;
-  margin: 0 1px;
+  display: inline-block;
+  margin-right: 5px;
   overflow: hidden;
+  position: relative;
+  vertical-align: top;
 }
 
 .screen-rect {
   background-color: #eee;
-  position: relative;
+  position: absolute;
 }
 
 .view-rect {
@@ -184,12 +181,7 @@ img {
   background-color: #ddd;
 }
 
-#apps-list > .row {
-  -webkit-flex-direction: column;
-}
-
 .guest {
-  -webkit-flex-direction: row;
   padding-left: 20px;
 }
 
