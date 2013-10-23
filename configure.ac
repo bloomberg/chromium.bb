@@ -87,6 +87,9 @@ fi
 AC_PATH_PROG(XSLTPROC, xsltproc)
 AM_CONDITIONAL([HAVE_XSLTPROC], [test "x$XSLTPROC" != "x"])
 
+AC_PATH_PROG(XMLLINT, xmllint)
+AM_CONDITIONAL([HAVE_XMLLINT], [test "x$XMLLINT" != "x"])
+
 AC_MSG_CHECKING([for docbook manpages stylesheet])
 MANPAGES_STYLESHEET=http://docbook.sourceforge.net/release/xsl/current/manpages/docbook.xsl
 AC_PATH_PROGS_FEATURE_CHECK([XSLTPROC_TMP], [xsltproc],
