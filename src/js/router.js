@@ -12,16 +12,26 @@ var camera = camera || {};
 /**
  * Creates the Router object, used to navigate between views.
  *
- * @param {function(camera.View}) callback Callback to be called, when a view
- *     switch is requested. This callback should perform the switch.
+ * @param {function(camera.Router.ViewIdentifier, Object=)} navigateCallback
+ *     Callback to be called, when a view switch is requested. An optional
+ *     argument for the view may be specified.
+ * @param {function(Object=)} backCallback Callback to be called, when the
+ *     current view is requested to be closed. An optional argument acting
+ *     as a return value passed to the previous view can be passed.
  * @constructor
  */
-camera.Router = function(callback) {
+camera.Router = function(navigateCallback, backCallback) {
   /**
-   * @param function()
+   * @param {function(camera.Router.ViewIdentifier, Object=}}
    * @private
    */
-  this.callback_ = callback;
+  this.navigateCallback_ = navigateCallback;
+
+  /**
+   * @param {function(Object=)}
+   * @private
+   */
+  this.backCallback_ = backCallback;
 
   // End of properties. Freeze the object.
   Object.freeze(this);
@@ -39,10 +49,22 @@ camera.Router.ViewIdentifier = {
 
 /**
  * Switches to the specified view.
- * @param {camera.Router.ViewIdentifier} viewIdentifier View
- *     identifier.
+ *
+ * @param {camera.Router.ViewIdentifier} viewIdentifier View identifier.
+ * @param {Object=} opt_argument Optional arguments for the new view.
+ * @param {function(Object=)=} opt_callback Optional result callback.
  */
-camera.Router.prototype.switchView = function(viewIdentifier) {
-  this.callback_(viewIdentifier);
+camera.Router.prototype.navigate = function(
+    viewIdentifier, opt_arguments, opt_callback) {
+  this.navigateCallback_(viewIdentifier, opt_arguments, opt_callback);
+};
+
+/**
+ * Closes the current view and returns an optional return value to the previous
+ * view.
+ * @param {Object=} opt_result Optional result.
+ */
+camera.Router.prototype.back = function(opt_result) {
+  this.backCallback_(opt_result);
 };
 

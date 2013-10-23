@@ -151,7 +151,7 @@ camera.views.Browser.prototype.onResize = function() {
  * @private
  */
 camera.views.Browser.prototype.onBackgroundClicked_ = function(event) {
-  this.router.switchView(camera.Router.ViewIdentifier.GALLERY);
+  this.router.back();
 };
 
 /**
@@ -373,7 +373,7 @@ camera.views.Browser.prototype.onKeyPressed = function(event) {
       this.exportSelection_();
       break;
     case 'U+001B':
-      this.router.switchView(camera.Router.ViewIdentifier.GALLERY);
+      this.router.back();
       break;
   }
 };

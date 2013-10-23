@@ -66,6 +66,9 @@ camera.views.Gallery = function(context, router) {
   // Listen for clicking on the delete button.
   document.querySelector('#gallery-delete').addEventListener(
       'click', this.onDeleteButtonClicked_.bind(this));
+
+  document.querySelector('#corner-buttons .gallery-switch').addEventListener(
+      'click', this.router.back.bind(this.router));
 };
 
 /**
@@ -336,10 +339,10 @@ camera.views.Gallery.prototype.onKeyPressed = function(event) {
       break;
     case 'Enter':
       if (this.model_.length)
-        this.router.switchView(camera.Router.ViewIdentifier.BROWSER);
+        this.router.navigate(camera.Router.ViewIdentifier.BROWSER);
       break;
     case 'U+001B':
-      this.router.switchView(camera.Router.ViewIdentifier.CAMERA);
+      this.router.back();
       break;
   }
 };
@@ -372,7 +375,7 @@ camera.views.Gallery.prototype.addPictureToDOM_ = function(picture) {
   }.bind(this));
 
   img.addEventListener('dblclick', function() {
-    this.router.switchView(camera.Router.ViewIdentifier.BROWSER);
+    this.router.navigate(camera.Router.ViewIdentifier.BROWSER);
   }.bind(this));
 };
 
