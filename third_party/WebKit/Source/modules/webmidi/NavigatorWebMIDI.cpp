@@ -76,8 +76,7 @@ PassRefPtr<MIDIAccessPromise> NavigatorWebMIDI::requestMIDIAccess(const Dictiona
     ExecutionContext* context = frame()->document();
     ASSERT(context);
 
-    RefPtr<MIDIAccessPromise> promise = MIDIAccessPromise::create(context, options);
-    return promise;
+    return MIDIAccessPromise::create(context, options);
 }
 
 } // namespace WebCore

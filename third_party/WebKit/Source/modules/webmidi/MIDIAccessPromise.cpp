@@ -58,14 +58,22 @@ MIDIAccessPromise::~MIDIAccessPromise()
     stop();
 }
 
+void MIDIAccessPromise::clear()
+{
+    ASSERT(m_state == Invoked);
+    m_access.clear();
+    m_error.clear();
+    m_options.clear();
+}
+
 void MIDIAccessPromise::fulfill()
 {
     if (m_state == Pending) {
         if (m_successCallback) {
             m_state = Invoked;
-            ASSERT(m_access.get());
-            m_successCallback->handleEvent(m_access.release().leakRef(), m_options->sysex);
-            m_options.clear();
+            ASSERT(m_access);
+            m_successCallback->handleEvent(m_access.get(), m_options->sysex);
+            clear();
         } else {
             m_state = Accepted;
         }
@@ -80,7 +88,8 @@ void MIDIAccessPromise::reject(PassRefPtr<DOMError> error)
     if (m_state == Pending) {
         if (m_errorCallback) {
             m_state = Invoked;
-            m_errorCallback->handleEvent(error.leakRef());
+            m_errorCallback->handleEvent(error.get());
+            clear();
         } else {
             m_state = Rejected;
             m_error = error;
@@ -101,13 +110,14 @@ void MIDIAccessPromise::then(PassRefPtr<MIDISuccessCallback> successCallback, Pa
 
     switch (m_state) {
     case Accepted:
-        successCallback->handleEvent(m_access.release().leakRef(), m_options->sysex);
-        m_options.clear();
         m_state = Invoked;
+        successCallback->handleEvent(m_access.get(), m_options->sysex);
+        clear();
         break;
     case Rejected:
-        errorCallback->handleEvent(m_error.release().leakRef());
         m_state = Invoked;
+        errorCallback->handleEvent(m_error.get());
+        clear();
         break;
     case Pending:
         m_successCallback = successCallback;

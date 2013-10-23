@@ -766,11 +766,6 @@ crbug.com/309369 perf/accessibility-title-ui-element.html [ Pass Timeout ]
 crbug.com/309370 [ Mac ] fast/css/font-face-html-as-svg.html [ Timeout ]
 crbug.com/310292 [ SnowLeopard ] http/tests/security/video-poster-cross-origin-crash.html [ Failure Pass ]
 
-crbug.com/256226 [ Debug ] webmidi/requestmidiaccess.html [ Crash Pass ]
-crbug.com/282079 [ Debug ] webmidi/requestmidiaccess-basic.html [ Crash Pass ]
-crbug.com/282079 [ Debug ] webmidi/requestmidiaccess-fail.html [ Crash Pass ]
-crbug.com/282079 [ Debug ] webmidi/permission.html [ Crash Pass ]
-
 crbug.com/310323 [ Debug ] http/tests/plugins/third-party-cookie-accept-policy.html [ Crash Pass ]
 crbug.com/310323 [ Debug ] http/tests/security/contentSecurityPolicy/report-multiple-violations-02.html [ Crash Pass ]
 

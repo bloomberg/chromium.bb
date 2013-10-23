@@ -70,6 +70,8 @@ private:
 
     MIDIAccessPromise(ExecutionContext*, const Dictionary&);
 
+    void clear();
+
     State m_state;
     RefPtr<MIDISuccessCallback> m_successCallback;
     RefPtr<MIDIErrorCallback> m_errorCallback;

@@ -48,7 +48,6 @@ public:
         MIDIPortTypeOutput
     };
 
-    static PassRefPtr<MIDIPort> create(ExecutionContext*, const String& id, const String& manufacturer, const String& name, MIDIPortTypeCode, const String& version);
     virtual ~MIDIPort();
 
     String id() const { return m_id; }
