@@ -163,12 +163,11 @@ void FakeAPIUtil::DownloadFile(const std::string& resource_id,
     error = google_apis::HTTP_SUCCESS;
   }
 
-  scoped_ptr<webkit_blob::ScopedFile> dummy_local_file(
-      new webkit_blob::ScopedFile);
+  webkit_blob::ScopedFile dummy;
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
       base::Bind(callback, error, file_md5, file_size, updated_time,
-                 base::Passed(&dummy_local_file)));
+                 base::Passed(&dummy)));
 }
 
 void FakeAPIUtil::UploadNewFile(const std::string& directory_resource_id,

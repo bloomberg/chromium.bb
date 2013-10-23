@@ -64,7 +64,7 @@ void DownloadVersionCallbackAdapter(
     const DriveFileSyncService::DownloadVersionCallback& download_callback,
     const SyncStatusCallback& completion_callback,
     SyncStatusCode status,
-    scoped_ptr<webkit_blob::ScopedFile> downloaded) {
+    webkit_blob::ScopedFile downloaded) {
   completion_callback.Run(status);
   download_callback.Run(status, downloaded.Pass());
 }
@@ -707,8 +707,7 @@ void DriveFileSyncService::DoDownloadRemoteVersion(
   DriveMetadata metadata;
   if (metadata_store_->ReadEntry(url, &metadata) != SYNC_STATUS_OK) {
     // The conflict may have been already resolved.
-    callback.Run(SYNC_FILE_ERROR_NOT_FOUND,
-                 scoped_ptr<webkit_blob::ScopedFile>());
+    callback.Run(SYNC_FILE_ERROR_NOT_FOUND, webkit_blob::ScopedFile());
     return;
   }
 
@@ -724,7 +723,7 @@ void DriveFileSyncService::DidDownloadVersion(
     const std::string& file_md5,
     int64 file_size,
     const base::Time& last_updated,
-    scoped_ptr<webkit_blob::ScopedFile> downloaded) {
+    webkit_blob::ScopedFile downloaded) {
   SyncStatusCode status = GDataErrorCodeToSyncStatusCodeWrapper(error);
   download_callback.Run(status, downloaded.Pass());
 }

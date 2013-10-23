@@ -207,7 +207,7 @@ void RemoteSyncDelegate::DidDownloadFile(
     const std::string& md5_checksum,
     int64 file_size,
     const base::Time& updated_time,
-    scoped_ptr<webkit_blob::ScopedFile> downloaded_file) {
+    webkit_blob::ScopedFile downloaded_file) {
   if (error == google_apis::HTTP_NOT_MODIFIED) {
     sync_action_ = SYNC_ACTION_NONE;
     DidApplyRemoteChange(callback, SYNC_STATUS_OK);
@@ -228,7 +228,7 @@ void RemoteSyncDelegate::DidDownloadFile(
     return;
   }
 
-  temporary_file_ = downloaded_file->Pass();
+  temporary_file_ = downloaded_file.Pass();
   drive_metadata_.set_md5_checksum(md5_checksum);
   remote_change_processor()->ApplyRemoteChange(
       remote_file_change(), temporary_file_.path(), url(),

@@ -61,7 +61,7 @@ class RemoteSyncDelegate : public base::SupportsWeakPtr<RemoteSyncDelegate> {
                        const std::string& md5_checksum,
                        int64 file_size,
                        const base::Time& updated_time,
-                       scoped_ptr<webkit_blob::ScopedFile> downloaded_file);
+                       webkit_blob::ScopedFile downloaded_file);
   void HandleConflict(const SyncStatusCallback& callback,
                       SyncFileType remote_file_type);
   void HandleLocalWin(const SyncStatusCallback& callback);

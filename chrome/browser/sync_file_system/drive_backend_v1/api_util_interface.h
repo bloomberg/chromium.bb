@@ -51,7 +51,7 @@ class APIUtilInterface {
                               const std::string& file_md5,
                               int64 file_size,
                               const base::Time& last_updated,
-                              scoped_ptr<webkit_blob::ScopedFile> downloaded)>
+                              webkit_blob::ScopedFile downloaded)>
       DownloadFileCallback;
   typedef base::Callback<void(google_apis::GDataErrorCode error,
                               const std::string& resource_id,

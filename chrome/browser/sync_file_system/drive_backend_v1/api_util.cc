@@ -742,7 +742,7 @@ void APIUtil::DidGetTemporaryFileForDownload(
     DVLOG(2) << "Error in creating a temp file under "
              << temp_dir_path_.value();
     callback.Run(google_apis::GDATA_FILE_ERROR, std::string(), 0, base::Time(),
-                 local_file.Pass());
+                 local_file->Pass());
     return;
   }
   drive_service_->GetResourceEntry(
@@ -766,8 +766,7 @@ void APIUtil::DownloadFileInternal(
 
   if (error != google_apis::HTTP_SUCCESS) {
     DVLOG(2) << "Error on getting resource entry for download";
-    callback.Run(error, std::string(), 0, base::Time(),
-                 local_file.Pass());
+    callback.Run(error, std::string(), 0, base::Time(), local_file->Pass());
     return;
   }
   DCHECK(entry);
@@ -779,7 +778,7 @@ void APIUtil::DownloadFileInternal(
                  local_file_md5,
                  entry->file_size(),
                  entry->updated_time(),
-                 local_file.Pass());
+                 local_file->Pass());
     return;
   }
 
@@ -810,7 +809,7 @@ void APIUtil::DidDownloadFile(scoped_ptr<google_apis::ResourceEntry> entry,
 
   callback.Run(
       error, entry->file_md5(), entry->file_size(), entry->updated_time(),
-      local_file.Pass());
+      local_file->Pass());
 }
 
 void APIUtil::DidUploadNewFile(const std::string& parent_resource_id,

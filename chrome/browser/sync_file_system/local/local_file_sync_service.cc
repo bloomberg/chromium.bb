@@ -35,7 +35,7 @@ void PrepareForProcessRemoteChangeCallbackAdapter(
     const RemoteChangeProcessor::PrepareChangeCallback& callback,
     SyncStatusCode status,
     const LocalFileSyncInfo& sync_file_info,
-    scoped_ptr<webkit_blob::ScopedFile> snapshot) {
+    webkit_blob::ScopedFile snapshot) {
   callback.Run(status, sync_file_info.metadata, sync_file_info.changes);
 }
 
@@ -362,7 +362,7 @@ void LocalFileSyncService::RunLocalSyncCallback(
 void LocalFileSyncService::DidGetFileForLocalSync(
     SyncStatusCode status,
     const LocalFileSyncInfo& sync_file_info,
-    scoped_ptr<webkit_blob::ScopedFile> snapshot) {
+    webkit_blob::ScopedFile snapshot) {
   DCHECK(!local_sync_callback_.is_null());
   if (status != SYNC_STATUS_OK) {
     RunLocalSyncCallback(status, sync_file_info.url);
@@ -391,7 +391,7 @@ void LocalFileSyncService::DidGetFileForLocalSync(
 }
 
 void LocalFileSyncService::ProcessNextChangeForURL(
-    scoped_ptr<webkit_blob::ScopedFile> snapshot,
+    webkit_blob::ScopedFile snapshot,
     const LocalFileSyncInfo& sync_file_info,
     const FileChange& processed_change,
     const FileChangeList& changes,

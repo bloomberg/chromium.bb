@@ -122,14 +122,14 @@ class LocalFileSyncContextTest : public testing::Test {
                          webkit_blob::ScopedFile* snapshot_out,
                          SyncStatusCode status,
                          const LocalFileSyncInfo& sync_file_info,
-                         scoped_ptr<webkit_blob::ScopedFile> snapshot) {
+                         webkit_blob::ScopedFile snapshot) {
     ASSERT_TRUE(ui_task_runner_->RunsTasksOnCurrentThread());
     has_inflight_prepare_for_sync_ = false;
     status_ = status;
     *metadata_out = sync_file_info.metadata;
     *changes_out = sync_file_info.changes;
-    if (snapshot_out && snapshot)
-      *snapshot_out = snapshot->Pass();
+    if (snapshot_out)
+      *snapshot_out = snapshot.Pass();
     base::MessageLoop::current()->Quit();
   }
 

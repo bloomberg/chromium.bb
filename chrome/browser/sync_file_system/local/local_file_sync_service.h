@@ -183,9 +183,9 @@ class LocalFileSyncService
   void DidGetFileForLocalSync(
       SyncStatusCode status,
       const LocalFileSyncInfo& sync_file_info,
-      scoped_ptr<webkit_blob::ScopedFile> snapshot);
+      webkit_blob::ScopedFile snapshot);
   void ProcessNextChangeForURL(
-      scoped_ptr<webkit_blob::ScopedFile> snapshot,
+      webkit_blob::ScopedFile snapshot,
       const LocalFileSyncInfo& sync_file_info,
       const FileChange& last_change,
       const FileChangeList& changes,

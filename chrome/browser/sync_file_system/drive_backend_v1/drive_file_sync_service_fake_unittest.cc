@@ -101,9 +101,9 @@ void DidDownloadRemoteVersion(
     SyncStatusCode* status_out,
     webkit_blob::ScopedFile* downloaded_out,
     SyncStatusCode status,
-    scoped_ptr<webkit_blob::ScopedFile> downloaded) {
+    webkit_blob::ScopedFile downloaded) {
   *status_out = status;
-  *downloaded_out = downloaded->Pass();
+  *downloaded_out = downloaded.Pass();
 }
 
 void ExpectEqStatus(bool* done,

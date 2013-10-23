@@ -62,7 +62,7 @@ class LocalFileSyncContext
   typedef base::Callback<void(
       SyncStatusCode status,
       const LocalFileSyncInfo& sync_file_info,
-      scoped_ptr<webkit_blob::ScopedFile> snapshot)>
+      webkit_blob::ScopedFile snapshot)>
           LocalFileSyncInfoCallback;
 
   typedef base::Callback<void(SyncStatusCode status,
@@ -256,7 +256,7 @@ class LocalFileSyncContext
       const LocalFileSyncInfoCallback& callback,
       SyncStatusCode status,
       const LocalFileSyncInfo& sync_file_info,
-      scoped_ptr<webkit_blob::ScopedFile> snapshot);
+      webkit_blob::ScopedFile snapshot);
 
   // Callback routine for PrepareForSync and GetFileForLocalSync.
   void DidGetWritingStatusForSync(

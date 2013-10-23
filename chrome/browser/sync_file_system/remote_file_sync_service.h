@@ -104,7 +104,7 @@ class RemoteFileSyncService {
                               const std::vector<Version>& versions)>
       RemoteVersionsCallback;
   typedef base::Callback<void(SyncStatusCode status,
-                              scoped_ptr<webkit_blob::ScopedFile> downloaded)>
+                              webkit_blob::ScopedFile downloaded)>
       DownloadVersionCallback;
 
   RemoteFileSyncService() {}

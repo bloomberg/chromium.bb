@@ -365,9 +365,9 @@ void DidDownloadFile(Output* output,
                      const std::string& file_md5,
                      int64 file_size,
                      const base::Time& updated_time,
-                     scoped_ptr<webkit_blob::ScopedFile> file) {
+                     webkit_blob::ScopedFile file) {
   ASSERT_TRUE(output);
-  ASSERT_TRUE(base::PathExists(file->path()));
+  ASSERT_TRUE(base::PathExists(file.path()));
   output->error = error;
   output->file_md5 = file_md5;
 }

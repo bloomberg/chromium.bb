@@ -667,13 +667,13 @@ void LocalFileSyncContext::TryPrepareForLocalSync(
 
   if (shutdown_on_ui_) {
     callback.Run(SYNC_STATUS_ABORT, LocalFileSyncInfo(),
-                 scoped_ptr<webkit_blob::ScopedFile>());
+                 webkit_blob::ScopedFile());
     return;
   }
 
   if (urls->empty()) {
     callback.Run(SYNC_STATUS_NO_CHANGE_TO_SYNC, LocalFileSyncInfo(),
-                 scoped_ptr<webkit_blob::ScopedFile>());
+                 webkit_blob::ScopedFile());
     return;
   }
 
@@ -695,7 +695,7 @@ void LocalFileSyncContext::DidTryPrepareForLocalSync(
     const LocalFileSyncInfoCallback& callback,
     SyncStatusCode status,
     const LocalFileSyncInfo& sync_file_info,
-    scoped_ptr<webkit_blob::ScopedFile> snapshot) {
+    webkit_blob::ScopedFile snapshot) {
   DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
   if (status != SYNC_STATUS_FILE_BUSY) {
     callback.Run(status, sync_file_info, snapshot.Pass());
@@ -718,7 +718,7 @@ void LocalFileSyncContext::DidGetWritingStatusForSync(
     DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
     if (shutdown_on_ui_) {
       callback.Run(SYNC_STATUS_ABORT, LocalFileSyncInfo(),
-                   scoped_ptr<webkit_blob::ScopedFile>());
+                   webkit_blob::ScopedFile());
       return;
     }
     file_system_context->default_file_task_runner()->PostTask(
@@ -749,17 +749,17 @@ void LocalFileSyncContext::DidGetWritingStatusForSync(
       &file_info,
       &platform_path);
 
-  scoped_ptr<webkit_blob::ScopedFile> snapshot;
+  webkit_blob::ScopedFile snapshot;
   if (file_error == base::PLATFORM_FILE_OK && sync_mode == SYNC_SNAPSHOT) {
     base::FilePath snapshot_path;
     file_util::CreateTemporaryFileInDir(local_base_path_.Append(kSnapshotDir),
                                         &snapshot_path);
     if (base::CopyFile(platform_path, snapshot_path)) {
       platform_path = snapshot_path;
-      snapshot.reset(new webkit_blob::ScopedFile(
+      snapshot = webkit_blob::ScopedFile(
           snapshot_path,
           webkit_blob::ScopedFile::DELETE_ON_SCOPE_OUT,
-          file_system_context->default_file_task_runner()));
+          file_system_context->default_file_task_runner());
     }
   }
 

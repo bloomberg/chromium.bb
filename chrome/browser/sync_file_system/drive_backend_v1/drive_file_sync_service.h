@@ -229,7 +229,7 @@ class DriveFileSyncService : public RemoteFileSyncService,
       const std::string& file_md5,
       int64 file_size,
       const base::Time& last_updated,
-      scoped_ptr<webkit_blob::ScopedFile> downloaded);
+      webkit_blob::ScopedFile downloaded);
 
   void UpdateRegisteredOrigins();
 
