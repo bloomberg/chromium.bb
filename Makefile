@@ -46,6 +46,7 @@ SRC_RESOURCES= \
 	src/js/effects/newspaper.js \
 	src/js/effects/normal.js \
 	src/js/effects/pinch.js \
+	src/js/effects/retro.js \
 	src/js/effects/sepia.js \
 	src/js/effects/swirl.js \
 	src/js/effects/tilt-shift.js \
