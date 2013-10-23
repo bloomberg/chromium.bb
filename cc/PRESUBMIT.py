@@ -196,4 +196,8 @@ def CheckChangeOnUpload(input_api, output_api):
 def GetPreferredTrySlaves(project, change):
   return [
     'linux_layout_rel',
+    'win_gpu',
+    'linux_gpu',
+    'mac_gpu',
+    'mac_gpu_retina',
     ]
