@@ -54,7 +54,7 @@ class MockAudioOutputControllerSyncReader
   MockAudioOutputControllerSyncReader() {}
 
   MOCK_METHOD1(UpdatePendingBytes, void(uint32 bytes));
-  MOCK_METHOD3(Read, int(bool block, const AudioBus* source, AudioBus* dest));
+  MOCK_METHOD2(Read, void(const AudioBus* source, AudioBus* dest));
   MOCK_METHOD0(Close, void());
 
  private:
@@ -84,10 +84,10 @@ ACTION_P(SignalEvent, event) {
 
 static const float kBufferNonZeroData = 1.0f;
 ACTION(PopulateBuffer) {
-  arg2->Zero();
+  arg1->Zero();
   // Note: To confirm the buffer will be populated in these tests, it's
   // sufficient that only the first float in channel 0 is set to the value.
-  arg2->channel(0)[0] = kBufferNonZeroData;
+  arg1->channel(0)[0] = kBufferNonZeroData;
 }
 
 class AudioOutputControllerTest : public testing::Test {
@@ -142,10 +142,9 @@ class AudioOutputControllerTest : public testing::Test {
     // sent from the render process.
     EXPECT_CALL(mock_sync_reader_, UpdatePendingBytes(_))
         .Times(AtLeast(1));
-    EXPECT_CALL(mock_sync_reader_, Read(_, _, _))
+    EXPECT_CALL(mock_sync_reader_, Read(_, _))
         .WillRepeatedly(DoAll(PopulateBuffer(),
-                              SignalEvent(&read_event_),
-                              Return(params_.frames_per_buffer())));
+                              SignalEvent(&read_event_)));
     controller_->Play();
   }
 

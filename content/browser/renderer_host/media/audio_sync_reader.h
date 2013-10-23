@@ -33,9 +33,8 @@ class AudioSyncReader : public media::AudioOutputController::SyncReader {
 
   // media::AudioOutputController::SyncReader implementations.
   virtual void UpdatePendingBytes(uint32 bytes) OVERRIDE;
-  virtual int Read(bool block,
-                   const media::AudioBus* source,
-                   media::AudioBus* dest) OVERRIDE;
+  virtual void Read(const media::AudioBus* source,
+                    media::AudioBus* dest) OVERRIDE;
   virtual void Close() OVERRIDE;
 
   bool Init();
@@ -47,11 +46,9 @@ class AudioSyncReader : public media::AudioOutputController::SyncReader {
 #endif
 
  private:
-  // Indicates whether the renderer has data available for reading.
-  bool DataReady();
-
-  // Blocks until DataReady() is true or a timeout expires.
-  void WaitTillDataReady();
+  // Blocks until data is ready for reading or a timeout expires.  Returns false
+  // if an error or timeout occurs.
+  bool WaitUntilDataIsReady();
 
   base::SharedMemory* shared_memory_;
 
@@ -82,6 +79,14 @@ class AudioSyncReader : public media::AudioOutputController::SyncReader {
   // report a UMA stat during destruction.
   size_t renderer_callback_count_;
   size_t renderer_missed_callback_count_;
+
+  // The maximum amount of time to wait for data from the renderer.  Calculated
+  // from the parameters given at construction.
+  const base::TimeDelta maximum_wait_time_;
+
+  // The index of the audio buffer we're expecting to be sent from the renderer;
+  // used to block with timeout for audio data.
+  uint32 buffer_index_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioSyncReader);
 };

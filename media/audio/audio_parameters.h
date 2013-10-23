@@ -6,6 +6,7 @@
 #define MEDIA_AUDIO_AUDIO_PARAMETERS_H_
 
 #include "base/basictypes.h"
+#include "base/time/time.h"
 #include "media/base/channel_layout.h"
 #include "media/base/media_export.h"
 
@@ -68,6 +69,10 @@ class MEDIA_EXPORT AudioParameters {
 
   // Returns the number of bytes representing a frame of audio.
   int GetBytesPerFrame() const;
+
+  // Returns the duration of this buffer as calculated from frames_per_buffer()
+  // and sample_rate().
+  base::TimeDelta GetBufferDuration() const;
 
   Format format() const { return format_; }
   ChannelLayout channel_layout() const { return channel_layout_; }

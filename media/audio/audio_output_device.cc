@@ -10,7 +10,6 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "media/audio/audio_output_controller.h"
-#include "media/audio/shared_memory_util.h"
 #include "media/base/limits.h"
 
 namespace media {
@@ -244,8 +243,8 @@ void AudioOutputDevice::OnStreamCreated(
   DCHECK(audio_thread_.IsStopped());
   audio_callback_.reset(new AudioOutputDevice::AudioThreadCallback(
       audio_parameters_, handle, length, callback_));
-  audio_thread_.Start(audio_callback_.get(), socket_handle,
-      "AudioOutputDevice");
+  audio_thread_.Start(
+      audio_callback_.get(), socket_handle, "AudioOutputDevice", true);
   state_ = PAUSED;
 
   // We handle the case where Play() and/or Pause() may have been called
@@ -272,26 +271,21 @@ AudioOutputDevice::AudioThreadCallback::AudioThreadCallback(
     base::SharedMemoryHandle memory,
     int memory_length,
     AudioRendererSink::RenderCallback* render_callback)
-    : AudioDeviceThread::Callback(audio_parameters,
-                                  memory,
-                                  memory_length,
-                                  1),
-      render_callback_(render_callback) {
-}
+    : AudioDeviceThread::Callback(audio_parameters, memory, memory_length, 1),
+      render_callback_(render_callback) {}
 
 AudioOutputDevice::AudioThreadCallback::~AudioThreadCallback() {
 }
 
 void AudioOutputDevice::AudioThreadCallback::MapSharedMemory() {
   CHECK_EQ(total_segments_, 1);
-  CHECK(shared_memory_.Map(TotalSharedMemorySizeInBytes(memory_length_)));
+  CHECK(shared_memory_.Map(memory_length_));
 
   // Calculate output and input memory size.
   int output_memory_size = AudioBus::CalculateMemorySize(audio_parameters_);
   int input_channels = audio_parameters_.input_channels();
   int frames = audio_parameters_.frames_per_buffer();
-  int input_memory_size =
-      AudioBus::CalculateMemorySize(input_channels, frames);
+  int input_memory_size = AudioBus::CalculateMemorySize(input_channels, frames);
 
   int io_size = output_memory_size + input_memory_size;
 
@@ -304,21 +298,17 @@ void AudioOutputDevice::AudioThreadCallback::MapSharedMemory() {
     // The input data is after the output data.
     char* input_data =
         static_cast<char*>(shared_memory_.memory()) + output_memory_size;
-    input_bus_ =
-        AudioBus::WrapMemory(input_channels, frames, input_data);
+    input_bus_ = AudioBus::WrapMemory(input_channels, frames, input_data);
   }
 }
 
 // Called whenever we receive notifications about pending data.
 void AudioOutputDevice::AudioThreadCallback::Process(int pending_data) {
-  if (pending_data == kPauseMark) {
-    memset(shared_memory_.memory(), 0, memory_length_);
-    SetActualDataSizeInBytes(&shared_memory_, memory_length_, 0);
+  // Negative |pending_data| indicates the browser side stream has stopped.
+  if (pending_data < 0)
     return;
-  }
 
-  // Convert the number of pending bytes in the render buffer
-  // into milliseconds.
+  // Convert the number of pending bytes in the render buffer into milliseconds.
   int audio_delay_milliseconds = pending_data / bytes_per_ms_;
 
   TRACE_EVENT0("audio", "AudioOutputDevice::FireRenderCallback");
@@ -327,25 +317,12 @@ void AudioOutputDevice::AudioThreadCallback::Process(int pending_data) {
   // |output_bus_| is wrapping the shared memory the Render() call is writing
   // directly into the shared memory.
   int input_channels = audio_parameters_.input_channels();
-  size_t num_frames = audio_parameters_.frames_per_buffer();
-
-  if (input_bus_.get() && input_channels > 0) {
-    render_callback_->RenderIO(input_bus_.get(),
-                               output_bus_.get(),
-                               audio_delay_milliseconds);
+  if (input_bus_ && input_channels > 0) {
+    render_callback_->RenderIO(
+        input_bus_.get(), output_bus_.get(), audio_delay_milliseconds);
   } else {
-    num_frames = render_callback_->Render(output_bus_.get(),
-                                          audio_delay_milliseconds);
+    render_callback_->Render(output_bus_.get(), audio_delay_milliseconds);
   }
-
-  // Let the host know we are done.
-  // TODO(dalecurtis): Technically this is not always correct.  Due to channel
-  // padding for alignment, there may be more data available than this.  We're
-  // relying on AudioSyncReader::Read() to parse this with that in mind.  Rename
-  // these methods to Set/GetActualFrameCount().
-  SetActualDataSizeInBytes(
-      &shared_memory_, memory_length_,
-      num_frames * sizeof(*output_bus_->channel(0)) * output_bus_->channels());
 }
 
 }  // namespace media.

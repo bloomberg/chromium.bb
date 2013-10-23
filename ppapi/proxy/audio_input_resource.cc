@@ -8,7 +8,6 @@
 #include "base/logging.h"
 #include "ipc/ipc_platform_file.h"
 #include "media/audio/audio_parameters.h"
-#include "media/audio/shared_memory_util.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/resource_message_params.h"
@@ -168,15 +167,9 @@ void AudioInputResource::OnPluginMsgOpenReply(
         params.TakeHandleOfTypeAtIndex(1, SerializedHandle::SHARED_MEMORY);
     CHECK(serialized_shared_memory_handle.IsHandleValid());
 
-    // See the comment in pepper_audio_input_host.cc about how we must call
-    // TotalSharedMemorySizeInBytes to get the actual size of the buffer. Here,
-    // we must call PacketSizeInBytes to get back the size of the audio buffer,
-    // excluding the bytes that audio uses for book-keeping.
-    size_t shared_memory_size = media::PacketSizeInBytes(
-        serialized_shared_memory_handle.size());
-
     open_state_ = OPENED;
-    SetStreamInfo(serialized_shared_memory_handle.shmem(), shared_memory_size,
+    SetStreamInfo(serialized_shared_memory_handle.shmem(),
+                  serialized_shared_memory_handle.size(),
                   socket_handle);
   } else {
     capturing_ = false;

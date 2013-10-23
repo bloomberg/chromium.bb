@@ -10,8 +10,6 @@
     'shared_memory_support_sources': [
       'audio/audio_parameters.cc',
       'audio/audio_parameters.h',
-      'audio/shared_memory_util.cc',
-      'audio/shared_memory_util.h',
       'base/audio_bus.cc',
       'base/audio_bus.h',
       'base/channel_layout.cc',

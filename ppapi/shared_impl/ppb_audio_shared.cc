@@ -5,7 +5,6 @@
 #include "ppapi/shared_impl/ppb_audio_shared.h"
 
 #include "base/logging.h"
-#include "media/audio/shared_memory_util.h"
 #include "ppapi/shared_impl/ppapi_globals.h"
 #include "ppapi/shared_impl/ppb_audio_config_shared.h"
 #include "ppapi/shared_impl/proxy_lock.h"
@@ -114,8 +113,7 @@ void PPB_Audio_Shared::SetStreamInfo(
   bytes_per_second_ = kAudioOutputChannels * (kBitsPerAudioOutputSample / 8) *
                       sample_rate;
 
-  if (!shared_memory_->Map(
-          media::TotalSharedMemorySizeInBytes(shared_memory_size_))) {
+  if (!shared_memory_->Map(shared_memory_size_)) {
     PpapiGlobals::Get()->LogWithSource(
         instance,
         PP_LOGLEVEL_WARNING,
@@ -203,13 +201,11 @@ void PPB_Audio_Shared::CallRun(void* self) {
 #endif
 
 void PPB_Audio_Shared::Run() {
-  int pending_data;
-  const int bytes_per_frame =
-      sizeof(*audio_bus_->channel(0)) * audio_bus_->channels();
-
+  int pending_data = 0;
+  uint32_t buffer_index = 0;
   while (sizeof(pending_data) ==
       socket_->Receive(&pending_data, sizeof(pending_data)) &&
-      pending_data != media::kPauseMark) {
+      pending_data >= 0) {
     PP_TimeDelta latency =
         static_cast<double>(pending_data) / bytes_per_second_;
     callback_.Run(client_buffer_.get(), client_buffer_size_bytes_, latency,
@@ -220,14 +216,10 @@ void PPB_Audio_Shared::Run() {
         client_buffer_.get(), audio_bus_->frames(),
         kBitsPerAudioOutputSample / 8);
 
-    // Let the host know we are done.
-    // TODO(dalecurtis): Technically this is not the exact size.  Due to channel
-    // padding for alignment, there may be more data available than this.  We're
-    // relying on AudioSyncReader::Read() to parse this with that in mind.
-    // Rename these methods to Set/GetActualFrameCount().
-    media::SetActualDataSizeInBytes(
-        shared_memory_.get(), shared_memory_size_,
-        audio_bus_->frames() * bytes_per_frame);
+    ++buffer_index;
+    size_t bytes_sent = socket_->Send(&buffer_index, sizeof(buffer_index));
+    if (bytes_sent != sizeof(buffer_index))
+      break;
   }
 }
 

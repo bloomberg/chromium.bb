@@ -89,6 +89,12 @@ int AudioParameters::GetBytesPerFrame() const {
   return channels_ * bits_per_sample_ / 8;
 }
 
+base::TimeDelta AudioParameters::GetBufferDuration() const {
+  return base::TimeDelta::FromMicroseconds(
+      frames_per_buffer_ * base::Time::kMicrosecondsPerSecond /
+      static_cast<float>(sample_rate_));
+}
+
 void AudioParameters::SetDiscreteChannels(int channels) {
   channel_layout_ = CHANNEL_LAYOUT_DISCRETE;
   channels_ = channels;

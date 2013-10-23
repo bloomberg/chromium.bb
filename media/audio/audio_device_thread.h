@@ -12,7 +12,6 @@
 #include "base/sync_socket.h"
 #include "base/synchronization/lock.h"
 #include "media/audio/audio_parameters.h"
-#include "media/audio/shared_memory_util.h"
 #include "media/base/media_export.h"
 
 namespace base {
@@ -74,10 +73,13 @@ class MEDIA_EXPORT AudioDeviceThread {
   AudioDeviceThread();
   ~AudioDeviceThread();
 
-  // Starts the audio thread. The thread must not already be running.
+  // Starts the audio thread. The thread must not already be running.  If
+  // |sychronized_buffers| is set, the browser expects to be notified via the
+  // |socket| every time AudioDeviceThread::Process() completes.
   void Start(AudioDeviceThread::Callback* callback,
              base::SyncSocket::Handle socket,
-             const char* thread_name);
+             const char* thread_name,
+             bool synchronized_buffers);
 
   // This tells the audio thread to stop and clean up the data.
   // The method can stop the thread synchronously or asynchronously.

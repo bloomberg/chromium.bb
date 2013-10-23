@@ -12,7 +12,6 @@
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "media/audio/shared_memory_util.h"
 #include "media/base/scoped_histogram_timer.h"
 
 using base::Time;
@@ -240,8 +239,10 @@ void AudioOutputController::DoPause() {
   if (state_ != kPaused)
     return;
 
-  // Send a special pause mark to the low-latency audio thread.
-  sync_reader_->UpdatePendingBytes(kPauseMark);
+  // Let the renderer know we've stopped.  Necessary to let PPAPI clients know
+  // audio has been shutdown.  TODO(dalecurtis): This stinks.  PPAPI should have
+  // a better way to know when it should exit PPB_Audio_Shared::Run().
+  sync_reader_->UpdatePendingBytes(-1);
 
 #if defined(AUDIO_POWER_MONITORING)
   // Paused means silence follows.
@@ -319,26 +320,9 @@ int AudioOutputController::OnMoreIOData(AudioBus* source,
   DisallowEntryToOnMoreIOData();
   TRACE_EVENT0("audio", "AudioOutputController::OnMoreIOData");
 
-  // The OS level audio APIs on Linux and Windows all have problems requesting
-  // data on a fixed interval.  Sometimes they will issue calls back to back
-  // which can cause glitching, so wait until the renderer is ready.
-  //
-  // We also need to wait when diverting since the virtual stream will call this
-  // multiple times without waiting.
-  //
-  // NEVER wait on OSX unless a virtual stream is connected, otherwise we can
-  // end up hanging the entire OS.
-  //
-  // See many bugs for context behind this decision: http://crbug.com/170498,
-  // http://crbug.com/171651, http://crbug.com/174985, and more.
-#if defined(OS_WIN) || defined(OS_LINUX)
-    const bool kShouldBlock = true;
-#else
-    const bool kShouldBlock = diverting_to_stream_ != NULL;
-#endif
+  sync_reader_->Read(source, dest);
 
-  const int frames = sync_reader_->Read(kShouldBlock, source, dest);
-  DCHECK_LE(0, frames);
+  const int frames = dest->frames();
   sync_reader_->UpdatePendingBytes(
       buffers_state.total_bytes() + frames * params_.GetBytesPerFrame());
 

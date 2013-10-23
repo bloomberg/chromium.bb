@@ -12,7 +12,6 @@
 #include "base/test/test_timeouts.h"
 #include "media/audio/audio_output_device.h"
 #include "media/audio/sample_rates.h"
-#include "media/audio/shared_memory_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gmock_mutant.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -133,13 +132,7 @@ int AudioOutputDeviceTest::CalculateMemorySize() {
   int input_memory_size =
       AudioBus::CalculateMemorySize(input_channels_, frames);
 
-  int io_buffer_size = output_memory_size + input_memory_size;
-
-  // This is where it gets a bit hacky.  The shared memory contract between
-  // AudioOutputDevice and its browser side counter part includes a bit more
-  // than just the audio data, so we must call TotalSharedMemorySizeInBytes()
-  // to get the actual size needed to fit the audio data plus the extra data.
-  return TotalSharedMemorySizeInBytes(io_buffer_size);
+  return output_memory_size + input_memory_size;
 }
 
 AudioOutputDeviceTest::AudioOutputDeviceTest()
@@ -193,7 +186,7 @@ void AudioOutputDeviceTest::CreateStream() {
                                             &duplicated_memory_handle));
 
   audio_device_->OnStreamCreated(duplicated_memory_handle, audio_device_socket,
-                                 PacketSizeInBytes(kMemorySize));
+                                 kMemorySize);
   io_loop_.RunUntilIdle();
 }
 

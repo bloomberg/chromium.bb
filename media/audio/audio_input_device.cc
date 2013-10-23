@@ -138,10 +138,10 @@ void AudioInputDevice::OnStreamCreated(
     return;
 
   DCHECK(audio_thread_.IsStopped());
-  audio_callback_.reset(
-      new AudioInputDevice::AudioThreadCallback(
-          audio_parameters_, handle, length, total_segments, callback_));
-  audio_thread_.Start(audio_callback_.get(), socket_handle, "AudioInputDevice");
+  audio_callback_.reset(new AudioInputDevice::AudioThreadCallback(
+      audio_parameters_, handle, length, total_segments, callback_));
+  audio_thread_.Start(
+      audio_callback_.get(), socket_handle, "AudioInputDevice", false);
 
   state_ = RECORDING;
   ipc_->RecordStream();

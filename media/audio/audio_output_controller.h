@@ -91,11 +91,10 @@ class MEDIA_EXPORT AudioOutputController
     // prepare more data and perform synchronization.
     virtual void UpdatePendingBytes(uint32 bytes) = 0;
 
-    // Attempt to completely fill |dest|, return the actual number of frames
-    // that could be read.  |source| may optionally be provided for input data.
-    // If |block| is specified, the Read() will block until data is available
-    // or a timeout is reached.
-    virtual int Read(bool block, const AudioBus* source, AudioBus* dest) = 0;
+    // Attempts to completely fill |dest|, zeroing |dest| if the request can not
+    // be fulfilled (due to timeout).  |source| may optionally be provided for
+    // input data.
+    virtual void Read(const AudioBus* source, AudioBus* dest) = 0;
 
     // Close this synchronous reader.
     virtual void Close() = 0;

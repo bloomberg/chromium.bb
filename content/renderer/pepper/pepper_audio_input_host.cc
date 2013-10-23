@@ -12,7 +12,6 @@
 #include "content/renderer/pepper/renderer_ppapi_host_impl.h"
 #include "content/renderer/render_view_impl.h"
 #include "ipc/ipc_message.h"
-#include "media/audio/shared_memory_util.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/host/dispatch_host_message.h"
 #include "ppapi/host/ppapi_host.h"
@@ -169,13 +168,7 @@ void PepperAudioInputHost::OnOpenComplete(
         scoped_socket, scoped_shared_memory, &temp_socket, &temp_shmem);
 
     serialized_socket_handle.set_socket(temp_socket);
-    // Note that we must call TotalSharedMemorySizeInBytes() because extra space
-    // in shared memory is allocated for book-keeping, so the actual size of the
-    // shared memory buffer is larger than |shared_memory_size|. When sending to
-    // NaCl, NaClIPCAdapter expects this size to match the size of the full
-    // shared memory buffer.
-    serialized_shared_memory_handle.set_shmem(
-        temp_shmem, media::TotalSharedMemorySizeInBytes(shared_memory_size));
+    serialized_shared_memory_handle.set_shmem(temp_shmem, shared_memory_size);
   }
 
   // Send all the values, even on error. This simplifies some of our cleanup

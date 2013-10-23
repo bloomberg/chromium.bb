@@ -20,7 +20,6 @@
 #include "content/public/browser/media_observer.h"
 #include "content/public/common/content_switches.h"
 #include "media/audio/audio_manager_base.h"
-#include "media/audio/shared_memory_util.h"
 #include "media/base/audio_bus.h"
 #include "media/base/limits.h"
 
@@ -249,7 +248,7 @@ void AudioRendererHost::DoCompleteCreation(int stream_id) {
       entry->stream_id(),
       foreign_memory_handle,
       foreign_socket_handle,
-      media::PacketSizeInBytes(entry->shared_memory()->requested_size())));
+      entry->shared_memory()->requested_size()));
 }
 
 RenderViewHost::AudioOutputControllerList
@@ -346,15 +345,12 @@ void AudioRendererHost::OnCreateStream(
   // Calculate output and input memory size.
   int output_memory_size = AudioBus::CalculateMemorySize(params);
   int frames = params.frames_per_buffer();
-  int input_memory_size =
-      AudioBus::CalculateMemorySize(input_channels, frames);
+  int input_memory_size = AudioBus::CalculateMemorySize(input_channels, frames);
 
   // Create the shared memory and share with the renderer process.
   // For synchronized I/O (if input_channels > 0) then we allocate
   // extra memory after the output data for the input data.
-  uint32 io_buffer_size = output_memory_size + input_memory_size;
-  uint32 shared_memory_size =
-      media::TotalSharedMemorySizeInBytes(io_buffer_size);
+  uint32 shared_memory_size = output_memory_size + input_memory_size;
   scoped_ptr<base::SharedMemory> shared_memory(new base::SharedMemory());
   if (!shared_memory->CreateAndMapAnonymous(shared_memory_size)) {
     SendErrorMessage(stream_id);

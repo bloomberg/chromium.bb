@@ -28,7 +28,8 @@ class AudioDeviceThread::Thread
  public:
   Thread(AudioDeviceThread::Callback* callback,
          base::SyncSocket::Handle socket,
-         const char* thread_name);
+         const char* thread_name,
+         bool synchronized_buffers);
 
   void Start();
 
@@ -54,6 +55,7 @@ class AudioDeviceThread::Thread
   base::CancelableSyncSocket socket_;
   base::Lock callback_lock_;
   const char* thread_name_;
+  const bool synchronized_buffers_;
 
   DISALLOW_COPY_AND_ASSIGN(Thread);
 };
@@ -67,10 +69,12 @@ AudioDeviceThread::~AudioDeviceThread() { DCHECK(!thread_.get()); }
 
 void AudioDeviceThread::Start(AudioDeviceThread::Callback* callback,
                               base::SyncSocket::Handle socket,
-                              const char* thread_name) {
+                              const char* thread_name,
+                              bool synchronized_buffers) {
   base::AutoLock auto_lock(thread_lock_);
-  CHECK(thread_.get() == NULL);
-  thread_ = new AudioDeviceThread::Thread(callback, socket, thread_name);
+  CHECK(!thread_);
+  thread_ = new AudioDeviceThread::Thread(
+      callback, socket, thread_name, synchronized_buffers);
   thread_->Start();
 }
 
@@ -84,17 +88,19 @@ void AudioDeviceThread::Stop(base::MessageLoop* loop_for_join) {
 
 bool AudioDeviceThread::IsStopped() {
   base::AutoLock auto_lock(thread_lock_);
-  return thread_.get() == NULL;
+  return !thread_;
 }
 
 // AudioDeviceThread::Thread implementation
 AudioDeviceThread::Thread::Thread(AudioDeviceThread::Callback* callback,
                                   base::SyncSocket::Handle socket,
-                                  const char* thread_name)
+                                  const char* thread_name,
+                                  bool synchronized_buffers)
     : thread_(),
       callback_(callback),
       socket_(socket),
-      thread_name_(thread_name) {
+      thread_name_(thread_name),
+      synchronized_buffers_(synchronized_buffers) {
 }
 
 AudioDeviceThread::Thread::~Thread() {
@@ -156,6 +162,7 @@ void AudioDeviceThread::Thread::ThreadMain() {
 }
 
 void AudioDeviceThread::Thread::Run() {
+  uint32 buffer_index = 0;
   while (true) {
     int pending_data = 0;
     size_t bytes_read = socket_.Receive(&pending_data, sizeof(pending_data));
@@ -164,9 +171,21 @@ void AudioDeviceThread::Thread::Run() {
       break;
     }
 
-    base::AutoLock auto_lock(callback_lock_);
-    if (callback_)
-      callback_->Process(pending_data);
+    {
+      base::AutoLock auto_lock(callback_lock_);
+      if (callback_)
+        callback_->Process(pending_data);
+    }
+
+    // Let the other end know which buffer we just filled.  The buffer index is
+    // used to ensure the other end is getting the buffer it expects.  For more
+    // details on how this works see AudioSyncReader::WaitUntilDataIsReady().
+    if (synchronized_buffers_) {
+      ++buffer_index;
+      size_t bytes_sent = socket_.Send(&buffer_index, sizeof(buffer_index));
+      if (bytes_sent != sizeof(buffer_index))
+        break;
+    }
   }
 }
 
