@@ -69,21 +69,6 @@ CK_MECHANISM_TYPE WebCryptoAlgorithmToHMACMechanism(
   }
 }
 
-// TODO(eroman): This works by re-allocating a new buffer. It would be better if
-//               the WebArrayBuffer could just be truncated instead.
-void ShrinkBuffer(WebKit::WebArrayBuffer* buffer, unsigned new_size) {
-  DCHECK_LE(new_size, buffer->byteLength());
-
-  if (new_size == buffer->byteLength())
-    return;
-
-  WebKit::WebArrayBuffer new_buffer =
-      WebKit::WebArrayBuffer::create(new_size, 1);
-  DCHECK(!new_buffer.isNull());
-  memcpy(new_buffer.data(), buffer->data(), new_size);
-  *buffer = new_buffer;
-}
-
 bool AesCbcEncryptDecrypt(
     CK_ATTRIBUTE_TYPE operation,
     const WebKit::WebCryptoAlgorithm& algorithm,
@@ -162,7 +147,7 @@ bool AesCbcEncryptDecrypt(
     return false;
   }
 
-  ShrinkBuffer(buffer, final_output_chunk_len + output_len);
+  WebCryptoImpl::ShrinkBuffer(buffer, final_output_chunk_len + output_len);
   return true;
 }
 

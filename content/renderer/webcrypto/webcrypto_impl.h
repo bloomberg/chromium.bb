@@ -63,6 +63,8 @@ class CONTENT_EXPORT WebCryptoImpl
       unsigned data_size,
       WebKit::WebCryptoResult result);
 
+  static void ShrinkBuffer(WebKit::WebArrayBuffer* buffer, unsigned new_size);
+
  protected:
   friend class WebCryptoImplTest;
 

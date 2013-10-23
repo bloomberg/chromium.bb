@@ -268,9 +268,6 @@ TEST_F(WebCryptoImplTest, DigestSampleSets) {
   }
 }
 
-// TODO(padolph) Enable these tests for OpenSSL once matching impl is available
-#if !defined(USE_OPENSSL)
-
 TEST_F(WebCryptoImplTest, HMACSampleSets) {
   struct TestCase {
     WebKit::WebCryptoAlgorithmId algorithm;
@@ -603,9 +600,8 @@ TEST_F(WebCryptoImplTest, AesCbcSampleSets) {
   }
 }
 
-#endif // !defined(USE_OPENSSL)
-
 #if !defined(USE_OPENSSL)
+
 TEST_F(WebCryptoImplTest, GenerateKeyAes) {
   scoped_ptr<WebKit::WebCryptoAesKeyGenParams> params(
       new WebKit::WebCryptoAesKeyGenParams(128));
@@ -672,6 +668,7 @@ TEST_F(WebCryptoImplTest, GenerateKeyHmacNoLength) {
   EXPECT_TRUE(bool(result));
   EXPECT_EQ(type, WebKit::WebCryptoKeyTypeSecret);
 }
-#endif /* !defined(USE_OPENSSL) */
+
+#endif //#if !defined(USE_OPENSSL)
 
 }  // namespace content

@@ -4,6 +4,7 @@
 
 #include "content/renderer/webcrypto/webcrypto_impl.h"
 
+#include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "third_party/WebKit/public/platform/WebArrayBuffer.h"
 #include "third_party/WebKit/public/platform/WebCryptoAlgorithm.h"
@@ -13,6 +14,24 @@ namespace content {
 
 WebCryptoImpl::WebCryptoImpl() {
   Init();
+}
+
+// static
+// TODO(eroman): This works by re-allocating a new buffer. It would be better if
+//               the WebArrayBuffer could just be truncated instead.
+void WebCryptoImpl::ShrinkBuffer(
+    WebKit::WebArrayBuffer* buffer,
+    unsigned new_size) {
+  DCHECK_LE(new_size, buffer->byteLength());
+
+  if (new_size == buffer->byteLength())
+    return;
+
+  WebKit::WebArrayBuffer new_buffer =
+      WebKit::WebArrayBuffer::create(new_size, 1);
+  DCHECK(!new_buffer.isNull());
+  memcpy(new_buffer.data(), buffer->data(), new_size);
+  *buffer = new_buffer;
 }
 
 void WebCryptoImpl::encrypt(

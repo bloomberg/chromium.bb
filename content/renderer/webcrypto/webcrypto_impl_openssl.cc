@@ -5,6 +5,7 @@
 #include "content/renderer/webcrypto/webcrypto_impl.h"
 
 #include <vector>
+#include <openssl/aes.h>
 #include <openssl/evp.h>
 #include <openssl/hmac.h>
 #include <openssl/sha.h>
@@ -33,29 +34,134 @@ class SymKeyHandle : public WebKit::WebCryptoKeyHandle {
   DISALLOW_COPY_AND_ASSIGN(SymKeyHandle);
 };
 
-}  // anonymous namespace
+const EVP_CIPHER* GetAESCipherByKeyLength(unsigned key_length_bytes) {
+  // OpenSSL supports AES CBC ciphers for only 3 key lengths: 128, 192, 256 bits
+  switch (key_length_bytes) {
+    case 16:
+      return EVP_aes_128_cbc();
+    case 24:
+      return EVP_aes_192_cbc();
+    case 32:
+      return EVP_aes_256_cbc();
+    default:
+      return NULL;
+  }
+}
+
+// OpenSSL constants for EVP_CipherInit_ex(), do not change
+enum CipherOperation {
+  kDoDecrypt = 0,
+  kDoEncrypt = 1
+};
+
+bool AesCbcEncryptDecrypt(CipherOperation cipher_operation,
+                          const WebKit::WebCryptoAlgorithm& algorithm,
+                          const WebKit::WebCryptoKey& key,
+                          const unsigned char* data,
+                          unsigned data_size,
+                          WebKit::WebArrayBuffer* buffer) {
+
+  // TODO(padolph): Handle other encrypt operations and then remove this gate
+  if (algorithm.id() != WebKit::WebCryptoAlgorithmIdAesCbc)
+    return false;
+
+  DCHECK_EQ(algorithm.id(), key.algorithm().id());
+  DCHECK_EQ(WebKit::WebCryptoKeyTypeSecret, key.type());
+
+  if (data_size >= INT_MAX - AES_BLOCK_SIZE) {
+    // TODO(padolph): Handle this by chunking the input fed into OpenSSL. Right
+    // now it doesn't make much difference since the one-shot API would end up
+    // blowing out the memory and crashing anyway. However a newer version of
+    // the spec allows for a sequence<CryptoData> so this will be relevant.
+    return false;
+  }
+
+  // Note: PKCS padding is enabled by default
+  crypto::ScopedOpenSSL<EVP_CIPHER_CTX, EVP_CIPHER_CTX_free> context(
+      EVP_CIPHER_CTX_new());
+
+  if (!context.get())
+    return false;
+
+  SymKeyHandle* const sym_key = reinterpret_cast<SymKeyHandle*>(key.handle());
+
+  const EVP_CIPHER* const cipher =
+      GetAESCipherByKeyLength(sym_key->key().size());
+  DCHECK(cipher);
+
+  const WebKit::WebCryptoAesCbcParams* const params = algorithm.aesCbcParams();
+  if (params->iv().size() != AES_BLOCK_SIZE)
+    return false;
+
+  if (!EVP_CipherInit_ex(context.get(),
+                         cipher,
+                         NULL,
+                         &sym_key->key()[0],
+                         params->iv().data(),
+                         cipher_operation)) {
+    return false;
+  }
+
+  // According to the openssl docs, the amount of data written may be as large
+  // as (data_size + cipher_block_size - 1), constrained to a multiple of
+  // cipher_block_size.
+  unsigned output_max_len = data_size + AES_BLOCK_SIZE - 1;
+  const unsigned remainder = output_max_len % AES_BLOCK_SIZE;
+  if (remainder != 0)
+    output_max_len += AES_BLOCK_SIZE - remainder;
+  DCHECK_GT(output_max_len, data_size);
+
+  *buffer = WebKit::WebArrayBuffer::create(output_max_len, 1);
+
+  unsigned char* const buffer_data =
+      reinterpret_cast<unsigned char*>(buffer->data());
+
+  int output_len = 0;
+  if (!EVP_CipherUpdate(
+          context.get(), buffer_data, &output_len, data, data_size))
+    return false;
+  int final_output_chunk_len = 0;
+  if (!EVP_CipherFinal_ex(
+          context.get(), buffer_data + output_len, &final_output_chunk_len))
+    return false;
+
+  const unsigned final_output_len =
+      static_cast<unsigned>(output_len) +
+      static_cast<unsigned>(final_output_chunk_len);
+  DCHECK_LE(final_output_len, output_max_len);
+
+  WebCryptoImpl::ShrinkBuffer(buffer, final_output_len);
+
+  return true;
+}
+
+}  // namespace
 
 void WebCryptoImpl::Init() { crypto::EnsureOpenSSLInit(); }
 
-bool WebCryptoImpl::EncryptInternal(
-    const WebKit::WebCryptoAlgorithm& algorithm,
-    const WebKit::WebCryptoKey& key,
-    const unsigned char* data,
-    unsigned data_size,
-    WebKit::WebArrayBuffer* buffer) {
-  // TODO(padolph): Placeholder for OpenSSL implementation.
-  // Issue http://crbug.com/267888.
+bool WebCryptoImpl::EncryptInternal(const WebKit::WebCryptoAlgorithm& algorithm,
+                                    const WebKit::WebCryptoKey& key,
+                                    const unsigned char* data,
+                                    unsigned data_size,
+                                    WebKit::WebArrayBuffer* buffer) {
+  if (algorithm.id() == WebKit::WebCryptoAlgorithmIdAesCbc) {
+    return AesCbcEncryptDecrypt(
+        kDoEncrypt, algorithm, key, data, data_size, buffer);
+  }
+
   return false;
 }
 
-bool WebCryptoImpl::DecryptInternal(
-    const WebKit::WebCryptoAlgorithm& algorithm,
-    const WebKit::WebCryptoKey& key,
-    const unsigned char* data,
-    unsigned data_size,
-    WebKit::WebArrayBuffer* buffer) {
-  // TODO(padolph): Placeholder for OpenSSL implementation.
-  // Issue http://crbug.com/267888.
+bool WebCryptoImpl::DecryptInternal(const WebKit::WebCryptoAlgorithm& algorithm,
+                                    const WebKit::WebCryptoKey& key,
+                                    const unsigned char* data,
+                                    unsigned data_size,
+                                    WebKit::WebArrayBuffer* buffer) {
+  if (algorithm.id() == WebKit::WebCryptoAlgorithmIdAesCbc) {
+    return AesCbcEncryptDecrypt(
+        kDoDecrypt, algorithm, key, data, data_size, buffer);
+  }
+
   return false;
 }
 
@@ -160,6 +266,12 @@ bool WebCryptoImpl::ImportKeyInternal(
     case WebKit::WebCryptoKeyFormatRaw:
       raw_key_data = key_data;
       raw_key_data_size = key_data_size;
+      // The NSS implementation fails when importing a raw AES key with a length
+      // incompatible with AES. The line below is to match this behavior.
+      if (algorithm.id() == WebKit::WebCryptoAlgorithmIdAesCbc &&
+          !GetAESCipherByKeyLength(raw_key_data_size)) {
+        return false;
+      }
       break;
     case WebKit::WebCryptoKeyFormatJwk:
       // TODO(padolph): Handle jwk format; need simple JSON parser.
