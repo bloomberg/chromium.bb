@@ -1554,8 +1554,9 @@ class BisectPerformanceMetrics(object):
           return ('Skipped revision: [%s]' % str(revision),
               BUILD_RESULT_SKIPPED)
 
+        start_build_time = time.time()
         if self.BuildCurrentRevision(depot):
-          start_time = time.time()
+          after_build_time = time.time()
           results = self.RunPerformanceTestAndParseResults(command_to_run,
                                                            metric)
 
@@ -1565,7 +1566,8 @@ class BisectPerformanceMetrics(object):
 
             if not external_revisions is None:
               return (results[0], results[1], external_revisions,
-                  time.time() - start_time)
+                  time.time() - after_build_time, time.time() -
+                  start_build_time)
             else:
               return ('Failed to parse DEPS file for external revisions.',
                   BUILD_RESULT_FAIL)
@@ -1759,7 +1761,8 @@ class BisectPerformanceMetrics(object):
       revision_data[r] = {'revision' : r,
                           'depot' : depot,
                           'value' : None,
-                          'time' : 0,
+                          'perf_time' : 0,
+                          'build_time' : 0,
                           'passed' : '?',
                           'sort' : i + sort + 1}
 
@@ -1963,7 +1966,8 @@ class BisectPerformanceMetrics(object):
                                               'passed' : '?',
                                               'depot' : target_depot,
                                               'external' : None,
-                                              'time' : 0,
+                                              'perf_time' : 0,
+                                              'build_time' : 0,
                                               'sort' : sort_key_ids}
         revision_list.append(current_revision_id)
 
@@ -2012,13 +2016,15 @@ class BisectPerformanceMetrics(object):
       # already know the results.
       bad_revision_data = revision_data[revision_list[0]]
       bad_revision_data['external'] = bad_results[2]
-      bad_revision_data['time'] = bad_results[3]
+      bad_revision_data['perf_time'] = bad_results[3]
+      bad_revision_data['build_time'] = bad_results[4]
       bad_revision_data['passed'] = False
       bad_revision_data['value'] = known_bad_value
 
       good_revision_data = revision_data[revision_list[max_revision]]
       good_revision_data['external'] = good_results[2]
-      good_revision_data['time'] = good_results[3]
+      good_revision_data['perf_time'] = good_results[3]
+      good_revision_data['build_time'] = good_results[4]
       good_revision_data['passed'] = True
       good_revision_data['value'] = known_good_value
 
@@ -2116,7 +2122,8 @@ class BisectPerformanceMetrics(object):
         if not run_results[1]:
           if len(run_results) > 2:
             next_revision_data['external'] = run_results[2]
-            next_revision_data['time'] = run_results[3]
+            next_revision_data['perf_time'] = run_results[3]
+            next_revision_data['build_time'] = run_results[4]
 
           passed_regression = self.CheckIfRunPassed(run_results[0],
                                                     known_good_value,
@@ -2219,7 +2226,8 @@ class BisectPerformanceMetrics(object):
         'Commit SHA'.center(40, ' '), 'Mean'.center(12, ' '),
         'Std. Error'.center(14, ' '), 'State'.center(13, ' '))
     state = 0
-    step_time_avg = 0.0
+    step_perf_time_avg = 0.0
+    step_build_time_avg = 0.0
     step_count = 0.0
     for current_id, current_data in revision_data_sorted:
       if current_data['value']:
@@ -2242,11 +2250,13 @@ class BisectPerformanceMetrics(object):
             current_data['depot'].center(20, ' '), current_id, mean,
             std_error, state_str)
 
-        step_time_avg += current_data['time']
+        step_perf_time_avg += current_data['perf_time']
+        step_build_time_avg += current_data['build_time']
         step_count += 1
 
     if step_count:
-      step_time_avg = step_time_avg / step_count
+      step_perf_time_avg = step_perf_time_avg / step_count
+      step_build_time_avg = step_build_time_avg / step_count
 
     if last_broken_revision != None and first_working_revision != None:
       bounds_broken = [revision_data[last_broken_revision]['value']['mean'],
@@ -2283,8 +2293,10 @@ class BisectPerformanceMetrics(object):
           max(0.0001, min(mean_of_good_runs, mean_of_bad_runs))) * 100.0
 
       print
-      print 'Average step time: %s' % datetime.timedelta(
-          seconds=int(step_time_avg))
+      print 'Average build time: %s' % datetime.timedelta(
+          seconds=int(step_build_time_avg))
+      print 'Average test time: %s' % datetime.timedelta(
+          seconds=int(step_perf_time_avg))
       print 'Approximate size of regression: %.02f%%, +-%.02f%% std. err' % (
           regression_size, regression_std_err)
 
