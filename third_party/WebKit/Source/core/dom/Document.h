@@ -570,7 +570,7 @@ public:
     // implicitClose() actually does the work of closing the input stream.
     void implicitClose();
 
-    bool dispatchBeforeUnloadEvent(Chrome&, Document* navigatingDocument);
+    bool dispatchBeforeUnloadEvent(Chrome&, bool&);
     void dispatchUnloadEvents();
 
     enum PageDismissalType {
@@ -1346,9 +1346,6 @@ private:
 
     bool m_directionSetOnDocumentElement;
     bool m_writingModeSetOnDocumentElement;
-
-    bool m_didAllowNavigationViaBeforeUnloadConfirmationPanel;
-
     DocumentTiming m_documentTiming;
     RefPtr<MediaQueryMatcher> m_mediaQueryMatcher;
     bool m_writeRecursionIsTooDeep;

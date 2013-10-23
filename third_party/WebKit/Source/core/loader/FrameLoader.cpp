@@ -1304,10 +1304,11 @@ bool FrameLoader::shouldClose()
         NavigationDisablerForBeforeUnload navigationDisabler;
         size_t i;
 
+        bool didAllowNavigation = false;
         for (i = 0; i < targetFrames.size(); i++) {
             if (!targetFrames[i]->tree().isDescendantOf(m_frame))
                 continue;
-            if (!targetFrames[i]->document()->dispatchBeforeUnloadEvent(page->chrome(), m_frame->document()))
+            if (!targetFrames[i]->document()->dispatchBeforeUnloadEvent(page->chrome(), didAllowNavigation))
                 break;
         }
 
