@@ -107,10 +107,6 @@
 #define WTF_USE_SYSTEM_MALLOC 1
 #endif /* OS(MACOSX) */
 
-#if !defined(HAVE_ACCESSIBILITY)
-#define HAVE_ACCESSIBILITY 1
-#endif /* !defined(HAVE_ACCESSIBILITY) */
-
 #if OS(POSIX)
 #define HAVE_MMAP 1
 #define HAVE_SIGNAL_H 1

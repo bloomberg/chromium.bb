@@ -28,8 +28,6 @@
 
 #include "config.h"
 
-#if HAVE(ACCESSIBILITY)
-
 #include "core/accessibility/AXObjectCache.h"
 
 #include "HTMLNames.h"
@@ -1028,5 +1026,3 @@ void AXObjectCache::handleScrolledToAnchor(const Node* anchorNode)
 }
 
 } // namespace WebCore
-
-#endif // HAVE(ACCESSIBILITY)

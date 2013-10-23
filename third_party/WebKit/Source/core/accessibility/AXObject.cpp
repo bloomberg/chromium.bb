@@ -164,14 +164,12 @@ AXObjectCache* AXObject::axObjectCache() const
     return 0;
 }
 
-#if HAVE(ACCESSIBILITY)
 void AXObject::updateBackingStore()
 {
     // Updating the layout may delete this object.
     if (Document* document = this->document())
         document->updateLayoutIgnorePendingStylesheets();
 }
-#endif
 
 bool AXObject::isARIATextControl() const
 {
@@ -315,7 +313,6 @@ AccessibilityOrientation AXObject::orientation() const
     return AccessibilityOrientationHorizontal;
 }
 
-#if HAVE(ACCESSIBILITY)
 static String queryString(WebLocalizedString::Name name)
 {
     return Locale::defaultLocale().queryString(name);
@@ -348,7 +345,6 @@ String AXObject::actionVerb() const
         return emptyString();
     }
 }
-#endif
 
 AccessibilityButtonState AXObject::checkboxOrRadioValue() const
 {
@@ -491,14 +487,12 @@ AXObject* AXObject::elementAccessibilityHitTest(const IntPoint& point) const
     return const_cast<AXObject*>(this);
 }
 
-#if HAVE(ACCESSIBILITY)
 const AXObject::AccessibilityChildrenVector& AXObject::children()
 {
     updateChildrenIfNecessary();
 
     return m_children;
 }
-#endif
 
 AXObject* AXObject::parentObjectUnignored() const
 {
@@ -891,7 +885,6 @@ static bool replacedNodeNeedsCharacter(Node* replacedNode)
     return true;
 }
 
-#if HAVE(ACCESSIBILITY)
 int AXObject::lineForPosition(const VisiblePosition& visiblePos) const
 {
     if (visiblePos.isNull() || !node())
@@ -918,7 +911,6 @@ int AXObject::lineForPosition(const VisiblePosition& visiblePos) const
 
     return lineCount;
 }
-#endif
 
 // Finds a RenderListItem parent give a node.
 static RenderListItem* renderListItemContainerForNode(Node* node)

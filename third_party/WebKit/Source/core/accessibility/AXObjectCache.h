@@ -133,17 +133,10 @@ public:
     void handleAttributeChanged(const QualifiedName& attrName, Element*);
     void recomputeIsIgnored(RenderObject* renderer);
 
-#if HAVE(ACCESSIBILITY)
     static void enableAccessibility() { gAccessibilityEnabled = true; }
     static bool accessibilityEnabled() { return gAccessibilityEnabled; }
     static void setInlineTextBoxAccessibility(bool flag) { gInlineTextBoxAccessibility = flag; }
     static bool inlineTextBoxAccessibility() { return gInlineTextBoxAccessibility; }
-#else
-    static void enableAccessibility() { }
-    static void setInlineTextBoxAccessibility(bool) { }
-    static bool accessibilityEnabled() { return false; }
-    static bool inlineTextBoxAccessibility() { return false; }
-#endif
 
     void removeAXID(AXObject*);
     bool isIDinUse(AXID id) const { return m_idsInUse.contains(id); }
@@ -236,61 +229,6 @@ private:
 bool nodeHasRole(Node*, const String& role);
 // This will let you know if aria-hidden was explicitly set to false.
 bool isNodeAriaVisible(Node*);
-
-#if !HAVE(ACCESSIBILITY)
-inline AXObjectInclusion AXComputedObjectAttributeCache::getIgnored(AXID) const { return DefaultBehavior; }
-inline void AXComputedObjectAttributeCache::setIgnored(AXID, AXObjectInclusion) { }
-inline AXObjectCache::AXObjectCache(const Document* doc) : m_document(const_cast<Document*>(doc)), m_notificationPostTimer(this, 0) { }
-inline AXObjectCache::~AXObjectCache() { }
-inline AXObject* AXObjectCache::focusedUIElementForPage(const Page*) { return 0; }
-inline AXObject* AXObjectCache::get(RenderObject*) { return 0; }
-inline AXObject* AXObjectCache::get(Node*) { return 0; }
-inline AXObject* AXObjectCache::get(Widget*) { return 0; }
-inline AXObject* AXObjectCache::get(AbstractInlineTextBox*) { return 0; }
-inline AXObject* AXObjectCache::getOrCreate(AccessibilityRole) { return 0; }
-inline AXObject* AXObjectCache::getOrCreate(RenderObject*) { return 0; }
-inline AXObject* AXObjectCache::getOrCreate(Node*) { return 0; }
-inline AXObject* AXObjectCache::getOrCreate(Widget*) { return 0; }
-inline AXObject* AXObjectCache::getOrCreate(AbstractInlineTextBox*) { return 0; }
-inline AXObject* AXObjectCache::rootObject() { return 0; }
-inline Element* AXObjectCache::rootAXEditableElement(Node*) { return 0; }
-inline bool nodeHasRole(Node*, const String&) { return false; }
-inline void AXObjectCache::startCachingComputedObjectAttributesUntilTreeMutates() { }
-inline void AXObjectCache::stopCachingComputedObjectAttributes() { }
-inline bool isNodeAriaVisible(Node*) { return true; }
-inline const Element* AXObjectCache::rootAXEditableElement(const Node*) { return 0; }
-inline void AXObjectCache::attachWrapper(AXObject*) { }
-inline void AXObjectCache::checkedStateChanged(Node*) { }
-inline void AXObjectCache::childrenChanged(RenderObject*) { }
-inline void AXObjectCache::childrenChanged(Node*) { }
-inline void AXObjectCache::childrenChanged(AXObject*) { }
-inline void AXObjectCache::textChanged(RenderObject*) { }
-inline void AXObjectCache::textChanged(Node*) { }
-inline void AXObjectCache::textChanged(AXObject*) { }
-inline void AXObjectCache::updateCacheAfterNodeIsAttached(Node*) { }
-inline void AXObjectCache::detachWrapper(AXObject*) { }
-inline void AXObjectCache::handleActiveDescendantChanged(Node*) { }
-inline void AXObjectCache::handleAriaExpandedChange(Node*) { }
-inline void AXObjectCache::handleAriaRoleChanged(Node*) { }
-inline void AXObjectCache::handleFocusedUIElementChanged(Node*, Node*) { }
-inline void AXObjectCache::handleScrollbarUpdate(ScrollView*) { }
-inline void AXObjectCache::handleAttributeChanged(const QualifiedName&, Element*) { }
-inline void AXObjectCache::recomputeIsIgnored(RenderObject*) { }
-inline void AXObjectCache::handleScrolledToAnchor(const Node*) { }
-inline void AXObjectCache::nodeTextChangeNotification(Node*, AXTextChange, unsigned, const String&) { }
-inline void AXObjectCache::nodeTextChangePlatformNotification(AXObject*, AXTextChange, unsigned, const String&) { }
-inline void AXObjectCache::postNotification(AXObject*, Document*, AXNotification, bool, PostType) { }
-inline void AXObjectCache::postNotification(RenderObject*, AXNotification, bool, PostType) { }
-inline void AXObjectCache::postNotification(Node*, AXNotification, bool, PostType) { }
-inline void AXObjectCache::postPlatformNotification(AXObject*, AXNotification) { }
-inline void AXObjectCache::remove(AXID) { }
-inline void AXObjectCache::remove(RenderObject*) { }
-inline void AXObjectCache::remove(Node*) { }
-inline void AXObjectCache::remove(Widget*) { }
-inline void AXObjectCache::remove(AbstractInlineTextBox*) { }
-inline void AXObjectCache::selectedChildrenChanged(RenderObject*) { }
-inline void AXObjectCache::selectedChildrenChanged(Node*) { }
-#endif
 
 }
 
