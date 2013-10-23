@@ -6,6 +6,15 @@
 set -o nounset
 set -o errexit
 
+SCRIPT_DIR="$(cd $(dirname $0) && pwd)"
+OUT_DIR=${SCRIPT_DIR}/out
+NACLPORTS_URL=https://chromium.googlesource.com/external/naclports
+NACLPORTS_SHA=0096083c0fa71c014f6218bb14d7e1742d9a6b0c
+NACLPORTS_DIR=${OUT_DIR}/naclports
+NACLAM_URL=https://github.com/johnmccutchan/NaClAMBase
+NACLAM_DIR=${OUT_DIR}/NaClAMBase
+NACLAM_SHA=0eb4647a3f99c6e66156959edc6c55d4a913468a
+
 if [ -z "${NACL_SDK_ROOT:-}" ]; then
   echo "-------------------------------------------------------------------"
   echo "NACL_SDK_ROOT is unset."
@@ -31,13 +40,18 @@ LogExecute() {
 Clone() {
   local url=$1
   local dir=$2
+  local sha=$3
   if [ ! -d $dir ]; then
     LogExecute git clone $url $dir
   else
     pushd $dir
-    LogExecute git pull origin master
+    LogExecute git fetch origin
     popd
   fi
+
+  pushd $dir
+  LogExecute git checkout $sha
+  popd
 }
 
 readonly OS_NAME=$(uname -s)
@@ -49,13 +63,8 @@ else
   OS_JOBS=1
 fi
 
-NACLPORTS_URL=https://chromium.googlesource.com/external/naclports
-NACLPORTS_DIR=naclports
-NACLAM_URL=https://github.com/johnmccutchan/NaClAMBase
-NACLAM_DIR=NaClAMBase
-
 Banner Cloning naclports
-Clone ${NACLPORTS_URL} ${NACLPORTS_DIR}
+Clone ${NACLPORTS_URL} ${NACLPORTS_DIR} ${NACLPORTS_SHA}
 
 Banner Building bullet
 pushd ${NACLPORTS_DIR}
@@ -63,14 +72,14 @@ make NACL_ARCH=pnacl bullet
 popd
 
 Banner Cloning NaClAMBase
-Clone ${NACLAM_URL} ${NACLAM_DIR}
+Clone ${NACLAM_URL} ${NACLAM_DIR} ${NACLAM_SHA}
 
 Banner Building NaClAM
-LogExecute cp Makefile ${NACLAM_DIR}
+LogExecute cp ${SCRIPT_DIR}/Makefile ${NACLAM_DIR}
 pushd ${NACLAM_DIR}
 LogExecute make -j${OS_JOBS}
 popd
 
-LogExecute cp ${NACLAM_DIR}/pnacl/Release/NaClAMBullet.{pexe,nmf} .
+LogExecute cp ${NACLAM_DIR}/pnacl/Release/NaClAMBullet.{pexe,nmf} ${OUT_DIR}
 
 Banner Done!

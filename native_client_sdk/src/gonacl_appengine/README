@@ -1,25 +1,65 @@
+GoNaCl App Engine
+=================
+
 This is a new App Engine Python 2.7 application for http://gonacl.com
 
 At this time it presents the existing functionality of redirecting
 to http://developers.google.com/native-client/
 
-Also, there are PNaCl demos added at /static/pnacl-demo-<name>/index.html
+Also, there are PNaCl demos added at ``/static/pnacl-demo-<name>/index.html``
 
-To upload, run this from the root directory of the AppEngine SDK:
 
-$ ./appcfg.py update <path-to-this-dir>
+To Run Locally
+--------------
+
+1. Download the App Engine SDK (https://developers.google.com/appengine/downloads#Google_App_Engine_SDK_for_Python)
+
+2. Run ``<path/to/app/engine>/dev_appserver.py app.yaml``
+
+3. Navigate in your browser to http://localhost:8080/static/
+
+
+To Update App Engine (HTML/JS)
+------------------------------
+
+To upload, run this from the root directory of the App Engine SDK::
+
+    $ ./appcfg.py update <path-to-this-dir>
 
 It probably makes sense to bump the application version in app.yaml for each
-upload, as it lets us use AppEngine's versioning. The newly uploaded version can
-be tried before actually being activated, by going to the "Versions" section on
-the AppEngine dashboard. Note that the newly uploaded version only becomes
-active when it's set as the "default" version in the dashboard.
+upload, as it lets us use App Engine's versioning. The newly uploaded version
+can be tried before actually being activated, by going to the "Versions"
+section on the App Engine dashboard. Note that the newly uploaded version only
+becomes active when it's set as the "default" version in the dashboard.
 
-Included demos:
 
-* static/pnacl-demo-earth: the modified Earth demo.
-* static/pnacl-demo-bullet: a demo of bullet physics, using NaCl acceleration
-    modules.
+To Update the Binary files (.pexe/.nmf)
+---------------------------------------
 
-Only the source files (HTML and JS) are kept in source control. The pexe and
-images should be copied over from an SDK build when uploading to AppEngine.
+The build outputs are automatically uploaded to Google Cloud Storage
+(``commondatastorage.googleapis.com``) by the linux SDK builder
+(linux-sdk-multi).
+To publish a new version:
+
+1. Make and land your change to the demo, found in ``src/<demo-name>``.
+
+2. Wait for the linux SDK builder to build and upload your change. You can see
+   what's available by using gsutil::
+
+       $ gsutil ls gs://gonacl/demos/continuous
+
+       gs://gonacl/demos/continuous/229855/
+       gs://gonacl/demos/continuous/229860/
+       ...
+
+3. Update the URLs to use this new revision in each demo's JavaScript files:
+
+  * For ``earth``, this is found in ``/static/pnacl-demo-earth/example.js``, in
+    the ``getDataURL`` function.
+
+  * For ``bullet``, this is found in ``/static/pnacl-demo-bullet/main.js``, in
+    the ``pageDidLoad`` function.
+
+4. Land a CL with these changes.
+
+5. Update App Engine, using the instructions above.

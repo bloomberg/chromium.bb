@@ -22,3 +22,6 @@ handlers:
 
 - url: /.*
   script: gonacl.application
+
+skip_files:
+- src/.*

@@ -130,11 +130,6 @@ endef
 # using the finalizing to a .pexe.  This enables debugging.
 #
 define LINK_RULE
-ifeq ($(CONFIG),Debug)
-EXECUTABLES=$(OUTDIR)/$(1)_x86_32.nexe $(OUTDIR)/$(1)_x86_64.nexe $(OUTDIR)/$(1)_arm.nexe
-else
-EXECUTABLES=$(OUTDIR)/$(1).pexe
-endif
 $(call LINKER_RULE,$(OUTDIR)/$(1),$(foreach src,$(2),$(call SRC_TO_OBJ,$(src),_pnacl)),$(filter-out pthread,$(3)),$(4),$(LIB_PATHS),$(5))
 endef
 
@@ -169,6 +164,12 @@ endef
 # $2 = Additional create_nmf.py arguments
 #
 NMF:=python $(NACL_SDK_ROOT)/tools/create_nmf.py
+
+ifeq ($(CONFIG),Debug)
+EXECUTABLES=$(OUTDIR)/$(1)_x86_32.nexe $(OUTDIR)/$(1)_x86_64.nexe $(OUTDIR)/$(1)_arm.nexe
+else
+EXECUTABLES=$(OUTDIR)/$(1).pexe
+endif
 
 define NMF_RULE
 all: $(OUTDIR)/$(1).nmf

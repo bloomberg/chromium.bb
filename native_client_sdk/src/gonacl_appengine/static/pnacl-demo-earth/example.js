@@ -42,9 +42,9 @@ function browserSupportsPNaCl() {
  * @return {string}
  */
 function getDataURL(name) {
-  var baseUrl =
-    'http://commondatastorage.googleapis.com/gonacl/pnacl-earth-demo/';
-  return baseUrl + name;
+  var revision = 229855;
+  var baseUrl = 'http://commondatastorage.googleapis.com/gonacl/demos/publish/';
+  return baseUrl + revision + '/earth/' + name;
 }
 
 /**
