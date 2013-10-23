@@ -71,8 +71,6 @@ void SetContentCommandLineFlags(int max_render_process_count,
   parsed_command_line->AppendSwitch(switches::kInProcessGPU);
   parsed_command_line->AppendSwitch(switches::kDisableGpuShaderDiskCache);
 
-  // Always use fixed layout and viewport tag.
-  parsed_command_line->AppendSwitch(switches::kEnableFixedLayout);
   parsed_command_line->AppendSwitch(switches::kEnableViewport);
 
   // Disable anti-aliasing.

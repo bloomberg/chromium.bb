@@ -3606,10 +3606,6 @@ NavigationState* RenderViewImpl::CreateNavigationStateFromPending() {
 void RenderViewImpl::ProcessViewLayoutFlags(const CommandLine& command_line) {
   bool enable_viewport =
       command_line.HasSwitch(switches::kEnableViewport);
-  bool enable_fixed_layout =
-      command_line.HasSwitch(switches::kEnableFixedLayout);
-
-  webview()->enableFixedLayoutMode(enable_fixed_layout || enable_viewport);
 
   // If viewport tag is enabled, then the WebKit side will take care
   // of setting the fixed layout size and page scale limits.
@@ -3619,18 +3615,6 @@ void RenderViewImpl::ProcessViewLayoutFlags(const CommandLine& command_line) {
   // When navigating to a new page, reset the page scale factor to be 1.0.
   webview()->setInitialPageScaleOverride(1.f);
 
-  if (enable_fixed_layout) {
-    std::string str =
-        command_line.GetSwitchValueASCII(switches::kEnableFixedLayout);
-    std::vector<std::string> tokens;
-    base::SplitString(str, ',', &tokens);
-    if (tokens.size() == 2) {
-      int width, height;
-      if (base::StringToInt(tokens[0], &width) &&
-          base::StringToInt(tokens[1], &height))
-        webview()->setFixedLayoutSize(WebSize(width, height));
-    }
-  }
   float maxPageScaleFactor =
       command_line.HasSwitch(switches::kEnablePinch) ? 4.f : 1.f ;
   webview()->setPageScaleFactorLimits(1, maxPageScaleFactor);

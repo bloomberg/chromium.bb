@@ -341,7 +341,6 @@ void AwRenderViewExt::OnSetInitialPageScale(double page_scale_factor) {
 void AwRenderViewExt::OnSetFixedLayoutSize(const gfx::Size& size) {
   if (!render_view() || !render_view()->GetWebView())
     return;
-  DCHECK(render_view()->GetWebView()->isFixedLayoutModeEnabled());
   render_view()->GetWebView()->setFixedLayoutSize(size);
 }
 
