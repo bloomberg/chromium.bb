@@ -478,6 +478,17 @@ void NTPResourceCache::CreateNewTabHTML() {
   load_time_data.SetBoolean("showWebStoreIcon",
                             !prefs->GetBoolean(prefs::kHideWebStoreIcon));
 
+  bool streamlined_hosted_apps = CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableStreamlinedHostedApps);
+  load_time_data.SetBoolean("enableStreamlinedHostedApps",
+                            streamlined_hosted_apps);
+  // Use a different string for launching as a regular tab for streamlined
+  // hosted apps.
+  if (streamlined_hosted_apps) {
+    load_time_data.SetString("applaunchtypetab",
+        l10n_util::GetStringUTF16(IDS_APP_CONTEXT_MENU_OPEN_TAB));
+  }
+
 #if defined(OS_MACOSX)
   load_time_data.SetBoolean(
       "disableCreateAppShortcut",

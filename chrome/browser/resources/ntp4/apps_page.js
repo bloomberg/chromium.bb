@@ -49,7 +49,10 @@ cr.define('ntp', function() {
       this.launch_.addEventListener('activate', this.onLaunch_.bind(this));
 
       menu.appendChild(cr.ui.MenuItem.createSeparator());
-      this.launchRegularTab_ = this.appendMenuItem_('applaunchtyperegular');
+      if (loadTimeData.getBoolean('enableStreamlinedHostedApps'))
+        this.launchRegularTab_ = this.appendMenuItem_('applaunchtypetab');
+      else
+        this.launchRegularTab_ = this.appendMenuItem_('applaunchtyperegular');
       this.launchPinnedTab_ = this.appendMenuItem_('applaunchtypepinned');
       if (!cr.isMac)
         this.launchNewWindow_ = this.appendMenuItem_('applaunchtypewindow');
@@ -128,10 +131,14 @@ cr.define('ntp', function() {
 
       this.launch_.textContent = app.appData.title;
 
+      var launchTypeRegularTab = this.launchRegularTab_;
       this.forAllLaunchTypes_(function(launchTypeButton, id) {
         launchTypeButton.disabled = false;
         launchTypeButton.checked = app.appData.launch_type == id;
-        launchTypeButton.hidden = app.appData.packagedApp;
+        // Streamlined hosted apps should only show the "Open as tab" button.
+        launchTypeButton.hidden = app.appData.packagedApp ||
+            (loadTimeData.getBoolean('enableStreamlinedHostedApps') &&
+             launchTypeButton != launchTypeRegularTab);
       });
 
       this.launchTypeMenuSeparator_.hidden = app.appData.packagedApp;
@@ -163,8 +170,15 @@ cr.define('ntp', function() {
     onLaunchTypeChanged_: function(e) {
       var pressed = e.currentTarget;
       var app = this.app_;
+      var targetLaunchType = pressed;
+      // Streamlined hosted apps can only toggle between open as window and open
+      // as tab.
+      if (loadTimeData.getBoolean('enableStreamlinedHostedApps')) {
+        targetLaunchType = this.launchRegularTab_.checked ?
+            this.launchNewWindow_ : this.launchRegularTab_;
+      }
       this.forAllLaunchTypes_(function(launchTypeButton, id) {
-        if (launchTypeButton == pressed) {
+        if (launchTypeButton == targetLaunchType) {
           chrome.send('setLaunchType', [app.appId, id]);
           // Manually update the launch type. We will only get
           // appsPrefChangeCallback calls after changes to other NTP instances.

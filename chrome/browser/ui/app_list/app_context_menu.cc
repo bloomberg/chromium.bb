@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/app_list/app_context_menu.h"
 
+#include "base/command_line.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/extensions/context_menu_matcher.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -15,6 +16,7 @@
 #include "chrome/browser/ui/app_list/app_context_menu_delegate.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/browser_navigator.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
 #include "content/public/common/context_menu_params.h"
 #include "grit/chromium_strings.h"
@@ -196,27 +198,36 @@ ui::MenuModel* AppContextMenu::GetMenuModel() {
 
     if (!is_platform_app_) {
       menu_model_->AddSeparator(ui::NORMAL_SEPARATOR);
-      menu_model_->AddCheckItemWithStringId(
-          LAUNCH_TYPE_REGULAR_TAB,
-          IDS_APP_CONTEXT_MENU_OPEN_REGULAR);
-      menu_model_->AddCheckItemWithStringId(
-          LAUNCH_TYPE_PINNED_TAB,
-          IDS_APP_CONTEXT_MENU_OPEN_PINNED);
+      // Streamlined hosted apps can only toggle between LAUNCH_WINDOW and
+      // LAUNCH_REGULAR.
+      if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableStreamlinedHostedApps)) {
+        menu_model_->AddCheckItemWithStringId(
+            LAUNCH_TYPE_REGULAR_TAB,
+            IDS_APP_CONTEXT_MENU_OPEN_TAB);
+      } else {
+        menu_model_->AddCheckItemWithStringId(
+            LAUNCH_TYPE_REGULAR_TAB,
+            IDS_APP_CONTEXT_MENU_OPEN_REGULAR);
+        menu_model_->AddCheckItemWithStringId(
+            LAUNCH_TYPE_PINNED_TAB,
+            IDS_APP_CONTEXT_MENU_OPEN_PINNED);
 #if defined(OS_MACOSX)
-      // Mac does not support standalone web app browser windows or maximize.
-      menu_model_->AddCheckItemWithStringId(
-          LAUNCH_TYPE_FULLSCREEN,
-          IDS_APP_CONTEXT_MENU_OPEN_FULLSCREEN);
+        // Mac does not support standalone web app browser windows or maximize.
+        menu_model_->AddCheckItemWithStringId(
+            LAUNCH_TYPE_FULLSCREEN,
+            IDS_APP_CONTEXT_MENU_OPEN_FULLSCREEN);
 #else
-      menu_model_->AddCheckItemWithStringId(
-          LAUNCH_TYPE_WINDOW,
-          IDS_APP_CONTEXT_MENU_OPEN_WINDOW);
-      // Even though the launch type is Full Screen it is more accurately
-      // described as Maximized in Ash.
-      menu_model_->AddCheckItemWithStringId(
-          LAUNCH_TYPE_FULLSCREEN,
-          IDS_APP_CONTEXT_MENU_OPEN_MAXIMIZED);
+        menu_model_->AddCheckItemWithStringId(
+            LAUNCH_TYPE_WINDOW,
+            IDS_APP_CONTEXT_MENU_OPEN_WINDOW);
+        // Even though the launch type is Full Screen it is more accurately
+        // described as Maximized in Ash.
+        menu_model_->AddCheckItemWithStringId(
+            LAUNCH_TYPE_FULLSCREEN,
+            IDS_APP_CONTEXT_MENU_OPEN_MAXIMIZED);
 #endif
+      }
       menu_model_->AddSeparator(ui::NORMAL_SEPARATOR);
       menu_model_->AddItemWithStringId(OPTIONS, IDS_NEW_TAB_APP_OPTIONS);
     }
@@ -370,10 +381,21 @@ void AppContextMenu::ExecuteCommand(int command_id, int event_flags) {
     controller_->DoCreateShortcutsFlow(profile_, app_id_);
   } else if (command_id >= LAUNCH_TYPE_START &&
              command_id < LAUNCH_TYPE_LAST) {
+    extensions::ExtensionPrefs::LaunchType launch_type =
+        static_cast<extensions::ExtensionPrefs::LaunchType>(
+            command_id - LAUNCH_TYPE_START);
+    // Streamlined hosted apps can only toggle between LAUNCH_WINDOW and
+    // LAUNCH_REGULAR.
+    if (CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kEnableStreamlinedHostedApps)) {
+      launch_type = GetExtensionLaunchType(profile_, GetExtension()) ==
+                            extensions::ExtensionPrefs::LAUNCH_REGULAR
+                        ? extensions::ExtensionPrefs::LAUNCH_WINDOW
+                        : extensions::ExtensionPrefs::LAUNCH_REGULAR;
+    }
     SetExtensionLaunchType(profile_,
                            app_id_,
-                           static_cast<extensions::ExtensionPrefs::LaunchType>(
-                               command_id - LAUNCH_TYPE_START));
+                           launch_type);
   } else if (command_id == OPTIONS) {
     ShowExtensionOptions();
   } else if (command_id == UNINSTALL) {
