@@ -43,6 +43,7 @@
         '--namespace=<(root_namespace)',
         '--generator=cpp-bundle',
         '<@(schema_files)',
+        '<@(non_compiled_schema_files)',
       ],
       'message': 'Generating C++ API bundle code',
       'process_outputs_as_sources': 1,
