@@ -1388,18 +1388,6 @@
    fun:_ZN14KeychainSearch17FindMatchingItemsEPSt6vectorIP24OpaqueSecKeychainItemRefSaIS2_EE
 }
 {
-   bug_96684a
-   Memcheck:Uninitialized
-   fun:_ZN7content20P2PSocketHostTcpBase4SendERKN3net10IPEndPointERKSt6vectorIcSaIcEE
-   fun:*SocketHost*TcpTest_*_Test8TestBodyEv
-}
-{
-   bug_96684b
-   Memcheck:Uninitialized
-   fun:_ZN7content16P2PSocketHostUdp4SendERKN3net10IPEndPointERKSt6vectorIcSaIcEE
-   fun:*SocketHostUdpTest_*_Test8TestBodyEv
-}
-{
    bug_96689
    Memcheck:Uninitialized
    fun:_ZN3net11SSLHostInfo10ParseInnerERKSs
@@ -2367,18 +2355,6 @@
    fun:_ZN16TType1OTFCIDFont15ParseCFFCIDFontERK19TType1CFFDescriptorP32Type1ProtectionEvaluationContext
    fun:_ZN16TType1OTFCIDFontC2ERK19TType1CFFDescriptor
    fun:_ZN10TType1Font7GetFontEPK5TFont
-}
-{
-   bug_308683_a
-   Memcheck:Uninitialized
-   fun:_ZN7content16P2PSocketHostUdp4SendERKN3net10IPEndPointERKSt6vectorIcSaIcEEy
-   fun:_ZN7content*P2PSocketHostUdpTest_Send*
-}
-{
-   bug_308683_b
-   Memcheck:Uninitialized
-   fun:_ZN7content20P2PSocketHostTcpBase4SendERKN3net10IPEndPointERKSt6vectorIcSaIcEEy
-   fun:_ZN7content*P2PSocketHost*
 }
 {
    bug_310351
