@@ -60,7 +60,7 @@ public:
     AnimationStack* animationStack(const Element* element) const
     {
         if (ActiveAnimations* animations = element->activeAnimations())
-            return animations->defaultStack();
+            return &animations->defaultStack();
         return 0;
     }
     void addEventToDispatch(EventTarget* target, PassRefPtr<Event> event)

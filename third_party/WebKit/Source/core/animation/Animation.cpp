@@ -56,7 +56,7 @@ void Animation::willDetach()
         clearEffects();
 }
 
-static AnimationStack* ensureAnimationStack(Element* element)
+static AnimationStack& ensureAnimationStack(Element* element)
 {
     return element->ensureActiveAnimations()->defaultStack();
 }
@@ -68,7 +68,7 @@ void Animation::applyEffects(bool previouslyInEffect)
         return;
 
     if (!previouslyInEffect) {
-        ensureAnimationStack(m_target.get())->add(this);
+        ensureAnimationStack(m_target.get()).add(this);
         m_activeInAnimationStack = true;
     }
 
@@ -80,7 +80,7 @@ void Animation::clearEffects()
 {
     ASSERT(player());
     ASSERT(m_activeInAnimationStack);
-    ensureAnimationStack(m_target.get())->remove(this);
+    ensureAnimationStack(m_target.get()).remove(this);
     m_activeInAnimationStack = false;
     m_compositableValues.clear();
     m_target->setNeedsStyleRecalc(LocalStyleChange, StyleChangeFromRenderer);

@@ -43,11 +43,11 @@ class ActiveAnimations {
 public:
     // Animations that are currently active for this element, their effects will be applied
     // during a style recalc.
-    AnimationStack* defaultStack() { return &m_defaultStack; }
+    AnimationStack& defaultStack() { return m_defaultStack; }
     // Tracks the state of active CSS Animations and Transitions. The individual animations
     // will also be part of the default stack, but the mapping betwen animation name and
     // player is kept here.
-    CSSAnimations* cssAnimations() { return &m_cssAnimations; }
+    CSSAnimations& cssAnimations() { return m_cssAnimations; }
     bool isEmpty() const { return m_defaultStack.isEmpty() && m_cssAnimations.isEmpty(); }
 private:
     AnimationStack m_defaultStack;

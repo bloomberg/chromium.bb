@@ -181,23 +181,19 @@ CSSAnimationUpdateScope::CSSAnimationUpdateScope(Element* target)
 {
     if (!m_target)
         return;
-    ActiveAnimations* activeAnimations = m_target->activeAnimations();
-    CSSAnimations* cssAnimations = activeAnimations ? activeAnimations->cssAnimations() : 0;
     // It's possible than an update was created outside an update scope. That's harmless
     // but we must clear it now to avoid applying it if an updated replacement is not
     // created in this scope.
-    if (cssAnimations)
-        cssAnimations->setPendingUpdate(nullptr);
+    if (ActiveAnimations* activeAnimations = m_target->activeAnimations())
+        activeAnimations->cssAnimations().setPendingUpdate(nullptr);
 }
 
 CSSAnimationUpdateScope::~CSSAnimationUpdateScope()
 {
     if (!m_target)
         return;
-    ActiveAnimations* activeAnimations = m_target->activeAnimations();
-    CSSAnimations* cssAnimations = activeAnimations ? activeAnimations->cssAnimations() : 0;
-    if (cssAnimations)
-        cssAnimations->maybeApplyPendingUpdate(m_target);
+    if (ActiveAnimations* activeAnimations = m_target->activeAnimations())
+        activeAnimations->cssAnimations().maybeApplyPendingUpdate(m_target);
 }
 
 PassOwnPtr<CSSAnimationUpdate> CSSAnimations::calculateUpdate(Element* element, const RenderStyle* style, StyleResolver* resolver)
@@ -213,7 +209,7 @@ void CSSAnimations::calculateAnimationUpdate(CSSAnimationUpdate* update, Element
 {
     ActiveAnimations* activeAnimations = element->activeAnimations();
     const CSSAnimationDataList* animationDataList = style->animations();
-    const CSSAnimations* cssAnimations = activeAnimations ? activeAnimations->cssAnimations() : 0;
+    const CSSAnimations* cssAnimations = activeAnimations ? &activeAnimations->cssAnimations() : 0;
 
     HashSet<AtomicString> inactive;
     if (cssAnimations)
@@ -352,8 +348,7 @@ void CSSAnimations::calculateTransitionUpdateForProperty(CSSAnimationUpdate* upd
 void CSSAnimations::calculateTransitionUpdate(CSSAnimationUpdate* update, const Element* element, const RenderStyle* style)
 {
     ActiveAnimations* activeAnimations = element->activeAnimations();
-    const CSSAnimations* cssAnimations = activeAnimations ? activeAnimations->cssAnimations() : 0;
-    const TransitionMap* transitions = cssAnimations ? &cssAnimations->m_transitions : 0;
+    const TransitionMap* transitions = activeAnimations ? &activeAnimations->cssAnimations().m_transitions : 0;
 
     HashSet<CSSPropertyID> listedProperties;
     if (style->display() != NONE && element->renderer() && element->renderer()->style()) {

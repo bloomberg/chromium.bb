@@ -210,7 +210,7 @@ Element::~Element()
 
         if (RuntimeEnabledFeatures::webAnimationsCSSEnabled()) {
             if (ActiveAnimations* activeAnimations = data->activeAnimations())
-                activeAnimations->cssAnimations()->cancel();
+                activeAnimations->cssAnimations().cancel();
         }
     }
 
@@ -1447,7 +1447,7 @@ void Element::detach(const AttachContext& context)
 
         if (RuntimeEnabledFeatures::webAnimationsCSSEnabled() && !context.performingReattach) {
             if (ActiveAnimations* activeAnimations = data->activeAnimations())
-                activeAnimations->cssAnimations()->cancel();
+                activeAnimations->cssAnimations().cancel();
         }
     }
     if (ElementShadow* shadow = this->shadow())
