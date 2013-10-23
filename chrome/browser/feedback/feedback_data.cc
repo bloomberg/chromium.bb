@@ -7,6 +7,7 @@
 #include "base/file_util.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/strings/string_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
@@ -33,6 +34,8 @@ const size_t kFeedbackMaxLineCount = 40;
 
 const char kTraceFilename[] = "tracing.zip\n";
 const char kPerformanceCategoryTag[] = "Performance";
+
+const char kZipExt[] = ".zip";
 
 const base::FilePath::CharType kLogsFilename[] =
     FILE_PATH_LITERAL("system_logs.txt");
@@ -67,12 +70,19 @@ std::string LogsToString(FeedbackData::SystemLogsMap* sys_info) {
   return syslogs_string;
 }
 
+void ZipFile(const base::FilePath& filename,
+             const std::string& data, std::string* compressed_data) {
+  if (!feedback_util::ZipString(filename, data, compressed_data))
+    compressed_data->clear();
+}
+
 void ZipLogs(FeedbackData::SystemLogsMap* sys_info,
              std::string* compressed_logs) {
   DCHECK(compressed_logs);
   std::string logs_string = LogsToString(sys_info);
   if (logs_string.empty() ||
-      !feedback_util::ZipString(kLogsFilename, logs_string, compressed_logs)) {
+      !feedback_util::ZipString(
+          base::FilePath(kLogsFilename), logs_string, compressed_logs)) {
     compressed_logs->clear();
   }
 }
@@ -93,6 +103,7 @@ FeedbackData::FeedbackData() : profile_(NULL),
                                trace_id_(0),
                                feedback_page_data_complete_(false),
                                syslogs_compression_complete_(false),
+                               attached_file_compression_complete_(false),
                                report_sent_(false) {
 }
 
@@ -133,6 +144,32 @@ void FeedbackData::SetAndCompressSystemInfo(
   }
 }
 
+void FeedbackData::AttachAndCompressFileData(
+    scoped_ptr<std::string> attached_filedata) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  attached_filedata_ = attached_filedata.Pass();
+
+  if (!attached_filename_.empty() && attached_filedata_.get()) {
+    std::string* compressed_file_ptr = new std::string;
+    scoped_ptr<std::string> compressed_file(compressed_file_ptr);
+#if defined(OS_WIN)
+    base::FilePath attached_file(base::UTF8ToWide(attached_filename_));
+#else
+    base::FilePath attached_file(attached_filename_);
+#endif
+    BrowserThread::PostBlockingPoolTaskAndReply(
+        FROM_HERE,
+        base::Bind(&ZipFile,
+                   attached_file,
+                   *(attached_filedata_.get()),
+                   compressed_file_ptr),
+        base::Bind(&FeedbackData::OnCompressFileComplete,
+                   this,
+                   base::Passed(&compressed_file)));
+  }
+}
+
 void FeedbackData::OnGetTraceData(
     int trace_id_,
     scoped_refptr<base::RefCountedString> trace_data) {
@@ -143,8 +180,8 @@ void FeedbackData::OnGetTraceData(
 
   scoped_ptr<std::string> data(new std::string(trace_data->data()));
 
-  set_attached_filename(kTraceFilename);
-  set_attached_filedata(data.Pass());
+  attached_filename_ = kTraceFilename;
+  attached_filedata_ = data.Pass();
   trace_id_ = 0;
 
   set_category_tag(kPerformanceCategoryTag);
@@ -162,8 +199,25 @@ void FeedbackData::OnCompressLogsComplete(
   SendReport();
 }
 
+void FeedbackData::OnCompressFileComplete(
+    scoped_ptr<std::string> compressed_file) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  if (compressed_file.get()) {
+    attached_filedata_ = compressed_file.Pass();
+    attached_filename_.append(kZipExt);
+    attached_file_compression_complete_ = true;
+  } else {
+    attached_filename_.clear();
+    attached_filedata_.reset(NULL);
+  }
+
+  SendReport();
+}
+
 bool FeedbackData::IsDataComplete() {
-  return (syslogs_compression_complete_ || !sys_info_.get()) &&
+  return (!sys_info_.get() || syslogs_compression_complete_) &&
+      (!attached_filedata_.get() || attached_file_compression_complete_) &&
       !trace_id_ &&
       feedback_page_data_complete_;
 }

@@ -99,7 +99,8 @@ void TracingManager::OnEndTracingComplete() {
   data_ = std::string("[") + data_ + "]";
 
   std::string output_val;
-  feedback_util::ZipString(kTracingFilename, data_, &output_val);
+  feedback_util::ZipString(
+      base::FilePath(kTracingFilename), data_, &output_val);
 
   scoped_refptr<base::RefCountedString> output(
       base::RefCountedString::TakeString(&output_val));

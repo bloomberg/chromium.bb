@@ -36,8 +36,15 @@ class FeedbackData : public base::RefCountedThreadSafe<FeedbackData> {
   // compression.
   void SetAndCompressSystemInfo(scoped_ptr<SystemLogsMap> sys_info);
 
+  // Sets the system information for this instance and kicks off its
+  // compression.
+  void AttachAndCompressFileData(scoped_ptr<std::string> attached_filedata);
+
   // Called once we have compressed our system logs.
   void OnCompressLogsComplete(scoped_ptr<std::string> compressed_logs);
+
+  // Called once we have compressed our attached file.
+  void OnCompressFileComplete(scoped_ptr<std::string> compressed_file);
 
   // Returns true if we've completed all the tasks needed before we can send
   // feedback - at this time this is includes getting the feedback page data
@@ -78,9 +85,6 @@ class FeedbackData : public base::RefCountedThreadSafe<FeedbackData> {
   void set_attached_filename(const std::string& attached_filename) {
     attached_filename_ = attached_filename;
   }
-  void set_attached_filedata(scoped_ptr<std::string> attached_filedata) {
-    attached_filedata_ = attached_filedata.Pass();
-  }
   void set_attached_file_uuid(const std::string& uuid) {
     attached_file_uuid_ = uuid;
   }
@@ -117,7 +121,7 @@ class FeedbackData : public base::RefCountedThreadSafe<FeedbackData> {
 
   bool feedback_page_data_complete_;
   bool syslogs_compression_complete_;
-
+  bool attached_file_compression_complete_;
   bool report_sent_;
 
   DISALLOW_COPY_AND_ASSIGN(FeedbackData);

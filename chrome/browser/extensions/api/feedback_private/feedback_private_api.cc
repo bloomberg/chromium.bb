@@ -7,6 +7,7 @@
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/feedback_private/feedback_service.h"
@@ -17,6 +18,19 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/webui/web_ui_util.h"
 #include "url/url_util.h"
+
+namespace {
+
+// Getting the filename of a blob prepends a "C:\fakepath" to the filename.
+// This is undesirable, strip it if it exists.
+std::string StripFakepath(const std::string& path) {
+  const char kFakePathStr[] = "C:\\fakepath\\";
+  if (StartsWithASCII(path, kFakePathStr, false))
+    return path.substr(arraysize(kFakePathStr) - 1);
+  return path;
+}
+
+}  // namespace
 
 namespace extensions {
 
@@ -176,7 +190,7 @@ bool FeedbackPrivateSendFeedbackFunction::RunImpl() {
 
   if (!attached_file_uuid.empty()) {
     feedback_data->set_attached_filename(
-        (*feedback_info.attached_file.get()).name);
+        StripFakepath((*feedback_info.attached_file.get()).name));
     feedback_data->set_attached_file_uuid(attached_file_uuid);
   }
 

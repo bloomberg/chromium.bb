@@ -36,8 +36,8 @@ extern const char kAppLauncherCategoryTag[];
 namespace feedback_util {
 
   void SendReport(scoped_refptr<FeedbackData> data);
-  bool ZipString(const base::FilePath::CharType filename[],
-                 const std::string& logs, std::string* compressed_logs);
+  bool ZipString(const base::FilePath& filename,
+                 const std::string& data, std::string* compressed_data);
 
 }  // namespace feedback_util
 

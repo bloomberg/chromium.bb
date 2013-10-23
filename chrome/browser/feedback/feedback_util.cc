@@ -362,8 +362,8 @@ void SendReport(scoped_refptr<FeedbackData> data) {
   DispatchFeedback(data->profile(), post_body, 0);
 }
 
-bool ZipString(const base::FilePath::CharType filename[],
-               const std::string& logs, std::string* compressed_logs) {
+bool ZipString(const base::FilePath& filename,
+               const std::string& data, std::string* compressed_logs) {
   base::FilePath temp_path;
   base::FilePath zip_file;
 
@@ -372,7 +372,7 @@ bool ZipString(const base::FilePath::CharType filename[],
   if (!file_util::CreateNewTempDirectory(FILE_PATH_LITERAL(""), &temp_path))
     return false;
   if (file_util::WriteFile(temp_path.Append(filename),
-                           logs.c_str(), logs.size()) == -1)
+                           data.c_str(), data.size()) == -1)
     return false;
   if (!file_util::CreateTemporaryFile(&zip_file))
     return false;
