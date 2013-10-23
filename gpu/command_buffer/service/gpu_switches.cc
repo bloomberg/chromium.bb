@@ -57,8 +57,6 @@ const char kGpuDriverBugWorkarounds[] = "gpu-driver-bug-workarounds";
 // Sets the maximum size of the in-memory gpu program cache, in kb
 const char kGpuProgramCacheSizeKb[]         = "gpu-program-cache-size-kb";
 
-const char kTraceGL[]       = "trace-gl";
-
 // Disables the GPU shader on disk cache.
 const char kDisableGpuShaderDiskCache[]     = "disable-gpu-shader-disk-cache";
 
@@ -82,7 +80,6 @@ const char* kGpuSwitches[] = {
   kForceSynchronousGLReadPixels,
   kGpuDriverBugWorkarounds,
   kGpuProgramCacheSizeKb,
-  kTraceGL,
   kDisableGpuShaderDiskCache,
   kEnableShareGroupAsyncTextureUpload,
 };
