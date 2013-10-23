@@ -10,6 +10,7 @@ include_rules = [
   "+components/browser_context_keyed_service",
   "+components/nacl/common",
   "+components/navigation_interception",
+  "+components/navigation_metrics",
   "+components/policy",
   "+components/startup_metric_utils",
   "+components/translate/common",

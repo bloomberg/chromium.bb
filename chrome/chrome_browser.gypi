@@ -28,6 +28,7 @@
         'safe_browsing_report_proto',
         '../components/components.gyp:browser_context_keyed_service',
         '../components/components.gyp:encryptor',
+        '../components/components.gyp:navigation_metrics',
         '../components/components.gyp:sessions',
         '../components/components.gyp:startup_metric_utils',
         '../components/components.gyp:translate_common',
