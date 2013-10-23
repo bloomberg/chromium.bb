@@ -1,0 +1,18 @@
+{
+    "page_set": "../key_silk_cases.json", 
+    "description": "Describes the Web Page Replay archives for a page set. Don't edit by hand! Use record_wpr for updating.", 
+    "archives": {
+        "key_silk_cases_000.wpr": [
+            "http://groupcloned.com/test/plain/list-recycle-transform.html", 
+            "http://groupcloned.com/test/plain/list-animation-simple.html", 
+            "http://www.polymer-project.org/polymer-all/labs/list/static-scroll-display.html", 
+            "http://www.polymer-project.org/polymer-all/labs/list/virtual-scroll-examples.html", 
+            "http://groupcloned.com/test/plain/sticky-using-webkit-backface-visibility.html", 
+            "http://pr.gg/scroll6_even_faster.html", 
+            "http://staff.tumblr.com/", 
+            "http://jsfiddle.net/mdxJ7/3/show", 
+            "http://jsfiddle.net/3yDKh/1/show", 
+            "http://jsfiddle.net/3yDKh/3/show"
+        ]
+    }
+}

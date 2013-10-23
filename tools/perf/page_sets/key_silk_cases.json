@@ -1,0 +1,114 @@
+{
+  "description": "Pages hand-picked for project Silk.",
+  "archive_data_file": "data/key_silk_cases.json",
+  "credentials_path": "data/credentials.json",
+  "user_agent_type": "mobile",
+  "smoothness": { "action": "scroll" },
+  "pages": [
+    {
+      "url": "http://groupcloned.com/test/plain/list-recycle-transform.html",
+      "why": "best case infinite scroll from sencha",
+      "navigate_steps" : [
+        { "action": "navigate" },
+        { "action": "wait", "seconds": 2 }
+      ],
+      "smoothness": { 
+        "action": "scroll",
+        "scrollable_element_function": "function(callback) { callback(document.getElementById('scrollable')); }" 
+      }
+    },
+    {
+      "url": "http://groupcloned.com/test/plain/list-animation-simple.html",
+      "why": "lots of layers all animating",
+      "navigate_steps" : [
+        { "action": "navigate" },
+        { "action": "wait", "seconds": 2 }
+      ],
+      "smoothness": { "action": "wait", "seconds": 10 }
+    },
+    {
+      "url": "http://www.polymer-project.org/polymer-all/labs/list/static-scroll-display.html",
+      "why": "",
+      "navigate_steps" : [
+        { "action": "navigate" },
+        { "action": "wait", "seconds": 2 }
+      ],
+      "smoothness": { 
+        "action": "scroll",
+        "scrollable_element_function": "function(callback) { callback(document.getElementById('list')); }" 
+      }
+    },
+    {
+      "url": "http://www.polymer-project.org/polymer-all/labs/list/virtual-scroll-examples.html",
+      "why": "",
+      "navigate_steps" : [
+        { "action": "navigate" },
+        { "action": "wait", "seconds": 2 }
+      ],
+      "smoothness": { 
+        "action": "scroll",
+        "scrollable_element_function": "function(callback) { callback(document.getElementById('list')); }" 
+      }
+    },
+    {
+      "url": "http://groupcloned.com/test/plain/sticky-using-webkit-backface-visibility.html",
+      "why": "",
+      "navigate_steps" : [
+        { "action": "navigate" },
+        { "action": "wait", "seconds": 2 }
+      ],
+      "smoothness": { 
+        "action": "scroll",
+        "scrollable_element_function": "function(callback) { callback(document.getElementById('container')); }" 
+      }
+    },
+    {
+      "url": "http://pr.gg/scroll6_even_faster.html",
+      "why": "reduced version of ui toolkit static scroll case",
+      "navigate_steps" : [
+        { "action": "navigate" },
+        { "action": "wait", "seconds": 2 }
+      ],
+      "smoothness": { 
+        "action": "scroll",
+        "scrollable_element_function": "function(callback) { callback(document.getElementsByClassName('container')[0]); }" 
+      }
+    },
+    {
+      "url": "http://staff.tumblr.com/",
+      "why": "long jank at the start of every scroll gesture (due to layout?)",
+      "navigate_steps" : [
+        { "action": "navigate" },
+        { "action": "wait", "seconds": 2 }
+      ],
+      "smoothness": { "action": "scroll" }
+    },
+    {
+      "url": "http://jsfiddle.net/mdxJ7/3/show",
+      "why": "only the green div should repaint",
+      "navigate_steps" : [
+        { "action": "navigate" },
+        { "action": "wait", "seconds": 2 }
+      ],
+      "smoothness": { "action": "wait", "seconds": 5 }
+    },
+    {
+      "url": "http://jsfiddle.net/3yDKh/1/show",
+      "why": "only the red div should repaint",
+      "navigate_steps" : [
+        { "action": "navigate" },
+        { "action": "wait", "seconds": 2 }
+      ],
+      "smoothness": { "action": "wait", "seconds": 5 }
+    },
+    {
+      "url": "http://jsfiddle.net/3yDKh/3/show",
+      "why": "margin top animation",
+      "navigate_steps" : [
+        { "action": "navigate" },
+        { "action": "wait", "seconds": 2 }
+      ],
+      "smoothness": { "action": "wait", "seconds": 5 }
+    }
+  ]
+}
