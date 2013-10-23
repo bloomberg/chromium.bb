@@ -111,7 +111,7 @@ static void {{attribute.name}}AttributeSetter{{world_suffix}}(v8::Local<v8::Stri
     {# Type checking for interface types (if interface not implemented, throw
        TypeError), per http://www.w3.org/TR/WebIDL/#es-interface #}
     if (!isUndefinedOrNull(jsValue) && !V8{{attribute.idl_type}}::HasInstance(jsValue, info.GetIsolate(), worldType(info.GetIsolate()))) {
-        throwTypeError(info.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToSet("{{attribute.name}}", "{{interface_name}}", "The provided value is not of type '{{attribute.idl_type}}'."), info.GetIsolate());
         return;
     }
     {% endif %}
