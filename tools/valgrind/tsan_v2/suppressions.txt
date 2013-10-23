@@ -137,3 +137,6 @@ race:net::URLFetcherCore::Stop
 
 # http://crbug.com/305459
 race:base::debug::TraceEventTestFixture_TraceContinuousSampling_Test::TestBody
+
+# http://crbug.com/310851
+race:net::ProxyResolverV8Tracing::Job::~Job
