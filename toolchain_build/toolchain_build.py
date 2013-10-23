@@ -208,7 +208,7 @@ def WithDepsOptions(options):
 # These are libraries that go into building the compiler itself.
 HOST_GCC_LIBS = {
     'gmp': {
-        'tar_src': 'third_party/gmp/gmp-5.1.2.tar.bz2',
+        'tar_src': 'third_party/gmp/gmp-5.1.3.tar.bz2',
         'unpack_commands': UnpackSrc(False),
         'hashed_inputs': {'src': 'src'},
         'commands': CommandsInBuild([
@@ -256,7 +256,7 @@ HOST_GCC_LIBS = {
         },
     'isl': {
         'dependencies': ['gmp'],
-        'tar_src': 'third_party/cloog/isl-0.11.1.tar.bz2',
+        'tar_src': 'third_party/cloog/isl-0.12.1.tar.bz2',
         'unpack_commands': UnpackSrc(False) + PopulateDeps(['%(gmp)s']),
         'hashed_inputs': {'src': 'src', 'all_deps': 'all_deps'},
         'commands': CommandsInBuild([
@@ -277,7 +277,7 @@ HOST_GCC_LIBS = {
         },
     'cloog': {
         'dependencies': ['gmp', 'isl'],
-        'tar_src': 'third_party/cloog/cloog-0.18.0.tar.gz',
+        'tar_src': 'third_party/cloog/cloog-0.18.1.tar.gz',
         'unpack_commands': UnpackSrc(True) + PopulateDeps(['%(gmp)s',
                                                            '%(isl)s']),
         'hashed_inputs': {'src': 'src', 'all_deps': 'all_deps'},
