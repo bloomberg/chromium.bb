@@ -1,0 +1,7 @@
+# TODO(darin): Move this folder out of mojo/public/.
+include_rules = [
+  "+base",
+  "+build",
+  "+mojo",
+  "+testing",
+]

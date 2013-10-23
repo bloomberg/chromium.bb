@@ -1,0 +1,8 @@
+include_rules = [
+  "-base",
+  "-build",
+  "-mojo",
+  "-testing",
+
+  "+mojo/public",
+]
