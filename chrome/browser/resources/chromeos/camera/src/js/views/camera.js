@@ -236,6 +236,12 @@ camera.views.Camera = function(context, router) {
   this.scrollTracker_ = new camera.util.ScrollTracker(
       this.scroller_, function() {}, function() {});  // No callbacks.
 
+  /**
+   * @type {string}
+   * @private
+   */
+  this.keyBuffer_ = '';
+
   // End of properties, seal the object.
   Object.seal(this);
 
@@ -248,6 +254,9 @@ camera.views.Camera = function(context, router) {
   // Handle the 'Take' button.
   document.querySelector('#take-picture').addEventListener(
       'click', this.takePicture_.bind(this));
+
+  document.querySelector('#toolbar .gallery-switch').addEventListener('click',
+      this.onGalleryClicked_.bind(this));
 
   // Load the shutter sound.
   this.shutterSound_.src = '../sounds/shutter.ogg';
@@ -381,6 +390,15 @@ camera.views.Camera.prototype.onLeave = function() {
 };
 
 /**
+ * Handles clicking on the gallery button.
+ * @param {Event} event Mouse event
+ * @private
+ */
+camera.views.Camera.prototype.onGalleryClicked_ = function(event) {
+  this.router.navigate(camera.Router.ViewIdentifier.GALLERY);
+};
+
+/**
  * Adds an effect to the user interface.
  * @param {camera.Effect} effect Effect to be added.
  * @private
@@ -446,6 +464,15 @@ camera.views.Camera.prototype.onResize = function() {
  * @override
  */
 camera.views.Camera.prototype.onKeyPressed = function(event) {
+  this.keyBuffer_ += String.fromCharCode(event.which);
+  this.keyBuffer_ = this.keyBuffer_.substr(-10);
+
+  // Allow to load a file stream (for debugging).
+  if (this.keyBuffer_.indexOf('CRAZYPONY') !== -1) {
+    this.chooseFileStream();
+    this.keyBuffer_ = '';
+  }
+
   switch (event.keyIdentifier) {
     case 'Left':
       this.setCurrentEffect_(
