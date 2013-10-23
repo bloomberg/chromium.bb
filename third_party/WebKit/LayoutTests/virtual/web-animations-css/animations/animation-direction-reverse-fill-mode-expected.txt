@@ -11,7 +11,7 @@ PASS - start of animation - id: both expected: 300 actual: 300
 PASS - start of animation - id: both_iterating expected: 300 actual: 300
 PASS - end of animation - id: none expected: 100 actual: 100
 PASS - end of animation - id: backwards expected: 100 actual: 100
-FAIL - end of animation - id: forwards expected: 200 actual: 300
-FAIL - end of animation - id: both expected: 200 actual: 300
+PASS - end of animation - id: forwards expected: 200 actual: 200
+PASS - end of animation - id: both expected: 200 actual: 200
 PASS - end of animation - id: both_iterating expected: 300 actual: 300
 

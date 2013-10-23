@@ -6,11 +6,10 @@
     .box {
       position: relative;
       left: 100px;
-      top: 10px;
       height: 100px;
       width: 100px;
       -webkit-animation-delay: 0.1s;
-      -webkit-animation-duration: 2s;
+      -webkit-animation-duration: 0.1s;
       -webkit-animation-timing-function: linear;
       -webkit-animation-name: anim;
       -webkit-animation-direction: reverse;
@@ -19,23 +18,23 @@
         from { left: 200px; }
         to   { left: 300px; }
     }
-    #a {
+    #none {
       background-color: blue;
       -webkit-animation-fill-mode: none;
     }
-    #b {
+    #backwards {
       background-color: red;
       -webkit-animation-fill-mode: backwards;
     }
-    #c {
+    #forwards {
       background-color: green;
       -webkit-animation-fill-mode: forwards;
     }
-    #d {
+    #both {
       background-color: yellow;
       -webkit-animation-fill-mode: both;
     }
-    #e {
+    #both_iterating {
       background-color: #999;
       -webkit-animation-fill-mode: both;
       -webkit-animation-iteration-count: 2;
@@ -48,11 +47,11 @@
     var animsFinished = 0;
     const allowance = 5;
     const expectedValues = [
-      {id: "a", start: 100, end: 100},
-      {id: "b", start: 300, end: 100},
-      {id: "c", start: 100, end: 300},
-      {id: "d", start: 300, end: 300},
-      {id: "e", start: 300, end: 300}
+      {id: "none",           start: 100, end: 100},
+      {id: "backwards",      start: 300, end: 100},
+      {id: "forwards",       start: 100, end: 200},
+      {id: "both",           start: 300, end: 200},
+      {id: "both_iterating", start: 300, end: 300}
     ];
     var result = "";
 
@@ -63,13 +62,13 @@
 
     function animationEnded(event) {
         if (++animsFinished == numAnims) {
-            setTimeout(endTest, 0); // This call to setTimeout should be ok in the test environment
-                                    // since we're just giving style a chance to resolve.
+            // This call to setTimeout should be ok in the test environment
+            // since we're just giving style a chance to resolve.
+            setTimeout(endTest, 0);
         }
     };
 
     function endTest() {
-
         for (var i = 0; i < expectedValues.length; i++) {
             var realValue = getPropertyValue("left", expectedValues[i].id);
             var expectedValue = expectedValues[i].end;
@@ -97,26 +96,28 @@
         }
         document.addEventListener("webkitAnimationEnd", animationEnded, false);
     };
-
   </script>
 </head>
 <body>
-This test performs an animation of the left property with four different
-fill modes. It animates over 0.1 second with a 0.1 second delay.
-It takes snapshots at document load and the end of the animation.
-<div id="a" class="box">
+<div>
+  This test performs an animation of the left property with direction reverse
+  and four different fill modes. It animates over 0.1 seconds with a 0.1
+  second delay. It takes snapshots at document load and the end of the
+  animation.
+</div>
+<div id="none" class="box">
   None
 </div>
-<div id="b" class="box">
+<div id="backwards" class="box">
   Backwards
 </div>
-<div id="c" class="box">
+<div id="forwards" class="box">
   Forwards
 </div>
-<div id="d" class="box">
+<div id="both" class="box">
   Both
 </div>
-<div id="e" class="box">
+<div id="both_iterating" class="box">
   Both iterating
 </div>
 <div id="result">
