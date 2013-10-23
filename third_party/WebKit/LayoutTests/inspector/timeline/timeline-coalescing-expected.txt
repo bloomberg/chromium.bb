@@ -23,6 +23,6 @@ Root
 --------> EventDispatch
 --------> EventDispatch
 ----> EventDispatch
-coalesced record's hasWarning: undefined
-coalesced record's childHasWarning: true
+coalesced record's hasWarnings(): false
+coalesced record's childHasWarnings(): true
 

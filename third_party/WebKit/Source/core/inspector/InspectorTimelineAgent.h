@@ -146,7 +146,7 @@ public:
     void didLayout(RenderObject*);
 
     void willAutosizeText(RenderObject*);
-    void didAutosizeText();
+    void didAutosizeText(RenderObject*);
 
     void didScheduleStyleRecalculation(Document*);
     bool willRecalculateStyle(Document*);

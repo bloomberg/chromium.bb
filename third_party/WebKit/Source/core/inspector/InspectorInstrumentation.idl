@@ -200,7 +200,7 @@ interface InspectorInstrumentation {
     void willAutosizeText([Keep] RenderObject* root);
 
     [Timeline, Inline=FastReturn]
-    void didAutosizeText(RenderObject* root);
+    void didAutosizeText([Keep] RenderObject* root);
 
     [Page, Inline=FastReturn]
     void didScroll(Page*);
