@@ -151,7 +151,6 @@ const char kUrlHandlers[] = "url_handlers";
 const char kUrlHandlerTitle[] = "title";
 const char kVersion[] = "version";
 const char kWebAccessibleResources[] = "web_accessible_resources";
-const char kWebRtc[] = "webrtc";
 const char kWebURLs[] = "app.urls";
 const char kWebview[] = "webview";
 const char kWebviewAccessibleResources[] = "accessible_resources";
