@@ -108,12 +108,15 @@ var UnmergedNotification;
 
 /**
  * Notification group as the client stores it. |cardsTimestamp| and |rank| are
- * defined if |cards| is non-empty.
+ * defined if |cards| is non-empty. |nextPollTime| is undefined if the server
+ * (1) never sent 'nextPollSeconds' for the group or
+ * (2) didn't send 'nextPollSeconds' with the last group update containing a
+ *     cards update and all the times after that.
  *
  * @typedef {{
  *   cards: Array.<UnmergedNotification>,
  *   cardsTimestamp: number=,
- *   nextPollTime: number,
+ *   nextPollTime: number=,
  *   rank: number=
  * }}
  */
@@ -431,10 +434,13 @@ function scheduleNextPoll(groups) {
 
   for (var groupName in groups) {
     var group = groups[groupName];
-    nextPollTime = nextPollTime == null ?
-        group.nextPollTime : Math.min(group.nextPollTime, nextPollTime);
+    if (group.nextPollTime !== undefined) {
+      nextPollTime = nextPollTime == null ?
+          group.nextPollTime : Math.min(group.nextPollTime, nextPollTime);
+    }
   }
 
+  // At least one of the groups must have nextPollTime.
   verify(nextPollTime != null, 'scheduleNextPoll: nextPollTime is null');
 
   var nextPollDelaySeconds = Math.max(
@@ -493,7 +499,7 @@ function parseAndShowNotificationCards(response) {
       var storageGroup = items.notificationGroups[groupName] || {
         cards: [],
         cardsTimestamp: undefined,
-        nextPollTime: now,
+        nextPollTime: undefined,
         rank: undefined
       };
 
@@ -501,11 +507,20 @@ function parseAndShowNotificationCards(response) {
         receivedGroup.cards = receivedGroup.cards || [];
 
       if (receivedGroup.cards) {
+        // If the group contains a cards update, all its fields will get new
+        // values.
         storageGroup.cards = receivedGroup.cards;
         storageGroup.cardsTimestamp = now;
         storageGroup.rank = receivedGroup.rank;
+        storageGroup.nextPollTime = undefined;
+        // The code below assigns nextPollTime a defined value if
+        // nextPollSeconds is specified in the received group.
+        // If the group's cards are not updated, and nextPollSeconds is
+        // unspecified, this method doesn't change group's nextPollTime.
       }
 
+      // 'nextPollSeconds' may be sent even for groups that don't contain cards
+      // updates.
       if (receivedGroup.nextPollSeconds !== undefined) {
         storageGroup.nextPollTime =
             now + receivedGroup.nextPollSeconds * MS_IN_SECOND;
@@ -575,7 +590,7 @@ function requestNotificationCards(position) {
 
       for (var groupName in items.notificationGroups) {
         var group = items.notificationGroups[groupName];
-        if (group.nextPollTime <= now)
+        if (group.nextPollTime !== undefined && group.nextPollTime <= now)
           groupsToRequest.push(groupName);
       }
     }
