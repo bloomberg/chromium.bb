@@ -184,7 +184,6 @@ crbug.com/258896 virtual/web-animations-css/animations/opacity-transform-animati
 crbug.com/258896 virtual/web-animations-css/animations/lineheight-animation.html [ Crash ]
 # These can't be rebaselined because the failure involves flaky output.
 crbug.com/258896 virtual/web-animations-css/animations/play-state.html [ Failure ]
-crbug.com/258896 virtual/web-animations-css/animations/3d/state-at-end-event-transform.html [ ImageOnlyFailure Pass ]
 crbug.com/258896 virtual/web-animations-css/animations/transition-and-animation-1.html [ Failure ]
 crbug.com/258896 virtual/web-animations-css/animations/transition-and-animation-2.html [ Failure ]
 crbug.com/258896 virtual/web-animations-css/animations/transition-and-animation-3.html [ Failure ]
