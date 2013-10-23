@@ -56,7 +56,12 @@ void* win_heap_memalign(size_t alignment, size_t size) {
   DCHECK_LT(size, allocation_size);
   DCHECK_LT(alignment, allocation_size);
 
+  // Since we're directly calling the allocator function, before OOM handling,
+  // we need to NULL check to ensure the allocation succeeded.
   void* ptr = win_heap_malloc(allocation_size);
+  if (!ptr)
+    return ptr;
+
   char* aligned_ptr = static_cast<char*>(ptr) + sizeof(void*);
   aligned_ptr +=
       alignment - reinterpret_cast<uintptr_t>(aligned_ptr) & (alignment - 1);
