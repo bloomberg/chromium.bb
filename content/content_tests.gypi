@@ -750,15 +750,6 @@
             'browser/accessibility/browser_accessibility_win_unittest.cc',
           ],
         }],
-        ['branding=="Chrome"', {
-          'sources!': [
-            # These tests depend on single process mode, which is disabled in
-            # official builds.
-            'renderer/dom_serializer_browsertest.cc',
-            'renderer/resource_fetcher_browsertest.cc',
-            'renderer/savable_resources_browsertest.cc',
-          ],
-        }],
         ['OS == "android"', {
           'sources': [
             'browser/renderer_host/java/jni_helper_unittest.cc',
@@ -1094,6 +1085,15 @@
               'sources/': [
                 ['exclude', '^browser/speech/'],
               ]
+            }],
+            ['branding=="Chrome"', {
+              'sources!': [
+                # These tests depend on single process mode, which is disabled
+                # in official builds.
+                'renderer/dom_serializer_browsertest.cc',
+                'renderer/resource_fetcher_browsertest.cc',
+                'renderer/savable_resources_browsertest.cc',
+              ],
             }],
           ],
         },
