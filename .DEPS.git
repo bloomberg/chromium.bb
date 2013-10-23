@@ -1,7 +1,7 @@
 # DO NOT EDIT EXCEPT FOR LOCAL TESTING.
 # THIS IS A GENERATED FILE.
 # ALL MANUAL CHANGES WILL BE OVERWRITTEN.
-# SEE http://code.google.com/p/chromium/wiki/UsingNewGit
+# SEE http://code.google.com/p/chromium/wiki/UsingGit
 # FOR HOW TO ROLL DEPS
 vars = {
     'webkit_url':
