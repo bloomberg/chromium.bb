@@ -39,7 +39,7 @@ class AccessibleHWND
  public:
   // Unfortunately, some screen readers look for this exact window class
   // to enable certain features. It'd be great to remove this.
-  DECLARE_WND_CLASS_EX(L"Chrome_RenderWidgetHostHWND1", CS_DBLCLKS, 0);
+  DECLARE_WND_CLASS_EX(L"Chrome_RenderWidgetHostHWND", CS_DBLCLKS, 0);
 
   BEGIN_MSG_MAP_EX(AccessibleHWND)
     MESSAGE_HANDLER_EX(WM_GETOBJECT, OnGetObject)
