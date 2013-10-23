@@ -125,6 +125,11 @@ FileSystemContext::FileSystemContext(
       sandbox_backend_(new SandboxFileSystemBackend(
           sandbox_delegate_.get())),
       isolated_backend_(new IsolatedFileSystemBackend()),
+      plugin_private_backend_(new PluginPrivateFileSystemBackend(
+          file_task_runner,
+          partition_path,
+          special_storage_policy,
+          options)),
       additional_backends_(additional_backends.Pass()),
       external_mount_points_(external_mount_points),
       partition_path_(partition_path),
@@ -132,6 +137,7 @@ FileSystemContext::FileSystemContext(
       operation_runner_(new FileSystemOperationRunner(this)) {
   RegisterBackend(sandbox_backend_.get());
   RegisterBackend(isolated_backend_.get());
+  RegisterBackend(plugin_private_backend_.get());
 
   for (ScopedVector<FileSystemBackend>::const_iterator iter =
           additional_backends_.begin();
@@ -147,6 +153,7 @@ FileSystemContext::FileSystemContext(
 
   sandbox_backend_->Initialize(this);
   isolated_backend_->Initialize(this);
+  plugin_private_backend_->Initialize(this);
   for (ScopedVector<FileSystemBackend>::const_iterator iter =
           additional_backends_.begin();
        iter != additional_backends_.end(); ++iter) {
@@ -404,6 +411,9 @@ void FileSystemContext::EnableTemporaryFileSystemInIncognito() {
 #endif
 
 bool FileSystemContext::CanServeURLRequest(const FileSystemURL& url) const {
+  // We never support accessing files in isolated filesystems via an URL.
+  if (url.mount_type() == kFileSystemTypeIsolated)
+    return false;
 #if defined(OS_CHROMEOS) && defined(GOOGLE_CHROME_BUILD)
   if (url.type() == kFileSystemTypeTemporary &&
       sandbox_backend_->enable_temporary_file_system_in_incognito()) {
@@ -411,6 +421,17 @@ bool FileSystemContext::CanServeURLRequest(const FileSystemURL& url) const {
   }
 #endif
   return !is_incognito_ || !FileSystemContext::IsSandboxFileSystem(url.type());
+}
+
+void FileSystemContext::OpenPluginPrivateFileSystem(
+    const GURL& origin_url,
+    FileSystemType type,
+    const std::string& plugin_id,
+    OpenFileSystemMode mode,
+    const OpenFileSystemCallback& callback) {
+  DCHECK(plugin_private_backend_);
+  plugin_private_backend_->OpenPrivateFileSystem(
+      origin_url, type, plugin_id, mode, callback);
 }
 
 FileSystemContext::~FileSystemContext() {

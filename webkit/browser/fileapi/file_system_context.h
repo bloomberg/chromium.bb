@@ -17,6 +17,7 @@
 #include "base/sequenced_task_runner_helpers.h"
 #include "webkit/browser/fileapi/file_system_url.h"
 #include "webkit/browser/fileapi/open_file_system_mode.h"
+#include "webkit/browser/fileapi/plugin_private_file_system_backend.h"
 #include "webkit/browser/fileapi/sandbox_file_system_backend_delegate.h"
 #include "webkit/browser/fileapi/task_runner_bound_observer_list.h"
 #include "webkit/browser/webkit_storage_browser_export.h"
@@ -246,6 +247,15 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemContext
   // (E.g. this returns false if the context is created for incognito mode)
   bool CanServeURLRequest(const FileSystemURL& url) const;
 
+  // This must be used to open 'plugin private' filesystem.
+  // See "plugin_private_file_system_backend.h" for more details.
+  void OpenPluginPrivateFileSystem(
+      const GURL& origin_url,
+      FileSystemType type,
+      const std::string& plugin_id,
+      OpenFileSystemMode mode,
+      const OpenFileSystemCallback& callback);
+
  private:
   typedef std::map<FileSystemType, FileSystemBackend*>
       FileSystemBackendMap;
@@ -255,6 +265,9 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemContext
 
   // For sandbox_backend().
   friend class SandboxFileSystemTestHelper;
+
+  // For plugin_private_backend().
+  friend class PluginPrivateFileSystemBackendTest;
 
   // Deleters.
   friend struct DefaultContextDeleter;
@@ -301,6 +314,11 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemContext
     return sandbox_backend_.get();
   }
 
+  // Used only by test code.
+  PluginPrivateFileSystemBackend* plugin_private_backend() const {
+    return plugin_private_backend_.get();
+  }
+
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
   scoped_refptr<base::SequencedTaskRunner> default_file_task_runner_;
 
@@ -313,6 +331,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemContext
   scoped_ptr<IsolatedFileSystemBackend> isolated_backend_;
 
   // Additional file system backends.
+  scoped_ptr<PluginPrivateFileSystemBackend> plugin_private_backend_;
   ScopedVector<FileSystemBackend> additional_backends_;
 
   // Registered file system backends.

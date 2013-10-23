@@ -6,7 +6,6 @@
 #include "base/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/scoped_vector.h"
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/run_loop.h"
@@ -44,16 +43,8 @@ class PluginPrivateFileSystemBackendTest : public testing::Test {
  protected:
   virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
-    backend_ = new PluginPrivateFileSystemBackend(
-        base::MessageLoopProxy::current().get(),
-        data_dir_.path(),
-        NULL /* special_storage_policy */,
-        CreateAllowFileAccessOptions());
-    ScopedVector<FileSystemBackend> additional_providers;
-    additional_providers.push_back(backend_);
-    context_ = CreateFileSystemContextWithAdditionalProvidersForTesting(
+    context_ = CreateFileSystemContextForTesting(
         NULL /* quota_manager_proxy */,
-        additional_providers.Pass(),
         data_dir_.path());
   }
 
@@ -65,12 +56,15 @@ class PluginPrivateFileSystemBackendTest : public testing::Test {
         root.virtual_path().AppendASCII(relative));
   }
 
-  const base::FilePath& base_path() const { return backend_->base_path(); }
+  PluginPrivateFileSystemBackend* backend() const {
+    return context_->plugin_private_backend();
+  }
+
+  const base::FilePath& base_path() const { return backend()->base_path(); }
 
   base::ScopedTempDir data_dir_;
   base::MessageLoop message_loop_;
   scoped_refptr<FileSystemContext> context_;
-  PluginPrivateFileSystemBackend* backend_;  // Owned by context_.
 };
 
 TEST_F(PluginPrivateFileSystemBackendTest, OpenFileSystemBasic) {
@@ -78,7 +72,7 @@ TEST_F(PluginPrivateFileSystemBackendTest, OpenFileSystemBasic) {
   std::string name;
   base::PlatformFileError error = base::PLATFORM_FILE_ERROR_FAILED;
 
-  backend_->OpenPrivateFileSystem(
+  backend()->OpenPrivateFileSystem(
       kOrigin, kType, kPlugin1, OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
       base::Bind(&DidOpenFileSystem, &root_url, &name, &error));
   base::RunLoop().RunUntilIdle();
@@ -86,7 +80,7 @@ TEST_F(PluginPrivateFileSystemBackendTest, OpenFileSystemBasic) {
 
   // Run this again with FAIL_IF_NONEXISTENT to see if it succeeds.
   error = base::PLATFORM_FILE_ERROR_FAILED;
-  backend_->OpenPrivateFileSystem(
+  backend()->OpenPrivateFileSystem(
       kOrigin, kType, kPlugin1, OPEN_FILE_SYSTEM_FAIL_IF_NONEXISTENT,
       base::Bind(&DidOpenFileSystem, &root_url, &name, &error));
   base::RunLoop().RunUntilIdle();
@@ -109,14 +103,14 @@ TEST_F(PluginPrivateFileSystemBackendTest, PluginIsolation) {
 
   // Open filesystem for kPlugin1 and kPlugin2.
   base::PlatformFileError error = base::PLATFORM_FILE_ERROR_FAILED;
-  backend_->OpenPrivateFileSystem(
+  backend()->OpenPrivateFileSystem(
       kOrigin, kType, kPlugin1, OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
       base::Bind(&DidOpenFileSystem, &root_url1, &name1, &error));
   base::RunLoop().RunUntilIdle();
   ASSERT_EQ(base::PLATFORM_FILE_OK, error);
 
   error = base::PLATFORM_FILE_ERROR_FAILED;
-  backend_->OpenPrivateFileSystem(
+  backend()->OpenPrivateFileSystem(
       kOrigin, kType, kPlugin2, OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
       base::Bind(&DidOpenFileSystem, &root_url2, &name2, &error));
   base::RunLoop().RunUntilIdle();

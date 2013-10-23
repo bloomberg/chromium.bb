@@ -324,6 +324,44 @@ TEST_F(FileSystemContextTest, CrackFileSystemURL) {
       kIsolatedFileSystemID);
 }
 
+TEST_F(FileSystemContextTest, CanServeURLRequest) {
+  scoped_refptr<ExternalMountPoints> external_mount_points(
+      ExternalMountPoints::CreateRefCounted());
+  scoped_refptr<FileSystemContext> context(
+      CreateFileSystemContextForTest(external_mount_points.get()));
+
+  // A request for a sandbox mount point should be served.
+  FileSystemURL cracked_url =
+      context->CrackURL(CreateRawFileSystemURL("persistent", "pers_mount"));
+  EXPECT_EQ(kFileSystemTypePersistent, cracked_url.mount_type());
+  EXPECT_TRUE(context->CanServeURLRequest(cracked_url));
+
+  // A request for an isolated mount point should NOT be served.
+  std::string isolated_fs_name = "root";
+  std::string isolated_fs_id =
+      IsolatedContext::GetInstance()->RegisterFileSystemForPath(
+          kFileSystemTypeNativeLocal,
+          base::FilePath(DRIVE FPL("/test/isolated/root")),
+          &isolated_fs_name);
+  cracked_url = context->CrackURL(
+      CreateRawFileSystemURL("isolated", isolated_fs_id));
+  EXPECT_EQ(kFileSystemTypeIsolated, cracked_url.mount_type());
+  EXPECT_FALSE(context->CanServeURLRequest(cracked_url));
+
+  // A request for an external mount point should be served.
+  const std::string kExternalMountName = "ext_mount";
+  ASSERT_TRUE(ExternalMountPoints::GetSystemInstance()->RegisterFileSystem(
+      kExternalMountName, kFileSystemTypeDrive, base::FilePath()));
+  cracked_url = context->CrackURL(
+      CreateRawFileSystemURL("external", kExternalMountName));
+  EXPECT_EQ(kFileSystemTypeExternal, cracked_url.mount_type());
+  EXPECT_TRUE(context->CanServeURLRequest(cracked_url));
+
+  ExternalMountPoints::GetSystemInstance()->RevokeFileSystem(
+      kExternalMountName);
+  IsolatedContext::GetInstance()->RevokeFileSystem(isolated_fs_id);
+}
+
 }  // namespace
 
 }  // namespace fileapi
