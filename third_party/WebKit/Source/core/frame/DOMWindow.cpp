@@ -425,7 +425,7 @@ DOMWindow* DOMWindow::toDOMWindow()
 
 PassRefPtr<MediaQueryList> DOMWindow::matchMedia(const String& media)
 {
-    return document() ? document()->mediaQueryMatcher()->matchMedia(media) : 0;
+    return document() ? document()->mediaQueryMatcher().matchMedia(media) : 0;
 }
 
 Page* DOMWindow::page()
