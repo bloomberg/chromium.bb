@@ -267,7 +267,7 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<bool> {
   QuicEncryptedPacket* ConstructRstStreamPacket(
       QuicPacketSequenceNumber sequence_number) {
     InitializeHeader(sequence_number, false);
-    QuicRstStreamFrame frame(3, QUIC_ERROR_PROCESSING_STREAM);
+    QuicRstStreamFrame frame(3, QUIC_STREAM_CANCELLED);
     return ConstructPacket(header_, QuicFrame(&frame));
   }
 
