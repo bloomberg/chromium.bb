@@ -16,6 +16,7 @@
 #include "base/observer_list_threadsafe.h"
 #include "crypto/nss_util.h"
 #include "crypto/nss_util_internal.h"
+#include "crypto/scoped_nss_types.h"
 #include "net/base/crypto_module.h"
 #include "net/base/net_errors.h"
 #include "net/cert/cert_database.h"
@@ -93,25 +94,23 @@ void NSSCertDatabase::ListModules(CryptoModuleList* modules,
                                   bool need_rw) const {
   modules->clear();
 
-  PK11SlotList* slot_list = NULL;
   // The wincx arg is unused since we don't call PK11_SetIsLoggedInFunc.
-  slot_list = PK11_GetAllTokens(CKM_INVALID_MECHANISM,
-                                need_rw ? PR_TRUE : PR_FALSE,  // needRW
-                                PR_TRUE,  // loadCerts (unused)
-                                NULL);  // wincx
+  crypto::ScopedPK11SlotList slot_list(
+      PK11_GetAllTokens(CKM_INVALID_MECHANISM,
+                        need_rw ? PR_TRUE : PR_FALSE,  // needRW
+                        PR_TRUE,                       // loadCerts (unused)
+                        NULL));                        // wincx
   if (!slot_list) {
     LOG(ERROR) << "PK11_GetAllTokens failed: " << PORT_GetError();
     return;
   }
 
-  PK11SlotListElement* slot_element = PK11_GetFirstSafe(slot_list);
+  PK11SlotListElement* slot_element = PK11_GetFirstSafe(slot_list.get());
   while (slot_element) {
     modules->push_back(CryptoModule::CreateFromHandle(slot_element->slot));
-    slot_element = PK11_GetNextSafe(slot_list, slot_element,
+    slot_element = PK11_GetNextSafe(slot_list.get(), slot_element,
                                     PR_FALSE);  // restart
   }
-
-  PK11_FreeSlotList(slot_list);
 }
 
 int NSSCertDatabase::ImportFromPKCS12(

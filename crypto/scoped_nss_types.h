@@ -38,6 +38,9 @@ typedef scoped_ptr_malloc<
 typedef scoped_ptr_malloc<
     PK11SlotInfo, NSSDestroyer<PK11SlotInfo, PK11_FreeSlot> > ScopedPK11Slot;
 typedef scoped_ptr_malloc<
+    PK11SlotList, NSSDestroyer<PK11SlotList,
+                               PK11_FreeSlotList> > ScopedPK11SlotList;
+typedef scoped_ptr_malloc<
     PK11SymKey, NSSDestroyer<PK11SymKey, PK11_FreeSymKey> > ScopedPK11SymKey;
 typedef scoped_ptr_malloc<
     SECKEYPublicKey, NSSDestroyer<SECKEYPublicKey, SECKEY_DestroyPublicKey> >
