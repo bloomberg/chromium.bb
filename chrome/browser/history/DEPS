@@ -8,6 +8,8 @@ include_rules = [
   "+chrome/browser/favicon",
   "+chrome/browser/history",
   "+chrome/browser/network_time",
+  "+chrome/tools/profiles",  # For history unit tests.
+  "+components/visitedlink/browser",
 
   # TODO(erikwright): Bring this list to zero.
   #

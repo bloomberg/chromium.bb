@@ -4,4 +4,7 @@ include_rules = [
   "+dbus",
   "+device/bluetooth",
   "+media/base/media_switches.h",  # For media command line switches.
+
+  # Other libraries.
+  "+third_party/libjingle",
 ]

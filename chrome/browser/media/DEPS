@@ -1,5 +1,7 @@
 include_rules = [
+  "+media/audio",
   "+media/base",
+  "+third_party/libyuv",
   "+third_party/webrtc",
   "+third_party/zlib"
 ]
