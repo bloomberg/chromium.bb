@@ -119,7 +119,6 @@ crbug.com/248938 virtual/threaded/animations/3d/replace-filling-transform.html [
 crbug.com/248938 virtual/threaded/animations/animation-welcome-safari.html [ Slow ]
 
 crbug.com/258896 virtual/web-animations-css/animations/animation-direction-reverse-fill-mode.html [ Slow ]
-crbug.com/258896 [ Win ] virtual/web-animations-css/animations/dynamic-stylesheet-loading.html [ Slow ]
 
 # FIXME: These tests might still be buggy and time out. They were marked as Slow on 9/20/2013.
 # Double-check the data after they've been running another week or so.

@@ -189,9 +189,6 @@ crbug.com/258896 virtual/web-animations-css/animations/3d/state-at-end-event-tra
 crbug.com/258896 virtual/web-animations-css/animations/transition-and-animation-1.html [ Failure ]
 crbug.com/258896 virtual/web-animations-css/animations/transition-and-animation-2.html [ Failure ]
 crbug.com/258896 virtual/web-animations-css/animations/transition-and-animation-3.html [ Failure ]
-# These can't be rebaselined because they time out.
-# dynamic-stylesheet-loading.html starts to be timeout in range 159179:159181.
-crbug.com/258896 virtual/web-animations-css/animations/dynamic-stylesheet-loading.html [ Failure Timeout ]
 # This test fails due to -webkit-mask-box-image not being implemented as a shorthand property
 crbug.com/309962 virtual/web-animations-css/animations/cross-fade-webkit-mask-box-image.html [ ImageOnlyFailure ]
 
