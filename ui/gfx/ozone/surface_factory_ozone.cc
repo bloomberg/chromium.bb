@@ -71,8 +71,12 @@ intptr_t SurfaceFactoryOzone::GetNativeDisplay() {
   return 0;
 }
 
-bool SurfaceFactoryOzone::SchedulePageFlip(gfx::AcceleratedWidget) {
+bool SurfaceFactoryOzone::SchedulePageFlip(gfx::AcceleratedWidget w) {
   return true;
+}
+
+SkCanvas* SurfaceFactoryOzone::GetCanvasForWidget(gfx::AcceleratedWidget w) {
+  return NULL;
 }
 
 const int32* SurfaceFactoryOzone::GetEGLSurfaceProperties(

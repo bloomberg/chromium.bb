@@ -9,10 +9,39 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect.h"
 
+class SkCanvas;
+
 namespace gfx {
 class Screen;
 class VSyncProvider;
 
+// The Ozone interface allows external implementations to hook into Chromium to
+// provide a system specific implementation. The Ozone interface supports two
+// drawing modes: 1) accelerated drawing through EGL and 2) software drawing
+// through Skia.
+//
+// The following functionality is specific to the drawing mode and may not have
+// any meaningful implementation in the other mode. An implementation must
+// provide functionality for at least one mode.
+//
+// 1) Accelerated Drawing (EGL path):
+//
+// The following functions are specific to EGL:
+//  - GetNativeDisplay
+//  - LoadEGLGLES2Bindings
+//  - GetEGLSurfaceProperties (optional if the properties match the default
+//  Chromium ones).
+//
+// 2) Software Drawing (Skia):
+//
+// The following function is specific to the software path:
+//  - GetCanvasForWidget
+//
+// The accelerated path can optionally provide support for the software drawing
+// path.
+//
+// The remaining functions are not covered since they are needed in both drawing
+// modes (See comments bellow for descriptions).
 class GFX_EXPORT SurfaceFactoryOzone {
  public:
   // Describes the state of the hardware after initialization.
@@ -75,6 +104,12 @@ class GFX_EXPORT SurfaceFactoryOzone {
   // Called after the appropriate GL swap buffers command. Used if extra work
   // is needed to perform the actual buffer swap.
   virtual bool SchedulePageFlip(gfx::AcceleratedWidget w);
+
+  // Returns a SkCanvas for the backing buffers. Drawing to the canvas will draw
+  // to the native surface. The canvas is intended for use when no EGL
+  // acceleration is possible. Its implementation is optional when an EGL
+  // backend is provided for rendering.
+  virtual SkCanvas* GetCanvasForWidget(gfx::AcceleratedWidget w);
 
   // Returns a gfx::VsyncProvider for the provided AcceleratedWidget. Note
   // that this may be called after we have entered the sandbox so if there are

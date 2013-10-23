@@ -36,6 +36,8 @@
 #if defined(OS_WIN)
 #include "content/browser/aura/software_output_device_win.h"
 #include "ui/surface/accelerated_surface_win.h"
+#elif defined(USE_OZONE)
+#include "content/browser/aura/software_output_device_ozone.h"
 #elif defined(USE_X11)
 #include "content/browser/aura/software_output_device_x11.h"
 #endif
@@ -204,6 +206,9 @@ scoped_ptr<cc::SoftwareOutputDevice> CreateSoftwareOutputDevice(
     ui::Compositor* compositor) {
 #if defined(OS_WIN)
   return scoped_ptr<cc::SoftwareOutputDevice>(new SoftwareOutputDeviceWin(
+      compositor));
+#elif defined(USE_OZONE)
+  return scoped_ptr<cc::SoftwareOutputDevice>(new SoftwareOutputDeviceOzone(
       compositor));
 #elif defined(USE_X11)
   return scoped_ptr<cc::SoftwareOutputDevice>(new SoftwareOutputDeviceX11(
