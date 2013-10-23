@@ -54,22 +54,21 @@ class TestResultsTracker {
   bool SaveSummaryAsJSON(const FilePath& path) const WARN_UNUSED_RESULT;
 
  private:
+  struct AggregateTestResult {
+    AggregateTestResult();
+    ~AggregateTestResult();
+
+    std::vector<TestResult> test_results;
+  };
+
   struct PerIterationData {
     PerIterationData();
     ~PerIterationData();
 
-    // Test results grouped by test case name.
-    typedef std::map<std::string, std::vector<TestResult> > ResultsMap;
+    // Aggregate test results grouped by full test name.
+    typedef std::map<std::string, AggregateTestResult> ResultsMap;
     ResultsMap results;
-
-    // List of full names of failed tests.
-    typedef std::map<TestResult::Status, std::vector<std::string> > StatusMap;
-    StatusMap tests_by_status;
   };
-
-  // Prints a list of tests that finished with |status|.
-  void PrintTestsByStatus(TestResult::Status status,
-                          const std::string& description) const;
 
   ThreadChecker thread_checker_;
 

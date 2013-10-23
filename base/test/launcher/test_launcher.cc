@@ -210,7 +210,12 @@ TestLauncher::TestLauncher(TestLauncherDelegate* launcher_delegate)
       test_started_count_(0),
       test_finished_count_(0),
       test_success_count_(0),
+      retry_count_(0),
+      retry_limit_(3),  // TODO(phajdan.jr): Make a flag control this.
       run_result_(true) {
+}
+
+TestLauncher::~TestLauncher() {
 }
 
 bool TestLauncher::Run(int argc, char** argv) {
@@ -267,6 +272,8 @@ void TestLauncher::OnTestFinished(const TestResult& result) {
   if (result.status == TestResult::TEST_SUCCESS) {
     ++test_success_count_;
   } else {
+    tests_to_retry_.insert(result.full_name);
+
     fprintf(stdout, "%s", result.output_snippet.c_str());
     fflush(stdout);
   }
@@ -298,24 +305,65 @@ void TestLauncher::OnTestFinished(const TestResult& result) {
   fflush(stdout);
 
   if (test_finished_count_ == test_started_count_) {
-    // The current iteration is done.
-    fprintf(stdout, "%" PRIuS " test%s run\n",
-            test_finished_count_,
-            test_finished_count_ > 1 ? "s" : "");
-    fflush(stdout);
+    if (!tests_to_retry_.empty() && retry_count_ < retry_limit_) {
+      retry_count_++;
 
-    results_tracker_.PrintSummaryOfCurrentIteration();
+      std::vector<std::string> test_names(tests_to_retry_.begin(),
+                                          tests_to_retry_.end());
 
-    if (test_success_count_ != test_finished_count_) {
-      // Signal failure, but continue to run all requested test iterations.
-      // With the summary of all iterations at the end this is a good default.
-      run_result_ = false;
+      tests_to_retry_.clear();
+
+      size_t retry_started_count =
+          launcher_delegate_->RetryTests(this, test_names);
+      if (retry_started_count == 0) {
+        // Signal failure, but continue to run all requested test iterations.
+        // With the summary of all iterations at the end this is a good default.
+        run_result_ = false;
+
+        // The current iteration is done.
+        fprintf(stdout, "%" PRIuS " test%s run\n",
+                test_finished_count_,
+                test_finished_count_ > 1 ? "s" : "");
+        fflush(stdout);
+
+        results_tracker_.PrintSummaryOfCurrentIteration();
+
+        // Kick off the next iteration.
+        MessageLoop::current()->PostTask(
+            FROM_HERE,
+            Bind(&TestLauncher::RunTestIteration, Unretained(this)));
+      } else {
+        fprintf(stdout, "Retrying %" PRIuS " test%s (retry #%" PRIuS ")\n",
+                retry_started_count,
+                retry_started_count > 1 ? "s" : "",
+                retry_count_);
+        fflush(stdout);
+
+        test_started_count_ += retry_started_count;
+      }
+    } else {
+      // The current iteration is done.
+      fprintf(stdout, "%" PRIuS " test%s run\n",
+              test_finished_count_,
+              test_finished_count_ > 1 ? "s" : "");
+      fflush(stdout);
+
+      results_tracker_.PrintSummaryOfCurrentIteration();
+
+      // When we retry tests, success is determined by having nothing more
+      // to retry (everything eventually passed), as opposed to having
+      // no failures at all.
+      if (!tests_to_retry_.empty()) {
+        // Signal failure, but continue to run all requested test iterations.
+        // With the summary of all iterations at the end this is a good default.
+        run_result_ = false;
+      }
+
+      // Kick off the next iteration.
+      MessageLoop::current()->PostTask(
+          FROM_HERE,
+          Bind(&TestLauncher::RunTestIteration, Unretained(this)));
     }
-
-    // Kick off the next iteration.
-    MessageLoop::current()->PostTask(
-        FROM_HERE,
-        Bind(&TestLauncher::RunTestIteration, Unretained(this)));
   }
 }
 
@@ -439,6 +487,8 @@ void TestLauncher::RunTestIteration() {
   test_started_count_ = 0;
   test_finished_count_ = 0;
   test_success_count_ = 0;
+  retry_count_ = 0;
+  tests_to_retry_.clear();
   results_tracker_.OnTestIterationStarting();
   launcher_delegate_->OnTestIterationStarting();
 

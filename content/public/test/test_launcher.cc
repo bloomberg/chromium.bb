@@ -105,6 +105,9 @@ class WrapperTestLauncherDelegate : public base::TestLauncherDelegate {
                              const testing::TestInfo* test_info) OVERRIDE;
   virtual void RunTests(base::TestLauncher* test_launcher,
                         const std::vector<std::string>& test_names) OVERRIDE;
+  virtual size_t RetryTests(
+      base::TestLauncher* test_launcher,
+      const std::vector<std::string>& test_names) OVERRIDE;
 
  private:
   void DoRunTest(base::TestLauncher* test_launcher,
@@ -139,6 +142,7 @@ class WrapperTestLauncherDelegate : public base::TestLauncherDelegate {
   // Store dependent test name (map is indexed by full test name).
   typedef std::map<std::string, std::string> DependentTestMap;
   DependentTestMap dependent_test_map_;
+  DependentTestMap reverse_dependent_test_map_;
 
   // Store unique data directory prefix for test names (without PRE_ prefixes).
   // PRE_ tests and tests that depend on them must share the same
@@ -217,6 +221,9 @@ void WrapperTestLauncherDelegate::RunTests(
     if (ContainsKey(test_names_set, pre_test_name)) {
       DCHECK(!ContainsKey(dependent_test_map_, pre_test_name));
       dependent_test_map_[pre_test_name] = full_name;
+
+      DCHECK(!ContainsKey(reverse_dependent_test_map_, full_name));
+      reverse_dependent_test_map_[full_name] = pre_test_name;
     } else {
       tests_to_run_now.push_back(full_name);
     }
@@ -224,6 +231,60 @@ void WrapperTestLauncherDelegate::RunTests(
 
   for (size_t i = 0; i < tests_to_run_now.size(); i++)
     DoRunTest(test_launcher, tests_to_run_now[i]);
+}
+
+size_t WrapperTestLauncherDelegate::RetryTests(
+    base::TestLauncher* test_launcher,
+    const std::vector<std::string>& test_names) {
+  // List of tests we can kick off right now, depending on no other tests.
+  std::vector<std::string> tests_to_run_now;
+
+  // We retry at least the tests requested to retry.
+  std::set<std::string> test_names_set(test_names.begin(), test_names.end());
+
+  // In the face of PRE_ tests, we need to retry the entire chain of tests,
+  // from the very first one.
+  for (size_t i = 0; i < test_names.size(); i++) {
+    std::string test_name(test_names[i]);
+    while (ContainsKey(reverse_dependent_test_map_, test_name)) {
+      test_name = reverse_dependent_test_map_[test_name];
+      test_names_set.insert(test_name);
+    }
+  }
+
+  // Discard user data directories from any previous runs. Start with
+  // fresh state.
+  user_data_dir_map_.clear();
+
+  for (std::set<std::string>::const_iterator i = test_names_set.begin();
+       i != test_names_set.end();
+       ++i) {
+    std::string full_name(*i);
+
+    // Make sure PRE_ tests and tests that depend on them share the same
+    // data directory - based it on the test name without prefixes.
+    std::string test_name_no_pre(RemoveAnyPrePrefixes(full_name));
+    if (!ContainsKey(user_data_dir_map_, test_name_no_pre)) {
+      base::FilePath temp_dir;
+      CHECK(file_util::CreateTemporaryDirInDir(
+                temp_dir_.path(), FILE_PATH_LITERAL("d"), &temp_dir));
+      user_data_dir_map_[test_name_no_pre] = temp_dir;
+    }
+
+    size_t dot_pos = full_name.find('.');
+    CHECK_NE(dot_pos, std::string::npos);
+    std::string test_case_name = full_name.substr(0, dot_pos);
+    std::string test_name = full_name.substr(dot_pos + 1);
+    std::string pre_test_name(
+        test_case_name + "." + kPreTestPrefix + test_name);
+    if (!ContainsKey(test_names_set, pre_test_name))
+      tests_to_run_now.push_back(full_name);
+  }
+
+  for (size_t i = 0; i < tests_to_run_now.size(); i++)
+    DoRunTest(test_launcher, tests_to_run_now[i]);
+
+  return test_names_set.size();
 }
 
 void WrapperTestLauncherDelegate::DoRunTest(base::TestLauncher* test_launcher,
@@ -276,6 +337,7 @@ void WrapperTestLauncherDelegate::RunDependentTest(
     base::TestResult test_result;
     test_result.full_name = test_name;
     test_result.status = base::TestResult::TEST_SKIPPED;
+    test_launcher->OnTestFinished(test_result);
 
     if (ContainsKey(dependent_test_map_, test_name)) {
       RunDependentTest(test_launcher,

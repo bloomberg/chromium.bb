@@ -5,6 +5,7 @@
 #ifndef BASE_TEST_LAUNCHER_TEST_LAUNCHER_H_
 #define BASE_TEST_LAUNCHER_TEST_LAUNCHER_H_
 
+#include <set>
 #include <string>
 
 #include "base/basictypes.h"
@@ -62,6 +63,14 @@ class TestLauncherDelegate {
   virtual void RunTests(TestLauncher* test_launcher,
                         const std::vector<std::string>& test_names) = 0;
 
+  // Called to make the delegate retry the specified tests. The delegate must
+  // return the number of actual tests it's going to retry (can be smaller,
+  // equal to, or larger than size of |test_names|). It must also call
+  // |test_launcher|'s OnTestFinished method once per every retried test,
+  // regardless of its success.
+  virtual size_t RetryTests(TestLauncher* test_launcher,
+                            const std::vector<std::string>& test_names) = 0;
+
  protected:
   virtual ~TestLauncherDelegate();
 };
@@ -70,6 +79,7 @@ class TestLauncherDelegate {
 class TestLauncher {
  public:
   explicit TestLauncher(TestLauncherDelegate* launcher_delegate);
+  ~TestLauncher();
 
   // Runs the launcher. Must be called at most once.
   bool Run(int argc, char** argv) WARN_UNUSED_RESULT;
@@ -107,6 +117,15 @@ class TestLauncher {
 
   // Number of tests successfully finished in this iteration.
   size_t test_success_count_;
+
+  // Number of retries in this iteration.
+  size_t retry_count_;
+
+  // Maximum number of retries per iteration.
+  size_t retry_limit_;
+
+  // Tests to retry in this iteration.
+  std::set<std::string> tests_to_retry_;
 
   // Result to be returned from Run.
   bool run_result_;
