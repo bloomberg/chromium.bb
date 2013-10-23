@@ -28,7 +28,6 @@
 
 namespace content {
 
-// TODO(mohsen): Remove logs if the test showed no flakiness anymore.
 class TestTouchEditableImplAura : public TouchEditableImplAura {
  public:
   TestTouchEditableImplAura()
@@ -37,62 +36,29 @@ class TestTouchEditableImplAura : public TouchEditableImplAura {
         gesture_ack_callback_arrived_(false),
         waiting_for_gesture_ack_callback_(false) {}
 
-  void Reset() {
-    LOG(INFO) << "TestTouchEditableImplAura::Reset()";
+  virtual void Reset() {
     selection_changed_callback_arrived_ = false;
     waiting_for_selection_changed_callback_ = false;
     gesture_ack_callback_arrived_ = false;
     waiting_for_gesture_ack_callback_ = false;
   }
 
-  virtual void StartTouchEditing() OVERRIDE {
-    LOG(INFO) << "TestTouchEditableImplAura::StartTouchEditing()";
-    TouchEditableImplAura::StartTouchEditing();
-  }
-
-  virtual void EndTouchEditing() OVERRIDE {
-    LOG(INFO) << "TestTouchEditableImplAura::EndTouchEditing()";
-    TouchEditableImplAura::EndTouchEditing();
-  }
-
   virtual void OnSelectionOrCursorChanged(const gfx::Rect& anchor,
                                           const gfx::Rect& focus) OVERRIDE {
-    LOG(INFO) << "TestTouchEditableImplAura::OnSelectionOrCursorChanged("
-              << anchor.ToString() << ", " << focus.ToString() << ")";
     selection_changed_callback_arrived_ = true;
     TouchEditableImplAura::OnSelectionOrCursorChanged(anchor, focus);
     if (waiting_for_selection_changed_callback_)
       selection_changed_wait_run_loop_->Quit();
   }
 
-  virtual void OnTextInputTypeChanged(ui::TextInputType type) OVERRIDE {
-    LOG(INFO) << "TestTouchEditableImplAura::OnTextInputTypeChanged("
-              << type << ")";
-    TouchEditableImplAura::OnTextInputTypeChanged(type);
-  }
-
-  virtual bool HandleInputEvent(const ui::Event* event) OVERRIDE {
-    LOG(INFO) << "TestTouchEditableImplAura::HandleInputEvent("
-              << event->type() << ")";
-    return TouchEditableImplAura::HandleInputEvent(event);
-  }
-
   virtual void GestureEventAck(int gesture_event_type) OVERRIDE {
-    LOG(INFO) << "TestTouchEditableImplAura::GestureEventAck("
-              << gesture_event_type << ")";
     gesture_ack_callback_arrived_ = true;
     TouchEditableImplAura::GestureEventAck(gesture_event_type);
     if (waiting_for_gesture_ack_callback_)
       gesture_ack_wait_run_loop_->Quit();
   }
 
-  virtual void OnViewDestroyed() OVERRIDE {
-    LOG(INFO) << "TestTouchEditableImplAura::OnViewDestroyed()";
-    TouchEditableImplAura::OnViewDestroyed();
-  }
-
-  void WaitForSelectionChangeCallback() {
-    LOG(INFO) << "TestTouchEditableImplAura::WaitForSelectionChangeCallback()";
+  virtual void WaitForSelectionChangeCallback() {
     if (selection_changed_callback_arrived_)
       return;
     waiting_for_selection_changed_callback_ = true;
@@ -100,8 +66,7 @@ class TestTouchEditableImplAura : public TouchEditableImplAura {
     selection_changed_wait_run_loop_->Run();
   }
 
-  void WaitForGestureAck() {
-    LOG(INFO) << "TestTouchEditableImplAura::WaitForGestureAck()";
+  virtual void WaitForGestureAck() {
     if (gesture_ack_callback_arrived_)
       return;
     waiting_for_gesture_ack_callback_ = true;
@@ -121,6 +86,83 @@ class TestTouchEditableImplAura : public TouchEditableImplAura {
   scoped_ptr<base::RunLoop> gesture_ack_wait_run_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(TestTouchEditableImplAura);
+};
+
+// This class decorates TestTouchEditableImplAura with some logs and also a
+// crash when it receives a non-touch, non-gesture event to help investigate
+// flakiness of some of the tests.
+// TODO(mohsen): Remove when flakiness of tests is resolved.
+class TestTouchEditableImplAuraWithLog
+    : public TestTouchEditableImplAura {
+ public:
+  TestTouchEditableImplAuraWithLog() {}
+
+  virtual void Reset() OVERRIDE {
+    LOG(INFO) << "TestTouchEditableImplAuraWithLog::Reset()";
+    TestTouchEditableImplAura::Reset();
+  }
+
+  virtual void StartTouchEditing() OVERRIDE {
+    LOG(INFO) << "TestTouchEditableImplAuraWithLog::StartTouchEditing()";
+    TestTouchEditableImplAura::StartTouchEditing();
+  }
+
+  virtual void EndTouchEditing() OVERRIDE {
+    LOG(INFO) << "TestTouchEditableImplAuraWithLog::EndTouchEditing()";
+    TestTouchEditableImplAura::EndTouchEditing();
+  }
+
+  virtual void OnSelectionOrCursorChanged(const gfx::Rect& anchor,
+                                          const gfx::Rect& focus) OVERRIDE {
+    LOG(INFO) << "TestTouchEditableImplAuraWithLog::OnSelectionOrCursorChanged("
+              << anchor.ToString() << ", " << focus.ToString() << ")";
+    TestTouchEditableImplAura::OnSelectionOrCursorChanged(anchor, focus);
+  }
+
+  virtual void OnTextInputTypeChanged(ui::TextInputType type) OVERRIDE {
+    LOG(INFO) << "TestTouchEditableImplAuraWithLog::OnTextInputTypeChanged("
+              << type << ")";
+    TestTouchEditableImplAura::OnTextInputTypeChanged(type);
+  }
+
+  virtual bool HandleInputEvent(const ui::Event* event) OVERRIDE {
+    LOG(INFO) << "TestTouchEditableImplAuraWithLog::HandleInputEvent("
+              << event->type() << ")";
+    // In tests we should only receive touch or gesture events. In rare cases
+    // we receive events that are not touch or gesture that make tests flaky.
+    // The following CHECK will generate the stack trace which might be helpful
+    // in identifying source of those unexpected events.
+    CHECK(event->IsTouchEvent() || event->IsGestureEvent());
+    return TestTouchEditableImplAura::HandleInputEvent(event);
+  }
+
+  virtual void GestureEventAck(int gesture_event_type) OVERRIDE {
+    LOG(INFO) << "TestTouchEditableImplAuraWithLog::GestureEventAck("
+              << gesture_event_type << ")";
+    TestTouchEditableImplAura::GestureEventAck(gesture_event_type);
+  }
+
+  virtual void OnViewDestroyed() OVERRIDE {
+    LOG(INFO) << "TestTouchEditableImplAuraWithLog::OnViewDestroyed()";
+    TestTouchEditableImplAura::OnViewDestroyed();
+  }
+
+  virtual void WaitForSelectionChangeCallback() OVERRIDE {
+    LOG(INFO)
+        << "TestTouchEditableImplAuraWithLog::WaitForSelectionChangeCallback()";
+    TestTouchEditableImplAura::WaitForSelectionChangeCallback();
+  }
+
+  virtual void WaitForGestureAck() OVERRIDE {
+    LOG(INFO) << "TestTouchEditableImplAuraWithLog::WaitForGestureAck()";
+    TestTouchEditableImplAura::WaitForGestureAck();
+  }
+
+ protected:
+  virtual ~TestTouchEditableImplAuraWithLog() {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestTouchEditableImplAuraWithLog);
 };
 
 class TouchEditableImplAuraTest : public ContentBrowserTest {
@@ -160,7 +202,8 @@ class TouchEditableImplAuraTest : public ContentBrowserTest {
         web_contents->GetRenderViewHost());
     WebContentsViewAura* view_aura = static_cast<WebContentsViewAura*>(
         web_contents->GetView());
-    TestTouchEditableImplAura* touch_editable = new TestTouchEditableImplAura;
+    TestTouchEditableImplAura* touch_editable =
+        new TestTouchEditableImplAuraWithLog;
     view_aura->SetTouchEditableForTest(touch_editable);
     RenderWidgetHostViewAura* rwhva = static_cast<RenderWidgetHostViewAura*>(
         web_contents->GetRenderWidgetHostView());
@@ -331,7 +374,8 @@ class TouchEditableImplAuraTest : public ContentBrowserTest {
         web_contents->GetRenderViewHost());
     WebContentsViewAura* view_aura = static_cast<WebContentsViewAura*>(
         web_contents->GetView());
-    TestTouchEditableImplAura* touch_editable = new TestTouchEditableImplAura;
+    TestTouchEditableImplAura* touch_editable =
+        new TestTouchEditableImplAuraWithLog;
     view_aura->SetTouchEditableForTest(touch_editable);
     RenderWidgetHostViewAura* rwhva = static_cast<RenderWidgetHostViewAura*>(
         web_contents->GetRenderWidgetHostView());
