@@ -27,7 +27,7 @@ class EventConverterOzone : public base::MessagePumpLibevent::Watcher {
   // Subclasses should use this method to post a task that will dispatch
   // |event| from the UI message loop. This method takes ownership of
   // |event|. |event| will be deleted at the end of the posted task.
-  void DispatchEvent(scoped_ptr<ui::Event> event);
+  virtual void DispatchEvent(scoped_ptr<ui::Event> event);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(EventConverterOzone);

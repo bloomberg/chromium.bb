@@ -67,6 +67,8 @@
         'latency_info.h',
         'ozone/evdev/event_factory_delegate.cc',
         'ozone/evdev/event_factory_delegate.h',
+        'ozone/evdev/event_modifiers.cc',
+        'ozone/evdev/event_modifiers.h',
         'ozone/evdev/key_event_converter.cc',
         'ozone/evdev/key_event_converter.h',
         'ozone/evdev/touch_event_converter.cc',

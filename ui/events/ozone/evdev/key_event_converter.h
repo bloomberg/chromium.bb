@@ -5,19 +5,29 @@
 #ifndef UI_EVENTS_OZONE_EVDEV_KEY_EVENT_CONVERTER_EVDEV_H_
 #define UI_EVENTS_OZONE_EVDEV_KEY_EVENT_CONVERTER_EVDEV_H_
 
+#include "ui/events/event.h"
+#include "ui/events/ozone/evdev/event_modifiers.h"
 #include "ui/events/ozone/event_converter_ozone.h"
+
+struct input_event;
 
 namespace ui {
 
 class KeyEventConverterEvdev : public EventConverterOzone {
  public:
-  KeyEventConverterEvdev();
+  KeyEventConverterEvdev(EventModifiersEvdev* modifiers);
   virtual ~KeyEventConverterEvdev();
 
- private:
   // Overidden from base::MessagePumpLibevent::Watcher.
   virtual void OnFileCanReadWithoutBlocking(int fd) OVERRIDE;
   virtual void OnFileCanWriteWithoutBlocking(int fd) OVERRIDE;
+
+  void ProcessEvents(const struct input_event* inputs, int count);
+
+ private:
+  EventModifiersEvdev* modifiers_;
+
+  void ConvertKeyEvent(int key, int value);
 
   DISALLOW_COPY_AND_ASSIGN(KeyEventConverterEvdev);
 };

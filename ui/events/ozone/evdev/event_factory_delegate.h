@@ -6,6 +6,7 @@
 #define UI_EVENTS_OZONE_EVENT_FACTORY_DELEGATE_EVDEV_H_
 
 #include "base/compiler_specific.h"
+#include "ui/events/ozone/evdev/event_modifiers.h"
 #include "ui/events/ozone/event_factory_delegate_ozone.h"
 
 namespace ui {
@@ -20,6 +21,8 @@ class EventFactoryDelegateEvdev : public EventFactoryDelegateOzone {
       EventFactoryOzone* factory) OVERRIDE;
 
  private:
+  EventModifiersEvdev modifiers_;
+
   DISALLOW_COPY_AND_ASSIGN(EventFactoryDelegateEvdev);
 };
 

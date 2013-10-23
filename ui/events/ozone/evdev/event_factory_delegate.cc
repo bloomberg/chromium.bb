@@ -49,7 +49,7 @@ void EventFactoryDelegateEvdev::CreateStartupEventConverters(
     if (evtype & (1 << EV_ABS))
       converter.reset(new TouchEventConverterEvdev(fd, id));
     else if (evtype & (1 << EV_KEY))
-      converter.reset(new KeyEventConverterEvdev());
+      converter.reset(new KeyEventConverterEvdev(&modifiers_));
 
     if (converter) {
       factory->AddEventConverter(fd, converter.Pass());

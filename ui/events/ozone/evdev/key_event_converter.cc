@@ -8,6 +8,9 @@
 
 #include "ui/events/event.h"
 #include "ui/events/keycodes/keyboard_codes.h"
+#include "ui/events/ozone/evdev/event_modifiers.h"
+
+namespace ui {
 
 namespace {
 
@@ -150,12 +153,43 @@ ui::KeyboardCode KeyboardCodeFromButton(unsigned int code) {
   return ui::VKEY_UNKNOWN;
 }
 
+int ModifierFromButton(unsigned int code) {
+  switch (code) {
+    case KEY_CAPSLOCK:
+      return EVDEV_MODIFIER_CAPS_LOCK;
+    case KEY_LEFTSHIFT:
+    case KEY_RIGHTSHIFT:
+      return EVDEV_MODIFIER_SHIFT;
+    case KEY_LEFTCTRL:
+    case KEY_RIGHTCTRL:
+      return EVDEV_MODIFIER_CONTROL;
+    case KEY_LEFTALT:
+    case KEY_RIGHTALT:
+      return EVDEV_MODIFIER_ALT;
+    case BTN_LEFT:
+      return EVDEV_MODIFIER_LEFT_MOUSE_BUTTON;
+    case BTN_MIDDLE:
+      return EVDEV_MODIFIER_MIDDLE_MOUSE_BUTTON;
+    case BTN_RIGHT:
+      return EVDEV_MODIFIER_RIGHT_MOUSE_BUTTON;
+    case KEY_LEFTMETA:
+    case KEY_RIGHTMETA:
+      return EVDEV_MODIFIER_COMMAND;
+    default:
+      return EVDEV_MODIFIER_NONE;
+  }
+}
+
+bool IsLockButton(unsigned int code) { return code == KEY_CAPSLOCK; }
+
 }  // namespace
 
-namespace ui {
-
 // TODO(rjkroege): Stop leaking file descriptor.
-KeyEventConverterEvdev::KeyEventConverterEvdev() {}
+KeyEventConverterEvdev::KeyEventConverterEvdev(EventModifiersEvdev* modifiers)
+    : modifiers_(modifiers) {
+  // TODO(spang): Initialize modifiers using EVIOCGKEY.
+}
+
 KeyEventConverterEvdev::~KeyEventConverterEvdev() {}
 
 void KeyEventConverterEvdev::OnFileCanReadWithoutBlocking(int fd) {
@@ -165,23 +199,46 @@ void KeyEventConverterEvdev::OnFileCanReadWithoutBlocking(int fd) {
     return;
 
   CHECK_EQ(read_size % sizeof(*inputs), 0u);
-  for (unsigned i = 0; i < read_size / sizeof(*inputs); ++i) {
+  ProcessEvents(inputs, read_size / sizeof(*inputs));
+}
+
+void KeyEventConverterEvdev::OnFileCanWriteWithoutBlocking(int fd) {
+  NOTREACHED();
+}
+
+void KeyEventConverterEvdev::ProcessEvents(const input_event* inputs,
+                                           int count) {
+  for (int i = 0; i < count; ++i) {
     const input_event& input = inputs[i];
     if (input.type == EV_KEY) {
-      scoped_ptr<KeyEvent> key(
-          new KeyEvent(input.value == 0 ? ET_KEY_RELEASED : ET_KEY_PRESSED,
-                       KeyboardCodeFromButton(input.code),
-                       0,
-                       true));
-      DispatchEvent(key.PassAs<ui::Event>());
+      ConvertKeyEvent(input.code, input.value);
     } else if (input.type == EV_SYN) {
       // TODO(sadrul): Handle this case appropriately.
     }
   }
 }
 
-void KeyEventConverterEvdev::OnFileCanWriteWithoutBlocking(int fd) {
-  NOTREACHED();
+void KeyEventConverterEvdev::ConvertKeyEvent(int key, int value) {
+  int down = (value != 0);
+  int repeat = (value == 2);
+  int modifier = ModifierFromButton(key);
+  ui::KeyboardCode code = KeyboardCodeFromButton(key);
+
+  if (!repeat && (modifier != EVDEV_MODIFIER_NONE)) {
+    if (IsLockButton(key)) {
+      // Locking modifier keys: CapsLock.
+      modifiers_->UpdateModifierLock(modifier, down);
+    } else {
+      // Regular modifier keys: Shift, Ctrl, Alt, etc.
+      modifiers_->UpdateModifier(modifier, down);
+    }
+  }
+
+  int flags = modifiers_->GetModifierFlags();
+
+  scoped_ptr<KeyEvent> key_event(
+      new KeyEvent(down ? ET_KEY_PRESSED : ET_KEY_RELEASED, code, flags, true));
+  DispatchEvent(key_event.PassAs<ui::Event>());
 }
 
 }  // namespace ui
