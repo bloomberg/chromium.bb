@@ -66,6 +66,7 @@ leak:BookmarkBubbleGtk::InitFolderComboModel
 leak:TranslateInfoBarBase::CreateLanguageCombobox
 leak:GtkNativeViewManager
 leak:_gdk_x11_window_get_toplevel
+leak:gtk_util::*AppModal
 
 # Infobar-related leaks in browser tests. Retriage them once
 # http://crbug.com/62154 is fixed.
