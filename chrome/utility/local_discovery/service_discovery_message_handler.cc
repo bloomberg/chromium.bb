@@ -410,8 +410,10 @@ void ServiceDiscoveryMessageHandler::OnLocalDomainResolved(
     const net::IPAddressNumber& address_ipv4,
     const net::IPAddressNumber& address_ipv6) {
   VLOG(1) << "OnLocalDomainResolved, id=" << id
-          << ", IPv4=" << net::IPAddressToString(address_ipv4)
-          << ", IPv6=" << net::IPAddressToString(address_ipv6);
+          << ", IPv4=" << (address_ipv4.empty() ? "" :
+                           net::IPAddressToString(address_ipv4))
+          << ", IPv6=" << (address_ipv6.empty() ? "" :
+                           net::IPAddressToString(address_ipv6));
 
   DCHECK(service_discovery_client_);
   Send(new LocalDiscoveryHostMsg_LocalDomainResolverCallback(
