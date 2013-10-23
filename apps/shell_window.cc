@@ -18,7 +18,6 @@
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/extensions/manifest_handlers/icons_handler.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
@@ -33,9 +32,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/media_stream_request.h"
 #include "extensions/browser/view_type_utils.h"
-#include "skia/ext/image_operations.h"
 #include "third_party/skia/include/core/SkRegion.h"
-#include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/screen.h"
 
 #if !defined(OS_MACOSX)
@@ -317,22 +314,6 @@ void ShellWindow::OnNativeWindowChanged() {
 
 void ShellWindow::OnNativeWindowActivated() {
   ShellWindowRegistry::Get(profile_)->ShellWindowActivated(this);
-}
-
-scoped_ptr<gfx::Image> ShellWindow::GetAppListIcon() {
-  // TODO(skuhne): We might want to use LoadImages in UpdateExtensionAppIcon
-  // instead to let the extension give us pre-defined icons in the launcher
-  // and the launcher list sizes. Since there is no mock yet, doing this now
-  // seems a bit premature and we scale for the time being.
-  if (app_icon_.IsEmpty())
-    return make_scoped_ptr(new gfx::Image());
-
-  SkBitmap bmp = skia::ImageOperations::Resize(
-        *app_icon_.ToSkBitmap(), skia::ImageOperations::RESIZE_BEST,
-        extension_misc::EXTENSION_ICON_SMALLISH,
-        extension_misc::EXTENSION_ICON_SMALLISH);
-  return make_scoped_ptr(
-      new gfx::Image(gfx::ImageSkia::CreateFrom1xBitmap(bmp)));
 }
 
 content::WebContents* ShellWindow::web_contents() const {

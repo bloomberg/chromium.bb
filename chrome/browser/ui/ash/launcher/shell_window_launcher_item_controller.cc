@@ -16,14 +16,39 @@
 #include "chrome/browser/ui/ash/launcher/launcher_context_menu.h"
 #include "chrome/browser/ui/ash/launcher/launcher_item_controller.h"
 #include "content/public/browser/web_contents.h"
+#include "skia/ext/image_operations.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/events/event.h"
+#include "ui/gfx/image/image_skia.h"
 #include "ui/views/corewm/window_animations.h"
 
 using apps::ShellWindow;
 
 namespace {
+
+// Size of the icon in the shelf launcher in display-independent pixels.
+const int kAppListIconSize = 24;
+
+// This will return a slightly smaller icon than the app icon to be used in
+// the application list menu.
+scoped_ptr<gfx::Image> GetAppListIcon(ShellWindow* shell_window) {
+  // TODO(skuhne): We instead might want to use LoadImages in
+  // ShellWindow::UpdateExtensionAppIcon() to let the extension give us
+  // pre-defined icons in the launcher and the launcher list sizes. Since there
+  // is no mock yet, doing this now seems a bit premature and we scale for the
+  // time being.
+  if (shell_window->app_icon().IsEmpty())
+    return make_scoped_ptr(new gfx::Image());
+
+  SkBitmap bmp =
+      skia::ImageOperations::Resize(*shell_window->app_icon().ToSkBitmap(),
+                                    skia::ImageOperations::RESIZE_BEST,
+                                    kAppListIconSize,
+                                    kAppListIconSize);
+  return make_scoped_ptr(
+      new gfx::Image(gfx::ImageSkia::CreateFrom1xBitmap(bmp)));
+}
 
 // Functor for std::find_if used in AppLauncherItemController.
 class ShellWindowHasWindow {
@@ -145,7 +170,7 @@ ShellWindowLauncherItemController::GetApplicationList(int event_flags) {
   for (ShellWindowList::iterator iter = shell_windows_.begin();
        iter != shell_windows_.end(); ++iter) {
     ShellWindow* shell_window = *iter;
-    scoped_ptr<gfx::Image> image(shell_window->GetAppListIcon());
+    scoped_ptr<gfx::Image> image(GetAppListIcon(shell_window));
     items.push_back(new ChromeLauncherAppMenuItemV2App(
         shell_window->GetTitle(),
         image.get(),  // Will be copied

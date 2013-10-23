@@ -245,10 +245,6 @@ class ShellWindow : public content::NotificationObserver,
   // Returns the bounds that should be reported to the renderer.
   gfx::Rect GetClientBounds() const;
 
-  // This will return a slightly smaller icon then the app_icon to be used in
-  // application lists.
-  scoped_ptr<gfx::Image> GetAppListIcon();
-
   // NativeAppWindows should call this to determine what the window's title
   // is on startup and from within UpdateWindowTitle().
   string16 GetTitle() const;
