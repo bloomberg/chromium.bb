@@ -1978,6 +1978,8 @@
         'browser/sessions/base_session_service.h',
         'browser/sessions/persistent_tab_restore_service.cc',
         'browser/sessions/persistent_tab_restore_service.h',
+        'browser/sessions/restore_on_startup_policy_handler.cc',
+        'browser/sessions/restore_on_startup_policy_handler.h',
         'browser/sessions/session_backend.cc',
         'browser/sessions/session_backend.h',
         'browser/sessions/session_command.cc',

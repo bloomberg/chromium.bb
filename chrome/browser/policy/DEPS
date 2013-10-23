@@ -45,7 +45,6 @@ specific_include_rules = {
   r"configuration_policy_handler\.cc": [
     "+chrome/browser/chrome_notification_types.h",
     "+chrome/browser/policy/policy_path_parser.h",
-    "+chrome/browser/prefs/session_startup_pref.h",
   ],
 
   r"configuration_policy_handler\.h": [

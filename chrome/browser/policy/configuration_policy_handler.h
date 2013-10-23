@@ -327,28 +327,6 @@ class URLBlacklistPolicyHandler : public ConfigurationPolicyHandler {
   DISALLOW_COPY_AND_ASSIGN(URLBlacklistPolicyHandler);
 };
 
-// Handles RestoreOnStartup policy.
-class RestoreOnStartupPolicyHandler : public TypeCheckingPolicyHandler {
- public:
-  RestoreOnStartupPolicyHandler(const char* restore_on_startup_pref_name,
-                                const char* startup_url_list_pref_name);
-  virtual ~RestoreOnStartupPolicyHandler();
-
-  // ConfigurationPolicyHandler methods:
-  virtual bool CheckPolicySettings(const PolicyMap& policies,
-                                   PolicyErrorMap* errors) OVERRIDE;
-  virtual void ApplyPolicySettings(const PolicyMap& policies,
-                                   PrefValueMap* prefs) OVERRIDE;
-
- private:
-  void ApplyPolicySettingsFromHomePage(const PolicyMap& policies,
-                                       PrefValueMap* prefs);
-
-  const char* restore_on_startup_pref_name_;
-  const char* startup_url_list_pref_name_;
-  DISALLOW_COPY_AND_ASSIGN(RestoreOnStartupPolicyHandler);
-};
-
 }  // namespace policy
 
 #endif  // CHROME_BROWSER_POLICY_CONFIGURATION_POLICY_HANDLER_H_
