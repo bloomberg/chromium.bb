@@ -32,7 +32,6 @@
 #include "gpu/config/gpu_info.h"
 #include "grit/common_resources.h"
 #include "ppapi/shared_impl/ppapi_permissions.h"
-#include "remoting/client/plugin/pepper_entrypoints.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -44,9 +43,12 @@
 #if defined(OS_WIN)
 #include "base/win/registry.h"
 #include "base/win/windows_version.h"
-#include "sandbox/win/src/sandbox.h"
 #elif defined(OS_MACOSX)
 #include "components/nacl/common/nacl_sandbox_type_mac.h"
+#endif
+
+#if defined(ENABLE_REMOTING)
+#include "remoting/client/plugin/pepper_entrypoints.h"
 #endif
 
 #if defined(WIDEVINE_CDM_AVAILABLE) && defined(ENABLE_PEPPER_CDMS) && \

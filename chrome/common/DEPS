@@ -5,35 +5,12 @@ include_rules = [
   "+components/autofill/core/common",
   "+components/nacl/common",
   "+components/policy/core/common",
-  "+device/bluetooth",  # For BluetoothPermission
-  "+device/media_transfer_protocol",  # For MediaTransferProtocolManager
-  "+device/usb",  # For UsbDevicePermission
   "+extensions/common",
   "+grit",  # For generated headers
-  "+libxml",
-  "+ppapi/c",  # For various types.
-  "+ppapi/proxy",
   "+ppapi/shared_impl",
   "+remoting/client/plugin",
-  "+sandbox/win/src",
-  "+skia",
   "+webkit/common/user_agent",
   "+webkit/glue",
-  "+webkit/plugins",
-
-  # Other libraries.
-  "+chrome/third_party/xdg_user_dirs",
-  "+third_party/bzip2",
-  "+third_party/mt19937ar",
-  "+third_party/npapi",
-  "+third_party/re2",
-  "+third_party/sqlite",
-  "+third_party/zlib",
-
-  # This is required by all_messages.h to allow logging of all messages. It
-  # can't be moved to chrome/common/ because it has so many dependencies in
-  # chrome/browser/.
-  "+chrome/browser/importer/profile_import_process_messages.h",
 
   # FIXME - refactor code and remove these dependencies
   "+chrome/installer",
