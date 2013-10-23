@@ -54,6 +54,13 @@ function FileTransferController(doc,
    * @private
    */
   this.dragSelector_ = new DragSelector();
+
+  /**
+   * Whether a user is touching the device or not.
+   * @type {boolean}
+   * @private
+   */
+  this.touching_ = false;
 }
 
 FileTransferController.prototype = {
@@ -67,6 +74,8 @@ FileTransferController.prototype = {
     list.style.webkitUserDrag = 'element';
     list.addEventListener('dragstart', this.onDragStart_.bind(this, list));
     list.addEventListener('dragend', this.onDragEnd_.bind(this, list));
+    list.addEventListener('touchstart', this.onTouchStart_.bind(this));
+    list.addEventListener('touchend', this.onTouchEnd_.bind(this));
   },
 
   /**
@@ -290,6 +299,12 @@ FileTransferController.prototype = {
    * @param {Event} event A dragstart event of DOM.
    */
   onDragStart_: function(list, event) {
+    // If a user is touching, Files.app does not receive drag operations.
+    if (this.touching_) {
+      event.preventDefault();
+      return;
+    }
+
     // Check if a drag selection should be initiated or not.
     if (list.shouldStartDragSelection(event)) {
       this.dragSelector_.startDragSelection(list, event);
@@ -489,6 +504,21 @@ FileTransferController.prototype = {
         (/** @type {DirectoryItem} */ domElement).doDropTargetAction();
       this.directoryModel_.changeDirectory(destinationPath);
     }.bind(this), 2000);
+  },
+
+  /**
+   * Handles touch start.
+   */
+  onTouchStart_: function() {
+    this.touching_ = true;
+  },
+
+  /**
+   * Handles touch end.
+   */
+  onTouchEnd_: function(event) {
+    if (event.touches.length === 0)
+      this.touching_ = false;
   },
 
   /**
