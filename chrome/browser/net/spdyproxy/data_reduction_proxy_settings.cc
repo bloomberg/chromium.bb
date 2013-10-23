@@ -82,11 +82,11 @@ void DataReductionProxySettings::InitPrefMembers() {
 }
 
 void DataReductionProxySettings::InitDataReductionProxySettings() {
+  InitPrefMembers();
+
   // Disable the proxy if it is not allowed to be used.
   if (!IsDataReductionProxyAllowed())
     return;
-
-  InitPrefMembers();
 
   AddDefaultProxyBypassRules();
   net::NetworkChangeNotifier::AddIPAddressObserver(this);
