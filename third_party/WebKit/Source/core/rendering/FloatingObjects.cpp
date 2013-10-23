@@ -24,7 +24,7 @@
 #include "config.h"
 #include "core/rendering/FloatingObjects.h"
 
-#include "core/rendering/RenderBlock.h"
+#include "core/rendering/RenderBlockFlow.h"
 #include "core/rendering/RenderBox.h"
 #include "core/rendering/RenderView.h"
 
@@ -104,7 +104,7 @@ class ComputeFloatOffsetAdapter {
 public:
     typedef FloatingObjectInterval IntervalType;
 
-    ComputeFloatOffsetAdapter(const RenderBlock* renderer, int lineTop, int lineBottom, LayoutUnit& offset)
+    ComputeFloatOffsetAdapter(const RenderBlockFlow* renderer, int lineTop, int lineBottom, LayoutUnit& offset)
         : m_renderer(renderer)
         , m_lineTop(lineTop)
         , m_lineBottom(lineBottom)
@@ -128,7 +128,7 @@ public:
 private:
     bool updateOffsetIfNeeded(const FloatingObject*);
 
-    const RenderBlock* m_renderer;
+    const RenderBlockFlow* m_renderer;
     int m_lineTop;
     int m_lineBottom;
     LayoutUnit& m_offset;
@@ -154,7 +154,7 @@ void FloatingObjects::clearLineBoxTreePointers()
 template<>
 inline bool ComputeFloatOffsetAdapter<FloatingObject::FloatLeft>::updateOffsetIfNeeded(const FloatingObject* floatingObject)
 {
-    LayoutUnit logicalRight = floatingObject->logicalRight(m_renderer->isHorizontalWritingMode());
+    LayoutUnit logicalRight = m_renderer->logicalRightForFloat(floatingObject);
     if (logicalRight > m_offset) {
         m_offset = logicalRight;
         return true;
@@ -162,7 +162,7 @@ inline bool ComputeFloatOffsetAdapter<FloatingObject::FloatLeft>::updateOffsetIf
     return false;
 }
 
-FloatingObjects::FloatingObjects(const RenderBlock* renderer, bool horizontalWritingMode)
+FloatingObjects::FloatingObjects(const RenderBlockFlow* renderer, bool horizontalWritingMode)
     : m_placedFloatsTree(UninitializedTree)
     , m_leftObjectsCount(0)
     , m_rightObjectsCount(0)
@@ -202,10 +202,10 @@ LayoutUnit FloatingObjects::lowestFloatLogicalBottom(FloatingObject::Type floatT
         LayoutUnit lowestFloatBottomLeft = 0;
         LayoutUnit lowestFloatBottomRight = 0;
         for (FloatingObjectSetIterator it = floatingObjectSet.begin(); it != end; ++it) {
-            FloatingObject* r = *it;
-            if (r->isPlaced()) {
-                FloatingObject::Type curType = r->type();
-                LayoutUnit curFloatLogicalBottom = r->logicalBottom(isInHorizontalWritingMode);
+            FloatingObject* floatingObject = *it;
+            if (floatingObject->isPlaced()) {
+                FloatingObject::Type curType = floatingObject->type();
+                LayoutUnit curFloatLogicalBottom = m_renderer->logicalBottomForFloat(floatingObject);
                 if (curType & FloatingObject::FloatLeft)
                     lowestFloatBottomLeft = max(lowestFloatBottomLeft, curFloatLogicalBottom);
                 if (curType & FloatingObject::FloatRight)
@@ -217,9 +217,9 @@ LayoutUnit FloatingObjects::lowestFloatLogicalBottom(FloatingObject::Type floatT
         setCachedLowestFloatLogicalBottom(isInHorizontalWritingMode, FloatingObject::FloatRight, lowestFloatBottomRight);
     } else {
         for (FloatingObjectSetIterator it = floatingObjectSet.begin(); it != end; ++it) {
-            FloatingObject* r = *it;
-            if (r->isPlaced() && r->type() == floatType)
-                lowestFloatBottom = max(lowestFloatBottom, r->logicalBottom(isInHorizontalWritingMode));
+            FloatingObject* floatingObject = *it;
+            if (floatingObject->isPlaced() && floatingObject->type() == floatType)
+                lowestFloatBottom = max(lowestFloatBottom, m_renderer->logicalBottomForFloat(floatingObject));
         }
         setCachedLowestFloatLogicalBottom(isInHorizontalWritingMode, floatType, lowestFloatBottom);
     }
@@ -431,7 +431,7 @@ inline static bool rangesIntersect(int floatTop, int floatBottom, int objectTop,
 template<>
 inline bool ComputeFloatOffsetAdapter<FloatingObject::FloatRight>::updateOffsetIfNeeded(const FloatingObject* floatingObject)
 {
-    LayoutUnit logicalLeft = floatingObject->logicalLeft(m_renderer->isHorizontalWritingMode());
+    LayoutUnit logicalLeft = m_renderer->logicalLeftForFloat(floatingObject);
     if (logicalLeft < m_offset) {
         m_offset = logicalLeft;
         return true;
@@ -448,8 +448,8 @@ inline void ComputeFloatOffsetAdapter<FloatTypeValue>::collectIfNeeded(const Int
 
     // Make sure the float hasn't changed since it was added to the placed floats tree.
     ASSERT(floatingObject->isPlaced());
-    ASSERT(interval.low() == floatingObject->pixelSnappedLogicalTop(m_renderer->isHorizontalWritingMode()));
-    ASSERT(interval.high() == floatingObject->pixelSnappedLogicalBottom(m_renderer->isHorizontalWritingMode()));
+    ASSERT(interval.low() == m_renderer->pixelSnappedLogicalTopForFloat(floatingObject));
+    ASSERT(interval.high() == m_renderer->pixelSnappedLogicalBottomForFloat(floatingObject));
 
     bool floatIsNewExtreme = updateOffsetIfNeeded(floatingObject);
     if (floatIsNewExtreme)
@@ -459,7 +459,7 @@ inline void ComputeFloatOffsetAdapter<FloatTypeValue>::collectIfNeeded(const Int
 template <FloatingObject::Type FloatTypeValue>
 LayoutUnit ComputeFloatOffsetAdapter<FloatTypeValue>::getHeightRemaining() const
 {
-    return m_outermostFloat ? m_outermostFloat->logicalBottom(m_renderer->isHorizontalWritingMode()) - m_lineTop : LayoutUnit(1);
+    return m_outermostFloat ? m_renderer->logicalBottomForFloat(m_outermostFloat) - m_lineTop : LayoutUnit(1);
 }
 
 #ifndef NDEBUG

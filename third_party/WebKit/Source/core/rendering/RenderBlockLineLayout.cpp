@@ -1732,7 +1732,7 @@ bool RenderBlockFlow::adjustLogicalLineTopAndLogicalHeightIfNeeded(ShapeInsideIn
     if (shapeInsideInfo) {
         lastFloatFromPreviousLine = (containsFloats()) ? m_floatingObjects->set().last() : 0;
         if (!wordMeasurements.size() && lastFloatFromPreviousLine) {
-            LayoutUnit floatLogicalTopOffset = shapeInsideInfo->computeFirstFitPositionForFloat(lastFloatFromPreviousLine->logicalSize(isHorizontalWritingMode()));
+            LayoutUnit floatLogicalTopOffset = shapeInsideInfo->computeFirstFitPositionForFloat(logicalSizeForFloat(lastFloatFromPreviousLine));
             if (logicalHeight() < floatLogicalTopOffset)
                 adjustedLogicalLineTop = floatLogicalTopOffset;
         }
@@ -2406,8 +2406,8 @@ bool RenderBlockFlow::checkPaginationAndFloatsAtEndLine(LineLayoutState& layoutS
     const FloatingObjectSet& floatingObjectSet = m_floatingObjects->set();
     FloatingObjectSetIterator end = floatingObjectSet.end();
     for (FloatingObjectSetIterator it = floatingObjectSet.begin(); it != end; ++it) {
-        FloatingObject* f = *it;
-        if (f->logicalBottom(isHorizontalWritingMode()) >= logicalTop && f->logicalBottom(isHorizontalWritingMode()) < logicalBottom)
+        FloatingObject* floatingObject = *it;
+        if (logicalBottomForFloat(floatingObject) >= logicalTop && logicalBottomForFloat(floatingObject) < logicalBottom)
             return false;
     }
 
@@ -2789,7 +2789,7 @@ inline void LineBreaker::BreakingContext::handleFloat()
     // If it does, position it now, otherwise, position
     // it after moving to next line (in newLine() func)
     // FIXME: Bug 110372: Properly position multiple stacked floats with non-rectangular shape outside.
-    if (m_floatsFitOnLine && m_width.fitsOnLine(floatingObject->logicalWidth(m_block->isHorizontalWritingMode()))) {
+    if (m_floatsFitOnLine && m_width.fitsOnLine(m_block->logicalWidthForFloat(floatingObject))) {
         m_block->positionNewFloatOnLine(floatingObject, m_lastFloatFromPreviousLine, m_lineInfo, m_width);
         if (m_lineBreak.m_obj == m_current.m_obj) {
             ASSERT(!m_lineBreak.m_pos);
@@ -2897,8 +2897,8 @@ static void updateSegmentsForShapes(RenderBlockFlow* block, const FloatingObject
     LayoutUnit lineLogicalHeight = block->lineHeight(isFirstLine, isHorizontalWritingMode ? HorizontalLine : VerticalLine, PositionOfInteriorLineBoxes);
     LayoutUnit lineLogicalBottom = lineLogicalTop + lineLogicalHeight;
 
-    LayoutUnit floatLogicalTop = lastFloatFromPreviousLine->logicalTop(isHorizontalWritingMode);
-    LayoutUnit floatLogicalBottom = lastFloatFromPreviousLine->logicalBottom(isHorizontalWritingMode);
+    LayoutUnit floatLogicalTop = block->logicalTopForFloat(lastFloatFromPreviousLine);
+    LayoutUnit floatLogicalBottom = block->logicalBottomForFloat(lastFloatFromPreviousLine);
 
     bool lineOverlapsWithFloat = (floatLogicalTop < lineLogicalBottom) && (lineLogicalTop < floatLogicalBottom);
     if (!lineOverlapsWithFloat)
@@ -2906,8 +2906,8 @@ static void updateSegmentsForShapes(RenderBlockFlow* block, const FloatingObject
 
     float minSegmentWidth = firstPositiveWidth(wordMeasurements);
 
-    LayoutUnit floatLogicalWidth = lastFloatFromPreviousLine->logicalWidth(isHorizontalWritingMode);
-    LayoutUnit availableLogicalWidth = block->logicalWidth() - lastFloatFromPreviousLine->logicalRight(isHorizontalWritingMode);
+    LayoutUnit floatLogicalWidth = block->logicalWidthForFloat(lastFloatFromPreviousLine);
+    LayoutUnit availableLogicalWidth = block->logicalWidth() - block->logicalRightForFloat(lastFloatFromPreviousLine);
     if (availableLogicalWidth < minSegmentWidth)
         block->setLogicalHeight(floatLogicalBottom);
 
@@ -3475,7 +3475,7 @@ bool RenderBlockFlow::positionNewFloatOnLine(FloatingObject* newFloat, FloatingO
     const FloatingObjectSet& floatingObjectSet = m_floatingObjects->set();
     ASSERT(floatingObjectSet.last() == newFloat);
 
-    LayoutUnit floatLogicalTop = newFloat->logicalTop(isHorizontalWritingMode());
+    LayoutUnit floatLogicalTop = logicalTopForFloat(newFloat);
     int paginationStrut = newFloat->paginationStrut();
 
     if (floatLogicalTop - paginationStrut != logicalHeight() + lineInfo.floatPaginationStrut())
@@ -3486,23 +3486,23 @@ bool RenderBlockFlow::positionNewFloatOnLine(FloatingObject* newFloat, FloatingO
     FloatingObjectSetIterator begin = floatingObjectSet.begin();
     while (it != begin) {
         --it;
-        FloatingObject* f = *it;
-        if (f == lastFloatFromPreviousLine)
+        FloatingObject* floatingObject = *it;
+        if (floatingObject == lastFloatFromPreviousLine)
             break;
-        if (f->logicalTop(isHorizontalWritingMode()) == logicalHeight() + lineInfo.floatPaginationStrut()) {
-            f->setPaginationStrut(paginationStrut + f->paginationStrut());
-            RenderBox* o = f->renderer();
-            setLogicalTopForChild(o, logicalTopForChild(o) + marginBeforeForChild(o) + paginationStrut);
-            if (o->isRenderBlock())
-                o->forceChildLayout();
+        if (logicalTopForFloat(floatingObject) == logicalHeight() + lineInfo.floatPaginationStrut()) {
+            floatingObject->setPaginationStrut(paginationStrut + floatingObject->paginationStrut());
+            RenderBox* floatBox = floatingObject->renderer();
+            setLogicalTopForChild(floatBox, logicalTopForChild(floatBox) + marginBeforeForChild(floatBox) + paginationStrut);
+            if (floatBox->isRenderBlock())
+                floatBox->forceChildLayout();
             else
-                o->layoutIfNeeded();
+                floatBox->layoutIfNeeded();
             // Save the old logical top before calling removePlacedObject which will set
             // isPlaced to false. Otherwise it will trigger an assert in logicalTopForFloat.
-            LayoutUnit oldLogicalTop = f->logicalTop(isHorizontalWritingMode());
-            m_floatingObjects->removePlacedObject(f);
-            f->setLogicalTop(oldLogicalTop + paginationStrut, isHorizontalWritingMode());
-            m_floatingObjects->addPlacedObject(f);
+            LayoutUnit oldLogicalTop = logicalTopForFloat(floatingObject);
+            m_floatingObjects->removePlacedObject(floatingObject);
+            setLogicalTopForFloat(floatingObject, oldLogicalTop + paginationStrut);
+            m_floatingObjects->addPlacedObject(floatingObject);
         }
     }
 

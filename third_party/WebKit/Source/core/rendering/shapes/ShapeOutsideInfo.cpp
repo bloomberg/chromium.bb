@@ -31,7 +31,7 @@
 #include "core/rendering/shapes/ShapeOutsideInfo.h"
 
 #include "core/rendering/FloatingObjects.h"
-#include "core/rendering/RenderBlock.h"
+#include "core/rendering/RenderBlockFlow.h"
 #include "core/rendering/RenderBox.h"
 
 namespace WebCore {
@@ -53,9 +53,9 @@ bool ShapeOutsideInfo::isEnabledFor(const RenderBox* box)
     return false;
 }
 
-void ShapeOutsideInfo::updateDeltasForContainingBlockLine(const RenderBlock* containingBlock, const FloatingObject* floatingObject, LayoutUnit lineTop, LayoutUnit lineHeight)
+void ShapeOutsideInfo::updateDeltasForContainingBlockLine(const RenderBlockFlow* containingBlock, const FloatingObject* floatingObject, LayoutUnit lineTop, LayoutUnit lineHeight)
 {
-    LayoutUnit shapeTop = floatingObject->logicalTop(containingBlock->isHorizontalWritingMode()) + std::max(LayoutUnit(), containingBlock->marginBeforeForChild(m_renderer));
+    LayoutUnit shapeTop = containingBlock->logicalTopForFloat(floatingObject) + std::max(LayoutUnit(), containingBlock->marginBeforeForChild(m_renderer));
     LayoutUnit lineTopInShapeCoordinates = lineTop - shapeTop + logicalTopOffset();
 
     if (shapeSizeDirty() || m_lineTop != lineTopInShapeCoordinates || m_lineHeight != lineHeight) {

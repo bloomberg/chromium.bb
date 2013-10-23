@@ -35,7 +35,7 @@
 
 namespace WebCore {
 
-class RenderBlock;
+class RenderBlockFlow;
 class RenderBox;
 class FloatingObject;
 
@@ -44,7 +44,7 @@ public:
     LayoutUnit leftMarginBoxDelta() const { return m_leftMarginBoxDelta; }
     LayoutUnit rightMarginBoxDelta() const { return m_rightMarginBoxDelta; }
 
-    void updateDeltasForContainingBlockLine(const RenderBlock*, const FloatingObject*, LayoutUnit lineTop, LayoutUnit lineHeight);
+    void updateDeltasForContainingBlockLine(const RenderBlockFlow*, const FloatingObject*, LayoutUnit lineTop, LayoutUnit lineHeight);
 
     static PassOwnPtr<ShapeOutsideInfo> createInfo(const RenderBox* renderer) { return adoptPtr(new ShapeOutsideInfo(renderer)); }
     static bool isEnabledFor(const RenderBox*);

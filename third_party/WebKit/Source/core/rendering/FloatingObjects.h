@@ -32,7 +32,7 @@
 
 namespace WebCore {
 
-class RenderBlock;
+class RenderBlockFlow;
 class RenderBox;
 
 enum ShapeOutsideFloatOffsetMode { ShapeOutsideFloatShapeOffset, ShapeOutsideFloatMarginBoxOffset };
@@ -92,48 +92,6 @@ public:
     RootInlineBox* originatingLine() const { return m_originatingLine; }
     void setOriginatingLine(RootInlineBox* line) { m_originatingLine = line; }
 
-    LayoutUnit logicalTop(bool isHorizontalWritingMode) const { return isHorizontalWritingMode ? y() : x(); }
-    LayoutUnit logicalBottom(bool isHorizontalWritingMode) const { return isHorizontalWritingMode ? maxY() : maxX(); }
-    LayoutUnit logicalLeft(bool isHorizontalWritingMode) const { return isHorizontalWritingMode ? x() : y(); }
-    LayoutUnit logicalRight(bool isHorizontalWritingMode) const { return isHorizontalWritingMode ? maxX() : maxY(); }
-    LayoutUnit logicalWidth(bool isHorizontalWritingMode) const { return isHorizontalWritingMode ? width() : height(); }
-    LayoutUnit logicalHeight(bool isHorizontalWritingMode) const { return isHorizontalWritingMode ? height() : width(); }
-    LayoutSize logicalSize(bool isHorizontalWritingMode) const { return isHorizontalWritingMode ? m_frameRect.size() : m_frameRect.size().transposedSize(); }
-
-    int pixelSnappedLogicalTop(bool isHorizontalWritingMode) const { return isHorizontalWritingMode ? frameRect().pixelSnappedY() : frameRect().pixelSnappedX(); }
-    int pixelSnappedLogicalBottom(bool isHorizontalWritingMode) const { return isHorizontalWritingMode ? frameRect().pixelSnappedMaxY() : frameRect().pixelSnappedMaxX(); }
-    int pixelSnappedLogicalLeft(bool isHorizontalWritingMode) const { return isHorizontalWritingMode ? frameRect().pixelSnappedX() : frameRect().pixelSnappedY(); }
-    int pixelSnappedLogicalRight(bool isHorizontalWritingMode) const { return isHorizontalWritingMode ? frameRect().pixelSnappedMaxX() : frameRect().pixelSnappedMaxY(); }
-
-    void setLogicalTop(LayoutUnit logicalTop, bool isHorizontalWritingMode)
-    {
-        if (isHorizontalWritingMode)
-            setY(logicalTop);
-        else
-            setX(logicalTop);
-    }
-    void setLogicalLeft(LayoutUnit logicalLeft, bool isHorizontalWritingMode)
-    {
-        if (isHorizontalWritingMode)
-            setX(logicalLeft);
-        else
-            setY(logicalLeft);
-    }
-    void setLogicalHeight(LayoutUnit logicalHeight, bool isHorizontalWritingMode)
-    {
-        if (isHorizontalWritingMode)
-            setHeight(logicalHeight);
-        else
-            setWidth(logicalHeight);
-    }
-    void setLogicalWidth(LayoutUnit logicalWidth, bool isHorizontalWritingMode)
-    {
-        if (isHorizontalWritingMode)
-            setWidth(logicalWidth);
-        else
-            setHeight(logicalWidth);
-    }
-
 private:
     explicit FloatingObject(RenderBox*);
     FloatingObject(RenderBox*, Type, const LayoutRect&, bool shouldPaint, bool isDescendant);
@@ -171,7 +129,7 @@ typedef HashMap<RenderBox*, FloatingObject*> RendererToFloatInfoMap;
 class FloatingObjects {
     WTF_MAKE_NONCOPYABLE(FloatingObjects); WTF_MAKE_FAST_ALLOCATED;
 public:
-    FloatingObjects(const RenderBlock*, bool horizontalWritingMode);
+    FloatingObjects(const RenderBlockFlow*, bool horizontalWritingMode);
     ~FloatingObjects();
 
     void clear();
@@ -213,7 +171,7 @@ private:
     unsigned m_leftObjectsCount;
     unsigned m_rightObjectsCount;
     bool m_horizontalWritingMode;
-    const RenderBlock* m_renderer;
+    const RenderBlockFlow* m_renderer;
 
     struct FloatBottomCachedValue {
         FloatBottomCachedValue();

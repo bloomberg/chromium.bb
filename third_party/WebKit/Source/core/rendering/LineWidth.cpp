@@ -69,7 +69,7 @@ void LineWidth::updateAvailableWidth(LayoutUnit replacedHeight)
 void LineWidth::shrinkAvailableWidthForNewFloatIfNeeded(FloatingObject* newFloat)
 {
     LayoutUnit height = m_block.logicalHeight();
-    if (height < newFloat->logicalTop(m_block.isHorizontalWritingMode()) || height >= newFloat->logicalBottom(m_block.isHorizontalWritingMode()))
+    if (height < m_block.logicalTopForFloat(newFloat) || height >= m_block.logicalBottomForFloat(newFloat))
         return;
 
     // When floats with shape outside are stacked, the floats are positioned based on the margin box of the float,
@@ -97,7 +97,7 @@ void LineWidth::shrinkAvailableWidthForNewFloatIfNeeded(FloatingObject* newFloat
         shapeOutsideInfo->updateDeltasForContainingBlockLine(&m_block, newFloat, m_block.logicalHeight(), lineHeight);
 
     if (newFloat->type() == FloatingObject::FloatLeft) {
-        float newLeft = newFloat->logicalRight(m_block.isHorizontalWritingMode());
+        float newLeft = m_block.logicalRightForFloat(newFloat);
         if (previousShapeOutsideInfo)
             newLeft -= previousShapeOutsideInfo->rightMarginBoxDelta();
         if (shapeOutsideInfo)
@@ -107,7 +107,7 @@ void LineWidth::shrinkAvailableWidthForNewFloatIfNeeded(FloatingObject* newFloat
             newLeft += floorToInt(m_block.textIndentOffset());
         m_left = std::max<float>(m_left, newLeft);
     } else {
-        float newRight = newFloat->logicalLeft(m_block.isHorizontalWritingMode());
+        float newRight = m_block.logicalLeftForFloat(newFloat);
         if (previousShapeOutsideInfo)
             newRight -= previousShapeOutsideInfo->leftMarginBoxDelta();
         if (shapeOutsideInfo)

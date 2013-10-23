@@ -650,10 +650,10 @@ void RenderBlockFlow::rebuildFloatsFromIntruding()
             for (FloatingObjectSetIterator it = floatingObjectSet.begin(); it != end; ++it) {
                 FloatingObject* floatingObject = *it;
                 FloatingObject* oldFloatingObject = floatMap.get(floatingObject->renderer());
-                LayoutUnit logicalBottom = floatingObject->logicalBottom(isHorizontalWritingMode());
+                LayoutUnit logicalBottom = logicalBottomForFloat(floatingObject);
                 if (oldFloatingObject) {
-                    LayoutUnit oldLogicalBottom = oldFloatingObject->logicalBottom(isHorizontalWritingMode());
-                    if (floatingObject->logicalWidth(isHorizontalWritingMode()) != oldFloatingObject->logicalWidth(isHorizontalWritingMode()) || floatingObject->logicalLeft(isHorizontalWritingMode()) != oldFloatingObject->logicalLeft(isHorizontalWritingMode())) {
+                    LayoutUnit oldLogicalBottom = logicalBottomForFloat(oldFloatingObject);
+                    if (logicalWidthForFloat(floatingObject) != logicalWidthForFloat(oldFloatingObject) || logicalLeftForFloat(floatingObject) != logicalLeftForFloat(oldFloatingObject)) {
                         changeLogicalTop = 0;
                         changeLogicalBottom = max(changeLogicalBottom, max(logicalBottom, oldLogicalBottom));
                     } else {
@@ -661,8 +661,8 @@ void RenderBlockFlow::rebuildFloatsFromIntruding()
                             changeLogicalTop = min(changeLogicalTop, min(logicalBottom, oldLogicalBottom));
                             changeLogicalBottom = max(changeLogicalBottom, max(logicalBottom, oldLogicalBottom));
                         }
-                        LayoutUnit logicalTop = floatingObject->logicalTop(isHorizontalWritingMode());
-                        LayoutUnit oldLogicalTop = oldFloatingObject->logicalTop(isHorizontalWritingMode());
+                        LayoutUnit logicalTop = logicalTopForFloat(floatingObject);
+                        LayoutUnit oldLogicalTop = logicalTopForFloat(oldFloatingObject);
                         if (logicalTop != oldLogicalTop) {
                             changeLogicalTop = min(changeLogicalTop, min(logicalTop, oldLogicalTop));
                             changeLogicalBottom = max(changeLogicalBottom, max(logicalTop, oldLogicalTop));
@@ -687,7 +687,7 @@ void RenderBlockFlow::rebuildFloatsFromIntruding()
             FloatingObject* floatingObject = (*it).value;
             if (!floatingObject->isDescendant()) {
                 changeLogicalTop = 0;
-                changeLogicalBottom = max(changeLogicalBottom, floatingObject->logicalBottom(isHorizontalWritingMode()));
+                changeLogicalBottom = max(changeLogicalBottom, logicalBottomForFloat(floatingObject));
             }
         }
         deleteAllValues(floatMap);
@@ -1703,7 +1703,7 @@ void RenderBlockFlow::repaintOverhangingFloats(bool paintAllDescendants)
         // Only repaint the object if it is overhanging, is not in its own layer, and
         // is our responsibility to paint (m_shouldPaint is set). When paintAllDescendants is true, the latter
         // condition is replaced with being a descendant of us.
-        if (floatingObject->logicalBottom(isHorizontalWritingMode()) > logicalHeight()
+        if (logicalBottomForFloat(floatingObject) > logicalHeight()
             && !floatingObject->renderer()->hasSelfPaintingLayer()
             && (floatingObject->shouldPaint() || (paintAllDescendants && floatingObject->renderer()->isDescendantOf(this)))) {
             floatingObject->renderer()->repaint();
@@ -1815,7 +1815,7 @@ LayoutPoint RenderBlockFlow::computeLogicalLocationForFloat(const FloatingObject
     ShapeInsideInfo* shapeInsideInfo = this->layoutShapeInsideInfo();
     // FIXME: Implement behavior for right floats.
     if (shapeInsideInfo) {
-        LayoutSize floatLogicalSize = floatingObject->logicalSize(isHorizontalWritingMode());
+        LayoutSize floatLogicalSize = logicalSizeForFloat(floatingObject);
         // floatingObject's logicalSize doesn't contain the actual height at this point, so we need to calculate it
         floatLogicalSize.setHeight(logicalHeightForChild(childBox) + marginBeforeForChild(childBox) + marginAfterForChild(childBox));
 
@@ -1835,7 +1835,7 @@ LayoutPoint RenderBlockFlow::computeLogicalLocationForFloat(const FloatingObject
         logicalRightOffset = logicalRightOffsetForContent(logicalTopOffset);
     }
 
-    LayoutUnit floatLogicalWidth = min(floatingObject->logicalWidth(isHorizontalWritingMode()), logicalRightOffset - logicalLeftOffset); // The width we look for.
+    LayoutUnit floatLogicalWidth = min(logicalWidthForFloat(floatingObject), logicalRightOffset - logicalLeftOffset); // The width we look for.
 
     LayoutUnit floatLogicalLeft;
 
@@ -1852,7 +1852,7 @@ LayoutPoint RenderBlockFlow::computeLogicalLocationForFloat(const FloatingObject
                 // Have to re-evaluate all of our offsets, since they may have changed.
                 logicalRightOffset = logicalRightOffsetForContent(logicalTopOffset); // Constant part of right offset.
                 logicalLeftOffset = logicalLeftOffsetForContent(logicalTopOffset); // Constant part of left offset.
-                floatLogicalWidth = min(floatingObject->logicalWidth(isHorizontalWritingMode()), logicalRightOffset - logicalLeftOffset);
+                floatLogicalWidth = min(logicalWidthForFloat(floatingObject), logicalRightOffset - logicalLeftOffset);
             }
         }
         floatLogicalLeft = max(logicalLeftOffset - borderAndPaddingLogicalLeft(), floatLogicalLeft);
@@ -1867,13 +1867,13 @@ LayoutPoint RenderBlockFlow::computeLogicalLocationForFloat(const FloatingObject
                 // Have to re-evaluate all of our offsets, since they may have changed.
                 logicalRightOffset = logicalRightOffsetForContent(logicalTopOffset); // Constant part of right offset.
                 logicalLeftOffset = logicalLeftOffsetForContent(logicalTopOffset); // Constant part of left offset.
-                floatLogicalWidth = min(floatingObject->logicalWidth(isHorizontalWritingMode()), logicalRightOffset - logicalLeftOffset);
+                floatLogicalWidth = min(logicalWidthForFloat(floatingObject), logicalRightOffset - logicalLeftOffset);
             }
         }
         // Use the original width of the float here, since the local variable
         // |floatLogicalWidth| was capped to the available line width. See
         // fast/block/float/clamped-right-float.html.
-        floatLogicalLeft -= floatingObject->logicalWidth(isHorizontalWritingMode());
+        floatLogicalLeft -= logicalWidthForFloat(floatingObject);
     }
 
     return LayoutPoint(floatLogicalLeft, logicalTopOffset);
@@ -1912,7 +1912,7 @@ FloatingObject* RenderBlockFlow::insertFloatingObject(RenderBox* floatBox)
         floatBox->computeAndSetBlockDirectionMargins(this);
     }
 
-    newObj->setLogicalWidth(logicalWidthForChild(floatBox) + marginStartForChild(floatBox) + marginEndForChild(floatBox), isHorizontalWritingMode());
+    setLogicalWidthForFloat(newObj.get(), logicalWidthForChild(floatBox) + marginStartForChild(floatBox) + marginEndForChild(floatBox));
 
     if (ShapeOutsideInfo* shapeOutside = floatBox->shapeOutsideInfo())
         shapeOutside->setShapeSize(logicalWidthForChild(floatBox), logicalHeightForChild(floatBox));
@@ -1928,8 +1928,8 @@ void RenderBlockFlow::removeFloatingObject(RenderBox* floatBox)
         if (it != floatingObjectSet.end()) {
             FloatingObject* floatingObject = *it;
             if (childrenInline()) {
-                LayoutUnit logicalTop = floatingObject->logicalTop(isHorizontalWritingMode());
-                LayoutUnit logicalBottom = floatingObject->logicalBottom(isHorizontalWritingMode());
+                LayoutUnit logicalTop = logicalTopForFloat(floatingObject);
+                LayoutUnit logicalBottom = logicalBottomForFloat(floatingObject);
 
                 // Fix for https://bugs.webkit.org/show_bug.cgi?id=54995.
                 if (logicalBottom < 0 || logicalBottom < logicalTop || logicalTop == LayoutUnit::max()) {
@@ -1963,7 +1963,7 @@ void RenderBlockFlow::removeFloatingObjectsBelow(FloatingObject* lastFloat, int 
 
     const FloatingObjectSet& floatingObjectSet = m_floatingObjects->set();
     FloatingObject* curr = floatingObjectSet.last();
-    while (curr != lastFloat && (!curr->isPlaced() || curr->logicalTop(isHorizontalWritingMode()) >= logicalOffset)) {
+    while (curr != lastFloat && (!curr->isPlaced() || logicalTopForFloat(curr) >= logicalOffset)) {
         m_floatingObjects->remove(curr);
         if (floatingObjectSet.isEmpty())
             break;
@@ -2004,7 +2004,7 @@ bool RenderBlockFlow::positionNewFloats()
 
     // The float cannot start above the top position of the last positioned float.
     if (lastPlacedFloatingObject)
-        logicalTop = max(lastPlacedFloatingObject->logicalTop(isHorizontalWritingMode()), logicalTop);
+        logicalTop = max(logicalTopForFloat(lastPlacedFloatingObject), logicalTop);
 
     FloatingObjectSetIterator end = floatingObjectSet.end();
     // Now walk through the set of unpositioned floats and place them.
@@ -2027,7 +2027,7 @@ bool RenderBlockFlow::positionNewFloats()
 
         LayoutPoint floatLogicalLocation = computeLogicalLocationForFloat(floatingObject, logicalTop);
 
-        floatingObject->setLogicalLeft(floatLogicalLocation.x(), isHorizontalWritingMode());
+        setLogicalLeftForFloat(floatingObject, floatLogicalLocation.x());
 
         setLogicalLeftForChild(childBox, floatLogicalLocation.x() + childLogicalLeftMargin);
         setLogicalTopForChild(childBox, floatLogicalLocation.y() + marginBeforeForChild(childBox));
@@ -2058,7 +2058,7 @@ bool RenderBlockFlow::positionNewFloats()
                 floatingObject->setPaginationStrut(newLogicalTop - floatLogicalLocation.y());
 
                 floatLogicalLocation = computeLogicalLocationForFloat(floatingObject, newLogicalTop);
-                floatingObject->setLogicalLeft(floatLogicalLocation.x(), isHorizontalWritingMode());
+                setLogicalLeftForFloat(floatingObject, floatLogicalLocation.x());
 
                 setLogicalLeftForChild(childBox, floatLogicalLocation.x() + childLogicalLeftMargin);
                 setLogicalTopForChild(childBox, floatLogicalLocation.y() + marginBeforeForChild(childBox));
@@ -2069,9 +2069,9 @@ bool RenderBlockFlow::positionNewFloats()
             }
         }
 
-        floatingObject->setLogicalTop(floatLogicalLocation.y(), isHorizontalWritingMode());
+        setLogicalTopForFloat(floatingObject, floatLogicalLocation.y());
 
-        floatingObject->setLogicalHeight(logicalHeightForChild(childBox) + marginBeforeForChild(childBox) + marginAfterForChild(childBox), isHorizontalWritingMode());
+        setLogicalHeightForFloat(floatingObject, logicalHeightForChild(childBox) + marginBeforeForChild(childBox) + marginAfterForChild(childBox));
 
         m_floatingObjects->addPlacedObject(floatingObject);
 
@@ -2092,7 +2092,7 @@ bool RenderBlockFlow::hasOverhangingFloat(RenderBox* renderer)
     if (it == floatingObjectSet.end())
         return false;
 
-    return (*it)->logicalBottom(isHorizontalWritingMode()) > logicalHeight();
+    return logicalBottomForFloat(*it) > logicalHeight();
 }
 
 void RenderBlockFlow::addIntrudingFloats(RenderBlockFlow* prev, LayoutUnit logicalLeftOffset, LayoutUnit logicalTopOffset)
@@ -2109,7 +2109,7 @@ void RenderBlockFlow::addIntrudingFloats(RenderBlockFlow* prev, LayoutUnit logic
     FloatingObjectSetIterator prevEnd = prevSet.end();
     for (FloatingObjectSetIterator prevIt = prevSet.begin(); prevIt != prevEnd; ++prevIt) {
         FloatingObject* floatingObject = *prevIt;
-        if (floatingObject->logicalBottom(isHorizontalWritingMode()) > logicalTopOffset) {
+        if (logicalBottomForFloat(floatingObject) > logicalTopOffset) {
             if (!m_floatingObjects || !m_floatingObjects->set().contains(floatingObject)) {
                 // We create the floating object list lazily.
                 if (!m_floatingObjects)
@@ -2145,7 +2145,7 @@ LayoutUnit RenderBlockFlow::addOverhangingFloats(RenderBlockFlow* child, bool ma
     FloatingObjectSetIterator childEnd = child->m_floatingObjects->set().end();
     for (FloatingObjectSetIterator childIt = child->m_floatingObjects->set().begin(); childIt != childEnd; ++childIt) {
         FloatingObject* floatingObject = *childIt;
-        LayoutUnit logicalBottomForFloat = min(floatingObject->logicalBottom(isHorizontalWritingMode()), LayoutUnit::max() - childLogicalTop);
+        LayoutUnit logicalBottomForFloat = min(this->logicalBottomForFloat(floatingObject), LayoutUnit::max() - childLogicalTop);
         LayoutUnit logicalBottom = childLogicalTop + logicalBottomForFloat;
         lowestFloatLogicalBottom = max(lowestFloatLogicalBottom, logicalBottom);
 
@@ -2210,9 +2210,9 @@ LayoutUnit RenderBlockFlow::nextFloatLogicalBottomBelow(LayoutUnit logicalHeight
         LayoutUnit floatBottom;
         ShapeOutsideInfo* shapeOutside = floatingObject->renderer()->shapeOutsideInfo();
         if (offsetMode == ShapeOutsideFloatShapeOffset && shapeOutside)
-            floatBottom = floatingObject->logicalTop(isHorizontalWritingMode()) + marginBeforeForChild(floatingObject->renderer()) + shapeOutside->shapeLogicalBottom();
+            floatBottom = logicalTopForFloat(floatingObject) + marginBeforeForChild(floatingObject->renderer()) + shapeOutside->shapeLogicalBottom();
         else
-            floatBottom = floatingObject->logicalBottom(isHorizontalWritingMode());
+            floatBottom = logicalBottomForFloat(floatingObject);
         if (floatBottom > logicalHeight)
             bottom = min(floatBottom, bottom);
     }
