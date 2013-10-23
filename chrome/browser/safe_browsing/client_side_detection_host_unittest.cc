@@ -339,7 +339,13 @@ TEST_F(ClientSideDetectionHostTest, OnPhishingDetectionDoneInvalidVerdict) {
   EXPECT_TRUE(Mock::VerifyAndClear(mock_extractor));
 }
 
+#if defined(OS_WIN)
+// Fails on Blink canary bots: http://crbug.com/310423
+TEST_F(ClientSideDetectionHostTest,
+       DISABLED_OnPhishingDetectionDoneNotPhishing) {
+#else
 TEST_F(ClientSideDetectionHostTest, OnPhishingDetectionDoneNotPhishing) {
+#endif
   // Case 1: client thinks the page is phishing.  The server does not agree.
   // No interstitial is shown.
   MockBrowserFeatureExtractor* mock_extractor = new MockBrowserFeatureExtractor(
