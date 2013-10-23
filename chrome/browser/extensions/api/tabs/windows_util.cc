@@ -10,6 +10,7 @@
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
 #include "chrome/browser/extensions/window_controller.h"
 #include "chrome/browser/extensions/window_controller_list.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "extensions/common/error_utils.h"
 
 namespace windows_util {

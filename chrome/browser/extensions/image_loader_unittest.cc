@@ -29,6 +29,7 @@ using extensions::Extension;
 using extensions::ExtensionResource;
 using extensions::ImageLoader;
 using extensions::Manifest;
+using extensions::UnloadedExtensionInfo;
 
 class ImageLoaderTest : public testing::Test {
  public:
@@ -169,12 +170,12 @@ TEST_F(ImageLoaderTest, DeleteExtensionWhileWaitingForCache) {
   EXPECT_EQ(0, image_loaded_count());
 
   // Send out notification the extension was uninstalled.
-  extensions::UnloadedExtensionInfo details(extension.get(),
-      extension_misc::UNLOAD_REASON_UNINSTALL);
+  UnloadedExtensionInfo details(extension.get(),
+                                UnloadedExtensionInfo::REASON_UNINSTALL);
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_EXTENSION_UNLOADED,
       content::NotificationService::AllSources(),
-      content::Details<extensions::UnloadedExtensionInfo>(&details));
+      content::Details<UnloadedExtensionInfo>(&details));
 
   // Chuck the extension, that way if anyone tries to access it we should crash
   // or get valgrind errors.

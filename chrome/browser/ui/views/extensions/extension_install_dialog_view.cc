@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/views/constrained_window_views.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/web_contents.h"

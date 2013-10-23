@@ -20,6 +20,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "base/version.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/manifest_handler.h"
 #include "chrome/common/extensions/permissions/permission_set.h"
 #include "chrome/common/extensions/permissions/permissions_data.h"
@@ -834,7 +835,7 @@ InstalledExtensionInfo::InstalledExtensionInfo(
 
 UnloadedExtensionInfo::UnloadedExtensionInfo(
     const Extension* extension,
-    extension_misc::UnloadedExtensionReason reason)
+    UnloadedExtensionInfo::Reason reason)
     : reason(reason),
       extension(extension) {}
 

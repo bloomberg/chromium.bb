@@ -297,7 +297,7 @@ class DriveFileSyncServiceFakeTest : public testing::Test {
     // Call UnloadExtension instead of UninstallExtension since it does
     // unnecessary cleanup (e.g. deleting extension data) and emits warnings.
     extension_service_->UnloadExtension(
-        extension_id, extension_misc::UNLOAD_REASON_UNINSTALL);
+        extension_id, extensions::UnloadedExtensionInfo::REASON_UNINSTALL);
   }
 
   void UpdateRegisteredOrigins() {

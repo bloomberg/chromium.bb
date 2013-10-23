@@ -234,7 +234,7 @@ TEST_F(ExtensionProtocolTest, ComponentResourceRequest) {
 
   // And then test it with the extension disabled.
   extension_info_map_->RemoveExtension(extension->id(),
-                                       extension_misc::UNLOAD_REASON_DISABLE);
+                                       UnloadedExtensionInfo::REASON_DISABLE);
   {
     net::URLRequest request(extension->GetResourceURL("webstore_icon_16.png"),
                             &test_delegate_,

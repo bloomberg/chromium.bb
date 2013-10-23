@@ -42,7 +42,7 @@ class MockExtensionService : public TestExtensionService {
 
   virtual void UnloadExtension(
       const std::string& extension_id,
-      extension_misc::UnloadedExtensionReason reason) OVERRIDE {
+      UnloadedExtensionInfo::Reason reason) OVERRIDE {
     ASSERT_TRUE(extension_set_.Contains(extension_id));
     // Remove the extension with the matching id.
     extension_set_.Remove(extension_id);
@@ -51,7 +51,7 @@ class MockExtensionService : public TestExtensionService {
 
   virtual void RemoveComponentExtension(const std::string & extension_id)
       OVERRIDE {
-    UnloadExtension(extension_id, extension_misc::UNLOAD_REASON_DISABLE);
+    UnloadExtension(extension_id, UnloadedExtensionInfo::REASON_DISABLE);
   }
 
   virtual bool is_ready() OVERRIDE {

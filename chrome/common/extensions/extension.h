@@ -20,7 +20,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
-#include "chrome/common/extensions/extension_constants.h"
 #include "extensions/common/extension_resource.h"
 #include "extensions/common/install_warning.h"
 #include "extensions/common/manifest.h"
@@ -504,14 +503,20 @@ struct InstalledExtensionInfo {
 };
 
 struct UnloadedExtensionInfo {
-  extension_misc::UnloadedExtensionReason reason;
+  enum Reason {
+    REASON_DISABLE,    // Extension is being disabled.
+    REASON_UPDATE,     // Extension is being updated to a newer version.
+    REASON_UNINSTALL,  // Extension is being uninstalled.
+    REASON_TERMINATE,  // Extension has terminated.
+    REASON_BLACKLIST,  // Extension has been blacklisted.
+  };
+
+  Reason reason;
 
   // The extension being unloaded - this should always be non-NULL.
   const Extension* extension;
 
-  UnloadedExtensionInfo(
-      const Extension* extension,
-      extension_misc::UnloadedExtensionReason reason);
+  UnloadedExtensionInfo(const Extension* extension, Reason reason);
 };
 
 // The details sent for EXTENSION_PERMISSIONS_UPDATED notifications.

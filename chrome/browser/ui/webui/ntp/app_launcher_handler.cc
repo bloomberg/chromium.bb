@@ -60,6 +60,7 @@ using content::WebContents;
 using extensions::CrxInstaller;
 using extensions::Extension;
 using extensions::ExtensionPrefs;
+using extensions::UnloadedExtensionInfo;
 
 namespace {
 
@@ -283,8 +284,8 @@ void AppLauncherHandler::Observe(int type,
         extension = content::Details<const Extension>(details).ptr();
         uninstalled = true;
       } else {  // NOTIFICATION_EXTENSION_UNLOADED
-        if (content::Details<extensions::UnloadedExtensionInfo>(
-                details)->reason == extension_misc::UNLOAD_REASON_UNINSTALL) {
+        if (content::Details<UnloadedExtensionInfo>(details)->reason ==
+            UnloadedExtensionInfo::REASON_UNINSTALL) {
           // Uninstalls are tracked by NOTIFICATION_EXTENSION_UNINSTALLED.
           return;
         }

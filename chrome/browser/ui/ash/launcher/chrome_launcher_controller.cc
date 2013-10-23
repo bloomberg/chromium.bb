@@ -88,6 +88,7 @@
 #endif
 
 using extensions::Extension;
+using extensions::UnloadedExtensionInfo;
 using extension_misc::kGmailAppId;
 using content::WebContents;
 
@@ -1055,19 +1056,18 @@ void ChromeLauncherController::Observe(
       break;
     }
     case chrome::NOTIFICATION_EXTENSION_UNLOADED: {
-      const content::Details<extensions::UnloadedExtensionInfo>& unload_info(
-          details);
+      const content::Details<UnloadedExtensionInfo>& unload_info(details);
       const Extension* extension = unload_info->extension;
       const std::string& id = extension->id();
       // Since we might have windowed apps of this type which might have
       // outstanding locks which needs to be removed.
       if (GetLauncherIDForAppID(id) &&
-          unload_info->reason == extension_misc::UNLOAD_REASON_UNINSTALL) {
+          unload_info->reason == UnloadedExtensionInfo::REASON_UNINSTALL) {
         CloseWindowedAppsFromRemovedExtension(id);
       }
 
       if (IsAppPinned(id)) {
-        if (unload_info->reason == extension_misc::UNLOAD_REASON_UNINSTALL) {
+        if (unload_info->reason == UnloadedExtensionInfo::REASON_UNINSTALL) {
           DoUnpinAppWithID(id);
           app_icon_loader_->ClearImage(id);
         } else {

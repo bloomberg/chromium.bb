@@ -102,7 +102,7 @@ TEST_F(ExtensionInfoMapTest, RefCounting) {
 
   // Remove extension2, and the extension2 object should have the only ref.
   info_map->RemoveExtension(
-      extension2->id(), extension_misc::UNLOAD_REASON_UNINSTALL);
+      extension2->id(), extensions::UnloadedExtensionInfo::REASON_UNINSTALL);
   EXPECT_TRUE(extension2->HasOneRef());
 
   // Delete the info map, and the extension3 object should have the only ref.

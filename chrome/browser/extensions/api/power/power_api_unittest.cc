@@ -164,7 +164,7 @@ class PowerApiTest : public BrowserWithTestWindowTest {
   // been unloaded.
   void UnloadExtension(extensions::Extension* extension) {
     UnloadedExtensionInfo details(
-        extension, extension_misc::UNLOAD_REASON_UNINSTALL);
+        extension, UnloadedExtensionInfo::REASON_UNINSTALL);
     PowerApiManager::GetInstance()->Observe(
         chrome::NOTIFICATION_EXTENSION_UNLOADED,
         content::Source<Profile>(browser()->profile()),

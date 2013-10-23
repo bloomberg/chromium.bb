@@ -131,7 +131,7 @@ bool AppLoadService::HasShellWindows(const std::string& extension_id) {
 
 bool AppLoadService::WasUnloadedForReload(
     const extensions::UnloadedExtensionInfo& unload_info) {
-  if (unload_info.reason == extension_misc::UNLOAD_REASON_DISABLE) {
+  if (unload_info.reason == extensions::UnloadedExtensionInfo::REASON_DISABLE) {
     ExtensionPrefs* prefs = ExtensionPrefs::Get(profile_);
      return (prefs->GetDisableReasons(unload_info.extension->id()) &
         Extension::DISABLE_RELOAD) != 0;

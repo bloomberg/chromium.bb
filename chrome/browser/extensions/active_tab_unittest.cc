@@ -270,7 +270,7 @@ TEST_F(ActiveTabTest, Uninstalling) {
 
   // Uninstalling the extension should clear its tab permissions.
   UnloadedExtensionInfo details(extension.get(),
-                                extension_misc::UNLOAD_REASON_DISABLE);
+                                UnloadedExtensionInfo::REASON_DISABLE);
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_EXTENSION_UNLOADED,
       content::Source<Profile>(Profile::FromBrowserContext(

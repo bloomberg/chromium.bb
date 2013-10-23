@@ -13,7 +13,6 @@
 #include "base/time/time.h"
 #include "chrome/browser/extensions/extensions_quota_service.h"
 #include "chrome/browser/extensions/process_map.h"
-#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_set.h"
 
 namespace extensions {
@@ -41,7 +40,7 @@ class ExtensionInfoMap : public base::RefCountedThreadSafe<ExtensionInfoMap> {
 
   // Callback for when an extension is unloaded.
   void RemoveExtension(const std::string& extension_id,
-                       const extension_misc::UnloadedExtensionReason reason);
+                       const extensions::UnloadedExtensionInfo::Reason reason);
 
   // Returns the time the extension was installed, or base::Time() if not found.
   base::Time GetInstallTime(const std::string& extension_id) const;

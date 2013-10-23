@@ -47,6 +47,7 @@
 
 using extensions::Extension;
 using extensions::Manifest;
+using extensions::UnloadedExtensionInfo;
 
 namespace {
 const char* offline_gmail_url = "https://mail.google.com/mail/mu/u";
@@ -949,16 +950,16 @@ TEST_F(ChromeLauncherControllerTest, RestoreDefaultAppsResyncOrder) {
 
   // Check that unloading of extensions works as expected.
   extension_service_->UnloadExtension(extension1_->id(),
-                                      extension_misc::UNLOAD_REASON_UNINSTALL);
+                                      UnloadedExtensionInfo::REASON_UNINSTALL);
   EXPECT_EQ("AppList, Chrome, App3, App2, ", GetPinnedAppStatus());
 
   extension_service_->UnloadExtension(extension2_->id(),
-                                      extension_misc::UNLOAD_REASON_UNINSTALL);
+                                      UnloadedExtensionInfo::REASON_UNINSTALL);
   EXPECT_EQ("AppList, Chrome, App3, ", GetPinnedAppStatus());
 
   // Check that an update of an extension does not crash the system.
   extension_service_->UnloadExtension(extension3_->id(),
-                                      extension_misc::UNLOAD_REASON_UPDATE);
+                                      UnloadedExtensionInfo::REASON_UPDATE);
   EXPECT_EQ("AppList, Chrome, App3, ", GetPinnedAppStatus());
 }
 
@@ -1412,7 +1413,7 @@ TEST_F(ChromeLauncherControllerTest, UnpinWithUninstall) {
   EXPECT_TRUE(launcher_controller_->IsAppPinned(extension4_->id()));
 
   extension_service_->UnloadExtension(extension3_->id(),
-                                      extension_misc::UNLOAD_REASON_UNINSTALL);
+                                      UnloadedExtensionInfo::REASON_UNINSTALL);
 
   EXPECT_FALSE(launcher_controller_->IsAppPinned(extension3_->id()));
   EXPECT_TRUE(launcher_controller_->IsAppPinned(extension4_->id()));

@@ -12,6 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/permissions/chrome_scheme_hosts.h"
 #include "chrome/common/extensions/permissions/permission_set.h"
 #include "content/public/common/url_constants.h"

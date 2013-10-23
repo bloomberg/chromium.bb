@@ -834,7 +834,7 @@ bool ExtensionService::UninstallExtension(
 
   // Unload before doing more cleanup to ensure that nothing is hanging on to
   // any of these resources.
-  UnloadExtension(extension_id, extension_misc::UNLOAD_REASON_UNINSTALL);
+  UnloadExtension(extension_id, UnloadedExtensionInfo::REASON_UNINSTALL);
 
   // Tell the backend to start deleting installed extensions on the file thread.
   if (!Manifest::IsUnpackedLocation(extension->location())) {
@@ -1024,7 +1024,7 @@ void ExtensionService::DisableExtension(
     extension_prefs_->SetKnownDisabled(disabled_extensions_.GetIDs());
   if (extensions_.Contains(extension->id())) {
     extensions_.Remove(extension->id());
-    NotifyExtensionUnloaded(extension, extension_misc::UNLOAD_REASON_DISABLE);
+    NotifyExtensionUnloaded(extension, UnloadedExtensionInfo::REASON_DISABLE);
   } else {
     terminated_extensions_.Remove(extension->id());
   }
@@ -1183,7 +1183,7 @@ void ExtensionService::NotifyExtensionLoaded(const Extension* extension) {
 
 void ExtensionService::NotifyExtensionUnloaded(
     const Extension* extension,
-    extension_misc::UnloadedExtensionReason reason) {
+    UnloadedExtensionInfo::Reason reason) {
   UnloadedExtensionInfo details(extension, reason);
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_EXTENSION_UNLOADED,
@@ -1280,7 +1280,7 @@ void ExtensionService::CheckManagementPolicy() {
   // UnloadExtension will change the extensions_ list. So, we should
   // call it outside the iterator loop.
   for (size_t i = 0; i < to_be_removed.size(); ++i)
-    UnloadExtension(to_be_removed[i], extension_misc::UNLOAD_REASON_DISABLE);
+    UnloadExtension(to_be_removed[i], UnloadedExtensionInfo::REASON_DISABLE);
 }
 
 void ExtensionService::CheckForUpdatesSoon() {
@@ -1869,7 +1869,7 @@ void ExtensionService::UpdateExternalExtensionAlert() {
 
 void ExtensionService::UnloadExtension(
     const std::string& extension_id,
-    extension_misc::UnloadedExtensionReason reason) {
+    UnloadedExtensionInfo::Reason reason) {
   // Make sure the extension gets deleted after we return from this function.
   int include_mask = INCLUDE_EVERYTHING & ~INCLUDE_TERMINATED;
   scoped_refptr<const Extension> extension(
@@ -1885,7 +1885,7 @@ void ExtensionService::UnloadExtension(
   }
 
   // If uninstalling let RuntimeEventRouter know.
-  if (reason == extension_misc::UNLOAD_REASON_UNINSTALL)
+  if (reason == UnloadedExtensionInfo::REASON_UNINSTALL)
     extensions::RuntimeEventRouter::OnExtensionUninstalled(
         profile_, extension_id);
 
@@ -1921,7 +1921,7 @@ void ExtensionService::RemoveComponentExtension(
     const std::string& extension_id) {
   scoped_refptr<const Extension> extension(
       GetExtensionById(extension_id, false));
-  UnloadExtension(extension_id, extension_misc::UNLOAD_REASON_UNINSTALL);
+  UnloadExtension(extension_id, UnloadedExtensionInfo::REASON_UNINSTALL);
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_EXTENSION_UNINSTALLED,
       content::Source<Profile>(profile_),
@@ -2063,7 +2063,7 @@ void ExtensionService::AddExtension(const Extension* extension) {
   if (is_extension_installed && !reloading) {
     // To upgrade an extension in place, unload the old one and then load the
     // new one.  ReloadExtension disables the extension, which is sufficient.
-    UnloadExtension(extension->id(), extension_misc::UNLOAD_REASON_UPDATE);
+    UnloadExtension(extension->id(), UnloadedExtensionInfo::REASON_UPDATE);
   }
 
   if (extension_prefs_->IsExtensionBlacklisted(extension->id())) {
@@ -2635,7 +2635,7 @@ void ExtensionService::TrackTerminatedExtension(const Extension* extension) {
   if (!terminated_extensions_.Contains(extension->id()))
     terminated_extensions_.Insert(make_scoped_refptr(extension));
 
-  UnloadExtension(extension->id(), extension_misc::UNLOAD_REASON_TERMINATE);
+  UnloadExtension(extension->id(), UnloadedExtensionInfo::REASON_TERMINATE);
 }
 
 void ExtensionService::UntrackTerminatedExtension(const std::string& id) {
@@ -3120,7 +3120,7 @@ void ExtensionService::ManageBlacklist(const std::set<std::string>& updated) {
     }
     blacklisted_extensions_.Insert(extension);
     extension_prefs_->SetExtensionBlacklisted(extension->id(), true);
-    UnloadExtension(*it, extension_misc::UNLOAD_REASON_BLACKLIST);
+    UnloadExtension(*it, UnloadedExtensionInfo::REASON_BLACKLIST);
     UMA_HISTOGRAM_ENUMERATION("ExtensionBlacklist.BlacklistInstalled",
                               extension->location(), Manifest::NUM_LOCATIONS);
   }

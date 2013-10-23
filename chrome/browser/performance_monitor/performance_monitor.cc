@@ -45,6 +45,7 @@
 
 using content::BrowserThread;
 using extensions::Extension;
+using extensions::UnloadedExtensionInfo;
 
 namespace performance_monitor {
 
@@ -564,11 +565,11 @@ void PerformanceMonitor::Observe(int type,
       break;
     }
     case chrome::NOTIFICATION_EXTENSION_UNLOADED: {
-      const extensions::UnloadedExtensionInfo* info =
-          content::Details<extensions::UnloadedExtensionInfo>(details).ptr();
+      const UnloadedExtensionInfo* info =
+          content::Details<UnloadedExtensionInfo>(details).ptr();
 
       // Check if the extension was unloaded because it was disabled.
-      if (info->reason == extension_misc::UNLOAD_REASON_DISABLE) {
+      if (info->reason == UnloadedExtensionInfo::REASON_DISABLE) {
         AddExtensionEvent(EVENT_EXTENSION_DISABLE,
                           info->extension);
       }

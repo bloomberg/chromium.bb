@@ -13,6 +13,7 @@
 
 using content::BrowserThread;
 using extensions::Extension;
+using extensions::UnloadedExtensionInfo;
 
 namespace {
 
@@ -54,13 +55,14 @@ void ExtensionInfoMap::AddExtension(const Extension* extension,
   extra_data_[extension->id()].incognito_enabled = incognito_enabled;
 }
 
-void ExtensionInfoMap::RemoveExtension(const std::string& extension_id,
-    const extension_misc::UnloadedExtensionReason reason) {
+void ExtensionInfoMap::RemoveExtension(
+    const std::string& extension_id,
+    const UnloadedExtensionInfo::Reason reason) {
   CheckOnValidThread();
   const Extension* extension = extensions_.GetByID(extension_id);
   extra_data_.erase(extension_id);  // we don't care about disabled extra data
-  bool was_uninstalled = (reason != extension_misc::UNLOAD_REASON_DISABLE &&
-                          reason != extension_misc::UNLOAD_REASON_TERMINATE);
+  bool was_uninstalled = (reason != UnloadedExtensionInfo::REASON_DISABLE &&
+                          reason != UnloadedExtensionInfo::REASON_TERMINATE);
   if (extension) {
     if (!was_uninstalled)
       disabled_extensions_.Insert(extension);

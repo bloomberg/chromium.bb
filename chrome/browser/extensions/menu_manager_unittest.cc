@@ -23,7 +23,6 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/api/context_menus.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/context_menu_params.h"
@@ -436,7 +435,7 @@ TEST_F(MenuManagerTest, ExtensionUnloadRemovesMenuItems) {
   // Notify that the extension was unloaded, and make sure the right item is
   // gone.
   UnloadedExtensionInfo details(
-      extension1, extension_misc::UNLOAD_REASON_DISABLE);
+      extension1, UnloadedExtensionInfo::REASON_DISABLE);
   notifier->Notify(chrome::NOTIFICATION_EXTENSION_UNLOADED,
                    content::Source<Profile>(&profile_),
                    content::Details<UnloadedExtensionInfo>(

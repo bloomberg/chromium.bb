@@ -406,7 +406,7 @@ void ExtensionSystemImpl::RegisterExtensionWithRequestContexts(
 
 void ExtensionSystemImpl::UnregisterExtensionWithRequestContexts(
     const std::string& extension_id,
-    const extension_misc::UnloadedExtensionReason reason) {
+    const UnloadedExtensionInfo::Reason reason) {
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&ExtensionInfoMap::RemoveExtension, info_map(),

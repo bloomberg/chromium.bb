@@ -121,7 +121,7 @@ class ExtensionServiceInterface : public syncer::SyncableService {
 
   virtual void UnloadExtension(
       const std::string& extension_id,
-      extension_misc::UnloadedExtensionReason reason) = 0;
+      extensions::UnloadedExtensionInfo::Reason reason) = 0;
   virtual void RemoveComponentExtension(const std::string& extension_id) = 0;
 
   virtual void SyncExtensionChangeIfNeeded(
@@ -327,7 +327,7 @@ class ExtensionService
   // Unload the specified extension.
   virtual void UnloadExtension(
       const std::string& extension_id,
-      extension_misc::UnloadedExtensionReason reason) OVERRIDE;
+      extensions::UnloadedExtensionInfo::Reason reason) OVERRIDE;
 
   // Remove the specified component extension.
   virtual void RemoveComponentExtension(const std::string& extension_id)
@@ -726,8 +726,9 @@ class ExtensionService
   void NotifyExtensionLoaded(const extensions::Extension* extension);
 
   // Handles sending notification that |extension| was unloaded.
-  void NotifyExtensionUnloaded(const extensions::Extension* extension,
-                               extension_misc::UnloadedExtensionReason reason);
+  void NotifyExtensionUnloaded(
+      const extensions::Extension* extension,
+      extensions::UnloadedExtensionInfo::Reason reason);
 
   // Common helper to finish installing the given extension.
   void FinishInstallation(const extensions::Extension* extension);

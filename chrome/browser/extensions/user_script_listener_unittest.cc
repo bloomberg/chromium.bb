@@ -193,7 +193,7 @@ class UserScriptListenerTest : public ExtensionServiceTestBase {
   void UnloadTestExtension() {
     ASSERT_FALSE(service_->extensions()->is_empty());
     service_->UnloadExtension((*service_->extensions()->begin())->id(),
-                              extension_misc::UNLOAD_REASON_DISABLE);
+                              UnloadedExtensionInfo::REASON_DISABLE);
   }
 
   scoped_refptr<UserScriptListener> listener_;

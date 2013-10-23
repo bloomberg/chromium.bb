@@ -37,6 +37,7 @@
 using content::BrowserThread;
 using content::UserMetricsAction;
 using extensions::Extension;
+using extensions::UnloadedExtensionInfo;
 using ui::ResourceBundle;
 
 typedef ThemeProperties Properties;
@@ -257,9 +258,8 @@ void ThemeService::Observe(int type,
     }
     case chrome::NOTIFICATION_EXTENSION_UNLOADED:
     {
-      Details<const extensions::UnloadedExtensionInfo> unloaded_details(
-          details);
-      if (unloaded_details->reason != extension_misc::UNLOAD_REASON_UPDATE &&
+      Details<const UnloadedExtensionInfo> unloaded_details(details);
+      if (unloaded_details->reason != UnloadedExtensionInfo::REASON_UPDATE &&
           unloaded_details->extension->is_theme() &&
           unloaded_details->extension->id() == GetThemeID()) {
         UseDefaultTheme();

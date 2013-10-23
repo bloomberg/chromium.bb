@@ -9,7 +9,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/common/extensions/extension_constants.h"
+#include "chrome/common/extensions/extension.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
 #include "extensions/common/one_shot_event.h"
 
@@ -116,7 +116,7 @@ class ExtensionSystem : public BrowserContextKeyedService {
   // EXTENSION_UNLOADED notification have finished running.
   virtual void UnregisterExtensionWithRequestContexts(
       const std::string& extension_id,
-      const extension_misc::UnloadedExtensionReason reason) {}
+      const UnloadedExtensionInfo::Reason reason) {}
 
   // Signaled when the extension system has completed its startup tasks.
   virtual const OneShotEvent& ready() const = 0;
@@ -157,7 +157,7 @@ class ExtensionSystemImpl : public ExtensionSystem {
 
   virtual void UnregisterExtensionWithRequestContexts(
       const std::string& extension_id,
-      const extension_misc::UnloadedExtensionReason reason) OVERRIDE;
+      const UnloadedExtensionInfo::Reason reason) OVERRIDE;
 
   virtual const OneShotEvent& ready() const OVERRIDE;
 

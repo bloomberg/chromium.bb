@@ -659,7 +659,7 @@ void SyncFileSystemService::HandleExtensionUnloaded(
     int type,
     const content::NotificationDetails& details) {
   content::Details<const extensions::UnloadedExtensionInfo> info(details);
-  if (info->reason != extension_misc::UNLOAD_REASON_DISABLE)
+  if (info->reason != extensions::UnloadedExtensionInfo::REASON_DISABLE)
     return;
 
   std::string extension_id = info->extension->id();

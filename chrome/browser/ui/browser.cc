@@ -142,7 +142,6 @@
 #include "chrome/common/custom_handlers/protocol_handler.h"
 #include "chrome/common/extensions/background_info.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/net/url_fixer_upper.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/profiling.h"
@@ -1802,7 +1801,8 @@ void Browser::Observe(int type,
 
       // Close any tabs from the unloaded extension, unless it's terminated,
       // in which case let the sad tabs remain.
-      if (extension_info->reason != extension_misc::UNLOAD_REASON_TERMINATE) {
+      if (extension_info->reason !=
+          extensions::UnloadedExtensionInfo::REASON_TERMINATE) {
         const Extension* extension = extension_info->extension;
         // Iterate backwards as we may remove items while iterating.
         for (int i = tab_strip_model_->count() - 1; i >= 0; --i) {

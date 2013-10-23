@@ -14,6 +14,7 @@
 #include "chrome/browser/extensions/bundle_installer.h"
 #import "chrome/browser/ui/chrome_style.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "content/public/browser/page_navigator.h"
 #include "grit/generated_resources.h"
 #include "skia/ext/skia_utils_mac.h"
