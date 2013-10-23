@@ -85,7 +85,6 @@ bool NavigatorVibration::vibrate(const VibrationPattern& pattern)
     }
 
     m_timerStart.startOneShot(0);
-    m_isVibrating = true;
     return true;
 }
 
@@ -115,8 +114,7 @@ void NavigatorVibration::timerStopFired(Timer<NavigatorVibration>* timer)
 {
     ASSERT_UNUSED(timer, timer == &m_timerStop);
 
-    if (m_pattern.isEmpty())
-        m_isVibrating = false;
+    m_isVibrating = false;
 
     if (m_pattern.size()) {
         m_timerStart.startOneShot(m_pattern[0] / 1000.0);
