@@ -63,10 +63,9 @@ SkBitmap ReferenceCreateHSLShiftedBitmap(
     color_utils::HSL hsl_shift) {
   SkBitmap shifted;
   shifted.setConfig(SkBitmap::kARGB_8888_Config, bitmap.width(),
-                    bitmap.height(), 0);
+                    bitmap.height());
   shifted.allocPixels();
   shifted.eraseARGB(0, 0, 0, 0);
-  shifted.setIsOpaque(false);
 
   SkAutoLockPixels lock_bitmap(bitmap);
   SkAutoLockPixels lock_shifted(shifted);

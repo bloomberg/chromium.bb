@@ -45,8 +45,8 @@ SkBitmap ToSkBitmap(IDirect3DSurface9* surface, bool is_single_channel) {
   gfx::Size size = d3d_utils::GetSize(surface);
   if (is_single_channel)
     size = gfx::Size(size.width() * 4, size.height());
-  result.setConfig(SkBitmap::kARGB_8888_Config, size.width(), size.height());
-  result.setIsOpaque(true);
+  result.setConfig(SkBitmap::kARGB_8888_Config, size.width(), size.height(),
+                   0, kOpaque_SkAlphaType);
   result.allocPixels();
   result.lockPixels();
   for (int y = 0; y < size.height(); ++y) {

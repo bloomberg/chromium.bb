@@ -25,9 +25,9 @@ void BitmapSkPictureContentLayerUpdater::Resource::Update(
     gfx::Vector2d dest_offset,
     bool partial_update) {
   bitmap_.setConfig(
-      SkBitmap::kARGB_8888_Config, source_rect.width(), source_rect.height());
+      SkBitmap::kARGB_8888_Config, source_rect.width(), source_rect.height(), 0,
+      updater_->layer_is_opaque() ? kOpaque_SkAlphaType : kPremul_SkAlphaType);
   bitmap_.allocPixels();
-  bitmap_.setIsOpaque(updater_->layer_is_opaque());
   SkBitmapDevice device(bitmap_);
   SkCanvas canvas(&device);
   updater_->PaintContentsRect(&canvas, source_rect);

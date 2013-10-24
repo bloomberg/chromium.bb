@@ -560,10 +560,9 @@ SkBitmap SkBitmapOperations::CreateHSLShiftedBitmap(
 
   SkBitmap shifted;
   shifted.setConfig(SkBitmap::kARGB_8888_Config, bitmap.width(),
-                    bitmap.height(), 0);
+                    bitmap.height());
   shifted.allocPixels();
   shifted.eraseARGB(0, 0, 0, 0);
-  shifted.setIsOpaque(false);
 
   SkAutoLockPixels lock_bitmap(bitmap);
   SkAutoLockPixels lock_shifted(shifted);
@@ -704,7 +703,8 @@ SkBitmap SkBitmapOperations::UnPreMultiply(const SkBitmap& bitmap) {
     return bitmap;
 
   SkBitmap opaque_bitmap;
-  opaque_bitmap.setConfig(bitmap.config(), bitmap.width(), bitmap.height());
+  opaque_bitmap.setConfig(bitmap.config(), bitmap.width(), bitmap.height(),
+                          0, kOpaque_SkAlphaType);
   opaque_bitmap.allocPixels();
 
   {
@@ -720,7 +720,6 @@ SkBitmap SkBitmapOperations::UnPreMultiply(const SkBitmap& bitmap) {
     }
   }
 
-  opaque_bitmap.setIsOpaque(true);
   return opaque_bitmap;
 }
 

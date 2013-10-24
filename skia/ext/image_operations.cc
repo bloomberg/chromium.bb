@@ -394,7 +394,7 @@ SkBitmap ImageOperations::ResizeSubpixel(const SkBitmap& source,
   // Render into subpixels.
   SkBitmap result;
   result.setConfig(SkBitmap::kARGB_8888_Config, dest_subset.width(),
-                   dest_subset.height());
+                   dest_subset.height(), 0, img.alphaType());
   result.allocPixels(allocator, NULL);
   if (!result.readyToDraw())
     return img;
@@ -455,7 +455,6 @@ SkBitmap ImageOperations::ResizeSubpixel(const SkBitmap& source,
     src_row += h * row_words;
     dst_row += result.rowBytes() / 4;
   }
-  result.setIsOpaque(img.isOpaque());
   return result;
 #else
   return SkBitmap();
@@ -510,8 +509,8 @@ SkBitmap ImageOperations::ResizeBasic(const SkBitmap& source,
 
   // Convolve into the result.
   SkBitmap result;
-  result.setConfig(SkBitmap::kARGB_8888_Config,
-                   dest_subset.width(), dest_subset.height());
+  result.setConfig(SkBitmap::kARGB_8888_Config, dest_subset.width(),
+                   dest_subset.height(), 0, source.alphaType());
   result.allocPixels(allocator, NULL);
   if (!result.readyToDraw())
     return SkBitmap();
@@ -521,9 +520,6 @@ SkBitmap ImageOperations::ResizeBasic(const SkBitmap& source,
                  static_cast<int>(result.rowBytes()),
                  static_cast<unsigned char*>(result.getPixels()),
                  true);
-
-  // Preserve the "opaque" flag for use as an optimization later.
-  result.setIsOpaque(source.isOpaque());
 
   base::TimeDelta delta = base::TimeTicks::Now() - resize_start;
   UMA_HISTOGRAM_TIMES("Image.ResampleMS", delta);

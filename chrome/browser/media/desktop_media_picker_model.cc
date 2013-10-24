@@ -44,7 +44,8 @@ gfx::ImageSkia ScaleDesktopFrame(scoped_ptr<webrtc::DesktopFrame> frame,
 
   SkBitmap result;
   result.setConfig(SkBitmap::kARGB_8888_Config,
-                   scaled_rect.width(), scaled_rect.height());
+                   scaled_rect.width(), scaled_rect.height(), 0,
+                   kOpaque_SkAlphaType);
   result.allocPixels();
   result.lockPixels();
 
@@ -68,7 +69,6 @@ gfx::ImageSkia ScaleDesktopFrame(scoped_ptr<webrtc::DesktopFrame> frame,
   }
 
   result.unlockPixels();
-  result.setIsOpaque(true);
 
   return gfx::ImageSkia::CreateFrom1xBitmap(result);
 }

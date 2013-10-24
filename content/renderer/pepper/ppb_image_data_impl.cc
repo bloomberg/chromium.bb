@@ -198,7 +198,7 @@ void* ImageDataPlatformBackend::Map() {
       skia::GetTopDevice(*mapped_canvas_)->accessBitmap(true);
 
   // Our platform bitmaps are set to opaque by default, which we don't want.
-  const_cast<SkBitmap&>(bitmap).setIsOpaque(false);
+  const_cast<SkBitmap&>(bitmap).setAlphaType(kPremul_SkAlphaType);
 
   bitmap.lockPixels();
   return bitmap.getAddr32(0, 0);
@@ -273,7 +273,7 @@ void* ImageDataSimpleBackend::Map() {
     shared_memory_->Map(skia_bitmap_.getSize());
     skia_bitmap_.setPixels(shared_memory_->memory());
     // Our platform bitmaps are set to opaque by default, which we don't want.
-    skia_bitmap_.setIsOpaque(false);
+    skia_bitmap_.setAlphaType(kPremul_SkAlphaType);
     skia_canvas_.reset(new SkCanvas(skia_bitmap_));
     return skia_bitmap_.getAddr32(0, 0);
   }

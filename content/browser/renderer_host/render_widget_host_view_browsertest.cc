@@ -591,9 +591,9 @@ class CompositingRenderWidgetHostViewBrowserTestTabCapture
     SkBitmap bitmap;
     bitmap.setConfig(SkBitmap::kARGB_8888_Config,
                      video_frame->visible_rect().width(),
-                     video_frame->visible_rect().height());
+                     video_frame->visible_rect().height(),
+                     0, kOpaque_SkAlphaType);
     bitmap.allocPixels();
-    bitmap.setIsOpaque(true);
 
     SkBitmapDevice device(bitmap);
     SkCanvas canvas(&device);

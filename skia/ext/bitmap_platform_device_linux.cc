@@ -89,9 +89,9 @@ BitmapPlatformDevice* BitmapPlatformDevice::Create(int width, int height,
   }
   SkBitmap bitmap;
   bitmap.setConfig(SkBitmap::kARGB_8888_Config, width, height,
-                   cairo_image_surface_get_stride(surface));
+                   cairo_image_surface_get_stride(surface),
+                   is_opaque ? kOpaque_SkAlphaType : kPremul_SkAlphaType);
   bitmap.setPixels(cairo_image_surface_get_data(surface));
-  bitmap.setIsOpaque(is_opaque);
 
   // The device object will take ownership of the graphics context.
   return new BitmapPlatformDevice
@@ -195,10 +195,10 @@ bool PlatformBitmap::Allocate(int width, int height, bool is_opaque) {
   // cairo drawing context tied to the bitmap. The SkBitmap's pixelRef can
   // outlive the PlatformBitmap if additional copies are made.
   int stride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, width);
-  bitmap_.setConfig(SkBitmap::kARGB_8888_Config, width, height, stride);
+  bitmap_.setConfig(SkBitmap::kARGB_8888_Config, width, height, stride,
+                    is_opaque ? kOpaque_SkAlphaType : kPremul_SkAlphaType);
   if (!bitmap_.allocPixels())  // Using the default allocator.
     return false;
-  bitmap_.setIsOpaque(is_opaque);
 
   cairo_surface_t* surf = cairo_image_surface_create_for_data(
       reinterpret_cast<unsigned char*>(bitmap_.getPixels()),

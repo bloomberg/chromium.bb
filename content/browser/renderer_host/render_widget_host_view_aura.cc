@@ -1917,10 +1917,10 @@ void RenderWidgetHostViewAura::PrepareTextureCopyOutputResult(
 
   scoped_ptr<SkBitmap> bitmap(new SkBitmap);
   bitmap->setConfig(SkBitmap::kARGB_8888_Config,
-                    dst_size_in_pixel.width(), dst_size_in_pixel.height());
+                    dst_size_in_pixel.width(), dst_size_in_pixel.height(),
+                    0, kOpaque_SkAlphaType);
   if (!bitmap->allocPixels())
     return;
-  bitmap->setIsOpaque(true);
 
   ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
   GLHelper* gl_helper = factory->GetGLHelper();

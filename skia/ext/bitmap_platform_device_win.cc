@@ -171,9 +171,9 @@ BitmapPlatformDevice* BitmapPlatformDevice::Create(
     return NULL;
 
   SkBitmap bitmap;
-  bitmap.setConfig(SkBitmap::kARGB_8888_Config, width, height);
+  bitmap.setConfig(SkBitmap::kARGB_8888_Config, width, height, 0,
+                   is_opaque ? kOpaque_SkAlphaType : kPremul_SkAlphaType);
   bitmap.setPixels(data);
-  bitmap.setIsOpaque(is_opaque);
 
 #ifndef NDEBUG
   // If we were given data, then don't clobber it!
@@ -343,11 +343,11 @@ bool PlatformBitmap::Allocate(int width, int height, bool is_opaque) {
   HGDIOBJ stock_bitmap = SelectObject(surface_, hbitmap);
   platform_extra_ = reinterpret_cast<intptr_t>(stock_bitmap);
 
-  bitmap_.setConfig(SkBitmap::kARGB_8888_Config, width, height);
+  bitmap_.setConfig(SkBitmap::kARGB_8888_Config, width, height, 0,
+                    is_opaque ? kOpaque_SkAlphaType : kPremul_SkAlphaType);
   // PlatformBitmapPixelRef takes ownership of |hbitmap|.
   bitmap_.setPixelRef(
       skia::AdoptRef(new PlatformBitmapPixelRef(hbitmap, data)).get());
-  bitmap_.setIsOpaque(is_opaque);
   bitmap_.lockPixels();
 
   return true;

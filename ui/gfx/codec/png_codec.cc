@@ -465,7 +465,8 @@ bool PNGCodec::Decode(const unsigned char* input, size_t input_size,
   }
 
   // Set the bitmap's opaqueness based on what we saw.
-  bitmap->setIsOpaque(state.is_opaque);
+  bitmap->setAlphaType(state.is_opaque ?
+                       kOpaque_SkAlphaType : kPremul_SkAlphaType);
 
   return true;
 }

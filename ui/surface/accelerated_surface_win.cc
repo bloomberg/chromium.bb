@@ -522,11 +522,10 @@ bool AcceleratedPresenter::DoCopyToARGB(const gfx::Rect& requested_src_subrect,
     }
   }
 
-  bitmap->setConfig(SkBitmap::kARGB_8888_Config,
-                    dst_size.width(), dst_size.height());
+  bitmap->setConfig(SkBitmap::kARGB_8888_Config, dst_size.width(),
+                    dst_size.height(), 0, kOpaque_SkAlphaType);
   if (!bitmap->allocPixels())
     return false;
-  bitmap->setIsOpaque(true);
 
   // Copy |final_surface| to |bitmap|. This is always a synchronous operation.
   return gpu_ops->ReadFast(final_surface,
