@@ -6,6 +6,7 @@
 #define UI_VIEWS_WIDGET_DESKTOP_AURA_DESKTOP_ROOT_WINDOW_HOST_H_
 
 #include "base/memory/scoped_ptr.h"
+#include "ui/aura/root_window.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/views/views_export.h"
 #include "ui/views/widget/widget.h"
@@ -13,6 +14,10 @@
 namespace aura {
 class RootWindowHost;
 class Window;
+
+namespace client {
+class DragDropClient;
+}
 }
 
 namespace gfx {
@@ -26,11 +31,15 @@ class NativeTheme;
 
 namespace views {
 namespace corewm {
+
 class Tooltip;
 }
+
 namespace internal {
 class NativeWidgetDelegate;
 }
+
+class DesktopNativeCursorManager;
 class DesktopNativeWidgetAura;
 
 class VIEWS_EXPORT DesktopRootWindowHost {
@@ -39,21 +48,30 @@ class VIEWS_EXPORT DesktopRootWindowHost {
 
   static DesktopRootWindowHost* Create(
       internal::NativeWidgetDelegate* native_widget_delegate,
-      DesktopNativeWidgetAura* desktop_native_widget_aura,
-      const gfx::Rect& initial_bounds);
+      DesktopNativeWidgetAura* desktop_native_widget_aura);
 
   // Return the NativeTheme to use for |window|. WARNING: |window| may be NULL.
   static ui::NativeTheme* GetNativeTheme(aura::Window* window);
 
-  // Creates the aura resources associated with the native window we built.
-  // Caller takes ownership of returned RootWindow.
-  virtual aura::RootWindow* Init(aura::Window* content_window,
-                                 const Widget::InitParams& params) = 0;
+  // Sets up resources needed before the RootWindow has been created.
+  virtual void Init(aura::Window* content_window,
+                    const Widget::InitParams& params,
+                    aura::RootWindow::CreateParams* rw_create_params) = 0;
+
+  // Invoked once the RootWindow has been created. Caller owns the RootWindow.
+  virtual void OnRootWindowCreated(aura::RootWindow* root,
+                                   const Widget::InitParams& params) = 0;
 
   // Creates and returns the Tooltip implementation to use. Return value is
   // owned by DesktopNativeWidgetAura and lives as long as
   // DesktopRootWindowHost.
   virtual scoped_ptr<corewm::Tooltip> CreateTooltip() = 0;
+
+  // Creates and returns the DragDropClient implementation to use. Return value
+  // is owned by DesktopNativeWidgetAura and lives as long as
+  // DesktopRootWindowHost.
+  virtual scoped_ptr<aura::client::DragDropClient> CreateDragDropClient(
+      DesktopNativeCursorManager* cursor_manager) = 0;
 
   virtual void Close() = 0;
   virtual void CloseNow() = 0;

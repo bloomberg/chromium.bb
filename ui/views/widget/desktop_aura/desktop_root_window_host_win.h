@@ -13,19 +13,17 @@
 
 namespace aura {
 namespace client {
+class DragDropClient;
 class FocusClient;
-class ScreenPositionClient;
 }
 }
 
 namespace views {
 class DesktopCursorClient;
-class DesktopDispatcherClient;
 class DesktopDragDropClientWin;
 class HWNDMessageHandler;
 
 namespace corewm {
-class CursorManager;
 class TooltipWin;
 }
 
@@ -37,8 +35,7 @@ class VIEWS_EXPORT DesktopRootWindowHostWin
  public:
   DesktopRootWindowHostWin(
       internal::NativeWidgetDelegate* native_widget_delegate,
-      DesktopNativeWidgetAura* desktop_native_widget_aura,
-      const gfx::Rect& initial_bounds);
+      DesktopNativeWidgetAura* desktop_native_widget_aura);
   virtual ~DesktopRootWindowHostWin();
 
   // A way of converting an HWND into a content window.
@@ -46,9 +43,14 @@ class VIEWS_EXPORT DesktopRootWindowHostWin
 
  protected:
   // Overridden from DesktopRootWindowHost:
-  virtual aura::RootWindow* Init(aura::Window* content_window,
-                                 const Widget::InitParams& params) OVERRIDE;
+  virtual void Init(aura::Window* content_window,
+                    const Widget::InitParams& params,
+                    aura::RootWindow::CreateParams* rw_create_params) OVERRIDE;
+  virtual void OnRootWindowCreated(aura::RootWindow* root,
+                                   const Widget::InitParams& params) OVERRIDE;
   virtual scoped_ptr<corewm::Tooltip> CreateTooltip() OVERRIDE;
+  virtual scoped_ptr<aura::client::DragDropClient>
+      CreateDragDropClient(DesktopNativeCursorManager* cursor_manager) OVERRIDE;
   virtual void Close() OVERRIDE;
   virtual void CloseNow() OVERRIDE;
   virtual aura::RootWindowHost* AsRootWindowHost() OVERRIDE;
@@ -222,7 +224,6 @@ class VIEWS_EXPORT DesktopRootWindowHostWin
   aura::RootWindow* root_window_;
 
   scoped_ptr<HWNDMessageHandler> message_handler_;
-  scoped_ptr<DesktopDispatcherClient> dispatcher_client_;
   scoped_ptr<aura::client::FocusClient> focus_client_;
 
   // TODO(beng): Consider providing an interface to DesktopNativeWidgetAura
@@ -234,14 +235,8 @@ class VIEWS_EXPORT DesktopRootWindowHostWin
   aura::RootWindowHostDelegate* root_window_host_delegate_;
   aura::Window* content_window_;
 
-  // In some cases, we set a screen position client on |root_window_|. If we
-  // do, we're responsible for the lifetime.
-  scoped_ptr<aura::client::ScreenPositionClient> position_client_;
-
-  // Controls visibility of the cursor.
-  scoped_ptr<views::corewm::CursorManager> cursor_client_;
-
-  scoped_ptr<DesktopDragDropClientWin> drag_drop_client_;
+  // Owned by DesktopNativeWidgetAura.
+  DesktopDragDropClientWin* drag_drop_client_;
 
   // When certain windows are being shown, we augment the window size
   // temporarily for animation. The following two members contain the top left

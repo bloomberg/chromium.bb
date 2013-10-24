@@ -19,6 +19,9 @@
 namespace aura {
 class RootWindow;
 namespace client {
+class DragDropClient;
+class FocusClient;
+class ScreenPositionClient;
 class WindowTreeClient;
 }
 }
@@ -27,6 +30,7 @@ namespace views {
 
 namespace corewm {
 class CompoundEventFilter;
+class CursorManager;
 class InputMethodEventFilter;
 class ShadowController;
 class TooltipController;
@@ -35,6 +39,7 @@ class WindowModalityController;
 }
 
 class DesktopCaptureClient;
+class DesktopDispatcherClient;
 class DesktopRootWindowHost;
 class DropHelper;
 class TooltipManagerAura;
@@ -60,9 +65,10 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
   // this is the signal that we should start our shutdown.
   virtual void OnHostClosed();
 
-  // Installs the input method filter on |root|. This is intended to be invoked
-  // by the DesktopRootWindowHost implementation during Init().
-  void InstallInputMethodEventFilter(aura::RootWindow* root);
+  // Called from ~DesktopRootWindowHost. This takes the RootWindow as by the
+  // time we get here |root_window_| is NULL.
+  virtual void OnDesktopRootWindowHostDestroyed(aura::RootWindow* root);
+
   corewm::InputMethodEventFilter* input_method_event_filter() {
     return input_method_event_filter_.get();
   }
@@ -70,20 +76,12 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
     return root_window_event_filter_;
   }
 
-  // Invoked from DesktopRootWindowHost creation to create the CaptureClient.
-  void CreateCaptureClient(aura::RootWindow* root);
-
   // Overridden from NativeWidget:
   virtual ui::EventHandler* GetEventHandler() OVERRIDE;
 
   // Ensures that the correct window is activated/deactivated based on whether
   // we are being activated/deactivated.
   void HandleActivationChanged(bool active);
-
-  // Installs the window modality controller event filter on the |root|. This
-  // should be invoked by the DesktopRootWindowHost implementation immediately
-  // after creation of the RootWindow.
-  void InstallWindowModalityController(aura::RootWindow* root);
 
  protected:
   // Overridden from internal::NativeWidgetPrivate:
@@ -225,6 +223,9 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
                                      const gfx::Point& new_origin) OVERRIDE;
 
  private:
+  // Installs the input method filter.
+  void InstallInputMethodEventFilter();
+
   // To save a clear on platforms where the window is never transparent, the
   // window is only set as transparent when the glass frame is in use.
   void UpdateWindowTransparency();
@@ -258,6 +259,11 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
 
   internal::NativeWidgetDelegate* native_widget_delegate_;
 
+  scoped_ptr<aura::client::FocusClient> focus_client_;
+  scoped_ptr<DesktopDispatcherClient> dispatcher_client_;
+  scoped_ptr<views::corewm::CursorManager> cursor_client_;
+  scoped_ptr<aura::client::ScreenPositionClient> position_client_;
+  scoped_ptr<aura::client::DragDropClient> drag_drop_client_;
   scoped_ptr<aura::client::WindowTreeClient> window_tree_client_;
 
   // Toplevel event filter which dispatches to other event filters.

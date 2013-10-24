@@ -64,4 +64,10 @@ void DesktopCursorLoaderUpdaterAuraX11::OnDisplayUpdated(
   LoadImageCursors(display.device_scale_factor(), loader);
 }
 
+// static
+scoped_ptr<DesktopCursorLoaderUpdater> DesktopCursorLoaderUpdater::Create() {
+  return scoped_ptr<DesktopCursorLoaderUpdater>(
+      new DesktopCursorLoaderUpdaterAuraX11).Pass();
+}
+
 }  // namespace views

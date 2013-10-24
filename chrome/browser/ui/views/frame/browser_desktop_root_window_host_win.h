@@ -26,7 +26,6 @@ class BrowserDesktopRootWindowHostWin : public BrowserDesktopRootWindowHost,
   BrowserDesktopRootWindowHostWin(
       views::internal::NativeWidgetDelegate* native_widget_delegate,
       views::DesktopNativeWidgetAura* desktop_native_widget_aura,
-      const gfx::Rect& initial_bounds,
       BrowserView* browser_view,
       BrowserFrame* browser_frame);
   virtual ~BrowserDesktopRootWindowHostWin();

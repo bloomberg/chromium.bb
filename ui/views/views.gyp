@@ -366,6 +366,7 @@
         'widget/desktop_aura/desktop_capture_client.cc',
         'widget/desktop_aura/desktop_capture_client.h',
         'widget/desktop_aura/desktop_cursor_loader_updater.h',
+        'widget/desktop_aura/desktop_cursor_loader_updater_aurawin.cc',
         'widget/desktop_aura/desktop_cursor_loader_updater_aurax11.cc',
         'widget/desktop_aura/desktop_cursor_loader_updater_aurax11.h',
         'widget/desktop_aura/desktop_dispatcher_client.cc',

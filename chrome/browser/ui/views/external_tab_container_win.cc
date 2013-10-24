@@ -286,11 +286,9 @@ class ExternalTabRootWindowHost : public views::DesktopRootWindowHostWin {
  public:
   ExternalTabRootWindowHost(
       views::internal::NativeWidgetDelegate* native_widget_delegate,
-      views::DesktopNativeWidgetAura* desktop_native_widget_aura,
-      const gfx::Rect& initial_bounds)
+      views::DesktopNativeWidgetAura* desktop_native_widget_aura)
       : views::DesktopRootWindowHostWin(native_widget_delegate,
-                                        desktop_native_widget_aura,
-                                        initial_bounds) {}
+                                        desktop_native_widget_aura) {}
 
  protected:
   // HWNDMessageHandlerDelegate methods:
@@ -385,7 +383,7 @@ bool ExternalTabContainerWin::Init(Profile* profile,
       new views::DesktopNativeWidgetAura(widget_);
   params.native_widget = native_widget;
   params.desktop_root_window_host =
-      new ExternalTabRootWindowHost(widget_, native_widget, params.bounds);
+      new ExternalTabRootWindowHost(widget_, native_widget);
   params.type = views::Widget::InitParams::TYPE_WINDOW_FRAMELESS;
   params.opacity = views::Widget::InitParams::OPAQUE_WINDOW;
 #endif

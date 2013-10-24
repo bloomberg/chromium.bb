@@ -5,6 +5,9 @@
 #ifndef UI_VIEWS_WIDGET_DESKTOP_AURA_DESKTOP_CURSOR_LOADER_UPDATER_H_
 #define UI_VIEWS_WIDGET_DESKTOP_AURA_DESKTOP_CURSOR_LOADER_UPDATER_H_
 
+#include "base/memory/scoped_ptr.h"
+#include "ui/views/views_export.h"
+
 namespace aura {
 class RootWindow;
 }
@@ -21,9 +24,13 @@ namespace views {
 
 // An interface to optionally update the state of a cursor loader. Only used on
 // desktop AuraX11.
-class DesktopCursorLoaderUpdater {
+class VIEWS_EXPORT DesktopCursorLoaderUpdater {
  public:
   virtual ~DesktopCursorLoaderUpdater() {}
+
+  // Creates a new DesktopCursorLoaderUpdater, or NULL if the platform doesn't
+  // support one.
+  static scoped_ptr<DesktopCursorLoaderUpdater> Create();
 
   // Called when a CursorLoader is created.
   virtual void OnCreate(aura::RootWindow* window,

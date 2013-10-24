@@ -15,7 +15,8 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "third_party/skia/include/core/SkPath.h"
-#include "ui/aura/client/screen_position_client.h"
+#include "ui/aura/client/cursor_client.h"
+#include "ui/aura/client/focus_client.h"
 #include "ui/aura/client/user_action_client.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window_property.h"
@@ -30,19 +31,14 @@
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/corewm/compound_event_filter.h"
 #include "ui/views/corewm/corewm_switches.h"
-#include "ui/views/corewm/cursor_manager.h"
-#include "ui/views/corewm/focus_controller.h"
 #include "ui/views/corewm/tooltip_aura.h"
 #include "ui/views/ime/input_method.h"
 #include "ui/views/linux_ui/linux_ui.h"
-#include "ui/views/widget/desktop_aura/desktop_cursor_loader_updater_aurax11.h"
 #include "ui/views/widget/desktop_aura/desktop_dispatcher_client.h"
 #include "ui/views/widget/desktop_aura/desktop_drag_drop_client_aurax11.h"
-#include "ui/views/widget/desktop_aura/desktop_focus_rules.h"
 #include "ui/views/widget/desktop_aura/desktop_native_cursor_manager.h"
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
 #include "ui/views/widget/desktop_aura/desktop_root_window_host_observer_x11.h"
-#include "ui/views/widget/desktop_aura/desktop_screen_position_client.h"
 #include "ui/views/widget/desktop_aura/x11_desktop_handler.h"
 #include "ui/views/widget/desktop_aura/x11_desktop_window_move_client.h"
 #include "ui/views/widget/desktop_aura/x11_window_event_filter.h"
@@ -113,8 +109,7 @@ const char* kAtomsToCache[] = {
 
 DesktopRootWindowHostX11::DesktopRootWindowHostX11(
     internal::NativeWidgetDelegate* native_widget_delegate,
-    DesktopNativeWidgetAura* desktop_native_widget_aura,
-    const gfx::Rect& initial_bounds)
+    DesktopNativeWidgetAura* desktop_native_widget_aura)
     : close_widget_factory_(this),
       xdisplay_(gfx::GetXDisplay()),
       xwindow_(0),
@@ -124,6 +119,8 @@ DesktopRootWindowHostX11::DesktopRootWindowHostX11(
       focus_when_shown_(false),
       is_fullscreen_(false),
       is_always_on_top_(false),
+      root_window_(NULL),
+      drag_drop_client_(NULL),
       current_cursor_(ui::kCursorNull),
       native_widget_delegate_(native_widget_delegate),
       desktop_native_widget_aura_(desktop_native_widget_aura) {
@@ -131,13 +128,8 @@ DesktopRootWindowHostX11::DesktopRootWindowHostX11(
 
 DesktopRootWindowHostX11::~DesktopRootWindowHostX11() {
   root_window_->ClearProperty(kHostForRootWindow);
-  aura::client::SetFocusClient(root_window_, NULL);
-  aura::client::SetActivationClient(root_window_, NULL);
-  aura::client::SetScreenPositionClient(root_window_, NULL);
-  aura::client::SetDispatcherClient(root_window_, NULL);
-  aura::client::SetCursorClient(root_window_, NULL);
-  aura::client::SetDragDropClient(root_window_, NULL);
   aura::client::SetWindowMoveClient(root_window_, NULL);
+  desktop_native_widget_aura_->OnDesktopRootWindowHostDestroyed(root_window_);
 }
 
 // static
@@ -194,9 +186,10 @@ void DesktopRootWindowHostX11::CleanUpWindowList() {
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopRootWindowHostX11, DesktopRootWindowHost implementation:
 
-aura::RootWindow* DesktopRootWindowHostX11::Init(
+void DesktopRootWindowHostX11::Init(
     aura::Window* content_window,
-    const Widget::InitParams& params) {
+    const Widget::InitParams& params,
+    aura::RootWindow::CreateParams* rw_create_params) {
   content_window_ = content_window;
 
   // TODO(erg): Check whether we *should* be building a RootWindowHost here, or
@@ -211,12 +204,52 @@ aura::RootWindow* DesktopRootWindowHostX11::Init(
     sanitized_params.bounds.set_height(100);
 
   InitX11Window(sanitized_params);
-  return InitRootWindow(sanitized_params);
+
+  rw_create_params->initial_bounds = bounds_;
+  rw_create_params->host = this;
+}
+
+void DesktopRootWindowHostX11::OnRootWindowCreated(
+    aura::RootWindow* root,
+    const Widget::InitParams& params) {
+  root_window_ = root;
+
+  root_window_->SetProperty(kViewsWindowForRootWindow, content_window_);
+  root_window_->SetProperty(kHostForRootWindow, this);
+  root_window_host_delegate_ = root_window_;
+
+  // If we're given a parent, we need to mark ourselves as transient to another
+  // window. Otherwise activation gets screwy.
+  gfx::NativeView parent = params.parent;
+  if (!params.child && params.parent)
+    parent->AddTransientChild(content_window_);
+
+  // Ensure that the X11DesktopHandler exists so that it dispatches activation
+  // messages to us.
+  X11DesktopHandler::get();
+
+  // TODO(erg): Unify this code once the other consumer goes away.
+  x11_window_event_filter_.reset(new X11WindowEventFilter(root_window_));
+  x11_window_event_filter_->SetUseHostWindowBorders(false);
+  desktop_native_widget_aura_->root_window_event_filter()->AddHandler(
+      x11_window_event_filter_.get());
+
+  x11_window_move_client_.reset(new X11DesktopWindowMoveClient);
+  aura::client::SetWindowMoveClient(root_window_,
+                                    x11_window_move_client_.get());
 }
 
 scoped_ptr<corewm::Tooltip> DesktopRootWindowHostX11::CreateTooltip() {
   return scoped_ptr<corewm::Tooltip>(
       new corewm::TooltipAura(gfx::SCREEN_TYPE_NATIVE));
+}
+
+scoped_ptr<aura::client::DragDropClient>
+DesktopRootWindowHostX11::CreateDragDropClient(
+    DesktopNativeCursorManager* cursor_manager) {
+  drag_drop_client_ = new DesktopDragDropClientAuraX11(
+      root_window_, cursor_manager, xdisplay_, xwindow_);
+  return scoped_ptr<aura::client::DragDropClient>(drag_drop_client_).Pass();
 }
 
 void DesktopRootWindowHostX11::Close() {
@@ -940,77 +973,6 @@ void DesktopRootWindowHostX11::InitX11Window(
   }
 }
 
-aura::RootWindow* DesktopRootWindowHostX11::InitRootWindow(
-    const Widget::InitParams& params) {
-  aura::RootWindow::CreateParams rw_params(bounds_);
-  rw_params.host = this;
-  root_window_ = new aura::RootWindow(rw_params);
-  root_window_->Init();
-  root_window_->AddChild(content_window_);
-  root_window_->SetProperty(kViewsWindowForRootWindow, content_window_);
-  root_window_->SetProperty(kHostForRootWindow, this);
-  root_window_host_delegate_ = root_window_;
-
-  // If we're given a parent, we need to mark ourselves as transient to another
-  // window. Otherwise activation gets screwy.
-  gfx::NativeView parent = params.parent;
-  if (!params.child && params.parent)
-    parent->AddTransientChild(content_window_);
-
-  native_widget_delegate_->OnNativeWidgetCreated(true);
-
-  desktop_native_widget_aura_->InstallWindowModalityController(root_window_);
-  desktop_native_widget_aura_->CreateCaptureClient(root_window_);
-
-  // Ensure that the X11DesktopHandler exists so that it dispatches activation
-  // messages to us.
-  X11DesktopHandler::get();
-
-  corewm::FocusController* focus_controller =
-      new corewm::FocusController(new DesktopFocusRules(content_window_));
-  focus_client_.reset(focus_controller);
-  aura::client::SetFocusClient(root_window_, focus_controller);
-  aura::client::SetActivationClient(root_window_, focus_controller);
-  root_window_->AddPreTargetHandler(focus_controller);
-
-  dispatcher_client_.reset(new DesktopDispatcherClient);
-  aura::client::SetDispatcherClient(root_window_,
-                                    dispatcher_client_.get());
-
-  views::DesktopNativeCursorManager* desktop_native_cursor_manager =
-      new views::DesktopNativeCursorManager(
-          root_window_,
-          scoped_ptr<DesktopCursorLoaderUpdater>(
-              new DesktopCursorLoaderUpdaterAuraX11));
-  cursor_client_.reset(
-      new views::corewm::CursorManager(
-          scoped_ptr<corewm::NativeCursorManager>(
-              desktop_native_cursor_manager)));
-  aura::client::SetCursorClient(root_window_,
-                                cursor_client_.get());
-
-  position_client_.reset(new DesktopScreenPositionClient);
-  aura::client::SetScreenPositionClient(root_window_,
-                                        position_client_.get());
-
-  desktop_native_widget_aura_->InstallInputMethodEventFilter(root_window_);
-
-  drag_drop_client_.reset(new DesktopDragDropClientAuraX11(
-      root_window_, desktop_native_cursor_manager, xdisplay_, xwindow_));
-  aura::client::SetDragDropClient(root_window_, drag_drop_client_.get());
-
-  // TODO(erg): Unify this code once the other consumer goes away.
-  x11_window_event_filter_.reset(new X11WindowEventFilter(root_window_));
-  x11_window_event_filter_->SetUseHostWindowBorders(false);
-  desktop_native_widget_aura_->root_window_event_filter()->AddHandler(
-      x11_window_event_filter_.get());
-
-  x11_window_move_client_.reset(new X11DesktopWindowMoveClient);
-  aura::client::SetWindowMoveClient(root_window_,
-                                    x11_window_move_client_.get());
-  return root_window_;
-}
-
 bool DesktopRootWindowHostX11::IsWindowManagerPresent() {
   // Per ICCCM 2.8, "Manager Selections", window managers should take ownership
   // of WM_Sn selections (where n is a screen number).
@@ -1415,11 +1377,9 @@ bool DesktopRootWindowHostX11::Dispatch(const base::NativeEvent& event) {
 // static
 DesktopRootWindowHost* DesktopRootWindowHost::Create(
     internal::NativeWidgetDelegate* native_widget_delegate,
-    DesktopNativeWidgetAura* desktop_native_widget_aura,
-    const gfx::Rect& initial_bounds) {
+    DesktopNativeWidgetAura* desktop_native_widget_aura) {
   return new DesktopRootWindowHostX11(native_widget_delegate,
-                                      desktop_native_widget_aura,
-                                      initial_bounds);
+                                      desktop_native_widget_aura);
 }
 
 // static

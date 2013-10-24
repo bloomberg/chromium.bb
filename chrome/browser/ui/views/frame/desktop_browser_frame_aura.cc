@@ -56,7 +56,6 @@ void DesktopBrowserFrameAura::InitNativeWidget(
       BrowserDesktopRootWindowHost::CreateBrowserDesktopRootWindowHost(
           browser_frame_,
           this,
-          params.bounds,
           browser_view_,
           browser_frame_);
   views::Widget::InitParams modified_params = params;

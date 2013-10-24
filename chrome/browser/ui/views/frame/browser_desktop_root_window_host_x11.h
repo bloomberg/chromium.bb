@@ -23,7 +23,6 @@ class BrowserDesktopRootWindowHostX11
   BrowserDesktopRootWindowHostX11(
       views::internal::NativeWidgetDelegate* native_widget_delegate,
       views::DesktopNativeWidgetAura* desktop_native_widget_aura,
-      const gfx::Rect& initial_bounds,
       BrowserView* browser_view);
   virtual ~BrowserDesktopRootWindowHostX11();
 
@@ -34,9 +33,10 @@ class BrowserDesktopRootWindowHostX11
   virtual bool UsesNativeSystemMenu() const OVERRIDE;
 
   // Overridden from views::DesktopRootWindowHostX11:
-  virtual aura::RootWindow* Init(
+  virtual void Init(
       aura::Window* content_window,
-      const views::Widget::InitParams& params) OVERRIDE;
+      const views::Widget::InitParams& params,
+      aura::RootWindow::CreateParams* rw_create_params) OVERRIDE;
   virtual void CloseNow() OVERRIDE;
 
   BrowserView* browser_view_;

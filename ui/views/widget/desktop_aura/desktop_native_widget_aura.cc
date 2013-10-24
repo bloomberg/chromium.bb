@@ -8,6 +8,7 @@
 #include "ui/aura/client/activation_client.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/cursor_client.h"
+#include "ui/aura/client/drag_drop_client.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/client/window_tree_client.h"
 #include "ui/aura/root_window.h"
@@ -25,7 +26,10 @@
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/corewm/compound_event_filter.h"
 #include "ui/views/corewm/corewm_switches.h"
+#include "ui/views/corewm/cursor_manager.h"
+#include "ui/views/corewm/focus_controller.h"
 #include "ui/views/corewm/input_method_event_filter.h"
+#include "ui/views/corewm/native_cursor_manager.h"
 #include "ui/views/corewm/shadow_controller.h"
 #include "ui/views/corewm/shadow_types.h"
 #include "ui/views/corewm/tooltip.h"
@@ -36,7 +40,12 @@
 #include "ui/views/ime/input_method.h"
 #include "ui/views/ime/input_method_bridge.h"
 #include "ui/views/widget/desktop_aura/desktop_capture_client.h"
+#include "ui/views/widget/desktop_aura/desktop_cursor_loader_updater.h"
+#include "ui/views/widget/desktop_aura/desktop_dispatcher_client.h"
+#include "ui/views/widget/desktop_aura/desktop_focus_rules.h"
+#include "ui/views/widget/desktop_aura/desktop_native_cursor_manager.h"
 #include "ui/views/widget/desktop_aura/desktop_root_window_host.h"
+#include "ui/views/widget/desktop_aura/desktop_screen_position_client.h"
 #include "ui/views/widget/drop_helper.h"
 #include "ui/views/widget/native_widget_aura.h"
 #include "ui/views/widget/root_view.h"
@@ -215,8 +224,8 @@ void DesktopNativeWidgetAura::OnHostClosed() {
   if (window_modality_controller_)
     window_modality_controller_.reset();
 
-  // Make sure we don't still have capture. Otherwise CaptureController and
-  // RootWindow are left referencing a deleted Window.
+  // Make sure we don't have capture. Otherwise CaptureController and RootWindow
+  // are left referencing a deleted Window.
   {
     aura::Window* capture_window = capture_client_->GetCaptureWindow();
     if (capture_window && root_window_->Contains(capture_window))
@@ -248,27 +257,25 @@ void DesktopNativeWidgetAura::OnHostClosed() {
     delete this;
 }
 
-void DesktopNativeWidgetAura::InstallInputMethodEventFilter(
+void DesktopNativeWidgetAura::OnDesktopRootWindowHostDestroyed(
     aura::RootWindow* root) {
-  DCHECK(!input_method_event_filter_.get());
+  // |root_window_| is still valid, but DesktopRootWindowHost is nearly
+  // destroyed. Do cleanup here of members DesktopRootWindowHost may also use.
+  aura::client::SetFocusClient(root, NULL);
+  aura::client::SetActivationClient(root, NULL);
+  focus_client_.reset();
 
-  // CEF sets focus to the window the user clicks down on.
-  // TODO(beng): see if we can't do this some other way. CEF seems a heavy-
-  //             handed way of accomplishing focus.
-  // No event filter for aura::Env. Create CompoundEvnetFilter per RootWindow.
-  root_window_event_filter_ = new corewm::CompoundEventFilter;
-  // Pass ownership of the filter to the root_window.
-  root->SetEventFilter(root_window_event_filter_);
+  aura::client::SetDispatcherClient(root, NULL);
+  dispatcher_client_.reset();
 
-  input_method_event_filter_.reset(
-      new corewm::InputMethodEventFilter(root->GetAcceleratedWidget()));
-  input_method_event_filter_->SetInputMethodPropertyInRootWindow(root);
-  root_window_event_filter_->AddHandler(input_method_event_filter_.get());
-}
+  aura::client::SetCursorClient(root, NULL);
+  cursor_client_.reset();
 
-void DesktopNativeWidgetAura::CreateCaptureClient(aura::RootWindow* root) {
-  DCHECK(!capture_client_.get());
-  capture_client_.reset(new DesktopCaptureClient(root));
+  aura::client::SetScreenPositionClient(root, NULL);
+  position_client_.reset();
+
+  aura::client::SetDragDropClient(root, NULL);
+  drag_drop_client_.reset();
 }
 
 void DesktopNativeWidgetAura::HandleActivationChanged(bool active) {
@@ -302,16 +309,6 @@ void DesktopNativeWidgetAura::HandleActivationChanged(bool active) {
   }
 }
 
-void DesktopNativeWidgetAura::InstallWindowModalityController(
-    aura::RootWindow* root) {
-  // The WindowsModalityController event filter should be at the head of the
-  // pre target handlers list. This ensures that it handles input events first
-  // when modal windows are at the top of the Zorder.
-  if (widget_type_ == Widget::InitParams::TYPE_WINDOW)
-    window_modality_controller_.reset(
-        new views::corewm::WindowModalityController(root));
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopNativeWidgetAura, internal::NativeWidgetPrivate implementation:
 
@@ -335,20 +332,80 @@ void DesktopNativeWidgetAura::InitNativeWidget(
   content_window_->Show();
 #endif
 
-  desktop_root_window_host_ = params.desktop_root_window_host ?
-      params.desktop_root_window_host :
-      DesktopRootWindowHost::Create(native_widget_delegate_,
-                                    this, params.bounds);
-  root_window_.reset(
-      desktop_root_window_host_->Init(content_window_, params));
-
-  UpdateWindowTransparency();
-
   content_window_container_ = new aura::Window(NULL);
   content_window_container_->Init(ui::LAYER_NOT_DRAWN);
   content_window_container_->Show();
   content_window_container_->AddChild(content_window_);
+
+  desktop_root_window_host_ = params.desktop_root_window_host ?
+      params.desktop_root_window_host :
+      DesktopRootWindowHost::Create(native_widget_delegate_, this);
+  aura::RootWindow::CreateParams rw_params(params.bounds);
+  desktop_root_window_host_->Init(content_window_, params, &rw_params);
+
+  root_window_.reset(new aura::RootWindow(rw_params));
+  root_window_->Init();
   root_window_->AddChild(content_window_container_);
+
+  // The WindowsModalityController event filter should be at the head of the
+  // pre target handlers list. This ensures that it handles input events first
+  // when modal windows are at the top of the Zorder.
+  if (widget_type_ == Widget::InitParams::TYPE_WINDOW)
+    window_modality_controller_.reset(
+        new views::corewm::WindowModalityController(root_window_.get()));
+
+  // |root_window_event_filter_| must be created before
+  // OnRootWindowHostCreated() is invoked.
+
+  // CEF sets focus to the window the user clicks down on.
+  // TODO(beng): see if we can't do this some other way. CEF seems a heavy-
+  //             handed way of accomplishing focus.
+  // No event filter for aura::Env. Create CompoundEvnetFilter per RootWindow.
+  root_window_event_filter_ = new corewm::CompoundEventFilter;
+  // Pass ownership of the filter to the root_window.
+  root_window_->SetEventFilter(root_window_event_filter_);
+
+  desktop_root_window_host_->OnRootWindowCreated(root_window_.get(), params);
+
+  native_widget_delegate_->OnNativeWidgetCreated(true);
+
+  UpdateWindowTransparency();
+
+  capture_client_.reset(new DesktopCaptureClient(root_window_.get()));
+
+  corewm::FocusController* focus_controller =
+      new corewm::FocusController(new DesktopFocusRules(content_window_));
+  focus_client_.reset(focus_controller);
+  aura::client::SetFocusClient(root_window_.get(), focus_controller);
+  aura::client::SetActivationClient(root_window_.get(), focus_controller);
+  root_window_->AddPreTargetHandler(focus_controller);
+
+  dispatcher_client_.reset(new DesktopDispatcherClient);
+  aura::client::SetDispatcherClient(root_window_.get(),
+                                    dispatcher_client_.get());
+
+  DesktopNativeCursorManager* desktop_native_cursor_manager =
+      new views::DesktopNativeCursorManager(
+          root_window_.get(),
+          DesktopCursorLoaderUpdater::Create());
+  cursor_client_.reset(
+      new views::corewm::CursorManager(
+          scoped_ptr<corewm::NativeCursorManager>(
+              desktop_native_cursor_manager)));
+  aura::client::SetCursorClient(root_window_.get(), cursor_client_.get());
+
+  position_client_.reset(new DesktopScreenPositionClient());
+  aura::client::SetScreenPositionClient(root_window_.get(),
+                                        position_client_.get());
+
+  InstallInputMethodEventFilter();
+
+  drag_drop_client_ = desktop_root_window_host_->CreateDragDropClient(
+      desktop_native_cursor_manager);
+  aura::client::SetDragDropClient(root_window_.get(), drag_drop_client_.get());
+
+  focus_client_->FocusWindow(content_window_);
+
   OnRootWindowHostResized(root_window_.get());
 
   root_window_->AddRootWindowObserver(this);
@@ -1020,6 +1077,16 @@ void DesktopNativeWidgetAura::OnRootWindowHostMoved(
 
 ui::EventHandler* DesktopNativeWidgetAura::GetEventHandler() {
   return this;
+}
+
+void DesktopNativeWidgetAura::InstallInputMethodEventFilter() {
+  DCHECK(!input_method_event_filter_.get());
+
+  input_method_event_filter_.reset(
+      new corewm::InputMethodEventFilter(root_window_->GetAcceleratedWidget()));
+  input_method_event_filter_->SetInputMethodPropertyInRootWindow(
+      root_window_.get());
+  root_window_event_filter_->AddHandler(input_method_event_filter_.get());
 }
 
 void DesktopNativeWidgetAura::UpdateWindowTransparency() {
