@@ -2804,8 +2804,8 @@ RenderWidget::CreateGraphicsContext3D(
 
   base::WeakPtr<WebGraphicsContext3DSwapBuffersClient> swap_client;
 
-  // TODO(sievers): Only set this if !is_threaded_compositing_enabled_
-  swap_client = weak_ptr_factory_.GetWeakPtr();
+  if (!is_threaded_compositing_enabled_)
+    swap_client = weak_ptr_factory_.GetWeakPtr();
 
   scoped_ptr<WebGraphicsContext3DCommandBufferImpl> context(
       new WebGraphicsContext3DCommandBufferImpl(

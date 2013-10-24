@@ -1237,7 +1237,7 @@ void WebGraphicsContext3DCommandBufferImpl::deleteTexture(WebGLId texture) {
 }
 
 bool WebGraphicsContext3DCommandBufferImpl::ShouldUseSwapClient() {
-  return host_ && host_->IsMainThread() && swap_client_.get();
+  return !!swap_client_.get();
 }
 
 void WebGraphicsContext3DCommandBufferImpl::OnSwapBuffersComplete() {

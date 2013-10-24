@@ -179,9 +179,6 @@ class GpuChannelHost : public IPC::Sender,
   // Reserve one unused gpu memory buffer ID.
   int32 ReserveGpuMemoryBufferId();
 
-  // TODO(sievers): Remove this.
-  bool IsMainThread();
-
  private:
   friend class base::RefCountedThreadSafe<GpuChannelHost>;
   GpuChannelHost(GpuChannelHostFactory* factory,
