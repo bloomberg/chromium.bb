@@ -135,7 +135,9 @@ void AwAutofillManagerDelegate::ShowAutofillPopupImpl(
 void AwAutofillManagerDelegate::UpdateAutofillPopupDataListValues(
     const std::vector<base::string16>& values,
     const std::vector<base::string16>& labels) {
-  NOTIMPLEMENTED();
+  // Leaving as an empty method since updating autofill popup window
+  // dynamically does not seem to be a useful feature for android webview.
+  // See crrev.com/18102002 if need to implement.
 }
 
 void AwAutofillManagerDelegate::HideAutofillPopup() {
