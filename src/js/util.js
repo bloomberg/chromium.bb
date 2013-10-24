@@ -15,6 +15,87 @@ var camera = camera || {};
 camera.util = camera.util || {};
 
 /**
+ * Creates a tooltip manager for the entire document.
+ * @constructor
+ */
+camera.util.TooltipManager = function() {
+  /**
+   * @type {camera.util.Queue}
+   * @private
+   */
+  this.queue_ = new camera.util.Queue();
+
+  // No more properties. Freeze the object.
+  Object.freeze(this);
+};
+
+/**
+ * Minimal distance from the tooltip to the closest edge in pixels.
+ * @type {number}
+ * @const
+ */
+camera.util.TooltipManager.EDGE_MARGIN = 10;
+
+/**
+ * Initializes the manager by adding tooltip handlers to every element which
+ * has the i18n-label attribute.
+ */
+camera.util.TooltipManager.prototype.initialize = function() {
+  var selectors = document.querySelectorAll('*[i18n-label]');
+  for (var index = 0; index < selectors.length; index++) {
+    selectors[index].addEventListener(
+        'mouseover', this.showTooltip_.bind(this, selectors[index]));
+  }
+};
+
+/**
+ * Shows a tooltip over the element.
+ * @param {HTMLElement} element Element to be shown.
+ * @private
+ */
+camera.util.TooltipManager.prototype.showTooltip_ = function(element) {
+  this.queue_.run(function(callback) {
+    var tooltip = document.querySelector('#tooltip');
+    var tooltipMsg = tooltip.querySelector('#tooltip-msg');
+    var tooltipArrow = tooltip.querySelector('#tooltip-arrow');
+
+    tooltip.classList.remove('visible');
+    tooltipMsg.textContent = chrome.i18n.getMessage(
+        element.getAttribute('i18n-label'));
+
+    var hideTooltip = function() {
+      tooltip.classList.remove('visible');
+      element.removeEventListener('mouseout', hideTooltip);
+    };
+
+    element.addEventListener('mouseout', hideTooltip);
+
+    // Set the position. Wait for DOM refresh to get accurate tooltip dimensions
+    // for the new text.
+    // TODO(mtomasz): Support showing near the top edge.
+    setTimeout(function() {
+      var elementRect = element.getBoundingClientRect();
+      var elementCenter = elementRect.left + element.offsetWidth / 2;
+      tooltip.style.top = elementRect.top - tooltip.offsetHeight + 'px';
+
+      // Center over the element, but avoid touching edges.
+      var left = Math.min(
+          Math.max(elementCenter - tooltip.clientWidth / 2,
+                   camera.util.TooltipManager.EDGE_MARGIN),
+          document.body.offsetWidth - tooltip.offsetWidth -
+              camera.util.TooltipManager.EDGE_MARGIN);
+      tooltip.style.left = Math.round(left) + 'px';
+
+      // Align the arrow to point to the element.
+      tooltipArrow.style.left = Math.round(elementCenter - left) + 'px';
+
+      tooltip.classList.add('visible');
+      callback();
+    }, 0);
+  });
+};
+
+/**
  * Sets a class which invokes an animation and calls the callback when the
  * animation is done. The class is released once the animation is finished.
  * If the class name is already set, then calls onCompletion immediately.

@@ -586,3 +586,38 @@ body:not(.gallery):not(.browser) #gallery {
   }
 }
 
+#tooltip {
+  -webkit-transform: translateY(10px);
+  left: 0;
+  opacity: 0;
+  padding: 5px;
+  pointer-events: none;
+  position: absolute;
+  top: 0;
+  white-space: nowrap;
+  z-index: 100;
+}
+
+#tooltip-arrow {
+  border-left: 10px solid transparent;
+  border-right: 10px solid transparent;
+  border-top: 10px solid #e0e0e0;
+  bottom: 0;
+  height: 0;
+  left: 50%;
+  margin: 0 -10px;
+  position: absolute;
+  width: 0;
+}
+
+#tooltip #tooltip-msg {
+  background: #e0e0e0;
+  padding: 10px;
+}
+
+body.expanded #tooltip.visible {
+  -webkit-transform: translateY(0);
+  transition: opacity 500ms 500ms, -webkit-transform 500ms 500ms;
+  opacity: 1;
+}
+
