@@ -772,3 +772,5 @@ crbug.com/310323 [ Debug ] http/tests/plugins/third-party-cookie-accept-policy.h
 crbug.com/310323 [ Debug ] http/tests/security/contentSecurityPolicy/report-multiple-violations-02.html [ Crash Pass ]
 
 crbug.com/310547 fast/dom/HTMLDialogElement/form-method-dialog.html [ Pass Timeout ]
+
+crbug.com/310326 [ Win7 Debug ] fast/dom/Geolocation/window-close-crash.html [ Crash Pass ]
