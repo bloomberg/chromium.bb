@@ -318,10 +318,12 @@ void WebstoreInstaller::Observe(int type,
       CHECK(profile_->IsSameProfile(content::Source<Profile>(source).ptr()));
       const Extension* extension =
           content::Details<const InstalledExtensionInfo>(details)->extension;
-      CHECK(!pending_modules_.empty());
+      if (pending_modules_.empty())
+        return;
       SharedModuleInfo::ImportInfo info = pending_modules_.front();
+      if (extension->id() != info.extension_id)
+        return;
       pending_modules_.pop_front();
-      CHECK_EQ(extension->id(), info.extension_id);
 
       if (pending_modules_.empty()) {
         CHECK_EQ(extension->id(), id_);
