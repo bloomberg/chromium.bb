@@ -15,8 +15,6 @@
 
   var gRemoteStreams = {};
 
-  var gLocalDtlsFingerprint = null;
-
   setAllEventsOccuredHandler(function() {
     document.title = 'OK';
   });
@@ -536,26 +534,6 @@
     var remoteStreamUrl = webkitURL.createObjectURL(e.stream);
     var remoteVideo = $(target);
     remoteVideo.src = remoteStreamUrl;
-  }
-
-  function extractLocalDtlsFingerprint() {
-    document.title = 'Waiting to get DTLS fingerprint.';
-    var interval = setInterval(function() {
-      gFirstConnection.getStats(function(response) {
-        var result = response.result();
-        for (var i = 0; i < result.length; ++i) {
-          if (!result[i].stat('googLocalCertificateId'))
-            continue;
-          gLocalDtlsFingerprint = result[i].stat('googLocalCertificateId');
-          document.title = 'OK';
-          clearInterval(interval);
-        }
-      });
-    }, 100);
-  }
-
-  function getLocalDtlsFingerprint() {
-    window.domAutomationController.send(gLocalDtlsFingerprint);
   }
 
   </script>
