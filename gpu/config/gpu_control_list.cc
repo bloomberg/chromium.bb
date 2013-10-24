@@ -1033,8 +1033,8 @@ void GpuControlList::GpuControlListEntry::LogControlListMatch(
     const std::string& control_list_logging_name) const {
   static const char kControlListMatchMessage[] =
       "Control list match for rule #%u in %s.";
-  LOG(INFO) << base::StringPrintf(kControlListMatchMessage, id_,
-                                  control_list_logging_name.c_str());
+  VLOG(1) << base::StringPrintf(kControlListMatchMessage, id_,
+                                control_list_logging_name.c_str());
 }
 
 bool GpuControlList::GpuControlListEntry::Contains(
