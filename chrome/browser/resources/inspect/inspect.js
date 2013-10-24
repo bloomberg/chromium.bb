@@ -299,7 +299,7 @@ function populateDeviceLists(devices) {
           addFavicon(row, page);
         if (isChrome) {
           if (majorChromeVersion >= MIN_VERSION_TAB_ACTIVATE) {
-            addActionLink(row, 'activate', activate.bind(null, page), false);
+            addActionLink(row, 'focus tab', activate.bind(null, page), false);
           }
           addActionLink(row, 'reload', reload.bind(null, page), page.attached);
           if (majorChromeVersion >= MIN_VERSION_TAB_CLOSE) {

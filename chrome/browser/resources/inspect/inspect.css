@@ -199,7 +199,10 @@ img {
 
 a {
   color: rgb(17, 85, 204);
-  margin-right: 6px;
+  margin-right: 15px;
+}
+
+a:not(:hover) {
   text-decoration: none;
 }
 
