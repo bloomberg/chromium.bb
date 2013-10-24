@@ -56,6 +56,7 @@
 #include "weborigin/SecurityOrigin.h"
 #include "wtf/ArrayBuffer.h"
 #include "wtf/ArrayBufferView.h"
+#include "wtf/Deque.h"
 #include "wtf/HashSet.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
@@ -67,6 +68,88 @@
 using namespace std;
 
 namespace WebCore {
+
+WebSocket::EventQueue::EventQueue(EventTarget* target)
+    : m_state(Active)
+    , m_target(target)
+    , m_resumeTimer(this, &EventQueue::resumeTimerFired) { }
+
+WebSocket::EventQueue::~EventQueue() { stop(); }
+
+void WebSocket::EventQueue::dispatch(PassRefPtr<Event> event)
+{
+    switch (m_state) {
+    case Active:
+        ASSERT(m_events.isEmpty());
+        ASSERT(m_target->executionContext());
+        m_target->dispatchEvent(event);
+        break;
+    case Suspended:
+        m_events.append(event);
+        break;
+    case Stopped:
+        ASSERT(m_events.isEmpty());
+        // Do nothing.
+        break;
+    }
+}
+
+void WebSocket::EventQueue::suspend()
+{
+    if (m_state != Active)
+        return;
+
+    m_state = Suspended;
+}
+
+void WebSocket::EventQueue::resume()
+{
+    if (m_state != Suspended || m_resumeTimer.isActive())
+        return;
+
+    m_resumeTimer.startOneShot(0);
+}
+
+void WebSocket::EventQueue::stop()
+{
+    if (m_state == Stopped)
+        return;
+
+    m_state = Stopped;
+    m_resumeTimer.stop();
+    m_events.clear();
+}
+
+void WebSocket::EventQueue::dispatchQueuedEvents()
+{
+    if (m_state != Active)
+        return;
+
+    RefPtr<EventQueue> protect(this);
+
+    Deque<RefPtr<Event> > events;
+    events.swap(m_events);
+    while (!events.isEmpty()) {
+        if (m_state == Stopped || m_state == Suspended)
+            break;
+        ASSERT(m_state == Active);
+        ASSERT(m_target->executionContext());
+        m_target->dispatchEvent(events.takeFirst());
+        // |this| can be stopped here.
+    }
+    if (m_state == Suspended) {
+        while (!m_events.isEmpty())
+            events.append(m_events.takeFirst());
+        events.swap(m_events);
+    }
+}
+
+void WebSocket::EventQueue::resumeTimerFired(Timer<EventQueue>*)
+{
+    ASSERT(m_state == Suspended);
+    m_state = Active;
+    dispatchQueuedEvents();
+}
 
 const size_t maxReasonSizeInBytes = 123;
 
@@ -139,8 +222,8 @@ WebSocket::WebSocket(ExecutionContext* context)
     , m_binaryType(BinaryTypeBlob)
     , m_subprotocol("")
     , m_extensions("")
-    , m_stopped(false)
     , m_dropProtectionRunner(this, &WebSocket::dropProtection)
+    , m_eventQueue(EventQueue::create(this))
 {
     ScriptWrappable::init(this);
 }
@@ -371,9 +454,9 @@ void WebSocket::close(unsigned short code, ExceptionState& es)
 
 void WebSocket::closeInternal(int code, const String& reason, ExceptionState& es)
 {
-    if (code == WebSocketChannel::CloseEventCodeNotSpecified)
+    if (code == WebSocketChannel::CloseEventCodeNotSpecified) {
         LOG(Network, "WebSocket %p close() without code and reason", this);
-    else {
+    } else {
         LOG(Network, "WebSocket %p close() code=%d reason='%s'", this, code, reason.utf8().data());
         if (!(code == WebSocketChannel::CloseEventCodeNormalClosure || (WebSocketChannel::CloseEventCodeMinimumUserDefined <= code && code <= WebSocketChannel::CloseEventCodeMaximumUserDefined))) {
             es.throwDOMException(InvalidAccessError, ExceptionMessages::failedToExecute("close", "WebSocket", "the code must be either 1000, or between 3000 and 4999. " + String::number(code) + " is neither."));
@@ -470,12 +553,14 @@ void WebSocket::suspend()
 {
     if (m_channel)
         m_channel->suspend();
+    m_eventQueue->suspend();
 }
 
 void WebSocket::resume()
 {
     if (m_channel)
         m_channel->resume();
+    m_eventQueue->resume();
 }
 
 void WebSocket::dropProtection()
@@ -485,7 +570,7 @@ void WebSocket::dropProtection()
 
 void WebSocket::stop()
 {
-    m_stopped = true;
+    m_eventQueue->stop();
 
     if (!hasPendingActivity()) {
         ASSERT(!m_channel);
@@ -516,12 +601,7 @@ void WebSocket::didConnect()
     m_state = OPEN;
     m_subprotocol = m_channel->subprotocol();
     m_extensions = m_channel->extensions();
-
-    if (m_stopped)
-        return;
-
-    ASSERT(executionContext());
-    dispatchEvent(Event::create(EventTypeNames::open));
+    m_eventQueue->dispatch(Event::create(EventTypeNames::open));
 }
 
 void WebSocket::didReceiveMessage(const String& msg)
@@ -529,12 +609,7 @@ void WebSocket::didReceiveMessage(const String& msg)
     LOG(Network, "WebSocket %p didReceiveMessage() Text message '%s'", this, msg.utf8().data());
     if (m_state != OPEN)
         return;
-
-    if (m_stopped)
-        return;
-
-    ASSERT(executionContext());
-    dispatchEvent(MessageEvent::create(msg, SecurityOrigin::create(m_url)->toString()));
+    m_eventQueue->dispatch(MessageEvent::create(msg, SecurityOrigin::create(m_url)->toString()));
 }
 
 void WebSocket::didReceiveBinaryData(PassOwnPtr<Vector<char> > binaryData)
@@ -548,15 +623,12 @@ void WebSocket::didReceiveBinaryData(PassOwnPtr<Vector<char> > binaryData)
         OwnPtr<BlobData> blobData = BlobData::create();
         blobData->appendData(rawData.release(), 0, BlobDataItem::toEndOfFile);
         RefPtr<Blob> blob = Blob::create(BlobDataHandle::create(blobData.release(), size));
-        if (!m_stopped)
-            dispatchEvent(MessageEvent::create(blob.release(), SecurityOrigin::create(m_url)->toString()));
+        m_eventQueue->dispatch(MessageEvent::create(blob.release(), SecurityOrigin::create(m_url)->toString()));
         break;
     }
 
     case BinaryTypeArrayBuffer:
-        if (!m_stopped)
-            dispatchEvent(MessageEvent::create(ArrayBuffer::create(binaryData->data(), binaryData->size()), SecurityOrigin::create(m_url)->toString()));
-
+        m_eventQueue->dispatch(MessageEvent::create(ArrayBuffer::create(binaryData->data(), binaryData->size()), SecurityOrigin::create(m_url)->toString()));
         break;
     }
 }
@@ -564,12 +636,7 @@ void WebSocket::didReceiveBinaryData(PassOwnPtr<Vector<char> > binaryData)
 void WebSocket::didReceiveMessageError()
 {
     LOG(Network, "WebSocket %p didReceiveMessageError()", this);
-
-    if (m_stopped)
-        return;
-
-    ASSERT(executionContext());
-    dispatchEvent(Event::create(EventTypeNames::error));
+    m_eventQueue->dispatch(Event::create(EventTypeNames::error));
 }
 
 void WebSocket::didUpdateBufferedAmount(unsigned long bufferedAmount)
@@ -594,11 +661,7 @@ void WebSocket::didClose(unsigned long unhandledBufferedAmount, ClosingHandshake
     bool wasClean = m_state == CLOSING && !unhandledBufferedAmount && closingHandshakeCompletion == ClosingHandshakeComplete && code != WebSocketChannel::CloseEventCodeAbnormalClosure;
     m_state = CLOSED;
     m_bufferedAmount = unhandledBufferedAmount;
-
-    if (!m_stopped) {
-        ASSERT(executionContext());
-        dispatchEvent(CloseEvent::create(wasClean, code, reason));
-    }
+    m_eventQueue->dispatch(CloseEvent::create(wasClean, code, reason));
 
     if (m_channel) {
         m_channel->disconnect();
