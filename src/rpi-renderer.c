@@ -1260,8 +1260,9 @@ rpi_renderer_repaint_output(struct weston_output *base,
 				rpir_surface_swap_pointers(view->surface);
 		}
 
-		if (view->surface->egl_front->buffer_ref.buffer == NULL) {
-			weston_log("warning: client unreffed current front buffer\n");
+		if (view->surface->buffer_type == BUFFER_TYPE_EGL &&
+		    view->surface->egl_front->buffer_ref.buffer == NULL) {
+			weston_log("warning: client destroyed current front buffer\n");
 
 			wl_list_remove(&view->link);
 			if (view->handle == DISPMANX_NO_HANDLE) {
