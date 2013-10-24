@@ -30,11 +30,12 @@
 #define WTF_OwnPtrCommon_h
 
 #include "wtf/Assertions.h"
-#include "wtf/RefCounted.h"
-#include "wtf/ThreadSafeRefCounted.h"
 #include "wtf/TypeTraits.h"
 
 namespace WTF {
+
+class RefCountedBase;
+class ThreadSafeRefCountedBase;
 
 template<typename T>
 struct IsRefCounted {
