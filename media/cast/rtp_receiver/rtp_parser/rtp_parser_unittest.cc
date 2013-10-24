@@ -14,7 +14,6 @@ namespace media {
 namespace cast {
 
 static const size_t kPacketLength = 1500;
-static const size_t kCastRtpLength = 7;
 static const int kTestPayloadType = 127;
 static const uint32 kTestSsrc = 1234;
 static const uint32 kTestTimestamp = 111111;

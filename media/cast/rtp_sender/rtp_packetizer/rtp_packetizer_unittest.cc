@@ -19,12 +19,9 @@ namespace cast {
 static const int kPayload = 127;
 static const uint32 kTimestampMs = 10;
 static const uint16 kSeqNum = 33;
-static const int kTimeOffset = 22222;
 static const int kMaxPacketLength = 1500;
-static const bool kMarkerBit = true;
 static const int kSsrc = 0x12345;
 static const unsigned int kFrameSize = 5000;
-static const int kTotalHeaderLength = 19;
 static const int kMaxPacketStorageTimeMs = 300;
 static const int64 kStartMillisecond = 0;
 
@@ -64,7 +61,7 @@ class TestRtpPacketTransport : public PacedPacketSender {
   }
 
   virtual bool SendPackets(const PacketList& packets) OVERRIDE {
-    EXPECT_EQ(expected_number_of_packets_, packets.size());
+    EXPECT_EQ(expected_number_of_packets_, static_cast<int>(packets.size()));
     PacketList::const_iterator it = packets.begin();
     for (; it != packets.end(); ++it) {
       ++packets_sent_;
@@ -146,7 +143,7 @@ TEST_F(RtpPacketizerTest, Stats) {
   EXPECT_FALSE(rtp_packetizer_->send_packets_count());
   EXPECT_FALSE(rtp_packetizer_->send_octet_count());
   // Insert packets at varying lengths.
-  unsigned int expected_num_of_packets = kFrameSize / kMaxPacketLength + 1;
+  int expected_num_of_packets = kFrameSize / kMaxPacketLength + 1;
   transport_->SetExpectedNumberOfPackets(expected_num_of_packets);
 
   testing_clock_.Advance(base::TimeDelta::FromMilliseconds(kTimestampMs));

@@ -16,7 +16,6 @@ static const uint32 kStartBitrate = 2000000;
 static const int64 kStartMillisecond = GG_INT64_C(12345678900000);
 static const int64 kRttMs = 20;
 static const int64 kAckRateMs = 33;
-static const int64 kNackRateMs = 10;
 
 class CongestionControlTest : public ::testing::Test {
  protected:

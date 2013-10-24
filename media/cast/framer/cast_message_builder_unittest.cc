@@ -172,7 +172,7 @@ TEST_F(CastMessageBuilderTest, OneFrameNackList) {
   SetPacketId(5);
   InsertPacket();
   EXPECT_TRUE(feedback_.triggered());
-  EXPECT_EQ(4, feedback_.num_missing_packets(0));
+  EXPECT_EQ(4u, feedback_.num_missing_packets(0));
 }
 
 TEST_F(CastMessageBuilderTest, CompleteFrameMissing) {
@@ -310,7 +310,7 @@ TEST_F(CastMessageBuilderTest, NackUntilMaxReceivedPacket) {
   SetPacketId(5);
   InsertPacket();
   EXPECT_TRUE(feedback_.triggered());
-  EXPECT_EQ(4, feedback_.num_missing_packets(0));
+  EXPECT_EQ(4u, feedback_.num_missing_packets(0));
 }
 
 TEST_F(CastMessageBuilderTest, NackUntilMaxReceivedPacketNextFrame) {
@@ -326,7 +326,7 @@ TEST_F(CastMessageBuilderTest, NackUntilMaxReceivedPacketNextFrame) {
   testing_clock_.Advance(
       base::TimeDelta::FromMilliseconds(kLongTimeIncrementMs));
   EXPECT_TRUE(feedback_.triggered());
-  EXPECT_EQ(4, feedback_.num_missing_packets(0));
+  EXPECT_EQ(4u, feedback_.num_missing_packets(0));
   SetFrameId(1);
   SetMaxPacketId(2);
   SetPacketId(0);
@@ -335,7 +335,7 @@ TEST_F(CastMessageBuilderTest, NackUntilMaxReceivedPacketNextFrame) {
   testing_clock_.Advance(
       base::TimeDelta::FromMilliseconds(kLongTimeIncrementMs));
   EXPECT_TRUE(feedback_.triggered());
-  EXPECT_EQ(21 - 2, feedback_.num_missing_packets(0));
+  EXPECT_EQ(19u, feedback_.num_missing_packets(0));
 }
 
 TEST_F(CastMessageBuilderTest, NackUntilMaxReceivedPacketNextKey) {
@@ -351,7 +351,7 @@ TEST_F(CastMessageBuilderTest, NackUntilMaxReceivedPacketNextKey) {
   testing_clock_.Advance(
       base::TimeDelta::FromMilliseconds(kLongTimeIncrementMs));
   EXPECT_TRUE(feedback_.triggered());
-  EXPECT_EQ(4, feedback_.num_missing_packets(0));
+  EXPECT_EQ(4u, feedback_.num_missing_packets(0));
   SetFrameId(1);
   SetMaxPacketId(0);
   SetPacketId(0);
@@ -360,7 +360,7 @@ TEST_F(CastMessageBuilderTest, NackUntilMaxReceivedPacketNextKey) {
   testing_clock_.Advance(
       base::TimeDelta::FromMilliseconds(kLongTimeIncrementMs));
   EXPECT_TRUE(feedback_.triggered());
-  EXPECT_EQ(0, feedback_.num_missing_packets(0));
+  EXPECT_EQ(0u, feedback_.num_missing_packets(0));
 }
 
 TEST_F(CastMessageBuilderTest, Reset) {
@@ -372,7 +372,7 @@ TEST_F(CastMessageBuilderTest, Reset) {
   // Should reset nack list state and request a key frame.
   cast_msg_builder_->UpdateCastMessage();
   EXPECT_TRUE(feedback_.triggered());
-  EXPECT_EQ(0, feedback_.num_missing_packets(0));
+  EXPECT_EQ(0u, feedback_.num_missing_packets(0));
 }
 
 TEST_F(CastMessageBuilderTest, DeltaAfterReset) {
@@ -382,7 +382,7 @@ TEST_F(CastMessageBuilderTest, DeltaAfterReset) {
   SetKeyFrame(true);
   InsertPacket();
   EXPECT_TRUE(feedback_.triggered());
-  EXPECT_EQ(0, feedback_.num_missing_packets(0));
+  EXPECT_EQ(0u, feedback_.num_missing_packets(0));
   testing_clock_.Advance(
       base::TimeDelta::FromMilliseconds(kLongTimeIncrementMs));
   cast_msg_builder_->Reset();
@@ -402,19 +402,19 @@ TEST_F(CastMessageBuilderTest, BasicRps) {
   testing_clock_.Advance(
       base::TimeDelta::FromMilliseconds(kLongTimeIncrementMs));
   EXPECT_TRUE(feedback_.triggered());
-  EXPECT_EQ(0, feedback_.last_frame_acked());
+  EXPECT_EQ(0u, feedback_.last_frame_acked());
   SetFrameId(3);
   SetKeyFrame(false);
   SetReferenceFrameId(0);
   InsertPacket();
   EXPECT_TRUE(feedback_.triggered());
-  EXPECT_EQ(0, feedback_.last_frame_acked());
+  EXPECT_EQ(0u, feedback_.last_frame_acked());
   testing_clock_.Advance(
       base::TimeDelta::FromMilliseconds(kLongTimeIncrementMs));
   frame_id_map_.RemoveOldFrames(3);  // Simulate 3 being pulled for rendering.
   cast_msg_builder_->UpdateCastMessage();
   EXPECT_TRUE(feedback_.triggered());
-  EXPECT_EQ(3, feedback_.last_frame_acked());
+  EXPECT_EQ(3u, feedback_.last_frame_acked());
 }
 
 TEST_F(CastMessageBuilderTest, InOrderRps) {
@@ -427,7 +427,7 @@ TEST_F(CastMessageBuilderTest, InOrderRps) {
   testing_clock_.Advance(
       base::TimeDelta::FromMilliseconds(kShortTimeIncrementMs));
   EXPECT_TRUE(feedback_.triggered());
-  EXPECT_EQ(0, feedback_.last_frame_acked());
+  EXPECT_EQ(0u, feedback_.last_frame_acked());
   SetFrameId(1);
   SetPacketId(0);
   SetMaxPacketId(1);
@@ -449,7 +449,7 @@ TEST_F(CastMessageBuilderTest, InOrderRps) {
       base::TimeDelta::FromMilliseconds(kShortTimeIncrementMs));
   cast_msg_builder_->UpdateCastMessage();
   EXPECT_TRUE(feedback_.triggered());
-  EXPECT_EQ(3, feedback_.last_frame_acked());
+  EXPECT_EQ(3u, feedback_.last_frame_acked());
   // Make an old frame complete - should not trigger an ack.
   SetFrameId(1);
   SetPacketId(1);
@@ -459,7 +459,7 @@ TEST_F(CastMessageBuilderTest, InOrderRps) {
   testing_clock_.Advance(
       base::TimeDelta::FromMilliseconds(kShortTimeIncrementMs));
   EXPECT_FALSE(feedback_.triggered());
-  EXPECT_EQ(3, feedback_.last_frame_acked());
+  EXPECT_EQ(3u, feedback_.last_frame_acked());
 }
 
 TEST_F(CastMessageBuilderTest, SlowDownAck) {

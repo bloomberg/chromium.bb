@@ -5,6 +5,7 @@
 {
   'variables': {
     'include_tests%': 1,
+    'chromium_code': 1,
   },
   'targets': [
     {

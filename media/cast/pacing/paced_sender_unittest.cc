@@ -26,7 +26,7 @@ class TestPacketSender : public PacketSender {
     PacketList::const_iterator it = packets.begin();
     for (; it != packets.end(); ++it) {
       EXPECT_FALSE(expected_packet_size_.empty());
-      int expected_packet_size = expected_packet_size_.front();
+      size_t expected_packet_size = expected_packet_size_.front();
       expected_packet_size_.pop_front();
       EXPECT_EQ(expected_packet_size, it->size());
     }

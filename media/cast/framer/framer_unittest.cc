@@ -10,8 +10,6 @@
 namespace media {
 namespace cast {
 
-static const int64 kFrameTimeMillisecond = 33;
-
 class FramerTest : public ::testing::Test {
  protected:
   FramerTest()

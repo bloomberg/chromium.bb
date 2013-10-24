@@ -517,10 +517,10 @@ class End2EndTest : public ::testing::Test {
   scoped_refptr<FrameInput> frame_input_;
   scoped_refptr<FrameReceiver> frame_receiver_;
 
-  double audio_angle_;
-
   scoped_refptr<TestReceiverAudioCallback> test_receiver_audio_callback_;
   scoped_refptr<TestReceiverVideoCallback> test_receiver_video_callback_;
+
+  double audio_angle_;
 };
 
 // Audio and video test without packet loss using raw PCM 16 audio "codec";
