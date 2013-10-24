@@ -214,7 +214,7 @@
 %define HAVE_MEMALIGN 0
 %define HAVE_MEMORYBARRIER 0
 %define HAVE_MKSTEMP 1
-%define HAVE_MM_EMPTY 0
+%define HAVE_MM_EMPTY 1
 %define HAVE_MMAP 1
 %define HAVE_MPROTECT 1
 %define HAVE_MSVCRT 0
