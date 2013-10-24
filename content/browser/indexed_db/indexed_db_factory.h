@@ -28,6 +28,7 @@ class CONTENT_EXPORT IndexedDBFactory
 
   // Notifications from weak pointers.
   void ReleaseDatabase(const IndexedDBDatabase::Identifier& identifier,
+                       const std::string& backing_store_identifier,
                        bool forcedClose);
 
   void GetDatabaseNames(scoped_refptr<IndexedDBCallbacks> callbacks,
@@ -49,6 +50,11 @@ class CONTENT_EXPORT IndexedDBFactory
   // Iterates over all databases; for diagnostics only.
   std::vector<IndexedDBDatabase*> GetOpenDatabasesForOrigin(
       const std::string& origin_identifier) const;
+
+  bool IsBackingStoreOpenForTesting(const std::string& origin_identifier) const;
+
+  // Called by the IndexedDBContext destructor so the factory can do cleanup.
+  void ContextDestroyed();
 
  protected:
   friend class base::RefCounted<IndexedDBFactory>;

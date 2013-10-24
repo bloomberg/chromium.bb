@@ -26,11 +26,12 @@ IndexedDBFactory::~IndexedDBFactory() {}
 
 void IndexedDBFactory::ReleaseDatabase(
     const IndexedDBDatabase::Identifier& identifier,
+    const std::string& backing_store_identifier,
     bool forcedClose) {
-  DCHECK(database_map_.find(identifier) != database_map_.end());
-  std::string backing_store_identifier =
-      database_map_[identifier]->backing_store()->identifier();
-  database_map_.erase(identifier);
+  IndexedDBDatabaseMap::iterator it = database_map_.find(identifier);
+  DCHECK(it != database_map_.end());
+  DCHECK(!it->second->backing_store());
+  database_map_.erase(it);
 
   // No grace period on a forced-close, as the initiator is
   // assuming the backing store will be released once all
@@ -44,11 +45,16 @@ void IndexedDBFactory::ReleaseBackingStore(const std::string& identifier,
   if (!HasLastBackingStoreReference(identifier))
     return;
 
+  // If this factory does hold the last reference to the backing store, it can
+  // be closed - but unless requested to close it immediately, keep it around
+  // for a short period so that a re-open is fast.
   if (immediate) {
     CloseBackingStore(identifier);
     return;
   }
 
+  // Start a timer to close the backing store, unless something else opens it
+  // in the mean time.
   DCHECK(!backing_store_map_[identifier]->close_timer()->IsRunning());
   backing_store_map_[identifier]->close_timer()->Start(
       FROM_HERE,
@@ -57,14 +63,19 @@ void IndexedDBFactory::ReleaseBackingStore(const std::string& identifier,
 }
 
 void IndexedDBFactory::MaybeCloseBackingStore(const std::string& identifier) {
-  // Another reference may have opened since the maybe-close was posted,
-  // so it is necessary to check again.
+  // Another reference may have opened since the maybe-close was posted, so it
+  // is necessary to check again.
   if (HasLastBackingStoreReference(identifier))
     CloseBackingStore(identifier);
 }
 
 void IndexedDBFactory::CloseBackingStore(const std::string& identifier) {
-  backing_store_map_.erase(identifier);
+  IndexedDBBackingStoreMap::iterator it = backing_store_map_.find(identifier);
+  DCHECK(it != backing_store_map_.end());
+  // Stop the timer (if it's running) - this may happen if the timer was started
+  // and then a forced close occurs.
+  it->second->close_timer()->Stop();
+  backing_store_map_.erase(it);
 }
 
 bool IndexedDBFactory::HasLastBackingStoreReference(
@@ -78,6 +89,18 @@ bool IndexedDBFactory::HasLastBackingStoreReference(
     ptr = it->second.get();
   }
   return ptr->HasOneRef();
+}
+
+void IndexedDBFactory::ContextDestroyed() {
+  // Timers on backing stores hold a reference to this factory. When the
+  // context (which nominally owns this factory) is destroyed during thread
+  // termination the timers must be stopped so that this factory and the
+  // stores can be disposed of.
+  for (IndexedDBBackingStoreMap::iterator it = backing_store_map_.begin();
+       it != backing_store_map_.end();
+       ++it)
+    it->second->close_timer()->Stop();
+  backing_store_map_.clear();
 }
 
 void IndexedDBFactory::GetDatabaseNames(
@@ -144,6 +167,13 @@ void IndexedDBFactory::DeleteDatabase(
   database_map_[unique_identifier] = database;
   database->DeleteDatabase(callbacks);
   database_map_.erase(unique_identifier);
+}
+
+bool IndexedDBFactory::IsBackingStoreOpenForTesting(
+    const std::string& origin_identifier) const {
+  const std::string file_identifier = ComputeFileIdentifier(origin_identifier);
+
+  return backing_store_map_.find(file_identifier) != backing_store_map_.end();
 }
 
 scoped_refptr<IndexedDBBackingStore> IndexedDBFactory::OpenBackingStore(

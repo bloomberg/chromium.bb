@@ -444,12 +444,9 @@ quota::QuotaManagerProxy* IndexedDBContextImpl::quota_manager_proxy() {
 
 IndexedDBContextImpl::~IndexedDBContextImpl() {
   if (factory_) {
-    IndexedDBFactory* factory = factory_;
-    factory->AddRef();
+    TaskRunner()->PostTask(
+        FROM_HERE, base::Bind(&IndexedDBFactory::ContextDestroyed, factory_));
     factory_ = NULL;
-    if (!task_runner_->ReleaseSoon(FROM_HERE, factory)) {
-      factory->Release();
-    }
   }
 
   if (data_path_.empty())
