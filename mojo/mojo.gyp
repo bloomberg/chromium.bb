@@ -132,8 +132,8 @@
       ],
     },
     {
-      'target_name': 'mojo_shell',
-      'type': 'executable',
+      'target_name': 'mojo_shell_lib',
+      'type': 'static_library',
       'dependencies': [
         '../base/base.gyp:base',
         '../net/net.gyp:net',
@@ -149,13 +149,33 @@
         'loader/url_request_context_getter.h',
         'shell/app_container.cc',
         'shell/app_container.h',
-        'shell/shell.cc',
         'shell/storage.cc',
         'shell/storage.h',
         'shell/switches.cc',
         'shell/switches.h',
         'shell/task_runners.cc',
         'shell/task_runners.h',
+      ],
+      'conditions': [
+        ['OS == "win"', {
+          # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+          'msvs_disabled_warnings': [
+            4267,
+          ],
+        }],
+      ],
+    },
+    {
+      'target_name': 'mojo_shell',
+      'type': 'executable',
+      'dependencies': [
+        '../base/base.gyp:base',
+        '../url/url.gyp:url_lib',
+        'mojo_shell_lib',
+        'mojo_system',
+      ],
+      'sources': [
+        'shell/shell.cc',
       ],
       'conditions': [
         ['OS == "win"', {
@@ -213,5 +233,38 @@
         'public/bindings/sample/sample_test.cc',
       ],
     },
+  ],
+  'conditions': [
+    ['OS=="android"', {
+      'targets': [
+        {
+          'target_name': 'libmojo_shell',
+          'type': 'shared_library',
+          'dependencies': [
+            '../base/base.gyp:base',
+            'mojo_shell_lib',
+          ],
+          'sources': [
+            'shell/android/library_loader.cc',
+          ],
+        },
+        {
+          'target_name': 'mojo_shell_apk',
+          'type': 'none',
+          'dependencies': [
+            '../base/base.gyp:base_java',
+            '../net/net.gyp:net_java',
+            'libmojo_shell',
+          ],
+          'variables': {
+            'apk_name': 'MojoShell',
+            'java_in_dir': '<(DEPTH)/mojo/shell/android/shell_apk',
+            'resource_dir': '<(DEPTH)/mojo/shell/android/shell_apk/res',
+            'native_lib_target': 'libmojo_shell',
+          },
+          'includes': [ '../build/java_apk.gypi' ],
+        }
+      ],
+    }],
   ],
 }

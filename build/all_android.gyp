@@ -18,6 +18,7 @@
       'type': 'none',
       'dependencies': [
         '../content/content_shell_and_tests.gyp:content_shell_apk',
+        '../mojo/mojo.gyp:mojo_shell_apk',
         '<@(android_app_targets)',
         'android_builder_tests',
         '../android_webview/android_webview.gyp:android_webview_apk',
