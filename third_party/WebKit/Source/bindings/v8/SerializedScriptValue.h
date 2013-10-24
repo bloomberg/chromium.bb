@@ -60,7 +60,7 @@ public:
     // Version 3: Switched to using uuids as blob data identifiers.
     static const uint32_t wireFormatVersion = 3;
 
-    virtual ~SerializedScriptValue();
+    ~SerializedScriptValue();
 
     // If a serialization error occurs (e.g., cyclic input value) this
     // function returns an empty representation, schedules a V8 exception to
