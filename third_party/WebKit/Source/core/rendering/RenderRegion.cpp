@@ -165,6 +165,13 @@ bool RenderRegion::isLastRegion() const
     return m_flowThread->lastRegion() == this;
 }
 
+static bool shouldPaintRegionContentsInPhase(PaintPhase phase)
+{
+    return phase == PaintPhaseForeground
+        || phase == PaintPhaseSelection
+        || phase == PaintPhaseTextClip;
+}
+
 void RenderRegion::paintObject(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     if (style()->visibility() != VISIBLE)
@@ -172,11 +179,14 @@ void RenderRegion::paintObject(PaintInfo& paintInfo, const LayoutPoint& paintOff
 
     RenderBlock::paintObject(paintInfo, paintOffset);
 
+    if (!isValid())
+        return;
+
     // Delegate painting of content in region to RenderFlowThread.
     // RenderFlowThread is a self painting layer (being a positioned object) who is painting its children, the collected objects.
     // Since we do not want to paint the flow thread content multiple times (for each painting phase of the region object),
-    // we allow the flow thread painting only for the selection and the foreground phase.
-    if (!isValid() || (paintInfo.phase != PaintPhaseForeground && paintInfo.phase != PaintPhaseSelection))
+    // we allow the flow thread painting only in certain phases.
+    if (!shouldPaintRegionContentsInPhase(paintInfo.phase))
         return;
 
     setRegionObjectsRegionStyle();
@@ -240,9 +250,9 @@ void RenderRegion::updateRegionHasAutoLogicalHeightFlag()
     bool didHaveAutoLogicalHeight = m_hasAutoLogicalHeight;
     m_hasAutoLogicalHeight = shouldHaveAutoLogicalHeight();
     if (m_hasAutoLogicalHeight != didHaveAutoLogicalHeight) {
-        if (m_hasAutoLogicalHeight)
+        if (m_hasAutoLogicalHeight) {
             incrementAutoLogicalHeightCount();
-        else {
+        } else {
             clearComputedAutoHeight();
             decrementAutoLogicalHeightCount();
         }
@@ -292,9 +302,10 @@ void RenderRegion::layoutBlock(bool relayoutChildren, LayoutUnit)
             return;
         }
 
-        if (!isRenderRegionSet() && (oldRegionRect.width() != pageLogicalWidth() || oldRegionRect.height() != pageLogicalHeight()))
+        if (!isRenderRegionSet() && (oldRegionRect.width() != pageLogicalWidth() || oldRegionRect.height() != pageLogicalHeight())) {
             // This can happen even if we are in the inConstrainedLayoutPhase and it will trigger a pathological layout of the flow thread.
             m_flowThread->invalidateRegions();
+        }
     }
 
     // FIXME: We need to find a way to set up overflow properly. Our flow thread hasn't gotten a layout
@@ -480,8 +491,9 @@ void RenderRegion::setRegionObjectsRegionStyle()
             objectStyleInRegion = it->value.style;
             ASSERT(it->value.cached);
             objectRegionStyleCached = true;
-        } else
+        } else {
             objectStyleInRegion = computeStyleInRegion(object);
+        }
 
         setObjectStyleInRegion(object, objectStyleInRegion, objectRegionStyleCached);
 
