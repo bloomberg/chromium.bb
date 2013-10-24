@@ -151,6 +151,8 @@
         'browser/extensions/api/braille_display_private/brlapi_connection.h',
         'browser/extensions/api/browsing_data/browsing_data_api.cc',
         'browser/extensions/api/browsing_data/browsing_data_api.h',
+        'browser/extensions/api/cast_channel/cast_auth_util_nss.cc',
+        'browser/extensions/api/cast_channel/cast_auth_util.h',
         'browser/extensions/api/cast_channel/cast_channel_api.cc',
         'browser/extensions/api/cast_channel/cast_channel_api.h',
         'browser/extensions/api/cast_channel/cast_message_util.cc',
@@ -1080,6 +1082,8 @@
           'sources!': [
             # networking_private_crypto.cc uses NSS functions.
             'browser/extensions/api/networking_private/networking_private_crypto.cc',
+            # cast_auth_util_nss.cc uses NSS functions.
+            'browser/extensions/api/cast_channel/cast_auth_util_nss.cc',
           ],
         }],
         ['OS=="android"', {

@@ -11,6 +11,14 @@
 #include "chrome/browser/extensions/api/cast_channel/cast_channel.pb.h"
 #include "chrome/common/extensions/api/cast_channel.h"
 
+namespace {
+static const char kAuthNamespace[] =
+    "urn:x-cast:com.google.cast.tp.deviceauth";
+// Sender and receiver IDs to use for platform messages.
+static const char kPlatformSenderId[] = "sender-0";
+static const char kPlatformReceiverId[] = "receiver-0";
+}  // namespace
+
 namespace extensions {
 namespace api {
 namespace cast_channel {
@@ -83,7 +91,7 @@ bool CastMessageToMessageInfo(const CastMessage& message_proto,
   }
 }
 
-const std::string MessageProtoToString(const CastMessage& message_proto) {
+std::string CastMessageToString(const CastMessage& message_proto) {
   std::string out("{");
   out += "namespace = " + message_proto.namespace_();
   out += ", sourceId = " + message_proto.source_id();
@@ -91,6 +99,46 @@ const std::string MessageProtoToString(const CastMessage& message_proto) {
   out += ", type = " + base::IntToString(message_proto.payload_type());
   out += ", str = \"" + message_proto.payload_utf8() + "\"}";
   return out;
+}
+
+std::string AuthMessageToString(const DeviceAuthMessage& message) {
+  std::string out("{");
+  if (message.has_challenge()) {
+    out += "\n  challenge = {},";
+  }
+  if (message.has_response()) {
+    out += "\n  response = {";
+    out += "\n    signature = " + message.response().signature();
+    out += "\n,   certificate = " +
+        message.response().client_auth_certificate();
+    out += "\n  }";
+  }
+  if (message.has_error()) {
+    out += "\n  error = {";
+    out += base::IntToString(message.error().error_type());
+    out += "}";
+  }
+  out += "}";
+  return out;
+}
+
+void CreateAuthChallengeMessage(CastMessage* message_proto) {
+  CHECK(message_proto);
+  DeviceAuthMessage auth_message;
+  auth_message.mutable_challenge();
+  std::string auth_message_string;
+  auth_message.SerializeToString(&auth_message_string);
+
+  message_proto->set_protocol_version(CastMessage_ProtocolVersion_CASTV2_1_0);
+  message_proto->set_source_id(kPlatformSenderId);
+  message_proto->set_destination_id(kPlatformReceiverId);
+  message_proto->set_namespace_(kAuthNamespace);
+  message_proto->set_payload_type(CastMessage_PayloadType_BINARY);
+  message_proto->set_payload_binary(auth_message_string);
+}
+
+bool IsAuthMessage(const CastMessage& message) {
+  return message.namespace_() == kAuthNamespace;
 }
 
 }  // namespace cast_channel

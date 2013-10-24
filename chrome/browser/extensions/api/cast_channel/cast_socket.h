@@ -75,8 +75,8 @@ class CastSocket : public ApiResource,
   // The URL for the channel.
   const GURL& url() const;
 
-  // True if the protocol is casts:
-  bool is_secure() const { return is_secure_; }
+  // Whether to perform receiver authentication.
+  bool auth_required() const { return auth_required_; }
 
   // Channel id for the ApiResourceManager.
   long id() const { return channel_id_; }
@@ -116,9 +116,19 @@ class CastSocket : public ApiResource,
   // is in cert error state.
   // Returns whether certificate is successfully extracted.
   virtual bool ExtractPeerCert(std::string* cert);
+  // Sends a challenge request to the receiver.
+  virtual int SendAuthChallenge();
+  // Reads auth challenge reply from the receiver.
+  virtual int ReadAuthChallengeReply();
+  // Verifies whether the challenge reply received from the peer is valid:
+  // 1. Signature in the reply is valid.
+  // 2. Certificate is rooted to a trusted CA.
+  virtual bool VerifyChallengeReply();
 
  private:
   friend class ApiResourceManager<CastSocket>;
+  friend class CastSocketTest;
+
   static const char* service_name() {
     return "CastSocketManager";
   }
@@ -130,6 +140,9 @@ class CastSocket : public ApiResource,
     CONN_STATE_TCP_CONNECT_COMPLETE,
     CONN_STATE_SSL_CONNECT,
     CONN_STATE_SSL_CONNECT_COMPLETE,
+    CONN_STATE_AUTH_CHALLENGE_SEND,
+    CONN_STATE_AUTH_CHALLENGE_SEND_COMPLETE,
+    CONN_STATE_AUTH_CHALLENGE_REPLY_COMPLETE,
   };
 
   /////////////////////////////////////////////////////////////////////////////
@@ -139,6 +152,9 @@ class CastSocket : public ApiResource,
   // 3. If connection fails due to invalid cert authority, then extract the
   //    peer certificate from the error.
   // 4. Whitelist the peer certificate and try #1 and #2 again.
+  // 5. If SSL socket is connected successfully, and if protocol is casts://
+  //    then issue an auth challenge request.
+  // 6. Validate the auth challenge response.
 
   // Main method that performs connection state transitions.
   int DoConnectLoop(int result);
@@ -149,11 +165,16 @@ class CastSocket : public ApiResource,
   int DoTcpConnectComplete(int result);
   int DoSslConnect();
   int DoSslConnectComplete(int result);
-  int DoSslConnectRetry();
+  int DoAuthChallengeSend();
+  int DoAuthChallengeSendComplete(int result);
+  int DoAuthChallengeReplyComplete(int result);
   /////////////////////////////////////////////////////////////////////////////
 
   // Callback method for callbacks from underlying sockets.
   void OnConnectComplete(int result);
+
+  // Callback method when a challenge request is sent or a reply is received.
+  void OnChallengeEvent(int result);
 
   // Runs the external connection callback and resets it.
   void DoConnectCallback(int result);
@@ -162,14 +183,18 @@ class CastSocket : public ApiResource,
   // the result.
   bool ParseChannelUrl(const GURL& url);
 
+  // Sends the given |message| and invokes the given callback when done.
+  int SendMessageInternal(const CastMessage& message,
+                          const net::CompletionCallback& callback);
+
   // Writes data to the socket from the WriteRequest at the head of the queue.
   // Calls OnWriteData() on completion.
-  void WriteData();
+  int WriteData();
   void OnWriteData(int result);
 
   // Reads data from the socket into one of the read buffers. Calls
   // OnReadData() on completion.
-  void ReadData();
+  int ReadData();
   void OnReadData(int result);
 
   // Processes the contents of header_read_buffer_ and returns true on success.
@@ -195,8 +220,8 @@ class CastSocket : public ApiResource,
   GURL url_;
   // Delegate to inform of incoming messages and errors.
   Delegate* delegate_;
-  // True if the channel is using a secure transport.
-  bool is_secure_;
+  // True if we should perform receiver authentication.
+  bool auth_required_;
   // The IP endpoint of the peer.
   net::IPEndPoint ip_endpoint_;
   // The last error encountered by the channel.
@@ -234,6 +259,8 @@ class CastSocket : public ApiResource,
   std::string peer_cert_;
   scoped_ptr<net::CertVerifier> cert_verifier_;
   scoped_ptr<net::TransportSecurityState> transport_security_state_;
+  // Reply received from the receiver to a challenge request.
+  scoped_ptr<CastMessage> challenge_reply_;
 
   // Callback invoked when the socket is connected.
   net::CompletionCallback connect_callback_;

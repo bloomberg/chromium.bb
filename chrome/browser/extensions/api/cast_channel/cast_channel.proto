@@ -53,3 +53,27 @@ message CastMessage {
   optional bytes payload_binary = 7;
 }
 
+// Messages for authentication protocol between a sender and a receiver.
+message AuthChallenge {
+}
+
+message AuthResponse {
+  required bytes signature = 1;
+  required bytes client_auth_certificate = 2;
+}
+
+message AuthError {
+  enum ErrorType {
+    INTERNAL_ERROR = 0;
+    NO_TLS = 1;  // The underlying connection is not TLS
+  }
+  required ErrorType error_type = 1;
+}
+
+message DeviceAuthMessage {
+  // Request fields
+  optional AuthChallenge challenge = 1;
+  // Response fields
+  optional AuthResponse response = 2;
+  optional AuthError error = 3;
+}

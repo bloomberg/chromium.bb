@@ -12,6 +12,7 @@ namespace api {
 namespace cast_channel {
 
 class CastMessage;
+class DeviceAuthMessage;
 struct MessageInfo;
 
 // Fills |message_proto| from |message| and returns true on success.
@@ -23,7 +24,16 @@ bool CastMessageToMessageInfo(const CastMessage& message_proto,
                               MessageInfo* message);
 
 // Returns a human readable string for |message_proto|.
-const std::string MessageProtoToString(const CastMessage& message_proto);
+std::string CastMessageToString(const CastMessage& message_proto);
+
+// Returns a human readable string for |message|.
+std::string AuthMessageToString(const DeviceAuthMessage& message);
+
+// Fills |message_proto| appropriately for an auth challenge request message.
+void CreateAuthChallengeMessage(CastMessage* message_proto);
+
+// Returns whether the given message is an auth handshake message.
+bool IsAuthMessage(const CastMessage& message);
 
 }  // namespace cast_channel
 }  // namespace api
