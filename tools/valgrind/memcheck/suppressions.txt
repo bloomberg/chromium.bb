@@ -5242,7 +5242,7 @@
    bug_222898
    Memcheck:Leak
    fun:malloc
-   fun:_ZN3WTF10fastMallocEm
+   ...
    fun:_ZN3WTF9BitVector13OutOfLineBits6createEm
    fun:_ZN3WTF9BitVector15resizeOutOfLineEm
    fun:_ZN3WTF9BitVector10ensureSizeEm
@@ -5417,7 +5417,7 @@
    bug_239141
    Memcheck:Leak
    fun:malloc
-   fun:_ZN3WTF10fastMallocEm
+   ...
    fun:_ZN3WTF9BitVector13OutOfLineBits6createEm
    fun:_ZN3WTF9BitVector15resizeOutOfLineEm
    fun:_ZN3WTF9BitVector10ensureSizeEm
@@ -5510,7 +5510,7 @@
    bug_242672
    Memcheck:Leak
    fun:malloc
-   fun:_ZN3WTF10fastMallocEm
+   ...
    fun:_ZN3WTF9BitVector13OutOfLineBits6createEm
    fun:_ZN3WTF9BitVector15resizeOutOfLineEm
    fun:_ZN3WTF9BitVector10ensureSizeEm
@@ -6246,7 +6246,7 @@
    fun:_ZN3WTF10fastMallocEm
    fun:_ZN3WTF24ThreadSafeRefCountedBasenwEm
    fun:_ZN6WebKit12_GLOBAL__N_131AllowFileSystemMainThreadBridge6createEPN7WebCore17WorkerGlobalScopeEPNS_13WebWorkerBaseERKN3WTF6StringE
-   fun:_ZN6WebKit22WorkerFileSystemClient15allowFileSystemEPN7WebCore22ScriptExecutionContextE
+   fun:_ZN6WebKit22WorkerFileSystemClient15allowFileSystem*
    ...
    fun:_ZN2v88internal25FunctionCallbackArguments4CallEPFvRKNS_20FunctionCallbackInfoINS_5ValueEEEE
 }
@@ -6406,4 +6406,26 @@
    fun:_ZN7content26ShellRenderProcessObserver17WebKitInitializedEv
    fun:_ZN7content16RenderThreadImpl23EnsureWebKitInitializedEv
    fun:_ZN7content16RenderThreadImpl15OnCreateNewViewERK18ViewMsg_New_Params
+}
+{
+   bug_311211
+   Memcheck:Uninitialized
+   fun:_ZNK12browser_sync15SyncBackendHost22GetSyncedDeviceTrackerEv
+}
+{
+   bug_311229
+   Memcheck:Leak
+   fun:malloc
+   fun:_ZN3WTF10fastMallocEm
+   fun:_ZN3WTF24ThreadSafeRefCountedBasenwEm
+   fun:_ZN7WebCore18MessagePortChannel6createEPN6WebKit21WebMessagePortChannelE
+   fun:_ZN7WebCore18MessagePortChannel13createChannelEPNS_11MessagePortES2_
+   fun:_ZN7WebCore14MessageChannelC1EPNS_16ExecutionContextE
+   fun:_ZN7WebCore14MessageChannel6createEPNS_16ExecutionContextE
+   fun:_ZN7WebCore16V8MessageChannel17constructorCustomERKN2v820FunctionCallbackInfoINS1_5ValueEEE
+   fun:_ZN7WebCore16V8MessageChannel19constructorCallbackERKN2v820FunctionCallbackInfoINS1_5ValueEEE
+   fun:_ZN2v88internal25FunctionCallbackArguments4CallEPFvRKNS_20FunctionCallbackInfoINS_5ValueEEEE
+   fun:_ZN2v88internalL19HandleApiCallHelperILb1EEEPNS0_11MaybeObjectENS0_12_GLOBAL__N_116BuiltinArgumentsILNS0_21BuiltinExtraArgumentsE1EEEPNS0_7IsolateE
+   fun:_ZN2v88internalL34Builtin_implHandleApiCallConstructENS0_12_GLOBAL__N_116BuiltinArgumentsILNS0_21BuiltinExtraArgumentsE1EEEPNS0_7IsolateE
+   fun:_ZN2v88internalL30Builtin_HandleApiCallConstructEiPPNS0_6ObjectEPNS0_7IsolateE
 }
