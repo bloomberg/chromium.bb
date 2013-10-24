@@ -62,6 +62,10 @@ class NET_EXPORT CertVerifyResult {
   // is_issued_by_additional_trust_anchor is true if the root CA used for this
   // verification came from the list of additional trust anchors.
   bool is_issued_by_additional_trust_anchor;
+
+  // True if a fallback to the common name was used when matching the host
+  // name, rather than using the subjectAltName.
+  bool common_name_fallback_used;
 };
 
 }  // namespace net

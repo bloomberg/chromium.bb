@@ -504,7 +504,8 @@ bool X509Certificate::VerifyHostname(
     const std::string& hostname,
     const std::string& cert_common_name,
     const std::vector<std::string>& cert_san_dns_names,
-    const std::vector<std::string>& cert_san_ip_addrs) {
+    const std::vector<std::string>& cert_san_ip_addrs,
+    bool* common_name_fallback_used) {
   DCHECK(!hostname.empty());
   // Perform name verification following http://tools.ietf.org/html/rfc6125.
   // The terminology used in this method is as per that RFC:-
@@ -528,6 +529,7 @@ bool X509Certificate::VerifyHostname(
   // Allow fallback to Common name matching?
   const bool common_name_fallback = cert_san_dns_names.empty() &&
                                     cert_san_ip_addrs.empty();
+  *common_name_fallback_used = common_name_fallback;
 
   // Fully handle all cases where |hostname| contains an IP address.
   if (host_info.IsIPAddress()) {
@@ -649,10 +651,12 @@ bool X509Certificate::VerifyHostname(
   return false;
 }
 
-bool X509Certificate::VerifyNameMatch(const std::string& hostname) const {
+bool X509Certificate::VerifyNameMatch(const std::string& hostname,
+                                      bool* common_name_fallback_used) const {
   std::vector<std::string> dns_names, ip_addrs;
   GetSubjectAltName(&dns_names, &ip_addrs);
-  return VerifyHostname(hostname, subject_.common_name, dns_names, ip_addrs);
+  return VerifyHostname(hostname, subject_.common_name, dns_names, ip_addrs,
+                        common_name_fallback_used);
 }
 
 // static

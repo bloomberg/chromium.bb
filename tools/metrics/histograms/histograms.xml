@@ -6810,6 +6810,25 @@ other types of suffix sets.
   <summary>The time to generate an NTLM HTTP authentication token.</summary>
 </histogram>
 
+<histogram name="Net.CertCommonNameFallback" enum="BooleanCommonNameMatch">
+  <summary>
+    Whether the certificate common name was used for matching the hostname,
+    instead of the subjectAlternativeName.
+
+    Measures results for all CAs (internal and publicly-trusted).
+  </summary>
+</histogram>
+
+<histogram name="Net.CertCommonNameFallbackPrivateCA"
+    enum="BooleanCommonNameMatch">
+  <summary>
+    Whether the certificate common name was used for matching the hostname,
+    instead of the subjectAlternativeName.
+
+    Measures results ony for internal (non-publicly-trusted) CAs.
+  </summary>
+</histogram>
+
 <histogram name="Net.CertificatePinSuccess" enum="BooleanSuccess">
   <obsolete>
     Renamed to Net.PublicKeyPinSuccess 28 Oct 2011.
@@ -20085,6 +20104,11 @@ other types of suffix sets.
 <enum name="BooleanAttempted" type="int">
   <int value="0" label="Not Attempted"/>
   <int value="1" label="Attempted"/>
+</enum>
+
+<enum name="BooleanCommonNameMatch" type="int">
+  <int value="0" label="subjectAltName used"/>
+  <int value="1" label="Common Name used"/>
 </enum>
 
 <enum name="BooleanCorrupt" type="int">

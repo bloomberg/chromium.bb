@@ -23,6 +23,7 @@ void CertVerifyResult::Reset() {
   has_md4 = false;
   is_issued_by_known_root = false;
   is_issued_by_additional_trust_anchor = false;
+  common_name_fallback_used = false;
 
   public_key_hashes.clear();
 }

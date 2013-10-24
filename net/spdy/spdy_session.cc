@@ -569,11 +569,12 @@ bool SpdySession::VerifyDomainAuthentication(const std::string& domain) {
   if (!GetSSLInfo(&ssl_info, &was_npn_negotiated, &protocol_negotiated))
     return true;   // This is not a secure session, so all domains are okay.
 
+  bool unused = false;
   return !ssl_info.client_cert_sent &&
       (enable_credential_frames_ || !ssl_info.channel_id_sent ||
        ServerBoundCertService::GetDomainForHost(domain) ==
        ServerBoundCertService::GetDomainForHost(host_port_pair().host())) &&
-       ssl_info.cert->VerifyNameMatch(domain);
+       ssl_info.cert->VerifyNameMatch(domain, &unused);
 }
 
 int SpdySession::GetPushStream(

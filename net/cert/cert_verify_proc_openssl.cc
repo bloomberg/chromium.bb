@@ -172,8 +172,10 @@ int CertVerifyProcOpenSSL::VerifyInternal(
     CertVerifyResult* verify_result) {
   crypto::EnsureOpenSSLInit();
 
-  if (!cert->VerifyNameMatch(hostname))
+  if (!cert->VerifyNameMatch(hostname,
+                             &verify_result->common_name_fallback_used)) {
     verify_result->cert_status |= CERT_STATUS_COMMON_NAME_INVALID;
+  }
 
   crypto::ScopedOpenSSL<X509_STORE_CTX, X509_STORE_CTX_free> ctx(
       X509_STORE_CTX_new());

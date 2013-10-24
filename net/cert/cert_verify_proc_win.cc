@@ -764,8 +764,10 @@ int CertVerifyProcWin::VerifyInternal(
 
   // Perform hostname verification independent of
   // CertVerifyCertificateChainPolicy.
-  if (!cert->VerifyNameMatch(hostname))
+  if (!cert->VerifyNameMatch(hostname,
+                             &verify_result->common_name_fallback_used)) {
     verify_result->cert_status |= CERT_STATUS_COMMON_NAME_INVALID;
+  }
 
   if (!rev_checking_enabled) {
     // If we didn't do online revocation checking then Windows will report

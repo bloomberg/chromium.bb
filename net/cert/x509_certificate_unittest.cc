@@ -190,11 +190,12 @@ TEST(X509CertificateTest, WebkitCertParsing) {
   EXPECT_EQ("webkit.org", dns_names[1]);
 
   // Test that the wildcard cert matches properly.
-  EXPECT_TRUE(webkit_cert->VerifyNameMatch("www.webkit.org"));
-  EXPECT_TRUE(webkit_cert->VerifyNameMatch("foo.webkit.org"));
-  EXPECT_TRUE(webkit_cert->VerifyNameMatch("webkit.org"));
-  EXPECT_FALSE(webkit_cert->VerifyNameMatch("www.webkit.com"));
-  EXPECT_FALSE(webkit_cert->VerifyNameMatch("www.foo.webkit.com"));
+  bool unused = false;
+  EXPECT_TRUE(webkit_cert->VerifyNameMatch("www.webkit.org", &unused));
+  EXPECT_TRUE(webkit_cert->VerifyNameMatch("foo.webkit.org", &unused));
+  EXPECT_TRUE(webkit_cert->VerifyNameMatch("webkit.org", &unused));
+  EXPECT_FALSE(webkit_cert->VerifyNameMatch("www.webkit.com", &unused));
+  EXPECT_FALSE(webkit_cert->VerifyNameMatch("www.foo.webkit.com", &unused));
 }
 
 TEST(X509CertificateTest, ThawteCertParsing) {
@@ -1139,8 +1140,9 @@ TEST_P(X509CertificateNameVerifyTest, VerifyHostname) {
     }
   }
 
+  bool unused = false;
   EXPECT_EQ(test_data.expected, X509Certificate::VerifyHostname(
-      test_data.hostname, common_name, dns_names, ip_addressses));
+      test_data.hostname, common_name, dns_names, ip_addressses, &unused));
 }
 
 INSTANTIATE_TEST_CASE_P(, X509CertificateNameVerifyTest,

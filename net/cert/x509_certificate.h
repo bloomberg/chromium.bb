@@ -313,8 +313,11 @@ class NET_EXPORT X509Certificate
   // Verifies that |hostname| matches this certificate.
   // Does not verify that the certificate is valid, only that the certificate
   // matches this host.
-  // Returns true if it matches.
-  bool VerifyNameMatch(const std::string& hostname) const;
+  // Returns true if it matches, and updates |*common_name_fallback_used|,
+  // setting it to true if a fallback to the CN was used, rather than
+  // subjectAltName.
+  bool VerifyNameMatch(const std::string& hostname,
+                       bool* common_name_fallback_used) const;
 
   // Obtains the DER encoded certificate data for |cert_handle|. On success,
   // returns true and writes the DER encoded certificate to |*der_encoded|.
@@ -425,10 +428,14 @@ class NET_EXPORT X509Certificate
   // extension, if present. Note these IP addresses are NOT ascii-encoded:
   // they must be 4 or 16 bytes of network-ordered data, for IPv4 and IPv6
   // addresses, respectively.
+  // |common_name_fallback_used| will be updated to true if cert_common_name
+  // was used to match the hostname, or false if either of the |cert_san_*|
+  // parameters was used to match the hostname.
   static bool VerifyHostname(const std::string& hostname,
                              const std::string& cert_common_name,
                              const std::vector<std::string>& cert_san_dns_names,
-                             const std::vector<std::string>& cert_san_ip_addrs);
+                             const std::vector<std::string>& cert_san_ip_addrs,
+                             bool* common_name_fallback_used);
 
   // Reads a single certificate from |pickle_iter| and returns a
   // platform-specific certificate handle. The format of the certificate

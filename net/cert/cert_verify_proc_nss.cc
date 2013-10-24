@@ -763,9 +763,10 @@ int CertVerifyProcNSS::VerifyInternal(
   CERTCertificate* cert_handle = cert->os_cert_handle();
 #endif  // defined(OS_IOS)
 
-  // Make sure that the hostname matches with the common name of the cert.
-  if (!cert->VerifyNameMatch(hostname))
+  if (!cert->VerifyNameMatch(hostname,
+                             &verify_result->common_name_fallback_used)) {
     verify_result->cert_status |= CERT_STATUS_COMMON_NAME_INVALID;
+  }
 
   // Make sure that the cert is valid now.
   SECCertTimeValidity validity = CERT_CheckCertValidTimes(

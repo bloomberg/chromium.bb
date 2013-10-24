@@ -206,6 +206,13 @@ int CertVerifyProc::Verify(X509Certificate* cert,
   int rv = VerifyInternal(cert, hostname, flags, crl_set,
                           additional_trust_anchors, verify_result);
 
+  UMA_HISTOGRAM_BOOLEAN("Net.CertCommonNameFallback",
+                        verify_result->common_name_fallback_used);
+  if (!verify_result->is_issued_by_known_root) {
+    UMA_HISTOGRAM_BOOLEAN("Net.CertCommonNameFallbackPrivateCA",
+                          verify_result->common_name_fallback_used);
+  }
+
   // This check is done after VerifyInternal so that VerifyInternal can fill
   // in the list of public key hashes.
   if (IsPublicKeyBlacklisted(verify_result->public_key_hashes)) {

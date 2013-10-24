@@ -91,8 +91,10 @@ int CertVerifyProcAndroid::VerifyInternal(
     CRLSet* crl_set,
     const CertificateList& additional_trust_anchors,
     CertVerifyResult* verify_result) {
-  if (!cert->VerifyNameMatch(hostname))
+  if (!cert->VerifyNameMatch(hostname,
+                             &verify_result->common_name_fallback_used)) {
     verify_result->cert_status |= CERT_STATUS_COMMON_NAME_INVALID;
+  }
 
   std::vector<std::string> cert_bytes;
   if (!GetChainDEREncodedBytes(cert, &cert_bytes))
