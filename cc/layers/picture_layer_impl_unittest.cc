@@ -1106,6 +1106,21 @@ TEST_F(PictureLayerImplTest, ActivateUninitializedLayer) {
   EXPECT_FALSE(active_layer_->needs_post_commit_initialization());
 }
 
+TEST_F(PictureLayerImplTest, SyncTilingAfterReleaseResource) {
+  SetupDefaultTrees(gfx::Size(10, 10));
+  host_impl_.active_tree()->UpdateDrawProperties();
+  EXPECT_FALSE(host_impl_.active_tree()->needs_update_draw_properties());
+
+  // Contrived unit test of a real crash. A layer is transparent during a
+  // context loss, and later becomes opaque, causing active layer SyncTiling to
+  // be called.
+  const float tile_scale = 2.f;
+  active_layer_->DidLoseOutputSurface();
+  EXPECT_FALSE(active_layer_->tilings()->TilingAtScale(tile_scale));
+  pending_layer_->AddTiling(2.f);
+  EXPECT_TRUE(active_layer_->tilings()->TilingAtScale(tile_scale));
+}
+
 class DeferredInitPictureLayerImplTest : public PictureLayerImplTest {
  public:
   DeferredInitPictureLayerImplTest()

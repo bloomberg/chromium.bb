@@ -611,7 +611,8 @@ void PictureLayerImpl::SyncTiling(
   // get updated prior to drawing or activation.  If this tree does not
   // need update draw properties, then its transforms are up to date and
   // we can create tiles for this tiling immediately.
-  if (!layer_tree_impl()->needs_update_draw_properties())
+  if (!layer_tree_impl()->needs_update_draw_properties() &&
+      should_update_tile_priorities_)
     UpdateTilePriorities();
 }
 
