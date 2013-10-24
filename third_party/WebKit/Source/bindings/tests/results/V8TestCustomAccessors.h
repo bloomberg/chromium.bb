@@ -38,7 +38,7 @@ public:
         return fromInternalPointer(object->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex));
     }
     static void derefObject(void*);
-    static WrapperTypeInfo wrapperTypeInfo;
+    static const WrapperTypeInfo wrapperTypeInfo;
     static void indexedPropertyGetterCustom(uint32_t, const v8::PropertyCallbackInfo<v8::Value>&);
     static void indexedPropertySetterCustom(uint32_t, v8::Local<v8::Value>, const v8::PropertyCallbackInfo<v8::Value>&);
     static void indexedPropertyDeleterCustom(uint32_t, const v8::PropertyCallbackInfo<v8::Boolean>&);
@@ -68,7 +68,7 @@ private:
 template<>
 class WrapperTypeTraits<TestCustomAccessors > {
 public:
-    static WrapperTypeInfo* wrapperTypeInfo() { return &V8TestCustomAccessors::wrapperTypeInfo; }
+    static const WrapperTypeInfo* wrapperTypeInfo() { return &V8TestCustomAccessors::wrapperTypeInfo; }
 };
 
 inline v8::Handle<v8::Object> wrap(TestCustomAccessors* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)

@@ -33,12 +33,12 @@
 
 namespace WebCore {
 
-PassOwnPtr<CustomElementBinding> CustomElementBinding::create(v8::Isolate* isolate, v8::Handle<v8::Object> prototype, WrapperTypeInfo* wrapperType)
+PassOwnPtr<CustomElementBinding> CustomElementBinding::create(v8::Isolate* isolate, v8::Handle<v8::Object> prototype, const WrapperTypeInfo* wrapperType)
 {
     return adoptPtr(new CustomElementBinding(isolate, prototype, wrapperType));
 }
 
-CustomElementBinding::CustomElementBinding(v8::Isolate* isolate, v8::Handle<v8::Object> prototype, WrapperTypeInfo* wrapperType)
+CustomElementBinding::CustomElementBinding(v8::Isolate* isolate, v8::Handle<v8::Object> prototype, const WrapperTypeInfo* wrapperType)
     : m_isolate(isolate)
     , m_prototype(isolate, prototype)
     , m_wrapperType(wrapperType)

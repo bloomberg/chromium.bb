@@ -40,7 +40,7 @@ public:
         return fromInternalPointer(object->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex));
     }
     static void derefObject(void*);
-    static WrapperTypeInfo info;
+    static const WrapperTypeInfo info;
     {% for attribute in attributes %}
     {% if attribute.has_custom_getter %}{# FIXME: and not attribute.implemented_by #}
     {% filter conditional(attribute.conditional_string) %}
@@ -76,7 +76,7 @@ private:
 template<>
 class WrapperTypeTraits<{{cpp_class_name}} > {
 public:
-    static WrapperTypeInfo* info() { return &{{v8_class_name}}::info; }
+    static const WrapperTypeInfo* info() { return &{{v8_class_name}}::info; }
 };
 
 inline v8::Handle<v8::Object> wrap({{cpp_class_name}}* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)

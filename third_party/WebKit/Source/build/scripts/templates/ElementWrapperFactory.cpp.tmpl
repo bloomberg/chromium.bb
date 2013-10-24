@@ -72,9 +72,9 @@ v8::Handle<v8::Object> createV8{{namespace}}Wrapper({{namespace}}Element* elemen
 {%- endif %}
 }
 
-WrapperTypeInfo* findWrapperTypeFor{{namespace}}TagName(const AtomicString& name)
+const WrapperTypeInfo* findWrapperTypeFor{{namespace}}TagName(const AtomicString& name)
 {
-    typedef HashMap<StringImpl*, WrapperTypeInfo*> NameTypeMap;
+    typedef HashMap<StringImpl*, const WrapperTypeInfo*> NameTypeMap;
     DEFINE_STATIC_LOCAL(NameTypeMap, map, ());
     if (map.isEmpty()) {
         // FIXME: This seems wrong. We should list every interface here, not
@@ -84,7 +84,7 @@ WrapperTypeInfo* findWrapperTypeFor{{namespace}}TagName(const AtomicString& name
 {%- endfor %}
     }
 
-    if (WrapperTypeInfo* result = map.get(name.impl()))
+    if (const WrapperTypeInfo* result = map.get(name.impl()))
         return result;
 
     return WrapperTypeTraits<{{fallback_js_interface}}>::wrapperTypeInfo();

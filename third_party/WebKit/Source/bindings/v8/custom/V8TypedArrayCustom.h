@@ -59,7 +59,7 @@ public:
 
     static TypedArray* toNative(v8::Handle<v8::Object>);
     static void derefObject(void*);
-    static WrapperTypeInfo wrapperTypeInfo;
+    static const WrapperTypeInfo wrapperTypeInfo;
     static const int internalFieldCount = v8DefaultWrapperInternalFieldCount;
 
     static v8::Handle<v8::Object> wrap(TypedArray* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
@@ -134,7 +134,7 @@ private:
 template<typename TypedArray>
 class TypedArrayWrapperTraits {
 public:
-    static WrapperTypeInfo* info() { return &V8TypedArray<TypedArray>::wrapperTypeInfo; }
+    static const WrapperTypeInfo* info() { return &V8TypedArray<TypedArray>::wrapperTypeInfo; }
 };
 
 
@@ -176,7 +176,7 @@ TypedArray* V8TypedArray<TypedArray>::toNative(v8::Handle<v8::Object> object)
 
 
 template <typename TypedArray>
-WrapperTypeInfo V8TypedArray<TypedArray>::wrapperTypeInfo = {
+const WrapperTypeInfo V8TypedArray<TypedArray>::wrapperTypeInfo = {
     0, V8TypedArray<TypedArray>::derefObject,
     0, 0, 0, 0, 0, WrapperTypeObjectPrototype
 };

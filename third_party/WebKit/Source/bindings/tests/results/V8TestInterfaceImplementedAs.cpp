@@ -57,7 +57,7 @@ void webCoreInitializeScriptWrappableForInterface(WebCore::RealClass* object)
 }
 
 namespace WebCore {
-WrapperTypeInfo V8TestInterfaceImplementedAs::wrapperTypeInfo = { V8TestInterfaceImplementedAs::GetTemplate, V8TestInterfaceImplementedAs::derefObject, 0, 0, 0, V8TestInterfaceImplementedAs::installPerContextEnabledPrototypeProperties, 0, WrapperTypeObjectPrototype };
+const WrapperTypeInfo V8TestInterfaceImplementedAs::wrapperTypeInfo = { V8TestInterfaceImplementedAs::GetTemplate, V8TestInterfaceImplementedAs::derefObject, 0, 0, 0, V8TestInterfaceImplementedAs::installPerContextEnabledPrototypeProperties, 0, WrapperTypeObjectPrototype };
 
 namespace RealClassV8Internal {
 

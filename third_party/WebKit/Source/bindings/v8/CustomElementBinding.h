@@ -41,19 +41,19 @@ struct WrapperTypeInfo;
 
 class CustomElementBinding {
 public:
-    static PassOwnPtr<CustomElementBinding> create(v8::Isolate*, v8::Handle<v8::Object> prototype, WrapperTypeInfo*);
+    static PassOwnPtr<CustomElementBinding> create(v8::Isolate*, v8::Handle<v8::Object> prototype, const WrapperTypeInfo*);
 
     ~CustomElementBinding() { m_prototype.dispose(); }
 
     v8::Handle<v8::Object> prototype() { return m_prototype.newLocal(m_isolate); }
-    WrapperTypeInfo* wrapperType() { return m_wrapperType; }
+    const WrapperTypeInfo* wrapperType() { return m_wrapperType; }
 
 private:
-    CustomElementBinding(v8::Isolate*, v8::Handle<v8::Object> prototype, WrapperTypeInfo*);
+    CustomElementBinding(v8::Isolate*, v8::Handle<v8::Object> prototype, const WrapperTypeInfo*);
 
     v8::Isolate* m_isolate;
     UnsafePersistent<v8::Object> m_prototype;
-    WrapperTypeInfo* m_wrapperType;
+    const WrapperTypeInfo* m_wrapperType;
 };
 
 }

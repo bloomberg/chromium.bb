@@ -646,7 +646,7 @@ sub GenerateHeader
 class V8${nativeType}Constructor {
 public:
     static v8::Handle<v8::FunctionTemplate> GetTemplate(v8::Isolate*, WrapperWorldType);
-    static WrapperTypeInfo wrapperTypeInfo;
+    static const WrapperTypeInfo wrapperTypeInfo;
 };
 END
     }
@@ -663,7 +663,7 @@ END
         return fromInternalPointer(object->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex));
     }
     static void derefObject(void*);
-    static WrapperTypeInfo wrapperTypeInfo;
+    static const WrapperTypeInfo wrapperTypeInfo;
 END
 
     if (NeedsOpaqueRootForGC($interface)) {
@@ -827,7 +827,7 @@ END
 template<>
 class WrapperTypeTraits<${nativeType} > {
 public:
-    static WrapperTypeInfo* wrapperTypeInfo() { return &${v8ClassName}::wrapperTypeInfo; }
+    static const WrapperTypeInfo* wrapperTypeInfo() { return &${v8ClassName}::wrapperTypeInfo; }
 };
 END
 
@@ -2891,7 +2891,7 @@ sub GenerateNamedConstructor
     }
 
     $implementation{nameSpaceWebCore}->add(<<END);
-WrapperTypeInfo ${v8ClassName}Constructor::wrapperTypeInfo = { ${v8ClassName}Constructor::GetTemplate, ${v8ClassName}::derefObject, $toActiveDOMObject, $toEventTarget, 0, ${v8ClassName}::installPerContextEnabledPrototypeProperties, 0, WrapperTypeObjectPrototype };
+const WrapperTypeInfo ${v8ClassName}Constructor::wrapperTypeInfo = { ${v8ClassName}Constructor::GetTemplate, ${v8ClassName}::derefObject, $toActiveDOMObject, $toEventTarget, 0, ${v8ClassName}::installPerContextEnabledPrototypeProperties, 0, WrapperTypeObjectPrototype };
 
 END
 
@@ -3092,7 +3092,7 @@ sub GenerateAttributeConfigurationParameters
         if ($constructorType !~ /Constructor$/ || $attribute->extendedAttributes->{"CustomConstructor"}) {
             AddToImplIncludes("V8${constructorType}.h");
         }
-        $data = "&V8${constructorType}::wrapperTypeInfo";
+        $data = "const_cast<WrapperTypeInfo*>(&V8${constructorType}::wrapperTypeInfo)";
         $getter = "${implClassName}V8Internal::${implClassName}ConstructorGetter";
         $setter = "${implClassName}V8Internal::${implClassName}ReplaceableAttributeSetterCallback";
         $getterForMainWorld = "0";
@@ -4045,7 +4045,7 @@ END
         $implementation{nameSpaceWebCore}->addHeader($code);
     }
 
-    my $code = "WrapperTypeInfo ${v8ClassName}::wrapperTypeInfo = { ${v8ClassName}::GetTemplate, ${v8ClassName}::derefObject, $toActiveDOMObject, $toEventTarget, ";
+    my $code = "const WrapperTypeInfo ${v8ClassName}::wrapperTypeInfo = { ${v8ClassName}::GetTemplate, ${v8ClassName}::derefObject, $toActiveDOMObject, $toEventTarget, ";
     $code .= "$rootForGC, ${v8ClassName}::installPerContextEnabledPrototypeProperties, $parentClassInfo, $WrapperTypePrototype };\n";
     $implementation{nameSpaceWebCore}->addHeader($code);
 
@@ -4271,7 +4271,7 @@ END
 
     my $access_check = "";
     if ($interface->extendedAttributes->{"CheckSecurity"} && $interfaceName ne "Window") {
-        $access_check = "instance->SetAccessCheckCallbacks(${implClassName}V8Internal::namedSecurityCheck, ${implClassName}V8Internal::indexedSecurityCheck, v8::External::New(&${v8ClassName}::wrapperTypeInfo));";
+        $access_check = "instance->SetAccessCheckCallbacks(${implClassName}V8Internal::namedSecurityCheck, ${implClassName}V8Internal::indexedSecurityCheck, v8::External::New(const_cast<WrapperTypeInfo*>(&${v8ClassName}::wrapperTypeInfo)));";
     }
 
     # For the Window interface, generate the shadow object template
@@ -4283,7 +4283,7 @@ static void ConfigureShadowObjectTemplate(v8::Handle<v8::ObjectTemplate> templ, 
     V8DOMConfiguration::installAttributes(templ, v8::Handle<v8::ObjectTemplate>(), shadowAttributes, WTF_ARRAY_LENGTH(shadowAttributes), isolate, currentWorldType);
 
     // Install a security handler with V8.
-    templ->SetAccessCheckCallbacks(V8Window::namedSecurityCheckCustom, V8Window::indexedSecurityCheckCustom, v8::External::New(&V8Window::wrapperTypeInfo));
+    templ->SetAccessCheckCallbacks(V8Window::namedSecurityCheckCustom, V8Window::indexedSecurityCheckCustom, v8::External::New(const_cast<WrapperTypeInfo*>(&V8Window::wrapperTypeInfo)));
     templ->SetInternalFieldCount(V8Window::internalFieldCount);
 }
 END
@@ -4446,7 +4446,7 @@ END
     // Set access check callbacks, but turned off initially.
     // When a context is detached from a frame, turn on the access check.
     // Turning on checks also invalidates inline caches of the object.
-    instance->SetAccessCheckCallbacks(V8Window::namedSecurityCheckCustom, V8Window::indexedSecurityCheckCustom, v8::External::New(&V8Window::wrapperTypeInfo), false);
+    instance->SetAccessCheckCallbacks(V8Window::namedSecurityCheckCustom, V8Window::indexedSecurityCheckCustom, v8::External::New(const_cast<WrapperTypeInfo*>(&V8Window::wrapperTypeInfo)), false);
 END
     }
     if ($interfaceName eq "HTMLDocument" or $interfaceName eq "DedicatedWorkerGlobalScope" or $interfaceName eq "SharedWorkerGlobalScope") {

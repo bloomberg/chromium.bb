@@ -57,7 +57,7 @@ namespace WebCore {
 
 static Frame* findFrame(v8::Local<v8::Object> host, v8::Local<v8::Value> data, v8::Isolate* isolate)
 {
-    WrapperTypeInfo* type = WrapperTypeInfo::unwrap(data);
+    const WrapperTypeInfo* type = WrapperTypeInfo::unwrap(data);
 
     if (V8Window::wrapperTypeInfo.equals(type)) {
         v8::Handle<v8::Object> windowWrapper = host->FindInstanceInPrototypeChain(V8Window::GetTemplate(isolate, worldTypeInMainThread(isolate)));
@@ -111,7 +111,7 @@ static void messageHandlerInMainThread(v8::Handle<v8::Message> message, v8::Hand
     RefPtr<ErrorEvent> event = ErrorEvent::create(errorMessage, resource, message->GetLineNumber(), message->GetStartColumn() + 1, DOMWrapperWorld::current());
     if (V8DOMWrapper::isDOMWrapper(data)) {
         v8::Handle<v8::Object> obj = v8::Handle<v8::Object>::Cast(data);
-        WrapperTypeInfo* type = toWrapperTypeInfo(obj);
+        const WrapperTypeInfo* type = toWrapperTypeInfo(obj);
         if (V8DOMException::wrapperTypeInfo.isSubclass(type)) {
             DOMException* exception = V8DOMException::toNative(obj);
             if (exception && !exception->messageForConsole().isEmpty())

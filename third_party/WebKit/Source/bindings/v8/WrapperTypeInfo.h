@@ -73,9 +73,9 @@ namespace WebCore {
     // comparing pointers is a safe way to determine if types match.
     struct WrapperTypeInfo {
 
-        static WrapperTypeInfo* unwrap(v8::Handle<v8::Value> typeInfoWrapper)
+        static const WrapperTypeInfo* unwrap(v8::Handle<v8::Value> typeInfoWrapper)
         {
-            return reinterpret_cast<WrapperTypeInfo*>(v8::External::Cast(*typeInfoWrapper)->Value());
+            return reinterpret_cast<const WrapperTypeInfo*>(v8::External::Cast(*typeInfoWrapper)->Value());
         }
 
 
@@ -94,35 +94,35 @@ namespace WebCore {
             return false;
         }
 
-        v8::Handle<v8::FunctionTemplate> getTemplate(v8::Isolate* isolate, WrapperWorldType worldType) { return getTemplateFunction(isolate, worldType); }
+        v8::Handle<v8::FunctionTemplate> getTemplate(v8::Isolate* isolate, WrapperWorldType worldType) const { return getTemplateFunction(isolate, worldType); }
 
-        void derefObject(void* object)
+        void derefObject(void* object) const
         {
             if (derefObjectFunction)
                 derefObjectFunction(object);
         }
 
-        void installPerContextEnabledPrototypeProperties(v8::Handle<v8::Object> proto, v8::Isolate* isolate)
+        void installPerContextEnabledPrototypeProperties(v8::Handle<v8::Object> proto, v8::Isolate* isolate) const
         {
             if (installPerContextEnabledPrototypePropertiesFunction)
                 installPerContextEnabledPrototypePropertiesFunction(proto, isolate);
         }
 
-        ActiveDOMObject* toActiveDOMObject(v8::Handle<v8::Object> object)
+        ActiveDOMObject* toActiveDOMObject(v8::Handle<v8::Object> object) const
         {
             if (!toActiveDOMObjectFunction)
                 return 0;
             return toActiveDOMObjectFunction(object);
         }
 
-        EventTarget* toEventTarget(v8::Handle<v8::Object> object)
+        EventTarget* toEventTarget(v8::Handle<v8::Object> object) const
         {
             if (!toEventTargetFunction)
                 return 0;
             return toEventTargetFunction(object);
         }
 
-        void* opaqueRootForGC(void* object, v8::Isolate* isolate)
+        void* opaqueRootForGC(void* object, v8::Isolate* isolate) const
         {
             if (!opaqueRootForGCFunction)
                 return object;
@@ -165,12 +165,12 @@ namespace WebCore {
         return getInternalField<void, v8DOMWrapperObjectIndex>(object);
     }
 
-    inline WrapperTypeInfo* toWrapperTypeInfo(const v8::Persistent<v8::Object>& object)
+    inline const WrapperTypeInfo* toWrapperTypeInfo(const v8::Persistent<v8::Object>& object)
     {
         return getInternalField<WrapperTypeInfo, v8DOMWrapperTypeIndex>(object);
     }
 
-    inline WrapperTypeInfo* toWrapperTypeInfo(v8::Handle<v8::Object> object)
+    inline const WrapperTypeInfo* toWrapperTypeInfo(v8::Handle<v8::Object> object)
     {
         return getInternalField<WrapperTypeInfo, v8DOMWrapperTypeIndex>(object);
     }

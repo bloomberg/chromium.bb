@@ -60,7 +60,7 @@ void webCoreInitializeScriptWrappableForInterface(WebCore::SupportTestInterface*
 }
 
 namespace WebCore {
-WrapperTypeInfo V8SupportTestInterface::wrapperTypeInfo = { V8SupportTestInterface::GetTemplate, V8SupportTestInterface::derefObject, 0, 0, 0, V8SupportTestInterface::installPerContextEnabledPrototypeProperties, 0, WrapperTypeObjectPrototype };
+const WrapperTypeInfo V8SupportTestInterface::wrapperTypeInfo = { V8SupportTestInterface::GetTemplate, V8SupportTestInterface::derefObject, 0, 0, 0, V8SupportTestInterface::installPerContextEnabledPrototypeProperties, 0, WrapperTypeObjectPrototype };
 
 namespace SupportTestInterfaceV8Internal {
 

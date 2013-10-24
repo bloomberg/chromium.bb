@@ -194,7 +194,7 @@ private:
 
         // Note: |object| might not be equal to |key|, e.g., if ScriptWrappable isn't a left-most base class.
         void* object = toNative(*wrapper);
-        WrapperTypeInfo* info = toWrapperTypeInfo(*wrapper);
+        const WrapperTypeInfo* info = toWrapperTypeInfo(*wrapper);
         ASSERT(info->derefObjectFunction);
 
         key->disposeWrapper(wrapper, info);

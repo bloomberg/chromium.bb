@@ -50,7 +50,7 @@ public:
         v8::AccessorSetterCallback setter;
         v8::AccessorGetterCallback getterForMainWorld;
         v8::AccessorSetterCallback setterForMainWorld;
-        WrapperTypeInfo* data;
+        const WrapperTypeInfo* data;
         v8::AccessControl settings;
         v8::PropertyAttribute attribute;
         bool onPrototype;
@@ -64,7 +64,7 @@ public:
         (attribute.onPrototype ? prototype : instance)->SetAccessor(v8::String::NewSymbol(attribute.name),
                                                                     attribute.getter,
                                                                     attribute.setter,
-                                                                    v8::External::New(attribute.data),
+                                                                    v8::External::New(const_cast<WrapperTypeInfo*>(attribute.data)),
                                                                     attribute.settings,
                                                                     attribute.attribute);
     }
@@ -83,7 +83,7 @@ public:
         (attribute.onPrototype ? prototype : instance)->SetAccessor(v8::String::NewSymbol(attribute.name),
             getter,
             setter,
-            v8::External::New(attribute.data),
+            v8::External::New(const_cast<WrapperTypeInfo*>(attribute.data)),
             attribute.settings,
             attribute.attribute);
     }

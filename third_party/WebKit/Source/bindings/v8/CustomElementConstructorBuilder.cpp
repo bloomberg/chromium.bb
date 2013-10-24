@@ -235,7 +235,7 @@ ScriptValue CustomElementConstructorBuilder::bindingsReturnValue() const
     return ScriptValue(m_constructor, m_context->GetIsolate());
 }
 
-bool CustomElementConstructorBuilder::hasValidPrototypeChainFor(WrapperTypeInfo* type) const
+bool CustomElementConstructorBuilder::hasValidPrototypeChainFor(const WrapperTypeInfo* type) const
 {
     v8::Handle<v8::Object> elementPrototype = V8PerContextData::from(m_context)->prototypeForType(type);
     if (elementPrototype.IsEmpty())

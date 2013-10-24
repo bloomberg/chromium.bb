@@ -64,7 +64,7 @@ void webCoreInitializeScriptWrappableForInterface(Float64Array* object)
 }
 
 namespace WebCore {
-WrapperTypeInfo V8Float64Array::wrapperTypeInfo = { V8Float64Array::GetTemplate, V8Float64Array::derefObject, 0, 0, 0, V8Float64Array::installPerContextEnabledPrototypeProperties, &V8ArrayBufferView::wrapperTypeInfo, WrapperTypeObjectPrototype };
+const WrapperTypeInfo V8Float64Array::wrapperTypeInfo = { V8Float64Array::GetTemplate, V8Float64Array::derefObject, 0, 0, 0, V8Float64Array::installPerContextEnabledPrototypeProperties, &V8ArrayBufferView::wrapperTypeInfo, WrapperTypeObjectPrototype };
 
 namespace Float64ArrayV8Internal {
 

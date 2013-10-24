@@ -80,13 +80,13 @@ public:
     // To create JS Wrapper objects, we create a cache of a 'boiler plate'
     // object, and then simply Clone that object each time we need a new one.
     // This is faster than going through the full object creation process.
-    v8::Local<v8::Object> createWrapperFromCache(WrapperTypeInfo* type)
+    v8::Local<v8::Object> createWrapperFromCache(const WrapperTypeInfo* type)
     {
         UnsafePersistent<v8::Object> boilerplate = m_wrapperBoilerplates.get(type);
         return !boilerplate.isEmpty() ? boilerplate.newLocal(v8::Isolate::GetCurrent())->Clone() : createWrapperFromCacheSlowCase(type);
     }
 
-    v8::Local<v8::Function> constructorForType(WrapperTypeInfo* type)
+    v8::Local<v8::Function> constructorForType(const WrapperTypeInfo* type)
     {
         UnsafePersistent<v8::Function> function = m_constructorMap.get(type);
         if (!function.isEmpty())
@@ -94,7 +94,7 @@ public:
         return constructorForTypeSlowCase(type);
     }
 
-    v8::Local<v8::Object> prototypeForType(WrapperTypeInfo*);
+    v8::Local<v8::Object> prototypeForType(const WrapperTypeInfo*);
 
     V8NPObjectMap* v8NPObjectMap()
     {
@@ -126,15 +126,15 @@ private:
 
     void dispose();
 
-    v8::Local<v8::Object> createWrapperFromCacheSlowCase(WrapperTypeInfo*);
-    v8::Local<v8::Function> constructorForTypeSlowCase(WrapperTypeInfo*);
+    v8::Local<v8::Object> createWrapperFromCacheSlowCase(const WrapperTypeInfo*);
+    v8::Local<v8::Function> constructorForTypeSlowCase(const WrapperTypeInfo*);
 
     // For each possible type of wrapper, we keep a boilerplate object.
     // The boilerplate is used to create additional wrappers of the same type.
-    typedef WTF::HashMap<WrapperTypeInfo*, UnsafePersistent<v8::Object> > WrapperBoilerplateMap;
+    typedef WTF::HashMap<const WrapperTypeInfo*, UnsafePersistent<v8::Object> > WrapperBoilerplateMap;
     WrapperBoilerplateMap m_wrapperBoilerplates;
 
-    typedef WTF::HashMap<WrapperTypeInfo*, UnsafePersistent<v8::Function> > ConstructorMap;
+    typedef WTF::HashMap<const WrapperTypeInfo*, UnsafePersistent<v8::Function> > ConstructorMap;
     ConstructorMap m_constructorMap;
 
     V8NPObjectMap m_v8NPObjectMap;

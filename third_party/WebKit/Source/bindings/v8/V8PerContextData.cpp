@@ -89,7 +89,7 @@ bool V8PerContextData::init()
 
 #undef V8_STORE_PRIMORDIAL
 
-v8::Local<v8::Object> V8PerContextData::createWrapperFromCacheSlowCase(WrapperTypeInfo* type)
+v8::Local<v8::Object> V8PerContextData::createWrapperFromCacheSlowCase(const WrapperTypeInfo* type)
 {
     ASSERT(!m_errorPrototype.isEmpty());
 
@@ -103,7 +103,7 @@ v8::Local<v8::Object> V8PerContextData::createWrapperFromCacheSlowCase(WrapperTy
     return v8::Local<v8::Object>();
 }
 
-v8::Local<v8::Function> V8PerContextData::constructorForTypeSlowCase(WrapperTypeInfo* type)
+v8::Local<v8::Function> V8PerContextData::constructorForTypeSlowCase(const WrapperTypeInfo* type)
 {
     ASSERT(!m_errorPrototype.isEmpty());
 
@@ -116,7 +116,7 @@ v8::Local<v8::Function> V8PerContextData::constructorForTypeSlowCase(WrapperType
         return v8::Local<v8::Function>();
 
     if (type->parentClass) {
-        v8::Local<v8::Object> proto = constructorForType(const_cast<WrapperTypeInfo*>(type->parentClass));
+        v8::Local<v8::Object> proto = constructorForType(type->parentClass);
         if (proto.IsEmpty())
             return v8::Local<v8::Function>();
         function->SetPrototype(proto);
@@ -127,7 +127,7 @@ v8::Local<v8::Function> V8PerContextData::constructorForTypeSlowCase(WrapperType
         v8::Local<v8::Object> prototypeObject = v8::Local<v8::Object>::Cast(prototypeValue);
         if (prototypeObject->InternalFieldCount() == v8PrototypeInternalFieldcount
             && type->wrapperTypePrototype == WrapperTypeObjectPrototype)
-            prototypeObject->SetAlignedPointerInInternalField(v8PrototypeTypeIndex, type);
+            prototypeObject->SetAlignedPointerInInternalField(v8PrototypeTypeIndex, const_cast<WrapperTypeInfo*>(type));
         type->installPerContextEnabledPrototypeProperties(prototypeObject, m_isolate);
         if (type->wrapperTypePrototype == WrapperTypeErrorPrototype)
             prototypeObject->SetPrototype(m_errorPrototype.newLocal(m_isolate));
@@ -138,7 +138,7 @@ v8::Local<v8::Function> V8PerContextData::constructorForTypeSlowCase(WrapperType
     return function;
 }
 
-v8::Local<v8::Object> V8PerContextData::prototypeForType(WrapperTypeInfo* type)
+v8::Local<v8::Object> V8PerContextData::prototypeForType(const WrapperTypeInfo* type)
 {
     v8::Local<v8::Object> constructor = constructorForType(type);
     if (constructor.IsEmpty())

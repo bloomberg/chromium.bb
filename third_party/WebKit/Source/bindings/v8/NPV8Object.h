@@ -43,7 +43,7 @@ class DOMWindow;
 
 static const int npObjectInternalFieldCount = v8DefaultWrapperInternalFieldCount + 0;
 
-WrapperTypeInfo* npObjectTypeInfo();
+const WrapperTypeInfo* npObjectTypeInfo();
 
 // A V8NPObject is a NPObject which carries additional V8-specific information.
 // It is created with npCreateV8ScriptObject() and deallocated via the deallocate

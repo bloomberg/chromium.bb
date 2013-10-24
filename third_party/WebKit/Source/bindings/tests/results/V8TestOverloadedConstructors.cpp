@@ -59,7 +59,7 @@ void webCoreInitializeScriptWrappableForInterface(WebCore::TestOverloadedConstru
 }
 
 namespace WebCore {
-WrapperTypeInfo V8TestOverloadedConstructors::wrapperTypeInfo = { V8TestOverloadedConstructors::GetTemplate, V8TestOverloadedConstructors::derefObject, 0, 0, 0, V8TestOverloadedConstructors::installPerContextEnabledPrototypeProperties, 0, WrapperTypeObjectPrototype };
+const WrapperTypeInfo V8TestOverloadedConstructors::wrapperTypeInfo = { V8TestOverloadedConstructors::GetTemplate, V8TestOverloadedConstructors::derefObject, 0, 0, 0, V8TestOverloadedConstructors::installPerContextEnabledPrototypeProperties, 0, WrapperTypeObjectPrototype };
 
 namespace TestOverloadedConstructorsV8Internal {
 

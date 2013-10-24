@@ -63,7 +63,7 @@ public:
     }
     static void dispose(v8::Isolate*);
 
-    typedef HashMap<void*, UnsafePersistent<v8::FunctionTemplate> > TemplateMap;
+    typedef HashMap<const void*, UnsafePersistent<v8::FunctionTemplate> > TemplateMap;
 
     TemplateMap& rawTemplateMap(WrapperWorldType worldType)
     {
@@ -133,9 +133,9 @@ public:
     v8::Handle<v8::FunctionTemplate> privateTemplateIfExists(WrapperWorldType, void* privatePointer);
     void setPrivateTemplate(WrapperWorldType, void* privatePointer, v8::Handle<v8::FunctionTemplate>);
 
-    v8::Handle<v8::FunctionTemplate> rawTemplate(WrapperTypeInfo*, WrapperWorldType);
+    v8::Handle<v8::FunctionTemplate> rawTemplate(const WrapperTypeInfo*, WrapperWorldType);
 
-    bool hasInstance(WrapperTypeInfo*, v8::Handle<v8::Value>, WrapperWorldType);
+    bool hasInstance(const WrapperTypeInfo*, v8::Handle<v8::Value>, WrapperWorldType);
 
     v8::Local<v8::Context> ensureRegexContext();
 

@@ -39,7 +39,7 @@ public:
         return fromInternalPointer(object->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex));
     }
     static void derefObject(void*);
-    static WrapperTypeInfo wrapperTypeInfo;
+    static const WrapperTypeInfo wrapperTypeInfo;
     static EventTarget* toEventTarget(v8::Handle<v8::Object>);
     static const int eventListenerCacheIndex = v8DefaultWrapperInternalFieldCount + 0;
     static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + 1;
@@ -63,7 +63,7 @@ private:
 template<>
 class WrapperTypeTraits<TestEventTarget > {
 public:
-    static WrapperTypeInfo* wrapperTypeInfo() { return &V8TestEventTarget::wrapperTypeInfo; }
+    static const WrapperTypeInfo* wrapperTypeInfo() { return &V8TestEventTarget::wrapperTypeInfo; }
 };
 
 inline v8::Handle<v8::Object> wrap(TestEventTarget* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)

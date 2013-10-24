@@ -45,7 +45,7 @@ V8ArrayBufferDeallocationObserver* V8ArrayBufferDeallocationObserver::instance()
     return &deallocationObserver;
 }
 
-WrapperTypeInfo V8ArrayBuffer::wrapperTypeInfo = {
+const WrapperTypeInfo V8ArrayBuffer::wrapperTypeInfo = {
     0, V8ArrayBuffer::derefObject,
     0, 0, 0, 0, 0, WrapperTypeObjectPrototype
 };

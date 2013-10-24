@@ -38,7 +38,7 @@ public:
         return fromInternalPointer(object->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex));
     }
     static void derefObject(void*);
-    static WrapperTypeInfo wrapperTypeInfo;
+    static const WrapperTypeInfo wrapperTypeInfo;
     static void customLongAttributeAttributeGetterCustom(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>&);
     static void customLongAttributeAttributeSetterCustom(v8::Local<v8::String> name, v8::Local<v8::Value>, const v8::PropertyCallbackInfo<void>&);
     static void customGetterLongAttributeAttributeGetterCustom(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>&);
@@ -74,7 +74,7 @@ private:
 template<>
 class WrapperTypeTraits<TestObjectPython > {
 public:
-    static WrapperTypeInfo* wrapperTypeInfo() { return &V8TestObjectPython::wrapperTypeInfo; }
+    static const WrapperTypeInfo* wrapperTypeInfo() { return &V8TestObjectPython::wrapperTypeInfo; }
 };
 
 inline v8::Handle<v8::Object> wrap(TestObjectPython* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)

@@ -121,7 +121,7 @@ private:
 template<>
 inline void DOMWrapperMap<void>::makeWeakCallback(v8::Isolate* isolate, v8::Persistent<v8::Object>* wrapper, DOMWrapperMap<void>* map)
 {
-    WrapperTypeInfo* type = toWrapperTypeInfo(*wrapper);
+    const WrapperTypeInfo* type = toWrapperTypeInfo(*wrapper);
     ASSERT(type->derefObjectFunction);
     void* key = static_cast<void*>(toNative(*wrapper));
     ASSERT(*(map->m_map.get(key).persistent()) == *wrapper);

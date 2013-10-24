@@ -39,7 +39,7 @@ public:
         return fromInternalPointer(object->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex));
     }
     static void derefObject(void*);
-    static WrapperTypeInfo wrapperTypeInfo;
+    static const WrapperTypeInfo wrapperTypeInfo;
     static ActiveDOMObject* toActiveDOMObject(v8::Handle<v8::Object>);
     static void implementsMethod3MethodCustom(const v8::FunctionCallbackInfo<v8::Value>&);
 #if ENABLE(Condition11) || ENABLE(Condition12)
@@ -68,7 +68,7 @@ private:
 template<>
 class WrapperTypeTraits<TestInterface > {
 public:
-    static WrapperTypeInfo* wrapperTypeInfo() { return &V8TestInterface::wrapperTypeInfo; }
+    static const WrapperTypeInfo* wrapperTypeInfo() { return &V8TestInterface::wrapperTypeInfo; }
 };
 
 inline v8::Handle<v8::Object> wrap(TestInterface* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)

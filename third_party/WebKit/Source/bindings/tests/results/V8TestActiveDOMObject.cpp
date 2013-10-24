@@ -57,7 +57,7 @@ void webCoreInitializeScriptWrappableForInterface(WebCore::TestActiveDOMObject* 
 }
 
 namespace WebCore {
-WrapperTypeInfo V8TestActiveDOMObject::wrapperTypeInfo = { V8TestActiveDOMObject::GetTemplate, V8TestActiveDOMObject::derefObject, 0, 0, 0, V8TestActiveDOMObject::installPerContextEnabledPrototypeProperties, 0, WrapperTypeObjectPrototype };
+const WrapperTypeInfo V8TestActiveDOMObject::wrapperTypeInfo = { V8TestActiveDOMObject::GetTemplate, V8TestActiveDOMObject::derefObject, 0, 0, 0, V8TestActiveDOMObject::installPerContextEnabledPrototypeProperties, 0, WrapperTypeObjectPrototype };
 
 namespace TestActiveDOMObjectV8Internal {
 
@@ -206,7 +206,7 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestActiveDOMObjectTemplate(v
     v8::Local<v8::ObjectTemplate> proto = desc->PrototypeTemplate();
     UNUSED_PARAM(instance);
     UNUSED_PARAM(proto);
-    instance->SetAccessCheckCallbacks(TestActiveDOMObjectV8Internal::namedSecurityCheck, TestActiveDOMObjectV8Internal::indexedSecurityCheck, v8::External::New(&V8TestActiveDOMObject::wrapperTypeInfo));
+    instance->SetAccessCheckCallbacks(TestActiveDOMObjectV8Internal::namedSecurityCheck, TestActiveDOMObjectV8Internal::indexedSecurityCheck, v8::External::New(const_cast<WrapperTypeInfo*>(&V8TestActiveDOMObject::wrapperTypeInfo)));
 
     // Custom Signature 'excitingFunction'
     const int excitingFunctionArgc = 1;

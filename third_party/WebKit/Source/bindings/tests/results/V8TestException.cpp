@@ -53,7 +53,7 @@ void webCoreInitializeScriptWrappableForInterface(WebCore::TestException* object
 }
 
 namespace WebCore {
-WrapperTypeInfo V8TestException::wrapperTypeInfo = { V8TestException::GetTemplate, V8TestException::derefObject, 0, 0, 0, V8TestException::installPerContextEnabledPrototypeProperties, 0, WrapperTypeErrorPrototype };
+const WrapperTypeInfo V8TestException::wrapperTypeInfo = { V8TestException::GetTemplate, V8TestException::derefObject, 0, 0, 0, V8TestException::installPerContextEnabledPrototypeProperties, 0, WrapperTypeErrorPrototype };
 
 namespace TestExceptionV8Internal {
 

@@ -55,7 +55,7 @@ public:
     static bool HasInstanceInAnyWorld(v8::Handle<v8::Value>, v8::Isolate*);
     static ArrayBuffer* toNative(v8::Handle<v8::Object>);
     static void derefObject(void*);
-    static WrapperTypeInfo wrapperTypeInfo;
+    static const WrapperTypeInfo wrapperTypeInfo;
     static const int internalFieldCount = v8DefaultWrapperInternalFieldCount;
     static void installPerContextEnabledProperties(v8::Handle<v8::Object>, ArrayBuffer*, v8::Isolate*) { }
     static void installPerContextEnabledPrototypeProperties(v8::Handle<v8::Object>, v8::Isolate*) { }
@@ -78,7 +78,7 @@ private:
 template<>
 class WrapperTypeTraits<ArrayBuffer > {
 public:
-    static WrapperTypeInfo* wrapperTypeInfo() { return &V8ArrayBuffer::wrapperTypeInfo; }
+    static const WrapperTypeInfo* wrapperTypeInfo() { return &V8ArrayBuffer::wrapperTypeInfo; }
 };
 
 

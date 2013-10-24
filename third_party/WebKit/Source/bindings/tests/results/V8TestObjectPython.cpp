@@ -86,7 +86,7 @@ void webCoreInitializeScriptWrappableForInterface(WebCore::TestObjectPython* obj
 }
 
 namespace WebCore {
-WrapperTypeInfo V8TestObjectPython::wrapperTypeInfo = { V8TestObjectPython::GetTemplate, V8TestObjectPython::derefObject, 0, 0, 0, V8TestObjectPython::installPerContextEnabledPrototypeProperties, 0, WrapperTypeObjectPrototype };
+const WrapperTypeInfo V8TestObjectPython::wrapperTypeInfo = { V8TestObjectPython::GetTemplate, V8TestObjectPython::derefObject, 0, 0, 0, V8TestObjectPython::installPerContextEnabledPrototypeProperties, 0, WrapperTypeObjectPrototype };
 
 namespace TestObjectPythonV8Internal {
 
@@ -3282,7 +3282,7 @@ static const V8DOMConfiguration::AttributeConfiguration V8TestObjectPythonAttrib
     {"nullableStringAttribute", TestObjectPythonV8Internal::nullableStringAttributeAttributeGetterCallback, TestObjectPythonV8Internal::nullableStringAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"nullableLongAttribute", TestObjectPythonV8Internal::nullableLongAttributeAttributeGetterCallback, TestObjectPythonV8Internal::nullableLongAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"testEnumAttribute", TestObjectPythonV8Internal::testEnumAttributeAttributeGetterCallback, TestObjectPythonV8Internal::testEnumAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
-    {"testObjectAConstructorAttribute", TestObjectPythonV8Internal::TestObjectPythonConstructorGetter, TestObjectPythonV8Internal::TestObjectPythonReplaceableAttributeSetterCallback, 0, 0, &V8TestObjectA::wrapperTypeInfo, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::DontEnum), 0 /* on instance */},
+    {"testObjectAConstructorAttribute", TestObjectPythonV8Internal::TestObjectPythonConstructorGetter, TestObjectPythonV8Internal::TestObjectPythonReplaceableAttributeSetterCallback, 0, 0, const_cast<WrapperTypeInfo*>(&V8TestObjectA::wrapperTypeInfo), static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::DontEnum), 0 /* on instance */},
     {"eventHandlerAttribute", TestObjectPythonV8Internal::eventHandlerAttributeAttributeGetterCallback, TestObjectPythonV8Internal::eventHandlerAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"promiseAttribute", TestObjectPythonV8Internal::promiseAttributeAttributeGetterCallback, TestObjectPythonV8Internal::promiseAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"activityLoggingAccessForAllWorldsLongAttribute", TestObjectPythonV8Internal::activityLoggingAccessForAllWorldsLongAttributeAttributeGetterCallback, TestObjectPythonV8Internal::activityLoggingAccessForAllWorldsLongAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},

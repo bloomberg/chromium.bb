@@ -128,7 +128,7 @@ public:
         // Note that node->wrapper().IsEmpty() returns true for nodes that
         // do not have wrappers in the main world.
         if (node->containsWrapper()) {
-            WrapperTypeInfo* type = toWrapperTypeInfo(*wrapper);
+            const WrapperTypeInfo* type = toWrapperTypeInfo(*wrapper);
             ActiveDOMObject* activeDOMObject = type->toActiveDOMObject(*wrapper);
             if (activeDOMObject && activeDOMObject->hasPendingActivity())
                 return;
@@ -245,7 +245,7 @@ public:
         if (value->IsIndependent())
             return;
 
-        WrapperTypeInfo* type = toWrapperTypeInfo(*wrapper);
+        const WrapperTypeInfo* type = toWrapperTypeInfo(*wrapper);
         void* object = toNative(*wrapper);
 
         if (V8MessagePort::wrapperTypeInfo.equals(type)) {

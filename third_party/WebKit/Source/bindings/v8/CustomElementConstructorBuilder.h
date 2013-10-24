@@ -78,14 +78,14 @@ public:
     ScriptValue bindingsReturnValue() const;
 
 private:
-    bool hasValidPrototypeChainFor(WrapperTypeInfo*) const;
+    bool hasValidPrototypeChainFor(const WrapperTypeInfo*) const;
     bool prototypeIsValid(const AtomicString& type, ExceptionState&) const;
     v8::Handle<v8::Function> retrieveCallback(v8::Isolate*, const char* name);
 
     v8::Handle<v8::Context> m_context;
     const Dictionary* m_options;
     v8::Handle<v8::Object> m_prototype;
-    WrapperTypeInfo* m_wrapperType;
+    const WrapperTypeInfo* m_wrapperType;
     v8::Handle<v8::Function> m_constructor;
     RefPtr<V8CustomElementLifecycleCallbacks> m_callbacks;
 };

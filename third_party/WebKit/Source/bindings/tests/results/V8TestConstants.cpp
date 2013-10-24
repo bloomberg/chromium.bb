@@ -53,7 +53,7 @@ void webCoreInitializeScriptWrappableForInterface(WebCore::TestConstants* object
 }
 
 namespace WebCore {
-WrapperTypeInfo V8TestConstants::wrapperTypeInfo = { V8TestConstants::GetTemplate, V8TestConstants::derefObject, 0, 0, 0, V8TestConstants::installPerContextEnabledPrototypeProperties, 0, WrapperTypeObjectPrototype };
+const WrapperTypeInfo V8TestConstants::wrapperTypeInfo = { V8TestConstants::GetTemplate, V8TestConstants::derefObject, 0, 0, 0, V8TestConstants::installPerContextEnabledPrototypeProperties, 0, WrapperTypeObjectPrototype };
 
 namespace TestConstantsV8Internal {
 

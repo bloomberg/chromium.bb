@@ -51,9 +51,9 @@ using namespace WebCore;
 
 namespace WebCore {
 
-WrapperTypeInfo* npObjectTypeInfo()
+const WrapperTypeInfo* npObjectTypeInfo()
 {
-    static WrapperTypeInfo typeInfo = { 0, 0, 0, 0, 0, 0, 0, WrapperTypeObjectPrototype };
+    static const WrapperTypeInfo typeInfo = { 0, 0, 0, 0, 0, 0, 0, WrapperTypeObjectPrototype };
     return &typeInfo;
 }
 
@@ -118,7 +118,7 @@ NPObject* npCreateV8ScriptObject(NPP npp, v8::Handle<v8::Object> object, DOMWind
 {
     // Check to see if this object is already wrapped.
     if (object->InternalFieldCount() == npObjectInternalFieldCount) {
-        WrapperTypeInfo* typeInfo = static_cast<WrapperTypeInfo*>(object->GetAlignedPointerFromInternalField(v8DOMWrapperTypeIndex));
+        const WrapperTypeInfo* typeInfo = static_cast<const WrapperTypeInfo*>(object->GetAlignedPointerFromInternalField(v8DOMWrapperTypeIndex));
         if (typeInfo == npObjectTypeInfo()) {
             NPObject* returnValue = v8ObjectToNPObject(object);
             _NPN_RetainObject(returnValue);
