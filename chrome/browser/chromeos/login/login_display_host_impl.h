@@ -88,6 +88,8 @@ class LoginDisplayHostImpl : public LoginDisplayHost,
   // WebUI at a time).
   static const int kShowLoginWebUIid;
 
+  views::Widget* login_window_for_test() { return login_window_; }
+
  protected:
   // content::NotificationObserver implementation:
   virtual void Observe(int type,

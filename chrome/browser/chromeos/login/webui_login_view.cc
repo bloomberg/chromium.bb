@@ -152,6 +152,7 @@ void WebUILoginView::Init() {
   Profile* signin_profile = ProfileHelper::GetSigninProfile();
   auth_extension_.reset(new ScopedGaiaAuthExtension(signin_profile));
   webui_login_ = new views::WebView(signin_profile);
+  webui_login_->set_allow_accelerators(true);
   AddChildView(webui_login_);
 
   WebContents* web_contents = webui_login_->GetWebContents();

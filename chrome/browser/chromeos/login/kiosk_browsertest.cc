@@ -24,6 +24,7 @@
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/mock_user_manager.h"
+#include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/webui_login_display.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/device_policy_cros_browser_test.h"
@@ -147,58 +148,6 @@ class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
  private:
   ConnectionType connection_type_;
   DISALLOW_COPY_AND_ASSIGN(FakeNetworkChangeNotifier);
-};
-
-// A waiter that blocks until the expected oobe screen is reached.
-class OobeScreenWaiter : public OobeUI::Observer {
- public:
-  explicit OobeScreenWaiter(OobeDisplay::Screen expected_screen)
-      : waiting_for_screen_(false),
-        expected_screen_(expected_screen) {
-  }
-
-  virtual ~OobeScreenWaiter() {
-    if (waiting_for_screen_) {
-      GetOobeUI()->RemoveObserver(this);
-    }
-  }
-
-  void Wait() {
-    if (GetOobeUI()->current_screen() == expected_screen_) {
-      return;
-    }
-
-    waiting_for_screen_ = true;
-    GetOobeUI()->AddObserver(this);
-
-    runner_ = new content::MessageLoopRunner;
-    runner_->Run();
-    ASSERT_EQ(expected_screen_, GetOobeUI()->current_screen());
-    ASSERT_FALSE(waiting_for_screen_);
-  }
-
-  // OobeUI::Observer implementation:
-  virtual void OnCurrentScreenChanged(
-        OobeDisplay::Screen current_screen,
-        OobeDisplay::Screen new_screen) OVERRIDE {
-    if (waiting_for_screen_ && new_screen == expected_screen_) {
-      runner_->Quit();
-      waiting_for_screen_ = false;
-      GetOobeUI()->RemoveObserver(this);
-    }
-  }
-
-  OobeUI* GetOobeUI() {
-    OobeUI* oobe_ui = static_cast<chromeos::LoginDisplayHostImpl*>(
-        chromeos::LoginDisplayHostImpl::default_host())->GetOobeUI();
-    CHECK(oobe_ui);
-    return oobe_ui;
-  }
-
- private:
-  bool waiting_for_screen_;
-  OobeDisplay::Screen expected_screen_;
-  scoped_refptr<content::MessageLoopRunner> runner_;
 };
 
 class KioskTest : public InProcessBrowserTest,
@@ -410,7 +359,7 @@ class KioskTest : public InProcessBrowserTest,
       disable_network_notifier_;
   scoped_ptr<FakeNetworkChangeNotifier> fake_network_notifier_;
   scoped_ptr<MockUserManager> mock_user_manager_;
- };
+};
 
 IN_PROC_BROWSER_TEST_P(KioskTest, InstallAndLaunchApp) {
   StartAppLaunchFromLoginScreen(true);
@@ -438,8 +387,8 @@ IN_PROC_BROWSER_TEST_P(KioskTest, LaunchAppNetworkDown) {
 
   // A network error screen should be shown after authenticating.
   OobeScreenWaiter error_screen_waiter(OobeDisplay::SCREEN_ERROR_MESSAGE);
-   static_cast<AppLaunchSigninScreen::Delegate*>(GetAppLaunchController())
-     ->OnOwnerSigninSuccess();
+  static_cast<AppLaunchSigninScreen::Delegate*>(GetAppLaunchController())
+      ->OnOwnerSigninSuccess();
   error_screen_waiter.Wait();
 
   ASSERT_TRUE(GetAppLaunchController()->showing_network_dialog());
