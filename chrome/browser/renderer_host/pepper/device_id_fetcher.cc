@@ -37,26 +37,19 @@ const char kDRMIdentifierFile[] = "Pepper DRM ID.0";
 
 const uint32_t kSaltLength = 32;
 
-void GetMachineIDAsync(const DeviceIDFetcher::IDCallback& callback) {
-  std::string result;
+void GetMachineIDAsync(
+    const base::Callback<void(const std::string&)>& callback) {
 #if defined(OS_WIN) && defined(ENABLE_RLZ)
+  std::string result;
   rlz_lib::GetMachineId(&result);
+  callback.Run(result);
 #elif defined(OS_CHROMEOS)
-  result = chromeos::SystemSaltGetter::Get()->GetSystemSaltSync();
-  if (result.empty()) {
-    // cryptohome must not be running; re-request after a delay.
-    const int64 kRequestSystemSaltDelayMs = 500;
-    base::MessageLoop::current()->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&GetMachineIDAsync, callback),
-        base::TimeDelta::FromMilliseconds(kRequestSystemSaltDelayMs));
-    return;
-  }
+  chromeos::SystemSaltGetter::Get()->GetSystemSalt(callback);
 #else
   // Not implemented for other platforms.
   NOTREACHED();
+  callback.Run(std::string());
 #endif
-  callback.Run(result, result.empty() ? PP_ERROR_FAILED : PP_OK);
 }
 
 }  // namespace
@@ -147,13 +140,12 @@ void DeviceIDFetcher::CheckPrefsOnUIThread() {
 }
 
 void DeviceIDFetcher::ComputeOnUIThread(const std::string& salt,
-                                        const std::string& machine_id,
-                                        int32_t result) {
+                                        const std::string& machine_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (result != PP_OK) {
+  if (machine_id.empty()) {
     LOG(ERROR) << "Empty machine id";
-    RunCallbackOnIOThread(std::string(), result);
+    RunCallbackOnIOThread(std::string(), PP_ERROR_FAILED);
     return;
   }
 

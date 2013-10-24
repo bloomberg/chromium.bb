@@ -55,8 +55,7 @@ class DeviceIDFetcher : public base::RefCountedThreadSafe<DeviceIDFetcher> {
 
   // Compute the device ID on the UI thread with the given salt and machine ID.
   void ComputeOnUIThread(const std::string& salt,
-                         const std::string& machine_id,
-                         int32_t result);
+                         const std::string& machine_id);
 
   // Legacy method used to get the device ID for ChromeOS.
   void LegacyComputeOnBlockingPool(const base::FilePath& profile_path,
