@@ -1255,7 +1255,8 @@ rpi_renderer_repaint_output(struct weston_output *base,
 		if (!wv->surface->touched) {
 			wv->surface->touched = 1;
 
-			if (view->surface->need_swap)
+			if (view->surface->buffer_type == BUFFER_TYPE_EGL ||
+			    view->surface->need_swap)
 				rpir_surface_swap_pointers(view->surface);
 		}
 
