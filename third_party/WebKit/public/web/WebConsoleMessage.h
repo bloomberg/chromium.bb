@@ -39,6 +39,7 @@ struct WebConsoleMessage {
     enum Level {
         LevelDebug = 4,
         LevelLog = 1,
+        LevelInfo = 5,
         LevelWarning = 2,
         LevelError = 3,
     };

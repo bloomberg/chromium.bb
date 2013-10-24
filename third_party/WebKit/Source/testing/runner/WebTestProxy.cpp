@@ -1325,6 +1325,9 @@ void WebTestProxyBase::didAddMessageToConsole(const WebConsoleMessage& message, 
     case WebConsoleMessage::LevelLog:
         level = "MESSAGE";
         break;
+    case WebConsoleMessage::LevelInfo:
+        level = "INFO";
+        break;
     case WebConsoleMessage::LevelWarning:
         level = "WARNING";
         break;
