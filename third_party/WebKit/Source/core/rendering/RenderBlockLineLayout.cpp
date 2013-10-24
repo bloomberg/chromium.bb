@@ -451,11 +451,6 @@ static inline void ensureCharacterGetsLineBox(LineMidpointState& lineMidpointSta
     stopIgnoringSpaces(lineMidpointState, InlineIterator(0, textParagraphSeparator.m_obj, textParagraphSeparator.m_pos));
 }
 
-void RenderBlockFlow::appendRunsForObject(BidiRunList<BidiRun>& runs, int start, int end, RenderObject* obj, InlineBidiResolver& resolver)
-{
-    adjustMidpointsAndAppendRunsForObjectIfNeeded(obj, start, end, resolver, AppendingRunsForObject, &runs);
-}
-
 static inline InlineBox* createInlineBoxForRenderer(RenderObject* obj, bool isRootLineBox, bool isOnlyRun = false)
 {
     if (isRootLineBox)

@@ -305,9 +305,6 @@ protected:
 // RenderBlockLineLayout. They should be moved to the proper header once the
 // line layout code is separated from RenderBlock and RenderBlockFlow.
 // START METHODS DEFINED IN RenderBlockLineLayout
-public:
-    static void appendRunsForObject(BidiRunList<BidiRun>&, int start, int end, RenderObject*, InlineBidiResolver&);
-
 private:
     InlineFlowBox* createLineBoxes(RenderObject*, const LineInfo&, InlineBox* childBox, bool startsNewSegment);
     RootInlineBox* constructLine(BidiRunList<BidiRun>&, const LineInfo&);
