@@ -174,8 +174,6 @@ webkit.org/b/109056 accessibility/html-html-element-is-ignored.html [ Skip ]
 # -----------------------------------------------------------------
 
 # The implementation of CSS Animations on the Web Animations model is still in progress
-# These can't be rebaselined because they're reftests.
-crbug.com/258896 virtual/web-animations-css/animations/opacity-transform-animation.html [ ImageOnlyFailure ]
 # These can't be rebaselined because they're crashes.
 crbug.com/258896 virtual/web-animations-css/animations/lineheight-animation.html [ Crash ]
 # These can't be rebaselined because the failure involves flaky output.
@@ -767,6 +765,9 @@ crbug.com/305853 [ SnowLeopard ] svg/as-object/embedded-svg-immediate-offsetWidt
 crbug.com/306595 svg/W3C-SVG-1.1-SE/struct-dom-11-f.svg [ Pass Timeout ]
 
 crbug.com/308952 [ Win ] inspector/editor/text-editor-reveal-line.html [ Failure ]
+
+# This can't be rebaselined because it's a reftest.
+crbug.com/999999 animations/opacity-transform-animation.html [ ImageOnlyFailure ]
 
 crbug.com/309369 perf/accessibility-title-ui-element.html [ Pass Timeout ]
 crbug.com/309370 [ Mac ] fast/css/font-face-html-as-svg.html [ Timeout ]

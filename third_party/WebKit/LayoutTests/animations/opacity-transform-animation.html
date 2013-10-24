@@ -2,36 +2,31 @@
 <html>
 <head>
   <style type="text/css" media="screen">
-    #box {
+    .target {
         position: absolute;
+        top: 100px;
         left: 0;
-        top: 0;
         height: 100px;
         width: 100px;
+    }
+    #box {
         background-color: green;
         -webkit-animation-name: move;
         -webkit-animation-duration: 1s;
         -webkit-animation-timing-function: linear;
         -webkit-animation-iteration-count: 1;
     }
-
     @-webkit-keyframes move {
         from {
             -webkit-transform: translateX(0) scale(1);
-            opacity: 0.7;
+            opacity: 0.0;
         }
         to {
             -webkit-transform: translateX(400px) scale(1);
             opacity: 1.0;
         }
     }
-    
     #indicator {
-        position: absolute;
-        left: 0;
-        top: 0;
-        height: 100px;
-        width: 100px;
         left: 200px;
         background-color: red;
     }
@@ -41,7 +36,7 @@
 
     const expectedValues = [
       // [time, element-id, property, expected-value, tolerance]
-      [0.5, "box", "webkitTransform.4", 200, 2],
+      [0.5, "box", "webkitTransform.4", 200, 5],
     ];
 
     var disablePauseAnimationAPI = false;
@@ -53,8 +48,8 @@
 <body>
 
 <!-- In the pixel results, the green square should overlay the red square -->
-<div id="indicator"></div>
-<div id="box"></div>
+<div class="target" id="indicator"></div>
+<div class="target" id="box"></div>
 <div id="result"></div>
 
 </body>
