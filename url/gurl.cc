@@ -422,6 +422,10 @@ std::string GURL::HostNoBrackets() const {
   return ComponentString(h);
 }
 
+std::string GURL::GetContent() const {
+  return is_valid_ ? ComponentString(parsed_.GetContent()) : std::string();
+}
+
 bool GURL::HostIsIPAddress() const {
   if (!is_valid_ || spec_.empty())
      return false;

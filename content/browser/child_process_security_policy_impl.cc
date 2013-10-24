@@ -391,7 +391,7 @@ void ChildProcessSecurityPolicyImpl::GrantRequestURL(
       //   view-source:http://www.google.com/a
       // In order to request these URLs, the child_id needs to be able to
       // request the embedded URL.
-      GrantRequestURL(child_id, GURL(url.path()));
+      GrantRequestURL(child_id, GURL(url.GetContent()));
     }
 
     return;  // Can't grant the capability to request pseudo schemes.
@@ -572,7 +572,7 @@ bool ChildProcessSecurityPolicyImpl::CanRequestURL(
     if (url.SchemeIs(kViewSourceScheme)) {
       // A view-source URL is allowed if the child process is permitted to
       // request the embedded URL. Careful to avoid pointless recursion.
-      GURL child_url(url.path());
+      GURL child_url(url.GetContent());
       if (child_url.SchemeIs(kViewSourceScheme) &&
           url.SchemeIs(kViewSourceScheme))
           return false;

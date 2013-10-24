@@ -227,6 +227,11 @@ class URL_EXPORT GURL {
         (SchemeIsFileSystem() && inner_url() && inner_url()->SchemeIsSecure());
   }
 
+  // The "content" of the URL is everything after the scheme (skipping the
+  // scheme delimiting colon). It is an error to get the origin of an invalid
+  // URL. The result will be an empty string.
+  std::string GetContent() const;
+
   // Returns true if the hostname is an IP address. Note: this function isn't
   // as cheap as a simple getter because it re-parses the hostname to verify.
   // This currently identifies only IPv4 addresses (bug 822685).

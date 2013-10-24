@@ -1009,7 +1009,7 @@ bool IsValidUrlScheme(const GURL& url, bool is_privileged) {
   // Additional checking for view-source. Allow only http and https
   // URLs in view source.
   if (url.SchemeIs(content::kViewSourceScheme)) {
-    GURL sub_url(url.path());
+    GURL sub_url(url.GetContent());
     if (sub_url.SchemeIs(content::kHttpScheme) ||
         sub_url.SchemeIs(content::kHttpsScheme))
       return true;

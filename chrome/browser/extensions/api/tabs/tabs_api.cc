@@ -1345,7 +1345,7 @@ bool TabsUpdateFunction::UpdateURL(const std::string &url_string,
         script_executor()->ExecuteScript(
             extension_id(),
             ScriptExecutor::JAVASCRIPT,
-            url.path(),
+            url.GetContent(),
             ScriptExecutor::TOP_FRAME,
             UserScript::DOCUMENT_IDLE,
             ScriptExecutor::MAIN_WORLD,

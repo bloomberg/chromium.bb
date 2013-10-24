@@ -159,10 +159,11 @@ struct URL_EXPORT Parsed {
   // Port number.
   Component port;
 
-  // Path, this is everything following the host name. Length will be -1 if
-  // unspecified. This includes the preceeding slash, so the path on
-  // http://www.google.com/asdf" is "/asdf". As a result, it is impossible to
-  // have a 0 length path, it will be -1 in cases like "http://host?foo".
+  // Path, this is everything following the host name, stopping at the query of
+  // ref delimiter (if any). Length will be -1 if unspecified. This includes
+  // the preceeding slash, so the path on http://www.google.com/asdf" is
+  // "/asdf". As a result, it is impossible to have a 0 length path, it will
+  // be -1 in cases like "http://host?foo".
   // Note that we treat backslashes the same as slashes.
   Component path;
 
@@ -176,6 +177,12 @@ struct URL_EXPORT Parsed {
   // Length will be -1 if there is no hash sign, or 0 if there is one but
   // nothing follows it.
   Component ref;
+
+  // The URL spec from the character after the scheme: until the end of the
+  // URL, regardless of the scheme. This is mostly useful for 'opaque' non-
+  // hierarchical schemes like data: and javascript: as a convient way to get
+  // the string with the scheme stripped off.
+  Component GetContent() const;
 
   // This is used for nested URL types, currently only filesystem.  If you
   // parse a filesystem URL, the resulting Parsed will have a nested

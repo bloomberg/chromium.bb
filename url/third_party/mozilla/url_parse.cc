@@ -792,6 +792,15 @@ int Parsed::CountCharactersBefore(ComponentType type,
   return cur;
 }
 
+Component Parsed::GetContent() const {
+  const int begin = CountCharactersBefore(USERNAME, false);
+  const int len = Length() - begin;
+  // For compatability with the standard URL parser, we treat no content as
+  // -1, rather than having a length of 0 (we normally wouldn't care so
+  // much for these non-standard URLs).
+  return len ? Component(begin, len) : Component();
+}
+
 bool ExtractScheme(const char* url, int url_len, Component* scheme) {
   return DoExtractScheme(url, url_len, scheme);
 }

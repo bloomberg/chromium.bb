@@ -113,11 +113,11 @@ void GaiaWebAuthFlow::OnAuthFlowURLChange(const GURL& url) {
   // interpreted as a path, including the fragment.
 
   if (url.scheme() == redirect_scheme_ && !url.has_host() && !url.has_port() &&
-      StartsWithASCII(url.path(), redirect_path_prefix_, true)) {
+      StartsWithASCII(url.GetContent(), redirect_path_prefix_, true)) {
     web_flow_.release()->DetachDelegateAndDelete();
 
-    std::string fragment =
-        url.path().substr(redirect_path_prefix_.length(), std::string::npos);
+    std::string fragment = url.GetContent().substr(
+        redirect_path_prefix_.length(), std::string::npos);
     std::vector<std::pair<std::string, std::string> > pairs;
     base::SplitStringIntoKeyValuePairs(fragment, '=', '&', &pairs);
     std::string access_token;

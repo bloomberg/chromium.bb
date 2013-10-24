@@ -19,7 +19,7 @@ namespace content {
 static bool HandleViewSource(GURL* url, BrowserContext* browser_context) {
   if (url->SchemeIs(kViewSourceScheme)) {
     // Load the inner URL instead.
-    *url = GURL(url->path());
+    *url = GURL(url->GetContent());
 
     // Bug 26129: limit view-source to view the content and not any
     // other kind of 'active' url scheme like 'javascript' or 'data'.

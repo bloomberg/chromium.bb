@@ -198,7 +198,7 @@ base::FilePath DriveURLToFilePath(const GURL& url) {
   if (!url.is_valid() || url.scheme() != chrome::kDriveScheme)
     return base::FilePath();
   std::string path_string = net::UnescapeURLComponent(
-      url.path(), net::UnescapeRule::NORMAL);
+      url.GetContent(), net::UnescapeRule::NORMAL);
   return base::FilePath::FromUTF8Unsafe(path_string);
 }
 
