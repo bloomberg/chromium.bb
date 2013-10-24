@@ -207,6 +207,10 @@ class MEDIA_EXPORT MediaSourcePlayer : public MediaPlayerAndroid,
   bool reconfig_audio_decoder_;
   bool reconfig_video_decoder_;
 
+  // Track the most recent preroll target. Decoder re-creation needs this to
+  // resume any in-progress preroll.
+  base::TimeDelta preroll_timestamp_;
+
   // A cancelable task that is posted when the audio decoder starts requesting
   // new data. This callback runs if no data arrives before the timeout period
   // elapses.

@@ -27,6 +27,9 @@ class MediaDecoderJob {
 
   // Callback when a decoder job finishes its work. Args: whether decode
   // finished successfully, presentation time, audio output bytes.
+  // If the presentation time is equal to kNoTimestamp(), the decoder job
+  // skipped rendering of the decoded output and the callback target should
+  // update its clock to avoid introducing extra delays to the next frame.
   typedef base::Callback<void(MediaCodecStatus, const base::TimeDelta&,
                               size_t)> DecoderCallback;
   // Callback when a decoder job finishes releasing the output buffer.
@@ -66,9 +69,10 @@ class MediaDecoderJob {
   // Flush the decoder.
   void Flush();
 
-  void set_preroll_timestamp(const base::TimeDelta& preroll_timestamp) {
-    preroll_timestamp_ = preroll_timestamp;
-  }
+  // Enter prerolling state. The job must not currently be decoding.
+  void BeginPrerolling(const base::TimeDelta& preroll_timestamp);
+
+  bool prerolling() const { return prerolling_; }
 
   bool is_decoding() const { return !decode_cb_.is_null(); }
 
@@ -120,9 +124,8 @@ class MediaDecoderJob {
                       const DecoderCallback& callback);
 
   // Called on the UI thread to indicate that one decode cycle has completed.
-  // If the |presentation_timestamp| is equal to kNoTimestamp(),
-  // the caller should ignore the output of this frame and update its clock to
-  // avoid introducing extra delays to the next frame.
+  // Completes any pending job destruction or any pending decode stop. If
+  // destruction was not pending, passes its arguments to |decode_cb_|.
   void OnDecodeCompleted(MediaCodecStatus status,
                          const base::TimeDelta& presentation_timestamp,
                          size_t audio_output_bytes);
@@ -148,6 +151,13 @@ class MediaDecoderJob {
   // TODO(qinmin): Comparing access unit's timestamp with |preroll_timestamp_|
   // is not very accurate.
   base::TimeDelta preroll_timestamp_;
+
+  // Indicates prerolling state. If true, this job has not yet decoded output
+  // that it will render, since the most recent of job construction or
+  // BeginPrerolling(). If false, |preroll_timestamp_| has been reached.
+  // TODO(qinmin): Comparing access unit's timestamp with |preroll_timestamp_|
+  // is not very accurate.
+  bool prerolling_;
 
   // Weak pointer passed to media decoder jobs for callbacks. It is bounded to
   // the decoder thread.

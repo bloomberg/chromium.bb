@@ -28,6 +28,7 @@ MediaDecoderJob::MediaDecoderJob(
       media_codec_bridge_(media_codec_bridge),
       needs_flush_(false),
       input_eos_encountered_(false),
+      prerolling_(true),
       weak_this_(this),
       request_data_cb_(request_data_cb),
       access_unit_index_(0),
@@ -119,6 +120,16 @@ void MediaDecoderJob::Flush() {
   input_eos_encountered_ = false;
   access_unit_index_ = 0;
   on_data_received_cb_.Reset();
+}
+
+void MediaDecoderJob::BeginPrerolling(
+    const base::TimeDelta& preroll_timestamp) {
+  DVLOG(1) << __FUNCTION__ << "(" << preroll_timestamp.InSecondsF() << ")";
+  DCHECK(ui_loop_->BelongsToCurrentThread());
+  DCHECK(!is_decoding());
+
+  preroll_timestamp_ = preroll_timestamp;
+  prerolling_ = true;
 }
 
 void MediaDecoderJob::Release() {
@@ -282,11 +293,9 @@ void MediaDecoderJob::DecodeInternal(
       &output_eos_encountered);
 
   if (status != MEDIA_CODEC_OK) {
-    if (status == MEDIA_CODEC_OUTPUT_BUFFERS_CHANGED) {
-        if (media_codec_bridge_->GetOutputBuffers())
-          status = MEDIA_CODEC_OK;
-        else
-          status = MEDIA_CODEC_ERROR;
+    if (status == MEDIA_CODEC_OUTPUT_BUFFERS_CHANGED &&
+        !media_codec_bridge_->GetOutputBuffers()) {
+      status = MEDIA_CODEC_ERROR;
     }
     callback.Run(status, kNoTimestamp(), 0);
     return;
@@ -299,9 +308,12 @@ void MediaDecoderJob::DecodeInternal(
     status = MEDIA_CODEC_INPUT_END_OF_STREAM;
 
   // Check whether we need to render the output.
-  // TODO(qinmin): comparing |unit.timestamp| with |preroll_timestamp_| is not
-  // accurate due to data reordering. Need to use the |presentation_timestamp|
-  // for video, and use |size| to calculate the timestamp for audio.
+  // TODO(qinmin): comparing most recently queued input's |unit.timestamp| with
+  // |preroll_timestamp_| is not accurate due to data reordering and possible
+  // input queueing without immediate dequeue when |input_status| !=
+  // |MEDIA_CODEC_OK|. Need to use the |presentation_timestamp| for video, and
+  // use |size| to calculate the timestamp for audio. See
+  // http://crbug.com/310823 and b/11356652.
   bool render_output  = unit.timestamp >= preroll_timestamp_ &&
       (status != MEDIA_CODEC_OUTPUT_END_OF_STREAM || size != 0u);
   base::TimeDelta time_to_render;
@@ -350,6 +362,11 @@ void MediaDecoderJob::OnDecodeCompleted(
   }
 
   DCHECK(!decode_cb_.is_null());
+
+  // If output was queued for rendering, then we have completed prerolling.
+  if (presentation_timestamp != kNoTimestamp())
+    prerolling_ = false;
+
   switch (status) {
     case MEDIA_CODEC_OK:
     case MEDIA_CODEC_DEQUEUE_OUTPUT_AGAIN_LATER:

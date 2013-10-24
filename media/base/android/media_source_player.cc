@@ -394,10 +394,11 @@ void MediaSourcePlayer::OnDemuxerSeekDone() {
   // to preroll media decoder jobs. Currently |start_presentation_timestamp_|
   // is calculated from decoder output, while preroll relies on the access
   // unit's timestamp. There are some differences between the two.
+  preroll_timestamp_ = current_time;
   if (audio_decoder_job_)
-    audio_decoder_job_->set_preroll_timestamp(current_time);
+    audio_decoder_job_->BeginPrerolling(preroll_timestamp_);
   if (video_decoder_job_)
-    video_decoder_job_->set_preroll_timestamp(current_time);
+    video_decoder_job_->BeginPrerolling(preroll_timestamp_);
   ProcessPendingEvents();
 }
 
@@ -658,6 +659,7 @@ void MediaSourcePlayer::ConfigureAudioDecoderJob() {
 
   if (audio_decoder_job_) {
     SetVolumeInternal();
+    audio_decoder_job_->BeginPrerolling(preroll_timestamp_);
     reconfig_audio_decoder_ =  false;
   }
 }
@@ -692,8 +694,10 @@ void MediaSourcePlayer::ConfigureVideoDecoderJob() {
                               base::Bind(&DemuxerAndroid::RequestDemuxerData,
                                          base::Unretained(demuxer_.get()),
                                          DemuxerStream::VIDEO)));
-  if (video_decoder_job_)
+  if (video_decoder_job_) {
+    video_decoder_job_->BeginPrerolling(preroll_timestamp_);
     reconfig_video_decoder_ = false;
+  }
 
   // Inform the fullscreen view the player is ready.
   // TODO(qinmin): refactor MediaPlayerBridge so that we have a better way
