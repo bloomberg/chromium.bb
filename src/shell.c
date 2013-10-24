@@ -4651,7 +4651,7 @@ create_shell_output(struct desktop_shell *shell,
 	shell_output->destroy_listener.notify = handle_output_destroy;
 	wl_signal_add(&output->destroy_signal,
 		      &shell_output->destroy_listener);
-	wl_list_insert(shell->output_list.prev, &output->link);
+	wl_list_insert(shell->output_list.prev, &shell_output->link);
 }
 
 static void
