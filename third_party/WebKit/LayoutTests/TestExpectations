@@ -195,6 +195,7 @@ crbug.com/258896 virtual/web-animations-css/animations/transition-and-animation-
 crbug.com/258896 virtual/web-animations-css/animations/transition-and-animation-2.html [ Failure ]
 crbug.com/258896 virtual/web-animations-css/animations/transition-and-animation-3.html [ Failure ]
 crbug.com/303430 virtual/web-animations-css/transitions/change-values-during-transition.html [ Failure ]
+crbug.com/303430 virtual/web-animations-css/transitions/extra-transition.html [ Failure ]
 # This test fails due to -webkit-mask-box-image not being implemented as a shorthand property
 crbug.com/309962 virtual/web-animations-css/animations/cross-fade-webkit-mask-box-image.html [ ImageOnlyFailure ]
 # These can't be rebaselined because they timeout
