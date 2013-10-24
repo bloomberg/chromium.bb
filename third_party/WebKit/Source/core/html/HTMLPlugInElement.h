@@ -108,6 +108,8 @@ protected:
     RenderEmbeddedObject* renderEmbeddedObject() const;
     bool allowedToLoadFrameURL(const String& url);
     bool wouldLoadAsNetscapePlugin(const String& url, const String& serviceType);
+    bool requestObject(const String& url, const String& mimeType, const Vector<String>& paramNames, const Vector<String>& paramValues);
+    bool shouldUsePlugin(const KURL&, const String& mimeType, bool hasFallback, bool& useFallback);
 
     String m_serviceType;
     String m_url;
@@ -133,6 +135,8 @@ private:
     virtual bool isPluginElement() const;
     static void updateWidgetCallback(Node*);
     void updateWidgetIfNecessary();
+    bool loadPlugin(const KURL&, const String& mimeType, const Vector<String>& paramNames, const Vector<String>& paramValues, bool useFallback);
+    bool pluginIsLoadable(const KURL&, const String& mimeType);
 
     mutable RefPtr<SharedPersistent<v8::Object> > m_pluginWrapper;
     NPObject* m_NPObject;

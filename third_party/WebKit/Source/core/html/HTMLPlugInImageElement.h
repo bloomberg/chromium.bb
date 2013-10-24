@@ -23,15 +23,7 @@
 
 #include "core/html/HTMLPlugInElement.h"
 
-#include "core/rendering/style/RenderStyle.h"
-#include "wtf/OwnPtr.h"
-
 namespace WebCore {
-
-class FrameLoader;
-class Image;
-class MouseEvent;
-class Widget;
 
 // Base class for HTMLObjectElement and HTMLEmbedElement
 class HTMLPlugInImageElement : public HTMLPlugInElement {
@@ -41,16 +33,9 @@ public:
 protected:
     HTMLPlugInImageElement(const QualifiedName& tagName, Document&, bool createdByParser, PreferPlugInsForImagesOption);
 
-    bool requestObject(const String& url, const String& mimeType, const Vector<String>& paramNames, const Vector<String>& paramValues);
-    bool shouldUsePlugin(const KURL&, const String& mimeType, bool hasFallback, bool& useFallback);
-
 private:
-    bool loadPlugin(const KURL&, const String& mimeType, const Vector<String>& paramNames, const Vector<String>& paramValues, bool useFallback);
-    bool pluginIsLoadable(const KURL&, const String& mimeType);
-
     virtual bool isPlugInImageElement() const OVERRIDE { return true; }
 
-    bool m_createdDuringUserGesture;
 };
 
 inline HTMLPlugInImageElement* toHTMLPlugInImageElement(Node* node)
