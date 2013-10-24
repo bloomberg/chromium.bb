@@ -10,7 +10,7 @@
 #include "ui/aura/window.h"
 
 namespace aura {
-class RootWindow;
+class Window;
 namespace client {
 
 // An interface implemented by an object which handles nested dispatchers.
@@ -21,9 +21,9 @@ class AURA_EXPORT DispatcherClient {
                                  bool nestable_tasks_allowed) = 0;
 };
 
-AURA_EXPORT void SetDispatcherClient(RootWindow* root_window,
+AURA_EXPORT void SetDispatcherClient(Window* root_window,
                                      DispatcherClient* client);
-AURA_EXPORT DispatcherClient* GetDispatcherClient(RootWindow* root_window);
+AURA_EXPORT DispatcherClient* GetDispatcherClient(Window* root_window);
 
 }  // namespace client
 }  // namespace aura

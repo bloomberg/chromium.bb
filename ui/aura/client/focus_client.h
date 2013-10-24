@@ -12,9 +12,7 @@ class Event;
 }
 
 namespace aura {
-class RootWindow;
 class Window;
-
 namespace client {
 class FocusChangeObserver;
 
@@ -37,8 +35,8 @@ class AURA_EXPORT FocusClient {
   virtual Window* GetFocusedWindow() = 0;
 };
 
-// Sets/Gets the focus client on the RootWindow.
-AURA_EXPORT void SetFocusClient(RootWindow* root_window, FocusClient* client);
+// Sets/Gets the focus client on the root Window.
+AURA_EXPORT void SetFocusClient(Window* root_window, FocusClient* client);
 AURA_EXPORT FocusClient* GetFocusClient(Window* window);
 AURA_EXPORT FocusClient* GetFocusClient(const Window* window);
 

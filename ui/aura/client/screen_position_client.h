@@ -14,15 +14,11 @@ class Rect;
 }
 
 namespace aura {
-
-class Event;
-class RootWindow;
 class Window;
-
 namespace client {
 
-// An interface implemented by an object that changes coordinates on a
-// RootWindow into system coordinates.
+// An interface implemented by an object that changes coordinates within a root
+// Window into system coordinates.
 class AURA_EXPORT ScreenPositionClient {
  public:
   // Converts the |screen_point| from a given |window|'s coordinate space
@@ -36,7 +32,7 @@ class AURA_EXPORT ScreenPositionClient {
   // A typical example of using this function instead of ConvertPointToScreen is
   // when X's native input is captured by a drag operation.
   // See the comments for ash::GetRootWindowRelativeToWindow for details.
-  virtual void ConvertHostPointToScreen(aura::RootWindow* root_window,
+  virtual void ConvertHostPointToScreen(Window* root_window,
                                         gfx::Point* point) = 0;
   // Sets the bounds of the window. The implementation is responsible
   // for finding out and translating the right coordinates for the |window|.
@@ -47,10 +43,10 @@ class AURA_EXPORT ScreenPositionClient {
 };
 
 // Sets/Gets the activation client on the Window.
-AURA_EXPORT void SetScreenPositionClient(RootWindow* window,
+AURA_EXPORT void SetScreenPositionClient(Window* root_window,
                                          ScreenPositionClient* client);
 AURA_EXPORT ScreenPositionClient* GetScreenPositionClient(
-    const RootWindow* window);
+    const Window* root_window);
 
 }  // namespace clients
 }  // namespace aura

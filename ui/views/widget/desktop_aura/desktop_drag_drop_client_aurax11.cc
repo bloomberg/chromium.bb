@@ -366,7 +366,7 @@ bool DesktopDragDropClientAuraX11::X11DragContext::Dispatch(
 ///////////////////////////////////////////////////////////////////////////////
 
 DesktopDragDropClientAuraX11::DesktopDragDropClientAuraX11(
-    aura::RootWindow* root_window,
+    aura::Window* root_window,
     views::DesktopNativeCursorManager* cursor_manager,
     Display* xdisplay,
     ::Window xwindow)
@@ -562,7 +562,7 @@ void DesktopDragDropClientAuraX11::OnSelectionNotify(
 
 int DesktopDragDropClientAuraX11::StartDragAndDrop(
     const ui::OSExchangeData& data,
-    aura::RootWindow* root_window,
+    aura::Window* root_window,
     aura::Window* source_window,
     const gfx::Point& root_location,
     int operation,
@@ -681,7 +681,7 @@ void DesktopDragDropClientAuraX11::DragTranslate(
     scoped_ptr<ui::DropTargetEvent>* event,
     aura::client::DragDropDelegate** delegate) {
   gfx::Point root_location = root_window_location;
-  root_window_->ConvertPointFromNativeScreen(&root_location);
+  root_window_->GetRootWindow()->ConvertPointFromNativeScreen(&root_location);
   aura::Window* target_window =
       root_window_->GetEventHandlerForPoint(root_location);
   bool target_window_changed = false;

@@ -15,11 +15,14 @@ namespace client {
 DEFINE_LOCAL_WINDOW_PROPERTY_KEY(
     DragDropClient*, kRootWindowDragDropClientKey, NULL);
 
-void SetDragDropClient(RootWindow* root_window, DragDropClient* client) {
+void SetDragDropClient(Window* root_window, DragDropClient* client) {
+  DCHECK_EQ(root_window->GetRootWindow(), root_window);
   root_window->SetProperty(kRootWindowDragDropClientKey, client);
 }
 
-DragDropClient* GetDragDropClient(RootWindow* root_window) {
+DragDropClient* GetDragDropClient(Window* root_window) {
+  if (root_window)
+    DCHECK_EQ(root_window->GetRootWindow(), root_window);
   return root_window ?
       root_window->GetProperty(kRootWindowDragDropClientKey) : NULL;
 }

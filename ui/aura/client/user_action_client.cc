@@ -14,11 +14,14 @@ DEFINE_WINDOW_PROPERTY_KEY(UserActionClient*,
                            kRootWindowUserActionClientKey,
                            NULL);
 
-void SetUserActionClient(RootWindow* root_window, UserActionClient* client) {
+void SetUserActionClient(Window* root_window, UserActionClient* client) {
+  DCHECK_EQ(root_window->GetRootWindow(), root_window);
   root_window->SetProperty(kRootWindowUserActionClientKey, client);
 }
 
-UserActionClient* GetUserActionClient(RootWindow* root_window) {
+UserActionClient* GetUserActionClient(Window* root_window) {
+  if (root_window)
+    DCHECK_EQ(root_window->GetRootWindow(), root_window);
   return root_window ?
       root_window->GetProperty(kRootWindowUserActionClientKey) : NULL;
 }

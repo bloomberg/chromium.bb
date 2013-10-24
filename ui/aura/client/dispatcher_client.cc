@@ -14,11 +14,14 @@ namespace client {
 
 DEFINE_LOCAL_WINDOW_PROPERTY_KEY(DispatcherClient*, kDispatcherClientKey, NULL);
 
-void SetDispatcherClient(RootWindow* root_window, DispatcherClient* client) {
+void SetDispatcherClient(Window* root_window, DispatcherClient* client) {
+  DCHECK_EQ(root_window->GetRootWindow(), root_window);
   root_window->SetProperty(kDispatcherClientKey, client);
 }
 
-DispatcherClient* GetDispatcherClient(RootWindow* root_window) {
+DispatcherClient* GetDispatcherClient(Window* root_window) {
+  if (root_window)
+    DCHECK_EQ(root_window->GetRootWindow(), root_window);
   return root_window ? root_window->GetProperty(kDispatcherClientKey) : NULL;
 }
 

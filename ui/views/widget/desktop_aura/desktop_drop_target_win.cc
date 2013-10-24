@@ -20,7 +20,7 @@ using ui::OSExchangeDataProviderWin;
 
 namespace views {
 
-DesktopDropTargetWin::DesktopDropTargetWin(aura::RootWindow* root_window,
+DesktopDropTargetWin::DesktopDropTargetWin(aura::Window* root_window,
                                            HWND window)
     : ui::DropTargetWin(window),
       root_window_(root_window),
@@ -96,7 +96,7 @@ void DesktopDropTargetWin::Translate(
     DragDropDelegate** delegate) {
   gfx::Point location(position.x, position.y);
   gfx::Point root_location = location;
-  root_window_->ConvertPointFromNativeScreen(&root_location);
+  root_window_->GetRootWindow()->ConvertPointFromNativeScreen(&root_location);
   aura::Window* target_window =
       root_window_->GetEventHandlerForPoint(root_location);
   bool target_window_changed = false;

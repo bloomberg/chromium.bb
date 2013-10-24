@@ -8,7 +8,6 @@
 #include "ui/aura/aura_export.h"
 
 namespace aura {
-class RootWindow;
 class Window;
 
 namespace client {
@@ -29,10 +28,10 @@ class AURA_EXPORT CaptureClient {
   virtual ~CaptureClient() {}
 };
 
-// Sets/Gets the capture client on the RootWindow.
-AURA_EXPORT void SetCaptureClient(RootWindow* root_window,
+// Sets/Gets the capture client on the root Window.
+AURA_EXPORT void SetCaptureClient(Window* root_window,
                                   CaptureClient* client);
-AURA_EXPORT CaptureClient* GetCaptureClient(RootWindow* root_window);
+AURA_EXPORT CaptureClient* GetCaptureClient(Window* root_window);
 
 // A utility function to get the current capture window. Returns NULL
 // if the window doesn't have a root window, or there is no capture window.

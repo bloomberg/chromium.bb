@@ -21,7 +21,7 @@ class ScreenPositionController : public aura::client::ScreenPositionClient {
                                     gfx::Point* point) OVERRIDE;
   virtual void ConvertPointFromScreen(const aura::Window* window,
                                       gfx::Point* point) OVERRIDE;
-  virtual void ConvertHostPointToScreen(aura::RootWindow* window,
+  virtual void ConvertHostPointToScreen(aura::Window* window,
                                         gfx::Point* point) OVERRIDE;
   virtual void SetBounds(aura::Window* window,
                          const gfx::Rect& bounds,

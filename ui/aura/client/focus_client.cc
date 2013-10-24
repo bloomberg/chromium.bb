@@ -15,7 +15,8 @@ namespace client {
 
 DEFINE_WINDOW_PROPERTY_KEY(FocusClient*, kRootWindowFocusClientKey, NULL);
 
-void SetFocusClient(RootWindow* root_window, FocusClient* client) {
+void SetFocusClient(Window* root_window, FocusClient* client) {
+  DCHECK_EQ(root_window->GetRootWindow(), root_window);
   root_window->SetProperty(kRootWindowFocusClientKey, client);
 }
 

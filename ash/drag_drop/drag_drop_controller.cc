@@ -33,8 +33,6 @@
 namespace ash {
 namespace internal {
 
-using aura::RootWindow;
-
 namespace {
 // The duration of the drag cancel animation in millisecond.
 const int kCancelAnimationDuration = 250;
@@ -160,7 +158,7 @@ DragDropController::~DragDropController() {
 
 int DragDropController::StartDragAndDrop(
     const ui::OSExchangeData& data,
-    aura::RootWindow* root_window,
+    aura::Window* root_window,
     aura::Window* source_window,
     const gfx::Point& root_location,
     int operation,

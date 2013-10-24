@@ -12,6 +12,10 @@
 #include "ui/aura/client/capture_client.h"
 #include "ui/views/views_export.h"
 
+namespace aura {
+class RootWindow;
+}
+
 namespace views {
 
 // Desktop implementation of CaptureClient. There is one CaptureClient per

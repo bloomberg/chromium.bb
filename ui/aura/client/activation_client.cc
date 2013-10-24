@@ -17,11 +17,11 @@ DEFINE_WINDOW_PROPERTY_KEY(
     ActivationClient*, kRootWindowActivationClientKey, NULL);
 DEFINE_WINDOW_PROPERTY_KEY(bool, kHideOnDeactivate, false);
 
-void SetActivationClient(RootWindow* root_window, ActivationClient* client) {
+void SetActivationClient(Window* root_window, ActivationClient* client) {
   root_window->SetProperty(kRootWindowActivationClientKey, client);
 }
 
-ActivationClient* GetActivationClient(RootWindow* root_window) {
+ActivationClient* GetActivationClient(Window* root_window) {
   return root_window ?
       root_window->GetProperty(kRootWindowActivationClientKey) : NULL;
 }

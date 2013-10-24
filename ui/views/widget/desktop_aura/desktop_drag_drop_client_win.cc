@@ -15,7 +15,7 @@
 namespace views {
 
 DesktopDragDropClientWin::DesktopDragDropClientWin(
-    aura::RootWindow* root_window,
+    aura::Window* root_window,
     HWND window)
     : drag_drop_in_progress_(false),
       drag_operation_(0) {
@@ -27,7 +27,7 @@ DesktopDragDropClientWin::~DesktopDragDropClientWin() {
 
 int DesktopDragDropClientWin::StartDragAndDrop(
     const ui::OSExchangeData& data,
-    aura::RootWindow* root_window,
+    aura::Window* root_window,
     aura::Window* source_window,
     const gfx::Point& root_location,
     int operation,

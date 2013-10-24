@@ -17,11 +17,14 @@ DEFINE_LOCAL_WINDOW_PROPERTY_KEY(
     TooltipClient*, kRootWindowTooltipClientKey, NULL);
 DEFINE_LOCAL_WINDOW_PROPERTY_KEY(base::string16*, kTooltipTextKey, NULL);
 
-void SetTooltipClient(RootWindow* root_window, TooltipClient* client) {
+void SetTooltipClient(Window* root_window, TooltipClient* client) {
+  DCHECK_EQ(root_window->GetRootWindow(), root_window);
   root_window->SetProperty(kRootWindowTooltipClientKey, client);
 }
 
-TooltipClient* GetTooltipClient(RootWindow* root_window) {
+TooltipClient* GetTooltipClient(Window* root_window) {
+  if (root_window)
+    DCHECK_EQ(root_window->GetRootWindow(), root_window);
   return root_window ?
       root_window->GetProperty(kRootWindowTooltipClientKey) : NULL;
 }

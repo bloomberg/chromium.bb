@@ -14,11 +14,14 @@ namespace client {
 
 DEFINE_WINDOW_PROPERTY_KEY(EventClient*, kRootWindowEventClientKey, NULL);
 
-void SetEventClient(RootWindow* root_window, EventClient* client) {
+void SetEventClient(Window* root_window, EventClient* client) {
+  DCHECK_EQ(root_window->GetRootWindow(), root_window);
   root_window->SetProperty(kRootWindowEventClientKey, client);
 }
 
-EventClient* GetEventClient(const RootWindow* root_window) {
+EventClient* GetEventClient(const Window* root_window) {
+  if (root_window)
+    DCHECK_EQ(root_window->GetRootWindow(), root_window);
   return root_window ?
       root_window->GetProperty(kRootWindowEventClientKey) : NULL;
 }

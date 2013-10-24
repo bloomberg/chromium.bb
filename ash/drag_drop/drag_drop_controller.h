@@ -16,11 +16,6 @@
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/rect.h"
 
-namespace aura {
-class RootWindow;
-class Window;
-}
-
 namespace gfx {
 class LinearAnimation;
 }
@@ -53,7 +48,7 @@ class ASH_EXPORT DragDropController
   // Overridden from aura::client::DragDropClient:
   virtual int StartDragAndDrop(
       const ui::OSExchangeData& data,
-      aura::RootWindow* root_window,
+      aura::Window* root_window,
       aura::Window* source_window,
       const gfx::Point& root_location,
       int operation,

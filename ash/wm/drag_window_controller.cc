@@ -7,6 +7,7 @@
 #include "ash/shell_window_ids.h"
 #include "ash/wm/window_util.h"
 #include "ui/aura/client/screen_position_client.h"
+#include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"

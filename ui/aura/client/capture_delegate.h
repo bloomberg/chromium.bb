@@ -11,8 +11,8 @@ namespace aura {
 class Window;
 namespace client {
 
-// This interface provides API to change the RootWindow's capture state
-// without exposing them as RootWindow API.
+// This interface provides API to change the root Window's capture state without
+// exposing them as RootWindow API.
 class AURA_EXPORT CaptureDelegate {
  public:
   // Called when a capture is set on the |new_capture| which is owned by

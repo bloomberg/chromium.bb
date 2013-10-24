@@ -59,8 +59,9 @@ void DesktopScreenPositionClient::ConvertPointFromScreen(
 }
 
 void DesktopScreenPositionClient::ConvertHostPointToScreen(
-    aura::RootWindow* window, gfx::Point* point) {
-  ConvertPointToScreen(window, point);
+    aura::Window* window, gfx::Point* point) {
+  aura::RootWindow* root_window = window->GetRootWindow();
+  ConvertPointToScreen(root_window, point);
 }
 
 void DesktopScreenPositionClient::SetBounds(

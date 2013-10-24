@@ -6,11 +6,9 @@
 #define ASH_WM_EVENT_CLIENT_IMPL_H_
 
 #include "ash/ash_export.h"
+#include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "ui/aura/client/event_client.h"
-
-namespace aura {
-class RootWindow;
-}
 
 namespace ash {
 namespace internal {

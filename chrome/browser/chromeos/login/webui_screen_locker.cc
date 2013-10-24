@@ -27,6 +27,7 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_ui.h"
 #include "ui/aura/client/capture_client.h"
+#include "ui/aura/root_window.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/gfx/screen.h"

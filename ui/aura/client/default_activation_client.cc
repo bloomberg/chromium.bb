@@ -6,7 +6,6 @@
 
 #include "ui/aura/client/activation_change_observer.h"
 #include "ui/aura/client/activation_delegate.h"
-#include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 
 namespace aura {
@@ -15,7 +14,7 @@ namespace client {
 ////////////////////////////////////////////////////////////////////////////////
 // DefaultActivationClient, public:
 
-DefaultActivationClient::DefaultActivationClient(RootWindow* root_window)
+DefaultActivationClient::DefaultActivationClient(Window* root_window)
     : last_active_(NULL) {
   client::SetActivationClient(root_window, this);
 }

@@ -136,11 +136,12 @@ void ScreenPositionController::ConvertPointFromScreen(
 }
 
 void ScreenPositionController::ConvertHostPointToScreen(
-    aura::RootWindow* root_window,
+    aura::Window* root_window,
     gfx::Point* point) {
-  root_window->ConvertPointFromHost(point);
+  aura::RootWindow* root = root_window->GetRootWindow();
+  root->ConvertPointFromHost(point);
   std::pair<aura::RootWindow*, gfx::Point> pair =
-      GetRootWindowRelativeToWindow(root_window, *point);
+      GetRootWindowRelativeToWindow(root, *point);
   *point = pair.second;
   ConvertPointToScreen(pair.first, point);
 }

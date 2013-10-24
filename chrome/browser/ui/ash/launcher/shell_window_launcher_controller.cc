@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/ash/launcher/shell_window_launcher_item_controller.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "ui/aura/client/activation_client.h"
+#include "ui/aura/root_window.h"
 
 using apps::ShellWindow;
 

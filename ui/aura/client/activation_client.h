@@ -6,14 +6,13 @@
 #define UI_AURA_CLIENT_ACTIVATION_CLIENT_H_
 
 #include "ui/aura/aura_export.h"
-#include "ui/aura/window.h"
 
 namespace ui {
 class Event;
 }
 
 namespace aura {
-class RootWindow;
+class Window;
 
 namespace client {
 class ActivationChangeObserver;
@@ -57,10 +56,10 @@ class AURA_EXPORT ActivationClient {
   virtual ~ActivationClient() {}
 };
 
-// Sets/Gets the activation client on the RootWindow.
-AURA_EXPORT void SetActivationClient(RootWindow* root_window,
+// Sets/Gets the activation client on the root Window.
+AURA_EXPORT void SetActivationClient(Window* root_window,
                                      ActivationClient* client);
-AURA_EXPORT ActivationClient* GetActivationClient(RootWindow* root_window);
+AURA_EXPORT ActivationClient* GetActivationClient(Window* root_window);
 
 // Some types of transient window are only visible when active.
 // The transient parents of these windows may have visual appearance properties

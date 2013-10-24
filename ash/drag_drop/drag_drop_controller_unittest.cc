@@ -163,7 +163,7 @@ class TestDragDropController : public internal::DragDropController {
 
   virtual int StartDragAndDrop(
       const ui::OSExchangeData& data,
-      aura::RootWindow* root_window,
+      aura::Window* root_window,
       aura::Window* source_window,
       const gfx::Point& location,
       int operation,

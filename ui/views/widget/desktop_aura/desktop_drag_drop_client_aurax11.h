@@ -5,12 +5,8 @@
 #ifndef UI_VIEWS_WIDGET_DESKTOP_AURA_DESKTOP_DRAG_DROP_CLIENT_AURAX11_H_
 #define UI_VIEWS_WIDGET_DESKTOP_AURA_DESKTOP_DRAG_DROP_CLIENT_AURAX11_H_
 
-#include <X11/Xlib.h>
-
-// Get rid of a macro from Xlib.h that conflicts with Aura's RootWindow class.
-#undef RootWindow
-
 #include <set>
+#include <X11/Xlib.h>
 
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
@@ -25,7 +21,6 @@
 #include "ui/views/widget/desktop_aura/x11_whole_screen_move_loop_delegate.h"
 
 namespace aura {
-class RootWindow;
 namespace client {
 class DragDropDelegate;
 }
@@ -40,7 +35,6 @@ class DragSource;
 class DropTargetEvent;
 class OSExchangeData;
 class OSExchangeDataProviderAuraX11;
-class RootWindow;
 class SelectionFormatMap;
 }
 
@@ -56,7 +50,7 @@ class VIEWS_EXPORT DesktopDragDropClientAuraX11
       public X11WholeScreenMoveLoopDelegate {
  public:
   DesktopDragDropClientAuraX11(
-      aura::RootWindow* root_window,
+      aura::Window* root_window,
       views::DesktopNativeCursorManager* cursor_manager,
       Display* xdisplay,
       ::Window xwindow);
@@ -81,7 +75,7 @@ class VIEWS_EXPORT DesktopDragDropClientAuraX11
   // Overridden from aura::client::DragDropClient:
   virtual int StartDragAndDrop(
       const ui::OSExchangeData& data,
-      aura::RootWindow* root_window,
+      aura::Window* root_window,
       aura::Window* source_window,
       const gfx::Point& root_location,
       int operation,
@@ -155,7 +149,7 @@ class VIEWS_EXPORT DesktopDragDropClientAuraX11
   // X11WholeScreenMoveLoopDelegate interface.
   X11WholeScreenMoveLoop move_loop_;
 
-  aura::RootWindow* root_window_;
+  aura::Window* root_window_;
 
   Display* xdisplay_;
   ::Window xwindow_;

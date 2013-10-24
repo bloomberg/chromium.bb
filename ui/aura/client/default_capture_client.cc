@@ -9,7 +9,7 @@
 namespace aura {
 namespace client {
 
-DefaultCaptureClient::DefaultCaptureClient(RootWindow* root_window)
+DefaultCaptureClient::DefaultCaptureClient(Window* root_window)
     : root_window_(root_window),
       capture_window_(NULL) {
   client::SetCaptureClient(root_window_, this);
@@ -30,7 +30,7 @@ void DefaultCaptureClient::SetCapture(Window* window) {
   Window* old_capture_window = capture_window_;
   capture_window_ = window;
 
-  CaptureDelegate* capture_delegate = root_window_;
+  CaptureDelegate* capture_delegate = root_window_->GetRootWindow();
   if (capture_window_)
     capture_delegate->SetNativeCapture();
   else

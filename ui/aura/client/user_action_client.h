@@ -8,7 +8,7 @@
 #include "ui/aura/aura_export.h"
 
 namespace aura {
-class RootWindow;
+class Window;
 namespace client {
 
 // An interface for handling a user action that isn't handled by the standard
@@ -27,9 +27,9 @@ class AURA_EXPORT UserActionClient {
 };
 
 // Sets/gets the client for handling user action on the specified root window.
-AURA_EXPORT void SetUserActionClient(RootWindow* root_window,
+AURA_EXPORT void SetUserActionClient(Window* root_window,
                                      UserActionClient* client);
-AURA_EXPORT UserActionClient* GetUserActionClient(RootWindow* root_window);
+AURA_EXPORT UserActionClient* GetUserActionClient(Window* root_window);
 
 }  // namespace client
 }  // namespace aura

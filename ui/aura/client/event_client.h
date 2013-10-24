@@ -6,13 +6,13 @@
 #define UI_AURA_CLIENT_EVENT_CLIENT_H_
 
 #include "ui/aura/aura_export.h"
-#include "ui/aura/window.h"
+
+namespace ui {
+class EventTarget;
+}
 
 namespace aura {
-
-class Event;
-class RootWindow;
-
+class Window;
 namespace client {
 
 // An interface implemented by an object that alters event processing.
@@ -28,9 +28,9 @@ class AURA_EXPORT EventClient {
   virtual ~EventClient() {}
 };
 
-// Sets/Gets the event client on the RootWindow.
-AURA_EXPORT void SetEventClient(RootWindow* root_window, EventClient* client);
-AURA_EXPORT EventClient* GetEventClient(const RootWindow* root_window);
+// Sets/Gets the event client on the root Window.
+AURA_EXPORT void SetEventClient(Window* root_window, EventClient* client);
+AURA_EXPORT EventClient* GetEventClient(const Window* root_window);
 
 }  // namespace clients
 }  // namespace aura

@@ -19,7 +19,6 @@ class OSExchangeData;
 }
 
 namespace aura {
-class RootWindow;
 class Window;
 namespace client {
 
@@ -30,9 +29,9 @@ class AURA_EXPORT DragDropClient {
 
   // Initiates a drag and drop session. Returns the drag operation that was
   // applied at the end of the drag drop session. |root_location| is in the
-  // RootWindow's coordinate system.
+  // root Window's coordinate system.
   virtual int StartDragAndDrop(const ui::OSExchangeData& data,
-                               aura::RootWindow* root_window,
+                               aura::Window* root_window,
                                aura::Window* source_window,
                                const gfx::Point& root_location,
                                int operation,
@@ -53,9 +52,9 @@ class AURA_EXPORT DragDropClient {
   virtual bool IsDragDropInProgress() = 0;
 };
 
-AURA_EXPORT void SetDragDropClient(RootWindow* root_window,
+AURA_EXPORT void SetDragDropClient(Window* root_window,
                                    DragDropClient* client);
-AURA_EXPORT DragDropClient* GetDragDropClient(RootWindow* root_window);
+AURA_EXPORT DragDropClient* GetDragDropClient(Window* root_window);
 
 }  // namespace client
 }  // namespace aura

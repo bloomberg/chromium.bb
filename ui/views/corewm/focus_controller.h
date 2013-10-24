@@ -6,10 +6,13 @@
 #define UI_VIEWS_COREWM_FOCUS_CONTROLLER_H_
 
 #include "base/compiler_specific.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/observer_list.h"
 #include "base/scoped_observer.h"
 #include "ui/aura/client/activation_client.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/window_observer.h"
+#include "ui/events/event_handler.h"
 #include "ui/views/views_export.h"
 
 namespace views {

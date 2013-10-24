@@ -11,7 +11,6 @@
 #include "ui/events/event.h"
 
 namespace aura {
-class RootWindow;
 class Window;
 class WindowDelegate;
 }
@@ -26,7 +25,7 @@ namespace internal {
 // is supported for now.
 class ASH_EXPORT DragDropTracker {
  public:
-  DragDropTracker(aura::RootWindow* context_root,
+  DragDropTracker(aura::Window* context_root,
                   aura::WindowDelegate* delegate);
   ~DragDropTracker();
 

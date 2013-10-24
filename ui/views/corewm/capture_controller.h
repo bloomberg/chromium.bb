@@ -13,6 +13,10 @@
 #include "ui/aura/window_observer.h"
 #include "ui/views/views_export.h"
 
+namespace aura {
+class RootWindow;
+}
+
 namespace views {
 namespace corewm {
 

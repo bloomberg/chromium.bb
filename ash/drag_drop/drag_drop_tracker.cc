@@ -9,6 +9,7 @@
 #include "ash/wm/coordinate_conversion.h"
 #include "ui/aura/client/window_tree_client.h"
 #include "ui/aura/root_window.h"
+#include "ui/aura/window.h"
 #include "ui/events/event.h"
 #include "ui/gfx/screen.h"
 
@@ -18,7 +19,7 @@ namespace internal {
 namespace {
 
 // Creates a window for capturing drag events.
-aura::Window* CreateCaptureWindow(aura::RootWindow* context_root,
+aura::Window* CreateCaptureWindow(aura::Window* context_root,
                                   aura::WindowDelegate* delegate) {
   aura::Window* window = new aura::Window(delegate);
   window->SetType(aura::client::WINDOW_TYPE_NORMAL);
@@ -31,7 +32,7 @@ aura::Window* CreateCaptureWindow(aura::RootWindow* context_root,
 
 }  // namespace
 
-DragDropTracker::DragDropTracker(aura::RootWindow* context_root,
+DragDropTracker::DragDropTracker(aura::Window* context_root,
                                  aura::WindowDelegate* delegate)
     : capture_window_(CreateCaptureWindow(context_root, delegate)) {
 }
