@@ -17,10 +17,8 @@ import logging
 import os
 import platform
 import shutil
-import subprocess
 import sys
 
-import command
 import directory_storage
 import file_tools
 import gsd_storage
@@ -55,7 +53,6 @@ class Once(object):
     self._cache_results = cache_results
     self._print_url = print_url
     self._check_call = check_call
-    self._system_summary = None
 
   def KeyForOutput(self, package, output_hash):
     """Compute the key to store a give output in the data-store.
@@ -225,29 +222,17 @@ class Once(object):
     Ideally this would capture anything relevant about the current machine that
     would cause build output to vary (other than build recipe + inputs).
     """
-    if self._system_summary is None:
-      # Note there is no attempt to canonicalize these values.  If two
-      # machines that would in fact produce identical builds differ in
-      # these values, it just means that a superfluous build will be
-      # done once to get the mapping from new input hash to preexisting
-      # output hash into the cache.
-      assert len(sys.platform) != 0, len(platform.machine()) != 0
-      if sys.platform == 'win32':
-        msys = command.MsysPath()
-        cmd = [os.path.join(msys, 'bin', 'bash'), '-c',
-               '/mingw/bin/gcc -v']
-      else:
-        cmd = ['gcc', '-v']
-      p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-      _, gcc_version = p.communicate()
-      assert p.returncode == 0
-      items = [
-          ('platform', sys.platform),
-          ('machine', platform.machine()),
-          ('gcc-v', gcc_version),
-          ]
-      self._system_summary = str(items)
-    return self._system_summary
+    # Note there is no attempt to canonicalize these values.  If two
+    # machines that would in fact produce identical builds differ in
+    # these values, it just means that a superfluous build will be
+    # done once to get the mapping from new input hash to preexisting
+    # output hash into the cache.
+    assert len(sys.platform) != 0, len(platform.machine()) != 0
+    items = [
+        ('platform', sys.platform),
+        ('machine', platform.machine()),
+        ]
+    return str(items)
 
   def BuildSignature(self, package, inputs, commands):
     """Compute a total checksum for a computation.
