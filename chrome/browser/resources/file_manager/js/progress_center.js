@@ -372,14 +372,9 @@ ProgressCenterHandler.prototype.onCopyProgress_ = function(event) {
       item.message = ProgressCenterHandler.getMessage_(event);
       item.progressMax = event.status.totalBytes;
       item.progressValue = event.status.processedBytes;
-      item.cancelCallback = function(inItem) {
-        this.fileOperationManager_.requestCancel(function() {
-          inItem.message = strf('COPY_CANCELLED');
-          inItem.state = ProgressItemState.CANCELED;
-          progressCenter.updateItem(inItem);
-        }.bind(this));
-      }.bind(this, item);
-
+      item.cancelCallback = this.fileOperationManager_.requestTaskCancel.bind(
+          this.fileOperationManager_,
+          event.taskId);
       progressCenter.updateItem(item);
       break;
 
@@ -407,6 +402,9 @@ ProgressCenterHandler.prototype.onCopyProgress_ = function(event) {
         // TODO(hirono): Add a message for complete.
         item.state = ProgressItemState.COMPLETE;
         item.progressValue = item.progressMax;
+      } else if (event.error.data.code === FileError.ABORT_ERR) {
+        item.message = strf('COPY_CANCELLED');
+        item.state = ProgressItemState.CANCELED;
       } else {
         item.message = ProgressCenterHandler.getMessage_(event);
         item.state = ProgressItemState.ERROR;
