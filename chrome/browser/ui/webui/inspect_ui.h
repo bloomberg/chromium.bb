@@ -21,6 +21,7 @@ class Value;
 }
 
 class Browser;
+class DevToolsTargetImpl;
 
 class InspectUI : public content::WebUIController,
                   public content::NotificationObserver,
@@ -30,18 +31,18 @@ class InspectUI : public content::WebUIController,
   virtual ~InspectUI();
 
   void InitUI();
-  void InspectRemotePage(const std::string& page_id);
-  void ActivateRemotePage(const std::string& page_id);
-  void CloseRemotePage(const std::string& page_id);
-  void ReloadRemotePage(const std::string& page_id);
-  void OpenRemotePage(const std::string& browser_id, const std::string& url);
+  DevToolsTargetImpl* FindTarget(const std::string& type,
+                                 const std::string& id);
+  scoped_refptr<DevToolsAdbBridge::RemoteBrowser> FindRemoteBrowser(
+      const std::string& id);
 
   static void InspectDevices(Browser* browser);
 
  private:
   class WorkerCreationDestructionListener;
 
-  void PopulateLists();
+  void PopulateWebContentsTargets();
+  void PopulateWorkerTargets(const std::vector<DevToolsTargetImpl*>&);
 
   // content::NotificationObserver overrides.
   virtual void Observe(int type,
@@ -73,9 +74,10 @@ class InspectUI : public content::WebUIController,
   // A scoped container for preference change registries.
   PrefChangeRegistrar pref_change_registrar_;
 
-  typedef std::map<std::string, scoped_refptr<DevToolsAdbBridge::RemotePage> >
-      RemotePages;
-  RemotePages remote_pages_;
+  typedef std::map<std::string, DevToolsTargetImpl*> TargetMap;
+  TargetMap web_contents_targets_;
+  TargetMap worker_targets_;
+  TargetMap remote_targets_;
 
   typedef std::map<std::string,
       scoped_refptr<DevToolsAdbBridge::RemoteBrowser> > RemoteBrowsers;
