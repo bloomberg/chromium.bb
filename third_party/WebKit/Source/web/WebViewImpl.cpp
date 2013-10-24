@@ -652,14 +652,8 @@ bool WebViewImpl::handleGestureEvent(const WebGestureEvent& event)
     bool eventSwallowed = false;
     bool eventCancelled = false; // for disambiguation
 
-    // TODO - once chrome passes GestureShowPress and GestureTapDown events correctly,
-    // don't retype tap down events. See crbug.com/302752.
-    WebInputEvent::Type eventType = event.type;
-    if (eventType == WebInputEvent::GestureTapDown)
-        eventType = WebInputEvent::GestureShowPress;
-
     // Special handling for slow-path fling gestures, which have no PlatformGestureEvent equivalent.
-    switch (eventType) {
+    switch (event.type) {
     case WebInputEvent::GestureFlingStart: {
         if (mainFrameImpl()->frame()->eventHandler().isScrollbarHandlingGestures()) {
             m_client->didHandleGestureEvent(event, eventCancelled);
@@ -696,7 +690,7 @@ bool WebViewImpl::handleGestureEvent(const WebGestureEvent& event)
 
     // Handle link highlighting outside the main switch to avoid getting lost in the
     // complicated set of cases handled below.
-    switch (eventType) {
+    switch (event.type) {
     case WebInputEvent::GestureShowPress:
         // Queue a highlight animation, then hand off to regular handler.
         if (settingsImpl()->gestureTapHighlightEnabled())
@@ -712,7 +706,7 @@ bool WebViewImpl::handleGestureEvent(const WebGestureEvent& event)
         break;
     }
 
-    switch (eventType) {
+    switch (event.type) {
     case WebInputEvent::GestureTap: {
         m_client->cancelScheduledContentIntents();
         if (detectContentOnTouch(platformEvent.position())) {
@@ -795,6 +789,7 @@ bool WebViewImpl::handleGestureEvent(const WebGestureEvent& event)
     case WebInputEvent::GestureScrollBegin:
     case WebInputEvent::GesturePinchBegin:
         m_client->cancelScheduledContentIntents();
+    case WebInputEvent::GestureTapDown:
     case WebInputEvent::GestureScrollEnd:
     case WebInputEvent::GestureScrollUpdate:
     case WebInputEvent::GestureScrollUpdateWithoutPropagation:

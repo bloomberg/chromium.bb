@@ -183,9 +183,10 @@ PlatformGestureEventBuilder::PlatformGestureEventBuilder(Widget* widget, const W
         m_type = PlatformEvent::GestureTapUnconfirmed;
         m_area = expandedIntSize(FloatSize(e.data.tap.width / scale, e.data.tap.height / scale));
         break;
-        // TODO - once chrome passes GestureShowPress and GestureTapDown events correctly,
-        // don't retype tap down events. See crbug.com/302752.
     case WebInputEvent::GestureTapDown:
+        m_type = PlatformEvent::GestureTapDown;
+        m_area = expandedIntSize(FloatSize(e.data.tapDown.width / scale, e.data.tapDown.height / scale));
+        break;
     case WebInputEvent::GestureShowPress:
         m_type = PlatformEvent::GestureShowPress;
         m_area = expandedIntSize(FloatSize(e.data.showPress.width / scale, e.data.showPress.height / scale));
