@@ -132,9 +132,10 @@ void TextureLayer::SetTextureId(unsigned id) {
   SetNextCommitWaitsForActivation();
 }
 
-void TextureLayer::SetTextureMailbox(
+void TextureLayer::SetTextureMailboxInternal(
     const TextureMailbox& mailbox,
-    scoped_ptr<SingleReleaseCallback> release_callback) {
+    scoped_ptr<SingleReleaseCallback> release_callback,
+    bool requires_commit) {
   DCHECK(uses_mailbox_);
   DCHECK(!mailbox.IsValid() || !holder_ref_ ||
          !mailbox.Equals(holder_ref_->holder()->mailbox()));
@@ -146,10 +147,24 @@ void TextureLayer::SetTextureMailbox(
   else
     holder_ref_.reset();
   needs_set_mailbox_ = true;
-  SetNeedsCommit();
+  // If we are within a commit, no need to do it again immediately after.
+  if (requires_commit)
+    SetNeedsCommit();
+  else
+    SetNeedsPushProperties();
+
   // The active frame needs to be replaced and the mailbox returned before the
   // commit is called complete.
   SetNextCommitWaitsForActivation();
+}
+
+void TextureLayer::SetTextureMailbox(
+    const TextureMailbox& mailbox,
+    scoped_ptr<SingleReleaseCallback> release_callback) {
+  SetTextureMailboxInternal(
+      mailbox,
+      release_callback.Pass(),
+      true /* requires_commit */);
 }
 
 void TextureLayer::WillModifyTexture() {
@@ -209,7 +224,11 @@ bool TextureLayer::Update(ResourceUpdateQueue* queue,
               &mailbox,
               &release_callback,
               layer_tree_host()->UsingSharedMemoryResources())) {
-        SetTextureMailbox(mailbox, release_callback.Pass());
+        // Already within a commit, no need to do another one immediately.
+        SetTextureMailboxInternal(
+            mailbox,
+            release_callback.Pass(),
+            false /* requires_commit */);
         updated = true;
       }
     } else {

@@ -148,6 +148,11 @@ class CC_EXPORT TextureLayer : public Layer {
   virtual ~TextureLayer();
 
  private:
+  void SetTextureMailboxInternal(
+      const TextureMailbox& mailbox,
+      scoped_ptr<SingleReleaseCallback> release_callback,
+      bool requires_commit);
+
   TextureLayerClient* client_;
   bool uses_mailbox_;
 
