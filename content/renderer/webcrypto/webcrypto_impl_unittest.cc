@@ -43,6 +43,17 @@ WebKit::WebCryptoAlgorithm CreateHmacAlgorithm(
       new WebKit::WebCryptoHmacParams(CreateAlgorithm(hashId)));
 }
 
+WebKit::WebCryptoAlgorithm CreateHmacKeyAlgorithm(
+    WebKit::WebCryptoAlgorithmId hashId,
+    unsigned hash_length) {
+  // hash_length < 0 means unspecified
+  return WebKit::WebCryptoAlgorithm::adoptParamsAndCreate(
+      WebKit::WebCryptoAlgorithmIdHmac,
+      new WebKit::WebCryptoHmacKeyParams(CreateAlgorithm(hashId),
+                                         (hash_length != 0),
+                                         hash_length));
+}
+
 // Returns a pointer to the start of |data|, or NULL if it is empty. This is a
 // convenience function for getting the pointer, and should not be used beyond
 // the expected lifetime of |data|.
@@ -57,6 +68,13 @@ WebKit::WebCryptoAlgorithm CreateAesCbcAlgorithm(
   return WebKit::WebCryptoAlgorithm::adoptParamsAndCreate(
       WebKit::WebCryptoAlgorithmIdAesCbc,
       new WebKit::WebCryptoAesCbcParams(Start(iv), iv.size()));
+}
+
+WebKit::WebCryptoAlgorithm CreateAesCbcAlgorithm(
+    unsigned short key_length_bits) {
+  return WebKit::WebCryptoAlgorithm::adoptParamsAndCreate(
+      WebKit::WebCryptoAlgorithmIdAesCbc,
+      new WebKit::WebCryptoAesKeyGenParams(key_length_bits));
 }
 
 }  // namespace
@@ -600,75 +618,42 @@ TEST_F(WebCryptoImplTest, AesCbcSampleSets) {
   }
 }
 
-#if !defined(USE_OPENSSL)
+// TODO (padolph): Add test to verify generated symmetric keys appear random.
+
 
 TEST_F(WebCryptoImplTest, GenerateKeyAes) {
-  scoped_ptr<WebKit::WebCryptoAesKeyGenParams> params(
-      new WebKit::WebCryptoAesKeyGenParams(128));
-  WebKit::WebCryptoAlgorithm algorithm(
-      WebKit::WebCryptoAlgorithm::adoptParamsAndCreate(
-          WebKit::WebCryptoAlgorithmIdAesCbc, params.release()));
-
   scoped_ptr<WebKit::WebCryptoKeyHandle> result;
   WebKit::WebCryptoKeyType type = WebKit::WebCryptoKeyTypePublic;
-
-  ASSERT_TRUE(GenerateKeyInternal(algorithm, &result, &type));
-  EXPECT_TRUE(bool(result));
+  ASSERT_TRUE(GenerateKeyInternal(CreateAesCbcAlgorithm(128), &result, &type));
+  EXPECT_TRUE(result);
   EXPECT_EQ(type, WebKit::WebCryptoKeyTypeSecret);
 }
 
-TEST_F(WebCryptoImplTest, GenerateKeyAesOddLength) {
-  scoped_ptr<WebKit::WebCryptoAesKeyGenParams> params(
-      new WebKit::WebCryptoAesKeyGenParams(129));
-  WebKit::WebCryptoAlgorithm algorithm(
-      WebKit::WebCryptoAlgorithm::adoptParamsAndCreate(
-          WebKit::WebCryptoAlgorithmIdAesCbc, params.release()));
-
-  WebCryptoImpl crypto;
+TEST_F(WebCryptoImplTest, GenerateKeyAesBadLength) {
   scoped_ptr<WebKit::WebCryptoKeyHandle> result;
   WebKit::WebCryptoKeyType type = WebKit::WebCryptoKeyTypePublic;
-
-  EXPECT_FALSE(GenerateKeyInternal(algorithm, &result, &type));
-  EXPECT_FALSE(bool(result));
-  EXPECT_EQ(type, WebKit::WebCryptoKeyTypePublic);
+  EXPECT_FALSE(GenerateKeyInternal(CreateAesCbcAlgorithm(0), &result, &type));
+  EXPECT_FALSE(GenerateKeyInternal(CreateAesCbcAlgorithm(129), &result, &type));
 }
 
 TEST_F(WebCryptoImplTest, GenerateKeyHmac) {
-  WebKit::WebCryptoAlgorithm sha1_alg(
-      WebKit::WebCryptoAlgorithm::adoptParamsAndCreate(
-          WebKit::WebCryptoAlgorithmIdSha1, NULL));
-  scoped_ptr<WebKit::WebCryptoHmacKeyParams> params(
-      new WebKit::WebCryptoHmacKeyParams(sha1_alg, true, 128));
-  WebKit::WebCryptoAlgorithm algorithm(
-      WebKit::WebCryptoAlgorithm::adoptParamsAndCreate(
-          WebKit::WebCryptoAlgorithmIdHmac, params.release()));
-
   scoped_ptr<WebKit::WebCryptoKeyHandle> result;
   WebKit::WebCryptoKeyType type = WebKit::WebCryptoKeyTypePublic;
-
+  WebKit::WebCryptoAlgorithm algorithm =
+      CreateHmacKeyAlgorithm(WebKit::WebCryptoAlgorithmIdSha1, 128);
   ASSERT_TRUE(GenerateKeyInternal(algorithm, &result, &type));
-  EXPECT_TRUE(bool(result));
+  EXPECT_TRUE(result);
   EXPECT_EQ(type, WebKit::WebCryptoKeyTypeSecret);
 }
 
 TEST_F(WebCryptoImplTest, GenerateKeyHmacNoLength) {
-  WebKit::WebCryptoAlgorithm sha1_alg(
-      WebKit::WebCryptoAlgorithm::adoptParamsAndCreate(
-          WebKit::WebCryptoAlgorithmIdSha1, NULL));
-  scoped_ptr<WebKit::WebCryptoHmacKeyParams> params(
-      new WebKit::WebCryptoHmacKeyParams(sha1_alg, false, 0));
-  WebKit::WebCryptoAlgorithm algorithm(
-      WebKit::WebCryptoAlgorithm::adoptParamsAndCreate(
-          WebKit::WebCryptoAlgorithmIdHmac, params.release()));
-
   scoped_ptr<WebKit::WebCryptoKeyHandle> result;
   WebKit::WebCryptoKeyType type = WebKit::WebCryptoKeyTypePublic;
-
+  WebKit::WebCryptoAlgorithm algorithm =
+      CreateHmacKeyAlgorithm(WebKit::WebCryptoAlgorithmIdSha1, 0);
   ASSERT_TRUE(GenerateKeyInternal(algorithm, &result, &type));
-  EXPECT_TRUE(bool(result));
+  EXPECT_TRUE(result);
   EXPECT_EQ(type, WebKit::WebCryptoKeyTypeSecret);
 }
-
-#endif //#if !defined(USE_OPENSSL)
 
 }  // namespace content

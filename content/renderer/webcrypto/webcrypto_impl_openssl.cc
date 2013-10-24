@@ -9,6 +9,8 @@
 #include <openssl/evp.h>
 #include <openssl/hmac.h>
 #include <openssl/sha.h>
+#include <openssl/evp.h>
+#include <openssl/rand.h>
 
 #include "base/logging.h"
 #include "crypto/openssl_util.h"
@@ -45,6 +47,25 @@ const EVP_CIPHER* GetAESCipherByKeyLength(unsigned key_length_bytes) {
       return EVP_aes_256_cbc();
     default:
       return NULL;
+  }
+}
+
+unsigned WebCryptoHmacParamsToBlockSize(
+    const WebKit::WebCryptoHmacKeyParams* params) {
+  DCHECK(params);
+  switch (params->hash().id()) {
+    case WebKit::WebCryptoAlgorithmIdSha1:
+      return SHA_DIGEST_LENGTH / 8;
+    case WebKit::WebCryptoAlgorithmIdSha224:
+      return SHA224_DIGEST_LENGTH / 8;
+    case WebKit::WebCryptoAlgorithmIdSha256:
+      return SHA256_DIGEST_LENGTH / 8;
+    case WebKit::WebCryptoAlgorithmIdSha384:
+      return SHA384_DIGEST_LENGTH / 8;
+    case WebKit::WebCryptoAlgorithmIdSha512:
+      return SHA512_DIGEST_LENGTH / 8;
+    default:
+      return 0;
   }
 }
 
@@ -229,9 +250,51 @@ bool WebCryptoImpl::GenerateKeyInternal(
     const WebKit::WebCryptoAlgorithm& algorithm,
     scoped_ptr<WebKit::WebCryptoKeyHandle>* key,
     WebKit::WebCryptoKeyType* type) {
-  // TODO(ellyjones): Placeholder for OpenSSL implementation.
-  // Issue http://crbug.com/267888.
-  return false;
+
+  unsigned keylen_bytes = 0;
+  WebKit::WebCryptoKeyType key_type;
+  switch (algorithm.id()) {
+    case WebKit::WebCryptoAlgorithmIdAesCbc: {
+      const WebKit::WebCryptoAesKeyGenParams* params =
+          algorithm.aesKeyGenParams();
+      DCHECK(params);
+      if (params->length() % 8)
+        return false;
+      keylen_bytes = params->length() / 8;
+      if (!GetAESCipherByKeyLength(keylen_bytes)) {
+        return false;
+      }
+      key_type = WebKit::WebCryptoKeyTypeSecret;
+      break;
+    }
+    case WebKit::WebCryptoAlgorithmIdHmac: {
+      const WebKit::WebCryptoHmacKeyParams* params = algorithm.hmacKeyParams();
+      DCHECK(params);
+      if (!params->getLength(keylen_bytes)) {
+        keylen_bytes = WebCryptoHmacParamsToBlockSize(params);
+      }
+      key_type = WebKit::WebCryptoKeyTypeSecret;
+      break;
+    }
+
+    default: { return false; }
+  }
+
+  if (keylen_bytes == 0) {
+    return false;
+  }
+
+  crypto::OpenSSLErrStackTracer(FROM_HERE);
+
+  std::vector<unsigned char> random_bytes(keylen_bytes, 0);
+  if (!(RAND_bytes(&random_bytes[0], keylen_bytes))) {
+    return false;
+  }
+
+  key->reset(new SymKeyHandle(&random_bytes[0], random_bytes.size()));
+  *type = key_type;
+
+  return true;
 }
 
 bool WebCryptoImpl::ImportKeyInternal(
