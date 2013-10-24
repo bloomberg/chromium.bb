@@ -22,6 +22,10 @@ gfx::NativeWindow AppListControllerDelegateAsh::GetAppListWindow() {
   return ash::Shell::GetInstance()->GetAppListWindow();
 }
 
+gfx::ImageSkia AppListControllerDelegateAsh::GetWindowIcon() {
+  return gfx::ImageSkia();
+}
+
 bool AppListControllerDelegateAsh::IsAppPinned(
     const std::string& extension_id) {
   return ChromeLauncherController::instance()->IsAppPinned(extension_id);
@@ -39,6 +43,16 @@ AppListControllerDelegate::Pinnable
     AppListControllerDelegateAsh::GetPinnable() {
   return ChromeLauncherController::instance()->CanPin() ? PIN_EDITABLE :
       PIN_FIXED;
+}
+
+bool AppListControllerDelegateAsh::CanDoCreateShortcutsFlow() {
+  return false;
+}
+
+void AppListControllerDelegateAsh::DoCreateShortcutsFlow(
+    Profile* profile,
+    const std::string& extension_id) {
+  NOTREACHED();
 }
 
 void AppListControllerDelegateAsh::CreateNewWindow(Profile* profile,

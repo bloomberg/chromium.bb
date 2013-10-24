@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_APP_LIST_WIN_APP_LIST_CONTROLLER_DELEGATE_WIN_H_
 
 #include "base/files/file_path.h"
-#include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
+#include "chrome/browser/ui/app_list/app_list_controller_delegate_impl.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -18,31 +18,17 @@ class Extension;
 }
 
 // Windows specific configuration and behaviour for the AppList.
-class AppListControllerDelegateWin : public AppListControllerDelegate {
+class AppListControllerDelegateWin : public AppListControllerDelegateImpl {
  public:
   explicit AppListControllerDelegateWin(AppListServiceWin* service);
   virtual ~AppListControllerDelegateWin();
 
-  // AppListServiceWin overrides:
-  virtual void DismissView() OVERRIDE;
+  // AppListControllerDelegate overrides:
   virtual void ViewClosing() OVERRIDE;
-  virtual gfx::NativeWindow GetAppListWindow() OVERRIDE;
   virtual gfx::ImageSkia GetWindowIcon() OVERRIDE;
-  virtual Pinnable GetPinnable() OVERRIDE;
   virtual void OnShowExtensionPrompt() OVERRIDE;
   virtual void OnCloseExtensionPrompt() OVERRIDE;
   virtual bool CanDoCreateShortcutsFlow() OVERRIDE;
-  virtual void CreateNewWindow(Profile* profile, bool incognito) OVERRIDE;
-  virtual void ActivateApp(Profile* profile,
-                           const extensions::Extension* extension,
-                           AppListSource source,
-                           int event_flags) OVERRIDE;
-  virtual void LaunchApp(Profile* profile,
-                         const extensions::Extension* extension,
-                         AppListSource source,
-                         int event_flags) OVERRIDE;
-  virtual void ShowForProfileByPath(
-      const base::FilePath& profile_path) OVERRIDE;
 
  private:
   AppListServiceWin* service_;

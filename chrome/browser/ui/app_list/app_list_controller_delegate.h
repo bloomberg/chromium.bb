@@ -55,28 +55,29 @@ class AppListControllerDelegate {
   virtual gfx::NativeWindow GetAppListWindow() = 0;
 
   // Get the application icon to be used, if any, for the app list.
-  virtual gfx::ImageSkia GetWindowIcon();
+  virtual gfx::ImageSkia GetWindowIcon() = 0;
 
   // Control of pinning apps.
-  virtual bool IsAppPinned(const std::string& extension_id);
-  virtual void PinApp(const std::string& extension_id);
-  virtual void UnpinApp(const std::string& extension_id);
+  virtual bool IsAppPinned(const std::string& extension_id) = 0;
+  virtual void PinApp(const std::string& extension_id) = 0;
+  virtual void UnpinApp(const std::string& extension_id) = 0;
   virtual Pinnable GetPinnable() = 0;
 
   // Be aware of the extension prompt (either uninstalling flow or enable flow).
-  virtual void OnShowExtensionPrompt() {}
-  virtual void OnCloseExtensionPrompt() {}
+  virtual void OnShowExtensionPrompt();
+  virtual void OnCloseExtensionPrompt();
 
   // Whether the controller supports a Create Shortcuts flow.
-  virtual bool CanDoCreateShortcutsFlow();
+  virtual bool CanDoCreateShortcutsFlow() = 0;
 
   // Show the dialog to create shortcuts. Call only if
   // CanDoCreateShortcutsFlow() returns true.
-  void DoCreateShortcutsFlow(Profile* profile, const std::string& extension_id);
+  virtual void DoCreateShortcutsFlow(Profile* profile,
+                                     const std::string& extension_id) = 0;
 
   // Handle the "create window" context menu items of Chrome App.
   // |incognito| is true to create an incognito window.
-  virtual void CreateNewWindow(Profile* profile, bool incognito);
+  virtual void CreateNewWindow(Profile* profile, bool incognito) = 0;
 
   // Show the app's most recent window, or launch it if it is not running.
   virtual void ActivateApp(Profile* profile,
@@ -95,7 +96,7 @@ class AppListControllerDelegate {
 
   // Whether or not the icon indicating which user is logged in should be
   // visible.
-  virtual bool ShouldShowUserIcon();
+  virtual bool ShouldShowUserIcon() = 0;
 
   static std::string AppListSourceToString(AppListSource source);
 

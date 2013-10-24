@@ -1,21 +1,31 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_ASH_APP_LIST_APP_LIST_CONTROLLER_ASH_H_
-#define CHROME_BROWSER_UI_ASH_APP_LIST_APP_LIST_CONTROLLER_ASH_H_
+#ifndef CHROME_BROWSER_UI_APP_LIST_APP_LIST_CONTROLLER_DELEGATE_IMPL_H_
+#define CHROME_BROWSER_UI_APP_LIST_APP_LIST_CONTROLLER_DELEGATE_IMPL_H_
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
-#include "chrome/browser/ui/ash/launcher/chrome_launcher_types.h"
 
-class AppListControllerDelegateAsh : public AppListControllerDelegate {
+class AppListService;
+class Profile;
+
+namespace base {
+class FilePath;
+}
+
+namespace extensions {
+class Extension;
+}
+
+// Primary implementation of AppListControllerDelegate, used by non-Ash
+// platforms.
+class AppListControllerDelegateImpl : public AppListControllerDelegate {
  public:
-  AppListControllerDelegateAsh();
-  virtual ~AppListControllerDelegateAsh();
+  explicit AppListControllerDelegateImpl(AppListService* service);
+  virtual ~AppListControllerDelegateImpl();
 
- private:
   // AppListControllerDelegate overrides:
   virtual void DismissView() OVERRIDE;
   virtual gfx::NativeWindow GetAppListWindow() OVERRIDE;
@@ -40,9 +50,10 @@ class AppListControllerDelegateAsh : public AppListControllerDelegate {
       const base::FilePath& profile_path) OVERRIDE;
   virtual bool ShouldShowUserIcon() OVERRIDE;
 
-  ash::LaunchSource AppListSourceToLaunchSource(AppListSource source);
+ private:
+  AppListService* service_;
 
-  DISALLOW_COPY_AND_ASSIGN(AppListControllerDelegateAsh);
+  DISALLOW_COPY_AND_ASSIGN(AppListControllerDelegateImpl);
 };
 
-#endif  // CHROME_BROWSER_UI_ASH_APP_LIST_APP_LIST_CONTROLLER_ASH_H_
+#endif  // CHROME_BROWSER_UI_APP_LIST_APP_LIST_CONTROLLER_DELEGATE_IMPL_H_
