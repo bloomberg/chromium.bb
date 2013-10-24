@@ -363,6 +363,9 @@ bool ResourceFetcher::checkInsecureContent(Resource::Type type, const KURL& url,
         if (Frame* f = frame()) {
             if (!f->loader().mixedContentChecker()->canRunInsecureContent(m_document->securityOrigin(), url))
                 return false;
+            Frame* top = f->tree().top();
+            if (top != f && !top->loader().mixedContentChecker()->canRunInsecureContent(top->document()->securityOrigin(), url))
+                return false;
         }
     } else if (treatment == TreatAsPassiveContent) {
         if (Frame* f = frame()) {
