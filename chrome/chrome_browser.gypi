@@ -2027,6 +2027,8 @@
         'browser/signin/chrome_signin_manager_delegate.h',
         'browser/signin/google_auto_login_helper.cc',
         'browser/signin/google_auto_login_helper.h',
+        'browser/signin/local_auth.cc',
+        'browser/signin/local_auth.h',
         'browser/signin/profile_oauth2_token_service.cc',
         'browser/signin/profile_oauth2_token_service.h',
         'browser/signin/profile_oauth2_token_service_factory.cc',

@@ -18,6 +18,7 @@
 #include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/browser/signin/about_signin_internals.h"
 #include "chrome/browser/signin/about_signin_internals_factory.h"
+#include "chrome/browser/signin/local_auth.h"
 #include "chrome/browser/signin/signin_global_error.h"
 #include "chrome/browser/signin/signin_internals_util.h"
 #include "chrome/browser/signin/signin_manager_cookie_helper.h"
@@ -602,6 +603,12 @@ void SigninManager::OnSignedIn(const std::string& username) {
       content::Source<Profile>(profile_),
       content::Details<const GoogleServiceSigninSuccessDetails>(&details));
 
+  // Don't store password hash except for users of new profile features.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kNewProfileManagement)) {
+    std::string auth_username = GetAuthenticatedUsername();
+    chrome::SetLocalAuthCredentials(profile_, auth_username, password_);
+  }
   password_.clear();  // Don't need it anymore.
   DisableOneClickSignIn(profile_);  // Don't ever offer again.
 

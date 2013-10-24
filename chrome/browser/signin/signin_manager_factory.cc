@@ -7,6 +7,7 @@
 #include "base/prefs/pref_registry_simple.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/signin/chrome_signin_manager_delegate.h"
+#include "chrome/browser/signin/local_auth.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/token_service_factory.h"
 #include "chrome/common/pref_names.h"
@@ -77,6 +78,7 @@ void SigninManagerFactory::RegisterProfilePrefs(
   registry->RegisterListPref(prefs::kReverseAutologinRejectedEmailList,
                              new ListValue,
                              user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  chrome::RegisterLocalAuthPrefs(registry);
 }
 
 // static

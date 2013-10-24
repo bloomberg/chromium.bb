@@ -1867,6 +1867,10 @@ const char kGoogleServicesUsername[] = "google.services.username";
 const char kGoogleServicesUsernamePattern[] =
     "google.services.username_pattern";
 
+// Local hash of authentication password, used for off-line authentication
+// when on-line authentication is not available.
+const char kGoogleServicesPasswordHash[] = "google.services.password_hash";
+
 #if !defined(OS_ANDROID)
 // Tracks the number of times that we have shown the sign in promo at startup.
 const char kSignInPromoStartupCount[] = "sync_promo.startup_count";
