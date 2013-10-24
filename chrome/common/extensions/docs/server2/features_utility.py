@@ -29,17 +29,25 @@ def Parse(features_json):
   '''
   features = {}
 
-  for name, value in deepcopy(features_json).iteritems():
-    # Some feature names correspond to a list; force a list down to a single
-    # feature by removing entries that have a 'whitelist'.
-    if isinstance(value, list):
-      values = [subvalue for subvalue in value if not 'whitelist' in subvalue]
-      if values:
-        value = values[0]
-      else:
-        continue
+  def ignore_feature(name, value):
+    '''Returns true if this feature should be ignored. This is defined by the
+    presence of a 'whitelist' property for non-private APIs. Private APIs
+    shouldn't have whitelisted features ignored since they're inherently
+    private. Logic elsewhere makes sure not to list private APIs.
+    '''
+    return 'whitelist' in value and not name.endswith('Private')
 
-    if 'whitelist' in value:
+  for name, value in deepcopy(features_json).iteritems():
+    # Some feature names correspond to a list, typically because they're
+    # whitelisted in stable for certain extensions and available in dev for
+    # everybody else. Force a list down to a single feature by attempting to
+    # remove the entries that don't affect the typical usage of an API.
+    if isinstance(value, list):
+      available_values = [subvalue for subvalue in value
+                          if not ignore_feature(name, subvalue)]
+      value = available_values[0] if available_values else value[0]
+
+    if ignore_feature(name, value):
       continue
 
     features[name] = { 'platforms': [] }
