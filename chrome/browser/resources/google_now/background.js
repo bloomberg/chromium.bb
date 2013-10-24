@@ -156,12 +156,15 @@ wrapper.instrumentChromeApiFunction('location.onLocationUpdate.addListener', 0);
 wrapper.instrumentChromeApiFunction('metricsPrivate.getVariationParams', 1);
 wrapper.instrumentChromeApiFunction('notifications.clear', 1);
 wrapper.instrumentChromeApiFunction('notifications.create', 2);
+wrapper.instrumentChromeApiFunction('notifications.getPermissionLevel', 0);
 wrapper.instrumentChromeApiFunction('notifications.update', 2);
 wrapper.instrumentChromeApiFunction('notifications.getAll', 0);
 wrapper.instrumentChromeApiFunction(
     'notifications.onButtonClicked.addListener', 0);
 wrapper.instrumentChromeApiFunction('notifications.onClicked.addListener', 0);
 wrapper.instrumentChromeApiFunction('notifications.onClosed.addListener', 0);
+wrapper.instrumentChromeApiFunction(
+    'notifications.onPermissionLevelChanged.addListener', 0);
 wrapper.instrumentChromeApiFunction(
     'preferencesPrivate.googleGeolocationAccessEnabled.get',
     1);
@@ -276,8 +279,6 @@ function showNotificationCards(cards) {
         instrumented.notifications.getAll(function(notifications) {
           console.log('showNotificationCards-getAll ' +
               JSON.stringify(notifications));
-          // TODO(vadimt): Figure out what to do when notifications are
-          // disabled for our extension.
           notifications = notifications || {};
 
           // Build a set of non-expired recent dismissals. It will be used for
@@ -935,14 +936,19 @@ function setBackgroundEnable(backgroundEnable) {
  *     the geolocation option is enabled.
  * @param {boolean} enableBackground true if
  *     the background permission should be requested.
+ * @param {boolean} notificationEnabled true if
+ *     Google Now for Chrome is allowed to show notifications.
  */
 function updateRunningState(
     signedIn,
     geolocationEnabled,
-    enableBackground) {
+    enableBackground,
+    notificationEnabled) {
   console.log(
       'State Update signedIn=' + signedIn + ' ' +
-      'geolocationEnabled=' + geolocationEnabled);
+      'geolocationEnabled=' + geolocationEnabled + ' ' +
+      'enableBackground=' + enableBackground + ' ' +
+      'notificationEnabled=' + notificationEnabled);
 
   // TODO(vadimt): Remove this line once state machine design is finalized.
   geolocationEnabled = true;
@@ -950,7 +956,7 @@ function updateRunningState(
   var shouldPollCards = false;
   var shouldSetBackground = false;
 
-  if (signedIn) {
+  if (signedIn && notificationEnabled) {
     if (geolocationEnabled) {
       if (enableBackground)
         shouldSetBackground = true;
@@ -982,7 +988,9 @@ function onStateChange() {
           function(response) {
             var enableBackground =
                 (!response || (response.enableBackground != 'false'));
-            instrumented.
+            instrumented.notifications.getPermissionLevel(function(level) {
+              var notificationEnabled = (level == 'granted');
+              instrumented.
                 preferencesPrivate.
                 googleGeolocationAccessEnabled.
                 get({}, function(prefValue) {
@@ -990,8 +998,10 @@ function onStateChange() {
                   updateRunningState(
                       signedIn,
                       geolocationEnabled,
-                      enableBackground);
+                      enableBackground,
+                      notificationEnabled);
                 });
+            });
           });
     });
   });
@@ -1058,6 +1068,12 @@ instrumented.notifications.onButtonClicked.addListener(
     });
 
 instrumented.notifications.onClosed.addListener(onNotificationClosed);
+
+instrumented.notifications.onPermissionLevelChanged.addListener(
+    function(permissionLevel) {
+      console.log('Notifications permissionLevel Change');
+      onStateChange();
+    });
 
 instrumented.location.onLocationUpdate.addListener(function(position) {
   recordEvent(GoogleNowEvent.LOCATION_UPDATE);

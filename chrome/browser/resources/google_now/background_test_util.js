@@ -22,6 +22,7 @@ mockChromeEvent(instrumented, 'location.onLocationUpdate');
 mockChromeEvent(instrumented, 'notifications.onButtonClicked');
 mockChromeEvent(instrumented, 'notifications.onClicked');
 mockChromeEvent(instrumented, 'notifications.onClosed');
+mockChromeEvent(instrumented, 'notifications.onPermissionLevelChanged');
 mockChromeEvent(
     instrumented, 'preferencesPrivate.googleGeolocationAccessEnabled.onChange');
 mockChromeEvent(instrumented, 'pushMessaging.onMessage');

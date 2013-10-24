@@ -464,6 +464,7 @@ function mockInitializeDependencies(fixture) {
     'chrome.storage.local.remove',
     'instrumented.metricsPrivate.getVariationParams',
     'instrumented.notifications.getAll',
+    'instrumented.notifications.getPermissionLevel',
     'instrumented.preferencesPrivate.googleGeolocationAccessEnabled.get',
     'instrumented.storage.local.get',
     'tasks.add',
@@ -482,13 +483,16 @@ function mockInitializeDependencies(fixture) {
  * @param {string} testIdentityToken getAuthToken callback token.
  * @param {boolean} testGeolocationPref Geolocation Preference callback value.
  * @param {object} testExperimentVariationParams Response of
- *     metricsPrivate.getVariationParams
+ *     metricsPrivate.getVariationParams.
+ * @param {string} testExperimentVariationParams Response of
+ *     notifications.getPermissionLevel.
  */
 function expectStateMachineCalls(
     fixture,
     testIdentityToken,
     testGeolocationPref,
-    testExperimentVariationParams) {
+    testExperimentVariationParams,
+    testNotificationPermissionLevel) {
   var authenticationManagerIsSignedInSavedArgs = new SaveMockArguments();
   fixture.mockApis.expects(once()).
       authenticationManager_isSignedIn(
@@ -513,6 +517,15 @@ function expectStateMachineCalls(
           googleGeolocationPrefGetSavedArgs.match(ANYTHING)).
       will(invokeCallback(
           googleGeolocationPrefGetSavedArgs, 1, {value: testGeolocationPref}));
+
+  var notificationGetPermissionLevelSavedArgs = new SaveMockArguments();
+  fixture.mockApis.expects(once()).
+      instrumented_notifications_getPermissionLevel(
+          notificationGetPermissionLevelSavedArgs.match(ANYTHING)).
+      will(invokeCallback(
+          notificationGetPermissionLevelSavedArgs,
+          0,
+          testNotificationPermissionLevel))
 
   fixture.mockGlobals.expects(once()).
       setBackgroundEnable(ANYTHING);
@@ -553,6 +566,7 @@ TEST_F(
       var testIdentityToken = undefined;
       var testGeolocationPref = false;
       var testExperimentVariationParams = {};
+      var testNotificationPermissionLevel = 'denied';
 
       mockInitializeDependencies(this);
 
@@ -568,7 +582,8 @@ TEST_F(
           this,
           testIdentityToken,
           testGeolocationPref,
-          testExperimentVariationParams);
+          testExperimentVariationParams,
+          testNotificationPermissionLevel);
 
       // Invoking the tested function.
       initialize();
@@ -586,6 +601,7 @@ TEST_F(
       var testIdentityToken = 'some identity token';
       var testGeolocationPref = false;
       var testExperimentVariationParams = {};
+      var testNotificationPermissionLevel = 'denied';
 
       mockInitializeDependencies(this);
 
@@ -598,7 +614,8 @@ TEST_F(
           this,
           testIdentityToken,
           testGeolocationPref,
-          testExperimentVariationParams);
+          testExperimentVariationParams,
+          testNotificationPermissionLevel);
 
       var chromeNotificationGetAllSavedArgs = new SaveMockArguments();
       this.mockApis.expects(exactly(1)).
@@ -620,6 +637,7 @@ TEST_F('GoogleNowBackgroundUnitTest', 'Initialize_RunGoogleNow', function() {
   var testIdentityToken = 'some identity token';
   var testGeolocationPref = true;
   var testExperimentVariationParams = {};
+  var testNotificationPermissionLevel = 'granted';
 
   mockInitializeDependencies(this);
 
@@ -632,7 +650,8 @@ TEST_F('GoogleNowBackgroundUnitTest', 'Initialize_RunGoogleNow', function() {
       this,
       testIdentityToken,
       testGeolocationPref,
-      testExperimentVariationParams);
+      testExperimentVariationParams,
+      testNotificationPermissionLevel);
 
   this.mockGlobals.expects(once()).startPollingCards();
 
@@ -651,6 +670,7 @@ TEST_F(
   var testIdentityToken = 'some identity token';
   var testGeolocationPref = false;
   var testExperimentVariationParams = {};
+  var testNotificationPermissionLevel = 'denied';
 
   mockInitializeDependencies(this);
 
@@ -666,7 +686,9 @@ TEST_F(
       this,
       testIdentityToken,
       testGeolocationPref,
-      testExperimentVariationParams);
+      testExperimentVariationParams,
+      testNotificationPermissionLevel,
+      testNotificationPermissionLevel);
 
   var chromeNotificationGetAllSavedArgs = new SaveMockArguments();
   this.mockApis.expects(exactly(2)).
