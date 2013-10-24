@@ -141,6 +141,12 @@ ui::TextInputMode ConvertInputMode(
   return it->second;
 }
 
+// TODO(brianderson): Replace the hard-coded threshold with a fraction of
+// the BeginMainFrame interval.
+// 4166us will allow 1/4 of a 60Hz interval or 1/2 of a 120Hz interval to
+// be spent in input hanlders before input starts getting throttled.
+const int kInputHandlingTimeThrottlingThresholdMicroseconds = 4166;
+
 }  // namespace
 
 namespace content {
@@ -1051,6 +1057,10 @@ void RenderWidget::OnHandleInputEvent(const WebKit::WebInputEvent* input_event,
     return;
   }
 
+  base::TimeTicks start_time;
+  if (base::TimeTicks::IsHighResNowFastAndReliable())
+    start_time = base::TimeTicks::HighResNow();
+
   const char* const event_name =
       WebInputEventTraits::GetName(input_event->type);
   TRACE_EVENT1("renderer", "RenderWidget::OnHandleInputEvent",
@@ -1130,7 +1140,7 @@ void RenderWidget::OnHandleInputEvent(const WebKit::WebInputEvent* input_event,
                                             input_event->type,
                                             ack_result,
                                             latency_info);
-  bool event_type_gets_rate_limited =
+  bool event_type_can_be_rate_limited =
       input_event->type == WebInputEvent::MouseMove ||
       input_event->type == WebInputEvent::MouseWheel ||
       input_event->type == WebInputEvent::TouchMove;
@@ -1141,9 +1151,24 @@ void RenderWidget::OnHandleInputEvent(const WebKit::WebInputEvent* input_event,
                     compositor_->commitRequested();
   }
 
-  if (event_type_gets_rate_limited && frame_pending && !is_hidden_) {
+  // If we don't have a fast and accurate HighResNow, we assume the input
+  // handlers are heavy and rate limit them.
+  bool rate_limiting_wanted = true;
+  if (base::TimeTicks::IsHighResNowFastAndReliable()) {
+      base::TimeTicks end_time = base::TimeTicks::HighResNow();
+      total_input_handling_time_this_frame_ += (end_time - start_time);
+      rate_limiting_wanted =
+          total_input_handling_time_this_frame_.InMicroseconds() >
+          kInputHandlingTimeThrottlingThresholdMicroseconds;
+  }
+
+  if (rate_limiting_wanted && event_type_can_be_rate_limited &&
+      frame_pending && !is_hidden_) {
     // We want to rate limit the input events in this case, so we'll wait for
     // painting to finish before ACKing this message.
+    TRACE_EVENT_INSTANT0("renderer",
+      "RenderWidget::OnHandleInputEvent ack throttled",
+      TRACE_EVENT_SCOPE_THREAD);
     if (pending_input_event_ack_) {
       // As two different kinds of events could cause us to postpone an ack
       // we send it now, if we have one pending. The Browser should never
@@ -1399,11 +1424,15 @@ void RenderWidget::InvalidationCallback() {
   DoDeferredUpdateAndSendInputAck();
 }
 
-void RenderWidget::DoDeferredUpdateAndSendInputAck() {
-  DoDeferredUpdate();
-
+void RenderWidget::FlushPendingInputEventAck() {
   if (pending_input_event_ack_)
     Send(pending_input_event_ack_.release());
+  total_input_handling_time_this_frame_ = base::TimeDelta();
+}
+
+void RenderWidget::DoDeferredUpdateAndSendInputAck() {
+  DoDeferredUpdate();
+  FlushPendingInputEventAck();
 }
 
 void RenderWidget::DoDeferredUpdate() {
@@ -1625,8 +1654,7 @@ void RenderWidget::DoDeferredUpdate() {
   // UpdateReply message so we can receive another input event before the
   // UpdateRect_ACK on platforms where the UpdateRect_ACK is sent from within
   // the UpdateRect IPC message handler.
-  if (pending_input_event_ack_)
-    Send(pending_input_event_ack_.release());
+  FlushPendingInputEventAck();
 
   // If Composite() called SwapBuffers, pending_update_params_ will be reset (in
   // OnSwapBuffersPosted), meaning a message has been added to the
@@ -1845,8 +1873,7 @@ void RenderWidget::willBeginCompositorFrame() {
 
 void RenderWidget::didBecomeReadyForAdditionalInput() {
   TRACE_EVENT0("renderer", "RenderWidget::didBecomeReadyForAdditionalInput");
-  if (pending_input_event_ack_)
-    Send(pending_input_event_ack_.release());
+  FlushPendingInputEventAck();
 }
 
 void RenderWidget::DidCommitCompositorFrame() {
