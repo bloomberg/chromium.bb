@@ -640,8 +640,9 @@
             'remoting_host',
             'remoting_host_event_logger',
             'remoting_host_logging',
-            'remoting_infoplist_strings',
             'remoting_host_setup_base',
+            'remoting_infoplist_strings',
+            'remoting_it2me_host_static',
             'remoting_jingle_glue',
             'remoting_resources',
           ],
@@ -731,6 +732,27 @@
             }],
           ],
         },  # end of target 'remoting_host_plugin'
+        {
+          'target_name': 'remoting_it2me_host_static',
+          'type': 'static_library',
+          'variables': { 'enable_wexit_time_destructors': 1, },
+          'dependencies': [
+            '../base/base.gyp:base_i18n',
+            '../net/net.gyp:net',
+            'remoting_base',
+            'remoting_host',
+            'remoting_host_event_logger',
+            'remoting_host_logging',
+            'remoting_infoplist_strings',
+            'remoting_host_setup_base',
+            'remoting_jingle_glue',
+            'remoting_resources',
+          ],
+          'sources': [
+            'host/it2me/it2me_impl.cc',
+            'host/it2me/it2me_impl.h',
+          ],
+        },  # end of target 'remoting_it2me_host_static'
         {
           'target_name': 'remoting_infoplist_strings',
           'type': 'none',
