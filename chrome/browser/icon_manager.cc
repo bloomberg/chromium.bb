@@ -107,17 +107,21 @@ bool IconManager::OnImageLoaded(
 
   const ClientRequest& client_request = rit->second;
 
-  // Cache the bitmap. Watch out: |result| or the cached bitmap may be NULL to
-  // indicate a current or past failure.
+  // Cache the bitmap. Watch out: |result| may be NULL to indicate a current
+  // failure. We assume that if we have an entry in |icon_cache_|
+  // it must not be NULL.
   CacheKey key(group, client_request.size);
   IconMap::iterator it = icon_cache_.find(key);
-  if (it != icon_cache_.end() && result && it->second) {
-    if (it->second != result) {
+  if (it != icon_cache_.end()) {
+    if (!result) {
+      delete it->second;
+      icon_cache_.erase(it);
+    } else if (result != it->second) {
       it->second->SwapRepresentations(result);
       delete result;
       result = it->second;
     }
-  } else {
+  } else if (result) {
     icon_cache_[key] = result;
   }
 
