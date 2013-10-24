@@ -921,7 +921,9 @@ x11_compositor_create_output(struct x11_compositor *c, int x, int y,
 			   x, y, width, height, transform, scale);
 
 	if (c->use_pixman) {
-		if (x11_output_init_shm(c, output, output_width, output_height) < 0)
+		if (x11_output_init_shm(c, output,
+					output->mode.width,
+					output->mode.height) < 0)
 			return NULL;
 		if (pixman_renderer_output_create(&output->base) < 0) {
 			x11_output_deinit_shm(c, output);
