@@ -35,13 +35,14 @@ class SyncPolicy {
   static DWORD CreateEventAction(EvalResult eval_result,
                                  const ClientInfo& client_info,
                                  const std::wstring &event_name,
-                                 uint32 event_type,
+                                 uint32 manual_reset,
                                  uint32 initial_state,
                                  HANDLE *handle);
   static DWORD OpenEventAction(EvalResult eval_result,
                                const ClientInfo& client_info,
                                const std::wstring &event_name,
                                uint32 desired_access,
+                               uint32 inherit_handle,
                                HANDLE *handle);
 };
 
