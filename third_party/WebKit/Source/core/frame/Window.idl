@@ -24,6 +24,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// HTML 5 draft spec:
+// http://www.w3.org/html/wg/drafts/html/master/browsers.html#window
 [
     CheckSecurity,
     CustomToV8,
@@ -42,7 +44,7 @@
     [Replaceable, PerWorldBindings, ActivityLogging=GetterForIsolatedWorlds] readonly attribute Navigator navigator;
     [Replaceable] readonly attribute Navigator clientInformation;
     [DoNotCheckSecurity, Unforgeable, Replaceable, PerWorldBindings, ActivityLogging=AccessForIsolatedWorlds, PutForwards=href] readonly attribute Location location;
-    [Custom, MeasureAs=WindowEvent, NotEnumerable, Replaceable] readonly attribute Event event;
+    [Custom, MeasureAs=WindowEvent, NotEnumerable] attribute Event event;
 
     Selection getSelection();
 
@@ -115,7 +117,7 @@
     [DoNotCheckSecurity, Unforgeable] readonly attribute Window window;
     [Replaceable, DoNotCheckSecurityOnGetter] readonly attribute  Window frames;
 
-    [Replaceable, DoNotCheckSecurityOnGetter, CustomSetter] readonly attribute Window opener;
+    [DoNotCheckSecurityOnGetter, CustomSetter] attribute Window opener;
     [Replaceable, DoNotCheckSecurityOnGetter] readonly attribute Window parent;
     [DoNotCheckSecurityOnGetter, Unforgeable] readonly attribute Window top;
 

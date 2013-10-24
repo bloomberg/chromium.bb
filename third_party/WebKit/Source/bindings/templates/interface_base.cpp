@@ -66,10 +66,10 @@ template <typename T> void V8_USE(T) { }
 {{attribute_getter(attribute, world_suffix)}}
 {% endif %}
 {{attribute_getter_callback(attribute, world_suffix)}}
-{% if not (attribute.is_read_only or attribute.has_custom_setter) %}
+{% if not attribute.is_read_only %}
+{% if not attribute.has_custom_setter %}
 {{attribute_setter(attribute, world_suffix)}}
 {% endif %}
-{% if not attribute.is_read_only or attribute.has_custom_setter %}{# Separate check needed for [Custom(Setter), Replaceable], which are read only but have a setter callback #}
 {{attribute_setter_callback(attribute, world_suffix)}}
 {% endif %}
 {% endfor %}

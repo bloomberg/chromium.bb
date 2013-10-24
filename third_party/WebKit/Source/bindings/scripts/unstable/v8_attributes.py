@@ -70,10 +70,7 @@ def generate_attribute_and_includes(interface, attribute):
     extended_attributes = attribute.extended_attributes
 
     has_custom_getter = has_extended_attribute(attribute, ('Custom', 'CustomGetter'))
-    is_replaceable = 'Replaceable' in attribute.extended_attributes
-    has_custom_setter = (
-            (not attribute.is_read_only or is_replaceable) and
-            has_extended_attribute(attribute, ('Custom', 'CustomSetter')))
+    has_custom_setter = not attribute.is_read_only and has_extended_attribute(attribute, ('Custom', 'CustomSetter'))
     includes = set()
     contents = {
         'access_control_list': access_control_list(attribute),
@@ -91,7 +88,7 @@ def generate_attribute_and_includes(interface, attribute):
         'is_keep_alive_for_gc': is_keep_alive_for_gc(attribute),
         'is_nullable': attribute.is_nullable,
         'is_read_only': attribute.is_read_only,
-        'is_replaceable': is_replaceable,
+        'is_replaceable': 'Replaceable' in attribute.extended_attributes,
         'is_setter_raises_exception': has_extended_attribute(attribute, ('RaisesException', 'SetterRaisesException')),
         'is_static': attribute.is_static,
         'name': attribute.name,
@@ -105,7 +102,7 @@ def generate_attribute_and_includes(interface, attribute):
     }
     if not has_custom_getter:
         generate_getter(interface, attribute, contents, includes)
-    if not (attribute.is_read_only or has_custom_setter):
+    if not attribute.is_read_only and not has_custom_setter:
         generate_setter(interface, attribute, contents, includes)
 
     return contents, includes
@@ -312,18 +309,14 @@ def getter_callback_name(interface, attribute):
     return '%sV8Internal::%sAttributeGetterCallback' % (cpp_name(interface), attribute.name)
 
 
+# [Replaceable]
 def setter_callback_name(interface, attribute):
-    if (attribute.is_read_only and
-        'Replaceable' not in attribute.extended_attributes):
-        # FIXME: support [PutForwards]
-        return '0'
     cpp_class_name = cpp_name(interface)
-    if ('Replaceable' in attribute.extended_attributes and
-        not has_extended_attribute(attribute, ('Custom', 'CustomSetter'))):
-        # Non-custom replaceable attributes have a single interface-level
-        # setter callback (rather than individual attribute-level callbacks),
-        # but custom replaceable attributes have individual callbacks, as usual.
+    if 'Replaceable' in attribute.extended_attributes:
         return '{0}V8Internal::{0}ReplaceableAttributeSetterCallback'.format(cpp_class_name)
+    # FIXME: support [PutForwards]
+    if attribute.is_read_only:
+        return '0'
     return '%sV8Internal::%sAttributeSetterCallback' % (cpp_class_name, attribute.name)
 
 
