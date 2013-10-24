@@ -61,76 +61,6 @@ namespace WebCore {
 
 namespace {
 
-struct PendingEvent {
-    enum Type {
-        DidConnectComplete,
-        DidReceiveTextMessage,
-        DidReceiveBinaryMessage,
-        DidReceiveError,
-        DidClose,
-    };
-    Type type;
-    Vector<char> message; // for DidReceiveTextMessage / DidReceiveBinaryMessage
-    int closingCode; // for DidClose
-    String closingReason; // for DidClose
-
-    explicit PendingEvent(Type type) : type(type), closingCode(0) { }
-    PendingEvent(Type, Vector<char>*);
-    PendingEvent(int code, const String& reason) : type(DidClose), closingCode(code), closingReason(reason) { }
-};
-
-class PendingEventProcessor : public RefCounted<PendingEventProcessor> {
-public:
-    PendingEventProcessor() : m_isAborted(false) { }
-    virtual ~PendingEventProcessor() { }
-    void abort() { m_isAborted = true; }
-    void append(const PendingEvent& e) { m_events.append(e); }
-    void process(NewWebSocketChannelImpl*);
-
-private:
-    bool m_isAborted;
-    Vector<PendingEvent> m_events;
-};
-
-PendingEvent::PendingEvent(Type type, Vector<char>* data)
-    : type(type)
-    , closingCode(0)
-{
-    ASSERT(type == DidReceiveTextMessage || type == DidReceiveBinaryMessage);
-    message.swap(*data);
-}
-
-void PendingEventProcessor::process(NewWebSocketChannelImpl* channel)
-{
-    RefPtr<PendingEventProcessor> protect(this);
-    for (size_t i = 0; i < m_events.size() && !m_isAborted; ++i) {
-        PendingEvent& event = m_events[i];
-        switch (event.type) {
-        case PendingEvent::DidConnectComplete:
-            channel->handleDidConnect();
-            // |this| can be detached here.
-            break;
-        case PendingEvent::DidReceiveTextMessage:
-            channel->handleTextMessage(&event.message);
-            // |this| can be detached here.
-            break;
-        case PendingEvent::DidReceiveBinaryMessage:
-            channel->handleBinaryMessage(&event.message);
-            // |this| can be detached here.
-            break;
-        case PendingEvent::DidReceiveError:
-            channel->handleDidReceiveMessageError();
-            // |this| can be detached here.
-            break;
-        case PendingEvent::DidClose:
-            channel->handleDidClose(event.closingCode, event.closingReason);
-            // |this| can be detached here.
-            break;
-        }
-    }
-    m_events.clear();
-}
-
 bool isClean(int code)
 {
     return code == WebSocketChannel::CloseEventCodeNormalClosure
@@ -184,87 +114,11 @@ void NewWebSocketChannelImpl::BlobLoader::didFail(FileError::ErrorCode errorCode
     // |this| is deleted here.
 }
 
-class NewWebSocketChannelImpl::Resumer {
-public:
-    explicit Resumer(NewWebSocketChannelImpl*);
-    ~Resumer();
-
-    void append(const PendingEvent&);
-    void suspend();
-    void resumeLater();
-    void abort();
-
-private:
-    void resumeNow(Timer<Resumer>*);
-
-    NewWebSocketChannelImpl* m_channel;
-    RefPtr<PendingEventProcessor> m_pendingEventProcessor;
-    Timer<Resumer> m_timer;
-    bool m_isAborted;
-};
-
-NewWebSocketChannelImpl::Resumer::Resumer(NewWebSocketChannelImpl* channel)
-    : m_channel(channel)
-    , m_pendingEventProcessor(adoptRef(new PendingEventProcessor))
-    , m_timer(this, &Resumer::resumeNow)
-    , m_isAborted(false) { }
-
-NewWebSocketChannelImpl::Resumer::~Resumer()
-{
-    abort();
-}
-
-void NewWebSocketChannelImpl::Resumer::append(const PendingEvent& event)
-{
-    if (m_isAborted)
-        return;
-    m_pendingEventProcessor->append(event);
-}
-
-void NewWebSocketChannelImpl::Resumer::suspend()
-{
-    if (m_isAborted)
-        return;
-    m_timer.stop();
-    m_channel->m_isSuspended = true;
-}
-
-void NewWebSocketChannelImpl::Resumer::resumeLater()
-{
-    if (m_isAborted)
-        return;
-    if (!m_timer.isActive())
-        m_timer.startOneShot(0);
-}
-
-void NewWebSocketChannelImpl::Resumer::abort()
-{
-    if (m_isAborted)
-        return;
-    m_isAborted = true;
-    m_timer.stop();
-    m_pendingEventProcessor->abort();
-    m_pendingEventProcessor = 0;
-}
-
-void NewWebSocketChannelImpl::Resumer::resumeNow(Timer<Resumer>*)
-{
-    ASSERT(!m_isAborted);
-    m_channel->m_isSuspended = false;
-
-    ASSERT(m_channel->m_client);
-    m_pendingEventProcessor->process(m_channel);
-    // |this| can be aborted here.
-    // |this| can be deleted here.
-}
-
 NewWebSocketChannelImpl::NewWebSocketChannelImpl(ExecutionContext* context, WebSocketChannelClient* client, const String& sourceURL, unsigned lineNumber)
     : ContextLifecycleObserver(context)
     , m_handle(adoptPtr(WebKit::Platform::current()->createWebSocketHandle()))
     , m_client(client)
     , m_identifier(0)
-    , m_resumer(adoptPtr(new Resumer(this)))
-    , m_isSuspended(false)
     , m_sendingQuota(0)
     , m_receivedDataSizeForFlowControl(receivedDataSizeForFlowControlHighWaterMark * 2) // initial quota
     , m_bufferedAmount(0)
@@ -392,12 +246,8 @@ void NewWebSocketChannelImpl::fail(const String& reason, MessageLevel level, con
         m_client->didReceiveMessageError();
     // |reason| is only for logging and should not be provided for scripts,
     // hence close reason must be empty.
-    if (m_isSuspended) {
-        m_resumer->append(PendingEvent(CloseEventCodeAbnormalClosure, String()));
-    } else {
-        handleDidClose(CloseEventCodeAbnormalClosure, String());
-        // handleDidClose may delete this object.
-    }
+    handleDidClose(CloseEventCodeAbnormalClosure, String());
+    // handleDidClose may delete this object.
 }
 
 void NewWebSocketChannelImpl::disconnect()
@@ -413,94 +263,14 @@ void NewWebSocketChannelImpl::disconnect()
     m_identifier = 0;
 }
 
-Document* NewWebSocketChannelImpl::document()
-{
-    ASSERT(m_identifier);
-    ExecutionContext* context = executionContext();
-    ASSERT(context->isDocument());
-    return toDocument(context);
-}
-
 void NewWebSocketChannelImpl::suspend()
 {
     LOG(Network, "NewWebSocketChannelImpl %p suspend()", this);
-    m_resumer->suspend();
 }
 
 void NewWebSocketChannelImpl::resume()
 {
     LOG(Network, "NewWebSocketChannelImpl %p resume()", this);
-    m_resumer->resumeLater();
-}
-
-void NewWebSocketChannelImpl::handleDidConnect()
-{
-    ASSERT(m_client);
-    ASSERT(!m_isSuspended);
-    m_client->didConnect();
-}
-
-void NewWebSocketChannelImpl::handleTextMessage(Vector<char>* messageData)
-{
-    ASSERT(m_client);
-    ASSERT(!m_isSuspended);
-    ASSERT(messageData);
-    if (m_identifier) {
-        // FIXME: Change the inspector API to show the entire message instead
-        // of individual frames.
-        WebSocketFrame frame(WebSocketFrame::OpCodeText, messageData->data(), messageData->size(), WebSocketFrame::Final);
-        InspectorInstrumentation::didReceiveWebSocketFrame(document(), m_identifier, frame);
-    }
-
-    String message = String::fromUTF8(messageData->data(), messageData->size());
-    // For consistency with handleBinaryMessage, we clear |messageData|.
-    messageData->clear();
-    if (message.isNull()) {
-        failAsError("Could not decode a text frame as UTF-8.");
-        // failAsError may delete this object.
-    } else {
-        m_client->didReceiveMessage(message);
-    }
-}
-
-void NewWebSocketChannelImpl::handleBinaryMessage(Vector<char>* messageData)
-{
-    ASSERT(m_client);
-    ASSERT(!m_isSuspended);
-    ASSERT(messageData);
-    if (m_identifier) {
-        // FIXME: Change the inspector API to show the entire message instead
-        // of individual frames.
-        WebSocketFrame frame(WebSocketFrame::OpCodeBinary, messageData->data(), messageData->size(), WebSocketFrame::Final);
-        InspectorInstrumentation::didReceiveWebSocketFrame(document(), m_identifier, frame);
-    }
-
-    OwnPtr<Vector<char> > binaryData = adoptPtr(new Vector<char>);
-    messageData->swap(*binaryData);
-    m_client->didReceiveBinaryData(binaryData.release());
-}
-
-void NewWebSocketChannelImpl::handleDidReceiveMessageError()
-{
-    ASSERT(m_client);
-    ASSERT(!m_isSuspended);
-    m_client->didReceiveMessageError();
-}
-
-void NewWebSocketChannelImpl::handleDidClose(unsigned short code, const String& reason)
-{
-    ASSERT(!m_isSuspended);
-    m_handle.clear();
-    abortAsyncOperations();
-    if (!m_client) {
-        return;
-    }
-    WebSocketChannelClient* client = m_client;
-    m_client = 0;
-    WebSocketChannelClient::ClosingHandshakeCompletionStatus status =
-        isClean(code) ? WebSocketChannelClient::ClosingHandshakeComplete : WebSocketChannelClient::ClosingHandshakeIncomplete;
-    client->didClose(m_bufferedAmount, status, code, reason);
-    // client->didClose may delete this object.
 }
 
 NewWebSocketChannelImpl::Message::Message(const String& text)
@@ -573,7 +343,29 @@ void NewWebSocketChannelImpl::abortAsyncOperations()
         m_blobLoader->cancel();
         m_blobLoader.clear();
     }
-    m_resumer->abort();
+}
+
+void NewWebSocketChannelImpl::handleDidClose(unsigned short code, const String& reason)
+{
+    m_handle.clear();
+    abortAsyncOperations();
+    if (!m_client) {
+        return;
+    }
+    WebSocketChannelClient* client = m_client;
+    m_client = 0;
+    WebSocketChannelClient::ClosingHandshakeCompletionStatus status =
+        isClean(code) ? WebSocketChannelClient::ClosingHandshakeComplete : WebSocketChannelClient::ClosingHandshakeIncomplete;
+    client->didClose(m_bufferedAmount, status, code, reason);
+    // client->didClose may delete this object.
+}
+
+Document* NewWebSocketChannelImpl::document()
+{
+    ASSERT(m_identifier);
+    ExecutionContext* context = executionContext();
+    ASSERT(context->isDocument());
+    return toDocument(context);
 }
 
 void NewWebSocketChannelImpl::didConnect(WebSocketHandle* handle, bool fail, const WebKit::WebString& selectedProtocol, const WebKit::WebString& extensions)
@@ -593,10 +385,7 @@ void NewWebSocketChannelImpl::didConnect(WebSocketHandle* handle, bool fail, con
 
     m_subprotocol = selectedProtocol;
     m_extensions = extensions;
-    if (m_isSuspended)
-        m_resumer->append(PendingEvent(PendingEvent::DidConnectComplete));
-    else
-        m_client->didConnect();
+    m_client->didConnect();
 }
 
 void NewWebSocketChannelImpl::didReceiveData(WebSocketHandle* handle, bool fin, WebSocketHandle::MessageType type, const char* data, size_t size)
@@ -627,22 +416,28 @@ void NewWebSocketChannelImpl::didReceiveData(WebSocketHandle* handle, bool fin, 
     if (!fin) {
         return;
     }
-    if (m_isSuspended) {
-        PendingEvent::Type type =
-            m_receivingMessageTypeIsText ? PendingEvent::DidReceiveTextMessage : PendingEvent::DidReceiveBinaryMessage;
-        m_resumer->append(PendingEvent(type, &m_receivingMessageData));
-        return;
+    if (m_identifier) {
+        // FIXME: Change the inspector API to show the entire message instead
+        // of individual frames.
+        WebSocketFrame::OpCode opcode = m_receivingMessageTypeIsText ? WebSocketFrame::OpCodeText : WebSocketFrame::OpCodeBinary;
+        WebSocketFrame frame(opcode, m_receivingMessageData.data(), m_receivingMessageData.size(), WebSocketFrame::Final);
+        InspectorInstrumentation::didReceiveWebSocketFrame(document(), m_identifier, frame);
     }
-    Vector<char> messageData;
-    messageData.swap(m_receivingMessageData);
     if (m_receivingMessageTypeIsText) {
-        handleTextMessage(&messageData);
-        // handleTextMessage may delete this object.
+        String message = String::fromUTF8(m_receivingMessageData.data(), m_receivingMessageData.size());
+        m_receivingMessageData.clear();
+        if (message.isNull()) {
+            failAsError("Could not decode a text frame as UTF-8.");
+            // failAsError may delete this object.
+        } else {
+            m_client->didReceiveMessage(message);
+        }
     } else {
-        handleBinaryMessage(&messageData);
+        OwnPtr<Vector<char> > binaryData = adoptPtr(new Vector<char>);
+        binaryData->swap(m_receivingMessageData);
+        m_client->didReceiveBinaryData(binaryData.release());
     }
 }
-
 
 void NewWebSocketChannelImpl::didClose(WebSocketHandle* handle, unsigned short code, const WebKit::WebString& reason)
 {
@@ -655,12 +450,8 @@ void NewWebSocketChannelImpl::didClose(WebSocketHandle* handle, unsigned short c
     }
 
     // FIXME: Maybe we should notify an error to m_client for some didClose messages.
-    if (m_isSuspended) {
-        m_resumer->append(PendingEvent(code, reason));
-    } else {
-        handleDidClose(code, reason);
-        // handleDidClose may delete this object.
-    }
+    handleDidClose(code, reason);
+    // handleDidClose may delete this object.
 }
 
 void NewWebSocketChannelImpl::didFinishLoadingBlob(PassRefPtr<ArrayBuffer> buffer)

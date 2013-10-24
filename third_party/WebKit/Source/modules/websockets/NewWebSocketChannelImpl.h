@@ -89,12 +89,6 @@ public:
     virtual void suspend() OVERRIDE;
     virtual void resume() OVERRIDE;
 
-    void handleDidConnect();
-    void handleTextMessage(Vector<char>*);
-    void handleBinaryMessage(Vector<char>*);
-    void handleDidReceiveMessageError();
-    void handleDidClose(unsigned short code, const String& reason);
-
 private:
     enum MessageType {
         MessageTypeText,
@@ -118,13 +112,13 @@ private:
     };
 
     class BlobLoader;
-    class Resumer;
 
     NewWebSocketChannelImpl(ExecutionContext*, WebSocketChannelClient*, const String&, unsigned);
     void sendInternal();
     void flowControlIfNecessary();
     void failAsError(const String& reason) { fail(reason, ErrorMessageLevel, m_sourceURLAtConnection, m_lineNumberAtConnection); }
     void abortAsyncOperations();
+    void handleDidClose(unsigned short code, const String& reason);
     Document* document(); // can be called only when m_identifier > 0.
 
     // WebSocketHandleClient functions.
@@ -156,8 +150,6 @@ private:
     // m_identifier > 0 means calling scriptContextExecution() returns a Document.
     unsigned long m_identifier;
     OwnPtr<BlobLoader> m_blobLoader;
-    OwnPtr<Resumer> m_resumer;
-    bool m_isSuspended;
     Deque<Message> m_messages;
     Vector<char> m_receivingMessageData;
 
