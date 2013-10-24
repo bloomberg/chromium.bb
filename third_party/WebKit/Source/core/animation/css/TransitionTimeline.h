@@ -37,10 +37,10 @@ namespace WebCore {
 
 class TransitionTimeline FINAL : public DocumentTimeline {
 public:
-    static PassRefPtr<TransitionTimeline> create(Document*);
+    static PassRefPtr<TransitionTimeline> create(Document*, PassOwnPtr<PlatformTiming> = nullptr);
 
 private:
-    TransitionTimeline(Document*);
+    TransitionTimeline(Document*, PassOwnPtr<PlatformTiming>);
 };
 
 } // namespace WebCore

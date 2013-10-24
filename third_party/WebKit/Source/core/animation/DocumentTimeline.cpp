@@ -39,15 +39,25 @@
 
 namespace WebCore {
 
-PassRefPtr<DocumentTimeline> DocumentTimeline::create(Document* document)
+// This value represents 1 frame at 30Hz plus a little bit of wiggle room.
+// TODO: Plumb a nominal framerate through and derive this value from that.
+const double DocumentTimeline::s_minimumDelay = 0.04;
+
+
+PassRefPtr<DocumentTimeline> DocumentTimeline::create(Document* document, PassOwnPtr<PlatformTiming> timing)
 {
-    return adoptRef(new DocumentTimeline(document));
+    return adoptRef(new DocumentTimeline(document, timing));
 }
 
-DocumentTimeline::DocumentTimeline(Document* document)
+DocumentTimeline::DocumentTimeline(Document* document, PassOwnPtr<PlatformTiming> timing)
     : m_document(document)
     , m_zeroTime(nullValue())
 {
+    if (!timing)
+        m_timing = adoptPtr(new DocumentTimelineTiming(this));
+    else
+        m_timing = timing;
+
     ASSERT(document);
 }
 
@@ -57,21 +67,38 @@ PassRefPtr<Player> DocumentTimeline::play(TimedItem* child)
     m_players.append(player);
 
     if (m_document->view())
-        m_document->view()->scheduleAnimation();
+        m_timing->serviceOnNextFrame();
 
     return player.release();
+}
+
+void DocumentTimeline::wake()
+{
+    m_timing->serviceOnNextFrame();
 }
 
 void DocumentTimeline::serviceAnimations(double monotonicAnimationStartTime)
 {
     TRACE_EVENT0("webkit", "DocumentTimeline::serviceAnimations");
 
+    m_timing->cancelWake();
+
     m_document->animationClock().updateTime(monotonicAnimationStartTime);
 
-    double timeToNextEffect = -1;
+    double timeToNextEffect = std::numeric_limits<double>::infinity();
+    double playerNextEffect;
     for (int i = m_players.size() - 1; i >= 0; --i) {
-        if (!m_players[i]->update(&timeToNextEffect))
+        if (!m_players[i]->update(&playerNextEffect))
             m_players.remove(i);
+        if (playerNextEffect < timeToNextEffect)
+            timeToNextEffect = playerNextEffect;
+    }
+
+    if (!m_players.isEmpty()) {
+        if (timeToNextEffect < s_minimumDelay)
+            m_timing->serviceOnNextFrame();
+        else if (timeToNextEffect != std::numeric_limits<double>::infinity())
+            m_timing->wakeAfter(timeToNextEffect - s_minimumDelay);
     }
 
     if (m_document->view() && !m_players.isEmpty())
@@ -83,6 +110,22 @@ void DocumentTimeline::setZeroTime(double zeroTime)
     ASSERT(isNull(m_zeroTime));
     m_zeroTime = zeroTime;
     ASSERT(!isNull(m_zeroTime));
+}
+
+void DocumentTimeline::DocumentTimelineTiming::wakeAfter(double duration)
+{
+    m_timer.startOneShot(duration);
+}
+
+void DocumentTimeline::DocumentTimelineTiming::cancelWake()
+{
+    m_timer.stop();
+}
+
+void DocumentTimeline::DocumentTimelineTiming::serviceOnNextFrame()
+{
+    if (m_timeline->m_document->view())
+        m_timeline->m_document->view()->scheduleAnimation();
 }
 
 double DocumentTimeline::currentTime()

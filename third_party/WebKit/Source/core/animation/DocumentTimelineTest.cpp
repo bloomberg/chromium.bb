@@ -39,11 +39,45 @@
 #include "core/dom/Element.h"
 #include "core/dom/QualifiedName.h"
 #include "weborigin/KURL.h"
+
+#include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
-using namespace WebCore;
+namespace WebCore {
 
-namespace {
+class MockPlatformTiming : public DocumentTimeline::PlatformTiming {
+public:
+
+    MOCK_METHOD1(wakeAfter, void(double));
+    MOCK_METHOD0(cancelWake, void());
+    MOCK_METHOD0(serviceOnNextFrame, void());
+
+    /**
+     * DocumentTimelines should do one of the following things after servicing animations:
+     *  - cancel the timer and not request to be woken again (expectNoMoreActions)
+     *  - cancel the timer and request to be woken on the next frame (expectNextFrameAction)
+     *  - cancel the timer and request to be woken at some point in the future (expectDelayedAction)
+     */
+
+    void expectNoMoreActions()
+    {
+        EXPECT_CALL(*this, cancelWake());
+    }
+
+    void expectNextFrameAction()
+    {
+        ::testing::Sequence sequence;
+        EXPECT_CALL(*this, cancelWake()).InSequence(sequence);
+        EXPECT_CALL(*this, serviceOnNextFrame()).InSequence(sequence);
+    }
+
+    void expectDelayedAction(double when)
+    {
+        ::testing::Sequence sequence;
+        EXPECT_CALL(*this, cancelWake()).InSequence(sequence);
+        EXPECT_CALL(*this, wakeAfter(when)).InSequence(sequence);
+    }
+};
 
 class CoreAnimationDocumentTimelineTest : public ::testing::Test {
 protected:
@@ -52,15 +86,35 @@ protected:
         document = Document::create();
         document->animationClock().resetTimeForTesting();
         element = Element::create(nullQName() , document.get());
-        timeline = DocumentTimeline::create(document.get());
+        platformTiming = new MockPlatformTiming;
+        timeline = DocumentTimeline::create(document.get(), adoptPtr(platformTiming));
         timeline->setZeroTime(0);
         ASSERT_EQ(0, timeline->currentTime());
+    }
+
+    virtual void TearDown()
+    {
+        timeline.release();
+        document.release();
+        element.release();
     }
 
     RefPtr<Document> document;
     RefPtr<Element> element;
     RefPtr<DocumentTimeline> timeline;
     Timing timing;
+    MockPlatformTiming* platformTiming;
+
+    void wake()
+    {
+        timeline->wake();
+    }
+
+    double minimumDelay()
+    {
+        return DocumentTimeline::s_minimumDelay;
+    }
+
 };
 
 TEST_F(CoreAnimationDocumentTimelineTest, EmptyKeyframeAnimation)
@@ -70,10 +124,12 @@ TEST_F(CoreAnimationDocumentTimelineTest, EmptyKeyframeAnimation)
 
     timeline->play(anim.get());
 
+    platformTiming->expectNoMoreActions();
     timeline->serviceAnimations(0);
     EXPECT_FLOAT_EQ(0, timeline->currentTime());
     EXPECT_TRUE(anim->compositableValues()->isEmpty());
 
+    platformTiming->expectNoMoreActions();
     timeline->serviceAnimations(100);
     EXPECT_FLOAT_EQ(100, timeline->currentTime());
 }
@@ -143,14 +199,43 @@ TEST_F(CoreAnimationDocumentTimelineTest, NumberOfActiveAnimations)
     RefPtr<Player> player3 = timeline->play(anim3.get());
     RefPtr<Player> player4 = timeline->play(anim4.get());
 
+    platformTiming->expectNextFrameAction();
     timeline->serviceAnimations(0);
     EXPECT_EQ(4U, timeline->numberOfActiveAnimationsForTesting());
+    platformTiming->expectNextFrameAction();
     timeline->serviceAnimations(0.5);
     EXPECT_EQ(4U, timeline->numberOfActiveAnimationsForTesting());
+    platformTiming->expectNextFrameAction();
     timeline->serviceAnimations(1.5);
     EXPECT_EQ(4U, timeline->numberOfActiveAnimationsForTesting());
+    platformTiming->expectNoMoreActions();
     timeline->serviceAnimations(3);
     EXPECT_EQ(1U, timeline->numberOfActiveAnimationsForTesting());
+}
+
+TEST_F(CoreAnimationDocumentTimelineTest, DelayBeforeAnimationStart)
+{
+
+    timing.hasIterationDuration = true;
+    timing.iterationDuration = 2;
+    timing.startDelay = 5;
+
+    RefPtr<Animation> anim = Animation::create(element.get(), 0, timing);
+
+    RefPtr<Player> player = timeline->play(anim.get());
+
+    // TODO: Put the player startTime in the future when we add the capability to change player startTime
+    platformTiming->expectDelayedAction(timing.startDelay - minimumDelay());
+    timeline->serviceAnimations(0);
+
+    platformTiming->expectDelayedAction(timing.startDelay - minimumDelay() - 1.5);
+    timeline->serviceAnimations(1.5);
+
+    EXPECT_CALL(*platformTiming, serviceOnNextFrame());
+    wake();
+
+    platformTiming->expectNextFrameAction();
+    timeline->serviceAnimations(4.98);
 }
 
 }

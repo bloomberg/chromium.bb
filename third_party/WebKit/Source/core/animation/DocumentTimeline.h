@@ -35,6 +35,7 @@
 #include "core/animation/Player.h"
 #include "core/dom/Element.h"
 #include "core/events/Event.h"
+#include "platform/Timer.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
@@ -46,9 +47,19 @@ class TimedItem;
 
 // DocumentTimeline is constructed and owned by Document, and tied to its lifecycle.
 class DocumentTimeline : public RefCounted<DocumentTimeline> {
-
 public:
-    static PassRefPtr<DocumentTimeline> create(Document*);
+    class PlatformTiming {
+
+    public:
+        // Calls DocumentTimeline's wake() method after duration seconds.
+        virtual void wakeAfter(double duration) = 0;
+        virtual void cancelWake() = 0;
+        virtual void serviceOnNextFrame() = 0;
+        virtual ~PlatformTiming() { }
+
+    };
+
+    static PassRefPtr<DocumentTimeline> create(Document*, PassOwnPtr<PlatformTiming> = nullptr);
     void serviceAnimations(double);
     PassRefPtr<Player> play(TimedItem*);
     // Called from setReadyState() in Document.cpp to set m_zeroTime to
@@ -66,12 +77,14 @@ public:
     void dispatchEvents();
 
 protected:
-    DocumentTimeline(Document*);
+    DocumentTimeline(Document*, PassOwnPtr<PlatformTiming>);
 
 private:
     double m_zeroTime;
     Document* m_document;
     Vector<RefPtr<Player> > m_players;
+
+    void wake();
 
     struct EventToDispatch {
         EventToDispatch(EventTarget* target, PassRefPtr<Event> event)
@@ -83,6 +96,33 @@ private:
         RefPtr<Event> event;
     };
     Vector<EventToDispatch> m_events;
+
+    static const double s_minimumDelay;
+
+    OwnPtr<PlatformTiming> m_timing;
+
+    class DocumentTimelineTiming : public PlatformTiming {
+    public:
+        DocumentTimelineTiming(DocumentTimeline* documentTimeline)
+            : m_timeline(documentTimeline)
+            , m_timer(this, &DocumentTimelineTiming::timerFired)
+        {
+            ASSERT(m_timeline);
+        }
+
+        virtual void wakeAfter(double duration) OVERRIDE;
+        virtual void cancelWake() OVERRIDE;
+        virtual void serviceOnNextFrame() OVERRIDE;
+
+        void timerFired(Timer<DocumentTimelineTiming>*) { m_timeline->wake(); }
+
+    private:
+        DocumentTimeline* m_timeline;
+        Timer<DocumentTimelineTiming> m_timer;
+
+    };
+
+    friend class CoreAnimationDocumentTimelineTest;
 };
 
 } // namespace
