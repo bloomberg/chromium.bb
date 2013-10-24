@@ -27,9 +27,9 @@
 #define GraphicsContext3D_h
 
 #include "core/platform/graphics/Extensions3D.h"
-#include "core/platform/graphics/GraphicsTypes3D.h"
 #include "core/platform/graphics/Image.h"
 #include "platform/geometry/IntRect.h"
+#include "platform/graphics/GraphicsTypes3D.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "weborigin/KURL.h"
 #include "wtf/HashMap.h"

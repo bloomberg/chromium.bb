@@ -26,8 +26,8 @@
 #ifndef SkiaImageFilterBuilder_h
 #define SkiaImageFilterBuilder_h
 
-#include "core/platform/graphics/ColorSpace.h"
 #include "platform/geometry/FloatSize.h"
+#include "platform/graphics/ColorSpace.h"
 #include "public/platform/WebFilterOperations.h"
 #include "wtf/HashMap.h"
 

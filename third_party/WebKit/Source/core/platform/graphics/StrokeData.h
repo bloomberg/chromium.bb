@@ -31,12 +31,10 @@
 
 #include "core/platform/graphics/DashArray.h"
 #include "core/platform/graphics/Gradient.h"
-#include "core/platform/graphics/GraphicsTypes.h"
 #include "core/platform/graphics/Pattern.h"
-
+#include "platform/graphics/GraphicsTypes.h"
 #include "third_party/skia/include/core/SkColorPriv.h"
 #include "third_party/skia/include/effects/SkDashPathEffect.h"
-
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
 

@@ -28,13 +28,13 @@
 #ifndef ImageBuffer_h
 #define ImageBuffer_h
 
-#include "core/platform/graphics/ColorSpace.h"
 #include "core/platform/graphics/GraphicsContext.h"
-#include "core/platform/graphics/GraphicsTypes.h"
-#include "core/platform/graphics/GraphicsTypes3D.h"
 #include "core/platform/graphics/chromium/Canvas2DLayerBridge.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/geometry/IntSize.h"
+#include "platform/graphics/ColorSpace.h"
+#include "platform/graphics/GraphicsTypes.h"
+#include "platform/graphics/GraphicsTypes3D.h"
 #include "platform/transforms/AffineTransform.h"
 #include "wtf/Forward.h"
 #include "wtf/OwnPtr.h"

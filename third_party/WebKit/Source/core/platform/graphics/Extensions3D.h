@@ -26,7 +26,7 @@
 #ifndef Extensions3D_h
 #define Extensions3D_h
 
-#include "core/platform/graphics/GraphicsTypes3D.h"
+#include "platform/graphics/GraphicsTypes3D.h"
 
 #include "wtf/text/WTFString.h"
 

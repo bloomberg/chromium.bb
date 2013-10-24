@@ -23,9 +23,9 @@
 #ifndef FilterEffect_h
 #define FilterEffect_h
 
-#include "core/platform/graphics/ColorSpace.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/geometry/IntRect.h"
+#include "platform/graphics/ColorSpace.h"
 
 #include "third_party/skia/include/core/SkImageFilter.h"
 

@@ -31,11 +31,11 @@
 #ifndef FECustomFilter_h
 #define FECustomFilter_h
 
-#include "core/platform/graphics/GraphicsTypes3D.h"
 #include "core/platform/graphics/filters/Filter.h"
 #include "core/platform/graphics/filters/FilterEffect.h"
 #include "core/platform/graphics/filters/custom/CustomFilterConstants.h"
 #include "core/platform/graphics/filters/custom/CustomFilterOperation.h"
+#include "platform/graphics/GraphicsTypes3D.h"
 #include "wtf/RefPtr.h"
 
 namespace WebCore {

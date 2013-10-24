@@ -32,8 +32,8 @@
 #define DrawingBuffer_h
 
 #include "core/platform/graphics/GraphicsContext3D.h"
-#include "core/platform/graphics/GraphicsTypes3D.h"
 #include "platform/geometry/IntSize.h"
+#include "platform/graphics/GraphicsTypes3D.h"
 
 #include "public/platform/WebExternalTextureLayerClient.h"
 #include "public/platform/WebExternalTextureMailbox.h"

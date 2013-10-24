@@ -26,7 +26,7 @@
 #ifndef MediaPlayer_h
 #define MediaPlayer_h
 
-#include "core/platform/graphics/GraphicsTypes3D.h"
+#include "platform/graphics/GraphicsTypes3D.h"
 #include "wtf/Forward.h"
 #include "wtf/Noncopyable.h"
 

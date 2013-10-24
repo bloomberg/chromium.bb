@@ -30,10 +30,10 @@
 #define GraphicsContextState_h
 
 #include "core/platform/graphics/Gradient.h"
-#include "core/platform/graphics/GraphicsTypes.h"
 #include "core/platform/graphics/Path.h"
 #include "core/platform/graphics/Pattern.h"
 #include "core/platform/graphics/StrokeData.h"
+#include "platform/graphics/GraphicsTypes.h"
 #include "third_party/skia/include/core/SkColorFilter.h"
 #include "third_party/skia/include/core/SkColorPriv.h"
 #include "third_party/skia/include/core/SkDrawLooper.h"

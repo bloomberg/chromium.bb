@@ -26,8 +26,8 @@
 #ifndef GraphicsTypes_h
 #define GraphicsTypes_h
 
+#include "platform/PlatformExport.h"
 #include "third_party/skia/include/core/SkPaint.h"
-
 #include "wtf/Forward.h"
 
 namespace WebCore {
@@ -123,20 +123,20 @@ enum ColorFilter {
     ColorFilterLinearRGBToSRGB
 };
 
-String compositeOperatorName(CompositeOperator, BlendMode);
-bool parseCompositeAndBlendOperator(const String&, CompositeOperator&, BlendMode&);
+PLATFORM_EXPORT String compositeOperatorName(CompositeOperator, BlendMode);
+PLATFORM_EXPORT bool parseCompositeAndBlendOperator(const String&, CompositeOperator&, BlendMode&);
 
-String lineCapName(LineCap);
-bool parseLineCap(const String&, LineCap&);
+PLATFORM_EXPORT String lineCapName(LineCap);
+PLATFORM_EXPORT bool parseLineCap(const String&, LineCap&);
 
-String lineJoinName(LineJoin);
-bool parseLineJoin(const String&, LineJoin&);
+PLATFORM_EXPORT String lineJoinName(LineJoin);
+PLATFORM_EXPORT bool parseLineJoin(const String&, LineJoin&);
 
-String textAlignName(TextAlign);
-bool parseTextAlign(const String&, TextAlign&);
+PLATFORM_EXPORT String textAlignName(TextAlign);
+PLATFORM_EXPORT bool parseTextAlign(const String&, TextAlign&);
 
-String textBaselineName(TextBaseline);
-bool parseTextBaseline(const String&, TextBaseline&);
+PLATFORM_EXPORT String textBaselineName(TextBaseline);
+PLATFORM_EXPORT bool parseTextBaseline(const String&, TextBaseline&);
 
 } // namespace WebCore
 

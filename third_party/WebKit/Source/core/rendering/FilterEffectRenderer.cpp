@@ -32,7 +32,6 @@
 #include "core/fetch/DocumentResource.h"
 #include "core/fetch/DocumentResourceReference.h"
 #include "core/page/Page.h"
-#include "core/platform/graphics/ColorSpace.h"
 #include "core/platform/graphics/filters/FEColorMatrix.h"
 #include "core/platform/graphics/filters/FEComponentTransfer.h"
 #include "core/platform/graphics/filters/FEDropShadow.h"
@@ -48,6 +47,7 @@
 #include "core/svg/SVGFilterPrimitiveStandardAttributes.h"
 #include "platform/FloatConversion.h"
 #include "platform/LengthFunctions.h"
+#include "platform/graphics/ColorSpace.h"
 #include "wtf/MathExtras.h"
 #include <algorithm>
 

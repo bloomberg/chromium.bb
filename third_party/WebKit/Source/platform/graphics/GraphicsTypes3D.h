@@ -31,16 +31,16 @@
 
 // GC3D types match the corresponding GL types as defined in OpenGL ES 2.0
 // header file gl2.h from khronos.org.
-typedef unsigned int GC3Denum;
+typedef unsigned GC3Denum;
 typedef unsigned char GC3Dboolean;
-typedef unsigned int GC3Dbitfield;
+typedef unsigned GC3Dbitfield;
 typedef signed char GC3Dbyte;
 typedef unsigned char GC3Dubyte;
 typedef short GC3Dshort;
 typedef unsigned short GC3Dushort;
 typedef int GC3Dint;
 typedef int GC3Dsizei;
-typedef unsigned int GC3Duint;
+typedef unsigned GC3Duint;
 typedef float GC3Dfloat;
 typedef unsigned short GC3Dhalffloat;
 typedef float GC3Dclampf;

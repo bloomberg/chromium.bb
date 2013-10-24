@@ -26,6 +26,8 @@
 #ifndef ColorSpace_h
 #define ColorSpace_h
 
+#include "platform/PlatformExport.h"
+
 namespace WebCore {
 
 enum ColorSpace {

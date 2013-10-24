@@ -25,12 +25,12 @@
 
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/css/CSSValueList.h"
-#include "core/platform/graphics/GraphicsTypes.h"
 #include "core/platform/graphics/Path.h"
 #include "core/rendering/style/DataRef.h"
 #include "core/rendering/style/RenderStyleConstants.h"
 #include "core/rendering/style/SVGRenderStyleDefs.h"
 #include "core/svg/SVGPaint.h"
+#include "platform/graphics/GraphicsTypes.h"
 
 namespace WebCore {
 
