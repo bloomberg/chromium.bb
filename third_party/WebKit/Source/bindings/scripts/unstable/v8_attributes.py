@@ -35,22 +35,18 @@ Until then, please work on the Perl IDL compiler.
 For details, see bug http://crbug.com/239771
 """
 
+from v8_globals import includes
 import v8_types
 import v8_utilities
 from v8_utilities import capitalize, cpp_name, has_extended_attribute, uncapitalize
 
 
 def generate_attributes(interface):
-    def generate_attribute(attribute):
-        attribute_contents, attribute_includes = generate_attribute_and_includes(interface, attribute)
-        includes.update(attribute_includes)
-        return attribute_contents
-
-    includes = set()
-    attributes = [generate_attribute(attribute) for attribute in interface.attributes]
+    attributes = [generate_attribute(interface, attribute)
+                  for attribute in interface.attributes]
     contents = {'attributes': attributes}
     contents.update(generate_attributes_common(interface, attributes))
-    return contents, includes
+    return contents
 
 
 def generate_attributes_common(interface, attributes):
@@ -65,17 +61,16 @@ def generate_attributes_common(interface, attributes):
     }
 
 
-def generate_attribute_and_includes(interface, attribute):
+def generate_attribute(interface, attribute):
     idl_type = attribute.data_type
     extended_attributes = attribute.extended_attributes
 
     has_custom_getter = has_extended_attribute(attribute, ('Custom', 'CustomGetter'))
     has_custom_setter = not attribute.is_read_only and has_extended_attribute(attribute, ('Custom', 'CustomSetter'))
-    includes = set()
     contents = {
         'access_control_list': access_control_list(attribute),
-        'activity_logging_world_list_for_getter': v8_utilities.activity_logging_world_list(attribute, includes, 'Getter'),  # [ActivityLogging]
-        'activity_logging_world_list_for_setter': v8_utilities.activity_logging_world_list(attribute, includes, 'Setter'),  # [ActivityLogging]
+        'activity_logging_world_list_for_getter': v8_utilities.activity_logging_world_list(attribute, 'Getter'),  # [ActivityLogging]
+        'activity_logging_world_list_for_setter': v8_utilities.activity_logging_world_list(attribute, 'Setter'),  # [ActivityLogging]
         'cached_attribute_validation_method': extended_attributes.get('CachedAttribute'),
         'conditional_string': v8_utilities.generate_conditional_string(attribute),
         'cpp_type': v8_types.cpp_type(idl_type),
@@ -101,19 +96,19 @@ def generate_attribute_and_includes(interface, attribute):
         'world_suffixes': ['', 'ForMainWorld'] if 'PerWorldBindings' in extended_attributes else [''],  # [PerWorldBindings]
     }
     if not has_custom_getter:
-        generate_getter(interface, attribute, contents, includes)
+        generate_getter(interface, attribute, contents)
     if not attribute.is_read_only and not has_custom_setter:
-        generate_setter(interface, attribute, contents, includes)
+        generate_setter(interface, attribute, contents)
 
-    return contents, includes
+    return contents
 
 
-def generate_getter(interface, attribute, contents, includes):
+def generate_getter(interface, attribute, contents):
     idl_type = attribute.data_type
-    includes.update(v8_types.includes_for_type(idl_type))
+    v8_types.add_includes_for_type(idl_type)
     extended_attributes = attribute.extended_attributes
 
-    cpp_value = getter_expression(interface, attribute, contents, includes)
+    cpp_value = getter_expression(interface, attribute, contents)
     # Normally we can inline the function call into the return statement to
     # avoid the overhead of using a Ref<> temporary, but for some cases
     # (nullable types, EventHandler, [CachedAttribute], or if there are
@@ -132,7 +127,7 @@ def generate_getter(interface, attribute, contents, includes):
         v8_set_return_value_statement = 'v8SetReturnValue(info, wrapper)'
         includes.add('bindings/v8/V8HiddenPropertyName.h')
     else:
-        v8_set_return_value_statement = v8_types.v8_set_return_value(idl_type, cpp_value, includes, callback_info='info', isolate='info.GetIsolate()', extended_attributes=extended_attributes, script_wrappable='imp')
+        v8_set_return_value_statement = v8_types.v8_set_return_value(idl_type, cpp_value, callback_info='info', isolate='info.GetIsolate()', extended_attributes=extended_attributes, script_wrappable='imp')
     contents['v8_set_return_value'] = v8_set_return_value_statement
 
     if (idl_type == 'EventHandler' and
@@ -144,13 +139,11 @@ def generate_getter(interface, attribute, contents, includes):
     is_check_security_for_node = 'CheckSecurityForNode' in extended_attributes
     if is_check_security_for_node:
         includes.add('bindings/v8/BindingSecurity.h')
-    v8_utilities.generate_measure_as(attribute, contents, includes)  # [MeasureAs]
-
-    # [DeprecateAs]
-    v8_utilities.generate_deprecate_as(attribute, contents, includes)
     if is_check_security_for_node or contents['is_getter_raises_exception']:
         includes.update(set(['bindings/v8/ExceptionMessages.h',
                              'bindings/v8/ExceptionState.h']))
+    v8_utilities.generate_deprecate_as(attribute, contents)  # [DeprecateAs]
+    v8_utilities.generate_measure_as(attribute, contents)  # [MeasureAs]
 
     contents.update({
         'is_check_security_for_node': is_check_security_for_node,
@@ -158,9 +151,9 @@ def generate_getter(interface, attribute, contents, includes):
     })
 
 
-def getter_expression(interface, attribute, contents, includes):
+def getter_expression(interface, attribute, contents):
     arguments = []
-    this_getter_base_name = getter_base_name(attribute, includes, arguments)
+    this_getter_base_name = getter_base_name(attribute, arguments)
     getter_name = scoped_name(interface, attribute, this_getter_base_name)
 
     call_with = attribute.extended_attributes.get('CallWith')
@@ -181,7 +174,7 @@ CONTENT_ATTRIBUTE_GETTER_NAMES = {
 }
 
 
-def getter_base_name(attribute, includes, arguments):
+def getter_base_name(attribute, arguments):
     extended_attributes = attribute.extended_attributes
     if 'Reflect' not in extended_attributes:
         return uncapitalize(cpp_name(attribute))
@@ -191,7 +184,7 @@ def getter_base_name(attribute, includes, arguments):
         # Special-case for performance optimization.
         return 'get%sAttribute' % content_attribute_name.capitalize()
 
-    arguments.append(scoped_content_attribute_name(attribute, includes))
+    arguments.append(scoped_content_attribute_name(attribute))
 
     idl_type = attribute.data_type
     if idl_type in CONTENT_ATTRIBUTE_GETTER_NAMES:
@@ -222,7 +215,7 @@ def is_keep_alive_for_gc(attribute):
              idl_type.startswith('HTML'))))
 
 
-def generate_setter(interface, attribute, contents, includes):
+def generate_setter(interface, attribute, contents):
     idl_type = attribute.data_type
     extended_attributes = attribute.extended_attributes
     if v8_types.is_interface_type(idl_type) and not v8_types.array_type(idl_type):
@@ -233,19 +226,19 @@ def generate_setter(interface, attribute, contents, includes):
     if is_reflect:
         includes.add('core/dom/custom/CustomElementCallbackDispatcher.h')
     contents.update({
-        'cpp_setter': setter_expression(interface, attribute, contents, includes),
+        'cpp_setter': setter_expression(interface, attribute, contents),
         'enum_validation_expression': enum_validation_expression(idl_type),
         'has_strict_type_checking': 'StrictTypeChecking' in extended_attributes and v8_types.is_interface_type(idl_type),
         'is_reflect': is_reflect,
-        'v8_value_to_local_cpp_value': v8_types.v8_value_to_local_cpp_value(idl_type, extended_attributes, 'jsValue', 'cppValue', includes, 'info.GetIsolate()'),
+        'v8_value_to_local_cpp_value': v8_types.v8_value_to_local_cpp_value(idl_type, extended_attributes, 'jsValue', 'cppValue', 'info.GetIsolate()'),
     })
 
 
-def setter_expression(interface, attribute, contents, includes):
+def setter_expression(interface, attribute, contents):
     call_with = attribute.extended_attributes.get('SetterCallWith') or attribute.extended_attributes.get('CallWith')
     arguments = v8_utilities.call_with_arguments(call_with, contents)
 
-    this_setter_base_name = setter_base_name(attribute, includes, arguments)
+    this_setter_base_name = setter_base_name(attribute, arguments)
     setter_name = scoped_name(interface, attribute, this_setter_base_name)
 
     idl_type = attribute.data_type
@@ -274,10 +267,10 @@ CONTENT_ATTRIBUTE_SETTER_NAMES = {
 }
 
 
-def setter_base_name(attribute, includes, arguments):
+def setter_base_name(attribute, arguments):
     if 'Reflect' not in attribute.extended_attributes:
         return 'set%s' % capitalize(cpp_name(attribute))
-    arguments.append(scoped_content_attribute_name(attribute, includes))
+    arguments.append(scoped_content_attribute_name(attribute))
 
     idl_type = attribute.data_type
     if idl_type in CONTENT_ATTRIBUTE_SETTER_NAMES:
@@ -292,7 +285,7 @@ def enum_validation_expression(idl_type):
                         for enum_value in v8_types.enum_values(idl_type)])
 
 
-def scoped_content_attribute_name(attribute, includes):
+def scoped_content_attribute_name(attribute):
     content_attribute_name = attribute.extended_attributes['Reflect'] or attribute.name.lower()
     namespace = 'HTMLNames'  # FIXME: can be SVG too
     includes.add('%s.h' % namespace)

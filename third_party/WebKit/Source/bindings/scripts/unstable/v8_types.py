@@ -41,6 +41,7 @@ For details, see bug http://crbug.com/239771
 import posixpath
 import re
 
+from v8_globals import includes
 import idl_definitions  # for UnionType
 
 ################################################################################
@@ -322,6 +323,10 @@ def includes_for_type(idl_type):
     return set(['V8%s.h' % idl_type])
 
 
+def add_includes_for_type(idl_type):
+    includes.update(includes_for_type(idl_type))
+
+
 ################################################################################
 # V8 -> C++
 ################################################################################
@@ -359,10 +364,10 @@ V8_VALUE_TO_CPP_VALUE_AND_INCLUDES = {
 }
 
 
-def v8_value_to_cpp_value(idl_type, extended_attributes, v8_value, includes, isolate):
+def v8_value_to_cpp_value(idl_type, extended_attributes, v8_value, isolate):
     this_array_or_sequence_type = array_or_sequence_type(idl_type)
     if this_array_or_sequence_type:
-        return v8_value_to_cpp_value_array_or_sequence(this_array_or_sequence_type, v8_value, includes, isolate)
+        return v8_value_to_cpp_value_array_or_sequence(this_array_or_sequence_type, v8_value, isolate)
 
     idl_type = preprocess_idl_type(idl_type)
 
@@ -380,17 +385,17 @@ def v8_value_to_cpp_value(idl_type, extended_attributes, v8_value, includes, iso
         cpp_expression_format = (
             'jsValue->Is{idl_type}() ? '
             'V8{idl_type}::toNative(v8::Handle<v8::{idl_type}>::Cast({v8_value})) : 0')
-        includes.update(includes_for_type(idl_type))
+        add_includes_for_type(idl_type)
     else:
         cpp_expression_format = (
             'V8{idl_type}::HasInstance({v8_value}, {isolate}, worldType({isolate})) ? '
             'V8{idl_type}::toNative(v8::Handle<v8::Object>::Cast({v8_value})) : 0')
-        includes.update(includes_for_type(idl_type))
+        add_includes_for_type(idl_type)
 
     return cpp_expression_format.format(arguments=arguments, idl_type=idl_type, isolate=isolate, v8_value=v8_value)
 
 
-def v8_value_to_cpp_value_array_or_sequence(this_array_or_sequence_type, v8_value, includes, isolate):
+def v8_value_to_cpp_value_array_or_sequence(this_array_or_sequence_type, v8_value, isolate):
     if is_interface_type(this_array_or_sequence_type):
         this_cpp_type = None
         expression_format = '(toRefPtrNativeArray<{array_or_sequence_type}, V8{array_or_sequence_type}>({v8_value}, {isolate}))'
@@ -402,7 +407,7 @@ def v8_value_to_cpp_value_array_or_sequence(this_array_or_sequence_type, v8_valu
     return expression
 
 
-def v8_value_to_local_cpp_value(idl_type, extended_attributes, v8_value, variable_name, includes, isolate):
+def v8_value_to_local_cpp_value(idl_type, extended_attributes, v8_value, variable_name, isolate):
     """Returns an expression that converts a V8 value to a C++ value and stores it as a local value."""
     this_cpp_type = cpp_type(idl_type, extended_attributes=extended_attributes, used_as_argument=True)
 
@@ -414,7 +419,7 @@ def v8_value_to_local_cpp_value(idl_type, extended_attributes, v8_value, variabl
     else:
         format_string = 'V8TRYCATCH_VOID({cpp_type}, {variable_name}, {cpp_value})'
 
-    cpp_value = v8_value_to_cpp_value(idl_type, extended_attributes, v8_value, includes, isolate)
+    cpp_value = v8_value_to_cpp_value(idl_type, extended_attributes, v8_value, isolate)
     return format_string.format(cpp_type=this_cpp_type, cpp_value=cpp_value, isolate=isolate, variable_name=variable_name)
 
 
@@ -454,7 +459,7 @@ def preprocess_idl_type_and_value(idl_type, cpp_value, extended_attributes):
     return idl_type, cpp_value
 
 
-def v8_conversion_type(idl_type, extended_attributes, includes):
+def v8_conversion_type(idl_type, extended_attributes):
     """Returns V8 conversion type, adding any additional includes.
 
     The V8 conversion type is used to select the C++ -> V8 conversion function
@@ -482,10 +487,10 @@ def v8_conversion_type(idl_type, extended_attributes, includes):
     this_array_or_sequence_type = array_or_sequence_type(idl_type)
     if this_array_or_sequence_type:
         if is_interface_type(this_array_or_sequence_type):
-            includes.update(includes_for_type(this_array_or_sequence_type))
+            add_includes_for_type(this_array_or_sequence_type)
         return 'array'
 
-    includes.update(includes_for_type(idl_type))
+    add_includes_for_type(idl_type)
     if idl_type in INCLUDES_FOR_TYPE:
         return idl_type
 
@@ -520,7 +525,8 @@ V8_SET_RETURN_VALUE = {
 }
 
 
-def v8_set_return_value(idl_type, cpp_value, includes, callback_info, isolate, creation_context='', extended_attributes=None, script_wrappable=''):
+# XXX
+def v8_set_return_value(idl_type, cpp_value, callback_info, isolate, creation_context='', extended_attributes=None, script_wrappable=''):
     """Returns a statement that converts a C++ value to a V8 value and sets it as a return value."""
     def dom_wrapper_conversion_type():
         if not script_wrappable:
@@ -528,11 +534,11 @@ def v8_set_return_value(idl_type, cpp_value, includes, callback_info, isolate, c
         return 'DOMWrapperFast'
 
     idl_type, cpp_value = preprocess_idl_type_and_value(idl_type, cpp_value, extended_attributes)
-    this_v8_conversion_type = v8_conversion_type(idl_type, extended_attributes, includes)
+    this_v8_conversion_type = v8_conversion_type(idl_type, extended_attributes)
     # SetReturn-specific overrides
     if this_v8_conversion_type in ['Date', 'EventHandler', 'ScriptValue', 'SerializedScriptValue', 'array']:
         # Convert value to V8 and then use general v8SetReturnValue
-        cpp_value = cpp_value_to_v8_value(idl_type, cpp_value, includes, isolate, callback_info=callback_info, extended_attributes=extended_attributes)
+        cpp_value = cpp_value_to_v8_value(idl_type, cpp_value, isolate, callback_info=callback_info, extended_attributes=extended_attributes)
     if this_v8_conversion_type == 'DOMWrapper':
         this_v8_conversion_type = dom_wrapper_conversion_type()
 
@@ -560,10 +566,10 @@ CPP_VALUE_TO_V8_VALUE = {
 }
 
 
-def cpp_value_to_v8_value(idl_type, cpp_value, includes, isolate, callback_info='', creation_context='', extended_attributes=None):
+def cpp_value_to_v8_value(idl_type, cpp_value, isolate, callback_info='', creation_context='', extended_attributes=None):
     """Returns an expression that converts a C++ value to a V8 value."""
     idl_type, cpp_value = preprocess_idl_type_and_value(idl_type, cpp_value, extended_attributes)
-    this_v8_conversion_type = v8_conversion_type(idl_type, extended_attributes, includes)
+    this_v8_conversion_type = v8_conversion_type(idl_type, extended_attributes)
     format_string = CPP_VALUE_TO_V8_VALUE[this_v8_conversion_type]
     statement = format_string.format(callback_info=callback_info, cpp_value=cpp_value, creation_context=creation_context, isolate=isolate)
     return statement

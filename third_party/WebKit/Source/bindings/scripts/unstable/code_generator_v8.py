@@ -52,6 +52,7 @@ import jinja2
 templates_dir = os.path.join(module_path, os.pardir, os.pardir, 'templates')
 
 import v8_callback_interface
+from v8_globals import includes
 import v8_interface
 import v8_types
 from v8_utilities import cpp_name, generate_conditional_string, v8_class_name
@@ -115,7 +116,7 @@ class CodeGeneratorV8:
         template_contents['conditional_string'] = generate_conditional_string(interface)
         template_contents['header_includes'].add(self.include_for_cpp_class)
         template_contents['header_includes'] = sorted(template_contents['header_includes'])
-        template_contents['cpp_includes'] = sorted(template_contents['cpp_includes'])
+        template_contents['cpp_includes'] = sorted(includes)
 
         header_basename = v8_class_name(interface) + '.h'
         header_file_text = self.header_template.render(template_contents)
