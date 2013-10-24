@@ -153,7 +153,7 @@ def GenerateBreakpadSymbol(elf_file, debug_file=None, breakpad_dir=None,
 
 def GenerateBreakpadSymbols(board, breakpad_dir=None, strip_cfi=False,
                             generate_count=None, sysroot=None,
-                            num_processes=None):
+                            num_processes=None, clean_breakpad=False):
   """Generate all the symbols for this board
 
   TODO(build):
@@ -167,6 +167,8 @@ def GenerateBreakpadSymbols(board, breakpad_dir=None, strip_cfi=False,
     generate_count: If set, only generate this many symbols (meant for testing)
     sysroot: The root where to find the corresponding ELFs
     num_processes: Number of jobs to run in parallel
+    clean_breakpad: Should we `rm -rf` the breakpad output dir first; note: we
+      do not do any locking, so do not run more than one in parallel when True
   Returns:
     The number of errors that were encountered.
   """
@@ -174,6 +176,9 @@ def GenerateBreakpadSymbols(board, breakpad_dir=None, strip_cfi=False,
     breakpad_dir = FindBreakpadDir(board)
   if sysroot is None:
     sysroot = os.path.join('/build', board)
+  if clean_breakpad:
+    cros_build_lib.Info('cleaning out %s first', breakpad_dir)
+    osutils.RmDir(breakpad_dir, ignore_missing=True, sudo=True)
   # Make sure non-root can write out symbols as needed.
   osutils.SafeMakedirs(breakpad_dir, sudo=True)
   if not os.access(breakpad_dir, os.W_OK):
@@ -251,6 +256,9 @@ def main(argv):
                       help='root directory for breakpad symbols')
   parser.add_argument('--generate-count', type=int, default=None,
                       help='only generate # number of symbols')
+  parser.add_argument('--noclean', dest='clean', action='store_false',
+                      default=True,
+                      help='do not clean out breakpad dir before running')
   parser.add_argument('--jobs', type=int, default=None,
                       help='limit number of parallel jobs')
   parser.add_argument('--strip_cfi', action='store_true', default=False,
@@ -264,7 +272,8 @@ def main(argv):
   ret = GenerateBreakpadSymbols(opts.board, breakpad_dir=opts.breakpad_root,
                                 strip_cfi=opts.strip_cfi,
                                 generate_count=opts.generate_count,
-                                num_processes=opts.jobs)
+                                num_processes=opts.jobs,
+                                clean_breakpad=opts.clean)
   if ret:
     cros_build_lib.Error('encountered %i problem(s)', ret)
     # Since exit(status) gets masked, clamp it to 1 so we don't inadvertently

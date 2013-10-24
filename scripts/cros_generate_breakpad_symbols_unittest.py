@@ -141,6 +141,52 @@ class GenerateSymbolsTest(cros_test_lib.MockTempDirTestCase):
       self.assertEquals(ret, 3)
       self.assertEquals(gen_mock.call_count, 3)
 
+  def testCleaningTrue(self, gen_mock):
+    """Verify behavior of clean_breakpad=True"""
+    with parallel_unittest.ParallelMock():
+      # Dir does not exist, and then does.
+      self.assertNotExists(self.breakpad_dir)
+      ret = cros_generate_breakpad_symbols.GenerateBreakpadSymbols(
+          self.board, sysroot=self.board_dir, generate_count=1,
+          clean_breakpad=True)
+      self.assertEquals(ret, 0)
+      self.assertEquals(gen_mock.call_count, 1)
+      self.assertExists(self.breakpad_dir)
+
+      # Dir exists before & after.
+      # File exists, but then doesn't.
+      dummy_file = os.path.join(self.breakpad_dir, 'fooooooooo')
+      osutils.Touch(dummy_file)
+      ret = cros_generate_breakpad_symbols.GenerateBreakpadSymbols(
+          self.board, sysroot=self.board_dir, generate_count=1,
+          clean_breakpad=True)
+      self.assertEquals(ret, 0)
+      self.assertEquals(gen_mock.call_count, 2)
+      self.assertNotExists(dummy_file)
+
+  def testCleaningFalse(self, gen_mock):
+    """Verify behavior of clean_breakpad=False"""
+    with parallel_unittest.ParallelMock():
+      # Dir does not exist, and then does.
+      self.assertNotExists(self.breakpad_dir)
+      ret = cros_generate_breakpad_symbols.GenerateBreakpadSymbols(
+          self.board, sysroot=self.board_dir, generate_count=1,
+          clean_breakpad=False)
+      self.assertEquals(ret, 0)
+      self.assertEquals(gen_mock.call_count, 1)
+      self.assertExists(self.breakpad_dir)
+
+      # Dir exists before & after.
+      # File exists before & after.
+      dummy_file = os.path.join(self.breakpad_dir, 'fooooooooo')
+      osutils.Touch(dummy_file)
+      ret = cros_generate_breakpad_symbols.GenerateBreakpadSymbols(
+          self.board, sysroot=self.board_dir, generate_count=1,
+          clean_breakpad=False)
+      self.assertEquals(ret, 0)
+      self.assertEquals(gen_mock.call_count, 2)
+      self.assertExists(dummy_file)
+
 
 class GenerateSymbolTest(cros_test_lib.MockTempDirTestCase):
 

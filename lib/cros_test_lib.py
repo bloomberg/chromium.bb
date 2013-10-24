@@ -536,6 +536,11 @@ class TestCase(unittest.TestCase):
           break
       raise self.failureException('\n'.join(msg))
 
+  def assertNotExists(self, path):
+    """Make sure |path| does not exist"""
+    if os.path.exists(path):
+      raise self.failureException('path exists when it should not: %s' % path)
+
 
 class LoggingTestCase(TestCase):
   """Base class for logging capturer test cases."""
