@@ -738,6 +738,7 @@
                 'isherman@chromium.org',
                 'asvitkine+watch@chromium.org'],
     'mojo': ['aa@chromium.org',
+             'abarth@chromium.org',
              'ben+mojo@chromium.org',
              'darin@chromium.org',
              'viettrungluu+watch@chromium.org'],
