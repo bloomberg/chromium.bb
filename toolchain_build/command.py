@@ -93,10 +93,8 @@ class Command(object):
 
     # Use mingw on windows.
     if sys.platform == 'win32':
-      # Use hermetic copy if possible.
-      mingw = os.path.join(NACL_DIR, 'mingw')
-      if not os.path.exists(mingw):
-        mingw = os.environ.get('MINGW', r'c:\mingw')
+      # TODO(bradnelson): switch to something hermetic.
+      mingw = os.environ.get('MINGW', r'c:\mingw')
       msys = os.path.join(mingw, 'msys', '1.0')
       if not os.path.exists(msys):
         msys = os.path.join(mingw, 'msys')
