@@ -102,13 +102,6 @@ public class AwContents {
      * dispatching of view methods through the containing view.
      */
     public interface InternalAccessDelegate extends ContentViewCore.InternalAccessDelegate {
-        /**
-         * @see View#onScrollChanged(int, int, int, int)
-         *
-         * TODO(mkosiba): WebViewClassic calls this, AwContents doesn't. Check if there
-         * are any cases we're missing, if not - remove.
-         */
-        void onScrollChanged(int lPix, int tPix, int oldlPix, int oldtPix);
 
         /**
          * @see View#overScrollBy(int, int, int, int, int, int, int, int, boolean);

@@ -4,11 +4,16 @@
 
 package org.chromium.content.browser;
 
-import android.test.FlakyTest;
+import android.content.res.Configuration;
+import android.graphics.Canvas;
 import android.test.suitebuilder.annotation.SmallTest;
+import android.view.KeyEvent;
+import android.view.MotionEvent;
+import android.view.View;
 
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.UrlUtils;
+import org.chromium.content.browser.ContentViewCore.InternalAccessDelegate;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content_shell_apk.ContentShellTestBase;
@@ -21,10 +26,77 @@ public class ContentViewScrollingTest extends ContentShellTestBase {
     private static final String LARGE_PAGE = UrlUtils.encodeHtmlDataUri(
             "<html><head>" +
             "<meta name=\"viewport\" content=\"width=device-width, " +
-            "initial-scale=1.0, maximum-scale=1.0\" />" +
+            "initial-scale=2.0, maximum-scale=2.0\" />" +
             "<style>body { width: 5000px; height: 5000px; }</style></head>" +
             "<body>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</body>" +
             "</html>");
+
+    /**
+     * InternalAccessDelegate to ensure AccessibilityEvent notifications (Eg:TYPE_VIEW_SCROLLED)
+     * are being sent properly on scrolling a page.
+     */
+    static class TestInternalAccessDelegate implements InternalAccessDelegate {
+
+        private boolean mScrollChanged;
+        private final Object mLock = new Object();
+
+
+
+        @Override
+        public boolean drawChild(Canvas canvas, View child, long drawingTime) {
+            return false;
+        }
+
+        @Override
+        public boolean super_onKeyUp(int keyCode, KeyEvent event) {
+            return false;
+        }
+
+        @Override
+        public boolean super_dispatchKeyEventPreIme(KeyEvent event) {
+            return false;
+        }
+
+        @Override
+        public boolean super_dispatchKeyEvent(KeyEvent event) {
+            return false;
+        }
+
+        @Override
+        public boolean super_onGenericMotionEvent(MotionEvent event) {
+            return false;
+        }
+
+        @Override
+        public void super_onConfigurationChanged(Configuration newConfig) {
+        }
+
+        @Override
+        public void onScrollChanged(int lPix, int tPix, int oldlPix, int oldtPix) {
+            synchronized (mLock) {
+                mScrollChanged = true;
+            }
+        }
+
+        @Override
+        public boolean awakenScrollBars() {
+            return false;
+        }
+
+        @Override
+        public boolean super_awakenScrollBars(int startDelay, boolean invalidate) {
+            return false;
+        }
+
+        /**
+         * @return Whether OnScrollChanged() has been called.
+         */
+        public boolean isScrollChanged() {
+            synchronized (mLock) {
+                return mScrollChanged;
+            }
+        }
+    }
 
     private void assertWaitForScroll(final boolean hugLeft, final boolean hugTop)
             throws InterruptedException {
@@ -70,18 +142,14 @@ public class ContentViewScrollingTest extends ContentShellTestBase {
 
         launchContentShellWithUrl(LARGE_PAGE);
         assertTrue("Page failed to load", waitForActiveShellToBeDoneLoading());
-        assertWaitForPageScaleFactorMatch(1.0f);
+        assertWaitForPageScaleFactorMatch(2.0f);
 
         assertEquals(0, getContentViewCore().getNativeScrollXForTest());
         assertEquals(0, getContentViewCore().getNativeScrollYForTest());
     }
 
-    /**
-     * @SmallTest
-     * @Feature({"Main"})
-     * crbug.com/224458
-     */
-    @FlakyTest
+    @SmallTest
+    @Feature({"Main"})
     public void testFling() throws Throwable {
         // Vertical fling to lower-left.
         fling(0, -1000);
@@ -104,12 +172,8 @@ public class ContentViewScrollingTest extends ContentShellTestBase {
         assertWaitForScroll(false, false);
     }
 
-    /**
-     * @SmallTest
-     * @Feature({"Main"})
-     * crbug.com/224458
-     */
-    @FlakyTest
+    @SmallTest
+    @Feature({"Main"})
     public void testScroll() throws Throwable {
         // Vertical scroll to lower-left.
         scrollTo(0, 2500);
@@ -130,5 +194,31 @@ public class ContentViewScrollingTest extends ContentShellTestBase {
         // Diagonal scroll to bottom-right.
         scrollTo(2500, 2500);
         assertWaitForScroll(false, false);
+    }
+
+    /**
+     * To ensure the AccessibilityEvent notifications (Eg:TYPE_VIEW_SCROLLED) are being sent
+     * properly on scrolling a page.
+     */
+    @SmallTest
+    @Feature({"Main"})
+    public void testOnScrollChanged() throws Throwable {
+        final int scrollToX = 2500;
+        final int scrollToY = 2500;
+        final TestInternalAccessDelegate containerViewInternals = new TestInternalAccessDelegate();
+        runTestOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                getContentViewCore().setContainerViewInternals(containerViewInternals);
+            }
+        });
+        scrollTo(scrollToX, scrollToY);
+        assertWaitForScroll(false, false);
+        assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return containerViewInternals.isScrollChanged();
+            }
+        }));
     }
 }

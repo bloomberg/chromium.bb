@@ -172,6 +172,11 @@ public class ContentViewCore
         void super_onConfigurationChanged(Configuration newConfig);
 
         /**
+         * @see View#onScrollChanged(int, int, int, int)
+         */
+        void onScrollChanged(int lPix, int tPix, int oldlPix, int oldtPix);
+
+        /**
          * @see View#awakenScrollBars()
          */
         boolean awakenScrollBars();
@@ -769,6 +774,15 @@ public class ContentViewCore
     void onNativeContentViewCoreDestroyed(int nativeContentViewCore) {
         assert nativeContentViewCore == mNativeContentViewCore;
         mNativeContentViewCore = 0;
+    }
+
+    /**
+     * Set the Container view Internals.
+     * @param internalDispatcher Handles dispatching all hidden or super methods to the
+     *                           containerView.
+     */
+    public void setContainerViewInternals(InternalAccessDelegate internalDispatcher) {
+        mContainerViewInternals = internalDispatcher;
     }
 
     /**
@@ -2401,6 +2415,14 @@ public class ContentViewCore
         final boolean needTemporarilyHideHandles = scrollChanged;
 
         if (needHidePopupZoomer) mPopupZoomer.hide(true);
+
+        if (scrollChanged) {
+            mContainerViewInternals.onScrollChanged(
+                    (int) mRenderCoordinates.fromLocalCssToPix(scrollOffsetX),
+                    (int) mRenderCoordinates.fromLocalCssToPix(scrollOffsetY),
+                    (int) mRenderCoordinates.getScrollXPix(),
+                    (int) mRenderCoordinates.getScrollYPix());
+        }
 
         mRenderCoordinates.updateFrameInfo(
                 scrollOffsetX, scrollOffsetY,
