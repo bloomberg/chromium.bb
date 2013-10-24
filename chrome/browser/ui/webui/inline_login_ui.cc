@@ -153,6 +153,11 @@ class InlineLoginUIHandler : public content::WebUIMessageHandler {
       params.SetString("continueUrl",
           gaiaUrls->client_login_to_oauth2_url().Resolve(
               encoded_continue_params).spec());
+
+      std::string email;
+      net::GetValueForKeyInQuery(current_url, "Email", &email);
+      if (!email.empty())
+        params.SetString("email", email);
     }
 #endif
 

@@ -44,6 +44,7 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
+#include "net/base/url_util.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_CHROMEOS)
@@ -504,11 +505,7 @@ void SyncSetupHandler::DisplayGaiaLoginInNewTabOrWindow() {
     UMA_HISTOGRAM_ENUMERATION("Signin.Reauth",
                               signin::HISTOGRAM_SHOWN,
                               signin::HISTOGRAM_MAX);
-    std::string fragment("Email=");
-    fragment += email;
-    GURL::Replacements replacements;
-    replacements.SetRefStr(fragment);
-    url = url.ReplaceComponents(replacements);
+    url = net::AppendQueryParameter(url, "Email", email);
   }
 
   browser->OpenURL(
