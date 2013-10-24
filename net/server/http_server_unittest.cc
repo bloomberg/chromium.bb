@@ -188,7 +188,7 @@ TEST_F(HttpServerTest, RequestWithHeaders) {
       {"HeaderWithColon", ": ", "1:1"},
       {"EmptyHeader", ":", ""},
       {"EmptyHeaderWithWhitespace", ":  \t  ", ""},
-      {"HeaderWithNonASCII", ":  ", "\u00f7"},
+      {"HeaderWithNonASCII", ":  ", "\xf7"},
   };
   std::string headers;
   for (size_t i = 0; i < arraysize(kHeaders); ++i) {
