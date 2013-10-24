@@ -126,7 +126,6 @@ Bug(nbarth) perf/show-hide-table-rows.html [ Slow ] # Should be [ Slow Timeout ]
 Bug(nbarth) perf/typing-at-end-of-line.html [ Slow ] # Possibly just times out ?
 webkit.org/b/58193 [ Win7 ] http/tests/local/fileapi/send-sliced-dragged-file.html [ Slow ]
 webkit.org/b/74746 [ Win ] http/tests/xmlhttprequest/workers/methods.html [ Slow ]
-crbug.com/310866 fast/workers/storage/use-same-database-in-page-and-workers.html [ Slow Timeout ]
 crbug.com/9798 [ Win Release ] http/tests/navigation/no-referrer-reset.html [ Slow ]
 crbug.com/9798 [ Win Release ] http/tests/xmlhttprequest/small-chunks-response-text.html [ Slow ]
 crbug.com/9798 [ Win ] http/tests/cookies/multiple-cookies.html [ Slow ]

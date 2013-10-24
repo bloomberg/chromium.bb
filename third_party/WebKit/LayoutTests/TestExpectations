@@ -535,7 +535,7 @@ crbug.com/246072 fast/forms/post-popup-no-multiple-windows.html [ Pass Timeout ]
 crbug.com/246549 http/tests/security/svg-image-leak.html [ Failure Pass ]
 
 crbug.com/247604 fast/workers/shared-worker-frame-lifecycle.html [ Skip ]
-
+crbug.com/310866 fast/workers/storage/use-same-database-in-page-and-workers.html [ Slow Timeout ]
 crbug.com/247888 fast/workers/worker-cloneport.html [ Failure Pass Timeout ]
 
 crbug.com/247889 [ Win ] http/tests/navigation/back-send-referrer.html [ Pass Timeout ]
