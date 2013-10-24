@@ -18,6 +18,7 @@
 #include "chrome/common/extensions/permissions/permissions_data.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/browser/media_device_id.h"
 #include "content/public/browser/web_contents.h"
 #include "media/audio/audio_manager.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -36,6 +37,10 @@ using extension_function_test_utils::RunFunctionAndReturnSingleResult;
 
 class WebrtcAudioPrivateTest : public ExtensionApiTest {
  public:
+  WebrtcAudioPrivateTest() : enumeration_event_(false, false) {
+  }
+
+ protected:
   std::string InvokeGetActiveSink(int tab_id) {
     ListValue parameters;
     parameters.AppendInteger(tab_id);
@@ -54,15 +59,35 @@ class WebrtcAudioPrivateTest : public ExtensionApiTest {
     list->GetString(0, &device_id);
     return device_id;
   }
+
+  // Synchronously (from the calling thread's point of view) runs the
+  // given enumeration function on the device thread. On return,
+  // |device_names| has been filled with the device names resulting
+  // from that call.
+  void GetAudioDeviceNames(
+      void (AudioManager::*EnumerationFunc)(AudioDeviceNames*),
+      AudioDeviceNames* device_names) {
+    AudioManager* audio_manager = AudioManager::Get();
+
+    if (!audio_manager->GetMessageLoop()->BelongsToCurrentThread()) {
+      audio_manager->GetMessageLoop()->PostTask(
+          FROM_HERE,
+          base::Bind(&WebrtcAudioPrivateTest::GetAudioDeviceNames, this,
+                     EnumerationFunc, device_names));
+      enumeration_event_.Wait();
+    } else {
+      (audio_manager->*EnumerationFunc)(device_names);
+      enumeration_event_.Signal();
+    }
+  }
+
+  // Event used to signal completion of enumeration.
+  base::WaitableEvent enumeration_event_;
 };
 
 IN_PROC_BROWSER_TEST_F(WebrtcAudioPrivateTest, GetSinks) {
-  // Get the list of sinks to compare against. This function is not
-  // threadsafe and is normally called only from the audio IO thread,
-  // but we know no other code is currently running so we call it
-  // directly.
   AudioDeviceNames devices;
-  AudioManager::Get()->GetAudioOutputDeviceNames(&devices);
+  GetAudioDeviceNames(&AudioManager::GetAudioOutputDeviceNames, &devices);
 
   scoped_refptr<WebrtcAudioPrivateGetSinksFunction> function =
       new WebrtcAudioPrivateGetSinksFunction();
@@ -152,16 +177,17 @@ static void OnAudioControllers(
     *audio_playing = true;
 }
 
-// TODO(joi): See if we can enable this on bots.
+// TODO(joi): Currently this needs to be run manually. See if we can
+// enable this on bots.
 IN_PROC_BROWSER_TEST_F(WebrtcAudioPrivateTest,
-                       MANUAL_GetAndSetWithMediaStream) {
+                       DISABLED_GetAndSetWithMediaStream) {
   // First get the list of output devices, so that we can (if
   // available) set the active device to a device other than the one
   // it starts as. This function is not threadsafe and is normally
   // called only from the audio IO thread, but we know no other code
   // is currently running so we call it directly.
   AudioDeviceNames devices;
-  AudioManager::Get()->GetAudioOutputDeviceNames(&devices);
+  GetAudioDeviceNames(&AudioManager::GetAudioOutputDeviceNames, &devices);
 
   ASSERT_TRUE(StartEmbeddedTestServer());
 
@@ -227,6 +253,41 @@ IN_PROC_BROWSER_TEST_F(WebrtcAudioPrivateTest,
   VLOG(2) << "After setting to " << target_device
           << ", current device is " << current_device;
   EXPECT_EQ(target_device, current_device);
+}
+
+IN_PROC_BROWSER_TEST_F(WebrtcAudioPrivateTest, GetAssociatedSink) {
+  // Get the list of input devices. We can cheat in the unit test and
+  // run this on the main thread since nobody else will be running at
+  // the same time.
+  AudioDeviceNames devices;
+  GetAudioDeviceNames(&AudioManager::GetAudioInputDeviceNames, &devices);
+
+  // Try to get an associated sink for each source.
+  for (AudioDeviceNames::const_iterator device = devices.begin();
+       device != devices.end();
+       ++device) {
+    std::string raw_source_id = device->unique_id;
+    VLOG(2) << "Trying to find associated sink for device " << raw_source_id;
+    GURL origin(GURL("http://www.google.com/").GetOrigin());
+    std::string source_id_in_origin =
+        content::GetHMACForMediaDeviceID(origin, raw_source_id);
+
+    ListValue parameters;
+    parameters.AppendString(origin.spec());
+    parameters.AppendString(source_id_in_origin);
+    std::string parameter_string;
+    JSONWriter::Write(&parameters, &parameter_string);
+
+    scoped_refptr<WebrtcAudioPrivateGetAssociatedSinkFunction> function =
+        new WebrtcAudioPrivateGetAssociatedSinkFunction();
+    scoped_ptr<base::Value> result(
+        RunFunctionAndReturnSingleResult(function.get(),
+                                         parameter_string,
+                                         browser()));
+    std::string result_string;
+    JSONWriter::Write(result.get(), &result_string);
+    VLOG(2) << "Results: " << result_string;
+  }
 }
 
 IN_PROC_BROWSER_TEST_F(WebrtcAudioPrivateTest, TriggerEvent) {

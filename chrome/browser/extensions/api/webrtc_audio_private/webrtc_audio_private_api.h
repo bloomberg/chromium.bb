@@ -12,6 +12,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/webrtc_audio_private.h"
 #include "content/public/browser/render_view_host.h"
+#include "media/audio/audio_device_name.h"
+#include "url/gurl.h"
 
 namespace base {
 class MessageLoopProxy;
@@ -120,13 +122,19 @@ class WebrtcAudioPrivateSetActiveSinkFunction
 class WebrtcAudioPrivateGetAssociatedSinkFunction
     : public AsyncExtensionFunction {
  protected:
-  virtual ~WebrtcAudioPrivateGetAssociatedSinkFunction() {}
+  virtual ~WebrtcAudioPrivateGetAssociatedSinkFunction();
 
  private:
   DECLARE_EXTENSION_FUNCTION("webrtcAudioPrivate.getAssociatedSink",
                              WEBRTC_AUDIO_PRIVATE_GET_ASSOCIATED_SINK);
 
   virtual bool RunImpl() OVERRIDE;
+
+  // Takes the parameters of the function, returns the associated sink
+  // ID, or the empty string if none.
+  std::string DoWorkOnDeviceThread(GURL security_origin,
+                                   std::string source_id_in_origin);
+  void DoneOnUIThread(const std::string& associated_sink_id);
 };
 
 }  // namespace extensions

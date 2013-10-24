@@ -21,6 +21,7 @@
 #include "content/browser/renderer_host/media/web_contents_capture_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/media_device_id.h"
 #include "content/public/browser/media_observer.h"
 #include "content/public/browser/media_request_state.h"
 #include "content/public/common/content_switches.h"
@@ -559,8 +560,8 @@ bool MediaStreamManager::TranslateGUIDToRawId(MediaStreamType stream_type,
   for (StreamDeviceInfoArray::const_iterator it = cache->devices.begin();
        it != cache->devices.end();
        ++it) {
-    if (DeviceRequestMessageFilter::DoesRawIdMatchGuid(
-        security_origin, device_guid, it->device.id)) {
+    if (content::DoesMediaDeviceIDMatchHMAC(
+            security_origin, device_guid, it->device.id)) {
       *raw_device_id = it->device.id;
       return true;
     }

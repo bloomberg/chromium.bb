@@ -6,6 +6,7 @@
 #include "content/browser/renderer_host/media/device_request_message_filter.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/common/media/media_stream_messages.h"
+#include "content/public/browser/media_device_id.h"
 #include "content/public/test/mock_resource_context.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -217,7 +218,7 @@ class DeviceRequestMessageFilterTest : public testing::Test {
     for (size_t i = 0; i < devices.size(); i++) {
       bool found_match = false;
       for (size_t j = 0; j < physical_audio_devices_.size(); ++j) {
-        if (DeviceRequestMessageFilter::DoesRawIdMatchGuid(
+        if (content::DoesMediaDeviceIDMatchHMAC(
                 origin,
                 devices[i].device.id,
                 physical_audio_devices_[j].device.id)) {
@@ -226,7 +227,7 @@ class DeviceRequestMessageFilterTest : public testing::Test {
         }
       }
       for (size_t j = 0; j < physical_video_devices_.size(); ++j) {
-        if (DeviceRequestMessageFilter::DoesRawIdMatchGuid(
+        if (content::DoesMediaDeviceIDMatchHMAC(
                 origin,
                 devices[i].device.id,
                 physical_video_devices_[j].device.id)) {

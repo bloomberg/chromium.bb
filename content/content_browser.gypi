@@ -117,6 +117,8 @@
     'public/browser/load_notification_details.h',
     'public/browser/local_storage_usage_info.cc',
     'public/browser/local_storage_usage_info.h',
+    'public/browser/media_device_id.cc',
+    'public/browser/media_device_id.h',
     'public/browser/media_devices_monitor.h',
     'public/browser/native_web_keyboard_event.h',
     'public/browser/navigation_controller.cc',

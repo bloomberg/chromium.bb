@@ -4,13 +4,11 @@
 
 #include "content/browser/renderer_host/media/device_request_message_filter.h"
 
-#include "base/strings/string_number_conversions.h"
-#include "base/strings/string_util.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/common/media/media_stream_messages.h"
+#include "content/public/browser/media_device_id.h"
 #include "content/public/browser/resource_context.h"
-#include "crypto/hmac.h"
 
 // Clears the MediaStreamDevice.name from all devices in |device_list|.
 static void ClearDeviceLabels(content::StreamDeviceInfoArray* devices) {
@@ -162,34 +160,11 @@ void DeviceRequestMessageFilter::HmacDeviceIds(
   for (StreamDeviceInfoArray::const_iterator device_itr = raw_devices.begin();
        device_itr != raw_devices.end();
        ++device_itr) {
-    crypto::HMAC hmac(crypto::HMAC::SHA256);
-    const size_t digest_length = hmac.DigestLength();
-    std::vector<uint8> digest(digest_length);
-    bool result = hmac.Init(origin.spec()) &&
-                  hmac.Sign(device_itr->device.id, &digest[0], digest.size());
-    DCHECK(result);
-    if (result) {
-      StreamDeviceInfo current_device_info = *device_itr;
-      current_device_info.device.id =
-          StringToLowerASCII(base::HexEncode(&digest[0], digest.size()));
-      devices_with_guids->push_back(current_device_info);
-    }
+    StreamDeviceInfo current_device_info = *device_itr;
+    current_device_info.device.id =
+        content::GetHMACForMediaDeviceID(origin, device_itr->device.id);
+    devices_with_guids->push_back(current_device_info);
   }
-}
-
-bool DeviceRequestMessageFilter::DoesRawIdMatchGuid(
-    const GURL& security_origin,
-    const std::string& device_guid,
-    const std::string& raw_device_id) {
-  crypto::HMAC hmac(crypto::HMAC::SHA256);
-  bool result = hmac.Init(security_origin.spec());
-  DCHECK(result);
-  std::vector<uint8> converted_guid;
-  base::HexStringToBytes(device_guid, &converted_guid);
-  return hmac.Verify(
-      raw_device_id,
-      base::StringPiece(reinterpret_cast<const char*>(&converted_guid[0]),
-                        converted_guid.size()));
 }
 
 void DeviceRequestMessageFilter::OnGetSources(int request_id,

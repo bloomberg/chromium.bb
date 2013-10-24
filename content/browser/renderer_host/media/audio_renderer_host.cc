@@ -24,6 +24,7 @@
 #include "media/base/limits.h"
 
 using media::AudioBus;
+using media::AudioManager;
 
 namespace content {
 
