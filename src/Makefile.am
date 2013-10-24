@@ -224,6 +224,12 @@ rpi_backend_la_SOURCES =			\
 	evdev.c					\
 	evdev.h					\
 	evdev-touchpad.c
+
+if ENABLE_EGL
+rpi_backend_la_LIBADD += $(EGL_LIBS)
+rpi_backend_la_CFLAGS += $(EGL_CFLAGS)
+endif
+
 endif
 
 if ENABLE_HEADLESS_COMPOSITOR
