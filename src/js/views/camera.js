@@ -381,7 +381,7 @@ camera.views.Camera.prototype.initialize = function(callback) {
 camera.views.Camera.prototype.onEnter = function() {
   if (!this.running_ && this.mainCanvas_ && this.mainFastCanvas_)
     this.start_();
-
+  this.scrollTracker_.start();
   this.onResize();
 };
 
@@ -390,6 +390,7 @@ camera.views.Camera.prototype.onEnter = function() {
  * @override
  */
 camera.views.Camera.prototype.onLeave = function() {
+  this.scrollTracker_.stop();
 };
 
 /**
