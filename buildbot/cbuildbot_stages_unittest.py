@@ -1232,14 +1232,20 @@ class PublishUprevChangesStageTest(AbstractStageTest):
                              '_GetPortageEnvVar')
     self.mox.StubOutWithMock(commands, 'UploadPrebuilts')
     self.mox.StubOutWithMock(commands, 'UprevPush')
+    self.mox.StubOutWithMock(stages.PublishUprevChangesStage,
+                             '_ExtractOverlays')
+    stages.PublishUprevChangesStage._ExtractOverlays().AndReturn(
+        [['foo'], ['bar']])
 
   def ConstructStage(self):
-    return stages.PublishUprevChangesStage(self.options, self.build_config)
+    return stages.PublishUprevChangesStage(
+        self.options, self.build_config, success=True)
 
   def testPush(self):
     """Test values for PublishUprevChanges."""
     self.build_config['push_overlays'] = constants.PUBLIC_OVERLAYS
     self.build_config['master'] = True
+    stages.commands.UprevPush(self.build_root, ['bar'], False)
 
     self.mox.ReplayAll()
     self.RunStage()

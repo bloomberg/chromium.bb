@@ -600,17 +600,15 @@ class DistributedBuilder(SimpleBuilder):
                                               self.sync_stage,
                                               was_build_successful)
     self._completion_stage = completion_stage
-    completion_stage.Run()
-    name = completion_stage.name
-    if (self.build_config['pre_cq'] or self.options.pre_cq or
-        not results_lib.Results.WasStageSuccessful(name)):
-      should_publish_changes = False
-    else:
-      should_publish_changes = (self.build_config['master'] and
-                                was_build_successful)
-
-    if should_publish_changes:
-      self._RunStage(stages.PublishUprevChangesStage)
+    completion_successful = False
+    try:
+      completion_stage.Run()
+      completion_successful = True
+    finally:
+      if not completion_successful:
+        was_build_successful = False
+      if self.build_config['push_overlays']:
+        self._RunStage(stages.PublishUprevChangesStage, was_build_successful)
 
   def RunStages(self):
     """Runs simple builder logic and publishes information to overlays."""

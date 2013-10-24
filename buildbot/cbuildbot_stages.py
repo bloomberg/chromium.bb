@@ -767,19 +767,9 @@ class SyncStage(bs.BuilderStage):
   def Initialize(self):
     self._InitializeRepo()
 
-  def _InitializeRepo(self, build_root=None, **kwds):
-    if build_root is None:
-      build_root = self._build_root
-
-    manifest_url = self._options.manifest_repo_url
-    if manifest_url is None:
-      manifest_url = self._build_config['manifest_repo_url']
-
-    kwds.setdefault('referenced_repo', self._options.reference_repo)
-    kwds.setdefault('branch', self._target_manifest_branch)
-    kwds.setdefault('manifest', self._build_config['manifest'])
-
-    self.repo = repository.RepoRepository(manifest_url, build_root, **kwds)
+  def _InitializeRepo(self):
+    """Set up the RepoRepository object."""
+    self.repo = self.GetRepoRepository()
 
   def GetNextManifest(self):
     """Returns the manifest to use."""
@@ -3146,12 +3136,43 @@ class DevInstallerPrebuiltsStage(UploadPrebuiltsStage):
         extra_args=generated_args)
 
 
-class PublishUprevChangesStage(NonHaltingBuilderStage):
+class PublishUprevChangesStage(bs.BuilderStage):
   """Makes uprev changes from pfq live for developers."""
+
+  def __init__(self, options, build_config, success):
+    """Constructor.
+
+    Args:
+      options, build_config: See arguments to bs.BuilderStage.__init__()
+      success: Whether the build succeeded.
+    """
+    bs.BuilderStage.__init__(self, options, build_config)
+    self.success = success
+
   def PerformStage(self):
-    _, push_overlays = self._ExtractOverlays()
-    if push_overlays:
-      commands.UprevPush(self._build_root, push_overlays, self._options.debug)
+    overlays, push_overlays = self._ExtractOverlays()
+    assert push_overlays, 'push_overlays must be set to run this stage'
+
+    # If the build failed, we don't want to push our local changes, because
+    # they might include some CLs that failed. Instead, clean up our local
+    # changes and do a fresh uprev.
+    if not self.success:
+      # Clean up our root and sync down the latest changes that were
+      # submitted.
+      commands.BuildRootGitCleanup(self._build_root)
+
+      # Sync down the latest changes we have submitted.
+      if self._options.sync:
+        next_manifest = self._build_config['manifest']
+        repo = self.GetRepoRepository()
+        repo.Sync(next_manifest)
+
+      # Commit an uprev locally.
+      if self._options.uprev and self._build_config['uprev']:
+        commands.UprevPackages(self._build_root, self._boards, overlays)
+
+    # Push the uprev commit.
+    commands.UprevPush(self._build_root, push_overlays, self._options.debug)
 
 
 class ReportStage(bs.BuilderStage):

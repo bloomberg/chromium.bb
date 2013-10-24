@@ -21,6 +21,7 @@ except ImportError:
 from chromite.buildbot import cbuildbot_config
 from chromite.buildbot import cbuildbot_results as results_lib
 from chromite.buildbot import portage_utilities
+from chromite.buildbot import repository
 from chromite.buildbot import validation_pool
 from chromite.lib import cros_build_lib
 
@@ -139,6 +140,18 @@ class BuilderStage(object):
     assert self._build_config['master'] or not push_overlays
 
     return overlays, push_overlays
+
+  def GetRepoRepository(self, **kwds):
+    """Create a new repo repository object."""
+    manifest_url = self._options.manifest_repo_url
+    if manifest_url is None:
+      manifest_url = self._build_config['manifest_repo_url']
+
+    kwds.setdefault('referenced_repo', self._options.reference_repo)
+    kwds.setdefault('branch', self._target_manifest_branch)
+    kwds.setdefault('manifest', self._build_config['manifest'])
+
+    return repository.RepoRepository(manifest_url, self._build_root, **kwds)
 
   def _Print(self, msg):
     """Prints a msg to stderr."""
