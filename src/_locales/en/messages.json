@@ -17,7 +17,7 @@
   },
   "beautyEffect": {
     "message": "Beauty",
-    "description": "Beauty effect's name."
+    "description": "Beauty effect's name. Smooths skin and increases brightness."
   },
   "colorizeEffect": {
     "message": "Colorize",
@@ -54,6 +54,18 @@
   "sepiaEffect": {
     "message": "Sepia",
     "description": "Sepia effect's name. Makes the image look like an old picture."
+  },
+  "retro30Effect": {
+    "message": "Retro '30",
+    "description": "Retro '30 effect's name. Makes the image look like a retro picture."
+  },
+  "retro50Effect": {
+    "message": "Retro '50",
+    "description": "Retro '50 effect's name. Makes the image look like a retro picture."
+  },
+  "retro60Effect": {
+    "message": "Retro '60",
+    "description": "Retro '60 effect's name. Makes the image look like a retro picture."
   },
   "swirlEffect": {
     "message": "Swirl",
