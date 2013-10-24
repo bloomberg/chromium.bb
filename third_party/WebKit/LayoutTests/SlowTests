@@ -83,7 +83,6 @@ crbug.com/24182 virtual/implsidepainting/inspector/timeline/timeline-decode-resi
 # FIXME: Most inspector tests are slow. We should triage and consolidate these bugs and figure out if any are unusually slow.
 webkit.org/b/60109 inspector/elements/edit-dom-actions.html [ Slow ]
 webkit.org/b/84735 [ Win ] http/tests/inspector/change-iframe-src.html [ Slow ]
-webkit.org/b/88832 [ Win ] http/tests/xmlhttprequest/origin-exact-matching.html [ Slow ]
 webkit.org/b/90488 [ Debug ] inspector/ [ Slow ]
 webkit.org/b/90488 [ Debug ] http/tests/inspector/ [ Slow ]
 webkit.org/b/90488 [ Debug ] http/tests/inspector-enabled/ [ Slow ]
