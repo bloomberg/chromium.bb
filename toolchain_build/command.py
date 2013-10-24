@@ -58,6 +58,15 @@ def PrepareCommandValues(cwd, inputs, output):
   return values
 
 
+def MsysPath():
+  # TODO(bradnelson): switch to something hermetic.
+  mingw = os.environ.get('MINGW', r'c:\mingw')
+  msys = os.path.join(mingw, 'msys', '1.0')
+  if not os.path.exists(msys):
+    msys = os.path.join(mingw, 'msys')
+  return msys
+
+
 class Command(object):
   """An object representing a single command."""
 
@@ -93,11 +102,7 @@ class Command(object):
 
     # Use mingw on windows.
     if sys.platform == 'win32':
-      # TODO(bradnelson): switch to something hermetic.
-      mingw = os.environ.get('MINGW', r'c:\mingw')
-      msys = os.path.join(mingw, 'msys', '1.0')
-      if not os.path.exists(msys):
-        msys = os.path.join(mingw, 'msys')
+      msys = MsysPath()
       # We need both msys (posix like build environment) and MinGW (windows
       # build of tools like gcc). We add <MINGW>/msys/[1.0/]bin to the path to
       # get sh.exe. We also add an msys style path (/mingw/bin) to get things
