@@ -320,12 +320,27 @@ load_cairo_surface(const char *filename)
 						   width, height, stride);
 }
 
+void
+theme_set_background_source(struct theme *t, cairo_t *cr, uint32_t flags)
+{
+	cairo_pattern_t *pattern;
+
+	if (flags & THEME_FRAME_ACTIVE) {
+		pattern = cairo_pattern_create_linear(16, 16, 16, 112);
+		cairo_pattern_add_color_stop_rgb(pattern, 0.0, 1.0, 1.0, 1.0);
+		cairo_pattern_add_color_stop_rgb(pattern, 0.2, 0.8, 0.8, 0.8);
+		cairo_set_source(cr, pattern);
+		cairo_pattern_destroy(pattern);
+	} else {
+		cairo_set_source_rgba(cr, 0.75, 0.75, 0.75, 1);
+	}
+}
+
 struct theme *
 theme_create(void)
 {
 	struct theme *t;
 	cairo_t *cr;
-	cairo_pattern_t *pattern;
 
 	t = malloc(sizeof *t);
 	if (t == NULL)
@@ -352,12 +367,7 @@ theme_create(void)
 	cr = cairo_create(t->active_frame);
 	cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
 
-	pattern = cairo_pattern_create_linear(16, 16, 16, 112);
-	cairo_pattern_add_color_stop_rgb(pattern, 0.0, 1.0, 1.0, 1.0);
-	cairo_pattern_add_color_stop_rgb(pattern, 0.2, 0.8, 0.8, 0.8);
-	cairo_set_source(cr, pattern);
-	cairo_pattern_destroy(pattern);
-
+	theme_set_background_source(t, cr, THEME_FRAME_ACTIVE);
 	rounded_rect(cr, 0, 0, 128, 128, t->frame_radius);
 	cairo_fill(cr);
 
@@ -370,7 +380,7 @@ theme_create(void)
 		cairo_image_surface_create (CAIRO_FORMAT_ARGB32, 128, 128);
 	cr = cairo_create(t->inactive_frame);
 	cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
-	cairo_set_source_rgba(cr, 0.75, 0.75, 0.75, 1);
+	theme_set_background_source(t, cr, 0);
 	rounded_rect(cr, 0, 0, 128, 128, t->frame_radius);
 	cairo_fill(cr);
 

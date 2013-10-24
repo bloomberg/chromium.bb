@@ -358,6 +358,7 @@ struct menu {
 	struct window *window;
 	struct widget *widget;
 	struct input *input;
+	struct frame *frame;
 	const char **entries;
 	uint32_t time;
 	int current;
@@ -3795,6 +3796,7 @@ menu_destroy(struct menu *menu)
 {
 	widget_destroy(menu->widget);
 	window_destroy(menu->window);
+	frame_destroy(menu->frame);
 	free(menu);
 }
 
@@ -4322,9 +4324,11 @@ window_create_transient(struct display *display, struct window *parent,
 static void
 menu_set_item(struct menu *menu, int sy)
 {
+	int32_t x, y, width, height;
 	int next;
 
-	next = (sy - 8) / 20;
+	frame_interior(menu->frame, &x, &y, &width, &height);
+	next = (sy - y) / 20;
 	if (menu->current != next) {
 		menu->current = next;
 		widget_schedule_redraw(menu->widget);
@@ -4391,35 +4395,35 @@ static void
 menu_redraw_handler(struct widget *widget, void *data)
 {
 	cairo_t *cr;
-	const int32_t r = 3, margin = 3;
 	struct menu *menu = data;
-	int32_t width, height, i;
+	int32_t x, y, width, height, i;
 
 	cr = widget_cairo_create(widget);
-	cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
-	cairo_set_source_rgba(cr, 0.0, 0.0, 0.0, 0.0);
-	cairo_paint(cr);
 
-	width = widget->allocation.width;
-	height = widget->allocation.height;
-	rounded_rect(cr, 0, 0, width, height, r);
+	frame_repaint(menu->frame, cr);
+	frame_interior(menu->frame, &x, &y, &width, &height);
 
-	cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
-	cairo_set_source_rgba(cr, 0.0, 0.0, 0.4, 0.8);
+	theme_set_background_source(menu->window->display->theme,
+				    cr, THEME_FRAME_ACTIVE);
+	cairo_rectangle(cr, x, y, width, height);
 	cairo_fill(cr);
+
+	cairo_select_font_face(cr, "sans",
+			       CAIRO_FONT_SLANT_NORMAL,
+			       CAIRO_FONT_WEIGHT_NORMAL);
+	cairo_set_font_size(cr, 12);
 
 	for (i = 0; i < menu->count; i++) {
 		if (i == menu->current) {
 			cairo_set_source_rgb(cr, 1.0, 1.0, 1.0);
-			cairo_rectangle(cr, margin, i * 20 + margin,
-					width - 2 * margin, 20);
+			cairo_rectangle(cr, x, y + i * 20, width, 20);
 			cairo_fill(cr);
 			cairo_set_source_rgb(cr, 0.0, 0.0, 0.0);
-			cairo_move_to(cr, 10, i * 20 + 16);
+			cairo_move_to(cr, x + 10, y + i * 20 + 16);
 			cairo_show_text(cr, menu->entries[i]);
 		} else {
-			cairo_set_source_rgb(cr, 1.0, 1.0, 1.0);
-			cairo_move_to(cr, 10, i * 20 + 16);
+			cairo_set_source_rgb(cr, 0.0, 0.0, 0.0);
+			cairo_move_to(cr, x + 10, y + i * 20 + 16);
 			cairo_show_text(cr, menu->entries[i]);
 		}
 	}
@@ -4435,7 +4439,7 @@ window_show_menu(struct display *display,
 {
 	struct window *window;
 	struct menu *menu;
-	const int32_t margin = 3;
+	int32_t ix, iy;
 
 	menu = malloc(sizeof *menu);
 	if (!menu)
@@ -4451,6 +4455,8 @@ window_show_menu(struct display *display,
 	menu->widget = window_add_widget(menu->window, menu);
 	window_set_buffer_scale (menu->window, window_get_buffer_scale (parent));
 	window_set_buffer_transform (menu->window, window_get_buffer_transform (parent));
+	menu->frame = frame_create(window->display->theme, 0, 0,
+				   FRAME_BUTTON_NONE, "Menu");
 	menu->entries = entries;
 	menu->count = count;
 	menu->release_count = 0;
@@ -4462,12 +4468,6 @@ window_show_menu(struct display *display,
 	window->x = x;
 	window->y = y;
 
-	input_ungrab(input);
-	wl_shell_surface_set_popup(window->shell_surface, input->seat,
-				   display_get_serial(window->display),
-				   window->parent->main_surface->surface,
-				   window->x, window->y, 0);
-
 	widget_set_redraw_handler(menu->widget, menu_redraw_handler);
 	widget_set_enter_handler(menu->widget, menu_enter_handler);
 	widget_set_leave_handler(menu->widget, menu_leave_handler);
@@ -4475,7 +4475,17 @@ window_show_menu(struct display *display,
 	widget_set_button_handler(menu->widget, menu_button_handler);
 
 	input_grab(input, menu->widget, 0);
-	window_schedule_resize(window, 200, count * 20 + margin * 2);
+	frame_resize_inside(menu->frame, 200, count * 20);
+	frame_set_flag(menu->frame, FRAME_FLAG_ACTIVE);
+	window_schedule_resize(window, frame_width(menu->frame),
+			       frame_height(menu->frame));
+
+	input_ungrab(input);
+	frame_interior(menu->frame, &ix, &iy, NULL, NULL);
+	wl_shell_surface_set_popup(window->shell_surface, input->seat,
+				   display_get_serial(window->display),
+				   window->parent->main_surface->surface,
+				   window->x - ix, window->y - iy, 0);
 }
 
 void
