@@ -685,6 +685,7 @@ void GpuDataManagerImplPrivate::AppendGpuCommandLine(
   }
   if (IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_TEXTURE_SHARING)) {
     command_line->AppendSwitch(switches::kDisableImageTransportSurface);
+    reduce_sandbox = true;
   }
   if (gpu_driver_bugs_.find(gpu::DISABLE_D3D11) != gpu_driver_bugs_.end())
     command_line->AppendSwitch(switches::kDisableD3D11);
