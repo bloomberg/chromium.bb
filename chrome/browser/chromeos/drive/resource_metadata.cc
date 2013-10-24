@@ -167,24 +167,22 @@ FileError ResourceMetadata::AddEntry(const ResourceEntry& entry,
   if (!EnoughDiskSpaceIsAvailableForDBOperation(storage_->directory_path()))
     return FILE_ERROR_NO_LOCAL_SPACE;
 
-  // Multiple entries with the same resource ID should not be present.
-  std::string existing_entry_id;
-  if (!entry.resource_id().empty() &&
-      GetIdByResourceId(entry.resource_id(),
-                        &existing_entry_id) == FILE_ERROR_OK)
-    return FILE_ERROR_EXISTS;
-
   ResourceEntry parent;
   if (!storage_->GetEntry(entry.parent_local_id(), &parent) ||
       !parent.file_info().is_directory())
     return FILE_ERROR_NOT_FOUND;
 
-  // Generate unique local ID.
+  // Multiple entries with the same resource ID should not be present.
   std::string local_id;
   ResourceEntry existing_entry;
-  do {
+  if (!entry.resource_id().empty() &&
+      storage_->GetIdByResourceId(entry.resource_id(), &local_id) &&
+      storage_->GetEntry(local_id, &existing_entry))
+    return FILE_ERROR_EXISTS;
+
+  // Generate unique local ID when needed.
+  while (local_id.empty() || storage_->GetEntry(local_id, &existing_entry))
     local_id = base::GenerateGUID();
-  } while (storage_->GetEntry(local_id, &existing_entry));
 
   ResourceEntry new_entry(entry);
   new_entry.set_local_id(local_id);

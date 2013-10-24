@@ -115,12 +115,15 @@ FileError InitializeMetadata(
       file_util::FILE_PERMISSION_EXECUTE_BY_GROUP |
       file_util::FILE_PERMISSION_EXECUTE_BY_OTHERS);
 
+  internal::ResourceMetadataStorage::UpgradeOldDB(
+      metadata_storage->directory_path(), id_canonicalizer);
+
   if (!metadata_storage->Initialize()) {
     LOG(WARNING) << "Failed to initialize the metadata storage.";
     return FILE_ERROR_FAILED;
   }
 
-  if (!cache->Initialize() || !cache->CanonicalizeIDs(id_canonicalizer)) {
+  if (!cache->Initialize()) {
     LOG(WARNING) << "Failed to initialize the cache.";
     return FILE_ERROR_FAILED;
   }

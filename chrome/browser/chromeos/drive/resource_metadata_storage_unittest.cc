@@ -10,9 +10,11 @@
 #include "base/files/scoped_temp_dir.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/test_util.h"
+#include "chrome/browser/drive/drive_api_util.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
+#include "third_party/leveldatabase/src/include/leveldb/write_batch.h"
 
 namespace drive {
 namespace internal {
@@ -38,6 +40,8 @@ class ResourceMetadataStorageTest : public testing::Test {
   bool CheckValidity() {
     return storage_->CheckValidity();
   }
+
+  leveldb::DB* resource_map() { return storage_->resource_map_.get(); }
 
   // Puts a child entry.
   void PutChild(const std::string& parent_id,
@@ -358,30 +362,44 @@ TEST_F(ResourceMetadataStorageTest, OpenExistingDB) {
   EXPECT_EQ(child_id1, storage_->GetChild(parent_id1, child_name1));
 }
 
-TEST_F(ResourceMetadataStorageTest, IncompatibleDB_Old) {
+TEST_F(ResourceMetadataStorageTest, IncompatibleDB_M29) {
   const int64 kLargestChangestamp = 1234567890;
-  const std::string key1 = "abcd";
 
-  // Put some data.
+  // Construct M29 version DB.
+  SetDBVersion(6);
   EXPECT_TRUE(storage_->SetLargestChangestamp(kLargestChangestamp));
-  ResourceEntry entry;
-  entry.set_local_id(key1);
-  EXPECT_TRUE(storage_->PutEntry(entry));
-  EXPECT_TRUE(storage_->GetEntry(key1, &entry));
-  FileCacheEntry cache_entry;
-  EXPECT_TRUE(storage_->PutCacheEntry(key1, FileCacheEntry()));
-  EXPECT_TRUE(storage_->GetCacheEntry(key1, &cache_entry));
 
-  // Set older version and reopen DB.
-  SetDBVersion(ResourceMetadataStorage::kDBVersion - 1);
+  leveldb::WriteBatch batch;
+
+  // Put a file entry and its cache entry.
+  ResourceEntry entry;
+  std::string serialized_entry;
+  entry.set_resource_id("file:abcd");
+  EXPECT_TRUE(entry.SerializeToString(&serialized_entry));
+  batch.Put("file:abcd", serialized_entry);
+
+  FileCacheEntry cache_entry;
+  EXPECT_TRUE(cache_entry.SerializeToString(&serialized_entry));
+  batch.Put(std::string("file:abcd") + '\0' + "CACHE", serialized_entry);
+
+  EXPECT_TRUE(resource_map()->Write(leveldb::WriteOptions(), &batch).ok());
+
+  // Upgrade and reopen.
+  storage_.reset();
+  EXPECT_TRUE(ResourceMetadataStorage::UpgradeOldDB(
+      temp_dir_.path(), base::Bind(&util::CanonicalizeResourceId)));
   storage_.reset(new ResourceMetadataStorage(
       temp_dir_.path(), base::MessageLoopProxy::current().get()));
   ASSERT_TRUE(storage_->Initialize());
 
-  // Data is erased, except cache entries, because of the incompatible version.
+  // Resource-ID-to-local-ID mapping is added.
+  std::string id;
+  EXPECT_TRUE(storage_->GetIdByResourceId("abcd", &id));  // "file:" is dropped.
+
+  // Data is erased, except cache entries.
   EXPECT_EQ(0, storage_->GetLargestChangestamp());
-  EXPECT_FALSE(storage_->GetEntry(key1, &entry));
-  EXPECT_TRUE(storage_->GetCacheEntry(key1, &cache_entry));
+  EXPECT_FALSE(storage_->GetEntry(id, &entry));
+  EXPECT_TRUE(storage_->GetCacheEntry(id, &cache_entry));
 }
 
 TEST_F(ResourceMetadataStorageTest, IncompatibleDB_Unknown) {
@@ -393,13 +411,14 @@ TEST_F(ResourceMetadataStorageTest, IncompatibleDB_Unknown) {
   ResourceEntry entry;
   entry.set_local_id(key1);
   EXPECT_TRUE(storage_->PutEntry(entry));
-  EXPECT_TRUE(storage_->GetEntry(key1, &entry));
   FileCacheEntry cache_entry;
-  EXPECT_TRUE(storage_->PutCacheEntry(key1, FileCacheEntry()));
-  EXPECT_TRUE(storage_->GetCacheEntry(key1, &cache_entry));
+  EXPECT_TRUE(storage_->PutCacheEntry(key1, cache_entry));
 
-  // Set newer version and reopen DB.
+  // Set newer version, upgrade and reopen DB.
   SetDBVersion(ResourceMetadataStorage::kDBVersion + 1);
+  storage_.reset();
+  EXPECT_FALSE(ResourceMetadataStorage::UpgradeOldDB(
+      temp_dir_.path(), base::Bind(&util::CanonicalizeResourceId)));
   storage_.reset(new ResourceMetadataStorage(
       temp_dir_.path(), base::MessageLoopProxy::current().get()));
   ASSERT_TRUE(storage_->Initialize());

@@ -3040,6 +3040,14 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Drive.MetadataDBVersionBeforeUpgradeCheck">
+  <summary>
+    Version number of drive resource metadata DB found on the disk before
+    checking whether it should be upgraded. Recorded during Drive metadata
+    initialization triggered by profile initialization.
+  </summary>
+</histogram>
+
 <histogram name="Drive.NumberOfHostedDocuments">
   <summary>
     Number of hosted documents (spreadsheets etc.) on Drive. Logged when Drive

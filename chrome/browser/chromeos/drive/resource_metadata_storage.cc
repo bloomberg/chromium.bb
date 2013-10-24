@@ -9,6 +9,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
+#include "base/metrics/sparse_histogram.h"
 #include "base/sequenced_task_runner.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
@@ -78,6 +79,15 @@ bool IsCacheEntryKey(const leveldb::Slice& key) {
   const leveldb::Slice key_substring(
       key.data() + key.size() - expected_suffix.size(), expected_suffix.size());
   return key_substring.compare(expected_suffix) == 0;
+}
+
+// Returns ID extracted from a cache entry key.
+std::string GetIdFromCacheEntryKey(const leveldb::Slice& key) {
+  DCHECK(IsCacheEntryKey(key));
+  // Drop the suffix |kDBKeyDelimeter + kCacheEntryKeySuffix| from the key.
+  const size_t kSuffixLength = arraysize(kCacheEntryKeySuffix) - 1;
+  const int id_length = key.size() - 1 - kSuffixLength;
+  return std::string(key.data(), id_length);
 }
 
 // Returns a string to be used as a key for a resource-ID-to-local-ID entry.
@@ -279,13 +289,83 @@ void ResourceMetadataStorage::CacheEntryIterator::AdvanceInternal() {
     // TODO(hashimoto): Broken entries should be cleaned up at some point.
     if (IsCacheEntryKey(it_->key()) &&
         entry_.ParseFromArray(it_->value().data(), it_->value().size())) {
-      // Drop the suffix |kDBKeyDelimeter + kCacheEntryKeySuffix| from the key.
-      const size_t kSuffixLength = arraysize(kCacheEntryKeySuffix) - 1;
-      const int id_length = it_->key().size() - 1 - kSuffixLength;
-      id_.assign(it_->key().data(), id_length);
+      id_ = GetIdFromCacheEntryKey(it_->key());
       break;
     }
   }
+}
+
+// static
+bool ResourceMetadataStorage::UpgradeOldDB(
+    const base::FilePath& directory_path,
+    const ResourceIdCanonicalizer& id_canonicalizer) {
+  base::ThreadRestrictions::AssertIOAllowed();
+  COMPILE_ASSERT(
+      kDBVersion == 11,
+      db_version_and_this_function_should_be_updated_at_the_same_time);
+
+  // Open DB.
+  leveldb::DB* db = NULL;
+  leveldb::Options options;
+  options.max_open_files = 0;  // Use minimum.
+  options.create_if_missing = false;
+  if (!leveldb::DB::Open(
+          options,
+          directory_path.Append(kResourceMapDBName).AsUTF8Unsafe(), &db).ok())
+    return false;
+  scoped_ptr<leveldb::DB> resource_map(db);
+
+  // Check DB version.
+  std::string serialized_header;
+  ResourceMetadataHeader header;
+  if (!resource_map->Get(leveldb::ReadOptions(),
+                         leveldb::Slice(GetHeaderDBKey()),
+                         &serialized_header).ok() ||
+      !header.ParseFromString(serialized_header))
+    return false;
+  UMA_HISTOGRAM_SPARSE_SLOWLY("Drive.MetadataDBVersionBeforeUpgradeCheck",
+                              header.version());
+
+  if (header.version() == kDBVersion) {  // Nothing to do.
+    return true;
+  } else if (header.version() < 6) {  // Too old, nothing can be done.
+    return false;
+  } else if (header.version() < 11) {  // Cache entries can be reused.
+    leveldb::ReadOptions options;
+    options.verify_checksums = true;
+    scoped_ptr<leveldb::Iterator> it(resource_map->NewIterator(options));
+
+    leveldb::WriteBatch batch;
+    for (it->SeekToFirst(); it->Valid(); it->Next()) {
+      if (IsCacheEntryKey(it->key())) {
+        // The resource ID might be in old WAPI format. We need to canonicalize
+        // to the format of API service currently in use.
+        const std::string& id = GetIdFromCacheEntryKey(it->key());
+        const std::string& id_new = id_canonicalizer.Run(id);
+        if (id != id_new) {
+          batch.Delete(it->key());
+          batch.Put(GetCacheEntryKey(id_new), it->value());
+        }
+        // Before v11, resource ID was directly used as local ID. Such entries
+        // can be migrated by adding an identity ID mapping.
+        batch.Put(GetIdEntryKey(id_new), id_new);
+      } else {  // Remove all entries except cache entries.
+        batch.Delete(it->key());
+      }
+    }
+    if (!it->status().ok())
+      return false;
+
+    // Put header with the latest version number.
+    std::string serialized_header;
+    if (!GetDefaultHeaderEntry().SerializeToString(&serialized_header))
+      return false;
+    batch.Put(GetHeaderDBKey(), serialized_header);
+
+    return resource_map->Write(leveldb::WriteOptions(), &batch).ok();
+  }
+  LOG(WARNING) << "Unexpected DB version: " << header.version();
+  return false;
 }
 
 ResourceMetadataStorage::ResourceMetadataStorage(
@@ -336,25 +416,6 @@ bool ResourceMetadataStorage::Initialize() {
     bool should_discard_db = true;
     if (db_version != kDBVersion) {
       open_existing_result = DB_INIT_INCOMPATIBLE;
-
-      // We can reuse cache entries when appropriate.
-      if (6 <= db_version && db_version < kDBVersion) {
-        // Remove all entries except cache entries.
-        leveldb::ReadOptions options;
-        options.verify_checksums = true;
-        scoped_ptr<leveldb::Iterator> it(resource_map_->NewIterator(options));
-
-        leveldb::WriteBatch batch;
-        for (it->SeekToFirst(); it->Valid(); it->Next()) {
-          if (!IsCacheEntryKey(it->key()))
-            batch.Delete(it->key());
-        }
-
-        should_discard_db =
-            !it->status().ok() ||
-            !resource_map_->Write(leveldb::WriteOptions(), &batch).ok() ||
-            !PutHeader(GetDefaultHeaderEntry());
-      }
       LOG(INFO) << "Reject incompatible DB.";
     } else if (!CheckValidity()) {
       open_existing_result = DB_INIT_BROKEN;
@@ -731,13 +792,16 @@ bool ResourceMetadataStorage::CheckValidity() {
     // Check if resource-ID-to-local-ID mapping is stored correctly.
     if (IsIdEntryKey(it->key())) {
       leveldb::Status status = resource_map_->Get(
-          options,
-          it->value(),
-          &serialized_entry);
-      if (!status.ok() ||
-          !entry.ParseFromString(serialized_entry) ||
-          entry.resource_id().empty() ||
-          leveldb::Slice(GetIdEntryKey(entry.resource_id())) != it->key()) {
+          options, it->value(), &serialized_entry);
+      // Resource-ID-to-local-ID mapping without entry for the local ID is ok.
+      if (status.IsNotFound())
+        continue;
+      // When the entry exists, its resource ID must be consistent.
+      const bool ok = status.ok() &&
+          entry.ParseFromString(serialized_entry) &&
+          !entry.resource_id().empty() &&
+          leveldb::Slice(GetIdEntryKey(entry.resource_id())) == it->key();
+      if (!ok) {
         DLOG(ERROR) << "Broken ID entry. status = " << status.ToString();
         return false;
       }

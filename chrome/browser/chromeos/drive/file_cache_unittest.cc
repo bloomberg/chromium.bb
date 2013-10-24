@@ -12,7 +12,6 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/md5.h"
 #include "base/run_loop.h"
-#include "base/strings/string_util.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/fake_free_disk_space_getter.h"
@@ -893,30 +892,6 @@ TEST_F(FileCacheTest, GetFile) {
   contents.clear();
   EXPECT_TRUE(base::ReadFileToString(cache_file_path, &contents));
   EXPECT_EQ(src_contents, contents);
-}
-
-TEST_F(FileCacheTest, CanonicalizeIDs) {
-  ResourceIdCanonicalizer id_canonicalizer = base::Bind(
-      (ResourceIdCanonicalizer::RunType*)(&StringToUpperASCII));
-  const std::string id("abc");
-  const std::string md5("abcdef0123456789");
-
-  const base::FilePath file_directory =
-      temp_dir_.path().AppendASCII(kCacheFileDirectory);
-
-  // Store a file to the cache.
-  base::FilePath file;
-  EXPECT_TRUE(file_util::CreateTemporaryFileInDir(temp_dir_.path(), &file));
-  EXPECT_EQ(FILE_ERROR_OK,
-            cache_->Store(id, md5, file, FileCache::FILE_OPERATION_COPY));
-
-  // Canonicalize IDs.
-  EXPECT_TRUE(cache_->CanonicalizeIDs(id_canonicalizer));
-
-  const std::string canonicalized_id = id_canonicalizer.Run(id);
-  FileCacheEntry entry;
-  EXPECT_FALSE(cache_->GetCacheEntry(id, &entry));
-  EXPECT_TRUE(cache_->GetCacheEntry(canonicalized_id, &entry));
 }
 
 TEST_F(FileCacheTest, RenameCacheFilesToNewFormat) {

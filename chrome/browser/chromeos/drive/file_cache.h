@@ -15,7 +15,6 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/drive/file_errors.h"
 #include "chrome/browser/chromeos/drive/resource_metadata_storage.h"
-#include "chrome/browser/drive/drive_service_interface.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -155,10 +154,6 @@ class FileCache {
   // runner to safely delete the object.
   // Must be called on the UI thread.
   void Destroy();
-
-  // Converts entry IDs and cache file names to the desired format.
-  // TODO(hashimoto): Remove this method at some point.
-  bool CanonicalizeIDs(const ResourceIdCanonicalizer& id_canonicalizer);
 
  private:
   friend class FileCacheTest;

@@ -13,6 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
+#include "chrome/browser/drive/drive_service_interface.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -103,6 +104,10 @@ class ResourceMetadataStorage {
 
     DISALLOW_COPY_AND_ASSIGN(CacheEntryIterator);
   };
+
+  // Returns true if the DB was successfully upgraded to the newest version.
+  static bool UpgradeOldDB(const base::FilePath& directory_path,
+                           const ResourceIdCanonicalizer& id_canonicalizer);
 
   ResourceMetadataStorage(const base::FilePath& directory_path,
                           base::SequencedTaskRunner* blocking_task_runner);

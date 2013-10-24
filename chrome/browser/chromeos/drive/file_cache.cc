@@ -420,21 +420,6 @@ void FileCache::Destroy() {
       base::Bind(&FileCache::DestroyOnBlockingPool, base::Unretained(this)));
 }
 
-bool FileCache::CanonicalizeIDs(
-    const ResourceIdCanonicalizer& id_canonicalizer) {
-  scoped_ptr<Iterator> it = GetIterator();
-  for (; !it->IsAtEnd(); it->Advance()) {
-    const std::string id_canonicalized = id_canonicalizer.Run(it->GetID());
-    if (id_canonicalized != it->GetID()) {
-      // Replace the existing entry.
-      if (!storage_->RemoveCacheEntry(it->GetID()) ||
-          !storage_->PutCacheEntry(id_canonicalized, it->GetValue()))
-        return false;
-    }
-  }
-  return !it->HasError();
-}
-
 void FileCache::DestroyOnBlockingPool() {
   AssertOnSequencedWorkerPool();
   delete this;
