@@ -333,26 +333,30 @@ DOMWindow::DOMWindow(Frame* frame)
     ScriptWrappable::init(this);
 }
 
-void DOMWindow::setDocument(PassRefPtr<Document> document)
+void DOMWindow::clearDocument()
 {
-    ASSERT(!document || document->frame() == m_frame);
-    if (m_document) {
-        if (m_document->confusingAndOftenMisusedAttached()) {
-            // FIXME: We don't call willRemove here. Why is that OK?
-            // This detach() call is also mostly redundant. Most of the calls to
-            // this function come via DocumentLoader::createWriterFor, which
-            // always detaches the previous Document first. Only XSLTProcessor
-            // depends on this detach() call, so it seems like there's some room
-            // for cleanup.
-            m_document->detach();
-        }
-        m_document->setDOMWindow(0);
-    }
-
-    m_document = document;
-
     if (!m_document)
         return;
+
+    if (m_document->confusingAndOftenMisusedAttached()) {
+        // FIXME: We don't call willRemove here. Why is that OK?
+        // This detach() call is also mostly redundant. Most of the calls to
+        // this function come via DocumentLoader::createWriterFor, which
+        // always detaches the previous Document first. Only XSLTProcessor
+        // depends on this detach() call, so it seems like there's some room
+        // for cleanup.
+        m_document->detach();
+    }
+
+    m_document->setDOMWindow(0);
+    m_document = 0;
+}
+
+void DOMWindow::setDocument(PassRefPtr<Document> document)
+{
+    ASSERT(document && document->frame() == m_frame);
+    clearDocument();
+    m_document = document;
 
     m_document->setDOMWindow(this);
     if (!m_document->confusingAndOftenMisusedAttached())
@@ -405,7 +409,7 @@ DOMWindow::~DOMWindow()
     removeAllEventListeners();
 
     ASSERT(!m_document->confusingAndOftenMisusedAttached());
-    setDocument(0);
+    clearDocument();
 }
 
 const AtomicString& DOMWindow::interfaceName() const

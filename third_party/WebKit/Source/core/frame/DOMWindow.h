@@ -394,6 +394,7 @@ namespace WebCore {
         virtual void frameDestroyed() OVERRIDE;
         virtual void willDetachPage() OVERRIDE;
 
+        void clearDocument();
         void resetDOMWindowProperties();
         void willDestroyDocumentInFrame();
 
