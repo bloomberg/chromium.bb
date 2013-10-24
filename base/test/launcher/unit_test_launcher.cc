@@ -89,14 +89,10 @@ class UnitTestLauncherDelegate : public TestLauncherDelegate {
   }
 
  private:
-  struct TestLaunchInfo {
-    std::string GetFullName() const {
-      return test_case_name + "." + test_name;
-    }
-
-    std::string test_case_name;
-    std::string test_name;
-    TestResultCallback callback;
+  struct GTestCallbackState {
+    TestLauncher* test_launcher;
+    std::vector<std::string> test_names;
+    FilePath output_file;
   };
 
   virtual void OnTestIterationStarting() OVERRIDE {
@@ -119,27 +115,43 @@ class UnitTestLauncherDelegate : public TestLauncherDelegate {
     return true;
   }
 
-  virtual void RunTest(const testing::TestCase* test_case,
-                       const testing::TestInfo* test_info,
-                       const TestResultCallback& callback) OVERRIDE {
+  virtual void RunTests(TestLauncher* test_launcher,
+                        const std::vector<std::string>& test_names) OVERRIDE {
     DCHECK(thread_checker_.CalledOnValidThread());
 
-    TestLaunchInfo launch_info;
-    launch_info.test_case_name = test_case->name();
-    launch_info.test_name = test_info->name();
-    launch_info.callback = callback;
-    tests_.push_back(launch_info);
+    std::vector<std::string> batch;
+    for (size_t i = 0; i < test_names.size(); i++) {
+      batch.push_back(test_names[i]);
 
-    // Run tests in batches no larger than the limit.
-    if (tests_.size() >= batch_limit_)
-      RunRemainingTests();
+      if (batch.size() >= batch_limit_) {
+        RunBatch(test_launcher, batch);
+        batch.clear();
+      }
+    }
+
+    RunBatch(test_launcher, batch);
   }
 
-  virtual void RunRemainingTests() OVERRIDE {
-    DCHECK(thread_checker_.CalledOnValidThread());
+  virtual size_t RetryTests(
+      TestLauncher* test_launcher,
+      const std::vector<std::string>& test_names) OVERRIDE {
+    MessageLoop::current()->PostTask(
+        FROM_HERE,
+        Bind(&UnitTestLauncherDelegate::RunSerially,
+             Unretained(this),
+             test_launcher,
+             test_names));
+    return test_names.size();
+  }
 
-    if (tests_.empty())
+  void RunSerially(TestLauncher* test_launcher,
+                   const std::vector<std::string>& test_names) {
+    if (test_names.empty())
       return;
+
+    std::vector<std::string> new_test_names(test_names);
+    std::string test_name(new_test_names.back());
+    new_test_names.pop_back();
 
     // Create a dedicated temporary directory to store the xml result data
     // per run to ensure clean state and make it possible to launch multiple
@@ -149,9 +161,40 @@ class UnitTestLauncherDelegate : public TestLauncherDelegate {
                                             &output_file));
     output_file = output_file.AppendASCII("test_results.xml");
 
-    std::vector<std::string> test_names;
-    for (size_t i = 0; i < tests_.size(); i++)
-      test_names.push_back(tests_[i].GetFullName());
+    std::vector<std::string> current_test_names;
+    current_test_names.push_back(test_name);
+    CommandLine cmd_line(
+        GetCommandLineForChildGTestProcess(current_test_names, output_file));
+
+    GTestCallbackState callback_state;
+    callback_state.test_launcher = test_launcher;
+    callback_state.test_names = current_test_names;
+    callback_state.output_file = output_file;
+
+    parallel_launcher_.LaunchChildGTestProcess(
+        cmd_line,
+        std::string(),
+        TestTimeouts::test_launcher_timeout(),
+        Bind(&UnitTestLauncherDelegate::SerialGTestCallback,
+             Unretained(this),
+             callback_state,
+             new_test_names));
+  }
+
+  void RunBatch(TestLauncher* test_launcher,
+                const std::vector<std::string>& test_names) {
+    DCHECK(thread_checker_.CalledOnValidThread());
+
+    if (test_names.empty())
+      return;
+
+    // Create a dedicated temporary directory to store the xml result data
+    // per run to ensure clean state and make it possible to launch multiple
+    // processes in parallel.
+    base::FilePath output_file;
+    CHECK(file_util::CreateNewTempDirectory(FilePath::StringType(),
+                                            &output_file));
+    output_file = output_file.AppendASCII("test_results.xml");
 
     CommandLine cmd_line(
         GetCommandLineForChildGTestProcess(test_names, output_file));
@@ -165,51 +208,93 @@ class UnitTestLauncherDelegate : public TestLauncherDelegate {
     base::TimeDelta timeout =
         test_names.size() * TestTimeouts::test_launcher_timeout();
 
+    GTestCallbackState callback_state;
+    callback_state.test_launcher = test_launcher;
+    callback_state.test_names = test_names;
+    callback_state.output_file = output_file;
+
     parallel_launcher_.LaunchChildGTestProcess(
         cmd_line,
         std::string(),
         timeout,
         Bind(&UnitTestLauncherDelegate::GTestCallback,
-             base::Unretained(this),
-             tests_,
-             output_file));
-    tests_.clear();
+             Unretained(this),
+             callback_state));
   }
 
-  void GTestCallback(const std::vector<TestLaunchInfo>& tests,
-                     const FilePath& output_file,
+  void GTestCallback(const GTestCallbackState& callback_state,
                      int exit_code,
                      const TimeDelta& elapsed_time,
                      bool was_timeout,
                      const std::string& output) {
     DCHECK(thread_checker_.CalledOnValidThread());
-    std::vector<TestLaunchInfo> tests_to_relaunch_after_interruption;
+    std::vector<std::string> tests_to_relaunch_after_interruption;
     bool called_any_callbacks =
-        ProcessTestResults(tests,
-                           output_file,
+        ProcessTestResults(callback_state.test_launcher,
+                           callback_state.test_names,
+                           callback_state.output_file,
                            output,
                            exit_code,
                            was_timeout,
                            &tests_to_relaunch_after_interruption);
 
-    for (size_t i = 0; i < tests_to_relaunch_after_interruption.size(); i++)
-      tests_.push_back(tests_to_relaunch_after_interruption[i]);
-    RunRemainingTests();
+    RunBatch(callback_state.test_launcher,
+             tests_to_relaunch_after_interruption);
 
     if (called_any_callbacks)
       parallel_launcher_.ResetOutputWatchdog();
 
     // The temporary file's directory is also temporary.
-    DeleteFile(output_file.DirName(), true);
+    DeleteFile(callback_state.output_file.DirName(), true);
+  }
+
+  void SerialGTestCallback(const GTestCallbackState& callback_state,
+                           const std::vector<std::string>& test_names,
+                           int exit_code,
+                           const TimeDelta& elapsed_time,
+                           bool was_timeout,
+                           const std::string& output) {
+    DCHECK(thread_checker_.CalledOnValidThread());
+    std::vector<std::string> tests_to_relaunch_after_interruption;
+    bool called_any_callbacks =
+        ProcessTestResults(callback_state.test_launcher,
+                           callback_state.test_names,
+                           callback_state.output_file,
+                           output,
+                           exit_code,
+                           was_timeout,
+                           &tests_to_relaunch_after_interruption);
+
+    // There is only one test, there cannot be other tests to relaunch
+    // due to a crash.
+    DCHECK(tests_to_relaunch_after_interruption.empty());
+
+    if (called_any_callbacks) {
+      parallel_launcher_.ResetOutputWatchdog();
+    } else {
+      // There is only one test, we should have called back with its result.
+      NOTREACHED();
+    }
+
+    // The temporary file's directory is also temporary.
+    DeleteFile(callback_state.output_file.DirName(), true);
+
+    MessageLoop::current()->PostTask(
+        FROM_HERE,
+        Bind(&UnitTestLauncherDelegate::RunSerially,
+             Unretained(this),
+             callback_state.test_launcher,
+             test_names));
   }
 
   static bool ProcessTestResults(
-      const std::vector<TestLaunchInfo>& tests,
+      TestLauncher* test_launcher,
+      const std::vector<std::string>& test_names,
       const base::FilePath& output_file,
       const std::string& output,
       int exit_code,
       bool was_timeout,
-      std::vector<TestLaunchInfo>* tests_to_relaunch_after_interruption) {
+      std::vector<std::string>* tests_to_relaunch_after_interruption) {
     std::vector<TestResult> test_results;
     bool crashed = false;
     bool have_test_results =
@@ -222,13 +307,13 @@ class UnitTestLauncherDelegate : public TestLauncherDelegate {
       // the results we got from XML file and tests we intended to run.
       std::map<std::string, TestResult> results_map;
       for (size_t i = 0; i < test_results.size(); i++)
-        results_map[test_results[i].GetFullName()] = test_results[i];
+        results_map[test_results[i].full_name] = test_results[i];
 
       bool had_interrupted_test = false;
 
-      for (size_t i = 0; i < tests.size(); i++) {
-        if (ContainsKey(results_map, tests[i].GetFullName())) {
-          TestResult test_result = results_map[tests[i].GetFullName()];
+      for (size_t i = 0; i < test_names.size(); i++) {
+        if (ContainsKey(results_map, test_names[i])) {
+          TestResult test_result = results_map[test_names[i]];
           if (test_result.status == TestResult::TEST_CRASH) {
             had_interrupted_test = true;
 
@@ -252,21 +337,20 @@ class UnitTestLauncherDelegate : public TestLauncherDelegate {
           }
           test_result.output_snippet =
               GetTestOutputSnippet(test_result, output);
-          tests[i].callback.Run(test_result);
+          test_launcher->OnTestFinished(test_result);
           called_any_callback = true;
         } else if (had_interrupted_test) {
-          tests_to_relaunch_after_interruption->push_back(tests[i]);
+          tests_to_relaunch_after_interruption->push_back(test_names[i]);
         } else {
           // TODO(phajdan.jr): Explicitly pass the info that the test didn't
           // run for a mysterious reason.
-          LOG(ERROR) << "no test result for " << tests[i].GetFullName();
+          LOG(ERROR) << "no test result for " << test_names[i];
           TestResult test_result;
-          test_result.test_case_name = tests[i].test_case_name;
-          test_result.test_name = tests[i].test_name;
+          test_result.full_name = test_names[i];
           test_result.status = TestResult::TEST_UNKNOWN;
           test_result.output_snippet =
               GetTestOutputSnippet(test_result, output);
-          tests[i].callback.Run(test_result);
+          test_launcher->OnTestFinished(test_result);
           called_any_callback = true;
         }
       }
@@ -289,12 +373,11 @@ class UnitTestLauncherDelegate : public TestLauncherDelegate {
       // to all tests.
       // TODO(phajdan.jr): Be smarter about this, e.g. retry each test
       // individually.
-      for (size_t i = 0; i < tests.size(); i++) {
+      for (size_t i = 0; i < test_names.size(); i++) {
         TestResult test_result;
-        test_result.test_case_name = tests[i].test_case_name;
-        test_result.test_name = tests[i].test_name;
+        test_result.full_name = test_names[i];
         test_result.status = TestResult::TEST_UNKNOWN;
-        tests[i].callback.Run(test_result);
+        test_launcher->OnTestFinished(test_result);
         called_any_callback = true;
       }
     }
@@ -308,8 +391,6 @@ class UnitTestLauncherDelegate : public TestLauncherDelegate {
 
   // Maximum number of tests to run in a single batch.
   size_t batch_limit_;
-
-  std::vector<TestLaunchInfo> tests_;
 };
 
 bool GetSwitchValueAsInt(const std::string& switch_name, int* result) {

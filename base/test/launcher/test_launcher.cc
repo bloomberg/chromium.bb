@@ -210,7 +210,12 @@ TestLauncher::TestLauncher(TestLauncherDelegate* launcher_delegate)
       test_started_count_(0),
       test_finished_count_(0),
       test_success_count_(0),
+      retry_count_(0),
+      retry_limit_(3),  // TODO(phajdan.jr): Make a flag control this.
       run_result_(true) {
+}
+
+TestLauncher::~TestLauncher() {
 }
 
 bool TestLauncher::Run(int argc, char** argv) {
@@ -259,6 +264,107 @@ bool TestLauncher::Run(int argc, char** argv) {
   }
 
   return run_result_;
+}
+
+void TestLauncher::OnTestFinished(const TestResult& result) {
+  ++test_finished_count_;
+
+  if (result.status == TestResult::TEST_SUCCESS) {
+    ++test_success_count_;
+  } else {
+    tests_to_retry_.insert(result.full_name);
+
+    fprintf(stdout, "%s", result.output_snippet.c_str());
+    fflush(stdout);
+  }
+
+  results_tracker_.AddTestResult(result);
+
+  // TODO(phajdan.jr): Align counter (padding).
+  std::string status_line(
+      StringPrintf("[%" PRIuS "/%" PRIuS "] %s ",
+                   test_finished_count_,
+                   test_started_count_,
+                   result.full_name.c_str()));
+  if (result.completed()) {
+    status_line.append(StringPrintf("(%" PRId64 " ms)",
+                                    result.elapsed_time.InMilliseconds()));
+  } else if (result.status == TestResult::TEST_TIMEOUT) {
+    status_line.append("(TIMED OUT)");
+  } else if (result.status == TestResult::TEST_CRASH) {
+    status_line.append("(CRASHED)");
+  } else if (result.status == TestResult::TEST_SKIPPED) {
+    status_line.append("(SKIPPED)");
+  } else if (result.status == TestResult::TEST_UNKNOWN) {
+    status_line.append("(UNKNOWN)");
+  } else {
+    // Fail very loudly so it's not ignored.
+    CHECK(false) << "Unhandled test result status: " << result.status;
+  }
+  fprintf(stdout, "%s\n", status_line.c_str());
+  fflush(stdout);
+
+  if (test_finished_count_ == test_started_count_) {
+    if (!tests_to_retry_.empty() && retry_count_ < retry_limit_) {
+      retry_count_++;
+
+      std::vector<std::string> test_names(tests_to_retry_.begin(),
+                                          tests_to_retry_.end());
+
+      tests_to_retry_.clear();
+
+      size_t retry_started_count =
+          launcher_delegate_->RetryTests(this, test_names);
+      if (retry_started_count == 0) {
+        // Signal failure, but continue to run all requested test iterations.
+        // With the summary of all iterations at the end this is a good default.
+        run_result_ = false;
+
+        // The current iteration is done.
+        fprintf(stdout, "%" PRIuS " test%s run\n",
+                test_finished_count_,
+                test_finished_count_ > 1 ? "s" : "");
+        fflush(stdout);
+
+        results_tracker_.PrintSummaryOfCurrentIteration();
+
+        // Kick off the next iteration.
+        MessageLoop::current()->PostTask(
+            FROM_HERE,
+            Bind(&TestLauncher::RunTestIteration, Unretained(this)));
+      } else {
+        fprintf(stdout, "Retrying %" PRIuS " test%s (retry #%" PRIuS ")\n",
+                retry_started_count,
+                retry_started_count > 1 ? "s" : "",
+                retry_count_);
+        fflush(stdout);
+
+        test_started_count_ += retry_started_count;
+      }
+    } else {
+      // The current iteration is done.
+      fprintf(stdout, "%" PRIuS " test%s run\n",
+              test_finished_count_,
+              test_finished_count_ > 1 ? "s" : "");
+      fflush(stdout);
+
+      results_tracker_.PrintSummaryOfCurrentIteration();
+
+      // When we retry tests, success is determined by having nothing more
+      // to retry (everything eventually passed), as opposed to having
+      // no failures at all.
+      if (!tests_to_retry_.empty()) {
+        // Signal failure, but continue to run all requested test iterations.
+        // With the summary of all iterations at the end this is a good default.
+        run_result_ = false;
+      }
+
+      // Kick off the next iteration.
+      MessageLoop::current()->PostTask(
+          FROM_HERE,
+          Bind(&TestLauncher::RunTestIteration, Unretained(this)));
+    }
+  }
 }
 
 bool TestLauncher::Init() {
@@ -318,6 +424,8 @@ void TestLauncher::RunTests() {
 
   int num_runnable_tests = 0;
 
+  std::vector<std::string> test_names;
+
   for (int i = 0; i < unit_test->total_test_case_count(); ++i) {
     const testing::TestCase* test_case = unit_test->GetTestCase(i);
     for (int j = 0; j < test_case->total_test_count(); ++j) {
@@ -349,27 +457,22 @@ void TestLauncher::RunTests() {
       if (num_runnable_tests++ % total_shards_ != shard_index_)
         continue;
 
-      test_started_count_++;
-      MessageLoop::current()->PostTask(
-          FROM_HERE,
-          Bind(&TestLauncherDelegate::RunTest,
-               Unretained(launcher_delegate_),
-               test_case,
-               test_info,
-               Bind(&TestLauncher::OnTestFinished,
-                    Unretained(this))));
+      test_names.push_back(test_name);
     }
   }
 
-  MessageLoop::current()->PostTask(
-      FROM_HERE,
-      Bind(&TestLauncherDelegate::RunRemainingTests,
-           Unretained(launcher_delegate_)));
+  test_started_count_ = test_names.size();
+  launcher_delegate_->RunTests(this, test_names);
 
-  MessageLoop::current()->PostTask(
-      FROM_HERE,
-      Bind(&TestLauncher::OnAllTestsStarted,
-           Unretained(this)));
+  if (test_started_count_ == 0) {
+    fprintf(stdout, "0 tests run\n");
+    fflush(stdout);
+
+    // No tests have actually been started, so kick off the next iteration.
+    MessageLoop::current()->PostTask(
+        FROM_HERE,
+        Bind(&TestLauncher::RunTestIteration, Unretained(this)));
+  }
 }
 
 void TestLauncher::RunTestIteration() {
@@ -384,6 +487,8 @@ void TestLauncher::RunTestIteration() {
   test_started_count_ = 0;
   test_finished_count_ = 0;
   test_success_count_ = 0;
+  retry_count_ = 0;
+  tests_to_retry_.clear();
   results_tracker_.OnTestIterationStarting();
   launcher_delegate_->OnTestIterationStarting();
 
@@ -392,88 +497,21 @@ void TestLauncher::RunTestIteration() {
 }
 
 void TestLauncher::OnAllTestsStarted() {
-  if (test_started_count_ == 0) {
-    fprintf(stdout, "0 tests run\n");
-    fflush(stdout);
-
-    // No tests have actually been started, so kick off the next iteration.
-    MessageLoop::current()->PostTask(
-        FROM_HERE,
-        Bind(&TestLauncher::RunTestIteration, Unretained(this)));
-  }
-}
-
-void TestLauncher::OnTestFinished(const TestResult& result) {
-  ++test_finished_count_;
-
-  if (result.status == TestResult::TEST_SUCCESS) {
-    ++test_success_count_;
-  } else {
-    fprintf(stdout, "%s", result.output_snippet.c_str());
-    fflush(stdout);
-  }
-
-  results_tracker_.AddTestResult(result);
-
-  // TODO(phajdan.jr): Align counter (padding).
-  std::string status_line(
-      StringPrintf("[%" PRIuS "/%" PRIuS "] %s ",
-                   test_finished_count_,
-                   test_started_count_,
-                   result.GetFullName().c_str()));
-  if (result.completed()) {
-    status_line.append(StringPrintf("(%" PRId64 " ms)",
-                                    result.elapsed_time.InMilliseconds()));
-  } else if (result.status == TestResult::TEST_TIMEOUT) {
-    status_line.append("(TIMED OUT)");
-  } else if (result.status == TestResult::TEST_CRASH) {
-    status_line.append("(CRASHED)");
-  } else if (result.status == TestResult::TEST_SKIPPED) {
-    status_line.append("(SKIPPED)");
-  } else if (result.status == TestResult::TEST_UNKNOWN) {
-    status_line.append("(UNKNOWN)");
-  } else {
-    // Fail very loudly so it's not ignored.
-    CHECK(false) << "Unhandled test result status: " << result.status;
-  }
-  fprintf(stdout, "%s\n", status_line.c_str());
-  fflush(stdout);
-
-  if (test_finished_count_ == test_started_count_) {
-    // The current iteration is done.
-    fprintf(stdout, "%" PRIuS " test%s run\n",
-            test_finished_count_,
-            test_finished_count_ > 1 ? "s" : "");
-    fflush(stdout);
-
-    results_tracker_.PrintSummaryOfCurrentIteration();
-
-    if (test_success_count_ != test_finished_count_) {
-      // Signal failure, but continue to run all requested test iterations.
-      // With the summary of all iterations at the end this is a good default.
-      run_result_ = false;
-    }
-
-    // Kick off the next iteration.
-    MessageLoop::current()->PostTask(
-        FROM_HERE,
-        Bind(&TestLauncher::RunTestIteration, Unretained(this)));
-  }
 }
 
 std::string GetTestOutputSnippet(const TestResult& result,
                                  const std::string& full_output) {
   size_t run_pos = full_output.find(std::string("[ RUN      ] ") +
-                                    result.GetFullName());
+                                    result.full_name);
   if (run_pos == std::string::npos)
     return std::string();
 
   size_t end_pos = full_output.find(std::string("[  FAILED  ] ") +
-                                    result.GetFullName(),
+                                    result.full_name,
                                     run_pos);
   if (end_pos == std::string::npos) {
     end_pos = full_output.find(std::string("[       OK ] ") +
-                               result.GetFullName(),
+                               result.full_name,
                                run_pos);
   }
   if (end_pos != std::string::npos) {

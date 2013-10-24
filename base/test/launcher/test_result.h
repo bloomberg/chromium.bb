@@ -25,10 +25,14 @@ struct TestResult {
   TestResult();
   ~TestResult();
 
-  std::string GetFullName() const { return test_case_name + "." + test_name; }
-
   // Returns the test status as string (e.g. for display).
   std::string StatusAsString() const;
+
+  // Returns the test name (e.g. "B" for "A.B").
+  std::string GetTestName() const;
+
+  // Returns the test case name (e.g. "A" for "A.B").
+  std::string GetTestCaseName() const;
 
   // Returns true if the test has completed (i.e. the test binary exited
   // normally, possibly with an exit code indicating failure, but didn't crash
@@ -37,11 +41,8 @@ struct TestResult {
     return status == TEST_SUCCESS || status == TEST_FAILURE;
   }
 
-  // Name of the test case (before the dot, e.g. "A" for test "A.B").
-  std::string test_case_name;
-
-  // Name of the test (after the dot, e.g. "B" for test "A.B").
-  std::string test_name;
+  // Full name of the test (e.g. "A.B").
+  std::string full_name;
 
   Status status;
 

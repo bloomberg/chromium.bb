@@ -58,9 +58,21 @@ TestResultsTracker::~TestResultsTracker() {
   fprintf(out_, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
   fprintf(out_, "<testsuites name=\"AllTests\" tests=\"\" failures=\"\""
           " disabled=\"\" errors=\"\" time=\"\">\n");
+
+  // Maps test case names to test results.
+  typedef std::map<std::string, std::vector<TestResult> > TestCaseMap;
+  TestCaseMap test_case_map;
+
   for (PerIterationData::ResultsMap::iterator i =
            per_iteration_data_[iteration_].results.begin();
        i != per_iteration_data_[iteration_].results.end();
+       ++i) {
+    // Use the last test result as the final one.
+    TestResult result = i->second.test_results.back();
+    test_case_map[result.GetTestCaseName()].push_back(result);
+  }
+  for (TestCaseMap::iterator i = test_case_map.begin();
+       i != test_case_map.end();
        ++i) {
     fprintf(out_, "  <testsuite name=\"%s\" tests=\"%" PRIuS "\" failures=\"\""
             " disabled=\"\" errors=\"\" time=\"\">\n",
@@ -69,9 +81,9 @@ TestResultsTracker::~TestResultsTracker() {
       const TestResult& result = i->second[j];
       fprintf(out_, "    <testcase name=\"%s\" status=\"run\" time=\"%.3f\""
               " classname=\"%s\">\n",
-              result.test_name.c_str(),
+              result.GetTestName().c_str(),
               result.elapsed_time.InSecondsF(),
-              result.test_case_name.c_str());
+              result.GetTestCaseName().c_str());
       if (result.status != TestResult::TEST_SUCCESS)
         fprintf(out_, "      <failure message=\"\" type=\"\"></failure>\n");
       fprintf(out_, "    </testcase>\n");
@@ -144,52 +156,72 @@ void TestResultsTracker::OnTestIterationStarting() {
 void TestResultsTracker::AddTestResult(const TestResult& result) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  per_iteration_data_[iteration_].results[result.test_case_name].push_back(
-      result);
-  per_iteration_data_[iteration_].tests_by_status[result.status].push_back(
-      result.GetFullName());
+  per_iteration_data_[iteration_].results[
+      result.full_name].test_results.push_back(result);
 }
 
 void TestResultsTracker::PrintSummaryOfCurrentIteration() const {
-  PrintTestsByStatus(TestResult::TEST_FAILURE, "failed");
-  PrintTestsByStatus(TestResult::TEST_TIMEOUT, "timed out");
-  PrintTestsByStatus(TestResult::TEST_CRASH, "crashed");
-  PrintTestsByStatus(TestResult::TEST_SKIPPED, "skipped");
-  PrintTestsByStatus(TestResult::TEST_UNKNOWN, "had unknown result");
+  std::map<TestResult::Status, std::set<std::string> > tests_by_status;
+
+  for (PerIterationData::ResultsMap::const_iterator j =
+           per_iteration_data_[iteration_].results.begin();
+       j != per_iteration_data_[iteration_].results.end();
+       ++j) {
+    // Use the last test result as the final one.
+    TestResult result = j->second.test_results.back();
+    tests_by_status[result.status].insert(result.full_name);
+  }
+
+  PrintTests(tests_by_status[TestResult::TEST_FAILURE].begin(),
+             tests_by_status[TestResult::TEST_FAILURE].end(),
+             "failed");
+  PrintTests(tests_by_status[TestResult::TEST_TIMEOUT].begin(),
+             tests_by_status[TestResult::TEST_TIMEOUT].end(),
+             "timed out");
+  PrintTests(tests_by_status[TestResult::TEST_CRASH].begin(),
+             tests_by_status[TestResult::TEST_CRASH].end(),
+             "crashed");
+  PrintTests(tests_by_status[TestResult::TEST_SKIPPED].begin(),
+             tests_by_status[TestResult::TEST_SKIPPED].end(),
+             "skipped");
+  PrintTests(tests_by_status[TestResult::TEST_UNKNOWN].begin(),
+             tests_by_status[TestResult::TEST_UNKNOWN].end(),
+             "had unknown result");
 }
 
 void TestResultsTracker::PrintSummaryOfAllIterations() const {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  std::map<TestResult::Status, std::set<std::string> > all_tests_by_status;
+  std::map<TestResult::Status, std::set<std::string> > tests_by_status;
 
   for (int i = 0; i <= iteration_; i++) {
-    for (PerIterationData::StatusMap::const_iterator j =
-             per_iteration_data_[i].tests_by_status.begin();
-         j != per_iteration_data_[i].tests_by_status.end();
+    for (PerIterationData::ResultsMap::const_iterator j =
+             per_iteration_data_[i].results.begin();
+         j != per_iteration_data_[i].results.end();
          ++j) {
-      for (size_t k = 0; k < j->second.size(); k++)
-        all_tests_by_status[j->first].insert(j->second[k]);
+      // Use the last test result as the final one.
+      TestResult result = j->second.test_results.back();
+      tests_by_status[result.status].insert(result.full_name);
     }
   }
 
   fprintf(stdout, "Summary of all itest iterations:\n");
   fflush(stdout);
 
-  PrintTests(all_tests_by_status[TestResult::TEST_FAILURE].begin(),
-             all_tests_by_status[TestResult::TEST_FAILURE].end(),
+  PrintTests(tests_by_status[TestResult::TEST_FAILURE].begin(),
+             tests_by_status[TestResult::TEST_FAILURE].end(),
              "failed");
-  PrintTests(all_tests_by_status[TestResult::TEST_TIMEOUT].begin(),
-             all_tests_by_status[TestResult::TEST_TIMEOUT].end(),
+  PrintTests(tests_by_status[TestResult::TEST_TIMEOUT].begin(),
+             tests_by_status[TestResult::TEST_TIMEOUT].end(),
              "timed out");
-  PrintTests(all_tests_by_status[TestResult::TEST_CRASH].begin(),
-             all_tests_by_status[TestResult::TEST_CRASH].end(),
+  PrintTests(tests_by_status[TestResult::TEST_CRASH].begin(),
+             tests_by_status[TestResult::TEST_CRASH].end(),
              "crashed");
-  PrintTests(all_tests_by_status[TestResult::TEST_SKIPPED].begin(),
-             all_tests_by_status[TestResult::TEST_SKIPPED].end(),
+  PrintTests(tests_by_status[TestResult::TEST_SKIPPED].begin(),
+             tests_by_status[TestResult::TEST_SKIPPED].end(),
              "skipped");
-  PrintTests(all_tests_by_status[TestResult::TEST_UNKNOWN].begin(),
-             all_tests_by_status[TestResult::TEST_UNKNOWN].end(),
+  PrintTests(tests_by_status[TestResult::TEST_UNKNOWN].begin(),
+             tests_by_status[TestResult::TEST_UNKNOWN].end(),
              "had unknown result");
 
   fprintf(stdout, "End of the summary.\n");
@@ -203,20 +235,22 @@ bool TestResultsTracker::SaveSummaryAsJSON(const FilePath& path) const {
   summary_root->Set("per_iteration_data", per_iteration_data);
 
   for (int i = 0; i <= iteration_; i++) {
-    ListValue* current_iteration_data = new ListValue;
+    DictionaryValue* current_iteration_data = new DictionaryValue;
     per_iteration_data->Append(current_iteration_data);
 
     for (PerIterationData::ResultsMap::const_iterator j =
              per_iteration_data_[i].results.begin();
          j != per_iteration_data_[i].results.end();
          ++j) {
-      for (size_t k = 0; k < j->second.size(); k++) {
-        const TestResult& test_result = j->second[k];
+      ListValue* test_results = new ListValue;
+      current_iteration_data->SetWithoutPathExpansion(j->first, test_results);
+
+      for (size_t k = 0; k < j->second.test_results.size(); k++) {
+        const TestResult& test_result = j->second.test_results[k];
 
         DictionaryValue* test_result_value = new DictionaryValue;
-        current_iteration_data->Append(test_result_value);
+        test_results->Append(test_result_value);
 
-        test_result_value->SetString("full_name", test_result.GetFullName());
         test_result_value->SetString("status", test_result.StatusAsString());
         test_result_value->SetInteger(
             "elapsed_time_ms", test_result.elapsed_time.InMilliseconds());
@@ -230,22 +264,16 @@ bool TestResultsTracker::SaveSummaryAsJSON(const FilePath& path) const {
   return serializer.Serialize(*summary_root);
 }
 
+TestResultsTracker::AggregateTestResult::AggregateTestResult() {
+}
+
+TestResultsTracker::AggregateTestResult::~AggregateTestResult() {
+}
+
 TestResultsTracker::PerIterationData::PerIterationData() {
 }
 
 TestResultsTracker::PerIterationData::~PerIterationData() {
-}
-
-void TestResultsTracker::PrintTestsByStatus(
-    TestResult::Status status,
-    const std::string& description) const {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  PerIterationData::StatusMap::const_iterator i(
-      per_iteration_data_[iteration_].tests_by_status.find(status));
-  if (i == per_iteration_data_[iteration_].tests_by_status.end())
-    return;
-  PrintTests(i->second.begin(), i->second.end(), description);
 }
 
 }  // namespace base
