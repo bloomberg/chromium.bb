@@ -814,6 +814,9 @@ if __name__ == '__main__':
       '', '--chromedriver',
       help='Path to chromedriver server (REQUIRED!)')
   parser.add_option(
+      '', '--log-path',
+      help='Output verbose server logs to this file')
+  parser.add_option(
       '', '--reference-chromedriver',
       help='Path to the reference chromedriver server')
   parser.add_option(
@@ -833,7 +836,8 @@ if __name__ == '__main__':
     parser.error('chromedriver is required or the given path is invalid.' +
                  'Please run "%s --help" for help' % __file__)
 
-  chromedriver_server = server.Server(os.path.abspath(options.chromedriver))
+  chromedriver_server = server.Server(os.path.abspath(options.chromedriver),
+                                      options.log_path)
   global _CHROMEDRIVER_SERVER_URL
   _CHROMEDRIVER_SERVER_URL = chromedriver_server.GetUrl()
 

@@ -9,6 +9,7 @@ import optparse
 import os
 import platform
 import sys
+import tempfile
 
 _THIS_DIR = os.path.abspath(os.path.dirname(__file__))
 sys.path.insert(0, os.path.join(_THIS_DIR, os.pardir))
@@ -46,15 +47,20 @@ def _GenerateTestCommand(script,
                          chrome_version=None,
                          android_package=None,
                          verbose=False):
+  _, log_path = tempfile.mkstemp(prefix='chromedriver_')
+  print 'chromedriver server log: %s' % log_path
   cmd = [
       sys.executable,
       os.path.join(_THIS_DIR, script),
-      '--chromedriver=' + chromedriver,
+      '--chromedriver=%s' % chromedriver,
+      '--log-path=%s' % log_path,
   ]
   if ref_chromedriver:
     cmd.append('--reference-chromedriver=' + ref_chromedriver)
+
   if chrome:
     cmd.append('--chrome=' + chrome)
+
   if chrome_version:
     cmd.append('--chrome-version=' + chrome_version)
 

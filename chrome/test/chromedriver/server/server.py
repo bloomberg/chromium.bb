@@ -13,11 +13,12 @@ import urllib2
 class Server(object):
   """A running ChromeDriver server."""
 
-  def __init__(self, exe_path):
+  def __init__(self, exe_path, log_path=None):
     """Starts the ChromeDriver server and waits for it to be ready.
 
     Args:
       exe_path: path to the ChromeDriver executable
+      log_path: path to the log file
     Raises:
       RuntimeError if ChromeDriver fails to start
     """
@@ -26,6 +27,8 @@ class Server(object):
 
     port = self._FindOpenPort()
     chromedriver_args = [exe_path, '--port=%d' % port]
+    if log_path:
+      chromedriver_args.append('--log-path=%s' % log_path)
     self._process = subprocess.Popen(chromedriver_args)
     self._url = 'http://127.0.0.1:%d' % port
     if self._process is None:

@@ -58,7 +58,7 @@ class TestResult(object):
 
 
 def _Run(java_tests_src_dir, test_filter,
-         chromedriver_path, chrome_path, android_package,
+         chromedriver_path, chrome_path, log_path, android_package,
          verbose, debug):
   """Run the WebDriver Java tests and return the test results.
 
@@ -68,6 +68,7 @@ def _Run(java_tests_src_dir, test_filter,
         as Google C++ Test format.
     chromedriver_path: path to ChromeDriver exe.
     chrome_path: path to Chrome exe.
+    log_path: path to server log.
     android_package: name of Chrome's Android package.
     verbose: whether the output should be verbose.
     debug: whether the tests should wait until attached by a debugger.
@@ -94,9 +95,11 @@ def _Run(java_tests_src_dir, test_filter,
 
   sys_props = ['selenium.browser=chrome',
                'webdriver.chrome.driver=' + os.path.abspath(chromedriver_path)]
-  if chrome_path is not None:
+  if chrome_path:
     sys_props += ['webdriver.chrome.binary=' + os.path.abspath(chrome_path)]
-  if android_package is not None:
+  if log_path:
+    sys_props += ['webdriver.chrome.logfile=' + log_path]
+  if android_package:
     sys_props += ['webdriver.chrome.android_package=' + android_package]
   if test_filter:
     # Test jar actually takes a regex. Convert from glob.
@@ -233,6 +236,9 @@ def main():
       '', '--chrome', type='string', default=None,
       help='Path to a build of the chrome binary')
   parser.add_option(
+      '', '--log-path',
+      help='Output verbose server logs to this file')
+  parser.add_option(
       '', '--chrome-version', default='HEAD',
       help='Version of chrome. Default is \'HEAD\'')
   parser.add_option(
@@ -302,6 +308,7 @@ def main():
           test_filter=filter,
           chromedriver_path=options.chromedriver,
           chrome_path=options.chrome,
+          log_path=options.log_path,
           android_package=options.android_package,
           verbose=options.verbose,
           debug=options.debug)
