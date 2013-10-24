@@ -11,7 +11,6 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
-#include "chrome/common/content_settings.h"
 
 class PrefValueMap;
 
@@ -291,23 +290,6 @@ class FileSelectionDialogsHandler : public TypeCheckingPolicyHandler {
   const char* allow_dialogs_pref_name_;
   const char* prompt_for_download_pref_name_;
   DISALLOW_COPY_AND_ASSIGN(FileSelectionDialogsHandler);
-};
-
-// Handles JavaScript policies.
-class JavascriptPolicyHandler : public ConfigurationPolicyHandler {
- public:
-  explicit JavascriptPolicyHandler(const char* pref_name);
-  virtual ~JavascriptPolicyHandler();
-
-  // ConfigurationPolicyHandler methods:
-  virtual bool CheckPolicySettings(const PolicyMap& policies,
-                                   PolicyErrorMap* errors) OVERRIDE;
-  virtual void ApplyPolicySettings(const PolicyMap& policies,
-                                   PrefValueMap* prefs) OVERRIDE;
-
- private:
-  const char* pref_name_;
-  DISALLOW_COPY_AND_ASSIGN(JavascriptPolicyHandler);
 };
 
 // Handles URLBlacklist policies.

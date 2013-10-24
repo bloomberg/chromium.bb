@@ -15,7 +15,6 @@
 #include "chrome/browser/policy/external_data_fetcher.h"
 #include "chrome/browser/policy/policy_map.h"
 #include "chrome/browser/policy/policy_service_impl.h"
-#include "chrome/common/content_settings.h"
 #include "chrome/common/pref_names.h"
 #include "components/policy/core/common/policy_pref_names.h"
 #include "policy/policy_constants.h"
@@ -554,48 +553,6 @@ TEST_F(ConfigurationPolicyPrefStoreRefreshTest, Initialization) {
   UpdateProviderPolicy(policy);
   Mock::VerifyAndClearExpectations(&observer_);
   EXPECT_TRUE(store_->IsInitializationComplete());
-}
-
-// Tests for policies that don't quite fit the previous patterns.
-class ConfigurationPolicyPrefStoreOthersTest
-    : public ConfigurationPolicyPrefStoreTest {};
-
-TEST_F(ConfigurationPolicyPrefStoreOthersTest, JavascriptEnabled) {
-  // This is a boolean policy, but affects an integer preference.
-  EXPECT_FALSE(store_->GetValue(prefs::kManagedDefaultJavaScriptSetting, NULL));
-  PolicyMap policy;
-  policy.Set(key::kJavascriptEnabled, POLICY_LEVEL_MANDATORY,
-             POLICY_SCOPE_USER, base::Value::CreateBooleanValue(true), NULL);
-  UpdateProviderPolicy(policy);
-  EXPECT_FALSE(store_->GetValue(prefs::kManagedDefaultJavaScriptSetting, NULL));
-  policy.Set(key::kJavascriptEnabled, POLICY_LEVEL_MANDATORY,
-             POLICY_SCOPE_USER, base::Value::CreateBooleanValue(false), NULL);
-  UpdateProviderPolicy(policy);
-  const base::Value* value = NULL;
-  EXPECT_TRUE(store_->GetValue(prefs::kManagedDefaultJavaScriptSetting,
-                               &value));
-  EXPECT_TRUE(base::FundamentalValue(CONTENT_SETTING_BLOCK).Equals(value));
-}
-
-TEST_F(ConfigurationPolicyPrefStoreOthersTest, JavascriptEnabledOverridden) {
-  EXPECT_FALSE(store_->GetValue(prefs::kManagedDefaultJavaScriptSetting, NULL));
-  PolicyMap policy;
-  policy.Set(key::kJavascriptEnabled, POLICY_LEVEL_MANDATORY,
-             POLICY_SCOPE_USER, base::Value::CreateBooleanValue(false), NULL);
-  UpdateProviderPolicy(policy);
-  const base::Value* value = NULL;
-  EXPECT_TRUE(store_->GetValue(prefs::kManagedDefaultJavaScriptSetting,
-                               &value));
-  EXPECT_TRUE(base::FundamentalValue(CONTENT_SETTING_BLOCK).Equals(value));
-  // DefaultJavaScriptSetting overrides JavascriptEnabled.
-  policy.Set(key::kDefaultJavaScriptSetting, POLICY_LEVEL_MANDATORY,
-             POLICY_SCOPE_USER,
-             base::Value::CreateIntegerValue(CONTENT_SETTING_ALLOW),
-             NULL);
-  UpdateProviderPolicy(policy);
-  EXPECT_TRUE(store_->GetValue(prefs::kManagedDefaultJavaScriptSetting,
-                               &value));
-  EXPECT_TRUE(base::FundamentalValue(CONTENT_SETTING_ALLOW).Equals(value));
 }
 
 }  // namespace policy

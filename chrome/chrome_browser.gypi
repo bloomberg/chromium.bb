@@ -1529,6 +1529,8 @@
         'browser/policy/external_data_fetcher.cc',
         'browser/policy/external_data_fetcher.h',
         'browser/policy/external_data_manager.h',
+        'browser/policy/javascript_policy_handler.cc',
+        'browser/policy/javascript_policy_handler.h',
         'browser/policy/policy_bundle.cc',
         'browser/policy/policy_bundle.h',
         'browser/policy/policy_domain_descriptor.cc',

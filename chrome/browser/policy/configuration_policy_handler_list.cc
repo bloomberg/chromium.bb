@@ -13,6 +13,7 @@
 #include "chrome/browser/extensions/policy_handlers.h"
 #include "chrome/browser/net/proxy_policy_handler.h"
 #include "chrome/browser/policy/configuration_policy_handler.h"
+#include "chrome/browser/policy/javascript_policy_handler.h"
 #include "chrome/browser/policy/policy_error_map.h"
 #include "chrome/browser/policy/policy_map.h"
 #include "chrome/browser/profiles/incognito_mode_policy_handler.h"
@@ -464,8 +465,7 @@ ConfigurationPolicyHandlerList::ConfigurationPolicyHandlerList() {
   handlers_.push_back(new FileSelectionDialogsHandler(
       prefs::kAllowFileSelectionDialogs, prefs::kPromptForDownload));
   handlers_.push_back(new IncognitoModePolicyHandler());
-  handlers_.push_back(
-      new JavascriptPolicyHandler(prefs::kManagedDefaultJavaScriptSetting));
+  handlers_.push_back(new JavascriptPolicyHandler());
   handlers_.push_back(new ProxyPolicyHandler());
   handlers_.push_back(new RestoreOnStartupPolicyHandler());
   handlers_.push_back(new SyncPolicyHandler(prefs::kSyncManaged));

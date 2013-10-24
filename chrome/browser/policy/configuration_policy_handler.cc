@@ -437,65 +437,6 @@ void FileSelectionDialogsHandler::ApplyPolicySettings(const PolicyMap& policies,
 }
 
 
-// JavascriptPolicyHandler implementation --------------------------------------
-
-JavascriptPolicyHandler::JavascriptPolicyHandler(const char* pref_name)
-    : pref_name_(pref_name) {}
-
-JavascriptPolicyHandler::~JavascriptPolicyHandler() {
-}
-
-bool JavascriptPolicyHandler::CheckPolicySettings(const PolicyMap& policies,
-                                                  PolicyErrorMap* errors) {
-  const Value* javascript_enabled = policies.GetValue(key::kJavascriptEnabled);
-  const Value* default_setting =
-      policies.GetValue(key::kDefaultJavaScriptSetting);
-
-  if (javascript_enabled && !javascript_enabled->IsType(Value::TYPE_BOOLEAN)) {
-    errors->AddError(key::kJavascriptEnabled,
-                     IDS_POLICY_TYPE_ERROR,
-                     ValueTypeToString(Value::TYPE_BOOLEAN));
-  }
-
-  if (default_setting && !default_setting->IsType(Value::TYPE_INTEGER)) {
-    errors->AddError(key::kDefaultJavaScriptSetting,
-                     IDS_POLICY_TYPE_ERROR,
-                     ValueTypeToString(Value::TYPE_INTEGER));
-  }
-
-  if (javascript_enabled && default_setting) {
-    errors->AddError(key::kJavascriptEnabled,
-                     IDS_POLICY_OVERRIDDEN,
-                     key::kDefaultJavaScriptSetting);
-  }
-
-  return true;
-}
-
-void JavascriptPolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
-                                                  PrefValueMap* prefs) {
-  int setting = CONTENT_SETTING_DEFAULT;
-  const Value* default_setting =
-      policies.GetValue(key::kDefaultJavaScriptSetting);
-
-  if (default_setting) {
-    default_setting->GetAsInteger(&setting);
-  } else {
-    const Value* javascript_enabled =
-        policies.GetValue(key::kJavascriptEnabled);
-    bool enabled = true;
-    if (javascript_enabled &&
-        javascript_enabled->GetAsBoolean(&enabled) &&
-        !enabled) {
-      setting = CONTENT_SETTING_BLOCK;
-    }
-  }
-
-  if (setting != CONTENT_SETTING_DEFAULT)
-    prefs->SetValue(pref_name_, Value::CreateIntegerValue(setting));
-}
-
-
 // URLBlacklistPolicyHandler implementation ------------------------------------
 
 URLBlacklistPolicyHandler::URLBlacklistPolicyHandler(const char* pref_name)

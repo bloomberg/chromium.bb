@@ -16,6 +16,8 @@ specific_include_rules = {
   # These files will stay.
   r"(browser_policy_connector|"
   r"configuration_policy_handler_list|"
+  r"javascript_policy_handler|"
+  r"javascript_policy_handler_unittest|"
   r"managed_mode_policy_provider|"
   r"policy_browsertest|"
   r"policy_path_parser|"
@@ -48,12 +50,7 @@ specific_include_rules = {
     "+chrome/browser/policy/policy_path_parser.h",
   ],
 
-  r"configuration_policy_handler\.h": [
-    "+chrome/common/content_settings.h",
-  ],
-
   r"configuration_policy_pref_store_unittest\.cc": [
-    "+chrome/common/content_settings.h",
     "+chrome/common/pref_names.h",
   ],
 }
