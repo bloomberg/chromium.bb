@@ -104,7 +104,7 @@ ImageCaptureDeviceManager* g_image_capture_device_manager = NULL;
           base::SysNSStringToUTF8([cameraDevice UUIDString])),
       base::SysNSStringToUTF16([cameraDevice name]),
       "",
-      string16(),
+      base::SysNSStringToUTF16([cameraDevice name]),
       string16(),
       string16(),
       0);

@@ -133,7 +133,6 @@ std::string TestMediaFileSystemContext::RegisterFileSystemForMTPDevice(
     const std::string& device_id, const base::FilePath& path) {
   CHECK(!StorageInfo::IsMassStorageDevice(device_id));
   std::string fsid = AddFSEntry(device_id, path);
-  registry_->RegisterMTPFileSystem(path.value(), fsid);
   return fsid;
 }
 
@@ -141,7 +140,6 @@ void TestMediaFileSystemContext::RevokeFileSystem(const std::string& fsid) {
   if (!ContainsKey(file_systems_by_id_, fsid))
     return;
   EXPECT_EQ(1U, file_systems_by_id_.erase(fsid));
-  registry_->RevokeMTPFileSystem(fsid);
 }
 
 base::FilePath TestMediaFileSystemContext::GetPathForId(

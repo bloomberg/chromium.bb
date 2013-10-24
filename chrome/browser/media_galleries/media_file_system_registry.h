@@ -17,7 +17,6 @@
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/media_galleries/media_galleries_preferences.h"
-#include "chrome/browser/media_galleries/mtp_device_delegate_impl.h"
 #include "chrome/browser/storage_monitor/removable_storage_observer.h"
 
 class ExtensionGalleriesHost;
@@ -100,40 +99,17 @@ class MediaFileSystemRegistry
   // Map a profile and extension to the ExtensionGalleriesHost.
   typedef std::map<Profile*, ExtensionHostMap> ExtensionGalleriesHostMap;
 
-  // Map a filesystem id (fsid) to an MTP device location.
-  typedef std::map<std::string, base::FilePath::StringType>
-      MTPDeviceFileSystemMap;
-
-  // Map a MTP or PTP device location to a count of current uses of that
-  // location.
-  typedef std::map<const base::FilePath::StringType, int>
-      MTPDeviceUsageMap;
-
   virtual void OnPermissionRemoved(MediaGalleriesPreferences* pref,
                                    const std::string& extension_id,
                                    MediaGalleryPrefId pref_id) OVERRIDE;
   virtual void OnGalleryRemoved(MediaGalleriesPreferences* pref,
                                 MediaGalleryPrefId pref_id) OVERRIDE;
 
-  // Register that an MTP filesystem is in use for the given |device_location|.
-  void RegisterMTPFileSystem(
-      const base::FilePath::StringType& device_location,
-      const std::string& fsid);
-
-  // Removes the MTP entry associated with the given
-  // |device_location|. Signals the MTPDeviceMapService to destroy the
-  // delegate if there are no more uses of it.
-  void RevokeMTPFileSystem(const std::string& fsid);
-
   void OnExtensionGalleriesHostEmpty(Profile* profile,
                                      const std::string& extension_id);
 
   // This map owns all the ExtensionGalleriesHost objects created.
   ExtensionGalleriesHostMap extension_hosts_map_;
-
-  MTPDeviceFileSystemMap mtp_device_map_;
-
-  MTPDeviceUsageMap mtp_device_usage_map_;
 
   scoped_ptr<MediaFileSystemContext> file_system_context_;
 

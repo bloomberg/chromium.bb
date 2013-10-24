@@ -1112,7 +1112,6 @@
         'browser/media_galleries/media_galleries_preferences.h',
         'browser/media_galleries/media_galleries_preferences_factory.cc',
         'browser/media_galleries/media_galleries_preferences_factory.h',
-        'browser/media_galleries/mtp_device_delegate_impl.h',
         'browser/media_galleries/win/mtp_device_delegate_impl_win.cc',
         'browser/media_galleries/win/mtp_device_delegate_impl_win.h',
         'browser/media_galleries/win/mtp_device_object_entry.cc',
