@@ -17,7 +17,7 @@ aesCbc = {name: 'aes-cbc'};
 
 Promise.resolve(null).then(function() {
     keyFormat = "raw";
-    data = asciiToArrayBuffer("raw bytes for key");
+    data = asciiToUint8Array("raw bytes for key");
     algorithm = { name: 'hmac', hash: { name: 'sha-256' } };
     extractable = true;
     // Note there are duplicates
@@ -34,7 +34,7 @@ Promise.resolve(null).then(function() {
 
     // Same test as above, but with an keyUsages, and AES-CBC.
     keyFormat = "raw";
-    data = asciiToArrayBuffer("16 bytes of key!");
+    data = asciiToUint8Array("16 bytes of key!");
     algorithm = aesCbc;
     extractable = true;
     keyUsages = [];
@@ -49,7 +49,7 @@ Promise.resolve(null).then(function() {
 
     // Same test as above, but with extractable = false.
     keyFormat = "raw";
-    data = asciiToArrayBuffer("16 bytes of key!");
+    data = asciiToUint8Array("16 bytes of key!");
     algorithm = aesCbc;
     extractable = false;
     keyUsages = [];
@@ -64,7 +64,7 @@ Promise.resolve(null).then(function() {
 
     // Same test as above, but with key.type of public.
     keyFormat = "raw";
-    data = asciiToArrayBuffer("16 bytes of key!");
+    data = asciiToUint8Array("16 bytes of key!");
     algorithm = aesCbc;
     extractable = false;
     keyUsages = [];
@@ -79,7 +79,7 @@ Promise.resolve(null).then(function() {
 
     // Same test as above, but with keyFormat = spki
     keyFormat = "spki";
-    data = asciiToArrayBuffer("16 bytes of key!");
+    data = asciiToUint8Array("16 bytes of key!");
     algorithm = aesCbc;
     extractable = false;
     keyUsages = [];
@@ -90,7 +90,7 @@ Promise.resolve(null).then(function() {
     debug("rejected with " + result);
 
     keyFormat = "raw";
-    data = asciiToArrayBuffer("");
+    data = asciiToUint8Array("");
     algorithm = aesCbc;
     extractable = true;
     keyUsages = [];

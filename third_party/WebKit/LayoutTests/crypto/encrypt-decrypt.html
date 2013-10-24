@@ -16,7 +16,7 @@ jsTestIsAsync = true;
 importTestKeys().then(function(importedKeys) {
     keys = importedKeys;
 
-    data = asciiToArrayBuffer("hello");
+    data = asciiToUint8Array("hello");
 
     // ---------------------------------------------------
     // AES-CBC normalization failures (AesCbcParams)

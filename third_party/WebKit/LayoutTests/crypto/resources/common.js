@@ -1,7 +1,7 @@
 function importTestKeys()
 {
     var keyFormat = "raw";
-    var data = asciiToArrayBuffer("16 bytes of key!");
+    var data = asciiToUint8Array("16 bytes of key!");
     var extractable = true;
     var keyUsages = ['encrypt', 'decrypt', 'sign', 'verify'];
 
@@ -18,11 +18,30 @@ function importTestKeys()
     });
 }
 
-// Builds a hex string representation of any array-like input (array or
-// ArrayBufferView). The output looks like this:
-//    [ab 03 4c 99]
-function byteArrayToHexString(bytes)
+// Verifies that the given "bytes" holds the same value as "expectedHexString".
+// "bytes" can be anything recognized by "bytesToHexString()".
+function bytesShouldMatchHexString(testDescription, expectedHexString, bytes)
 {
+    expectedHexString = "[" + expectedHexString.toLowerCase() + "]";
+    var actualHexString = "[" + bytesToHexString(bytes) + "]";
+
+    if (actualHexString === expectedHexString) {
+        debug("PASS: " + testDescription + " should be " + expectedHexString + " and was");
+    } else {
+        debug("FAIL: " + testDescription + " should be " + expectedHexString + " but was " + actualHexString);
+    }
+}
+
+// Builds a hex string representation for an array-like input.
+// "bytes" can be an Array of bytes, an ArrayBuffer, or any TypedArray.
+// The output looks like this:
+//    ab034c99
+function bytesToHexString(bytes)
+{
+    if (!bytes)
+        return null;
+
+    bytes = new Uint8Array(bytes);
     var hexBytes = [];
 
     for (var i = 0; i < bytes.length; ++i) {
@@ -32,15 +51,26 @@ function byteArrayToHexString(bytes)
         hexBytes.push(byteString);
     }
 
-    return "[" + hexBytes.join(" ") + "]";
+    return hexBytes.join("");
 }
 
-function arrayBufferToHexString(buffer)
+function hexStringToUint8Array(hexString)
 {
-    return byteArrayToHexString(new Uint8Array(buffer));
+    if (hexString.length % 2 != 0)
+        throw "Invalid hexString";
+    var arrayBuffer = new Uint8Array(hexString.length / 2);
+
+    for (var i = 0; i < hexString.length; i += 2) {
+        var byteValue = parseInt(hexString.substr(i, 2), 16);
+        if (byteValue == NaN)
+            throw "Invalid hexString";
+        arrayBuffer[i/2] = byteValue;
+    }
+
+    return arrayBuffer;
 }
 
-function asciiToArrayBuffer(str)
+function asciiToUint8Array(str)
 {
     var chars = [];
     for (var i = 0; i < str.length; ++i)

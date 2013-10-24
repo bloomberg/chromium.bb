@@ -14,7 +14,7 @@ description("Tests cypto.subtle.sign and crypto.subtle.verify");
 jsTestIsAsync = true;
 
 hmacSha1 = {name: 'hmac', hash: {name: 'sha-1'}};
-data = asciiToArrayBuffer("hello");
+data = asciiToUint8Array("hello");
 
 importTestKeys().then(function(importedKeys) {
     keys = importedKeys;
@@ -46,15 +46,14 @@ importTestKeys().then(function(importedKeys) {
 
     return crypto.subtle.sign(hmacSha1, keys.hmacSha1, data);
 }).then(function(result) {
-    signResult = arrayBufferToHexString(result);
-    shouldBe("signResult", "'[89 0d 9b 89 4b 23 97 69 ac 77 25 04 66 dc e4 2a f9 26 ed 76]'");
+    bytesShouldMatchHexString('HMAC SHA1 signature', "890d9b894b239769ac77250466dce42af926ed76", result);
 
     return crypto.subtle.verify(hmacSha1, keys.hmacSha1, new Uint8Array(result), data);
 }).then(function(result) {
     verifyResult = result;
     shouldBe("verifyResult", "true");
 
-    return crypto.subtle.verify(hmacSha1, keys.hmacSha1, asciiToArrayBuffer("badsignature"), data);
+    return crypto.subtle.verify(hmacSha1, keys.hmacSha1, asciiToUint8Array("badsignature"), data);
 }).then(function(result) {
     verifyResult = result;
     shouldBe("verifyResult", "false");
