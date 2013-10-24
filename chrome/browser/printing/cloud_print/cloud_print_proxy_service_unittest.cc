@@ -8,6 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/prefs/testing_pref_service.h"
+#include "base/run_loop.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_proxy_service.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_proxy_service_factory.h"
 #include "chrome/browser/service/service_process_control.h"
@@ -154,14 +155,16 @@ void MockServiceProcessControl::SetWillBeDisabledExpectations() {
 bool MockServiceProcessControl::SendEnabledInfo() {
   info_.enabled = true;
   info_.email = EnabledUserId();
-  OnCloudPrintProxyInfo(info_);
+  PostTask(base::Bind(&MockServiceProcessControl::OnCloudPrintProxyInfo,
+                      base::Unretained(this), info_));
   return true;
 }
 
 bool MockServiceProcessControl::SendDisabledInfo() {
   info_.enabled = false;
   info_.email = std::string();
-  OnCloudPrintProxyInfo(info_);
+  PostTask(base::Bind(&MockServiceProcessControl::OnCloudPrintProxyInfo,
+                      base::Unretained(this), info_));
   return true;
 }
 
@@ -169,6 +172,16 @@ class TestCloudPrintProxyService : public CloudPrintProxyService {
  public:
   explicit TestCloudPrintProxyService(Profile* profile)
       : CloudPrintProxyService(profile) { }
+
+  void Initialize() {
+    CloudPrintProxyService::Initialize();
+    base::RunLoop().RunUntilIdle();
+  }
+
+  void RefreshStatusFromService() {
+    CloudPrintProxyService::RefreshStatusFromService();
+    base::RunLoop().RunUntilIdle();
+  }
 
   virtual ServiceProcessControl* GetServiceProcessControl() OVERRIDE {
     return &process_control_;
@@ -435,7 +448,6 @@ BrowserContextKeyedService* TestCloudPrintProxyServiceFactory(
   service->GetMockServiceProcessControl()->SetWillBeDisabledExpectations();
 
   service->Initialize();
-  base::MessageLoop::current()->RunUntilIdle();
   return service;
 }
 
@@ -453,5 +465,5 @@ TEST_F(CloudPrintProxyPolicyTest, StartupBrowserCreatorWithCommandLine) {
   command_line.AppendSwitch(switches::kCheckCloudPrintConnectorPolicy);
 
   EXPECT_FALSE(LaunchBrowser(command_line, &profile_));
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }

@@ -481,6 +481,9 @@ class MetricsService
   // This is used only for debugging.
   bool waiting_for_asynchronous_reporting_step_;
 
+  // Number of async histogram fetch requests in progress.
+  int num_async_histogram_fetches_in_progress_;
+
 #if defined(OS_CHROMEOS)
   // The external metric service is used to log ChromeOS UMA events.
   scoped_refptr<chromeos::ExternalMetrics> external_metrics_;

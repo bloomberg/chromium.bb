@@ -34,6 +34,9 @@ IPC_MESSAGE_CONTROL0(ServiceMsg_DisableCloudPrintProxy)
 // (whether it is enabled, the email address and the proxy id).
 IPC_MESSAGE_CONTROL0(ServiceMsg_GetCloudPrintProxyInfo)
 
+// Requests a message back with serialized UMA histograms.
+IPC_MESSAGE_CONTROL0(ServiceMsg_GetHistograms)
+
 // Tell the service process to shutdown.
 IPC_MESSAGE_CONTROL0(ServiceMsg_Shutdown)
 
@@ -43,9 +46,10 @@ IPC_MESSAGE_CONTROL0(ServiceMsg_UpdateAvailable)
 //-----------------------------------------------------------------------------
 // Service process host messages:
 // These are messages from the service process to the browser.
-// Sent when the cloud print proxy has an authentication error.
-IPC_MESSAGE_CONTROL0(ServiceHostMsg_CloudPrintProxy_AuthError)
-
 // Sent as a response to a request for cloud print proxy info
 IPC_MESSAGE_CONTROL1(ServiceHostMsg_CloudPrintProxy_Info,
                      cloud_print::CloudPrintProxyInfo /* proxy info */)
+
+// Sent as a response to ServiceMsg_GetHistograms.
+IPC_MESSAGE_CONTROL1(ServiceHostMsg_Histograms,
+                     std::vector<std::string> /* pickled_histograms */)

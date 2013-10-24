@@ -8,6 +8,8 @@
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/metrics/histogram_base.h"
+#include "base/metrics/histogram_delta_serialization.h"
 #include "base/process/launch.h"
 #include "base/stl_util.h"
 #include "base/threading/thread.h"
@@ -178,6 +180,7 @@ bool ServiceProcessControl::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(ServiceProcessControl, message)
     IPC_MESSAGE_HANDLER(ServiceHostMsg_CloudPrintProxy_Info,
                         OnCloudPrintProxyInfo)
+    IPC_MESSAGE_HANDLER(ServiceHostMsg_Histograms, OnHistograms)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -230,13 +233,58 @@ void ServiceProcessControl::OnCloudPrintProxyInfo(
   }
 }
 
+void ServiceProcessControl::OnHistograms(
+    const std::vector<std::string>& pickled_histograms) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  base::HistogramDeltaSerialization::DeserializeAndAddSamples(
+      pickled_histograms);
+  RunHistogramsCallback();
+}
+
+void ServiceProcessControl::RunHistogramsCallback() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (!histograms_callback_.is_null()) {
+    histograms_callback_.Run();
+    histograms_callback_.Reset();
+  }
+  histograms_timeout_callback_.Cancel();
+}
+
 bool ServiceProcessControl::GetCloudPrintProxyInfo(
     const CloudPrintProxyInfoHandler& cloud_print_info_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK_EQ(false, cloud_print_info_callback.is_null());
-
+  DCHECK(!cloud_print_info_callback.is_null());
+  cloud_print_info_callback_.Reset();
+  if (!Send(new ServiceMsg_GetCloudPrintProxyInfo()))
+    return false;
   cloud_print_info_callback_ = cloud_print_info_callback;
-  return Send(new ServiceMsg_GetCloudPrintProxyInfo());
+  return true;
+}
+
+bool ServiceProcessControl::GetHistograms(
+    const base::Closure& histograms_callback,
+    const base::TimeDelta& timeout) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!histograms_callback.is_null());
+  histograms_callback_.Reset();
+
+  // If the service process is already running then connect to it.
+  if (!CheckServiceProcessReady())
+    return false;
+  ConnectInternal();
+  if (!Send(new ServiceMsg_GetHistograms()))
+    return false;
+
+  // Run timeout task to make sure |histograms_callback| is called.
+  histograms_timeout_callback_.Reset(
+      base::Bind(&ServiceProcessControl::RunHistogramsCallback,
+                 base::Unretained(this)));
+  BrowserThread::PostDelayedTask(BrowserThread::UI, FROM_HERE,
+                                 histograms_timeout_callback_.callback(),
+                                 timeout);
+
+  histograms_callback_ = histograms_callback;
+  return true;
 }
 
 bool ServiceProcessControl::Shutdown() {
@@ -272,14 +320,14 @@ void ServiceProcessControl::Launcher::Run(const base::Closure& task) {
 ServiceProcessControl::Launcher::~Launcher() {}
 
 void ServiceProcessControl::Launcher::Notify() {
-  DCHECK_EQ(false, notify_task_.is_null());
+  DCHECK(!notify_task_.is_null());
   notify_task_.Run();
   notify_task_.Reset();
 }
 
 #if !defined(OS_MACOSX)
 void ServiceProcessControl::Launcher::DoDetectLaunched() {
-  DCHECK_EQ(false, notify_task_.is_null());
+  DCHECK(!notify_task_.is_null());
 
   const uint32 kMaxLaunchDetectRetries = 10;
   launched_ = CheckServiceProcessReady();
@@ -298,7 +346,7 @@ void ServiceProcessControl::Launcher::DoDetectLaunched() {
 }
 
 void ServiceProcessControl::Launcher::DoRun() {
-  DCHECK_EQ(false, notify_task_.is_null());
+  DCHECK(!notify_task_.is_null());
 
   base::LaunchOptions options;
 #if defined(OS_WIN)

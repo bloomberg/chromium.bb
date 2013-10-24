@@ -228,6 +228,10 @@
 #include "base/win/registry.h"
 #endif
 
+#if !defined(OS_ANDROID)
+#include "chrome/browser/service/service_process_control.h"
+#endif
+
 using base::Time;
 using content::BrowserThread;
 using content::ChildProcessData;
@@ -476,6 +480,7 @@ MetricsService::MetricsService()
       self_ptr_factory_(this),
       state_saver_factory_(this),
       waiting_for_asynchronous_reporting_step_(false),
+      num_async_histogram_fetches_in_progress_(0),
       entropy_source_returned_(LAST_ENTROPY_NONE) {
   DCHECK(IsSingleThreaded());
   InitializeMetricsState();
@@ -1306,12 +1311,32 @@ void MetricsService::OnMemoryDetailCollectionDone() {
       &MetricsService::OnHistogramSynchronizationDone,
       self_ptr_factory_.GetWeakPtr());
 
+  base::TimeDelta timeout =
+      base::TimeDelta::FromMilliseconds(kMaxHistogramGatheringWaitDuration);
+
+  DCHECK_EQ(num_async_histogram_fetches_in_progress_, 0);
+
+#if defined(OS_ANDROID)
+  // Android has no service process.
+  num_async_histogram_fetches_in_progress_ = 1;
+#else  // OS_ANDROID
+  num_async_histogram_fetches_in_progress_ = 2;
+  // Run requests to service and content in parallel.
+  if (!ServiceProcessControl::GetInstance()->GetHistograms(callback, timeout)) {
+    // Assume |num_async_histogram_fetches_in_progress_| is not changed by
+    // |GetHistograms()|.
+    DCHECK_EQ(num_async_histogram_fetches_in_progress_, 2);
+    // Assign |num_async_histogram_fetches_in_progress_| above and decrement it
+    // here to make code work even if |GetHistograms()| fired |callback|.
+    --num_async_histogram_fetches_in_progress_;
+  }
+#endif  // OS_ANDROID
+
   // Set up the callback to task to call after we receive histograms from all
   // child processes. Wait time specifies how long to wait before absolutely
   // calling us back on the task.
-  content::FetchHistogramsAsynchronously(
-      base::MessageLoop::current(), callback,
-      base::TimeDelta::FromMilliseconds(kMaxHistogramGatheringWaitDuration));
+  content::FetchHistogramsAsynchronously(base::MessageLoop::current(), callback,
+                                         timeout);
 }
 
 void MetricsService::OnHistogramSynchronizationDone() {
@@ -1319,6 +1344,11 @@ void MetricsService::OnHistogramSynchronizationDone() {
   // This function should only be called as the callback from an ansynchronous
   // step.
   DCHECK(waiting_for_asynchronous_reporting_step_);
+  DCHECK_GT(num_async_histogram_fetches_in_progress_, 0);
+
+  // Check if all expected requests finished.
+  if (--num_async_histogram_fetches_in_progress_ > 0)
+    return;
 
   waiting_for_asynchronous_reporting_step_ = false;
   OnFinalLogInfoCollectionDone();

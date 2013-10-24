@@ -12,6 +12,7 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/cancelable_callback.h"
 #include "base/id_map.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
@@ -85,10 +86,6 @@ class ServiceProcessControl : public IPC::Sender,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  // Message handlers
-  void OnCloudPrintProxyInfo(
-      const cloud_print::CloudPrintProxyInfo& proxy_info);
-
   // Send a shutdown message to the service process. IPC channel will be
   // destroyed after calling this method.
   // Return true if the message was sent.
@@ -97,8 +94,19 @@ class ServiceProcessControl : public IPC::Sender,
 
   // Send request for cloud print proxy info (enabled state, email, proxy id).
   // The callback gets the information when received.
+  // Returns true if request was sent. Callback will be called only in case of
+  // reply from service. The method resets any previous callback.
+  // This call starts service if needed.
   bool GetCloudPrintProxyInfo(
       const CloudPrintProxyInfoHandler& cloud_print_status_callback);
+
+  // Send request for histograms collected in service process.
+  // Returns true if request was sent, and callback will be called in case of
+  // success or timeout. The method resets any previous callback.
+  // Returns false if service is not running or other failure, callback will not
+  // be called in this case.
+  bool GetHistograms(const base::Closure& cloud_print_status_callback,
+                     const base::TimeDelta& timeout);
 
  private:
   // This class is responsible for launching the service process on the
@@ -141,6 +149,14 @@ class ServiceProcessControl : public IPC::Sender,
 
   typedef std::vector<base::Closure> TaskList;
 
+  // Message handlers
+  void OnCloudPrintProxyInfo(
+      const cloud_print::CloudPrintProxyInfo& proxy_info);
+  void OnHistograms(const std::vector<std::string>& pickled_histograms);
+
+  // Runs callback provided in |GetHistograms()|.
+  void RunHistogramsCallback();
+
   // Helper method to invoke all the callbacks based on success or failure.
   void RunConnectDoneTasks();
 
@@ -170,7 +186,14 @@ class ServiceProcessControl : public IPC::Sender,
   // the cloud print proxy.
   CloudPrintProxyInfoHandler cloud_print_info_callback_;
 
+  // Callback that gets invoked when a message with histograms is received from
+  // the service process.
+  base::Closure histograms_callback_;
+
   content::NotificationRegistrar registrar_;
+
+  // Callback that gets invoked if service didn't reply in time.
+  base::CancelableClosure histograms_timeout_callback_;
 };
 
 #endif  // CHROME_BROWSER_SERVICE_SERVICE_PROCESS_CONTROL_H_

@@ -4,6 +4,7 @@
 
 #include "chrome/service/service_ipc_server.h"
 
+#include "base/metrics/histogram_delta_serialization.h"
 #include "chrome/common/service_messages.h"
 #include "chrome/service/cloud_print/cloud_print_proxy.h"
 #include "chrome/service/service_process.h"
@@ -98,6 +99,7 @@ bool ServiceIPCServer::OnMessageReceived(const IPC::Message& msg) {
                         OnDisableCloudPrintProxy)
     IPC_MESSAGE_HANDLER(ServiceMsg_GetCloudPrintProxyInfo,
                         OnGetCloudPrintProxyInfo)
+    IPC_MESSAGE_HANDLER(ServiceMsg_GetHistograms, OnGetHistograms)
     IPC_MESSAGE_HANDLER(ServiceMsg_Shutdown, OnShutdown);
     IPC_MESSAGE_HANDLER(ServiceMsg_UpdateAvailable, OnUpdateAvailable);
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -118,6 +120,16 @@ void ServiceIPCServer::OnGetCloudPrintProxyInfo() {
   cloud_print::CloudPrintProxyInfo info;
   g_service_process->GetCloudPrintProxy()->GetProxyInfo(&info);
   channel_->Send(new ServiceHostMsg_CloudPrintProxy_Info(info));
+}
+
+void ServiceIPCServer::OnGetHistograms() {
+  if (!histogram_delta_serializer_) {
+    histogram_delta_serializer_.reset(
+        new base::HistogramDeltaSerialization("ServiceProcess"));
+  }
+  std::vector<std::string> deltas;
+  histogram_delta_serializer_->PrepareAndSerializeDeltas(&deltas);
+  channel_->Send(new ServiceHostMsg_Histograms(deltas));
 }
 
 void ServiceIPCServer::OnDisableCloudPrintProxy() {
