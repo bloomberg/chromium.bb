@@ -27,3 +27,4 @@ Cherry-picks:
   6284854b Support for "Do not blend" in mux and demux libraries
   40ae352 Fix memleak in WebPIDelete()
   92d47e4 improve VP8L signature detection by checking the version bits too
+  dde91fd Demux: Correct the extended format validation
