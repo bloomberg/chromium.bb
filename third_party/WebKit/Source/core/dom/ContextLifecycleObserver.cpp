@@ -31,18 +31,23 @@
 
 namespace WebCore {
 
+template<> void observerContext(ExecutionContext* context, LifecycleObserver<ExecutionContext>* observer)
+{
+    context->wasObservedBy(observer);
+}
+
+template<> void unobserverContext(ExecutionContext* context, LifecycleObserver<ExecutionContext>* observer)
+{
+    context->wasUnobservedBy(observer);
+}
+
 ContextLifecycleObserver::ContextLifecycleObserver(ExecutionContext* executionContext, Type type)
-    : LifecycleObserver(executionContext, type)
+    : LifecycleObserver<ExecutionContext>(executionContext, type)
 {
 }
 
 ContextLifecycleObserver::~ContextLifecycleObserver()
 {
-}
-
-ExecutionContext* ContextLifecycleObserver::executionContext() const
-{
-    return static_cast<ExecutionContext*>(m_lifecycleContext);
 }
 
 } // namespace WebCore

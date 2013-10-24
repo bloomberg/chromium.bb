@@ -31,6 +31,16 @@
 
 namespace WebCore {
 
+template<> void observerContext(DOMWindow* context, LifecycleObserver<DOMWindow>* observer)
+{
+    context->wasObservedBy(observer);
+}
+
+template<> void unobserverContext(DOMWindow* context, LifecycleObserver<DOMWindow>* observer)
+{
+    context->wasUnobservedBy(observer);
+}
+
 DOMWindowLifecycleObserver::DOMWindowLifecycleObserver(DOMWindow* window)
     : LifecycleObserver(window, DOMWindowLifecycleObserverType)
 {

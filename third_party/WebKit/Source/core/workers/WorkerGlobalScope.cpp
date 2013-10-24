@@ -328,7 +328,7 @@ WorkerEventQueue* WorkerGlobalScope::eventQueue() const
     return m_eventQueue.get();
 }
 
-PassOwnPtr<LifecycleNotifier> WorkerGlobalScope::createLifecycleNotifier()
+PassOwnPtr<LifecycleNotifier<ExecutionContext> > WorkerGlobalScope::createLifecycleNotifier()
 {
     return ContextLifecycleNotifier::create(this);
 }

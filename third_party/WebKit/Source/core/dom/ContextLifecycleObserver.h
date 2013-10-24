@@ -27,17 +27,19 @@
 #ifndef ContextLifecycleObserver_h
 #define ContextLifecycleObserver_h
 
-#include "core/platform/LifecycleObserver.h"
+#include "core/platform/LifecycleContext.h"
 
 namespace WebCore {
 
 class ExecutionContext;
 
-class ContextLifecycleObserver : public LifecycleObserver {
+template<> void observerContext(ExecutionContext*, LifecycleObserver<ExecutionContext>*);
+template<> void unobserverContext(ExecutionContext*, LifecycleObserver<ExecutionContext>*);
+
+class ContextLifecycleObserver : public LifecycleObserver<ExecutionContext> {
 public:
     explicit ContextLifecycleObserver(ExecutionContext*, Type = GenericType);
-    ExecutionContext* executionContext() const;
-
+    ExecutionContext* executionContext() const { return lifecycleContext(); }
 protected:
     virtual ~ContextLifecycleObserver();
 };

@@ -37,9 +37,9 @@ DocumentLifecycleNotifier::DocumentLifecycleNotifier(ExecutionContext* context)
 {
 }
 
-void DocumentLifecycleNotifier::addObserver(LifecycleObserver* observer)
+void DocumentLifecycleNotifier::addObserver(DocumentLifecycleNotifier::Observer* observer)
 {
-    if (observer->observerType() == LifecycleObserver::DocumentLifecycleObserverType) {
+    if (observer->observerType() == Observer::DocumentLifecycleObserverType) {
         RELEASE_ASSERT(m_iterating != IteratingOverDocumentObservers);
         m_documentObservers.add(static_cast<DocumentLifecycleObserver*>(observer));
     }
@@ -47,9 +47,9 @@ void DocumentLifecycleNotifier::addObserver(LifecycleObserver* observer)
     ContextLifecycleNotifier::addObserver(observer);
 }
 
-void DocumentLifecycleNotifier::removeObserver(LifecycleObserver* observer)
+void DocumentLifecycleNotifier::removeObserver(DocumentLifecycleNotifier::Observer* observer)
 {
-    if (observer->observerType() == LifecycleObserver::DocumentLifecycleObserverType) {
+    if (observer->observerType() == Observer::DocumentLifecycleObserverType) {
         RELEASE_ASSERT(m_iterating != IteratingOverDocumentObservers);
         m_documentObservers.remove(static_cast<DocumentLifecycleObserver*>(observer));
     }

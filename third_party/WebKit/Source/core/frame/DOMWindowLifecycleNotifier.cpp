@@ -29,14 +29,14 @@
 
 namespace WebCore {
 
-DOMWindowLifecycleNotifier::DOMWindowLifecycleNotifier(LifecycleContext* context)
+DOMWindowLifecycleNotifier::DOMWindowLifecycleNotifier(DOMWindow* context)
     : LifecycleNotifier(context)
 {
 }
 
-void DOMWindowLifecycleNotifier::addObserver(LifecycleObserver* observer)
+void DOMWindowLifecycleNotifier::addObserver(DOMWindowLifecycleNotifier::Observer* observer)
 {
-    if (observer->observerType() == LifecycleObserver::DOMWindowLifecycleObserverType) {
+    if (observer->observerType() == Observer::DOMWindowLifecycleObserverType) {
         RELEASE_ASSERT(m_iterating != IteratingOverDOMWindowObservers);
         m_windowObservers.add(static_cast<DOMWindowLifecycleObserver*>(observer));
     }
@@ -44,9 +44,9 @@ void DOMWindowLifecycleNotifier::addObserver(LifecycleObserver* observer)
     LifecycleNotifier::addObserver(observer);
 }
 
-void DOMWindowLifecycleNotifier::removeObserver(LifecycleObserver* observer)
+void DOMWindowLifecycleNotifier::removeObserver(DOMWindowLifecycleNotifier::Observer* observer)
 {
-    if (observer->observerType() == LifecycleObserver::DOMWindowLifecycleObserverType) {
+    if (observer->observerType() == Observer::DOMWindowLifecycleObserverType) {
         RELEASE_ASSERT(m_iterating != IteratingOverDOMWindowObservers);
         m_windowObservers.remove(static_cast<DOMWindowLifecycleObserver*>(observer));
     }
@@ -54,7 +54,7 @@ void DOMWindowLifecycleNotifier::removeObserver(LifecycleObserver* observer)
     LifecycleNotifier::removeObserver(observer);
 }
 
-PassOwnPtr<DOMWindowLifecycleNotifier> DOMWindowLifecycleNotifier::create(LifecycleContext* context)
+PassOwnPtr<DOMWindowLifecycleNotifier> DOMWindowLifecycleNotifier::create(DOMWindow* context)
 {
     return adoptPtr(new DOMWindowLifecycleNotifier(context));
 }

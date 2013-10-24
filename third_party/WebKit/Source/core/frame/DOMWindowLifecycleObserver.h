@@ -34,7 +34,10 @@ namespace WebCore {
 
 class DOMWindow;
 
-class DOMWindowLifecycleObserver : public LifecycleObserver {
+template<> void observerContext(DOMWindow*, LifecycleObserver<DOMWindow>*);
+template<> void unobserverContext(DOMWindow*, LifecycleObserver<DOMWindow>*);
+
+class DOMWindowLifecycleObserver : public LifecycleObserver<DOMWindow> {
 public:
     explicit DOMWindowLifecycleObserver(DOMWindow*);
     virtual ~DOMWindowLifecycleObserver();

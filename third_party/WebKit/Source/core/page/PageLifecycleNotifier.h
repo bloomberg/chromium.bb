@@ -36,24 +36,24 @@ namespace WebCore {
 class Page;
 class Frame;
 
-class PageLifecycleNotifier : public LifecycleNotifier {
+class PageLifecycleNotifier : public LifecycleNotifier<Page> {
 public:
-    static PassOwnPtr<PageLifecycleNotifier> create(LifecycleContext*);
+    static PassOwnPtr<PageLifecycleNotifier> create(Page*);
 
     void notifyPageVisibilityChanged();
     void notifyDidCommitLoad(Frame*);
 
-    virtual void addObserver(LifecycleObserver*) OVERRIDE;
-    virtual void removeObserver(LifecycleObserver*) OVERRIDE;
+    virtual void addObserver(Observer*) OVERRIDE;
+    virtual void removeObserver(Observer*) OVERRIDE;
 
 private:
-    explicit PageLifecycleNotifier(LifecycleContext*);
+    explicit PageLifecycleNotifier(Page*);
 
     typedef HashSet<PageLifecycleObserver*> PageObserverSet;
     PageObserverSet m_pageObservers;
 };
 
-inline PassOwnPtr<PageLifecycleNotifier> PageLifecycleNotifier::create(LifecycleContext* context)
+inline PassOwnPtr<PageLifecycleNotifier> PageLifecycleNotifier::create(Page* context)
 {
     return adoptPtr(new PageLifecycleNotifier(context));
 }

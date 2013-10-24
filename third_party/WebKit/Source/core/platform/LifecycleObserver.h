@@ -27,12 +27,15 @@
 #ifndef LifecycleObserver_h
 #define LifecycleObserver_h
 
+#include "wtf/Assertions.h"
+
 namespace WebCore {
 
-class LifecycleContext;
-
+template<typename T>
 class LifecycleObserver {
 public:
+    typedef T Context;
+
     enum Type {
         ActiveDOMObjectType,
         DocumentLifecycleObserverType,
@@ -41,21 +44,49 @@ public:
         DOMWindowLifecycleObserverType
     };
 
-    explicit LifecycleObserver(LifecycleContext*, Type = GenericType);
+    explicit LifecycleObserver(Context* context, Type type = GenericType)
+        : m_lifecycleContext(context)
+        , m_observerType(type)
+    {
+        observeContext(context);
+    }
 
-    virtual void contextDestroyed();
+    virtual ~LifecycleObserver()
+    {
+        observeContext(0);
+    }
 
-    LifecycleContext* lifecycleContext() const { return m_lifecycleContext; }
+    virtual void contextDestroyed() { m_lifecycleContext = 0; }
+
+
+    Context* lifecycleContext() const { return m_lifecycleContext; }
     Type observerType() const { return m_observerType; }
 
 protected:
-    virtual ~LifecycleObserver();
+    void observeContext(Context*);
 
-    void observeContext(LifecycleContext*);
-
-    LifecycleContext* m_lifecycleContext;
+    Context* m_lifecycleContext;
     Type m_observerType;
 };
+
+//
+// These functions should be specialized for each LifecycleObserver instances.
+//
+template<typename T> void observerContext(T*, LifecycleObserver<T>*) { ASSERT_NOT_REACHED(); }
+template<typename T> void unobserverContext(T*, LifecycleObserver<T>*) { ASSERT_NOT_REACHED(); }
+
+
+template<typename T>
+inline void LifecycleObserver<T>::observeContext(typename LifecycleObserver<T>::Context* context)
+{
+    if (m_lifecycleContext)
+        unobserverContext(m_lifecycleContext, this);
+
+    m_lifecycleContext = context;
+
+    if (m_lifecycleContext)
+        observerContext(m_lifecycleContext, this);
+}
 
 } // namespace WebCore
 

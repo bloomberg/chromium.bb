@@ -1108,7 +1108,7 @@ private:
 
     virtual void refExecutionContext() { ref(); }
     virtual void derefExecutionContext() { deref(); }
-    virtual PassOwnPtr<LifecycleNotifier> createLifecycleNotifier() OVERRIDE;
+    virtual PassOwnPtr<LifecycleNotifier<ExecutionContext> > createLifecycleNotifier() OVERRIDE;
 
     virtual const KURL& virtualURL() const; // Same as url(), but needed for ExecutionContext to implement it without a performance loss for direct calls.
     virtual KURL virtualCompleteURL(const String&) const; // Same as completeURL() for the same reason as above.

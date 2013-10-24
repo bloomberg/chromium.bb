@@ -40,7 +40,7 @@ class EventQueue;
 class EventTarget;
 class ExecutionContextTask;
 class KURL;
-class LifecycleNotifier;
+template<class T> class LifecycleNotifier;
 class ScriptCallStack;
 class ScriptState;
 class SecurityContext;
@@ -65,7 +65,7 @@ public:
     virtual EventTarget* errorEventTarget() = 0;
     virtual void logExceptionToConsole(const String& errorMessage, const String& sourceURL, int lineNumber, int columnNumber, PassRefPtr<ScriptCallStack>) = 0;
     virtual double timerAlignmentInterval() const = 0;
-    virtual PassOwnPtr<LifecycleNotifier> createLifecycleNotifier() = 0;
+    virtual PassOwnPtr<LifecycleNotifier<ExecutionContext> > createLifecycleNotifier() = 0;
     virtual void didUpdateSecurityOrigin() = 0;
 protected:
     virtual ~ExecutionContextClient() { }

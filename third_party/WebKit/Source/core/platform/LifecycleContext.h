@@ -28,6 +28,7 @@
 #ifndef LifecycleContext_h
 #define LifecycleContext_h
 
+#include "core/platform/LifecycleNotifier.h"
 #include "core/platform/LifecycleObserver.h"
 #include "wtf/HashSet.h"
 #include "wtf/OwnPtr.h"
@@ -35,30 +36,59 @@
 
 namespace WebCore {
 
-class LifecycleNotifier;
-class LifecycleObserver;
-
+template <typename T>
 class LifecycleContext {
 public:
-    LifecycleContext();
-    virtual ~LifecycleContext();
+    typedef LifecycleNotifier<T> Notifier;
+    typedef LifecycleObserver<T> Observer;
+
+    LifecycleContext() { }
+    virtual ~LifecycleContext() { }
 
     virtual bool isContextThread() const { return true; }
 
     // Called from the constructor of observers.
-    void wasObservedBy(LifecycleObserver*);
+    void wasObservedBy(Observer*);
 
     // Called from the destructor of observers.
-    void wasUnobservedBy(LifecycleObserver*);
+    void wasUnobservedBy(Observer*);
 
 protected:
-    LifecycleNotifier* lifecycleNotifier();
+    Notifier* lifecycleNotifier();
 
 private:
-    virtual PassOwnPtr<LifecycleNotifier> createLifecycleNotifier();
+    virtual PassOwnPtr<Notifier> createLifecycleNotifier();
 
-    OwnPtr<LifecycleNotifier> m_lifecycleNotifier;
+    OwnPtr<Notifier> m_lifecycleNotifier;
 };
+
+template<typename T>
+inline void LifecycleContext<T>::wasObservedBy(typename LifecycleContext<T>::Observer* observer)
+{
+    ASSERT(isContextThread());
+    lifecycleNotifier()->addObserver(observer);
+}
+
+template<typename T>
+inline void LifecycleContext<T>::wasUnobservedBy(typename LifecycleContext<T>::Observer* observer)
+{
+    ASSERT(isContextThread());
+    lifecycleNotifier()->removeObserver(observer);
+}
+
+template<typename T>
+inline typename LifecycleContext<T>::Notifier* LifecycleContext<T>::lifecycleNotifier()
+{
+    if (!m_lifecycleNotifier)
+        m_lifecycleNotifier = const_cast<LifecycleContext*>(this)->createLifecycleNotifier();
+    return m_lifecycleNotifier.get();
+}
+
+template<typename T>
+inline PassOwnPtr<typename LifecycleContext<T>::Notifier> LifecycleContext<T>::createLifecycleNotifier()
+{
+    return LifecycleContext<T>::Notifier::create(static_cast<T*>(this));
+}
 
 } // namespace WebCore
 

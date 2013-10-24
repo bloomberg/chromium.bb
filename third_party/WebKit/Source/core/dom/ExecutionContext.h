@@ -60,7 +60,7 @@ class SecurityOrigin;
 class ScriptCallStack;
 class ScriptState;
 
-class ExecutionContext : public LifecycleContext {
+class ExecutionContext : public LifecycleContext<ExecutionContext> {
 public:
     ExecutionContext();
     virtual ~ExecutionContext();
@@ -136,7 +136,8 @@ private:
 
     virtual void refExecutionContext() = 0;
     virtual void derefExecutionContext() = 0;
-    virtual PassOwnPtr<LifecycleNotifier> createLifecycleNotifier() OVERRIDE;
+    // LifecycleContext implementation.
+    virtual PassOwnPtr<LifecycleNotifier<ExecutionContext> > createLifecycleNotifier() OVERRIDE;
 
     // Implementation details for DOMTimer. No other classes should call these functions.
     int installNewTimeout(PassOwnPtr<ScheduledAction>, int timeout, bool singleShot);

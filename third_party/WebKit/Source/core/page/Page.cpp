@@ -599,7 +599,7 @@ PageLifecycleNotifier* Page::lifecycleNotifier()
     return static_cast<PageLifecycleNotifier*>(LifecycleContext::lifecycleNotifier());
 }
 
-PassOwnPtr<LifecycleNotifier> Page::createLifecycleNotifier()
+PassOwnPtr<LifecycleNotifier<Page> > Page::createLifecycleNotifier()
 {
     return PageLifecycleNotifier::create(this);
 }

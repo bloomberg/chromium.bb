@@ -1773,7 +1773,7 @@ DOMWindowLifecycleNotifier* DOMWindow::lifecycleNotifier()
     return static_cast<DOMWindowLifecycleNotifier*>(LifecycleContext::lifecycleNotifier());
 }
 
-PassOwnPtr<LifecycleNotifier> DOMWindow::createLifecycleNotifier()
+PassOwnPtr<LifecycleNotifier<DOMWindow> > DOMWindow::createLifecycleNotifier()
 {
     return DOMWindowLifecycleNotifier::create(this);
 }

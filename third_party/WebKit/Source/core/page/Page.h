@@ -78,7 +78,7 @@ typedef uint64_t LinkHash;
 
 float deviceScaleFactor(Frame*);
 
-class Page : public Supplementable<Page>, public LifecycleContext {
+class Page : public Supplementable<Page>, public LifecycleContext<Page> {
     WTF_MAKE_NONCOPYABLE(Page);
     friend class Settings;
 public:
@@ -250,7 +250,7 @@ private:
 
     void setTimerAlignmentInterval(double);
 
-    virtual PassOwnPtr<LifecycleNotifier> createLifecycleNotifier() OVERRIDE;
+    virtual PassOwnPtr<LifecycleNotifier<Page> > createLifecycleNotifier() OVERRIDE;
 
     const OwnPtr<AutoscrollController> m_autoscrollController;
     const OwnPtr<Chrome> m_chrome;

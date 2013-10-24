@@ -36,19 +36,19 @@ namespace WebCore {
 
 class DOMWindow;
 
-class DOMWindowLifecycleNotifier : public LifecycleNotifier {
+class DOMWindowLifecycleNotifier : public LifecycleNotifier<DOMWindow> {
 public:
-    static PassOwnPtr<DOMWindowLifecycleNotifier> create(LifecycleContext*);
+    static PassOwnPtr<DOMWindowLifecycleNotifier> create(DOMWindow*);
 
     void notifyAddEventListener(DOMWindow*, const AtomicString& eventType);
     void notifyRemoveEventListener(DOMWindow*, const AtomicString& eventType);
     void notifyRemoveAllEventListeners(DOMWindow*);
 
-    virtual void addObserver(LifecycleObserver*) OVERRIDE;
-    virtual void removeObserver(LifecycleObserver*) OVERRIDE;
+    virtual void addObserver(Observer*) OVERRIDE;
+    virtual void removeObserver(Observer*) OVERRIDE;
 
 private:
-    explicit DOMWindowLifecycleNotifier(LifecycleContext*);
+    explicit DOMWindowLifecycleNotifier(DOMWindow*);
 
     typedef HashSet<DOMWindowLifecycleObserver*> DOMWindowObserverSet;
     DOMWindowObserverSet m_windowObservers;

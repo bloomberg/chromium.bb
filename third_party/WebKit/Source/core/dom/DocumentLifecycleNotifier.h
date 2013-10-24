@@ -40,8 +40,8 @@ public:
     void notifyDocumentWasDetached();
     void notifyDocumentWasDisposed();
 
-    virtual void addObserver(LifecycleObserver*) OVERRIDE;
-    virtual void removeObserver(LifecycleObserver*) OVERRIDE;
+    virtual void addObserver(Observer*) OVERRIDE;
+    virtual void removeObserver(Observer*) OVERRIDE;
 
 private:
     explicit DocumentLifecycleNotifier(ExecutionContext*);

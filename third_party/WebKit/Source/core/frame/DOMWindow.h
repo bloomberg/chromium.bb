@@ -81,7 +81,7 @@ namespace WebCore {
 
     enum SetLocationLocking { LockHistoryBasedOnGestureState, LockHistoryAndBackForwardList };
 
-    class DOMWindow : public RefCounted<DOMWindow>, public ScriptWrappable, public EventTargetWithInlineData, public FrameDestructionObserver, public Supplementable<DOMWindow>, public LifecycleContext {
+    class DOMWindow : public RefCounted<DOMWindow>, public ScriptWrappable, public EventTargetWithInlineData, public FrameDestructionObserver, public Supplementable<DOMWindow>, public LifecycleContext<DOMWindow> {
         REFCOUNTED_EVENT_TARGET(DOMWindow);
     public:
         static PassRefPtr<DOMWindow> create(Frame* frame) { return adoptRef(new DOMWindow(frame)); }
@@ -389,7 +389,7 @@ namespace WebCore {
 
         Page* page();
 
-        virtual PassOwnPtr<LifecycleNotifier> createLifecycleNotifier() OVERRIDE;
+        virtual PassOwnPtr<LifecycleNotifier<DOMWindow> > createLifecycleNotifier() OVERRIDE;
 
         virtual void frameDestroyed() OVERRIDE;
         virtual void willDetachPage() OVERRIDE;

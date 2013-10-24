@@ -34,7 +34,10 @@ namespace WebCore {
 class Frame;
 class Page;
 
-class PageLifecycleObserver : public LifecycleObserver {
+template<> void observerContext(Page*, LifecycleObserver<Page>*);
+template<> void unobserverContext(Page*, LifecycleObserver<Page>*);
+
+class PageLifecycleObserver : public LifecycleObserver<Page> {
 public:
     explicit PageLifecycleObserver(Page*);
     virtual ~PageLifecycleObserver();

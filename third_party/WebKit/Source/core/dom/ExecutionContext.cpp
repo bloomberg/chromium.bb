@@ -374,7 +374,7 @@ void ExecutionContext::postTask(PassOwnPtr<ExecutionContextTask> task)
     m_client->postTask(task);
 }
 
-PassOwnPtr<LifecycleNotifier> ExecutionContext::createLifecycleNotifier()
+PassOwnPtr<LifecycleNotifier<ExecutionContext> > ExecutionContext::createLifecycleNotifier()
 {
     RELEASE_ASSERT(m_client);
     return m_client->createLifecycleNotifier();
@@ -382,7 +382,7 @@ PassOwnPtr<LifecycleNotifier> ExecutionContext::createLifecycleNotifier()
 
 ContextLifecycleNotifier* ExecutionContext::lifecycleNotifier()
 {
-    return static_cast<ContextLifecycleNotifier*>(LifecycleContext::lifecycleNotifier());
+    return static_cast<ContextLifecycleNotifier*>(LifecycleContext<ExecutionContext>::lifecycleNotifier());
 }
 
 bool ExecutionContext::isIteratingOverObservers() const

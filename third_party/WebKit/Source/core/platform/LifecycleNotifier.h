@@ -30,27 +30,41 @@
 #include "core/platform/LifecycleObserver.h"
 #include "wtf/HashSet.h"
 #include "wtf/PassOwnPtr.h"
+#include "wtf/TemporaryChange.h"
 
 namespace WebCore {
 
-class LifecycleContext;
-class LifecycleObserver;
+template<typename T> class LifecycleContext;
 
+template<typename T>
 class LifecycleNotifier {
 public:
-    static PassOwnPtr<LifecycleNotifier> create(LifecycleContext*);
+    typedef LifecycleObserver<T> Observer;
+    typedef T Context;
+
+    static PassOwnPtr<LifecycleNotifier> create(Context* context)
+    {
+        return adoptPtr(new LifecycleNotifier(context));
+    }
+
 
     virtual ~LifecycleNotifier();
 
-    virtual void addObserver(LifecycleObserver*);
-    virtual void removeObserver(LifecycleObserver*);
+
+    // FIXME: this won't need to be virtual anymore.
+    virtual void addObserver(Observer*);
+    virtual void removeObserver(Observer*);
 
     bool isIteratingOverObservers() const { return m_iterating != IteratingNone; }
 
 protected:
-    explicit LifecycleNotifier(LifecycleContext*);
+    explicit LifecycleNotifier(Context* context)
+        : m_iterating(IteratingNone)
+        , m_context(context)
+    {
+    }
 
-    LifecycleContext* context();
+    Context* context() const { return m_context; }
 
     enum IterationType {
         IteratingNone,
@@ -65,16 +79,39 @@ protected:
     IterationType m_iterating;
 
 private:
-    typedef HashSet<LifecycleObserver*> ObserverSet;
+    typedef HashSet<Observer*> ObserverSet;
 
     ObserverSet m_observers;
-    LifecycleContext* m_context;
+    Context* m_context;
 };
 
-inline PassOwnPtr<LifecycleNotifier> LifecycleNotifier::create(LifecycleContext* context)
+template<typename T>
+inline LifecycleNotifier<T>::~LifecycleNotifier()
 {
-    return adoptPtr(new LifecycleNotifier(context));
+    TemporaryChange<IterationType> scope(this->m_iterating, IteratingOverAll);
+    for (typename ObserverSet::iterator it = m_observers.begin(); it != m_observers.end(); it = m_observers.begin()) {
+        Observer* observer = *it;
+        m_observers.remove(observer);
+        ASSERT(observer->lifecycleContext() == m_context);
+        observer->contextDestroyed();
+    }
 }
+
+template<typename T>
+inline void LifecycleNotifier<T>::addObserver(typename LifecycleNotifier<T>::Observer* observer)
+{
+    RELEASE_ASSERT(m_iterating != IteratingOverAll);
+    m_observers.add(observer);
+}
+
+template<typename T>
+inline void LifecycleNotifier<T>::removeObserver(typename LifecycleNotifier<T>::Observer* observer)
+{
+    RELEASE_ASSERT(m_iterating != IteratingOverAll);
+    m_observers.remove(observer);
+}
+
+
 
 } // namespace WebCore
 

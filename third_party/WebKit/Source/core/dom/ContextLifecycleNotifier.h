@@ -38,7 +38,7 @@ class ActiveDOMObject;
 class ContextLifecycleObserver;
 class ExecutionContext;
 
-class ContextLifecycleNotifier : public LifecycleNotifier {
+class ContextLifecycleNotifier : public LifecycleNotifier<ExecutionContext> {
 public:
     static PassOwnPtr<ContextLifecycleNotifier> create(ExecutionContext*);
 
@@ -48,8 +48,8 @@ public:
 
     const ActiveDOMObjectSet& activeDOMObjects() const { return m_activeDOMObjects; }
 
-    virtual void addObserver(LifecycleObserver*) OVERRIDE;
-    virtual void removeObserver(LifecycleObserver*) OVERRIDE;
+    virtual void addObserver(Observer*) OVERRIDE;
+    virtual void removeObserver(Observer*) OVERRIDE;
 
     void notifyResumingActiveDOMObjects();
     void notifySuspendingActiveDOMObjects();

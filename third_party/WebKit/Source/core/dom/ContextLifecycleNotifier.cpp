@@ -34,7 +34,7 @@
 namespace WebCore {
 
 ContextLifecycleNotifier::ContextLifecycleNotifier(ExecutionContext* context)
-    : LifecycleNotifier(context)
+    : LifecycleNotifier<ExecutionContext>(context)
 {
 }
 
@@ -42,23 +42,23 @@ ContextLifecycleNotifier::~ContextLifecycleNotifier()
 {
 }
 
-void ContextLifecycleNotifier::addObserver(LifecycleObserver* observer)
+void ContextLifecycleNotifier::addObserver(ContextLifecycleNotifier::Observer* observer)
 {
     LifecycleNotifier::addObserver(observer);
 
     RELEASE_ASSERT(m_iterating != IteratingOverContextObservers);
-    if (observer->observerType() == LifecycleObserver::ActiveDOMObjectType) {
+    if (observer->observerType() == Observer::ActiveDOMObjectType) {
         RELEASE_ASSERT(m_iterating != IteratingOverActiveDOMObjects);
         m_activeDOMObjects.add(static_cast<ActiveDOMObject*>(observer));
     }
 }
 
-void ContextLifecycleNotifier::removeObserver(LifecycleObserver* observer)
+void ContextLifecycleNotifier::removeObserver(ContextLifecycleNotifier::Observer* observer)
 {
     LifecycleNotifier::removeObserver(observer);
 
     RELEASE_ASSERT(m_iterating != IteratingOverContextObservers);
-    if (observer->observerType() == LifecycleObserver::ActiveDOMObjectType) {
+    if (observer->observerType() == Observer::ActiveDOMObjectType) {
         RELEASE_ASSERT(m_iterating != IteratingOverActiveDOMObjects);
         m_activeDOMObjects.remove(static_cast<ActiveDOMObject*>(observer));
     }
