@@ -200,6 +200,14 @@ class CdmAdapter : public pp::Instance,
   linked_ptr<CdmWrapper> cdm_;
   std::string key_system_;
 
+  // If the CDM returned kDeferredInitialization during InitializeAudioDecoder()
+  // or InitializeVideoDecoder(), the (Audio|Video)DecoderConfig.request_id is
+  // saved for the future call to OnDeferredInitializationDone().
+  bool deferred_initialize_audio_decoder_;
+  uint32_t deferred_audio_decoder_config_id_;
+  bool deferred_initialize_video_decoder_;
+  uint32_t deferred_video_decoder_config_id_;
+
   DISALLOW_COPY_AND_ASSIGN(CdmAdapter);
 };
 

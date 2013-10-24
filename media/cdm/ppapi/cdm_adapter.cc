@@ -215,7 +215,11 @@ CdmAdapter::CdmAdapter(PP_Instance instance, pp::Module* module)
       query_output_protection_in_progress_(false),
 #endif
       allocator_(this),
-      cdm_(NULL) {
+      cdm_(NULL),
+      deferred_initialize_audio_decoder_(false),
+      deferred_audio_decoder_config_id_(0),
+      deferred_initialize_video_decoder_(false),
+      deferred_video_decoder_config_id_(0) {
   callback_factory_.Initialize(this);
 }
 
@@ -353,6 +357,8 @@ void CdmAdapter::Decrypt(pp::Buffer_Dev encrypted_buffer,
 void CdmAdapter::InitializeAudioDecoder(
     const PP_AudioDecoderConfig& decoder_config,
     pp::Buffer_Dev extra_data_buffer) {
+  PP_DCHECK(!deferred_initialize_audio_decoder_);
+  PP_DCHECK(deferred_audio_decoder_config_id_ == 0);
   cdm::Status status = cdm::kSessionError;
   if (cdm_) {
     cdm::AudioDecoderConfig cdm_decoder_config;
@@ -367,6 +373,12 @@ void CdmAdapter::InitializeAudioDecoder(
     status = cdm_->InitializeAudioDecoder(cdm_decoder_config);
   }
 
+  if (status == cdm::kDeferredInitialization) {
+    deferred_initialize_audio_decoder_ = true;
+    deferred_audio_decoder_config_id_ = decoder_config.request_id;
+    return;
+  }
+
   CallOnMain(callback_factory_.NewCallback(
       &CdmAdapter::DecoderInitializeDone,
       PP_DECRYPTORSTREAMTYPE_AUDIO,
@@ -377,6 +389,8 @@ void CdmAdapter::InitializeAudioDecoder(
 void CdmAdapter::InitializeVideoDecoder(
     const PP_VideoDecoderConfig& decoder_config,
     pp::Buffer_Dev extra_data_buffer) {
+  PP_DCHECK(!deferred_initialize_video_decoder_);
+  PP_DCHECK(deferred_video_decoder_config_id_ == 0);
   cdm::Status status = cdm::kSessionError;
   if (cdm_) {
     cdm::VideoDecoderConfig cdm_decoder_config;
@@ -392,6 +406,12 @@ void CdmAdapter::InitializeVideoDecoder(
         static_cast<uint8_t*>(extra_data_buffer.data());
     cdm_decoder_config.extra_data_size = extra_data_buffer.size();
     status = cdm_->InitializeVideoDecoder(cdm_decoder_config);
+  }
+
+  if (status == cdm::kDeferredInitialization) {
+    deferred_initialize_video_decoder_ = true;
+    deferred_video_decoder_config_id_ = decoder_config.request_id;
+    return;
   }
 
   CallOnMain(callback_factory_.NewCallback(
@@ -744,11 +764,6 @@ bool CdmAdapter::IsValidVideoFrame(const LinkedVideoFrame& video_frame) {
   return true;
 }
 
-void CdmAdapter::OnDeferredInitializationDone(cdm::StreamType stream_type,
-                                              cdm::Status decoder_status) {
-  PP_NOTREACHED();
-}
-
 void CdmAdapter::SendPlatformChallenge(
     const char* service_id, uint32_t service_id_length,
     const char* challenge, uint32_t challenge_length) {
@@ -815,6 +830,32 @@ void CdmAdapter::QueryOutputProtectionStatus() {
 #endif
 
   cdm_->OnQueryOutputProtectionStatus(0, 0);
+}
+
+void CdmAdapter::OnDeferredInitializationDone(cdm::StreamType stream_type,
+                                              cdm::Status decoder_status) {
+  switch (stream_type) {
+    case cdm::kStreamTypeAudio:
+      PP_DCHECK(deferred_initialize_audio_decoder_);
+      CallOnMain(
+          callback_factory_.NewCallback(&CdmAdapter::DecoderInitializeDone,
+                                        PP_DECRYPTORSTREAMTYPE_AUDIO,
+                                        deferred_audio_decoder_config_id_,
+                                        decoder_status == cdm::kSuccess));
+      deferred_initialize_audio_decoder_ = false;
+      deferred_audio_decoder_config_id_ = 0;
+      break;
+    case cdm::kStreamTypeVideo:
+      PP_DCHECK(deferred_initialize_video_decoder_);
+      CallOnMain(
+          callback_factory_.NewCallback(&CdmAdapter::DecoderInitializeDone,
+                                        PP_DECRYPTORSTREAMTYPE_VIDEO,
+                                        deferred_video_decoder_config_id_,
+                                        decoder_status == cdm::kSuccess));
+      deferred_initialize_video_decoder_ = false;
+      deferred_video_decoder_config_id_ = 0;
+      break;
+  }
 }
 
 #if defined(OS_CHROMEOS)
