@@ -49,6 +49,8 @@ const char kListProcessesCommand[] = "shell:ps";
 const char kDumpsysCommand[] = "shell:dumpsys window policy";
 const char kDumpsysScreenSizePrefix[] = "mStable=";
 
+const char kUnknownModel[] = "Offline";
+
 const char kPageListRequest[] = "GET /json HTTP/1.1\r\n\r\n";
 const char kVersionRequest[] = "GET /json/version HTTP/1.1\r\n\r\n";
 const char kClosePageRequest[] = "GET /json/close/%s HTTP/1.1\r\n\r\n";
@@ -196,6 +198,7 @@ void AdbPagesCommand::ProcessSerials() {
     device->RunCommand(kDeviceModelCommand,
                        base::Bind(&AdbPagesCommand::ReceivedModel, this));
   } else {
+    device->set_model(kUnknownModel);
     remote_devices_->push_back(new DevToolsAdbBridge::RemoteDevice(device));
     devices_.pop_back();
     ProcessSerials();
