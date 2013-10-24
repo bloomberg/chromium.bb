@@ -1067,6 +1067,19 @@
       ],
     },
     {
+      'target_name': 'media_perftests',
+      'type': '<(gtest_target_type)',
+      'dependencies': [
+        'media',
+        '../base/base.gyp:test_support_base',
+        '../testing/gmock.gyp:gmock',
+        '../testing/gtest.gyp:gtest',
+      ],
+      'sources': [
+        'base/run_all_unittests.cc',
+      ],
+    },
+    {
       'target_name': 'media_test_support',
       'type': 'static_library',
       'dependencies': [
