@@ -108,12 +108,11 @@ class InspectorOverlay {
 public:
     // This must be kept in sync with the overrideEntries array in InspectorOverlayPage.html.
     enum OverrideType {
-        UserAgentOverride = 1,
-        DeviceMetricsOverride = 1 << 1,
-        GeolocationOverride = 1 << 2,
-        DeviceOrientationOverride = 1 << 3,
-        TouchOverride = 1 << 4,
-        CSSMediaOverride = 1 << 5
+        ViewportOverride = 1,
+        UserAgentOverride = 1 << 1,
+        TouchOverride = 1 << 2,
+        SensorsOverride = 1 << 3,
+        CSSMediaOverride = 1 << 4
     };
     static PassOwnPtr<InspectorOverlay> create(Page* page, InspectorClient* client)
     {

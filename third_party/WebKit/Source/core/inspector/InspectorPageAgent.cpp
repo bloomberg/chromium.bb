@@ -1100,7 +1100,7 @@ void InspectorPageAgent::updateViewMetrics(int width, int height, double deviceS
     if (document)
         document->styleResolverChanged(RecalcStyleImmediately);
     InspectorInstrumentation::mediaQueryResultChanged(document);
-    m_overlay->setOverride(InspectorOverlay::DeviceMetricsOverride, width && height);
+    m_overlay->setOverride(InspectorOverlay::ViewportOverride, width && height);
 
     // FIXME: allow metrics override, fps counter and continuous painting at the same time: crbug.com/299837.
     bool override = width && height;
@@ -1132,6 +1132,11 @@ void InspectorPageAgent::updateOverridesTopOffset()
         m_overlay->setOverridesTopOffset(topOffset);
 }
 
+void InspectorPageAgent::updateSensorsOverlayMessage()
+{
+    m_overlay->setOverride(InspectorOverlay::SensorsOverride, m_geolocationOverridden || m_deviceOrientation);
+}
+
 void InspectorPageAgent::setGeolocationOverride(ErrorString* error, const double* latitude, const double* longitude, const double* accuracy)
 {
     GeolocationController* controller = GeolocationController::from(m_page);
@@ -1151,7 +1156,7 @@ void InspectorPageAgent::setGeolocationOverride(ErrorString* error, const double
         m_geolocationPosition.clear();
 
     controller->positionChanged(0); // Kick location update.
-    m_overlay->setOverride(InspectorOverlay::GeolocationOverride, true);
+    updateSensorsOverlayMessage();
 }
 
 void InspectorPageAgent::clearGeolocationOverride(ErrorString*)
@@ -1164,7 +1169,7 @@ void InspectorPageAgent::clearGeolocationOverride(ErrorString*)
     GeolocationController* controller = GeolocationController::from(m_page);
     if (controller && m_platformGeolocationPosition.get())
         controller->positionChanged(m_platformGeolocationPosition.get());
-    m_overlay->setOverride(InspectorOverlay::GeolocationOverride, false);
+    updateSensorsOverlayMessage();
 }
 
 GeolocationPosition* InspectorPageAgent::overrideGeolocationPosition(GeolocationPosition* position)
@@ -1190,13 +1195,13 @@ void InspectorPageAgent::setDeviceOrientationOverride(ErrorString* error, double
 
     m_deviceOrientation = DeviceOrientationData::create(true, alpha, true, beta, true, gamma);
     controller->didChangeDeviceOrientation(m_deviceOrientation.get());
-    m_overlay->setOverride(InspectorOverlay::DeviceOrientationOverride, true);
+    updateSensorsOverlayMessage();
 }
 
 void InspectorPageAgent::clearDeviceOrientationOverride(ErrorString*)
 {
     m_deviceOrientation.clear();
-    m_overlay->setOverride(InspectorOverlay::DeviceOrientationOverride, false);
+    updateSensorsOverlayMessage();
 }
 
 DeviceOrientationData* InspectorPageAgent::overrideDeviceOrientation(DeviceOrientationData* deviceOrientation)

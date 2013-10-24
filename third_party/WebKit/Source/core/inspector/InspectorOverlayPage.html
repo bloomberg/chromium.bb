@@ -199,8 +199,8 @@ const transparentColor = "rgba(0, 0, 0, 0)";
 const gridBackgroundColor = "rgba(255, 255, 255, 0.8)";
 
 // The order must correspond to that in InspectorOverlay::OverrideType.
-const overrideEntries = ["User-Agent", "Device Metrics", "Geolocation", "Device Orientation", "Touch", "Media"];
-const overrideTouchBit = 1 << 4;
+const overrideEntries = ["Viewport", "User Agent", "Touch", "Sensors", "Media"];
+const overrideTouchBit = 1 << 2;
 
 var overridesContainer;
 var overridesMessageElement;
