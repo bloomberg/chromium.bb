@@ -52,7 +52,7 @@ class TabCaptureApiTest : public ExtensionApiTest {
 }  // namespace
 
 // http://crbug.com/261493 and http://crbug.com/268644
-#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(USE_AURA)
+#if defined(OS_CHROMEOS) || defined(USE_AURA)
 #define MAYBE_ApiTests DISABLED_ApiTests
 #else
 #define MAYBE_ApiTests ApiTests
