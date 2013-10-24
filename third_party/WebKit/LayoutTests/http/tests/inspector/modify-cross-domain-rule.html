@@ -75,7 +75,7 @@ function test()
             {
                 InspectorTest.addResult("=== Selector changed ===");
                 InspectorTest.addResult(rule.selectorText + " {" + rule.style.cssText + "}");
-                InspectorTest.addResult("Affects selected (#inspected) node: " + doesAffectSelectedNode);
+                InspectorTest.addResult("Selectors matching the (#inspected) node: " + InspectorTest.matchingSelectors(rule));
                 next();
             }
 

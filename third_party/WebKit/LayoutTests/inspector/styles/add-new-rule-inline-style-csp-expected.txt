@@ -7,7 +7,7 @@ Running: testSetUp
 Running: testAddRule
 === Rule added ===
 #inspected {}
-Affects selected (#inspected) node: true
+Selectors matching the (#inspected) node: [#inspected]
 
 Running: testAddProperty
 === Added rule modified ===
@@ -16,7 +16,7 @@ width: 100%;
 body {
     width: 100%;
 }
-Affects selected (#inspected) node: false
+Selectors matching the (#inspected) node: []
 
 Running: testModifyInlineStyle
 === Inline style modified ===

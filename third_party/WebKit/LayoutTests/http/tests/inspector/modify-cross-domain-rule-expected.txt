@@ -13,5 +13,5 @@ body {
   color: green;
   width: 100%;
 }
-Affects selected (#inspected) node: false
+Selectors matching the (#inspected) node: []
 
