@@ -36,7 +36,24 @@ namespace WebCore {
 GeolocationController::GeolocationController(Page* page, GeolocationClient* client)
     : PageLifecycleObserver(page)
     , m_client(client)
+    , m_isClientUpdating(false)
 {
+}
+
+void GeolocationController::startUpdatingIfNeeded()
+{
+    if (m_isClientUpdating)
+        return;
+    m_isClientUpdating = true;
+    m_client->startUpdating();
+}
+
+void GeolocationController::stopUpdatingIfNeeded()
+{
+    if (!m_isClientUpdating)
+        return;
+    m_isClientUpdating = false;
+    m_client->stopUpdating();
 }
 
 GeolocationController::~GeolocationController()
@@ -65,7 +82,7 @@ void GeolocationController::addObserver(Geolocation* observer, bool enableHighAc
         if (enableHighAccuracy)
             m_client->setEnableHighAccuracy(true);
         if (wasEmpty && page() && page()->visibilityState() == PageVisibilityStateVisible)
-            m_client->startUpdating();
+            startUpdatingIfNeeded();
     }
 }
 
@@ -79,7 +96,7 @@ void GeolocationController::removeObserver(Geolocation* observer)
 
     if (m_client) {
         if (m_observers.isEmpty())
-            m_client->stopUpdating();
+            stopUpdatingIfNeeded();
         else if (m_highAccuracyObservers.isEmpty())
             m_client->setEnableHighAccuracy(false);
     }
@@ -136,9 +153,9 @@ void GeolocationController::pageVisibilityChanged()
         return;
 
     if (page() && page()->visibilityState() == PageVisibilityStateVisible)
-        m_client->startUpdating();
+        startUpdatingIfNeeded();
     else
-        m_client->stopUpdating();
+        stopUpdatingIfNeeded();
 }
 
 const char* GeolocationController::supplementName()

@@ -58,8 +58,6 @@ public:
 
     GeolocationPosition* lastPosition();
 
-    GeolocationClient* client() { return m_client; }
-
     // Inherited from PageLifecycleObserver.
     virtual void pageVisibilityChanged() OVERRIDE;
 
@@ -69,6 +67,9 @@ public:
 private:
     GeolocationController(Page*, GeolocationClient*);
 
+    void startUpdatingIfNeeded();
+    void stopUpdatingIfNeeded();
+
     GeolocationClient* m_client;
 
     RefPtr<GeolocationPosition> m_lastPosition;
@@ -76,6 +77,7 @@ private:
     // All observers; both those requesting high accuracy and those not.
     ObserversSet m_observers;
     ObserversSet m_highAccuracyObservers;
+    bool m_isClientUpdating;
 };
 
 } // namespace WebCore

@@ -795,8 +795,6 @@ crbug.com/310292 [ SnowLeopard ] http/tests/security/video-poster-cross-origin-c
 crbug.com/310323 [ Debug ] http/tests/plugins/third-party-cookie-accept-policy.html [ Crash Pass ]
 crbug.com/310323 [ Debug ] http/tests/security/contentSecurityPolicy/report-multiple-violations-02.html [ Crash Pass ]
 
-crbug.com/310326 [ Win7 Debug ] fast/dom/Geolocation/window-close-crash.html [ Crash Pass ]
-
 crbug.com/231880 [ Win7 Debug ] fast/dom/Window/open-window-min-size.html [ Failure Pass ]
 
 crbug.com/311164 fast/js/mozilla/strict/15.4.4.6.html [ Failure Pass ]
