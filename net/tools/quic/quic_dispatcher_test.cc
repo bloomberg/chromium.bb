@@ -14,6 +14,7 @@
 #include "net/quic/test_tools/quic_test_utils.h"
 #include "net/tools/epoll_server/epoll_server.h"
 #include "net/tools/quic/quic_time_wait_list_manager.h"
+#include "net/tools/quic/test_tools/quic_dispatcher_peer.h"
 #include "net/tools/quic/test_tools/quic_test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -33,19 +34,6 @@ using testing::WithoutArgs;
 namespace net {
 namespace tools {
 namespace test {
-class QuicDispatcherPeer {
- public:
-  static void SetTimeWaitListManager(
-      QuicDispatcher* dispatcher,
-      QuicTimeWaitListManager* time_wait_list_manager) {
-    dispatcher->time_wait_list_manager_.reset(time_wait_list_manager);
-  }
-
-  static void SetWriteBlocked(QuicDispatcher* dispatcher) {
-    dispatcher->write_blocked_ = true;
-  }
-};
-
 namespace {
 
 class TestDispatcher : public QuicDispatcher {
@@ -199,7 +187,8 @@ class MockTimeWaitListManager : public QuicTimeWaitListManager {
 
 TEST_F(QuicDispatcherTest, TimeWaitListManager) {
   MockTimeWaitListManager* time_wait_list_manager =
-      new MockTimeWaitListManager(&dispatcher_, &eps_);
+      new MockTimeWaitListManager(
+          QuicDispatcherPeer::GetWriter(&dispatcher_), &eps_);
   // dispatcher takes the ownership of time_wait_list_manager.
   QuicDispatcherPeer::SetTimeWaitListManager(&dispatcher_,
                                              time_wait_list_manager);

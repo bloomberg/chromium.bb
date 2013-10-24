@@ -25,6 +25,7 @@
 #include "net/quic/quic_connection.h"
 #include "net/quic/quic_connection_helper.h"
 #include "net/quic/quic_crypto_client_stream_factory.h"
+#include "net/quic/quic_default_packet_writer.h"
 #include "net/quic/quic_http_stream.h"
 #include "net/quic/quic_protocol.h"
 #include "net/socket/client_socket_factory.h"
@@ -441,18 +442,22 @@ QuicClientSession* QuicStreamFactory::CreateSession(
   QuicConnectionHelper* helper = new QuicConnectionHelper(
       base::MessageLoop::current()->message_loop_proxy().get(),
       clock_.get(),
-      random_generator_,
-      socket.get());
+      random_generator_);
 
-  QuicConnection* connection = new QuicConnection(guid, addr, helper, false,
+  scoped_ptr<QuicDefaultPacketWriter> writer(
+      new QuicDefaultPacketWriter(socket.get()));
+
+  QuicConnection* connection = new QuicConnection(guid, addr, helper,
+                                                  writer.get(), false,
                                                   QuicVersionMax());
+  writer->SetConnection(connection);
 
   QuicCryptoClientConfig* crypto_config =
       GetOrCreateCryptoConfig(host_port_proxy_pair);
   DCHECK(crypto_config);
 
   QuicClientSession* session =
-      new QuicClientSession(connection, socket.Pass(), this,
+      new QuicClientSession(connection, socket.Pass(), writer.Pass(), this,
                             quic_crypto_client_stream_factory_,
                             host_port_proxy_pair.first.host(), config_,
                             crypto_config, net_log.net_log());

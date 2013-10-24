@@ -20,6 +20,10 @@ namespace net {
 
 namespace tools {
 
+namespace test {
+class QuicServerPeer;
+}  // namespace test
+
 class QuicDispatcher;
 
 class QuicServer : public EpollCallbackInterface {
@@ -76,6 +80,8 @@ class QuicServer : public EpollCallbackInterface {
   int port() { return port_; }
 
  private:
+  friend class net::tools::test::QuicServerPeer;
+
   // Initialize the internal state of the server.
   void Initialize();
 

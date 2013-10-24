@@ -93,20 +93,14 @@ class QuicChromeAlarm : public QuicAlarm {
 
 QuicConnectionHelper::QuicConnectionHelper(base::TaskRunner* task_runner,
                                            const QuicClock* clock,
-                                           QuicRandom* random_generator,
-                                           DatagramClientSocket* socket)
+                                           QuicRandom* random_generator)
     : weak_factory_(this),
       task_runner_(task_runner),
-      socket_(socket),
       clock_(clock),
       random_generator_(random_generator) {
 }
 
 QuicConnectionHelper::~QuicConnectionHelper() {
-}
-
-void QuicConnectionHelper::SetConnection(QuicConnection* connection) {
-  connection_ = connection;
 }
 
 const QuicClock* QuicConnectionHelper::GetClock() const {
@@ -117,48 +111,8 @@ QuicRandom* QuicConnectionHelper::GetRandomGenerator() {
   return random_generator_;
 }
 
-WriteResult QuicConnectionHelper::WritePacketToWire(
-    const QuicEncryptedPacket& packet) {
-  if (connection_->ShouldSimulateLostPacket()) {
-    DLOG(INFO) << "Dropping packet due to fake packet loss.";
-    return WriteResult(WRITE_STATUS_OK, packet.length());
-  }
-
-  scoped_refptr<StringIOBuffer> buf(
-      new StringIOBuffer(std::string(packet.data(),
-                                     packet.length())));
-  int rv = socket_->Write(buf.get(),
-                          packet.length(),
-                          base::Bind(&QuicConnectionHelper::OnWriteComplete,
-                                     weak_factory_.GetWeakPtr()));
-  WriteStatus status = WRITE_STATUS_OK;
-  if (rv < 0) {
-    if (rv != ERR_IO_PENDING) {
-      UMA_HISTOGRAM_SPARSE_SLOWLY("Net.QuicSession.WriteError", -rv);
-      status = WRITE_STATUS_ERROR;
-    } else {
-      status = WRITE_STATUS_BLOCKED;
-    }
-  }
-
-  return WriteResult(status, rv);
-}
-
-bool QuicConnectionHelper::IsWriteBlockedDataBuffered() {
-  // Chrome sockets' Write() methods buffer the data until the Write is
-  // permitted.
-  return true;
-}
-
 QuicAlarm* QuicConnectionHelper::CreateAlarm(QuicAlarm::Delegate* delegate) {
   return new QuicChromeAlarm(clock_, task_runner_, delegate);
-}
-
-void QuicConnectionHelper::OnWriteComplete(int rv) {
-  DCHECK_NE(rv, ERR_IO_PENDING);
-  WriteResult result(rv < 0 ? WRITE_STATUS_ERROR : WRITE_STATUS_OK, rv);
-  connection_->OnPacketSent(result);
-  connection_->OnCanWrite();
 }
 
 }  // namespace net

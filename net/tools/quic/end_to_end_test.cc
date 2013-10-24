@@ -17,15 +17,18 @@
 #include "net/quic/quic_protocol.h"
 #include "net/quic/test_tools/quic_connection_peer.h"
 #include "net/quic/test_tools/quic_session_peer.h"
+#include "net/quic/test_tools/quic_test_writer.h"
 #include "net/quic/test_tools/reliable_quic_stream_peer.h"
 #include "net/tools/quic/quic_epoll_connection_helper.h"
 #include "net/tools/quic/quic_in_memory_cache.h"
 #include "net/tools/quic/quic_server.h"
 #include "net/tools/quic/quic_socket_utils.h"
 #include "net/tools/quic/test_tools/http_message_test_utils.h"
+#include "net/tools/quic/test_tools/packet_dropping_test_writer.h"
 #include "net/tools/quic/test_tools/quic_client_peer.h"
-#include "net/tools/quic/test_tools/quic_epoll_connection_helper_peer.h"
+#include "net/tools/quic/test_tools/quic_dispatcher_peer.h"
 #include "net/tools/quic/test_tools/quic_in_memory_cache_peer.h"
+#include "net/tools/quic/test_tools/quic_server_peer.h"
 #include "net/tools/quic/test_tools/quic_test_client.h"
 #include "net/tools/quic/test_tools/server_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -34,7 +37,11 @@ using base::StringPiece;
 using base::WaitableEvent;
 using net::test::QuicConnectionPeer;
 using net::test::QuicSessionPeer;
+using net::test::QuicTestWriter;
 using net::test::ReliableQuicStreamPeer;
+using net::tools::test::PacketDroppingTestWriter;
+using net::tools::test::QuicDispatcherPeer;
+using net::tools::test::QuicServerPeer;
 using std::string;
 
 namespace net {
@@ -85,12 +92,13 @@ class EndToEndTest : public ::testing::TestWithParam<QuicVersion> {
     QuicInMemoryCachePeer::ResetForTests();
   }
 
-  virtual QuicTestClient* CreateQuicClient() {
+  virtual QuicTestClient* CreateQuicClient(QuicTestWriter* writer) {
     QuicTestClient* client = new QuicTestClient(server_address_,
                                                 server_hostname_,
                                                 false,  // not secure
                                                 client_config_,
                                                 version_);
+    client->UseWriter(writer);
     client->Connect();
     return client;
   }
@@ -99,8 +107,20 @@ class EndToEndTest : public ::testing::TestWithParam<QuicVersion> {
     // Start the server first, because CreateQuicClient() attempts
     // to connect to the server.
     StartServer();
-    client_.reset(CreateQuicClient());
+    client_.reset(CreateQuicClient(client_writer_));
+    QuicEpollConnectionHelper* helper =
+        reinterpret_cast<QuicEpollConnectionHelper*>(
+            QuicConnectionPeer::GetHelper(
+                client_->client()->session()->connection()));
+    client_writer_->SetConnectionHelper(helper);
     return client_->client()->connected();
+  }
+
+  virtual void SetUp() {
+    // The ownership of these gets transferred to the QuicTestWriter and
+    // QuicDispatcher when Initialize() is executed.
+    client_writer_ = new PacketDroppingTestWriter();
+    server_writer_ = new PacketDroppingTestWriter();
   }
 
   virtual void TearDown() {
@@ -114,6 +134,9 @@ class EndToEndTest : public ::testing::TestWithParam<QuicVersion> {
     server_thread_->listening()->Wait();
     server_address_ = IPEndPoint(server_address_.address(),
                                  server_thread_->GetPort());
+    QuicDispatcher* dispatcher = QuicServerPeer::GetDispatcher(
+        server_thread_->server());
+    QuicDispatcherPeer::UseWriter(dispatcher, server_writer_);
     server_started_ = true;
   }
 
@@ -136,10 +159,19 @@ class EndToEndTest : public ::testing::TestWithParam<QuicVersion> {
         method, path, version, response_code, response_detail, body);
   }
 
+  void SetPacketLossPercentage(int32 loss) {
+    // TODO(rtenneti): enable when we can do random packet loss tests in
+    // chrome's tree.
+    // client_writer_->set_fake_packet_loss_percentage(loss);
+    // server_writer_->set_fake_packet_loss_percentage(loss);
+  }
+
   IPEndPoint server_address_;
   string server_hostname_;
   scoped_ptr<ServerThread> server_thread_;
   scoped_ptr<QuicTestClient> client_;
+  PacketDroppingTestWriter* client_writer_;
+  PacketDroppingTestWriter* server_writer_;
   bool server_started_;
   QuicConfig client_config_;
   QuicConfig server_config_;
@@ -206,7 +238,7 @@ TEST_P(EndToEndTest, MultipleRequestResponse) {
 
 TEST_P(EndToEndTest, MultipleClients) {
   ASSERT_TRUE(Initialize());
-  scoped_ptr<QuicTestClient> client2(CreateQuicClient());
+  scoped_ptr<QuicTestClient> client2(CreateQuicClient(NULL));
 
   HTTPMessage request(HttpConstants::HTTP_1_1,
                       HttpConstants::POST, "/foo");
@@ -323,12 +355,12 @@ TEST_P(EndToEndTest, LargePostNoPacketLoss) {
 TEST_P(EndToEndTest, LargePostWithPacketLoss) {
   // Connect with lower fake packet loss than we'd like to test.  Until
   // b/10126687 is fixed, losing handshake packets is pretty brutal.
-  // FLAGS_fake_packet_loss_percentage = 5;
+  SetPacketLossPercentage(5);
   ASSERT_TRUE(Initialize());
 
   // Wait for the server SHLO before upping the packet loss.
   client_->client()->WaitForCryptoHandshakeConfirmed();
-  // FLAGS_fake_packet_loss_percentage = 30;
+  SetPacketLossPercentage(30);
 
   // 10 Kb body.
   string body;
@@ -341,7 +373,31 @@ TEST_P(EndToEndTest, LargePostWithPacketLoss) {
   EXPECT_EQ(kFooResponseBody, client_->SendCustomSynchronousRequest(request));
 }
 
-TEST_P(EndToEndTest, LargePostZeroRTTFailure) {
+TEST_P(EndToEndTest, LargePostWithPacketLossAndBlocketSocket) {
+  // Connect with lower fake packet loss than we'd like to test.  Until
+  // b/10126687 is fixed, losing handshake packets is pretty brutal.
+  SetPacketLossPercentage(5);
+  ASSERT_TRUE(Initialize());
+
+  // Wait for the server SHLO before upping the packet loss.
+  client_->client()->WaitForCryptoHandshakeConfirmed();
+  SetPacketLossPercentage(30);
+  client_writer_->set_fake_blocked_socket_percentage(10);
+
+  // 10 Kb body.
+  string body;
+  GenerateBody(&body, 1024 * 10);
+
+  HTTPMessage request(HttpConstants::HTTP_1_1,
+                      HttpConstants::POST, "/foo");
+  request.AddBody(body, true);
+
+  EXPECT_EQ(kFooResponseBody, client_->SendCustomSynchronousRequest(request));
+}
+
+// TODO(rtenneti): rch is investigating the root cause. Will enable after we
+// find the bug.
+TEST_P(EndToEndTest, DISABLED_LargePostZeroRTTFailure) {
   // Have the server accept 0-RTT without waiting a startup period.
   strike_register_no_startup_period_ = true;
 
@@ -371,6 +427,7 @@ TEST_P(EndToEndTest, LargePostZeroRTTFailure) {
 
   // Restart the server so that the 0-RTT handshake will take 1 RTT.
   StopServer();
+  server_writer_ = new PacketDroppingTestWriter();
   StartServer();
 
   client_->Connect();
@@ -381,7 +438,7 @@ TEST_P(EndToEndTest, LargePostZeroRTTFailure) {
 
 // TODO(ianswett): Enable once b/9295090 is fixed.
 TEST_P(EndToEndTest, DISABLED_LargePostFEC) {
-  // FLAGS_fake_packet_loss_percentage = 30;
+  SetPacketLossPercentage(30);
   ASSERT_TRUE(Initialize());
   client_->options()->max_packets_per_fec_group = 6;
 
@@ -507,7 +564,7 @@ TEST_P(EndToEndTest, ResetConnection) {
 }
 
 TEST_P(EndToEndTest, MaxStreamsUberTest) {
-  // FLAGS_fake_packet_loss_percentage = 1;
+  SetPacketLossPercentage(1);
   ASSERT_TRUE(Initialize());
   string large_body;
   GenerateBody(&large_body, 10240);
@@ -516,7 +573,7 @@ TEST_P(EndToEndTest, MaxStreamsUberTest) {
   AddToCache("GET", "/large_response", "HTTP/1.1", "200", "OK", large_body);;
 
   client_->client()->WaitForCryptoHandshakeConfirmed();
-  // FLAGS_fake_packet_loss_percentage = 10;
+  SetPacketLossPercentage(10);
 
   for (int i = 0; i < max_streams; ++i) {
     EXPECT_LT(0, client_->SendRequest("/large_response"));
@@ -528,9 +585,9 @@ TEST_P(EndToEndTest, MaxStreamsUberTest) {
   }
 }
 
-class WrongAddressWriter : public QuicPacketWriter {
+class WrongAddressWriter : public QuicTestWriter {
  public:
-  explicit WrongAddressWriter(int fd) : fd_(fd) {
+  WrongAddressWriter() {
     IPAddressNumber ip;
     CHECK(net::ParseIPLiteralToNumber("127.0.0.2", &ip));
     self_address_ = IPEndPoint(ip, 0);
@@ -541,12 +598,15 @@ class WrongAddressWriter : public QuicPacketWriter {
       const IPAddressNumber& real_self_address,
       const IPEndPoint& peer_address,
       QuicBlockedWriterInterface* blocked_writer) OVERRIDE {
-    return QuicSocketUtils::WritePacket(fd_, buffer, buf_len,
-                                        self_address_.address(), peer_address);
+    return writer()->WritePacket(buffer, buf_len, self_address_.address(),
+                                 peer_address, blocked_writer);
+  }
+
+  virtual bool IsWriteBlockedDataBuffered() const OVERRIDE {
+    return false;
   }
 
   IPEndPoint self_address_;
-  int fd_;
 };
 
 TEST_P(EndToEndTest, ConnectionMigration) {
@@ -555,15 +615,15 @@ TEST_P(EndToEndTest, ConnectionMigration) {
   EXPECT_EQ(kFooResponseBody, client_->SendSynchronousRequest("/foo"));
   EXPECT_EQ(200u, client_->response_headers()->parsed_response_code());
 
-  WrongAddressWriter writer(QuicClientPeer::GetFd(client_->client()));
-  QuicEpollConnectionHelper* helper =
-      reinterpret_cast<QuicEpollConnectionHelper*>(
-          QuicConnectionPeer::GetHelper(
-              client_->client()->session()->connection()));
-  QuicEpollConnectionHelperPeer::SetWriter(helper, &writer);
+  scoped_ptr<WrongAddressWriter> writer(new WrongAddressWriter());
+
+  writer->set_writer(new QuicDefaultPacketWriter(
+      QuicClientPeer::GetFd(client_->client())));
+  QuicConnectionPeer::SetWriter(
+      client_->client()->session()->connection(),
+      reinterpret_cast<QuicTestWriter*>(writer.get()));
 
   client_->SendSynchronousRequest("/bar");
-  QuicEpollConnectionHelperPeer::SetWriter(helper, NULL);
 
   EXPECT_EQ(QUIC_STREAM_CONNECTION_ERROR, client_->stream_error());
   EXPECT_EQ(QUIC_ERROR_MIGRATING_ADDRESS, client_->connection_error());

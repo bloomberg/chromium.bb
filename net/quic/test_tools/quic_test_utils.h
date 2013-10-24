@@ -197,9 +197,6 @@ class MockHelper : public QuicConnectionHelperInterface {
   const QuicClock* GetClock() const;
   QuicRandom* GetRandomGenerator();
   void AdvanceTime(QuicTime::Delta delta);
-  MOCK_METHOD1(WritePacketToWire,
-               WriteResult(const QuicEncryptedPacket& packet));
-  MOCK_METHOD0(IsWriteBlockedDataBuffered, bool());
   virtual QuicAlarm* CreateAlarm(QuicAlarm::Delegate* delegate);
 
  private:
@@ -214,6 +211,7 @@ class MockConnection : public QuicConnection {
   MockConnection(QuicGuid guid,
                  IPEndPoint address,
                  QuicConnectionHelperInterface* helper,
+                 QuicPacketWriter* writer,
                  bool is_server);
   virtual ~MockConnection();
 
@@ -247,6 +245,7 @@ class MockConnection : public QuicConnection {
 
  private:
   const bool has_mock_helper_;
+  scoped_ptr<QuicPacketWriter> writer_;
 
   DISALLOW_COPY_AND_ASSIGN(MockConnection);
 };
@@ -316,6 +315,20 @@ class TestSession : public QuicSession {
  private:
   QuicCryptoStream* crypto_stream_;
   DISALLOW_COPY_AND_ASSIGN(TestSession);
+};
+
+class MockPacketWriter : public QuicPacketWriter {
+ public:
+  MockPacketWriter();
+  virtual ~MockPacketWriter();
+
+  MOCK_METHOD5(WritePacket,
+               WriteResult(const char* buffer,
+                           size_t buf_len,
+                           const IPAddressNumber& self_address,
+                           const IPEndPoint& peer_address,
+                           QuicBlockedWriterInterface* blocked_writer));
+  MOCK_CONST_METHOD0(IsWriteBlockedDataBuffered, bool());
 };
 
 class MockSendAlgorithm : public SendAlgorithmInterface {

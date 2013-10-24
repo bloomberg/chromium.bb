@@ -14,9 +14,9 @@
 #include "net/base/ip_endpoint.h"
 #include "net/base/linked_hash_map.h"
 #include "net/quic/quic_blocked_writer_interface.h"
+#include "net/quic/quic_packet_writer.h"
 #include "net/quic/quic_protocol.h"
 #include "net/tools/epoll_server/epoll_server.h"
-#include "net/tools/quic/quic_packet_writer.h"
 #include "net/tools/quic/quic_server_session.h"
 #include "net/tools/quic/quic_time_wait_list_manager.h"
 
@@ -65,6 +65,7 @@ class QuicDispatcher : public QuicPacketWriter, public QuicSessionOwner {
       const IPAddressNumber& self_address,
       const IPEndPoint& peer_address,
       QuicBlockedWriterInterface* writer) OVERRIDE;
+  virtual bool IsWriteBlockedDataBuffered() const OVERRIDE;
 
   virtual void ProcessPacket(const IPEndPoint& server_address,
                              const IPEndPoint& client_address,
@@ -83,7 +84,8 @@ class QuicDispatcher : public QuicPacketWriter, public QuicSessionOwner {
   // Ensure that the closed connection is cleaned up asynchronously.
   virtual void OnConnectionClose(QuicGuid guid, QuicErrorCode error) OVERRIDE;
 
-  void set_fd(int fd) { fd_ = fd; }
+  // Sets the fd and creates a default packet writer with that fd.
+  void set_fd(int fd);
 
   typedef base::hash_map<QuicGuid, QuicSession*> SessionMap;
 
@@ -97,6 +99,10 @@ class QuicDispatcher : public QuicPacketWriter, public QuicSessionOwner {
   void DeleteSessions();
 
   const SessionMap& session_map() const { return session_map_; }
+
+  // Uses the specified |writer| instead of QuicSocketUtils and takes ownership
+  // of writer.
+  void UseWriter(QuicPacketWriter* writer);
 
   WriteBlockedList* write_blocked_list() { return &write_blocked_list_; }
 
@@ -137,6 +143,9 @@ class QuicDispatcher : public QuicPacketWriter, public QuicSessionOwner {
   // True if the session is write blocked due to the socket returning EAGAIN.
   // False if we have gotten a call to OnCanWrite after the last failed write.
   bool write_blocked_;
+
+  // The writer to write to the socket with.
+  scoped_ptr<QuicPacketWriter> writer_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicDispatcher);
 };

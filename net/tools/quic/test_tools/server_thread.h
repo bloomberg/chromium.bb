@@ -29,6 +29,7 @@ class ServerThread : public base::SimpleThread {
 
   base::WaitableEvent* listening() { return &listening_; }
   base::WaitableEvent* quit() { return &quit_; }
+  QuicServer* server() { return &server_; }
 
  private:
   base::WaitableEvent listening_;

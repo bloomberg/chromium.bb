@@ -27,39 +27,26 @@ namespace net {
 class QuicClock;
 class QuicRandom;
 
-namespace test {
-class QuicConnectionHelperPeer;
-}  // namespace test
-
 class NET_EXPORT_PRIVATE QuicConnectionHelper
     : public QuicConnectionHelperInterface {
  public:
   QuicConnectionHelper(base::TaskRunner* task_runner,
                        const QuicClock* clock,
-                       QuicRandom* random_generator,
-                       DatagramClientSocket* socket);
+                       QuicRandom* random_generator);
 
   virtual ~QuicConnectionHelper();
 
   // QuicConnectionHelperInterface
-  virtual void SetConnection(QuicConnection* connection) OVERRIDE;
   virtual const QuicClock* GetClock() const OVERRIDE;
   virtual QuicRandom* GetRandomGenerator() OVERRIDE;
-  virtual WriteResult WritePacketToWire(
-      const QuicEncryptedPacket& packet) OVERRIDE;
-  virtual bool IsWriteBlockedDataBuffered() OVERRIDE;
   virtual QuicAlarm* CreateAlarm(QuicAlarm::Delegate* delegate) OVERRIDE;
 
  private:
-  friend class test::QuicConnectionHelperPeer;
-
   // A completion callback invoked when a write completes.
   void OnWriteComplete(int rv);
 
   base::WeakPtrFactory<QuicConnectionHelper> weak_factory_;
   base::TaskRunner* task_runner_;
-  DatagramClientSocket* socket_;
-  QuicConnection* connection_;
   const QuicClock* clock_;
   QuicRandom* random_generator_;
 

@@ -13,6 +13,7 @@
 #include "net/quic/crypto/quic_encrypter.h"
 #include "net/quic/quic_framer.h"
 #include "net/quic/quic_packet_creator.h"
+#include "net/quic/test_tools/quic_connection_peer.h"
 #include "net/spdy/spdy_frame_builder.h"
 
 using base::StringPiece;
@@ -207,15 +208,19 @@ MockConnection::MockConnection(QuicGuid guid,
                                IPEndPoint address,
                                bool is_server)
     : QuicConnection(guid, address, new testing::NiceMock<MockHelper>(),
+                     new testing::NiceMock<MockPacketWriter>(),
                      is_server, QuicVersionMax()),
-      has_mock_helper_(true) {
+      has_mock_helper_(true),
+      writer_(QuicConnectionPeer::GetWriter(this)) {
 }
 
 MockConnection::MockConnection(QuicGuid guid,
                                IPEndPoint address,
                                QuicConnectionHelperInterface* helper,
+                               QuicPacketWriter* writer,
                                bool is_server)
-    : QuicConnection(guid, address, helper, is_server, QuicVersionMax()),
+    : QuicConnection(guid, address, helper, writer, is_server,
+                     QuicVersionMax()),
       has_mock_helper_(false) {
 }
 
@@ -278,6 +283,12 @@ void TestSession::SetCryptoStream(QuicCryptoStream* stream) {
 
 QuicCryptoStream* TestSession::GetCryptoStream() {
   return crypto_stream_;
+}
+
+MockPacketWriter::MockPacketWriter() {
+}
+
+MockPacketWriter::~MockPacketWriter() {
 }
 
 MockSendAlgorithm::MockSendAlgorithm() {

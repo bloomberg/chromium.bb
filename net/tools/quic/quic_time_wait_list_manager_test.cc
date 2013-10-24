@@ -12,9 +12,9 @@
 #include "net/quic/crypto/quic_encrypter.h"
 #include "net/quic/quic_data_reader.h"
 #include "net/quic/quic_framer.h"
+#include "net/quic/quic_packet_writer.h"
 #include "net/quic/quic_protocol.h"
 #include "net/quic/test_tools/quic_test_utils.h"
-#include "net/tools/quic/quic_packet_writer.h"
 #include "net/tools/quic/test_tools/mock_epoll_server.h"
 #include "net/tools/quic/test_tools/quic_test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -62,6 +62,8 @@ class QuicTimeWaitListManagerTest : public testing::Test {
                 true),
         guid_(45) {
   }
+
+  virtual ~QuicTimeWaitListManagerTest() {}
 
   void AddGuid(QuicGuid guid) {
     time_wait_list_manager_.AddGuidToTimeWait(guid, QuicVersionMax());

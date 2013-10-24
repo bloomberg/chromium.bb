@@ -19,6 +19,7 @@
 #include "net/quic/quic_client_session.h"
 #include "net/quic/quic_connection.h"
 #include "net/quic/quic_connection_helper.h"
+#include "net/quic/quic_default_packet_writer.h"
 #include "net/quic/quic_http_utils.h"
 #include "net/quic/quic_reliable_client_stream.h"
 #include "net/quic/spdy_utils.h"
@@ -51,8 +52,9 @@ class TestQuicConnection : public QuicConnection {
  public:
   TestQuicConnection(QuicGuid guid,
                      IPEndPoint address,
-                     QuicConnectionHelper* helper)
-      : QuicConnection(guid, address, helper, false, QuicVersionMax()) {
+                     QuicConnectionHelper* helper,
+                     QuicPacketWriter* writer)
+      : QuicConnection(guid, address, helper, writer, false, QuicVersionMax()) {
   }
 
   void SetSendAlgorithm(SendAlgorithmInterface* send_algorithm) {
@@ -200,15 +202,18 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<bool> {
     EXPECT_CALL(*send_algorithm_, BandwidthEstimate()).WillRepeatedly(
         Return(QuicBandwidth::Zero()));
     helper_ = new QuicConnectionHelper(runner_.get(), &clock_,
-                                       &random_generator_, socket);
-    connection_ = new TestQuicConnection(guid_, peer_addr_, helper_);
+                                       &random_generator_);
+    writer_.reset(new QuicDefaultPacketWriter(socket));
+    connection_ = new TestQuicConnection(guid_, peer_addr_, helper_,
+                                         writer_.get());
     connection_->set_visitor(&visitor_);
     connection_->SetSendAlgorithm(send_algorithm_);
     connection_->SetReceiveAlgorithm(receive_algorithm_);
     crypto_config_.SetDefaults();
     session_.reset(
         new QuicClientSession(connection_,
-                              scoped_ptr<DatagramClientSocket>(socket), NULL,
+                              scoped_ptr<DatagramClientSocket>(socket),
+                              writer_.Pass(), NULL,
                               &crypto_client_stream_factory_,
                               "www.google.com", DefaultQuicConfig(),
                               &crypto_config_, NULL));
@@ -307,6 +312,7 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<bool> {
   QuicConnectionHelper* helper_;
   testing::StrictMock<MockConnectionVisitor> visitor_;
   scoped_ptr<QuicHttpStream> stream_;
+  scoped_ptr<QuicDefaultPacketWriter> writer_;
   scoped_ptr<QuicClientSession> session_;
   QuicCryptoClientConfig crypto_config_;
   TestCompletionCallback callback_;

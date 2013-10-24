@@ -15,9 +15,10 @@
 #include "net/tools/quic/test_tools/http_message_test_utils.h"
 #include "url/gurl.h"
 
+using base::StringPiece;
+using net::test::QuicTestWriter;
 using std::string;
 using std::vector;
-using base::StringPiece;
 
 namespace {
 
@@ -98,14 +99,16 @@ class QuicEpollClient : public QuicClient {
   QuicEpollClient(IPEndPoint server_address,
              const string& server_hostname,
              const QuicVersion version)
-      : Super(server_address, server_hostname, version, false) {
+      : Super(server_address, server_hostname, version, false),
+        test_writer_(NULL) {
   }
 
   QuicEpollClient(IPEndPoint server_address,
              const string& server_hostname,
              const QuicConfig& config,
              const QuicVersion version)
-      : Super(server_address, server_hostname, config, version) {
+      : Super(server_address, server_hostname, config, version),
+        test_writer_(NULL) {
   }
 
   virtual ~QuicEpollClient() {
@@ -114,19 +117,20 @@ class QuicEpollClient : public QuicClient {
     }
   }
 
-  virtual QuicEpollConnectionHelper* CreateQuicConnectionHelper() OVERRIDE {
-    if (writer_.get() != NULL) {
-      writer_->set_fd(fd());
-      return new QuicEpollConnectionHelper(writer_.get(), epoll_server());
-    } else {
-      return Super::CreateQuicConnectionHelper();
+  virtual QuicPacketWriter* CreateQuicPacketWriter() OVERRIDE {
+    QuicPacketWriter* writer = Super::CreateQuicPacketWriter();
+    if (!test_writer_) {
+      return writer;
     }
+    test_writer_->set_writer(writer);
+    return test_writer_;
   }
 
-  void UseWriter(QuicTestWriter* writer) { writer_.reset(writer); }
+  // Takes ownership of writer.
+  void UseWriter(QuicTestWriter* writer) { test_writer_ = writer; }
 
  private:
-  scoped_ptr<QuicTestWriter> writer_;
+  QuicTestWriter* test_writer_;
 };
 
 QuicTestClient::QuicTestClient(IPEndPoint address, const string& hostname,
@@ -337,7 +341,6 @@ void QuicTestClient::OnClose(ReliableQuicStream* stream) {
 }
 
 void QuicTestClient::UseWriter(QuicTestWriter* writer) {
-  DCHECK(!connected());
   reinterpret_cast<QuicEpollClient*>(client_.get())->UseWriter(writer);
 }
 

@@ -33,23 +33,29 @@ namespace {
 const char kData[] = "foo";
 const bool kFromPeer = true;
 
-class TestConnectionHelper : public QuicEpollConnectionHelper {
+class TestWriter : public QuicPacketWriter {
  public:
-  TestConnectionHelper(int fd, EpollServer* eps)
-      : QuicEpollConnectionHelper(fd, eps) {
-  }
-
-  virtual WriteResult WritePacketToWire(
-      const QuicEncryptedPacket& packet) OVERRIDE {
+  // QuicPacketWriter
+  virtual WriteResult WritePacket(
+      const char* buffer, size_t buf_len,
+      const IPAddressNumber& self_address,
+      const IPEndPoint& peer_address,
+      QuicBlockedWriterInterface* blocked_writer) OVERRIDE {
     QuicFramer framer(QuicVersionMax(), QuicTime::Zero(), true);
     FramerVisitorCapturingFrames visitor;
     framer.set_visitor(&visitor);
+    QuicEncryptedPacket packet(buffer, buf_len);
     EXPECT_TRUE(framer.ProcessPacket(packet));
     header_ = *visitor.header();
     return WriteResult(WRITE_STATUS_OK, packet.length());
   }
 
-  QuicPacketHeader* header() { return &header_; }
+  virtual bool IsWriteBlockedDataBuffered() const OVERRIDE {
+    return false;
+  }
+
+  // Returns the header from the last packet written.
+  const QuicPacketHeader& header() { return header_; }
 
  private:
   QuicPacketHeader header_;
@@ -59,8 +65,9 @@ class TestConnection : public QuicConnection {
  public:
   TestConnection(QuicGuid guid,
                  IPEndPoint address,
-                 TestConnectionHelper* helper)
-      : QuicConnection(guid, address, helper, false, QuicVersionMax()) {
+                 QuicEpollConnectionHelper* helper,
+                 TestWriter* writer)
+      : QuicConnection(guid, address, helper, writer, false, QuicVersionMax()) {
   }
 
   void SendAck() {
@@ -78,8 +85,8 @@ class QuicEpollConnectionHelperTest : public ::testing::Test {
       : guid_(42),
         framer_(QuicVersionMax(), QuicTime::Zero(), false),
         send_algorithm_(new testing::StrictMock<MockSendAlgorithm>),
-        helper_(new TestConnectionHelper(0, &epoll_server_)),
-        connection_(guid_, IPEndPoint(), helper_),
+        helper_(new QuicEpollConnectionHelper(&epoll_server_)),
+        connection_(guid_, IPEndPoint(), helper_, &writer_),
         frame_(3, false, 0, kData) {
     connection_.set_visitor(&visitor_);
     connection_.SetSendAlgorithm(send_algorithm_);
@@ -115,7 +122,8 @@ class QuicEpollConnectionHelperTest : public ::testing::Test {
 
   MockEpollServer epoll_server_;
   testing::StrictMock<MockSendAlgorithm>* send_algorithm_;
-  TestConnectionHelper* helper_;
+  QuicEpollConnectionHelper* helper_;
+  TestWriter writer_;
   TestConnection connection_;
   testing::StrictMock<MockConnectionVisitor> visitor_;
 
@@ -123,7 +131,6 @@ class QuicEpollConnectionHelperTest : public ::testing::Test {
 };
 
 TEST_F(QuicEpollConnectionHelperTest, DISABLED_TestRTORetransmission) {
-  //FLAGS_fake_packet_loss_percentage = 100;
   EXPECT_CALL(*send_algorithm_, RetransmissionDelay()).WillRepeatedly(
       Return(QuicTime::Delta::Zero()));
   const int64 kDefaultRetransmissionTimeMs = 500;
@@ -143,12 +150,12 @@ TEST_F(QuicEpollConnectionHelperTest, DISABLED_TestRTORetransmission) {
   struct iovec iov = {const_cast<char*>(buffer),
                       static_cast<size_t>(3)};
   connection_.SendvStreamData(1, &iov, 1, 0, false);
-  EXPECT_EQ(1u, helper_->header()->packet_sequence_number);
+  EXPECT_EQ(1u, writer_.header().packet_sequence_number);
   EXPECT_CALL(*send_algorithm_,
               OnPacketSent(_, 2, packet_size, RTO_RETRANSMISSION, _));
   epoll_server_.AdvanceByAndCallCallbacks(kDefaultRetransmissionTimeMs * 1000);
 
-  EXPECT_EQ(2u, helper_->header()->packet_sequence_number);
+  EXPECT_EQ(2u, writer_.header().packet_sequence_number);
 }
 
 TEST_F(QuicEpollConnectionHelperTest, InitialTimeout) {

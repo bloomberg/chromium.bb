@@ -25,6 +25,7 @@ namespace net {
 class DatagramClientSocket;
 class QuicConnectionHelper;
 class QuicCryptoClientStreamFactory;
+class QuicDefaultPacketWriter;
 class QuicStreamFactory;
 class SSLInfo;
 
@@ -84,6 +85,7 @@ class NET_EXPORT_PRIVATE QuicClientSession : public QuicSession {
   // TODO(rch): decouple the factory from the session via a Delegate interface.
   QuicClientSession(QuicConnection* connection,
                     scoped_ptr<DatagramClientSocket> socket,
+                    scoped_ptr<QuicDefaultPacketWriter> writer,
                     QuicStreamFactory* stream_factory,
                     QuicCryptoClientStreamFactory* crypto_client_stream_factory,
                     const std::string& server_hostname,
@@ -197,6 +199,7 @@ class NET_EXPORT_PRIVATE QuicClientSession : public QuicSession {
   scoped_ptr<QuicCryptoClientStream> crypto_stream_;
   QuicStreamFactory* stream_factory_;
   scoped_ptr<DatagramClientSocket> socket_;
+  scoped_ptr<QuicDefaultPacketWriter> writer_;
   scoped_refptr<IOBufferWithSize> read_buffer_;
   ObserverSet observers_;
   StreamRequestQueue stream_requests_;

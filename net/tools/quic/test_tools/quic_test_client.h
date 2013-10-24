@@ -12,8 +12,8 @@
 #include "net/quic/quic_framer.h"
 #include "net/quic/quic_packet_creator.h"
 #include "net/quic/quic_protocol.h"
+#include "net/quic/test_tools/quic_test_writer.h"
 #include "net/tools/quic/quic_client.h"
-#include "net/tools/quic/quic_packet_writer.h"
 
 namespace net {
 
@@ -22,14 +22,6 @@ class ProofVerifier;
 namespace tools {
 
 namespace test {
-
-// Allows setting a writer for the client's QuicConnectionHelper, to allow
-// fine-grained control of writes.
-class QuicTestWriter : public QuicPacketWriter {
- public:
-  virtual ~QuicTestWriter() {}
-  virtual void set_fd(int fd) = 0;
-};
 
 class HTTPMessage;
 
@@ -88,7 +80,7 @@ class QuicTestClient :  public ReliableQuicStream::Visitor {
 
   // Configures client_ to take ownership of and use the writer.
   // Must be called before initial connect.
-  void UseWriter(QuicTestWriter* writer);
+  void UseWriter(net::test::QuicTestWriter* writer);
 
   // Returns NULL if the maximum number of streams have already been created.
   QuicReliableClientStream* GetOrCreateStream();

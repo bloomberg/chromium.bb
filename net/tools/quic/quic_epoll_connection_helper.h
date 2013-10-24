@@ -12,10 +12,11 @@
 #include <set>
 
 #include "net/quic/quic_connection.h"
+#include "net/quic/quic_packet_writer.h"
 #include "net/quic/quic_protocol.h"
 #include "net/quic/quic_time.h"
+#include "net/tools/quic/quic_default_packet_writer.h"
 #include "net/tools/quic/quic_epoll_clock.h"
-#include "net/tools/quic/quic_packet_writer.h"
 
 namespace net {
 
@@ -29,36 +30,23 @@ class RetransmissionAlarm;
 class SendAlarm;
 class TimeoutAlarm;
 
-namespace test {
-class QuicEpollConnectionHelperPeer;
-}  // namespace test
-
 class QuicEpollConnectionHelper : public QuicConnectionHelperInterface {
  public:
-  QuicEpollConnectionHelper(int fd, EpollServer* eps);
-  QuicEpollConnectionHelper(QuicPacketWriter* writer, EpollServer* eps);
+  explicit QuicEpollConnectionHelper(EpollServer* eps);
   virtual ~QuicEpollConnectionHelper();
 
   // QuicEpollConnectionHelperInterface
-  virtual void SetConnection(QuicConnection* connection) OVERRIDE;
   virtual const QuicClock* GetClock() const OVERRIDE;
   virtual QuicRandom* GetRandomGenerator() OVERRIDE;
-  virtual WriteResult WritePacketToWire(
-      const QuicEncryptedPacket& packet) OVERRIDE;
-  virtual bool IsWriteBlockedDataBuffered() OVERRIDE;
   virtual QuicAlarm* CreateAlarm(QuicAlarm::Delegate* delegate) OVERRIDE;
 
   EpollServer* epoll_server() { return epoll_server_; }
 
  private:
   friend class QuicConnectionPeer;
-  friend class net::tools::test::QuicEpollConnectionHelperPeer;
 
-  QuicPacketWriter* writer_;  // Not owned
   EpollServer* epoll_server_;  // Not owned.
-  int fd_;
 
-  QuicConnection* connection_;
   const QuicEpollClock clock_;
   QuicRandom* random_generator_;
 

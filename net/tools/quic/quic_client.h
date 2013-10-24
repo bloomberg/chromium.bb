@@ -145,6 +145,7 @@ class QuicClient : public EpollCallbackInterface,
 
  protected:
   virtual QuicEpollConnectionHelper* CreateQuicConnectionHelper();
+  virtual QuicPacketWriter* CreateQuicPacketWriter();
 
  private:
   friend class net::tools::test::QuicClientPeer;
@@ -180,6 +181,9 @@ class QuicClient : public EpollCallbackInterface,
   EpollServer epoll_server_;
   // UDP socket.
   int fd_;
+
+  // Writer used to actually send packets to the wire.
+  scoped_ptr<QuicPacketWriter> writer_;
 
   // Tracks if the client is initialized to connect.
   bool initialized_;

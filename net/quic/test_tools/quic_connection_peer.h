@@ -22,10 +22,13 @@ class QuicConnectionVisitorInterface;
 class QuicFecGroup;
 class QuicFramer;
 class QuicPacketCreator;
+class QuicPacketWriter;
 class ReceiveAlgorithmInterface;
 class SendAlgorithmInterface;
 
 namespace test {
+
+class QuicTestWriter;
 
 // Peer to make public a number of otherwise private QuicConnection methods.
 class QuicConnectionPeer {
@@ -101,6 +104,9 @@ class QuicConnectionPeer {
   static QuicAlarm* GetSendAlarm(QuicConnection* connection);
   static QuicAlarm* GetResumeWritesAlarm(QuicConnection* connection);
   static QuicAlarm* GetTimeoutAlarm(QuicConnection* connection);
+
+  static QuicPacketWriter* GetWriter(QuicConnection* connection);
+  static void SetWriter(QuicConnection* connection, QuicTestWriter* writer);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(QuicConnectionPeer);

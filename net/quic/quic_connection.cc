@@ -14,8 +14,6 @@
 #include <utility>
 
 #include "base/logging.h"
-#include "base/rand_util.h"
-#include "base/sha1.h"
 #include "base/stl_util.h"
 #include "net/quic/crypto/quic_decrypter.h"
 #include "net/quic/crypto/quic_encrypter.h"
@@ -204,12 +202,14 @@ bool QuicConnection::g_acks_do_not_instigate_acks = true;
 QuicConnection::QuicConnection(QuicGuid guid,
                                IPEndPoint address,
                                QuicConnectionHelperInterface* helper,
+                               QuicPacketWriter* writer,
                                bool is_server,
                                QuicVersion version)
     : framer_(version,
               helper->GetClock()->ApproximateNow(),
               is_server),
       helper_(helper),
+      writer_(writer),
       encryption_level_(ENCRYPTION_NONE),
       clock_(helper->GetClock()),
       random_generator_(helper->GetRandomGenerator()),
@@ -243,16 +243,9 @@ QuicConnection::QuicConnection(QuicGuid guid,
       received_truncated_ack_(false),
       send_ack_in_response_to_packet_(false),
       address_migrating_(false) {
-  helper_->SetConnection(this);
   timeout_alarm_->Set(clock_->ApproximateNow().Add(idle_network_timeout_));
   framer_.set_visitor(this);
   framer_.set_received_entropy_calculator(&received_packet_manager_);
-
-  if (FLAGS_fake_packet_loss_percentage > 0) {
-    int64 seed = base::RandUint64();
-    LOG(INFO) << ENDPOINT << "Seeding packet loss with " << seed;
-    simple_random_.set_seed(seed);
-  }
 }
 
 QuicConnection::~QuicConnection() {
@@ -676,7 +669,7 @@ bool QuicConnection::OnConnectionCloseFrame(
   if (debug_visitor_) {
     debug_visitor_->OnConnectionCloseFrame(frame);
   }
-  DLOG(INFO) << ENDPOINT << "Connection " << guid() << "closed with error "
+  DLOG(INFO) << ENDPOINT << "Connection " << guid() << " closed with error "
              << QuicUtils::ErrorToString(frame.error_code)
              << " " << frame.error_details;
   CloseConnection(frame.error_code, true);
@@ -849,10 +842,11 @@ void QuicConnection::SendVersionNegotiationPacket() {
       packet_creator_.SerializeVersionNegotiationPacket(supported_versions));
   // TODO(satyamshekhar): implement zero server state negotiation.
   WriteResult result =
-      helper_->WritePacketToWire(*version_packet);
+      writer_->WritePacket(version_packet->data(), version_packet->length(),
+                           self_address().address(), peer_address(), this);
   if (result.status == WRITE_STATUS_OK ||
       (result.status == WRITE_STATUS_BLOCKED &&
-          helper_->IsWriteBlockedDataBuffered())) {
+       writer_->IsWriteBlockedDataBuffered())) {
     pending_version_negotiation_packet_ = false;
     return;
   }
@@ -1382,7 +1376,7 @@ bool QuicConnection::WritePacket(EncryptionLevel level,
     // be queued and sent again, which would result in an unnecessary
     // duplicate packet being sent.  The helper must call OnPacketSent
     // when the packet is actually sent.
-    if (helper_->IsWriteBlockedDataBuffered()) {
+    if (writer_->IsWriteBlockedDataBuffered()) {
       delete packet;
       return true;
     }
@@ -1460,7 +1454,9 @@ WriteResult QuicConnection::WritePacketToWire(
     QuicPacketSequenceNumber sequence_number,
     EncryptionLevel level,
     const QuicEncryptedPacket& packet) {
-  WriteResult result = helper_->WritePacketToWire(packet);
+  WriteResult result =
+      writer_->WritePacket(packet.data(), packet.length(),
+                           self_address().address(), peer_address(), this);
   if (debug_visitor_) {
     // Pass the write result to the visitor.
     debug_visitor_->OnPacketSent(sequence_number, level, packet, result);
@@ -1519,20 +1515,6 @@ bool QuicConnection::SendOrQueuePacket(EncryptionLevel level,
     return false;
   }
   return true;
-}
-
-uint64 QuicConnection::SimpleRandom::RandUint64() {
-  unsigned char hash[base::kSHA1Length];
-  base::SHA1HashBytes(reinterpret_cast<unsigned char*>(&seed_), sizeof(seed_),
-                      hash);
-  memcpy(&seed_, hash, sizeof(seed_));
-  return seed_;
-}
-
-bool QuicConnection::ShouldSimulateLostPacket() {
-  return FLAGS_fake_packet_loss_percentage > 0 &&
-      simple_random_.RandUint64() % 100 <
-      static_cast<uint64>(FLAGS_fake_packet_loss_percentage);
 }
 
 void QuicConnection::UpdateSentPacketInfo(SentPacketInfo* sent_info) {

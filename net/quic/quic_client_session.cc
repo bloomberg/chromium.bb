@@ -15,6 +15,7 @@
 #include "net/base/net_errors.h"
 #include "net/quic/quic_connection_helper.h"
 #include "net/quic/quic_crypto_client_stream_factory.h"
+#include "net/quic/quic_default_packet_writer.h"
 #include "net/quic/quic_stream_factory.h"
 #include "net/ssl/ssl_info.h"
 #include "net/udp/datagram_client_socket.h"
@@ -82,6 +83,7 @@ void QuicClientSession::StreamRequest::OnRequestCompleteFailure(int rv) {
 QuicClientSession::QuicClientSession(
     QuicConnection* connection,
     scoped_ptr<DatagramClientSocket> socket,
+    scoped_ptr<QuicDefaultPacketWriter> writer,
     QuicStreamFactory* stream_factory,
     QuicCryptoClientStreamFactory* crypto_client_stream_factory,
     const string& server_hostname,
@@ -92,6 +94,7 @@ QuicClientSession::QuicClientSession(
       require_confirmation_(false),
       stream_factory_(stream_factory),
       socket_(socket.Pass()),
+      writer_(writer.Pass()),
       read_buffer_(new IOBufferWithSize(kMaxPacketSize)),
       read_pending_(false),
       num_total_streams_(0),

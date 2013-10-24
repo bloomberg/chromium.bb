@@ -13,6 +13,7 @@
 #include "net/quic/crypto/crypto_protocol.h"
 #include "net/quic/crypto/quic_decrypter.h"
 #include "net/quic/crypto/quic_encrypter.h"
+#include "net/quic/quic_default_packet_writer.h"
 #include "net/quic/test_tools/crypto_test_utils.h"
 #include "net/quic/test_tools/quic_client_session_peer.h"
 #include "net/quic/test_tools/quic_test_utils.h"
@@ -27,13 +28,47 @@ namespace {
 
 const char kServerHostname[] = "www.example.com";
 
+class TestPacketWriter : public QuicDefaultPacketWriter {
+ public:
+  TestPacketWriter() {
+  }
+
+  // QuicPacketWriter
+  virtual WriteResult WritePacket(
+      const char* buffer, size_t buf_len,
+      const IPAddressNumber& self_address,
+      const IPEndPoint& peer_address,
+      QuicBlockedWriterInterface* blocked_writer) OVERRIDE {
+    QuicFramer framer(QuicVersionMax(), QuicTime::Zero(), true);
+    FramerVisitorCapturingFrames visitor;
+    framer.set_visitor(&visitor);
+    QuicEncryptedPacket packet(buffer, buf_len);
+    EXPECT_TRUE(framer.ProcessPacket(packet));
+    header_ = *visitor.header();
+    return WriteResult(WRITE_STATUS_OK, packet.length());
+  }
+
+  virtual bool IsWriteBlockedDataBuffered() const OVERRIDE {
+    // Chrome sockets' Write() methods buffer the data until the Write is
+    // permitted.
+    return true;
+  }
+
+  // Returns the header from the last packet written.
+  const QuicPacketHeader& header() { return header_; }
+
+ private:
+  QuicPacketHeader header_;
+};
+
 class QuicClientSessionTest : public ::testing::Test {
  protected:
   QuicClientSessionTest()
       : guid_(1),
+        writer_(new TestPacketWriter()),
         connection_(new PacketSavingConnection(guid_, IPEndPoint(), false)),
-        session_(connection_, GetSocket().Pass(), NULL,
-                 NULL, kServerHostname, DefaultQuicConfig(), &crypto_config_,
+        session_(connection_, GetSocket().Pass(), writer_.Pass(), NULL, NULL,
+                 kServerHostname, DefaultQuicConfig(), &crypto_config_,
                  &net_log_) {
     session_.config()->SetDefaults();
     crypto_config_.SetDefaults();
@@ -59,6 +94,7 @@ class QuicClientSessionTest : public ::testing::Test {
   }
 
   QuicGuid guid_;
+  scoped_ptr<QuicDefaultPacketWriter> writer_;
   PacketSavingConnection* connection_;
   CapturingNetLog net_log_;
   MockClientSocketFactory socket_factory_;

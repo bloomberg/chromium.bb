@@ -9,10 +9,10 @@
 
 #include "base/strings/string_piece.h"
 #include "net/quic/quic_connection.h"
+#include "net/quic/quic_packet_writer.h"
 #include "net/quic/quic_session.h"
 #include "net/quic/quic_spdy_decompressor.h"
 #include "net/spdy/spdy_framer.h"
-#include "net/tools/quic/quic_packet_writer.h"
 #include "net/tools/quic/quic_server_session.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -23,6 +23,23 @@ class IPEndPoint;
 
 namespace tools {
 namespace test {
+
+// Simple random number generator used to compute random numbers suitable
+// for pseudo-randomly dropping packets in tests.  It works by computing
+// the sha1 hash of the current seed, and using the first 64 bits as
+// the next random number, and the next seed.
+class SimpleRandom {
+ public:
+  SimpleRandom() : seed_(0) {}
+
+  // Returns a random number in the range [0, kuint64max].
+  uint64 RandUint64();
+
+  void set_seed(uint64 seed) { seed_ = seed; }
+
+ private:
+  uint64 seed_;
+};
 
 class MockConnection : public QuicConnection {
  public:
@@ -36,7 +53,9 @@ class MockConnection : public QuicConnection {
   MockConnection(QuicGuid guid, IPEndPoint address, bool is_server);
   MockConnection(QuicGuid guid,
                  IPEndPoint address,
-                 QuicConnectionHelperInterface* helper, bool is_server);
+                 QuicConnectionHelperInterface* helper,
+                 QuicPacketWriter* writer,
+                 bool is_server);
   virtual ~MockConnection();
 
   // If the constructor that uses a MockHelper has been used then this method
@@ -67,8 +86,43 @@ class MockConnection : public QuicConnection {
 
  private:
   const bool has_mock_helper_;
+  scoped_ptr<QuicPacketWriter> writer_;
 
   DISALLOW_COPY_AND_ASSIGN(MockConnection);
+};
+
+class TestSession : public QuicSession {
+ public:
+  TestSession(QuicConnection* connection,
+              const QuicConfig& config,
+              bool is_server);
+  virtual ~TestSession();
+
+  MOCK_METHOD1(CreateIncomingReliableStream,
+               ReliableQuicStream*(QuicStreamId id));
+  MOCK_METHOD0(CreateOutgoingReliableStream, ReliableQuicStream*());
+
+  void SetCryptoStream(QuicCryptoStream* stream);
+
+  virtual QuicCryptoStream* GetCryptoStream();
+
+ private:
+  QuicCryptoStream* crypto_stream_;
+  DISALLOW_COPY_AND_ASSIGN(TestSession);
+};
+
+class MockPacketWriter : public QuicPacketWriter {
+ public:
+  MockPacketWriter();
+  virtual ~MockPacketWriter();
+
+  MOCK_METHOD5(WritePacket,
+               WriteResult(const char* buffer,
+                           size_t buf_len,
+                           const IPAddressNumber& self_address,
+                           const IPEndPoint& peer_address,
+                           QuicBlockedWriterInterface* blocked_writer));
+  MOCK_CONST_METHOD0(IsWriteBlockedDataBuffered, bool());
 };
 
 class MockQuicSessionOwner : public QuicSessionOwner {
@@ -92,45 +146,12 @@ class TestDecompressorVisitor : public QuicSpdyDecompressor::Visitor {
   bool error_;
 };
 
-class TestSession : public QuicSession {
- public:
-  TestSession(QuicConnection* connection,
-              const QuicConfig& config,
-              bool is_server);
-  virtual ~TestSession();
-
-  MOCK_METHOD1(CreateIncomingReliableStream,
-               ReliableQuicStream*(QuicStreamId id));
-  MOCK_METHOD0(CreateOutgoingReliableStream, ReliableQuicStream*());
-
-  void SetCryptoStream(QuicCryptoStream* stream);
-
-  virtual QuicCryptoStream* GetCryptoStream();
-
- private:
-  QuicCryptoStream* crypto_stream_;
-  DISALLOW_COPY_AND_ASSIGN(TestSession);
-};
-
 class MockAckNotifierDelegate : public QuicAckNotifier::DelegateInterface {
  public:
   MockAckNotifierDelegate();
   virtual ~MockAckNotifierDelegate();
 
   MOCK_METHOD0(OnAckNotification, void());
-};
-
-class MockPacketWriter : public QuicPacketWriter {
- public:
-  MockPacketWriter();
-  virtual ~MockPacketWriter();
-
-  MOCK_METHOD5(WritePacket,
-               WriteResult(const char* buffer,
-                           size_t buf_len,
-                           const IPAddressNumber& self_address,
-                           const IPEndPoint& peer_address,
-                           QuicBlockedWriterInterface* blocked_writer));
 };
 
 }  // namespace test

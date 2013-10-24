@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_TOOLS_QUIC_QUIC_PACKET_WRITER_H_
-#define NET_TOOLS_QUIC_QUIC_PACKET_WRITER_H_
+#ifndef NET_QUIC_QUIC_PACKET_WRITER_H_
+#define NET_QUIC_QUIC_PACKET_WRITER_H_
 
 #include "net/base/ip_endpoint.h"
 #include "net/quic/quic_protocol.h"
@@ -13,23 +13,29 @@ namespace net {
 class QuicBlockedWriterInterface;
 struct WriteResult;
 
-namespace tools {
-
 // An interface between writers and the entity managing the
 // socket (in our case the QuicDispatcher).  This allows the Dispatcher to
 // control writes, and manage any writers who end up write blocked.
-class QuicPacketWriter {
+class NET_EXPORT_PRIVATE QuicPacketWriter {
  public:
   virtual ~QuicPacketWriter() {}
 
+  // Sends the packet out to the peer.  If the write succeeded, the result's
+  // status is WRITE_OK and bytes_written is populated. If the write failed,
+  // the result's status is WRITE_BLOCKED or WRITE_ERROR and error_code is
+  // populated.
   virtual WriteResult WritePacket(
       const char* buffer, size_t buf_len,
       const net::IPAddressNumber& self_address,
       const net::IPEndPoint& peer_address,
       QuicBlockedWriterInterface* blocked_writer) = 0;
+
+  // Returns true if the writer buffers and subsequently rewrites data
+  // when an attempt to write results in the underlying socket becoming
+  // write blocked.
+  virtual bool IsWriteBlockedDataBuffered() const = 0;
 };
 
-}  // namespace tools
 }  // namespace net
 
-#endif  // NET_TOOLS_QUIC_QUIC_PACKET_WRITER_H_
+#endif  // NET_QUIC_QUIC_PACKET_WRITER_H_

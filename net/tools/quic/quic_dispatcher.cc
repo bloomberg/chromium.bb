@@ -10,6 +10,7 @@
 #include "base/stl_util.h"
 #include "net/quic/quic_blocked_writer_interface.h"
 #include "net/quic/quic_utils.h"
+#include "net/tools/quic/quic_default_packet_writer.h"
 #include "net/tools/quic/quic_epoll_connection_helper.h"
 #include "net/tools/quic/quic_socket_utils.h"
 
@@ -45,7 +46,8 @@ QuicDispatcher::QuicDispatcher(const QuicConfig& config,
       delete_sessions_alarm_(new DeleteSessionsAlarm(this)),
       epoll_server_(epoll_server),
       fd_(fd),
-      write_blocked_(false) {
+      write_blocked_(false),
+      writer_(new QuicDefaultPacketWriter(fd)) {
 }
 
 QuicDispatcher::~QuicDispatcher() {
@@ -53,22 +55,31 @@ QuicDispatcher::~QuicDispatcher() {
   STLDeleteElements(&closed_session_list_);
 }
 
-WriteResult  QuicDispatcher::WritePacket(const char* buffer, size_t buf_len,
-                                         const IPAddressNumber& self_address,
-                                         const IPEndPoint& peer_address,
-                                         QuicBlockedWriterInterface* writer) {
+void QuicDispatcher::set_fd(int fd) {
+  fd_ = fd;
+  writer_.reset(new QuicDefaultPacketWriter(fd));
+}
+
+WriteResult QuicDispatcher::WritePacket(const char* buffer, size_t buf_len,
+                                        const IPAddressNumber& self_address,
+                                        const IPEndPoint& peer_address,
+                                        QuicBlockedWriterInterface* writer) {
   if (write_blocked_) {
     write_blocked_list_.insert(make_pair(writer, true));
     return WriteResult(WRITE_STATUS_BLOCKED, EAGAIN);
   }
 
-  WriteResult result = QuicSocketUtils::WritePacket(fd_, buffer, buf_len,
-                                                    self_address, peer_address);
+  WriteResult result =
+      writer_->WritePacket(buffer, buf_len, self_address, peer_address, writer);
   if (result.status == WRITE_STATUS_BLOCKED) {
     write_blocked_list_.insert(make_pair(writer, true));
     write_blocked_ = true;
   }
   return result;
+}
+
+bool QuicDispatcher::IsWriteBlockedDataBuffered() const {
+  return writer_->IsWriteBlockedDataBuffered();
 }
 
 void QuicDispatcher::ProcessPacket(const IPEndPoint& server_address,
@@ -119,6 +130,10 @@ void QuicDispatcher::CleanUpSession(SessionMap::iterator it) {
 
 void QuicDispatcher::DeleteSessions() {
   STLDeleteElements(&closed_session_list_);
+}
+
+void QuicDispatcher::UseWriter(QuicPacketWriter* writer) {
+  writer_.reset(writer);
 }
 
 bool QuicDispatcher::OnCanWrite() {
@@ -184,18 +199,16 @@ void QuicDispatcher::OnConnectionClose(QuicGuid guid, QuicErrorCode error) {
 QuicSession* QuicDispatcher::CreateQuicSession(
     QuicGuid guid,
     const IPEndPoint& client_address,
-    int fd,
+    int /* fd */,
     EpollServer* epoll_server) {
   QuicConnectionHelperInterface* helper =
-      new QuicEpollConnectionHelper(this, epoll_server);
+      new QuicEpollConnectionHelper(epoll_server);
   QuicServerSession* session = new QuicServerSession(
-       config_, new QuicConnection(guid, client_address, helper, true,
-                                   QuicVersionMax()), this);
+      config_, new QuicConnection(guid, client_address, helper, this,
+                                  true, QuicVersionMax()), this);
   session->InitializeSession(crypto_config_);
   return session;
 }
 
 }  // namespace tools
 }  // namespace net
-
-

@@ -36,6 +36,7 @@
 #include "net/quic/quic_framer.h"
 #include "net/quic/quic_packet_creator.h"
 #include "net/quic/quic_packet_generator.h"
+#include "net/quic/quic_packet_writer.h"
 #include "net/quic/quic_protocol.h"
 #include "net/quic/quic_received_packet_manager.h"
 #include "net/quic/quic_sent_entropy_manager.h"
@@ -159,27 +160,11 @@ class NET_EXPORT_PRIVATE QuicConnectionHelperInterface {
  public:
   virtual ~QuicConnectionHelperInterface() {}
 
-  // Sets the QuicConnection to be used by this helper.  This method
-  // must only be called once.
-  virtual void SetConnection(QuicConnection* connection) = 0;
-
   // Returns a QuicClock to be used for all time related functions.
   virtual const QuicClock* GetClock() const = 0;
 
   // Returns a QuicRandom to be used for all random number related functions.
   virtual QuicRandom* GetRandomGenerator() = 0;
-
-  // Sends the packet out to the peer, possibly simulating packet
-  // loss if FLAGS_fake_packet_loss_percentage is set.  If the write
-  // succeeded, the result's status is WRITE_STATUS_OK and bytes_written is
-  // populated. If the write failed, the result's status is WRITE_STATUS_BLOCKED
-  // or WRITE_STATUS_ERROR and error_code will populated.
-  virtual WriteResult WritePacketToWire(const QuicEncryptedPacket& packet) = 0;
-
-  // Returns true if the helper buffers and subsequently rewrites data
-  // when an attempt to write results in the underlying socket becoming
-  // write blocked.
-  virtual bool IsWriteBlockedDataBuffered() = 0;
 
   // Creates a new platform-specific alarm which will be configured to
   // notify |delegate| when the alarm fires.  Caller takes ownership
@@ -208,6 +193,7 @@ class NET_EXPORT_PRIVATE QuicConnection
   QuicConnection(QuicGuid guid,
                  IPEndPoint address,
                  QuicConnectionHelperInterface* helper,
+                 QuicPacketWriter* writer,
                  bool is_server,
                  QuicVersion version);
   virtual ~QuicConnection();
@@ -368,10 +354,6 @@ class NET_EXPORT_PRIVATE QuicConnection
   // true.  Otherwise, it will return false and will reset the timeout alarm.
   bool CheckForTimeout();
 
-  // Returns true of the next packet to be sent should be "lost" by
-  // not actually writing it to the wire.
-  bool ShouldSimulateLostPacket();
-
   // Sets up a packet with an QuicAckFrame and sends it out.
   void SendAck();
 
@@ -471,23 +453,6 @@ class NET_EXPORT_PRIVATE QuicConnection
   QuicFramer framer_;
 
  private:
-  // Simple random number generator used to compute random numbers suitable
-  // for pseudo-randomly dropping packets in tests.  It works by computing
-  // the sha1 hash of the current seed, and using the first 64 bits as
-  // the next random number, and the next seed.
-  class SimpleRandom {
-   public:
-    SimpleRandom() : seed_(0) {}
-
-    // Returns a random number in the range [0, kuint64max].
-    uint64 RandUint64();
-
-    void set_seed(uint64 seed) { seed_ = seed; }
-
-   private:
-    uint64 seed_;
-  };
-
   // Stores current batch state for connection, puts the connection
   // into batch mode, and destruction restores the stored batch state.
   // While the bundler is in scope, any generated frames are bundled
@@ -686,6 +651,7 @@ class NET_EXPORT_PRIVATE QuicConnection
   void CloseFecGroupsBefore(QuicPacketSequenceNumber sequence_number);
 
   scoped_ptr<QuicConnectionHelperInterface> helper_;
+  QuicPacketWriter* writer_;
   EncryptionLevel encryption_level_;
   const QuicClock* clock_;
   QuicRandom* random_generator_;
@@ -816,9 +782,6 @@ class NET_EXPORT_PRIVATE QuicConnection
   // all packets that a given block of data was sent in. The AckNotifierManager
   // maintains the currently active notifiers.
   AckNotifierManager ack_notifier_manager_;
-
-  // Only used to configure fake packet loss.
-  SimpleRandom simple_random_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicConnection);
 };
