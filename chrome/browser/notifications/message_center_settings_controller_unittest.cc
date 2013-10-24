@@ -70,14 +70,6 @@ TEST_F(MessageCenterSettingsControllerTest, NotifierGroups) {
             UTF8ToUTF16("Profile-1"));
 }
 
-TEST_F(MessageCenterSettingsControllerTest, GuestNoBreak) {
-  // In the guest mode of ChromeOS, there're no notifier groups but
-  // GetNotifierList() shouldn't cause crash.
-  scoped_ptr<MessageCenterSettingsController> controller(
-      new MessageCenterSettingsController(GetCache()));
-
-  EXPECT_EQ(controller->GetNotifierGroupCount(), 0u);
-  std::vector<message_center::Notifier*> notifiers;
-  controller->GetNotifierList(&notifiers);
-  EXPECT_TRUE(notifiers.empty());
-}
+// TODO(mukai): write a test case to reproduce the actual guest session scenario
+// in ChromeOS -- no profiles in the profile_info_cache but GetDefaultProfile
+// returns a new one.

@@ -418,15 +418,10 @@ void NotifierSettingsView::UpdateContentsView(
       0, kMenuButtonInnateMargin, 0, kMenuButtonInnateMargin));
   contents_title_view->AddChildView(top_label);
 
-  string16 notifier_group_text;
-  if (provider_ && provider_->GetNotifierGroupCount() > 0) {
-    const NotifierGroup& active_group = provider_->GetActiveNotifierGroup();
-    notifier_group_text = active_group.login_info.empty()
-                              ? active_group.name
-                              : active_group.login_info;
-  }
-
   if (need_account_switcher) {
+    const NotifierGroup& active_group = provider_->GetActiveNotifierGroup();
+    string16 notifier_group_text = active_group.login_info.empty() ?
+        active_group.name : active_group.login_info;
     notifier_group_selector_ =
         new views::MenuButton(NULL, notifier_group_text, this, true);
     notifier_group_selector_->set_border(new NotifierGroupMenuButtonBorder);

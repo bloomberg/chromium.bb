@@ -162,14 +162,9 @@ void MessageCenterSettingsController::SwitchToNotifierGroup(size_t index) {
 void MessageCenterSettingsController::GetNotifierList(
     std::vector<Notifier*>* notifiers) {
   DCHECK(notifiers);
-  if (notifier_groups_.empty())
-    return;
-
   // Temporarily use the last used profile to prevent chrome from crashing when
   // the default profile is not loaded.
-  message_center::ProfileNotifierGroup* group =
-      notifier_groups_[current_notifier_group_];
-  Profile* profile = group->profile();
+  Profile* profile = GetCurrentProfile();
   if (!profile)
     return;
 
@@ -213,12 +208,14 @@ void MessageCenterSettingsController::GetNotifierList(
     notifier::ChromeNotifierService* sync_notifier_service =
         notifier::ChromeNotifierServiceFactory::GetInstance()->GetForProfile(
             profile, Profile::EXPLICIT_ACCESS);
-    sync_notifier_service->GetSyncedNotificationServices(notifiers);
+    if (sync_notifier_service) {
+      sync_notifier_service->GetSyncedNotificationServices(notifiers);
 
-    if (comparator)
-      std::sort(notifiers->begin(), notifiers->end(), *comparator);
-    else
-      std::sort(notifiers->begin(), notifiers->end(), SimpleCompareNotifiers);
+      if (comparator)
+        std::sort(notifiers->begin(), notifiers->end(), *comparator);
+      else
+        std::sort(notifiers->begin(), notifiers->end(), SimpleCompareNotifiers);
+    }
   }
 
   int app_count = notifiers->size();
@@ -287,7 +284,7 @@ void MessageCenterSettingsController::GetNotifierList(
 void MessageCenterSettingsController::SetNotifierEnabled(
     const Notifier& notifier,
     bool enabled) {
-  Profile* profile = notifier_groups_[current_notifier_group_]->profile();
+  Profile* profile = GetCurrentProfile();
   DCHECK(profile);
 
   DesktopNotificationService* notification_service =
@@ -366,6 +363,18 @@ void MessageCenterSettingsController::Observe(
   FOR_EACH_OBSERVER(message_center::NotifierSettingsObserver,
                     observers_,
                     NotifierGroupChanged());
+}
+
+Profile* MessageCenterSettingsController::GetCurrentProfile() {
+  if (notifier_groups_.size() > current_notifier_group_)
+    return notifier_groups_[current_notifier_group_]->profile();
+
+#if defined(OS_CHROMEOS)
+  return ProfileManager::GetDefaultProfileOrOffTheRecord();
+#else
+  NOTREACHED();
+  return NULL;
+#endif
 }
 
 void MessageCenterSettingsController::RebuildNotifierGroups() {

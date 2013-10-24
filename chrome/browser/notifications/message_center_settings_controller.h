@@ -21,6 +21,7 @@
 #include "ui/message_center/notifier_settings.h"
 
 class CancelableTaskTracker;
+class Profile;
 class ProfileInfoCache;
 
 namespace chrome {
@@ -72,6 +73,8 @@ class MessageCenterSettingsController
 
   void OnFaviconLoaded(const GURL& url,
                        const chrome::FaviconImageResult& favicon_result);
+
+  Profile* GetCurrentProfile();
 
   void RebuildNotifierGroups();
 
