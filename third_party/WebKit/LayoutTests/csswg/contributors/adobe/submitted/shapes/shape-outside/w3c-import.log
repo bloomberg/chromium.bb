@@ -8,14 +8,12 @@ Then run the Tools/Scripts/import-w3c-tests in Webkit to reimport
 Do NOT modify or remove this file
 
 ------------------------------------------------------------------------
-Last Import: 2013-09-27 16:59
+Last Import: 2013-10-24 13:35
 W3C Mercurial changeset: Not Available
 Test status at time of import: unknown
 ------------------------------------------------------------------------
 Properties requiring vendor prefixes:
-shape-outside
 writing-mode
-shape-margin
 ------------------------------------------------------------------------
 List of files:
 /LayoutTests/csswg/contributors/adobe/submitted/shapes/shape-outside/shape-outside-floats-circle-000-expected.html
