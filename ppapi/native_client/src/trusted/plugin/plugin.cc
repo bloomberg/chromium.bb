@@ -29,28 +29,14 @@
 #include "native_client/src/trusted/nonnacl_util/sel_ldr_launcher.h"
 #include "native_client/src/trusted/service_runtime/nacl_error_code.h"
 
-#include "ppapi/c/dev/ppp_find_dev.h"
-#include "ppapi/c/dev/ppp_printing_dev.h"
-#include "ppapi/c/dev/ppp_selection_dev.h"
-#include "ppapi/c/dev/ppp_zoom_dev.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb_console.h"
 #include "ppapi/c/ppb_var.h"
-#include "ppapi/c/ppp_input_event.h"
 #include "ppapi/c/ppp_instance.h"
-#include "ppapi/c/ppp_mouse_lock.h"
 #include "ppapi/c/private/ppb_nacl_private.h"
 #include "ppapi/c/private/ppb_uma_private.h"
-#include "ppapi/cpp/dev/find_dev.h"
-#include "ppapi/cpp/dev/printing_dev.h"
-#include "ppapi/cpp/dev/selection_dev.h"
 #include "ppapi/cpp/dev/url_util_dev.h"
-#include "ppapi/cpp/dev/zoom_dev.h"
-#include "ppapi/cpp/image_data.h"
-#include "ppapi/cpp/input_event.h"
 #include "ppapi/cpp/module.h"
-#include "ppapi/cpp/mouse_lock.h"
-#include "ppapi/cpp/rect.h"
 #include "ppapi/cpp/text_input_controller.h"
 
 #include "ppapi/native_client/src/trusted/plugin/file_utils.h"
@@ -300,11 +286,12 @@ void Plugin::GetLastError(NaClSrpcArg* prop_value) {
 void Plugin::GetReadyStateProperty(NaClSrpcArg* prop_value) {
   PLUGIN_PRINTF(("GetReadyState (this=%p)\n", reinterpret_cast<void*>(this)));
   prop_value->tag = NACL_SRPC_ARG_TYPE_INT;
-  prop_value->u.ival = nacl_ready_state();
+  prop_value->u.ival = nacl_ready_state_;
 }
 
-bool Plugin::Init(int argc, char* argn[], char* argv[]) {
-  PLUGIN_PRINTF(("Plugin::Init (instance=%p)\n", static_cast<void*>(this)));
+bool Plugin::EarlyInit(int argc, const char* argn[], const char* argv[]) {
+  PLUGIN_PRINTF(("Plugin::EarlyInit (instance=%p)\n",
+                 static_cast<void*>(this)));
 
 #ifdef NACL_OSX
   // TODO(kochi): For crbug.com/102808, this is a stopgap solution for Lion
@@ -563,10 +550,10 @@ NaClSubprocess* Plugin::LoadHelperNaClModule(nacl::DescWrapper* wrapper,
 }
 
 char* Plugin::LookupArgument(const char* key) {
-  char** keys = argn();
-  for (int ii = 0, len = argc(); ii < len; ++ii) {
+  char** keys = argn_;
+  for (int ii = 0, len = argc_; ii < len; ++ii) {
     if (!strcmp(keys[ii], key)) {
-      return argv()[ii];
+      return argv_[ii];
     }
   }
   return NULL;
@@ -632,9 +619,6 @@ Plugin* Plugin::New(PP_Instance pp_instance) {
   PLUGIN_PRINTF(("Plugin::New (pp_instance=%" NACL_PRId32 ")\n", pp_instance));
   Plugin* plugin = new Plugin(pp_instance);
   PLUGIN_PRINTF(("Plugin::New (plugin=%p)\n", static_cast<void*>(plugin)));
-  if (plugin == NULL) {
-    return NULL;
-  }
   return plugin;
 }
 
@@ -661,12 +645,7 @@ bool Plugin::Init(uint32_t argc, const char* argn[], const char* argv[]) {
   PLUGIN_PRINTF(("Plugin::Init (url_util_=%p)\n",
                  static_cast<const void*>(url_util_)));
 
-  bool status = Plugin::Init(
-      static_cast<int>(argc),
-      // TODO(polina): Can we change the args on our end to be const to
-      // avoid these ugly casts?
-      const_cast<char**>(argn),
-      const_cast<char**>(argv));
+  bool status = EarlyInit(static_cast<int>(argc), argn, argv);
   if (status) {
     // Look for the developer attribute; if it's present, enable 'dev'
     // interfaces.
@@ -988,7 +967,7 @@ void Plugin::NexeDidCrash(int32_t pp_error) {
     PLUGIN_PRINTF(("Plugin::NexeDidCrash: error already reported;"
                    " suppressing\n"));
   } else {
-    if (nacl_ready_state() == DONE) {
+    if (nacl_ready_state_ == DONE) {
       ReportDeadNexe();
     } else {
       ErrorInfo error_info;
@@ -1055,7 +1034,7 @@ void Plugin::BitcodeDidTranslateContinuation(int32_t pp_error) {
 void Plugin::ReportDeadNexe() {
   PLUGIN_PRINTF(("Plugin::ReportDeadNexe\n"));
 
-  if (nacl_ready_state() == DONE && !nexe_error_reported()) {  // After loadEnd.
+  if (nacl_ready_state_ == DONE && !nexe_error_reported()) {  // After loadEnd.
     int64_t crash_time = NaClGetTimeOfDayMicroseconds();
     // Crashes will be more likely near startup, so use a medium histogram
     // instead of a large one.
@@ -1199,7 +1178,7 @@ void Plugin::ProcessNaClManifest(const nacl::string& manifest_json) {
 
   if (manifest_->GetProgramURL(&program_url, &pnacl_options, &error_info)) {
     is_installed_ = GetUrlScheme(program_url) == SCHEME_CHROME_EXTENSION;
-    set_nacl_ready_state(LOADING);
+    nacl_ready_state_ = LOADING;
     // Inform JavaScript that we found a nexe URL to load.
     EnqueueProgressEvent(kProgressEventProgress);
     if (pnacl_options.translate()) {
@@ -1259,7 +1238,7 @@ void Plugin::RequestNaClManifest(const nacl::string& url) {
   set_manifest_base_url(nmf_resolved_url.AsString());
   set_manifest_url(url);
   // Inform JavaScript that a load is starting.
-  set_nacl_ready_state(OPENED);
+  nacl_ready_state_ = OPENED;
   EnqueueProgressEvent(kProgressEventLoadStart);
   bool is_data_uri = GetUrlScheme(nmf_resolved_url.AsString()) == SCHEME_DATA;
   HistogramEnumerateManifestIsDataURI(static_cast<int>(is_data_uri));
@@ -1378,7 +1357,7 @@ void Plugin::ReportLoadSuccess(LengthComputable length_computable,
                                uint64_t loaded_bytes,
                                uint64_t total_bytes) {
   // Set the readyState attribute to indicate loaded.
-  set_nacl_ready_state(DONE);
+  nacl_ready_state_ = DONE;
   // Inform JavaScript that loading was successful and is complete.
   const nacl::string& url = nexe_downloader_.url_to_open();
   EnqueueProgressEvent(
@@ -1405,7 +1384,7 @@ void Plugin::ReportLoadError(const ErrorInfo& error_info) {
   }
 
   // Set the readyState attribute to indicate we need to start over.
-  set_nacl_ready_state(DONE);
+  nacl_ready_state_ = DONE;
   set_nexe_error_reported(true);
   // Report an error in lastError and on the JavaScript console.
   nacl::string message = nacl::string("NaCl module load failed: ") +
@@ -1425,7 +1404,7 @@ void Plugin::ReportLoadError(const ErrorInfo& error_info) {
 void Plugin::ReportLoadAbort() {
   PLUGIN_PRINTF(("Plugin::ReportLoadAbort\n"));
   // Set the readyState attribute to indicate we need to start over.
-  set_nacl_ready_state(DONE);
+  nacl_ready_state_ = DONE;
   set_nexe_error_reported(true);
   // Report an error in lastError and on the JavaScript console.
   nacl::string error_string("NaCl module load failed: user aborted");
