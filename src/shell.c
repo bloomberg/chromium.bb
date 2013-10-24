@@ -207,7 +207,7 @@ struct shell_surface {
 	int32_t saved_x, saved_y;
 	bool saved_position_valid;
 	bool saved_rotation_valid;
-	int unresponsive;
+	int unresponsive, grabbed;
 
 	struct {
 		struct weston_transform transform;
@@ -375,6 +375,7 @@ shell_grab_start(struct shell_grab *grab,
 	wl_signal_add(&shsurf->destroy_signal,
 		      &grab->shsurf_destroy_listener);
 
+	shsurf->grabbed = 1;
 	weston_pointer_start_grab(pointer, &grab->grab);
 	if (shell->child.desktop_shell) {
 		desktop_shell_send_grab_cursor(shell->child.desktop_shell,
@@ -389,8 +390,10 @@ shell_grab_start(struct shell_grab *grab,
 static void
 shell_grab_end(struct shell_grab *grab)
 {
-	if (grab->shsurf)
+	if (grab->shsurf) {
 		wl_list_remove(&grab->shsurf_destroy_listener.link);
+		grab->shsurf->grabbed = 0;
+	}
 
 	weston_pointer_end_grab(grab->grab.pointer);
 }
@@ -410,6 +413,7 @@ shell_touch_grab_start(struct shell_touch_grab *grab,
 		      &grab->shsurf_destroy_listener);
 
 	grab->touch = touch;
+	shsurf->grabbed = 1;
 
 	weston_touch_start_grab(touch, &grab->grab);
 	if (shell->child.desktop_shell)
@@ -420,8 +424,10 @@ shell_touch_grab_start(struct shell_touch_grab *grab,
 static void
 shell_touch_grab_end(struct shell_touch_grab *grab)
 {
-	if (grab->shsurf)
+	if (grab->shsurf) {
 		wl_list_remove(&grab->shsurf_destroy_listener.link);
+		grab->shsurf->grabbed = 0;
+	}
 
 	weston_touch_end_grab(grab->touch);
 }
@@ -1170,6 +1176,8 @@ surface_touch_move(struct shell_surface *shsurf, struct weston_seat *seat)
 
 	if (shsurf->type == SHELL_SURFACE_FULLSCREEN)
 		return 0;
+	if (shsurf->grabbed)
+		return 0;
 
 	move = malloc(sizeof *move);
 	if (!move)
@@ -1240,6 +1248,8 @@ surface_move(struct shell_surface *shsurf, struct weston_seat *seat)
 	if (!shsurf)
 		return -1;
 
+	if (shsurf->grabbed)
+		return 0;
 	if (shsurf->type == SHELL_SURFACE_FULLSCREEN)
 		return 0;
 
