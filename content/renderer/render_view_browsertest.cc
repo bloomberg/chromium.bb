@@ -1991,7 +1991,14 @@ class SuppressErrorPageTest : public RenderViewTest {
   TestContentRendererClient client_;
 };
 
-TEST_F(SuppressErrorPageTest, Suppresses) {
+#if defined(OS_ANDROID)
+// Crashing on Android: http://crbug.com/311341
+#define MAYBE_Suppresses DISABLED_Suppresses
+#else
+#define MAYBE_Suppresses Suppresses
+#endif
+
+TEST_F(SuppressErrorPageTest, MAYBE_Suppresses) {
   WebURLError error;
   error.domain = WebString::fromUTF8(net::kErrorDomain);
   error.reason = net::ERR_FILE_NOT_FOUND;
@@ -2012,7 +2019,14 @@ TEST_F(SuppressErrorPageTest, Suppresses) {
   EXPECT_EQ("", UTF16ToASCII(web_frame->contentAsText(kMaxOutputCharacters)));
 }
 
-TEST_F(SuppressErrorPageTest, DoesNotSuppress) {
+#if defined(OS_ANDROID)
+// Crashing on Android: http://crbug.com/311341
+#define MAYBE_DoesNotSuppress DISABLED_DoesNotSuppress
+#else
+#define MAYBE_DoesNotSuppress DoesNotSuppress
+#endif
+
+TEST_F(SuppressErrorPageTest, MAYBE_DoesNotSuppress) {
   WebURLError error;
   error.domain = WebString::fromUTF8(net::kErrorDomain);
   error.reason = net::ERR_FILE_NOT_FOUND;
