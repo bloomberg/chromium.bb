@@ -40,6 +40,8 @@ bool NudgeTracker::IsSyncRequired() const {
 }
 
 bool NudgeTracker::IsGetUpdatesRequired() const {
+  if (invalidations_out_of_sync_)
+    return true;
   for (TypeTrackerMap::const_iterator it = type_trackers_.begin();
        it != type_trackers_.end(); ++it) {
     if (it->second.IsGetUpdatesRequired()) {
