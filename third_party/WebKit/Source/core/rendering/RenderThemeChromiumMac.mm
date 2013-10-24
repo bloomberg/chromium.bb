@@ -31,7 +31,6 @@
 #import "core/html/HTMLInputElement.h"
 #import "core/html/HTMLMediaElement.h"
 #import "core/html/HTMLMeterElement.h"
-#import "core/html/HTMLPlugInImageElement.h"
 #import "core/html/TimeRanges.h"
 #import "core/html/shadow/MediaControlElements.h"
 #import "core/frame/FrameView.h"

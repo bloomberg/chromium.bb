@@ -73,9 +73,6 @@ public:
     bool canProcessDrag() const;
 
     virtual bool willRespondToMouseClickEvents() OVERRIDE;
-
-    virtual bool isPlugInImageElement() const { return false; }
-
     virtual void removeAllEventListeners() OVERRIDE FINAL;
 
     const String& serviceType() const { return m_serviceType; }

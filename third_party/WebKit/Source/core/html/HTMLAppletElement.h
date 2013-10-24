@@ -23,11 +23,11 @@
 #ifndef HTMLAppletElement_h
 #define HTMLAppletElement_h
 
-#include "core/html/HTMLPlugInImageElement.h"
+#include "core/html/HTMLPlugInElement.h"
 
 namespace WebCore {
 
-class HTMLAppletElement FINAL : public HTMLPlugInImageElement {
+class HTMLAppletElement FINAL : public HTMLPlugInElement {
 public:
     static PassRefPtr<HTMLAppletElement> create(const QualifiedName&, Document&, bool createdByParser);
 

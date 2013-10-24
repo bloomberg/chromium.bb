@@ -54,7 +54,7 @@
 #include "core/html/HTMLFormElement.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLMediaElement.h"
-#include "core/html/HTMLPlugInImageElement.h"
+#include "core/html/HTMLPlugInElement.h"
 #include "core/html/HTMLVideoElement.h"
 #include "core/html/MediaError.h"
 #include "core/loader/DocumentLoader.h"
@@ -262,7 +262,7 @@ void ContextMenuClientImpl::showContextMenu(const WebCore::ContextMenu* defaultM
                 if (plugin->plugin()->supportsPaginatedPrint())
                     data.mediaFlags |= WebContextMenuData::MediaCanPrint;
 
-                HTMLPlugInImageElement* pluginElement = toHTMLPlugInImageElement(r.innerNonSharedNode());
+                HTMLPlugInElement* pluginElement = toHTMLPlugInElement(r.innerNonSharedNode());
                 data.srcURL = pluginElement->document().completeURL(pluginElement->url());
                 data.mediaFlags |= WebContextMenuData::MediaCanSave;
 

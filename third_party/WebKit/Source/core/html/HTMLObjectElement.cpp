@@ -49,7 +49,7 @@ namespace WebCore {
 using namespace HTMLNames;
 
 inline HTMLObjectElement::HTMLObjectElement(const QualifiedName& tagName, Document& document, HTMLFormElement* form, bool createdByParser)
-    : HTMLPlugInImageElement(tagName, document, createdByParser, ShouldNotPreferPlugInsForImages)
+    : HTMLPlugInElement(tagName, document, createdByParser, ShouldNotPreferPlugInsForImages)
     , m_docNamedItem(true)
     , m_useFallbackContent(false)
 {
@@ -77,7 +77,7 @@ bool HTMLObjectElement::isPresentationAttribute(const QualifiedName& name) const
 {
     if (name == borderAttr)
         return true;
-    return HTMLPlugInImageElement::isPresentationAttribute(name);
+    return HTMLPlugInElement::isPresentationAttribute(name);
 }
 
 void HTMLObjectElement::collectStyleForPresentationAttribute(const QualifiedName& name, const AtomicString& value, MutableStylePropertySet* style)
@@ -85,7 +85,7 @@ void HTMLObjectElement::collectStyleForPresentationAttribute(const QualifiedName
     if (name == borderAttr)
         applyBorderAttributeToStyle(value, style);
     else
-        HTMLPlugInImageElement::collectStyleForPresentationAttribute(name, value, style);
+        HTMLPlugInElement::collectStyleForPresentationAttribute(name, value, style);
 }
 
 void HTMLObjectElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
@@ -113,10 +113,11 @@ void HTMLObjectElement::parseAttribute(const QualifiedName& name, const AtomicSt
         m_classId = value;
         if (renderer())
             setNeedsWidgetUpdate(true);
-    } else if (name == onbeforeloadAttr)
+    } else if (name == onbeforeloadAttr) {
         setAttributeEventListener(EventTypeNames::beforeload, createAttributeEventListener(this, name, value));
-    else
-        HTMLPlugInImageElement::parseAttribute(name, value);
+    } else {
+        HTMLPlugInElement::parseAttribute(name, value);
+    }
 }
 
 static void mapDataParamToSrc(Vector<String>* paramNames, Vector<String>* paramValues)
@@ -261,7 +262,7 @@ bool HTMLObjectElement::hasValidClassId()
 }
 
 // FIXME: This should be unified with HTMLEmbedElement::updateWidget and
-// moved down into HTMLPluginImageElement.cpp
+// moved down into HTMLPluginElement.cpp
 void HTMLObjectElement::updateWidget(PluginCreationOption pluginCreationOption)
 {
     ASSERT(!renderEmbeddedObject()->showsUnavailablePluginIndicator());
@@ -314,23 +315,21 @@ void HTMLObjectElement::updateWidget(PluginCreationOption pluginCreationOption)
 bool HTMLObjectElement::rendererIsNeeded(const RenderStyle& style)
 {
     // FIXME: This check should not be needed, detached documents never render!
-    Frame* frame = document().frame();
-    if (!frame)
+    if (!document().frame())
         return false;
-
-    return HTMLPlugInImageElement::rendererIsNeeded(style);
+    return HTMLPlugInElement::rendererIsNeeded(style);
 }
 
 Node::InsertionNotificationRequest HTMLObjectElement::insertedInto(ContainerNode* insertionPoint)
 {
-    HTMLPlugInImageElement::insertedInto(insertionPoint);
+    HTMLPlugInElement::insertedInto(insertionPoint);
     FormAssociatedElement::insertedInto(insertionPoint);
     return InsertionDone;
 }
 
 void HTMLObjectElement::removedFrom(ContainerNode* insertionPoint)
 {
-    HTMLPlugInImageElement::removedFrom(insertionPoint);
+    HTMLPlugInElement::removedFrom(insertionPoint);
     FormAssociatedElement::removedFrom(insertionPoint);
 }
 
@@ -341,12 +340,12 @@ void HTMLObjectElement::childrenChanged(bool changedByParser, Node* beforeChange
         setNeedsWidgetUpdate(true);
         setNeedsStyleRecalc();
     }
-    HTMLPlugInImageElement::childrenChanged(changedByParser, beforeChange, afterChange, childCountDelta);
+    HTMLPlugInElement::childrenChanged(changedByParser, beforeChange, afterChange, childCountDelta);
 }
 
 bool HTMLObjectElement::isURLAttribute(const Attribute& attribute) const
 {
-    return attribute.name() == dataAttr || (attribute.name() == usemapAttr && attribute.value().string()[0] != '#') || HTMLPlugInImageElement::isURLAttribute(attribute);
+    return attribute.name() == dataAttr || (attribute.name() == usemapAttr && attribute.value().string()[0] != '#') || HTMLPlugInElement::isURLAttribute(attribute);
 }
 
 const AtomicString HTMLObjectElement::imageSourceURL() const
@@ -470,7 +469,7 @@ bool HTMLObjectElement::containsJavaApplet() const
 
 void HTMLObjectElement::addSubresourceAttributeURLs(ListHashSet<KURL>& urls) const
 {
-    HTMLPlugInImageElement::addSubresourceAttributeURLs(urls);
+    HTMLPlugInElement::addSubresourceAttributeURLs(urls);
 
     addSubresourceURL(urls, document().completeURL(getAttribute(dataAttr)));
 
@@ -484,7 +483,7 @@ void HTMLObjectElement::addSubresourceAttributeURLs(ListHashSet<KURL>& urls) con
 void HTMLObjectElement::didMoveToNewDocument(Document& oldDocument)
 {
     FormAssociatedElement::didMoveToNewDocument(oldDocument);
-    HTMLPlugInImageElement::didMoveToNewDocument(oldDocument);
+    HTMLPlugInElement::didMoveToNewDocument(oldDocument);
 }
 
 bool HTMLObjectElement::appendFormData(FormDataList& encoding, bool)

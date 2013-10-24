@@ -40,7 +40,7 @@
 #include "core/fetch/TextResourceDecoder.h"
 #include "core/html/HTMLFrameElement.h"
 #include "core/html/HTMLHtmlElement.h"
-#include "core/html/HTMLPlugInImageElement.h"
+#include "core/html/HTMLPlugInElement.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
@@ -1166,10 +1166,8 @@ void FrameView::addWidgetToUpdate(RenderObject* object)
 
     // Tell the DOM element that it needs a widget update.
     Node* node = object->node();
-    if (node->hasTagName(objectTag) || node->hasTagName(embedTag)) {
-        HTMLPlugInImageElement* pluginElement = toHTMLPlugInImageElement(node);
-        pluginElement->setNeedsWidgetUpdate(true);
-    }
+    if (node->hasTagName(objectTag) || node->hasTagName(embedTag))
+        toHTMLPlugInElement(node)->setNeedsWidgetUpdate(true);
 
     m_widgetUpdateSet->add(object);
 }
@@ -2165,12 +2163,13 @@ void FrameView::updateWidget(RenderObject* object)
 
         // FIXME: This could turn into a real virtual dispatch if we defined
         // updateWidget(PluginCreationOption) on HTMLElement.
-        if (ownerElement->hasTagName(objectTag) || ownerElement->hasTagName(embedTag) || ownerElement->hasTagName(appletTag)) {
-            HTMLPlugInImageElement* pluginElement = toHTMLPlugInImageElement(ownerElement);
+        if (ownerElement->isPluginElement()) {
+            HTMLPlugInElement* pluginElement = toHTMLPlugInElement(ownerElement);
             if (pluginElement->needsWidgetUpdate())
                 pluginElement->updateWidget(CreateAnyWidgetType);
-        } else
+        } else {
             ASSERT_NOT_REACHED();
+        }
 
         // Caution: it's possible the object was destroyed again, since loading a
         // plugin may run any arbitrary JavaScript.

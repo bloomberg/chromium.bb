@@ -39,7 +39,7 @@ namespace WebCore {
 using namespace HTMLNames;
 
 inline HTMLEmbedElement::HTMLEmbedElement(const QualifiedName& tagName, Document& document, bool createdByParser)
-    : HTMLPlugInImageElement(tagName, document, createdByParser, ShouldPreferPlugInsForImages)
+    : HTMLPlugInElement(tagName, document, createdByParser, ShouldPreferPlugInsForImages)
 {
     ASSERT(hasTagName(embedTag));
     ScriptWrappable::init(this);
@@ -77,7 +77,7 @@ bool HTMLEmbedElement::isPresentationAttribute(const QualifiedName& name) const
 {
     if (name == hiddenAttr)
         return true;
-    return HTMLPlugInImageElement::isPresentationAttribute(name);
+    return HTMLPlugInElement::isPresentationAttribute(name);
 }
 
 void HTMLEmbedElement::collectStyleForPresentationAttribute(const QualifiedName& name, const AtomicString& value, MutableStylePropertySet* style)
@@ -87,8 +87,9 @@ void HTMLEmbedElement::collectStyleForPresentationAttribute(const QualifiedName&
             addPropertyToPresentationAttributeStyle(style, CSSPropertyWidth, 0, CSSPrimitiveValue::CSS_PX);
             addPropertyToPresentationAttributeStyle(style, CSSPropertyHeight, 0, CSSPrimitiveValue::CSS_PX);
         }
-    } else
-        HTMLPlugInImageElement::collectStyleForPresentationAttribute(name, value, style);
+    } else {
+        HTMLPlugInElement::collectStyleForPresentationAttribute(name, value, style);
+    }
 }
 
 void HTMLEmbedElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
@@ -98,17 +99,18 @@ void HTMLEmbedElement::parseAttribute(const QualifiedName& name, const AtomicStr
         size_t pos = m_serviceType.find(";");
         if (pos != kNotFound)
             m_serviceType = m_serviceType.left(pos);
-    } else if (name == codeAttr)
+    } else if (name == codeAttr) {
         m_url = stripLeadingAndTrailingHTMLSpaces(value);
-    else if (name == srcAttr) {
+    } else if (name == srcAttr) {
         m_url = stripLeadingAndTrailingHTMLSpaces(value);
         if (renderer() && isImageType()) {
             if (!m_imageLoader)
                 m_imageLoader = adoptPtr(new HTMLImageLoader(this));
             m_imageLoader->updateFromElementIgnoringPreviousError();
         }
-    } else
-        HTMLPlugInImageElement::parseAttribute(name, value);
+    } else {
+        HTMLPlugInElement::parseAttribute(name, value);
+    }
 }
 
 void HTMLEmbedElement::parametersForPlugin(Vector<String>& paramNames, Vector<String>& paramValues)
@@ -124,7 +126,7 @@ void HTMLEmbedElement::parametersForPlugin(Vector<String>& paramNames, Vector<St
 }
 
 // FIXME: This should be unified with HTMLObjectElement::updateWidget and
-// moved down into HTMLPluginImageElement.cpp
+// moved down into HTMLPluginElement.cpp
 void HTMLEmbedElement::updateWidget(PluginCreationOption pluginCreationOption)
 {
     ASSERT(!renderEmbeddedObject()->showsUnavailablePluginIndicator());
@@ -174,7 +176,7 @@ void HTMLEmbedElement::updateWidget(PluginCreationOption pluginCreationOption)
 bool HTMLEmbedElement::rendererIsNeeded(const RenderStyle& style)
 {
     if (isImageType())
-        return HTMLPlugInImageElement::rendererIsNeeded(style);
+        return HTMLPlugInElement::rendererIsNeeded(style);
 
     Frame* frame = document().frame();
     if (!frame)
@@ -190,12 +192,12 @@ bool HTMLEmbedElement::rendererIsNeeded(const RenderStyle& style)
             return false;
         }
     }
-    return HTMLPlugInImageElement::rendererIsNeeded(style);
+    return HTMLPlugInElement::rendererIsNeeded(style);
 }
 
 bool HTMLEmbedElement::isURLAttribute(const Attribute& attribute) const
 {
-    return attribute.name() == srcAttr || HTMLPlugInImageElement::isURLAttribute(attribute);
+    return attribute.name() == srcAttr || HTMLPlugInElement::isURLAttribute(attribute);
 }
 
 const AtomicString HTMLEmbedElement::imageSourceURL() const
@@ -205,7 +207,7 @@ const AtomicString HTMLEmbedElement::imageSourceURL() const
 
 void HTMLEmbedElement::addSubresourceAttributeURLs(ListHashSet<KURL>& urls) const
 {
-    HTMLPlugInImageElement::addSubresourceAttributeURLs(urls);
+    HTMLPlugInElement::addSubresourceAttributeURLs(urls);
 
     addSubresourceURL(urls, document().completeURL(getAttribute(srcAttr)));
 }

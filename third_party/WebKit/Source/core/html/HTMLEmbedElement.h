@@ -23,11 +23,11 @@
 #ifndef HTMLEmbedElement_h
 #define HTMLEmbedElement_h
 
-#include "core/html/HTMLPlugInImageElement.h"
+#include "core/html/HTMLPlugInElement.h"
 
 namespace WebCore {
 
-class HTMLEmbedElement FINAL : public HTMLPlugInImageElement {
+class HTMLEmbedElement FINAL : public HTMLPlugInElement {
 public:
     static PassRefPtr<HTMLEmbedElement> create(Document&);
     static PassRefPtr<HTMLEmbedElement> create(const QualifiedName&, Document&, bool createdByParser);

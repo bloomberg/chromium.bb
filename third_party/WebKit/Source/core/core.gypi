@@ -2239,7 +2239,7 @@
             'html/HTMLParamElement.cpp',
             'html/HTMLParamElement.h',
             'html/HTMLPlugInElement.cpp',
-            'html/HTMLPlugInImageElement.cpp',
+            'html/HTMLPlugInElement.h',
             'html/HTMLPreElement.cpp',
             'html/HTMLPreElement.h',
             'html/HTMLProgressElement.cpp',

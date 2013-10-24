@@ -40,7 +40,7 @@ namespace WebCore {
 using namespace HTMLNames;
 
 HTMLAppletElement::HTMLAppletElement(const QualifiedName& tagName, Document& document, bool createdByParser)
-    : HTMLPlugInImageElement(tagName, document, createdByParser, ShouldNotPreferPlugInsForImages)
+    : HTMLPlugInElement(tagName, document, createdByParser, ShouldNotPreferPlugInsForImages)
 {
     ASSERT(hasTagName(appletTag));
     ScriptWrappable::init(this);
@@ -65,14 +65,14 @@ void HTMLAppletElement::parseAttribute(const QualifiedName& name, const AtomicSt
         return;
     }
 
-    HTMLPlugInImageElement::parseAttribute(name, value);
+    HTMLPlugInElement::parseAttribute(name, value);
 }
 
 bool HTMLAppletElement::rendererIsNeeded(const RenderStyle& style)
 {
     if (!fastHasAttribute(codeAttr))
         return false;
-    return HTMLPlugInImageElement::rendererIsNeeded(style);
+    return HTMLPlugInElement::rendererIsNeeded(style);
 }
 
 RenderObject* HTMLAppletElement::createRenderer(RenderStyle* style)
@@ -87,7 +87,7 @@ RenderWidget* HTMLAppletElement::renderWidgetForJSBindings() const
 {
     if (!canEmbedJava())
         return 0;
-    return HTMLPlugInImageElement::renderWidgetForJSBindings();
+    return HTMLPlugInElement::renderWidgetForJSBindings();
 }
 
 RenderWidget* HTMLAppletElement::existingRenderWidget() const
