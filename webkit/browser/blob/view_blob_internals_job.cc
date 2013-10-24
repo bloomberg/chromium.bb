@@ -24,7 +24,6 @@
 namespace {
 
 const char kEmptyBlobStorageMessage[] = "No available blob data.";
-const char kRemove[] = "Remove";
 const char kContentType[] = "Content Type: ";
 const char kContentDisposition[] = "Content Disposition: ";
 const char kCount[] = "Count: ";

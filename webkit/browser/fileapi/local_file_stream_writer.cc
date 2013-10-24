@@ -84,9 +84,9 @@ LocalFileStreamWriter::LocalFileStreamWriter(base::TaskRunner* task_runner,
                                              int64 initial_offset)
     : file_path_(file_path),
       initial_offset_(initial_offset),
+      task_runner_(task_runner),
       has_pending_operation_(false),
-      weak_factory_(this),
-      task_runner_(task_runner) {}
+      weak_factory_(this) {}
 
 int LocalFileStreamWriter::InitiateOpen(
     const net::CompletionCallback& error_callback,

@@ -805,8 +805,8 @@ QuotaManager::QuotaManager(bool is_incognito,
     temporary_quota_override_(-1),
     desired_available_space_(-1),
     special_storage_policy_(special_storage_policy),
-    weak_factory_(this),
-    get_disk_space_fn_(&CallSystemGetAmountOfFreeDiskSpace) {
+    get_disk_space_fn_(&CallSystemGetAmountOfFreeDiskSpace),
+    weak_factory_(this) {
 }
 
 void QuotaManager::GetUsageInfo(const GetUsageInfoCallback& callback) {
