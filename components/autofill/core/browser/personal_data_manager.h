@@ -181,6 +181,11 @@ class PersonalDataManager : public WebDataServiceConsumer,
       const std::string& app_locale,
       std::vector<AutofillProfile>* merged_profiles);
 
+  // Returns our best guess for the country a user is likely to use when
+  // inputting a new address. The value is calculated once and cached, so it
+  // will only update when Chrome is restarted.
+  const std::string& GetDefaultCountryCodeForNewAddress();
+
  protected:
   // Only PersonalDataManagerFactory and certain tests can create instances of
   // PersonalDataManager.
@@ -282,7 +287,14 @@ class PersonalDataManager : public WebDataServiceConsumer,
   ObserverList<PersonalDataManagerObserver> observers_;
 
  private:
+  // Finds the country code that occurs most frequently among all profiles.
+  // Prefers verified profiles over unverified ones.
+  std::string MostCommonCountryCodeFromProfiles();
+
   const std::string app_locale_;
+
+  // The default country code for new addresses.
+  std::string default_country_code_;
 
   // For logging UMA metrics. Overridden by metrics tests.
   scoped_ptr<const AutofillMetrics> metric_logger_;
