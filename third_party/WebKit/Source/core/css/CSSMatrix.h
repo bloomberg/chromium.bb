@@ -46,8 +46,6 @@ public:
         return adoptRef(new CSSMatrix(s, es));
     }
 
-    virtual ~CSSMatrix();
-
     double a() const { return m_matrix.a(); }
     double b() const { return m_matrix.b(); }
     double c() const { return m_matrix.c(); }

@@ -41,8 +41,6 @@ class ExceptionState;
 
 class CSSVariablesMap : public RefCounted<CSSVariablesMap> {
 public:
-    virtual ~CSSVariablesMap() { }
-
     static PassRefPtr<CSSVariablesMap> create(CSSStyleDeclaration* styleDeclaration)
     {
         return adoptRef(new CSSVariablesMap(styleDeclaration));

@@ -49,10 +49,6 @@ CSSMatrix::CSSMatrix(const String& s, ExceptionState& es)
     setMatrixValue(s, es);
 }
 
-CSSMatrix::~CSSMatrix()
-{
-}
-
 void CSSMatrix::setMatrixValue(const String& string, ExceptionState& es)
 {
     if (string.isEmpty())
