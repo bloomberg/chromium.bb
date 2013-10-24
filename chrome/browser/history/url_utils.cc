@@ -68,4 +68,19 @@ bool IsPathPrefix(const std::string& p1, const std::string& p2) {
   return *(first_diff.second) == '/';
 }
 
+GURL ToggleHTTPAndHTTPS(const GURL& url) {
+  std::string new_scheme;
+  if (url.SchemeIs("http"))
+    new_scheme = "https";
+  else if (url.SchemeIs("https"))
+    new_scheme = "http";
+  else
+    return GURL::EmptyGURL();
+  url_parse::Component comp;
+  comp.len = new_scheme.length();
+  GURL::Replacements replacement;
+  replacement.SetScheme(new_scheme.c_str(), comp);
+  return url.ReplaceComponents(replacement);
+}
+
 }  // namespace history

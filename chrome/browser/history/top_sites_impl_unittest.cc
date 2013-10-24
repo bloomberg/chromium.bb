@@ -512,7 +512,7 @@ TEST_F(TopSitesImplTest, GetPageThumbnail) {
   EXPECT_TRUE(top_sites()->GetPageThumbnail(url1.url, false, &result));
 
   EXPECT_TRUE(top_sites()->SetPageThumbnail(GURL("http://gmail.com"),
-                                           thumbnail, score));
+                                            thumbnail, score));
   EXPECT_TRUE(top_sites()->GetPageThumbnail(GURL("http://gmail.com"),
                                             false,
                                             &result));
@@ -522,7 +522,7 @@ TEST_F(TopSitesImplTest, GetPageThumbnail) {
                                             &result));
 
   EXPECT_TRUE(top_sites()->SetPageThumbnail(GURL("http://mail.google.com"),
-                                           thumbnail, score));
+                                            thumbnail, score));
   EXPECT_TRUE(top_sites()->GetPageThumbnail(url2.url, false, &result));
 
   EXPECT_TRUE(ThumbnailEqualsBytes(thumbnail, result.get()));

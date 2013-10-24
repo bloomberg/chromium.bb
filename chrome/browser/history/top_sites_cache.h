@@ -146,12 +146,12 @@ class TopSitesCache {
   // description above typedef for details.
   CanonicalURLs canonical_urls_;
 
-  // Helper to clear "?query#ref" from any GURL. This is set in the contrustor
+  // Helper to clear "?query#ref" from any GURL. This is set in the constructor
   // and never modified after.
   GURL::Replacements clear_query_ref_;
 
   // Helper to clear "/path?query#ref" from any GURL. This is set in the
-  // contrustor and never modified after.
+  // constructor and never modified after.
   GURL::Replacements clear_path_query_ref_;
 
   DISALLOW_COPY_AND_ASSIGN(TopSitesCache);

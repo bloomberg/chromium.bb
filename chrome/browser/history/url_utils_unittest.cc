@@ -116,6 +116,15 @@ TEST(HistoryUrlUtilsTest, IsPathPrefix) {
   }
 }
 
+TEST(HistoryUrlUtilsTest, ToggleHTTPAndHTTPS) {
+  EXPECT_EQ(GURL("http://www.google.com/test?q#r"),
+            ToggleHTTPAndHTTPS(GURL("https://www.google.com/test?q#r")));
+  EXPECT_EQ(GURL("https://www.google.com:137/"),
+            ToggleHTTPAndHTTPS(GURL("http://www.google.com:137/")));
+  EXPECT_EQ(GURL::EmptyGURL(),
+            ToggleHTTPAndHTTPS(GURL("ftp://www.google.com/")));
+}
+
 }  // namespace
 
 }  // namespace history

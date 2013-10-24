@@ -37,6 +37,10 @@ bool HaveSameSchemeHostAndPort(const GURL&url1, const GURL& url2);
 // prefix of "testing", even though "test" is a (string) prefix of "testing".
 bool IsPathPrefix(const std::string& p1, const std::string& p2);
 
+// Converts |url| from HTTP to HTTPS, and vice versa, then returns the result.
+// If |url| is neither HTTP nor HTTPS, returns an empty URL.
+GURL ToggleHTTPAndHTTPS(const GURL& url);
+
 }  // namespace history
 
 #endif  // CHROME_BROWSER_HISTORY_URL_UTILS_H_
