@@ -47,6 +47,7 @@ GLenum TextureToStorageFormat(ResourceFormat format) {
     case RGBA_4444:
     case LUMINANCE_8:
     case RGB_565:
+    case ETC1:
       NOTREACHED();
       break;
   }
@@ -62,6 +63,7 @@ bool IsFormatSupportedForStorage(ResourceFormat format) {
     case RGBA_4444:
     case LUMINANCE_8:
     case RGB_565:
+    case ETC1:
       return false;
   }
   return false;
@@ -838,6 +840,7 @@ bool ResourceProvider::InitializeGL() {
   use_texture_storage_ext_ = caps.texture_storage;
   use_shallow_flush_ = caps.shallow_flush;
   use_texture_usage_hint_ = caps.texture_usage;
+  use_compressed_texture_etc1_ = caps.texture_format_etc1;
 
   texture_uploader_ =
       TextureUploader::Create(context3d, use_map_sub, use_shallow_flush_);
@@ -1264,6 +1267,7 @@ void ResourceProvider::AcquirePixelBuffer(ResourceId id) {
   DCHECK(!resource->external);
   DCHECK_EQ(resource->exported_count, 0);
   DCHECK(!resource->image_id);
+  DCHECK_NE(ETC1, resource->format);
 
   if (resource->type == GLTexture) {
     WebGraphicsContext3D* context3d = Context3d();
@@ -1273,7 +1277,7 @@ void ResourceProvider::AcquirePixelBuffer(ResourceId id) {
     context3d->bindBuffer(
         GL_PIXEL_UNPACK_TRANSFER_BUFFER_CHROMIUM,
         resource->gl_pixel_buffer_id);
-    unsigned bytes_per_pixel = BytesPerPixel(resource->format);
+    unsigned bytes_per_pixel = BitsPerPixel(resource->format) / 8;
     context3d->bufferData(
         GL_PIXEL_UNPACK_TRANSFER_BUFFER_CHROMIUM,
         resource->size.height() * RoundUp(bytes_per_pixel
@@ -1596,15 +1600,19 @@ void ResourceProvider::LazyAllocate(Resource* resource) {
                                               size.width(),
                                               size.height()));
   } else {
-    GLC(context3d, context3d->texImage2D(GL_TEXTURE_2D,
-                                         0,
-                                         GLInternalFormat(format),
-                                         size.width(),
-                                         size.height(),
-                                         0,
-                                         GLDataFormat(format),
-                                         GLDataType(format),
-                                         NULL));
+    // ETC1 does not support preallocation.
+    if (format != ETC1) {
+      GLC(context3d,
+          context3d->texImage2D(GL_TEXTURE_2D,
+                                0,
+                                GLInternalFormat(format),
+                                size.width(),
+                                size.height(),
+                                0,
+                                GLDataFormat(format),
+                                GLDataType(format),
+                                NULL));
+    }
   }
 }
 

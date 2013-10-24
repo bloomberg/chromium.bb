@@ -3308,7 +3308,8 @@ TEST_F(LayerTreeHostImplViewportCoveredTest, ViewportCoveredOverhangBitmap) {
   skbitmap.setImmutable();
 
   // Specify an overhang bitmap to use.
-  UIResourceBitmap ui_resource_bitmap(skbitmap, UIResourceBitmap::REPEAT);
+  UIResourceBitmap ui_resource_bitmap(skbitmap);
+  ui_resource_bitmap.SetWrapMode(UIResourceBitmap::REPEAT);
   UIResourceId ui_resource_id = 12345;
   host_impl_->CreateUIResource(ui_resource_id, ui_resource_bitmap);
   host_impl_->SetOverhangUIResource(ui_resource_id, gfx::Size(32, 32));

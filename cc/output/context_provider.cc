@@ -21,6 +21,7 @@ ContextProvider::Capabilities::Capabilities()
       shallow_flush(false),
       swapbuffers_complete_callback(false),
       texture_format_bgra8888(false),
+      texture_format_etc1(false),
       texture_rectangle(false),
       texture_storage(false),
       texture_usage(false),

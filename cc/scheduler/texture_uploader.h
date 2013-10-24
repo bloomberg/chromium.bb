@@ -103,6 +103,7 @@ class CC_EXPORT TextureUploader {
                                 gfx::Rect source_rect,
                                 gfx::Vector2d dest_offset,
                                 ResourceFormat format);
+  void UploadWithTexImageETC1(const uint8* image, gfx::Size size);
 
   WebKit::WebGraphicsContext3D* context_;
   ScopedPtrDeque<Query> pending_queries_;

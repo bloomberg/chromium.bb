@@ -17,7 +17,8 @@ enum ResourceFormat {
   BGRA_8888,
   LUMINANCE_8,
   RGB_565,
-  RESOURCE_FORMAT_MAX = RGB_565,
+  ETC1,
+  RESOURCE_FORMAT_MAX = ETC1,
 };
 
 SkBitmap::Config SkBitmapConfig(ResourceFormat format);

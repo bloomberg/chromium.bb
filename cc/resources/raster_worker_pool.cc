@@ -140,6 +140,7 @@ class RasterWorkerPoolTaskImpl : public internal::RasterWorkerPoolTask {
         break;
       case LUMINANCE_8:
       case RGB_565:
+      case ETC1:
         NOTREACHED();
         break;
     }

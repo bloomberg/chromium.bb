@@ -24,7 +24,8 @@ namespace cc {
 class CC_EXPORT UIResourceBitmap {
  public:
   enum UIResourceFormat {
-    RGBA8
+    RGBA8,
+    ETC1
   };
   enum UIResourceWrapMode {
     CLAMP_TO_EDGE,
@@ -34,12 +35,16 @@ class CC_EXPORT UIResourceBitmap {
   gfx::Size GetSize() const { return size_; }
   UIResourceFormat GetFormat() const { return format_; }
   UIResourceWrapMode GetWrapMode() const { return wrap_mode_; }
+  void SetWrapMode(UIResourceWrapMode wrap_mode) { wrap_mode_ = wrap_mode; }
 
   // The constructor for the UIResourceBitmap.  User must ensure that |skbitmap|
   // is immutable.  The SkBitmap format should be in 32-bit RGBA.  Wrap mode is
   // unnecessary for most UI resources and is defaulted to CLAMP_TO_EDGE.
-  UIResourceBitmap(const SkBitmap& skbitmap,
-                   UIResourceWrapMode wrap_mode = CLAMP_TO_EDGE);
+  explicit UIResourceBitmap(const SkBitmap& skbitmap);
+
+  UIResourceBitmap(const skia::RefPtr<SkPixelRef>& pixel_ref,
+                   UIResourceFormat format,
+                   gfx::Size size);
 
   ~UIResourceBitmap();
 
@@ -47,7 +52,6 @@ class CC_EXPORT UIResourceBitmap {
   friend class AutoLockUIResourceBitmap;
   void Create(const skia::RefPtr<SkPixelRef>& pixel_ref,
               UIResourceFormat format,
-              UIResourceWrapMode wrap_mode,
               gfx::Size size);
 
   skia::RefPtr<SkPixelRef> pixel_ref_;

@@ -194,6 +194,9 @@ class CC_EXPORT TestWebGraphicsContext3D : public FakeWebGraphicsContext3D {
   void set_have_discard_framebuffer(bool have) {
     test_capabilities_.discard_framebuffer = have;
   }
+  void set_support_compressed_texture_etc1(bool support) {
+    test_capabilities_.texture_format_etc1 = support;
+  }
 
   // When this context is lost, all contexts in its share group are also lost.
   void add_share_group_context(WebKit::WebGraphicsContext3D* context3d) {

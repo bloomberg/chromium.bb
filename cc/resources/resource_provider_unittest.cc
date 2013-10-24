@@ -2408,6 +2408,15 @@ class AllocationTrackingContext3D : public TestWebGraphicsContext3D {
                     WGC3Denum format,
                     WGC3Denum type,
                     const void* pixels));
+  MOCK_METHOD8(compressedTexImage2D,
+               void(WGC3Denum target,
+                    WGC3Dint level,
+                    WGC3Denum internalformat,
+                    WGC3Dsizei width,
+                    WGC3Dsizei height,
+                    WGC3Dint border,
+                    WGC3Dsizei image_size,
+                    const void* data));
   MOCK_METHOD1(waitAsyncTexImage2DCHROMIUM, void(WGC3Denum));
   MOCK_METHOD3(createImageCHROMIUM, WGC3Duint(WGC3Dsizei, WGC3Dsizei,
                                               WGC3Denum));
@@ -2830,6 +2839,71 @@ TEST(ResourceProviderTest, BasicInitializeGLSoftware) {
   InitializeGLAndCheck(shared_data.get(),
                        resource_provider.get(),
                        output_surface.get());
+}
+
+TEST_P(ResourceProviderTest, CompressedTextureETC1Allocate) {
+  if (GetParam() != ResourceProvider::GLTexture)
+    return;
+
+  scoped_ptr<AllocationTrackingContext3D> context_owned(
+      new AllocationTrackingContext3D);
+  AllocationTrackingContext3D* context = context_owned.get();
+  context_owned->set_support_compressed_texture_etc1(true);
+
+  FakeOutputSurfaceClient output_surface_client;
+  scoped_ptr<OutputSurface> output_surface(FakeOutputSurface::Create3d(
+      context_owned.PassAs<TestWebGraphicsContext3D>()));
+  CHECK(output_surface->BindToClient(&output_surface_client));
+
+  gfx::Size size(4, 4);
+  scoped_ptr<ResourceProvider> resource_provider(ResourceProvider::Create(
+      output_surface.get(), shared_bitmap_manager_.get(), 0, false));
+  int texture_id = 123;
+
+  ResourceProvider::ResourceId id = resource_provider->CreateResource(
+      size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureUsageAny, ETC1);
+  EXPECT_NE(0u, id);
+  EXPECT_CALL(*context, createTexture()).WillOnce(Return(texture_id));
+  EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, texture_id)).Times(2);
+  resource_provider->AllocateForTesting(id);
+
+  EXPECT_CALL(*context, deleteTexture(texture_id)).Times(1);
+  resource_provider->DeleteResource(id);
+}
+
+TEST_P(ResourceProviderTest, CompressedTextureETC1SetPixels) {
+  if (GetParam() != ResourceProvider::GLTexture)
+    return;
+
+  scoped_ptr<AllocationTrackingContext3D> context_owned(
+      new AllocationTrackingContext3D);
+  AllocationTrackingContext3D* context = context_owned.get();
+  context_owned->set_support_compressed_texture_etc1(true);
+
+  FakeOutputSurfaceClient output_surface_client;
+  scoped_ptr<OutputSurface> output_surface(FakeOutputSurface::Create3d(
+      context_owned.PassAs<TestWebGraphicsContext3D>()));
+  CHECK(output_surface->BindToClient(&output_surface_client));
+
+  gfx::Size size(4, 4);
+  scoped_ptr<ResourceProvider> resource_provider(ResourceProvider::Create(
+      output_surface.get(), shared_bitmap_manager_.get(), 0, false));
+  int texture_id = 123;
+  uint8_t pixels[8];
+
+  ResourceProvider::ResourceId id = resource_provider->CreateResource(
+      size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureUsageAny, ETC1);
+  EXPECT_NE(0u, id);
+  EXPECT_CALL(*context, createTexture()).WillOnce(Return(texture_id));
+  EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, texture_id)).Times(3);
+  EXPECT_CALL(*context,
+              compressedTexImage2D(
+                  _, 0, _, size.width(), size.height(), _, _, _)).Times(1);
+  resource_provider->SetPixels(
+      id, pixels, gfx::Rect(size), gfx::Rect(size), gfx::Vector2d(0, 0));
+
+  EXPECT_CALL(*context, deleteTexture(texture_id)).Times(1);
+  resource_provider->DeleteResource(id);
 }
 
 INSTANTIATE_TEST_CASE_P(

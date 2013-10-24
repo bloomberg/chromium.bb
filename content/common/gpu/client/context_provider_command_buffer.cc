@@ -277,6 +277,10 @@ bool ContextProviderCommandBuffer::InitializeCapabilities() {
 
   caps.texture_format_bgra8888 =
       extension_set.count("GL_EXT_texture_format_BGRA8888") > 0;
+
+  caps.texture_format_etc1 =
+      extension_set.count("GL_OES_compressed_ETC1_RGB8_texture") > 0;
+
   caps.texture_rectangle = extension_set.count("GL_ARB_texture_rectangle") > 0;
 
   caps.post_sub_buffer = extension_set.count("GL_CHROMIUM_post_sub_buffer") > 0;

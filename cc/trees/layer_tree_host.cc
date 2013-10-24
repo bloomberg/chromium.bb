@@ -693,8 +693,9 @@ void LayerTreeHost::SetOverhangBitmap(const SkBitmap& bitmap) {
     bitmap_copy.setImmutable();
   }
 
-  overhang_ui_resource_ = ScopedUIResource::Create(
-      this, UIResourceBitmap(bitmap_copy, UIResourceBitmap::REPEAT));
+  UIResourceBitmap overhang_bitmap(bitmap_copy);
+  overhang_bitmap.SetWrapMode(UIResourceBitmap::REPEAT);
+  overhang_ui_resource_ = ScopedUIResource::Create(this, overhang_bitmap);
 }
 
 void LayerTreeHost::SetVisible(bool visible) {

@@ -482,6 +482,7 @@ class CC_EXPORT ResourceProvider {
   bool use_texture_storage_ext_;
   bool use_texture_usage_hint_;
   bool use_shallow_flush_;
+  bool use_compressed_texture_etc1_;
   scoped_ptr<TextureUploader> texture_uploader_;
   int max_texture_size_;
   ResourceFormat best_texture_format_;
@@ -497,16 +498,17 @@ class CC_EXPORT ResourceProvider {
 
 // TODO(epenner): Move these format conversions to resource_format.h
 // once that builds on mac (npapi.h currently #includes OpenGL.h).
-inline unsigned BytesPerPixel(ResourceFormat format) {
+inline unsigned BitsPerPixel(ResourceFormat format) {
   DCHECK_LE(format, RESOURCE_FORMAT_MAX);
-  static const unsigned format_bytes_per_pixel[RESOURCE_FORMAT_MAX + 1] = {
-    4,  // RGBA_8888
-    2,  // RGBA_4444
-    4,  // BGRA_8888
-    1,  // LUMINANCE_8
-    2   // RGB_565
+  static const unsigned format_bits_per_pixel[RESOURCE_FORMAT_MAX + 1] = {
+    32,  // RGBA_8888
+    16,  // RGBA_4444
+    32,  // BGRA_8888
+    8,   // LUMINANCE_8
+    16,  // RGB_565,
+    4    // ETC1
   };
-  return format_bytes_per_pixel[format];
+  return format_bits_per_pixel[format];
 }
 
 inline GLenum GLDataType(ResourceFormat format) {
@@ -516,7 +518,8 @@ inline GLenum GLDataType(ResourceFormat format) {
     GL_UNSIGNED_SHORT_4_4_4_4,  // RGBA_4444
     GL_UNSIGNED_BYTE,           // BGRA_8888
     GL_UNSIGNED_BYTE,           // LUMINANCE_8
-    GL_UNSIGNED_SHORT_5_6_5     // RGB_565
+    GL_UNSIGNED_SHORT_5_6_5,    // RGB_565,
+    GL_UNSIGNED_BYTE            // ETC1
   };
   return format_gl_data_type[format];
 }
@@ -524,11 +527,12 @@ inline GLenum GLDataType(ResourceFormat format) {
 inline GLenum GLDataFormat(ResourceFormat format) {
   DCHECK_LE(format, RESOURCE_FORMAT_MAX);
   static const unsigned format_gl_data_format[RESOURCE_FORMAT_MAX + 1] = {
-    GL_RGBA,       // RGBA_8888
-    GL_RGBA,       // RGBA_4444
-    GL_BGRA_EXT,   // BGRA_8888
-    GL_LUMINANCE,  // LUMINANCE_8
-    GL_RGB         // RGB_565
+    GL_RGBA,           // RGBA_8888
+    GL_RGBA,           // RGBA_4444
+    GL_BGRA_EXT,       // BGRA_8888
+    GL_LUMINANCE,      // LUMINANCE_8
+    GL_RGB,            // RGB_565
+    GL_ETC1_RGB8_OES   // ETC1
   };
   return format_gl_data_format[format];
 }

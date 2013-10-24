@@ -41,6 +41,7 @@ class ContextProvider : public base::RefCountedThreadSafe<ContextProvider> {
     bool shallow_flush;
     bool swapbuffers_complete_callback;
     bool texture_format_bgra8888;
+    bool texture_format_etc1;
     bool texture_rectangle;
     bool texture_storage;
     bool texture_usage;

@@ -143,6 +143,13 @@ void TextureUploader::Upload(const uint8* image,
   if (is_full_upload)
     BeginQuery();
 
+  if (format == ETC1) {
+    // ETC1 does not support subimage uploads.
+    DCHECK(is_full_upload);
+    UploadWithTexImageETC1(image, size);
+    return;
+  }
+
   if (use_map_tex_sub_image_) {
     UploadWithMapTexSubImage(
         image, image_rect, source_rect, dest_offset, format);
@@ -190,7 +197,7 @@ void TextureUploader::UploadWithTexSubImage(const uint8* image,
   gfx::Vector2d offset(source_rect.origin() - image_rect.origin());
 
   const uint8* pixel_source;
-  unsigned bytes_per_pixel = BytesPerPixel(format);
+  unsigned bytes_per_pixel = BitsPerPixel(format) / 8;
   // Use 4-byte row alignment (OpenGL default) for upload performance.
   // Assuming that GL_UNPACK_ALIGNMENT has not changed from default.
   unsigned upload_image_stride =
@@ -239,11 +246,13 @@ void TextureUploader::UploadWithMapTexSubImage(const uint8* image,
   if (source_rect.IsEmpty())
     return;
   DCHECK(image);
+  // Compressed textures have no implementation of mapTexSubImage.
+  DCHECK_NE(ETC1, format);
 
   // Offset from image-rect to source-rect.
   gfx::Vector2d offset(source_rect.origin() - image_rect.origin());
 
-  unsigned bytes_per_pixel = BytesPerPixel(format);
+  unsigned bytes_per_pixel = BitsPerPixel(format) / 8;
   // Use 4-byte row alignment (OpenGL default) for upload performance.
   // Assuming that GL_UNPACK_ALIGNMENT has not changed from default.
   unsigned upload_image_stride =
@@ -283,6 +292,22 @@ void TextureUploader::UploadWithMapTexSubImage(const uint8* image,
   }
 
   context_->unmapTexSubImage2DCHROMIUM(pixel_dest);
+}
+
+void TextureUploader::UploadWithTexImageETC1(const uint8* image,
+                                             gfx::Size size) {
+  TRACE_EVENT0("cc", "TextureUploader::UploadWithTexImageETC1");
+  DCHECK_EQ(0, size.width() % 4);
+  DCHECK_EQ(0, size.height() % 4);
+
+  context_->compressedTexImage2D(GL_TEXTURE_2D,
+                                 0,
+                                 GLInternalFormat(ETC1),
+                                 size.width(),
+                                 size.height(),
+                                 0,
+                                 Resource::MemorySizeBytes(size, ETC1),
+                                 image);
 }
 
 void TextureUploader::ProcessQueries() {

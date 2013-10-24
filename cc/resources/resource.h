@@ -26,7 +26,8 @@ class CC_EXPORT Resource {
   size_t bytes() const;
 
   inline static size_t MemorySizeBytes(gfx::Size size, ResourceFormat format) {
-    return BytesPerPixel(format) * size.width() * size.height();
+    DCHECK_EQ(0u, (BitsPerPixel(format) * size.width() * size.height()) % 8);
+    return (BitsPerPixel(format) * size.width() * size.height()) / 8;
   }
 
  protected:

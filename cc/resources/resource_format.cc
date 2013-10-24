@@ -13,6 +13,7 @@ SkBitmap::Config SkBitmapConfig(ResourceFormat format) {
     case RGBA_8888:
     case BGRA_8888:
       return SkBitmap::kARGB_8888_Config;
+    case ETC1:
     case LUMINANCE_8:
     case RGB_565:
       NOTREACHED();
