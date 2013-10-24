@@ -173,6 +173,22 @@ kb-key:-webkit-any(.backspace,
 /**
  * Images for keys.
  */
+.arrow-down {
+ background-image: url('images/down.svg');
+}
+
+.arrow-left {
+ background-image: url('images/left.svg');
+}
+
+.arrow-right {
+ background-image: url('images/right.svg');
+}
+
+.arrow-up {
+ background-image: url('images/up.svg');
+}
+
 .back {
   background-image: url('images/back.svg');
 }
