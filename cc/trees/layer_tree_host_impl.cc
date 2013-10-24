@@ -1470,9 +1470,7 @@ void LayerTreeHostImpl::CreatePendingTree() {
   else
     pending_tree_ = LayerTreeImpl::create(this);
   client_->OnCanDrawStateChanged(CanDraw());
-  TRACE_EVENT_ASYNC_BEGIN0("cc", "PendingTree", pending_tree_.get());
-  TRACE_EVENT_ASYNC_STEP0("cc",
-                          "PendingTree", pending_tree_.get(), "waiting");
+  TRACE_EVENT_ASYNC_BEGIN0("cc", "PendingTree:waiting", pending_tree_.get());
 }
 
 void LayerTreeHostImpl::UpdateVisibleTiles() {
@@ -1483,7 +1481,7 @@ void LayerTreeHostImpl::UpdateVisibleTiles() {
 
 void LayerTreeHostImpl::ActivatePendingTree() {
   CHECK(pending_tree_);
-  TRACE_EVENT_ASYNC_END0("cc", "PendingTree", pending_tree_.get());
+  TRACE_EVENT_ASYNC_END0("cc", "PendingTree:waiting", pending_tree_.get());
 
   need_to_update_visible_tiles_before_draw_ = true;
 

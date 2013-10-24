@@ -90,7 +90,7 @@ class ResourceScheduler::ScheduledResourceRequest
   }
 
   void Start() {
-    TRACE_EVENT_ASYNC_STEP0("net", "URLRequest", request_, "Queued");
+    TRACE_EVENT_ASYNC_STEP_PAST0("net", "URLRequest", request_, "Queued");
     ready_ = true;
     if (deferred_ && request_->status().is_success()) {
       deferred_ = false;

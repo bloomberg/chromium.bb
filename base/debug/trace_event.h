@@ -520,12 +520,18 @@
 //   all match. |id| must either be a pointer or an integer value up to 64 bits.
 //   If it's a pointer, the bits will be xored with a hash of the process ID so
 //   that the same pointer on two different processes will not collide.
+//
 // An asynchronous operation can consist of multiple phases. The first phase is
 // defined by the ASYNC_BEGIN calls. Additional phases can be defined using the
-// ASYNC_STEP macros. When the operation completes, call ASYNC_END.
-// An ASYNC trace typically occur on a single thread (if not, they will only be
+// ASYNC_STEP_INTO or ASYNC_STEP_PAST macros. The ASYNC_STEP_INTO macro will
+// annotate the block following the call. The ASYNC_STEP_PAST macro will
+// annotate the block prior to the call. Note that any particular event must use
+// only STEP_INTO or STEP_PAST macros; they can not mix and match. When the
+// operation completes, call ASYNC_END.
+//
+// An ASYNC trace typically occurs on a single thread (if not, they will only be
 // drawn on the thread defined in the ASYNC_BEGIN event), but all events in that
-// operation must use the same |name| and |id|. Each event can have its own
+// operation must use the same |name| and |id|. Each step can have its own
 // args.
 #define TRACE_EVENT_ASYNC_BEGIN0(category_group, name, id) \
     INTERNAL_TRACE_EVENT_ADD_WITH_ID(TRACE_EVENT_PHASE_ASYNC_BEGIN, \
@@ -553,27 +559,34 @@
         category_group, name, id, TRACE_EVENT_FLAG_COPY, \
         arg1_name, arg1_val, arg2_name, arg2_val)
 
-// Records a single ASYNC_STEP event for |step| immediately. If the category
-// is not enabled, then this does nothing. The |name| and |id| must match the
-// ASYNC_BEGIN event above. The |step| param identifies this step within the
-// async event. This should be called at the beginning of the next phase of an
-// asynchronous operation.
-#define TRACE_EVENT_ASYNC_STEP0(category_group, name, id, step) \
-    INTERNAL_TRACE_EVENT_ADD_WITH_ID(TRACE_EVENT_PHASE_ASYNC_STEP, \
+// Records a single ASYNC_STEP_INTO event for |step| immediately. If the
+// category is not enabled, then this does nothing. The |name| and |id| must
+// match the ASYNC_BEGIN event above. The |step| param identifies this step
+// within the async event. This should be called at the beginning of the next
+// phase of an asynchronous operation. The ASYNC_BEGIN event must not have any
+// ASYNC_STEP_PAST events.
+#define TRACE_EVENT_ASYNC_STEP_INTO0(category_group, name, id, step) \
+    INTERNAL_TRACE_EVENT_ADD_WITH_ID(TRACE_EVENT_PHASE_ASYNC_STEP_INTO, \
         category_group, name, id, TRACE_EVENT_FLAG_NONE, "step", step)
-#define TRACE_EVENT_ASYNC_STEP1(category_group, name, id, step, \
-                                      arg1_name, arg1_val) \
-    INTERNAL_TRACE_EVENT_ADD_WITH_ID(TRACE_EVENT_PHASE_ASYNC_STEP, \
+#define TRACE_EVENT_ASYNC_STEP_INTO1(category_group, name, id, step, \
+                                     arg1_name, arg1_val) \
+    INTERNAL_TRACE_EVENT_ADD_WITH_ID(TRACE_EVENT_PHASE_ASYNC_STEP_INTO, \
         category_group, name, id, TRACE_EVENT_FLAG_NONE, "step", step, \
         arg1_name, arg1_val)
 
-#define TRACE_EVENT_COPY_ASYNC_STEP0(category_group, name, id, step) \
-    INTERNAL_TRACE_EVENT_ADD_WITH_ID(TRACE_EVENT_PHASE_ASYNC_STEP, \
-        category_group, name, id, TRACE_EVENT_FLAG_COPY, "step", step)
-#define TRACE_EVENT_COPY_ASYNC_STEP1(category_group, name, id, step, \
-        arg1_name, arg1_val) \
-    INTERNAL_TRACE_EVENT_ADD_WITH_ID(TRACE_EVENT_PHASE_ASYNC_STEP, \
-        category_group, name, id, TRACE_EVENT_FLAG_COPY, "step", step, \
+// Records a single ASYNC_STEP_PAST event for |step| immediately. If the
+// category is not enabled, then this does nothing. The |name| and |id| must
+// match the ASYNC_BEGIN event above. The |step| param identifies this step
+// within the async event. This should be called at the beginning of the next
+// phase of an asynchronous operation. The ASYNC_BEGIN event must not have any
+// ASYNC_STEP_INTO events.
+#define TRACE_EVENT_ASYNC_STEP_PAST0(category_group, name, id, step) \
+    INTERNAL_TRACE_EVENT_ADD_WITH_ID(TRACE_EVENT_PHASE_ASYNC_STEP_PAST, \
+        category_group, name, id, TRACE_EVENT_FLAG_NONE, "step", step)
+#define TRACE_EVENT_ASYNC_STEP_PAST1(category_group, name, id, step, \
+                                     arg1_name, arg1_val) \
+    INTERNAL_TRACE_EVENT_ADD_WITH_ID(TRACE_EVENT_PHASE_ASYNC_STEP_PAST, \
+        category_group, name, id, TRACE_EVENT_FLAG_NONE, "step", step, \
         arg1_name, arg1_val)
 
 // Records a single ASYNC_END event for "name" immediately. If the category
@@ -924,7 +937,8 @@ TRACE_EVENT_API_CLASS_EXPORT extern \
 #define TRACE_EVENT_PHASE_COMPLETE ('X')
 #define TRACE_EVENT_PHASE_INSTANT  ('i')
 #define TRACE_EVENT_PHASE_ASYNC_BEGIN ('S')
-#define TRACE_EVENT_PHASE_ASYNC_STEP  ('T')
+#define TRACE_EVENT_PHASE_ASYNC_STEP_INTO  ('T')
+#define TRACE_EVENT_PHASE_ASYNC_STEP_PAST  ('p')
 #define TRACE_EVENT_PHASE_ASYNC_END   ('F')
 #define TRACE_EVENT_PHASE_FLOW_BEGIN ('s')
 #define TRACE_EVENT_PHASE_FLOW_STEP  ('t')

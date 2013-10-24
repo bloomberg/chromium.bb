@@ -149,7 +149,7 @@ void ImageRasterWorkerPool::ScheduleTasks(RasterTask::Queue* queue) {
   set_raster_required_for_activation_finished_task(
       new_raster_required_for_activation_finished_task);
 
-  TRACE_EVENT_ASYNC_STEP1(
+  TRACE_EVENT_ASYNC_STEP_INTO1(
       "cc", "ScheduledTasks", this, "rasterizing",
       "state", TracedValue::FromValue(StateAsValue().release()));
 }
@@ -169,7 +169,7 @@ void ImageRasterWorkerPool::OnRasterTasksFinished() {
 void ImageRasterWorkerPool::OnRasterTasksRequiredForActivationFinished() {
   DCHECK(raster_tasks_required_for_activation_pending_);
   raster_tasks_required_for_activation_pending_ = false;
-  TRACE_EVENT_ASYNC_STEP1(
+  TRACE_EVENT_ASYNC_STEP_INTO1(
       "cc", "ScheduledTasks", this, "rasterizing",
       "state", TracedValue::FromValue(StateAsValue().release()));
   client()->DidFinishRunningTasksRequiredForActivation();

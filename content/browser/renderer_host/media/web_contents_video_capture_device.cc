@@ -650,7 +650,7 @@ void RenderVideoFrame(const SkBitmap& input,
       method = skia::ImageOperations::RESIZE_BOX;
     }
 
-    TRACE_EVENT_ASYNC_STEP0("mirroring", "Capture", output.get(), "Scale");
+    TRACE_EVENT_ASYNC_STEP_INTO0("mirroring", "Capture", output.get(), "Scale");
     scaled_bitmap = skia::ImageOperations::Resize(input, method,
                                                   region_in_frame.width(),
                                                   region_in_frame.height());
@@ -658,7 +658,7 @@ void RenderVideoFrame(const SkBitmap& input,
     scaled_bitmap = input;
   }
 
-  TRACE_EVENT_ASYNC_STEP0("mirroring", "Capture", output.get(), "YUV");
+  TRACE_EVENT_ASYNC_STEP_INTO0("mirroring", "Capture", output.get(), "YUV");
   {
     SkAutoLockPixels scaled_bitmap_locker(scaled_bitmap);
 
@@ -872,7 +872,8 @@ void CaptureMachine::DidCopyFromBackingStore(
   base::Time now = base::Time::Now();
   if (success) {
     UMA_HISTOGRAM_TIMES("TabCapture.CopyTimeBitmap", now - start_time);
-    TRACE_EVENT_ASYNC_STEP0("mirroring", "Capture", target.get(), "Render");
+    TRACE_EVENT_ASYNC_STEP_INTO0("mirroring", "Capture", target.get(),
+                                 "Render");
     render_task_runner_->PostTask(FROM_HERE, base::Bind(
         &RenderVideoFrame, bitmap, target,
         base::Bind(deliver_frame_cb, start_time)));

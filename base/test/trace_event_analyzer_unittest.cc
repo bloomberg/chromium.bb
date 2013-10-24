@@ -562,17 +562,17 @@ TEST_F(TraceEventAnalyzerTest, AsyncBeginEndAssocationsWithSteps) {
 
   BeginTracing();
   {
-    TRACE_EVENT_ASYNC_STEP0("c", "n", 0xA, "s1");
+    TRACE_EVENT_ASYNC_STEP_INTO0("c", "n", 0xA, "s1");
     TRACE_EVENT_ASYNC_END0("c", "n", 0xA);
     TRACE_EVENT_ASYNC_BEGIN0("c", "n", 0xB);
     TRACE_EVENT_ASYNC_BEGIN0("c", "n", 0xC);
-    TRACE_EVENT_ASYNC_STEP0("c", "n", 0xB, "s1");
-    TRACE_EVENT_ASYNC_STEP0("c", "n", 0xC, "s1");
-    TRACE_EVENT_ASYNC_STEP1("c", "n", 0xC, "s2", "a", 1);
+    TRACE_EVENT_ASYNC_STEP_PAST0("c", "n", 0xB, "s1");
+    TRACE_EVENT_ASYNC_STEP_INTO0("c", "n", 0xC, "s1");
+    TRACE_EVENT_ASYNC_STEP_INTO1("c", "n", 0xC, "s2", "a", 1);
     TRACE_EVENT_ASYNC_END0("c", "n", 0xB);
     TRACE_EVENT_ASYNC_END0("c", "n", 0xC);
     TRACE_EVENT_ASYNC_BEGIN0("c", "n", 0xA);
-    TRACE_EVENT_ASYNC_STEP0("c", "n", 0xA, "s2");
+    TRACE_EVENT_ASYNC_STEP_INTO0("c", "n", 0xA, "s2");
   }
   EndTracing();
 
@@ -586,15 +586,15 @@ TEST_F(TraceEventAnalyzerTest, AsyncBeginEndAssocationsWithSteps) {
   ASSERT_EQ(3u, found.size());
 
   EXPECT_STRCASEEQ("0xb", found[0]->id.c_str());
-  EXPECT_EQ(TRACE_EVENT_PHASE_ASYNC_STEP, found[0]->other_event->phase);
+  EXPECT_EQ(TRACE_EVENT_PHASE_ASYNC_STEP_PAST, found[0]->other_event->phase);
   EXPECT_TRUE(found[0]->other_event->other_event);
   EXPECT_EQ(TRACE_EVENT_PHASE_ASYNC_END,
             found[0]->other_event->other_event->phase);
 
   EXPECT_STRCASEEQ("0xc", found[1]->id.c_str());
-  EXPECT_EQ(TRACE_EVENT_PHASE_ASYNC_STEP, found[1]->other_event->phase);
+  EXPECT_EQ(TRACE_EVENT_PHASE_ASYNC_STEP_INTO, found[1]->other_event->phase);
   EXPECT_TRUE(found[1]->other_event->other_event);
-  EXPECT_EQ(TRACE_EVENT_PHASE_ASYNC_STEP,
+  EXPECT_EQ(TRACE_EVENT_PHASE_ASYNC_STEP_INTO,
             found[1]->other_event->other_event->phase);
   double arg_actual = 0;
   EXPECT_TRUE(found[1]->other_event->other_event->GetArgAsNumber(
@@ -605,7 +605,7 @@ TEST_F(TraceEventAnalyzerTest, AsyncBeginEndAssocationsWithSteps) {
             found[1]->other_event->other_event->other_event->phase);
 
   EXPECT_STRCASEEQ("0xa", found[2]->id.c_str());
-  EXPECT_EQ(TRACE_EVENT_PHASE_ASYNC_STEP, found[2]->other_event->phase);
+  EXPECT_EQ(TRACE_EVENT_PHASE_ASYNC_STEP_INTO, found[2]->other_event->phase);
 }
 
 // Test that the TraceAnalyzer custom associations work.

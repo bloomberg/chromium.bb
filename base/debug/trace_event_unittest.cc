@@ -400,10 +400,10 @@ void TraceWithAllMacroVariants(WaitableEvent* task_complete_event) {
                              "name1", "value1",
                              "name2", "value2");
 
-    TRACE_EVENT_ASYNC_STEP0("all", "TRACE_EVENT_ASYNC_STEP0 call",
-                                  5, "step1");
-    TRACE_EVENT_ASYNC_STEP1("all", "TRACE_EVENT_ASYNC_STEP1 call",
-                                  5, "step2", "name1", "value1");
+    TRACE_EVENT_ASYNC_STEP_INTO0("all", "TRACE_EVENT_ASYNC_STEP_INTO0 call",
+                                 kAsyncId, "step_begin1");
+    TRACE_EVENT_ASYNC_STEP_INTO1("all", "TRACE_EVENT_ASYNC_STEP_INTO1 call",
+                                 kAsyncId, "step_begin2", "name1", "value1");
 
     TRACE_EVENT_ASYNC_END0("all", "TRACE_EVENT_ASYNC_END0 call", kAsyncId);
     TRACE_EVENT_ASYNC_END1("all", "TRACE_EVENT_ASYNC_END1 call", kAsyncId,
@@ -438,6 +438,11 @@ void TraceWithAllMacroVariants(WaitableEvent* task_complete_event) {
     TRACE_EVENT_BEGIN_WITH_ID_TID_AND_TIMESTAMP0("all",
         "TRACE_EVENT_BEGIN_WITH_ID_TID_AND_TIMESTAMP0 call",
         kAsyncId2, kThreadId, 34567);
+    TRACE_EVENT_ASYNC_STEP_PAST0("all", "TRACE_EVENT_ASYNC_STEP_PAST0 call",
+                                 kAsyncId2, "step_end1");
+    TRACE_EVENT_ASYNC_STEP_PAST1("all", "TRACE_EVENT_ASYNC_STEP_PAST1 call",
+                                 kAsyncId2, "step_end2", "name1", "value1");
+
     TRACE_EVENT_END_WITH_ID_TID_AND_TIMESTAMP0("all",
         "TRACE_EVENT_END_WITH_ID_TID_AND_TIMESTAMP0 call",
         kAsyncId2, kThreadId, 45678);
@@ -557,14 +562,14 @@ void ValidateAllTraceMacrosCreatedData(const ListValue& trace_parsed) {
   EXPECT_SUB_FIND_("name2");
   EXPECT_SUB_FIND_("value2");
 
-  EXPECT_FIND_("TRACE_EVENT_ASYNC_STEP0 call");
+  EXPECT_FIND_("TRACE_EVENT_ASYNC_STEP_INTO0 call");
   EXPECT_SUB_FIND_("id");
   EXPECT_SUB_FIND_(kAsyncIdStr);
-  EXPECT_SUB_FIND_("step1");
-  EXPECT_FIND_("TRACE_EVENT_ASYNC_STEP1 call");
+  EXPECT_SUB_FIND_("step_begin1");
+  EXPECT_FIND_("TRACE_EVENT_ASYNC_STEP_INTO1 call");
   EXPECT_SUB_FIND_("id");
   EXPECT_SUB_FIND_(kAsyncIdStr);
-  EXPECT_SUB_FIND_("step2");
+  EXPECT_SUB_FIND_("step_begin2");
   EXPECT_SUB_FIND_("name1");
   EXPECT_SUB_FIND_("value1");
 
@@ -707,6 +712,19 @@ void ValidateAllTraceMacrosCreatedData(const ListValue& trace_parsed) {
     std::string id;
     EXPECT_TRUE((item && item->GetString("id", &id)));
     EXPECT_EQ(kAsyncId2Str, id);
+  }
+
+  EXPECT_FIND_("TRACE_EVENT_ASYNC_STEP_PAST0 call");
+  {
+    EXPECT_SUB_FIND_("id");
+    EXPECT_SUB_FIND_(kAsyncId2Str);
+    EXPECT_SUB_FIND_("step_end1");
+    EXPECT_FIND_("TRACE_EVENT_ASYNC_STEP_PAST1 call");
+    EXPECT_SUB_FIND_("id");
+    EXPECT_SUB_FIND_(kAsyncId2Str);
+    EXPECT_SUB_FIND_("step_end2");
+    EXPECT_SUB_FIND_("name1");
+    EXPECT_SUB_FIND_("value1");
   }
 
   EXPECT_FIND_("TRACE_EVENT_END_WITH_ID_TID_AND_TIMESTAMP0 call");
@@ -1222,10 +1240,11 @@ TEST_F(TraceEventTestFixture, AsyncBeginEndEvents) {
 
   unsigned long long id = 0xfeedbeeffeedbeefull;
   TRACE_EVENT_ASYNC_BEGIN0( "cat", "name1", id);
-  TRACE_EVENT_ASYNC_STEP0( "cat", "name1", id, "step1");
+  TRACE_EVENT_ASYNC_STEP_INTO0( "cat", "name1", id, "step1");
   TRACE_EVENT_ASYNC_END0("cat", "name1", id);
   TRACE_EVENT_BEGIN0( "cat", "name2");
   TRACE_EVENT_ASYNC_BEGIN0( "cat", "name3", 0);
+  TRACE_EVENT_ASYNC_STEP_PAST0( "cat", "name3", 0, "step2");
 
   EndTraceAndFlush();
 
@@ -1240,6 +1259,7 @@ TEST_F(TraceEventTestFixture, AsyncBeginEndEvents) {
   EXPECT_TRUE(FindNamePhaseKeyValue("name1", "T", "id", id_str.c_str()));
   EXPECT_TRUE(FindNamePhaseKeyValue("name1", "F", "id", id_str.c_str()));
   EXPECT_TRUE(FindNamePhaseKeyValue("name3", "S", "id", "0x0"));
+  EXPECT_TRUE(FindNamePhaseKeyValue("name3", "p", "id", "0x0"));
 
   // BEGIN events should not have id
   EXPECT_FALSE(FindNamePhaseKeyValue("name2", "B", "id", "0"));

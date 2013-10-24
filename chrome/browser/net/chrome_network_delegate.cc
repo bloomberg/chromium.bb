@@ -458,7 +458,7 @@ int ChromeNetworkDelegate::OnBeforeSendHeaders(
     net::URLRequest* request,
     const net::CompletionCallback& callback,
     net::HttpRequestHeaders* headers) {
-  TRACE_EVENT_ASYNC_STEP0("net", "URLRequest", request, "SendRequest");
+  TRACE_EVENT_ASYNC_STEP_PAST0("net", "URLRequest", request, "SendRequest");
   return ExtensionWebRequestEventRouter::GetInstance()->OnBeforeSendHeaders(
       profile_, extension_info_map_.get(), request, callback, headers);
 }
@@ -488,7 +488,7 @@ void ChromeNetworkDelegate::OnBeforeRedirect(net::URLRequest* request,
 
 
 void ChromeNetworkDelegate::OnResponseStarted(net::URLRequest* request) {
-  TRACE_EVENT_ASYNC_STEP0("net", "URLRequest", request, "ResponseStarted");
+  TRACE_EVENT_ASYNC_STEP_PAST0("net", "URLRequest", request, "ResponseStarted");
   ExtensionWebRequestEventRouter::GetInstance()->OnResponseStarted(
       profile_, extension_info_map_.get(), request);
   ForwardProxyErrors(request, event_router_.get(), profile_);
@@ -496,8 +496,8 @@ void ChromeNetworkDelegate::OnResponseStarted(net::URLRequest* request) {
 
 void ChromeNetworkDelegate::OnRawBytesRead(const net::URLRequest& request,
                                            int bytes_read) {
-  TRACE_EVENT_ASYNC_STEP1("net", "URLRequest", &request, "DidRead",
-                          "bytes_read", bytes_read);
+  TRACE_EVENT_ASYNC_STEP_PAST1("net", "URLRequest", &request, "DidRead",
+                               "bytes_read", bytes_read);
   performance_monitor::PerformanceMonitor::GetInstance()->BytesReadOnIOThread(
       request, bytes_read);
 

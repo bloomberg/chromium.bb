@@ -48,7 +48,8 @@ bool TraceEvent::SetFromJSON(const base::Value* event_value) {
   bool may_have_duration = (phase == TRACE_EVENT_PHASE_COMPLETE);
   bool require_origin = (phase != TRACE_EVENT_PHASE_METADATA);
   bool require_id = (phase == TRACE_EVENT_PHASE_ASYNC_BEGIN ||
-                     phase == TRACE_EVENT_PHASE_ASYNC_STEP ||
+                     phase == TRACE_EVENT_PHASE_ASYNC_STEP_INTO ||
+                     phase == TRACE_EVENT_PHASE_ASYNC_STEP_PAST ||
                      phase == TRACE_EVENT_PHASE_ASYNC_END);
 
   if (require_origin && !dictionary->GetInteger("pid", &thread.process_id)) {
@@ -717,9 +718,11 @@ void TraceAnalyzer::AssociateAsyncBeginEndEvents() {
 
   Query begin(
       Query::EventPhaseIs(TRACE_EVENT_PHASE_ASYNC_BEGIN) ||
-      Query::EventPhaseIs(TRACE_EVENT_PHASE_ASYNC_STEP));
+      Query::EventPhaseIs(TRACE_EVENT_PHASE_ASYNC_STEP_INTO) ||
+      Query::EventPhaseIs(TRACE_EVENT_PHASE_ASYNC_STEP_PAST));
   Query end(Query::EventPhaseIs(TRACE_EVENT_PHASE_ASYNC_END) ||
-            Query::EventPhaseIs(TRACE_EVENT_PHASE_ASYNC_STEP));
+            Query::EventPhaseIs(TRACE_EVENT_PHASE_ASYNC_STEP_INTO) ||
+            Query::EventPhaseIs(TRACE_EVENT_PHASE_ASYNC_STEP_PAST));
   Query match(Query::EventName() == Query::OtherName() &&
               Query::EventCategory() == Query::OtherCategory() &&
               Query::EventId() == Query::OtherId());
