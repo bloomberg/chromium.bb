@@ -16,6 +16,7 @@
 #include "base/location.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
+#include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/safe_numerics.h"
 #include "base/strings/string_piece.h"
@@ -88,6 +89,7 @@ namespace {
 using ::base::TimeDelta;
 
 using ::testing::AnyNumber;
+using ::testing::DefaultValue;
 using ::testing::InSequence;
 using ::testing::MockFunction;
 using ::testing::Return;
@@ -123,29 +125,50 @@ const size_t kDefaultQuotaRefreshTrigger = (1 << 16) + 1;
 // in that time! I would like my tests to run a bit quicker.
 const int kVeryTinyTimeoutMillis = 1;
 
+typedef WebSocketEventInterface::ChannelState ChannelState;
+const ChannelState CHANNEL_ALIVE = WebSocketEventInterface::CHANNEL_ALIVE;
+const ChannelState CHANNEL_DELETED = WebSocketEventInterface::CHANNEL_DELETED;
+
+// This typedef mainly exists to avoid having to repeat the "NOLINT" incantation
+// all over the place.
+typedef MockFunction<void(int)> Checkpoint;  // NOLINT
+
 // This mock is for testing expectations about how the EventInterface is used.
 class MockWebSocketEventInterface : public WebSocketEventInterface {
  public:
-  MOCK_METHOD2(OnAddChannelResponse, void(bool, const std::string&));
+  MOCK_METHOD2(OnAddChannelResponse,
+               ChannelState(bool, const std::string&));  // NOLINT
   MOCK_METHOD3(OnDataFrame,
-               void(bool, WebSocketMessageType, const std::vector<char>&));
-  MOCK_METHOD1(OnFlowControl, void(int64));
-  MOCK_METHOD0(OnClosingHandshake, void(void));
-  MOCK_METHOD2(OnDropChannel, void(uint16, const std::string&));
+               ChannelState(bool,
+                            WebSocketMessageType,
+                            const std::vector<char>&));  // NOLINT
+  MOCK_METHOD1(OnFlowControl, ChannelState(int64));      // NOLINT
+  MOCK_METHOD0(OnClosingHandshake, ChannelState(void));  // NOLINT
+  MOCK_METHOD2(OnDropChannel,
+               ChannelState(uint16, const std::string&));  // NOLINT
 };
 
 // This fake EventInterface is for tests which need a WebSocketEventInterface
 // implementation but are not verifying how it is used.
 class FakeWebSocketEventInterface : public WebSocketEventInterface {
-  virtual void OnAddChannelResponse(
+  virtual ChannelState OnAddChannelResponse(
       bool fail,
-      const std::string& selected_protocol) OVERRIDE {}
-  virtual void OnDataFrame(bool fin,
-                           WebSocketMessageType type,
-                           const std::vector<char>& data) OVERRIDE {}
-  virtual void OnFlowControl(int64 quota) OVERRIDE {}
-  virtual void OnClosingHandshake() OVERRIDE {}
-  virtual void OnDropChannel(uint16 code, const std::string& reason) OVERRIDE {}
+      const std::string& selected_protocol) OVERRIDE {
+    return fail ? CHANNEL_DELETED : CHANNEL_ALIVE;
+  }
+  virtual ChannelState OnDataFrame(bool fin,
+                                   WebSocketMessageType type,
+                                   const std::vector<char>& data) OVERRIDE {
+    return CHANNEL_ALIVE;
+  }
+  virtual ChannelState OnFlowControl(int64 quota) OVERRIDE {
+    return CHANNEL_ALIVE;
+  }
+  virtual ChannelState OnClosingHandshake() OVERRIDE { return CHANNEL_ALIVE; }
+  virtual ChannelState OnDropChannel(uint16 code,
+                                     const std::string& reason) OVERRIDE {
+    return CHANNEL_DELETED;
+  }
 };
 
 // This fake WebSocketStream is for tests that require a WebSocketStream but are
@@ -362,6 +385,12 @@ class TestClosure {
 // A GoogleMock action to run a Closure.
 ACTION_P(InvokeClosure, closure) { closure.Run(); }
 
+// A GoogleMock action to run a Closure and return CHANNEL_DELETED.
+ACTION_P(InvokeClosureReturnDeleted, closure) {
+  closure.Run();
+  return WebSocketEventInterface::CHANNEL_DELETED;
+}
+
 // A FakeWebSocketStream whose ReadFrames() function returns data.
 class ReadableFakeWebSocketStream : public FakeWebSocketStream {
  public:
@@ -558,15 +587,28 @@ class EchoeyFakeWebSocketStream : public FakeWebSocketStream {
 // A FakeWebSocketStream where writes trigger a connection reset.
 // This differs from UnWriteableFakeWebSocketStream in that it is asynchronous
 // and triggers ReadFrames to return a reset as well. Tests using this need to
-// run the message loop.
+// run the message loop. There are two tricky parts here:
+// 1. Calling the write callback may call Close(), after which the read callback
+//    should not be called.
+// 2. Calling either callback may delete the stream altogether.
 class ResetOnWriteFakeWebSocketStream : public FakeWebSocketStream {
  public:
+  ResetOnWriteFakeWebSocketStream() : closed_(false), weak_ptr_factory_(this) {}
+
   virtual int WriteFrames(ScopedVector<WebSocketFrame>* frames,
                           const CompletionCallback& callback) OVERRIDE {
     base::MessageLoop::current()->PostTask(
-        FROM_HERE, base::Bind(callback, ERR_CONNECTION_RESET));
+        FROM_HERE,
+        base::Bind(&ResetOnWriteFakeWebSocketStream::CallCallbackUnlessClosed,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   callback,
+                   ERR_CONNECTION_RESET));
     base::MessageLoop::current()->PostTask(
-        FROM_HERE, base::Bind(read_callback_, ERR_CONNECTION_RESET));
+        FROM_HERE,
+        base::Bind(&ResetOnWriteFakeWebSocketStream::CallCallbackUnlessClosed,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   read_callback_,
+                   ERR_CONNECTION_RESET));
     return ERR_IO_PENDING;
   }
 
@@ -576,8 +618,19 @@ class ResetOnWriteFakeWebSocketStream : public FakeWebSocketStream {
     return ERR_IO_PENDING;
   }
 
+  virtual void Close() OVERRIDE { closed_ = true; }
+
  private:
+  void CallCallbackUnlessClosed(const CompletionCallback& callback, int value) {
+    if (!closed_)
+      callback.Run(value);
+  }
+
   CompletionCallback read_callback_;
+  bool closed_;
+  // An IO error can result in the socket being deleted, so we use weak pointers
+  // to ensure correct behaviour in that case.
+  base::WeakPtrFactory<ResetOnWriteFakeWebSocketStream> weak_ptr_factory_;
 };
 
 // This mock is for verifying that WebSocket protocol semantics are obeyed (to
@@ -696,14 +749,41 @@ class WebSocketChannelTest : public ::testing::Test {
   scoped_ptr<WebSocketStream> stream_;
 };
 
+// enum of WebSocketEventInterface calls. These are intended to be or'd together
+// in order to instruct WebSocketChannelDeletingTest when it should fail.
+enum EventInterfaceCall {
+  EVENT_ON_ADD_CHANNEL_RESPONSE = 0x1,
+  EVENT_ON_DATA_FRAME = 0x2,
+  EVENT_ON_FLOW_CONTROL = 0x4,
+  EVENT_ON_CLOSING_HANDSHAKE = 0x8,
+  EVENT_ON_DROP_CHANNEL = 0x10,
+};
+
 class WebSocketChannelDeletingTest : public WebSocketChannelTest {
  public:
-  void ResetChannel() { channel_.reset(); }
+  ChannelState DeleteIfDeleting(EventInterfaceCall call) {
+    if (deleting_ & call) {
+      channel_.reset();
+      return CHANNEL_DELETED;
+    } else {
+      return CHANNEL_ALIVE;
+    }
+  }
 
  protected:
+  WebSocketChannelDeletingTest()
+      : deleting_(EVENT_ON_ADD_CHANNEL_RESPONSE | EVENT_ON_DATA_FRAME |
+                  EVENT_ON_FLOW_CONTROL |
+                  EVENT_ON_CLOSING_HANDSHAKE |
+                  EVENT_ON_DROP_CHANNEL) {}
   // Create a ChannelDeletingFakeWebSocketEventInterface. Defined out-of-line to
   // avoid circular dependency.
   virtual scoped_ptr<WebSocketEventInterface> CreateEventInterface() OVERRIDE;
+
+  // Tests can set deleting_ to a bitmap of EventInterfaceCall members that they
+  // want to cause Channel deletion. The default is for all calls to cause
+  // deletion.
+  int deleting_;
 };
 
 // A FakeWebSocketEventInterface that deletes the WebSocketChannel on failure to
@@ -715,12 +795,29 @@ class ChannelDeletingFakeWebSocketEventInterface
       WebSocketChannelDeletingTest* fixture)
       : fixture_(fixture) {}
 
-  virtual void OnAddChannelResponse(
+  virtual ChannelState OnAddChannelResponse(
       bool fail,
       const std::string& selected_protocol) OVERRIDE {
-    if (fail) {
-      fixture_->ResetChannel();
-    }
+    return fixture_->DeleteIfDeleting(EVENT_ON_ADD_CHANNEL_RESPONSE);
+  }
+
+  virtual ChannelState OnDataFrame(bool fin,
+                                   WebSocketMessageType type,
+                                   const std::vector<char>& data) OVERRIDE {
+    return fixture_->DeleteIfDeleting(EVENT_ON_DATA_FRAME);
+  }
+
+  virtual ChannelState OnFlowControl(int64 quota) OVERRIDE {
+    return fixture_->DeleteIfDeleting(EVENT_ON_FLOW_CONTROL);
+  }
+
+  virtual ChannelState OnClosingHandshake() OVERRIDE {
+    return fixture_->DeleteIfDeleting(EVENT_ON_CLOSING_HANDSHAKE);
+  }
+
+  virtual ChannelState OnDropChannel(uint16 code,
+                                     const std::string& reason) OVERRIDE {
+    return fixture_->DeleteIfDeleting(EVENT_ON_DROP_CHANNEL);
   }
 
  private:
@@ -740,7 +837,17 @@ WebSocketChannelDeletingTest::CreateEventInterface() {
 class WebSocketChannelEventInterfaceTest : public WebSocketChannelTest {
  protected:
   WebSocketChannelEventInterfaceTest()
-      : event_interface_(new StrictMock<MockWebSocketEventInterface>) {}
+      : event_interface_(new StrictMock<MockWebSocketEventInterface>) {
+    DefaultValue<ChannelState>::Set(CHANNEL_ALIVE);
+    ON_CALL(*event_interface_, OnAddChannelResponse(true, _))
+        .WillByDefault(Return(CHANNEL_DELETED));
+    ON_CALL(*event_interface_, OnDropChannel(_, _))
+        .WillByDefault(Return(CHANNEL_DELETED));
+  }
+
+  virtual ~WebSocketChannelEventInterfaceTest() {
+    DefaultValue<ChannelState>::Clear();
+  }
 
   // Tests using this fixture must set expectations on the event_interface_ mock
   // object before calling CreateChannelAndConnect() or
@@ -787,15 +894,198 @@ TEST_F(WebSocketChannelTest, EverythingIsPassedToTheFactoryFunction) {
   EXPECT_EQ(connect_data_.origin, actual.origin);
 }
 
-// The documentation for WebSocketEventInterface::OnAddChannelResponse() says
-// that if the first argument is true, ie. the connection failed, then we can
-// safely synchronously delete the WebSocketChannel. This test will only
-// reliably find problems if run with a memory debugger such as
-// AddressSanitizer.
-TEST_F(WebSocketChannelDeletingTest, DeletingFromOnAddChannelResponseWorks) {
+// Any WebSocketEventInterface methods can delete the WebSocketChannel and
+// return CHANNEL_DELETED. The WebSocketChannelDeletingTests are intended to
+// verify that there are no use-after-free bugs when this happens. Problems will
+// probably only be found when running under Address Sanitizer or a similar
+// tool.
+TEST_F(WebSocketChannelDeletingTest, OnAddChannelResponseFail) {
   CreateChannelAndConnect();
+  EXPECT_TRUE(channel_);
   connect_data_.factory.connect_delegate->OnFailure(
       kWebSocketErrorNoStatusReceived);
+  EXPECT_EQ(NULL, channel_.get());
+}
+
+// Deletion is possible (due to IPC failure) even if the connect succeeds.
+TEST_F(WebSocketChannelDeletingTest, OnAddChannelResponseSuccess) {
+  CreateChannelAndConnectSuccessfully();
+  EXPECT_EQ(NULL, channel_.get());
+}
+
+TEST_F(WebSocketChannelDeletingTest, OnDataFrameSync) {
+  scoped_ptr<ReadableFakeWebSocketStream> stream(
+      new ReadableFakeWebSocketStream);
+  static const InitFrame frames[] = {
+      {FINAL_FRAME, WebSocketFrameHeader::kOpCodeText, NOT_MASKED, "HELLO"}};
+  stream->PrepareReadFrames(ReadableFakeWebSocketStream::SYNC, OK, frames);
+  set_stream(stream.Pass());
+  deleting_ = EVENT_ON_DATA_FRAME;
+
+  CreateChannelAndConnectSuccessfully();
+  EXPECT_EQ(NULL, channel_.get());
+}
+
+TEST_F(WebSocketChannelDeletingTest, OnDataFrameAsync) {
+  scoped_ptr<ReadableFakeWebSocketStream> stream(
+      new ReadableFakeWebSocketStream);
+  static const InitFrame frames[] = {
+      {FINAL_FRAME, WebSocketFrameHeader::kOpCodeText, NOT_MASKED, "HELLO"}};
+  stream->PrepareReadFrames(ReadableFakeWebSocketStream::ASYNC, OK, frames);
+  set_stream(stream.Pass());
+  deleting_ = EVENT_ON_DATA_FRAME;
+
+  CreateChannelAndConnectSuccessfully();
+  EXPECT_TRUE(channel_);
+  base::MessageLoop::current()->RunUntilIdle();
+  EXPECT_EQ(NULL, channel_.get());
+}
+
+TEST_F(WebSocketChannelDeletingTest, OnFlowControlAfterConnect) {
+  deleting_ = EVENT_ON_FLOW_CONTROL;
+
+  CreateChannelAndConnectSuccessfully();
+  EXPECT_EQ(NULL, channel_.get());
+}
+
+TEST_F(WebSocketChannelDeletingTest, OnFlowControlAfterSend) {
+  set_stream(make_scoped_ptr(new WriteableFakeWebSocketStream));
+  // Avoid deleting the channel yet.
+  deleting_ = EVENT_ON_DROP_CHANNEL;
+  CreateChannelAndConnectSuccessfully();
+  ASSERT_TRUE(channel_);
+  deleting_ = EVENT_ON_FLOW_CONTROL;
+  channel_->SendFrame(true,
+                      WebSocketFrameHeader::kOpCodeText,
+                      std::vector<char>(kDefaultInitialQuota, 'B'));
+  EXPECT_EQ(NULL, channel_.get());
+}
+
+TEST_F(WebSocketChannelDeletingTest, OnClosingHandshakeSync) {
+  scoped_ptr<ReadableFakeWebSocketStream> stream(
+      new ReadableFakeWebSocketStream);
+  static const InitFrame frames[] = {
+      {FINAL_FRAME, WebSocketFrameHeader::kOpCodeClose,
+       NOT_MASKED,  CLOSE_DATA(NORMAL_CLOSURE, "Success")}};
+  stream->PrepareReadFrames(ReadableFakeWebSocketStream::SYNC, OK, frames);
+  set_stream(stream.Pass());
+  deleting_ = EVENT_ON_CLOSING_HANDSHAKE;
+  CreateChannelAndConnectSuccessfully();
+  EXPECT_EQ(NULL, channel_.get());
+}
+
+TEST_F(WebSocketChannelDeletingTest, OnClosingHandshakeAsync) {
+  scoped_ptr<ReadableFakeWebSocketStream> stream(
+      new ReadableFakeWebSocketStream);
+  static const InitFrame frames[] = {
+      {FINAL_FRAME, WebSocketFrameHeader::kOpCodeClose,
+       NOT_MASKED,  CLOSE_DATA(NORMAL_CLOSURE, "Success")}};
+  stream->PrepareReadFrames(ReadableFakeWebSocketStream::ASYNC, OK, frames);
+  set_stream(stream.Pass());
+  deleting_ = EVENT_ON_CLOSING_HANDSHAKE;
+  CreateChannelAndConnectSuccessfully();
+  ASSERT_TRUE(channel_);
+  base::MessageLoop::current()->RunUntilIdle();
+  EXPECT_EQ(NULL, channel_.get());
+}
+
+TEST_F(WebSocketChannelDeletingTest, OnDropChannelWriteError) {
+  set_stream(make_scoped_ptr(new UnWriteableFakeWebSocketStream));
+  deleting_ = EVENT_ON_DROP_CHANNEL;
+  CreateChannelAndConnectSuccessfully();
+  ASSERT_TRUE(channel_);
+  channel_->SendFrame(
+      true, WebSocketFrameHeader::kOpCodeText, AsVector("this will fail"));
+  EXPECT_EQ(NULL, channel_.get());
+}
+
+TEST_F(WebSocketChannelDeletingTest, OnDropChannelReadError) {
+  scoped_ptr<ReadableFakeWebSocketStream> stream(
+      new ReadableFakeWebSocketStream);
+  stream->PrepareReadFramesError(ReadableFakeWebSocketStream::ASYNC,
+                                 ERR_FAILED);
+  set_stream(stream.Pass());
+  deleting_ = EVENT_ON_DROP_CHANNEL;
+  CreateChannelAndConnectSuccessfully();
+  ASSERT_TRUE(channel_);
+  base::MessageLoop::current()->RunUntilIdle();
+  EXPECT_EQ(NULL, channel_.get());
+}
+
+TEST_F(WebSocketChannelDeletingTest, FailChannelInSendFrame) {
+  set_stream(make_scoped_ptr(new WriteableFakeWebSocketStream));
+  deleting_ = EVENT_ON_DROP_CHANNEL;
+  CreateChannelAndConnectSuccessfully();
+  ASSERT_TRUE(channel_);
+  channel_->SendFrame(true,
+                      WebSocketFrameHeader::kOpCodeText,
+                      std::vector<char>(kDefaultInitialQuota * 2, 'T'));
+  EXPECT_EQ(NULL, channel_.get());
+}
+
+TEST_F(WebSocketChannelDeletingTest, FailChannelInOnReadDone) {
+  scoped_ptr<ReadableFakeWebSocketStream> stream(
+      new ReadableFakeWebSocketStream);
+  stream->PrepareReadFramesError(ReadableFakeWebSocketStream::ASYNC,
+                                 ERR_WS_PROTOCOL_ERROR);
+  set_stream(stream.Pass());
+  deleting_ = EVENT_ON_DROP_CHANNEL;
+  CreateChannelAndConnectSuccessfully();
+  ASSERT_TRUE(channel_);
+  base::MessageLoop::current()->RunUntilIdle();
+  EXPECT_EQ(NULL, channel_.get());
+}
+
+TEST_F(WebSocketChannelDeletingTest, FailChannelDueToMaskedFrame) {
+  scoped_ptr<ReadableFakeWebSocketStream> stream(
+      new ReadableFakeWebSocketStream);
+  static const InitFrame frames[] = {
+      {FINAL_FRAME, WebSocketFrameHeader::kOpCodeText, MASKED, "HELLO"}};
+  stream->PrepareReadFrames(ReadableFakeWebSocketStream::SYNC, OK, frames);
+  set_stream(stream.Pass());
+  deleting_ = EVENT_ON_DROP_CHANNEL;
+
+  CreateChannelAndConnectSuccessfully();
+  EXPECT_EQ(NULL, channel_.get());
+}
+
+TEST_F(WebSocketChannelDeletingTest, FailChannelDueToBadControlFrame) {
+  scoped_ptr<ReadableFakeWebSocketStream> stream(
+      new ReadableFakeWebSocketStream);
+  static const InitFrame frames[] = {
+      {NOT_FINAL_FRAME, WebSocketFrameHeader::kOpCodePong, NOT_MASKED, ""}};
+  stream->PrepareReadFrames(ReadableFakeWebSocketStream::SYNC, OK, frames);
+  set_stream(stream.Pass());
+  deleting_ = EVENT_ON_DROP_CHANNEL;
+
+  CreateChannelAndConnectSuccessfully();
+  EXPECT_EQ(NULL, channel_.get());
+}
+
+TEST_F(WebSocketChannelDeletingTest, FailChannelDueToPongAfterClose) {
+  scoped_ptr<ReadableFakeWebSocketStream> stream(
+      new ReadableFakeWebSocketStream);
+  static const InitFrame frames[] = {
+    {FINAL_FRAME, WebSocketFrameHeader::kOpCodeClose, NOT_MASKED,
+     CLOSE_DATA(NORMAL_CLOSURE, "Success")},
+    {FINAL_FRAME, WebSocketFrameHeader::kOpCodePong, NOT_MASKED, ""}};
+  stream->PrepareReadFrames(ReadableFakeWebSocketStream::SYNC, OK, frames);
+  set_stream(stream.Pass());
+  deleting_ = EVENT_ON_DROP_CHANNEL;
+
+  CreateChannelAndConnectSuccessfully();
+  EXPECT_EQ(NULL, channel_.get());
+}
+
+TEST_F(WebSocketChannelDeletingTest, FailChannelDueToUnknownOpCode) {
+  scoped_ptr<ReadableFakeWebSocketStream> stream(
+      new ReadableFakeWebSocketStream);
+  static const InitFrame frames[] = {{FINAL_FRAME, 0x7, NOT_MASKED, ""}};
+  stream->PrepareReadFrames(ReadableFakeWebSocketStream::SYNC, OK, frames);
+  set_stream(stream.Pass());
+  deleting_ = EVENT_ON_DROP_CHANNEL;
+
+  CreateChannelAndConnectSuccessfully();
   EXPECT_EQ(NULL, channel_.get());
 }
 
@@ -905,7 +1195,7 @@ TEST_F(WebSocketChannelEventInterfaceTest, NormalAsyncRead) {
       {FINAL_FRAME, WebSocketFrameHeader::kOpCodeText, NOT_MASKED, "HELLO"}};
   // We use this checkpoint object to verify that the callback isn't called
   // until we expect it to be.
-  MockFunction<void(int)> checkpoint;
+  Checkpoint checkpoint;
   stream->PrepareReadFrames(ReadableFakeWebSocketStream::ASYNC, OK, frames);
   set_stream(stream.Pass());
   {
@@ -1193,7 +1483,7 @@ TEST_F(WebSocketChannelEventInterfaceTest, LargeWriteUpdatesQuota) {
   set_stream(make_scoped_ptr(new WriteableFakeWebSocketStream));
   // We use this checkpoint object to verify that the quota update comes after
   // the write.
-  MockFunction<void(int)> checkpoint;
+  Checkpoint checkpoint;
   {
     InSequence s;
     EXPECT_CALL(*event_interface_, OnAddChannelResponse(false, _));
@@ -1214,7 +1504,7 @@ TEST_F(WebSocketChannelEventInterfaceTest, LargeWriteUpdatesQuota) {
 // Verify that our quota actually is refreshed when we are told it is.
 TEST_F(WebSocketChannelEventInterfaceTest, QuotaReallyIsRefreshed) {
   set_stream(make_scoped_ptr(new WriteableFakeWebSocketStream));
-  MockFunction<void(int)> checkpoint;
+  Checkpoint checkpoint;
   {
     InSequence s;
     EXPECT_CALL(*event_interface_, OnAddChannelResponse(false, _));
@@ -1262,7 +1552,7 @@ TEST_F(WebSocketChannelEventInterfaceTest, WriteOverQuotaIsRejected) {
 // If a write fails, the channel is dropped.
 TEST_F(WebSocketChannelEventInterfaceTest, FailedWrite) {
   set_stream(make_scoped_ptr(new UnWriteableFakeWebSocketStream));
-  MockFunction<void(int)> checkpoint;
+  Checkpoint checkpoint;
   {
     InSequence s;
     EXPECT_CALL(*event_interface_, OnAddChannelResponse(false, _));
@@ -1381,14 +1671,14 @@ TEST_F(WebSocketChannelEventInterfaceTest,
   EXPECT_CALL(*event_interface_, OnFlowControl(_));
   // This checkpoint object verifies that the OnDropChannel message comes after
   // the timeout.
-  MockFunction<void(int)> checkpoint;
+  Checkpoint checkpoint;
   TestClosure completion;
   {
     InSequence s;
     EXPECT_CALL(checkpoint, Call(1));
     EXPECT_CALL(*event_interface_,
                 OnDropChannel(kWebSocketErrorAbnormalClosure, _))
-        .WillOnce(InvokeClosure(completion.closure()));
+        .WillOnce(InvokeClosureReturnDeleted(completion.closure()));
   }
   CreateChannelAndConnectSuccessfully();
   // OneShotTimer is not very friendly to testing; there is no apparent way to
@@ -1414,7 +1704,7 @@ TEST_F(WebSocketChannelEventInterfaceTest,
   set_stream(stream.Pass());
   EXPECT_CALL(*event_interface_, OnAddChannelResponse(false, _));
   EXPECT_CALL(*event_interface_, OnFlowControl(_));
-  MockFunction<void(int)> checkpoint;
+  Checkpoint checkpoint;
   TestClosure completion;
   {
     InSequence s;
@@ -1422,7 +1712,7 @@ TEST_F(WebSocketChannelEventInterfaceTest,
     EXPECT_CALL(*event_interface_, OnClosingHandshake());
     EXPECT_CALL(*event_interface_,
                 OnDropChannel(kWebSocketErrorAbnormalClosure, _))
-        .WillOnce(InvokeClosure(completion.closure()));
+        .WillOnce(InvokeClosureReturnDeleted(completion.closure()));
   }
   CreateChannelAndConnectSuccessfully();
   channel_->SetClosingHandshakeTimeoutForTesting(
@@ -1500,7 +1790,7 @@ TEST_F(WebSocketChannelStreamTest, CloseOnlySentOnce) {
   ScopedVector<WebSocketFrame>* frames = NULL;
 
   // Use a checkpoint to make the ordering of events clearer.
-  MockFunction<void(int)> checkpoint;
+  Checkpoint checkpoint;
   {
     InSequence s;
     EXPECT_CALL(*mock_stream_, GetSubProtocol()).Times(AnyNumber());
@@ -1652,7 +1942,7 @@ TEST_F(WebSocketChannelStreamTest, WriteFramesOneAtATime) {
   static const InitFrame expected2[] = {
       {FINAL_FRAME, WebSocketFrameHeader::kOpCodeText, MASKED, "World"}};
   CompletionCallback write_callback;
-  MockFunction<void(int)> checkpoint;
+  Checkpoint checkpoint;
 
   EXPECT_CALL(*mock_stream_, GetSubProtocol()).Times(AnyNumber());
   EXPECT_CALL(*mock_stream_, ReadFrames(_, _)).WillOnce(Return(ERR_IO_PENDING));
@@ -1861,7 +2151,7 @@ TEST_F(WebSocketChannelStreamTimeoutTest, ServerInitiatedCloseTimesOut) {
   EXPECT_CALL(*mock_stream_, ReadFrames(_, _))
       .WillOnce(ReturnFrames(&frames))
       .WillRepeatedly(Return(ERR_IO_PENDING));
-  MockFunction<void(int)> checkpoint;
+  Checkpoint checkpoint;
   TestClosure completion;
   {
     InSequence s;

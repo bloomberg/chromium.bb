@@ -27,8 +27,8 @@ namespace content {
 
 class WebSocketDispatcherHost;
 
-// Host of WebSocketChannel. The lifetime of an instance of this class is
-// completely controlled by the WebSocketDispatcherHost.
+// Host of net::WebSocketChannel. The lifetime of an instance of this class is
+// completely controlled by the WebSocketDispatcherHost object.
 class CONTENT_EXPORT WebSocketHost {
  public:
   WebSocketHost(int routing_id,

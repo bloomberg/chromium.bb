@@ -93,6 +93,7 @@
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/socket_stream_dispatcher_host.h"
 #include "content/browser/renderer_host/text_input_client_message_filter.h"
+#include "content/browser/renderer_host/websocket_dispatcher_host.h"
 #include "content/browser/resolve_proxy_msg_helper.h"
 #include "content/browser/service_worker/service_worker_context.h"
 #include "content/browser/service_worker/service_worker_dispatcher_host.h"
@@ -673,6 +674,13 @@ void RenderProcessHostImpl::CreateMessageFilters() {
       new SocketStreamDispatcherHost(
           GetID(), request_context_callback, resource_context);
   AddFilter(socket_stream_dispatcher_host);
+
+  WebSocketDispatcherHost::GetRequestContextCallback
+      websocket_request_context_callback(
+          base::Bind(&GetRequestContext, request_context,
+                     media_request_context, ResourceType::SUB_RESOURCE));
+
+  AddFilter(new WebSocketDispatcherHost(websocket_request_context_callback));
 
   message_port_message_filter_ = new MessagePortMessageFilter(
       base::Bind(&RenderWidgetHelper::GetNextRoutingID,

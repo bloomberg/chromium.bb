@@ -119,6 +119,12 @@ class NET_EXPORT_PRIVATE WebSocketStream {
   // ReadFrames may discard the incomplete frame. Since the renderer will
   // discard any incomplete messages when the connection is closed, this makes
   // no difference to the overall semantics.
+  //
+  // Implementations of ReadFrames() must be able to handle being deleted during
+  // the execution of callback.Run(). In practice this means that the method
+  // calling callback.Run() (and any calling methods in the same object) must
+  // return immediately without any further method calls or access to member
+  // variables. Implementors should write test(s) for this case.
   virtual int ReadFrames(ScopedVector<WebSocketFrame>* frames,
                          const CompletionCallback& callback) = 0;
 
@@ -131,6 +137,11 @@ class NET_EXPORT_PRIVATE WebSocketStream {
   //
   // This method will only return OK if all frames were written completely.
   // Otherwise it will return an appropriate net error code.
+  //
+  // The callback implementation is permitted to delete this
+  // object. Implementations of WriteFrames() should be robust against
+  // this. This generally means returning to the event loop immediately after
+  // calling the callback.
   virtual int WriteFrames(ScopedVector<WebSocketFrame>* frames,
                           const CompletionCallback& callback) = 0;
 

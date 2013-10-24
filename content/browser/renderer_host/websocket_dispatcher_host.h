@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/compiler_specific.h"
 #include "base/containers/hash_tables.h"
 #include "content/common/content_export.h"
 #include "content/common/websocket.h"
@@ -33,6 +34,15 @@ class CONTENT_EXPORT WebSocketDispatcherHost : public BrowserMessageFilter {
   // WebSocketHost or its subclass.
   typedef base::Callback<WebSocketHost*(int)> WebSocketHostFactory;
 
+  // Return value for methods that may delete the WebSocketHost. This enum is
+  // binary-compatible with net::WebSocketEventInterface::ChannelState, to make
+  // conversion cheap. By using a separate enum including net/ header files can
+  // be avoided.
+  enum WebSocketHostState {
+    WEBSOCKET_HOST_ALIVE,
+    WEBSOCKET_HOST_DELETED
+  };
+
   explicit WebSocketDispatcherHost(
       const GetRequestContextCallback& get_context_callback);
 
@@ -48,30 +58,36 @@ class CONTENT_EXPORT WebSocketDispatcherHost : public BrowserMessageFilter {
 
   // The following methods are used by WebSocketHost::EventInterface to send
   // IPCs from the browser to the renderer or child process. Any of them may
-  // delete the WebSocketHost on failure, leading to the WebSocketChannel and
-  // EventInterface also being deleted.
+  // return WEBSOCKET_HOST_DELETED and delete the WebSocketHost on failure,
+  // leading to the WebSocketChannel and EventInterface also being deleted.
 
   // Sends a WebSocketMsg_AddChannelResponse IPC, and then deletes and
   // unregisters the WebSocketHost if |fail| is true.
-  void SendAddChannelResponse(int routing_id,
-                              bool fail,
-                              const std::string& selected_protocol,
-                              const std::string& extensions);
+  WebSocketHostState SendAddChannelResponse(
+      int routing_id,
+      bool fail,
+      const std::string& selected_protocol,
+      const std::string& extensions) WARN_UNUSED_RESULT;
 
   // Sends a WebSocketMsg_SendFrame IPC.
-  void SendFrame(int routing_id,
-                 bool fin,
-                 WebSocketMessageType type,
-                 const std::vector<char>& data);
+  WebSocketHostState SendFrame(int routing_id,
+                               bool fin,
+                               WebSocketMessageType type,
+                               const std::vector<char>& data);
 
   // Sends a WebSocketMsg_FlowControl IPC.
-  void SendFlowControl(int routing_id, int64 quota);
+  WebSocketHostState SendFlowControl(int routing_id,
+                                     int64 quota) WARN_UNUSED_RESULT;
 
   // Sends a WebSocketMsg_SendClosing IPC
-  void SendClosing(int routing_id);
+  WebSocketHostState SendClosing(int routing_id) WARN_UNUSED_RESULT;
 
-  // Sends a WebSocketMsg_DropChannel IPC and delete and unregister the channel.
-  void DoDropChannel(int routing_id, uint16 code, const std::string& reason);
+  // Sends a WebSocketMsg_DropChannel IPC and deletes and unregisters the
+  // channel.
+  WebSocketHostState DoDropChannel(
+      int routing_id,
+      uint16 code,
+      const std::string& reason) WARN_UNUSED_RESULT;
 
  private:
   typedef base::hash_map<int, WebSocketHost*> WebSocketHostTable;
@@ -85,13 +101,13 @@ class CONTENT_EXPORT WebSocketDispatcherHost : public BrowserMessageFilter {
   WebSocketHost* GetHost(int routing_id) const;
 
   // Sends the passed in IPC::Message via the BrowserMessageFilter::Send()
-  // method. If the Send() fails, logs it and deletes the corresponding
-  // WebSocketHost object (the client is probably dead).
-  void SendOrDrop(IPC::Message* message);
+  // method. If sending the IPC fails, assumes that this connection is no
+  // longer useable, calls DeleteWebSocketHost(), and returns
+  // WEBSOCKET_HOST_DELETED. The behaviour is the same for all message types.
+  WebSocketHostState SendOrDrop(IPC::Message* message) WARN_UNUSED_RESULT;
 
   // Deletes the WebSocketHost object associated with the given |routing_id| and
-  // removes it from the |hosts_| table. Does nothing if the |routing_id| is
-  // unknown, since SendAddChannelResponse() may call this method twice.
+  // removes it from the |hosts_| table.
   void DeleteWebSocketHost(int routing_id);
 
   // Table of WebSocketHost objects, owned by this object, indexed by

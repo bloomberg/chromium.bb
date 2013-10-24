@@ -10,11 +10,13 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/compiler_specific.h"  // for WARN_UNUSED_RESULT
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "net/base/net_export.h"
+#include "net/websockets/websocket_event_interface.h"
 #include "net/websockets/websocket_frame.h"
 #include "net/websockets/websocket_stream.h"
 #include "url/gurl.h"
@@ -24,7 +26,6 @@ namespace net {
 class BoundNetLog;
 class IOBuffer;
 class URLRequestContext;
-class WebSocketEventInterface;
 
 // Transport-independent implementation of WebSockets. Implements protocol
 // semantics that do not depend on the underlying transport. Provides the
@@ -101,6 +102,11 @@ class NET_EXPORT WebSocketChannel {
   void SetClosingHandshakeTimeoutForTesting(base::TimeDelta delay);
 
  private:
+  // Methods which return a value of type ChannelState may delete |this|. If the
+  // return value is CHANNEL_DELETED, then the caller must return without making
+  // any further access to member variables or methods.
+  typedef WebSocketEventInterface::ChannelState ChannelState;
+
   // The object passes through a linear progression of states from
   // FRESHLY_CONSTRUCTED to CLOSED, except that the SEND_CLOSED and RECV_CLOSED
   // states may be skipped in case of error.
@@ -142,55 +148,56 @@ class NET_EXPORT WebSocketChannel {
       const WebSocketStreamFactory& factory);
 
   // Success callback from WebSocketStream::CreateAndConnectStream(). Reports
-  // success to the event interface.
+  // success to the event interface. May delete |this|.
   void OnConnectSuccess(scoped_ptr<WebSocketStream> stream);
 
   // Failure callback from WebSocketStream::CreateAndConnectStream(). Reports
-  // failure to the event interface.
+  // failure to the event interface. May delete |this|.
   void OnConnectFailure(uint16 websocket_error);
 
   // Returns true if state_ is SEND_CLOSED, CLOSE_WAIT or CLOSED.
   bool InClosingState() const;
 
   // Calls WebSocketStream::WriteFrames() with the appropriate arguments
-  void WriteFrames();
+  ChannelState WriteFrames() WARN_UNUSED_RESULT;
 
   // Callback from WebSocketStream::WriteFrames. Sends pending data or adjusts
   // the send quota of the renderer channel as appropriate. |result| is a net
   // error code, usually OK. If |synchronous| is true, then OnWriteDone() is
   // being called from within the WriteFrames() loop and does not need to call
   // WriteFrames() itself.
-  void OnWriteDone(bool synchronous, int result);
+  ChannelState OnWriteDone(bool synchronous, int result) WARN_UNUSED_RESULT;
 
   // Calls WebSocketStream::ReadFrames() with the appropriate arguments.
-  void ReadFrames();
+  ChannelState ReadFrames() WARN_UNUSED_RESULT;
 
   // Callback from WebSocketStream::ReadFrames. Handles any errors and processes
   // the returned chunks appropriately to their type. |result| is a net error
   // code. If |synchronous| is true, then OnReadDone() is being called from
   // within the ReadFrames() loop and does not need to call ReadFrames() itself.
-  void OnReadDone(bool synchronous, int result);
+  ChannelState OnReadDone(bool synchronous, int result) WARN_UNUSED_RESULT;
 
   // Processes a single frame that has been read from the stream.
-  void ProcessFrame(scoped_ptr<WebSocketFrame> frame);
+  ChannelState ProcessFrame(
+      scoped_ptr<WebSocketFrame> frame) WARN_UNUSED_RESULT;
 
   // Handles a frame that the object has received enough of to process. May call
   // |event_interface_| methods, send responses to the server, and change the
   // value of |state_|.
-  void HandleFrame(const WebSocketFrameHeader::OpCode opcode,
-                   bool final,
-                   const scoped_refptr<IOBuffer>& data_buffer,
-                   size_t size);
+  ChannelState HandleFrame(const WebSocketFrameHeader::OpCode opcode,
+                           bool final,
+                           const scoped_refptr<IOBuffer>& data_buffer,
+                           size_t size) WARN_UNUSED_RESULT;
 
   // Low-level method to send a single frame. Used for both data and control
   // frames. Either sends the frame immediately or buffers it to be scheduled
   // when the current write finishes. |fin| and |op_code| are defined as for
   // SendFrame() above, except that |op_code| may also be a control frame
   // opcode.
-  void SendIOBuffer(bool fin,
-                    WebSocketFrameHeader::OpCode op_code,
-                    const scoped_refptr<IOBuffer>& buffer,
-                    size_t size);
+  ChannelState SendIOBuffer(bool fin,
+                            WebSocketFrameHeader::OpCode op_code,
+                            const scoped_refptr<IOBuffer>& buffer,
+                            size_t size) WARN_UNUSED_RESULT;
 
   // Performs the "Fail the WebSocket Connection" operation as defined in
   // RFC6455. The supplied code and reason are sent back to the renderer in an
@@ -198,13 +205,18 @@ class NET_EXPORT WebSocketChannel {
   // to the remote host. If |expose| is SEND_REAL_ERROR then the remote host is
   // given the same status code passed to the renderer; otherwise it is sent a
   // fixed "Going Away" code.  Closes the stream_ and sets state_ to CLOSED.
-  void FailChannel(ExposeError expose, uint16 code, const std::string& reason);
+  // FailChannel() always returns CHANNEL_DELETED. It is not valid to access any
+  // member variables or methods after calling FailChannel().
+  ChannelState FailChannel(ExposeError expose,
+                           uint16 code,
+                           const std::string& reason) WARN_UNUSED_RESULT;
 
   // Sends a Close frame to Start the WebSocket Closing Handshake, or to respond
   // to a Close frame from the server. As a special case, setting |code| to
   // kWebSocketErrorNoStatusReceived will create a Close frame with no payload;
   // this is symmetric with the behaviour of ParseClose.
-  void SendClose(uint16 code, const std::string& reason);
+  ChannelState SendClose(uint16 code,
+                         const std::string& reason) WARN_UNUSED_RESULT;
 
   // Parses a Close frame. If no status code is supplied, then |code| is set to
   // 1005 (No status code) with empty |reason|. If the supplied code is

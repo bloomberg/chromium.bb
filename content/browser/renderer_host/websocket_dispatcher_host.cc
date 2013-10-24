@@ -14,6 +14,15 @@
 
 namespace content {
 
+namespace {
+
+// Many methods defined in this file return a WebSocketHostState enum
+// value. Make WebSocketHostState visible at file scope so it doesn't have to be
+// fully-qualified every time.
+typedef WebSocketDispatcherHost::WebSocketHostState WebSocketHostState;
+
+}  // namespace
+
 WebSocketDispatcherHost::WebSocketDispatcherHost(
     const GetRequestContextCallback& get_context_callback)
     : get_context_callback_(get_context_callback),
@@ -73,45 +82,59 @@ WebSocketHost* WebSocketDispatcherHost::GetHost(int routing_id) const {
   return it == hosts_.end() ? NULL : it->second;
 }
 
-void WebSocketDispatcherHost::SendOrDrop(IPC::Message* message) {
+WebSocketHostState WebSocketDispatcherHost::SendOrDrop(IPC::Message* message) {
   if (!Send(message)) {
     DVLOG(1) << "Sending of message type " << message->type()
              << " failed. Dropping channel.";
     DeleteWebSocketHost(message->routing_id());
+    return WEBSOCKET_HOST_DELETED;
   }
+  return WEBSOCKET_HOST_ALIVE;
 }
 
-void WebSocketDispatcherHost::SendAddChannelResponse(
+WebSocketHostState WebSocketDispatcherHost::SendAddChannelResponse(
     int routing_id,
     bool fail,
     const std::string& selected_protocol,
     const std::string& extensions) {
-  SendOrDrop(new WebSocketMsg_AddChannelResponse(
-      routing_id, fail, selected_protocol, extensions));
-  if (fail)
+  if (SendOrDrop(new WebSocketMsg_AddChannelResponse(
+          routing_id, fail, selected_protocol, extensions)) ==
+      WEBSOCKET_HOST_DELETED)
+    return WEBSOCKET_HOST_DELETED;
+  if (fail) {
     DeleteWebSocketHost(routing_id);
+    return WEBSOCKET_HOST_DELETED;
+  }
+  return WEBSOCKET_HOST_ALIVE;
 }
 
-void WebSocketDispatcherHost::SendFrame(int routing_id,
-                                        bool fin,
-                                        WebSocketMessageType type,
-                                        const std::vector<char>& data) {
-  SendOrDrop(new WebSocketMsg_SendFrame(routing_id, fin, type, data));
+WebSocketHostState WebSocketDispatcherHost::SendFrame(
+    int routing_id,
+    bool fin,
+    WebSocketMessageType type,
+    const std::vector<char>& data) {
+  return SendOrDrop(new WebSocketMsg_SendFrame(routing_id, fin, type, data));
 }
 
-void WebSocketDispatcherHost::SendFlowControl(int routing_id, int64 quota) {
-  SendOrDrop(new WebSocketMsg_FlowControl(routing_id, quota));
+WebSocketHostState WebSocketDispatcherHost::SendFlowControl(int routing_id,
+                                                            int64 quota) {
+  return SendOrDrop(new WebSocketMsg_FlowControl(routing_id, quota));
 }
 
-void WebSocketDispatcherHost::SendClosing(int routing_id) {
+WebSocketHostState WebSocketDispatcherHost::SendClosing(int routing_id) {
   // TODO(ricea): Implement the SendClosing IPC.
+  return WEBSOCKET_HOST_ALIVE;
 }
 
-void WebSocketDispatcherHost::DoDropChannel(int routing_id,
-                                            uint16 code,
-                                            const std::string& reason) {
-  SendOrDrop(new WebSocketMsg_DropChannel(routing_id, code, reason));
+WebSocketHostState WebSocketDispatcherHost::DoDropChannel(
+    int routing_id,
+    uint16 code,
+    const std::string& reason) {
+  if (SendOrDrop(new WebSocketMsg_DropChannel(routing_id, code, reason)) ==
+      WEBSOCKET_HOST_DELETED)
+    return WEBSOCKET_HOST_DELETED;
   DeleteWebSocketHost(routing_id);
+  return WEBSOCKET_HOST_DELETED;
 }
 
 WebSocketDispatcherHost::~WebSocketDispatcherHost() {
@@ -120,10 +143,9 @@ WebSocketDispatcherHost::~WebSocketDispatcherHost() {
 
 void WebSocketDispatcherHost::DeleteWebSocketHost(int routing_id) {
   WebSocketHostTable::iterator it = hosts_.find(routing_id);
-  if (it != hosts_.end()) {
-    delete it->second;
-    hosts_.erase(it);
-  }
+  DCHECK(it != hosts_.end());
+  delete it->second;
+  hosts_.erase(it);
 }
 
 }  // namespace content

@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"  // for WARN_UNUSED_RESULT
 #include "net/base/net_export.h"
 
 namespace net {
@@ -18,35 +19,41 @@ namespace net {
 class NET_EXPORT WebSocketEventInterface {
  public:
   typedef int WebSocketMessageType;
+
+  // Any event can cause the Channel to be deleted. The Channel needs to avoid
+  // doing further processing in this case. It does not need to do cleanup, as
+  // cleanup will already have been done as a result of the deletion.
+  enum ChannelState {
+    CHANNEL_ALIVE,
+    CHANNEL_DELETED
+  };
+
   virtual ~WebSocketEventInterface() {}
   // Called in response to an AddChannelRequest. This generally means that a
   // response has been received from the remote server, but the response might
   // have been generated internally. If |fail| is true, the channel cannot be
-  // used and it is valid to delete the WebSocketChannel from within this
-  // callback.
-  virtual void OnAddChannelResponse(
+  // used and should be deleted, returning CHANNEL_DELETED.
+  virtual ChannelState OnAddChannelResponse(
       bool fail,
-      const std::string& selected_subprotocol) = 0;
+      const std::string& selected_subprotocol) WARN_UNUSED_RESULT = 0;
 
   // Called when a data frame has been received from the remote host and needs
-  // to be forwarded to the renderer process. It is not safe to delete the
-  // WebSocketChannel object from within this callback.
-  virtual void OnDataFrame(bool fin,
-                           WebSocketMessageType type,
-                           const std::vector<char>& data) = 0;
+  // to be forwarded to the renderer process.
+  virtual ChannelState OnDataFrame(
+      bool fin,
+      WebSocketMessageType type,
+      const std::vector<char>& data) WARN_UNUSED_RESULT = 0;
 
   // Called to provide more send quota for this channel to the renderer
   // process. Currently the quota units are always bytes of message body
-  // data. In future it might depend on the type of multiplexing in use. It is
-  // not safe to delete the WebSocketChannel from within this callback.
-  virtual void OnFlowControl(int64 quota) = 0;
+  // data. In future it might depend on the type of multiplexing in use.
+  virtual ChannelState OnFlowControl(int64 quota) WARN_UNUSED_RESULT = 0;
 
   // Called when the remote server has Started the WebSocket Closing
   // Handshake. The client should not attempt to send any more messages after
   // receiving this message. It will be followed by OnDropChannel() when the
-  // closing handshake is complete. It is not safe to delete the
-  // WebSocketChannel from within this callback.
-  virtual void OnClosingHandshake() = 0;
+  // closing handshake is complete.
+  virtual ChannelState OnClosingHandshake() WARN_UNUSED_RESULT = 0;
 
   // Called when the channel has been dropped, either due to a network close, a
   // network error, or a protocol error. This may or may not be preceeded by a
@@ -59,10 +66,10 @@ class NET_EXPORT WebSocketEventInterface {
   // The channel should not be used again after OnDropChannel() has been
   // called.
   //
-  // It is not safe to delete the WebSocketChannel from within this
-  // callback. It is recommended to delete the channel after returning to the
-  // event loop.
-  virtual void OnDropChannel(uint16 code, const std::string& reason) = 0;
+  // This method returns a ChannelState for consistency, but all implementations
+  // must delete the Channel and return CHANNEL_DELETED.
+  virtual ChannelState OnDropChannel(uint16 code, const std::string& reason)
+      WARN_UNUSED_RESULT = 0;
 
  protected:
   WebSocketEventInterface() {}

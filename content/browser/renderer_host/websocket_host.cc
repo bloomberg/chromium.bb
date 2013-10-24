@@ -17,6 +17,8 @@ namespace content {
 
 namespace {
 
+typedef net::WebSocketEventInterface::ChannelState ChannelState;
+
 // Convert a content::WebSocketMessageType to a
 // net::WebSocketFrameHeader::OpCode
 net::WebSocketFrameHeader::OpCode MessageTypeToOpCode(
@@ -48,6 +50,25 @@ WebSocketMessageType OpCodeToMessageType(
   return static_cast<WebSocketMessageType>(opCode);
 }
 
+ChannelState StateCast(WebSocketDispatcherHost::WebSocketHostState host_state) {
+  const WebSocketDispatcherHost::WebSocketHostState WEBSOCKET_HOST_ALIVE =
+      WebSocketDispatcherHost::WEBSOCKET_HOST_ALIVE;
+  const WebSocketDispatcherHost::WebSocketHostState WEBSOCKET_HOST_DELETED =
+      WebSocketDispatcherHost::WEBSOCKET_HOST_DELETED;
+
+  DCHECK(host_state == WEBSOCKET_HOST_ALIVE ||
+         host_state == WEBSOCKET_HOST_DELETED);
+  // These compile asserts verify that we can get away with using static_cast<>
+  // for the conversion.
+  COMPILE_ASSERT(static_cast<ChannelState>(WEBSOCKET_HOST_ALIVE) ==
+                     net::WebSocketEventInterface::CHANNEL_ALIVE,
+                 enum_values_must_match_for_state_alive);
+  COMPILE_ASSERT(static_cast<ChannelState>(WEBSOCKET_HOST_DELETED) ==
+                     net::WebSocketEventInterface::CHANNEL_DELETED,
+                 enum_values_must_match_for_state_deleted);
+  return static_cast<ChannelState>(host_state);
+}
+
 // Implementation of net::WebSocketEventInterface. Receives events from our
 // WebSocketChannel object. Each event is translated to an IPC and sent to the
 // renderer or child process via WebSocketDispatcherHost.
@@ -61,16 +82,16 @@ class WebSocketEventHandler : public net::WebSocketEventInterface {
   // TODO(ricea): Add |extensions| parameter to pass the list of enabled
   // WebSocket extensions through to the renderer to make it visible to
   // Javascript.
-  virtual void OnAddChannelResponse(
+  virtual ChannelState OnAddChannelResponse(
       bool fail,
       const std::string& selected_subprotocol) OVERRIDE;
-  virtual void OnDataFrame(bool fin,
-                           WebSocketMessageType type,
-                           const std::vector<char>& data) OVERRIDE;
-  virtual void OnClosingHandshake() OVERRIDE;
-  virtual void OnFlowControl(int64 quota) OVERRIDE;
-  virtual void OnDropChannel(uint16 code,
-                             const std::string& reason) OVERRIDE;
+  virtual ChannelState OnDataFrame(bool fin,
+                                   WebSocketMessageType type,
+                                   const std::vector<char>& data) OVERRIDE;
+  virtual ChannelState OnClosingHandshake() OVERRIDE;
+  virtual ChannelState OnFlowControl(int64 quota) OVERRIDE;
+  virtual ChannelState OnDropChannel(uint16 code,
+                                     const std::string& reason) OVERRIDE;
 
  private:
   WebSocketDispatcherHost* const dispatcher_;
@@ -88,35 +109,32 @@ WebSocketEventHandler::~WebSocketEventHandler() {
   DVLOG(1) << "WebSocketEventHandler destroyed routing_id= " << routing_id_;
 }
 
-void WebSocketEventHandler::OnAddChannelResponse(
+ChannelState WebSocketEventHandler::OnAddChannelResponse(
     bool fail,
     const std::string& selected_protocol) {
-  dispatcher_->SendAddChannelResponse(
-      routing_id_, fail, selected_protocol, std::string());
-  // |this| may have been deleted here.
+  return StateCast(dispatcher_->SendAddChannelResponse(
+      routing_id_, fail, selected_protocol, std::string()));
 }
 
-void WebSocketEventHandler::OnDataFrame(bool fin,
-                                        net::WebSocketFrameHeader::OpCode type,
-                                        const std::vector<char>& data) {
-  dispatcher_->SendFrame(routing_id_, fin, OpCodeToMessageType(type), data);
-  // |this| may have been deleted here.
+ChannelState WebSocketEventHandler::OnDataFrame(
+    bool fin,
+    net::WebSocketFrameHeader::OpCode type,
+    const std::vector<char>& data) {
+  return StateCast(dispatcher_->SendFrame(
+      routing_id_, fin, OpCodeToMessageType(type), data));
 }
 
-void WebSocketEventHandler::OnClosingHandshake() {
-  dispatcher_->SendClosing(routing_id_);
-  // |this| may have been deleted here.
+ChannelState WebSocketEventHandler::OnClosingHandshake() {
+  return StateCast(dispatcher_->SendClosing(routing_id_));
 }
 
-void WebSocketEventHandler::OnFlowControl(int64 quota) {
-  dispatcher_->SendFlowControl(routing_id_, quota);
-  // |this| may have been deleted here.
+ChannelState WebSocketEventHandler::OnFlowControl(int64 quota) {
+  return StateCast(dispatcher_->SendFlowControl(routing_id_, quota));
 }
 
-void WebSocketEventHandler::OnDropChannel(uint16 code,
-                                          const std::string& reason) {
-  dispatcher_->DoDropChannel(routing_id_, code, reason);
-  // |this| has been deleted here.
+ChannelState WebSocketEventHandler::OnDropChannel(uint16 code,
+                                                  const std::string& reason) {
+  return StateCast(dispatcher_->DoDropChannel(routing_id_, code, reason));
 }
 
 }  // namespace
