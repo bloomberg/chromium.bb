@@ -171,11 +171,9 @@ class MaxSizeWidgetDelegate : public views::WidgetDelegateView {
 
 } // namespace
 
-class SystemGestureEventFilterTest
-    : public AshTestBase,
-      public testing::WithParamInterface<bool> {
+class SystemGestureEventFilterTest : public AshTestBase {
  public:
-  SystemGestureEventFilterTest() : AshTestBase(), docked_enabled_(GetParam()) {}
+  SystemGestureEventFilterTest() : AshTestBase() {}
   virtual ~SystemGestureEventFilterTest() {}
 
   internal::LongPressAffordanceHandler* GetLongPressAffordance() {
@@ -202,10 +200,6 @@ class SystemGestureEventFilterTest
   virtual void SetUp() OVERRIDE {
     CommandLine::ForCurrentProcess()->AppendSwitch(
         ash::switches::kAshEnableAdvancedGestures);
-    if (docked_enabled_) {
-      CommandLine::ForCurrentProcess()->AppendSwitch(
-          ash::switches::kAshEnableDockedWindows);
-    }
     test::AshTestBase::SetUp();
     // Enable brightness key.
     test::DisplayManagerTestApi(Shell::GetInstance()->display_manager()).
@@ -213,9 +207,6 @@ class SystemGestureEventFilterTest
   }
 
  private:
-  // true if docked windows are enabled with a flag.
-  bool docked_enabled_;
-
   DISALLOW_COPY_AND_ASSIGN(SystemGestureEventFilterTest);
 };
 
@@ -284,7 +275,7 @@ void MoveToDeviceControlBezelStartPosition(
   EXPECT_EQ(expected_value, delegate->handle_percent());
 }
 
-TEST_P(SystemGestureEventFilterTest, LongPressAffordanceStateOnCaptureLoss) {
+TEST_F(SystemGestureEventFilterTest, LongPressAffordanceStateOnCaptureLoss) {
   aura::RootWindow* root_window = Shell::GetPrimaryRootWindow();
 
   aura::test::TestWindowDelegate delegate;
@@ -343,7 +334,7 @@ TEST_P(SystemGestureEventFilterTest, LongPressAffordanceStateOnCaptureLoss) {
   EXPECT_EQ(NULL, GetLongPressAffordanceView());
 }
 
-TEST_P(SystemGestureEventFilterTest, MultiFingerSwipeGestures) {
+TEST_F(SystemGestureEventFilterTest, MultiFingerSwipeGestures) {
   aura::RootWindow* root_window = Shell::GetPrimaryRootWindow();
   views::Widget* toplevel = views::Widget::CreateWindowWithContextAndBounds(
       new ResizableWidgetDelegate, root_window, gfx::Rect(0, 0, 600, 600));
@@ -401,7 +392,7 @@ TEST_P(SystemGestureEventFilterTest, MultiFingerSwipeGestures) {
   EXPECT_EQ(current_bounds.ToString(), right_tile_bounds.ToString());
 }
 
-TEST_P(SystemGestureEventFilterTest, TwoFingerDrag) {
+TEST_F(SystemGestureEventFilterTest, TwoFingerDrag) {
   gfx::Rect bounds(0, 0, 600, 600);
   aura::RootWindow* root_window = Shell::GetPrimaryRootWindow();
   views::Widget* toplevel = views::Widget::CreateWindowWithContextAndBounds(
@@ -459,7 +450,7 @@ TEST_P(SystemGestureEventFilterTest, TwoFingerDrag) {
   EXPECT_EQ(current_bounds.ToString(), right_tile_bounds.ToString());
 }
 
-TEST_P(SystemGestureEventFilterTest, TwoFingerDragTwoWindows) {
+TEST_F(SystemGestureEventFilterTest, TwoFingerDragTwoWindows) {
   aura::RootWindow* root_window = Shell::GetPrimaryRootWindow();
   ui::GestureConfiguration::set_max_separation_for_gesture_touches_in_pixels(0);
   views::Widget* first = views::Widget::CreateWindowWithContextAndBounds(
@@ -483,9 +474,8 @@ TEST_P(SystemGestureEventFilterTest, TwoFingerDragTwoWindows) {
   };
 
   aura::test::EventGenerator generator(root_window);
-  // Do not drag too fast to avoid fling.
   generator.GestureMultiFingerScroll(kTouchPoints, points,
-      50, kSteps, 0, 150);
+      15, kSteps, 0, 150);
 
   EXPECT_NE(first_bounds.ToString(),
             first->GetWindowBoundsInScreen().ToString());
@@ -493,7 +483,7 @@ TEST_P(SystemGestureEventFilterTest, TwoFingerDragTwoWindows) {
             second->GetWindowBoundsInScreen().ToString());
 }
 
-TEST_P(SystemGestureEventFilterTest, WindowsWithMaxSizeDontSnap) {
+TEST_F(SystemGestureEventFilterTest, WindowsWithMaxSizeDontSnap) {
   gfx::Rect bounds(150, 150, 100, 100);
   aura::RootWindow* root_window = Shell::GetPrimaryRootWindow();
   views::Widget* toplevel = views::Widget::CreateWindowWithContextAndBounds(
@@ -552,7 +542,7 @@ TEST_P(SystemGestureEventFilterTest, WindowsWithMaxSizeDontSnap) {
       toplevel->GetWindowBoundsInScreen().ToString());
 }
 
-TEST_P(SystemGestureEventFilterTest, TwoFingerDragEdge) {
+TEST_F(SystemGestureEventFilterTest, TwoFingerDragEdge) {
   gfx::Rect bounds(0, 0, 100, 100);
   aura::RootWindow* root_window = Shell::GetPrimaryRootWindow();
   views::Widget* toplevel = views::Widget::CreateWindowWithContextAndBounds(
@@ -578,83 +568,6 @@ TEST_P(SystemGestureEventFilterTest, TwoFingerDragEdge) {
   EXPECT_EQ(bounds.ToString(),
             toplevel->GetNativeWindow()->bounds().ToString());
 }
-
-TEST_P(SystemGestureEventFilterTest, TwoFingerDragDelayed) {
-  gfx::Rect bounds(0, 0, 100, 100);
-  aura::RootWindow* root_window = Shell::GetPrimaryRootWindow();
-  views::Widget* toplevel = views::Widget::CreateWindowWithContextAndBounds(
-      new ResizableWidgetDelegate, root_window, bounds);
-  toplevel->Show();
-
-  const int kSteps = 15;
-  const int kTouchPoints = 2;
-  gfx::Point points[kTouchPoints] = {
-    gfx::Point(30, 20),  // Caption
-    gfx::Point(34, 20),  // Caption
-  };
-  int delays[kTouchPoints] = {0, 120};
-
-  EXPECT_EQ(HTCAPTION, toplevel->GetNativeWindow()->delegate()->
-        GetNonClientComponent(points[0]));
-  EXPECT_EQ(HTCAPTION, toplevel->GetNativeWindow()->delegate()->
-        GetNonClientComponent(points[1]));
-
-  aura::test::EventGenerator generator(root_window,
-                                       toplevel->GetNativeWindow());
-
-  bounds = toplevel->GetNativeWindow()->bounds();
-  // Swipe right and down starting with one finger.
-  // Add another finger after 120ms and continue dragging.
-  // The window should move and the drag should be determined by the center
-  // point between the fingers.
-  generator.GestureMultiFingerScrollWithDelays(
-      kTouchPoints, points, delays, 15, kSteps, 150, 150);
-  bounds += gfx::Vector2d(150 + (points[1].x() - points[0].x()) / 2, 150);
-  EXPECT_EQ(bounds.ToString(),
-            toplevel->GetNativeWindow()->bounds().ToString());
-}
-
-TEST_P(SystemGestureEventFilterTest, ThreeFingerGestureStopsDrag) {
-  gfx::Rect bounds(0, 0, 100, 100);
-  aura::RootWindow* root_window = Shell::GetPrimaryRootWindow();
-  views::Widget* toplevel = views::Widget::CreateWindowWithContextAndBounds(
-      new ResizableWidgetDelegate, root_window, bounds);
-  toplevel->Show();
-
-  const int kSteps = 10;
-  const int kTouchPoints = 3;
-  gfx::Point points[kTouchPoints] = {
-    gfx::Point(30, 20),  // Caption
-    gfx::Point(34, 20),  // Caption
-    gfx::Point(38, 20),  // Caption
-  };
-  int delays[kTouchPoints] = {0, 0, 120};
-
-  EXPECT_EQ(HTCAPTION, toplevel->GetNativeWindow()->delegate()->
-        GetNonClientComponent(points[0]));
-  EXPECT_EQ(HTCAPTION, toplevel->GetNativeWindow()->delegate()->
-        GetNonClientComponent(points[1]));
-
-  aura::test::EventGenerator generator(root_window,
-                                       toplevel->GetNativeWindow());
-
-  bounds = toplevel->GetNativeWindow()->bounds();
-  // Swipe right and down starting with two fingers.
-  // Add third finger after 120ms and continue dragging.
-  // The window should start moving but stop when the 3rd finger touches down.
-  const int kEventSeparation = 15;
-  generator.GestureMultiFingerScrollWithDelays(
-      kTouchPoints, points, delays, kEventSeparation, kSteps, 150, 150);
-  int expected_drag = 150 / kSteps * 120 / kEventSeparation;
-  bounds += gfx::Vector2d(expected_drag, expected_drag);
-  EXPECT_EQ(bounds.ToString(),
-            toplevel->GetNativeWindow()->bounds().ToString());
-}
-
-// Tests run twice - with docked windows disabled or enabled.
-INSTANTIATE_TEST_CASE_P(DockedWindowsDisabledOrEnabled,
-                        SystemGestureEventFilterTest,
-                        testing::Bool());
 
 }  // namespace test
 }  // namespace ash

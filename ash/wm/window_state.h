@@ -22,8 +22,6 @@ class Rect;
 }
 
 namespace ash {
-class WindowResizer;
-
 namespace wm {
 class WindowStateObserver;
 
@@ -197,19 +195,6 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
     top_row_keys_are_function_keys_ = value;
   }
 
-  // Returns or sets a pointer to WindowResizer when resizing is active.
-  // The pointer to a WindowResizer that is returned is set when a resizer gets
-  // created and cleared when it gets destroyed. WindowState does not own the
-  // |window_resizer_| instance and the resizer's lifetime is controlled
-  // externally. It can be used to avoid creating multiple instances of a
-  // WindowResizer for the same window.
-  WindowResizer* window_resizer() const {
-    return window_resizer_;
-  }
-  void set_window_resizer_(WindowResizer* window_resizer) {
-    window_resizer_ = window_resizer;
-  }
-
   // aura::WindowObserver overrides:
   virtual void OnWindowPropertyChanged(aura::Window* window,
                                        const void* key,
@@ -232,7 +217,6 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   bool ignored_by_shelf_;
   bool can_consume_system_keys_;
   bool top_row_keys_are_function_keys_;
-  WindowResizer* window_resizer_;
 
   bool always_restores_to_restore_bounds_;
 

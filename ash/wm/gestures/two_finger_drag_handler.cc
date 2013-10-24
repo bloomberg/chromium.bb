@@ -74,8 +74,7 @@ namespace ash {
 namespace internal {
 
 TwoFingerDragHandler::TwoFingerDragHandler()
-    : first_finger_hittest_(HTNOWHERE),
-      in_gesture_drag_(false) {
+    : first_finger_hittest_(HTNOWHERE) {
 }
 
 TwoFingerDragHandler::~TwoFingerDragHandler() {
@@ -97,14 +96,11 @@ bool TwoFingerDragHandler::ProcessGestureEvent(aura::Window* target,
 
   if (event.type() == ui::ET_GESTURE_BEGIN &&
       event.details().touch_points() == 2) {
-    if (!in_gesture_drag_ && window_state->IsNormalShowState() &&
+    if (!window_resizer_.get() && window_state->IsNormalShowState() &&
       target->type() == aura::client::WINDOW_TYPE_NORMAL) {
       if (WindowComponentsAllowMoving(first_finger_hittest_,
           target->delegate()->GetNonClientComponent(event.location()))) {
-        in_gesture_drag_ = true;
         target->AddObserver(this);
-        // Only create a new WindowResizer if one doesn't already exist
-        // for the target window.
         window_resizer_ = CreateWindowResizer(
             target,
             event.details().bounding_box().CenterPoint(),
@@ -117,28 +113,20 @@ bool TwoFingerDragHandler::ProcessGestureEvent(aura::Window* target,
     return false;
   }
 
-  if (!in_gesture_drag_) {
+  if (!window_resizer_) {
     // Consume all two-finger gestures on a normal window.
     return event.details().touch_points() == 2 &&
            target->type() == aura::client::WINDOW_TYPE_NORMAL &&
            window_state->IsNormalShowState();
   }
-  // Since |in_gesture_drag_| is true a resizer was either created above or
-  // it was created elsewhere and can be found in |window_state|.
-  WindowResizer* any_window_resizer = window_resizer_ ?
-      window_resizer_.get() : window_state->window_resizer();
-  DCHECK(any_window_resizer);
 
-  if (target != any_window_resizer->GetTarget())
+  if (target != window_resizer_->GetTarget())
     return false;
 
   switch (event.type()) {
     case ui::ET_GESTURE_BEGIN:
-      if (event.details().touch_points() > 2) {
-        if (window_resizer_)
-          window_resizer_->CompleteDrag(event.flags());
-        Reset(target);
-      }
+      if (event.details().touch_points() > 2)
+        Reset();
       return false;
 
     case ui::ET_GESTURE_SCROLL_BEGIN:
@@ -148,10 +136,8 @@ bool TwoFingerDragHandler::ProcessGestureEvent(aura::Window* target,
 
     case ui::ET_GESTURE_MULTIFINGER_SWIPE: {
       // For a swipe, the window either maximizes, minimizes, or snaps. In this
-      // case, complete the drag, and do the appropriate action.
-      if (window_resizer_)
-        window_resizer_->CompleteDrag(event.flags());
-      Reset(target);
+      // case, cancel the drag, and do the appropriate action.
+      Reset();
       if (event.details().swipe_up()) {
         if (window_state->CanMaximize())
           window_state->Maximize();
@@ -171,21 +157,19 @@ bool TwoFingerDragHandler::ProcessGestureEvent(aura::Window* target,
 
     case ui::ET_GESTURE_PINCH_UPDATE:
     case ui::ET_GESTURE_SCROLL_UPDATE:
-      any_window_resizer->Drag(event.details().bounding_box().CenterPoint(),
-                               event.flags());
+      window_resizer_->Drag(event.details().bounding_box().CenterPoint(),
+                            event.flags());
       return true;
 
     case ui::ET_GESTURE_PINCH_END:
-      if (window_resizer_)
-        window_resizer_->CompleteDrag(event.flags());
-      Reset(target);
+      window_resizer_->CompleteDrag(event.flags());
+      Reset();
       return true;
 
     case ui::ET_GESTURE_END:
       if (event.details().touch_points() == 2) {
-        if (window_resizer_)
-          window_resizer_->RevertDrag();
-        Reset(target);
+        window_resizer_->RevertDrag();
+        Reset();
         return true;
       }
       break;
@@ -197,19 +181,18 @@ bool TwoFingerDragHandler::ProcessGestureEvent(aura::Window* target,
   return false;
 }
 
-void TwoFingerDragHandler::Reset(aura::Window* window) {
-  window->RemoveObserver(this);
+void TwoFingerDragHandler::Reset() {
+  window_resizer_->GetTarget()->RemoveObserver(this);
   window_resizer_.reset();
-  in_gesture_drag_ = false;
 }
 
 void TwoFingerDragHandler::OnWindowVisibilityChanged(aura::Window* window,
                                                      bool visible) {
-  Reset(window);
+  Reset();
 }
 
 void TwoFingerDragHandler::OnWindowDestroying(aura::Window* window) {
-  Reset(window);
+  Reset();
 }
 
 }  // namespace internal

@@ -63,9 +63,8 @@ class TestTouchEvent : public ui::TouchEvent {
  public:
   TestTouchEvent(ui::EventType type,
                  const gfx::Point& root_location,
-                 int touch_id,
                  int flags)
-      : TouchEvent(type, root_location, flags, touch_id, ui::EventTimeForNow(),
+      : TouchEvent(type, root_location, flags, 0, ui::EventTimeForNow(),
                    1.0f, 1.0f, 1.0f, 1.0f) {
   }
 
@@ -202,23 +201,15 @@ void EventGenerator::MoveMouseToCenterOf(Window* window) {
 }
 
 void EventGenerator::PressTouch() {
-  PressTouchId(0);
-}
-
-void EventGenerator::PressTouchId(int touch_id) {
   TestTouchEvent touchev(
-      ui::ET_TOUCH_PRESSED, GetLocationInCurrentRoot(), touch_id, flags_);
+      ui::ET_TOUCH_PRESSED, GetLocationInCurrentRoot(), flags_);
   Dispatch(&touchev);
 }
 
 void EventGenerator::MoveTouch(const gfx::Point& point) {
-  MoveTouchId(point, 0);
-}
-
-void EventGenerator::MoveTouchId(const gfx::Point& point, int touch_id) {
   current_location_ = point;
   TestTouchEvent touchev(
-      ui::ET_TOUCH_MOVED, GetLocationInCurrentRoot(), touch_id, flags_);
+      ui::ET_TOUCH_MOVED, GetLocationInCurrentRoot(), flags_);
   Dispatch(&touchev);
 
   if (!grab_)
@@ -226,12 +217,8 @@ void EventGenerator::MoveTouchId(const gfx::Point& point, int touch_id) {
 }
 
 void EventGenerator::ReleaseTouch() {
-  ReleaseTouchId(0);
-}
-
-void EventGenerator::ReleaseTouchId(int touch_id) {
   TestTouchEvent touchev(
-      ui::ET_TOUCH_RELEASED, GetLocationInCurrentRoot(), touch_id, flags_);
+      ui::ET_TOUCH_RELEASED, GetLocationInCurrentRoot(), flags_);
   Dispatch(&touchev);
 }
 
@@ -312,25 +299,11 @@ void EventGenerator::GestureScrollSequenceWithCallback(
 }
 
 void EventGenerator::GestureMultiFingerScroll(int count,
-                                              const gfx::Point start[],
+                                              const gfx::Point* start,
                                               int event_separation_time_ms,
                                               int steps,
                                               int move_x,
                                               int move_y) {
-  const int kMaxTouchPoints = 10;
-  int delays[kMaxTouchPoints] = { 0 };
-  GestureMultiFingerScrollWithDelays(
-      count, start, delays, event_separation_time_ms, steps, move_x, move_y);
-}
-
-void EventGenerator::GestureMultiFingerScrollWithDelays(
-    int count,
-    const gfx::Point start[],
-    const int delay_adding_finger_ms[],
-    int event_separation_time_ms,
-    int steps,
-    int move_x,
-    int move_y) {
   const int kMaxTouchPoints = 10;
   gfx::Point points[kMaxTouchPoints];
   CHECK_LE(count, kMaxTouchPoints);
@@ -339,48 +312,26 @@ void EventGenerator::GestureMultiFingerScrollWithDelays(
   int delta_x = move_x / steps;
   int delta_y = move_y / steps;
 
+  base::TimeDelta press_time = ui::EventTimeForNow();
   for (int i = 0; i < count; ++i) {
     points[i] = start[i];
+    ui::TouchEvent press(ui::ET_TOUCH_PRESSED, points[i], i, press_time);
+    Dispatch(&press);
   }
 
-  base::TimeDelta press_time_first = ui::EventTimeForNow();
-  base::TimeDelta press_time[kMaxTouchPoints];
-  bool pressed[kMaxTouchPoints];
-  for (int i = 0; i < count; ++i) {
-    pressed[i] = false;
-    press_time[i] = press_time_first +
-        base::TimeDelta::FromMilliseconds(delay_adding_finger_ms[i]);
-  }
-
-  int last_id = 0;
   for (int step = 0; step < steps; ++step) {
-    base::TimeDelta move_time = press_time_first +
+    base::TimeDelta move_time = press_time +
         base::TimeDelta::FromMilliseconds(event_separation_time_ms * step);
-
-    while (last_id < count &&
-           !pressed[last_id] &&
-           move_time >= press_time[last_id]) {
-      ui::TouchEvent press(ui::ET_TOUCH_PRESSED,
-                           points[last_id],
-                           last_id,
-                           press_time[last_id]);
-      Dispatch(&press);
-      pressed[last_id] = true;
-      last_id++;
-    }
-
     for (int i = 0; i < count; ++i) {
       points[i].Offset(delta_x, delta_y);
-      if (i >= last_id)
-        continue;
       ui::TouchEvent move(ui::ET_TOUCH_MOVED, points[i], i, move_time);
       Dispatch(&move);
     }
   }
 
-  base::TimeDelta release_time = press_time_first +
+  base::TimeDelta release_time = press_time +
       base::TimeDelta::FromMilliseconds(event_separation_time_ms * steps);
-  for (int i = 0; i < last_id; ++i) {
+  for (int i = 0; i < count; ++i) {
     ui::TouchEvent release(
         ui::ET_TOUCH_RELEASED, points[i], i, release_time);
     Dispatch(&release);
