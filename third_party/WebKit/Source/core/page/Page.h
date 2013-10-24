@@ -286,8 +286,8 @@ private:
 
     Pagination m_pagination;
 
-    mutable String m_userStyleSheet;
-    mutable bool m_didLoadUserStyleSheet;
+    String m_userStyleSheet;
+    bool m_didLoadUserStyleSheet;
 
     RefPtr<PageGroup> m_group;
 
