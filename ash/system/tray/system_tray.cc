@@ -78,13 +78,15 @@ class SystemBubbleWrapper {
  public:
   // Takes ownership of |bubble|.
   explicit SystemBubbleWrapper(internal::SystemTrayBubble* bubble)
-      : bubble_(bubble) {
+      : bubble_(bubble),
+        is_persistent_(false) {
   }
 
   // Initializes the bubble view and creates |bubble_wrapper_|.
   void InitView(TrayBackgroundView* tray,
                 views::View* anchor,
-                TrayBubbleView::InitParams* init_params) {
+                TrayBubbleView::InitParams* init_params,
+                bool is_persistent) {
     DCHECK(anchor);
     user::LoginStatus login_status =
         Shell::GetInstance()->system_tray_delegate()->GetUserLoginStatus();
@@ -96,6 +98,7 @@ class SystemBubbleWrapper {
       bubble_->bubble_view()->SetArrowPaintType(
           views::BubbleBorder::PAINT_NONE);
     }
+    is_persistent_ = is_persistent;
   }
 
   // Convenience accessors:
@@ -104,10 +107,12 @@ class SystemBubbleWrapper {
     return bubble_->bubble_type();
   }
   TrayBubbleView* bubble_view() const { return bubble_->bubble_view(); }
+  bool is_persistent() const { return is_persistent_; }
 
  private:
   scoped_ptr<internal::SystemTrayBubble> bubble_;
   scoped_ptr<internal::TrayBubbleWrapper> bubble_wrapper_;
+  bool is_persistent_;
 
   DISALLOW_COPY_AND_ASSIGN(SystemBubbleWrapper);
 };
@@ -124,7 +129,8 @@ SystemTray::SystemTray(internal::StatusAreaWidget* status_area_widget)
       default_bubble_height_(0),
       hide_notifications_(false),
       full_system_tray_menu_(false),
-      tray_accessibility_(NULL) {
+      tray_accessibility_(NULL),
+      tray_date_(NULL) {
   SetContentsBackground();
 }
 
@@ -163,6 +169,7 @@ void SystemTray::CreateItems(SystemTrayDelegate* delegate) {
 #endif
 
   tray_accessibility_ = new internal::TrayAccessibility(this);
+  tray_date_ = new internal::TrayDate(this);
 
 #if defined(OS_CHROMEOS)
   AddTrayItem(new internal::TrayEnterprise(this));
@@ -185,10 +192,10 @@ void SystemTray::CreateItems(SystemTrayDelegate* delegate) {
   AddTrayItem(new internal::TrayCapsLock(this));
   AddTrayItem(new internal::TraySettings(this));
   AddTrayItem(new internal::TrayUpdate(this));
-  AddTrayItem(new internal::TrayDate(this));
+  AddTrayItem(tray_date_);
 #elif defined(OS_WIN)
   AddTrayItem(tray_accessibility_);
-  AddTrayItem(new internal::TrayDate(this));
+  AddTrayItem(tray_date_);
 #elif defined(OS_LINUX)
   AddTrayItem(new internal::TrayIME(this));
   AddTrayItem(tray_accessibility_);
@@ -196,7 +203,7 @@ void SystemTray::CreateItems(SystemTrayDelegate* delegate) {
   AddTrayItem(new internal::TrayDrive(this));
   AddTrayItem(new internal::TrayCapsLock(this));
   AddTrayItem(new internal::TrayUpdate(this));
-  AddTrayItem(new internal::TrayDate(this));
+  AddTrayItem(tray_date_);
 #endif
 
 #if defined(OS_LINUX)
@@ -236,8 +243,17 @@ const std::vector<internal::TrayUser*>& SystemTray::GetTrayUserItems() const {
 }
 
 void SystemTray::ShowDefaultView(BubbleCreationType creation_type) {
-  ShowDefaultViewWithOffset(creation_type,
-                            TrayBubbleView::InitParams::kArrowDefaultOffset);
+  ShowDefaultViewWithOffset(
+      creation_type,
+      TrayBubbleView::InitParams::kArrowDefaultOffset,
+      false);
+}
+
+void SystemTray::ShowPersistentDefaultView() {
+  ShowDefaultViewWithOffset(
+      BUBBLE_CREATE_NEW,
+      TrayBubbleView::InitParams::kArrowDefaultOffset,
+      true);
 }
 
 void SystemTray::ShowDetailedView(SystemTrayItem* item,
@@ -246,7 +262,7 @@ void SystemTray::ShowDetailedView(SystemTrayItem* item,
                                   BubbleCreationType creation_type) {
   std::vector<SystemTrayItem*> items;
   items.push_back(item);
-  ShowItems(items, true, activate, creation_type, GetTrayXOffset(item));
+  ShowItems(items, true, activate, creation_type, GetTrayXOffset(item), false);
   if (system_bubble_)
     system_bubble_->bubble()->StartAutoCloseTimer(close_delay);
 }
@@ -354,6 +370,10 @@ bool SystemTray::CloseSystemBubble() const {
   return true;
 }
 
+views::View* SystemTray::GetHelpButtonView() const {
+  return tray_date_->GetHelpButtonView();
+}
+
 bool SystemTray::CloseNotificationBubbleForTest() const {
   if (!notification_bubble_)
     return false;
@@ -405,15 +425,17 @@ int SystemTray::GetTrayXOffset(SystemTrayItem* item) const {
 }
 
 void SystemTray::ShowDefaultViewWithOffset(BubbleCreationType creation_type,
-                                           int arrow_offset) {
-  ShowItems(items_.get(), false, true, creation_type, arrow_offset);
+                                           int arrow_offset,
+                                           bool persistent) {
+  ShowItems(items_.get(), false, true, creation_type, arrow_offset, persistent);
 }
 
 void SystemTray::ShowItems(const std::vector<SystemTrayItem*>& items,
                            bool detailed,
                            bool can_activate,
                            BubbleCreationType creation_type,
-                           int arrow_offset) {
+                           int arrow_offset,
+                           bool persistent) {
   // No system tray bubbles in kiosk mode.
   if (Shell::GetInstance()->system_tray_delegate()->GetUserLoginStatus() ==
       ash::user::LOGGED_IN_KIOSK_APP) {
@@ -457,6 +479,8 @@ void SystemTray::ShowItems(const std::vector<SystemTrayItem*>& items,
       init_params.arrow_color = kHeaderBackgroundColor;
     }
     init_params.arrow_offset = arrow_offset;
+    if (bubble_type == SystemTrayBubble::BUBBLE_TYPE_DEFAULT)
+      init_params.close_on_deactivate = !persistent;
     // For Volume and Brightness we don't want to show an arrow when
     // they are shown in a bubble by themselves.
     init_params.arrow_paint_type = views::BubbleBorder::PAINT_NORMAL;
@@ -464,7 +488,7 @@ void SystemTray::ShowItems(const std::vector<SystemTrayItem*>& items,
       init_params.arrow_paint_type = views::BubbleBorder::PAINT_TRANSPARENT;
     SystemTrayBubble* bubble = new SystemTrayBubble(this, items, bubble_type);
     system_bubble_.reset(new internal::SystemBubbleWrapper(bubble));
-    system_bubble_->InitView(this, tray_container(), &init_params);
+    system_bubble_->InitView(this, tray_container(), &init_params, persistent);
   }
   // Save height of default view for creating detailed views directly.
   if (!detailed)
@@ -522,7 +546,7 @@ void SystemTray::UpdateNotificationBubble() {
   init_params.arrow_offset = GetTrayXOffset(notification_items_[0]);
   notification_bubble_.reset(
       new internal::SystemBubbleWrapper(notification_bubble));
-  notification_bubble_->InitView(this, anchor, &init_params);
+  notification_bubble_->InitView(this, anchor, &init_params, false);
 
   if (notification_bubble->bubble_view()->child_count() == 0) {
     // It is possible that none of the items generated actual notifications.
@@ -604,7 +628,7 @@ void SystemTray::HideBubbleWithView(const TrayBubbleView* bubble_view) {
 }
 
 bool SystemTray::ClickedOutsideBubble() {
-  if (!system_bubble_)
+  if (!system_bubble_ || system_bubble_->is_persistent())
     return false;
   HideBubbleWithView(system_bubble_->bubble_view());
   return true;
@@ -665,7 +689,7 @@ bool SystemTray::PerformAction(const ui::Event& event) {
         arrow_offset = point.x();
       }
     }
-    ShowDefaultViewWithOffset(BUBBLE_CREATE_NEW, arrow_offset);
+    ShowDefaultViewWithOffset(BUBBLE_CREATE_NEW, arrow_offset, false);
   }
   return true;
 }

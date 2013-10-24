@@ -111,6 +111,10 @@ class DateDefaultView : public views::View,
 
   virtual ~DateDefaultView() {}
 
+  views::View* GetHelpButtonView() const {
+    return help_;
+  }
+
  private:
   // Overridden from views::ButtonListener.
   virtual void ButtonPressed(views::Button* sender,
@@ -146,7 +150,8 @@ namespace internal {
 
 TrayDate::TrayDate(SystemTray* system_tray)
     : SystemTrayItem(system_tray),
-      time_tray_(NULL) {
+      time_tray_(NULL),
+      default_view_(NULL) {
 #if defined(OS_CHROMEOS)
   system_clock_observer_.reset(new SystemClockObserver());
 #endif
@@ -155,6 +160,12 @@ TrayDate::TrayDate(SystemTray* system_tray)
 
 TrayDate::~TrayDate() {
   Shell::GetInstance()->system_tray_notifier()->RemoveClockObserver(this);
+}
+
+views::View* TrayDate::GetHelpButtonView() const {
+  if (!default_view_)
+    return NULL;
+  return static_cast<DateDefaultView*>(default_view_)->GetHelpButtonView();
 }
 
 views::View* TrayDate::CreateTrayView(user::LoginStatus status) {
@@ -170,7 +181,8 @@ views::View* TrayDate::CreateTrayView(user::LoginStatus status) {
 }
 
 views::View* TrayDate::CreateDefaultView(user::LoginStatus status) {
-  return new DateDefaultView(status);
+  default_view_ = new DateDefaultView(status);
+  return default_view_;
 }
 
 views::View* TrayDate::CreateDetailedView(user::LoginStatus status) {
@@ -182,6 +194,7 @@ void TrayDate::DestroyTrayView() {
 }
 
 void TrayDate::DestroyDefaultView() {
+  default_view_ = NULL;
 }
 
 void TrayDate::DestroyDetailedView() {

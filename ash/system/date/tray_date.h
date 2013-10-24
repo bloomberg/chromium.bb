@@ -34,6 +34,9 @@ class TrayDate : public SystemTrayItem,
   explicit TrayDate(SystemTray* system_tray);
   virtual ~TrayDate();
 
+  // Returns view for help button if it is exists. Returns NULL otherwise.
+  views::View* GetHelpButtonView() const;
+
  private:
   // Overridden from SystemTrayItem.
   virtual views::View* CreateTrayView(user::LoginStatus status) OVERRIDE;
@@ -54,6 +57,7 @@ class TrayDate : public SystemTrayItem,
   void SetupLabelForTimeTray(views::Label* label);
 
   tray::TimeView* time_tray_;
+  views::View* default_view_;
 
 #if defined(OS_CHROMEOS)
   scoped_ptr<SystemClockObserver> system_clock_observer_;

@@ -13,7 +13,11 @@
 #include "ash/system/status_area_widget.h"
 #include "ash/system/tray/system_tray_item.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/wm/window_util.h"
+#include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "ui/aura/test/event_generator.h"
+#include "ui/aura/window.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/view.h"
@@ -370,6 +374,47 @@ TEST_F(SystemTrayTest, TrayBoundsInWidget) {
   EXPECT_TRUE(window_bounds.right() >= tray_bounds.right());
   EXPECT_TRUE(window_bounds.x() >= tray_bounds.x());
   EXPECT_TRUE(window_bounds.y() >= tray_bounds.y());
+}
+
+TEST_F(SystemTrayTest, PersistentBubble) {
+  SystemTray* tray = GetSystemTray();
+  ASSERT_TRUE(tray->GetWidget());
+
+  TestItem* test_item = new TestItem;
+  tray->AddTrayItem(test_item);
+
+  scoped_ptr<aura::Window> window(CreateTestWindowInShellWithId(0));
+
+  // Tests for usual default view.
+  // Activating window.
+  tray->ShowDefaultView(BUBBLE_CREATE_NEW);
+  ASSERT_TRUE(tray->HasSystemBubble());
+  wm::ActivateWindow(window.get());
+  base::RunLoop().RunUntilIdle();
+  ASSERT_FALSE(tray->HasSystemBubble());
+
+  tray->ShowDefaultView(BUBBLE_CREATE_NEW);
+  ASSERT_TRUE(tray->HasSystemBubble());
+  {
+    aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
+                                         gfx::Point(5, 5));
+    generator.ClickLeftButton();
+    ASSERT_FALSE(tray->HasSystemBubble());
+  }
+
+  // Same tests for persistent default view.
+  tray->ShowPersistentDefaultView();
+  ASSERT_TRUE(tray->HasSystemBubble());
+  wm::ActivateWindow(window.get());
+  base::RunLoop().RunUntilIdle();
+  ASSERT_TRUE(tray->HasSystemBubble());
+
+  {
+    aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
+                                         gfx::Point(5, 5));
+    generator.ClickLeftButton();
+    ASSERT_TRUE(tray->HasSystemBubble());
+  }
 }
 
 }  // namespace test
