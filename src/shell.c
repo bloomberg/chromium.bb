@@ -2850,8 +2850,7 @@ get_shell_surface_type(struct weston_surface *surface)
 static void
 move_binding(struct weston_seat *seat, uint32_t time, uint32_t button, void *data)
 {
-	struct weston_surface *focus =
-		(struct weston_surface *) seat->pointer->focus;
+	struct weston_surface *focus = seat->pointer->focus->surface;
 	struct weston_surface *surface;
 	struct shell_surface *shsurf;
 
@@ -2870,8 +2869,7 @@ move_binding(struct weston_seat *seat, uint32_t time, uint32_t button, void *dat
 static void
 touch_move_binding(struct weston_seat *seat, uint32_t time, void *data)
 {
-	struct weston_surface *focus =
-		(struct weston_surface *) seat->touch->focus;
+	struct weston_surface *focus = seat->touch->focus->surface;
 	struct weston_surface *surface;
 	struct shell_surface *shsurf;
 
@@ -2890,8 +2888,7 @@ touch_move_binding(struct weston_seat *seat, uint32_t time, void *data)
 static void
 resize_binding(struct weston_seat *seat, uint32_t time, uint32_t button, void *data)
 {
-	struct weston_surface *focus =
-		(struct weston_surface *) seat->pointer->focus;
+	struct weston_surface *focus = seat->pointer->focus->surface;
 	struct weston_surface *surface;
 	uint32_t edges = 0;
 	int32_t x, y;
@@ -2934,8 +2931,7 @@ surface_opacity_binding(struct weston_seat *seat, uint32_t time, uint32_t axis,
 {
 	float step = 0.005;
 	struct shell_surface *shsurf;
-	struct weston_surface *focus =
-		(struct weston_surface *) seat->pointer->focus;
+	struct weston_surface *focus = seat->pointer->focus->surface;
 	struct weston_surface *surface;
 
 	/* XXX: broken for windows containing sub-surfaces */
@@ -3153,8 +3149,7 @@ static void
 rotate_binding(struct weston_seat *seat, uint32_t time, uint32_t button,
 	       void *data)
 {
-	struct weston_surface *focus =
-		(struct weston_surface *) seat->pointer->focus;
+	struct weston_surface *focus = seat->pointer->focus->surface;
 	struct weston_surface *base_surface;
 	struct shell_surface *surface;
 
@@ -3265,8 +3260,7 @@ click_to_activate_binding(struct weston_seat *seat, uint32_t time, uint32_t butt
 	if (seat->pointer->grab != &seat->pointer->default_grab)
 		return;
 
-	activate_binding(seat, data,
-			 (struct weston_surface *) seat->pointer->focus);
+	activate_binding(seat, data, seat->pointer->focus->surface);
 }
 
 static void
@@ -3275,8 +3269,7 @@ touch_to_activate_binding(struct weston_seat *seat, uint32_t time, void *data)
 	if (seat->touch->grab != &seat->touch->default_grab)
 		return;
 
-	activate_binding(seat, data,
-			 (struct weston_surface *) seat->touch->focus);
+	activate_binding(seat, data, seat->touch->focus->surface);
 }
 
 static void
