@@ -31,10 +31,8 @@ void PepperMessageFilter::OnX509CertificateParseDER(
     const std::vector<char>& der,
     bool* succeeded,
     ppapi::PPB_X509Certificate_Fields* result) {
-  if (der.size() == 0)
-    *succeeded = false;
-  *succeeded =
-      pepper_socket_utils::GetCertificateFields(&der[0], der.size(), result);
+  *succeeded = (der.size() != 0 && pepper_socket_utils::GetCertificateFields(
+      &der[0], der.size(), result));
 }
 
 }  // namespace content
