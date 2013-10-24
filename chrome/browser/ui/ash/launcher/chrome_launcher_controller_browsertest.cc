@@ -1544,7 +1544,7 @@ IN_PROC_BROWSER_TEST_F(LauncherAppBrowserTest, DragAndDrop) {
       ash::Shell::GetPrimaryRootWindow(), gfx::Point());
   ash::test::ShelfViewTestAPI test(
       ash::test::LauncherTestAPI(launcher_).shelf_view());
-  AppListService* service = AppListService::Get();
+  AppListService* service = AppListService::Get(chrome::GetActiveDesktop());
 
   // There should be two items in our launcher by this time.
   EXPECT_EQ(2, model_->item_count());
@@ -1762,7 +1762,7 @@ IN_PROC_BROWSER_TEST_F(LauncherAppBrowserTest, ClickItem) {
       ash::Shell::GetPrimaryRootWindow(), gfx::Point());
   ash::test::ShelfViewTestAPI test(
       ash::test::LauncherTestAPI(launcher_).shelf_view());
-  AppListService* service = AppListService::Get();
+  AppListService* service = AppListService::Get(chrome::GetActiveDesktop());
   // There should be two items in our launcher by this time.
   EXPECT_EQ(2, model_->item_count());
   EXPECT_FALSE(service->IsAppListVisible());

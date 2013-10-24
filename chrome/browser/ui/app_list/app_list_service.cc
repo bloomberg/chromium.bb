@@ -110,6 +110,6 @@ void AppListService::RecordShowTimings(const CommandLine& command_line) {
       break;
   }
 
-  AppListService::Get()->SetAppListNextPaintCallback(
+  Get(chrome::HOST_DESKTOP_TYPE_NATIVE)->SetAppListNextPaintCallback(
       base::Bind(RecordFirstPaintTiming, startup, start_time));
 }

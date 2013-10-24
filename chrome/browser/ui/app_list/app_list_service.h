@@ -10,6 +10,7 @@
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
+#include "chrome/browser/ui/host_desktop.h"
 #include "ui/gfx/native_widget_types.h"
 
 class AppListControllerDelegate;
@@ -27,8 +28,9 @@ class ImageSkia;
 
 class AppListService {
  public:
-  // Get the AppListService for the current platform and desktop type.
-  static AppListService* Get();
+  // Get the AppListService for the current platform and specified
+  // |desktop_type|.
+  static AppListService* Get(chrome::HostDesktopType desktop_type);
 
   // Call Init for all AppListService instances on this platform.
   static void InitAll(Profile* initial_profile);

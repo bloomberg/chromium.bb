@@ -373,8 +373,10 @@ bool StartupBrowserCreatorImpl::Launch(Profile* profile,
       return true;
     }
   } else if (command_line_.HasSwitch(switches::kShowAppList)) {
+    // This switch is used for shortcuts on the native desktop.
     AppListService::RecordShowTimings(command_line_);
-    AppListService::Get()->ShowForProfile(profile);
+    AppListService::Get(chrome::HOST_DESKTOP_TYPE_NATIVE)->
+        ShowForProfile(profile);
     return true;
   }
 

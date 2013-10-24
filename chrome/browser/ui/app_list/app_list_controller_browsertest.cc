@@ -65,12 +65,17 @@ class AppListControllerBrowserTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(AppListControllerBrowserTest);
 };
 
+AppListService* GetAppListService() {
+  // TODO(tapted): Consider testing ash explicitly on the win-ash trybot.
+  return AppListService::Get(chrome::GetActiveDesktop());
+}
+
 // Test the CreateNewWindow function of the controller delegate.
 // TODO(mgiuca): Enable on Linux when supported.
 #if !defined(OS_LINUX)
 IN_PROC_BROWSER_TEST_F(AppListControllerBrowserTest, CreateNewWindow) {
   const chrome::HostDesktopType desktop = chrome::GetActiveDesktop();
-  AppListService* service = AppListService::Get();
+  AppListService* service = GetAppListService();
   scoped_ptr<AppListControllerDelegate> controller(
       service->CreateControllerDelegate());
   ASSERT_TRUE(controller);
@@ -92,7 +97,7 @@ IN_PROC_BROWSER_TEST_F(AppListControllerBrowserTest, CreateNewWindow) {
 #if !defined(OS_CHROMEOS) && !defined(OS_LINUX)
 // Show the app list, then dismiss it.
 IN_PROC_BROWSER_TEST_F(AppListControllerBrowserTest, ShowAndDismiss) {
-  AppListService* service = AppListService::Get();
+  AppListService* service = GetAppListService();
   ASSERT_FALSE(service->IsAppListVisible());
   service->ShowForProfile(browser()->profile());
   ASSERT_TRUE(service->IsAppListVisible());
@@ -103,7 +108,7 @@ IN_PROC_BROWSER_TEST_F(AppListControllerBrowserTest, ShowAndDismiss) {
 IN_PROC_BROWSER_TEST_F(AppListControllerBrowserTest, SwitchAppListProfiles) {
   InitSecondProfile();
 
-  AppListService* service = AppListService::Get();
+  AppListService* service = GetAppListService();
   scoped_ptr<test::AppListServiceTestApi> test_api(
       test::AppListServiceTestApi::Create(chrome::HOST_DESKTOP_TYPE_NATIVE));
   ASSERT_TRUE(service);
@@ -141,7 +146,7 @@ IN_PROC_BROWSER_TEST_F(AppListControllerBrowserTest,
                        SwitchAppListProfilesDuringSearch) {
   InitSecondProfile();
 
-  AppListService* service = AppListService::Get();
+  AppListService* service = GetAppListService();
   scoped_ptr<test::AppListServiceTestApi> test_api(
       test::AppListServiceTestApi::Create(chrome::HOST_DESKTOP_TYPE_NATIVE));
   ASSERT_TRUE(service);
@@ -187,7 +192,7 @@ class ShowAppListBrowserTest : public InProcessBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(ShowAppListBrowserTest, ShowAppListFlag) {
-  AppListService* service = AppListService::Get();
+  AppListService* service = GetAppListService();
   // The app list should already be shown because we passed
   // switches::kShowAppList.
   ASSERT_TRUE(service->IsAppListVisible());
@@ -291,7 +296,7 @@ IN_PROC_BROWSER_TEST_F(AppListControllerSearchResultsBrowserTest,
                        1 /* expected_change: new install */);
   ASSERT_TRUE(extension);
 
-  AppListService* service = AppListService::Get();
+  AppListService* service = GetAppListService();
   scoped_ptr<test::AppListServiceTestApi> test_api(
       test::AppListServiceTestApi::Create(chrome::HOST_DESKTOP_TYPE_NATIVE));
   ASSERT_TRUE(service);

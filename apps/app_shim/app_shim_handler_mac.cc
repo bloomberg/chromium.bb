@@ -25,8 +25,10 @@ namespace {
 void TerminateIfNoShellWindows() {
   bool shell_windows_left =
       apps::ShellWindowRegistry::IsShellWindowRegisteredInAnyProfile(0);
-  if (!shell_windows_left && !AppListService::Get()->IsAppListVisible())
+  if (!shell_windows_left && !AppListService::Get(
+          chrome::HOST_DESKTOP_TYPE_NATIVE)->IsAppListVisible()) {
     chrome::AttemptExit();
+  }
 }
 
 class AppShimHandlerRegistry : public content::NotificationObserver {

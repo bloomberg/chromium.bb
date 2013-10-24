@@ -29,6 +29,7 @@
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/app_list/app_list_service.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_l10n_util.h"
@@ -536,17 +537,19 @@ bool WebstorePrivateCompleteInstallFunction::RunImpl() {
 
   // Balanced in OnExtensionInstallSuccess() or OnExtensionInstallFailure().
   AddRef();
+  AppListService* app_list_service =
+      AppListService::Get(GetCurrentBrowser()->host_desktop_type());
 
   if (approval_->enable_launcher)
-    AppListService::Get()->EnableAppList(profile());
+    app_list_service->EnableAppList(profile());
 
   if (IsAppLauncherEnabled() && approval_->manifest->is_app()) {
     // Show the app list to show download is progressing. Don't show the app
     // list on first app install so users can be trained to open it themselves.
     if (approval_->enable_launcher)
-      AppListService::Get()->CreateForProfile(profile());
+      app_list_service->CreateForProfile(profile());
     else
-      AppListService::Get()->ShowForProfile(profile());
+      app_list_service->ShowForProfile(profile());
   }
 
   // The extension will install through the normal extension install flow, but
@@ -599,7 +602,8 @@ WebstorePrivateEnableAppLauncherFunction::
     ~WebstorePrivateEnableAppLauncherFunction() {}
 
 bool WebstorePrivateEnableAppLauncherFunction::RunImpl() {
-  AppListService::Get()->EnableAppList(profile());
+  AppListService::Get(GetCurrentBrowser()->host_desktop_type())->
+      EnableAppList(profile());
   return true;
 }
 

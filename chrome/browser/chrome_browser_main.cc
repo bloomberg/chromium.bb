@@ -314,8 +314,10 @@ base::FilePath GetStartupProfilePath(const base::FilePath& user_data_dir,
 
   // If we are showing the app list then chrome isn't shown so load the app
   // list's profile rather than chrome's.
-  if (command_line.HasSwitch(switches::kShowAppList))
-    return AppListService::Get()->GetProfilePath(user_data_dir);
+  if (command_line.HasSwitch(switches::kShowAppList)) {
+    return AppListService::Get(chrome::HOST_DESKTOP_TYPE_NATIVE)->
+        GetProfilePath(user_data_dir);
+  }
 
   return g_browser_process->profile_manager()->GetLastUsedProfileDir(
       user_data_dir);
@@ -959,7 +961,7 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
           master_prefs_->suppress_default_browser_prompt_for_version);
     }
 
-    AppListService::Get()->HandleFirstRun();
+    AppListService::Get(chrome::HOST_DESKTOP_TYPE_NATIVE)->HandleFirstRun();
   }
 #endif
 

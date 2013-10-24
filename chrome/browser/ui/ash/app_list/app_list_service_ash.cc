@@ -90,13 +90,13 @@ AppListService* GetAppListServiceAsh() {
 #if !defined(OS_WIN)
 
 // static
-AppListService* AppListService::Get() {
+AppListService* AppListService::Get(chrome::HostDesktopType desktop_type) {
   return chrome::GetAppListServiceAsh();
 }
 
 // static
 void AppListService::InitAll(Profile* initial_profile) {
-  Get()->Init(initial_profile);
+  AppListServiceAsh::GetInstance()->Init(initial_profile);
 }
 
 #endif  // !defined(OS_WIN)

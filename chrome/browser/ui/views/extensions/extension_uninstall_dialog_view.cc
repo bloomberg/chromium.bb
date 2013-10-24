@@ -130,8 +130,10 @@ ExtensionUninstallDialogViews::~ExtensionUninstallDialogViews() {
 }
 
 void ExtensionUninstallDialogViews::Show() {
+  // TODO(tapted): A true |desktop_type| needs to be passed in at creation time
+  // to remove reliance on GetActiveDesktop(). http://crbug.com/308360
   gfx::NativeWindow parent = show_in_app_list_ ?
-      AppListService::Get()->GetAppListWindow() :
+      AppListService::Get(chrome::GetActiveDesktop())->GetAppListWindow() :
       GetParent(browser_);
   if (browser_ && !parent) {
     delegate_->ExtensionUninstallCanceled();

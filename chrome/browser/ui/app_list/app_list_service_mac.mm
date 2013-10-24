@@ -459,13 +459,13 @@ void AppListServiceMac::ShowWindowNearDock() {
 }
 
 // static
-AppListService* AppListService::Get() {
+AppListService* AppListService::Get(chrome::HostDesktopType desktop_type) {
   return AppListServiceMac::GetInstance();
 }
 
 // static
 void AppListService::InitAll(Profile* initial_profile) {
-  Get()->Init(initial_profile);
+  AppListServiceMac::GetInstance()->Init(initial_profile);
 }
 
 @implementation AppListAnimationController

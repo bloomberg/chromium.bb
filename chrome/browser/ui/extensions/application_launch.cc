@@ -64,11 +64,13 @@ namespace {
 class EnableViaAppListFlow : public ExtensionEnableFlowDelegate {
  public:
   EnableViaAppListFlow(ExtensionService* service,
-                      Profile* profile,
-                      const std::string& extension_id,
-                      const base::Closure& callback)
+                       Profile* profile,
+                       chrome::HostDesktopType desktop_type,
+                       const std::string& extension_id,
+                       const base::Closure& callback)
       : service_(service),
         profile_(profile),
+        desktop_type_(desktop_type),
         extension_id_(extension_id),
         callback_(callback) {
   }
@@ -85,8 +87,9 @@ class EnableViaAppListFlow : public ExtensionEnableFlowDelegate {
 
  private:
   gfx::NativeWindow ShowAppList() {
-    AppListService::Get()->Show();
-    return AppListService::Get()->GetAppListWindow();
+    AppListService* app_list_service = AppListService::Get(desktop_type_);
+    app_list_service->Show();
+    return app_list_service->GetAppListWindow();
   }
 
   // ExtensionEnableFlowDelegate overrides.
@@ -105,6 +108,7 @@ class EnableViaAppListFlow : public ExtensionEnableFlowDelegate {
 
   ExtensionService* service_;
   Profile* profile_;
+  chrome::HostDesktopType desktop_type_;
   std::string extension_id_;
   base::Closure callback_;
   scoped_ptr<ExtensionEnableFlow> flow_;
@@ -455,7 +459,7 @@ void OpenApplicationWithReenablePrompt(const AppLaunchParams& params) {
       extensions::ExtensionSystem::Get(profile)->extension_service();
   if (!service->IsExtensionEnabled(extension->id())) {
     (new EnableViaAppListFlow(
-        service, profile, extension->id(),
+        service, profile, params.desktop_type, extension->id(),
         base::Bind(base::IgnoreResult(OpenEnabledApplication), params)))->Run();
     return;
   }

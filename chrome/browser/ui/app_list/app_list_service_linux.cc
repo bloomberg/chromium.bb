@@ -52,11 +52,11 @@ void AppListServiceLinux::CreateShortcut() {
 AppListServiceLinux::AppListServiceLinux() {}
 
 // static
-AppListService* AppListService::Get() {
+AppListService* AppListService::Get(chrome::HostDesktopType desktop_type) {
   return AppListServiceLinux::GetInstance();
 }
 
 // static
 void AppListService::InitAll(Profile* initial_profile) {
-  Get()->Init(initial_profile);
+  AppListServiceLinux::GetInstance()->Init(initial_profile);
 }

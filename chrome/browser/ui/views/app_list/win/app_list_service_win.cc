@@ -81,9 +81,9 @@
 #endif
 
 // static
-AppListService* AppListService::Get() {
+AppListService* AppListService::Get(chrome::HostDesktopType desktop_type) {
 #if defined(USE_ASH)
-  if (chrome::GetActiveDesktop() == chrome::HOST_DESKTOP_TYPE_ASH)
+  if (desktop_type == chrome::HOST_DESKTOP_TYPE_ASH)
     return chrome::GetAppListServiceAsh();
 #endif
 
