@@ -611,9 +611,9 @@ class GitRepoPatch(object):
     """
     # Note the --ff; we do *not* want the sha1 to change unless it
     # has to.
-    cmd = ['cherry-pick', '--ff']
+    cmd = ['cherry-pick', '--strategy', 'resolve', '--ff']
     if trivial:
-      cmd += ['--strategy', 'resolve', '-X', 'trivial']
+      cmd += ['-X', 'trivial']
     cmd.append(self.sha1)
 
     reset_target = None if leave_dirty else 'HEAD'
