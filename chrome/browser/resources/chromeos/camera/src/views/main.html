@@ -46,7 +46,8 @@
           <button id="take-picture" tabIndex="-1"></button>
         </div>
         <div id="side-buttons">
-          <button class="gallery-switch" tabIndex="-1"></button>
+          <button class="gallery-switch" tabIndex="-1"
+                  i18n-label="galleryButton"></button>
         </div>
       </div>
       <div id="effects">
@@ -70,16 +71,24 @@
       </div>
     </div>
     <div id="corner-buttons">
-      <button id="browser-print" disabled tabIndex="-1"></button>
-      <button id="browser-export" disabled tabIndex="-1"></button>
-      <button id="gallery-delete" disabled tabIndex="-1"></button>
-      <button class="gallery-switch" tabIndex="-1"></button>
+      <button id="browser-print" disabled tabIndex="-1"
+              i18n-label="printButton"></button>
+      <button id="browser-export" disabled tabIndex="-1"
+              i18n-label="exportButton"></button>
+      <button id="gallery-delete" disabled tabIndex="-1"
+              i18n-label="deleteButton"></button>
+      <button class="gallery-switch" tabIndex="-1"
+              i18n-label="backButton"></button>
     </div>
     <div id="shutter"></div>
     <div id="error">
       <div class="icon"></div>
       <div id="error-msg"></div>
       <div id="error-msg-hint"></div>
+    </div>
+    <div id="tooltip">
+      <div id="tooltip-msg"></div>
+      <div id="tooltip-arrow"></div>
     </div>
   </body>
 </html>

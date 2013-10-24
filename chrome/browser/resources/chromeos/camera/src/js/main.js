@@ -60,6 +60,12 @@ camera.Camera = function() {
    */
   this.resizingTimer_ = null;
 
+  /**
+   * @type {camera.util.TooltipManager}
+   * @private
+   */
+  this.tooltipManager_ = new camera.util.TooltipManager();
+
   // End of properties. Seal the object.
   Object.seal(this);
 
@@ -216,6 +222,7 @@ camera.Camera.prototype.start = function() {
 
   // Display the camera view after initializing.
   queue.run(function(callback) {
+    this.tooltipManager_.initialize();
     this.viewsStack_.push(this.cameraView_);
     callback();
   }.bind(this));
