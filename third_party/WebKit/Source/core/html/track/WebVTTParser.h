@@ -57,8 +57,6 @@ public:
 
 class WebVTTParser {
 public:
-    virtual ~WebVTTParser() { }
-
     enum ParseState {
         Initial,
         Header,
