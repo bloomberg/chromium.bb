@@ -2689,7 +2689,6 @@ subcompositor_get_subsurface(struct wl_client *client,
 	struct weston_surface *parent =
 		wl_resource_get_user_data(parent_resource);
 	struct weston_subsurface *sub;
-	struct weston_view *view, *subview;
 	static const char where[] = "get_subsurface: wl_subsurface@";
 
 	if (surface == parent) {
