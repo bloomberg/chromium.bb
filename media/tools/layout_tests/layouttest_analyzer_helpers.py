@@ -150,7 +150,7 @@ class AnalyzerResultMap:
     if delta <= 0:
       raise ValueError('The number of tests in test group "whole" is equal or '
                        'less than that of "skip"')
-    return 100 - len(self.result_map['nonskip'].keys()) * 100 / delta
+    return 100 - len(self.result_map['nonskip'].keys()) * 100.0 / delta
 
   def ConvertToCSVText(self, current_time):
     """Convert |self.result_map| into stats and issues text in CSV format.
@@ -214,7 +214,7 @@ class AnalyzerResultMap:
           '<li>The number of tests: %d (%s)</li>'
           '<li>The number of failing skipped tests: %d (%s)</li>'
           '<li>The number of failing non-skipped tests: %d (%s)</li>'
-          '<li>Passing rate: %d %%</li></ul>') % (
+          '<li>Passing rate: %.2f %%</li></ul>') % (
               prev_time, len(self.result_map['whole'].keys()),
               AnalyzerResultMap.GetDiffString(diff_map['whole'], 'whole'),
               len(self.result_map['skip'].keys()),
