@@ -237,6 +237,8 @@ void ChromeViewsDelegate::OnBeforeWidgetInit(
   // but have neither a context nor a parent. Provide a fallback context so
   // users don't crash. Developers will hit the DCHECK and should provide a
   // context.
+  if (params->context)
+    params->context = params->context->GetRootWindow();
   DCHECK(params->parent || params->context || params->top_level)
       << "Please provide a parent or context for this widget.";
   if (!params->parent && !params->context)
