@@ -68,7 +68,7 @@ def _GenerateTestCommand(script,
     cmd.append('--verbose')
 
   if android_package:
-    cmd = ['xvfb-run', '-a', '-e', '/dev/stdout'] + cmd
+    cmd = ['xvfb-run', '-a'] + cmd
     cmd.append('--android-package=' + android_package)
   return cmd
 
