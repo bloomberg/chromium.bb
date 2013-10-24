@@ -160,8 +160,6 @@
         'renderer/extensions/v8_schema_registry.h',
         'renderer/extensions/webstore_bindings.cc',
         'renderer/extensions/webstore_bindings.h',
-        'renderer/frame_sniffer.cc',
-        'renderer/frame_sniffer.h',
         'renderer/isolated_world_ids.h',
         'renderer/loadtimes_extension_bindings.cc',
         'renderer/loadtimes_extension_bindings.h',

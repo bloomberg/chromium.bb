@@ -22,7 +22,6 @@
 #include "chrome/renderer/content_settings_observer.h"
 #include "chrome/renderer/extensions/dispatcher.h"
 #include "chrome/renderer/external_host_bindings.h"
-#include "chrome/renderer/frame_sniffer.h"
 #include "chrome/renderer/prerender/prerender_helper.h"
 #include "chrome/renderer/safe_browsing/phishing_classifier_delegate.h"
 #include "chrome/renderer/translate/translate_helper.h"
@@ -312,9 +311,6 @@ bool ChromeRenderViewObserver::OnMessageReceived(const IPC::Message& message) {
                         OnSetVisuallyDeemphasized)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_RequestThumbnailForContextNode,
                         OnRequestThumbnailForContextNode)
-#if defined(OS_CHROMEOS)
-    IPC_MESSAGE_HANDLER(ChromeViewMsg_StartFrameSniffer, OnStartFrameSniffer)
-#endif
     IPC_MESSAGE_HANDLER(ChromeViewMsg_GetFPS, OnGetFPS)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_AddStrictSecurityHost,
                         OnAddStrictSecurityHost)
@@ -513,10 +509,6 @@ void ChromeRenderViewObserver::OnRequestThumbnailForContextNode(
   }
   Send(new ChromeViewHostMsg_RequestThumbnailForContextNode_ACK(
       routing_id(), thumbnail, original_size));
-}
-
-void ChromeRenderViewObserver::OnStartFrameSniffer(const string16& frame_name) {
-  new FrameSniffer(render_view(), frame_name);
 }
 
 void ChromeRenderViewObserver::OnGetFPS() {

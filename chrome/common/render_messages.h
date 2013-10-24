@@ -376,10 +376,6 @@ IPC_MESSAGE_ROUTED1(ChromeViewMsg_AddStrictSecurityHost,
 IPC_MESSAGE_ROUTED1(ChromeViewMsg_SetClientSidePhishingDetection,
                     bool /* enable_phishing_detection */)
 
-// This message asks frame sniffer start.
-IPC_MESSAGE_ROUTED1(ChromeViewMsg_StartFrameSniffer,
-                    string16 /* frame-name */)
-
 // Asks the renderer for a thumbnail of the image selected by the most
 // recently opened context menu, if there is one. If the image's area
 // is greater than thumbnail_min_area it will be downscaled to

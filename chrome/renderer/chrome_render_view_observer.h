@@ -139,7 +139,6 @@ class ChromeRenderViewObserver : public content::RenderViewObserver,
   void OnSetVisuallyDeemphasized(bool deemphasized);
   void OnRequestThumbnailForContextNode(int thumbnail_min_area_pixels,
                                         gfx::Size thumbnail_max_size_pixels);
-  void OnStartFrameSniffer(const string16& frame_name);
   void OnGetFPS();
   void OnAddStrictSecurityHost(const std::string& host);
   void OnNPAPINotSupported();
