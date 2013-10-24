@@ -445,11 +445,7 @@ void ComponentLoader::AddDefaultComponentExtensionsWithBackgroundPages(
     Add(IDR_FEEDBACK_MANIFEST, base::FilePath(FILE_PATH_LITERAL("feedback")));
 
 #if defined(OS_CHROMEOS)
-  if (!skip_session_components &&
-      !command_line->HasSwitch(chromeos::switches::kGuestSession)) {
-    Add(IDR_WALLPAPERMANAGER_MANIFEST,
-        base::FilePath(FILE_PATH_LITERAL("chromeos/wallpaper_manager")));
-
+  if (!skip_session_components) {
 #if defined(GOOGLE_CHROME_BUILD)
     if (!command_line->HasSwitch(
             chromeos::switches::kDisableQuickofficeComponentApp)) {
@@ -481,6 +477,11 @@ void ComponentLoader::AddDefaultComponentExtensionsWithBackgroundPages(
           chromeos::switches::kEchoExtensionPath);
     }
     Add(IDR_ECHO_MANIFEST, echo_extension_path);
+
+    if (!command_line->HasSwitch(chromeos::switches::kGuestSession)) {
+      Add(IDR_WALLPAPERMANAGER_MANIFEST,
+          base::FilePath(FILE_PATH_LITERAL("chromeos/wallpaper_manager")));
+    }
 
     Add(IDR_NETWORK_CONFIGURATION_MANIFEST,
         base::FilePath(FILE_PATH_LITERAL("chromeos/network_configuration")));
