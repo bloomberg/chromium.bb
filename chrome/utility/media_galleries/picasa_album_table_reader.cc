@@ -33,7 +33,9 @@ PicasaAlbumTableReader::PicasaAlbumTableReader(
       initialized_(false) {
 }
 
-PicasaAlbumTableReader::~PicasaAlbumTableReader() {}
+PicasaAlbumTableReader::~PicasaAlbumTableReader() {
+  CloseAlbumTableFiles(&table_files_);
+}
 
 const std::vector<AlbumInfo>& PicasaAlbumTableReader::folders() const {
   DCHECK(initialized_);

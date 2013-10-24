@@ -60,7 +60,6 @@ TEST(PicasaAlbumTableReaderTest, FoldersAndAlbums) {
   PicasaAlbumTableReader reader(album_table_files);
 
   ASSERT_TRUE(reader.Init());
-  CloseAlbumTableFiles(&album_table_files);
 
   const std::vector<AlbumInfo>& albums = reader.albums();
   const std::vector<AlbumInfo>& folders = reader.folders();

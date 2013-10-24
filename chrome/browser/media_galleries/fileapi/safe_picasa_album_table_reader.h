@@ -36,6 +36,7 @@ class SafePicasaAlbumTableReader : public content::UtilityProcessHostClient {
                               const std::vector<AlbumInfo>&)>
       ParserCallback;
 
+  // This class takes ownership of |album_table_files| and will close them.
   explicit SafePicasaAlbumTableReader(const AlbumTableFiles& album_table_files);
 
   void Start(const ParserCallback& callback);

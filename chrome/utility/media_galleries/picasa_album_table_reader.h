@@ -14,6 +14,7 @@ namespace picasa {
 
 class PicasaAlbumTableReader {
  public:
+  // This class takes ownership of |table_files| and will close them.
   explicit PicasaAlbumTableReader(const AlbumTableFiles& table_files);
   ~PicasaAlbumTableReader();
 
@@ -23,7 +24,7 @@ class PicasaAlbumTableReader {
   const std::vector<AlbumInfo>& folders() const;
 
  private:
-  const AlbumTableFiles table_files_;
+  AlbumTableFiles table_files_;
 
   bool initialized_;
 
