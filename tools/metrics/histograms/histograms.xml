@@ -11363,6 +11363,15 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="PerformanceMonitor.AverageCPU.BrowserProcess"
+    units="PercentCPUUsage">
+  <summary>
+    Average CPU utilization of the browser process, read out at each two-minute
+    interval. The utilization is in the 0-100% range per CPU, which is then
+    summed up. I.e. a quadcore system fully loaded would read as 400%.
+  </summary>
+</histogram>
+
 <histogram name="PerformanceMonitor.HighCPU.BrowserProcess" enum="BooleanHit">
   <summary>
     The number of times a browser process has continuously stayed above a

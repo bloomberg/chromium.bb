@@ -52,7 +52,7 @@ void ProcessMetricsHistory::Initialize(base::ProcessHandle process_handle,
 }
 
 void ProcessMetricsHistory::SampleMetrics() {
-  double cpu_usage = process_metrics_->GetCPUUsage();
+  double cpu_usage = process_metrics_->GetPlatformIndependentCPUUsage();
   min_cpu_usage_ = std::min(min_cpu_usage_, cpu_usage);
   accumulated_cpu_usage_ += cpu_usage;
 
@@ -74,8 +74,14 @@ void ProcessMetricsHistory::EndOfCycle() {
 
 void ProcessMetricsHistory::RunPerformanceTriggers() {
   // As an initial step, we only care about browser processes.
-  if (process_type_ != content::PROCESS_TYPE_BROWSER)
+  if (process_type_ != content::PROCESS_TYPE_BROWSER || sample_count_ == 0)
     return;
+
+  // We scale up to the equivalent of 64 CPU cores fully loaded. More than this
+  // doesn't really matter, as we're already in a terrible place.
+  UMA_HISTOGRAM_CUSTOM_COUNTS("PerformanceMonitor.AverageCPU.BrowserProcess",
+                              accumulated_cpu_usage_ / sample_count_,
+                              0, 6400, 50);
 
   // If CPU usage has consistently been above our threshold,
   // we *may* have an issue.

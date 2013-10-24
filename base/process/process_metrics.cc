@@ -42,4 +42,12 @@ scoped_ptr<Value> SystemMetrics::ToValue() const {
   return res.PassAs<Value>();
 }
 
+double ProcessMetrics::GetPlatformIndependentCPUUsage() {
+#if defined(OS_WIN)
+  return GetCPUUsage() * processor_count_;
+#else
+  return GetCPUUsage();
+#endif
+}
+
 }  // namespace base
