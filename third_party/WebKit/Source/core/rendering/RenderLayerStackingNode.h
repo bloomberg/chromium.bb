@@ -91,6 +91,7 @@ public:
     void clearZOrderLists();
     void dirtyStackingContainerZOrderLists();
 
+    // FIXME: These accessors should be made private and callers moved to RenderLayerStackingNodeIterator.
     Vector<RenderLayerStackingNode*>* posZOrderList() const
     {
         ASSERT(!m_zOrderListsDirty);

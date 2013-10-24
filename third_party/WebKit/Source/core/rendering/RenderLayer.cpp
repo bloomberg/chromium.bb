@@ -80,6 +80,7 @@
 #include "core/rendering/RenderGeometryMap.h"
 #include "core/rendering/RenderInline.h"
 #include "core/rendering/RenderLayerCompositor.h"
+#include "core/rendering/RenderLayerStackingNodeIterator.h"
 #include "core/rendering/RenderReplica.h"
 #include "core/rendering/RenderScrollbar.h"
 #include "core/rendering/RenderScrollbarPart.h"
@@ -940,16 +941,9 @@ bool RenderLayer::update3DTransformedDescendantStatus()
 
         // Transformed or preserve-3d descendants can only be in the z-order lists, not
         // in the normal flow list, so we only need to check those.
-        if (Vector<RenderLayerStackingNode*>* positiveZOrderList = m_stackingNode->posZOrderList()) {
-            for (unsigned i = 0; i < positiveZOrderList->size(); ++i)
-                m_has3DTransformedDescendant |= positiveZOrderList->at(i)->layer()->update3DTransformedDescendantStatus();
-        }
-
-        // Now check our negative z-index children.
-        if (Vector<RenderLayerStackingNode*>* negativeZOrderList = m_stackingNode->negZOrderList()) {
-            for (unsigned i = 0; i < negativeZOrderList->size(); ++i)
-                m_has3DTransformedDescendant |= negativeZOrderList->at(i)->layer()->update3DTransformedDescendantStatus();
-        }
+        RenderLayerStackingNodeIterator iterator(*m_stackingNode.get(), PositiveZOrderChildren | NegativeZOrderChildren);
+        while (RenderLayerStackingNode* node = iterator.next())
+            m_has3DTransformedDescendant |= node->layer()->update3DTransformedDescendantStatus();
 
         m_3DTransformedDescendantStatusDirty = false;
     }
@@ -3915,36 +3909,11 @@ IntRect RenderLayer::calculateLayerBounds(const RenderLayer* ancestorLayer, cons
     // FIXME: Descendants that are composited should not necessarily be skipped, if they don't paint into their own
     // separate backing. Instead, they ought to contribute to the bounds of the layer we're trying to compute.
     // This applies to all z-order lists below.
-    if (Vector<RenderLayerStackingNode*>* negZOrderList = m_stackingNode->negZOrderList()) {
-        size_t listSize = negZOrderList->size();
-        for (size_t i = 0; i < listSize; ++i) {
-            RenderLayer* curLayer = negZOrderList->at(i)->layer();
-            if (flags & IncludeCompositedDescendants || !curLayer->compositedLayerMapping()) {
-                IntRect childUnionBounds = curLayer->calculateLayerBounds(this, 0, descendantFlags);
-                unionBounds.unite(childUnionBounds);
-            }
-        }
-    }
-
-    if (Vector<RenderLayerStackingNode*>* posZOrderList = m_stackingNode->posZOrderList()) {
-        size_t listSize = posZOrderList->size();
-        for (size_t i = 0; i < listSize; ++i) {
-            RenderLayer* curLayer = posZOrderList->at(i)->layer();
-            if (flags & IncludeCompositedDescendants || !curLayer->compositedLayerMapping()) {
-                IntRect childUnionBounds = curLayer->calculateLayerBounds(this, 0, descendantFlags);
-                unionBounds.unite(childUnionBounds);
-            }
-        }
-    }
-
-    if (Vector<RenderLayerStackingNode*>* normalFlowList = m_stackingNode->normalFlowList()) {
-        size_t listSize = normalFlowList->size();
-        for (size_t i = 0; i < listSize; ++i) {
-            RenderLayer* curLayer = normalFlowList->at(i)->layer();
-            if (flags & IncludeCompositedDescendants || !curLayer->compositedLayerMapping()) {
-                IntRect curAbsBounds = curLayer->calculateLayerBounds(this, 0, descendantFlags);
-                unionBounds.unite(curAbsBounds);
-            }
+    RenderLayerStackingNodeIterator iterator(*m_stackingNode.get(), AllChildren);
+    while (RenderLayerStackingNode* node = iterator.next()) {
+        if (flags & IncludeCompositedDescendants || !node->layer()->compositedLayerMapping()) {
+            IntRect childUnionBounds = node->layer()->calculateLayerBounds(this, 0, descendantFlags);
+            unionBounds.unite(childUnionBounds);
         }
     }
 
