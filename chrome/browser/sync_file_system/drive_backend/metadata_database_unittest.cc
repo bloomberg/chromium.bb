@@ -538,6 +538,7 @@ class MetadataDatabaseTest : public testing::Test {
       ScopedVector<google_apis::ChangeResource> changes) {
     SyncStatusCode status = SYNC_STATUS_UNKNOWN;
     metadata_database_->UpdateByChangeList(
+        current_change_id_,
         changes.Pass(), CreateResultReceiver(&status));
     message_loop_.RunUntilIdle();
     return status;

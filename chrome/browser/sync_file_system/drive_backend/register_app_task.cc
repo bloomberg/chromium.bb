@@ -194,7 +194,7 @@ bool RegisterAppTask::FilterCandidates(const TrackerSet& trackers,
 void RegisterAppTask::RegisterAppIntoDatabase(
     const FileTracker& tracker,
     const SyncStatusCallback& callback) {
-  sync_context_->GetMetadataDatabase()->RegisterApp(
+  metadata_database()->RegisterApp(
       app_id_, tracker.file_id(), callback);
 }
 

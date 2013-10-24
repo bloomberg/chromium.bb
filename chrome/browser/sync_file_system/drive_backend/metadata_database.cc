@@ -735,8 +735,11 @@ bool MetadataDatabase::BuildPathForTracker(int64 tracker_id,
 }
 
 void MetadataDatabase::UpdateByChangeList(
+    int64 largest_change_id,
     ScopedVector<google_apis::ChangeResource> changes,
     const SyncStatusCallback& callback) {
+  DCHECK_LE(service_metadata_->largest_change_id(), largest_change_id);
+
   scoped_ptr<leveldb::WriteBatch> batch(new leveldb::WriteBatch);
 
   for (ScopedVector<google_apis::ChangeResource>::const_iterator itr =
@@ -762,6 +765,8 @@ void MetadataDatabase::UpdateByChangeList(
     }
   }
 
+  service_metadata_->set_largest_change_id(largest_change_id);
+  PutServiceMetadataToBatch(*service_metadata_, batch.get());
   WriteToDatabase(batch.Pass(), callback);
 }
 
@@ -924,6 +929,16 @@ SyncStatusCode MetadataDatabase::CreateForTesting(
   if (status == SYNC_STATUS_OK)
     *metadata_database_out = metadata_database.Pass();
   return status;
+}
+
+SyncStatusCode MetadataDatabase::SetLargestChangeIDForTesting(
+    int64 largest_change_id) {
+  service_metadata_->set_largest_change_id(largest_change_id);
+
+  leveldb::WriteBatch batch;
+  PutServiceMetadataToBatch(*service_metadata_, &batch);
+  return LevelDBStatusToSyncStatusCode(
+      db_->Write(leveldb::WriteOptions(), &batch));
 }
 
 SyncStatusCode MetadataDatabase::InitializeOnTaskRunner(

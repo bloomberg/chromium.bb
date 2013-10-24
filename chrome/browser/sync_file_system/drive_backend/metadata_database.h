@@ -201,7 +201,8 @@ class MetadataDatabase {
   // Updates database by |changes|.
   // Marks each tracker for modified file as dirty and adds new trackers if
   // needed.
-  void UpdateByChangeList(ScopedVector<google_apis::ChangeResource> changes,
+  void UpdateByChangeList(int64 largest_change_id,
+                          ScopedVector<google_apis::ChangeResource> changes,
                           const SyncStatusCallback& callback);
 
   // Updates database by |resource|.
@@ -224,6 +225,8 @@ class MetadataDatabase {
                      const SyncStatusCallback& callback);
 
  private:
+  friend class ListChangesTaskTest;
+  friend class MetadataDatabaseTest;
   friend class RegisterAppTaskTest;
   friend class SyncEngineInitializerTest;
 
@@ -233,8 +236,6 @@ class MetadataDatabase {
   };
 
   typedef std::set<FileTracker*, DirtyTrackerComparator> DirtyTrackers;
-
-  friend class MetadataDatabaseTest;
 
   explicit MetadataDatabase(base::SequencedTaskRunner* task_runner);
   static void CreateOnTaskRunner(base::SingleThreadTaskRunner* callback_runner,
@@ -246,6 +247,8 @@ class MetadataDatabase {
       scoped_ptr<MetadataDatabase>* metadata_database_out);
   SyncStatusCode InitializeOnTaskRunner(const base::FilePath& database_path);
   void BuildIndexes(DatabaseContents* contents);
+
+  SyncStatusCode SetLargestChangeIDForTesting(int64 largest_changestamp);
 
   // Database manipulation methods.
   void RegisterTrackerAsAppRoot(const std::string& app_id,
