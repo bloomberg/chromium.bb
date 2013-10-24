@@ -62,6 +62,7 @@ ASH_EXPORT extern const char kAshHostWindowBounds[];
 ASH_EXPORT extern const char kAshImmersiveHideTabIndicators[];
 ASH_EXPORT extern const char kAshOemWallpaperLarge[];
 ASH_EXPORT extern const char kAshOemWallpaperSmall[];
+ASH_EXPORT extern const char kAshOverviewDelayOnAltTab[];
 ASH_EXPORT extern const char kAshSecondaryDisplayLayout[];
 ASH_EXPORT extern const char kAshTouchHud[];
 ASH_EXPORT extern const char kAshUseAlternateShelfLayout[];

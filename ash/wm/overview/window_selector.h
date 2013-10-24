@@ -117,6 +117,7 @@ class ASH_EXPORT WindowSelector
   // of the stacking order and made visible).
   scoped_ptr<ScopedShowWindow> showing_window_;
 
+  bool timer_enabled_;
   base::DelayTimer<WindowSelector> start_overview_timer_;
   scoped_ptr<WindowOverview> window_overview_;
 

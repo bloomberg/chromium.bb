@@ -261,6 +261,20 @@ const Experiment::Choice kDefaultTileWidthChoices[] = {
     switches::kDefaultTileWidth, "1024"}
 };
 
+#if defined(USE_ASH)
+const Experiment::Choice kAshOverviewDelayChoices[] = {
+  { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
+  { IDS_FLAGS_OVERVIEW_DELAY_INSTANT,
+    ash::switches::kAshOverviewDelayOnAltTab, "0" },
+  { IDS_FLAGS_OVERVIEW_DELAY_SHORT,
+    ash::switches::kAshOverviewDelayOnAltTab, "100" },
+  { IDS_FLAGS_OVERVIEW_DELAY_LONG,
+    ash::switches::kAshOverviewDelayOnAltTab, "500" },
+  { IDS_FLAGS_OVERVIEW_DELAY_NEVER,
+    ash::switches::kAshOverviewDelayOnAltTab, "10000" },
+};
+#endif
+
 const Experiment::Choice kDefaultTileHeightChoices[] = {
   { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
   { IDS_FLAGS_DEFAULT_TILE_HEIGHT_SHORT,
@@ -1062,6 +1076,13 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_DISABLE_OVERVIEW_MODE_DESCRIPTION,
     kOsCrOS,
     SINGLE_VALUE_TYPE(ash::switches::kAshDisableOverviewMode)
+  },
+  {
+    "overview-delay-on-alt-tab",
+    IDS_FLAGS_OVERVIEW_DELAY_NAME,
+    IDS_FLAGS_OVERVIEW_DELAY_DESCRIPTION,
+    kOsCrOS,
+    MULTI_VALUE_TYPE(kAshOverviewDelayChoices)
   },
   {
     "show-touch-hud",

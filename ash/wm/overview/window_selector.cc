@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "ash/ash_switches.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/wm/mru_window_tracker.h"
@@ -15,7 +16,9 @@
 #include "ash/wm/overview/window_selector_window.h"
 #include "ash/wm/window_state.h"
 #include "base/auto_reset.h"
+#include "base/command_line.h"
 #include "base/metrics/histogram.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/timer/timer.h"
 #include "ui/aura/client/activation_client.h"
 #include "ui/aura/client/focus_client.h"
@@ -29,7 +32,29 @@ namespace ash {
 
 namespace {
 
-const int kOverviewDelayOnCycleMilliseconds = 500;
+// The time from when the user pressed alt+tab while still holding alt before
+// overview is engaged.
+const int kOverviewDelayOnCycleMilliseconds = 100;
+
+// The maximum amount of time allowed for the delay before overview on cycling.
+// If the specified time exceeds this the timer will not be started.
+const int kMaxOverviewDelayOnCycleMilliseconds = 10000;
+
+int GetOverviewDelayOnCycleMilliseconds() {
+  static int value = -1;
+  if (value == -1) {
+    value = kOverviewDelayOnCycleMilliseconds;
+    if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kAshOverviewDelayOnAltTab)) {
+      if (!base::StringToInt(CommandLine::ForCurrentProcess()->
+            GetSwitchValueASCII(switches::kAshOverviewDelayOnAltTab), &value)) {
+        LOG(ERROR) << "Expected int value for "
+                   << switches::kAshOverviewDelayOnAltTab;
+      }
+    }
+  }
+  return value;
+}
 
 // A comparator for locating a given target window.
 struct WindowSelectorItemComparator
@@ -209,8 +234,11 @@ WindowSelector::WindowSelector(const WindowList& windows,
                                WindowSelector::Mode mode,
                                WindowSelectorDelegate* delegate)
     : mode_(mode),
+      timer_enabled_(GetOverviewDelayOnCycleMilliseconds() <
+                         kMaxOverviewDelayOnCycleMilliseconds),
       start_overview_timer_(FROM_HERE,
-          base::TimeDelta::FromMilliseconds(kOverviewDelayOnCycleMilliseconds),
+          base::TimeDelta::FromMilliseconds(
+              GetOverviewDelayOnCycleMilliseconds()),
           this, &WindowSelector::StartOverview),
       delegate_(delegate),
       selected_window_(0),
@@ -259,7 +287,8 @@ WindowSelector::WindowSelector(const WindowList& windows,
 
   if (mode == WindowSelector::CYCLE) {
     event_handler_.reset(new WindowSelectorEventFilter(this));
-    start_overview_timer_.Reset();
+    if (timer_enabled_)
+      start_overview_timer_.Reset();
   } else {
     StartOverview();
   }
@@ -307,6 +336,8 @@ void WindowSelector::Step(WindowSelector::Direction direction) {
     showing_window_.reset(new ScopedShowWindow);
     showing_window_->Show(windows_[selected_window_]->SelectionWindow());
     start_overview_timer_.Reset();
+    if (timer_enabled_)
+      start_overview_timer_.Reset();
   }
 }
 
