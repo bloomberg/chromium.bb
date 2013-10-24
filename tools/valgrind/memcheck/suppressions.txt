@@ -6408,6 +6408,15 @@
    fun:_ZN7content16RenderThreadImpl15OnCreateNewViewERK18ViewMsg_New_Params
 }
 {
+   bug_310351
+   Memcheck:Leak
+   ...
+   fun:_ZN3WTF12PthreadStatenwEm
+   fun:_ZN3WTFL35establishIdentifierForPthreadHandleERK*
+   fun:_ZN3WTF13currentThreadEv
+   fun:_ZN3WTF20initializeMainThreadEPFvPFvPvES0_E
+}
+{
    bug_311229
    Memcheck:Leak
    fun:malloc

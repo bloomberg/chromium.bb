@@ -2333,16 +2333,6 @@
    fun:_ZN10TType1Font7GetFontEPK5TFont
 }
 {
-   bug_310351
-   Memcheck:Leak
-   ...
-   fun:_ZN3WTF12PthreadStatenwEm
-   fun:_ZN3WTFL35establishIdentifierForPthreadHandleERKP17_opaque_pthread_t
-   fun:_ZN3WTF13currentThreadEv
-   fun:_ZN3WTF20initializeMainThreadEPFvPFvPvES0_E
-   ...
-}
-{
    bug_310761_a
    Memcheck:Leak
    fun:malloc
