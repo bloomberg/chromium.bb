@@ -458,7 +458,6 @@ crbug.com/248938 [ Mac Linux ] virtual/threaded/animations/additive-transform-an
 crbug.com/248938 [ Win ] virtual/threaded/animations/transition-and-animation-3.html [ Pass Failure ]
 crbug.com/248938 [ Mac Linux ] virtual/threaded/animations/missing-values-first-keyframe.html [ Pass ImageOnlyFailure ]
 crbug.com/248938 virtual/threaded/animations/animation-direction-normal.html [ Pass ImageOnlyFailure Timeout ]
-crbug.com/248938 virtual/threaded/animations/play-state.html [ Pass Failure ]
 crbug.com/248938 virtual/threaded/animations/combo-transform-translate+scale.html [ Pass Failure ]
 crbug.com/248938 virtual/threaded/animations/change-one-anim.html [ Pass Failure ]
 crbug.com/248938 virtual/threaded/transitions/transition-end-event-nested.html [ Pass Failure ]
@@ -764,6 +763,10 @@ crbug.com/305853 [ SnowLeopard ] svg/as-object/embedded-svg-immediate-offsetWidt
 crbug.com/306595 svg/W3C-SVG-1.1-SE/struct-dom-11-f.svg [ Pass Timeout ]
 
 crbug.com/308952 [ Win ] inspector/editor/text-editor-reveal-line.html [ Failure ]
+
+crbug.com/310992 animations/play-state.html [ Pass Failure ]
+crbug.com/310992 virtual/threaded/animations/play-state.html [ Pass Failure ]
+crbug.com/310992 virtual/web-animations-css/animations/play-state.html [ Pass Failure ]
 
 # This can't be rebaselined because it's a reftest.
 crbug.com/999999 animations/opacity-transform-animation.html [ ImageOnlyFailure ]
