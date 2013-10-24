@@ -40,9 +40,10 @@ namespace WebCore {
 class InertAnimation FINAL : public TimedItem {
 
 public:
-    static PassRefPtr<InertAnimation> create(PassRefPtr<AnimationEffect>, const Timing&);
+    static PassRefPtr<InertAnimation> create(PassRefPtr<AnimationEffect>, const Timing&, bool paused);
     PassOwnPtr<AnimationEffect::CompositableValueMap> sample();
     AnimationEffect* effect() const { return m_effect.get(); }
+    bool paused() const { return m_paused; }
 
 protected:
     virtual void updateChildrenAndEffects() const OVERRIDE { };
@@ -50,8 +51,9 @@ protected:
     virtual double calculateTimeToEffectChange(double inheritedTime, double activeTime, Phase) const OVERRIDE FINAL;
 
 private:
-    InertAnimation(PassRefPtr<AnimationEffect>, const Timing&);
+    InertAnimation(PassRefPtr<AnimationEffect>, const Timing&, bool paused);
     RefPtr<AnimationEffect> m_effect;
+    bool m_paused;
 };
 
 } // namespace WebCore

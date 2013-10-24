@@ -75,6 +75,10 @@ public:
         for (HashSet<RefPtr<Player> >::const_iterator iter = players.begin(); iter != players.end(); ++iter)
             m_cancelledAnimationPlayers.add(iter->get());
     }
+    void toggleAnimationPaused(const AtomicString& name)
+    {
+        m_animationsWithPauseToggled.append(name);
+    }
 
     void startTransition(CSSPropertyID id, const AnimatableValue* from, const AnimatableValue* to, PassRefPtr<InertAnimation> animation)
     {
@@ -95,6 +99,7 @@ public:
     const Vector<NewAnimation>& newAnimations() const { return m_newAnimations; }
     const Vector<AtomicString>& cancelledAnimationNames() const { return m_cancelledAnimationNames; }
     const HashSet<const Player*>& cancelledAnimationPlayers() const { return m_cancelledAnimationPlayers; }
+    const Vector<AtomicString>& animationsWithPauseToggled() const { return m_animationsWithPauseToggled; }
 
     struct NewTransition {
         CSSPropertyID id;
@@ -110,6 +115,7 @@ public:
         return m_newAnimations.isEmpty()
             && m_cancelledAnimationNames.isEmpty()
             && m_cancelledAnimationPlayers.isEmpty()
+            && m_animationsWithPauseToggled.isEmpty()
             && m_newTransitions.isEmpty()
             && m_cancelledTransitions.isEmpty();
     }
@@ -121,6 +127,7 @@ private:
     Vector<NewAnimation> m_newAnimations;
     Vector<AtomicString> m_cancelledAnimationNames;
     HashSet<const Player*> m_cancelledAnimationPlayers;
+    Vector<AtomicString> m_animationsWithPauseToggled;
 
     Vector<NewTransition> m_newTransitions;
     HashSet<CSSPropertyID> m_cancelledTransitions;
