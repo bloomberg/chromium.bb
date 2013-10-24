@@ -2815,6 +2815,7 @@ desktop_shell_set_grab_surface(struct wl_client *client,
 	struct desktop_shell *shell = wl_resource_get_user_data(resource);
 
 	shell->grab_surface = wl_resource_get_user_data(surface_resource);
+	weston_view_create(shell->grab_surface);
 }
 
 static void
