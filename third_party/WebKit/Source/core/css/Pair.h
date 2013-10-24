@@ -44,7 +44,6 @@ public:
     {
         return adoptRef(new Pair(first, second, identicalValuesPolicy));
     }
-    virtual ~Pair() { }
 
     CSSPrimitiveValue* first() const { return m_first.get(); }
     CSSPrimitiveValue* second() const { return m_second.get(); }
