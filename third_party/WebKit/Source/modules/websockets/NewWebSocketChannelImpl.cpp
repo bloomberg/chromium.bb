@@ -390,10 +390,12 @@ void NewWebSocketChannelImpl::fail(const String& reason, MessageLevel level, con
 
     if (m_client)
         m_client->didReceiveMessageError();
+    // |reason| is only for logging and should not be provided for scripts,
+    // hence close reason must be empty.
     if (m_isSuspended) {
-        m_resumer->append(PendingEvent(CloseEventCodeAbnormalClosure, reason));
+        m_resumer->append(PendingEvent(CloseEventCodeAbnormalClosure, String()));
     } else {
-        handleDidClose(CloseEventCodeAbnormalClosure, reason);
+        handleDidClose(CloseEventCodeAbnormalClosure, String());
         // handleDidClose may delete this object.
     }
 }
