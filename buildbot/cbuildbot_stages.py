@@ -1212,7 +1212,7 @@ class LKGMCandidateSyncCompletionStage(ManifestVersionedSyncCompletionStage):
     super(LKGMCandidateSyncCompletionStage, self).__init__(*args, **kwargs)
     self._slave_statuses = {}
 
-  def _FetchSlaveStatuses(self):
+  def _FetchSlaveStatuses(self, step_name=None, wait_for_status=True):
     """Fetch and return build status for this build and any of its slaves."""
     if self._options.debug:
       # In debug mode, nothing is uploaded to Google Storage, so we bypass
@@ -1223,18 +1223,23 @@ class LKGMCandidateSyncCompletionStage(ManifestVersionedSyncCompletionStage):
     elif not self._build_config['master']:
       # Slaves only need to look at their own status.
       return ManifestVersionedSyncStage.manifest_manager.GetBuildersStatus(
-          [self._bot_id])
+          [self._bot_id], step_name=step_name,
+          wait_for_status=wait_for_status)
     else:
       builders = self._GetSlavesForMaster(self._build_config)
       manager = ManifestVersionedSyncStage.manifest_manager
       sub_manager = LKGMCandidateSyncStage.sub_manager
       if sub_manager:
         public_builders = [b['name'] for b in builders if not b['internal']]
-        statuses = sub_manager.GetBuildersStatus(public_builders)
+        statuses = sub_manager.GetBuildersStatus(public_builders,
+            step_name=step_name, wait_for_status=wait_for_status)
         private_builders = [b['name'] for b in builders if b['internal']]
-        statuses.update(manager.GetBuildersStatus(private_builders))
+        statuses.update(manager.GetBuildersStatus(private_builders,
+            step_name=step_name, wait_for_status=wait_for_status))
       else:
-        statuses = manager.GetBuildersStatus([b['name'] for b in builders])
+        statuses = manager.GetBuildersStatus([b['name'] for b in builders],
+                                             step_name=step_name,
+                                             wait_for_status=wait_for_status)
       return statuses
 
   def _AbortCQHWTests(self):
@@ -1301,6 +1306,14 @@ class LKGMCandidateSyncCompletionStage(ManifestVersionedSyncCompletionStage):
           self._AbortCQHWTests()
 
       statuses = self._FetchSlaveStatuses()
+
+      # disable the unused-variable warning
+      # pylint: disable-msg=W0612
+      unittest_statuses = self._FetchSlaveStatuses(step_name='unittest',
+                                                   wait_for_status=False)
+      # TODO: Handle the case where statuses shows full build failures, but
+      # unittest_statuses shows that all slave builder unit tests passed.
+      # In this case, submit and uprev the non-unit-test CLs only.
       self._slave_statuses = statuses
       failing_build_dict, inflight_build_dict = {}, {}
       for builder, status in statuses.iteritems():
