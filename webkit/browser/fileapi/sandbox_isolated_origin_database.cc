@@ -12,14 +12,17 @@ namespace fileapi {
 
 // Special directory name for isolated origin.
 const base::FilePath::CharType
-SandboxIsolatedOriginDatabase::kOriginDirectory[] = FILE_PATH_LITERAL("iso");
+SandboxIsolatedOriginDatabase::kObsoleteOriginDirectory[] =
+    FILE_PATH_LITERAL("iso");
 
 SandboxIsolatedOriginDatabase::SandboxIsolatedOriginDatabase(
     const std::string& origin,
-    const base::FilePath& file_system_directory)
+    const base::FilePath& file_system_directory,
+    const base::FilePath& origin_directory)
     : migration_checked_(false),
       origin_(origin),
-      file_system_directory_(file_system_directory) {
+      file_system_directory_(file_system_directory),
+      origin_directory_(origin_directory) {
 }
 
 SandboxIsolatedOriginDatabase::~SandboxIsolatedOriginDatabase() {
@@ -27,16 +30,14 @@ SandboxIsolatedOriginDatabase::~SandboxIsolatedOriginDatabase() {
 
 bool SandboxIsolatedOriginDatabase::HasOriginPath(
     const std::string& origin) {
-  MigrateDatabaseIfNeeded();
   return (origin_ == origin);
 }
 
 bool SandboxIsolatedOriginDatabase::GetPathForOrigin(
     const std::string& origin, base::FilePath* directory) {
-  MigrateDatabaseIfNeeded();
   if (origin != origin_)
     return false;
-  *directory = base::FilePath(kOriginDirectory);
+  *directory = origin_directory_;
   return true;
 }
 
@@ -47,20 +48,19 @@ bool SandboxIsolatedOriginDatabase::RemovePathForOrigin(
 
 bool SandboxIsolatedOriginDatabase::ListAllOrigins(
     std::vector<OriginRecord>* origins) {
-  MigrateDatabaseIfNeeded();
-  origins->push_back(OriginRecord(origin_, base::FilePath(kOriginDirectory)));
+  origins->push_back(OriginRecord(origin_, origin_directory_));
   return true;
 }
 
 void SandboxIsolatedOriginDatabase::DropDatabase() {
 }
 
-void SandboxIsolatedOriginDatabase::MigrateBackDatabase(
+void SandboxIsolatedOriginDatabase::MigrateBackFromObsoleteOriginDatabase(
     const std::string& origin,
     const base::FilePath& file_system_directory,
     SandboxOriginDatabase* database) {
   base::FilePath isolated_directory =
-      file_system_directory.Append(kOriginDirectory);
+      file_system_directory.Append(kObsoleteOriginDirectory);
 
   if (database->HasOriginPath(origin)) {
     // Don't bother.
@@ -75,31 +75,6 @@ void SandboxIsolatedOriginDatabase::MigrateBackDatabase(
     base::DeleteFile(origin_directory, true /* recursive */);
     base::Move(isolated_directory, origin_directory);
   }
-}
-
-void SandboxIsolatedOriginDatabase::MigrateDatabaseIfNeeded() {
-  if (migration_checked_)
-    return;
-
-  migration_checked_ = true;
-  // See if we have non-isolated version of sandbox database.
-  scoped_ptr<SandboxOriginDatabase> database(
-      new SandboxOriginDatabase(file_system_directory_));
-  if (!database->HasOriginPath(origin_))
-    return;
-
-  base::FilePath directory_name;
-  if (database->GetPathForOrigin(origin_, &directory_name) &&
-      directory_name != base::FilePath(kOriginDirectory)) {
-    base::FilePath from_path = file_system_directory_.Append(directory_name);
-    base::FilePath to_path = file_system_directory_.Append(kOriginDirectory);
-
-    if (base::PathExists(to_path))
-      base::DeleteFile(to_path, true /* recursive */);
-    base::Move(from_path, to_path);
-  }
-
-  database->RemoveDatabase();
 }
 
 }  // namespace fileapi

@@ -2316,7 +2316,7 @@ TEST_F(ObfuscatedFileUtilTest, MaybeDropDatabasesAliveCase) {
       ObfuscatedFileUtil::CreateForTesting(
           NULL, data_dir_path(),
           base::MessageLoopProxy::current().get()));
-  file_util->InitOriginDatabase(true /*create*/);
+  file_util->InitOriginDatabase(GURL(), true /*create*/);
   ASSERT_TRUE(file_util->origin_database_ != NULL);
 
   // Callback to Drop DB is called while ObfuscatedFileUtilTest is still alive.
@@ -2335,7 +2335,7 @@ TEST_F(ObfuscatedFileUtilTest, MaybeDropDatabasesAlreadyDeletedCase) {
         ObfuscatedFileUtil::CreateForTesting(
             NULL, data_dir_path(),
             base::MessageLoopProxy::current().get()));
-    file_util->InitOriginDatabase(true /*create*/);
+    file_util->InitOriginDatabase(GURL(), true /*create*/);
     file_util->db_flush_delay_seconds_ = 0;
     file_util->MarkUsed();
   }
@@ -2397,7 +2397,10 @@ TEST_F(ObfuscatedFileUtilTest, MigrationBackFromIsolated) {
   {
     std::string origin_string =
         webkit_database::GetIdentifierFromOrigin(origin_);
-    SandboxIsolatedOriginDatabase database_old(origin_string, data_dir_path());
+    SandboxIsolatedOriginDatabase database_old(
+        origin_string, data_dir_path(),
+        base::FilePath(
+            SandboxIsolatedOriginDatabase::kObsoleteOriginDirectory));
     base::FilePath path;
     EXPECT_TRUE(database_old.GetPathForOrigin(origin_string, &path));
     EXPECT_FALSE(path.empty());

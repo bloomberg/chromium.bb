@@ -302,7 +302,10 @@ class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE ObfuscatedFileUtil
 
   void MarkUsed();
   void DropDatabases();
-  bool InitOriginDatabase(bool create);
+
+  // Initializes the origin database. |origin_hint| may be used as a hint
+  // for initializing database if it's not empty.
+  bool InitOriginDatabase(const GURL& origin_hint, bool create);
 
   base::PlatformFileError GenerateNewLocalPath(
       SandboxDirectoryDatabase* db,
@@ -333,10 +336,6 @@ class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE ObfuscatedFileUtil
 
   GetTypeStringForURLCallback get_type_string_for_url_;
   std::set<std::string> known_type_strings_;
-
-  // If this instance is initialized for an isolated partition, this should
-  // only see a single origin.
-  GURL isolated_origin_;
 
   DISALLOW_COPY_AND_ASSIGN(ObfuscatedFileUtil);
 };

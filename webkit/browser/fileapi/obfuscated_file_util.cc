@@ -899,7 +899,7 @@ bool ObfuscatedFileUtil::DeleteDirectoryForOriginAndType(
   }
 
   // No other directories seem exist. Try deleting the entire origin directory.
-  InitOriginDatabase(false);
+  InitOriginDatabase(origin, false);
   if (origin_database_) {
     origin_database_->RemovePathForOrigin(
         webkit_database::GetIdentifierFromOrigin(origin));
@@ -914,7 +914,7 @@ ObfuscatedFileUtil::AbstractOriginEnumerator*
 ObfuscatedFileUtil::CreateOriginEnumerator() {
   std::vector<SandboxOriginDatabase::OriginRecord> origins;
 
-  InitOriginDatabase(false);
+  InitOriginDatabase(GURL(), false);
   return new ObfuscatedOriginEnumerator(
       origin_database_.get(), file_system_directory_);
 }
@@ -1104,10 +1104,6 @@ std::string ObfuscatedFileUtil::GetDirectoryDatabaseKey(
     return std::string();
   }
   // For isolated origin we just use a type string as a key.
-  if (HasIsolatedStorage(origin)) {
-    CHECK_EQ(isolated_origin_.spec(), origin.spec());
-    return type_string;
-  }
   return webkit_database::GetIdentifierFromOrigin(origin) +
       type_string;
 }
@@ -1143,11 +1139,7 @@ SandboxDirectoryDatabase* ObfuscatedFileUtil::GetDirectoryDatabase(
 
 base::FilePath ObfuscatedFileUtil::GetDirectoryForOrigin(
     const GURL& origin, bool create, base::PlatformFileError* error_code) {
-  if (HasIsolatedStorage(origin)) {
-    CHECK_EQ(isolated_origin_.spec(), origin.spec());
-  }
-
-  if (!InitOriginDatabase(create)) {
+  if (!InitOriginDatabase(origin, create)) {
     if (error_code) {
       *error_code = create ?
           base::PLATFORM_FILE_ERROR_FAILED :
@@ -1227,7 +1219,8 @@ void ObfuscatedFileUtil::DropDatabases() {
   timer_.reset();
 }
 
-bool ObfuscatedFileUtil::InitOriginDatabase(bool create) {
+bool ObfuscatedFileUtil::InitOriginDatabase(const GURL& origin_hint,
+                                            bool create) {
   if (origin_database_)
     return true;
 
@@ -1242,12 +1235,14 @@ bool ObfuscatedFileUtil::InitOriginDatabase(bool create) {
   origin_database_.reset(
       new SandboxOriginDatabase(file_system_directory_));
 
+  // TODO(kinuko): Deprecate this after a few release cycles, e.g. around M33.
   base::FilePath isolated_origin_dir = file_system_directory_.Append(
-      SandboxIsolatedOriginDatabase::kOriginDirectory);
-  if (base::DirectoryExists(isolated_origin_dir) &&
-      !isolated_origin_.is_empty()) {
-    SandboxIsolatedOriginDatabase::MigrateBackDatabase(
-        webkit_database::GetIdentifierFromOrigin(isolated_origin_),
+      SandboxIsolatedOriginDatabase::kObsoleteOriginDirectory);
+  if (!origin_hint.is_empty() &&
+      HasIsolatedStorage(origin_hint) &&
+      base::DirectoryExists(isolated_origin_dir)) {
+    SandboxIsolatedOriginDatabase::MigrateBackFromObsoleteOriginDatabase(
+        webkit_database::GetIdentifierFromOrigin(origin_hint),
         file_system_directory_,
         static_cast<SandboxOriginDatabase*>(origin_database_.get()));
   }
@@ -1365,24 +1360,8 @@ PlatformFileError ObfuscatedFileUtil::CreateOrOpenInternal(
 }
 
 bool ObfuscatedFileUtil::HasIsolatedStorage(const GURL& origin) {
-  if (special_storage_policy_.get() &&
-      special_storage_policy_->HasIsolatedStorage(origin)) {
-    if (isolated_origin_.is_empty())
-      isolated_origin_ = origin;
-    // Record isolated_origin_, but always disable for now.
-    // crbug.com/264429
-    if (isolated_origin_ != origin) {
-      UMA_HISTOGRAM_ENUMERATION("FileSystem.IsolatedOriginStatus",
-                                kIsolatedOriginDontMatch,
-                                kIsolatedOriginStatusMax);
-    } else {
-      UMA_HISTOGRAM_ENUMERATION("FileSystem.IsolatedOriginStatus",
-                                kIsolatedOriginMatch,
-                                kIsolatedOriginStatusMax);
-    }
-    return false;
-  }
-  return false;
+  return special_storage_policy_.get() &&
+      special_storage_policy_->HasIsolatedStorage(origin);
 }
 
 }  // namespace fileapi
