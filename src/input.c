@@ -1954,6 +1954,7 @@ weston_compositor_build_global_keymap(struct weston_compositor *ec)
 	}
 
 	ec->xkb_info = weston_xkb_info_create(keymap);
+	xkb_keymap_unref(keymap);
 	if (ec->xkb_info == NULL)
 		return -1;
 
