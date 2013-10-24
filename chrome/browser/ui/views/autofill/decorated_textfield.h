@@ -52,6 +52,8 @@ class DecoratedTextfield : public views::Textfield {
   virtual const char* GetClassName() const OVERRIDE;
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual void Layout() OVERRIDE;
+  virtual views::View* GetEventHandlerForPoint(const gfx::Point& point)
+      OVERRIDE;
   virtual void OnFocus() OVERRIDE;
   virtual void OnBlur() OVERRIDE;
 

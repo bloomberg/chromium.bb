@@ -120,6 +120,11 @@ const char* DecoratedTextfield::GetClassName() const {
   return kViewClassName;
 }
 
+views::View* DecoratedTextfield::GetEventHandlerForPoint(
+    const gfx::Point& point) {
+  return native_wrapper_->GetView();
+}
+
 void DecoratedTextfield::OnFocus() {
   border_->set_has_focus(true);
   views::Textfield::OnFocus();
