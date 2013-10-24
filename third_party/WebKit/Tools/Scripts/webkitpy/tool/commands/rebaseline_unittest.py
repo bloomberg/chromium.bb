@@ -784,6 +784,7 @@ TBR=foo@chromium.org
     def test_execute(self):
         def blame(path):
             return """
+6469e754a1 path/to/TestExpectations                   (foobarbaz1@chromium.org 2013-06-14 20:18:46 +0000   11) # Test NeedsRebaseline being in a comment doesn't bork parsing.
 6469e754a1 path/to/TestExpectations                   (foobarbaz1@chromium.org 2013-06-14 20:18:46 +0000   11) crbug.com/24182 [ Debug ] path/to/norebaseline.html [ ImageOnlyFailure ]
 6469e754a1 path/to/TestExpectations                   (foobarbaz1@chromium.org 2013-04-28 04:52:41 +0000   13) Bug(foo) fast/dom/prototype-taco.html [ NeedsRebaseline ]
 6469e754a1 path/to/TestExpectations                   (foobarbaz1@chromium.org 2013-06-14 20:18:46 +0000   11) crbug.com/24182 [ SnowLeopard ] fast/dom/prototype-strawberry.html [ NeedsRebaseline ]

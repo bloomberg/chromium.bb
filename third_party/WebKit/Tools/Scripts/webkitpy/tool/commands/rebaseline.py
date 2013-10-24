@@ -681,14 +681,19 @@ class AutoRebaseline(AbstractParallelRebaselineCommand):
         has_any_needs_rebaseline_lines = False
 
         for line in tool.scm().blame(expectations_file_path).split("\n"):
-            if "NeedsRebaseline" not in line:
+            comment_index = line.find("#")
+            if comment_index == -1:
+                comment_index = len(line)
+            line_without_comments = re.sub(r"\s+", " ", line[:comment_index].strip())
+
+            if "NeedsRebaseline" not in line_without_comments:
                 continue
 
             if not has_any_needs_rebaseline_lines:
                 self._start_new_log_entry(log_server)
             has_any_needs_rebaseline_lines = True
 
-            parsed_line = re.match("^(\S*)[^(]*\((\S*).*?([^ ]*)\ \[[^[]*$", line)
+            parsed_line = re.match("^(\S*)[^(]*\((\S*).*?([^ ]*)\ \[[^[]*$", line_without_comments)
 
             commit_hash = parsed_line.group(1)
             svn_revision = tool.scm().svn_revision_from_git_commit(commit_hash)
@@ -707,7 +712,7 @@ class AutoRebaseline(AbstractParallelRebaselineCommand):
                 revision = svn_revision
                 author = parsed_line.group(2)
 
-            bugs.update(re.findall("crbug\.com\/(\d+)", line))
+            bugs.update(re.findall("crbug\.com\/(\d+)", line_without_comments))
             tests.add(test)
 
             if len(tests) >= self.MAX_LINES_TO_REBASELINE:
