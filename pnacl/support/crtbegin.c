@@ -59,35 +59,6 @@ static char __EH_FRAME_BEGIN__[]
     __attribute__((section(".eh_frame"), aligned(4)))
     = { };
 
-
-#if defined(SHARED)
-
-/*
- * Registration and deregistration of exception handling tables are done
- * by .init_array and .fini_array elements added here.
- */
-/*
- * __attribute__((constructor)) places a call to the function in the
- * .init_array section in PNaCl.  The function pointers in .init_array
- * are then invoked in order (__do_eh_ctor is invoked first) before main.
- */
-static void __attribute__((constructor)) __do_eh_ctor(void) {
-  static struct object object;
-  __register_frame_info (__EH_FRAME_BEGIN__, &object);
-}
-
-/*
- * __attribute__((destructor)) places a call to the function in the
- * .fini_array section in PNaCl.  The function pointers in .fini_array
- * are then invoked in inverse order (__do_global_dtors_aux is invoked last)
- * at exit.
- */
-static void __attribute__((destructor)) __do_eh_dtor(void) {
-  __deregister_frame_info (__EH_FRAME_BEGIN__);
-}
-
-#else
-
 static void __do_eh_ctor(void) {
   static struct object object;
   __register_frame_info (__EH_FRAME_BEGIN__, &object);
@@ -106,5 +77,3 @@ void __pnacl_start(uint32_t *info) {
 
   _pnacl_wrapper_start(info);
 }
-
-#endif
