@@ -93,7 +93,7 @@ class CONTENT_EXPORT GestureEventFilter {
   friend class MockRenderWidgetHost;
   friend class GestureEventFilterTest;
 
-  static bool IsGestureEventTypeAsync(WebKit::WebInputEvent::Type type);
+  static bool ShouldIgnoreAckForGestureType(WebKit::WebInputEvent::Type type);
 
   // Returns the last gesture event that was sent to the renderer.
   const GestureEventWithLatencyInfo& GetGestureEventAwaitingAck() const;
@@ -155,9 +155,10 @@ class CONTENT_EXPORT GestureEventFilter {
   gfx::Transform GetTransformForEvent(
       const GestureEventWithLatencyInfo& gesture_event) const;
 
-  // Pops and sends async events from the head of |coalesced_gesture_events_|
-  // until the queue is empty or the event at the head is synchronous.
-  void SendAsyncEvents();
+  // Pops and sends events ignoring ack from the head of
+  // |coalesced_gesture_events_| until the queue is empty or the event at the
+  // head requires an ack.
+  void SendEventsIgnoringAck();
 
   // The receiver of all forwarded gesture events.
   GestureEventFilterClient* client_;

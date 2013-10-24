@@ -571,7 +571,7 @@ INSTANTIATE_TEST_CASE_P(AllSources,
 #endif  // GTEST_HAS_PARAM_TEST
 
 // Test that GestureShowPress events don't wait for ACKs.
-TEST_F(GestureEventFilterTest, GestureShowPressIsAsync) {
+TEST_F(GestureEventFilterTest, GestureShowPressIgnoresAck) {
   SimulateGestureEvent(WebInputEvent::GestureShowPress,
                        WebGestureEvent::Touchscreen);
 
@@ -588,12 +588,12 @@ TEST_F(GestureEventFilterTest, GestureShowPressIsAsync) {
                        WebGestureEvent::Touchscreen);
 
   EXPECT_EQ(1U, GetAndResetSentGestureEventCount());
-  // The tap down events will have escaped the queue, since they're async.
+  // The show press events will have escaped the queue, since they ignore acks.
   EXPECT_EQ(0U, GestureEventLastQueueEventSize());
 }
 
 // Test that GestureShowPress events don't get out of order due to
-// asynchronicity.
+// ignoring their acks.
 TEST_F(GestureEventFilterTest, GestureShowPressIsInOrder) {
   SimulateGestureEvent(WebInputEvent::GestureTap,
                        WebGestureEvent::Touchscreen);
@@ -605,8 +605,8 @@ TEST_F(GestureEventFilterTest, GestureShowPressIsInOrder) {
                        WebGestureEvent::Touchscreen);
 
   EXPECT_EQ(0U, GetAndResetSentGestureEventCount());
-  // The ShowPress, though asynchronous, is still stuck in the queue
-  // behind the synchronous Tap.
+  // The ShowPress, though it ignores ack, is still stuck in the queue
+  // behind the Tap which requires an ack.
   EXPECT_EQ(2U, GestureEventLastQueueEventSize());
 
   SimulateGestureEvent(WebInputEvent::GestureShowPress,

@@ -163,16 +163,16 @@ bool GestureEventFilter::ShouldForwardForCoalescing(
   }
   coalesced_gesture_events_.push_back(gesture_event);
 
-  // Ensure that if the added event is asynchonous, it is fired and
+  // Ensure that if the added event ignores its ack, it is fired and
   // removed from |coalesced_gesture_events_|.
-  SendAsyncEvents();
+  SendEventsIgnoringAck();
   return ShouldHandleEventNow();
 }
 
 void GestureEventFilter::ProcessGestureAck(InputEventAckState ack_result,
                                            WebInputEvent::Type type,
                                            const ui::LatencyInfo& latency) {
-  if (IsGestureEventTypeAsync(type))
+  if (ShouldIgnoreAckForGestureType(type))
     return;
 
   if (coalesced_gesture_events_.empty()) {
@@ -197,9 +197,9 @@ void GestureEventFilter::ProcessGestureAck(InputEventAckState ack_result,
       touchpad_tap_suppression_controller_->GestureFlingCancelAck(processed);
   }
   coalesced_gesture_events_.pop_front();
-  // If the event which was just ACKed was blocking asynchronous
-  // events, fire those asynchronous events now.
-  SendAsyncEvents();
+  // If the event which was just ACKed was blocking events ignoring ack, fire
+  // those events now.
+  SendEventsIgnoringAck();
   if (ignore_next_ack_) {
     ignore_next_ack_ = false;
   } else if (!coalesced_gesture_events_.empty()) {
@@ -359,12 +359,14 @@ gfx::Transform GestureEventFilter::GetTransformForEvent(
   return gesture_transform;
 }
 
-void GestureEventFilter::SendAsyncEvents() {
+void GestureEventFilter::SendEventsIgnoringAck() {
   GestureEventWithLatencyInfo gesture_event;
   while (!coalesced_gesture_events_.empty()) {
     gesture_event = coalesced_gesture_events_.front();
-    if (!GestureEventFilter::IsGestureEventTypeAsync(gesture_event.event.type))
+    if (!GestureEventFilter::ShouldIgnoreAckForGestureType(
+            gesture_event.event.type)) {
       return;
+    }
     coalesced_gesture_events_.pop_front();
 
     // TODO - once Blink accepts tap down events correctly, re-enable tap
@@ -376,7 +378,8 @@ void GestureEventFilter::SendAsyncEvents() {
   }
 }
 
-bool GestureEventFilter::IsGestureEventTypeAsync(WebInputEvent::Type type) {
+bool GestureEventFilter::ShouldIgnoreAckForGestureType(
+    WebInputEvent::Type type) {
   return type == WebInputEvent::GestureTapDown ||
       type == WebInputEvent::GestureShowPress;
 }
