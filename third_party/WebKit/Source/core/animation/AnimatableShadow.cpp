@@ -28,49 +28,28 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ShadowList_h
-#define ShadowList_h
-
-#include "core/rendering/style/ShadowData.h"
-#include "wtf/RefCounted.h"
-#include "wtf/Vector.h"
+#include "config.h"
+#include "core/animation/AnimatableShadow.h"
 
 namespace WebCore {
 
-class FloatRect;
-class LayoutRect;
+PassRefPtr<AnimatableValue> AnimatableShadow::interpolateTo(const AnimatableValue* value, double fraction) const
+{
+    const AnimatableShadow* shadowList = toAnimatableShadow(value);
+    return AnimatableShadow::create(ShadowList::blend(m_shadowList.get(), shadowList->m_shadowList.get(), fraction));
+}
 
-typedef Vector<ShadowData, 1> ShadowDataVector;
+PassRefPtr<AnimatableValue> AnimatableShadow::addWith(const AnimatableValue* value) const
+{
+    // FIXME: The spec doesn't specify anything for shadow in particular, but
+    // the default behaviour is probably not what one would expect.
+    return AnimatableValue::defaultAddWith(this, value);
+}
 
-// These are used to store shadows in specified order, but we usually want to
-// iterate over them backwards as the first-specified shadow is painted on top.
-class ShadowList : public RefCounted<ShadowList> {
-public:
-    // This consumes passed in vector.
-    static PassRefPtr<ShadowList> adopt(ShadowDataVector& shadows)
-    {
-        return adoptRef(new ShadowList(shadows));
-    }
-    const ShadowDataVector& shadows() const { return m_shadows; }
-    bool operator==(const ShadowList& o) const { return m_shadows == o.m_shadows; }
-    bool operator!=(const ShadowList& o) const { return !(*this == o); }
-
-    static PassRefPtr<ShadowList> blend(const ShadowList* from, const ShadowList* to, double progress);
-
-    void adjustRectForShadow(LayoutRect&, int additionalOutlineSize = 0) const;
-    void adjustRectForShadow(FloatRect&, int additionalOutlineSize = 0) const;
-
-private:
-    ShadowList(ShadowDataVector& shadows)
-    {
-        // If we have no shadows, we use a null ShadowList
-        ASSERT(!shadows.isEmpty());
-        m_shadows.swap(shadows);
-        m_shadows.shrinkToFit();
-    }
-    ShadowDataVector m_shadows;
-};
+bool AnimatableShadow::equalTo(const AnimatableValue* value) const
+{
+    const ShadowList* shadowList = toAnimatableShadow(value)->m_shadowList.get();
+    return m_shadowList == shadowList || (m_shadowList && shadowList && *m_shadowList == *shadowList);
+}
 
 } // namespace WebCore
-
-#endif // ShadowList_h

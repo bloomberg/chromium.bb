@@ -43,6 +43,7 @@
 #include "core/animation/AnimatableRepeatable.h"
 #include "core/animation/AnimatableSVGLength.h"
 #include "core/animation/AnimatableSVGPaint.h"
+#include "core/animation/AnimatableShadow.h"
 #include "core/animation/AnimatableShapeValue.h"
 #include "core/animation/AnimatableStrokeDasharrayList.h"
 #include "core/animation/AnimatableTransform.h"
@@ -288,6 +289,10 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
     case CSSPropertyBottom:
         style->setBottom(animatableValueToLength(value, state));
         return;
+    case CSSPropertyBoxShadow:
+    case CSSPropertyWebkitBoxShadow:
+        style->setBoxShadow(toAnimatableShadow(value)->shadowList());
+        return;
     case CSSPropertyClip:
         style->setClip(animatableValueToLengthBox(value, state));
         style->setHasClip(true);
@@ -432,6 +437,9 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
         return;
     case CSSPropertyTextIndent:
         style->setTextIndent(animatableValueToLength(value, state));
+        return;
+    case CSSPropertyTextShadow:
+        style->setTextShadow(toAnimatableShadow(value)->shadowList());
         return;
     case CSSPropertyTop:
         style->setTop(animatableValueToLength(value, state));

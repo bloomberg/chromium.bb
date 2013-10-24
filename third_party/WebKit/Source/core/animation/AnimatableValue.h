@@ -68,6 +68,7 @@ public:
     bool isRepeatable() const { return type() == TypeRepeatable; }
     bool isSVGLength() const { return type() == TypeSVGLength; }
     bool isSVGPaint() const { return type() == TypeSVGPaint; }
+    bool isShadow() const { return type() == TypeShadow; }
     bool isShapeValue() const { return type() == TypeShapeValue; }
     bool isStrokeDasharrayList() const { return type() == TypeStrokeDasharrayList; }
     bool isTransform() const { return type() == TypeTransform; }
@@ -100,6 +101,7 @@ protected:
         TypeRepeatable,
         TypeSVGLength,
         TypeSVGPaint,
+        TypeShadow,
         TypeShapeValue,
         TypeStrokeDasharrayList,
         TypeTransform,

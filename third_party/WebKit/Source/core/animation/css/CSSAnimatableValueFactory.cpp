@@ -44,6 +44,7 @@
 #include "core/animation/AnimatableRepeatable.h"
 #include "core/animation/AnimatableSVGLength.h"
 #include "core/animation/AnimatableSVGPaint.h"
+#include "core/animation/AnimatableShadow.h"
 #include "core/animation/AnimatableShapeValue.h"
 #include "core/animation/AnimatableStrokeDasharrayList.h"
 #include "core/animation/AnimatableTransform.h"
@@ -249,6 +250,9 @@ PassRefPtr<AnimatableValue> CSSAnimatableValueFactory::create(CSSPropertyID prop
         return createFromDouble(style->borderTopWidth());
     case CSSPropertyBottom:
         return createFromLength(style->bottom(), style);
+    case CSSPropertyBoxShadow:
+    case CSSPropertyWebkitBoxShadow:
+        return AnimatableShadow::create(style->boxShadow());
     case CSSPropertyClip:
         if (style->hasClip())
             return createFromLengthBox(style->clip(), style);
@@ -345,6 +349,8 @@ PassRefPtr<AnimatableValue> CSSAnimatableValueFactory::create(CSSPropertyID prop
         return createFromColor(property, style);
     case CSSPropertyTextIndent:
         return createFromLength(style->textIndent(), style);
+    case CSSPropertyTextShadow:
+        return AnimatableShadow::create(style->textShadow());
     case CSSPropertyTop:
         return createFromLength(style->top(), style);
     case CSSPropertyWebkitBorderHorizontalSpacing:

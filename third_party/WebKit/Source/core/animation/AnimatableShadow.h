@@ -28,49 +28,40 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ShadowList_h
-#define ShadowList_h
+#ifndef AnimatableShadow_h
+#define AnimatableShadow_h
 
-#include "core/rendering/style/ShadowData.h"
-#include "wtf/RefCounted.h"
-#include "wtf/Vector.h"
+#include "core/animation/AnimatableValue.h"
+#include "core/rendering/style/ShadowList.h"
 
 namespace WebCore {
 
-class FloatRect;
-class LayoutRect;
-
-typedef Vector<ShadowData, 1> ShadowDataVector;
-
-// These are used to store shadows in specified order, but we usually want to
-// iterate over them backwards as the first-specified shadow is painted on top.
-class ShadowList : public RefCounted<ShadowList> {
+class AnimatableShadow : public AnimatableValue {
 public:
-    // This consumes passed in vector.
-    static PassRefPtr<ShadowList> adopt(ShadowDataVector& shadows)
+    virtual ~AnimatableShadow() { }
+    static PassRefPtr<AnimatableShadow> create(PassRefPtr<ShadowList> shadowList)
     {
-        return adoptRef(new ShadowList(shadows));
+        return adoptRef(new AnimatableShadow(shadowList));
     }
-    const ShadowDataVector& shadows() const { return m_shadows; }
-    bool operator==(const ShadowList& o) const { return m_shadows == o.m_shadows; }
-    bool operator!=(const ShadowList& o) const { return !(*this == o); }
+    ShadowList* shadowList() const { return m_shadowList.get(); }
 
-    static PassRefPtr<ShadowList> blend(const ShadowList* from, const ShadowList* to, double progress);
-
-    void adjustRectForShadow(LayoutRect&, int additionalOutlineSize = 0) const;
-    void adjustRectForShadow(FloatRect&, int additionalOutlineSize = 0) const;
+protected:
+    virtual PassRefPtr<AnimatableValue> interpolateTo(const AnimatableValue*, double fraction) const OVERRIDE;
+    virtual PassRefPtr<AnimatableValue> addWith(const AnimatableValue*) const OVERRIDE;
 
 private:
-    ShadowList(ShadowDataVector& shadows)
+    explicit AnimatableShadow(PassRefPtr<ShadowList> shadowList)
+        : m_shadowList(shadowList)
     {
-        // If we have no shadows, we use a null ShadowList
-        ASSERT(!shadows.isEmpty());
-        m_shadows.swap(shadows);
-        m_shadows.shrinkToFit();
     }
-    ShadowDataVector m_shadows;
+    virtual AnimatableType type() const OVERRIDE { return TypeShadow; }
+    virtual bool equalTo(const AnimatableValue*) const OVERRIDE;
+
+    const RefPtr<ShadowList> m_shadowList;
 };
+
+DEFINE_ANIMATABLE_VALUE_TYPE_CASTS(AnimatableShadow, isShadow());
 
 } // namespace WebCore
 
-#endif // ShadowList_h
+#endif // AnimatableShadow_h

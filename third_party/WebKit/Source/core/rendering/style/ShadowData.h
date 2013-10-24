@@ -48,6 +48,8 @@ public:
     bool operator==(const ShadowData&) const;
     bool operator!=(const ShadowData& o) const { return !(*this == o); }
 
+    ShadowData blend(const ShadowData& from, double progress) const;
+
     int x() const { return m_location.x(); }
     int y() const { return m_location.y(); }
     IntPoint location() const { return m_location; }

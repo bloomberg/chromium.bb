@@ -88,29 +88,6 @@ static inline IntSize blendFunc(const AnimationBase* anim, const IntSize& from, 
                    blendFunc(anim, from.height(), to.height(), progress));
 }
 
-static inline ShadowStyle blendFunc(const AnimationBase* anim, ShadowStyle from, ShadowStyle to, double progress)
-{
-    if (from == to)
-        return to;
-
-    double fromVal = from == Normal ? 1 : 0;
-    double toVal = to == Normal ? 1 : 0;
-    double result = blendFunc(anim, fromVal, toVal, progress);
-    return result > 0 ? Normal : Inset;
-}
-
-static inline ShadowData blendFunc(const AnimationBase* anim, const ShadowData& from, const ShadowData& to, double progress)
-{
-    if (from.style() != to.style())
-        return to;
-
-    return ShadowData(blend(from.location(), to.location(), progress),
-        blend(from.blur(), to.blur(), progress),
-        blend(from.spread(), to.spread(), progress),
-        blendFunc(anim, from.style(), to.style(), progress),
-        blend(from.color(), to.color(), progress));
-}
-
 static inline TransformOperations blendFunc(const AnimationBase* anim, const TransformOperations& from, const TransformOperations& to, double progress)
 {
     if (anim->isTransformFunctionListValid())
@@ -523,22 +500,6 @@ public:
     }
 };
 
-static inline size_t shadowListLength(const ShadowList* shadowList)
-{
-    return shadowList ? shadowList->shadows().size() : 0;
-}
-
-static inline const ShadowData& shadowForBlending(const ShadowData* srcShadow, const ShadowData* otherShadow)
-{
-    DEFINE_STATIC_LOCAL(ShadowData, defaultShadowData, (IntPoint(), 0, 0, Normal, Color::transparent));
-    DEFINE_STATIC_LOCAL(ShadowData, defaultInsetShadowData, (IntPoint(), 0, 0, Inset, Color::transparent));
-
-    if (srcShadow)
-        return *srcShadow;
-
-    return otherShadow->style() == Inset ? defaultInsetShadowData : defaultShadowData;
-}
-
 class PropertyWrapperShadow : public AnimationPropertyWrapperBase {
 public:
     PropertyWrapperShadow(CSSPropertyID prop, ShadowList* (RenderStyle::*getter)() const, void (RenderStyle::*setter)(PassRefPtr<ShadowList>))
@@ -561,29 +522,7 @@ public:
 
     virtual void blend(const AnimationBase* anim, RenderStyle* dst, const RenderStyle* a, const RenderStyle* b, double progress) const
     {
-        const ShadowList* shadowA = (a->*m_getter)();
-        const ShadowList* shadowB = (b->*m_getter)();
-
-        size_t fromLength = shadowListLength(shadowA);
-        size_t toLength = shadowListLength(shadowB);
-        if (!fromLength && !toLength) {
-            (dst->*m_setter)(0);
-            return;
-        }
-
-        ShadowDataVector shadows;
-
-        size_t maxLength = max(fromLength, toLength);
-        for (size_t i = 0; i < maxLength; ++i) {
-            const ShadowData* fromShadow = i < fromLength ? &shadowA->shadows()[i] : 0;
-            const ShadowData* toShadow = i < toLength ? &shadowB->shadows()[i] : 0;
-            const ShadowData& srcShadow = shadowForBlending(fromShadow, toShadow);
-            const ShadowData& dstShadow = shadowForBlending(toShadow, fromShadow);
-
-            shadows.append(blendFunc(anim, srcShadow, dstShadow, progress));
-        }
-
-        (dst->*m_setter)(ShadowList::adopt(shadows));
+        (dst->*m_setter)(ShadowList::blend((a->*m_getter)(), (b->*m_getter)(), progress));
     }
 
     ShadowList* (RenderStyle::*m_getter)() const;

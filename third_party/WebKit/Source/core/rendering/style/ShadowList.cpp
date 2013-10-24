@@ -78,4 +78,30 @@ void ShadowList::adjustRectForShadow(FloatRect& rect, int additionalOutlineSize)
     rect.setHeight(rect.height() - shadowTop + shadowBottom);
 }
 
+PassRefPtr<ShadowList> ShadowList::blend(const ShadowList* from, const ShadowList* to, double progress)
+{
+    size_t fromLength = from ? from->shadows().size() : 0;
+    size_t toLength = to ? to->shadows().size() : 0;
+    if (!fromLength && !toLength)
+        return 0;
+
+    ShadowDataVector shadows;
+
+    DEFINE_STATIC_LOCAL(ShadowData, defaultShadowData, (IntPoint(), 0, 0, Normal, Color::transparent));
+    DEFINE_STATIC_LOCAL(ShadowData, defaultInsetShadowData, (IntPoint(), 0, 0, Inset, Color::transparent));
+
+    size_t maxLength = std::max(fromLength, toLength);
+    for (size_t i = 0; i < maxLength; ++i) {
+        const ShadowData* fromShadow = i < fromLength ? &from->shadows()[i] : 0;
+        const ShadowData* toShadow = i < toLength ? &to->shadows()[i] : 0;
+        if (!fromShadow)
+            fromShadow = toShadow->style() == Inset ? &defaultInsetShadowData : &defaultShadowData;
+        else if (!toShadow)
+            toShadow = fromShadow->style() == Inset ? &defaultInsetShadowData : &defaultShadowData;
+        shadows.append(toShadow->blend(*fromShadow, progress));
+    }
+
+    return ShadowList::adopt(shadows);
+}
+
 } // namespace WebCore

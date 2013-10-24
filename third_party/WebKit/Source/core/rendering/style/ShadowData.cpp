@@ -22,6 +22,8 @@
 #include "config.h"
 #include "core/rendering/style/ShadowData.h"
 
+#include "platform/animation/AnimationUtilities.h"
+
 namespace WebCore {
 
 bool ShadowData::operator==(const ShadowData& o) const
@@ -31,6 +33,18 @@ bool ShadowData::operator==(const ShadowData& o) const
         && m_spread == o.m_spread
         && m_style == o.m_style
         && m_color == o.m_color;
+}
+
+ShadowData ShadowData::blend(const ShadowData& from, double progress) const
+{
+    if (style() != from.style())
+        return *this;
+
+    return ShadowData(WebCore::blend(from.location(), location(), progress),
+        clampTo<int>(WebCore::blend(from.blur(), blur(), progress), 0),
+        WebCore::blend(from.spread(), spread(), progress),
+        style(),
+        WebCore::blend(from.color(), color(), progress));
 }
 
 } // namespace WebCore

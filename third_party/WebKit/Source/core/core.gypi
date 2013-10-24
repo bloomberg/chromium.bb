@@ -554,6 +554,8 @@
             'animation/AnimatableSVGLength.h',
             'animation/AnimatableSVGPaint.cpp',
             'animation/AnimatableSVGPaint.h',
+            'animation/AnimatableShadow.cpp',
+            'animation/AnimatableShadow.h',
             'animation/AnimatableShapeValue.cpp',
             'animation/AnimatableShapeValue.h',
             'animation/AnimatableStrokeDasharrayList.cpp',
