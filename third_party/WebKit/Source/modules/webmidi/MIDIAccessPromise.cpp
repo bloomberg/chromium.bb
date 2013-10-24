@@ -58,12 +58,17 @@ MIDIAccessPromise::~MIDIAccessPromise()
     stop();
 }
 
-void MIDIAccessPromise::clear()
+bool MIDIAccessPromise::hasPendingActivity() const
 {
-    ASSERT(m_state == Invoked);
-    m_access.clear();
-    m_error.clear();
-    m_options.clear();
+    return !!m_access && m_state != Accepted && m_state != Rejected;
+}
+
+void MIDIAccessPromise::stop()
+{
+    m_state = Invoked;
+    if (!!m_access)
+        m_access->stop();
+    clear();
 }
 
 void MIDIAccessPromise::fulfill()
@@ -77,10 +82,7 @@ void MIDIAccessPromise::fulfill()
         } else {
             m_state = Accepted;
         }
-        unsetPendingActivity(this);
     }
-    m_successCallback.clear();
-    m_errorCallback.clear();
 }
 
 void MIDIAccessPromise::reject(PassRefPtr<DOMError> error)
@@ -94,19 +96,14 @@ void MIDIAccessPromise::reject(PassRefPtr<DOMError> error)
             m_state = Rejected;
             m_error = error;
         }
-        unsetPendingActivity(this);
     }
-    m_successCallback.clear();
-    m_errorCallback.clear();
 }
 
 void MIDIAccessPromise::then(PassRefPtr<MIDISuccessCallback> successCallback, PassRefPtr<MIDIErrorCallback> errorCallback)
 {
     // Lazily request access.
-    if (!m_access) {
-        setPendingActivity(this);
+    if (!m_access)
         m_access = MIDIAccess::create(executionContext(), this);
-    }
 
     switch (m_state) {
     case Accepted:
@@ -128,6 +125,16 @@ void MIDIAccessPromise::then(PassRefPtr<MIDISuccessCallback> successCallback, Pa
     default:
         ASSERT_NOT_REACHED();
     }
+}
+
+void MIDIAccessPromise::clear()
+{
+    ASSERT(m_state == Invoked);
+    m_access.clear();
+    m_error.clear();
+    m_options.clear();
+    m_successCallback.clear();
+    m_errorCallback.clear();
 }
 
 } // namespace WebCore

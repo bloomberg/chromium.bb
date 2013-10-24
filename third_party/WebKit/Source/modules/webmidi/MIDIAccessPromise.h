@@ -53,12 +53,16 @@ public:
     static PassRefPtr<MIDIAccessPromise> create(ExecutionContext*, const Dictionary&);
     virtual ~MIDIAccessPromise();
 
-    void then(PassRefPtr<MIDISuccessCallback>, PassRefPtr<MIDIErrorCallback>);
+    // ActiveDOMObject
+    virtual bool hasPendingActivity() const OVERRIDE;
+    virtual void stop() OVERRIDE;
 
     MIDIOptions* options() { return m_options.get(); }
 
     void fulfill();
     void reject(PassRefPtr<DOMError>);
+
+    void then(PassRefPtr<MIDISuccessCallback>, PassRefPtr<MIDIErrorCallback>);
 
 private:
     enum State {
