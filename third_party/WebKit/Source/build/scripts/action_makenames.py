@@ -117,7 +117,7 @@ def main(args):
         inputAbs = os.path.abspath(input)
         inputAbsPosix = inputAbs.replace(os.path.sep, posixpath.sep)
         inputBasename = os.path.basename(input)
-        if inputBasename in ('make_names.pl', 'make_dom_exceptions.pl', 'make_settings.pl'):
+        if inputBasename in ('make_names.pl', 'make_dom_exceptions.pl'):
             assert makeNamesInput == None
             makeNamesInput = inputAbs
         elif inputBasename.endswith('TagNames.in'):
@@ -126,7 +126,7 @@ def main(args):
         elif inputBasename.endswith('AttributeNames.in') or inputBasename.endswith('attrs.in'):
             assert attrInput == None
             attrInput = inputAbsPosix
-        elif (inputBasename.endswith('EventTargetFactory.in') or inputBasename.endswith('DOMExceptions.in') or inputBasename.endswith('Settings.in')):
+        elif (inputBasename.endswith('EventTargetFactory.in') or inputBasename.endswith('DOMExceptions.in')):
             eventsInput = inputAbsPosix
         elif inputBasename.endswith('Names.in'):
             options.append(inputAbsPosix)

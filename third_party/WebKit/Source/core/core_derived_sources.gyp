@@ -44,7 +44,12 @@
         {
           'action_name': 'Settings',
           'inputs': [
-            'page/make_settings.pl',
+            '<@(scripts_for_in_files)',
+            '../build/scripts/make_settings.py',
+            '../build/scripts/templates/InternalSettingsGenerated.idl.tmpl',
+            '../build/scripts/templates/InternalSettingsGenerated.cpp.tmpl',
+            '../build/scripts/templates/InternalSettingsGenerated.h.tmpl',
+            '../build/scripts/templates/SettingsMacros.h.tmpl',
             'page/Settings.in',
           ],
           'outputs': [
@@ -55,12 +60,11 @@
           ],
           'action': [
             'python',
-            '../build/scripts/action_makenames.py',
-            '<@(_outputs)',
-            '--',
-            '<@(_inputs)',
+            '../build/scripts/make_settings.py',
+            'page/Settings.in',
+            '--output_dir',
+            '<(SHARED_INTERMEDIATE_DIR)/blink',
           ],
-          'msvs_cygwin_shell': 1,
         },
         {
           'action_name': 'InternalRuntimeFlags',

@@ -30,7 +30,7 @@ import os.path
 import re
 
 
-ACRONYMS = ['CSS', 'FE', 'HTML', 'IME', 'JS', 'SVG', 'URL', 'WOFF', 'XML', 'XSLT']
+ACRONYMS = ['CSS', 'FE', 'FTP', 'HTML', 'IME', 'JS', 'SVG', 'URL', 'WOFF', 'XML', 'XSLT', 'XSS']
 
 
 def lower_first(name):
