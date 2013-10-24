@@ -229,7 +229,7 @@ deps = {
          Var("libphonenumber_revision"),
 
   "src/tools/deps2git":
-    "/trunk/tools/deps2git@214390",
+    "/trunk/tools/deps2git@230538",
 
   "src/third_party/webpagereplay":
     (Var("googlecode_url") % "web-page-replay") + "/trunk@522",
