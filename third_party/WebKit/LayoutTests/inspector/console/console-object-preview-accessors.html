@@ -36,7 +36,9 @@ function test()
 {
     InspectorTest.showConsolePanel();
     InspectorTest.evaluateInConsole("arrayLikeWithAccessors");
+    InspectorTest.evaluateInConsole("console.log(arrayLikeWithAccessors)");
     InspectorTest.evaluateInConsole("objectWithAccessors");
+    InspectorTest.evaluateInConsole("console.log(objectWithAccessors)");
     InspectorTest.evaluateInConsole("console.table(tableObject)");
     InspectorTest.evaluateInConsole("console.dir(objectWithAccessors)");
     InspectorTest.runAfterPendingDispatches(step0);
