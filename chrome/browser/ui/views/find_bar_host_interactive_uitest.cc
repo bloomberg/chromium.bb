@@ -145,14 +145,11 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, MAYBE_FocusRestore) {
   EXPECT_TRUE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_OMNIBOX));
 }
 
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_AURA)
-// TODO(erg): linux_aura bringup: http://crbug.com/163931
-#define MAYBE_SelectionRestoreOnTabSwitch DISABLED_SelectionRestoreOnTabSwitch
-#else
-#define MAYBE_SelectionRestoreOnTabSwitch SelectionRestoreOnTabSwitch
-#endif
 
-IN_PROC_BROWSER_TEST_F(FindInPageTest, MAYBE_SelectionRestoreOnTabSwitch) {
+// TODO(phajdan.jr): Disabling due to possible timing issues on XP
+// interactive_ui_tests.
+// http://crbug.com/311363
+IN_PROC_BROWSER_TEST_F(FindInPageTest, DISABLED_SelectionRestoreOnTabSwitch) {
   ASSERT_TRUE(test_server()->Start());
 
   // Make sure Chrome is in the foreground, otherwise sending input
@@ -415,7 +412,10 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, MAYBE_PasteWithoutTextChange) {
 }
 
 #if defined(OS_WIN)
-IN_PROC_BROWSER_TEST_F(FindInPageTest, CtrlEnter) {
+// TODO(phajdan.jr): Disabling due to possible timing issues on XP
+// interactive_ui_tests.
+// http://crbug.com/311363
+IN_PROC_BROWSER_TEST_F(FindInPageTest, DISABLED_CtrlEnter) {
   ui_test_utils::NavigateToURL(browser(),
                                GURL("data:text/html,This is some text with a "
                                     "<a href=\"about:blank\">link</a>."));
