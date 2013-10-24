@@ -567,7 +567,7 @@ void WebRTCIdentityStoreBackend::SqlLiteStorage::Commit() {
       case DELETE_IDENTITY:
         del_stmt.Reset(true);
         del_stmt.BindString(0, po->origin.spec());
-        add_stmt.BindString(1, po->identity_name);
+        del_stmt.BindString(1, po->identity_name);
         CHECK(del_stmt.Run());
         break;
 
