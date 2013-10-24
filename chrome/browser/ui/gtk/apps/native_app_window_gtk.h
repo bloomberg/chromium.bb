@@ -145,6 +145,9 @@ class NativeAppWindowGtk : public apps::NativeAppWindow,
   // fullscreen, however: some WMs don't support fullscreen.
   bool content_thinks_its_fullscreen_;
 
+  // Represents whether the window is waiting to be maximized.
+  bool maximize_pending_;
+
   // The region is treated as title bar, can be dragged to move
   // and double clicked to maximize.
   scoped_ptr<SkRegion> draggable_region_;

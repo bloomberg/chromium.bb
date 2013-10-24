@@ -47,6 +47,7 @@ NativeAppWindowGtk::NativeAppWindowGtk(ShellWindow* shell_window,
       state_(GDK_WINDOW_STATE_WITHDRAWN),
       is_active_(false),
       content_thinks_its_fullscreen_(false),
+      maximize_pending_(false),
       frameless_(params.frame == ShellWindow::FRAME_NONE),
       always_on_top_(params.always_on_top),
       frame_cursor_(NULL),
@@ -250,7 +251,18 @@ void NativeAppWindowGtk::Maximize() {
   // consistency with Windows platform. Otherwise the window will be hidden if
   // it has been minimized.
   gtk_window_present(window_);
-  gtk_window_maximize(window_);
+
+  if (!resizable_) {
+    // When the window is not resizable, we still want to make this call succeed
+    // but gtk will not allow it if the window is not resizable. The actual
+    // maximization will happen with the subsequent OnConfigureDebounced call,
+    // that will be triggered when the window manager's resizable property
+    // changes.
+    maximize_pending_ = true;
+    gtk_window_set_resizable(window_, TRUE);
+  } else {
+    gtk_window_maximize(window_);
+  }
 }
 
 void NativeAppWindowGtk::Minimize() {
@@ -431,6 +443,24 @@ void NativeAppWindowGtk::OnConfigureDebounced() {
   // to fullscreen.
   if (!IsFullscreen() && IsFullscreenOrPending()) {
     gtk_window_fullscreen(window_);
+  }
+
+  // maximize_pending_ is the boolean that lets us know that the window is in
+  // the process of being maximized but was set as not resizable.
+  // This function will be called twice during the maximization process:
+  // 1. gtk_window_maximize() is called to maximize the window;
+  // 2. gtk_set_resizable(, FALSE) is called to make the window no longer
+  //    resizable.
+  // gtk_window_maximize() will cause ::OnConfigureDebounced to be called
+  // again, at which time we will run into the second step.
+  if (maximize_pending_) {
+    if (!(state_ & GDK_WINDOW_STATE_MAXIMIZED)) {
+      gtk_window_maximize(window_);
+    } else {
+      maximize_pending_ = false;
+      if (!resizable_)
+        gtk_window_set_resizable(window_, FALSE);
+    }
   }
 }
 
