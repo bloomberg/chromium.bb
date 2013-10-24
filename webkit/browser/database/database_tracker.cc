@@ -786,7 +786,6 @@ bool DatabaseTracker::HasSavedIncognitoFileHandle(
 }
 
 void DatabaseTracker::DeleteIncognitoDBDirectory() {
-  shutting_down_ = true;
   is_initialized_ = false;
 
   for (FileHandlesMap::iterator it = incognito_file_handles_.begin();
@@ -800,8 +799,6 @@ void DatabaseTracker::DeleteIncognitoDBDirectory() {
 }
 
 void DatabaseTracker::ClearSessionOnlyOrigins() {
-  shutting_down_ = true;
-
   bool has_session_only_databases =
       special_storage_policy_.get() &&
       special_storage_policy_->HasSessionOnlyOrigins();
@@ -852,10 +849,12 @@ void DatabaseTracker::Shutdown() {
     NOTREACHED();
     return;
   }
+  shutting_down_ = true;
   if (is_incognito_)
     DeleteIncognitoDBDirectory();
   else if (!force_keep_session_state_)
     ClearSessionOnlyOrigins();
+  CloseTrackerDatabaseAndClearCaches();
 }
 
 void DatabaseTracker::SetForceKeepSessionState() {
