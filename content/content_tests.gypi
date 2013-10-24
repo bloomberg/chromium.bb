@@ -1331,7 +1331,6 @@
             'native_lib_target': 'libcontent_browsertests',
             'additional_input_paths': ['<(PRODUCT_DIR)/content_shell/assets/content_shell.pak'],
             'asset_location': '<(ant_build_out)/content_shell/assets',
-            'is_test_apk': 1,
           },
           'includes': [ '../build/java_apk.gypi' ],
         },
