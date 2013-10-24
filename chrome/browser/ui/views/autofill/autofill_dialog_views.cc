@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/autofill/autofill_dialog_view_delegate.h"
 #include "chrome/browser/ui/autofill/loading_animation.h"
 #include "chrome/browser/ui/views/autofill/decorated_textfield.h"
+#include "chrome/browser/ui/views/autofill/tooltip_icon.h"
 #include "chrome/browser/ui/views/constrained_window_views.h"
 #include "components/autofill/content/browser/wallet/wallet_service_url.h"
 #include "components/autofill/core/browser/autofill_type.h"
@@ -240,28 +241,6 @@ class LayoutPropagationView : public views::View {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(LayoutPropagationView);
-};
-
-// A tooltip icon (just an ImageView with a tooltip). Looks like (?).
-class TooltipIcon : public views::ImageView {
- public:
-  explicit TooltipIcon(const base::string16& tooltip) : tooltip_(tooltip) {
-    SetImage(ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-        IDR_AUTOFILL_TOOLTIP_ICON).ToImageSkia());
-  }
-  virtual ~TooltipIcon() {}
-
-  // views::View implementation
-  virtual bool GetTooltipText(const gfx::Point& p,
-                              base::string16* tooltip) const OVERRIDE {
-    *tooltip = tooltip_;
-    return !tooltip_.empty();
-  }
-
- private:
-  base::string16 tooltip_;
-
-  DISALLOW_COPY_AND_ASSIGN(TooltipIcon);
 };
 
 // A View for a single notification banner.
