@@ -153,7 +153,12 @@ TEST_F(PictureLayerTilingPerfTest, Invalidate) {
   RunInvalidateTest("50x50", full_region);
 }
 
+#if defined(OS_ANDROID)
+// TODO(vmpstr): Investigate why this is noisy (crbug.com/310220).
+TEST_F(PictureLayerTilingPerfTest, DISABLED_UpdateTilePriorities) {
+#else
 TEST_F(PictureLayerTilingPerfTest, UpdateTilePriorities) {
+#endif  // defined(OS_ANDROID)
   gfx::Transform transform;
   RunUpdateTilePrioritiesStationaryTest("no_transform", transform);
   RunUpdateTilePrioritiesScrollingTest("no_transform", transform);
