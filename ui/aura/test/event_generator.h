@@ -183,11 +183,20 @@ class EventGenerator {
   // Generates a touch press event.
   void PressTouch();
 
+  // Generates a touch press event with |touch_id|.
+  void PressTouchId(int touch_id);
+
   // Generates a ET_TOUCH_MOVED event to |point|.
   void MoveTouch(const gfx::Point& point);
 
+  // Generates a ET_TOUCH_MOVED event to |point| with |touch_id|.
+  void MoveTouchId(const gfx::Point& point, int touch_id);
+
   // Generates a touch release event.
   void ReleaseTouch();
+
+  // Generates a touch release event with |touch_id|.
+  void ReleaseTouchId(int touch_id);
 
   // Generates press, move and release event to move touch
   // to be the given |point|.
@@ -241,13 +250,33 @@ class EventGenerator {
   // of all the touch points. |steps| and |event_separation_time_ms| are
   // relevant when testing velocity/fling/swipe, otherwise these can be any
   // non-zero value. |delta_x| and |delta_y| are the amount that each finger
-  // should be moved.
+  // should be moved. Internally calls GestureMultiFingerScrollWithDelays
+  // with zeros as |delay_adding_finger_ms| forcing all touch down events to be
+  // immediate.
   void GestureMultiFingerScroll(int count,
-                                const gfx::Point* start,
+                                const gfx::Point start[],
                                 int event_separation_time_ms,
                                 int steps,
                                 int move_x,
                                 int move_y);
+
+  // Generates press, move, release touch-events to generate a sequence of
+  // multi-finger scroll events. |count| specifies the number of touch-points
+  // that should generate the scroll events. |start| are the starting positions
+  // of all the touch points. |delay_adding_finger_ms| are delays in ms from the
+  // starting time till touching down of each finger. |delay_adding_finger_ms|
+  // is useful when testing complex gestures that start with 1 or 2 fingers and
+  // add fingers with a delay. |steps| and |event_separation_time_ms| are
+  // relevant when testing velocity/fling/swipe, otherwise these can be any
+  // non-zero value. |delta_x| and |delta_y| are the amount that each finger
+  // should be moved.
+  void GestureMultiFingerScrollWithDelays(int count,
+                                          const gfx::Point start[],
+                                          const int delay_adding_finger_ms[],
+                                          int event_separation_time_ms,
+                                          int steps,
+                                          int move_x,
+                                          int move_y);
 
   // Generates scroll sequences of a FlingCancel, Scrolls, FlingStart, with
   // constant deltas to |x_offset| and |y_offset| in |steps|.

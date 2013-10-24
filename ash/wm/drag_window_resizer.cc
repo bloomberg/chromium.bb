@@ -12,6 +12,7 @@
 #include "ash/system/user/tray_user.h"
 #include "ash/wm/coordinate_conversion.h"
 #include "ash/wm/drag_window_controller.h"
+#include "ash/wm/window_state.h"
 #include "base/memory/weak_ptr.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
@@ -53,6 +54,8 @@ aura::RootWindow* GetAnotherRootWindow(aura::RootWindow* root_window) {
 DragWindowResizer* DragWindowResizer::instance_ = NULL;
 
 DragWindowResizer::~DragWindowResizer() {
+  if (GetTarget())
+    wm::GetWindowState(GetTarget())->set_window_resizer_(NULL);
   Shell* shell = Shell::GetInstance();
   shell->mouse_cursor_filter()->set_mouse_warp_mode(
       MouseCursorEventFilter::WARP_ALWAYS);

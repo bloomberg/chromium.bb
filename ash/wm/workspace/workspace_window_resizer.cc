@@ -47,9 +47,12 @@ scoped_ptr<WindowResizer> CreateWindowResizer(
     aura::client::WindowMoveSource source) {
   DCHECK(window);
   wm::WindowState* window_state = wm::GetWindowState(window);
-  // No need to return a resizer when the window cannot get resized.
-  if (!window_state->CanResize() && window_component != HTCAPTION)
+  // No need to return a resizer when the window cannot get resized or when a
+  // resizer already exists for this window.
+  if ((!window_state->CanResize() && window_component != HTCAPTION) ||
+      window_state->window_resizer()) {
     return scoped_ptr<WindowResizer>();
+  }
 
   // TODO(varkha): The chaining of window resizers causes some of the logic
   // to be repeated and the logic flow difficult to control. With some windows
@@ -102,6 +105,7 @@ scoped_ptr<WindowResizer> CreateWindowResizer(
     window_resizer = internal::DockedWindowResizer::Create(
         window_resizer, window, point_in_parent, window_component, source);
   }
+  window_state->set_window_resizer_(window_resizer);
   return make_scoped_ptr<WindowResizer>(window_resizer);
 }
 
