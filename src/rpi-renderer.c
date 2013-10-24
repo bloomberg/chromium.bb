@@ -969,13 +969,14 @@ rpir_surface_swap_pointers(struct rpir_surface *surface)
 			surface->egl_old_front = surface->egl_front;
 			surface->egl_front = surface->egl_back;
 			surface->egl_back = NULL;
+			DBG("new front %d\n", surface->egl_front->resource_handle);
 		}
 	} else {
 		tmp = surface->front;
 		surface->front = surface->back;
 		surface->back = tmp;
+		DBG("new back %p, new front %p\n", surface->back, surface->front);
 	}
-	DBG("new back %p, new front %p\n", surface->back, surface->front);
 }
 
 static int
