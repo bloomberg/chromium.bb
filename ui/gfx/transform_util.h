@@ -11,6 +11,7 @@
 namespace gfx {
 
 class Point;
+class Rect;
 
 // Returns a scale transform at |anchor| point.
 GFX_EXPORT Transform GetScaleTransform(const Point& anchor, float scale);
@@ -52,6 +53,10 @@ GFX_EXPORT bool DecomposeTransform(DecomposedTransform* out,
 // and rotation components following the routines detailed in this spec:
 // http://www.w3.org/TR/css3-3d-transforms/.
 GFX_EXPORT Transform ComposeTransform(const DecomposedTransform& decomp);
+
+GFX_EXPORT bool SnapTransform(Transform* out,
+                              const Transform& transform,
+                              const Rect& viewport);
 
 }  // namespace gfx
 

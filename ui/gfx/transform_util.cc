@@ -7,8 +7,11 @@
 #include <algorithm>
 #include <cmath>
 
+#include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "ui/gfx/point.h"
+#include "ui/gfx/point3_f.h"
+#include "ui/gfx/rect.h"
 
 namespace gfx {
 
@@ -51,6 +54,10 @@ void Cross3(SkMScalar out[3], SkMScalar a[3], SkMScalar b[3]) {
   out[0] = x;
   out[1] = y;
   out[2] = z;
+}
+
+SkMScalar Round(SkMScalar n) {
+  return SkDoubleToMScalar(std::floor(SkMScalarToDouble(n) + 0.5));
 }
 
 // Taken from http://www.w3.org/TR/css3-transforms/.
@@ -106,6 +113,163 @@ bool Normalize(SkMatrix44& m) {
       m.set(i, j, m.get(i, j) * scale);
 
   return true;
+}
+
+SkMatrix44 BuildPerspectiveMatrix(const DecomposedTransform& decomp) {
+  SkMatrix44 matrix(SkMatrix44::kIdentity_Constructor);
+
+  for (int i = 0; i < 4; i++)
+    matrix.setDouble(3, i, decomp.perspective[i]);
+  return matrix;
+}
+
+SkMatrix44 BuildTranslationMatrix(const DecomposedTransform& decomp) {
+  SkMatrix44 matrix(SkMatrix44::kUninitialized_Constructor);
+  // Implicitly calls matrix.setIdentity()
+  matrix.setTranslate(SkDoubleToMScalar(decomp.translate[0]),
+                      SkDoubleToMScalar(decomp.translate[1]),
+                      SkDoubleToMScalar(decomp.translate[2]));
+  return matrix;
+}
+
+SkMatrix44 BuildSnappedTranslationMatrix(DecomposedTransform decomp) {
+  decomp.translate[0] = Round(decomp.translate[0]);
+  decomp.translate[1] = Round(decomp.translate[1]);
+  decomp.translate[2] = Round(decomp.translate[2]);
+  return BuildTranslationMatrix(decomp);
+}
+
+SkMatrix44 BuildRotationMatrix(const DecomposedTransform& decomp) {
+  double x = decomp.quaternion[0];
+  double y = decomp.quaternion[1];
+  double z = decomp.quaternion[2];
+  double w = decomp.quaternion[3];
+
+  SkMatrix44 matrix(SkMatrix44::kUninitialized_Constructor);
+
+  // Implicitly calls matrix.setIdentity()
+  matrix.set3x3(1.0 - 2.0 * (y * y + z * z),
+                2.0 * (x * y + z * w),
+                2.0 * (x * z - y * w),
+                2.0 * (x * y - z * w),
+                1.0 - 2.0 * (x * x + z * z),
+                2.0 * (y * z + x * w),
+                2.0 * (x * z + y * w),
+                2.0 * (y * z - x * w),
+                1.0 - 2.0 * (x * x + y * y));
+  return matrix;
+}
+
+SkMatrix44 BuildSnappedRotationMatrix(const DecomposedTransform& decomp) {
+  // Create snapped rotation.
+  SkMatrix44 rotation_matrix = BuildRotationMatrix(decomp);
+  for (int i = 0; i < 3; ++i) {
+    for (int j = 0; j < 3; ++j) {
+      SkMScalar value = rotation_matrix.get(i, j);
+      // Snap values to -1, 0 or 1.
+      if (value < -0.5f) {
+        value = -1.0f;
+      } else if (value > 0.5f) {
+        value = 1.0f;
+      } else {
+        value = 0.0f;
+      }
+      rotation_matrix.set(i, j, value);
+    }
+  }
+  return rotation_matrix;
+}
+
+SkMatrix44 BuildSkewMatrix(const DecomposedTransform& decomp) {
+  SkMatrix44 matrix(SkMatrix44::kIdentity_Constructor);
+
+  SkMatrix44 temp(SkMatrix44::kIdentity_Constructor);
+  if (decomp.skew[2]) {
+    temp.setDouble(1, 2, decomp.skew[2]);
+    matrix.preConcat(temp);
+  }
+
+  if (decomp.skew[1]) {
+    temp.setDouble(1, 2, 0);
+    temp.setDouble(0, 2, decomp.skew[1]);
+    matrix.preConcat(temp);
+  }
+
+  if (decomp.skew[0]) {
+    temp.setDouble(0, 2, 0);
+    temp.setDouble(0, 1, decomp.skew[0]);
+    matrix.preConcat(temp);
+  }
+  return matrix;
+}
+
+SkMatrix44 BuildScaleMatrix(const DecomposedTransform& decomp) {
+  SkMatrix44 matrix(SkMatrix44::kUninitialized_Constructor);
+  matrix.setScale(SkDoubleToMScalar(decomp.scale[0]),
+                  SkDoubleToMScalar(decomp.scale[1]),
+                  SkDoubleToMScalar(decomp.scale[2]));
+  return matrix;
+}
+
+SkMatrix44 BuildSnappedScaleMatrix(DecomposedTransform decomp) {
+  decomp.scale[0] = Round(decomp.scale[0]);
+  decomp.scale[1] = Round(decomp.scale[1]);
+  decomp.scale[2] = Round(decomp.scale[2]);
+  return BuildScaleMatrix(decomp);
+}
+
+Transform ComposeTransform(const SkMatrix44& perspective,
+                           const SkMatrix44& translation,
+                           const SkMatrix44& rotation,
+                           const SkMatrix44& skew,
+                           const SkMatrix44& scale) {
+  SkMatrix44 matrix(SkMatrix44::kIdentity_Constructor);
+
+  matrix.preConcat(perspective);
+  matrix.preConcat(translation);
+  matrix.preConcat(rotation);
+  matrix.preConcat(skew);
+  matrix.preConcat(scale);
+
+  Transform to_return;
+  to_return.matrix() = matrix;
+  return to_return;
+}
+
+bool CheckViewportPointMapsWithinOnePixel(const Point& point,
+                                          const Transform& transform) {
+  Point3F point_original(point);
+  Point3F point_transformed(point);
+
+  // Can't use TransformRect here since it would give us the axis-aligned
+  // bounding rect of the 4 points in the initial rectable which is not what we
+  // want.
+  transform.TransformPoint(&point_transformed);
+
+  if ((point_transformed - point_original).Length() > 1.f) {
+    // The changed distance should not be more than 1 pixel.
+    return false;
+  }
+  return true;
+}
+
+bool CheckTransformsMapsIntViewportWithinOnePixel(const Rect& viewport,
+                                                  const Transform& original,
+                                                  const Transform& snapped) {
+
+  Transform original_inv(Transform::kSkipInitialization);
+  bool invertible = true;
+  invertible &= original.GetInverse(&original_inv);
+  DCHECK(invertible) << "Non-invertible transform, cannot snap.";
+
+  Transform combined = snapped * original_inv;
+
+  return CheckViewportPointMapsWithinOnePixel(viewport.origin(), combined) &&
+         CheckViewportPointMapsWithinOnePixel(viewport.top_right(), combined) &&
+         CheckViewportPointMapsWithinOnePixel(viewport.bottom_left(),
+                                              combined) &&
+         CheckViewportPointMapsWithinOnePixel(viewport.bottom_right(),
+                                              combined);
 }
 
 }  // namespace
@@ -270,54 +434,42 @@ bool DecomposeTransform(DecomposedTransform* decomp,
 
 // Taken from http://www.w3.org/TR/css3-transforms/.
 Transform ComposeTransform(const DecomposedTransform& decomp) {
-  SkMatrix44 matrix(SkMatrix44::kIdentity_Constructor);
-  for (int i = 0; i < 4; i++)
-    matrix.set(3, i, decomp.perspective[i]);
+  SkMatrix44 perspective = BuildPerspectiveMatrix(decomp);
+  SkMatrix44 translation = BuildTranslationMatrix(decomp);
+  SkMatrix44 rotation = BuildRotationMatrix(decomp);
+  SkMatrix44 skew = BuildSkewMatrix(decomp);
+  SkMatrix44 scale = BuildScaleMatrix(decomp);
 
-  matrix.preTranslate(
-      decomp.translate[0], decomp.translate[1], decomp.translate[2]);
+  return ComposeTransform(perspective, translation, rotation, skew, scale);
+}
 
-  SkMScalar x = decomp.quaternion[0];
-  SkMScalar y = decomp.quaternion[1];
-  SkMScalar z = decomp.quaternion[2];
-  SkMScalar w = decomp.quaternion[3];
+bool SnapTransform(Transform* out,
+                   const Transform& transform,
+                   const Rect& viewport) {
+  DecomposedTransform decomp;
+  DecomposeTransform(&decomp, transform);
 
-  SkMatrix44 rotation_matrix(SkMatrix44::kUninitialized_Constructor);
-  rotation_matrix.set3x3(1.0 - 2.0 * (y * y + z * z),
-                         2.0 * (x * y + z * w),
-                         2.0 * (x * z - y * w),
-                         2.0 * (x * y - z * w),
-                         1.0 - 2.0 * (x * x + z * z),
-                         2.0 * (y * z + x * w),
-                         2.0 * (x * z + y * w),
-                         2.0 * (y * z - x * w),
-                         1.0 - 2.0 * (x * x + y * y));
+  SkMatrix44 rotation_matrix = BuildSnappedRotationMatrix(decomp);
+  SkMatrix44 translation = BuildSnappedTranslationMatrix(decomp);
+  SkMatrix44 scale = BuildSnappedScaleMatrix(decomp);
 
-  matrix.preConcat(rotation_matrix);
+  // Rebuild matrices for other unchanged components.
+  SkMatrix44 perspective = BuildPerspectiveMatrix(decomp);
 
-  SkMatrix44 temp(SkMatrix44::kIdentity_Constructor);
-  if (decomp.skew[2]) {
-    temp.set(1, 2, decomp.skew[2]);
-    matrix.preConcat(temp);
+  // Completely ignore the skew.
+  SkMatrix44 skew(SkMatrix44::kIdentity_Constructor);
+
+  // Get full tranform
+  Transform snapped =
+      ComposeTransform(perspective, translation, rotation_matrix, skew, scale);
+
+  // Verify that viewport is not moved unnaturally.
+  bool snappable =
+    CheckTransformsMapsIntViewportWithinOnePixel(viewport, transform, snapped);
+  if (snappable) {
+    *out = snapped;
   }
-
-  if (decomp.skew[1]) {
-    temp.set(1, 2, 0);
-    temp.set(0, 2, decomp.skew[1]);
-    matrix.preConcat(temp);
-  }
-
-  if (decomp.skew[0]) {
-    temp.set(0, 2, 0);
-    temp.set(0, 1, decomp.skew[0]);
-    matrix.preConcat(temp);
-  }
-
-  matrix.preScale(decomp.scale[0], decomp.scale[1], decomp.scale[2]);
-
-  Transform to_return;
-  to_return.matrix() = matrix;
-  return to_return;
+  return snappable;
 }
 
 std::string DecomposedTransform::ToString() const {
