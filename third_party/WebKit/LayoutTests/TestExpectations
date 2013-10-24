@@ -800,3 +800,5 @@ crbug.com/310326 [ Win7 Debug ] fast/dom/Geolocation/window-close-crash.html [ C
 crbug.com/231880 [ Win7 Debug ] fast/dom/Window/open-window-min-size.html [ Failure Pass ]
 
 crbug.com/311164 fast/js/mozilla/strict/15.4.4.6.html [ Failure Pass ]
+
+crbug.com/311301 fast/history/history_reload.html [ Failure Pass ]
