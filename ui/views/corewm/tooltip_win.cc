@@ -129,6 +129,8 @@ void TooltipWin::Show() {
 
   SendMessage(tooltip_hwnd_, TTM_TRACKACTIVATE,
               TRUE, reinterpret_cast<LPARAM>(&toolinfo_));
+  SetWindowPos(tooltip_hwnd_, HWND_TOPMOST, 0, 0, 0, 0,
+               SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOSIZE);
 }
 
 void TooltipWin::Hide() {
