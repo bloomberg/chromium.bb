@@ -110,6 +110,18 @@ scoped_ptr<ResourceHost> ChromeBrowserPepperHostFactory::CreateResourceHost(
             host_->GetPpapiHost(), instance, params.pp_resource(),
             clipboard_filter));
       }
+    }
+  }
+
+  // PepperFlashDRMHost is also used by the PPB_Flash_DeviceID interface
+  // which has private permission.
+  // TODO(xhwang): Once PPB_Flash_DeviceID is removed, remove the check
+  // for private permissions.
+  if (host_->GetPpapiHost()->permissions().HasPermission(
+          ppapi::PERMISSION_FLASH) ||
+      host_->GetPpapiHost()->permissions().HasPermission(
+          ppapi::PERMISSION_PRIVATE)) {
+    switch (message.type()) {
       case PpapiHostMsg_FlashDRM_Create::ID:
         return scoped_ptr<ResourceHost>(new PepperFlashDRMHost(
             host_, instance, params.pp_resource()));
