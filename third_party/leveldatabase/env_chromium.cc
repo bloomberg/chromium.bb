@@ -674,19 +674,32 @@ void ChromiumEnv::RestoreIfNecessary(const std::string& dir,
 namespace {
 #if defined(OS_WIN)
 static base::PlatformFileError GetDirectoryEntries(
-    const base::FilePath& dir_filepath,
+    const base::FilePath& dir_param,
     std::vector<base::FilePath>* result) {
-  // TODO(dgrogan): Replace with FindFirstFile / FindNextFile. Note that until
-  // that happens this is filtering out directories whereas the Posix version
-  // below is not. There shouldn't be any directories so this shouldn't be an
-  // issue.
-  base::FileEnumerator iter(dir_filepath, false, base::FileEnumerator::FILES);
-  base::FilePath current = iter.Next();
-  while (!current.empty()) {
-    result->push_back(current.BaseName());
-    current = iter.Next();
+  result->clear();
+  base::FilePath dir_filepath = dir_param.Append(FILE_PATH_LITERAL("*"));
+  WIN32_FIND_DATA find_data;
+  HANDLE find_handle = FindFirstFile(dir_filepath.value().c_str(), &find_data);
+  if (find_handle == INVALID_HANDLE_VALUE) {
+    DWORD last_error = GetLastError();
+    if (last_error == ERROR_FILE_NOT_FOUND)
+      return base::PLATFORM_FILE_OK;
+    return base::LastErrorToPlatformFileError(last_error);
   }
-  return base::PLATFORM_FILE_OK;
+  do {
+    base::FilePath filepath(find_data.cFileName);
+    base::FilePath::StringType basename = filepath.BaseName().value();
+    if (basename == FILE_PATH_LITERAL(".") ||
+        basename == FILE_PATH_LITERAL(".."))
+      continue;
+    result->push_back(filepath.BaseName());
+  } while (FindNextFile(find_handle, &find_data));
+  DWORD last_error = GetLastError();
+  base::PlatformFileError return_value = base::PLATFORM_FILE_OK;
+  if (last_error != ERROR_NO_MORE_FILES)
+    return_value = base::LastErrorToPlatformFileError(last_error);
+  FindClose(find_handle);
+  return return_value;
 }
 #else
 static base::PlatformFileError GetDirectoryEntries(

@@ -122,7 +122,7 @@ struct BASE_EXPORT PlatformFileInfo {
 #if defined(OS_WIN)
 typedef HANDLE PlatformFile;
 const PlatformFile kInvalidPlatformFileValue = INVALID_HANDLE_VALUE;
-PlatformFileError LastErrorToPlatformFileError(DWORD saved_errno);
+BASE_EXPORT PlatformFileError LastErrorToPlatformFileError(DWORD last_error);
 #elif defined(OS_POSIX)
 typedef int PlatformFile;
 const PlatformFile kInvalidPlatformFileValue = -1;

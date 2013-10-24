@@ -187,4 +187,16 @@ TEST(ChromiumEnv, BackupTables) {
   EXPECT_EQ(bak_files, ldb_files);
 }
 
+TEST(ChromiumEnv, GetChildrenEmptyDir) {
+  base::ScopedTempDir scoped_temp_dir;
+  scoped_temp_dir.CreateUniqueTempDir();
+  base::FilePath dir = scoped_temp_dir.path();
+
+  Env* env = IDBEnv();
+  std::vector<std::string> result;
+  leveldb::Status status = env->GetChildren(dir.AsUTF8Unsafe(), &result);
+  EXPECT_TRUE(status.ok());
+  EXPECT_EQ(0, result.size());
+}
+
 int main(int argc, char** argv) { return base::TestSuite(argc, argv).Run(); }
