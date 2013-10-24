@@ -9,7 +9,7 @@ namespace content {
 DropData::FileInfo::FileInfo() {
 }
 
-DropData::FileInfo::FileInfo(const base::FilePath& path,
+DropData::FileInfo::FileInfo(const base::string16& path,
                              const base::string16& display_name)
     : path(path),
       display_name(display_name) {
