@@ -15,6 +15,7 @@
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/test_focus_client.h"
 #include "ui/aura/test/test_screen.h"
+#include "ui/aura/test/test_window_tree_client.h"
 #include "ui/aura/window.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/input_method_delegate.h"
@@ -146,6 +147,8 @@ void ShellAuraPlatformData::CreateWindow(int width, int height) {
       new aura::client::DefaultActivationClient(root_window_.get()));
   capture_client_.reset(
       new aura::client::DefaultCaptureClient(root_window_.get()));
+  window_tree_client_.reset(
+      new aura::test::TestWindowTreeClient(root_window_.get()));
   ime_filter_.reset(new MinimalInputEventFilter(root_window_.get()));
 }
 
@@ -184,6 +187,8 @@ void Shell::PlatformResizeSubViews() {
 }
 
 void Shell::Close() {
+  web_contents_.reset();
+  platform_.reset();
 }
 
 void Shell::PlatformSetTitle(const string16& title) {
