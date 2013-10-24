@@ -60,7 +60,8 @@ theme_destroy(struct theme *t);
 
 enum {
 	THEME_FRAME_ACTIVE = 1,
-	THEME_FRAME_MAXIMIZED,
+	THEME_FRAME_MAXIMIZED = 2,
+	THEME_FRAME_NO_TITLE = 4
 };
 
 void

@@ -291,11 +291,14 @@ frame_create(struct theme *t, int32_t width, int32_t height, uint32_t buttons,
 	wl_list_init(&frame->pointers);
 	wl_list_init(&frame->touches);
 
-	button = frame_button_create(frame, DATADIR "/weston/icon_window.png",
-				     FRAME_STATUS_MENU,
-				     FRAME_BUTTON_CLICK_DOWN);
-	if (!button)
-		goto free_frame;
+	if (title) {
+		button = frame_button_create(frame,
+					     DATADIR "/weston/icon_window.png",
+					     FRAME_STATUS_MENU,
+					     FRAME_BUTTON_CLICK_DOWN);
+		if (!button)
+			goto free_frame;
+	}
 
 	if (buttons & FRAME_BUTTON_CLOSE) {
 		button = frame_button_create(frame,
@@ -400,15 +403,20 @@ void
 frame_resize_inside(struct frame *frame, int32_t width, int32_t height)
 {
 	struct theme *t = frame->theme;
-	int decoration_width, decoration_height;
+	int decoration_width, decoration_height, titlebar_height;
+
+	if (frame->title)
+		titlebar_height = t->titlebar_height;
+	else
+		titlebar_height = t->width;
 
 	if (frame->flags & FRAME_FLAG_MAXIMIZED) {
 		decoration_width = t->width * 2;
-		decoration_height = t->width + t->titlebar_height;
+		decoration_height = t->width + titlebar_height;
 	} else {
 		decoration_width = (t->width + t->margin) * 2;
 		decoration_height = t->width +
-			t->titlebar_height + t->margin * 2;
+			titlebar_height + t->margin * 2;
 	}
 
 	frame_resize(frame, width + decoration_width,
@@ -432,18 +440,23 @@ frame_refresh_geometry(struct frame *frame)
 {
 	struct frame_button *button;
 	struct theme *t = frame->theme;
-	int x_l, x_r, y, w, h;
+	int x_l, x_r, y, w, h, titlebar_height;
 	int32_t decoration_width, decoration_height;
 
 	if (!frame->geometry_dirty)
 		return;
 
+	if (frame->title)
+		titlebar_height = t->titlebar_height;
+	else
+		titlebar_height = t->width;
+
 	if (frame->flags & FRAME_FLAG_MAXIMIZED) {
 		decoration_width = t->width * 2;
-		decoration_height = t->width + t->titlebar_height;
+		decoration_height = t->width + titlebar_height;
 
 		frame->interior.x = t->width;
-		frame->interior.y = t->titlebar_height;
+		frame->interior.y = titlebar_height;
 		frame->interior.width = frame->width - decoration_width;
 		frame->interior.height = frame->height - decoration_height;
 
@@ -451,11 +464,10 @@ frame_refresh_geometry(struct frame *frame)
 		frame->shadow_margin = 0;
 	} else {
 		decoration_width = (t->width + t->margin) * 2;
-		decoration_height = t->width +
-			t->titlebar_height + t->margin * 2;
+		decoration_height = t->width + titlebar_height + t->margin * 2;
 
 		frame->interior.x = t->width + t->margin;
-		frame->interior.y = t->titlebar_height + t->margin;
+		frame->interior.y = titlebar_height + t->margin;
 		frame->interior.width = frame->width - decoration_width;
 		frame->interior.height = frame->height - decoration_height;
 

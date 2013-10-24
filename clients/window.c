@@ -4456,7 +4456,7 @@ window_show_menu(struct display *display,
 	window_set_buffer_scale (menu->window, window_get_buffer_scale (parent));
 	window_set_buffer_transform (menu->window, window_get_buffer_transform (parent));
 	menu->frame = frame_create(window->display->theme, 0, 0,
-				   FRAME_BUTTON_NONE, "Menu");
+				   FRAME_BUTTON_NONE, NULL);
 	menu->entries = entries;
 	menu->count = count;
 	menu->release_count = 0;
