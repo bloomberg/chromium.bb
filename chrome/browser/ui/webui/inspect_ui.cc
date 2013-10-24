@@ -10,21 +10,20 @@
 #include "base/bind_helpers.h"
 #include "base/json/json_writer.h"
 #include "base/memory/ref_counted_memory.h"
+#include "base/prefs/pref_service.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/devtools/devtools_window.h"
+#include "chrome/browser/devtools/devtools_target_impl.h"
 #include "chrome/browser/devtools/port_forwarding_controller.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"
-#include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
 #include "chrome/browser/ui/webui/theme_source.h"
-#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_child_process_observer.h"
@@ -33,8 +32,6 @@
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/devtools_client_host.h"
 #include "content/public/browser/devtools_manager.h"
-#include "content/public/browser/favicon_status.h"
-#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
@@ -70,16 +67,13 @@ using content::WorkerServiceObserver;
 
 namespace {
 
-const char kAppTargetType[] = "app";
-const char kExtensionTargetType[]  = "extension";
-const char kPageTargetType[]  = "page";
 const char kWorkerTargetType[]  = "worker";
 const char kAdbTargetType[]  = "adb_page";
 
 const char kInitUICommand[]  = "init-ui";
 const char kInspectCommand[]  = "inspect";
 const char kActivateCommand[]  = "activate";
-const char kTerminateCommand[]  = "terminate";
+const char kCloseCommand[]  = "close";
 const char kReloadCommand[]  = "reload";
 const char kOpenCommand[]  = "open";
 
@@ -92,15 +86,13 @@ const char kPortForwardingConfigCommand[] = "set-port-forwarding-config";
 const char kPortForwardingDefaultPort[] = "8080";
 const char kPortForwardingDefaultLocation[] = "localhost:8080";
 
+const char kTargetIdField[]  = "id";
 const char kTargetTypeField[]  = "type";
 const char kAttachedField[]  = "attached";
-const char kProcessIdField[]  = "processId";
-const char kRouteIdField[]  = "routeId";
 const char kUrlField[]  = "url";
 const char kNameField[]  = "name";
 const char kFaviconUrlField[] = "faviconUrl";
 const char kDescription[] = "description";
-const char kPidField[]  = "pid";
 const char kAdbConnectedField[] = "adbConnected";
 const char kAdbModelField[] = "adbModel";
 const char kAdbSerialField[] = "adbSerial";
@@ -117,90 +109,17 @@ const char kAdbAttachedForeignField[]  = "adbAttachedForeign";
 const char kGuestList[] = "guests";
 
 DictionaryValue* BuildTargetDescriptor(
-    const std::string& target_type,
-    bool attached,
-    const GURL& url,
-    const std::string& name,
-    const GURL& favicon_url,
-    const std::string& description,
-    int process_id,
-    int route_id,
-    base::ProcessHandle handle = base::kNullProcessHandle) {
+    const DevToolsTargetImpl& target) {
   DictionaryValue* target_data = new DictionaryValue();
-  target_data->SetString(kTargetTypeField, target_type);
-  target_data->SetBoolean(kAttachedField, attached);
-  target_data->SetInteger(kProcessIdField, process_id);
-  target_data->SetInteger(kRouteIdField, route_id);
-  target_data->SetString(kUrlField, url.spec());
-  target_data->SetString(kNameField, net::EscapeForHTML(name));
-  target_data->SetInteger(kPidField, base::GetProcId(handle));
-  target_data->SetString(kFaviconUrlField, favicon_url.spec());
-  target_data->SetString(kDescription, description);
+  target_data->SetString(kTargetIdField, target.GetId());
+  target_data->SetString(kTargetTypeField, target.GetType());
+  target_data->SetBoolean(kAttachedField, target.IsAttached());
+  target_data->SetString(kUrlField, target.GetUrl().spec());
+  target_data->SetString(kNameField, net::EscapeForHTML(target.GetTitle()));
+  target_data->SetString(kFaviconUrlField, target.GetFaviconUrl().spec());
+  target_data->SetString(kDescription, target.GetDescription());
 
   return target_data;
-}
-
-bool HasClientHost(RenderViewHost* rvh) {
-  if (!DevToolsAgentHost::HasFor(rvh))
-    return false;
-
-  scoped_refptr<DevToolsAgentHost> agent(
-      DevToolsAgentHost::GetOrCreateFor(rvh));
-  return agent->IsAttached();
-}
-
-bool HasClientHost(int process_id, int route_id) {
-  if (!DevToolsAgentHost::HasForWorker(process_id, route_id))
-    return false;
-
-  scoped_refptr<DevToolsAgentHost> agent(
-      DevToolsAgentHost::GetForWorker(process_id, route_id));
-  return agent->IsAttached();
-}
-
-DictionaryValue* BuildTargetDescriptor(RenderViewHost* rvh, bool is_tab) {
-  WebContents* web_contents = WebContents::FromRenderViewHost(rvh);
-  std::string title;
-  std::string target_type = is_tab ? kPageTargetType : "";
-  GURL url;
-  GURL favicon_url;
-  if (web_contents) {
-    url = web_contents->GetURL();
-    title = UTF16ToUTF8(web_contents->GetTitle());
-    content::NavigationController& controller = web_contents->GetController();
-    content::NavigationEntry* entry = controller.GetActiveEntry();
-    if (entry != NULL && entry->GetURL().is_valid())
-      favicon_url = entry->GetFavicon().url;
-
-    Profile* profile = Profile::FromBrowserContext(
-        web_contents->GetBrowserContext());
-    if (profile) {
-      ExtensionService* extension_service = profile->GetExtensionService();
-      const extensions::Extension* extension = extension_service->
-          extensions()->GetByID(url.host());
-      if (extension) {
-        if (extension->is_hosted_app()
-            || extension->is_legacy_packaged_app()
-            || extension->is_platform_app())
-          target_type = kAppTargetType;
-        else
-          target_type = kExtensionTargetType;
-        title = extension->name();
-        favicon_url = extensions::ExtensionIconSource::GetIconURL(
-            extension, extension_misc::EXTENSION_ICON_SMALLISH,
-            ExtensionIconSet::MATCH_BIGGER, false, NULL);
-      }
-    }
-  }
-
-  return BuildTargetDescriptor(target_type,
-                               HasClientHost(rvh),
-                               url,
-                               title,
-                               favicon_url,
-                               "",
-                               rvh->GetProcess()->GetID(),
-                               rvh->GetRoutingID());
 }
 
 class InspectMessageHandler : public WebUIMessageHandler {
@@ -216,18 +135,14 @@ class InspectMessageHandler : public WebUIMessageHandler {
   void HandleInitUICommand(const ListValue* args);
   void HandleInspectCommand(const ListValue* args);
   void HandleActivateCommand(const ListValue* args);
-  void HandleTerminateCommand(const ListValue* args);
+  void HandleCloseCommand(const ListValue* args);
   void HandleReloadCommand(const ListValue* args);
   void HandleOpenCommand(const ListValue* args);
   void HandleBooleanPrefChanged(const char* pref_name,
                                 const ListValue* args);
   void HandlePortForwardingConfigCommand(const ListValue* args);
 
-  static bool GetProcessAndRouteId(const ListValue* args,
-                                   int* process_id,
-                                   int* route_id);
-
-  static bool GetRemotePageId(const ListValue* args, std::string* page_id);
+  DevToolsTargetImpl* FindTarget(const ListValue* args);
 
   InspectUI* inspect_ui_;
 
@@ -244,8 +159,8 @@ void InspectMessageHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(kActivateCommand,
       base::Bind(&InspectMessageHandler::HandleActivateCommand,
                  base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(kTerminateCommand,
-      base::Bind(&InspectMessageHandler::HandleTerminateCommand,
+  web_ui()->RegisterMessageCallback(kCloseCommand,
+      base::Bind(&InspectMessageHandler::HandleCloseCommand,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback(kDiscoverUsbDevicesEnabledCommand,
       base::Bind(&InspectMessageHandler::HandleBooleanPrefChanged,
@@ -274,86 +189,61 @@ void InspectMessageHandler::HandleInspectCommand(const ListValue* args) {
   Profile* profile = Profile::FromWebUI(web_ui());
   if (!profile)
     return;
-
-  std::string page_id;
-  if (GetRemotePageId(args, &page_id)) {
-    inspect_ui_->InspectRemotePage(page_id);
-    return;
-  }
-
-  int process_id;
-  int route_id;
-  if (!GetProcessAndRouteId(args, &process_id, &route_id) || process_id == 0
-      || route_id == 0) {
-    return;
-  }
-
-  RenderViewHost* rvh = RenderViewHost::FromID(process_id, route_id);
-  if (rvh) {
-    DevToolsWindow::OpenDevToolsWindow(rvh);
-    return;
-  }
-
-  scoped_refptr<DevToolsAgentHost> agent_host(
-      DevToolsAgentHost::GetForWorker(process_id, route_id));
-  if (!agent_host.get())
-    return;
-
-  DevToolsWindow::OpenDevToolsWindowForWorker(profile, agent_host.get());
+  DevToolsTargetImpl* target = FindTarget(args);
+  if (target)
+    target->Inspect(profile);
 }
 
 void InspectMessageHandler::HandleActivateCommand(const ListValue* args) {
-  std::string page_id;
-  if (GetRemotePageId(args, &page_id))
-    inspect_ui_->ActivateRemotePage(page_id);
+  DevToolsTargetImpl* target = FindTarget(args);
+  if (target)
+    target->Activate();
 }
 
-static void TerminateWorker(int process_id, int route_id) {
-  WorkerService::GetInstance()->TerminateWorker(process_id, route_id);
-}
-
-void InspectMessageHandler::HandleTerminateCommand(const ListValue* args) {
-  std::string page_id;
-  if (GetRemotePageId(args, &page_id)) {
-    inspect_ui_->CloseRemotePage(page_id);
-    return;
-  }
-
-  int process_id;
-  int route_id;
-  if (!GetProcessAndRouteId(args, &process_id, &route_id))
-    return;
-
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-      base::Bind(&TerminateWorker, process_id, route_id));
+void InspectMessageHandler::HandleCloseCommand(const ListValue* args) {
+  DevToolsTargetImpl* target = FindTarget(args);
+  if (target)
+    target->Close();
 }
 
 void InspectMessageHandler::HandleReloadCommand(const ListValue* args) {
-  std::string page_id;
-  if (GetRemotePageId(args, &page_id))
-    inspect_ui_->ReloadRemotePage(page_id);
+  DevToolsTargetImpl* target = FindTarget(args);
+  if (target)
+    target->Reload();
 }
 
 void InspectMessageHandler::HandleOpenCommand(const ListValue* args) {
+  if (args->GetSize() != 2)
+    return;
   std::string browser_id;
+  if (!args->GetString(0, &browser_id))
+    return;
+  scoped_refptr<DevToolsAdbBridge::RemoteBrowser> remote_browser =
+      inspect_ui_->FindRemoteBrowser(browser_id);
+  if (!remote_browser)
+    return;
   std::string url;
-  if (args->GetSize() == 2 &&
-      args->GetString(0, &browser_id) &&
-      args->GetString(1, &url)) {
-    inspect_ui_->OpenRemotePage(browser_id, url);
+  if (!args->GetString(1, &url))
+    return;
+  GURL gurl(url);
+  if (!gurl.is_valid()) {
+    gurl = GURL("http://" + url);
+    if (!gurl.is_valid())
+     return;
   }
+  remote_browser->Open(gurl.spec());
 }
 
-bool InspectMessageHandler::GetProcessAndRouteId(const ListValue* args,
-                                                 int* process_id,
-                                                 int* route_id) {
+DevToolsTargetImpl* InspectMessageHandler::FindTarget(const ListValue* args) {
   const DictionaryValue* data;
+  std::string type;
+  std::string id;
   if (args->GetSize() == 1 && args->GetDictionary(0, &data) &&
-      data->GetInteger(kProcessIdField, process_id) &&
-      data->GetInteger(kRouteIdField, route_id)) {
-    return true;
+      data->GetString(kTargetTypeField, &type) &&
+      data->GetString(kTargetIdField, &id)) {
+    return inspect_ui_->FindTarget(type, id);
   }
-  return false;
+  return NULL;
 }
 
 void InspectMessageHandler::HandleBooleanPrefChanged(
@@ -377,16 +267,6 @@ void InspectMessageHandler::HandlePortForwardingConfigCommand(
   const DictionaryValue* dict_src;
   if (args->GetSize() == 1 && args->GetDictionary(0, &dict_src))
     profile->GetPrefs()->Set(prefs::kDevToolsPortForwardingConfig, *dict_src);
-}
-
-bool InspectMessageHandler::GetRemotePageId(const ListValue* args,
-                                            std::string* page_id) {
-  const DictionaryValue* data;
-  if (args->GetSize() == 1 && args->GetDictionary(0, &data) &&
-      data->GetString(kAdbGlobalIdField, page_id)) {
-    return true;
-  }
-  return false;
 }
 
 }  // namespace
@@ -457,10 +337,9 @@ class InspectUI::WorkerCreationDestructionListener
 
   void CollectWorkersData() {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(&WorkerCreationDestructionListener::PopulateWorkersList,
-                   this, WorkerService::GetInstance()->GetWorkers()));
+    DevToolsTargetImpl::EnumerateWorkerTargets(
+        base::Bind(
+            &WorkerCreationDestructionListener::PopulateWorkersList, this));
   }
 
   void RegisterObserver() {
@@ -471,29 +350,10 @@ class InspectUI::WorkerCreationDestructionListener
     WorkerService::GetInstance()->RemoveObserver(this);
   }
 
-  void PopulateWorkersList(
-      const std::vector<WorkerService::WorkerInfo>& worker_info) {
+  void PopulateWorkersList(const DevToolsTargetImpl::List& targets) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-    if (!discovery_ui_)
-      return;
-
-    ListValue target_list;
-    for (size_t i = 0; i < worker_info.size(); ++i) {
-      if (!worker_info[i].handle)
-        continue;  // Process is still being created.
-      target_list.Append(BuildTargetDescriptor(
-          kWorkerTargetType,
-          HasClientHost(worker_info[i].process_id, worker_info[i].route_id),
-          worker_info[i].url,
-          UTF16ToUTF8(worker_info[i].name),
-          GURL(),
-          "",
-          worker_info[i].process_id,
-          worker_info[i].route_id,
-          worker_info[i].handle));
-    }
-    discovery_ui_->web_ui()->CallJavascriptFunction(
-        "populateWorkersList", target_list);
+    if (discovery_ui_)
+       discovery_ui_->PopulateWorkerTargets(targets);
   }
 
   InspectUI* discovery_ui_;
@@ -517,50 +377,31 @@ InspectUI::~InspectUI() {
 void InspectUI::InitUI() {
   SetPortForwardingDefaults();
   StartListeningNotifications();
-  PopulateLists();
+  PopulateWebContentsTargets();
   UpdateDiscoverUsbDevicesEnabled();
   UpdatePortForwardingEnabled();
   UpdatePortForwardingConfig();
   observer_->UpdateUI();
 }
 
-void InspectUI::InspectRemotePage(const std::string& id) {
-  RemotePages::iterator it = remote_pages_.find(id);
-  if (it != remote_pages_.end()) {
-    Profile* profile = Profile::FromWebUI(web_ui());
-    it->second->Inspect(profile);
+DevToolsTargetImpl* InspectUI::FindTarget(const std::string& type,
+                                          const std::string& id) {
+  if (type == kWorkerTargetType) {
+    TargetMap::iterator it = worker_targets_.find(id);
+    return it == worker_targets_.end() ? NULL : it->second;
+  } else if (type == kAdbTargetType) {
+    TargetMap::iterator it = remote_targets_.find(id);
+    return it == remote_targets_.end() ? NULL : it->second;
+  } else {
+    TargetMap::iterator it = web_contents_targets_.find(id);
+    return it == web_contents_targets_.end() ? NULL : it->second;
   }
 }
 
-void InspectUI::ActivateRemotePage(const std::string& id) {
-  RemotePages::iterator it = remote_pages_.find(id);
-  if (it != remote_pages_.end())
-    it->second->Activate();
-}
-
-void InspectUI::ReloadRemotePage(const std::string& id) {
-  RemotePages::iterator it = remote_pages_.find(id);
-  if (it != remote_pages_.end())
-    it->second->Reload();
-}
-
-void InspectUI::CloseRemotePage(const std::string& id) {
-  RemotePages::iterator it = remote_pages_.find(id);
-  if (it != remote_pages_.end())
-    it->second->Close();
-}
-
-void InspectUI::OpenRemotePage(const std::string& browser_id,
-                               const std::string& url) {
-  GURL gurl(url);
-  if (!gurl.is_valid()) {
-    gurl = GURL("http://" + url);
-    if (!gurl.is_valid())
-      return;
-  }
-  RemoteBrowsers::iterator it = remote_browsers_.find(browser_id);
-  if (it != remote_browsers_.end())
-    it->second->Open(gurl.spec());
+scoped_refptr<DevToolsAdbBridge::RemoteBrowser>
+InspectUI::FindRemoteBrowser(const std::string& id) {
+  RemoteBrowsers::iterator it = remote_browsers_.find(id);
+  return it == remote_browsers_.end() ? NULL : it->second;
 }
 
 void InspectUI::InspectDevices(Browser* browser) {
@@ -571,61 +412,74 @@ void InspectUI::InspectDevices(Browser* browser) {
   ShowSingletonTabOverwritingNTP(browser, params);
 }
 
-void InspectUI::PopulateLists() {
-  std::set<RenderViewHost*> tab_rvhs;
-  for (TabContentsIterator it; !it.done(); it.Next())
-    tab_rvhs.insert(it->GetRenderViewHost());
+void InspectUI::PopulateWebContentsTargets() {
+  ListValue list_value;
 
-  scoped_ptr<ListValue> target_list(new ListValue());
+  std::map<WebContents*, DictionaryValue*> web_contents_to_descriptor_;
+  std::vector<DevToolsTargetImpl*> guest_targets;
 
-  std::vector<RenderViewHost*> rvh_vector =
-      DevToolsAgentHost::GetValidRenderViewHosts();
+  DevToolsTargetImpl::List targets =
+      DevToolsTargetImpl::EnumerateWebContentsTargets();
 
-  std::map<WebContents*, DictionaryValue*> description_map;
-  std::vector<WebContents*> guest_contents;
+  STLDeleteValues(&web_contents_targets_);
+  for (DevToolsTargetImpl::List::iterator it = targets.begin();
+      it != targets.end(); ++it) {
+    DevToolsTargetImpl* target = *it;
+    WebContents* web_contents = target->GetWebContents();
+    if (!web_contents)
+      continue;
+    RenderViewHost* rvh = web_contents->GetRenderViewHost();
+    if (!rvh)
+      continue;
 
-  for (std::vector<RenderViewHost*>::iterator it(rvh_vector.begin());
-       it != rvh_vector.end(); it++) {
-    bool is_tab = tab_rvhs.find(*it) != tab_rvhs.end();
-    RenderViewHost* rvh = (*it);
-    WebContents* web_contents = WebContents::FromRenderViewHost(rvh);
+    web_contents_targets_[target->GetId()] = target;
     if (rvh->GetProcess()->IsGuest()) {
-      if (web_contents)
-        guest_contents.push_back(web_contents);
+      guest_targets.push_back(target);
     } else {
-      DictionaryValue* dictionary = BuildTargetDescriptor(rvh, is_tab);
-      if (web_contents)
-        description_map[web_contents] = dictionary;
-      target_list->Append(dictionary);
+      DictionaryValue* descriptor = BuildTargetDescriptor(*target);
+      list_value.Append(descriptor);
+      web_contents_to_descriptor_[web_contents] = descriptor;
     }
   }
 
   // Add the list of guest-views to each of its embedders.
-  for (std::vector<WebContents*>::iterator it(guest_contents.begin());
-       it != guest_contents.end(); ++it) {
-    WebContents* guest = (*it);
-    WebContents* embedder = guest->GetEmbedderWebContents();
-    if (embedder && description_map.count(embedder) > 0) {
-      DictionaryValue* description = description_map[embedder];
+  for (std::vector<DevToolsTargetImpl*>::iterator it(guest_targets.begin());
+       it != guest_targets.end(); ++it) {
+    DevToolsTargetImpl* guest = (*it);
+    WebContents* embedder = guest->GetWebContents()->GetEmbedderWebContents();
+    if (embedder && web_contents_to_descriptor_.count(embedder) > 0) {
+      DictionaryValue* parent = web_contents_to_descriptor_[embedder];
       ListValue* guests = NULL;
-      if (!description->GetList(kGuestList, &guests)) {
+      if (!parent->GetList(kGuestList, &guests)) {
         guests = new ListValue();
-        description->Set(kGuestList, guests);
+        parent->Set(kGuestList, guests);
       }
-      RenderViewHost* rvh = guest->GetRenderViewHost();
-      if (rvh)
-        guests->Append(BuildTargetDescriptor(rvh, false));
+      guests->Append(BuildTargetDescriptor(*guest));
     }
   }
 
-  web_ui()->CallJavascriptFunction("populateLists", *target_list.get());
+  web_ui()->CallJavascriptFunction("populateWebContentsTargets", list_value);
+}
+
+void InspectUI::PopulateWorkerTargets(const DevToolsTargetImpl::List& targets) {
+  ListValue list_value;
+
+  STLDeleteValues(&worker_targets_);
+  for (DevToolsTargetImpl::List::const_iterator it = targets.begin();
+      it != targets.end(); ++it) {
+    DevToolsTargetImpl* target = *it;
+    list_value.Append(BuildTargetDescriptor(*target));
+    worker_targets_[target->GetId()] = target;
+  }
+
+  web_ui()->CallJavascriptFunction("populateWorkerTargets", list_value);
 }
 
 void InspectUI::Observe(int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   if (source != content::Source<WebContents>(web_ui()->GetWebContents()))
-    PopulateLists();
+    PopulateWebContentsTargets();
   else if (type == content::NOTIFICATION_WEB_CONTENTS_DISCONNECTED)
     StopListeningNotifications();
 }
@@ -700,7 +554,7 @@ void InspectUI::RemoteDevicesChanged(
         port_forwarding_controller->UpdateDeviceList(*devices);
 
   remote_browsers_.clear();
-  remote_pages_.clear();
+  STLDeleteValues(&remote_targets_);
   ListValue device_list;
   for (DevToolsAdbBridge::RemoteDevices::iterator dit = devices->begin();
        dit != devices->end(); ++dit) {
@@ -734,28 +588,22 @@ void InspectUI::RemoteDevicesChanged(
       ListValue* page_list = new ListValue();
       browser_data->Set(kAdbPagesField, page_list);
 
-      DevToolsAdbBridge::RemotePages& pages = browser->pages();
-      for (DevToolsAdbBridge::RemotePages::iterator it =
+      DevToolsTargetImpl::List pages = browser->CreatePageTargets();
+      for (DevToolsTargetImpl::List::iterator it =
           pages.begin(); it != pages.end(); ++it) {
-        DevToolsAdbBridge::RemotePage* page =  it->get();
-        DictionaryValue* page_data = BuildTargetDescriptor(
-            kAdbTargetType, page->attached(),
-            GURL(page->url()), page->title(), GURL(page->favicon_url()),
-            page->description(), 0, 0);
-        std::string page_id = base::StringPrintf("page:%s:%s:%s",
-            device->GetSerial().c_str(),
-            browser->socket().c_str(),
-            page->id().c_str());
-        page_data->SetString(kAdbGlobalIdField, page_id);
-        page_data->SetBoolean(kAdbAttachedForeignField,
-            page->attached() && !page->HasDevToolsWindow());
+        DevToolsTargetImpl* page =  *it;
+        DictionaryValue* page_data = BuildTargetDescriptor(*page);
+        page_data->SetBoolean(
+            kAdbAttachedForeignField,
+            page->IsAttached() &&
+                !DevToolsAdbBridge::HasDevToolsWindow(page->GetId()));
         // Pass the screen size in the page object to make sure that
         // the caching logic does not prevent the page item from updating
         // when the screen size changes.
         gfx::Size screen_size = device->screen_size();
         page_data->SetInteger(kAdbScreenWidthField, screen_size.width());
         page_data->SetInteger(kAdbScreenHeightField, screen_size.height());
-        remote_pages_[page_id] = page;
+        remote_targets_[page->GetId()] = page;
         page_list->Append(page_data);
       }
       browser_list->Append(browser_data);
@@ -779,7 +627,7 @@ void InspectUI::RemoteDevicesChanged(
 
     device_list.Append(device_data);
   }
-  web_ui()->CallJavascriptFunction("populateDeviceLists", device_list);
+  web_ui()->CallJavascriptFunction("populateRemoteTargets", device_list);
 }
 
 void InspectUI::UpdateDiscoverUsbDevicesEnabled() {
