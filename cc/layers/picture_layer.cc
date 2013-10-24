@@ -42,11 +42,9 @@ void PictureLayer::PushPropertiesTo(LayerImpl* base_layer) {
     // Update may not get called for an empty layer, so resize here instead.
     // Using layer_impl because either bounds() or paint_properties().bounds
     // may disagree and either one could have been pushed to layer_impl.
-    pile_->Resize(layer_impl->bounds());
+    pile_->Resize(gfx::Size());
     pile_->UpdateRecordedRegion();
-  }
-
-  if (DrawsContent()) {
+  } else if (DrawsContent()) {
     DCHECK(paint_properties().bounds == pile_->size());
   }
 
