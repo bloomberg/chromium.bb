@@ -393,8 +393,17 @@ void IdentityGetAuthTokenFunction::OnGetTokenFailure(
 
 #if defined(OS_CHROMEOS)
 void IdentityGetAuthTokenFunction::StartDeviceLoginAccessTokenRequest() {
-  chromeos::DeviceOAuth2TokenService* service =
-      chromeos::DeviceOAuth2TokenServiceFactory::Get();
+  chromeos::DeviceOAuth2TokenServiceFactory::Get(
+      base::Bind(&IdentityGetAuthTokenFunction::DidGetTokenService,
+                 this));
+}
+
+void IdentityGetAuthTokenFunction::DidGetTokenService(
+    chromeos::DeviceOAuth2TokenService* service) {
+  if (!service) {
+    CompleteFunctionWithError(identity_constants::kUserNotSignedIn);
+    return;
+  }
   // Since robot account refresh tokens are scoped down to [any-api] only,
   // request access token for [any-api] instead of login.
   OAuth2TokenService::ScopeSet scopes;

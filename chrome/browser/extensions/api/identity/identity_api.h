@@ -29,6 +29,12 @@ class GoogleServiceAuthError;
 class MockGetAuthTokenFunction;
 class Profile;
 
+#if defined(OS_CHROMEOS)
+namespace chromeos {
+class DeviceOAuth2TokenService;
+}
+#endif
+
 namespace extensions {
 
 class GetAuthTokenFunctionTest;
@@ -134,6 +140,9 @@ class IdentityGetAuthTokenFunction : public AsyncExtensionFunction,
   // Starts a login access token request for device robot account. This method
   // will be called only in enterprise kiosk mode in ChromeOS.
   virtual void StartDeviceLoginAccessTokenRequest();
+
+  // Continuation of StartDeviceLoginAccessTokenRequest().
+  virtual void DidGetTokenService(chromeos::DeviceOAuth2TokenService* service);
 #endif
 
   // Starts a mint token request to GAIA.

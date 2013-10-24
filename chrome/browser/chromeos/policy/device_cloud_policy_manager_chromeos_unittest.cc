@@ -58,6 +58,11 @@ void CopyLockResult(base::RunLoop* loop,
   loop->Quit();
 }
 
+void CopyTokenService(chromeos::DeviceOAuth2TokenService** out_token_service,
+                      chromeos::DeviceOAuth2TokenService* in_token_service) {
+  *out_token_service = in_token_service;
+}
+
 class DeviceCloudPolicyManagerChromeOSTest
     : public chromeos::DeviceSettingsTestBase {
  protected:
@@ -384,8 +389,12 @@ class DeviceCloudPolicyManagerChromeOSEnrollmentTest
     if (done_)
       return;
 
-    chromeos::DeviceOAuth2TokenService* token_service =
-        chromeos::DeviceOAuth2TokenServiceFactory::Get();
+    chromeos::DeviceOAuth2TokenService* token_service = NULL;
+    chromeos::DeviceOAuth2TokenServiceFactory::Get(
+        base::Bind(&CopyTokenService, &token_service));
+    base::RunLoop().RunUntilIdle();
+    ASSERT_TRUE(token_service);
+
     // Process robot refresh token store.
     EXPECT_EQ(
         "refreshToken4Test",

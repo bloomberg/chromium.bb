@@ -53,7 +53,8 @@ EnrollmentHandlerChromeOS::EnrollmentHandlerChromeOS(
       device_mode_(DEVICE_MODE_NOT_SET),
       enrollment_step_(STEP_PENDING),
       lockbox_init_duration_(0),
-      weak_factory_(this) {
+      lock_weak_factory_(this),
+      token_weak_factory_(this) {
   CHECK(!client_->is_registered());
   CHECK_EQ(DM_STATUS_SUCCESS, client_->status());
   store_->AddObserver(this);
@@ -110,7 +111,7 @@ void EnrollmentHandlerChromeOS::OnPolicyFetched(CloudPolicyClient* client) {
   validator->ValidateInitialKey();
   validator.release()->StartValidation(
       base::Bind(&EnrollmentHandlerChromeOS::PolicyValidated,
-                 weak_factory_.GetWeakPtr()));
+                 lock_weak_factory_.GetWeakPtr()));
 }
 
 void EnrollmentHandlerChromeOS::OnRegistrationStateChanged(
@@ -161,16 +162,19 @@ void EnrollmentHandlerChromeOS::OnStoreLoaded(CloudPolicyStore* store) {
     // registration rolling again after the store finishes loading.
     AttemptRegistration();
   } else if (enrollment_step_ == STEP_STORE_POLICY) {
-    // Store the robot API auth refresh token.
-    // Currently optional, so always return success.
-    chromeos::DeviceOAuth2TokenService* token_service =
-        chromeos::DeviceOAuth2TokenServiceFactory::Get();
-    if (token_service && !robot_refresh_token_.empty()) {
-      token_service->SetAndSaveRefreshToken(robot_refresh_token_);
-
-    }
-    ReportResult(EnrollmentStatus::ForStatus(EnrollmentStatus::STATUS_SUCCESS));
+    chromeos::DeviceOAuth2TokenServiceFactory::Get(
+        base::Bind(&EnrollmentHandlerChromeOS::DidGetTokenService,
+                   token_weak_factory_.GetWeakPtr()));
   }
+}
+
+void EnrollmentHandlerChromeOS::DidGetTokenService(
+    chromeos::DeviceOAuth2TokenService* token_service) {
+  // Store the robot API auth refresh token.
+  // Currently optional, so always return success.
+  if (token_service && !robot_refresh_token_.empty())
+    token_service->SetAndSaveRefreshToken(robot_refresh_token_);
+  ReportResult(EnrollmentStatus::ForStatus(EnrollmentStatus::STATUS_SUCCESS));
 }
 
 void EnrollmentHandlerChromeOS::OnStoreError(CloudPolicyStore* store) {
@@ -271,12 +275,12 @@ void EnrollmentHandlerChromeOS::StartLockDevice(
     const std::string& device_id) {
   CHECK_EQ(STEP_LOCK_DEVICE, enrollment_step_);
   // Since this method is also called directly.
-  weak_factory_.InvalidateWeakPtrs();
+  lock_weak_factory_.InvalidateWeakPtrs();
 
   install_attributes_->LockDevice(
       user, device_mode, device_id,
       base::Bind(&EnrollmentHandlerChromeOS::HandleLockDeviceResult,
-                 weak_factory_.GetWeakPtr(),
+                 lock_weak_factory_.GetWeakPtr(),
                  user,
                  device_mode,
                  device_id));
@@ -303,7 +307,7 @@ void EnrollmentHandlerChromeOS::HandleLockDeviceResult(
         base::MessageLoop::current()->PostDelayedTask(
             FROM_HERE,
             base::Bind(&EnrollmentHandlerChromeOS::StartLockDevice,
-                       weak_factory_.GetWeakPtr(),
+                       lock_weak_factory_.GetWeakPtr(),
                        user, device_mode, device_id),
             base::TimeDelta::FromMilliseconds(kLockRetryIntervalMs));
         lockbox_init_duration_ += kLockRetryIntervalMs;
@@ -333,7 +337,7 @@ void EnrollmentHandlerChromeOS::Stop() {
   if (client_.get())
     client_->RemoveObserver(this);
   enrollment_step_ = STEP_FINISHED;
-  weak_factory_.InvalidateWeakPtrs();
+  lock_weak_factory_.InvalidateWeakPtrs();
   completion_callback_.Reset();
 }
 

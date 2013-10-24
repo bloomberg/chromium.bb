@@ -118,6 +118,12 @@ void OnNetworkWaitTimedOut(const base::Closure& runner_quit_task) {
   runner_quit_task.Run();
 }
 
+// Helper function for DeviceOAuth2TokenServiceFactory::Get().
+void CopyTokenService(DeviceOAuth2TokenService** out_token_service,
+                      DeviceOAuth2TokenService* in_token_service) {
+  *out_token_service = in_token_service;
+}
+
 }  // namespace
 
 // Fake NetworkChangeNotifier used to simulate network connectivity.
@@ -647,8 +653,12 @@ class KioskEnterpriseTest : public KioskTest {
     token_info.token = kTestAccessToken;
     token_info.email = kTestEnterpriseServiceAccountId;
     fake_gaia_.IssueOAuthToken(kTestRefreshToken, token_info);
-    DeviceOAuth2TokenServiceFactory::Get()
-        ->SetAndSaveRefreshToken(kTestRefreshToken);
+    DeviceOAuth2TokenService* token_service = NULL;
+    DeviceOAuth2TokenServiceFactory::Get(
+        base::Bind(&CopyTokenService, &token_service));
+    base::RunLoop().RunUntilIdle();
+    ASSERT_TRUE(token_service);
+    token_service->SetAndSaveRefreshToken(kTestRefreshToken);
 
     KioskTest::SetUpOnMainThread();
   }
