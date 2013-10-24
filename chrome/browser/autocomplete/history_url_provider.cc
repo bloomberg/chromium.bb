@@ -700,14 +700,11 @@ void HistoryURLProvider::RunAutocompletePasses(
   // Create the data structure for the autocomplete passes.  We'll save this off
   // onto the |params_| member for later deletion below if we need to run pass
   // 2.
-  std::string languages(languages_);
-  if (languages.empty()) {
-    languages =
-        profile_->GetPrefs()->GetString(prefs::kAcceptLanguages);
-  }
   scoped_ptr<HistoryURLProviderParams> params(
-      new HistoryURLProviderParams(input, trim_http, languages,
-                                   default_search_provider, data));
+      new HistoryURLProviderParams(
+          input, trim_http,
+          profile_->GetPrefs()->GetString(prefs::kAcceptLanguages),
+          default_search_provider, data));
 
   params->prevent_inline_autocomplete =
       PreventInlineAutocomplete(input);

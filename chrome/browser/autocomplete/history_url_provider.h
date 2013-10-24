@@ -162,19 +162,6 @@ class HistoryURLProvider : public HistoryProvider {
 
   HistoryURLProvider(AutocompleteProviderListener* listener, Profile* profile);
 
-#ifdef UNIT_TEST
-  HistoryURLProvider(AutocompleteProviderListener* listener,
-                     Profile* profile,
-                     const std::string& languages)
-    : HistoryProvider(listener, profile,
-          AutocompleteProvider::TYPE_HISTORY_URL),
-      params_(NULL),
-      cull_redirects_(true),
-      create_shorter_match_(true),
-      search_url_database_(true),
-      languages_(languages) {}
-#endif
-
   // Returns a match corresponding to exactly what the user has typed.
   // |trim_http| should not be set to true if |input| contains an http
   // prefix.
@@ -332,10 +319,6 @@ class HistoryURLProvider : public HistoryProvider {
   // It's used to aid the transition to get all URLs from history to
   // be scored in the HistoryQuick provider only.
   bool search_url_database_;
-
-  // Only used by unittests; if non-empty, overrides accept-languages in the
-  // profile's pref system.
-  std::string languages_;
 };
 
 #endif  // CHROME_BROWSER_AUTOCOMPLETE_HISTORY_URL_PROVIDER_H_
