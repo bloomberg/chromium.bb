@@ -405,6 +405,14 @@ bool SourceBufferStream::Append(
     return false;
   }
 
+  if (!IsNextTimestampValid(buffers.front()->GetDecodeTimestamp(),
+                            buffers.front()->IsKeyframe())) {
+    MEDIA_LOG(log_cb_) << "Invalid same timestamp construct detected at time "
+                       << buffers.front()->GetDecodeTimestamp().InSecondsF();
+
+    return false;
+  }
+
   UpdateMaxInterbufferDistance(buffers);
   SetConfigIds(buffers);
 
@@ -412,24 +420,22 @@ bool SourceBufferStream::Append(
   base::TimeDelta next_buffer_timestamp = GetNextBufferTimestamp();
   BufferQueue deleted_buffers;
 
-  RangeList::iterator range_for_new_buffers = range_for_next_append_;
+  PrepareRangesForNextAppend(buffers, &deleted_buffers);
+
   // If there's a range for |buffers|, insert |buffers| accordingly. Otherwise,
   // create a new range with |buffers|.
-  if (range_for_new_buffers != ranges_.end()) {
-    if (!InsertIntoExistingRange(range_for_new_buffers, buffers,
-                                 &deleted_buffers)) {
-      return false;
-    }
+  if (range_for_next_append_ != ranges_.end()) {
+    (*range_for_next_append_)->AppendBuffersToEnd(buffers);
   } else {
     DCHECK(new_media_segment_);
-    range_for_new_buffers =
+    range_for_next_append_ =
         AddToRanges(new SourceBufferRange(
             buffers, media_segment_start_time_,
             base::Bind(&SourceBufferStream::GetMaxInterbufferDistance,
                        base::Unretained(this))));
   }
 
-  range_for_next_append_ = range_for_new_buffers;
+  RangeList::iterator range_for_new_buffers = range_for_next_append_;
   new_media_segment_ = false;
   last_appended_buffer_timestamp_ = buffers.back()->GetDecodeTimestamp();
   last_appended_buffer_is_keyframe_ = buffers.back()->IsKeyframe();
@@ -607,6 +613,14 @@ bool SourceBufferStream::IsMonotonicallyIncreasing(
   }
   return true;
 }
+
+bool SourceBufferStream::IsNextTimestampValid(
+    base::TimeDelta next_timestamp, bool next_is_keyframe) const {
+  return (last_appended_buffer_timestamp_ != next_timestamp) ||
+      new_media_segment_ ||
+      AllowSameTimestamp(last_appended_buffer_is_keyframe_, next_is_keyframe);
+}
+
 
 bool SourceBufferStream::OnlySelectedRangeIsSeeked() const {
   for (RangeList::const_iterator itr = ranges_.begin();
@@ -805,12 +819,14 @@ int SourceBufferStream::FreeBuffers(int total_bytes_to_free,
   return bytes_freed;
 }
 
-bool SourceBufferStream::InsertIntoExistingRange(
-    const RangeList::iterator& range_for_new_buffers_itr,
+void SourceBufferStream::PrepareRangesForNextAppend(
     const BufferQueue& new_buffers, BufferQueue* deleted_buffers) {
   DCHECK(deleted_buffers);
 
-  SourceBufferRange* range_for_new_buffers = *range_for_new_buffers_itr;
+  if (range_for_next_append_ == ranges_.end())
+    return;
+
+  SourceBufferRange* range_for_new_buffers = *range_for_next_append_;
 
   bool temporarily_select_range = false;
   if (!track_buffer_.empty()) {
@@ -843,31 +859,22 @@ bool SourceBufferStream::InsertIntoExistingRange(
     // Clean up the old buffers between the last appended buffer and the
     // beginning of |new_buffers|.
     DeleteBetween(
-        range_for_new_buffers_itr, prev_timestamp, next_timestamp, true,
+        range_for_next_append_, prev_timestamp, next_timestamp, true,
         deleted_buffers);
   }
 
-  bool is_exclusive = false;
-  if (prev_timestamp == next_timestamp) {
-    if (!new_media_segment_ &&
-        !AllowSameTimestamp(prev_is_keyframe, next_is_keyframe)) {
-      MEDIA_LOG(log_cb_) << "Invalid same timestamp construct detected at time "
-                         << prev_timestamp.InSecondsF();
-      return false;
-    }
-
-    // Make the delete range exclusive if we are dealing with an allowed same
-    // timestamp situation so that the buffer with the same timestamp that is
-    // already stored in |*range_for_new_buffers_itr| doesn't get deleted.
-    is_exclusive = AllowSameTimestamp(prev_is_keyframe, next_is_keyframe);
-  }
+  // Make the delete range exclusive if we are dealing with an allowed same
+  // timestamp situation so that the buffer with the same timestamp that is
+  // already stored in |*range_for_new_buffers_itr| doesn't get deleted.
+  bool is_exclusive = (prev_timestamp == next_timestamp) &&
+      AllowSameTimestamp(prev_is_keyframe, next_is_keyframe);
 
   // If we cannot append the |new_buffers| to the end of the existing range,
   // this is either a start overlap or a middle overlap. Delete the buffers
   // that |new_buffers| overlaps.
   if (!range_for_new_buffers->CanAppendBuffersToEnd(new_buffers)) {
     DeleteBetween(
-        range_for_new_buffers_itr, new_buffers.front()->GetDecodeTimestamp(),
+        range_for_next_append_, new_buffers.front()->GetDecodeTimestamp(),
         new_buffers.back()->GetDecodeTimestamp(), is_exclusive,
         deleted_buffers);
   }
@@ -875,9 +882,6 @@ bool SourceBufferStream::InsertIntoExistingRange(
   // Restore the range seek state if necessary.
   if (temporarily_select_range)
     SetSelectedRange(NULL);
-
-  range_for_new_buffers->AppendBuffersToEnd(new_buffers);
-  return true;
 }
 
 void SourceBufferStream::DeleteBetween(

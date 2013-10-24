@@ -153,17 +153,14 @@ class MEDIA_EXPORT SourceBufferStream {
       base::TimeDelta end_timestamp, int byte_to_free,
       base::TimeDelta* removal_end_timestamp);
 
-  // Appends |new_buffers| into |range_for_new_buffers_itr|, handling start and
-  // end overlaps if necessary.
+  // Prepares |range_for_next_append_| so |new_buffers| can be appended.
+  // This involves removing buffers between the end of the previous append
+  // and any buffers covered by the time range in |new_buffers|.
   // |deleted_buffers| is an output parameter containing candidates for
-  // |track_buffer_|.
-  // Returns true if the buffers were successfully inserted into the existing
-  // range.
-  // Returns false if the buffers being inserted triggered an error.
-  bool InsertIntoExistingRange(
-      const RangeList::iterator& range_for_new_buffers_itr,
-      const BufferQueue& new_buffers,
-      BufferQueue* deleted_buffers);
+  // |track_buffer_| if this method ends up removing the current playback
+  // position from the range.
+  void PrepareRangesForNextAppend(const BufferQueue& new_buffers,
+                                  BufferQueue* deleted_buffers);
 
   // Resolve overlapping ranges such that no ranges overlap anymore.
   // |range_with_new_buffers_itr| points to the range that has newly appended
@@ -248,6 +245,11 @@ class MEDIA_EXPORT SourceBufferStream {
   // Returns true if the timestamps of |buffers| are monotonically increasing
   // since the previous append to the media segment, false otherwise.
   bool IsMonotonicallyIncreasing(const BufferQueue& buffers) const;
+
+  // Returns true if |next_timestamp| and |next_is_keyframe| are valid for
+  // the first buffer after the previous append.
+  bool IsNextTimestampValid(base::TimeDelta next_timestamp,
+                            bool next_is_keyframe) const;
 
   // Returns true if |selected_range_| is the only range in |ranges_| that
   // HasNextBufferPosition().
