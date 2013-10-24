@@ -6,6 +6,8 @@ import time
 
 from metrics import rendering_stats
 from telemetry.page import page_measurement
+from telemetry.core.timeline.model import MarkerMismatchError
+from telemetry.core.timeline.model import MarkerOverlapError
 
 
 class RasterizeAndRecord(page_measurement.PageMeasurement):
@@ -81,8 +83,11 @@ class RasterizeAndRecord(page_measurement.PageMeasurement):
         'console.timeEnd("' + rendering_stats.RENDER_PROCESS_MARKER + '")')
 
     timeline = tab.browser.StopTracing().AsTimelineModel()
-    timeline_markers = timeline.FindTimelineMarkers(
-        rendering_stats.RENDER_PROCESS_MARKER)
+    try:
+      timeline_markers = timeline.FindTimelineMarkers(
+          rendering_stats.RENDER_PROCESS_MARKER)
+    except (MarkerMismatchError, MarkerOverlapError) as e:
+      raise page_measurement.MeasurementFailure(str(e))
     stats = rendering_stats.RenderingStats(timeline_markers, timeline_markers)
 
     results.Add('rasterize_time', 'ms',

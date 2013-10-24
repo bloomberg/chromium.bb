@@ -7,6 +7,7 @@ from metrics import rendering_stats
 from telemetry.page import page_test
 from telemetry.page import page_measurement
 from telemetry.core.timeline.model import MarkerMismatchError
+from telemetry.core.timeline.model import MarkerOverlapError
 
 
 class NotEnoughFramesError(page_measurement.MeasurementFailure):
@@ -73,11 +74,14 @@ class Smoothness(page_measurement.PageMeasurement):
     compound_action = page_test.GetCompoundActionFromPage(
         page, self._action_name_to_run)
     timeline_marker_labels = GetTimelineMarkerLabelsFromAction(compound_action)
-    # TODO(ernstm): remove try-except when the reference build was updated?
     try:
       timeline_markers = timeline.FindTimelineMarkers(timeline_marker_labels)
     except MarkerMismatchError:
+      # TODO(ernstm): re-raise exception as MeasurementFailure when the
+      # reference build was updated.
       timeline_markers = render_process_marker
+    except MarkerOverlapError as e:
+      raise page_measurement.MeasurementFailure(str(e))
 
     stats = rendering_stats.RenderingStats(
         render_process_marker, timeline_markers)
