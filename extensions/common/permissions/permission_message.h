@@ -74,7 +74,6 @@ class PermissionMessage {
     kSignedInDevices,
     kWallpaper,
     kNetworkState,
-    kIdentityEmail,
     kEnumBoundary,
   };
   COMPILE_ASSERT(PermissionMessage::kNone > PermissionMessage::kUnknown,

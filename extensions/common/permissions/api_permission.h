@@ -91,7 +91,6 @@ class APIPermission {
     kGeolocation,
     kHistory,
     kIdentity,
-    kIdentityEmail,
     kIdentityPrivate,
     kIdltest,
     kIdle,

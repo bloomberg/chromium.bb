@@ -4302,9 +4302,6 @@ Make sure you do not expose any sensitive information.
       <message name="IDS_EXTENSION_PROMPT_WARNING_DOWNLOADS_OPEN" desc="Permission string for access to downloads.">
         Open downloaded files
       </message>
-      <message name="IDS_EXTENSION_PROMPT_WARNING_IDENTITY_EMAIL" desc="Permission string for access to profile email address.">
-        View email addresses signed in to your profile
-      </message>
       <message name="IDS_EXTENSION_PROMPT_WARNING_WALLPAPER" desc="Permission string for access to wallpaper.">
         Change your wallpaper
       </message>

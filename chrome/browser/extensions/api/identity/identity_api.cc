@@ -17,8 +17,10 @@
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/profile_oauth2_token_service.h"
@@ -664,8 +666,7 @@ const base::Time& IdentityTokenCacheValue::expiration_time() const {
 
 IdentityAPI::IdentityAPI(Profile* profile)
     : profile_(profile),
-      account_tracker_(profile),
-      identity_event_router_(profile) {
+      account_tracker_(profile) {
   account_tracker_.AddObserver(this);
 }
 
@@ -741,7 +742,15 @@ void IdentityAPI::OnAccountRemoved(const AccountIds& ids) {}
 
 void IdentityAPI::OnAccountSignInChanged(const AccountIds& ids,
                                          bool is_signed_in) {
-  identity_event_router_.DispatchSignInEvent(ids.gaia, ids.email, is_signed_in);
+  api::identity::AccountInfo account_info;
+  account_info.id = ids.gaia;
+
+  scoped_ptr<base::ListValue> args =
+      api::identity::OnSignInChanged::Create(account_info, is_signed_in);
+  scoped_ptr<Event> event(new Event(
+      api::identity::OnSignInChanged::kEventName, args.Pass(), profile_));
+
+  ExtensionSystem::Get(profile_)->event_router()->BroadcastEvent(event.Pass());
 }
 
 template <>

@@ -15,7 +15,6 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/extensions/api/identity/account_tracker.h"
 #include "chrome/browser/extensions/api/identity/gaia_web_auth_flow.h"
-#include "chrome/browser/extensions/api/identity/identity_event_router.h"
 #include "chrome/browser/extensions/api/identity/identity_mint_queue.h"
 #include "chrome/browser/extensions/api/identity/identity_signin_flow.h"
 #include "chrome/browser/extensions/api/identity/web_auth_flow.h"
@@ -306,7 +305,6 @@ class IdentityAPI : public ProfileKeyedAPI,
   IdentityMintRequestQueue mint_queue_;
   CachedTokens token_cache_;
   AccountTracker account_tracker_;
-  IdentityEventRouter identity_event_router_;
 };
 
 template <>

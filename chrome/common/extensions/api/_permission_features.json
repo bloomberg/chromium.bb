@@ -360,10 +360,6 @@
     "channel": "stable",
     "extension_types": ["extension", "platform_app"]
   },
-  "identity.email": {
-    "channel": "dev",
-    "extension_types": ["extension", "platform_app"]
-  },
   "identityPrivate": {
     "channel": "stable",
     "extension_types": [

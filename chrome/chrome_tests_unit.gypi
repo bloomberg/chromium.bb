@@ -812,7 +812,6 @@
         'browser/extensions/api/identity/account_tracker_unittest.cc',
         'browser/extensions/api/identity/experimental_web_auth_flow_unittest.cc',
         'browser/extensions/api/identity/gaia_web_auth_flow_unittest.cc',
-        'browser/extensions/api/identity/identity_event_router_unittest.cc',
         'browser/extensions/api/identity/identity_mint_queue_unittest.cc',
         'browser/extensions/api/idle/idle_api_unittest.cc',
         'browser/extensions/api/log_private/syslog_parser_unittest.cc',

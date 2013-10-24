@@ -40,8 +40,9 @@ namespace identity {
   };
 
   dictionary AccountInfo {
+    // A unique identifier for the account. This ID will not change
+    // for the lifetime of the account.
     DOMString id;
-    DOMString? email;
   };
 
   callback GetAuthTokenCallback = void (optional DOMString token);
