@@ -577,7 +577,15 @@ class PackageInfo(object):
       raise PackageSkipped("%s in SKIPPED_PACKAGES, skip package" %
                            self.fullname)
 
-    args = ['equery-%s' % self.board, 'which', self.fullname]
+
+    # By default, equery returns the latest version of the package. A
+    # build may have used an older version than what is currently
+    # available in the source tree (a build dependency can be pinned
+    # to an older version of a package for compatibility
+    # reasons). Therefore we need to tell equery that we want the
+    # exact version number used in the image build as opposed to the
+    # latest available in the source tree.
+    args = ['equery-%s' % self.board, 'which', self.fullnamerev]
     path = cros_build_lib.RunCommand(args, print_cmd=debug,
                                      redirect_stdout=True).output.strip()
     logging.debug("%s -> %s", " ".join(args), path)
