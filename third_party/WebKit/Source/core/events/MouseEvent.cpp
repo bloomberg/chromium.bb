@@ -24,6 +24,7 @@
 #include "core/events/MouseEvent.h"
 
 #include "core/dom/Clipboard.h"
+#include "core/dom/Element.h"
 #include "core/events/EventDispatcher.h"
 #include "core/events/EventRetargeter.h"
 #include "core/events/ThreadLocalEventNames.h"

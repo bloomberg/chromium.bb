@@ -20,19 +20,19 @@
 #ifndef EventRetargeter_h
 #define EventRetargeter_h
 
-#include "core/dom/ContainerNode.h"
-#include "core/events/EventContext.h"
-#include "core/dom/shadow/ShadowRoot.h"
 #include "wtf/HashMap.h"
 #include "wtf/RefPtr.h"
+#include "wtf/Vector.h"
 
 namespace WebCore {
 
+class EventPath;
 class EventTarget;
 class FocusEvent;
 class MouseEvent;
 class Node;
 class TouchEvent;
+class TouchList;
 class TreeScope;
 
 class EventRetargeter {
@@ -49,9 +49,6 @@ private:
         StopAtBoundaryIfNeeded,
         DoesNotStopAtBoundary
     };
-    static void calculateEventPath(Node*, Event*);
-    static void calculateAdjustedEventPathForEachNode(EventPath&);
-
     static void adjustForRelatedTarget(const Node*, EventTarget* relatedTarget, EventPath&);
     static void calculateAdjustedNodes(const Node*, const Node* relatedNode, EventWithRelatedTargetDispatchBehavior, EventPath&, AdjustedTargets&);
     static void buildRelatedNodeMap(const Node*, RelatedTargetMap&);
