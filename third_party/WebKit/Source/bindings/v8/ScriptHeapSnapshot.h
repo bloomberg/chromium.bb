@@ -55,7 +55,7 @@ public:
     {
         return adoptRef(new ScriptHeapSnapshot(snapshot));
     }
-    virtual ~ScriptHeapSnapshot();
+    ~ScriptHeapSnapshot();
 
     String title() const;
     unsigned int uid() const;
