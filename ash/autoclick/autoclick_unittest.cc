@@ -66,7 +66,7 @@ class AutoclickTest : public test::AshTestBase {
     GetAutoclickController()->SetAutoclickDelay(0);
 
     // Move mouse to deterministic location at the start of each test.
-    GetEventGenerator().MoveMouseTo(10, 10);
+    GetEventGenerator().MoveMouseTo(100, 100);
   }
 
   virtual void TearDown() OVERRIDE {
@@ -117,7 +117,7 @@ TEST_F(AutoclickTest, ToggleEnabled) {
   // We should not get any more clicks until we move the mouse.
   events = WaitForMouseEvents();
   EXPECT_EQ(0u, events.size());
-  GetEventGenerator().MoveMouseTo(0, 1);
+  GetEventGenerator().MoveMouseTo(30, 30);
   events = WaitForMouseEvents();
   EXPECT_EQ(2u, events.size());
   EXPECT_EQ(ui::ET_MOUSE_PRESSED, events[0].type());
@@ -143,9 +143,9 @@ TEST_F(AutoclickTest, MAYBE_MouseMovement) {
   std::vector<ui::MouseEvent> events;
   GetAutoclickController()->SetEnabled(true);
 
-  gfx::Point p1(1, 1);
-  gfx::Point p2(2, 2);
-  gfx::Point p3(3, 3);
+  gfx::Point p1(0, 0);
+  gfx::Point p2(20, 20);
+  gfx::Point p3(40, 40);
 
   // Move mouse to p1.
   GetEventGenerator().MoveMouseTo(p1);
@@ -162,6 +162,24 @@ TEST_F(AutoclickTest, MAYBE_MouseMovement) {
   EXPECT_EQ(2u, events.size());
   EXPECT_EQ(p3.ToString(), events[0].root_location().ToString());
   EXPECT_EQ(p3.ToString(), events[1].root_location().ToString());
+}
+
+TEST_F(AutoclickTest, MovementThreshold) {
+  GetAutoclickController()->SetEnabled(true);
+  GetEventGenerator().MoveMouseTo(0, 0);
+  EXPECT_EQ(2u, WaitForMouseEvents().size());
+
+  // Small mouse movements should not trigger an autoclick.
+  GetEventGenerator().MoveMouseTo(1, 1);
+  EXPECT_EQ(0u, WaitForMouseEvents().size());
+  GetEventGenerator().MoveMouseTo(2, 2);
+  EXPECT_EQ(0u, WaitForMouseEvents().size());
+  GetEventGenerator().MoveMouseTo(0, 0);
+  EXPECT_EQ(0u, WaitForMouseEvents().size());
+
+  // A large mouse movement should trigger an autoclick.
+  GetEventGenerator().MoveMouseTo(100, 100);
+  EXPECT_EQ(2u, WaitForMouseEvents().size());
 }
 
 TEST_F(AutoclickTest, SingleKeyModifier) {
@@ -236,6 +254,8 @@ TEST_F(AutoclickTest, MAYBE_ExtendedDisplay) {
   EXPECT_EQ(2u, events.size());
   EXPECT_EQ(300, events[0].root_location().x());
   EXPECT_EQ(400, events[0].root_location().y());
+
+  // Test movement threshold between displays.
 }
 
 }  // namespace ash

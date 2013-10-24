@@ -13,8 +13,17 @@
 #include "ui/events/event_constants.h"
 #include "ui/events/event_handler.h"
 #include "ui/gfx/point.h"
+#include "ui/gfx/vector2d.h"
 
 namespace ash {
+
+namespace {
+
+// The threshold of mouse movement measured in DIP that will
+// initiate a new autoclick.
+const int kMovementThreshold = 20;
+
+}  // namespace
 
 // static.
 const int AutoclickController::kDefaultAutoclickDelayMs = 400;
@@ -45,6 +54,9 @@ class AutoclickControllerImpl : public AutoclickController,
   int delay_ms_;
   int mouse_event_flags_;
   scoped_ptr<base::Timer> autoclick_timer_;
+  // The position in screen coordinates used to determine
+  // the distance the mouse has moved.
+  gfx::Point anchor_location_;
 
   DISALLOW_COPY_AND_ASSIGN(AutoclickControllerImpl);
 };
@@ -53,7 +65,8 @@ class AutoclickControllerImpl : public AutoclickController,
 AutoclickControllerImpl::AutoclickControllerImpl()
     : enabled_(false),
       delay_ms_(kDefaultAutoclickDelayMs),
-      mouse_event_flags_(ui::EF_NONE) {
+      mouse_event_flags_(ui::EF_NONE),
+      anchor_location_(-kMovementThreshold, -kMovementThreshold) {
   InitClickTimer();
 }
 
@@ -98,7 +111,23 @@ void AutoclickControllerImpl::InitClickTimer() {
 void AutoclickControllerImpl::OnMouseEvent(ui::MouseEvent* event) {
   if (event->type() == ui::ET_MOUSE_MOVED) {
     mouse_event_flags_ = event->flags();
-    autoclick_timer_->Reset();
+
+    gfx::Point mouse_location = event->root_location();
+    ash::wm::ConvertPointToScreen(
+        wm::GetRootWindowAt(mouse_location),
+        &mouse_location);
+
+    // The distance between the mouse location and the anchor location
+    // must exceed a certain threshold to initiate a new autoclick countdown.
+    // This ensures that mouse jitter caused by poor motor control does not
+    // 1. initiate an unwanted autoclick from rest
+    // 2. prevent the autoclick from ever occuring when the mouse
+    //    arrives at the target.
+    gfx::Vector2d delta = mouse_location - anchor_location_;
+    if (delta.LengthSquared() >= kMovementThreshold * kMovementThreshold) {
+      anchor_location_ = event->root_location();
+      autoclick_timer_->Reset();
+    }
   } else if (event->type() == ui::ET_MOUSE_PRESSED) {
     autoclick_timer_->Stop();
   } else if (event->type() == ui::ET_MOUSEWHEEL &&
@@ -129,6 +158,7 @@ void AutoclickControllerImpl::DoAutoclick() {
   DCHECK(root_window) << "Root window not found while attempting autoclick.";
 
   gfx::Point click_location(screen_location);
+  anchor_location_ = click_location;
   wm::ConvertPointFromScreen(root_window, &click_location);
   root_window->ConvertPointToHost(&click_location);
 
