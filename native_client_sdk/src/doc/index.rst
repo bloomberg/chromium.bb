@@ -46,6 +46,7 @@ Contents:
    peppercpp/index.rst
    reference/index.rst
    reference/pnacl-bitcode-abi.rst
+   reference/pnacl-c-cpp-language-support.rst
    reference/nacl-manifest-format.rst
    publications-and-presentations.rst
    faq.rst

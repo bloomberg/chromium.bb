@@ -62,13 +62,14 @@ See :doc:`Dynamic Linking & Loading with glibc <dynamic-loading>`
 for information about these libraries, including factors to help you
 decide which to use.
 
+.. _building_cpp_libraries:
 
 C++ libraries
 -------------
 
 The PNaCl SDK can use either
 `libstdc++ <http://gcc.gnu.org/libstdc++>`_ (the current default)
-or LLVM's `libc++ <http://libcxx.llvm.org/>`_ (preliminary support).
+or LLVM's `libc++ <http://libcxx.llvm.org/>`_ (experimental support).
 The ``-stdlib=[libstdc++|libc++]`` command line argument can be used
 to choose which standard library to use.
 
