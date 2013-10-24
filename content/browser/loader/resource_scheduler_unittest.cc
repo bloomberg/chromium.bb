@@ -430,6 +430,16 @@ TEST_F(ResourceSchedulerTest, ReprioritizedRequestGoesToBackOfQueue) {
   EXPECT_FALSE(idle->started());
 }
 
+TEST_F(ResourceSchedulerTest, NonHTTPSchedulesImmediately) {
+  // Dummies to enforce scheduling.
+  scoped_ptr<TestRequest> high(NewRequest("http://host/high", net::HIGHEST));
+  scoped_ptr<TestRequest> low(NewRequest("http://host/high", net::LOWEST));
+
+  scoped_ptr<TestRequest> request(
+      NewRequest("chrome-extension://req", net::LOWEST));
+  EXPECT_TRUE(request->started());
+}
+
 }  // unnamed namespace
 
 }  // namespace content
