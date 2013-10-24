@@ -107,9 +107,31 @@ class WebSocketDeflateStreamTest : public ::testing::Test {
       : mock_stream_(NULL) {
     mock_stream_ = new testing::StrictMock<MockWebSocketStream>;
     deflate_stream_.reset(new WebSocketDeflateStream(
-        scoped_ptr<WebSocketStream>(mock_stream_)));
+        scoped_ptr<WebSocketStream>(mock_stream_),
+        WebSocketDeflater::TAKE_OVER_CONTEXT));
   }
   virtual ~WebSocketDeflateStreamTest() {}
+
+ protected:
+  scoped_ptr<WebSocketDeflateStream> deflate_stream_;
+  // |mock_stream_| will be deleted when |deflate_stream_| is destroyed.
+  MockWebSocketStream* mock_stream_;
+};
+
+// Since WebSocketDeflater with DoNotTakeOverContext is well tested at
+// websocket_deflater_test.cc, we have only one test for this configuration
+// here.
+class WebSocketDeflateStreamWithDoNotTakeOverContextTest
+    : public ::testing::Test {
+ public:
+  WebSocketDeflateStreamWithDoNotTakeOverContextTest()
+      : mock_stream_(NULL) {
+    mock_stream_ = new testing::StrictMock<MockWebSocketStream>;
+    deflate_stream_.reset(new WebSocketDeflateStream(
+        scoped_ptr<WebSocketStream>(mock_stream_),
+        WebSocketDeflater::DO_NOT_TAKE_OVER_CONTEXT));
+  }
+  virtual ~WebSocketDeflateStreamWithDoNotTakeOverContextTest() {}
 
  protected:
   scoped_ptr<WebSocketDeflateStream> deflate_stream_;
@@ -917,6 +939,60 @@ TEST_F(WebSocketDeflateStreamTest, LargeDeflatedFramesShouldBeSplit) {
   }
   EXPECT_EQ(total_deflated,
             ToString(deflater.GetOutput(deflater.CurrentOutputSize())));
+}
+
+TEST_F(WebSocketDeflateStreamTest, WriteMultipleMessages) {
+  ScopedVector<WebSocketFrame> frames;
+  AppendTo(&frames, WebSocketFrameHeader::kOpCodeText, kFinal, "Hello");
+  AppendTo(&frames, WebSocketFrameHeader::kOpCodeText, kFinal, "Hello");
+  WriteFramesStub stub(OK);
+  CompletionCallback callback;
+
+  {
+    InSequence s;
+    EXPECT_CALL(*mock_stream_, WriteFrames(&frames, _))
+        .WillOnce(Invoke(&stub, &WriteFramesStub::Call));
+  }
+  ASSERT_EQ(OK, deflate_stream_->WriteFrames(&frames, callback));
+  const ScopedVector<WebSocketFrame>& frames_passed = *stub.frames();
+  ASSERT_EQ(2u, frames_passed.size());
+  EXPECT_EQ(WebSocketFrameHeader::kOpCodeText, frames_passed[0]->header.opcode);
+  EXPECT_TRUE(frames_passed[0]->header.final);
+  EXPECT_TRUE(frames_passed[0]->header.reserved1);
+  EXPECT_EQ(std::string("\xf2\x48\xcd\xc9\xc9\x07\x00", 7),
+            ToString(frames_passed[0]));
+  EXPECT_EQ(WebSocketFrameHeader::kOpCodeText, frames_passed[1]->header.opcode);
+  EXPECT_TRUE(frames_passed[1]->header.final);
+  EXPECT_TRUE(frames_passed[1]->header.reserved1);
+  EXPECT_EQ(std::string("\xf2\x00\x11\x00\x00", 5), ToString(frames_passed[1]));
+}
+
+TEST_F(WebSocketDeflateStreamWithDoNotTakeOverContextTest,
+       WriteMultipleMessages) {
+  ScopedVector<WebSocketFrame> frames;
+  AppendTo(&frames, WebSocketFrameHeader::kOpCodeText, kFinal, "Hello");
+  AppendTo(&frames, WebSocketFrameHeader::kOpCodeText, kFinal, "Hello");
+  WriteFramesStub stub(OK);
+  CompletionCallback callback;
+
+  {
+    InSequence s;
+    EXPECT_CALL(*mock_stream_, WriteFrames(&frames, _))
+        .WillOnce(Invoke(&stub, &WriteFramesStub::Call));
+  }
+  ASSERT_EQ(OK, deflate_stream_->WriteFrames(&frames, callback));
+  const ScopedVector<WebSocketFrame>& frames_passed = *stub.frames();
+  ASSERT_EQ(2u, frames_passed.size());
+  EXPECT_EQ(WebSocketFrameHeader::kOpCodeText, frames_passed[0]->header.opcode);
+  EXPECT_TRUE(frames_passed[0]->header.final);
+  EXPECT_TRUE(frames_passed[0]->header.reserved1);
+  EXPECT_EQ(std::string("\xf2\x48\xcd\xc9\xc9\x07\x00", 7),
+            ToString(frames_passed[0]));
+  EXPECT_EQ(WebSocketFrameHeader::kOpCodeText, frames_passed[1]->header.opcode);
+  EXPECT_TRUE(frames_passed[1]->header.final);
+  EXPECT_TRUE(frames_passed[1]->header.reserved1);
+  EXPECT_EQ(std::string("\xf2\x48\xcd\xc9\xc9\x07\x00", 7),
+            ToString(frames_passed[1]));
 }
 
 }  // namespace

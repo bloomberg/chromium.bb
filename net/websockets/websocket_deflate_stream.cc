@@ -33,9 +33,10 @@ const size_t kChunkSize = 4 * 1024;
 }  // namespace
 
 WebSocketDeflateStream::WebSocketDeflateStream(
-    scoped_ptr<WebSocketStream> stream)
+    scoped_ptr<WebSocketStream> stream,
+    WebSocketDeflater::ContextTakeOverMode mode)
     : stream_(stream.Pass()),
-      deflater_(WebSocketDeflater::TAKE_OVER_CONTEXT),
+      deflater_(mode),
       inflater_(kChunkSize, kChunkSize),
       reading_state_(NOT_READING),
       writing_state_(NOT_WRITING),

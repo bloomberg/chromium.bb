@@ -27,7 +27,8 @@ namespace net {
 // [1]: http://tools.ietf.org/html/draft-ietf-hybi-permessage-compression-12
 class NET_EXPORT_PRIVATE WebSocketDeflateStream : public WebSocketStream {
  public:
-  explicit WebSocketDeflateStream(scoped_ptr<WebSocketStream> stream);
+  WebSocketDeflateStream(scoped_ptr<WebSocketStream> stream,
+                         WebSocketDeflater::ContextTakeOverMode mode);
   virtual ~WebSocketDeflateStream();
 
   // WebSocketStream functions.
