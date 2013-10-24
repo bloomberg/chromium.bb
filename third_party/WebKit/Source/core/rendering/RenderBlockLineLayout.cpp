@@ -1699,9 +1699,9 @@ bool RenderBlockFlow::adjustLogicalLineTopAndLogicalHeightIfNeeded(ShapeInsideIn
 {
     LayoutUnit adjustedLogicalLineTop = adjustLogicalLineTop(shapeInsideInfo, resolver.position(), end, wordMeasurements);
 
-    if (shapeInsideInfo) {
-        lastFloatFromPreviousLine = (containsFloats()) ? m_floatingObjects->set().last() : 0;
-        if (!wordMeasurements.size() && lastFloatFromPreviousLine) {
+    if (shapeInsideInfo && containsFloats()) {
+        lastFloatFromPreviousLine = m_floatingObjects->set().last();
+        if (!wordMeasurements.size()) {
             LayoutUnit floatLogicalTopOffset = shapeInsideInfo->computeFirstFitPositionForFloat(logicalSizeForFloat(lastFloatFromPreviousLine));
             if (logicalHeight() < floatLogicalTopOffset)
                 adjustedLogicalLineTop = floatLogicalTopOffset;
