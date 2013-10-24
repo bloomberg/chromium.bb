@@ -4,6 +4,7 @@
 
 #include "ash/system/chromeos/tray_tracing.h"
 
+#include "ash/shell.h"
 #include "ash/system/tray/actionable_view.h"
 #include "ash/system/tray/fixed_sized_image_view.h"
 #include "ash/system/tray/system_tray.h"
@@ -24,17 +25,16 @@ namespace internal {
 
 namespace tray {
 
-class DefaultTracingView : public ash::internal::ActionableView {
+class DefaultTracingView : public internal::ActionableView {
  public:
   DefaultTracingView() {
     SetLayoutManager(new views::BoxLayout(
         views::BoxLayout::kHorizontal,
-        ash::kTrayPopupPaddingHorizontal, 0,
-        ash::kTrayPopupPaddingBetweenItems));
+        kTrayPopupPaddingHorizontal, 0,
+        kTrayPopupPaddingBetweenItems));
 
     ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
-    image_ =
-        new ash::internal::FixedSizedImageView(0, ash::kTrayPopupItemHeight);
+    image_ = new internal::FixedSizedImageView(0, kTrayPopupItemHeight);
     image_->SetImage(
         bundle.GetImageNamed(IDR_AURA_UBER_TRAY_TRACING).ToImageSkia());
     AddChildView(image_);
@@ -51,7 +51,7 @@ class DefaultTracingView : public ash::internal::ActionableView {
  private:
   // Overridden from ActionableView.
   virtual bool PerformAction(const ui::Event& event) OVERRIDE {
-    ash::Shell::GetInstance()->system_tray_delegate()->ShowChromeSlow();
+    Shell::GetInstance()->system_tray_delegate()->ShowChromeSlow();
     return true;
   }
 

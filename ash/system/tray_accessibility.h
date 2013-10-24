@@ -5,7 +5,7 @@
 #ifndef ASH_SYSTEM_TRAY_ACCESSIBILITY_H_
 #define ASH_SYSTEM_TRAY_ACCESSIBILITY_H_
 
-#include "ash/shell_delegate.h"
+#include "ash/accessibility_delegate.h"
 #include "ash/shell_observer.h"
 #include "ash/system/tray/tray_details_view.h"
 #include "ash/system/tray/tray_image_item.h"

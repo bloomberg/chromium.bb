@@ -4,9 +4,10 @@
 
 #include "chrome/browser/ui/ash/chrome_shell_delegate.h"
 
-#include "base/command_line.h"
+#include "ash/accessibility_delegate.h"
 #include "ash/magnifier/magnifier_constants.h"
 #include "ash/system/tray/default_system_tray_delegate.h"
+#include "base/command_line.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -24,6 +25,76 @@
 #if defined(OS_WIN)
 #include "chrome/browser/ui/ash/user_wallpaper_delegate_win.h"
 #endif
+
+namespace {
+
+class EmptyAccessibilityDelegate : public ash::AccessibilityDelegate {
+ public:
+  EmptyAccessibilityDelegate() {}
+  virtual ~EmptyAccessibilityDelegate() {}
+
+  virtual void ToggleHighContrast() OVERRIDE {
+  }
+
+  virtual bool IsSpokenFeedbackEnabled() const OVERRIDE {
+    return false;
+  }
+
+  virtual void ToggleSpokenFeedback(
+      ash::AccessibilityNotificationVisibility notify) OVERRIDE {
+  }
+
+  virtual void SetLargeCursorEnabled(bool enalbed) OVERRIDE {
+  }
+
+  virtual bool IsLargeCursorEnabled() const OVERRIDE {
+    return false;
+  }
+
+  virtual bool IsHighContrastEnabled() const OVERRIDE {
+    return false;
+  }
+
+  virtual void SetMagnifierEnabled(bool enabled) OVERRIDE {
+  }
+
+  virtual void SetMagnifierType(ash::MagnifierType type) OVERRIDE {
+  }
+
+  virtual bool IsMagnifierEnabled() const OVERRIDE {
+    return false;
+  }
+
+  virtual void SetAutoclickEnabled(bool enabled) OVERRIDE {
+  }
+
+  virtual bool IsAutoclickEnabled() const OVERRIDE {
+    return false;
+  }
+
+  virtual ash::MagnifierType GetMagnifierType() const OVERRIDE {
+    return ash::kDefaultMagnifierType;
+  }
+
+  virtual void SaveScreenMagnifierScale(double scale) OVERRIDE {
+  }
+
+  virtual double GetSavedScreenMagnifierScale() OVERRIDE {
+    return std::numeric_limits<double>::min();
+  }
+
+  virtual bool ShouldAlwaysShowAccessibilityMenu() const OVERRIDE {
+    return false;
+  }
+
+  virtual void SilenceSpokenFeedback() const OVERRIDE {
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(EmptyAccessibilityDelegate);
+};
+
+}  // namespace
 
 bool ChromeShellDelegate::IsFirstRunAfterBoot() const {
   return false;
@@ -44,49 +115,6 @@ void ChromeShellDelegate::OpenCrosh() {
 void ChromeShellDelegate::ShowKeyboardOverlay() {
 }
 
-void ChromeShellDelegate::ToggleHighContrast() {
-}
-
-bool ChromeShellDelegate::IsSpokenFeedbackEnabled() const {
-  return false;
-}
-
-void ChromeShellDelegate::ToggleSpokenFeedback(
-    ash::AccessibilityNotificationVisibility notify) {
-}
-
-void ChromeShellDelegate::SetLargeCursorEnabled(bool enalbed) {
-}
-
-bool ChromeShellDelegate::IsLargeCursorEnabled() const {
-  return false;
-}
-
-void ChromeShellDelegate::SetAutoclickEnabled(bool enabled) {
-}
-
-bool ChromeShellDelegate::IsAutoclickEnabled() const {
-  return false;
-}
-
-bool ChromeShellDelegate::IsHighContrastEnabled() const {
-  return false;
-}
-
-void ChromeShellDelegate::SetMagnifierEnabled(bool enabled) {
-}
-
-void ChromeShellDelegate::SetMagnifierType(ash::MagnifierType type) {
-}
-
-bool ChromeShellDelegate::IsMagnifierEnabled() const {
-  return false;
-}
-
-ash::MagnifierType ChromeShellDelegate::GetMagnifierType() const {
-  return ash::kDefaultMagnifierType;
-}
-
 ash::CapsLockDelegate* ChromeShellDelegate::CreateCapsLockDelegate() {
   return new CapsLockDelegate();
 }
@@ -95,23 +123,13 @@ ash::SessionStateDelegate* ChromeShellDelegate::CreateSessionStateDelegate() {
   return new SessionStateDelegate;
 }
 
-void ChromeShellDelegate::SaveScreenMagnifierScale(double scale) {
-}
-
-double ChromeShellDelegate::GetSavedScreenMagnifierScale() {
-  return std::numeric_limits<double>::min();
-}
-
-bool ChromeShellDelegate::ShouldAlwaysShowAccessibilityMenu() const {
-  return false;
-}
-
-void ChromeShellDelegate::SilenceSpokenFeedback() const {
-}
-
 ash::SystemTrayDelegate* ChromeShellDelegate::CreateSystemTrayDelegate() {
   // TODO(sky): need to subclass and override Shutdown() in a meaningful way.
   return new ash::DefaultSystemTrayDelegate;
+}
+
+ash::AccessibilityDelegate* ChromeShellDelegate::CreateAccessibilityDelegate() {
+  return new EmptyAccessibilityDelegate;
 }
 
 ash::UserWallpaperDelegate* ChromeShellDelegate::CreateUserWallpaperDelegate() {

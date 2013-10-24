@@ -4,9 +4,9 @@
 
 #include "ash/magnifier/magnification_controller.h"
 
+#include "ash/accessibility_delegate.h"
 #include "ash/display/root_window_transformers.h"
 #include "ash/shell.h"
-#include "ash/shell_delegate.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "base/synchronization/waitable_event.h"
 #include "ui/aura/client/cursor_client.h"
@@ -503,7 +503,8 @@ void MagnificationControllerImpl::SetScale(float scale, bool animate) {
     return;
 
   ValidateScale(&scale);
-  ash::Shell::GetInstance()->delegate()->SaveScreenMagnifierScale(scale);
+  ash::Shell::GetInstance()->accessibility_delegate()->
+      SaveScreenMagnifierScale(scale);
   RedrawKeepingMousePosition(scale, animate);
 }
 
@@ -543,7 +544,8 @@ void MagnificationControllerImpl::EnsurePointIsVisible(
 void MagnificationControllerImpl::SetEnabled(bool enabled) {
   if (enabled) {
     float scale =
-        ash::Shell::GetInstance()->delegate()->GetSavedScreenMagnifierScale();
+        ash::Shell::GetInstance()->accessibility_delegate()->
+        GetSavedScreenMagnifierScale();
     if (scale <= 0.0f)
       scale = kInitialMagnifiedScale;
     ValidateScale(&scale);
@@ -554,7 +556,8 @@ void MagnificationControllerImpl::SetEnabled(bool enabled) {
 
     is_enabled_ = enabled;
     RedrawKeepingMousePosition(scale, true);
-    ash::Shell::GetInstance()->delegate()->SaveScreenMagnifierScale(scale);
+    ash::Shell::GetInstance()->accessibility_delegate()->
+        SaveScreenMagnifierScale(scale);
   } else {
     // Do nothing, if already disabled.
     if (!is_enabled_)

@@ -53,21 +53,6 @@ class ChromeShellDelegate : public ash::ShellDelegate,
       CreateKeyboardControllerProxy() OVERRIDE;
   virtual void ShowTaskManager() OVERRIDE;
   virtual content::BrowserContext* GetCurrentBrowserContext() OVERRIDE;
-  virtual void ToggleHighContrast() OVERRIDE;
-  virtual bool IsSpokenFeedbackEnabled() const OVERRIDE;
-  virtual void ToggleSpokenFeedback(
-      ash::AccessibilityNotificationVisibility notify) OVERRIDE;
-  virtual bool IsHighContrastEnabled() const OVERRIDE;
-  virtual void SetMagnifierEnabled(bool enabled) OVERRIDE;
-  virtual void SetMagnifierType(ash::MagnifierType type) OVERRIDE;
-  virtual bool IsMagnifierEnabled() const OVERRIDE;
-  virtual ash::MagnifierType GetMagnifierType() const OVERRIDE;
-  virtual void SetLargeCursorEnabled(bool enabled) OVERRIDE;
-  virtual bool IsLargeCursorEnabled() const OVERRIDE;
-  virtual void SetAutoclickEnabled(bool enabled) OVERRIDE;
-  virtual bool IsAutoclickEnabled() const OVERRIDE;
-  virtual bool ShouldAlwaysShowAccessibilityMenu() const OVERRIDE;
-  virtual void SilenceSpokenFeedback() const OVERRIDE;
   virtual app_list::AppListViewDelegate* CreateAppListViewDelegate() OVERRIDE;
   virtual ash::LauncherDelegate* CreateLauncherDelegate(
       ash::LauncherModel* model) OVERRIDE;
@@ -75,14 +60,13 @@ class ChromeShellDelegate : public ash::ShellDelegate,
   virtual ash::UserWallpaperDelegate* CreateUserWallpaperDelegate() OVERRIDE;
   virtual ash::CapsLockDelegate* CreateCapsLockDelegate() OVERRIDE;
   virtual ash::SessionStateDelegate* CreateSessionStateDelegate() OVERRIDE;
+  virtual ash::AccessibilityDelegate* CreateAccessibilityDelegate() OVERRIDE;
   virtual aura::client::UserActionClient* CreateUserActionClient() OVERRIDE;
   virtual void OpenFeedbackPage() OVERRIDE;
   virtual void RecordUserMetricsAction(ash::UserMetricsAction action) OVERRIDE;
   virtual void HandleMediaNextTrack() OVERRIDE;
   virtual void HandleMediaPlayPause() OVERRIDE;
   virtual void HandleMediaPrevTrack() OVERRIDE;
-  virtual void SaveScreenMagnifierScale(double scale) OVERRIDE;
-  virtual double GetSavedScreenMagnifierScale() OVERRIDE;
   virtual ui::MenuModel* CreateContextMenu(aura::RootWindow* root) OVERRIDE;
   virtual ash::RootWindowHostFactory* CreateRootWindowHostFactory() OVERRIDE;
   virtual string16 GetProductName() const OVERRIDE;

@@ -4,6 +4,7 @@
 
 #include "ash/accelerators/accelerator_controller.h"
 #include "ash/accelerators/accelerator_table.h"
+#include "ash/accessibility_delegate.h"
 #include "ash/caps_lock_delegate.h"
 #include "ash/display/display_manager.h"
 #include "ash/ime_control_delegate.h"
@@ -957,9 +958,8 @@ TEST_F(AcceleratorControllerTest, GlobalAccelerators) {
 }
 
 TEST_F(AcceleratorControllerTest, GlobalAcceleratorsToggleAppList) {
-  test::TestShellDelegate* delegate =
-      reinterpret_cast<test::TestShellDelegate*>(
-          ash::Shell::GetInstance()->delegate());
+  AccessibilityDelegate* delegate =
+          ash::Shell::GetInstance()->accessibility_delegate();
   EXPECT_FALSE(ash::Shell::GetInstance()->GetAppListTargetVisibility());
 
   // The press event should not open the AppList, the release should instead.

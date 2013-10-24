@@ -4,9 +4,9 @@
 
 #include "ash/shell/shell_delegate_impl.h"
 
-#include <limits>
-
+#include "ash/accessibility_delegate.h"
 #include "ash/caps_lock_delegate_stub.h"
+#include "ash/default_accessibility_delegate.h"
 #include "ash/default_user_wallpaper_delegate.h"
 #include "ash/host/root_window_host_factory.h"
 #include "ash/keyboard_controller_proxy_stub.h"
@@ -28,13 +28,7 @@ namespace shell {
 
 ShellDelegateImpl::ShellDelegateImpl()
     : watcher_(NULL),
-      launcher_delegate_(NULL),
-      spoken_feedback_enabled_(false),
-      high_contrast_enabled_(false),
-      screen_magnifier_enabled_(false),
-      screen_magnifier_type_(kDefaultMagnifierType),
-      large_cursor_enabled_(false),
-      autoclick_enabled_(false) {
+      launcher_delegate_(NULL) {
 }
 
 ShellDelegateImpl::~ShellDelegateImpl() {
@@ -109,62 +103,6 @@ content::BrowserContext* ShellDelegateImpl::GetCurrentBrowserContext() {
   return Shell::GetInstance()->browser_context();
 }
 
-void ShellDelegateImpl::ToggleSpokenFeedback(
-    AccessibilityNotificationVisibility notify) {
-  spoken_feedback_enabled_ = !spoken_feedback_enabled_;
-}
-
-bool ShellDelegateImpl::IsSpokenFeedbackEnabled() const {
-  return spoken_feedback_enabled_;
-}
-
-void ShellDelegateImpl::ToggleHighContrast() {
-  high_contrast_enabled_ = !high_contrast_enabled_;
-}
-
-bool ShellDelegateImpl::IsHighContrastEnabled() const {
-  return high_contrast_enabled_;
-}
-
-void ShellDelegateImpl::SetMagnifierEnabled(bool enabled) {
-  screen_magnifier_enabled_ = enabled;
-}
-
-void ShellDelegateImpl::SetMagnifierType(MagnifierType type) {
-  screen_magnifier_type_ = type;
-}
-
-bool ShellDelegateImpl::IsMagnifierEnabled() const {
-  return screen_magnifier_enabled_;
-}
-
-MagnifierType ShellDelegateImpl::GetMagnifierType() const {
-  return screen_magnifier_type_;
-}
-
-void ShellDelegateImpl::SetLargeCursorEnabled(bool enabled) {
-  large_cursor_enabled_ = enabled;
-}
-
-bool ShellDelegateImpl::IsLargeCursorEnabled() const {
-  return large_cursor_enabled_;
-}
-
-void ShellDelegateImpl::SetAutoclickEnabled(bool enabled) {
-  autoclick_enabled_ = enabled;
-}
-
-bool ShellDelegateImpl::IsAutoclickEnabled() const {
-  return autoclick_enabled_;
-}
-
-bool ShellDelegateImpl::ShouldAlwaysShowAccessibilityMenu() const {
-  return false;
-}
-
-void ShellDelegateImpl::SilenceSpokenFeedback() const {
-}
-
 app_list::AppListViewDelegate* ShellDelegateImpl::CreateAppListViewDelegate() {
   return ash::shell::CreateAppListViewDelegate();
 }
@@ -191,6 +129,10 @@ ash::SessionStateDelegate* ShellDelegateImpl::CreateSessionStateDelegate() {
   return new SessionStateDelegateStub;
 }
 
+ash::AccessibilityDelegate* ShellDelegateImpl::CreateAccessibilityDelegate() {
+  return new internal::DefaultAccessibilityDelegate;
+}
+
 aura::client::UserActionClient* ShellDelegateImpl::CreateUserActionClient() {
   return NULL;
 }
@@ -208,13 +150,6 @@ void ShellDelegateImpl::HandleMediaPlayPause() {
 }
 
 void ShellDelegateImpl::HandleMediaPrevTrack() {
-}
-
-void ShellDelegateImpl::SaveScreenMagnifierScale(double scale) {
-}
-
-double ShellDelegateImpl::GetSavedScreenMagnifierScale() {
-  return std::numeric_limits<double>::min();
 }
 
 ui::MenuModel* ShellDelegateImpl::CreateContextMenu(aura::RootWindow* root) {

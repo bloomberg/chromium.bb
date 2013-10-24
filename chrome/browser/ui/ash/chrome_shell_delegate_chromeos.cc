@@ -6,6 +6,7 @@
 
 #include "apps/shell_window_registry.h"
 #include "apps/ui/native_app_window.h"
+#include "ash/accessibility_delegate.h"
 #include "ash/keyboard_overlay/keyboard_overlay_view.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/window_util.h"
@@ -54,6 +55,104 @@ void RestoreFocus() {
   if (!mru_list.empty())
     mru_list.front()->Focus();
 }
+
+class AccessibilityDelegateImpl : public ash::AccessibilityDelegate {
+ public:
+  AccessibilityDelegateImpl() {}
+  virtual ~AccessibilityDelegateImpl() {}
+
+  virtual void ToggleHighContrast() OVERRIDE {
+    DCHECK(chromeos::AccessibilityManager::Get());
+    chromeos::AccessibilityManager::Get()->EnableHighContrast(
+        !chromeos::AccessibilityManager::Get()->IsHighContrastEnabled());
+  }
+
+  virtual bool IsSpokenFeedbackEnabled() const OVERRIDE {
+    DCHECK(chromeos::AccessibilityManager::Get());
+    return chromeos::AccessibilityManager::Get()->IsSpokenFeedbackEnabled();
+  }
+
+  virtual void ToggleSpokenFeedback(
+      ash::AccessibilityNotificationVisibility notify) OVERRIDE {
+    DCHECK(chromeos::AccessibilityManager::Get());
+    chromeos::AccessibilityManager::Get()->ToggleSpokenFeedback(notify);
+  }
+
+  virtual bool IsHighContrastEnabled() const OVERRIDE {
+    DCHECK(chromeos::AccessibilityManager::Get());
+    return chromeos::AccessibilityManager::Get()->IsHighContrastEnabled();
+  }
+
+  virtual void SetMagnifierEnabled(bool enabled) OVERRIDE {
+    DCHECK(chromeos::MagnificationManager::Get());
+    return chromeos::MagnificationManager::Get()->SetMagnifierEnabled(enabled);
+  }
+
+  virtual void SetMagnifierType(ash::MagnifierType type) OVERRIDE {
+    DCHECK(chromeos::MagnificationManager::Get());
+    return chromeos::MagnificationManager::Get()->SetMagnifierType(type);
+  }
+
+  virtual bool IsMagnifierEnabled() const OVERRIDE {
+    DCHECK(chromeos::MagnificationManager::Get());
+    return chromeos::MagnificationManager::Get()->IsMagnifierEnabled();
+  }
+
+  virtual ash::MagnifierType GetMagnifierType() const OVERRIDE {
+    DCHECK(chromeos::MagnificationManager::Get());
+    return chromeos::MagnificationManager::Get()->GetMagnifierType();
+  }
+
+  virtual void SetLargeCursorEnabled(bool enabled) OVERRIDE {
+    DCHECK(chromeos::AccessibilityManager::Get());
+    return chromeos::AccessibilityManager::Get()->EnableLargeCursor(enabled);
+  }
+
+  virtual bool IsLargeCursorEnabled() const OVERRIDE {
+    DCHECK(chromeos::AccessibilityManager::Get());
+    return chromeos::AccessibilityManager::Get()->IsLargeCursorEnabled();
+  }
+
+  virtual void SetAutoclickEnabled(bool enabled) OVERRIDE {
+    DCHECK(chromeos::AccessibilityManager::Get());
+    return chromeos::AccessibilityManager::Get()->EnableAutoclick(enabled);
+  }
+
+  virtual bool IsAutoclickEnabled() const OVERRIDE {
+    DCHECK(chromeos::AccessibilityManager::Get());
+    return chromeos::AccessibilityManager::Get()->IsAutoclickEnabled();
+  }
+
+  virtual bool ShouldAlwaysShowAccessibilityMenu() const OVERRIDE {
+    Profile* profile = ProfileManager::GetDefaultProfile();
+    if (!profile)
+      return false;
+
+    PrefService* user_pref_service = profile->GetPrefs();
+    return user_pref_service && user_pref_service->GetBoolean(
+        prefs::kShouldAlwaysShowAccessibilityMenu);
+  }
+
+  virtual void SilenceSpokenFeedback() const OVERRIDE {
+    TtsController::GetInstance()->Stop();
+  }
+
+  virtual void SaveScreenMagnifierScale(double scale) OVERRIDE {
+    if (chromeos::MagnificationManager::Get())
+      chromeos::MagnificationManager::Get()->SaveScreenMagnifierScale(scale);
+  }
+
+  virtual double GetSavedScreenMagnifierScale() OVERRIDE {
+    if (chromeos::MagnificationManager::Get()) {
+      return chromeos::MagnificationManager::Get()->
+          GetSavedScreenMagnifierScale();
+    }
+    return std::numeric_limits<double>::min();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(AccessibilityDelegateImpl);
+};
 
 }  // anonymous namespace
 
@@ -117,81 +216,6 @@ void ChromeShellDelegate::OpenCrosh() {
   page->GetView()->Focus();
 }
 
-void ChromeShellDelegate::ToggleHighContrast() {
-  DCHECK(chromeos::AccessibilityManager::Get());
-  bool enabled = chromeos::AccessibilityManager::Get()->IsHighContrastEnabled();
-  chromeos::AccessibilityManager::Get()->EnableHighContrast(!enabled);
-}
-
-bool ChromeShellDelegate::IsSpokenFeedbackEnabled() const {
-  DCHECK(chromeos::AccessibilityManager::Get());
-  return chromeos::AccessibilityManager::Get()->IsSpokenFeedbackEnabled();
-}
-
-void ChromeShellDelegate::ToggleSpokenFeedback(
-    ash::AccessibilityNotificationVisibility notify) {
-  DCHECK(chromeos::AccessibilityManager::Get());
-  chromeos::AccessibilityManager::Get()->ToggleSpokenFeedback(notify);
-}
-
-bool ChromeShellDelegate::IsHighContrastEnabled() const {
-  DCHECK(chromeos::AccessibilityManager::Get());
-  return chromeos::AccessibilityManager::Get()->IsHighContrastEnabled();
-}
-
-bool ChromeShellDelegate::IsMagnifierEnabled() const {
-  DCHECK(chromeos::MagnificationManager::Get());
-  return chromeos::MagnificationManager::Get()->IsMagnifierEnabled();
-}
-
-ash::MagnifierType ChromeShellDelegate::GetMagnifierType() const {
-  DCHECK(chromeos::MagnificationManager::Get());
-  return chromeos::MagnificationManager::Get()->GetMagnifierType();
-}
-
-void ChromeShellDelegate::SetMagnifierEnabled(bool enabled) {
-  DCHECK(chromeos::MagnificationManager::Get());
-  return chromeos::MagnificationManager::Get()->SetMagnifierEnabled(enabled);
-}
-
-void ChromeShellDelegate::SetMagnifierType(ash::MagnifierType type) {
-  DCHECK(chromeos::MagnificationManager::Get());
-  return chromeos::MagnificationManager::Get()->SetMagnifierType(type);
-}
-
-void ChromeShellDelegate::SaveScreenMagnifierScale(double scale) {
-  if (chromeos::MagnificationManager::Get())
-    chromeos::MagnificationManager::Get()->SaveScreenMagnifierScale(scale);
-}
-
-double ChromeShellDelegate::GetSavedScreenMagnifierScale() {
-  if (chromeos::MagnificationManager::Get()) {
-    return chromeos::MagnificationManager::Get()->
-        GetSavedScreenMagnifierScale();
-  }
-  return std::numeric_limits<double>::min();
-}
-
-void ChromeShellDelegate::SetLargeCursorEnabled(bool enabled) {
-  DCHECK(chromeos::AccessibilityManager::Get());
-  return chromeos::AccessibilityManager::Get()->EnableLargeCursor(enabled);
-}
-
-bool ChromeShellDelegate::IsLargeCursorEnabled() const {
-  DCHECK(chromeos::AccessibilityManager::Get());
-  return chromeos::AccessibilityManager::Get()->IsLargeCursorEnabled();
-}
-
-void ChromeShellDelegate::SetAutoclickEnabled(bool enabled) {
-  DCHECK(chromeos::AccessibilityManager::Get());
-  return chromeos::AccessibilityManager::Get()->EnableAutoclick(enabled);
-}
-
-bool ChromeShellDelegate::IsAutoclickEnabled() const {
-  DCHECK(chromeos::AccessibilityManager::Get());
-  return chromeos::AccessibilityManager::Get()->IsAutoclickEnabled();
-}
-
 ash::CapsLockDelegate* ChromeShellDelegate::CreateCapsLockDelegate() {
   chromeos::input_method::XKeyboard* xkeyboard =
       chromeos::input_method::InputMethodManager::Get()->GetXKeyboard();
@@ -202,6 +226,10 @@ ash::SessionStateDelegate* ChromeShellDelegate::CreateSessionStateDelegate() {
   return new SessionStateDelegateChromeos;
 }
 
+ash::AccessibilityDelegate* ChromeShellDelegate::CreateAccessibilityDelegate() {
+  return new AccessibilityDelegateImpl;
+}
+
 void ChromeShellDelegate::ShowKeyboardOverlay() {
   // TODO(mazda): Move the show logic to ash (http://crbug.com/124222).
   Profile* profile = ProfileManager::GetDefaultProfileOrOffTheRecord();
@@ -209,20 +237,6 @@ void ChromeShellDelegate::ShowKeyboardOverlay() {
   ash::KeyboardOverlayView::ShowDialog(profile,
                                        new ChromeWebContentsHandler,
                                        GURL(url));
-}
-
-bool ChromeShellDelegate::ShouldAlwaysShowAccessibilityMenu() const {
-  Profile* profile = ProfileManager::GetDefaultProfile();
-  if (!profile)
-    return false;
-
-  PrefService* user_pref_service = profile->GetPrefs();
-  return user_pref_service &&
-      user_pref_service->GetBoolean(prefs::kShouldAlwaysShowAccessibilityMenu);
-}
-
-void ChromeShellDelegate::SilenceSpokenFeedback() const {
-  TtsController::GetInstance()->Stop();
 }
 
 ash::SystemTrayDelegate* ChromeShellDelegate::CreateSystemTrayDelegate() {

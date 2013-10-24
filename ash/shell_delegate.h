@@ -8,7 +8,6 @@
 #include <string>
 
 #include "ash/ash_export.h"
-#include "ash/magnifier/magnifier_constants.h"
 #include "ash/shell.h"
 #include "base/callback.h"
 #include "base/strings/string16.h"
@@ -44,6 +43,7 @@ class LauncherDelegate;
 class LauncherModel;
 struct LauncherItem;
 class RootWindowHostFactory;
+class AccessibilityDelegate;
 class SessionStateDelegate;
 class SystemTrayDelegate;
 class UserWallpaperDelegate;
@@ -99,11 +99,6 @@ enum UserMetricsAction {
   // Window selection started by beginning an alt+tab cycle or pressing the
   // overview key. This does not count each step through an alt+tab cycle.
   UMA_WINDOW_SELECTION,
-};
-
-enum AccessibilityNotificationVisibility {
-  A11Y_NOTIFICATION_NONE,
-  A11Y_NOTIFICATION_SHOW,
 };
 
 // Delegate of the Shell.
@@ -164,50 +159,6 @@ class ASH_EXPORT ShellDelegate {
   // Get the current browser context. This will get us the current profile.
   virtual content::BrowserContext* GetCurrentBrowserContext() = 0;
 
-  // Invoked to toggle spoken feedback for accessibility
-  virtual void ToggleSpokenFeedback(
-      AccessibilityNotificationVisibility notify) = 0;
-
-  // Returns true if spoken feedback is enabled.
-  virtual bool IsSpokenFeedbackEnabled() const = 0;
-
-  // Invoked to toggle high contrast for accessibility.
-  virtual void ToggleHighContrast() = 0;
-
-  // Returns true if high contrast mode is enabled.
-  virtual bool IsHighContrastEnabled() const = 0;
-
-  // Invoked to enable the screen magnifier.
-  virtual void SetMagnifierEnabled(bool enabled) = 0;
-
-  // Invoked to change the type of the screen magnifier.
-  virtual void SetMagnifierType(MagnifierType type) = 0;
-
-  // Returns if the screen magnifier is enabled or not.
-  virtual bool IsMagnifierEnabled() const = 0;
-
-  // Returns the current screen magnifier mode.
-  virtual MagnifierType GetMagnifierType() const = 0;
-
-  // Invoked to enable Large Cursor.
-  virtual void SetLargeCursorEnabled(bool enabled) = 0;
-
-  // Returns if Large Cursor is enabled or not.
-  virtual bool IsLargeCursorEnabled() const = 0;
-
-  // Invoked to enable autoclick.
-  virtual void SetAutoclickEnabled(bool enabled) = 0;
-
-  // Returns if autoclick is enabled or not.
-  virtual bool IsAutoclickEnabled() const = 0;
-
-  // Returns true if the user want to show accesibility menu even when all the
-  // accessibility features are disabled.
-  virtual bool ShouldAlwaysShowAccessibilityMenu() const = 0;
-
-  // Cancel all current and queued speech immediately.
-  virtual void SilenceSpokenFeedback() const = 0;
-
   // Invoked to create an AppListViewDelegate. Shell takes the ownership of
   // the created delegate.
   virtual app_list::AppListViewDelegate* CreateAppListViewDelegate() = 0;
@@ -229,6 +180,9 @@ class ASH_EXPORT ShellDelegate {
   // Creates a session state delegate. Shell takes ownership of the delegate.
   virtual SessionStateDelegate* CreateSessionStateDelegate() = 0;
 
+  // Creates a accessibility delegate. Shell takes ownership of the delegate.
+  virtual AccessibilityDelegate* CreateAccessibilityDelegate() = 0;
+
   // Creates a user action client. Shell takes ownership of the object.
   virtual aura::client::UserActionClient* CreateUserActionClient() = 0;
 
@@ -246,13 +200,6 @@ class ASH_EXPORT ShellDelegate {
 
   // Handles the Previous Track Media shortcut key.
   virtual void HandleMediaPrevTrack() = 0;
-
-  // Saves the zoom scale of the full screen magnifier.
-  virtual void SaveScreenMagnifierScale(double scale) = 0;
-
-  // Gets a saved value of the zoom scale of full screen magnifier. If a value
-  // is not saved, return a negative value.
-  virtual double GetSavedScreenMagnifierScale() = 0;
 
   // Creates a menu model of the context for the |root_window|.
   virtual ui::MenuModel* CreateContextMenu(aura::RootWindow* root_window) = 0;

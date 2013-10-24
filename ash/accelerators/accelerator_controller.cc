@@ -134,8 +134,10 @@ void HandleCycleLinear(const ui::Accelerator& accelerator) {
 }
 
 bool HandleAccessibleFocusCycle(bool reverse) {
-  if (!Shell::GetInstance()->delegate()->IsSpokenFeedbackEnabled())
+  if (!Shell::GetInstance()->accessibility_delegate()->
+      IsSpokenFeedbackEnabled()) {
     return false;
+  }
   aura::Window* active_window = ash::wm::GetActiveWindow();
   if (!active_window)
     return false;
@@ -157,10 +159,11 @@ bool HandleAccessibleFocusCycle(bool reverse) {
 }
 
 void HandleSilenceSpokenFeedback() {
-  if (!Shell::GetInstance()->delegate()->IsSpokenFeedbackEnabled())
+  AccessibilityDelegate* delegate =
+      Shell::GetInstance()->accessibility_delegate();
+  if (!delegate->IsSpokenFeedbackEnabled())
     return;
-
-  Shell::GetInstance()->delegate()->SilenceSpokenFeedback();
+  delegate->SilenceSpokenFeedback();
 }
 
 #if defined(OS_CHROMEOS)
@@ -180,7 +183,7 @@ bool HandleCrosh() {
 }
 
 bool HandleToggleSpokenFeedback() {
-  Shell::GetInstance()->delegate()->
+  Shell::GetInstance()->accessibility_delegate()->
       ToggleSpokenFeedback(A11Y_NOTIFICATION_SHOW);
   return true;
 }
@@ -662,7 +665,8 @@ bool AcceleratorController::PerformAction(int action,
       // consume the key since Search+Shift is one of the shortcuts the a11y
       // feature uses. crbug.com/132296
       DCHECK_EQ(ui::VKEY_LWIN, accelerator.key_code());
-      if (Shell::GetInstance()->delegate()->IsSpokenFeedbackEnabled())
+      if (Shell::GetInstance()->accessibility_delegate()->
+          IsSpokenFeedbackEnabled())
         return false;
       ash::Shell::GetInstance()->ToggleAppList(NULL);
       return true;

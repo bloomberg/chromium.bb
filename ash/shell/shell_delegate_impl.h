@@ -44,21 +44,6 @@ class ShellDelegateImpl : public ash::ShellDelegate {
       CreateKeyboardControllerProxy() OVERRIDE;
   virtual void ShowTaskManager() OVERRIDE;
   virtual content::BrowserContext* GetCurrentBrowserContext() OVERRIDE;
-  virtual void ToggleSpokenFeedback(
-      AccessibilityNotificationVisibility notify) OVERRIDE;
-  virtual bool IsSpokenFeedbackEnabled() const OVERRIDE;
-  virtual void ToggleHighContrast() OVERRIDE;
-  virtual bool IsHighContrastEnabled() const OVERRIDE;
-  virtual void SetMagnifierEnabled(bool enabled) OVERRIDE;
-  virtual void SetMagnifierType(MagnifierType type) OVERRIDE;
-  virtual bool IsMagnifierEnabled() const OVERRIDE;
-  virtual MagnifierType GetMagnifierType() const OVERRIDE;
-  virtual void SetLargeCursorEnabled(bool enabled) OVERRIDE;
-  virtual bool IsLargeCursorEnabled() const OVERRIDE;
-  virtual void SetAutoclickEnabled(bool enabled) OVERRIDE;
-  virtual bool IsAutoclickEnabled() const OVERRIDE;
-  virtual bool ShouldAlwaysShowAccessibilityMenu() const OVERRIDE;
-  virtual void SilenceSpokenFeedback() const OVERRIDE;
   virtual app_list::AppListViewDelegate* CreateAppListViewDelegate() OVERRIDE;
   virtual ash::LauncherDelegate* CreateLauncherDelegate(
       ash::LauncherModel* model) OVERRIDE;
@@ -66,14 +51,13 @@ class ShellDelegateImpl : public ash::ShellDelegate {
   virtual ash::UserWallpaperDelegate* CreateUserWallpaperDelegate() OVERRIDE;
   virtual ash::CapsLockDelegate* CreateCapsLockDelegate() OVERRIDE;
   virtual ash::SessionStateDelegate* CreateSessionStateDelegate() OVERRIDE;
+  virtual ash::AccessibilityDelegate* CreateAccessibilityDelegate() OVERRIDE;
   virtual aura::client::UserActionClient* CreateUserActionClient() OVERRIDE;
   virtual void OpenFeedbackPage() OVERRIDE;
   virtual void RecordUserMetricsAction(UserMetricsAction action) OVERRIDE;
   virtual void HandleMediaNextTrack() OVERRIDE;
   virtual void HandleMediaPlayPause() OVERRIDE;
   virtual void HandleMediaPrevTrack() OVERRIDE;
-  virtual void SaveScreenMagnifierScale(double scale) OVERRIDE;
-  virtual double GetSavedScreenMagnifierScale() OVERRIDE;
   virtual ui::MenuModel* CreateContextMenu(
       aura::RootWindow* root_window) OVERRIDE;
   virtual RootWindowHostFactory* CreateRootWindowHostFactory() OVERRIDE;
@@ -84,13 +68,6 @@ class ShellDelegateImpl : public ash::ShellDelegate {
   WindowWatcher* watcher_;
 
   LauncherDelegateImpl* launcher_delegate_;
-
-  bool spoken_feedback_enabled_;
-  bool high_contrast_enabled_;
-  bool screen_magnifier_enabled_;
-  MagnifierType screen_magnifier_type_;
-  bool large_cursor_enabled_;
-  bool autoclick_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellDelegateImpl);
 };

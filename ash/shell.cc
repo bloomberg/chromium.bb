@@ -660,6 +660,7 @@ Shell::~Shell() {
   screen_position_controller_.reset();
 
   keyboard_controller_.reset();
+  accessibility_delegate_.reset();
 
 #if defined(OS_CHROMEOS) && defined(USE_X11)
    if (display_change_observer_)
@@ -831,6 +832,7 @@ void Shell::Init() {
   caps_lock_delegate_.reset(delegate_->CreateCapsLockDelegate());
 
   session_state_delegate_.reset(delegate_->CreateSessionStateDelegate());
+  accessibility_delegate_.reset(delegate_->CreateAccessibilityDelegate());
 
   if (!command_line->HasSwitch(views::corewm::switches::kNoDropShadows)) {
     resize_shadow_controller_.reset(new internal::ResizeShadowController());

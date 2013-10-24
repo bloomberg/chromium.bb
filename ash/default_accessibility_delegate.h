@@ -1,0 +1,53 @@
+// Copyright 2013 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef ASH_DEFAULT_ACCESSIBILITY_DELEGATE_H_
+#define ASH_DEFAULT_ACCESSIBILITY_DELEGATE_H_
+
+#include "ash/accessibility_delegate.h"
+#include "ash/ash_export.h"
+#include "base/basictypes.h"
+#include "base/compiler_specific.h"
+
+namespace ash {
+namespace internal {
+
+class ASH_EXPORT DefaultAccessibilityDelegate : public AccessibilityDelegate {
+ public:
+  DefaultAccessibilityDelegate();
+  virtual ~DefaultAccessibilityDelegate();
+
+  virtual bool IsSpokenFeedbackEnabled() const OVERRIDE;
+  virtual void ToggleHighContrast() OVERRIDE;
+  virtual bool IsHighContrastEnabled() const OVERRIDE;
+  virtual void SetMagnifierEnabled(bool enabled) OVERRIDE;
+  virtual void SetMagnifierType(MagnifierType type) OVERRIDE;
+  virtual bool IsMagnifierEnabled() const OVERRIDE;
+  virtual MagnifierType GetMagnifierType() const OVERRIDE;
+  virtual void SetLargeCursorEnabled(bool enabled) OVERRIDE;
+  virtual bool IsLargeCursorEnabled() const OVERRIDE;
+  virtual void SetAutoclickEnabled(bool enabled) OVERRIDE;
+  virtual bool IsAutoclickEnabled() const OVERRIDE;
+  virtual bool ShouldAlwaysShowAccessibilityMenu() const OVERRIDE;
+  virtual void SilenceSpokenFeedback() const OVERRIDE;
+  virtual void ToggleSpokenFeedback(
+      AccessibilityNotificationVisibility notify) OVERRIDE;
+  virtual void SaveScreenMagnifierScale(double scale) OVERRIDE;
+  virtual double GetSavedScreenMagnifierScale() OVERRIDE;
+
+ private:
+  bool spoken_feedback_enabled_;
+  bool high_contrast_enabled_;
+  bool screen_magnifier_enabled_;
+  MagnifierType screen_magnifier_type_;
+  bool large_cursor_enabled_;
+  bool autoclick_enabled_;
+
+  DISALLOW_COPY_AND_ASSIGN(DefaultAccessibilityDelegate);
+};
+
+}  // namespace internal
+}  // namespace ash
+
+#endif  // DEFAULT_ACCESSIBILITY_DELEGATE_H_

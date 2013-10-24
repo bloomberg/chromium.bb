@@ -76,6 +76,7 @@ class WindowModalityController;
 namespace ash {
 
 class AcceleratorController;
+class AccessibilityDelegate;
 class AshNativeCursorManager;
 class AutoclickController;
 class CapsLockDelegate;
@@ -366,6 +367,10 @@ class ASH_EXPORT Shell
     return session_state_delegate_.get();
   }
 
+  AccessibilityDelegate* accessibility_delegate() {
+    return accessibility_delegate_.get();
+  }
+
   HighContrastController* high_contrast_controller() {
     return high_contrast_controller_.get();
   }
@@ -573,6 +578,7 @@ class ASH_EXPORT Shell
   scoped_ptr<UserWallpaperDelegate> user_wallpaper_delegate_;
   scoped_ptr<CapsLockDelegate> caps_lock_delegate_;
   scoped_ptr<SessionStateDelegate> session_state_delegate_;
+  scoped_ptr<AccessibilityDelegate> accessibility_delegate_;
   scoped_ptr<LauncherDelegate> launcher_delegate_;
   scoped_ptr<LauncherItemDelegateManager> launcher_item_delegate_manager_;
 

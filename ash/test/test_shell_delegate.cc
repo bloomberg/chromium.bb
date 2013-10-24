@@ -7,6 +7,7 @@
 #include <limits>
 
 #include "ash/caps_lock_delegate_stub.h"
+#include "ash/default_accessibility_delegate.h"
 #include "ash/host/root_window_host_factory.h"
 #include "ash/keyboard_controller_proxy_stub.h"
 #include "ash/session_state_delegate.h"
@@ -27,13 +28,7 @@ namespace ash {
 namespace test {
 
 TestShellDelegate::TestShellDelegate()
-    : spoken_feedback_enabled_(false),
-      high_contrast_enabled_(false),
-      screen_magnifier_enabled_(false),
-      screen_magnifier_type_(kDefaultMagnifierType),
-      large_cursor_enabled_(false),
-      autoclick_enabled_(false),
-      num_exit_requests_(0),
+    : num_exit_requests_(0),
       multi_profiles_enabled_(false),
       test_session_state_delegate_(NULL) {
 }
@@ -97,62 +92,6 @@ content::BrowserContext* TestShellDelegate::GetCurrentBrowserContext() {
   return current_browser_context_.get();
 }
 
-void TestShellDelegate::ToggleSpokenFeedback(
-    AccessibilityNotificationVisibility notify) {
-  spoken_feedback_enabled_ = !spoken_feedback_enabled_;
-}
-
-bool TestShellDelegate::IsSpokenFeedbackEnabled() const {
-  return spoken_feedback_enabled_;
-}
-
-void TestShellDelegate::ToggleHighContrast() {
-  high_contrast_enabled_ = !high_contrast_enabled_;
-}
-
-bool TestShellDelegate::IsHighContrastEnabled() const {
-  return high_contrast_enabled_;
-}
-
-void TestShellDelegate::SetMagnifierEnabled(bool enabled) {
-  screen_magnifier_enabled_ = enabled;
-}
-
-void TestShellDelegate::SetMagnifierType(MagnifierType type) {
-  screen_magnifier_type_ = type;
-}
-
-bool TestShellDelegate::IsMagnifierEnabled() const {
-  return screen_magnifier_enabled_;
-}
-
-MagnifierType TestShellDelegate::GetMagnifierType() const {
-  return screen_magnifier_type_;
-}
-
-void TestShellDelegate::SetLargeCursorEnabled(bool enabled) {
-  large_cursor_enabled_ = enabled;
-}
-
-bool TestShellDelegate::IsLargeCursorEnabled() const {
-  return large_cursor_enabled_;
-}
-
-void TestShellDelegate::SetAutoclickEnabled(bool enabled) {
-  autoclick_enabled_ = enabled;
-}
-
-bool TestShellDelegate::IsAutoclickEnabled() const {
-  return autoclick_enabled_;
-}
-
-bool TestShellDelegate::ShouldAlwaysShowAccessibilityMenu() const {
-  return false;
-}
-
-void TestShellDelegate::SilenceSpokenFeedback() const {
-}
-
 app_list::AppListViewDelegate* TestShellDelegate::CreateAppListViewDelegate() {
   return NULL;
 }
@@ -180,6 +119,10 @@ SessionStateDelegate* TestShellDelegate::CreateSessionStateDelegate() {
   return test_session_state_delegate_;
 }
 
+AccessibilityDelegate* TestShellDelegate::CreateAccessibilityDelegate() {
+  return new internal::DefaultAccessibilityDelegate();
+}
+
 aura::client::UserActionClient* TestShellDelegate::CreateUserActionClient() {
   return NULL;
 }
@@ -199,15 +142,8 @@ void TestShellDelegate::HandleMediaPlayPause() {
 void TestShellDelegate::HandleMediaPrevTrack() {
 }
 
-void TestShellDelegate::SaveScreenMagnifierScale(double scale) {
-}
-
 ui::MenuModel* TestShellDelegate::CreateContextMenu(aura::RootWindow* root) {
   return NULL;
-}
-
-double TestShellDelegate::GetSavedScreenMagnifierScale() {
-  return std::numeric_limits<double>::min();
 }
 
 RootWindowHostFactory* TestShellDelegate::CreateRootWindowHostFactory() {

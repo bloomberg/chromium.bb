@@ -4,6 +4,7 @@
 
 #include "ash/system/chromeos/system_clock_observer.h"
 
+#include "ash/shell.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 
