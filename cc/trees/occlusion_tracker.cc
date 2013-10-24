@@ -272,12 +272,6 @@ static void ReduceOcclusionBelowSurface(LayerType* contributing_layer,
   // to expand outside the clip.
   affected_area_in_target.Inset(
       -outset_left, -outset_top, -outset_right, -outset_bottom);
-
-  gfx::Rect FilterOutsetsInTarget(-outset_left,
-                                  -outset_top,
-                                  outset_left + outset_right,
-                                  outset_top + outset_bottom);
-
   Region affected_occlusion = IntersectRegions(*occlusion_from_inside_target,
                                                affected_area_in_target);
   Region::Iterator affected_occlusion_rects(affected_occlusion);
