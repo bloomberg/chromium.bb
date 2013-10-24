@@ -118,7 +118,10 @@ class TouchPointView : public views::View,
 
   // Overridden from views::WidgetObserver.
   virtual void OnWidgetDestroying(views::Widget* widget) OVERRIDE {
-    fadeout_->Stop();
+    if (fadeout_)
+      fadeout_->Stop();
+    else
+      Remove();
   }
 
   const gfx::Point circle_center_;
