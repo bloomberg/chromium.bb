@@ -327,6 +327,27 @@ struct MEDIA_EXPORT TrackFragmentRun : Box {
   std::vector<int32> sample_composition_time_offsets;
 };
 
+// sample_depends_on values in ISO/IEC 14496-12 Section 8.40.2.3.
+enum SampleDependsOn {
+  kSampleDependsOnUnknown = 0,
+  kSampleDependsOnOthers = 1,
+  kSampleDependsOnNoOther = 2,
+  kSampleDependsOnReserved = 3,
+};
+
+class MEDIA_EXPORT IndependentAndDisposableSamples : public Box {
+ public:
+  DECLARE_BOX_METHODS(IndependentAndDisposableSamples);
+
+  // Returns the SampleDependsOn value for the |i|'th value
+  // in the track. If no data was parsed for the |i|'th sample,
+  // then |kSampleDependsOnUnknown| is returned.
+  SampleDependsOn sample_depends_on(size_t i) const;
+
+ private:
+  std::vector<SampleDependsOn> sample_depends_on_;
+};
+
 struct MEDIA_EXPORT TrackFragment : Box {
   DECLARE_BOX_METHODS(TrackFragment);
 
@@ -335,6 +356,7 @@ struct MEDIA_EXPORT TrackFragment : Box {
   TrackFragmentDecodeTime decode_time;
   SampleAuxiliaryInformationOffset auxiliary_offset;
   SampleAuxiliaryInformationSize auxiliary_size;
+  IndependentAndDisposableSamples sdtp;
 };
 
 struct MEDIA_EXPORT MovieFragment : Box {

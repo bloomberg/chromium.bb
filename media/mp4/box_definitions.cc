@@ -743,7 +743,8 @@ bool TrackFragment::Parse(BoxReader* reader) {
          reader->ReadChild(&decode_time) &&
          reader->MaybeReadChildren(&runs) &&
          reader->MaybeReadChild(&auxiliary_offset) &&
-         reader->MaybeReadChild(&auxiliary_size);
+         reader->MaybeReadChild(&auxiliary_size) &&
+         reader->MaybeReadChild(&sdtp);
 }
 
 MovieFragment::MovieFragment() {}
@@ -756,6 +757,39 @@ bool MovieFragment::Parse(BoxReader* reader) {
          reader->ReadChildren(&tracks) &&
          reader->MaybeReadChildren(&pssh));
   return true;
+}
+
+IndependentAndDisposableSamples::IndependentAndDisposableSamples() {}
+IndependentAndDisposableSamples::~IndependentAndDisposableSamples() {}
+FourCC IndependentAndDisposableSamples::BoxType() const { return FOURCC_SDTP; }
+
+bool IndependentAndDisposableSamples::Parse(BoxReader* reader) {
+  RCHECK(reader->ReadFullBoxHeader());
+  RCHECK(reader->version() == 0);
+  RCHECK(reader->flags() == 0);
+
+  int sample_count = reader->size() - reader->pos();
+  sample_depends_on_.resize(sample_count);
+  for (int i = 0; i < sample_count; ++i) {
+    uint8 sample_info;
+    RCHECK(reader->Read1(&sample_info));
+    RCHECK((sample_info >> 6) == 0);  // reserved.
+
+    sample_depends_on_[i] =
+        static_cast<SampleDependsOn>((sample_info >> 4) & 0x3);
+
+    RCHECK(sample_depends_on_[i] != kSampleDependsOnReserved);
+  }
+
+  return true;
+}
+
+SampleDependsOn IndependentAndDisposableSamples::sample_depends_on(
+    size_t i) const {
+  if (i >= sample_depends_on_.size())
+    return kSampleDependsOnUnknown;
+
+  return sample_depends_on_[i];
 }
 
 }  // namespace mp4
