@@ -158,6 +158,20 @@ void testDecodeAfterReallocatingData(const char* webpFile)
     }
 }
 
+void testInvalidImage(const char* webpFile)
+{
+    OwnPtr<WEBPImageDecoder> decoder = createDecoder();
+
+    RefPtr<SharedBuffer> data = readFile(webpFile);
+    ASSERT_TRUE(data.get());
+    decoder->setData(data.get(), true);
+
+    EXPECT_EQ(0u, decoder->frameCount());
+    ImageFrame* frame = decoder->frameBufferAtIndex(0);
+    EXPECT_FALSE(frame);
+    EXPECT_EQ(cAnimationLoopOnce, decoder->repetitionCount());
+}
+
 } // namespace
 
 class AnimatedWebPTests : public ::testing::Test {
@@ -335,18 +349,12 @@ TEST_F(AnimatedWebPTests, parseAndDecodeByteByByte)
     }
 }
 
-TEST_F(AnimatedWebPTests, invalidImage)
+TEST_F(AnimatedWebPTests, invalidImages)
 {
-    OwnPtr<WEBPImageDecoder> decoder = createDecoder();
-
-    RefPtr<SharedBuffer> data = readFile("/LayoutTests/fast/images/resources/invalid-animated-webp.webp");
-    ASSERT_TRUE(data.get());
-    decoder->setData(data.get(), true);
-
-    EXPECT_EQ(0u, decoder->frameCount());
-    ImageFrame* frame = decoder->frameBufferAtIndex(0);
-    EXPECT_FALSE(frame);
-    EXPECT_EQ(cAnimationLoopOnce, decoder->repetitionCount());
+    // crbug.com/229641
+    testInvalidImage("/LayoutTests/fast/images/resources/invalid-animated-webp.webp");
+    // crbug.com/310257
+    testInvalidImage("/LayoutTests/fast/images/resources/invalid-animated-webp3.webp");
 }
 
 // Reproduce a crash that used to happen for a specific file with specific sequence of method calls.
