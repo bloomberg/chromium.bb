@@ -894,8 +894,9 @@ TEST_F(LayerTreeHostContextTestLostContextAndEvictTextures,
   RunTest(true, true, false);
 }
 
+// Flaky on all platforms, http://crbug.com/310979
 TEST_F(LayerTreeHostContextTestLostContextAndEvictTextures,
-       LoseAfterEvict_MultiThread_DelegatingRenderer_ImplSidePaint) {
+       DISABLED_LoseAfterEvict_MultiThread_DelegatingRenderer_ImplSidePaint) {
   lose_after_evict_ = true;
   RunTest(true, true, true);
 }
