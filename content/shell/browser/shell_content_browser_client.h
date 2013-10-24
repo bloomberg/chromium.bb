@@ -66,7 +66,7 @@ class ShellContentBrowserClient : public ContentBrowserClient,
                                               const GURL& current_url,
                                               const GURL& new_url) OVERRIDE;
 
-#if defined(OS_ANDROID)
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
   virtual void GetAdditionalMappedFilesForChildProcess(
       const CommandLine& command_line,
       int child_process_id,

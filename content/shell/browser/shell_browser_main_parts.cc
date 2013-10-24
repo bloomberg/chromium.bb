@@ -4,6 +4,7 @@
 
 #include "content/shell/browser/shell_browser_main_parts.h"
 
+#include "base/base_switches.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
@@ -34,12 +35,25 @@
 #endif
 
 #if defined(OS_ANDROID)
+#include "components/breakpad/browser/crash_dump_manager_android.h"
 #include "net/android/network_change_notifier_factory_android.h"
 #include "net/base/network_change_notifier.h"
 #endif
 
 #if defined(USE_AURA) && defined(USE_X11)
 #include "ui/events/x/touch_factory_x11.h"
+#endif
+
+#if defined(OS_MACOSX)
+#include "components/breakpad/app/breakpad_mac.h"
+#endif
+
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
+#include "components/breakpad/app/breakpad_linux.h"
+#endif
+
+#if defined(OS_WIN)
+#include "components/breakpad/app/breakpad_win.h"
 #endif
 
 namespace content {
@@ -114,6 +128,16 @@ void ShellBrowserMainParts::PreEarlyInitialization() {
 }
 
 void ShellBrowserMainParts::PreMainMessageLoopRun() {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableCrashReporter)) {
+    breakpad::InitCrashReporter();
+#if defined(OS_ANDROID)
+    base::FilePath crash_dumps_dir =
+        CommandLine::ForCurrentProcess()->GetSwitchValuePath(
+            switches::kCrashDumpsDir);
+    crash_dump_manager_.reset(new breakpad::CrashDumpManager(crash_dumps_dir));
+#endif
+  }
   net_log_.reset(new ShellNetLog());
   browser_context_.reset(new ShellBrowserContext(false, net_log_.get()));
   off_the_record_browser_context_.reset(

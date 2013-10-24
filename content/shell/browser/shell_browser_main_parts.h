@@ -10,6 +10,12 @@
 #include "content/public/browser/browser_main_parts.h"
 #include "content/public/common/main_function_params.h"
 
+#if defined(OS_ANDROID)
+namespace breakpad {
+class CrashDumpManager;
+}
+#endif
+
 namespace base {
 class Thread;
 }
@@ -49,6 +55,9 @@ class ShellBrowserMainParts : public BrowserMainParts {
   net::NetLog* net_log() { return net_log_.get(); }
 
  private:
+#if defined(OS_ANDROID)
+  scoped_ptr<breakpad::CrashDumpManager> crash_dump_manager_;
+#endif
   scoped_ptr<net::NetLog> net_log_;
   scoped_ptr<ShellBrowserContext> browser_context_;
   scoped_ptr<ShellBrowserContext> off_the_record_browser_context_;
