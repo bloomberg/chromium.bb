@@ -1154,7 +1154,8 @@ weston_touch_set_focus(struct weston_seat *seat, struct weston_view *view)
 
 	focus_resource_list = &seat->touch->focus_resource_list;
 
-	if (seat->touch->focus->surface == view->surface) {
+	if (view && seat->touch->focus &&
+	    seat->touch->focus->surface == view->surface) {
 		seat->touch->focus = view;
 		return;
 	}
