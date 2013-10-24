@@ -67,7 +67,7 @@ TraceEvent::TraceEventHandle EventTracer::addTraceEvent(char phase, const unsign
     const char* name, unsigned long long id, int numArgs, const char** argNames,
     const unsigned char* argTypes, const unsigned long long* argValues, unsigned char flags)
 {
-    return WebKit::Platform::current()->addTraceEventNew(phase, categoryEnabledFlag, name, id, numArgs, argNames, argTypes, argValues, flags);
+    return WebKit::Platform::current()->addTraceEvent(phase, categoryEnabledFlag, name, id, numArgs, argNames, argTypes, argValues, flags);
 }
 
 void EventTracer::updateTraceEventDuration(TraceEvent::TraceEventHandle handle)
