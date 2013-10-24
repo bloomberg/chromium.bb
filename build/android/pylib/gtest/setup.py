@@ -61,7 +61,7 @@ _WEBRTC_ISOLATE_FILE_PATHS = {
 }
 
 # Append the WebRTC tests with the full path from Chromium's src/ root.
-for test,isolate_path in _WEBRTC_ISOLATE_FILE_PATHS.items():
+for test, isolate_path in _WEBRTC_ISOLATE_FILE_PATHS.items():
   _ISOLATE_FILE_PATHS[test] = 'third_party/webrtc/%s' % isolate_path
 
 # Used for filtering large data deps at a finer grain than what's allowed in
@@ -211,9 +211,9 @@ def _GetTestsFromDevice(runner_factory, devices):
       return runner_factory(device, 0).GetAllTests()
     except (android_commands.errors.WaitForResponseTimedOutError,
             android_commands.errors.DeviceUnresponsiveError), e:
-      logging.warning('Failed obtaining tests from %s with exception: %s',
+      logging.warning('Failed obtaining test list from %s with exception: %s',
                       device, e)
-  raise Exception('No device available to get the list of tests.')
+  raise Exception('Failed to obtain test list from devices.')
 
 
 def _FilterTestsUsingPrefixes(all_tests, pre=False, manual=False):
