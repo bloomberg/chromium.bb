@@ -25,8 +25,9 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
-const char kDataReductionProxyOrigin[] = "https://foo:443/";
-const char kDataReductionProxyAuth[] = "12345";
+const char kDataReductionProxyOrigin[] = "https://foo.com:443/";
+const char kDataReductionProxyOriginPAC[] = "HTTPS foo.com:443;";
+const char kDataReductionProxyFallbackPAC[] = "HTTP bar.com:80;";
 
 class TestDataReductionProxySettingsAndroid
     : public DataReductionProxySettingsAndroid {
@@ -42,7 +43,8 @@ class TestDataReductionProxySettingsAndroid
         local_state_prefs_(local_state_prefs) {
   }
 
-  // DataReductionProxySettings implementation:
+  // TODO(marq): Replace virtual methods with MOCKs.
+  // DataReductionProxySettingsAndroid implementation:
   virtual net::URLFetcher* GetURLFetcher() OVERRIDE {
     if (test_url_.empty())
       return NULL;
@@ -55,6 +57,7 @@ class TestDataReductionProxySettingsAndroid
   virtual PrefService* GetOriginalProfilePrefs() OVERRIDE {
     return profile_prefs_;
   }
+
   virtual PrefService* GetLocalStatePrefs() OVERRIDE {
     return local_state_prefs_;
   }
@@ -131,33 +134,6 @@ TEST_F(DataReductionProxySettingsAndroidTest, TestGetDataReductionProxyOrigin) {
   EXPECT_EQ(kDataReductionProxyOrigin, ConvertJavaStringToUTF8(str_ref));
 }
 
-TEST_F(DataReductionProxySettingsAndroidTest, TestGetDataReductionProxyAuth) {
-  AddProxyToCommandLine();
-  // SetUp() adds the auth string to the command line, which should be returned
-  // here.
-  ScopedJavaLocalRef<jstring> result =
-      settings_->GetDataReductionProxyAuth(env_, NULL);
-  ASSERT_TRUE(result.obj());
-  const base::android::JavaRef<jstring>& str_ref = result;
-  EXPECT_EQ(kDataReductionProxyAuth, ConvertJavaStringToUTF8(str_ref));
-}
-
-// Test that the auth value set by preprocessor directive is not returned
-// when an origin is set via a switch. This test only does anything useful in
-// Chrome builds.
-TEST_F(DataReductionProxySettingsAndroidTest,
-       TestGetDataReductionProxyAuthWithOriginSetViaSwitch) {
-  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kSpdyProxyAuthOrigin, kDataReductionProxyOrigin);
-  // SetUp() adds the auth string to the command line, which should be returned
-  // here.
-  ScopedJavaLocalRef<jstring> result =
-      settings_->GetDataReductionProxyAuth(env_, NULL);
-  ASSERT_TRUE(result.obj());
-  const base::android::JavaRef<jstring>& str_ref = result;
-  EXPECT_EQ(std::string(), ConvertJavaStringToUTF8(str_ref));
-}
-
 // Confirm that the bypass rule functions generate the intended JavaScript
 // code for the Proxy PAC.
 TEST_F(DataReductionProxySettingsAndroidTest, TestBypassPACRules) {
@@ -173,9 +149,13 @@ TEST_F(DataReductionProxySettingsAndroidTest, TestBypassPACRules) {
 }
 
 TEST_F(DataReductionProxySettingsAndroidTest, TestSetProxyPac) {
+  AddProxyToCommandLine();
   settings_->AddDefaultProxyBypassRules();
+  std::string raw_pac = settings_->GetProxyPacScript();
+  EXPECT_NE(raw_pac.find(kDataReductionProxyOriginPAC), std::string::npos);
+  EXPECT_NE(raw_pac.find(kDataReductionProxyFallbackPAC), std::string::npos);;
   std::string pac;
-  base::Base64Encode(settings_->GetProxyPacScript(), &pac);
+  base::Base64Encode(raw_pac, &pac);
   std::string expected_pac_url =
       "data:application/x-ns-proxy-autoconfig;base64," + pac;
   // Test setting the PAC, without generating histograms.

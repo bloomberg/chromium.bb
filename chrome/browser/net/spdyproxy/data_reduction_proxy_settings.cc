@@ -21,9 +21,14 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "crypto/random.h"
+#include "net/base/auth.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
+#include "net/http/http_auth.h"
+#include "net/http/http_auth_cache.h"
+#include "net/http/http_network_session.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_status.h"
@@ -47,6 +52,10 @@ enum ProxyStartupState {
 
 const char kEnabled[] = "Enabled";
 
+// TODO(marq): Factor this string out into a constant here and in
+//             http_auth_handler_spdyproxy.
+const char kAuthenticationRealmName[] = "SpdyProxy";
+
 int64 GetInt64PrefValue(const ListValue& list_value, size_t index) {
   int64 val = 0;
   std::string pref_value;
@@ -57,6 +66,11 @@ int64 GetInt64PrefValue(const ListValue& list_value, size_t index) {
     DCHECK(rv);
   }
   return val;
+}
+
+bool IsProxyOriginSetOnCommandLine() {
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  return command_line.HasSwitch(switches::kSpdyProxyAuthOrigin);
 }
 
 }  // namespace
@@ -107,6 +121,54 @@ void DataReductionProxySettings::InitDataReductionProxySettings() {
   }
 }
 
+void DataReductionProxySettings::InitDataReductionProxySession(
+    net::HttpNetworkSession* session) {
+// This is a no-op unless the authentication parameters are compiled in.
+// (even though values for them may be specified on the command line).
+// Authentication will still work if the command line parameters are used,
+// however there will be a round-trip overhead for each challenge/response
+// (typically once per session).
+#if defined(SPDY_PROXY_AUTH_ORIGIN) && defined(SPDY_PROXY_AUTH_VALUE)
+  DCHECK(session);
+  net::HttpAuthCache* auth_cache = session->http_auth_cache();
+  DCHECK(auth_cache);
+  InitDataReductionAuthentication(auth_cache);
+#endif  // defined(SPDY_PROXY_AUTH_ORIGIN) && defined(SPDY_PROXY_AUTH_VALUE)
+}
+
+void DataReductionProxySettings::InitDataReductionAuthentication(
+    net::HttpAuthCache* auth_cache) {
+  DCHECK(auth_cache);
+  int64 timestamp =
+      (base::Time::Now() - base::Time::UnixEpoch()).InMilliseconds() / 1000;
+
+  DataReductionProxyList proxies = GetDataReductionProxies();
+  for (DataReductionProxyList::iterator it = proxies.begin();
+      it != proxies.end(); ++it) {
+    GURL auth_origin = (*it).GetOrigin();
+    int32 rand[3];
+    crypto::RandBytes(rand, 3 * sizeof(rand[0]));
+
+    std::string realm =
+        base::StringPrintf("%s%lld", kAuthenticationRealmName, timestamp);
+    std::string challenge = base::StringPrintf(
+        "%s realm=\"%s\", ps=\"%lld-%u-%u-%u\"", kAuthenticationRealmName,
+        realm.data(), timestamp, rand[0], rand[1], rand[2]);
+    base::string16 password = AuthHashForSalt(timestamp);
+
+    DVLOG(1) << "origin: [" << auth_origin << "] realm: [" << realm
+        << "] challenge: [" << challenge << "] password: [" << password << "]";
+
+    net::AuthCredentials credentials(base::string16(), password);
+    auth_cache->Add(auth_origin,
+                    realm,
+                    net::HttpAuth::AUTH_SCHEME_SPDYPROXY,
+                    challenge,
+                    credentials,
+                    std::string()); // Proxy auth uses an empty path for lookup.
+  }
+}
+
 void DataReductionProxySettings::AddHostPatternToBypass(
     const std::string& pattern) {
   bypass_rules_.push_back(pattern);
@@ -150,24 +212,56 @@ std::string DataReductionProxySettings::GetDataReductionProxyOrigin() {
 #endif
 }
 
-std::string DataReductionProxySettings::GetDataReductionProxyAuth() {
-  if (!IsDataReductionProxyAllowed())
+std::string DataReductionProxySettings::GetDataReductionProxyFallback() {
+  // Regardless of what else is defined, only return a value if the main proxy
+  // origin is defined.
+  if (GetDataReductionProxyOrigin().empty())
     return std::string();
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(switches::kSpdyProxyAuthOrigin)) {
-    // If an origin is provided via a switch, then only consider the value
-    // that is provided by a switch. Do not use the preprocessor constant.
-    // Don't expose SPDY_PROXY_AUTH_VALUE to a proxy passed in via the command
-    // line.
-    if (command_line.HasSwitch(switches::kSpdyProxyAuthValue))
-      return command_line.GetSwitchValueASCII(switches::kSpdyProxyAuthValue);
-    return std::string();
-  }
-#if defined(SPDY_PROXY_AUTH_VALUE)
-  return SPDY_PROXY_AUTH_VALUE;
+  if (command_line.HasSwitch(switches::kSpdyProxyAuthFallback))
+    return command_line.GetSwitchValueASCII(switches::kSpdyProxyAuthFallback);
+#if defined(DATA_REDUCTION_FALLBACK_HOST)
+  return DATA_REDUCTION_FALLBACK_HOST;
 #else
   return std::string();
 #endif
+}
+
+bool DataReductionProxySettings::IsAcceptableAuthChallenge(
+    net::AuthChallengeInfo* auth_info) {
+  // Challenge realm must start with the authentication realm name.
+  std::string realm_prefix =
+      auth_info->realm.substr(0, strlen(kAuthenticationRealmName));
+  if (realm_prefix != kAuthenticationRealmName)
+    return false;
+
+  // The challenger must be one of the configured proxies.
+  DataReductionProxyList proxies = GetDataReductionProxies();
+  for (DataReductionProxyList::iterator it = proxies.begin();
+       it != proxies.end(); ++it) {
+    net::HostPortPair origin_host = net::HostPortPair::FromURL(*it);
+    if (origin_host.Equals(auth_info->challenger))
+      return true;
+  }
+  return false;
+}
+
+base::string16 DataReductionProxySettings::GetTokenForAuthChallenge(
+    net::AuthChallengeInfo* auth_info) {
+  if (auth_info->realm.length() > strlen(kAuthenticationRealmName)) {
+    int64 salt;
+    std::string realm_suffix =
+        auth_info->realm.substr(strlen(kAuthenticationRealmName));
+    if (base::StringToInt64(realm_suffix, &salt)) {
+      return AuthHashForSalt(salt);
+    } else {
+      DVLOG(1) << "Unable to parse realm name " << auth_info->realm
+               << "into an int for salting.";
+      return base::string16();
+    }
+  } else {
+    return base::string16();
+  }
 }
 
 bool DataReductionProxySettings::IsDataReductionProxyEnabled() {
@@ -176,6 +270,24 @@ bool DataReductionProxySettings::IsDataReductionProxyEnabled() {
 
 bool DataReductionProxySettings::IsDataReductionProxyManaged() {
   return spdy_proxy_auth_enabled_.IsManaged();
+}
+
+DataReductionProxySettings::DataReductionProxyList
+DataReductionProxySettings::GetDataReductionProxies() {
+  DataReductionProxyList proxies;
+  std::string proxy = GetDataReductionProxyOrigin();
+  std::string fallback = GetDataReductionProxyFallback();
+
+  if (!proxy.empty())
+    proxies.push_back(GURL(proxy));
+
+  if (!fallback.empty()) {
+    // Sanity check: fallback isn't the only proxy.
+    DCHECK(!proxies.empty());
+    proxies.push_back(GURL(fallback));
+  }
+
+  return proxies;
 }
 
 void DataReductionProxySettings::SetDataReductionProxyEnabled(bool enabled) {
@@ -195,12 +307,12 @@ int64 DataReductionProxySettings::GetDataReductionLastUpdateTime() {
   return static_cast<int64>(last_update.ToJsTime());
 }
 
-std::vector<long long>
+DataReductionProxySettings::ContentLengthList
 DataReductionProxySettings::GetDailyOriginalContentLengths() {
   return GetDailyContentLengths(prefs::kDailyHttpOriginalContentLength);
 }
 
-std::vector<long long>
+DataReductionProxySettings::ContentLengthList
 DataReductionProxySettings::GetDailyReceivedContentLengths() {
   return GetDailyContentLengths(prefs::kDailyHttpReceivedContentLength);
 }
@@ -237,17 +349,6 @@ void DataReductionProxySettings::OnURLFetchComplete(
   disabled_by_carrier_ = true;
 }
 
-std::string DataReductionProxySettings::GetDataReductionProxyOriginHostPort() {
-  std::string spdy_proxy = GetDataReductionProxyOrigin();
-  if (spdy_proxy.empty()) {
-    DLOG(ERROR) << "A SPDY proxy has not been set.";
-    return spdy_proxy;
-  }
-  // Remove a trailing slash from the proxy string if one exists as well as
-  // leading HTTPS scheme.
-  return net::HostPortPair::FromURL(GURL(spdy_proxy)).ToString();
-}
-
 void DataReductionProxySettings::OnIPAddressChanged() {
   if (enabled_by_user_) {
     DCHECK(IsDataReductionProxyAllowed());
@@ -256,7 +357,7 @@ void DataReductionProxySettings::OnIPAddressChanged() {
 }
 
 void DataReductionProxySettings::OnProxyEnabledPrefChange() {
-  if (!IsDataReductionProxyAllowed())
+  if (!DataReductionProxySettings::IsDataReductionProxyAllowed())
     return;
   MaybeActivateDataReductionProxy(false);
 }
@@ -293,11 +394,6 @@ PrefService* DataReductionProxySettings::GetLocalStatePrefs() {
   return g_browser_process->local_state();
 }
 
-bool DataReductionProxySettings::IsProxyOriginSetOnCommandLine() {
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  return command_line.HasSwitch(switches::kSpdyProxyAuthOrigin);
-}
-
 void DataReductionProxySettings::ResetDataReductionStatistics() {
   PrefService* prefs = GetLocalStatePrefs();
   if (!prefs)
@@ -324,12 +420,10 @@ void DataReductionProxySettings::MaybeActivateDataReductionProxy(
     ResetDataReductionStatistics();
   }
 
-  std::string spdy_proxy_origin = GetDataReductionProxyOriginHostPort();
-
+  std::string proxy = GetDataReductionProxyOrigin();
   // Configure use of the data reduction proxy if it is enabled and the proxy
   // origin is non-empty.
-  enabled_by_user_=
-      spdy_proxy_auth_enabled_.GetValue() && !spdy_proxy_origin.empty();
+  enabled_by_user_= spdy_proxy_auth_enabled_.GetValue() && !proxy.empty();
   SetProxyConfigs(enabled_by_user_ && !disabled_by_carrier_, at_startup);
 
   // Check if the proxy has been disabled explicitly by the carrier.
@@ -345,8 +439,11 @@ void DataReductionProxySettings::SetProxyConfigs(bool enabled,
   DictionaryPrefUpdate update(prefs, prefs::kProxy);
   base::DictionaryValue* dict = update.Get();
   if (enabled) {
+    std::string fallback = GetDataReductionProxyFallback();
     std::string proxy_server_config =
-        "http=" + GetDataReductionProxyOrigin() + ",direct://;";
+        "http=" + GetDataReductionProxyOrigin() +
+        (fallback.empty() ? "" : "," + fallback) +
+        ",direct://;";
     dict->SetString("server", proxy_server_config);
     dict->SetString("mode",
                     ProxyModeToString(ProxyPrefs::MODE_FIXED_SERVERS));
@@ -436,6 +533,36 @@ std::string DataReductionProxySettings::GetProxyCheckURL() {
 #endif
 }
 
+base::string16 DataReductionProxySettings::AuthHashForSalt(int64 salt) {
+  if (!IsDataReductionProxyAllowed())
+    return base::string16();
+
+  std::string key;
+
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  if (command_line.HasSwitch(switches::kSpdyProxyAuthOrigin)) {
+    // If an origin is provided via a switch, then only consider the value
+    // that is provided by a switch. Do not use the preprocessor constant.
+    // Don't expose SPDY_PROXY_AUTH_VALUE to a proxy passed in via the command
+    // line.
+    if (!command_line.HasSwitch(switches::kSpdyProxyAuthValue))
+      return base::string16();
+    key = command_line.GetSwitchValueASCII(switches::kSpdyProxyAuthValue);
+  } else {
+#if defined(SPDY_PROXY_AUTH_VALUE)
+    key = SPDY_PROXY_AUTH_VALUE;
+#else
+    return base::string16();
+#endif
+  }
+
+  DCHECK(!key.empty());
+
+  std::string salted_key =
+      base::StringPrintf("%lld%s%lld", salt, key.c_str(), salt);
+  return UTF8ToUTF16(base::MD5String(salted_key));
+}
+
 net::URLFetcher* DataReductionProxySettings::GetURLFetcher() {
   std::string url = GetProxyCheckURL();
   if (url.empty())
@@ -443,8 +570,7 @@ net::URLFetcher* DataReductionProxySettings::GetURLFetcher() {
   net::URLFetcher* fetcher = net::URLFetcher::Create(GURL(url),
                                                      net::URLFetcher::GET,
                                                      this);
-  fetcher->SetLoadFlags(net::LOAD_DISABLE_CACHE);
-  fetcher->SetLoadFlags(net::LOAD_BYPASS_PROXY);
+  fetcher->SetLoadFlags(net::LOAD_DISABLE_CACHE | net::LOAD_BYPASS_PROXY);
   Profile* profile = g_browser_process->profile_manager()->
       GetDefaultProfile();
   fetcher->SetRequestContext(profile->GetRequestContext());

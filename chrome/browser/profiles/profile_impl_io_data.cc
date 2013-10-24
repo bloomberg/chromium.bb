@@ -45,8 +45,8 @@
 #include "net/url_request/url_request_job_factory_impl.h"
 #include "webkit/browser/quota/special_storage_policy.h"
 
-#if defined(OS_ANDROID)
-#include "chrome/app/android/chrome_data_reduction_proxy_android.h"
+#if defined(OS_ANDROID) || defined(OS_IOS)
+#include "chrome/browser/net/spdyproxy/data_reduction_proxy_settings.h"
 #endif
 
 namespace {
@@ -432,8 +432,9 @@ void ProfileImplIOData::InitializeInternal(
       network_session_params, main_backend);
   main_cache->InitializeInfiniteCache(lazy_params_->infinite_cache_path);
 
-#if defined(OS_ANDROID)
-  ChromeDataReductionProxyAndroid::Init(main_cache->GetSession());
+#if defined(OS_ANDROID) || defined(OS_IOS)
+  DataReductionProxySettings::InitDataReductionProxySession(
+      main_cache->GetSession());
 #endif
 
   if (record_mode || playback_mode) {

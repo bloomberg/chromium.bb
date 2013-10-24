@@ -10,7 +10,6 @@
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_member.h"
 #include "base/prefs/pref_service.h"
@@ -26,6 +25,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "jni/DataReductionProxySettings_jni.h"
+#include "net/base/auth.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
@@ -36,9 +36,9 @@
 
 using base::android::CheckException;
 using base::android::ConvertJavaStringToUTF8;
+using base::android::ConvertUTF16ToJavaString;
 using base::android::ConvertUTF8ToJavaString;
 using base::android::ScopedJavaLocalRef;
-using base::FieldTrialList;
 using base::StringPrintf;
 
 namespace {
@@ -54,6 +54,21 @@ enum {
   // Used by UMA histograms and should always be the last value.
   NUM_SPDY_PROXY_AUTH_STATE
 };
+
+// Generates a PAC proxy string component, including trailing semicolon and
+// space, for |origin|. Eg:
+//     "http://foo.com/"        -> "HTTP foo.com:80; "
+//     "https://bar.com:10443"  -> "HTTPS bar.coom:10443; "
+// The returned strings are suitable for concatenating into a PAC string.
+// If |origin| is empty, returns an empty string.
+std::string ProtocolAndHostForPACString(const std::string& origin) {
+  if (origin.empty()) {
+    return std::string();
+  }
+  GURL url = GURL(origin);
+  std::string protocol = url.SchemeIsSecure() ? "HTTPS "  : "HTTP ";
+  return protocol + net::HostPortPair::FromURL(url).ToString() + "; ";
+}
 
 }  // namespace
 
@@ -102,13 +117,6 @@ DataReductionProxySettingsAndroid::GetDataReductionProxyOrigin(
       env, DataReductionProxySettings::GetDataReductionProxyOrigin());
 }
 
-ScopedJavaLocalRef<jstring>
-DataReductionProxySettingsAndroid::GetDataReductionProxyAuth(
-    JNIEnv* env, jobject obj) {
-  return ConvertUTF8ToJavaString(
-      env, DataReductionProxySettings::GetDataReductionProxyAuth());
-}
-
 jboolean DataReductionProxySettingsAndroid::IsDataReductionProxyEnabled(
     JNIEnv* env, jobject obj) {
   return DataReductionProxySettings::IsDataReductionProxyEnabled();
@@ -147,6 +155,34 @@ DataReductionProxySettingsAndroid::GetContentLengths(JNIEnv* env,
                                     original_content_length,
                                     received_content_length);
 }
+
+jboolean DataReductionProxySettingsAndroid::IsAcceptableAuthChallenge(
+    JNIEnv* env,
+    jobject obj,
+    jstring host,
+    jstring realm) {
+  scoped_refptr<net::AuthChallengeInfo> auth_info(new net::AuthChallengeInfo);
+  auth_info->realm = ConvertJavaStringToUTF8(env, realm);
+  auth_info->challenger =
+      net::HostPortPair::FromString(ConvertJavaStringToUTF8(env, host));
+  return DataReductionProxySettings::IsAcceptableAuthChallenge(auth_info.get());
+}
+
+ScopedJavaLocalRef<jstring>
+DataReductionProxySettingsAndroid::GetTokenForAuthChallenge(JNIEnv* env,
+                                                            jobject obj,
+                                                            jstring host,
+                                                            jstring realm) {
+  scoped_refptr<net::AuthChallengeInfo> auth_info(new net::AuthChallengeInfo);
+  auth_info->realm = ConvertJavaStringToUTF8(env, realm);
+  auth_info->challenger =
+      net::HostPortPair::FromString(ConvertJavaStringToUTF8(env, host));
+
+  // If an empty string != null in Java, then here we should test for the
+  // token being empty and return a java null.
+  return ConvertUTF16ToJavaString(env,
+      DataReductionProxySettings::GetTokenForAuthChallenge(auth_info.get()));
+ }
 
 ScopedJavaLocalRef<jlongArray>
 DataReductionProxySettingsAndroid::GetDailyOriginalContentLengths(
@@ -260,19 +296,18 @@ std::string DataReductionProxySettingsAndroid::GetProxyPacScript() {
       "(" + JoinString(pac_bypass_rules_, ") || (") + ")";
 
   // Generate a proxy PAC that falls back to direct loading when the proxy is
-  // unavailable and only process HTTP traffic. (With a statically configured
-  // proxy, proxy failures will simply result in a connection error presented to
-  // users.)
+  // unavailable and only process HTTP traffic.
 
-  std::string proxy_host =
-      DataReductionProxySettings::GetDataReductionProxyOriginHostPort();
+  std::string proxy_host = ProtocolAndHostForPACString(
+      DataReductionProxySettings::GetDataReductionProxyOrigin());
+  std::string fallback_host = ProtocolAndHostForPACString(
+      DataReductionProxySettings::GetDataReductionProxyFallback());
   std::string pac = "function FindProxyForURL(url, host) {"
       "  if (" + bypass_clause + ") {"
       "    return 'DIRECT';"
       "  } "
       "  if (url.substring(0, 5) == 'http:') {"
-      "    return 'HTTPS " + proxy_host +
-      "; DIRECT';"
+      "    return '" + proxy_host + fallback_host + "DIRECT';"
       "  }"
       "  return 'DIRECT';"
       "}";

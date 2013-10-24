@@ -365,6 +365,7 @@ extern const char kSimulateOutdated[];
 extern const char kSpeculativeResourcePrefetching[];
 extern const char kSpeculativeResourcePrefetchingDisabled[];
 extern const char kSpeculativeResourcePrefetchingLearning[];
+extern const char kSpdyProxyAuthFallback[];
 extern const char kSpdyProxyAuthOrigin[];
 extern const char kSpdyProxyAuthValue[];
 extern const char kSpeculativeResourcePrefetchingEnabled[];

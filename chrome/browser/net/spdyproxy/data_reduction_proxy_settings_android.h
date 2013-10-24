@@ -29,7 +29,6 @@ class DataReductionProxySettingsAndroid : public DataReductionProxySettings {
 
   void InitDataReductionProxySettings(JNIEnv* env, jobject obj);
 
-
   void BypassHostPattern(JNIEnv* env, jobject obj, jstring pattern);
   // Add a URL pattern to bypass the proxy. Wildcards
   // should be compatible with the JavaScript function shExpMatch, which can be
@@ -44,8 +43,6 @@ class DataReductionProxySettingsAndroid : public DataReductionProxySettings {
   jboolean IsDataReductionProxyPromoAllowed(JNIEnv* env, jobject obj);
   ScopedJavaLocalRef<jstring> GetDataReductionProxyOrigin(JNIEnv* env,
                                                           jobject obj);
-  ScopedJavaLocalRef<jstring> GetDataReductionProxyAuth(JNIEnv* env,
-                                                        jobject obj);
   jboolean IsDataReductionProxyEnabled(JNIEnv* env, jobject obj);
   jboolean IsDataReductionProxyManaged(JNIEnv* env, jobject obj);
   void SetDataReductionProxyEnabled(JNIEnv* env, jobject obj, jboolean enabled);
@@ -60,6 +57,19 @@ class DataReductionProxySettingsAndroid : public DataReductionProxySettings {
   // DataReductionProxySettings::GetContentLengths.
   base::android::ScopedJavaLocalRef<jobject> GetContentLengths(JNIEnv* env,
                                                                jobject obj);
+
+  // Wrapper methods for handling auth challenges. In both of the following,
+  // a net::AuthChallengeInfo object is created from |host| and |realm| and
+  // passed in to the superclass method.
+  jboolean IsAcceptableAuthChallenge(JNIEnv* env,
+                                     jobject obj,
+                                     jstring host,
+                                     jstring realm);
+
+  ScopedJavaLocalRef<jstring> GetTokenForAuthChallenge(JNIEnv* env,
+                                                       jobject obj,
+                                                       jstring host,
+                                                       jstring realm);
 
   // Registers the native methods to be call from Java.
   static bool Register(JNIEnv* env);

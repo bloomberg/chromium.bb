@@ -5,11 +5,13 @@
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_settings_unittest.h"
 
 #include "base/command_line.h"
+#include "base/md5.h"
 #include "base/metrics/field_trial.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
 #include "base/prefs/testing_pref_service.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_settings.h"
 #include "chrome/browser/prefs/proxy_prefs.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
@@ -17,11 +19,16 @@
 #include "chrome/common/metrics/variations/variations_util.h"
 #include "chrome/common/pref_names.h"
 #include "components/variations/entropy_provider.h"
+#include "net/base/auth.h"
+#include "net/base/host_port_pair.h"
+#include "net/http/http_auth.h"
+#include "net/http/http_auth_cache.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
-const char kDataReductionProxyOrigin[] = "https://foo:443/";
+const char kDataReductionProxyOrigin[] = "https://foo.com:443/";
+const char kDataReductionProxyFallback[] = "http://bar.com:80";
 const char kDataReductionProxyAuth[] = "12345";
 
 const char kProbeURLWithOKResponse[] = "http://ok.org/";
@@ -40,6 +47,7 @@ class TestDataReductionProxySettings
         local_state_prefs_(local_state_prefs) {
   }
 
+  // TODO(marq): Replace virtual methods with MOCKs. Also mock LogProxyState.
   // DataReductionProxySettings implementation:
   virtual net::URLFetcher* GetURLFetcher() OVERRIDE {
     if (test_url_.empty())
@@ -89,6 +97,8 @@ void DataReductionProxySettingsTestBase::AddProxyToCommandLine() {
   CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kSpdyProxyAuthOrigin, kDataReductionProxyOrigin);
   CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kSpdyProxyAuthFallback, kDataReductionProxyFallback);
+  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kSpdyProxyAuthValue, kDataReductionProxyAuth);
 }
 
@@ -133,8 +143,10 @@ void DataReductionProxySettingsTestBase::CheckProxyPref(
 void DataReductionProxySettingsTestBase::CheckProxyConfigs(
     bool expected_enabled) {
   if (expected_enabled) {
+    std::string main_proxy = kDataReductionProxyOrigin;
+    std::string fallback_proxy = kDataReductionProxyFallback;
     std::string servers =
-      "http=" + Settings()->GetDataReductionProxyOrigin() + ",direct://;";
+        "http=" + main_proxy + "," + fallback_proxy + ",direct://;";
     CheckProxyPref(servers,
                    ProxyModeToString(ProxyPrefs::MODE_FIXED_SERVERS));
   } else {
@@ -214,31 +226,94 @@ class DataReductionProxySettingsTest:
   scoped_ptr<TestDataReductionProxySettings> settings_;
 };
 
+TEST_F(DataReductionProxySettingsTest, TestAuthenticationInit) {
+  AddProxyToCommandLine();
+  net::HttpAuthCache cache;
+  DataReductionProxySettings::InitDataReductionAuthentication(&cache);
+  DataReductionProxySettings::DataReductionProxyList proxies =
+      DataReductionProxySettings::GetDataReductionProxies();
+  for (DataReductionProxySettings::DataReductionProxyList::iterator it =
+          proxies.begin();  it != proxies.end(); ++it) {
+    //GURL server = (*it).GetOrigin();
+    net::HttpAuthCache::Entry* entry =
+        cache.LookupByPath(*it, std::string());
+    EXPECT_TRUE(entry != NULL);
+    EXPECT_EQ(net::HttpAuth::AUTH_SCHEME_SPDYPROXY, entry->scheme());
+    EXPECT_EQ("SpdyProxy", entry->auth_challenge().substr(0,9));
+  }
+  GURL bad_server = GURL("https://bad.proxy.com/");
+    net::HttpAuthCache::Entry* entry =
+        cache.LookupByPath(bad_server, std::string());
+    EXPECT_TRUE(entry == NULL);
+}
+
 TEST_F(DataReductionProxySettingsTest, TestGetDataReductionProxyOrigin) {
   AddProxyToCommandLine();
   // SetUp() adds the origin to the command line, which should be returned here.
-  std::string result = settings_->GetDataReductionProxyOrigin();
+  std::string result =
+      DataReductionProxySettings::GetDataReductionProxyOrigin();
   EXPECT_EQ(kDataReductionProxyOrigin, result);
 }
 
-TEST_F(DataReductionProxySettingsTest, TestGetDataReductionProxyAuth) {
-  AddProxyToCommandLine();
-  // SetUp() adds the auth string to the command line, which should be returned
-  // here.
-  std::string result = settings_->GetDataReductionProxyAuth();
-  EXPECT_EQ(kDataReductionProxyAuth, result);
+TEST_F(DataReductionProxySettingsTest, TestGetDataReductionProxies) {
+  DataReductionProxySettings::DataReductionProxyList proxies =
+      DataReductionProxySettings::GetDataReductionProxies();
+
+  unsigned int expected_proxy_size = 0u;
+#if defined(SPDY_PROXY_AUTH_ORIGIN)
+  ++expected_proxy_size;
+#endif
+#if defined(DATA_REDUCTION_FALLBACK_HOST)
+  ++expected_proxy_size;
+#endif
+
+  EXPECT_EQ(expected_proxy_size, proxies.size());
+
+  // Adding just the fallback on the command line shouldn't add a proxy unless
+  // there was already one compiled in.
+  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kSpdyProxyAuthFallback, kDataReductionProxyFallback);
+  proxies = DataReductionProxySettings::GetDataReductionProxies();
+
+  // So: if there weren't any proxies before, there still won't be.
+  // If there were one or two, there will be two now.
+  expected_proxy_size = expected_proxy_size == 0u ? 0u : 2u;
+
+  EXPECT_EQ(expected_proxy_size, proxies.size());
+
+  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+    switches::kSpdyProxyAuthOrigin, kDataReductionProxyOrigin);
+  proxies = DataReductionProxySettings::GetDataReductionProxies();
+  EXPECT_EQ(2u, proxies.size());
+
+  // Command line proxies have precedence, so even if there were other values
+  // compiled in, these should be the ones in the list.
+  EXPECT_EQ("foo.com", proxies[0].host());
+  EXPECT_EQ(443 ,proxies[0].EffectiveIntPort());
+  EXPECT_EQ("bar.com", proxies[1].host());
+  EXPECT_EQ(80, proxies[1].EffectiveIntPort());
 }
 
-// Test that the auth value set by preprocessor directive is not returned
+TEST_F(DataReductionProxySettingsTest, TestAuthHashGeneration) {
+  AddProxyToCommandLine();
+  std::string salt = "8675309";  // Jenny's number to test the hash generator.
+  std::string salted_key = salt + kDataReductionProxyAuth + salt;
+  base::string16 expected_hash = UTF8ToUTF16(base::MD5String(salted_key));
+  EXPECT_EQ(expected_hash,
+            DataReductionProxySettings::AuthHashForSalt(8675309));
+}
+
+// Test that the auth key set by preprocessor directive is not used
 // when an origin is set via a switch. This test only does anything useful in
 // Chrome builds.
 TEST_F(DataReductionProxySettingsTest,
-       TestGetDataReductionProxyAuthWithOriginSetViaSwitch) {
+       TestAuthHashGenerationWithOriginSetViaSwitch) {
   CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kSpdyProxyAuthOrigin, kDataReductionProxyOrigin);
-  std::string result = settings_->GetDataReductionProxyAuth();
-  EXPECT_EQ("", result);
+  EXPECT_EQ(base::string16(),
+            DataReductionProxySettings::AuthHashForSalt(8675309));
 }
+
 
 TEST_F(DataReductionProxySettingsTest, TestIsProxyEnabledOrManaged) {
   settings_->InitPrefMembers();
@@ -253,6 +328,64 @@ TEST_F(DataReductionProxySettingsTest, TestIsProxyEnabledOrManaged) {
                                base::Value::CreateBooleanValue(true));
   EXPECT_TRUE(settings_->IsDataReductionProxyEnabled());
   EXPECT_TRUE(settings_->IsDataReductionProxyManaged());
+}
+
+
+TEST_F(DataReductionProxySettingsTest, TestAcceptableChallenges) {
+  AddProxyToCommandLine();
+  typedef struct {
+    std::string host;
+    std::string realm;
+    bool expected_to_succeed;
+  } challenge_test;
+
+  challenge_test tests[] = {
+    {"foo.com:443", "", false},                 // 0. No realm.
+    {"foo.com:443", "xxx", false},              // 1. Wrong realm.
+    {"foo.com:443", "spdyproxy", false},        // 2. Case matters.
+    {"foo.com:443", "SpdyProxy", true},         // 3. OK.
+    {"foo.com:443", "SpdyProxy1234567", true},  // 4. OK
+    {"bar.com:80", "SpdyProxy1234567", true},   // 5. OK.
+    {"foo.com:443", "SpdyProxyxxx", true},      // 6. OK
+    {"", "SpdyProxy1234567", false},            // 7. No challenger.
+    {"xxx.net:443", "SpdyProxy1234567", false}, // 8. Wrong host.
+    {"foo.com", "SpdyProxy1234567", false},     // 9. No port.
+    {"foo.com:80", "SpdyProxy1234567", false},  // 10.Wrong port.
+    {"bar.com:81", "SpdyProxy1234567", false},  // 11.Wrong port.
+  };
+
+  for (int i = 0; i <= 11; ++i) {
+    scoped_refptr<net::AuthChallengeInfo> auth_info(new net::AuthChallengeInfo);
+    auth_info->challenger = net::HostPortPair::FromString(tests[i].host);
+    auth_info->realm = tests[i].realm;
+    EXPECT_EQ(tests[i].expected_to_succeed,
+              settings_->IsAcceptableAuthChallenge(auth_info.get()));
+  }
+}
+
+TEST_F(DataReductionProxySettingsTest, TestChallengeTokens) {
+  AddProxyToCommandLine();
+  typedef struct {
+    std::string realm;
+    bool expected_empty_token;
+  } token_test;
+
+  token_test tests[] = {
+    {"", true},                  // 0. No realm.
+    {"xxx", true},               // 1. realm too short.
+    {"spdyproxy", true},         // 2. no salt.
+    {"SpdyProxyxxx", true},      // 3. Salt not an int.
+    {"SpdyProxy1234567", false}, // 4. OK
+  };
+
+  for (int i = 0; i <= 4; ++i) {
+    scoped_refptr<net::AuthChallengeInfo> auth_info(new net::AuthChallengeInfo);
+    auth_info->challenger =
+        net::HostPortPair::FromString(kDataReductionProxyOrigin);
+    auth_info->realm = tests[i].realm;
+    base::string16 token = settings_->GetTokenForAuthChallenge(auth_info.get());
+    EXPECT_EQ(tests[i].expected_empty_token, token.empty());
+  }
 }
 
 TEST_F(DataReductionProxySettingsTest, TestResetDataReductionStatistics) {
@@ -415,4 +548,3 @@ TEST_F(DataReductionProxySettingsTest, TestBypassList) {
     EXPECT_EQ(expected[i++], *it);
   }
 }
-

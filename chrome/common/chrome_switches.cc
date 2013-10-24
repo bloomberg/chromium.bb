@@ -1351,6 +1351,9 @@ const char kSimulateOutdated[]               = "simulate-outdated";
 // Replaces the buffered data source for <audio> and <video> with a simplified
 // resource loader that downloads the entire resource into memory.
 
+// Second origin that can be used for the spdy proxy.
+const char kSpdyProxyAuthFallback[]         = "spdy-proxy-auth-fallback";
+
 // Origin for which SpdyProxy authentication is supported.
 const char kSpdyProxyAuthOrigin[]           = "spdy-proxy-auth-origin";
 

@@ -18,6 +18,10 @@
 class PrefService;
 
 namespace net {
+class AuthChallengeInfo;
+class HostPortPair;
+class HttpAuthCache;
+class HttpNetworkSession;
 class URLFetcher;
 }
 
@@ -37,16 +41,24 @@ COMPILE_ASSERT(kNumDaysInHistorySummary <= kNumDaysInHistory,
 // Central point for configuring the data reduction proxy.
 // This object lives on the UI thread and all of its methods are expected to
 // be called from there.
+// TODO(marq): Convert this to be a BrowserContextKeyedService with an
+// associated factory class, and refactor the Java call sites accordingly.
 class DataReductionProxySettings
     : public net::URLFetcherDelegate,
       public net::NetworkChangeNotifier::IPAddressObserver {
  public:
   typedef std::vector<long long> ContentLengthList;
+  // TODO(marq): Consider instead using a std::pair instead of a vector.
+  typedef std::vector<GURL> DataReductionProxyList;
 
   DataReductionProxySettings();
   virtual ~DataReductionProxySettings();
 
   void InitDataReductionProxySettings();
+
+  // If proxy authentication is compiled in, pre-cache authentication
+  // keys for all configured proxies in |session|.
+  static void InitDataReductionProxySession(net::HttpNetworkSession* session);
 
   // Add a host pattern to bypass. This should follow the same syntax used
   // in net::ProxyBypassRules; that is, a hostname pattern, a hostname suffix
@@ -64,19 +76,31 @@ class DataReductionProxySettings
   // instance of Chrome. This could return false, for example, if this instance
   // is not part of the field trial, or if the proxy name is not configured
   // via gyp.
-  bool IsDataReductionProxyAllowed();
+  static bool IsDataReductionProxyAllowed();
 
   // Returns true if a screen promoting the data reduction proxy is allowed to
   // be shown. Logic that decides when to show the promo should check its
   // availability. This would return false if not part of a separate field
   // trial that governs the use of the promotion.
-  bool IsDataReductionProxyPromoAllowed();
+  static bool IsDataReductionProxyPromoAllowed();
 
   // Returns the URL of the data reduction proxy.
-  std::string GetDataReductionProxyOrigin();
+  static std::string GetDataReductionProxyOrigin();
 
-  // Returns a configuration string for the proxy.
-  std::string GetDataReductionProxyAuth();
+  // Returns the URL of the fallback data reduction proxy.
+  static std::string GetDataReductionProxyFallback();
+
+  // Returns a vector of GURLs for all configured proxies.
+  static DataReductionProxyList GetDataReductionProxies();
+
+  // Returns true if |auth_info| represents an authentication challenge from
+  // a compatible, configured proxy.
+  bool IsAcceptableAuthChallenge(net::AuthChallengeInfo* auth_info);
+
+  // Returns a UTF16 string suitable for use as an authentication token in
+  // response to the challenge represented by |auth_info|. If the token can't
+  // be correctly generated for |auth_info|, returns an empty UTF16 string.
+  base::string16 GetTokenForAuthChallenge(net::AuthChallengeInfo* auth_info);
 
   // Returns true if the proxy is enabled.
   bool IsDataReductionProxyEnabled();
@@ -107,15 +131,13 @@ class DataReductionProxySettings
 
  protected:
   void InitPrefMembers();
+
   virtual net::URLFetcher* GetURLFetcher();
 
   // Virtualized for unit test support.
   virtual PrefService* GetOriginalProfilePrefs();
   virtual PrefService* GetLocalStatePrefs();
 
-  std::string GetDataReductionProxyOriginHostPort();
-
-  bool IsProxyOriginSetOnCommandLine();
   void GetContentLengths(unsigned int days,
                          int64* original_content_length,
                          int64* received_content_length,
@@ -134,8 +156,8 @@ class DataReductionProxySettings
   virtual void AddDefaultProxyBypassRules();
 
   // Writes a warning to the log that is used in backend processing of
-  // customer feedback.
-  void LogProxyState(bool enabled, bool at_startup);
+  // customer feedback. Virtual so tests can mock it for verification.
+  virtual void LogProxyState(bool enabled, bool at_startup);
 
   bool HasTurnedOn() { return has_turned_on_; }
   bool HasTurnedOff() { return has_turned_off_; }
@@ -149,6 +171,12 @@ class DataReductionProxySettings
  private:
   friend class DataReductionProxySettingsTestBase;
   friend class DataReductionProxySettingsTest;
+  FRIEND_TEST_ALL_PREFIXES(DataReductionProxySettingsTest,
+                           TestAuthenticationInit);
+  FRIEND_TEST_ALL_PREFIXES(DataReductionProxySettingsTest,
+                           TestAuthHashGeneration);
+  FRIEND_TEST_ALL_PREFIXES(DataReductionProxySettingsTest,
+                           TestAuthHashGenerationWithOriginSetViaSwitch);
   FRIEND_TEST_ALL_PREFIXES(DataReductionProxySettingsTest,
                            TestResetDataReductionStatistics);
   FRIEND_TEST_ALL_PREFIXES(DataReductionProxySettingsTest,
@@ -173,6 +201,10 @@ class DataReductionProxySettings
   // NetworkChangeNotifier::IPAddressObserver:
   virtual void OnIPAddressChanged() OVERRIDE;
 
+  // Underlying implementation of InitDataReductionProxySession(), factored
+  // out to be testable without creating a full HttpNetworkSession.
+  static void InitDataReductionAuthentication(net::HttpAuthCache* auth_cache);
+
   void OnProxyEnabledPrefChange();
 
   void ResetDataReductionStatistics();
@@ -184,6 +216,11 @@ class DataReductionProxySettings
   // failure.
   void ProbeWhetherDataReductionProxyIsAvailable();
   std::string GetProxyCheckURL();
+
+  // Returns a UTF16 string that's the hash of the configured authentication
+  // key and |salt|. Returns an empty UTF16 string if no key is configured or
+  // the data reduction proxy feature isn't available.
+  static base::string16 AuthHashForSalt(int64 salt);
 
   std::vector<std::string> bypass_rules_;
 
