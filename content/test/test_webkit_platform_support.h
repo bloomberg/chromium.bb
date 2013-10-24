@@ -12,7 +12,6 @@
 #include "third_party/WebKit/public/platform/WebUnitTestSupport.h"
 #include "webkit/child/webkitplatformsupport_child_impl.h"
 #include "webkit/glue/simple_webmimeregistry_impl.h"
-#include "webkit/glue/webfileutilities_impl.h"
 #include "webkit/renderer/compositor_bindings/web_compositor_support_impl.h"
 
 namespace WebKit {
@@ -31,11 +30,10 @@ class TestWebKitPlatformSupport
 
   virtual WebKit::WebMimeRegistry* mimeRegistry();
   virtual WebKit::WebClipboard* clipboard();
-  virtual WebKit::WebFileUtilities* fileUtilities();
-  virtual WebKit::WebIDBFactory* idbFactory();
 
   virtual WebKit::WebURLLoader* createURLLoader();
-  virtual WebKit::WebData loadResource(const char* name);
+  virtual WebKit::WebString defaultLocale();
+
   virtual WebKit::WebString queryLocalizedString(
       WebKit::WebLocalizedString::Name name);
   virtual WebKit::WebString queryLocalizedString(
@@ -45,7 +43,6 @@ class TestWebKitPlatformSupport
       WebKit::WebLocalizedString::Name name,
       const WebKit::WebString& value1,
       const WebKit::WebString& value2);
-  virtual WebKit::WebString defaultLocale();
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
   void SetThemeEngine(WebKit::WebThemeEngine* engine);
@@ -56,10 +53,6 @@ class TestWebKitPlatformSupport
 
   WebURLLoaderMockFactory* url_loader_factory() {
     return url_loader_factory_.get();
-  }
-
-  const base::FilePath& file_system_root() const {
-    return file_system_root_.path();
   }
 
   virtual base::string16 GetLocalizedString(int message_id) OVERRIDE;
@@ -99,8 +92,6 @@ class TestWebKitPlatformSupport
  private:
   webkit_glue::SimpleWebMimeRegistryImpl mime_registry_;
   scoped_ptr<MockWebClipboardImpl> mock_clipboard_;
-  webkit_glue::WebFileUtilitiesImpl file_utilities_;
-  base::ScopedTempDir file_system_root_;
   scoped_ptr<WebURLLoaderMockFactory> url_loader_factory_;
   webkit::WebCompositorSupportImpl compositor_support_;
 

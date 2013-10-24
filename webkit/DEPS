@@ -1,18 +1,9 @@
-# checkdeps.py shouldn't check include paths for files in these dirs:
-skip_child_includes = [
-  "build",
-]
-
 # Do NOT add chrome to the list below.  We shouldn't be including files from
 # src/chrome in src/webkit.
 include_rules = [
-  # For bridge/c/c_utility.h in npruntime_util.cc
-  "+bridge",
   "+cc",
   "+grit",  # For generated headers
   "+skia",
-  "+third_party/angle_dx11",
-  "+third_party/hyphen",
   "+third_party/leveldatabase",
   "+third_party/skia",
   "+third_party/sqlite",
@@ -32,9 +23,6 @@ include_rules = [
   "+gpu/command_buffer/service",
   "+gpu/GLES2",
   "+third_party/khronos/GLES2",
-
-  # For shared USB keycode conversion tables used by ppapi plugin code.
-  "+ui/base/keycodes",
 
   # TODO(brettw) - review these; move up if it's ok, or remove the dependency
   "+net",
