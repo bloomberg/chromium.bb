@@ -77,11 +77,12 @@ namespace WebCore {
         bool m_shouldMatchStyle;
     };
 
-inline TextEvent* toTextEvent(Event* event)
+inline bool isTextEvent(const Event& event)
 {
-    ASSERT_WITH_SECURITY_IMPLICATION(!event || (event->type() == EventTypeNames::textInput && event->hasInterface(EventNames::TextEvent)));
-    return static_cast<TextEvent*>(event);
+    return event.type() == EventTypeNames::textInput && event.hasInterface(EventNames::TextEvent);
 }
+
+DEFINE_TYPE_CASTS(TextEvent, Event, event, isTextEvent(*event), isTextEvent(event));
 
 } // namespace WebCore
 

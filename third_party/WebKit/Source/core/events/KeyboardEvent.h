@@ -125,11 +125,7 @@ private:
     virtual bool dispatchEvent(EventDispatcher*) const OVERRIDE;
 };
 
-inline KeyboardEvent* toKeyboardEvent(Event* event)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!event || event->isKeyboardEvent());
-    return static_cast<KeyboardEvent*>(event);
-}
+DEFINE_EVENT_TYPE_CASTS(KeyboardEvent);
 
 } // namespace WebCore
 

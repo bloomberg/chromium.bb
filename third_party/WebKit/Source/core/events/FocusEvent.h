@@ -70,11 +70,7 @@ private:
     RefPtr<EventTarget> m_relatedTarget;
 };
 
-inline FocusEvent* toFocusEvent(Event* event)
-{
-    ASSERT(event && event->isFocusEvent());
-    return static_cast<FocusEvent*>(event);
-}
+DEFINE_EVENT_TYPE_CASTS(FocusEvent);
 
 class FocusEventDispatchMediator : public EventDispatchMediator {
 public:

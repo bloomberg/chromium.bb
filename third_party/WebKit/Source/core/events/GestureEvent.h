@@ -71,11 +71,7 @@ private:
     virtual bool dispatchEvent(EventDispatcher*) const OVERRIDE;
 };
 
-inline GestureEvent* toGestureEvent(Event* event)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!event || event->isGestureEvent());
-    return static_cast<GestureEvent*>(event);
-}
+DEFINE_EVENT_TYPE_CASTS(GestureEvent);
 
 } // namespace WebCore
 

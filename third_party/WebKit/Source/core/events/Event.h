@@ -209,6 +209,9 @@ private:
     EventPath m_eventPath;
 };
 
+#define DEFINE_EVENT_TYPE_CASTS(typeName) \
+    DEFINE_TYPE_CASTS(typeName, Event, event, event->is##typeName(), event.is##typeName())
+
 } // namespace WebCore
 
 #endif // Event_h

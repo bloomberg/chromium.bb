@@ -112,11 +112,7 @@ private:
     bool m_directionInvertedFromDevice;
 };
 
-inline WheelEvent* toWheelEvent(Event* event)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!event || event->isWheelEvent());
-    return static_cast<WheelEvent*>(event);
-}
+DEFINE_EVENT_TYPE_CASTS(WheelEvent);
 
 class WheelEventDispatchMediator : public EventDispatchMediator {
 public:

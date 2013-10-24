@@ -52,11 +52,7 @@ private:
     String m_returnValue;
 };
 
-inline BeforeUnloadEvent* toBeforeUnloadEvent(Event* event)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!event || event->isBeforeUnloadEvent());
-    return static_cast<BeforeUnloadEvent*>(event);
-}
+DEFINE_EVENT_TYPE_CASTS(BeforeUnloadEvent);
 
 } // namespace WebCore
 

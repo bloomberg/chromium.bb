@@ -139,11 +139,7 @@ private:
     MouseEventType m_mouseEventType;
 };
 
-inline MouseEvent* toMouseEvent(Event* event)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!event || event->isMouseEvent());
-    return static_cast<MouseEvent*>(event);
-}
+DEFINE_EVENT_TYPE_CASTS(MouseEvent);
 
 } // namespace WebCore
 

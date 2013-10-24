@@ -93,11 +93,7 @@ private:
     virtual bool dispatchEvent(EventDispatcher*) const OVERRIDE;
 };
 
-inline TouchEvent* toTouchEvent(Event* event)
-{
-    ASSERT(event && event->isTouchEvent());
-    return static_cast<TouchEvent*>(event);
-}
+DEFINE_EVENT_TYPE_CASTS(TouchEvent);
 
 } // namespace WebCore
 
