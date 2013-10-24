@@ -173,11 +173,12 @@ def UploadSymbol(sym_file, upload_url, file_limit=DEFAULT_FILE_LIMIT,
 
     # Upload the symbol file.
     try:
-      cros_build_lib.RetryException((urllib2.HTTPError, urllib2.URLError),
-                                    MAX_RETRIES, SymUpload, upload_file,
-                                    upload_url, sleep=INITIAL_RETRY_DELAY)
-      cros_build_lib.Info('successfully uploaded %10i bytes: %s', file_size,
-                          os.path.basename(sym_file))
+      cros_build_lib.TimedCommand(
+          cros_build_lib.RetryException,
+          (urllib2.HTTPError, urllib2.URLError), MAX_RETRIES, SymUpload,
+          upload_file, upload_url, sleep=INITIAL_RETRY_DELAY,
+          timed_log_msg='upload of %10i bytes took %%s: %s' %
+                        (file_size, os.path.basename(sym_file)))
     except urllib2.HTTPError as e:
       cros_build_lib.Warning('could not upload: %s: HTTP %s: %s',
                              os.path.basename(sym_file), e.code, e.reason)
