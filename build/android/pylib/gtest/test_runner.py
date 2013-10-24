@@ -11,6 +11,7 @@ from pylib import constants
 from pylib import pexpect
 from pylib.base import base_test_result
 from pylib.base import base_test_runner
+from pylib.perf import perf_control
 
 
 def _TestSuiteRequiresMockTestServer(suite_name):
@@ -21,6 +22,9 @@ def _TestSuiteRequiresMockTestServer(suite_name):
   return (suite_name in
           tests_require_net_test_server)
 
+def _TestSuiteRequiresHighPerfMode(suite_name):
+  """Returns True if the test suite requires high performance mode."""
+  return 'perftests' in suite_name
 
 class TestRunner(base_test_runner.BaseTestRunner):
   def __init__(self, test_options, device, test_package):
@@ -48,6 +52,7 @@ class TestRunner(base_test_runner.BaseTestRunner):
       timeout = timeout * 2
 
     self._timeout = timeout * self.tool.GetTimeoutScale()
+    self._perf_controller = perf_control.PerfControl(self.adb)
 
   #override
   def InstallTestPackage(self):
@@ -182,11 +187,15 @@ class TestRunner(base_test_runner.BaseTestRunner):
     super(TestRunner, self).SetUp()
     if _TestSuiteRequiresMockTestServer(self.test_package.suite_name):
       self.LaunchChromeTestServerSpawner()
+    if _TestSuiteRequiresHighPerfMode(self.test_package.suite_name):
+      self._perf_controller.SetHighPerfMode()
     self.tool.SetupEnvironment()
 
   #override
   def TearDown(self):
     """Cleans up the test enviroment for the test suite."""
+    if _TestSuiteRequiresHighPerfMode(self.test_package.suite_name):
+      self._perf_controller.RestoreOriginalPerfMode()
     self.test_package.ClearApplicationState(self.adb)
     self.tool.CleanUpEnvironment()
     super(TestRunner, self).TearDown()
