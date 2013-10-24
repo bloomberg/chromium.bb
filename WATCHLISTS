@@ -268,9 +268,6 @@
     'ftp': {
       'filepath': 'ftp',
     },
-    'fullscreen_controller': {
-      'filepath': 'fullscreen_controller',
-    },
     'geolocation': {
       'filepath': 'chrome/browser/geolocation/|'\
                   'content/browser/geolocation|'\
@@ -713,7 +710,6 @@
     'filebrowse': ['rginda+watch@chromium.org'],
     'filesapp': ['mtomasz+watch@chromium.org'],
     'ftp': ['phajdan.jr@chromium.org'],
-    'fullscreen_controller': ['scheib+watch@chromium.org'],
     'geolocation': ['mvanouwerkerk@chromium.org'],
     'gfx_geometry': ['cc-bugs@chromium.org'],
     'gfx_image': ['rsesek+watch@chromium.org'],
