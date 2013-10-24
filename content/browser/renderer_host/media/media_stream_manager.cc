@@ -67,9 +67,13 @@ static bool Requested(const MediaStreamRequest& request,
 class MediaStreamManager::DeviceRequest {
  public:
   DeviceRequest(MediaStreamRequester* requester,
-                const MediaStreamRequest& request)
+                const MediaStreamRequest& request,
+                int requesting_process_id,
+                int requesting_view_id)
       : requester(requester),
         request(request),
+        requesting_process_id(requesting_process_id),
+        requesting_view_id(requesting_view_id),
         state_(NUM_MEDIA_TYPES, MEDIA_REQUEST_STATE_NOT_REQUESTED) {
   }
 
@@ -116,6 +120,18 @@ class MediaStreamManager::DeviceRequest {
 
   MediaStreamRequester* const requester;  // Can be NULL.
   MediaStreamRequest request;
+
+  // The render process id that requested this stream to be generated. This may
+  // be different from MediaStreamRequest::render_process_id since
+  // MediaStreamRequest::render_process_id is the process that receive the
+  // stream output.
+  const int requesting_process_id;
+
+  // The render view id generating this request.
+  // This may be different from MediaStreamRequest::render_view__id since
+  // MediaStreamRequest::render_view__id is the view that receive the
+  // stream output.
+  const int requesting_view_id;
 
   StreamDeviceInfoArray devices;
 
@@ -194,7 +210,8 @@ std::string MediaStreamManager::MakeMediaAccessRequest(
       render_process_id, render_view_id, page_request_id, std::string(),
       security_origin, MEDIA_DEVICE_ACCESS, std::string(), std::string(),
       options.audio_type, options.video_type);
-  DeviceRequest* request = new DeviceRequest(NULL, stream_request);
+  DeviceRequest* request = new DeviceRequest(NULL, stream_request,
+                                             render_process_id, render_view_id);
   const std::string& label = AddRequest(request);
 
   request->callback = callback;
@@ -286,7 +303,9 @@ std::string MediaStreamManager::GenerateStream(
       tab_capture_device_id, security_origin, MEDIA_GENERATE_STREAM,
       translated_audio_device_id, translated_video_device_id,
       options.audio_type, options.video_type);
-  DeviceRequest* request = new DeviceRequest(requester, stream_request);
+  DeviceRequest* request = new DeviceRequest(requester, stream_request,
+                                             render_process_id,
+                                             render_view_id);
   const std::string& label = AddRequest(request);
   HandleRequest(label);
   return label;
@@ -327,7 +346,7 @@ void MediaStreamManager::CancelRequest(const std::string& label) {
 void MediaStreamManager::CancelAllRequests(int render_process_id) {
   DeviceRequests::iterator request_it = requests_.begin();
   while (request_it != requests_.end()) {
-    if (request_it->second->request.render_process_id != render_process_id) {
+    if (request_it->second->requesting_process_id != render_process_id) {
       ++request_it;
       continue;
     }
@@ -349,15 +368,15 @@ void MediaStreamManager::StopStreamDevice(int render_process_id,
   // MEDIA_GENERATE_STREAM that has requested to use |device_id|.
   DeviceRequests::iterator request_it = requests_.begin();
   while (request_it  != requests_.end()) {
-    const MediaStreamRequest& ms_request = request_it->second->request;
-    if (ms_request.render_process_id != render_process_id ||
-        ms_request.render_view_id != render_view_id ||
+    DeviceRequest* request = request_it->second;
+    const MediaStreamRequest& ms_request = request->request;
+    if (request->requesting_process_id != render_process_id ||
+        request->requesting_view_id != render_view_id ||
         ms_request.request_type != MEDIA_GENERATE_STREAM) {
       ++request_it;
       continue;
     }
 
-    DeviceRequest* request = request_it->second;
     StreamDeviceInfoArray* devices = &request->devices;
     StreamDeviceInfoArray::iterator device_it = devices->begin();
     while (device_it != devices->end()) {
@@ -444,7 +463,9 @@ std::string MediaStreamManager::EnumerateDevices(
       render_process_id, render_view_id, page_request_id, std::string(),
       security_origin, MEDIA_ENUMERATE_DEVICES, std::string(), std::string(),
       options.audio_type, options.video_type);
-  DeviceRequest* request = new DeviceRequest(requester, stream_request);
+  DeviceRequest* request = new DeviceRequest(requester, stream_request,
+                                             render_process_id,
+                                             render_view_id);
   const std::string& label = AddRequest(request);
 
   if (cache->valid) {
@@ -493,7 +514,9 @@ std::string MediaStreamManager::OpenDevice(
       render_process_id, render_view_id, page_request_id, std::string(),
       security_origin, MEDIA_OPEN_DEVICE, options.audio_device_id,
       options.video_device_id, options.audio_type, options.video_type);
-  DeviceRequest* request = new DeviceRequest(requester, stream_request);
+  DeviceRequest* request = new DeviceRequest(requester, stream_request,
+                                             render_process_id,
+                                             render_view_id);
   const std::string& label = AddRequest(request);
   StartEnumeration(request);
 
@@ -696,8 +719,8 @@ bool MediaStreamManager::FindExistingRequestedDeviceInfo(
   for (DeviceRequests::const_iterator it = requests_.begin();
        it != requests_.end() ; ++it) {
     const DeviceRequest* request = it->second;
-    if (request->request.render_process_id ==render_process_id &&
-        request->request.render_view_id == render_view_id &&
+    if (request->requesting_process_id ==render_process_id &&
+        request->requesting_view_id == render_view_id &&
         request->request.request_type == type) {
       for (StreamDeviceInfoArray::const_iterator device_it =
                request->devices.begin();
@@ -1036,8 +1059,8 @@ void MediaStreamManager::HandleAccessRequestResponse(
 
     if (request->request.request_type == MEDIA_GENERATE_STREAM) {
       MediaRequestState state;
-      if (FindExistingRequestedDeviceInfo(request->request.render_process_id,
-                                          request->request.render_view_id,
+      if (FindExistingRequestedDeviceInfo(request->requesting_process_id,
+                                          request->requesting_view_id,
                                           request->request.request_type,
                                           device_it->id,
                                           &device_info,
