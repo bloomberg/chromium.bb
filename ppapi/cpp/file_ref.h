@@ -46,6 +46,9 @@ class FileRef : public Resource {
   /// A constructor that creates a weak pointer to a file in the given file
   /// system. File paths are POSIX style.
   ///
+  /// If the <code>path</code> is malformed, the resulting <code>FileRef</code>
+  /// will have a null <code>PP_Resource</code>.
+  ///
   /// @param[in] file_system A <code>FileSystem</code> corresponding to a file
   /// system type.
   /// @param[in] path A path to the file. Must begin with a '/' character.
