@@ -43,15 +43,15 @@
 /* This is a bodge to allow this code to be compiled against older NSS
  * headers. */
 #ifndef CKM_NSS_CHACHA20_POLY1305
-#define CKM_NSS_CHACHA20_POLY1305               (CKM_NSS + 25)
+#define CKM_NSS_CHACHA20_POLY1305               (CKM_NSS + 26)
 
-typedef struct CK_AEAD_PARAMS {
-  CK_BYTE_PTR  pIv;  /* This is the nonce. */
-  CK_ULONG     ulIvLen;
-  CK_BYTE_PTR  pAAD;
-  CK_ULONG     ulAADLen;
-  CK_ULONG     ulTagBits;
-} CK_AEAD_PARAMS;
+typedef struct CK_NSS_AEAD_PARAMS {
+    CK_BYTE_PTR  pIv;  /* This is the nonce. */
+    CK_ULONG     ulIvLen;
+    CK_BYTE_PTR  pAAD;
+    CK_ULONG     ulAADLen;
+    CK_ULONG     ulTagLen;
+} CK_NSS_AEAD_PARAMS;
 
 #endif
 
@@ -2064,18 +2064,18 @@ ssl3_ChaCha20Poly1305(
     SECItem            param;
     SECStatus          rv = SECFailure;
     unsigned int       uOutLen;
-    CK_AEAD_PARAMS     aeadParams;
+    CK_NSS_AEAD_PARAMS aeadParams;
     static const int   tagSize = 16;
 
     param.type = siBuffer;
     param.len = sizeof(aeadParams);
     param.data = (unsigned char *) &aeadParams;
-    memset(&aeadParams, 0, sizeof(CK_AEAD_PARAMS));
+    memset(&aeadParams, 0, sizeof(aeadParams));
     aeadParams.pIv = (unsigned char *) additionalData;
     aeadParams.ulIvLen = 8;
     aeadParams.pAAD = (unsigned char *) additionalData;
     aeadParams.ulAADLen = additionalDataLen;
-    aeadParams.ulTagBits = tagSize * 8;
+    aeadParams.ulTagLen = tagSize;
 
     if (doDecrypt) {
 	rv = pk11_decrypt(keys->write_key, CKM_NSS_CHACHA20_POLY1305, &param,
