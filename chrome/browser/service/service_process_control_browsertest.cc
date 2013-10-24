@@ -133,7 +133,9 @@ IN_PROC_BROWSER_TEST_F(RealServiceProcessControlBrowserTest, LaunchAndIPC) {
   EXPECT_TRUE(ServiceProcessControl::GetInstance()->Shutdown());
 }
 
-IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest, LaunchAndIPC) {
+// Failing on Mac, http://crbug.com/310943
+IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest,
+                       DISABLED_LaunchAndIPC) {
   LaunchServiceProcessControl();
 
   // Make sure we are connected to the service process.
