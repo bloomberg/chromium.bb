@@ -426,6 +426,7 @@ def generate_expected_json(
           u'os': os_value,
         },
         u'min_instances': shards,
+        u'priority': 101,
       },
     ],
     u'data': [],
@@ -434,7 +435,6 @@ def generate_expected_json(
     u'test_case_name': TEST_NAME,
     u'tests': chromium_tasks(isolate_server),
     u'working_dir': unicode(working_dir),
-    u'priority': 101,
   }
   if shards > 1:
     expected[u'env_vars'][u'GTEST_SHARD_INDEX'] = u'%(instance_index)s'

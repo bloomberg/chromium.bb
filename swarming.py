@@ -157,6 +157,7 @@ class Manifest(object):
         {
           'min_instances': self._shards,
           'config_name': self._target_platform,
+          'priority': self.priority,
           'dimensions': {
             'os': self._target_platform,
           },
@@ -165,7 +166,6 @@ class Manifest(object):
       'working_dir': self._working_dir,
       'restart_on_failure': True,
       'cleanup': 'root',
-      'priority': self.priority,
     }
     if self._isolate_item:
       test_case['data'].append(
