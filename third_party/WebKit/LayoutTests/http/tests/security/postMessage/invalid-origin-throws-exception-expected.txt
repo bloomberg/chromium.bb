@@ -1,5 +1,4 @@
-CONSOLE ERROR: Unable to post message to asdf://. Recipient has origin http://localhost:8000.
-
+CONSOLE ERROR: Failed to execute 'postMessage' on 'DOMWindow': The target origin provided ('asdf://') does not match the recipient window's origin ('http://localhost:8000').
 window.location.href = http://127.0.0.1:8000/security/postMessage/invalid-origin-throws-exception.html
 waiting...
 Encountered exception "SyntaxError: Invalid target origin '' in a call to 'postMessage'." while posting message to ''.
