@@ -29,34 +29,39 @@
  */
 
 #include "config.h"
-#include "core/animation/ThreadedAnimation.h"
+#include "core/animation/CompositorAnimations.h"
+
+#include "core/rendering/CompositedLayerMapping.h"
+#include "core/rendering/RenderBoxModelObject.h"
+#include "core/rendering/RenderLayer.h"
+#include "core/rendering/RenderObject.h"
+#include "public/platform/Platform.h"
+#include "public/platform/WebAnimation.h"
+#include "public/platform/WebCompositorSupport.h"
+#include "public/platform/WebFloatAnimationCurve.h"
+#include "public/platform/WebFloatKeyframe.h"
 
 namespace WebCore {
 
-ThreadedAnimation::IsCandidateForThreadedAnimationFunction ThreadedAnimation::s_isCandidateForThreadedAnimationFunction = *ThreadedAnimation::isCandidateForThreadedAnimationImpl;
-ThreadedAnimation::CanStartThreadedAnimationFunction ThreadedAnimation::s_canStartThreadedAnimationFunction = *ThreadedAnimation::canStartThreadedAnimationImpl;
-ThreadedAnimation::StartThreadedAnimationFunction ThreadedAnimation::s_startThreadedAnimationFunction = *ThreadedAnimation::startThreadedAnimationImpl;
-ThreadedAnimation::CancelThreadedAnimationFunction ThreadedAnimation::s_cancelThreadedAnimationFunction = *ThreadedAnimation::cancelThreadedAnimationImpl;
+bool CompositorAnimations::isCandidateForCompositorAnimation(const Timing& timing, const AnimationEffect* effect)
+{
+    // FIXME: Implement.
+    ASSERT_NOT_REACHED();
+    return false;
+}
 
-void ThreadedAnimation::isCandidateForThreadedAnimationImpl(const Timing* timing, const AnimationEffect* effect)
+bool CompositorAnimations::canStartCompositorAnimation(const Element* element)
+{
+    return element->renderer() && element->renderer()->compositingState() == PaintsIntoOwnBacking;
+}
+
+void CompositorAnimations::startCompositorAnimation(const Element* element, const Timing&, const AnimationEffect*, Vector<int>& startedAnimationIds)
 {
     // FIXME: Implement.
     ASSERT_NOT_REACHED();
 }
 
-void ThreadedAnimation::canStartThreadedAnimationImpl(const Element* element)
-{
-    // FIXME: Implement.
-    ASSERT_NOT_REACHED();
-}
-
-void ThreadedAnimation::startThreadedAnimationImpl(const Element*, const Timing*, const AnimationEffect*, Vector<int>& threadedAnimationIds)
-{
-    // FIXME: Implement.
-    ASSERT_NOT_REACHED();
-}
-
-void ThreadedAnimation::cancelThreadedAnimationImpl(const Element* element, int id)
+void CompositorAnimations::cancelCompositorAnimation(const Element* element, int id)
 {
     // FIXME: Implement.
     ASSERT_NOT_REACHED();
