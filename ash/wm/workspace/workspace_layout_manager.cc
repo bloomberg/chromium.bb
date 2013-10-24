@@ -186,6 +186,14 @@ void WorkspaceLayoutManager::OnWindowShowTypeChanged(
     restore = window_state->GetRestoreBoundsInScreen();
     window_state->SaveCurrentBoundsForRestore();
   }
+  // Notify observers that fullscreen state may be changing.
+  if (old_state != new_state &&
+      (new_state == ui::SHOW_STATE_FULLSCREEN ||
+       old_state == ui::SHOW_STATE_FULLSCREEN)) {
+    ash::Shell::GetInstance()->NotifyFullscreenStateChange(
+        new_state == ui::SHOW_STATE_FULLSCREEN,
+        window_state->window()->GetRootWindow());
+  }
 
   UpdateBoundsFromShowState(window_state, old_state);
   ShowStateChanged(window_state, old_state);
