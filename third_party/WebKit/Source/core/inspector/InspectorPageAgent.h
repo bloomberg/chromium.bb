@@ -99,7 +99,6 @@ public:
     virtual void getResourceTree(ErrorString*, RefPtr<TypeBuilder::Page::FrameResourceTree>&);
     virtual void getResourceContent(ErrorString*, const String& frameId, const String& url, String* content, bool* base64Encoded);
     virtual void searchInResource(ErrorString*, const String& frameId, const String& url, const String& query, const bool* optionalCaseSensitive, const bool* optionalIsRegex, RefPtr<TypeBuilder::Array<TypeBuilder::Page::SearchMatch> >&);
-    virtual void searchInResources(ErrorString*, const String&, const bool* caseSensitive, const bool* isRegex, RefPtr<TypeBuilder::Array<TypeBuilder::Page::SearchResult> >&);
     virtual void setDocumentContent(ErrorString*, const String& frameId, const String& html);
     virtual void setDeviceMetricsOverride(ErrorString*, int width, int height, double deviceScaleFactor, bool fitWindow, const bool* optionalTextAutosizing);
     virtual void setShowPaintRects(ErrorString*, bool show);
