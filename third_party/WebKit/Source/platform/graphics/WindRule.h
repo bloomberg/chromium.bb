@@ -30,7 +30,7 @@
 
 namespace WebCore {
 
-enum PLATFORM_EXPORT WindRule {
+enum WindRule {
     RULE_NONZERO = 0,
     RULE_EVENODD = 1
 };

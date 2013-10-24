@@ -40,14 +40,14 @@
 
 namespace WebCore {
 
-enum PLATFORM_EXPORT CalcOperator {
+enum CalcOperator {
     CalcAdd = '+',
     CalcSubtract = '-',
     CalcMultiply = '*',
     CalcDivide = '/'
 };
 
-enum PLATFORM_EXPORT CalcExpressionNodeType {
+enum CalcExpressionNodeType {
     CalcExpressionNodeUndefined,
     CalcExpressionNodeNumber,
     CalcExpressionNodeLength,
@@ -129,7 +129,7 @@ private:
     float m_value;
 };
 
-PLATFORM_EXPORT inline const CalcExpressionNumber* toCalcExpressionNumber(const CalcExpressionNode* value)
+inline const CalcExpressionNumber* toCalcExpressionNumber(const CalcExpressionNode* value)
 {
     ASSERT_WITH_SECURITY_IMPLICATION(!value || value->type() == CalcExpressionNodeNumber);
     return static_cast<const CalcExpressionNumber*>(value);
@@ -164,7 +164,7 @@ private:
     Length m_length;
 };
 
-PLATFORM_EXPORT inline const CalcExpressionLength* toCalcExpressionLength(const CalcExpressionNode* value)
+inline const CalcExpressionLength* toCalcExpressionLength(const CalcExpressionNode* value)
 {
     ASSERT_WITH_SECURITY_IMPLICATION(!value || value->type() == CalcExpressionNodeLength);
     return static_cast<const CalcExpressionLength*>(value);
@@ -205,7 +205,7 @@ private:
     CalcOperator m_operator;
 };
 
-PLATFORM_EXPORT inline const CalcExpressionBinaryOperation* toCalcExpressionBinaryOperation(const CalcExpressionNode* value)
+inline const CalcExpressionBinaryOperation* toCalcExpressionBinaryOperation(const CalcExpressionNode* value)
 {
     ASSERT_WITH_SECURITY_IMPLICATION(!value || value->type() == CalcExpressionNodeBinaryOperation);
     return static_cast<const CalcExpressionBinaryOperation*>(value);
@@ -246,7 +246,7 @@ private:
     float m_progress;
 };
 
-PLATFORM_EXPORT inline const CalcExpressionBlendLength* toCalcExpressionBlendLength(const CalcExpressionNode* value)
+inline const CalcExpressionBlendLength* toCalcExpressionBlendLength(const CalcExpressionNode* value)
 {
     ASSERT_WITH_SECURITY_IMPLICATION(!value || value->type() == CalcExpressionNodeBlendLength);
     return static_cast<const CalcExpressionBlendLength*>(value);
