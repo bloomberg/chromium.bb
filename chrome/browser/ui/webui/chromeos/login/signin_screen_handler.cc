@@ -397,7 +397,8 @@ SigninScreenHandler::SigninScreenHandler(
       is_first_update_state_call_(true),
       offline_login_active_(false),
       last_network_state_(NetworkStateInformer::UNKNOWN),
-      has_pending_auth_ui_(false) {
+      has_pending_auth_ui_(false),
+      wait_for_auto_enrollment_check_(false) {
   DCHECK(network_state_informer_.get());
   DCHECK(error_screen_actor_);
   DCHECK(core_oobe_actor_);
@@ -1329,8 +1330,13 @@ void SigninScreenHandler::HandleToggleEnrollmentScreen() {
 
 void SigninScreenHandler::HandleToggleKioskEnableScreen() {
   if (delegate_ &&
+      !wait_for_auto_enrollment_check_ &&
       !g_browser_process->browser_policy_connector()->IsEnterpriseManaged()) {
-    delegate_->ShowKioskEnableScreen();
+    wait_for_auto_enrollment_check_ = true;
+
+    LoginDisplayHostImpl::default_host()->GetAutoEnrollmentCheckResult(
+        base::Bind(&SigninScreenHandler::ContinueKioskEnableFlow,
+                   weak_factory_.GetWeakPtr()));
   }
 }
 
@@ -1787,6 +1793,24 @@ void SigninScreenHandler::SubmitLoginFormForTest() {
   // Test properties are cleared in HandleCompleteLogin because the form
   // submission might fail and login will not be attempted after reloading
   // if they are cleared here.
+}
+
+void SigninScreenHandler::ContinueKioskEnableFlow(bool should_auto_enroll) {
+  wait_for_auto_enrollment_check_ = false;
+
+  // Do not proceed with kiosk enable when auto enroll will be enforced.
+  // TODO(xiyuan): Add an error UI feedkback so user knows what happens.
+  if (should_auto_enroll) {
+    LOG(WARNING) << "Kiosk enable flow aborted because auto enrollment is "
+                    "going to be enforced.";
+
+    if (!kiosk_enable_flow_aborted_callback_for_test_.is_null())
+      kiosk_enable_flow_aborted_callback_for_test_.Run();
+    return;
+  }
+
+  if (delegate_)
+    delegate_->ShowKioskEnableScreen();
 }
 
 }  // namespace chromeos

@@ -41,9 +41,11 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
+#include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -355,6 +357,13 @@ class KioskTest : public InProcessBrowserTest,
         chromeos::LoginDisplayHostImpl::default_host())->GetOobeUI()->web_ui();
   }
 
+  SigninScreenHandler* GetSigninScreenHandler() {
+    return static_cast<chromeos::LoginDisplayHostImpl*>(
+        chromeos::LoginDisplayHostImpl::default_host())
+        ->GetOobeUI()
+        ->signin_screen_handler_for_test();
+  }
+
   AppLaunchController* GetAppLaunchController() {
     return chromeos::LoginDisplayHostImpl::default_host()
         ->GetAppLaunchController();
@@ -567,6 +576,43 @@ IN_PROC_BROWSER_TEST_P(KioskTest, KioskEnableConfirmed) {
       content::NotificationService::AllSources()).Wait();
   EXPECT_EQ(KioskAppManager::CONSUMER_KIOSK_MODE_ENABLED,
             GetConsumerKioskModeStatus());
+}
+
+IN_PROC_BROWSER_TEST_P(KioskTest, KioskEnableAbortedWithAutoEnrollment) {
+  // Fake an auto enrollment is going to be enforced.
+  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kEnterpriseEnrollmentInitialModulus, "1");
+  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kEnterpriseEnrollmentModulusLimit, "2");
+  g_browser_process->local_state()->SetBoolean(prefs::kShouldAutoEnroll, true);
+  g_browser_process->local_state()->SetInteger(
+      prefs::kAutoEnrollmentPowerLimit, 3);
+
+  // Start UI, find menu entry for this app and launch it.
+  chromeos::WizardController::SkipPostLoginScreensForTesting();
+  chromeos::WizardController* wizard_controller =
+      chromeos::WizardController::default_controller();
+  CHECK(wizard_controller);
+
+  // Check Kiosk mode status.
+  EXPECT_EQ(KioskAppManager::CONSUMER_KIOSK_MODE_CONFIGURABLE,
+            GetConsumerKioskModeStatus());
+  wizard_controller->SkipToLoginForTesting();
+
+  // Wait for the login UI to come up and switch to the kiosk_enable screen.
+  wizard_controller->SkipToLoginForTesting();
+  content::WindowedNotificationObserver(
+      chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
+      content::NotificationService::AllSources()).Wait();
+  GetLoginUI()->CallJavascriptFunction("cr.ui.Oobe.handleAccelerator",
+                                       base::StringValue("kiosk_enable"));
+
+  // The flow should be aborted due to auto enrollment enforcement.
+  scoped_refptr<content::MessageLoopRunner> runner =
+      new content::MessageLoopRunner;
+  GetSigninScreenHandler()->set_kiosk_enable_flow_aborted_callback_for_test(
+      runner->QuitClosure());
+  runner->Run();
 }
 
 INSTANTIATE_TEST_CASE_P(KioskTestInstantiation, KioskTest, testing::Bool());

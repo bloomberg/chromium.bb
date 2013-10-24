@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_LOGIN_DISPLAY_HOST_IMPL_H_
 
 #include <string>
+#include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
@@ -60,6 +61,8 @@ class LoginDisplayHostImpl : public LoginDisplayHost,
   virtual void OpenProxySettings() OVERRIDE;
   virtual void SetStatusAreaVisible(bool visible) OVERRIDE;
   virtual void CheckForAutoEnrollment() OVERRIDE;
+  virtual void GetAutoEnrollmentCheckResult(
+      const GetAutoEnrollmentCheckResultCallback& callback) OVERRIDE;
   virtual void StartWizard(
       const std::string& first_screen_name,
       scoped_ptr<DictionaryValue> screen_parameters) OVERRIDE;
@@ -141,6 +144,9 @@ class LoginDisplayHostImpl : public LoginDisplayHost,
 
   // Toggles OOBE progress bar visibility, the bar is hidden by default.
   void SetOobeProgressBarVisible(bool visible);
+
+  // Notifies the interested parties of the auto enrollment check result.
+  void NotifyAutoEnrollmentCheckResult(bool should_auto_enroll);
 
   // Used to calculate position of the screens and background.
   gfx::Rect background_bounds_;
@@ -237,6 +243,13 @@ class LoginDisplayHostImpl : public LoginDisplayHost,
   // A focus ring controller to draw focus ring around view for keyboard
   // driven oobe.
   scoped_ptr<FocusRingController> focus_ring_controller_;
+
+  // Whether auto enrollment client has done the check.
+  bool auto_enrollment_check_done_;
+
+  // Callbacks to notify when auto enrollment client has done the check.
+  std::vector<GetAutoEnrollmentCheckResultCallback>
+      get_auto_enrollment_result_callbacks_;
 
   DISALLOW_COPY_AND_ASSIGN(LoginDisplayHostImpl);
 };

@@ -126,6 +126,10 @@ class OobeUI : public OobeDisplay,
 
   const std::string& GetScreenName(Screen screen) const;
 
+  SigninScreenHandler* signin_screen_handler_for_test() {
+    return signin_screen_handler_;
+  }
+
  private:
   // Initializes |screen_ids_| and |screen_names_| structures.
   void InitializeScreenMaps();

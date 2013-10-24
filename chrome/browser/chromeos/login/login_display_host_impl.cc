@@ -174,7 +174,8 @@ LoginDisplayHostImpl::LoginDisplayHostImpl(const gfx::Rect& background_bounds)
       is_wallpaper_loaded_(false),
       status_area_saved_visibility_(false),
       crash_count_(0),
-      restore_path_(RESTORE_UNKNOWN) {
+      restore_path_(RESTORE_UNKNOWN),
+      auto_enrollment_check_done_(false) {
   // We need to listen to CLOSE_ALL_BROWSERS_REQUEST but not APP_TERMINATING
   // because/ APP_TERMINATING will never be fired as long as this keeps
   // ref-count. CLOSE_ALL_BROWSERS_REQUEST is safe here because there will be no
@@ -350,6 +351,7 @@ void LoginDisplayHostImpl::CheckForAutoEnrollment() {
 
   if (policy::AutoEnrollmentClient::IsDisabled()) {
     VLOG(1) << "CheckForAutoEnrollment: auto-enrollment disabled";
+    auto_enrollment_check_done_ = true;
     return;
   }
 
@@ -358,6 +360,20 @@ void LoginDisplayHostImpl::CheckForAutoEnrollment() {
   DeviceSettingsService::Get()->GetOwnershipStatusAsync(
       base::Bind(&LoginDisplayHostImpl::OnOwnershipStatusCheckDone,
                  pointer_factory_.GetWeakPtr()));
+  auto_enrollment_check_done_ = false;
+}
+
+void LoginDisplayHostImpl::GetAutoEnrollmentCheckResult(
+    const GetAutoEnrollmentCheckResultCallback& callback) {
+  DCHECK(!callback.is_null());
+
+  if (auto_enrollment_check_done_) {
+    callback.Run(auto_enrollment_client_ &&
+                 auto_enrollment_client_->should_auto_enroll());
+    return;
+  }
+
+  get_auto_enrollment_result_callbacks_.push_back(callback);
 }
 
 void LoginDisplayHostImpl::StartWizard(
@@ -670,6 +686,8 @@ void LoginDisplayHostImpl::OnOwnershipStatusCheckDone(
   if (status != DeviceSettingsService::OWNERSHIP_NONE) {
     // The device is already owned. No need for auto-enrollment checks.
     VLOG(1) << "CheckForAutoEnrollment: device already owned";
+    auto_enrollment_check_done_ = true;
+    NotifyAutoEnrollmentCheckResult(false);
     return;
   }
 
@@ -702,6 +720,9 @@ void LoginDisplayHostImpl::OnAutoEnrollmentClientDone() {
 
   if (auto_enroll)
     ForceAutoEnrollment();
+
+  auto_enrollment_check_done_ = true;
+  NotifyAutoEnrollmentCheckResult(auto_enroll);
 }
 
 void LoginDisplayHostImpl::ForceAutoEnrollment() {
@@ -824,6 +845,14 @@ void LoginDisplayHostImpl::OnAuthPrewarmDone() {
 
 void LoginDisplayHostImpl::SetOobeProgressBarVisible(bool visible) {
   GetOobeUI()->ShowOobeUI(visible);
+}
+
+void LoginDisplayHostImpl::NotifyAutoEnrollmentCheckResult(
+    bool should_auto_enroll) {
+  std::vector<GetAutoEnrollmentCheckResultCallback> callbacks;
+  callbacks.swap(get_auto_enrollment_result_callbacks_);
+  for (size_t i = 0; i < callbacks.size(); ++i)
+    callbacks[i].Run(should_auto_enroll);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

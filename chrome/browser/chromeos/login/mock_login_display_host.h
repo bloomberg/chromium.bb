@@ -27,6 +27,8 @@ class MockLoginDisplayHost : public LoginDisplayHost {
   MOCK_METHOD1(SetStatusAreaVisible, void(bool));
   MOCK_METHOD0(ShowBackground, void(void));
   MOCK_METHOD0(CheckForAutoEnrollment, void(void));
+  MOCK_METHOD1(GetAutoEnrollmentCheckResult, void(
+      const GetAutoEnrollmentCheckResultCallback& callback));
   // GMock currently doesn't support move-only arguments, so we have
   // to use this hack here.
   MOCK_METHOD2(StartWizardPtr, void(const std::string&,
