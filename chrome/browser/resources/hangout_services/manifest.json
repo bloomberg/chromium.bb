@@ -1,5 +1,8 @@
 {
-  "name": "Hangouts Services",
+  // Extension ID: nkeimhogjdpnpccoofpliimaahmaaome
+  "key": "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDAQt2ZDdPfoSe/JI6ID5bgLHRCnCu9T36aYczmhw/tnv6QZB2I6WnOCMZXJZlRdqWc7w9jo4BWhYS50Vb4weMfh/I0On7VcRwJUgfAxW2cHB+EkmtI1v4v/OU24OqIa1Nmv9uRVeX0GjhQukdLNhAE6ACWooaf5kqKlCeK+1GOkQIDAQAB",
+
+  "name": "Hangout Services",
   "version": "1.0",
   "manifest_version": 2,
   "icons": {

@@ -285,6 +285,11 @@ void ComponentLoader::AddFileManagerExtension() {
 #endif  // defined(FILE_MANAGER_EXTENSION)
 }
 
+void ComponentLoader::AddHangoutServicesExtension() {
+  Add(IDR_HANGOUT_SERVICES_MANIFEST,
+      base::FilePath(FILE_PATH_LITERAL("hangout_services")));
+}
+
 void ComponentLoader::AddImageLoaderExtension() {
 #if defined(IMAGE_LOADER_EXTENSION)
 #ifndef NDEBUG
@@ -426,7 +431,9 @@ void ComponentLoader::AddDefaultComponentExtensionsWithBackgroundPages(
           base::FilePath(FILE_PATH_LITERAL("apps_debugger")));
     }
 
+
     AddFileManagerExtension();
+    AddHangoutServicesExtension();
     AddImageLoaderExtension();
 
 #if defined(ENABLE_SETTINGS_APP)

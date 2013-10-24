@@ -112,6 +112,7 @@ class ComponentLoader {
   void AddDefaultComponentExtensionsWithBackgroundPages(
       bool skip_session_components);
   void AddFileManagerExtension();
+  void AddHangoutServicesExtension();
   void AddImageLoaderExtension();
   void AddBookmarksExtensions();
 

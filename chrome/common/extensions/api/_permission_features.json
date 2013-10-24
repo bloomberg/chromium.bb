@@ -239,7 +239,11 @@
     {
       "channel": "stable",
       "extension_types": ["extension", "platform_app"],
-      "whitelist": ["80B9DC58E5210749F052F5B4DB239C50CF72AEB6"]
+      "whitelist": [
+        "80B9DC58E5210749F052F5B4DB239C50CF72AEB6",
+        // Hangout Services component extension.
+        "nkeimhogjdpnpccoofpliimaahmaaome"
+      ]
     }
   ],
   "dns": [
@@ -788,13 +792,20 @@
     "extension_types": ["extension"],
     "whitelist": [
       "80B9DC58E5210749F052F5B4DB239C50CF72AEB6",
-      "knldjmfmopnpolahpmmgbagdohdnhkik"  // Extension used for API test.
+      // Hangout Services component extension.
+      "nkeimhogjdpnpccoofpliimaahmaaome",
+      // Extension used for API test.
+      "knldjmfmopnpolahpmmgbagdohdnhkik"
     ]
   },
   "webrtcLoggingPrivate": {
     "channel": "stable",
     "extension_types": ["extension"],
-    "whitelist": ["80B9DC58E5210749F052F5B4DB239C50CF72AEB6"]
+    "whitelist": [
+      "80B9DC58E5210749F052F5B4DB239C50CF72AEB6",
+      // Hangout Services component extension.
+      "nkeimhogjdpnpccoofpliimaahmaaome"
+    ]
   },
   "webstorePrivate": {
     "channel": "stable",
