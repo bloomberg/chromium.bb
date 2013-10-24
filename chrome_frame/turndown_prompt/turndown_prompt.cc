@@ -35,7 +35,7 @@
 namespace {
 
 // Time between showings of the turndown prompt.
-const int kTurndownPromptReshowDeltaMinutes = 60 * 24 * 7;
+const int kTurndownPromptReshowDeltaMinutes = 60 * 24 * 1;
 
 void OnUninstallClicked(UrlLauncher* url_launcher);
 
