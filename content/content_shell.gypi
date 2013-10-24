@@ -538,6 +538,62 @@
         'content_shell',
       ],
     },
+    {
+      'target_name': 'content_shell_symbols',
+      'type': 'none',
+      'conditions': [
+        ['OS=="linux"', {
+          'actions': [
+            {
+              'action_name': 'dump_symbols',
+              'inputs': [
+                '<(DEPTH)/components/breakpad/tools/generate_breakpad_symbols.py',
+                '<(PRODUCT_DIR)/dump_syms',
+                '<(PRODUCT_DIR)/content_shell',
+              ],
+              'outputs': [
+                '<(PRODUCT_DIR)/content_shell.breakpad.<(target_arch)',
+              ],
+              'action': ['<(DEPTH)/components/breakpad/tools/generate_breakpad_symbols.py',
+                         '--dump-syms-dir=<(PRODUCT_DIR)',
+                         '--symbols-dir=<(PRODUCT_DIR)/content_shell.breakpad.<(target_arch)',
+                         '--binary=<(PRODUCT_DIR)/content_shell',
+                         '--clear'],
+              'message': 'Dumping breakpad symbols to <(_outputs)',
+            },
+          ],
+          'dependencies': [
+            'content_shell',
+            '../breakpad/breakpad.gyp:dump_syms#host',
+          ],
+        }],  # OS=="linux"
+        ['OS=="android"', {
+          'actions': [
+            {
+              'action_name': 'dump_symbols',
+              'inputs': [
+                '<(DEPTH)/components/breakpad/tools/generate_breakpad_symbols.py',
+                '<(PRODUCT_DIR)/dump_syms',
+                '<(PRODUCT_DIR)/lib/libcontent_shell_content_view.so',
+              ],
+              'outputs': [
+                '<(PRODUCT_DIR)/content_shell.breakpad.<(target_arch)',
+              ],
+              'action': ['<(DEPTH)/components/breakpad/tools/generate_breakpad_symbols.py',
+                         '--dump-syms-dir=<(PRODUCT_DIR)',
+                         '--symbols-dir=<(PRODUCT_DIR)/content_shell.breakpad.<(target_arch)',
+                         '--binary=<(PRODUCT_DIR)/lib/libcontent_shell_content_view.so',
+                         '--clear'],
+              'message': 'Dumping breakpad symbols to <(_outputs)',
+            },
+          ],
+          'dependencies': [
+            'libcontent_shell_content_view',
+            '../breakpad/breakpad.gyp:dump_syms#host',
+          ],
+        }],  # OS=="android"
+      ],
+    },
   ],
   'conditions': [
     ['OS=="mac"', {
