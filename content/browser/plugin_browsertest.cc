@@ -276,7 +276,7 @@ IN_PROC_BROWSER_TEST_F(PluginTest, MAYBE(SelfDeletePluginInNewStream)) {
 // On Mac this test asserts in plugin_host: http://crbug.com/95558
 // On all platforms it flakes in ~URLRequestContext: http://crbug.com/310336
 #if !defined(NDEBUG)
-IN_PROC_BROWSER_TEST_F(PluginTest, MAYBE(DeletePluginInDeallocate)) {
+IN_PROC_BROWSER_TEST_F(PluginTest, DISABLED_DeletePluginInDeallocate) {
   LoadAndWait(GetURL("plugin_delete_in_deallocate.html"));
 }
 #endif
