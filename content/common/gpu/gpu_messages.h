@@ -220,6 +220,7 @@ IPC_STRUCT_TRAITS_BEGIN(content::GpuRenderingStats)
   IPC_STRUCT_TRAITS_MEMBER(total_texture_upload_time)
   IPC_STRUCT_TRAITS_MEMBER(global_total_processing_commands_time)
   IPC_STRUCT_TRAITS_MEMBER(total_processing_commands_time)
+  IPC_STRUCT_TRAITS_MEMBER(global_video_memory_bytes_allocated)
 IPC_STRUCT_TRAITS_END()
 
 IPC_ENUM_TRAITS(media::VideoFrame::Format)

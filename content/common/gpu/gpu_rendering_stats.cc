@@ -8,7 +8,8 @@ namespace content {
 
 GpuRenderingStats::GpuRenderingStats()
     : global_texture_upload_count(0),
-      texture_upload_count(0) {
+      texture_upload_count(0),
+      global_video_memory_bytes_allocated(0) {
 }
 
 GpuRenderingStats::~GpuRenderingStats() {
