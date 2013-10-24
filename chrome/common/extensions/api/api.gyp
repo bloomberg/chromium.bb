@@ -117,6 +117,10 @@
               'virtual_keyboard_private.json',
               'web_navigation.json',
               'web_request.json',
+              # Despite the name, this API does not rely on any
+              # WebRTC-specific bits and as such does not belong in
+              # the enable_webrtc=0 section below.
+              'webrtc_audio_private.idl',
               'webstore_private.json',
               'webview.json',
               'windows.json',
@@ -157,7 +161,6 @@
           }],
           ['enable_webrtc==1', {
             'schema_files': [
-              'webrtc_audio_private.idl',
               'webrtc_cast_send_transport.idl',
               'webrtc_cast_udp_transport.idl',
               'webrtc_logging_private.idl',
