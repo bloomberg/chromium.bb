@@ -99,9 +99,7 @@ class ServiceProcessControlBrowserTest
   base::ProcessHandle service_process_handle_;
 };
 
-// Failing on Mac, http://crbug.com/310943
-IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest,
-                       DISABLED_LaunchAndIPC) {
+IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest, LaunchAndIPC) {
   LaunchServiceProcessControl();
 
   // Make sure we are connected to the service process.
