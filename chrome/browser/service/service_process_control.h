@@ -124,11 +124,13 @@ class ServiceProcessControl : public IPC::Sender,
 
     void DoRun();
     void Notify();
+    void CloseProcessHandle();
     ServiceProcessControl* process_;
     scoped_ptr<CommandLine> cmd_line_;
     base::Closure notify_task_;
     bool launched_;
     uint32 retry_count_;
+    base::ProcessHandle process_handle_;
   };
 
   friend class MockServiceProcessControl;

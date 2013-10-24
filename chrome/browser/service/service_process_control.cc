@@ -8,6 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/process/kill.h"
 #include "base/process/launch.h"
 #include "base/stl_util.h"
 #include "base/threading/thread.h"
@@ -256,7 +257,8 @@ ServiceProcessControl::Launcher::Launcher(ServiceProcessControl* process,
     : process_(process),
       cmd_line_(cmd_line),
       launched_(false),
-      retry_count_(0) {
+      retry_count_(0),
+      process_handle_(base::kNullProcessHandle) {
 }
 
 // Execute the command line to start the process asynchronously.
@@ -269,12 +271,22 @@ void ServiceProcessControl::Launcher::Run(const base::Closure& task) {
                           base::Bind(&Launcher::DoRun, this));
 }
 
-ServiceProcessControl::Launcher::~Launcher() {}
+ServiceProcessControl::Launcher::~Launcher() {
+  CloseProcessHandle();
+}
+
 
 void ServiceProcessControl::Launcher::Notify() {
   DCHECK_EQ(false, notify_task_.is_null());
   notify_task_.Run();
   notify_task_.Reset();
+}
+
+void ServiceProcessControl::Launcher::CloseProcessHandle() {
+  if (process_handle_ != base::kNullProcessHandle) {
+    base::CloseProcessHandle(process_handle_);
+    process_handle_ = base::kNullProcessHandle;
+  }
 }
 
 #if !defined(OS_MACOSX)
@@ -283,7 +295,12 @@ void ServiceProcessControl::Launcher::DoDetectLaunched() {
 
   const uint32 kMaxLaunchDetectRetries = 10;
   launched_ = CheckServiceProcessReady();
-  if (launched_ || (retry_count_ >= kMaxLaunchDetectRetries)) {
+
+  int exit_code = 0;
+  if (launched_ || (retry_count_ >= kMaxLaunchDetectRetries) ||
+      base::WaitForExitCodeWithTimeout(process_handle_, &exit_code,
+                                       base::TimeDelta())) {
+    CloseProcessHandle();
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE, base::Bind(&Launcher::Notify, this));
     return;
@@ -304,7 +321,7 @@ void ServiceProcessControl::Launcher::DoRun() {
 #if defined(OS_WIN)
   options.start_hidden = true;
 #endif
-  if (base::LaunchProcess(*cmd_line_, options, NULL)) {
+  if (base::LaunchProcess(*cmd_line_, options, &process_handle_)) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::Bind(&Launcher::DoDetectLaunched, this));
