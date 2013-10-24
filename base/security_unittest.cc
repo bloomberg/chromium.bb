@@ -147,10 +147,10 @@ TEST(SecurityTest, TCMALLOC_TEST(MemoryAllocationRestrictionsNewArray)) {
 
 // The tests bellow check for overflows in new[] and calloc().
 
-#if defined(OS_IOS) || defined(OS_WIN)
-  #define DISABLE_ON_IOS_AND_WIN(function) DISABLED_##function
+#if defined(OS_IOS) || defined(OS_WIN) || defined(THREAD_SANITIZER)
+  #define DISABLE_ON_IOS_AND_WIN_AND_TSAN(function) DISABLED_##function
 #else
-  #define DISABLE_ON_IOS_AND_WIN(function) function
+  #define DISABLE_ON_IOS_AND_WIN_AND_TSAN(function) function
 #endif
 
 // There are platforms where these tests are known to fail. We would like to
@@ -174,7 +174,7 @@ void OverflowTestsSoftExpectTrue(bool overflow_detected) {
 // Test array[TooBig][X] and array[X][TooBig] allocations for int overflows.
 // IOS doesn't honor nothrow, so disable the test there.
 // Crashes on Windows Dbg builds, disable there as well.
-TEST(SecurityTest, DISABLE_ON_IOS_AND_WIN(NewOverflow)) {
+TEST(SecurityTest, DISABLE_ON_IOS_AND_WIN_AND_TSAN(NewOverflow)) {
   const size_t kArraySize = 4096;
   // We want something "dynamic" here, so that the compiler doesn't
   // immediately reject crazy arrays.
