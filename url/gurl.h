@@ -53,7 +53,7 @@ class URL_EXPORT GURL {
 
   ~GURL();
 
-  GURL& operator=(const GURL& other);
+  GURL& operator=(GURL other);
 
   // Returns true when this object represents a valid parsed URL. When not
   // valid, other functions will still succeed, but you will not get canonical

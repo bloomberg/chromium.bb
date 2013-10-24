@@ -136,6 +136,48 @@ TEST(GURLTest, Copy) {
   EXPECT_EQ("", invalid2.ref());
 }
 
+TEST(GURLTest, Assign) {
+  GURL url(WStringToUTF16(L"http://user:pass@google.com:99/foo;bar?q=a#ref"));
+
+  GURL url2;
+  url2 = url;
+  EXPECT_TRUE(url2.is_valid());
+
+  EXPECT_EQ("http://user:pass@google.com:99/foo;bar?q=a#ref", url2.spec());
+  EXPECT_EQ("http", url2.scheme());
+  EXPECT_EQ("user", url2.username());
+  EXPECT_EQ("pass", url2.password());
+  EXPECT_EQ("google.com", url2.host());
+  EXPECT_EQ("99", url2.port());
+  EXPECT_EQ(99, url2.IntPort());
+  EXPECT_EQ("/foo;bar", url2.path());
+  EXPECT_EQ("q=a", url2.query());
+  EXPECT_EQ("ref", url2.ref());
+
+  // Assignment of invalid URL should be invalid
+  GURL invalid;
+  GURL invalid2;
+  invalid2 = invalid;
+  EXPECT_FALSE(invalid2.is_valid());
+  EXPECT_EQ("", invalid2.spec());
+  EXPECT_EQ("", invalid2.scheme());
+  EXPECT_EQ("", invalid2.username());
+  EXPECT_EQ("", invalid2.password());
+  EXPECT_EQ("", invalid2.host());
+  EXPECT_EQ("", invalid2.port());
+  EXPECT_EQ(url_parse::PORT_UNSPECIFIED, invalid2.IntPort());
+  EXPECT_EQ("", invalid2.path());
+  EXPECT_EQ("", invalid2.query());
+  EXPECT_EQ("", invalid2.ref());
+}
+
+// This is a regression test for http://crbug.com/309975 .
+TEST(GURLTest, SelfAssign) {
+  GURL a("filesystem:http://example.com/temporary/");
+  // This should not crash.
+  a = a;
+}
+
 TEST(GURLTest, CopyFileSystem) {
   GURL url(WStringToUTF16(L"filesystem:https://user:pass@google.com:99/t/foo;bar?q=a#ref"));
 
@@ -486,11 +528,4 @@ TEST(GURLTest, IsStandard) {
 
   GURL c("foo://bar/baz");
   EXPECT_FALSE(c.IsStandard());
-}
-
-// This is a regression test for http://crbug.com/309975 .
-TEST(GURLTest, SelfAssignment) {
-  GURL a("filesystem:http://example.com/temporary/");
-  // This should not crash.
-  a = a;
 }

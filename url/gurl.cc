@@ -167,18 +167,8 @@ void GURL::InitializeFromCanonicalSpec() {
 GURL::~GURL() {
 }
 
-GURL& GURL::operator=(const GURL& other) {
-  if (&other == this)
-    return *this;
-
-  spec_ = other.spec_;
-  is_valid_ = other.is_valid_;
-  parsed_ = other.parsed_;
-  inner_url_.reset(NULL);
-  if (other.inner_url_)
-    inner_url_.reset(new GURL(*other.inner_url_));
-  // Valid filesystem urls should always have an inner_url_.
-  DCHECK(!is_valid_ || !SchemeIsFileSystem() || inner_url_);
+GURL& GURL::operator=(GURL other) {
+  Swap(&other);
   return *this;
 }
 
