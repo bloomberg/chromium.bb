@@ -25,7 +25,7 @@ config("wtf-config") {
   if (is_linux) { # (gcc_version >= 46) {
     # Disable warnings about c++0x compatibility, as some names (such as
     # nullptr) conflict with upcoming c++0x types.
-    cflags_cc += [ "-Wno-c++0x-compat" ]
+    cflags_cc = [ "-Wno-c++0x-compat" ]
   }
 
 #  # Some warnings occur in WTF headers, so they must also be disabled
