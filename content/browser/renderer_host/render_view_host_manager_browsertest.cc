@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <set>
+
 #include "base/json/json_reader.h"
 #include "base/memory/ref_counted.h"
 #include "base/path_service.h"
@@ -18,7 +20,6 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/browser/render_view_host_observer.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/url_constants.h"
@@ -1202,50 +1203,27 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
   EXPECT_TRUE(success);
 }
 
-// This class holds onto RenderViewHostObservers for as long as their observed
-// RenderViewHosts are alive. This allows us to confirm that all hosts have
-// properly been shutdown.
-class RenderViewHostObserverArray {
+// This class ensures that all the given RenderViewHosts have properly been
+// shutdown.
+class RenderViewHostDestructionObserver : public WebContentsObserver {
  public:
-  ~RenderViewHostObserverArray() {
-    // In case some would be left in there with a dead pointer to us.
-    for (std::list<RVHObserver*>::iterator iter = observers_.begin();
-         iter != observers_.end(); ++iter) {
-      (*iter)->ClearParent();
-    }
+  explicit RenderViewHostDestructionObserver(WebContents* web_contents)
+      : WebContentsObserver(web_contents) {}
+  virtual ~RenderViewHostDestructionObserver() {}
+  void EnsureRVHGetsDestructed(RenderViewHost* rvh) {
+    watched_render_view_hosts_.insert(rvh);
   }
-  void AddObserverToRVH(RenderViewHost* rvh) {
-    observers_.push_back(new RVHObserver(this, rvh));
-  }
-  size_t GetNumObservers() const {
-    return observers_.size();
+  size_t GetNumberOfWatchedRenderViewHosts() const {
+    return watched_render_view_hosts_.size();
   }
 
  private:
-  friend class RVHObserver;
-  class RVHObserver : public RenderViewHostObserver {
-   public:
-    RVHObserver(RenderViewHostObserverArray* parent, RenderViewHost* rvh)
-        : RenderViewHostObserver(rvh),
-          parent_(parent) {
-    }
-    virtual void RenderViewHostDestroyed(RenderViewHost* rvh) OVERRIDE {
-      if (parent_)
-        parent_->RemoveObserver(this);
-      RenderViewHostObserver::RenderViewHostDestroyed(rvh);
-    };
-    void ClearParent() {
-      parent_ = NULL;
-    }
-   private:
-    RenderViewHostObserverArray* parent_;
-  };
-
-  void RemoveObserver(RVHObserver* observer) {
-    observers_.remove(observer);
+  // WebContentsObserver implementation:
+  virtual void RenderViewDeleted(RenderViewHost* rvh) OVERRIDE {
+    watched_render_view_hosts_.erase(rvh);
   }
 
-  std::list<RVHObserver*> observers_;
+  std::set<RenderViewHost*> watched_render_view_hosts_;
 };
 
 // Test for crbug.com/90867. Make sure we don't leak render view hosts since
@@ -1263,7 +1241,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest, LeakingRenderViewHosts) {
   ASSERT_TRUE(https_server.Start());
 
   // Observe the created render_view_host's to make sure they will not leak.
-  RenderViewHostObserverArray rvh_observers;
+  RenderViewHostDestructionObserver rvh_observers(shell()->web_contents());
 
   GURL navigated_url(test_server()->GetURL("files/title2.html"));
   GURL view_source_url(kViewSourceScheme + std::string(":") +
@@ -1275,7 +1253,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest, LeakingRenderViewHosts) {
   SiteInstance* blank_site_instance = blank_rvh->GetSiteInstance();
   EXPECT_EQ(shell()->web_contents()->GetLastCommittedURL(), GURL::EmptyGURL());
   EXPECT_EQ(blank_site_instance->GetSiteURL(), GURL::EmptyGURL());
-  rvh_observers.AddObserverToRVH(blank_rvh);
+  rvh_observers.EnsureRVHGetsDestructed(blank_rvh);
 
   // Now navigate to the view-source URL and ensure we got a different
   // SiteInstance and RenderViewHost.
@@ -1283,7 +1261,8 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest, LeakingRenderViewHosts) {
   EXPECT_NE(blank_rvh, shell()->web_contents()->GetRenderViewHost());
   EXPECT_NE(blank_site_instance, shell()->web_contents()->
       GetRenderViewHost()->GetSiteInstance());
-  rvh_observers.AddObserverToRVH(shell()->web_contents()->GetRenderViewHost());
+  rvh_observers.EnsureRVHGetsDestructed(
+      shell()->web_contents()->GetRenderViewHost());
 
   // Load a random page and then navigate to view-source: of it.
   // This used to cause two RVH instances for the same SiteInstance, which
@@ -1291,10 +1270,12 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest, LeakingRenderViewHosts) {
   NavigateToURL(shell(), navigated_url);
   SiteInstance* site_instance1 = shell()->web_contents()->
       GetRenderViewHost()->GetSiteInstance();
-  rvh_observers.AddObserverToRVH(shell()->web_contents()->GetRenderViewHost());
+  rvh_observers.EnsureRVHGetsDestructed(
+      shell()->web_contents()->GetRenderViewHost());
 
   NavigateToURL(shell(), view_source_url);
-  rvh_observers.AddObserverToRVH(shell()->web_contents()->GetRenderViewHost());
+  rvh_observers.EnsureRVHGetsDestructed(
+      shell()->web_contents()->GetRenderViewHost());
   SiteInstance* site_instance2 = shell()->web_contents()->
       GetRenderViewHost()->GetSiteInstance();
 
@@ -1303,14 +1284,15 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest, LeakingRenderViewHosts) {
 
   // Now navigate to a different instance so that we swap out again.
   NavigateToURL(shell(), https_server.GetURL("files/title2.html"));
-  rvh_observers.AddObserverToRVH(shell()->web_contents()->GetRenderViewHost());
+  rvh_observers.EnsureRVHGetsDestructed(
+      shell()->web_contents()->GetRenderViewHost());
 
   // This used to leak a render view host.
   shell()->Close();
 
   RunAllPendingInMessageLoop();  // Needed on ChromeOS.
 
-  EXPECT_EQ(0U, rvh_observers.GetNumObservers());
+  EXPECT_EQ(0U, rvh_observers.GetNumberOfWatchedRenderViewHosts());
 }
 
 // Test for crbug.com/143155.  Frame tree updates during unload should not
