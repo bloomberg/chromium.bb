@@ -19,14 +19,15 @@ binding.registerCustomHook(function(bindingsAPI) {
 
   apiFunctions.setCustomCallback('openPopup',
                                  function(name, request, response) {
-    if (chrome.runtime.lastError)
-      throw new Error(chrome.runtime.lastError.message);
-
     if (!request.callback)
       return;
 
-    var views = getExtensionViews(-1, 'POPUP');
-    request.callback(views.length > 0 ? views[0] : null);
+    if (chrome.runtime.lastError) {
+      request.callback();
+    } else {
+      var views = getExtensionViews(-1, 'POPUP');
+      request.callback(views.length > 0 ? views[0] : null);
+    }
     request.callback = null;
   });
 });
