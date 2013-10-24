@@ -180,20 +180,15 @@ with the NaCl port of glibc, the main program is specified in the
   }
 
 
-Dynamic libraries that the dynamic program depends upon and links in
-at program startup must be listed in the ``files`` dictionary.
-Library files that are loaded after startup using ``dlopen()`` should either
-be listed in the ``files`` dictionary, or should be made accessible
-by the ``nacl_io`` library.  The ``nacl_io`` library provides various
-file system *mounts* such as HTTP-based file systems and memory-based
-file systems. The Native Client SDK includes helpful tools for
-determining library dependencies and generating NaCl manifest files
-for programs that that use dynamic linking. See
-`Generating a Native Client manifest file for a dynamically linked application
-<https://developers.google.com/native-client/devguide/devcycle/dynamic-loading#manifest>`_.
-
-.. TODO(jvoung) update the link when glibc document is linkable.
-
+Dynamic libraries that the dynamic program depends upon and links in at program
+startup must be listed in the ``files`` dictionary. Library files that are
+loaded after startup using ``dlopen()`` should either be listed in the ``files``
+dictionary, or should be made accessible by the ``nacl_io`` library.  The
+``nacl_io`` library provides various file system *mounts* such as HTTP-based
+file systems and memory-based file systems. The Native Client SDK includes
+helpful tools for determining library dependencies and generating NaCl manifest
+files for programs that that use dynamic linking. See
+:ref:`dynamic_loading_manifest`.
 
 Semantics
 =========

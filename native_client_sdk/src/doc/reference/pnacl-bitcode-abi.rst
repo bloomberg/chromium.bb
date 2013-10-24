@@ -77,12 +77,11 @@ Global Variables
 
 Restrictions on global variables:
 
-* PNaCl bitcode does not support LLVM IR TLS models.
+* PNaCl bitcode does not support LLVM IR TLS models. See
+  :ref:`language_support_threading` for more details.
 * Restrictions on :ref:`linkage types <bitcode_linkagetypes>`.
 * The ``addrspace``, ``section``, ``unnamed_addr`` and
   ``externally_initialized`` attributes are not supported.
-
-.. TODO: link to developer's guide to explain TLS in more detail
 
 Every global variable must have an initializer. Each initializer must be
 either a *SimpleElement* or a *CompoundElement*, defined as follows.
@@ -162,9 +161,7 @@ Volatile Memory Accesses
 
 PNaCl bitcode does not support volatile memory accesses. The
 ``volatile`` attribute on loads and stores is not supported. See the
-`PNaCl Developer's Guide <PNaClDeveloperGuide.html>`_ for more details.
-
-.. TODO: link to developers guide once it's ported
+:doc:`pnacl-c-cpp-language-support` for more details.
 
 Memory Model for Concurrent Operations
 --------------------------------------

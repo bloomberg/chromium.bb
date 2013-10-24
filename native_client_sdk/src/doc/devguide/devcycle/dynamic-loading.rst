@@ -317,6 +317,8 @@ example, the shared objects are put into the subdirectories ``lib32`` and
 ``lib64``.  These directories are used to collect all the shared libraries
 needed by the application, as discussed below.
 
+.. _dynamic_loading_manifest:
+
 Generating a Native Client manifest file for a dynamically linked application
 =============================================================================
 

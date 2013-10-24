@@ -132,6 +132,8 @@ code, and combined with builtin fences these programs can do meaningful
 cross-thread communication without changing code. They also better
 reflect the original code's intent and guarantee better portability.
 
+.. _language_support_threading:
+
 Threading
 =========
 

@@ -44,8 +44,9 @@ analogous to client/server communication on the web, where the client posts a
 message to the server and returns immediately. The Native Client messaging
 system is part of the Pepper API, and is described in detail in
 :doc:`Developer's Guide: Messaging System </devguide/coding/message-system>`.
-
-TODO: would it be better to compare to web-worker communication?
+It is also similar to the way `web workers
+<http://en.wikipedia.org/wiki/Web_worker>`_ interact with the main document in
+JavaScript.
 
 Step 1: Download and install the Native Client SDK
 ==================================================
