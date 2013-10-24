@@ -156,12 +156,6 @@ class EncryptedMediaTestBase : public MediaBrowserTest {
     command_line->AppendSwitch(
         switches::kDisableGestureRequirementForMediaPlayback);
 #endif  // defined(OS_ANDROID)
-
-#if defined(OS_CHROMEOS)
-    // Disable GPU video decoder on ChromeOS since these tests run on
-    // linux_chromeos which does not support GPU video decoder.
-    command_line->AppendSwitch(switches::kDisableAcceleratedVideoDecode);
-#endif  // defined(OS_CHROMEOS)
   }
 
   void SetUpCommandLineForKeySystem(const char* key_system,
