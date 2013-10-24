@@ -24,6 +24,7 @@ from pylib import constants
 from pylib.gtest import gtest_config
 
 CHROME_SRC_DIR = bb_utils.CHROME_SRC
+DIR_BUILD_ROOT = os.path.dirname(CHROME_SRC_DIR)
 CHROME_OUT_DIR = bb_utils.CHROME_OUT_DIR
 sys.path.append(os.path.join(
     CHROME_SRC_DIR, 'third_party', 'android_testrunner'))
@@ -46,6 +47,10 @@ GS_URL = 'https://storage.googleapis.com'
 I_TEST = collections.namedtuple('InstrumentationTest', [
     'name', 'apk', 'apk_package', 'test_apk', 'test_data', 'host_driven_root',
     'annotation', 'exclude_annotation', 'extra_flags'])
+
+
+def SrcPath(*path):
+  return os.path.join(CHROME_SRC_DIR, *path)
 
 
 def I(name, apk, apk_package, test_apk, test_data, host_driven_root=None,
@@ -221,7 +226,7 @@ def RunInstrumentationSuite(options, test, flunk_on_failure=True,
 def RunWebkitLint(target):
   """Lint WebKit's TestExpectation files."""
   bb_annotations.PrintNamedStep('webkit_lint')
-  RunCmd(['webkit/tools/layout_tests/run_webkit_tests.py',
+  RunCmd([SrcPath('webkit/tools/layout_tests/run_webkit_tests.py'),
           '--lint-test-files',
           '--chromium',
           '--target', target])
@@ -261,8 +266,8 @@ def RunWebkitLayoutTests(options):
     cmd_args.extend(
         ['--additional-expectations=%s' % os.path.join(CHROME_SRC_DIR, *f)])
 
-  exit_code = RunCmd(['webkit/tools/layout_tests/run_webkit_tests.py'] +
-                     cmd_args)
+  exit_code = RunCmd([SrcPath('webkit/tools/layout_tests/run_webkit_tests.py')]
+                     + cmd_args)
   if exit_code == 255: # test_run_results.UNEXPECTED_ERROR_EXIT_STATUS
     bb_annotations.PrintMsg('?? (crashed or hung)')
   elif exit_code == 254: # test_run_results.NO_DEVICES_EXIT_STATUS
@@ -310,7 +315,8 @@ def RunWebkitLayoutTests(options):
             '--build-dir', CHROME_OUT_DIR,
             '--build-number', build_number,
             '--builder-name', builder_name,
-            '--gs-bucket', gs_bucket])
+            '--gs-bucket', gs_bucket],
+            cwd=DIR_BUILD_ROOT)
 
 
 def _ParseLayoutTestResults(results):
