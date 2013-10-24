@@ -1789,8 +1789,19 @@ bool AutofillDialogViews::Accept() {
   if (ValidateForm())
     return delegate_->OnAccept();
 
-  if (!validity_map_.empty())
-    validity_map_.begin()->first->RequestFocus();
+  // |ValidateForm()| failed; there should be invalid views in |validity_map_|.
+  DCHECK(!validity_map_.empty());
+
+  views::FocusManager* manager = focus_manager_;
+  for (views::View* next = GroupForSection(GetCreditCardSection())->container;
+       next;
+       next = manager->GetNextFocusableView(next, window_, false, true)) {
+    if (validity_map_.find(next) != validity_map_.end()) {
+      next->RequestFocus();
+      break;
+    }
+  }
+
   return false;
 }
 

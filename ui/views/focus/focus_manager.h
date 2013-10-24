@@ -311,7 +311,6 @@ class VIEWS_EXPORT FocusManager {
   // Gets an event handler suitable for registering as an observer.
   ui::EventHandler* GetEventHandler();
 
- private:
   // Returns the next focusable view. Traversal starts at |starting_view|. If
   // |starting_view| is NULL |starting_widget| is consuled to determine which
   // Widget to start from. See
@@ -323,6 +322,7 @@ class VIEWS_EXPORT FocusManager {
                              bool reverse,
                              bool dont_loop);
 
+ private:
   // Returns the focusable view found in the FocusTraversable specified starting
   // at the specified view. This traverses down along the FocusTraversable
   // hierarchy.
