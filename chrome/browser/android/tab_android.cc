@@ -156,6 +156,32 @@ int TabAndroid::GetAndroidId() const {
   return Java_TabBase_getId(env, obj.obj());
 }
 
+string16 TabAndroid::GetTitle() const {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = weak_java_tab_.get(env);
+  if (obj.is_null())
+    return string16();
+  return base::android::ConvertJavaStringToUTF16(
+      Java_TabBase_getTitle(env, obj.obj()));
+}
+
+GURL TabAndroid::GetURL() const {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = weak_java_tab_.get(env);
+  if (obj.is_null())
+    return GURL::EmptyGURL();
+  return GURL(base::android::ConvertJavaStringToUTF8(
+      Java_TabBase_getUrl(env, obj.obj())));
+}
+
+bool TabAndroid::RestoreIfNeeded() {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = weak_java_tab_.get(env);
+  if (obj.is_null())
+    return false;
+  return Java_TabBase_restoreIfNeeded(env, obj.obj());
+}
+
 content::ContentViewCore* TabAndroid::GetContentViewCore() const {
   if (!web_contents())
     return NULL;
@@ -227,16 +253,6 @@ void TabAndroid::Observe(int type,
       NOTREACHED() << "Unexpected notification " << type;
       break;
   }
-}
-
-void TabAndroid::InitWebContents(JNIEnv* env,
-                                 jobject obj,
-                                 jint tab_id,
-                                 jboolean incognito,
-                                 jobject jcontent_view_core,
-                                 jobject jweb_contents_delegate) {
-  InitWebContents(
-      env, obj, incognito, jcontent_view_core, jweb_contents_delegate);
 }
 
 void TabAndroid::InitWebContents(JNIEnv* env,
