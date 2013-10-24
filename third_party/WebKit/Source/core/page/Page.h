@@ -237,7 +237,7 @@ public:
     static void networkStateChanged(bool online);
 
 protected:
-    PageLifecycleNotifier* lifecycleNotifier();
+    PageLifecycleNotifier& lifecycleNotifier();
 
 private:
     void initGroup();

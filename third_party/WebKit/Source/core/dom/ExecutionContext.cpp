@@ -137,7 +137,7 @@ void ExecutionContext::destroyedMessagePort(MessagePort* port)
 
 bool ExecutionContext::hasPendingActivity()
 {
-    if (lifecycleNotifier()->hasPendingActivity())
+    if (lifecycleNotifier().hasPendingActivity())
         return true;
 
     HashSet<MessagePort*>::const_iterator messagePortsEnd = m_messagePorts.end();
@@ -151,27 +151,27 @@ bool ExecutionContext::hasPendingActivity()
 
 void ExecutionContext::suspendActiveDOMObjects()
 {
-    lifecycleNotifier()->notifySuspendingActiveDOMObjects();
+    lifecycleNotifier().notifySuspendingActiveDOMObjects();
     m_activeDOMObjectsAreSuspended = true;
 }
 
 void ExecutionContext::resumeActiveDOMObjects()
 {
     m_activeDOMObjectsAreSuspended = false;
-    lifecycleNotifier()->notifyResumingActiveDOMObjects();
+    lifecycleNotifier().notifyResumingActiveDOMObjects();
 }
 
 void ExecutionContext::stopActiveDOMObjects()
 {
     m_activeDOMObjectsAreStopped = true;
-    lifecycleNotifier()->notifyStoppingActiveDOMObjects();
+    lifecycleNotifier().notifyStoppingActiveDOMObjects();
     // Also close MessagePorts. If they were ActiveDOMObjects (they could be) then they could be stopped instead.
     closeMessagePorts();
 }
 
 void ExecutionContext::suspendActiveDOMObjectIfNeeded(ActiveDOMObject* object)
 {
-    ASSERT(lifecycleNotifier()->contains(object));
+    ASSERT(lifecycleNotifier().contains(object));
     // Ensure all ActiveDOMObjects are suspended also newly created ones.
     if (m_activeDOMObjectsAreSuspended)
         object->suspend();
@@ -380,9 +380,9 @@ PassOwnPtr<LifecycleNotifier<ExecutionContext> > ExecutionContext::createLifecyc
     return m_client->createLifecycleNotifier();
 }
 
-ContextLifecycleNotifier* ExecutionContext::lifecycleNotifier()
+ContextLifecycleNotifier& ExecutionContext::lifecycleNotifier()
 {
-    return static_cast<ContextLifecycleNotifier*>(LifecycleContext<ExecutionContext>::lifecycleNotifier());
+    return static_cast<ContextLifecycleNotifier&>(LifecycleContext<ExecutionContext>::lifecycleNotifier());
 }
 
 bool ExecutionContext::isIteratingOverObservers() const

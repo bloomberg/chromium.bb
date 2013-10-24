@@ -1443,7 +1443,7 @@ bool DOMWindow::addEventListener(const AtomicString& eventType, PassRefPtr<Event
             didAddStorageEventListener(this);
     }
 
-    lifecycleNotifier()->notifyAddEventListener(this, eventType);
+    lifecycleNotifier().notifyAddEventListener(this, eventType);
 
     if (eventType == EventTypeNames::unload) {
         addUnloadEventListener(this);
@@ -1475,7 +1475,7 @@ bool DOMWindow::removeEventListener(const AtomicString& eventType, EventListener
             document->didRemoveTouchEventHandler(document);
     }
 
-    lifecycleNotifier()->notifyRemoveEventListener(this, eventType);
+    lifecycleNotifier().notifyRemoveEventListener(this, eventType);
 
     if (eventType == EventTypeNames::unload) {
         removeUnloadEventListener(this);
@@ -1535,7 +1535,7 @@ void DOMWindow::removeAllEventListeners()
 {
     EventTarget::removeAllEventListeners();
 
-    lifecycleNotifier()->notifyRemoveAllEventListeners(this);
+    lifecycleNotifier().notifyRemoveAllEventListeners(this);
 
     if (NewDeviceOrientationController* controller = NewDeviceOrientationController::from(document()))
         controller->stopUpdating();
@@ -1772,9 +1772,9 @@ DOMWindow* DOMWindow::anonymousIndexedGetter(uint32_t index)
     return 0;
 }
 
-DOMWindowLifecycleNotifier* DOMWindow::lifecycleNotifier()
+DOMWindowLifecycleNotifier& DOMWindow::lifecycleNotifier()
 {
-    return static_cast<DOMWindowLifecycleNotifier*>(LifecycleContext::lifecycleNotifier());
+    return static_cast<DOMWindowLifecycleNotifier&>(LifecycleContext::lifecycleNotifier());
 }
 
 PassOwnPtr<LifecycleNotifier<DOMWindow> > DOMWindow::createLifecycleNotifier()

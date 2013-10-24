@@ -621,7 +621,7 @@ void Document::dispose()
         accessSVGExtensions()->pauseAnimations();
 
     m_lifecyle.advanceTo(DocumentLifecycle::Disposed);
-    lifecycleNotifier()->notifyDocumentWasDisposed();
+    lifecycleNotifier().notifyDocumentWasDisposed();
 }
 
 SelectorQueryCache& Document::selectorQueryCache()
@@ -2049,7 +2049,7 @@ void Document::detach(const AttachContext& context)
     if (m_mediaQueryMatcher)
         m_mediaQueryMatcher->documentDestroyed();
 
-    lifecycleNotifier()->notifyDocumentWasDetached();
+    lifecycleNotifier().notifyDocumentWasDetached();
     m_lifecyle.advanceTo(DocumentLifecycle::Stopped);
 }
 
@@ -5337,9 +5337,9 @@ PassOwnPtr<LifecycleNotifier<ExecutionContext> > Document::createLifecycleNotifi
     return DocumentLifecycleNotifier::create(this);
 }
 
-DocumentLifecycleNotifier* Document::lifecycleNotifier()
+DocumentLifecycleNotifier& Document::lifecycleNotifier()
 {
-    return static_cast<DocumentLifecycleNotifier*>(ExecutionContext::lifecycleNotifier());
+    return static_cast<DocumentLifecycleNotifier&>(ExecutionContext::lifecycleNotifier());
 }
 
 void Document::removedStyleSheet(StyleSheet* sheet, RecalcStyleTime when, StyleResolverUpdateMode updateMode)

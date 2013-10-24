@@ -559,7 +559,7 @@ void Page::setVisibilityState(PageVisibilityState visibilityState, bool isInitia
         setTimerAlignmentInterval(DOMTimer::visiblePageAlignmentInterval());
 
     if (!isInitialState)
-        lifecycleNotifier()->notifyPageVisibilityChanged();
+        lifecycleNotifier().notifyPageVisibilityChanged();
 
     if (!isInitialState && m_mainFrame)
         m_mainFrame->dispatchVisibilityStateChangeEvent();
@@ -589,14 +589,14 @@ void Page::multisamplingChanged()
 
 void Page::didCommitLoad(Frame* frame)
 {
-    lifecycleNotifier()->notifyDidCommitLoad(frame);
+    lifecycleNotifier().notifyDidCommitLoad(frame);
     if (m_mainFrame == frame)
         useCounter().didCommitLoad();
 }
 
-PageLifecycleNotifier* Page::lifecycleNotifier()
+PageLifecycleNotifier& Page::lifecycleNotifier()
 {
-    return static_cast<PageLifecycleNotifier*>(LifecycleContext::lifecycleNotifier());
+    return static_cast<PageLifecycleNotifier&>(LifecycleContext::lifecycleNotifier());
 }
 
 PassOwnPtr<LifecycleNotifier<Page> > Page::createLifecycleNotifier()

@@ -1065,7 +1065,7 @@ public:
 
     // Can never return null.
     FontFaceSet* fonts();
-    DocumentLifecycleNotifier* lifecycleNotifier();
+    DocumentLifecycleNotifier& lifecycleNotifier();
     bool isActive() const { return m_lifecyle.state() == DocumentLifecycle::Active; }
 
     enum HttpRefreshType {

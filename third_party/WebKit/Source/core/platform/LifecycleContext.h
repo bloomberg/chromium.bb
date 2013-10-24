@@ -54,7 +54,7 @@ public:
     void wasUnobservedBy(Observer*);
 
 protected:
-    Notifier* lifecycleNotifier();
+    Notifier& lifecycleNotifier();
 
 private:
     virtual PassOwnPtr<Notifier> createLifecycleNotifier();
@@ -66,22 +66,22 @@ template<typename T>
 inline void LifecycleContext<T>::wasObservedBy(typename LifecycleContext<T>::Observer* observer)
 {
     ASSERT(isContextThread());
-    lifecycleNotifier()->addObserver(observer);
+    lifecycleNotifier().addObserver(observer);
 }
 
 template<typename T>
 inline void LifecycleContext<T>::wasUnobservedBy(typename LifecycleContext<T>::Observer* observer)
 {
     ASSERT(isContextThread());
-    lifecycleNotifier()->removeObserver(observer);
+    lifecycleNotifier().removeObserver(observer);
 }
 
 template<typename T>
-inline typename LifecycleContext<T>::Notifier* LifecycleContext<T>::lifecycleNotifier()
+inline typename LifecycleContext<T>::Notifier& LifecycleContext<T>::lifecycleNotifier()
 {
     if (!m_lifecycleNotifier)
         m_lifecycleNotifier = const_cast<LifecycleContext*>(this)->createLifecycleNotifier();
-    return m_lifecycleNotifier.get();
+    return *m_lifecycleNotifier;
 }
 
 template<typename T>

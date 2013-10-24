@@ -125,7 +125,7 @@ public:
 
 protected:
 
-    ContextLifecycleNotifier* lifecycleNotifier();
+    ContextLifecycleNotifier& lifecycleNotifier();
 
 private:
     friend class DOMTimer; // For installNewTimeout() and removeTimeoutByID() below.

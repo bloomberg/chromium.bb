@@ -382,7 +382,7 @@ namespace WebCore {
         bool isInsecureScriptAccess(DOMWindow* activeWindow, const String& urlString);
 
     protected:
-        DOMWindowLifecycleNotifier* lifecycleNotifier();
+        DOMWindowLifecycleNotifier& lifecycleNotifier();
 
     private:
         explicit DOMWindow(Frame*);
