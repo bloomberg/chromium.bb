@@ -161,11 +161,19 @@
   }
 
   function assertInterpolation(params, expectations) {
+    // If the prefixed property is not supported, try to unprefix it.
+    if (/^-[^-]+-/.test(params.property) && !CSS.supports(params.property, 'initial')) {
+      var unprefixed = params.property.replace(/^-[^-]+-/, '');
+      if (CSS.supports(unprefixed, 'initial')) {
+        params.property = unprefixed;
+      }
+    }
     var testId = defineKeyframes(params);
     var nextCaseId = 0;
     var testContainer = document.createElement('div');
     testContainer.setAttribute('description', describeTest(params));
-    testContainer.classList.add('test', testId);
+    testContainer.classList.add('test');
+    testContainer.classList.add(testId);
     fragment.appendChild(testContainer);
     expectations.forEach(function(expectation) {
       testContainer.appendChild(makeInterpolationTest(
@@ -237,13 +245,6 @@
 
   function makeInterpolationTest(fraction, testId, caseId, params, expectation) {
     console.assert(expectation === undefined || !isRefTest);
-    // If the prefixed property is not supported, try to unprefix it.
-    if (/^-[^-]+-/.test(params.property) && !CSS.supports(params.property, expectation)) {
-      var unprefixed = params.property.replace(/^-[^-]+-/, '');
-      if (CSS.supports(unprefixed, expectation)) {
-        params.property = unprefixed;
-      }
-    }
     var targetContainer = createTargetContainer(caseId);
     var target = targetContainer.querySelector('.target') || targetContainer;
     target.classList.add('active');
