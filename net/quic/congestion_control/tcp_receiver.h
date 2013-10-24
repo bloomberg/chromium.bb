@@ -20,6 +20,9 @@ class NET_EXPORT_PRIVATE TcpReceiver : public ReceiveAlgorithmInterface {
  public:
   TcpReceiver();
 
+  // Size of the (currently fixed) receive window.
+  static const QuicByteCount kReceiveWindowTCP;
+
   // Start implementation of SendAlgorithmInterface.
   virtual bool GenerateCongestionFeedback(
       QuicCongestionFeedbackFrame* feedback) OVERRIDE;

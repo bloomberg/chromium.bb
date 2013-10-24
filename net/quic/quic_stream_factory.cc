@@ -18,6 +18,7 @@
 #include "net/dns/host_resolver.h"
 #include "net/dns/single_request_host_resolver.h"
 #include "net/http/http_server_properties.h"
+#include "net/quic/congestion_control/tcp_receiver.h"
 #include "net/quic/crypto/proof_verifier_chromium.h"
 #include "net/quic/crypto/quic_random.h"
 #include "net/quic/quic_client_session.h"
@@ -429,10 +430,10 @@ QuicClientSession* QuicStreamFactory::CreateSession(
   socket->Connect(addr);
 
   // We should adaptively set this buffer size, but for now, we'll use a size
-  // that is more than large enough for a 100 packet congestion window, and yet
+  // that is more than large enough for a full receive window, and yet
   // does not consume "too much" memory.  If we see bursty packet loss, we may
   // revisit this setting and test for its impact.
-  const int32 kSocketBufferSize(kMaxPacketSize * 100);  // Support 100 packets.
+  const int32 kSocketBufferSize(TcpReceiver::kReceiveWindowTCP);
   socket->SetReceiveBufferSize(kSocketBufferSize);
   // Set a buffer large enough to contain the initial CWND's worth of packet
   // to work around the problem with CHLO packets being sent out with the
