@@ -178,11 +178,8 @@ class QuicNetworkTransactionTest : public PlatformTest {
 
   std::string SerializeHeaderBlock(const SpdyHeaderBlock& headers) {
     QuicSpdyCompressor compressor;
-    if (QuicVersionMax() >= QUIC_VERSION_9) {
-      return compressor.CompressHeadersWithPriority(
-          ConvertRequestPriorityToQuicPriority(DEFAULT_PRIORITY), headers);
-    }
-    return compressor.CompressHeaders(headers);
+    return compressor.CompressHeadersWithPriority(
+        ConvertRequestPriorityToQuicPriority(DEFAULT_PRIORITY), headers);
   }
 
   // Returns a newly created packet to send kData on stream 1.

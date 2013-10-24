@@ -43,11 +43,9 @@ class TestDispatcher : public QuicDispatcher {
                           EpollServer* eps)
       : QuicDispatcher(config, crypto_config, 1, eps) {}
 
-  MOCK_METHOD4(CreateQuicSession, QuicSession*(
+  MOCK_METHOD2(CreateQuicSession, QuicSession*(
       QuicGuid guid,
-      const IPEndPoint& client_address,
-      int fd,
-      EpollServer* eps));
+      const IPEndPoint& client_address));
   using QuicDispatcher::write_blocked_list;
 };
 
@@ -139,12 +137,12 @@ class QuicDispatcherTest : public ::testing::Test {
 TEST_F(QuicDispatcherTest, ProcessPackets) {
   IPEndPoint addr(Loopback4(), 1);
 
-  EXPECT_CALL(dispatcher_, CreateQuicSession(1, addr, _, &eps_))
+  EXPECT_CALL(dispatcher_, CreateQuicSession(1, addr))
       .WillOnce(testing::Return(CreateSession(
           &dispatcher_, 1, addr, &session1_, &eps_)));
   ProcessPacket(addr, 1, "foo");
 
-  EXPECT_CALL(dispatcher_, CreateQuicSession(2, addr, _, &eps_))
+  EXPECT_CALL(dispatcher_, CreateQuicSession(2, addr))
       .WillOnce(testing::Return(CreateSession(
                     &dispatcher_, 2, addr, &session2_, &eps_)));
   ProcessPacket(addr, 2, "bar");
@@ -160,7 +158,7 @@ TEST_F(QuicDispatcherTest, ProcessPackets) {
 TEST_F(QuicDispatcherTest, Shutdown) {
   IPEndPoint addr(Loopback4(), 1);
 
-  EXPECT_CALL(dispatcher_, CreateQuicSession(_, addr, _, &eps_))
+  EXPECT_CALL(dispatcher_, CreateQuicSession(_, addr))
       .WillOnce(testing::Return(CreateSession(
                     &dispatcher_, 1, addr, &session1_, &eps_)));
 
@@ -195,7 +193,7 @@ TEST_F(QuicDispatcherTest, TimeWaitListManager) {
   // Create a new session.
   IPEndPoint addr(Loopback4(), 1);
   QuicGuid guid = 1;
-  EXPECT_CALL(dispatcher_, CreateQuicSession(guid, addr, _, &eps_))
+  EXPECT_CALL(dispatcher_, CreateQuicSession(guid, addr))
       .WillOnce(testing::Return(CreateSession(
                     &dispatcher_, guid, addr, &session1_, &eps_)));
   ProcessPacket(addr, guid, "foo");
@@ -232,12 +230,12 @@ class QuicWriteBlockedListTest : public QuicDispatcherTest {
   virtual void SetUp() {
     IPEndPoint addr(Loopback4(), 1);
 
-    EXPECT_CALL(dispatcher_, CreateQuicSession(_, addr, _, &eps_))
+    EXPECT_CALL(dispatcher_, CreateQuicSession(_, addr))
         .WillOnce(testing::Return(CreateSession(
                       &dispatcher_, 1, addr, &session1_, &eps_)));
     ProcessPacket(addr, 1, "foo");
 
-    EXPECT_CALL(dispatcher_, CreateQuicSession(_, addr, _, &eps_))
+    EXPECT_CALL(dispatcher_, CreateQuicSession(_, addr))
         .WillOnce(testing::Return(CreateSession(
                       &dispatcher_, 2, addr, &session2_, &eps_)));
     ProcessPacket(addr, 2, "bar");

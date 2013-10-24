@@ -108,20 +108,10 @@ class QuicClientSessionTest : public ::testing::Test {
 };
 
 TEST_F(QuicClientSessionTest, CryptoConnect) {
-  if (!Aes128Gcm12Encrypter::IsSupported()) {
-    LOG(INFO) << "AES GCM not supported. Test skipped.";
-    return;
-  }
-
   CompleteCryptoHandshake();
 }
 
 TEST_F(QuicClientSessionTest, MaxNumStreams) {
-  if (!Aes128Gcm12Encrypter::IsSupported()) {
-    LOG(INFO) << "AES GCM not supported. Test skipped.";
-    return;
-  }
-
   CompleteCryptoHandshake();
 
   std::vector<QuicReliableClientStream*> streams;
@@ -138,11 +128,6 @@ TEST_F(QuicClientSessionTest, MaxNumStreams) {
 }
 
 TEST_F(QuicClientSessionTest, MaxNumStreamsViaRequest) {
-  if (!Aes128Gcm12Encrypter::IsSupported()) {
-    LOG(INFO) << "AES GCM not supported. Test skipped.";
-    return;
-  }
-
   CompleteCryptoHandshake();
 
   std::vector<QuicReliableClientStream*> streams;
@@ -167,11 +152,6 @@ TEST_F(QuicClientSessionTest, MaxNumStreamsViaRequest) {
 }
 
 TEST_F(QuicClientSessionTest, GoAwayReceived) {
-  if (!Aes128Gcm12Encrypter::IsSupported()) {
-    LOG(INFO) << "AES GCM not supported. Test skipped.";
-    return;
-  }
-
   CompleteCryptoHandshake();
 
   // After receiving a GoAway, I should no longer be able to create outgoing

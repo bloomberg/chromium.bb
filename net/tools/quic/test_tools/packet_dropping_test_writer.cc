@@ -31,11 +31,28 @@ class WriteUnblockedAlarm : public QuicAlarm::Delegate {
   PacketDroppingTestWriter* writer_;
 };
 
+// An alarm that is scheduled every time a new packet is to be written at a
+// later point.
+class DelayAlarm : public QuicAlarm::Delegate {
+ public:
+  explicit DelayAlarm(PacketDroppingTestWriter* writer)
+      : writer_(writer) { }
+
+  virtual QuicTime OnAlarm() OVERRIDE {
+    return writer_->ReleaseNextPacket();
+  }
+
+ private:
+  PacketDroppingTestWriter* writer_;
+};
+
 PacketDroppingTestWriter::PacketDroppingTestWriter()
     : clock_(NULL),
       blocked_writer_(NULL),
       fake_packet_loss_percentage_(0),
-      fake_blocked_socket_percentage_(0) {
+      fake_blocked_socket_percentage_(0),
+      fake_packet_reorder_percentage_(0),
+      fake_packet_delay_(QuicTime::Delta::Zero()) {
   int64 seed = base::RandUint64();
   LOG(INFO) << "Seeding packet loss with " << seed;
   simple_random_.set_seed(seed);
@@ -48,6 +65,8 @@ void PacketDroppingTestWriter::SetConnectionHelper(
   clock_ = helper->GetClock();
   write_unblocked_alarm_.reset(
       helper->CreateAlarm(new WriteUnblockedAlarm(this)));
+  delay_alarm_.reset(
+        helper->CreateAlarm(new DelayAlarm(this)));
 }
 
 WriteResult PacketDroppingTestWriter::WritePacket(
@@ -56,12 +75,14 @@ WriteResult PacketDroppingTestWriter::WritePacket(
     const net::IPEndPoint& peer_address,
     QuicBlockedWriterInterface* blocked_writer) {
   if (fake_packet_loss_percentage_ > 0 &&
-      simple_random_.RandUint64() % 100 < fake_packet_loss_percentage_) {
+      simple_random_.RandUint64() % 100 <
+          static_cast<uint64>(fake_packet_loss_percentage_)) {
     DLOG(INFO) << "Dropping packet.";
     return WriteResult(WRITE_STATUS_OK, buf_len);
   }
   if (fake_blocked_socket_percentage_ > 0 &&
-      simple_random_.RandUint64() % 100 < fake_blocked_socket_percentage_) {
+      simple_random_.RandUint64() % 100 <
+          static_cast<uint64>(fake_blocked_socket_percentage_)) {
     DLOG(INFO) << "Blocking socket.";
     if (!write_unblocked_alarm_->IsSet()) {
       blocked_writer_ = blocked_writer;
@@ -73,6 +94,19 @@ WriteResult PacketDroppingTestWriter::WritePacket(
     return WriteResult(WRITE_STATUS_BLOCKED, EAGAIN);
   }
 
+  if (!fake_packet_delay_.IsZero()) {
+    // Queue it to be sent.
+    QuicTime send_time = clock_->ApproximateNow().Add(fake_packet_delay_);
+    delayed_packets_.push_back(DelayedWrite(buffer, buf_len, self_address,
+                                             peer_address, send_time));
+    // Set the alarm if it's not yet set.
+    if (!delay_alarm_->IsSet()) {
+      delay_alarm_->Set(send_time);
+    }
+
+    return WriteResult(WRITE_STATUS_OK, buf_len);
+  }
+
   return writer()->WritePacket(buffer, buf_len, self_address, peer_address,
                                blocked_writer);
 }
@@ -80,6 +114,49 @@ WriteResult PacketDroppingTestWriter::WritePacket(
 bool PacketDroppingTestWriter::IsWriteBlockedDataBuffered() const {
   return false;
 }
+
+QuicTime PacketDroppingTestWriter::ReleaseNextPacket() {
+  if (delayed_packets_.empty()) {
+    return QuicTime::Zero();
+  }
+  DelayedPacketList::iterator iter = delayed_packets_.begin();
+  // Determine if we should re-order.
+  if (delayed_packets_.size() > 1 && fake_packet_reorder_percentage_ > 0 &&
+      simple_random_.RandUint64() % 100 <
+          static_cast<uint64>(fake_packet_reorder_percentage_)) {
+    DLOG(INFO) << "Reordering packets.";
+    ++iter;
+    // Swap the send times when re-ordering packets.
+    delayed_packets_.begin()->send_time = iter->send_time;
+  }
+
+  DLOG(INFO) << "Releasing packet.  " << (delayed_packets_.size() - 1)
+             << " remaining.";
+  // Grab the next one off the queue and send it.
+  writer()->WritePacket(iter->buffer.data(), iter->buffer.length(),
+                        iter->self_address, iter->peer_address, NULL);
+  delayed_packets_.erase(iter);
+
+  // If there are others, find the time for the next to be sent.
+  if (delayed_packets_.empty()) {
+    return QuicTime::Zero();
+  }
+  return delayed_packets_.begin()->send_time;
+}
+
+PacketDroppingTestWriter::DelayedWrite::DelayedWrite(
+    const char* buffer,
+    size_t buf_len,
+    const net::IPAddressNumber& self_address,
+    const net::IPEndPoint& peer_address,
+    QuicTime send_time)
+    : buffer(buffer, buf_len),
+      self_address(self_address),
+      peer_address(peer_address),
+      send_time(send_time) {
+}
+
+PacketDroppingTestWriter::DelayedWrite::~DelayedWrite() {}
 
 }  // namespace test
 }  // namespace tools

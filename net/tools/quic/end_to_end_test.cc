@@ -74,7 +74,6 @@ class EndToEndTest : public ::testing::TestWithParam<QuicVersion> {
     net::IPAddressNumber ip;
     CHECK(net::ParseIPLiteralToNumber("127.0.0.1", &ip));
     server_address_ = IPEndPoint(ip, 0);
-    QuicConnection::g_acks_do_not_instigate_acks = true;
     FLAGS_track_retransmission_history = true;
     client_config_.SetDefaults();
     server_config_.SetDefaults();
@@ -164,6 +163,23 @@ class EndToEndTest : public ::testing::TestWithParam<QuicVersion> {
     // chrome's tree.
     // client_writer_->set_fake_packet_loss_percentage(loss);
     // server_writer_->set_fake_packet_loss_percentage(loss);
+  }
+
+  void SetRTT(QuicTime::Delta rtt) {
+    // TODO(ianswett): For now, the RTT is entirely simulated on the client
+    // side, because the server's writer does not have a ConnectionHelper.
+    // TODO(rtenneti): enable when we can do random packet loss tests in
+    // chrome's tree.
+    // client_writer_->set_fake_packet_delay(rtt);
+  }
+
+  void SetReorderPercentage(int32 reorder) {
+    // TODO(ianswett): For now, the reordering is entirely simulated on the
+    // client side, because the server's writer does not have a
+    // ConnectionHelper.
+    // TODO(rtenneti): enable when we can do random packet loss tests in
+    // chrome's tree.
+    // client_writer_->set_fake_reorder_percentage(reorder);
   }
 
   IPEndPoint server_address_;
@@ -365,6 +381,24 @@ TEST_P(EndToEndTest, LargePostWithPacketLoss) {
   // 10 Kb body.
   string body;
   GenerateBody(&body, 1024 * 10);
+
+  HTTPMessage request(HttpConstants::HTTP_1_1,
+                      HttpConstants::POST, "/foo");
+  request.AddBody(body, true);
+
+  EXPECT_EQ(kFooResponseBody, client_->SendCustomSynchronousRequest(request));
+}
+
+TEST_P(EndToEndTest, LargePostNoPacketLossWithDelayAndReordering) {
+  ASSERT_TRUE(Initialize());
+  SetRTT(QuicTime::Delta::FromMilliseconds(2));
+  SetReorderPercentage(30);
+
+  client_->client()->WaitForCryptoHandshakeConfirmed();
+
+  // 1 Mb body.
+  string body;
+  GenerateBody(&body, 1024 * 1024);
 
   HTTPMessage request(HttpConstants::HTTP_1_1,
                       HttpConstants::POST, "/foo");

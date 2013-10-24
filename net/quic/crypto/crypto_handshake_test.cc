@@ -155,11 +155,6 @@ TEST(QuicCryptoServerConfigTest, ServerConfig) {
 }
 
 TEST(QuicCryptoServerConfigTest, SourceAddressTokens) {
-  if (!Aes128Gcm12Encrypter::IsSupported()) {
-    LOG(INFO) << "AES GCM not supported. Test skipped.";
-    return;
-  }
-
   QuicRandom* rand = QuicRandom::GetInstance();
   QuicCryptoServerConfig server(QuicCryptoServerConfig::TESTING, rand);
   IPAddressNumber ip;

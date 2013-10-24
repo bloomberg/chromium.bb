@@ -401,8 +401,6 @@ class NET_EXPORT_PRIVATE QuicConnection
 
   bool is_server() const { return is_server_; }
 
-  static bool g_acks_do_not_instigate_acks;
-
  protected:
   // Send a packet to the peer using encryption |level|. If |sequence_number|
   // is present in the |retransmission_map_|, then contents of this packet will
@@ -772,7 +770,6 @@ class NET_EXPORT_PRIVATE QuicConnection
   // True if the last ack received from the peer may have been truncated.  False
   // otherwise.
   bool received_truncated_ack_;
-  bool send_ack_in_response_to_packet_;
 
   // Set to true if the udp packet headers have a new self or peer address.
   // This is checked later on validating a data or version negotiation packet.

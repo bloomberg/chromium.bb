@@ -25,9 +25,6 @@ Aes128Gcm12Encrypter::Aes128Gcm12Encrypter() {}
 
 Aes128Gcm12Encrypter::~Aes128Gcm12Encrypter() {}
 
-// static
-bool Aes128Gcm12Encrypter::IsSupported() { return true; }
-
 bool Aes128Gcm12Encrypter::SetKey(StringPiece key) {
   DCHECK_EQ(key.size(), sizeof(key_));
   if (key.size() != sizeof(key_)) {

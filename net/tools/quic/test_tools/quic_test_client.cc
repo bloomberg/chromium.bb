@@ -100,7 +100,7 @@ class QuicEpollClient : public QuicClient {
              const string& server_hostname,
              const QuicVersion version)
       : Super(server_address, server_hostname, version, false),
-        test_writer_(NULL) {
+        override_guid_(0), test_writer_(NULL) {
   }
 
   QuicEpollClient(IPEndPoint server_address,
@@ -108,7 +108,7 @@ class QuicEpollClient : public QuicClient {
              const QuicConfig& config,
              const QuicVersion version)
       : Super(server_address, server_hostname, config, version),
-        test_writer_(NULL) {
+        override_guid_(0), test_writer_(NULL) {
   }
 
   virtual ~QuicEpollClient() {
@@ -126,10 +126,19 @@ class QuicEpollClient : public QuicClient {
     return test_writer_;
   }
 
+  virtual QuicGuid GenerateGuid() OVERRIDE {
+    return override_guid_ ? override_guid_ : Super::GenerateGuid();
+  }
+
   // Takes ownership of writer.
   void UseWriter(QuicTestWriter* writer) { test_writer_ = writer; }
 
+  void UseGuid(QuicGuid guid) {
+    override_guid_ = guid;
+  }
+
  private:
+  QuicGuid override_guid_;  // GUID to use, if nonzero
   QuicTestWriter* test_writer_;
 };
 
@@ -165,7 +174,7 @@ void QuicTestClient::Initialize(IPEndPoint address,
   priority_ = 3;
   bytes_read_ = 0;
   bytes_written_= 0;
-  never_connected_ = true;
+  connect_attempted_ = false;
   secure_ = secure;
   auto_reconnect_ = false;
   proof_verifier_ = NULL;
@@ -239,7 +248,7 @@ string QuicTestClient::SendSynchronousRequest(const string& uri) {
 }
 
 QuicReliableClientStream* QuicTestClient::GetOrCreateStream() {
-  if (never_connected_ == true || auto_reconnect_) {
+  if (!connect_attempted_ || auto_reconnect_) {
     if (!connected()) {
       Connect();
     }
@@ -278,9 +287,11 @@ void QuicTestClient::WaitForResponse() {
 
 void QuicTestClient::Connect() {
   DCHECK(!connected());
-  client_->Initialize();
+  if (!connect_attempted_) {
+    client_->Initialize();
+  }
   client_->Connect();
-  never_connected_ = false;
+  connect_attempted_ = true;
 }
 
 void QuicTestClient::ResetConnection() {
@@ -290,6 +301,7 @@ void QuicTestClient::ResetConnection() {
 
 void QuicTestClient::Disconnect() {
   client_->Disconnect();
+  connect_attempted_ = false;
 }
 
 IPEndPoint QuicTestClient::LocalSocketAddress() const {
@@ -342,6 +354,11 @@ void QuicTestClient::OnClose(ReliableQuicStream* stream) {
 
 void QuicTestClient::UseWriter(QuicTestWriter* writer) {
   reinterpret_cast<QuicEpollClient*>(client_.get())->UseWriter(writer);
+}
+
+void QuicTestClient::UseGuid(QuicGuid guid) {
+  DCHECK(!connected());
+  reinterpret_cast<QuicEpollClient*>(client_.get())->UseGuid(guid);
 }
 
 }  // namespace test

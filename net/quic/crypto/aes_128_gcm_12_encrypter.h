@@ -36,9 +36,6 @@ class NET_EXPORT_PRIVATE Aes128Gcm12Encrypter : public QuicEncrypter {
   Aes128Gcm12Encrypter();
   virtual ~Aes128Gcm12Encrypter();
 
-  // Returns true if the underlying crypto library supports AES GCM.
-  static bool IsSupported();
-
   // QuicEncrypter implementation
   virtual bool SetKey(base::StringPiece key) OVERRIDE;
   virtual bool SetNoncePrefix(base::StringPiece nonce_prefix) OVERRIDE;

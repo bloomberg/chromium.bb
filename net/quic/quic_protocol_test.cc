@@ -135,8 +135,8 @@ TEST(QuicProtocolTest, QuicVersionToString) {
   EXPECT_EQ("QUIC_VERSION_10,",
             QuicVersionArrayToString(single_version,
                                      arraysize(single_version)));
-  QuicVersion multiple_versions[] = {QUIC_VERSION_10, QUIC_VERSION_9};
-  EXPECT_EQ("QUIC_VERSION_10,QUIC_VERSION_9,",
+  QuicVersion multiple_versions[] = {QUIC_VERSION_11, QUIC_VERSION_10};
+  EXPECT_EQ("QUIC_VERSION_11,QUIC_VERSION_10,",
             QuicVersionArrayToString(multiple_versions,
                                      arraysize(multiple_versions)));
 

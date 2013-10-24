@@ -97,7 +97,7 @@ void QuicDispatcher::ProcessPacket(const IPEndPoint& server_address,
                                              packet);
       return;
     }
-    session = CreateQuicSession(guid, client_address, fd_, epoll_server_);
+    session = CreateQuicSession(guid, client_address);
 
     if (session == NULL) {
       DLOG(INFO) << "Failed to create session for " << guid;
@@ -198,11 +198,9 @@ void QuicDispatcher::OnConnectionClose(QuicGuid guid, QuicErrorCode error) {
 
 QuicSession* QuicDispatcher::CreateQuicSession(
     QuicGuid guid,
-    const IPEndPoint& client_address,
-    int /* fd */,
-    EpollServer* epoll_server) {
+    const IPEndPoint& client_address) {
   QuicConnectionHelperInterface* helper =
-      new QuicEpollConnectionHelper(epoll_server);
+      new QuicEpollConnectionHelper(epoll_server_);
   QuicServerSession* session = new QuicServerSession(
       config_, new QuicConnection(guid, client_address, helper, this,
                                   true, QuicVersionMax()), this);

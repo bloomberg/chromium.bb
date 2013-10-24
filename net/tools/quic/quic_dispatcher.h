@@ -91,9 +91,7 @@ class QuicDispatcher : public QuicPacketWriter, public QuicSessionOwner {
 
   virtual QuicSession* CreateQuicSession(
       QuicGuid guid,
-      const IPEndPoint& client_address,
-      int fd,
-      EpollServer* epoll_server);
+      const IPEndPoint& client_address);
 
   // Deletes all sessions on the closed session list and clears the list.
   void DeleteSessions();
@@ -113,6 +111,8 @@ class QuicDispatcher : public QuicPacketWriter, public QuicSessionOwner {
   QuicTimeWaitListManager* time_wait_list_manager() {
     return time_wait_list_manager_.get();
   }
+
+  EpollServer* epoll_server() { return epoll_server_; }
 
  private:
   friend class net::tools::test::QuicDispatcherPeer;

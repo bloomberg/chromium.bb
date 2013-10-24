@@ -526,7 +526,6 @@ class QuicConnectionTest : public ::testing::TestWithParam<bool> {
         frame2_(1, false, 3, data2),
         accept_packet_(true) {
     // TODO(rtenneti): remove g_* flags.
-    QuicConnection::g_acks_do_not_instigate_acks = true;
     FLAGS_track_retransmission_history = true;
     connection_.set_visitor(&visitor_);
     connection_.SetSendAlgorithm(send_algorithm_);
@@ -550,11 +549,6 @@ class QuicConnectionTest : public ::testing::TestWithParam<bool> {
     EXPECT_CALL(visitor_, HasPendingHandshake()).Times(AnyNumber());
     EXPECT_CALL(visitor_, OnCanWrite()).Times(AnyNumber()).WillRepeatedly(
         Return(true));
-  }
-
-  ~QuicConnectionTest() {
-    // TODO(rch): remove this.
-    QuicConnection::g_acks_do_not_instigate_acks = false;
   }
 
   void SetUp() {
@@ -701,8 +695,10 @@ class QuicConnectionTest : public ::testing::TestWithParam<bool> {
     return encrypted->length();
   }
 
-  QuicByteCount SendStreamDataToPeer(QuicStreamId id, StringPiece data,
-                                     QuicStreamOffset offset, bool fin,
+  QuicByteCount SendStreamDataToPeer(QuicStreamId id,
+                                     StringPiece data,
+                                     QuicStreamOffset offset,
+                                     bool fin,
                                      QuicPacketSequenceNumber* last_packet) {
     QuicByteCount packet_size;
     EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _))
@@ -1488,6 +1484,45 @@ TEST_P(QuicConnectionTest, FramePackingFEC) {
   EXPECT_EQ(0u, writer_->frame_count());
 }
 
+TEST_P(QuicConnectionTest, FramePackingAckResponse) {
+  if (!GetParam()) {
+    // This test depends on BundleAckWithPacket being true.
+    return;
+  }
+  EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
+
+  // Process a data packet to queue up a pending ack.
+  EXPECT_CALL(visitor_, OnStreamFrames(_)).WillOnce(Return(true));
+  ProcessDataPacket(1, 1, kEntropyFlag);
+
+  EXPECT_CALL(visitor_, OnCanWrite()).WillOnce(DoAll(
+      IgnoreResult(InvokeWithoutArgs(&connection_,
+                                     &TestConnection::SendStreamData3)),
+      IgnoreResult(InvokeWithoutArgs(&connection_,
+                                     &TestConnection::SendStreamData5)),
+      Return(true)));
+
+  EXPECT_CALL(*send_algorithm_,
+              OnPacketSent(_, _, _, NOT_RETRANSMISSION, _))
+      .Times(1);
+
+  // Process an ack to cause the visitor's OnCanWrite to be invoked.
+  creator_.set_sequence_number(2);
+  QuicAckFrame ack_one(0, QuicTime::Zero(), 0);
+  ProcessAckPacket(&ack_one);
+
+  EXPECT_EQ(0u, connection_.NumQueuedPackets());
+  EXPECT_FALSE(connection_.HasQueuedData());
+
+  // Parse the last packet and ensure it's an ack and two stream frames from
+  // two different streams.
+  EXPECT_EQ(3u, writer_->frame_count());
+  EXPECT_TRUE(writer_->ack());
+  ASSERT_EQ(2u, writer_->stream_frames()->size());
+  EXPECT_EQ(kStreamId3, (*writer_->stream_frames())[0].stream_id);
+  EXPECT_EQ(kStreamId5, (*writer_->stream_frames())[1].stream_id);
+}
+
 TEST_P(QuicConnectionTest, FramePackingSendv) {
   // Send two stream frames in 1 packet by using writev.
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, NOT_RETRANSMISSION, _));
@@ -1724,18 +1759,6 @@ TEST_P(QuicConnectionTest, QueueAfterTwoRTOs) {
   connection_.OnCanWrite();
 }
 
-TEST_P(QuicConnectionTest, ResumptionAlarmThenWriteBlocked) {
-  // Set the send and resumption alarm, then block the connection.
-  connection_.GetResumeWritesAlarm()->Set(clock_.ApproximateNow());
-  connection_.GetSendAlarm()->Set(clock_.ApproximateNow());
-  QuicConnectionPeer::SetIsWriteBlocked(&connection_, true);
-
-  // Fire the alarms and ensure the connection is still write blocked.
-  connection_.GetResumeWritesAlarm()->Fire();
-  connection_.GetSendAlarm()->Fire();
-  EXPECT_TRUE(QuicConnectionPeer::IsWriteBlocked(&connection_));
-}
-
 TEST_P(QuicConnectionTest, WriteBlockedThenSent) {
   writer_->set_blocked(true);
 
@@ -1746,6 +1769,18 @@ TEST_P(QuicConnectionTest, WriteBlockedThenSent) {
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(1);
   connection_.OnPacketSent(WriteResult(WRITE_STATUS_OK, 0));
   EXPECT_TRUE(connection_.GetRetransmissionAlarm()->IsSet());
+}
+
+TEST_P(QuicConnectionTest, ResumptionAlarmThenWriteBlocked) {
+  // Set the send and resumption alarm, then block the connection.
+  connection_.GetResumeWritesAlarm()->Set(clock_.ApproximateNow());
+  connection_.GetSendAlarm()->Set(clock_.ApproximateNow());
+  QuicConnectionPeer::SetIsWriteBlocked(&connection_, true);
+
+  // Fire the alarms and ensure the connection is still write blocked.
+  connection_.GetResumeWritesAlarm()->Fire();
+  connection_.GetSendAlarm()->Fire();
+  EXPECT_TRUE(QuicConnectionPeer::IsWriteBlocked(&connection_));
 }
 
 TEST_P(QuicConnectionTest, LimitPacketsPerNack) {

@@ -81,6 +81,9 @@ class QuicTestClient :  public ReliableQuicStream::Visitor {
   // Configures client_ to take ownership of and use the writer.
   // Must be called before initial connect.
   void UseWriter(net::test::QuicTestWriter* writer);
+  // If the given GUID is nonzero, configures client_ to use a specific GUID
+  // instead of a random one.
+  void UseGuid(QuicGuid guid);
 
   // Returns NULL if the maximum number of streams have already been created.
   QuicReliableClientStream* GetOrCreateStream();
@@ -117,13 +120,12 @@ class QuicTestClient :  public ReliableQuicStream::Visitor {
   string response_;
   uint64 bytes_read_;
   uint64 bytes_written_;
-  // True if the client has never connected before.  The client will
-  // auto-connect exactly once before sending data.  If something causes a
-  // connection reset, it will not automatically reconnect.
-  bool never_connected_;
+  // True if we tried to connect already since the last call to Disconnect().
+  bool connect_attempted_;
   bool secure_;
-  // If true, the client will always reconnect if necessary before creating a
-  // stream.
+  // The client will auto-connect exactly once before sending data.  If
+  // something causes a connection reset, it will not automatically reconnect
+  // unless auto_reconnect_ is true.
   bool auto_reconnect_;
 
   // proof_verifier_ points to a RecordingProofVerifier that is owned by

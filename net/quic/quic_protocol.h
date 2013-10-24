@@ -190,7 +190,6 @@ enum QuicVersion {
   // Special case to indicate unknown/unsupported QUIC version.
   QUIC_VERSION_UNSUPPORTED = 0,
 
-  QUIC_VERSION_9 = 9,
   QUIC_VERSION_10 = 10,
   QUIC_VERSION_11 = 11,  // Current version.
 };
@@ -200,7 +199,7 @@ enum QuicVersion {
 // element, with subsequent elements in descending order (versions can be
 // skipped as necessary).
 static const QuicVersion kSupportedQuicVersions[] =
-    {QUIC_VERSION_10, QUIC_VERSION_9};
+    {QUIC_VERSION_10};
 
 typedef std::vector<QuicVersion> QuicVersionVector;
 
@@ -219,10 +218,6 @@ NET_EXPORT_PRIVATE QuicTag QuicVersionToQuicTag(const QuicVersion version);
 // Returns appropriate QuicVersion from a QuicTag.
 // Returns QUIC_VERSION_UNSUPPORTED if version_tag cannot be understood.
 NET_EXPORT_PRIVATE QuicVersion QuicTagToQuicVersion(const QuicTag version_tag);
-
-// Returns the appropriate QuicTag for a properly formed version string
-// (e.g. Q010).
-NET_EXPORT_PRIVATE QuicTag StringToQuicTag(std::string version);
 
 // Helper function which translates from a QuicVersion to a string.
 // Returns strings corresponding to enum names (e.g. QUIC_VERSION_6).

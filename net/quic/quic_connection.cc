@@ -55,8 +55,7 @@ const QuicPacketSequenceNumber kMaxPacketGap = 5000;
 // initial congestion window(RFC 6928).
 const size_t kMaxRetransmissionsPerAck = 10;
 
-// TCP retransmits after 2 nacks.  We allow for a third in case of out-of-order
-// delivery.
+// TCP retransmits after 3 nacks.
 // TODO(ianswett): Change to match TCP's rule of retransmitting once an ack
 // at least 3 sequence numbers larger arrives.
 const size_t kNumberOfNacksBeforeRetransmission = 3;
@@ -189,14 +188,6 @@ net::IsHandshake HasCryptoHandshake(
 
 }  // namespace
 
-// TODO(rch): Remove this.
-// Because of a bug in the interaction between the TcpCubicSender and
-// QuicConnection, acks currently count against the congestion window.
-// This means that if acks are not acked, and data is only flowing in
-// one direction, then the connection will deadlock.
-// static
-bool QuicConnection::g_acks_do_not_instigate_acks = true;
-
 #define ENDPOINT (is_server_ ? "Server: " : " Client: ")
 
 QuicConnection::QuicConnection(QuicGuid guid,
@@ -241,7 +232,6 @@ QuicConnection::QuicConnection(QuicGuid guid,
       is_server_(is_server),
       connected_(true),
       received_truncated_ack_(false),
-      send_ack_in_response_to_packet_(false),
       address_migrating_(false) {
   timeout_alarm_->Set(clock_->ApproximateNow().Add(idle_network_timeout_));
   framer_.set_visitor(this);
@@ -718,10 +708,15 @@ void QuicConnection::OnPacketComplete() {
   bool send_ack_immediately =
       received_packet_manager_.GetNumMissingPackets() != 0;
 
+  // Ensure the visitor can process the stream frames before recording and
+  // processing the rest of the packet.
   if (last_stream_frames_.empty() ||
       visitor_->OnStreamFrames(last_stream_frames_)) {
     received_packet_manager_.RecordPacketReceived(
         last_header_, time_of_last_received_packet_);
+    for (size_t i = 0; i < last_stream_frames_.size(); ++i) {
+      stats_.stream_bytes_received += last_stream_frames_[i].data.length();
+    }
   }
 
   // Process stream resets, then acks, then congestion feedback.
@@ -794,26 +789,17 @@ void QuicConnection::MaybeSendInResponseToPacket(
   // |include_ack| is false since we decide about ack bundling below.
   ScopedPacketBundler bundler(this, false);
 
-  if (send_ack_immediately) {
-    send_ack_in_response_to_packet_ = true;
-  }
-
-  // TODO(rch): remove last_packet_should_instigate_ack when we remove
-  // g_acks_do_not_instigate_acks.
-  if (last_packet_should_instigate_ack ||
-      !g_acks_do_not_instigate_acks) {
-    if (send_ack_in_response_to_packet_) {
+  if (last_packet_should_instigate_ack) {
+    // In general, we ack every second packet.  When we don't ack the first
+    // packet, we set the delayed ack alarm.  Thus, if the ack alarm is set
+    // then we know this is the second packet, and we should send an ack.
+    if (send_ack_immediately || ack_alarm_->IsSet()) {
       SendAck();
-      DCHECK(!send_ack_in_response_to_packet_);
+      DCHECK(!ack_alarm_->IsSet());
     } else {
-      send_ack_in_response_to_packet_ = true;
-      DVLOG(1) << "Next received packet will trigger ACK.";
-      if (last_packet_should_instigate_ack && !ack_alarm_->IsSet()) {
-        // Set the ack alarm for when any retransmittable frame is received.
-        ack_alarm_->Set(clock_->ApproximateNow().Add(
-            congestion_manager_.DelayedAckTime()));
-        DVLOG(1) << "Ack timer set; next packet or timer will trigger ACK.";
-      }
+      ack_alarm_->Set(clock_->ApproximateNow().Add(
+          congestion_manager_.DelayedAckTime()));
+      DVLOG(1) << "Ack timer set; next packet or timer will trigger ACK.";
     }
   }
 
@@ -907,6 +893,7 @@ QuicConsumedData QuicConnection::SendvStreamDataInner(
     fin_consumed = consumed_data.fin_consumed;
   }
 
+  stats_.stream_bytes_sent += bytes_written;
   return QuicConsumedData(bytes_written, fin_consumed);
 }
 
@@ -1237,8 +1224,6 @@ void QuicConnection::SetupRetransmission(
           sent_packet_manager_.GetNumUnackedPackets(), consecutive_rto_count_);
   retransmission_alarm_->Set(
       clock_->ApproximateNow().Add(retransmission_delay));
-  // TODO(satyamshekhar): restore packet reordering with Ian's TODO in
-  // SendStreamData().
 }
 
 void QuicConnection::SetupAbandonFecTimer(
@@ -1525,7 +1510,6 @@ void QuicConnection::UpdateSentPacketInfo(SentPacketInfo* sent_info) {
 
 void QuicConnection::SendAck() {
   ack_alarm_->Cancel();
-  send_ack_in_response_to_packet_ = false;
   // TODO(rch): delay this until the CreateFeedbackFrame
   // method is invoked.  This requires changes SetShouldSendAck
   // to be a no-arg method, and re-jiggering its implementation.
@@ -1555,6 +1539,8 @@ void QuicConnection::OnRetransmissionTimeout() {
   // packets will be queued for future sending.
   SequenceNumberSet unacked_packets =
       sent_packet_manager_.GetUnackedPackets();
+  DLOG(INFO) << "OnRetransmissionTimeout() fired with "
+             << unacked_packets.size() << " unacked packets.";
 
   // Abandon all unacked packets to ensure the congestion window
   // opens up before we attempt to retransmit the packet.
@@ -1882,9 +1868,7 @@ QuicConnection::ScopedPacketBundler::ScopedPacketBundler(
   if (FLAGS_bundle_ack_with_outgoing_packet &&
       include_ack && connection_->ack_alarm_->IsSet()) {
     DVLOG(1) << "Bundling ack with outgoing packet.";
-    DCHECK(connection_->send_ack_in_response_to_packet_);
     connection_->SendAck();
-    DCHECK(!connection_->send_ack_in_response_to_packet_);
   }
 }
 

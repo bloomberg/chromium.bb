@@ -261,11 +261,6 @@ QuicData* EncryptWithNonce(Aes128Gcm12Encrypter* encrypter,
 }
 
 TEST(Aes128Gcm12EncrypterTest, Encrypt) {
-  if (!Aes128Gcm12Encrypter::IsSupported()) {
-    LOG(INFO) << "AES GCM not supported. Test skipped.";
-    return;
-  }
-
   char key[1024];
   size_t key_len;
   char iv[1024];

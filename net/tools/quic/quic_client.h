@@ -144,6 +144,7 @@ class QuicClient : public EpollCallbackInterface,
   }
 
  protected:
+  virtual QuicGuid GenerateGuid();
   virtual QuicEpollConnectionHelper* CreateQuicConnectionHelper();
   virtual QuicPacketWriter* CreateQuicPacketWriter();
 

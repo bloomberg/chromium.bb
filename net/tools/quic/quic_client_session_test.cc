@@ -48,19 +48,11 @@ class ToolsQuicClientSessionTest : public ::testing::Test {
 };
 
 TEST_F(ToolsQuicClientSessionTest, CryptoConnect) {
-  if (!Aes128Gcm12Encrypter::IsSupported()) {
-    LOG(INFO) << "AES GCM not supported. Test skipped.";
-    return;
-  }
   CompleteCryptoHandshake();
 }
 
 TEST_F(ToolsQuicClientSessionTest, MaxNumStreams) {
   session_->config()->set_max_streams_per_connection(1, 1);
-  if (!Aes128Gcm12Encrypter::IsSupported()) {
-    LOG(INFO) << "AES GCM not supported. Test skipped.";
-    return;
-  }
   // FLAGS_max_streams_per_connection = 1;
   // Initialize crypto before the client session will create a stream.
   CompleteCryptoHandshake();
@@ -77,11 +69,6 @@ TEST_F(ToolsQuicClientSessionTest, MaxNumStreams) {
 }
 
 TEST_F(ToolsQuicClientSessionTest, GoAwayReceived) {
-  if (!Aes128Gcm12Encrypter::IsSupported()) {
-    LOG(INFO) << "AES GCM not supported. Test skipped.";
-    return;
-  }
-
   CompleteCryptoHandshake();
 
   // After receiving a GoAway, I should no longer be able to create outgoing

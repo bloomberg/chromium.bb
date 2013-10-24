@@ -256,14 +256,6 @@ Aes128Gcm12Encrypter::Aes128Gcm12Encrypter() {
 
 Aes128Gcm12Encrypter::~Aes128Gcm12Encrypter() {}
 
-// static
-bool Aes128Gcm12Encrypter::IsSupported() {
-  // NSS 3.15 supports CKM_AES_GCM directly.
-  // NSS 3.14 supports CKM_AES_CTR, which can be used to emulate CKM_AES_GCM.
-  // Versions earlier than NSS 3.14 are not supported.
-  return NSS_VersionCheck("3.14") != PR_FALSE;
-}
-
 bool Aes128Gcm12Encrypter::SetKey(StringPiece key) {
   DCHECK_EQ(key.size(), sizeof(key_));
   if (key.size() != sizeof(key_)) {

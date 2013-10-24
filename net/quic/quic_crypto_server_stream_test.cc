@@ -86,21 +86,11 @@ class QuicCryptoServerStreamTest : public ::testing::Test {
 };
 
 TEST_F(QuicCryptoServerStreamTest, NotInitiallyConected) {
-  if (!Aes128Gcm12Encrypter::IsSupported()) {
-    LOG(INFO) << "AES GCM not supported. Test skipped.";
-    return;
-  }
-
   EXPECT_FALSE(stream_.encryption_established());
   EXPECT_FALSE(stream_.handshake_confirmed());
 }
 
 TEST_F(QuicCryptoServerStreamTest, ConnectedAfterCHLO) {
-  if (!Aes128Gcm12Encrypter::IsSupported()) {
-    LOG(INFO) << "AES GCM not supported. Test skipped.";
-    return;
-  }
-
   // CompleteCryptoHandshake returns the number of client hellos sent. This
   // test should send:
   //   * One to get a source-address token and certificates.
@@ -111,11 +101,6 @@ TEST_F(QuicCryptoServerStreamTest, ConnectedAfterCHLO) {
 }
 
 TEST_F(QuicCryptoServerStreamTest, ZeroRTT) {
-  if (!Aes128Gcm12Encrypter::IsSupported()) {
-    LOG(INFO) << "AES GCM not supported. Test skipped.";
-    return;
-  }
-
   QuicGuid guid(1);
   IPAddressNumber ip;
   ParseIPLiteralToNumber("127.0.0.1", &ip);
@@ -184,11 +169,6 @@ TEST_F(QuicCryptoServerStreamTest, ZeroRTT) {
 }
 
 TEST_F(QuicCryptoServerStreamTest, MessageAfterHandshake) {
-  if (!Aes128Gcm12Encrypter::IsSupported()) {
-    LOG(INFO) << "AES GCM not supported. Test skipped.";
-    return;
-  }
-
   CompleteCryptoHandshake();
   EXPECT_CALL(*connection_, SendConnectionClose(
       QUIC_CRYPTO_MESSAGE_AFTER_HANDSHAKE_COMPLETE));
@@ -198,11 +178,6 @@ TEST_F(QuicCryptoServerStreamTest, MessageAfterHandshake) {
 }
 
 TEST_F(QuicCryptoServerStreamTest, BadMessageType) {
-  if (!Aes128Gcm12Encrypter::IsSupported()) {
-    LOG(INFO) << "AES GCM not supported. Test skipped.";
-    return;
-  }
-
   message_.set_tag(kSHLO);
   ConstructHandshakeMessage();
   EXPECT_CALL(*connection_, SendConnectionClose(
@@ -211,11 +186,6 @@ TEST_F(QuicCryptoServerStreamTest, BadMessageType) {
 }
 
 TEST_F(QuicCryptoServerStreamTest, WithoutCertificates) {
-  if (!Aes128Gcm12Encrypter::IsSupported()) {
-    LOG(INFO) << "AES GCM not supported. Test skipped.";
-    return;
-  }
-
   crypto_config_.SetProofSource(NULL);
   client_options_.dont_verify_certs = true;
 
@@ -227,11 +197,6 @@ TEST_F(QuicCryptoServerStreamTest, WithoutCertificates) {
 }
 
 TEST_F(QuicCryptoServerStreamTest, ChannelID) {
-  if (!Aes128Gcm12Encrypter::IsSupported()) {
-    LOG(INFO) << "AES GCM not supported. Test skipped.";
-    return;
-  }
-
   client_options_.channel_id_enabled = true;
   // TODO(rtenneti): Enable testing of ProofVerifier.
   // CompleteCryptoHandshake verifies
