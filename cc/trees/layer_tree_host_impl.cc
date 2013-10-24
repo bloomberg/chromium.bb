@@ -436,21 +436,11 @@ bool LayerTreeHostImpl::HaveTouchEventHandlersAt(gfx::Point viewport_point) {
   gfx::PointF device_viewport_point =
       gfx::ScalePoint(viewport_point, device_scale_factor_);
 
-  // First find out which layer was hit from the saved list of visible layers
-  // in the most recent frame.
-  LayerImpl* layer_impl = LayerTreeHostCommon::FindLayerThatIsHitByPoint(
-      device_viewport_point,
-      active_tree_->RenderSurfaceLayerList());
-
-  // Walk up the hierarchy and look for a layer with a touch event handler
-  // region that the given point hits.
-  for (; layer_impl; layer_impl = layer_impl->parent()) {
-    if (LayerTreeHostCommon::LayerHasTouchEventHandlersAt(device_viewport_point,
-                                                          layer_impl))
-      return true;
-  }
-
-  return false;
+  LayerImpl* layer_impl =
+      LayerTreeHostCommon::FindLayerThatIsHitByPointInTouchHandlerRegion(
+          device_viewport_point,
+          active_tree_->RenderSurfaceLayerList());
+  return layer_impl != NULL;
 }
 
 void LayerTreeHostImpl::SetLatencyInfoForInputEvent(

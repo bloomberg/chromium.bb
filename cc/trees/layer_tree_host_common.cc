@@ -2344,34 +2344,21 @@ LayerImpl* LayerTreeHostCommon::FindLayerThatIsHitByPoint(
 LayerImpl* LayerTreeHostCommon::FindLayerThatIsHitByPointInTouchHandlerRegion(
     gfx::PointF screen_space_point,
     const LayerImplList& render_surface_layer_list) {
-  LayerImpl* found_layer = NULL;
+  // First find out which layer was hit from the saved list of visible layers
+  // in the most recent frame.
+  LayerImpl* layer_impl = LayerTreeHostCommon::FindLayerThatIsHitByPoint(
+      screen_space_point,
+      render_surface_layer_list);
 
-  typedef LayerIterator<LayerImpl,
-                        LayerImplList,
-                        RenderSurfaceImpl,
-                        LayerIteratorActions::FrontToBack> LayerIteratorType;
-  LayerIteratorType end = LayerIteratorType::End(&render_surface_layer_list);
-
-  for (LayerIteratorType
-           it = LayerIteratorType::Begin(&render_surface_layer_list);
-       it != end;
-       ++it) {
-    // We don't want to consider render_surfaces for hit testing.
-    if (!it.represents_itself())
-      continue;
-
-    LayerImpl* current_layer = (*it);
-
-    if (!LayerHasTouchEventHandlersAt(screen_space_point, current_layer))
-      continue;
-
-    found_layer = current_layer;
-    break;
+  // Walk up the hierarchy and look for a layer with a touch event handler
+  // region that the given point hits.
+  // This walk may not be necessary anymore: http://crbug.com/310817
+  for (; layer_impl; layer_impl = layer_impl->parent()) {
+    if (LayerTreeHostCommon::LayerHasTouchEventHandlersAt(screen_space_point,
+                                                          layer_impl))
+      break;
   }
-
-  // This can potentially return NULL, which means the screen_space_point did
-  // not successfully hit test any layers, not even the root layer.
-  return found_layer;
+  return layer_impl;
 }
 
 bool LayerTreeHostCommon::LayerHasTouchEventHandlersAt(
