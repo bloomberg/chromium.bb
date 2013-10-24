@@ -31,6 +31,37 @@ const size_t kWebSocketCloseCodeLength = 2;
 // MainThreadWebSocketChannel.cpp in Blink.
 const int kClosingHandshakeTimeoutSeconds = 2 * 2 * 60;
 
+// Maximum close reason length = max control frame payload -
+//                               status code length
+//                             = 125 - 2
+const size_t kMaximumCloseReasonLength = 125 - kWebSocketCloseCodeLength;
+
+// Check a close status code for strict compliance with RFC6455. This is only
+// used for close codes received from a renderer that we are intending to send
+// out over the network. See ParseClose() for the restrictions on incoming close
+// codes. The |code| parameter is type int for convenience of implementation;
+// the real type is uint16.
+bool IsStrictlyValidCloseStatusCode(int code) {
+  static const int kInvalidRanges[] = {
+      // [BAD, OK)
+      0,    1000,   // 1000 is the first valid code
+      1005, 1007,   // 1005 and 1006 MUST NOT be set.
+      1014, 3000,   // 1014 unassigned; 1015 up to 2999 are reserved.
+      5000, 65536,  // Codes above 5000 are invalid.
+  };
+  const int* const kInvalidRangesEnd =
+      kInvalidRanges + arraysize(kInvalidRanges);
+
+  DCHECK_GE(code, 0);
+  DCHECK_LT(code, 65536);
+  const int* upper = std::upper_bound(kInvalidRanges, kInvalidRangesEnd, code);
+  DCHECK_NE(kInvalidRangesEnd, upper);
+  DCHECK_GT(upper, kInvalidRanges);
+  DCHECK_GT(*upper, code);
+  DCHECK_LE(*(upper - 1), code);
+  return ((upper - kInvalidRanges) % 2) == 0;
+}
+
 }  // namespace
 
 // A class to encapsulate a set of frames and information about the size of
@@ -188,7 +219,19 @@ void WebSocketChannel::StartClosingHandshake(uint16 code,
     NOTREACHED() << "StartClosingHandshake() called in state " << state_;
     return;
   }
-  // TODO(ricea): Validate |code|? Check that |reason| is valid UTF-8?
+  // Javascript actually only permits 1000 and 3000-4999, but the implementation
+  // itself may produce different codes. The length of |reason| is also checked
+  // by Javascript.
+  if (!IsStrictlyValidCloseStatusCode(code) ||
+      reason.size() > kMaximumCloseReasonLength) {
+    // "InternalServerError" is actually used for errors from any endpoint, per
+    // errata 3227 to RFC6455. If the renderer is sending us an invalid code or
+    // reason it must be malfunctioning in some way, and based on that we
+    // interpret this as an internal error.
+    SendClose(kWebSocketErrorInternalServerError, "Internal Error");
+    return;
+  }
+  // TODO(ricea): Check that |reason| is valid UTF-8.
   SendClose(code, reason);  // Sets state_ to SEND_CLOSED
 }
 
@@ -574,7 +617,7 @@ void WebSocketChannel::FailChannel(ExposeError expose,
 
 void WebSocketChannel::SendClose(uint16 code, const std::string& reason) {
   DCHECK(state_ == CONNECTED || state_ == RECV_CLOSED);
-  // TODO(ricea): Ensure reason.length() <= 123
+  DCHECK_LE(reason.size(), kMaximumCloseReasonLength);
   scoped_refptr<IOBuffer> body;
   size_t size = 0;
   if (code == kWebSocketErrorNoStatusReceived) {

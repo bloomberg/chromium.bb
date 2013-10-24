@@ -777,8 +777,7 @@ TEST_F(WebSocketChannelTest, EverythingIsPassedToTheFactoryFunction) {
 
   CreateChannelAndConnect();
 
-  const ArgumentCopyingWebSocketStreamFactory& actual =
-      connect_data_.factory;
+  const ArgumentCopyingWebSocketStreamFactory& actual = connect_data_.factory;
 
   EXPECT_EQ(&connect_data_.url_request_context, actual.url_request_context);
 
@@ -1528,6 +1527,39 @@ TEST_F(WebSocketChannelStreamTest, CloseOnlySentOnce) {
   *frames = CreateFrameVector(frames_init);
   read_callback.Run(OK);
   checkpoint.Call(3);
+}
+
+// Invalid close status codes should not be sent on the network.
+TEST_F(WebSocketChannelStreamTest, InvalidCloseStatusCodeNotSent) {
+  static const InitFrame expected[] = {
+      {FINAL_FRAME, WebSocketFrameHeader::kOpCodeClose,
+       MASKED,      CLOSE_DATA(SERVER_ERROR, "Internal Error")}};
+
+  EXPECT_CALL(*mock_stream_, GetSubProtocol()).Times(AnyNumber());
+  EXPECT_CALL(*mock_stream_, ReadFrames(_, _))
+      .WillOnce(Return(ERR_IO_PENDING));
+
+  EXPECT_CALL(*mock_stream_, WriteFrames(EqualsFrames(expected), _));
+
+  CreateChannelAndConnectSuccessfully();
+  channel_->StartClosingHandshake(999, "");
+}
+
+// A Close frame with a reason longer than 123 bytes cannot be sent on the
+// network.
+TEST_F(WebSocketChannelStreamTest, LongCloseReasonNotSent) {
+  static const InitFrame expected[] = {
+      {FINAL_FRAME, WebSocketFrameHeader::kOpCodeClose,
+       MASKED,      CLOSE_DATA(SERVER_ERROR, "Internal Error")}};
+
+  EXPECT_CALL(*mock_stream_, GetSubProtocol()).Times(AnyNumber());
+  EXPECT_CALL(*mock_stream_, ReadFrames(_, _))
+      .WillOnce(Return(ERR_IO_PENDING));
+
+  EXPECT_CALL(*mock_stream_, WriteFrames(EqualsFrames(expected), _));
+
+  CreateChannelAndConnectSuccessfully();
+  channel_->StartClosingHandshake(1000, std::string(124, 'A'));
 }
 
 // We generate code 1005, kWebSocketErrorNoStatusReceived, when there is no
