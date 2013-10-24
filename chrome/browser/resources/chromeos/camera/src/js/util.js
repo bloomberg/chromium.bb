@@ -527,6 +527,13 @@ camera.util.ScrollTracker = function(scroller, onScrollStarted, onScrollEnded) {
   this.timer_ = null;
 
   /**
+   * Workaround for: crbug.com/135780.
+   * @type {?number}
+   * @private
+   */
+  this.noChangeTimer_ = null;
+
+  /**
    * @type {boolean}
    * @private
    */
@@ -633,9 +640,12 @@ camera.util.ScrollTracker.prototype.probe_ = function() {
   var scrollLeft = this.scroller_.scrollLeft;
   var scrollTop = this.scroller_.scrollTop;
 
-  if (scrollLeft != this.lastScrollPosition_[0] ||
+  var scrollChanged =
+      scrollLeft != this.lastScrollPosition_[0] ||
       scrollTop != this.lastScrollPosition_[1] ||
-      this.scroller_.animating) {
+      this.scroller_.animating;
+
+  if (scrollChanged) {
     if (!this.scrolling_)
       this.onScrollStarted_();
     this.scrolling_ = true;
@@ -643,6 +653,33 @@ camera.util.ScrollTracker.prototype.probe_ = function() {
     if (!this.mousePressed_ && !this.touchPressed_ && this.scrolling_) {
       this.onScrollEnded_();
       this.scrolling_ = false;
+    }
+  }
+
+  // Workaround for: crbug.com/135780.
+  // When scrolling by touch screen, the touchend event is not emitted. So, a
+  // timer has to be used as a fallback to detect the end of scrolling.
+  if (this.touchPressed_) {
+    if (scrollChanged) {
+      // Scrolling changed, cancel the timer.
+      if (this.noChangeTimer_) {
+        clearTimeout(this.noChangeTimer_);
+        this.noChangeTimer_ = null;
+      }
+    } else {
+      // Scrolling previously, but now no change is detected, so set a timer.
+      if (this.scrolling_) {
+        if (this.noChangeTimer_) {
+          clearTimeout(this.noChangeTimer_);
+          this.noChangeTimer_ = null;
+        }
+        this.noChangeTimer_ = setTimeout(function() {
+          this.onScrollEnded_();
+          this.scrolling_ = false;
+          this.touchPressed_ = false;
+          this.noChangeTimer_ = null;
+        }.bind(this), 200);
+      }
     }
   }
 
