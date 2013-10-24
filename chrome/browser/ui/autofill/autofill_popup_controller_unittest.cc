@@ -81,68 +81,33 @@ class TestAutofillPopupController : public AutofillPopupControllerImpl {
   }
 
   // Making protected functions public for testing
-  void SetPopupBounds(const gfx::Rect& bounds) {
-    AutofillPopupControllerImpl::SetPopupBounds(bounds);
-  }
-  const std::vector<string16>& names() const {
-    return AutofillPopupControllerImpl::names();
-  }
-  const std::vector<string16>& subtexts() const {
-    return AutofillPopupControllerImpl::subtexts();
-  }
-  const std::vector<int>& identifiers() const {
-    return AutofillPopupControllerImpl::identifiers();
-  }
-  int selected_line() const {
-    return AutofillPopupControllerImpl::selected_line();
-  }
-  void SetSelectedLine(size_t selected_line) {
-    AutofillPopupControllerImpl::SetSelectedLine(selected_line);
-  }
-  void SelectNextLine() {
-    AutofillPopupControllerImpl::SelectNextLine();
-  }
-  void SelectPreviousLine() {
-    AutofillPopupControllerImpl::SelectPreviousLine();
-  }
-  bool RemoveSelectedLine() {
-    return AutofillPopupControllerImpl::RemoveSelectedLine();
-  }
-  void DoHide() {
-    AutofillPopupControllerImpl::Hide();
-  }
-  const gfx::Rect& popup_bounds() const {
-    return AutofillPopupControllerImpl::popup_bounds();
-  }
-  const gfx::RectF& element_bounds() const {
-    return AutofillPopupControllerImpl::element_bounds();
-  }
+  using AutofillPopupControllerImpl::SetPopupBounds;
+  using AutofillPopupControllerImpl::names;
+  using AutofillPopupControllerImpl::subtexts;
+  using AutofillPopupControllerImpl::identifiers;
+  using AutofillPopupControllerImpl::selected_line;
+  using AutofillPopupControllerImpl::SetSelectedLine;
+  using AutofillPopupControllerImpl::SelectNextLine;
+  using AutofillPopupControllerImpl::SelectPreviousLine;
+  using AutofillPopupControllerImpl::RemoveSelectedLine;
+  using AutofillPopupControllerImpl::popup_bounds;
+  using AutofillPopupControllerImpl::element_bounds;
 #if !defined(OS_ANDROID)
-  const gfx::Font& GetNameFontForRow(size_t index) const {
-    return AutofillPopupControllerImpl::GetNameFontForRow(index);
-  }
-  const gfx::Font& subtext_font() const {
-    return AutofillPopupControllerImpl::subtext_font();
-  }
-  int RowWidthWithoutText(int row) const {
-    return AutofillPopupControllerImpl::RowWidthWithoutText(row);
-  }
+  using AutofillPopupControllerImpl::GetNameFontForRow;
+  using AutofillPopupControllerImpl::subtext_font;
+  using AutofillPopupControllerImpl::RowWidthWithoutText;
 #endif
   using AutofillPopupControllerImpl::SetValues;
-  int GetDesiredPopupWidth() const {
-    return AutofillPopupControllerImpl::GetDesiredPopupWidth();
-  }
-  int GetDesiredPopupHeight() const {
-    return AutofillPopupControllerImpl::GetDesiredPopupHeight();
-  }
-
-  WeakPtr<AutofillPopupControllerImpl> GetWeakPtr() {
-    return AutofillPopupControllerImpl::GetWeakPtr();
-  }
-
+  using AutofillPopupControllerImpl::GetDesiredPopupWidth;
+  using AutofillPopupControllerImpl::GetDesiredPopupHeight;
+  using AutofillPopupControllerImpl::GetWeakPtr;
   MOCK_METHOD1(InvalidateRow, void(size_t));
   MOCK_METHOD0(UpdateBoundsAndRedrawPopup, void());
   MOCK_METHOD0(Hide, void());
+
+  void DoHide() {
+    AutofillPopupControllerImpl::Hide();
+  }
 
  private:
   virtual void ShowView() OVERRIDE {}
@@ -355,7 +320,9 @@ TEST_F(AutofillPopupControllerUnitTest, RowWidthWithoutText) {
   icons[3] = ASCIIToUTF16("x");
   autofill_popup_controller_->Show(names, subtexts, icons, ids);
 
-  int base_size = AutofillPopupView::kEndPadding * 2;
+  int base_size =
+      AutofillPopupView::kEndPadding * 2 +
+      AutofillPopupView::kBorderThickness * 2;
   int subtext_increase = AutofillPopupView::kNamePadding;
   int icon_increase = AutofillPopupView::kIconPadding +
       AutofillPopupView::kAutofillIconWidth;

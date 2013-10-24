@@ -12,33 +12,6 @@
 #include "ui/base/cocoa/window_size_constants.h"
 #include "ui/gfx/rect.h"
 
-namespace {
-
-// The width of the border around the popup.
-const CGFloat kBorderWidth = 1.0;
-
-// The color of the border around the popup.
-NSColor* BorderColor() {
-  return [NSColor colorForControlTint:[NSColor currentControlTint]];
-}
-
-// Returns a view that contains a border around the content view.
-NSBox* CreateBorderView() {
-  // TODO(isherman): We should consider using asset-based drawing for the
-  // border, creating simple bitmaps for the view's border and background, and
-  // drawing them using NSDrawNinePartImage().
-  NSBox* border_view = [[[NSBox alloc] initWithFrame:NSZeroRect] autorelease];
-  [border_view setBorderColor:BorderColor()];
-  [border_view setBorderType:NSLineBorder];
-  [border_view setBorderWidth:kBorderWidth];
-  [border_view setBoxType:NSBoxCustom];
-  [border_view setContentViewMargins:NSZeroSize];
-  [border_view setTitlePosition:NSNoTitle];
-  return border_view;
-}
-
-}  // namespace
-
 namespace autofill {
 
 AutofillPopupViewBridge::AutofillPopupViewBridge(
@@ -52,13 +25,10 @@ AutofillPopupViewBridge::AutofillPopupViewBridge(
   // Telling Cocoa that the window is opaque enables some drawing optimizations.
   [window_ setOpaque:YES];
 
-  NSBox* border_view = CreateBorderView();
-  [window_ setContentView:border_view];
-
   view_ = [[[AutofillPopupViewCocoa alloc]
              initWithController:controller_
                           frame:NSZeroRect] autorelease];
-  [border_view setContentView:view_];
+  [window_ setContentView:view_];
 }
 
 AutofillPopupViewBridge::~AutofillPopupViewBridge() {
@@ -96,23 +66,6 @@ void AutofillPopupViewBridge::UpdateBoundsAndRedrawPopup() {
   // bottom-left of this same screen.
   NSScreen* screen = [[NSScreen screens] objectAtIndex:0];
   frame.origin.y = NSMaxY([screen frame]) - NSMaxY(frame);
-
-  // Leave room for the border.
-  frame = NSInsetRect(frame, -kBorderWidth, -kBorderWidth);
-  if (controller_->popup_bounds().y() > controller_->element_bounds().y()) {
-    // Popup is below the element which initiated it.
-    frame.origin.y -= kBorderWidth;
-  } else {
-    // Popup is above the element which initiated it.
-    frame.origin.y += kBorderWidth;
-  }
-  if (controller_->popup_bounds().x() == controller_->element_bounds().x()) {
-    // Popup is anchored to the left of the element which initiated it.
-    frame.origin.x += kBorderWidth;
-  } else {
-    // Popup is anhored to the right of the element which initiated it.
-    frame.origin.x -= kBorderWidth;
-  }
 
   // TODO(isherman): The view should support scrolling if the popup gets too
   // big to fit on the screen.

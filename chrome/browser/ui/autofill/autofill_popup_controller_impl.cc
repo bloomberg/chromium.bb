@@ -336,15 +336,15 @@ bool AutofillPopupControllerImpl::IsWarning(size_t index) const {
 }
 
 gfx::Rect AutofillPopupControllerImpl::GetRowBounds(size_t index) {
-  int top = 0;
+  int top = AutofillPopupView::kBorderThickness;
   for (size_t i = 0; i < index; ++i) {
     top += GetRowHeightFromId(identifiers()[i]);
   }
 
   return gfx::Rect(
-      0,
+      AutofillPopupView::kBorderThickness,
       top,
-      popup_bounds_.width(),
+      popup_bounds_.width() - 2 * AutofillPopupView::kBorderThickness,
       GetRowHeightFromId(identifiers()[index]));
 }
 
@@ -508,7 +508,7 @@ bool AutofillPopupControllerImpl::RemoveSelectedLine() {
 }
 
 int AutofillPopupControllerImpl::LineFromY(int y) {
-  int current_height = 0;
+  int current_height = AutofillPopupView::kBorderThickness;
 
   for (size_t i = 0; i < identifiers().size(); ++i) {
     current_height += GetRowHeightFromId(identifiers()[i]);
@@ -586,7 +586,7 @@ int AutofillPopupControllerImpl::GetDesiredPopupWidth() const {
 }
 
 int AutofillPopupControllerImpl::GetDesiredPopupHeight() const {
-  int popup_height = 0;
+  int popup_height = 2 * AutofillPopupView::kBorderThickness;
 
   for (size_t i = 0; i < identifiers().size(); ++i) {
     popup_height += GetRowHeightFromId(identifiers()[i]);
@@ -605,8 +605,11 @@ int AutofillPopupControllerImpl::RowWidthWithoutText(int row) const {
   if (!icons_[row].empty())
     row_size += kAutofillIconWidth + kIconPadding;
 
-  // Add the padding at the end
+  // Add the padding at the end.
   row_size += kEndPadding;
+
+  // Add room for the popup border.
+  row_size += 2 * AutofillPopupView::kBorderThickness;
 
   return row_size;
 }
