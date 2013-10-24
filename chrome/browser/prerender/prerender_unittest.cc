@@ -498,6 +498,38 @@ TEST_F(PrerenderTest, LinkManagerNavigateAwayNearExpiry) {
   EXPECT_EQ(null, prerender_manager()->FindEntry(url));
 }
 
+// When the user navigates away from a page, and then launches a new prerender,
+// the new prerender should preempt the abandoned prerender even if the
+// abandoned prerender hasn't expired.
+TEST_F(PrerenderTest, LinkManagerNavigateAwayLaunchAnother) {
+  const TimeDelta time_to_live = TimeDelta::FromSeconds(300);
+  const TimeDelta abandon_time_to_live = TimeDelta::FromSeconds(20);
+  const TimeDelta test_advance = TimeDelta::FromSeconds(5);
+  ASSERT_LT(test_advance, time_to_live);
+  ASSERT_GT(abandon_time_to_live, test_advance);
+
+  prerender_manager()->mutable_config().time_to_live = time_to_live;
+  prerender_manager()->mutable_config().abandon_time_to_live =
+      abandon_time_to_live;
+
+  GURL url("http://example.com");
+  prerender_manager()->CreateNextPrerenderContents(url, FINAL_STATUS_CANCELLED);
+  EXPECT_TRUE(AddSimplePrerender(url));
+  prerender_link_manager()->OnAbandonPrerender(kDefaultChildId,
+                                               last_prerender_id());
+
+  prerender_manager()->AdvanceTimeTicks(test_advance);
+
+  GURL second_url("http://example2.com");
+  DummyPrerenderContents* second_prerender_contents =
+      prerender_manager()->CreateNextPrerenderContents(
+          second_url, FINAL_STATUS_MANAGER_SHUTDOWN);
+  EXPECT_TRUE(AddSimplePrerender(second_url));
+  EXPECT_EQ(second_prerender_contents,
+            prerender_manager()->FindEntry(second_url));
+}
+
+
 // Make sure that if we prerender more requests than we support, that we launch
 // them in the order given up until we reach MaxConcurrency, at which point we
 // queue them and launch them in the order given. As well, insure that limits

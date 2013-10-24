@@ -99,6 +99,9 @@ class PrerenderLinkManager : public BrowserContextKeyedService,
     // True if this prerender has become a MatchComplete replacement. This state
     // is maintained so the renderer is not notified of a stop twice.
     bool is_match_complete_replacement;
+
+    // True if this prerender has been abandoned by its launcher.
+    bool has_been_abandoned;
   };
 
   bool IsEmpty() const;
@@ -115,7 +118,13 @@ class PrerenderLinkManager : public BrowserContextKeyedService,
 
   LinkPrerender* FindByPrerenderHandle(PrerenderHandle* prerender_handle);
 
+  // Removes |prerender| from the the prerender link manager. Deletes the
+  // PrerenderHandle as needed.
   void RemovePrerender(LinkPrerender* prerender);
+
+  // Cancels |prerender| and removes |prerender| from the prerender link
+  // manager.
+  void CancelPrerender(LinkPrerender* prerender);
 
   // From BrowserContextKeyedService:
   virtual void Shutdown() OVERRIDE;
