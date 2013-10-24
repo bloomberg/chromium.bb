@@ -629,7 +629,10 @@ mode-buildbot-tc-x8632-linux() {
     run_hello_world_test_irt \
     run_irt_futex_test_irt \
     run_thread_test_irt \
-    run_float_test_irt
+    run_float_test_irt \
+    run_malloc_realloc_calloc_free_test_irt \
+    run_dup_test_irt \
+    run_cond_timedwait_test_irt
 }
 
 mode-buildbot-tc-x8632-mac() {

@@ -73,13 +73,43 @@ static void convert_to_nacl_timeval(struct timeval *dest_nacl,
 }
 
 static int check_error(int result) {
-  if (result != 0)
+  if (result != 0) {
+    /*
+     * Check that we really have an error and don't indicate success
+     * mistakenly.
+     */
+    assert(errno != 0);
     return errno;
+  }
   return 0;
 }
 
 static int irt_close(int fd) {
   return check_error(close(fd));
+}
+
+static int irt_dup(int fd, int *new_fd) {
+  int result = dup(fd);
+  if (result < 0)
+    return errno;
+  *new_fd = result;
+  return 0;
+}
+
+static int irt_dup2(int fd, int new_fd) {
+  int result = dup2(fd, new_fd);
+  if (result < 0)
+    return errno;
+  assert(result == new_fd);
+  return 0;
+}
+
+static int irt_read(int fd, void *buf, size_t count, size_t *nread) {
+  int result = read(fd, buf, count);
+  if (result < 0)
+    return errno;
+  *nread = result;
+  return 0;
 }
 
 static int irt_write(int fd, const void *buf, size_t count, size_t *nwrote) {
@@ -97,6 +127,14 @@ static int irt_fstat(int fd, struct stat *st) {
 
 static void irt_exit(int status) {
   _exit(status);
+}
+
+static int irt_clock_func(clock_t *ticks) {
+  clock_t result = clock();
+  if (result == (clock_t) -1)
+    return errno;
+  *ticks = result;
+  return 0;
 }
 
 static int irt_gettod(struct timeval *time_nacl) {
@@ -145,6 +183,10 @@ static int irt_mmap(void **addr, size_t len, int prot, int flags,
     return errno;
   *addr = result;
   return 0;
+}
+
+static int irt_munmap(void *addr, size_t len) {
+  return check_error(munmap(addr, len));
 }
 
 static int tls_init(void *ptr) {
@@ -273,37 +315,32 @@ static void irt_stub_func(const char *name) {
     static void irt_stub_##name() { irt_stub_func(#name); }
 #define USE_STUB(s, name) (typeof(s.name)) irt_stub_##name
 
-DEFINE_STUB(clock)
 static const struct nacl_irt_basic irt_basic = {
   irt_exit,
   irt_gettod,
-  USE_STUB(irt_basic, clock),
+  irt_clock_func,
   irt_nanosleep,
   irt_sched_yield,
   irt_sysconf,
 };
 
-DEFINE_STUB(dup)
-DEFINE_STUB(dup2)
-DEFINE_STUB(read)
 DEFINE_STUB(seek)
 DEFINE_STUB(getdents)
 static const struct nacl_irt_fdio irt_fdio = {
   irt_close,
-  USE_STUB(irt_fdio, dup),
-  USE_STUB(irt_fdio, dup2),
-  USE_STUB(irt_fdio, read),
+  irt_dup,
+  irt_dup2,
+  irt_read,
   irt_write,
   USE_STUB(irt_fdio, seek),
   irt_fstat,
   USE_STUB(irt_fdio, getdents),
 };
 
-DEFINE_STUB(munmap)
 DEFINE_STUB(mprotect)
 static const struct nacl_irt_memory irt_memory = {
   irt_mmap,
-  USE_STUB(irt_memory, munmap),
+  irt_munmap,
   USE_STUB(irt_memory, mprotect),
 };
 
