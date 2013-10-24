@@ -429,12 +429,12 @@ TEST_F(AppsGridControllerTest, ModelUpdates) {
   EXPECT_EQ(2u, [[GetPageAt(0) content] count]);
   EXPECT_EQ(std::string("|Item 0,Item 1|"), GetViewContent());
 
-  // Add an item (PopulateApps will create a duplicate "Item 0").
+  // Add an item (PopulateApps will create a new "Item 2").
   model()->PopulateApps(1);
   EXPECT_EQ(3u, [[GetPageAt(0) content] count]);
   NSButton* button = GetItemViewAt(2);
-  EXPECT_NSEQ(@"Item 0", [button title]);
-  EXPECT_EQ(std::string("|Item 0,Item 1,Item 0|"), GetViewContent());
+  EXPECT_NSEQ(@"Item 2", [button title]);
+  EXPECT_EQ(std::string("|Item 0,Item 1,Item 2|"), GetViewContent());
 
   // Update the title via the ItemModelObserver.
   app_list::AppListItemModel* item_model = model()->apps()->GetItemAt(2);
@@ -463,7 +463,7 @@ TEST_F(AppsGridControllerTest, ModelUpdates) {
   EXPECT_EQ(std::string("|Item 0,Item 1|"), GetViewContent());
 
   // Test removing in the middle.
-  model()->AddItem("Item 2");
+  model()->CreateAndAddItem("Item 2");
   EXPECT_EQ(3u, [apps_grid_controller_ itemCount]);
   EXPECT_EQ(std::string("|Item 0,Item 1,Item 2|"), GetViewContent());
   model()->apps()->DeleteAt(1);

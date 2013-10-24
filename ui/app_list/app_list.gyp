@@ -165,13 +165,19 @@
       'dependencies': [
         '../../base/base.gyp:base',
         '../../base/base.gyp:test_support_base',
+        # TODO: Remove this dependency. See comment for views_unittests.
+        '../../chrome/chrome_resources.gyp:packed_resources',
         '../../skia/skia.gyp:skia',
         '../../testing/gtest.gyp:gtest',
         '../compositor/compositor.gyp:compositor',
         '../ui.gyp:run_ui_unittests',
+        '../ui.gyp:ui',
+        '../ui.gyp:ui_resources',
+        '../ui.gyp:ui_test_support',
         'app_list',
       ],
       'sources': [
+        'app_list_model_unittest.cc',
         'pagination_model_unittest.cc',
         'test/app_list_test_model.cc',
         'test/app_list_test_model.h',
@@ -215,6 +221,11 @@
         }, {  # OS!="mac"
           'sources/': [
             ['exclude', 'cocoa/'],
+          ],
+        }],
+        ['use_glib == 1 or OS == "ios"', {
+          'dependencies': [
+            '../base/strings/ui_strings.gyp:ui_unittest_strings',
           ],
         }],
         # See http://crbug.com/162998#c4 for why this is needed.

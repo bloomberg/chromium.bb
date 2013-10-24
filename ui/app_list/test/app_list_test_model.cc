@@ -33,13 +33,18 @@ AppListTestModel::AppListTestModel()
   SetSignedIn(true);
 }
 
+std::string AppListTestModel::GetItemName(int id) {
+  return base::StringPrintf("Item %d", id);
+}
+
 void AppListTestModel::PopulateApps(int n) {
+  int start_index = apps()->item_count();
   for (int i = 0; i < n; ++i)
-    AddItem(base::StringPrintf("Item %d", i));
+    CreateAndAddItem(GetItemName(start_index + i));
 }
 
 void AppListTestModel::PopulateAppWithId(int id) {
-  AddItem(base::StringPrintf("Item %d", id));
+  CreateAndAddItem(GetItemName(id));
 }
 
 std::string AppListTestModel::GetModelContent() {
@@ -59,13 +64,13 @@ AppListItemModel* AppListTestModel::CreateItem(const std::string& title,
   return item;
 }
 
-void AppListTestModel::AddItem(const std::string& title) {
-  apps()->Add(CreateItem(title, title));
+void AppListTestModel::CreateAndAddItem(const std::string& title,
+                                        const std::string& full_name) {
+  AddItem(CreateItem(title, full_name));
 }
 
-void AppListTestModel::AddItem(const std::string& title,
-                               const std::string& full_name) {
-  apps()->Add(CreateItem(title, full_name));
+void AppListTestModel::CreateAndAddItem(const std::string& title) {
+  CreateAndAddItem(title, title);
 }
 
 void AppListTestModel::HighlightItemAt(int index) {

@@ -19,6 +19,7 @@
 #include "ui/app_list/test/app_list_test_model.h"
 #include "ui/app_list/views/app_list_item_view.h"
 #include "ui/app_list/views/test/apps_grid_view_test_api.h"
+#include "ui/views/test/views_test_base.h"
 
 namespace app_list {
 namespace test {
@@ -91,13 +92,14 @@ class PageFlipWaiter : public PaginationModelObserver {
 
 }  // namespace
 
-class AppsGridViewTest : public testing::Test {
+class AppsGridViewTest : public views::ViewsTestBase {
  public:
   AppsGridViewTest() {}
   virtual ~AppsGridViewTest() {}
 
   // testing::Test overrides:
   virtual void SetUp() OVERRIDE {
+    views::ViewsTestBase::SetUp();
     model_.reset(new AppListTestModel);
     pagination_model_.reset(new PaginationModel);
 
@@ -112,6 +114,7 @@ class AppsGridViewTest : public testing::Test {
   }
   virtual void TearDown() OVERRIDE {
     apps_grid_view_.reset();  // Release apps grid view before models.
+    views::ViewsTestBase::TearDown();
   }
 
  protected:
@@ -170,8 +173,6 @@ class AppsGridViewTest : public testing::Test {
   scoped_ptr<AppsGridView> apps_grid_view_;
   scoped_ptr<AppsGridViewTestApi> test_api_;
 
-  base::MessageLoopForUI message_loop_;
-
  private:
   DISALLOW_COPY_AND_ASSIGN(AppsGridViewTest);
 };
@@ -183,7 +184,7 @@ TEST_F(AppsGridViewTest, CreatePage) {
   EXPECT_EQ(kPages, pagination_model_->total_pages());
 
   // Adds one more and gets a new page created.
-  model_->AddItem(std::string("Extra"));
+  model_->CreateAndAddItem("Extra");
   EXPECT_EQ(kPages + 1, pagination_model_->total_pages());
 }
 
@@ -260,7 +261,7 @@ TEST_F(AppsGridViewTest, MouseDrag) {
 
   // Adding a launcher item cancels the drag and respects the order.
   SimulateDrag(AppsGridView::MOUSE, from, to);
-  model_->AddItem(std::string("Extra"));
+  model_->CreateAndAddItem("Extra");
   apps_grid_view_->EndDrag(false);
   EXPECT_EQ(std::string("Item 1,Item 2,Item 3,Extra"),
             model_->GetModelContent());
@@ -271,7 +272,7 @@ TEST_F(AppsGridViewTest, MouseDragFlipPage) {
   test_api_->SetPageFlipDelay(10);
   pagination_model_->SetTransitionDurations(10, 10);
 
-  PageFlipWaiter page_flip_waiter(&message_loop_,
+  PageFlipWaiter page_flip_waiter(message_loop(),
                                   pagination_model_.get());
 
   const int kPages = 3;
@@ -432,7 +433,7 @@ TEST_F(AppsGridViewTest, ItemLabelShortNameOverride) {
   // should always be the full name of the app.
   std::string expected_text("xyz");
   std::string expected_tooltip("tooltip");
-  model_->AddItem(expected_text, expected_tooltip);
+  model_->CreateAndAddItem(expected_text, expected_tooltip);
 
   string16 actual_tooltip;
   AppListItemView* item_view = GetItemViewAt(0);
@@ -448,7 +449,7 @@ TEST_F(AppsGridViewTest, ItemLabelNoShortName) {
   // If the app's full name and short name are the same, use the default tooltip
   // behavior of the label (only show a tooltip if the title is truncated).
   std::string title("a");
-  model_->AddItem(title, title);
+  model_->CreateAndAddItem(title, title);
 
   string16 actual_tooltip;
   AppListItemView* item_view = GetItemViewAt(0);

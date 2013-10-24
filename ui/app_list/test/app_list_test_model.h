@@ -20,6 +20,9 @@ class AppListTestModel : public AppListModel {
  public:
   AppListTestModel();
 
+  // Generates a name based on |id|.
+  std::string GetItemName(int id);
+
   // Populate the model with |n| items titled "Item #".
   void PopulateApps(int n);
 
@@ -29,15 +32,15 @@ class AppListTestModel : public AppListModel {
   // Get a string of all apps in |model| joined with ','.
   std::string GetModelContent();
 
+  // Creates an item with |title| and |full_name|. Caller owns the result.
   AppListItemModel* CreateItem(const std::string& title,
                                const std::string& full_name);
 
-  // Add an item with arbitrary |title| and |full_name| to the model.
-  void AddItem(const std::string& title, const std::string& full_name);
+  // Creates and adds an item with |title| and |full_name| to the model.
+  void CreateAndAddItem(const std::string& title, const std::string& full_name);
 
-  // Add an item with arbitrary |title| to the model. This is a convenience
-  // version which will use the title for the full_name.
-  void AddItem(const std::string& title);
+  // Convenience version of CreateAndAddItem(title, title).
+  void CreateAndAddItem(const std::string& title);
 
   // Call SetHighlighted on the specified item.
   void HighlightItemAt(int index);
