@@ -42,12 +42,13 @@ namespace {
 const char kSettingsOrigin[] = "Chrome settings";
 
 // Sets data related to the country <select>.
-void SetCountryData(PersonalDataManager* manager,
-                    DictionaryValue* localized_strings) {
-  autofill::CountryComboboxModel model(manager);
+void SetCountryData(DictionaryValue* localized_strings) {
+  std::string default_country_code = AutofillCountry::CountryCodeForLocale(
+      g_browser_process->GetApplicationLocale());
+  localized_strings->SetString("defaultCountryCode", default_country_code);
+
+  autofill::CountryComboboxModel model;
   const std::vector<AutofillCountry*>& countries = model.countries();
-  localized_strings->SetString("defaultCountryCode",
-                               countries.front()->country_code());
 
   // An ordered list of options to show in the <select>.
   scoped_ptr<ListValue> country_list(new ListValue());
@@ -241,7 +242,8 @@ scoped_ptr<ListValue> ValidatePhoneArguments(const ListValue* args) {
 namespace options {
 
 AutofillOptionsHandler::AutofillOptionsHandler()
-    : personal_data_(NULL) {}
+    : personal_data_(NULL) {
+}
 
 AutofillOptionsHandler::~AutofillOptionsHandler() {
   if (personal_data_)
@@ -280,6 +282,8 @@ void AutofillOptionsHandler::GetLocalizedValues(
 }
 
 void AutofillOptionsHandler::InitializeHandler() {
+  personal_data_ = autofill::PersonalDataManagerFactory::GetForProfile(
+      Profile::FromWebUI(web_ui()));
   // personal_data_ is NULL in guest mode on Chrome OS.
   if (personal_data_)
     personal_data_->AddObserver(this);
@@ -291,9 +295,6 @@ void AutofillOptionsHandler::InitializePage() {
 }
 
 void AutofillOptionsHandler::RegisterMessages() {
-  personal_data_ = autofill::PersonalDataManagerFactory::GetForProfile(
-      Profile::FromWebUI(web_ui()));
-
   web_ui()->RegisterMessageCallback(
       "removeData",
       base::Bind(&AutofillOptionsHandler::RemoveData,
@@ -359,7 +360,7 @@ void AutofillOptionsHandler::SetAddressOverlayStrings(
       l10n_util::GetStringUTF16(IDS_AUTOFILL_FIELD_LABEL_ADD_PHONE));
   localized_strings->SetString("autofillAddEmailPlaceholder",
       l10n_util::GetStringUTF16(IDS_AUTOFILL_FIELD_LABEL_ADD_EMAIL));
-  SetCountryData(personal_data_, localized_strings);
+  SetCountryData(localized_strings);
 }
 
 void AutofillOptionsHandler::SetCreditCardOverlayStrings(

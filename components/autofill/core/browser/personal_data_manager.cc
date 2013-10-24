@@ -139,12 +139,6 @@ bool IsValidFieldTypeAndValue(const std::set<ServerFieldType>& types_seen,
   return true;
 }
 
-// A helper function for finding the maximum value in a string->int map.
-static bool CompareVotes(const std::pair<std::string, int>& a,
-                         const std::pair<std::string, int>& b) {
-  return a.second < b.second;
-}
-
 }  // namespace
 
 PersonalDataManager::PersonalDataManager(const std::string& app_locale)
@@ -771,18 +765,6 @@ std::string PersonalDataManager::MergeProfile(
   return guid;
 }
 
-const std::string& PersonalDataManager::GetDefaultCountryCodeForNewAddress() {
-  if (default_country_code_.empty())
-    default_country_code_ = MostCommonCountryCodeFromProfiles();
-
-  // If the profiles don't help, guess based on locale.
-  // TODO(estade): prefer to use the timezone instead.
-  if (default_country_code_.empty())
-    default_country_code_ = AutofillCountry::CountryCodeForLocale(app_locale());
-
-  return default_country_code_;
-}
-
 void PersonalDataManager::SetProfiles(std::vector<AutofillProfile>* profiles) {
   if (browser_context_->IsOffTheRecord())
     return;
@@ -1047,33 +1029,6 @@ void PersonalDataManager::set_metric_logger(
 void PersonalDataManager::set_browser_context(
     content::BrowserContext* context) {
   browser_context_ = context;
-}
-
-std::string PersonalDataManager::MostCommonCountryCodeFromProfiles() {
-  // Count up country codes from existing profiles.
-  std::map<std::string, int> votes;
-  const std::vector<AutofillProfile*>& profiles = GetProfiles();
-  std::vector<std::string> country_codes;
-  AutofillCountry::GetAvailableCountries(&country_codes);
-  for (size_t i = 0; i < profiles.size(); ++i) {
-    std::string country_code = StringToUpperASCII(UTF16ToASCII(
-        profiles[i]->GetRawInfo(ADDRESS_HOME_COUNTRY)));
-
-    if (std::find(country_codes.begin(), country_codes.end(), country_code) !=
-            country_codes.end()) {
-      // Verified profiles count 100x more than unverified ones.
-      votes[country_code] += profiles[i]->IsVerified() ? 100 : 1;
-    }
-  }
-
-  // Take the most common country code.
-  if (!votes.empty()) {
-    std::map<std::string, int>::iterator iter =
-        std::max_element(votes.begin(), votes.end(), CompareVotes);
-    return iter->first;
-  }
-
-  return std::string();
 }
 
 }  // namespace autofill

@@ -15,12 +15,11 @@
 namespace autofill {
 
 class AutofillCountry;
-class PersonalDataManager;
 
 // A model for countries to be used to enter addresses.
 class CountryComboboxModel : public ui::ComboboxModel {
  public:
-  explicit CountryComboboxModel(PersonalDataManager* manager);
+  CountryComboboxModel();
   virtual ~CountryComboboxModel();
 
   // ui::Combobox implementation:

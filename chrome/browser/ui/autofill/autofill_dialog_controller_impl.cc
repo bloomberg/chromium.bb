@@ -2499,7 +2499,6 @@ AutofillDialogControllerImpl::AutofillDialogControllerImpl(
       callback_(callback),
       account_chooser_model_(this, profile_->GetPrefs(), metric_logger_),
       wallet_client_(profile_->GetRequestContext(), this, source_url),
-      country_combobox_model_(GetManager()),
       suggested_cc_(this),
       suggested_billing_(this),
       suggested_cc_billing_(this),
