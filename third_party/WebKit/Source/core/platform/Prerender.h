@@ -65,8 +65,6 @@ public:
     void add();
     void cancel();
     void abandon();
-    void suspend();
-    void resume();
 
     const KURL& url() const { return m_url; }
     const String& referrer() const { return m_referrer; }
@@ -88,8 +86,6 @@ private:
     const KURL m_url;
     const String m_referrer;
     const ReferrerPolicy m_referrerPolicy;
-
-    bool m_isActive;
 
     RefPtr<ExtraData> m_extraData;
 };

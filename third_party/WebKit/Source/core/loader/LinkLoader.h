@@ -37,13 +37,13 @@
 #include "core/loader/LinkLoaderClient.h"
 #include "core/platform/PrerenderClient.h"
 #include "platform/Timer.h"
-#include "wtf/RefPtr.h"
+#include "wtf/OwnPtr.h"
 
 namespace WebCore {
 
 class Document;
 class LinkRelAttribute;
-class Prerender;
+class PrerenderHandle;
 
 // The LinkLoader can load link rel types icon, dns-prefetch, subresource, prefetch and prerender.
 class LinkLoader : public ResourceClient, public PrerenderClient {
@@ -74,7 +74,7 @@ private:
     Timer<LinkLoader> m_linkLoadTimer;
     Timer<LinkLoader> m_linkLoadingErrorTimer;
 
-    RefPtr<Prerender> m_prerender;
+    OwnPtr<PrerenderHandle> m_prerender;
 };
 
 }

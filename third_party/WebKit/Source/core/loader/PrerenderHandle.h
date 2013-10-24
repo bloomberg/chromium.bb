@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012 Google Inc. All rights reserved.
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -26,55 +26,43 @@
  * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
  */
 
-#ifndef Prerenderer_h
-#define Prerenderer_h
+#ifndef PrerenderHandle_h
+#define PrerenderHandle_h
 
 #include "core/dom/DocumentLifecycleObserver.h"
-#include "core/dom/DocumentSupplementable.h"
-#include "platform/Supplementable.h"
 #include "weborigin/KURL.h"
+#include "wtf/Noncopyable.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
-#include "wtf/RefPtr.h"
-#include "wtf/Vector.h"
 
 namespace WebCore {
 
-class PrerenderClient;
+class Document;
 class Prerender;
-class PrerendererClient;
-class Page;
+class PrerenderClient;
 
-class Prerenderer : public DocumentLifecycleObserver, public DocumentSupplement {
-    WTF_MAKE_NONCOPYABLE(Prerenderer);
+class PrerenderHandle : public DocumentLifecycleObserver {
+    WTF_MAKE_NONCOPYABLE(PrerenderHandle);
 public:
-    virtual ~Prerenderer();
+    static PassOwnPtr<PrerenderHandle> create(Document&, PrerenderClient*, const KURL&);
 
-    PassRefPtr<Prerender> render(PrerenderClient*, const KURL&);
+    virtual ~PrerenderHandle();
 
-    static const char* supplementName();
-    static Prerenderer* from(Document*);
+    void cancel();
+    const KURL& url() const;
 
     // From DocumentLifecycleObserver:
     virtual void documentWasDetached() OVERRIDE;
-
 private:
-    typedef Vector<RefPtr<Prerender> > PrerenderVector;
-    typedef Vector<KURL> KURLVector;
+    PrerenderHandle(Document&, PassRefPtr<Prerender>);
 
-    explicit Prerenderer(Document*);
+    void detach();
 
-    Document* document();
-    PrerendererClient* client();
-
-    bool m_initializedClient;
-    PrerendererClient* m_client;
-    PrerenderVector m_activePrerenders;
+    RefPtr<Prerender> m_prerender;
 };
 
 }
 
-#endif // Prerenderer_h
+#endif // PrerenderHandle_h

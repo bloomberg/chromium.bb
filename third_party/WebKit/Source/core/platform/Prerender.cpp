@@ -48,7 +48,6 @@ Prerender::Prerender(PrerenderClient* client, const KURL& url, const String& ref
     , m_url(url)
     , m_referrer(referrer)
     , m_referrerPolicy(policy)
-    , m_isActive(false)
 {
 }
 
@@ -63,8 +62,6 @@ void Prerender::removeClient()
 
 void Prerender::add()
 {
-    ASSERT(!m_isActive);
-    m_isActive = true;
     WebKit::WebPrerenderingSupport* platform = WebKit::WebPrerenderingSupport::current();
     if (!platform)
         return;
@@ -73,12 +70,6 @@ void Prerender::add()
 
 void Prerender::cancel()
 {
-    // The LinkLoader and the Document (via Prerenderer) share ownership of
-    // the Prerender, so it may have been abandoned by the Prerenderer and
-    // then later canceled by the LinkLoader.
-    if (!m_isActive)
-        return;
-    m_isActive = false;
     WebKit::WebPrerenderingSupport* platform = WebKit::WebPrerenderingSupport::current();
     if (!platform)
         return;
@@ -87,26 +78,10 @@ void Prerender::cancel()
 
 void Prerender::abandon()
 {
-    // The LinkLoader and the Document (via Prerenderer) share ownership of
-    // the Prerender, so it may have been canceled by the LinkLoader and
-    // then later abandoned by the Prerenderer.
-    if (!m_isActive)
-        return;
-    m_isActive = false;
     WebKit::WebPrerenderingSupport* platform = WebKit::WebPrerenderingSupport::current();
     if (!platform)
         return;
     platform->abandon(WebKit::WebPrerender(this));
-}
-
-void Prerender::suspend()
-{
-    abandon();
-}
-
-void Prerender::resume()
-{
-    add();
 }
 
 void Prerender::didStartPrerender()

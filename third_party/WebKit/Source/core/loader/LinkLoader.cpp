@@ -37,9 +37,8 @@
 #include "core/fetch/FetchRequest.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/html/LinkRelAttribute.h"
-#include "core/loader/Prerenderer.h"
+#include "core/loader/PrerenderHandle.h"
 #include "core/page/Settings.h"
-#include "core/platform/Prerender.h"
 #include "platform/network/DNS.h"
 
 namespace WebCore {
@@ -55,8 +54,6 @@ LinkLoader::~LinkLoader()
 {
     if (m_cachedLinkResource)
         m_cachedLinkResource->removeClient(this);
-    if (m_prerender)
-        m_prerender->removeClient();
 }
 
 void LinkLoader::linkLoadTimerFired(Timer<LinkLoader>* timer)
@@ -130,16 +127,14 @@ bool LinkLoader::loadLink(const LinkRelAttribute& relAttribute, const String& ty
 
     if (relAttribute.isLinkPrerender()) {
         if (!m_prerender) {
-            m_prerender = Prerenderer::from(&document)->render(this, href);
+            m_prerender = PrerenderHandle::create(document, this, href);
         } else if (m_prerender->url() != href) {
             m_prerender->cancel();
-            m_prerender->removeClient();
-            m_prerender = Prerenderer::from(&document)->render(this, href);
+            m_prerender = PrerenderHandle::create(document, this, href);
         }
     } else if (m_prerender) {
         m_prerender->cancel();
-        m_prerender->removeClient();
-        m_prerender = 0;
+        m_prerender.clear();
     }
     return true;
 }
@@ -150,7 +145,6 @@ void LinkLoader::released()
     // atomic (dns prefetch).
     if (m_prerender) {
         m_prerender->cancel();
-        m_prerender->removeClient();
         m_prerender.clear();
     }
 }

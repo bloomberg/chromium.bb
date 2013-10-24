@@ -312,6 +312,11 @@ TEST_F(PrerenderingTest, AbandonPrerender)
 
     EXPECT_EQ(1u, prerenderingSupport()->abandonCount(webPrerender));
     EXPECT_EQ(2u, prerenderingSupport()->totalCount());
+
+    // Check that the prerender does not emit an extra cancel when garbage-collecting everything.
+    close();
+
+    EXPECT_EQ(2u, prerenderingSupport()->totalCount());
 }
 
 TEST_F(PrerenderingTest, ExtraData)
@@ -388,8 +393,7 @@ TEST_F(PrerenderingTest, TwoPrerendersRemovingFirstThenNavigating)
     navigateAway();
 
     EXPECT_EQ(1u, prerenderingSupport()->abandonCount(secondPrerender));
-
-    // FIXME: After we fix prerenders such that they don't send redundant events, assert that totalCount() == 4u.
+    EXPECT_EQ(4u, prerenderingSupport()->totalCount());
 }
 
 TEST_F(PrerenderingTest, TwoPrerendersAddingThird)
