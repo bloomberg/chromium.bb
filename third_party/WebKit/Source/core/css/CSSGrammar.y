@@ -1,3 +1,5 @@
+%{
+
 /*
  *  Copyright (C) 2002-2003 Lars Knoll (knoll@kde.org)
  *  Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013 Apple Inc. All rights reserved.
@@ -20,6 +22,43 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  *
  */
+
+#include "config.h"
+
+#include "CSSPropertyNames.h"
+#include "HTMLNames.h"
+#include "core/css/CSSKeyframeRule.h"
+#include "core/css/CSSKeyframesRule.h"
+#include "core/css/CSSParser.h"
+#include "core/css/CSSParserMode.h"
+#include "core/css/CSSPrimitiveValue.h"
+#include "core/css/CSSSelector.h"
+#include "core/css/CSSSelectorList.h"
+#include "core/css/MediaList.h"
+#include "core/css/MediaQueryExp.h"
+#include "core/css/StyleRule.h"
+#include "core/css/StyleSheetContents.h"
+#include "core/dom/Document.h"
+#include "wtf/FastMalloc.h"
+#include <stdlib.h>
+#include <string.h>
+
+using namespace WebCore;
+using namespace HTMLNames;
+
+#define YYMALLOC fastMalloc
+#define YYFREE fastFree
+
+#define YYENABLE_NLS 0
+#define YYLTYPE_IS_TRIVIAL 1
+#define YYMAXDEPTH 10000
+#define YYDEBUG 0
+
+#if YYDEBUG > 0
+#define YYPRINT(File,Type,Value) if (isCSSTokenAString(Type)) YYFPRINTF(File, "%s", String((Value).string).utf8().data())
+#endif
+
+%}
 
 %pure_parser
 

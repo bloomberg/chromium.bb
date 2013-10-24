@@ -98,7 +98,7 @@
       ],
       'sources': [
         # bison rule
-        '<(SHARED_INTERMEDIATE_DIR)/blink/CSSGrammar.y',
+        'css/CSSGrammar.y',
         'xml/XPathGrammar.y',
 
         # gperf rule
@@ -570,24 +570,6 @@
             'xml/xmlattrs.in',
             '--output_dir',
             '<(SHARED_INTERMEDIATE_DIR)/blink',
-          ],
-        },
-        {
-          'action_name': 'preprocess_grammar',
-          'inputs': [
-            'css/CSSGrammar.y.in',
-            'css/CSSGrammar.y.includes',
-          ],
-          'outputs': [
-            '<(SHARED_INTERMEDIATE_DIR)/blink/CSSGrammar.y',
-          ],
-          'action': [
-            '<(perl_exe)',
-            '-I../build/scripts',
-            'css/makegrammar.pl',
-            '--outputDir',
-            '<(SHARED_INTERMEDIATE_DIR)/blink',
-            '<@(_inputs)',
           ],
         },
         {
