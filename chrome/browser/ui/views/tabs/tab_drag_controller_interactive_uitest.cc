@@ -42,6 +42,7 @@
 #endif
 
 #if defined(USE_ASH)
+#include "ash/ash_switches.h"
 #include "ash/display/display_controller.h"
 #include "ash/display/display_manager.h"
 #include "ash/shell.h"
@@ -338,6 +339,12 @@ class DetachToBrowserTabDragControllerTest
 
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     command_line->AppendSwitch(switches::kTabBrowserDragging);
+#if defined(USE_ASH) && !defined(OS_WIN)  // TODO(win_ash)
+    if (docked_windows_enabled()) {
+      CommandLine::ForCurrentProcess()->AppendSwitch(
+          ash::switches::kAshEnableDockedWindows);
+    }
+#endif
   }
 
   virtual void SetUpOnMainThread() OVERRIDE {
@@ -348,8 +355,12 @@ class DetachToBrowserTabDragControllerTest
   }
 
   InputSource input_source() const {
-    return !strcmp(GetParam(), "mouse") ?
+    return strstr(GetParam(), "mouse") ?
         INPUT_SOURCE_MOUSE : INPUT_SOURCE_TOUCH;
+  }
+
+  bool docked_windows_enabled() const {
+    return (strstr(GetParam(), "docked") != NULL);
   }
 
   // Set root window from a point in screen coordinates
@@ -370,9 +381,22 @@ class DetachToBrowserTabDragControllerTest
           ui_test_utils::SendMouseEventsSync(
               ui_controls::LEFT, ui_controls::DOWN);
     }
-#if defined(USE_ASH)  && !defined(OS_WIN)  // TODO(win_ash)
+#if defined(USE_ASH) && !defined(OS_WIN)  // TODO(win_ash)
     event_generator_->set_current_location(location);
     event_generator_->PressTouch();
+#else
+    NOTREACHED();
+#endif
+    return true;
+  }
+
+  bool PressInput2() {
+    // Second touch input is only used for touch sequence tests.
+    EXPECT_EQ(INPUT_SOURCE_TOUCH, input_source());
+#if defined(USE_ASH) && !defined(OS_WIN)  // TODO(win_ash)
+    event_generator_->set_current_location(
+        event_generator_->current_location());
+    event_generator_->PressTouchId(1);
 #else
     NOTREACHED();
 #endif
@@ -415,6 +439,35 @@ class DetachToBrowserTabDragControllerTest
     return true;
   }
 
+  bool DragInputToDelayedNotifyWhenDone(int x,
+                                        int y,
+                                        const base::Closure& task,
+                                        base::TimeDelta delay) {
+    if (input_source() == INPUT_SOURCE_MOUSE)
+      return ui_controls::SendMouseMoveNotifyWhenDone(x, y, task);
+#if defined(USE_ASH) && !defined(OS_WIN)  // TODO(win_ash)
+    base::MessageLoop::current()->PostDelayedTask(FROM_HERE, task, delay);
+    event_generator_->MoveTouch(gfx::Point(x, y));
+#else
+    NOTREACHED();
+#endif
+    return true;
+  }
+
+  bool DragInput2ToNotifyWhenDone(int x,
+                                 int y,
+                                 const base::Closure& task) {
+    if (input_source() == INPUT_SOURCE_MOUSE)
+      return ui_controls::SendMouseMoveNotifyWhenDone(x, y, task);
+#if defined(USE_ASH) && !defined(OS_WIN)  // TODO(win_ash)
+    base::MessageLoop::current()->PostTask(FROM_HERE, task);
+    event_generator_->MoveTouchId(gfx::Point(x, y), 1);
+#else
+    NOTREACHED();
+#endif
+    return true;
+  }
+
   bool ReleaseInput() {
     if (input_source() == INPUT_SOURCE_MOUSE) {
       return ui_test_utils::SendMouseEventsSync(
@@ -422,6 +475,19 @@ class DetachToBrowserTabDragControllerTest
     }
 #if defined(USE_ASH) && !defined(OS_WIN)  // TODO(win_ash)
     event_generator_->ReleaseTouch();
+#else
+    NOTREACHED();
+#endif
+    return true;
+  }
+
+  bool ReleaseInput2() {
+    if (input_source() == INPUT_SOURCE_MOUSE) {
+      return ui_test_utils::SendMouseEventsSync(
+              ui_controls::LEFT, ui_controls::UP);
+    }
+#if defined(USE_ASH) && !defined(OS_WIN)  // TODO(win_ash)
+    event_generator_->ReleaseTouchId(1);
 #else
     NOTREACHED();
 #endif
@@ -1248,7 +1314,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
   EXPECT_TRUE(new_browser->window()->IsMaximized());
 }
 
-// Subclass of DetachToBrowserInSeparateDisplayTabDragControllerTest that
+// Subclass of DetachToBrowserTabDragControllerTest that
 // creates multiple displays.
 class DetachToBrowserInSeparateDisplayTabDragControllerTest
     : public DetachToBrowserTabDragControllerTest {
@@ -1265,6 +1331,17 @@ class DetachToBrowserInSeparateDisplayTabDragControllerTest
  private:
   DISALLOW_COPY_AND_ASSIGN(
       DetachToBrowserInSeparateDisplayTabDragControllerTest);
+};
+
+// Subclass of DetachToBrowserTabDragControllerTest that runs tests only with
+// touch input.
+class DetachToBrowserTabDragControllerTestTouch
+    : public DetachToBrowserTabDragControllerTest {
+ public:
+  DetachToBrowserTabDragControllerTestTouch() {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(DetachToBrowserTabDragControllerTestTouch);
 };
 
 namespace {
@@ -1864,6 +1941,99 @@ IN_PROC_BROWSER_TEST_F(
       ui_controls::LEFT, ui_controls::UP));
 }
 
+namespace {
+
+void DetachToOwnWindowTwoFingersDragStep5(
+    DetachToBrowserTabDragControllerTest* test) {
+  ASSERT_EQ(2u, test->native_browser_list->size());
+  Browser* new_browser = test->native_browser_list->get(1);
+  ASSERT_TRUE(new_browser->window()->IsActive());
+
+  ASSERT_TRUE(test->ReleaseInput());
+  ASSERT_TRUE(test->ReleaseInput2());
+  ASSERT_TRUE(new_browser->window()->IsActive());
+}
+
+void DetachToOwnWindowTwoFingersDragStep4(
+    DetachToBrowserTabDragControllerTest* test,
+    const gfx::Point& target_point) {
+  ASSERT_EQ(2u, test->native_browser_list->size());
+  Browser* new_browser = test->native_browser_list->get(1);
+  ASSERT_TRUE(new_browser->window()->IsActive());
+
+  ASSERT_TRUE(test->DragInput2ToNotifyWhenDone(
+      target_point.x(), target_point.y(),
+      base::Bind(&DetachToOwnWindowTwoFingersDragStep5, test)));
+}
+
+void DetachToOwnWindowTwoFingersDragStep3(
+    DetachToBrowserTabDragControllerTest* test,
+    const gfx::Point& target_point) {
+  ASSERT_TRUE(test->PressInput2());
+
+  ASSERT_EQ(2u, test->native_browser_list->size());
+  Browser* new_browser = test->native_browser_list->get(1);
+  ASSERT_TRUE(new_browser->window()->IsActive());
+
+  ASSERT_TRUE(test->DragInputToDelayedNotifyWhenDone(
+      target_point.x(), target_point.y(),
+      base::Bind(&DetachToOwnWindowTwoFingersDragStep4,
+                 test,
+                 target_point),
+      base::TimeDelta::FromMilliseconds(60)));
+}
+
+void DetachToOwnWindowTwoFingersDragStep2(
+    DetachToBrowserTabDragControllerTest* test,
+    const gfx::Point& target_point) {
+  ASSERT_EQ(2u, test->native_browser_list->size());
+  Browser* new_browser = test->native_browser_list->get(1);
+  ASSERT_TRUE(new_browser->window()->IsActive());
+
+  ASSERT_TRUE(test->DragInputToDelayedNotifyWhenDone(
+      target_point.x(), target_point.y(),
+      base::Bind(&DetachToOwnWindowTwoFingersDragStep3,
+                 test,
+                 target_point + gfx::Vector2d(-2, 1)),
+      base::TimeDelta::FromMilliseconds(60)));
+}
+
+}  // namespace
+
+// Drags from browser to separate window starting with one finger and
+// then continuing with two fingers.
+IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTestTouch,
+                       DetachToOwnWindowTwoFingers) {
+  gfx::Rect bounds(browser()->window()->GetBounds());
+  // Add another tab.
+  AddTabAndResetBrowser(browser());
+  TabStrip* tab_strip = GetTabStripForBrowser(browser());
+
+  // Move to the first tab and drag it enough so that it detaches.
+  gfx::Point tab_0_center(
+      GetCenterInScreenCoordinates(tab_strip->tab_at(0)));
+  ASSERT_TRUE(PressInput(tab_0_center));
+  // Drags in this test are very short to avoid fling.
+  ASSERT_TRUE(DragInputToDelayedNotifyWhenDone(
+                  tab_0_center.x(), tab_0_center.y() + GetDetachY(tab_strip),
+                  base::Bind(&DetachToOwnWindowTwoFingersDragStep2,
+                             this, gfx::Point(5 + tab_0_center.x(),
+                                              1 + tab_0_center.y()
+                                              + GetDetachY(tab_strip))),
+                  base::TimeDelta::FromMilliseconds(60)));
+  // Continue dragging, first with one finger, then with two fingers.
+  QuitWhenNotDragging();
+
+  // There should now be another browser.
+  ASSERT_EQ(2u, native_browser_list->size());
+  Browser* new_browser = native_browser_list->get(1);
+  ASSERT_TRUE(new_browser->window()->IsActive());
+  // The sequence of drags should successfully move the browser window.
+  bounds += gfx::Vector2d(5 - 2, 1 + 1 + GetDetachY(tab_strip));
+  EXPECT_EQ(bounds.ToString(),
+            new_browser->window()->GetNativeWindow()->bounds().ToString());
+}
+
 #endif
 
 #if defined(USE_ASH) && !defined(OS_WIN)  // TODO(win_ash)
@@ -1876,6 +2046,9 @@ INSTANTIATE_TEST_CASE_P(TabDragging,
 INSTANTIATE_TEST_CASE_P(TabDragging,
                         DetachToBrowserTabDragControllerTest,
                         ::testing::Values("mouse", "touch"));
+INSTANTIATE_TEST_CASE_P(TabDragging,
+                        DetachToBrowserTabDragControllerTestTouch,
+                        ::testing::Values("touch", "touch docked"));
 #else
 INSTANTIATE_TEST_CASE_P(TabDragging,
                         DetachToBrowserTabDragControllerTest,

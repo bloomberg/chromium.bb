@@ -35,7 +35,7 @@ class TwoFingerDragHandler : public aura::WindowObserver {
   bool ProcessGestureEvent(aura::Window* target, const ui::GestureEvent& event);
 
  private:
-  void Reset();
+  void Reset(aura::Window* window);
 
   // Overridden from aura::WindowObserver.
   virtual void OnWindowVisibilityChanged(aura::Window* window,
@@ -43,6 +43,9 @@ class TwoFingerDragHandler : public aura::WindowObserver {
   virtual void OnWindowDestroying(aura::Window* window) OVERRIDE;
 
   int first_finger_hittest_;
+
+  // Set to true while a drag initiated with two-finger gesture is in progress.
+  bool in_gesture_drag_;
 
   scoped_ptr<WindowResizer> window_resizer_;
 
