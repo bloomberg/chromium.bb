@@ -104,11 +104,6 @@ GraphicsContext3D::~GraphicsContext3D()
 {
     setContextLostCallback(nullptr);
     setErrorMessageCallback(nullptr);
-
-    if (m_ownedGrContext) {
-        m_ownedWebContext->setMemoryAllocationChangedCallbackCHROMIUM(0);
-        m_ownedGrContext->contextDestroyed();
-    }
 }
 
 // Macros to assist in delegating from GraphicsContext3D to
@@ -300,59 +295,8 @@ PassRefPtr<GraphicsContext3D> GraphicsContext3D::createGraphicsContextFromWebCon
     return context.release();
 }
 
-class GrMemoryAllocationChangedCallbackAdapter : public WebKit::WebGraphicsContext3D::WebGraphicsMemoryAllocationChangedCallbackCHROMIUM {
-public:
-    GrMemoryAllocationChangedCallbackAdapter(GrContext* context)
-        : m_context(context)
-    {
-    }
-
-    virtual void onMemoryAllocationChanged(WebKit::WebGraphicsMemoryAllocation allocation) OVERRIDE
-    {
-        if (!m_context)
-            return;
-
-        if (!allocation.gpuResourceSizeInBytes) {
-            m_context->freeGpuResources();
-            m_context->setTextureCacheLimits(0, 0);
-        } else
-            m_context->setTextureCacheLimits(maxGaneshTextureCacheCount, maxGaneshTextureCacheBytes);
-    }
-
-private:
-    GrContext* m_context;
-};
-
-namespace {
-void bindWebGraphicsContext3DGLContextCallback(const GrGLInterface* interface)
-{
-    reinterpret_cast<WebKit::WebGraphicsContext3D*>(interface->fCallbackData)->makeContextCurrent();
-}
-}
-
 GrContext* GraphicsContext3D::grContext()
 {
-    if (m_grContext)
-        return m_grContext;
-    if (!m_ownedWebContext)
-        return 0;
-
-    SkAutoTUnref<GrGLInterface> interface(m_ownedWebContext->createGrGLInterface());
-    if (!interface)
-        return 0;
-
-    interface->fCallback = bindWebGraphicsContext3DGLContextCallback;
-    interface->fCallbackData = reinterpret_cast<GrGLInterfaceCallbackData>(m_ownedWebContext.get());
-
-    m_ownedGrContext.reset(GrContext::Create(kOpenGL_GrBackend, reinterpret_cast<GrBackendContext>(interface.get())));
-    m_grContext = m_ownedGrContext;
-    if (!m_grContext)
-        return 0;
-
-    m_grContext->setTextureCacheLimits(maxGaneshTextureCacheCount, maxGaneshTextureCacheBytes);
-    m_grContextMemoryAllocationCallbackAdapter = adoptPtr(new GrMemoryAllocationChangedCallbackAdapter(m_grContext));
-    m_ownedWebContext->setMemoryAllocationChangedCallbackCHROMIUM(m_grContextMemoryAllocationCallbackAdapter.get());
-
     return m_grContext;
 }
 

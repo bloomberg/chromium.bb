@@ -58,7 +58,6 @@ class DrawingBuffer;
 class Extensions3D;
 class GraphicsContext3DContextLostCallbackAdapter;
 class GraphicsContext3DErrorMessageCallbackAdapter;
-class GrMemoryAllocationChangedCallbackAdapter;
 class Image;
 class ImageBuffer;
 class ImageData;
@@ -830,7 +829,6 @@ private:
     OwnPtr<GraphicsContext3DErrorMessageCallbackAdapter> m_errorMessageCallbackAdapter;
     OwnPtr<WebKit::WebGraphicsContext3D> m_ownedWebContext;
     OwnPtr<Extensions3D> m_extensions;
-    OwnPtr<GrMemoryAllocationChangedCallbackAdapter> m_grContextMemoryAllocationCallbackAdapter;
     bool m_initializedAvailableExtensions;
     HashSet<String> m_enabledExtensions;
     HashSet<String> m_requestableExtensions;
@@ -853,7 +851,6 @@ private:
     SkBitmap m_resizingBitmap;
 
     GrContext* m_grContext;
-    SkAutoTUnref<GrContext> m_ownedGrContext;
 
     // Used to flip a bitmap vertically.
     Vector<uint8_t> m_scanline;
