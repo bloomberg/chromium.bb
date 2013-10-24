@@ -123,6 +123,7 @@
         'system/message_pipe_unittest.cc',
         'system/raw_channel_posix_unittest.cc',
         'system/simple_dispatcher_unittest.cc',
+        'system/test_utils.cc',
         'system/test_utils.h',
         'system/waiter_list_unittest.cc',
         'system/waiter_test_utils.cc',

@@ -34,28 +34,12 @@
 #include "base/time/time.h"
 #include "mojo/system/message_in_transit.h"
 #include "mojo/system/platform_channel_handle.h"
+#include "mojo/system/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {
 namespace system {
 namespace {
-
-void PostTaskAndWaitHelper(base::WaitableEvent* event,
-                           const base::Closure& task) {
-  task.Run();
-  event->Signal();
-}
-
-void PostTaskAndWait(base::MessageLoop* message_loop,
-                     const tracked_objects::Location& from_here,
-                     const base::Closure& task) {
-  base::WaitableEvent event(false, false);
-  message_loop->PostTask(from_here,
-                         base::Bind(&PostTaskAndWaitHelper, &event, task));
-  event.Wait();
-}
-
-// -----------------------------------------------------------------------------
 
 MessageInTransit* MakeTestMessage(uint32_t num_bytes) {
   std::vector<unsigned char> bytes(num_bytes, 0);
@@ -110,7 +94,13 @@ class RawChannelPosixTest : public testing::Test {
   int fd(size_t i) { return fds_[i]; }
   void clear_fd(size_t i) { fds_[i] = -1; }
 
-  base::MessageLoop* message_loop() { return io_thread_.message_loop(); }
+  base::MessageLoop* io_thread_message_loop() {
+    return io_thread_.message_loop();
+  }
+
+  scoped_refptr<base::TaskRunner> io_thread_task_runner() {
+    return io_thread_message_loop()->message_loop_proxy();
+  }
 
  private:
   base::Thread io_thread_;
@@ -212,15 +202,16 @@ TEST_F(RawChannelPosixTest, WriteMessage) {
   WriteOnlyRawChannelDelegate delegate;
   scoped_ptr<RawChannel> rc(RawChannel::Create(PlatformChannelHandle(fd(0)),
                                                &delegate,
-                                               message_loop()));
+                                               io_thread_message_loop()));
   // |RawChannel::Create()| takes ownership of the FD.
   clear_fd(0);
 
   TestMessageReaderAndChecker checker(fd(1));
 
-  PostTaskAndWait(message_loop(),
-                  FROM_HERE,
-                  base::Bind(&RawChannel::Init, base::Unretained(rc.get())));
+  test::PostTaskAndWait(io_thread_task_runner(),
+                        FROM_HERE,
+                        base::Bind(&RawChannel::Init,
+                                   base::Unretained(rc.get())));
 
   // Write and read, for a variety of sizes.
   for (uint32_t size = 1; size < 5 * 1000 * 1000; size += size / 2 + 1) {
@@ -234,10 +225,10 @@ TEST_F(RawChannelPosixTest, WriteMessage) {
   for (uint32_t size = 1; size < 5 * 1000 * 1000; size += size / 2 + 1)
     EXPECT_TRUE(checker.ReadAndCheckNextMessage(size)) << size;
 
-  PostTaskAndWait(message_loop(),
-                  FROM_HERE,
-                  base::Bind(&RawChannel::Shutdown,
-                             base::Unretained(rc.get())));
+  test::PostTaskAndWait(io_thread_task_runner(),
+                        FROM_HERE,
+                        base::Bind(&RawChannel::Shutdown,
+                                   base::Unretained(rc.get())));
 }
 
 // RawChannelPosixTest.OnReadMessage -------------------------------------------
@@ -307,13 +298,14 @@ TEST_F(RawChannelPosixTest, OnReadMessage) {
   ReadCheckerRawChannelDelegate delegate;
   scoped_ptr<RawChannel> rc(RawChannel::Create(PlatformChannelHandle(fd(0)),
                                                &delegate,
-                                               message_loop()));
+                                               io_thread_message_loop()));
   // |RawChannel::Create()| takes ownership of the FD.
   clear_fd(0);
 
-  PostTaskAndWait(message_loop(),
-                  FROM_HERE,
-                  base::Bind(&RawChannel::Init, base::Unretained(rc.get())));
+  test::PostTaskAndWait(io_thread_task_runner(),
+                        FROM_HERE,
+                        base::Bind(&RawChannel::Init,
+                                   base::Unretained(rc.get())));
 
   // Write and read, for a variety of sizes.
   for (uint32_t size = 1; size < 5 * 1000 * 1000; size += size / 2 + 1) {
@@ -339,10 +331,10 @@ TEST_F(RawChannelPosixTest, OnReadMessage) {
   }
   delegate.Wait();
 
-  PostTaskAndWait(message_loop(),
-                  FROM_HERE,
-                  base::Bind(&RawChannel::Shutdown,
-                             base::Unretained(rc.get())));
+  test::PostTaskAndWait(io_thread_task_runner(),
+                        FROM_HERE,
+                        base::Bind(&RawChannel::Shutdown,
+                                   base::Unretained(rc.get())));
 }
 
 // RawChannelPosixTest.WriteMessageAndOnReadMessage ----------------------------
@@ -418,28 +410,28 @@ TEST_F(RawChannelPosixTest, WriteMessageAndOnReadMessage) {
   scoped_ptr<RawChannel> writer_rc(
       RawChannel::Create(PlatformChannelHandle(fd(0)),
                                                &writer_delegate,
-                                               message_loop()));
+                                               io_thread_message_loop()));
   // |RawChannel::Create()| takes ownership of the FD.
   clear_fd(0);
 
-  PostTaskAndWait(message_loop(),
-                  FROM_HERE,
-                  base::Bind(&RawChannel::Init,
-                             base::Unretained(writer_rc.get())));
+  test::PostTaskAndWait(io_thread_task_runner(),
+                        FROM_HERE,
+                        base::Bind(&RawChannel::Init,
+                                   base::Unretained(writer_rc.get())));
 
   ReadCountdownRawChannelDelegate reader_delegate(
       kNumWriterThreads * kNumWriteMessagesPerThread);
   scoped_ptr<RawChannel> reader_rc(
       RawChannel::Create(PlatformChannelHandle(fd(1)),
                                                &reader_delegate,
-                                               message_loop()));
+                                               io_thread_message_loop()));
   // |RawChannel::Create()| takes ownership of the FD.
   clear_fd(1);
 
-  PostTaskAndWait(message_loop(),
-                  FROM_HERE,
-                  base::Bind(&RawChannel::Init,
-                             base::Unretained(reader_rc.get())));
+  test::PostTaskAndWait(io_thread_task_runner(),
+                        FROM_HERE,
+                        base::Bind(&RawChannel::Init,
+                                   base::Unretained(reader_rc.get())));
 
   {
     ScopedVector<RawChannelWriterThread> writer_threads;
@@ -458,15 +450,15 @@ TEST_F(RawChannelPosixTest, WriteMessageAndOnReadMessage) {
   // Wait for reading to finish.
   reader_delegate.Wait();
 
-  PostTaskAndWait(message_loop(),
-                  FROM_HERE,
-                  base::Bind(&RawChannel::Shutdown,
-                             base::Unretained(reader_rc.get())));
+  test::PostTaskAndWait(io_thread_task_runner(),
+                        FROM_HERE,
+                        base::Bind(&RawChannel::Shutdown,
+                                   base::Unretained(reader_rc.get())));
 
-  PostTaskAndWait(message_loop(),
-                  FROM_HERE,
-                  base::Bind(&RawChannel::Shutdown,
-                             base::Unretained(writer_rc.get())));
+  test::PostTaskAndWait(io_thread_task_runner(),
+                        FROM_HERE,
+                        base::Bind(&RawChannel::Shutdown,
+                                   base::Unretained(writer_rc.get())));
 }
 
 // RawChannelPosixTest.OnFatalError --------------------------------------------
@@ -512,13 +504,14 @@ TEST_F(RawChannelPosixTest, OnFatalError) {
   FatalErrorRecordingRawChannelDelegate delegate;
   scoped_ptr<RawChannel> rc(RawChannel::Create(PlatformChannelHandle(fd(0)),
                                                &delegate,
-                                               message_loop()));
+                                               io_thread_message_loop()));
   // |RawChannel::Create()| takes ownership of the FD.
   clear_fd(0);
 
-  PostTaskAndWait(message_loop(),
-                  FROM_HERE,
-                  base::Bind(&RawChannel::Init, base::Unretained(rc.get())));
+  test::PostTaskAndWait(io_thread_task_runner(),
+                        FROM_HERE,
+                        base::Bind(&RawChannel::Init,
+                                   base::Unretained(rc.get())));
 
   // Close the other end, which should make writing fail.
   CHECK_EQ(close(fd(1)), 0);
@@ -531,10 +524,10 @@ TEST_F(RawChannelPosixTest, OnFatalError) {
   EXPECT_EQ(RawChannel::Delegate::FATAL_ERROR_FAILED_WRITE,
             delegate.WaitForFatalError());
 
-  PostTaskAndWait(message_loop(),
-                  FROM_HERE,
-                  base::Bind(&RawChannel::Shutdown,
-                             base::Unretained(rc.get())));
+  test::PostTaskAndWait(io_thread_task_runner(),
+                        FROM_HERE,
+                        base::Bind(&RawChannel::Shutdown,
+                                   base::Unretained(rc.get())));
 
 }
 
@@ -546,17 +539,18 @@ TEST_F(RawChannelPosixTest, WriteMessageAfterShutdown) {
   WriteOnlyRawChannelDelegate delegate;
   scoped_ptr<RawChannel> rc(RawChannel::Create(PlatformChannelHandle(fd(0)),
                                                &delegate,
-                                               message_loop()));
+                                               io_thread_message_loop()));
   // |RawChannel::Create()| takes ownership of the FD.
   clear_fd(0);
 
-  PostTaskAndWait(message_loop(),
-                  FROM_HERE,
-                  base::Bind(&RawChannel::Init, base::Unretained(rc.get())));
-  PostTaskAndWait(message_loop(),
-                  FROM_HERE,
-                  base::Bind(&RawChannel::Shutdown,
-                             base::Unretained(rc.get())));
+  test::PostTaskAndWait(io_thread_task_runner(),
+                        FROM_HERE,
+                        base::Bind(&RawChannel::Init,
+                                   base::Unretained(rc.get())));
+  test::PostTaskAndWait(io_thread_task_runner(),
+                        FROM_HERE,
+                        base::Bind(&RawChannel::Shutdown,
+                                   base::Unretained(rc.get())));
 
   EXPECT_FALSE(rc->WriteMessage(MakeTestMessage(1)));
 }
