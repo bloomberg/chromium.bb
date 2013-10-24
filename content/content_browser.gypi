@@ -331,8 +331,6 @@
     'browser/browser_plugin/browser_plugin_geolocation_permission_context.h',
     'browser/browser_plugin/browser_plugin_guest.cc',
     'browser/browser_plugin/browser_plugin_guest.h',
-    'browser/browser_plugin/browser_plugin_guest_helper.cc',
-    'browser/browser_plugin/browser_plugin_guest_helper.h',
     'browser/browser_plugin/browser_plugin_guest_manager.cc',
     'browser/browser_plugin/browser_plugin_guest_manager.h',
     'browser/browser_plugin/browser_plugin_host_factory.h',

@@ -10,7 +10,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/browser_plugin/browser_plugin_embedder.h"
-#include "content/browser/browser_plugin/browser_plugin_guest_helper.h"
 #include "content/browser/browser_plugin/browser_plugin_guest_manager.h"
 #include "content/browser/browser_plugin/browser_plugin_host_factory.h"
 #include "content/browser/browser_thread_impl.h"
@@ -556,9 +555,6 @@ void BrowserPluginGuest::Initialize(
   WebContentsViewGuest* new_view =
       static_cast<WebContentsViewGuest*>(GetWebContents()->GetView());
   new_view->OnGuestInitialized(embedder_web_contents->GetView());
-
-  // |render_view_host| manages the ownership of this BrowserPluginGuestHelper.
-  new BrowserPluginGuestHelper(this, GetWebContents()->GetRenderViewHost());
 
   RendererPreferences* renderer_prefs =
       GetWebContents()->GetMutableRendererPrefs();
