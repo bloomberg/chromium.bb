@@ -15,6 +15,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
@@ -31,9 +32,11 @@
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/notification_source.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_observer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::SiteInstance;
@@ -46,19 +49,23 @@ namespace {
 // Class used to delete a WebContents and TabStripModel when another WebContents
 // is destroyed.
 class DeleteWebContentsOnDestroyedObserver
-    : public content::WebContentsObserver {
+    : public content::NotificationObserver {
  public:
   // When |source| is deleted both |tab_to_delete| and |tab_strip| are deleted.
   // |tab_to_delete| and |tab_strip| may be NULL.
   DeleteWebContentsOnDestroyedObserver(WebContents* source,
                                        WebContents* tab_to_delete,
                                        TabStripModel* tab_strip)
-      : WebContentsObserver(source),
+      : source_(source),
         tab_to_delete_(tab_to_delete),
         tab_strip_(tab_strip) {
+    registrar_.Add(this, content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
+                   content::Source<WebContents>(source));
   }
 
-  virtual void WebContentsDestroyed(WebContents* web_contents) OVERRIDE {
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE {
     WebContents* tab_to_delete = tab_to_delete_;
     tab_to_delete_ = NULL;
     TabStripModel* tab_strip_to_delete = tab_strip_;
@@ -68,8 +75,10 @@ class DeleteWebContentsOnDestroyedObserver
   }
 
  private:
+  WebContents* source_;
   WebContents* tab_to_delete_;
   TabStripModel* tab_strip_;
+  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(DeleteWebContentsOnDestroyedObserver);
 };
