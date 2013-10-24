@@ -30,10 +30,8 @@
 #include "core/page/Settings.h"
 #include "platform/Logging.h"
 #include "core/platform/MIMETypeRegistry.h"
-#include "core/platform/graphics/Image.h"
 #include "core/plugins/PluginData.h"
 #include "core/rendering/RenderEmbeddedObject.h"
-#include "core/rendering/RenderImage.h"
 #include "platform/UserGestureIndicator.h"
 #include "weborigin/SecurityOrigin.h"
 
@@ -54,74 +52,10 @@ HTMLPlugInImageElement::HTMLPlugInImageElement(const QualifiedName& tagName, Doc
     : HTMLPlugInElement(tagName, document, createdByParser, preferPlugInsForImagesOption)
     , m_createdDuringUserGesture(UserGestureIndicator::processingUserGesture())
 {
-    setHasCustomStyleCallbacks();
 }
 
 HTMLPlugInImageElement::~HTMLPlugInImageElement()
 {
-}
-
-// We don't use m_url, as it may not be the final URL that the object loads,
-// depending on <param> values.
-bool HTMLPlugInImageElement::allowedToLoadFrameURL(const String& url)
-{
-    KURL completeURL = document().completeURL(url);
-
-    if (contentFrame() && protocolIsJavaScript(completeURL)
-        && !document().securityOrigin()->canAccess(contentDocument()->securityOrigin()))
-        return false;
-
-    return document().frame()->isURLAllowed(completeURL);
-}
-
-// We don't use m_url, or m_serviceType as they may not be the final values
-// that <object> uses depending on <param> values.
-bool HTMLPlugInImageElement::wouldLoadAsNetscapePlugin(const String& url, const String& serviceType)
-{
-    ASSERT(document().frame());
-    KURL completedURL;
-    if (!url.isEmpty())
-        completedURL = document().completeURL(url);
-
-    FrameLoader& frameLoader = document().frame()->loader();
-    if (frameLoader.client()->objectContentType(completedURL, serviceType, shouldPreferPlugInsForImages()) == ObjectContentNetscapePlugin)
-        return true;
-    return false;
-}
-
-RenderObject* HTMLPlugInImageElement::createRenderer(RenderStyle* style)
-{
-    // Fallback content breaks the DOM->Renderer class relationship of this
-    // class and all superclasses because createObject won't necessarily
-    // return a RenderEmbeddedObject, RenderPart or even RenderWidget.
-    if (useFallbackContent())
-        return RenderObject::createObject(this, style);
-
-    if (isImageType()) {
-        RenderImage* image = new RenderImage(this);
-        image->setImageResource(RenderImageResource::create());
-        return image;
-    }
-
-    return new RenderEmbeddedObject(this);
-}
-
-void HTMLPlugInImageElement::willRecalcStyle(StyleRecalcChange)
-{
-    // FIXME: Why is this necessary?  Manual re-attach is almost always wrong.
-    if (!useFallbackContent() && needsWidgetUpdate() && renderer() && !isImageType())
-        reattach();
-}
-
-void HTMLPlugInImageElement::finishParsingChildren()
-{
-    HTMLPlugInElement::finishParsingChildren();
-    if (useFallbackContent())
-        return;
-
-    setNeedsWidgetUpdate(true);
-    if (inDocument())
-        setNeedsStyleRecalc();
 }
 
 bool HTMLPlugInImageElement::requestObject(const String& url, const String& mimeType, const Vector<String>& paramNames, const Vector<String>& paramValues)

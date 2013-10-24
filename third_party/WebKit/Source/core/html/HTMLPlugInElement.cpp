@@ -37,6 +37,7 @@
 #include "core/platform/MIMETypeFromURL.h"
 #include "core/plugins/PluginView.h"
 #include "core/rendering/RenderEmbeddedObject.h"
+#include "core/rendering/RenderImage.h"
 #include "core/rendering/RenderWidget.h"
 #include "platform/Widget.h"
 #include "wtf/UnusedParam.h"
@@ -59,6 +60,7 @@ HTMLPlugInElement::HTMLPlugInElement(const QualifiedName& tagName, Document& doc
     , m_shouldPreferPlugInsForImages(preferPlugInsForImagesOption == ShouldPreferPlugInsForImages)
     , m_displayState(Playing)
 {
+    setHasCustomStyleCallbacks();
 }
 
 HTMLPlugInElement::~HTMLPlugInElement()
@@ -163,6 +165,41 @@ void HTMLPlugInElement::detach(const AttachContext& context)
     }
 
     HTMLFrameOwnerElement::detach(context);
+}
+
+RenderObject* HTMLPlugInElement::createRenderer(RenderStyle* style)
+{
+    // Fallback content breaks the DOM->Renderer class relationship of this
+    // class and all superclasses because createObject won't necessarily
+    // return a RenderEmbeddedObject, RenderPart or even RenderWidget.
+    if (useFallbackContent())
+        return RenderObject::createObject(this, style);
+
+    if (isImageType()) {
+        RenderImage* image = new RenderImage(this);
+        image->setImageResource(RenderImageResource::create());
+        return image;
+    }
+
+    return new RenderEmbeddedObject(this);
+}
+
+void HTMLPlugInElement::willRecalcStyle(StyleRecalcChange)
+{
+    // FIXME: Why is this necessary? Manual re-attach is almost always wrong.
+    if (!useFallbackContent() && needsWidgetUpdate() && renderer() && !isImageType())
+        reattach();
+}
+
+void HTMLPlugInElement::finishParsingChildren()
+{
+    HTMLFrameOwnerElement::finishParsingChildren();
+    if (useFallbackContent())
+        return;
+
+    setNeedsWidgetUpdate(true);
+    if (inDocument())
+        setNeedsStyleRecalc();
 }
 
 void HTMLPlugInElement::resetInstance()
@@ -335,6 +372,28 @@ RenderEmbeddedObject* HTMLPlugInElement::renderEmbeddedObject() const
     if (!renderer() || !renderer()->isEmbeddedObject())
         return 0;
     return toRenderEmbeddedObject(renderer());
+}
+
+// We don't use m_url, as it may not be the final URL that the object loads,
+// depending on <param> values.
+bool HTMLPlugInElement::allowedToLoadFrameURL(const String& url)
+{
+    KURL completeURL = document().completeURL(url);
+    if (contentFrame() && protocolIsJavaScript(completeURL)
+        && !document().securityOrigin()->canAccess(contentDocument()->securityOrigin()))
+        return false;
+    return document().frame()->isURLAllowed(completeURL);
+}
+
+// We don't use m_url, or m_serviceType as they may not be the final values
+// that <object> uses depending on <param> values.
+bool HTMLPlugInElement::wouldLoadAsNetscapePlugin(const String& url, const String& serviceType)
+{
+    ASSERT(document().frame());
+    KURL completedURL;
+    if (!url.isEmpty())
+        completedURL = document().completeURL(url);
+    return document().frame()->loader().client()->objectContentType(completedURL, serviceType, shouldPreferPlugInsForImages()) == ObjectContentNetscapePlugin;
 }
 
 }

@@ -41,22 +41,10 @@ public:
 protected:
     HTMLPlugInImageElement(const QualifiedName& tagName, Document&, bool createdByParser, PreferPlugInsForImagesOption);
 
-    bool allowedToLoadFrameURL(const String& url);
-    bool wouldLoadAsNetscapePlugin(const String& url, const String& serviceType);
-
     bool requestObject(const String& url, const String& mimeType, const Vector<String>& paramNames, const Vector<String>& paramValues);
     bool shouldUsePlugin(const KURL&, const String& mimeType, bool hasFallback, bool& useFallback);
 
 private:
-    virtual RenderObject* createRenderer(RenderStyle*);
-    virtual void willRecalcStyle(StyleRecalcChange) OVERRIDE FINAL;
-
-    virtual void finishParsingChildren();
-
-    void swapRendererTimerFired(Timer<HTMLPlugInImageElement>*);
-
-    void restartSimilarPlugIns();
-
     bool loadPlugin(const KURL&, const String& mimeType, const Vector<String>& paramNames, const Vector<String>& paramValues, bool useFallback);
     bool pluginIsLoadable(const KURL&, const String& mimeType);
 

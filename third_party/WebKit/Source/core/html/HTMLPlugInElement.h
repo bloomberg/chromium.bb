@@ -106,6 +106,8 @@ protected:
     bool isImageType();
     bool shouldPreferPlugInsForImages() const { return m_shouldPreferPlugInsForImages; }
     RenderEmbeddedObject* renderEmbeddedObject() const;
+    bool allowedToLoadFrameURL(const String& url);
+    bool wouldLoadAsNetscapePlugin(const String& url, const String& serviceType);
 
     String m_serviceType;
     String m_url;
@@ -116,7 +118,10 @@ private:
     virtual bool areAuthorShadowsAllowed() const OVERRIDE { return false; }
     virtual void attach(const AttachContext& = AttachContext()) OVERRIDE;
     virtual void detach(const AttachContext& = AttachContext()) OVERRIDE;
-    virtual void defaultEventHandler(Event*);
+    virtual void defaultEventHandler(Event*) OVERRIDE;
+    virtual RenderObject* createRenderer(RenderStyle*) OVERRIDE;
+    virtual void willRecalcStyle(StyleRecalcChange) OVERRIDE FINAL;
+    virtual void finishParsingChildren() OVERRIDE;
 
     // Return any existing RenderWidget without triggering relayout, or 0 if it doesn't yet exist.
     virtual RenderWidget* existingRenderWidget() const = 0;
