@@ -54,7 +54,7 @@ AnimationControllerPrivate::AnimationControllerPrivate(Frame* frame)
     , m_beginAnimationUpdateTime(cBeginAnimationUpdateTimeNotSet)
     , m_animationsWaitingForStyle()
     , m_animationsWaitingForStartTimeResponse()
-    , m_waitingForAsyncStartNotification(false)
+    , m_animationsWaitingForAsyncStartNotification()
 {
 }
 
@@ -306,13 +306,12 @@ double AnimationControllerPrivate::beginAnimationUpdateTime()
 void AnimationControllerPrivate::endAnimationUpdate()
 {
     styleAvailable();
-    if (!m_waitingForAsyncStartNotification)
+    if (m_animationsWaitingForAsyncStartNotification.isEmpty())
         startTimeResponse(beginAnimationUpdateTime());
 }
 
 void AnimationControllerPrivate::receivedStartTimeResponse(double time)
 {
-    m_waitingForAsyncStartNotification = false;
     startTimeResponse(time);
 }
 
@@ -351,6 +350,7 @@ void AnimationControllerPrivate::addToAnimationsWaitingForStyle(AnimationBase* a
 {
     // Make sure this animation is not in the start time waiters
     m_animationsWaitingForStartTimeResponse.remove(animation);
+    m_animationsWaitingForAsyncStartNotification.remove(animation);
 
     m_animationsWaitingForStyle.add(animation);
 }
@@ -392,7 +392,7 @@ void AnimationControllerPrivate::addToAnimationsWaitingForStartTimeResponse(Anim
     //
 
     if (willGetResponse)
-        m_waitingForAsyncStartNotification = true;
+        m_animationsWaitingForAsyncStartNotification.add(animation);
 
     m_animationsWaitingForStartTimeResponse.add(animation);
 }
@@ -400,9 +400,7 @@ void AnimationControllerPrivate::addToAnimationsWaitingForStartTimeResponse(Anim
 void AnimationControllerPrivate::removeFromAnimationsWaitingForStartTimeResponse(AnimationBase* animationToRemove)
 {
     m_animationsWaitingForStartTimeResponse.remove(animationToRemove);
-
-    if (m_animationsWaitingForStartTimeResponse.isEmpty())
-        m_waitingForAsyncStartNotification = false;
+    m_animationsWaitingForAsyncStartNotification.remove(animationToRemove);
 }
 
 void AnimationControllerPrivate::startTimeResponse(double time)
@@ -415,7 +413,7 @@ void AnimationControllerPrivate::startTimeResponse(double time)
         (*it)->onAnimationStartResponse(time);
 
     m_animationsWaitingForStartTimeResponse.clear();
-    m_waitingForAsyncStartNotification = false;
+    m_animationsWaitingForAsyncStartNotification.clear();
 }
 
 void AnimationControllerPrivate::animationWillBeRemoved(AnimationBase* animation)
