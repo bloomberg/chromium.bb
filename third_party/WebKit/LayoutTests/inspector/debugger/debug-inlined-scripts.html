@@ -29,8 +29,6 @@ var test = function()
     function step2(sourceFrame)
     {
         InspectorTest.addResult("Script source was shown.");
-        // Use fake resources to make sure that scripts will be loaded from JavaScript VM.
-        WebInspector.networkManager.inflightResourceForURL = function() { return new WebInspector.Resource(); };
         InspectorTest.setBreakpoint(sourceFrame, 2, "", true);
         InspectorTest.setBreakpoint(sourceFrame, 9, "", true);
         InspectorTest.waitUntilPaused(step3);
@@ -52,10 +50,11 @@ var test = function()
 
     function step5(callFrames)
     {
-        if (callFrames[0].line !== 9) {
+        if (callFrames[0].location.lineNumber !== 9) {
             InspectorTest.resumeExecution(InspectorTest.waitUntilPaused.bind(null, step5));
             return;
         }
+
         InspectorTest.addResult("Script execution paused.");
         InspectorTest.captureStackTrace(callFrames);
         InspectorTest.showScriptSource("debug-inlined-scripts.html", step6);
