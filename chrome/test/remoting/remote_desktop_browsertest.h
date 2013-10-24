@@ -84,7 +84,7 @@ class RemoteDesktopBrowserTest : public extensions::PlatformAppBrowserTest {
   void Approve();
 
   // Click on "Get Started" in the Me2Me section and show the host list.
-  void StartMe2Me();
+  void ExpandMe2Me();
 
   // Disconnect the active Me2Me session.
   void DisconnectMe2Me();
@@ -126,13 +126,13 @@ class RemoteDesktopBrowserTest : public extensions::PlatformAppBrowserTest {
   void Auth();
 
   // Connect to the local host through Me2Me.
-  void ConnectToLocalHost();
+  void ConnectToLocalHost(bool remember_pin);
 
   // Connect to a remote host through Me2Me.
-  void ConnectToRemoteHost(const std::string& host_name);
+  void ConnectToRemoteHost(const std::string& host_name, bool remember_pin);
 
   // Enter the pin number and connect.
-  void EnterPin(const std::string& name);
+  void EnterPin(const std::string& name, bool remember_pin);
 
   // Helper to get the pin number used for me2me authentication.
   std::string me2me_pin() { return me2me_pin_; }
@@ -140,7 +140,6 @@ class RemoteDesktopBrowserTest : public extensions::PlatformAppBrowserTest {
   // Helper to get the name of the remote host to connect to.
   std::string remote_host_name() { return remote_host_name_; }
 
- private:
   // Change behavior of the default host resolver to allow DNS lookup
   // to proceed instead of being blocked by the test infrastructure.
   void EnableDNSLookupForThisTest(
@@ -266,10 +265,14 @@ class RemoteDesktopBrowserTest : public extensions::PlatformAppBrowserTest {
       return IsAuthenticatedInWindow(active_web_contents());
   }
 
+  // If the "Host version out-of-date" form is visible, dismiss it.
+  void DismissHostVersionWarningIfVisible();
+
   // Callback used by Approve to check whether the chromoting app has
   // successfully authenticated with the Google services.
   static bool IsAuthenticatedInWindow(content::WebContents* web_contents);
 
+ private:
   // Fields
 
   // This test needs to make live DNS requests for access to

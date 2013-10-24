@@ -57,6 +57,7 @@ remoting.PairedClient.prototype.createDom = function(parent, tbody) {
   this.deleteButton.href = '#';
   this.deleteButton.innerText = chrome.i18n.getMessage(
       /*i18n-content*/'DELETE_PAIRED_CLIENT');
+  this.deleteButton.id = 'delete-client-' + this.clientId;
   this.deleteButton.addEventListener(
       'click',
       parent.deletePairedClient.bind(parent, this),
@@ -268,6 +269,17 @@ remoting.PairedClientManager.prototype.deleteAll_ = function() {
     this.clientRows_.removeChild(this.clientRows_.lastChild);
   }
   this.pairedClients_ = [];
+};
+
+/**
+ * Get the id of the first paired client for testing.
+ *
+ * @private
+ * @return {string} The client id of the first paired client in the list.
+ */
+remoting.PairedClientManager.prototype.getFirstClientIdForTesting_ =
+    function() {
+  return this.pairedClients_.length > 0 ? this.pairedClients_[0].clientId : '';
 };
 
 

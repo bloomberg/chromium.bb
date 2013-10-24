@@ -305,7 +305,7 @@ void RemoteDesktopBrowserTest::Approve() {
   EXPECT_TRUE(IsAuthenticated());
 }
 
-void RemoteDesktopBrowserTest::StartMe2Me() {
+void RemoteDesktopBrowserTest::ExpandMe2Me() {
   // The chromoting extension should be installed.
   ASSERT_TRUE(extension_);
 
@@ -459,7 +459,7 @@ void RemoteDesktopBrowserTest::Auth() {
   Approve();
 }
 
-void RemoteDesktopBrowserTest::ConnectToLocalHost() {
+void RemoteDesktopBrowserTest::ConnectToLocalHost(bool remember_pin) {
   // Verify that the local host is online.
   ASSERT_TRUE(ExecuteScriptAndExtractBool(
       "remoting.hostList.localHost_.hostName && "
@@ -471,13 +471,13 @@ void RemoteDesktopBrowserTest::ConnectToLocalHost() {
   ClickOnControl("this-host-connect");
 
   // Enter the pin # passed in from the command line.
-  EnterPin(me2me_pin());
+  EnterPin(me2me_pin(), remember_pin);
 
   WaitForConnection();
 }
 
 void RemoteDesktopBrowserTest::ConnectToRemoteHost(
-    const std::string& host_name) {
+    const std::string& host_name, bool remember_pin) {
   std::string host_id = ExecuteScriptAndExtractString(
       "remoting.hostList.getHostIdForName('" + host_name + "')");
 
@@ -492,7 +492,7 @@ void RemoteDesktopBrowserTest::ConnectToRemoteHost(
   ClickOnControl(element_id);
 
   // Enter the pin # passed in from the command line.
-  EnterPin(me2me_pin());
+  EnterPin(me2me_pin(), remember_pin);
 
   WaitForConnection();
 }
@@ -613,7 +613,8 @@ void RemoteDesktopBrowserTest::ClickOnControl(const std::string& name) {
   ExecuteScript("document.getElementById(\"" + name + "\").click();");
 }
 
-void RemoteDesktopBrowserTest::EnterPin(const std::string& pin) {
+void RemoteDesktopBrowserTest::EnterPin(const std::string& pin,
+                                        bool remember_pin) {
   // Wait for the pin-form to be displayed. This can take a while.
   // We also need to dismiss the host-needs-update dialog if it comes up.
   // TODO(weitaosu) 1: Instead of polling, can we register a callback to be
@@ -629,6 +630,15 @@ void RemoteDesktopBrowserTest::EnterPin(const std::string& pin) {
 
   ExecuteScript(
       "document.getElementById(\"pin-entry\").value = \"" + pin + "\";");
+
+  if (remember_pin) {
+    EXPECT_TRUE(HtmlElementVisible("remember-pin"));
+    EXPECT_FALSE(ExecuteScriptAndExtractBool(
+        "document.getElementById('remember-pin-checkbox').checked"));
+    ClickOnControl("remember-pin");
+    EXPECT_TRUE(ExecuteScriptAndExtractBool(
+        "document.getElementById('remember-pin-checkbox').checked"));
+  }
 
   ClickOnControl("pin-connect-button");
 }
@@ -657,6 +667,10 @@ bool RemoteDesktopBrowserTest::IsLocalHostReady() {
 }
 
 bool RemoteDesktopBrowserTest::IsSessionConnected() {
+  // If some form of PINless authentication is enabled, the host version
+  // warning may appear while waiting for the session to connect.
+  DismissHostVersionWarningIfVisible();
+
   return ExecuteScriptAndExtractBool(
       "remoting.clientSession != null && "
       "remoting.clientSession.getState() == "
@@ -664,10 +678,13 @@ bool RemoteDesktopBrowserTest::IsSessionConnected() {
 }
 
 bool RemoteDesktopBrowserTest::IsPinFormVisible() {
+  DismissHostVersionWarningIfVisible();
+  return HtmlElementVisible("pin-form");
+}
+
+void RemoteDesktopBrowserTest::DismissHostVersionWarningIfVisible() {
   if (HtmlElementVisible("host-needs-update-connect-button"))
     ClickOnControl("host-needs-update-connect-button");
-
-  return HtmlElementVisible("pin-form");
 }
 
 // static
