@@ -182,8 +182,6 @@
         'base/gtk/gtk_floating_container.cc',
         'base/gtk/gtk_floating_container.h',
         'base/gtk/gtk_hig_constants.h',
-        'base/gtk/gtk_im_context_util.cc',
-        'base/gtk/gtk_im_context_util.h',
         'base/gtk/gtk_screen_util.cc',
         'base/gtk/gtk_screen_util.h',
         'base/gtk/gtk_signal.h',

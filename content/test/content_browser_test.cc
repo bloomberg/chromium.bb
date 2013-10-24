@@ -26,6 +26,10 @@
 #include "base/mac/scoped_nsautorelease_pool.h"
 #endif
 
+#if !defined(OS_CHROMEOS) && defined(USE_AURA) && defined(USE_X11)
+#include "ui/base/ime/input_method_initializer.h"
+#endif
+
 namespace content {
 
 IN_PROC_BROWSER_TEST_F(ContentBrowserTest, MANUAL_ShouldntRun) {
@@ -91,11 +95,21 @@ void ContentBrowserTest::SetUp() {
   command_line->AppendSwitch(switches::kDisableAcceleratedVideoDecode);
 #endif
 
+  // LinuxInputMethodContextFactory has to be initialized.
+#if !defined(OS_CHROMEOS) && defined(USE_AURA) && defined(USE_X11)
+  ui::InitializeInputMethodForTesting();
+#endif
+
   BrowserTestBase::SetUp();
 }
 
 void ContentBrowserTest::TearDown() {
   BrowserTestBase::TearDown();
+
+  // LinuxInputMethodContextFactory has to be shutdown.
+#if !defined(OS_CHROMEOS) && defined(USE_AURA) && defined(USE_X11)
+  ui::ShutdownInputMethodForTesting();
+#endif
 
   shell_main_delegate_.reset();
 }

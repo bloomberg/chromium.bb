@@ -1,8 +1,10 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/base/gtk/gtk_im_context_util.h"
+#include "ui/base/ime/composition_text_util_pango.h"
+
+#include <pango/pango-attributes.h>
 
 #include "base/basictypes.h"
 #include "base/i18n/char_iterator.h"

@@ -22,6 +22,7 @@
 #include "chrome/browser/ui/libgtk2ui/select_file_dialog_impl.h"
 #include "chrome/browser/ui/libgtk2ui/skia_utils_gtk2.h"
 #include "chrome/browser/ui/libgtk2ui/unity_service.h"
+#include "chrome/browser/ui/libgtk2ui/x11_input_method_context_impl_gtk2.h"
 #include "grit/theme_resources.h"
 #include "grit/ui_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -490,6 +491,12 @@ void Gtk2UI::SetWindowButtonOrdering(
   FOR_EACH_OBSERVER(views::WindowButtonOrderObserver, observer_list_,
                     OnWindowButtonOrderingChange(leading_buttons_,
                                                  trailing_buttons_));
+}
+
+scoped_ptr<ui::LinuxInputMethodContext> Gtk2UI::CreateInputMethodContext(
+    ui::LinuxInputMethodContextDelegate* delegate) const {
+  return scoped_ptr<ui::LinuxInputMethodContext>(
+      new X11InputMethodContextImplGtk2(delegate));
 }
 
 ui::SelectFileDialog* Gtk2UI::CreateSelectFileDialog(

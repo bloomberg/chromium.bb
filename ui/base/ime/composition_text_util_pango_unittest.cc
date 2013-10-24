@@ -1,6 +1,10 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
+#include "ui/base/ime/composition_text_util_pango.h"
+
+#include <pango/pango-attributes.h>
 
 #include <string>
 #include <utility>
@@ -8,7 +12,6 @@
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/gtk/gtk_im_context_util.h"
 #include "ui/base/ime/composition_text.h"
 
 namespace {
@@ -102,10 +105,7 @@ void CompareUnderline(const Underline& a,
   EXPECT_EQ(a.thick, b.thick);
 }
 
-class GtkIMContextWrapperTest : public testing::Test {
-};
-
-TEST(GtkIMContextUtilTest, ExtractCompositionText) {
+TEST(CompositionTextUtilPangoTest, ExtractCompositionText) {
   for (size_t i = 0; i < arraysize(kTestData); ++i) {
     const char* text = kTestData[i].text;
     const AttributeInfo* attrs = kTestData[i].attrs;

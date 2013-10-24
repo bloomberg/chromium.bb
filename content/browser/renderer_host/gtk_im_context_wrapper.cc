@@ -17,7 +17,7 @@
 #include "content/browser/renderer_host/render_widget_host_view_gtk.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "third_party/WebKit/public/web/WebCompositionUnderline.h"
-#include "ui/base/gtk/gtk_im_context_util.h"
+#include "ui/base/ime/composition_text_util_pango.h"
 #include "ui/gfx/gtk_util.h"
 #include "ui/gfx/rect.h"
 

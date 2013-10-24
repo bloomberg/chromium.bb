@@ -59,6 +59,8 @@
         'skia_utils_gtk2.h',
         'unity_service.cc',
         'unity_service.h',
+        'x11_input_method_context_impl_gtk2.cc',
+        'x11_input_method_context_impl_gtk2.h',
       ],
     },
   ],

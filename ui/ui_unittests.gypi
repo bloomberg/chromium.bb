@@ -159,7 +159,6 @@
         'base/cocoa/tracking_area_unittest.mm',
         'base/dragdrop/os_exchange_data_provider_aurax11_unittest.cc',
         'base/gtk/gtk_expanded_container_unittest.cc',
-        'base/gtk/gtk_im_context_util_unittest.cc',
         'base/keycodes/keycode_converter_unittest.cc',
         'base/models/list_model_unittest.cc',
         'base/models/list_selection_model_unittest.cc',

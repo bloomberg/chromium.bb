@@ -18,6 +18,7 @@
 #include "ui/aura/test/test_screen.h"
 #include "ui/aura/test/test_window_tree_client.h"
 #include "ui/base/ime/dummy_input_method.h"
+#include "ui/base/ime/input_method_initializer.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
@@ -73,6 +74,8 @@ void AuraTestHelper::SetUp() {
   EnvTestHelper(Env::GetInstance()).SetInputStateLookup(
       scoped_ptr<InputStateLookup>());
 
+  ui::InitializeInputMethodForTesting();
+
   test_screen_.reset(TestScreen::Create());
   gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, test_screen_.get());
   root_window_.reset(test_screen_->CreateRootWindowForPrimaryDisplay());
@@ -108,6 +111,8 @@ void AuraTestHelper::TearDown() {
 #if defined(USE_X11)
   ui::ResetXCursorCache();
 #endif
+
+  ui::ShutdownInputMethodForTesting();
 
   Env::DeleteInstance();
 }

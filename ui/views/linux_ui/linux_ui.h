@@ -6,6 +6,7 @@
 #define UI_VIEWS_LINUX_UI_LINUX_UI_H_
 
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/base/ime/linux/linux_input_method_context_factory.h"
 #include "ui/shell_dialogs/linux_shell_dialog.h"
 #include "ui/views/linux_ui/status_icon_linux.h"
 #include "ui/views/views_export.h"
@@ -31,7 +32,8 @@ class WindowButtonOrderObserver;
 // minimum) GTK2 and GTK3. LinuxUI::instance() should actually be a very
 // complex method that pokes around with dlopen against a libuigtk2.so, a
 // liuigtk3.so, etc.
-class VIEWS_EXPORT LinuxUI : public ui::LinuxShellDialog {
+class VIEWS_EXPORT LinuxUI : public ui::LinuxInputMethodContextFactory,
+                             public ui::LinuxShellDialog {
  public:
   virtual ~LinuxUI() {}
 

@@ -1632,6 +1632,7 @@
         'browser/ui/gtk/reload_button_gtk_unittest.cc',
         'browser/ui/gtk/status_icons/status_tray_gtk_unittest.cc',
         'browser/ui/gtk/tabs/tab_renderer_gtk_unittest.cc',
+        'browser/ui/libgtk2ui/x11_input_method_context_impl_gtk2_unittest.cc',
         'browser/ui/login/login_prompt_unittest.cc',
         'browser/ui/omnibox/omnibox_controller_unittest.cc',
         'browser/ui/omnibox/omnibox_edit_unittest.cc',
@@ -2171,6 +2172,16 @@
             ['exclude', '^browser/ui/views/extensions/browser_action_drag_data_unittest.cc'],
             ['exclude', '^browser/ui/panels/display_settings_provider_win_unittest.cc'],
             ['exclude', '^browser/bookmarks/bookmark_node_data_unittest.cc'],
+          ],
+        }],
+        ['use_aura==1 and use_ash==0 and use_ozone==0 and OS=="linux"', {
+          'dependencies': [
+            'browser/ui/libgtk2ui/libgtk2ui.gyp:gtk2ui',
+            '../build/linux/system.gyp:gio',
+          ],
+        }, {
+          'sources/': [
+            ['exclude', '^browser/ui/libgtk2ui/'],
           ],
         }],
         ['enable_task_manager==0', {

@@ -13,6 +13,8 @@
 #include "base/win/metro.h"
 #include "ui/base/ime/input_method_imm32.h"
 #include "ui/base/ime/input_method_tsf.h"
+#elif defined(USE_AURA) && defined(USE_X11)
+#include "ui/base/ime/input_method_linux_x11.h"
 #else
 #include "ui/base/ime/fake_input_method.h"
 #endif
@@ -45,6 +47,8 @@ InputMethod* CreateInputMethod(internal::InputMethodDelegate* delegate,
   return new InputMethodIBus(delegate);
 #elif defined(OS_WIN)
   return CreateInputMethodWinInternal(delegate, widget);
+#elif defined(USE_AURA) && defined(USE_X11)
+  return new InputMethodLinuxX11(delegate);
 #else
   return new FakeInputMethod(delegate);
 #endif
