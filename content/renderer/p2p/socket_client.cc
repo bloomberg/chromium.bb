@@ -69,7 +69,8 @@ void P2PSocketClient::SendWithDscp(
     net::DiffServCodePoint dscp) {
   if (!ipc_message_loop_->BelongsToCurrentThread()) {
     ipc_message_loop_->PostTask(
-        FROM_HERE, base::Bind(&P2PSocketClient::Send, this, address, data));
+        FROM_HERE, base::Bind(
+            &P2PSocketClient::SendWithDscp, this, address, data, dscp));
     return;
   }
 
