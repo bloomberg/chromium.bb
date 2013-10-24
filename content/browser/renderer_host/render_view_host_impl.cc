@@ -608,8 +608,7 @@ void RenderViewHostImpl::DragTargetDragEnter(
     // which will happen at this point, so generously grant both access
     // and request permissions to the specific file to cover both cases.
     // We do not give it the permission to request all file:// URLs.
-    base::FilePath path =
-        base::FilePath::FromUTF8Unsafe(UTF16ToUTF8(iter->path));
+    const base::FilePath& path = iter->path;
 
     // Make sure we have the same display_name as the one we register.
     if (iter->display_name.empty()) {
@@ -1487,8 +1486,7 @@ void RenderViewHostImpl::OnStartDragging(
   for (std::vector<DropData::FileInfo>::const_iterator it =
            drop_data.filenames.begin();
        it != drop_data.filenames.end(); ++it) {
-    base::FilePath path(base::FilePath::FromUTF8Unsafe(UTF16ToUTF8(it->path)));
-    if (policy->CanReadFile(GetProcess()->GetID(), path))
+    if (policy->CanReadFile(GetProcess()->GetID(), it->path))
       filtered_data.filenames.push_back(*it);
   }
   float scale = ui::GetImageScale(GetScaleFactorForView(GetView()));

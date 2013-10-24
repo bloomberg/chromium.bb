@@ -75,11 +75,11 @@ void InstallExtensionHandler::HandleStartDragMessage(const ListValue* args) {
 
   const content::DropData::FileInfo& file_info = drop_data->filenames.front();
 
-  file_to_install_ = base::FilePath::FromUTF16Unsafe(file_info.path);
+  file_to_install_ = file_info.path;
   // Use the display name if provided, for checking file names
   // (.path is likely a random hash value in that case).
-  file_display_name_ =
-      file_info.display_name.empty() ? file_info.path : file_info.display_name;
+  file_display_name_ = file_info.display_name.empty() ?
+      file_info.path.LossyDisplayName() : file_info.display_name;
 }
 
 void InstallExtensionHandler::HandleStopDragMessage(const ListValue* args) {

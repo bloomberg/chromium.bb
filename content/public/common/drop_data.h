@@ -13,6 +13,7 @@
 #include <string>
 #include <vector>
 
+#include "base/files/file_path.h"
 #include "base/strings/nullable_string16.h"
 #include "content/common/content_export.h"
 #include "third_party/WebKit/public/platform/WebReferrerPolicy.h"
@@ -24,10 +25,10 @@ struct CONTENT_EXPORT DropData {
   // The struct is used to represent a file in the drop data.
   struct CONTENT_EXPORT FileInfo {
     FileInfo();
-    FileInfo(const base::string16& path, const base::string16& display_name);
+    FileInfo(const base::FilePath& path, const base::string16& display_name);
 
     // The path of the file.
-    base::string16 path;
+    base::FilePath path;
     // The display name of the file. This field is optional.
     base::string16 display_name;
   };

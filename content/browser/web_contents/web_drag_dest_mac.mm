@@ -6,6 +6,7 @@
 
 #import <Carbon/Carbon.h>
 
+#include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -290,7 +291,7 @@ int GetModifierFlags() {
         if (exists) {
           data->filenames.push_back(
               DropData::FileInfo(
-                  base::SysNSStringToUTF16(filename), string16()));
+                  base::mac::NSStringToFilePath(filename), base::string16()));
         }
       }
     }

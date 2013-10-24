@@ -794,7 +794,7 @@ WebDragData DropDataToWebDragData(const DropData& drop_data) {
        ++it) {
     WebDragData::Item item;
     item.storageType = WebDragData::Item::StorageTypeFilename;
-    item.filenameData = it->path;
+    item.filenameData = it->path.AsUTF16Unsafe();
     item.displayNameData = it->display_name;
     item_list.push_back(item);
   }

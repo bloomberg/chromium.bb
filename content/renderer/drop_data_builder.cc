@@ -55,8 +55,9 @@ DropData DropDataBuilder::Build(const WebDragData& drag_data) {
         break;
       case WebDragData::Item::StorageTypeFilename:
         // TODO(varunjain): This only works on chromeos. Support win/mac/gtk.
+        base::FilePath path(base::FilePath::FromUTF16Unsafe(item.filenameData));
         result.filenames.push_back(
-            DropData::FileInfo(item.filenameData, item.displayNameData));
+            DropData::FileInfo(path, item.displayNameData));
         break;
     }
   }
