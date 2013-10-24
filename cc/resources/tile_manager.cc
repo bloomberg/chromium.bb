@@ -471,13 +471,13 @@ void TileManager::ManageTiles(const GlobalStateThatImpactsTilePriority& state) {
 
   // Update internal state.
   if (state != global_state_) {
+    global_state_ = state;
     prioritized_tiles_dirty_ = true;
     resource_pool_->SetResourceUsageLimits(
         global_state_.memory_limit_in_bytes,
         global_state_.unused_memory_limit_in_bytes,
         global_state_.num_resources_limit);
   }
-  global_state_ = state;
 
   // We need to call CheckForCompletedTasks() once in-between each call
   // to ScheduleTasks() to prevent canceled tasks from being scheduled.
