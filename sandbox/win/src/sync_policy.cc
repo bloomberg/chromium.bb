@@ -7,45 +7,13 @@
 #include "sandbox/win/src/sync_policy.h"
 
 #include "base/logging.h"
-#include "base/strings/stringprintf.h"
 #include "sandbox/win/src/ipc_tags.h"
-#include "sandbox/win/src/nt_internals.h"
 #include "sandbox/win/src/policy_engine_opcodes.h"
 #include "sandbox/win/src/policy_params.h"
 #include "sandbox/win/src/sandbox_types.h"
 #include "sandbox/win/src/sandbox_utils.h"
-#include "sandbox/win/src/sync_interception.h"
-#include "sandbox/win/src/win_utils.h"
 
 namespace sandbox {
-
-NTSTATUS GetBaseNamedObjectsDirectory(HANDLE* directory) {
-  static HANDLE base_named_objects_handle = NULL;
-  if (base_named_objects_handle) {
-    *directory = base_named_objects_handle;
-    return STATUS_SUCCESS;
-  }
-
-  NtOpenDirectoryObjectFunction NtOpenDirectoryObject = NULL;
-  ResolveNTFunctionPtr("NtOpenDirectoryObject", &NtOpenDirectoryObject);
-
-  DWORD session_id = 0;
-  ProcessIdToSessionId(::GetCurrentProcessId(), &session_id);
-
-  std::wstring base_named_objects_path =
-      base::StringPrintf(L"\\Sessions\\%d\\BaseNamedObjects", session_id);
-
-  UNICODE_STRING directory_name = {};
-  OBJECT_ATTRIBUTES object_attributes = {};
-  InitObjectAttribs(base_named_objects_path, OBJ_CASE_INSENSITIVE, NULL,
-                    &object_attributes, &directory_name);
-  NTSTATUS status = NtOpenDirectoryObject(&base_named_objects_handle,
-                                          DIRECTORY_ALL_ACCESS,
-                                          &object_attributes);
-  if (status == STATUS_SUCCESS)
-    *directory = base_named_objects_handle;
-  return status;
-}
 
 bool SyncPolicy::GenerateRules(const wchar_t* name,
                                TargetPolicy::Semantics semantics,
@@ -96,75 +64,49 @@ bool SyncPolicy::GenerateRules(const wchar_t* name,
 DWORD SyncPolicy::CreateEventAction(EvalResult eval_result,
                                     const ClientInfo& client_info,
                                     const std::wstring &event_name,
-                                    uint32 event_type,
+                                    uint32 manual_reset,
                                     uint32 initial_state,
                                     HANDLE *handle) {
-  NtCreateEventFunction NtCreateEvent = NULL;
-  ResolveNTFunctionPtr("NtCreateEvent", &NtCreateEvent);
-
   // The only action supported is ASK_BROKER which means create the requested
   // file as specified.
   if (ASK_BROKER != eval_result)
     return false;
 
-  HANDLE object_directory = NULL;
-  NTSTATUS status = GetBaseNamedObjectsDirectory(&object_directory);
-  if (status != STATUS_SUCCESS)
-    return status;
-
-  UNICODE_STRING unicode_event_name = {};
-  OBJECT_ATTRIBUTES object_attributes = {};
-  InitObjectAttribs(event_name, OBJ_CASE_INSENSITIVE, object_directory,
-                    &object_attributes, &unicode_event_name);
-
-  HANDLE local_handle = NULL;
-  status = NtCreateEvent(&local_handle, EVENT_ALL_ACCESS, &object_attributes,
-                         static_cast<EVENT_TYPE>(event_type), initial_state);
+  HANDLE local_handle = ::CreateEvent(NULL, manual_reset, initial_state,
+                                     event_name.c_str());
   if (NULL == local_handle)
-    return status;
+    return ::GetLastError();
 
   if (!::DuplicateHandle(::GetCurrentProcess(), local_handle,
                          client_info.process, handle, 0, FALSE,
                          DUPLICATE_CLOSE_SOURCE | DUPLICATE_SAME_ACCESS)) {
-    return STATUS_ACCESS_DENIED;
+    return ERROR_ACCESS_DENIED;
   }
-  return status;
+  return ERROR_SUCCESS;
 }
 
 DWORD SyncPolicy::OpenEventAction(EvalResult eval_result,
                                   const ClientInfo& client_info,
                                   const std::wstring &event_name,
                                   uint32 desired_access,
+                                  uint32 inherit_handle,
                                   HANDLE *handle) {
-  NtOpenEventFunction NtOpenEvent = NULL;
-  ResolveNTFunctionPtr("NtOpenEvent", &NtOpenEvent);
-
   // The only action supported is ASK_BROKER which means create the requested
-  // event as specified.
+  // file as specified.
   if (ASK_BROKER != eval_result)
     return false;
 
-  HANDLE object_directory = NULL;
-  NTSTATUS status = GetBaseNamedObjectsDirectory(&object_directory);
-  if (status != STATUS_SUCCESS)
-    return status;
-
-  UNICODE_STRING unicode_event_name = {};
-  OBJECT_ATTRIBUTES object_attributes = {};
-  InitObjectAttribs(event_name, OBJ_CASE_INSENSITIVE, object_directory,
-                    &object_attributes, &unicode_event_name);
-
-  HANDLE local_handle = NULL;
-  status = NtOpenEvent(&local_handle, desired_access, &object_attributes);
+  HANDLE local_handle = ::OpenEvent(desired_access, FALSE,
+                                    event_name.c_str());
   if (NULL == local_handle)
-    return status;
+    return ::GetLastError();
 
   if (!::DuplicateHandle(::GetCurrentProcess(), local_handle,
-                         client_info.process, handle, 0, FALSE,
+                         client_info.process, handle, 0, inherit_handle,
                          DUPLICATE_CLOSE_SOURCE | DUPLICATE_SAME_ACCESS)) {
-    return STATUS_ACCESS_DENIED;
+    return ERROR_ACCESS_DENIED;
   }
-  return status;
+  return ERROR_SUCCESS;
 }
 
 }  // namespace sandbox

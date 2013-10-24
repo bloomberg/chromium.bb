@@ -153,15 +153,23 @@ SANDBOX_INTERCEPT NTSTATUS WINAPI TargetNtOpenKeyEx64(
 // -----------------------------------------------------------------------
 // Interceptors handled by the sync dispatcher.
 
-// Interception of NtCreateEvent/NtOpenEvent on the child process.
-SANDBOX_INTERCEPT NTSTATUS WINAPI TargetNtCreateEvent64(
-    PHANDLE event_handle, ACCESS_MASK desired_access,
-    POBJECT_ATTRIBUTES object_attributes, EVENT_TYPE event_type,
-    BOOLEAN initial_state);
+// Interception of CreateEventW on the child process.
+SANDBOX_INTERCEPT HANDLE WINAPI TargetCreateEventW64(
+    LPSECURITY_ATTRIBUTES security_attributes, BOOL manual_reset,
+    BOOL initial_state, LPCWSTR name);
 
-SANDBOX_INTERCEPT NTSTATUS WINAPI TargetNtOpenEvent64(
-    PHANDLE event_handle, ACCESS_MASK desired_access,
-    POBJECT_ATTRIBUTES object_attributes);
+// Interception of CreateEventA on the child process.
+SANDBOX_INTERCEPT HANDLE WINAPI TargetCreateEventA64(
+    LPSECURITY_ATTRIBUTES security_attributes, BOOL manual_reset,
+    BOOL initial_state, LPCSTR name);
+
+// Interception of OpenEventW on the child process.
+SANDBOX_INTERCEPT HANDLE WINAPI TargetOpenEventW64(
+    DWORD desired_access, BOOL inherit_handle, LPCWSTR name);
+
+// Interception of OpenEventA on the child process.
+SANDBOX_INTERCEPT HANDLE WINAPI TargetOpenEventA64(
+    DWORD desired_access, BOOL inherit_handle, LPCSTR name);
 
 }  // extern "C"
 

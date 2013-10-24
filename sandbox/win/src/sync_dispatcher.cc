@@ -25,7 +25,7 @@ SyncDispatcher::SyncDispatcher(PolicyBase* policy_base)
   };
 
   static const IPCCall open_params = {
-    {IPC_OPENEVENT_TAG, WCHAR_TYPE, ULONG_TYPE},
+    {IPC_OPENEVENT_TAG, WCHAR_TYPE, ULONG_TYPE, ULONG_TYPE},
     reinterpret_cast<CallbackGeneric>(&SyncDispatcher::OpenEvent)
   };
 
@@ -35,16 +35,33 @@ SyncDispatcher::SyncDispatcher(PolicyBase* policy_base)
 
 bool SyncDispatcher::SetupService(InterceptionManager* manager,
                                   int service) {
+  bool ret = false;
+  // We need to intercept kernelbase.dll on Windows 7 and beyond and
+  // kernel32.dll for earlier versions.
+  static const wchar_t* kWin32SyncDllName =
+      base::win::GetVersion() >= base::win::VERSION_WIN7 ? kKernelBasedllName :
+          kKerneldllName;
+
   if (IPC_CREATEEVENT_TAG == service) {
-    return INTERCEPT_NT(manager, NtCreateEvent, CREATE_EVENT_ID, 24);
+    ret = INTERCEPT_EAT(manager, kWin32SyncDllName, CreateEventW,
+                        CREATE_EVENTW_ID, 20);
+    if (ret) {
+      ret = INTERCEPT_EAT(manager, kWin32SyncDllName, CreateEventA,
+                          CREATE_EVENTA_ID, 20);
+    }
   } else if (IPC_OPENEVENT_TAG == service) {
-    return INTERCEPT_NT(manager, NtOpenEvent, OPEN_EVENT_ID, 16);
+    ret = INTERCEPT_EAT(manager, kWin32SyncDllName, OpenEventW, OPEN_EVENTW_ID,
+                        16);
+    if (ret) {
+      ret = INTERCEPT_EAT(manager, kWin32SyncDllName, OpenEventA,
+                          OPEN_EVENTA_ID, 16);
+    }
   }
-  return false;
+  return ret;
 }
 
 bool SyncDispatcher::CreateEvent(IPCInfo* ipc, std::wstring* name,
-                                 DWORD event_type, DWORD initial_state) {
+                                 DWORD manual_reset, DWORD initial_state) {
   const wchar_t* event_name = name->c_str();
   CountedParameterSet<NameBased> params;
   params[NameBased::NAME] = ParamPickerMake(event_name);
@@ -53,16 +70,16 @@ bool SyncDispatcher::CreateEvent(IPCInfo* ipc, std::wstring* name,
                                                params.GetBase());
   HANDLE handle = NULL;
   DWORD ret = SyncPolicy::CreateEventAction(result, *ipc->client_info, *name,
-                                            event_type, initial_state,
+                                            manual_reset, initial_state,
                                             &handle);
   // Return operation status on the IPC.
-  ipc->return_info.nt_status = ret;
+  ipc->return_info.win32_result = ret;
   ipc->return_info.handle = handle;
   return true;
 }
 
 bool SyncDispatcher::OpenEvent(IPCInfo* ipc, std::wstring* name,
-                               DWORD desired_access) {
+                               DWORD desired_access, DWORD inherit_handle) {
   const wchar_t* event_name = name->c_str();
 
   CountedParameterSet<OpenEventParams> params;
@@ -73,7 +90,8 @@ bool SyncDispatcher::OpenEvent(IPCInfo* ipc, std::wstring* name,
                                                params.GetBase());
   HANDLE handle = NULL;
   DWORD ret = SyncPolicy::OpenEventAction(result, *ipc->client_info, *name,
-                                          desired_access, &handle);
+                                          desired_access, inherit_handle,
+                                          &handle);
   // Return operation status on the IPC.
   ipc->return_info.win32_result = ret;
   ipc->return_info.handle = handle;
