@@ -103,20 +103,6 @@ IPC_MESSAGE_ROUTED0(WorkerMsg_WorkerObjectDestroyed)
 // WorkerHost messages
 // These are messages sent from the worker process to the renderer process.
 // WorkerMsg_PostMessage is also sent here.
-IPC_MESSAGE_ROUTED3(WorkerHostMsg_PostExceptionToWorkerObject,
-                    string16  /* error_message */,
-                    int  /* line_number */,
-                    string16  /* source_url*/)
-
-IPC_MESSAGE_ROUTED1(WorkerHostMsg_PostConsoleMessageToWorkerObject,
-                    WorkerHostMsg_PostConsoleMessageToWorkerObject_Params)
-
-IPC_MESSAGE_ROUTED1(WorkerHostMsg_ConfirmMessageFromWorkerObject,
-                    bool /* bool has_pending_activity */)
-
-IPC_MESSAGE_ROUTED1(WorkerHostMsg_ReportPendingActivity,
-                    bool /* bool has_pending_activity */)
-
 IPC_MESSAGE_CONTROL1(WorkerHostMsg_WorkerContextClosed,
                      int /* worker_route_id */)
 IPC_MESSAGE_ROUTED0(WorkerHostMsg_WorkerContextDestroyed)

@@ -47,50 +47,6 @@ WebSharedWorkerClientProxy::WebSharedWorkerClientProxy(
 WebSharedWorkerClientProxy::~WebSharedWorkerClientProxy() {
 }
 
-void WebSharedWorkerClientProxy::postMessageToWorkerObject(
-    const WebString& message,
-    const WebMessagePortChannelArray& channels) {
-  // TODO(marja): Clean up the interface; this function doesn't need to exist.
-  NOTREACHED();
-}
-
-void WebSharedWorkerClientProxy::postExceptionToWorkerObject(
-    const WebString& error_message,
-    int line_number,
-    const WebString& source_url) {
-  Send(new WorkerHostMsg_PostExceptionToWorkerObject(
-      route_id_, error_message, line_number, source_url));
-}
-
-void WebSharedWorkerClientProxy::postConsoleMessageToWorkerObject(
-    int source,
-    int type,
-    int level,
-    const WebString& message,
-    int line_number,
-    const WebString& source_url) {
-  WorkerHostMsg_PostConsoleMessageToWorkerObject_Params params;
-  params.source_identifier = source;
-  params.message_type = type;
-  params.message_level = level;
-  params.message = message;
-  params.line_number = line_number;
-  params.source_url = source_url;
-  Send(new WorkerHostMsg_PostConsoleMessageToWorkerObject(route_id_, params));
-}
-
-void WebSharedWorkerClientProxy::confirmMessageFromWorkerObject(
-    bool has_pending_activity) {
-  Send(new WorkerHostMsg_ConfirmMessageFromWorkerObject(
-      route_id_, has_pending_activity));
-}
-
-void WebSharedWorkerClientProxy::reportPendingActivity(
-    bool has_pending_activity) {
-  Send(new WorkerHostMsg_ReportPendingActivity(
-      route_id_, has_pending_activity));
-}
-
 void WebSharedWorkerClientProxy::workerContextClosed() {
   Send(new WorkerHostMsg_WorkerContextClosed(route_id_));
 }
