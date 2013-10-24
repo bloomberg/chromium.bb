@@ -780,6 +780,8 @@ crbug.com/306280 http/tests/pointer-lock/iframe-sandboxed-allow-pointer-lock.htm
 crbug.com/305853 [ SnowLeopard ] svg/as-object/embedded-svg-immediate-offsetWidth-query.html [ Pass ImageOnlyFailure ]
 
 crbug.com/306595 svg/W3C-SVG-1.1-SE/struct-dom-11-f.svg [ Pass Timeout ]
+crbug.com/306595 svg/W3C-SVG-1.1-SE/types-dom-03-b.svg [ Pass Timeout ]
+crbug.com/306595 svg/W3C-SVG-1.1-SE/svgdom-over-01-f.svg [ Pass Timeout ]
 
 crbug.com/308952 [ Win ] inspector/editor/text-editor-reveal-line.html [ Failure ]
 
