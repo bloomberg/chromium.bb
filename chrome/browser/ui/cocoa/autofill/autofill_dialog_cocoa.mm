@@ -393,7 +393,7 @@ void AutofillDialogCocoa::OnConstrainedWindowClosed(
   NSSize contentSize;
 
   // Overall size is determined by either main container or sign in view.
-  if (![[mainContainer_ view] isHidden])
+  if ([[signInContainer_ view] isHidden])
     contentSize = [mainContainer_ preferredSize];
   else
     contentSize = [signInContainer_ preferredSize];
@@ -523,18 +523,15 @@ void AutofillDialogCocoa::OnConstrainedWindowClosed(
     NSView* loadingShieldView = [loadingShieldTextField_ superview];
     [loadingShieldTextField_ setStringValue:newLoadingMessage];
     [loadingShieldTextField_ sizeToFit];
-    [loadingShieldView setHidden:[newLoadingMessage length] == 0];
 
-    // For the duration of the loading shield, it becomes first responder.
+    BOOL showShield = ([newLoadingMessage length] != 0);
+
+    // For the duration of the loading shield, hide the main contents.
     // This prevents the currently focused text field "shining through".
-    if (![loadingShieldView isHidden]) {
-      [loadingShieldView setNextResponder:
-          [[loadingShieldView window] firstResponder]];
-      [[loadingShieldView window] makeFirstResponder:loadingShieldView];
-    } else {
-      [[loadingShieldView window] makeFirstResponder:
-          [loadingShieldView nextResponder]];
-    }
+    // No need to remember previous state, because the loading shield
+    // always flows through to the main container.
+    [[mainContainer_ view] setHidden:showShield];
+    [loadingShieldView setHidden:!showShield];
     [self requestRelayout];
   }
 }
