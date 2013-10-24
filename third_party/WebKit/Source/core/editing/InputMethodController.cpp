@@ -42,23 +42,6 @@
 
 namespace WebCore {
 
-PlainTextOffsets::PlainTextOffsets()
-    : m_start(kNotFound)
-    , m_end(kNotFound)
-{
-}
-
-PlainTextOffsets::PlainTextOffsets(int start, int end)
-    : m_start(start)
-    , m_end(end)
-{
-    ASSERT(start != kNotFound);
-    ASSERT(end != kNotFound);
-    ASSERT(start <= end);
-}
-
-// ----------------------------
-
 InputMethodController::SelectionOffsetsScope::SelectionOffsetsScope(InputMethodController* inputMethodController)
     : m_inputMethodController(inputMethodController)
     , m_offsets(inputMethodController->getSelectionOffsets())
@@ -358,7 +341,7 @@ void InputMethodController::setCompositionFromExistingText(const Vector<Composit
 
     Editor::RevealSelectionScope revealSelectionScope(&editor());
     SelectionOffsetsScope selectionOffsetsScope(this);
-    setSelectionOffsets(PlainTextOffsets(compositionStart, compositionEnd));
+    setSelectionOffsets(PlainTextRange(compositionStart, compositionEnd));
     setComposition(m_frame.selectedText(), underlines, 0, 0);
 }
 
@@ -374,20 +357,17 @@ PassRefPtr<Range> InputMethodController::compositionRange() const
     return Range::create(m_compositionNode->document(), m_compositionNode.get(), start, m_compositionNode.get(), end);
 }
 
-PlainTextOffsets InputMethodController::getSelectionOffsets() const
+PlainTextRange InputMethodController::getSelectionOffsets() const
 {
     RefPtr<Range> range = m_frame.selection().selection().firstRange();
     if (!range)
-        return PlainTextOffsets();
-    size_t location;
-    size_t length;
-    // FIXME: We should change TextIterator::getLocationAndLengthFromRange() returns PlainTextOffsets.
-    if (TextIterator::getLocationAndLengthFromRange(m_frame.selection().rootEditableElementOrTreeScopeRootNode(), range.get(), location, length))
-        return PlainTextOffsets(location, location + length);
-    return PlainTextOffsets();
+        return PlainTextRange();
+    Node* editable = m_frame.selection().rootEditableElementOrTreeScopeRootNode();
+    ASSERT(editable);
+    return PlainTextRange::create(*editable, *range.get());
 }
 
-bool InputMethodController::setSelectionOffsets(const PlainTextOffsets& selectionOffsets)
+bool InputMethodController::setSelectionOffsets(const PlainTextRange& selectionOffsets)
 {
     if (selectionOffsets.isNull())
         return false;
@@ -395,14 +375,14 @@ bool InputMethodController::setSelectionOffsets(const PlainTextOffsets& selectio
     if (!rootEditableElement)
         return false;
 
-    RefPtr<Range> range = TextIterator::rangeFromLocationAndLength(rootEditableElement, selectionOffsets.start(), selectionOffsets.end() - selectionOffsets.start());
+    RefPtr<Range> range = selectionOffsets.createRange(*rootEditableElement);
     if (!range)
         return false;
 
     return m_frame.selection().setSelectedRange(range.get(), VP_DEFAULT_AFFINITY, true);
 }
 
-bool InputMethodController::setEditableSelectionOffsets(const PlainTextOffsets& selectionOffsets)
+bool InputMethodController::setEditableSelectionOffsets(const PlainTextRange& selectionOffsets)
 {
     if (!editor().canEdit())
         return false;
@@ -413,10 +393,10 @@ void InputMethodController::extendSelectionAndDelete(int before, int after)
 {
     if (!editor().canEdit())
         return;
-    PlainTextOffsets selectionOffsets = getSelectionOffsets();
+    PlainTextRange selectionOffsets(getSelectionOffsets());
     if (selectionOffsets.isNull())
         return;
-    setSelectionOffsets(PlainTextOffsets(std::max(static_cast<int>(selectionOffsets.start()) - before, 0), selectionOffsets.end() + after));
+    setSelectionOffsets(PlainTextRange(std::max(static_cast<int>(selectionOffsets.start()) - before, 0), selectionOffsets.end() + after));
     TypingCommand::deleteSelection(*m_frame.document());
 }
 

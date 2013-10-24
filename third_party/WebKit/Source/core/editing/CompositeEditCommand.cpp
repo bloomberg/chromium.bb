@@ -45,6 +45,7 @@
 #include "core/editing/InsertNodeBeforeCommand.h"
 #include "core/editing/InsertParagraphSeparatorCommand.h"
 #include "core/editing/MergeIdenticalElementsCommand.h"
+#include "core/editing/PlainTextRange.h"
 #include "core/editing/RemoveCSSPropertyCommand.h"
 #include "core/editing/RemoveNodeCommand.h"
 #include "core/editing/RemoveNodePreservingChildrenCommand.h"
@@ -1242,8 +1243,8 @@ void CompositeEditCommand::moveParagraphs(const VisiblePosition& startOfParagrap
         // causes spaces to be collapsed during the move operation.  This results
         // in a call to rangeFromLocationAndLength with a location past the end
         // of the document (which will return null).
-        RefPtr<Range> start = TextIterator::rangeFromLocationAndLength(document().documentElement(), destinationIndex + startIndex, 0, true);
-        RefPtr<Range> end = TextIterator::rangeFromLocationAndLength(document().documentElement(), destinationIndex + endIndex, 0, true);
+        RefPtr<Range> start = PlainTextRange(destinationIndex + startIndex).createRangeForSelection(*document().documentElement());
+        RefPtr<Range> end = PlainTextRange(destinationIndex + endIndex).createRangeForSelection(*document().documentElement());
         if (start && end)
             setEndingSelection(VisibleSelection(start->startPosition(), end->startPosition(), DOWNSTREAM, originalIsDirectional));
     }

@@ -66,6 +66,7 @@
 #include "core/dom/shadow/SelectRuleFeatureSet.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/editing/Editor.h"
+#include "core/editing/PlainTextRange.h"
 #include "core/editing/SpellCheckRequester.h"
 #include "core/editing/SpellChecker.h"
 #include "core/editing/TextIterator.h"
@@ -1088,7 +1089,7 @@ PassRefPtr<Range> Internals::rangeFromLocationAndLength(Element* scope, int rang
     // TextIterator depends on Layout information, make sure layout it up to date.
     scope->document().updateLayoutIgnorePendingStylesheets();
 
-    return TextIterator::rangeFromLocationAndLength(scope, rangeLocation, rangeLength);
+    return PlainTextRange(rangeLocation, rangeLocation + rangeLength).createRange(*scope);
 }
 
 unsigned Internals::locationFromRange(Element* scope, const Range* range, ExceptionState& es)
@@ -1098,13 +1099,10 @@ unsigned Internals::locationFromRange(Element* scope, const Range* range, Except
         return 0;
     }
 
-    // TextIterator depends on Layout information, make sure layout it up to date.
+    // PlainTextRange depends on Layout information, make sure layout it up to date.
     scope->document().updateLayoutIgnorePendingStylesheets();
 
-    size_t location = 0;
-    size_t unusedLength = 0;
-    TextIterator::getLocationAndLengthFromRange(scope, range, location, unusedLength);
-    return location;
+    return PlainTextRange::create(*scope, *range).start();
 }
 
 unsigned Internals::lengthFromRange(Element* scope, const Range* range, ExceptionState& es)
@@ -1114,13 +1112,10 @@ unsigned Internals::lengthFromRange(Element* scope, const Range* range, Exceptio
         return 0;
     }
 
-    // TextIterator depends on Layout information, make sure layout it up to date.
+    // PlainTextRange depends on Layout information, make sure layout it up to date.
     scope->document().updateLayoutIgnorePendingStylesheets();
 
-    size_t unusedLocation = 0;
-    size_t length = 0;
-    TextIterator::getLocationAndLengthFromRange(scope, range, unusedLocation, length);
-    return length;
+    return PlainTextRange::create(*scope, *range).length();
 }
 
 String Internals::rangeAsText(const Range* range, ExceptionState& es)

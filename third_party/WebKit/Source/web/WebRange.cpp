@@ -41,7 +41,7 @@
 #include "core/dom/Range.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/editing/FrameSelection.h"
-#include "core/editing/TextIterator.h"
+#include "core/editing/PlainTextRange.h"
 #include "core/frame/Frame.h"
 #include "core/frame/FrameView.h"
 #include "public/platform/WebFloatQuad.h"
@@ -119,7 +119,7 @@ WebRange WebRange::fromDocumentRange(WebFrame* frame, int start, int length)
     WebCore::Frame* webFrame = toWebFrameImpl(frame)->frame();
     Element* selectionRoot = webFrame->selection().rootEditableElement();
     ContainerNode* scope = selectionRoot ? selectionRoot : webFrame->document()->documentElement();
-    return TextIterator::rangeFromLocationAndLength(scope, start, length);
+    return PlainTextRange(start, start + length).createRange(*scope);
 }
 
 WebVector<WebFloatQuad> WebRange::textQuads() const

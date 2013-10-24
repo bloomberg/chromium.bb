@@ -38,6 +38,7 @@
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/editing/Editor.h"
 #include "core/editing/HTMLInterchange.h"
+#include "core/editing/PlainTextRange.h"
 #include "core/editing/TextIterator.h"
 #include "core/editing/VisiblePosition.h"
 #include "core/editing/VisibleSelection.h"
@@ -1060,7 +1061,9 @@ int indexForVisiblePosition(const VisiblePosition& visiblePosition, RefPtr<Conta
 
 VisiblePosition visiblePositionForIndex(int index, ContainerNode* scope)
 {
-    RefPtr<Range> range = TextIterator::rangeFromLocationAndLength(scope, index, 0, true);
+    if (!scope)
+        return VisiblePosition();
+    RefPtr<Range> range = PlainTextRange(index).createRangeForSelection(*scope);
     // Check for an invalid index. Certain editing operations invalidate indices because
     // of problems with TextIteratorEmitsCharactersBetweenAllVisiblePositions.
     if (!range)

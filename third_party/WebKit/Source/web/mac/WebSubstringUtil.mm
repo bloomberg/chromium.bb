@@ -41,6 +41,7 @@
 #include "core/dom/Node.h"
 #include "core/dom/Range.h"
 #include "core/editing/FrameSelection.h"
+#include "core/editing/PlainTextRange.h"
 #include "core/editing/TextIterator.h"
 #include "core/html/HTMLElement.h"
 #include "core/frame/Frame.h"
@@ -61,7 +62,9 @@ NSAttributedString* WebSubstringUtil::attributedSubstringInRange(WebFrame* webFr
     if (frame->view()->needsLayout())
         frame->view()->layout();
 
-    RefPtr<Range> range(TextIterator::rangeFromLocationAndLength(frame->selection().rootEditableElementOrDocumentElement(), location, length));
+    Element* editable = frame->selection().rootEditableElementOrDocumentElement();
+    ASSERT(editable);
+    RefPtr<Range> range(PlainTextRange(location, location + length).createRange(*editable));
     if (!range)
         return nil;
 

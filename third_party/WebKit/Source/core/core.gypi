@@ -878,6 +878,8 @@
             'editing/ModifySelectionListLevel.cpp',
             'editing/ModifySelectionListLevel.h',
             'editing/MoveSelectionCommand.cpp',
+            'editing/PlainTextRange.h',
+            'editing/PlainTextRange.cpp',
             'editing/RemoveCSSPropertyCommand.cpp',
             'editing/RemoveCSSPropertyCommand.h',
             'editing/RemoveFormatCommand.cpp',

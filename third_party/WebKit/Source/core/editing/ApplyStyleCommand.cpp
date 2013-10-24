@@ -39,6 +39,7 @@
 #include "core/dom/Text.h"
 #include "core/editing/EditingStyle.h"
 #include "core/editing/HTMLInterchange.h"
+#include "core/editing/PlainTextRange.h"
 #include "core/editing/TextIterator.h"
 #include "core/editing/VisibleUnits.h"
 #include "core/editing/htmlediting.h"
@@ -285,8 +286,8 @@ void ApplyStyleCommand::applyBlockStyle(EditingStyle *style)
         nextParagraphStart = endOfParagraph(paragraphStart).next();
     }
 
-    startRange = TextIterator::rangeFromLocationAndLength(toContainerNode(scope), startIndex, 0, true);
-    endRange = TextIterator::rangeFromLocationAndLength(toContainerNode(scope), endIndex, 0, true);
+    startRange = PlainTextRange(startIndex).createRangeForSelection(*toContainerNode(scope));
+    endRange = PlainTextRange(endIndex).createRangeForSelection(*toContainerNode(scope));
     if (startRange && endRange)
         updateStartEnd(startRange->startPosition(), endRange->startPosition());
 }

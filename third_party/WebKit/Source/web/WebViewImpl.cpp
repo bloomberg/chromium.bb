@@ -2140,9 +2140,14 @@ bool WebViewImpl::compositionRange(size_t* location, size_t* length)
     if (!range)
         return false;
 
-    if (TextIterator::getLocationAndLengthFromRange(focused->selection().rootEditableElementOrDocumentElement(), range.get(), *location, *length))
-        return true;
-    return false;
+    Element* editable = focused->selection().rootEditableElementOrDocumentElement();
+    ASSERT(editable);
+    PlainTextRange plainTextRange(PlainTextRange::create(*editable, *range.get()));
+    if (plainTextRange.isNull())
+        return false;
+    *location = plainTextRange.start();
+    *length = plainTextRange.length();
+    return true;
 }
 
 WebTextInputInfo WebViewImpl::textInputInfo()
@@ -2172,17 +2177,20 @@ WebTextInputInfo WebViewImpl::textInputInfo()
     if (info.value.isEmpty())
         return info;
 
-    size_t location;
-    size_t length;
-    RefPtr<Range> range = selection.selection().firstRange();
-    if (range && TextIterator::getLocationAndLengthFromRange(selection.rootEditableElement(), range.get(), location, length)) {
-        info.selectionStart = location;
-        info.selectionEnd = location + length;
+    if (RefPtr<Range> range = selection.selection().firstRange()) {
+        PlainTextRange plainTextRange(PlainTextRange::create(*node, *range.get()));
+        if (plainTextRange.isNotNull()) {
+            info.selectionStart = plainTextRange.start();
+            info.selectionEnd = plainTextRange.end();
+        }
     }
-    range = focused->inputMethodController().compositionRange();
-    if (range && TextIterator::getLocationAndLengthFromRange(selection.rootEditableElement(), range.get(), location, length)) {
-        info.compositionStart = location;
-        info.compositionEnd = location + length;
+
+    if (RefPtr<Range> range = focused->inputMethodController().compositionRange()) {
+        PlainTextRange plainTextRange(PlainTextRange::create(*node, *range.get()));
+        if (plainTextRange.isNotNull()) {
+            info.compositionStart = plainTextRange.start();
+            info.compositionEnd = plainTextRange.end();
+        }
     }
 
     return info;
@@ -2336,7 +2344,7 @@ bool WebViewImpl::setEditableSelectionOffsets(int start, int end)
     const Frame* focused = focusedWebCoreFrame();
     if (!focused)
         return false;
-    return focused->inputMethodController().setEditableSelectionOffsets(PlainTextOffsets(start, end));
+    return focused->inputMethodController().setEditableSelectionOffsets(PlainTextRange(start, end));
 }
 
 bool WebViewImpl::setCompositionFromExistingText(int compositionStart, int compositionEnd, const WebVector<WebCompositionUnderline>& underlines)
@@ -2407,7 +2415,7 @@ bool WebViewImpl::caretOrSelectionRange(size_t* location, size_t* length)
     if (!focused)
         return false;
 
-    PlainTextOffsets selectionOffsets = focused->inputMethodController().getSelectionOffsets();
+    PlainTextRange selectionOffsets = focused->inputMethodController().getSelectionOffsets();
     if (selectionOffsets.isNull())
         return false;
 

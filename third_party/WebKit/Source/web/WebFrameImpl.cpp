@@ -124,6 +124,7 @@
 #include "core/editing/Editor.h"
 #include "core/editing/FrameSelection.h"
 #include "core/editing/InputMethodController.h"
+#include "core/editing/PlainTextRange.h"
 #include "core/editing/SpellChecker.h"
 #include "core/editing/TextAffinity.h"
 #include "core/editing/TextIterator.h"
@@ -1108,7 +1109,9 @@ bool WebFrameImpl::firstRectForCharacterRange(unsigned location, unsigned length
     if ((location + length < location) && (location + length))
         length = 0;
 
-    RefPtr<Range> range = TextIterator::rangeFromLocationAndLength(frame()->selection().rootEditableElementOrDocumentElement(), location, length);
+    Element* editable = frame()->selection().rootEditableElementOrDocumentElement();
+    ASSERT(editable);
+    RefPtr<Range> range = PlainTextRange(location, location + length).createRange(*editable);
     if (!range)
         return false;
     IntRect intRect = frame()->editor().firstRectForRange(range.get());
@@ -1127,10 +1130,9 @@ size_t WebFrameImpl::characterIndexForPoint(const WebPoint& webPoint) const
     RefPtr<Range> range = frame()->rangeForPoint(result.roundedPointInInnerNodeFrame());
     if (!range)
         return kNotFound;
-
-    size_t location, length;
-    TextIterator::getLocationAndLengthFromRange(frame()->selection().rootEditableElementOrDocumentElement(), range.get(), location, length);
-    return location;
+    Element* editable = frame()->selection().rootEditableElementOrDocumentElement();
+    ASSERT(editable);
+    return PlainTextRange::create(*editable, *range.get()).start();
 }
 
 bool WebFrameImpl::executeCommand(const WebString& name, const WebNode& node)
