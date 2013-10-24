@@ -17,7 +17,7 @@
 #include "base/time/time.h"
 #include "content/browser/android/content_video_view.h"
 #include "content/common/media/media_player_messages_enums_android.h"
-#include "content/public/browser/render_view_host_observer.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "media/base/android/media_player_android.h"
 #include "media/base/android/media_player_manager.h"
 #include "ui/gfx/rect_f.h"
@@ -38,7 +38,7 @@ class WebContents;
 // MediaPlayerAndroid objects are converted to IPCs and then sent to the
 // render process.
 class CONTENT_EXPORT BrowserMediaPlayerManager
-    : public RenderViewHostObserver,
+    : public WebContentsObserver,
       public media::MediaPlayerManager {
  public:
   // Permits embedders to provide an extended version of the class.
@@ -50,7 +50,7 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
 
   virtual ~BrowserMediaPlayerManager();
 
-  // RenderViewHostObserver overrides.
+  // WebContentsObserver overrides.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   // Fullscreen video playback controls.

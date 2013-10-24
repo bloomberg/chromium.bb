@@ -81,7 +81,7 @@ MediaPlayerAndroid* BrowserMediaPlayerManager::CreateMediaPlayer(
 
 BrowserMediaPlayerManager::BrowserMediaPlayerManager(
     RenderViewHost* render_view_host)
-    : RenderViewHostObserver(render_view_host),
+    : WebContentsObserver(WebContents::FromRenderViewHost(render_view_host)),
       fullscreen_player_id_(-1),
       pending_fullscreen_player_id_(-1),
       web_contents_(WebContents::FromRenderViewHost(render_view_host)),
@@ -266,7 +266,7 @@ void BrowserMediaPlayerManager::ReleaseMediaResources(int player_id) {
 media::MediaResourceGetter*
 BrowserMediaPlayerManager::GetMediaResourceGetter() {
   if (!media_resource_getter_.get()) {
-    RenderProcessHost* host = render_view_host()->GetProcess();
+    RenderProcessHost* host = web_contents()->GetRenderProcessHost();
     BrowserContext* context = host->GetBrowserContext();
     StoragePartition* partition = host->GetStoragePartition();
     fileapi::FileSystemContext* file_system_context =
@@ -403,10 +403,8 @@ void BrowserMediaPlayerManager::OnEnterFullscreen(int player_id) {
     // In Android WebView, two ContentViewCores could both try to enter
     // fullscreen video, we just ignore the second one.
     fullscreen_player_id_ = player_id;
-    WebContents* web_contents =
-        WebContents::FromRenderViewHost(render_view_host());
     ContentViewCoreImpl* content_view_core_impl =
-        ContentViewCoreImpl::FromWebContents(web_contents);
+        ContentViewCoreImpl::FromWebContents(web_contents());
     video_view_.reset(new ContentVideoView(content_view_core_impl->GetContext(),
         content_view_core_impl->GetContentVideoViewClient(), this));
   }
@@ -433,8 +431,8 @@ void BrowserMediaPlayerManager::OnInitialize(
 
   RemovePlayer(player_id);
 
-  RenderProcessHostImpl* host =
-      static_cast<RenderProcessHostImpl*>(render_view_host()->GetProcess());
+  RenderProcessHostImpl* host = static_cast<RenderProcessHostImpl*>(
+      web_contents()->GetRenderProcessHost());
   AddPlayer(CreateMediaPlayer(
       type, player_id, url, first_party_for_cookies, demuxer_client_id,
       host->GetBrowserContext()->IsOffTheRecord(), this,
@@ -522,10 +520,8 @@ void BrowserMediaPlayerManager::OnGenerateKeyRequest(
       media_keys_ids_approved_.end()) {
     media_keys_ids_pending_approval_.insert(media_keys_id);
   }
-  WebContents* web_contents =
-      WebContents::FromRenderViewHost(render_view_host());
-  web_contents->GetDelegate()->RequestProtectedMediaIdentifierPermission(
-      web_contents,
+  web_contents()->GetDelegate()->RequestProtectedMediaIdentifierPermission(
+      web_contents(),
       drm_bridge->frame_url(),
       base::Bind(&BrowserMediaPlayerManager::GenerateKeyIfAllowed,
                  weak_ptr_factory_.GetWeakPtr(),
