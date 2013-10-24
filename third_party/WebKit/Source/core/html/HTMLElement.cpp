@@ -152,6 +152,11 @@ bool HTMLElement::isPresentationAttribute(const QualifiedName& name) const
     return Element::isPresentationAttribute(name);
 }
 
+static inline bool isValidDirAttribute(const AtomicString& value)
+{
+    return equalIgnoringCase(value, "auto") || equalIgnoringCase(value, "ltr") || equalIgnoringCase(value, "rtl");
+}
+
 void HTMLElement::collectStyleForPresentationAttribute(const QualifiedName& name, const AtomicString& value, MutableStylePropertySet* style)
 {
     if (name == alignAttr) {
@@ -182,7 +187,10 @@ void HTMLElement::collectStyleForPresentationAttribute(const QualifiedName& name
         if (equalIgnoringCase(value, "auto"))
             addPropertyToPresentationAttributeStyle(style, CSSPropertyUnicodeBidi, unicodeBidiAttributeForDirAuto(this));
         else {
-            addPropertyToPresentationAttributeStyle(style, CSSPropertyDirection, value);
+            if (isValidDirAttribute(value))
+                addPropertyToPresentationAttributeStyle(style, CSSPropertyDirection, value);
+            else
+                addPropertyToPresentationAttributeStyle(style, CSSPropertyDirection, "ltr");
             if (!hasTagName(bdiTag) && !hasTagName(bdoTag) && !hasTagName(outputTag))
                 addPropertyToPresentationAttributeStyle(style, CSSPropertyUnicodeBidi, CSSValueEmbed);
         }
@@ -886,7 +894,7 @@ TextDirection HTMLElement::directionality(Node** strongDirectionalityTextNode) c
         // Skip elements with valid dir attribute
         if (node->isElementNode()) {
             AtomicString dirAttributeValue = toElement(node)->fastGetAttribute(dirAttr);
-            if (equalIgnoringCase(dirAttributeValue, "rtl") || equalIgnoringCase(dirAttributeValue, "ltr") || equalIgnoringCase(dirAttributeValue, "auto")) {
+            if (isValidDirAttribute(dirAttributeValue)) {
                 node = NodeTraversal::nextSkippingChildren(node, this);
                 continue;
             }
