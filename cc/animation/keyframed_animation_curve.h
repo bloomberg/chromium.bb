@@ -31,6 +31,26 @@ class CC_EXPORT Keyframe {
   DISALLOW_COPY_AND_ASSIGN(Keyframe);
 };
 
+class CC_EXPORT ColorKeyframe : public Keyframe {
+ public:
+  static scoped_ptr<ColorKeyframe> Create(
+      double time,
+      SkColor value,
+      scoped_ptr<TimingFunction> timing_function);
+  virtual ~ColorKeyframe();
+
+  SkColor Value() const;
+
+  scoped_ptr<ColorKeyframe> Clone() const;
+
+ private:
+  ColorKeyframe(double time,
+                SkColor value,
+                scoped_ptr<TimingFunction> timing_function);
+
+  SkColor value_;
+};
+
 class CC_EXPORT FloatKeyframe : public Keyframe {
  public:
   static scoped_ptr<FloatKeyframe> Create(
@@ -91,6 +111,32 @@ class CC_EXPORT FilterKeyframe : public Keyframe {
       scoped_ptr<TimingFunction> timing_function);
 
   FilterOperations value_;
+};
+
+class CC_EXPORT KeyframedColorAnimationCurve : public ColorAnimationCurve {
+ public:
+  // It is required that the keyframes be sorted by time.
+  static scoped_ptr<KeyframedColorAnimationCurve> Create();
+
+  virtual ~KeyframedColorAnimationCurve();
+
+  void AddKeyframe(scoped_ptr<ColorKeyframe> keyframe);
+
+  // AnimationCurve implementation
+  virtual double Duration() const OVERRIDE;
+  virtual scoped_ptr<AnimationCurve> Clone() const OVERRIDE;
+
+  // BackgrounColorAnimationCurve implementation
+  virtual SkColor GetValue(double t) const OVERRIDE;
+
+ private:
+  KeyframedColorAnimationCurve();
+
+  // Always sorted in order of increasing time. No two keyframes have the
+  // same time.
+  ScopedPtrVector<ColorKeyframe> keyframes_;
+
+  DISALLOW_COPY_AND_ASSIGN(KeyframedColorAnimationCurve);
 };
 
 class CC_EXPORT KeyframedFloatAnimationCurve : public FloatAnimationCurve {

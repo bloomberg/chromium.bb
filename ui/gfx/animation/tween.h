@@ -6,6 +6,7 @@
 #define UI_GFX_ANIMATION_TWEEN_H_
 
 #include "base/basictypes.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/gfx_export.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/transform.h"
@@ -30,9 +31,20 @@ class GFX_EXPORT Tween {
   static double CalculateValue(Type type, double state);
 
   // Conveniences for getting a value between a start and end point.
+  static SkColor ColorValueBetween(double value, SkColor start, SkColor target);
   static double DoubleValueBetween(double value, double start, double target);
   static float FloatValueBetween(double value, float start, float target);
+
+  // Interpolated between start and target, with every integer in this range
+  // given equal weight.
   static int IntValueBetween(double value, int start, int target);
+
+  // Interpolates between start and target as real numbers, and rounds the
+  // result to the nearest integer, with ties broken by rounding towards
+  // positive infinity. This gives start and target half the weight of the
+  // other integers in the range. This is the integer interpolation approach
+  // specified by www.w3.org/TR/css3-transitions.
+  static int LinearIntValueBetween(double value, int start, int target);
   static gfx::Rect RectValueBetween(double value,
                                     const gfx::Rect& start_bounds,
                                     const gfx::Rect& target_bounds);

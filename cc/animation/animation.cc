@@ -33,7 +33,8 @@ COMPILE_ASSERT(static_cast<int>(cc::Animation::RunStateEnumSize) ==
 static const char* const s_targetPropertyNames[] = {
   "Transform",
   "Opacity",
-  "Filter"
+  "Filter",
+  "BackgroundColor"
 };
 
 COMPILE_ASSERT(static_cast<int>(cc::Animation::TargetPropertyEnumSize) ==

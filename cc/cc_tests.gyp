@@ -326,6 +326,7 @@
       'dependencies': [
         '../skia/skia.gyp:skia',
         '../ui/gfx/gfx.gyp:gfx',
+        '../ui/ui.gyp:ui_test_support',
       ],
     },
   ],

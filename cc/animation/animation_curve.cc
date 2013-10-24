@@ -8,6 +8,13 @@
 
 namespace cc {
 
+const ColorAnimationCurve* AnimationCurve::ToColorAnimationCurve() const {
+  DCHECK(Type() == AnimationCurve::Color);
+  return static_cast<const ColorAnimationCurve*>(this);
+}
+
+AnimationCurve::CurveType ColorAnimationCurve::Type() const { return Color; }
+
 const FloatAnimationCurve* AnimationCurve::ToFloatAnimationCurve() const {
   DCHECK(Type() == AnimationCurve::Float);
   return static_cast<const FloatAnimationCurve*>(this);

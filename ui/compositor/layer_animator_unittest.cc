@@ -2149,9 +2149,9 @@ TEST(LayerAnimatorTest, Color) {
   TestLayerAnimationDelegate delegate;
   animator->SetDelegate(&delegate);
 
-  SkColor start_color  = SkColorSetARGB(  0, 20, 40,  60);
-  SkColor middle_color = SkColorSetARGB(127, 30, 60, 100);
-  SkColor target_color = SkColorSetARGB(254, 40, 80, 140);
+  SkColor start_color  = SkColorSetARGB( 64, 20, 40,  60);
+  SkColor middle_color = SkColorSetARGB(128, 35, 70, 120);
+  SkColor target_color = SkColorSetARGB(192, 40, 80, 140);
 
   base::TimeDelta delta = base::TimeDelta::FromSeconds(1);
 

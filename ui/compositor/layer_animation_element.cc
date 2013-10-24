@@ -345,19 +345,8 @@ class ColorTransition : public LayerAnimationElement {
   }
 
   virtual bool OnProgress(double t, LayerAnimationDelegate* delegate) OVERRIDE {
-    delegate->SetColorFromAnimation(SkColorSetARGB(
-        gfx::Tween::IntValueBetween(t,
-                                    static_cast<int>(SkColorGetA(start_)),
-                                    static_cast<int>(SkColorGetA(target_))),
-        gfx::Tween::IntValueBetween(t,
-                                    static_cast<int>(SkColorGetR(start_)),
-                                    static_cast<int>(SkColorGetR(target_))),
-        gfx::Tween::IntValueBetween(t,
-                                    static_cast<int>(SkColorGetG(start_)),
-                                    static_cast<int>(SkColorGetG(target_))),
-        gfx::Tween::IntValueBetween(t,
-                                    static_cast<int>(SkColorGetB(start_)),
-                                    static_cast<int>(SkColorGetB(target_)))));
+    delegate->SetColorFromAnimation(
+        gfx::Tween::ColorValueBetween(t, start_, target_));
     return true;
   }
 

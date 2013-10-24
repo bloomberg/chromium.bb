@@ -412,6 +412,11 @@ TEST(FilterOperationsTest, BlendDropShadowFilters) {
       gfx::Point(-2, -4), 0.f, SkColorSetARGB(0, 0, 0, 0));
   EXPECT_EQ(expected, blended);
 
+  blended = FilterOperation::Blend(&from, &to, 0.25);
+  expected = FilterOperation::CreateDropShadowFilter(
+      gfx::Point(1, 1), 3.f, SkColorSetARGB(24, 32, 64, 128));
+  EXPECT_EQ(expected, blended);
+
   blended = FilterOperation::Blend(&from, &to, 0.75);
   expected = FilterOperation::CreateDropShadowFilter(
       gfx::Point(2, 4), 5.f, SkColorSetARGB(42, 30, 61, 121));

@@ -187,6 +187,8 @@ void LayerAnimationController::AccumulatePropertyUpdates(
         break;
       }
 
+      case Animation::BackgroundColor: { break; }
+
       case Animation::TargetPropertyEnumSize:
         NOTREACHED();
     }
@@ -707,6 +709,11 @@ void LayerAnimationController::TickAnimations(double monotonic_time) {
           const FilterOperations filter =
               filter_animation_curve->GetValue(trimmed);
           NotifyObserversFilterAnimated(filter);
+          break;
+        }
+
+        case Animation::BackgroundColor: {
+          // Not yet implemented.
           break;
         }
 

@@ -10,7 +10,9 @@
 #include <float.h>
 #endif
 
+#include "base/basictypes.h"
 #include "base/logging.h"
+#include "ui/gfx/safe_integer_conversions.h"
 
 namespace gfx {
 
@@ -55,6 +57,58 @@ double Tween::CalculateValue(Tween::Type type, double state) {
   return state;
 }
 
+namespace {
+uint8 FloatToColorByte(float f) {
+  return std::min(std::max(ToRoundedInt(f * 255.f), 0), 255);
+}
+
+uint8 BlendColorComponents(uint8 start,
+                           uint8 target,
+                           float start_alpha,
+                           float target_alpha,
+                           float blended_alpha,
+                           double progress) {
+  // Since progress can be outside [0, 1], blending can produce a value outside
+  // [0, 255].
+  float blended_premultiplied = Tween::FloatValueBetween(
+      progress, start / 255.f * start_alpha, target / 255.f * target_alpha);
+  return FloatToColorByte(blended_premultiplied / blended_alpha);
+}
+
+}  // namespace
+
+// static
+SkColor Tween::ColorValueBetween(double value, SkColor start, SkColor target) {
+  float start_a = SkColorGetA(start) / 255.f;
+  float target_a = SkColorGetA(target) / 255.f;
+  float blended_a = FloatValueBetween(value, start_a, target_a);
+  if (blended_a <= 0.f)
+    return SkColorSetARGB(0, 0, 0, 0);
+  blended_a = std::min(blended_a, 1.f);
+
+  uint8 blended_r = BlendColorComponents(SkColorGetR(start),
+                                         SkColorGetR(target),
+                                         start_a,
+                                         target_a,
+                                         blended_a,
+                                         value);
+  uint8 blended_g = BlendColorComponents(SkColorGetG(start),
+                                         SkColorGetG(target),
+                                         start_a,
+                                         target_a,
+                                         blended_a,
+                                         value);
+  uint8 blended_b = BlendColorComponents(SkColorGetB(start),
+                                         SkColorGetB(target),
+                                         start_a,
+                                         target_a,
+                                         blended_a,
+                                         value);
+
+  return SkColorSetARGB(
+      FloatToColorByte(blended_a), blended_r, blended_g, blended_b);
+}
+
 // static
 double Tween::DoubleValueBetween(double value, double start, double target) {
   return start + (target - start) * value;
@@ -81,15 +135,21 @@ int Tween::IntValueBetween(double value, int start, int target) {
 #endif
 }
 
+//static
+int Tween::LinearIntValueBetween(double value, int start, int target) {
+  return std::floor(0.5 + DoubleValueBetween(value, start, target));
+}
+
 // static
 gfx::Rect Tween::RectValueBetween(double value,
                                   const gfx::Rect& start_bounds,
                                   const gfx::Rect& target_bounds) {
   return gfx::Rect(
-      IntValueBetween(value, start_bounds.x(), target_bounds.x()),
-      IntValueBetween(value, start_bounds.y(), target_bounds.y()),
-      IntValueBetween(value, start_bounds.width(), target_bounds.width()),
-      IntValueBetween(value, start_bounds.height(), target_bounds.height()));
+      LinearIntValueBetween(value, start_bounds.x(), target_bounds.x()),
+      LinearIntValueBetween(value, start_bounds.y(), target_bounds.y()),
+      LinearIntValueBetween(value, start_bounds.width(), target_bounds.width()),
+      LinearIntValueBetween(
+          value, start_bounds.height(), target_bounds.height()));
 }
 
 // static

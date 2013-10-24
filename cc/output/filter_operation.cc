@@ -8,6 +8,7 @@
 #include "cc/base/math_util.h"
 #include "cc/output/filter_operation.h"
 #include "third_party/skia/include/core/SkMath.h"
+#include "ui/gfx/animation/tween.h"
 
 namespace cc {
 
@@ -95,52 +96,6 @@ FilterOperation::FilterOperation(const FilterOperation& other)
 }
 
 FilterOperation::~FilterOperation() {
-}
-
-// TODO(ajuma): Define a version of gfx::Tween::ValueBetween for floats, and use
-// that instead.
-static float BlendFloats(float from, float to, double progress) {
-  return from * (1.0 - progress) + to * progress;
-}
-
-static int BlendInts(int from, int to, double progress) {
-  return static_cast<int>(
-      MathUtil::Round(from * (1.0 - progress) + to * progress));
-}
-
-static uint8_t  BlendColorComponents(uint8_t from,
-                                     uint8_t to,
-                                     uint8_t from_alpha,
-                                     uint8_t to_alpha,
-                                     uint8_t blended_alpha,
-                                     double progress) {
-  // Since progress can be outside [0, 1], blending can produce a value outside
-  // [0, 255].
-  int blended_premultiplied = BlendInts(SkMulDiv255Round(from, from_alpha),
-                                        SkMulDiv255Round(to, to_alpha),
-                                        progress);
-  int blended = static_cast<int>(
-      MathUtil::Round(blended_premultiplied * 255.f / blended_alpha));
-  return static_cast<uint8_t>(MathUtil::ClampToRange(blended, 0, 255));
-}
-
-static SkColor BlendSkColors(SkColor from, SkColor to, double progress) {
-  int from_a = SkColorGetA(from);
-  int to_a = SkColorGetA(to);
-  int blended_a = BlendInts(from_a, to_a, progress);
-  if (blended_a <= 0)
-    return SkColorSetARGB(0, 0, 0, 0);
-  blended_a = std::min(blended_a, 255);
-
-  // TODO(ajuma): Use SkFourByteInterp once http://crbug.com/260369 is fixed.
-  uint8_t blended_r = BlendColorComponents(
-      SkColorGetR(from), SkColorGetR(to), from_a, to_a, blended_a, progress);
-  uint8_t blended_g = BlendColorComponents(
-      SkColorGetG(from), SkColorGetG(to), from_a, to_a, blended_a, progress);
-  uint8_t blended_b = BlendColorComponents(
-      SkColorGetB(from), SkColorGetB(to), from_a, to_a, blended_a, progress);
-
-  return SkColorSetARGB(blended_a, blended_r, blended_g, blended_b);
 }
 
 static FilterOperation CreateNoOpFilter(FilterOperation::FilterType type) {
@@ -239,21 +194,25 @@ FilterOperation FilterOperation::Blend(const FilterOperation* from,
   }
 
   blended_filter.set_amount(ClampAmountForFilterType(
-      BlendFloats(from_op.amount(), to_op.amount(), progress), to_op.type()));
+      gfx::Tween::FloatValueBetween(progress, from_op.amount(), to_op.amount()),
+      to_op.type()));
 
   if (to_op.type() == FilterOperation::DROP_SHADOW) {
-    gfx::Point blended_offset(BlendInts(from_op.drop_shadow_offset().x(),
-                                        to_op.drop_shadow_offset().x(),
-                                        progress),
-                              BlendInts(from_op.drop_shadow_offset().y(),
-                                        to_op.drop_shadow_offset().y(),
-                                        progress));
+    gfx::Point blended_offset(
+        gfx::Tween::LinearIntValueBetween(progress,
+                                          from_op.drop_shadow_offset().x(),
+                                          to_op.drop_shadow_offset().x()),
+        gfx::Tween::LinearIntValueBetween(progress,
+                                          from_op.drop_shadow_offset().y(),
+                                          to_op.drop_shadow_offset().y()));
     blended_filter.set_drop_shadow_offset(blended_offset);
-    blended_filter.set_drop_shadow_color(BlendSkColors(
-        from_op.drop_shadow_color(), to_op.drop_shadow_color(), progress));
+    blended_filter.set_drop_shadow_color(gfx::Tween::ColorValueBetween(
+        progress, from_op.drop_shadow_color(), to_op.drop_shadow_color()));
   } else if (to_op.type() == FilterOperation::ZOOM) {
-    blended_filter.set_zoom_inset(std::max(
-        BlendInts(from_op.zoom_inset(), to_op.zoom_inset(), progress), 0));
+    blended_filter.set_zoom_inset(
+        std::max(gfx::Tween::LinearIntValueBetween(
+                     from_op.zoom_inset(), to_op.zoom_inset(), progress),
+                 0));
   }
 
   return blended_filter;

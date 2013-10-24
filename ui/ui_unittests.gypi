@@ -25,6 +25,8 @@
         'base/test/ui_controls_internal_win.h',
         'base/test/ui_controls_mac.mm',
         'base/test/ui_controls_win.cc',
+        'gfx/test/color_util.cc',
+        'gfx/test/color_util.h',
       ],
       'include_dirs': [
         '../',
@@ -172,6 +174,7 @@
         'events/latency_info_unittest.cc',
         'events/ozone/evdev/key_event_converter_unittest.cc',
         'events/ozone/evdev/touch_event_converter_unittest.cc',
+        'gfx/animation/tween_unittest.cc',
         'gfx/blit_unittest.cc',
         'gfx/break_list_unittest.cc',
         'gfx/canvas_unittest.cc',
