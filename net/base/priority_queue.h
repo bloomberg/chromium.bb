@@ -90,13 +90,16 @@ class PriorityQueue : public base::NonThreadSafe {
    private:
     friend class PriorityQueue;
 
-    // Note that we need iterator not const_iterator to pass to List::erase.
-    // When C++0x comes, this could be changed to const_iterator and const could
-    // be added to First, Last, and OldestLowest.
+    // Note that we need iterator and not const_iterator to pass to
+    // List::erase.  When C++11 is turned on for Chromium, this could
+    // be changed to const_iterator and the const_casts in the rest of
+    // the file can be removed.
     typedef typename PriorityQueue::List::iterator ListIterator;
 
     static const Priority kNullPriority = static_cast<Priority>(-1);
 
+    // It is guaranteed that Pointer will treat |iterator| as a
+    // const_iterator.
     Pointer(Priority priority, const ListIterator& iterator)
         : priority_(priority), iterator_(iterator) {
 #if !defined(NDEBUG)
@@ -175,48 +178,78 @@ class PriorityQueue : public base::NonThreadSafe {
 
   // Returns a pointer to the first value of minimum priority or a null-pointer
   // if empty.
-  Pointer FirstMin() {
+  Pointer FirstMin() const {
     DCHECK(CalledOnValidThread());
     for (size_t i = 0; i < lists_.size(); ++i) {
-      if (!lists_[i].empty())
-        return Pointer(i, lists_[i].begin());
+      List* list = const_cast<List*>(&lists_[i]);
+      if (!list->empty())
+        return Pointer(i, list->begin());
     }
     return Pointer();
   }
 
   // Returns a pointer to the last value of minimum priority or a null-pointer
   // if empty.
-  Pointer LastMin() {
+  Pointer LastMin() const {
     DCHECK(CalledOnValidThread());
     for (size_t i = 0; i < lists_.size(); ++i) {
-      if (!lists_[i].empty())
-        return Pointer(i, --lists_[i].end());
+      List* list = const_cast<List*>(&lists_[i]);
+      if (!list->empty())
+        return Pointer(i, --list->end());
     }
     return Pointer();
   }
 
   // Returns a pointer to the first value of maximum priority or a null-pointer
   // if empty.
-  Pointer FirstMax() {
+  Pointer FirstMax() const {
     DCHECK(CalledOnValidThread());
     for (size_t i = lists_.size(); i > 0; --i) {
       size_t index = i - 1;
-      if (!lists_[index].empty())
-        return Pointer(index, lists_[index].begin());
+      List* list = const_cast<List*>(&lists_[index]);
+      if (!list->empty())
+        return Pointer(index, list->begin());
     }
     return Pointer();
   }
 
   // Returns a pointer to the last value of maximum priority or a null-pointer
   // if empty.
-  Pointer LastMax() {
+  Pointer LastMax() const {
     DCHECK(CalledOnValidThread());
     for (size_t i = lists_.size(); i > 0; --i) {
       size_t index = i - 1;
-      if (!lists_[index].empty())
-        return Pointer(index, --lists_[index].end());
+      List* list = const_cast<List*>(&lists_[index]);
+      if (!list->empty())
+        return Pointer(index, --list->end());
     }
     return Pointer();
+  }
+
+  // Given an ordering of the values in this queue by decreasing
+  // priority and then FIFO, returns a pointer to the value following
+  // the value of the given pointer (which must be non-NULL).
+  //
+  // (One could also implement GetNextTowardsFirstMin() [decreasing
+  // priority, then reverse FIFO] as well as
+  // GetNextTowards{First,Last}Max() [increasing priority, then
+  // {,reverse} FIFO].)
+  Pointer GetNextTowardsLastMin(const Pointer& pointer) const {
+    DCHECK(CalledOnValidThread());
+    DCHECK(!pointer.is_null());
+    DCHECK_LT(pointer.priority_, lists_.size());
+
+    typename Pointer::ListIterator it = pointer.iterator_;
+    Priority priority = pointer.priority_;
+    DCHECK(it != lists_[priority].end());
+    ++it;
+    while (it == lists_[priority].end()) {
+      if (priority == 0u)
+        return Pointer();
+      --priority;
+      it = const_cast<List*>(&lists_[priority])->begin();
+    }
+    return Pointer(priority, it);
   }
 
   // Empties the queue. All pointers become invalid.
@@ -232,7 +265,15 @@ class PriorityQueue : public base::NonThreadSafe {
   }
 
   // Returns the number of priorities the queue supports.
-  size_t num_priorities() const { return lists_.size(); }
+  size_t num_priorities() const {
+    DCHECK(CalledOnValidThread());
+    return lists_.size();
+  }
+
+  bool empty() const {
+    DCHECK(CalledOnValidThread());
+    return size_ == 0;
+  }
 
   // Returns number of queued values.
   size_t size() const {

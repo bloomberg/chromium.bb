@@ -22,6 +22,7 @@
 #ifndef NET_SOCKET_CLIENT_SOCKET_POOL_BASE_H_
 #define NET_SOCKET_CLIENT_SOCKET_POOL_BASE_H_
 
+#include <cstddef>
 #include <deque>
 #include <list>
 #include <map>
@@ -43,6 +44,7 @@
 #include "net/base/net_export.h"
 #include "net/base/net_log.h"
 #include "net/base/network_change_notifier.h"
+#include "net/base/priority_queue.h"
 #include "net/base/request_priority.h"
 #include "net/socket/client_socket_pool.h"
 #include "net/socket/stream_socket.h"
@@ -182,12 +184,12 @@ class NET_EXPORT_PRIVATE ClientSocketPoolBaseHelper
 
    private:
     ClientSocketHandle* const handle_;
-    CompletionCallback callback_;
+    const CompletionCallback callback_;
     // TODO(akalin): Support reprioritization.
     const RequestPriority priority_;
-    bool ignore_limits_;
+    const bool ignore_limits_;
     const Flags flags_;
-    BoundNetLog net_log_;
+    const BoundNetLog net_log_;
 
     DISALLOW_COPY_AND_ASSIGN(Request);
   };
@@ -350,7 +352,7 @@ class NET_EXPORT_PRIVATE ClientSocketPoolBaseHelper
     base::TimeTicks start_time;
   };
 
-  typedef std::deque<const Request* > RequestQueue;
+  typedef PriorityQueue<const Request*> RequestQueue;
   typedef std::map<const ClientSocketHandle*, const Request*> RequestMap;
 
   // A Group is allocated per group_name when there are idle sockets or pending
@@ -380,8 +382,14 @@ class NET_EXPORT_PRIVATE ClientSocketPoolBaseHelper
           pending_requests_.size() > jobs_.size();
     }
 
+    // Returns the priority of the top of the pending request queue
+    // (which may be less than the maximum priority over the entire
+    // queue, due to how we prioritize requests with |ignore_limits|
+    // set over others).
     RequestPriority TopPendingPriority() const {
-      return pending_requests_.front()->priority();
+      // NOTE: FirstMax().value()->priority() is not the same as
+      // FirstMax().priority()!
+      return pending_requests_.FirstMax().value()->priority();
     }
 
     bool HasBackupJob() const { return weak_factory_.HasWeakPtrs(); }
@@ -422,7 +430,7 @@ class NET_EXPORT_PRIVATE ClientSocketPoolBaseHelper
     // Inserts the request into the queue based on priority
     // order. Older requests are prioritized over requests of equal
     // priority.
-    void InsertPendingRequest(scoped_ptr<const Request> r);
+    void InsertPendingRequest(scoped_ptr<const Request> request);
 
     // Gets and removes the next pending request. Returns NULL if
     // there are no pending requests.
@@ -446,7 +454,7 @@ class NET_EXPORT_PRIVATE ClientSocketPoolBaseHelper
     // Returns the iterator's pending request after removing it from
     // the queue.
     scoped_ptr<const Request> RemovePendingRequest(
-        const RequestQueue::iterator& it);
+        const RequestQueue::Pointer& pointer);
 
     // Called when the backup socket timer fires.
     void OnBackupSocketTimerFired(

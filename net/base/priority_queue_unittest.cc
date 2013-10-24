@@ -3,6 +3,9 @@
 // found in the LICENSE file.
 
 #include "net/base/priority_queue.h"
+
+#include <cstddef>
+
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
@@ -14,7 +17,7 @@ const Priority kPriorities[] = { 2, 1, 2, 0, 4, 3, 1, 4, 0 };
 const Priority kNumPriorities = 5;  // max(kPriorities) + 1
 const size_t kNumElements = arraysize(kPriorities);
 const int kFirstMinOrder[kNumElements] = { 3, 8, 1, 6, 0, 2, 5, 4, 7 };
-const int kLastMaxOrder[kNumElements] = { 7, 4, 5, 2, 0, 6, 1, 8, 3 };
+const int kLastMaxOrderErase[kNumElements] = { 7, 4, 5, 2, 0, 6, 1, 8, 3 };
 const int kFirstMaxOrder[kNumElements] = { 4, 7, 5, 0, 2, 1, 6, 3, 8 };
 const int kLastMinOrder[kNumElements] = { 8, 3, 6, 1, 2, 0, 5, 7, 4 };
 
@@ -27,11 +30,13 @@ class PriorityQueueTest : public testing::Test {
     for (size_t i = 0; i < kNumElements; ++i) {
       EXPECT_EQ(i, queue_.size());
       pointers_[i] = queue_.Insert(static_cast<int>(i), kPriorities[i]);
+      EXPECT_FALSE(queue_.empty());
     }
     EXPECT_EQ(kNumElements, queue_.size());
   }
 
   void CheckEmpty() {
+    EXPECT_TRUE(queue_.empty());
     EXPECT_EQ(0u, queue_.size());
     EXPECT_TRUE(queue_.FirstMin().is_null());
     EXPECT_TRUE(queue_.LastMin().is_null());
@@ -72,6 +77,19 @@ TEST_F(PriorityQueueTest, LastMinOrder) {
 }
 
 TEST_F(PriorityQueueTest, FirstMaxOrder) {
+  PriorityQueue<int>::Pointer p = queue_.FirstMax();
+  size_t i = 0;
+  for (; !p.is_null() && i < kNumElements;
+       p = queue_.GetNextTowardsLastMin(p), ++i) {
+    EXPECT_EQ(kFirstMaxOrder[i], p.value());
+  }
+  EXPECT_TRUE(p.is_null());
+  EXPECT_EQ(kNumElements, i);
+  queue_.Clear();
+  CheckEmpty();
+}
+
+TEST_F(PriorityQueueTest, FirstMaxOrderErase) {
   for (size_t i = 0; i < kNumElements; ++i) {
     EXPECT_EQ(kFirstMaxOrder[i], queue_.FirstMax().value());
     queue_.Erase(queue_.FirstMax());
@@ -79,9 +97,9 @@ TEST_F(PriorityQueueTest, FirstMaxOrder) {
   CheckEmpty();
 }
 
-TEST_F(PriorityQueueTest, LastMaxOrder) {
+TEST_F(PriorityQueueTest, LastMaxOrderErase) {
   for (size_t i = 0; i < kNumElements; ++i) {
-    EXPECT_EQ(kLastMaxOrder[i], queue_.LastMax().value());
+    EXPECT_EQ(kLastMaxOrderErase[i], queue_.LastMax().value());
     queue_.Erase(queue_.LastMax());
   }
   CheckEmpty();
