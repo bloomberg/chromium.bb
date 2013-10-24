@@ -44,6 +44,7 @@
     ],
     'support_idl_files': [
       '<@(webcore_testing_support_idl_files)',
+      '<@(modules_testing_support_idl_files)',
     ],
     'generated_support_idl_files': [
       '<@(generated_webcore_testing_support_idl_files)',
