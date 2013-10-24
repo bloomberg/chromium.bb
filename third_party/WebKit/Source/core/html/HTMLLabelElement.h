@@ -66,11 +66,7 @@ inline bool isHTMLLabelElement(const Element* element)
     return element->hasTagName(HTMLNames::labelTag);
 }
 
-inline HTMLLabelElement* toHTMLLabelElement(Node* node)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!node || isHTMLLabelElement(node));
-    return static_cast<HTMLLabelElement*>(node);
-}
+DEFINE_NODE_TYPE_CASTS(HTMLLabelElement, hasTagName(HTMLNames::labelTag));
 
 } //namespace
 

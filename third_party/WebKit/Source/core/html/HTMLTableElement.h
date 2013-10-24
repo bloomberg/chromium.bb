@@ -111,11 +111,7 @@ inline bool isHTMLTableElement(const Element* element)
     return element->hasTagName(HTMLNames::tableTag);
 }
 
-inline HTMLTableElement* toHTMLTableElement(Node* node)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!node || isHTMLTableElement(node));
-    return static_cast<HTMLTableElement*>(node);
-}
+DEFINE_NODE_TYPE_CASTS(HTMLTableElement, hasTagName(HTMLNames::tableTag));
 
 } //namespace
 

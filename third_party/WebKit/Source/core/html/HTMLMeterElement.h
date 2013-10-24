@@ -86,11 +86,7 @@ inline bool isHTMLMeterElement(Node* node)
     return node->hasTagName(HTMLNames::meterTag);
 }
 
-inline HTMLMeterElement* toHTMLMeterElement(Node* node)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!node || isHTMLMeterElement(node));
-    return static_cast<HTMLMeterElement*>(node);
-}
+DEFINE_NODE_TYPE_CASTS(HTMLMeterElement, hasTagName(HTMLNames::meterTag));
 
 } // namespace
 

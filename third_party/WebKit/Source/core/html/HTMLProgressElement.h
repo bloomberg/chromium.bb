@@ -74,11 +74,7 @@ inline bool isHTMLProgressElement(Node* node)
     return node->hasTagName(HTMLNames::progressTag);
 }
 
-inline HTMLProgressElement* toHTMLProgressElement(Node* node)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!node || isHTMLProgressElement(node));
-    return static_cast<HTMLProgressElement*>(node);
-}
+DEFINE_NODE_TYPE_CASTS(HTMLProgressElement, hasTagName(HTMLNames::progressTag));
 
 } // namespace
 

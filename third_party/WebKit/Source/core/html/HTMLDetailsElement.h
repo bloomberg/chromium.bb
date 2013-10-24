@@ -54,11 +54,7 @@ inline bool isHTMLDetailsElement(const Element* element)
     return element->hasTagName(HTMLNames::detailsTag);
 }
 
-inline HTMLDetailsElement* toHTMLDetailsElement(Node* node)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!node || isHTMLDetailsElement(node));
-    return static_cast<HTMLDetailsElement*>(node);
-}
+DEFINE_NODE_TYPE_CASTS(HTMLDetailsElement, hasTagName(HTMLNames::detailsTag));
 
 } // namespace WebCore
 

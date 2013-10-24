@@ -58,11 +58,7 @@ inline bool isHTMLTableRowElement(const Node* node)
     return node->hasTagName(HTMLNames::trTag);
 }
 
-inline HTMLTableRowElement* toHTMLTableRowElement(Node* node)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!node || isHTMLTableRowElement(node));
-    return static_cast<HTMLTableRowElement*>(node);
-}
+DEFINE_NODE_TYPE_CASTS(HTMLTableRowElement, hasTagName(HTMLNames::trTag));
 
 } // namespace
 

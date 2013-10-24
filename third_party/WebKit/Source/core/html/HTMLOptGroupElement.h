@@ -73,11 +73,7 @@ inline bool isHTMLOptGroupElement(const Element* element)
     return element->hasTagName(HTMLNames::optgroupTag);
 }
 
-inline HTMLOptGroupElement* toHTMLOptGroupElement(Node* node)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!node || isHTMLOptGroupElement(node));
-    return static_cast<HTMLOptGroupElement*>(node);
-}
+DEFINE_NODE_TYPE_CASTS(HTMLOptGroupElement, hasTagName(HTMLNames::optgroupTag));
 
 } //namespace
 

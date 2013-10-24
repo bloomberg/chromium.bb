@@ -55,17 +55,7 @@ inline bool isHTMLShadowElement(const Node* node)
     return node->hasTagName(HTMLNames::shadowTag);
 }
 
-inline HTMLShadowElement* toHTMLShadowElement(Node* node)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!node || isHTMLShadowElement(node));
-    return static_cast<HTMLShadowElement*>(node);
-}
-
-inline const HTMLShadowElement* toHTMLShadowElement(const Node* node)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!node || isHTMLShadowElement(node));
-    return static_cast<const HTMLShadowElement*>(node);
-}
+DEFINE_NODE_TYPE_CASTS(HTMLShadowElement, hasTagName(HTMLNames::shadowTag));
 
 inline bool isActiveShadowInsertionPoint(const Node* node)
 {

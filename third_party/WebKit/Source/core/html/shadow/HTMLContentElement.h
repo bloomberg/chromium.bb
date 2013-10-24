@@ -101,11 +101,7 @@ inline bool isHTMLContentElement(const Element* element)
     return element->hasTagName(HTMLNames::contentTag);
 }
 
-inline HTMLContentElement* toHTMLContentElement(Node* node)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!node || isHTMLContentElement(node));
-    return static_cast<HTMLContentElement*>(node);
-}
+DEFINE_NODE_TYPE_CASTS(HTMLContentElement, hasTagName(HTMLNames::contentTag));
 
 }
 
