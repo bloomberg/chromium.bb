@@ -400,7 +400,7 @@ tc-test-bot() {
       continue
     fi
     echo "@@@BUILD_STEP torture_tests $arch @@@"
-    ${TORTURE_TEST} pnacl ${arch} --bot --verbose \
+    ${TORTURE_TEST} pnacl ${arch} --verbose \
       --concurrency=${PNACL_CONCURRENCY} || handle-error
   done
 

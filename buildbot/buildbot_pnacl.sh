@@ -585,7 +585,7 @@ tc-tests-all() {
   # due to a hardware difference:
   # https://code.google.com/p/nativeclient/issues/detail?id=3697).
   echo "@@@BUILD_STEP torture_tests x86-32 @@@"
-  tools/toolchain_tester/torture_test.py pnacl x86-32 --bot --verbose \
+  tools/toolchain_tester/torture_test.py pnacl x86-32 --verbose \
       --concurrency=8 || handle-error
 }
 

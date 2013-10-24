@@ -10,10 +10,7 @@ various nacl and non-nacl toolchains
 import glob
 import os
 import os.path
-import shutil
 import sys
-import tempfile
-import urllib
 
 # Hack to get buildbot_lib. Fix by moving scripts around?
 sys.path.append(os.path.abspath(os.path.join(os.getcwd(),'buildbot')))
@@ -21,51 +18,12 @@ import buildbot_lib
 
 
 # Config
-# This directory will usually persist on the buildbot between runs so we don't
-# always have to download the testsuite.
-TEST_ROOT = os.path.join(tempfile.gettempdir(), 'nacl_compiler_test')
-TEST_TARBALL_URL = ('http://commondatastorage.googleapis.com/'
-                    'nativeclient-mirror/nacl/gcc-testsuite-4.6.1.tar.bz2')
-TEST_PATH_C = os.path.join(TEST_ROOT, 'gcc-4.6.1', 'gcc', 'testsuite',
-                           'gcc.c-torture', 'execute')
-TEST_PATH_CPP = os.path.join(TEST_ROOT, 'gcc-4.6.1', 'gcc', 'testsuite',
-                             'g++.dg')
-
-def print_banner(*args):
-  print '.' * 80
-  print ' '.join(args)
-  print '.' * 80
-
-def download_or_copy(url, filename):
-  ''' Download or copy the remote file pointed to by 'url' to the location
-      pointed to by 'filename'. 'url' can be either an HTTP url or a filename.
-  '''
-  if os.path.exists(filename):
-    print filename, 'exists'
-  elif url.startswith('http'):
-    print_banner('downloading from', url)
-    urllib.urlretrieve(url, filename)
-  else:
-    print_banner('copying from', url)
-    shutil.copy(url, filename)
-
-def install_tests(context):
-  if not os.path.exists(TEST_ROOT):
-    os.makedirs(TEST_ROOT)
-  tarball = os.path.join(TEST_ROOT, 'test_tarball.tgz')
-  download_or_copy(TEST_TARBALL_URL, tarball)
-  return buildbot_lib.Command(context, ('tar', 'jxf', tarball, '-C', TEST_ROOT))
+TEST_PATH_C = 'pnacl/git/gcc/gcc/testsuite/gcc.c-torture/execute'
+TEST_PATH_CPP = 'pnacl/git/gcc/gcc/testsuite/g++.dg'
 
 def usage():
   print 'Usage:', sys.argv[0], '<compiler> <platform>',
   print '[<args for toolchain_tester.py>]'
-  print 'or:'
-  print sys.argv[0], 'clean'
-  print 'or:'
-  print sys.argv[0], 'install-tests'
-
-def clean():
-  shutil.rmtree(TEST_ROOT)
 
 def prereqs_scons(context, platform):
   if not platform in ('x86-32', 'x86-64', 'arm'):
@@ -169,23 +127,12 @@ def main():
   # TODO(dschuff): it's a pain to pass through unknown arguments with optparse,
   # but if we add more, or once we have argparse (python2.7) everywhere, switch.
   try:
-    if sys.argv[1] == 'clean':
-      clean()
-      sys.exit(0)
-    if sys.argv[1] == 'install-tests':
-      install_tests(context)
-      sys.exit(0)
     compiler = sys.argv[1]
     platform = sys.argv[2]
     tester_argv = sys.argv[3:]
   except IndexError:
     usage()
     sys.exit(1)
-
-  # --bot is passed by the bot script, which needs to install the tests
-  if '--bot' in tester_argv:
-    install_tests(context)
-    tester_argv.remove('--bot')
 
   return run_torture(status, compiler, platform, tester_argv)
 
