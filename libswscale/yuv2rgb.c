@@ -601,14 +601,14 @@ SwsFunc ff_yuv2rgb_get_func_ptr(SwsContext *c)
 {
     SwsFunc t = NULL;
 
-    if (HAVE_MMX)
-        t = ff_yuv2rgb_init_mmx(c);
-    else if (HAVE_VIS)
+    if (ARCH_BFIN)
+        t = ff_yuv2rgb_init_bfin(c);
+    if (ARCH_PPC)
+        t = ff_yuv2rgb_init_ppc(c);
+    if (HAVE_VIS)
         t = ff_yuv2rgb_init_vis(c);
-    else if (HAVE_ALTIVEC)
-        t = ff_yuv2rgb_init_altivec(c);
-    else if (ARCH_BFIN)
-        t = ff_yuv2rgb_get_func_ptr_bfin(c);
+    if (ARCH_X86)
+        t = ff_yuv2rgb_init_x86(c);
 
     if (t)
         return t;
@@ -773,7 +773,7 @@ av_cold int ff_yuv2rgb_c_init_tables(SwsContext *c, const int inv_table[4],
     cgu = ((cgu << 16) + 0x8000) / cy;
     cgv = ((cgv << 16) + 0x8000) / cy;
 
-    av_free(c->yuvTable);
+    av_freep(&c->yuvTable);
 
     switch (bpp) {
     case 1:
@@ -912,7 +912,6 @@ av_cold int ff_yuv2rgb_c_init_tables(SwsContext *c, const int inv_table[4],
         fill_gv_table(c->table_gV, 4, cgv);
         break;
     default:
-        c->yuvTable = NULL;
         if(!isPlanar(c->dstFormat) || bpp <= 24)
             av_log(c, AV_LOG_ERROR, "%ibpp not supported by yuv2rgb\n", bpp);
         return -1;

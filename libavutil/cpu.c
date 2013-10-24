@@ -17,6 +17,7 @@
  */
 
 #include "cpu.h"
+#include "cpu_internal.h"
 #include "config.h"
 #include "opt.h"
 #include "common.h"
@@ -35,7 +36,6 @@
 #include <sys/param.h>
 #endif
 #include <sys/types.h>
-#include <sys/param.h>
 #include <sys/sysctl.h>
 #endif
 #if HAVE_SYSCONF

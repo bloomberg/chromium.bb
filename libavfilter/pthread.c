@@ -45,7 +45,7 @@ typedef struct ThreadContext {
 
     int nb_threads;
     pthread_t *workers;
-    action_func *func;
+    avfilter_action_func *func;
 
     /* per-execute perameters */
     AVFilterContext *ctx;
@@ -75,7 +75,8 @@ static void* attribute_align_arg worker(void *v)
             if (c->current_job == nb_threads + c->nb_jobs)
                 pthread_cond_signal(&c->last_job_cond);
 
-            pthread_cond_wait(&c->current_job_cond, &c->current_job_lock);
+            if (!c->done)
+                pthread_cond_wait(&c->current_job_cond, &c->current_job_lock);
             our_job = self_id;
 
             if (c->done) {
@@ -116,7 +117,7 @@ static void slice_thread_park_workers(ThreadContext *c)
     pthread_mutex_unlock(&c->current_job_lock);
 }
 
-static int thread_execute(AVFilterContext *ctx, action_func *func,
+static int thread_execute(AVFilterContext *ctx, avfilter_action_func *func,
                           void *arg, int *ret, int nb_jobs)
 {
     ThreadContext *c = ctx->graph->internal->thread;

@@ -680,10 +680,10 @@ static int nut_write_header(AVFormatContext *s)
 
     nut->avf = s;
 
-    nut->stream   = av_mallocz(sizeof(StreamContext ) * s->nb_streams);
-    nut->chapter  = av_mallocz(sizeof(ChapterContext) * s->nb_chapters);
-    nut->time_base= av_mallocz(sizeof(AVRational    ) *(s->nb_streams +
-                                                        s->nb_chapters));
+    nut->stream   = av_calloc(s->nb_streams,  sizeof(*nut->stream ));
+    nut->chapter  = av_calloc(s->nb_chapters, sizeof(*nut->chapter));
+    nut->time_base= av_calloc(s->nb_streams +
+                              s->nb_chapters, sizeof(*nut->time_base));
     if (!nut->stream || !nut->chapter || !nut->time_base) {
         av_freep(&nut->stream);
         av_freep(&nut->chapter);
@@ -864,7 +864,7 @@ static int nut_write_packet(AVFormatContext *s, AVPacket *pkt)
             for (i=0; i<s->nb_streams; i++) {
                 int j;
                 StreamContext *nus = &nut->stream[i];
-                nus->keyframe_pts = av_realloc(nus->keyframe_pts, 2*nut->sp_count*sizeof(*nus->keyframe_pts));
+                av_reallocp_array(&nus->keyframe_pts, 2*nut->sp_count, sizeof(*nus->keyframe_pts));
                 if (!nus->keyframe_pts)
                     return AVERROR(ENOMEM);
                 for (j=nut->sp_count == 1 ? 0 : nut->sp_count; j<2*nut->sp_count; j++)

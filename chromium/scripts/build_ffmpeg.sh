@@ -277,7 +277,7 @@ fi
 # Common codecs.
 add_flag_common --enable-decoder=theora,vorbis,vp8
 add_flag_common --enable-decoder=pcm_u8,pcm_s16le,pcm_s24le,pcm_f32le
-add_flag_common --enable-decoder=pcm_s16be,pcm_s24be
+add_flag_common --enable-decoder=pcm_s16be,pcm_s24be,pcm_mulaw,pcm_alaw
 add_flag_common --enable-demuxer=ogg,matroska,wav
 add_flag_common --enable-parser=vp3,vorbis,vp8
 
@@ -438,7 +438,6 @@ add_flag_chromeos --enable-demuxer=flac
 add_flag_chromeos --enable-decoder=flac
 add_flag_chromeos --enable-parser=flac
 # Wav files for playing phone messages.
-add_flag_chromeos --enable-decoder=pcm_mulaw
 add_flag_chromeos --enable-decoder=gsm_ms
 add_flag_chromeos --enable-demuxer=gsm
 add_flag_chromeos --enable-parser=gsm

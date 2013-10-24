@@ -59,7 +59,7 @@ static const AVOption tile_options[] = {
     { "padding", "set inner border thickness in pixels", OFFSET(padding),
         AV_OPT_TYPE_INT, {.i64 = 0}, 0, 1024, FLAGS },
     { "color",   "set the color of the unused area", OFFSET(rgba_color), AV_OPT_TYPE_COLOR, {.str = "black"}, .flags = FLAGS },
-    {NULL},
+    { NULL }
 };
 
 AVFILTER_DEFINE_CLASS(tile);
@@ -172,8 +172,10 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *picref)
 
     if (!tile->current) {
         tile->out_ref = ff_get_video_buffer(outlink, outlink->w, outlink->h);
-        if (!tile->out_ref)
+        if (!tile->out_ref) {
+            av_frame_free(&picref);
             return AVERROR(ENOMEM);
+        }
         av_frame_copy_props(tile->out_ref, picref);
         tile->out_ref->width  = outlink->w;
         tile->out_ref->height = outlink->h;

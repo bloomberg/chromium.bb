@@ -433,10 +433,7 @@ static int mxf_read_partition_pack(void *arg, AVIOContext *pb, int tag, int size
     uint64_t footer_partition;
     uint32_t nb_essence_containers;
 
-    if (mxf->partitions_count+1 >= UINT_MAX / sizeof(*mxf->partitions))
-        return AVERROR(ENOMEM);
-
-    tmp_part = av_realloc(mxf->partitions, (mxf->partitions_count + 1) * sizeof(*mxf->partitions));
+    tmp_part = av_realloc_array(mxf->partitions, mxf->partitions_count + 1, sizeof(*mxf->partitions));
     if (!tmp_part)
         return AVERROR(ENOMEM);
     mxf->partitions = tmp_part;
@@ -563,9 +560,8 @@ static int mxf_read_partition_pack(void *arg, AVIOContext *pb, int tag, int size
 static int mxf_add_metadata_set(MXFContext *mxf, void *metadata_set)
 {
     MXFMetadataSet **tmp;
-    if (mxf->metadata_sets_count+1 >= UINT_MAX / sizeof(*mxf->metadata_sets))
-        return AVERROR(ENOMEM);
-    tmp = av_realloc(mxf->metadata_sets, (mxf->metadata_sets_count + 1) * sizeof(*mxf->metadata_sets));
+
+    tmp = av_realloc_array(mxf->metadata_sets, mxf->metadata_sets_count + 1, sizeof(*mxf->metadata_sets));
     if (!tmp)
         return AVERROR(ENOMEM);
     mxf->metadata_sets = tmp;
@@ -939,6 +935,7 @@ static const MXFCodecUL mxf_intra_only_essence_container_uls[] = {
 /* intra-only PictureEssenceCoding ULs, where no corresponding EC UL exists */
 static const MXFCodecUL mxf_intra_only_picture_essence_coding_uls[] = {
     { { 0x06,0x0E,0x2B,0x34,0x04,0x01,0x01,0x0A,0x04,0x01,0x02,0x02,0x01,0x32,0x00,0x00 }, 14,       AV_CODEC_ID_H264 }, /* H.264/MPEG-4 AVC Intra Profiles */
+    { { 0x06,0x0E,0x2B,0x34,0x04,0x01,0x01,0x07,0x04,0x01,0x02,0x02,0x03,0x01,0x01,0x00 }, 14,   AV_CODEC_ID_JPEG2000 }, /* JPEG2000 Codestream */
     { { 0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00 },  0,       AV_CODEC_ID_NONE },
 };
 
@@ -1572,11 +1569,13 @@ static int mxf_parse_structural_metadata(MXFContext *mxf)
             st->codec->bits_per_coded_sample = descriptor->bits_per_sample;
 
             if (descriptor->sample_rate.den > 0) {
-                avpriv_set_pts_info(st, 64, descriptor->sample_rate.den, descriptor->sample_rate.num);
                 st->codec->sample_rate = descriptor->sample_rate.num / descriptor->sample_rate.den;
+                avpriv_set_pts_info(st, 64, descriptor->sample_rate.den, descriptor->sample_rate.num);
             } else {
-                av_log(mxf->fc, AV_LOG_WARNING, "invalid sample rate (%d/%d) found for stream #%d, time base forced to 1/48000\n",
-                       descriptor->sample_rate.num, descriptor->sample_rate.den, st->index);
+                av_log(mxf->fc, AV_LOG_WARNING, "invalid sample rate (%d/%d) "
+                       "found for stream #%d, time base forced to 1/48000\n",
+                       descriptor->sample_rate.num, descriptor->sample_rate.den,
+                       st->index);
                 avpriv_set_pts_info(st, 64, 1, 48000);
             }
 
@@ -1600,10 +1599,8 @@ static int mxf_parse_structural_metadata(MXFContext *mxf)
             }
         }
         if (descriptor->extradata) {
-            st->codec->extradata = av_mallocz(descriptor->extradata_size + FF_INPUT_BUFFER_PADDING_SIZE);
-            if (st->codec->extradata) {
+            if (!ff_alloc_extradata(st->codec, descriptor->extradata_size)) {
                 memcpy(st->codec->extradata, descriptor->extradata, descriptor->extradata_size);
-                st->codec->extradata_size = descriptor->extradata_size;
             }
         } else if(st->codec->codec_id == AV_CODEC_ID_H264) {
             ff_generate_avci_extradata(st);
@@ -2199,7 +2196,9 @@ static int mxf_set_audio_pts(MXFContext *mxf, AVCodecContext *codec, AVPacket *p
 {
     MXFTrack *track = mxf->fc->streams[pkt->stream_index]->priv_data;
     pkt->pts = track->sample_count;
-    if (codec->channels <= 0 || av_get_bits_per_sample(codec->codec_id) <= 0)
+    if (   codec->channels <= 0
+        || av_get_bits_per_sample(codec->codec_id) <= 0
+        || codec->channels * (int64_t)av_get_bits_per_sample(codec->codec_id) < 8)
         return AVERROR(EINVAL);
     track->sample_count += pkt->size / (codec->channels * (int64_t)av_get_bits_per_sample(codec->codec_id) / 8);
     return 0;

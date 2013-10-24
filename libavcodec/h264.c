@@ -48,6 +48,8 @@
 
 #include <assert.h>
 
+static void flush_change(H264Context *h);
+
 const uint16_t ff_h264_mb_sizes[4] = { 256, 384, 512, 768 };
 
 static const uint8_t rem6[QP_MAX_NUM + 1] = {
@@ -909,7 +911,7 @@ static av_always_inline void mc_dir_part(H264Context *h, Picture *pic,
     const int mx      = h->mv_cache[list][scan8[n]][0] + src_x_offset * 8;
     int my            = h->mv_cache[list][scan8[n]][1] + src_y_offset * 8;
     const int luma_xy = (mx & 3) + ((my & 3) << 2);
-    int offset        = ((mx >> 2) << pixel_shift) + (my >> 2) * h->mb_linesize;
+    ptrdiff_t offset  = ((mx >> 2) << pixel_shift) + (my >> 2) * h->mb_linesize;
     uint8_t *src_y    = pic->f.data[0] + offset;
     uint8_t *src_cb, *src_cr;
     int extra_width  = 0;
@@ -930,7 +932,7 @@ static av_always_inline void mc_dir_part(H264Context *h, Picture *pic,
         full_my                <          0 - extra_height ||
         full_mx + 16 /*FIXME*/ > pic_width  + extra_width  ||
         full_my + 16 /*FIXME*/ > pic_height + extra_height) {
-        h->vdsp.emulated_edge_mc(h->edge_emu_buffer,
+        h->vdsp.emulated_edge_mc(h->edge_emu_buffer, h->mb_linesize,
                                  src_y - (2 << pixel_shift) - 2 * h->mb_linesize,
                                  h->mb_linesize,
                                  16 + 5, 16 + 5 /*FIXME*/, full_mx - 2,
@@ -949,7 +951,7 @@ static av_always_inline void mc_dir_part(H264Context *h, Picture *pic,
     if (chroma_idc == 3 /* yuv444 */) {
         src_cb = pic->f.data[1] + offset;
         if (emu) {
-            h->vdsp.emulated_edge_mc(h->edge_emu_buffer,
+            h->vdsp.emulated_edge_mc(h->edge_emu_buffer, h->mb_linesize,
                                      src_cb - (2 << pixel_shift) - 2 * h->mb_linesize,
                                      h->mb_linesize,
                                      16 + 5, 16 + 5 /*FIXME*/,
@@ -963,7 +965,7 @@ static av_always_inline void mc_dir_part(H264Context *h, Picture *pic,
 
         src_cr = pic->f.data[2] + offset;
         if (emu) {
-            h->vdsp.emulated_edge_mc(h->edge_emu_buffer,
+            h->vdsp.emulated_edge_mc(h->edge_emu_buffer, h->mb_linesize,
                                      src_cr - (2 << pixel_shift) - 2 * h->mb_linesize,
                                      h->mb_linesize,
                                      16 + 5, 16 + 5 /*FIXME*/,
@@ -990,7 +992,7 @@ static av_always_inline void mc_dir_part(H264Context *h, Picture *pic,
              (my >> ysh) * h->mb_uvlinesize;
 
     if (emu) {
-        h->vdsp.emulated_edge_mc(h->edge_emu_buffer, src_cb, h->mb_uvlinesize,
+        h->vdsp.emulated_edge_mc(h->edge_emu_buffer, h->mb_uvlinesize, src_cb, h->mb_uvlinesize,
                                  9, 8 * chroma_idc + 1, (mx >> 3), (my >> ysh),
                                  pic_width >> 1, pic_height >> (chroma_idc == 1 /* yuv420 */));
         src_cb = h->edge_emu_buffer;
@@ -1000,7 +1002,7 @@ static av_always_inline void mc_dir_part(H264Context *h, Picture *pic,
               mx & 7, (my << (chroma_idc == 2 /* yuv422 */)) & 7);
 
     if (emu) {
-        h->vdsp.emulated_edge_mc(h->edge_emu_buffer, src_cr, h->mb_uvlinesize,
+        h->vdsp.emulated_edge_mc(h->edge_emu_buffer, h->mb_uvlinesize, src_cr, h->mb_uvlinesize,
                                  9, 8 * chroma_idc + 1, (mx >> 3), (my >> ysh),
                                  pic_width >> 1, pic_height >> (chroma_idc == 1 /* yuv420 */));
         src_cr = h->edge_emu_buffer;
@@ -1591,6 +1593,8 @@ av_cold int ff_h264_decode_init(AVCodecContext *avctx)
 
     ff_h264_decode_init_vlc();
 
+    ff_init_cabac_states();
+
     h->pixel_shift        = 0;
     h->sps.bit_depth_luma = avctx->bits_per_raw_sample = 8;
 
@@ -1627,8 +1631,9 @@ av_cold int ff_h264_decode_init(AVCodecContext *avctx)
         h->low_delay           = 0;
     }
 
-    ff_init_cabac_states();
     avctx->internal->allocate_progress = 1;
+
+    flush_change(h);
 
     return 0;
 }
@@ -1679,6 +1684,10 @@ static int decode_init_thread_copy(AVCodecContext *avctx)
     memset(h->sps_buffers, 0, sizeof(h->sps_buffers));
     memset(h->pps_buffers, 0, sizeof(h->pps_buffers));
 
+    h->rbsp_buffer[0] = NULL;
+    h->rbsp_buffer[1] = NULL;
+    h->rbsp_buffer_size[0] = 0;
+    h->rbsp_buffer_size[1] = 0;
     h->context_initialized = 0;
 
     return 0;
@@ -1761,6 +1770,8 @@ static int decode_update_thread_context(AVCodecContext *dst,
         for (i = 0; i < MAX_PPS_COUNT; i++)
             av_freep(h->pps_buffers + i);
 
+        av_freep(&h->rbsp_buffer[0]);
+        av_freep(&h->rbsp_buffer[1]);
         memcpy(h, h1, offsetof(H264Context, intra_pcm_ptr));
         memcpy(&h->cabac, &h1->cabac,
                sizeof(H264Context) - offsetof(H264Context, cabac));
@@ -1781,6 +1792,10 @@ static int decode_update_thread_context(AVCodecContext *dst,
         h->mb_type_pool      = NULL;
         h->ref_index_pool    = NULL;
         h->motion_val_pool   = NULL;
+        for (i = 0; i < 2; i++) {
+            h->rbsp_buffer[i] = NULL;
+            h->rbsp_buffer_size[i] = 0;
+        }
 
         if (h1->context_initialized) {
         h->context_initialized = 0;
@@ -1801,10 +1816,6 @@ static int decode_update_thread_context(AVCodecContext *dst,
         }
         }
 
-        for (i = 0; i < 2; i++) {
-            h->rbsp_buffer[i]      = NULL;
-            h->rbsp_buffer_size[i] = 0;
-        }
         h->bipred_scratchpad = NULL;
         h->edge_emu_buffer   = NULL;
 
@@ -3464,7 +3475,7 @@ static int decode_slice_header(H264Context *h, H264Context *h0)
         h->avctx->pix_fmt = ret;
 
         av_log(h->avctx, AV_LOG_INFO, "Reinit context to %dx%d, "
-               "pix_fmt: %d\n", h->width, h->height, h->avctx->pix_fmt);
+               "pix_fmt: %s\n", h->width, h->height, av_get_pix_fmt_name(h->avctx->pix_fmt));
 
         if ((ret = h264_slice_header_init(h, 1)) < 0) {
             av_log(h->avctx, AV_LOG_ERROR,
@@ -3990,6 +4001,7 @@ static int decode_slice_header(H264Context *h, H264Context *h0)
 
     if (h->ref_count[0]) h->er.last_pic = &h->ref_list[0][0];
     if (h->ref_count[1]) h->er.next_pic = &h->ref_list[1][0];
+    h->er.ref_count = h->ref_count[0];
 
     if (h->avctx->debug & FF_DEBUG_PICT_INFO) {
         av_log(h->avctx, AV_LOG_DEBUG,
@@ -4381,7 +4393,6 @@ static void er_add_slice(H264Context *h, int startx, int starty,
     if (CONFIG_ERROR_RESILIENCE) {
         ERContext *er = &h->er;
 
-        er->ref_count = h->ref_count[0];
         ff_er_add_slice(er, startx, starty, endx, endy, status);
     }
 }
@@ -4749,8 +4760,9 @@ static int decode_nal_units(H264Context *h, const uint8_t *buf, int buf_size,
                     first_slice = hx->nal_unit_type;
                 }
 
-            // FIXME do not discard SEI id
-            if (avctx->skip_frame >= AVDISCARD_NONREF && h->nal_ref_idc == 0)
+            if (avctx->skip_frame >= AVDISCARD_NONREF &&
+                h->nal_ref_idc == 0 &&
+                h->nal_unit_type != NAL_SEI)
                 continue;
 
 again:
@@ -4764,8 +4776,11 @@ again:
                 case NAL_DPA:
                 case NAL_DPB:
                 case NAL_DPC:
+                    av_log(h->avctx, AV_LOG_WARNING,
+                           "Ignoring NAL %d in global header/extradata\n",
+                           hx->nal_unit_type);
+                    // fall through to next case
                 case NAL_AUXILIARY_SLICE:
-                    av_log(h->avctx, AV_LOG_WARNING, "Ignoring NAL %d in global header/extradata\n", hx->nal_unit_type);
                     hx->nal_unit_type = NAL_FF_IGNORE;
                 }
             }
@@ -5171,6 +5186,7 @@ static const AVClass h264_vdpau_class = {
 
 AVCodec ff_h264_decoder = {
     .name                  = "h264",
+    .long_name             = NULL_IF_CONFIG_SMALL("H.264 / AVC / MPEG-4 AVC / MPEG-4 part 10"),
     .type                  = AVMEDIA_TYPE_VIDEO,
     .id                    = AV_CODEC_ID_H264,
     .priv_data_size        = sizeof(H264Context),
@@ -5181,7 +5197,6 @@ AVCodec ff_h264_decoder = {
                              CODEC_CAP_DELAY | CODEC_CAP_SLICE_THREADS |
                              CODEC_CAP_FRAME_THREADS,
     .flush                 = flush_dpb,
-    .long_name             = NULL_IF_CONFIG_SMALL("H.264 / AVC / MPEG-4 AVC / MPEG-4 part 10"),
     .init_thread_copy      = ONLY_IF_THREADS_ENABLED(decode_init_thread_copy),
     .update_thread_context = ONLY_IF_THREADS_ENABLED(decode_update_thread_context),
     .profiles              = NULL_IF_CONFIG_SMALL(profiles),
@@ -5191,6 +5206,7 @@ AVCodec ff_h264_decoder = {
 #if CONFIG_H264_VDPAU_DECODER
 AVCodec ff_h264_vdpau_decoder = {
     .name           = "h264_vdpau",
+    .long_name      = NULL_IF_CONFIG_SMALL("H.264 / AVC / MPEG-4 AVC / MPEG-4 part 10 (VDPAU acceleration)"),
     .type           = AVMEDIA_TYPE_VIDEO,
     .id             = AV_CODEC_ID_H264,
     .priv_data_size = sizeof(H264Context),
@@ -5199,7 +5215,6 @@ AVCodec ff_h264_vdpau_decoder = {
     .decode         = decode_frame,
     .capabilities   = CODEC_CAP_DR1 | CODEC_CAP_DELAY | CODEC_CAP_HWACCEL_VDPAU,
     .flush          = flush_dpb,
-    .long_name      = NULL_IF_CONFIG_SMALL("H.264 / AVC / MPEG-4 AVC / MPEG-4 part 10 (VDPAU acceleration)"),
     .pix_fmts       = (const enum AVPixelFormat[]) { AV_PIX_FMT_VDPAU_H264,
                                                      AV_PIX_FMT_NONE},
     .profiles       = NULL_IF_CONFIG_SMALL(profiles),

@@ -160,6 +160,7 @@ static int open_slave(AVFormatContext *avf, char *slave, TeeSlave *tee_slave)
     ret = avformat_alloc_output_context2(&avf2, NULL, format, filename);
     if (ret < 0)
         goto end;
+    av_dict_copy(&avf2->metadata, avf->metadata, 0);
 
     tee_slave->stream_map = av_calloc(avf->nb_streams, sizeof(*tee_slave->stream_map));
     if (!tee_slave->stream_map) {
@@ -386,7 +387,7 @@ static int filter_packet(void *log_ctx, AVPacket *pkt,
                          AVFormatContext *fmt_ctx, AVBitStreamFilterContext *bsf_ctx)
 {
     AVCodecContext *enc_ctx = fmt_ctx->streams[pkt->stream_index]->codec;
-    int ret;
+    int ret = 0;
 
     while (bsf_ctx) {
         AVPacket new_pkt = *pkt;
