@@ -130,6 +130,7 @@
 <translation id="1589055389569595240">显示拼写和语法</translation>
 <translation id="7017587484910029005">键入下面图片中显示的字符。</translation>
 <translation id="9013589315497579992">SSL 客户端身份验证证书出错。</translation>
+<translation id="2085245445866855859">带有“kiosk_only”清单属性的应用必须安装在 Chrome 操作系统信息亭模式下。</translation>
 <translation id="1467999917853307373"><ph name="URL"/> 想在您的设备上永久存储数据。</translation>
 <translation id="8524066305376229396">持久存储：</translation>
 <translation id="7567293639574541773">审查元素(&amp;N)</translation>
@@ -181,6 +182,7 @@
 <translation id="4858913220355269194">足球</translation>
 <translation id="2231238007119540260">如果您删除了某个服务器的证书，则会恢复对该服务器的常规安全检查，并要求其使用有效证书。</translation>
 <translation id="9110235431257073974">启用网上应用店和“文件”应用之间的集成。</translation>
+<translation id="6489433341782457580">适用于开发者：为调用 requestAutocomplete() 的 Wallet API 使用沙盒服务。</translation>
 <translation id="8186609076106987817">服务器找不到该文件。</translation>
 <translation id="2846816712032308263">启用快速关闭标签页/窗口功能 - 将标签页的 onunload js 处理程序与 GUI 分开运行。</translation>
 <translation id="9134410174832249455">由于 <ph name="HOST_NAME"/> 响应时间过长，导致 <ph name="PRODUCT_NAME"/> 无法加载网页。该网站可能已崩溃，或者您的互联网连接出现了问题。</translation>
@@ -342,6 +344,7 @@
 <translation id="8959810181433034287">受监管用户必须使用此密码才能登录，因此请选择一个安全密码，同时务必将此密码告诉相应的受监管用户。</translation>
 <translation id="5154917547274118687">内存</translation>
 <translation id="1493492096534259649">该语言无法进行拼写检查</translation>
+<translation id="2103866351350079276">停用不带前缀的 MediaSource 对象。此对象允许 JavaScript 直接向视频元素发送媒体数据。</translation>
 <translation id="6628463337424475685"><ph name="ENGINE"/> 搜索</translation>
 <translation id="6460423884798879930">启用该选项，即可在初始 SYN 包中为之前连接的客户端发送额外的身份验证信息，以便更快地开始发送数据。</translation>
 <translation id="6563261555270336410">有关 <ph name="ELEMENTS_HOST_NAME"/> 的详情</translation>
@@ -1567,6 +1570,7 @@
 <translation id="6736329909263487977"><ph name="ISSUED_BY"/> [<ph name="ISSUED_TO"/>]</translation>
 <translation id="8899388739470541164">越南文</translation>
 <translation id="6423064450797205562">与 <ph name="SHORT_PRODUCT_NAME"/>执行所请求操作的速度相关的指标</translation>
+<translation id="2048118585307365263">启用 MediaDrm。</translation>
 <translation id="4091434297613116013">纸张数</translation>
 <translation id="7475671414023905704">Netscape 忘了密码网址</translation>
 <translation id="3335947283844343239">重新打开关闭的标签页</translation>
@@ -1732,7 +1736,7 @@
 <translation id="894360074127026135">Netscape International Step-Up</translation>
 <translation id="8420060421540670057">显示 Google 文档文件</translation>
 <translation id="6075731018162044558">糟糕！系统无法为此设备获得长期的 API 访问令牌。</translation>
-<translation id="1201402288615127009">下一个</translation>
+<translation id="1201402288615127009">下一步</translation>
 <translation id="1335588927966684346">实用工具：</translation>
 <translation id="2710582058364740604">覆盖设备的显示密度，以强制使用高 DPI 模式和资源。</translation>
 <translation id="2220529011494928058">报告问题</translation>
@@ -2465,7 +2469,7 @@
 <translation id="2894654529758326923">信息</translation>
 <translation id="4135450933899346655">您的证书</translation>
 <translation id="3979395879372752341">已添加新扩展程序（<ph name="EXTENSION_NAME"/>）</translation>
-<translation id="2609632851001447353">其他版本</translation>
+<translation id="2609632851001447353">其他变体</translation>
 <translation id="2127166530420714525">无法更改蓝牙适配器的电源状态。</translation>
 <translation id="2824775600643448204">地址和搜索栏</translation>
 <translation id="7716781361494605745">Netscape 证书授权中心政策网址</translation>
@@ -3809,6 +3813,7 @@
 <translation id="3672159315667503033"><ph name="URL"/> 想在您的本地计算机上永久保存大量数据。</translation>
 <translation id="373572798843615002">1 个标签页</translation>
 <translation id="4806065163318322702">切换语音输入</translation>
+<translation id="6190185222845843088">使用电子钱包沙盒服务器</translation>
 <translation id="3177048931975664371">点击以隐藏密码</translation>
 <translation id="5852137567692933493">重新启动，然后执行 Powerwash</translation>
 <translation id="3092544800441494315">包括此屏幕截图：</translation>
@@ -4074,6 +4079,7 @@
 <translation id="1639239467298939599">正在加载</translation>
 <translation id="5457599981699367932">以访客身份浏览</translation>
 <translation id="6850233365366645553">您需要先重新启动您的设备，然后才能通过 Powerwash 功能重置设备。Powerwash 可将您的 <ph name="IDS_SHORT_PRODUCT_NAME"/> 设备重置为初始状态。</translation>
+<translation id="4292622557427736684">默认情况下为已加密的媒体扩展程序启用 MediaDrm。</translation>
 <translation id="1812514023095547458">选择颜色</translation>
 <translation id="5089363139417863686">使用“文件”应用查看</translation>
 <translation id="7047998246166230966">指针</translation>
@@ -4322,7 +4328,7 @@
 <translation id="3508920295779105875">选择其他文件夹...</translation>
 <translation id="2159915644201199628">无法对图片解码：“<ph name="IMAGE_NAME"/>”</translation>
 <translation id="904451693890288097">请输入“<ph name="DEVICE_NAME"/>”的配对密钥：</translation>
-<translation id="2604467856256242911">允许支持由其他用户管理的用户个人资料，并可实施限制。</translation>
+<translation id="2604467856256242911">启用后，即允许添加由其他用户管理的用户个人资料并可对这些用户实施限制。</translation>
 <translation id="2987775926667433828">中文（繁体）</translation>
 <translation id="5210496856287228091">停用启动动画。</translation>
 <translation id="3954582159466790312">取消静音(&amp;M)</translation>
@@ -4423,6 +4429,7 @@
 <translation id="1728442818359004787">更改默认应用…</translation>
 <translation id="7540972813190816353">检查更新时出错：<ph name="ERROR"/></translation>
 <translation id="7664620655576155379">不支持的蓝牙设备：“<ph name="DEVICE_NAME"/>”。</translation>
+<translation id="2990212470195050777">停用不带前缀的 Media Source API。</translation>
 <translation id="2225024820658613551">您不应再继续，&lt;strong&gt;尤其&lt;/strong&gt;是如果您以前从未在此网站看到这一警告信息，则更不应继续操作。</translation>
 <translation id="2049639323467105390">此设备由 <ph name="DOMAIN"/> 管理。</translation>
 <translation id="1932098463447129402">不早于</translation>

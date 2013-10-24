@@ -3,9 +3,24 @@
 <translationbundle lang="uk">
 <translation id="1491151370853475546">Перезавантажити цю сторінку</translation>
 <translation id="7658239707568436148">Скасувати</translation>
+<translation id="6458785801851713928">Синхронізація не доступна для вашого домену.</translation>
 <translation id="2731700343119398978">Зачекайте...</translation>
+<translation id="3358663646935160692">Цим обліковим записом керує домен <ph name="DOMAIN_NAME"/>.
+
+Ви входите в керований обліковий запис і дозволяєте його адміністратору керувати вашим профілем Chrome. Ваші дані Chrome буде назавжди пов’язано з цим обліковим записом. Відключення від цього облікового запису видалить усі локальні дані Chrome.</translation>
+<translation id="1623104350909869708">Заборонити цій сторінці створювати додаткові діалогові вікна</translation>
+<translation id="3896036286668839683">Перегляд сертифікатів</translation>
+<translation id="8583805026567836021">Очищення даних облікового запису</translation>
+<translation id="4170011742729630528">Служба не доступна. Повторіть спробу пізніше.</translation>
+<translation id="8627706565932943526">Помилка синхронізації</translation>
+<translation id="3136378934686431938">Оновіть свої дані для входу.</translation>
+<translation id="4510973599275542560">Не оновлювати</translation>
 <translation id="9154176715500758432">Залишатися на цій сторінці</translation>
+<translation id="7063006564040364415">Не вдалося з’єднатись із сервером синхронізації.</translation>
 <translation id="6512448926095770873">Залишити цю сторінку</translation>
+<translation id="7947953824732555851">Прийняти й увійти</translation>
 <translation id="6040143037577758943">Закрити</translation>
+<translation id="5032574515228824816">Підказка</translation>
 <translation id="6965382102122355670">ОК</translation>
+<translation id="7495038789730067783">Підтвердити вхід</translation>
 </translationbundle>

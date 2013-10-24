@@ -134,6 +134,7 @@
 <translation id="1589055389569595240">Hiển thị Chính tả và Ngữ pháp</translation>
 <translation id="7017587484910029005">Nhập ký tự bạn thấy trong hình bên dưới.</translation>
 <translation id="9013589315497579992">Chứng chỉ xác thực ứng dụng khách SSL không hợp lệ.</translation>
+<translation id="2085245445866855859">Phải cài đặt ứng dụng có thuộc tính tệp kê khai 'kiosk_only' ở chế độ kiosk ChromeOS.</translation>
 <translation id="1467999917853307373"><ph name="URL"/> muốn lưu trữ vĩnh viễn dữ liệu trên thiết bị của bạn.</translation>
 <translation id="8524066305376229396">Bộ nhớ liên tục:</translation>
 <translation id="7567293639574541773">Kiểm tra phầ&amp;n tử</translation>
@@ -187,6 +188,7 @@
 <translation id="4858913220355269194">Nam cầu thủ Fritz</translation>
 <translation id="2231238007119540260">Nếu bạn xóa chứng chỉ máy chủ, nghĩa là bạn đã khôi phục việc kiểm tra bảo mật thường xuyên cho máy chủ đó và yêu cầu sử dụng chứng chỉ hợp lệ.</translation>
 <translation id="9110235431257073974">Bật tính năng tích hợp Cửa hàng trực tuyến và Files.app.</translation>
+<translation id="6489433341782457580">Đối với nhà phát triển: sử dụng dịch vụ hộp cát đối với cuộc gọi API Wallet cho requestAutocomplete().</translation>
 <translation id="8186609076106987817">Máy chủ không thể tìm thấy tệp.</translation>
 <translation id="2846816712032308263">Bật tính năng đóng tab/cửa sổ nhanh - chạy độc lập trình xử lý onunload.js cho tab của GUI.</translation>
 <translation id="9134410174832249455"><ph name="PRODUCT_NAME"/> không thể tải trang web vì <ph name="HOST_NAME"/> mất quá nhiều thời gian để phản hồi. Trang web có thể ngừng hoạt động hoặc bạn có thể gặp sự cố với kết nối Internet của mình.</translation>
@@ -357,6 +359,7 @@
 <translation id="8959810181433034287">Người dùng được giám sát sẽ cần sử dụng mật khẩu này để đăng nhập, vì vậy hãy chọn một mật khẩu an toàn và nhớ thảo luận mật khẩu đó với người dùng được giám sát.</translation>
 <translation id="5154917547274118687">Bộ nhớ</translation>
 <translation id="1493492096534259649">Không thể sử dụng ngôn ngữ này để kiểm tra chính tả</translation>
+<translation id="2103866351350079276">Vô hiệu hóa đối tượng MediaSource chưa được định sẵn. Đối tượng này cho phép Javascript gửi trực tiếp dữ liệu đa phương tiện đến phần tử video.</translation>
 <translation id="6628463337424475685">Tìm kiếm trên <ph name="ENGINE"/></translation>
 <translation id="6460423884798879930">Bật tùy chọn để gửi thêm thông tin xác thực trong gói SYN ban đầu cho một khách hàng đã kết nối trước đó, cho phép khởi động gửi dữ liệu nhanh hơn.</translation>
 <translation id="6563261555270336410">Thông tin chi tiết về <ph name="ELEMENTS_HOST_NAME"/></translation>
@@ -1598,6 +1601,7 @@ Sau khi bạn tạo người dùng được giám sát mới, bạn có thể qu
 <translation id="6736329909263487977"><ph name="ISSUED_BY"/> [<ph name="ISSUED_TO"/>]</translation>
 <translation id="8899388739470541164">Vietnamese</translation>
 <translation id="6423064450797205562">Số liệu liên quan đến tốc độ mà <ph name="SHORT_PRODUCT_NAME"/> thực hiện các tác vụ được yêu cầu</translation>
+<translation id="2048118585307365263">Bật MediaDrm.</translation>
 <translation id="4091434297613116013">trang giấy</translation>
 <translation id="7475671414023905704">URL Mật khẩu đã Mất của Netscape</translation>
 <translation id="3335947283844343239">Mở lại Tab đã Đóng</translation>
@@ -3865,6 +3869,7 @@ Chi tiết đăng nhập tài khoản của bạn đã hết hạn.</translation
 <translation id="3672159315667503033"><ph name="URL"/> muốn lưu trữ vĩnh viễn dữ liệu trên máy tính cục bộ của bạn.</translation>
 <translation id="373572798843615002">1 Tab</translation>
 <translation id="4806065163318322702">Bắt đầu/dừng nhập bằng giọng nói</translation>
+<translation id="6190185222845843088">Sử dụng máy chủ hộp cát Wallet</translation>
 <translation id="3177048931975664371">Nhấp để ẩn mật khẩu</translation>
 <translation id="5852137567692933493">Khởi động lại và Powerwash</translation>
 <translation id="3092544800441494315">Bao gồm ảnh chụp màn hình này:</translation>
@@ -4132,6 +4137,7 @@ Chi tiết đăng nhập tài khoản của bạn đã hết hạn.</translation
 <translation id="1639239467298939599">Đang tải</translation>
 <translation id="5457599981699367932">Duyệt với tư cách Khách</translation>
 <translation id="6850233365366645553">Cần phải khởi động lại trước khi đặt lại thiết bị của bạn với Powerwash. Powerwash đặt lại thiết bị <ph name="IDS_SHORT_PRODUCT_NAME"/> của bạn giống như mới.</translation>
+<translation id="4292622557427736684">Bật MediaDrm theo mặc định cho Tiện ích mở rộng đa phương tiện đã mã hóa.</translation>
 <translation id="1812514023095547458">Chọn màu</translation>
 <translation id="5089363139417863686">Xem bằng ứng dụng Tệp</translation>
 <translation id="7047998246166230966">Con trỏ</translation>
@@ -4483,6 +4489,7 @@ Chi tiết đăng nhập tài khoản của bạn đã hết hạn.</translation
 <translation id="1728442818359004787">Thay đổi ứng dụng mặc định...</translation>
 <translation id="7540972813190816353">Đã xảy ra lỗi khi kiểm tra cập nhật: <ph name="ERROR"/></translation>
 <translation id="7664620655576155379">Thiết bị Bluetooth không được hỗ trợ: &quot;<ph name="DEVICE_NAME"/>&quot;.</translation>
+<translation id="2990212470195050777">Vô hiệu hóa API nguồn đa phương tiện chưa được định sẵn.</translation>
 <translation id="2225024820658613551">Bạn không nên tiếp tục, &lt;strong&gt;đặc biệt&lt;/strong&gt; nếu trước đây bạn chưa từng thấy cảnh báo này trên trang web này.</translation>
 <translation id="2049639323467105390">Thiết bị này được <ph name="DOMAIN"/> quản lý.</translation>
 <translation id="1932098463447129402">Không được Trước</translation>

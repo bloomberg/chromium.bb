@@ -125,6 +125,7 @@
 <translation id="1589055389569595240">แสดงตัวสะกดและไวยากรณ์</translation>
 <translation id="7017587484910029005">พิมพ์อักขระตามที่คุณเห็นในรูปด้านล่าง</translation>
 <translation id="9013589315497579992">ใบรับรองการตรวจสอบสิทธิ์ไคลเอนต์ SSL ใช้ไม่ได้</translation>
+<translation id="2085245445866855859">ต้องติดตั้งแอปที่มีแอตทริบิวต์ไฟล์ Manifest ที่ชื่อ &quot;kiosk_only&quot; ในโหมดคีออสก์ของ ChromeOS</translation>
 <translation id="1467999917853307373"><ph name="URL"/> ต้องการจัดเก็บข้อมูลอย่างถาวรในอุปกรณ์ของคุณ</translation>
 <translation id="8524066305376229396">พื้นที่จัดเก็บข้อมูลถาวร:</translation>
 <translation id="7567293639574541773">&amp;ตรวจสอบองค์ประกอบ</translation>
@@ -176,6 +177,7 @@
 <translation id="4858913220355269194">ฟริทซ์</translation>
 <translation id="2231238007119540260">หากคุณลบใบรับรองเซิร์ฟเวอร์ คุณจะเรียกคืนการตรวจสอบความปลอดภัยตามปกติสำหรับเซิร์ฟเวอร์นั้น และกำหนดให้เซิร์ฟเวอร์ใช้ใบรับรองที่ถูกต้อง</translation>
 <translation id="9110235431257073974">เปิดการรวมระบบ Webstore และ Files.app</translation>
+<translation id="6489433341782457580">สำหรับนักพัฒนาซอฟต์แวร์ ให้ใช้บริการแซนด์บ็อกซ์สำหรับ Wallet API เรียก requestAutocomplete()</translation>
 <translation id="8186609076106987817">เซิร์ฟเวอร์ไม่พบไฟล์</translation>
 <translation id="2846816712032308263">ช่วยให้ปิดแท็บ/หน้าต่างได้อย่างรวดเร็ว - เรียกใช้เครื่องจัดการ onunload js ของแท็บอย่างเป็นอิสระจาก GUI</translation>
 <translation id="9134410174832249455"><ph name="PRODUCT_NAME"/> ไม่สามารถโหลดหน้าเว็บเนื่องจาก <ph name="HOST_NAME"/> ใช้เวลาในการตอบสนองนานเกินไป เว็บไซต์อาจล่ม หรือคุณอาจประสบปัญหาในการเชื่อมต่ออินเทอร์เน็ต</translation>
@@ -333,6 +335,7 @@
 <translation id="8959810181433034287">ผู้ใช้ภายใต้การดูแลจะต้องใช้รหัสผ่านนี้ในการลงชื่อเข้าใช้ ดังนั้น เลือกรหัสผ่านที่ปลอดภัยและหารือเกี่ยวกับรหัสผ่านกับผู้ใช้ภายใต้การดูแล</translation>
 <translation id="5154917547274118687">หน่วยความจำ</translation>
 <translation id="1493492096534259649">ภาษานี้ใช้ในการตรวจสอบการสะกดไม่ได้</translation>
+<translation id="2103866351350079276">ปิดใช้วัตถุ MediaSource ที่ไม่มีคำนำหน้า ซึ่งวัตถุนี้ช่วยให้ JavaScript ส่งข้อมูลสื่อไปยังองค์ประกอบวิดีโอโดยตรง</translation>
 <translation id="6628463337424475685"><ph name="ENGINE"/> ค้นหา</translation>
 <translation id="6460423884798879930">เปิดใช้งานตัวเลือกเพื่อส่งข้อมูลการตรวจสอบสิทธิ์เพิ่มเติมในแพ็คเก็ต SYN แรกสำหรับไคลเอ็นต์ที่เชื่อมต่อก่อนหน้า ทำให้การส่งข้อมูลแบบรวดเร็วเริ่มขึ้น</translation>
 <translation id="6563261555270336410">รายละเอียดเกี่ยวกับ <ph name="ELEMENTS_HOST_NAME"/></translation>
@@ -1562,6 +1565,7 @@
 <translation id="6736329909263487977"><ph name="ISSUED_BY"/> [<ph name="ISSUED_TO"/>]</translation>
 <translation id="8899388739470541164">เวียดนาม</translation>
 <translation id="6423064450797205562">เมตริกที่เกี่ยวข้องกับความเร็วซึ่ง <ph name="SHORT_PRODUCT_NAME"/> ใช้เพื่อทำตามการทำงานที่ได้รับคำขอ</translation>
+<translation id="2048118585307365263">เปิดใช้ MediaDrm</translation>
 <translation id="4091434297613116013">หน้ากระดาษ</translation>
 <translation id="7475671414023905704">URL รหัสผ่านสูญหายของ Netscape</translation>
 <translation id="3335947283844343239">เปิดแท็บที่ปิดไปแล้วขึ้นใหม่</translation>
@@ -3784,6 +3788,7 @@
 <translation id="3672159315667503033"><ph name="URL"/> ต้องการที่จะจัดเก็บข้อมูลขนาดใหญ่อย่างถาวรในเครื่องคอมพิวเตอร์ของคุณ</translation>
 <translation id="373572798843615002">1 แท็บ</translation>
 <translation id="4806065163318322702">สลับการป้อนคำพูด</translation>
+<translation id="6190185222845843088">ใช้เซิร์ฟเวอร์แซนด์บ็อกซ์ Wallet</translation>
 <translation id="3177048931975664371">คลิกเพื่อซ่อนรหัสผ่าน</translation>
 <translation id="5852137567692933493">รีสตาร์ทและ Powerwash</translation>
 <translation id="3092544800441494315">รวมภาพหน้าจอนี้:</translation>
@@ -4050,6 +4055,7 @@
 <translation id="1639239467298939599">กำลังโหลด</translation>
 <translation id="5457599981699367932">ท่องเว็บในฐานะผู้มาเยือน</translation>
 <translation id="6850233365366645553">จำเป็นต้องรีสตาร์ทอุปกรณ์ก่อนที่จะสามารถรีเซ็ตอุปกรณ์ด้วย Powerwash และ Powerwash จะรีเซ็ตอุปกรณ์ <ph name="IDS_SHORT_PRODUCT_NAME"/> ของคุณให้มีสภาพเหมือนใหม่</translation>
+<translation id="4292622557427736684">เปิดใช้ MediaDrm เป็นค่าเริ่มต้นสำหรับส่วนขยายสื่อที่เข้ารหัส</translation>
 <translation id="1812514023095547458">เลือกสี</translation>
 <translation id="5089363139417863686">ดูด้วยแอปไฟล์</translation>
 <translation id="7047998246166230966">ตัวชี้</translation>
@@ -4399,6 +4405,7 @@
 <translation id="1728442818359004787">เปลี่ยนแอปเริ่มต้น...</translation>
 <translation id="7540972813190816353">เกิดข้อผิดพลาดในขณะทำการตรวจสอบการอัปเดต: <ph name="ERROR"/></translation>
 <translation id="7664620655576155379">อุปกรณ์บลูทูธที่ไม่สนับสนุน: &quot;<ph name="DEVICE_NAME"/>&quot;</translation>
+<translation id="2990212470195050777">ปิดใช้ Media Source API ที่ไม่มีคำนำหน้า</translation>
 <translation id="2225024820658613551">คุณไม่ควรดำเนินการต่อ &lt;strong&gt;โดยเฉพาะอย่างยิ่ง&lt;/strong&gt;หากคุณไม่เคยเห็นคำเตือนนี้มาก่อนสำหรับไซต์นี้</translation>
 <translation id="2049639323467105390">อุปกรณ์นี้ได้รับการจัดการโดย <ph name="DOMAIN"/></translation>
 <translation id="1932098463447129402">หลังจาก</translation>

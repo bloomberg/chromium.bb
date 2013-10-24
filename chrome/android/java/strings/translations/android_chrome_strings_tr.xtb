@@ -3,9 +3,24 @@
 <translationbundle lang="tr">
 <translation id="1491151370853475546">Bu Sayfayı Yeniden Yükle</translation>
 <translation id="7658239707568436148">İptal</translation>
+<translation id="6458785801851713928">Senkronizasyon özelliği alan adınızda kullanılamıyor.</translation>
 <translation id="2731700343119398978">Lütfen bekleyin...</translation>
+<translation id="3358663646935160692">Bu hesap <ph name="DOMAIN_NAME"/> tarafından yönetiliyor.
+
+Yönetilen bir hesapla oturum açıyor ve hesabın yöneticisine Chrome profilinizi denetleme olanağı veriyorsunuz. Chrome verileriniz bu hesaba kalıcı olarak bağlanır. Bu hesabın bağlantısı kesildiğinde yerel Chrome verileriniz silinir.</translation>
+<translation id="1623104350909869708">Bu sayfanın daha fazla iletişim kutusu oluşturmasını önle</translation>
+<translation id="3896036286668839683">Sertifika Görüntüleyici</translation>
+<translation id="8583805026567836021">Hesap verileri temizleniyor</translation>
+<translation id="4170011742729630528">Hizmet kullanılamıyor, daha sonra tekrar deneyin.</translation>
+<translation id="8627706565932943526">Senkronizasyon hatası</translation>
+<translation id="3136378934686431938">Lütfen oturum açma ayrıntılarınızı güncelleyin</translation>
+<translation id="4510973599275542560">Yeniden yükleme</translation>
 <translation id="9154176715500758432">Bu Sayfada Kal</translation>
+<translation id="7063006564040364415">Senkronizasyon sunucusuna bağlanılamadı.</translation>
 <translation id="6512448926095770873">Bu Sayfadan Ayrıl</translation>
+<translation id="7947953824732555851">Kabul et ve oturum aç</translation>
 <translation id="6040143037577758943">Kapat</translation>
+<translation id="5032574515228824816">İstem</translation>
 <translation id="6965382102122355670">Tamam</translation>
+<translation id="7495038789730067783">Oturum açmayı onaylayın</translation>
 </translationbundle>

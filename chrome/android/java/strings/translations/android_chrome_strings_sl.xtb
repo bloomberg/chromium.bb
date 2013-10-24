@@ -3,9 +3,24 @@
 <translationbundle lang="sl">
 <translation id="1491151370853475546">Znova naloži stran</translation>
 <translation id="7658239707568436148">Prekliči</translation>
+<translation id="6458785801851713928">Sinhronizacija ni na voljo za vašo domeno.</translation>
 <translation id="2731700343119398978">Počakajte ...</translation>
+<translation id="3358663646935160692">Ta račun upravlja domena <ph name="DOMAIN_NAME"/>.
+
+Prijavljate se z upravljanim računom in s tem njegovemu skrbniku omogočate nadziranje vašega profila v Google Chromu. Vaši podatki v Google Chromu bodo trajno povezani s tem računom. Če prekinete povezavo s tem računom, se izbrišejo lokalni podatki v Google Chromu.</translation>
+<translation id="1623104350909869708">Tej strani prepreči, da bi ustvarila dodatna pogovorna okna</translation>
+<translation id="3896036286668839683">Pregledovalnik potrdil</translation>
+<translation id="8583805026567836021">Brisanje podatkov računa</translation>
+<translation id="4170011742729630528">Storitev ni na voljo; poskusite znova pozneje.</translation>
+<translation id="8627706565932943526">Napaka pri sinhronizaciji</translation>
+<translation id="3136378934686431938">Posodobite podrobnosti prijave.</translation>
+<translation id="4510973599275542560">Ne naloži znova</translation>
 <translation id="9154176715500758432">Ostani na tej strani</translation>
+<translation id="7063006564040364415">Povezave s strežnikom za sinhronizacijo ni bilo mogoče vzpostaviti.</translation>
 <translation id="6512448926095770873">Zapusti to stran</translation>
+<translation id="7947953824732555851">Sprejem in prijava</translation>
 <translation id="6040143037577758943">Zapri</translation>
+<translation id="5032574515228824816">Poziv</translation>
 <translation id="6965382102122355670">V redu</translation>
+<translation id="7495038789730067783">Potrditev prijave</translation>
 </translationbundle>

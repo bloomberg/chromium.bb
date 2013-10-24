@@ -3,9 +3,24 @@
 <translationbundle lang="it">
 <translation id="1491151370853475546">Ricarica questa pagina</translation>
 <translation id="7658239707568436148">Annulla</translation>
+<translation id="6458785801851713928">Il servizio di sincronizzazione non è disponibile per il tuo dominio.</translation>
 <translation id="2731700343119398978">Attendi...</translation>
+<translation id="3358663646935160692">Questo account è gestito da <ph name="DOMAIN_NAME"/>.
+
+Stai per eseguire l'accesso con un account gestito e consentire al relativo amministratore di controllare il tuo profilo Chrome. I tuoi dati di Chrome verranno associati definitivamente a questo account. La disconnessione dall'account comporterà l'eliminazione dei dati di Chrome locali.</translation>
+<translation id="1623104350909869708">Impedisci la creazione di altre finestre di dialogo in questa pagina</translation>
+<translation id="3896036286668839683">Visualizzatore certificati</translation>
+<translation id="8583805026567836021">Cancellazione dati dell'account</translation>
+<translation id="4170011742729630528">Il servizio non è disponibile, riprova più tardi.</translation>
+<translation id="8627706565932943526">Errore di sincronizzazione</translation>
+<translation id="3136378934686431938">Aggiorna i dati di accesso.</translation>
+<translation id="4510973599275542560">Non ricaricare</translation>
 <translation id="9154176715500758432">Rimani su questa pagina</translation>
+<translation id="7063006564040364415">Impossibile collegarsi al server di sincronizzazione.</translation>
 <translation id="6512448926095770873">Esci dalla pagina</translation>
+<translation id="7947953824732555851">Accetta e accedi</translation>
 <translation id="6040143037577758943">Chiudi</translation>
+<translation id="5032574515228824816">Messaggio</translation>
 <translation id="6965382102122355670">OK</translation>
+<translation id="7495038789730067783">Conferma accesso</translation>
 </translationbundle>

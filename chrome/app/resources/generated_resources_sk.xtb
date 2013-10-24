@@ -133,6 +133,7 @@
 <translation id="1589055389569595240">Zobraziť pravopis a gramatiku</translation>
 <translation id="7017587484910029005">Zadajte znaky na obrázku nižšie.</translation>
 <translation id="9013589315497579992">Chybný certifikát SSL overenia klienta.</translation>
+<translation id="2085245445866855859">Aplikácie s atribútom manifestu „kiosk_only“ musia byť nainštalované v režime verejného terminálu OS Chrome.</translation>
 <translation id="1467999917853307373">Stránky <ph name="URL"/> chcú natrvalo ukladať údaje do vášho zariadenia.</translation>
 <translation id="8524066305376229396">Trvalý ukladací priestor:</translation>
 <translation id="7567293639574541773">&amp;Preskúmať prvok</translation>
@@ -186,6 +187,7 @@
 <translation id="4858913220355269194">Fritz</translation>
 <translation id="2231238007119540260">Ak odstránite certifikát servera, obnovíte zvyčajné bezpečnostné kontroly servera a server bude musieť používať platný certifikát.</translation>
 <translation id="9110235431257073974">Povoliť integráciu Internetového obchodu a aplikácie Files.app.</translation>
+<translation id="6489433341782457580">Pre vývojárov: pre volania rozhrania API služby Peňaženka „requestAutocomplete()“ používajte službu v karanténe.</translation>
 <translation id="8186609076106987817">Server nemohol nájsť súbor.</translation>
 <translation id="2846816712032308263">Povoliť rýchle zatváranie kariet alebo okien – táto možnosť spustí ovládač karty onunload v jazyku JavaScript nezávisle od hlavného používateľského rozhrania.</translation>
 <translation id="9134410174832249455">Nástroj <ph name="PRODUCT_NAME"/> nemohol načítať webovú stránku, pretože stránkam <ph name="HOST_NAME"/> trvala odpoveď príliš dlho. Webové stránky možno nie sú v prevádzke alebo máte problémy s internetovým pripojením.</translation>
@@ -356,6 +358,7 @@
 <translation id="8959810181433034287">Kontrolovaný používateľ bude toto heslo potrebovať na prihlásenie, preto vyberte bezpečné heslo a nezabudnite ho prekonzultovať s kontrolovaným používateľom.</translation>
 <translation id="5154917547274118687">Pamäť</translation>
 <translation id="1493492096534259649">Tento jazyk nie je možné použiť na kontrolu pravopisu</translation>
+<translation id="2103866351350079276">Zakáže objekt MediaSource bez predpony. Tento objekt umožňuje kódu JavaScript odosielať údaje médií priamo do prvku videa.</translation>
 <translation id="6628463337424475685">Vyhľadávanie <ph name="ENGINE"/></translation>
 <translation id="6460423884798879930">Povolí možnosť odosielania dodatočných overovacích informácií v počiatočnom balíku SYN predošlého pripojeného klienta a umožní tak rýchlejší štart odosielania údajov.</translation>
 <translation id="6563261555270336410">Podrobnosti o lokalite <ph name="ELEMENTS_HOST_NAME"/></translation>
@@ -1594,6 +1597,7 @@ Uistite sa, že neodhaľujete žiadne citlivé informácie.</translation>
 <translation id="6736329909263487977"><ph name="ISSUED_BY"/> [ <ph name="ISSUED_TO"/> ]</translation>
 <translation id="8899388739470541164">Vietnamské</translation>
 <translation id="6423064450797205562">Metriky súvisiace s rýchlosťou, s akou prehliadač <ph name="SHORT_PRODUCT_NAME"/> vykonáva požadované akcie</translation>
+<translation id="2048118585307365263">Povoliť ochranu MediaDrm.</translation>
 <translation id="4091434297613116013">listy papiera</translation>
 <translation id="7475671414023905704">Netscape – adresa URL pre zabudnuté heslo</translation>
 <translation id="3335947283844343239">Znova otvoriť zatvorenú kartu</translation>
@@ -2878,7 +2882,7 @@ Ak chcete využívať túto funkciu, musíte sa prihlásiť.</translation>
 <translation id="7525067979554623046">Vytvoriť</translation>
 <translation id="4853020600495124913">Otvoriť v &amp;novom okne</translation>
 <translation id="6847758263950452722">Uložiť stránku vo formáte MHTML</translation>
-<translation id="4217998989792742258">Toto je kontrolovaný používateľ, ktorého spravuje správca <ph name="CUSTODIAN_EMAIL"/></translation>
+<translation id="4217998989792742258">Toto je kontrolovaný používateľ, ktorého bude spravovať <ph name="CUSTODIAN_EMAIL"/></translation>
 <translation id="4711094779914110278">Turecké</translation>
 <translation id="5121130586824819730">Pevný disk je plný. Uložte inde alebo uvoľnite viac miesta na pevnom disku. </translation>
 <translation id="7643802497509977994">Zmeniť späť na miestne nastavenie <ph name="FROM_LOCALE"/> (vyžaduje sa odhlásenie)</translation>
@@ -2946,7 +2950,7 @@ Ak chcete využívať túto funkciu, musíte sa prihlásiť.</translation>
 <translation id="6664237456442406323">Váš počítač je žiaľ nakonfigurovaný pomocou poškodeného ID hardvéru. Systému Chrome OS to zabraňuje získať aktualizácie s najnovšími opravami zabezpečenia a váš počítač <ph name="BEGIN_BOLD"/>môže byť zraniteľný voči škodlivým útokom<ph name="END_BOLD"/>.</translation>
 <translation id="785160701896930981">Vytvoril sa kontrolovaný používateľ s názvom <ph name="NEW_PROFILE_NAME"/>. Ak chcete nastaviť, ktoré webové stránky môže kontrolovaný používateľ zobraziť, môžete prejsť na adresu <ph name="BEGIN_LINK"/>www.chrome.com/manage<ph name="END_LINK"/> a nakonfigurovať obmedzenia a nastavenia. Ak predvolené nastavenia nezmeníte, bude môcť používateľ <ph name="NEW_PROFILE_NAME"/> prehliadať všetky stránky na webe.
 
-Ak chcete získať príslušné pokyny a ďalšie informácie, skontrolujte svoje e-maily na adrese <ph name="ACCOUNT_EMAIL"/>.</translation>
+Tieto a ďalšie inštrukcie nájdete v e-maile, ktorý bol poslaný na adresu <ph name="ACCOUNT_EMAIL"/>.</translation>
 <translation id="8493236660459102203">Mikrofón:</translation>
 <translation id="4788968718241181184">Vietnamská metóda vstupu (TCVN6064)</translation>
 <translation id="3254409185687681395">Vytvoriť záložku pre túto stránku</translation>
@@ -3844,6 +3848,7 @@ Vaše súbory sú bezpečne uložené v službe Disk Google bez ohľadu na to, �
 <translation id="3672159315667503033">Stránky <ph name="URL"/> chcú natrvalo ukladať údaje vo vašom počítači.</translation>
 <translation id="373572798843615002">1 karta</translation>
 <translation id="4806065163318322702">Prepnúť hlasový vstup</translation>
+<translation id="6190185222845843088">Použiť servery karantény služby Peňaženka</translation>
 <translation id="3177048931975664371">Kliknutím skryjete heslo</translation>
 <translation id="5852137567692933493">Reštartovať a použiť funkciu Powerwash</translation>
 <translation id="3092544800441494315">Zahrnúť túto snímku obrazovky:</translation>
@@ -4112,6 +4117,7 @@ Vaše súbory sú bezpečne uložené v službe Disk Google bez ohľadu na to, �
 <translation id="1639239467298939599">Prebieha načítavanie</translation>
 <translation id="5457599981699367932">Prehliadať ako hosť</translation>
 <translation id="6850233365366645553">Zariadenie je nevyhnutné pred obnovením pomocou funkcie Powerwash reštartovať. Funkcia Powerwash vo vašom zariadení <ph name="IDS_SHORT_PRODUCT_NAME"/> úplne obnoví počiatočné nastavenie.</translation>
+<translation id="4292622557427736684">Povoliť predvolené nastavenie ochrany MediaDrm pre šifrované rozšírenia médií.</translation>
 <translation id="1812514023095547458">Vyberte farbu</translation>
 <translation id="5089363139417863686">Zobraziť pomocou aplikácie Súbory</translation>
 <translation id="7047998246166230966">Kurzor</translation>
@@ -4461,6 +4467,7 @@ Vaše súbory sú bezpečne uložené v službe Disk Google bez ohľadu na to, �
 <translation id="1728442818359004787">Zmeniť predvolenú aplikáciu...</translation>
 <translation id="7540972813190816353">Pri kontrole aktualizácií sa vyskytla chyba: <ph name="ERROR"/></translation>
 <translation id="7664620655576155379">Nepodporované zariadenie Bluetooth: <ph name="DEVICE_NAME"/>.</translation>
+<translation id="2990212470195050777">Zakázať rozhranie Media Source API bez predpony.</translation>
 <translation id="2225024820658613551">Nemali by ste pokračovať, &lt;strong&gt;najmä&lt;/strong&gt; ak sa toto upozornenie pre tieto stránky v minulosti nikdy nezobrazilo.</translation>
 <translation id="2049639323467105390">Toto zariadenie je spravované doménou <ph name="DOMAIN"/>.</translation>
 <translation id="1932098463447129402">Nie pred</translation>

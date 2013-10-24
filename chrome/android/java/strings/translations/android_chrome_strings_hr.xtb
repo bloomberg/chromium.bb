@@ -3,9 +3,24 @@
 <translationbundle lang="hr">
 <translation id="1491151370853475546">Ponovo učitaj ovu stranicu</translation>
 <translation id="7658239707568436148">Odustani</translation>
+<translation id="6458785801851713928">Sinkronizacija nije dostupna za vašu domenu.</translation>
 <translation id="2731700343119398978">Pričekajte...</translation>
+<translation id="3358663646935160692">Ovim računom upravlja domena <ph name="DOMAIN_NAME"/>.
+
+Prijavljujete se svojim upravljanim računom i njenom administratoru dajete nadzor nad svojim Chrome profilom. Vaši podaci na Chromeu bit će trajno povezani s ovim računom. Prekidanje veze s ovim računom dovest će do brisanja lokalnih podataka na Chromeu.</translation>
+<translation id="1623104350909869708">Spriječi da ova stranica stvori dodatne dijaloške okvire</translation>
+<translation id="3896036286668839683">Preglednik certifikata</translation>
+<translation id="8583805026567836021">Brisanje podataka računa</translation>
+<translation id="4170011742729630528">Usluga nije dostupna, pokušajte ponovo kasnije.</translation>
+<translation id="8627706565932943526">Pogreška sinkronizacije</translation>
+<translation id="3136378934686431938">Ažurirajte pojedinosti prijave.</translation>
+<translation id="4510973599275542560">Ne učitavaj ponovo</translation>
 <translation id="9154176715500758432">Ostani na ovoj stranici</translation>
+<translation id="7063006564040364415">Nije uspjelo povezivanje s poslužiteljem za sinkronizaciju.</translation>
 <translation id="6512448926095770873">Zatvori ovu stranicu</translation>
+<translation id="7947953824732555851">Prihv. i prijavi se</translation>
 <translation id="6040143037577758943">Zatvori</translation>
+<translation id="5032574515228824816">Upit</translation>
 <translation id="6965382102122355670">U redu</translation>
+<translation id="7495038789730067783">Potvrda prijave</translation>
 </translationbundle>

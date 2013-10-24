@@ -134,6 +134,7 @@
 <translation id="1589055389569595240">అక్షరక్రమం మరియు వ్యాకరణం చూపించు</translation>
 <translation id="7017587484910029005">క్రింద ఉన్న చిత్రంలో మీరు చూస్తున్న అక్షరాలను టైప్ చెయ్యండి.</translation>
 <translation id="9013589315497579992">తప్పుడు SSL క్లయింట్ ప్రామాణీకరణ సర్టిఫికెట్.</translation>
+<translation id="2085245445866855859">'kiosk_only' మానిఫెస్ట్ లక్షణం గల అనువర్తనాన్ని తప్పనిసరిగా ChromeOS కియోస్క్ మోడ్‌లో ఇన్‌స్టాల్ చేయాలి.</translation>
 <translation id="1467999917853307373"><ph name="URL"/> శాశ్వతంగా డేటాను మీ పరికరంలో నిల్వ చేయాలనుకుంటోంది.</translation>
 <translation id="8524066305376229396">శాశ్వత నిల్వ:</translation>
 <translation id="7567293639574541773">ఎలిమెంట్‌ను క్షుణ్ణంగా ప&amp;రిశీలించండి</translation>
@@ -187,6 +188,7 @@
 <translation id="4858913220355269194">ఫ్రిట్జ్</translation>
 <translation id="2231238007119540260">మీరు సర్వర్ ప్రమాణపత్రాన్ని తొలగిస్తే, సర్వర్ కోసం మీరు సాధారణ భద్రతా తనిఖీలను పునరుద్ధరించండి మరియు చెల్లుబాటు అయ్యే ప్రమాణపత్రాన్ని ఉపయోగించడానికి ఇది అవసరం.</translation>
 <translation id="9110235431257073974">వెబ్‌స్టోర్ మరియు Files.app యొక్క ఏకీకరణను ప్రారంభించండి.</translation>
+<translation id="6489433341782457580">డెవలపర్‌ల కోసం: requestAutocomplete()కి సంబంధించిన Wallet API కాల్‌ల కోసం శాండ్‌బాక్స్ సేవను ఉపయోగించండి.</translation>
 <translation id="8186609076106987817">సర్వర్ ఫైల్‌ని కనుగొనలేకపోయింది.</translation>
 <translation id="2846816712032308263">వేగంగా ట్యాబ్/విండో మూసివేతను ప్రారంభిస్తుంది - ట్యాబ్ యొక్క onunload js హ్యాండ్లర్‌ను GUI లేకుండా స్వతంత్రంగా అమలు చేస్తుంది.</translation>
 <translation id="9134410174832249455"><ph name="HOST_NAME"/>
@@ -349,6 +351,7 @@
 <translation id="8959810181433034287">పర్యవేక్షించబడే వినియోగదారు సైన్ ఇన్ చేయడానికి ఈ పాస్‌వర్డ్‌ను ఉపయోగించాల్సి ఉంటుంది, అందువల్ల సురక్షితమైన పాస్‌వర్డ్‌ను ఎంచుకుని, దాన్ని పర్యవేక్షించబడే వినియోగదారుతో చర్చించాలని గుర్తుంచుకోండి.</translation>
 <translation id="5154917547274118687">మెమరీ</translation>
 <translation id="1493492096534259649">అక్షర క్రమం తనిఖీ కోసం ఈ భాష ఉపయోగించబడదు</translation>
+<translation id="2103866351350079276">పూర్వప్రత్యయం లేని MediaSource ఆబ్జెట్‌ను నిలిపివేయండి. ఈ ఆబ్జెట్ మీడియా డేటాను నేరుగా వీడియో మూలకానికి పంపడానికి జావాస్క్రిప్ట్‌ని అనుమతిస్తుంది.</translation>
 <translation id="6628463337424475685"><ph name="ENGINE"/> శోధన</translation>
 <translation id="6460423884798879930">మునుపు కనెక్ట్ చేయబడిన క్లయింట్ కోసం వేగంగా డేటాను పంపడాన్ని ప్రారంభించడానికి అనుమతిస్తూ, ప్రాథమిక SYN ప్యాకెట్‌లో అదనపు ప్రామాణీకరణ సమాచారాన్ని పంపడానికి ఎంపికను ప్రారంభించండి.</translation>
 <translation id="6563261555270336410"><ph name="ELEMENTS_HOST_NAME"/> గురించి వివరాలు</translation>
@@ -1261,7 +1264,7 @@
 <translation id="14171126816530869"><ph name="LOCALITY"/> వద్ద <ph name="ORGANIZATION"/> యొక్క గుర్తింపు <ph name="ISSUER"/>చే ధ్రువీకరించబడింది.</translation>
 <translation id="220858061631308971">దయచేసి ఈ PIN కోడ్‌ని &quot;<ph name="DEVICE_NAME"/>&quot;లో నమోదు చేయండి:</translation>
 <translation id="6263082573641595914">Microsoft CA సంస్కరణ</translation>
-<translation id="953345106084818179">అనుమతిని అభ్యర్థించు</translation>
+<translation id="953345106084818179">అనుమతి అభ్యర్థించండి</translation>
 <translation id="3105917916468784889">స్క్రీన్‌షాట్‌ని తీయండి</translation>
 <translation id="6000902307058248087">సైట్ నా మైక్రోఫోన్‌కు ప్రాప్యతను కోరినప్పుడు నన్ను అడుగు (సిఫార్సు చేయబడింది)</translation>
 <translation id="1587275751631642843">&amp; JavaScript కన్‌సోల్</translation>
@@ -1592,6 +1595,7 @@
 <translation id="6736329909263487977"><ph name="ISSUED_BY"/> [<ph name="ISSUED_TO"/>]</translation>
 <translation id="8899388739470541164">వియత్నామీస్</translation>
 <translation id="6423064450797205562">అభ్యర్థించిన చర్యలను <ph name="SHORT_PRODUCT_NAME"/> అమలు చేయగల వేగానికి సంబంధించిన గణాంకాలు</translation>
+<translation id="2048118585307365263">MediaDrm ప్రారంభించండి.</translation>
 <translation id="4091434297613116013">పేపర్ షీట్‌లు</translation>
 <translation id="7475671414023905704">Netscape తప్పిపోయిన పాస్‌వర్డ్ URL</translation>
 <translation id="3335947283844343239">మూసిన టాబ్‌ను మళ్ళీ తెరువు</translation>
@@ -3838,6 +3842,7 @@
 <translation id="3672159315667503033">మీ స్థానిక కంప్యూటర్‌లో <ph name="URL"/> శాశ్వతంగా డేటాను నిల్వ చేయాలనుకుంటుంది.</translation>
 <translation id="373572798843615002">1 టాబ్</translation>
 <translation id="4806065163318322702">ప్రసంగం ఇన్‌పుట్‌ను టోగుల్ చేయి</translation>
+<translation id="6190185222845843088">Wallet శాండ్‌బాక్స్ సర్వర్‌లను ఉపయోగించండి</translation>
 <translation id="3177048931975664371">పాస్‌వర్డ్ దాచుటకు క్లిక్ చేయండి</translation>
 <translation id="5852137567692933493">పునఃప్రారంభించి, పవర్‌వాష్ చేయి</translation>
 <translation id="3092544800441494315">ఈ స్క్రీన్‌షాట్‌ని చేర్చు:</translation>
@@ -4104,6 +4109,7 @@
 <translation id="1639239467298939599">లోడ్ అవుతోంది</translation>
 <translation id="5457599981699367932">అతిథి వలె బ్రౌజ్ చెయ్యండి</translation>
 <translation id="6850233365366645553">మీ పరికరం పవర్‌వాష్‌తో రీసెట్ చేయబడటానికి ముందు పునఃప్రారంభించడం అవసరం. పవర్‌వాష్ మీ <ph name="IDS_SHORT_PRODUCT_NAME"/> పరికరాన్ని క్రొత్తదాని వలె రీసెట్ చేస్తుంది.</translation>
+<translation id="4292622557427736684">గుప్తీకరించిన మీడియా పొడిగింపుల కోసం డిఫాల్ట్‌గా MediaDrmను ప్రారంభించండి.</translation>
 <translation id="1812514023095547458">రంగుని ఎంచుకోండి</translation>
 <translation id="5089363139417863686">ఫైల్‌లు అనువర్తనంతో వీక్షించండి</translation>
 <translation id="7047998246166230966">పాయింటర్</translation>
@@ -4455,6 +4461,7 @@
 <translation id="1728442818359004787">డిఫాల్ట్ అనువర్తనాన్ని మార్చండి...</translation>
 <translation id="7540972813190816353">నవీకరణల కోసం తనిఖీ చేస్తున్నప్పుడు లోపం సంభవించింది: <ph name="ERROR"/></translation>
 <translation id="7664620655576155379">మద్దతు లేని బ్లూటూత్ పరికరం: &quot;<ph name="DEVICE_NAME"/>&quot;.</translation>
+<translation id="2990212470195050777">పూర్వప్రత్యయం లేని మీడియా సోర్స్ APIని నిలిపివేయండి.</translation>
 <translation id="2225024820658613551">&lt;strong&gt;ముఖ్యంగా&lt;/strong&gt; ఈ సైట్ కోసం మీరు ఈ హెచ్చరికను ఇంతకు ముందు ఎప్పుడూ చూడకుంటే మీరు ఖచ్చితంగా కొనసాగకూడదు.</translation>
 <translation id="2049639323467105390">ఈ పరికరం <ph name="DOMAIN"/> ద్వారా నిర్వహించబడుతుంది.</translation>
 <translation id="1932098463447129402">ముందు కాదు</translation>

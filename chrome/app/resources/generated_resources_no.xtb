@@ -130,6 +130,7 @@
 <translation id="1589055389569595240">Vis stavekontroll og grammatikk</translation>
 <translation id="7017587484910029005">Skriv inn tegnene du ser i bildet nedenfor.</translation>
 <translation id="9013589315497579992">Ugyldig autentiseringssertifikat for SSL-klient.</translation>
+<translation id="2085245445866855859">App med «kiosk_only»-manifestattributt må være installert i kioskmodusen for ChromeOS.</translation>
 <translation id="1467999917853307373"><ph name="URL"/> ønsker å lagre data på enheten din permanent.</translation>
 <translation id="8524066305376229396">Permanent lagring:</translation>
 <translation id="7567293639574541773">I&amp;nspiser element</translation>
@@ -181,6 +182,7 @@
 <translation id="4858913220355269194">Drible</translation>
 <translation id="2231238007119540260">Hvis du sletter et tjenersertifikat, gjenoppretter du de vanlige sikkerhetskontrollene for tjeneren og krever at den bruker et gyldig sertifikat.</translation>
 <translation id="9110235431257073974">Aktiver integrering av Nettbutikken og Files.app.</translation>
+<translation id="6489433341782457580">For utviklere: bruk prosessisolering for Wallet API-anrop for requestAutocomplete().</translation>
 <translation id="8186609076106987817">Tjeneren fant ikke filen.</translation>
 <translation id="2846816712032308263">Muliggjør rask lukking av faner og vinduer – kjøres på fanens onunload js-behandler, uavhengig av GUI,</translation>
 <translation id="9134410174832249455"><ph name="PRODUCT_NAME"/> kan ikke laste inn nettsiden fordi det tok <ph name="HOST_NAME"/> for lang tid å svare. Nettstedet kan være nede, eller det kan ha oppstått problemer med Internett-forbindelsen din.</translation>
@@ -321,7 +323,7 @@
 <translation id="2179052183774520942">Legg til søkemotor</translation>
 <translation id="4043223219875055035">Logg deg på med Google-kontoen din for å tillate apper å synkronisere innstillinger og tilby andre tilpassede tjenester.</translation>
 <translation id="5498951625591520696">Får ikke kontakt med tjeneren.</translation>
-<translation id="1621207256975573490">Lagre &amp;ramme som...</translation>
+<translation id="1621207256975573490">Lagre &amp;rammen som...</translation>
 <translation id="4681260323810445443">Du er ikke autorisert til å ha tilgang til nettsiden på <ph name="URL"/>. Det kan hende at du må logge deg på.</translation>
 <translation id="7207605296944356446">Mikrosekunder</translation>
 <translation id="6093888419484831006">Avbryter oppdatering …</translation>
@@ -349,6 +351,7 @@
 <translation id="8959810181433034287">Den overvåkede brukeren må bruke dette passordet til å logge seg på, så velg et sikkert passord, og husk å formidle det til den overvåkede brukeren.</translation>
 <translation id="5154917547274118687">Minne</translation>
 <translation id="1493492096534259649">Dette språket kan ikke brukes til stavekontroll</translation>
+<translation id="2103866351350079276">Deaktiver MediaSource-objektet uten prefiks. Dette objektet gjør det mulig for JavaScript å sende mediedata direkte til et videoelement.</translation>
 <translation id="6628463337424475685"><ph name="ENGINE"/> Søk</translation>
 <translation id="6460423884798879930">Aktiver muligheten til å sende ekstra autentiseringsinformasjon med den første SYN-pakken for en klient som har vært tilkoblet tidligere. Dette gjør at datasending kan starte raskere.</translation>
 <translation id="6563261555270336410">Detaljer om <ph name="ELEMENTS_HOST_NAME"/></translation>
@@ -591,7 +594,7 @@
 <translation id="5640179856859982418">Sveitsisk tastatur</translation>
 <translation id="1662837784918284394">(ingen)</translation>
 <translation id="2573269395582837871">Velg bilde og navn</translation>
-<translation id="5910363049092958439">Lagre &amp;bilde som</translation>
+<translation id="5910363049092958439">Lagre &amp;bildet som</translation>
 <translation id="8793975580333839911">Kjør dette programtillegget</translation>
 <translation id="3645617779454068495">Ved å aktivere denne innstillingen gir du nettapper tillatelse til å bruke WebGL API-en.</translation>
 <translation id="1864146862702347178">Aktiver forslag ved rulling</translation>
@@ -986,7 +989,7 @@
 <translation id="3534176359640723312">Utvidelser som kommuniserer med denne siden:</translation>
 <translation id="7474889694310679759">Engelsk tastatur (Canada)</translation>
 <translation id="1817871734039893258">Microsoft-filgjenoppretting</translation>
-<translation id="2423578206845792524">Lagre &amp;bilde som...</translation>
+<translation id="2423578206845792524">Lagre &amp;bildet som...</translation>
 <translation id="6806236207372176468">Deaktiver støtte for videokoding for WebRTC-maskinvare.</translation>
 <translation id="7549584377607005141">Denne nettsiden krever data som du har skrevet inn tidligere for å vises korrekt. Du kan sende inn dataene på nytt, men hvis du gjør det, gjentas eventuelle handlinger denne siden utførte.</translation>
 <translation id="6954850746343724854">Aktiver Native Client for alle nettprogrammer, selv de som ikke ble installert fra Chrome Nettmarked.</translation>
@@ -1584,6 +1587,7 @@ Pass på at du ikke deler privat informasjon.</translation>
 <translation id="6736329909263487977"><ph name="ISSUED_BY"/> [<ph name="ISSUED_TO"/>]</translation>
 <translation id="8899388739470541164">Vietnamesisk</translation>
 <translation id="6423064450797205562">Beregninger knyttet til hvor raskt <ph name="SHORT_PRODUCT_NAME"/> utfører forespurte handlinger</translation>
+<translation id="2048118585307365263">Aktiver MediaDrm.</translation>
 <translation id="4091434297613116013">ark</translation>
 <translation id="7475671414023905704">Nettadresse for mistet passord – Netscape</translation>
 <translation id="3335947283844343239">Åpne lukkede faner igjen</translation>
@@ -3407,7 +3411,7 @@ Kontopåloggings-informasjonen din er utløpt.</translation>
 <translation id="4367133129601245178">K&amp;opier bildeadressen</translation>
 <translation id="6326175484149238433">Fjern fra Chrome</translation>
 <translation id="2554553592469060349">Den valgte filen er for stor (maksimal størrelse: 3 MB).</translation>
-<translation id="3494444535872870968">Lagre &amp;ramme som</translation>
+<translation id="3494444535872870968">Lagre &amp;rammen som</translation>
 <translation id="987264212798334818">Generelt</translation>
 <translation id="7496327459896094472">Berøringsoptimalisert grensesnitt</translation>
 <translation id="2356070529366658676">Spør</translation>
@@ -3836,6 +3840,7 @@ Kontopåloggings-informasjonen din er utløpt.</translation>
 <translation id="3672159315667503033"><ph name="URL"/> ønsker permanent å lagre data lokalt på datamaskinen din.</translation>
 <translation id="373572798843615002">1 fane</translation>
 <translation id="4806065163318322702">Slå på taleinndata</translation>
+<translation id="6190185222845843088">Bruk prosessisoleringstjenere for Wallet</translation>
 <translation id="3177048931975664371">Klikk for å skjule passord</translation>
 <translation id="5852137567692933493">Omstart og Powerwash</translation>
 <translation id="3092544800441494315">Inkluder denne skjermdumpen:</translation>
@@ -4105,6 +4110,7 @@ Kontopåloggings-informasjonen din er utløpt.</translation>
 <translation id="1639239467298939599">Laster inn</translation>
 <translation id="5457599981699367932">Surf som gjest</translation>
 <translation id="6850233365366645553">Omstart er nødvendig før enheten din kan tilbakestilles med Powerwash. Powerwash tilbakestiller <ph name="IDS_SHORT_PRODUCT_NAME"/>-enheten så den blir akkurat som ny.</translation>
+<translation id="4292622557427736684">Aktiver MediaDrm som standard for krypterte medieutvidelser.</translation>
 <translation id="1812514023095547458">Velg farge</translation>
 <translation id="5089363139417863686">Se med filer-appen</translation>
 <translation id="7047998246166230966">Peker</translation>
@@ -4454,6 +4460,7 @@ Kontopåloggings-informasjonen din er utløpt.</translation>
 <translation id="1728442818359004787">Endre standardapp</translation>
 <translation id="7540972813190816353">Det oppsto en feil under søk etter oppdateringer: <ph name="ERROR"/></translation>
 <translation id="7664620655576155379">Ustøttet Bluetooth-enhet: <ph name="DEVICE_NAME"/>.</translation>
+<translation id="2990212470195050777">Deaktiver mediekilde-API uten prefiks.</translation>
 <translation id="2225024820658613551">Du bør ikke fortsette, &lt;strong&gt;særlig&lt;/strong&gt; hvis du aldri har sett denne advarselen tidligere for dette nettstedet.</translation>
 <translation id="2049639323467105390">Denne enheten administreres av <ph name="DOMAIN"/>.</translation>
 <translation id="1932098463447129402">Ikke før</translation>

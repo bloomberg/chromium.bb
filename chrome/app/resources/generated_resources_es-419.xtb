@@ -131,6 +131,7 @@
 <translation id="1589055389569595240">Mostrar ortografía y gramática</translation>
 <translation id="7017587484910029005">Escribe los caracteres que ves en la imagen a continuación.</translation>
 <translation id="9013589315497579992">Certificado de autenticación de cliente SSL incorrecto</translation>
+<translation id="2085245445866855859">La aplicación con el atributo del manifiesto &quot;kiosk_only&quot; se debe instalar en el modo kiosco del Sistema operativo Chrome.</translation>
 <translation id="1467999917853307373"><ph name="URL"/> quiere almacenar datos de forma permanente en el dispositivo.</translation>
 <translation id="8524066305376229396">Almacenamiento permanente:</translation>
 <translation id="7567293639574541773">I&amp;nspeccionar elemento</translation>
@@ -184,6 +185,7 @@
 <translation id="4858913220355269194">Balón</translation>
 <translation id="2231238007119540260">Al eliminar un certificado de servidor, restableces las verificaciones de seguridad normales para ese servidor, y solicitas que utilice un certificado válido.</translation>
 <translation id="9110235431257073974">Habilitar la integración de Chrome Web Store y la aplicación Archivos</translation>
+<translation id="6489433341782457580">Para programadores: utiliza el servicio de zona de pruebas para las solicitudes de requestAutocomplete() de la API de Wallet.</translation>
 <translation id="8186609076106987817">El servidor no pudo encontrar el archivo.</translation>
 <translation id="2846816712032308263">Permite cerrar rápidamente ventanas o pestañas, ya que ejecuta el controlador onunload de JavaScript de forma independiente de la interfaz gráfica de usuario.</translation>
 <translation id="9134410174832249455"><ph name="PRODUCT_NAME"/> no ha podido cargar la página web porque <ph name="HOST_NAME"/> ha tardado demasiado en responder. Es posible que el sitio web no esté disponible o que se haya producido algún problema con tu conexión a Internet.</translation>
@@ -341,6 +343,7 @@
 <translation id="8959810181433034287">El usuario supervisado deberá utilizar esta contraseña para acceder, por lo que debes elegir una contraseña segura y comunicársela.</translation>
 <translation id="5154917547274118687">Memoria</translation>
 <translation id="1493492096534259649">No se puede usar este idioma para el corrector ortográfico</translation>
+<translation id="2103866351350079276">Inhabilita el objeto MediaSource sin prefijo. Este objeto permite que JavaScript envíe datos de medios directamente a un elemento de video.</translation>
 <translation id="6628463337424475685"><ph name="ENGINE"/> Búsqueda</translation>
 <translation id="6460423884798879930">Habilita la opción de envío de información adicional de autenticación en el paquete SYN inicial de un cliente conectado anteriormente, lo que permite un inicio más rápido del envío de datos.</translation>
 <translation id="6563261555270336410">Información sobre <ph name="ELEMENTS_HOST_NAME"/></translation>
@@ -1577,6 +1580,7 @@ Asegúrate de no revelar información confidencial.</translation>
 <translation id="6736329909263487977"><ph name="ISSUED_BY"/> [<ph name="ISSUED_TO"/>]</translation>
 <translation id="8899388739470541164">Vietnamita</translation>
 <translation id="6423064450797205562">Estadísticas relacionadas con la velocidad a la que <ph name="SHORT_PRODUCT_NAME"/> realiza las acciones solicitadas</translation>
+<translation id="2048118585307365263">Habilitar MediaDrm</translation>
 <translation id="4091434297613116013">hojas de papel</translation>
 <translation id="7475671414023905704">URL de contraseña perdida de Netscape</translation>
 <translation id="3335947283844343239">Volver a abrir pestaña cerrada</translation>
@@ -3811,6 +3815,7 @@ Los datos de acceso a tu cuenta están desactualizados.</translation>
 <translation id="3672159315667503033"><ph name="URL"/> desea almacenar de forma permanente los datos de gran tamaño en tu computadora local.</translation>
 <translation id="373572798843615002">1 pestaña</translation>
 <translation id="4806065163318322702">Activar o desactivar la entrada de voz</translation>
+<translation id="6190185222845843088">Utilizar servidores de zona de pruebas de Wallet</translation>
 <translation id="3177048931975664371">Haz clic para ocultar la contraseña</translation>
 <translation id="5852137567692933493">Reiniciar y aplicar Powerwash</translation>
 <translation id="3092544800441494315">Incluir esta captura de pantalla:</translation>
@@ -4077,6 +4082,7 @@ Los datos de acceso a tu cuenta están desactualizados.</translation>
 <translation id="1639239467298939599">Cargando</translation>
 <translation id="5457599981699367932">Navega como invitado</translation>
 <translation id="6850233365366645553">Debes reiniciar tu dispositivo para que pueda restablecerse con Powerwash. Un Powerwash restablece el dispositivo <ph name="IDS_SHORT_PRODUCT_NAME"/> para que quede como nuevo.</translation>
+<translation id="4292622557427736684">Habilita MediaDrm de forma predeterminada para extensiones de medios encriptados.</translation>
 <translation id="1812514023095547458">Seleccionar color</translation>
 <translation id="5089363139417863686">Ver con la aplicación de archivos</translation>
 <translation id="7047998246166230966">Puntero</translation>
@@ -4426,6 +4432,7 @@ Los datos de acceso a tu cuenta están desactualizados.</translation>
 <translation id="1728442818359004787">Cambiar aplicación predeterminada...</translation>
 <translation id="7540972813190816353">Se produjo un error al buscar actualizaciones: <ph name="ERROR"/></translation>
 <translation id="7664620655576155379">Dispositivo Bluetooth no compatible: &quot;<ph name="DEVICE_NAME"/>&quot;</translation>
+<translation id="2990212470195050777">Inhabilitar la API de fuente de medios sin prefijo</translation>
 <translation id="2225024820658613551">No deberías continuar, &lt;strong&gt;sobre todo&lt;/strong&gt; si no has recibido nunca esta advertencia para este sitio.</translation>
 <translation id="2049639323467105390"><ph name="DOMAIN"/> administra esta cuenta.</translation>
 <translation id="1932098463447129402">No antes</translation>

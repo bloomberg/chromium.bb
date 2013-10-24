@@ -3,9 +3,24 @@
 <translationbundle lang="hi">
 <translation id="1491151370853475546">यह पृष्ठ पुन: लोड करें</translation>
 <translation id="7658239707568436148">रद्द करें</translation>
+<translation id="6458785801851713928">आपके डोमेन के लिए समन्‍वयन उपलब्‍ध नहीं है.</translation>
 <translation id="2731700343119398978">कृपया प्रतीक्षा करें...</translation>
+<translation id="3358663646935160692">यह खाता <ph name="DOMAIN_NAME"/> द्वारा प्रबंधित है.
+
+आप प्रबंधित खाते से प्रवेश कर रहे हैं और अपनी Chrome प्रोफ़ाइल को इसका व्यवस्थापक नियंत्रण दे रहे हैं. आपका Chrome डेटा इस खाते से स्थायी रूप से जुड़ जाएगा. इस खाते से डिस्कनेक्ट करने से स्थानीय Chrome डेटा हट जाएगा.</translation>
+<translation id="1623104350909869708">इस पृष्ठ को अतिरिक्त संवाद बनाने से रोकें</translation>
+<translation id="3896036286668839683">प्रमाणपत्र व्यूअर</translation>
+<translation id="8583805026567836021">खाते का डेटा साफ़ हो रहा है</translation>
+<translation id="4170011742729630528">सेवा उपलब्ध नहीं है; बाद में पुन: प्रयास करें.</translation>
+<translation id="8627706565932943526">समन्वयन त्रुटि</translation>
+<translation id="3136378934686431938">कृपया अपने प्रवेश विवरण अपडेट करें.</translation>
+<translation id="4510973599275542560">पुनः लोड न करें</translation>
 <translation id="9154176715500758432">इस पृष्ठ पर बनें रहें</translation>
+<translation id="7063006564040364415">समन्‍वयन सर्वर से कनेक्‍ट नहीं किया जा सका.</translation>
 <translation id="6512448926095770873">इस पृष्ठ से जाएं</translation>
+<translation id="7947953824732555851">स्वीकार करें और प्रवेश करें</translation>
 <translation id="6040143037577758943">बंद करें</translation>
+<translation id="5032574515228824816">शीघ्र</translation>
 <translation id="6965382102122355670">ठीक</translation>
+<translation id="7495038789730067783">प्रवेश की पुष्टि करें</translation>
 </translationbundle>

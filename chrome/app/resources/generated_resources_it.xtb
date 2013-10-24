@@ -134,6 +134,7 @@
 <translation id="1589055389569595240">Mostra ortografia e grammatica</translation>
 <translation id="7017587484910029005">Digita i caratteri che vedi nella seguente immagine.</translation>
 <translation id="9013589315497579992">Certificato di autenticazione client SSL non corretto.</translation>
+<translation id="2085245445866855859">L'app con l'attributo del file manifest &quot;kiosk_only&quot; deve essere installata in modalità kiosk ChromeOS.</translation>
 <translation id="1467999917853307373"><ph name="URL"/> vuole memorizzare in modo permanente i dati sul tuo dispositivo.</translation>
 <translation id="8524066305376229396">Archiviazione persistente:</translation>
 <translation id="7567293639574541773">Ispeziona eleme&amp;nto</translation>
@@ -187,6 +188,7 @@
 <translation id="4858913220355269194">Holly</translation>
 <translation id="2231238007119540260">Se elimini un certificato server, ripristini i normali controlli di protezione del server e richiedi l'utilizzo di un certificato valido per il server.</translation>
 <translation id="9110235431257073974">Attiva l'integrazione di Webstore e Files.app.</translation>
+<translation id="6489433341782457580">Per gli sviluppatori. Consente di utilizzare il servizio sandbox per le chiamate all'API di Wallet relative a requestAutocomplete().</translation>
 <translation id="8186609076106987817">Impossibile trovare il file sul server.</translation>
 <translation id="2846816712032308263">Consente la chiusura veloce di schede/finestre - viene eseguito il gestore onunload js di una scheda indipendentemente dalla GUI.</translation>
 <translation id="9134410174832249455">Impossibile caricare la pagina web su <ph name="PRODUCT_NAME"/> perché <ph name="HOST_NAME"/> ha impiegato troppo tempo per rispondere. Il sito web potrebbe non essere disponibile o potrebbero esserci problemi con la connessione Internet.</translation>
@@ -350,6 +352,7 @@
 <translation id="8959810181433034287">L'utente supervisionato dovrà utilizzare la password specificata per eseguire l'accesso, pertanto scegli una password sicura e ricordati di parlarne con l'utente supervisionato.</translation>
 <translation id="5154917547274118687">Memoria</translation>
 <translation id="1493492096534259649">Impossibile utilizzare questa lingua per il controllo ortografico</translation>
+<translation id="2103866351350079276">Consente di disattivare l'oggetto MediaSource senza prefisso, che consente a JavaScript di inviare i dati multimediali direttamente a un elemento video.</translation>
 <translation id="6628463337424475685">Ricerca <ph name="ENGINE"/></translation>
 <translation id="6460423884798879930">Attiva l'opzione per inviare informazioni di autenticazione aggiuntive nel pacchetto SYN iniziale per un client precedentemente connesso, consentendo un avvio dell'invio dei dati più veloce.</translation>
 <translation id="6563261555270336410">Dettagli su <ph name="ELEMENTS_HOST_NAME"/></translation>
@@ -1575,6 +1578,7 @@ Assicurati di non mostrare informazioni riservate.</translation>
 <translation id="6736329909263487977"><ph name="ISSUED_BY"/> [<ph name="ISSUED_TO"/>]</translation>
 <translation id="8899388739470541164">Vietnamita</translation>
 <translation id="6423064450797205562">Metriche relative alla velocità con cui <ph name="SHORT_PRODUCT_NAME"/> esegue le azioni richieste</translation>
+<translation id="2048118585307365263">Attiva MediaDrm.</translation>
 <translation id="4091434297613116013">fogli</translation>
 <translation id="7475671414023905704">URL password persa Netscape</translation>
 <translation id="3335947283844343239">Riapri scheda chiusa</translation>
@@ -2906,7 +2910,7 @@ Per poter utilizzare questa funzione devi eseguire l'accesso.</translation>
 <translation id="8691686986795184760">(Attivato in base a norma aziendale)</translation>
 <translation id="878763818693997570">Il nome è troppo lungo</translation>
 <translation id="1976323404609382849">Sono stati bloccati cookie provenienti da più siti.</translation>
-<translation id="7913678092679498828">OK, ricevuto.</translation>
+<translation id="7913678092679498828">OK</translation>
 <translation id="3655670868607891010">Se questo problema si verifica spesso, prova questi <ph name="HELP_LINK"/>.</translation>
 <translation id="4504940961672722399">Utilizza questa estensione facendo clic su questa icona o premendo <ph name="EXTENSION_SHORTCUT"/>.</translation>
 <translation id="2523966157338854187">Apri una pagina specifica o un insieme di pagine.</translation>
@@ -3801,6 +3805,7 @@ I dati di accesso del tuo account sono obsoleti.</translation>
 <translation id="3672159315667503033"><ph name="URL"/> vuole memorizzare in modo permanente grandi quantità di dati sul computer locale.</translation>
 <translation id="373572798843615002">1 scheda</translation>
 <translation id="4806065163318322702">Attiva/disattiva ingresso voce</translation>
+<translation id="6190185222845843088">Utilizza server sandbox di Wallet</translation>
 <translation id="3177048931975664371">Fai clic per nascondere la password</translation>
 <translation id="5852137567692933493">Riavvia ed esegui Powerwash</translation>
 <translation id="3092544800441494315">Includi questo screenshot:</translation>
@@ -4065,6 +4070,7 @@ I dati di accesso del tuo account sono obsoleti.</translation>
 <translation id="1639239467298939599">Caricamento</translation>
 <translation id="5457599981699367932">Esplora come ospite</translation>
 <translation id="6850233365366645553">È necessario riavviare prima che il dispositivo possa essere ripristinato con un Powerwash. Un Powerwash ripristina il tuo dispositivo <ph name="IDS_SHORT_PRODUCT_NAME"/> facendolo tornare come nuovo.</translation>
+<translation id="4292622557427736684">Consente di attivare per impostazione predefinita MediaDrm per Encrypted Media Extensions.</translation>
 <translation id="1812514023095547458">Seleziona colore</translation>
 <translation id="5089363139417863686">Visualizza con l'app File</translation>
 <translation id="7047998246166230966">Puntatore</translation>
@@ -4414,6 +4420,7 @@ I dati di accesso del tuo account sono obsoleti.</translation>
 <translation id="1728442818359004787">Cambia applicazione predefinita...</translation>
 <translation id="7540972813190816353">Si è verificato un errore durante il controllo della disponibilità di aggiornamenti: <ph name="ERROR"/></translation>
 <translation id="7664620655576155379">Dispositivo Bluetooth non supportato: &quot;<ph name="DEVICE_NAME"/>&quot;.</translation>
+<translation id="2990212470195050777">Disattiva API Media Source senza prefisso.</translation>
 <translation id="2225024820658613551">Non procedere oltre, &lt;strong&gt;soprattutto&lt;/strong&gt; se questo avviso non è mai stato visualizzato per questo sito.</translation>
 <translation id="2049639323467105390">Questo dispositivo è gestito da <ph name="DOMAIN"/>.</translation>
 <translation id="1932098463447129402">Non prima</translation>

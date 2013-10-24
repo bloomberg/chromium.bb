@@ -134,6 +134,7 @@
 <translation id="1589055389569595240">Прикажи правопис и граматику</translation>
 <translation id="7017587484910029005">Унесите знакове које видите на слици испод.</translation>
 <translation id="9013589315497579992">Неисправaн сертификат за потврду идентитета SSL клијента.</translation>
+<translation id="2085245445866855859">Апликација са атрибутом манифеста „kiosk_only“ мора да се инсталира у режиму киоска у Chrome ОС-у.</translation>
 <translation id="1467999917853307373"><ph name="URL"/> жели да трајно складишти податке на уређају.</translation>
 <translation id="8524066305376229396">Трајна меморија:</translation>
 <translation id="7567293639574541773">И&amp;спитај елемент</translation>
@@ -187,6 +188,7 @@
 <translation id="4858913220355269194">Фриц</translation>
 <translation id="2231238007119540260">Уколико избришете серверски сертификат, враћате уобичајене безбедносне провере за тај сервер и захтевате да користи важећи сертификат.</translation>
 <translation id="9110235431257073974">Омогући интеграцију Веб-продавнице и апликације Датотеке.</translation>
+<translation id="6489433341782457580">За програмере: Користите услугу у заштићеном окружењу за позиве API-ја Новчаника за requestAutocomplete().</translation>
 <translation id="8186609076106987817">Сервер није могао да пронађе датотеку.</translation>
 <translation id="2846816712032308263">Омогућава брзо затварање картице/прозора – покреће js обрађивач onunload на картици независно од графичког корисничког интерфејса.</translation>
 <translation id="9134410174832249455"><ph name="PRODUCT_NAME"/> није могао да учита веб-страницу јер је хосту <ph name="HOST_NAME"/> било потребно превише времена за одговор. Можда је веб сајт неисправан или имате проблема са интернет везом.</translation>
@@ -357,6 +359,7 @@
 <translation id="8959810181433034287">Корисник под надзором ће морати да користи ову лозинку да би се пријављивао и зато изаберите безбедну лозинку и обавезно поразговарајте о њој са корисником под надзором.</translation>
 <translation id="5154917547274118687">Меморија</translation>
 <translation id="1493492096534259649">Није могуће користити овај језик за проверу правописа</translation>
+<translation id="2103866351350079276">Онемогућите MediaSource објекат без префикса. Овај објекат омогућава да JavaScript шаље медијске податке директно у видео елемент.</translation>
 <translation id="6628463337424475685"><ph name="ENGINE"/> претрага</translation>
 <translation id="6460423884798879930">Омогућите опцију за слање додатних информација за потврду аутентичности у почетном SYN пакету за претходно повезаног клијента, што омогућава бржи почетак слања података.</translation>
 <translation id="6563261555270336410">Детаљи о хосту <ph name="ELEMENTS_HOST_NAME"/></translation>
@@ -1597,6 +1600,7 @@
 <translation id="6736329909263487977"><ph name="ISSUED_BY"/> [<ph name="ISSUED_TO"/>]</translation>
 <translation id="8899388739470541164">вијетнамски</translation>
 <translation id="6423064450797205562">Показатељи који се односе на брзину којом <ph name="SHORT_PRODUCT_NAME"/> обавља захтеване радње</translation>
+<translation id="2048118585307365263">Омогући MediaDrm.</translation>
 <translation id="4091434297613116013">листови папира</translation>
 <translation id="7475671414023905704">Netscape URL адреса за изгубљену лозинку</translation>
 <translation id="3335947283844343239">Поново отвори затворену картицу</translation>
@@ -3854,6 +3858,7 @@
 <translation id="3672159315667503033"><ph name="URL"/> жели да трајно складишти велику количину података на локалном рачунару.</translation>
 <translation id="373572798843615002">1 картица</translation>
 <translation id="4806065163318322702">Укључује/искључује говорни унос</translation>
+<translation id="6190185222845843088">Користи сервере Новчаника у заштићеном окружењу</translation>
 <translation id="3177048931975664371">Кликните да бисте сакрили лозинку</translation>
 <translation id="5852137567692933493">Поново покрени и обави Powerwash</translation>
 <translation id="3092544800441494315">Укључи овај снимак екрана:</translation>
@@ -4123,6 +4128,7 @@
 <translation id="1639239467298939599">Учитавање</translation>
 <translation id="5457599981699367932">Прегледај као гост</translation>
 <translation id="6850233365366645553">Потребно је поновно покретање да би уређај могао да се врати на почетна подешавања помоћу Powerwash-а. Powerwash враћа <ph name="IDS_SHORT_PRODUCT_NAME"/> уређај на почетна подешавања тако да буде као нов.</translation>
+<translation id="4292622557427736684">Подразумевано омогућите MediaDrm за додатке за шифроване медије.</translation>
 <translation id="1812514023095547458">Избор боја</translation>
 <translation id="5089363139417863686">Прикажи помоћу апликације Датотеке</translation>
 <translation id="7047998246166230966">Показивач</translation>
@@ -4473,6 +4479,7 @@
 <translation id="1728442818359004787">Промени подразумевану апликацију...</translation>
 <translation id="7540972813190816353">Дошло је до грешке при провери ажурирања: <ph name="ERROR"/></translation>
 <translation id="7664620655576155379">Неподржани Bluetooth уређај: „<ph name="DEVICE_NAME"/>“.</translation>
+<translation id="2990212470195050777">Онемогући API за извор медија без префикса.</translation>
 <translation id="2225024820658613551">Не би требало да наставите &lt;strong&gt;нарочито&lt;/strong&gt; ако никада раније нисте видели ово упозорење за овај сајт.</translation>
 <translation id="2049639323467105390">Овим уређајем управља домен <ph name="DOMAIN"/>.</translation>
 <translation id="1932098463447129402">Не пре</translation>
@@ -4627,7 +4634,7 @@
 <translation id="3366404380928138336">Захтев спољног протокола</translation>
 <translation id="5300589172476337783">Прикажи</translation>
 <translation id="3160041952246459240">На датотеци постоје сертификати који идентификују следеће сервере:</translation>
-<translation id="566920818739465183">Први пут сте посетили овај сајт дана <ph name="VISIT_DATE"/>.</translation>
+<translation id="566920818739465183">Први пут сте посетили овај сајт <ph name="VISIT_DATE"/></translation>
 <translation id="2961695502793809356">Кликните да бисте отишли напред, задржите да бисте видели историју</translation>
 <translation id="4092878864607680421">Најновија верзија апликације „<ph name="APP_NAME"/>“ захтева више дозвола па је онемогућена.</translation>
 <translation id="4242168008489677578">Омиљено:</translation>

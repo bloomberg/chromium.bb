@@ -3,9 +3,22 @@
 <translationbundle lang="fa">
 <translation id="1491151370853475546">بارگیری مجدد این صفحه</translation>
 <translation id="7658239707568436148">لغو</translation>
+<translation id="6458785801851713928">همگام‌سازی برای دامنه شما در دسترس نیست.</translation>
 <translation id="2731700343119398978">لطفاً صبر کنید...</translation>
+<translation id="3358663646935160692">‏این حساب توسط <ph name="DOMAIN_NAME"/> مدیریت می‌شود. شما با یک حساب مدیریت شده وارد سیستم شده‌اید و به سرپرست این حساب اجازه کنترل نمایه Chrome خود را می‌دهید. اطلاعات Chrome شما به صورت دائم با این حساب مرتبط می‌شود. با قطع ارتباط از این حساب، کلیه اطلاعات Chrome شما در دستگاه حذف می‌شود.</translation>
+<translation id="1623104350909869708">جلوگیری از ایجاد پنجره‌های اضافی توسط این صفحه</translation>
+<translation id="3896036286668839683">نمایشگر گواهی</translation>
+<translation id="8583805026567836021">پاکسازی اطلاعات حساب</translation>
+<translation id="4170011742729630528">این سرویس در دسترس نیست؛ بعداً دوباره امتحان کنید.</translation>
+<translation id="8627706565932943526">خطای همگام‌سازی</translation>
+<translation id="3136378934686431938">لطفاً جزئیات ورود به سیستمتان را به‌روز کنید.</translation>
+<translation id="4510973599275542560">تازه‌سازی نشود</translation>
 <translation id="9154176715500758432">ماندن در این صفحه</translation>
+<translation id="7063006564040364415">اتصال به سرور همگام‌سازی ممکن نیست.</translation>
 <translation id="6512448926095770873">ترک کردن این صفحه</translation>
+<translation id="7947953824732555851">پذیرش و ورود به سیستم</translation>
 <translation id="6040143037577758943">بستن</translation>
+<translation id="5032574515228824816">فرمان</translation>
 <translation id="6965382102122355670">تأیید</translation>
+<translation id="7495038789730067783">تأیید ورود به سیستم</translation>
 </translationbundle>

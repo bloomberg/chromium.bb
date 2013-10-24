@@ -134,6 +134,7 @@
 <translation id="1589055389569595240">Mostra l'ortografia i la gramàtica</translation>
 <translation id="7017587484910029005">Escriviu els caràcters que veieu a la imatge inferior.</translation>
 <translation id="9013589315497579992">Certificat d'autenticació de client SSL incorrecte.</translation>
+<translation id="2085245445866855859">L'aplicació amb l'atribut del fitxer de manifest &quot;kiosk_only&quot; s'ha d'instal·lar al mode quiosc de ChromeOS.</translation>
 <translation id="1467999917853307373"><ph name="URL"/> vol emmagatzemar dades al vostre dispositiu de manera permanent.</translation>
 <translation id="8524066305376229396">Emmagatzematge permanent:</translation>
 <translation id="7567293639574541773">I&amp;nspecciona l'element</translation>
@@ -186,6 +187,7 @@
 <translation id="4858913220355269194">Pilota</translation>
 <translation id="2231238007119540260">Si suprimiu un certificat de servidor, restaurareu les comprovacions de seguretat normals per a aquell servidor i es necessitarà que utilitzi un certificat vàlid.</translation>
 <translation id="9110235431257073974">Activa la integració de WebStore i Files.app.</translation>
+<translation id="6489433341782457580">Per als desenvolupadors: utilitzeu el servei de la zona de proves per a les trucades a l'API de Wallet per a requestAutocomplete().</translation>
 <translation id="8186609076106987817">El servidor no ha pogut trobar el fitxer.</translation>
 <translation id="2846816712032308263">Activa el tancament ràpid de la pestanya/finestra; executa un gestor js de descàrrega de la pestanya independentment de la interfície gràfica d'usuari.</translation>
 <translation id="9134410174832249455"><ph name="PRODUCT_NAME"/> no ha pogut carregar la pàgina web perquè <ph name="HOST_NAME"/> ha trigat massa a respondre. Pot ser que el lloc web estigui fora de servei o que tingueu problemes amb la connexió a Internet.</translation>
@@ -349,6 +351,7 @@
 <translation id="8959810181433034287">L'usuari supervisat haurà de fer servir aquesta contrasenya per iniciar la sessió, de manera que cal que escolliu una contrasenya segura i que us recordeu de proporcionar-la a l'usuari supervisat.</translation>
 <translation id="5154917547274118687">Memòria</translation>
 <translation id="1493492096534259649">Aquest idioma no es pot utilitzar per a la revisió de l'ortografia</translation>
+<translation id="2103866351350079276">Desactiva l'objecte MediaSource sense prefix. Aquest objecte permet que JavaScript enviï dades multimèdia directament a un element de vídeo.</translation>
 <translation id="6628463337424475685">Cerca de <ph name="ENGINE"/></translation>
 <translation id="6460423884798879930">Activa l'opció per enviar informació d'autenticació addicional al paquet SYN inicial per a un client ja connectat, de manera que permet que s'iniciï l'enviament de dades més ràpidament.</translation>
 <translation id="6563261555270336410">Detalls sobre <ph name="ELEMENTS_HOST_NAME"/></translation>
@@ -1585,6 +1588,7 @@ Assegureu-vos que no es mostri informació confidencial.</translation>
 <translation id="6736329909263487977"><ph name="ISSUED_BY"/> [<ph name="ISSUED_TO"/>]</translation>
 <translation id="8899388739470541164">Vietnamita</translation>
 <translation id="6423064450797205562">Mètriques relacionades amb la velocitat amb què <ph name="SHORT_PRODUCT_NAME"/> realitza les accions requerides</translation>
+<translation id="2048118585307365263">Activa MediaDrm</translation>
 <translation id="4091434297613116013">fulls de paper</translation>
 <translation id="7475671414023905704">URL de contrasenya perduda de Netscape</translation>
 <translation id="3335947283844343239">Torna a obrir la pestanya tancada</translation>
@@ -3118,7 +3122,7 @@ Consulteu el vostre correu electrònic <ph name="ACCOUNT_EMAIL"/> per obtenir m�
 <translation id="5266113311903163739">Error d'importació de l'entitat emissora de certificats</translation>
 <translation id="4240511609794012987">Memòria compartida</translation>
 <translation id="4756388243121344051">&amp;Historial</translation>
-<translation id="5488640658880603382">Esteu segur que voleu suprimir &quot;<ph name="PROFILE_NAME"/>&quot; i totes les dades associades des d'aquest equip? Aquesta acció no es pot desfer.</translation>
+<translation id="5488640658880603382">Esteu segur que voleu suprimir &quot;<ph name="PROFILE_NAME"/>&quot; i totes les dades associades d'aquest ordinador? Aquesta acció no es pot desfer.</translation>
 <translation id="8044899503464538266">Lent</translation>
 <translation id="3789841737615482174">Instal·la</translation>
 <translation id="4320697033624943677">Afegeix usuaris</translation>
@@ -3239,7 +3243,7 @@ Consulteu el vostre correu electrònic <ph name="ACCOUNT_EMAIL"/> per obtenir m�
 <translation id="8813873272012220470">Activa una comprovació en processament de fons que us avisa si detecta incompatibilitats de programari (p. ex., mòduls de tercers que bloquegen el navegador).</translation>
 <translation id="3660234220361471169">No és de confiança</translation>
 <translation id="3504669335572969216">Aquest és un usuari supervisat gestionat per <ph name="CUSTODIAN_EMAIL"/>
-La vostra informació d'inici de sessió al compte ha caducat.</translation>
+La vostra informació d'inici de sessió al compte no està actualitzada.</translation>
 <translation id="2679385451463308372">Imprimeix amb el diàleg del sistema…</translation>
 <translation id="959890390740139744">Corregeix l'ortografia automàticament</translation>
 <translation id="2607991137469694339">Mètode d'introducció en tàmil (fonètic)</translation>
@@ -3831,6 +3835,7 @@ La vostra informació d'inici de sessió al compte ha caducat.</translation>
 <translation id="3672159315667503033"><ph name="URL"/> vol emmagatzemar de forma permanent una gran quantitat de dades a l'equip local.</translation>
 <translation id="373572798843615002">1 pestanya</translation>
 <translation id="4806065163318322702">Canvia a l'entrada de veu</translation>
+<translation id="6190185222845843088">Utilitza els servidors de la zona de proves de Wallet</translation>
 <translation id="3177048931975664371">Feu clic per amagar la contrasenya</translation>
 <translation id="5852137567692933493">Reinicia i utilitza Powerwash</translation>
 <translation id="3092544800441494315">Inclou aquesta captura de pantalla:</translation>
@@ -4098,6 +4103,7 @@ La vostra informació d'inici de sessió al compte ha caducat.</translation>
 <translation id="1639239467298939599">S'està carregant</translation>
 <translation id="5457599981699367932">Navega com a convidat</translation>
 <translation id="6850233365366645553">Per poder restablir el dispositiu amb Powerwash, abans cal reiniciar-lo. Una operació Powerwash restableix la configuració de fàbrica del dispositiu <ph name="IDS_SHORT_PRODUCT_NAME"/> i el deixa com si fos nou.</translation>
+<translation id="4292622557427736684">Activa MediaDrm de manera predeterminada per a les extensions de fitxers multimèdia encriptats.</translation>
 <translation id="1812514023095547458">Selecció de color</translation>
 <translation id="5089363139417863686">Visualitza amb l'aplicació Fitxers</translation>
 <translation id="7047998246166230966">Busca</translation>
@@ -4447,6 +4453,7 @@ La vostra informació d'inici de sessió al compte ha caducat.</translation>
 <translation id="1728442818359004787">Canvia l'aplicació predeterminada...</translation>
 <translation id="7540972813190816353">S'ha produït un error durant la cerca d'actualitzacions: <ph name="ERROR"/></translation>
 <translation id="7664620655576155379">Dispositiu Bluetooth no compatible: &quot;<ph name="DEVICE_NAME"/>&quot;.</translation>
+<translation id="2990212470195050777">Desactiva l'API font multimèdia sense prefix</translation>
 <translation id="2225024820658613551">No hauríeu de continuar, &lt;strong&gt;sobretot&lt;/strong&gt; si és la primera vegada que veieu aquesta advertència en aquest lloc.</translation>
 <translation id="2049639323467105390"><ph name="DOMAIN"/> gestiona aquest dispositiu.</translation>
 <translation id="1932098463447129402">No abans</translation>

@@ -134,6 +134,7 @@
 <translation id="1589055389569595240">Näita õigekirja ja grammatikat</translation>
 <translation id="7017587484910029005">Sisestage allpool asuval pildil olevad tähemärgid.</translation>
 <translation id="9013589315497579992">Halb SSL-kliendi autentimise sertifikaat.</translation>
+<translation id="2085245445866855859">Rakendus manifesti atribuudiga „kiosk_only” tuleb installida ChromeOS-i kioskirežiimis.</translation>
 <translation id="1467999917853307373"><ph name="URL"/> soovib andmed alaliselt teie seadmesse talletada.</translation>
 <translation id="8524066305376229396">Püsitalletusruum:</translation>
 <translation id="7567293639574541773">I&amp;nspekteeri elementi</translation>
@@ -187,6 +188,7 @@
 <translation id="4858913220355269194">Fritz</translation>
 <translation id="2231238007119540260">Serveri sertifikaadi kustutamisel taastate selle serveri tavapärased turvalisuse kontrollid ja selle taotlemine vajab kehtivat sertifikaati.</translation>
 <translation id="9110235431257073974">Veebipoe ja rakenduse Files.app. integratsiooni lubamine</translation>
+<translation id="6489433341782457580">Arendajatele: kasutage liivakasti teenust Walleti API toimingu requestAutocomplete() kutsete jaoks.</translation>
 <translation id="8186609076106987817">Server ei leidnud faili.</translation>
 <translation id="2846816712032308263">Lubab kiire vahelehe/akna sulgemise – käitab vahelehe töötlejat onunload js GUI-st sõltumatult.</translation>
 <translation id="9134410174832249455"><ph name="PRODUCT_NAME"/> ei saanud veebilehte alla laadida, sest hostil <ph name="HOST_NAME"/> võttis vastamine liiga kaua aega. See veebisait võib olla maas või teil on probleeme Interneti-ühendusega.</translation>
@@ -353,6 +355,7 @@
 <translation id="8959810181433034287">Valvatav kasutaja peab kasutama seda parooli sisselogimiseks, nii et valige turvaline parool ja rääkige sellest kindlasti ka valvatava kasutajaga.</translation>
 <translation id="5154917547274118687">Mälu</translation>
 <translation id="1493492096534259649">Selle keele õigekirja ei saa kontrollida</translation>
+<translation id="2103866351350079276">Keelab eesliiteta MediaSource'i objekti. See objekt lubab JavaScriptil saata meediaandmed otse videoelementi.</translation>
 <translation id="6628463337424475685"><ph name="ENGINE"/>'i otsing</translation>
 <translation id="6460423884798879930">Andmete saatmise kiiremaks käivitamiseks tehke valik, mis lubab algses SYN-paketis saata autentimise lisateavet varem ühendatud kliendi jaoks.</translation>
 <translation id="6563261555270336410">Hosti <ph name="ELEMENTS_HOST_NAME"/> üksikasjad</translation>
@@ -1596,6 +1599,7 @@ Veenduge, et te ei avalda tundlikku teavet.</translation>
 <translation id="6736329909263487977"><ph name="ISSUED_BY"/> [<ph name="ISSUED_TO"/>]</translation>
 <translation id="8899388739470541164">vietnami</translation>
 <translation id="6423064450797205562">Mõõdikud, mis on seotud kiirusega, millega rakendus <ph name="SHORT_PRODUCT_NAME"/> taotletud toiminguid teeb</translation>
+<translation id="2048118585307365263">MediaDrmi kasutamine.</translation>
 <translation id="4091434297613116013">paberilehed</translation>
 <translation id="7475671414023905704">Netscape'i kaotatud parooli URL</translation>
 <translation id="3335947283844343239">Ava uuesti suletud vaheleht</translation>
@@ -3843,6 +3847,7 @@ Teie konto sisselogimisandmed on aegunud.</translation>
 <translation id="3672159315667503033"><ph name="URL"/> tahab suured andmed alaliselt teie kohalikku arvutisse talletada.</translation>
 <translation id="373572798843615002">1 vahekaart</translation>
 <translation id="4806065163318322702">Kõnesisestus sisse/välja</translation>
+<translation id="6190185222845843088">Walleti liivakasti serverite kasutamine</translation>
 <translation id="3177048931975664371">Parooli peitmiseks klõpsake</translation>
 <translation id="5852137567692933493">Taaskäivita ja tee Powerwash</translation>
 <translation id="3092544800441494315">Lisa see ekraanipilt:</translation>
@@ -4111,6 +4116,7 @@ Teie konto sisselogimisandmed on aegunud.</translation>
 <translation id="1639239467298939599">Laadimine</translation>
 <translation id="5457599981699367932">Sirvi külalisena</translation>
 <translation id="6850233365366645553">Enne seadme lähtestamist funktsiooniga Powerwash on vaja seade taaskäivitada. Pärast Powerwashiga lähtestamist on rakenduse <ph name="IDS_SHORT_PRODUCT_NAME"/> seade just nagu uus.</translation>
+<translation id="4292622557427736684">Lubab krüpteeritud meedialaienduste jaoks vaikimisi funktsiooni MediaDrm.</translation>
 <translation id="1812514023095547458">Värvi valimine</translation>
 <translation id="5089363139417863686">Kuva rakendusega Failid</translation>
 <translation id="7047998246166230966">Kursor</translation>
@@ -4461,6 +4467,7 @@ Teie konto sisselogimisandmed on aegunud.</translation>
 <translation id="1728442818359004787">Muuda vaikerakendust ...</translation>
 <translation id="7540972813190816353">Värskenduste otsimisel ilmnes viga: <ph name="ERROR"/></translation>
 <translation id="7664620655576155379">Toetamata Bluetooth-seade: „<ph name="DEVICE_NAME"/>”.</translation>
+<translation id="2990212470195050777">Eesliiteta meediaallika API keelamine.</translation>
 <translation id="2225024820658613551">Ärge jätkake, &lt;strong&gt;eriti&lt;/strong&gt; juhul, kui te ei ole sel saidil varem seda hoiatust näinud.</translation>
 <translation id="2049639323467105390">Seadet haldab <ph name="DOMAIN"/>.</translation>
 <translation id="1932098463447129402">Mitte enne</translation>

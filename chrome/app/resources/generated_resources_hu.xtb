@@ -134,6 +134,7 @@
 <translation id="1589055389569595240">Helyesírás és nyelvhelyesség megjelenítése</translation>
 <translation id="7017587484910029005">Gépelje be az alábbi képen látható karaktereket.</translation>
 <translation id="9013589315497579992">Rossz SSL-ügyfélhitelesítési tanúsítvány.</translation>
+<translation id="2085245445866855859">A „kiosk_only” jegyzékattribútummal rendelkező alkalmazást kioszk módban kell telepíteni a ChromeOS rendszeren.</translation>
 <translation id="1467999917853307373">A(z) <ph name="URL"/> webhely állandó jelleggel adatokat akar tárolni az eszközén.</translation>
 <translation id="8524066305376229396">Állandó tárhely:</translation>
 <translation id="7567293639574541773">E&amp;lem megtekintése</translation>
@@ -187,6 +188,7 @@
 <translation id="4858913220355269194">Foci</translation>
 <translation id="2231238007119540260">Ha töröl egy szervertanúsítványt, akkor annál a szervernél visszaállítja a hagyományos biztonsági ellenőrzéseket, és elvárja, hogy érvényes tanúsítványt használjon.</translation>
 <translation id="9110235431257073974">Az Internetes áruház és a Files.app integrálásának engedélyezése.</translation>
+<translation id="6489433341782457580">Fejlesztők figyelmébe: requestAutocomplete() esetében használja a Wallet API-hívásokhoz tartozó tesztkörnyezeti szolgáltatást.</translation>
 <translation id="8186609076106987817">A szerver nem találta a fájlt.</translation>
 <translation id="2846816712032308263">A lapok/ablakok gyors bezárásának engedélyezése – egy lap kiürítési js-kezelőjének futtatása a GUI-tól függetlenül.</translation>
 <translation id="9134410174832249455">A <ph name="PRODUCT_NAME"/> nem tudta betölteni a weblapot, mert a(z) <ph name="HOST_NAME"/> túl későn válaszolt. Lehet, hogy a webhely leállt, vagy lehet, hogy az internetkapcsolatával vannak problémák.</translation>
@@ -346,6 +348,7 @@
 <translation id="8959810181433034287">A felügyelt felhasználónak ezt a jelszót kell használnia majd a bejelentkezéshez, úgyhogy biztonságos jelszót válasszon, és ne feledje el megbeszélni vele.</translation>
 <translation id="5154917547274118687">Memória</translation>
 <translation id="1493492096534259649">Ezen a nyelven nem használhatja a helyesírás-ellenőrzőt</translation>
+<translation id="2103866351350079276">Az előtag nélküli MediaSource objektum letiltása. Az objektum lehetővé teszi, hogy a JavaScript közvetlenül küldjön médiaadatokat a videoelemeknek.</translation>
 <translation id="6628463337424475685">Keresés: <ph name="ENGINE"/></translation>
 <translation id="6460423884798879930">Lehetővé teszi plusz hitelesítési információk küldését a kezdeti SYN csomagban korábban kapcsolódott ügyfelek esetén, amivel az adatküldés gyorsabb elindítása válik lehetővé.</translation>
 <translation id="6563261555270336410"><ph name="ELEMENTS_HOST_NAME"/> részletei</translation>
@@ -1578,6 +1581,7 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="6736329909263487977"><ph name="ISSUED_BY"/> [<ph name="ISSUED_TO"/>]</translation>
 <translation id="8899388739470541164">Vietnami</translation>
 <translation id="6423064450797205562">Annak mérőszámai, hogy a(z) <ph name="SHORT_PRODUCT_NAME"/> milyen sebességgel végzi el a kért műveleteket</translation>
+<translation id="2048118585307365263">A MediaDrm engedélyezése.</translation>
 <translation id="4091434297613116013">papírlap</translation>
 <translation id="7475671414023905704">Netscape - elveszett jelszó URL</translation>
 <translation id="3335947283844343239">Bezárt lap megnyitása</translation>
@@ -3812,6 +3816,7 @@ Az Ön fiókjának bejelentkezési adatai elavultak.</translation>
 <translation id="3672159315667503033">A(z) <ph name="URL"/> webhely állandó, nagy méretű adatokat akar tárolni a helyi számítógépen.</translation>
 <translation id="373572798843615002">1 lap</translation>
 <translation id="4806065163318322702">Hangbevitel be-/kikapcsolása</translation>
+<translation id="6190185222845843088">Wallet tesztkörnyezeti szerverek használata</translation>
 <translation id="3177048931975664371">Kattintson ide a jelszó elrejtéséhez</translation>
 <translation id="5852137567692933493">Újraindítás és Powerwash</translation>
 <translation id="3092544800441494315">A következő képernyőkép mellékelése:</translation>
@@ -4078,6 +4083,7 @@ Az Ön fiókjának bejelentkezési adatai elavultak.</translation>
 <translation id="1639239467298939599">Betöltés</translation>
 <translation id="5457599981699367932">Böngészés vendégként</translation>
 <translation id="6850233365366645553">Újra kell indítania rendszerét, mielőtt a Powerwash segítségével visszaállíthatná azt. A Powerwash alaphelyzetbe állítja <ph name="IDS_SHORT_PRODUCT_NAME"/> eszközét, mintha csak új lenne.</translation>
+<translation id="4292622557427736684">A MediaDrm alapértelmezett engedélyezése a titkosított médiabővítményekhez (Encrypted Media Extension, EME).</translation>
 <translation id="1812514023095547458">Szín kiválasztása</translation>
 <translation id="5089363139417863686">Megtekintés a Fájlok alkalmazással</translation>
 <translation id="7047998246166230966">Mutató</translation>
@@ -4428,6 +4434,7 @@ Az Ön fiókjának bejelentkezési adatai elavultak.</translation>
 <translation id="1728442818359004787">Alapértelmezett alkalmazás módosítása...</translation>
 <translation id="7540972813190816353">Hiba történt a frissítések keresése közben: <ph name="ERROR"/></translation>
 <translation id="7664620655576155379">Nem támogatott Bluetooth-eszköz: „<ph name="DEVICE_NAME"/>”.</translation>
+<translation id="2990212470195050777">Az előtag nélküli Media Source API letiltása.</translation>
 <translation id="2225024820658613551">Javasoljuk, hogy ne menjen tovább, &lt;strong&gt;különösen&lt;/strong&gt; akkor, ha ezt a figyelmeztetést még nem látta ezen a webhelyen.</translation>
 <translation id="2049639323467105390">Ezt az eszközt a(z) <ph name="DOMAIN"/> domain kezeli.</translation>
 <translation id="1932098463447129402">Ez előtt nem:</translation>

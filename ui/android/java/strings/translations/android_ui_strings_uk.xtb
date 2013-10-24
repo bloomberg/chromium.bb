@@ -2,6 +2,12 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="uk">
 <translation id="7658239707568436148">Скасувати</translation>
+<translation id="9068849894565669697">Вибрати колір</translation>
+<translation id="793640675459356075">Не вдалося відкрити файл</translation>
 <translation id="6727102863431372879">Встановити</translation>
+<translation id="6315516427814392808">Не вдається закінчити попередню операцію через нестачу пам’яті</translation>
 <translation id="6042308850641462728">Більше</translation>
+<translation id="7535087603100972091">Яскравість</translation>
+<translation id="8889402386540077796">Тон</translation>
+<translation id="3329013043687509092">Насиченість</translation>
 </translationbundle>

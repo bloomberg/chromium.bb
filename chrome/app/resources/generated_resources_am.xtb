@@ -134,6 +134,7 @@
 <translation id="1589055389569595240">እረማ ሆሄ እና ሰዋስው አሳይ</translation>
 <translation id="7017587484910029005">ከታች በስዕሉ ላይ የሚያዩዋቸውን ቁምፊዎች ይተይቡ።</translation>
 <translation id="9013589315497579992">ጥሩ ያልሆነ SSL የተገልጋይ ማረጋገጫ ሰርቲፊኬት።</translation>
+<translation id="2085245445866855859">የ«kiosk_only» አንጸባራቂ አይነታ ያለው መተግበሪያ በChromeOS ኪዮስክ ሁነታ ላይ መጫን አለበት።</translation>
 <translation id="1467999917853307373"><ph name="URL"/> ውሂብ እስከ መጨረሻው በእርስዎ መሣሪያ ላይ ሊያከማች ይፈልጋል።</translation>
 <translation id="8524066305376229396">የቋሚነት ማከማቻ፦</translation>
 <translation id="7567293639574541773">አባል መ&amp;ርምር</translation>
@@ -186,6 +187,7 @@
 <translation id="4858913220355269194">Fritz</translation>
 <translation id="2231238007119540260">የአገልጋይ እውቅና ማረጋገጫ ከሰረዙ የዚያ አገልጋይ መደበኛው የደህንነት ማረጋገጫዎችን ይመልሱና የሚሰራ የእውቅና ማረጋገጫ እንዲጠቀሙ ይፈልጉበታል።</translation>
 <translation id="9110235431257073974">የድር ማከማቻ እና Files.app ውህደትን ያንቁ።</translation>
+<translation id="6489433341782457580">ለገንቢዎች፦ ለrequestAutocomplete() Wallet ኤ ፒ አይ ጥሪዎች የማጠሪያ አገልግሎቱን ተጠቀሙ።</translation>
 <translation id="8186609076106987817">አገልጋዩ ፋይሉን ሊያገኝ አልቻለም።</translation>
 <translation id="2846816712032308263">ፈጣን የትር/መስኮት መዝጋትን አንቃ - የትሩን onunload js መቆጣጠሪያ ከGUI በተናጠል ያስኬዳል።</translation>
 <translation id="9134410174832249455"><ph name="HOST_NAME"/>
@@ -357,6 +359,7 @@
 <translation id="8959810181433034287">ክትትል የሚደረግበት ተጠቃሚ በመለያ ለመግባት ይህን የይለፍ ቃል መጠቀም ይኖርበታል፣ ስለዚህ የይለፍ ቃል በጥንቃቄ ይምረጡና ክትትል ከሚደረግበት ተጠቃሚ ጋር መነጋገርዎን ያስታውሱ።</translation>
 <translation id="5154917547274118687">ማህደረ ትውስታ</translation>
 <translation id="1493492096534259649">ይህ ቋንቋ ለፊደል ማረም መጠቀም አይቻልም</translation>
+<translation id="2103866351350079276">ቅጥያ የሌለው የMediaSource ነገር ያሰናክሉ። ይህ ነገር ጃቫስክሪፕት የሚዲያ ውሂብ በቀጥታ ለአንድ የቪዲዮ አባል እንዲልክ ያስችለዋል።</translation>
 <translation id="6628463337424475685"><ph name="ENGINE"/> ፍለጋ</translation>
 <translation id="6460423884798879930">በመጀመሪያው የSYN ጥቅል ውስጥ ከዚህ ቀደም ለተገናኘ ደንበኛ ትርፍ የማረጋገጫ መረጃ የመላክ አማራጩን ያንቁ፣ ይህም የበለጠ ፈጣን የውሂብ መላክ መጀመር ያስችላል።</translation>
 <translation id="6563261555270336410">ስለ<ph name="ELEMENTS_HOST_NAME"/> ዝርዝሮች</translation>
@@ -1609,6 +1612,7 @@ nil</translation>
 <translation id="6736329909263487977"><ph name="ISSUED_BY"/> [<ph name="ISSUED_TO"/>]</translation>
 <translation id="8899388739470541164">ቪትናምኛ</translation>
 <translation id="6423064450797205562"><ph name="SHORT_PRODUCT_NAME"/> የተጠየቁ እርምጃዎችን የሚፈጽምበት የፍጥነት ልኬቶች</translation>
+<translation id="2048118585307365263">MediaDrmን ያንቁ።</translation>
 <translation id="4091434297613116013">የወረቀት ሉኮች</translation>
 <translation id="7475671414023905704">የNetscape የጠፋ የይለፍ ቃል URL</translation>
 <translation id="3335947283844343239">የተዘጋውን ትር ዳግም ክፈት</translation>
@@ -2765,7 +2769,7 @@ nil</translation>
 <translation id="1653828314016431939">እሺ - አሁን ዳግም አስጀምር</translation>
 <translation id="7364796246159120393">ፋይል ምረጥ</translation>
 <translation id="6585283250473596934">ወደ ይፋዊ ክፍለ ጊዜ በመግባት ላይ።</translation>
-<translation id="7870278953869613713">ውይይት ይጀምሩ</translation>
+<translation id="7870278953869613713">Hangout ይጀምሩ</translation>
 <translation id="8915370057835397490">የጥቆማ አስተያየት በመጫን ላይ</translation>
 <translation id="1511623662787566703">እንደ <ph name="USER_EMAIL_ADDRESS"/> ሆነው ገብተዋል። ማመሳሰል በGoogle ዳሽቦርዱ በኩል እንዲቆም ተደርጓል።</translation>
 <translation id="4352333825734680558">ውይ! አዲሱ ክትትል የሚደረግበት ተጠቃሚ ለፈጠር አልቻለም። እባክዎ የአውታረ መረብዎን ግንኙነት ይፈትሹና ቆይተው እንደገና ይሞክሩ።</translation>
@@ -3883,6 +3887,7 @@ nil</translation>
 <translation id="3672159315667503033"><ph name="URL"/> ትልቅ ውሂብ በአካባቢያዊ ኮምፒውተርዎ ላይ እስከመጨረሻው ሊያከማች ይፈልጋል።</translation>
 <translation id="373572798843615002">1 ትር</translation>
 <translation id="4806065163318322702">የንግግር ግቤት ይቀያይሩ</translation>
+<translation id="6190185222845843088">የWallet ማጠሪያ አገልጋዮችን ይጠቀሙ</translation>
 <translation id="3177048931975664371">የይለፍ ቃልን ለመደበቅ ጠቅ ያድርጉ</translation>
 <translation id="5852137567692933493">ዳግም አስጀምር እና ፓወርዋሽ አድርግ</translation>
 <translation id="3092544800441494315">ይህን ቅጽበታዊ ገጽ እይታን ያካትቱ፦</translation>
@@ -4152,6 +4157,7 @@ nil</translation>
 <translation id="1639239467298939599">በመጫን ላይ</translation>
 <translation id="5457599981699367932">እንደ እንግዳ ያስሱ</translation>
 <translation id="6850233365366645553">መሣሪያዎ በPowerwash ዳግም መጀመር ከመቻሉ በፊት እንደገና ማስጀመር ያስፈልጋል። Powerwash የእርስዎን <ph name="IDS_SHORT_PRODUCT_NAME"/> መሣሪያ ልክ እንደ አዲስ ዳግም ያስጀምረዋል።</translation>
+<translation id="4292622557427736684">MediaDrm በነባሪነት ለተመሰጠሩ የሚዲያ ቅጥያዎች ያንቁ።</translation>
 <translation id="1812514023095547458">ቀለም ይምረጡ</translation>
 <translation id="5089363139417863686">በፋይሎች መተግበሪያው ይመልከቱ</translation>
 <translation id="7047998246166230966">ጠቋሚ</translation>
@@ -4503,6 +4509,7 @@ nil</translation>
 <translation id="1728442818359004787">ነባሪ መተግበሪያ ቀይር...</translation>
 <translation id="7540972813190816353">ዝማኔዎችን በመፈለግ ላይ ሳለ ስህተት ተከስቷል፦ <ph name="ERROR"/></translation>
 <translation id="7664620655576155379">የማይደገፍ የብሉቱዝ መሣሪያ፦ «<ph name="DEVICE_NAME"/>»።</translation>
+<translation id="2990212470195050777">ቅጥያ የሌለው የሚዲያ ምንጭ ኤ ፒ አይ ያሰናክሉ።</translation>
 <translation id="2225024820658613551">መቀጠል የለብዎትም፣ &lt;strong&gt;በተለይ&lt;/strong&gt; ከዚህ በፊት ለዚህ ጣቢያ ማስጠንቀቂያ አይተው የማያውቁ ከሆኑ።</translation>
 <translation id="2049639323467105390">ይህ መሣሪያ በ<ph name="DOMAIN"/> ነው የሚቀናበረው።</translation>
 <translation id="1932098463447129402">በፊት ያልሆነ</translation>

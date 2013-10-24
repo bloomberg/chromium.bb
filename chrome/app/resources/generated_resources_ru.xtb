@@ -133,6 +133,7 @@
 <translation id="1589055389569595240">Показать правописание и грамматику</translation>
 <translation id="7017587484910029005">Введите символы, которые показаны на картинке ниже.</translation>
 <translation id="9013589315497579992">Недопустимый сертификат SSL для аутентификации клиента.</translation>
+<translation id="2085245445866855859">Приложения, у которых в манифесте есть атрибут kiosk_only, можно устанавливать только в режиме информационного киоска.</translation>
 <translation id="1467999917853307373">От <ph name="URL"/> поступил запрос на постоянное хранение данных на вашем мобильном устройстве.</translation>
 <translation id="8524066305376229396">Папка для постоянного хранения:</translation>
 <translation id="7567293639574541773">П&amp;росмотр кода элемента</translation>
@@ -186,6 +187,7 @@
 <translation id="4858913220355269194">Футбол</translation>
 <translation id="2231238007119540260">Если удалить сертификат сервера, восстановится обычная проверка безопасности сервера и будет необходимо использовать допустимый сертификат.</translation>
 <translation id="9110235431257073974">Включить интеграцию Интернет-магазина и приложения &quot;Файлы&quot;.</translation>
+<translation id="6489433341782457580">Разработчикам: для обращения к методу requestAutocomplete() API Кошелька используйте тестовую среду.</translation>
 <translation id="8186609076106987817">Этот файл отсутствует на сервере.</translation>
 <translation id="2846816712032308263">Быстрое  закрытие окон и вкладок – JS-обработчик &quot;onunload&quot; для вкладки выполняется независимо от интерфейса пользователя.</translation>
 <translation id="9134410174832249455"><ph name="PRODUCT_NAME"/> не удалось загрузить веб-страницу из-за слишком долгого ожидания ответа от <ph name="HOST_NAME"/>. Сайт недоступен или отсутствует интернет-подключение.</translation>
@@ -345,6 +347,7 @@
 <translation id="8959810181433034287">Этот пароль будет использоваться контролируемым пользователем для входа. Выберите надежный пароль и сообщите его пользователю.</translation>
 <translation id="5154917547274118687">Память</translation>
 <translation id="1493492096534259649">Этот язык нельзя использовать для проверки правописания</translation>
+<translation id="2103866351350079276">Отключить объект MediaSource, в котором не используются префиксы. С помощью этого объекта JavaScript может отправлять медиаданные непосредственно в элемент &lt;video&gt;.</translation>
 <translation id="6628463337424475685">Поиск <ph name="ENGINE"/></translation>
 <translation id="6460423884798879930">Обеспечивает отправку дополнительных данных аутентификации в исходном SYN-пакете подключенного клиента, благодаря чему ускоряется обмен данными.</translation>
 <translation id="6563261555270336410">Подробные сведения о ресурсе <ph name="ELEMENTS_HOST_NAME"/></translation>
@@ -1582,6 +1585,7 @@
 <translation id="6736329909263487977"><ph name="ISSUED_BY"/> [<ph name="ISSUED_TO"/>]</translation>
 <translation id="8899388739470541164">Вьетнамская</translation>
 <translation id="6423064450797205562">Показатели скорости выполнения требуемых действий в <ph name="SHORT_PRODUCT_NAME"/></translation>
+<translation id="2048118585307365263">Включить MediaDrm</translation>
 <translation id="4091434297613116013">лист. бумаги</translation>
 <translation id="7475671414023905704">URL потерянных паролей Netscape</translation>
 <translation id="3335947283844343239">Открыть закрытую вкладку</translation>
@@ -3811,6 +3815,7 @@
 <translation id="3672159315667503033"><ph name="URL"/> запрашивает постоянное хранение данных на вашем компьютере.</translation>
 <translation id="373572798843615002">1 вкладка</translation>
 <translation id="4806065163318322702">Голосовой ввод</translation>
+<translation id="6190185222845843088">Использовать тестовую среду для Кошелька</translation>
 <translation id="3177048931975664371">Нажмите, чтобы скрыть пароль</translation>
 <translation id="5852137567692933493">Перезапуск и Powerwash</translation>
 <translation id="3092544800441494315">Включить этот снимок экрана:</translation>
@@ -4077,6 +4082,7 @@
 <translation id="1639239467298939599">Загрузка</translation>
 <translation id="5457599981699367932">Войти в гостевой режим</translation>
 <translation id="6850233365366645553">Перед запуском процесса Powerwash необходимо перезагрузить устройство. После его завершения на вашем устройстве <ph name="IDS_SHORT_PRODUCT_NAME"/> будут восстановлены заводские настройки.</translation>
+<translation id="4292622557427736684">Включить MediaDrm по умолчанию для зашифрованного контента</translation>
 <translation id="1812514023095547458">Выберите цвет</translation>
 <translation id="5089363139417863686">Просмотреть в приложении &quot;Файлы&quot;</translation>
 <translation id="7047998246166230966">Указатель</translation>
@@ -4426,6 +4432,7 @@
 <translation id="1728442818359004787">Изменить приложение по умолчанию...</translation>
 <translation id="7540972813190816353">При проверке обновлений произошла ошибка: <ph name="ERROR"/></translation>
 <translation id="7664620655576155379">Устройство Bluetooth &quot;<ph name="DEVICE_NAME"/>&quot; не поддерживается.</translation>
+<translation id="2990212470195050777">Отключить API Media Source без префикса</translation>
 <translation id="2225024820658613551">Не стоит продолжать, &lt;strong&gt;особенно&lt;/strong&gt; если ранее вы не видели этого предупреждения для данного сайта.</translation>
 <translation id="2049639323467105390">Это устройство находится в домене <ph name="DOMAIN"/>.</translation>
 <translation id="1932098463447129402">Не ранее</translation>

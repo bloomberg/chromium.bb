@@ -3,9 +3,24 @@
 <translationbundle lang="lv">
 <translation id="1491151370853475546">Atkārtoti ielādēt šo lapu</translation>
 <translation id="7658239707568436148">Atcelt</translation>
+<translation id="6458785801851713928">Jūsu domēnam nav pieejama sinhronizācija.</translation>
 <translation id="2731700343119398978">Lūdzu, uzgaidiet...</translation>
+<translation id="3358663646935160692">Šis konts tiek pārvaldīts domēnā <ph name="DOMAIN_NAME"/>.
+
+Jūs pierakstāties, izmantojot pārvaldītu kontu, un ļaujat šī konta administratoram pārvaldīt jūsu Chrome profilu. Jūsu Chrome dati tiks neatgriezeniski saistīti ar šo kontu. Noņemot saiti no šī konta, tiks dzēsti lokālie Chrome dati.</translation>
+<translation id="1623104350909869708">Neļaut šai lapai veidot papildu dialoglodziņus</translation>
+<translation id="3896036286668839683">Sertifikāta skatītājs</translation>
+<translation id="8583805026567836021">Konta datu dzēšana</translation>
+<translation id="4170011742729630528">Pakalpojums nav pieejams. Vēlāk mēģiniet vēlreiz.</translation>
+<translation id="8627706565932943526">Sinhronizācijas kļūda.</translation>
+<translation id="3136378934686431938">Lūdzu, atjauniniet pierakstīšanās informāciju.</translation>
+<translation id="4510973599275542560">Neielādēt atkārtoti</translation>
 <translation id="9154176715500758432">Palikt šajā lapā</translation>
+<translation id="7063006564040364415">Nevarēja izveidot savienojumu ar sinhronizācijas serveri.</translation>
 <translation id="6512448926095770873">Pamest šo lapu</translation>
+<translation id="7947953824732555851">Pieņemt un pierakst.</translation>
 <translation id="6040143037577758943">Aizvērt</translation>
+<translation id="5032574515228824816">Uzvedne</translation>
 <translation id="6965382102122355670">Labi</translation>
+<translation id="7495038789730067783">Pierakstīšanās apstiprinājums</translation>
 </translationbundle>

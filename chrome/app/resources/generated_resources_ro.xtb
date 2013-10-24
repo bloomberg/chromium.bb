@@ -133,6 +133,7 @@
 <translation id="1589055389569595240">Afișați verificarea ortografiei și a gramaticii</translation>
 <translation id="7017587484910029005">Introduceți caracterele din imaginea de mai jos.</translation>
 <translation id="9013589315497579992">Certificat de autentificare client SSL nevalid.</translation>
+<translation id="2085245445866855859">Aplicația cu atributul „kiosk_only” din manifest trebuie să fie instalată în modul chioșc pentru sistemul de operare Chrome.</translation>
 <translation id="1467999917853307373"><ph name="URL"/> dorește să stocheze permanent date pe dispozitivul dvs.</translation>
 <translation id="8524066305376229396">Stocare persistentă:</translation>
 <translation id="7567293639574541773">I&amp;nspectați elementul</translation>
@@ -186,6 +187,7 @@
 <translation id="4858913220355269194">Jucător</translation>
 <translation id="2231238007119540260">Dacă ștergeți un certificat de server, restabiliți verificările de securitate obișnuite pentru serverul respectiv și solicitați utilizarea unui certificat valid.</translation>
 <translation id="9110235431257073974">Activați integrarea Magazinului web și a aplicației Fișiere.</translation>
+<translation id="6489433341782457580">Pentru dezvoltatori: utilizați mediul de testare securizat pentru apelările rutinei requestAutocomplete() din API-ul Wallet.</translation>
 <translation id="8186609076106987817">Serverul nu a putut găsi fișierul.</translation>
 <translation id="2846816712032308263">Activează închiderea rapidă a filei/ferestrei – rulează un handler js onunload al filei independent de GUI.</translation>
 <translation id="9134410174832249455"><ph name="PRODUCT_NAME"/> nu a putut încărca pagina web, deoarece <ph name="HOST_NAME"/> a avut nevoie de prea mult timp pentru a răspunde. Este posibil ca site-ul să nu funcționeze sau să aveți probleme cu conexiunea la internet.</translation>
@@ -356,6 +358,7 @@
 <translation id="8959810181433034287">Utilizatorul monitorizat va trebui să utilizeze această parolă pentru a se conecta. Prin urmare, alegeți o parolă sigură și nu uitați să discutați despre aceasta cu utilizatorul monitorizat.</translation>
 <translation id="5154917547274118687">Memorie</translation>
 <translation id="1493492096534259649">Această limbă nu poate fi utilizată pentru o verificare ortografică</translation>
+<translation id="2103866351350079276">Dezactivați obiectul fără prefix MediaSource. Acest obiect permite ca JavaScript să trimită date media direct către un element video.</translation>
 <translation id="6628463337424475685">Căutare <ph name="ENGINE"/></translation>
 <translation id="6460423884798879930">Activați opțiunea pentru a trimite informații de autentificare suplimentare în pachetul SYN inițial pentru un client conectat anterior, ceea ce permite o pornire mai rapidă a trimiterii datelor.</translation>
 <translation id="6563261555270336410">Detalii despre <ph name="ELEMENTS_HOST_NAME"/></translation>
@@ -1593,6 +1596,7 @@ Asigurați-vă că nu expuneți informații confidențiale.</translation>
 <translation id="6736329909263487977"><ph name="ISSUED_BY"/> [<ph name="ISSUED_TO"/>]</translation>
 <translation id="8899388739470541164">Vietnameză</translation>
 <translation id="6423064450797205562">Statistici legate de viteza cu care <ph name="SHORT_PRODUCT_NAME"/> efectuează acțiunile solicitate</translation>
+<translation id="2048118585307365263">Activați MediaDrm.</translation>
 <translation id="4091434297613116013">foi de hârtie</translation>
 <translation id="7475671414023905704">Adresă URL pentru parolă pierdută Netscape</translation>
 <translation id="3335947283844343239">Redeschideți fila închisă</translation>
@@ -3858,6 +3862,7 @@ Detaliile dvs. de conectare la cont sunt învechite.</translation>
 <translation id="3672159315667503033"><ph name="URL"/> vrea să stocheze în mod permanent un volum mare de date pe computerul dvs. local.</translation>
 <translation id="373572798843615002">O filă</translation>
 <translation id="4806065163318322702">Comutați introducerea prin vorbire</translation>
+<translation id="6190185222845843088">Utilizați serverele mediului de testare securizat Wallet</translation>
 <translation id="3177048931975664371">Faceți clic pentru a ascunde parola</translation>
 <translation id="5852137567692933493">Reporniți și efectuați Powerwash</translation>
 <translation id="3092544800441494315">Includeți această captură de ecran:</translation>
@@ -4125,6 +4130,7 @@ Detaliile dvs. de conectare la cont sunt învechite.</translation>
 <translation id="1639239467298939599">Se încarcă</translation>
 <translation id="5457599981699367932">Răsfoiți în calitate de invitat</translation>
 <translation id="6850233365366645553">Înainte ca dispozitivul să poată fi resetat utilizând Powerwash, este necesară repornirea acestuia. Utilizarea funcției Powerwash vă resetează dispozitivul <ph name="IDS_SHORT_PRODUCT_NAME"/> la setările din fabrică.</translation>
+<translation id="4292622557427736684">Activați MediaDrm în mod prestabilit pentru Encrypted Media Extensions.</translation>
 <translation id="1812514023095547458">Selectați o culoare</translation>
 <translation id="5089363139417863686">Afișați utilizând aplicația Fișiere</translation>
 <translation id="7047998246166230966">Cursor</translation>
@@ -4474,6 +4480,7 @@ Detaliile dvs. de conectare la cont sunt învechite.</translation>
 <translation id="1728442818359004787">Schimbați aplicația prestabilită...</translation>
 <translation id="7540972813190816353">A avut loc o eroare la verificarea existenței unor actualizări: <ph name="ERROR"/></translation>
 <translation id="7664620655576155379">Dispozitiv Bluetooth neacceptat: „<ph name="DEVICE_NAME"/>”.</translation>
+<translation id="2990212470195050777">Dezactivați API-ul Media Source fără prefix.</translation>
 <translation id="2225024820658613551">Vă recomandăm să nu continuați, &lt;strong&gt;mai ales&lt;/strong&gt; dacă nu ați mai văzut niciodată acest avertisment pentru acest site.</translation>
 <translation id="2049639323467105390">Acest dispozitiv este gestionat de <ph name="DOMAIN"/>.</translation>
 <translation id="1932098463447129402">Nu înainte de</translation>

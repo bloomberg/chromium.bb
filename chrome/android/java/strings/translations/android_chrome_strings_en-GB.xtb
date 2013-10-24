@@ -3,9 +3,24 @@
 <translationbundle lang="en-GB">
 <translation id="1491151370853475546">Reload this Page</translation>
 <translation id="7658239707568436148">Cancel</translation>
+<translation id="6458785801851713928">Sync is not available for your domain.</translation>
 <translation id="2731700343119398978">Please wait...</translation>
+<translation id="3358663646935160692">This account is managed by <ph name="DOMAIN_NAME"/>.
+
+You are signing in with a managed account and giving its administrator control over your Chrome profile. Your Chrome data will become permanently tied to this account. Disconnecting from this account will delete the local Chrome data.</translation>
+<translation id="1623104350909869708">Prevent this page from creating additional dialogues</translation>
+<translation id="3896036286668839683">Certificate Viewer</translation>
+<translation id="8583805026567836021">Clearing account data</translation>
+<translation id="4170011742729630528">The service is not available; try again later.</translation>
+<translation id="8627706565932943526">Sync error</translation>
+<translation id="3136378934686431938">Please update your sign in details.</translation>
+<translation id="4510973599275542560">Don't reload</translation>
 <translation id="9154176715500758432">Stay on this Page</translation>
+<translation id="7063006564040364415">Could not connect to the sync server.</translation>
 <translation id="6512448926095770873">Leave this Page</translation>
+<translation id="7947953824732555851">Accept and sign in</translation>
 <translation id="6040143037577758943">Close</translation>
+<translation id="5032574515228824816">Prompt</translation>
 <translation id="6965382102122355670">OK</translation>
+<translation id="7495038789730067783">Confirm sign in</translation>
 </translationbundle>

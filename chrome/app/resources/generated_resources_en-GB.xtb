@@ -134,6 +134,7 @@
 <translation id="1589055389569595240">Show Spelling and Grammar</translation>
 <translation id="7017587484910029005">Type the characters that you see in the picture below.</translation>
 <translation id="9013589315497579992">Bad SSL client-authentication certificate.</translation>
+<translation id="2085245445866855859">App with 'kiosk_only' manifest attribute must be installed in ChromeOS kiosk mode.</translation>
 <translation id="1467999917853307373"><ph name="URL"/> wants to permanently store data on your device.</translation>
 <translation id="8524066305376229396">Persistent Storage:</translation>
 <translation id="7567293639574541773">I&amp;nspect element</translation>
@@ -187,6 +188,7 @@
 <translation id="4858913220355269194">Footy</translation>
 <translation id="2231238007119540260">If you delete a server certificate, you restore the usual security checks for that server and require that it uses a valid certificate.</translation>
 <translation id="9110235431257073974">Enable the integration of Webstore and Files.app.</translation>
+<translation id="6489433341782457580">For developers: use the sandbox service for Wallet API calls for requestAutocomplete().</translation>
 <translation id="8186609076106987817">The server could not find the file.</translation>
 <translation id="2846816712032308263">Enables fast tab/window closing - runs a tab's onunload js handler independently of the GUI.</translation>
 <translation id="9134410174832249455"><ph name="PRODUCT_NAME"/> could not load the web page because <ph name="HOST_NAME"/> took too long to respond. The website may be down or you may be experiencing issues with your Internet connection.</translation>
@@ -357,6 +359,7 @@
 <translation id="8959810181433034287">The supervised user will need to use this password to sign in, so choose a safe password and remember to discuss it with the supervised user.</translation>
 <translation id="5154917547274118687">Memory</translation>
 <translation id="1493492096534259649">This language cannot be used for spell checking</translation>
+<translation id="2103866351350079276">Disable the unprefixed MediaSource object. This object allows JavaScript to send media data directly to a video element.</translation>
 <translation id="6628463337424475685"><ph name="ENGINE"/> Search</translation>
 <translation id="6460423884798879930">Enable the option to send extra authentication information in the initial SYN packet for a previously connected client, allowing faster data send start.</translation>
 <translation id="6563261555270336410">Details about <ph name="ELEMENTS_HOST_NAME"/></translation>
@@ -1600,6 +1603,7 @@ Make sure you do not expose any sensitive information.</translation>
 <translation id="6736329909263487977"><ph name="ISSUED_BY"/> [<ph name="ISSUED_TO"/>]</translation>
 <translation id="8899388739470541164">Vietnamese</translation>
 <translation id="6423064450797205562">Metrics relating to the speed with which <ph name="SHORT_PRODUCT_NAME"/> performs requested actions</translation>
+<translation id="2048118585307365263">Enable MediaDrm.</translation>
 <translation id="4091434297613116013">sheets of paper</translation>
 <translation id="7475671414023905704">Netscape Lost Password URL</translation>
 <translation id="3335947283844343239">Re-open Closed Tab</translation>
@@ -3848,6 +3852,7 @@ Your account sign-in details are out of date.</translation>
 <translation id="3672159315667503033"><ph name="URL"/> wants to permanently store large data on your local computer.</translation>
 <translation id="373572798843615002">1 Tab</translation>
 <translation id="4806065163318322702">Toggle speech input</translation>
+<translation id="6190185222845843088">Use Wallet sandbox servers</translation>
 <translation id="3177048931975664371">Click to hide password</translation>
 <translation id="5852137567692933493">Restart and Powerwash</translation>
 <translation id="3092544800441494315">Include this screenshot:</translation>
@@ -4116,6 +4121,7 @@ Your account sign-in details are out of date.</translation>
 <translation id="1639239467298939599">Loading</translation>
 <translation id="5457599981699367932">Browse as Guest</translation>
 <translation id="6850233365366645553">A restart is required before your device can be reset with Powerwash. A Powerwash resets your <ph name="IDS_SHORT_PRODUCT_NAME"/> device to be just like new.</translation>
+<translation id="4292622557427736684">Enable MediaDrm by default for Encrypted Media Extensions.</translation>
 <translation id="1812514023095547458">Select Colour</translation>
 <translation id="5089363139417863686">View with the Files app</translation>
 <translation id="7047998246166230966">Pointer</translation>
@@ -4465,6 +4471,7 @@ Your account sign-in details are out of date.</translation>
 <translation id="1728442818359004787">Change default app...</translation>
 <translation id="7540972813190816353">An error occurred while checking for updates: <ph name="ERROR"/></translation>
 <translation id="7664620655576155379">Unsupported Bluetooth device: &quot;<ph name="DEVICE_NAME"/>&quot;.</translation>
+<translation id="2990212470195050777">Disable unprefixed Media Source API.</translation>
 <translation id="2225024820658613551">You should not proceed, &lt;strong&gt;especially&lt;/strong&gt; if you have never seen this warning before for this site.</translation>
 <translation id="2049639323467105390">This device is managed by <ph name="DOMAIN"/>.</translation>
 <translation id="1932098463447129402">Not Before</translation>

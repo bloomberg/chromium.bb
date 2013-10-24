@@ -3,9 +3,24 @@
 <translationbundle lang="fi">
 <translation id="1491151370853475546">Päivitä tämä sivu</translation>
 <translation id="7658239707568436148">Peruuta</translation>
+<translation id="6458785801851713928">Synkronointi ei ole käytettävissä verkkotunnuksessasi.</translation>
 <translation id="2731700343119398978">Odota...</translation>
+<translation id="3358663646935160692">Tätä tiliä hallinnoi <ph name="DOMAIN_NAME"/>.
+
+Olet kirjautumassa hallinnoituun tiliin, jonka hallinnoijalla on oikeus muokata Chrome-profiiliasi. Chrome-tietosi yhdistetään tähän tiliin pysyvästi. Jos irrotat Chrome-tiedot tilistä, paikalliset Chrome-tiedot poistetaan.</translation>
+<translation id="1623104350909869708">Estä tätä sivua luomasta muita viestejä</translation>
+<translation id="3896036286668839683">Varmennetiedot</translation>
+<translation id="8583805026567836021">Poistetaan tilin tietoja</translation>
+<translation id="4170011742729630528">Palvelu ei ole käytettävissä. Yritä myöhemmin uudelleen.</translation>
+<translation id="8627706565932943526">Synkronointivirhe</translation>
+<translation id="3136378934686431938">Päivitä kirjautumistietosi.</translation>
+<translation id="4510973599275542560">Älä päivitä</translation>
 <translation id="9154176715500758432">Pysy tällä sivulla</translation>
+<translation id="7063006564040364415">Synkronointipalvelimeen ei saada yhteyttä.</translation>
 <translation id="6512448926095770873">Poistu tältä sivulta</translation>
+<translation id="7947953824732555851">Hyväksy ja kirjaudu sisään</translation>
 <translation id="6040143037577758943">Sulje</translation>
+<translation id="5032574515228824816">Kehote</translation>
 <translation id="6965382102122355670">OK</translation>
+<translation id="7495038789730067783">Vahvista kirjautuminen</translation>
 </translationbundle>

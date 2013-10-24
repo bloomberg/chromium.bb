@@ -134,6 +134,7 @@
 <translation id="1589055389569595240">Rechtschreibung und Grammatik einblenden</translation>
 <translation id="7017587484910029005">Geben Sie die Zeichen aus dem angezeigten Bild ein.</translation>
 <translation id="9013589315497579992">Ungültiges Zertifikat für SSL-Clientauthentifizierung</translation>
+<translation id="2085245445866855859">App mit Manifest-Attribut &quot;kiosk_only&quot; muss im Chrome OS-Kioskmodus installiert werden.</translation>
 <translation id="1467999917853307373"><ph name="URL"/> möchte Daten dauerhaft auf Ihrem Gerät speichern.</translation>
 <translation id="8524066305376229396">Permanentspeicher:</translation>
 <translation id="7567293639574541773">Element u&amp;ntersuchen</translation>
@@ -187,6 +188,7 @@
 <translation id="4858913220355269194">Fußball</translation>
 <translation id="2231238007119540260">Wenn Sie ein Serverzertifikat löschen, werden die üblichen Sicherheitsprüfungen für den jeweiligen Server wieder aktiviert und es muss ein gültiges Zertifikat verwendet werden.</translation>
 <translation id="9110235431257073974">Integration von WebStore und Files.app aktivieren</translation>
+<translation id="6489433341782457580">Für Entwickler: Verwenden Sie den Sandbox-Dienst für Wallet API-Aufrufe für requestAutocomplete().</translation>
 <translation id="8186609076106987817">Die Datei konnte nicht gefunden werden.</translation>
 <translation id="2846816712032308263">Aktiviert schnelles Schließen von Tabs und Fenstern – führt den onunload-JS-Handler eines Tabs unabhängig von der GUI aus</translation>
 <translation id="9134410174832249455"><ph name="PRODUCT_NAME"/> konnte die Webseite nicht laden, weil <ph name="HOST_NAME"/> zu lange zum Antworten benötigt. Möglicherweise ist die Website inaktiv oder es gibt Probleme mit Ihrer Internetverbindung.</translation>
@@ -353,6 +355,7 @@
 <translation id="8959810181433034287">Der betreute Nutzer benötigt dieses Passwort für die Anmeldung. Achten Sie darauf, ein sicheres Passwort auszuwählen und es dem betreuten Nutzer mitzuteilen.</translation>
 <translation id="5154917547274118687">Speicher</translation>
 <translation id="1493492096534259649">Diese Sprache kann nicht für die Rechtschreibprüfung verwendet werden.</translation>
+<translation id="2103866351350079276">Das MediaSource-Objekt ohne Präfix wird deaktiviert. Über dieses Objekt kann JavaScript Mediendaten direkt an das Videoelement senden.</translation>
 <translation id="6628463337424475685"><ph name="ENGINE"/>-Suche</translation>
 <translation id="6460423884798879930">Aktiviert die Option zum Senden zusätzlicher Authentifizierungsinformationen im ersten SYN-Paket für Clients, zu denen bereits eine Verbindung bestand. Dadurch beginnt das Senden der Daten schneller.</translation>
 <translation id="6563261555270336410">Details zu <ph name="ELEMENTS_HOST_NAME"/></translation>
@@ -1580,6 +1583,7 @@ Achten Sie darauf, dass dadurch keine vertraulichen Informationen offengelegt we
 <translation id="6736329909263487977"><ph name="ISSUED_BY"/> [<ph name="ISSUED_TO"/>]</translation>
 <translation id="8899388739470541164">Vietnamesisch</translation>
 <translation id="6423064450797205562">Messwerte in Bezug auf die Geschwindigkeit, mit der <ph name="SHORT_PRODUCT_NAME"/> die geforderten Aktionen durchführt</translation>
+<translation id="2048118585307365263">MediaDrm aktivieren</translation>
 <translation id="4091434297613116013">Blatt Papier</translation>
 <translation id="7475671414023905704">Netscape-URL für vergessene Passwörter</translation>
 <translation id="3335947283844343239">Geschlossenen Tab wieder öffnen</translation>
@@ -3802,6 +3806,7 @@ Ihre Details für die Kontoanmeldung sind veraltet.</translation>
 <translation id="3672159315667503033"><ph name="URL"/> möchte umfangreiche Daten dauerhaft auf Ihrem lokalen Computer speichern.</translation>
 <translation id="373572798843615002">1 Tab</translation>
 <translation id="4806065163318322702">Spracheingabe starten/beenden</translation>
+<translation id="6190185222845843088">Wallet-Sandbox-Server verwenden</translation>
 <translation id="3177048931975664371">Hier klicken, um Passwort zu verbergen</translation>
 <translation id="5852137567692933493">Neu starten und Powerwash durchführen</translation>
 <translation id="3092544800441494315">Diesen Screenshot einfügen:</translation>
@@ -4068,6 +4073,7 @@ Ihre Details für die Kontoanmeldung sind veraltet.</translation>
 <translation id="1639239467298939599">Wird geladen...</translation>
 <translation id="5457599981699367932">Als Gast nutzen</translation>
 <translation id="6850233365366645553">Ihr Gerät muss neu gestartet werden, damit es per Powerwash zurückgesetzt werden kann. Durch die Powerwash-Funktion wird der Werkszustand Ihres <ph name="IDS_SHORT_PRODUCT_NAME"/>-Geräts wieder hergestellt.</translation>
+<translation id="4292622557427736684">MediaDrm standardmäßig für verschlüsselte Medienerweiterungen aktivieren</translation>
 <translation id="1812514023095547458">Farbe auswählen</translation>
 <translation id="5089363139417863686">Mit der App &quot;Dateien&quot; ansehen</translation>
 <translation id="7047998246166230966">Mauszeiger</translation>
@@ -4418,6 +4424,7 @@ Ihre Details für die Kontoanmeldung sind veraltet.</translation>
 <translation id="1728442818359004787">Standard-App ändern...</translation>
 <translation id="7540972813190816353">Fehler beim Suchen nach Updates: <ph name="ERROR"/></translation>
 <translation id="7664620655576155379">Nicht unterstütztes Bluetooth-Gerät: &quot;<ph name="DEVICE_NAME"/>&quot;</translation>
+<translation id="2990212470195050777">MediaSource API ohne Präfix deaktivieren</translation>
 <translation id="2225024820658613551">Fahren Sie nicht fort, &lt;strong&gt;insbesondere&lt;/strong&gt; wenn diese Warnung für diese Website vorher noch nie erschienen ist.</translation>
 <translation id="2049639323467105390">Dieses Gerät wird durch <ph name="DOMAIN"/> verwaltet.</translation>
 <translation id="1932098463447129402">Nicht vor</translation>

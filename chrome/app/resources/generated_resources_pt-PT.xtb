@@ -132,6 +132,7 @@
 <translation id="1589055389569595240">Mostrar ortografia e gramática</translation>
 <translation id="7017587484910029005">Escreva os caracteres que vê na imagem abaixo.</translation>
 <translation id="9013589315497579992">Certificado de autenticação de cliente SSL incorrecto.</translation>
+<translation id="2085245445866855859">A aplicação com o atributo de manifesto &quot;kiosk_only&quot; tem de ser instalada no modo quiosque do SO Chrome.</translation>
 <translation id="1467999917853307373"><ph name="URL"/> pretende armazenar definitivamente dados no seu dispositivo móvel.</translation>
 <translation id="8524066305376229396">Armazenamento persistente:</translation>
 <translation id="7567293639574541773">I&amp;nspeccionar elemento</translation>
@@ -185,6 +186,7 @@
 <translation id="4858913220355269194">Fritz</translation>
 <translation id="2231238007119540260">Se eliminar um certificado de servidor, restaurará as verificações de segurança normais para esse servidor e será necessário que o servidor utilize um certificado válido.</translation>
 <translation id="9110235431257073974">Ative a integração da Web Store na aplicação Ficheiros.</translation>
+<translation id="6489433341782457580">Para programadores: utilize o serviço de isolamento de processos para chamadas da API do Google Wallet para requestAutocomplete().</translation>
 <translation id="8186609076106987817">O servidor não conseguiu encontrar o ficheiro.</translation>
 <translation id="2846816712032308263">Ativa o fecho rápido de separadores/janelas – executa um controlador onunload js de um separador independentemente da GUI.</translation>
 <translation id="9134410174832249455">O <ph name="PRODUCT_NAME"/> não conseguiu carregar a página Web porque <ph name="HOST_NAME"/> demorou demasiado a responder. O Web site pode não estar a funcionar ou poderá estar a ter problemas com a sua ligação à internet.</translation>
@@ -355,6 +357,7 @@
 <translation id="8959810181433034287">O utilizador supervisionado vai precisar de utilizar esta palavra-passe para iniciar sessão, logo, escolha uma palavra-passe segura e não se esqueça de a transmitir ao utilizador supervisionado.</translation>
 <translation id="5154917547274118687">Memória</translation>
 <translation id="1493492096534259649">Não é possível utilizar este idioma para a verificação ortográfica</translation>
+<translation id="2103866351350079276">Desativar o objeto MediaSource sem prefixo. Este objeto permite que o JavaScript envie dados multimédia diretamente para elementos de vídeo.</translation>
 <translation id="6628463337424475685"><ph name="ENGINE"/> Pesquisar</translation>
 <translation id="6460423884798879930">Ativa a opção para enviar informações de autenticação adicionais no pacote SYN inicial para um cliente ligado anteriormente, permitindo que o envio de dados seja iniciado mais rapidamente.</translation>
 <translation id="6563261555270336410">Detalhes sobre <ph name="ELEMENTS_HOST_NAME"/></translation>
@@ -1590,6 +1593,7 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="6736329909263487977"><ph name="ISSUED_BY"/> [ <ph name="ISSUED_TO"/> ]</translation>
 <translation id="8899388739470541164">Vietnamita</translation>
 <translation id="6423064450797205562">Métricas relacionadas com a velocidade com a qual o <ph name="SHORT_PRODUCT_NAME"/> realiza ações solicitadas</translation>
+<translation id="2048118585307365263">Ativar MediaDrm.</translation>
 <translation id="4091434297613116013">folhas de papel</translation>
 <translation id="7475671414023905704">URL de palavra-passe perdida Netscape</translation>
 <translation id="3335947283844343239">Reabrir separador fechado</translation>
@@ -3838,6 +3842,7 @@ Os detalhes de início de sessão da sua conta estão desatualizados.</translati
 <translation id="3672159315667503033"><ph name="URL"/> pretende armazenar permanentemente dados de grandes dimensões no seu computador local.</translation>
 <translation id="373572798843615002">1 Separador</translation>
 <translation id="4806065163318322702">Ativar/desativar entrada de voz</translation>
+<translation id="6190185222845843088">Utilizar servidores de isolamento de processos do Google Wallet</translation>
 <translation id="3177048931975664371">Clicar para ocultar a palavra-passe</translation>
 <translation id="5852137567692933493">Reiniciar e executar o Powerwash</translation>
 <translation id="3092544800441494315">Incluir esta captura de ecrã:</translation>
@@ -4104,6 +4109,7 @@ Os detalhes de início de sessão da sua conta estão desatualizados.</translati
 <translation id="1639239467298939599">A carregar</translation>
 <translation id="5457599981699367932">Navegar como convidado</translation>
 <translation id="6850233365366645553">É necessário reiniciar antes de poder repor o seu dispositivo com a Powerwash. Uma Powerwash repõe o dispositivo <ph name="IDS_SHORT_PRODUCT_NAME"/> para funcionar como se fosse novo.</translation>
+<translation id="4292622557427736684">Ativar o MediaDrm por predefinição para Extensões multimédia encriptadas.</translation>
 <translation id="1812514023095547458">Selecionar a Cor</translation>
 <translation id="5089363139417863686">Ver com a aplicação Ficheiros</translation>
 <translation id="7047998246166230966">Ponteiro</translation>
@@ -4453,6 +4459,7 @@ Os detalhes de início de sessão da sua conta estão desatualizados.</translati
 <translation id="1728442818359004787">Alterar a aplicação predefinida...</translation>
 <translation id="7540972813190816353">Ocorreu um erro durante a verificação de atualizações: <ph name="ERROR"/></translation>
 <translation id="7664620655576155379">Dispositivo Bluetooth não suportado: &quot;<ph name="DEVICE_NAME"/>&quot;.</translation>
+<translation id="2990212470195050777">Desativar API de Fonte de multimédia sem prefixo.</translation>
 <translation id="2225024820658613551">Não deverá prosseguir, &lt;strong&gt;especialmente&lt;/strong&gt; se nunca tiver visto este aviso relativamente a esse site.</translation>
 <translation id="2049639323467105390">Este aparelho é gerido por <ph name="DOMAIN"/>.</translation>
 <translation id="1932098463447129402">Não anterior a</translation>

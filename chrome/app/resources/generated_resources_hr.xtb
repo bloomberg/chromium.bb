@@ -133,6 +133,7 @@
 <translation id="1589055389569595240">Prikaži pravopis i gramatiku</translation>
 <translation id="7017587484910029005">Upišite znakove koje vidite na slici u nastavku.</translation>
 <translation id="9013589315497579992">Loš certifikat SSL klijentske provjere autentičnosti.</translation>
+<translation id="2085245445866855859">Aplikaciju s atributom manifesta 'kiosk_only' potrebno je instalirati u načinu kioska ChromeOS.</translation>
 <translation id="1467999917853307373"><ph name="URL"/> želi trajno pohraniti podatke na vaš uređaj.</translation>
 <translation id="8524066305376229396">Stalna pohrana:</translation>
 <translation id="7567293639574541773">P&amp;regledaj element</translation>
@@ -186,6 +187,7 @@
 <translation id="4858913220355269194">Zvone</translation>
 <translation id="2231238007119540260">Ako izbrišete certifikat poslužitelja, vratit ćete uobičajene sigurnosne provjere za taj poslužitelj i tražiti da koristi važeće certifikate.</translation>
 <translation id="9110235431257073974">Omogućite integraciju Web-trgovine i aplikacije Datoteke.</translation>
+<translation id="6489433341782457580">Za razvojne programere: upotrijebite uslugu testnog okruženja za pozive API-ja Novčanik za requestAutocomplete().</translation>
 <translation id="8186609076106987817">Poslužitelj nije mogao pronaći datoteku.</translation>
 <translation id="2846816712032308263">Omogućuje brzo zatvaranje kartice/prozora – pokreće rukovatelja kartice &quot;OnUnload JS&quot; neovisno o grafičkom korisničkom sučelju.</translation>
 <translation id="9134410174832249455">Proizvod <ph name="PRODUCT_NAME"/> nije mogao učitati web-stranicu jer <ph name="HOST_NAME"/> nije na vrijeme odgovorio. Web-lokacija možda je neaktivna ili možda imate problema s internetskom vezom.</translation>
@@ -345,6 +347,7 @@
 <translation id="8959810181433034287">Nadzirani korisnik morat će upotrebljavati tu zaporku za prijavu te odaberite sigurnu zaporku i raspravite o njoj s nadziranim korisnikom.</translation>
 <translation id="5154917547274118687">Memorija</translation>
 <translation id="1493492096534259649">Taj se jezik ne može koristiti za provjeru pravopisa</translation>
+<translation id="2103866351350079276">Onemogući objekt MediaSource bez prefiksa. Taj objekt omogućuje JavaScriptu slanje medijskih podataka izravno na videoelement.</translation>
 <translation id="6628463337424475685"><ph name="ENGINE"/> Pretraživanje</translation>
 <translation id="6460423884798879930">Omogućuje opciju slanja dodatnih podataka za autentifikaciju u početnom paketu SYN za prethodno povezani klijent dopuštajući brže pokretanje slanja podataka.</translation>
 <translation id="6563261555270336410">Pojedinosti o hostu <ph name="ELEMENTS_HOST_NAME"/></translation>
@@ -1575,6 +1578,7 @@ Ne otkrivajte nikakve osjetljive podatke.</translation>
 <translation id="6736329909263487977"><ph name="ISSUED_BY"/> [<ph name="ISSUED_TO"/>]</translation>
 <translation id="8899388739470541164">vijetnamski</translation>
 <translation id="6423064450797205562">Mjerenja u vezi s brzinom kojom proizvod <ph name="SHORT_PRODUCT_NAME"/> izvodi tražene radnje</translation>
+<translation id="2048118585307365263">Omogući MediaDrm.</translation>
 <translation id="4091434297613116013">listova papira</translation>
 <translation id="7475671414023905704">URL Netscape izgubljene zaporke</translation>
 <translation id="3335947283844343239">Ponovo otvori zatvorenu karticu</translation>
@@ -3809,6 +3813,7 @@ Vaši su podaci o prijavi na račun zastarjeli.</translation>
 <translation id="3672159315667503033"><ph name="URL"/> želi trajno pohraniti veliku količinu podataka na vaše lokalno računalo.</translation>
 <translation id="373572798843615002">1 kartica</translation>
 <translation id="4806065163318322702">Uključi/isključi govorni unos</translation>
+<translation id="6190185222845843088">Upotrijebi poslužitelje testnog okruženja Novčanika</translation>
 <translation id="3177048931975664371">Kliknite za skrivanje zaporke</translation>
 <translation id="5852137567692933493">Pokreni ponovo i izvrši Powerwash</translation>
 <translation id="3092544800441494315">Uključi ovu snimku zaslona:</translation>
@@ -4075,6 +4080,7 @@ Vaši su podaci o prijavi na račun zastarjeli.</translation>
 <translation id="1639239467298939599">Učitavanje</translation>
 <translation id="5457599981699367932">Pregledavaj kao gost</translation>
 <translation id="6850233365366645553">Prvo morate ponovo pokrenuti uređaj da biste ga mogli poništiti funkcijom Powerwash. Powerwash vraća vaš <ph name="IDS_SHORT_PRODUCT_NAME"/> uređaj na zadano kako bi ponovo bio kao nov.</translation>
+<translation id="4292622557427736684">Omogući MediaDrm prema zadanim postavkama za proširenja kriptiranih medija.</translation>
 <translation id="1812514023095547458">Odabir boje</translation>
 <translation id="5089363139417863686">Prikaži aplikacijom Datoteke</translation>
 <translation id="7047998246166230966">Pokazivač</translation>
@@ -4425,6 +4431,7 @@ Vaši su podaci o prijavi na račun zastarjeli.</translation>
 <translation id="1728442818359004787">Promjena zadane aplikacije...</translation>
 <translation id="7540972813190816353">Došlo je do pogreške prilikom traženja ažuriranja: <ph name="ERROR"/></translation>
 <translation id="7664620655576155379">Nepodržani Bluetooth uređaj: &quot;<ph name="DEVICE_NAME"/>&quot;.</translation>
+<translation id="2990212470195050777">Onemogući API Media Source bez prefiksa.</translation>
 <translation id="2225024820658613551">Ne biste trebali nastaviti, &lt;strong&gt;posebno&lt;/strong&gt; ako nikad prije niste vidjeli takvo upozorenje za tu lokaciju.</translation>
 <translation id="2049639323467105390">Ovim uređajem upravlja <ph name="DOMAIN"/>.</translation>
 <translation id="1932098463447129402">Ne prije</translation>

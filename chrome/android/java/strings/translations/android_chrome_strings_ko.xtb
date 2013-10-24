@@ -3,9 +3,24 @@
 <translationbundle lang="ko">
 <translation id="1491151370853475546">페이지 새로고침</translation>
 <translation id="7658239707568436148">취소</translation>
+<translation id="6458785801851713928">도메인에 대해 동기화를 사용할 수 없습니다.</translation>
 <translation id="2731700343119398978">잠시 기다려 주세요...</translation>
+<translation id="3358663646935160692"><ph name="DOMAIN_NAME"/>에서 관리하는 계정입니다.
+
+관리 계정으로 로그인하면 사용자의 Chrome 프로필에 대한 제어 권한이 관리자에게 부여됩니다. 사용자의 Chrome 데이터는 이 계정에 영구적으로 연결되며, 이 계정의 연결을 해제하면 로컬 Chrome 데이터가 삭제됩니다.</translation>
+<translation id="1623104350909869708">이 페이지가 추가적인 대화를 생성하지 않도록 차단</translation>
+<translation id="3896036286668839683">인증서 뷰어</translation>
+<translation id="8583805026567836021">계정 데이터 지우기</translation>
+<translation id="4170011742729630528">서비스를 사용할 수 없습니다. 나중에 다시 시도해 주세요.</translation>
+<translation id="8627706565932943526">동기화 오류</translation>
+<translation id="3136378934686431938">로그인 세부정보를 업데이트하세요.</translation>
+<translation id="4510973599275542560">새로고침 안함</translation>
 <translation id="9154176715500758432">이 페이지에 머무르기</translation>
+<translation id="7063006564040364415">동기화 서버에 연결할 수 없습니다.</translation>
 <translation id="6512448926095770873">이 페이지 나오기</translation>
+<translation id="7947953824732555851">수락 및 로그인</translation>
 <translation id="6040143037577758943">닫기</translation>
+<translation id="5032574515228824816">프롬프트</translation>
 <translation id="6965382102122355670">확인</translation>
+<translation id="7495038789730067783">로그인 확인</translation>
 </translationbundle>

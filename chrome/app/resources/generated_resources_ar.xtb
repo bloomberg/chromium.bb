@@ -133,6 +133,7 @@
 <translation id="1589055389569595240">إظهار التدقيق الإملائي والتدقيق النحوي</translation>
 <translation id="7017587484910029005">اكتب الأحرف التي تراها في الصورة بالأسفل.</translation>
 <translation id="9013589315497579992">‏شهادة تالفة لمصادقة عميل SSL (طبقة المقابس الآمنة).</translation>
+<translation id="2085245445866855859">‏يجب أن يتم تثبيت التطبيق الذي يتضمن سمة البيان &quot;kiosk_only&quot; في وضع الكشك على نظام تشغيل Chrome.</translation>
 <translation id="1467999917853307373">يريد <ph name="URL"/> تخزين البيانات بشكل دائم على جهازك.</translation>
 <translation id="8524066305376229396">التخزين الثابت:</translation>
 <translation id="7567293639574541773">فح&amp;ص العنصر</translation>
@@ -186,6 +187,7 @@
 <translation id="4858913220355269194">فريتز</translation>
 <translation id="2231238007119540260">في حالة حذف شهادة الخادم، تتم استعادة العمليات المعتادة للتحقق من الأمان لذلك الخادم وسيتطلب الأمر استخدامه لشهادة صالحة.</translation>
 <translation id="9110235431257073974">‏تمكين دمج Webstore وتطبيق الملفات.</translation>
+<translation id="6489433341782457580">‏بالنسبة إلى مطوِّري البرامج: يمكن استخدام خدمة وضع الحماية مع مكالمات واجهة برمجة تطبيقات المحفظة لـ requestAutocomplete().</translation>
 <translation id="8186609076106987817">تعذر على الخادم العثور على الملف.</translation>
 <translation id="2846816712032308263">‏لتمكين الغلق السريع لعلامة التبويب/النافذة - لتشغيل معالج onunload js في علامة التبويب بشكل مستقل عن واجهة المستخدم الرسومية.</translation>
 <translation id="9134410174832249455">تعذر على <ph name="PRODUCT_NAME"/> تحميل صفحة الويب نظرًا لاستغراق <ph name="HOST_NAME"/> وقتًا أطول مما يجب للاستجابة. قد يكون موقع الويب معطلاً، أو ربما تواجهك مشكلات تتعلق باتصالك بالإنترنت.</translation>
@@ -354,6 +356,7 @@
 <translation id="8959810181433034287">سيحتاج المستخدم الذي يخضع للإشراف إلى استخدام كلمة المرور هذه لتسجيل الدخول، لذا يُرجى اختيار كلمة مرور آمنة ولا تنس طرح الأمر للنقاش مع المستخدم الخاضع للإشراف.</translation>
 <translation id="5154917547274118687">الذاكرة</translation>
 <translation id="1493492096534259649">لا يمكن استخدام هذه اللغة للتدقيق الإملائي</translation>
+<translation id="2103866351350079276">‏تعطيل عنصر MediaSource غير المسبوق ببادئة. ويتيح هذا العنصر لجافا سكريبت إرسال بيانات الوسائط إلى عنصر فيديو مباشرة.</translation>
 <translation id="6628463337424475685">بحث <ph name="ENGINE"/></translation>
 <translation id="6460423884798879930">‏يمكنك تمكين هذا الخيار لإرسال معلومات مصادقة إضافية في حزمة SYN الأولية لعميل متصل سابقًا، مما يتيح بدء أسرع لإرسال البيانات.</translation>
 <translation id="6563261555270336410">تفاصيل حول <ph name="ELEMENTS_HOST_NAME"/></translation>
@@ -657,7 +660,7 @@
 <translation id="6431347207794742960">سيعمل <ph name="PRODUCT_NAME"/> على إعداد التحديثات التلقائية لجميع مستخدمي هذا الكمبيوتر.</translation>
 <translation id="4973698491777102067">مسح العناصر التالية من:</translation>
 <translation id="9021662811137657072">تم اكتشاف فيروس</translation>
-<translation id="6074963268421707432">عدم السماح لأي موقع بعرض تنبيهات سطح المكتب</translation>
+<translation id="6074963268421707432">عدم السماح لأي موقع بعرض اشعارات سطح المكتب</translation>
 <translation id="3016857782996729000"><ph name="BEGIN_BOLD"/>لا تزل جهازك الآن.<ph name="END_BOLD"/>
        <ph name="LINE_BREAKS"/>
        قد تؤدي إزالة جهازك أثناء وجوده قيد الاستخدام إلى فقدان البيانات. الرجاء الانتظار حتى انتهاء العملية، ثم إخراج الجهاز باستخدام تطبيق الملفات.</translation>
@@ -677,7 +680,7 @@
 <translation id="6351933643423632811">‏تمكين إتاحة إشعارات مساعد Google الفوري.</translation>
 <translation id="4255096080864111471">حدد الحد الأقصى لعدد الأجزاء لمنطقة الاهتمامات.</translation>
 <translation id="5136529877787728692">F7</translation>
-<translation id="6974306300279582256">تمكين التنبيهات من <ph name="SITE"/></translation>
+<translation id="6974306300279582256">تمكين الاشعارات من <ph name="SITE"/></translation>
 <translation id="5233638681132016545">علامة تبويب جديدة</translation>
 <translation id="6567688344210276845">تعذر تحميل الرمز '<ph name="ICON"/>' لإجراء المتصفح.</translation>
 <translation id="5210365745912300556">إغلاق علامة التبويب</translation>
@@ -1062,7 +1065,7 @@
 <translation id="7441627299479586546">موضوع السياسة غير صحيح</translation>
 <translation id="5252456968953390977">تجوال</translation>
 <translation id="8744641000906923997">Romaji</translation>
-<translation id="348620396154188443">السماح لكل المواقع بعرض تنبيهات سطح المكتب</translation>
+<translation id="348620396154188443">السماح لكل المواقع بعرض اشعارات سطح المكتب</translation>
 <translation id="7375125077091615385">النوع:</translation>
 <translation id="8214489666383623925">فتح ملف...</translation>
 <translation id="4583537898417244378">ملف غير صالح أو تالف.</translation>
@@ -1573,7 +1576,7 @@
 <translation id="5745056705311424885">‏اكتشاف رقاقة ذاكرة USB</translation>
 <translation id="7651319298187296870">يلزم تسجيل الدخول لشهادة المستخدم.</translation>
 <translation id="626568068055008686">كلمة مرور غير صالحة أو ملف تالف.</translation>
-<translation id="5895875028328858187">عرض تنبيهات عندما تكون البيانات قليلة أو أوشكت صلاحيتها على الانتهاء</translation>
+<translation id="5895875028328858187">عرض اشعارات عندما تكون البيانات قليلة أو أوشكت صلاحيتها على الانتهاء</translation>
 <translation id="939598580284253335">إدخال عبارة المرور</translation>
 <translation id="8418240940464873056">وضع الحروف الصينية</translation>
 <translation id="6557224990928257403">‏(لإجراء تحديث تلقائي لهذه الصفحة، استخدم chrome://<ph name="PAGE_NAME"/>/&amp;lt;ثانية&amp;gt;)</translation>
@@ -1583,6 +1586,7 @@
 <translation id="6736329909263487977"><ph name="ISSUED_BY"/> [<ph name="ISSUED_TO"/>]</translation>
 <translation id="8899388739470541164">الفيتناميّة</translation>
 <translation id="6423064450797205562">المقاييس المتعلقة بسرعة أداء <ph name="SHORT_PRODUCT_NAME"/> للإجراءات المطلوبة</translation>
+<translation id="2048118585307365263">‏تمكين MediaDrm.</translation>
 <translation id="4091434297613116013">أوراق</translation>
 <translation id="7475671414023905704">‏عنوان URL لكلمة المرور المفقودة في Netscape</translation>
 <translation id="3335947283844343239">إعادة فتح علامة التبويب المغلقة</translation>
@@ -2426,7 +2430,7 @@
 <translation id="6432458268957186486">الطباعة باستخدام مربع الحوار <ph name="CLOUD_PRINT_NAME"/>...</translation>
 <translation id="2950186680359523359">أغلق الخادم الاتصال بدون إرسال أية بيانات.</translation>
 <translation id="4269099019648381197">لتمكين خيار طلب موقع الجهاز اللوحي في قائمة الإعدادات.</translation>
-<translation id="9142623379911037913">هل تريد السماح للموقع <ph name="SITE"/> بعرض تنبيهات سطح المكتب؟</translation>
+<translation id="9142623379911037913">هل تريد السماح للموقع <ph name="SITE"/> بعرض اشعارات سطح المكتب؟</translation>
 <translation id="6546686722964485737">‏الانضمام إلى شبكة WiMAX</translation>
 <translation id="266983583785200437">الأحداث المتعلقة بأعطال وإخفاقات <ph name="SHORT_PRODUCT_NAME"/></translation>
 <translation id="9118804773997839291">توجد أدناه قائمة بجميع العناصر غير الآمنة في الصفحة. انقر على الرابط التشخيصي لمزيد من المعلومات عن سلسلة عنصر معيِّن.</translation>
@@ -2965,7 +2969,7 @@
 <translation id="7208899522964477531">البحث  في الموقع <ph name="SITE_NAME"/> عن &quot;<ph name="SEARCH_TERMS"/>&quot;</translation>
 <translation id="4031910098617850788">F5</translation>
 <translation id="8960795431111723921">نحن نحقق في هذه المشكلة حاليًا.</translation>
-<translation id="2482878487686419369">التنبيهات</translation>
+<translation id="2482878487686419369">الاشعارات</translation>
 <translation id="7091371877941014288">هل ترغب في التمكّن من تشغيل تطبيقات الكشك على هذا الجهاز؟</translation>
 <translation id="3175100205257218635"><ph name="BEGIN_BOLD"/>أنت تستخدم تصفح الضيف<ph name="END_BOLD"/>. لن تظهر الصفحات التي تشاهدها في علامة التبويب هذه في سجل المتصفح أو في سجل البحث، كما أنها لن تترك أي آثار أخرى، مثل ملفات تعريف الارتباط، على الجهاز بعد الخروج. ولن يتم الاحتفاظ بالملفات التي تنزلها والإشارات المرجعية التي تنشئها.
           <ph name="LINE_BREAK"/>
@@ -3822,6 +3826,7 @@
 <translation id="3672159315667503033"><ph name="URL"/> يريد تخزين بيانات ذات حجم كبير في جهاز الكمبيوتر المحلي بشكل دائم.</translation>
 <translation id="373572798843615002">علامة تبويب واحدة</translation>
 <translation id="4806065163318322702">تبديل إدخال الصوت</translation>
+<translation id="6190185222845843088">استخدام خوادم وضع الحماية في المحفظة</translation>
 <translation id="3177048931975664371">انقر لإخفاء كلمة المرور</translation>
 <translation id="5852137567692933493">‏إعادة التشغيل وإجراء Powerwash</translation>
 <translation id="3092544800441494315">تضمين لقطة الشاشة هذه:</translation>
@@ -4092,6 +4097,7 @@
 <translation id="1639239467298939599">جارٍ التحميل.</translation>
 <translation id="5457599981699367932">تصفَّح كزائر</translation>
 <translation id="6850233365366645553">‏يجب إعادة التشغيل قبل أن تتم إعادة تعيين الجهاز عبر Powerwash. إجراء Powerwash من شأنه أن يعيد تعيين جهاز <ph name="IDS_SHORT_PRODUCT_NAME"/> ليصبح كما لو كان جديدًا.</translation>
+<translation id="4292622557427736684">‏تمكين MediaDrm افتراضيًا مع إضافات الوسائط المشفرة.</translation>
 <translation id="1812514023095547458">تحديد اللون</translation>
 <translation id="5089363139417863686">عرض باستخدام تطبيق الملفات</translation>
 <translation id="7047998246166230966">المؤشر</translation>
@@ -4441,6 +4447,7 @@
 <translation id="1728442818359004787">تغيير التطبيق الافتراضي...</translation>
 <translation id="7540972813190816353">حدث خطأ أثناء التحقق من التحديثات: <ph name="ERROR"/></translation>
 <translation id="7664620655576155379">جهاز بلوتوث غير متوافق: &quot;<ph name="DEVICE_NAME"/>&quot;.</translation>
+<translation id="2990212470195050777">‏تعطيل واجهة برمجة تطبيقات Media Source غير المسبوقة ببادئة.</translation>
 <translation id="2225024820658613551">‏يجب عدم المتابعة &lt;strong&gt;خاصةً&lt;/strong&gt; إذا لم يظهر هذا التحذير من قبل بشأن هذا الموقع.</translation>
 <translation id="2049639323467105390">تتم إدارة هذا الجهاز بواسطة <ph name="DOMAIN"/>.</translation>
 <translation id="1932098463447129402">أول يوم لتفعيل الصلاحية</translation>
@@ -4449,7 +4456,7 @@
 <translation id="1332674359020733290">أدخل كلمة المرور هنا للتأكيد.</translation>
 <translation id="3819415294190923087">تحديد شبكة</translation>
 <translation id="7325437708553334317">إضافة التباين العالي</translation>
-<translation id="2192664328428693215">الرجوع إليّ عند محاولة موقع إظهار تنبيهات على سطح المكتب (مستحسن)</translation>
+<translation id="2192664328428693215">الرجوع إليّ عند محاولة موقع إظهار اشعارات على سطح المكتب (مستحسن)</translation>
 <translation id="6708242697268981054">المصدر:</translation>
 <translation id="1909880997794698664">هل تريد بالتأكيد تشغيل هذا الجهاز في وضع الكشك بشكل دائم؟</translation>
 <translation id="1986281090560408715">لتمكين شاشة علوية أعلى الجانب الأيمن من الشاشة تدرج معلومات حول نقاط الاتصال على الشاشة.</translation>
@@ -5061,7 +5068,7 @@
 <translation id="5765491088802881382">لا تتوفر أية شبكات</translation>
 <translation id="1971538228422220140">حذف ملفات تعريف الارتباط وبيانات الموقع والمكونات الإضافية الأخرى</translation>
 <translation id="6510391806634703461">مستخدم جديد</translation>
-<translation id="4469842253116033348">تعطيل التنبيهات من الموقع <ph name="SITE"/></translation>
+<translation id="4469842253116033348">تعطيل الاشعارات من الموقع <ph name="SITE"/></translation>
 <translation id="3709244229496787112">تم إيقاف تشغيل المتصفح قبل انتهاء التنزيل.</translation>
 <translation id="7999229196265990314">تم إنشاء الملفات التالية:
         

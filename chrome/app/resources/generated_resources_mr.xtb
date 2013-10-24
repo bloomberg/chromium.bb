@@ -134,6 +134,7 @@
 <translation id="1589055389569595240">शुद्धलेखन आणि व्याकरण दर्शवा</translation>
 <translation id="7017587484910029005">आपल्याला खालील चित्रात दिसत असलेले वर्ण टाइप करा.</translation>
 <translation id="9013589315497579992">खराब SSL क्लायंट प्रमाणीकरण प्रमाणपत्र.</translation>
+<translation id="2085245445866855859">'kiosk_only' मॅनिफेस्ट विशेषता असलेला अ‍ॅप ChromeOS कियोस्क मोडमध्ये स्थापित करणे आवश्यक आहे.</translation>
 <translation id="1467999917853307373"><ph name="URL"/> आपल्या डिव्हाइसवर डेटा कायमचा संचयित करू इच्छित आहे.</translation>
 <translation id="8524066305376229396">सातत्यपूर्ण संचयन:</translation>
 <translation id="7567293639574541773">घटक त&amp;पासा</translation>
@@ -187,6 +188,7 @@
 <translation id="4858913220355269194">फ्रिटझ</translation>
 <translation id="2231238007119540260">आपण एक सर्व्हर प्रमाणपत्र हटविल्यास, आपण त्या सर्व्हरसाठी नेहमीचे सुरक्षा चेक पुनर्संचयित करता आणि त्यास एक वैध प्रमाणपत्र वापरणे आवश्यक आहे.</translation>
 <translation id="9110235431257073974">वेबस्टोअर आणि Files.app चे संकलन सक्षम करा</translation>
+<translation id="6489433341782457580">विकासकांसाठी: requestAutocomplete() साठी Wallet API कॉलकरिता सॅन्डबॉक्स सेवा वापरा.</translation>
 <translation id="8186609076106987817">सर्व्हर फाइल शोधू शकले नाही.</translation>
 <translation id="2846816712032308263">जलद टॅब/विंडो बंद करणे सक्षम करते - GUI च्या  टॅब चे onunload js हँडलर वैयक्तिकरित्या चालविते.</translation>
 <translation id="9134410174832249455"><ph name="PRODUCT_NAME"/>
@@ -349,6 +351,7 @@
 <translation id="8959810181433034287">साइन इन करण्यासाठी पर्यवेक्षी वापरकर्त्यास हा संकेतशब्द वापरण्याची आवश्यकता असेल, म्हणून एक सुरक्षित संकेतशब्द निवडा आणि पर्यवेक्षी वापरकर्त्यासह त्याची चर्चा करण्याचे लक्षात ठेवा.</translation>
 <translation id="5154917547274118687">मेमरी</translation>
 <translation id="1493492096534259649">ही भाषा शब्दलेखन तपासण्यासाठी वापरली जाऊ शकत नाही</translation>
+<translation id="2103866351350079276">उपसर्ग नसलेले MediaSource ऑब्जेक्ट अक्षम करा. हे ऑब्जेक्ट थेट एका व्हिडिओ घटकावर माध्यम डेटा पाठविण्यास JavaScript ला अनुमती देते.</translation>
 <translation id="6628463337424475685"><ph name="ENGINE"/> शोध</translation>
 <translation id="6460423884798879930">जलद डेटा पाठवणे प्रारंभ करण्याची अनुमती देऊन, मागे कनेक्ट केलेल्या क्लायंटसाठी आरंभीच्या SYN पॅकेटमध्ये अतिरिक्त प्रमाणीकरण माहिती पाठविण्यासाठी पर्याय सक्षम करा.</translation>
 <translation id="6563261555270336410"><ph name="ELEMENTS_HOST_NAME"/> बद्दल तपशील</translation>
@@ -542,7 +545,7 @@
 <translation id="2587922270115112871">पर्यवेक्षी वापरकर्ता तयार करण्याने Google खाते तयार होत नाही आणि त्यांच्या सेटिंग्ज आणि डेटा
     Chrome Sync सह इतर डिव्हाइसवर त्यांचे अनुसरण करणार नाही. पर्यवेक्षी वापरकर्ता केवळ या डिव्हाइसवर लागू होतो.</translation>
 <translation id="4497097279402334319">नेटवर्कशी कनेक्ट करण्यात अयशस्वी.</translation>
-<translation id="7342729285348293164">आपली वैयक्तिकृत ब्राउझर वैशिष्‍ट्ये वेबवर जतन करण्‍यासाठी आणि त्यावर कोणत्याही <ph name="PRODUCT_NAME"/> संगणकावरुन प्रवेश करण्‍यासाठी आपल्या Google खात्यासह <ph name="PRODUCT_NAME"/> यामध्ये साइन इन करा. आपणास स्वयंचलितपणे आपल्या आवडीच्या Google सेवांमध्‍ये साइन इन करण्‍यात येईल.</translation>
+<translation id="7342729285348293164">आपली वैयक्तिकृत ब्राउझर वैशिष्‍ट्ये वेबवर जतन करण्‍यासाठी आणि त्यावर कोणत्याही <ph name="PRODUCT_NAME"/> संगणकावरुन प्रवेश करण्‍यासाठी आपल्या Google खात्यासह <ph name="PRODUCT_NAME"/> यामध्ये साइन इन करा. आपल्याला स्वयंचलितपणे आपल्या आवडीच्या Google सेवांमध्‍ये साइन इन केले जाईल.</translation>
 <translation id="2542049655219295786">Google सारणी</translation>
 <translation id="3899879303189199559">एक वर्षापेक्षा जास्त ऑफलाइन</translation>
 <translation id="5303618139271450299">हे वेबपृष्ठ आढळले नाही</translation>
@@ -621,7 +624,7 @@
 <translation id="4765210369020942754"><ph name="PRODUCT_NAME"/> वर प्रिंटर जोडा म्हणजे आपण कुठूनही मुद्रण करू शकता.</translation>
 <translation id="2038896902310685531">अरेरे, <ph name="WALLET_ERROR"/> Google Wallet शिवाय हा व्यवहार आपण पूर्ण करू शकता.</translation>
 <translation id="3925573269917483990">कॅमेराः</translation>
-<translation id="3170072451822350649">आपण साइन इन वगळू देखील शकता आणि <ph name="LINK_START"/>अतिथी म्हणून ब्राउझ करा<ph name="LINK_END"/>.</translation>
+<translation id="3170072451822350649">आपण साइन इन वगळुन <ph name="LINK_START"/>अतिथी म्हणून ब्राउझ<ph name="LINK_END"/> देखील करू शकता.</translation>
 <translation id="8390449457866780408">सर्व्हर अनुपलब्ध.</translation>
 <translation id="5098629044894065541">हिब्रू</translation>
 <translation id="5971820162272282813">कृपया नेटवर्कवर रीकनेक्ट करा.</translation>
@@ -1592,6 +1595,7 @@
 <translation id="6736329909263487977"><ph name="ISSUED_BY"/> [<ph name="ISSUED_TO"/>]</translation>
 <translation id="8899388739470541164">व्हिएतनामी</translation>
 <translation id="6423064450797205562">ज्यासह <ph name="SHORT_PRODUCT_NAME"/> विनंती केलेल्या क्रिया करते त्या गतीशी संबद्ध मेट्रिक्स</translation>
+<translation id="2048118585307365263">MediaDrm सक्षम करा.</translation>
 <translation id="4091434297613116013">कागदी पत्रके</translation>
 <translation id="7475671414023905704">Netscape संकेतशब्द URL गमावली</translation>
 <translation id="3335947283844343239">बंद केलेले टॅब पुन्हा उघडा</translation>
@@ -3853,6 +3857,7 @@
 <translation id="3672159315667503033"><ph name="URL"/> आपल्या स्थानिक संगणकावर मोठ्या प्रमाणावर डेटा कायमचा संचयित करू इच्छित आहे.</translation>
 <translation id="373572798843615002">1 टॅब</translation>
 <translation id="4806065163318322702">भाषिक इनपुट टॉगल करा</translation>
+<translation id="6190185222845843088">Wallet सॅन्डबॉक्स सर्व्हर वापरा</translation>
 <translation id="3177048931975664371">संकेतशब्द लपविण्यासाठी क्लिक करा</translation>
 <translation id="5852137567692933493">रीस्टार्ट करा आणि पॉवरवॉश करा</translation>
 <translation id="3092544800441494315">हा स्क्रीनशॉट समाविष्ट करा:</translation>
@@ -4119,6 +4124,7 @@
 <translation id="1639239467298939599">लोड करीत आहे</translation>
 <translation id="5457599981699367932">अतिथी म्हणून ब्राउझ करा</translation>
 <translation id="6850233365366645553">Powerwash सह डिव्हाइस रीसेट केले जाण्यापूर्वी रीस्टार्ट करण्याची आवश्यकता आहे. Powerwash आपले <ph name="IDS_SHORT_PRODUCT_NAME"/> डिव्हाइस अगदी नव्यासारखे रीसेट करते.</translation>
+<translation id="4292622557427736684">कूटबद्ध माध्यम विस्तारांसाठी डीफॉल्टनुसार MediaDrm सक्षम करा.</translation>
 <translation id="1812514023095547458">रंग निवडा</translation>
 <translation id="5089363139417863686">फायली अ‍ॅपसह पहा</translation>
 <translation id="7047998246166230966">पॉइंटर</translation>
@@ -4468,6 +4474,7 @@
 <translation id="1728442818359004787">डीफॉल्ट अ‍ॅप बदला...</translation>
 <translation id="7540972813190816353">अद्यतने तपासताना एक त्रुटी आली: <ph name="ERROR"/></translation>
 <translation id="7664620655576155379">असमर्थित Bluetooth डिव्हाइस: &quot;<ph name="DEVICE_NAME"/>&quot;.</translation>
+<translation id="2990212470195050777">उपसर्ग नसलेले माध्यम स्रोत API अक्षम करा.</translation>
 <translation id="2225024820658613551">&lt;strong&gt;विशेषत:&lt;/strong&gt;या साइटसाठी ही चेतावणी यापूर्वी कधीही पाहिली नसल्यास, आपण पुढे जाऊ नये.</translation>
 <translation id="2049639323467105390"><ph name="DOMAIN"/> याद्वारे हे डिव्हाइस व्यवस्‍थापित केले जाते.</translation>
 <translation id="1932098463447129402">पूर्वी नाही</translation>

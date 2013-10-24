@@ -3,9 +3,24 @@
 <translationbundle lang="nl">
 <translation id="1491151370853475546">Deze pagina opnieuw laden</translation>
 <translation id="7658239707568436148">Annuleren</translation>
+<translation id="6458785801851713928">De synchronisatieservice is niet beschikbaar voor je domein.</translation>
 <translation id="2731700343119398978">Even geduld...</translation>
+<translation id="3358663646935160692">Dit account wordt beheerd door <ph name="DOMAIN_NAME"/>.
+
+Je logt in met een beheerd account en geeft de beheerder controle over je Chrome-profiel. Je Chrome-gegevens worden permanent gekoppeld aan dit account. Als je dit account loskoppelt, worden de lokale Chrome-gegevens verwijderd.</translation>
+<translation id="1623104350909869708">Voorkomen dat deze pagina extra dialoogvensters weergeeft</translation>
+<translation id="3896036286668839683">Certificaatweergave</translation>
+<translation id="8583805026567836021">Accountgegevens wissen</translation>
+<translation id="4170011742729630528">De service is niet beschikbaar. Probeer het later opnieuw.</translation>
+<translation id="8627706565932943526">Synchronisatiefout</translation>
+<translation id="3136378934686431938">Werk je inloggegevens bij.</translation>
+<translation id="4510973599275542560">Niet opnieuw laden</translation>
 <translation id="9154176715500758432">Op deze pagina blijven</translation>
+<translation id="7063006564040364415">Kan geen verbinding maken met synchronisatieserver.</translation>
 <translation id="6512448926095770873">Deze pagina verlaten</translation>
+<translation id="7947953824732555851">Accepteren en inloggen</translation>
 <translation id="6040143037577758943">Sluiten</translation>
+<translation id="5032574515228824816">Prompt</translation>
 <translation id="6965382102122355670">OK</translation>
+<translation id="7495038789730067783">Inloggen bevestigen</translation>
 </translationbundle>

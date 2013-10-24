@@ -3,9 +3,24 @@
 <translationbundle lang="fil">
 <translation id="1491151370853475546">I-reload ang Pahinang Ito</translation>
 <translation id="7658239707568436148">Kanselahin</translation>
+<translation id="6458785801851713928">Hindi available ang pag-sync para sa iyong domain.</translation>
 <translation id="2731700343119398978">Mangyaring maghintay...</translation>
+<translation id="3358663646935160692">Pinamamahalaan ang account na ito ng <ph name="DOMAIN_NAME"/>.
+
+Nagsa-sign in ka sa isang pinamamahalaang account at nagbibigay sa administrator nito ng kontrol sa iyong profile sa Chrome. Permanenteng mauugnay ang iyong data ng Chrome sa account na ito. Ang pagdiskonekta mula sa account na ito ay magtatanggal sa lokal na data ng Chrome.</translation>
+<translation id="1623104350909869708">Pigilan ang pahinang ito sa paggawa ng mga karagdagang dialog</translation>
+<translation id="3896036286668839683">Viewer ng Certificate</translation>
+<translation id="8583805026567836021">Kini-clear ang data ng account</translation>
+<translation id="4170011742729630528">Hindi available ang serbisyo; subukang muli sa ibang pagkakataon.</translation>
+<translation id="8627706565932943526">Error sa pag-sync</translation>
+<translation id="3136378934686431938">Paki-update ang iyong mga detalye sa pag-sign in.</translation>
+<translation id="4510973599275542560">Huwag i-reload</translation>
 <translation id="9154176715500758432">Manatili sa Pahinang ito</translation>
+<translation id="7063006564040364415">Hindi makakonekta sa server ng pag-sync.</translation>
 <translation id="6512448926095770873">Iwanan ang Pahinang ito</translation>
+<translation id="7947953824732555851">I-accept, mag-sign in</translation>
 <translation id="6040143037577758943">Isara</translation>
+<translation id="5032574515228824816">I-prompt</translation>
 <translation id="6965382102122355670">OK</translation>
+<translation id="7495038789730067783">Kumpirmahin ang pag-sign in</translation>
 </translationbundle>

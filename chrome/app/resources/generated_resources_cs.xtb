@@ -130,6 +130,7 @@
 <translation id="1589055389569595240">Zobrazit pravopis a gramatiku</translation>
 <translation id="7017587484910029005">Zadejte znaky, které vidíte na obrázku níže.</translation>
 <translation id="9013589315497579992">Špatný ověřovací certifikát klienta SSL</translation>
+<translation id="2085245445866855859">Aplikace s atributem manifestu kiosk_only je třeba nainstalovat v režimu veřejného terminálu systému Chrome OS.</translation>
 <translation id="1467999917853307373">Stránka <ph name="URL"/> chce trvale ukládat data v zařízení.</translation>
 <translation id="8524066305376229396">Trvalé úložiště:</translation>
 <translation id="7567293639574541773">Zkontrolovat &amp;prvek</translation>
@@ -183,6 +184,7 @@
 <translation id="4858913220355269194">Fotbal</translation>
 <translation id="2231238007119540260">Smažete-li certifikát serveru, bude server opět prověřován běžnými bezpečnostními kontrolami a bude od něj vyžadován platný certifikát.</translation>
 <translation id="9110235431257073974">Aktivovat integraci funkce Webstore s aplikací Soubory.</translation>
+<translation id="6489433341782457580">Pro vývojáře: Pro volání rozhraní Wallet API metody requestAutocomplete() používat službu sandbox.</translation>
 <translation id="8186609076106987817">Serveru se nepodařilo soubor najít.</translation>
 <translation id="2846816712032308263">Aktivuje rychlé zavírání karet nebo oken. Spouští obslužný nástroj rutiny OnUnload JavaScriptu nezávisle na grafickém uživatelském rozhraní.</translation>
 <translation id="9134410174832249455">Prohlížeči <ph name="PRODUCT_NAME"/> se nepodařilo načíst stránku, protože odezva serveru <ph name="HOST_NAME"/> byla příliš dlouhá. Webové stránky možná nejsou v provozu nebo máte potíže s připojením k internetu.</translation>
@@ -351,6 +353,7 @@
 <translation id="8959810181433034287">Dozorovaný uživatel se pomocí tohoto hesla bude přihlašovat. Vyberte proto bezpečné heslo a nezapomeňte je s daným uživatelem prodiskutovat.</translation>
 <translation id="5154917547274118687">Paměť</translation>
 <translation id="1493492096534259649">Tento jazyk nelze použít ke kontrole pravopisu</translation>
+<translation id="2103866351350079276">Deaktivovat objekt MediaSource bez předpony. Tento objekt umožňuje JavaScriptu odesílat data médií přímo do prvku videa.</translation>
 <translation id="6628463337424475685">Vyhledávání <ph name="ENGINE"/></translation>
 <translation id="6460423884798879930">U klienta, který již byl dříve připojen, bude aktivována možnost odeslání dodatečných ověřovacích údajů v počátečním paketu SYN, což zvyšuje rychlost zahájení odesílání dat.</translation>
 <translation id="6563261555270336410">Podrobnosti o webu <ph name="ELEMENTS_HOST_NAME"/></translation>
@@ -1123,7 +1126,7 @@ Výpočet zbývajícího času</translation>
 <translation id="7518003948725431193">Na webové adrese <ph name="URL"/> se nepodařilo nalézt žádnou webovou stránku.</translation>
 <translation id="7484645889979462775">Nikdy v případě těchto stránek</translation>
 <translation id="9086455579313502267">Nelze získat přístup k síti.</translation>
-<translation id="2772936498786524345">Ninja</translation>
+<translation id="2772936498786524345">Nindža</translation>
 <translation id="5595485650161345191">Upravit adresu</translation>
 <translation id="1849186935225320012">Tato stránka má úplnou kontrolu nad zařízeními MIDI.</translation>
 <translation id="7309416673261215716">Verze rozšíření</translation>
@@ -1372,7 +1375,6 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME"/>
 <translation id="2660779039299703961">Událost</translation>
 <translation id="4249248555939881673">Čeká se na připojení k síti...</translation>
 <translation id="8651130890368571179">Dozorovaný uživatel si může prohlížet web podle vašich pokynů. Jakožto správce dozorovaného uživatele v Chromu můžete
-
  • povolit nebo zakázat konkrétní weby,
  • kontrolovat, které weby uživatel navštívil, a
  • spravovat další nastavení.
@@ -1573,6 +1575,7 @@ Dejte pozor, abyste neodhalili žádné citlivé informace.</translation>
 <translation id="6736329909263487977"><ph name="ISSUED_BY"/> [<ph name="ISSUED_TO"/>]</translation>
 <translation id="8899388739470541164">Vietnamština</translation>
 <translation id="6423064450797205562">Metriky související s rychlostí, kterou <ph name="SHORT_PRODUCT_NAME"/> provádí požadované akce</translation>
+<translation id="2048118585307365263">Aktivovat službu MediaDrm.</translation>
 <translation id="4091434297613116013">listy papíru</translation>
 <translation id="7475671414023905704">Adresa URL pro získání ztraceného hesla Netscape</translation>
 <translation id="3335947283844343239">Znovu otevřít zavřenou kartu</translation>
@@ -2855,7 +2858,7 @@ Veřejný exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS"/> bitů):
 <translation id="2912905526406334195">Stránka <ph name="HOST"/> chce použít váš mikrofon.</translation>
 <translation id="2805756323405976993">Aplikace</translation>
 <translation id="1608626060424371292">Odebrat tohoto uživatele</translation>
-<translation id="3075239840551149663"><ph name="NEW_PROFILE_NAME"/> byl vytvořen jako dozorovaný uživatel.</translation>
+<translation id="3075239840551149663">Vytvořili jste dozorovaného uživatele <ph name="NEW_PROFILE_NAME"/>!</translation>
 <translation id="3651020361689274926">Požadovaný zdroj již neexistuje a není k dispozici ani adresa přesměrování. Tento stav je pravděpodobně trvalý.</translation>
 <translation id="7541236596838501870">Nahrané protokoly WebRTC (<ph name="WEBRTC_LOG_COUNT"/>)</translation>
 <translation id="6003284010415283671">Přidat aplikace</translation>
@@ -3831,6 +3834,7 @@ Přihlašovací údaje k účtu jsou zastaralé.</translation>
 <translation id="3672159315667503033">Stránka <ph name="URL"/> chce trvale ukládat data v místním počítači.</translation>
 <translation id="373572798843615002">1 karta</translation>
 <translation id="4806065163318322702">Přepnout hlasový vstup</translation>
+<translation id="6190185222845843088">Použít servery sandbox služby Peněženka</translation>
 <translation id="3177048931975664371">Kliknutím skryjete heslo</translation>
 <translation id="5852137567692933493">Restartovat a použít funkci Powerwash</translation>
 <translation id="3092544800441494315">Přiložit tento snímek obrazovky:</translation>
@@ -4098,6 +4102,7 @@ Přihlašovací údaje k účtu jsou zastaralé.</translation>
 <translation id="1639239467298939599">Načítání</translation>
 <translation id="5457599981699367932">Použít jako host</translation>
 <translation id="6850233365366645553">Před obnovením pomocí funkce Powerwash je nutné zařízení restartovat. Funkce Powerwash ve vašem zařízení <ph name="IDS_SHORT_PRODUCT_NAME"/> zcela obnoví počáteční nastavení.</translation>
+<translation id="4292622557427736684">Pro rozhraní Encrypted Media Extensions ve výchozím nastavení aktivovat službu MediaDrm.</translation>
 <translation id="1812514023095547458">Výběr barvy</translation>
 <translation id="5089363139417863686">Zobrazit pomocí aplikace Soubory</translation>
 <translation id="7047998246166230966">Kurzor</translation>
@@ -4447,6 +4452,7 @@ Přihlašovací údaje k účtu jsou zastaralé.</translation>
 <translation id="1728442818359004787">Změnit výchozí aplikaci...</translation>
 <translation id="7540972813190816353">Při kontrole aktualizací došlo k chybě: <ph name="ERROR"/></translation>
 <translation id="7664620655576155379">Nepodporované zařízení Bluetooth: <ph name="DEVICE_NAME"/>.</translation>
+<translation id="2990212470195050777">Deaktivovat rozhraní Media Source API bez předpony.</translation>
 <translation id="2225024820658613551">Neměli byste pokračovat, &lt;strong&gt;zvláště&lt;/strong&gt; pokud jste takové varování u těchto stránek dosud neviděli.</translation>
 <translation id="2049639323467105390">Zařízení je spravováno doménou <ph name="DOMAIN"/>.</translation>
 <translation id="1932098463447129402">Nikoli před</translation>

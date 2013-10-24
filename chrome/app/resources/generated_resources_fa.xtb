@@ -134,6 +134,7 @@
 <translation id="1589055389569595240">نمایش املا و گرامر</translation>
 <translation id="7017587484910029005">نویسه‌هایی را که در تصویر زیر می‌بینید تایپ کنید.</translation>
 <translation id="9013589315497579992">‏گواهی تأیید اعتبار سرویس گیرنده SSL نادرست است.</translation>
+<translation id="2085245445866855859">‏برنامه‌ای با ویژگی مانیفست «kiosk_only» باید در حالت کیوسک ChromeOS نصب شود.</translation>
 <translation id="1467999917853307373"><ph name="URL"/> می‌خواهد داده‌ها را برای همیشه در دستگاه شما ذخیره کند.</translation>
 <translation id="8524066305376229396">محل ذخیره دائمی:</translation>
 <translation id="7567293639574541773">&amp;بازرسی عنصر</translation>
@@ -187,6 +188,7 @@
 <translation id="4858913220355269194">فوتبالی</translation>
 <translation id="2231238007119540260">در صورتی که یک مجوز سرور را حذف کنید، بررسی های امنیتی معمولی را برای آن سرور بازیابی می‌کنید و سرور ملزم به استفاده از یک مجوز معتبر می‌شود.</translation>
 <translation id="9110235431257073974">‏فعال کردن ادغام Webstore و Files.app.</translation>
+<translation id="6489433341782457580">‏برای برنامه‌نویسان: از سرویس جعبه ایمنی برای فراخوانی‌های Wallet API برای requestAutocomplete() استفاده کنید.</translation>
 <translation id="8186609076106987817">سرور نتوانست فایل را پیدا کند.</translation>
 <translation id="2846816712032308263">‏بستن سریع برگه/پنجره را فعال می‌کند - کنترل‌کننده onunload js برگه را مستقل از GUI اجرا می‌کند.</translation>
 <translation id="9134410174832249455"><ph name="PRODUCT_NAME"/> نمی‌تواند صفحهٔ وب را بارگیری کند زیرا پاسخ <ph name="HOST_NAME"/> مدت زمان زیادی طول کشید. ممکن است وب سایت کار نکند، یا اتصال اینترنت شما مشکل داشته باشد.</translation>
@@ -346,6 +348,7 @@
 <translation id="8959810181433034287">کاربر نظارت‌شده برای ورود به سیستم باید از این گذرواژه استفاده کند. بنابراین گذرواژه‌ای ایمن انتخاب کرده، آن را با کاربر نظارت‌شده در میان بگذارید.</translation>
 <translation id="5154917547274118687">حافظه</translation>
 <translation id="1493492096534259649">امکان استفاده از این زبان برای بررسی املا وجود ندارد</translation>
+<translation id="2103866351350079276">‏شیء بدون پیشوند MediaSource را غیر فعال می‌کند. این شیء به جاوا اسکریپت امکان می‌دهد داده‌های رسانه‌ای را مستقیماً به یک عنصر ویدیویی ارسال کند.</translation>
 <translation id="6628463337424475685">جستجوی <ph name="ENGINE"/></translation>
 <translation id="6460423884798879930">‏قابلیت ارسال اطلاعات تأیید هویت اضافی در بسته اولیه SYN را برای سرویس‌گیرنده‌ای که قبلاً متصل شده است به کار می‌اندازد و باعث می‌شود ارسال داده سریع‌تر آغاز شود.</translation>
 <translation id="6563261555270336410">جزئيات مربوط به <ph name="ELEMENTS_HOST_NAME"/></translation>
@@ -1580,6 +1583,7 @@
 <translation id="6736329909263487977"><ph name="ISSUED_BY"/> [<ph name="ISSUED_TO"/>]</translation>
 <translation id="8899388739470541164">ویتنامی</translation>
 <translation id="6423064450797205562">معیارهای اندازه‌گیری مربوط به سرعت انجام عملکردهای درخواستی توسط  <ph name="SHORT_PRODUCT_NAME"/></translation>
+<translation id="2048118585307365263">‏فعال کردن MediaDrm.</translation>
 <translation id="4091434297613116013">صفحات کاغذ</translation>
 <translation id="7475671414023905704">‏Netscape URL رمز ورود را گم کرده است</translation>
 <translation id="3335947283844343239">باز کردن مجدد برگه بسته شده</translation>
@@ -3825,6 +3829,7 @@
 <translation id="3672159315667503033"><ph name="URL"/> می‌خواهد بطور دائم داده‌های بزرگ را در رایانه محلی شما ذخیره کند.</translation>
 <translation id="373572798843615002">1 برگه</translation>
 <translation id="4806065163318322702">تغییر حالت ورودی گفتار</translation>
+<translation id="6190185222845843088">‏استفاده از سرورهای جعبه ایمنی Wallet</translation>
 <translation id="3177048931975664371">برای پنهان کردن گذرواژه، کلیک کنید</translation>
 <translation id="5852137567692933493">‏راه‌اندازی مجدد و Powerwash</translation>
 <translation id="3092544800441494315">لحاظ کردن این عکس صفحهٔ نمایش:</translation>
@@ -4091,6 +4096,7 @@
 <translation id="1639239467298939599">بارگیری</translation>
 <translation id="5457599981699367932">مرور کردن به‌عنوان یک مهمان</translation>
 <translation id="6850233365366645553">‏‘پیش از آنکه دستگاه شما با Powerwash بازنشانی شود، یک راه‌اندازی مجدد مورد نیاز است. Powerwash دستگاه <ph name="IDS_SHORT_PRODUCT_NAME"/> شما را به گونه‌ای بازنشانی می‌کند که انگار یک دستگاه جدید است.</translation>
+<translation id="4292622557427736684">‏MediaDrm را به طور پیش‌فرض برای برنامه‌های افزودنی رسانه‌ای رمزگذاری شده فعال می‌کند.</translation>
 <translation id="1812514023095547458">انتخاب رنگ</translation>
 <translation id="5089363139417863686">مشاهده با برنامه «فایل‌ها»</translation>
 <translation id="7047998246166230966">اشاره‌گر</translation>
@@ -4441,6 +4447,7 @@
 <translation id="1728442818359004787">تغییر برنامه پیش‌فرض...</translation>
 <translation id="7540972813190816353">در هنگام بررسی برای وجود به‌روزرسانی خطایی رخ داد: <ph name="ERROR"/></translation>
 <translation id="7664620655576155379">دستگاه بلوتوث پشتیبانی نشده: «<ph name="DEVICE_NAME"/>».</translation>
+<translation id="2990212470195050777">‏غیرفعال کردن Media Source API بدون پیشوند.</translation>
 <translation id="2225024820658613551">‏نباید ادامه دهید، &lt;strong&gt;مخصوصاً&lt;/strong&gt; اگر قبلاً هیچوقت این هشدار را در مورد این سایت ندیده‌اید.</translation>
 <translation id="2049639323467105390">این دستگاه توسط <ph name="DOMAIN"/> مدیریت می‌شود.</translation>
 <translation id="1932098463447129402">نه قبل از</translation>

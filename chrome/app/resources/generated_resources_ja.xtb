@@ -134,6 +134,7 @@
 <translation id="1589055389569595240">スペルと文法を表示</translation>
 <translation id="7017587484910029005">下記の画像に表示されている文字を入力してください。</translation>
 <translation id="9013589315497579992">SSL クライアント認証証明書が不正です。</translation>
+<translation id="2085245445866855859">マニフェスト属性が kiosk_only のアプリをインストールするには ChromeOS でキオスク モードを有効にする必要があります。</translation>
 <translation id="1467999917853307373"><ph name="URL"/> がお使いの端末への永続的なデータ保存を必要としています。</translation>
 <translation id="8524066305376229396">永続的ストレージ:</translation>
 <translation id="7567293639574541773">要素を検証(&amp;N)</translation>
@@ -187,6 +188,7 @@
 <translation id="4858913220355269194">フリッツ</translation>
 <translation id="2231238007119540260">サーバー証明書を削除すると、そのサーバーの通常のセキュリティ チェックを復活させることになり、サーバーは正当な証明書を使用することが必要となります。</translation>
 <translation id="9110235431257073974">ウェブストアと Files.app の統合を有効にする。</translation>
+<translation id="6489433341782457580">デベロッパー向け: Wallet API で requestAutocomplete() を呼び出す場合はサンドボックス サービスをご利用ください。</translation>
 <translation id="8186609076106987817">お探しのファイルはサーバーにはありません。</translation>
 <translation id="2846816712032308263">タブ/ウィンドウを高速に閉じられるようにします（タブの onunload js ハンドラを GUI とは別に実行します）。</translation>
 <translation id="9134410174832249455"><ph name="HOST_NAME"/> からの応答が遅いため、<ph name="PRODUCT_NAME"/> ではウェブページの読み込みができませんでした。ウェブサイトがダウンしているか、インターネット接続に問題が発生している可能性があります。</translation>
@@ -351,6 +353,7 @@
 <translation id="8959810181433034287">監視対象ユーザーは、ログインするときにこのパスワードを使用する必要があります。そのため、安全なパスワードを選んでください。また、必ず監視対象ユーザー本人にも相談してください。</translation>
 <translation id="5154917547274118687">メモリ</translation>
 <translation id="1493492096534259649">この言語はスペルチェックに使用できません</translation>
+<translation id="2103866351350079276">プレフィックスなしの MediaSource オブジェクトを無効にします。このオブジェクトを有効にすると、JavaScript を使用してメディア データを video 要素に直接送信できます。</translation>
 <translation id="6628463337424475685"><ph name="ENGINE"/> 検索</translation>
 <translation id="6460423884798879930">以前接続したクライアントの認証情報を最初の SYN パケットで送信し、データ送信が迅速に開始されるようにするには、このオプションを有効にします。</translation>
 <translation id="6563261555270336410"><ph name="ELEMENTS_HOST_NAME"/> の詳細</translation>
@@ -1256,7 +1259,7 @@
 <translation id="14171126816530869"><ph name="LOCALITY"/> の <ph name="ORGANIZATION"/> の ID は、<ph name="ISSUER"/> によって確認済みです。</translation>
 <translation id="220858061631308971">「<ph name="DEVICE_NAME"/>」の PIN コードを入力してください:</translation>
 <translation id="6263082573641595914">Microsoft CA バージョン</translation>
-<translation id="953345106084818179">許可を要求</translation>
+<translation id="953345106084818179">許可をリクエスト</translation>
 <translation id="3105917916468784889">スクリーンショットを撮る</translation>
 <translation id="6000902307058248087">マイクへのアクセスをサイトが要求するたびに確認する（推奨）</translation>
 <translation id="1587275751631642843">JavaScript コンソール(&amp;J)</translation>
@@ -1588,6 +1591,7 @@
 <translation id="6736329909263487977"><ph name="ISSUED_BY"/> [<ph name="ISSUED_TO"/>]</translation>
 <translation id="8899388739470541164">ベトナム語</translation>
 <translation id="6423064450797205562"><ph name="SHORT_PRODUCT_NAME"/> が要求された操作を実行する速度に関連する指標</translation>
+<translation id="2048118585307365263">MediaDrm を有効にする</translation>
 <translation id="4091434297613116013">用紙</translation>
 <translation id="7475671414023905704">Netscape パスワード紛失 URL</translation>
 <translation id="3335947283844343239">閉じたタブを開く</translation>
@@ -2832,7 +2836,7 @@
 <translation id="5618018737832496935">「adview」要素を有効にする</translation>
 <translation id="8190193592390505034"><ph name="PROVIDER_NAME"/> に接続中</translation>
 <translation id="2433452467737464329">ページを自動更新するには URL に次のようなクエリ パラメータを追加してください: chrome://network/?refresh=&lt;sec&gt;</translation>
-<translation id="8712637175834984815">了解</translation>
+<translation id="8712637175834984815">閉じる</translation>
 <translation id="6144890426075165477">現在、<ph name="PRODUCT_NAME"/> は既定のブラウザに設定されていません。</translation>
 <translation id="4068506536726151626">このページには、あなたの現在地を追跡している以下のサイトからの要素が含まれています。</translation>
 <translation id="4220128509585149162">クラッシュ</translation>
@@ -2883,7 +2887,7 @@
 <translation id="7525067979554623046">作成</translation>
 <translation id="4853020600495124913">新しいウィンドウで開く(&amp;N)</translation>
 <translation id="6847758263950452722">MHTML としてページを保存</translation>
-<translation id="4217998989792742258">これは <ph name="CUSTODIAN_EMAIL"/> によって管理されている監視対象ユーザーです</translation>
+<translation id="4217998989792742258"><ph name="CUSTODIAN_EMAIL"/> によって管理される監視対象ユーザー</translation>
 <translation id="4711094779914110278">トルコ語</translation>
 <translation id="5121130586824819730">ハード ディスクがいっぱいです。別の場所に保存するか、ハード ディスクの空き容量を増やしてください。</translation>
 <translation id="7643802497509977994">「<ph name="FROM_LOCALE"/>」に戻す（ログアウトが必要です）</translation>
@@ -3254,7 +3258,7 @@
 <translation id="8891727572606052622">プロキシ モードが無効です。</translation>
 <translation id="8813873272012220470">互換性のないソフトウェアが検出されたときに警告するためのバックグラウンド チェックを有効にします（たとえば、ブラウザのクラッシュの原因となるサードパーティ モジュールが検出されると警告します）。</translation>
 <translation id="3660234220361471169">信頼されていない</translation>
-<translation id="3504669335572969216"><ph name="CUSTODIAN_EMAIL"/> によって管理されている監視対象ユーザーです。
+<translation id="3504669335572969216"><ph name="CUSTODIAN_EMAIL"/> によって管理される監視対象ユーザー
 アカウントのログイン詳細が最新のものではありません。</translation>
 <translation id="2679385451463308372">システム ダイアログを使用して印刷...</translation>
 <translation id="959890390740139744">スペルミスの自動修正</translation>
@@ -3848,6 +3852,7 @@
 <translation id="3672159315667503033"><ph name="URL"/> では、大容量のデータをローカル コンピュータに永続的に保存することを要求しています。</translation>
 <translation id="373572798843615002">タブ（1）</translation>
 <translation id="4806065163318322702">音声認識を切り替える</translation>
+<translation id="6190185222845843088">ウォレットのサンドボックス サーバーを使用する</translation>
 <translation id="3177048931975664371">クリックしてパスワードを隠す</translation>
 <translation id="5852137567692933493">再起動して Powerwash を実行する</translation>
 <translation id="3092544800441494315">このスクリーンショットを含める:</translation>
@@ -4115,6 +4120,7 @@
 <translation id="1639239467298939599">読み込み中</translation>
 <translation id="5457599981699367932">ゲストとしてブラウジング</translation>
 <translation id="6850233365366645553">Powerwash でデバイスをリセットするには、その前に再起動が必要です。Powerwash を実行すると、お使いの <ph name="IDS_SHORT_PRODUCT_NAME"/> デバイスは出荷時と同じ状態にリセットされます。</translation>
+<translation id="4292622557427736684">Encrypted Media Extensions に対して MediaDrm をデフォルトで有効にします。</translation>
 <translation id="1812514023095547458">色を選択</translation>
 <translation id="5089363139417863686">ファイル アプリで表示</translation>
 <translation id="7047998246166230966">ポインタ</translation>
@@ -4465,6 +4471,7 @@
 <translation id="1728442818359004787">デフォルトのアプリを変更...</translation>
 <translation id="7540972813190816353">更新の確認中にエラーが発生しました: <ph name="ERROR"/></translation>
 <translation id="7664620655576155379">サポートされていない Bluetooth デバイス: 「<ph name="DEVICE_NAME"/>」</translation>
+<translation id="2990212470195050777">プレフィックスなしの Media Source API を無効にする</translation>
 <translation id="2225024820658613551">先に進まないでください。このサイトについて今回初めてこの警告メッセージが表示された場合は&lt;strong&gt;特に&lt;/strong&gt;注意が必要です。</translation>
 <translation id="2049639323467105390">この端末は <ph name="DOMAIN"/> によって管理されています。</translation>
 <translation id="1932098463447129402">開始時刻</translation>

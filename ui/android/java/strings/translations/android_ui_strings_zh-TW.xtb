@@ -2,6 +2,12 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="zh-TW">
 <translation id="7658239707568436148">取消</translation>
+<translation id="9068849894565669697">選取顏色</translation>
+<translation id="793640675459356075">無法開啟選取的檔案</translation>
 <translation id="6727102863431372879">設定</translation>
+<translation id="6315516427814392808">記憶體不足，無法完成前一項操作</translation>
 <translation id="6042308850641462728">詳細資訊</translation>
+<translation id="7535087603100972091">值</translation>
+<translation id="8889402386540077796">色調</translation>
+<translation id="3329013043687509092">飽和度</translation>
 </translationbundle>

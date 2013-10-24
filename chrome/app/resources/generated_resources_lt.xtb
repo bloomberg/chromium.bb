@@ -133,6 +133,7 @@
 <translation id="1589055389569595240">Rodyti rašybos ir gramatikos tikrinimą</translation>
 <translation id="7017587484910029005">Įveskite simbolius, kuriuos matote toliau esančiame paveikslėlyje.</translation>
 <translation id="9013589315497579992">Blogas SSL kliento tapatybės nustatymo sertifikatas.</translation>
+<translation id="2085245445866855859">Programa su „kiosk_only“ deklaracijos atributu turi būti įdiegta „Chrome“ OS viešojo terminalo režimu.</translation>
 <translation id="1467999917853307373"><ph name="URL"/> pageidaujama visą laiką saugoti duomenis jūsų įrenginyje.</translation>
 <translation id="8524066305376229396">Ilgalaikė atmintis:</translation>
 <translation id="7567293639574541773">P&amp;atikrinti elementą</translation>
@@ -186,6 +187,7 @@
 <translation id="4858913220355269194">Šemberas</translation>
 <translation id="2231238007119540260">Jei ištrinsite serverio sertifikatą, atnaujinsite įprastas to serverio saugos patikras ir reikės naudoti galiojantį sertifikatą.</translation>
 <translation id="9110235431257073974">Įgalinti internetinės parduotuvės ir failų programos („Files.app“) integravimą.</translation>
+<translation id="6489433341782457580">Kūrėjams: naudokite „sandbox“ (smėlio dėžės) paslaugą Piniginės API „requestAutocomplete()“ iškvietoms.</translation>
 <translation id="8186609076106987817">Serveriui nepavyko rasti failo.</translation>
 <translation id="2846816712032308263">Įgalinamas greitas skirtuko lapo / lango uždarymas – paleidžiama skirtuko iškelties JS doroklė, neatsižvelgiant į VSS.</translation>
 <translation id="9134410174832249455">„<ph name="PRODUCT_NAME"/>“ nepavyko įkelti tinklalapio, nes <ph name="HOST_NAME"/> per ilgai neatsakė. Gali neveikti svetainė arba yra interneto ryšio problemų.</translation>
@@ -356,6 +358,7 @@
 <translation id="8959810181433034287">Prižiūrimas naudotojas turės naudoti šį slaptažodį prisijungdamas, todėl pasirinkite saugų slaptažodį ir būtinai aptarkite jį su prižiūrimu naudotoju.</translation>
 <translation id="5154917547274118687">Atmintis</translation>
 <translation id="1493492096534259649">Šios kalbos negalima naudoti rašybai tikrinti</translation>
+<translation id="2103866351350079276">Išjunkite „MediaSource“ objektą be kodo. Taikant šį objektą leidžiama „JavaScript“ siųsti medijos duomenis tiesiogiai vaizdo įrašo elementui.</translation>
 <translation id="6628463337424475685">„<ph name="ENGINE"/>“ paieška</translation>
 <translation id="6460423884798879930">Įgalinkite parinktį siųsti papildomą autentifikavimo informaciją pradiniame anksčiau prijungto kliento programos SYN pakete, kad duomenys būtų pradedami siųsti greičiau.</translation>
 <translation id="6563261555270336410">Išsami informacija apie <ph name="ELEMENTS_HOST_NAME"/></translation>
@@ -1600,6 +1603,7 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME"/>“?</translation>
 <translation id="6736329909263487977">„<ph name="ISSUED_BY"/>“ [<ph name="ISSUED_TO"/>]</translation>
 <translation id="8899388739470541164">vietnamiečių</translation>
 <translation id="6423064450797205562">Metrika, susijusi su greičiu, kuriuo „<ph name="SHORT_PRODUCT_NAME"/>“ atlieka pageidaujamus veiksmus</translation>
+<translation id="2048118585307365263">Įgalinti „MediaDrm“.</translation>
 <translation id="4091434297613116013">popieriaus lapai</translation>
 <translation id="7475671414023905704">„Netscape“ prarasto slaptažodžio URL</translation>
 <translation id="3335947283844343239">Iš naujo atidarykite uždarytą skirtuką</translation>
@@ -3870,6 +3874,7 @@ Išsami paskyros prisijungimo informacija pasenusi.</translation>
 <translation id="3672159315667503033"><ph name="URL"/> pageidaujama visam laikui išsaugoti daug duomenų jūsų vietiniame kompiuteryje.</translation>
 <translation id="373572798843615002">1 skirtukas</translation>
 <translation id="4806065163318322702">Perjungti kalbos įvestį</translation>
+<translation id="6190185222845843088">Piniginės „sandbox“ (smėlio dėžės) serverių naudojimas</translation>
 <translation id="3177048931975664371">Jei norite slėpti slaptažodį, spustelėkite.</translation>
 <translation id="5852137567692933493">Paleisti iš naujo ir naudoti „Powerwash“</translation>
 <translation id="3092544800441494315">Įtraukti šią ekrano kopiją:</translation>
@@ -4139,6 +4144,7 @@ Išsami paskyros prisijungimo informacija pasenusi.</translation>
 <translation id="1639239467298939599">Įkeliama</translation>
 <translation id="5457599981699367932">Naršyti kaip svečiui</translation>
 <translation id="6850233365366645553">Būtina paleisti iš naujo, kad įrenginį būtų galima nustatyti iš naujo naudojant „Powerwash“. „Powerwash“ iš naujo nustato „<ph name="IDS_SHORT_PRODUCT_NAME"/>“ įrenginį, kad jis būtų tarsi naujas.</translation>
+<translation id="4292622557427736684">Įgalinti šifruotų medijos plėtinių „MediaDrm“ pagal numatytuosius nustatymus.</translation>
 <translation id="1812514023095547458">Pasirinkti spalvą</translation>
 <translation id="5089363139417863686">Peržiūrėti naudojant Failų programą</translation>
 <translation id="7047998246166230966">Žymeklis</translation>
@@ -4488,6 +4494,7 @@ Išsami paskyros prisijungimo informacija pasenusi.</translation>
 <translation id="1728442818359004787">Keisti numatytąją programą...</translation>
 <translation id="7540972813190816353">Tikrinant, ar yra naujinių, įvyko klaida: <ph name="ERROR"/></translation>
 <translation id="7664620655576155379">Nepalaikomas „Bluetooth“ įrenginys: „<ph name="DEVICE_NAME"/>“.</translation>
+<translation id="2990212470195050777">Išjungti medijos šaltinio API be kodo.</translation>
 <translation id="2225024820658613551">Neturėtumėte toliau tęsti, &lt;strong&gt;ypač&lt;/strong&gt; jei anksčiau šioje svetainėje nesate matę tokio įspėjimo.</translation>
 <translation id="2049639323467105390">Įrenginys valdomas „<ph name="DOMAIN"/>“.</translation>
 <translation id="1932098463447129402">Nuo</translation>

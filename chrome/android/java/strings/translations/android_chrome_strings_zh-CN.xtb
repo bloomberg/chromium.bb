@@ -3,9 +3,24 @@
 <translationbundle lang="zh-CN">
 <translation id="1491151370853475546">重新加载此页</translation>
 <translation id="7658239707568436148">取消</translation>
+<translation id="6458785801851713928">您的网域不支持同步。</translation>
 <translation id="2731700343119398978">请稍候...</translation>
+<translation id="3358663646935160692">此帐户由 <ph name="DOMAIN_NAME"/> 管理。
+
+您目前登录的帐户是一个托管帐户，该帐户的管理员将能够控制您的 Chrome 个人资料。您的 Chrome 数据将永远与此帐户相关联。断开与此帐户的关联将删除本地 Chrome 数据。</translation>
+<translation id="1623104350909869708">阻止此页创建其他对话框</translation>
+<translation id="3896036286668839683">证书查看器</translation>
+<translation id="8583805026567836021">清除帐户数据</translation>
+<translation id="4170011742729630528">此服务目前无法使用，请稍后再试。</translation>
+<translation id="8627706565932943526">同步错误</translation>
+<translation id="3136378934686431938">请更新您的登录详情。</translation>
+<translation id="4510973599275542560">不重新加载</translation>
 <translation id="9154176715500758432">留在此页</translation>
+<translation id="7063006564040364415">无法连接到同步服务器。</translation>
 <translation id="6512448926095770873">离开此页</translation>
+<translation id="7947953824732555851">接受并登录</translation>
 <translation id="6040143037577758943">关闭</translation>
+<translation id="5032574515228824816">提示</translation>
 <translation id="6965382102122355670">确定</translation>
+<translation id="7495038789730067783">确认登录</translation>
 </translationbundle>

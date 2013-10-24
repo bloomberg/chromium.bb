@@ -2,6 +2,12 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ca">
 <translation id="7658239707568436148">Cancel·la</translation>
+<translation id="9068849894565669697">Selecció de color</translation>
+<translation id="793640675459356075">No s'ha pogut obrir fitxer sel.</translation>
 <translation id="6727102863431372879">Configura</translation>
+<translation id="6315516427814392808">No es pot completar l'operació anterior perquè hi ha poca memòria.</translation>
 <translation id="6042308850641462728">Més</translation>
+<translation id="7535087603100972091">Valor</translation>
+<translation id="8889402386540077796">To</translation>
+<translation id="3329013043687509092">Saturació</translation>
 </translationbundle>

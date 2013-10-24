@@ -136,6 +136,7 @@
 <translation id="1589055389569595240">Pokaż pisownię i gramatykę</translation>
 <translation id="7017587484910029005">Wpisz znaki widoczne na poniższym obrazie.</translation>
 <translation id="9013589315497579992">Błędny certyfikat uwierzytelniania klienta SSL.</translation>
+<translation id="2085245445866855859">Aplikacja z atrybutem „kiosk_only” w pliku manifestu musi być zainstalowana w trybie kiosku Chrome OS.</translation>
 <translation id="1467999917853307373">Witryna <ph name="URL"/> chce na stałe przechowywać dane na Twoim urządzeniu.</translation>
 <translation id="8524066305376229396">Stała przestrzeń dyskowa:</translation>
 <translation id="7567293639574541773">Z&amp;badaj element</translation>
@@ -189,6 +190,7 @@
 <translation id="4858913220355269194">Fritz</translation>
 <translation id="2231238007119540260">Jeśli usuniesz certyfikat serwera, przywrócisz zwykłe sprawdzenia zabezpieczeń w odniesieniu do tego serwera z wymogiem używania przez niego ważnego certyfikatu.</translation>
 <translation id="9110235431257073974">Włącz integrację sklepu internetowego i aplikacji Pliki.</translation>
+<translation id="6489433341782457580">Programiści: w przypadku wywołań requestAutocomplete() interfejsu API Portfela należy używać usługi piaskownicy.</translation>
 <translation id="8186609076106987817">Serwer nie znalazł pliku.</translation>
 <translation id="2846816712032308263">Włącza szybkie zamykanie kart/okien – uruchamia moduł js zwolnienia karty niezależnie od GUI.</translation>
 <translation id="9134410174832249455">Przeglądarka <ph name="PRODUCT_NAME"/> nie może wczytać strony internetowej, ponieważ oczekiwanie na odpowiedź serwera <ph name="HOST_NAME"/> trwa zbyt długo. Witryna może być wyłączona lub mogły wystąpić problemy z połączeniem internetowym.</translation>
@@ -349,6 +351,7 @@
 <translation id="8959810181433034287">Użytkownik nadzorowany będzie musiał podawać to hasło podczas logowania się, więc utwórz takie, które będzie bezpieczne, i przekaż je temu użytkownikowi.</translation>
 <translation id="5154917547274118687">Pamięć</translation>
 <translation id="1493492096534259649">Nie można użyć tego języka do sprawdzania pisowni</translation>
+<translation id="2103866351350079276">Wyłącza obiekt MediaSource bez przedrostka. Pozwala on bezpośrednio przesyłać dane multimedialne z JavaScriptu do elementu wideo.</translation>
 <translation id="6628463337424475685">Wyszukiwarka <ph name="ENGINE"/></translation>
 <translation id="6460423884798879930">Włącz tę opcję, by wysłać dodatkowe informacje uwierzytelniania we wstępnym pakiecie SYN dla uprzednio połączonego klienta, umożliwiając szybsze rozpoczęcie wysyłania danych.</translation>
 <translation id="6563261555270336410">Informacje o <ph name="ELEMENTS_HOST_NAME"/></translation>
@@ -384,7 +387,7 @@
 <translation id="4684748086689879921">Pomiń importowanie</translation>
 <translation id="6418443601594065950">Wyłącz wyskakujący pasek informacyjny dla chronionych nośników.</translation>
 <translation id="8191230140820435481">Zarządzać Twoimi aplikacjami, rozszerzeniami i motywami</translation>
-<translation id="8279107132611114222">Twoja prośba o dostęp to tej witryny została wysłana do: <ph name="NAME"/>.</translation>
+<translation id="8279107132611114222">Twoja prośba o dostęp to tej witryny została wysłana do: <ph name="NAME"/></translation>
 <translation id="8685753823371943147">Sprawdzanie dysku USB...</translation>
 <translation id="8034955203865359138">Brak wpisów historii.</translation>
 <translation id="9130015405878219958">Wprowadzono nieprawidłowy tryb.</translation>
@@ -541,7 +544,7 @@
 <translation id="1916935104118658523">Ukryj wtyczkę</translation>
 <translation id="1046059554679513793">Niestety, ta nazwa jest już używana.</translation>
 <translation id="2587922270115112871">Utworzenie użytkownika nadzorowanego nie powoduje utworzenia konta Google, a jego ustawienia
-    ani dane nie są przenoszone na inne urządzenia przez Synchronizację Chrome. Jego zasięg działania jest ograniczony tylko do tego urządzenia.</translation>
+    ani dane nie są przenoszone na inne urządzenia przez funkcje synchronizacji w Chrome. Jego zasięg działania jest ograniczony tylko do tego urządzenia.</translation>
 <translation id="4497097279402334319">Nie można nawiązać połączenia z siecią.</translation>
 <translation id="7342729285348293164">Zaloguj się do <ph name="PRODUCT_NAME"/> przy użyciu swojego konta Google, aby zapisać w sieci spersonalizowane funkcje przeglądarki i mieć do nich dostęp z przeglądarki <ph name="PRODUCT_NAME"/> na dowolnym komputerze. Będziesz też automatycznie logowany(a) do swoich ulubionych usług Google.</translation>
 <translation id="2542049655219295786">Tabela Google</translation>
@@ -819,8 +822,8 @@
 <translation id="7550830279652415241">bookmarks_<ph name="DATESTAMP"/>.html</translation>
 <translation id="3127360977178108225">Zakończ sesję gościa</translation>
 <translation id="6327653052522436195">Miasto</translation>
-<translation id="164814987133974965">Użytkownik nadzorowany może przeglądać internet z Twoją pomocą. Jako jego menedżer możesz:
-    <ph name="BEGIN_BOLD"/>zezwalać na dostęp do określonych witryn lub blokować go<ph name="END_BOLD"/>;
+<translation id="164814987133974965">Użytkownik nadzorowany może przeglądać internet zgodnie z Twoimi wytycznymi. Jako jego menedżer możesz:
+    <ph name="BEGIN_BOLD"/>zezwalać na dostęp do określonych witryn lub blokować go<ph name="END_BOLD"/>,
     <ph name="BEGIN_BOLD"/>sprawdzać<ph name="END_BOLD"/>, na jakie strony wszedł użytkownik nadzorowany, oraz
     <ph name="BEGIN_BOLD"/>zarządzać<ph name="END_BOLD"/> innymi ustawieniami.</translation>
 <translation id="6828153365543658583">Ogranicz logowanie do następujących użytkowników:</translation>
@@ -1145,7 +1148,7 @@ Psst! Następnym razem możesz użyć trybu incognito <ph name="SHORTCUT_KEY"/>.
 <translation id="2374144379568843525">&amp;Ukryj panel pisowni</translation>
 <translation id="3313590242757056087">Aby określić, jakie strony będzie mógł przeglądać użytkownik nadzorowany,
     skonfiguruj ograniczenia i ustawienia na <ph name="MANAGEMENT_URL"/>.
-    Jeśli nie zmienisz ustawień domyślnych, <ph name="USER_DISPLAY_NAME"/>
+    Jeśli nie zmienisz ustawień domyślnych, użytkownik <ph name="USER_DISPLAY_NAME"/>
     będzie mieć dostęp do wszystkich stron w internecie.</translation>
 <translation id="2694026874607847549">Pliki cookie (1)</translation>
 <translation id="3909791450649380159">Wy&amp;tnij</translation>
@@ -1386,13 +1389,13 @@ Psst! Następnym razem możesz użyć trybu incognito <ph name="SHORTCUT_KEY"/>.
 <translation id="839736845446313156">Zarejestruj</translation>
 <translation id="2660779039299703961">Wydarzenie</translation>
 <translation id="4249248555939881673">Czekam na połączenie z siecią...</translation>
-<translation id="8651130890368571179">Użytkownik nadzorowany może przeglądać internet z Twoją pomocą. Jako jego menedżer w Chrome możesz:
+<translation id="8651130890368571179">Użytkownik nadzorowany może przeglądać internet zgodnie z Twoimi wytycznymi. Jako jego menedżer w Chrome możesz:
 
- • zezwalać na dostęp do określonych witryn lub blokować go;
+ • zezwalać na dostęp do określonych witryn lub blokować go,
  • sprawdzać, na jakie strony wszedł użytkownik nadzorowany, oraz
  • zarządzać innymi ustawieniami.
 
-Utworzenie użytkownika nadzorowanego nie powoduje utworzenia konta Google, a jego ustawienia ani dane nie są przenoszone na inne urządzenia przez Synchronizację Chrome. Jego zasięg działania jest ograniczony tylko do tej instalacji Chrome na tym urządzeniu.
+Utworzenie użytkownika nadzorowanego nie powoduje utworzenia konta Google, a jego ustawienia ani dane nie są przenoszone na inne urządzenia przez funkcje synchronizacji w Chrome. Jego zasięg działania jest ograniczony tylko do tej instalacji Chrome na tym urządzeniu.
       
 Po utworzeniu nowego użytkownika nadzorowanego możesz w każdej chwili i z dowolnego urządzenia zarządzać jego ustawieniami na www.chrome.com/manage.</translation>
 <translation id="2409527877874991071">Wprowadź nową nazwę</translation>
@@ -1474,7 +1477,7 @@ Po utworzeniu nowego użytkownika nadzorowanego możesz w każdej chwili i z dow
 <translation id="3627671146180677314">Czas odnowienia certyfikatu firmy Netscape</translation>
 <translation id="6980956047710795611">Zapisz wszystkie dane systemu operacyjnego Chrome, używając nowego hasła (wymaga poprzedniego hasła).</translation>
 <translation id="8652487083013326477">opcja zakresu stron</translation>
-<translation id="5204967432542742771">Wprowadź hasło</translation>
+<translation id="5204967432542742771">Wpisz hasło</translation>
 <translation id="9025098623496448965">OK, wróć do ekranu logowania</translation>
 <translation id="589737135092634133">Sprawdź ustawienia serwera proxy lub skontaktuj się z administratorem sieci,
           by upewnić się, że serwer proxy działa. Jeśli uważasz, że
@@ -1576,7 +1579,7 @@ Upewnij się, że nie zdradzasz żadnych poufnych informacji.</translation>
 <translation id="7651319298187296870">Wymagane jest zalogowanie, aby użyć certyfikatu użytkownika.</translation>
 <translation id="626568068055008686">Nieprawidłowe hasło lub uszkodzony plik.</translation>
 <translation id="5895875028328858187">Pokazuj powiadomienia, gdy abonament na dane jest na wyczerpaniu lub bliski wygaśnięcia</translation>
-<translation id="939598580284253335">Wprowadź hasło</translation>
+<translation id="939598580284253335">Wpisz hasło</translation>
 <translation id="8418240940464873056">Tryb Hanja</translation>
 <translation id="6557224990928257403">(Aby autoodświeżać tę stronę, wpisz chrome://<ph name="PAGE_NAME"/>/&amp;lt;sekundy&amp;gt;)</translation>
 <translation id="7917972308273378936">Klawiatura litewska</translation>
@@ -1585,6 +1588,7 @@ Upewnij się, że nie zdradzasz żadnych poufnych informacji.</translation>
 <translation id="6736329909263487977"><ph name="ISSUED_BY"/> [<ph name="ISSUED_TO"/>]</translation>
 <translation id="8899388739470541164">Wietnamski</translation>
 <translation id="6423064450797205562">Statystyki dotyczące szybkości, z jaką <ph name="SHORT_PRODUCT_NAME"/> wykonuje żądane działania</translation>
+<translation id="2048118585307365263">Włącz MediaDrm.</translation>
 <translation id="4091434297613116013">kartki</translation>
 <translation id="7475671414023905704">Adres URL utraconego hasła firmy Netscape</translation>
 <translation id="3335947283844343239">Otwórz ponownie zamkniętą kartę</translation>
@@ -1647,7 +1651,7 @@ Upewnij się, że nie zdradzasz żadnych poufnych informacji.</translation>
 <translation id="1672536633972826703">Włącz zdarzenia kliknięć na obramowaniach.</translation>
 <translation id="4628757576491864469">Urządzenia</translation>
 <translation id="8461914792118322307">Serwer proxy</translation>
-<translation id="4707934200082538898">Dalsze instrukcje znajdziesz w e-mailu na koncie <ph name="BEGIN_BOLD"/><ph name="MANAGER_EMAIL"/><ph name="END_BOLD"/>.</translation>
+<translation id="4707934200082538898">Dalsze instrukcje znajdziesz w e-mailu przesłanym na adres <ph name="BEGIN_BOLD"/><ph name="MANAGER_EMAIL"/><ph name="END_BOLD"/>.</translation>
 <translation id="4089521618207933045">Ma menu podrzędne</translation>
 <translation id="3470442499439619530">Usuń tego użytkownika</translation>
 <translation id="1936157145127842922">Pokaż w folderze</translation>
@@ -2224,7 +2228,7 @@ Upewnij się, że nie zdradzasz żadnych poufnych informacji.</translation>
 <translation id="3898521660513055167">Stan tokenu</translation>
 <translation id="1950295184970569138">* Zdjęcie z profilu Google (ładowanie)</translation>
 <translation id="8063491445163840780">Aktywuj kartę 4</translation>
-<translation id="7939997691108949385">Menedżer będzie mógł na stronie <ph name="MANAGEMENT_URL"/> konfigurować ograniczenia i ustawienia dla użytkownika nadzorowanego.</translation>
+<translation id="7939997691108949385">Menedżer będzie mógł konfigurować ograniczenia i ustawienia dla użytkownika nadzorowanego na stronie <ph name="MANAGEMENT_URL"/>.</translation>
 <translation id="2322193970951063277">Nagłówki i stopki</translation>
 <translation id="6436164536244065364">Zobacz w Chrome Web Store</translation>
 <translation id="9137013805542155359">Pokaż tekst oryginalny</translation>
@@ -2488,7 +2492,7 @@ Upewnij się, że nie zdradzasz żadnych poufnych informacji.</translation>
 <translation id="4647090755847581616">&amp;Zamknij kartę</translation>
 <translation id="2649204054376361687"><ph name="CITY"/>, <ph name="COUNTRY"/></translation>
 <translation id="7886758531743562066">Witryna pod adresem <ph name="HOST_NAME"/> zawiera elementy pochodzące z witryn prawdopodobnie zawierających złośliwe oprogramowanie, które może zaszkodzić komputerowi lub w inny sposób działać bez zgody użytkownika. Samo odwiedzenie witryny zawierającej złośliwe oprogramowanie może spowodować zainfekowanie komputera.</translation>
-<translation id="4012185032967847512">Ups, wygląda na to, że jeśli chcesz wejść na tę stronę, musisz uzyskać pozwolenie od menedżera (<ph name="NAME"/>).</translation>
+<translation id="4012185032967847512">Wygląda na to, że jeśli chcesz wejść na tę stronę, musisz uzyskać pozwolenie od menedżera (<ph name="NAME"/>).</translation>
 <translation id="6593868448848741421">najlepsza</translation>
 <translation id="7126604456862387217">„&lt;b&gt;<ph name="SEARCH_STRING"/>&lt;/b&gt;” – &lt;em&gt;wyszukaj na Dysku&lt;/em&gt;</translation>
 <translation id="6181431612547969857">Pobieranie zostało zablokowane</translation>
@@ -2856,7 +2860,7 @@ Aby korzystać z tej funkcji, musisz się zalogować.</translation>
 <translation id="2912905526406334195">Strona <ph name="HOST"/> chce użyć mikrofonu.</translation>
 <translation id="2805756323405976993">Aplikacje</translation>
 <translation id="1608626060424371292">Usuń tego użytkownika</translation>
-<translation id="3075239840551149663">Użytkownik nadzorowany <ph name="NEW_PROFILE_NAME"/> został utworzony.</translation>
+<translation id="3075239840551149663">Użytkownik nadzorowany o nazwie <ph name="NEW_PROFILE_NAME"/> został utworzony.</translation>
 <translation id="3651020361689274926">Żądany zasób już nie istnieje i nie jest dostępny adres przekazywania. Jest to prawdopodobnie sytuacja trwała.</translation>
 <translation id="7541236596838501870">Przesłane dzienniki WebRTC (<ph name="WEBRTC_LOG_COUNT"/>)</translation>
 <translation id="6003284010415283671">Dodaj aplikacje</translation>
@@ -2924,7 +2928,7 @@ Aby korzystać z tej funkcji, musisz się zalogować.</translation>
 <translation id="8691686986795184760">(Włączona na podstawie zasad przedsiębiorstwa)</translation>
 <translation id="878763818693997570">Ta nazwa jest za długa</translation>
 <translation id="1976323404609382849">Pliki cookie z wielu witryn zostały zablokowane.</translation>
-<translation id="7913678092679498828">OK, rozumiem.</translation>
+<translation id="7913678092679498828">OK, rozumiem</translation>
 <translation id="3655670868607891010">Jeśli często widzisz ten komunikat, przeczytaj <ph name="HELP_LINK"/>.</translation>
 <translation id="4504940961672722399">Użyj tego rozszerzenia, klikając tę ikonę lub naciskając <ph name="EXTENSION_SHORTCUT"/>.</translation>
 <translation id="2523966157338854187">Otwórz konkretną stronę lub zestaw stron.</translation>
@@ -2935,9 +2939,9 @@ Aby korzystać z tej funkcji, musisz się zalogować.</translation>
 <translation id="2319236583141234177">Sprawdź ustawienia DNS.</translation>
 <translation id="114140604515785785">Główny katalog rozszerzenia:</translation>
 <translation id="6664237456442406323">Twój komputer jest skonfigurowany przy użyciu błędnie sformatowanego identyfikatora sprzętu. Ta sytuacja uniemożliwia zaktualizowanie systemu operacyjnego Chrome za pomocą najnowszych poprawek zabezpieczeń, a komputer <ph name="BEGIN_BOLD"/>może być narażony na złośliwe ataki<ph name="END_BOLD"/>.</translation>
-<translation id="785160701896930981">Użytkownik nadzorowany o nazwie <ph name="NEW_PROFILE_NAME"/> został utworzony. Aby określić, jakie strony będzie on mógł przeglądać, skonfiguruj ograniczenia i ustawienia na <ph name="BEGIN_LINK"/>www.chrome.com/manage<ph name="END_LINK"/>. Jeśli nie zmienisz ustawień domyślnych, <ph name="NEW_PROFILE_NAME"/> będzie mieć dostęp do wszystkich stron w internecie.
+<translation id="785160701896930981">Użytkownik nadzorowany o nazwie <ph name="NEW_PROFILE_NAME"/> został utworzony. Aby określić, jakie strony będzie on mógł przeglądać, skonfiguruj ograniczenia i ustawienia na <ph name="BEGIN_LINK"/>www.chrome.com/manage<ph name="END_LINK"/>. Jeśli nie zmienisz ustawień domyślnych, użytkownik <ph name="NEW_PROFILE_NAME"/> będzie mieć dostęp do wszystkich stron w internecie.
 
-Te i dalsze instrukcje znajdziesz w e-mailu na koncie <ph name="ACCOUNT_EMAIL"/>.</translation>
+Dalsze instrukcje znajdziesz w e-mailu przesłanym na adres <ph name="ACCOUNT_EMAIL"/>.</translation>
 <translation id="8493236660459102203">Mikrofon:</translation>
 <translation id="4788968718241181184">wietnamski (TCVN6064)</translation>
 <translation id="3254409185687681395">Dodaj stronę do zakładek</translation>
@@ -3833,6 +3837,7 @@ Twoje dane logowania na konto są nieaktualne.</translation>
 <translation id="3672159315667503033">Witryna <ph name="URL"/> chce na stałe przechowywać dużą ilość danych lokalnych na Twoim komputerze.</translation>
 <translation id="373572798843615002">1 karta</translation>
 <translation id="4806065163318322702">Przełącz wprowadzanie głosowe.</translation>
+<translation id="6190185222845843088">Użyj serwerów piaskownicy Portfela</translation>
 <translation id="3177048931975664371">Kliknij, aby ukryć hasło</translation>
 <translation id="5852137567692933493">Uruchom ponownie i użyj Powerwash</translation>
 <translation id="3092544800441494315">Dołącz następujący zrzut ekranu:</translation>
@@ -3958,7 +3963,7 @@ Twoje dane logowania na konto są nieaktualne.</translation>
 <translation id="6681668084120808868">Zrób zdjęcie</translation>
 <translation id="1368265273904755308">Zgłoś problem</translation>
 <translation id="780301667611848630">Nie, dziękuję</translation>
-<translation id="8209677645716428427">Użytkownik nadzorowany może przeglądać internet z Twoją pomocą. Jako jego menedżer w Chrome możesz:</translation>
+<translation id="8209677645716428427">Użytkownik nadzorowany może przeglądać internet zgodnie z Twoimi wytycznymi. Jako jego menedżer w Chrome możesz:</translation>
 <translation id="2812989263793994277">Nie pokazuj żadnych grafik</translation>
 <translation id="722363467515709460">Włącz lupę</translation>
 <translation id="7190251665563814471">Zawsze zezwalaj na korzystanie z tych wtyczek w witrynie <ph name="HOST"/></translation>
@@ -4099,6 +4104,7 @@ Twoje dane logowania na konto są nieaktualne.</translation>
 <translation id="1639239467298939599">Wczytywanie</translation>
 <translation id="5457599981699367932">Przeglądaj jako gość</translation>
 <translation id="6850233365366645553">Przed zresetowaniem urządzenia za pomocą funkcji Powerwash trzeba je ponownie uruchomić. Powerwash przywróci pierwotny stan urządzenia <ph name="IDS_SHORT_PRODUCT_NAME"/>.</translation>
+<translation id="4292622557427736684">Domyślnie włącza MediaDrm dla rozszerzeń zaszyfrowanych multimediów.</translation>
 <translation id="1812514023095547458">Wybierz kolor</translation>
 <translation id="5089363139417863686">Wyświetl w aplikacji Pliki</translation>
 <translation id="7047998246166230966">Wskaźnik</translation>
@@ -4449,6 +4455,7 @@ Twoje dane logowania na konto są nieaktualne.</translation>
 <translation id="1728442818359004787">Zmień aplikację domyślną...</translation>
 <translation id="7540972813190816353">Podczas sprawdzania dostępności aktualizacji wystąpił błąd: <ph name="ERROR"/></translation>
 <translation id="7664620655576155379">Nieobsługiwane urządzenie Bluetooth: „<ph name="DEVICE_NAME"/>”.</translation>
+<translation id="2990212470195050777">Wyłącz interfejs API Media Source bez przedrostka.</translation>
 <translation id="2225024820658613551">Nie przechodź dalej – &lt;strong&gt;zwłaszcza&lt;/strong&gt; jeśli pierwszy raz widzisz to ostrzeżenie na tej stronie.</translation>
 <translation id="2049639323467105390">To urządzenie jest zarządzane przez: <ph name="DOMAIN"/>.</translation>
 <translation id="1932098463447129402">Nie wcześniej niż</translation>

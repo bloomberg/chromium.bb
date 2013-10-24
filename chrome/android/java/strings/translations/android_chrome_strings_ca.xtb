@@ -3,9 +3,24 @@
 <translationbundle lang="ca">
 <translation id="1491151370853475546">Torna a carregar aquesta pàgina</translation>
 <translation id="7658239707568436148">Cancel·la</translation>
+<translation id="6458785801851713928">La sincronització no està disponible per al vostre domini.</translation>
 <translation id="2731700343119398978">Espereu...</translation>
+<translation id="3358663646935160692"><ph name="DOMAIN_NAME"/> s'encarrega de gestionar aquest compte.
+
+Inicieu la sessió amb un compte gestionat, de manera que concediu al seu administrador el control sobre el vostre perfil de Chrome. Les vostres dades de Chrome estaran vinculades a aquest compte de manera permanent. Si desconnecteu aquest compte se suprimiran les dades de Chrome locals.</translation>
+<translation id="1623104350909869708">Impedeix que aquesta pàgina creï diàlegs addicionals.</translation>
+<translation id="3896036286668839683">Lector de certificats</translation>
+<translation id="8583805026567836021">S'estan esborrant les dades del compte</translation>
+<translation id="4170011742729630528">El servei no està disponible. Torneu-ho a provar més tard.</translation>
+<translation id="8627706565932943526">Error de sincronització</translation>
+<translation id="3136378934686431938">Actualitzeu les dades d'inici de sessió.</translation>
+<translation id="4510973599275542560">No tornis a carregar</translation>
 <translation id="9154176715500758432">Roman en aquesta pàgina</translation>
+<translation id="7063006564040364415">No s'ha pogut connectar amb el servidor de sincronització.</translation>
 <translation id="6512448926095770873">Abandona aquesta pàgina</translation>
+<translation id="7947953824732555851">Acc. i inicia sessió</translation>
 <translation id="6040143037577758943">Tanca</translation>
+<translation id="5032574515228824816">Sol·licitud</translation>
 <translation id="6965382102122355670">D'acord</translation>
+<translation id="7495038789730067783">Confirmació de l'inici de sessió</translation>
 </translationbundle>

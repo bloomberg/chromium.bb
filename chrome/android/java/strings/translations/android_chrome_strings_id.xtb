@@ -3,9 +3,24 @@
 <translationbundle lang="id">
 <translation id="1491151370853475546">Muat Ulang Laman Ini</translation>
 <translation id="7658239707568436148">Batal</translation>
+<translation id="6458785801851713928">Sinkronisasi tidak tersedia untuk domain Anda.</translation>
 <translation id="2731700343119398978">Harap tunggu...</translation>
+<translation id="3358663646935160692">Akun ini dikelola oleh <ph name="DOMAIN_NAME"/>.
+
+Anda masuk dengan akun yang dikelola dan memberikan administratornya kontrol atas profil Chrome Anda. Data Chrome Anda akan terikat dengan akun ini secara permanen. Memutuskan tautan dengan akun ini akan menghapus data Chrome lokal.</translation>
+<translation id="1623104350909869708">Cegah dialog lain dari laman ini.</translation>
+<translation id="3896036286668839683">Penampil Sertifikat</translation>
+<translation id="8583805026567836021">Menghapus data akun</translation>
+<translation id="4170011742729630528">Layanan tidak tersedia; coba lagi nanti.</translation>
+<translation id="8627706565932943526">Kesalahan sinkronisasi</translation>
+<translation id="3136378934686431938">Perbarui detail proses masuk Anda.</translation>
+<translation id="4510973599275542560">Jangan muat ulang</translation>
 <translation id="9154176715500758432">Tetap di Laman ini</translation>
+<translation id="7063006564040364415">Tidak dapat menyambung ke server sinkronisasi.</translation>
 <translation id="6512448926095770873">Keluar dari Laman</translation>
+<translation id="7947953824732555851">Terima dan masuk</translation>
 <translation id="6040143037577758943">Tutup</translation>
+<translation id="5032574515228824816">Meminta</translation>
 <translation id="6965382102122355670">Oke</translation>
+<translation id="7495038789730067783">Konfirmasi info masuk</translation>
 </translationbundle>

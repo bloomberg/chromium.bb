@@ -134,6 +134,7 @@
 <translation id="1589055389569595240">הצג איות ודקדוק</translation>
 <translation id="7017587484910029005">הקלד למטה את התווים הבאים.</translation>
 <translation id="9013589315497579992">‏אישור אימות לקוח SSL פגום.</translation>
+<translation id="2085245445866855859">‏יש להתקין יישומים עם מאפיין המניפסט 'kiosk_only' רק במצב קיוסק של מערכת ההפעלה של Chrome.</translation>
 <translation id="1467999917853307373">אפליקציית האינטרנט <ph name="URL"/> מבקשת לאחסן נתונים במכשיר שלך באופן קבוע.</translation>
 <translation id="8524066305376229396">אחסון קבוע:</translation>
 <translation id="7567293639574541773">בדוק מרכיב</translation>
@@ -187,6 +188,7 @@
 <translation id="4858913220355269194">מסי</translation>
 <translation id="2231238007119540260">אם אתה מוחק אישור שרת, אתה משחזר את בדיקות האבטחה הרגילות לשרת זה ודורש שהוא ישתמש באישור חוקי.</translation>
 <translation id="9110235431257073974">אפשר שילוב של חנות האינטרנט עם היישום 'קבצים'.</translation>
+<translation id="6489433341782457580">‏למפתחים: השתמשו בשירות ארגז החול לקריאות ממשק ה-API של 'ארנק' עבור requestAutocomplete()‎.</translation>
 <translation id="8186609076106987817">השרת לא הצליח למצוא את הקובץ.</translation>
 <translation id="2846816712032308263">‏אפשרות לסגירה מהירה של כרטיסיות/חלונות -הפעלת המטפל onunload js של כרטיסייה בנפרד מממשק המשתמש הגרפי (GUI).</translation>
 <translation id="9134410174832249455"><ph name="PRODUCT_NAME"/> לא הצליח לטעון את דף האינטרנט משום שזמן התגובה של <ph name="HOST_NAME"/> היה ארוך מדי. ייתכן שהאתר מושבת או שיש בעיות עם החיבור לאינטרנט.</translation>
@@ -353,6 +355,7 @@
 <translation id="8959810181433034287">המשתמש המבוקר יצטרך להשתמש בסיסמה זו כדי להיכנס, לכן בחר סיסמה בטוחה וזכור ליידע את המשתמש המבוקר.</translation>
 <translation id="5154917547274118687">זיכרון</translation>
 <translation id="1493492096534259649">לא ניתן להשתמש בשפה זו לבדיקת איות</translation>
+<translation id="2103866351350079276">‏השבת את אובייקט MediaSource המופיע ללא תחילית. האובייקט הזה מאפשר ל-JavaScript לשלוח נתוני מדיה ישירות לרכיב וידאו.</translation>
 <translation id="6628463337424475685"><ph name="ENGINE"/> חיפוש</translation>
 <translation id="6460423884798879930">‏הפעל את האפשרות לשלוח מידע נוסף לאימות במנת ה-SYN הראשונה עבור לקוח שכבר התחבר בעבר, כדי לאפשר התחלה של שליחת נתונים מהירה.</translation>
 <translation id="6563261555270336410">פרטים על <ph name="ELEMENTS_HOST_NAME"/></translation>
@@ -1589,6 +1592,7 @@ JavaScript ויישומי פלאגין.</translation>
 <translation id="6736329909263487977"><ph name="ISSUED_BY"/> ‏[<ph name="ISSUED_TO"/>]‏</translation>
 <translation id="8899388739470541164">וייאטנאמית</translation>
 <translation id="6423064450797205562">מדדים המתייחסים למהירות שבה <ph name="SHORT_PRODUCT_NAME"/> מבצע פעולות מבוקשות</translation>
+<translation id="2048118585307365263">‏הפעל את MediaDrm.</translation>
 <translation id="4091434297613116013">גליונות נייר</translation>
 <translation id="7475671414023905704">‏כתובת אתר לסיסמה שאבדה של Netscape</translation>
 <translation id="3335947283844343239">פתח מחדש כרטיסייה שנסגרה</translation>
@@ -1619,7 +1623,7 @@ JavaScript ויישומי פלאגין.</translation>
 <translation id="1397674396541164684">‏בטל הנפשות CSS מואצות</translation>
 <translation id="7124398136655728606">‏Esc מנקה את כל המאגר של טרום-עריכה</translation>
 <translation id="3344786168130157628">שם נקודת הגישה:</translation>
-<translation id="8293206222192510085">הוסף סימנייה</translation>
+<translation id="8293206222192510085">הוסף סימניה</translation>
 <translation id="2592884116796016067">‏חלק מדף זה (HTML WebWorker) קרס וייתכן שלא יפעל כראוי.</translation>
 <translation id="2529133382850673012">מקלדת אנגלית (ארה&quot;ב)</translation>
 <translation id="4411578466613447185">חותם קוד</translation>
@@ -3817,6 +3821,7 @@ JavaScript ויישומי פלאגין.</translation>
 <translation id="3672159315667503033"><ph name="URL"/> רוצה לאחסן נתונים גדולים במחשב המקומי שלך באופן קבוע.</translation>
 <translation id="373572798843615002">כרטיסייה 1</translation>
 <translation id="4806065163318322702">הפעל או השבת דיבור</translation>
+<translation id="6190185222845843088">‏השתמש בשרתי ארגז החול של ארנק Google</translation>
 <translation id="3177048931975664371">לחץ כדי להסתיר את הסיסמה</translation>
 <translation id="5852137567692933493">‏הפעל מחדש ובצע פעולת Powerwash</translation>
 <translation id="3092544800441494315">כלול צילום מסך זה:</translation>
@@ -4086,6 +4091,7 @@ JavaScript ויישומי פלאגין.</translation>
 <translation id="1639239467298939599">טוען</translation>
 <translation id="5457599981699367932">גלוש כאורח</translation>
 <translation id="6850233365366645553">‏יש לבצע אתחול לפני שניתן יהיה לאפס את המכשיר באמצעות Powerwash‏. Powerash מאפס את מכשיר ה-<ph name="IDS_SHORT_PRODUCT_NAME"/> שלך כך שיהיה כמו חדש.</translation>
+<translation id="4292622557427736684">‏הפעל את MediaDrm כברירת מחדל עבור תוספי מדיה מוצפנים.</translation>
 <translation id="1812514023095547458">בחר צבע</translation>
 <translation id="5089363139417863686">הצג באמצעות יישום הקבצים</translation>
 <translation id="7047998246166230966">מצביע</translation>
@@ -4436,6 +4442,7 @@ JavaScript ויישומי פלאגין.</translation>
 <translation id="1728442818359004787">שנה את יישום ברירת המחדל...</translation>
 <translation id="7540972813190816353">אירעה שגיאה בעת בדיקת עדכונים: <ph name="ERROR"/></translation>
 <translation id="7664620655576155379">‏מכשיר Bluetooth שאינו נתמך: &quot;<ph name="DEVICE_NAME"/>&quot;.</translation>
+<translation id="2990212470195050777">‏השבת את ממשק ה-API של Media Source המופיע ללא תחילית.</translation>
 <translation id="2225024820658613551">‏מומלץ לא להמשיך, &lt;strong&gt;במיוחד&lt;/strong&gt; אם לא ראית בעבר את האזהרה הזו לגבי האתר.</translation>
 <translation id="2049639323467105390">מכשיר זה מנוהל על ידי <ph name="DOMAIN"/>.</translation>
 <translation id="1932098463447129402">לא לפני</translation>
@@ -4690,7 +4697,7 @@ Del</translation>
 <translation id="1732215134274276513">בטל הצמדה של כרטיסיות</translation>
 <translation id="4785040501822872973">מחשב זה יופעל מחדש בעוד <ph name="LOGOUT_TIME_LEFT"/> שניות.
 הקש על מקש כלשהו כדי להמשיך בסיור.</translation>
-<translation id="4084682180776658562">סימנייה</translation>
+<translation id="4084682180776658562">סימניה</translation>
 <translation id="8859057652521303089">בחר שפה:</translation>
 <translation id="5941864346249299673">מספר הבייטים שנקראו בכל הרשת</translation>
 <translation id="7243388728764696895">כרטיסייה חדשה - מכשירים אחרים</translation>

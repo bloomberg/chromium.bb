@@ -134,6 +134,7 @@
 <translation id="1589055389569595240">Show Spelling and Grammar</translation>
 <translation id="7017587484910029005">I-type ang mga character na iyong nakikita sa larawan sa ibaba.</translation>
 <translation id="9013589315497579992">Bad SSL client authentication certificate.</translation>
+<translation id="2085245445866855859">Naka-install dapat ang app na may katangian ng manifest na 'kiosk_only' sa ChromeOS kiosk mode.</translation>
 <translation id="1467999917853307373">Gusto ng <ph name="URL"/> na permanenteng mag-imbak ng data sa iyong device.</translation>
 <translation id="8524066305376229396">Matagalang storage:</translation>
 <translation id="7567293639574541773">S&amp;iyasatin ang elemento</translation>
@@ -187,6 +188,7 @@
 <translation id="4858913220355269194">Azkals</translation>
 <translation id="2231238007119540260">Kung nagtanggal ka ng certificate ng server, ibinabalik mo ang mga karaniwang pagsusuri ng seguridad para sa server na iyon at kinakailangang gumagamit ito ng wastong certificate.</translation>
 <translation id="9110235431257073974">I-enable ang pagsasama ng Webstore at Files.app.</translation>
+<translation id="6489433341782457580">Para sa mga developer: gamitin ang serbisyo ng sandbox para sa mga tawag sa Wallet API para sa requestAutocomplete().</translation>
 <translation id="8186609076106987817">Hindi makita ng server ang file.</translation>
 <translation id="2846816712032308263">Ini-enable ang mabilis na pagsasara ng tab/window - pinapatakbo ang onunload js handler ng isang tab nang independiyente sa GUI.</translation>
 <translation id="9134410174832249455">Hindi ma-load ng <ph name="PRODUCT_NAME"/> ang webpage dahil masyadong matagal ang pagtugon ng <ph name="HOST_NAME"/>. Maaaring hindi gumagana ang website, o maaaring nakakaranas ka ng mga isyu sa iyong koneksyon sa Internet.</translation>
@@ -357,6 +359,7 @@
 <translation id="8959810181433034287">Kakailanganin ng pinangangasiwaang user ang password na ito upang makapag-sign in, kaya pumili ng ligtas na password at tandaang italakay ito sa pinangangasiwaang user.</translation>
 <translation id="5154917547274118687">Memorya</translation>
 <translation id="1493492096534259649">Hindi magagamit ang wikang ito para sa spell checking</translation>
+<translation id="2103866351350079276">I-disable ang walang prefix na MediaSource object. Binibigyang-daan ng object na ito ang JavaScript na magpadala ng data ng media nang direkta sa isang elemento ng video.</translation>
 <translation id="6628463337424475685">Paghahanap ng <ph name="ENGINE"/></translation>
 <translation id="6460423884798879930">I-enable ang pagpipiliang ito upang magpadala ng karagdagang impormasyon sa pagpapatunay sa unang SYN packet para sa isang client na nakakonekta dati, na nagbibigay-daan sa mas mabilis na pagsisimula ng pagpapadala ng data.</translation>
 <translation id="6563261555270336410">Mga detalye tungkol sa <ph name="ELEMENTS_HOST_NAME"/></translation>
@@ -1599,6 +1602,7 @@ Siguraduhing hindi ka maglalantad ng anumang sensitibong impormasyon.</translati
 <translation id="6736329909263487977"><ph name="ISSUED_BY"/> [<ph name="ISSUED_TO"/>]</translation>
 <translation id="8899388739470541164">Vietnamese</translation>
 <translation id="6423064450797205562">Mga sukatang may kaugnayan sa bilis ng paggawa ng <ph name="SHORT_PRODUCT_NAME"/> sa mga hiniling na pagkilos</translation>
+<translation id="2048118585307365263">I-enable ang MediaDrm.</translation>
 <translation id="4091434297613116013">mga sheet ng papel</translation>
 <translation id="7475671414023905704">URL ng Nawalang Password ng Netscape</translation>
 <translation id="3335947283844343239">Muling buksan ang Nakasarang Tab</translation>
@@ -3863,6 +3867,7 @@ Luma na ang mga detalye sa pag-sign-in ng iyong account.</translation>
 <translation id="3672159315667503033">Nais ng <ph name="URL"/> na permanenteng mag-imbak ng malaking data sa iyong lokal na computer.</translation>
 <translation id="373572798843615002">1 Tab</translation>
 <translation id="4806065163318322702">I-toggle ang input ng pananalita</translation>
+<translation id="6190185222845843088">Gumamit ng mga server ng sandbox ng Wallet</translation>
 <translation id="3177048931975664371">I-click upang itago ang password</translation>
 <translation id="5852137567692933493">I-restart at I-powerwash</translation>
 <translation id="3092544800441494315">Isama ang screenshot na ito</translation>
@@ -4132,6 +4137,7 @@ Luma na ang mga detalye sa pag-sign-in ng iyong account.</translation>
 <translation id="1639239467298939599">Naglo-load</translation>
 <translation id="5457599981699367932">Mag-browse bilang Bisita</translation>
 <translation id="6850233365366645553">Kinakailangan ang pag-restart bago ma-reset ang iyong device gamit ang Powerwash. Nire-reset ng Powerwash ang iyong <ph name="IDS_SHORT_PRODUCT_NAME"/> device upang maging parang bago.</translation>
+<translation id="4292622557427736684">I-enable ang MediaDrm bilang default para sa Mga Naka-encrypt na Extension ng Media.</translation>
 <translation id="1812514023095547458">Pumili ng Kulay</translation>
 <translation id="5089363139417863686">Tingnan gamit ang Files app</translation>
 <translation id="7047998246166230966">Pointer</translation>
@@ -4482,6 +4488,7 @@ Luma na ang mga detalye sa pag-sign-in ng iyong account.</translation>
 <translation id="1728442818359004787">Palitan ang default na app...</translation>
 <translation id="7540972813190816353">Naganap ang isang error habang nagsusuri ng mga update: <ph name="ERROR"/></translation>
 <translation id="7664620655576155379">Hindi sinusuportahang Bluetooth device: &quot;<ph name="DEVICE_NAME"/>&quot;.</translation>
+<translation id="2990212470195050777">I-disable ang walang prefix na Media Source API.</translation>
 <translation id="2225024820658613551">Hindi ka dapat magpatuloy, &lt;strong&gt;lalo na&lt;/strong&gt; kung hindi mo pa kailanman nakita ang babalang ito para sa site na ito.</translation>
 <translation id="2049639323467105390">Pinamamahalaan ng <ph name="DOMAIN"/> ang device na ito.</translation>
 <translation id="1932098463447129402">Hindi Bago</translation>

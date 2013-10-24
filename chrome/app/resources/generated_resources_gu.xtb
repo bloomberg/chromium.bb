@@ -134,6 +134,7 @@
 <translation id="1589055389569595240">જોડણી અને વ્યાકરણ બતાવો</translation>
 <translation id="7017587484910029005">નીચેના ચિત્રમાં તમે જોયેલા અક્ષરો લખો.</translation>
 <translation id="9013589315497579992">ખરાબ SSL ક્લાયંટ પ્રમાણીકરણ પ્રમાણપત્ર.</translation>
+<translation id="2085245445866855859">'Kiosk_only' મેનિફેસ્ટ લક્ષણ સાથેની એપ્લિકેશન ChromeOS કિઓસ્ક મોડમાં ઇન્સ્ટોલ કરેલી હોવી આવશ્યક છે.</translation>
 <translation id="1467999917853307373"><ph name="URL"/> તમારા ઉપકરણ પર કાયમી ધોરણે ડેટા સ્ટોર કરવા માંગે છે.</translation>
 <translation id="8524066305376229396">સતત સ્ટોરેજ:</translation>
 <translation id="7567293639574541773">ઘટકની ત&amp;પાસ કરો</translation>
@@ -187,6 +188,7 @@
 <translation id="4858913220355269194">Fritz</translation>
 <translation id="2231238007119540260">જો તમે કોઈ સર્વર પ્રમાણપત્રને કાઢી નાંખો છો, તો તમે તે સર્વર માટેની સામાન્ય સુરક્ષા તપાસોને પુનર્પ્રાપ્ત કરો છો અને આવશ્યક છે કે તે માન્ય પ્રામણપત્રનો ઉપયોગ કરે છે.</translation>
 <translation id="9110235431257073974">Webstore અને Files.app નું એકીકરણ સક્ષમ કરો.</translation>
+<translation id="6489433341782457580">વિકાસકર્તાઓ માટે: requestAutocomplete() માટે કૉલ કરતા Wallet API માટે સેન્ડબોક્સ સેવાનો ઉપયોગ કરો.</translation>
 <translation id="8186609076106987817">સર્વર ફાઇલને શોધી શક્યું નથી.</translation>
 <translation id="2846816712032308263">ઝડપી ટેબ/ વિંડો બંધ કરવું સક્ષમ કરે છે - GUI ના તે ટેબના onunload js હેન્ડલરને સ્વતંત્રરીતે શરૂ કરે છે.</translation>
 <translation id="9134410174832249455"><ph name="PRODUCT_NAME"/>
@@ -357,6 +359,7 @@
 <translation id="8959810181433034287">નિરીક્ષણ કરેલ વપરાશકર્તાને સાઇન ઇન કરવા માટે આ પાસવર્ડનો ઉપયોગ કરવાની જરૂર પડશે, જેથી સલામત પાસવર્ડ પસંદ કરો અને તેની નિરીક્ષણ કરેલ વપરાશકર્તા સાથે ચર્ચા કરવાનું યાદ રાખો.</translation>
 <translation id="5154917547274118687">મેમરી</translation>
 <translation id="1493492096534259649">આ ભાષાનો ઉપયોગ જોડણી પરીક્ષણ માટે કરી શકાતો નથી</translation>
+<translation id="2103866351350079276">પ્રીફિક્સ ન કરેલ MediaSource ઓબ્જેક્ટને અક્ષમ કરો. આ ઓબ્જેક્ટ JavaScript ને સીધા જ વિડિઓ ઘટક પર મીડિયા ડેટા મોકલવાની મંજૂરી આપે છે.</translation>
 <translation id="6628463337424475685"><ph name="ENGINE"/> શોધ</translation>
 <translation id="6460423884798879930">ઝડપી ડેટા મોકલો પ્રારંભ કરીને, પહેલાંથી કનેક્ટ થયેલા ક્લાયંટ માટે પ્રારંભિક SYN પૅકેટમાં વધારાની અધિકૃતતા માહિતી મોકલવાનો વિકલ્પ સક્ષમ કરો.</translation>
 <translation id="6563261555270336410"><ph name="ELEMENTS_HOST_NAME"/> વિશે વિગતો</translation>
@@ -832,7 +835,7 @@
 <translation id="7550830279652415241">bookmarks_<ph name="DATESTAMP"/>.html</translation>
 <translation id="3127360977178108225">અતિથિ સત્ર સમાપ્ત કરો</translation>
 <translation id="6327653052522436195">શહેર</translation>
-<translation id="164814987133974965">એક નિરીક્ષણ કરેલ વપરાશકર્તા તમારા માર્ગદર્શન હેઠળ વેબ એક્સ્પ્લોર કરી શકે છે. નિરીક્ષણ કરેલ વપરાશકર્તાના સંચાલક તરીકે, તમે 
+<translation id="164814987133974965">એક નિરીક્ષણ કરેલ વપરાશકર્તા તમારા માર્ગદર્શન હેઠળ વેબ પર અન્વેષણ કરી શકે છે. નિરીક્ષણ કરેલ વપરાશકર્તાના સંચાલક તરીકે, તમે 
     અમુક વેબસાઇટ્સને <ph name="BEGIN_BOLD"/>મંજુર અથવા પ્રતિબંધિત<ph name="END_BOLD"/> કરી શકો છો.
     નિરીક્ષણ કરેલ વપરાશકર્તાએ મુલાકાત લીધેલી વેબસાઇટ્સની <ph name="BEGIN_BOLD"/>સમીક્ષા<ph name="END_BOLD"/> કરી શકો છો, અને
     અન્ય સેટિંગ્સનું <ph name="BEGIN_BOLD"/>સંચાલન<ph name="END_BOLD"/> કરી શકો છો.</translation>
@@ -1473,7 +1476,7 @@
 
         જો આ ઉપકરણ તમારા સંગઠનનું ન હોય, અને તે તમારી વ્યક્તિગત ઉપકરણ હોય, તો તમે ઉપકરણની નોંધણીને રદ કરવા માટે હમણાં Ctrl+Alt+E દબાવી શકો છો અને સાઇન ઇન સ્ક્રીન પર પાછા ફરી શકો છો.</translation>
 <translation id="2655386581175833247">વપરાશકર્તા પ્રમાણપત્ર:</translation>
-<translation id="5039804452771397117">પરવાનગી આપો</translation>
+<translation id="5039804452771397117">મંજૂરી આપો</translation>
 <translation id="5435964418642993308">પાછળ જવા માટે એન્ટર અને ઇતિહાસ જોવા માટે સંદર્ભ મેનૂ કી દબાવો</translation>
 <translation id="6815206662964743929">વપરાશકર્તાને સ્વિચ કરો</translation>
 <translation id="81686154743329117">ઝેડઆરએમ</translation>
@@ -1604,6 +1607,7 @@
 <translation id="6736329909263487977"><ph name="ISSUED_BY"/> [<ph name="ISSUED_TO"/>]</translation>
 <translation id="8899388739470541164">વિયેતનામીસ</translation>
 <translation id="6423064450797205562">ઝડપથી સંબંધિત મેટ્રિક્સ કે જેની સાથે <ph name="SHORT_PRODUCT_NAME"/> વિનંતી કરેલ ક્રિયા કરે છે</translation>
+<translation id="2048118585307365263">MediaDrm સક્ષમ કરો.</translation>
 <translation id="4091434297613116013">કાગળનાં પત્રકો</translation>
 <translation id="7475671414023905704">નેટસ્કેપ ખોવાયેલો પાસવર્ડ URL</translation>
 <translation id="3335947283844343239">બંધ કરેલું ટૅબ ફરીથી ખોલો</translation>
@@ -3863,6 +3867,7 @@
 <translation id="3672159315667503033"><ph name="URL"/> તમારા કમ્પ્યુટર પર કાયમી ધોરણે વિશાળ ડેટા સ્ટોર કરવા માંગે છે.</translation>
 <translation id="373572798843615002">1 ટૅબ</translation>
 <translation id="4806065163318322702">ભાષણ ઇનપુટ ટૉગલ કરો</translation>
+<translation id="6190185222845843088">Wallet સેન્ડબોક્સ સર્વર્સનો ઉપયોગ કરો</translation>
 <translation id="3177048931975664371">પાસવર્ડ છુપાવવા માટે ક્લિક કરો</translation>
 <translation id="5852137567692933493">પુનઃપ્રારંભ કરો અને પાવરવૉશ કરો</translation>
 <translation id="3092544800441494315">આ સ્ક્રીનશોટ શામેલ કરો:</translation>
@@ -4129,6 +4134,7 @@
 <translation id="1639239467298939599">લોડ કરી રહ્યું છે</translation>
 <translation id="5457599981699367932">અતિથિ તરીકે બ્રાઉઝ કરો</translation>
 <translation id="6850233365366645553">તમારા ઉપકરણને Powerwash સાથે સેટ કરવામાં આવે તે પહેલાં એક પુનઃપ્રારંભ આવશ્યક છે. Powerwash તમારા <ph name="IDS_SHORT_PRODUCT_NAME"/> ઉપકરણને નવાની જેમ જ ફરીથી સેટ કરે છે.</translation>
+<translation id="4292622557427736684">એન્ક્રિપ્ટ કરેલ મીડિયા એક્સ્ટેન્શન્સ માટે ડિફોલ્ટ તરીકે MediaDrm ને સક્ષમ કરો.</translation>
 <translation id="1812514023095547458">રંગ પસંદ કરો</translation>
 <translation id="5089363139417863686">ફાઇલો એપ્લિકેશન સાથે જુઓ</translation>
 <translation id="7047998246166230966">પોઇન્ટર</translation>
@@ -4477,6 +4483,7 @@
 <translation id="1728442818359004787">ડિફોલ્ટ એપ્લિકેશન બદલો...</translation>
 <translation id="7540972813190816353">અપડેટ્સ માટે તપાસ કરતી વખતે એક ભૂલ આવી: <ph name="ERROR"/></translation>
 <translation id="7664620655576155379">અસમર્થિત Bluetooth ઉપકરણ: &quot;<ph name="DEVICE_NAME"/>&quot;.</translation>
+<translation id="2990212470195050777">પ્રીફિક્સ ન કરેલ મીડિયા સ્રોત API અક્ષમ કરો.</translation>
 <translation id="2225024820658613551">&lt;strong&gt;વિશેષ રૂપે&lt;/strong&gt;, જો તમે આ સાઇટ માટે પહેલાં આ ચેતવણીને ક્યારે પણ જોઈ નથી, તો તમારે આગળ વધવું જોઈએ નહીં.</translation>
 <translation id="2049639323467105390">આ ઉપકરણને <ph name="DOMAIN"/> દ્વારા મેનેજ કરવામાં આવેલું છે.</translation>
 <translation id="1932098463447129402">આની પહેલા નહીં</translation>

@@ -3,9 +3,24 @@
 <translationbundle lang="ro">
 <translation id="1491151370853475546">Reîncărcați această pagină</translation>
 <translation id="7658239707568436148">Anulaţi</translation>
+<translation id="6458785801851713928">Sincronizarea nu este disponibilă pentru domeniul dvs.</translation>
 <translation id="2731700343119398978">Așteptați...</translation>
+<translation id="3358663646935160692">Acest cont este gestionat de <ph name="DOMAIN_NAME"/>.
+
+Urmează să vă conectați cu un cont gestionat și să acordați administratorului control asupra profilului Chrome. Datele din Chrome vor fi asociate definitiv acestui cont. Dacă vă deconectați de la acest cont, datele locale Chrome se vor șterge.</translation>
+<translation id="1623104350909869708">Restricționați capacitatea acestei pagini de a crea casete de dialog suplimentare</translation>
+<translation id="3896036286668839683">Vizualizator de certificate</translation>
+<translation id="8583805026567836021">Se șterg datele contului</translation>
+<translation id="4170011742729630528">Serviciul nu este disponibil. Încercați din nou mai târziu.</translation>
+<translation id="8627706565932943526">Eroare de sincronizare</translation>
+<translation id="3136378934686431938">Actualizați detaliile de conectare.</translation>
+<translation id="4510973599275542560">Nu reîncărcați</translation>
 <translation id="9154176715500758432">Rămâneți pe această pagină</translation>
+<translation id="7063006564040364415">Nu s-a putut stabili conexiunea cu serverul de sincronizare.</translation>
 <translation id="6512448926095770873">Părăsiți această pagină</translation>
+<translation id="7947953824732555851">Accept și conectare</translation>
 <translation id="6040143037577758943">Închideți</translation>
+<translation id="5032574515228824816">Solicitare</translation>
 <translation id="6965382102122355670">OK</translation>
+<translation id="7495038789730067783">Confirmați conectarea</translation>
 </translationbundle>

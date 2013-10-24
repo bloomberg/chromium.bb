@@ -2,6 +2,12 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="pt-PT">
 <translation id="7658239707568436148">Cancelar</translation>
+<translation id="9068849894565669697">Selecionar cor</translation>
+<translation id="793640675459356075">Falha ao abrir o fich. selec.</translation>
 <translation id="6727102863431372879">Definir</translation>
+<translation id="6315516427814392808">Não foi possível concluir a operação anterior devido à baixa memória disponível</translation>
 <translation id="6042308850641462728">Mais</translation>
+<translation id="7535087603100972091">Valor</translation>
+<translation id="8889402386540077796">Tonalidade</translation>
+<translation id="3329013043687509092">Saturação</translation>
 </translationbundle>

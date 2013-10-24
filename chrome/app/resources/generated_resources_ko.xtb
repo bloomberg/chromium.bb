@@ -134,6 +134,7 @@
 <translation id="1589055389569595240">영문 철자 및 문법 보기</translation>
 <translation id="7017587484910029005">아래 그림에 표시된 문자를 입력하세요.</translation>
 <translation id="9013589315497579992">잘못된 SSL 클라이언트 인증서입니다.</translation>
+<translation id="2085245445866855859">'kiosk_only' 매니페스트 속성을 사용하는 앱은 Chrome OS 키오스크 모드에 설치되어야 합니다.</translation>
 <translation id="1467999917853307373"><ph name="URL"/>에서 내 기기에 데이터를 영구적으로 저장하려고 합니다.</translation>
 <translation id="8524066305376229396">영구 저장소:</translation>
 <translation id="7567293639574541773">요소 검사(&amp;N)</translation>
@@ -187,6 +188,7 @@
 <translation id="4858913220355269194">축구왕</translation>
 <translation id="2231238007119540260">서버 인증서를 삭제하려면 해당 서버에 대해 일반적인 보안 확인을 복원하고 유효한 인증서를 사용해야 합니다.</translation>
 <translation id="9110235431257073974">웹 스토어와 Files.app 통합 사용</translation>
+<translation id="6489433341782457580">개발자 전용: requestAutocomplete()에 대한 지갑 API 호출에 샌드박스 서비스를 사용합니다.</translation>
 <translation id="8186609076106987817">서버에서 파일을 찾을 수 없습니다.</translation>
 <translation id="2846816712032308263">빠른 탭/창 닫기 사용 - 탭의 onunload js 핸들러를 GUI와 별도로 실행합니다.</translation>
 <translation id="9134410174832249455"><ph name="HOST_NAME"/>이(가) 응답하는 데 시간이 너무 오래 걸려 <ph name="PRODUCT_NAME"/>을(를) 로드할 수 없습니다. 웹사이트가 다운되었거나 인터넷 연결에 문제가 발생했을 수 있습니다.</translation>
@@ -356,6 +358,7 @@
 <translation id="8959810181433034287">관리 대상 사용자가 이 비밀번호를 사용하여 로그인해야 하므로 안전한 비밀번호를 선택하고 이에 대해 관리 대상 사용자와 상의해야 합니다.</translation>
 <translation id="5154917547274118687">메모리</translation>
 <translation id="1493492096534259649">맞춤법 검사를 사용할 수 없는 언어입니다.</translation>
+<translation id="2103866351350079276">접두어가 붙지 않은 미디어 소스 개체를 사용 중지합니다. 이 개체를 사용하면 자바스크립트가 미디어 데이터를 직접 동영상 요소에 보낼 수 있습니다.</translation>
 <translation id="6628463337424475685"><ph name="ENGINE"/> 검색</translation>
 <translation id="6460423884798879930">이전에 연결된 클라이언트가 초기 SYN 패킷에 추가 인증 정보를 전송할 수 있도록 옵션을 사용 설정하여 데이터에서 신속하게 '시작' 명령을 보낼 수 있도록 합니다.</translation>
 <translation id="6563261555270336410"><ph name="ELEMENTS_HOST_NAME"/> 관련 세부사항</translation>
@@ -1601,6 +1604,7 @@ http://support.google.com/chromebook/?p=tpm</translation>
 <translation id="6736329909263487977"><ph name="ISSUED_BY"/>[<ph name="ISSUED_TO"/>]</translation>
 <translation id="8899388739470541164">베트남어</translation>
 <translation id="6423064450797205562"><ph name="SHORT_PRODUCT_NAME"/>이(가) 요청한 작업을 수행하는 속도 관련 통계</translation>
+<translation id="2048118585307365263">MediaDrm 사용 설정</translation>
 <translation id="4091434297613116013">장</translation>
 <translation id="7475671414023905704">Netscape Lost Password URL</translation>
 <translation id="3335947283844343239">닫은 탭 다시 열기</translation>
@@ -2960,7 +2964,7 @@ Public Exponent(<ph name="PUBLIC_EXPONENT_NUM_BITS"/>비트):
 <translation id="6664237456442406323">컴퓨터가 잘못된 형식의 하드웨어 ID로 구성되어 있습니다. 이렇게 하면 Chrome OS가 최신 보안 수정사항을 업데이트할 수 없으며 컴퓨터가<ph name="BEGIN_BOLD"/>악의적인 공격에 취약해 집니다<ph name="END_BOLD"/>.</translation>
 <translation id="785160701896930981"><ph name="NEW_PROFILE_NAME"/>(으)로 이름이 지정된 관리 대상 사용자가 생성되었습니다. 이 관리 대상 사용자가 볼 수 있는 웹사이트를 설정하려면 <ph name="BEGIN_LINK"/>www.chrome.com/manage<ph name="END_LINK"/> 페이지에서 제한사항 및 설정을 지정할 수 있습니다. 기본 설정을 변경하지 않는 경우 <ph name="NEW_PROFILE_NAME"/>에서 웹상의 모든 사이트를 탐색할 수 있습니다.
 
-이와 함께 자세한 안내를 보려면 <ph name="ACCOUNT_EMAIL"/>에서 이메일을 확인하세요.</translation>
+자세한 안내를 보려면 <ph name="ACCOUNT_EMAIL"/>에서 이메일을 확인하세요.</translation>
 <translation id="8493236660459102203">마이크:</translation>
 <translation id="4788968718241181184">베트남어 입력 방법(TCVN6064)</translation>
 <translation id="3254409185687681395">페이지 북마크</translation>
@@ -3857,6 +3861,7 @@ Public Exponent(<ph name="PUBLIC_EXPONENT_NUM_BITS"/>비트):
 <translation id="3672159315667503033"><ph name="URL"/>에서 로컬 컴퓨터에 대용량 데이터를 영구 저장하려고 합니다.</translation>
 <translation id="373572798843615002">탭 1개</translation>
 <translation id="4806065163318322702">음성 입력 전환</translation>
+<translation id="6190185222845843088">지갑 샌드박스 서버 사용</translation>
 <translation id="3177048931975664371">비밀번호를 숨기려면 클릭하세요.</translation>
 <translation id="5852137567692933493">다시 시작 및 Powerwash</translation>
 <translation id="3092544800441494315">다음 캡쳐화면 포함:</translation>
@@ -4125,6 +4130,7 @@ Public Exponent(<ph name="PUBLIC_EXPONENT_NUM_BITS"/>비트):
 <translation id="1639239467298939599">로드 중</translation>
 <translation id="5457599981699367932">손님으로 로그인</translation>
 <translation id="6850233365366645553">기기를 Powerwash로 재설정하기 전에 다시 시작해야 합니다. Powerwash로 <ph name="IDS_SHORT_PRODUCT_NAME"/> 기기를 재설정하면 새것처럼 초기화됩니다.</translation>
+<translation id="4292622557427736684">암호화된 미디어 확장 프로그램에 대해 기본적으로 MediaDrm을 사용하도록 설정합니다.</translation>
 <translation id="1812514023095547458">색상 선택</translation>
 <translation id="5089363139417863686">파일 앱으로 표시</translation>
 <translation id="7047998246166230966">포인터</translation>
@@ -4476,6 +4482,7 @@ Public Exponent(<ph name="PUBLIC_EXPONENT_NUM_BITS"/>비트):
 <translation id="1728442818359004787">기본 앱 변경</translation>
 <translation id="7540972813190816353">업데이트를 확인하는 동안 오류가 발생했습니다. <ph name="ERROR"/></translation>
 <translation id="7664620655576155379">지원되지 않는 블루투스 기기(<ph name="DEVICE_NAME"/>)입니다.</translation>
+<translation id="2990212470195050777">접두어가 붙지 않은 미디어 소스 API 사용 중지</translation>
 <translation id="2225024820658613551">더 이상 진행하지 않는 것이 안전하며, &lt;strong&gt;특히&lt;/strong&gt; 해당 사이트에서 이 경고를 처음 보는 것이라면 더욱 주의해야 합니다.</translation>
 <translation id="2049639323467105390">기기는 <ph name="DOMAIN"/>에서 관리합니다.</translation>
 <translation id="1932098463447129402">시작:</translation>

@@ -134,6 +134,7 @@
 <translation id="1589055389569595240">Toon spelling en grammatica</translation>
 <translation id="7017587484910029005">Typ de tekens die in de onderstaande afbeelding worden weergegeven.</translation>
 <translation id="9013589315497579992">Ongeldig SSL-certificaat voor clientverificatie.</translation>
+<translation id="2085245445866855859">Een app met het manifestkenmerk 'kiosk_only' moet worden geïnstalleerd in de Chrome OS-kioskmodus.</translation>
 <translation id="1467999917853307373"><ph name="URL"/> vraagt toestemming om gegevens permanent op je apparaat op te slaan.</translation>
 <translation id="8524066305376229396">Permanente opslag:</translation>
 <translation id="7567293639574541773">Eleme&amp;nt inspecteren</translation>
@@ -187,6 +188,7 @@
 <translation id="4858913220355269194">Fritz</translation>
 <translation id="2231238007119540260">Als je een servercertificaat verwijdert, herstel je de gebruikelijke beveiligingscontroles voor de server en verplicht je de server een geldig certificaat te gebruiken.</translation>
 <translation id="9110235431257073974">De integratie van Web Store en de Bestanden-app inschakelen.</translation>
+<translation id="6489433341782457580">Voor ontwikkelaars: gebruik de sandboxservice voor Wallet API-aanroepen voor requestAutocomplete().</translation>
 <translation id="8186609076106987817">De server kan het bestand niet vinden.</translation>
 <translation id="2846816712032308263">Snel sluiten van tabbladen/vensters inschakelen. Hiervoor wordt de onunload js handler van een tabblad onafhankelijk van de GUI uitgevoerd.</translation>
 <translation id="9134410174832249455"><ph name="PRODUCT_NAME"/>
@@ -361,6 +363,7 @@
 <translation id="8959810181433034287">De bewaakte gebruiker moet dit wachtwoord gebruiken om in te loggen, kies dus een veilig wachtwoord en geef dit door aan de bewaakte gebruiker.</translation>
 <translation id="5154917547274118687">Geheugen</translation>
 <translation id="1493492096534259649">Je kunt deze taal niet voor spellingcontrole gebruiken</translation>
+<translation id="2103866351350079276">Het MediaSource-object zonder voorvoegsels uitschakelen. Dit object staat JavaScript toe mediagegevens rechtstreeks naar een video-element te verzenden.</translation>
 <translation id="6628463337424475685">Zoeken via <ph name="ENGINE"/></translation>
 <translation id="6460423884798879930">Hiermee schakel je de optie in om in het eerste SYN-pakket extra verificatiegegevens te verzenden voor een eerder verbonden client, waardoor het verzenden van gegevens sneller kan starten.</translation>
 <translation id="6563261555270336410">Details over <ph name="ELEMENTS_HOST_NAME"/></translation>
@@ -1604,6 +1607,7 @@ Zorg ervoor dat je geen gevoelige informatie weergeeft.</translation>
 <translation id="6736329909263487977"><ph name="ISSUED_BY"/> [<ph name="ISSUED_TO"/>]</translation>
 <translation id="8899388739470541164">Vietnamees</translation>
 <translation id="6423064450797205562">Statistieken met betrekking tot de snelheid waarmee <ph name="SHORT_PRODUCT_NAME"/> verzochte acties uitvoert</translation>
+<translation id="2048118585307365263">MediaDrm inschakelen.</translation>
 <translation id="4091434297613116013">vellen papier</translation>
 <translation id="7475671414023905704">URL van verloren Netscape-wachtwoord</translation>
 <translation id="3335947283844343239">Open gesloten tabblad opnieuw</translation>
@@ -3860,6 +3864,7 @@ De inloggegevens voor je account zijn verouderd.</translation>
 <translation id="3672159315667503033"><ph name="URL"/> vraagt toestemming om permanent veel gegevens op je lokale computer op te slaan.</translation>
 <translation id="373572798843615002">1 tabblad</translation>
 <translation id="4806065163318322702">Spraakinvoer in-/uitschakelen</translation>
+<translation id="6190185222845843088">Wallet-sandboxservers gebruiken</translation>
 <translation id="3177048931975664371">Klik om het wachtwoord te verbergen</translation>
 <translation id="5852137567692933493">Opnieuw opstarten en Powerwash uitvoeren</translation>
 <translation id="3092544800441494315">Dit screenshot opnemen:</translation>
@@ -4129,6 +4134,7 @@ De inloggegevens voor je account zijn verouderd.</translation>
 <translation id="1639239467298939599">Laden</translation>
 <translation id="5457599981699367932">Gebruiken als gast</translation>
 <translation id="6850233365366645553">Het apparaat moet opnieuw worden opgestart voordat het opnieuw kan worden ingesteld met de Powerwash-functie. Met de Powerwash-functie worden alle standaardinstellingen van je <ph name="IDS_SHORT_PRODUCT_NAME"/>-apparaat hersteld.</translation>
+<translation id="4292622557427736684">MediaDrm standaard inschakelen voor versleutelde media-extensies.</translation>
 <translation id="1812514023095547458">Kleur selecteren</translation>
 <translation id="5089363139417863686">Weergeven met de app Bestanden</translation>
 <translation id="7047998246166230966">Pijltje</translation>
@@ -4477,6 +4483,7 @@ De inloggegevens voor je account zijn verouderd.</translation>
 <translation id="1728442818359004787">Standaard-app wijzigen...</translation>
 <translation id="7540972813190816353">Er is een fout opgetreden bij het ​​controleren op updates: <ph name="ERROR"/></translation>
 <translation id="7664620655576155379">Niet-ondersteund Bluetooth-apparaat: '<ph name="DEVICE_NAME"/>'.</translation>
+<translation id="2990212470195050777">Media Source API zonder voorvoegsels uitschakelen.</translation>
 <translation id="2225024820658613551">Je kunt beter niet verder gaan, &lt;strong&gt;vooral niet&lt;/strong&gt; als deze waarschuwing niet eerder is weergegeven voor deze website.</translation>
 <translation id="2049639323467105390">Dit apparaat wordt beheerd door <ph name="DOMAIN"/>.</translation>
 <translation id="1932098463447129402">Niet vóór</translation>

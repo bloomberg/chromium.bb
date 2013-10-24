@@ -135,6 +135,7 @@
 <translation id="1589055389569595240">Yazım ve Dilbilgisi'ni Göster</translation>
 <translation id="7017587484910029005">Aşağıdaki resimde gördüğünüz karakterleri yazın.</translation>
 <translation id="9013589315497579992">Bozuk SSL istemci kimlik doğrulaması sertifikası.</translation>
+<translation id="2085245445866855859">&quot;kiosk_only&quot; manifest özelliğine sahip uygulama ChromeOS kiosk modunda yüklenmelidir.</translation>
 <translation id="1467999917853307373"><ph name="URL"/>, cihazınıza kalıcı olarak veri depolamak istiyor.</translation>
 <translation id="8524066305376229396">Kalıcı depolama:</translation>
 <translation id="7567293639574541773">Öğeyi de&amp;netle</translation>
@@ -188,6 +189,7 @@
 <translation id="4858913220355269194">Futbolcu</translation>
 <translation id="2231238007119540260">Bir sunucu sertifikasını silerseniz, söz konusu sunucuya yönelik olağan güvenlik denetimlerini geri yükler ve sunucunun geçerli bir sertifika kullanmasını gerekli kılarsınız.</translation>
 <translation id="9110235431257073974">Web Mağazası ve Dosyalar uygulaması entegrasyonunu etkinleştirin.</translation>
+<translation id="6489433341782457580">Geliştiriciler için: requestAutocomplete() için Cüzdan API çağrılarına ilişkin korumalı alan hizmetini kullanın.</translation>
 <translation id="8186609076106987817">Sunucu dosyayı bulamadı.</translation>
 <translation id="2846816712032308263">Hızlı sekme/pencere kapatmayı etkinleştirir - bir sekmenin &quot;onunload&quot; js işleyicisini GUI'den bağımsız olarak çalıştırır.</translation>
 <translation id="9134410174832249455"><ph name="HOST_NAME"/>
@@ -361,6 +363,7 @@
 <translation id="8959810181433034287">Denetlenen kullanıcının oturum açmak için bu şifreyi kullanması gerekecektir. Bu nedenle güvenli bir şifre seçin ve bunu, denetlenen kullanıcıya söylemeyi unutmayın.</translation>
 <translation id="5154917547274118687">Bellek</translation>
 <translation id="1493492096534259649">Bu dil yazım denetimi için kullanılamaz</translation>
+<translation id="2103866351350079276">Öneksiz MediaSource nesnesini devre dışı bırakın. Bu nesne, JavaScript'in, medya verilerini doğrudan bir video öğesine göndermesine olanak sağlar.</translation>
 <translation id="6628463337424475685"><ph name="ENGINE"/> Arama</translation>
 <translation id="6460423884798879930">Veri gönderiminin daha hızlı başlatılması için, daha önce bağlanmış bir istemciye yönelik ilk SYN paketinde ekstra kimlik doğrulama bilgileri gönderme seçeneğini etkinleştirin.</translation>
 <translation id="6563261555270336410"><ph name="ELEMENTS_HOST_NAME"/> ile ilgili ayrıntılar</translation>
@@ -1597,6 +1600,7 @@ Hassas bilgilerinizi vermediğinizden emin olun.</translation>
 <translation id="6736329909263487977"><ph name="ISSUED_BY"/> [<ph name="ISSUED_TO"/>]</translation>
 <translation id="8899388739470541164">Vietnamca</translation>
 <translation id="6423064450797205562"><ph name="SHORT_PRODUCT_NAME"/> ürününün, istenen işlemleri gerçekleştirme hızı ile ilgili metrikler</translation>
+<translation id="2048118585307365263">MediaDrm'yi etkinleştir.</translation>
 <translation id="4091434297613116013">yaprak</translation>
 <translation id="7475671414023905704">Netscape Kayıp Şifre URL'si</translation>
 <translation id="3335947283844343239">Kapatılan Sekmeyi Tekrar Aç</translation>
@@ -3857,6 +3861,7 @@ Dolması için gereken süre: <ph name="HOUR"/>:<ph name="MINUTE"/></translation
 <translation id="3672159315667503033"><ph name="URL"/>, büyük miktarda veriyi yerel bilgisiayarınızda depolamak istiyor.</translation>
 <translation id="373572798843615002">1 Sekme</translation>
 <translation id="4806065163318322702">Sesli girişi aç/kapat</translation>
+<translation id="6190185222845843088">Cüzdan korumalı alan sunucularını kullan.</translation>
 <translation id="3177048931975664371">Şifreyi gizlemek için tıklayın</translation>
 <translation id="5852137567692933493">Tekrar başlat ve Powerwash uygula</translation>
 <translation id="3092544800441494315">Bu ekran görüntüsünü ekle:</translation>
@@ -4125,6 +4130,7 @@ Dolması için gereken süre: <ph name="HOUR"/>:<ph name="MINUTE"/></translation
 <translation id="1639239467298939599">Yükleniyor</translation>
 <translation id="5457599981699367932">Misafir olarak Göz At</translation>
 <translation id="6850233365366645553">Cihazınızın Powerwash ile sıfırlanmasından önce yeniden başlatılması gerekir. Powerwash <ph name="IDS_SHORT_PRODUCT_NAME"/> cihazınızı yeni alınmış gibi sıfırlar.</translation>
+<translation id="4292622557427736684">Şifrelenmiş Medya Uzantıları için MediaDrm'yi varsayılan olarak etkinleştirin.</translation>
 <translation id="1812514023095547458">Renk Seç</translation>
 <translation id="5089363139417863686">Dosyalar uygulaması ile görüntüle</translation>
 <translation id="7047998246166230966">İşaretçi</translation>
@@ -4475,6 +4481,7 @@ Dolması için gereken süre: <ph name="HOUR"/>:<ph name="MINUTE"/></translation
 <translation id="1728442818359004787">Varsayılan uygulamayı değiştir...</translation>
 <translation id="7540972813190816353">Güncelleme olup olmadığı kontrol edilirken bir hata oluştu: <ph name="ERROR"/></translation>
 <translation id="7664620655576155379">Desteklenmeyen Bluetooth cihazı: &quot;<ph name="DEVICE_NAME"/>&quot;.</translation>
+<translation id="2990212470195050777">Öneksiz Media Source API'sını devre dışı bırak.</translation>
 <translation id="2225024820658613551">&lt;strong&gt;Özellikle&lt;/strong&gt; daha önce bu site için bu uyarıyla hiç karşılaşmadıysanız ilerlememelisiniz.</translation>
 <translation id="2049639323467105390">Bu cihaz <ph name="DOMAIN"/> tarafından yönetiliyor.</translation>
 <translation id="1932098463447129402">Şundan Önce Değil:</translation>

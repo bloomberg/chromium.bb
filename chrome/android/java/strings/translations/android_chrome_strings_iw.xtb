@@ -3,9 +3,24 @@
 <translationbundle lang="iw">
 <translation id="1491151370853475546">טען מחדש דף זה</translation>
 <translation id="7658239707568436148">ביטול</translation>
+<translation id="6458785801851713928">הסנכרון אינו זמין בדומיין שלך.</translation>
 <translation id="2731700343119398978">המתן בבקשה...</translation>
+<translation id="3358663646935160692">‏החשבון הזה מנוהל על ידי <ph name="DOMAIN_NAME"/>.
+
+אתה נכנס לחשבון מנוהל, ונותן למנהל המערכת שליטה על פרופיל Chrome שלך. נתוני Chrome שלך ייקשרו באופן קבוע לחשבון הזה. התנתקות מהחשבון הזה תמחק את נתוני Chrome המקומיים.</translation>
+<translation id="1623104350909869708">מנע מהדף זה ליצור תיבות דו-שיח נוספות</translation>
+<translation id="3896036286668839683">מציג האישורים</translation>
+<translation id="8583805026567836021">מנקה נתוני חשבון</translation>
+<translation id="4170011742729630528">השירות אינו זמין. נסה שוב מאוחר יותר.</translation>
+<translation id="8627706565932943526">שגיאת סנכרון</translation>
+<translation id="3136378934686431938">עדכן את פרטי הכניסה שלך.</translation>
+<translation id="4510973599275542560">אל תטען מחדש</translation>
 <translation id="9154176715500758432">הישאר בדף זה</translation>
+<translation id="7063006564040364415">לא ניתן היה להתחבר אל שרת הסנכרון.</translation>
 <translation id="6512448926095770873">צא מדף זה</translation>
+<translation id="7947953824732555851">קבל והיכנס</translation>
 <translation id="6040143037577758943">סגור</translation>
+<translation id="5032574515228824816">בקשה</translation>
 <translation id="6965382102122355670">אישור</translation>
+<translation id="7495038789730067783">אשר את הכניסה</translation>
 </translationbundle>

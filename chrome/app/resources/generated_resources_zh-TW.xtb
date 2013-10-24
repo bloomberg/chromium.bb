@@ -128,11 +128,12 @@
 <translation id="528468243742722775">結束</translation>
 <translation id="1723824996674794290">新增視窗(&amp;N)</translation>
 <translation id="1313405956111467313">自動 Proxy 設定</translation>
-<translation id="3527276236624876118">已建立名稱為 <ph name="USER_DISPLAY_NAME"/> 的受監管使用者。</translation>
+<translation id="3527276236624876118">已建立名為「<ph name="USER_DISPLAY_NAME"/>」的受監管使用者。</translation>
 <translation id="4367782753568896354">無法安裝：</translation>
 <translation id="1589055389569595240">顯示拼字與文法</translation>
 <translation id="7017587484910029005">輸入下方圖片中的字元。</translation>
 <translation id="9013589315497579992">SSL 用戶端授權憑證錯誤。</translation>
+<translation id="2085245445866855859">含有「kiosk_only」資訊清單屬性的應用程式只能在 ChromeOS Kiosk 模式中安裝。</translation>
 <translation id="1467999917853307373"><ph name="URL"/> 要求在您的裝置上永久儲存資料。</translation>
 <translation id="8524066305376229396">永久儲存空間：</translation>
 <translation id="7567293639574541773">檢查元素(&amp;N)</translation>
@@ -184,6 +185,7 @@
 <translation id="4858913220355269194">飛球</translation>
 <translation id="2231238007119540260">如果您刪除了伺服器憑證，系統便會還原對該伺服器的定期安全性檢查，並要求使用有效的憑證。</translation>
 <translation id="9110235431257073974">將「線上應用程式商店」整合至「檔案」應用程式。</translation>
+<translation id="6489433341782457580">開發人員請注意，透過 Wallet API 呼叫 requestAutocomplete() 時，請使用沙箱服務。</translation>
 <translation id="8186609076106987817">伺服器找不到檔案。</translation>
 <translation id="2846816712032308263">快速關閉分頁/視窗，將分頁的 onunload js 處理常式與 GUI 分別執行。</translation>
 <translation id="9134410174832249455"><ph name="HOST_NAME"/> 的回應時間過長，因此 <ph name="PRODUCT_NAME"/> 無法載入網頁。網站可能無法使用，或是您可能遇到網際網路連線的相關問題。</translation>
@@ -347,6 +349,7 @@
 <translation id="8959810181433034287">受監管的使用者必須使用這組密碼才能登入，因此請選擇安全無虞的密碼；此外，別忘了與受監管的使用者討論這組密碼。</translation>
 <translation id="5154917547274118687">記憶體</translation>
 <translation id="1493492096534259649">不能選擇檢查這個語言的拼字</translation>
+<translation id="2103866351350079276">停用無前置字串的 MediaSource 物件。這個物件允許 JavaScript 直接將媒體資料傳送至影片元素。</translation>
 <translation id="6628463337424475685"><ph name="ENGINE"/> 搜尋</translation>
 <translation id="6460423884798879930">啟用這個選項即可傳送第一個 SYN 封包中上一次用戶端連線的額外驗證資訊，使系統能迅速開始傳送資料。</translation>
 <translation id="6563261555270336410"><ph name="ELEMENTS_HOST_NAME"/> 詳細資訊</translation>
@@ -681,7 +684,7 @@
 <translation id="8628085465172583869">伺服器主機名稱：</translation>
 <translation id="3633586230741134985">應用程式啟動器設定</translation>
 <translation id="1992397118740194946">尚未設定</translation>
-<translation id="6867678160199975333">切換至 <ph name="NEW_PROFILE_NAME"/></translation>
+<translation id="6867678160199975333">切換至<ph name="NEW_PROFILE_NAME"/></translation>
 <translation id="8556732995053816225">大小寫須相符(&amp;C)</translation>
 <translation id="3942420633017001071">診斷</translation>
 <translation id="3718720264653688555">虛擬鍵盤</translation>
@@ -1578,6 +1581,7 @@
 <translation id="6736329909263487977"><ph name="ISSUED_BY"/> [<ph name="ISSUED_TO"/>]</translation>
 <translation id="8899388739470541164">越南文</translation>
 <translation id="6423064450797205562"><ph name="SHORT_PRODUCT_NAME"/> 執行要求動作的速度相關數據</translation>
+<translation id="2048118585307365263">啟用 MediaDrm。</translation>
 <translation id="4091434297613116013">張數</translation>
 <translation id="7475671414023905704">Netscape 遺失密碼網址</translation>
 <translation id="3335947283844343239">重新開啟先前關閉的分頁</translation>
@@ -2932,7 +2936,7 @@
 <translation id="2319236583141234177">檢查 DNS 設定。</translation>
 <translation id="114140604515785785">擴充功能根目錄：</translation>
 <translation id="6664237456442406323">抱歉，您的電腦是由格式錯誤的硬體 ID 所設定。這樣會防止 Chrome 作業系統更新最新的安全性修復，您的電腦也可能<ph name="BEGIN_BOLD"/>容易遭受惡意攻擊<ph name="END_BOLD"/>。</translation>
-<translation id="785160701896930981">已建立名稱為 <ph name="NEW_PROFILE_NAME"/> 的受監管使用者。如要設定受監管的使用者可瀏覽哪些網站，您可以前往 <ph name="BEGIN_LINK"/>www.chrome.com/manage<ph name="END_LINK"/> 修改限制與設定。如果您並未變更預設設定，那麼 <ph name="NEW_PROFILE_NAME"/> 便可以瀏覽網路上的所有網站。
+<translation id="785160701896930981">已建立名稱為「<ph name="NEW_PROFILE_NAME"/>」的受監管使用者。如要設定受監管的使用者可瀏覽哪些網站，您可以前往 <ph name="BEGIN_LINK"/>www.chrome.com/manage<ph name="END_LINK"/> 修改限制與設定。如果您並未變更預設設定，那麼「<ph name="NEW_PROFILE_NAME"/>」將可以瀏覽網路上的所有網站。
 
 如需進一步指示，請前往 <ph name="ACCOUNT_EMAIL"/> 查看電子郵件。</translation>
 <translation id="8493236660459102203">麥克風：</translation>
@@ -3829,6 +3833,7 @@
 <translation id="3672159315667503033"><ph name="URL"/> 要求在您的本機電腦上永久儲存大量資料。</translation>
 <translation id="373572798843615002">1 個分頁</translation>
 <translation id="4806065163318322702">切換語音輸入</translation>
+<translation id="6190185222845843088">使用電子錢包沙箱伺服器</translation>
 <translation id="3177048931975664371">按這裡隱藏密碼</translation>
 <translation id="5852137567692933493">重新啟動並恢復原廠設定</translation>
 <translation id="3092544800441494315">包含這個螢幕擷取畫面：</translation>
@@ -4096,6 +4101,7 @@
 <translation id="1639239467298939599">載入中</translation>
 <translation id="5457599981699367932">以訪客身分瀏覽</translation>
 <translation id="6850233365366645553">您必須先重新啟動，才能透過 Powerwash 重設裝置。Powerwash 會將您的 <ph name="IDS_SHORT_PRODUCT_NAME"/> 裝置重設為出廠狀態。</translation>
+<translation id="4292622557427736684">針對 Encrypted Media Extensions 預設啟用 MediaDrm。</translation>
 <translation id="1812514023095547458">選取顏色</translation>
 <translation id="5089363139417863686">在檔案應用程式中查看。</translation>
 <translation id="7047998246166230966">指標裝置</translation>
@@ -4444,6 +4450,7 @@
 <translation id="1728442818359004787">變更預設應用程式...</translation>
 <translation id="7540972813190816353">檢查更新時發生錯誤：<ph name="ERROR"/></translation>
 <translation id="7664620655576155379">不支援的藍牙裝置：「<ph name="DEVICE_NAME"/>」。</translation>
+<translation id="2990212470195050777">停用無前置字串的 Media Source API。</translation>
 <translation id="2225024820658613551">請不要繼續瀏覽這個網站，&lt;strong&gt;尤其&lt;/strong&gt;如果您從未在這個網站看到過這項警告，就更不應該繼續。</translation>
 <translation id="2049639323467105390">這個裝置由 <ph name="DOMAIN"/> 管理。</translation>
 <translation id="1932098463447129402">此日期之後：</translation>
@@ -4864,7 +4871,7 @@
 <translation id="5075306601479391924">在播放媒體時停用使用者手勢需求。啟用這項設定將允許自動播放功能。</translation>
 <translation id="9112748030372401671">變更您的桌布</translation>
 <translation id="1735181657228649412">這是可用來開發應用程式/擴充功能的應用程式。</translation>
-<translation id="1832546148887467272">切換至 <ph name="NEW_GOOGLE_HOST"/></translation>
+<translation id="1832546148887467272">切換至<ph name="NEW_GOOGLE_HOST"/></translation>
 <translation id="2670965183549957348">新酷音輸入法</translation>
 <translation id="7839804798877833423">擷取這些檔案大約會使用 <ph name="FILE_SIZE"/> 行動數據流量。</translation>
 <translation id="3268451620468152448">開啟的分頁</translation>
