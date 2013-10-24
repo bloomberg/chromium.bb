@@ -65,7 +65,7 @@ bool SoftwareSurfaceOzone::Initialize() {
   }
 
   skia_device_ = skia::AdoptRef(
-      new SkBitmapDevice(*bitmaps_[front_buffer_ ^ 1].get()));
+      new CustomSkBitmapDevice(*bitmaps_[front_buffer_ ^ 1].get()));
   skia_canvas_ = skia::AdoptRef(new SkCanvas(skia_device_.get()));
 
   return true;
