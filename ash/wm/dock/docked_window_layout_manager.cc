@@ -108,7 +108,11 @@ void UndockWindow(aura::Window* window) {
   aura::Window* focused =
       aura::client::GetFocusClient(window)->GetFocusedWindow();
   bool had_focus = window == focused || window->Contains(focused);
-  window->Hide();
+  // Hide a window to prevent it from being animated during reparenting.
+  // This is useful when minimizing or maximizing a window out of dock but not
+  // when transitioning to fullscreen.
+  if (!wm::GetWindowState(window)->IsFullscreen())
+    window->Hide();
   window->layer()->GetAnimator()->StopAnimating();
   gfx::Rect previous_bounds = window->bounds();
   aura::Window* previous_parent = window->parent();
