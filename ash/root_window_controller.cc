@@ -806,6 +806,8 @@ void RootWindowController::CreateContainersInRootWindow(
       kShellWindowId_InputMethodContainer,
       "InputMethodContainer",
       non_lock_screen_containers);
+  views::corewm::SetChildWindowVisibilityChangesAnimated(
+      input_method_container);
   SetUsesScreenCoordinates(input_method_container);
 
   // TODO(beng): Figure out if we can make this use
