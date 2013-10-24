@@ -20,6 +20,7 @@ class GoogleAutoLoginHelper : public GaiaAuthConsumer,
   virtual ~GoogleAutoLoginHelper();
 
   void LogIn();
+  void LogIn(const std::string& account_id);
 
   // Overridden from GaiaAuthConsumer.
   virtual void OnMergeSessionSuccess(const std::string& data) OVERRIDE;

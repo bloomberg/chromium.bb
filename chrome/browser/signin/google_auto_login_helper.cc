@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/android/signin/google_auto_login_helper.h"
+#include "chrome/browser/signin/google_auto_login_helper.h"
 
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
+#include "google_apis/gaia/gaia_constants.h"
 
 GoogleAutoLoginHelper::GoogleAutoLoginHelper(Profile* profile)
     : profile_(profile) {}
@@ -18,9 +19,14 @@ void GoogleAutoLoginHelper::LogIn() {
   uber_token_fetcher_->StartFetchingToken();
 }
 
+void GoogleAutoLoginHelper::LogIn(const std::string& account_id) {
+  uber_token_fetcher_.reset(new UbertokenFetcher(profile_, this));
+  uber_token_fetcher_->StartFetchingToken(account_id);
+}
+
 void GoogleAutoLoginHelper::OnUbertokenSuccess(const std::string& uber_token) {
   gaia_auth_fetcher_.reset(new GaiaAuthFetcher(
-      this, "ChromiumBrowser", profile_->GetRequestContext()));
+      this, GaiaConstants::kChromeSource, profile_->GetRequestContext()));
   gaia_auth_fetcher_->StartMergeSession(uber_token);
 }
 
