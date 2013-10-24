@@ -428,6 +428,7 @@ struct terminal {
 	struct window *window;
 	struct widget *widget;
 	struct display *display;
+	char *title;
 	union utf8_char *data;
 	struct task io_task;
 	char *tab_ruler;
@@ -837,7 +838,7 @@ resize_handler(struct widget *widget,
 {
 	struct terminal *terminal = data;
 	int32_t columns, rows, m;
-
+	char *p;
 	m = 2 * terminal->margin;
 	columns = (width - m) / (int32_t) terminal->average_width;
 	rows = (height - m) / (int32_t) terminal->extents.height;
@@ -847,6 +848,9 @@ resize_handler(struct widget *widget,
 		width = columns * terminal->average_width + m;
 		height = rows * terminal->extents.height + m;
 		widget_set_size(terminal->widget, width, height);
+		asprintf(&p, "%s — [%dx%d]", terminal->title, columns, rows);
+		window_set_title(terminal->window, p);
+		free(p);
 	}
 
 	terminal_resize_cells(terminal, columns, rows);
@@ -1257,6 +1261,8 @@ handle_osc(struct terminal *terminal)
 	case 0: /* Icon name and window title */
 	case 1: /* Icon label */
 	case 2: /* Window title*/
+		free(terminal->title);
+		terminal->title = strdup(p);
 		window_set_title(terminal->window, p);
 		break;
 	case 7: /* shell cwd as uri */
@@ -2725,6 +2731,11 @@ static int
 enter_handler(struct widget *widget,
 	      struct input *input, float x, float y, void *data)
 {
+	struct terminal *terminal = data;
+
+	/* Reset title to get rid of resizing '[WxH]' in titlebar */
+	window_set_title(terminal->window, terminal->title);
+
 	return CURSOR_IBEAM;
 }
 
@@ -2776,7 +2787,8 @@ terminal_create(struct display *display)
 	terminal->margin_bottom = -1;
 	terminal->window = window_create(display);
 	terminal->widget = window_frame_create(terminal->window, terminal);
-	window_set_title(terminal->window, "Wayland Terminal");
+	terminal->title = strdup("Wayland Terminal");
+	window_set_title(terminal->window, terminal->title);
 	widget_set_transparent(terminal->widget, 0);
 
 	init_state_machine(&terminal->state_machine);
@@ -2851,6 +2863,7 @@ terminal_destroy(struct terminal *terminal)
 	if (wl_list_empty(&terminal_list))
 		display_exit(terminal->display);
 
+	free(terminal->title);
 	free(terminal);
 }
 
