@@ -1,9 +1,9 @@
-<h1>In-App Payments Service</h1>
+<h1>Google Wallet for Digital Goods</h1>
 
 <table class="intro">
   <tr>
     <td><strong>Description:</strong></td>
-    <td>Use the In-App Payments Service to sell digital and virtual goods within a Chrome app.</td>
+    <td>Use Google Wallet for digital goods to sell digital and virtual goods within a Chrome app.</td>
   </tr>
   <tr>
     <td><strong>Availability:</strong></td>
@@ -16,19 +16,20 @@
   <tr>
     <td><strong>Learn more:</strong></td>
     <td>
-    <a href="https://support.google.com/chrome_webstore/answer/1053354">Google Wallet</a>; <br>
-    <a href="https://developers.google.com/commerce/wallet/digital/docs/">Google Wallet for Digital Goods</a></td>
+    <a href="https://support.google.com/chrome_webstore/answer/1053354">Google Wallet</a><br>
+    <a href="https://developers.google.com/commerce/wallet/digital/docs/">Google Wallet for Digital Goods</a><br>
+    <a href="http://www.youtube.com/watch?v=Z3jryGggMCs">How-to Video</a></td>
   </tr>
 </table>
 
 <h2 id="overview">Overview</h2>
 
 <p>
-You can use the In-App Payments Service to sell digital and virtual goods within your app.
-The In-App Payments Service, which is embedded in Chrome, communicates with the
+You can use Google Wallet for digital goods to sell digital and virtual goods within your app.
+The Google Wallet for digital goods client app, which is embedded in Chrome, communicates with the
 <a href="https://support.google.com/chrome_webstore/answer/1053354">Google Wallet</a>
 servers and handles all the required checkout details, so your app does not have to process any financial transactions.
-The In-App Payments Service requires you to package a JavaScript file, 
+Google Wallet for digital goods requires you to package a JavaScript file, 
 <a href="https://raw.github.com/GoogleChrome/chrome-app-samples/master/in-app-payments/buy.js">buy.js</a>,
 with your app to trigger the purchase flow.
 </p>
@@ -36,13 +37,13 @@ with your app to trigger the purchase flow.
 <h2 id="flow">Purchase flow</h2>
 
 <p>
-When a customer clicks a "Buy" button in your app to make a purchase, the In-App Payments Service displays a payment processing window
+When a customer clicks a "Buy" button in your app to make a purchase, Google Wallet for digital goods displays a payment processing window
 on top of your application window:
 </p>
 
-<img src="{{static}}/images/in-app-payments-review.png"
-     width="569"
-     alt="screenshot: in-app-payments review dialog">
+<img src="{{static}}/images/wallet-review.png"
+     width="694"
+     alt="screenshot: Google Wallet review dialog">
 
 <p>
 When the user clicks the "Buy" button in the payment processing window, the Google Wallet server processes the payment
@@ -50,17 +51,17 @@ and displays a purchase confirmation dialog to the user, as shown below.
 The success or failure callback in your app is invoked appropriately.
 </p>
 
-<img src="{{static}}/images/in-app-payments-confirmation.png"
-     width="563"
-     alt="screenshot: in-app-payments confirmation dialog">
+<img src="{{static}}/images/wallet-confirmation.png"
+     width="694"
+     alt="screenshot: Google Wallet confirmation dialog">
 
 <p>
-If the user is not signed up for Google Wallet, the In-App Payments Service takes the user through the sign-up flow:
+If the user is not signed up for Google Wallet, Google Wallet for digital goods takes the user through the sign-up flow:
 </p>
 
-<img src="{{static}}/images/in-app-payments-set-up.png"
-     width="565"
-     alt="screenshot: Google wallet set up dialog">
+<img src="{{static}}/images/wallet-set-up.png"
+     width="694"
+     alt="screenshot: Google Wallet set up dialog">
 
 <h2 id="sample-code">Sample code</h2>
 
@@ -94,13 +95,13 @@ google.payments.inapp.buy({
 });
 </pre>
 
-<h2 id="how-to">How to use the Service</h2>
+<h2 id="how-to">How to use Google Wallet for digital goods</h2>
 
-<p>Using the In-App Payments Service in an app is similar to using the
-<a href="https://developers.google.com/commerce/wallet/digital/docs/">Google Wallet for Digital Goods API</a> in a web site.
+<p>Using Google Wallet for digital goods in a Chrome App is similar to using the
+<a href="https://developers.google.com/commerce/wallet/digital/docs/">Google Wallet for digital goods API</a> in a web site.
 The integration steps below are based on the
-<a href="https://developers.google.com/commerce/wallet/digital/docs/tutorial">Google Wallet for Digital Goods Tutorial</a>,
-but there are a few key differences for Apps. These differences are summarized below and described in detail in the
+<a href="https://developers.google.com/commerce/wallet/digital/docs/tutorial">Google Wallet for digital goods tutorial</a>,
+but there are a few key differences for apps. These differences are summarized below and described in detail in the
 integration steps.
 </p>
 
@@ -115,7 +116,7 @@ integration steps.
   <li>The UI to process payments is displayed in a separate window on top of your application window, rather than in an iframe.</li>
 </ul>
 
-<p>Follow these steps to use the In-App Payments Service in your app:</p>
+<p>Follow these steps to use Google Wallet for digital goods in your app:</p>
 
 <ol>
   <li><a href="https://developers.google.com/commerce/wallet/digital/docs/tutorial#1">Generate a JSON Web Token (JWT) for each item to be purchased.</a>
@@ -133,7 +134,7 @@ integration steps.
   <li>Include <a href="https://raw.github.com/GoogleChrome/chrome-app-samples/master/in-app-payments/buy.js">buy.js</a> in your app.
     <div class="indent-small">
       Due to the security restrictions in the
-      <a href="contentSecurityPolicy.html">Content Security Policy</a> for Chrome apps,
+      <a href="contentSecurityPolicy.html">Content Security Policy</a> for Chrome Apps,
       you cannot include the <a href="https://raw.github.com/GoogleChrome/chrome-app-samples/master/in-app-payments/buy.js">buy.js</a>
       library from an external location. Instead, you must package the library with your app, and load it from the packaged location.
     </div>
@@ -166,7 +167,7 @@ integration steps.
 
   <li><a href="https://developers.google.com/commerce/wallet/digital/docs/tutorial#6">Get set up as a seller on Google Wallet.</a>
     <div class="indent-small">
-      You must sign up for Google Wallet for digital goods in order to use the In-App Payments Service.
+      You must sign up for Google Wallet in order to use Google Wallet for digital goods.
     </div>
   </li>
 
@@ -179,10 +180,10 @@ integration steps.
 
 <h2 id="recurring">Recurring billing</h2>
 
-<p>The In-App Payments Service supports automated recurring billing. To set up recurring billing, follow the
+<p>Google Wallet for digital goods supports automated recurring billing. To set up recurring billing, follow the
 instructions for setting up
 <a href="https://developers.google.com/commerce/wallet/digital/docs/subscriptions">subscriptions</a>
-for the Google Wallet for Digital Goods API,
+for the Google Wallet for digital goods API,
 but note again the differences described above (you can use pre-generated JWT tokens;
 you must package <a href="https://raw.github.com/GoogleChrome/chrome-app-samples/master/in-app-payments/buy.js">buy.js</a>
 with your app; and you must specify an additional parameter in the call to <code>buy()</code>).
@@ -190,7 +191,7 @@ with your app; and you must specify an additional parameter in the call to <code
 <h2 id="sample-app">Sample app</h2>
 
 <p>
-For a simple app that demonstrates how to use the In-App Payments Service, see:
+For a simple app that demonstrates how to use Google Wallet for digital goods, see:
 </p>
 
 </ul>
@@ -202,5 +203,5 @@ For a simple app that demonstrates how to use the In-App Payments Service, see:
 You can install and run the published app from the Chrome Web Store to try out the in-app payment purchase flow.
 The app has options to use either the production server or the sandbox server. When testing with the sandbox server,
 use these <a href="https://developers.google.com/commerce/wallet/digital/docs/testing">test credit card numbers</a>,
-which pass basic checks by the Google Wallet for Digital Goods system.
+which pass basic checks by the Google Wallet for digital goods system.
 </p>
