@@ -100,9 +100,6 @@
         # bison rule
         'css/CSSGrammar.y',
         'xml/XPathGrammar.y',
-
-        # gperf rule
-        'platform/ColorData.gperf',
       ],
       'actions': [
         {
@@ -606,6 +603,22 @@
             '<(SHARED_INTERMEDIATE_DIR)/blink/HTMLMetaElement.cpp',
           ],
         },
+        {
+          'action_name': 'ColorData',
+          'inputs': [
+            'platform/ColorData.gperf',
+          ],
+          'outputs': [
+            '<(SHARED_INTERMEDIATE_DIR)/blink/ColorData.cpp',
+          ],
+          'action': [
+            '<(gperf_exe)',
+            '--key-positions=*',
+            '-D', '-s', '2',
+            '<@(_inputs)',
+            '--output-file=<(SHARED_INTERMEDIATE_DIR)/blink/ColorData.cpp',
+          ],
+        },
       ],
       'rules': [
         {
@@ -623,24 +636,6 @@
             '<(bison_exe)',
           ],
           'msvs_cygwin_shell': 1,
-        },
-        {
-          'rule_name': 'gperf',
-          'extension': 'gperf',
-          'outputs': [
-            '<(SHARED_INTERMEDIATE_DIR)/blink/<(RULE_INPUT_ROOT).cpp',
-          ],
-          'inputs': [
-            '../build/scripts/make-hash-tools.pl',
-          ],
-          'msvs_cygwin_shell': 0,
-          'action': [
-            '<(perl_exe)',
-            '../build/scripts/make-hash-tools.pl',
-            '<(SHARED_INTERMEDIATE_DIR)/blink',
-            '<(RULE_INPUT_PATH)',
-            '<(gperf_exe)',
-          ],
         },
       ],
     },
