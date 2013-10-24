@@ -43,6 +43,7 @@ import re
 
 from v8_globals import includes
 import idl_definitions  # for UnionType
+from v8_utilities import strip_suffix
 
 ################################################################################
 # IDL types
@@ -184,6 +185,10 @@ TYPED_ARRAYS = {
 }
 
 
+def constructor_type(idl_type):
+    return strip_suffix(idl_type, 'Constructor')
+
+
 def is_dom_node_type(idl_type):
     return (idl_type in DOM_NODE_TYPES or
             (idl_type.startswith(('HTML', 'SVG')) and
@@ -320,6 +325,8 @@ def includes_for_type(idl_type):
     this_array_or_sequence_type = array_or_sequence_type(idl_type)
     if this_array_or_sequence_type:
         return includes_for_type(this_array_or_sequence_type)
+    if idl_type.endswith('Constructor'):
+        idl_type = constructor_type(idl_type)
     return set(['V8%s.h' % idl_type])
 
 

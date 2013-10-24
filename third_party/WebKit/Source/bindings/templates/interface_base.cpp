@@ -60,7 +60,7 @@ template <typename T> void V8_USE(T) { }
 {% from 'attributes.cpp' import attribute_getter, attribute_getter_callback,
        attribute_setter, attribute_setter_callback
    with context %}
-{% for attribute in attributes %}
+{% for attribute in attributes if not attribute.is_constructor %}
 {% for world_suffix in attribute.world_suffixes %}
 {% if not attribute.has_custom_getter %}
 {{attribute_getter(attribute, world_suffix)}}
@@ -74,6 +74,7 @@ template <typename T> void V8_USE(T) { }
 {% endif %}
 {% endfor %}
 {% endfor %}
+{% block constructor_getter %}{% endblock %}
 {% block replaceable_attribute_setter_and_callback %}{% endblock %}
 } // namespace {{cpp_class_name}}V8Internal
 

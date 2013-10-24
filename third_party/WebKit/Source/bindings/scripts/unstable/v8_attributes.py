@@ -53,6 +53,7 @@ def generate_attributes_common(interface, attributes):
     v8_class_name = v8_utilities.v8_class_name(interface)
     return {
         'has_per_context_enabled_attributes': any(attribute['per_context_enabled_function_name'] for attribute in attributes),
+        'has_constructor_attributes': any(attribute['is_constructor'] for attribute in attributes),
         'has_replaceable_attributes': any(attribute['is_replaceable'] for attribute in attributes),
         'has_runtime_enabled_attributes': any(attribute['runtime_enabled_function_name'] for attribute in attributes),
         'installed_attributes': '%sAttributes' % v8_class_name if attributes else '0',
@@ -79,6 +80,7 @@ def generate_attribute(interface, attribute):
         'has_custom_getter': has_custom_getter,
         'has_custom_setter': has_custom_setter,
         'idl_type': idl_type,
+        'is_constructor': is_constructor_attribute(attribute),
         'is_getter_raises_exception': has_extended_attribute(attribute, ('GetterRaisesException', 'RaisesException')),
         'is_keep_alive_for_gc': is_keep_alive_for_gc(attribute),
         'is_nullable': attribute.is_nullable,
@@ -94,7 +96,11 @@ def generate_attribute(interface, attribute):
         'v8_type': v8_types.v8_type(idl_type),
         'runtime_enabled_function_name': v8_utilities.runtime_enabled_function_name(attribute),  # [RuntimeEnabled]
         'world_suffixes': ['', 'ForMainWorld'] if 'PerWorldBindings' in extended_attributes else [''],  # [PerWorldBindings]
+        'wrapper_type_info': wrapper_type_info(attribute),
     }
+    if is_constructor_attribute(attribute):
+        includes.update(v8_types.includes_for_type(idl_type))
+        return contents, includes
     if not has_custom_getter:
         generate_getter(interface, attribute, contents)
     if not attribute.is_read_only and not has_custom_setter:
@@ -102,6 +108,8 @@ def generate_attribute(interface, attribute):
 
     return contents
 
+
+# Getter
 
 def generate_getter(interface, attribute, contents):
     idl_type = attribute.data_type
@@ -215,6 +223,8 @@ def is_keep_alive_for_gc(attribute):
              idl_type.startswith('HTML'))))
 
 
+# Setter
+
 def generate_setter(interface, attribute, contents):
     idl_type = attribute.data_type
     extended_attributes = attribute.extended_attributes
@@ -298,19 +308,45 @@ def scoped_name(interface, attribute, base_name):
     return 'imp->%s' % base_name
 
 
+# Attribute configuration
+
 def getter_callback_name(interface, attribute):
+    if attribute.data_type.endswith('Constructor'):
+        return '{0}V8Internal::{0}ConstructorGetter'.format(cpp_name(interface))
     return '%sV8Internal::%sAttributeGetterCallback' % (cpp_name(interface), attribute.name)
 
 
 # [Replaceable]
 def setter_callback_name(interface, attribute):
     cpp_class_name = cpp_name(interface)
-    if 'Replaceable' in attribute.extended_attributes:
+    if ('Replaceable' in attribute.extended_attributes or
+        attribute.data_type.endswith('Constructor')):
+        # FIXME: rename to ForceSetAttributeOnThisCallback, since also used for Constructors
         return '{0}V8Internal::{0}ReplaceableAttributeSetterCallback'.format(cpp_class_name)
     # FIXME: support [PutForwards]
     if attribute.is_read_only:
         return '0'
     return '%sV8Internal::%sAttributeSetterCallback' % (cpp_class_name, attribute.name)
+
+
+# [PerWorldBindings]
+def getter_callback_name_for_main_world(interface, attribute):
+    if 'PerWorldBindings' not in attribute.extended_attributes:
+        return '0'
+    return '%sV8Internal::%sAttributeGetterCallbackForMainWorld' % (cpp_name(interface), attribute.name)
+
+
+def setter_callback_name_for_main_world(interface, attribute):
+    if ('PerWorldBindings' not in attribute.extended_attributes or
+        attribute.is_read_only):
+        return '0'
+    return '%sV8Internal::%sAttributeSetterCallbackForMainWorld' % (cpp_name(interface), attribute.name)
+
+
+def wrapper_type_info(attribute):
+    if not is_constructor_attribute(attribute):
+        return '0'
+    return '&V8%s::info' % v8_types.constructor_type(attribute.data_type)
 
 
 # [DoNotCheckSecurity], [DoNotCheckSecurityOnGetter], [DoNotCheckSecurityOnSetter], [Unforgeable]
@@ -334,22 +370,13 @@ def access_control_list(attribute):
 def property_attributes(attribute):
     extended_attributes = attribute.extended_attributes
     property_attributes_list = []
-    if 'NotEnumerable' in extended_attributes:
+    if ('NotEnumerable' in extended_attributes or
+        is_constructor_attribute(attribute)):
         property_attributes_list.append('v8::DontEnum')
     if 'Unforgeable' in extended_attributes:
         property_attributes_list.append('v8::DontDelete')
     return property_attributes_list or ['v8::None']
 
 
-# [PerWorldBindings]
-def getter_callback_name_for_main_world(interface, attribute):
-    if 'PerWorldBindings' not in attribute.extended_attributes:
-        return '0'
-    return '%sV8Internal::%sAttributeGetterCallbackForMainWorld' % (cpp_name(interface), attribute.name)
-
-
-def setter_callback_name_for_main_world(interface, attribute):
-    if ('PerWorldBindings' not in attribute.extended_attributes or
-        attribute.is_read_only):
-        return '0'
-    return '%sV8Internal::%sAttributeSetterCallbackForMainWorld' % (cpp_name(interface), attribute.name)
+def is_constructor_attribute(attribute):
+    return attribute.data_type.endswith('Constructor')

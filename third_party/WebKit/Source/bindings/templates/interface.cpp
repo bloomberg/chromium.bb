@@ -3,17 +3,36 @@
 
 {##############################################################################}
 {% macro attribute_configuration(attribute) %}
-{"{{attribute.name}}", {{attribute.getter_callback_name}}, {{attribute.setter_callback_name}}, {{attribute.getter_callback_name_for_main_world}}, {{attribute.setter_callback_name_for_main_world}}, 0, static_cast<v8::AccessControl>({{attribute.access_control_list | join(' | ')}}), static_cast<v8::PropertyAttribute>({{attribute.property_attributes | join(' | ')}}), 0 /* on instance */}{% endmacro %}
+{"{{attribute.name}}", {{attribute.getter_callback_name}}, {{attribute.setter_callback_name}}, {{attribute.getter_callback_name_for_main_world}}, {{attribute.setter_callback_name_for_main_world}}, {{attribute.wrapper_type_info}}, static_cast<v8::AccessControl>({{attribute.access_control_list | join(' | ')}}), static_cast<v8::PropertyAttribute>({{attribute.property_attributes | join(' | ')}}), 0 /* on instance */}{% endmacro %}
+
+
+{##############################################################################}
+{% block constructor_getter %}
+{% if has_constructor_attributes %}
+static void {{interface_name}}ConstructorGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    v8::Handle<v8::Value> data = info.Data();
+    ASSERT(data->IsExternal());
+    V8PerContextData* perContextData = V8PerContextData::from(info.Holder()->CreationContext());
+    if (!perContextData)
+        return;
+    v8SetReturnValue(info, perContextData->constructorForType(WrapperTypeInfo::unwrap(data)));
+}
+
+{% endif %}
+{% endblock %}
 
 
 {##############################################################################}
 {% block replaceable_attribute_setter_and_callback %}
-{% if has_replaceable_attributes %}
+{% if has_replaceable_attributes or has_constructor_attributes %}
+{# FIXME: rename to ForceSetAttributeOnThis, since also used for Constructors #}
 static void {{interface_name}}ReplaceableAttributeSetter(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     info.This()->ForceSet(name, jsValue);
 }
 
+{# FIXME: rename to ForceSetAttributeOnThisCallback, since also used for Constructors #}
 static void {{interface_name}}ReplaceableAttributeSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     {{interface_name}}V8Internal::{{interface_name}}ReplaceableAttributeSetter(name, jsValue, info);

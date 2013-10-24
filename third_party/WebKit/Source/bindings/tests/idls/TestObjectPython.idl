@@ -94,6 +94,9 @@ interface TestObjectPython {
     // Static attributes
     static attribute DOMString staticStringAttribute;
     static attribute long staticLongAttribute;
+    // Constructors
+    // attribute attribute TestSubObjConstructor TestSubObj;
+    attribute TestObjectAConstructor testObjectAConstructorAttribute;
     // Miscellaneous special types
     attribute EventHandler eventHandlerAttribute;
     attribute Promise promiseAttribute;

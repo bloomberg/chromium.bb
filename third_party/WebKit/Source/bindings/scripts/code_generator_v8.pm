@@ -1246,6 +1246,7 @@ static void ${implClassName}ConstructorGetter(v8::Local<v8::String> name, const 
         return;
     v8SetReturnValue(info, perContextData->constructorForType(WrapperTypeInfo::unwrap(data)));
 }
+
 END
 }
 

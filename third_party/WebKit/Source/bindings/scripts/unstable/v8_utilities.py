@@ -62,6 +62,12 @@ def capitalize(name):
     return name[0].upper() + name[1:]
 
 
+def strip_suffix(string, suffix):
+    if not suffix or not string.endswith(suffix):
+        return string
+    return string[:-len(suffix)]
+
+
 def uncapitalize(name):
     """Uncapitalizes first letter or initial acronym (* with some exceptions).
 
