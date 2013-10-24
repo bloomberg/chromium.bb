@@ -211,6 +211,12 @@ def _RunPerformanceTest(config, path_to_file):
   cloud_file_link = [t for t in output.splitlines()
       if 'storage.googleapis.com/chromium-telemetry/html-results/' in t]
   if cloud_file_link:
+    # What we're getting here is basically "View online at http://..." so parse
+    # out just the url portion.
+    cloud_file_link = cloud_file_link[0]
+    cloud_file_link = [t for t in cloud_file_link.split(' ')
+        if 'storage.googleapis.com/chromium-telemetry/html-results/' in t]
+    assert cloud_file_link, "Couldn't parse url from output."
     cloud_file_link = cloud_file_link[0]
   else:
     cloud_file_link = ''
