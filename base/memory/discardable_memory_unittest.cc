@@ -62,7 +62,8 @@ TEST(DiscardableMemoryTest, UnlockedMemoryAccessCrashesInDebugMode) {
       DiscardableMemory::CreateLockedMemory(kSize));
   ASSERT_TRUE(memory);
   memory->Unlock();
-  ASSERT_DEATH({ *static_cast<int*>(memory->Memory()) = 0xdeadbeef; }, ".*");
+  ASSERT_DEATH_IF_SUPPORTED(
+      { *static_cast<int*>(memory->Memory()) = 0xdeadbeef; }, ".*");
 }
 #endif
 
