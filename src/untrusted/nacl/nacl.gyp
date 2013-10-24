@@ -116,6 +116,7 @@
       'nacl_irt_init.c',
       'nacl_tls_get.c',
       'nacl_tls_init.c',
+      'random.c',
     ],
     'imc_syscalls': [
       'imc_accept.c',

@@ -139,6 +139,7 @@ SRCS_NACL_EXTENSIONS = [
     'nacl_irt_init.c',
     'nacl_tls_get.c',
     'nacl_tls_init.c',
+    'random.c',
     ]
 
 if env.Bit('nacl_glibc'):
@@ -157,7 +158,8 @@ else:
 libnacl = env.ComponentLibrary('libnacl', sources)
 
 env.AddLibraryToSdk(libnacl)
-header_install = env.AddHeaderToSdk(['nacl_startup.h', 'nacl_thread.h'])
+header_install = env.AddHeaderToSdk([
+    'nacl_random.h', 'nacl_startup.h', 'nacl_thread.h'])
 env.Requires('libnacl', header_install)
 
 libnacl_dyncode = env.NaClSdkLibrary('libnacl_dyncode', ['dyncode.c'])

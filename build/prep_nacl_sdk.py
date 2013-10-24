@@ -25,6 +25,8 @@ HEADER_MAP = {
           'src/untrusted/valgrind/dynamic_annotations.h',
       'x86_64-nacl/include/nacl/nacl_dyncode.h':
           'src/untrusted/nacl/nacl_dyncode.h',
+      'x86_64-nacl/include/nacl/nacl_random.h':
+          'src/untrusted/nacl/nacl_random.h',
       'x86_64-nacl/include/nacl/nacl_startup.h':
           'src/untrusted/nacl/nacl_startup.h',
       'x86_64-nacl/include/nacl/nacl_thread.h':
@@ -40,6 +42,8 @@ HEADER_MAP = {
           'src/untrusted/valgrind/dynamic_annotations.h',
       'x86_64-nacl/include/nacl/nacl_dyncode.h':
           'src/untrusted/nacl/nacl_dyncode.h',
+      'x86_64-nacl/include/nacl/nacl_random.h':
+          'src/untrusted/nacl/nacl_random.h',
       'x86_64-nacl/include/nacl/nacl_startup.h':
           'src/untrusted/nacl/nacl_startup.h',
       'x86_64-nacl/include/nacl/nacl_thread.h':
@@ -54,6 +58,8 @@ HEADER_MAP = {
           'src/untrusted/valgrind/dynamic_annotations.h',
       'arm-nacl/include/nacl/nacl_dyncode.h':
           'src/untrusted/nacl/nacl_dyncode.h',
+      'arm-nacl/include/nacl/nacl_random.h':
+          'src/untrusted/nacl/nacl_random.h',
       'arm-nacl/include/nacl/nacl_startup.h':
           'src/untrusted/nacl/nacl_startup.h',
       'arm-nacl/include/nacl/nacl_thread.h':
@@ -69,6 +75,8 @@ HEADER_MAP = {
           'src/untrusted/valgrind/dynamic_annotations.h',
       'sdk/include/nacl/nacl_dyncode.h':
           'src/untrusted/nacl/nacl_dyncode.h',
+      'sdk/include/nacl/nacl_random.h':
+          'src/untrusted/nacl/nacl_random.h',
       'sdk/include/nacl/nacl_startup.h':
           'src/untrusted/nacl/nacl_startup.h',
       'sdk/include/nacl/nacl_thread.h':
