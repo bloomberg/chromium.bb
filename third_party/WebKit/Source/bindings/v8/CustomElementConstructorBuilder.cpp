@@ -82,7 +82,7 @@ bool CustomElementConstructorBuilder::validateOptions(const AtomicString& type, 
         }
     } else {
         m_prototype = v8::Object::New();
-        v8::Local<v8::Object> basePrototype = V8PerContextData::from(m_context)->prototypeForType(&V8HTMLElement::info);
+        v8::Local<v8::Object> basePrototype = V8PerContextData::from(m_context)->prototypeForType(&V8HTMLElement::wrapperTypeInfo);
         if (!basePrototype.IsEmpty())
             m_prototype->SetPrototype(basePrototype);
     }
@@ -97,7 +97,7 @@ bool CustomElementConstructorBuilder::validateOptions(const AtomicString& type, 
     }
 
     AtomicString namespaceURI = HTMLNames::xhtmlNamespaceURI;
-    if (hasValidPrototypeChainFor(&V8SVGElement::info))
+    if (hasValidPrototypeChainFor(&V8SVGElement::wrapperTypeInfo))
         namespaceURI = SVGNames::svgNamespaceURI;
 
     AtomicString localName;
@@ -118,7 +118,7 @@ bool CustomElementConstructorBuilder::validateOptions(const AtomicString& type, 
     }
 
     if (!extendsProvidedAndNonNull)
-        m_wrapperType = &V8HTMLElement::info;
+        m_wrapperType = &V8HTMLElement::wrapperTypeInfo;
     else if (namespaceURI == HTMLNames::xhtmlNamespaceURI)
         m_wrapperType = findWrapperTypeForHTMLTagName(localName);
     else

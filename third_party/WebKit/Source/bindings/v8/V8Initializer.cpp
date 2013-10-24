@@ -59,17 +59,17 @@ static Frame* findFrame(v8::Local<v8::Object> host, v8::Local<v8::Value> data, v
 {
     WrapperTypeInfo* type = WrapperTypeInfo::unwrap(data);
 
-    if (V8Window::info.equals(type)) {
+    if (V8Window::wrapperTypeInfo.equals(type)) {
         v8::Handle<v8::Object> windowWrapper = host->FindInstanceInPrototypeChain(V8Window::GetTemplate(isolate, worldTypeInMainThread(isolate)));
         if (windowWrapper.IsEmpty())
             return 0;
         return V8Window::toNative(windowWrapper)->frame();
     }
 
-    if (V8History::info.equals(type))
+    if (V8History::wrapperTypeInfo.equals(type))
         return V8History::toNative(host)->frame();
 
-    if (V8Location::info.equals(type))
+    if (V8Location::wrapperTypeInfo.equals(type))
         return V8Location::toNative(host)->frame();
 
     // This function can handle only those types listed above.
@@ -112,7 +112,7 @@ static void messageHandlerInMainThread(v8::Handle<v8::Message> message, v8::Hand
     if (V8DOMWrapper::isDOMWrapper(data)) {
         v8::Handle<v8::Object> obj = v8::Handle<v8::Object>::Cast(data);
         WrapperTypeInfo* type = toWrapperTypeInfo(obj);
-        if (V8DOMException::info.isSubclass(type)) {
+        if (V8DOMException::wrapperTypeInfo.isSubclass(type)) {
             DOMException* exception = V8DOMException::toNative(obj);
             if (exception && !exception->messageForConsole().isEmpty())
                 event->setUnsanitizedMessage("Uncaught " + exception->toStringForConsole());

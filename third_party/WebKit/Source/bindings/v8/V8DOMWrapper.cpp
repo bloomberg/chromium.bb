@@ -102,7 +102,7 @@ static v8::Local<v8::Object> wrapInShadowTemplate(v8::Local<v8::Object> wrapper,
     if (shadow.IsEmpty())
         return v8::Local<v8::Object>();
     shadow->SetPrototype(wrapper);
-    V8DOMWrapper::setNativeInfo(wrapper, &V8HTMLDocument::info, impl);
+    V8DOMWrapper::setNativeInfo(wrapper, &V8HTMLDocument::wrapperTypeInfo, impl);
     return shadow;
 }
 
@@ -113,7 +113,7 @@ v8::Local<v8::Object> V8DOMWrapper::createWrapper(v8::Handle<v8::Object> creatio
     V8PerContextData* perContextData = V8PerContextData::from(scope.context());
     v8::Local<v8::Object> wrapper = perContextData ? perContextData->createWrapperFromCache(type) : V8ObjectConstructor::newInstance(type->getTemplate(isolate, worldTypeInMainThread(isolate))->GetFunction());
 
-    if (type == &V8HTMLDocument::info && !wrapper.IsEmpty())
+    if (type == &V8HTMLDocument::wrapperTypeInfo && !wrapper.IsEmpty())
         wrapper = wrapInShadowTemplate(wrapper, static_cast<Node*>(impl), isolate);
 
     return wrapper;

@@ -56,7 +56,7 @@ void V8WebKitPoint::constructorCustom(const v8::FunctionCallbackInfo<v8::Value>&
     }
     RefPtr<DOMPoint> point = DOMPoint::create(x, y);
     v8::Handle<v8::Object> wrapper = args.Holder();
-    V8DOMWrapper::associateObjectWithWrapper<V8WebKitPoint>(point.release(), &info, wrapper, args.GetIsolate(), WrapperConfiguration::Dependent);
+    V8DOMWrapper::associateObjectWithWrapper<V8WebKitPoint>(point.release(), &wrapperTypeInfo, wrapper, args.GetIsolate(), WrapperConfiguration::Dependent);
     args.GetReturnValue().Set(wrapper);
 }
 

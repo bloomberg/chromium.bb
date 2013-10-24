@@ -173,7 +173,7 @@ class GlobalObjectNameResolver : public v8::HeapProfiler::ObjectNameResolver {
 public:
     virtual const char* GetName(v8::Handle<v8::Object> object)
     {
-        if (V8DOMWrapper::isWrapperOfType(object, &V8Window::info)) {
+        if (V8DOMWrapper::isWrapperOfType(object, &V8Window::wrapperTypeInfo)) {
             DOMWindow* window = V8Window::toNative(object);
             if (window) {
                 CString url = window->document()->url().string().utf8();

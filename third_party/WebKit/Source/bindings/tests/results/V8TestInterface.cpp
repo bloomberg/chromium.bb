@@ -47,7 +47,7 @@ namespace WebCore {
 static void initializeScriptWrappableForInterface(TestInterface* object)
 {
     if (ScriptWrappable::wrapperCanBeStoredInObject(object))
-        ScriptWrappable::setTypeInfoInObject(object, &V8TestInterface::info);
+        ScriptWrappable::setTypeInfoInObject(object, &V8TestInterface::wrapperTypeInfo);
     else
         ASSERT_NOT_REACHED();
 }
@@ -64,7 +64,7 @@ void webCoreInitializeScriptWrappableForInterface(WebCore::TestInterface* object
 }
 
 namespace WebCore {
-WrapperTypeInfo V8TestInterface::info = { V8TestInterface::GetTemplate, V8TestInterface::derefObject, V8TestInterface::toActiveDOMObject, 0, 0, V8TestInterface::installPerContextEnabledPrototypeProperties, 0, WrapperTypeObjectPrototype };
+WrapperTypeInfo V8TestInterface::wrapperTypeInfo = { V8TestInterface::GetTemplate, V8TestInterface::derefObject, V8TestInterface::toActiveDOMObject, 0, 0, V8TestInterface::installPerContextEnabledPrototypeProperties, 0, WrapperTypeObjectPrototype };
 
 namespace TestInterfaceV8Internal {
 
@@ -667,7 +667,7 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& args)
     if (es.throwIfNeeded())
         return;
 
-    V8DOMWrapper::associateObjectWithWrapper<V8TestInterface>(impl.release(), &V8TestInterface::info, wrapper, args.GetIsolate(), WrapperConfiguration::Dependent);
+    V8DOMWrapper::associateObjectWithWrapper<V8TestInterface>(impl.release(), &V8TestInterface::wrapperTypeInfo, wrapper, args.GetIsolate(), WrapperConfiguration::Dependent);
     args.GetReturnValue().Set(wrapper);
 }
 
@@ -846,7 +846,7 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestInterfaceTemplate(v8::Han
 
     // Custom Signature 'implementsMethod2'
     const int implementsMethod2Argc = 2;
-    v8::Handle<v8::FunctionTemplate> implementsMethod2Argv[implementsMethod2Argc] = { v8::Handle<v8::FunctionTemplate>(), V8PerIsolateData::from(isolate)->rawTemplate(&V8TestObject::info, currentWorldType) };
+    v8::Handle<v8::FunctionTemplate> implementsMethod2Argv[implementsMethod2Argc] = { v8::Handle<v8::FunctionTemplate>(), V8PerIsolateData::from(isolate)->rawTemplate(&V8TestObject::wrapperTypeInfo, currentWorldType) };
     v8::Handle<v8::Signature> implementsMethod2Signature = v8::Signature::New(desc, implementsMethod2Argc, implementsMethod2Argv);
     proto->Set(v8::String::NewSymbol("implementsMethod2"), v8::FunctionTemplate::New(TestInterfaceV8Internal::implementsMethod2MethodCallback, v8Undefined(), implementsMethod2Signature, 2));
     desc->Set(v8::String::NewSymbol("implementsMethod4"), v8::FunctionTemplate::New(TestInterfaceV8Internal::implementsMethod4MethodCallback, v8Undefined(), v8::Local<v8::Signature>(), 0));
@@ -854,7 +854,7 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestInterfaceTemplate(v8::Han
 
     // Custom Signature 'supplementalMethod2'
     const int supplementalMethod2Argc = 2;
-    v8::Handle<v8::FunctionTemplate> supplementalMethod2Argv[supplementalMethod2Argc] = { v8::Handle<v8::FunctionTemplate>(), V8PerIsolateData::from(isolate)->rawTemplate(&V8TestObject::info, currentWorldType) };
+    v8::Handle<v8::FunctionTemplate> supplementalMethod2Argv[supplementalMethod2Argc] = { v8::Handle<v8::FunctionTemplate>(), V8PerIsolateData::from(isolate)->rawTemplate(&V8TestObject::wrapperTypeInfo, currentWorldType) };
     v8::Handle<v8::Signature> supplementalMethod2Signature = v8::Signature::New(desc, supplementalMethod2Argc, supplementalMethod2Argv);
     proto->Set(v8::String::NewSymbol("supplementalMethod2"), v8::FunctionTemplate::New(TestInterfaceV8Internal::supplementalMethod2MethodCallback, v8Undefined(), supplementalMethod2Signature, 2));
 #endif // ENABLE(Condition11) || ENABLE(Condition12)
@@ -878,28 +878,28 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestInterfaceTemplate(v8::Han
 v8::Handle<v8::FunctionTemplate> V8TestInterface::GetTemplate(v8::Isolate* isolate, WrapperWorldType currentWorldType)
 {
     V8PerIsolateData* data = V8PerIsolateData::from(isolate);
-    V8PerIsolateData::TemplateMap::iterator result = data->templateMap(currentWorldType).find(&info);
+    V8PerIsolateData::TemplateMap::iterator result = data->templateMap(currentWorldType).find(&wrapperTypeInfo);
     if (result != data->templateMap(currentWorldType).end())
         return result->value.newLocal(isolate);
 
     TRACE_EVENT_SCOPED_SAMPLING_STATE("Blink", "BuildDOMTemplate");
     v8::HandleScope handleScope(isolate);
     v8::Handle<v8::FunctionTemplate> templ =
-        ConfigureV8TestInterfaceTemplate(data->rawTemplate(&info, currentWorldType), isolate, currentWorldType);
-    data->templateMap(currentWorldType).add(&info, UnsafePersistent<v8::FunctionTemplate>(isolate, templ));
+        ConfigureV8TestInterfaceTemplate(data->rawTemplate(&wrapperTypeInfo, currentWorldType), isolate, currentWorldType);
+    data->templateMap(currentWorldType).add(&wrapperTypeInfo, UnsafePersistent<v8::FunctionTemplate>(isolate, templ));
     return handleScope.Close(templ);
 }
 
 bool V8TestInterface::HasInstance(v8::Handle<v8::Value> jsValue, v8::Isolate* isolate, WrapperWorldType currentWorldType)
 {
-    return V8PerIsolateData::from(isolate)->hasInstance(&info, jsValue, currentWorldType);
+    return V8PerIsolateData::from(isolate)->hasInstance(&wrapperTypeInfo, jsValue, currentWorldType);
 }
 
 bool V8TestInterface::HasInstanceInAnyWorld(v8::Handle<v8::Value> jsValue, v8::Isolate* isolate)
 {
-    return V8PerIsolateData::from(isolate)->hasInstance(&info, jsValue, MainWorld)
-        || V8PerIsolateData::from(isolate)->hasInstance(&info, jsValue, IsolatedWorld)
-        || V8PerIsolateData::from(isolate)->hasInstance(&info, jsValue, WorkerWorld);
+    return V8PerIsolateData::from(isolate)->hasInstance(&wrapperTypeInfo, jsValue, MainWorld)
+        || V8PerIsolateData::from(isolate)->hasInstance(&wrapperTypeInfo, jsValue, IsolatedWorld)
+        || V8PerIsolateData::from(isolate)->hasInstance(&wrapperTypeInfo, jsValue, WorkerWorld);
 }
 
 void V8TestInterface::installPerContextEnabledProperties(v8::Handle<v8::Object> instance, TestInterface* impl, v8::Isolate* isolate)
@@ -933,17 +933,17 @@ v8::Handle<v8::Object> V8TestInterface::createWrapper(PassRefPtr<TestInterface> 
     ASSERT(!DOMDataStore::containsWrapper<V8TestInterface>(impl.get(), isolate));
     if (ScriptWrappable::wrapperCanBeStoredInObject(impl.get())) {
         const WrapperTypeInfo* actualInfo = ScriptWrappable::getTypeInfoFromObject(impl.get());
-        // Might be a XXXConstructor::info instead of an XXX::info. These will both have
+        // Might be a XXXConstructor::wrapperTypeInfo instead of an XXX::wrapperTypeInfo. These will both have
         // the same object de-ref functions, though, so use that as the basis of the check.
-        RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(actualInfo->derefObjectFunction == info.derefObjectFunction);
+        RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(actualInfo->derefObjectFunction == wrapperTypeInfo.derefObjectFunction);
     }
 
-    v8::Handle<v8::Object> wrapper = V8DOMWrapper::createWrapper(creationContext, &info, toInternalPointer(impl.get()), isolate);
+    v8::Handle<v8::Object> wrapper = V8DOMWrapper::createWrapper(creationContext, &wrapperTypeInfo, toInternalPointer(impl.get()), isolate);
     if (UNLIKELY(wrapper.IsEmpty()))
         return wrapper;
 
     installPerContextEnabledProperties(wrapper, impl.get(), isolate);
-    V8DOMWrapper::associateObjectWithWrapper<V8TestInterface>(impl, &info, wrapper, isolate, WrapperConfiguration::Dependent);
+    V8DOMWrapper::associateObjectWithWrapper<V8TestInterface>(impl, &wrapperTypeInfo, wrapper, isolate, WrapperConfiguration::Dependent);
     return wrapper;
 }
 

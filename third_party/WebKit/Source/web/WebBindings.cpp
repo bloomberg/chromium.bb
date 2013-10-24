@@ -216,7 +216,7 @@ static bool getRangeImpl(NPObject* object, WebRange* webRange, v8::Isolate* isol
     v8::Handle<v8::Object> v8Object = v8::Local<v8::Object>::New(isolate, v8NPObject->v8Object);
     if (v8Object.IsEmpty())
         return false;
-    if (!V8Range::info.equals(toWrapperTypeInfo(v8Object)))
+    if (!V8Range::wrapperTypeInfo.equals(toWrapperTypeInfo(v8Object)))
         return false;
 
     Range* native = V8Range::HasInstanceInAnyWorld(v8Object, isolate) ? V8Range::toNative(v8Object) : 0;

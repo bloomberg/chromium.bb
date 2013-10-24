@@ -101,7 +101,7 @@ void V8InspectorFrontendHost::showContextMenuMethodCustom(const v8::FunctionCall
         return;
 
     v8::Local<v8::Object> eventWrapper = v8::Local<v8::Object>::Cast(args[0]);
-    if (!V8MouseEvent::info.equals(toWrapperTypeInfo(eventWrapper)))
+    if (!V8MouseEvent::wrapperTypeInfo.equals(toWrapperTypeInfo(eventWrapper)))
         return;
 
     Event* event = V8Event::toNative(eventWrapper);

@@ -71,7 +71,7 @@ DOMWrapperWorld* DOMWrapperWorld::current()
 {
     ASSERT(v8::Context::InContext());
     v8::Handle<v8::Context> context = v8::Context::GetCurrent();
-    if (!V8DOMWrapper::isWrapperOfType(toInnerGlobalObject(context), &V8Window::info))
+    if (!V8DOMWrapper::isWrapperOfType(toInnerGlobalObject(context), &V8Window::wrapperTypeInfo))
         return 0;
     ASSERT(isMainThread());
     if (DOMWrapperWorld* world = isolatedWorld(context))
@@ -98,7 +98,7 @@ bool DOMWrapperWorld::contextHasCorrectPrototype(v8::Handle<v8::Context> context
     ASSERT(isMainThread());
     if (initializingWindow)
         return true;
-    return V8DOMWrapper::isWrapperOfType(toInnerGlobalObject(context), &V8Window::info);
+    return V8DOMWrapper::isWrapperOfType(toInnerGlobalObject(context), &V8Window::wrapperTypeInfo);
 }
 
 void DOMWrapperWorld::setIsolatedWorldField(v8::Handle<v8::Context> context)

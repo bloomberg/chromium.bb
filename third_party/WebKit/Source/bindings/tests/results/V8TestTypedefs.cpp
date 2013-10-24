@@ -45,7 +45,7 @@ namespace WebCore {
 static void initializeScriptWrappableForInterface(TestTypedefs* object)
 {
     if (ScriptWrappable::wrapperCanBeStoredInObject(object))
-        ScriptWrappable::setTypeInfoInObject(object, &V8TestTypedefs::info);
+        ScriptWrappable::setTypeInfoInObject(object, &V8TestTypedefs::wrapperTypeInfo);
     else
         ASSERT_NOT_REACHED();
 }
@@ -62,7 +62,7 @@ void webCoreInitializeScriptWrappableForInterface(WebCore::TestTypedefs* object)
 }
 
 namespace WebCore {
-WrapperTypeInfo V8TestTypedefs::info = { V8TestTypedefs::GetTemplate, V8TestTypedefs::derefObject, 0, 0, 0, V8TestTypedefs::installPerContextEnabledPrototypeProperties, 0, WrapperTypeObjectPrototype };
+WrapperTypeInfo V8TestTypedefs::wrapperTypeInfo = { V8TestTypedefs::GetTemplate, V8TestTypedefs::derefObject, 0, 0, 0, V8TestTypedefs::installPerContextEnabledPrototypeProperties, 0, WrapperTypeObjectPrototype };
 
 namespace TestTypedefsV8Internal {
 
@@ -483,7 +483,7 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& args)
     RefPtr<TestTypedefs> impl = TestTypedefs::create(hello, testCallback);
     v8::Handle<v8::Object> wrapper = args.Holder();
 
-    V8DOMWrapper::associateObjectWithWrapper<V8TestTypedefs>(impl.release(), &V8TestTypedefs::info, wrapper, args.GetIsolate(), WrapperConfiguration::Dependent);
+    V8DOMWrapper::associateObjectWithWrapper<V8TestTypedefs>(impl.release(), &V8TestTypedefs::wrapperTypeInfo, wrapper, args.GetIsolate(), WrapperConfiguration::Dependent);
     args.GetReturnValue().Set(wrapper);
 }
 
@@ -541,7 +541,7 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestTypedefsTemplate(v8::Hand
     v8::Local<v8::ObjectTemplate> proto = desc->PrototypeTemplate();
     UNUSED_PARAM(instance);
     UNUSED_PARAM(proto);
-    desc->SetNativeDataProperty(v8::String::NewSymbol("TestSubObj"), TestTypedefsV8Internal::TestTypedefsConstructorGetter, 0, v8::External::New(&V8TestSubObj::info), static_cast<v8::PropertyAttribute>(v8::DontEnum), v8::Handle<v8::AccessorSignature>(), static_cast<v8::AccessControl>(v8::DEFAULT));
+    desc->SetNativeDataProperty(v8::String::NewSymbol("TestSubObj"), TestTypedefsV8Internal::TestTypedefsConstructorGetter, 0, v8::External::New(&V8TestSubObj::wrapperTypeInfo), static_cast<v8::PropertyAttribute>(v8::DontEnum), v8::Handle<v8::AccessorSignature>(), static_cast<v8::AccessControl>(v8::DEFAULT));
 
     // Custom toString template
     desc->Set(v8::String::NewSymbol("toString"), V8PerIsolateData::current()->toStringTemplate());
@@ -551,28 +551,28 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestTypedefsTemplate(v8::Hand
 v8::Handle<v8::FunctionTemplate> V8TestTypedefs::GetTemplate(v8::Isolate* isolate, WrapperWorldType currentWorldType)
 {
     V8PerIsolateData* data = V8PerIsolateData::from(isolate);
-    V8PerIsolateData::TemplateMap::iterator result = data->templateMap(currentWorldType).find(&info);
+    V8PerIsolateData::TemplateMap::iterator result = data->templateMap(currentWorldType).find(&wrapperTypeInfo);
     if (result != data->templateMap(currentWorldType).end())
         return result->value.newLocal(isolate);
 
     TRACE_EVENT_SCOPED_SAMPLING_STATE("Blink", "BuildDOMTemplate");
     v8::HandleScope handleScope(isolate);
     v8::Handle<v8::FunctionTemplate> templ =
-        ConfigureV8TestTypedefsTemplate(data->rawTemplate(&info, currentWorldType), isolate, currentWorldType);
-    data->templateMap(currentWorldType).add(&info, UnsafePersistent<v8::FunctionTemplate>(isolate, templ));
+        ConfigureV8TestTypedefsTemplate(data->rawTemplate(&wrapperTypeInfo, currentWorldType), isolate, currentWorldType);
+    data->templateMap(currentWorldType).add(&wrapperTypeInfo, UnsafePersistent<v8::FunctionTemplate>(isolate, templ));
     return handleScope.Close(templ);
 }
 
 bool V8TestTypedefs::HasInstance(v8::Handle<v8::Value> jsValue, v8::Isolate* isolate, WrapperWorldType currentWorldType)
 {
-    return V8PerIsolateData::from(isolate)->hasInstance(&info, jsValue, currentWorldType);
+    return V8PerIsolateData::from(isolate)->hasInstance(&wrapperTypeInfo, jsValue, currentWorldType);
 }
 
 bool V8TestTypedefs::HasInstanceInAnyWorld(v8::Handle<v8::Value> jsValue, v8::Isolate* isolate)
 {
-    return V8PerIsolateData::from(isolate)->hasInstance(&info, jsValue, MainWorld)
-        || V8PerIsolateData::from(isolate)->hasInstance(&info, jsValue, IsolatedWorld)
-        || V8PerIsolateData::from(isolate)->hasInstance(&info, jsValue, WorkerWorld);
+    return V8PerIsolateData::from(isolate)->hasInstance(&wrapperTypeInfo, jsValue, MainWorld)
+        || V8PerIsolateData::from(isolate)->hasInstance(&wrapperTypeInfo, jsValue, IsolatedWorld)
+        || V8PerIsolateData::from(isolate)->hasInstance(&wrapperTypeInfo, jsValue, WorkerWorld);
 }
 
 v8::Handle<v8::Object> V8TestTypedefs::createWrapper(PassRefPtr<TestTypedefs> impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
@@ -581,17 +581,17 @@ v8::Handle<v8::Object> V8TestTypedefs::createWrapper(PassRefPtr<TestTypedefs> im
     ASSERT(!DOMDataStore::containsWrapper<V8TestTypedefs>(impl.get(), isolate));
     if (ScriptWrappable::wrapperCanBeStoredInObject(impl.get())) {
         const WrapperTypeInfo* actualInfo = ScriptWrappable::getTypeInfoFromObject(impl.get());
-        // Might be a XXXConstructor::info instead of an XXX::info. These will both have
+        // Might be a XXXConstructor::wrapperTypeInfo instead of an XXX::wrapperTypeInfo. These will both have
         // the same object de-ref functions, though, so use that as the basis of the check.
-        RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(actualInfo->derefObjectFunction == info.derefObjectFunction);
+        RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(actualInfo->derefObjectFunction == wrapperTypeInfo.derefObjectFunction);
     }
 
-    v8::Handle<v8::Object> wrapper = V8DOMWrapper::createWrapper(creationContext, &info, toInternalPointer(impl.get()), isolate);
+    v8::Handle<v8::Object> wrapper = V8DOMWrapper::createWrapper(creationContext, &wrapperTypeInfo, toInternalPointer(impl.get()), isolate);
     if (UNLIKELY(wrapper.IsEmpty()))
         return wrapper;
 
     installPerContextEnabledProperties(wrapper, impl.get(), isolate);
-    V8DOMWrapper::associateObjectWithWrapper<V8TestTypedefs>(impl, &info, wrapper, isolate, WrapperConfiguration::Independent);
+    V8DOMWrapper::associateObjectWithWrapper<V8TestTypedefs>(impl, &wrapperTypeInfo, wrapper, isolate, WrapperConfiguration::Independent);
     return wrapper;
 }
 

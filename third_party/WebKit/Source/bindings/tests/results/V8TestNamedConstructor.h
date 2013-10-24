@@ -31,7 +31,7 @@ namespace WebCore {
 class V8TestNamedConstructorConstructor {
 public:
     static v8::Handle<v8::FunctionTemplate> GetTemplate(v8::Isolate*, WrapperWorldType);
-    static WrapperTypeInfo info;
+    static WrapperTypeInfo wrapperTypeInfo;
 };
 
 class V8TestNamedConstructor {
@@ -44,7 +44,7 @@ public:
         return fromInternalPointer(object->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex));
     }
     static void derefObject(void*);
-    static WrapperTypeInfo info;
+    static WrapperTypeInfo wrapperTypeInfo;
     static ActiveDOMObject* toActiveDOMObject(v8::Handle<v8::Object>);
     static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + 0;
     static inline void* toInternalPointer(TestNamedConstructor* impl)
@@ -67,7 +67,7 @@ private:
 template<>
 class WrapperTypeTraits<TestNamedConstructor > {
 public:
-    static WrapperTypeInfo* info() { return &V8TestNamedConstructor::info; }
+    static WrapperTypeInfo* wrapperTypeInfo() { return &V8TestNamedConstructor::wrapperTypeInfo; }
 };
 
 inline v8::Handle<v8::Object> wrap(TestNamedConstructor* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)

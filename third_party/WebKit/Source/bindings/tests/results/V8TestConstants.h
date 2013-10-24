@@ -38,7 +38,7 @@ public:
         return fromInternalPointer(object->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex));
     }
     static void derefObject(void*);
-    static WrapperTypeInfo info;
+    static WrapperTypeInfo wrapperTypeInfo;
     static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + 0;
     static inline void* toInternalPointer(TestConstants* impl)
     {
@@ -60,7 +60,7 @@ private:
 template<>
 class WrapperTypeTraits<TestConstants > {
 public:
-    static WrapperTypeInfo* info() { return &V8TestConstants::info; }
+    static WrapperTypeInfo* wrapperTypeInfo() { return &V8TestConstants::wrapperTypeInfo; }
 };
 
 inline v8::Handle<v8::Object> wrap(TestConstants* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)

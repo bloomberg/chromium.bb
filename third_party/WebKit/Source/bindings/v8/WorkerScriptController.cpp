@@ -115,9 +115,9 @@ bool WorkerScriptController::initializeContextIfNeeded()
     context->SetEmbedderData(0, v8::String::NewSymbol("worker"));
 
     // Create a new JS object and use it as the prototype for the shadow global object.
-    WrapperTypeInfo* contextType = &V8DedicatedWorkerGlobalScope::info;
+    WrapperTypeInfo* contextType = &V8DedicatedWorkerGlobalScope::wrapperTypeInfo;
     if (!m_workerGlobalScope.isDedicatedWorkerGlobalScope())
-        contextType = &V8SharedWorkerGlobalScope::info;
+        contextType = &V8SharedWorkerGlobalScope::wrapperTypeInfo;
     v8::Handle<v8::Function> workerGlobalScopeConstructor = m_perContextData->constructorForType(contextType);
     v8::Local<v8::Object> jsWorkerGlobalScope = V8ObjectConstructor::newInstance(workerGlobalScopeConstructor);
     if (jsWorkerGlobalScope.IsEmpty()) {

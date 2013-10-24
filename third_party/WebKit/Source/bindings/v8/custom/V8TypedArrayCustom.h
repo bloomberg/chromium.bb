@@ -59,7 +59,7 @@ public:
 
     static TypedArray* toNative(v8::Handle<v8::Object>);
     static void derefObject(void*);
-    static WrapperTypeInfo info;
+    static WrapperTypeInfo wrapperTypeInfo;
     static const int internalFieldCount = v8DefaultWrapperInternalFieldCount;
 
     static v8::Handle<v8::Object> wrap(TypedArray* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
@@ -134,7 +134,7 @@ private:
 template<typename TypedArray>
 class TypedArrayWrapperTraits {
 public:
-    static WrapperTypeInfo* info() { return &V8TypedArray<TypedArray>::info; }
+    static WrapperTypeInfo* info() { return &V8TypedArray<TypedArray>::wrapperTypeInfo; }
 };
 
 
@@ -151,7 +151,7 @@ v8::Handle<v8::Object> V8TypedArray<TypedArray>::createWrapper(PassRefPtr<TypedA
 
     v8::Local<v8::Object> wrapper = V8Type::New(v8Buffer.As<v8::ArrayBuffer>(), impl->byteOffset(), Traits::length(impl.get()));
 
-    V8DOMWrapper::associateObjectWithWrapper<Binding>(impl, &info, wrapper, isolate, WrapperConfiguration::Independent);
+    V8DOMWrapper::associateObjectWithWrapper<Binding>(impl, &wrapperTypeInfo, wrapper, isolate, WrapperConfiguration::Independent);
     return wrapper;
 }
 
@@ -167,7 +167,7 @@ TypedArray* V8TypedArray<TypedArray>::toNative(v8::Handle<v8::Object> object)
     RefPtr<ArrayBuffer> arrayBuffer = V8ArrayBuffer::toNative(view->Buffer());
     RefPtr<TypedArray> typedArray = TypedArray::create(arrayBuffer, view->ByteOffset(), Traits::length(view));
     ASSERT(typedArray.get());
-    V8DOMWrapper::associateObjectWithWrapper<Binding>(typedArray.release(), &info, object, v8::Isolate::GetCurrent(), WrapperConfiguration::Independent);
+    V8DOMWrapper::associateObjectWithWrapper<Binding>(typedArray.release(), &wrapperTypeInfo, object, v8::Isolate::GetCurrent(), WrapperConfiguration::Independent);
 
     typedarrayPtr = object->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex);
     ASSERT(typedarrayPtr);
@@ -176,7 +176,7 @@ TypedArray* V8TypedArray<TypedArray>::toNative(v8::Handle<v8::Object> object)
 
 
 template <typename TypedArray>
-WrapperTypeInfo V8TypedArray<TypedArray>::info = {
+WrapperTypeInfo V8TypedArray<TypedArray>::wrapperTypeInfo = {
     0, V8TypedArray<TypedArray>::derefObject,
     0, 0, 0, 0, 0, WrapperTypeObjectPrototype
 };

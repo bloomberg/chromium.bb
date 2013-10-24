@@ -47,7 +47,7 @@ namespace WebCore {
 static void initializeScriptWrappableForInterface(Float64Array* object)
 {
     if (ScriptWrappable::wrapperCanBeStoredInObject(object))
-        ScriptWrappable::setTypeInfoInObject(object, &V8Float64Array::info);
+        ScriptWrappable::setTypeInfoInObject(object, &V8Float64Array::wrapperTypeInfo);
     else
         ASSERT_NOT_REACHED();
 }
@@ -64,7 +64,7 @@ void webCoreInitializeScriptWrappableForInterface(Float64Array* object)
 }
 
 namespace WebCore {
-WrapperTypeInfo V8Float64Array::info = { V8Float64Array::GetTemplate, V8Float64Array::derefObject, 0, 0, 0, V8Float64Array::installPerContextEnabledPrototypeProperties, &V8ArrayBufferView::info, WrapperTypeObjectPrototype };
+WrapperTypeInfo V8Float64Array::wrapperTypeInfo = { V8Float64Array::GetTemplate, V8Float64Array::derefObject, 0, 0, 0, V8Float64Array::installPerContextEnabledPrototypeProperties, &V8ArrayBufferView::wrapperTypeInfo, WrapperTypeObjectPrototype };
 
 namespace Float64ArrayV8Internal {
 
@@ -177,28 +177,28 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8Float64ArrayTemplate(v8::Hand
 v8::Handle<v8::FunctionTemplate> V8Float64Array::GetTemplate(v8::Isolate* isolate, WrapperWorldType currentWorldType)
 {
     V8PerIsolateData* data = V8PerIsolateData::from(isolate);
-    V8PerIsolateData::TemplateMap::iterator result = data->templateMap(currentWorldType).find(&info);
+    V8PerIsolateData::TemplateMap::iterator result = data->templateMap(currentWorldType).find(&wrapperTypeInfo);
     if (result != data->templateMap(currentWorldType).end())
         return result->value.newLocal(isolate);
 
     TRACE_EVENT_SCOPED_SAMPLING_STATE("Blink", "BuildDOMTemplate");
     v8::HandleScope handleScope(isolate);
     v8::Handle<v8::FunctionTemplate> templ =
-        ConfigureV8Float64ArrayTemplate(data->rawTemplate(&info, currentWorldType), isolate, currentWorldType);
-    data->templateMap(currentWorldType).add(&info, UnsafePersistent<v8::FunctionTemplate>(isolate, templ));
+        ConfigureV8Float64ArrayTemplate(data->rawTemplate(&wrapperTypeInfo, currentWorldType), isolate, currentWorldType);
+    data->templateMap(currentWorldType).add(&wrapperTypeInfo, UnsafePersistent<v8::FunctionTemplate>(isolate, templ));
     return handleScope.Close(templ);
 }
 
 bool V8Float64Array::HasInstance(v8::Handle<v8::Value> jsValue, v8::Isolate* isolate, WrapperWorldType currentWorldType)
 {
-    return V8PerIsolateData::from(isolate)->hasInstance(&info, jsValue, currentWorldType);
+    return V8PerIsolateData::from(isolate)->hasInstance(&wrapperTypeInfo, jsValue, currentWorldType);
 }
 
 bool V8Float64Array::HasInstanceInAnyWorld(v8::Handle<v8::Value> jsValue, v8::Isolate* isolate)
 {
-    return V8PerIsolateData::from(isolate)->hasInstance(&info, jsValue, MainWorld)
-        || V8PerIsolateData::from(isolate)->hasInstance(&info, jsValue, IsolatedWorld)
-        || V8PerIsolateData::from(isolate)->hasInstance(&info, jsValue, WorkerWorld);
+    return V8PerIsolateData::from(isolate)->hasInstance(&wrapperTypeInfo, jsValue, MainWorld)
+        || V8PerIsolateData::from(isolate)->hasInstance(&wrapperTypeInfo, jsValue, IsolatedWorld)
+        || V8PerIsolateData::from(isolate)->hasInstance(&wrapperTypeInfo, jsValue, WorkerWorld);
 }
 
 v8::Handle<v8::Object> V8Float64Array::createWrapper(PassRefPtr<Float64Array> impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
@@ -207,18 +207,18 @@ v8::Handle<v8::Object> V8Float64Array::createWrapper(PassRefPtr<Float64Array> im
     ASSERT(!DOMDataStore::containsWrapper<V8Float64Array>(impl.get(), isolate));
     if (ScriptWrappable::wrapperCanBeStoredInObject(impl.get())) {
         const WrapperTypeInfo* actualInfo = ScriptWrappable::getTypeInfoFromObject(impl.get());
-        // Might be a XXXConstructor::info instead of an XXX::info. These will both have
+        // Might be a XXXConstructor::wrapperTypeInfo instead of an XXX::wrapperTypeInfo. These will both have
         // the same object de-ref functions, though, so use that as the basis of the check.
-        RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(actualInfo->derefObjectFunction == info.derefObjectFunction);
+        RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(actualInfo->derefObjectFunction == wrapperTypeInfo.derefObjectFunction);
     }
 
-    v8::Handle<v8::Object> wrapper = V8DOMWrapper::createWrapper(creationContext, &info, toInternalPointer(impl.get()), isolate);
+    v8::Handle<v8::Object> wrapper = V8DOMWrapper::createWrapper(creationContext, &wrapperTypeInfo, toInternalPointer(impl.get()), isolate);
     if (UNLIKELY(wrapper.IsEmpty()))
         return wrapper;
 
     impl->buffer()->setDeallocationObserver(V8ArrayBufferDeallocationObserver::instance());
     installPerContextEnabledProperties(wrapper, impl.get(), isolate);
-    V8DOMWrapper::associateObjectWithWrapper<V8Float64Array>(impl, &info, wrapper, isolate, WrapperConfiguration::Independent);
+    V8DOMWrapper::associateObjectWithWrapper<V8Float64Array>(impl, &wrapperTypeInfo, wrapper, isolate, WrapperConfiguration::Independent);
     return wrapper;
 }
 

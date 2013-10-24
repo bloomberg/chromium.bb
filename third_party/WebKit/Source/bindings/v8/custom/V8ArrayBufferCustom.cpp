@@ -45,7 +45,7 @@ V8ArrayBufferDeallocationObserver* V8ArrayBufferDeallocationObserver::instance()
     return &deallocationObserver;
 }
 
-WrapperTypeInfo V8ArrayBuffer::info = {
+WrapperTypeInfo V8ArrayBuffer::wrapperTypeInfo = {
     0, V8ArrayBuffer::derefObject,
     0, 0, 0, 0, 0, WrapperTypeObjectPrototype
 };
@@ -73,7 +73,7 @@ v8::Handle<v8::Object> V8ArrayBuffer::createWrapper(PassRefPtr<ArrayBuffer> impl
     v8::Handle<v8::Object> wrapper = v8::ArrayBuffer::New(impl->data(), impl->byteLength());
     impl->setDeallocationObserver(V8ArrayBufferDeallocationObserver::instance());
 
-    V8DOMWrapper::associateObjectWithWrapper<V8ArrayBuffer>(impl, &info, wrapper, isolate, WrapperConfiguration::Independent);
+    V8DOMWrapper::associateObjectWithWrapper<V8ArrayBuffer>(impl, &wrapperTypeInfo, wrapper, isolate, WrapperConfiguration::Independent);
     return wrapper;
 }
 
@@ -91,7 +91,7 @@ ArrayBuffer* V8ArrayBuffer::toNative(v8::Handle<v8::Object> object)
     ArrayBufferContents contents(v8Contents.Data(), v8Contents.ByteLength(),
         V8ArrayBufferDeallocationObserver::instance());
     RefPtr<ArrayBuffer> buffer = ArrayBuffer::create(contents);
-    V8DOMWrapper::associateObjectWithWrapper<V8ArrayBuffer>(buffer.release(), &info, object, v8::Isolate::GetCurrent(), WrapperConfiguration::Dependent);
+    V8DOMWrapper::associateObjectWithWrapper<V8ArrayBuffer>(buffer.release(), &wrapperTypeInfo, object, v8::Isolate::GetCurrent(), WrapperConfiguration::Dependent);
 
     arraybufferPtr = object->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex);
     ASSERT(arraybufferPtr);

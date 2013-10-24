@@ -43,7 +43,7 @@
 
 namespace WebCore {
 
-WrapperTypeInfo V8HTMLImageElementConstructor::info = { V8HTMLImageElementConstructor::GetTemplate, V8HTMLImageElement::derefObject, 0, V8HTMLImageElement::toEventTarget, 0, V8HTMLImageElement::installPerContextEnabledPrototypeProperties, 0, WrapperTypeObjectPrototype };
+WrapperTypeInfo V8HTMLImageElementConstructor::wrapperTypeInfo = { V8HTMLImageElementConstructor::GetTemplate, V8HTMLImageElement::derefObject, 0, V8HTMLImageElement::toEventTarget, 0, V8HTMLImageElement::installPerContextEnabledPrototypeProperties, 0, WrapperTypeObjectPrototype };
 
 static void v8HTMLImageElementConstructorMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
@@ -82,7 +82,7 @@ static void v8HTMLImageElementConstructorMethodCustom(const v8::FunctionCallback
 
     RefPtr<HTMLImageElement> image = HTMLImageElement::createForJSConstructor(*document, optionalWidth, optionalHeight);
     v8::Handle<v8::Object> wrapper = args.Holder();
-    V8DOMWrapper::associateObjectWithWrapper<V8HTMLImageElement>(image.release(), &V8HTMLImageElementConstructor::info, wrapper, args.GetIsolate(), WrapperConfiguration::Dependent);
+    V8DOMWrapper::associateObjectWithWrapper<V8HTMLImageElement>(image.release(), &V8HTMLImageElementConstructor::wrapperTypeInfo, wrapper, args.GetIsolate(), WrapperConfiguration::Dependent);
     v8SetReturnValue(args, wrapper);
 }
 

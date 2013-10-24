@@ -71,7 +71,7 @@ namespace WebCore {
 static void initializeScriptWrappableForInterface(TestObj* object)
 {
     if (ScriptWrappable::wrapperCanBeStoredInObject(object))
-        ScriptWrappable::setTypeInfoInObject(object, &V8TestObject::info);
+        ScriptWrappable::setTypeInfoInObject(object, &V8TestObject::wrapperTypeInfo);
     else
         ASSERT_NOT_REACHED();
 }
@@ -88,7 +88,7 @@ void webCoreInitializeScriptWrappableForInterface(WebCore::TestObj* object)
 }
 
 namespace WebCore {
-WrapperTypeInfo V8TestObject::info = { V8TestObject::GetTemplate, V8TestObject::derefObject, 0, V8TestObject::toEventTarget, 0, V8TestObject::installPerContextEnabledPrototypeProperties, &V8EventTarget::info, WrapperTypeObjectPrototype };
+WrapperTypeInfo V8TestObject::wrapperTypeInfo = { V8TestObject::GetTemplate, V8TestObject::derefObject, 0, V8TestObject::toEventTarget, 0, V8TestObject::installPerContextEnabledPrototypeProperties, &V8EventTarget::wrapperTypeInfo, WrapperTypeObjectPrototype };
 
 namespace TestObjV8Internal {
 
@@ -5065,7 +5065,7 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& args)
     RefPtr<TestObj> impl = TestObj::create(testCallback);
     v8::Handle<v8::Object> wrapper = args.Holder();
 
-    V8DOMWrapper::associateObjectWithWrapper<V8TestObject>(impl.release(), &V8TestObject::info, wrapper, args.GetIsolate(), WrapperConfiguration::Dependent);
+    V8DOMWrapper::associateObjectWithWrapper<V8TestObject>(impl.release(), &V8TestObject::wrapperTypeInfo, wrapper, args.GetIsolate(), WrapperConfiguration::Dependent);
     args.GetReturnValue().Set(wrapper);
 }
 
@@ -5211,13 +5211,13 @@ static const V8DOMConfiguration::AttributeConfiguration V8TestObjectAttributes[]
     {"conditionalAttr3", TestObjV8Internal::conditionalAttr3AttributeGetterCallback, TestObjV8Internal::conditionalAttr3AttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
 #endif // ENABLE(Condition1) || ENABLE(Condition2)
 #if ENABLE(Condition1)
-    {"conditionalAttr4", TestObjV8Internal::TestObjConstructorGetter, TestObjV8Internal::TestObjReplaceableAttributeSetterCallback, 0, 0, &V8TestObjectectA::info, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::DontEnum), 0 /* on instance */},
+    {"conditionalAttr4", TestObjV8Internal::TestObjConstructorGetter, TestObjV8Internal::TestObjReplaceableAttributeSetterCallback, 0, 0, &V8TestObjectectA::wrapperTypeInfo, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::DontEnum), 0 /* on instance */},
 #endif // ENABLE(Condition1)
 #if ENABLE(Condition1) && ENABLE(Condition2)
-    {"conditionalAttr5", TestObjV8Internal::TestObjConstructorGetter, TestObjV8Internal::TestObjReplaceableAttributeSetterCallback, 0, 0, &V8TestObjectectB::info, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::DontEnum), 0 /* on instance */},
+    {"conditionalAttr5", TestObjV8Internal::TestObjConstructorGetter, TestObjV8Internal::TestObjReplaceableAttributeSetterCallback, 0, 0, &V8TestObjectectB::wrapperTypeInfo, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::DontEnum), 0 /* on instance */},
 #endif // ENABLE(Condition1) && ENABLE(Condition2)
 #if ENABLE(Condition1) || ENABLE(Condition2)
-    {"conditionalAttr6", TestObjV8Internal::TestObjConstructorGetter, TestObjV8Internal::TestObjReplaceableAttributeSetterCallback, 0, 0, &V8TestObjectectC::info, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::DontEnum), 0 /* on instance */},
+    {"conditionalAttr6", TestObjV8Internal::TestObjConstructorGetter, TestObjV8Internal::TestObjReplaceableAttributeSetterCallback, 0, 0, &V8TestObjectectC::wrapperTypeInfo, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::DontEnum), 0 /* on instance */},
 #endif // ENABLE(Condition1) || ENABLE(Condition2)
     {"cachedAttribute1", TestObjV8Internal::cachedAttribute1AttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"cachedAttribute2", TestObjV8Internal::cachedAttribute2AttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
@@ -5376,25 +5376,25 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestObjectTemplate(v8::Handle
 
     // Custom Signature 'voidMethodWithArgs'
     const int voidMethodWithArgsArgc = 3;
-    v8::Handle<v8::FunctionTemplate> voidMethodWithArgsArgv[voidMethodWithArgsArgc] = { v8::Handle<v8::FunctionTemplate>(), v8::Handle<v8::FunctionTemplate>(), V8PerIsolateData::from(isolate)->rawTemplate(&V8TestObject::info, currentWorldType) };
+    v8::Handle<v8::FunctionTemplate> voidMethodWithArgsArgv[voidMethodWithArgsArgc] = { v8::Handle<v8::FunctionTemplate>(), v8::Handle<v8::FunctionTemplate>(), V8PerIsolateData::from(isolate)->rawTemplate(&V8TestObject::wrapperTypeInfo, currentWorldType) };
     v8::Handle<v8::Signature> voidMethodWithArgsSignature = v8::Signature::New(desc, voidMethodWithArgsArgc, voidMethodWithArgsArgv);
     proto->Set(v8::String::NewSymbol("voidMethodWithArgs"), v8::FunctionTemplate::New(TestObjV8Internal::voidMethodWithArgsMethodCallback, v8Undefined(), voidMethodWithArgsSignature, 3));
 
     // Custom Signature 'longMethodWithArgs'
     const int longMethodWithArgsArgc = 3;
-    v8::Handle<v8::FunctionTemplate> longMethodWithArgsArgv[longMethodWithArgsArgc] = { v8::Handle<v8::FunctionTemplate>(), v8::Handle<v8::FunctionTemplate>(), V8PerIsolateData::from(isolate)->rawTemplate(&V8TestObject::info, currentWorldType) };
+    v8::Handle<v8::FunctionTemplate> longMethodWithArgsArgv[longMethodWithArgsArgc] = { v8::Handle<v8::FunctionTemplate>(), v8::Handle<v8::FunctionTemplate>(), V8PerIsolateData::from(isolate)->rawTemplate(&V8TestObject::wrapperTypeInfo, currentWorldType) };
     v8::Handle<v8::Signature> longMethodWithArgsSignature = v8::Signature::New(desc, longMethodWithArgsArgc, longMethodWithArgsArgv);
     proto->Set(v8::String::NewSymbol("longMethodWithArgs"), v8::FunctionTemplate::New(TestObjV8Internal::longMethodWithArgsMethodCallback, v8Undefined(), longMethodWithArgsSignature, 3));
 
     // Custom Signature 'objMethodWithArgs'
     const int objMethodWithArgsArgc = 3;
-    v8::Handle<v8::FunctionTemplate> objMethodWithArgsArgv[objMethodWithArgsArgc] = { v8::Handle<v8::FunctionTemplate>(), v8::Handle<v8::FunctionTemplate>(), V8PerIsolateData::from(isolate)->rawTemplate(&V8TestObject::info, currentWorldType) };
+    v8::Handle<v8::FunctionTemplate> objMethodWithArgsArgv[objMethodWithArgsArgc] = { v8::Handle<v8::FunctionTemplate>(), v8::Handle<v8::FunctionTemplate>(), V8PerIsolateData::from(isolate)->rawTemplate(&V8TestObject::wrapperTypeInfo, currentWorldType) };
     v8::Handle<v8::Signature> objMethodWithArgsSignature = v8::Signature::New(desc, objMethodWithArgsArgc, objMethodWithArgsArgv);
     proto->Set(v8::String::NewSymbol("objMethodWithArgs"), v8::FunctionTemplate::New(TestObjV8Internal::objMethodWithArgsMethodCallback, v8Undefined(), objMethodWithArgsSignature, 3));
 
     // Custom Signature 'methodThatRequiresAllArgsAndThrows'
     const int methodThatRequiresAllArgsAndThrowsArgc = 2;
-    v8::Handle<v8::FunctionTemplate> methodThatRequiresAllArgsAndThrowsArgv[methodThatRequiresAllArgsAndThrowsArgc] = { v8::Handle<v8::FunctionTemplate>(), V8PerIsolateData::from(isolate)->rawTemplate(&V8TestObject::info, currentWorldType) };
+    v8::Handle<v8::FunctionTemplate> methodThatRequiresAllArgsAndThrowsArgv[methodThatRequiresAllArgsAndThrowsArgc] = { v8::Handle<v8::FunctionTemplate>(), V8PerIsolateData::from(isolate)->rawTemplate(&V8TestObject::wrapperTypeInfo, currentWorldType) };
     v8::Handle<v8::Signature> methodThatRequiresAllArgsAndThrowsSignature = v8::Signature::New(desc, methodThatRequiresAllArgsAndThrowsArgc, methodThatRequiresAllArgsAndThrowsArgv);
     proto->Set(v8::String::NewSymbol("methodThatRequiresAllArgsAndThrows"), v8::FunctionTemplate::New(TestObjV8Internal::methodThatRequiresAllArgsAndThrowsMethodCallback, v8Undefined(), methodThatRequiresAllArgsAndThrowsSignature, 2));
     desc->Set(v8::String::NewSymbol("staticMethodWithCallbackAndOptionalArg"), v8::FunctionTemplate::New(TestObjV8Internal::staticMethodWithCallbackAndOptionalArgMethodCallback, v8Undefined(), v8::Local<v8::Signature>(), 0));
@@ -5410,49 +5410,49 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestObjectTemplate(v8::Handle
 
     // Custom Signature 'domStringListFunction'
     const int domStringListFunctionArgc = 1;
-    v8::Handle<v8::FunctionTemplate> domStringListFunctionArgv[domStringListFunctionArgc] = { V8PerIsolateData::from(isolate)->rawTemplate(&V8DOMStringList::info, currentWorldType) };
+    v8::Handle<v8::FunctionTemplate> domStringListFunctionArgv[domStringListFunctionArgc] = { V8PerIsolateData::from(isolate)->rawTemplate(&V8DOMStringList::wrapperTypeInfo, currentWorldType) };
     v8::Handle<v8::Signature> domStringListFunctionSignature = v8::Signature::New(desc, domStringListFunctionArgc, domStringListFunctionArgv);
     proto->Set(v8::String::NewSymbol("domStringListFunction"), v8::FunctionTemplate::New(TestObjV8Internal::domStringListFunctionMethodCallback, v8Undefined(), domStringListFunctionSignature, 1));
 
     // Custom Signature 'convert1'
     const int convert1Argc = 1;
-    v8::Handle<v8::FunctionTemplate> convert1Argv[convert1Argc] = { V8PerIsolateData::from(isolate)->rawTemplate(&V8TestNode::info, currentWorldType) };
+    v8::Handle<v8::FunctionTemplate> convert1Argv[convert1Argc] = { V8PerIsolateData::from(isolate)->rawTemplate(&V8TestNode::wrapperTypeInfo, currentWorldType) };
     v8::Handle<v8::Signature> convert1Signature = v8::Signature::New(desc, convert1Argc, convert1Argv);
     proto->Set(v8::String::NewSymbol("convert1"), v8::FunctionTemplate::New(TestObjV8Internal::convert1MethodCallback, v8Undefined(), convert1Signature, 1));
 
     // Custom Signature 'convert2'
     const int convert2Argc = 1;
-    v8::Handle<v8::FunctionTemplate> convert2Argv[convert2Argc] = { V8PerIsolateData::from(isolate)->rawTemplate(&V8TestNode::info, currentWorldType) };
+    v8::Handle<v8::FunctionTemplate> convert2Argv[convert2Argc] = { V8PerIsolateData::from(isolate)->rawTemplate(&V8TestNode::wrapperTypeInfo, currentWorldType) };
     v8::Handle<v8::Signature> convert2Signature = v8::Signature::New(desc, convert2Argc, convert2Argv);
     proto->Set(v8::String::NewSymbol("convert2"), v8::FunctionTemplate::New(TestObjV8Internal::convert2MethodCallback, v8Undefined(), convert2Signature, 1));
 
     // Custom Signature 'convert4'
     const int convert4Argc = 1;
-    v8::Handle<v8::FunctionTemplate> convert4Argv[convert4Argc] = { V8PerIsolateData::from(isolate)->rawTemplate(&V8TestNode::info, currentWorldType) };
+    v8::Handle<v8::FunctionTemplate> convert4Argv[convert4Argc] = { V8PerIsolateData::from(isolate)->rawTemplate(&V8TestNode::wrapperTypeInfo, currentWorldType) };
     v8::Handle<v8::Signature> convert4Signature = v8::Signature::New(desc, convert4Argc, convert4Argv);
     proto->Set(v8::String::NewSymbol("convert4"), v8::FunctionTemplate::New(TestObjV8Internal::convert4MethodCallback, v8Undefined(), convert4Signature, 1));
 
     // Custom Signature 'convert5'
     const int convert5Argc = 1;
-    v8::Handle<v8::FunctionTemplate> convert5Argv[convert5Argc] = { V8PerIsolateData::from(isolate)->rawTemplate(&V8TestNode::info, currentWorldType) };
+    v8::Handle<v8::FunctionTemplate> convert5Argv[convert5Argc] = { V8PerIsolateData::from(isolate)->rawTemplate(&V8TestNode::wrapperTypeInfo, currentWorldType) };
     v8::Handle<v8::Signature> convert5Signature = v8::Signature::New(desc, convert5Argc, convert5Argv);
     proto->Set(v8::String::NewSymbol("convert5"), v8::FunctionTemplate::New(TestObjV8Internal::convert5MethodCallback, v8Undefined(), convert5Signature, 1));
 
     // Custom Signature 'svgPointMethod'
     const int svgPointMethodArgc = 2;
-    v8::Handle<v8::FunctionTemplate> svgPointMethodArgv[svgPointMethodArgc] = { V8PerIsolateData::from(isolate)->rawTemplate(&V8SVGPoint::info, currentWorldType), v8::Handle<v8::FunctionTemplate>() };
+    v8::Handle<v8::FunctionTemplate> svgPointMethodArgv[svgPointMethodArgc] = { V8PerIsolateData::from(isolate)->rawTemplate(&V8SVGPoint::wrapperTypeInfo, currentWorldType), v8::Handle<v8::FunctionTemplate>() };
     v8::Handle<v8::Signature> svgPointMethodSignature = v8::Signature::New(desc, svgPointMethodArgc, svgPointMethodArgv);
     proto->Set(v8::String::NewSymbol("svgPointMethod"), v8::FunctionTemplate::New(TestObjV8Internal::svgPointMethodMethodCallback, v8Undefined(), svgPointMethodSignature, 2));
 
     // Custom Signature 'variadicNodeMethod'
     const int variadicNodeMethodArgc = 2;
-    v8::Handle<v8::FunctionTemplate> variadicNodeMethodArgv[variadicNodeMethodArgc] = { V8PerIsolateData::from(isolate)->rawTemplate(&V8Node::info, currentWorldType), V8PerIsolateData::from(isolate)->rawTemplate(&V8Node::info, currentWorldType) };
+    v8::Handle<v8::FunctionTemplate> variadicNodeMethodArgv[variadicNodeMethodArgc] = { V8PerIsolateData::from(isolate)->rawTemplate(&V8Node::wrapperTypeInfo, currentWorldType), V8PerIsolateData::from(isolate)->rawTemplate(&V8Node::wrapperTypeInfo, currentWorldType) };
     v8::Handle<v8::Signature> variadicNodeMethodSignature = v8::Signature::New(desc, variadicNodeMethodArgc, variadicNodeMethodArgv);
     proto->Set(v8::String::NewSymbol("variadicNodeMethod"), v8::FunctionTemplate::New(TestObjV8Internal::variadicNodeMethodMethodCallback, v8Undefined(), variadicNodeMethodSignature, 2));
     desc->Set(v8::String::NewSymbol("deprecatedStaticMethod"), v8::FunctionTemplate::New(TestObjV8Internal::deprecatedStaticMethodMethodCallback, v8Undefined(), v8::Local<v8::Signature>(), 0));
     desc->SetNativeDataProperty(v8::String::NewSymbol("staticReadOnlyLongAttr"), TestObjV8Internal::staticReadOnlyLongAttrAttributeGetterCallback, 0, v8::External::New(0), static_cast<v8::PropertyAttribute>(v8::None), v8::Handle<v8::AccessorSignature>(), static_cast<v8::AccessControl>(v8::DEFAULT));
     desc->SetNativeDataProperty(v8::String::NewSymbol("staticStringAttr"), TestObjV8Internal::staticStringAttrAttributeGetterCallback, TestObjV8Internal::staticStringAttrAttributeSetterCallback, v8::External::New(0), static_cast<v8::PropertyAttribute>(v8::None), v8::Handle<v8::AccessorSignature>(), static_cast<v8::AccessControl>(v8::DEFAULT));
-    desc->SetNativeDataProperty(v8::String::NewSymbol("TestSubObj"), TestObjV8Internal::TestObjConstructorGetter, 0, v8::External::New(&V8TestSubObj::info), static_cast<v8::PropertyAttribute>(v8::DontEnum), v8::Handle<v8::AccessorSignature>(), static_cast<v8::AccessControl>(v8::DEFAULT));
+    desc->SetNativeDataProperty(v8::String::NewSymbol("TestSubObj"), TestObjV8Internal::TestObjConstructorGetter, 0, v8::External::New(&V8TestSubObj::wrapperTypeInfo), static_cast<v8::PropertyAttribute>(v8::DontEnum), v8::Handle<v8::AccessorSignature>(), static_cast<v8::AccessControl>(v8::DEFAULT));
     desc->SetNativeDataProperty(v8::String::NewSymbol("deprecatedStaticReadOnlyAttr"), TestObjV8Internal::deprecatedStaticReadOnlyAttrAttributeGetterCallback, 0, v8::External::New(0), static_cast<v8::PropertyAttribute>(v8::None), v8::Handle<v8::AccessorSignature>(), static_cast<v8::AccessControl>(v8::DEFAULT));
     desc->SetNativeDataProperty(v8::String::NewSymbol("deprecatedStaticAttr"), TestObjV8Internal::deprecatedStaticAttrAttributeGetterCallback, TestObjV8Internal::deprecatedStaticAttrAttributeSetterCallback, v8::External::New(0), static_cast<v8::PropertyAttribute>(v8::None), v8::Handle<v8::AccessorSignature>(), static_cast<v8::AccessControl>(v8::DEFAULT));
 
@@ -5464,28 +5464,28 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestObjectTemplate(v8::Handle
 v8::Handle<v8::FunctionTemplate> V8TestObject::GetTemplate(v8::Isolate* isolate, WrapperWorldType currentWorldType)
 {
     V8PerIsolateData* data = V8PerIsolateData::from(isolate);
-    V8PerIsolateData::TemplateMap::iterator result = data->templateMap(currentWorldType).find(&info);
+    V8PerIsolateData::TemplateMap::iterator result = data->templateMap(currentWorldType).find(&wrapperTypeInfo);
     if (result != data->templateMap(currentWorldType).end())
         return result->value.newLocal(isolate);
 
     TRACE_EVENT_SCOPED_SAMPLING_STATE("Blink", "BuildDOMTemplate");
     v8::HandleScope handleScope(isolate);
     v8::Handle<v8::FunctionTemplate> templ =
-        ConfigureV8TestObjectTemplate(data->rawTemplate(&info, currentWorldType), isolate, currentWorldType);
-    data->templateMap(currentWorldType).add(&info, UnsafePersistent<v8::FunctionTemplate>(isolate, templ));
+        ConfigureV8TestObjectTemplate(data->rawTemplate(&wrapperTypeInfo, currentWorldType), isolate, currentWorldType);
+    data->templateMap(currentWorldType).add(&wrapperTypeInfo, UnsafePersistent<v8::FunctionTemplate>(isolate, templ));
     return handleScope.Close(templ);
 }
 
 bool V8TestObject::HasInstance(v8::Handle<v8::Value> jsValue, v8::Isolate* isolate, WrapperWorldType currentWorldType)
 {
-    return V8PerIsolateData::from(isolate)->hasInstance(&info, jsValue, currentWorldType);
+    return V8PerIsolateData::from(isolate)->hasInstance(&wrapperTypeInfo, jsValue, currentWorldType);
 }
 
 bool V8TestObject::HasInstanceInAnyWorld(v8::Handle<v8::Value> jsValue, v8::Isolate* isolate)
 {
-    return V8PerIsolateData::from(isolate)->hasInstance(&info, jsValue, MainWorld)
-        || V8PerIsolateData::from(isolate)->hasInstance(&info, jsValue, IsolatedWorld)
-        || V8PerIsolateData::from(isolate)->hasInstance(&info, jsValue, WorkerWorld);
+    return V8PerIsolateData::from(isolate)->hasInstance(&wrapperTypeInfo, jsValue, MainWorld)
+        || V8PerIsolateData::from(isolate)->hasInstance(&wrapperTypeInfo, jsValue, IsolatedWorld)
+        || V8PerIsolateData::from(isolate)->hasInstance(&wrapperTypeInfo, jsValue, WorkerWorld);
 }
 
 void V8TestObject::installPerContextEnabledProperties(v8::Handle<v8::Object> instance, TestObj* impl, v8::Isolate* isolate)
@@ -5520,17 +5520,17 @@ v8::Handle<v8::Object> V8TestObject::createWrapper(PassRefPtr<TestObj> impl, v8:
     ASSERT(!DOMDataStore::containsWrapper<V8TestObject>(impl.get(), isolate));
     if (ScriptWrappable::wrapperCanBeStoredInObject(impl.get())) {
         const WrapperTypeInfo* actualInfo = ScriptWrappable::getTypeInfoFromObject(impl.get());
-        // Might be a XXXConstructor::info instead of an XXX::info. These will both have
+        // Might be a XXXConstructor::wrapperTypeInfo instead of an XXX::wrapperTypeInfo. These will both have
         // the same object de-ref functions, though, so use that as the basis of the check.
-        RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(actualInfo->derefObjectFunction == info.derefObjectFunction);
+        RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(actualInfo->derefObjectFunction == wrapperTypeInfo.derefObjectFunction);
     }
 
-    v8::Handle<v8::Object> wrapper = V8DOMWrapper::createWrapper(creationContext, &info, toInternalPointer(impl.get()), isolate);
+    v8::Handle<v8::Object> wrapper = V8DOMWrapper::createWrapper(creationContext, &wrapperTypeInfo, toInternalPointer(impl.get()), isolate);
     if (UNLIKELY(wrapper.IsEmpty()))
         return wrapper;
 
     installPerContextEnabledProperties(wrapper, impl.get(), isolate);
-    V8DOMWrapper::associateObjectWithWrapper<V8TestObject>(impl, &info, wrapper, isolate, WrapperConfiguration::Independent);
+    V8DOMWrapper::associateObjectWithWrapper<V8TestObject>(impl, &wrapperTypeInfo, wrapper, isolate, WrapperConfiguration::Independent);
     return wrapper;
 }
 

@@ -646,7 +646,7 @@ sub GenerateHeader
 class V8${nativeType}Constructor {
 public:
     static v8::Handle<v8::FunctionTemplate> GetTemplate(v8::Isolate*, WrapperWorldType);
-    static WrapperTypeInfo info;
+    static WrapperTypeInfo wrapperTypeInfo;
 };
 END
     }
@@ -663,7 +663,7 @@ END
         return fromInternalPointer(object->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex));
     }
     static void derefObject(void*);
-    static WrapperTypeInfo info;
+    static WrapperTypeInfo wrapperTypeInfo;
 END
 
     if (NeedsOpaqueRootForGC($interface)) {
@@ -827,7 +827,7 @@ END
 template<>
 class WrapperTypeTraits<${nativeType} > {
 public:
-    static WrapperTypeInfo* info() { return &${v8ClassName}::info; }
+    static WrapperTypeInfo* wrapperTypeInfo() { return &${v8ClassName}::wrapperTypeInfo; }
 };
 END
 
@@ -1150,7 +1150,7 @@ sub GenerateDomainSafeFunctionGetter
     my $funcName = $function->name;
 
     my $functionLength = GetFunctionLength($function);
-    my $signature = "v8::Signature::New(V8PerIsolateData::from(info.GetIsolate())->rawTemplate(&" . $v8ClassName . "::info, currentWorldType))";
+    my $signature = "v8::Signature::New(V8PerIsolateData::from(info.GetIsolate())->rawTemplate(&" . $v8ClassName . "::wrapperTypeInfo, currentWorldType))";
     if ($function->extendedAttributes->{"DoNotCheckSignature"}) {
         $signature = "v8::Local<v8::Signature>()";
     }
@@ -2674,7 +2674,7 @@ END
 
     $code .= <<END;
 
-    V8DOMWrapper::associateObjectWithWrapper<${v8ClassName}>(impl.release(), &${v8ClassName}::info, wrapper, args.GetIsolate(), WrapperConfiguration::Dependent);
+    V8DOMWrapper::associateObjectWithWrapper<${v8ClassName}>(impl.release(), &${v8ClassName}::wrapperTypeInfo, wrapper, args.GetIsolate(), WrapperConfiguration::Dependent);
     args.GetReturnValue().Set(wrapper);
 }
 
@@ -2817,7 +2817,7 @@ END
 
     $implementation{nameSpaceInternal}->add(<<END);
     v8::Handle<v8::Object> wrapper = args.Holder();
-    V8DOMWrapper::associateObjectWithWrapper<${v8ClassName}>(event.release(), &${v8ClassName}::info, wrapper, args.GetIsolate(), WrapperConfiguration::Dependent);
+    V8DOMWrapper::associateObjectWithWrapper<${v8ClassName}>(event.release(), &${v8ClassName}::wrapperTypeInfo, wrapper, args.GetIsolate(), WrapperConfiguration::Dependent);
     v8SetReturnValue(args, wrapper);
 }
 END
@@ -2891,7 +2891,7 @@ sub GenerateNamedConstructor
     }
 
     $implementation{nameSpaceWebCore}->add(<<END);
-WrapperTypeInfo ${v8ClassName}Constructor::info = { ${v8ClassName}Constructor::GetTemplate, ${v8ClassName}::derefObject, $toActiveDOMObject, $toEventTarget, 0, ${v8ClassName}::installPerContextEnabledPrototypeProperties, 0, WrapperTypeObjectPrototype };
+WrapperTypeInfo ${v8ClassName}Constructor::wrapperTypeInfo = { ${v8ClassName}Constructor::GetTemplate, ${v8ClassName}::derefObject, $toActiveDOMObject, $toEventTarget, 0, ${v8ClassName}::installPerContextEnabledPrototypeProperties, 0, WrapperTypeObjectPrototype };
 
 END
 
@@ -2955,7 +2955,7 @@ END
 
     $code .= <<END;
 
-    V8DOMWrapper::associateObjectWithWrapper<${v8ClassName}>(impl.release(), &${v8ClassName}Constructor::info, wrapper, args.GetIsolate(), WrapperConfiguration::Dependent);
+    V8DOMWrapper::associateObjectWithWrapper<${v8ClassName}>(impl.release(), &${v8ClassName}Constructor::wrapperTypeInfo, wrapper, args.GetIsolate(), WrapperConfiguration::Dependent);
     args.GetReturnValue().Set(wrapper);
 }
 
@@ -3092,7 +3092,7 @@ sub GenerateAttributeConfigurationParameters
         if ($constructorType !~ /Constructor$/ || $attribute->extendedAttributes->{"CustomConstructor"}) {
             AddToImplIncludes("V8${constructorType}.h");
         }
-        $data = "&V8${constructorType}::info";
+        $data = "&V8${constructorType}::wrapperTypeInfo";
         $getter = "${implClassName}V8Internal::${implClassName}ConstructorGetter";
         $setter = "${implClassName}V8Internal::${implClassName}ReplaceableAttributeSetterCallback";
         $getterForMainWorld = "0";
@@ -4008,7 +4008,7 @@ sub GenerateImplementation
         $parentClassTemplate = $parentClass . "::GetTemplate(isolate, currentWorldType)";
     }
 
-    my $parentClassInfo = $parentClass ? "&${parentClass}::info" : "0";
+    my $parentClassInfo = $parentClass ? "&${parentClass}::wrapperTypeInfo" : "0";
     my $WrapperTypePrototype = $interface->isException ? "WrapperTypeErrorPrototype" : "WrapperTypeObjectPrototype";
 
     if (!IsSVGTypeNeedingTearOff($interfaceName)) {
@@ -4016,7 +4016,7 @@ sub GenerateImplementation
 static void initializeScriptWrappableForInterface(${implClassName}* object)
 {
     if (ScriptWrappable::wrapperCanBeStoredInObject(object))
-        ScriptWrappable::setTypeInfoInObject(object, &${v8ClassName}::info);
+        ScriptWrappable::setTypeInfoInObject(object, &${v8ClassName}::wrapperTypeInfo);
     else
         ASSERT_NOT_REACHED();
 }
@@ -4045,7 +4045,7 @@ END
         $implementation{nameSpaceWebCore}->addHeader($code);
     }
 
-    my $code = "WrapperTypeInfo ${v8ClassName}::info = { ${v8ClassName}::GetTemplate, ${v8ClassName}::derefObject, $toActiveDOMObject, $toEventTarget, ";
+    my $code = "WrapperTypeInfo ${v8ClassName}::wrapperTypeInfo = { ${v8ClassName}::GetTemplate, ${v8ClassName}::derefObject, $toActiveDOMObject, $toEventTarget, ";
     $code .= "$rootForGC, ${v8ClassName}::installPerContextEnabledPrototypeProperties, $parentClassInfo, $WrapperTypePrototype };\n";
     $implementation{nameSpaceWebCore}->addHeader($code);
 
@@ -4271,7 +4271,7 @@ END
 
     my $access_check = "";
     if ($interface->extendedAttributes->{"CheckSecurity"} && $interfaceName ne "Window") {
-        $access_check = "instance->SetAccessCheckCallbacks(${implClassName}V8Internal::namedSecurityCheck, ${implClassName}V8Internal::indexedSecurityCheck, v8::External::New(&${v8ClassName}::info));";
+        $access_check = "instance->SetAccessCheckCallbacks(${implClassName}V8Internal::namedSecurityCheck, ${implClassName}V8Internal::indexedSecurityCheck, v8::External::New(&${v8ClassName}::wrapperTypeInfo));";
     }
 
     # For the Window interface, generate the shadow object template
@@ -4283,7 +4283,7 @@ static void ConfigureShadowObjectTemplate(v8::Handle<v8::ObjectTemplate> templ, 
     V8DOMConfiguration::installAttributes(templ, v8::Handle<v8::ObjectTemplate>(), shadowAttributes, WTF_ARRAY_LENGTH(shadowAttributes), isolate, currentWorldType);
 
     // Install a security handler with V8.
-    templ->SetAccessCheckCallbacks(V8Window::namedSecurityCheckCustom, V8Window::indexedSecurityCheckCustom, v8::External::New(&V8Window::info));
+    templ->SetAccessCheckCallbacks(V8Window::namedSecurityCheckCustom, V8Window::indexedSecurityCheckCustom, v8::External::New(&V8Window::wrapperTypeInfo));
     templ->SetInternalFieldCount(V8Window::internalFieldCount);
 }
 END
@@ -4446,7 +4446,7 @@ END
     // Set access check callbacks, but turned off initially.
     // When a context is detached from a frame, turn on the access check.
     // Turning on checks also invalidates inline caches of the object.
-    instance->SetAccessCheckCallbacks(V8Window::namedSecurityCheckCustom, V8Window::indexedSecurityCheckCustom, v8::External::New(&V8Window::info), false);
+    instance->SetAccessCheckCallbacks(V8Window::namedSecurityCheckCustom, V8Window::indexedSecurityCheckCustom, v8::External::New(&V8Window::wrapperTypeInfo), false);
 END
     }
     if ($interfaceName eq "HTMLDocument" or $interfaceName eq "DedicatedWorkerGlobalScope" or $interfaceName eq "SharedWorkerGlobalScope") {
@@ -4469,15 +4469,15 @@ END
 v8::Handle<v8::FunctionTemplate> ${v8ClassName}::GetTemplate(v8::Isolate* isolate, WrapperWorldType currentWorldType)
 {
     V8PerIsolateData* data = V8PerIsolateData::from(isolate);
-    V8PerIsolateData::TemplateMap::iterator result = data->templateMap(currentWorldType).find(&info);
+    V8PerIsolateData::TemplateMap::iterator result = data->templateMap(currentWorldType).find(&wrapperTypeInfo);
     if (result != data->templateMap(currentWorldType).end())
         return result->value.newLocal(isolate);
 
     TRACE_EVENT_SCOPED_SAMPLING_STATE("Blink", "BuildDOMTemplate");
     v8::HandleScope handleScope(isolate);
     v8::Handle<v8::FunctionTemplate> templ =
-        Configure${v8ClassName}Template(data->rawTemplate(&info, currentWorldType), isolate, currentWorldType);
-    data->templateMap(currentWorldType).add(&info, UnsafePersistent<v8::FunctionTemplate>(isolate, templ));
+        Configure${v8ClassName}Template(data->rawTemplate(&wrapperTypeInfo, currentWorldType), isolate, currentWorldType);
+    data->templateMap(currentWorldType).add(&wrapperTypeInfo, UnsafePersistent<v8::FunctionTemplate>(isolate, templ));
     return handleScope.Close(templ);
 }
 
@@ -4485,16 +4485,16 @@ END
     $implementation{nameSpaceWebCore}->add(<<END);
 bool ${v8ClassName}::HasInstance(v8::Handle<v8::Value> jsValue, v8::Isolate* isolate, WrapperWorldType currentWorldType)
 {
-    return V8PerIsolateData::from(isolate)->hasInstance(&info, jsValue, currentWorldType);
+    return V8PerIsolateData::from(isolate)->hasInstance(&wrapperTypeInfo, jsValue, currentWorldType);
 }
 
 END
     $implementation{nameSpaceWebCore}->add(<<END);
 bool ${v8ClassName}::HasInstanceInAnyWorld(v8::Handle<v8::Value> jsValue, v8::Isolate* isolate)
 {
-    return V8PerIsolateData::from(isolate)->hasInstance(&info, jsValue, MainWorld)
-        || V8PerIsolateData::from(isolate)->hasInstance(&info, jsValue, IsolatedWorld)
-        || V8PerIsolateData::from(isolate)->hasInstance(&info, jsValue, WorkerWorld);
+    return V8PerIsolateData::from(isolate)->hasInstance(&wrapperTypeInfo, jsValue, MainWorld)
+        || V8PerIsolateData::from(isolate)->hasInstance(&wrapperTypeInfo, jsValue, IsolatedWorld)
+        || V8PerIsolateData::from(isolate)->hasInstance(&wrapperTypeInfo, jsValue, WorkerWorld);
 }
 
 END
@@ -4917,9 +4917,9 @@ v8::Handle<v8::Object> ${v8ClassName}::createWrapper(${createWrapperArgumentType
     ASSERT(!DOMDataStore::containsWrapper<${v8ClassName}>(impl.get(), isolate));
     if (ScriptWrappable::wrapperCanBeStoredInObject(impl.get())) {
         const WrapperTypeInfo* actualInfo = ScriptWrappable::getTypeInfoFromObject(impl.get());
-        // Might be a XXXConstructor::info instead of an XXX::info. These will both have
+        // Might be a XXXConstructor::wrapperTypeInfo instead of an XXX::wrapperTypeInfo. These will both have
         // the same object de-ref functions, though, so use that as the basis of the check.
-        RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(actualInfo->derefObjectFunction == info.derefObjectFunction);
+        RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(actualInfo->derefObjectFunction == wrapperTypeInfo.derefObjectFunction);
     }
 
 END
@@ -4942,7 +4942,7 @@ END
     }
 
     $code .= <<END;
-    v8::Handle<v8::Object> wrapper = V8DOMWrapper::createWrapper(creationContext, &info, toInternalPointer(impl.get()), isolate);
+    v8::Handle<v8::Object> wrapper = V8DOMWrapper::createWrapper(creationContext, &wrapperTypeInfo, toInternalPointer(impl.get()), isolate);
     if (UNLIKELY(wrapper.IsEmpty()))
         return wrapper;
 
@@ -4967,7 +4967,7 @@ END
 
     $code .= <<END;
     installPerContextEnabledProperties(wrapper, impl.get(), isolate);
-    V8DOMWrapper::associateObjectWithWrapper<$v8ClassName>(impl, &info, wrapper, isolate, $wrapperConfiguration);
+    V8DOMWrapper::associateObjectWithWrapper<$v8ClassName>(impl, &wrapperTypeInfo, wrapper, isolate, $wrapperConfiguration);
     return wrapper;
 }
 
@@ -5394,7 +5394,7 @@ sub CreateCustomSignature
                 } else {
                     AddIncludesForType($type);
                 }
-                $code .= "V8PerIsolateData::from(isolate)->rawTemplate(&V8${type}::info, currentWorldType)";
+                $code .= "V8PerIsolateData::from(isolate)->rawTemplate(&V8${type}::wrapperTypeInfo, currentWorldType)";
             }
         } else {
             $code .= "v8::Handle<v8::FunctionTemplate>()";

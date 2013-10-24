@@ -47,7 +47,7 @@ void V8FormData::constructorCustom(const v8::FunctionCallbackInfo<v8::Value>& ar
     RefPtr<DOMFormData> domFormData = DOMFormData::create(form);
 
     v8::Handle<v8::Object> wrapper = args.Holder();
-    V8DOMWrapper::associateObjectWithWrapper<V8FormData>(domFormData.release(), &info, wrapper, args.GetIsolate(), WrapperConfiguration::Dependent);
+    V8DOMWrapper::associateObjectWithWrapper<V8FormData>(domFormData.release(), &wrapperTypeInfo, wrapper, args.GetIsolate(), WrapperConfiguration::Dependent);
     args.GetReturnValue().Set(wrapper);
 }
 

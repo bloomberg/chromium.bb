@@ -39,7 +39,7 @@ public:
         return fromInternalPointer(object->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex));
     }
     static void derefObject(void*);
-    static WrapperTypeInfo info;
+    static WrapperTypeInfo wrapperTypeInfo;
     static void constructorCallback(const v8::FunctionCallbackInfo<v8::Value>&);
     static void indexedPropertyGetterCustom(uint32_t, const v8::PropertyCallbackInfo<v8::Value>&);
     static void indexedPropertySetterCustom(uint32_t, v8::Local<v8::Value>, const v8::PropertyCallbackInfo<v8::Value>&);
@@ -64,7 +64,7 @@ private:
 template<>
 class WrapperTypeTraits<Float64Array > {
 public:
-    static WrapperTypeInfo* info() { return &V8Float64Array::info; }
+    static WrapperTypeInfo* wrapperTypeInfo() { return &V8Float64Array::wrapperTypeInfo; }
 };
 
 v8::Handle<v8::Object> wrap(Float64Array* impl, v8::Handle<v8::Object> creationContext, v8::Isolate*);

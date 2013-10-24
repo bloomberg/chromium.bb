@@ -639,7 +639,7 @@ v8::Local<v8::Object> V8PromiseCustom::createPromise(v8::Handle<v8::Object> crea
 {
     v8::Local<v8::ObjectTemplate> internalTemplate = internalObjectTemplate(isolate);
     v8::Local<v8::Object> internal = internalTemplate->NewInstance();
-    v8::Local<v8::Object> promise = V8DOMWrapper::createWrapper(creationContext, &V8Promise::info, 0, isolate);
+    v8::Local<v8::Object> promise = V8DOMWrapper::createWrapper(creationContext, &V8Promise::wrapperTypeInfo, 0, isolate);
 
     clearDerived(internal);
     setState(internal, Pending, v8::Undefined(isolate), isolate);

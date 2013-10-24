@@ -57,7 +57,7 @@ static v8::Local<v8::Object> createInjectedScriptHostV8Wrapper(InjectedScriptHos
         // Avoid setting the wrapper if allocation failed.
         return v8::Local<v8::Object>();
     }
-    V8DOMWrapper::setNativeInfo(instance, &V8InjectedScriptHost::info, host);
+    V8DOMWrapper::setNativeInfo(instance, &V8InjectedScriptHost::wrapperTypeInfo, host);
     // Create a weak reference to the v8 wrapper of InspectorBackend to deref
     // InspectorBackend when the wrapper is garbage collected.
     host->ref();
