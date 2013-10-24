@@ -404,21 +404,18 @@ void ExtensionInstallPrompt::Prompt::AppendRatingStars(
 
 string16 ExtensionInstallPrompt::Prompt::GetRatingCount() const {
   CHECK_EQ(INLINE_INSTALL_PROMPT, type_);
-  return l10n_util::GetStringFUTF16(
-        IDS_EXTENSION_RATING_COUNT,
-        UTF8ToUTF16(base::IntToString(rating_count_)));
+  return l10n_util::GetStringFUTF16(IDS_EXTENSION_RATING_COUNT,
+                                    base::IntToString16(rating_count_));
 }
 
 string16 ExtensionInstallPrompt::Prompt::GetUserCount() const {
   CHECK_EQ(INLINE_INSTALL_PROMPT, type_);
 
   if (show_user_count_) {
-    return l10n_util::GetStringFUTF16(
-        IDS_EXTENSION_USER_COUNT,
-        UTF8ToUTF16(localized_user_count_));
-  } else {
-    return string16();
+    return l10n_util::GetStringFUTF16(IDS_EXTENSION_USER_COUNT,
+                                      base::UTF8ToUTF16(localized_user_count_));
   }
+  return base::string16();
 }
 
 size_t ExtensionInstallPrompt::Prompt::GetPermissionCount() const {
@@ -471,7 +468,7 @@ size_t ExtensionInstallPrompt::Prompt::GetRetainedFileCount() const {
 
 string16 ExtensionInstallPrompt::Prompt::GetRetainedFile(size_t index) const {
   CHECK_LT(index, retained_files_.size());
-  return base::UTF8ToUTF16(retained_files_[index].AsUTF8Unsafe());
+  return retained_files_[index].AsUTF16Unsafe();
 }
 
 bool ExtensionInstallPrompt::Prompt::ShouldDisplayRevokeFilesButton() const {

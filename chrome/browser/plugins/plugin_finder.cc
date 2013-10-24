@@ -49,13 +49,7 @@ static string16 GetGroupName(const content::WebPluginInfo& plugin) {
   if (!plugin.name.empty())
     return plugin.name;
 
-  base::FilePath::StringType path =
-      plugin.path.BaseName().RemoveExtension().value();
-#if defined(OS_POSIX)
-  return UTF8ToUTF16(path);
-#elif defined(OS_WIN)
-  return WideToUTF16(path);
-#endif
+  return plugin.path.BaseName().RemoveExtension().AsUTF16Unsafe();
 }
 
 void LoadMimeTypes(bool matching_mime_types,
