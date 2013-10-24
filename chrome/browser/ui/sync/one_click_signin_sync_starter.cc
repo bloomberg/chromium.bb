@@ -151,15 +151,18 @@ OneClickSigninSyncStarter::SigninDialogDelegate::~SigninDialogDelegate() {
 }
 
 void OneClickSigninSyncStarter::SigninDialogDelegate::OnCancelSignin() {
-  sync_starter_->CancelSigninAndDelete();
+  if (sync_starter_ != NULL)
+    sync_starter_->CancelSigninAndDelete();
 }
 
 void OneClickSigninSyncStarter::SigninDialogDelegate::OnContinueSignin() {
-  sync_starter_->LoadPolicyWithCachedClient();
+  if (sync_starter_ != NULL)
+    sync_starter_->LoadPolicyWithCachedClient();
 }
 
 void OneClickSigninSyncStarter::SigninDialogDelegate::OnSigninWithNewProfile() {
-  sync_starter_->CreateNewSignedInProfile();
+  if (sync_starter_ != NULL)
+    sync_starter_->CreateNewSignedInProfile();
 }
 
 void OneClickSigninSyncStarter::OnRegisteredForPolicy(
