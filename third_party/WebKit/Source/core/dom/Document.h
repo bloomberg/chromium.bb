@@ -230,6 +230,7 @@ public:
     using ContainerNode::deref;
     using SecurityContext::securityOrigin;
     using SecurityContext::contentSecurityPolicy;
+    using ExecutionContextClient::addConsoleMessage;
 
     virtual bool canContainRangeEndPoint() const { return true; }
 
@@ -1113,6 +1114,7 @@ private:
     virtual const KURL& virtualURL() const; // Same as url(), but needed for ExecutionContext to implement it without a performance loss for direct calls.
     virtual KURL virtualCompleteURL(const String&) const; // Same as completeURL() for the same reason as above.
 
+    virtual void reportBlockedScriptExecutionToInspector(const String& directiveText) OVERRIDE;
     virtual void addMessage(MessageSource, MessageLevel, const String& message, const String& sourceURL, unsigned lineNumber, ScriptState*);
     void internalAddMessage(MessageSource, MessageLevel, const String& message, const String& sourceURL, unsigned lineNumber, PassRefPtr<ScriptCallStack>, ScriptState*);
 

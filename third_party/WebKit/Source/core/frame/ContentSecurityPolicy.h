@@ -46,7 +46,7 @@ class CSPDirectiveList;
 class DOMStringList;
 class JSONObject;
 class KURL;
-class ExecutionContext;
+class ExecutionContextClient;
 class SecurityOrigin;
 
 typedef int SandboxFlags;
@@ -55,9 +55,9 @@ typedef Vector<OwnPtr<CSPDirectiveList> > CSPDirectiveListVector;
 class ContentSecurityPolicy {
     WTF_MAKE_FAST_ALLOCATED;
 public:
-    static PassOwnPtr<ContentSecurityPolicy> create(ExecutionContext* executionContext)
+    static PassOwnPtr<ContentSecurityPolicy> create(ExecutionContextClient* client)
     {
-        return adoptPtr(new ContentSecurityPolicy(executionContext));
+        return adoptPtr(new ContentSecurityPolicy(client));
     }
     ~ContentSecurityPolicy();
 
@@ -123,7 +123,7 @@ public:
 
     void reportBlockedScriptExecutionToInspector(const String& directiveText) const;
 
-    const KURL& url() const;
+    const KURL url() const;
     KURL completeURL(const String&) const;
     SecurityOrigin* securityOrigin() const;
     void enforceSandboxFlags(SandboxFlags) const;
@@ -133,10 +133,10 @@ public:
 
     static bool shouldBypassMainWorld(ExecutionContext*);
 
-    ExecutionContext* executionContext() { return m_executionContext; }
+    ExecutionContextClient* client() { return m_client; }
 
 private:
-    explicit ContentSecurityPolicy(ExecutionContext*);
+    explicit ContentSecurityPolicy(ExecutionContextClient*);
 
     void logToConsole(const String& message) const;
     void addPolicyFromHeaderValue(const String&, HeaderType);
@@ -144,7 +144,7 @@ private:
     bool shouldSendViolationReport(const String&) const;
     void didSendViolationReport(const String&);
 
-    ExecutionContext* m_executionContext;
+    ExecutionContextClient* m_client;
     bool m_overrideInlineStyleAllowed;
     CSPDirectiveListVector m_policies;
 

@@ -29,6 +29,7 @@
 
 #include "core/frame/ConsoleTypes.h"
 #include "core/platform/LifecycleNotifier.h"
+#include "weborigin/KURL.h"
 #include "wtf/Forward.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/text/WTFString.h"
@@ -51,7 +52,6 @@ public:
 
     virtual bool isDocument() const { return false; }
     virtual bool isWorkerGlobalScope() const { return false; }
-
     virtual bool isJSExecutionForbidden() const = 0;
     virtual DOMWindow* executingWindow() { return 0; }
     virtual void userEventWasHandled() { }
@@ -62,14 +62,23 @@ public:
     virtual const KURL& virtualURL() const = 0;
     virtual KURL virtualCompleteURL(const String&) const = 0;
     virtual void addMessage(MessageSource, MessageLevel, const String& message, const String& sourceURL, unsigned lineNumber, ScriptState*) = 0;
+    virtual void reportBlockedScriptExecutionToInspector(const String& directiveText) = 0;
     virtual EventTarget* errorEventTarget() = 0;
     virtual void logExceptionToConsole(const String& errorMessage, const String& sourceURL, int lineNumber, int columnNumber, PassRefPtr<ScriptCallStack>) = 0;
     virtual double timerAlignmentInterval() const = 0;
     virtual PassOwnPtr<LifecycleNotifier<ExecutionContext> > createLifecycleNotifier() = 0;
     virtual void didUpdateSecurityOrigin() = 0;
+
+    void addConsoleMessage(MessageSource source, MessageLevel level, const String& message, const String& sourceURL, unsigned lineNumber) { addMessage(source, level, message, sourceURL, lineNumber, 0); }
+    void addConsoleMessage(MessageSource source, MessageLevel level, const String& message, ScriptState* state = 0) { addMessage(source, level, message, String(), 0, state); }
+    KURL contextURL() const { return virtualURL(); }
+    KURL contextCompleteURL(const String& url) const { return virtualCompleteURL(url); }
+
 protected:
     virtual ~ExecutionContextClient() { }
+
 };
+
 
 } // namespace
 

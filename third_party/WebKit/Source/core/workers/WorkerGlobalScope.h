@@ -154,6 +154,7 @@ namespace WebCore {
         virtual const KURL& virtualURL() const OVERRIDE;
         virtual KURL virtualCompleteURL(const String&) const;
 
+        virtual void reportBlockedScriptExecutionToInspector(const String& directiveText) OVERRIDE;
         virtual void addMessage(MessageSource, MessageLevel, const String& message, const String& sourceURL, unsigned lineNumber, ScriptState* = 0) OVERRIDE;
 
         virtual EventTarget* errorEventTarget() OVERRIDE;

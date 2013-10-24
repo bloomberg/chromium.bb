@@ -891,21 +891,21 @@ PassOwnPtr<CSPDirectiveList> CSPDirectiveList::create(ContentSecurityPolicy* pol
 void CSPDirectiveList::reportViolation(const String& directiveText, const String& effectiveDirective, const String& consoleMessage, const KURL& blockedURL) const
 {
     String message = m_reportOnly ? "[Report Only] " + consoleMessage : consoleMessage;
-    m_policy->executionContext()->addConsoleMessage(SecurityMessageSource, ErrorMessageLevel, message);
+    m_policy->client()->addConsoleMessage(SecurityMessageSource, ErrorMessageLevel, message);
     m_policy->reportViolation(directiveText, effectiveDirective, message, blockedURL, m_reportURIs, m_header);
 }
 
 void CSPDirectiveList::reportViolationWithLocation(const String& directiveText, const String& effectiveDirective, const String& consoleMessage, const KURL& blockedURL, const String& contextURL, const WTF::OrdinalNumber& contextLine) const
 {
     String message = m_reportOnly ? "[Report Only] " + consoleMessage : consoleMessage;
-    m_policy->executionContext()->addConsoleMessage(SecurityMessageSource, ErrorMessageLevel, message, contextURL, contextLine.oneBasedInt());
+    m_policy->client()->addConsoleMessage(SecurityMessageSource, ErrorMessageLevel, message, contextURL, contextLine.oneBasedInt());
     m_policy->reportViolation(directiveText, effectiveDirective, message, blockedURL, m_reportURIs, m_header);
 }
 
 void CSPDirectiveList::reportViolationWithState(const String& directiveText, const String& effectiveDirective, const String& consoleMessage, const KURL& blockedURL, ScriptState* state) const
 {
     String message = m_reportOnly ? "[Report Only] " + consoleMessage : consoleMessage;
-    m_policy->executionContext()->addConsoleMessage(SecurityMessageSource, ErrorMessageLevel, message, state);
+    m_policy->client()->addConsoleMessage(SecurityMessageSource, ErrorMessageLevel, message, state);
     m_policy->reportViolation(directiveText, effectiveDirective, message, blockedURL, m_reportURIs, m_header);
 }
 
@@ -1387,8 +1387,8 @@ void CSPDirectiveList::addDirective(const String& name, const String& value)
     }
 }
 
-ContentSecurityPolicy::ContentSecurityPolicy(ExecutionContext* executionContext)
-    : m_executionContext(executionContext)
+ContentSecurityPolicy::ContentSecurityPolicy(ExecutionContextClient* client)
+    : m_client(client)
     , m_overrideInlineStyleAllowed(false)
 {
 }
@@ -1412,8 +1412,8 @@ void ContentSecurityPolicy::didReceiveHeaders(const ContentSecurityPolicyRespons
         didReceiveHeader(headers.contentSecurityPolicyReportOnly(), ContentSecurityPolicy::Report);
 
     // FIXME: Remove this reporting (and the 'xWebKitCSP*' methods) after the next release branch.
-    if (m_executionContext->isDocument()) {
-        Document* document = toDocument(m_executionContext);
+    if (m_client->isDocument()) {
+        Document* document = static_cast<Document*>(m_client);
         if (!headers.xWebKitCSP().isEmpty())
             UseCounter::countDeprecation(*document, UseCounter::PrefixedContentSecurityPolicy);
         if (!headers.xWebKitCSPReportOnly().isEmpty())
@@ -1428,8 +1428,8 @@ void ContentSecurityPolicy::didReceiveHeader(const String& header, HeaderType ty
 
 void ContentSecurityPolicy::addPolicyFromHeaderValue(const String& header, HeaderType type)
 {
-    if (m_executionContext->isDocument()) {
-        Document* document = toDocument(m_executionContext);
+    if (m_client->isDocument()) {
+        Document* document = static_cast<Document*>(m_client);
         UseCounter::count(*document, getUseCounterType(type));
     }
 
@@ -1452,7 +1452,7 @@ void ContentSecurityPolicy::addPolicyFromHeaderValue(const String& header, Heade
 
         // We disable 'eval()' even in the case of report-only policies, and rely on the check in the V8Initializer::codeGenerationCheckCallbackInMainThread callback to determine whether the call should execute or not.
         if (!policy->allowEval(0, SuppressReport))
-            m_executionContext->disableEval(policy->evalDisabledErrorMessage());
+            m_client->disableEval(policy->evalDisabledErrorMessage());
 
         m_policies.append(policy.release());
 
@@ -1658,23 +1658,23 @@ void ContentSecurityPolicy::gatherReportURIs(DOMStringList& list) const
 
 SecurityOrigin* ContentSecurityPolicy::securityOrigin() const
 {
-    return m_executionContext->securityOrigin();
+    return m_client->securityContext().securityOrigin();
 }
 
-const KURL& ContentSecurityPolicy::url() const
+const KURL ContentSecurityPolicy::url() const
 {
-    return m_executionContext->url();
+    return m_client->contextURL();
 }
 
 KURL ContentSecurityPolicy::completeURL(const String& url) const
 {
-    return m_executionContext->completeURL(url);
+    return m_client->contextCompleteURL(url);
 }
 
 void ContentSecurityPolicy::enforceSandboxFlags(SandboxFlags mask) const
 {
-    if (m_executionContext->isDocument())
-        toDocument(m_executionContext)->enforceSandboxFlags(mask);
+    if (m_client->isDocument())
+        static_cast<Document*>(m_client)->enforceSandboxFlags(mask);
 }
 
 static String stripURLForUseInReport(Document* document, const KURL& url)
@@ -1719,10 +1719,10 @@ static void gatherSecurityPolicyViolationEventData(SecurityPolicyViolationEventI
 void ContentSecurityPolicy::reportViolation(const String& directiveText, const String& effectiveDirective, const String& consoleMessage, const KURL& blockedURL, const Vector<KURL>& reportURIs, const String& header)
 {
     // FIXME: Support sending reports from worker.
-    if (!m_executionContext->isDocument())
+    if (!m_client->isDocument())
         return;
 
-    Document* document = toDocument(m_executionContext);
+    Document* document = static_cast<Document*>(m_client);
     Frame* frame = document->frame();
     if (!frame)
         return;
@@ -1866,12 +1866,12 @@ void ContentSecurityPolicy::reportMissingReportURI(const String& policy) const
 
 void ContentSecurityPolicy::logToConsole(const String& message) const
 {
-    m_executionContext->addConsoleMessage(SecurityMessageSource, ErrorMessageLevel, message);
+    m_client->addConsoleMessage(SecurityMessageSource, ErrorMessageLevel, message);
 }
 
 void ContentSecurityPolicy::reportBlockedScriptExecutionToInspector(const String& directiveText) const
 {
-    InspectorInstrumentation::scriptExecutionBlockedByCSP(m_executionContext, directiveText);
+    m_client->reportBlockedScriptExecutionToInspector(directiveText);
 }
 
 bool ContentSecurityPolicy::experimentalFeaturesEnabled() const

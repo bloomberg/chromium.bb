@@ -242,6 +242,11 @@ void WorkerGlobalScope::logExceptionToConsole(const String& errorMessage, const 
     thread()->workerReportingProxy().postExceptionToWorkerObject(errorMessage, lineNumber, columnNumber, sourceURL);
 }
 
+void WorkerGlobalScope::reportBlockedScriptExecutionToInspector(const String& directiveText)
+{
+    InspectorInstrumentation::scriptExecutionBlockedByCSP(this, directiveText);
+}
+
 void WorkerGlobalScope::addMessage(MessageSource source, MessageLevel level, const String& message, const String& sourceURL, unsigned lineNumber, ScriptState* state)
 {
     if (!isContextThread()) {
