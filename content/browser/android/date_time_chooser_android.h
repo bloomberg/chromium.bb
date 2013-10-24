@@ -23,7 +23,7 @@ class DateTimeChooserAndroid {
 
   // DateTimeChooser implementation:
   void ShowDialog(ContentViewCore* content,
-                  RenderViewHost* sender,
+                  RenderViewHost* host,
                   int type,
                   int year,
                   int month,
@@ -61,11 +61,7 @@ class DateTimeChooserAndroid {
        int text_input_type_time, int text_input_type_week);
 
  private:
-  class DateTimeIPCSender;
-
-  // The DateTimeIPCSender class is a render view observer, so it will take care
-  // of its own deletion.
-  DateTimeIPCSender* sender_;
+  RenderViewHost* host_;
 
   base::android::ScopedJavaGlobalRef<jobject> j_date_time_chooser_;
 
