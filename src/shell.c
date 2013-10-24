@@ -3241,7 +3241,6 @@ activate_binding(struct weston_seat *seat,
 
 	if (!focus)
 		return;
-	focus = seat->pointer->focus->surface;
 
 	if (is_black_surface(focus, &main_surface))
 		focus = main_surface;
