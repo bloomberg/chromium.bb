@@ -24,8 +24,9 @@ IconGroupID IconLoader::ReadGroupIDFromFilepath(
 }
 
 bool IconLoader::IsIconMutableFromFilepath(const base::FilePath& filepath) {
-  base::FilePath::StringType extension = filepath.Extension();
-  return extension == L".exe" || extension == L".dll" || extension == L".ico";
+  return filepath.MatchesExtension(L".exe") ||
+         filepath.MatchesExtension(L".dll") ||
+         filepath.MatchesExtension(L".ico");
 }
 
 void IconLoader::ReadIcon() {
