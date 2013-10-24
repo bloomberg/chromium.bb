@@ -3285,23 +3285,6 @@
               }],
             ],
           }],
-          # TODO(glider): this is a temporary workaround for
-          # http://crbug.com/310479.
-          ['tsan==1', {
-            'target_conditions': [
-              ['_toolset=="target"', {
-                'cflags!': [
-                  '-gline-tables-only',
-                ],
-                'cflags': [
-                  '-g',
-                  '-O1',
-                  '-fno-inline-functions',
-                  ' -fno-inline',
-                ],
-              }],
-            ],
-          }],
           ['asan==1', {
             'target_conditions': [
               ['_toolset=="target"', {
