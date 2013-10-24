@@ -7,6 +7,10 @@
       "third_party/WebKit/PerformanceTests/"
     ]
   },
+  "canvasmark": {
+    "description": "Runs Canvasmark HTML5, Canvas 2D rendering and javascript benchmark.\n\nCanvasMark tests the HTML5 <canvas> rendering performance for commonly used operations in HTML5 games: bitmaps, canvas drawing, alpha blending, polygon fills, shadows and text functions.(http://www.kevs3d.co.uk/dev/canvasmark/)",
+    "code": ["chrome/src/tools/perf/benchmarks/canvasmark.py"]
+  },
   "cc_perftests":{
     "description":"Microbenchmarks for compositor (cc/) component.",
     "code":[
