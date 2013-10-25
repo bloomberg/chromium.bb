@@ -39,10 +39,8 @@ enum InterceptorId {
   OPEN_KEY_ID,
   OPEN_KEY_EX_ID,
   // Sync dispatcher:
-  CREATE_EVENTW_ID,
-  CREATE_EVENTA_ID,
-  OPEN_EVENTW_ID,
-  OPEN_EVENTA_ID,
+  CREATE_EVENT_ID,
+  OPEN_EVENT_ID,
   // CSRSS bypasses for HandleCloser:
   CREATE_THREAD_ID,
   GET_USER_DEFAULT_LCID_ID,

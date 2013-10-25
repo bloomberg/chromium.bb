@@ -22,12 +22,11 @@ class SyncDispatcher : public Dispatcher {
 
 private:
   // Processes IPC requests coming from calls to CreateEvent in the target.
-  bool CreateEvent(IPCInfo* ipc, std::wstring* name, DWORD manual_reset,
+  bool CreateEvent(IPCInfo* ipc, std::wstring* name, DWORD event_type,
                    DWORD initial_state);
 
   // Processes IPC requests coming from calls to OpenEvent in the target.
-  bool OpenEvent(IPCInfo* ipc, std::wstring* name, DWORD desired_access,
-                 DWORD inherit_handle);
+  bool OpenEvent(IPCInfo* ipc, std::wstring* name, DWORD desired_access);
 
   PolicyBase* policy_base_;
   DISALLOW_COPY_AND_ASSIGN(SyncDispatcher);

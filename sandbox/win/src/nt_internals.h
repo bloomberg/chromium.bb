@@ -615,5 +615,31 @@ typedef VOID (WINAPI *RtlInitUnicodeStringFunction) (
   IN OUT PUNICODE_STRING DestinationString,
   IN PCWSTR SourceString);
 
+typedef enum _EVENT_TYPE {
+  NotificationEvent,
+  SynchronizationEvent
+} EVENT_TYPE, *PEVENT_TYPE;
+
+typedef NTSTATUS (WINAPI* NtOpenDirectoryObjectFunction) (
+    PHANDLE DirectoryHandle,
+    ACCESS_MASK DesiredAccess,
+    POBJECT_ATTRIBUTES ObjectAttributes);
+
+typedef NTSTATUS (WINAPI* NtQuerySymbolicLinkObjectFunction) (
+    HANDLE LinkHandle,
+    PUNICODE_STRING LinkTarget,
+    PULONG ReturnedLength);
+
+typedef NTSTATUS (WINAPI* NtOpenSymbolicLinkObjectFunction) (
+    PHANDLE LinkHandle,
+    ACCESS_MASK DesiredAccess,
+    POBJECT_ATTRIBUTES ObjectAttributes);
+
+#define DIRECTORY_QUERY               0x0001
+#define DIRECTORY_TRAVERSE            0x0002
+#define DIRECTORY_CREATE_OBJECT       0x0004
+#define DIRECTORY_CREATE_SUBDIRECTORY 0x0008
+#define DIRECTORY_ALL_ACCESS          0x000F
+
 #endif  // SANDBOX_WIN_SRC_NT_INTERNALS_H__
 
