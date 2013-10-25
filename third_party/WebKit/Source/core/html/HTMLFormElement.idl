@@ -39,6 +39,6 @@ interface HTMLFormElement : HTMLElement {
     boolean checkValidity();
 
     [RuntimeEnabled=RequestAutocomplete] void requestAutocomplete();
-    [RuntimeEnabled=RequestAutocomplete, NotEnumerable] attribute EventHandler onautocomplete;
-    [RuntimeEnabled=RequestAutocomplete, NotEnumerable] attribute EventHandler onautocompleteerror;
+    [RuntimeEnabled=RequestAutocomplete] attribute EventHandler onautocomplete;
+    [RuntimeEnabled=RequestAutocomplete] attribute EventHandler onautocompleteerror;
 };

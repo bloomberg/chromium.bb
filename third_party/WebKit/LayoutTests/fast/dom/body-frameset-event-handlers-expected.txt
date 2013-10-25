@@ -1,0 +1,32 @@
+
+PASS Set HTMLBodyElement.onblur 
+PASS Enumerate HTMLBodyElement.onblur 
+PASS Reflect HTMLBodyElement.onblur 
+PASS Set HTMLFrameSetElement.onblur 
+PASS Enumerate HTMLFrameSetElement.onblur 
+PASS Reflect HTMLFrameSetElement.onblur 
+PASS Set HTMLBodyElement.onerror 
+PASS Enumerate HTMLBodyElement.onerror 
+FAIL Reflect HTMLBodyElement.onerror assert_equals: Convert to function expected "function" but got "object"
+PASS Set HTMLFrameSetElement.onerror 
+PASS Enumerate HTMLFrameSetElement.onerror 
+FAIL Reflect HTMLFrameSetElement.onerror assert_equals: Convert to function expected "function" but got "object"
+PASS Set HTMLBodyElement.onfocus 
+PASS Enumerate HTMLBodyElement.onfocus 
+PASS Reflect HTMLBodyElement.onfocus 
+PASS Set HTMLFrameSetElement.onfocus 
+PASS Enumerate HTMLFrameSetElement.onfocus 
+PASS Reflect HTMLFrameSetElement.onfocus 
+PASS Set HTMLBodyElement.onload 
+PASS Enumerate HTMLBodyElement.onload 
+PASS Reflect HTMLBodyElement.onload 
+PASS Set HTMLFrameSetElement.onload 
+PASS Enumerate HTMLFrameSetElement.onload 
+PASS Reflect HTMLFrameSetElement.onload 
+PASS Set HTMLBodyElement.onscroll 
+PASS Enumerate HTMLBodyElement.onscroll 
+PASS Reflect HTMLBodyElement.onscroll 
+PASS Set HTMLFrameSetElement.onscroll 
+PASS Enumerate HTMLFrameSetElement.onscroll 
+PASS Reflect HTMLFrameSetElement.onscroll 
+

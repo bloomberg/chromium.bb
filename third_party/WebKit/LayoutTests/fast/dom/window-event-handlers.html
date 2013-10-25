@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<title>WindowEventHandlers test</title>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="script-tests/event-handlers.js"></script>
+<script>
+// attribute list from WHATWG HTML Living Standard r8239
+[
+    "onafterprint",
+    "onbeforeprint",
+    "onbeforeunload",
+    "onhashchange",
+    "onmessage",
+    "onoffline",
+    "ononline",
+    "onpagehide",
+    "onpageshow",
+    "onpopstate",
+    "onresize",
+    "onstorage",
+    "onunload"
+].forEach(function(attribute) {
+    testEnumerate("Window", attribute);
+    testEnumerate("HTMLBodyElement", attribute);
+    testEnumerate("HTMLFrameSetElement", attribute);
+});
+</script>
+<div id="log"></div>

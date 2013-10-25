@@ -23,16 +23,14 @@ function runTests()
 
 function checkForEnumerableProperties(form)
 {
-    var enumerated = false;
-    for (var field in form) {
-        if (/^onautocomplete/i.test(field))
-            testFailed('enumerable form attribute found on HTMLFormElement: ' + field);
-        enumerated = true;
-    }
-    if (enumerated)
-        testPassed('no enumerable properties on HTMLFormElement');
-    else
-        testFailed('failed to enumerate HTMLFormElement properties');
+    var enumerable = {};
+    for (var field in form)
+        enumerable[field] = true;
+    if (!enumerable.onautocomplete)
+        testFailed('failed to enumerate HTMLFormElement.onautocomplete');
+    if (!enumerable.onautocompleteerror)
+        testFailed('failed to enumerate HTMLFormElement.onautocompleteerror');
+    testPassed('found enumerable properties on HTMLFormElement');
 }
 
 function checkDynamicAttributes()

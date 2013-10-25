@@ -1,0 +1,41 @@
+
+FAIL Enumerate Window.onafterprint assert_true: expected true got undefined
+FAIL Enumerate HTMLBodyElement.onafterprint assert_true: expected true got undefined
+FAIL Enumerate HTMLFrameSetElement.onafterprint assert_true: expected true got undefined
+FAIL Enumerate Window.onbeforeprint assert_true: expected true got undefined
+FAIL Enumerate HTMLBodyElement.onbeforeprint assert_true: expected true got undefined
+FAIL Enumerate HTMLFrameSetElement.onbeforeprint assert_true: expected true got undefined
+PASS Enumerate Window.onbeforeunload 
+PASS Enumerate HTMLBodyElement.onbeforeunload 
+PASS Enumerate HTMLFrameSetElement.onbeforeunload 
+PASS Enumerate Window.onhashchange 
+PASS Enumerate HTMLBodyElement.onhashchange 
+PASS Enumerate HTMLFrameSetElement.onhashchange 
+PASS Enumerate Window.onmessage 
+PASS Enumerate HTMLBodyElement.onmessage 
+PASS Enumerate HTMLFrameSetElement.onmessage 
+PASS Enumerate Window.onoffline 
+PASS Enumerate HTMLBodyElement.onoffline 
+PASS Enumerate HTMLFrameSetElement.onoffline 
+PASS Enumerate Window.ononline 
+PASS Enumerate HTMLBodyElement.ononline 
+PASS Enumerate HTMLFrameSetElement.ononline 
+PASS Enumerate Window.onpagehide 
+FAIL Enumerate HTMLBodyElement.onpagehide assert_true: expected true got undefined
+FAIL Enumerate HTMLFrameSetElement.onpagehide assert_true: expected true got undefined
+PASS Enumerate Window.onpageshow 
+FAIL Enumerate HTMLBodyElement.onpageshow assert_true: expected true got undefined
+FAIL Enumerate HTMLFrameSetElement.onpageshow assert_true: expected true got undefined
+PASS Enumerate Window.onpopstate 
+PASS Enumerate HTMLBodyElement.onpopstate 
+PASS Enumerate HTMLFrameSetElement.onpopstate 
+PASS Enumerate Window.onresize 
+PASS Enumerate HTMLBodyElement.onresize 
+PASS Enumerate HTMLFrameSetElement.onresize 
+PASS Enumerate Window.onstorage 
+PASS Enumerate HTMLBodyElement.onstorage 
+PASS Enumerate HTMLFrameSetElement.onstorage 
+PASS Enumerate Window.onunload 
+PASS Enumerate HTMLBodyElement.onunload 
+PASS Enumerate HTMLFrameSetElement.onunload 
+
