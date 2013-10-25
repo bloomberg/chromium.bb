@@ -73,9 +73,9 @@ public:
 
     // Custom animated 'viewBox' property.
     PassRefPtr<SVGAnimatedRect> viewBox();
-    FloatRect& viewBoxCurrentValue() { return m_viewBox; }
-    FloatRect viewBoxBaseValue() const { return m_viewBox; }
-    void setViewBoxBaseValue(const FloatRect& viewBox) { m_viewBox = viewBox; }
+    SVGRect& viewBoxCurrentValue() { return m_viewBox; }
+    SVGRect viewBoxBaseValue() const { return m_viewBox; }
+    void setViewBoxBaseValue(const SVGRect& viewBox) { m_viewBox = viewBox; }
 
     // Custom animated 'preserveAspectRatio' property.
     PassRefPtr<SVGAnimatedPreserveAspectRatio> preserveAspectRatio();
@@ -105,7 +105,7 @@ private:
     SVGZoomAndPanType m_zoomAndPan;
 
     SVGTransformList m_transform;
-    FloatRect m_viewBox;
+    SVGRect m_viewBox;
     SVGPreserveAspectRatio m_preserveAspectRatio;
     String m_viewTargetString;
 };

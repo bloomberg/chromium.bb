@@ -130,7 +130,7 @@ public:
     SVGZoomAndPanType zoomAndPan() const { return m_zoomAndPan; }
     void setZoomAndPan(unsigned short zoomAndPan) { m_zoomAndPan = SVGZoomAndPan::parseFromNumber(zoomAndPan); }
 
-    bool hasEmptyViewBox() const { return viewBoxIsValid() && viewBoxCurrentValue().isEmpty(); }
+    bool hasEmptyViewBox() const { return viewBoxCurrentValue().isValid() && viewBoxCurrentValue().isEmpty(); }
 
 private:
     SVGSVGElement(const QualifiedName&, Document&);

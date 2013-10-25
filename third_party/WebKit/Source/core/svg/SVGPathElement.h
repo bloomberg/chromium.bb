@@ -91,7 +91,7 @@ public:
 
     void pathSegListChanged(SVGPathSegRole, ListModification = ListModificationUnknown);
 
-    virtual FloatRect getBBox(StyleUpdateStrategy = AllowStyleUpdate);
+    virtual SVGRect getBBox(StyleUpdateStrategy = AllowStyleUpdate);
 
     static const SVGPropertyInfo* dPropertyInfo();
 

@@ -130,7 +130,7 @@ String SVGViewSpec::transformString() const
 
 String SVGViewSpec::viewBoxString() const
 {
-    return SVGPropertyTraits<FloatRect>::toString(viewBoxBaseValue());
+    return SVGPropertyTraits<SVGRect>::toString(viewBoxBaseValue());
 }
 
 String SVGViewSpec::preserveAspectRatioString() const
@@ -174,7 +174,7 @@ PassRefPtr<SVGAnimatedProperty> SVGViewSpec::lookupOrCreateViewBoxWrapper(SVGVie
 {
     ASSERT(ownerType);
     ASSERT(ownerType->contextElement());
-    return SVGAnimatedProperty::lookupOrCreateWrapper<SVGElement, SVGAnimatedRect, FloatRect>(ownerType->contextElement(), viewBoxPropertyInfo(), ownerType->m_viewBox);
+    return SVGAnimatedProperty::lookupOrCreateWrapper<SVGElement, SVGAnimatedRect, SVGRect>(ownerType->contextElement(), viewBoxPropertyInfo(), ownerType->m_viewBox);
 }
 
 PassRefPtr<SVGAnimatedProperty> SVGViewSpec::lookupOrCreatePreserveAspectRatioWrapper(SVGViewSpec* ownerType)
@@ -195,7 +195,7 @@ void SVGViewSpec::reset()
 {
     m_zoomAndPan = SVGZoomAndPanMagnify;
     m_transform.clear();
-    m_viewBox = FloatRect();
+    m_viewBox = SVGRect();
     m_preserveAspectRatio = SVGPreserveAspectRatio();
     m_viewTargetString = emptyString();
 }
@@ -223,7 +223,7 @@ bool SVGViewSpec::parseViewSpecInternal(const CharType* ptr, const CharType* end
                 if (ptr >= end || *ptr != '(')
                     return false;
                 ptr++;
-                FloatRect viewBox;
+                SVGRect viewBox;
                 if (!SVGFitToViewBox::parseViewBox(&m_contextElement->document(), ptr, end, viewBox, false))
                     return false;
                 setViewBoxBaseValue(viewBox);
