@@ -943,6 +943,9 @@ void QuicCryptoClientConfig::InitializeFrom(
     QuicCryptoClientConfig* canonical_crypto_config) {
   CachedState* canonical_cached =
       canonical_crypto_config->LookupOrCreate(canonical_server_hostname);
+  if (!canonical_cached->proof_valid()) {
+    return;
+  }
   CachedState* cached = LookupOrCreate(server_hostname);
   cached->InitializeFrom(*canonical_cached);
 }

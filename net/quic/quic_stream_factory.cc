@@ -496,9 +496,7 @@ QuicCryptoClientConfig* QuicStreamFactory::GetOrCreateCryptoConfig(
     crypto_config = new QuicCryptoClientConfig();
     crypto_config->SetDefaults();
     all_crypto_configs_[host_port_proxy_pair] = crypto_config;
-    // TODO(rtenneti): Temporarily disabled using CanonicalConfig until we fix
-    // performance problems.
-    // PopulateFromCanonicalConfig(host_port_proxy_pair, crypto_config);
+    PopulateFromCanonicalConfig(host_port_proxy_pair, crypto_config);
   }
   return crypto_config;
 }
@@ -533,6 +531,8 @@ void QuicStreamFactory::PopulateFromCanonicalConfig(
   crypto_config->InitializeFrom(server_hostname,
                                 canonical_host_port_proxy_pair.first.host(),
                                 canonical_crypto_config);
+  // Update canonical version to point at the "most recent" crypto_config.
+  canonical_hostname_to_origin_map_[canonical_host_port] = host_port_proxy_pair;
 }
 
 }  // namespace net

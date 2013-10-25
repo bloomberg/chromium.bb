@@ -394,7 +394,8 @@ class NET_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
 
   // Initialize the CachedState from |canonical_crypto_config| for the
   // |canonical_server_hostname| as the initial CachedState for
-  // |server_hostname|.
+  // |server_hostname|. We will copy config data only if
+  // |canonical_crypto_config| has valid proof.
   void InitializeFrom(const std::string& server_hostname,
                       const std::string& canonical_server_hostname,
                       QuicCryptoClientConfig* canonical_crypto_config);
