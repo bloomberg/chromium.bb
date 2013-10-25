@@ -10,6 +10,7 @@
 #import "base/mac/foundation_util.h"
 #import "base/mac/scoped_nsobject.h"
 #include "base/time/time.h"
+#include "chrome/browser/policy/preferences_mac.h"
 #include "chrome/browser/storage_monitor/storage_info.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -23,16 +24,24 @@ namespace {
 
 typedef base::Callback<base::FilePath(NSString*)> PListPathExtractor;
 
+static MacPreferences* g_test_mac_preferences = NULL;
+
 void FindMostRecentDatabase(
     base::scoped_nsobject<NSString> recent_databases_key,
     const PListPathExtractor& path_extractor,
     const IAppsFinderCallback& callback) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
 
+  scoped_ptr<MacPreferences> real_preferences;
+  MacPreferences* prefs = g_test_mac_preferences;
+  if (!prefs) {
+    real_preferences.reset(new MacPreferences());
+    prefs = real_preferences.get();
+  }
+
   CFStringRef iapp_id = CFSTR("com.apple.iApps");
   base::scoped_nsobject<NSArray> plist(CFToNSCast(CFCast<CFArrayRef>(
-      CFPreferencesCopyAppValue(NSToCFCast(recent_databases_key.get()),
-                                iapp_id))));
+      prefs->CopyAppValue(NSToCFCast(recent_databases_key.get()), iapp_id))));
   if (!plist) {
     callback.Run(std::string());
     return;
@@ -81,14 +90,6 @@ base::FilePath ExtractITunesPath(NSString* path_ns) {
 NSString* const kIPhotoRecentDatabasesKey = @"iPhotoRecentDatabases";
 NSString* const kITunesRecentDatabasePathsKey = @"iTunesRecentDatabasePaths";
 
-void TestFunc(
-    const PListPathExtractor& path_extractor,
-    const IAppsFinderCallback& callback) {
-}
-void TestFunc2(
-    const IAppsFinderCallback& callback) {
-}
-
 void FindIPhotoLibrary(const IAppsFinderCallback& callback) {
   FindIAppsOnFileThread(
       StorageInfo::IPHOTO,
@@ -105,6 +106,10 @@ void FindITunesLibrary(const IAppsFinderCallback& callback) {
                  base::scoped_nsobject<NSString>(kITunesRecentDatabasePathsKey),
                  base::Bind(&ExtractITunesPath)),
       callback);
+}
+
+void SetMacPreferencesForTesting(MacPreferences* preferences) {
+  g_test_mac_preferences = preferences;
 }
 
 }  // namespace iapps

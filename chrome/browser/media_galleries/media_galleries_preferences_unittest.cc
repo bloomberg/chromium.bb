@@ -262,6 +262,8 @@ class MediaGalleriesPreferencesTest : public testing::Test {
   // Needed for extension service & friends to work.
   content::TestBrowserThreadBundle thread_bundle_;
 
+  EnsureMediaDirectoriesExists mock_gallery_locations_;
+
 #if defined OS_CHROMEOS
   chromeos::ScopedTestDeviceSettingsService test_device_settings_service_;
   chromeos::ScopedTestCrosSettings test_cros_settings_;

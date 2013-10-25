@@ -13,6 +13,7 @@
 
 #if defined(OS_MACOSX)
 
+class MacPreferences;
 #if defined(__OBJC__)
 @class NSString;
 #else  // __OBJC__
@@ -27,6 +28,11 @@ namespace iapps {
 
 extern NSString* const kIPhotoRecentDatabasesKey;
 extern NSString* const kITunesRecentDatabasePathsKey;
+
+// Set the mac preferences to use for testing. The caller continues to own
+// |preferences| and should call this function again with NULL before freeing
+// it.
+void SetMacPreferencesForTesting(MacPreferences* preferences);
 
 #endif  // OS_MACOSX
 
