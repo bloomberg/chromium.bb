@@ -769,11 +769,7 @@ camera.util.ScrollTracker.prototype.probe_ = function() {
       }
     } else {
       // Scrolling previously, but now no change is detected, so set a timer.
-      if (this.scrolling_) {
-        if (this.noChangeTimer_) {
-          clearTimeout(this.noChangeTimer_);
-          this.noChangeTimer_ = null;
-        }
+      if (this.scrolling_ && !this.noChangeTimer_) {
         this.noChangeTimer_ = setTimeout(function() {
           this.onScrollEnded_();
           this.scrolling_ = false;
