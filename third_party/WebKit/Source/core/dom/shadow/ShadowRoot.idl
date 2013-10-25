@@ -46,4 +46,5 @@
                              [Default=Undefined] optional long y);
 
     [RuntimeEnabled=ShadowDOM] readonly attribute StyleSheetList styleSheets;
+    [RuntimeEnabled=ShadowDOM] readonly attribute Element host;
 };
