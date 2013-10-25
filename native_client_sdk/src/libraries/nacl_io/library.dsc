@@ -219,6 +219,7 @@
         "poll.h",
         "sys/ioctl.h",
         "sys/mount.h",
+        "sys/poll.h",
         "sys/select.h",
         "sys/signal.h",
         "sys/socket.h",
@@ -237,6 +238,7 @@
         "poll.h",
         "sys/ioctl.h",
         "sys/mount.h",
+        "sys/poll.h",
         "sys/select.h",
         "sys/signal.h",
         "sys/socket.h",
@@ -248,6 +250,7 @@
     {
       'FILES': [
         "poll.h",
+        "sys/poll.h",
       ],
       'DEST': 'include/win',
     },

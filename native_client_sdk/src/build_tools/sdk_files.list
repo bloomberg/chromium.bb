@@ -85,6 +85,7 @@ include/ppapi_simple/*
 include/sdk_util/*
 [win]include/win/*
 include/win/poll.h
+include/win/sys/poll.h
 [linux]lib/${PLATFORM}_host/Debug/libgmock.a
 [linux]lib/${PLATFORM}_host/Debug/libgtest.a
 [linux]lib/${PLATFORM}_host/Debug/libjsoncpp.a

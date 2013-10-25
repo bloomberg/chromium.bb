@@ -2,8 +2,8 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-#ifndef LIBRARIES_NACL_IO_POLL_H_
-#define LIBRARIES_NACL_IO_POLL_H_
+#ifndef LIBRARIES_NACL_IO_INCLUDE_SYS_POLL_H_
+#define LIBRARIES_NACL_IO_INCLUDE_SYS_POLL_H_
 
 #include <stdint.h>
 
@@ -31,9 +31,8 @@ struct pollfd {
   uint16_t revents;
 };
 
-int poll (struct pollfd *__fds, nfds_t __nfds, int __timeout);
+int poll(struct pollfd *__fds, nfds_t __nfds, int __timeout);
 
 EXTERN_C_END
 
-#endif  /* LIBRARIES_NACL_IO_POLL_H_ */
-
+#endif  /* LIBRARIES_NACL_IO_INCLUDE_SYS_POLL_H_ */
