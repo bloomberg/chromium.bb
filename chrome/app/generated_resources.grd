@@ -15049,6 +15049,13 @@ Do you accept?
       Enable virtual keyboard support.
     </message>
 
+    <message name="IDS_FLAGS_ENABLE_SWIPE_SELECTION_NAME" desc="Name of about:flags option to turn on swipe selection for the virtual keyboard">
+      Swipe Selection
+    </message>
+    <message name="IDS_FLAGS_ENABLE_SWIPE_SELECTION_DESCRIPTION" desc="Description of about:flags option to turn on swipe selection for the virtual keyboard">
+      Enable Swipe Selection support for the virtual keyboard. Unless the virtual keyboard is also enabled, this will do nothing.
+    </message>
+
     <!-- Simple Cache Backend experiment. -->
     <message name="IDS_FLAGS_ENABLE_SIMPLE_CACHE_BACKEND_NAME" desc="Name of about:flags option to turn on the Simple Cache Backend">
       Simple Cache for HTTP.

@@ -1528,6 +1528,13 @@ const Experiment kExperiments[] = {
     kOsCrOS,
     SINGLE_VALUE_TYPE(keyboard::switches::kEnableVirtualKeyboard)
   },
+  {
+    "enable-swipe-selection",
+    IDS_FLAGS_ENABLE_SWIPE_SELECTION_NAME,
+    IDS_FLAGS_ENABLE_SWIPE_SELECTION_DESCRIPTION,
+    kOsCrOS,
+    SINGLE_VALUE_TYPE(keyboard::switches::kEnableSwipeSelection)
+  },
 #endif
   {
     "enable-simple-cache-backend",

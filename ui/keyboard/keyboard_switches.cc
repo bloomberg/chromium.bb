@@ -7,6 +7,8 @@
 namespace keyboard {
 namespace switches {
 
+const char kEnableSwipeSelection[] = "enable-swipe-selection";
+
 const char kEnableVirtualKeyboard[] = "enable-virtual-keyboard";
 
 }  // namespace switches

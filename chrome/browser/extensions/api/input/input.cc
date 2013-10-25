@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/api/input/input.h"
 
 #include "ash/root_window_controller.h"
+#include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string16.h"
@@ -12,6 +13,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "ui/events/event.h"
 #include "ui/keyboard/keyboard_controller.h"
+#include "ui/keyboard/keyboard_switches.h"
 
 #if defined(USE_ASH)
 #include "ash/shell.h"
@@ -43,6 +45,11 @@ bool VirtualKeyboardPrivateInsertTextFunction::RunImpl() {
 bool VirtualKeyboardPrivateMoveCursorFunction::RunImpl() {
 #if defined(USE_ASH)
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+      keyboard::switches::kEnableSwipeSelection)) {
+    return false;
+  }
 
   int swipe_direction;
   int modifier_flags;

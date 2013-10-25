@@ -10,6 +10,9 @@
 namespace keyboard {
 namespace switches {
 
+// Enables the swipe selection feature on the virtual keyboard.
+KEYBOARD_EXPORT extern const char kEnableSwipeSelection[];
+
 // Enables the virtual keyboard.
 KEYBOARD_EXPORT extern const char kEnableVirtualKeyboard[];
 
