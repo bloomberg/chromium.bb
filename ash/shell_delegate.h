@@ -42,6 +42,7 @@ class CapsLockDelegate;
 class LauncherDelegate;
 class LauncherModel;
 struct LauncherItem;
+class NewWindowDelegate;
 class RootWindowHostFactory;
 class AccessibilityDelegate;
 class SessionStateDelegate;
@@ -128,33 +129,12 @@ class ASH_EXPORT ShellDelegate {
   // Invoked when the user uses Ctrl-Shift-Q to close chrome.
   virtual void Exit() = 0;
 
-  // Invoked when the user uses Ctrl+T to open a new tab.
-  virtual void NewTab() = 0;
-
-  // Invoked when the user uses Ctrl-N or Ctrl-Shift-N to open a new window.
-  virtual void NewWindow(bool incognito) = 0;
-
   // Invoked when the user uses Shift+F4 to toggle the window fullscreen state.
   virtual void ToggleFullscreen() = 0;
-
-  // Invoked when an accelerator is used to open the file manager.
-  virtual void OpenFileManager() = 0;
-
-  // Invoked when the user opens Crosh.
-  virtual void OpenCrosh() = 0;
-
-  // Invoked when the user uses Shift+Ctrl+T to restore the closed tab.
-  virtual void RestoreTab() = 0;
-
-  // Shows the keyboard shortcut overlay.
-  virtual void ShowKeyboardOverlay() = 0;
 
   // Create a shell-specific keyboard::KeyboardControllerProxy
   virtual keyboard::KeyboardControllerProxy*
       CreateKeyboardControllerProxy() = 0;
-
-  // Shows the task manager window.
-  virtual void ShowTaskManager() = 0;
 
   // Get the current browser context. This will get us the current profile.
   virtual content::BrowserContext* GetCurrentBrowserContext() = 0;
@@ -183,11 +163,11 @@ class ASH_EXPORT ShellDelegate {
   // Creates a accessibility delegate. Shell takes ownership of the delegate.
   virtual AccessibilityDelegate* CreateAccessibilityDelegate() = 0;
 
+  // Creates an application delegate. Shell takes ownership of the delegate.
+  virtual NewWindowDelegate* CreateNewWindowDelegate() = 0;
+
   // Creates a user action client. Shell takes ownership of the object.
   virtual aura::client::UserActionClient* CreateUserActionClient() = 0;
-
-  // Opens the feedback page for "Report Issue".
-  virtual void OpenFeedbackPage() = 0;
 
   // Records that the user performed an action.
   virtual void RecordUserMetricsAction(UserMetricsAction action) = 0;

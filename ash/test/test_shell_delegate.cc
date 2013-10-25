@@ -10,6 +10,7 @@
 #include "ash/default_accessibility_delegate.h"
 #include "ash/host/root_window_host_factory.h"
 #include "ash/keyboard_controller_proxy_stub.h"
+#include "ash/new_window_delegate.h"
 #include "ash/session_state_delegate.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
@@ -26,6 +27,20 @@
 
 namespace ash {
 namespace test {
+namespace {
+
+class NewWindowDelegateImpl : public NewWindowDelegate {
+  virtual void NewTab() OVERRIDE {}
+  virtual void NewWindow(bool incognito) OVERRIDE {}
+  virtual void OpenFileManager() OVERRIDE {}
+  virtual void OpenCrosh() OVERRIDE {}
+  virtual void RestoreTab() OVERRIDE {}
+  virtual void ShowKeyboardOverlay() OVERRIDE {}
+  virtual void ShowTaskManager() OVERRIDE {}
+  virtual void OpenFeedbackPage() OVERRIDE {}
+};
+
+}  // namespace
 
 TestShellDelegate::TestShellDelegate()
     : num_exit_requests_(0),
@@ -58,33 +73,12 @@ void TestShellDelegate::Exit() {
   num_exit_requests_++;
 }
 
-void TestShellDelegate::NewTab() {
-}
-
-void TestShellDelegate::NewWindow(bool incognito) {
-}
-
 void TestShellDelegate::ToggleFullscreen() {
-}
-
-void TestShellDelegate::OpenFileManager() {
-}
-
-void TestShellDelegate::OpenCrosh() {
-}
-
-void TestShellDelegate::RestoreTab() {
-}
-
-void TestShellDelegate::ShowKeyboardOverlay() {
 }
 
 keyboard::KeyboardControllerProxy*
     TestShellDelegate::CreateKeyboardControllerProxy() {
   return new KeyboardControllerProxyStub();
-}
-
-void TestShellDelegate::ShowTaskManager() {
 }
 
 content::BrowserContext* TestShellDelegate::GetCurrentBrowserContext() {
@@ -123,11 +117,12 @@ AccessibilityDelegate* TestShellDelegate::CreateAccessibilityDelegate() {
   return new internal::DefaultAccessibilityDelegate();
 }
 
-aura::client::UserActionClient* TestShellDelegate::CreateUserActionClient() {
-  return NULL;
+NewWindowDelegate* TestShellDelegate::CreateNewWindowDelegate() {
+  return new NewWindowDelegateImpl;
 }
 
-void TestShellDelegate::OpenFeedbackPage() {
+aura::client::UserActionClient* TestShellDelegate::CreateUserActionClient() {
+  return NULL;
 }
 
 void TestShellDelegate::RecordUserMetricsAction(UserMetricsAction action) {

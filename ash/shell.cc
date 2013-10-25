@@ -36,6 +36,7 @@
 #include "ash/launcher/launcher_model_util.h"
 #include "ash/magnifier/magnification_controller.h"
 #include "ash/magnifier/partial_magnification_controller.h"
+#include "ash/new_window_delegate.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_ash.h"
 #include "ash/session_state_delegate.h"
@@ -833,6 +834,7 @@ void Shell::Init() {
 
   session_state_delegate_.reset(delegate_->CreateSessionStateDelegate());
   accessibility_delegate_.reset(delegate_->CreateAccessibilityDelegate());
+  new_window_delegate_.reset(delegate_->CreateNewWindowDelegate());
 
   if (!command_line->HasSwitch(views::corewm::switches::kNoDropShadows)) {
     resize_shadow_controller_.reset(new internal::ResizeShadowController());

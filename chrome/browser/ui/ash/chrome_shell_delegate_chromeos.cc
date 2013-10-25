@@ -4,10 +4,7 @@
 
 #include "chrome/browser/ui/ash/chrome_shell_delegate.h"
 
-#include "apps/shell_window_registry.h"
-#include "apps/ui/native_app_window.h"
 #include "ash/accessibility_delegate.h"
-#include "ash/keyboard_overlay/keyboard_overlay_view.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
@@ -19,29 +16,23 @@
 #include "chrome/browser/chromeos/display/display_preferences.h"
 #include "chrome/browser/chromeos/extensions/media_player_api.h"
 #include "chrome/browser/chromeos/extensions/media_player_event_router.h"
-#include "chrome/browser/chromeos/file_manager/app_id.h"
 #include "chrome/browser/chromeos/system/ash_system_tray_delegate.h"
-#include "chrome/browser/extensions/api/terminal/terminal_extension_helper.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/speech/tts_controller.h"
 #include "chrome/browser/ui/ash/caps_lock_delegate_chromeos.h"
+#include "chrome/browser/ui/ash/chrome_new_window_delegate_chromeos.h"
 #include "chrome/browser/ui/ash/session_state_delegate_chromeos.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/extensions/application_launch.h"
-#include "chrome/browser/ui/webui/chrome_web_contents_handler.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/common/url_constants.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager_client.h"
 #include "chromeos/ime/input_method_manager.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/user_metrics.h"
-#include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_view.h"
+#include "ui/aura/window.h"
 
 namespace {
 
@@ -171,51 +162,6 @@ void ChromeShellDelegate::Shutdown() {
       RequestShutdown();
 }
 
-void ChromeShellDelegate::OpenFileManager() {
-  using file_manager::kFileManagerAppId;
-  Profile* const profile = ProfileManager::GetDefaultProfileOrOffTheRecord();
-  const apps::ShellWindowRegistry* const registry =
-      apps::ShellWindowRegistry::Get(profile);
-  const apps::ShellWindowRegistry::ShellWindowList list =
-      registry->GetShellWindowsForApp(kFileManagerAppId);
-  if (list.empty()) {
-    // Open the new window.
-    const ExtensionService* const service = profile->GetExtensionService();
-    if (service == NULL ||
-        !service->IsExtensionEnabledForLauncher(kFileManagerAppId))
-      return;
-    const extensions::Extension* const extension =
-        service->GetInstalledExtension(kFileManagerAppId);
-    // event_flags = 0 means this invokes the same behavior as the launcher
-    // item is clicked without any keyboard modifiers.
-    OpenApplication(AppLaunchParams(
-        profile,
-        extension,
-        0 /* event_flags */,
-        chrome::HOST_DESKTOP_TYPE_ASH));
-  } else {
-    // Activate the existing window.
-    list.front()->GetBaseWindow()->Activate();
-  }
-}
-
-void ChromeShellDelegate::OpenCrosh() {
-  GURL crosh_url = extensions::TerminalExtensionHelper::GetCroshExtensionURL(
-      ProfileManager::GetDefaultProfileOrOffTheRecord());
-  if (!crosh_url.is_valid())
-    return;
-  Browser* browser = GetTargetBrowser();
-  content::WebContents* page = browser->OpenURL(
-      content::OpenURLParams(crosh_url,
-                             content::Referrer(),
-                             NEW_FOREGROUND_TAB,
-                             content::PAGE_TRANSITION_GENERATED,
-                             false));
-  browser->window()->Show();
-  browser->window()->Activate();
-  page->GetView()->Focus();
-}
-
 ash::CapsLockDelegate* ChromeShellDelegate::CreateCapsLockDelegate() {
   chromeos::input_method::XKeyboard* xkeyboard =
       chromeos::input_method::InputMethodManager::Get()->GetXKeyboard();
@@ -230,13 +176,8 @@ ash::AccessibilityDelegate* ChromeShellDelegate::CreateAccessibilityDelegate() {
   return new AccessibilityDelegateImpl;
 }
 
-void ChromeShellDelegate::ShowKeyboardOverlay() {
-  // TODO(mazda): Move the show logic to ash (http://crbug.com/124222).
-  Profile* profile = ProfileManager::GetDefaultProfileOrOffTheRecord();
-  std::string url(chrome::kChromeUIKeyboardOverlayURL);
-  ash::KeyboardOverlayView::ShowDialog(profile,
-                                       new ChromeWebContentsHandler,
-                                       GURL(url));
+ash::NewWindowDelegate* ChromeShellDelegate::CreateNewWindowDelegate() {
+  return new ChromeNewWindowDelegateChromeos;
 }
 
 ash::SystemTrayDelegate* ChromeShellDelegate::CreateSystemTrayDelegate() {

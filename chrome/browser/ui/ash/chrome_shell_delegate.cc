@@ -6,37 +6,26 @@
 
 #include "apps/shell_window.h"
 #include "apps/shell_window_registry.h"
-#include "apps/ui/native_app_window.h"
 #include "ash/host/root_window_host_factory.h"
 #include "ash/magnifier/magnifier_constants.h"
-#include "ash/session_state_delegate.h"
-#include "ash/system/tray/system_tray_delegate.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
-#include "base/prefs/pref_service.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/sessions/tab_restore_service.h"
-#include "chrome/browser/sessions/tab_restore_service_factory.h"
-#include "chrome/browser/sessions/tab_restore_service_observer.h"
 #include "chrome/browser/ui/app_list/app_list_view_delegate.h"
 #include "chrome/browser/ui/ash/app_list/app_list_controller_ash.h"
 #include "chrome/browser/ui/ash/ash_keyboard_controller_proxy.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/launcher_context_menu.h"
 #include "chrome/browser/ui/ash/user_action_handler.h"
-#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/host_desktop.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/user_metrics.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
-#include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_CHROMEOS)
@@ -46,57 +35,6 @@
 
 // static
 ChromeShellDelegate* ChromeShellDelegate::instance_ = NULL;
-
-namespace {
-
-void RestoreTabUsingProfile(Profile* profile) {
-  TabRestoreService* service = TabRestoreServiceFactory::GetForProfile(profile);
-  service->RestoreMostRecentEntry(NULL, chrome::HOST_DESKTOP_TYPE_ASH);
-}
-
-}  // namespace
-
-// TabRestoreHelper is used to restore a tab. In particular when the user
-// attempts to a restore a tab if the TabRestoreService hasn't finished loading
-// this waits for it. Once the TabRestoreService finishes loading the tab is
-// restored.
-class ChromeShellDelegate::TabRestoreHelper : public TabRestoreServiceObserver {
- public:
-  TabRestoreHelper(ChromeShellDelegate* delegate,
-                   Profile* profile,
-                   TabRestoreService* service)
-      : delegate_(delegate),
-        profile_(profile),
-        tab_restore_service_(service) {
-    tab_restore_service_->AddObserver(this);
-  }
-
-  virtual ~TabRestoreHelper() {
-    tab_restore_service_->RemoveObserver(this);
-  }
-
-  TabRestoreService* tab_restore_service() { return tab_restore_service_; }
-
-  virtual void TabRestoreServiceChanged(TabRestoreService* service) OVERRIDE {
-  }
-  virtual void TabRestoreServiceDestroyed(TabRestoreService* service) OVERRIDE {
-    // This destroys us.
-    delegate_->tab_restore_helper_.reset();
-  }
-
-  virtual void TabRestoreServiceLoaded(TabRestoreService* service) OVERRIDE {
-    RestoreTabUsingProfile(profile_);
-    // This destroys us.
-    delegate_->tab_restore_helper_.reset();
-  }
-
- private:
-  ChromeShellDelegate* delegate_;
-  Profile* profile_;
-  TabRestoreService* tab_restore_service_;
-
-  DISALLOW_COPY_AND_ASSIGN(TabRestoreHelper);
-};
 
 ChromeShellDelegate::ChromeShellDelegate()
     : launcher_delegate_(NULL) {
@@ -132,23 +70,6 @@ bool ChromeShellDelegate::IsRunningInForcedAppMode() const {
 
 void ChromeShellDelegate::Exit() {
   chrome::AttemptUserExit();
-}
-
-void ChromeShellDelegate::NewTab() {
-  Browser* browser = GetTargetBrowser();
-  // If the browser was not active, we call BrowserWindow::Show to make it
-  // visible. Otherwise, we let Browser::NewTab handle the active window change.
-  const bool was_active = browser->window()->IsActive();
-  chrome::NewTab(browser);
-  if (!was_active)
-    browser->window()->Show();
-}
-
-void ChromeShellDelegate::NewWindow(bool is_incognito) {
-  Profile* profile = ProfileManager::GetDefaultProfileOrOffTheRecord();
-  chrome::NewEmptyWindow(
-      is_incognito ? profile->GetOffTheRecordProfile() : profile,
-      chrome::HOST_DESKTOP_TYPE_ASH);
 }
 
 void ChromeShellDelegate::ToggleFullscreen() {
@@ -200,35 +121,6 @@ void ChromeShellDelegate::ToggleFullscreen() {
   }
 }
 
-void ChromeShellDelegate::RestoreTab() {
-  if (tab_restore_helper_.get()) {
-    DCHECK(!tab_restore_helper_->tab_restore_service()->IsLoaded());
-    return;
-  }
-
-  Browser* browser = chrome::FindBrowserWithWindow(ash::wm::GetActiveWindow());
-  Profile* profile = browser ? browser->profile() : NULL;
-  if (!profile)
-    profile = ProfileManager::GetDefaultProfileOrOffTheRecord();
-  if (profile->IsOffTheRecord())
-    return;
-  TabRestoreService* service =
-      TabRestoreServiceFactory::GetForProfile(profile);
-  if (!service)
-    return;
-
-  if (service->IsLoaded()) {
-    RestoreTabUsingProfile(profile);
-  } else {
-    tab_restore_helper_.reset(new TabRestoreHelper(this, profile, service));
-    service->LoadTabsFromLastSession();
-  }
-}
-
-void ChromeShellDelegate::ShowTaskManager() {
-  chrome::OpenTaskManager(NULL);
-}
-
 content::BrowserContext* ChromeShellDelegate::GetCurrentBrowserContext() {
   return ProfileManager::GetDefaultProfile();
 }
@@ -259,10 +151,6 @@ ash::LauncherDelegate* ChromeShellDelegate::CreateLauncherDelegate(
 
 aura::client::UserActionClient* ChromeShellDelegate::CreateUserActionClient() {
   return new UserActionHandler;
-}
-
-void ChromeShellDelegate::OpenFeedbackPage() {
-  chrome::OpenFeedbackDialog(GetTargetBrowserIfAvailable());
 }
 
 void ChromeShellDelegate::RecordUserMetricsAction(
@@ -433,19 +321,6 @@ ash::RootWindowHostFactory* ChromeShellDelegate::CreateRootWindowHostFactory() {
 
 string16 ChromeShellDelegate::GetProductName() const {
   return l10n_util::GetStringUTF16(IDS_PRODUCT_NAME);
-}
-
-Browser* ChromeShellDelegate::GetTargetBrowser() {
-  Browser* browser = GetTargetBrowserIfAvailable();
-  if (browser)
-    return browser;
-  return chrome::FindOrCreateTabbedBrowser(
-      ProfileManager::GetDefaultProfileOrOffTheRecord(),
-      chrome::HOST_DESKTOP_TYPE_ASH);
-}
-
-Browser* ChromeShellDelegate::GetTargetBrowserIfAvailable() {
-  return chrome::FindBrowserWithWindow(ash::wm::GetActiveWindow());
 }
 
 keyboard::KeyboardControllerProxy*

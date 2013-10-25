@@ -10,6 +10,7 @@
 #include "ash/default_user_wallpaper_delegate.h"
 #include "ash/host/root_window_host_factory.h"
 #include "ash/keyboard_controller_proxy_stub.h"
+#include "ash/new_window_delegate.h"
 #include "ash/session_state_delegate.h"
 #include "ash/session_state_delegate_stub.h"
 #include "ash/shell/context_menu.h"
@@ -25,6 +26,32 @@
 
 namespace ash {
 namespace shell {
+namespace {
+
+class NewWindowDelegateImpl : public NewWindowDelegate {
+ public:
+  NewWindowDelegateImpl() {}
+  virtual ~NewWindowDelegateImpl() {}
+
+  virtual void NewTab() OVERRIDE {}
+  virtual void NewWindow(bool incognito) OVERRIDE {
+    ash::shell::ToplevelWindow::CreateParams create_params;
+    create_params.can_resize = true;
+    create_params.can_maximize = true;
+    ash::shell::ToplevelWindow::CreateToplevelWindow(create_params);
+  }
+  virtual void OpenFileManager() OVERRIDE {}
+  virtual void OpenCrosh() OVERRIDE {}
+  virtual void RestoreTab() OVERRIDE {}
+  virtual void ShowKeyboardOverlay() OVERRIDE {}
+  virtual void ShowTaskManager() OVERRIDE {}
+  virtual void OpenFeedbackPage() OVERRIDE {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(NewWindowDelegateImpl);
+};
+
+}  // namespace
 
 ShellDelegateImpl::ShellDelegateImpl()
     : watcher_(NULL),
@@ -62,16 +89,6 @@ void ShellDelegateImpl::Exit() {
   base::MessageLoopForUI::current()->Quit();
 }
 
-void ShellDelegateImpl::NewTab() {
-}
-
-void ShellDelegateImpl::NewWindow(bool incognito) {
-  ash::shell::ToplevelWindow::CreateParams create_params;
-  create_params.can_resize = true;
-  create_params.can_maximize = true;
-  ash::shell::ToplevelWindow::CreateToplevelWindow(create_params);
-}
-
 void ShellDelegateImpl::ToggleFullscreen() {
   // TODO(oshima): Remove this when crbug.com/309837 is implemented.
   wm::WindowState* window_state = wm::GetActiveWindowState();
@@ -79,24 +96,9 @@ void ShellDelegateImpl::ToggleFullscreen() {
     window_state->ToggleMaximized();
 }
 
-void ShellDelegateImpl::OpenFileManager() {
-}
-
-void ShellDelegateImpl::OpenCrosh() {
-}
-
-void ShellDelegateImpl::RestoreTab() {
-}
-
-void ShellDelegateImpl::ShowKeyboardOverlay() {
-}
-
 keyboard::KeyboardControllerProxy*
     ShellDelegateImpl::CreateKeyboardControllerProxy() {
   return new KeyboardControllerProxyStub();
-}
-
-void ShellDelegateImpl::ShowTaskManager() {
 }
 
 content::BrowserContext* ShellDelegateImpl::GetCurrentBrowserContext() {
@@ -133,11 +135,12 @@ ash::AccessibilityDelegate* ShellDelegateImpl::CreateAccessibilityDelegate() {
   return new internal::DefaultAccessibilityDelegate;
 }
 
-aura::client::UserActionClient* ShellDelegateImpl::CreateUserActionClient() {
-  return NULL;
+ash::NewWindowDelegate* ShellDelegateImpl::CreateNewWindowDelegate() {
+  return new NewWindowDelegateImpl;
 }
 
-void ShellDelegateImpl::OpenFeedbackPage() {
+aura::client::UserActionClient* ShellDelegateImpl::CreateUserActionClient() {
+  return NULL;
 }
 
 void ShellDelegateImpl::RecordUserMetricsAction(UserMetricsAction action) {

@@ -36,16 +36,9 @@ class TestShellDelegate : public ShellDelegate {
   virtual void PreInit() OVERRIDE;
   virtual void Shutdown() OVERRIDE;
   virtual void Exit() OVERRIDE;
-  virtual void NewTab() OVERRIDE;
-  virtual void NewWindow(bool incognito) OVERRIDE;
   virtual void ToggleFullscreen() OVERRIDE;
-  virtual void OpenFileManager() OVERRIDE;
-  virtual void OpenCrosh() OVERRIDE;
-  virtual void RestoreTab() OVERRIDE;
-  virtual void ShowKeyboardOverlay() OVERRIDE;
   virtual keyboard::KeyboardControllerProxy*
       CreateKeyboardControllerProxy() OVERRIDE;
-  virtual void ShowTaskManager() OVERRIDE;
   virtual content::BrowserContext* GetCurrentBrowserContext() OVERRIDE;
   virtual app_list::AppListViewDelegate* CreateAppListViewDelegate() OVERRIDE;
   virtual LauncherDelegate* CreateLauncherDelegate(
@@ -55,8 +48,8 @@ class TestShellDelegate : public ShellDelegate {
   virtual CapsLockDelegate* CreateCapsLockDelegate() OVERRIDE;
   virtual SessionStateDelegate* CreateSessionStateDelegate() OVERRIDE;
   virtual AccessibilityDelegate* CreateAccessibilityDelegate() OVERRIDE;
+  virtual NewWindowDelegate* CreateNewWindowDelegate() OVERRIDE;
   virtual aura::client::UserActionClient* CreateUserActionClient() OVERRIDE;
-  virtual void OpenFeedbackPage() OVERRIDE;
   virtual void RecordUserMetricsAction(UserMetricsAction action) OVERRIDE;
   virtual void HandleMediaNextTrack() OVERRIDE;
   virtual void HandleMediaPlayPause() OVERRIDE;

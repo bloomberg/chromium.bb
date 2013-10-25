@@ -89,14 +89,15 @@ class LauncherDelegate;
 class LauncherItemDelegate;
 class LauncherItemDelegateManager;
 class LauncherModel;
+class LockStateController;
 class MagnificationController;
 class MruWindowTracker;
 class NestedDispatcherController;
+class NewWindowDelegate;
 class PartialMagnificationController;
 class PowerButtonController;
 class RootWindowHostFactory;
 class ScreenAsh;
-class LockStateController;
 class SessionStateDelegate;
 class ShellDelegate;
 class ShellObserver;
@@ -371,6 +372,10 @@ class ASH_EXPORT Shell
     return accessibility_delegate_.get();
   }
 
+  NewWindowDelegate* new_window_delegate() {
+    return new_window_delegate_.get();
+  }
+
   HighContrastController* high_contrast_controller() {
     return high_contrast_controller_.get();
   }
@@ -579,6 +584,7 @@ class ASH_EXPORT Shell
   scoped_ptr<CapsLockDelegate> caps_lock_delegate_;
   scoped_ptr<SessionStateDelegate> session_state_delegate_;
   scoped_ptr<AccessibilityDelegate> accessibility_delegate_;
+  scoped_ptr<NewWindowDelegate> new_window_delegate_;
   scoped_ptr<LauncherDelegate> launcher_delegate_;
   scoped_ptr<LauncherItemDelegateManager> launcher_item_delegate_manager_;
 

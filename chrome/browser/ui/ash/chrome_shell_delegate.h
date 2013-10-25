@@ -26,6 +26,7 @@ class KeyboardControllerProxy;
 }
 
 class ChromeLauncherController;
+class ChromeNewWindowDelegate;
 
 class ChromeShellDelegate : public ash::ShellDelegate,
                             public content::NotificationObserver {
@@ -42,16 +43,9 @@ class ChromeShellDelegate : public ash::ShellDelegate,
   virtual void PreInit() OVERRIDE;
   virtual void Shutdown() OVERRIDE;
   virtual void Exit() OVERRIDE;
-  virtual void NewTab() OVERRIDE;
-  virtual void NewWindow(bool is_incognito) OVERRIDE;
   virtual void ToggleFullscreen() OVERRIDE;
-  virtual void OpenFileManager() OVERRIDE;
-  virtual void OpenCrosh() OVERRIDE;
-  virtual void RestoreTab() OVERRIDE;
-  virtual void ShowKeyboardOverlay() OVERRIDE;
   virtual keyboard::KeyboardControllerProxy*
       CreateKeyboardControllerProxy() OVERRIDE;
-  virtual void ShowTaskManager() OVERRIDE;
   virtual content::BrowserContext* GetCurrentBrowserContext() OVERRIDE;
   virtual app_list::AppListViewDelegate* CreateAppListViewDelegate() OVERRIDE;
   virtual ash::LauncherDelegate* CreateLauncherDelegate(
@@ -61,8 +55,8 @@ class ChromeShellDelegate : public ash::ShellDelegate,
   virtual ash::CapsLockDelegate* CreateCapsLockDelegate() OVERRIDE;
   virtual ash::SessionStateDelegate* CreateSessionStateDelegate() OVERRIDE;
   virtual ash::AccessibilityDelegate* CreateAccessibilityDelegate() OVERRIDE;
+  virtual ash::NewWindowDelegate* CreateNewWindowDelegate() OVERRIDE;
   virtual aura::client::UserActionClient* CreateUserActionClient() OVERRIDE;
-  virtual void OpenFeedbackPage() OVERRIDE;
   virtual void RecordUserMetricsAction(ash::UserMetricsAction action) OVERRIDE;
   virtual void HandleMediaNextTrack() OVERRIDE;
   virtual void HandleMediaPlayPause() OVERRIDE;
@@ -77,26 +71,13 @@ class ChromeShellDelegate : public ash::ShellDelegate,
                        const content::NotificationDetails& details) OVERRIDE;
 
  private:
-  class TabRestoreHelper;
-
   void PlatformInit();
-
-  // Returns the browser for active ash window if any. Otherwise it searches
-  // for a browser or create one for default profile and returns it.
-  Browser* GetTargetBrowser();
-
-  // This returns the active ash window if any. Unlike the method above, it
-  // does not create a window if one isn't available, instead it returns NULL
-  // in that case.
-  Browser* GetTargetBrowserIfAvailable();
 
   static ChromeShellDelegate* instance_;
 
   content::NotificationRegistrar registrar_;
 
   ChromeLauncherController* launcher_delegate_;
-
-  scoped_ptr<TabRestoreHelper> tab_restore_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeShellDelegate);
 };

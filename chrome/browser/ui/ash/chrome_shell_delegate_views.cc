@@ -12,6 +12,7 @@
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/caps_lock_delegate_views.h"
+#include "chrome/browser/ui/ash/chrome_new_window_delegate.h"
 #include "chrome/browser/ui/ash/session_state_delegate_views.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -28,12 +29,30 @@
 
 namespace {
 
+class NewWindowDelegateImpl : public ChromeNewWindowDelegate {
+ public:
+  NewWindowDelegateImpl() {}
+  virtual ~NewWindowDelegateImpl() {}
+
+  // Overridden from ash::NewWindowDelegate:
+  virtual void OpenFileManager() OVERRIDE {}
+  virtual void OpenCrosh() OVERRIDE {}
+  virtual void ShowKeyboardOverlay() OVERRIDE {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(NewWindowDelegateImpl);
+};
+
 class EmptyAccessibilityDelegate : public ash::AccessibilityDelegate {
  public:
   EmptyAccessibilityDelegate() {}
   virtual ~EmptyAccessibilityDelegate() {}
 
   virtual void ToggleHighContrast() OVERRIDE {
+  }
+
+  virtual bool IsHighContrastEnabled() const OVERRIDE {
+    return false;
   }
 
   virtual bool IsSpokenFeedbackEnabled() const OVERRIDE {
@@ -48,10 +67,6 @@ class EmptyAccessibilityDelegate : public ash::AccessibilityDelegate {
   }
 
   virtual bool IsLargeCursorEnabled() const OVERRIDE {
-    return false;
-  }
-
-  virtual bool IsHighContrastEnabled() const OVERRIDE {
     return false;
   }
 
@@ -106,13 +121,8 @@ void ChromeShellDelegate::PreInit() {
 void ChromeShellDelegate::Shutdown() {
 }
 
-void ChromeShellDelegate::OpenFileManager() {
-}
-
-void ChromeShellDelegate::OpenCrosh() {
-}
-
-void ChromeShellDelegate::ShowKeyboardOverlay() {
+ash::NewWindowDelegate* ChromeShellDelegate::CreateNewWindowDelegate() {
+  return new NewWindowDelegateImpl;
 }
 
 ash::CapsLockDelegate* ChromeShellDelegate::CreateCapsLockDelegate() {
@@ -181,7 +191,7 @@ void ChromeShellDelegate::Observe(int type,
                             true,
                             chrome::HOST_DESKTOP_TYPE_ASH);
       } else {
-        Browser* browser = GetTargetBrowser();
+        Browser* browser = ChromeNewWindowDelegate::GetTargetBrowser();
         chrome::AddBlankTabAt(browser, -1, true);
         browser->window()->Show();
       }
