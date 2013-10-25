@@ -450,4 +450,13 @@ bool ImageResource::currentFrameKnownToBeOpaque(const RenderObject* renderer)
     return image->currentFrameKnownToBeOpaque();
 }
 
+bool ImageResource::isAccessAllowed(SecurityOrigin* securityOrigin)
+{
+    if (!image()->currentFrameHasSingleSecurityOrigin())
+        return false;
+    if (passesAccessControlCheck(securityOrigin))
+        return true;
+    return !securityOrigin->taintsCanvas(response().url());
+}
+
 } // namespace WebCore

@@ -24,6 +24,7 @@
 #include "FetchInitiatorTypeNames.h"
 #include "core/css/CSSParser.h"
 #include "core/dom/Document.h"
+#include "core/fetch/CrossOriginAccessControl.h"
 #include "core/fetch/FetchRequest.h"
 #include "core/fetch/ImageResource.h"
 #include "core/fetch/ResourceFetcher.h"
@@ -67,6 +68,10 @@ StyleFetchedImage* CSSImageValue::cachedImage(ResourceFetcher* loader, const Res
         m_accessedImage = true;
 
         FetchRequest request(ResourceRequest(loader->document()->completeURL(m_url)), m_initiatorName.isEmpty() ? FetchInitiatorTypeNames::css : m_initiatorName, options);
+
+        if (options.requestOriginPolicy == PotentiallyCrossOriginEnabled)
+            updateRequestForAccessControl(request.mutableResourceRequest(), loader->document()->securityOrigin(), options.allowCredentials);
+
         if (ResourcePtr<ImageResource> cachedImage = loader->fetchImage(request))
             m_image = StyleFetchedImage::create(cachedImage.get());
     }

@@ -115,7 +115,8 @@ void StyleResourceLoader::loadPendingShapeImage(RenderStyle* renderStyle, ShapeV
     CSSImageValue* cssImageValue =  pendingImage->cssImageValue();
 
     ResourceLoaderOptions options = ResourceFetcher::defaultResourceOptions();
-    options.requestOriginPolicy = RestrictToSameOrigin;
+    options.requestOriginPolicy = PotentiallyCrossOriginEnabled;
+    options.allowCredentials = DoNotAllowStoredCredentials;
 
     shapeValue->setImage(cssImageValue->cachedImage(m_fetcher, options));
 }

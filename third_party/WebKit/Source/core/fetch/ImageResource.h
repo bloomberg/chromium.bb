@@ -39,6 +39,7 @@ class FloatSize;
 class Length;
 class MemoryCache;
 class RenderObject;
+class SecurityOrigin;
 
 class ImageResource : public Resource, public ImageObserver {
     friend class MemoryCache;
@@ -72,6 +73,8 @@ public:
     // This method takes a zoom multiplier that can be used to increase the natural size of the image by the zoom.
     LayoutSize imageSizeForRenderer(const RenderObject*, float multiplier, SizeType = NormalSize); // returns the size of the complete image.
     void computeIntrinsicDimensions(Length& intrinsicWidth, Length& intrinsicHeight, FloatSize& intrinsicRatio);
+
+    bool isAccessAllowed(SecurityOrigin*);
 
     virtual void didAddClient(ResourceClient*);
     virtual void didRemoveClient(ResourceClient*);

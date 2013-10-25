@@ -80,15 +80,6 @@ static const int defaultFontSize = 10;
 static const char* const defaultFontFamily = "sans-serif";
 static const char* const defaultFont = "10px sans-serif";
 
-static bool isOriginClean(ImageResource* cachedImage, SecurityOrigin* securityOrigin)
-{
-    if (!cachedImage->image()->currentFrameHasSingleSecurityOrigin())
-        return false;
-    if (cachedImage->passesAccessControlCheck(securityOrigin))
-        return true;
-    return !securityOrigin->taintsCanvas(cachedImage->response().url());
-}
-
 CanvasRenderingContext2D::CanvasRenderingContext2D(HTMLCanvasElement* canvas, const Canvas2DContextAttributes* attrs, bool usesCSSCompatibilityParseMode)
     : CanvasRenderingContext(canvas)
     , m_stateStack(1)
@@ -1757,7 +1748,7 @@ PassRefPtr<CanvasPattern> CanvasRenderingContext2D::createPattern(HTMLImageEleme
     if (!image->renderer() && imageForRendering->usesContainerSize())
         imageForRendering->setContainerSize(imageForRendering->size());
 
-    bool originClean = isOriginClean(cachedImage, canvas()->securityOrigin());
+    bool originClean = cachedImage->isAccessAllowed(canvas()->securityOrigin());
     return CanvasPattern::create(imageForRendering, repeatX, repeatY, originClean);
 }
 

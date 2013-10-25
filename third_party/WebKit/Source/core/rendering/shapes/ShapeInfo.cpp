@@ -35,6 +35,22 @@
 #include "core/rendering/style/RenderStyle.h"
 
 namespace WebCore {
+
+template<class RenderType>
+bool ShapeInfo<RenderType>::checkImageOrigin(const RenderType* renderer, const StyleImage* styleImage)
+{
+    ASSERT(styleImage && styleImage->isImageResource() && styleImage->cachedImage() && styleImage->cachedImage()->image());
+
+    bool accessAllowed = styleImage->cachedImage()->isAccessAllowed(renderer->document().securityOrigin());
+    if (!accessAllowed) {
+        const KURL& url = styleImage->cachedImage()->url();
+        String urlString = url.isNull() ? "''" : url.elidedString();
+        renderer->document().addConsoleMessage(SecurityMessageSource, ErrorMessageLevel, "Unsafe attempt to load URL " + urlString + ".");
+        return false;
+    }
+    return true;
+}
+
 template<class RenderType>
 const Shape* ShapeInfo<RenderType>::computedShape() const
 {
