@@ -4,12 +4,11 @@
 
 #include "content/child/npapi/np_channel_base.h"
 
-#include <stack>
-
 #include "base/auto_reset.h"
 #include "base/containers/hash_tables.h"
 #include "base/lazy_instance.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/threading/thread_local.h"
 #include "ipc/ipc_sync_message.h"
 
 #if defined(OS_POSIX)
@@ -18,13 +17,47 @@
 
 namespace content {
 
-typedef base::hash_map<std::string, scoped_refptr<NPChannelBase> > ChannelMap;
-static base::LazyInstance<ChannelMap>::Leaky
-     g_channels = LAZY_INSTANCE_INITIALIZER;
+namespace {
 
-typedef std::stack<scoped_refptr<NPChannelBase> > NPChannelRefStack;
-static base::LazyInstance<NPChannelRefStack>::Leaky
-    g_lazy_channel_stack = LAZY_INSTANCE_INITIALIZER;
+typedef base::hash_map<std::string, scoped_refptr<NPChannelBase> > ChannelMap;
+
+struct ChannelGlobals {
+  ChannelMap channel_map;
+  scoped_refptr<NPChannelBase> current_channel;
+};
+
+#if defined(OS_ANDROID)
+// Workaround for http://crbug.com/298179 - NPChannelBase is only intended
+// for use on one thread per process. Using TLS to store the globals removes the
+// worst thread hostility in this class, especially needed for webview which
+// runs in single-process mode. TODO(joth): Make a complete fix, most likely
+// as part of addressing http://crbug.com/258510.
+base::LazyInstance<base::ThreadLocalPointer<ChannelGlobals> >::Leaky
+    g_channels_tls_ptr = LAZY_INSTANCE_INITIALIZER;
+
+ChannelGlobals* GetChannelGlobals() {
+  ChannelGlobals* globals = g_channels_tls_ptr.Get().Get();
+  if (!globals) {
+    globals = new ChannelGlobals;
+    g_channels_tls_ptr.Get().Set(globals);
+  }
+  return globals;
+}
+
+#else
+
+base::LazyInstance<ChannelGlobals>::Leaky g_channels_globals =
+    LAZY_INSTANCE_INITIALIZER;
+
+ChannelGlobals* GetChannelGlobals() { return g_channels_globals.Pointer(); }
+
+#endif  // OS_ANDROID
+
+ChannelMap* GetChannelMap() {
+  return &GetChannelGlobals()->channel_map;
+}
+
+}  // namespace
 
 NPChannelBase* NPChannelBase::GetChannel(
     const IPC::ChannelHandle& channel_handle, IPC::Channel::Mode mode,
@@ -32,8 +65,8 @@ NPChannelBase* NPChannelBase::GetChannel(
     bool create_pipe_now, base::WaitableEvent* shutdown_event) {
   scoped_refptr<NPChannelBase> channel;
   std::string channel_key = channel_handle.name;
-  ChannelMap::const_iterator iter = g_channels.Get().find(channel_key);
-  if (iter == g_channels.Get().end()) {
+  ChannelMap::const_iterator iter = GetChannelMap()->find(channel_key);
+  if (iter == GetChannelMap()->end()) {
     channel = factory();
   } else {
     channel = iter->second;
@@ -49,7 +82,7 @@ NPChannelBase* NPChannelBase::GetChannel(
     }
     channel->mode_ = mode;
     if (channel->Init(ipc_message_loop, create_pipe_now, shutdown_event)) {
-      g_channels.Get()[channel_key] = channel;
+      (*GetChannelMap())[channel_key] = channel;
     } else {
       channel = NULL;
     }
@@ -59,8 +92,8 @@ NPChannelBase* NPChannelBase::GetChannel(
 }
 
 void NPChannelBase::Broadcast(IPC::Message* message) {
-  for (ChannelMap::iterator iter = g_channels.Get().begin();
-       iter != g_channels.Get().end();
+  for (ChannelMap::iterator iter = GetChannelMap()->begin();
+       iter != GetChannelMap()->end();
        ++iter) {
     iter->second->Send(new IPC::Message(*message));
   }
@@ -88,15 +121,15 @@ NPChannelBase::~NPChannelBase() {
 }
 
 NPChannelBase* NPChannelBase::GetCurrentChannel() {
-  return g_lazy_channel_stack.Pointer()->top().get();
+  return GetChannelGlobals()->current_channel.get();
 }
 
 void NPChannelBase::CleanupChannels() {
   // Make a copy of the references as we can't iterate the map since items will
   // be removed from it as we clean them up.
   std::vector<scoped_refptr<NPChannelBase> > channels;
-  for (ChannelMap::const_iterator iter = g_channels.Get().begin();
-       iter != g_channels.Get().end();
+  for (ChannelMap::const_iterator iter = GetChannelMap()->begin();
+       iter != GetChannelMap()->end();
        ++iter) {
     channels.push_back(iter->second);
   }
@@ -106,7 +139,7 @@ void NPChannelBase::CleanupChannels() {
 
   // This will clean up channels added to the map for which subsequent
   // AddRoute wasn't called
-  g_channels.Get().clear();
+  GetChannelMap()->clear();
 }
 
 NPObjectBase* NPChannelBase::GetNPObjectListenerForRoute(int route_id) {
@@ -164,14 +197,15 @@ bool NPChannelBase::Send(IPC::Message* message) {
 }
 
 int NPChannelBase::Count() {
-  return static_cast<int>(g_channels.Get().size());
+  return static_cast<int>(GetChannelMap()->size());
 }
 
 bool NPChannelBase::OnMessageReceived(const IPC::Message& message) {
-  // This call might cause us to be deleted, so keep an extra reference to
-  // ourself so that we can send the reply and decrement back in_dispatch_.
-  g_lazy_channel_stack.Pointer()->push(
-      scoped_refptr<NPChannelBase>(this));
+  // Push this channel as the current channel being processed. This also forms
+  // a stack of scoped_refptr avoiding ourselves (or any instance higher
+  // up the callstack) from being deleted while processing a message.
+  base::AutoReset<scoped_refptr<NPChannelBase> > keep_alive(
+      &GetChannelGlobals()->current_channel, this);
 
   bool handled;
   if (message.should_unblock())
@@ -191,7 +225,6 @@ bool NPChannelBase::OnMessageReceived(const IPC::Message& message) {
   if (message.should_unblock())
     in_unblock_dispatch_--;
 
-  g_lazy_channel_stack.Pointer()->pop();
   return handled;
 }
 
@@ -242,10 +275,10 @@ void NPChannelBase::RemoveRoute(int route_id) {
       }
     }
 
-    for (ChannelMap::iterator iter = g_channels.Get().begin();
-         iter != g_channels.Get().end(); ++iter) {
+    for (ChannelMap::iterator iter = GetChannelMap()->begin();
+         iter != GetChannelMap()->end(); ++iter) {
       if (iter->second.get() == this) {
-        g_channels.Get().erase(iter);
+        GetChannelMap()->erase(iter);
         return;
       }
     }
@@ -267,12 +300,12 @@ void NPChannelBase::OnChannelError() {
   // Once an error is seen on a channel, remap the channel to prevent
   // it from being vended again.  Keep the channel in the map so
   // RemoveRoute() can clean things up correctly.
-  for (ChannelMap::iterator iter = g_channels.Get().begin();
-       iter != g_channels.Get().end(); ++iter) {
+  for (ChannelMap::iterator iter = GetChannelMap()->begin();
+       iter != GetChannelMap()->end(); ++iter) {
     if (iter->second.get() == this) {
       // Insert new element before invalidating |iter|.
-      g_channels.Get()[iter->first + "-error"] = iter->second;
-      g_channels.Get().erase(iter);
+      (*GetChannelMap())[iter->first + "-error"] = iter->second;
+      GetChannelMap()->erase(iter);
       break;
     }
   }
