@@ -5,10 +5,6 @@
 #ifndef WEBKIT_RENDERER_COMPOSITOR_BINDINGS_WEB_FILTER_ANIMATION_CURVE_IMPL_H_
 #define WEBKIT_RENDERER_COMPOSITOR_BINDINGS_WEB_FILTER_ANIMATION_CURVE_IMPL_H_
 
-#include "third_party/WebKit/public/platform/WebAnimationCurve.h"
-
-#if WEB_FILTER_ANIMATION_CURVE_IS_DEFINED
-
 #include "base/memory/scoped_ptr.h"
 #include "third_party/WebKit/public/platform/WebFilterAnimationCurve.h"
 #include "webkit/renderer/compositor_bindings/webkit_compositor_bindings_export.h"
@@ -32,7 +28,6 @@ class WebFilterAnimationCurveImpl
   virtual AnimationCurveType type() const;
 
   // WebKit::WebFilterAnimationCurve implementation.
-  virtual void add(const WebKit::WebFilterKeyframe& keyframe);
   virtual void add(const WebKit::WebFilterKeyframe& keyframe,
                    TimingFunctionType type);
   virtual void add(const WebKit::WebFilterKeyframe& keyframe,
@@ -50,7 +45,5 @@ class WebFilterAnimationCurveImpl
 };
 
 }  // namespace webkit
-
-#endif  // WEB_FILTER_ANIMATION_CURVE_IS_DEFINED
 
 #endif  // WEBKIT_RENDERER_COMPOSITOR_BINDINGS_WEB_FILTER_ANIMATION_CURVE_IMPL_H_

@@ -7,7 +7,6 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop_proxy.h"
-#include "third_party/WebKit/public/platform/WebAnimationCurve.h"
 #include "third_party/WebKit/public/platform/WebCompositorSupport.h"
 #include "third_party/WebKit/public/platform/WebLayer.h"
 #include "third_party/WebKit/public/platform/WebTransformOperations.h"
@@ -42,9 +41,7 @@ class WebCompositorSupportImpl : public WebKit::WebCompositorSupport {
       const WebKit::WebAnimationCurve& curve,
       WebKit::WebAnimation::TargetProperty target,
       int animation_id);
-#if WEB_FILTER_ANIMATION_CURVE_IS_DEFINED
   virtual WebKit::WebFilterAnimationCurve* createFilterAnimationCurve();
-#endif
   virtual WebKit::WebFloatAnimationCurve* createFloatAnimationCurve();
   virtual WebKit::WebTransformAnimationCurve* createTransformAnimationCurve();
   virtual WebKit::WebTransformOperations* createTransformOperations();

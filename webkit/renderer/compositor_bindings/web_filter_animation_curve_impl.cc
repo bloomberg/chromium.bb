@@ -4,8 +4,6 @@
 
 #include "webkit/renderer/compositor_bindings/web_filter_animation_curve_impl.h"
 
-#if WEB_FILTER_ANIMATION_CURVE_IS_DEFINED
-
 #include "cc/animation/keyframed_animation_curve.h"
 #include "cc/animation/timing_function.h"
 #include "cc/output/filter_operations.h"
@@ -24,10 +22,6 @@ WebFilterAnimationCurveImpl::~WebFilterAnimationCurveImpl() {}
 WebKit::WebAnimationCurve::AnimationCurveType
 WebFilterAnimationCurveImpl::type() const {
   return WebAnimationCurve::AnimationCurveTypeFilter;
-}
-
-void WebFilterAnimationCurveImpl::add(const WebFilterKeyframe& keyframe) {
-  add(keyframe, TimingFunctionTypeEase);
 }
 
 void WebFilterAnimationCurveImpl::add(const WebFilterKeyframe& keyframe,
@@ -60,5 +54,3 @@ WebFilterAnimationCurveImpl::CloneToAnimationCurve() const {
 }
 
 }  // namespace webkit
-
-#endif  // WEB_FILTER_ANIMATION_CURVE_IS_DEFINED

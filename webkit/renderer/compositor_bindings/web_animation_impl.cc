@@ -45,14 +45,12 @@ WebAnimationImpl::WebAnimationImpl(const WebAnimationCurve& web_curve,
       curve = transform_curve_impl->CloneToAnimationCurve();
       break;
     }
-#if WEB_FILTER_ANIMATION_CURVE_IS_DEFINED
     case WebAnimationCurve::AnimationCurveTypeFilter: {
       const WebFilterAnimationCurveImpl* filter_curve_impl =
           static_cast<const WebFilterAnimationCurveImpl*>(&web_curve);
       curve = filter_curve_impl->CloneToAnimationCurve();
       break;
     }
-#endif
   }
   animation_ = Animation::Create(
       curve.Pass(),
@@ -109,9 +107,7 @@ COMPILE_ASSERT_MATCHING_ENUMS(
     WebAnimation::TargetPropertyTransform, Animation::Transform);
 COMPILE_ASSERT_MATCHING_ENUMS(
     WebAnimation::TargetPropertyOpacity, Animation::Opacity);
-#if WEB_FILTER_ANIMATION_CURVE_IS_DEFINED
 COMPILE_ASSERT_MATCHING_ENUMS(
     WebAnimation::TargetPropertyFilter, Animation::Filter);
-#endif
 
 }  // namespace webkit

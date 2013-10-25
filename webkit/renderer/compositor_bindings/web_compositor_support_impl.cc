@@ -30,9 +30,7 @@ using WebKit::WebContentLayer;
 using WebKit::WebContentLayerClient;
 using WebKit::WebExternalTextureLayer;
 using WebKit::WebExternalTextureLayerClient;
-#if WEB_FILTER_ANIMATION_CURVE_IS_DEFINED
 using WebKit::WebFilterAnimationCurve;
-#endif
 using WebKit::WebFilterOperations;
 using WebKit::WebFloatAnimationCurve;
 using WebKit::WebImageLayer;
@@ -99,12 +97,10 @@ WebAnimation* WebCompositorSupportImpl::createAnimation(
   return new WebAnimationImpl(curve, target, animation_id, 0);
 }
 
-#if WEB_FILTER_ANIMATION_CURVE_IS_DEFINED
 WebFilterAnimationCurve*
 WebCompositorSupportImpl::createFilterAnimationCurve() {
   return new WebFilterAnimationCurveImpl();
 }
-#endif
 
 WebFloatAnimationCurve* WebCompositorSupportImpl::createFloatAnimationCurve() {
   return new WebFloatAnimationCurveImpl();
