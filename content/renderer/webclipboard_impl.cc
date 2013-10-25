@@ -42,10 +42,6 @@ WebClipboardImpl::WebClipboardImpl(ClipboardClient* client)
 WebClipboardImpl::~WebClipboardImpl() {
 }
 
-uint64 WebClipboardImpl::getSequenceNumber() {
-  return sequenceNumber(BufferStandard);
-}
-
 uint64 WebClipboardImpl::sequenceNumber(Buffer buffer) {
   ui::ClipboardType clipboard_type;
   if (!ConvertBufferType(buffer, &clipboard_type))
@@ -155,6 +151,11 @@ WebString WebClipboardImpl::readCustomData(Buffer buffer,
   return data;
 }
 
+void WebClipboardImpl::writePlainText(const WebString& plain_text) {
+  ScopedClipboardWriterGlue scw(client_);
+  scw.WriteText(plain_text);
+}
+
 void WebClipboardImpl::writeHTML(
     const WebString& html_text, const WebURL& source_url,
     const WebString& plain_text, bool write_smart_paste) {
@@ -164,19 +165,6 @@ void WebClipboardImpl::writeHTML(
 
   if (write_smart_paste)
     scw.WriteWebSmartPaste();
-}
-
-void WebClipboardImpl::writePlainText(const WebString& plain_text) {
-  ScopedClipboardWriterGlue scw(client_);
-  scw.WriteText(plain_text);
-}
-
-void WebClipboardImpl::writeURL(const WebURL& url, const WebString& title) {
-  ScopedClipboardWriterGlue scw(client_);
-
-  scw.WriteBookmark(title, url.spec());
-  scw.WriteHTML(UTF8ToUTF16(URLToMarkup(url, title)), std::string());
-  scw.WriteText(UTF8ToUTF16(std::string(url.spec())));
 }
 
 void WebClipboardImpl::writeImage(const WebImage& image,
