@@ -14,6 +14,12 @@ import logging
 BROWSER_HISTOGRAM = 'browser_histogram'
 RENDERER_HISTOGRAM = 'renderer_histogram'
 
+
+def CustomizeBrowserOptions(options):
+  """Allows histogram collection."""
+  options.AppendExtraBrowserArgs(['--enable-stats-collection-bindings'])
+
+
 def SubtractHistogram(histogram_json, start_histogram_json):
   """Subtracts a previous histogram from a histogram.
 
@@ -65,3 +71,13 @@ def GetHistogram(histogram_type, histogram_name, tab):
   if histogram_json:
     return histogram_json
   return None
+
+
+def GetHistogramCount(histogram_type, histogram_name, tab):
+  """Get the count of events for the given histograms."""
+  histogram_json = GetHistogram(histogram_type, histogram_name, tab)
+  histogram = json.loads(histogram_json)
+  if 'count' in histogram:
+    return histogram['count']
+  else:
+    return 0
