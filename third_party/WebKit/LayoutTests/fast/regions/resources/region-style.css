@@ -110,6 +110,14 @@
     background-color: lightgrey;
 }
 
+.float {
+    float: left;
+}
+
+.clear {
+    clear: both;
+}
+
 /* regions create Stacking Contexts */
 .forcedStackingContext {
     position: relative;
