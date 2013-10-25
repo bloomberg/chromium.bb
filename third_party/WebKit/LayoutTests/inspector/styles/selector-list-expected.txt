@@ -5,7 +5,7 @@ Text
 element.style  { ()
 
 [expanded] 
-FOO bAr, #inspected, MOO>BAR, htML div, Foo~Moo, MOO  { (selector-list.html:14 -> selector-list.html:14:5)
+FOO bAr, #inspected, MOO>BAR, htML div, Foo~Moo, MOO  { (selector-list.html:14 -> selector-list.html:14:48)
 color: green;
 
 [expanded] 
@@ -18,7 +18,7 @@ color: green;
 #inspected  { (selector-list.html:4 -> selector-list.html:4:1)
 
 [expanded] 
-FOO bAr, #inspected, MOO>BAR, htML div, Foo~Moo, MOO  { (selector-list.html:14 -> selector-list.html:14:5)
+FOO bAr, #inspected, MOO>BAR, htML div, Foo~Moo, MOO  { (selector-list.html:14 -> selector-list.html:14:48)
 /-- overloaded --/ color: green;
 
 [expanded] 

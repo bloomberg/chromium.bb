@@ -18,7 +18,7 @@ display: block;
 element.style  { ()
 
 [expanded] 
-#inspected, #other  { (undo-set-selector-text.html:4 -> undo-set-selector-text.html:4:1)
+#inspected, #other  { (undo-set-selector-text.html:4 -> undo-set-selector-text.html:4:13)
 color: green;
 
 [expanded] 
@@ -44,7 +44,7 @@ display: block;
 element.style  { ()
 
 [expanded] 
-#inspected, #other  { (undo-set-selector-text.html:4 -> undo-set-selector-text.html:4:1)
+#inspected, #other  { (undo-set-selector-text.html:4 -> undo-set-selector-text.html:4:13)
 color: green;
 
 [expanded] 

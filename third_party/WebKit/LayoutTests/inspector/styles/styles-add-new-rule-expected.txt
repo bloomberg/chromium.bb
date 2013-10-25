@@ -8,7 +8,7 @@ element.style  { ()
 font-size: 12px;
 
 [expanded] 
-foo, [$#inspected$], bar  { (inspector-stylesheet:1 -> inspector-stylesheet:1:1)
+foo, [$#inspected$], bar  { (inspector-stylesheet:1 -> inspector-stylesheet:1:6)
 color: maroon;
 
 [expanded] 

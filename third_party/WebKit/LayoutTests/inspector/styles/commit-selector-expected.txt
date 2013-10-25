@@ -21,7 +21,7 @@ element.style  { ()
 color: red;
 
 [expanded] 
-hr, #inspected  { (commit-selector.html:4 -> commit-selector.html:4:1)
+hr, #inspected  { (commit-selector.html:4 -> commit-selector.html:4:5)
 /-- overloaded --/ color: green;
 
 [expanded] 

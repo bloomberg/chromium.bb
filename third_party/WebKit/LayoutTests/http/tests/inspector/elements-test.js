@@ -144,7 +144,7 @@ InspectorTest.dumpSelectedElementStyles = function(excludeComputed, excludeMatch
     {
         var result = "";
         for (var node = element.firstChild; node; node = node.nextSibling) {
-            if (node.nodeType === Node.ELEMENT_NODE && node.className === "selector-matches")
+            if (node.nodeType === Node.ELEMENT_NODE && node.hasStyleClass("selector-matches"))
                 result += "[$" + node.textContent + "$]";
             else
                 result += node.textContent;
