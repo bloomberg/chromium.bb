@@ -473,6 +473,7 @@ void AutofillDialogCocoa::OnConstrainedWindowClosed(
 
   NSRect frameRect = [[self window] frameRectForContentRect:contentRect];
   [[self window] setFrame:frameRect display:YES];
+  [[self window] recalculateKeyViewLoop];
 }
 
 - (IBAction)accept:(id)sender {
