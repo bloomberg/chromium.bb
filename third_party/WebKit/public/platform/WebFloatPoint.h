@@ -33,7 +33,7 @@
 
 #include "WebCommon.h"
 
-#if BLINK_IMPLEMENTATION
+#if INSIDE_BLINK
 #include "platform/geometry/FloatPoint.h"
 #else
 #include <ui/gfx/point_f.h>
@@ -57,7 +57,7 @@ struct WebFloatPoint {
     {
     }
 
-#if BLINK_IMPLEMENTATION
+#if INSIDE_BLINK
     WebFloatPoint(const WebCore::FloatPoint& p)
         : x(p.x())
         , y(p.y())

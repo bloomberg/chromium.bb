@@ -3540,7 +3540,6 @@
             'platform/chromium/support/WebDeviceMotionData.cpp',
             'platform/chromium/support/WebDeviceOrientationData.cpp',
             'platform/chromium/support/WebFileSystemCallbacks.cpp',
-            'platform/chromium/support/WebFloatQuad.cpp',
             'platform/chromium/support/WebFilterKeyframe.cpp',
             'platform/chromium/support/WebMediaConstraints.cpp',
             'platform/chromium/support/WebMediaStream.cpp',
