@@ -36,7 +36,6 @@ namespace WebCore {
 
 class SpeechSynthesisVoice : public ScriptWrappable, public RefCounted<SpeechSynthesisVoice> {
 public:
-    virtual ~SpeechSynthesisVoice() { }
     static PassRefPtr<SpeechSynthesisVoice> create(PassRefPtr<PlatformSpeechSynthesisVoice>);
 
     const String& voiceURI() const { return m_platformVoice->voiceURI(); }
