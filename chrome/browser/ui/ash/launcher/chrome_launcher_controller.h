@@ -373,6 +373,9 @@ class ChromeLauncherController : public ash::LauncherDelegate,
 
   LauncherItemController* GetLauncherItemController(const ash::LauncherID id);
 
+  // Returns true if |browser| is owned by the active user.
+  bool IsBrowserFromActiveUser(Browser* browser);
+
  protected:
   // Creates a new app shortcut item and controller on the launcher at |index|.
   // Use kInsertItemAtEnd to add a shortcut as the last item.
@@ -512,6 +515,9 @@ class ChromeLauncherController : public ash::LauncherDelegate,
   // Forget the current profile to allow attaching to a new one.
   void ReleaseProfile();
 
+  // Update the state of all V1 shortcut launcher items after a user switch.
+  void UpdateV1AppStatesAfterUserSwitch();
+
   static ChromeLauncherController* instance_;
 
   ash::LauncherModel* model_;
@@ -558,6 +564,9 @@ class ChromeLauncherController : public ash::LauncherDelegate,
 
   // If true, incoming pinned state changes should be ignored.
   bool ignore_persist_pinned_state_change_;
+
+  // True if each user has an own desktop.
+  bool multi_profile_desktop_separation_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeLauncherController);
 };

@@ -45,6 +45,7 @@ class FakeUserManager : public UserManager {
 
   virtual const User* GetActiveUser() const OVERRIDE;
   virtual User* GetActiveUser() OVERRIDE;
+  virtual void SwitchActiveUser(const std::string& email) OVERRIDE;
   virtual void SaveUserDisplayName(const std::string& username,
       const string16& display_name) OVERRIDE;
   virtual void UpdateUserAccountData(const std::string&, const string16&,
@@ -57,7 +58,6 @@ class FakeUserManager : public UserManager {
   virtual const UserList& GetLRULoggedInUsers() OVERRIDE;
   virtual UserList GetUnlockUsers() const OVERRIDE;
   virtual const std::string& GetOwnerEmail() OVERRIDE;
-  virtual void SwitchActiveUser(const std::string& email) OVERRIDE {}
   virtual void SessionStarted() OVERRIDE {}
   virtual void RestoreActiveSessions() OVERRIDE {}
   virtual void RemoveUser(const std::string& email,
@@ -131,6 +131,10 @@ class FakeUserManager : public UserManager {
   UserList logged_in_users_;
   std::string owner_email_;
   User* primary_user_;
+
+  // If set this is the active user. If empty, the first created user is the
+  // active user.
+  std::string active_user_id_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeUserManager);
 };

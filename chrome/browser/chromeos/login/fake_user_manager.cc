@@ -81,8 +81,16 @@ void FakeUserManager::UserLoggedIn(const std::string& email,
 }
 
 User* FakeUserManager::GetActiveUserInternal() const {
-  if (user_list_.size())
+  if (user_list_.size()) {
+    if (!active_user_id_.empty()) {
+      for (UserList::const_iterator it = user_list_.begin();
+           it != user_list_.end(); ++it) {
+        if ((*it)->email() == active_user_id_)
+          return *it;
+      }
+    }
     return user_list_[0];
+  }
   return NULL;
 }
 
@@ -92,6 +100,10 @@ const User* FakeUserManager::GetActiveUser() const {
 
 User* FakeUserManager::GetActiveUser() {
   return GetActiveUserInternal();
+}
+
+void FakeUserManager::SwitchActiveUser(const std::string& email) {
+  active_user_id_ = email;
 }
 
 void FakeUserManager::SaveUserDisplayName(
@@ -152,6 +164,12 @@ const User* FakeUserManager::GetPrimaryUser() const {
 }
 
 User* FakeUserManager::GetUserByProfile(Profile* profile) const {
+  const std::string& user_name = profile->GetProfileName();
+  for (UserList::const_iterator it = user_list_.begin();
+       it != user_list_.end(); ++it) {
+    if ((*it)->email() == user_name)
+      return *it;
+  }
   return primary_user_;
 }
 

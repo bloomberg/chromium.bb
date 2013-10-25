@@ -10,6 +10,8 @@
 #include "ash/session_state_delegate.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
+#include "ash/wm/mru_window_tracker.h"
+#include "ash/wm/window_positioner.h"
 #include "ash/wm/window_state.h"
 #include "base/auto_reset.h"
 #include "base/strings/string_util.h"
@@ -22,7 +24,9 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "content/public/browser/notification_service.h"
 #include "google_apis/gaia/gaia_auth_util.h"
+#include "ui/aura/client/activation_client.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/base/ui_base_types.h"
 
@@ -31,6 +35,31 @@ chrome::MultiUserWindowManager* g_instance = NULL;
 }  // namespace
 
 namespace chrome {
+
+// Caching the current multi profile mode since the detection which mode is
+// used is quite expensive.
+chrome::MultiUserWindowManager::MultiProfileMode
+    chrome::MultiUserWindowManager::multi_user_mode_ =
+        chrome::MultiUserWindowManager::MULTI_PROFILE_MODE_INVALID;
+
+// A class to disable updates to the MRU window list and the auto positioning
+// logic while the user gets switched.
+class UserChangeActionDisabler {
+ public:
+  UserChangeActionDisabler() {
+    ash::WindowPositioner::DisableAutoPositioning(true);
+    ash::Shell::GetInstance()->mru_window_tracker()->SetIgnoreActivations(true);
+  }
+
+  ~UserChangeActionDisabler() {
+    ash::WindowPositioner::DisableAutoPositioning(false);
+    ash::Shell::GetInstance()->mru_window_tracker()->SetIgnoreActivations(
+        false);
+  }
+ private:
+
+  DISALLOW_COPY_AND_ASSIGN(UserChangeActionDisabler);
+};
 
 // This class keeps track of all applications which were started for a user.
 // When an app gets created, the window will be tagged for that user. Note
@@ -65,9 +94,25 @@ MultiUserWindowManager* MultiUserWindowManager::GetInstance() {
       ash::Shell::GetInstance()->delegate()->IsMultiProfilesEnabled() &&
       !ash::switches::UseFullMultiProfileMode()) {
     g_instance = CreateInstanceInternal(
-        GetUserIDFromProfile(ProfileManager::GetDefaultProfile()));
+        ash::Shell::GetInstance()->session_state_delegate()->GetUserID(0));
   }
   return g_instance;
+}
+
+// static
+MultiUserWindowManager::MultiProfileMode
+MultiUserWindowManager::GetMultiProfileMode() {
+  if (multi_user_mode_ != MULTI_PROFILE_MODE_INVALID)
+    return multi_user_mode_;
+
+  if (GetInstance())
+    multi_user_mode_ = MULTI_PROFILE_MODE_SEPARATED;
+  else if (ash::Shell::GetInstance()->delegate()->IsMultiProfilesEnabled())
+    multi_user_mode_ = MULTI_PROFILE_MODE_MIXED;
+  else
+    multi_user_mode_ = MULTI_PROFILE_MODE_OFF;
+
+  return multi_user_mode_;
 }
 
 // static
@@ -161,15 +206,48 @@ void MultiUserWindowManager::ActiveUserChanged(const std::string& user_id) {
   DCHECK(user_id != current_user_id_);
   std::string old_user = current_user_id_;
   current_user_id_ = user_id;
-  // Hide all windows which are not shown and show which should get shown.
-  WindowToEntryMap::iterator it = window_to_entry_.begin();
-  for (; it != window_to_entry_.end(); ++it) {
+  // When a user has changed, we need to show only the windows which are visible
+  // to that user. Additionally we need to restore the activation state of the
+  // windows. Changing the activation state however triggers the window position
+  // manager to auto position the windows. To avoid that we disable it
+  // temporarily.
+
+  // Disable the window position manager and the MRU window tracker temporarily.
+  scoped_ptr<UserChangeActionDisabler> disabler(new UserChangeActionDisabler);
+
+  for (WindowToEntryMap::iterator it = window_to_entry_.begin();
+       it != window_to_entry_.end(); ++it) {
     aura::Window* window = it->first;
     bool should_be_visible =
         it->second->show_for_user() == user_id && it->second->show();
     bool is_visible = window->IsVisible();
     if (should_be_visible != is_visible)
       SetWindowVisibility(window, should_be_visible);
+  }
+
+  // Retrieve the list of visible windows in their order. Use the list to
+  // traverse the windows and activate them, thus restoring the previous state.
+  // TODO(skuhne): Unfortunately the MruWindowTracker does not let us get the
+  // full list (visible and invisible) and after our visibility changes the
+  // actual order of windows can be changed. A workaround would be to implement
+  // our own aura::client::ActivationChangeObserver and track the activations
+  // from our known windows. But that should be part of another CL.
+  ash::MruWindowTracker* tracker =
+      ash::Shell::GetInstance()->mru_window_tracker();
+  ash::MruWindowTracker::WindowList mru_list = tracker->BuildWindowList(true);
+  for (ash::MruWindowTracker::WindowList::iterator mru_iterator =
+           mru_list.begin();
+       mru_iterator != mru_list.end(); mru_iterator++) {
+    aura::Window* window = *mru_iterator;
+    ash::wm::WindowState* window_state = ash::wm::GetWindowState(window);
+    if (IsWindowOnDesktopOfUser(window, user_id) &&
+        !window_state->IsMinimized()) {
+      aura::client::ActivationClient* client =
+          aura::client::GetActivationClient(window->GetRootWindow());
+      // Several unit tests come here without an activation client.
+      if (client)
+        client->ActivateWindow(window);
+    }
   }
 }
 

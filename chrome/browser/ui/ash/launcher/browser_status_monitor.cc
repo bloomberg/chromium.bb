@@ -97,7 +97,9 @@ void BrowserStatusMonitor::UpdateAppItemState(
     content::WebContents* contents,
     ChromeLauncherController::AppState app_state) {
   DCHECK(contents);
-  launcher_controller_->UpdateAppState(contents, app_state);
+  if (launcher_controller_->IsBrowserFromActiveUser(
+          chrome::FindBrowserWithWebContents(contents)))
+    launcher_controller_->UpdateAppState(contents, app_state);
 }
 
 void BrowserStatusMonitor::UpdateBrowserItemState() {

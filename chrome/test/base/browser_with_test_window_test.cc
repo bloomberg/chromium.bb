@@ -59,7 +59,7 @@ void BrowserWithTestWindowTest::SetUp() {
 #endif  // USE_AURA
 
   // Subclasses can provide their own Profile.
-  profile_.reset(CreateProfile());
+  profile_ = CreateProfile();
   // Subclasses can provide their own test BrowserWindow. If they return NULL
   // then Browser will create the a production BrowserWindow and the subclass
   // is responsible for cleaning it up (usually by NativeWidget destruction).
@@ -179,11 +179,17 @@ void BrowserWithTestWindowTest::DestroyBrowserAndProfile() {
   // destructor, and a test subclass owns a resource that the profile depends
   // on (such as g_browser_process()->local_state()) there's no way for the
   // subclass to free it after the profile.
-  profile_.reset(NULL);
+  if (profile_)
+    DestroyProfile(profile_);
+  profile_ = NULL;
 }
 
 TestingProfile* BrowserWithTestWindowTest::CreateProfile() {
   return new TestingProfile();
+}
+
+void BrowserWithTestWindowTest::DestroyProfile(TestingProfile* profile) {
+  delete profile;
 }
 
 BrowserWindow* BrowserWithTestWindowTest::CreateBrowserWindow() {

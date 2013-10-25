@@ -117,7 +117,12 @@ bool BrowserShortcutLauncherItemController::IsCurrentlyShownInWindow(
 bool BrowserShortcutLauncherItemController::IsOpen() const {
   const BrowserList* ash_browser_list =
       BrowserList::GetInstance(chrome::HOST_DESKTOP_TYPE_ASH);
-  return ash_browser_list->empty() ? false : true;
+  for (BrowserList::const_iterator it = ash_browser_list->begin();
+       it != ash_browser_list->end(); ++it) {
+    if (launcher_controller()->IsBrowserFromActiveUser(*it))
+      return true;
+  }
+  return false;
 }
 
 bool BrowserShortcutLauncherItemController::IsVisible() const {
@@ -167,8 +172,10 @@ BrowserShortcutLauncherItemController::GetApplicationList(int event_flags) {
   for (BrowserList::const_iterator it = ash_browser_list->begin();
        it != ash_browser_list->end(); ++it) {
     Browser* browser = *it;
-    // Make sure that the browser was already shown and it has a proper window.
-    if (std::find(ash_browser_list->begin_last_active(),
+    // Make sure that the browser was already shown, is from the current user
+    // and has a proper window.
+    if (!launcher_controller()->IsBrowserFromActiveUser(browser) ||
+        std::find(ash_browser_list->begin_last_active(),
                   ash_browser_list->end_last_active(),
                   browser) == ash_browser_list->end_last_active() ||
         !browser->window())
@@ -330,6 +337,7 @@ void BrowserShortcutLauncherItemController::ActivateOrAdvanceToNextBrowser() {
 bool BrowserShortcutLauncherItemController::IsBrowserRepresentedInBrowserList(
     Browser* browser) {
   return (browser &&
+          launcher_controller()->IsBrowserFromActiveUser(browser) &&
           browser->host_desktop_type() == chrome::HOST_DESKTOP_TYPE_ASH &&
           (browser->is_type_tabbed() ||
            !browser->is_app() ||

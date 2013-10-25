@@ -53,11 +53,22 @@ class MultiUserWindowManager : public ash::SessionStateObserver,
                                public content::NotificationObserver,
                                public ash::wm::WindowStateObserver {
  public:
+  // The multi profile mode in use.
+  enum MultiProfileMode {
+    MULTI_PROFILE_MODE_INVALID,    // Used for initialization.
+    MULTI_PROFILE_MODE_OFF,        // Single user mode.
+    MULTI_PROFILE_MODE_SEPARATED,  // Each user has his own desktop.
+    MULTI_PROFILE_MODE_MIXED       // All users mix windows freely.
+  };
+
   // Gets the instance of the object. If the multi profile mode is not enabled
   // this will return NULL. If it wasn't created yet, it will create an instance
   // using the currently active user as the active user - otherwise it will
   // return the previously created instance.
   static MultiUserWindowManager* GetInstance();
+
+  // Return the current multi profile mode operation.
+  static MultiProfileMode GetMultiProfileMode();
 
   // Removes the instance.
   static void DeleteInstance();
@@ -205,6 +216,10 @@ class MultiUserWindowManager : public ash::SessionStateObserver,
 
   // Suppress changes to the visibility flag while we are changing it ourselves.
   bool suppress_visibility_changes_;
+
+  // Caching the current multi profile mode since the detection which mode is
+  // used is quite expensive.
+  static MultiProfileMode multi_user_mode_;
 
   DISALLOW_COPY_AND_ASSIGN(MultiUserWindowManager);
 };

@@ -66,6 +66,10 @@ class ASH_EXPORT WindowPositioner {
   static void RearrangeVisibleWindowOnHideOrRemove(
       const aura::Window* removed_window);
 
+  // Turn the automatic positioning logic temporarily off. Returns the previous
+  // state.
+  static bool DisableAutoPositioning(bool ignore);
+
   // Check if after insertion or showing of the given |added_window|
   // an automated desktop location management can be performed and
   // rearrange accordingly.

@@ -95,9 +95,9 @@ class BrowserWithTestWindowTest : public testing::Test {
     return browser_.release();
   }
 
-  TestingProfile* profile() const { return profile_.get(); }
+  TestingProfile* profile() const { return profile_; }
 
-  TestingProfile* GetProfile() { return profile_.get(); }
+  TestingProfile* GetProfile() { return profile_; }
 
   BrowserWindow* release_browser_window() WARN_UNUSED_RESULT {
     return window_.release();
@@ -134,6 +134,9 @@ class BrowserWithTestWindowTest : public testing::Test {
   // Creates the profile used by this test. The caller owns the return value.
   virtual TestingProfile* CreateProfile();
 
+  // Destroys the profile which was created through |CreateProfile|.
+  virtual void DestroyProfile(TestingProfile* profile);
+
   // Creates the BrowserWindow used by this test. The caller owns the return
   // value. Can return NULL to use the default window created by Browser.
   virtual BrowserWindow* CreateBrowserWindow();
@@ -149,7 +152,10 @@ class BrowserWithTestWindowTest : public testing::Test {
   chromeos::ScopedTestUserManager test_user_manager_;
 #endif
 
-  scoped_ptr<TestingProfile> profile_;
+  // The profile will automatically be destroyed by TearDown using the
+  // |DestroyProfile()| function - which can be overwritten by derived testing
+  // frameworks.
+  TestingProfile* profile_;
   scoped_ptr<BrowserWindow> window_;  // Usually a TestBrowserWindow.
   scoped_ptr<Browser> browser_;
 

@@ -46,8 +46,14 @@ const int kForceMaximizeWidthLimitDisabled = 640;
 // through an automatic "intelligent" window management option.
 const int kWindowAutoMoveDurationMS = 125;
 
+// If set to true all window repositioning actions will be ignored. Set through
+// WindowPositioner::SetIgnoreActivations().
+static bool disable_auto_positioning = false;
+
 // Check if any management should be performed (with a given |window|).
 bool UseAutoWindowManager(const aura::Window* window) {
+  if (disable_auto_positioning)
+    return false;
   const wm::WindowState* window_state = wm::GetWindowState(window);
   return window_state->tracked_by_workspace() &&
       window_state->window_position_managed();
@@ -57,6 +63,8 @@ bool UseAutoWindowManager(const aura::Window* window) {
 // not minimized/maximized/the user has changed it's size by hand already.
 // It furthermore checks for the WindowIsManaged status.
 bool WindowPositionCanBeManaged(const aura::Window* window) {
+  if (disable_auto_positioning)
+    return false;
   const wm::WindowState* window_state = wm::GetWindowState(window);
   return window_state->window_position_managed() &&
       !window_state->IsMinimized() &&
@@ -264,6 +272,13 @@ void WindowPositioner::RearrangeVisibleWindowOnHideOrRemove(
       !WindowPositionCanBeManaged(other_shown_window))
     return;
   AutoPlaceSingleWindow(other_shown_window, true);
+}
+
+// static
+bool WindowPositioner::DisableAutoPositioning(bool ignore) {
+  bool old_state = disable_auto_positioning;
+  disable_auto_positioning = ignore;
+  return old_state;
 }
 
 // static

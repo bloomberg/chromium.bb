@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/testing_profile.h"
+#include "ui/aura/client/activation_client.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/root_window.h"
 #include "ui/base/ui_base_types.h"
@@ -356,6 +357,50 @@ TEST_F(MultiUserWindowManagerTest, MinimizeSuppressesViewTransfer) {
   // Try to transfer the window to user B - which should get ignored.
   multi_user_window_manager()->ShowWindowForUser(window(0), "B");
   EXPECT_EQ("H[A]", GetStatus());
+}
+
+// Testing that the activation state changes to the active window.
+TEST_F(MultiUserWindowManagerTest, ActiveWindowTests) {
+  SetUpForThisManyWindows(4);
+
+  aura::client::ActivationClient* activation_client =
+      aura::client::GetActivationClient(window(0)->GetRootWindow());
+
+  // Set some windows to the active owner.
+  multi_user_window_manager()->SetWindowOwner(window(0), "A");
+  multi_user_window_manager()->SetWindowOwner(window(1), "A");
+  multi_user_window_manager()->SetWindowOwner(window(2), "B");
+  multi_user_window_manager()->SetWindowOwner(window(3), "B");
+  EXPECT_EQ("S[A], S[A], H[B], H[B]", GetStatus());
+
+  // Set the active window for user A to be #1
+  activation_client->ActivateWindow(window(1));
+
+  // Change to user B and make sure that one of its windows is active.
+  multi_user_window_manager()->ActiveUserChanged("B");
+  EXPECT_EQ("H[A], H[A], S[B], S[B]", GetStatus());
+  EXPECT_TRUE(window(3) == activation_client->GetActiveWindow() ||
+              window(2) == activation_client->GetActiveWindow());
+  // Set the active window for user B now to be #2
+  activation_client->ActivateWindow(window(2));
+
+  multi_user_window_manager()->ActiveUserChanged("A");
+  EXPECT_EQ(window(1), activation_client->GetActiveWindow());
+
+  multi_user_window_manager()->ActiveUserChanged("B");
+  EXPECT_EQ(window(2), activation_client->GetActiveWindow());
+
+  multi_user_window_manager()->ActiveUserChanged("C");
+  EXPECT_EQ(NULL, activation_client->GetActiveWindow());
+
+  // Now test that a minimized window stays minimized upon switch and back.
+  multi_user_window_manager()->ActiveUserChanged("A");
+  wm::GetWindowState(window(0))->Minimize();
+
+  multi_user_window_manager()->ActiveUserChanged("B");
+  multi_user_window_manager()->ActiveUserChanged("A");
+  EXPECT_TRUE(wm::GetWindowState(window(0))->IsMinimized());
+  EXPECT_EQ(window(1), activation_client->GetActiveWindow());
 }
 
 }  // namespace test

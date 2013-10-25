@@ -126,7 +126,7 @@ void AppShortcutLauncherItemController::Close() {
       launcher_controller()->GetV1ApplicationsFromAppId(app_id());
   for (size_t i = 0; i < content.size(); i++) {
     Browser* browser = chrome::FindBrowserWithWebContents(content[i]);
-    if (!browser)
+    if (!browser || !launcher_controller()->IsBrowserFromActiveUser(browser))
       continue;
     TabStripModel* tab_strip = browser->tab_strip_model();
     int index = tab_strip->GetIndexOfWebContents(content[i]);
@@ -178,6 +178,8 @@ AppShortcutLauncherItemController::GetRunningApplications() {
   for (BrowserList::const_iterator it = ash_browser_list->begin();
        it != ash_browser_list->end(); ++it) {
     Browser* browser = *it;
+    if (!launcher_controller()->IsBrowserFromActiveUser(browser))
+      continue;
     TabStripModel* tab_strip = browser->tab_strip_model();
     for (int index = 0; index < tab_strip->count(); index++) {
       content::WebContents* web_contents = tab_strip->GetWebContentsAt(index);
@@ -248,6 +250,8 @@ content::WebContents* AppShortcutLauncherItemController::GetLRUApplication() {
        it = ash_browser_list->begin_last_active();
        it != ash_browser_list->end_last_active(); ++it) {
     Browser* browser = *it;
+    if (!launcher_controller()->IsBrowserFromActiveUser(browser))
+      continue;
     TabStripModel* tab_strip = browser->tab_strip_model();
     // We start to enumerate from the active index.
     int active_index = tab_strip->active_index();
@@ -264,6 +268,8 @@ content::WebContents* AppShortcutLauncherItemController::GetLRUApplication() {
   for (BrowserList::const_iterator it = ash_browser_list->begin();
        it != ash_browser_list->end(); ++it) {
     Browser* browser = *it;
+    if (!launcher_controller()->IsBrowserFromActiveUser(browser))
+      continue;
     TabStripModel* tab_strip = browser->tab_strip_model();
     for (int index = 0; index < tab_strip->count(); index++) {
       content::WebContents* web_contents = tab_strip->GetWebContentsAt(index);

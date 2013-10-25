@@ -1037,6 +1037,7 @@ void ChromeLauncherController::ActiveUserChanged(
   SetShelfAlignmentFromPrefs();
   SetShelfAutoHideBehaviorFromPrefs();
   SetShelfBehaviorsFromPrefs();
+  UpdateV1AppStatesAfterUserSwitch();
 }
 
 void ChromeLauncherController::Observe(
@@ -1282,6 +1283,21 @@ LauncherItemController* ChromeLauncherController::GetLauncherItemController(
   if (!HasItemController(id))
     return NULL;
   return id_to_item_controller_map_[id];
+}
+
+bool ChromeLauncherController::IsBrowserFromActiveUser(Browser* browser) {
+#if defined(OS_CHROMEOS)
+  // If running multi user mode with separate desktops, we have to check if the
+  // browser is from the active user.
+  if (chrome::MultiUserWindowManager::GetMultiProfileMode() !=
+          chrome::MultiUserWindowManager::MULTI_PROFILE_MODE_SEPARATED)
+    return true;
+  chromeos::UserManager* manager = chromeos::UserManager::Get();
+  return manager->GetActiveUser() ==
+         manager->GetUserByProfile(browser->profile()->GetOriginalProfile());
+#else
+  return true;
+#endif
 }
 
 Profile* ChromeLauncherController::GetProfileForNewWindows() {
@@ -1887,3 +1903,53 @@ void ChromeLauncherController::ReleaseProfile() {
 
   pref_change_registrar_.RemoveAll();
 }
+
+void ChromeLauncherController::UpdateV1AppStatesAfterUserSwitch() {
+#if defined(OS_CHROMEOS)
+  if (!ash::switches::UseFullMultiProfileMode() &&
+      ChromeShellDelegate::instance() &&
+      ChromeShellDelegate::instance()->IsMultiProfilesEnabled()) {
+    // First we add the new applications.
+    BrowserList* browser_list =
+        BrowserList::GetInstance(chrome::HOST_DESKTOP_TYPE_ASH);
+    chromeos::UserManager* user_manager = chromeos::UserManager::Get();
+    chromeos::User* active_user = user_manager->GetActiveUser();
+
+    // Remove old (tabbed V1) applications.
+    for (BrowserList::const_iterator it = browser_list->begin();
+         it != browser_list->end(); ++it) {
+      Browser* browser = *it;
+      if (!browser->is_app() &&
+          browser->is_type_tabbed() &&
+          active_user != user_manager->GetUserByProfile(
+              browser->profile()->GetOriginalProfile())) {
+        for (int i = 0; i < browser->tab_strip_model()->count(); ++i) {
+          UpdateAppState(browser->tab_strip_model()->GetWebContentsAt(i),
+                         APP_STATE_REMOVED);
+        }
+      }
+    }
+
+    // Add new (tabbed V1) applications.
+    for (BrowserList::const_iterator it = browser_list->begin();
+         it != browser_list->end(); ++it) {
+      Browser* browser = *it;
+      if (!browser->is_app() &&
+          browser->is_type_tabbed() &&
+          active_user == user_manager->GetUserByProfile(
+              browser->profile()->GetOriginalProfile())) {
+        int active_index = browser->tab_strip_model()->active_index();
+        for (int i = 0; i < browser->tab_strip_model()->count(); ++i) {
+          UpdateAppState(browser->tab_strip_model()->GetWebContentsAt(i),
+                         browser->window()->IsActive() && i == active_index ?
+                             APP_STATE_WINDOW_ACTIVE : APP_STATE_INACTIVE);
+        }
+      }
+    }
+  }
+
+  // Finally we update the browser state itself.
+  browser_status_monitor_->UpdateBrowserItemState();
+#endif
+}
+
