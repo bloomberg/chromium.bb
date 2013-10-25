@@ -58,7 +58,7 @@
     'win/tsf_text_store.h',
   ],
   'conditions': [
-    ['toolkit_views==0', {
+    ['toolkit_views==0 and use_aura==0', {
       'sources!': [
         'fake_input_method.cc',
         'fake_input_method.h',
