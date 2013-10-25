@@ -106,8 +106,8 @@ void EnableBrowserLayoutTestMode() {
 }
 
 int GetLocalSessionHistoryLength(RenderView* render_view) {
-  return static_cast<RenderViewImpl*>(render_view)
-      ->GetLocalSessionHistoryLengthForTesting();
+  return static_cast<RenderViewImpl*>(render_view)->
+      GetLocalSessionHistoryLengthForTesting();
 }
 
 void SyncNavigationState(RenderView* render_view) {
@@ -115,8 +115,8 @@ void SyncNavigationState(RenderView* render_view) {
 }
 
 void SetFocusAndActivate(RenderView* render_view, bool enable) {
-  static_cast<RenderViewImpl*>(render_view)
-      ->SetFocusAndActivateForTesting(enable);
+  static_cast<RenderViewImpl*>(render_view)->
+      SetFocusAndActivateForTesting(enable);
 }
 
 void ForceResizeRenderView(RenderView* render_view,
@@ -129,25 +129,25 @@ void ForceResizeRenderView(RenderView* render_view,
 }
 
 void SetDeviceScaleFactor(RenderView* render_view, float factor) {
-  static_cast<RenderViewImpl*>(render_view)
-      ->SetDeviceScaleFactorForTesting(factor);
+  static_cast<RenderViewImpl*>(render_view)->
+      SetDeviceScaleFactorForTesting(factor);
 }
 
 void UseSynchronousResizeMode(RenderView* render_view, bool enable) {
-  static_cast<RenderViewImpl*>(render_view)
-      ->UseSynchronousResizeModeForTesting(enable);
+  static_cast<RenderViewImpl*>(render_view)->
+      UseSynchronousResizeModeForTesting(enable);
 }
 
 void EnableAutoResizeMode(RenderView* render_view,
                           const WebSize& min_size,
                           const WebSize& max_size) {
-  static_cast<RenderViewImpl*>(render_view)
-      ->EnableAutoResizeForTesting(min_size, max_size);
+  static_cast<RenderViewImpl*>(render_view)->
+      EnableAutoResizeForTesting(min_size, max_size);
 }
 
 void DisableAutoResizeMode(RenderView* render_view, const WebSize& new_size) {
-  static_cast<RenderViewImpl*>(render_view)
-      ->DisableAutoResizeForTesting(new_size);
+  static_cast<RenderViewImpl*>(render_view)->
+      DisableAutoResizeForTesting(new_size);
 }
 
 void UseMockMediaStreams(RenderView* render_view) {
