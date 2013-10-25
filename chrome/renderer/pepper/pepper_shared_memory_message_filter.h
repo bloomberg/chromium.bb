@@ -21,8 +21,6 @@ class SerializedHandle;
 }
 }
 
-namespace chrome {
-
 // Implements the backend for shared memory messages from a plugin process.
 class PepperSharedMemoryMessageFilter
     : public ppapi::host::InstanceMessageFilter {
@@ -47,7 +45,5 @@ class PepperSharedMemoryMessageFilter
 
   DISALLOW_COPY_AND_ASSIGN(PepperSharedMemoryMessageFilter);
 };
-
-}  // namespace chrome
 
 #endif  // CHROME_RENDERER_PEPPER_PEPPER_SHARED_MEMORY_MESSAGE_FILTER_H_

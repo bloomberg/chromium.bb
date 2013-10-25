@@ -18,8 +18,6 @@ namespace content {
 class RendererPpapiHost;
 }
 
-namespace chrome {
-
 // TODO(raymes): This is only needed until we move FileRef resources to the
 // browser. After that, get rid of this class altogether.
 class PepperFlashDRMRendererHost : public ppapi::host::ResourceHost {
@@ -49,7 +47,5 @@ class PepperFlashDRMRendererHost : public ppapi::host::ResourceHost {
 
   DISALLOW_COPY_AND_ASSIGN(PepperFlashDRMRendererHost);
 };
-
-}  // namespace chrome
 
 #endif  // CHROME_RENDERER_PEPPER_PEPPER_FLASH_DRM_RENDERER_HOST_H_

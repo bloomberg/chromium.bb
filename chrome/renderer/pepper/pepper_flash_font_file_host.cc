@@ -17,8 +17,6 @@
 #include "content/public/common/child_process_sandbox_support_linux.h"
 #endif
 
-namespace chrome {
-
 PepperFlashFontFileHost::PepperFlashFontFileHost(
     content::RendererPpapiHost* host,
     PP_Instance instance,
@@ -74,6 +72,3 @@ int32_t PepperFlashFontFileHost::OnGetFontTable(
   context->reply_msg = PpapiPluginMsg_FlashFontFile_GetFontTableReply(contents);
   return result;
 }
-
-}  // namespace chrome
-

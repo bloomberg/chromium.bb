@@ -8,8 +8,6 @@
 #include "base/compiler_specific.h"
 #include "content/public/renderer/render_view_observer.h"
 
-namespace chrome {
-
 // This class listens for Pepper creation events from the RenderView and
 // attaches the parts required for Chrome-specific plugin support.
 class PepperHelper : public content::RenderViewObserver {
@@ -23,7 +21,5 @@ class PepperHelper : public content::RenderViewObserver {
  private:
   DISALLOW_COPY_AND_ASSIGN(PepperHelper);
 };
-
-}  // namespace chrome
 
 #endif  // CHROME_RENDERER_PEPPER_PEPPER_HELPER_H_

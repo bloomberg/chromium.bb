@@ -9,8 +9,6 @@
 #include "content/public/renderer/renderer_ppapi_host.h"
 #include "ppapi/host/ppapi_host.h"
 
-namespace chrome {
-
 PepperHelper::PepperHelper(content::RenderView* render_view)
     : RenderViewObserver(render_view) {
 }
@@ -28,5 +26,3 @@ void PepperHelper::DidCreatePepperPlugin(content::RendererPpapiHost* host) {
       scoped_ptr<ppapi::host::InstanceMessageFilter>(
           new PepperSharedMemoryMessageFilter(host)));
 }
-
-}  // namespace chrome

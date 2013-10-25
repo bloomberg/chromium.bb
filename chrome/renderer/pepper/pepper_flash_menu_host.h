@@ -24,8 +24,6 @@ class SerializedFlashMenu;
 }
 }
 
-namespace chrome {
-
 class PepperFlashMenuHost : public ppapi::host::ResourceHost,
                             public content::ContextMenuClient {
  public:
@@ -67,7 +65,5 @@ class PepperFlashMenuHost : public ppapi::host::ResourceHost,
 
   DISALLOW_COPY_AND_ASSIGN(PepperFlashMenuHost);
 };
-
-}  // namespace chrome
 
 #endif  // CHROME_RENDERER_PEPPER_PEPPER_FLASH_MENU_HOST_H_

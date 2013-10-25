@@ -22,8 +22,6 @@
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebPluginContainer.h"
 
-namespace chrome {
-
 PepperExtensionsCommonHost::PepperExtensionsCommonHost(
     content::RendererPpapiHost* host,
     PP_Instance instance,
@@ -130,5 +128,3 @@ int32_t PepperExtensionsCommonHost::OnCall(
                                               true, false, &args);
   return PP_OK_COMPLETIONPENDING;
 }
-
-}  // namespace chrome

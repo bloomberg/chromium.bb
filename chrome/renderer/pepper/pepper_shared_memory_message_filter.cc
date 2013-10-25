@@ -15,8 +15,6 @@
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/shared_impl/var_tracker.h"
 
-namespace chrome {
-
 PepperSharedMemoryMessageFilter::PepperSharedMemoryMessageFilter(
     content::RendererPpapiHost* host)
     : InstanceMessageFilter(host->GetPpapiHost()),
@@ -72,5 +70,3 @@ void PepperSharedMemoryMessageFilter::OnHostMsgCreateSharedMemory(
   plugin_handle->set_shmem(
       host_->ShareHandleWithRemote(host_handle, false), size);
 }
-
-}  // namespace chrome

@@ -29,8 +29,6 @@ namespace content {
 class RendererPpapiHost;
 }
 
-namespace chrome {
-
 class PepperFlashRendererHost : public ppapi::host::ResourceHost {
  public:
   PepperFlashRendererHost(content::RendererPpapiHost* host,
@@ -68,7 +66,5 @@ class PepperFlashRendererHost : public ppapi::host::ResourceHost {
 
   DISALLOW_COPY_AND_ASSIGN(PepperFlashRendererHost);
 };
-
-}  // namespace chrome
 
 #endif  // CHROME_RENDERER_PEPPER_PEPPER_FLASH_RENDERER_HOST_H_

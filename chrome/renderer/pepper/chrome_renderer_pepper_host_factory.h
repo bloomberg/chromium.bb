@@ -13,8 +13,6 @@ namespace content {
 class RendererPpapiHost;
 }
 
-namespace chrome {
-
 class ChromeRendererPepperHostFactory : public ppapi::host::HostFactory {
  public:
   explicit ChromeRendererPepperHostFactory(content::RendererPpapiHost* host);
@@ -33,7 +31,5 @@ class ChromeRendererPepperHostFactory : public ppapi::host::HostFactory {
 
   DISALLOW_COPY_AND_ASSIGN(ChromeRendererPepperHostFactory);
 };
-
-}  // namespace chrome
 
 #endif  // CHROME_RENDERER_PEPPER_CHROME_RENDERER_PEPPER_HOST_FACTORY_H_

@@ -38,8 +38,6 @@
 #include "ui/gfx/image/image_skia_rep.h"
 #include "ui/gfx/point.h"
 
-namespace chrome {
-
 namespace {
 
 struct ResourceImageInfo {
@@ -139,15 +137,15 @@ int32_t PepperPDFHost::OnResourceMessageReceived(
     PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(PpapiHostMsg_PDF_DidStartLoading,
                                         OnHostMsgDidStartLoading)
     PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(PpapiHostMsg_PDF_DidStopLoading,
-                                      OnHostMsgDidStopLoading)
+                                        OnHostMsgDidStopLoading)
     PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_PDF_UserMetricsRecordAction,
                                       OnHostMsgUserMetricsRecordAction)
     PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(PpapiHostMsg_PDF_HasUnsupportedFeature,
                                         OnHostMsgHasUnsupportedFeature)
     PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(PpapiHostMsg_PDF_Print,
-                                      OnHostMsgPrint)
+                                        OnHostMsgPrint)
     PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(PpapiHostMsg_PDF_SaveAs,
-                                      OnHostMsgSaveAs)
+                                        OnHostMsgSaveAs)
     PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_PDF_GetResourceImage,
                                       OnHostMsgGetResourceImage)
   IPC_END_MESSAGE_MAP()
@@ -396,5 +394,3 @@ bool PepperPDFHost::CreateImageData(
 
   return true;
 }
-
-}  // namespace chrome

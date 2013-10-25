@@ -32,8 +32,6 @@ namespace extensions {
 class Dispatcher;
 }
 
-namespace chrome {
-
 class PepperExtensionsCommonHost : public ppapi::host::ResourceHost,
                                    public extensions::RequestSender::Source {
  public:
@@ -81,7 +79,5 @@ class PepperExtensionsCommonHost : public ppapi::host::ResourceHost,
 
   DISALLOW_COPY_AND_ASSIGN(PepperExtensionsCommonHost);
 };
-
-}  // namespace chrome
 
 #endif  // CHROME_RENDERER_PEPPER_PEPPER_EXTENSIONS_COMMON_HOST_H_

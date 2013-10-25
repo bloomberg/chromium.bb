@@ -16,8 +16,6 @@
 #include "ppapi/proxy/serialized_flash_menu.h"
 #include "ui/gfx/point.h"
 
-namespace chrome {
-
 namespace {
 
 // Maximum depth of submenus allowed (e.g., 1 indicates that submenus are
@@ -203,5 +201,3 @@ void PepperFlashMenuHost::SendMenuReply(int32_t result, int action) {
                     PpapiPluginMsg_FlashMenu_ShowReply(action));
 
 }
-
-}  // namespace chrome

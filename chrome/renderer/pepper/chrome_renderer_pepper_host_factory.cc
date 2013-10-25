@@ -21,8 +21,6 @@
 
 using ppapi::host::ResourceHost;
 
-namespace chrome {
-
 ChromeRendererPepperHostFactory::ChromeRendererPepperHostFactory(
     content::RendererPpapiHost* host)
     : host_(host) {
@@ -113,5 +111,3 @@ ChromeRendererPepperHostFactory::CreateResourceHost(
 
   return scoped_ptr<ResourceHost>();
 }
-
-}  // namespace chrome

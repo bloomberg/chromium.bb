@@ -13,8 +13,6 @@
 #include "ppapi/host/ppapi_host.h"
 #include "ppapi/proxy/ppapi_messages.h"
 
-namespace chrome {
-
 // TODO(raymes): This is duplicated from pepper_flash_drm_host.cc but once
 // FileRef is refactored to the browser, it won't need to be.
 namespace {
@@ -94,6 +92,3 @@ void PepperFlashDRMRendererHost::DidCreateFileRefHosts(
   host()->SendReply(reply_context,
                     PpapiPluginMsg_FlashDRM_GetVoucherFileReply(create_info));
 }
-
-}  // namespace chrome
-

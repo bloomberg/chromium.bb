@@ -33,8 +33,6 @@ struct HostMessageContext;
 }
 }
 
-namespace chrome {
-
 class PepperPDFHost : public ppapi::host::ResourceHost {
  public:
   PepperPDFHost(content::RendererPpapiHost* host,
@@ -78,7 +76,5 @@ class PepperPDFHost : public ppapi::host::ResourceHost {
 
   DISALLOW_COPY_AND_ASSIGN(PepperPDFHost);
 };
-
-}  // namespace chrome
 
 #endif  // CHROME_RENDERER_PEPPER_PEPPER_PDF_HOST_H_
