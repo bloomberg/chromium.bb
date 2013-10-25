@@ -9,6 +9,10 @@ namespace content {
 SyntheticGestureParams::SyntheticGestureParams()
     : gesture_source_type(DEFAULT_INPUT) {}
 
+SyntheticGestureParams::SyntheticGestureParams(
+    const SyntheticGestureParams& other)
+    : gesture_source_type(other.gesture_source_type) {}
+
 SyntheticGestureParams::~SyntheticGestureParams() {}
 
 }  // namespace content

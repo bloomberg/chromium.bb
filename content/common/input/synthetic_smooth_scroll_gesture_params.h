@@ -15,6 +15,8 @@ struct CONTENT_EXPORT SyntheticSmoothScrollGestureParams
     : public SyntheticGestureParams {
  public:
   SyntheticSmoothScrollGestureParams();
+  SyntheticSmoothScrollGestureParams(
+      const SyntheticSmoothScrollGestureParams& other);
   virtual ~SyntheticSmoothScrollGestureParams();
 
   virtual GestureType GetGestureType() const OVERRIDE;

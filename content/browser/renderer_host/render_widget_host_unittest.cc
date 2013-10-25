@@ -11,7 +11,7 @@
 #include "content/browser/renderer_host/backing_store.h"
 #include "content/browser/renderer_host/input/gesture_event_filter.h"
 #include "content/browser/renderer_host/input/immediate_input_router.h"
-#include "content/browser/renderer_host/input/mock_web_input_event_builders.h"
+#include "content/browser/renderer_host/input/synthetic_web_input_event_builders.h"
 #include "content/browser/renderer_host/input/tap_suppression_controller.h"
 #include "content/browser/renderer_host/input/tap_suppression_controller_client.h"
 #include "content/browser/renderer_host/input/touch_event_queue.h"
@@ -647,28 +647,28 @@ class RenderWidgetHostTest : public testing::Test {
   }
 
   void SimulateKeyboardEvent(WebInputEvent::Type type) {
-    host_->ForwardKeyboardEvent(MockWebKeyboardEventBuilder::Build(type));
+    host_->ForwardKeyboardEvent(SyntheticWebKeyboardEventBuilder::Build(type));
   }
 
   void SimulateMouseEvent(WebInputEvent::Type type) {
-    host_->ForwardMouseEvent(MockWebMouseEventBuilder::Build(type));
+    host_->ForwardMouseEvent(SyntheticWebMouseEventBuilder::Build(type));
   }
 
   void SimulateWheelEvent(float dX, float dY, int modifiers, bool precise) {
     host_->ForwardWheelEvent(
-        MockWebMouseWheelEventBuilder::Build(dX, dY, modifiers, precise));
+        SyntheticWebMouseWheelEventBuilder::Build(dX, dY, modifiers, precise));
   }
 
   void SimulateMouseMove(int x, int y, int modifiers) {
     host_->ForwardMouseEvent(
-        MockWebMouseEventBuilder::Build(WebInputEvent::MouseMove,
-                                        x,
-                                        y,
-                                        modifiers));
+        SyntheticWebMouseEventBuilder::Build(WebInputEvent::MouseMove,
+                                             x,
+                                             y,
+                                             modifiers));
   }
 
   void SimulateWheelEventWithPhase(WebMouseWheelEvent::Phase phase) {
-    host_->ForwardWheelEvent(MockWebMouseWheelEventBuilder::Build(phase));
+    host_->ForwardWheelEvent(SyntheticWebMouseWheelEventBuilder::Build(phase));
   }
 
   // Inject provided synthetic WebGestureEvent instance.
@@ -680,12 +680,12 @@ class RenderWidgetHostTest : public testing::Test {
   void SimulateGestureEvent(WebInputEvent::Type type,
                             WebGestureEvent::SourceDevice sourceDevice) {
     SimulateGestureEventCore(
-        MockWebGestureEventBuilder::Build(type, sourceDevice));
+        SyntheticWebGestureEventBuilder::Build(type, sourceDevice));
   }
 
   void SimulateGestureScrollUpdateEvent(float dX, float dY, int modifiers) {
     SimulateGestureEventCore(
-        MockWebGestureEventBuilder::BuildScrollUpdate(dX, dY, modifiers));
+        SyntheticWebGestureEventBuilder::BuildScrollUpdate(dX, dY, modifiers));
   }
 
   void SimulateGesturePinchUpdateEvent(float scale,
@@ -693,10 +693,10 @@ class RenderWidgetHostTest : public testing::Test {
                                        float anchorY,
                                        int modifiers) {
     SimulateGestureEventCore(
-        MockWebGestureEventBuilder::BuildPinchUpdate(scale,
-                                                     anchorX,
-                                                     anchorY,
-                                                     modifiers));
+        SyntheticWebGestureEventBuilder::BuildPinchUpdate(scale,
+                                                          anchorX,
+                                                          anchorY,
+                                                          modifiers));
   }
 
   // Inject synthetic GestureFlingStart events.
@@ -705,9 +705,9 @@ class RenderWidgetHostTest : public testing::Test {
       float velocityY,
       WebGestureEvent::SourceDevice sourceDevice) {
     SimulateGestureEventCore(
-        MockWebGestureEventBuilder::BuildFling(velocityX,
-                                               velocityY,
-                                               sourceDevice));
+        SyntheticWebGestureEventBuilder::BuildFling(velocityX,
+                                                    velocityY,
+                                                    sourceDevice));
   }
 
   // Set the timestamp for the touch-event.
@@ -756,7 +756,7 @@ class RenderWidgetHostTest : public testing::Test {
   bool handle_mouse_event_;
 
  private:
-  MockWebTouchEvent touch_event_;
+  SyntheticWebTouchEvent touch_event_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostTest);
 };

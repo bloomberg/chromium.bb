@@ -13,6 +13,13 @@ namespace content {
 SyntheticSmoothScrollGestureParams::SyntheticSmoothScrollGestureParams()
     : distance(100), anchor_x(0), anchor_y(0) {}
 
+SyntheticSmoothScrollGestureParams::SyntheticSmoothScrollGestureParams(
+      const SyntheticSmoothScrollGestureParams& other)
+    : SyntheticGestureParams(other),
+      distance(other.distance),
+      anchor_x(other.anchor_x),
+      anchor_y(other.anchor_y) {}
+
 SyntheticSmoothScrollGestureParams::~SyntheticSmoothScrollGestureParams() {}
 
 SyntheticGestureParams::GestureType

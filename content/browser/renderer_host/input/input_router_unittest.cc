@@ -44,9 +44,10 @@ void InputRouterTest::TearDown() {
 
 void InputRouterTest::SimulateKeyboardEvent(WebInputEvent::Type type,
                                             bool is_shortcut) {
-  input_router_->SendKeyboardEvent(MockWebKeyboardEventBuilder::Build(type),
-                                   ui::LatencyInfo(),
-                                   is_shortcut);
+  input_router_->SendKeyboardEvent(
+      SyntheticWebKeyboardEventBuilder::Build(type),
+      ui::LatencyInfo(),
+      is_shortcut);
 }
 
 void InputRouterTest::SimulateWheelEvent(float dX,
@@ -55,13 +56,13 @@ void InputRouterTest::SimulateWheelEvent(float dX,
                                          bool precise) {
   input_router_->SendWheelEvent(
       MouseWheelEventWithLatencyInfo(
-          MockWebMouseWheelEventBuilder::Build(dX, dY, modifiers, precise),
+          SyntheticWebMouseWheelEventBuilder::Build(dX, dY, modifiers, precise),
           ui::LatencyInfo()));
 }
 
 void InputRouterTest::SimulateMouseMove(int x, int y, int modifiers) {
   input_router_->SendMouseEvent(
-      MouseEventWithLatencyInfo(MockWebMouseEventBuilder::Build(
+      MouseEventWithLatencyInfo(SyntheticWebMouseEventBuilder::Build(
                                     WebInputEvent::MouseMove, x, y, modifiers),
                                 ui::LatencyInfo()));
 }
@@ -70,7 +71,7 @@ void InputRouterTest::SimulateWheelEventWithPhase(
     WebMouseWheelEvent::Phase phase) {
   input_router_->SendWheelEvent(
       MouseWheelEventWithLatencyInfo(
-          MockWebMouseWheelEventBuilder::Build(phase), ui::LatencyInfo()));
+          SyntheticWebMouseWheelEventBuilder::Build(phase), ui::LatencyInfo()));
 }
 
 // Inject provided synthetic WebGestureEvent instance.
@@ -84,14 +85,15 @@ void InputRouterTest::SimulateGestureEvent(
 void InputRouterTest::SimulateGestureEvent(
     WebInputEvent::Type type,
     WebGestureEvent::SourceDevice sourceDevice) {
-  SimulateGestureEvent(MockWebGestureEventBuilder::Build(type, sourceDevice));
+  SimulateGestureEvent(
+      SyntheticWebGestureEventBuilder::Build(type, sourceDevice));
 }
 
 void InputRouterTest::SimulateGestureScrollUpdateEvent(float dX,
                                                        float dY,
                                                        int modifiers) {
   SimulateGestureEvent(
-      MockWebGestureEventBuilder::BuildScrollUpdate(dX, dY, modifiers));
+      SyntheticWebGestureEventBuilder::BuildScrollUpdate(dX, dY, modifiers));
 }
 
 void InputRouterTest::SimulateGesturePinchUpdateEvent(float scale,
@@ -99,10 +101,10 @@ void InputRouterTest::SimulateGesturePinchUpdateEvent(float scale,
                                                       float anchorY,
                                                       int modifiers) {
   SimulateGestureEvent(
-      MockWebGestureEventBuilder::BuildPinchUpdate(scale,
-                                                   anchorX,
-                                                   anchorY,
-                                                   modifiers));
+      SyntheticWebGestureEventBuilder::BuildPinchUpdate(scale,
+                                                        anchorX,
+                                                        anchorY,
+                                                        modifiers));
 }
 
 // Inject synthetic GestureFlingStart events.
@@ -111,9 +113,9 @@ void InputRouterTest::SimulateGestureFlingStartEvent(
     float velocityY,
     WebGestureEvent::SourceDevice sourceDevice) {
   SimulateGestureEvent(
-      MockWebGestureEventBuilder::BuildFling(velocityX,
-                                             velocityY,
-                                             sourceDevice));
+      SyntheticWebGestureEventBuilder::BuildFling(velocityX,
+                                                  velocityY,
+                                                  sourceDevice));
 }
 
 void InputRouterTest::SimulateTouchEvent(int x, int y) {

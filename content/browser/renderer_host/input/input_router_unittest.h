@@ -9,7 +9,7 @@
 #include "content/browser/renderer_host/input/input_router_client.h"
 #include "content/browser/renderer_host/input/mock_input_ack_handler.h"
 #include "content/browser/renderer_host/input/mock_input_router_client.h"
-#include "content/browser/renderer_host/input/mock_web_input_event_builders.h"
+#include "content/browser/renderer_host/input/synthetic_web_input_event_builders.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -73,7 +73,7 @@ class InputRouterTest : public testing::Test {
 
  private:
   base::MessageLoopForUI message_loop_;
-  MockWebTouchEvent touch_event_;
+  SyntheticWebTouchEvent touch_event_;
 
   scoped_ptr<TestBrowserContext> browser_context_;
 };

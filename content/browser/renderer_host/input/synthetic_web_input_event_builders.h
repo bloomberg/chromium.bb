@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_RENDERER_HOST_INPUT_MOCK_WEB_INPUT_EVENT_BUILDERS_H_
-#define CONTENT_BROWSER_RENDERER_HOST_INPUT_MOCK_WEB_INPUT_EVENT_BUILDERS_H_
+#ifndef CONTENT_BROWSER_RENDERER_HOST_INPUT_SYNTHETIC_WEB_INPUT_EVENT_BUILDERS_H_
+#define CONTENT_BROWSER_RENDERER_HOST_INPUT_SYNTHETIC_WEB_INPUT_EVENT_BUILDERS_H_
 
 #include "base/time/time.h"
+#include "content/common/content_export.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 
@@ -13,7 +14,7 @@
 
 namespace content {
 
-class MockWebMouseEventBuilder {
+class CONTENT_EXPORT SyntheticWebMouseEventBuilder {
  public:
   static WebKit::WebMouseEvent Build(WebKit::WebInputEvent::Type type);
   static WebKit::WebMouseEvent Build(WebKit::WebInputEvent::Type type,
@@ -22,7 +23,7 @@ class MockWebMouseEventBuilder {
                                      int modifiers);
 };
 
-class MockWebMouseWheelEventBuilder {
+class CONTENT_EXPORT SyntheticWebMouseWheelEventBuilder {
  public:
   static WebKit::WebMouseWheelEvent Build(
       WebKit::WebMouseWheelEvent::Phase phase);
@@ -32,12 +33,12 @@ class MockWebMouseWheelEventBuilder {
                                           bool precise);
 };
 
-class MockWebKeyboardEventBuilder {
+class CONTENT_EXPORT SyntheticWebKeyboardEventBuilder {
  public:
   static NativeWebKeyboardEvent Build(WebKit::WebInputEvent::Type type);
 };
 
-class MockWebGestureEventBuilder {
+class CONTENT_EXPORT SyntheticWebGestureEventBuilder {
  public:
   static WebKit::WebGestureEvent Build(
       WebKit::WebInputEvent::Type type,
@@ -55,9 +56,10 @@ class MockWebGestureEventBuilder {
       WebKit::WebGestureEvent::SourceDevice source_device);
 };
 
-struct MockWebTouchEvent : public WebKit::WebTouchEvent {
+class CONTENT_EXPORT SyntheticWebTouchEvent
+    : public NON_EXPORTED_BASE(WebKit::WebTouchEvent) {
  public:
-  MockWebTouchEvent();
+  SyntheticWebTouchEvent();
 
   // Mark all the points as stationary, and remove any released points.
   void ResetPoints();
@@ -70,11 +72,11 @@ struct MockWebTouchEvent : public WebKit::WebTouchEvent {
   void SetTimestamp(base::TimeDelta timestamp);
 };
 
-class MockWebTouchEventBuilder {
+class CONTENT_EXPORT SyntheticWebTouchEventBuilder {
  public:
-  static MockWebTouchEvent Build(WebKit::WebInputEvent::Type type);
+  static SyntheticWebTouchEvent Build(WebKit::WebInputEvent::Type type);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_RENDERER_HOST_INPUT_MOCK_WEB_INPUT_EVENT_BUILDERS_H_
+#endif  // CONTENT_BROWSER_RENDERER_HOST_INPUT_SYNTHETIC_WEB_INPUT_EVENT_BUILDERS_H_

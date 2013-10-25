@@ -10,7 +10,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/time/time.h"
 #include "content/browser/renderer_host/input/gesture_event_filter.h"
-#include "content/browser/renderer_host/input/mock_web_input_event_builders.h"
+#include "content/browser/renderer_host/input/synthetic_web_input_event_builders.h"
 #include "content/browser/renderer_host/input/touchpad_tap_suppression_controller.h"
 #include "content/port/common/input_event_ack_state.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -76,12 +76,13 @@ class GestureEventFilterTest : public testing::Test,
 
   void SimulateGestureEvent(WebInputEvent::Type type,
                             WebGestureEvent::SourceDevice sourceDevice) {
-    SimulateGestureEvent(MockWebGestureEventBuilder::Build(type, sourceDevice));
+    SimulateGestureEvent(
+        SyntheticWebGestureEventBuilder::Build(type, sourceDevice));
   }
 
   void SimulateGestureScrollUpdateEvent(float dX, float dY, int modifiers) {
     SimulateGestureEvent(
-        MockWebGestureEventBuilder::BuildScrollUpdate(dX, dY, modifiers));
+        SyntheticWebGestureEventBuilder::BuildScrollUpdate(dX, dY, modifiers));
   }
 
   void SimulateGesturePinchUpdateEvent(float scale,
@@ -89,10 +90,10 @@ class GestureEventFilterTest : public testing::Test,
                                        float anchorY,
                                        int modifiers) {
     SimulateGestureEvent(
-        MockWebGestureEventBuilder::BuildPinchUpdate(scale,
-                                                     anchorX,
-                                                     anchorY,
-                                                     modifiers));
+        SyntheticWebGestureEventBuilder::BuildPinchUpdate(scale,
+                                                          anchorX,
+                                                          anchorY,
+                                                          modifiers));
   }
 
   void SimulateGestureFlingStartEvent(
@@ -100,9 +101,9 @@ class GestureEventFilterTest : public testing::Test,
       float velocityY,
       WebGestureEvent::SourceDevice sourceDevice) {
     SimulateGestureEvent(
-        MockWebGestureEventBuilder::BuildFling(velocityX,
-                                               velocityY,
-                                               sourceDevice));
+        SyntheticWebGestureEventBuilder::BuildFling(velocityX,
+                                                    velocityY,
+                                                    sourceDevice));
   }
 
   void SendInputEventACK(WebInputEvent::Type type,

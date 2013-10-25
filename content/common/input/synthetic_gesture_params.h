@@ -29,6 +29,10 @@ namespace content {
 //      correctly.
 // The details of each step should become clear when looking at other types.
 struct CONTENT_EXPORT SyntheticGestureParams {
+  SyntheticGestureParams();
+  SyntheticGestureParams(const SyntheticGestureParams& other);
+  virtual ~SyntheticGestureParams();
+
   // Describes which type of input events synthetic gesture objects should
   // generate. When specifying DEFAULT_INPUT the platform will be queried for
   // the preferred input event type.
@@ -38,10 +42,6 @@ struct CONTENT_EXPORT SyntheticGestureParams {
     MOUSE_INPUT,
     GESTURE_SOURCE_TYPE_MAX = MOUSE_INPUT
   };
-
-  SyntheticGestureParams();
-  virtual ~SyntheticGestureParams();
-
   GestureSourceType gesture_source_type;
 
   enum GestureType {

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/renderer_host/input/mock_web_input_event_builders.h"
+#include "content/browser/renderer_host/input/synthetic_web_input_event_builders.h"
 
 #include "base/logging.h"
 #include "content/browser/renderer_host/input/web_input_event_util.h"
@@ -18,17 +18,18 @@ using WebKit::WebMouseWheelEvent;
 using WebKit::WebTouchEvent;
 using WebKit::WebTouchPoint;
 
-WebMouseEvent MockWebMouseEventBuilder::Build(
+WebMouseEvent SyntheticWebMouseEventBuilder::Build(
     WebKit::WebInputEvent::Type type) {
   WebMouseEvent result;
   result.type = type;
   return result;
 }
 
-WebMouseEvent MockWebMouseEventBuilder::Build(WebKit::WebInputEvent::Type type,
-                                              int window_x,
-                                              int window_y,
-                                              int modifiers) {
+WebMouseEvent SyntheticWebMouseEventBuilder::Build(
+    WebKit::WebInputEvent::Type type,
+    int window_x,
+    int window_y,
+    int modifiers) {
   DCHECK(WebInputEvent::isMouseEventType(type));
   WebMouseEvent result = Build(type);
   result.x = window_x;
@@ -45,7 +46,7 @@ WebMouseEvent MockWebMouseEventBuilder::Build(WebKit::WebInputEvent::Type type,
   return result;
 }
 
-WebMouseWheelEvent MockWebMouseWheelEventBuilder::Build(
+WebMouseWheelEvent SyntheticWebMouseWheelEventBuilder::Build(
     WebMouseWheelEvent::Phase phase) {
   WebMouseWheelEvent result;
   result.type = WebInputEvent::MouseWheel;
@@ -53,10 +54,10 @@ WebMouseWheelEvent MockWebMouseWheelEventBuilder::Build(
   return result;
 }
 
-WebMouseWheelEvent MockWebMouseWheelEventBuilder::Build(float dx,
-                                                        float dy,
-                                                        int modifiers,
-                                                        bool precise) {
+WebMouseWheelEvent SyntheticWebMouseWheelEventBuilder::Build(float dx,
+                                                             float dy,
+                                                             int modifiers,
+                                                             bool precise) {
   WebMouseWheelEvent result;
   result.type = WebInputEvent::MouseWheel;
   result.deltaX = dx;
@@ -66,7 +67,7 @@ WebMouseWheelEvent MockWebMouseWheelEventBuilder::Build(float dx,
   return result;
 }
 
-NativeWebKeyboardEvent MockWebKeyboardEventBuilder::Build(
+NativeWebKeyboardEvent SyntheticWebKeyboardEventBuilder::Build(
     WebInputEvent::Type type) {
   DCHECK(WebInputEvent::isKeyboardEventType(type));
   NativeWebKeyboardEvent result;
@@ -75,7 +76,7 @@ NativeWebKeyboardEvent MockWebKeyboardEventBuilder::Build(
   return result;
 }
 
-WebGestureEvent MockWebGestureEventBuilder::Build(
+WebGestureEvent SyntheticWebGestureEventBuilder::Build(
     WebInputEvent::Type type,
     WebGestureEvent::SourceDevice source_device) {
   DCHECK(WebInputEvent::isGestureEventType(type));
@@ -85,7 +86,7 @@ WebGestureEvent MockWebGestureEventBuilder::Build(
   return result;
 }
 
-WebGestureEvent MockWebGestureEventBuilder::BuildScrollUpdate(
+WebGestureEvent SyntheticWebGestureEventBuilder::BuildScrollUpdate(
     float dx,
     float dy,
     int modifiers) {
@@ -97,7 +98,7 @@ WebGestureEvent MockWebGestureEventBuilder::BuildScrollUpdate(
   return result;
 }
 
-WebGestureEvent MockWebGestureEventBuilder::BuildPinchUpdate(
+WebGestureEvent SyntheticWebGestureEventBuilder::BuildPinchUpdate(
     float scale,
     float anchor_x,
     float anchor_y,
@@ -111,7 +112,7 @@ WebGestureEvent MockWebGestureEventBuilder::BuildPinchUpdate(
   return result;
 }
 
-WebGestureEvent MockWebGestureEventBuilder::BuildFling(
+WebGestureEvent SyntheticWebGestureEventBuilder::BuildFling(
     float velocity_x,
     float velocity_y,
     WebGestureEvent::SourceDevice source_device) {
@@ -122,9 +123,9 @@ WebGestureEvent MockWebGestureEventBuilder::BuildFling(
   return result;
 }
 
-MockWebTouchEvent::MockWebTouchEvent() : WebTouchEvent() {}
+SyntheticWebTouchEvent::SyntheticWebTouchEvent() : WebTouchEvent() {}
 
-void MockWebTouchEvent::ResetPoints() {
+void SyntheticWebTouchEvent::ResetPoints() {
   int point = 0;
   for (unsigned int i = 0; i < touchesLength; ++i) {
     if (touches[i].state == WebTouchPoint::StateReleased)
@@ -138,7 +139,7 @@ void MockWebTouchEvent::ResetPoints() {
   type = WebInputEvent::Undefined;
 }
 
-int MockWebTouchEvent::PressPoint(int x, int y) {
+int SyntheticWebTouchEvent::PressPoint(int x, int y) {
   if (touchesLength == touchesLengthCap)
     return -1;
   WebTouchPoint& point = touches[touchesLength];
@@ -152,7 +153,7 @@ int MockWebTouchEvent::PressPoint(int x, int y) {
   return point.id;
 }
 
-void MockWebTouchEvent::MovePoint(int index, int x, int y) {
+void SyntheticWebTouchEvent::MovePoint(int index, int x, int y) {
   CHECK(index >= 0 && index < touchesLengthCap);
   WebTouchPoint& point = touches[index];
   point.position.x = point.screenPosition.x = x;
@@ -161,19 +162,20 @@ void MockWebTouchEvent::MovePoint(int index, int x, int y) {
   type = WebInputEvent::TouchMove;
 }
 
-void MockWebTouchEvent::ReleasePoint(int index) {
+void SyntheticWebTouchEvent::ReleasePoint(int index) {
   CHECK(index >= 0 && index < touchesLengthCap);
   touches[index].state = WebTouchPoint::StateReleased;
   type = WebInputEvent::TouchEnd;
 }
 
-void MockWebTouchEvent::SetTimestamp(base::TimeDelta timestamp) {
+void SyntheticWebTouchEvent::SetTimestamp(base::TimeDelta timestamp) {
   timeStampSeconds = timestamp.InSecondsF();
 }
 
-MockWebTouchEvent MockWebTouchEventBuilder::Build(WebInputEvent::Type type) {
+SyntheticWebTouchEvent SyntheticWebTouchEventBuilder::Build(
+    WebInputEvent::Type type) {
   DCHECK(WebInputEvent::isTouchEventType(type));
-  MockWebTouchEvent result;
+  SyntheticWebTouchEvent result;
   result.type = type;
   return result;
 };

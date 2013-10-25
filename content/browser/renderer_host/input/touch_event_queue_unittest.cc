@@ -5,7 +5,7 @@
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "content/browser/renderer_host/input/mock_web_input_event_builders.h"
+#include "content/browser/renderer_host/input/synthetic_web_input_event_builders.h"
 #include "content/browser/renderer_host/input/touch_event_queue.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
@@ -156,7 +156,7 @@ class TouchEventQueueTest : public testing::Test,
   WebTouchEvent last_sent_event_;
   WebTouchEvent last_acked_event_;
   InputEventAckState last_acked_event_state_;
-  MockWebTouchEvent touch_event_;
+  SyntheticWebTouchEvent touch_event_;
   scoped_ptr<WebTouchEvent> followup_touch_event_;
   scoped_ptr<WebGestureEvent> followup_gesture_event_;
 };
