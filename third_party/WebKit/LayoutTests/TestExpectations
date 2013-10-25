@@ -676,3 +676,5 @@ crbug.com/311467 [ Win ] http/tests/xmlhttprequest/timeout/xmlhttprequest-timeou
 
 crbug.com/311469 [ Mac ] svg/custom/font-face-cascade-order.svg [ Crash Failure Pass ]
 crbug.com/311469 [ Mac ] svg/custom/getSubStringLength.html [ Failure Pass ]
+
+crbug.com/311487 [ Debug ] svg/custom/acid3-test-77.html [ Pass Timeout ]
