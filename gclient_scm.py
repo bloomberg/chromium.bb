@@ -801,8 +801,7 @@ class GitWrapper(SCMWrapper):
           cmd += ['--reference', os.path.abspath(self.checkout_path)]
 
         self._Run(cmd + [url, folder],
-                  options, git_filter=True, filter_fn=filter_fn,
-                  cwd=self.cache_dir, retry=True)
+                  options, filter_fn=filter_fn, cwd=self.cache_dir, retry=True)
       else:
         # For now, assert that host/path/to/repo.git is identical. We may want
         # to relax this restriction in the future to allow for smarter cache
@@ -819,8 +818,7 @@ class GitWrapper(SCMWrapper):
         # Would normally use `git remote update`, but it doesn't support
         # --progress, so use fetch instead.
         self._Run(['fetch'] + v + ['--multiple', '--progress', '--all'],
-                  options, git_filter=True, filter_fn=filter_fn, cwd=folder,
-                  retry=True)
+                  options, filter_fn=filter_fn, cwd=folder, retry=True)
 
       # If the clone has an object dependency on the existing repo, break it
       # with repack and remove the linkage.
@@ -859,8 +857,7 @@ class GitWrapper(SCMWrapper):
         dir=parent_dir)
     try:
       clone_cmd.append(tmp_dir)
-      self._Run(clone_cmd, options, cwd=self._root_dir, git_filter=True,
-                retry=True)
+      self._Run(clone_cmd, options, cwd=self._root_dir, retry=True)
       gclient_utils.safe_makedirs(self.checkout_path)
       gclient_utils.safe_rename(os.path.join(tmp_dir, '.git'),
                                 os.path.join(self.checkout_path, '.git'))
@@ -1037,8 +1034,9 @@ class GitWrapper(SCMWrapper):
           fetch_cmd.append('--verbose')
         self._Run(fetch_cmd, options, retry=True)
 
-  def _Run(self, args, _options, git_filter=False, **kwargs):
+  def _Run(self, args, options, **kwargs):
     kwargs.setdefault('cwd', self.checkout_path)
+    git_filter = not options.verbose
     if git_filter:
       kwargs['filter_fn'] = GitFilter(kwargs.get('filter_fn'))
       kwargs.setdefault('print_stdout', False)
