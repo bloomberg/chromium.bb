@@ -252,8 +252,6 @@
         'test/base/test_launcher_utils.h',
         'test/base/test_switches.cc',
         'test/base/test_switches.h',
-        'test/base/test_tab_strip_model_observer.cc',
-        'test/base/test_tab_strip_model_observer.h',
         'test/base/testing_browser_process.cc',
         'test/base/testing_browser_process.h',
         'test/base/testing_browser_process_platform_part.h',

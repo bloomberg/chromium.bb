@@ -14,27 +14,30 @@
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/webui/web_ui_test_handler.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/test_chrome_web_ui_controller_factory.h"
-#include "chrome/test/base/test_tab_strip_model_observer.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
-#include "content/public/browser/render_view_host_observer.h"
 #include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_ui_controller.h"
 #include "content/public/browser/web_ui_message_handler.h"
+#include "content/public/test/browser_test_utils.h"
+#include "content/public/test/test_navigation_observer.h"
 #include "net/base/net_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest-spi.h"
@@ -78,54 +81,26 @@ bool LogHandler(int severity,
   return false;
 }
 
-class RenderViewHostInitializedObserver
-    : public content::RenderViewHostObserver {
+class WebUIJsInjectionReadyObserver : public content::WebContentsObserver {
  public:
-  RenderViewHostInitializedObserver(content::RenderViewHost* render_view_host,
-                                    content::JsInjectionReadyObserver* observer)
-      : content::RenderViewHostObserver(render_view_host),
-        injection_observer_(observer) {
-  }
+  WebUIJsInjectionReadyObserver(content::WebContents* web_contents,
+                                WebUIBrowserTest* browser_test,
+                                const std::string& preload_test_fixture,
+                                const std::string& preload_test_name)
+      : content::WebContentsObserver(web_contents),
+        browser_test_(browser_test),
+        preload_test_fixture_(preload_test_fixture),
+        preload_test_name_(preload_test_name) {}
 
-  // content::RenderViewHostObserver:
-  virtual void RenderViewHostInitialized() OVERRIDE {
-    injection_observer_->OnJsInjectionReady(render_view_host());
+  virtual void RenderViewCreated(content::RenderViewHost* rvh) OVERRIDE {
+    browser_test_->PreLoadJavascriptLibraries(
+        preload_test_fixture_, preload_test_name_, rvh);
   }
 
  private:
-  content::JsInjectionReadyObserver* injection_observer_;
-
-  DISALLOW_COPY_AND_ASSIGN(RenderViewHostInitializedObserver);
-};
-
-class WebUIJsInjectionReadyObserver {
- public:
-  explicit WebUIJsInjectionReadyObserver(
-      content::JsInjectionReadyObserver* observer)
-      : injection_observer_(observer),
-        rvh_callback_(
-            base::Bind(&WebUIJsInjectionReadyObserver::RenderViewHostCreated,
-                       base::Unretained(this))) {
-    content::RenderViewHost::AddCreatedCallback(rvh_callback_);
-  }
-
-  ~WebUIJsInjectionReadyObserver() {
-    content::RenderViewHost::RemoveCreatedCallback(rvh_callback_);
-  }
-
- private:
-  void RenderViewHostCreated(content::RenderViewHost* rvh) {
-    rvh_observer_.reset(
-        new RenderViewHostInitializedObserver(rvh, injection_observer_));
-  }
-
-  content::JsInjectionReadyObserver* injection_observer_;
-
-  scoped_ptr<RenderViewHostInitializedObserver> rvh_observer_;
-
-  content::RenderViewHost::CreatedCallback rvh_callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(WebUIJsInjectionReadyObserver);
+  WebUIBrowserTest* browser_test_;
+  std::string preload_test_fixture_;
+  std::string preload_test_name_;
 };
 
 }  // namespace
@@ -268,9 +243,11 @@ void WebUIBrowserTest::PreLoadJavascriptLibraries(
 }
 
 void WebUIBrowserTest::BrowsePreload(const GURL& browse_to) {
-  WebUIJsInjectionReadyObserver injection_observer(this);
-  content::TestNavigationObserver navigation_observer(
-      browser()->tab_strip_model()->GetActiveWebContents());
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  WebUIJsInjectionReadyObserver injection_observer(
+      web_contents, this, preload_test_fixture_, preload_test_name_);
+  content::TestNavigationObserver navigation_observer(web_contents);
   chrome::NavigateParams params(browser(), GURL(browse_to),
                                 content::PAGE_TRANSITION_TYPED);
   params.disposition = CURRENT_TAB;
@@ -278,14 +255,61 @@ void WebUIBrowserTest::BrowsePreload(const GURL& browse_to) {
   navigation_observer.Wait();
 }
 
+#if defined(ENABLE_FULL_PRINTING)
+
+// This custom ContentBrowserClient is used to get notified when a WebContents
+// for the print preview dialog gets created.
+class PrintContentBrowserClient : public chrome::ChromeContentBrowserClient {
+ public:
+  PrintContentBrowserClient(WebUIBrowserTest* browser_test,
+                            const std::string& preload_test_fixture,
+                            const std::string& preload_test_name)
+      : browser_test_(browser_test),
+        preload_test_fixture_(preload_test_fixture),
+        preload_test_name_(preload_test_name),
+        preview_dialog_(NULL),
+        message_loop_runner_(new content::MessageLoopRunner) {}
+
+  void Wait() {
+    message_loop_runner_->Run();
+    content::WaitForLoadStop(preview_dialog_);
+  }
+
+ private:
+  // ChromeContentBrowserClient implementation:
+  virtual content::WebContentsViewPort* OverrideCreateWebContentsView(
+      content::WebContents* web_contents,
+      content::RenderViewHostDelegateView** view) OVERRIDE {
+    preview_dialog_ = web_contents;
+    observer_.reset(new WebUIJsInjectionReadyObserver(
+        preview_dialog_, browser_test_, preload_test_fixture_,
+        preload_test_name_));
+    message_loop_runner_->Quit();
+    return NULL;
+  }
+
+  WebUIBrowserTest* browser_test_;
+  scoped_ptr<WebUIJsInjectionReadyObserver> observer_;
+  std::string preload_test_fixture_;
+  std::string preload_test_name_;
+  content::WebContents* preview_dialog_;
+  scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
+};
+#endif
+
 void WebUIBrowserTest::BrowsePrintPreload(const GURL& browse_to) {
 #if defined(ENABLE_FULL_PRINTING)
   ui_test_utils::NavigateToURL(browser(), browse_to);
 
-  TestTabStripModelObserver tabstrip_observer(
-      browser()->tab_strip_model(), this);
+  PrintContentBrowserClient new_client(
+      this, preload_test_fixture_, preload_test_name_);
+  content::ContentBrowserClient* old_client =
+      SetBrowserClientForTesting(&new_client);
+
   chrome::Print(browser());
-  tabstrip_observer.Wait();
+  new_client.Wait();
+
+  SetBrowserClientForTesting(old_client);
 
   printing::PrintPreviewDialogController* tab_controller =
       printing::PrintPreviewDialogController::GetInstance();
@@ -435,11 +459,6 @@ GURL WebUIBrowserTest::WebUITestDataPathToURL(
   base::FilePath test_path(dir_test_data.Append(kWebUITestFolder).Append(path));
   EXPECT_TRUE(base::PathExists(test_path));
   return net::FilePathToFileURL(test_path);
-}
-
-void WebUIBrowserTest::OnJsInjectionReady(RenderViewHost* render_view_host) {
-  PreLoadJavascriptLibraries(preload_test_fixture_, preload_test_name_,
-                             render_view_host);
 }
 
 void WebUIBrowserTest::BuildJavascriptLibraries(string16* content) {

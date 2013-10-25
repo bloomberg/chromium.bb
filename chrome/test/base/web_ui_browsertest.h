@@ -12,7 +12,6 @@
 #include "base/memory/scoped_vector.h"
 #include "base/strings/string16.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "content/public/test/js_injection_ready_observer.h"
 
 namespace base {
 class Value;
@@ -41,9 +40,7 @@ class WebUITestHandler;
 // These tests should follow the form given in:
 // chrome/test/data/webui/sample_downloads.js.
 // and the lone test within this class.
-class WebUIBrowserTest
-    : public InProcessBrowserTest,
-      public content::JsInjectionReadyObserver {
+class WebUIBrowserTest : public InProcessBrowserTest {
  public:
   typedef ScopedVector<const base::Value> ConstValueVector;
   virtual ~WebUIBrowserTest();
@@ -140,10 +137,6 @@ class WebUIBrowserTest
   static GURL WebUITestDataPathToURL(const base::FilePath::StringType& path);
 
  private:
-  // content::JsInjectionReadyObserver implementation.
-  virtual void OnJsInjectionReady(
-      content::RenderViewHost* render_view_host) OVERRIDE;
-
   // Builds a string containing all added javascript libraries.
   void BuildJavascriptLibraries(string16* content);
 
