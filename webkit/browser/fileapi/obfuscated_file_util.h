@@ -18,6 +18,7 @@
 #include "webkit/browser/fileapi/file_system_file_util.h"
 #include "webkit/browser/fileapi/file_system_url.h"
 #include "webkit/browser/fileapi/sandbox_directory_database.h"
+#include "webkit/browser/fileapi/sandbox_file_system_backend_delegate.h"
 #include "webkit/browser/webkit_storage_browser_export.h"
 #include "webkit/common/blob/shareable_file_reference.h"
 #include "webkit/common/fileapi/file_system_types.h"
@@ -99,7 +100,8 @@ class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE ObfuscatedFileUtil
       const base::FilePath& file_system_directory,
       base::SequencedTaskRunner* file_task_runner,
       const GetTypeStringForURLCallback& get_type_string_for_url,
-      const std::set<std::string>& known_type_strings);
+      const std::set<std::string>& known_type_strings,
+      SandboxFileSystemBackendDelegate* sandbox_delegate);
   virtual ~ObfuscatedFileUtil();
 
   // FileSystemFileUtil overrides.
@@ -336,6 +338,9 @@ class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE ObfuscatedFileUtil
 
   GetTypeStringForURLCallback get_type_string_for_url_;
   std::set<std::string> known_type_strings_;
+
+  // Not owned.
+  SandboxFileSystemBackendDelegate* sandbox_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(ObfuscatedFileUtil);
 };

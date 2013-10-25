@@ -103,7 +103,8 @@ PluginPrivateFileSystemBackend::PluginPrivateFileSystemBackend(
           file_task_runner,
           base::Bind(&FileSystemIDToPluginMap::GetPluginIDForURL,
                      base::Owned(plugin_map_)),
-          std::set<std::string>())));
+          std::set<std::string>(),
+          NULL)));
 }
 
 PluginPrivateFileSystemBackend::~PluginPrivateFileSystemBackend() {

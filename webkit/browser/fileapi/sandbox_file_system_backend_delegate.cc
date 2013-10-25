@@ -166,7 +166,8 @@ SandboxFileSystemBackendDelegate::SandboxFileSystemBackendDelegate(
               profile_path.Append(kFileSystemDirectory),
               file_task_runner,
               base::Bind(&GetTypeStringForURL),
-              GetKnownTypeStrings()))),
+              GetKnownTypeStrings(),
+              this))),
       file_system_usage_cache_(new FileSystemUsageCache(file_task_runner)),
       quota_observer_(new SandboxQuotaObserver(
           quota_manager_proxy,
@@ -620,7 +621,8 @@ ObfuscatedFileUtil* ObfuscatedFileUtil::CreateForTesting(
                                 file_system_directory,
                                 file_task_runner,
                                 base::Bind(&GetTypeStringForURL),
-                                GetKnownTypeStrings());
+                                GetKnownTypeStrings(),
+                                NULL);
 }
 
 }  // namespace fileapi

@@ -257,13 +257,15 @@ ObfuscatedFileUtil::ObfuscatedFileUtil(
     const base::FilePath& file_system_directory,
     base::SequencedTaskRunner* file_task_runner,
     const GetTypeStringForURLCallback& get_type_string_for_url,
-    const std::set<std::string>& known_type_strings)
+    const std::set<std::string>& known_type_strings,
+    SandboxFileSystemBackendDelegate* sandbox_delegate)
     : special_storage_policy_(special_storage_policy),
       file_system_directory_(file_system_directory),
       db_flush_delay_seconds_(10 * 60),  // 10 mins.
       file_task_runner_(file_task_runner),
       get_type_string_for_url_(get_type_string_for_url),
-      known_type_strings_(known_type_strings) {
+      known_type_strings_(known_type_strings),
+      sandbox_delegate_(sandbox_delegate) {
 }
 
 ObfuscatedFileUtil::~ObfuscatedFileUtil() {
@@ -278,10 +280,10 @@ PlatformFileError ObfuscatedFileUtil::CreateOrOpen(
                                                  file_handle, created);
   if (*file_handle != base::kInvalidPlatformFileValue &&
       file_flags & base::PLATFORM_FILE_WRITE &&
-      context->quota_limit_type() == quota::kQuotaLimitTypeUnlimited) {
+      context->quota_limit_type() == quota::kQuotaLimitTypeUnlimited &&
+      sandbox_delegate_) {
     DCHECK_EQ(base::PLATFORM_FILE_OK, error);
-    context->file_system_context()->sandbox_delegate()->
-        StickyInvalidateUsageCache(url.origin(), url.type());
+    sandbox_delegate_->StickyInvalidateUsageCache(url.origin(), url.type());
   }
   return error;
 }
@@ -1194,8 +1196,8 @@ void ObfuscatedFileUtil::InvalidateUsageCache(
     FileSystemOperationContext* context,
     const GURL& origin,
     FileSystemType type) {
-  context->file_system_context()->sandbox_delegate()->
-      InvalidateUsageCache(origin, type);
+  if (sandbox_delegate_)
+    sandbox_delegate_->InvalidateUsageCache(origin, type);
 }
 
 void ObfuscatedFileUtil::MarkUsed() {
