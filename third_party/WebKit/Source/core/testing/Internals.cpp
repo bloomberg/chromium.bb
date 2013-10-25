@@ -107,7 +107,6 @@
 #include "core/platform/graphics/filters/FilterOperation.h"
 #include "core/platform/graphics/filters/FilterOperations.h"
 #include "core/platform/graphics/gpu/SharedGraphicsContext3D.h"
-#include "core/platform/mock/PlatformSpeechSynthesizerMock.h"
 #include "core/rendering/CompositedLayerMapping.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderLayerCompositor.h"
@@ -117,8 +116,6 @@
 #include "core/rendering/RenderView.h"
 #include "core/testing/GCObservation.h"
 #include "core/workers/WorkerThread.h"
-#include "modules/speech/DOMWindowSpeechSynthesis.h"
-#include "modules/speech/SpeechSynthesis.h"
 #include "platform/Language.h"
 #include "platform/TraceEvent.h"
 #include "platform/geometry/IntRect.h"
@@ -719,18 +716,6 @@ void Internals::setFormControlStateOfPreviousHistoryItem(const Vector<String>& s
         subItem->setDocumentState(state);
     else
         es.throwUninformativeAndGenericDOMException(InvalidAccessError);
-}
-
-void Internals::enableMockSpeechSynthesizer()
-{
-    Document* document = contextDocument();
-    if (!document || !document->domWindow())
-        return;
-    SpeechSynthesis* synthesis = DOMWindowSpeechSynthesis::speechSynthesis(document->domWindow());
-    if (!synthesis)
-        return;
-
-    synthesis->setPlatformSynthesizer(PlatformSpeechSynthesizerMock::create(synthesis));
 }
 
 void Internals::setEnableMockPagePopup(bool enabled, ExceptionState& es)

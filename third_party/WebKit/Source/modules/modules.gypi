@@ -776,9 +776,12 @@
       'websockets/WorkerThreadableWebSocketChannel.h',
     ],
     'modules_testing_support_idl_files' : [
+      'speech/testing/InternalsSpeechSynthesis.idl',
       'vibration/testing/InternalsVibration.idl',
     ],
     'modules_testing_support_files': [
+      'speech/testing/InternalsSpeechSynthesis.cpp',
+      'speech/testing/InternalsSpeechSynthesis.h',
       'vibration/testing/InternalsVibration.cpp',
       'vibration/testing/InternalsVibration.h',
     ],

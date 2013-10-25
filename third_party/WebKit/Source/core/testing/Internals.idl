@@ -255,8 +255,6 @@
 
     void forceReload(boolean endToEnd);
 
-    void enableMockSpeechSynthesizer();
-
     [RaisesException] DOMString getImageSourceURL(Element element);
 
     boolean isSelectPopupVisible(Node node);

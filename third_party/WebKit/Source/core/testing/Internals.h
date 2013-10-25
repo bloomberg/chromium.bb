@@ -287,8 +287,6 @@ public:
 
     void forceReload(bool endToEnd);
 
-    void enableMockSpeechSynthesizer();
-
     String getImageSourceURL(Element*, ExceptionState&);
 
     bool isSelectPopupVisible(Node*);
