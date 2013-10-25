@@ -36,7 +36,6 @@ class Document;
 class XMLTreeViewer {
 public:
     explicit XMLTreeViewer(Document*);
-    virtual ~XMLTreeViewer() {};
 
     void transformDocumentToTreeView();
 
