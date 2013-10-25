@@ -38,23 +38,15 @@ VideoCaptureParams::VideoCaptureParams()
     : session_id(0) {}
 
 VideoCaptureCapability::VideoCaptureCapability()
-    : color(PIXEL_FORMAT_UNKNOWN),
-      expected_capture_delay(0),
-      interlaced(false),
-      session_id(0) {}
+    : color(PIXEL_FORMAT_UNKNOWN) {}
 
 VideoCaptureCapability::VideoCaptureCapability(
     int width,
     int height,
     int frame_rate,
     VideoPixelFormat color,
-    int delay,
-    bool interlaced,
     VideoCaptureResolutionType frame_size_type)
     : VideoCaptureFormat(width, height, frame_rate, frame_size_type),
-      color(color),
-      expected_capture_delay(delay),
-      interlaced(interlaced),
-      session_id(0) {}
+      color(color) {}
 
 }  // namespace media

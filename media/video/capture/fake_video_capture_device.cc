@@ -89,8 +89,6 @@ void FakeVideoCaptureDevice::AllocateAndStart(
 
   client_ = client.Pass();
   capture_format_.color = PIXEL_FORMAT_I420;
-  capture_format_.expected_capture_delay = 0;
-  capture_format_.interlaced = false;
   if (capture_format.width > 320) {  // VGA
     capture_format_.width = 640;
     capture_format_.height = 480;
@@ -222,24 +220,18 @@ void FakeVideoCaptureDevice::PopulateCapabilitiesRoster() {
                                     240,
                                     30,
                                     PIXEL_FORMAT_I420,
-                                    0,
-                                    false,
                                     VariableResolutionVideoCaptureDevice));
   capabilities_roster_.push_back(
       media::VideoCaptureCapability(640,
                                     480,
                                     30,
                                     PIXEL_FORMAT_I420,
-                                    0,
-                                    false,
                                     VariableResolutionVideoCaptureDevice));
   capabilities_roster_.push_back(
       media::VideoCaptureCapability(800,
                                     600,
                                     30,
                                     PIXEL_FORMAT_I420,
-                                    0,
-                                    false,
                                     VariableResolutionVideoCaptureDevice));
 
   capabilities_roster_index_ = 0;

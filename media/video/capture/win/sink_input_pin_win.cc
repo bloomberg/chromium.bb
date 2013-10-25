@@ -147,8 +147,6 @@ void SinkInputPin::SetRequestedMediaCapability(
   resulting_capability_.height = 0;
   resulting_capability_.frame_rate = 0;
   resulting_capability_.color = PIXEL_FORMAT_UNKNOWN;
-  resulting_capability_.expected_capture_delay = 0;
-  resulting_capability_.interlaced = false;
 }
 
 const VideoCaptureCapability& SinkInputPin::ResultingCapability() {

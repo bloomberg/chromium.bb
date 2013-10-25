@@ -154,8 +154,6 @@ void VideoCaptureDeviceMac::AllocateAndStart(
   current_settings_.width = width;
   current_settings_.height = height;
   current_settings_.frame_rate = frame_rate;
-  current_settings_.expected_capture_delay = 0;
-  current_settings_.interlaced = false;
 
   if (width != kHD.width || height != kHD.height) {
     // If the resolution is VGA or QVGA, set the capture resolution to the

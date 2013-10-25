@@ -227,10 +227,7 @@ void DesktopCaptureDevice::Core::DoAllocateAndStart(
   client_ = client.Pass();
   requested_format_ = capture_format;
 
-  // Store requested frame rate and calculate expected delay.
   capture_format_.frame_rate = requested_format_.frame_rate;
-  capture_format_.expected_capture_delay =
-      base::Time::kMillisecondsPerSecond / requested_format_.frame_rate;
 
   // Support dynamic changes in resolution only if requester also does.
   if (requested_format_.frame_size_type ==
@@ -241,7 +238,6 @@ void DesktopCaptureDevice::Core::DoAllocateAndStart(
 
   // This capturer always outputs ARGB, non-interlaced.
   capture_format_.color = media::PIXEL_FORMAT_ARGB;
-  capture_format_.interlaced = false;
 
   desktop_capturer_->Start(this);
 

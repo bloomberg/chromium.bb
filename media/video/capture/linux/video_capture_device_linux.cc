@@ -415,8 +415,6 @@ void VideoCaptureDeviceLinux::OnAllocateAndStart(int width,
   current_settings.width  = video_fmt.fmt.pix.width;
   current_settings.height = video_fmt.fmt.pix.height;
   current_settings.frame_rate = frame_rate;
-  current_settings.expected_capture_delay = 0;
-  current_settings.interlaced = false;
 
   // Report the resulting frame size to the client.
   client_->OnFrameInfo(current_settings);

@@ -130,7 +130,7 @@ TEST_F(DesktopCaptureDeviceTest, MAYBE_Capture) {
                  InvokeWithoutArgs(&done_event, &base::WaitableEvent::Signal)));
 
   media::VideoCaptureCapability capture_format(
-      640, 480, kFrameRate, media::PIXEL_FORMAT_I420, 0, false,
+      640, 480, kFrameRate, media::PIXEL_FORMAT_I420,
       media::ConstantResolutionVideoCaptureDevice);
   capture_device.AllocateAndStart(
       capture_format, client.PassAs<media::VideoCaptureDevice::Client>());
@@ -141,7 +141,6 @@ TEST_F(DesktopCaptureDeviceTest, MAYBE_Capture) {
   EXPECT_GT(caps.height, 0);
   EXPECT_EQ(kFrameRate, caps.frame_rate);
   EXPECT_EQ(media::PIXEL_FORMAT_ARGB, caps.color);
-  EXPECT_FALSE(caps.interlaced);
 
   EXPECT_EQ(caps.width * caps.height * 4, frame_size);
   worker_pool_->FlushForTesting();
@@ -176,8 +175,6 @@ TEST_F(DesktopCaptureDeviceTest, ScreenResolutionChangeConstantResolution) {
       kTestFrameHeight1,
       kFrameRate,
       media::PIXEL_FORMAT_I420,
-      0,
-      false,
       media::ConstantResolutionVideoCaptureDevice);
 
   capture_device.AllocateAndStart(
@@ -195,7 +192,6 @@ TEST_F(DesktopCaptureDeviceTest, ScreenResolutionChangeConstantResolution) {
   EXPECT_EQ(kTestFrameHeight1, caps.height);
   EXPECT_EQ(kFrameRate, caps.frame_rate);
   EXPECT_EQ(media::PIXEL_FORMAT_ARGB, caps.color);
-  EXPECT_FALSE(caps.interlaced);
 
   EXPECT_EQ(caps.width * caps.height * 4, frame_size);
   worker_pool_->FlushForTesting();
@@ -237,8 +233,6 @@ TEST_F(DesktopCaptureDeviceTest, ScreenResolutionChangeVariableResolution) {
       kTestFrameHeight2,
       kFrameRate,
       media::PIXEL_FORMAT_I420,
-      0,
-      false,
       media::VariableResolutionVideoCaptureDevice);
 
   capture_device.AllocateAndStart(
@@ -258,7 +252,6 @@ TEST_F(DesktopCaptureDeviceTest, ScreenResolutionChangeVariableResolution) {
   EXPECT_EQ(kTestFrameHeight1, caps.height);
   EXPECT_EQ(kFrameRate, caps.frame_rate);
   EXPECT_EQ(media::PIXEL_FORMAT_ARGB, caps.color);
-  EXPECT_FALSE(caps.interlaced);
   worker_pool_->FlushForTesting();
 }
 

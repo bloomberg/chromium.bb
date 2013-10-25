@@ -576,8 +576,6 @@ TEST_F(WebContentsVideoCaptureDeviceTest, InvalidInitialWebContentsError) {
       kTestHeight,
       kTestFramesPerSecond,
       media::PIXEL_FORMAT_I420,
-      0,
-      false,
       media::ConstantResolutionVideoCaptureDevice);
   device()->AllocateAndStart(
       capture_format, client_observer()->PassClient());
@@ -593,8 +591,6 @@ TEST_F(WebContentsVideoCaptureDeviceTest, WebContentsDestroyed) {
       kTestHeight,
       kTestFramesPerSecond,
       media::PIXEL_FORMAT_I420,
-      0,
-      false,
       media::ConstantResolutionVideoCaptureDevice);
   device()->AllocateAndStart(
       capture_format, client_observer()->PassClient());
@@ -621,8 +617,6 @@ TEST_F(WebContentsVideoCaptureDeviceTest,
       kTestHeight,
       kTestFramesPerSecond,
       media::PIXEL_FORMAT_I420,
-      0,
-      false,
       media::ConstantResolutionVideoCaptureDevice);
   device()->AllocateAndStart(
       capture_format, client_observer()->PassClient());
@@ -647,8 +641,6 @@ TEST_F(WebContentsVideoCaptureDeviceTest, StopWithRendererWorkToDo) {
       kTestHeight,
       kTestFramesPerSecond,
       media::PIXEL_FORMAT_I420,
-      0,
-      false,
       media::ConstantResolutionVideoCaptureDevice);
   device()->AllocateAndStart(
       capture_format, client_observer()->PassClient());
@@ -671,8 +663,6 @@ TEST_F(WebContentsVideoCaptureDeviceTest, DeviceRestart) {
       kTestHeight,
       kTestFramesPerSecond,
       media::PIXEL_FORMAT_I420,
-      0,
-      false,
       media::ConstantResolutionVideoCaptureDevice);
   device()->AllocateAndStart(
       capture_format, client_observer()->PassClient());
@@ -714,8 +704,6 @@ TEST_F(WebContentsVideoCaptureDeviceTest, GoesThroughAllTheMotions) {
       kTestHeight,
       kTestFramesPerSecond,
       media::PIXEL_FORMAT_I420,
-      0,
-      false,
       media::ConstantResolutionVideoCaptureDevice);
   device()->AllocateAndStart(
       capture_format, client_observer()->PassClient());
@@ -769,8 +757,6 @@ TEST_F(WebContentsVideoCaptureDeviceTest, RejectsInvalidAllocateParams) {
       720,
       -2,
       media::PIXEL_FORMAT_I420,
-      0,
-      false,
       media::ConstantResolutionVideoCaptureDevice);
   BrowserThread::PostTask(
       BrowserThread::UI,
@@ -794,8 +780,6 @@ TEST_F(WebContentsVideoCaptureDeviceTest, BadFramesGoodFrames) {
       kTestHeight,
       kTestFramesPerSecond,
       media::PIXEL_FORMAT_I420,
-      0,
-      false,
       media::ConstantResolutionVideoCaptureDevice);
   // 1x1 is too small to process; we intend for this to result in an error.
   source()->SetCopyResultSize(1, 1);

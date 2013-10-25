@@ -132,9 +132,6 @@ bool FillCapabilitiesFromType(IMFMediaType* type,
   capability->frame_rate =
       capability->frame_rate_numerator / capability->frame_rate_denominator;
 
-  capability->expected_capture_delay = 0;  // Currently not used.
-  capability->interlaced = false;          // Currently not used.
-
   return true;
 }
 

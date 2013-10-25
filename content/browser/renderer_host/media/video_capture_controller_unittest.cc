@@ -225,7 +225,7 @@ TEST_F(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
   // The device format needn't match the VideoCaptureParams (the camera can do
   // what it wants). Pick something random to use for OnFrameInfo.
   media::VideoCaptureCapability device_format(
-      10, 10, 25, media::PIXEL_FORMAT_RGB24, 10, false,
+      10, 10, 25, media::PIXEL_FORMAT_RGB24,
       media::ConstantResolutionVideoCaptureDevice);
 
   const VideoCaptureControllerID client_a_route_1(0xa1a1a1a1);
@@ -381,7 +381,7 @@ TEST_F(VideoCaptureControllerTest, ErrorBeforeDeviceCreation) {
 
   // OnFrameInfo from the VCD should become a no-op after the error occurs.
   media::VideoCaptureCapability device_format(
-      10, 10, 25, media::PIXEL_FORMAT_ARGB, 10, false,
+      10, 10, 25, media::PIXEL_FORMAT_ARGB,
       media::ConstantResolutionVideoCaptureDevice);
 
   device_->OnFrameInfo(device_format);
@@ -406,7 +406,7 @@ TEST_F(VideoCaptureControllerTest, ErrorAfterDeviceCreation) {
                          base::kNullProcessHandle, session_100);
   // OnFrameInfo from the VCD should become a no-op after the error occurs.
   media::VideoCaptureCapability device_format(
-      10, 10, 25, media::PIXEL_FORMAT_ARGB, 10, false,
+      10, 10, 25, media::PIXEL_FORMAT_ARGB,
       media::ConstantResolutionVideoCaptureDevice);
 
   // Start the device. Then, before the first frame, signal an error and deliver

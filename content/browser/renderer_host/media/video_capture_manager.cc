@@ -210,7 +210,6 @@ void VideoCaptureManager::StartCaptureForClient(
              << entry->stream_type << ", id = " << entry->id << ")";
 
     media::VideoCaptureCapability params_as_capability;
-    params_as_capability.session_id = params.session_id;
     params_as_capability.width = params.requested_format.width;
     params_as_capability.height = params.requested_format.height;
     params_as_capability.frame_rate = params.requested_format.frame_rate;

@@ -280,8 +280,6 @@
     captureCapability.height = frameHeight;
     captureCapability.frame_rate = frameRate_;
     captureCapability.color = media::PIXEL_FORMAT_UYVY;
-    captureCapability.expected_capture_delay = 0;
-    captureCapability.interlaced = false;
 
     // The aspect ratio dictionary is often missing, in which case we report
     // a pixel aspect ratio of 0:0.
