@@ -53,8 +53,9 @@ namespace {
 // Size of extension icon in top left of dialog.
 const int kIconSize = 69;
 
-// The dialog width.
-const int kDialogWidth = 385;
+// We offset the icon a little bit from the right edge of the dialog, to make it
+// align with the button below it.
+const int kIconOffset = 16;
 
 // The dialog will resize based on its content, but this sets a maximum height
 // before overflowing a scrollbar.
@@ -378,6 +379,8 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
   if (is_external_install())
     left_column_width = kExternalInstallLeftColumnWidth;
 
+  int dialog_width = left_column_width + 2 * views::kPanelHorizMargin;
+
   column_set->AddColumn(views::GridLayout::LEADING,
                         views::GridLayout::FILL,
                         0,  // no resizing
@@ -386,12 +389,14 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
                         left_column_width);
   if (!is_bundle_install()) {
     column_set->AddPaddingColumn(0, views::kPanelHorizMargin);
-    column_set->AddColumn(views::GridLayout::LEADING,
+    column_set->AddColumn(views::GridLayout::TRAILING,
                           views::GridLayout::LEADING,
                           0,  // no resizing
                           views::GridLayout::USE_PREF,
                           0,  // no fixed width
                           kIconSize);
+
+    dialog_width += views::kPanelHorizMargin + kIconSize + kIconOffset;
   }
 
   layout->StartRow(0, column_set_id);
@@ -422,15 +427,10 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
       icon_row_span = 4;
     } else if (prompt.ShouldShowPermissions()) {
       size_t permission_count = prompt.GetPermissionCount();
-      if (permission_count > 0) {
-        // Also span the permission header and each of the permission rows (all
-        // have a padding row above it).
-        icon_row_span = 3 + permission_count * 2;
-      } else {
-        // This is the 'no special permissions' case, so span the line we add
-        // (without a header) saying the extension has no special privileges.
-        icon_row_span = 4;
-      }
+      // Also span the permission header and each of the permission rows (all
+      // have a padding row above it). This also works for the 'no special
+      // permissions' case.
+      icon_row_span = 3 + permission_count * 2;
     } else if (prompt.GetOAuthIssueCount()) {
       // Also span the permission header and each of the permission rows (all
       // have a padding row above it).
@@ -631,7 +631,7 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
   gfx::Size scrollable_size = scrollable_->GetPreferredSize();
   scrollable_->SetBoundsRect(gfx::Rect(scrollable_size));
   dialog_size_ = gfx::Size(
-      kDialogWidth,
+      dialog_width,
       std::min(scrollable_size.height(), kDialogMaxHeight));
 }
 
