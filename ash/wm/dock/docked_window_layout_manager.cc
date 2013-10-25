@@ -105,27 +105,13 @@ bool IsUsedByLayout(aura::Window* window) {
 }
 
 void UndockWindow(aura::Window* window) {
-  aura::Window* focused =
-      aura::client::GetFocusClient(window)->GetFocusedWindow();
-  bool had_focus = window == focused || window->Contains(focused);
-  // Hide a window to prevent it from being animated during reparenting.
-  // This is useful when minimizing or maximizing a window out of dock but not
-  // when transitioning to fullscreen.
-  if (!wm::GetWindowState(window)->IsFullscreen())
-    window->Hide();
-  window->layer()->GetAnimator()->StopAnimating();
   gfx::Rect previous_bounds = window->bounds();
   aura::Window* previous_parent = window->parent();
   aura::client::ParentWindowWithContext(window, window, gfx::Rect());
   if (window->parent() != previous_parent)
     wm::ReparentTransientChildrenOfChild(window->parent(), window);
   // Animate maximize animation from previous window bounds.
-  if (wm::GetWindowState(window)->IsMaximized())
-    window->layer()->SetBounds(previous_bounds);
-  window->Show();
-  // Restore focus if the window had it before.
-  if (had_focus && !wm::GetWindowState(window)->IsFullscreen())
-    focused->Focus();
+  window->layer()->SetBounds(previous_bounds);
 }
 
 // Returns width that is as close as possible to |target_width| while being
@@ -484,6 +470,7 @@ void DockedWindowLayoutManager::OnWindowRemovedFromLayout(aura::Window* child) {
   child->RemoveObserver(this);
   wm::GetWindowState(child)->RemoveObserver(this);
   Relayout();
+  UpdateDockBounds(DockedWindowLayoutManagerObserver::CHILD_CHANGED);
 }
 
 void DockedWindowLayoutManager::OnChildWindowVisibilityChanged(
