@@ -36,6 +36,9 @@ bool RootWindowHostOzone::Dispatch(const base::NativeEvent& ne) {
   } else if (event->IsKeyEvent()) {
     ui::KeyEvent* keyev = static_cast<ui::KeyEvent*>(ne);
     delegate_->OnHostKeyEvent(keyev);
+  } else if (event->IsMouseEvent()) {
+    ui::MouseEvent* mouseev = static_cast<ui::MouseEvent*>(ne);
+    delegate_->OnHostMouseEvent(mouseev);
   }
   return true;
 }
