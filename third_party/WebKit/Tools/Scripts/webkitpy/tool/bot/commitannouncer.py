@@ -182,7 +182,10 @@ class CommitAnnouncer(SingleServerIRCBot):
         return '%s committed "%s" %s %s%s' % (email, subject, first_url, svn_url, red_flag_message)
 
     def _post(self, message):
-        self.connection.execute_delayed(0, lambda: self.connection.privmsg(channel, message))
+        self.connection.execute_delayed(0, lambda: self.connection.privmsg(channel, self._sanitize_string(message)))
+
+    def _sanitize_string(self, message):
+        return message.encode('ascii', 'backslashreplace')
 
 
 class CommitAnnouncerThread(threading.Thread):

@@ -206,3 +206,8 @@ Review URL: https://codereview.chromium.org/123456
 
 git-svn-id: svn://svn.chromium.org/blink/trunk@456789 bbb929c8-8fbe-4397-9dbb-9b2b20218538
 """))
+
+    def test_sanitize_string(self):
+        bot = CommitAnnouncer(MockTool(), "test_password")
+        self.assertEqual('normal ascii', bot._sanitize_string('normal ascii'))
+        self.assertEqual('uni\\u0441ode!', bot._sanitize_string(u'uni\u0441ode!'))
