@@ -1007,6 +1007,7 @@
         'browser/chromeos/accessibility/magnification_manager_browsertest.cc',
         'browser/chromeos/app_mode/kiosk_app_manager_browsertest.cc',
         'browser/chromeos/app_mode/kiosk_app_update_service_browsertest.cc',
+        'browser/chromeos/attestation/attestation_policy_browsertest.cc',
         'browser/chromeos/drive/drive_integration_service_browsertest.cc',
         'browser/chromeos/drive/test_util.cc',
         'browser/chromeos/drive/test_util.h',
