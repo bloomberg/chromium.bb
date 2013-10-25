@@ -372,19 +372,28 @@ void PluginList::GetPluginPathsFromRegistry(
 bool PluginList::ShouldLoadPluginUsingPluginList(
     const WebPluginInfo& info,
     std::vector<WebPluginInfo>* plugins) {
-  // Version check
-  for (size_t j = 0; j < plugins->size(); ++j) {
-    base::FilePath::StringType plugin1 =
-        StringToLowerASCII((*plugins)[j].path.BaseName().value());
-    base::FilePath::StringType plugin2 =
-        StringToLowerASCII(info.path.BaseName().value());
-    if ((plugin1 == plugin2 && HaveSharedMimeType((*plugins)[j], info)) ||
-        (plugin1 == kJavaDeploy1 && plugin2 == kJavaDeploy2) ||
-        (plugin1 == kJavaDeploy2 && plugin2 == kJavaDeploy1)) {
-      if (IsNewerVersion(info.version, (*plugins)[j].version))
-        return false;  // We have loaded a plugin whose version is newer.
-      plugins->erase(plugins->begin() + j);
-      break;
+  bool should_check_version = true;
+  {
+    base::AutoLock lock(lock_);
+    should_check_version =
+        std::find(extra_plugin_paths_.begin(), extra_plugin_paths_.end(),
+                  info.path) == extra_plugin_paths_.end();
+  }
+  // Version check for plugins that are not coming from |extra_plugin_paths_|.
+  if (should_check_version) {
+    for (size_t j = 0; j < plugins->size(); ++j) {
+      base::FilePath::StringType plugin1 =
+          StringToLowerASCII((*plugins)[j].path.BaseName().value());
+      base::FilePath::StringType plugin2 =
+          StringToLowerASCII(info.path.BaseName().value());
+      if ((plugin1 == plugin2 && HaveSharedMimeType((*plugins)[j], info)) ||
+          (plugin1 == kJavaDeploy1 && plugin2 == kJavaDeploy2) ||
+          (plugin1 == kJavaDeploy2 && plugin2 == kJavaDeploy1)) {
+        if (IsNewerVersion(info.version, (*plugins)[j].version))
+          return false;  // We have loaded a plugin whose version is newer.
+        plugins->erase(plugins->begin() + j);
+        break;
+      }
     }
   }
 
