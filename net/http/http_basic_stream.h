@@ -27,12 +27,9 @@ class IOBuffer;
 
 class HttpBasicStream : public HttpStream {
  public:
-  // Constructs a new HttpBasicStream.  If |parser| is NULL, then
-  // InitializeStream should be called to initialize it correctly.  If
-  // |parser| is non-null, then InitializeStream should not be called,
-  // as the stream is already initialized.
+  // Constructs a new HttpBasicStream. InitializeStream must be called to
+  // initialize it correctly.
   HttpBasicStream(ClientSocketHandle* connection,
-                  HttpStreamParser* parser,
                   bool using_proxy);
   virtual ~HttpBasicStream();
 

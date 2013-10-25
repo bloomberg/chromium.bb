@@ -1082,8 +1082,7 @@ int HttpStreamFactoryImpl::Job::DoCreateStream() {
               protocol_negotiated_));
       CHECK(stream_.get());
     } else {
-      stream_.reset(new HttpBasicStream(connection_.release(), NULL,
-                                        using_proxy));
+      stream_.reset(new HttpBasicStream(connection_.release(), using_proxy));
     }
     return OK;
   }

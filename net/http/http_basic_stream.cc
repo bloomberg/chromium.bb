@@ -17,14 +17,11 @@
 namespace net {
 
 HttpBasicStream::HttpBasicStream(ClientSocketHandle* connection,
-                                 HttpStreamParser* parser,
                                  bool using_proxy)
     : read_buf_(new GrowableIOBuffer()),
-      parser_(parser),
       connection_(connection),
       using_proxy_(using_proxy),
-      request_info_(NULL) {
-}
+      request_info_(NULL) {}
 
 HttpBasicStream::~HttpBasicStream() {}
 
@@ -80,7 +77,7 @@ HttpStream* HttpBasicStream::RenewStreamForAuth() {
   DCHECK(IsResponseBodyComplete());
   DCHECK(!parser_->IsMoreDataBuffered());
   parser_.reset();
-  return new HttpBasicStream(connection_.release(), NULL, using_proxy_);
+  return new HttpBasicStream(connection_.release(), using_proxy_);
 }
 
 bool HttpBasicStream::IsResponseBodyComplete() const {
