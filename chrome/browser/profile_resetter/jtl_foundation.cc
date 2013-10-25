@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 
 namespace jtl_foundation {
 
@@ -20,7 +21,7 @@ std::string Hasher::GetHash(const std::string& input) const {
   if (cached_hashes_.find(input) == cached_hashes_.end()) {
     // Calculate value.
     unsigned char digest[kHashSizeInBytes];
-    if (!hmac_.Sign(input, digest, kHashSizeInBytes)) {
+    if (!hmac_.Sign(input, digest, arraysize(digest))) {
       NOTREACHED();
       return std::string();
     }
@@ -30,6 +31,18 @@ std::string Hasher::GetHash(const std::string& input) const {
     DCHECK_EQ(kHashSizeInBytes, cached_hashes_[input].size());
   }
   return cached_hashes_[input];
+}
+
+// static
+bool Hasher::IsHash(const std::string& maybe_hash) {
+  if (maybe_hash.size() != kHashSizeInBytes)
+    return false;
+  for (std::string::const_iterator it = maybe_hash.begin();
+       it != maybe_hash.end(); ++it) {
+    if (!IsHexDigit(*it))
+      return false;
+  }
+  return true;
 }
 
 }  // namespace jtl_foundation

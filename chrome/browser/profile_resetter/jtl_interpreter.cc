@@ -63,6 +63,23 @@ class ExecutionContext {
     return hasher_->GetHash(input);
   }
 
+  // Calculates the |hash| of a string, integer or double |value|, and returns
+  // true. Returns false otherwise.
+  bool GetValueHash(const Value& value, std::string* hash) {
+    DCHECK(hash);
+    std::string value_as_string;
+    int tmp_int = 0;
+    double tmp_double = 0.0;
+    if (value.GetAsInteger(&tmp_int))
+      value_as_string = base::IntToString(tmp_int);
+    else if (value.GetAsDouble(&tmp_double))
+      value_as_string = base::DoubleToString(tmp_double);
+    else if (!value.GetAsString(&value_as_string))
+      return false;
+    *hash = GetHash(value_as_string);
+    return true;
+  }
+
   const Value* current_node() const { return stack_.back(); }
   std::vector<const Value*>* stack() { return &stack_; }
   DictionaryValue* working_memory() { return working_memory_; }
@@ -88,7 +105,7 @@ class ExecutionContext {
 
 class NavigateOperation : public Operation {
  public:
-  explicit NavigateOperation(const std::string hashed_key)
+  explicit NavigateOperation(const std::string& hashed_key)
       : hashed_key_(hashed_key) {}
   virtual ~NavigateOperation() {}
   virtual bool Execute(ExecutionContext* context) OVERRIDE {
@@ -168,7 +185,7 @@ class NavigateBackOperation : public Operation {
 
 class StoreValue : public Operation {
  public:
-  StoreValue(const std::string hashed_name, scoped_ptr<Value> value)
+  StoreValue(const std::string& hashed_name, scoped_ptr<Value> value)
       : hashed_name_(hashed_name),
         value_(value.Pass()) {
     DCHECK(IsStringUTF8(hashed_name));
@@ -188,7 +205,7 @@ class StoreValue : public Operation {
 
 class CompareStoredValue : public Operation {
  public:
-  CompareStoredValue(const std::string hashed_name,
+  CompareStoredValue(const std::string& hashed_name,
                      scoped_ptr<Value> value,
                      scoped_ptr<Value> default_value)
       : hashed_name_(hashed_name),
@@ -215,6 +232,35 @@ class CompareStoredValue : public Operation {
   DISALLOW_COPY_AND_ASSIGN(CompareStoredValue);
 };
 
+template<bool ExpectedTypeIsBooleanNotHashable>
+class StoreNodeValue : public Operation {
+ public:
+  explicit StoreNodeValue(const std::string& hashed_name)
+      : hashed_name_(hashed_name) {
+    DCHECK(IsStringUTF8(hashed_name));
+  }
+  virtual ~StoreNodeValue() {}
+  virtual bool Execute(ExecutionContext* context) OVERRIDE {
+    scoped_ptr<base::Value> value;
+    if (ExpectedTypeIsBooleanNotHashable) {
+      if (!context->current_node()->IsType(base::Value::TYPE_BOOLEAN))
+        return true;
+      value.reset(context->current_node()->DeepCopy());
+    } else {
+      std::string hash;
+      if (!context->GetValueHash(*context->current_node(), &hash))
+        return true;
+      value.reset(new base::StringValue(hash));
+    }
+    context->working_memory()->Set(hashed_name_, value.release());
+    return context->ContinueExecution();
+  }
+
+ private:
+  std::string hashed_name_;
+  DISALLOW_COPY_AND_ASSIGN(StoreNodeValue);
+};
+
 class CompareNodeBool : public Operation {
  public:
   explicit CompareNodeBool(bool value) : value_(value) {}
@@ -239,19 +285,9 @@ class CompareNodeHash : public Operation {
       : hashed_value_(hashed_value) {}
   virtual ~CompareNodeHash() {}
   virtual bool Execute(ExecutionContext* context) OVERRIDE {
-    std::string actual_value;
-    int tmp_int = 0;
-    double tmp_double = 0.0;
-    if (context->current_node()->GetAsInteger(&tmp_int)) {
-      actual_value = base::IntToString(tmp_int);
-    } else if (context->current_node()->GetAsDouble(&tmp_double)) {
-      actual_value = base::DoubleToString(tmp_double);
-    } else {
-      if (!context->current_node()->GetAsString(&actual_value))
-        return true;
-    }
-    actual_value = context->GetHash(actual_value);
-    if (actual_value != hashed_value_)
+    std::string actual_hash;
+    if (!context->GetValueHash(*context->current_node(), &actual_hash) ||
+        actual_hash != hashed_value_)
       return true;
     return context->ContinueExecution();
   }
@@ -259,6 +295,54 @@ class CompareNodeHash : public Operation {
  private:
   std::string hashed_value_;
   DISALLOW_COPY_AND_ASSIGN(CompareNodeHash);
+};
+
+class CompareNodeHashNot : public Operation {
+ public:
+  explicit CompareNodeHashNot(const std::string& hashed_value)
+      : hashed_value_(hashed_value) {}
+  virtual ~CompareNodeHashNot() {}
+  virtual bool Execute(ExecutionContext* context) OVERRIDE {
+    std::string actual_hash;
+    if (context->GetValueHash(*context->current_node(), &actual_hash) &&
+        actual_hash == hashed_value_)
+      return true;
+    return context->ContinueExecution();
+  }
+
+ private:
+  std::string hashed_value_;
+  DISALLOW_COPY_AND_ASSIGN(CompareNodeHashNot);
+};
+
+template<bool ExpectedTypeIsBooleanNotHashable>
+class CompareNodeToStored : public Operation {
+ public:
+  explicit CompareNodeToStored(const std::string& hashed_name)
+      : hashed_name_(hashed_name) {}
+  virtual ~CompareNodeToStored() {}
+  virtual bool Execute(ExecutionContext* context) OVERRIDE {
+    const Value* stored_value = NULL;
+    if (!context->working_memory()->Get(hashed_name_, &stored_value))
+      return true;
+    if (ExpectedTypeIsBooleanNotHashable) {
+      if (!context->current_node()->IsType(base::Value::TYPE_BOOLEAN) ||
+          !context->current_node()->Equals(stored_value))
+        return true;
+    } else {
+      std::string actual_hash;
+      std::string stored_hash;
+      if (!context->GetValueHash(*context->current_node(), &actual_hash) ||
+          !stored_value->GetAsString(&stored_hash) ||
+          actual_hash != stored_hash)
+        return true;
+    }
+    return context->ContinueExecution();
+  }
+
+ private:
+  std::string hashed_name_;
+  DISALLOW_COPY_AND_ASSIGN(CompareNodeToStored);
 };
 
 class StopExecutingSentenceOperation : public Operation {
@@ -356,6 +440,20 @@ class Parser {
               scoped_ptr<Value>(new base::StringValue(hashed_default_value))));
           break;
         }
+        case jtl_foundation::STORE_NODE_BOOL: {
+          std::string hashed_name;
+          if (!ReadHash(&hashed_name) || !IsStringUTF8(hashed_name))
+            return false;
+          operators.push_back(new StoreNodeValue<true>(hashed_name));
+          break;
+        }
+        case jtl_foundation::STORE_NODE_HASH: {
+          std::string hashed_name;
+          if (!ReadHash(&hashed_name) || !IsStringUTF8(hashed_name))
+            return false;
+          operators.push_back(new StoreNodeValue<false>(hashed_name));
+          break;
+        }
         case jtl_foundation::COMPARE_NODE_BOOL: {
           bool value = false;
           if (!ReadBool(&value))
@@ -368,6 +466,27 @@ class Parser {
           if (!ReadHash(&hashed_value))
             return false;
           operators.push_back(new CompareNodeHash(hashed_value));
+          break;
+        }
+        case jtl_foundation::COMPARE_NODE_HASH_NOT: {
+          std::string hashed_value;
+          if (!ReadHash(&hashed_value))
+            return false;
+          operators.push_back(new CompareNodeHashNot(hashed_value));
+          break;
+        }
+        case jtl_foundation::COMPARE_NODE_TO_STORED_BOOL: {
+          std::string hashed_name;
+          if (!ReadHash(&hashed_name) || !IsStringUTF8(hashed_name))
+            return false;
+          operators.push_back(new CompareNodeToStored<true>(hashed_name));
+          break;
+        }
+        case jtl_foundation::COMPARE_NODE_TO_STORED_HASH: {
+          std::string hashed_name;
+          if (!ReadHash(&hashed_name) || !IsStringUTF8(hashed_name))
+            return false;
+          operators.push_back(new CompareNodeToStored<false>(hashed_name));
           break;
         }
         case jtl_foundation::STOP_EXECUTING_SENTENCE:
@@ -403,15 +522,12 @@ class Parser {
 
   bool ReadHash(std::string* out) {
     if (next_instruction_index_ + jtl_foundation::kHashSizeInBytes >
-        program_.size()) {
+        program_.size())
       return false;
-    }
-    char buffer[jtl_foundation::kHashSizeInBytes];
-    for (size_t i = 0; i < arraysize(buffer); ++i) {
-      buffer[i] = program_[next_instruction_index_];
-      ++next_instruction_index_;
-    }
-    *out = std::string(buffer, arraysize(buffer));
+    *out = program_.substr(next_instruction_index_,
+                           jtl_foundation::kHashSizeInBytes);
+    next_instruction_index_ += jtl_foundation::kHashSizeInBytes;
+    DCHECK(jtl_foundation::Hasher::IsHash(*out));
     return true;
   }
 

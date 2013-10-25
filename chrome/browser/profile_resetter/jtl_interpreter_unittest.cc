@@ -196,7 +196,7 @@ TEST(JtlInterpreter, CompareStoredNoValueMismatchingDefault) {
   EXPECT_FALSE(interpreter.working_memory()->HasKey(VAR_HASH_2));
 }
 
-TEST(JtlInterpreter, CompareBoolMatch) {
+TEST(JtlInterpreter, CompareBool) {
   struct TestCase {
     std::string expected_value;
     const char* json;
@@ -204,6 +204,7 @@ TEST(JtlInterpreter, CompareBoolMatch) {
   } cases[] = {
     { VALUE_TRUE, "{ 'KEY_HASH_1': true }", true },
     { VALUE_FALSE, "{ 'KEY_HASH_1': false }", true },
+    { VALUE_TRUE, "{ 'KEY_HASH_1': false }", false },
     { VALUE_TRUE, "{ 'KEY_HASH_1': 'abc' }", false },
     { VALUE_TRUE, "{ 'KEY_HASH_1': 1 }", false },
     { VALUE_TRUE, "{ 'KEY_HASH_1': 1.2 }", false },
@@ -274,6 +275,212 @@ TEST(JtlInterpreter, CompareHashString) {
       EXPECT_FALSE(interpreter.working_memory()->HasKey(VAR_HASH_1));
     }
   }
+
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
+    SCOPED_TRACE(testing::Message() << "Negated, Iteration " << i);
+    INIT_INTERPRETER(
+        OP_NAVIGATE(KEY_HASH_1) +
+        OP_COMPARE_NODE_HASH_NOT(cases[i].expected_value) +
+        OP_STORE_BOOL(VAR_HASH_1, VALUE_TRUE),
+        cases[i].json);
+    EXPECT_EQ(JtlInterpreter::OK, interpreter.result());
+    if (!cases[i].expected_success) {
+      base::ExpectDictBooleanValue(
+          true, *interpreter.working_memory(), VAR_HASH_1);
+    } else {
+      EXPECT_FALSE(interpreter.working_memory()->HasKey(VAR_HASH_1));
+    }
+  }
+}
+
+TEST(JtlInterpreter, StoreNodeBool) {
+  struct TestCase {
+    bool expected_value;
+    const char* json;
+    bool expected_success;
+  } cases[] = {
+    { true, "{ 'KEY_HASH_1': true }", true },
+    { false, "{ 'KEY_HASH_1': false }", true },
+    { false, "{ 'KEY_HASH_1': 'abc' }", false },
+    { false, "{ 'KEY_HASH_1': 1 }", false },
+    { false, "{ 'KEY_HASH_1': 1.2 }", false },
+    { false, "{ 'KEY_HASH_1': [1] }", false },
+    { false, "{ 'KEY_HASH_1': {'a': 'b'} }", false },
+  };
+
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
+    SCOPED_TRACE(testing::Message() << "Iteration " << i);
+    INIT_INTERPRETER(
+        OP_NAVIGATE(KEY_HASH_1) +
+        OP_STORE_NODE_BOOL(VAR_HASH_1) +
+        OP_STORE_BOOL(VAR_HASH_2, VALUE_TRUE),
+        cases[i].json);
+    EXPECT_EQ(JtlInterpreter::OK, interpreter.result());
+    if (cases[i].expected_success) {
+      base::ExpectDictBooleanValue(
+          cases[i].expected_value, *interpreter.working_memory(), VAR_HASH_1);
+      base::ExpectDictBooleanValue(
+          true, *interpreter.working_memory(), VAR_HASH_2);
+    } else {
+      EXPECT_FALSE(interpreter.working_memory()->HasKey(VAR_HASH_1));
+      EXPECT_FALSE(interpreter.working_memory()->HasKey(VAR_HASH_2));
+    }
+  }
+}
+
+TEST(JtlInterpreter, CompareNodeToStoredBool) {
+  struct TestCase {
+    std::string stored_value;
+    const char* json;
+    bool expected_success;
+  } cases[] = {
+    { VALUE_TRUE, "{ 'KEY_HASH_1': true }", true },
+    { VALUE_FALSE, "{ 'KEY_HASH_1': false }", true },
+    { VALUE_FALSE, "{ 'KEY_HASH_1': true }", false },
+    { std::string(), "{ 'KEY_HASH_1': true }", false },
+
+    { VALUE_HASH_1, "{ 'KEY_HASH_1': 'VALUE_HASH_1' }", false },
+    { GetHash("1"), "{ 'KEY_HASH_1': 1 }", false },
+    { GetHash("1.2"), "{ 'KEY_HASH_1': 1.2 }", false },
+
+    { VALUE_HASH_1, "{ 'KEY_HASH_1': true }", false },
+    { GetHash("1"), "{ 'KEY_HASH_1': true }", false },
+    { GetHash("1.2"), "{ 'KEY_HASH_1': true }", false },
+
+    { VALUE_TRUE, "{ 'KEY_HASH_1': 'VALUE_HASH_1' }", false },
+    { VALUE_TRUE, "{ 'KEY_HASH_1': 1 }", false },
+    { VALUE_TRUE, "{ 'KEY_HASH_1': 1.2 }", false },
+    { VALUE_TRUE, "{ 'KEY_HASH_1': [1] }", false },
+    { VALUE_TRUE, "{ 'KEY_HASH_1': {'a': 'b'} }", false },
+  };
+
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
+    SCOPED_TRACE(testing::Message() << "Iteration " << i);
+    std::string store_op;
+    if (cases[i].stored_value == VALUE_TRUE ||
+        cases[i].stored_value == VALUE_FALSE)
+      store_op = OP_STORE_BOOL(VAR_HASH_1, cases[i].stored_value);
+    else if (!cases[i].stored_value.empty())
+      store_op = OP_STORE_HASH(VAR_HASH_1, cases[i].stored_value);
+    INIT_INTERPRETER(
+        store_op +
+        OP_NAVIGATE(KEY_HASH_1) +
+        OP_COMPARE_NODE_TO_STORED_BOOL(VAR_HASH_1) +
+        OP_STORE_BOOL(VAR_HASH_2, VALUE_TRUE),
+        cases[i].json);
+    EXPECT_EQ(JtlInterpreter::OK, interpreter.result());
+    if (cases[i].expected_success) {
+      base::ExpectDictBooleanValue(
+          true, *interpreter.working_memory(), VAR_HASH_2);
+    } else {
+      EXPECT_FALSE(interpreter.working_memory()->HasKey(VAR_HASH_2));
+    }
+  }
+}
+
+TEST(JtlInterpreter, StoreNodeHash) {
+  struct TestCase {
+    std::string expected_value;
+    const char* json;
+    bool expected_success;
+  } cases[] = {
+    { VALUE_HASH_1, "{ 'KEY_HASH_1': 'VALUE_HASH_1' }", true },
+    { VALUE_HASH_2, "{ 'KEY_HASH_1': 'VALUE_HASH_2' }", true },
+    { GetHash("1"), "{ 'KEY_HASH_1': 1 }", true },
+    { GetHash("1.2"), "{ 'KEY_HASH_1': 1.2 }", true },
+    { std::string(), "{ 'KEY_HASH_1': true }", false },
+    { std::string(), "{ 'KEY_HASH_1': [1] }", false },
+    { std::string(), "{ 'KEY_HASH_1': {'a': 'b'} }", false },
+  };
+
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
+    SCOPED_TRACE(testing::Message() << "Iteration " << i);
+    INIT_INTERPRETER(
+        OP_NAVIGATE(KEY_HASH_1) +
+        OP_STORE_NODE_HASH(VAR_HASH_1) +
+        OP_STORE_BOOL(VAR_HASH_2, VALUE_TRUE),
+        cases[i].json);
+    EXPECT_EQ(JtlInterpreter::OK, interpreter.result());
+    if (cases[i].expected_success) {
+      base::ExpectDictStringValue(
+          cases[i].expected_value, *interpreter.working_memory(), VAR_HASH_1);
+      base::ExpectDictBooleanValue(
+          true, *interpreter.working_memory(), VAR_HASH_2);
+    } else {
+      EXPECT_FALSE(interpreter.working_memory()->HasKey(VAR_HASH_1));
+      EXPECT_FALSE(interpreter.working_memory()->HasKey(VAR_HASH_2));
+    }
+  }
+}
+
+TEST(JtlInterpreter, CompareNodeToStoredHash) {
+  struct TestCase {
+    std::string stored_value;
+    const char* json;
+    bool expected_success;
+  } cases[] = {
+    { VALUE_HASH_1, "{ 'KEY_HASH_1': 'VALUE_HASH_1' }", true },
+    { VALUE_HASH_2, "{ 'KEY_HASH_1': 'VALUE_HASH_2' }", true },
+    { std::string(), "{ 'KEY_HASH_1': 'VALUE_HASH_2' }", false },
+    { VALUE_HASH_1, "{ 'KEY_HASH_1': 'VALUE_HASH_2' }", false },
+    { VALUE_HASH_1, "{ 'KEY_HASH_1': true }", false },
+    { VALUE_HASH_1, "{ 'KEY_HASH_1': 1 }", false },
+    { VALUE_HASH_1, "{ 'KEY_HASH_1': 1.1 }", false },
+    { VALUE_HASH_1, "{ 'KEY_HASH_1': [1] }", false },
+    { VALUE_HASH_1, "{ 'KEY_HASH_1': {'a': 'b'} }", false },
+
+    { GetHash("1.2"), "{ 'KEY_HASH_1': 1.2 }", true },
+    { GetHash("1.3"), "{ 'KEY_HASH_1': 1.3 }", true },
+    { std::string(), "{ 'KEY_HASH_1': 1.2 }", false },
+    { GetHash("1.2"), "{ 'KEY_HASH_1': 'VALUE_HASH_1' }", false },
+    { GetHash("1.2"), "{ 'KEY_HASH_1': true }", false },
+    { GetHash("1.2"), "{ 'KEY_HASH_1': 1 }", false },
+    { GetHash("1.2"), "{ 'KEY_HASH_1': 1.3 }", false },
+    { GetHash("1.2"), "{ 'KEY_HASH_1': [1] }", false },
+    { GetHash("1.2"), "{ 'KEY_HASH_1': {'a': 'b'} }", false },
+
+    { GetHash("1"), "{ 'KEY_HASH_1': 1 }", true },
+    { GetHash("2"), "{ 'KEY_HASH_1': 2 }", true },
+    { std::string(), "{ 'KEY_HASH_1': 2 }", false },
+    { GetHash("1"), "{ 'KEY_HASH_1': 'VALUE_HASH_1' }", false },
+    { GetHash("1"), "{ 'KEY_HASH_1': true }", false },
+    { GetHash("1"), "{ 'KEY_HASH_1': 2 }", false },
+    { GetHash("1"), "{ 'KEY_HASH_1': 1.1 }", false },
+    { GetHash("1"), "{ 'KEY_HASH_1': [1] }", false },
+    { GetHash("1"), "{ 'KEY_HASH_1': {'a': 'b'} }", false },
+
+    { VALUE_TRUE, "{ 'KEY_HASH_1': 'VALUE_HASH_1' }", false },
+    { VALUE_TRUE, "{ 'KEY_HASH_1': 1 }", false },
+    { VALUE_TRUE, "{ 'KEY_HASH_1': 1.3 }", false },
+    { VALUE_TRUE, "{ 'KEY_HASH_1': [1] }", false },
+    { VALUE_TRUE, "{ 'KEY_HASH_1': {'a': 'b'} }", false },
+
+    { VALUE_TRUE, "{ 'KEY_HASH_1': true }", false },
+    { VALUE_FALSE, "{ 'KEY_HASH_1': false }", false },
+  };
+
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
+    SCOPED_TRACE(testing::Message() << "Iteration " << i);
+    std::string store_op;
+    if (cases[i].stored_value == VALUE_TRUE ||
+        cases[i].stored_value == VALUE_FALSE)
+      store_op = OP_STORE_BOOL(VAR_HASH_1, cases[i].stored_value);
+    else if (!cases[i].stored_value.empty())
+      store_op = OP_STORE_HASH(VAR_HASH_1, cases[i].stored_value);
+    INIT_INTERPRETER(
+        store_op +
+        OP_NAVIGATE(KEY_HASH_1) +
+        OP_COMPARE_NODE_TO_STORED_HASH(VAR_HASH_1) +
+        OP_STORE_BOOL(VAR_HASH_2, VALUE_TRUE),
+        cases[i].json);
+    EXPECT_EQ(JtlInterpreter::OK, interpreter.result());
+    if (cases[i].expected_success) {
+      base::ExpectDictBooleanValue(
+          true, *interpreter.working_memory(), VAR_HASH_2);
+    } else {
+      EXPECT_FALSE(interpreter.working_memory()->HasKey(VAR_HASH_2));
+    }
+  }
 }
 
 TEST(JtlInterpreter, Stop) {
@@ -327,10 +534,18 @@ TEST(JtlInterpreter, IncorrectPrograms) {
     OP_COMPARE_STORED_BOOL(VAR_HASH_1, invalid_bool, VALUE_TRUE),
     OP_COMPARE_STORED_BOOL(VAR_HASH_1, VALUE_TRUE, invalid_bool),
     OP_COMPARE_STORED_BOOL(VAR_HASH_1, VALUE_TRUE, missing_bool),
+    OP_STORE_NODE_BOOL(missing_hash),
+    OP_STORE_NODE_BOOL(invalid_hash),
+    OP_STORE_NODE_HASH(missing_hash),
+    OP_STORE_NODE_HASH(invalid_hash),
     OP_COMPARE_NODE_BOOL(missing_bool),
     OP_COMPARE_NODE_BOOL(invalid_bool),
     OP_COMPARE_NODE_HASH(missing_hash),
     OP_COMPARE_NODE_HASH(invalid_hash),
+    OP_COMPARE_NODE_TO_STORED_BOOL(missing_hash),
+    OP_COMPARE_NODE_TO_STORED_BOOL(invalid_hash),
+    OP_COMPARE_NODE_TO_STORED_HASH(missing_hash),
+    OP_COMPARE_NODE_TO_STORED_HASH(invalid_hash),
     invalid_operation,
   };
   for (size_t i = 0; i < arraysize(programs); ++i) {

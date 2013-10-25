@@ -16,7 +16,7 @@
 //
 // The text-based JTL syntax itself much resembles C/C++. A program consists of
 // zero or more sentences. Each sentence is terminated by a semi-colon (;), and
-// is composed of *one* or more operations, separated by forward slashes (/).
+// is composed of *one* or more operations, separated by periods (.).
 //
 // Each operation resembles a C/C++ function call and consists of an instruction
 // name, and an optional argument list, which takes Boolean values and/or string
@@ -28,10 +28,10 @@
 // Example source code:
 //
 //   // Store "x"=true if path "foo.bar" is found.
-//   node("foo")/node("bar")/store_bool("x", true);
+//   go("foo").go("bar").store_bool("x", true);
 //
 //   // Store "y"="1" if the above value is set.
-//   compare_stored_bool("x", true, false)/store_hash("y", "1");
+//   compare_stored_bool("x", true, false).store_hash("y", "1");
 //
 class JtlCompiler {
  public:

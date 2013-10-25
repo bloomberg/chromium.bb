@@ -50,7 +50,7 @@ const char kMaybeArgumentListRE[] =
     "(?:\\("                    // Opening parenthesis.
     "((?:\"[^\"]*\"|[^\")])*)"  // Capture: anything inside, quote-aware.
     "\\))?";                    // Closing parenthesis + everything optional.
-const char kOperationSeparatorRE[] = "(;|/)";
+const char kOperationSeparatorRE[] = "(;|\\.)";
 
 }  // namespace
 

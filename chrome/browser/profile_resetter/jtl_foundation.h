@@ -20,12 +20,12 @@ namespace jtl_foundation {
 // The execution of each sentence starts at the root of an input dictionary. The
 // operations include navigation in the JSON data structure, as well as
 // comparing the current (leaf) node to fixed values. The program also has a
-// spearate dictionary as working memory, into which it can memorize data, then
+// separate dictionary as working memory, into which it can memorize data, then
 // later recall it for comparisons.
 //
 // Example program:
 // NAVIGATE_ANY
-// NAVIGATE("bar")
+// NAVIGATE(hash("bar"))
 // COMPARE_NODE_BOOL(1)
 // STORE_BOOL(hash("found_foo"), 1)
 // STOP_EXECUTING_SENTENCE
@@ -51,22 +51,25 @@ namespace jtl_foundation {
 // of the interpreter. Next the interpreter executes STOP_EXECUTING_SENTENCE
 // which prevents the traversal from descending into the "key4" branch from the
 // NAVIGATE_ANY operation and can therefore speedup the processing.
+//
+// All node names, and node values of type string, integer and double are hashed
+// before being compared to hash values listed in |program|.
 
 // JTL byte code consists of uint8 opcodes followed by parameters. Parameters
-// are either boolean (uint8 with value \x00 or \x01), uint8s or hash strings
-// which consist of 32 bytes.
+// are either boolean (uint8 with value \x00 or \x01), uint8s, or hash strings
+// of 32 bytes.
 // The following opcodes are defined:
 enum OpCodes {
   // Continues execution with the next operation on the element of a
   // dictionary that matches the passed key parameter. If no such element
-  // exists, the command execution returns from the current node/instruction.
+  // exists, the command execution returns from the current instruction.
   // Parameters:
-  // - the hash value of a dictionary key.
+  // - a 32 byte hash of the target dictionary key.
   NAVIGATE = 0x00,
   // Continues execution with the next operation on each element of a
   // dictionary or list. If no such element exists or the current element is
   // neither a dictionary or list, the command execution returns from the
-  // current node/instruction.
+  // current instruction.
   NAVIGATE_ANY = 0x01,
   // Continues execution with the next operation on the parent node of the
   // current node. If the current node is the root of the input dictionary, the
@@ -74,15 +77,15 @@ enum OpCodes {
   NAVIGATE_BACK = 0x02,
   // Stores a boolean value in the working memory.
   // Parameters:
-  // - a 32 ASCII character parameter name.
+  // - a 32 byte hash of the parameter name,
   // - the value to store (\x00 or \x01)
   STORE_BOOL = 0x10,
   // Checks whether a boolean stored in working memory matches the expected
   // value and continues execution with the next operation in case of a match.
   // Parameters:
-  // - a 32 ASCII character parameter name.
-  // - the expected value (\x00 or \x01).
-  // - the default value in case the working memory contains no stored
+  // - a 32 byte hash of the parameter name,
+  // - the expected value (\x00 or \x01),
+  // - the default value in case the working memory contains no corresponding
   //   entry (\x00 or\x01).
   COMPARE_STORED_BOOL = 0x11,
   // Same as STORE_BOOL but takes a hash instead of a boolean value as
@@ -91,27 +94,58 @@ enum OpCodes {
   // Same as COMPARE_STORED_BOOL but takes a hash instead of two boolean values
   // as parameters.
   COMPARE_STORED_HASH = 0x13,
-  // Compares the current node against a boolean value and continues
-  // execution with the next operation in case of a match. If the current
-  // node does not match or is not a boolean value, the program execution
-  // returns from the current node/instruction.
+  // Stores the current node into the working memory. If the current node is not
+  // a boolean value, the program execution returns from the current
+  // instruction.
   // Parameters:
-  // - a boolen value (\x00 or \x01).
+  // - a 32 byte hash of the parameter name.
+  STORE_NODE_BOOL = 0x14,
+  // Stores the hashed value of the current node into the working memory. If
+  // the current node is not a string, integer or double, the program execution
+  // returns from the current instruction.
+  // Parameters:
+  // - a 32 byte hash of the parameter name.
+  STORE_NODE_HASH = 0x15,
+  // Compares the current node against a boolean value and continues execution
+  // with the next operation in case of a match. If the current node does not
+  // match or is not a boolean value, the program execution returns from the
+  // current instruction.
+  // Parameters:
+  // - a boolean value (\x00 or \x01).
   COMPARE_NODE_BOOL = 0x20,
-  // Compares the current node against a hash value and continues execution
-  // with the next operation in case of a match. If the current node is not
-  // a string, integer or double, or if it is either but does not match, the
-  // program execution stops for the current node.
+  // Compares the hashed value of the current node against the given hash, and
+  // continues execution with the next operation in case of a match. If the
+  // current node is not a string, integer or double, or if it is either, but
+  // its hash does not match, the program execution returns from the current
+  // instruction.
   // Parameters:
-  // - a hash string of 32 bytes.
+  // - a 32 byte hash of the expected value.
   COMPARE_NODE_HASH = 0x21,
+  // The negation of the above.
+  COMPARE_NODE_HASH_NOT = 0x22,
+  // Compares the current node against a boolean value stored in working memory,
+  // and continues with the next operation in case of a match. If the current
+  // node is not a boolean value, the working memory contains no corresponding
+  // boolean value, or if they do not match, the program execution returns from
+  // the current instruction.
+  // Parameters:
+  // - a 32 byte hash of the parameter name.
+  COMPARE_NODE_TO_STORED_BOOL = 0x23,
+  // Compares the hashed value of the current node against a hash value stored
+  // in working memory, and continues with the next operation in case of a
+  // match. If the current node is not a string, integer or double, or if the
+  // working memory contains no corresponding hash string, or if the hashes do
+  // not match, the program execution returns from the current instruction.
+  // Parameters:
+  // - a 32 byte hash of the parameter name.
+  COMPARE_NODE_TO_STORED_HASH = 0x24,
   // Stop execution in this specific sentence.
   STOP_EXECUTING_SENTENCE = 0x30,
   // Separator between sentences, starts a new sentence.
   END_OF_SENTENCE = 0x31
 };
 
-static const size_t kHashSizeInBytes = 32;
+const size_t kHashSizeInBytes = 32u;
 
 // A class that provides SHA256 hash values for strings using a fixed hash seed.
 class Hasher {
@@ -120,6 +154,8 @@ class Hasher {
   ~Hasher();
 
   std::string GetHash(const std::string& input) const;
+
+  static bool IsHash(const std::string& maybe_hash);
 
  private:
   crypto::HMAC hmac_;

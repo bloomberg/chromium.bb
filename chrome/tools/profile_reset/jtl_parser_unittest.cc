@@ -215,12 +215,12 @@ TEST(JtlParser, ParsingOneWellFormedOperation) {
     const bool expected_ends_sentence;
   } cases[] = {
       {"foo1;", "foo1", "[]", true},
-      {"foo2()/", "foo2", "[]", false},
+      {"foo2().", "foo2", "[]", false},
       {"foo3(true);", "foo3", "[true]", true},
-      {"foo4(false)/", "foo4", "[false]", false},
-      {"foo5(\"bar\")/", "foo5", "[\"bar\"]", false},
-      {"foo6(\" b a r \")/", "foo6", "[\" b a r \"]", false},
-      {"foo7(true, \"bar\")/", "foo7", "[true,\"bar\"]", false},
+      {"foo4(false).", "foo4", "[false]", false},
+      {"foo5(\"bar\").", "foo5", "[\"bar\"]", false},
+      {"foo6(\" b a r \").", "foo6", "[\" b a r \"]", false},
+      {"foo7(true, \"bar\").", "foo7", "[true,\"bar\"]", false},
       {"foo8(\"bar\", false, true);", "foo8", "[\"bar\",false,true]", true},
       {"foo9(\"bar\", \" b a r \");", "foo9", "[\"bar\",\" b a r \"]", true}
   };
@@ -239,7 +239,7 @@ TEST(JtlParser, ParsingOneWellFormedOperation) {
 
 TEST(JtlParser, ParsingMultipleWellFormedOperations) {
   const char kSourceCode[] =
-      "foo1(true)/foo2/foo3(\"bar\");"
+      "foo1(true).foo2.foo3(\"bar\");"
       "foo4(\"bar\", false);";
 
   scoped_ptr<JtlParser> parser(CreateParserFromVerboseText(kSourceCode));
@@ -257,13 +257,14 @@ TEST(JtlParser, ParsingTrickyStringLiterals) {
     const char* expected_args;
     const bool expected_ends_sentence;
   } cases[] = {
-      {"prev()/foo1(\"\");next(true);", "foo1", "[\"\"]", true},
-      {"prev()/foo2(\" \");next(true);", "foo2", "[\" \"]", true},
-      {"prev()/foo3(\",\",true);next(true);", "foo3", "[\",\",true]", true},
-      {"prev()/foo4(\")\",true);next(true);", "foo4", "[\")\",true]", true},
-      {"prev()/foo5(\";\",true);next(true);", "foo5", "[\";\",true]", true},
-      {"prev()/foo6(\"/\",true)/next(true);", "foo6", "[\"/\",true]", false},
-      {"prev()/foo7(\"//\",true)/next(true);", "foo7", "[\"//\",true]", false},
+      {"prev().foo1(\"\");next(true);", "foo1", "[\"\"]", true},
+      {"prev().foo2(\" \");next(true);", "foo2", "[\" \"]", true},
+      {"prev().foo3(\",\",true);next(true);", "foo3", "[\",\",true]", true},
+      {"prev().foo4(\")\",true);next(true);", "foo4", "[\")\",true]", true},
+      {"prev().foo5(\";\",true);next(true);", "foo5", "[\";\",true]", true},
+      {"prev().foo6(\"/\",true).next(true);", "foo6", "[\"/\",true]", false},
+      {"prev().foo7(\"//\",true).next(true);", "foo7", "[\"//\",true]", false},
+      {"prev().foo8(\".\",true).next(true);", "foo8", "[\".\",true]", false},
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
@@ -294,14 +295,14 @@ TEST(JtlParser, FirstOperationIsIllFormed) {
       {"bad_args6([\"bar\"]);", "bad_args6"},
       {"bad_args7(False);", "bad_args7"},
       {"bad_args8(True);", "bad_args8"},
-      {"bad_quotes1(missing both, true)/good();", "bad_quotes1"},
-      {"bad_quotes2(true, \"missing one)/good(); //\"", "bad_quotes2"},
-      {"bad_quotes3(\"too\" \"much\", true)/good();", "bad_quotes3"},
+      {"bad_quotes1(missing both, true).good();", "bad_quotes1"},
+      {"bad_quotes2(true, \"missing one).good(); //\"", "bad_quotes2"},
+      {"bad_quotes3(\"too\" \"much\", true).good();", "bad_quotes3"},
       {"bad_missing_separator1", "bad_missing_separator1"},
       {"bad_missing_separator2()good();", "bad_missing_separator2"},
-      {"bad_parenthesis1(true/good();", "bad_parenthesis1"},
-      {"bad_parenthesis2(true/good());", "bad_parenthesis2"},
-      {"bad_parenthesis3)/good();", "bad_parenthesis3"}
+      {"bad_parenthesis1(true.good();", "bad_parenthesis1"},
+      {"bad_parenthesis2(true.good());", "bad_parenthesis2"},
+      {"bad_parenthesis3).good();", "bad_parenthesis3"}
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
@@ -317,18 +318,20 @@ TEST(JtlParser, SecondOperationIsIllFormed) {
     const char* source_code;
     const char* bad_operation_name;
   } cases[] = {
-      {"\ngood(true,false)\n/bad_args(,);", "bad_args"},
-      {"\ngood(true,false)\n/bad_quotes1(missing both, true)/good();",
+      {"\ngood(true,false)\n.bad_args(,);", "bad_args"},
+      {"\ngood(true,false)\n.bad_quotes1(missing both, true).good();",
        "bad_quotes1"},
-      {"\ngood(true,false)\n/bad_quotes2(\"missing one, true)/good(); //\"",
+      {"\ngood(true,false)\n.bad_quotes2(\"missing one, true).good(); //\"",
        "bad_quotes2"},
-      {"\ngood(true,false)\n/bad_quotes3(\"too\" \"many\", true)/good();",
+      {"\ngood(true,false)\n.bad_quotes3(\"too\" \"many\", true).good();",
        "bad_quotes3"},
-      {"\ngood(true,false)\n/missing_separator1", "missing_separator1"},
-      {"\ngood(true,false)\n/missing_separator2()good()", "missing_separator2"},
-      {"\ngood(true,false)\n/bad_parens1(true/good();", "bad_parens1"},
-      {"\ngood(true,false)\n/bad_parens2(true/good());", "bad_parens2"},
-      {"\ngood(true,false)\n/bad_parens3)/good();", "bad_parens3"}
+      {"\ngood(true,false)\n.bad_separator1()/good();", "bad_separator1"},
+      {"\ngood(true,false)\n.missing_separator1", "missing_separator1"},
+      {"\ngood(true,false)\n.missing_separator2()good();",
+       "missing_separator2"},
+      {"\ngood(true,false)\n.bad_parens1(true.good();", "bad_parens1"},
+      {"\ngood(true,false)\n.bad_parens2(true.good());", "bad_parens2"},
+      {"\ngood(true,false)\n.bad_parens3).good();", "bad_parens3"}
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {

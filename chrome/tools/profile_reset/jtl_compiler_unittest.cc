@@ -33,25 +33,36 @@ TEST(JtlCompiler, CompileSingleInstructions) {
     std::string source_code;
     std::string expected_bytecode;
   } cases[] = {
-        {"node(\"foo\")/", OP_NAVIGATE(GetHash("foo"))},
-        {"node(\"has whitespace\t\")/",
+        {"go(\"foo\").", OP_NAVIGATE(GetHash("foo"))},
+        {"go(\"has whitespace\t\").",
          OP_NAVIGATE(GetHash("has whitespace\t"))},
-        {"any/", OP_NAVIGATE_ANY},
-        {"back/", OP_NAVIGATE_BACK},
-        {"store_bool(\"name\", true)/",
+        {"any.", OP_NAVIGATE_ANY},
+        {"back.", OP_NAVIGATE_BACK},
+        {"store_bool(\"name\", true).",
          OP_STORE_BOOL(GetHash("name"), VALUE_TRUE)},
-        {"compare_stored_bool(\"name\", true, false)/",
+        {"compare_stored_bool(\"name\", true, false).",
          OP_COMPARE_STORED_BOOL(GetHash("name"), VALUE_TRUE, VALUE_FALSE)},
-        {"store_hash(\"name\", \"value\")/",
+        {"store_hash(\"name\", \"" + GetHash("value") + "\").",
          OP_STORE_HASH(GetHash("name"), GetHash("value"))},
-        {"compare_stored_hash(\"name\", \"value\", \"default\")/",
+        {"store_hashed(\"name\", \"value\").",
+         OP_STORE_HASH(GetHash("name"), GetHash("value"))},
+        {"store_node_bool(\"name\").",
+         OP_STORE_NODE_BOOL(GetHash("name"))},
+        {"store_node_hash(\"name\").",
+         OP_STORE_NODE_HASH(GetHash("name"))},
+        {"compare_stored_hashed(\"name\", \"value\", \"default\").",
          OP_COMPARE_STORED_HASH(
              GetHash("name"), GetHash("value"), GetHash("default"))},
-        {"compare_bool(false)/", OP_COMPARE_NODE_BOOL(VALUE_FALSE)},
-        {"compare_bool(true)/", OP_COMPARE_NODE_BOOL(VALUE_TRUE)},
-        {"compare_hash(\"foo\")/", OP_COMPARE_NODE_HASH(GetHash("foo"))},
-        {"compare_hash(\"bar\")/", OP_COMPARE_NODE_HASH(GetHash("bar"))},
-        {"break/", OP_STOP_EXECUTING_SENTENCE},
+        {"compare_bool(false).", OP_COMPARE_NODE_BOOL(VALUE_FALSE)},
+        {"compare_bool(true).", OP_COMPARE_NODE_BOOL(VALUE_TRUE)},
+        {"compare_hashed(\"foo\").", OP_COMPARE_NODE_HASH(GetHash("foo"))},
+        {"compare_hashed_not(\"foo\").",
+         OP_COMPARE_NODE_HASH_NOT(GetHash("foo"))},
+        {"compare_to_stored_bool(\"name\").",
+         OP_COMPARE_NODE_TO_STORED_BOOL(GetHash("name"))},
+        {"compare_to_stored_hash(\"name\").",
+         OP_COMPARE_NODE_TO_STORED_HASH(GetHash("name"))},
+        {"break.", OP_STOP_EXECUTING_SENTENCE},
         {"break;", OP_STOP_EXECUTING_SENTENCE + OP_END_OF_SENTENCE}};
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
@@ -66,10 +77,10 @@ TEST(JtlCompiler, CompileSingleInstructions) {
 TEST(JtlCompiler, CompileEntireProgram) {
   const char kSourceCode[] =
       "// Store \"x\"=true if path is found.\n"
-      "node(\"foo\")/node(\"bar\")/store_bool(\"x\", true);\n"
+      "go(\"foo\").go(\"bar\").store_bool(\"x\", true);\n"
       "// ...\n"
       "// Store \"y\"=\"1\" if above value is set.\n"
-      "compare_stored_bool(\"x\", true, false)/store_hash(\"y\", \"1\");\n";
+      "compare_stored_bool(\"x\", true, false).store_hashed(\"y\", \"1\");\n";
 
   std::string expected_bytecode =
       OP_NAVIGATE(GetHash("foo")) +
@@ -85,7 +96,7 @@ TEST(JtlCompiler, CompileEntireProgram) {
 }
 
 TEST(JtlCompiler, InvalidOperationName) {
-  const char kSourceCode[] = "any()\n/\nnon_existent_instruction\n(\n)\n;\n";
+  const char kSourceCode[] = "any()\n.\nnon_existent_instruction\n(\n)\n;\n";
 
   std::string bytecode;
   JtlCompiler::CompileError error;
@@ -99,8 +110,8 @@ TEST(JtlCompiler, InvalidOperationName) {
 
 TEST(JtlCompiler, InvalidArgumentsCount) {
   const char* kSourceCodes[] = {
-      "any()/\nstore_bool(\"name\", true, \"superfluous argument\");\n",
-      "any()/\nstore_bool(\"name\");"};  // missing argument
+      "any().\nstore_bool(\"name\", true, \"superfluous argument\");\n",
+      "any().\nstore_bool(\"name\");"};  // missing argument
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kSourceCodes); ++i) {
     SCOPED_TRACE(kSourceCodes[i]);
@@ -116,19 +127,29 @@ TEST(JtlCompiler, InvalidArgumentsCount) {
 }
 
 TEST(JtlCompiler, InvalidArgumentType) {
-  const char* kSourceCodes[] = {
-      "any()\n/\ncompare_stored_bool(true, false, false);",  // Arg#1 should be
-                                                             // a hash.
-      "any()\n/\ncompare_stored_bool(\"name\", \"should be a bool\", false);",
-      "any()\n/\ncompare_stored_bool(\"name\", false, \"should be a bool\");"};
+  struct TestCase {
+    std::string expected_context_prefix;
+    std::string source_code;
+  } cases[] = {
+        {"compare_bool", "any()\n.\ncompare_bool(\"foo\");"},
+        {"compare_bool",
+         "any()\n.\ncompare_bool(\"01234567890123456789012345678901\");"},
+        {"compare_hashed", "any()\n.\ncompare_hashed(false);"},
+        {"store_hash", "any()\n.\nstore_hash(\"name\", false);"},
+        {"store_hash", "any()\n.\nstore_hash(\"name\", \"foo\");"},
+        {"compare_stored_bool",
+         "any()\n.\ncompare_stored_bool(\"name\", \"need a bool\", false);"},
+        {"compare_stored_bool",
+         "any()\n.\ncompare_stored_bool(\"name\", false, \"need a bool\");"}};
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kSourceCodes); ++i) {
-    SCOPED_TRACE(kSourceCodes[i]);
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
+    SCOPED_TRACE(cases[i].source_code);
     std::string bytecode;
     JtlCompiler::CompileError error;
     EXPECT_FALSE(JtlCompiler::Compile(
-        kSourceCodes[i], kTestHashSeed, &bytecode, &error));
-    EXPECT_THAT(error.context, testing::StartsWith("compare_stored_bool"));
+        cases[i].source_code, kTestHashSeed, &bytecode, &error));
+    EXPECT_THAT(error.context,
+                testing::StartsWith(cases[i].expected_context_prefix));
     EXPECT_EQ(2u, error.line_number);
     EXPECT_EQ(JtlCompiler::CompileError::INVALID_ARGUMENT_TYPE,
               error.error_code);
@@ -136,7 +157,7 @@ TEST(JtlCompiler, InvalidArgumentType) {
 }
 
 TEST(JtlCompiler, MistmatchedDoubleQuotes) {
-  const char kSourceCode[] = "any()/\nnode(\"ok\", \"stray quote)/break();";
+  const char kSourceCode[] = "any().\ngo(\"ok\", \"stray quote).break();";
 
   std::string bytecode;
   JtlCompiler::CompileError error;
@@ -148,13 +169,13 @@ TEST(JtlCompiler, MistmatchedDoubleQuotes) {
 }
 
 TEST(JtlCompiler, ParsingError) {
-  const char kSourceCode[] = "any()/\nnode()missing_separator();";
+  const char kSourceCode[] = "any().\ngo()missing_separator();";
 
   std::string bytecode;
   JtlCompiler::CompileError error;
   EXPECT_FALSE(
       JtlCompiler::Compile(kSourceCode, kTestHashSeed, &bytecode, &error));
-  EXPECT_THAT(error.context, testing::StartsWith("node"));
+  EXPECT_THAT(error.context, testing::StartsWith("go"));
   EXPECT_EQ(1u, error.line_number);
   EXPECT_EQ(JtlCompiler::CompileError::PARSING_ERROR, error.error_code);
 }

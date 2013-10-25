@@ -23,7 +23,7 @@ class ByteCodeWriter {
   void WriteUint8(uint8 value) { output_->push_back(static_cast<char>(value)); }
   void WriteOpCode(uint8 op_code) { WriteUint8(op_code); }
   void WriteHash(const std::string& hash) {
-    CHECK_EQ(hash.size(), jtl::kHashSizeInBytes);
+    CHECK(jtl::Hasher::IsHash(hash));
     *output_ += hash;
   }
   void WriteBool(bool value) { WriteUint8(value ? 1u : 0u); }
@@ -40,19 +40,40 @@ class InstructionSet {
  public:
   InstructionSet() {
     // Define each instruction in this list.
-    Add(Instruction("node", jtl::NAVIGATE, Arguments(Hash)));
+    // Note:
+    //  - Instructions ending in "hash" will write their 'HashString' arguments
+    //    directly into the byte-code.
+    //  - Instructions ending in "hashed" will first hash their 'String'
+    //    arguments, and will write this hash to the byte-code.
+    Add(Instruction("go", jtl::NAVIGATE, Arguments(String)));
     Add(Instruction("any", jtl::NAVIGATE_ANY, Arguments()));
     Add(Instruction("back", jtl::NAVIGATE_BACK, Arguments()));
-    Add(Instruction("store_bool", jtl::STORE_BOOL, Arguments(Hash, Bool)));
+    Add(Instruction("store_bool", jtl::STORE_BOOL, Arguments(String, Bool)));
+    Add(Instruction("store_hash",
+                    jtl::STORE_HASH, Arguments(String, HashString)));
+    Add(Instruction("store_hashed",
+                    jtl::STORE_HASH, Arguments(String, String)));
+    Add(Instruction("store_node_bool",
+                    jtl::STORE_NODE_BOOL, Arguments(String)));
+    Add(Instruction("store_node_hash",
+                    jtl::STORE_NODE_HASH, Arguments(String)));
+    Add(Instruction("compare_bool", jtl::COMPARE_NODE_BOOL, Arguments(Bool)));
+    Add(Instruction("compare_hashed",
+                    jtl::COMPARE_NODE_HASH, Arguments(String)));
+    Add(Instruction("compare_hashed_not",
+                    jtl::COMPARE_NODE_HASH_NOT, Arguments(String)));
     Add(Instruction("compare_stored_bool",
                     jtl::COMPARE_STORED_BOOL,
-                    Arguments(Hash, Bool, Bool)));
-    Add(Instruction("store_hash", jtl::STORE_HASH, Arguments(Hash, Hash)));
-    Add(Instruction("compare_stored_hash",
+                    Arguments(String, Bool, Bool)));
+    Add(Instruction("compare_stored_hashed",
                     jtl::COMPARE_STORED_HASH,
-                    Arguments(Hash, Hash, Hash)));
-    Add(Instruction("compare_bool", jtl::COMPARE_NODE_BOOL, Arguments(Bool)));
-    Add(Instruction("compare_hash", jtl::COMPARE_NODE_HASH, Arguments(Hash)));
+                    Arguments(String, String, String)));
+    Add(Instruction("compare_to_stored_bool",
+                    jtl::COMPARE_NODE_TO_STORED_BOOL,
+                    Arguments(String)));
+    Add(Instruction("compare_to_stored_hash",
+                    jtl::COMPARE_NODE_TO_STORED_HASH,
+                    Arguments(String)));
     Add(Instruction("break", jtl::STOP_EXECUTING_SENTENCE, Arguments()));
   }
 
@@ -77,11 +98,19 @@ class InstructionSet {
           target->WriteBool(value);
           break;
         }
-        case Hash: {
+        case String: {
           std::string value;
           if (!arguments.GetString(i, &value))
             return JtlCompiler::CompileError::INVALID_ARGUMENT_TYPE;
           target->WriteHash(hasher.GetHash(value));
+          break;
+        }
+        case HashString: {
+          std::string hash_value;
+          if (!arguments.GetString(i, &hash_value) ||
+              !jtl::Hasher::IsHash(hash_value))
+            return JtlCompiler::CompileError::INVALID_ARGUMENT_TYPE;
+          target->WriteHash(hash_value);
           break;
         }
         default:
@@ -99,7 +128,8 @@ class InstructionSet {
   enum ArgumentType {
     None,
     Bool,
-    Hash
+    String,
+    HashString
   };
 
   // Encapsulates meta-data about one instruction.
