@@ -456,7 +456,7 @@ bool CompositedLayerMapping::updateGraphicsLayerConfiguration()
     if (updateMaskLayer(renderer->hasMask()))
         m_graphicsLayer->setMaskLayer(m_maskLayer.get());
 
-    bool needsChildClippingMask = renderer->style()->hasBorderRadius() && isAcceleratedContents(renderer);
+    bool needsChildClippingMask = (renderer->style()->hasBorderRadius() || renderer->style()->clipPath()) && isAcceleratedContents(renderer);
     if (updateClippingMaskLayers(needsChildClippingMask))
         m_graphicsLayer->setContentsClippingMaskLayer(m_childClippingMaskLayer.get());
 

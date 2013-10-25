@@ -2436,7 +2436,7 @@ void RenderLayer::paintLayerContents(GraphicsContext* context, const LayerPainti
     bool shouldPaintNormalFlowAndPosZOrderLists = isPaintingCompositedForeground;
     bool shouldPaintOverlayScrollbars = isPaintingOverlayScrollbars;
     bool shouldPaintMask = (paintFlags & PaintLayerPaintingCompositingMaskPhase) && shouldPaintContent && renderer()->hasMask() && !selectionOnly;
-    bool shouldPaintClippingMask = (paintFlags & PaintLayerPaintingChildClippingMaskPhase) && renderer()->style()->hasBorderRadius() && shouldPaintContent && !selectionOnly;
+    bool shouldPaintClippingMask = (paintFlags & PaintLayerPaintingChildClippingMaskPhase) && shouldPaintContent && !selectionOnly;
 
     PaintBehavior paintBehavior = PaintBehaviorNormal;
     if (paintFlags & PaintLayerPaintingSkipRootBackground)
