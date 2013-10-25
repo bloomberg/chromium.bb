@@ -11,6 +11,7 @@
 #include "base/single_thread_task_runner.h"
 #include "cc/scheduler/delay_based_time_source.h"
 #include "cc/scheduler/time_source.h"
+#include "ui/gfx/frame_time.h"
 
 namespace cc {
 
@@ -165,7 +166,7 @@ base::TimeTicks FrameRateController::LastTickTime() {
   if (is_time_source_throttling_)
     return time_source_->LastTickTime();
 
-  return base::TimeTicks::Now();
+  return gfx::FrameTime::Now();
 }
 
 }  // namespace cc

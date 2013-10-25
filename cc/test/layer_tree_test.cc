@@ -23,6 +23,7 @@
 #include "cc/trees/layer_tree_host_impl.h"
 #include "cc/trees/single_thread_proxy.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "ui/gfx/frame_time.h"
 #include "ui/gfx/size_conversions.h"
 
 namespace cc {
@@ -591,7 +592,7 @@ void LayerTreeTest::DispatchComposite() {
   }
 
   schedule_when_set_visible_true_ = false;
-  base::TimeTicks now = base::TimeTicks::Now();
+  base::TimeTicks now = gfx::FrameTime::Now();
   layer_tree_host_->Composite(now);
 }
 

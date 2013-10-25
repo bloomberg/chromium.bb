@@ -56,6 +56,7 @@
 #include "cc/trees/quad_culler.h"
 #include "cc/trees/single_thread_proxy.h"
 #include "cc/trees/tree_synchronizer.h"
+#include "ui/gfx/frame_time.h"
 #include "ui/gfx/size_conversions.h"
 #include "ui/gfx/vector2d_conversions.h"
 
@@ -2685,7 +2686,7 @@ base::Time LayerTreeHostImpl::CurrentFrameTime() {
 }
 
 base::TimeTicks LayerTreeHostImpl::CurrentPhysicalTimeTicks() const {
-  return base::TimeTicks::Now();
+  return gfx::FrameTime::Now();
 }
 
 scoped_ptr<base::Value> LayerTreeHostImpl::AsValueWithFrame(

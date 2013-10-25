@@ -15,6 +15,7 @@
 #include "cc/trees/blocking_task_runner.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_impl.h"
+#include "ui/gfx/frame_time.h"
 
 namespace cc {
 
@@ -59,7 +60,7 @@ bool SingleThreadProxy::CompositeAndReadback(void* pixels, gfx::Rect rect) {
   gfx::Rect device_viewport_damage_rect = rect;
 
   LayerTreeHostImpl::FrameData frame;
-  if (!CommitAndComposite(base::TimeTicks::Now(),
+  if (!CommitAndComposite(gfx::FrameTime::Now(),
                           device_viewport_damage_rect,
                           true,  // for_readback
                           &frame))

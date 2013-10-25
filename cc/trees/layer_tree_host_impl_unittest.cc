@@ -53,6 +53,7 @@
 #include "media/base/media.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/frame_time.h"
 #include "ui/gfx/rect_conversions.h"
 #include "ui/gfx/size_conversions.h"
 #include "ui/gfx/vector2d_conversions.h"
@@ -267,7 +268,7 @@ class LayerTreeHostImplTest : public testing::Test,
   void DrawFrame() {
     LayerTreeHostImpl::FrameData frame;
     EXPECT_TRUE(host_impl_->PrepareToDraw(&frame, gfx::Rect()));
-    host_impl_->DrawLayers(&frame, base::TimeTicks::Now());
+    host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
     host_impl_->DidDrawAllLayers(frame);
   }
 
@@ -1207,7 +1208,7 @@ TEST_F(LayerTreeHostImplTest, ScrollbarLinearFadeScheduling) {
   host_impl_->active_tree()->DidBecomeActive();
   InitializeRendererAndDrawFrame();
 
-  base::TimeTicks fake_now = base::TimeTicks::Now();
+  base::TimeTicks fake_now = gfx::FrameTime::Now();
   host_impl_override_time->SetCurrentPhysicalTimeTicksForTest(fake_now);
 
   // If no scroll happened recently, StartScrollbarAnimation should have no
@@ -1506,7 +1507,7 @@ TEST_F(LayerTreeHostImplTest, WillDrawReturningFalseDoesNotCall) {
   {
     LayerTreeHostImpl::FrameData frame;
     EXPECT_TRUE(host_impl_->PrepareToDraw(&frame, gfx::Rect(10, 10)));
-    host_impl_->DrawLayers(&frame, base::TimeTicks::Now());
+    host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
     host_impl_->DidDrawAllLayers(frame);
 
     EXPECT_TRUE(layer->will_draw_called());
@@ -1521,7 +1522,7 @@ TEST_F(LayerTreeHostImplTest, WillDrawReturningFalseDoesNotCall) {
     layer->ClearDidDrawCheck();
 
     EXPECT_TRUE(host_impl_->PrepareToDraw(&frame, gfx::Rect(10, 10)));
-    host_impl_->DrawLayers(&frame, base::TimeTicks::Now());
+    host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
     host_impl_->DidDrawAllLayers(frame);
 
     EXPECT_TRUE(layer->will_draw_called());
@@ -1553,7 +1554,7 @@ TEST_F(LayerTreeHostImplTest, DidDrawNotCalledOnHiddenLayer) {
   EXPECT_FALSE(layer->did_draw_called());
 
   EXPECT_TRUE(host_impl_->PrepareToDraw(&frame, gfx::Rect()));
-  host_impl_->DrawLayers(&frame, base::TimeTicks::Now());
+  host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
   host_impl_->DidDrawAllLayers(frame);
 
   EXPECT_FALSE(layer->will_draw_called());
@@ -1568,7 +1569,7 @@ TEST_F(LayerTreeHostImplTest, DidDrawNotCalledOnHiddenLayer) {
   EXPECT_FALSE(layer->did_draw_called());
 
   EXPECT_TRUE(host_impl_->PrepareToDraw(&frame, gfx::Rect()));
-  host_impl_->DrawLayers(&frame, base::TimeTicks::Now());
+  host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
   host_impl_->DidDrawAllLayers(frame);
 
   EXPECT_TRUE(layer->will_draw_called());
@@ -1607,7 +1608,7 @@ TEST_F(LayerTreeHostImplTest, WillDrawNotCalledOnOccludedLayer) {
   EXPECT_FALSE(top_layer->did_draw_called());
 
   EXPECT_TRUE(host_impl_->PrepareToDraw(&frame, gfx::Rect()));
-  host_impl_->DrawLayers(&frame, base::TimeTicks::Now());
+  host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
   host_impl_->DidDrawAllLayers(frame);
 
   EXPECT_FALSE(occluded_layer->will_draw_called());
@@ -1639,7 +1640,7 @@ TEST_F(LayerTreeHostImplTest, DidDrawCalledOnAllLayers) {
 
   LayerTreeHostImpl::FrameData frame;
   EXPECT_TRUE(host_impl_->PrepareToDraw(&frame, gfx::Rect()));
-  host_impl_->DrawLayers(&frame, base::TimeTicks::Now());
+  host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
   host_impl_->DidDrawAllLayers(frame);
 
   EXPECT_TRUE(root->did_draw_called());
@@ -1712,7 +1713,7 @@ TEST_F(LayerTreeHostImplTest, PrepareToDrawFailsWhenAnimationUsesCheckerboard) {
   LayerTreeHostImpl::FrameData frame;
 
   EXPECT_TRUE(host_impl_->PrepareToDraw(&frame, gfx::Rect()));
-  host_impl_->DrawLayers(&frame, base::TimeTicks::Now());
+  host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
   host_impl_->DidDrawAllLayers(frame);
 
   // When a texture is missing and we're not animating, we draw as usual with
@@ -1730,7 +1731,7 @@ TEST_F(LayerTreeHostImplTest, PrepareToDrawFailsWhenAnimationUsesCheckerboard) {
                                            host_impl_->resource_provider()));
 
   EXPECT_TRUE(host_impl_->PrepareToDraw(&frame, gfx::Rect()));
-  host_impl_->DrawLayers(&frame, base::TimeTicks::Now());
+  host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
   host_impl_->DidDrawAllLayers(frame);
 
   // When a texture is missing and we're animating, we don't want to draw
@@ -1748,7 +1749,7 @@ TEST_F(LayerTreeHostImplTest, PrepareToDrawFailsWhenAnimationUsesCheckerboard) {
                                            host_impl_->resource_provider()));
 
   EXPECT_FALSE(host_impl_->PrepareToDraw(&frame, gfx::Rect()));
-  host_impl_->DrawLayers(&frame, base::TimeTicks::Now());
+  host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
   host_impl_->DidDrawAllLayers(frame);
 
   // When the layer skips draw and we're animating, we still draw the frame.
@@ -1765,7 +1766,7 @@ TEST_F(LayerTreeHostImplTest, PrepareToDrawFailsWhenAnimationUsesCheckerboard) {
                                            host_impl_->resource_provider()));
 
   EXPECT_TRUE(host_impl_->PrepareToDraw(&frame, gfx::Rect()));
-  host_impl_->DrawLayers(&frame, base::TimeTicks::Now());
+  host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
   host_impl_->DidDrawAllLayers(frame);
 }
 
@@ -2059,7 +2060,7 @@ TEST_F(LayerTreeHostImplTest, PageScaleDeltaAppliedToRootScrollLayerOnly) {
   // the page scale delta on the root layer is applied hierarchically.
   LayerTreeHostImpl::FrameData frame;
   EXPECT_TRUE(host_impl_->PrepareToDraw(&frame, gfx::Rect()));
-  host_impl_->DrawLayers(&frame, base::TimeTicks::Now());
+  host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
   host_impl_->DidDrawAllLayers(frame);
 
   EXPECT_EQ(1.f, root->draw_transform().matrix().getDouble(0, 0));
@@ -2894,7 +2895,7 @@ TEST_F(LayerTreeHostImplTest, BlendingOffWhenDrawingOpaqueLayers) {
   layer1->SetExpectation(false, false);
   layer1->set_update_rect(gfx::RectF(layer1->content_bounds()));
   EXPECT_TRUE(host_impl_->PrepareToDraw(&frame, gfx::Rect()));
-  host_impl_->DrawLayers(&frame, base::TimeTicks::Now());
+  host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
   EXPECT_TRUE(layer1->quads_appended());
   host_impl_->DidDrawAllLayers(frame);
 
@@ -2903,7 +2904,7 @@ TEST_F(LayerTreeHostImplTest, BlendingOffWhenDrawingOpaqueLayers) {
   layer1->SetExpectation(true, false);
   layer1->set_update_rect(gfx::RectF(layer1->content_bounds()));
   EXPECT_TRUE(host_impl_->PrepareToDraw(&frame, gfx::Rect()));
-  host_impl_->DrawLayers(&frame, base::TimeTicks::Now());
+  host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
   EXPECT_TRUE(layer1->quads_appended());
   host_impl_->DidDrawAllLayers(frame);
 
@@ -2913,7 +2914,7 @@ TEST_F(LayerTreeHostImplTest, BlendingOffWhenDrawingOpaqueLayers) {
   layer1->SetExpectation(true, false);
   layer1->set_update_rect(gfx::RectF(layer1->content_bounds()));
   EXPECT_TRUE(host_impl_->PrepareToDraw(&frame, gfx::Rect()));
-  host_impl_->DrawLayers(&frame, base::TimeTicks::Now());
+  host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
   EXPECT_TRUE(layer1->quads_appended());
   host_impl_->DidDrawAllLayers(frame);
 
@@ -2923,7 +2924,7 @@ TEST_F(LayerTreeHostImplTest, BlendingOffWhenDrawingOpaqueLayers) {
   layer1->SetExpectation(true, false);
   layer1->set_update_rect(gfx::RectF(layer1->content_bounds()));
   EXPECT_TRUE(host_impl_->PrepareToDraw(&frame, gfx::Rect()));
-  host_impl_->DrawLayers(&frame, base::TimeTicks::Now());
+  host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
   EXPECT_TRUE(layer1->quads_appended());
   host_impl_->DidDrawAllLayers(frame);
 
@@ -2945,7 +2946,7 @@ TEST_F(LayerTreeHostImplTest, BlendingOffWhenDrawingOpaqueLayers) {
   layer2->SetExpectation(false, false);
   layer2->set_update_rect(gfx::RectF(layer1->content_bounds()));
   EXPECT_TRUE(host_impl_->PrepareToDraw(&frame, gfx::Rect()));
-  host_impl_->DrawLayers(&frame, base::TimeTicks::Now());
+  host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
   EXPECT_TRUE(layer1->quads_appended());
   EXPECT_TRUE(layer2->quads_appended());
   host_impl_->DidDrawAllLayers(frame);
@@ -2958,7 +2959,7 @@ TEST_F(LayerTreeHostImplTest, BlendingOffWhenDrawingOpaqueLayers) {
   layer2->SetExpectation(false, false);
   layer2->set_update_rect(gfx::RectF(layer1->content_bounds()));
   EXPECT_TRUE(host_impl_->PrepareToDraw(&frame, gfx::Rect()));
-  host_impl_->DrawLayers(&frame, base::TimeTicks::Now());
+  host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
   EXPECT_TRUE(layer1->quads_appended());
   EXPECT_TRUE(layer2->quads_appended());
   host_impl_->DidDrawAllLayers(frame);
@@ -2972,7 +2973,7 @@ TEST_F(LayerTreeHostImplTest, BlendingOffWhenDrawingOpaqueLayers) {
   layer2->SetExpectation(false, false);
   layer2->set_update_rect(gfx::RectF(layer1->content_bounds()));
   EXPECT_TRUE(host_impl_->PrepareToDraw(&frame, gfx::Rect()));
-  host_impl_->DrawLayers(&frame, base::TimeTicks::Now());
+  host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
   EXPECT_TRUE(layer1->quads_appended());
   EXPECT_TRUE(layer2->quads_appended());
   host_impl_->DidDrawAllLayers(frame);
@@ -2989,7 +2990,7 @@ TEST_F(LayerTreeHostImplTest, BlendingOffWhenDrawingOpaqueLayers) {
   layer2->SetExpectation(false, false);
   layer2->set_update_rect(gfx::RectF(layer1->content_bounds()));
   EXPECT_TRUE(host_impl_->PrepareToDraw(&frame, gfx::Rect()));
-  host_impl_->DrawLayers(&frame, base::TimeTicks::Now());
+  host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
   EXPECT_TRUE(layer1->quads_appended());
   EXPECT_TRUE(layer2->quads_appended());
   host_impl_->DidDrawAllLayers(frame);
@@ -3005,7 +3006,7 @@ TEST_F(LayerTreeHostImplTest, BlendingOffWhenDrawingOpaqueLayers) {
   layer2->SetExpectation(true, false);
   layer2->set_update_rect(gfx::RectF(layer1->content_bounds()));
   EXPECT_TRUE(host_impl_->PrepareToDraw(&frame, gfx::Rect()));
-  host_impl_->DrawLayers(&frame, base::TimeTicks::Now());
+  host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
   EXPECT_TRUE(layer1->quads_appended());
   EXPECT_TRUE(layer2->quads_appended());
   host_impl_->DidDrawAllLayers(frame);
@@ -3020,7 +3021,7 @@ TEST_F(LayerTreeHostImplTest, BlendingOffWhenDrawingOpaqueLayers) {
   layer2->SetExpectation(true, false);
   layer2->set_update_rect(gfx::RectF(layer1->content_bounds()));
   EXPECT_TRUE(host_impl_->PrepareToDraw(&frame, gfx::Rect()));
-  host_impl_->DrawLayers(&frame, base::TimeTicks::Now());
+  host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
   EXPECT_TRUE(layer1->quads_appended());
   EXPECT_TRUE(layer2->quads_appended());
   host_impl_->DidDrawAllLayers(frame);
@@ -3036,7 +3037,7 @@ TEST_F(LayerTreeHostImplTest, BlendingOffWhenDrawingOpaqueLayers) {
   layer2->SetExpectation(false, false);
   layer2->set_update_rect(gfx::RectF(layer1->content_bounds()));
   EXPECT_TRUE(host_impl_->PrepareToDraw(&frame, gfx::Rect()));
-  host_impl_->DrawLayers(&frame, base::TimeTicks::Now());
+  host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
   EXPECT_TRUE(layer1->quads_appended());
   EXPECT_TRUE(layer2->quads_appended());
   host_impl_->DidDrawAllLayers(frame);
@@ -3049,7 +3050,7 @@ TEST_F(LayerTreeHostImplTest, BlendingOffWhenDrawingOpaqueLayers) {
   layer1->SetExpectation(true, false);
   layer1->set_update_rect(gfx::RectF(layer1->content_bounds()));
   EXPECT_TRUE(host_impl_->PrepareToDraw(&frame, gfx::Rect()));
-  host_impl_->DrawLayers(&frame, base::TimeTicks::Now());
+  host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
   EXPECT_TRUE(layer1->quads_appended());
   host_impl_->DidDrawAllLayers(frame);
 
@@ -3061,7 +3062,7 @@ TEST_F(LayerTreeHostImplTest, BlendingOffWhenDrawingOpaqueLayers) {
   layer1->SetExpectation(true, false);
   layer1->set_update_rect(gfx::RectF(layer1->content_bounds()));
   EXPECT_TRUE(host_impl_->PrepareToDraw(&frame, gfx::Rect()));
-  host_impl_->DrawLayers(&frame, base::TimeTicks::Now());
+  host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
   EXPECT_TRUE(layer1->quads_appended());
   host_impl_->DidDrawAllLayers(frame);
 
@@ -3073,7 +3074,7 @@ TEST_F(LayerTreeHostImplTest, BlendingOffWhenDrawingOpaqueLayers) {
   layer1->SetExpectation(true, false);
   layer1->set_update_rect(gfx::RectF(layer1->content_bounds()));
   EXPECT_TRUE(host_impl_->PrepareToDraw(&frame, gfx::Rect()));
-  host_impl_->DrawLayers(&frame, base::TimeTicks::Now());
+  host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
   EXPECT_TRUE(layer1->quads_appended());
   host_impl_->DidDrawAllLayers(frame);
 
@@ -3086,7 +3087,7 @@ TEST_F(LayerTreeHostImplTest, BlendingOffWhenDrawingOpaqueLayers) {
   layer1->SetExpectation(false, false);
   layer1->set_update_rect(gfx::RectF(layer1->content_bounds()));
   EXPECT_TRUE(host_impl_->PrepareToDraw(&frame, gfx::Rect()));
-  host_impl_->DrawLayers(&frame, base::TimeTicks::Now());
+  host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
   EXPECT_TRUE(layer1->quads_appended());
   host_impl_->DidDrawAllLayers(frame);
 }
@@ -3445,7 +3446,7 @@ TEST_F(LayerTreeHostImplTest, ReshapeNotCalledUntilDraw) {
   host_impl_->SetViewportSize(gfx::Size(10, 10));
   host_impl_->SetDeviceScaleFactor(1.f);
   EXPECT_TRUE(host_impl_->PrepareToDraw(&frame, gfx::Rect()));
-  host_impl_->DrawLayers(&frame, base::TimeTicks::Now());
+  host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
   EXPECT_TRUE(reshape_tracker->reshape_called());
   EXPECT_EQ(reshape_tracker->last_reshape_width(), 10);
   EXPECT_EQ(reshape_tracker->last_reshape_height(), 10);
@@ -3455,7 +3456,7 @@ TEST_F(LayerTreeHostImplTest, ReshapeNotCalledUntilDraw) {
 
   host_impl_->SetViewportSize(gfx::Size(20, 30));
   EXPECT_TRUE(host_impl_->PrepareToDraw(&frame, gfx::Rect()));
-  host_impl_->DrawLayers(&frame, base::TimeTicks::Now());
+  host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
   EXPECT_TRUE(reshape_tracker->reshape_called());
   EXPECT_EQ(reshape_tracker->last_reshape_width(), 20);
   EXPECT_EQ(reshape_tracker->last_reshape_height(), 30);
@@ -3465,7 +3466,7 @@ TEST_F(LayerTreeHostImplTest, ReshapeNotCalledUntilDraw) {
 
   host_impl_->SetDeviceScaleFactor(2.f);
   EXPECT_TRUE(host_impl_->PrepareToDraw(&frame, gfx::Rect()));
-  host_impl_->DrawLayers(&frame, base::TimeTicks::Now());
+  host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
   EXPECT_TRUE(reshape_tracker->reshape_called());
   EXPECT_EQ(reshape_tracker->last_reshape_width(), 20);
   EXPECT_EQ(reshape_tracker->last_reshape_height(), 30);
@@ -3549,7 +3550,7 @@ TEST_F(LayerTreeHostImplTest, PartialSwapReceivesDamageRect) {
 
   // First frame, the entire screen should get swapped.
   EXPECT_TRUE(layer_tree_host_impl->PrepareToDraw(&frame, gfx::Rect()));
-  layer_tree_host_impl->DrawLayers(&frame, base::TimeTicks::Now());
+  layer_tree_host_impl->DrawLayers(&frame, gfx::FrameTime::Now());
   layer_tree_host_impl->DidDrawAllLayers(frame);
   layer_tree_host_impl->SwapBuffers(frame);
   gfx::Rect actual_swap_rect = swap_tracker->update_rect();
@@ -3567,7 +3568,7 @@ TEST_F(LayerTreeHostImplTest, PartialSwapReceivesDamageRect) {
   layer_tree_host_impl->active_tree()->root_layer()->children()[0]->SetPosition(
       gfx::PointF());
   EXPECT_TRUE(layer_tree_host_impl->PrepareToDraw(&frame, gfx::Rect()));
-  layer_tree_host_impl->DrawLayers(&frame, base::TimeTicks::Now());
+  layer_tree_host_impl->DrawLayers(&frame, gfx::FrameTime::Now());
   host_impl_->DidDrawAllLayers(frame);
   layer_tree_host_impl->SwapBuffers(frame);
   actual_swap_rect = swap_tracker->update_rect();
@@ -3587,7 +3588,7 @@ TEST_F(LayerTreeHostImplTest, PartialSwapReceivesDamageRect) {
   layer_tree_host_impl->active_tree()->root_layer()->SetBackgroundColor(
       SK_ColorBLACK);
   EXPECT_TRUE(layer_tree_host_impl->PrepareToDraw(&frame, gfx::Rect()));
-  layer_tree_host_impl->DrawLayers(&frame, base::TimeTicks::Now());
+  layer_tree_host_impl->DrawLayers(&frame, gfx::FrameTime::Now());
   host_impl_->DidDrawAllLayers(frame);
   layer_tree_host_impl->SwapBuffers(frame);
   actual_swap_rect = swap_tracker->update_rect();
@@ -3755,7 +3756,7 @@ TEST_F(LayerTreeHostImplTest, NoPartialSwap) {
   {
     LayerTreeHostImpl::FrameData frame;
     EXPECT_TRUE(host_impl_->PrepareToDraw(&frame, gfx::Rect()));
-    host_impl_->DrawLayers(&frame, base::TimeTicks::Now());
+    host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
     host_impl_->DidDrawAllLayers(frame);
   }
   Mock::VerifyAndClearExpectations(&mock_context);
@@ -3768,7 +3769,7 @@ TEST_F(LayerTreeHostImplTest, NoPartialSwap) {
   {
     LayerTreeHostImpl::FrameData frame;
     EXPECT_TRUE(host_impl_->PrepareToDraw(&frame, gfx::Rect()));
-    host_impl_->DrawLayers(&frame, base::TimeTicks::Now());
+    host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
     host_impl_->DidDrawAllLayers(frame);
   }
   Mock::VerifyAndClearExpectations(&mock_context);
@@ -3790,7 +3791,7 @@ TEST_F(LayerTreeHostImplTest, PartialSwap) {
   {
     LayerTreeHostImpl::FrameData frame;
     EXPECT_TRUE(host_impl_->PrepareToDraw(&frame, gfx::Rect()));
-    host_impl_->DrawLayers(&frame, base::TimeTicks::Now());
+    host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
     host_impl_->DidDrawAllLayers(frame);
   }
   Mock::VerifyAndClearExpectations(&mock_context);
@@ -3805,7 +3806,7 @@ TEST_F(LayerTreeHostImplTest, PartialSwap) {
   {
     LayerTreeHostImpl::FrameData frame;
     EXPECT_TRUE(host_impl_->PrepareToDraw(&frame, gfx::Rect()));
-    host_impl_->DrawLayers(&frame, base::TimeTicks::Now());
+    host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
     host_impl_->DidDrawAllLayers(frame);
   }
   Mock::VerifyAndClearExpectations(&mock_context);
@@ -3919,7 +3920,7 @@ TEST_F(LayerTreeHostImplTest, ContributingLayerEmptyScissorPartialSwap) {
     EXPECT_EQ(DrawQuad::RENDER_PASS,
               frame.render_passes[1]->quad_list[0]->material);
 
-    my_host_impl->DrawLayers(&frame, base::TimeTicks::Now());
+    my_host_impl->DrawLayers(&frame, gfx::FrameTime::Now());
     my_host_impl->DidDrawAllLayers(frame);
   }
 }
@@ -3940,7 +3941,7 @@ TEST_F(LayerTreeHostImplTest, ContributingLayerEmptyScissorNoPartialSwap) {
     EXPECT_EQ(DrawQuad::RENDER_PASS,
               frame.render_passes[1]->quad_list[0]->material);
 
-    my_host_impl->DrawLayers(&frame, base::TimeTicks::Now());
+    my_host_impl->DrawLayers(&frame, gfx::FrameTime::Now());
     my_host_impl->DidDrawAllLayers(frame);
   }
 }
@@ -4019,7 +4020,7 @@ TEST_F(LayerTreeHostImplTest, LayersFreeTextures) {
 
   LayerTreeHostImpl::FrameData frame;
   EXPECT_TRUE(host_impl_->PrepareToDraw(&frame, gfx::Rect()));
-  host_impl_->DrawLayers(&frame, base::TimeTicks::Now());
+  host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
   host_impl_->DidDrawAllLayers(frame);
   host_impl_->SwapBuffers(frame);
 
@@ -4062,7 +4063,7 @@ TEST_F(LayerTreeHostImplTest, HasTransparentBackground) {
       .Times(1);
   LayerTreeHostImpl::FrameData frame;
   EXPECT_TRUE(host_impl_->PrepareToDraw(&frame, gfx::Rect()));
-  host_impl_->DrawLayers(&frame, base::TimeTicks::Now());
+  host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
   host_impl_->DidDrawAllLayers(frame);
   Mock::VerifyAndClearExpectations(&mock_context);
 
@@ -4070,7 +4071,7 @@ TEST_F(LayerTreeHostImplTest, HasTransparentBackground) {
   host_impl_->active_tree()->set_has_transparent_background(true);
   host_impl_->SetFullRootLayerDamage();
   EXPECT_TRUE(host_impl_->PrepareToDraw(&frame, gfx::Rect()));
-  host_impl_->DrawLayers(&frame, base::TimeTicks::Now());
+  host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
   host_impl_->DidDrawAllLayers(frame);
   Mock::VerifyAndClearExpectations(&mock_context);
 }
@@ -4157,7 +4158,7 @@ class LayerTreeHostImplTestWithDelegatingRenderer
                      root_render_pass->quad_list[1]->visible_rect);
     }
 
-    host_impl_->DrawLayers(&frame, base::TimeTicks::Now());
+    host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
     host_impl_->DidDrawAllLayers(frame);
     EXPECT_EQ(expect_to_draw, host_impl_->SwapBuffers(frame));
   }
@@ -4297,7 +4298,7 @@ TEST_F(LayerTreeHostImplTest, MaskLayerWithScaling) {
     EXPECT_EQ(gfx::RectF(0.f, 0.f, 1.f, 1.f).ToString(),
               render_pass_quad->mask_uv_rect.ToString());
 
-    host_impl_->DrawLayers(&frame, base::TimeTicks::Now());
+    host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
     host_impl_->DidDrawAllLayers(frame);
   }
 
@@ -4325,7 +4326,7 @@ TEST_F(LayerTreeHostImplTest, MaskLayerWithScaling) {
     EXPECT_EQ(gfx::RectF(0.f, 0.f, 1.f, 1.f).ToString(),
               render_pass_quad->mask_uv_rect.ToString());
 
-    host_impl_->DrawLayers(&frame, base::TimeTicks::Now());
+    host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
     host_impl_->DidDrawAllLayers(frame);
   }
 
@@ -4355,7 +4356,7 @@ TEST_F(LayerTreeHostImplTest, MaskLayerWithScaling) {
     EXPECT_EQ(gfx::RectF(0.f, 0.f, 1.f, 1.f).ToString(),
               render_pass_quad->mask_uv_rect.ToString());
 
-    host_impl_->DrawLayers(&frame, base::TimeTicks::Now());
+    host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
     host_impl_->DidDrawAllLayers(frame);
   }
 }
@@ -4418,7 +4419,7 @@ TEST_F(LayerTreeHostImplTest, MaskLayerWithDifferentBounds) {
     EXPECT_EQ(gfx::RectF(0.f, 0.f, 1.f, 1.f).ToString(),
               render_pass_quad->mask_uv_rect.ToString());
 
-    host_impl_->DrawLayers(&frame, base::TimeTicks::Now());
+    host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
     host_impl_->DidDrawAllLayers(frame);
   }
 
@@ -4445,7 +4446,7 @@ TEST_F(LayerTreeHostImplTest, MaskLayerWithDifferentBounds) {
     EXPECT_EQ(gfx::RectF(0.f, 0.f, 1.f, 1.f).ToString(),
               render_pass_quad->mask_uv_rect.ToString());
 
-    host_impl_->DrawLayers(&frame, base::TimeTicks::Now());
+    host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
     host_impl_->DidDrawAllLayers(frame);
   }
 
@@ -4475,7 +4476,7 @@ TEST_F(LayerTreeHostImplTest, MaskLayerWithDifferentBounds) {
     EXPECT_EQ(gfx::RectF(0.f, 0.f, 1.f, 1.f).ToString(),
               render_pass_quad->mask_uv_rect.ToString());
 
-    host_impl_->DrawLayers(&frame, base::TimeTicks::Now());
+    host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
     host_impl_->DidDrawAllLayers(frame);
   }
 
@@ -4500,7 +4501,7 @@ TEST_F(LayerTreeHostImplTest, MaskLayerWithDifferentBounds) {
     EXPECT_EQ(gfx::RectF(0.f, 0.f, 1.f, 1.f).ToString(),
               render_pass_quad->mask_uv_rect.ToString());
 
-    host_impl_->DrawLayers(&frame, base::TimeTicks::Now());
+    host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
     host_impl_->DidDrawAllLayers(frame);
   }
 }
@@ -4569,7 +4570,7 @@ TEST_F(LayerTreeHostImplTest, ReflectionMaskLayerWithDifferentBounds) {
     EXPECT_EQ(gfx::RectF(0.f, 0.f, 1.f, 1.f).ToString(),
               replica_quad->mask_uv_rect.ToString());
 
-    host_impl_->DrawLayers(&frame, base::TimeTicks::Now());
+    host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
     host_impl_->DidDrawAllLayers(frame);
   }
 
@@ -4597,7 +4598,7 @@ TEST_F(LayerTreeHostImplTest, ReflectionMaskLayerWithDifferentBounds) {
     EXPECT_EQ(gfx::RectF(0.f, 0.f, 1.f, 1.f).ToString(),
               replica_quad->mask_uv_rect.ToString());
 
-    host_impl_->DrawLayers(&frame, base::TimeTicks::Now());
+    host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
     host_impl_->DidDrawAllLayers(frame);
   }
 
@@ -4628,7 +4629,7 @@ TEST_F(LayerTreeHostImplTest, ReflectionMaskLayerWithDifferentBounds) {
     EXPECT_EQ(gfx::RectF(0.f, 0.f, 1.f, 1.f).ToString(),
               replica_quad->mask_uv_rect.ToString());
 
-    host_impl_->DrawLayers(&frame, base::TimeTicks::Now());
+    host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
     host_impl_->DidDrawAllLayers(frame);
   }
 
@@ -4654,7 +4655,7 @@ TEST_F(LayerTreeHostImplTest, ReflectionMaskLayerWithDifferentBounds) {
     EXPECT_EQ(gfx::RectF(0.f, 0.f, 1.f, 1.f).ToString(),
               replica_quad->mask_uv_rect.ToString());
 
-    host_impl_->DrawLayers(&frame, base::TimeTicks::Now());
+    host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
     host_impl_->DidDrawAllLayers(frame);
   }
 }
@@ -4745,7 +4746,7 @@ TEST_F(LayerTreeHostImplTest, ReflectionMaskLayerForSurfaceWithUnclippedChild) {
     EXPECT_EQ(gfx::RectF(0.f, 0.f, 2.f, 1.f).ToString(),
               replica_quad->mask_uv_rect.ToString());
 
-    host_impl_->DrawLayers(&frame, base::TimeTicks::Now());
+    host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
     host_impl_->DidDrawAllLayers(frame);
   }
 
@@ -4779,7 +4780,7 @@ TEST_F(LayerTreeHostImplTest, ReflectionMaskLayerForSurfaceWithUnclippedChild) {
     EXPECT_EQ(gfx::RectF(-1.f, 0.f, 2.f, 1.f).ToString(),
               replica_quad->mask_uv_rect.ToString());
 
-    host_impl_->DrawLayers(&frame, base::TimeTicks::Now());
+    host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
     host_impl_->DidDrawAllLayers(frame);
   }
 }
@@ -4875,7 +4876,7 @@ TEST_F(LayerTreeHostImplTest, MaskLayerForSurfaceWithClippedLayer) {
                              1.f / 50.f).ToString(),
               render_pass_quad->mask_uv_rect.ToString());
 
-    host_impl_->DrawLayers(&frame, base::TimeTicks::Now());
+    host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
     host_impl_->DidDrawAllLayers(frame);
   }
 }
@@ -4948,7 +4949,7 @@ TEST_F(LayerTreeHostImplTest, FarAwayQuadsDontNeedAA) {
           quad->quadTransform(), quad, &device_layer_quad, edge);
   EXPECT_FALSE(antialiased);
 
-  host_impl_->DrawLayers(&frame, base::TimeTicks::Now());
+  host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
   host_impl_->DidDrawAllLayers(frame);
 }
 
@@ -5049,7 +5050,7 @@ TEST_F(LayerTreeHostImplTest,
 
   LayerTreeHostImpl::FrameData frame;
   EXPECT_TRUE(host_impl_->PrepareToDraw(&frame, gfx::Rect()));
-  host_impl_->DrawLayers(&frame, base::TimeTicks::Now());
+  host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
   host_impl_->DidDrawAllLayers(frame);
 
   EXPECT_EQ(1u, frame.will_draw_layers.size());
@@ -5333,7 +5334,7 @@ TEST_F(LayerTreeHostImplTest, ShutdownReleasesContext) {
 
   LayerTreeHostImpl::FrameData frame;
   EXPECT_TRUE(host_impl_->PrepareToDraw(&frame, gfx::Rect()));
-  host_impl_->DrawLayers(&frame, base::TimeTicks::Now());
+  host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
   host_impl_->DidDrawAllLayers(frame);
 
   // The CopyOutputResult's callback has a ref on the ContextProvider and a

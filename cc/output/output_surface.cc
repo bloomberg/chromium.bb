@@ -25,6 +25,7 @@
 #include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
+#include "ui/gfx/frame_time.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
 
@@ -95,9 +96,12 @@ void OutputSurface::InitializeBeginImplFrameEmulation(
     bool throttle_frame_production,
     base::TimeDelta interval) {
   if (throttle_frame_production) {
-    frame_rate_controller_.reset(
-        new FrameRateController(
-            DelayBasedTimeSource::Create(interval, task_runner)));
+    scoped_refptr<DelayBasedTimeSource> time_source;
+    if (gfx::FrameTime::TimestampsAreHighRes())
+      time_source = DelayBasedTimeSourceHighRes::Create(interval, task_runner);
+    else
+      time_source = DelayBasedTimeSource::Create(interval, task_runner);
+    frame_rate_controller_.reset(new FrameRateController(time_source));
   } else {
     frame_rate_controller_.reset(new FrameRateController(task_runner));
   }
@@ -200,7 +204,7 @@ void OutputSurface::PostCheckForRetroactiveBeginImplFrame() {
 void OutputSurface::CheckForRetroactiveBeginImplFrame() {
   TRACE_EVENT0("cc", "OutputSurface::CheckForRetroactiveBeginImplFrame");
   check_for_retroactive_begin_impl_frame_pending_ = false;
-  if (base::TimeTicks::Now() < RetroactiveBeginImplFrameDeadline())
+  if (gfx::FrameTime::Now() < RetroactiveBeginImplFrameDeadline())
     BeginImplFrame(skipped_begin_impl_frame_args_);
 }
 

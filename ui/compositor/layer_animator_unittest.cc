@@ -20,6 +20,7 @@
 #include "ui/compositor/test/test_layer_animation_delegate.h"
 #include "ui/compositor/test/test_layer_animation_observer.h"
 #include "ui/compositor/test/test_utils.h"
+#include "ui/gfx/frame_time.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/transform.h"
 
@@ -168,7 +169,7 @@ TEST(LayerAnimatorTest, ImplicitAnimation) {
   animator->set_disable_timer_for_test(true);
   TestLayerAnimationDelegate delegate;
   animator->SetDelegate(&delegate);
-  base::TimeTicks now = base::TimeTicks::Now();
+  base::TimeTicks now = gfx::FrameTime::Now();
   animator->SetBrightness(0.5);
   EXPECT_TRUE(animator->is_animating());
   element->Step(now + base::TimeDelta::FromSeconds(1));
@@ -1035,7 +1036,7 @@ TEST(LayerAnimatorTest, StartTogetherSetsLastStepTime) {
   // miniscule (fractions of a millisecond). If set correctly, then the delta
   // should be enormous. Arbitrarily choosing 1 minute as the threshold,
   // though a much smaller value would probably have sufficed.
-  delta = base::TimeTicks::Now() - animator->last_step_time();
+  delta = gfx::FrameTime::Now() - animator->last_step_time();
   EXPECT_GT(60.0, delta.InSecondsF());
 }
 

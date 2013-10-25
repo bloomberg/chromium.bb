@@ -57,6 +57,7 @@
 #include "third_party/WebKit/public/web/WebScreenInfo.h"
 #include "third_party/skia/include/core/SkShader.h"
 #include "ui/base/ui_base_switches.h"
+#include "ui/gfx/frame_time.h"
 #include "ui/gfx/rect_conversions.h"
 #include "ui/gfx/size_conversions.h"
 #include "ui/gfx/skia_util.h"
@@ -1443,7 +1444,7 @@ void RenderWidget::DoDeferredUpdate() {
   }
 
   // Tracking of frame rate jitter
-  base::TimeTicks frame_begin_ticks = base::TimeTicks::Now();
+  base::TimeTicks frame_begin_ticks = gfx::FrameTime::Now();
   InstrumentWillBeginFrame();
   AnimateIfNeeded();
 

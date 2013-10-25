@@ -40,6 +40,7 @@
 #include "third_party/khronos/GLES2/gl2ext.h"
 #include "ui/gfx/android/device_display_info.h"
 #include "ui/gfx/android/java_bitmap.h"
+#include "ui/gfx/frame_time.h"
 #include "webkit/common/gpu/context_provider_in_process.h"
 #include "webkit/common/gpu/webgraphicscontext3d_in_process_command_buffer_impl.h"
 
@@ -153,7 +154,7 @@ CompositorImpl::~CompositorImpl() {
 
 void CompositorImpl::Composite() {
   if (host_)
-    host_->Composite(base::TimeTicks::Now());
+    host_->Composite(gfx::FrameTime::Now());
 }
 
 void CompositorImpl::SetRootLayer(scoped_refptr<cc::Layer> root_layer) {

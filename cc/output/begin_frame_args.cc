@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "cc/output/begin_frame_args.h"
+#include "ui/gfx/frame_time.h"
 
 namespace cc {
 
@@ -29,20 +30,20 @@ BeginFrameArgs BeginFrameArgs::Create(base::TimeTicks frame_time,
 BeginFrameArgs BeginFrameArgs::CreateForSynchronousCompositor() {
   // For WebView/SynchronousCompositor, we always want to draw immediately,
   // so we set the deadline to 0 and guess that the interval is 16 milliseconds.
-  return BeginFrameArgs(base::TimeTicks::Now(),
+  return BeginFrameArgs(gfx::FrameTime::Now(),
                         base::TimeTicks(),
                         DefaultInterval());
 }
 
 BeginFrameArgs BeginFrameArgs::CreateForTesting() {
-  base::TimeTicks now = base::TimeTicks::Now();
+  base::TimeTicks now = gfx::FrameTime::Now();
   return BeginFrameArgs(now,
                         now + (DefaultInterval() / 2),
                         DefaultInterval());
 }
 
 BeginFrameArgs BeginFrameArgs::CreateExpiredForTesting() {
-  base::TimeTicks now = base::TimeTicks::Now();
+  base::TimeTicks now = gfx::FrameTime::Now();
   return BeginFrameArgs(now,
                         now - DefaultInterval(),
                         DefaultInterval());

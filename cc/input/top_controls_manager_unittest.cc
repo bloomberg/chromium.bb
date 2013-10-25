@@ -12,6 +12,7 @@
 #include "cc/test/fake_layer_tree_host_impl.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/frame_time.h"
 #include "ui/gfx/vector2d_f.h"
 
 namespace cc {
@@ -131,7 +132,7 @@ TEST(TopControlsManagerTest, PartialShownHideAnimation) {
 
   EXPECT_TRUE(manager->animation());
 
-  base::TimeTicks time = base::TimeTicks::Now();
+  base::TimeTicks time = gfx::FrameTime::Now();
   float previous_offset = manager->controls_top_offset();
   while (manager->animation()) {
     time = base::TimeDelta::FromMicroseconds(100) + time;
@@ -161,7 +162,7 @@ TEST(TopControlsManagerTest, PartialShownShowAnimation) {
 
   EXPECT_TRUE(manager->animation());
 
-  base::TimeTicks time = base::TimeTicks::Now();
+  base::TimeTicks time = gfx::FrameTime::Now();
   float previous_offset = manager->controls_top_offset();
   while (manager->animation()) {
     time = base::TimeDelta::FromMicroseconds(100) + time;
@@ -187,7 +188,7 @@ TEST(TopControlsManagerTest, PartialHiddenWithAmbiguousThresholdShows) {
   manager->ScrollEnd();
   EXPECT_TRUE(manager->animation());
 
-  base::TimeTicks time = base::TimeTicks::Now();
+  base::TimeTicks time = gfx::FrameTime::Now();
   float previous_offset = manager->controls_top_offset();
   while (manager->animation()) {
     time = base::TimeDelta::FromMicroseconds(100) + time;
@@ -213,7 +214,7 @@ TEST(TopControlsManagerTest, PartialHiddenWithAmbiguousThresholdHides) {
   manager->ScrollEnd();
   EXPECT_TRUE(manager->animation());
 
-  base::TimeTicks time = base::TimeTicks::Now();
+  base::TimeTicks time = gfx::FrameTime::Now();
   float previous_offset = manager->controls_top_offset();
   while (manager->animation()) {
     time = base::TimeDelta::FromMicroseconds(100) + time;
@@ -243,7 +244,7 @@ TEST(TopControlsManagerTest, PartialShownWithAmbiguousThresholdHides) {
   manager->ScrollEnd();
   EXPECT_TRUE(manager->animation());
 
-  base::TimeTicks time = base::TimeTicks::Now();
+  base::TimeTicks time = gfx::FrameTime::Now();
   float previous_offset = manager->controls_top_offset();
   while (manager->animation()) {
     time = base::TimeDelta::FromMicroseconds(100) + time;
@@ -273,7 +274,7 @@ TEST(TopControlsManagerTest, PartialShownWithAmbiguousThresholdShows) {
   manager->ScrollEnd();
   EXPECT_TRUE(manager->animation());
 
-  base::TimeTicks time = base::TimeTicks::Now();
+  base::TimeTicks time = gfx::FrameTime::Now();
   float previous_offset = manager->controls_top_offset();
   while (manager->animation()) {
     time = base::TimeDelta::FromMicroseconds(100) + time;

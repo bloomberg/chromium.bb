@@ -51,6 +51,7 @@
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
 #include "third_party/skia/include/core/SkPicture.h"
+#include "ui/gfx/frame_time.h"
 #include "ui/gfx/point_conversions.h"
 #include "ui/gfx/size_conversions.h"
 #include "ui/gfx/vector2d_conversions.h"
@@ -1004,10 +1005,9 @@ class LayerTreeHostTestFrameTimeUpdatesAfterDraw : public LayerTreeHostTest {
       first_frame_time_ = impl->CurrentFrameTimeTicks();
       impl->SetNeedsRedraw();
 
-      // Since base::TimeTicks::Now() uses a low-resolution clock on
-      // Windows, we need to make sure that the clock has incremented past
-      // first_frame_time_.
-      while (first_frame_time_ == base::TimeTicks::Now()) {}
+      // Since we might use a low-resolution clock on Windows, we need to
+      // make sure that the clock has incremented past first_frame_time_.
+      while (first_frame_time_ == gfx::FrameTime::Now()) {}
 
       return;
     }

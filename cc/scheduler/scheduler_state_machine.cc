@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
+#include "ui/gfx/frame_time.h"
 
 namespace cc {
 
@@ -193,7 +194,7 @@ scoped_ptr<base::Value> SchedulerStateMachine::AsValue() const  {
   state->Set("major_state", major_state.release());
 
   scoped_ptr<base::DictionaryValue> timestamps_state(new base::DictionaryValue);
-  base::TimeTicks now = base::TimeTicks::Now();
+  base::TimeTicks now = gfx::FrameTime::Now();
   timestamps_state->SetDouble(
       "0_interval",
       last_begin_impl_frame_args_.interval.InMicroseconds() / 1000.0L);

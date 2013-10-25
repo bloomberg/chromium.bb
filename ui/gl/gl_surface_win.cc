@@ -11,6 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/win/windows_version.h"
 #include "third_party/mesa/src/include/GL/osmesa.h"
+#include "ui/gfx/frame_time.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_surface_egl.h"
@@ -56,8 +57,16 @@ class DWMVSyncProvider : public VSyncProvider {
     if (result != S_OK)
       return;
 
-    base::TimeTicks timebase = base::TimeTicks::FromQPCValue(
-        static_cast<LONGLONG>(timing_info.qpcVBlank));
+    base::TimeTicks timebase;
+    // If FrameTime is not high resolution, we do not want to translate the
+    // QPC value provided by DWM into the low-resolution timebase, which
+    // would be error prone and jittery. As a fallback, we assume the timebase
+    // is zero.
+    if (gfx::FrameTime::TimestampsAreHighRes()) {
+      timebase = gfx::FrameTime::FromQPCValue(
+          static_cast<LONGLONG>(timing_info.qpcVBlank));
+    }
+
     // Swap the numerator/denominator to convert frequency to period.
     if (timing_info.rateRefresh.uiDenominator > 0 &&
         timing_info.rateRefresh.uiNumerator > 0) {

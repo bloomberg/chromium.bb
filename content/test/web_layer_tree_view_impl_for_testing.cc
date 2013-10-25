@@ -20,6 +20,7 @@
 #include "third_party/WebKit/public/platform/WebLayerTreeView.h"
 #include "third_party/WebKit/public/platform/WebRenderingStats.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
+#include "ui/gfx/frame_time.h"
 #include "webkit/common/gpu/test_context_provider_factory.h"
 #include "webkit/renderer/compositor_bindings/web_layer_impl.h"
 
@@ -127,7 +128,7 @@ bool WebLayerTreeViewImplForTesting::commitRequested() const {
 }
 
 void WebLayerTreeViewImplForTesting::composite() {
-  layer_tree_host_->Composite(base::TimeTicks::Now());
+  layer_tree_host_->Composite(gfx::FrameTime::Now());
 }
 
 void WebLayerTreeViewImplForTesting::didStopFlinging() {}

@@ -28,6 +28,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/win/shell.h"
 #include "ui/events/latency_info.h"
+#include "ui/gfx/frame_time.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/win/dpi.h"
 #include "ui/gfx/win/hwnd_util.h"
@@ -877,18 +878,22 @@ void AcceleratedPresenter::DoPresentAndAcknowledge(
   if (raster_status.InVBlank)
     clamped_scanline = display_mode.Height;
 
-  base::TimeTicks current_time = base::TimeTicks::HighResNow();
-
   // Figure out approximately how far back in time the last vsync was based on
   // the ratio of the raster scanline to the display height.
   base::TimeTicks last_vsync_time;
   base::TimeDelta refresh_period;
+
   if (display_mode.Height) {
+    refresh_period = base::TimeDelta::FromMicroseconds(
+        1000000 / display_mode.RefreshRate);
+    // If FrameTime is not high resolution, we use a timebase of zero to avoid
+    // introducing jitter into our frame start times.
+    if (gfx::FrameTime::TimestampsAreHighRes()) {
+      base::TimeTicks current_time = gfx::FrameTime::Now();
       last_vsync_time = current_time -
         base::TimeDelta::FromMilliseconds((clamped_scanline * 1000) /
             (display_mode.RefreshRate * display_mode.Height));
-      refresh_period = base::TimeDelta::FromMicroseconds(
-          1000000 / display_mode.RefreshRate);
+    }
   }
 
   // Wait for the StretchRect to complete before notifying the GPU process

@@ -9,6 +9,7 @@
 #include "base/single_thread_task_runner.h"
 #include "cc/resources/prioritized_resource.h"
 #include "cc/resources/resource_provider.h"
+#include "ui/gfx/frame_time.h"
 
 namespace {
 
@@ -113,7 +114,7 @@ void ResourceUpdateController::OnTimerFired() {
 }
 
 base::TimeTicks ResourceUpdateController::Now() const {
-  return base::TimeTicks::Now();
+  return gfx::FrameTime::Now();
 }
 
 base::TimeDelta ResourceUpdateController::UpdateMoreTexturesTime() const {

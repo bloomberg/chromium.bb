@@ -7,11 +7,12 @@
 #include <algorithm>
 
 #include "base/logging.h"
-#include "base/time/time.h"
 #include "cc/animation/keyframed_animation_curve.h"
 #include "cc/animation/timing_function.h"
 #include "cc/input/top_controls_manager_client.h"
+#include "cc/output/begin_frame_args.h"
 #include "cc/trees/layer_tree_impl.h"
+#include "ui/gfx/frame_time.h"
 #include "ui/gfx/transform.h"
 #include "ui/gfx/vector2d_f.h"
 
@@ -194,7 +195,7 @@ void TopControlsManager::SetupAnimation(AnimationDirection direction) {
 
   top_controls_animation_ = KeyframedFloatAnimationCurve::Create();
   double start_time =
-      (base::TimeTicks::Now() - base::TimeTicks()).InMillisecondsF();
+      (gfx::FrameTime::Now() - base::TimeTicks()).InMillisecondsF();
   top_controls_animation_->AddKeyframe(
       FloatKeyframe::Create(start_time, controls_top_offset_,
                             scoped_ptr<TimingFunction>()));

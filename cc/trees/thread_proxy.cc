@@ -22,6 +22,7 @@
 #include "cc/trees/blocking_task_runner.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_impl.h"
+#include "ui/gfx/frame_time.h"
 
 // Measured in seconds.
 const double kSmoothnessTakesPriorityExpirationDelay = 0.25;
@@ -1255,7 +1256,7 @@ base::TimeDelta ThreadProxy::CommitToActivateDurationEstimate() {
 
 void ThreadProxy::PostBeginImplFrameDeadline(const base::Closure& closure,
                                              base::TimeTicks deadline) {
-  base::TimeDelta delta = deadline - base::TimeTicks::Now();
+  base::TimeDelta delta = deadline - gfx::FrameTime::Now();
   if (delta <= base::TimeDelta())
     delta = base::TimeDelta();
   Proxy::ImplThreadTaskRunner()->PostDelayedTask(FROM_HERE, closure, delta);

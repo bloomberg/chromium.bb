@@ -31,6 +31,7 @@
 #include "ui/compositor/dip_util.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/reflector.h"
+#include "ui/gfx/frame_time.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_surface.h"
@@ -555,7 +556,7 @@ void Compositor::Terminate() {
 
 void Compositor::ScheduleDraw() {
   if (g_compositor_thread) {
-    host_->Composite(base::TimeTicks::Now());
+    host_->Composite(gfx::FrameTime::Now());
   } else if (!defer_draw_scheduling_) {
     defer_draw_scheduling_ = true;
     base::MessageLoop::current()->PostTask(
@@ -603,7 +604,7 @@ void Compositor::Draw() {
     // TODO(nduca): Temporary while compositor calls
     // compositeImmediately() directly.
     Layout();
-    host_->Composite(base::TimeTicks::Now());
+    host_->Composite(gfx::FrameTime::Now());
 
 #if defined(OS_WIN)
     // While we resize, we are usually a few frames behind. By blocking
@@ -740,7 +741,7 @@ void Compositor::DidCommit() {
 }
 
 void Compositor::DidCommitAndDrawFrame() {
-  base::TimeTicks start_time = base::TimeTicks::Now();
+  base::TimeTicks start_time = gfx::FrameTime::Now();
   FOR_EACH_OBSERVER(CompositorObserver,
                     observer_list_,
                     OnCompositingStarted(this, start_time));

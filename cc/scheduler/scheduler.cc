@@ -9,6 +9,7 @@
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "cc/debug/traced_value.h"
+#include "ui/gfx/frame_time.h"
 
 namespace cc {
 
@@ -123,7 +124,7 @@ base::TimeTicks Scheduler::AnticipatedDrawTime() {
       last_begin_impl_frame_args_.interval <= base::TimeDelta())
     return base::TimeTicks();
 
-  base::TimeTicks now = base::TimeTicks::Now();
+  base::TimeTicks now = gfx::FrameTime::Now();
   base::TimeTicks timebase = std::max(last_begin_impl_frame_args_.frame_time,
                                       last_begin_impl_frame_args_.deadline);
   int64 intervals =

@@ -6,6 +6,7 @@
 
 #include "ui/gfx/animation/animation_container_element.h"
 #include "ui/gfx/animation/animation_container_observer.h"
+#include "ui/gfx/frame_time.h"
 
 using base::TimeDelta;
 using base::TimeTicks;
@@ -13,7 +14,7 @@ using base::TimeTicks;
 namespace gfx {
 
 AnimationContainer::AnimationContainer()
-    : last_tick_time_(TimeTicks::Now()),
+    : last_tick_time_(gfx::FrameTime::Now()),
       observer_(NULL) {
 }
 
@@ -28,7 +29,7 @@ void AnimationContainer::Start(AnimationContainerElement* element) {
                                           // element isn't running.
 
   if (elements_.empty()) {
-    last_tick_time_ = TimeTicks::Now();
+    last_tick_time_ = gfx::FrameTime::Now();
     SetMinTimerInterval(element->GetTimerInterval());
   } else if (element->GetTimerInterval() < min_timer_interval_) {
     SetMinTimerInterval(element->GetTimerInterval());
@@ -61,7 +62,7 @@ void AnimationContainer::Run() {
   // ourself here to make sure we're still valid after running all the elements.
   scoped_refptr<AnimationContainer> this_ref(this);
 
-  TimeTicks current_time = TimeTicks::Now();
+  TimeTicks current_time = gfx::FrameTime::Now();
 
   last_tick_time_ = current_time;
 

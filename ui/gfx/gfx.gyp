@@ -86,6 +86,7 @@
         'display_observer.h',
         'favicon_size.cc',
         'favicon_size.h',
+        'frame_time.h',
         'font.cc',
         'font.h',
         'font_fallback_win.cc',

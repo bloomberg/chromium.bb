@@ -15,6 +15,7 @@
 #include "cc/test/scheduler_test_common.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/frame_time.h"
 
 namespace cc {
 namespace {
@@ -386,7 +387,7 @@ TEST(OutputSurfaceTest,
   // We need to subtract an epsilon from Now() because some platforms have
   // a slow clock.
   output_surface.OnVSyncParametersChangedForTesting(
-      base::TimeTicks::Now() - base::TimeDelta::FromSeconds(1), big_interval);
+      gfx::FrameTime::Now() - base::TimeDelta::FromSeconds(1), big_interval);
 
   output_surface.SetMaxFramesPending(2);
   output_surface.EnableRetroactiveBeginImplFrameDeadline(
