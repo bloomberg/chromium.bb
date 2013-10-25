@@ -41,11 +41,6 @@ function test()
     internals.settings.setUnifiedTextCheckerEnabled(true);
     internals.settings.setAsynchronousSpellCheckingEnabled(true);
 
-    if (window.testRunner) {
-        testRunner.dumpAsText();
-        testRunner.waitUntilDone();
-    }
-
     internals.setContinuousSpellCheckingEnabled(false);
     testEditable.focus();
     internals.setContinuousSpellCheckingEnabled(true);

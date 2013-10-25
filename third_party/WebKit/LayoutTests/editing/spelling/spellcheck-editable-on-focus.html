@@ -50,11 +50,6 @@ function test()
         }
     }
 
-    if (window.testRunner) {
-        testRunner.dumpAsText();
-        testRunner.waitUntilDone();
-    }
-
     shouldBe('internals.markerCountForNode(findFirstTextNode(testEditable), "spelling")', '0');
     testEditable.focus();
     shouldBe('internals.markerCountForNode(findFirstTextNode(testTextArea), "spelling")', '0');

@@ -36,9 +36,6 @@ if (!window.internals) {
 
 internals.settings.setUnifiedTextCheckerEnabled(true);
 
-if (window.testRunner)
-    testRunner.dumpAsText();
-
 typeText(testTextArea, 'zz. ');
 shouldBe('internals.markerCountForNode(findFirstTextNode(testTextArea), "spelling")', '1');
 
