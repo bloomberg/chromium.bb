@@ -622,7 +622,17 @@ void RenderWidgetHostViewAura::InitAsPopup(
   aura::RootWindow* root = popup_parent_host_view_->window_->GetRootWindow();
   aura::client::ParentWindowWithContext(window_, root, bounds_in_screen);
 
-  SetBounds(bounds_in_screen);
+  // TODO(erg): While I could make sure details of the WindowTreeClient are
+  // hidden behind aura, hiding the details of the ScreenPositionClient will
+  // take another effort.
+  aura::client::ScreenPositionClient* screen_position_client =
+      aura::client::GetScreenPositionClient(root);
+  gfx::Point origin_in_parent(bounds_in_screen.origin());
+  if (screen_position_client) {
+    screen_position_client->ConvertPointFromScreen(
+        window_->parent(), &origin_in_parent);
+  }
+  SetBounds(gfx::Rect(origin_in_parent, bounds_in_screen.size()));
   Show();
 }
 
@@ -705,28 +715,20 @@ void RenderWidgetHostViewAura::WasHidden() {
 }
 
 void RenderWidgetHostViewAura::SetSize(const gfx::Size& size) {
-  // For a SetSize operation, we don't care what coordinate system the origin
-  // of the window is in, it's only important to make sure that the origin
-  // remains constant after the operation.
-  InternalSetBounds(gfx::Rect(window_->bounds().origin(), size));
+  SetBounds(gfx::Rect(window_->bounds().origin(), size));
 }
 
 void RenderWidgetHostViewAura::SetBounds(const gfx::Rect& rect) {
-  gfx::Point relative_origin(rect.origin());
+  if (HasDisplayPropertyChanged(window_))
+    host_->InvalidateScreenInfo();
 
-  // RenderWidgetHostViewAura::SetBounds() takes screen coordinates, but
-  // Window::SetBounds() takes parent coordinates, so do the conversion here.
-  aura::RootWindow* root = window_->GetRootWindow();
-  if (root) {
-    aura::client::ScreenPositionClient* screen_position_client =
-        aura::client::GetScreenPositionClient(root);
-    if (screen_position_client) {
-      screen_position_client->ConvertPointFromScreen(
-          window_->parent(), &relative_origin);
-    }
+  window_->SetBounds(rect);
+  host_->WasResized();
+  MaybeCreateResizeLock();
+  if (touch_editing_client_) {
+    touch_editing_client_->OnSelectionOrCursorChanged(selection_anchor_rect_,
+        selection_focus_rect_);
   }
-
-  InternalSetBounds(gfx::Rect(relative_origin, rect.size()));
 }
 
 void RenderWidgetHostViewAura::MaybeCreateResizeLock() {
@@ -1227,19 +1229,6 @@ bool RenderWidgetHostViewAura::ShouldSkipFrame(gfx::Size size_in_dip) const {
     return false;
 
   return size_in_dip != resize_lock_->expected_size();
-}
-
-void RenderWidgetHostViewAura::InternalSetBounds(const gfx::Rect& rect) {
-  if (HasDisplayPropertyChanged(window_))
-    host_->InvalidateScreenInfo();
-
-  window_->SetBounds(rect);
-  host_->WasResized();
-  MaybeCreateResizeLock();
-  if (touch_editing_client_) {
-    touch_editing_client_->OnSelectionOrCursorChanged(selection_anchor_rect_,
-      selection_focus_rect_);
-  }
 }
 
 void RenderWidgetHostViewAura::CheckResizeLock() {
