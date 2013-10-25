@@ -12,6 +12,7 @@
 #include "base/values.h"
 #include "chrome/browser/extensions/policy_handlers.h"
 #include "chrome/browser/net/proxy_policy_handler.h"
+#include "chrome/browser/policy/autofill_policy_handler.h"
 #include "chrome/browser/policy/configuration_policy_handler.h"
 #include "chrome/browser/policy/javascript_policy_handler.h"
 #include "chrome/browser/policy/policy_error_map.h"
@@ -459,8 +460,7 @@ ConfigurationPolicyHandlerList::ConfigurationPolicyHandlerList() {
                                 kSimplePolicyMap[i].value_type));
   }
 
-  handlers_.push_back(
-      new AutofillPolicyHandler(autofill::prefs::kAutofillEnabled));
+  handlers_.push_back(new AutofillPolicyHandler());
   handlers_.push_back(new DefaultSearchPolicyHandler());
   handlers_.push_back(new FileSelectionDialogsHandler(
       prefs::kAllowFileSelectionDialogs, prefs::kPromptForDownload));

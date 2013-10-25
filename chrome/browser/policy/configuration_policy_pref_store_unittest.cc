@@ -430,38 +430,6 @@ TEST_F(ConfigurationPolicyPrefStorePromptDownloadTest,
   EXPECT_FALSE(prompt_for_download);
 }
 
-// Test cases for the Autofill policy setting.
-class ConfigurationPolicyPrefStoreAutofillTest
-    : public ConfigurationPolicyPrefStoreTest {};
-
-TEST_F(ConfigurationPolicyPrefStoreAutofillTest, Default) {
-  EXPECT_FALSE(store_->GetValue(autofill::prefs::kAutofillEnabled, NULL));
-}
-
-TEST_F(ConfigurationPolicyPrefStoreAutofillTest, Enabled) {
-  PolicyMap policy;
-  policy.Set(key::kAutoFillEnabled, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-             base::Value::CreateBooleanValue(true), NULL);
-  UpdateProviderPolicy(policy);
-  // Enabling Autofill should not set the pref.
-  EXPECT_FALSE(store_->GetValue(autofill::prefs::kAutofillEnabled, NULL));
-}
-
-TEST_F(ConfigurationPolicyPrefStoreAutofillTest, Disabled) {
-  PolicyMap policy;
-  policy.Set(key::kAutoFillEnabled, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-             base::Value::CreateBooleanValue(false), NULL);
-  UpdateProviderPolicy(policy);
-  // Disabling Autofill should switch the pref to managed.
-  const base::Value* value = NULL;
-  EXPECT_TRUE(store_->GetValue(autofill::prefs::kAutofillEnabled, &value));
-  ASSERT_TRUE(value);
-  bool autofill_enabled = true;
-  bool result = value->GetAsBoolean(&autofill_enabled);
-  ASSERT_TRUE(result);
-  EXPECT_FALSE(autofill_enabled);
-}
-
 #if defined(OS_CHROMEOS)
 // Test cases for the screen magnifier type policy setting.
 class ConfigurationPolicyPrefStoreScreenMagnifierTypeTest

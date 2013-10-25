@@ -1448,6 +1448,8 @@
         'browser/policy/async_policy_loader.h',
         'browser/policy/async_policy_provider.cc',
         'browser/policy/async_policy_provider.h',
+        'browser/policy/autofill_policy_handler.cc',
+        'browser/policy/autofill_policy_handler.h',
         'browser/policy/browser_policy_connector.cc',
         'browser/policy/browser_policy_connector.h',
         'browser/policy/cloud/cloud_external_data_manager.cc',

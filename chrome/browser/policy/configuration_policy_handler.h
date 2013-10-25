@@ -241,21 +241,6 @@ class SyncPolicyHandler : public TypeCheckingPolicyHandler {
   DISALLOW_COPY_AND_ASSIGN(SyncPolicyHandler);
 };
 
-// ConfigurationPolicyHandler for the AutofillEnabled policy.
-class AutofillPolicyHandler : public TypeCheckingPolicyHandler {
- public:
-  explicit AutofillPolicyHandler(const char* pref_name);
-  virtual ~AutofillPolicyHandler();
-
-  // ConfigurationPolicyHandler methods:
-  virtual void ApplyPolicySettings(const PolicyMap& policies,
-                                   PrefValueMap* prefs) OVERRIDE;
-
- private:
-  const char* pref_name_;
-  DISALLOW_COPY_AND_ASSIGN(AutofillPolicyHandler);
-};
-
 #if !defined(OS_ANDROID)
 
 // ConfigurationPolicyHandler for the DiskCacheDir policy.
