@@ -1164,7 +1164,7 @@ void Chapter::ShallowCopy(Chapter* dst) const {
 void Chapter::Clear() {
   StrCpy(NULL, &id_);
 
-  while (displays_count_ < 0) {
+  while (displays_count_ > 0) {
     Display& d = displays_[--displays_count_];
     d.Clear();
   }
