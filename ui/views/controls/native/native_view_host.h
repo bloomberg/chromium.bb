@@ -31,7 +31,39 @@ class VIEWS_EXPORT NativeViewHost : public View {
   // Should views render the focus when on native controls?
   static const bool kRenderNativeControlFocus;
 
-  NativeViewHost();
+  // When performing fast resizes the contents is not actually resized, but
+  // instead the contents is positioned and clipped to give the impression of
+  // resizing. Gravity indicates the positioning of the content relative to the
+  // clipping. The default value, northwest, indicates that the top left corner
+  // of the clip and the content should align, so the bottom and right sides of
+  // the content will be clipped. For a value like south the bottom edges will
+  // align at their respective middles, thus the full vertical resize will be
+  // reflected on the top, but half of the horizontal resize will be reflected
+  // on the left and right sides. The following list is the gravity values and
+  // their alignment points for reference, coordinates relative to the
+  // respective system for the clip or contents:
+  //   NorthWest      (0, 0)
+  //   North          (width/2, 0)
+  //   NorthEast      (width, 0)
+  //   East           (width, height/2)
+  //   SouthEast      (width, height)
+  //   South          (width/2, height)
+  //   SouthWest      (0, height)
+  //   West           (0, height/2)
+  //   Center         (width/2, height/2)
+  enum Gravity {
+    GRAVITY_NORTHWEST,
+    GRAVITY_NORTH,
+    GRAVITY_NORTHEAST,
+    GRAVITY_EAST,
+    GRAVITY_SOUTHEAST,
+    GRAVITY_SOUTH,
+    GRAVITY_SOUTHWEST,
+    GRAVITY_WEST,
+    GRAVITY_CENTER,
+  };
+
+    NativeViewHost();
   virtual ~NativeViewHost();
 
   // Attach a gfx::NativeView to this View. Its bounds will be kept in sync
@@ -73,6 +105,23 @@ class VIEWS_EXPORT NativeViewHost : public View {
   bool fast_resize_at_last_layout() const {
     return fast_resize_at_last_layout_;
   }
+
+  // Gravity controls how the clip is positioned relative to the native
+  // view. The specifics of this are discussed in the comment above the related
+  // enum. This call only sets the value being used, but does not cause a
+  // re-layout, so ShowWidget, via Layout, must be called before the new gravity
+  // will have an effect.
+  void set_fast_resize_gravity(Gravity gravity) {
+    fast_resize_gravity_ = gravity;
+  }
+  Gravity fast_resize_gravity() const {
+    return fast_resize_gravity_;
+  }
+
+  // Returns the appropriate, as in the comment above discussing gravity,
+  // scaling factor for the current gravity.
+  float GetWidthScaleFactor() const;
+  float GetHeightScaleFactor() const;
 
   // Accessor for |native_view_|.
   gfx::NativeView native_view() const { return native_view_; }
@@ -122,6 +171,9 @@ class VIEWS_EXPORT NativeViewHost : public View {
 
   // Value of |fast_resize_| during the last call to Layout.
   bool fast_resize_at_last_layout_;
+
+  // Gravity value to be used on the next call to ShowWidget.
+  Gravity fast_resize_gravity_;
 
   // The view that should be given focus when this NativeViewHost is focused.
   View* focus_view_;
