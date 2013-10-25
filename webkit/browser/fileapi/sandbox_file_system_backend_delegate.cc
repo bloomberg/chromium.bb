@@ -43,11 +43,6 @@ const char kTemporaryDirectoryName[] = "t";
 const char kPersistentDirectoryName[] = "p";
 const char kSyncableDirectoryName[] = "s";
 
-const char* kPrepopulateTypes[] = {
-  kPersistentDirectoryName,
-  kTemporaryDirectoryName
-};
-
 enum FileSystemError {
   kOK = 0,
   kIncognito,
@@ -134,12 +129,6 @@ void DidOpenFileSystem(
   callback.Run(*error);
 }
 
-template <typename T>
-void DeleteSoon(base::SequencedTaskRunner* runner, T* ptr) {
-  if (!runner->DeleteSoon(FROM_HERE, ptr))
-    delete ptr;
-}
-
 }  // namespace
 
 const base::FilePath::CharType
@@ -189,25 +178,22 @@ SandboxFileSystemBackendDelegate::SandboxFileSystemBackendDelegate(
       file_system_options_(file_system_options),
       is_filesystem_opened_(false),
       weak_factory_(this) {
-  std::vector<std::string> types_to_prepopulate(
-      &kPrepopulateTypes[0], &kPrepopulateTypes[arraysize(kPrepopulateTypes)]);
-  file_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&ObfuscatedFileUtil::MaybePrepopulateDatabase,
-                 base::Unretained(obfuscated_file_util()),
-                 types_to_prepopulate));
 }
 
 SandboxFileSystemBackendDelegate::~SandboxFileSystemBackendDelegate() {
   io_thread_checker_.DetachFromThread();
-
-  // Always delete them lazily whether we're on file_task_runner or not.
-  // (So that the code that assumes tasks posted on file_task_runner can
-  // safely run with these raw pointers do not break in production code
-  // as well as in test code)
-  DeleteSoon(file_task_runner_.get(), sandbox_file_util_.release());
-  DeleteSoon(file_task_runner_.get(), quota_observer_.release());
-  DeleteSoon(file_task_runner_.get(), file_system_usage_cache_.release());
+  if (!file_task_runner_->RunsTasksOnCurrentThread()) {
+    AsyncFileUtil* sandbox_file_util = sandbox_file_util_.release();
+    SandboxQuotaObserver* quota_observer = quota_observer_.release();
+    FileSystemUsageCache* file_system_usage_cache =
+        file_system_usage_cache_.release();
+    if (!file_task_runner_->DeleteSoon(FROM_HERE, sandbox_file_util))
+      delete sandbox_file_util;
+    if (!file_task_runner_->DeleteSoon(FROM_HERE, quota_observer))
+      delete quota_observer;
+    if (!file_task_runner_->DeleteSoon(FROM_HERE, file_system_usage_cache))
+      delete file_system_usage_cache;
+  }
 }
 
 SandboxFileSystemBackendDelegate::OriginEnumerator*
