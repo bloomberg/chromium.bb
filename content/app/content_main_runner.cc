@@ -682,7 +682,8 @@ class ContentMainRunnerImpl : public ContentMainRunner {
       MachBroker::ChildSendTaskPortToParent();
     }
 #elif defined(OS_WIN)
-    base::TimeTicks::SetNowIsHighResNowIfSupported();
+    if (command_line.HasSwitch(switches::kEnableHighResolutionTime))
+      base::TimeTicks::SetNowIsHighResNowIfSupported();
 
     // This must be done early enough since some helper functions like
     // IsTouchEnabled, needed to load resources, may call into the theme dll.

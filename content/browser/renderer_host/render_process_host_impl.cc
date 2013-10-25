@@ -1078,6 +1078,9 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
 #if defined(OS_POSIX)
     switches::kChildCleanExit,
 #endif
+#if defined(OS_WIN)
+    switches::kEnableHighResolutionTime,
+#endif
   };
   renderer_cmd->CopySwitchesFrom(browser_cmd, kSwitchNames,
                                  arraysize(kSwitchNames));
