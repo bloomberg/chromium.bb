@@ -39,6 +39,8 @@ const char kUploadContentType[] = "multipart/form-data";
 const char kMultipartBoundary[] =
     "----**--yradnuoBgoLtrapitluMklaTelgooG--**----";
 
+const int kHttpResponseOk = 200;
+
 }  // namespace
 
 WebRtcLogUploader::WebRtcLogUploader()
@@ -52,27 +54,14 @@ void WebRtcLogUploader::OnURLFetchComplete(
   DCHECK(upload_done_data_.find(source) != upload_done_data_.end());
   int response_code = source->GetResponseCode();
   std::string report_id;
-  if (response_code == 200 && source->GetResponseAsString(&report_id)) {
+  if (response_code == kHttpResponseOk &&
+      source->GetResponseAsString(&report_id)) {
     AddUploadedLogInfoToUploadListFile(
         WebRtcLogUploadList::GetFilePathForProfile(
             upload_done_data_[source].profile),
         report_id);
   }
-  content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE,
-      base::Bind(&WebRtcLoggingHandlerHost::UploadLogDone,
-                 upload_done_data_[source].host));
-  if (!upload_done_data_[source].callback.is_null()) {
-    bool success = response_code == 200;
-    std::string error_message;
-    if (!success) {
-      error_message = "Uploading failed, response code: " +
-                      base::IntToString(response_code);
-    }
-    content::BrowserThread::PostTask(
-        content::BrowserThread::UI, FROM_HERE,
-        base::Bind(upload_done_data_[source].callback, success, report_id,
-                   error_message));
-  }
+  NotifyUploadDone(response_code, report_id, upload_done_data_[source]);
   upload_done_data_.erase(source);
 }
 
@@ -109,10 +98,13 @@ void WebRtcLogUploader::LoggingStoppedDoUpload(
                  length, meta_data);
 
   // If a test has set the test string pointer, write to it and skip uploading.
-  // This will be removed when the browser test for this feature is fully done
-  // according to the test plan. See http://crbug.com/257329.
+  // Still fire the upload callback so that we can run an extension API test
+  // using the test framework for that without hanging.
+  // TODO(grunell): Remove this when the api test for this feature is fully
+  // implemented according to the test plan. http://crbug.com/257329.
   if (post_data_) {
     *post_data_ = post_data;
+    NotifyUploadDone(kHttpResponseOk, "", upload_done_data);
     return;
   }
 
@@ -280,4 +272,25 @@ void WebRtcLogUploader::AddUploadedLogInfoToUploadListFile(
   int written = file_util::WriteFile(upload_list_path, &contents[0],
                                      contents.size());
   DPCHECK(written == static_cast<int>(contents.size()));
+}
+
+void WebRtcLogUploader::NotifyUploadDone(
+    int response_code,
+    const std::string& report_id,
+    const WebRtcLogUploadDoneData& upload_done_data) {
+  content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE,
+      base::Bind(&WebRtcLoggingHandlerHost::UploadLogDone,
+                 upload_done_data.host));
+  if (!upload_done_data.callback.is_null()) {
+    bool success = response_code == kHttpResponseOk;
+    std::string error_message;
+    if (!success) {
+      error_message = "Uploading failed, response code: " +
+                      base::IntToString(response_code);
+    }
+    content::BrowserThread::PostTask(
+        content::BrowserThread::UI, FROM_HERE,
+        base::Bind(upload_done_data.callback, success, report_id,
+                   error_message));
+  }
 }

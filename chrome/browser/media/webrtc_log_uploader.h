@@ -108,6 +108,10 @@ class WebRtcLogUploader : public net::URLFetcherDelegate {
       const base::FilePath& upload_list_path,
       const std::string& report_id);
 
+  void NotifyUploadDone(int response_code,
+                        const std::string& report_id,
+                        const WebRtcLogUploadDoneData& upload_done_data);
+
   int log_count_;
 
   // For testing purposes, see OverrideUploadWithBufferForTesting. Only accessed
