@@ -51,7 +51,7 @@ void WebContentsModalDialogManager::FocusTopmostDialog() {
   native_manager_->FocusDialog(child_dialogs_.front().dialog);
 }
 
-void WebContentsModalDialogManager::SetCloseOnInterstitialWebUI(
+void WebContentsModalDialogManager::SetCloseOnInterstitialPage(
     NativeWebContentsModalDialog dialog,
     bool close) {
   WebContentsModalDialogList::iterator loc = FindDialogState(dialog);
@@ -93,7 +93,14 @@ WebContentsModalDialogManager::WebContentsModalDialogManager(
 WebContentsModalDialogManager::DialogState::DialogState(
     NativeWebContentsModalDialog dialog)
     : dialog(dialog),
-      close_on_interstitial_webui(false) {
+#if defined(OS_WIN) || defined(USE_AURA)
+      close_on_interstitial_webui(true)
+#else
+      // TODO(wittman): Test that closing on interstitial webui works properly
+      // on Mac and use the true default for all platforms.
+      close_on_interstitial_webui(false)
+#endif
+                                         {
 }
 
 WebContentsModalDialogManager::WebContentsModalDialogList::iterator

@@ -198,9 +198,8 @@ TEST_F(WebContentsModalDialogManagerTest, VisibilityObservation) {
             native_manager->GetDialogState(dialog1));
 }
 
-// Test that attaching an interstitial WebUI page closes dialogs configured to
-// close on interstitial WebUI.
-TEST_F(WebContentsModalDialogManagerTest, InterstitialWebUI) {
+// Test that attaching an interstitial page closes dialogs configured to close.
+TEST_F(WebContentsModalDialogManagerTest, InterstitialPage) {
   const NativeWebContentsModalDialog dialog1 = MakeFakeDialog();
   const NativeWebContentsModalDialog dialog2 = MakeFakeDialog();
   const NativeWebContentsModalDialog dialog3 = MakeFakeDialog();
@@ -209,8 +208,14 @@ TEST_F(WebContentsModalDialogManagerTest, InterstitialWebUI) {
   manager->ShowDialog(dialog2);
   manager->ShowDialog(dialog3);
 
-  manager->SetCloseOnInterstitialWebUI(dialog1, true);
-  manager->SetCloseOnInterstitialWebUI(dialog3, true);
+#if defined(OS_WIN) || defined(USE_AURA)
+  manager->SetCloseOnInterstitialPage(dialog2, false);
+#else
+  // TODO(wittman): Remove this section once Mac is changed to close on
+  // interstitial pages by default.
+  manager->SetCloseOnInterstitialPage(dialog1, true);
+  manager->SetCloseOnInterstitialPage(dialog3, true);
+#endif
 
   test_api->DidAttachInterstitialPage();
   EXPECT_EQ(TestNativeWebContentsModalDialogManager::CLOSED,

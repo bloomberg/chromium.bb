@@ -93,8 +93,6 @@ MediaGalleriesDialogViews::MediaGalleriesDialogViews(
       controller->web_contents()->GetView()->GetNativeView(),
       modal_delegate->GetWebContentsModalDialogHost()->GetHostView());
   web_contents_modal_dialog_manager->ShowDialog(window_->GetNativeView());
-  web_contents_modal_dialog_manager->SetCloseOnInterstitialWebUI(
-      window_->GetNativeView(), true);
 }
 
 MediaGalleriesDialogViews::~MediaGalleriesDialogViews() {}

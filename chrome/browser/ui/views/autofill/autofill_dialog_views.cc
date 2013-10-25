@@ -1353,8 +1353,6 @@ void AutofillDialogViews::Show() {
       delegate_->GetWebContents()->GetView()->GetNativeView(),
       modal_delegate->GetWebContentsModalDialogHost()->GetHostView());
   web_contents_modal_dialog_manager->ShowDialog(window_->GetNativeView());
-  web_contents_modal_dialog_manager->SetCloseOnInterstitialWebUI(
-      window_->GetNativeView(), true);
   focus_manager_ = window_->GetFocusManager();
   focus_manager_->AddFocusChangeListener(this);
 

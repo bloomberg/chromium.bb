@@ -71,8 +71,6 @@ void CaptivePortalWindowProxy::Show() {
 
   widget_->AddObserver(this);
   web_contents_modal_dialog_manager->ShowDialog(widget_->GetNativeView());
-  web_contents_modal_dialog_manager->SetCloseOnInterstitialWebUI(
-      widget_->GetNativeView(), true);
   DCHECK(GetState() == STATE_DISPLAYED);
 }
 

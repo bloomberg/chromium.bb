@@ -43,8 +43,8 @@ class WebContentsModalDialogManager
   void FocusTopmostDialog();
 
   // Set to true to close the window when a page load starts on the WebContents.
-  void SetCloseOnInterstitialWebUI(NativeWebContentsModalDialog dialog,
-                                   bool close);
+  void SetCloseOnInterstitialPage(NativeWebContentsModalDialog dialog,
+                                  bool close);
 
   // Overriden from NativeWebContentsModalDialogManagerDelegate:
   virtual content::WebContents* GetWebContents() const OVERRIDE;

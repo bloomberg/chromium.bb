@@ -47,8 +47,6 @@ void PlatformVerificationDialog::ShowDialog(
       dialog, web_contents->GetView()->GetNativeView(),
       modal_delegate->GetWebContentsModalDialogHost()->GetHostView());
   web_contents_modal_dialog_manager->ShowDialog(widget->GetNativeView());
-  web_contents_modal_dialog_manager->SetCloseOnInterstitialWebUI(
-      widget->GetNativeView(), true);
   widget->Show();
 }
 

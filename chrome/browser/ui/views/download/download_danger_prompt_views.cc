@@ -372,8 +372,6 @@ DownloadDangerPrompt* DownloadDangerPrompt::Create(
       web_contents->GetView()->GetNativeView(),
       modal_delegate->GetWebContentsModalDialogHost()->GetHostView());
   web_contents_modal_dialog_manager->ShowDialog(dialog->GetNativeView());
-  web_contents_modal_dialog_manager->SetCloseOnInterstitialWebUI(
-      dialog->GetNativeView(), true);
 
   return download_danger_prompt;
 }
