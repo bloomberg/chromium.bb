@@ -1,0 +1,19 @@
+{
+  "name": "chrome.extension.settings_override",
+  "version": "0.1",
+  "manifest_version": 2,
+  "description": "end-to-end browser test for chrome.settings_override API",
+  "chrome_settings_overrides": {
+    "homepage": "http://www.homepage.com",
+    "search_provider": {
+        "name": "first",
+        "keyword": "firstkey",
+        "search_url": "http://www.foo.com/s?q={searchTerms}",
+        "favicon_url": "http://www.foo.com/favicon.ico",
+        "suggest_url": "http://www.foo.com/s?q={searchTerms}",
+        "encoding": "UTF-8",
+        "is_default": true
+    },
+    "startup_page": "http://www.startup.com"
+   }
+}

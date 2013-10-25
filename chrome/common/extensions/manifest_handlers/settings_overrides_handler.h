@@ -14,29 +14,32 @@ namespace extensions {
 // SettingsOverride is associated with "chrome_settings_overrides" manifest key.
 // An extension can add a search engine as default or non-default, overwrite the
 // homepage and append a startup page to the list.
-struct SettingsOverride : public Extension::ManifestData {
-  SettingsOverride();
-  virtual ~SettingsOverride();
+struct SettingsOverrides : public Extension::ManifestData {
+  SettingsOverrides();
+  virtual ~SettingsOverrides();
+
+  static const SettingsOverrides* Get(const Extension* extension);
 
   scoped_ptr<api::manifest_types::ChromeSettingsOverrides::Search_provider>
       search_engine;
   scoped_ptr<GURL> homepage;
   scoped_ptr<GURL> startup_page;
+
  private:
-  DISALLOW_COPY_AND_ASSIGN(SettingsOverride);
+  DISALLOW_COPY_AND_ASSIGN(SettingsOverrides);
 };
 
-class SettingsOverrideHandler : public ManifestHandler {
+class SettingsOverridesHandler : public ManifestHandler {
  public:
-  SettingsOverrideHandler();
-  virtual ~SettingsOverrideHandler();
+  SettingsOverridesHandler();
+  virtual ~SettingsOverridesHandler();
 
   virtual bool Parse(Extension* extension, string16* error) OVERRIDE;
 
  private:
   virtual const std::vector<std::string> Keys() const OVERRIDE;
 
-  DISALLOW_COPY_AND_ASSIGN(SettingsOverrideHandler);
+  DISALLOW_COPY_AND_ASSIGN(SettingsOverridesHandler);
 };
 
 }  // namespace extensions

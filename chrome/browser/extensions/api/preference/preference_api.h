@@ -180,7 +180,7 @@ class PreferenceFunction : public SyncExtensionFunction {
   virtual ~PreferenceFunction();
 
   // Given an |extension_pref_key|, provides its |browser_pref_key| from the
-  // static map in extension_preference.cc. Returns true if the corresponding
+  // static map in preference_api.cc. Returns true if the corresponding
   // browser pref exists and the extension has the API permission needed to
   // modify that pref. Sets |error_| if the extension doesn't have the needed
   // permission.

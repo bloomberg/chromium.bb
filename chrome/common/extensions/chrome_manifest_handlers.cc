@@ -87,7 +87,7 @@ void RegisterChromeManifestHandlers() {
   (new PluginsHandler)->Register();
   (new RequirementsHandler)->Register();
   (new SandboxedPageHandler)->Register();
-  (new SettingsOverrideHandler)->Register();
+  (new SettingsOverridesHandler)->Register();
   (new ScriptBadgeHandler)->Register();
   (new SharedModuleHandler)->Register();
   (new SocketsHandler)->Register();

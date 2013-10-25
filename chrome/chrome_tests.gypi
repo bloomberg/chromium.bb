@@ -1158,6 +1158,7 @@
         'browser/extensions/api/runtime/runtime_apitest.cc',
         'browser/extensions/api/serial/serial_apitest.cc',
         'browser/extensions/api/sessions/sessions_apitest.cc',
+        'browser/extensions/api/settings_overrides/settings_overrides_browsertest.cc',
         'browser/extensions/api/socket/socket_apitest.cc',
         'browser/extensions/api/sockets_tcp/sockets_tcp_apitest.cc',
         'browser/extensions/api/sockets_tcp_server/sockets_tcp_server_apitest.cc',

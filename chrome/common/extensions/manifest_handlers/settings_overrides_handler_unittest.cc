@@ -35,7 +35,7 @@ const char kManifest[] = "{"
 using extensions::api::manifest_types::ChromeSettingsOverrides;
 using extensions::Extension;
 using extensions::Manifest;
-using extensions::SettingsOverride;
+using extensions::SettingsOverrides;
 namespace manifest_keys = extensions::manifest_keys;
 
 class DeclarativeSettingsTest : public testing::Test {
@@ -59,7 +59,7 @@ TEST_F(DeclarativeSettingsTest, ParseManifest) {
   ASSERT_TRUE(extension);
   ASSERT_TRUE(extension->manifest()->HasPath(manifest_keys::kSettingsOverride));
 
-  SettingsOverride* settings_override = static_cast<SettingsOverride*>(
+  SettingsOverrides* settings_override = static_cast<SettingsOverrides*>(
         extension->GetManifestData(manifest_keys::kSettingsOverride));
   ASSERT_TRUE(settings_override);
   ASSERT_TRUE(settings_override->search_engine);
