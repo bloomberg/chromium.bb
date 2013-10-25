@@ -98,23 +98,22 @@ kDigestTestVectors = [
   },
 ];
 
+var allTests = [];
+
 // Run each test.
 for (var i = 0; i < kDigestTestVectors.length; ++i) {
-    var testCase = kDigestTestVectors[i];
-    var promise = crypto.subtle.digest({name: testCase.algorithm}, hexStringToUint8Array(testCase.input));
-    promise.then(onTestCaseComplete.bind(null, testCase), failAndFinishJSTest);
+    allTests.push(runTestCase(kDigestTestVectors[i]));
 }
 
-function onTestCaseComplete(testCase, result)
+function runTestCase(testCase)
 {
-    var testDescription = testCase.algorithm + " of [" + testCase.input + "]";
-    bytesShouldMatchHexString(testDescription, testCase.output, result);
-
-    // Once the last test has completed, done.
-    if (testCase == kDigestTestVectors[kDigestTestVectors.length - 1]) {
-      finishJSTest();
-    }
+    return crypto.subtle.digest({name: testCase.algorithm}, hexStringToUint8Array(testCase.input)).then(function(result) {
+        var testDescription = testCase.algorithm + " of [" + testCase.input + "]";
+        bytesShouldMatchHexString(testDescription, testCase.output, result);
+    });
 }
+
+Promise.all(allTests).then(finishJSTest, failAndFinishJSTest);
 
 // Pass invalid data to digeset()
 shouldThrow("crypto.subtle.digest({name: 'sha-1'})");
