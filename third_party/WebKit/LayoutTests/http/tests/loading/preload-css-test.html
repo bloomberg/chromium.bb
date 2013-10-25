@@ -17,14 +17,14 @@ function printResults(){
 }
     
 </script>
-<script src="http://127.0.0.1:8000/resources/slow-script.pl?delay=1000"></script>
+<script src="http://127.0.0.1:8000/resources/slow-script.pl?delay=100"></script>
 <script>
 checkForPreload("resources/big_mq.css", true);
 checkForPreload("resources/small_mq.css", false);
 </script>
 <link href="resources/big_mq.css" rel="stylesheet" media="screen and (min-width: 800px)">
 <link href="resources/small_mq.css" rel="stylesheet" media="screen and (max-width: 799px)">
-<script src="http://127.0.0.1:8000/resources/slow-script.pl?delay=1000"></script>
+<script src="http://127.0.0.1:8000/resources/slow-script.pl?delay=100"></script>
 
 <body>
 <p>Preload scanner should preload only the relevant MQ external CSS</p>
