@@ -2267,6 +2267,14 @@ def CMDformat(parser, args):
     if not os.path.exists(cfd_path):
       DieWithError('Could not find clang-format-diff at %s.' % cfd_path)
     cmd = [sys.executable, cfd_path, '-p0', '-style', 'Chromium']
+
+    # Newer versions of clang-format-diff.py require an explicit -i flag
+    # to apply the edits to files, otherwise it just displays a diff.
+    # Probe the usage string to verify if this is needed.
+    help_text = RunCommand([sys.executable, cfd_path, '-h'])
+    if '[-i]' in help_text:
+      cmd.append('-i')
+
     RunCommand(cmd, stdin=diff_output, cwd=top_dir)
 
   return 0
