@@ -48,7 +48,7 @@ namespace WebCore {
 class PLATFORM_EXPORT Biquad {
 public:
     Biquad();
-    virtual ~Biquad();
+    ~Biquad();
 
     void process(const float* sourceP, float* destP, size_t framesToProcess);
 
