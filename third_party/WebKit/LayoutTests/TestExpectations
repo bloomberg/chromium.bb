@@ -529,7 +529,7 @@ Bug(steveblock) animations/opacity-transform-animation.html [ ImageOnlyFailure ]
 
 crbug.com/309369 perf/accessibility-title-ui-element.html [ Pass Timeout ]
 crbug.com/309370 [ Mac ] fast/css/font-face-html-as-svg.html [ Timeout ]
-crbug.com/310292 [ SnowLeopard ] http/tests/security/video-poster-cross-origin-crash.html [ Failure Pass ]
+crbug.com/310292 [ Mac ] http/tests/security/video-poster-cross-origin-crash.html [ Failure Pass ]
 
 crbug.com/310323 [ Debug ] http/tests/plugins/third-party-cookie-accept-policy.html [ Crash Pass ]
 crbug.com/310323 [ Debug ] http/tests/security/contentSecurityPolicy/report-multiple-violations-02.html [ Crash Pass ]
@@ -552,3 +552,8 @@ crbug.com/311487 [ Debug ] svg/custom/acid3-test-77.html [ Pass Timeout ]
 crbug.com/311524 [ Win ] http/tests/inspector/appcache/appcache-iframe-manifests.html [ Pass Timeout ]
 
 crbug.com/311532 [ Win ] fast/dom/Geolocation/timestamp.html [ Pass Failure ]
+
+crbug.com/311319 webaudio/waveshaper-oversample-4x.html [ Pass Failure ]
+crbug.com/311804 [ Mac Win Linux ] storage/storagequota-query-usage.html [ Failure Pass ]
+crbug.com/311805 [ Mac ] http/tests/w3c/webperf/submission/Google/resource-timing/html/test_resource_reparenting.html [ Failure Pass ]
+crbug.com/311812 [ Mac ] http/tests/security/redirect-BLOCKED-to-localURL.html [ Failure Pass ]
