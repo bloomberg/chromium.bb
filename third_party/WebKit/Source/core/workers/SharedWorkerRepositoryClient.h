@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Google Inc. All rights reserved.
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,39 +28,31 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SharedWorkerRepository_h
-#define SharedWorkerRepository_h
+#ifndef SharedWorkerRepositoryClient_h
+#define SharedWorkerRepositoryClient_h
 
 #include "wtf/Forward.h"
-#include "wtf/PassOwnPtr.h"
-#include "wtf/PassRefPtr.h"
+#include "wtf/Noncopyable.h"
 
 namespace WebCore {
 
-    class Document;
-    class ExceptionState;
-    class KURL;
-    class MessagePortChannel;
-    class SharedWorker;
+class Document;
+class ExceptionState;
+class KURL;
+class MessagePortChannel;
+class SharedWorker;
 
-    // Interface to a repository which manages references to the set of active shared workers.
-    class SharedWorkerRepository {
-    public:
-        // Returns true if the platform supports SharedWorkers, otherwise false.
-        static bool isAvailable();
+class SharedWorkerRepositoryClient {
+    WTF_MAKE_NONCOPYABLE(SharedWorkerRepositoryClient);
+public:
+    SharedWorkerRepositoryClient() { }
+    virtual ~SharedWorkerRepositoryClient() { }
 
-        // Connects the passed SharedWorker object with the specified worker thread, creating a new thread if necessary.
-        static void connect(PassRefPtr<SharedWorker>, PassRefPtr<MessagePortChannel>, const KURL&, const String& name, ExceptionState&);
+    virtual void connect(PassRefPtr<SharedWorker>, PassRefPtr<MessagePortChannel>, const KURL&, const String& name, ExceptionState&)  = 0;
 
-        // Invoked when a document has been detached.
-        static void documentDetached(Document*);
-
-        // Returns true if the passed document is associated with any SharedWorkers.
-        static bool hasSharedWorkers(Document*);
-    private:
-        SharedWorkerRepository() { }
-    };
+    virtual void documentDetached(Document*) = 0;
+};
 
 } // namespace WebCore
 
-#endif // SharedWorkerRepository_h
+#endif // SharedWorkerRepositoryClient_h

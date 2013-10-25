@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Google Inc. All rights reserved.
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,10 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebSharedWorkerRepository_h
-#define WebSharedWorkerRepository_h
-
-#include "../platform/WebCommon.h"
+#ifndef WebSharedWorkerRepositoryClient_h
+#define WebSharedWorkerRepositoryClient_h
 
 namespace WebKit {
 
@@ -39,25 +37,18 @@ class WebString;
 class WebSharedWorker;
 class WebURL;
 
-// FIXME: Deprecate this.
-class WebSharedWorkerRepository {
+class WebSharedWorkerRepositoryClient {
 public:
     // Unique identifier for the parent document of a worker (unique within a given process).
     typedef unsigned long long DocumentID;
 
-    // Tracks a newly-created SharedWorker via the repository.
-    virtual void addSharedWorker(WebSharedWorker*, DocumentID) = 0;
+    // Creates a new shared worker. This may return null.
+    virtual WebSharedWorker* createSharedWorker(const WebURL&, const WebString&, DocumentID) { return 0; }
 
     // Invoked when a document has been detached. DocumentID can be re-used after documentDetached() is invoked.
-    virtual void documentDetached(DocumentID) = 0;
-
-    // Returns true if the passed document is associated with any SharedWorkers.
-    virtual bool hasSharedWorkers(DocumentID) = 0;
+    virtual void documentDetached(DocumentID) { }
 };
-
-// Initializes shared worker support.
-BLINK_EXPORT void setSharedWorkerRepository(WebSharedWorkerRepository*);
 
 } // namespace WebKit
 
-#endif // WebSharedWorkerRepository_h
+#endif // WebSharedWorkerRepositoryClient_h

@@ -71,6 +71,7 @@ class VisibleSelection;
 class ScrollableArea;
 class ScrollingCoordinator;
 class Settings;
+class SharedWorkerRepositoryClient;
 class StorageNamespace;
 class ValidationMessageClient;
 
@@ -146,6 +147,8 @@ public:
     PointerLockController& pointerLockController() const { return *m_pointerLockController; }
     ValidationMessageClient* validationMessageClient() const { return m_validationMessageClient; }
     void setValidationMessageClient(ValidationMessageClient* client) { m_validationMessageClient = client; }
+    SharedWorkerRepositoryClient* sharedWorkerRepositoryClient() { return m_sharedWorkerRepositoryClient; }
+    void setSharedWorkerRepositoryClient(SharedWorkerRepositoryClient* client) { m_sharedWorkerRepositoryClient = client; }
 
     bool autoscrollInProgress() const;
     bool autoscrollInProgress(const RenderBox*) const;
@@ -272,6 +275,7 @@ private:
     BackForwardClient* m_backForwardClient;
     EditorClient* const m_editorClient;
     ValidationMessageClient* m_validationMessageClient;
+    SharedWorkerRepositoryClient* m_sharedWorkerRepositoryClient;
 
     UseCounter m_useCounter;
 

@@ -58,6 +58,7 @@ class WebSettings;
 class WebSpellCheckClient;
 class WebString;
 class WebPasswordGeneratorClient;
+class WebSharedWorkerRepositoryClient;
 class WebValidationMessageClient;
 class WebViewClient;
 struct WebActiveWheelFlingParameters;
@@ -104,6 +105,7 @@ public:
     virtual void setSpellCheckClient(WebSpellCheckClient*) = 0;
     virtual void setValidationMessageClient(WebValidationMessageClient*) = 0;
     virtual void setPasswordGeneratorClient(WebPasswordGeneratorClient*) = 0;
+    virtual void setSharedWorkerRepositoryClient(WebSharedWorkerRepositoryClient*) = 0;
 
     // Options -------------------------------------------------------------
 

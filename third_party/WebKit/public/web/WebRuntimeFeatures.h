@@ -161,6 +161,8 @@ public:
 
     BLINK_EXPORT static void enableOverlayFullscreenVideo(bool);
 
+    BLINK_EXPORT static void enableSharedWorker(bool);
+
 private:
     WebRuntimeFeatures();
 };

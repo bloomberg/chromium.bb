@@ -168,7 +168,6 @@
 #include "core/rendering/TextAutosizer.h"
 #include "core/svg/SVGDocumentExtensions.h"
 #include "core/svg/SVGStyleElement.h"
-#include "core/workers/SharedWorkerRepository.h"
 #include "core/xml/XSLTProcessor.h"
 #include "core/xml/parser/XMLDocumentParser.h"
 #include "platform/DateComponents.h"
@@ -2008,8 +2007,6 @@ void Document::detach(const AttachContext& context)
     RenderView* renderView = m_renderView;
 
     documentWillBecomeInactive();
-
-    SharedWorkerRepository::documentDetached(this);
 
     if (m_frame) {
         FrameView* view = m_frame->view();

@@ -93,7 +93,7 @@ SeamlessIFrames status=experimental
 ServiceWorker status=experimental
 SessionStorage status=stable
 ShadowDOM status=experimental
-SharedWorker custom
+SharedWorker status=stable
 SpeechInput status=stable
 SpeechSynthesis status=experimental
 Srcset status=experimental

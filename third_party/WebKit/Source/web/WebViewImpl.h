@@ -88,6 +88,7 @@ class LinkHighlight;
 class MIDIClientProxy;
 class PinchViewports;
 class PrerendererClientImpl;
+class SharedWorkerRepositoryClientImpl;
 class SpeechInputClientImpl;
 class SpeechRecognitionClientProxy;
 class UserMediaClientImpl;
@@ -181,6 +182,7 @@ public:
     virtual void setSpellCheckClient(WebSpellCheckClient*);
     virtual void setValidationMessageClient(WebValidationMessageClient*) OVERRIDE;
     virtual void setPasswordGeneratorClient(WebPasswordGeneratorClient*) OVERRIDE;
+    virtual void setSharedWorkerRepositoryClient(WebSharedWorkerRepositoryClient*) OVERRIDE;
     virtual WebSettings* settings();
     virtual WebString pageEncoding() const;
     virtual void setPageEncoding(const WebString& encoding);
@@ -797,6 +799,7 @@ private:
     Vector<OwnPtr<LinkHighlight> > m_linkHighlights;
     OwnPtr<ValidationMessageClientImpl> m_validationMessage;
     OwnPtr<FullscreenController> m_fullscreenController;
+    OwnPtr<SharedWorkerRepositoryClientImpl> m_sharedWorkerRepositoryClient;
 
     bool m_showFPSCounter;
     bool m_showPaintRects;

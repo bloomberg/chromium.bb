@@ -441,4 +441,9 @@ void WebRuntimeFeatures::enableOverlayFullscreenVideo(bool enable)
     RuntimeEnabledFeatures::setOverlayFullscreenVideoEnabled(enable);
 }
 
+void WebRuntimeFeatures::enableSharedWorker(bool enable)
+{
+    RuntimeEnabledFeatures::setSharedWorkerEnabled(enable);
+}
+
 } // namespace WebKit

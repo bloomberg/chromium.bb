@@ -28,16 +28,37 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
-#include "RuntimeEnabledFeatures.h"
+#ifndef SharedWorkerRepositoryClientImpl_h
+#define SharedWorkerRepositoryClientImpl_h
 
-#include "core/workers/SharedWorkerRepository.h"
+#include "core/workers/SharedWorkerRepositoryClient.h"
+#include "wtf/Noncopyable.h"
+#include "wtf/PassOwnPtr.h"
+#include "wtf/PassRefPtr.h"
 
-namespace WebCore {
+namespace WebKit {
 
-bool RuntimeEnabledFeatures::sharedWorkerEnabled()
-{
-    return SharedWorkerRepository::isAvailable();
-}
+class WebSharedWorkerRepositoryClient;
 
-} // namespace WebCore
+class SharedWorkerRepositoryClientImpl : public WebCore::SharedWorkerRepositoryClient {
+    WTF_MAKE_NONCOPYABLE(SharedWorkerRepositoryClientImpl);
+public:
+    static PassOwnPtr<SharedWorkerRepositoryClientImpl> create(WebSharedWorkerRepositoryClient* client)
+    {
+        return adoptPtr(new SharedWorkerRepositoryClientImpl(client));
+    }
+
+    virtual ~SharedWorkerRepositoryClientImpl() { }
+
+    virtual void connect(PassRefPtr<WebCore::SharedWorker>, PassRefPtr<WebCore::MessagePortChannel>, const WebCore::KURL&, const String& name, WebCore::ExceptionState&) OVERRIDE;
+    virtual void documentDetached(WebCore::Document*) OVERRIDE;
+
+private:
+    explicit SharedWorkerRepositoryClientImpl(WebSharedWorkerRepositoryClient*);
+
+    WebSharedWorkerRepositoryClient* m_client;
+};
+
+} // namespace WebKit
+
+#endif // SharedWorkerRepositoryClientImpl_h

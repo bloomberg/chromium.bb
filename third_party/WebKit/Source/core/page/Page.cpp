@@ -52,6 +52,7 @@
 #include "core/plugins/PluginData.h"
 #include "core/rendering/RenderView.h"
 #include "core/storage/StorageNamespace.h"
+#include "core/workers/SharedWorkerRepositoryClient.h"
 #include "wtf/HashMap.h"
 #include "wtf/RefCountedLeakCounter.h"
 #include "wtf/StdLibExtras.h"
@@ -107,6 +108,7 @@ Page::Page(PageClients& pageClients)
     , m_backForwardClient(pageClients.backForwardClient)
     , m_editorClient(pageClients.editorClient)
     , m_validationMessageClient(0)
+    , m_sharedWorkerRepositoryClient(0)
     , m_subframeCount(0)
     , m_openedByDOM(false)
     , m_tabKeyCyclesThroughElements(true)
@@ -262,6 +264,8 @@ void Page::documentDetached(Document* document)
     m_contextMenuController->documentDetached(document);
     if (m_validationMessageClient)
         m_validationMessageClient->documentDetached(*document);
+    if (m_sharedWorkerRepositoryClient)
+        m_sharedWorkerRepositoryClient->documentDetached(document);
 }
 
 bool Page::openedByDOM() const

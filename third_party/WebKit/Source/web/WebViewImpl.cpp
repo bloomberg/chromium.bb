@@ -47,6 +47,7 @@
 #include "PopupContainer.h"
 #include "PrerendererClientImpl.h"
 #include "RuntimeEnabledFeatures.h"
+#include "SharedWorkerRepositoryClientImpl.h"
 #include "SpeechInputClientImpl.h"
 #include "SpeechRecognitionClientProxy.h"
 #include "ValidationMessageClientImpl.h"
@@ -370,6 +371,12 @@ void WebViewImpl::setPasswordGeneratorClient(WebPasswordGeneratorClient* client)
     m_passwordGeneratorClient = client;
 }
 
+void WebViewImpl::setSharedWorkerRepositoryClient(WebSharedWorkerRepositoryClient* client)
+{
+    m_sharedWorkerRepositoryClient = SharedWorkerRepositoryClientImpl::create(client);
+    m_page->setSharedWorkerRepositoryClient(m_sharedWorkerRepositoryClient.get());
+}
+
 WebViewImpl::WebViewImpl(WebViewClient* client)
     : m_client(client)
     , m_autofillClient(0)
@@ -470,6 +477,10 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
         setDeviceScaleFactor(m_client->screenInfo().deviceScaleFactor);
         setVisibilityState(m_client->visibilityState(), true);
     }
+
+    // FIXME: Remove this when the embedder starts to call
+    // setSharedWorkerRepositoryClient().
+    setSharedWorkerRepositoryClient(0);
 
     m_inspectorSettingsMap = adoptPtr(new SettingsMap);
 }
