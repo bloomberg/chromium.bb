@@ -1087,6 +1087,12 @@ int KernelProxy::accept(int fd, struct sockaddr* addr, socklen_t* len) {
 
   ScopedMountNode node(sock);
   ScopedKernelHandle new_handle(new KernelHandle(stream_mount_, node));
+  error = sock->Init(O_RDWR);
+  if (error != 0) {
+    errno = error;
+    return -1;
+  }
+
   return AllocateFD(new_handle);
 }
 
@@ -1419,6 +1425,12 @@ int KernelProxy::socket(int domain, int type, int protocol) {
   }
 
   ScopedKernelHandle handle(new KernelHandle(stream_mount_, node));
+  rtn = handle->Init(O_RDWR);
+  if (rtn != 0) {
+    errno = rtn;
+    return -1;
+  }
+
   return AllocateFD(handle);
 }
 

@@ -281,13 +281,14 @@ TEST_F(SocketTestWithServer, TCPConnect) {
   IP4ToSockAddr(LOCAL_HOST, PORT1, &addr);
 
   ASSERT_EQ(0, connect(sock_, (sockaddr*) &addr, addrlen))
-    << "Failed with " << errno << ": " << strerror(errno) << "\n";
+      << "Failed with " << errno << ": " << strerror(errno) << "\n";
 
   // Send two different messages to the echo server and verify the
   // response matches.
   strcpy(outbuf, "hello");
   memset(inbuf, 0, sizeof(inbuf));
-  ASSERT_EQ(sizeof(outbuf), write(sock_, outbuf, sizeof(outbuf)));
+  ASSERT_EQ(sizeof(outbuf), write(sock_, outbuf, sizeof(outbuf)))
+      << "socket write failed with: " << strerror(errno);
   ASSERT_EQ(sizeof(outbuf), read(sock_, inbuf, sizeof(inbuf)));
   EXPECT_EQ(0, memcmp(outbuf, inbuf, sizeof(outbuf)));
 
