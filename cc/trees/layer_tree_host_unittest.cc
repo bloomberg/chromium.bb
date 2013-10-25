@@ -731,6 +731,101 @@ class LayerTreeHostTestSetNextCommitForcesRedraw : public LayerTreeHostTest {
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestSetNextCommitForcesRedraw);
 
+// Tests that if a layer is not drawn because of some reason in the parent then
+// its damage is preserved until the next time it is drawn.
+class LayerTreeHostTestUndrawnLayersDamageLater : public LayerTreeHostTest {
+ public:
+  LayerTreeHostTestUndrawnLayersDamageLater()
+      : root_layer_(ContentLayer::Create(&client_)) {
+  }
+
+  virtual void SetupTree() OVERRIDE {
+    root_layer_->SetIsDrawable(true);
+    root_layer_->SetBounds(gfx::Size(50, 50));
+    layer_tree_host()->SetRootLayer(root_layer_);
+
+    // The initially transparent layer has a larger child layer, which is
+    // not initially drawn because of the this (parent) layer.
+    parent_layer_ = FakeContentLayer::Create(&client_);
+    parent_layer_->SetBounds(gfx::Size(15, 15));
+    parent_layer_->SetOpacity(0.0f);
+    root_layer_->AddChild(parent_layer_);
+
+    child_layer_ = FakeContentLayer::Create(&client_);
+    child_layer_->SetBounds(gfx::Size(25, 25));
+    parent_layer_->AddChild(child_layer_);
+
+    LayerTreeHostTest::SetupTree();
+  }
+
+  virtual void BeginTest() OVERRIDE {
+    PostSetNeedsCommitToMainThread();
+  }
+
+  virtual bool PrepareToDrawOnThread(LayerTreeHostImpl* host_impl,
+                                     LayerTreeHostImpl::FrameData* frame_data,
+                                     bool result) OVERRIDE {
+    EXPECT_TRUE(result);
+
+    gfx::RectF root_damage_rect;
+    if (!frame_data->render_passes.empty())
+      root_damage_rect = frame_data->render_passes.back()->damage_rect;
+
+    // The first time, the whole view needs be drawn.
+    // Afterwards, just the opacity of surface_layer1 is changed a few times,
+    // and each damage should be the bounding box of it and its child. If this
+    // was working improperly, the damage might not include its childs bounding
+    // box.
+    switch (layer_tree_host()->source_frame_number()) {
+      case 1:
+        EXPECT_RECT_EQ(gfx::Rect(root_layer_->bounds()), root_damage_rect);
+        break;
+      case 2:
+      case 3:
+      case 4:
+        EXPECT_RECT_EQ(gfx::Rect(child_layer_->bounds()), root_damage_rect);
+        break;
+      default:
+        NOTREACHED();
+    }
+
+    return result;
+  }
+
+  virtual void DidCommitAndDrawFrame() OVERRIDE {
+    switch (layer_tree_host()->source_frame_number()) {
+      case 1:
+        // Test not owning the surface.
+        parent_layer_->SetOpacity(1.0f);
+        break;
+      case 2:
+        parent_layer_->SetOpacity(0.0f);
+        break;
+      case 3:
+        // Test owning the surface.
+        parent_layer_->SetOpacity(0.5f);
+        parent_layer_->SetForceRenderSurface(true);
+        break;
+      case 4:
+        EndTest();
+        break;
+      default:
+        NOTREACHED();
+    }
+  }
+
+
+  virtual void AfterTest() OVERRIDE {}
+
+ private:
+  FakeContentLayerClient client_;
+  scoped_refptr<ContentLayer> root_layer_;
+  scoped_refptr<FakeContentLayer> parent_layer_;
+  scoped_refptr<FakeContentLayer> child_layer_;
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestUndrawnLayersDamageLater);
+
 // If the layerTreeHost says it can't draw, Then we should not try to draw.
 class LayerTreeHostTestCanDrawBlocksDrawing : public LayerTreeHostTest {
  public:
