@@ -7,15 +7,13 @@ set -o nounset
 set -o errexit
 
 SCRIPT_DIR="$(cd $(dirname $0) && pwd)"
+
 cd ${SCRIPT_DIR}
 
 OUT_DIR=out
-NACLPORTS_URL=https://chromium.googlesource.com/external/naclports
-NACLPORTS_SHA=0096083c0fa71c014f6218bb14d7e1742d9a6b0c
+NACLPORTS_URL=https://chromium.googlesource.com/external/naclports.git
+NACLPORTS_REV=58a6ab9
 NACLPORTS_DIR=${OUT_DIR}/naclports
-NACLAM_URL=https://github.com/johnmccutchan/NaClAMBase
-NACLAM_DIR=${OUT_DIR}/NaClAMBase
-NACLAM_SHA=0eb4647a3f99c6e66156959edc6c55d4a913468a
 
 if [ -z "${NACL_SDK_ROOT:-}" ]; then
   echo "-------------------------------------------------------------------"
@@ -56,32 +54,19 @@ Clone() {
   popd
 }
 
-readonly OS_NAME=$(uname -s)
-if [ $OS_NAME = "Darwin" ]; then
-  OS_JOBS=4
-elif [ $OS_NAME = "Linux" ]; then
-  OS_JOBS=`nproc`
-else
-  OS_JOBS=1
+Banner Cloning naclports
+if [ ! -d ${NACLPORTS_DIR} ]; then
+  mkdir -p ${NACLPORTS_DIR}
+  pushd ${NACLPORTS_DIR}
+  gclient config --name=src ${NACLPORTS_URL}
+  popd
 fi
 
-Banner Cloning naclports
-Clone ${NACLPORTS_URL} ${NACLPORTS_DIR} ${NACLPORTS_SHA}
+pushd ${NACLPORTS_DIR}/src
+gclient sync -r ${NACLPORTS_REV}
 
-Banner Building bullet
-pushd ${NACLPORTS_DIR}
-make NACL_ARCH=pnacl bullet
+Banner Building lua
+make NACL_ARCH=pnacl lua_ppapi
 popd
-
-Banner Cloning NaClAMBase
-Clone ${NACLAM_URL} ${NACLAM_DIR} ${NACLAM_SHA}
-
-Banner Building NaClAM
-LogExecute cp Makefile ${NACLAM_DIR}
-pushd ${NACLAM_DIR}
-LogExecute make -j${OS_JOBS}
-popd
-
-LogExecute cp ${NACLAM_DIR}/pnacl/Release/NaClAMBullet.{pexe,nmf} ${OUT_DIR}
 
 Banner Done!

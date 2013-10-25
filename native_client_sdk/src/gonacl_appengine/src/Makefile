@@ -53,7 +53,7 @@ all:
 #
 # All projects built by this Makefile
 #
-PROJECTS = earth voronoi life bullet
+PROJECTS = earth voronoi life bullet lua
 
 GS_URL_CONTINUOUS = gs://gonacl/demos/continuous
 GS_URL_PUBLISH = gs://gonacl/demos/publish
@@ -74,9 +74,9 @@ GS_URL_PUBLISH = gs://gonacl/demos/publish
 #
 # Earth
 #
-earth_SRC_DIR = $(CURDIR)/earth
-earth_TGT_DIR = $(CURDIR)/earth/pnacl/Release
-earth_JPG_DIR = $(CURDIR)/../../examples/demo/earth
+earth_SRC_DIR = earth
+earth_TGT_DIR = earth/pnacl/Release
+earth_JPG_DIR = ../../examples/demo/earth
 earth_SRCS = $(earth_SRC_DIR)/earth.cc \
              $(earth_SRC_DIR)/Makefile
 earth_TGTS = $(earth_TGT_DIR)/earth.pexe \
@@ -86,21 +86,35 @@ earth_JPGS = $(earth_JPG_DIR)/earth.jpg \
 earth_EXTRA_UPLOADS = $(earth_JPGS)
 
 $(earth_TGTS): $(earth_SRCS)
-	$(MAKE) -C $(CURDIR)/earth TOOLCHAIN=pnacl CONFIG=Release
+	$(MAKE) -C earth TOOLCHAIN=pnacl CONFIG=Release
 
 
 #
 # Bullet
 #
-bullet_SRC_DIR = $(CURDIR)/bullet
-bullet_TGT_DIR = $(CURDIR)/bullet/out
+bullet_SRC_DIR = bullet
+bullet_TGT_DIR = bullet/out
 bullet_SRCS = $(bullet_SRC_DIR)/build.sh \
               $(bullet_SRC_DIR)/Makefile
 bullet_TGTS = $(bullet_TGT_DIR)/NaClAMBullet.pexe \
               $(bullet_TGT_DIR)/NaClAMBullet.nmf
 
 $(bullet_TGTS): $(bullet_SRCS)
-	$(CURDIR)/bullet/build.sh
+	bullet/build.sh
+
+#
+# Lua
+#
+lua_SRC_DIR = lua
+lua_TGT_DIR = lua/out/naclports/src/out/publish/lua/pnacl
+lua_SRCS = $(lua_SRC_DIR)/build.sh
+lua_TGTS = $(lua_TGT_DIR)/lua.pexe \
+           $(lua_TGT_DIR)/luadata.tar \
+           $(lua_TGT_DIR)/lua.nmf \
+           $(lua_TGT_DIR)/hterm.concat.js
+
+$(lua_TGTS): $(lua_SRCS)
+	lua/build.sh
 
 #
 # Voronoi
