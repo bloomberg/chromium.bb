@@ -46,6 +46,15 @@ class RasterizeAndRecord(page_measurement.PageMeasurement):
     ])
 
   def MeasurePage(self, page, tab, results):
+    # TODO(ernstm): Remove this temporary workaround when reference build has
+    # been updated to branch 1671 or later.
+    backend = tab.browser._browser_backend # pylint: disable=W0212
+    if (not hasattr(backend, 'chrome_branch_number') or
+        backend.chrome_branch_number < 1671):
+      print ('Warning: rasterize_and_record requires Chrome branch 1671 or '
+             'later. Skipping measurement.')
+      return
+
     # Rasterize only what's visible.
     tab.ExecuteJavaScript(
         'chrome.gpuBenchmarking.setRasterizeOnlyVisibleContent();')
