@@ -371,12 +371,6 @@ void GestureEventFilter::SendEventsIgnoringAck() {
       return;
     }
     coalesced_gesture_events_.pop_front();
-
-    // TODO - once Blink accepts tap down events correctly, re-enable tap
-    // down. See crbug.com/302752.
-    if (gesture_event.event.type == WebInputEvent::GestureTapDown)
-      continue;
-
     client_->SendGestureEventImmediately(gesture_event);
   }
 }

@@ -664,8 +664,8 @@ INSTANTIATE_TEST_CASE_P(AllSources,
                                         WebGestureEvent::Touchpad));
 #endif  // GTEST_HAS_PARAM_TEST
 
-// Test that GestureShowPress events don't wait for ACKs.
-TEST_F(GestureEventFilterTest, GestureShowPressIgnoresAck) {
+// Test that GestureShowPress and GestureTapDown events don't wait for ACKs.
+TEST_F(GestureEventFilterTest, GestureShowPressAndTapDownIgnoreAck) {
   SimulateGestureEvent(WebInputEvent::GestureShowPress,
                        WebGestureEvent::Touchscreen);
 
@@ -682,7 +682,14 @@ TEST_F(GestureEventFilterTest, GestureShowPressIgnoresAck) {
                        WebGestureEvent::Touchscreen);
 
   EXPECT_EQ(1U, GetAndResetSentGestureEventCount());
-  // The show press events will have escaped the queue, since they ignore acks.
+  EXPECT_EQ(0U, GestureEventLastQueueEventSize());
+
+  SimulateGestureEvent(WebInputEvent::GestureTapDown,
+                       WebGestureEvent::Touchscreen);
+
+  EXPECT_EQ(1U, GetAndResetSentGestureEventCount());
+  // The show press and tap down events will have escaped the queue, since they
+  // ignore acks.
   EXPECT_EQ(0U, GestureEventLastQueueEventSize());
 }
 

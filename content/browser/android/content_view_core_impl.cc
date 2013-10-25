@@ -1061,8 +1061,9 @@ void ContentViewCoreImpl::ShowPressCancel(JNIEnv* env,
 void ContentViewCoreImpl::TapDown(JNIEnv* env, jobject obj,
                                   jlong time_ms,
                                   jfloat x, jfloat y) {
-  // TODO - once Blink accepts tap down events correctly, fire tap down
-  // here. See crbug.com/302752.
+  WebGestureEvent event = MakeGestureEvent(
+      WebInputEvent::GestureTapDown, time_ms, x, y);
+  SendGestureEvent(event);
 }
 
 void ContentViewCoreImpl::DoubleTap(JNIEnv* env, jobject obj, jlong time_ms,
