@@ -27,10 +27,10 @@ extern const WebCore::QualifiedName {{attr|symbol}}Attr;
 
 {%- if tags %}
 const unsigned {{namespace}}TagsCount = {{tags|count}};
-WebCore::QualifiedName** get{{namespace}}Tags();
+const WebCore::QualifiedName* const* get{{namespace}}Tags();
 {%- endif %}
 const unsigned {{namespace}}AttrsCount = {{attrs|count}};
-WebCore::QualifiedName** get{{namespace}}Attrs();
+const WebCore::QualifiedName* const* get{{namespace}}Attrs();
 
 void init();
 

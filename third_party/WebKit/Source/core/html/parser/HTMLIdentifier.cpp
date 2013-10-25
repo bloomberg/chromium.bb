@@ -91,7 +91,7 @@ const StringImpl* HTMLIdentifier::asStringImpl() const
     return m_string.impl();
 }
 
-void HTMLIdentifier::addNames(QualifiedName** names, unsigned namesCount, unsigned indexOffset)
+void HTMLIdentifier::addNames(const QualifiedName* const* names, unsigned namesCount, unsigned indexOffset)
 {
     IdentifierTable& table = identifierTable();
     for (unsigned i = 0; i < namesCount; ++i) {

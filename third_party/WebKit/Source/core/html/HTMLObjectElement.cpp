@@ -394,7 +394,7 @@ static bool isRecognizedTagName(const QualifiedName& tagName)
 {
     DEFINE_STATIC_LOCAL(HashSet<StringImpl*>, tagList, ());
     if (tagList.isEmpty()) {
-        QualifiedName** tags = HTMLNames::getHTMLTags();
+        const QualifiedName* const* tags = HTMLNames::getHTMLTags();
         for (size_t i = 0; i < HTMLNames::HTMLTagsCount; i++) {
             if (*tags[i] == bgsoundTag
                 || *tags[i] == commandTag

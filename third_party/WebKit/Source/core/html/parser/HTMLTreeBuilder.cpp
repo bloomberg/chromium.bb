@@ -546,7 +546,7 @@ void HTMLTreeBuilder::processCloseWhenNestedTag(AtomicHTMLToken* token)
 
 typedef HashMap<AtomicString, QualifiedName> PrefixedNameToQualifiedNameMap;
 
-static void mapLoweredLocalNameToName(PrefixedNameToQualifiedNameMap* map, QualifiedName** names, size_t length)
+static void mapLoweredLocalNameToName(PrefixedNameToQualifiedNameMap* map, const QualifiedName* const* names, size_t length)
 {
     for (size_t i = 0; i < length; ++i) {
         const QualifiedName& name = *names[i];
@@ -562,7 +562,7 @@ static void adjustSVGTagNameCase(AtomicHTMLToken* token)
     static PrefixedNameToQualifiedNameMap* caseMap = 0;
     if (!caseMap) {
         caseMap = new PrefixedNameToQualifiedNameMap;
-        QualifiedName** svgTags = SVGNames::getSVGTags();
+        const QualifiedName* const* svgTags = SVGNames::getSVGTags();
         mapLoweredLocalNameToName(caseMap, svgTags, SVGNames::SVGTagsCount);
     }
 
@@ -572,13 +572,13 @@ static void adjustSVGTagNameCase(AtomicHTMLToken* token)
     token->setName(casedName.localName());
 }
 
-template<QualifiedName** getAttrs(), unsigned length>
+template<const QualifiedName* const* getAttrs(), unsigned length>
 static void adjustAttributes(AtomicHTMLToken* token)
 {
     static PrefixedNameToQualifiedNameMap* caseMap = 0;
     if (!caseMap) {
         caseMap = new PrefixedNameToQualifiedNameMap;
-        QualifiedName** attrs = getAttrs();
+        const QualifiedName* const* attrs = getAttrs();
         mapLoweredLocalNameToName(caseMap, attrs, length);
     }
 
@@ -600,10 +600,10 @@ static void adjustMathMLAttributes(AtomicHTMLToken* token)
     adjustAttributes<MathMLNames::getMathMLAttrs, MathMLNames::MathMLAttrsCount>(token);
 }
 
-static void addNamesWithPrefix(PrefixedNameToQualifiedNameMap* map, const AtomicString& prefix, QualifiedName** names, size_t length)
+static void addNamesWithPrefix(PrefixedNameToQualifiedNameMap* map, const AtomicString& prefix, const QualifiedName* const* names, size_t length)
 {
     for (size_t i = 0; i < length; ++i) {
-        QualifiedName* name = names[i];
+        const QualifiedName* name = names[i];
         const AtomicString& localName = name->localName();
         AtomicString prefixColonLocalName = prefix + ':' + localName;
         QualifiedName nameWithPrefix(prefix, localName, name->namespaceURI());
@@ -617,7 +617,7 @@ static void adjustForeignAttributes(AtomicHTMLToken* token)
     if (!map) {
         map = new PrefixedNameToQualifiedNameMap;
 
-        QualifiedName** attrs = XLinkNames::getXLinkAttrs();
+        const QualifiedName* const* attrs = XLinkNames::getXLinkAttrs();
         addNamesWithPrefix(map, xlinkAtom, attrs, XLinkNames::XLinkAttrsCount);
 
         attrs = XMLNames::getXMLAttrs();

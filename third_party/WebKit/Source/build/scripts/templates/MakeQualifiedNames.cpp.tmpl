@@ -28,9 +28,9 @@ DEFINE_GLOBAL(QualifiedName, {{tag|symbol}}Tag)
 {%- endfor %}
 
 
-WebCore::QualifiedName** get{{namespace}}Tags()
+const WebCore::QualifiedName* const* get{{namespace}}Tags()
 {
-    static WebCore::QualifiedName* {{namespace}}Tags[] = {
+    static const WebCore::QualifiedName* const {{namespace}}Tags[] = {
 {%- for tag in tags|sort %}
         (WebCore::QualifiedName*)&{{tag|symbol}}Tag,
 {%- endfor %}
@@ -45,9 +45,9 @@ WebCore::QualifiedName** get{{namespace}}Tags()
 DEFINE_GLOBAL(QualifiedName, {{attr|symbol}}Attr)
 {%- endfor %}
 
-WebCore::QualifiedName** get{{namespace}}Attrs()
+const WebCore::QualifiedName* const* get{{namespace}}Attrs()
 {
-    static WebCore::QualifiedName* {{namespace}}Attrs[] = {
+    static const WebCore::QualifiedName* const {{namespace}}Attrs[] = {
 {%- for attr in attrs|sort %}
         (WebCore::QualifiedName*)&{{attr|symbol}}Attr,
 {%- endfor %}
