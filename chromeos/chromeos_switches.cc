@@ -80,9 +80,6 @@ const char kEnableBackgroundLoader[]        = "enable-background-loader";
 // Enables switching between different cellular carriers from the UI.
 const char kEnableCarrierSwitching[]        = "enable-carrier-switching";
 
-// Enable switching between audio devices in Chrome instead of cras.
-const char kEnableChromeAudioSwitching[] = "enable-chrome-audio-switching";
-
 // Enables Chrome Captive Portal detector, which initiates Captive
 // Portal detection for new active networks.
 const char kEnableChromeCaptivePortalDetector[] =

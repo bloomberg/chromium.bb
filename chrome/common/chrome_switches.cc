@@ -111,9 +111,6 @@ const char kAppModeOAuth2Token[]            = "app-mode-oauth-token";
 // Whether to always use the new app install bubble when installing an app.
 const char kAppsNewInstallBubble[]          = "apps-new-install-bubble";
 
-// Disable throbber for extension apps.
-const char kAppsNoThrob[]                   = "apps-no-throb";
-
 // Experimental native frame support for packaged apps.
 const char kAppsUseNativeFrame[]            = "apps-use-native-frame";
 
@@ -612,9 +609,6 @@ const char kEnableExtensionActivityLogging[] =
 
 const char kEnableExtensionActivityLogTesting[] =
     "enable-extension-activity-log-testing";
-
-// Enables or disables showing extensions in the action box.
-const char kExtensionsInActionBox[]         = "extensions-in-action-box";
 
 // Enable the fast unload controller, which speeds up tab/window close by
 // running a tab's onunload js handler independently of the GUI -
@@ -1231,10 +1225,6 @@ const char kProxyServer[]                   = "proxy-server";
 //
 // NOTE: This is only implemented for Views.
 const char kPurgeMemoryButton[]             = "purge-memory-button";
-
-// Capture resource consumption information through page cycling and output the
-// data to the specified file.
-const char kRecordStats[]                   = "record-stats";
 
 // Chrome supports a playback and record mode.  Record mode saves *everything*
 // to the cache.  Playback mode reads data exclusively from the cache.  This

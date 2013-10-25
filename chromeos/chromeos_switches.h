@@ -41,7 +41,6 @@ CHROMEOS_EXPORT extern const char kDisableStubEthernet[];
 CHROMEOS_EXPORT extern const char kEchoExtensionPath[];
 CHROMEOS_EXPORT extern const char kEnableBackgroundLoader[];
 CHROMEOS_EXPORT extern const char kEnableCarrierSwitching[];
-CHROMEOS_EXPORT extern const char kEnableChromeAudioSwitching[];
 CHROMEOS_EXPORT extern const char kEnableChromeCaptivePortalDetector[];
 CHROMEOS_EXPORT extern const char kEnableIMEModeIndicator[];
 CHROMEOS_EXPORT extern const char kEnableKioskMode[];

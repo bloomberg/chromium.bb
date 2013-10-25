@@ -34,9 +34,6 @@ const char kEncodeBinary[] = "encode-binary";
 // and debugging of layout tests that rely on it.
 const char kExposeInternalsForTesting[]     = "expose-internals-for-testing";
 
-// Save results when layout-as-browser tests fail.
-const char kOutputLayoutTestDifferences[] = "output-layout-test-differences";
-
 // This makes us disable some web-platform runtime features so that we test
 // content_shell as if it was a stable release. It is only followed when
 // kDumpRenderTree is set. For the features' level, see
