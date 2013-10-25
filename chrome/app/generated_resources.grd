@@ -7465,6 +7465,17 @@ Keep your key file in a safe place. You will need it to create new versions of y
         </message>
       </if>
 
+      <!--Tab media indicator tooltip strings-->
+      <message name="IDS_TOOLTIP_TAB_MEDIA_STATE_RECORDING" desc="Extra tool tip text, when the tab is recording media.">
+        This tab is using your camera or microphone.
+      </message>
+      <message name="IDS_TOOLTIP_TAB_MEDIA_STATE_CAPTURING" desc="Extra tool tip text, when the tab content is being captured.">
+        This tab's content is being shared.
+      </message>
+      <message name="IDS_TOOLTIP_TAB_MEDIA_STATE_AUDIO_PLAYING" desc="Extra tool tip text, when the tab is playing audio.">
+        This tab is playing audio.
+      </message>
+
       <!--Script Bubble-->
       <message name="IDS_SCRIPT_BUBBLE_HEADLINE" desc="The headline of the script bubble.">
         Extensions interacting with this page:
