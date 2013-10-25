@@ -87,7 +87,7 @@ enum RuleMatchingBehavior {
 };
 
 const unsigned styleSharingListSize = 40;
-typedef WTF::Deque<RefPtr<Element>, styleSharingListSize> StyleSharingList;
+typedef WTF::Deque<Element*, styleSharingListSize> StyleSharingList;
 
 #undef STYLE_STATS
 
