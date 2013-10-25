@@ -237,6 +237,11 @@ void ApplyWebPreferences(const WebPreferences& prefs, WebView* web_view) {
   settings->setAntialiased2dCanvasEnabled(
       !prefs.antialiased_2d_canvas_disabled);
 
+  // Set MSAA sample count for 2d canvas if requested on the command line (or
+  // default value if not).
+  settings->setAccelerated2dCanvasMSAASampleCount(
+      prefs.accelerated_2d_canvas_msaa_sample_count);
+
   // Enable gpu-accelerated filters if requested on the command line.
   settings->setAcceleratedFiltersEnabled(prefs.accelerated_filters_enabled);
 

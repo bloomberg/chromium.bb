@@ -6,6 +6,10 @@
 
 namespace switches {
 
+// The number of MSAA samples for canvas2D. Requires MSAA support by GPU to
+// have an effect. 0 disables MSAA.
+const char kAcceleratedCanvas2dMSAASampleCount[] = "canvas-msaa-sample-count";
+
 // By default, file:// URIs cannot read other file:// URIs. This is an
 // override for developers who need the old behavior for testing.
 const char kAllowFileAccessFromFiles[]      = "allow-file-access-from-files";

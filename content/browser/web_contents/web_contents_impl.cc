@@ -567,6 +567,9 @@ WebPreferences WebContentsImpl::GetWebkitPrefs(RenderViewHost* rvh,
       !command_line.HasSwitch(switches::kDisableAccelerated2dCanvas);
   prefs.antialiased_2d_canvas_disabled =
       command_line.HasSwitch(switches::kDisable2dCanvasAntialiasing);
+  prefs.accelerated_2d_canvas_msaa_sample_count =
+      atoi(command_line.GetSwitchValueASCII(
+      switches::kAcceleratedCanvas2dMSAASampleCount).c_str());
   prefs.accelerated_filters_enabled =
       GpuProcessHost::gpu_enabled() &&
       command_line.HasSwitch(switches::kEnableAcceleratedFilters);

@@ -121,6 +121,7 @@ struct WEBKIT_COMMON_EXPORT WebPreferences {
   bool accelerated_2d_canvas_enabled;
   int minimum_accelerated_2d_canvas_size;
   bool antialiased_2d_canvas_disabled;
+  int accelerated_2d_canvas_msaa_sample_count;
   bool accelerated_filters_enabled;
   bool gesture_tap_highlight_enabled;
   bool accelerated_compositing_for_plugins_enabled;
