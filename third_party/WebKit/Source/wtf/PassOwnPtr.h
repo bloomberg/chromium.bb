@@ -99,21 +99,6 @@ namespace WTF {
         return ptr;
     }
 
-    template<typename T, typename U> inline bool operator==(const PassOwnPtr<T>& a, const PassOwnPtr<U>& b)
-    {
-        return a.get() == b.get();
-    }
-
-    template<typename T, typename U> inline bool operator==(const PassOwnPtr<T>& a, const OwnPtr<U>& b)
-    {
-        return a.get() == b.get();
-    }
-
-    template<typename T, typename U> inline bool operator==(const OwnPtr<T>& a, const PassOwnPtr<U>& b)
-    {
-        return a.get() == b.get();
-    }
-
     template<typename T, typename U> inline bool operator==(const PassOwnPtr<T>& a, U* b)
     {
         return a.get() == b;
@@ -122,21 +107,6 @@ namespace WTF {
     template<typename T, typename U> inline bool operator==(T* a, const PassOwnPtr<U>& b)
     {
         return a == b.get();
-    }
-
-    template<typename T, typename U> inline bool operator!=(const PassOwnPtr<T>& a, const PassOwnPtr<U>& b)
-    {
-        return a.get() != b.get();
-    }
-
-    template<typename T, typename U> inline bool operator!=(const PassOwnPtr<T>& a, const OwnPtr<U>& b)
-    {
-        return a.get() != b.get();
-    }
-
-    template<typename T, typename U> inline bool operator!=(const OwnPtr<T>& a, const PassOwnPtr<U>& b)
-    {
-        return a.get() != b.get();
     }
 
     template<typename T, typename U> inline bool operator!=(const PassOwnPtr<T>& a, U* b)
