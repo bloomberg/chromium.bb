@@ -187,8 +187,6 @@ class ProfileSyncServicePreferenceTest
     sync_service_->RegisterDataTypeController(dtc_);
     ProfileOAuth2TokenServiceFactory::GetForProfile(profile_.get())
         ->UpdateCredentials("test", "oauth2_login_token");
-    TokenServiceFactory::GetForProfile(profile_.get())
-        ->IssueAuthTokenForTest(GaiaConstants::kSyncService, "token");
 
     sync_service_->Initialize();
     base::MessageLoop::current()->Run();

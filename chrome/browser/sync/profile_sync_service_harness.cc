@@ -209,8 +209,6 @@ bool ProfileSyncServiceHarness::SetupSync(
       content::Details<const GoogleServiceSigninSuccessDetails>(&details));
   TokenServiceFactory::GetForProfile(profile_)->IssueAuthTokenForTest(
       GaiaConstants::kGaiaOAuth2LoginRefreshToken, "oauth2_login_token");
-  TokenServiceFactory::GetForProfile(profile_)->IssueAuthTokenForTest(
-      GaiaConstants::kSyncService, "sync_token");
 
   // Wait for the OnBackendInitialized() callback.
   if (!AwaitBackendInitialized()) {

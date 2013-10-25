@@ -89,11 +89,6 @@ void DebugInfoEventListener::OnStopSyncingPermanently() {
   CreateAndAddEvent(sync_pb::DebugEventInfo::STOP_SYNCING_PERMANENTLY);
 }
 
-void DebugInfoEventListener::OnUpdatedToken(const std::string& token) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  CreateAndAddEvent(sync_pb::DebugEventInfo::UPDATED_TOKEN);
-}
-
 void DebugInfoEventListener::OnEncryptedTypesChanged(
     ModelTypeSet encrypted_types,
     bool encrypt_everything) {

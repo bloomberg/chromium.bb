@@ -128,7 +128,6 @@ class SyncBackendHost::Core
   virtual void OnConnectionStatusChange(
       syncer::ConnectionStatus status) OVERRIDE;
   virtual void OnStopSyncingPermanently() OVERRIDE;
-  virtual void OnUpdatedToken(const std::string& token) OVERRIDE;
   virtual void OnActionableError(
       const syncer::SyncProtocolError& sync_error) OVERRIDE;
 
@@ -1037,15 +1036,6 @@ void SyncBackendHost::Core::OnStopSyncingPermanently() {
       &SyncBackendHost::HandleStopSyncingPermanentlyOnFrontendLoop);
 }
 
-void SyncBackendHost::Core::OnUpdatedToken(const std::string& token) {
-  if (!sync_loop_)
-    return;
-  DCHECK_EQ(base::MessageLoop::current(), sync_loop_);
-  host_.Call(
-      FROM_HERE,
-      &SyncBackendHost::NotifyUpdatedToken, token);
-}
-
 void SyncBackendHost::Core::OnEncryptedTypesChanged(
     syncer::ModelTypeSet encrypted_types,
     bool encrypt_everything) {
@@ -1561,15 +1551,6 @@ void SyncBackendHost::NotifyPassphraseAccepted() {
   // Clear our cache of the cryptographer's pending keys.
   cached_pending_keys_.clear_blob();
   frontend_->OnPassphraseAccepted();
-}
-
-void SyncBackendHost::NotifyUpdatedToken(const std::string& token) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  TokenAvailableDetails details(GaiaConstants::kSyncService, token);
-
-  TokenService* token_service = TokenServiceFactory::GetForProfile(profile_);
-  CHECK(token_service);
-  token_service->AddAuthTokenManually(details.service(), details.token());
 }
 
 void SyncBackendHost::NotifyEncryptedTypesChanged(

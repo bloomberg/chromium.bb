@@ -222,8 +222,6 @@ class ProfileSyncServiceSessionTest
 
     ProfileOAuth2TokenServiceFactory::GetForProfile(profile())
         ->UpdateCredentials("test_user", "oauth2_login_token");
-    TokenServiceFactory::GetForProfile(profile())
-        ->IssueAuthTokenForTest(GaiaConstants::kSyncService, "token");
     sync_service_->Initialize();
     base::MessageLoop::current()->Run();
     return true;

@@ -47,8 +47,6 @@ class ProfileSyncServiceAndroid : public ProfileSyncServiceObserver {
   // which types have changed.
   void NudgeSyncerForAllTypes(JNIEnv* env, jobject obj);
 
-  void TokenAvailable(JNIEnv*, jobject, jstring username, jstring auth_token);
-
   // Called from Java when the user manually enables sync
   void EnableSync(JNIEnv* env, jobject obj);
 

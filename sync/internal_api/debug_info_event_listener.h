@@ -47,7 +47,6 @@ class SYNC_EXPORT_PRIVATE DebugInfoEventListener
   virtual void OnConnectionStatusChange(
       ConnectionStatus connection_status) OVERRIDE;
   virtual void OnStopSyncingPermanently() OVERRIDE;
-  virtual void OnUpdatedToken(const std::string& token) OVERRIDE;
   virtual void OnActionableError(
       const SyncProtocolError& sync_error) OVERRIDE;
 

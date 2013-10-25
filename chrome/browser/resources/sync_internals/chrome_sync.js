@@ -85,7 +85,6 @@ chrome.sync.events = {
     'onChangesComplete',
     'onSyncCycleCompleted',
     'onConnectionStatusChange',
-    'onUpdatedToken',
     'onPassphraseRequired',
     'onPassphraseAccepted',
     'onInitializationComplete',

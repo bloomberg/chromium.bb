@@ -141,8 +141,6 @@ class ProfileSyncServiceStartupTest : public testing::Test {
   void IssueTestTokens() {
     ProfileOAuth2TokenServiceFactory::GetForProfile(profile_.get())
         ->UpdateCredentials("test_user@gmail.com", "oauth2_login_token");
-    TokenServiceFactory::GetForProfile(profile_.get())
-        ->IssueAuthTokenForTest(GaiaConstants::kSyncService, "token");
   }
 
  protected:

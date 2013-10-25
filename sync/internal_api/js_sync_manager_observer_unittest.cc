@@ -129,19 +129,5 @@ TEST_F(JsSyncManagerObserverTest, OnConnectionStatusChange) {
   PumpLoop();
 }
 
-TEST_F(JsSyncManagerObserverTest, SensitiveNotifiations) {
-  base::DictionaryValue redacted_token_details;
-  redacted_token_details.SetString("token", "<redacted>");
-  base::DictionaryValue redacted_bootstrap_token_details;
-  redacted_bootstrap_token_details.SetString("bootstrapToken", "<redacted>");
-
-  EXPECT_CALL(mock_js_event_handler_,
-              HandleJsEvent("onUpdatedToken",
-                           HasDetailsAsDictionary(redacted_token_details)));
-
-  js_sync_manager_observer_.OnUpdatedToken("sensitive_token");
-  PumpLoop();
-}
-
 }  // namespace
 }  // namespace syncer

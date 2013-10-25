@@ -101,7 +101,6 @@ void AllStatus::OnSyncEngineEvent(const SyncEngineEvent& event) {
       status_ = CalcSyncing(event);
       break;
     case SyncEngineEvent::STOP_SYNCING_PERMANENTLY:
-    case SyncEngineEvent::UPDATED_TOKEN:
        break;
     case SyncEngineEvent::ACTIONABLE_ERROR:
       status_ = CreateBlankStatus();

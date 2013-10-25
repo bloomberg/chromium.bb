@@ -149,8 +149,6 @@ class ProfileSyncServiceTest : public testing::Test {
   void IssueTestTokens() {
     ProfileOAuth2TokenServiceFactory::GetForProfile(profile_.get())
         ->UpdateCredentials("test", "oauth2_login_token");
-    TokenServiceFactory::GetForProfile(profile_.get())
-        ->IssueAuthTokenForTest(GaiaConstants::kSyncService, "token");
   }
 
   scoped_ptr<TestProfileSyncService> service_;

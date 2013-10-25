@@ -466,9 +466,6 @@ class SyncBackendHost
   // Invoked when the passphrase provided by the user has been accepted.
   void NotifyPassphraseAccepted();
 
-  // Invoked when an updated token is available from the sync server.
-  void NotifyUpdatedToken(const std::string& token);
-
   // Invoked when the set of encrypted types or the encrypt
   // everything flag changes.
   void NotifyEncryptedTypesChanged(

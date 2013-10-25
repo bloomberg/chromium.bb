@@ -32,9 +32,6 @@ struct SYNC_EXPORT_PRIVATE SyncEngineEvent {
     ////////////////////////////////////////////////////////////////
     // Generated in response to specific protocol actions or events.
 
-    // New token in updated_token.
-    UPDATED_TOKEN,
-
     // This is sent after the Syncer (and SyncerThread) have initiated self
     // halt due to no longer being permitted to communicate with the server.
     // The listener should sever the sync / browser connections and delete sync

@@ -81,9 +81,6 @@ struct SYNC_EXPORT_PRIVATE HttpResponse {
   // The size of a download request's payload.
   int64 payload_length;
 
-  // Value of the Update-Client-Auth header.
-  std::string update_client_auth_header;
-
   // Identifies the type of failure, if any.
   ServerConnectionCode server_status;
 

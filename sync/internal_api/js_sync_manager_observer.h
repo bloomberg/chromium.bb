@@ -35,7 +35,6 @@ class SYNC_EXPORT_PRIVATE JsSyncManagerObserver : public SyncManager::Observer {
   virtual void OnSyncCycleCompleted(
       const sessions::SyncSessionSnapshot& snapshot) OVERRIDE;
   virtual void OnConnectionStatusChange(ConnectionStatus status) OVERRIDE;
-  virtual void OnUpdatedToken(const std::string& token) OVERRIDE;
   virtual void OnInitializationComplete(
       const WeakHandle<JsBackend>& js_backend,
       const WeakHandle<DataTypeDebugInfoListener>& debug_info_listener,

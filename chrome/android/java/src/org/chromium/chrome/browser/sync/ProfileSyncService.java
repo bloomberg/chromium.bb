@@ -511,8 +511,6 @@ public class ProfileSyncService {
     private native void nativeDisableSync(int nativeProfileSyncServiceAndroid);
     private native void nativeSignInSync(int nativeProfileSyncServiceAndroid);
     private native void nativeSignOutSync(int nativeProfileSyncServiceAndroid);
-    private native void nativeTokenAvailable(
-            int nativeProfileSyncServiceAndroid, String username, String authToken);
     private native boolean nativeSetSyncSessionsId(int nativeProfileSyncServiceAndroid, String tag);
     private native String nativeQuerySyncStatusSummary(int nativeProfileSyncServiceAndroid);
     private native int nativeGetAuthError(int nativeProfileSyncServiceAndroid);

@@ -949,12 +949,6 @@ void SyncManagerImpl::OnSyncEngineEvent(const SyncEngineEvent& event) {
     return;
   }
 
-  if (event.what_happened == SyncEngineEvent::UPDATED_TOKEN) {
-    FOR_EACH_OBSERVER(SyncManager::Observer, observers_,
-                      OnUpdatedToken(event.updated_token));
-    return;
-  }
-
   if (event.what_happened == SyncEngineEvent::ACTIONABLE_ERROR) {
     FOR_EACH_OBSERVER(
         SyncManager::Observer, observers_,

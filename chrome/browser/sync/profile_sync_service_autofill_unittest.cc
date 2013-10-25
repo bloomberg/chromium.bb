@@ -592,7 +592,6 @@ class ProfileSyncServiceAutofillTest
     // We need tokens to get the tests going
     ProfileOAuth2TokenServiceFactory::GetForProfile(profile_.get())
         ->UpdateCredentials("test_user@gmail.com", "oauth2_login_token");
-    token_service_->IssueAuthTokenForTest(GaiaConstants::kSyncService, "token");
 
     sync_service_->RegisterDataTypeController(data_type_controller);
     sync_service_->Initialize();

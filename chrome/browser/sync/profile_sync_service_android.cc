@@ -19,8 +19,6 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
-#include "chrome/browser/signin/token_service.h"
-#include "chrome/browser/signin/token_service_factory.h"
 #include "chrome/browser/sync/about_sync_util.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
@@ -32,7 +30,6 @@
 #include "google/cacheinvalidation/types.pb.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/google_service_auth_error.h"
-#include "google_apis/gaia/oauth2_token_service.h"
 #include "grit/generated_resources.h"
 #include "jni/ProfileSyncService_jni.h"
 #include "sync/internal_api/public/read_transaction.h"
@@ -133,13 +130,6 @@ void ProfileSyncServiceAndroid::OnStateChanged() {
   JNIEnv* env = AttachCurrentThread();
   Java_ProfileSyncService_syncStateChanged(
       env, weak_java_profile_sync_service_.get(env).obj());
-}
-
-void ProfileSyncServiceAndroid::TokenAvailable(
-    JNIEnv* env, jobject, jstring username, jstring auth_token) {
-  std::string token = ConvertJavaStringToUTF8(env, auth_token);
-  TokenServiceFactory::GetForProfile(profile_)->OnIssueAuthTokenSuccess(
-      GaiaConstants::kSyncService, token);
 }
 
 void ProfileSyncServiceAndroid::EnableSync(JNIEnv* env, jobject) {

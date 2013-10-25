@@ -276,13 +276,6 @@ bool SyncerProtoUtil::PostAndProcessHeaders(ServerConnectionManager* scm,
     return false;
   }
 
-  std::string new_token = params.response.update_client_auth_header;
-  if (!new_token.empty()) {
-    SyncEngineEvent event(SyncEngineEvent::UPDATED_TOKEN);
-    event.updated_token = new_token;
-    session->context()->NotifyListeners(event);
-  }
-
   if (response->ParseFromString(params.buffer_out)) {
     // TODO(tim): This is an egregious layering violation (bug 35060).
     switch (response->error_code()) {

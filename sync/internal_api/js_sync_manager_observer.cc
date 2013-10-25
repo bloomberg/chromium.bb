@@ -49,15 +49,6 @@ void JsSyncManagerObserver::OnConnectionStatusChange(ConnectionStatus status) {
                 "onConnectionStatusChange", JsEventDetails(&details));
 }
 
-void JsSyncManagerObserver::OnUpdatedToken(const std::string& token) {
-  if (!event_handler_.IsInitialized()) {
-    return;
-  }
-  base::DictionaryValue details;
-  details.SetString("token", "<redacted>");
-  HandleJsEvent(FROM_HERE, "onUpdatedToken", JsEventDetails(&details));
-}
-
 void JsSyncManagerObserver::OnActionableError(
     const SyncProtocolError& sync_error) {
   if (!event_handler_.IsInitialized()) {
