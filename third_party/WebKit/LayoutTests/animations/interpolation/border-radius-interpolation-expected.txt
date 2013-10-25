@@ -4,10 +4,10 @@ PASS: border-radius from [10px] to [50px] was [22px] at 0.3
 PASS: border-radius from [10px] to [50px] was [34px] at 0.6
 PASS: border-radius from [10px] to [50px] was [50px] at 1
 PASS: border-radius from [10px] to [50px] was [70px] at 1.5
-FAIL: border-radius from [10px] to [100%] was [-11px] at -0.3, expected [0px]
+FAIL: border-radius from [10px] to [100%] was [calc((10px * 1.300000011920929) + (100% * -0.30000001192092896))] at -0.3, expected [calc(13px + -30%)]
 PASS: border-radius from [10px] to [100%] was [10px] at 0
-PASS: border-radius from [10px] to [100%] was [31px] at 0.3
-PASS: border-radius from [10px] to [100%] was [52px] at 0.6
+FAIL: border-radius from [10px] to [100%] was [calc((10px * 0.699999988079071) + (100% * 0.30000001192092896))] at 0.3, expected [calc(7px + 30%)]
+FAIL: border-radius from [10px] to [100%] was [calc((10px * 0.3999999761581421) + (100% * 0.6000000238418579))] at 0.6, expected [calc(4px + 60%)]
 PASS: border-radius from [10px] to [100%] was [100%] at 1
-PASS: border-radius from [10px] to [100%] was [115px] at 1.5
+FAIL: border-radius from [10px] to [100%] was [calc((10px * -0.5) + (100% * 1.5))] at 1.5, expected [calc(-5px + 150%)]
 

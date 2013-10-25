@@ -33,12 +33,14 @@ assertInterpolation({
   from: '10px',
   to: '100%'
 }, [
-  {at: -0.3, is: '0px'},
+  // These expectations are expected to fail on the current animation engine
+  // with different (but equivalent) calc expressions.
+  {at: -0.3, is: 'calc(13px + -30%)'},
   {at: 0, is: '10px'},
-  {at: 0.3, is: '31px'},
-  {at: 0.6, is: '52px'},
+  {at: 0.3, is: 'calc(7px + 30%)'},
+  {at: 0.6, is: 'calc(4px + 60%)'},
   {at: 1, is: '100%'},
-  {at: 1.5, is: '115px'},
+  {at: 1.5, is: 'calc(-5px + 150%)'},
 ]);
 </script>
 </body>
