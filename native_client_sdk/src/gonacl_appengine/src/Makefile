@@ -53,7 +53,7 @@ all:
 #
 # All projects built by this Makefile
 #
-PROJECTS = earth bullet
+PROJECTS = earth voronoi bullet
 
 GS_URL_CONTINUOUS = gs://gonacl/demos/continuous
 GS_URL_PUBLISH = gs://gonacl/demos/publish
@@ -101,6 +101,19 @@ bullet_TGTS = $(bullet_TGT_DIR)/NaClAMBullet.pexe \
 
 $(bullet_TGTS): $(bullet_SRCS)
 	$(CURDIR)/bullet/build.sh
+
+#
+# Voronoi
+#
+voronoi_SRC_DIR = $(CURDIR)/voronoi
+voronoi_TGT_DIR = $(CURDIR)/voronoi/pnacl/Release
+voronoi_SRCS = $(voronoi_SRC_DIR)/voronoi.cc \
+             $(voronoi_SRC_DIR)/Makefile
+voronoi_TGTS = $(voronoi_TGT_DIR)/voronoi.pexe \
+             $(voronoi_TGT_DIR)/voronoi.nmf
+
+$(voronoi_TGTS): $(voronoi_SRCS)
+	$(MAKE) -C $(CURDIR)/voronoi TOOLCHAIN=pnacl CONFIG=Release
 
 ###############################################################################
 
