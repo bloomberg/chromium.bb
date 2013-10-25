@@ -425,9 +425,12 @@ void DevToolsHttpHandlerImpl::OnJsonRequestUI(
   std::string path = info.path.substr(5);
 
   // Trim fragment and query
+  std::string query;
   size_t query_pos = path.find("?");
-  if (query_pos != std::string::npos)
+  if (query_pos != std::string::npos) {
+    query = path.substr(query_pos + 1);
     path = path.substr(0, query_pos);
+  }
 
   size_t fragment_pos = path.find("#");
   if (fragment_pos != std::string::npos)
@@ -464,7 +467,11 @@ void DevToolsHttpHandlerImpl::OnJsonRequestUI(
   }
 
   if (command == "new") {
-    scoped_ptr<DevToolsTarget> target(delegate_->CreateNewTarget());
+    GURL url(net::UnescapeURLComponent(
+        query, net::UnescapeRule::URL_SPECIAL_CHARS));
+    if (!url.is_valid())
+      url = GURL(kAboutBlankURL);
+    scoped_ptr<DevToolsTarget> target(delegate_->CreateNewTarget(url));
     if (!target) {
       SendJson(connection_id,
                net::HTTP_INTERNAL_SERVER_ERROR,

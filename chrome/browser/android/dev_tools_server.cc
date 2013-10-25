@@ -291,14 +291,14 @@ class DevToolsServerDelegate : public content::DevToolsHttpHandlerDelegate {
     return "";
   }
 
-  virtual scoped_ptr<content::DevToolsTarget> CreateNewTarget() OVERRIDE {
+  virtual scoped_ptr<content::DevToolsTarget> CreateNewTarget(
+      const GURL& url) OVERRIDE {
     Profile* profile =
         g_browser_process->profile_manager()->GetDefaultProfile();
     TabModel* tab_model = TabModelList::GetTabModelWithProfile(profile);
     if (!tab_model)
       return scoped_ptr<content::DevToolsTarget>();
-    WebContents* web_contents =
-        tab_model->CreateTabForTesting(GURL(content::kAboutBlankURL));
+    WebContents* web_contents = tab_model->CreateTabForTesting(url);
     if (!web_contents)
       return scoped_ptr<content::DevToolsTarget>();
 

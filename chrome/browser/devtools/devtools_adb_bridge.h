@@ -103,6 +103,11 @@ class DevToolsAdbBridge
     std::string package() { return package_; }
     void set_package(const std::string& package) { package_ = package; }
 
+    bool IsChrome() const;
+
+    typedef std::vector<int> ParsedVersion;
+    ParsedVersion GetParsedVersion() const;
+
     std::vector<DevToolsTargetImpl*> CreatePageTargets();
     void SetPageDescriptors(const base::ListValue&);
 

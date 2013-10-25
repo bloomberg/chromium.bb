@@ -166,9 +166,10 @@ std::string ShellDevToolsDelegate::GetPageThumbnailData(const GURL& url) {
   return std::string();
 }
 
-scoped_ptr<DevToolsTarget> ShellDevToolsDelegate::CreateNewTarget() {
+scoped_ptr<DevToolsTarget>
+ShellDevToolsDelegate::CreateNewTarget(const GURL& url) {
   Shell* shell = Shell::CreateNewWindow(browser_context_,
-                                        GURL(kAboutBlankURL),
+                                        url,
                                         NULL,
                                         MSG_ROUTING_NONE,
                                         gfx::Size());

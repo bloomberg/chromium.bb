@@ -85,7 +85,7 @@ std::string BrowserListTabContentsProvider::GetPageThumbnailData(
 }
 
 scoped_ptr<DevToolsTarget>
-BrowserListTabContentsProvider::CreateNewTarget() {
+BrowserListTabContentsProvider::CreateNewTarget(const GURL& url) {
   const BrowserList* browser_list =
       BrowserList::GetInstance(host_desktop_type_);
   WebContents* web_contents;
@@ -96,10 +96,12 @@ BrowserListTabContentsProvider::CreateNewTarget() {
       return scoped_ptr<DevToolsTarget>();
     web_contents =
         browser_list->get(0)->tab_strip_model()->GetActiveWebContents();
+    web_contents->GetController().LoadURL(url,
+        content::Referrer(), content::PAGE_TRANSITION_TYPED, std::string());
   } else {
     web_contents = chrome::AddSelectedTabWithURL(
       browser_list->get(0),
-      GURL(content::kAboutBlankURL),
+      url,
       content::PAGE_TRANSITION_LINK);
   }
   return scoped_ptr<DevToolsTarget>(

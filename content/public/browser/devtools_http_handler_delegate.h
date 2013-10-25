@@ -37,7 +37,7 @@ class DevToolsHttpHandlerDelegate {
   virtual std::string GetPageThumbnailData(const GURL& url) = 0;
 
   // Creates new inspectable target.
-  virtual scoped_ptr<DevToolsTarget> CreateNewTarget() = 0;
+  virtual scoped_ptr<DevToolsTarget> CreateNewTarget(const GURL& url) = 0;
 
   typedef std::vector<DevToolsTarget*> TargetList;
   typedef base::Callback<void(const TargetList&)> TargetCallback;
