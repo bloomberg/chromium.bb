@@ -132,11 +132,13 @@ void PrintPreviewDialogDelegate::GetDialogSize(gfx::Size* size) const {
   if (browser)
     host = browser->window()->GetWebContentsModalDialogHost();
 
-  if (host)
+  if (host) {
     size->SetToMax(host->GetMaximumDialogSize());
-  else
+    size->Enlarge(-2 * kBorder, -kBorder);
+  } else {
     size->SetToMax(initiator_->GetView()->GetContainerSize());
-  size->Enlarge(-2 * kBorder, -kBorder);
+    size->Enlarge(-2 * kBorder, -2 * kBorder);
+  }
 
 #if defined(OS_MACOSX)
   // Limit the maximum size on MacOS X.
