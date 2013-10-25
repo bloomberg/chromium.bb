@@ -28,11 +28,6 @@
 #include "config.h"
 #include "core/dom/ViewportDescription.h"
 
-#include "core/dom/Document.h"
-#include "core/page/Page.h"
-#include "core/page/Settings.h"
-#include "wtf/text/WTFString.h"
-
 using namespace std;
 
 namespace WebCore {

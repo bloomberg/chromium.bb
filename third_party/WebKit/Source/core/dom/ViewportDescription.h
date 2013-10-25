@@ -31,11 +31,8 @@
 #include "core/page/PageScaleConstraints.h"
 #include "platform/Length.h"
 #include "platform/geometry/FloatSize.h"
-#include "wtf/Forward.h"
 
 namespace WebCore {
-
-class Document;
 
 struct ViewportDescription {
 
