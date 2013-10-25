@@ -29,30 +29,22 @@ static bool g_override_am_i_bundled_value = false;
 // Adapted from http://developer.apple.com/carbon/tipsandtricks.html#AmIBundled
 static bool UncachedAmIBundled() {
 #if defined(OS_IOS)
-  // All apps are bundled on iOS
+  // All apps are bundled on iOS.
   return true;
 #else
   if (g_override_am_i_bundled)
     return g_override_am_i_bundled_value;
 
-  ProcessSerialNumber psn = {0, kCurrentProcess};
+  NSBundle* bundle = base::mac::OuterBundle();
+  NSArray* bundle_parts = [[bundle bundlePath] pathComponents];
+  NSArray* executable_parts = [[bundle executablePath] pathComponents];
 
-  FSRef fsref;
-  OSStatus pbErr;
-  if ((pbErr = GetProcessBundleLocation(&psn, &fsref)) != noErr) {
-    OSSTATUS_DLOG(ERROR, pbErr) << "GetProcessBundleLocation failed";
-    return false;
-  }
-
-  FSCatalogInfo info;
-  OSErr fsErr;
-  if ((fsErr = FSGetCatalogInfo(&fsref, kFSCatInfoNodeFlags, &info,
-                                NULL, NULL, NULL)) != noErr) {
-    OSSTATUS_DLOG(ERROR, fsErr) << "FSGetCatalogInfo failed";
-    return false;
-  }
-
-  return info.nodeFlags & kFSNodeIsDirectoryMask;
+  // Bundled executables are exactly three levels deeper than their bundle.
+  // Non-bundled executables have a fake bundle with a bundle path of their
+  // parent directory.
+  NSUInteger depth_difference = [executable_parts count] - [bundle_parts count];
+  CHECK(depth_difference == 1 || depth_difference == 3);
+  return depth_difference == 3;
 #endif
 }
 
