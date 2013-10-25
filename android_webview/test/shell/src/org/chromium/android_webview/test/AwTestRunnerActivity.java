@@ -23,23 +23,11 @@ public class AwTestRunnerActivity extends Activity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // TODO(joth): When SW-renderer is available, we'll want to enable this on a per-test
-        // basis.
-        boolean hardwareAccelerated = true;
-        Log.i("AwTestRunnerActivity", "Is " + (hardwareAccelerated ? "" : "NOT ")
-                + "hardware accelerated");
-
-        if (hardwareAccelerated) {
-            getWindow().setFlags(
-                    WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED,
-                    WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED);
-        }
-
         mLinearLayout = new LinearLayout(this);
         mLinearLayout.setOrientation(LinearLayout.VERTICAL);
         mLinearLayout.setShowDividers(LinearLayout.SHOW_DIVIDER_MIDDLE);
-        mLinearLayout.setLayoutParams(new LayoutParams(LayoutParams.WRAP_CONTENT,
-                LayoutParams.WRAP_CONTENT));
+        mLinearLayout.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT,
+                LayoutParams.MATCH_PARENT));
 
         setContentView(mLinearLayout);
     }
