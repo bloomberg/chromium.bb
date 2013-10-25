@@ -1,0 +1,44 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<style>
+    div {
+        width: 160px;
+        height: 160px;
+        -webkit-transform: rotateY(30deg) rotateX(-30deg);
+        color: black;
+    }
+
+    .a {
+        background: rgba(200, 200, 156, 1);
+    }
+
+    .b, .c {
+        width: 120px;
+        height: 120px;
+    }
+
+    .b {
+        background: rgba(55, 55, 99, 1);
+        color: yellow;
+    }
+
+    .c {
+        background: rgba(155, 155, 199, 1);
+        color: white;
+        margin-top: -90px;
+    }
+
+</style>
+</head>
+<!-- Test to validate that background blending is working properly for series of hardware accelerated elements. -->
+<body>
+    <div class="a">sample<div class="b">sample</div></div>
+
+    <div class="a">sample<div class="b">sample</div>sample<div class="c">sample</div></div>
+
+    <div class="a">sample
+        <div class="b">sample</div>
+        <div class="c" style="position:absolute; z-index: -1;">sample sample sample sample sample sample sample sample sample sample sample sample</div>
+    </div>
+</body>
