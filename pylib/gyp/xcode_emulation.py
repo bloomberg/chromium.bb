@@ -880,7 +880,10 @@ class XcodeSettings(object):
         cache['DTSDKBuild'] = cache['BuildMachineOSBuild']
 
       if self.isIOS:
+        cache['DTPlatformName'] = cache['DTSDKName']
         if configname.endswith("iphoneos"):
+          cache['DTPlatformVersion'] = self._GetSdkVersionInfoItem(
+              sdk_root, 'ProductVersion')
           cache['CFBundleSupportedPlatforms'] = ['iPhoneOS']
         else:
           cache['CFBundleSupportedPlatforms'] = ['iPhoneSimulator']

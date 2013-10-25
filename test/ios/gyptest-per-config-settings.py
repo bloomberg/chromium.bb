@@ -37,6 +37,11 @@ def CheckSignature(file):
     print 'File %s not properly signed.' % (file)
     test.fail_test()
 
+def GetProductVersion():
+  args = ['xcodebuild','-version','-sdk','iphoneos','ProductVersion']
+  job = subprocess.Popen(args, stdout=subprocess.PIPE)
+  return job.communicate()[0].strip()
+
 def CheckPlistvalue(plist, key, expected):
   if key not in plist:
     print '%s not set in plist' % key
@@ -46,6 +51,12 @@ def CheckPlistvalue(plist, key, expected):
   if actual != expected:
     print 'File: Expected %s, got %s for %s' % (expected, actual, key)
     test.fail_test()
+
+def CheckPlistNotSet(plist, key):
+  if key in plist:
+    print '%s should not be set in plist' % key
+    test.fail_test()
+    return
 
 def ConvertBinaryPlistToXML(path):
   proc = subprocess.call(['plutil', '-convert', 'xml1', path],
@@ -81,10 +92,14 @@ if sys.platform == 'darwin':
 
     if configuration == 'Default-iphoneos':
       CheckFileType(result_file, 'armv7')
+      CheckPlistvalue(plist, 'DTPlatformVersion', GetProductVersion())
       CheckPlistvalue(plist, 'CFBundleSupportedPlatforms', ['iPhoneOS'])
+      CheckPlistvalue(plist, 'DTPlatformName', 'iphoneos')
     else:
       CheckFileType(result_file, 'i386')
+      CheckPlistNotSet(plist, 'DTPlatformVersion')
       CheckPlistvalue(plist, 'CFBundleSupportedPlatforms', ['iPhoneSimulator'])
+      CheckPlistvalue(plist, 'DTPlatformName', 'iphonesimulator')
 
     if HasCerts() and configuration == 'Default-iphoneos':
       test.build('test-device.gyp', 'sig_test', chdir='app-bundle')
