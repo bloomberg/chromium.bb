@@ -136,8 +136,6 @@ public:
     // deleting the delegate.
     virtual void setAnimationDelegate(WebAnimationDelegate*) = 0;
 
-    // TODO(dshwang): temporary macro to change addAnimation() in both Blink and Chromium.
-#define ANIMATION_OWNERSHIP_TRANSFER
 
     // Returns false if the animation cannot be added.
     // Takes ownership of the WebAnimation object.
