@@ -24,31 +24,33 @@ class Service_Frobinate_Params {
         Service_Frobinate_Params();
   }
 
-  void set_foo(Foo* foo) { foo_.ptr = foo; }
-  void set_baz(bool baz) { baz_ = baz; }
-  void set_port(mojo::Handle port) { port_ = port; }
+  void set_foo(Foo* foo) { d_.foo.ptr = foo; }
+  void set_baz(bool baz) { d_.baz = baz; }
+  void set_port(mojo::Handle port) { d_.port = port; }
 
-  const Foo* foo() const { return foo_.ptr; }
-  bool baz() const { return baz_; }
+  const Foo* foo() const { return d_.foo.ptr; }
+  bool baz() const { return d_.baz; }
   mojo::Handle port() const {
     // NOTE: port is an optional field!
-    return _header_.num_fields >= 3 ? port_ : mojo::kInvalidHandle;
+    return header_.num_fields >= 3 ? d_.port : mojo::kInvalidHandle;
   }
 
  private:
   friend class mojo::internal::ObjectTraits<Service_Frobinate_Params>;
 
   Service_Frobinate_Params() {
-    _header_.num_bytes = sizeof(*this);
-    _header_.num_fields = 3;
+    header_.num_bytes = sizeof(*this);
+    header_.num_fields = 3;
   }
   ~Service_Frobinate_Params();  // NOT IMPLEMENTED
 
-  mojo::internal::StructHeader _header_;
-  mojo::internal::StructPointer<Foo> foo_;
-  uint8_t baz_ : 1;
-  uint8_t _pad0_[3];
-  mojo::Handle port_;
+  mojo::internal::StructHeader header_;
+  struct Data {
+    mojo::internal::StructPointer<Foo> foo;
+    uint8_t baz : 1;
+    uint8_t padding0_[3];
+    mojo::Handle port;
+  } d_;
 };
 MOJO_COMPILE_ASSERT(sizeof(Service_Frobinate_Params) == 24,
                     bad_sizeof_Service_Frobinate_Params);
@@ -111,29 +113,29 @@ class ObjectTraits<sample::Foo> {
 
   static void EncodePointersAndHandles(sample::Foo* foo,
                                        std::vector<mojo::Handle>* handles) {
-    Encode(&foo->bar_, handles);
-    Encode(&foo->data_, handles);
-    Encode(&foo->extra_bars_, handles);
-    Encode(&foo->name_, handles);
-    Encode(&foo->files_, handles);
+    Encode(&foo->d_.bar, handles);
+    Encode(&foo->d_.data, handles);
+    Encode(&foo->d_.extra_bars, handles);
+    Encode(&foo->d_.name, handles);
+    Encode(&foo->d_.files, handles);
   }
 
   static bool DecodePointersAndHandles(sample::Foo* foo,
                                        const mojo::Message& message) {
-    if (!Decode(&foo->bar_, message))
+    if (!Decode(&foo->d_.bar, message))
       return false;
-    if (!Decode(&foo->data_, message))
+    if (!Decode(&foo->d_.data, message))
       return false;
-    if (foo->_header_.num_fields >= 8) {
-      if (!Decode(&foo->extra_bars_, message))
+    if (foo->header_.num_fields >= 8) {
+      if (!Decode(&foo->d_.extra_bars, message))
         return false;
     }
-    if (foo->_header_.num_fields >= 9) {
-      if (!Decode(&foo->name_, message))
+    if (foo->header_.num_fields >= 9) {
+      if (!Decode(&foo->d_.name, message))
         return false;
     }
-    if (foo->_header_.num_fields >= 10) {
-      if (!Decode(&foo->files_, message))
+    if (foo->header_.num_fields >= 10) {
+      if (!Decode(&foo->d_.files, message))
         return false;
     }
 
@@ -148,17 +150,17 @@ class ObjectTraits<sample::internal::Service_Frobinate_Params> {
   static void EncodePointersAndHandles(
       sample::internal::Service_Frobinate_Params* params,
       std::vector<mojo::Handle>* handles) {
-    Encode(&params->foo_, handles);
-    EncodeHandle(&params->port_, handles);
+    Encode(&params->d_.foo, handles);
+    EncodeHandle(&params->d_.port, handles);
   }
 
   static bool DecodePointersAndHandles(
       sample::internal::Service_Frobinate_Params* params,
       const mojo::Message& message) {
-    if (!Decode(&params->foo_, message))
+    if (!Decode(&params->d_.foo, message))
       return false;
-    if (params->_header_.num_fields >= 3) {
-      if (!DecodeHandle(&params->port_, message.handles))
+    if (params->header_.num_fields >= 3) {
+      if (!DecodeHandle(&params->d_.port, message.handles))
         return false;
     }
 
