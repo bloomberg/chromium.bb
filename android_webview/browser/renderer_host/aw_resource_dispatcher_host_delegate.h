@@ -48,6 +48,10 @@ class AwResourceDispatcherHostDelegate
       ScopedVector<content::ResourceThrottle>* throttles) OVERRIDE;
   virtual bool AcceptAuthRequest(net::URLRequest* request,
                                  net::AuthChallengeInfo* auth_info) OVERRIDE;
+  virtual bool AcceptSSLClientCertificateRequest(
+      net::URLRequest* request,
+      net::SSLCertRequestInfo* cert_info) OVERRIDE;
+
   virtual content::ResourceDispatcherHostLoginDelegate* CreateLoginDelegate(
       net::AuthChallengeInfo* auth_info,
       net::URLRequest* request) OVERRIDE;

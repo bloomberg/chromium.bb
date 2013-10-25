@@ -24,6 +24,7 @@
 #include "content/public/common/url_constants.h"
 #include "grit/ui_resources.h"
 #include "net/android/network_library.h"
+#include "net/ssl/ssl_cert_request_info.h"
 #include "net/ssl/ssl_info.h"
 #include "ui/base/l10n/l10n_util_android.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -263,6 +264,18 @@ void AwContentBrowserClient::AllowCertificateError(
                                   &cancel_request);
   if (cancel_request)
     *result = content::CERTIFICATE_REQUEST_RESULT_TYPE_DENY;
+}
+
+void AwContentBrowserClient::SelectClientCertificate(
+      int render_process_id,
+      int render_view_id,
+      const net::HttpNetworkSession* network_session,
+      net::SSLCertRequestInfo* cert_request_info,
+      const base::Callback<void(net::X509Certificate*)>& callback) {
+  LOG(INFO) << "Client certificate request from "
+        << cert_request_info->host_and_port
+        << " rejected. (Client certificates not supported in WebView)";
+  callback.Run(NULL);
 }
 
 WebKit::WebNotificationPresenter::Permission

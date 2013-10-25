@@ -290,6 +290,19 @@ bool AwResourceDispatcherHostDelegate::AcceptAuthRequest(
   return true;
 }
 
+bool AwResourceDispatcherHostDelegate::AcceptSSLClientCertificateRequest(
+    net::URLRequest* request,
+    net::SSLCertRequestInfo* cert_info) {
+  // WebView does not support client certificate selection, however it does
+  // send a no-certificate response to the server to allow it decide how to
+  // proceed. The base class returns false here, which causes the entire
+  // resource request to be abort. We don't want that, so we must return true
+  // here (and subsequently complete the request in
+  // AwContentBrowserClient::SelectClientCertificate) to get the intended
+  // behavior.
+  return true;
+}
+
 content::ResourceDispatcherHostLoginDelegate*
     AwResourceDispatcherHostDelegate::CreateLoginDelegate(
         net::AuthChallengeInfo* auth_info,
