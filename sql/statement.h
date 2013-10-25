@@ -178,6 +178,11 @@ class SQL_EXPORT Statement {
   // guaranteed non-NULL.
   scoped_refptr<Connection::StatementRef> ref_;
 
+  // Set after Step() or Run() are called, reset by Reset().  Used to
+  // prevent accidental calls to API functions which would not work
+  // correctly after stepping has started.
+  bool stepped_;
+
   // See Succeeded() for what this holds.
   bool succeeded_;
 

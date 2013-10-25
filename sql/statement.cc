@@ -16,11 +16,13 @@ namespace sql {
 // only have to check the ref's validity bit.
 Statement::Statement()
     : ref_(new Connection::StatementRef(NULL, NULL, false)),
+      stepped_(false),
       succeeded_(false) {
 }
 
 Statement::Statement(scoped_refptr<Connection::StatementRef> ref)
     : ref_(ref),
+      stepped_(false),
       succeeded_(false) {
 }
 
@@ -50,10 +52,12 @@ bool Statement::CheckValid() const {
 }
 
 bool Statement::Run() {
+  DCHECK(!stepped_);
   ref_->AssertIOAllowed();
   if (!CheckValid())
     return false;
 
+  stepped_ = true;
   return CheckError(sqlite3_step(ref_->stmt())) == SQLITE_DONE;
 }
 
@@ -62,6 +66,7 @@ bool Statement::Step() {
   if (!CheckValid())
     return false;
 
+  stepped_ = true;
   return CheckError(sqlite3_step(ref_->stmt())) == SQLITE_ROW;
 }
 
@@ -77,6 +82,7 @@ void Statement::Reset(bool clear_bound_vars) {
   }
 
   succeeded_ = false;
+  stepped_ = false;
 }
 
 bool Statement::Succeeded() const {
@@ -87,6 +93,7 @@ bool Statement::Succeeded() const {
 }
 
 bool Statement::BindNull(int col) {
+  DCHECK(!stepped_);
   if (!is_valid())
     return false;
 
@@ -98,6 +105,7 @@ bool Statement::BindBool(int col, bool val) {
 }
 
 bool Statement::BindInt(int col, int val) {
+  DCHECK(!stepped_);
   if (!is_valid())
     return false;
 
@@ -105,6 +113,7 @@ bool Statement::BindInt(int col, int val) {
 }
 
 bool Statement::BindInt64(int col, int64 val) {
+  DCHECK(!stepped_);
   if (!is_valid())
     return false;
 
@@ -112,6 +121,7 @@ bool Statement::BindInt64(int col, int64 val) {
 }
 
 bool Statement::BindDouble(int col, double val) {
+  DCHECK(!stepped_);
   if (!is_valid())
     return false;
 
@@ -119,6 +129,7 @@ bool Statement::BindDouble(int col, double val) {
 }
 
 bool Statement::BindCString(int col, const char* val) {
+  DCHECK(!stepped_);
   if (!is_valid())
     return false;
 
@@ -127,6 +138,7 @@ bool Statement::BindCString(int col, const char* val) {
 }
 
 bool Statement::BindString(int col, const std::string& val) {
+  DCHECK(!stepped_);
   if (!is_valid())
     return false;
 
@@ -142,6 +154,7 @@ bool Statement::BindString16(int col, const string16& value) {
 }
 
 bool Statement::BindBlob(int col, const void* val, int val_len) {
+  DCHECK(!stepped_);
   if (!is_valid())
     return false;
 
