@@ -8,6 +8,8 @@
 import logging
 import optparse
 import os
+import psutil
+import signal
 import smtplib
 import subprocess
 import sys
@@ -241,6 +243,24 @@ def RestartUsb():
   return 0
 
 
+def KillAllAdb():
+  def GetAllAdb():
+    for p in psutil.process_iter():
+      if 'adb' in p.name or 'adb' in ' '.join(p.cmdline):
+        yield p
+
+  for sig in [signal.SIGTERM, signal.SIGQUIT, signal.SIGKILL]:
+    for p in GetAllAdb():
+      try:
+        print 'kill %d %d (%s [%s])' % (sig, p.pid, p.name,
+            ' '.join(p.cmdline))
+        p.send_signal(sig)
+      except psutil.error.NoSuchProcess:
+        pass
+  for p in GetAllAdb():
+    print 'Unable to kill %d (%s [%s])' % (p.pid, p.name, ' '.join(p.cmdline))
+
+
 def main():
   parser = optparse.OptionParser()
   parser.add_option('', '--out-dir',
@@ -257,6 +277,7 @@ def main():
     parser.error('Unknown options %s' % args)
 
   if options.restart_usb:
+    KillAllAdb()
     rc = RestartUsb()
     if rc:
       return 1
