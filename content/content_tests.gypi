@@ -924,7 +924,6 @@
             'browser/renderer_host/render_view_host_manager_browsertest.cc',
             'browser/renderer_host/render_widget_host_browsertest.cc',
             'browser/renderer_host/render_widget_host_view_browsertest.cc',
-            'browser/renderer_host/render_widget_host_view_win_browsertest.cc',
             'browser/security_exploit_browsertest.cc',
             'browser/session_history_browsertest.cc',
             'browser/site_per_process_browsertest.cc',
@@ -1015,7 +1014,6 @@
             }, {  # OS!="win"
               'sources!': [
                 'browser/accessibility/accessibility_win_browsertest.cc',
-                'browser/renderer_host/render_widget_host_view_win_browsertest.cc',
               ],
             }],
             ['OS=="win" and win_use_allocator_shim==1', {
@@ -1050,7 +1048,7 @@
               'sources!': [
                 'browser/accessibility/accessibility_win_browsertest.cc',
                 'browser/accessibility/dump_accessibility_tree_browsertest.cc',
-                'browser/renderer_host/render_widget_host_view_win_browsertest.cc',
+                'browser/plugin_browsertest.cc',
               ],
             }, {
               'sources/': [
