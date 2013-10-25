@@ -11,15 +11,21 @@
 
 namespace mojo {
 
+#pragma pack(push, 1)
+
 struct MessageHeader {
   uint32_t num_bytes;
   uint32_t name;
 };
+MOJO_COMPILE_ASSERT(sizeof(MessageHeader) == 8, bad_sizeof_MessageHeader);
 
 struct MessageData {
   MessageHeader header;
   uint8_t payload[1];
 };
+MOJO_COMPILE_ASSERT(sizeof(MessageData) == 9, bad_sizeof_MessageData);
+
+#pragma pack(pop)
 
 struct Message {
   Message();

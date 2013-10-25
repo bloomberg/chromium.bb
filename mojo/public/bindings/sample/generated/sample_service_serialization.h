@@ -15,6 +15,8 @@ namespace internal {
 
 const uint32_t kService_Frobinate_Name = 1;
 
+#pragma pack(push, 1)
+
 class Service_Frobinate_Params {
  public:
   static Service_Frobinate_Params* New(mojo::Buffer* buf) {
@@ -45,10 +47,15 @@ class Service_Frobinate_Params {
   mojo::internal::StructHeader header_;
   struct Data {
     mojo::internal::StructPointer<Foo> foo;
-    uint32_t baz : 1;
+    uint8_t baz : 1;
+    uint8_t padding0_[3];
     mojo::Handle port;
   } d_;
 };
+MOJO_COMPILE_ASSERT(sizeof(Service_Frobinate_Params) == 24,
+                    bad_sizeof_Service_Frobinate_Params);
+
+#pragma pack(pop)
 
 }  // namespace internal
 }  // namespace sample
@@ -59,8 +66,8 @@ namespace internal {
 template <>
 class ObjectTraits<sample::Bar> {
  public:
-  static size_t ComputeAlignedSizeOf(const sample::Bar* bar) {
-    return Align(sizeof(*bar));
+  static size_t ComputeSizeOf(const sample::Bar* bar) {
+    return sizeof(*bar);
   }
 
   static sample::Bar* Clone(const sample::Bar* bar, Buffer* buf) {
@@ -82,13 +89,13 @@ class ObjectTraits<sample::Bar> {
 template <>
 class ObjectTraits<sample::Foo> {
  public:
-  static size_t ComputeAlignedSizeOf(const sample::Foo* foo) {
-    return Align(sizeof(*foo)) +
-        mojo::internal::ComputeAlignedSizeOf(foo->bar()) +
-        mojo::internal::ComputeAlignedSizeOf(foo->data()) +
-        mojo::internal::ComputeAlignedSizeOf(foo->extra_bars()) +
-        mojo::internal::ComputeAlignedSizeOf(foo->name()) +
-        mojo::internal::ComputeAlignedSizeOf(foo->files());
+  static size_t ComputeSizeOf(const sample::Foo* foo) {
+    return sizeof(*foo) +
+        mojo::internal::ComputeSizeOf(foo->bar()) +
+        mojo::internal::ComputeSizeOf(foo->data()) +
+        mojo::internal::ComputeSizeOf(foo->extra_bars()) +
+        mojo::internal::ComputeSizeOf(foo->name()) +
+        mojo::internal::ComputeSizeOf(foo->files());
   }
 
   static sample::Foo* Clone(const sample::Foo* foo, Buffer* buf) {

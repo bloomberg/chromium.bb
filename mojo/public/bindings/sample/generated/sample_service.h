@@ -9,6 +9,8 @@
 
 namespace sample {
 
+#pragma pack(push, 1)
+
 class Bar {
  public:
   static Bar* New(mojo::Buffer* buf) {
@@ -37,8 +39,10 @@ class Bar {
     uint8_t alpha;
     uint8_t beta;
     uint8_t gamma;
+    uint8_t padding0_[5];
   } d_;
 };
+MOJO_COMPILE_ASSERT(sizeof(Bar) == 16, bad_sizeof_Bar);
 
 class Foo {
  public:
@@ -96,9 +100,10 @@ class Foo {
   struct Data {
     int32_t x;
     int32_t y;
-    uint32_t a : 1;
-    uint32_t b : 1;
-    uint32_t c : 1;
+    uint8_t a : 1;
+    uint8_t b : 1;
+    uint8_t c : 1;
+    uint8_t padding0_[7];
     mojo::internal::StructPointer<Bar> bar;
     mojo::internal::ArrayPointer<uint8_t> data;
     mojo::internal::ArrayPointer<Bar*> extra_bars;
@@ -106,6 +111,9 @@ class Foo {
     mojo::internal::ArrayPointer<mojo::Handle> files;
   } d_;
 };
+MOJO_COMPILE_ASSERT(sizeof(Foo) == 64, bad_sizeof_Foo);
+
+#pragma pack(pop)
 
 class Service {
  public:

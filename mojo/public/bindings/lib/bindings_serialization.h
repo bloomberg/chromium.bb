@@ -51,8 +51,8 @@ bool DecodeHandle(Handle* handle, const std::vector<Handle>& handles);
 // specialization.
 
 template <typename T>
-inline size_t ComputeAlignedSizeOf(const T* obj) {
-  return obj ? ObjectTraits<T>::ComputeAlignedSizeOf(obj) : 0;
+inline size_t ComputeSizeOf(const T* obj) {
+  return obj ? ObjectTraits<T>::ComputeSizeOf(obj) : 0;
 }
 
 template <typename T>
@@ -102,8 +102,8 @@ template <typename T>
 struct ArrayHelper {
   typedef T ElementType;
 
-  static size_t ComputeAlignedSizeOfElements(const ArrayHeader* header,
-                                             const ElementType* elements) {
+  static size_t ComputeSizeOfElements(const ArrayHeader* header,
+                                      const ElementType* elements) {
     return 0;
   }
 
@@ -127,8 +127,8 @@ template <>
 struct ArrayHelper<Handle> {
   typedef Handle ElementType;
 
-  static size_t ComputeAlignedSizeOfElements(const ArrayHeader* header,
-                                             const ElementType* elements) {
+  static size_t ComputeSizeOfElements(const ArrayHeader* header,
+                                      const ElementType* elements) {
     return 0;
   }
 
@@ -149,11 +149,11 @@ template <typename P>
 struct ArrayHelper<P*> {
   typedef StructPointer<P> ElementType;
 
-  static size_t ComputeAlignedSizeOfElements(const ArrayHeader* header,
-                                             const ElementType* elements) {
+  static size_t ComputeSizeOfElements(const ArrayHeader* header,
+                                      const ElementType* elements) {
     size_t result = 0;
     for (uint32_t i = 0; i < header->num_elements; ++i)
-      result += ComputeAlignedSizeOf(elements[i].ptr);
+      result += ComputeSizeOf(elements[i].ptr);
     return result;
   }
 
@@ -184,10 +184,10 @@ struct ArrayHelper<P*> {
 template <typename T>
 class ObjectTraits<Array<T> > {
  public:
-  static size_t ComputeAlignedSizeOf(const Array<T>* array) {
+  static size_t ComputeSizeOf(const Array<T>* array) {
     return Align(array->header_.num_bytes) +
-        ArrayHelper<T>::ComputeAlignedSizeOfElements(&array->header_,
-                                                     array->storage());
+        ArrayHelper<T>::ComputeSizeOfElements(&array->header_,
+                                              array->storage());
   }
 
   static Array<T>* Clone(const Array<T>* array, Buffer* buf) {

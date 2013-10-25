@@ -7,8 +7,6 @@
 
 #ifdef __cplusplus
 
-namespace mojo {
-
 // Annotate a virtual method indicating it must be overriding a virtual
 // method in the parent class.
 // Use like:
@@ -26,11 +24,9 @@ namespace mojo {
   void operator=(const TypeName&)
 
 // Used to assert things at compile time.
-namespace internal { template <bool> struct CompileAssert {}; }
+namespace mojo { template <bool> struct CompileAssert {}; }
 #define MOJO_COMPILE_ASSERT(expr, msg) \
-    typedef internal::CompileAssert<(bool(expr))> msg[bool(expr) ? 1 : -1]
-
-}  // namespace mojo
+    typedef ::mojo::CompileAssert<(bool(expr))> msg[bool(expr) ? 1 : -1]
 
 #endif  // __cplusplus
 

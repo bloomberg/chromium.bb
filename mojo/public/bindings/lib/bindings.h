@@ -60,10 +60,12 @@ class Array {
   typedef typename internal::ArrayTraits<T>::StorageType StorageType;
 
   StorageType* storage() {
-    return reinterpret_cast<StorageType*>(this + 1);
+    return reinterpret_cast<StorageType*>(
+        reinterpret_cast<char*>(this) + sizeof(*this));
   }
   const StorageType* storage() const {
-    return reinterpret_cast<const StorageType*>(this + 1);
+    return reinterpret_cast<const StorageType*>(
+        reinterpret_cast<const char*>(this) + sizeof(*this));
   }
 
   Array(size_t num_bytes, size_t num_elements) {
@@ -76,6 +78,7 @@ class Array {
 
   // Elements of type internal::ArrayTraits<T>::StorageType follow.
 };
+MOJO_COMPILE_ASSERT(sizeof(Array<char>) == 8, bad_sizeof_Array);
 
 // UTF-8 encoded
 typedef Array<char> String;

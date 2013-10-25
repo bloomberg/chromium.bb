@@ -7,37 +7,48 @@
 
 #include <stdint.h>
 
+#include "mojo/public/system/macros.h"
+
 namespace mojo {
 template <typename T> class Array;
 
 namespace internal {
 
+#pragma pack(push, 1)
+
 struct StructHeader {
   uint32_t num_bytes;
   uint32_t num_fields;
 };
+MOJO_COMPILE_ASSERT(sizeof(StructHeader) == 8, bad_sizeof_StructHeader);
 
 struct ArrayHeader {
   uint32_t num_bytes;
   uint32_t num_elements;
 };
+MOJO_COMPILE_ASSERT(sizeof(ArrayHeader) == 8, bad_sizeof_ArrayHeader);
 
 template <typename T>
 union StructPointer {
   uint64_t offset;
   T* ptr;
 };
+MOJO_COMPILE_ASSERT(sizeof(StructPointer<char>) == 8, bad_sizeof_StructPointer);
 
 template <typename T>
 union ArrayPointer {
   uint64_t offset;
   Array<T>* ptr;
 };
+MOJO_COMPILE_ASSERT(sizeof(ArrayPointer<char>) == 8, bad_sizeof_ArrayPointer);
 
 union StringPointer {
   uint64_t offset;
   Array<char>* ptr;
 };
+MOJO_COMPILE_ASSERT(sizeof(StringPointer) == 8, bad_sizeof_StringPointer);
+
+#pragma pack(pop)
 
 template <typename T>
 struct ArrayTraits {

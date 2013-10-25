@@ -19,7 +19,7 @@ ServiceProxy::ServiceProxy(mojo::MessageReceiver* receiver)
 void ServiceProxy::Frobinate(const Foo* foo, bool baz, mojo::Handle port) {
   size_t payload_size =
       mojo::internal::Align(sizeof(internal::Service_Frobinate_Params));
-  payload_size += mojo::internal::ComputeAlignedSizeOf(foo);
+  payload_size += mojo::internal::ComputeSizeOf(foo);
 
   mojo::MessageBuilder builder(internal::kService_Frobinate_Name, payload_size);
 
