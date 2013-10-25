@@ -488,7 +488,6 @@ crbug.com/280698 inspector/styles/multiple-imports-edit-crash.html [ Pass Failur
 crbug.com/248938 [ SnowLeopard  Debug ] virtual/threaded/animations/animation-iteration-event-destroy-renderer.html [ Pass Timeout ]
 crbug.com/281911 [ Debug ] virtual/web-animations-css/animations/animation-direction-normal.html [ ImageOnlyFailure Pass ]
 crbug.com/281911 [ XP Release ] virtual/web-animations-css/animations/animation-direction-normal.html [ ImageOnlyFailure Pass ]
-crbug.com/281915 [ Mac Release ] svg/custom/repaint-shadow.svg [ Failure Pass ]
 crbug.com/282081 [ Debug ] http/tests/security/contentSecurityPolicy/report-only-from-header.php [ Crash Pass ]
 crbug.com/282081 [ Win Release ] http/tests/security/contentSecurityPolicy/report-only-from-header.php [ Pass Timeout ]
 crbug.com/282082 inspector/debugger/live-edit.html [ Failure Timeout ]
@@ -600,6 +599,9 @@ crbug.com/295605 [ Win Debug ] fast/dom/custom/document-register-reentrant-throw
 
 crbug.com/309675 compositing/gestures/gesture-tapHighlight-simple-longPress.html [ ImageOnlyFailure ]
 
+crbug.com/311469 svg/custom/repaint-shadow.svg [ NeedsRebaseline ]
+crbug.com/311469 svg/zoom/page/zoom-zoom-coords.xhtml [ NeedsRebaseline ]
+
 crbug.com/305345 fast/events/mouseover-mouseout.html [ Failure Pass ]
 
 # Android virtual suite shares the same expectation.
@@ -674,7 +676,6 @@ crbug.com/311429 [ Mac ] virtual/deferred/fast/images/png-suite/test.html [ Imag
 
 crbug.com/311467 [ Win ] http/tests/xmlhttprequest/timeout/xmlhttprequest-timeout-worker-simple.html [ Failure Timeout Pass ]
 
-crbug.com/311469 [ Mac ] svg/custom/font-face-cascade-order.svg [ Crash Failure Pass ]
 crbug.com/311469 [ Mac ] svg/custom/getSubStringLength.html [ Failure Pass ]
 
 crbug.com/311487 [ Debug ] svg/custom/acid3-test-77.html [ Pass Timeout ]

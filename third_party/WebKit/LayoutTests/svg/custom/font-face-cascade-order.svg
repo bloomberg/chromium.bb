@@ -7,7 +7,7 @@
   }
   @font-face {
     font-family: "test";
-    src: local("Ahem");
+    src: url(../../resources/Ahem.ttf);
   }
 </style>
 <defs>
