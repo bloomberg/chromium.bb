@@ -116,6 +116,7 @@ CRYPTO_EXPORT bool IsTPMTokenReady();
 
 // Initialize the TPM token.  Does nothing if it is already initialized.
 CRYPTO_EXPORT bool InitializeTPMToken(const std::string& token_name,
+                                      int token_slot_id,
                                       const std::string& user_pin);
 #endif
 

@@ -100,7 +100,7 @@ class CHROMEOS_EXPORT CertLoader : public net::CertDatabase::Observer,
   // TPM info is only valid once the TPM is available (IsHardwareBacked is
   // true). Otherwise empty strings will be returned.
   const std::string& tpm_token_name() const { return tpm_token_name_; }
-  const std::string& tpm_token_slot() const { return tpm_token_slot_; }
+  int tpm_token_slot_id() const { return tpm_token_slot_id_; }
   const std::string& tpm_user_pin() const { return tpm_user_pin_; }
 
   // This will be empty until certificates_loaded() is true.
@@ -124,7 +124,7 @@ class CHROMEOS_EXPORT CertLoader : public net::CertDatabase::Observer,
   void OnPkcs11GetTpmTokenInfo(DBusMethodCallStatus call_status,
                                const std::string& token_name,
                                const std::string& user_pin,
-                               int token_slot);
+                               int token_slot_id);
   void OnTPMTokenInitialized(bool success);
 
   // These calls handle the updating of the certificate list after the TPM token
@@ -178,7 +178,7 @@ class CHROMEOS_EXPORT CertLoader : public net::CertDatabase::Observer,
 
   // Cached TPM token info.
   std::string tpm_token_name_;
-  std::string tpm_token_slot_;
+  int tpm_token_slot_id_;
   std::string tpm_user_pin_;
 
   // Cached Certificates.

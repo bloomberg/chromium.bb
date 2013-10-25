@@ -12,6 +12,7 @@
 #include <string>
 
 #include "base/stl_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/task_runner.h"
 #include "base/threading/worker_pool.h"
 #include "base/time/time.h"
@@ -431,11 +432,12 @@ void ClientCertResolver::ConfigureCertificates(NetworkCertMatches* matches) {
     VLOG(1) << "Configuring certificate of network " << it->service_path;
     CertLoader* cert_loader = CertLoader::Get();
     base::DictionaryValue shill_properties;
-    client_cert::SetShillProperties(it->cert_config_type,
-                                    cert_loader->tpm_token_slot(),
-                                    cert_loader->tpm_user_pin(),
-                                    &it->pkcs11_id,
-                                    &shill_properties);
+    client_cert::SetShillProperties(
+        it->cert_config_type,
+        base::IntToString(cert_loader->tpm_token_slot_id()),
+        cert_loader->tpm_user_pin(),
+        &it->pkcs11_id,
+        &shill_properties);
     DBusThreadManager::Get()->GetShillServiceClient()->
         SetProperties(dbus::ObjectPath(it->service_path),
                         shill_properties,

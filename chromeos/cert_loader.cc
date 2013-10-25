@@ -94,6 +94,7 @@ CertLoader::CertLoader()
       tpm_token_state_(TPM_STATE_UNKNOWN),
       tpm_request_delay_(
           base::TimeDelta::FromMilliseconds(kInitialRequestDelayMs)),
+      tpm_token_slot_id_(-1),
       initialize_token_factory_(this),
       update_certificates_factory_(this) {
   if (LoginState::IsInitialized())
@@ -211,8 +212,10 @@ void CertLoader::InitializeTokenAndLoadCertificates() {
       base::PostTaskAndReplyWithResult(
           crypto_task_runner_.get(),
           FROM_HERE,
-          base::Bind(
-              &crypto::InitializeTPMToken, tpm_token_name_, tpm_user_pin_),
+          base::Bind(&crypto::InitializeTPMToken,
+                     tpm_token_name_,
+                     tpm_token_slot_id_,
+                     tpm_user_pin_),
           base::Bind(&CertLoader::OnTPMTokenInitialized,
                      initialize_token_factory_.GetWeakPtr()));
       return;
@@ -298,7 +301,7 @@ void CertLoader::OnPkcs11IsTpmTokenReady(DBusMethodCallStatus call_status,
 void CertLoader::OnPkcs11GetTpmTokenInfo(DBusMethodCallStatus call_status,
                                          const std::string& token_name,
                                          const std::string& user_pin,
-                                         int token_slot) {
+                                         int token_slot_id) {
   VLOG(1) << "OnPkcs11GetTpmTokenInfo: " << token_name;
 
   if (call_status == DBUS_METHOD_CALL_FAILURE) {
@@ -307,7 +310,7 @@ void CertLoader::OnPkcs11GetTpmTokenInfo(DBusMethodCallStatus call_status,
   }
 
   tpm_token_name_ = token_name;
-  tpm_token_slot_ = base::IntToString(token_slot);
+  tpm_token_slot_id_ = token_slot_id;
   tpm_user_pin_ = user_pin;
   tpm_token_state_ = TPM_TOKEN_INFO_RECEIVED;
 

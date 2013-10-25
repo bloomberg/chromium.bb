@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/json/json_reader.h"
+#include "base/strings/string_number_conversions.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/shill_manager_client.h"
@@ -441,11 +442,12 @@ void NetworkConnectionHandler::VerifyConfiguredAndConnect(
     if (cert_loader_ && cert_loader_->IsHardwareBacked()) {
       // Pass NULL if pkcs11_id is empty, so that it doesn't clear any
       // previously configured client cert.
-      client_cert::SetShillProperties(client_cert_type,
-                                      cert_loader_->tpm_token_slot(),
-                                      cert_loader_->tpm_user_pin(),
-                                      pkcs11_id.empty() ? NULL : &pkcs11_id,
-                                      &config_properties);
+      client_cert::SetShillProperties(
+          client_cert_type,
+          base::IntToString(cert_loader_->tpm_token_slot_id()),
+          cert_loader_->tpm_user_pin(),
+          pkcs11_id.empty() ? NULL : &pkcs11_id,
+          &config_properties);
     }
   }
 

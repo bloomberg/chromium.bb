@@ -168,20 +168,6 @@ void UseLocalCacheOfNSSDatabaseIfNFS(const base::FilePath& database_dir) {
 #endif  // defined(OS_LINUX) || defined(OS_OPENBSD)
 }
 
-PK11SlotInfo* FindSlotWithTokenName(const std::string& token_name) {
-  AutoSECMODListReadLock auto_lock;
-  SECMODModuleList* head = SECMOD_GetDefaultModuleList();
-  for (SECMODModuleList* item = head; item != NULL; item = item->next) {
-    int slot_count = item->module->loaded ? item->module->slotCount : 0;
-    for (int i = 0; i < slot_count; i++) {
-      PK11SlotInfo* slot = item->module->slots[i];
-      if (PK11_GetTokenName(slot) == token_name)
-        return PK11_ReferenceSlot(slot);
-    }
-  }
-  return NULL;
-}
-
 #endif  // defined(USE_NSS)
 
 // A singleton to initialize/deinitialize NSPR.
@@ -247,10 +233,14 @@ class NSSInitSingleton {
   }
 
   void EnableTPMTokenForNSS() {
+    // If this gets set, then we'll use the TPM for certs with
+    // private keys, otherwise we'll fall back to the software
+    // implementation.
     tpm_token_enabled_for_nss_ = true;
   }
 
   bool InitializeTPMToken(const std::string& token_name,
+                          int token_slot_id,
                           const std::string& user_pin) {
     // If EnableTPMTokenForNSS hasn't been called, return false.
     if (!tpm_token_enabled_for_nss_)
@@ -275,12 +265,15 @@ class NSSInitSingleton {
           //   read from this slot without requiring a call to C_Login.
           // askpw=only -- Only authenticate to the token when necessary.
           "NSS=\"slotParams=(0={slotFlags=[PublicCerts] askpw=only})\"");
+      if (!chaps_module_ && test_slot_) {
+        // chromeos_unittests try to test the TPM initialization process. If we
+        // have a test DB open, pretend that it is the TPM slot.
+        tpm_slot_ = PK11_ReferenceSlot(test_slot_);
+        return true;
+      }
     }
     if (chaps_module_){
-      // If this gets set, then we'll use the TPM for certs with
-      // private keys, otherwise we'll fall back to the software
-      // implementation.
-      tpm_slot_ = GetTPMSlot();
+      tpm_slot_ = GetTPMSlotForId(token_slot_id);
 
       return tpm_slot_ != NULL;
     }
@@ -302,10 +295,22 @@ class NSSInitSingleton {
     return tpm_slot_ != NULL;
   }
 
-  PK11SlotInfo* GetTPMSlot() {
-    std::string token_name;
-    GetTPMTokenInfo(&token_name, NULL);
-    return FindSlotWithTokenName(token_name);
+  // Note that CK_SLOT_ID is an unsigned long, but cryptohome gives us the slot
+  // id as an int. This should be safe since this is only used with chaps, which
+  // we also control.
+  PK11SlotInfo* GetTPMSlotForId(CK_SLOT_ID slot_id) {
+    if (!chaps_module_)
+      return NULL;
+
+    VLOG(1) << "Poking chaps module.";
+    SECStatus rv = SECMOD_UpdateSlotList(chaps_module_);
+    if (rv != SECSuccess)
+      PLOG(ERROR) << "SECMOD_UpdateSlotList failed: " << PORT_GetError();
+
+    PK11SlotInfo* slot = SECMOD_LookupSlot(chaps_module_->moduleID, slot_id);
+    if (!slot)
+      LOG(ERROR) << "TPM slot " << slot_id << " not found.";
+    return slot;
   }
 #endif  // defined(OS_CHROMEOS)
 
@@ -526,7 +531,7 @@ class NSSInitSingleton {
 
     // Aw, snap.  Can't find/load root cert shared library.
     // This will make it hard to talk to anybody via https.
-    NOTREACHED();
+    // TODO(mattm): Re-add the NOTREACHED here when crbug.com/310972 is fixed.
     return NULL;
   }
 
@@ -547,6 +552,12 @@ class NSSInitSingleton {
     if (!module) {
       LOG(ERROR) << "Error loading " << name << " module into NSS: "
                  << GetNSSErrorMessage();
+      return NULL;
+    }
+    if (!module->loaded) {
+      LOG(ERROR) << "After loading " << name << ", loaded==false: "
+                 << GetNSSErrorMessage();
+      SECMOD_DestroyModule(module);
       return NULL;
     }
     return module;
@@ -752,8 +763,10 @@ bool IsTPMTokenReady() {
 }
 
 bool InitializeTPMToken(const std::string& token_name,
+                        int token_slot_id,
                         const std::string& user_pin) {
-  return g_nss_singleton.Get().InitializeTPMToken(token_name, user_pin);
+  return g_nss_singleton.Get().InitializeTPMToken(
+      token_name, token_slot_id, user_pin);
 }
 #endif  // defined(OS_CHROMEOS)
 
