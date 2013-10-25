@@ -128,6 +128,11 @@ class PixelValidator(page_test.PageTest):
     full_image_name = img_name + '_' + str(build_revision)
     full_image_name = full_image_name + '.png'
 
+    # Save the reference image
+    # This ensures that we get the right revision number
+    PixelValidator.WriteImage(
+        os.path.join(img_dir, full_image_name), ref_png)
+
     PixelValidator.WriteImage(
         os.path.join(img_dir, 'FAIL_' + full_image_name), screenshot)
 
