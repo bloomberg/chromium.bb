@@ -26,9 +26,10 @@ namespace mdns {
   interface Events {
     // Event fired to inform clients of the current complete set of known
     // available services. Clients should only need to store the list from the
-    // most recent event. The service types that the extension is interested in
-    // discovering should be declared as an array in the extensions manifest
-    // file with the 'mdns_service_types' key.
+    // most recent event. The service type that the extension is interested in
+    // discovering should be specified as the event filter with the
+    // 'serviceType' key. Not specifying an event filter will not start any
+    // discovery listeners.
     [supportsFilters=true] static void onServiceList(MDnsService[] services);
   };
 };
