@@ -43,4 +43,10 @@ bool InternalsVibration::isVibrating(Internals* internals, Document* document)
     return NavigatorVibration::from(document->page())->isVibrating();
 }
 
+Vector<unsigned> InternalsVibration::pendingVibrationPattern(Internals* internals, Document* document)
+{
+    ASSERT(internals && document && document->page());
+    return NavigatorVibration::from(document->page())->pattern();
+}
+
 } // namespace WebCore

@@ -31,6 +31,8 @@
 #ifndef InternalsVibration_h
 #define InternalsVibration_h
 
+#include "wtf/Vector.h"
+
 namespace WebCore {
 
 class Document;
@@ -39,6 +41,7 @@ class Internals;
 class InternalsVibration {
 public:
     static bool isVibrating(Internals*, Document*);
+    static Vector<unsigned> pendingVibrationPattern(Internals*, Document*);
 };
 
 } // namespace WebCore

@@ -30,4 +30,5 @@
 
 partial interface Internals {
     boolean isVibrating(Document document);
+    sequence<unsigned long> pendingVibrationPattern(Document document);
 };
