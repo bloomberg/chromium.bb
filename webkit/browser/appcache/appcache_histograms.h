@@ -20,6 +20,7 @@ class AppCacheHistograms {
     NUM_INIT_RESULT_TYPES
   };
   static void CountInitResult(InitResultType init_result);
+  static void CountReinitAttempt(bool repeated_attempt);
 
   enum CheckResponseResultType {
     RESPONSE_OK, MANIFEST_OUT_OF_DATE, RESPONSE_OUT_OF_DATE, ENTRY_NOT_FOUND,

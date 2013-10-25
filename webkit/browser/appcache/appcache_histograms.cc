@@ -14,6 +14,10 @@ void AppCacheHistograms::CountInitResult(InitResultType init_result) {
        init_result, NUM_INIT_RESULT_TYPES);
 }
 
+void AppCacheHistograms::CountReinitAttempt(bool repeated_attempt) {
+  UMA_HISTOGRAM_BOOLEAN("appcache.ReinitAttempt", repeated_attempt);
+}
+
 void AppCacheHistograms::CountCheckResponseResult(
     CheckResponseResultType result) {
   UMA_HISTOGRAM_ENUMERATION(

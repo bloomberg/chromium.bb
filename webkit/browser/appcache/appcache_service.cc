@@ -475,6 +475,8 @@ void AppCacheService::Initialize(const base::FilePath& cache_directory,
 }
 
 void AppCacheService::Reinitialize() {
+  AppCacheHistograms::CountReinitAttempt(was_reinitialized_);
+
   // To avoid thrashing, we only do this once.
   if (was_reinitialized_)
     return;
