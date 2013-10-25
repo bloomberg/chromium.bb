@@ -43,7 +43,7 @@
       'SK_ENABLE_LEGACY_API_ALIASING=1',
     ],
 
-    'default_font_cache_limit': '(20*1024*1024)',
+    'default_font_cache_limit%': '(20*1024*1024)',
 
     'conditions': [
       ['OS== "android"', {
