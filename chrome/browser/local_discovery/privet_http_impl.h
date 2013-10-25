@@ -64,6 +64,14 @@ class PrivetRegisterOperationImpl
                                 int http_code,
                                 const base::DictionaryValue* value) OVERRIDE;
 
+  void GetTokenFromInfoCall(PrivetInfoOperation* operation,
+                            int http_code,
+                            const base::DictionaryValue* value);
+
+  void VerifyIDFromInfoCall(PrivetInfoOperation* operation,
+                            int http_code,
+                            const base::DictionaryValue* value);
+
   virtual PrivetHTTPClient* GetHTTPClient() OVERRIDE;
  private:
   class Cancelation : public PrivetURLFetcher::Delegate {
@@ -113,7 +121,11 @@ class PrivetRegisterOperationImpl
   // Required to ensure destroying completed register operations doesn't cause
   // extraneous cancelations.
   bool ongoing_;
+  // Whether the current /privet/info call is for the final confirmation or
+  // for initial token getting.
+  bool info_for_confirmation_;
   scoped_ptr<PrivetInfoOperation> info_operation_;
+  std::string expected_id_;
 };
 
 class PrivetHTTPClientImpl : public PrivetHTTPClient {

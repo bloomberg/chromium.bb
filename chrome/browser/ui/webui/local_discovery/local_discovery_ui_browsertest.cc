@@ -187,6 +187,11 @@ const char kResponseInfo[] = "{"
     "     \"x-privet-token\" : \"MyPrivetToken\""
     "}";
 
+const char kResponseInfoWithID[] = "{"
+    "     \"x-privet-token\" : \"MyPrivetToken\","
+    "     \"id\" : \"my_id\""
+    "}";
+
 const char kResponseRegisterStart[] = "{"
     "     \"action\": \"start\","
     "     \"user\": \"user@host.com\""
@@ -479,6 +484,11 @@ IN_PROC_BROWSER_TEST_F(LocalDiscoveryUITest, RegisterTest) {
       kResponseRegisterClaimTokenConfirm,
       true);
 
+  fake_fetcher_factory().SetFakeResponse(
+      GURL(kURLInfo),
+      kResponseInfoWithID,
+      true);
+
   {
     InSequence s;
     EXPECT_CALL(fake_url_fetcher_creator(), OnCreateFakeURLFetcher(
@@ -486,7 +496,8 @@ IN_PROC_BROWSER_TEST_F(LocalDiscoveryUITest, RegisterTest) {
     EXPECT_CALL(fake_url_fetcher_creator(), OnCreateFakeURLFetcher(
         kURLCloudPrintConfirm));
     EXPECT_CALL(fake_url_fetcher_creator(), OnCreateFakeURLFetcher(
-        kURLRegisterComplete))
+        kURLRegisterComplete));
+    EXPECT_CALL(fake_url_fetcher_creator(), OnCreateFakeURLFetcher(kURLInfo))
         .WillOnce(InvokeWithoutArgs(&condition_token_claimed,
                                     &TestMessageLoopCondition::Signal));
   }

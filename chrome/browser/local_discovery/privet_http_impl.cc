@@ -73,7 +73,7 @@ PrivetRegisterOperationImpl::PrivetRegisterOperationImpl(
     const std::string& user,
     PrivetRegisterOperation::Delegate* delegate)
     : user_(user), delegate_(delegate), privet_client_(privet_client),
-      ongoing_(false) {
+      ongoing_(false), info_for_confirmation_(false) {
 }
 
 PrivetRegisterOperationImpl::~PrivetRegisterOperationImpl() {
@@ -229,10 +229,23 @@ void PrivetRegisterOperationImpl::CompleteResponse(
   std::string id;
   value.GetString(kPrivetKeyDeviceID, &id);
   ongoing_ = false;
-  delegate_->OnPrivetRegisterDone(this, id);
+  expected_id_ = id;
+  info_for_confirmation_ = true;
+  StartInfoOperation();
 }
 
 void PrivetRegisterOperationImpl::OnPrivetInfoDone(
+    PrivetInfoOperation* operation,
+    int http_code,
+    const base::DictionaryValue* value) {
+  if (!info_for_confirmation_) {
+    GetTokenFromInfoCall(operation, http_code, value);
+  } else {
+    VerifyIDFromInfoCall(operation, http_code, value);
+  }
+}
+
+void PrivetRegisterOperationImpl::GetTokenFromInfoCall(
     PrivetInfoOperation* operation,
     int http_code,
     const base::DictionaryValue* value) {
@@ -271,6 +284,51 @@ void PrivetRegisterOperationImpl::OnPrivetInfoDone(
     Start();
   } else {
     SendRequest(current_action_);
+  }
+}
+
+void PrivetRegisterOperationImpl::VerifyIDFromInfoCall(
+    PrivetInfoOperation* operation,
+    int http_code,
+    const base::DictionaryValue* value) {
+  // TODO (noamsml): Simplify error case.
+  if (!value) {
+    delegate_->OnPrivetRegisterError(this,
+                                     kPrivetActionNameInfo,
+                                     FAILURE_NETWORK,
+                                     -1,
+                                     NULL);
+    return;
+  }
+
+  if (!value->HasKey(kPrivetInfoKeyID)) {
+    if (value->HasKey(kPrivetKeyError)) {
+      delegate_->OnPrivetRegisterError(this,
+                                       kPrivetActionNameInfo,
+                                       FAILURE_JSON_ERROR,
+                                       http_code,
+                                       value);
+    } else {
+      delegate_->OnPrivetRegisterError(this,
+                                       kPrivetActionNameInfo,
+                                       FAILURE_MALFORMED_RESPONSE,
+                                       -1,
+                                       NULL);
+    }
+    return;
+  }
+
+  std::string id;
+
+  if (!value->GetString(kPrivetInfoKeyID, &id) ||
+      id != expected_id_) {
+    delegate_->OnPrivetRegisterError(this,
+                                     kPrivetActionNameInfo,
+                                     FAILURE_MALFORMED_RESPONSE,
+                                     -1,
+                                     NULL);
+  } else {
+    delegate_->OnPrivetRegisterDone(this, id);
   }
 }
 

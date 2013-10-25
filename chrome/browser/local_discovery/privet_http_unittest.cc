@@ -27,7 +27,7 @@ const char kSampleInfoResponse[] = "{"
     "       \"type\": ["
     "               \"printer\""
     "       ],"
-    "       \"id\": \"11111111-2222-3333-4444-555555555555\","
+    "       \"id\": \"\","
     "       \"device_state\": \"idle\","
     "       \"connection_state\": \"online\","
     "       \"manufacturer\": \"Google\","
@@ -45,6 +45,34 @@ const char kSampleInfoResponse[] = "{"
     "               \"/privet/printer/submitdoc\","
     "       ]"
     "}";
+
+const char kSampleInfoResponseRegistered[] = "{"
+    "       \"version\": \"1.0\","
+    "       \"name\": \"Common printer\","
+    "       \"description\": \"Printer connected through Chrome connector\","
+    "       \"url\": \"https://www.google.com/cloudprint\","
+    "       \"type\": ["
+    "               \"printer\""
+    "       ],"
+    "       \"id\": \"MyDeviceID\","
+    "       \"device_state\": \"idle\","
+    "       \"connection_state\": \"online\","
+    "       \"manufacturer\": \"Google\","
+    "       \"model\": \"Google Chrome\","
+    "       \"serial_number\": \"1111-22222-33333-4444\","
+    "       \"firmware\": \"24.0.1312.52\","
+    "       \"uptime\": 600,"
+    "       \"setup_url\": \"http://support.google.com/\","
+    "       \"support_url\": \"http://support.google.com/cloudprint/?hl=en\","
+    "       \"update_url\": \"http://support.google.com/cloudprint/?hl=en\","
+    "       \"x-privet-token\": \"SampleTokenForTesting\","
+    "       \"api\": ["
+    "               \"/privet/accesstoken\","
+    "               \"/privet/capabilities\","
+    "               \"/privet/printer/submitdoc\","
+    "       ]"
+    "}";
+
 
 const char kSampleRegisterStartResponse[] = "{"
     "\"user\": \"example@google.com\","
@@ -348,13 +376,17 @@ TEST_F(PrivetRegisterTest, RegisterSuccessSimple) {
 
   register_operation_->CompleteRegistration();
 
-  EXPECT_CALL(register_delegate_, OnPrivetRegisterDoneInternal(
-      "MyDeviceID"));
-
   EXPECT_TRUE(SuccessfulResponseToURL(
       GURL("http://10.0.0.8:6006/privet/register?"
            "action=complete&user=example@google.com"),
       kSampleRegisterCompleteResponse));
+
+  EXPECT_CALL(register_delegate_, OnPrivetRegisterDoneInternal(
+      "MyDeviceID"));
+
+  EXPECT_TRUE(SuccessfulResponseToURL(
+      GURL("http://10.0.0.8:6006/privet/info"),
+      kSampleInfoResponseRegistered));
 }
 
 TEST_F(PrivetRegisterTest, RegisterNoInfoCall) {

@@ -55,7 +55,6 @@ namespace local_discovery {
 
 namespace {
 const char kPrivetAutomatedClaimURLFormat[] = "%s/confirm?token=%s";
-const int kRegistrationAnnouncementTimeoutSeconds = 5;
 
 const int kInitialRequeryTimeSeconds = 1;
 const int kMaxRequeryTimeSeconds = 2; // Time for last requery
@@ -321,30 +320,20 @@ void LocalDiscoveryUIHandler::OnPrivetRegisterDone(
   current_register_operation_.reset();
   current_http_client_.reset();
 
+  // HACK(noamsml): Generate network traffic so the Windows firewall doesn't
+  // block the printer's announcement.
+  privet_lister_->DiscoverNewDevices(false);
+
   DeviceDescriptionMap::iterator found = device_descriptions_.find(name);
 
-  if (found == device_descriptions_.end() || found->second.id.empty()) {
-    // HACK(noamsml): Generate network traffic so the Windows firewall doesn't
-    // block the printer's announcement.
-    privet_lister_->DiscoverNewDevices(false);
-
-    new_register_device_ = name;
-    registration_announce_timeout_.Reset(base::Bind(
-        &LocalDiscoveryUIHandler::OnAnnouncementTimeoutReached,
-        base::Unretained(this)));
-
-    base::MessageLoop::current()->PostDelayedTask(
-        FROM_HERE,
-        registration_announce_timeout_.callback(),
-        base::TimeDelta::FromSeconds(kRegistrationAnnouncementTimeoutSeconds));
+  if (found == device_descriptions_.end()) {
+    // TODO(noamsml): Handle the case where a printer's record is not present at
+    // the end of registration.
+    SendRegisterError();
+    return;
   }
-}
 
-void LocalDiscoveryUIHandler::OnAnnouncementTimeoutReached() {
-  new_register_device_.clear();
-  registration_announce_timeout_.Cancel();
-
-  SendRegisterError();
+  SendRegisterDone(found->second);
 }
 
 void LocalDiscoveryUIHandler::OnConfirmDone(
@@ -380,11 +369,6 @@ void LocalDiscoveryUIHandler::DeviceChanged(
     web_ui()->CallJavascriptFunction(
         "local_discovery.onUnregisteredDeviceUpdate",
         service_name, *null_value);
-
-    if (name == new_register_device_) {
-      new_register_device_.clear();
-      SendRegisterDone(description);
-    }
   }
 }
 
