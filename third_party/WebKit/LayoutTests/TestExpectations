@@ -175,7 +175,6 @@ crbug.com/303430 virtual/web-animations-css/transitions/extra-transition.html [ 
 crbug.com/309962 virtual/web-animations-css/animations/cross-fade-webkit-mask-box-image.html [ ImageOnlyFailure ]
 # These can't be rebaselined because they timeout
 crbug.com/303430 virtual/web-animations-css/transitions/cancel-transition.html [ Pass Failure Timeout ]
-crbug.com/303430 virtual/web-animations-css/transitions/negative-delay.html [ Timeout ]
 
 crbug.com/305070 [ Debug ] animations/interpolation/svg-stroke-dasharray-interpolation.html [ Crash ]
 crbug.com/305070 [ Debug ] virtual/threaded/animations/interpolation/svg-stroke-dasharray-interpolation.html [ Crash ]

@@ -300,9 +300,9 @@ function checkExpectedTransitionValue(expected, index)
     var transformRegExp = /^-webkit-transform(\.\d+)?$/;
     if (transformRegExp.test(property)) {
         computedValue = window.getComputedStyle(document.getElementById(elementId)).webkitTransform;
-        if (typeof expectedValue == "string")
+        if (typeof expectedValue === "string" || computedValue === "none")
             pass = (computedValue == expectedValue);
-        else if (typeof expectedValue == "number") {
+        else if (typeof expectedValue === "number") {
             var m = computedValue.split("(");
             var m = m[1].split(",");
             pass = isCloseEnough(parseFloat(m[parseInt(property.substring(18))]), expectedValue, tolerance);
