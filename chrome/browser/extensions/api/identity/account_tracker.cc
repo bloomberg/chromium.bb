@@ -52,7 +52,7 @@ void AccountTracker::RemoveObserver(Observer* observer) {
 
 void AccountTracker::OnRefreshTokenAvailable(const std::string& account_id) {
   DVLOG(1) << "AVAILABLE " << account_id;
-  account_errors_.erase(account_id);
+  ClearAuthError(account_id);
   UpdateSignInState(account_id, true);
 }
 
@@ -93,6 +93,11 @@ void AccountTracker::NotifySignInChanged(const AccountState& account) {
                     OnAccountSignInChanged(account.ids, account.is_signed_in));
 }
 
+void AccountTracker::ClearAuthError(const std::string& account_key) {
+  account_errors_.erase(account_key);
+  SigninGlobalError::GetForProfile(profile_)->AuthStatusChanged();
+}
+
 void AccountTracker::UpdateSignInState(const std::string& account_key,
                                        bool is_signed_in) {
   StartTrackingAccount(account_key);
@@ -129,7 +134,7 @@ void AccountTracker::StopTrackingAccount(const std::string& account_key) {
     accounts_.erase(account_key);
   }
 
-  account_errors_.erase(account_key);
+  ClearAuthError(account_key);
 
   if (ContainsKey(user_info_requests_, account_key))
     DeleteFetcher(user_info_requests_[account_key]);

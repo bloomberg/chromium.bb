@@ -87,6 +87,7 @@ class AccountTracker : public OAuth2TokenService::Observer,
   void NotifyAccountRemoved(const AccountState& account);
   void NotifySignInChanged(const AccountState& account);
 
+  void ClearAuthError(const std::string& account_key);
   void UpdateSignInState(const std::string& account_key, bool is_signed_in);
 
   void StartTrackingAccount(const std::string& account_key);
