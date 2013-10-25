@@ -393,6 +393,7 @@ var wrapper = (function() {
 wrapper.instrumentChromeApiFunction('alarms.get', 1);
 wrapper.instrumentChromeApiFunction('alarms.onAlarm.addListener', 0);
 wrapper.instrumentChromeApiFunction('identity.getAuthToken', 1);
+wrapper.instrumentChromeApiFunction('identity.onSignInChanged.addListener', 0);
 wrapper.instrumentChromeApiFunction('identity.removeCachedAuthToken', 1);
 
 /**
@@ -663,10 +664,7 @@ function buildAttemptManager(
   };
 }
 
-// TODO(robliao): Ideally, the authentication watcher infrastructure
-// below would be an API change to chrome.identity.
-// When this happens, remove the code below.
-
+// TODO(robliao): Use signed-in state change watch API when it's available.
 /**
  * Wraps chrome.identity to provide limited listening support for
  * the sign in state by polling periodically for the auth token.
@@ -733,6 +731,10 @@ function buildAuthenticationManager() {
       }
     });
   }
+
+  instrumented.identity.onSignInChanged.addListener(function() {
+    isSignedIn(function() {});
+  });
 
   instrumented.alarms.onAlarm.addListener(function(alarm) {
     if (alarm.name == alarmName)

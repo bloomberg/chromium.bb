@@ -15,4 +15,5 @@ chrome['identity'] = {
 };
 
 mockChromeEvent(chrome, 'alarms.onAlarm');
+mockChromeEvent(chrome, 'identity.onSignInChanged');
 mockChromeEvent(chrome, 'runtime.onSuspend');
