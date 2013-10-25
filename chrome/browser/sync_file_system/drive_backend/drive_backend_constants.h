@@ -20,6 +20,7 @@ extern const char kFileMetadataKeyPrefix[];
 extern const char kFileTrackerKeyPrefix[];
 
 extern const int kMaxRetry;
+extern const int64 kListChangesRetryDelaySeconds;
 
 }  // namespace drive_backend
 }  // namespace sync_file_system

@@ -18,6 +18,7 @@ const char kFileMetadataKeyPrefix[] = "FILE: ";
 const char kFileTrackerKeyPrefix[] = "TRACKER: ";
 
 const int kMaxRetry = 5;
+const int64 kListChangesRetryDelaySeconds = 60 * 60;
 
 }  // namespace drive_backend
 }  // namespace sync_file_system
