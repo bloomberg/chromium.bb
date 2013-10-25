@@ -73,6 +73,7 @@ cr.define('wallpapers', function() {
           }
           getThumbnail(self.dataItem.baseURL);
           break;
+        case Constants.WallpaperSourceEnum.OEM:
         case Constants.WallpaperSourceEnum.Online:
           chrome.wallpaperPrivate.getThumbnail(this.dataItem.baseURL,
                                                this.dataItem.source,

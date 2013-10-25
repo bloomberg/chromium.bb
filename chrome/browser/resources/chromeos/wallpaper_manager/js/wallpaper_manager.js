@@ -481,6 +481,14 @@ function WallpaperManager(dialogDom) {
         this.wallpaperDirs_.getDirectory(WallpaperDirNameEnum.ORIGINAL,
                                          success, errorHandler);
         break;
+      case Constants.WallpaperSourceEnum.OEM:
+        // Resets back to default wallpaper.
+        chrome.wallpaperPrivate.resetWallpaper();
+        this.currentWallpaper_ = selectedItem.baseURL;
+        this.wallpaperGrid_.activeItem = selectedItem;
+        WallpaperUtil.saveWallpaperInfo(wallpaperURL, selectedItem.layout,
+                                        selectedItem.source);
+        break;
       case Constants.WallpaperSourceEnum.Online:
         var wallpaperURL = selectedItem.baseURL +
             Constants.HighResolutionSuffix;
@@ -614,7 +622,10 @@ function WallpaperManager(dialogDom) {
    * @private
    */
   WallpaperManager.prototype.setWallpaperAttribution_ = function(selectedItem) {
-    if (selectedItem && selectedItem.source != 'ADDNEW') {
+    // Only online wallpapers have author and website attributes. All other type
+    // of wallpapers should not show attributions.
+    if (selectedItem &&
+        selectedItem.source == Constants.WallpaperSourceEnum.Online) {
       $('author-name').textContent = selectedItem.author;
       $('author-website').textContent = $('author-website').href =
           selectedItem.authorWebsite;
@@ -938,14 +949,25 @@ function WallpaperManager(dialogDom) {
                 source: Constants.WallpaperSourceEnum.Custom,
                 availableOffline: true
           };
-          if (self.currentWallpaper_ == entry.name)
-            selectedItem = wallpaperInfo;
           wallpapersDataModel.push(wallpaperInfo);
+        }
+        if (loadTimeData.getBoolean('isOEMDefaultWallpaper')) {
+          var oemDefaultWallpaperElement = {
+              baseURL: 'OemDefaultWallpaper',
+              layout: 'CENTER_CROPPED',
+              source: Constants.WallpaperSourceEnum.OEM,
+              availableOffline: true
+          };
+          wallpapersDataModel.push(oemDefaultWallpaperElement);
+        }
+        for (var i = 0; i < wallpapersDataModel.length; i++) {
+          if (self.currentWallpaper_ == wallpapersDataModel.item(i).baseURL)
+            selectedItem = wallpapersDataModel.item(i);
         }
         var lastElement = {
             baseURL: '',
             layout: '',
-            source: 'ADDNEW',
+            source: Constants.WallpaperSourceEnum.AddNew,
             availableOffline: true
         };
         wallpapersDataModel.push(lastElement);

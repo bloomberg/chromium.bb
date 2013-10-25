@@ -6,11 +6,13 @@
 
 #include <vector>
 
+#include "ash/ash_switches.h"
 #include "ash/desktop_background/desktop_background_controller.h"
 #include "ash/shell.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
+#include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/files/file_enumerator.h"
 #include "base/memory/scoped_ptr.h"
@@ -52,6 +54,11 @@ namespace {
 const char kWallpaperManifestBaseURL[] = "https://commondatastorage.googleapis."
     "com/chromeos-wallpaper-public/manifest_";
 #endif
+
+bool IsOEMDefaultWallpaper() {
+  return CommandLine::ForCurrentProcess()->
+      HasSwitch(ash::switches::kAshOemWallpaperSmall);
+}
 
 // Saves |data| as |file_name| to directory with |key|. Return false if the
 // directory can not be found/created or failed to write file.
@@ -206,6 +213,7 @@ bool WallpaperPrivateGetStringsFunction::RunImpl() {
   dict->SetString("manifestBaseURL", kWallpaperManifestBaseURL);
 #endif
 
+  dict->SetBoolean("isOEMDefaultWallpaper", IsOEMDefaultWallpaper());
   return true;
 }
 
@@ -603,13 +611,17 @@ bool WallpaperPrivateGetThumbnailFunction::RunImpl() {
                            &thumbnail_path));
     thumbnail_path = thumbnail_path.Append(file_name);
   } else {
-    std::string file_name = params->url_or_file;
-    std::string username_hash =
-        chromeos::UserManager::Get()->GetLoggedInUser()->username_hash();
-    thumbnail_path = chromeos::WallpaperManager::Get()->
-        GetCustomWallpaperPath(chromeos::kThumbnailWallpaperSubDir,
-                               username_hash,
-                               file_name);
+    if (!IsOEMDefaultWallpaper()) {
+      SetError("No OEM wallpaper.");
+      SendResponse(false);
+      return false;
+    }
+
+    // TODO(bshe): Small resolution wallpaper is used here as wallpaper
+    // thumbnail. We should either resize it or include a wallpaper thumbnail in
+    // addition to large and small wallpaper resolutions.
+    thumbnail_path = CommandLine::ForCurrentProcess()->GetSwitchValuePath(
+        ash::switches::kAshOemWallpaperSmall);
   }
 
   sequence_token_ = BrowserThread::GetBlockingPool()->

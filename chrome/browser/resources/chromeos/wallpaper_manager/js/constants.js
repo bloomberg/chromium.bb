@@ -57,6 +57,7 @@
    */
   WallpaperSourceEnum: {
       Online: 'ONLINE',
+      OEM: 'OEM',
       Custom: 'CUSTOM',
       AddNew: 'ADDNEW'
   },

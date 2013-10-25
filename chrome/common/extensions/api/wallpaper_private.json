@@ -176,7 +176,7 @@
           {
             "name": "source",
             "type": "string",
-            "enum": [ "ONLINE", "CUSTOM" ]
+            "enum": [ "ONLINE", "OEM" ]
           },
           {
             "type": "function",
