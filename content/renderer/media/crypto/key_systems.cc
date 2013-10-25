@@ -263,11 +263,6 @@ bool KeySystems::IsSupportedKeySystemWithMediaMimeType(
   else
     concrete_key_system = key_system;
 
-  // This method is only used by the canPlaytType() path (not the EME methods),
-  // so we check for suppressed key_systems here.
-  if(IsCanPlayTypeSuppressed(concrete_key_system))
-    return false;
-
   if (codecs.empty()) {
     return IsSupportedKeySystemWithContainerAndCodec(
         mime_type, std::string(), concrete_key_system);

@@ -10,25 +10,9 @@
 
 // The following must be after widevine_cdm_version.h.
 
-#if defined(DISABLE_WIDEVINE_CDM_CANPLAYTYPE)
-#include "base/command_line.h"
-#include "media/base/media_switches.h"
-#endif
-
 namespace content {
 
 static const char kClearKeyKeySystem[] = "webkit-org.w3.clearkey";
-
-bool IsCanPlayTypeSuppressed(const std::string& key_system) {
-#if defined(DISABLE_WIDEVINE_CDM_CANPLAYTYPE)
-  // See http://crbug.com/237627.
-  if (key_system == kWidevineKeySystem &&
-      !CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kOverrideEncryptedMediaCanPlayType))
-    return true;
-#endif
-  return false;
-}
 
 std::string KeySystemNameForUMAInternal(const WebKit::WebString& key_system) {
   if (key_system == kClearKeyKeySystem)

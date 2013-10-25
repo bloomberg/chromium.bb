@@ -21,10 +21,6 @@ const char kDisableVp8AlphaPlayback[] = "disable-vp8-alpha-playback";
 // Set number of threads to use for video decoding.
 const char kVideoThreads[] = "video-threads";
 
-// Override suppressed responses to canPlayType().
-const char kOverrideEncryptedMediaCanPlayType[] =
-    "override-encrypted-media-canplaytype";
-
 // Enables MP3 stream parser for Media Source Extensions.
 const char kEnableMP3StreamParser[] = "enable-mp3-stream-parser";
 

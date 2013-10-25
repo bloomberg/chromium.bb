@@ -823,13 +823,6 @@ const Experiment kExperiments[] = {
     kOsAll,
     SINGLE_VALUE_TYPE(switches::kDisablePrefixedEncryptedMedia)
   },
-  {
-    "override-encrypted-media-canplaytype",
-    IDS_FLAGS_ENCRYPTED_MEDIA_CANPLAYTYPE_OVERRIDE_NAME,
-    IDS_FLAGS_ENCRYPTED_MEDIA_CANPLAYTYPE_OVERRIDE_DESCRIPTION,
-    kOsMac | kOsWin | kOsAndroid,
-    SINGLE_VALUE_TYPE(switches::kOverrideEncryptedMediaCanPlayType)
-  },
 #if defined(OS_ANDROID)
   {
     "disable-infobar-for-protected-media-identifier",

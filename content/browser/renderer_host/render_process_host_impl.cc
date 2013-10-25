@@ -985,7 +985,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kMemoryMetrics,
     switches::kNoReferrers,
     switches::kNoSandbox,
-    switches::kOverrideEncryptedMediaCanPlayType,
     switches::kPpapiInProcess,
     switches::kRegisterPepperPlugins,
     switches::kRendererAssertTest,

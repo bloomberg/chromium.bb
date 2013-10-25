@@ -42,8 +42,7 @@
 #endif  // defined(ENABLE_PEPPER_CDMS)
 
 // Expectations for Widevine.
-#if defined(WIDEVINE_CDM_AVAILABLE) && \
-    !defined(DISABLE_WIDEVINE_CDM_CANPLAYTYPE)  // See http://crbug.com/237627
+#if defined(WIDEVINE_CDM_AVAILABLE)
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
 // TODO(ddorwin): Remove after bots switch to Precise.
 #define EXPECT_WV(a) \
@@ -70,14 +69,12 @@
 #define EXPECT_WVAAC EXPECT_FALSE
 #endif
 
-#else  // defined(WIDEVINE_CDM_AVAILABLE) &&
-       // !defined(DISABLE_WIDEVINE_CDM_CANPLAYTYPE)
+#else  // defined(WIDEVINE_CDM_AVAILABLE)
 #define EXPECT_WV EXPECT_FALSE
 #define EXPECT_WVAVC1 EXPECT_FALSE
 #define EXPECT_WVAVC1AAC EXPECT_FALSE
 #define EXPECT_WVAAC EXPECT_FALSE
-#endif  // defined(WIDEVINE_CDM_AVAILABLE) &&
-        // !defined(DISABLE_WIDEVINE_CDM_CANPLAYTYPE)
+#endif  // defined(WIDEVINE_CDM_AVAILABLE)
 
 namespace chrome {
 
@@ -692,11 +689,7 @@ IN_PROC_BROWSER_TEST_F(
 
 IN_PROC_BROWSER_TEST_F(EncryptedMediaIsTypeSupportedWidevineTest,
                        Widevine_Basic) {
-#if defined(WIDEVINE_CDM_AVAILABLE) && defined(DISABLE_WIDEVINE_CDM_CANPLAYTYPE)
-  EXPECT_TRUE(IsConcreteSupportedKeySystem(kWidevineAlpha));
-#else
   EXPECT_WV(IsConcreteSupportedKeySystem(kWidevineAlpha));
-#endif
   EXPECT_WV(IsSupportedKeySystemWithMediaMimeType(
       "video/webm", no_codecs(), kWidevineAlpha));
 }
