@@ -13,19 +13,27 @@
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/character_encoding.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/webui/options/font_settings_utils.h"
+#include "chrome/common/extensions/extension.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/font_list_async.h"
 #include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_ui.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "url/gurl.h"
 
 #if defined(OS_WIN)
 #include "ui/gfx/font.h"
@@ -46,6 +54,9 @@ std::string MaybeGetLocalizedFontName(const std::string& font_name) {
   return font_name;
 #endif
 }
+
+const char kAdvancedFontSettingsExtensionId[] =
+    "caclkomlalccbpcdllchkeecicepbmbm";
 
 }  // namespace
 
@@ -81,6 +92,8 @@ void FontSettingsHandler::GetLocalizedValues(
       IDS_FONT_LANGUAGE_SETTING_FONT_SIZE_HUGE },
     { "fontSettingsLoremIpsum",
       IDS_FONT_LANGUAGE_SETTING_LOREM_IPSUM },
+    { "advancedFontSettingsOptions",
+      IDS_FONT_LANGUAGE_SETTING_ADVANCED_FONT_SETTINGS_OPTIONS }
   };
 
   RegisterStrings(localized_strings, resources, arraysize(resources));
@@ -89,6 +102,20 @@ void FontSettingsHandler::GetLocalizedValues(
   localized_strings->SetString("fontSettingsPlaceholder",
       l10n_util::GetStringUTF16(
           IDS_FONT_LANGUAGE_SETTING_PLACEHOLDER));
+
+  GURL install_url(extension_urls::GetWebstoreItemDetailURLPrefix());
+  localized_strings->SetString("advancedFontSettingsInstall",
+      l10n_util::GetStringFUTF16(
+          IDS_FONT_LANGUAGE_SETTING_ADVANCED_FONT_SETTINGS_INSTALL,
+          UTF8ToUTF16(
+              install_url.Resolve(kAdvancedFontSettingsExtensionId).spec())));
+}
+
+void FontSettingsHandler::InitializeHandler() {
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
+                 content::NotificationService::AllSources());
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
+                 content::NotificationService::AllSources());
 }
 
 void FontSettingsHandler::InitializePage() {
@@ -98,6 +125,7 @@ void FontSettingsHandler::InitializePage() {
   SetUpSansSerifFontSample();
   SetUpFixedFontSample();
   SetUpMinimumFontSample();
+  NotifyAdvancedFontSettingsAvailability();
 }
 
 void FontSettingsHandler::RegisterMessages() {
@@ -142,6 +170,17 @@ void FontSettingsHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("fetchFontsData",
       base::Bind(&FontSettingsHandler::HandleFetchFontsData,
                  base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("openAdvancedFontSettingsOptions",
+      base::Bind(&FontSettingsHandler::HandleOpenAdvancedFontSettingsOptions,
+                 base::Unretained(this)));
+}
+
+void FontSettingsHandler::Observe(int type,
+                                  const content::NotificationSource& source,
+                                  const content::NotificationDetails& details) {
+  DCHECK(type == chrome::NOTIFICATION_EXTENSION_LOADED ||
+         type == chrome::NOTIFICATION_EXTENSION_UNLOADED);
+  NotifyAdvancedFontSettingsAvailability();
 }
 
 void FontSettingsHandler::HandleFetchFontsData(const ListValue* args) {
@@ -242,6 +281,31 @@ void FontSettingsHandler::SetUpMinimumFontSample() {
   base::FundamentalValue size_value(minimum_font_size_.GetValue());
   web_ui()->CallJavascriptFunction("FontSettings.setUpMinimumFontSample",
                                    size_value);
+}
+
+const extensions::Extension*
+FontSettingsHandler::GetAdvancedFontSettingsExtension() {
+  Profile* profile = Profile::FromWebUI(web_ui());
+  ExtensionService* service =
+      extensions::ExtensionSystem::Get(profile)->extension_service();
+  if (!service->IsExtensionEnabled(kAdvancedFontSettingsExtensionId))
+    return NULL;
+  return service->GetInstalledExtension(kAdvancedFontSettingsExtensionId);
+}
+
+void FontSettingsHandler::NotifyAdvancedFontSettingsAvailability() {
+  web_ui()->CallJavascriptFunction(
+      "FontSettings.notifyAdvancedFontSettingsAvailability",
+      base::FundamentalValue(GetAdvancedFontSettingsExtension() != NULL));
+}
+
+void FontSettingsHandler::HandleOpenAdvancedFontSettingsOptions(
+    const base::ListValue* args) {
+  const extensions::Extension* extension = GetAdvancedFontSettingsExtension();
+  if (!extension)
+    return;
+  ExtensionTabUtil::OpenOptionsPage(extension,
+      chrome::FindBrowserWithWebContents(web_ui()->GetWebContents()));
 }
 
 void FontSettingsHandler::OnWebKitDefaultFontSizeChanged() {

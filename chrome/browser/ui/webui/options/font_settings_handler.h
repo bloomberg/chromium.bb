@@ -8,9 +8,14 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_member.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
+#include "content/public/browser/notification_registrar.h"
 
 namespace base {
 class ListValue;
+}
+
+namespace extensions {
+class Extension;
 }
 
 namespace options {
@@ -23,12 +28,18 @@ class FontSettingsHandler : public OptionsPageUIHandler {
 
   // OptionsPageUIHandler implementation.
   virtual void GetLocalizedValues(DictionaryValue* localized_strings) OVERRIDE;
+  virtual void InitializeHandler() OVERRIDE;
   virtual void InitializePage() OVERRIDE;
 
   // WebUIMessageHandler implementation.
   virtual void RegisterMessages() OVERRIDE;
 
  private:
+  // OptionsPageUIHandler implementation.
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
+
   void HandleFetchFontsData(const ListValue* args);
 
   void FontsListHasLoaded(scoped_ptr<base::ListValue> list);
@@ -38,6 +49,16 @@ class FontSettingsHandler : public OptionsPageUIHandler {
   void SetUpSansSerifFontSample();
   void SetUpFixedFontSample();
   void SetUpMinimumFontSample();
+
+  // Returns the Advanced Font Settings Extension if it's installed and enabled,
+  // or NULL otherwise.
+  const extensions::Extension* GetAdvancedFontSettingsExtension();
+  // Notifies the web UI about whether the Advanced Font Settings Extension is
+  // installed and enabled.
+  void NotifyAdvancedFontSettingsAvailability();
+  // Opens the options page of the Advanced Font Settings Extension.
+  void HandleOpenAdvancedFontSettingsOptions(const base::ListValue* args);
+
   void OnWebKitDefaultFontSizeChanged();
 
   StringPrefMember standard_font_;
@@ -48,6 +69,8 @@ class FontSettingsHandler : public OptionsPageUIHandler {
   IntegerPrefMember default_font_size_;
   IntegerPrefMember default_fixed_font_size_;
   IntegerPrefMember minimum_font_size_;
+
+  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(FontSettingsHandler);
 };

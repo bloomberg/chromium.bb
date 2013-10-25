@@ -57,6 +57,10 @@ cr.define('options', function() {
       $('font-settings-confirm').onclick = function() {
         OptionsPage.closeOverlay();
       };
+
+      $('advanced-font-settings-options').onclick = function() {
+        chrome.send('openAdvancedFontSettingsOptions');
+      };
     },
 
     /**
@@ -232,6 +236,15 @@ cr.define('options', function() {
       size = 6;
     FontSettings.getInstance().setUpFontSample_($('minimum-font-sample'), size,
                                                 null, true);
+  };
+
+  /**
+   * @param {boolean} available Whether the Advanced Font Settings Extension
+   *     is installed and enabled.
+   */
+  FontSettings.notifyAdvancedFontSettingsAvailability = function(available) {
+    $('advanced-font-settings-install').hidden = available;
+    $('advanced-font-settings-options').hidden = !available;
   };
 
   // Export

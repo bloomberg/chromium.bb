@@ -6,6 +6,19 @@
   overflow: hidden;
 }
 
+#font-settings .action-area {
+  -webkit-box-pack: start;
+}
+
+#font-settings .action-area .spacer {
+  -webkit-box-flex: 1;
+  display: -webkit-box;
+}
+
+#font-settings .button-strip {
+  width: 100%;
+}
+
 .font-setting-container {
   display: -webkit-box;
 }

@@ -9632,6 +9632,14 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
       <message name="IDS_FONT_LANGUAGE_SETTING_PLACEHOLDER" desc="Placeholder string for the Fonts and Encodings select menus">
         Loading...
       </message>
+      <message name="IDS_FONT_LANGUAGE_SETTING_ADVANCED_FONT_SETTINGS_INSTALL"
+               desc="Explanatory message about how to get the Advanced Font Settings extension">
+        <ph name="BEGIN_LINK">&lt;a target="_blank" href="$1"&gt;</ph>Advanced font settings<ph name="END_LINK">&lt;/a&gt;</ph> (requires extension)
+      </message>
+      <message name="IDS_FONT_LANGUAGE_SETTING_ADVANCED_FONT_SETTINGS_OPTIONS"
+               desc="Link to the Advanced Font Settings extension's options page">
+        Advanced font settings
+      </message>
 
       <!-- Language & spell-checker settings -->
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_DIALOG_TITLE">
