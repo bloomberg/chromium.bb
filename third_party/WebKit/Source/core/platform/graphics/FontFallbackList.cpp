@@ -81,7 +81,7 @@ void FontFallbackList::determinePitch(const Font* font) const
     else {
         const SegmentedFontData* segmentedFontData = static_cast<const SegmentedFontData*>(fontData);
         unsigned numRanges = segmentedFontData->numRanges();
-        if (numRanges == 1)
+        if (numRanges == 1 && segmentedFontData->rangeAt(0).isEntireRange())
             m_pitch = segmentedFontData->rangeAt(0).fontData()->pitch();
         else
             m_pitch = VariablePitch;

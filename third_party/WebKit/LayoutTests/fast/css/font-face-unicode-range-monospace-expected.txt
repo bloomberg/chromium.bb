@@ -1,0 +1,10 @@
+@font-face should not affect width of characters outside of its unicode-range
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS document.getElementById('test').offsetWidth is document.getElementById('sans').offsetWidth
+PASS successfullyParsed is true
+
+TEST COMPLETE
+m m

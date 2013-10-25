@@ -43,6 +43,7 @@ struct FontDataRange {
 
     UChar32 from() const { return m_from; }
     UChar32 to() const { return m_to; }
+    bool isEntireRange() const { return !m_from && m_to >= 0x10ffff; }
     PassRefPtr<SimpleFontData> fontData() const { return m_fontData; }
 
 private:
