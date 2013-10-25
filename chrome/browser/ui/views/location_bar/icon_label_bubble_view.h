@@ -28,12 +28,14 @@ class Painter;
 // tab-to-search UI.
 class IconLabelBubbleView : public views::View {
  public:
+  // The label will be positioned |font_y_offset| px. from the top of the view.
   // |hover_background_images| is an optional set of images to be used in place
   // of |background_images| during mouse hover.
   IconLabelBubbleView(const int background_images[],
                       const int hover_background_images[],
                       int contained_image,
                       const gfx::FontList& font_list,
+                      int font_y_offset,
                       SkColor text_color,
                       SkColor parent_background_color,
                       bool elide_in_middle);

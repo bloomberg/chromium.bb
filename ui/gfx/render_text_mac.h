@@ -28,12 +28,12 @@ class RenderTextMac : public RenderText {
   // Overridden from RenderText:
   virtual Size GetStringSize() OVERRIDE;
   virtual SizeF GetStringSizeF() OVERRIDE;
+  virtual int GetBaseline() OVERRIDE;
   virtual SelectionModel FindCursorPosition(const Point& point) OVERRIDE;
   virtual std::vector<FontSpan> GetFontSpansForTesting() OVERRIDE;
 
  protected:
   // Overridden from RenderText:
-  virtual int GetLayoutTextBaseline() OVERRIDE;
   virtual SelectionModel AdjacentCharSelectionModel(
       const SelectionModel& selection,
       VisualCursorDirection direction) OVERRIDE;

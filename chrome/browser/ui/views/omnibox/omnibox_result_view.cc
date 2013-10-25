@@ -471,8 +471,9 @@ int OmniboxResultView::DrawString(
       const gfx::Size size = (*j)->GetStringSize();
       // Align the text runs to a common baseline.
       const gfx::Rect rect(
-          mirroring_context_->mirrored_left_coord(x, x + size.width()), y,
-          size.width(), height());
+          mirroring_context_->mirrored_left_coord(x, x + size.width()),
+          y + font_list_.GetBaseline() - (*j)->GetBaseline(),
+          size.width(), size.height());
       (*j)->SetDisplayRect(rect);
       (*j)->Draw(canvas);
       x += size.width();
@@ -573,7 +574,8 @@ void OmniboxResultView::Layout() {
       (height() - icon.height()) / 2, icon.width(), icon.height());
 
   int text_x = edge_item_padding_ + default_icon_size_ + item_padding_;
-  int text_width = width() - text_x - edge_item_padding_;
+  int text_height = GetTextHeight();
+  int text_width;
 
   if (match_.associated_keyword.get()) {
     const int kw_collapsed_size =
@@ -584,14 +586,16 @@ void OmniboxResultView::Layout() {
     const int kw_text_x = kw_x + keyword_icon_->width() + item_padding_;
 
     text_width = kw_x - text_x - item_padding_;
-    keyword_text_bounds_.SetRect(
-        kw_text_x, 0,
-        std::max(width() - kw_text_x - edge_item_padding_, 0), height());
-    keyword_icon_->SetPosition(
-        gfx::Point(kw_x, (height() - keyword_icon_->height()) / 2));
+    keyword_text_bounds_.SetRect(kw_text_x, 0,
+        std::max(width() - kw_text_x - edge_item_padding_, 0), text_height);
+    keyword_icon_->SetPosition(gfx::Point(kw_x,
+        (height() - keyword_icon_->height()) / 2));
+  } else {
+    text_width = width() - text_x - edge_item_padding_;
   }
 
-  text_bounds_.SetRect(text_x, 0, std::max(text_width, 0), height());
+  text_bounds_.SetRect(text_x, std::max(0, (height() - text_height) / 2),
+      std::max(text_width, 0), text_height);
 }
 
 void OmniboxResultView::OnBoundsChanged(const gfx::Rect& previous_bounds) {

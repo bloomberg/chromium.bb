@@ -5,7 +5,6 @@
 #include "ui/gfx/render_text.h"
 
 #include <algorithm>
-#include <limits>
 
 #include "base/i18n/break_iterator.h"
 #include "base/logging.h"
@@ -44,28 +43,6 @@ const SkScalar kUnderlineOffset = (SK_Scalar1 / 9);
 const SkScalar kLineThickness = (SK_Scalar1 / 18);
 // Fraction of the text size to use for a top margin of a diagonal strike.
 const SkScalar kDiagonalStrikeMarginOffset = (SK_Scalar1 / 4);
-
-// Invalid value of baseline.  Assigning this value to |baseline_| causes
-// re-calculation of baseline.
-const int kInvalidBaseline = std::numeric_limits<int>::max();
-
-// Returns the baseline, with which the text best appears vertically centered.
-int DetermineBaselineCenteringText(const Rect& display_rect,
-                                   const FontList& font_list) {
-  const int display_height = display_rect.height();
-  const int font_height = font_list.GetHeight();
-  // Lower and upper bound of baseline shift as we try to show as much area of
-  // text as possible.  In particular case of |display_height| == |font_height|,
-  // we do not want to shift the baseline.
-  const int min_shift = std::min(0, display_height - font_height);
-  const int max_shift = std::abs(display_height - font_height);
-  const int baseline = font_list.GetBaseline();
-  const int cap_height = font_list.GetCapHeight();
-  const int internal_leading = baseline - cap_height;
-  const int baseline_shift =
-      (display_height - cap_height) / 2 - internal_leading;
-  return baseline + std::max(min_shift, std::min(max_shift, baseline_shift));
-}
 
 // Converts |gfx::Font::FontStyle| flags to |SkTypeface::Style| flags.
 SkTypeface::Style ConvertFontStyleToSkiaTypefaceStyle(int font_style) {
@@ -371,9 +348,16 @@ void RenderText::SetHorizontalAlignment(HorizontalAlignment alignment) {
   }
 }
 
+void RenderText::SetVerticalAlignment(VerticalAlignment alignment) {
+  if (vertical_alignment_ != alignment) {
+    vertical_alignment_ = alignment;
+    display_offset_ = Vector2d();
+    cached_bounds_and_offset_valid_ = false;
+  }
+}
+
 void RenderText::SetFontList(const FontList& font_list) {
   font_list_ = font_list;
-  baseline_ = kInvalidBaseline;
   cached_bounds_and_offset_valid_ = false;
   ResetLayout();
 }
@@ -430,7 +414,6 @@ void RenderText::SetMultiline(bool multiline) {
 
 void RenderText::SetDisplayRect(const Rect& r) {
   display_rect_ = r;
-  baseline_ = kInvalidBaseline;
   cached_bounds_and_offset_valid_ = false;
   lines_.clear();
 }
@@ -670,13 +653,6 @@ int RenderText::GetContentWidth() {
   return GetStringSize().width() + (cursor_enabled_ ? 1 : 0);
 }
 
-int RenderText::GetBaseline() {
-  if (baseline_ == kInvalidBaseline)
-    baseline_ = DetermineBaselineCenteringText(display_rect(), font_list());
-  DCHECK_NE(kInvalidBaseline, baseline_);
-  return baseline_;
-}
-
 void RenderText::Draw(Canvas* canvas) {
   EnsureLayout();
 
@@ -808,6 +784,7 @@ void RenderText::SetTextShadows(const ShadowValues& shadows) {
 
 RenderText::RenderText()
     : horizontal_alignment_(base::i18n::IsRTL() ? ALIGN_RIGHT : ALIGN_LEFT),
+      vertical_alignment_(ALIGN_VCENTER),
       directionality_mode_(DIRECTIONALITY_FROM_TEXT),
       text_direction_(base::i18n::UNKNOWN_DIRECTION),
       cursor_enabled_(true),
@@ -829,7 +806,6 @@ RenderText::RenderText()
       fade_tail_(false),
       background_is_transparent_(false),
       clip_to_display_rect_(true),
-      baseline_(kInvalidBaseline),
       cached_bounds_and_offset_valid_(false) {
 }
 
@@ -993,7 +969,11 @@ Vector2d RenderText::GetAlignmentOffset(size_t line_number) {
     if (horizontal_alignment_ == ALIGN_CENTER)
       offset.set_x(offset.x() / 2);
   }
-  offset.set_y(GetBaseline() - GetLayoutTextBaseline());
+  if (vertical_alignment_ != ALIGN_TOP) {
+    offset.set_y(display_rect().height() - GetStringSize().height());
+    if (vertical_alignment_ == ALIGN_VCENTER)
+      offset.set_y(offset.y() / 2);
+  }
   return offset;
 }
 

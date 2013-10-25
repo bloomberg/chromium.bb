@@ -157,6 +157,12 @@ class VIEWS_EXPORT Textfield : public View {
   // NOTE: in most cases height could be changed instead.
   void SetVerticalMargins(int top, int bottom);
 
+  // Set the text vertical alignment.  Text is vertically centered by default.
+  gfx::VerticalAlignment vertical_alignment() const {
+    return vertical_alignment_;
+  }
+  void SetVerticalAlignment(gfx::VerticalAlignment alignment);
+
   // Sets the default width of the text control. See default_width_in_chars_.
   void set_default_width_in_chars(int default_width) {
     default_width_in_chars_ = default_width;
@@ -327,6 +333,9 @@ class VIEWS_EXPORT Textfield : public View {
   // Holds whether margins were set.
   bool horizontal_margins_were_set_;
   bool vertical_margins_were_set_;
+
+  // The vertical alignment of text in the Textfield.
+  gfx::VerticalAlignment vertical_alignment_;
 
   // Text to display when empty.
   string16 placeholder_text_;

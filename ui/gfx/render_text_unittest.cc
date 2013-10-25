@@ -1139,7 +1139,6 @@ TEST_F(RenderTextTest, StringSizeEmptyString) {
   const FontList font_list("Arial,Symbol, 16px");
   scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
   render_text->SetFontList(font_list);
-  render_text->SetDisplayRect(Rect(0, 0, 0, font_list.GetHeight()));
 
   // The empty string respects FontList metrics for non-zero height
   // and baseline.
@@ -1181,9 +1180,7 @@ TEST_F(RenderTextTest, StringSizeRespectsFontListMetrics) {
   // Check |smaller_font_text| is rendered with the smaller font.
   scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
   render_text->SetText(UTF8ToUTF16(smaller_font_text));
-  render_text->SetFontList(FontList(smaller_font));
-  render_text->SetDisplayRect(Rect(0, 0, 0,
-                                   render_text->font_list().GetHeight()));
+  render_text->SetFont(smaller_font);
   EXPECT_EQ(smaller_font.GetHeight(), render_text->GetStringSize().height());
   EXPECT_EQ(smaller_font.GetBaseline(), render_text->GetBaseline());
 
@@ -1195,8 +1192,6 @@ TEST_F(RenderTextTest, StringSizeRespectsFontListMetrics) {
   fonts.push_back(larger_font);
   const FontList font_list(fonts);
   render_text->SetFontList(font_list);
-  render_text->SetDisplayRect(Rect(0, 0, 0,
-                                   render_text->font_list().GetHeight()));
   EXPECT_LT(smaller_font.GetHeight(), render_text->GetStringSize().height());
   EXPECT_LT(smaller_font.GetBaseline(), render_text->GetBaseline());
   EXPECT_EQ(font_list.GetHeight(), render_text->GetStringSize().height());
@@ -1298,19 +1293,21 @@ TEST_F(RenderTextTest, GetTextOffset) {
 
   // Set display area's size equal to the font size.
   const Size font_size(render_text->GetContentWidth(),
-                       render_text->font_list().GetHeight());
+                       render_text->GetStringSize().height());
   Rect display_rect(font_size);
   render_text->SetDisplayRect(display_rect);
 
   Vector2d offset = render_text->GetLineOffset(0);
   EXPECT_TRUE(offset.IsZero());
 
-  const int kEnlargementX = 2;
-  display_rect.Inset(0, 0, -kEnlargementX, 0);
+  // Set display area's size greater than font size.
+  const int kEnlargement = 2;
+  display_rect.Inset(0, 0, -kEnlargement, -kEnlargement);
   render_text->SetDisplayRect(display_rect);
 
-  // Check the default horizontal alignment.
+  // Check the default horizontal and vertical alignment.
   offset = render_text->GetLineOffset(0);
+  EXPECT_EQ(kEnlargement / 2, offset.y());
   EXPECT_EQ(0, offset.x());
 
   // Check explicitly setting the horizontal alignment.
@@ -1319,20 +1316,21 @@ TEST_F(RenderTextTest, GetTextOffset) {
   EXPECT_EQ(0, offset.x());
   render_text->SetHorizontalAlignment(ALIGN_CENTER);
   offset = render_text->GetLineOffset(0);
-  EXPECT_EQ(kEnlargementX / 2, offset.x());
+  EXPECT_EQ(kEnlargement / 2, offset.x());
   render_text->SetHorizontalAlignment(ALIGN_RIGHT);
   offset = render_text->GetLineOffset(0);
-  EXPECT_EQ(kEnlargementX, offset.x());
+  EXPECT_EQ(kEnlargement, offset.x());
 
-  // Check that text is vertically centered within taller display rects.
-  const int kEnlargementY = display_rect.height();
-  display_rect.Inset(0, 0, 0, -kEnlargementY);
-  render_text->SetDisplayRect(display_rect);
-  const Vector2d prev_offset = render_text->GetLineOffset(0);
-  display_rect.Inset(0, 0, 0, -2 * kEnlargementY);
-  render_text->SetDisplayRect(display_rect);
+  // Check explicitly setting the vertical alignment.
+  render_text->SetVerticalAlignment(ALIGN_TOP);
   offset = render_text->GetLineOffset(0);
-  EXPECT_EQ(prev_offset.y() + kEnlargementY, offset.y());
+  EXPECT_EQ(0, offset.y());
+  render_text->SetVerticalAlignment(ALIGN_VCENTER);
+  offset = render_text->GetLineOffset(0);
+  EXPECT_EQ(kEnlargement / 2, offset.y());
+  render_text->SetVerticalAlignment(ALIGN_BOTTOM);
+  offset = render_text->GetLineOffset(0);
+  EXPECT_EQ(kEnlargement, offset.y());
 
   SetRTL(was_rtl);
 }

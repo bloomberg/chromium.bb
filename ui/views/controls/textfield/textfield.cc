@@ -91,6 +91,7 @@ Textfield::Textfield()
       use_default_background_color_(true),
       horizontal_margins_were_set_(false),
       vertical_margins_were_set_(false),
+      vertical_alignment_(gfx::ALIGN_VCENTER),
       placeholder_text_color_(kDefaultPlaceholderTextColor),
       text_input_type_(ui::TEXT_INPUT_TYPE_TEXT),
       weak_ptr_factory_(this) {
@@ -116,6 +117,7 @@ Textfield::Textfield(StyleFlags style)
       use_default_background_color_(true),
       horizontal_margins_were_set_(false),
       vertical_margins_were_set_(false),
+      vertical_alignment_(gfx::ALIGN_VCENTER),
       placeholder_text_color_(kDefaultPlaceholderTextColor),
       text_input_type_(ui::TEXT_INPUT_TYPE_TEXT),
       weak_ptr_factory_(this) {
@@ -305,6 +307,12 @@ void Textfield::SetVerticalMargins(int top, int bottom) {
   PreferredSizeChanged();
 }
 
+void Textfield::SetVerticalAlignment(gfx::VerticalAlignment alignment) {
+  vertical_alignment_ = alignment;
+  if (native_wrapper_)
+    native_wrapper_->UpdateVerticalAlignment();
+}
+
 void Textfield::RemoveBorder() {
   if (!draw_border_)
     return;
@@ -348,6 +356,7 @@ void Textfield::UpdateAllProperties() {
     native_wrapper_->UpdateIsObscured();
     native_wrapper_->UpdateHorizontalMargins();
     native_wrapper_->UpdateVerticalMargins();
+    native_wrapper_->UpdateVerticalAlignment();
   }
 }
 

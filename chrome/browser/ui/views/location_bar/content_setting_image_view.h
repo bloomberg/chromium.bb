@@ -39,6 +39,7 @@ class ContentSettingImageView : public gfx::AnimationDelegate,
   ContentSettingImageView(ContentSettingsType content_type,
                           LocationBarView* parent,
                           const gfx::FontList& font_list,
+                          int font_y_offset,
                           SkColor text_color,
                           SkColor parent_background_color);
   virtual ~ContentSettingImageView();

@@ -130,7 +130,8 @@ OmniboxViewViews::OmniboxViewViews(OmniboxEditController* controller,
                                    CommandUpdater* command_updater,
                                    bool popup_window_mode,
                                    LocationBarView* location_bar,
-                                   const gfx::FontList& font_list)
+                                   const gfx::FontList& font_list,
+                                   int font_y_offset)
     : OmniboxView(profile, controller, command_updater),
       popup_window_mode_(popup_window_mode),
       security_level_(ToolbarModel::NONE),
@@ -144,6 +145,8 @@ OmniboxViewViews::OmniboxViewViews(OmniboxEditController* controller,
   RemoveBorder();
   set_id(VIEW_ID_OMNIBOX);
   SetFontList(font_list);
+  SetVerticalMargins(font_y_offset, 0);
+  SetVerticalAlignment(gfx::ALIGN_TOP);
 }
 
 OmniboxViewViews::~OmniboxViewViews() {

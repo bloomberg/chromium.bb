@@ -93,9 +93,9 @@ TEST_F(FontTest, CapHeight) {
   EXPECT_GT(cf.GetCapHeight(), 0);
   EXPECT_GT(cf.GetCapHeight(), cf.GetHeight() / 2);
 #if defined(OS_CHROMEOS) || defined(OS_LINUX)
-  EXPECT_EQ(cf.GetCapHeight(), cf.GetBaseline());
+  EXPECT_EQ(cf.GetCapHeight(), cf.GetHeight());
 #else
-  EXPECT_LT(cf.GetCapHeight(), cf.GetBaseline());
+  EXPECT_LT(cf.GetCapHeight(), cf.GetHeight());
 #endif
 }
 

@@ -302,6 +302,12 @@ void NativeTextfieldWin::UpdateVerticalMargins() {
   NOTIMPLEMENTED();
 }
 
+void NativeTextfieldWin::UpdateVerticalAlignment() {
+  // Default alignment is vertically centered.
+  if (textfield_->vertical_alignment() != gfx::ALIGN_VCENTER)
+    NOTIMPLEMENTED();
+}
+
 bool NativeTextfieldWin::SetFocus() {
   // Focus the associated HWND.
   //container_view_->Focus();
