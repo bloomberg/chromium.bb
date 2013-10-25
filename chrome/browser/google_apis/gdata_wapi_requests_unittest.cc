@@ -39,8 +39,7 @@ const char kTestDownloadPathPrefix[] = "/download/";
 
 class GDataWapiRequestsTest : public testing::Test {
  public:
-  GDataWapiRequestsTest()
-      : test_server_(message_loop_.message_loop_proxy()) {
+  GDataWapiRequestsTest() {
   }
 
   virtual void SetUp() OVERRIDE {

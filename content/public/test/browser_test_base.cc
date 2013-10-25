@@ -114,8 +114,7 @@ class LocalHostResolverProc : public net::HostResolverProc {
 extern int BrowserMain(const MainFunctionParams&);
 
 BrowserTestBase::BrowserTestBase()
-    : embedded_test_server_io_thread_("EmbeddedTestServer io thread"),
-      allow_test_contexts_(true),
+    : allow_test_contexts_(true),
       allow_osmesa_(true) {
 #if defined(OS_MACOSX)
   base::mac::SetOverrideAmIBundled(true);
@@ -126,15 +125,7 @@ BrowserTestBase::BrowserTestBase()
   handle_sigterm_ = true;
 #endif
 
-  // Create a separate thread for the test server to run on. It's tempting to
-  // use actual browser threads, but that doesn't work for cases where the test
-  // server needs to be started before the browser, for example when the server
-  // URL should be passed in command-line parameters.
-  base::Thread::Options thread_options;
-  thread_options.message_loop_type = base::MessageLoop::TYPE_IO;
-  CHECK(embedded_test_server_io_thread_.StartWithOptions(thread_options));
-  embedded_test_server_.reset(new net::test_server::EmbeddedTestServer(
-      embedded_test_server_io_thread_.message_loop_proxy()));
+  embedded_test_server_.reset(new net::test_server::EmbeddedTestServer);
 }
 
 BrowserTestBase::~BrowserTestBase() {

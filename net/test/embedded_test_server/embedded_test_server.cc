@@ -99,13 +99,15 @@ HttpListenSocket::~HttpListenSocket() {
   DCHECK(thread_checker_.CalledOnValidThread());
 }
 
-EmbeddedTestServer::EmbeddedTestServer(
-    const scoped_refptr<base::SingleThreadTaskRunner>& io_thread)
-    : io_thread_(io_thread),
+EmbeddedTestServer::EmbeddedTestServer()
+    : io_thread_("EmbeddedTestServer io thread"),
       port_(-1),
       weak_factory_(this) {
-  DCHECK(io_thread_.get());
   DCHECK(thread_checker_.CalledOnValidThread());
+
+  base::Thread::Options thread_options;
+  thread_options.message_loop_type = base::MessageLoop::TYPE_IO;
+  CHECK(io_thread_.StartWithOptions(thread_options));
 }
 
 EmbeddedTestServer::~EmbeddedTestServer() {
@@ -135,7 +137,7 @@ bool EmbeddedTestServer::ShutdownAndWaitUntilComplete() {
 }
 
 void EmbeddedTestServer::InitializeOnIOThread() {
-  DCHECK(io_thread_->BelongsToCurrentThread());
+  DCHECK(io_thread_.message_loop_proxy()->BelongsToCurrentThread());
   DCHECK(!Started());
 
   SocketDescriptor socket_descriptor =
@@ -156,7 +158,7 @@ void EmbeddedTestServer::InitializeOnIOThread() {
 }
 
 void EmbeddedTestServer::ShutdownOnIOThread() {
-  DCHECK(io_thread_->BelongsToCurrentThread());
+  DCHECK(io_thread_.message_loop_proxy()->BelongsToCurrentThread());
 
   listen_socket_.reset();
   STLDeleteContainerPairSecondPointers(connections_.begin(),
@@ -166,7 +168,7 @@ void EmbeddedTestServer::ShutdownOnIOThread() {
 
 void EmbeddedTestServer::HandleRequest(HttpConnection* connection,
                                scoped_ptr<HttpRequest> request) {
-  DCHECK(io_thread_->BelongsToCurrentThread());
+  DCHECK(io_thread_.message_loop_proxy()->BelongsToCurrentThread());
 
   bool request_handled = false;
 
@@ -215,7 +217,7 @@ void EmbeddedTestServer::RegisterRequestHandler(
 void EmbeddedTestServer::DidAccept(
     StreamListenSocket* server,
     scoped_ptr<StreamListenSocket> connection) {
-  DCHECK(io_thread_->BelongsToCurrentThread());
+  DCHECK(io_thread_.message_loop_proxy()->BelongsToCurrentThread());
 
   HttpConnection* http_connection = new HttpConnection(
       connection.Pass(),
@@ -228,7 +230,7 @@ void EmbeddedTestServer::DidAccept(
 void EmbeddedTestServer::DidRead(StreamListenSocket* connection,
                          const char* data,
                          int length) {
-  DCHECK(io_thread_->BelongsToCurrentThread());
+  DCHECK(io_thread_.message_loop_proxy()->BelongsToCurrentThread());
 
   HttpConnection* http_connection = FindConnection(connection);
   if (http_connection == NULL) {
@@ -239,7 +241,7 @@ void EmbeddedTestServer::DidRead(StreamListenSocket* connection,
 }
 
 void EmbeddedTestServer::DidClose(StreamListenSocket* connection) {
-  DCHECK(io_thread_->BelongsToCurrentThread());
+  DCHECK(io_thread_.message_loop_proxy()->BelongsToCurrentThread());
 
   HttpConnection* http_connection = FindConnection(connection);
   if (http_connection == NULL) {
@@ -252,7 +254,7 @@ void EmbeddedTestServer::DidClose(StreamListenSocket* connection) {
 
 HttpConnection* EmbeddedTestServer::FindConnection(
     StreamListenSocket* socket) {
-  DCHECK(io_thread_->BelongsToCurrentThread());
+  DCHECK(io_thread_.message_loop_proxy()->BelongsToCurrentThread());
 
   std::map<StreamListenSocket*, HttpConnection*>::iterator it =
       connections_.find(socket);
@@ -277,8 +279,10 @@ bool EmbeddedTestServer::PostTaskToIOThreadAndWait(
     temporary_loop.reset(new base::MessageLoop());
 
   base::RunLoop run_loop;
-  if (!io_thread_->PostTaskAndReply(FROM_HERE, closure, run_loop.QuitClosure()))
+  if (!io_thread_.message_loop_proxy()->PostTaskAndReply(
+          FROM_HERE, closure, run_loop.QuitClosure())) {
     return false;
+  }
   run_loop.Run();
 
   return true;

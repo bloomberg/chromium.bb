@@ -44,10 +44,7 @@ class PDFBrowserTest : public InProcessBrowserTest,
   PDFBrowserTest()
       : snapshot_different_(true),
         next_dummy_search_value_(0),
-        load_stop_notification_count_(0),
-        pdf_test_server_(
-            content::BrowserThread::GetMessageLoopProxyForThread(
-                content::BrowserThread::IO)) {
+        load_stop_notification_count_(0) {
     pdf_test_server_.ServeFilesFromDirectory(
         base::FilePath(FILE_PATH_LITERAL("pdf/test")));
   }

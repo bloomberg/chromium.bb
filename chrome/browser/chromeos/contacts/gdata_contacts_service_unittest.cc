@@ -78,10 +78,7 @@ class GDataContactsServiceTest : public testing::Test {
         content::BrowserThread::GetMessageLoopProxyForThread(
             content::BrowserThread::IO));
 
-    test_server_.reset(
-        new net::test_server::EmbeddedTestServer(
-            content::BrowserThread::GetMessageLoopProxyForThread(
-                content::BrowserThread::IO)));
+    test_server_.reset(new net::test_server::EmbeddedTestServer);
     ASSERT_TRUE(test_server_->InitializeAndWaitUntilReady());
     test_server_->RegisterRequestHandler(
         base::Bind(&GDataContactsServiceTest::HandleDownloadRequest,
@@ -156,7 +153,6 @@ class GDataContactsServiceTest : public testing::Test {
   // returns the content.
   scoped_ptr<net::test_server::HttpResponse> HandleDownloadRequest(
       const net::test_server::HttpRequest& request) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
     // Requested url must not contain a query string.
     scoped_ptr<net::test_server::BasicHttpResponse> result =
         google_apis::test_util::CreateHttpResponseFromFile(

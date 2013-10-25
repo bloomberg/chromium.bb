@@ -53,8 +53,7 @@ void AppendContent(std::string* out,
 
 class DriveApiRequestsTest : public testing::Test {
  public:
-  DriveApiRequestsTest()
-      : test_server_(message_loop_.message_loop_proxy()) {
+  DriveApiRequestsTest() {
   }
 
   virtual void SetUp() OVERRIDE {

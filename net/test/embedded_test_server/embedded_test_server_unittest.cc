@@ -57,7 +57,7 @@ class EmbeddedTestServerTest: public testing::Test,
     request_context_getter_ = new TestURLRequestContextGetter(
         io_thread_.message_loop_proxy());
 
-    server_.reset(new EmbeddedTestServer(io_thread_.message_loop_proxy()));
+    server_.reset(new EmbeddedTestServer);
     ASSERT_TRUE(server_->InitializeAndWaitUntilReady());
   }
 
@@ -273,7 +273,7 @@ class EmbeddedTestServerThreadingTestDelegate
       loop.reset(new base::MessageLoop(base::MessageLoop::TYPE_IO));
 
     // Create the test server instance.
-    EmbeddedTestServer server(io_thread_runner);
+    EmbeddedTestServer server;
     base::FilePath src_dir;
     ASSERT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &src_dir));
     ASSERT_TRUE(server.InitializeAndWaitUntilReady());

@@ -170,8 +170,7 @@ class PeopleProviderTest : public InProcessBrowserTest {
   }
 
   virtual void SetUpOnMainThread() OVERRIDE {
-    test_server_.reset(new EmbeddedTestServer(
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO)));
+    test_server_.reset(new EmbeddedTestServer);
 
     ASSERT_TRUE(test_server_->InitializeAndWaitUntilReady());
     test_server_->RegisterRequestHandler(

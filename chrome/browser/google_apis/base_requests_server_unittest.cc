@@ -30,8 +30,7 @@ const char kTestUserAgent[] = "test-user-agent";
 
 class BaseRequestsServerTest : public testing::Test {
  protected:
-  BaseRequestsServerTest()
-      : test_server_(message_loop_.message_loop_proxy()) {
+  BaseRequestsServerTest() {
   }
 
   virtual void SetUp() OVERRIDE {

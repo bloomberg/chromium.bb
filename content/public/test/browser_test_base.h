@@ -133,7 +133,6 @@ class BrowserTestBase : public testing::Test {
   scoped_ptr<net::SpawnedTestServer> test_server_;
 
   // Embedded test server, cheap to create, started on demand.
-  base::Thread embedded_test_server_io_thread_;
   scoped_ptr<net::test_server::EmbeddedTestServer> embedded_test_server_;
 
   // Host resolver used during tests.

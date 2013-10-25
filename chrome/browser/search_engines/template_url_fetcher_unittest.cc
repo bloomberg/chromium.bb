@@ -108,10 +108,7 @@ void TemplateURLFetcherTestCallbacks::ConfirmAddSearchProvider(
 }
 
 TemplateURLFetcherTest::TemplateURLFetcherTest()
-    : test_server_(
-        content::BrowserThread::GetMessageLoopProxyForThread(
-            content::BrowserThread::IO)),
-      callbacks_destroyed_(0),
+    : callbacks_destroyed_(0),
       add_provider_called_(0),
       waiting_for_download_(false) {
   base::FilePath src_dir;

@@ -97,9 +97,7 @@ class StreamsPrivateApiTest : public ExtensionApiTest {
 
   virtual void SetUpOnMainThread() OVERRIDE {
     // Init test server.
-    test_server_.reset(new EmbeddedTestServer(
-                           content::BrowserThread::GetMessageLoopProxyForThread(
-                               content::BrowserThread::IO)));
+    test_server_.reset(new EmbeddedTestServer);
     ASSERT_TRUE(test_server_->InitializeAndWaitUntilReady());
     test_server_->RegisterRequestHandler(base::Bind(&HandleRequest));
 

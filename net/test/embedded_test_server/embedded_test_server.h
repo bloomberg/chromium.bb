@@ -14,6 +14,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/threading/thread.h"
 #include "base/threading/thread_checker.h"
 #include "net/socket/tcp_listen_socket.h"
 #include "url/gurl.h"
@@ -81,11 +82,9 @@ class EmbeddedTestServer : public StreamListenSocket::Delegate {
   typedef base::Callback<scoped_ptr<HttpResponse>(
       const HttpRequest& request)> HandleRequestCallback;
 
-  // Creates a http test server. |io_thread| is a task runner
-  // with IO message loop, used as a backend thread.
-  // InitializeAndWaitUntilReady() must be called to start the server.
-  explicit EmbeddedTestServer(
-      const scoped_refptr<base::SingleThreadTaskRunner>& io_thread);
+  // Creates a http test server. InitializeAndWaitUntilReady() must be called
+  // to start the server.
+  EmbeddedTestServer();
   virtual ~EmbeddedTestServer();
 
   // Initializes and waits until the server is ready to accept requests.
@@ -150,7 +149,7 @@ class EmbeddedTestServer : public StreamListenSocket::Delegate {
   bool PostTaskToIOThreadAndWait(
       const base::Closure& closure) WARN_UNUSED_RESULT;
 
-  scoped_refptr<base::SingleThreadTaskRunner> io_thread_;
+  base::Thread io_thread_;
 
   scoped_ptr<HttpListenSocket> listen_socket_;
   int port_;
