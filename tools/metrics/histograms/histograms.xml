@@ -18148,6 +18148,13 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Tabs.SpeculativeRestoreTargetStatus"
+    enum="SpeculativeRestoreTabStatus">
+  <summary>
+    Status of a tab recorded when the tab is targeted with speculative restore.
+  </summary>
+</histogram>
+
 <histogram name="Tabs.SpeculativeRestoreTimeAhead.SideSwipe" units="ms">
   <summary>
     Time between starting the speculative load and actual tab switch for correct
@@ -27028,6 +27035,11 @@ other types of suffix sets.
   <int value="0" label="Hit"/>
   <int value="1" label="Miss (different tab)"/>
   <int value="2" label="Miss (tab not switched)"/>
+</enum>
+
+<enum name="SpeculativeRestoreTabStatus" type="int">
+  <int value="0" label="Already loaded"/>
+  <int value="1" label="Needs restore"/>
 </enum>
 
 <enum name="SqliteErrorCode" type="int">
