@@ -245,7 +245,11 @@ class FaviconHandler {
   // Returns the preferred_icon_size according icon_types_, 0 means no
   // preference.
   int preferred_icon_size() {
+#if defined(OS_ANDROID)
+    return 0;
+#else
     return icon_types_ == chrome::FAVICON ? gfx::kFaviconSize : 0;
+#endif
   }
 
   // Used for FaviconService requests.

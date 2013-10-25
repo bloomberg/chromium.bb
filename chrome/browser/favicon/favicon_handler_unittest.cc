@@ -974,6 +974,8 @@ TEST_F(FaviconHandlerTest, UpdateDuringDownloading) {
   EXPECT_FALSE(download_handler->HasDownload());
 }
 
+#if !defined(OS_ANDROID)
+
 // Test the favicon which is selected when the web page provides several
 // favicons and none of the favicons are cached in history.
 // The goal of this test is to be more of an integration test than
@@ -1062,6 +1064,8 @@ TEST_F(FaviconHandlerTest, MultipleFavicons) {
   EXPECT_EQ(kSourceIconURLs[expected_index].icon_url,
             handler4.GetEntry()->GetFavicon().url);
 }
+
+#endif
 
 static BrowserContextKeyedService* BuildFaviconService(
     content::BrowserContext* profile) {
