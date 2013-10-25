@@ -4,7 +4,9 @@
 
 #include "chrome/browser/chromeos/app_mode/app_session_lifetime.h"
 
+#include "apps/shell_window.h"
 #include "apps/shell_window_registry.h"
+#include "ash/wm/window_state.h"
 #include "base/basictypes.h"
 #include "base/lazy_instance.h"
 #include "base/prefs/pref_service.h"
@@ -21,12 +23,14 @@ namespace chromeos {
 
 namespace {
 
-// AppWindowWatcher watches for app window and exits the session when the
-// last app window is closed.
-class AppWindowWatcher : public ShellWindowRegistry::Observer {
+// AppWindowHandler watches for app window and exits the session when the
+// last app window is closed. It also initializes the kiosk app window so
+// that it receives all function keys as a temp solution before underlying
+// http:://crbug.com/166928 is fixed..
+class AppWindowHandler : public ShellWindowRegistry::Observer {
  public:
-  AppWindowWatcher() : window_registry_(NULL) {}
-  virtual ~AppWindowWatcher() {}
+  AppWindowHandler() : window_registry_(NULL) {}
+  virtual ~AppWindowHandler() {}
 
   void Init(Profile* profile) {
     DCHECK(!window_registry_);
@@ -37,7 +41,13 @@ class AppWindowWatcher : public ShellWindowRegistry::Observer {
 
  private:
   // apps::ShellWindowRegistry::Observer overrides:
-  virtual void OnShellWindowAdded(apps::ShellWindow* shell_window) OVERRIDE {}
+  virtual void OnShellWindowAdded(apps::ShellWindow* shell_window) OVERRIDE {
+    // Set flags to allow kiosk app to receive all function keys.
+    // TODO(xiyuan): Remove this after http:://crbug.com/166928.
+    ash::wm::WindowState* window_state =
+        ash::wm::GetWindowState(shell_window->GetNativeWindow());
+    window_state->set_top_row_keys_are_function_keys(true);
+  }
   virtual void OnShellWindowIconChanged(apps::ShellWindow* shell_window)
     OVERRIDE {}
   virtual void OnShellWindowRemoved(apps::ShellWindow* shell_window) OVERRIDE {
@@ -49,18 +59,18 @@ class AppWindowWatcher : public ShellWindowRegistry::Observer {
 
   apps::ShellWindowRegistry* window_registry_;
 
-  DISALLOW_COPY_AND_ASSIGN(AppWindowWatcher);
+  DISALLOW_COPY_AND_ASSIGN(AppWindowHandler);
 };
 
-base::LazyInstance<AppWindowWatcher> app_window_watcher
+base::LazyInstance<AppWindowHandler> app_window_handler
     = LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 
 void InitAppSession(Profile* profile, const std::string& app_id) {
   // Binds the session lifetime with app window counts.
-  CHECK(app_window_watcher == NULL);
-  app_window_watcher.Get().Init(profile);
+  CHECK(app_window_handler == NULL);
+  app_window_handler.Get().Init(profile);
 
   // Set the app_id for the current instance of KioskAppUpdateService.
   KioskAppUpdateService* update_service =
