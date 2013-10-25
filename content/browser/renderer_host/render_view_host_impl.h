@@ -392,7 +392,7 @@ class CONTENT_EXPORT RenderViewHostImpl
 
 #if defined(OS_ANDROID)
   BrowserMediaPlayerManager* media_player_manager() {
-    return media_player_manager_;
+    return media_player_manager_.get();
   }
 
   void DidSelectPopupMenuItems(const std::vector<int>& selected_indices);
@@ -723,8 +723,7 @@ class CONTENT_EXPORT RenderViewHostImpl
 
 #if defined(OS_ANDROID)
   // Manages all the android mediaplayer objects and handling IPCs for video.
-  // This class inherits from RenderViewHostObserver.
-  BrowserMediaPlayerManager* media_player_manager_;
+  scoped_ptr<BrowserMediaPlayerManager> media_player_manager_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(RenderViewHostImpl);

@@ -197,7 +197,7 @@ RenderViewHostImpl::RenderViewHostImpl(
     instance_->increment_active_view_count();
 
 #if defined(OS_ANDROID)
-  media_player_manager_ = BrowserMediaPlayerManager::Create(this);
+  media_player_manager_.reset(BrowserMediaPlayerManager::Create(this));
 #endif
 }
 
