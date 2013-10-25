@@ -76,6 +76,7 @@ class CalledByNative(object):
     self.name = kwargs['name']
     self.params = kwargs['params']
     self.method_id_var_name = kwargs.get('method_id_var_name', None)
+    self.signature = kwargs.get('signature')
     self.is_constructor = kwargs.get('is_constructor', False)
     self.env_call = GetEnvCall(self.is_constructor, self.static,
                                self.return_type)
@@ -139,6 +140,11 @@ class JniParams(object):
       if not JniParams._fully_qualified_class.endswith(inner):
         JniParams._inner_classes += [JniParams._fully_qualified_class + '$' +
                                      inner]
+
+  @staticmethod
+  def ParseJavaPSignature(signature_line):
+    prefix = 'Signature: '
+    return '"%s"' % signature_line[signature_line.index(prefix) + len(prefix):]
 
   @staticmethod
   def JavaToJni(param):
@@ -466,7 +472,7 @@ class JNIFromJavaP(object):
     re_method = re.compile('(?P<prefix>.*?)(?P<return_type>\S+?) (?P<name>\w+?)'
                            '\((?P<params>.*?)\)')
     self.called_by_natives = []
-    for content in contents[2:]:
+    for lineno, content in enumerate(contents[2:], 2):
       match = re.match(re_method, content)
       if not match:
         continue
@@ -477,11 +483,12 @@ class JNIFromJavaP(object):
           java_class_name='',
           return_type=match.group('return_type').replace('.', '/'),
           name=match.group('name'),
-          params=JniParams.Parse(match.group('params').replace('.', '/')))]
-    re_constructor = re.compile('.*? public ' +
+          params=JniParams.Parse(match.group('params').replace('.', '/')),
+          signature=JniParams.ParseJavaPSignature(contents[lineno + 1]))]
+    re_constructor = re.compile('(.*?)public ' +
                                 self.fully_qualified_class.replace('/', '.') +
                                 '\((?P<params>.*?)\)')
-    for content in contents[2:]:
+    for lineno, content in enumerate(contents[2:], 2):
       match = re.match(re_constructor, content)
       if not match:
         continue
@@ -493,6 +500,7 @@ class JNIFromJavaP(object):
           return_type=self.fully_qualified_class,
           name='Constructor',
           params=JniParams.Parse(match.group('params').replace('.', '/')),
+          signature=JniParams.ParseJavaPSignature(contents[lineno + 1]),
           is_constructor=True)]
     self.called_by_natives = MangleCalledByNatives(self.called_by_natives)
     self.inl_header_file_generator = InlHeaderFileGenerator(
@@ -505,7 +513,7 @@ class JNIFromJavaP(object):
   @staticmethod
   def CreateFromClass(class_file, options):
     class_name = os.path.splitext(os.path.basename(class_file))[0]
-    p = subprocess.Popen(args=['javap', class_name],
+    p = subprocess.Popen(args=['javap', '-s', class_name],
                          cwd=os.path.dirname(class_file),
                          stdout=subprocess.PIPE,
                          stderr=subprocess.PIPE)
@@ -931,14 +939,18 @@ jclass g_${JAVA_CLASS}_clazz = NULL;""")
     if called_by_native.is_constructor:
       jni_name = '<init>'
       jni_return_type = 'void'
+    if called_by_native.signature:
+      signature = called_by_native.signature
+    else:
+      signature = JniParams.Signature(called_by_native.params,
+                                      jni_return_type,
+                                      True)
     values = {
         'JAVA_CLASS': called_by_native.java_class_name or self.class_name,
         'JNI_NAME': jni_name,
         'METHOD_ID_VAR_NAME': called_by_native.method_id_var_name,
         'STATIC': 'STATIC' if called_by_native.static else 'INSTANCE',
-        'JNI_SIGNATURE': JniParams.Signature(called_by_native.params,
-                                             jni_return_type,
-                                             True)
+        'JNI_SIGNATURE': signature,
     }
     return template.substitute(values)
 

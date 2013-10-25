@@ -1583,6 +1583,7 @@ import org.chromium.base.BuildInfo;
 public abstract class java.util.HashSet<T> extends java.util.AbstractSet<E>
       implements java.util.Set<E>, java.lang.Cloneable, java.io.Serializable {
     public void dummy();
+  Signature: ()V
 }
 """
     jni_from_javap = jni_generator.JNIFromJavaP(contents.split('\n'),
@@ -1632,10 +1633,7 @@ static void Java_HashSet_dummy(JNIEnv* env, jobject obj) {
       base::android::MethodID::TYPE_INSTANCE>(
       env, g_HashSet_clazz,
       "dummy",
-
-"("
-")"
-"V",
+"()V",
       &g_HashSet_dummy);
 
   env->CallVoidMethod(obj,
@@ -1658,20 +1656,55 @@ static bool RegisterNativesImpl(JNIEnv* env) {
 """
     self.assertTextEquals(golden_content, jni_from_javap.GetContent())
 
+  def testSnippnetJavap6_7(self):
+    content_javap6 = """
+public class java.util.HashSet {
+public boolean add(java.lang.Object);
+ Signature: (Ljava/lang/Object;)Z
+}
+"""
+
+    content_javap7 = """
+public class java.util.HashSet {
+public boolean add(E);
+  Signature: (Ljava/lang/Object;)Z
+}
+"""
+    jni_from_javap6 = jni_generator.JNIFromJavaP(content_javap6.split('\n'),
+                                                 TestOptions())
+    jni_from_javap7 = jni_generator.JNIFromJavaP(content_javap7.split('\n'),
+                                                 TestOptions())
+    self.assertTrue(jni_from_javap6.GetContent())
+    self.assertTrue(jni_from_javap7.GetContent())
+    # Ensure the javap7 is correctly parsed and uses the Signature field rather
+    # than the "E" parameter.
+    self.assertTextEquals(jni_from_javap6.GetContent(),
+                          jni_from_javap7.GetContent())
+
   def testFromJavaP(self):
     contents = """
-public abstract class java.io.InputStream extends java.lang.Object
-      implements java.io.Closeable{
-    public java.io.InputStream();
-    public int available()       throws java.io.IOException;
-    public void close()       throws java.io.IOException;
-    public void mark(int);
-    public boolean markSupported();
-    public abstract int read()       throws java.io.IOException;
-    public int read(byte[])       throws java.io.IOException;
-    public int read(byte[], int, int)       throws java.io.IOException;
-    public synchronized void reset()       throws java.io.IOException;
-    public long skip(long)       throws java.io.IOException;
+public abstract class java.io.InputStream extends
+  java.lang.Object implements java.io.Closeable{
+public java.io.InputStream();
+  Signature: ()V
+public int available()   throws java.io.IOException;
+  Signature: ()I
+public void close()   throws java.io.IOException;
+  Signature: ()V
+public void mark(int);
+  Signature: (I)V
+public boolean markSupported();
+  Signature: ()Z
+public abstract int read()   throws java.io.IOException;
+  Signature: ()I
+public int read(byte[])   throws java.io.IOException;
+  Signature: ([B)I
+public int read(byte[], int, int)   throws java.io.IOException;
+  Signature: ([BII)I
+public synchronized void reset()   throws java.io.IOException;
+  Signature: ()V
+public long skip(long)   throws java.io.IOException;
+  Signature: (J)J
 }
 """
     jni_from_javap = jni_generator.JNIFromJavaP(contents.split('\n'),
@@ -1721,10 +1754,7 @@ static jint Java_InputStream_available(JNIEnv* env, jobject obj) {
       base::android::MethodID::TYPE_INSTANCE>(
       env, g_InputStream_clazz,
       "available",
-
-"("
-")"
-"I",
+"()I",
       &g_InputStream_available);
 
   jint ret =
@@ -1745,10 +1775,7 @@ static void Java_InputStream_close(JNIEnv* env, jobject obj) {
       base::android::MethodID::TYPE_INSTANCE>(
       env, g_InputStream_clazz,
       "close",
-
-"("
-")"
-"V",
+"()V",
       &g_InputStream_close);
 
   env->CallVoidMethod(obj,
@@ -1768,11 +1795,7 @@ static void Java_InputStream_mark(JNIEnv* env, jobject obj, jint p0) {
       base::android::MethodID::TYPE_INSTANCE>(
       env, g_InputStream_clazz,
       "mark",
-
-"("
-"I"
-")"
-"V",
+"(I)V",
       &g_InputStream_mark);
 
   env->CallVoidMethod(obj,
@@ -1792,10 +1815,7 @@ static jboolean Java_InputStream_markSupported(JNIEnv* env, jobject obj) {
       base::android::MethodID::TYPE_INSTANCE>(
       env, g_InputStream_clazz,
       "markSupported",
-
-"("
-")"
-"Z",
+"()Z",
       &g_InputStream_markSupported);
 
   jboolean ret =
@@ -1816,10 +1836,7 @@ static jint Java_InputStream_readI(JNIEnv* env, jobject obj) {
       base::android::MethodID::TYPE_INSTANCE>(
       env, g_InputStream_clazz,
       "read",
-
-"("
-")"
-"I",
+"()I",
       &g_InputStream_readI);
 
   jint ret =
@@ -1840,11 +1857,7 @@ static jint Java_InputStream_readI_AB(JNIEnv* env, jobject obj, jbyteArray p0) {
       base::android::MethodID::TYPE_INSTANCE>(
       env, g_InputStream_clazz,
       "read",
-
-"("
-"[B"
-")"
-"I",
+"([B)I",
       &g_InputStream_readI_AB);
 
   jint ret =
@@ -1870,13 +1883,7 @@ static jint Java_InputStream_readI_AB_I_I(JNIEnv* env, jobject obj, jbyteArray
       base::android::MethodID::TYPE_INSTANCE>(
       env, g_InputStream_clazz,
       "read",
-
-"("
-"[B"
-"I"
-"I"
-")"
-"I",
+"([BII)I",
       &g_InputStream_readI_AB_I_I);
 
   jint ret =
@@ -1897,10 +1904,7 @@ static void Java_InputStream_reset(JNIEnv* env, jobject obj) {
       base::android::MethodID::TYPE_INSTANCE>(
       env, g_InputStream_clazz,
       "reset",
-
-"("
-")"
-"V",
+"()V",
       &g_InputStream_reset);
 
   env->CallVoidMethod(obj,
@@ -1920,11 +1924,7 @@ static jlong Java_InputStream_skip(JNIEnv* env, jobject obj, jlong p0) {
       base::android::MethodID::TYPE_INSTANCE>(
       env, g_InputStream_clazz,
       "skip",
-
-"("
-"J"
-")"
-"J",
+"(J)J",
       &g_InputStream_skip);
 
   jlong ret =
@@ -1945,10 +1945,7 @@ static ScopedJavaLocalRef<jobject> Java_InputStream_Constructor(JNIEnv* env) {
       base::android::MethodID::TYPE_INSTANCE>(
       env, g_InputStream_clazz,
       "<init>",
-
-"("
-")"
-"V",
+"()V",
       &g_InputStream_Constructor);
 
   jobject ret =
