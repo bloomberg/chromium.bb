@@ -89,18 +89,14 @@ class HTMLResourcePreloader {
 public:
     explicit HTMLResourcePreloader(Document* document)
         : m_document(document)
-        , m_weakFactory(this)
     {
     }
 
     void takeAndPreload(PreloadRequestStream&);
     void preload(PassOwnPtr<PreloadRequest>);
 
-    WeakPtr<HTMLResourcePreloader> createWeakPtr() { return m_weakFactory.createWeakPtr(); }
-
 private:
     Document* m_document;
-    WeakPtrFactory<HTMLResourcePreloader> m_weakFactory;
 };
 
 }
