@@ -151,7 +151,7 @@ deps = {
     (Var("googlecode_url") % "bidichecker") + "/trunk/lib@4",
 
   "src/third_party/webgl_conformance":
-    "/trunk/deps/third_party/webgl/sdk/tests@229432",
+    "/trunk/deps/third_party/webgl/sdk/tests@230853",
 
   "src/third_party/swig/Lib":
     "/trunk/deps/third_party/swig/Lib@" + Var("swig_revision"),
