@@ -456,6 +456,13 @@ UsbAsyncApiFunction::GetDeviceHandleOrCompleteWithError(
     CompleteWithError(kErrorNoDevice);
     return NULL;
   }
+
+  if (!resource->device() || !resource->device()->device()) {
+    CompleteWithError(kErrorDisconnect);
+    manager_->Remove(extension_->id(), input_device_handle.handle);
+    return NULL;
+  }
+
   if (resource->device()->device()->vendor_id() !=
           input_device_handle.vendor_id ||
       resource->device()->device()->product_id() !=
