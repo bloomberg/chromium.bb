@@ -121,19 +121,18 @@ class ChildProcessSecurityPolicyImpl::SecurityState {
   // Grant certain permissions to a file.
   void GrantPermissionsForFileSystem(const std::string& filesystem_id,
                                      int permissions) {
-    if (filesystem_permissions_.find(filesystem_id) ==
-        filesystem_permissions_.end())
+    if (!ContainsKey(filesystem_permissions_, filesystem_id))
       fileapi::IsolatedContext::GetInstance()->AddReference(filesystem_id);
     filesystem_permissions_[filesystem_id] |= permissions;
   }
 
   bool HasPermissionsForFileSystem(const std::string& filesystem_id,
                                    int permissions) {
-    if (filesystem_permissions_.find(filesystem_id) ==
-        filesystem_permissions_.end())
+    FileSystemMap::const_iterator it =
+        filesystem_permissions_.find(filesystem_id);
+    if (it == filesystem_permissions_.end())
       return false;
-    return (filesystem_permissions_[filesystem_id] & permissions) ==
-        permissions;
+    return (it->second & permissions) == permissions;
   }
 
   void GrantBindings(int bindings) {
@@ -164,7 +163,7 @@ class ChildProcessSecurityPolicyImpl::SecurityState {
     if (url.SchemeIs(chrome::kFileScheme)) {
       base::FilePath path;
       if (net::FileURLToFilePath(url, &path))
-        return request_file_set_.find(path) != request_file_set_.end();
+        return ContainsKey(request_file_set_, path);
     }
 
     return false;  // Unmentioned schemes are disallowed.
@@ -178,15 +177,16 @@ class ChildProcessSecurityPolicyImpl::SecurityState {
     base::FilePath last_path;
     int skip = 0;
     while (current_path != last_path) {
-      base::FilePath base_name =  current_path.BaseName();
+      base::FilePath base_name = current_path.BaseName();
       if (base_name.value() == base::FilePath::kParentDirectory) {
         ++skip;
       } else if (skip > 0) {
         if (base_name.value() != base::FilePath::kCurrentDirectory)
           --skip;
       } else {
-        if (file_permissions_.find(current_path) != file_permissions_.end())
-          return (file_permissions_[current_path] & permissions) == permissions;
+        FileMap::const_iterator it = file_permissions_.find(current_path);
+        if (it != file_permissions_.end())
+          return (it->second & permissions) == permissions;
       }
       last_path = current_path;
       current_path = current_path.DirName();
@@ -333,19 +333,21 @@ void ChildProcessSecurityPolicyImpl::AddWorker(int child_id,
 
 void ChildProcessSecurityPolicyImpl::Remove(int child_id) {
   base::AutoLock lock(lock_);
-  if (!security_state_.count(child_id))
+  SecurityStateMap::iterator it = security_state_.find(child_id);
+  if (it == security_state_.end())
     return;  // May be called multiple times.
 
-  delete security_state_[child_id];
-  security_state_.erase(child_id);
+  delete it->second;
+  security_state_.erase(it);
   worker_map_.erase(child_id);
 }
 
 void ChildProcessSecurityPolicyImpl::RegisterWebSafeScheme(
     const std::string& scheme) {
   base::AutoLock lock(lock_);
-  DCHECK(web_safe_schemes_.count(scheme) == 0) << "Add schemes at most once.";
-  DCHECK(pseudo_schemes_.count(scheme) == 0) << "Web-safe implies not pseudo.";
+  DCHECK_EQ(0U, web_safe_schemes_.count(scheme)) << "Add schemes at most once.";
+  DCHECK_EQ(0U, pseudo_schemes_.count(scheme))
+      << "Web-safe implies not pseudo.";
 
   web_safe_schemes_.insert(scheme);
 }
@@ -354,15 +356,15 @@ bool ChildProcessSecurityPolicyImpl::IsWebSafeScheme(
     const std::string& scheme) {
   base::AutoLock lock(lock_);
 
-  return (web_safe_schemes_.find(scheme) != web_safe_schemes_.end());
+  return ContainsKey(web_safe_schemes_, scheme);
 }
 
 void ChildProcessSecurityPolicyImpl::RegisterPseudoScheme(
     const std::string& scheme) {
   base::AutoLock lock(lock_);
-  DCHECK(pseudo_schemes_.count(scheme) == 0) << "Add schemes at most once.";
-  DCHECK(web_safe_schemes_.count(scheme) == 0) <<
-      "Pseudo implies not web-safe.";
+  DCHECK_EQ(0U, pseudo_schemes_.count(scheme)) << "Add schemes at most once.";
+  DCHECK_EQ(0U, web_safe_schemes_.count(scheme))
+      << "Pseudo implies not web-safe.";
 
   pseudo_schemes_.insert(scheme);
 }
@@ -371,7 +373,7 @@ bool ChildProcessSecurityPolicyImpl::IsPseudoScheme(
     const std::string& scheme) {
   base::AutoLock lock(lock_);
 
-  return (pseudo_schemes_.find(scheme) != pseudo_schemes_.end());
+  return ContainsKey(pseudo_schemes_, scheme);
 }
 
 void ChildProcessSecurityPolicyImpl::GrantRequestURL(
