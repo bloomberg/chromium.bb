@@ -29,10 +29,11 @@ UINT64 = Kind('u64')
 FLOAT  = Kind('f')
 DOUBLE = Kind('d')
 STRING = Kind('s')
+HANDLE = Kind('h')
 
 
 # Collection of all Primitive types
-PRIMITIVES = [
+PRIMITIVES = (
   BOOL,
   INT8,
   INT16,
@@ -45,8 +46,8 @@ PRIMITIVES = [
   FLOAT,
   DOUBLE,
   STRING,
-  # TODO(davemoore): Add HANDLE.
-]
+  HANDLE
+)
 
 
 class Field(object):

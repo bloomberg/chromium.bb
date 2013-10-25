@@ -21,16 +21,23 @@ class PackedField(object):
     mojom.INT32:  4,
     mojom.UINT32: 4,
     mojom.FLOAT:  4,
+    mojom.HANDLE: 4,
     mojom.INT64:  8,
     mojom.UINT64: 8,
     mojom.DOUBLE: 8,
     mojom.STRING: 8
   }
 
+  @classmethod
+  def GetSizeForKind(cls, kind):
+    if isinstance(kind, mojom.Array) or isinstance(kind, mojom.Struct):
+      return 8
+    return cls.kind_to_size[kind]
+
   def __init__(self, field, ordinal):
     self.field = field
     self.ordinal = ordinal
-    self.size = self.kind_to_size[field.kind]
+    self.size = self.GetSizeForKind(field.kind)
     self.offset = None
     self.bit = None
 

@@ -41,7 +41,6 @@ def TestOneField():
   errors += EXPECT_EQ(1, len(ps.packed_fields))
   return errors
 
-
 # Pass three tuples.
 # |kinds| is a sequence of mojom.Kinds that specify the fields that are to
 # be created.
@@ -69,14 +68,14 @@ def TestPaddingPackedInOrder():
   return TestSequence(
       (mojom.INT8, mojom.UINT8, mojom.INT32),
       (1, 2, 3),
-      (0, 1, 4));
+      (0, 1, 4))
 
 
 def TestPaddingPackedOutOfOrder():
   return TestSequence(
       (mojom.INT8, mojom.INT32, mojom.UINT8),
       (1, 3, 2),
-      (0, 1, 4));
+      (0, 1, 4))
 
 
 def TestPaddingPackedOverflow():
@@ -85,6 +84,19 @@ def TestPaddingPackedOverflow():
   fields = (1, 4, 3, 2, 5)
   offsets = (0, 1, 2, 4, 8)
   return TestSequence(kinds, fields, offsets)
+
+
+def TestAllTypes():
+  struct = mojom.Struct('test')
+  array = mojom.Array()
+  return TestSequence(
+      (mojom.BOOL, mojom.INT8, mojom.STRING, mojom.UINT8,
+       mojom.INT16, mojom.DOUBLE, mojom.UINT16,
+       mojom.INT32, mojom.UINT32, mojom.INT64,
+       mojom.FLOAT, mojom.STRING, mojom.HANDLE,
+       mojom.UINT64, mojom.Struct('test'), mojom.Array()),
+      (1, 2, 4, 5, 7, 3, 6,  8,  9,  10, 11, 13, 12, 14, 15, 16, 17),
+      (0, 1, 2, 4, 6, 8, 16, 24, 28, 32, 40, 44, 48, 56, 64, 72, 80))
 
 
 def TestPaddingPackedOutOfOrderByOrdinal():
@@ -151,6 +163,7 @@ def Main(args):
   errors += RunTest(TestPaddingPackedInOrder)
   errors += RunTest(TestPaddingPackedOutOfOrder)
   errors += RunTest(TestPaddingPackedOverflow)
+  errors += RunTest(TestAllTypes)
   errors += RunTest(TestPaddingPackedOutOfOrderByOrdinal)
   errors += RunTest(TestBools)
 
