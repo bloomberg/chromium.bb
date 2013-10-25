@@ -60,8 +60,6 @@ class EnrollmentScreenHandler
   virtual void OnBrowsingDataRemoverDone() OVERRIDE;
 
  private:
-  class TokenRevoker;
-
   // Handlers for WebUI messages.
   void HandleClose(const std::string& reason);
   void HandleCompleteLogin(const std::string& user);
@@ -82,12 +80,6 @@ class EnrollmentScreenHandler
   // Handles completion of the OAuth2 token fetch attempt.
   void OnTokenFetched(const std::string& token,
                       const GoogleServiceAuthError& error);
-
-  // Callback for TokenRevokers that have completed.
-  void OnTokenRevokerDone(TokenRevoker* revoker);
-
-  // Checks whether a pending auth reset is complete. If so, invokes callbacks.
-  void CheckAuthResetDone();
 
   // Shows the screen.
   void DoShow();
@@ -115,8 +107,6 @@ class EnrollmentScreenHandler
 
   // The browsing data remover instance currently active, if any.
   BrowsingDataRemover* browsing_data_remover_;
-  scoped_ptr<TokenRevoker> access_token_revoker_;
-  scoped_ptr<TokenRevoker> refresh_token_revoker_;
 
   // The callbacks to invoke after browsing data has been cleared.
   std::vector<base::Closure> auth_reset_callbacks_;
