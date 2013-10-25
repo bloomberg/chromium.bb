@@ -8401,6 +8401,14 @@ other types of suffix sets.
   <summary>The number of streams open when a QUIC session timed out.</summary>
 </histogram>
 
+<histogram
+    name="Net.QuicSession.ConnectionClose.NumTotalStreams.HandshakeTimedOut">
+  <summary>
+    The number of total streams created when a QUIC session crypto handshake
+    timed out.
+  </summary>
+</histogram>
+
 <histogram name="Net.QuicSession.ConnectionCloseErrorCode"
     enum="QuicErrorCodes">
   <summary>

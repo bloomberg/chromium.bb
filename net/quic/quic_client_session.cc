@@ -351,9 +351,16 @@ void QuicClientSession::ConnectionClose(QuicErrorCode error, bool from_peer) {
   }
 
   if (error == QUIC_CONNECTION_TIMED_OUT) {
-    UMA_HISTOGRAM_SPARSE_SLOWLY(
+    UMA_HISTOGRAM_COUNTS(
         "Net.QuicSession.ConnectionClose.NumOpenStreams.TimedOut",
         GetNumOpenStreams());
+    if (!IsCryptoHandshakeConfirmed()) {
+      // If there have been any streams created, they were 0-RTT speculative
+      // requests that have not be serviced.
+      UMA_HISTOGRAM_COUNTS(
+          "Net.QuicSession.ConnectionClose.NumTotalStreams.HandshakeTimedOut",
+          num_total_streams_);
+    }
   }
 
   UMA_HISTOGRAM_SPARSE_SLOWLY("Net.QuicSession.QuicVersion",
