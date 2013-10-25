@@ -29,9 +29,9 @@
  */
 
 #include "config.h"
-#include "core/platform/graphics/transforms/InterpolatedTransformOperation.h"
+#include "platform/transforms/InterpolatedTransformOperation.h"
 
-#include "core/platform/graphics/transforms/IdentityTransformOperation.h"
+#include "platform/transforms/IdentityTransformOperation.h"
 
 namespace WebCore {
 

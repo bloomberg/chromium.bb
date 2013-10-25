@@ -31,13 +31,13 @@
 #ifndef InterpolatedTransformOperation_h
 #define InterpolatedTransformOperation_h
 
-#include "core/platform/graphics/transforms/TransformOperation.h"
-#include "core/platform/graphics/transforms/TransformOperations.h"
+#include "platform/transforms/TransformOperation.h"
+#include "platform/transforms/TransformOperations.h"
 
 namespace WebCore {
 
 // This class is an implementation detail for deferred interpolations.
-class InterpolatedTransformOperation : public TransformOperation {
+class PLATFORM_EXPORT InterpolatedTransformOperation : public TransformOperation {
 public:
     static PassRefPtr<InterpolatedTransformOperation> create(const TransformOperations& from, const TransformOperations& to, double progress)
     {

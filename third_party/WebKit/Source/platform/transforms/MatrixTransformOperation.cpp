@@ -20,7 +20,7 @@
  */
 
 #include "config.h"
-#include "core/platform/graphics/transforms/MatrixTransformOperation.h"
+#include "platform/transforms/MatrixTransformOperation.h"
 
 #include <algorithm>
 

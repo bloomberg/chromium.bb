@@ -20,24 +20,24 @@
  */
 
 #include "config.h"
-#include "core/platform/graphics/transforms/SkewTransformOperation.h"
-
-#include "platform/animation/AnimationUtilities.h"
+#include "platform/transforms/TranslateTransformOperation.h"
 
 namespace WebCore {
 
-PassRefPtr<TransformOperation> SkewTransformOperation::blend(const TransformOperation* from, double progress, bool blendToIdentity)
+PassRefPtr<TransformOperation> TranslateTransformOperation::blend(const TransformOperation* from, double progress, bool blendToIdentity)
 {
     if (from && !from->isSameType(*this))
         return this;
 
+    const Length zeroLength(0, Fixed);
     if (blendToIdentity)
-        return SkewTransformOperation::create(WebCore::blend(m_angleX, 0.0, progress), WebCore::blend(m_angleY, 0.0, progress), m_type);
+        return TranslateTransformOperation::create(zeroLength.blend(m_x, progress, ValueRangeAll), zeroLength.blend(m_y, progress, ValueRangeAll), zeroLength.blend(m_z, progress, ValueRangeAll), m_type);
 
-    const SkewTransformOperation* fromOp = static_cast<const SkewTransformOperation*>(from);
-    double fromAngleX = fromOp ? fromOp->m_angleX : 0;
-    double fromAngleY = fromOp ? fromOp->m_angleY : 0;
-    return SkewTransformOperation::create(WebCore::blend(fromAngleX, m_angleX, progress), WebCore::blend(fromAngleY, m_angleY, progress), m_type);
+    const TranslateTransformOperation* fromOp = static_cast<const TranslateTransformOperation*>(from);
+    Length fromX = fromOp ? fromOp->m_x : zeroLength;
+    Length fromY = fromOp ? fromOp->m_y : zeroLength;
+    Length fromZ = fromOp ? fromOp->m_z : zeroLength;
+    return TranslateTransformOperation::create(m_x.blend(fromX, progress, ValueRangeAll), m_y.blend(fromY, progress, ValueRangeAll), m_z.blend(fromZ, progress, ValueRangeAll), m_type);
 }
 
 } // namespace WebCore

@@ -34,7 +34,7 @@ namespace WebCore {
 
 // CSS Transforms (may become part of CSS3)
 
-class TransformOperation : public RefCounted<TransformOperation> {
+class PLATFORM_EXPORT TransformOperation : public RefCounted<TransformOperation> {
 public:
     enum OperationType {
         ScaleX, ScaleY, Scale,

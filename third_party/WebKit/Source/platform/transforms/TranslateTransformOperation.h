@@ -25,13 +25,13 @@
 #ifndef TranslateTransformOperation_h
 #define TranslateTransformOperation_h
 
-#include "core/platform/graphics/transforms/TransformOperation.h"
 #include "platform/Length.h"
 #include "platform/LengthFunctions.h"
+#include "platform/transforms/TransformOperation.h"
 
 namespace WebCore {
 
-class TranslateTransformOperation : public TransformOperation {
+class PLATFORM_EXPORT TranslateTransformOperation : public TransformOperation {
 public:
     static PassRefPtr<TranslateTransformOperation> create(const Length& tx, const Length& ty, OperationType type)
     {
