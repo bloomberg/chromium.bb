@@ -141,19 +141,12 @@ public:
 
     LayoutRect getRectToExpose(const LayoutRect& visibleRect, const LayoutRect& exposeRect, const ScrollAlignment& alignX, const ScrollAlignment& alignY);
 
-    // isPointInResizeControl() is used for testing if a pointer/touch position is in the resize control
-    // area.
-    bool isPointInResizeControl(const IntPoint& absolutePoint, ResizerHitTestType resizerHitTestType) const;
     bool hitTestOverflowControls(HitTestResult&, const IntPoint& localPoint);
     IntSize offsetFromResizeCorner(const IntPoint& absolutePoint) const;
 
     void updateScrollInfoAfterLayout();
 
     void autoscroll(const IntPoint&);
-
-    void resize(const PlatformEvent&, const LayoutSize&);
-    bool inResizeMode() const;
-    void setInResizeMode(bool);
 
     bool isRootLayer() const { return m_isRootLayer; }
 

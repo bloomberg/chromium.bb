@@ -2050,21 +2050,6 @@ void RenderLayer::autoscroll(const IntPoint& position)
     scrollRectToVisible(LayoutRect(currentDocumentPosition, LayoutSize(1, 1)), ScrollAlignment::alignToEdgeIfNeeded, ScrollAlignment::alignToEdgeIfNeeded);
 }
 
-void RenderLayer::resize(const PlatformEvent& evt, const LayoutSize& oldOffset)
-{
-    m_scrollableArea->resize(evt, oldOffset);
-}
-
-bool RenderLayer::inResizeMode() const
-{
-    return m_scrollableArea->inResizeMode();
-}
-
-void RenderLayer::setInResizeMode(bool inResizeMode)
-{
-    return m_scrollableArea->setInResizeMode(inResizeMode);
-}
-
 IntSize RenderLayer::offsetFromResizeCorner(const IntPoint& absolutePoint) const
 {
     return m_scrollableArea->offsetFromResizeCorner(absolutePoint);
@@ -4571,14 +4556,6 @@ IntRect RenderLayer::scrollCornerAndResizerRect() const
         return IntRect();
 
     return m_scrollableArea->scrollCornerAndResizerRect();
-}
-
-bool RenderLayer::isPointInResizeControl(const IntPoint& absolutePoint, ResizerHitTestType resizerHitTestType) const
-{
-    if (!m_scrollableArea)
-        return false;
-
-    return m_scrollableArea->isPointInResizeControl(absolutePoint, resizerHitTestType);
 }
 
 bool RenderLayer::hitTestOverflowControls(HitTestResult& result, const IntPoint& localPoint)

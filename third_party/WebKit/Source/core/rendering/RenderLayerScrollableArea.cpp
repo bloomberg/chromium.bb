@@ -98,7 +98,7 @@ RenderLayerScrollableArea::~RenderLayerScrollableArea()
 {
     if (inResizeMode() && !m_box->documentBeingDestroyed()) {
         if (Frame* frame = m_box->frame())
-            frame->eventHandler().resizeLayerDestroyed();
+            frame->eventHandler().resizeScrollableAreaDestroyed();
     }
 
     if (Frame* frame = m_box->frame()) {

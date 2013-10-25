@@ -64,6 +64,7 @@ class PlatformKeyboardEvent;
 class PlatformTouchEvent;
 class PlatformWheelEvent;
 class RenderLayer;
+class RenderLayerScrollableArea;
 class RenderObject;
 class RenderWidget;
 class SVGElementInstance;
@@ -121,7 +122,7 @@ public:
 
     void setResizingFrameSet(HTMLFrameSetElement*);
 
-    void resizeLayerDestroyed();
+    void resizeScrollableAreaDestroyed();
 
     IntPoint lastKnownMousePosition() const;
     Cursor currentMouseCursor() const { return m_currentMouseCursor; }
@@ -319,7 +320,7 @@ private:
     RefPtr<SVGElementInstance> m_instanceUnderMouse;
     RefPtr<SVGElementInstance> m_lastInstanceUnderMouse;
 
-    RenderLayer* m_resizeLayer;
+    RenderLayerScrollableArea* m_resizeScrollableArea;
 
     RefPtr<Node> m_capturingMouseEventsNode;
     bool m_eventHandlerWillResetCapturingMouseEventsNode;
@@ -338,7 +339,7 @@ private:
 
     RefPtr<HTMLFrameSetElement> m_frameSetBeingResized;
 
-    LayoutSize m_offsetFromResizeCorner; // In the coords of m_resizeLayer.
+    LayoutSize m_offsetFromResizeCorner; // In the coords of m_resizeScrollableArea.
 
     bool m_mousePositionIsUnknown;
     IntPoint m_lastKnownMousePosition;

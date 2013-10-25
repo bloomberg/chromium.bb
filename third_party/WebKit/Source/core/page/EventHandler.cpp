@@ -293,7 +293,7 @@ EventHandler::EventHandler(Frame* frame)
     , m_mouseDownWasInSubframe(false)
     , m_fakeMouseMoveEventTimer(this, &EventHandler::fakeMouseMoveEventTimerFired)
     , m_svgPan(false)
-    , m_resizeLayer(0)
+    , m_resizeScrollableArea(0)
     , m_eventHandlerWillResetCapturingMouseEventsNode(0)
     , m_clickCount(0)
     , m_shouldOnlyFireDragOverEvent(false)
@@ -327,7 +327,7 @@ void EventHandler::clear()
     m_hoverTimer.stop();
     m_cursorUpdateTimer.stop();
     m_fakeMouseMoveEventTimer.stop();
-    m_resizeLayer = 0;
+    m_resizeScrollableArea = 0;
     m_nodeUnderMouse = 0;
     m_lastNodeUnderMouse = 0;
     m_instanceUnderMouse = 0;
@@ -1120,7 +1120,7 @@ void EventHandler::updateCursor()
 
 OptionalCursor EventHandler::selectCursor(const HitTestResult& result, bool shiftKey)
 {
-    if (m_resizeLayer && m_resizeLayer->inResizeMode())
+    if (m_resizeScrollableArea && m_resizeScrollableArea->inResizeMode())
         return NoCursorChange;
 
     Page* page = m_frame->page();
@@ -1272,7 +1272,7 @@ OptionalCursor EventHandler::selectAutoCursor(const HitTestResult& result, Node*
     if (renderer) {
         if (RenderLayer* layer = renderer->enclosingLayer()) {
             if (FrameView* view = m_frame->view())
-                inResizer = layer->isPointInResizeControl(result.roundedPointInMainFrame(), ResizerForPointer);
+                inResizer = layer->scrollableArea() && layer->scrollableArea()->isPointInResizeControl(result.roundedPointInMainFrame(), ResizerForPointer);
         }
     }
 
@@ -1372,9 +1372,9 @@ bool EventHandler::handleMousePressEvent(const PlatformMouseEvent& mouseEvent)
     if (FrameView* view = m_frame->view()) {
         RenderLayer* layer = m_clickNode->renderer() ? m_clickNode->renderer()->enclosingLayer() : 0;
         IntPoint p = view->windowToContents(mouseEvent.position());
-        if (layer && layer->isPointInResizeControl(p, ResizerForPointer)) {
-            layer->setInResizeMode(true);
-            m_resizeLayer = layer;
+        if (layer && layer->scrollableArea() && layer->scrollableArea()->isPointInResizeControl(p, ResizerForPointer)) {
+            m_resizeScrollableArea = layer->scrollableArea();
+            m_resizeScrollableArea->setInResizeMode(true);
             m_offsetFromResizeCorner = layer->offsetFromResizeCorner(p);
             invalidateClick();
             return true;
@@ -1550,8 +1550,8 @@ bool EventHandler::handleMouseMoveOrLeaveEvent(const PlatformMouseEvent& mouseEv
 
     Scrollbar* scrollbar = 0;
 
-    if (m_resizeLayer && m_resizeLayer->inResizeMode())
-        m_resizeLayer->resize(mouseEvent, m_offsetFromResizeCorner);
+    if (m_resizeScrollableArea && m_resizeScrollableArea->inResizeMode())
+        m_resizeScrollableArea->resize(mouseEvent, m_offsetFromResizeCorner);
     else {
         if (FrameView* view = m_frame->view())
             scrollbar = view->scrollbarAtPoint(mouseEvent.position());
@@ -1694,9 +1694,9 @@ bool EventHandler::handleMouseReleaseEvent(const PlatformMouseEvent& mouseEvent)
 
     bool swallowClickEvent = m_clickCount > 0 && !contextMenuEvent && mouseIsReleasedOnPressedElement(mev.targetNode(), m_clickNode.get()) && !dispatchMouseEvent(EventTypeNames::click, mev.targetNode(), true, m_clickCount, mouseEvent, true);
 
-    if (m_resizeLayer) {
-        m_resizeLayer->setInResizeMode(false);
-        m_resizeLayer = 0;
+    if (m_resizeScrollableArea) {
+        m_resizeScrollableArea->setInResizeMode(false);
+        m_resizeScrollableArea = 0;
     }
 
     bool swallowMouseReleaseEvent = false;
@@ -2454,22 +2454,22 @@ bool EventHandler::handleScrollGestureOnResizer(Node* eventTarget, const Platfor
     if (gestureEvent.type() == PlatformEvent::GestureScrollBegin) {
         RenderLayer* layer = eventTarget->renderer() ? eventTarget->renderer()->enclosingLayer() : 0;
         IntPoint p = m_frame->view()->windowToContents(gestureEvent.position());
-        if (layer && layer->isPointInResizeControl(p, ResizerForTouch)) {
-            layer->setInResizeMode(true);
-            m_resizeLayer = layer;
+        if (layer && layer->scrollableArea() && layer->scrollableArea()->isPointInResizeControl(p, ResizerForTouch)) {
+            m_resizeScrollableArea = layer->scrollableArea();
+            m_resizeScrollableArea->setInResizeMode(true);
             m_offsetFromResizeCorner = layer->offsetFromResizeCorner(p);
             return true;
         }
     } else if (gestureEvent.type() == PlatformEvent::GestureScrollUpdate ||
                gestureEvent.type() == PlatformEvent::GestureScrollUpdateWithoutPropagation) {
-        if (m_resizeLayer && m_resizeLayer->inResizeMode()) {
-            m_resizeLayer->resize(gestureEvent, m_offsetFromResizeCorner);
+        if (m_resizeScrollableArea && m_resizeScrollableArea->inResizeMode()) {
+            m_resizeScrollableArea->resize(gestureEvent, m_offsetFromResizeCorner);
             return true;
         }
     } else if (gestureEvent.type() == PlatformEvent::GestureScrollEnd) {
-        if (m_resizeLayer && m_resizeLayer->inResizeMode()) {
-            m_resizeLayer->setInResizeMode(false);
-            m_resizeLayer = 0;
+        if (m_resizeScrollableArea && m_resizeScrollableArea->inResizeMode()) {
+            m_resizeScrollableArea->setInResizeMode(false);
+            m_resizeScrollableArea = 0;
             return false;
         }
     }
@@ -2943,10 +2943,10 @@ void EventHandler::setResizingFrameSet(HTMLFrameSetElement* frameSet)
     m_frameSetBeingResized = frameSet;
 }
 
-void EventHandler::resizeLayerDestroyed()
+void EventHandler::resizeScrollableAreaDestroyed()
 {
-    ASSERT(m_resizeLayer);
-    m_resizeLayer = 0;
+    ASSERT(m_resizeScrollableArea);
+    m_resizeScrollableArea = 0;
 }
 
 void EventHandler::hoverTimerFired(Timer<EventHandler>*)
