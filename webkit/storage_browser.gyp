@@ -170,6 +170,8 @@
         'browser/fileapi/sandbox_origin_database.h',
         'browser/fileapi/sandbox_origin_database_interface.cc',
         'browser/fileapi/sandbox_origin_database_interface.h',
+        'browser/fileapi/sandbox_prioritized_origin_database.cc',
+        'browser/fileapi/sandbox_prioritized_origin_database.h',
         'browser/fileapi/sandbox_quota_observer.cc',
         'browser/fileapi/sandbox_quota_observer.h',
         'browser/fileapi/task_runner_bound_observer_list.h',

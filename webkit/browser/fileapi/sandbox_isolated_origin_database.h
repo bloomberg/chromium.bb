@@ -43,6 +43,8 @@ class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE SandboxIsolatedOriginDatabase
       const base::FilePath& file_system_directory,
       SandboxOriginDatabase* origin_database);
 
+  const std::string& origin() const { return origin_; }
+
  private:
   void MigrateDatabaseIfNeeded();
 

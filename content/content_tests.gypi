@@ -581,6 +581,7 @@
         '../webkit/browser/fileapi/sandbox_directory_database_unittest.cc',
         '../webkit/browser/fileapi/sandbox_isolated_origin_database_unittest.cc',
         '../webkit/browser/fileapi/sandbox_origin_database_unittest.cc',
+        '../webkit/browser/fileapi/sandbox_prioritized_origin_database_unittest.cc',
         '../webkit/browser/fileapi/test_file_set.cc',
         '../webkit/browser/fileapi/test_file_set.h',
         '../webkit/browser/fileapi/timed_task_helper_unittest.cc',

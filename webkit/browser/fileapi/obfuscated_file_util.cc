@@ -28,6 +28,7 @@
 #include "webkit/browser/fileapi/sandbox_file_system_backend.h"
 #include "webkit/browser/fileapi/sandbox_isolated_origin_database.h"
 #include "webkit/browser/fileapi/sandbox_origin_database.h"
+#include "webkit/browser/fileapi/sandbox_prioritized_origin_database.h"
 #include "webkit/browser/fileapi/timed_task_helper.h"
 #include "webkit/browser/quota/quota_manager.h"
 #include "webkit/common/database/database_identifier.h"
@@ -1232,20 +1233,29 @@ bool ObfuscatedFileUtil::InitOriginDatabase(const GURL& origin_hint,
     return false;
   }
 
-  origin_database_.reset(
-      new SandboxOriginDatabase(file_system_directory_));
+  SandboxPrioritizedOriginDatabase* prioritized_origin_database =
+      new SandboxPrioritizedOriginDatabase(file_system_directory_);
+  origin_database_.reset(prioritized_origin_database);
+
+  if (origin_hint.is_empty() || !HasIsolatedStorage(origin_hint))
+    return true;
+
+  const std::string isolated_origin_string =
+      webkit_database::GetIdentifierFromOrigin(origin_hint);
 
   // TODO(kinuko): Deprecate this after a few release cycles, e.g. around M33.
   base::FilePath isolated_origin_dir = file_system_directory_.Append(
       SandboxIsolatedOriginDatabase::kObsoleteOriginDirectory);
-  if (!origin_hint.is_empty() &&
-      HasIsolatedStorage(origin_hint) &&
-      base::DirectoryExists(isolated_origin_dir)) {
+  if (base::DirectoryExists(isolated_origin_dir) &&
+      prioritized_origin_database->GetSandboxOriginDatabase()) {
     SandboxIsolatedOriginDatabase::MigrateBackFromObsoleteOriginDatabase(
-        webkit_database::GetIdentifierFromOrigin(origin_hint),
+        isolated_origin_string,
         file_system_directory_,
-        static_cast<SandboxOriginDatabase*>(origin_database_.get()));
+        prioritized_origin_database->GetSandboxOriginDatabase());
   }
+
+  prioritized_origin_database->InitializePrimaryOrigin(
+      isolated_origin_string);
 
   return true;
 }
