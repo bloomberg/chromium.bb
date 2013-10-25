@@ -102,8 +102,7 @@ html[dir='rtl'] #search-field {
 
 #remove-selected,
 #search-button,
-.gap,
-.snippet {
+.gap {
   display: none;
 }
 

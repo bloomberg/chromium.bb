@@ -289,19 +289,6 @@ h2.timeframe {
   font-size: 1.5em;
 }
 
-.snippet {
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-  -webkit-margin-start: 136px;
-  clear: both;
-  color: rgb(34, 34, 34);
-  display: -webkit-box;
-  line-height: 1.6em;
-  margin-bottom: 1em;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
 .entry .domain {
   color: rgb(151, 156, 160);
   min-width: -webkit-min-content;

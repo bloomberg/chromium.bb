@@ -93,7 +93,6 @@ function Visit(result, continued, model) {
   this.url_ = result.url;
   this.domain_ = result.domain;
   this.starred_ = result.starred;
-  this.snippet_ = result.snippet || '';
 
   // These identify the name and type of the device on which this visit
   // occurred. They will be empty if the visit occurred on the current device.
@@ -255,14 +254,7 @@ Visit.prototype.getResultDOM = function(propertyBag) {
   node.appendChild(entryBoxContainer);
   entryBoxContainer.appendChild(entryBox);
 
-  if (isSearchResult) {
-    time.appendChild(document.createTextNode(this.dateShort));
-    var snippet = createElementWithClassName('div', 'snippet');
-    this.addHighlightedText_(snippet,
-                             this.snippet_,
-                             this.model_.getSearchText());
-    node.appendChild(snippet);
-  } else if (useMonthDate) {
+  if (isSearchResult || useMonthDate) {
     // Show the day instead of the time.
     time.appendChild(document.createTextNode(this.dateShort));
   } else {
