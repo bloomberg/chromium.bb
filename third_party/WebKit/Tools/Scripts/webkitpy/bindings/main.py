@@ -28,6 +28,18 @@ import tempfile
 from webkitpy.common.checkout.scm.detection import detect_scm_system
 from webkitpy.common.system.executive import ScriptError
 
+PASS_MESSAGE = 'All tests PASS!'
+FAIL_MESSAGE = """Some tests FAIL!
+To update the reference files, execute:
+    run-bindings-tests --reset-results
+
+If the failures are not due to your changes, test results may be out of sync;
+please rebaseline them in a separate CL, after checking that tests fail in ToT.
+In CL, please set:
+NOTRY=true
+TBR=(someone in Source/bindings/OWNERS or WATCHLISTS:bindings)
+"""
+
 # Python compiler is incomplete; skip IDLs with unimplemented features
 SKIP_PYTHON = set([
     'TestActiveDOMObject.idl',
@@ -266,7 +278,7 @@ class BindingsTests(object):
         all_tests_passed = self.run_tests()
         print
         if all_tests_passed:
-            print 'All tests PASS!'
+            print PASS_MESSAGE
             return 0
-        print 'Some tests FAIL! (To update the reference files, execute "run-bindings-tests --reset-results")'
+        print FAIL_MESSAGE
         return -1
