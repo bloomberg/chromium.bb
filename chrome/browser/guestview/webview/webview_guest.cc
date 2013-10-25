@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "chrome/browser/extensions/api/web_request/web_request_api.h"
 #include "chrome/browser/extensions/extension_renderer_state.h"
+#include "chrome/browser/extensions/extension_web_contents_observer.h"
 #include "chrome/browser/extensions/script_executor.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/guestview/guestview_constants.h"
@@ -98,6 +99,7 @@ void RemoveWebViewEventListenersOnIOThread(
 
 void AttachWebViewHelpers(WebContents* contents) {
   FaviconTabHelper::CreateForWebContents(contents);
+  extensions::ExtensionWebContentsObserver::CreateForWebContents(contents);
 #if defined(ENABLE_PLUGINS)
   PluginPermissionHelper::CreateForWebContents(contents);
 #endif
