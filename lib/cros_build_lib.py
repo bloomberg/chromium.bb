@@ -850,7 +850,7 @@ def CreateTarball(target, cwd, sudo=False, compression=COMP_XZ, chroot=None,
     chroot: See FindCompressor().
     inputs: A list of files or directories to add to the tarball.  If unset,
       defaults to ".".
-    extra_args: Extra args to pass to "tar".
+    extra_args: A list of extra args to pass to "tar".
     kwds: Any RunCommand options/overrides to use.
 
   Returns:
