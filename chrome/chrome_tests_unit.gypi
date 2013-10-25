@@ -2185,6 +2185,16 @@
             ['exclude', '^browser/ui/libgtk2ui/'],
           ],
         }],
+        ['use_aura==1 and component=="shared_library"', {
+          'sources!': [
+            # TODO(erg): This file does not compile in shared library mode
+            # because it is reaching into the internals of libgtk2ui, which
+            # shouldn't be linked with the rest of chrome. This should either
+            # be fixed by creating a separate unit test target, or by deleting
+            # the test.
+            'browser/ui/libgtk2ui/x11_input_method_context_impl_gtk2_unittest.cc'
+          ],
+        }],
         ['enable_task_manager==0', {
           'sources/': [
             ['exclude', '^browser/task_manager/'],

@@ -48,7 +48,7 @@ class InputMethodLinuxX11 : public InputMethodBase,
  protected:
   // Overridden from InputMethodBase.
   virtual void OnDidChangeFocusedClient(TextInputClient* focused_before,
-                                        TextInputClient* focused);
+                                        TextInputClient* focused) OVERRIDE;
 
  private:
   scoped_ptr<LinuxInputMethodContext> input_method_context_;

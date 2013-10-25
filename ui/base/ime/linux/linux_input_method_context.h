@@ -17,7 +17,7 @@ class Rect;
 
 namespace ui {
 
-class CompositionText;
+struct CompositionText;
 
 // An interface of input method context for input method frameworks on
 // GNU/Linux and likes.
