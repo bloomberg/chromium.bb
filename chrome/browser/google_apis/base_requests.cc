@@ -11,6 +11,8 @@
 #include "base/task_runner_util.h"
 #include "base/values.h"
 #include "chrome/browser/google_apis/request_sender.h"
+#include "chrome/browser/google_apis/task_util.h"
+#include "net/base/io_buffer.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_byte_range.h"
@@ -99,6 +101,56 @@ void ParseJson(base::TaskRunner* blocking_task_runner,
       callback);
 }
 
+//=========================== ResponseWriter ==================================
+ResponseWriter::ResponseWriter(base::TaskRunner* file_task_runner,
+                               const base::FilePath& file_path,
+                               const GetContentCallback& get_content_callback)
+    : get_content_callback_(get_content_callback) {
+  if (!file_path.empty()) {
+    file_writer_.reset(
+        new net::URLFetcherFileWriter(file_task_runner, file_path));
+  }
+}
+
+ResponseWriter::~ResponseWriter() {
+}
+
+void ResponseWriter::DisownFile() {
+  DCHECK(file_writer_);
+  file_writer_->DisownFile();
+}
+
+int ResponseWriter::Initialize(const net::CompletionCallback& callback) {
+  if (file_writer_)
+    return file_writer_->Initialize(callback);
+
+  data_.clear();
+  return net::OK;
+}
+
+int ResponseWriter::Write(net::IOBuffer* buffer,
+                          int num_bytes,
+                          const net::CompletionCallback& callback) {
+  if (!get_content_callback_.is_null()) {
+    get_content_callback_.Run(
+        HTTP_SUCCESS,
+        make_scoped_ptr(new std::string(buffer->data(), num_bytes)));
+  }
+
+  if (file_writer_)
+    return file_writer_->Write(buffer, num_bytes, callback);
+
+  data_.append(buffer->data(), num_bytes);
+  return num_bytes;
+}
+
+int ResponseWriter::Finish(const net::CompletionCallback& callback) {
+  if (file_writer_)
+    return file_writer_->Finish(callback);
+
+  return net::OK;
+}
+
 //============================ UrlFetchRequestBase ===========================
 
 UrlFetchRequestBase::UrlFetchRequestBase(RequestSender* sender)
@@ -139,11 +191,15 @@ void UrlFetchRequestBase::Start(const std::string& access_token,
       net::LOAD_DISABLE_CACHE);
 
   base::FilePath output_file_path;
-  if (GetOutputFilePath(&output_file_path)) {
-    url_fetcher_->SaveResponseToFileAtPath(
-        output_file_path,
-        blocking_task_runner());
-  }
+  GetContentCallback get_content_callback;
+  GetOutputFilePath(&output_file_path, &get_content_callback);
+  if (!get_content_callback.is_null())
+    get_content_callback = CreateRelayCallback(get_content_callback);
+  response_writer_ = new ResponseWriter(blocking_task_runner(),
+                                        output_file_path,
+                                        get_content_callback);
+  url_fetcher_->SaveResponseWithWriter(
+      scoped_ptr<net::URLFetcherResponseWriter>(response_writer_));
 
   // Add request headers.
   // Note that SetExtraRequestHeaders clears the current headers and sets it
@@ -215,11 +271,13 @@ bool UrlFetchRequestBase::GetContentFile(base::FilePath* local_file_path,
   return false;
 }
 
-bool UrlFetchRequestBase::GetOutputFilePath(base::FilePath* local_file_path) {
-  return false;
+void UrlFetchRequestBase::GetOutputFilePath(
+    base::FilePath* local_file_path,
+    GetContentCallback* get_content_callback) {
 }
 
 void UrlFetchRequestBase::Cancel() {
+  response_writer_ = NULL;
   url_fetcher_.reset(NULL);
   RunCallbackOnPrematureFailure(GDATA_CANCELLED);
   sender_->RequestFinished(this);
@@ -329,15 +387,12 @@ void GetDataRequest::ParseResponse(GDataErrorCode fetch_error_code,
 }
 
 void GetDataRequest::ProcessURLFetchResults(const URLFetcher* source) {
-  std::string data;
-  source->GetResponseAsString(&data);
-  scoped_ptr<base::Value> root_value;
   GDataErrorCode fetch_error_code = GetErrorCode(source);
 
   switch (fetch_error_code) {
     case HTTP_SUCCESS:
     case HTTP_CREATED:
-      ParseResponse(fetch_error_code, data);
+      ParseResponse(fetch_error_code, response_writer()->data());
       break;
     default:
       RunCallbackOnPrematureFailure(fetch_error_code);
@@ -490,11 +545,8 @@ void UploadRangeRequestBase::ProcessURLFetchResults(
   } else if (code == HTTP_CREATED || code == HTTP_SUCCESS) {
     // The upload is successfully done. Parse the response which should be
     // the entry's metadata.
-    std::string response_content;
-    source->GetResponseAsString(&response_content);
-
     ParseJson(blocking_task_runner(),
-              response_content,
+              response_writer()->data(),
               base::Bind(&UploadRangeRequestBase::OnDataParsed,
                          weak_ptr_factory_.GetWeakPtr(),
                          code));
@@ -638,11 +690,12 @@ GURL DownloadFileRequestBase::GetURL() const {
   return download_url_;
 }
 
-bool DownloadFileRequestBase::GetOutputFilePath(
-    base::FilePath* local_file_path) {
+void DownloadFileRequestBase::GetOutputFilePath(
+    base::FilePath* local_file_path,
+    GetContentCallback* get_content_callback) {
   // Configure so that the downloaded content is saved to |output_file_path_|.
   *local_file_path = output_file_path_;
-  return true;
+  *get_content_callback = get_content_callback_;
 }
 
 void DownloadFileRequestBase::OnURLFetchDownloadProgress(
@@ -653,26 +706,14 @@ void DownloadFileRequestBase::OnURLFetchDownloadProgress(
     progress_callback_.Run(current, total);
 }
 
-bool DownloadFileRequestBase::ShouldSendDownloadData() {
-  return !get_content_callback_.is_null();
-}
-
-void DownloadFileRequestBase::OnURLFetchDownloadData(
-    const URLFetcher* source,
-    scoped_ptr<std::string> download_data) {
-  if (!get_content_callback_.is_null())
-    get_content_callback_.Run(HTTP_SUCCESS, download_data.Pass());
-}
-
 void DownloadFileRequestBase::ProcessURLFetchResults(const URLFetcher* source) {
   GDataErrorCode code = GetErrorCode(source);
 
   // Take over the ownership of the the downloaded temp file.
   base::FilePath temp_file;
-  if (code == HTTP_SUCCESS &&
-      !source->GetResponseAsFilePath(true,  // take_ownership
-                                     &temp_file)) {
-    code = GDATA_FILE_ERROR;
+  if (code == HTTP_SUCCESS) {
+    response_writer()->DisownFile();
+    temp_file = output_file_path_;
   }
 
   download_action_callback_.Run(code, temp_file);

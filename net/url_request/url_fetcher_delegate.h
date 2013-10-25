@@ -28,19 +28,6 @@ class NET_EXPORT URLFetcherDelegate {
   virtual void OnURLFetchDownloadProgress(const URLFetcher* source,
                                           int64 current, int64 total);
 
-  // This will be called when some part of the response is read.
-  // |download_data| contains the current bytes received since the last call.
-  // This will be called after ShouldSendDownloadData() and only if the latter
-  // returns true.
-  virtual void OnURLFetchDownloadData(const URLFetcher* source,
-                                      scoped_ptr<std::string> download_data);
-
-  // This indicates if OnURLFetchDownloadData should be called.
-  // This will be called before OnURLFetchDownloadData is called, and only if
-  // this returns true.
-  // Default implementation is false.
-  virtual bool ShouldSendDownloadData();
-
   // This will be called when uploading of POST or PUT requests proceeded.
   // |current| denotes the number of bytes sent so far, and |total| is the
   // total size of uploading data (or -1 if chunked upload is enabled).

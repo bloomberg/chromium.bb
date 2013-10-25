@@ -9,15 +9,8 @@ namespace net {
 void URLFetcherDelegate::OnURLFetchDownloadProgress(
     const URLFetcher* source, int64 current, int64 total) {}
 
-void URLFetcherDelegate::OnURLFetchDownloadData(
-    const URLFetcher* source, scoped_ptr<std::string> download_data) {}
-
 void URLFetcherDelegate::OnURLFetchUploadProgress(
     const URLFetcher* source, int64 current, int64 total) {}
-
-bool URLFetcherDelegate::ShouldSendDownloadData() {
-  return false;
-}
 
 URLFetcherDelegate::~URLFetcherDelegate() {}
 

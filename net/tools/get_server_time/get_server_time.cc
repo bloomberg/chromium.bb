@@ -83,17 +83,6 @@ class QuitDelegate : public net::URLFetcherDelegate {
     NOTREACHED();
   }
 
-  virtual void OnURLFetchDownloadData(
-      const net::URLFetcher* source,
-      scoped_ptr<std::string> download_data) OVERRIDE{
-    NOTREACHED();
-  }
-
-  virtual bool ShouldSendDownloadData() OVERRIDE {
-    NOTREACHED();
-    return false;
-  }
-
   virtual void OnURLFetchUploadProgress(const net::URLFetcher* source,
                                         int64 current, int64 total) OVERRIDE {
     NOTREACHED();

@@ -101,8 +101,7 @@ GURL GetContactPhotoRequest::GetURL() const {
 void GetContactPhotoRequest::ProcessURLFetchResults(
     const net::URLFetcher* source) {
   GDataErrorCode code = GetErrorCode(source);
-  scoped_ptr<std::string> data(new std::string);
-  source->GetResponseAsString(data.get());
+  scoped_ptr<std::string> data(new std::string(response_writer()->data()));
   callback_.Run(code, data.Pass());
   OnProcessURLFetchResultsComplete();
 }

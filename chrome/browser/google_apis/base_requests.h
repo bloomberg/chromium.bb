@@ -18,6 +18,7 @@
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
+#include "net/url_request/url_fetcher_response_writer.h"
 #include "url/gurl.h"
 
 namespace base {
@@ -34,6 +35,11 @@ typedef base::Callback<void(scoped_ptr<base::Value> value)> ParseJsonCallback;
 
 // Callback used for DownloadFileRequest and ResumeUploadRequestBase.
 typedef base::Callback<void(int64 progress, int64 total)> ProgressCallback;
+
+// Callback used to get the content from DownloadFileRequest.
+typedef base::Callback<void(
+    GDataErrorCode error,
+    scoped_ptr<std::string> content)> GetContentCallback;
 
 // Parses JSON passed in |json| on |blocking_task_runner|. Runs |callback| on
 // the calling thread when finished with either success or failure.
@@ -79,6 +85,38 @@ class AuthenticatedRequestInterface {
   // Cancels the request. It will invoke the callback object passed in
   // each request's constructor with error code GDATA_CANCELLED.
   virtual void Cancel() = 0;
+};
+
+//=========================== ResponseWriter ==================================
+
+// Saves the response for the request to a file or string.
+class ResponseWriter : public net::URLFetcherResponseWriter {
+ public:
+  // If file_path is not empty, the response will be saved with file_writer_,
+  // otherwise it will be saved to data_.
+  ResponseWriter(base::TaskRunner* file_task_runner,
+                 const base::FilePath& file_path,
+                 const GetContentCallback& get_content_callback);
+  virtual ~ResponseWriter();
+
+  const std::string& data() const { return data_; }
+
+  // Disowns the output file.
+  void DisownFile();
+
+  // URLFetcherResponseWriter overrides:
+  virtual int Initialize(const net::CompletionCallback& callback) OVERRIDE;
+  virtual int Write(net::IOBuffer* buffer,
+                    int num_bytes,
+                    const net::CompletionCallback& callback) OVERRIDE;
+  virtual int Finish(const net::CompletionCallback& callback) OVERRIDE;
+
+ private:
+  const GetContentCallback get_content_callback_;
+  std::string data_;
+  scoped_ptr<net::URLFetcherFileWriter> file_writer_;
+
+  DISALLOW_COPY_AND_ASSIGN(ResponseWriter);
 };
 
 //============================ UrlFetchRequestBase ===========================
@@ -128,7 +166,10 @@ class UrlFetchRequestBase : public AuthenticatedRequestInterface,
 
   // Used by a derived class to set an output file path if they want to save
   // the downloaded content to a file at a specific path.
-  virtual bool GetOutputFilePath(base::FilePath* local_file_path);
+  // Sets |get_content_callback|, which is called when some part of the response
+  // is read.
+  virtual void GetOutputFilePath(base::FilePath* local_file_path,
+                                 GetContentCallback* get_content_callback);
 
   // Invoked by OnURLFetchComplete when the request completes without an
   // authentication error. Must be implemented by a derived class.
@@ -148,6 +189,9 @@ class UrlFetchRequestBase : public AuthenticatedRequestInterface,
   // Returns true if called on the thread where the constructor was called.
   bool CalledOnValidThread();
 
+  // Returns the writer which is used to save the response for the request.
+  ResponseWriter* response_writer() const { return response_writer_; }
+
   // Returns the task runner that should be used for blocking tasks.
   base::TaskRunner* blocking_task_runner() const;
 
@@ -161,6 +205,7 @@ class UrlFetchRequestBase : public AuthenticatedRequestInterface,
   ReAuthenticateCallback re_authenticate_callback_;
   int re_authenticate_count_;
   scoped_ptr<net::URLFetcher> url_fetcher_;
+  ResponseWriter* response_writer_;  // Owned by |url_fetcher_|.
   RequestSender* sender_;
 
   base::ThreadChecker thread_checker_;
@@ -426,11 +471,6 @@ class GetUploadStatusRequestBase : public UploadRangeRequestBase {
 
 //============================ DownloadFileRequest ===========================
 
-// Callback type for getting the content from DownloadFileRequest.
-typedef base::Callback<void(
-    GDataErrorCode error,
-    scoped_ptr<std::string> content)> GetContentCallback;
-
 // Callback type for receiving the completion of DownloadFileRequest.
 typedef base::Callback<void(GDataErrorCode error,
                             const base::FilePath& temp_file)>
@@ -468,17 +508,15 @@ class DownloadFileRequestBase : public UrlFetchRequestBase {
  protected:
   // UrlFetchRequestBase overrides.
   virtual GURL GetURL() const OVERRIDE;
-  virtual bool GetOutputFilePath(base::FilePath* local_file_path) OVERRIDE;
+  virtual void GetOutputFilePath(
+      base::FilePath* local_file_path,
+      GetContentCallback* get_content_callback) OVERRIDE;
   virtual void ProcessURLFetchResults(const net::URLFetcher* source) OVERRIDE;
   virtual void RunCallbackOnPrematureFailure(GDataErrorCode code) OVERRIDE;
 
   // net::URLFetcherDelegate overrides.
   virtual void OnURLFetchDownloadProgress(const net::URLFetcher* source,
                                           int64 current, int64 total) OVERRIDE;
-  virtual bool ShouldSendDownloadData() OVERRIDE;
-  virtual void OnURLFetchDownloadData(
-      const net::URLFetcher* source,
-      scoped_ptr<std::string> download_data) OVERRIDE;
 
  private:
   const DownloadActionCallback download_action_callback_;
