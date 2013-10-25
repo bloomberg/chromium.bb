@@ -657,6 +657,8 @@ class MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest
         ash::Shell::GetInstance()->delegate());
     shell_delegate_->set_multi_profiles_enabled(true);
     window_manager_ = chrome::MultiUserWindowManager::GetInstance();
+    EXPECT_EQ(chrome::MultiUserWindowManager::GetMultiProfileMode(),
+              chrome::MultiUserWindowManager::MULTI_PROFILE_MODE_SEPARATED);
   }
 
   virtual void TearDown() {

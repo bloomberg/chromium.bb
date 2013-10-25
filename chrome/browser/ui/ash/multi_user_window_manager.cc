@@ -120,6 +120,8 @@ void MultiUserWindowManager::DeleteInstance() {
   if (g_instance)
     delete g_instance;
   g_instance = NULL;
+  // With valgrind we might change modes and have therefore to reset the mode.
+  multi_user_mode_ = MULTI_PROFILE_MODE_INVALID;
 }
 
 // static
