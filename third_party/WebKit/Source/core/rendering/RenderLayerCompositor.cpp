@@ -46,6 +46,7 @@
 #include "core/frame/animation/AnimationController.h"
 #include "core/page/scrolling/ScrollingConstraints.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
+#include "core/platform/OverscrollTheme.h"
 #include "core/platform/ScrollbarTheme.h"
 #include "core/platform/graphics/GraphicsLayer.h"
 #include "core/platform/graphics/GraphicsLayerClient.h"
@@ -1483,7 +1484,7 @@ void RenderLayerCompositor::updateRootLayerPosition()
         m_rootContentLayer->setPosition(documentRect.location());
 #if USE(RUBBER_BANDING)
         if (m_layerForOverhangShadow)
-            ScrollbarTheme::theme()->updateOverhangShadowLayer(m_layerForOverhangShadow.get(), m_rootContentLayer.get());
+            OverscrollTheme::theme()->updateOverhangShadowLayer(m_layerForOverhangShadow.get(), m_rootContentLayer.get());
 #endif
     }
     if (m_containerLayer) {
@@ -2198,8 +2199,8 @@ void RenderLayerCompositor::updateOverflowControlsLayers()
     if (requiresOverhangLayers()) {
         if (!m_layerForOverhangShadow) {
             m_layerForOverhangShadow = GraphicsLayer::create(graphicsLayerFactory(), this);
-            ScrollbarTheme::theme()->setUpOverhangShadowLayer(m_layerForOverhangShadow.get());
-            ScrollbarTheme::theme()->updateOverhangShadowLayer(m_layerForOverhangShadow.get(), m_rootContentLayer.get());
+            OverscrollTheme::theme()->setUpOverhangShadowLayer(m_layerForOverhangShadow.get());
+            OverscrollTheme::theme()->updateOverhangShadowLayer(m_layerForOverhangShadow.get(), m_rootContentLayer.get());
             m_scrollLayer->addChild(m_layerForOverhangShadow.get());
         }
     } else {

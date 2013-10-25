@@ -115,6 +115,7 @@
 #include "core/platform/ContextMenuItem.h"
 #include "core/platform/Cursor.h"
 #include "core/platform/DragData.h"
+#include "core/platform/OverscrollTheme.h"
 #include "core/platform/PopupMenuClient.h"
 #include "core/platform/ScrollbarTheme.h"
 #include "core/platform/chromium/ChromiumDataObject.h"
@@ -3919,7 +3920,7 @@ void WebViewImpl::setIsAcceleratedCompositingActive(bool active)
             m_layerTreeView->setBackgroundColor(backgroundColor());
             m_layerTreeView->setHasTransparentBackground(isTransparent());
 #if USE(RUBBER_BANDING)
-            RefPtr<Image> overhangImage = ScrollbarTheme::theme()->getOverhangImage();
+            RefPtr<Image> overhangImage = OverscrollTheme::theme()->getOverhangImage();
             if (overhangImage)
                 m_layerTreeView->setOverhangBitmap(overhangImage->nativeImageForCurrentFrame()->bitmap());
 #endif

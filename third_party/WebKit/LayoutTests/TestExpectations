@@ -189,6 +189,9 @@ crbug.com/310679 [ Mac ] fast/frames/frame-set-scaling-hit.html [ ImageOnlyFailu
 crbug.com/310679 [ Mac ] virtual/gpu/compositedscrolling/scrollbars/custom-scrollbar-with-incomplete-style.html [ ImageOnlyFailure Pass ]
 crbug.com/310679 [ Mac ] fast/repaint/background-scaling.html [ ImageOnlyFailure Pass ]
 crbug.com/310679 [ Mac ] fast/repaint/scale-page-shrink.html [ ImageOnlyFailure Pass ]
+crbug.com/310679 [ Mac ] compositing/overflow/overflow-scaled-descendant-overlapping.html [ NeedsRebaseline ]
+crbug.com/310679 [ Mac ] compositing/repaint/page-scale-repaint.html [ NeedsRebaseline ]
+crbug.com/310679 [ Mac ] virtual/gpu/compositedscrolling/overflow/overflow-scaled-descendant-overlapping.html [ NeedsRebaseline ]
 
 # Tests failing since applyPageScaleFactorInCompositor enabled
 crbug.com/225184 fast/repaint/relayout-fixed-position-after-scale.html [ ImageOnlyFailure ]

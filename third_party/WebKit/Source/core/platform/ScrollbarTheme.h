@@ -36,10 +36,6 @@ class PlatformMouseEvent;
 class ScrollbarThemeClient;
 class ScrollView;
 
-#if USE(RUBBER_BANDING)
-class GraphicsLayer;
-#endif
-
 class ScrollbarTheme {
     WTF_MAKE_NONCOPYABLE(ScrollbarTheme); WTF_MAKE_FAST_ALLOCATED;
 public:
@@ -86,12 +82,6 @@ public:
     virtual void paintTickmarks(GraphicsContext*, ScrollbarThemeClient*, const IntRect&) { }
     virtual void paintOverhangBackground(ScrollView*, GraphicsContext*, const IntRect&, const IntRect&, const IntRect&);
     virtual void paintOverhangShadows(ScrollView*, GraphicsContext*, const IntRect&, const IntRect&, const IntRect&) { }
-
-#if USE(RUBBER_BANDING)
-    virtual PassRefPtr<Image> getOverhangImage() { return PassRefPtr<Image>(); }
-    virtual void setUpOverhangShadowLayer(GraphicsLayer*) { }
-    virtual void updateOverhangShadowLayer(GraphicsLayer* shadowLayer, GraphicsLayer* rootContentLayer) { }
-#endif
 
     virtual bool shouldCenterOnThumb(ScrollbarThemeClient*, const PlatformMouseEvent&) { return false; }
     virtual bool shouldSnapBackToDragOrigin(ScrollbarThemeClient*, const PlatformMouseEvent&) { return false; }
