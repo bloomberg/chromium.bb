@@ -52,11 +52,6 @@ PassRefPtr<InputType> PasswordInputType::create(HTMLInputElement& element)
     return adoptRef(new PasswordInputType(element));
 }
 
-HTMLElement* PasswordInputType::passwordGeneratorButtonElement() const
-{
-    return m_generatorButton.get();
-}
-
 bool PasswordInputType::isPasswordGenerationEnabled() const
 {
     if (isPasswordGenerationDecorationEnabled())
@@ -83,16 +78,10 @@ void PasswordInputType::createShadowSubtree()
     BaseTextInputType::createShadowSubtree();
     if (!isPasswordGenerationEnabled())
         return;
-    m_generatorButton = PasswordGeneratorButtonElement::create(element().document());
+    RefPtr<PasswordGeneratorButtonElement> generatorButton = PasswordGeneratorButtonElement::create(element().document());
     if (!isPasswordGenerationDecorationEnabled())
-        m_generatorButton->setInlineStyleProperty(CSSPropertyDisplay, CSSValueNone);
-    containerElement()->appendChild(m_generatorButton.get());
-}
-
-void PasswordInputType::destroyShadowSubtree()
-{
-    BaseTextInputType::destroyShadowSubtree();
-    m_generatorButton = 0;
+        generatorButton->setInlineStyleProperty(CSSPropertyDisplay, CSSValueNone);
+    containerElement()->appendChild(generatorButton.release());
 }
 
 const AtomicString& PasswordInputType::formControlType() const

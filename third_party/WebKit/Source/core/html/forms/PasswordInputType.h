@@ -42,10 +42,8 @@ public:
 
 private:
     PasswordInputType(HTMLInputElement& element) : BaseTextInputType(element) { }
-    virtual HTMLElement* passwordGeneratorButtonElement() const OVERRIDE;
     virtual bool needsContainer() const OVERRIDE;
     virtual void createShadowSubtree() OVERRIDE;
-    virtual void destroyShadowSubtree() OVERRIDE;
     virtual const AtomicString& formControlType() const OVERRIDE;
     virtual bool shouldSaveAndRestoreFormControlState() const OVERRIDE;
     virtual FormControlState saveFormControlState() const OVERRIDE;
@@ -61,8 +59,6 @@ private:
     bool isPasswordGenerationEnabled() const;
     // For testing.
     bool isPasswordGenerationDecorationEnabled() const;
-
-    RefPtr<PasswordGeneratorButtonElement> m_generatorButton;
 };
 
 } // namespace WebCore

@@ -35,6 +35,7 @@
 #include "core/dom/NodeRenderStyle.h"
 #include "core/fetch/ImageResource.h"
 #include "core/html/HTMLInputElement.h"
+#include "core/html/shadow/ShadowElementNames.h"
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
@@ -45,13 +46,18 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-// FIXME: This class is only used in Chromium and has no layout tests.
-
 PasswordGeneratorButtonElement::PasswordGeneratorButtonElement(Document& document)
     : HTMLDivElement(HTMLNames::divTag, document)
     , m_isInHoverState(false)
 {
     setHasCustomStyleCallbacks();
+}
+
+PassRefPtr<PasswordGeneratorButtonElement> PasswordGeneratorButtonElement::create(Document& document)
+{
+    RefPtr<PasswordGeneratorButtonElement> element = adoptRef(new PasswordGeneratorButtonElement(document));
+    element->setAttribute(idAttr, ShadowElementNames::passwordGenerator());
+    return element.release();
 }
 
 inline HTMLInputElement* PasswordGeneratorButtonElement::hostInput()

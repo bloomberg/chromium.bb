@@ -50,6 +50,8 @@
 #include "core/events/ThreadLocalEventNames.h"
 #include "core/events/TouchEvent.h"
 #include "core/fileapi/FileList.h"
+#include "core/frame/Frame.h"
+#include "core/frame/FrameView.h"
 #include "core/html/HTMLCollection.h"
 #include "core/html/HTMLDataListElement.h"
 #include "core/html/HTMLFormElement.h"
@@ -61,8 +63,7 @@
 #include "core/html/forms/InputType.h"
 #include "core/html/forms/SearchInputType.h"
 #include "core/html/parser/HTMLParserIdioms.h"
-#include "core/frame/Frame.h"
-#include "core/frame/FrameView.h"
+#include "core/html/shadow/ShadowElementNames.h"
 #include "core/page/UseCounter.h"
 #include "core/platform/DateTimeChooser.h"
 #include "core/rendering/RenderTextControlSingleLine.h"
@@ -182,7 +183,7 @@ HTMLElement* HTMLInputElement::innerTextElement() const
 
 HTMLElement* HTMLInputElement::passwordGeneratorButtonElement() const
 {
-    return m_inputType->passwordGeneratorButtonElement();
+    return toHTMLElement(userAgentShadowRoot()->getElementById(ShadowElementNames::passwordGenerator()));
 }
 
 bool HTMLInputElement::shouldAutocomplete() const
