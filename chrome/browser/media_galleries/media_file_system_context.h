@@ -19,14 +19,9 @@ class MediaFileSystemContext {
  public:
   virtual ~MediaFileSystemContext() {}
 
-  // Register a media file system (filtered to media files) for |path| and
-  // return the new file system id.
-  virtual std::string RegisterFileSystemForMassStorage(
-      const std::string& device_id, const base::FilePath& path) = 0;
-
-  // Registers and returns the file system id for the MTP or PTP device
-  // specified by |device_id| and |path|.
-  virtual std::string RegisterFileSystemForMTPDevice(
+  // Register a new media file system for |path| and return the corresponding
+  // filesystem ID.
+  virtual std::string RegisterFileSystem(
       const std::string& device_id, const base::FilePath& path) = 0;
 
   // Revoke the passed |fsid|.

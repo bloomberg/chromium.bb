@@ -320,14 +320,8 @@ class ExtensionGalleriesHost
       if (!MediaStorageUtil::CanCreateFileSystem(device_id, path))
         continue;
 
-      std::string fsid;
-      if (StorageInfo::IsMassStorageDevice(device_id)) {
-        fsid = file_system_context_->RegisterFileSystemForMassStorage(
-            device_id, path);
-      } else {
-        fsid = file_system_context_->RegisterFileSystemForMTPDevice(
-            device_id, path);
-      }
+      std::string fsid =
+          file_system_context_->RegisterFileSystem(device_id, path);
       if (fsid.empty())
         continue;
 
@@ -506,10 +500,35 @@ class MediaFileSystemRegistry::MediaFileSystemContextImpl
   }
   virtual ~MediaFileSystemContextImpl() {}
 
+  virtual std::string RegisterFileSystem(
+      const std::string& device_id, const base::FilePath& path) OVERRIDE {
+    if (StorageInfo::IsMassStorageDevice(device_id)) {
+      return RegisterFileSystemForMassStorage(device_id, path);
+    } else {
+      return RegisterFileSystemForMTPDevice(device_id, path);
+    }
+  }
+
+  virtual void RevokeFileSystem(const std::string& fsid) OVERRIDE {
+    ImportedMediaGalleryRegistry* imported_registry =
+        ImportedMediaGalleryRegistry::GetInstance();
+    if (imported_registry->RevokeImportedFilesystemOnUIThread(fsid))
+      return;
+
+    IsolatedContext::GetInstance()->RevokeFileSystem(fsid);
+
+    content::BrowserThread::PostTask(
+        content::BrowserThread::IO, FROM_HERE, base::Bind(
+            &MTPDeviceMapService::RevokeMTPFileSystem,
+            base::Unretained(MTPDeviceMapService::GetInstance()),
+            fsid));
+  }
+
+ private:
   // Registers and returns the file system id for the mass storage device
   // specified by |device_id| and |path|.
-  virtual std::string RegisterFileSystemForMassStorage(
-      const std::string& device_id, const base::FilePath& path) OVERRIDE {
+  std::string RegisterFileSystemForMassStorage(
+      const std::string& device_id, const base::FilePath& path) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     DCHECK(StorageInfo::IsMassStorageDevice(device_id));
 
@@ -544,8 +563,8 @@ class MediaFileSystemRegistry::MediaFileSystemContextImpl
     return fsid;
   }
 
-  virtual std::string RegisterFileSystemForMTPDevice(
-      const std::string& device_id, const base::FilePath& path) OVERRIDE {
+  std::string RegisterFileSystemForMTPDevice(
+      const std::string& device_id, const base::FilePath& path) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     DCHECK(!StorageInfo::IsMassStorageDevice(device_id));
 
@@ -553,8 +572,8 @@ class MediaFileSystemRegistry::MediaFileSystemContextImpl
     CHECK(MediaStorageUtil::CanCreateFileSystem(device_id, path));
     std::string fs_name(extension_misc::kMediaFileSystemPathPart);
     const std::string fsid =
-        IsolatedContext::GetInstance()->RegisterFileSystemForPath(
-            fileapi::kFileSystemTypeDeviceMedia, path, &fs_name);
+        IsolatedContext::GetInstance()->RegisterFileSystemForVirtualPath(
+            fileapi::kFileSystemTypeDeviceMedia, fs_name, path);
     CHECK(!fsid.empty());
     content::BrowserThread::PostTask(
         content::BrowserThread::IO, FROM_HERE, base::Bind(
@@ -564,22 +583,6 @@ class MediaFileSystemRegistry::MediaFileSystemContextImpl
     return fsid;
   }
 
-  virtual void RevokeFileSystem(const std::string& fsid) OVERRIDE {
-    ImportedMediaGalleryRegistry* imported_registry =
-        ImportedMediaGalleryRegistry::GetInstance();
-    if (imported_registry->RevokeImportedFilesystemOnUIThread(fsid))
-      return;
-
-    IsolatedContext::GetInstance()->RevokeFileSystem(fsid);
-
-    content::BrowserThread::PostTask(
-        content::BrowserThread::IO, FROM_HERE, base::Bind(
-            &MTPDeviceMapService::RevokeMTPFileSystem,
-            base::Unretained(MTPDeviceMapService::GetInstance()),
-            fsid));
-  }
-
- private:
   MediaFileSystemRegistry* registry_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaFileSystemContextImpl);

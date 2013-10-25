@@ -75,10 +75,7 @@ class TestMediaFileSystemContext : public MediaFileSystemContext {
   virtual ~TestMediaFileSystemContext() {}
 
   // MediaFileSystemContext implementation.
-  virtual std::string RegisterFileSystemForMassStorage(
-      const std::string& device_id, const base::FilePath& path) OVERRIDE;
-
-  virtual std::string RegisterFileSystemForMTPDevice(
+  virtual std::string RegisterFileSystem(
       const std::string& device_id, const base::FilePath& path) OVERRIDE;
 
   virtual void RevokeFileSystem(const std::string& fsid) OVERRIDE;
@@ -123,15 +120,8 @@ TestMediaFileSystemContext::TestMediaFileSystemContext(
   registry_->file_system_context_.reset(this);
 }
 
-std::string TestMediaFileSystemContext::RegisterFileSystemForMassStorage(
+std::string TestMediaFileSystemContext::RegisterFileSystem(
     const std::string& device_id, const base::FilePath& path) {
-  CHECK(StorageInfo::IsMassStorageDevice(device_id));
-  return AddFSEntry(device_id, path);
-}
-
-std::string TestMediaFileSystemContext::RegisterFileSystemForMTPDevice(
-    const std::string& device_id, const base::FilePath& path) {
-  CHECK(!StorageInfo::IsMassStorageDevice(device_id));
   std::string fsid = AddFSEntry(device_id, path);
   return fsid;
 }
