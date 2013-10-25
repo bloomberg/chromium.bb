@@ -3320,9 +3320,15 @@ TEST_F(ExtensionServiceTest, UpdatePendingExtensionAlreadyInstalled) {
 }
 
 #if defined(ENABLE_BLACKLIST_TESTS)
+#if defined(OS_WIN)
+// Fails on chromium.webkit Vista Tests. http://crbug.com/310941
+#define MAYBE_SetUnsetBlacklistInPrefs DISABLED_SetUnsetBlacklistInPrefs
+#else
+#define MAYBE_SetUnsetBlacklistInPrefs SetUnsetBlacklistInPrefs
+#endif
 // Tests blacklisting then unblacklisting extensions after the service has been
 // initialized.
-TEST_F(ExtensionServiceTest, SetUnsetBlacklistInPrefs) {
+TEST_F(ExtensionServiceTest, MAYBE_SetUnsetBlacklistInPrefs) {
   scoped_refptr<FakeSafeBrowsingDatabaseManager> blacklist_db(
       new FakeSafeBrowsingDatabaseManager(true));
   Blacklist::ScopedDatabaseManagerForTest scoped_blacklist_db(blacklist_db);
