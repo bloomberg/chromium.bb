@@ -5,10 +5,28 @@
 import os
 import sys
 
+def _DoDBusWorkaround():
+  # Attempt to work around bug in GLib by getting DBus session bus
+  # address early. crbug.com/309093
+  import platform
+  import re
+  import subprocess
+  if (platform.uname()[0].lower() == 'linux' and
+      'DBUS_SESSION_BUS_ADDRESS' not in os.environ):
+    try:
+      dbus_output = subprocess.check_output(['dbus-launch']).split('\n')
+      for line in dbus_output:
+        m = re.match(r"([^=]+)\=(.+)", line)
+        if m:
+          os.environ[m.group(1)] = m.group(2)
+    except:
+      pass
+
 sys.path.append(os.path.join(os.path.dirname(__file__),
     os.pardir, os.pardir, os.pardir, 'tools', 'telemetry'))
 
 from telemetry import test_runner
 
 if __name__ == '__main__':
+  _DoDBusWorkaround()
   sys.exit(test_runner.Main())
