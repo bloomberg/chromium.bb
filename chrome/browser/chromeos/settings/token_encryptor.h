@@ -33,11 +33,11 @@ class TokenEncryptor {
       const std::string& encrypted_token_hex) = 0;
 };
 
-// TokenEncryptor based on the cryptohome daemon. This implementation is used
-// in production.
+// TokenEncryptor based on the system salt from cryptohome daemon. This
+// implementation is used in production.
 class CryptohomeTokenEncryptor : public TokenEncryptor {
  public:
-  CryptohomeTokenEncryptor();
+  explicit CryptohomeTokenEncryptor(const std::string& system_salt);
   virtual ~CryptohomeTokenEncryptor();
 
   // TokenEncryptor overrides:
@@ -46,10 +46,6 @@ class CryptohomeTokenEncryptor : public TokenEncryptor {
       const std::string& encrypted_token_hex) OVERRIDE;
 
  private:
-  // Loads the system salt key based on the system salt from the cryptohome
-  // daemon. Returns true on success.
-  bool LoadSystemSaltKey();
-
   // Converts |passphrase| to a SymmetricKey using the given |salt|.
   crypto::SymmetricKey* PassphraseToKey(const std::string& passphrase,
                                         const std::string& salt);
@@ -64,7 +60,8 @@ class CryptohomeTokenEncryptor : public TokenEncryptor {
                                   const std::string& salt,
                                   const std::string& encrypted_token_hex);
 
-  // The cached system salt obtained from the cryptohome daemon.
+  // The cached system salt passed to the constructor, originally coming
+  // from cryptohome daemon.
   std::string system_salt_;
 
   // A key based on the system salt.  Useful for encrypting device-level

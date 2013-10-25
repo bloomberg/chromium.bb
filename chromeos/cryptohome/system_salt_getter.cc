@@ -38,10 +38,6 @@ std::string SystemSaltGetter::GetSystemSaltSync() {
   return system_salt_;
 }
 
-std::string SystemSaltGetter::GetCachedSystemSalt() {
-  return system_salt_;
-}
-
 void SystemSaltGetter::GetSystemSaltInternal(
     const GetSystemSaltCallback& callback,
     bool service_is_available) {

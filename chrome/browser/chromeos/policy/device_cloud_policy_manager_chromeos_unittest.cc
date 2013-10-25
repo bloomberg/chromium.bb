@@ -108,10 +108,9 @@ class DeviceCloudPolicyManagerChromeOSTest
     TestingBrowserProcess::GetGlobal()->SetSystemRequestContext(
         request_context_getter_.get());
     TestingBrowserProcess::GetGlobal()->SetLocalState(&local_state_);
-    chromeos::DeviceOAuth2TokenServiceFactory::Initialize();
-    // This is needed as SystemSaltGetter is used for encrypting tokens in
-    // CryptohomeTokenEncryptor.
+    // SystemSaltGetter is used in DeviceOAuth2TokenServiceFactory.
     chromeos::SystemSaltGetter::Initialize();
+    chromeos::DeviceOAuth2TokenServiceFactory::Initialize();
     url_fetcher_response_code_ = 200;
     url_fetcher_response_string_ = "{\"access_token\":\"accessToken4Test\","
                                    "\"expires_in\":1234,"

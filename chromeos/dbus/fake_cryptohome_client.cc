@@ -17,6 +17,7 @@ FakeCryptohomeClient::FakeCryptohomeClient()
       async_call_id_(1),
       tpm_is_ready_counter_(0),
       unmount_result_(true),
+      system_salt_(GetStubSystemSalt()),
       locked_(false),
       weak_ptr_factory_(this) {}
 
@@ -80,7 +81,7 @@ void FakeCryptohomeClient::AsyncRemove(
 }
 
 bool FakeCryptohomeClient::GetSystemSalt(std::vector<uint8>* salt) {
-  *salt = GetStubSystemSalt();
+  *salt = system_salt_;
   return true;
 }
 

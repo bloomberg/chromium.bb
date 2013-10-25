@@ -40,11 +40,6 @@ class CHROMEOS_EXPORT SystemSaltGetter {
   // DEPRECATED: DO NOT USE.
   std::string GetSystemSaltSync();
 
-  // Returns system hash in hex encoded ascii format, cached by a prior call
-  // to GetSystemSalt(). Note: this may return an empty string (e.g. if
-  // GetSystemSalt() is not yet called).
-  std::string GetCachedSystemSalt();
-
  protected:
   SystemSaltGetter();
   ~SystemSaltGetter();

@@ -22,7 +22,13 @@ namespace {
 const size_t kNonceSize = 16;
 }  // namespace
 
-CryptohomeTokenEncryptor::CryptohomeTokenEncryptor() {
+CryptohomeTokenEncryptor::CryptohomeTokenEncryptor(
+    const std::string& system_salt)
+    : system_salt_(system_salt) {
+  DCHECK(!system_salt.empty());
+  // TODO(davidroche): should this use the system salt for both the password
+  // and the salt value, or should this use a separate salt value?
+  system_salt_key_.reset(PassphraseToKey(system_salt_, system_salt_));
 }
 
 CryptohomeTokenEncryptor::~CryptohomeTokenEncryptor() {
@@ -34,7 +40,7 @@ std::string CryptohomeTokenEncryptor::EncryptWithSystemSalt(
   if (!base::SysInfo::IsRunningOnChromeOS())
     return token;
 
-  if (!LoadSystemSaltKey()) {
+  if (!system_salt_key_) {
     LOG(WARNING) << "System salt key is not available for encrypt.";
     return std::string();
   }
@@ -49,26 +55,13 @@ std::string CryptohomeTokenEncryptor::DecryptWithSystemSalt(
   if (!base::SysInfo::IsRunningOnChromeOS())
     return encrypted_token_hex;
 
-  if (!LoadSystemSaltKey()) {
+  if (!system_salt_key_) {
     LOG(WARNING) << "System salt key is not available for decrypt.";
     return std::string();
   }
   return DecryptTokenWithKey(system_salt_key_.get(),
                              system_salt_,
                              encrypted_token_hex);
-}
-
-// TODO: should this use the system salt for both the password and the salt
-// value, or should this use a separate salt value?
-bool CryptohomeTokenEncryptor::LoadSystemSaltKey() {
-  // Assume the system salt should be obtained beforehand at login time.
-  if (system_salt_.empty())
-    system_salt_ = SystemSaltGetter::Get()->GetCachedSystemSalt();
-  if (system_salt_.empty())
-    return false;
-  if (!system_salt_key_.get())
-    system_salt_key_.reset(PassphraseToKey(system_salt_, system_salt_));
-  return system_salt_key_.get();
 }
 
 crypto::SymmetricKey* CryptohomeTokenEncryptor::PassphraseToKey(
