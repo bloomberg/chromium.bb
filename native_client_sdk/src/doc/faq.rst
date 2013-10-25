@@ -387,12 +387,9 @@ Google has taken several steps to ensure that Native Client's security
 works, including:
 
 * Open source, peer-reviewed papers describing the design.
-* A `security contest
-  <https://developers.google.com/native-client/community/security-contest/>`_.
+* A :doc:`security contest <community/security-contest/index>`.
 * Multiple internal and external security reviews.
 * The ongoing vigilance of our engineering and developer community.
-
-.. TODO: Fix security contest link once ReST-ified.
 
 Google is committed to making Native Client safer than JavaScript and
 other popular browser technologies. If you have suggestions for security
