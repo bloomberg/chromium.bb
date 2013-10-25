@@ -3545,7 +3545,6 @@
             'platform/chromium/support/WebMediaStreamTrack.cpp',
             'platform/chromium/support/WebPrerender.cpp',
             'platform/chromium/support/WebRTCConfiguration.cpp',
-            'platform/chromium/support/WebRTCICECandidate.cpp',
             'platform/chromium/support/WebRTCSessionDescription.cpp',
             'platform/chromium/support/WebRTCSessionDescriptionRequest.cpp',
             'platform/chromium/support/WebRTCStatsRequest.cpp',

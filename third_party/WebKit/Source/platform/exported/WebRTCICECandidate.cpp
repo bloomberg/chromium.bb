@@ -29,12 +29,11 @@
  */
 
 #include "config.h"
-
 #include "public/platform/WebRTCICECandidate.h"
 
+#include "public/platform/WebString.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
-#include "public/platform/WebString.h"
 
 namespace WebKit {
 

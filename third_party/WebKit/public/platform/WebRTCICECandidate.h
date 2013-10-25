@@ -56,17 +56,17 @@ public:
         return *this;
     }
 
-    BLINK_EXPORT void assign(const WebRTCICECandidate&);
+    BLINK_PLATFORM_EXPORT void assign(const WebRTCICECandidate&);
 
-    BLINK_EXPORT void initialize(const WebString& candidate, const WebString& sdpMid, unsigned short sdpMLineIndex);
-    BLINK_EXPORT void reset();
+    BLINK_PLATFORM_EXPORT void initialize(const WebString& candidate, const WebString& sdpMid, unsigned short sdpMLineIndex);
+    BLINK_PLATFORM_EXPORT void reset();
     bool isNull() const { return m_private.isNull(); }
 
-    BLINK_EXPORT WebString candidate() const;
-    BLINK_EXPORT WebString sdpMid() const;
-    BLINK_EXPORT unsigned short sdpMLineIndex() const;
+    BLINK_PLATFORM_EXPORT WebString candidate() const;
+    BLINK_PLATFORM_EXPORT WebString sdpMid() const;
+    BLINK_PLATFORM_EXPORT unsigned short sdpMLineIndex() const;
 
-#if BLINK_IMPLEMENTATION
+#if INSIDE_BLINK
     WebRTCICECandidate(WebString candidate, WebString sdpMid, unsigned short sdpMLineIndex)
     {
         this->initialize(candidate, sdpMid, sdpMLineIndex);

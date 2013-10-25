@@ -206,6 +206,7 @@
       'exported/WebHTTPBody.cpp',
       'exported/WebHTTPLoadInfo.cpp',
       'exported/WebPrerenderingSupport.cpp',
+      'exported/WebRTCICECandidate.cpp',
       'exported/WebSocketStreamError.cpp',
       'exported/WebThreadSafeData.cpp',
       'exported/WebURL.cpp',
