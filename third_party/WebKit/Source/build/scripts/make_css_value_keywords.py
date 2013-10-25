@@ -94,7 +94,6 @@ bool isValueAllowedInMode(unsigned short id, CSSParserMode mode)
         %(quirks_mode_values_keywords)s
             return isQuirksModeBehavior(mode);
         %(quirks_mode_or_ua_sheet_mode_values_keywords)s
-            // FIXME: Investigate using isInternalPropertyAndValueAllowedForMode() instead.
             return isUASheetBehavior(mode) || isQuirksModeBehavior(mode);
         default:
             return true;
