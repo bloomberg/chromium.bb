@@ -12,12 +12,6 @@
 #include "ui/events/keycodes/keyboard_code_conversion_win.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 
-// TODO(beng): wtf is this? layering violation!!!1
-#if defined(USE_AURA)
-#include "ui/aura/root_window.h"
-#include "ui/aura/window.h"
-#endif
-
 namespace {
 
 // InputDispatcher ------------------------------------------------------------

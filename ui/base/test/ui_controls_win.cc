@@ -8,7 +8,6 @@
 #include "base/message_loop/message_loop.h"
 #include "ui/base/test/ui_controls_internal_win.h"
 #include "ui/gfx/point.h"
-#include "ui/views/view.h"
 
 namespace ui_controls {
 bool g_ui_controls_enabled = false;
