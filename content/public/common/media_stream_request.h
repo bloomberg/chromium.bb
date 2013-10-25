@@ -174,20 +174,14 @@ struct CONTENT_EXPORT MediaStreamRequest {
 
   ~MediaStreamRequest();
 
-  // This is the render process id that will receive the output of a generated
-  // MediaStream.
-  // If the MediaStreamType is MEDIA_DEVICE_AUDIO_CAPTURE or
-  // MEDIA_DEVICE_VIDEO_CAPTURE, this is the render process id generating the
-  // request. If it is MEDIA_TAB_AUDIO_CAPTURE or MEDIA_TAB_VIDEO_CAPTURE,
-  // this is the target process id.
+  // This is the render process id for the renderer associated with generating
+  // frames for a MediaStream. Any indicators associated with a capture will be
+  // displayed for this renderer.
   int render_process_id;
 
-  // This is the render view id that will receive the output of a generated
-  // MediaStream.
-  // If the MediaStreamType is MEDIA_DEVICE_AUDIO_CAPTURE or
-  // MEDIA_DEVICE_VIDEO_CAPTURE, this is the render view id generating the
-  // request. If it is MEDIA_TAB_AUDIO_CAPTURE or MEDIA_TAB_VIDEO_CAPTURE,
-  // this is the target render view id.
+  // This is the render view id for the renderer associated with generating
+  // frames for a MediaStream. Any indicators associated with a capture will be
+  // displayed for this renderer.
   int render_view_id;
 
   // The unique id combined with render_process_id and render_view_id for

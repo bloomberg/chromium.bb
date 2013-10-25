@@ -121,16 +121,16 @@ class MediaStreamManager::DeviceRequest {
   MediaStreamRequester* const requester;  // Can be NULL.
   MediaStreamRequest request;
 
-  // The render process id that requested this stream to be generated. This may
-  // be different from MediaStreamRequest::render_process_id since
-  // MediaStreamRequest::render_process_id is the process that receive the
-  // stream output.
+  // The render process id that requested this stream to be generated and that
+  // will receive a handle to the MediaStream. This may be different from
+  // MediaStreamRequest::render_process_id which in the tab capture case
+  // specifies the target renderer from which audio and video is captured.
   const int requesting_process_id;
 
-  // The render view id generating this request.
-  // This may be different from MediaStreamRequest::render_view__id since
-  // MediaStreamRequest::render_view__id is the view that receive the
-  // stream output.
+  // The render view id that requested this stream to be generated and that
+  // will receive a handle to the MediaStream. This may be different from
+  // MediaStreamRequest::render_view_id which in the tab capture case
+  // specifies the target renderer from which audio and video is captured.
   const int requesting_view_id;
 
   StreamDeviceInfoArray devices;
