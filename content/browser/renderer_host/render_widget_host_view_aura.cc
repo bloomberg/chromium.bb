@@ -1549,7 +1549,8 @@ void RenderWidgetHostViewAura::SwapSoftwareFrame(
           frame_data.get(),
           frame_device_scale_factor,
           host_->GetProcess()->GetHandle())) {
-    host_->GetProcess()->ReceivedBadMessage();
+    ReleaseSoftwareFrame(output_surface_id, frame_data->id);
+    SendSoftwareFrameAck(output_surface_id);
     return;
   }
 
