@@ -18,6 +18,7 @@
 #include "base/time/time.h"
 #include "content/browser/accessibility/browser_accessibility_delegate_mac.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
+#include "content/browser/renderer_host/software_frame_manager.h"
 #include "content/common/edit_command.h"
 #import "content/public/browser/render_widget_host_view_mac_base.h"
 #include "ipc/ipc_sender.h"
@@ -196,7 +197,8 @@ class RenderWidgetHostImpl;
 //
 // RenderWidgetHostView class hierarchy described in render_widget_host_view.h.
 class RenderWidgetHostViewMac : public RenderWidgetHostViewBase,
-                                public IPC::Sender {
+                                public IPC::Sender,
+                                public SoftwareFrameManagerClient {
  public:
   virtual ~RenderWidgetHostViewMac();
 
@@ -283,6 +285,8 @@ class RenderWidgetHostViewMac : public RenderWidgetHostViewBase,
   virtual void BeginFrameSubscription(
       scoped_ptr<RenderWidgetHostViewFrameSubscriber> subscriber) OVERRIDE;
   virtual void EndFrameSubscription() OVERRIDE;
+  virtual void OnSwapCompositorFrame(
+      uint32 output_surface_id, scoped_ptr<cc::CompositorFrame> frame) OVERRIDE;
   virtual void OnAcceleratedCompositingStateChange() OVERRIDE;
   virtual void OnAccessibilityEvents(
       const std::vector<AccessibilityHostMsg_EventParams>& params
@@ -315,6 +319,11 @@ class RenderWidgetHostViewMac : public RenderWidgetHostViewBase,
 
   // IPC::Sender implementation.
   virtual bool Send(IPC::Message* message) OVERRIDE;
+
+  // SoftwareFrameManagerClient implementation:
+  virtual void SoftwareFrameWasFreed(
+      uint32 output_surface_id, unsigned frame_id) OVERRIDE;
+  virtual void ReleaseReferencesToSoftwareFrame() OVERRIDE;
 
   // Forwards the mouse event to the renderer.
   void ForwardMouseEvent(const WebKit::WebMouseEvent& event);
@@ -411,6 +420,9 @@ class RenderWidgetHostViewMac : public RenderWidgetHostViewBase,
   base::scoped_nsobject<CompositingIOSurfaceLayer> compositing_iosurface_layer_;
   scoped_ptr<CompositingIOSurfaceMac> compositing_iosurface_;
   scoped_refptr<CompositingIOSurfaceContext> compositing_iosurface_context_;
+
+  // This holds the current software compositing framebuffer, if any.
+  scoped_ptr<SoftwareFrameManager> software_frame_manager_;
 
   // Whether to allow overlapping views.
   bool allow_overlapping_views_;
@@ -552,6 +564,8 @@ class RenderWidgetHostViewMac : public RenderWidgetHostViewBase,
   // Subscriber that listens to frame presentation events.
   scoped_ptr<RenderWidgetHostViewFrameSubscriber> frame_subscriber_;
 
+  base::WeakPtrFactory<RenderWidgetHostViewMac>
+      software_frame_weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewMac);
 };
 

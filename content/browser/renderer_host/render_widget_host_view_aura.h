@@ -20,8 +20,8 @@
 #include "cc/resources/texture_mailbox.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/aura/image_transport_factory.h"
-#include "content/browser/renderer_host/frame_memory_manager.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
+#include "content/browser/renderer_host/software_frame_manager.h"
 #include "content/common/content_export.h"
 #include "content/common/gpu/client/gl_helper.h"
 #include "third_party/skia/include/core/SkRegion.h"
@@ -59,7 +59,6 @@ class Texture;
 }
 
 namespace content {
-class MemoryHolder;
 class RenderWidgetHostImpl;
 class RenderWidgetHostView;
 class ResizeLock;
@@ -78,7 +77,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
       public aura::client::CursorClientObserver,
       public ImageTransportFactoryObserver,
       public BrowserAccessibilityDelegate,
-      public FrameContainer,
+      public SoftwareFrameManagerClient,
       public base::SupportsWeakPtr<RenderWidgetHostViewAura>,
       public cc::DelegatedFrameResourceCollectionClient {
  public:
@@ -332,8 +331,10 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   virtual void OnRootWindowHostMoved(const aura::RootWindow* root,
                                      const gfx::Point& new_origin) OVERRIDE;
 
-  // FrameContainer implementation:
-  virtual void ReleaseCurrentFrame() OVERRIDE;
+  // SoftwareFrameManagerClient implementation:
+  virtual void SoftwareFrameWasFreed(
+      uint32 output_surface_id, unsigned frame_id) OVERRIDE;
+  virtual void ReleaseReferencesToSoftwareFrame() OVERRIDE;
 
   bool CanCopyToBitmap() const;
 
@@ -613,8 +614,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   // The current frontbuffer texture.
   scoped_refptr<ui::Texture> current_surface_;
 
-  // This holds the current software framebuffer.
-  scoped_refptr<MemoryHolder> framebuffer_holder_;
+  // This holds the current software framebuffer, if any.
+  scoped_ptr<SoftwareFrameManager> software_frame_manager_;
 
   // With delegated renderer, this is the last output surface, used to
   // disambiguate resources with the same id coming from different output
@@ -754,6 +755,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   };
   scoped_ptr<ReleasedFrameInfo> released_software_frame_;
 
+  base::WeakPtrFactory<RenderWidgetHostViewAura> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewAura);
 };
 

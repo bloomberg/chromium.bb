@@ -93,35 +93,6 @@ using WebKit::WebTouchEvent;
 
 namespace content {
 
-void ReleaseMailbox(scoped_refptr<MemoryHolder> holder,
-                    unsigned sync_point,
-                    bool lost_resource) {}
-
-class MemoryHolder : public base::RefCounted<MemoryHolder> {
- public:
-  MemoryHolder(scoped_ptr<base::SharedMemory> shared_memory,
-               gfx::Size frame_size,
-               base::Callback<void()> callback)
-      : shared_memory_(shared_memory.Pass()),
-        frame_size_(frame_size),
-        callback_(callback) {}
-
-  void GetMailbox(cc::TextureMailbox* mailbox,
-                  scoped_ptr<cc::SingleReleaseCallback>* release_callback) {
-    *mailbox = cc::TextureMailbox(shared_memory_.get(), frame_size_);
-    *release_callback = cc::SingleReleaseCallback::Create(
-        base::Bind(ReleaseMailbox, make_scoped_refptr(this)));
-  }
-
- private:
-  friend class base::RefCounted<MemoryHolder>;
-  ~MemoryHolder() { callback_.Run(); }
-
-  scoped_ptr<base::SharedMemory> shared_memory_;
-  gfx::Size frame_size_;
-  base::Callback<void()> callback_;
-};
-
 namespace {
 
 void MailboxReleaseCallback(scoped_ptr<base::SharedMemory> shared_memory,
@@ -603,7 +574,8 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(RenderWidgetHost* host)
       can_lock_compositor_(YES),
       cursor_visibility_state_in_renderer_(UNKNOWN),
       paint_observer_(NULL),
-      touch_editing_client_(NULL) {
+      touch_editing_client_(NULL),
+      weak_ptr_factory_(this) {
   host_->SetView(this);
   window_observer_.reset(new WindowObserver(this));
   aura::client::SetTooltipText(window_, &tooltip_);
@@ -614,6 +586,8 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(RenderWidgetHost* host)
 #if defined(OS_WIN)
   transient_observer_.reset(new TransientWindowObserver(this));
 #endif
+  software_frame_manager_.reset(new SoftwareFrameManager(
+      weak_ptr_factory_.GetWeakPtr()));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -698,8 +672,7 @@ void RenderWidgetHostViewAura::WasShown() {
   if (!host_->is_hidden())
     return;
   host_->WasShown();
-  if (framebuffer_holder_)
-    FrameMemoryManager::GetInstance()->SetFrameVisibility(this, true);
+  software_frame_manager_->SetVisibility(true);
 
   aura::RootWindow* root = window_->GetRootWindow();
   if (root) {
@@ -727,9 +700,7 @@ void RenderWidgetHostViewAura::WasHidden() {
   if (!host_ || host_->is_hidden())
     return;
   host_->WasHidden();
-  if (framebuffer_holder_)
-    FrameMemoryManager::GetInstance()->SetFrameVisibility(this, false);
-
+  software_frame_manager_->SetVisibility(false);
   released_front_lock_ = NULL;
 
 #if defined(OS_WIN)
@@ -1288,12 +1259,12 @@ void RenderWidgetHostViewAura::UpdateExternalTexture() {
     current_frame_size_ = ConvertSizeToDIP(
         current_surface_->device_scale_factor(), current_surface_->size());
     CheckResizeLock();
-    framebuffer_holder_ = NULL;
-    FrameMemoryManager::GetInstance()->RemoveFrame(this);
-  } else if (is_compositing_active && framebuffer_holder_) {
+    software_frame_manager_->DiscardCurrentFrame();
+  } else if (is_compositing_active &&
+             software_frame_manager_->HasCurrentFrame()) {
     cc::TextureMailbox mailbox;
     scoped_ptr<cc::SingleReleaseCallback> callback;
-    framebuffer_holder_->GetMailbox(&mailbox, &callback);
+    software_frame_manager_->GetCurrentFrameMailbox(&mailbox, &callback);
     window_->layer()->SetTextureMailbox(mailbox,
                                         callback.Pass(),
                                         last_swapped_surface_scale_factor_);
@@ -1304,8 +1275,7 @@ void RenderWidgetHostViewAura::UpdateExternalTexture() {
     window_->layer()->SetShowPaintedContent();
     resize_lock_.reset();
     host_->WasResized();
-    framebuffer_holder_ = NULL;
-    FrameMemoryManager::GetInstance()->RemoveFrame(this);
+    software_frame_manager_->DiscardCurrentFrame();
   }
 }
 
@@ -1440,8 +1410,7 @@ void RenderWidgetHostViewAura::SwapDelegatedFrame(
   gfx::Rect damage_rect_in_dip =
       ConvertRectToDIP(frame_device_scale_factor, damage_rect);
 
-  framebuffer_holder_ = NULL;
-  FrameMemoryManager::GetInstance()->RemoveFrame(this);
+  software_frame_manager_->DiscardCurrentFrame();
 
   if (ShouldSkipFrame(frame_size_in_dip)) {
     cc::CompositorFrameAck ack;
@@ -1575,38 +1544,14 @@ void RenderWidgetHostViewAura::SwapSoftwareFrame(
     return;
   }
 
-  const size_t size_in_bytes = 4 * frame_size.GetArea();
-#ifdef OS_WIN
-  scoped_ptr<base::SharedMemory> shared_memory(
-      new base::SharedMemory(frame_data->handle, true,
-                             host_->GetProcess()->GetHandle()));
-#else
-  scoped_ptr<base::SharedMemory> shared_memory(
-      new base::SharedMemory(frame_data->handle, true));
-#endif
-
-#ifdef OS_WIN
-  if (!shared_memory->Map(0)) {
-    DLOG(ERROR) << "Unable to map renderer memory.";
-    RecordAction(UserMetricsAction("BadMessageTerminate_RWHVA1"));
+  if (!software_frame_manager_->SwapToNewFrame(
+          output_surface_id,
+          frame_data.get(),
+          frame_device_scale_factor,
+          host_->GetProcess()->GetHandle())) {
     host_->GetProcess()->ReceivedBadMessage();
     return;
   }
-
-  if (shared_memory->mapped_size() < size_in_bytes) {
-    DLOG(ERROR) << "Shared memory too small for given rectangle";
-    RecordAction(UserMetricsAction("BadMessageTerminate_RWHVA2"));
-    host_->GetProcess()->ReceivedBadMessage();
-    return;
-  }
-#else
-  if (!shared_memory->Map(size_in_bytes)) {
-    DLOG(ERROR) << "Unable to map renderer memory.";
-    RecordAction(UserMetricsAction("BadMessageTerminate_RWHVA1"));
-    host_->GetProcess()->ReceivedBadMessage();
-    return;
-  }
-#endif
 
   if (last_swapped_surface_size_ != frame_size) {
     DLOG_IF(ERROR, damage_rect != gfx::Rect(frame_size))
@@ -1615,17 +1560,9 @@ void RenderWidgetHostViewAura::SwapSoftwareFrame(
   last_swapped_surface_size_ = frame_size;
   last_swapped_surface_scale_factor_ = frame_device_scale_factor;
 
-  scoped_refptr<MemoryHolder> holder(new MemoryHolder(
-      shared_memory.Pass(),
-      frame_size,
-      base::Bind(&RenderWidgetHostViewAura::ReleaseSoftwareFrame,
-                 AsWeakPtr(),
-                 output_surface_id,
-                 frame_data->id)));
-  framebuffer_holder_.swap(holder);
   cc::TextureMailbox mailbox;
   scoped_ptr<cc::SingleReleaseCallback> callback;
-  framebuffer_holder_->GetMailbox(&mailbox, &callback);
+  software_frame_manager_->GetCurrentFrameMailbox(&mailbox, &callback);
   DCHECK(mailbox.IsSharedMemory());
   current_frame_size_ = frame_size_in_dip;
 
@@ -1648,7 +1585,8 @@ void RenderWidgetHostViewAura::SwapSoftwareFrame(
   if (paint_observer_)
     paint_observer_->OnUpdateCompositorContent();
   DidReceiveFrameFromRenderer();
-  FrameMemoryManager::GetInstance()->AddFrame(this, !host_->is_hidden());
+
+  software_frame_manager_->SwapToNewFrameComplete(!host_->is_hidden());
 }
 
 void RenderWidgetHostViewAura::SendSoftwareFrameAck(uint32 output_surface_id) {
@@ -1756,8 +1694,7 @@ void RenderWidgetHostViewAura::BuffersSwapped(
     const BufferPresentedCallback& ack_callback) {
   scoped_refptr<ui::Texture> previous_texture(current_surface_);
   const gfx::Rect surface_rect = gfx::Rect(surface_size);
-  framebuffer_holder_ = NULL;
-  FrameMemoryManager::GetInstance()->RemoveFrame(this);
+  software_frame_manager_->DiscardCurrentFrame();
 
   if (!SwapBuffersPrepare(surface_rect,
                           surface_scale_factor,
@@ -3070,16 +3007,21 @@ void RenderWidgetHostViewAura::OnRootWindowHostMoved(
   UpdateScreenInfo(window_);
 }
 
-void RenderWidgetHostViewAura::ReleaseCurrentFrame() {
-  if (framebuffer_holder_.get() && !current_surface_.get()) {
-    framebuffer_holder_ = NULL;
-    ui::Compositor* compositor = GetCompositor();
-    if (compositor) {
-      AddOnCommitCallbackAndDisableLocks(base::Bind(
-          &RenderWidgetHostViewAura::SendReclaimSoftwareFrames, AsWeakPtr()));
-    }
-    UpdateExternalTexture();
+////////////////////////////////////////////////////////////////////////////////
+// RenderWidgetHostViewAura, SoftwareFrameManagerClient implementation:
+
+void RenderWidgetHostViewAura::SoftwareFrameWasFreed(
+    uint32 output_surface_id, unsigned frame_id) {
+  ReleaseSoftwareFrame(output_surface_id, frame_id);
+}
+
+void RenderWidgetHostViewAura::ReleaseReferencesToSoftwareFrame() {
+  ui::Compositor* compositor = GetCompositor();
+  if (compositor) {
+    AddOnCommitCallbackAndDisableLocks(base::Bind(
+        &RenderWidgetHostViewAura::SendReclaimSoftwareFrames, AsWeakPtr()));
   }
+  UpdateExternalTexture();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -3253,10 +3195,6 @@ RenderWidgetHostViewAura::~RenderWidgetHostViewAura() {
   // Aura root window and we don't have a way to get an input method object
   // associated with the window, but just in case.
   DetachFromInputMethod();
-  FrameMemoryManager::GetInstance()->RemoveFrame(this);
-  // The destruction of the holder may call back into the RWHVA, so do it
-  // early.
-  framebuffer_holder_ = NULL;
 
   if (resource_collection_.get())
     resource_collection_->SetClient(NULL);

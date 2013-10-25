@@ -46,6 +46,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #import "content/public/browser/render_widget_host_view_mac_delegate.h"
+#include "content/public/browser/user_metrics.h"
 #include "content/public/common/content_switches.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
@@ -426,7 +427,10 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget)
       weak_factory_(this),
       fullscreen_parent_host_view_(NULL),
       pending_swap_buffers_acks_weak_factory_(this),
-      next_swap_ack_time_(base::Time::Now()) {
+      next_swap_ack_time_(base::Time::Now()),
+      software_frame_weak_ptr_factory_(this) {
+  software_frame_manager_.reset(new SoftwareFrameManager(
+      software_frame_weak_ptr_factory_.GetWeakPtr()));
   // |cocoa_view_| owns us and we will be deleted when |cocoa_view_|
   // goes away.  Since we autorelease it, our caller must put
   // |GetNativeView()| into the view hierarchy right after calling us.
@@ -732,6 +736,7 @@ void RenderWidgetHostViewMac::WasShown() {
   if (web_contents_switch_paint_time_.is_null())
     web_contents_switch_paint_time_ = base::TimeTicks::Now();
   render_widget_host_->WasShown();
+  software_frame_manager_->SetVisibility(true);
 
   // We're messing with the window, so do this to ensure no flashes.
   if (!use_core_animation_)
@@ -751,6 +756,7 @@ void RenderWidgetHostViewMac::WasHidden() {
   // If we have a renderer, then inform it that we are being hidden so it can
   // reduce its resource utilization.
   render_widget_host_->WasHidden();
+  software_frame_manager_->SetVisibility(false);
 
   // There can be a transparent flash as this view is removed and the next is
   // added, because of OSX windowing races between displaying the contents of
@@ -1650,15 +1656,48 @@ void RenderWidgetHostViewMac::AcceleratedSurfaceRelease() {
 
 bool RenderWidgetHostViewMac::HasAcceleratedSurface(
       const gfx::Size& desired_size) {
-  return last_frame_was_accelerated_ &&
-         compositing_iosurface_ &&
-         compositing_iosurface_->HasIOSurface() &&
-         (desired_size.IsEmpty() ||
-          compositing_iosurface_->dip_io_surface_size() == desired_size);
+  if (last_frame_was_accelerated_) {
+    return compositing_iosurface_ &&
+           compositing_iosurface_->HasIOSurface() &&
+           (desired_size.IsEmpty() ||
+               compositing_iosurface_->dip_io_surface_size() == desired_size);
+  } else {
+    return (software_frame_manager_->HasCurrentFrame() &&
+           (desired_size.IsEmpty() ||
+               software_frame_manager_->GetCurrentFrameSizeInDIP() ==
+                   desired_size));
+  }
+  return false;
 }
 
 void RenderWidgetHostViewMac::AboutToWaitForBackingStoreMsg() {
   AckPendingSwapBuffers();
+}
+
+void RenderWidgetHostViewMac::OnSwapCompositorFrame(
+    uint32 output_surface_id, scoped_ptr<cc::CompositorFrame> frame) {
+  // Only software compositor frames are accepted.
+  if (!frame->software_frame_data) {
+    DLOG(ERROR) << "Received unexpected frame type.";
+    RecordAction(UserMetricsAction(
+        "BadMessageTerminate_UnexpectedFrameType"));
+    render_widget_host_->GetProcess()->ReceivedBadMessage();
+    return;
+  }
+
+  GotSoftwareFrame();
+  if (!software_frame_manager_->SwapToNewFrame(
+          output_surface_id,
+          frame->software_frame_data.get(),
+          frame->metadata.device_scale_factor,
+          render_widget_host_->GetProcess()->GetHandle())) {
+    render_widget_host_->GetProcess()->ReceivedBadMessage();
+    return;
+  }
+  software_frame_manager_->SwapToNewFrameComplete(
+      !render_widget_host_->is_hidden());
+
+  [cocoa_view_ setNeedsDisplay:YES];
 }
 
 void RenderWidgetHostViewMac::OnAcceleratedCompositingStateChange() {
@@ -1741,6 +1780,19 @@ bool RenderWidgetHostViewMac::Send(IPC::Message* message) {
   return false;
 }
 
+void RenderWidgetHostViewMac::SoftwareFrameWasFreed(
+    uint32 output_surface_id, unsigned frame_id) {
+  cc::CompositorFrameAck ack;
+  ack.last_software_frame_id = frame_id;
+  RenderWidgetHostImpl::SendReclaimCompositorResources(
+      render_widget_host_->GetRoutingID(),
+      output_surface_id,
+      render_widget_host_->GetProcess()->GetID(),
+      ack);
+}
+
+void RenderWidgetHostViewMac::ReleaseReferencesToSoftwareFrame() {
+}
 
 void RenderWidgetHostViewMac::ShutdownHost() {
   weak_factory_.InvalidateWeakPtrs();
@@ -1764,6 +1816,7 @@ void RenderWidgetHostViewMac::GotAcceleratedFrame() {
 
     // Delete software backingstore.
     BackingStoreManager::RemoveBackingStore(render_widget_host_);
+    software_frame_manager_->DiscardCurrentFrame();
   }
 }
 
@@ -2718,29 +2771,62 @@ void RenderWidgetHostViewMac::FrameSwapped() {
 - (void)drawBackingStore:(BackingStoreMac*)backingStore
                dirtyRect:(CGRect)dirtyRect
                inContext:(CGContextRef)context {
-  if (backingStore) {
+  content::SoftwareFrameManager* software_frame_manager =
+      renderWidgetHostView_->software_frame_manager_.get();
+  // There should never be both a legacy software and software composited
+  // frame.
+  DCHECK(!backingStore || !software_frame_manager->HasCurrentFrame());
+
+  if (backingStore || software_frame_manager->HasCurrentFrame()) {
     // Note: All coordinates are in view units, not pixels.
-    gfx::Rect bitmapRect(0, 0,
-                         backingStore->size().width(),
-                         backingStore->size().height());
+    gfx::Rect bitmapRect(
+        software_frame_manager->HasCurrentFrame() ?
+            software_frame_manager->GetCurrentFrameSizeInDIP() :
+            backingStore->size());
 
     // Specify the proper y offset to ensure that the view is rooted to the
     // upper left corner.  This can be negative, if the window was resized
     // smaller and the renderer hasn't yet repainted.
-    int yOffset = NSHeight([self bounds]) - backingStore->size().height();
+    int yOffset = NSHeight([self bounds]) - bitmapRect.height();
 
     NSRect nsDirtyRect = NSRectFromCGRect(dirtyRect);
     const gfx::Rect damagedRect([self flipNSRectToRect:nsDirtyRect]);
 
     gfx::Rect paintRect = gfx::IntersectRects(bitmapRect, damagedRect);
     if (!paintRect.IsEmpty()) {
-      // if we have a CGLayer, draw that into the window
-      if (backingStore->cg_layer()) {
+      if (software_frame_manager->HasCurrentFrame()) {
+        // If a software compositor framebuffer is present, draw using that.
+        gfx::Size sizeInPixels =
+            software_frame_manager->GetCurrentFrameSizeInPixels();
+        base::ScopedCFTypeRef<CGDataProviderRef> dataProvider(
+            CGDataProviderCreateWithData(
+                NULL,
+                software_frame_manager->GetCurrentFramePixels(),
+                4 * sizeInPixels.width() * sizeInPixels.height(),
+                NULL));
+        base::ScopedCFTypeRef<CGImageRef> image(
+            CGImageCreate(
+                sizeInPixels.width(),
+                sizeInPixels.height(),
+                8,
+                32,
+                4 * sizeInPixels.width(),
+                base::mac::GetSystemColorSpace(),
+                kCGImageAlphaPremultipliedFirst | kCGBitmapByteOrder32Host,
+                dataProvider,
+                NULL,
+                false,
+                kCGRenderingIntentDefault));
+        CGRect imageRect = bitmapRect.ToCGRect();
+        imageRect.origin.y = yOffset;
+        CGContextDrawImage(context, imageRect, image);
+      } else if (backingStore->cg_layer()) {
+        // If we have a CGLayer, draw that into the window
         // TODO: add clipping to dirtyRect if it improves drawing performance.
         CGContextDrawLayerAtPoint(context, CGPointMake(0.0, yOffset),
                                   backingStore->cg_layer());
       } else {
-        // if we haven't created a layer yet, draw the cached bitmap into
+        // If we haven't created a layer yet, draw the cached bitmap into
         // the window.  The CGLayer will be created the next time the renderer
         // paints.
         base::ScopedCFTypeRef<CGImageRef> image(

@@ -1,0 +1,105 @@
+// Copyright 2013 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CONTENT_BROWSER_RENDERER_HOST_SOFTWARE_FRAME_MANAGER_H_
+#define CONTENT_BROWSER_RENDERER_HOST_SOFTWARE_FRAME_MANAGER_H_
+
+#include <list>
+#include <set>
+
+#include "base/basictypes.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/shared_memory.h"
+#include "base/memory/singleton.h"
+#include "base/memory/weak_ptr.h"
+#include "cc/output/software_frame_data.h"
+#include "cc/resources/single_release_callback.h"
+#include "cc/resources/texture_mailbox.h"
+#include "content/common/content_export.h"
+#include "ui/gfx/size.h"
+
+namespace content {
+class SoftwareFrame;
+class SoftwareFrameMemoryManager;
+
+class CONTENT_EXPORT SoftwareFrameManagerClient {
+ public:
+  // Called when the memory for the current software frame was freed.
+  virtual void SoftwareFrameWasFreed(
+      uint32 output_surface_id, unsigned frame_id) = 0;
+
+  // Called when the SoftwareFrameMemoryManager has requested that the frame
+  // be evicted. Upon receiving this callback, the client should release any
+  // references that it may hold to the current frame, to ensure that its memory
+  // is freed expediently.
+  virtual void ReleaseReferencesToSoftwareFrame() = 0;
+};
+
+class CONTENT_EXPORT SoftwareFrameManager {
+ public:
+  explicit SoftwareFrameManager(
+      base::WeakPtr<SoftwareFrameManagerClient> client);
+  ~SoftwareFrameManager();
+
+  // Swaps to a new frame from shared memory. This frame is guaranteed to
+  // not be evicted until SwapToNewFrameComplete is called.
+  bool SwapToNewFrame(
+      uint32 output_surface_id,
+      const cc::SoftwareFrameData* frame_data,
+      float frame_device_scale_factor,
+      base::ProcessHandle process_handle);
+  void SwapToNewFrameComplete(bool visible);
+  void SetVisibility(bool visible);
+  bool HasCurrentFrame() const;
+  void DiscardCurrentFrame();
+  void GetCurrentFrameMailbox(
+      cc::TextureMailbox* mailbox,
+      scoped_ptr<cc::SingleReleaseCallback>* callback);
+  const void* GetCurrentFramePixels() const;
+  gfx::Size GetCurrentFrameSizeInPixels() const;
+  gfx::Size GetCurrentFrameSizeInDIP() const;
+
+ private:
+  friend class SoftwareFrameMemoryManager;
+
+  // Called by SoftwareFrameMemoryManager to demand that the current frame
+  // be evicted.
+  void EvictCurrentFrame();
+
+  base::WeakPtr<SoftwareFrameManagerClient> client_;
+
+  // This holds the current software framebuffer.
+  scoped_refptr<SoftwareFrame> current_frame_;
+
+  DISALLOW_COPY_AND_ASSIGN(SoftwareFrameManager);
+};
+
+class CONTENT_EXPORT SoftwareFrameMemoryManager {
+ public:
+  static SoftwareFrameMemoryManager* GetInstance();
+
+  void AddFrame(SoftwareFrameManager*, bool visible);
+  void RemoveFrame(SoftwareFrameManager*);
+  void SetFrameVisibility(SoftwareFrameManager*, bool visible);
+
+  size_t max_number_of_saved_frames() const {
+    return max_number_of_saved_frames_;
+  }
+
+ private:
+  SoftwareFrameMemoryManager();
+  ~SoftwareFrameMemoryManager();
+  void CullHiddenFrames();
+  friend struct DefaultSingletonTraits<SoftwareFrameMemoryManager>;
+
+  std::set<SoftwareFrameManager*> visible_frames_;
+  std::list<SoftwareFrameManager*> hidden_frames_;
+  size_t max_number_of_saved_frames_;
+
+  DISALLOW_COPY_AND_ASSIGN(SoftwareFrameMemoryManager);
+};
+
+}  // namespace content
+
+#endif  // CONTENT_BROWSER_RENDERER_HOST_SOFTWARE_FRAME_MANAGER_H_
