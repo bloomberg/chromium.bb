@@ -43,10 +43,10 @@ camera.Camera = function() {
   this.cameraView_ = new camera.views.Camera(this.context_, this.router_);
 
   /**
-   * @type {camera.views.Gallery}
+   * @type {camera.views.Album}
    * @private
    */
-  this.galleryView_ = new camera.views.Gallery(this.context_, this.router_);
+  this.albumView_ = new camera.views.Album(this.context_, this.router_);
 
   /**
    * @type {camera.views.Browser}
@@ -207,8 +207,8 @@ camera.Camera.prototype = {
   get cameraView() {
     return this.cameraView_;
   },
-  get galleryView() {
-    return this.galleryView_;
+  get albumView() {
+    return this.albumView_;
   },
   get browserView() {
     return this.browserView_;
@@ -226,7 +226,7 @@ camera.Camera.prototype.start = function() {
 
   // Initialize all views.
   queue.run(this.cameraView_.initialize.bind(this.cameraView_));
-  queue.run(this.galleryView_.initialize.bind(this.galleryView_));
+  queue.run(this.albumView_.initialize.bind(this.albumView_));
   queue.run(this.browserView_.initialize.bind(this.browserView_));
   queue.run(this.dialogView_.initialize.bind(this.dialogView_));
 
@@ -253,8 +253,8 @@ camera.Camera.prototype.navigateById_ = function(
     case camera.Router.ViewIdentifier.CAMERA:
       this.viewsStack_.push(this.cameraView_, opt_arguments, opt_callback);
       break;
-    case camera.Router.ViewIdentifier.GALLERY:
-      this.viewsStack_.push(this.galleryView_, opt_arguments, opt_callback);
+    case camera.Router.ViewIdentifier.ALBUM:
+      this.viewsStack_.push(this.albumView_, opt_arguments, opt_callback);
       break;
     case camera.Router.ViewIdentifier.BROWSER:
       this.viewsStack_.push(this.browserView_, opt_arguments, opt_callback);

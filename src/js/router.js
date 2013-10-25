@@ -22,13 +22,13 @@ var camera = camera || {};
  */
 camera.Router = function(navigateCallback, backCallback) {
   /**
-   * @param {function(camera.Router.ViewIdentifier, Object=}}
+   * @type {function(camera.Router.ViewIdentifier, Object=}}
    * @private
    */
   this.navigateCallback_ = navigateCallback;
 
   /**
-   * @param {function(Object=)}
+   * @type {function(Object=)}
    * @private
    */
   this.backCallback_ = backCallback;
@@ -43,15 +43,16 @@ camera.Router = function(navigateCallback, backCallback) {
  */
 camera.Router.ViewIdentifier = {
   CAMERA: 0,
-  GALLERY: 1,
-  BROWSER: 2
+  ALBUM: 1,
+  BROWSER: 2,
+  DIALOG: 3
 };
 
 /**
  * Switches to the specified view.
  *
  * @param {camera.Router.ViewIdentifier} viewIdentifier View identifier.
- * @param {Object=} opt_argument Optional arguments for the new view.
+ * @param {Object=} opt_arguments Optional arguments for the new view.
  * @param {function(Object=)=} opt_callback Optional result callback.
  */
 camera.Router.prototype.navigate = function(

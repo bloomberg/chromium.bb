@@ -13,6 +13,7 @@ SRC_RESOURCES= \
 	src/images/2x/browser_button_print.png \
 	src/images/2x/camera_button_picture.png \
 	src/images/2x/camera_button_video.png \
+	src/images/2x/gallery_button_back.png \
 	src/images/2x/gallery_button_delete.png \
 	src/images/2x/topbar_button_close.png \
 	src/images/2x/topbar_button_gallery.png \
@@ -29,6 +30,7 @@ SRC_RESOURCES= \
 	src/images/camera_app_icons_favicon_32.png \
 	src/images/camera_button_picture.png \
 	src/images/camera_button_video.png \
+	src/images/gallery_button_back.png \
 	src/images/gallery_button_delete.png \
 	src/images/no_camera.svg \
 	src/images/topbar_button_close.png \
@@ -61,10 +63,11 @@ SRC_RESOURCES= \
 	src/js/tracker.js \
 	src/js/util.js \
 	src/js/view.js \
+	src/js/views/album.js \
 	src/js/views/browser.js \
 	src/js/views/camera.js \
 	src/js/views/dialog.js \
-	src/js/views/gallery.js \
+	src/js/views/gallery_base.js \
 	src/sounds/shutter.ogg \
 	src/views/main.html \
 

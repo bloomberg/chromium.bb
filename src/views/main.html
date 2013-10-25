@@ -13,9 +13,10 @@
     <script src="../js/scrollbar.js"></script>
     <script src="../js/models/gallery.js"></script>
     <script src="../js/view.js"></script>
+    <script src="../js/views/gallery_base.js"></script>
     <script src="../js/views/camera.js"></script>
     <script src="../js/views/dialog.js"></script>
-    <script src="../js/views/gallery.js"></script>
+    <script src="../js/views/album.js"></script>
     <script src="../js/views/browser.js"></script>
     <script src="../js/tracker.js"></script>
     <script src="../js/effect.js"></script>
@@ -46,8 +47,8 @@
         <div id="buttons">
           <button id="take-picture" tabIndex="-1"></button>
         </div>
-        <div id="side-buttons">
-          <button class="gallery-switch" tabIndex="-1"
+        <div class="buttons">
+          <button id="album-enter" tabIndex="-1"
                   i18n-label="galleryButton"></button>
         </div>
       </div>
@@ -58,28 +59,36 @@
     <div id="picture-preview">
     </div>
     <div id="header">
-      <button id="maximize-button" tabIndex="-1"></button>
-      <button id="close-button" tabIndex="-1"></button>
+      <div class="buttons dynamic">
+        <button id="maximize-button" tabIndex="-1"></button>
+        <button id="close-button" tabIndex="-1"></button>
+      </div>
     </div>
-    <div id="gallery">
+    <div id="album">
       <div class="padder">
-     </div>
+      </div>
+      <div class="buttons dynamic">
+        <button id="album-delete" disabled tabIndex="-1"
+                i18n-label="deleteButton"></button>
+        <button id="album-back" tabIndex="-1"
+                i18n-label="backButton"></button>
+      </div>
     </div>
     <div id="browser">
       <div class="padder">
         <div class="bounds-padder"></div>
         <div class="bounds-padder"></div>
       </div>
-    </div>
-    <div id="corner-buttons">
-      <button id="browser-print" disabled tabIndex="-1"
-              i18n-label="printButton"></button>
-      <button id="browser-export" disabled tabIndex="-1"
-              i18n-label="exportButton"></button>
-      <button id="gallery-delete" disabled tabIndex="-1"
-              i18n-label="deleteButton"></button>
-      <button class="gallery-switch" tabIndex="-1"
-              i18n-label="backButton"></button>
+      <div class="buttons dynamic">
+        <button id="browser-print" disabled tabIndex="-1"
+                i18n-label="printButton"></button>
+        <button id="browser-export" disabled tabIndex="-1"
+                i18n-label="exportButton"></button>
+        <button id="browser-delete" disabled tabIndex="-1"
+                i18n-label="deleteButton"></button>
+        <button id="browser-back" tabIndex="-1"
+                i18n-label="backButton"></button>
+      </div>
     </div>
     <div id="shutter"></div>
     <div id="error">

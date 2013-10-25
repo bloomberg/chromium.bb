@@ -71,6 +71,7 @@ button:empty {
   -webkit-app-region: drag;
   -webkit-box-pack: end;
   display: -webkit-box;
+  height: 32px;
   left: 0;
   padding: 10px;
   pointer-events: auto;
@@ -80,49 +81,40 @@ button:empty {
   z-index: 100;
 }
 
-#header button {
+.buttons button {
   -webkit-app-region: no-drag;
-}
-
-#header button,
-#corner-buttons button {
-  transition: opacity 200ms linear;
-}
-
-#header button,
-#side-buttons button,
-#corner-buttons button {
   background: rgba(0, 0, 0, 0.75) center center no-repeat;
   border: none;
   height: 32px;
-  margin: 0 2px;
+  margin: 2px;
   padding: 0;
+  pointer-events: auto;
   width: 32px;
 }
 
-#header button:hover,
-#side-buttons button:hover,
-#corner-buttons button:hover {
+.buttons button:hover {
   background-color: rgba(60, 60, 60, 0.75);
 }
 
-#header button:active,
-#side-buttons button:active,
-#corner-buttons button:active {
+.buttons button:active {
   background-color: rgba(90, 90, 90, 0.75);
-}
-
-body:not(.expanded) #header button,
-body:not(.expanded) #corner-buttons button {
-  opacity: 0;
 }
 
 #toolbar-stripe {
   position: relative;
 }
 
-#toolbar .gallery-switch.flash {
-  -webkit-animation: flashButton 300ms linear 1s 3;
+.buttons.dynamic {
+  opacity: 1;
+  transition: opacity 200ms linear;
+}
+
+body:not(.expanded) .buttons.dynamic {
+  opacity: 0;
+}
+
+#toolbar #album-enter.flash {
+  -webkit-animation: flashButton 300ms linear 2s 3;
 }
 
 @-webkit-keyframes flashButton {
@@ -137,103 +129,84 @@ body:not(.expanded) #corner-buttons button {
   }
 }
 
-#side-buttons,
-#corner-buttons {
+.buttons {
+  -webkit-box-align: end;
   -webkit-box-pack: end;
   bottom: 0;
   display: -webkit-box;
   left: 0;
+  margin: -2px;
+  padding: 10px;
   pointer-events: none;
   position: absolute;
   right: 0;
   top: 0;
 }
 
-#side-buttons .gallery-switch,
-#corner-buttons .gallery-switch {
+.buttons #album-enter {
   background-image: -webkit-image-set(
       url(../images/topbar_button_gallery.png) 1x,
       url(../images/2x/topbar_button_gallery.png) 2x);
 }
 
-#side-buttons {
+
+#toolbar .buttons {
   -webkit-box-align: center;
   padding: 0 10px;
 }
 
-#corner-buttons {
-  -webkit-box-align: end;
-  padding: 10px;
-}
-
-#side-buttons button {
-  pointer-events: auto;
-}
-
-#corner-buttons button {
-  pointer-events: auto;
-  position: relative;
-  z-index: 2;  /* Hack to enable touch scrolling in gallery. */
-}
-
-#corner-buttons button[disabled] {
+.buttons button[disabled] {
   opacity: 0.5;
   pointer-events: none;
 }
 
-body:not(.gallery):not(.browser) #corner-buttons {
-  display: none;
-}
-
-body:not(.browser) #corner-buttons #browser-print,
-body:not(.browser) #corner-buttons #browser-export {
-  display: none;
-}
-
-#corner-buttons #browser-print {
+.buttons #browser-print {
   background-image: -webkit-image-set(
       url(../images/browser_button_print.png) 1x,
       url(../images/2x/browser_button_print.png) 2x);
 }
 
-#corner-buttons #browser-export {
+.buttons #browser-export {
   background-image: -webkit-image-set(
       url(../images/browser_button_export.png) 1x,
       url(../images/2x/browser_button_export.png) 2x);
 }
 
-#corner-buttons #gallery-delete {
+.buttons #album-back,
+.buttons #browser-back {
+  background-image: -webkit-image-set(
+      url(../images/gallery_button_back.png) 1x,
+      url(../images/2x/gallery_button_back.png) 2x);
+}
+
+.buttons #album-delete,
+.buttons #browser-delete {
   background-image: -webkit-image-set(
       url(../images/gallery_button_delete.png) 1x,
       url(../images/2x/gallery_button_delete.png) 2x);
 }
 
-body.gallery #corner-buttons .gallery-switch:not(:hover):not(:active),
-body.browser #corner-buttons .gallery-switch:not(:hover):not(:active) {
-  background-color: #555555;
-}
-
-#header #maximize-button {
+.buttons #maximize-button {
   background-image: -webkit-image-set(
       url(../images/topbar_button_maximize.png) 1x,
       url(../images/2x/topbar_button_maximize.png) 2x);
 }
 
-#header #close-button {
+.buttons #close-button {
   background-image: -webkit-image-set(
       url(../images/topbar_button_close.png) 1x,
       url(../images/2x/topbar_button_close.png) 2x);
 }
 
 
-body.gallery #main-canvas-wrapper,
-body.gallery #main-fast-canvas-wrapper,
+body.album #main-canvas-wrapper,
+body.album #main-fast-canvas-wrapper,
 body.browser #main-canvas-wrapper,
 body.browser #main-fast-canvas-wrapper {
   display: none;
 }
 
-body.gallery #toolbar,
+body.album #toolbar,
 body.browser #toolbar {
   display: none;
 }
@@ -456,7 +429,7 @@ body.show-shutter #shutter {
   top: 25%;
 }
 
-body.gallery #picture-preview,
+body.album #picture-preview,
 body.browser #picture-preview {
   display: none;
 }
@@ -472,7 +445,7 @@ body.browser #picture-preview {
   width: 100%;
 }
 
-#gallery,
+#album,
 #browser {
   bottom: 0;
   left: 0;
@@ -480,14 +453,19 @@ body.browser #picture-preview {
   position: absolute;
   right: 0;
   top: 0;
-  z-index: 1;  /* Hack to enable touch scrolling in gallery. */
+  z-index: 1;  /* Hack to enable touch scrolling in album. */
 }
 
-#gallery .padder {
+#album .buttons,
+#browser .buttons {
+  position: fixed;
+}
+
+#album .padder {
   padding: 15px;
 }
 
-#gallery img {
+#album img {
   border: 4px solid white;
   box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
   margin: 10px;
@@ -495,7 +473,7 @@ body.browser #picture-preview {
   width: 170px;
 }
 
-#gallery img.selected {
+#album img.selected {
   -webkit-transform: scale(1.2);
   border-color: rgb(66, 129, 244);
 }
@@ -537,7 +515,7 @@ body.browser #browser {
   -webkit-transform: scale(1.1);
 }
 
-body:not(.gallery):not(.browser) #gallery {
+body:not(.album):not(.browser) #album {
   display: none;
 }
 
@@ -560,14 +538,13 @@ body:not(.gallery):not(.browser) #gallery {
 
   /* Hide the window's decoration and scroll bars. */
   #header,
-  #corner-buttons,
-  #side-buttons,
+  .buttons,
   .scrollbar-track {
     display: none;
   }
 
-  /* Hide the gallery behind the browser view. */
-  #gallery {
+  /* Hide the album behind the browser view. */
+  #album {
     display: none;
   }
 

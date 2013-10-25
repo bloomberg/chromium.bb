@@ -255,8 +255,8 @@ camera.views.Camera = function(context, router) {
   document.querySelector('#take-picture').addEventListener(
       'click', this.takePicture_.bind(this));
 
-  document.querySelector('#toolbar .gallery-switch').addEventListener('click',
-      this.onGalleryClicked_.bind(this));
+  document.querySelector('#toolbar #album-enter').addEventListener('click',
+      this.onAlbumEnterClicked_.bind(this));
 
   // Load the shutter sound.
   this.shutterSound_.src = '../sounds/shutter.ogg';
@@ -394,12 +394,12 @@ camera.views.Camera.prototype.onLeave = function() {
 };
 
 /**
- * Handles clicking on the gallery button.
+ * Handles clicking on the album button.
  * @param {Event} event Mouse event
  * @private
  */
-camera.views.Camera.prototype.onGalleryClicked_ = function(event) {
-  this.router.navigate(camera.Router.ViewIdentifier.GALLERY);
+camera.views.Camera.prototype.onAlbumEnterClicked_ = function(event) {
+  this.router.navigate(camera.Router.ViewIdentifier.ALBUM);
 };
 
 /**
@@ -547,7 +547,7 @@ camera.views.Camera.prototype.chooseFileStream = function() {
 };
 
 /**
- * Takes the picture, saves and puts to the gallery with a nice animation.
+ * Takes the picture, saves and puts to the album with a nice animation.
  * @private
  */
 camera.views.Camera.prototype.takePicture_ = function() {
@@ -559,8 +559,8 @@ camera.views.Camera.prototype.takePicture_ = function() {
 
   // Show flashing animation with the shutter sound.
   document.body.classList.add('show-shutter');
-  var galleryButton = document.querySelector('#toolbar .gallery-switch');
-  camera.util.setAnimationClass(galleryButton, galleryButton, 'flash');
+  var albumButton = document.querySelector('#toolbar #album-enter');
+  camera.util.setAnimationClass(albumButton, albumButton, 'flash');
   setTimeout(function() {
     document.body.classList.remove('show-shutter');
   }.bind(this), 200);
@@ -588,7 +588,7 @@ camera.views.Camera.prototype.takePicture_ = function() {
     // Create the fly-away animation after two second.
     setTimeout(function() {
       var sourceRect = img.getBoundingClientRect();
-      var targetRect = galleryButton.getBoundingClientRect();
+      var targetRect = albumButton.getBoundingClientRect();
 
       var translateXValue = (targetRect.left + targetRect.right) / 2 -
           (sourceRect.left + sourceRect.right) / 2;

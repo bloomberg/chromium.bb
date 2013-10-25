@@ -19,25 +19,11 @@ camera.views = camera.views || {};
  *
  * @param {camera.View.Context} context Context object.
  * @param {camera.Router} router View router to switch views.
- * @extends {camera.View}
- * @implements {camera.models.Gallery.Observer}
+ * @extends {camera.view.GalleryBase}
  * @constructor
  */
 camera.views.Browser = function(context, router) {
-  camera.View.call(this, context, router);
-
-  /**
-   * @type {camera.models.Gallery}
-   * @private
-   */
-  this.model_ = null;
-
-  /**
-   * Contains pictures' views.
-   * @type {Array.<camera.views.Gallery.DOMPicture>}
-   * @private
-   */
-  this.pictures_ = [];
+  camera.views.GalleryBase.call(this, context, router);
 
   /**
    * @type {camera.util.SmoothScroller}
@@ -54,7 +40,7 @@ camera.views.Browser = function(context, router) {
   this.scrollBar_ = new camera.HorizontalScrollBar(this.scroller_);
 
   /**
-   * Makes the gallery scrollable by dragging with mouse.
+   * Makes the browser scrollable by dragging with mouse.
    * @type {camera.util.MouseScroller}
    * @private
    */
@@ -82,36 +68,14 @@ camera.views.Browser = function(context, router) {
       'click', this.onPrintButtonClicked_.bind(this));
   document.querySelector('#browser-export').addEventListener(
       'click', this.onExportButtonClicked_.bind(this));
+  document.querySelector('#browser-delete').addEventListener(
+      'click', this.onDeleteButtonClicked_.bind(this));
+  document.querySelector('#browser-back').addEventListener(
+      'click', this.router.back.bind(this.router));
 };
 
 camera.views.Browser.prototype = {
-  __proto__: camera.View.prototype
-};
-
-/**
- * @override
- */
-camera.views.Browser.prototype.initialize = function(callback) {
-  camera.models.Gallery.getInstance(function(model) {
-    this.model_ = model;
-    this.model_.addObserver(this);
-    this.renderPictures_();
-    callback();
-  }.bind(this), function() {
-    // TODO(mtomasz): Add error handling.
-    console.error('Unable to initialize the file system.');
-    callback();
-  });
-};
-
-/**
- * Renders pictures from the model onto the DOM.
- * @private
- */
-camera.views.Browser.prototype.renderPictures_ = function() {
-  for (var index = 0; index < this.model_.length; index++) {
-    this.addPictureToDOM_(this.model_.pictures[index]);
-  }
+  __proto__: camera.views.GalleryBase.prototype
 };
 
 /**
@@ -138,8 +102,8 @@ camera.views.Browser.prototype.onLeave = function() {
  * @override
  */
 camera.views.Browser.prototype.onResize = function() {
-  if (this.currentPicture_()) {
-    camera.util.scrollToCenter(this.currentPicture_().element,
+  if (this.currentPicture()) {
+    camera.util.scrollToCenter(this.currentPicture().element,
                                this.scroller_,
                                camera.util.SmoothScroller.Mode.INSTANT);
   }
@@ -173,6 +137,14 @@ camera.views.Browser.prototype.onExportButtonClicked_ = function(event) {
   this.exportSelection_();
 };
 
+/**
+ * Handles clicking on the delete button.
+ * @param {Event} event Click event.
+ * @private
+ */
+camera.views.Browser.prototype.onDeleteButtonClicked_ = function(event) {
+  this.deleteSelection();
+};
 
 /**
  * Handles ending of scrolling.
@@ -184,8 +156,8 @@ camera.views.Browser.prototype.onScrollEnded_ = function() {
   // Find the closest picture.
   var minDistance = -1;
   var minIndex = -1;
-  for (var index = 0; index < this.model_.length; index++) {
-    var element = this.pictures_[index].element;
+  for (var index = 0; index < this.model.length; index++) {
+    var element = this.pictures[index].element;
     var distance = Math.abs(
         element.offsetLeft + element.offsetWidth / 2 - center);
     if (minIndex == -1 || distance < minDistance) {
@@ -196,7 +168,7 @@ camera.views.Browser.prototype.onScrollEnded_ = function() {
 
   // Select the closest picture to the center of the window.
   if (minIndex != -1)
-    this.model_.currentIndex = minIndex;
+    this.model.currentIndex = minIndex;
 
   this.updatePicturesResolutions_();
 };
@@ -206,13 +178,15 @@ camera.views.Browser.prototype.onScrollEnded_ = function() {
  * @private
  */
 camera.views.Browser.prototype.updateButtons_ = function() {
-  var pictureSelected = this.model_.currentIndex !== null;
+  var pictureSelected = this.model.currentIndex !== null;
   if (pictureSelected) {
     document.querySelector('#browser-print').removeAttribute('disabled');
     document.querySelector('#browser-export').removeAttribute('disabled');
+    document.querySelector('#browser-delete').removeAttribute('disabled');
   } else {
     document.querySelector('#browser-print').setAttribute('disabled', '');
     document.querySelector('#browser-export').setAttribute('disabled', '');
+    document.querySelector('#browser-delete').setAttribute('disabled', '');
   }
 };
 
@@ -225,19 +199,19 @@ camera.views.Browser.prototype.updateButtons_ = function() {
  */
 camera.views.Browser.prototype.updatePicturesResolutions_ = function() {
  var updateResolutions = function() {
-    for (var index = 0; index < this.pictures_.length; index++) {
-      this.pictures_[index].displayResolution =
-          (index == this.model_.currentIndex) ?
-              camera.views.Gallery.DOMPicture.DisplayResolution.HIGH :
-              camera.views.Gallery.DOMPicture.DisplayResolution.LOW;
+    for (var index = 0; index < this.pictures.length; index++) {
+      this.pictures[index].displayResolution =
+          (index == this.model.currentIndex) ?
+              camera.views.GalleryBase.DOMPicture.DisplayResolution.HIGH :
+              camera.views.GalleryBase.DOMPicture.DisplayResolution.LOW;
     }
   }.bind(this);
 
   // Wait until the zoom-in transition is finished, and then update pictures'
   // resolutions.
-  if (this.model_.currentIndex !== null) {
+  if (this.model.currentIndex !== null) {
     camera.util.waitForTransitionCompletion(
-        this.pictures_[this.model_.currentIndex].element,
+        this.pictures[this.model.currentIndex].element,
         250,  // Timeout in ms.
         updateResolutions);
   } else {
@@ -247,38 +221,15 @@ camera.views.Browser.prototype.updatePicturesResolutions_ = function() {
 };
 
 /**
- * Returns a picture view by index.
- *
- * @param {number} index Index of the picture.
- * @return {camera.views.Gallery.Picture}
- * @private
- */
-camera.views.Browser.prototype.pictureByIndex_ = function(index) {
-  return this.pictures_[index];
-};
-
-/**
- * Returns the currently selected picture view.
- *
- * @return {camera.views.Gallery.Picture}
- * @private
- */
-camera.views.Browser.prototype.currentPicture_ = function() {
-  return this.pictureByIndex_(this.model_.currentIndex);
-};
-
-/**
  * @override
  */
 camera.views.Browser.prototype.onCurrentIndexChanged = function(
     oldIndex, newIndex) {
-  if (oldIndex !== null && oldIndex < this.model_.length)
-    this.pictureByIndex_(oldIndex).element.classList.remove('selected');
-  if (newIndex !== null && newIndex < this.model_.length)
-    this.pictureByIndex_(newIndex).element.classList.add('selected');
+  camera.views.GalleryBase.prototype.onCurrentIndexChanged.apply(
+      this, arguments);
 
   if (newIndex !== null) {
-   camera.util.scrollToCenter(this.currentPicture_().element,
+   camera.util.scrollToCenter(this.currentPicture().element,
                               this.scroller_);
   }
 
@@ -289,18 +240,13 @@ camera.views.Browser.prototype.onCurrentIndexChanged = function(
  * @override
  */
 camera.views.Browser.prototype.onPictureDeleting = function(index) {
-  this.pictures_[index].element.parentNode.removeChild(
-    this.pictures_[index].element);
-  this.pictures_.splice(index, 1);
+  camera.views.GalleryBase.prototype.onPictureDeleting.apply(
+      this, arguments);
 
   // Update the resolutions, since the current image might have changed
   // without scrolling and without scrolling. Use a timer, to wait until
   // the picture is deleted from the model.
   setTimeout(this.updatePicturesResolutions_.bind(this), 0);
-
-  // TODO(mtomasz): Introduce a onPictureDeleted callback to avoid these
-  // timers.
-  setTimeout(this.updateButtons_.bind(this), 0);
 };
 
 /**
@@ -308,7 +254,7 @@ camera.views.Browser.prototype.onPictureDeleting = function(index) {
  * @private
  */
 camera.views.Browser.prototype.exportSelection_ = function() {
-  if (!this.currentPicture_())
+  if (!this.currentPicture())
     return;
 
   var accepts = [{
@@ -317,7 +263,7 @@ camera.views.Browser.prototype.exportSelection_ = function() {
     mimeTypes: ['image/jpeg']
   }];
 
-  var fileName = this.currentPicture_().picture.imageEntry.name;
+  var fileName = this.currentPicture().picture.imageEntry.name;
 
   var onError = function() {
     // TODO(mtomasz): Check if it works.
@@ -333,7 +279,7 @@ camera.views.Browser.prototype.exportSelection_ = function() {
   }, function(fileEntry) {
       if (!fileEntry)
         return;
-      this.model_.exportPicture(fileName,
+      this.model.exportPicture(fileName,
                 fileEntry,
                 function() {},
                 onError);
@@ -344,72 +290,28 @@ camera.views.Browser.prototype.exportSelection_ = function() {
  * @override
  */
 camera.views.Browser.prototype.onKeyPressed = function(event) {
-  var currentPicture = this.currentPicture_();
+  var currentPicture = this.currentPicture();
   switch (event.keyIdentifier) {
-    case 'Right':
-      this.model_.currentIndex = Math.max(0, this.model_.currentIndex - 1);
-      event.preventDefault();
-      break;
-    case 'Left':
-      this.model_.currentIndex =
-          Math.min(this.model_.length - 1, this.model_.currentIndex + 1);
-      event.preventDefault();
-      break;
-    case 'End':
-      this.model_.currentIndex = 0;
-      event.preventDefault();
-      break;
-    case 'Home':
-      this.model_.currentIndex = this.model_.length - 1;
-      event.preventDefault();
-      break;
-    case 'U+007F':
-      // TODO(mtomasz): Make Gallery and Browser views extend a intermediate
-      // Gallery view class to avoid duplicating code like this.
-      this.router.navigate(camera.Router.ViewIdentifier.DIALOG, {
-        type: camera.views.Dialog.Type.CONFIRMATION,
-        message: chrome.i18n.getMessage('deleteConfirmationMsg')
-      }, function(result) {
-        if (!result.isPositive)
-          return;
-        this.model_.deletePicture(this.currentPicture_().picture,
-            function() {},
-            function() {
-              // TODO(mtomasz): Handle errors.
-            });
-      }.bind(this));
-      break;
-    case 'Enter':
+   case 'Enter':
       this.exportSelection_();
-      break;
-    case 'U+001B':
-      this.router.back();
-      break;
+      return;
   }
+
+  // Call the base view for unhandled keys.
+  camera.views.GalleryBase.prototype.onKeyPressed.apply(this, arguments);
 };
 
 /**
  * @override
  */
-camera.views.Browser.prototype.onPictureAdded = function(index) {
-  this.addPictureToDOM_(this.model_.pictures[index]);
-};
-
-/**
- * Adds a picture represented by a model to DOM, and stores in the internal
- * mapping hash array (model -> view).
- *
- * @param {camera.model.Gallery.Picture} picture
- * @private
- */
-camera.views.Browser.prototype.addPictureToDOM_ = function(picture) {
-  var gallery = document.querySelector('#browser .padder');
-  var boundsPadder = gallery.querySelector('.bounds-padder');
+camera.views.Browser.prototype.addPictureToDOM = function(picture) {
+  var browser = document.querySelector('#browser .padder');
+  var boundsPadder = browser.querySelector('.bounds-padder');
   var img = document.createElement('img');
-  gallery.insertBefore(img, boundsPadder.nextSibling);
+  browser.insertBefore(img, boundsPadder.nextSibling);
 
   // Add to the collection.
-  this.pictures_.push(new camera.views.Gallery.DOMPicture(picture, img));
+  this.pictures.push(new camera.views.GalleryBase.DOMPicture(picture, img));
 
   img.addEventListener('click', function(event) {
     // If scrolled while clicking, then discard this selection, since another
@@ -419,7 +321,7 @@ camera.views.Browser.prototype.addPictureToDOM_ = function(picture) {
       return;
     }
 
-    this.model_.currentIndex = this.model_.pictures.indexOf(picture);
+    this.model.currentIndex = this.model.pictures.indexOf(picture);
   }.bind(this));
 };
 
