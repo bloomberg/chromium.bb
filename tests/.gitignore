@@ -1,4 +1,5 @@
 *.test
+*.trs
 *.weston
 logs
 matrix-test
