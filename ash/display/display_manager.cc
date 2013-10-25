@@ -907,6 +907,7 @@ gfx::Display DisplayManager::CreateDisplayFromDisplayInfoById(int64 id) {
   new_display.SetScaleAndBounds(
       display_info.device_scale_factor(), gfx::Rect(bounds_in_native.size()));
   new_display.set_rotation(display_info.rotation());
+  new_display.set_touch_support(display_info.touch_support());
   return new_display;
 }
 

@@ -644,8 +644,7 @@ void ChromeBrowserMainPartsChromeos::PreBrowserStart() {
   // adjusting the oom priority.
   g_browser_process->platform_part()->oom_priority_manager()->Start();
 
-  // Turn on natural scroll if we have a touch screen.
-  if (ui::IsTouchDevicePresent()) {
+  if (ui::ShouldDefaultToNaturalScroll()) {
     CommandLine::ForCurrentProcess()->AppendSwitch(
         chromeos::switches::kNaturalScrollDefault);
     ui::SetNaturalScroll(true);

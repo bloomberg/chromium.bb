@@ -57,13 +57,15 @@ bool Display::HasForceDeviceScaleFactor() {
 Display::Display()
     : id_(kInvalidDisplayID),
       device_scale_factor_(GetForcedDeviceScaleFactor()),
-      rotation_(ROTATE_0) {
+      rotation_(ROTATE_0),
+      touch_support_(TOUCH_SUPPORT_UNKNOWN) {
 }
 
 Display::Display(int64 id)
     : id_(id),
       device_scale_factor_(GetForcedDeviceScaleFactor()),
-      rotation_(ROTATE_0) {
+      rotation_(ROTATE_0),
+      touch_support_(TOUCH_SUPPORT_UNKNOWN) {
 }
 
 Display::Display(int64 id, const gfx::Rect& bounds)
@@ -71,7 +73,8 @@ Display::Display(int64 id, const gfx::Rect& bounds)
       bounds_(bounds),
       work_area_(bounds),
       device_scale_factor_(GetForcedDeviceScaleFactor()),
-      rotation_(ROTATE_0) {
+      rotation_(ROTATE_0),
+      touch_support_(TOUCH_SUPPORT_UNKNOWN) {
 #if defined(USE_AURA)
   SetScaleAndBounds(device_scale_factor_, bounds);
 #endif

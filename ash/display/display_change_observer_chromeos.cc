@@ -197,6 +197,9 @@ void DisplayChangeObserver::OnDisplayModeChanged(
     displays.back().SetBounds(display_bounds);
     displays.back().set_native(true);
     displays.back().set_resolutions(resolutions);
+    displays.back().set_touch_support(
+        output.touch_device_id == 0 ? gfx::Display::TOUCH_SUPPORT_UNAVAILABLE :
+                                      gfx::Display::TOUCH_SUPPORT_AVAILABLE);
   }
 
   // DisplayManager can be null during the boot.

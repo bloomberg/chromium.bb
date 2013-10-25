@@ -89,6 +89,11 @@ class ASH_EXPORT DisplayInfo {
   void set_rotation(gfx::Display::Rotation rotation) { rotation_ = rotation; }
   gfx::Display::Rotation rotation() const { return rotation_; }
 
+  void set_touch_support(gfx::Display::TouchSupport support) {
+    touch_support_ = support;
+  }
+  gfx::Display::TouchSupport touch_support() const { return touch_support_; }
+
   // Gets/Sets the device scale factor of the display.
   float device_scale_factor() const { return device_scale_factor_; }
   void set_device_scale_factor(float scale) { device_scale_factor_ = scale; }
@@ -150,6 +155,7 @@ class ASH_EXPORT DisplayInfo {
   std::string name_;
   bool has_overscan_;
   gfx::Display::Rotation rotation_;
+  gfx::Display::TouchSupport touch_support_;
 
   // This specifies the device's pixel density. (For example, a
   // display whose DPI is higher than the threshold is considered to have

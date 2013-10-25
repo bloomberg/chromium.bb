@@ -137,6 +137,7 @@ DisplayInfo::DisplayInfo()
     : id_(gfx::Display::kInvalidDisplayID),
       has_overscan_(false),
       rotation_(gfx::Display::ROTATE_0),
+      touch_support_(gfx::Display::TOUCH_SUPPORT_UNKNOWN),
       device_scale_factor_(1.0f),
       overscan_insets_in_dip_(0, 0, 0, 0),
       ui_scale_(1.0f),
@@ -150,6 +151,7 @@ DisplayInfo::DisplayInfo(int64 id,
       name_(name),
       has_overscan_(has_overscan),
       rotation_(gfx::Display::ROTATE_0),
+      touch_support_(gfx::Display::TOUCH_SUPPORT_UNKNOWN),
       device_scale_factor_(1.0f),
       overscan_insets_in_dip_(0, 0, 0, 0),
       ui_scale_(1.0f),
@@ -169,6 +171,7 @@ void DisplayInfo::Copy(const DisplayInfo& native_info) {
   size_in_pixel_ = native_info.size_in_pixel_;
   device_scale_factor_ = native_info.device_scale_factor_;
   resolutions_ = native_info.resolutions_;
+  touch_support_ = native_info.touch_support_;
 
   // Copy overscan_insets_in_dip_ if it's not empty. This is for test
   // cases which use "/o" annotation which sets the overscan inset
@@ -225,14 +228,17 @@ std::string DisplayInfo::ToString() const {
   int rotation_degree = static_cast<int>(rotation_) * 90;
   return base::StringPrintf(
       "DisplayInfo[%lld] native bounds=%s, size=%s, scale=%f, "
-      "overscan=%s, rotation=%d, ui-scale=%f",
+      "overscan=%s, rotation=%d, ui-scale=%f, touchscreen=%s",
       static_cast<long long int>(id_),
       bounds_in_native_.ToString().c_str(),
       size_in_pixel_.ToString().c_str(),
       device_scale_factor_,
       overscan_insets_in_dip_.ToString().c_str(),
       rotation_degree,
-      ui_scale_);
+      ui_scale_,
+      touch_support_ == gfx::Display::TOUCH_SUPPORT_AVAILABLE ? "yes" :
+      touch_support_ == gfx::Display::TOUCH_SUPPORT_UNAVAILABLE ? "no" :
+      "unknown");
 }
 
 std::string DisplayInfo::ToFullString() const {
