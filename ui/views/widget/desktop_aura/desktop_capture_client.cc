@@ -10,20 +10,21 @@
 namespace views {
 
 // static
-DesktopCaptureClient::Roots* DesktopCaptureClient::roots_ = NULL;
+DesktopCaptureClient::CaptureClients*
+DesktopCaptureClient::capture_clients_ = NULL;
 
 DesktopCaptureClient::DesktopCaptureClient(aura::RootWindow* root)
     : root_(root),
       capture_window_(NULL) {
-  if (!roots_)
-    roots_ = new Roots;
-  roots_->insert(root_);
+  if (!capture_clients_)
+    capture_clients_ = new CaptureClients;
+  capture_clients_->insert(this);
   aura::client::SetCaptureClient(root, this);
 }
 
 DesktopCaptureClient::~DesktopCaptureClient() {
   aura::client::SetCaptureClient(root_, NULL);
-  roots_->erase(root_);
+  capture_clients_->erase(this);
 }
 
 void DesktopCaptureClient::SetCapture(aura::Window* new_capture_window) {
@@ -37,9 +38,6 @@ void DesktopCaptureClient::SetCapture(aura::Window* new_capture_window) {
   DCHECK(!capture_window_ || capture_window_->GetRootWindow());
 
   aura::Window* old_capture_window = capture_window_;
-
-  // Copy the set in case it's modified out from under us.
-  Roots roots(*roots_);
 
   // If we're actually starting capture, then cancel any touches/gestures
   // that aren't already locked to the new window, and transfer any on the
@@ -62,6 +60,17 @@ void DesktopCaptureClient::SetCapture(aura::Window* new_capture_window) {
     delegate->ReleaseNativeCapture();
   } else if (!old_capture_window) {
     delegate->SetNativeCapture();
+
+    // Notify the other roots that we got capture. This is important so that
+    // they reset state.
+    CaptureClients capture_clients(*capture_clients_);
+    for (CaptureClients::iterator i = capture_clients.begin();
+         i != capture_clients.end(); ++i) {
+      if (*i != this) {
+        aura::client::CaptureDelegate* delegate = (*i)->root_;
+        delegate->OnOtherRootGotCapture();
+      }
+    }
   }  // else case is capture is remaining in our root, nothing to do.
 }
 

@@ -304,6 +304,7 @@ class AURA_EXPORT RootWindow : public Window,
 
   // Overridden from aura::client::CaptureDelegate:
   virtual void UpdateCapture(Window* old_capture, Window* new_capture) OVERRIDE;
+  virtual void OnOtherRootGotCapture() OVERRIDE;
   virtual void SetNativeCapture() OVERRIDE;
   virtual void ReleaseNativeCapture() OVERRIDE;
 

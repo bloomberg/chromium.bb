@@ -738,6 +738,11 @@ void RootWindow::UpdateCapture(Window* old_capture,
   mouse_pressed_handler_ = NULL;
 }
 
+void RootWindow::OnOtherRootGotCapture() {
+  mouse_moved_handler_ = NULL;
+  mouse_pressed_handler_ = NULL;
+}
+
 void RootWindow::SetNativeCapture() {
   host_->SetCapture();
 }

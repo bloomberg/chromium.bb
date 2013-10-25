@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
+#include "ui/aura/test/event_generator.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/events/event.h"
 #include "ui/views/test/views_test_base.h"
@@ -47,6 +48,38 @@ class DesktopViewInputTest : public View {
 
   DISALLOW_COPY_AND_ASSIGN(DesktopViewInputTest);
 };
+
+views::Widget* CreateWidget() {
+  views::Widget* widget = new views::Widget;
+  views::Widget::InitParams params;
+  params.type = views::Widget::InitParams::TYPE_WINDOW_FRAMELESS;
+  params.accept_events = true;
+  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  params.native_widget = new DesktopNativeWidgetAura(widget);
+  params.bounds = gfx::Rect(0, 0, 200, 100);
+  widget->Init(params);
+  widget->Show();
+  return widget;
+}
+
+// Verifies mouse handlers are reset when a window gains capture. Specifically
+// creates two widgets, does a mouse press in one, sets capture in the other and
+// verifies state is reset in the first.
+TEST_F(DesktopCaptureControllerTest, ResetMouseHandlers) {
+  scoped_ptr<Widget> w1(CreateWidget());
+  scoped_ptr<Widget> w2(CreateWidget());
+  aura::test::EventGenerator generator1(w1->GetNativeView()->GetRootWindow());
+  generator1.MoveMouseToCenterOf(w1->GetNativeView());
+  generator1.PressLeftButton();
+  EXPECT_FALSE(w1->HasCapture());
+  aura::RootWindow* w1_root = w1->GetNativeView()->GetRootWindow();
+  EXPECT_TRUE(w1_root->mouse_pressed_handler() != NULL);
+  EXPECT_TRUE(w1_root->mouse_moved_handler() != NULL);
+  w2->SetCapture(w2->GetRootView());
+  EXPECT_TRUE(w2->HasCapture());
+  EXPECT_TRUE(w1_root->mouse_pressed_handler() == NULL);
+  EXPECT_TRUE(w1_root->mouse_moved_handler() == NULL);
+}
 
 // Tests aura::Window capture and whether gesture events are sent to the window
 // which has capture.
