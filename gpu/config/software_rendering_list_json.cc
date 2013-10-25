@@ -652,7 +652,6 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
     },
     {
       "id": 48,
-      // Please keep in sync with content/test/content_browser_test.cc.
       "description": "Accelerated video decode is unavailable on Mac and Linux.",
       "cr_bugs": [137247, 133828],
       "exceptions": [

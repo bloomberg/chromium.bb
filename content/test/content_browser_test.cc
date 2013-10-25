@@ -89,12 +89,6 @@ void ContentBrowserTest::SetUp() {
                                  subprocess_path);
 #endif
 
-  // NOTE: should be kept in sync with
-  // chrome/browser/resources/software_rendering_list.json
-#if !defined(OS_WIN) && !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
-  command_line->AppendSwitch(switches::kDisableAcceleratedVideoDecode);
-#endif
-
   // LinuxInputMethodContextFactory has to be initialized.
 #if !defined(OS_CHROMEOS) && defined(USE_AURA) && defined(USE_X11)
   ui::InitializeInputMethodForTesting();
