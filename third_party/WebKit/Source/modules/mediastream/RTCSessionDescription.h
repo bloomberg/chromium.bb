@@ -46,7 +46,6 @@ class RTCSessionDescription : public RefCounted<RTCSessionDescription>, public S
 public:
     static PassRefPtr<RTCSessionDescription> create(const Dictionary&, ExceptionState&);
     static PassRefPtr<RTCSessionDescription> create(WebKit::WebRTCSessionDescription);
-    virtual ~RTCSessionDescription();
 
     String type();
     void setType(const String&, ExceptionState&);

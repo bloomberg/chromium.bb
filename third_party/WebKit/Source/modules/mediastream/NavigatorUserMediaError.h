@@ -44,8 +44,6 @@ public:
         return adoptRef(new NavigatorUserMediaError(name, message, constraintName));
     }
 
-    virtual ~NavigatorUserMediaError() { }
-
     String name() const;
     const String& message() const { return m_message; }
     const String& constraintName() const { return m_constraintName; }

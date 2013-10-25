@@ -68,10 +68,6 @@ RTCIceCandidate::RTCIceCandidate(WebKit::WebRTCICECandidate webCandidate)
     ScriptWrappable::init(this);
 }
 
-RTCIceCandidate::~RTCIceCandidate()
-{
-}
-
 String RTCIceCandidate::candidate() const
 {
     return m_webCandidate.candidate();

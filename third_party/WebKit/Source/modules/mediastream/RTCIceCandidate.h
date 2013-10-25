@@ -47,7 +47,6 @@ class RTCIceCandidate : public RefCounted<RTCIceCandidate>, public ScriptWrappab
 public:
     static PassRefPtr<RTCIceCandidate> create(const Dictionary&, ExceptionState&);
     static PassRefPtr<RTCIceCandidate> create(WebKit::WebRTCICECandidate);
-    virtual ~RTCIceCandidate();
 
     String candidate() const;
     String sdpMid() const;

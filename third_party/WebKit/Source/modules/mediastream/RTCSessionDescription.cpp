@@ -75,10 +75,6 @@ RTCSessionDescription::RTCSessionDescription(WebKit::WebRTCSessionDescription we
     ScriptWrappable::init(this);
 }
 
-RTCSessionDescription::~RTCSessionDescription()
-{
-}
-
 String RTCSessionDescription::type()
 {
     return m_webSessionDescription.type();

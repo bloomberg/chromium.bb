@@ -51,7 +51,7 @@ public:
     };
 
     static PassRefPtr<MediaStreamTrackSourcesRequest> create(ExecutionContext*, PassRefPtr<MediaStreamTrackSourcesCallback>);
-    virtual ~MediaStreamTrackSourcesRequest();
+    ~MediaStreamTrackSourcesRequest();
 
     String origin() { return m_origin; }
 
