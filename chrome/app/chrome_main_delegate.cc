@@ -252,32 +252,6 @@ bool SubprocessNeedsResourceBundle(const std::string& process_type) {
       process_type == switches::kUtilityProcess;
 }
 
-#if defined(OS_MACOSX)
-// Update the name shown in Activity Monitor so users are less likely to ask
-// why Chrome has so many processes.
-void SetMacProcessName(const CommandLine& command_line) {
-  std::string process_type =
-      command_line.GetSwitchValueASCII(switches::kProcessType);
-  // Don't worry about the browser process, its gets the stock name.
-  int name_id = 0;
-  if (command_line.HasSwitch(switches::kExtensionProcess)) {
-    name_id = IDS_WORKER_APP_NAME;
-  } else if (process_type == switches::kRendererProcess) {
-    name_id = IDS_RENDERER_APP_NAME;
-  } else if (process_type == switches::kPluginProcess ||
-             process_type == switches::kPpapiPluginProcess) {
-    name_id = IDS_PLUGIN_APP_NAME;
-  } else if (process_type == switches::kUtilityProcess) {
-    name_id = IDS_UTILITY_APP_NAME;
-  }
-  if (name_id) {
-    NSString* app_name = l10n_util::GetNSString(name_id);
-    base::mac::SetProcessName(base::mac::NSToCFCast(app_name));
-  }
-}
-
-#endif  // defined(OS_MACOSX)
-
 #if defined(OS_POSIX)
 // Check for --version and --product-version; return true if we encountered
 // one of these switches and should exit now.
@@ -720,12 +694,6 @@ void ChromeMainDelegate::PreSandboxStartup() {
 #endif
     CHECK(!loaded_locale.empty()) << "Locale could not be found for " <<
         locale;
-
-#if defined(OS_MACOSX)
-    // Update the process name (need resources to get the strings, so
-    // only do this when ResourcesBundle has been initialized).
-    SetMacProcessName(command_line);
-#endif  // defined(OS_MACOSX)
 
 #if !defined(CHROME_MULTIPLE_DLL_BROWSER)
     if (process_type == switches::kUtilityProcess)

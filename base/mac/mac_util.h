@@ -92,9 +92,6 @@ BASE_EXPORT bool AmIForeground();
 // Excludes the file given by |file_path| from being backed up by Time Machine.
 BASE_EXPORT bool SetFileBackupExclusion(const FilePath& file_path);
 
-// Sets the process name as displayed in Activity Monitor to process_name.
-BASE_EXPORT void SetProcessName(CFStringRef process_name);
-
 // Converts a NSImage to a CGImageRef.  Normally, the system frameworks can do
 // this fine, especially on 10.6.  On 10.5, however, CGImage cannot handle
 // converting a PDF-backed NSImage into a CGImageRef.  This function will
