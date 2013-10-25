@@ -12,29 +12,56 @@
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/test/base/testing_profile.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
 
+#if defined(OS_CHROMEOS)
+typedef FakeSigninManagerBase FakeSigninManagerForTesting;
+#else
+typedef FakeSigninManager FakeSigninManagerForTesting;
+#endif
+
+const char kTestEmail[] = "user@gmail.com";
+
 class AccountReconcilorTest : public testing::Test {
  public:
+  AccountReconcilorTest();
   virtual void SetUp() OVERRIDE;
   virtual void TearDown() OVERRIDE;
 
   TestingProfile* profile() { return profile_.get(); }
+  FakeSigninManagerForTesting* signin_manager() { return signin_manager_; }
+  FakeProfileOAuth2TokenService* token_service() { return token_service_; }
 
 private:
+  content::TestBrowserThreadBundle bundle_;
   scoped_ptr<TestingProfile> profile_;
+  FakeSigninManagerForTesting* signin_manager_;
+  FakeProfileOAuth2TokenService* token_service_;
 };
+
+AccountReconcilorTest::AccountReconcilorTest()
+    : signin_manager_(NULL), token_service_(NULL) {}
 
 void AccountReconcilorTest::SetUp() {
   TestingProfile::Builder builder;
   builder.AddTestingFactory(ProfileOAuth2TokenServiceFactory::GetInstance(),
                             FakeProfileOAuth2TokenService::Build);
   builder.AddTestingFactory(SigninManagerFactory::GetInstance(),
-                            FakeSigninManagerBase::Build);
+                            FakeSigninManagerForTesting::Build);
   profile_ = builder.Build();
+
+  signin_manager_ =
+      static_cast<FakeSigninManagerForTesting*>(
+          SigninManagerFactory::GetForProfile(profile()));
+  signin_manager_->Initialize(profile(), NULL);
+
+  token_service_ =
+      static_cast<FakeProfileOAuth2TokenService*>(
+          ProfileOAuth2TokenServiceFactory::GetForProfile(profile()));
 }
 
 void AccountReconcilorTest::TearDown() {
@@ -49,4 +76,28 @@ TEST_F(AccountReconcilorTest, Basic) {
       AccountReconcilorFactory::GetForProfile(profile());
   ASSERT_TRUE(NULL != reconcilor);
   ASSERT_EQ(profile(), reconcilor->profile());
+}
+
+#if !defined(OS_CHROMEOS)
+TEST_F(AccountReconcilorTest, SigninManagerRegistration) {
+  AccountReconcilor* reconcilor =
+      AccountReconcilorFactory::GetForProfile(profile());
+  ASSERT_TRUE(NULL != reconcilor);
+  ASSERT_FALSE(reconcilor->IsPeriodicReconciliationRunning());
+
+  signin_manager()->OnExternalSigninCompleted(kTestEmail);
+  ASSERT_TRUE(reconcilor->IsPeriodicReconciliationRunning());
+
+  signin_manager()->SignOut();
+  ASSERT_FALSE(reconcilor->IsPeriodicReconciliationRunning());
+}
+#endif
+
+TEST_F(AccountReconcilorTest, ProfileAlreadyConnected) {
+  signin_manager()->SetAuthenticatedUsername(kTestEmail);
+
+  AccountReconcilor* reconcilor =
+      AccountReconcilorFactory::GetForProfile(profile());
+  ASSERT_TRUE(NULL != reconcilor);
+  ASSERT_TRUE(reconcilor->IsPeriodicReconciliationRunning());
 }
