@@ -2371,6 +2371,8 @@ void LayerTreeHostImpl::PinchGestureBegin() {
   client_->RenewTreePriority();
   pinch_gesture_end_should_clear_scrolling_layer_ = !CurrentlyScrollingLayer();
   active_tree_->SetCurrentlyScrollingLayer(RootScrollLayer());
+  if (top_controls_manager_)
+    top_controls_manager_->PinchBegin();
 }
 
 void LayerTreeHostImpl::PinchGestureUpdate(float magnify_delta,
@@ -2408,6 +2410,8 @@ void LayerTreeHostImpl::PinchGestureEnd() {
     pinch_gesture_end_should_clear_scrolling_layer_ = false;
     ClearCurrentlyScrollingLayer();
   }
+  if (top_controls_manager_)
+    top_controls_manager_->PinchEnd();
   client_->SetNeedsCommitOnImplThread();
 }
 

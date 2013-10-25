@@ -56,6 +56,11 @@ class CC_EXPORT TopControlsManager
   gfx::Vector2dF ScrollBy(const gfx::Vector2dF pending_delta);
   void ScrollEnd();
 
+  // The caller should ensure that |Pinch{Begin,End}| are called within
+  // the scope of |Scroll{Begin,End}|.
+  void PinchBegin();
+  void PinchEnd();
+
   gfx::Vector2dF Animate(base::TimeTicks monotonic_time);
 
  protected:
@@ -90,6 +95,8 @@ class CC_EXPORT TopControlsManager
   // The height of the visible top control such that it must be hidden when
   // the user stops the scroll.
   float top_controls_hide_height_;
+
+  bool pinch_gesture_active_;
 
   DISALLOW_COPY_AND_ASSIGN(TopControlsManager);
 };

@@ -286,5 +286,88 @@ TEST(TopControlsManagerTest, PartialShownWithAmbiguousThresholdShows) {
   EXPECT_EQ(100.f, manager->content_top_offset());
 }
 
+TEST(TopControlsManagerTest, PinchIgnoresScroll) {
+  MockTopControlsManagerClient client(0.5f, 0.5f);
+  TopControlsManager* manager = client.manager();
+
+  // Hide the controls.
+  manager->ScrollBegin();
+  EXPECT_EQ(0.f, manager->controls_top_offset());
+
+  manager->ScrollBy(gfx::Vector2dF(0.f, 300.f));
+  EXPECT_EQ(-100.f, manager->controls_top_offset());
+
+  manager->PinchBegin();
+  EXPECT_EQ(-100.f, manager->controls_top_offset());
+
+  // Scrolls are ignored during pinch.
+  manager->ScrollBy(gfx::Vector2dF(0.f, -15.f));
+  EXPECT_EQ(-100.f, manager->controls_top_offset());
+  manager->PinchEnd();
+  EXPECT_EQ(-100.f, manager->controls_top_offset());
+
+  // Scrolls should no long be ignored.
+  manager->ScrollBy(gfx::Vector2dF(0.f, -15.f));
+  EXPECT_EQ(-85.f, manager->controls_top_offset());
+  EXPECT_EQ(15.f, manager->content_top_offset());
+  manager->ScrollEnd();
+
+  EXPECT_TRUE(manager->animation());
+}
+
+TEST(TopControlsManagerTest, PinchBeginStartsAnimationIfNecessary) {
+  MockTopControlsManagerClient client(0.5f, 0.5f);
+  TopControlsManager* manager = client.manager();
+
+  manager->ScrollBegin();
+  manager->ScrollBy(gfx::Vector2dF(0.f, 300.f));
+  EXPECT_EQ(-100.f, manager->controls_top_offset());
+
+  manager->PinchBegin();
+  EXPECT_FALSE(manager->animation());
+
+  manager->PinchEnd();
+  EXPECT_FALSE(manager->animation());
+
+  manager->ScrollBy(gfx::Vector2dF(0.f, -15.f));
+  EXPECT_EQ(-85.f, manager->controls_top_offset());
+  EXPECT_EQ(15.f, manager->content_top_offset());
+
+  manager->PinchBegin();
+  EXPECT_TRUE(manager->animation());
+
+  base::TimeTicks time = base::TimeTicks::Now();
+  float previous_offset = manager->controls_top_offset();
+  while (manager->animation()) {
+    time = base::TimeDelta::FromMicroseconds(100) + time;
+    manager->Animate(time);
+    EXPECT_LT(manager->controls_top_offset(), previous_offset);
+    previous_offset = manager->controls_top_offset();
+  }
+  EXPECT_FALSE(manager->animation());
+
+  manager->PinchEnd();
+  EXPECT_FALSE(manager->animation());
+
+  manager->ScrollBy(gfx::Vector2dF(0.f, -55.f));
+  EXPECT_EQ(-45.f, manager->controls_top_offset());
+  EXPECT_EQ(55.f, manager->content_top_offset());
+  EXPECT_FALSE(manager->animation());
+
+  manager->ScrollEnd();
+  EXPECT_TRUE(manager->animation());
+
+  time = base::TimeTicks::Now();
+  previous_offset = manager->controls_top_offset();
+  while (manager->animation()) {
+    time = base::TimeDelta::FromMicroseconds(100) + time;
+    manager->Animate(time);
+    EXPECT_GT(manager->controls_top_offset(), previous_offset);
+    previous_offset = manager->controls_top_offset();
+  }
+  EXPECT_FALSE(manager->animation());
+  EXPECT_EQ(0.f, manager->controls_top_offset());
+}
+
 }  // namespace
 }  // namespace cc
