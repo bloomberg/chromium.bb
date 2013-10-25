@@ -36,7 +36,6 @@ namespace WebKit {
 class WebSourceInfoPrivate : public RefCounted<WebSourceInfoPrivate> {
 public:
     static PassRefPtr<WebSourceInfoPrivate> create(const WebString& id, WebSourceInfo::SourceKind, const WebString& label, WebSourceInfo::VideoFacingMode);
-    virtual ~WebSourceInfoPrivate();
 
     const WebString& id() const { return m_id; }
     WebSourceInfo::SourceKind kind() const { return m_kind; }
@@ -62,10 +61,6 @@ WebSourceInfoPrivate::WebSourceInfoPrivate(const WebString& id, WebSourceInfo::S
     , m_kind(kind)
     , m_label(label)
     , m_facing(facing)
-{
-}
-
-WebSourceInfoPrivate::~WebSourceInfoPrivate()
 {
 }
 

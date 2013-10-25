@@ -44,7 +44,6 @@ public:
     {
         return adoptRef(new WebRTCICECandidatePrivate(candidate, sdpMid, sdpMLineIndex));
     }
-    virtual ~WebRTCICECandidatePrivate();
 
     const WebString& candidate() const { return m_candidate; }
     const WebString& sdpMid() const { return m_sdpMid; }
@@ -62,10 +61,6 @@ WebRTCICECandidatePrivate::WebRTCICECandidatePrivate(const WebString& candidate,
     : m_candidate(candidate)
     , m_sdpMid(sdpMid)
     , m_sdpMLineIndex(sdpMLineIndex)
-{
-}
-
-WebRTCICECandidatePrivate::~WebRTCICECandidatePrivate()
 {
 }
 

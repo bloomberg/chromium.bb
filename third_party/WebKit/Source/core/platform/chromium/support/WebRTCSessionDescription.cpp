@@ -41,7 +41,6 @@ namespace WebKit {
 class WebRTCSessionDescriptionPrivate : public RefCounted<WebRTCSessionDescriptionPrivate> {
 public:
     static PassRefPtr<WebRTCSessionDescriptionPrivate> create(const WebString& type, const WebString& sdp);
-    virtual ~WebRTCSessionDescriptionPrivate();
 
     WebString type() { return m_type; }
     void setType(const WebString& type) { m_type = type; }
@@ -64,10 +63,6 @@ PassRefPtr<WebRTCSessionDescriptionPrivate> WebRTCSessionDescriptionPrivate::cre
 WebRTCSessionDescriptionPrivate::WebRTCSessionDescriptionPrivate(const WebString& type, const WebString& sdp)
     : m_type(type)
     , m_sdp(sdp)
-{
-}
-
-WebRTCSessionDescriptionPrivate::~WebRTCSessionDescriptionPrivate()
 {
 }
 
