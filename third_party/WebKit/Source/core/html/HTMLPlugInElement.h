@@ -50,54 +50,31 @@ public:
     virtual ~HTMLPlugInElement();
 
     void resetInstance();
-
     SharedPersistent<v8::Object>* pluginWrapper();
-
     Widget* pluginWidget() const;
-
-    enum DisplayState {
-        Restarting,
-        RestartingWithPendingMouseClick,
-        Playing
-    };
-    DisplayState displayState() const { return m_displayState; }
-    void setDisplayState(DisplayState state) { m_displayState = state; }
-
     NPObject* getNPObject();
-
-    bool isCapturingMouseEvents() const { return m_isCapturingMouseEvents; }
-    void setIsCapturingMouseEvents(bool capturing) { m_isCapturingMouseEvents = capturing; }
-
-    bool canContainRangeEndPoint() const { return false; }
-
     bool canProcessDrag() const;
-
-    virtual bool willRespondToMouseClickEvents() OVERRIDE;
-    virtual void removeAllEventListeners() OVERRIDE FINAL;
-
-    const String& serviceType() const { return m_serviceType; }
     const String& url() const { return m_url; }
-    const KURL& loadedUrl() const { return m_loadedUrl; }
-    const String loadedMimeType() const;
 
     // Public for FrameView::addWidgetToUpdate()
     bool needsWidgetUpdate() const { return m_needsWidgetUpdate; }
     void setNeedsWidgetUpdate(bool needsWidgetUpdate) { m_needsWidgetUpdate = needsWidgetUpdate; }
-
     virtual void updateWidget(PluginCreationOption) = 0;
 
 protected:
     HTMLPlugInElement(const QualifiedName& tagName, Document&, bool createdByParser, PreferPlugInsForImagesOption);
 
+    // Node functions:
     virtual void didMoveToNewDocument(Document& oldDocument) OVERRIDE;
+    virtual bool dispatchBeforeLoadEvent(const String& sourceURL) OVERRIDE;
+
+    // Element functions:
     virtual bool isPresentationAttribute(const QualifiedName&) const OVERRIDE;
     virtual void collectStyleForPresentationAttribute(const QualifiedName&, const AtomicString&, MutableStylePropertySet*) OVERRIDE;
 
     virtual bool useFallbackContent() const { return false; }
-
-    virtual bool dispatchBeforeLoadEvent(const String& sourceURL) OVERRIDE;
-
-    // Create or update the RenderWidget and return it, triggering layout if necessary.
+    // Create or update the RenderWidget and return it, triggering layout if
+    // necessary.
     virtual RenderWidget* renderWidgetForJSBindings() const;
 
     bool isImageType();
@@ -114,22 +91,38 @@ protected:
     OwnPtr<HTMLImageLoader> m_imageLoader;
 
 private:
-    virtual bool areAuthorShadowsAllowed() const OVERRIDE { return false; }
+    // EventTarget functions:
+    virtual void removeAllEventListeners() OVERRIDE FINAL;
+
+    // Node functions:
+    virtual bool canContainRangeEndPoint() const OVERRIDE { return false; }
+    virtual bool willRespondToMouseClickEvents() OVERRIDE;
+    virtual void defaultEventHandler(Event*) OVERRIDE;
     virtual void attach(const AttachContext& = AttachContext()) OVERRIDE;
     virtual void detach(const AttachContext& = AttachContext()) OVERRIDE;
-    virtual void defaultEventHandler(Event*) OVERRIDE;
+    virtual void finishParsingChildren() OVERRIDE;
+    virtual bool isPluginElement() const OVERRIDE;
+
+    // Element functions:
+    virtual bool areAuthorShadowsAllowed() const OVERRIDE { return false; }
     virtual RenderObject* createRenderer(RenderStyle*) OVERRIDE;
     virtual void willRecalcStyle(StyleRecalcChange) OVERRIDE FINAL;
-    virtual void finishParsingChildren() OVERRIDE;
-
-    // Return any existing RenderWidget without triggering relayout, or 0 if it doesn't yet exist.
-    virtual RenderWidget* existingRenderWidget() const = 0;
-
     virtual bool supportsFocus() const OVERRIDE { return true; };
     virtual bool rendererIsFocusable() const OVERRIDE;
-
     virtual bool isKeyboardFocusable() const OVERRIDE;
-    virtual bool isPluginElement() const;
+
+    // Return any existing RenderWidget without triggering relayout, or 0 if it
+    // doesn't yet exist.
+    virtual RenderWidget* existingRenderWidget() const = 0;
+
+    enum DisplayState {
+        Restarting,
+        RestartingWithPendingMouseClick,
+        Playing
+    };
+    DisplayState displayState() const { return m_displayState; }
+    void setDisplayState(DisplayState state) { m_displayState = state; }
+    const String loadedMimeType() const;
     static void updateWidgetCallback(Node*);
     void updateWidgetIfNecessary();
     bool loadPlugin(const KURL&, const String& mimeType, const Vector<String>& paramNames, const Vector<String>& paramValues, bool useFallback);

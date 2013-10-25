@@ -82,8 +82,7 @@ HTMLPlugInElement::~HTMLPlugInElement()
 
 bool HTMLPlugInElement::canProcessDrag() const
 {
-    const PluginView* plugin = pluginWidget() && pluginWidget()->isPluginView() ? toPluginView(pluginWidget()) : 0;
-    return plugin ? plugin->canProcessDrag() : false;
+    return pluginWidget() && pluginWidget()->isPluginView() && toPluginView(pluginWidget())->canProcessDrag();
 }
 
 bool HTMLPlugInElement::willRespondToMouseClickEvents()
@@ -91,11 +90,7 @@ bool HTMLPlugInElement::willRespondToMouseClickEvents()
     if (isDisabledFormControl())
         return false;
     RenderObject* r = renderer();
-    if (!r)
-        return false;
-    if (!r->isEmbeddedObject() && !r->isWidget())
-        return false;
-    return true;
+    return r && (r->isEmbeddedObject() || r->isWidget());
 }
 
 void HTMLPlugInElement::removeAllEventListeners()
@@ -150,8 +145,8 @@ void HTMLPlugInElement::updateWidgetIfNecessary()
 void HTMLPlugInElement::detach(const AttachContext& context)
 {
     // FIXME: Because of the insanity that is HTMLPlugInElement::
-    // willRecalcStyle, we can end up detaching during an attach() call, before we
-    // even have a renderer. In that case, don't mark the widget for update.
+    // willRecalcStyle, we can end up detaching during an attach() call, before
+    // we even have a renderer. In that case, don't mark the widget for update.
     if (confusingAndOftenMisusedAttached() && renderer() && !useFallbackContent()) {
         // Update the widget the next time we attach (detaching destroys the
         // plugin).
@@ -220,8 +215,9 @@ SharedPersistent<v8::Object>* HTMLPlugInElement::pluginWrapper()
     if (!frame)
         return 0;
 
-    // If the host dynamically turns off JavaScript (or Java) we will still return
-    // the cached allocated Bindings::Instance.  Not supporting this edge-case is OK.
+    // If the host dynamically turns off JavaScript (or Java) we will still
+    // return the cached allocated Bindings::Instance. Not supporting this
+    // edge-case is OK.
     if (!m_pluginWrapper) {
         if (Widget* widget = pluginWidget())
             m_pluginWrapper = frame->script().createPluginWrapper(widget);
@@ -245,16 +241,15 @@ bool HTMLPlugInElement::dispatchBeforeLoadEvent(const String& sourceURL)
 Widget* HTMLPlugInElement::pluginWidget() const
 {
     if (m_inBeforeLoadEventHandler) {
-        // The plug-in hasn't loaded yet, and it makes no sense to try to load if beforeload handler happened to touch the plug-in element.
-        // That would recursively call beforeload for the same element.
+        // The plug-in hasn't loaded yet, and it makes no sense to try to load
+        // if beforeload handler happened to touch the plug-in element. That
+        // would recursively call beforeload for the same element.
         return 0;
     }
 
-    RenderWidget* renderWidget = renderWidgetForJSBindings();
-    if (!renderWidget)
-        return 0;
-
-    return renderWidget->widget();
+    if (RenderWidget* renderWidget = renderWidgetForJSBindings())
+        return renderWidget->widget();
+    return 0;
 }
 
 bool HTMLPlugInElement::isPresentationAttribute(const QualifiedName& name) const
@@ -266,41 +261,44 @@ bool HTMLPlugInElement::isPresentationAttribute(const QualifiedName& name) const
 
 void HTMLPlugInElement::collectStyleForPresentationAttribute(const QualifiedName& name, const AtomicString& value, MutableStylePropertySet* style)
 {
-    if (name == widthAttr)
+    if (name == widthAttr) {
         addHTMLLengthToStyle(style, CSSPropertyWidth, value);
-    else if (name == heightAttr)
+    } else if (name == heightAttr) {
         addHTMLLengthToStyle(style, CSSPropertyHeight, value);
-    else if (name == vspaceAttr) {
+    } else if (name == vspaceAttr) {
         addHTMLLengthToStyle(style, CSSPropertyMarginTop, value);
         addHTMLLengthToStyle(style, CSSPropertyMarginBottom, value);
     } else if (name == hspaceAttr) {
         addHTMLLengthToStyle(style, CSSPropertyMarginLeft, value);
         addHTMLLengthToStyle(style, CSSPropertyMarginRight, value);
-    } else if (name == alignAttr)
+    } else if (name == alignAttr) {
         applyAlignmentAttributeToStyle(value, style);
-    else
+    } else {
         HTMLFrameOwnerElement::collectStyleForPresentationAttribute(name, value, style);
+    }
 }
 
 void HTMLPlugInElement::defaultEventHandler(Event* event)
 {
-    // Firefox seems to use a fake event listener to dispatch events to plug-in (tested with mouse events only).
-    // This is observable via different order of events - in Firefox, event listeners specified in HTML attributes fires first, then an event
-    // gets dispatched to plug-in, and only then other event listeners fire. Hopefully, this difference does not matter in practice.
+    // Firefox seems to use a fake event listener to dispatch events to plug-in
+    // (tested with mouse events only). This is observable via different order
+    // of events - in Firefox, event listeners specified in HTML attributes
+    // fires first, then an event gets dispatched to plug-in, and only then
+    // other event listeners fire. Hopefully, this difference does not matter in
+    // practice.
 
-    // FIXME: Mouse down and scroll events are passed down to plug-in via custom code in EventHandler; these code paths should be united.
+    // FIXME: Mouse down and scroll events are passed down to plug-in via custom
+    // code in EventHandler; these code paths should be united.
 
     RenderObject* r = renderer();
-    if (r && r->isEmbeddedObject()) {
+    if (!r || !r->isWidget())
+        return;
+    if (r->isEmbeddedObject()) {
         if (toRenderEmbeddedObject(r)->showsUnavailablePluginIndicator())
             return;
-
         if (displayState() < Playing)
             return;
     }
-
-    if (!r || !r->isWidget())
-        return;
     RefPtr<Widget> widget = toRenderWidget(r)->widget();
     if (!widget)
         return;
@@ -320,12 +318,7 @@ bool HTMLPlugInElement::isKeyboardFocusable() const
 {
     if (!document().page())
         return false;
-
-    const PluginView* plugin = pluginWidget() && pluginWidget()->isPluginView() ? toPluginView(pluginWidget()) : 0;
-    if (plugin)
-        return plugin->supportsKeyboardFocus();
-
-    return false;
+    return pluginWidget() && pluginWidget()->isPluginView() && toPluginView(pluginWidget())->supportsKeyboardFocus();
 }
 
 bool HTMLPlugInElement::isPluginElement() const
@@ -366,7 +359,7 @@ bool HTMLPlugInElement::isImageType()
 
 const String HTMLPlugInElement::loadedMimeType() const
 {
-    String mimeType = serviceType();
+    String mimeType = m_serviceType;
     if (mimeType.isEmpty())
         mimeType = mimeTypeFromURL(m_loadedUrl);
     return mimeType;
@@ -489,10 +482,8 @@ bool HTMLPlugInElement::pluginIsLoadable(const KURL& url, const String& mimeType
     if (!settings)
         return false;
 
-    if (MIMETypeRegistry::isJavaAppletMIMEType(mimeType)) {
-        if (!settings->isJavaEnabled())
-            return false;
-    }
+    if (MIMETypeRegistry::isJavaAppletMIMEType(mimeType) && !settings->isJavaEnabled())
+        return false;
 
     if (document().isSandboxed(SandboxPlugins))
         return false;
@@ -511,9 +502,7 @@ bool HTMLPlugInElement::pluginIsLoadable(const KURL& url, const String& mimeType
         return false;
     }
 
-    if (!frame->loader().mixedContentChecker()->canRunInsecureContent(document().securityOrigin(), url))
-        return false;
-    return true;
+    return frame->loader().mixedContentChecker()->canRunInsecureContent(document().securityOrigin(), url);
 }
 
 }

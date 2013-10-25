@@ -250,7 +250,7 @@ bool HTMLObjectElement::shouldAllowQuickTimeClassIdQuirk()
 
 bool HTMLObjectElement::hasValidClassId()
 {
-    if (MIMETypeRegistry::isJavaAppletMIMEType(serviceType()) && classId().startsWith("java:", false))
+    if (MIMETypeRegistry::isJavaAppletMIMEType(m_serviceType) && classId().startsWith("java:", false))
         return true;
 
     if (shouldAllowQuickTimeClassIdQuirk())
@@ -279,7 +279,7 @@ void HTMLObjectElement::updateWidget(PluginCreationOption pluginCreationOption)
         return;
 
     String url = this->url();
-    String serviceType = this->serviceType();
+    String serviceType = m_serviceType;
 
     // FIXME: These should be joined into a PluginParameters class.
     Vector<String> paramNames;
