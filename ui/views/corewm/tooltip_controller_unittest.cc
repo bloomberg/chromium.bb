@@ -101,7 +101,7 @@ class TooltipControllerTest : public aura::test::AuraTestBase {
     return widget_->GetNativeWindow();
   }
 
-  aura::RootWindow* GetRootWindow() {
+  aura::Window* GetRootWindow() {
     return GetWindow()->GetRootWindow();
   }
 
@@ -159,7 +159,7 @@ TEST_F(TooltipControllerTest, TooltipsInMultipleViews) {
 
   PrepareSecondView();
   aura::Window* window = GetWindow();
-  aura::RootWindow* root_window = GetRootWindow();
+  aura::Window* root_window = GetRootWindow();
 
   // Fire tooltip timer so tooltip becomes visible.
   generator_->MoveMouseRelativeTo(window, view_->bounds().CenterPoint());
@@ -356,7 +356,7 @@ TEST_F(TooltipControllerTest, TooltipsInMultipleRootWindows) {
   EXPECT_EQ(NULL, helper_->GetTooltipWindow());
 
   aura::Window* window = GetWindow();
-  aura::RootWindow* root_window = GetRootWindow();
+  aura::Window* root_window = GetRootWindow();
 
   // Fire tooltip timer so tooltip becomes visible.
   generator_->MoveMouseRelativeTo(window, view_->bounds().CenterPoint());
@@ -386,7 +386,7 @@ TEST_F(TooltipControllerTest, TooltipsInMultipleRootWindows) {
     view2->set_tooltip_text(ASCIIToUTF16("Tooltip Text For RootWindow2"));
 
   aura::Window* window2 = widget2->GetNativeWindow();
-  aura::RootWindow* root_window2 =
+  aura::Window* root_window2 =
       widget2->GetNativeWindow()->GetRootWindow();
   // Fire tooltip timer so tooltip becomes visible.
   generator_->MoveMouseRelativeTo(window2, view2->bounds().CenterPoint());

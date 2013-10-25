@@ -184,7 +184,7 @@ class WindowSelectorTest : public test::AshTestBase {
 // Tests entering overview mode with two windows and selecting one.
 TEST_F(WindowSelectorTest, Basic) {
   gfx::Rect bounds(0, 0, 400, 400);
-  aura::RootWindow* root_window = Shell::GetPrimaryRootWindow();
+  aura::Window* root_window = Shell::GetPrimaryRootWindow();
   scoped_ptr<aura::Window> window1(CreateWindow(bounds));
   scoped_ptr<aura::Window> window2(CreateWindow(bounds));
   scoped_ptr<aura::Window> panel1(CreatePanelWindow(bounds));
@@ -196,7 +196,7 @@ TEST_F(WindowSelectorTest, Basic) {
   EXPECT_TRUE(wm::IsActiveWindow(window2.get()));
   EXPECT_EQ(window2.get(), GetFocusedWindow());
   // Hide the cursor before entering overview to test that it will be shown.
-  GetCursorClient(root_window)->HideCursor();
+  aura::client::GetCursorClient(root_window)->HideCursor();
 
   // In overview mode the windows should no longer overlap and focus should
   // be removed from the window.
@@ -209,9 +209,10 @@ TEST_F(WindowSelectorTest, Basic) {
   EXPECT_TRUE(WindowsOverlapping(panel1.get(), panel2.get()));
 
   // The cursor should be visible and locked as a pointer
-  EXPECT_EQ(ui::kCursorPointer, root_window->last_cursor().native_type());
-  EXPECT_TRUE(GetCursorClient(root_window)->IsCursorLocked());
-  EXPECT_TRUE(GetCursorClient(root_window)->IsCursorVisible());
+  EXPECT_EQ(ui::kCursorPointer,
+            root_window->GetDispatcher()->last_cursor().native_type());
+  EXPECT_TRUE(aura::client::GetCursorClient(root_window)->IsCursorLocked());
+  EXPECT_TRUE(aura::client::GetCursorClient(root_window)->IsCursorVisible());
 
   // Clicking window 1 should activate it.
   ClickWindow(window1.get());
@@ -220,7 +221,7 @@ TEST_F(WindowSelectorTest, Basic) {
   EXPECT_EQ(window1.get(), GetFocusedWindow());
 
   // Cursor should have been unlocked.
-  EXPECT_FALSE(GetCursorClient(root_window)->IsCursorLocked());
+  EXPECT_FALSE(aura::client::GetCursorClient(root_window)->IsCursorLocked());
 }
 
 // Tests that the shelf dimming state is removed while in overview and restored

@@ -15,7 +15,7 @@
 class ChromeLauncherController;
 
 namespace aura {
-class RootWindow;
+class Window;
 }
 
 namespace extensions {
@@ -30,10 +30,10 @@ class LauncherContextMenu : public ui::SimpleMenuModel,
   // |clicked on an area with no icons).
   LauncherContextMenu(ChromeLauncherController* controller,
                       const ash::LauncherItem* item,
-                      aura::RootWindow* root_window);
+                      aura::Window* root_window);
   // Creates a menu used as a desktop context menu on |root_window|.
   LauncherContextMenu(ChromeLauncherController* controller,
-                      aura::RootWindow* root_window);
+                      aura::Window* root_window);
   virtual ~LauncherContextMenu();
 
   void Init();
@@ -88,7 +88,7 @@ class LauncherContextMenu : public ui::SimpleMenuModel,
 
   scoped_ptr<extensions::ContextMenuMatcher> extension_items_;
 
-  aura::RootWindow* root_window_;
+  aura::Window* root_window_;
 
   DISALLOW_COPY_AND_ASSIGN(LauncherContextMenu);
 };

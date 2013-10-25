@@ -50,7 +50,7 @@ aura::Window* DragDropTracker::GetTarget(const ui::LocatedEvent& event) {
   gfx::Point location_in_screen = event.location();
   wm::ConvertPointToScreen(capture_window_.get(),
                            &location_in_screen);
-  aura::RootWindow* root_window_at_point =
+  aura::Window* root_window_at_point =
       wm::GetRootWindowAt(location_in_screen);
   gfx::Point location_in_root = location_in_screen;
   wm::ConvertPointFromScreen(root_window_at_point, &location_in_root);

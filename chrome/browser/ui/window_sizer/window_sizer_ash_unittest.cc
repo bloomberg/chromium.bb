@@ -46,7 +46,7 @@ class TestBrowserWindowAura : public TestBrowserWindow {
     native_window_->Hide();
   }
   virtual void Activate() OVERRIDE {
-    GetActivationClient(
+    aura::client::GetActivationClient(
         native_window_->GetRootWindow())->ActivateWindow(native_window_.get());
   }
   virtual gfx::NativeWindow GetNativeWindow() OVERRIDE {

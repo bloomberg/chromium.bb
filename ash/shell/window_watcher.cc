@@ -36,7 +36,7 @@ class WindowWatcher::WorkspaceWindowWatcher : public aura::WindowObserver {
     window->RemoveObserver(watcher_);
   }
 
-  void RootWindowAdded(aura::RootWindow* root) {
+  void RootWindowAdded(aura::Window* root) {
     aura::Window* panel_container = ash::Shell::GetContainer(
         root,
         internal::kShellWindowId_PanelContainer);
@@ -150,7 +150,7 @@ void WindowWatcher::OnDisplayBoundsChanged(const gfx::Display& display) {
 }
 
 void WindowWatcher::OnDisplayAdded(const gfx::Display& new_display) {
-  aura::RootWindow* root = Shell::GetInstance()->display_controller()->
+  aura::Window* root = Shell::GetInstance()->display_controller()->
       GetRootWindowForDisplayId(new_display.id());
   workspace_window_watcher_->RootWindowAdded(root);
 }

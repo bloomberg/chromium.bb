@@ -14,7 +14,7 @@
 namespace ash {
 namespace shell {
 
-ContextMenu::ContextMenu(aura::RootWindow* root)
+ContextMenu::ContextMenu(aura::Window* root)
     : ui::SimpleMenuModel(NULL),
       root_window_(root),
       alignment_menu_(root) {

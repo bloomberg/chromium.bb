@@ -28,7 +28,7 @@ class CleanupWidgetAfterAnimationObserver;
 // the class goes out of scope and the last animation has finished.
 class ScopedWindowCopy {
  public:
-  ScopedWindowCopy(aura::RootWindow* target_root, aura::Window* src_window);
+  ScopedWindowCopy(aura::Window* target_root, aura::Window* src_window);
   ~ScopedWindowCopy();
 
   aura::Window* GetWindow();

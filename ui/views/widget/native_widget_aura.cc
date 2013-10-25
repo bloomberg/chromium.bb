@@ -276,7 +276,7 @@ bool NativeWidgetAura::HasCapture() const {
 InputMethod* NativeWidgetAura::CreateInputMethod() {
   if (!window_)
     return NULL;
-  aura::RootWindow* root_window = window_->GetRootWindow();
+  aura::Window* root_window = window_->GetRootWindow();
   ui::InputMethod* host =
       root_window->GetProperty(aura::client::kRootWindowInputMethodKey);
   return new InputMethodBridge(this, host, true);
@@ -391,7 +391,7 @@ void NativeWidgetAura::SetBounds(const gfx::Rect& bounds) {
   if (!window_)
     return;
 
-  aura::RootWindow* root = window_->GetRootWindow();
+  aura::Window* root = window_->GetRootWindow();
   if (root) {
     aura::client::ScreenPositionClient* screen_position_client =
         aura::client::GetScreenPositionClient(root);
@@ -523,7 +523,7 @@ bool NativeWidgetAura::IsActive() const {
 
   // We may up here during destruction of the root, in which case
   // GetRootWindow() returns NULL (~RootWindow() has run and we're in ~Window).
-  aura::RootWindow* root = window_->GetRootWindow();
+  aura::Window* root = window_->GetRootWindow();
   return root &&
       aura::client::GetActivationClient(root)->GetActiveWindow() == window_;
 }
@@ -1118,7 +1118,7 @@ void NativeWidgetPrivate::ReparentNativeView(gfx::NativeView native_view,
     // in this case is the stacking client of the current RootWindow. This
     // matches our previous behaviour; the global stacking client would almost
     // always reattach the window to the same RootWindow.
-    aura::RootWindow* root_window = native_view->GetRootWindow();
+    aura::Window* root_window = native_view->GetRootWindow();
     aura::client::ParentWindowWithContext(
         native_view, root_window, root_window->GetBoundsInScreen());
   }

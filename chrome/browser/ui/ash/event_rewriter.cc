@@ -170,8 +170,10 @@ EventRewriter::EventRewriter()
 #endif
       pref_service_(NULL) {
   // The ash shell isn't instantiated for our unit tests.
-  if (ash::Shell::HasInstance())
-    ash::Shell::GetPrimaryRootWindow()->AddRootWindowObserver(this);
+  if (ash::Shell::HasInstance()) {
+    ash::Shell::GetPrimaryRootWindow()->GetDispatcher()->
+        AddRootWindowObserver(this);
+  }
 #if defined(OS_CHROMEOS)
   if (base::SysInfo::IsRunningOnChromeOS()) {
     chromeos::XInputHierarchyChangedEventListener::GetInstance()
@@ -182,8 +184,10 @@ EventRewriter::EventRewriter()
 }
 
 EventRewriter::~EventRewriter() {
-  if (ash::Shell::HasInstance())
-    ash::Shell::GetPrimaryRootWindow()->RemoveRootWindowObserver(this);
+  if (ash::Shell::HasInstance()) {
+    ash::Shell::GetPrimaryRootWindow()->GetDispatcher()->
+        RemoveRootWindowObserver(this);
+  }
 #if defined(OS_CHROMEOS)
   if (base::SysInfo::IsRunningOnChromeOS()) {
     chromeos::XInputHierarchyChangedEventListener::GetInstance()

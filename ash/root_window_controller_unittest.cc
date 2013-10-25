@@ -597,7 +597,7 @@ typedef test::NoSessionAshTestBase NoSessionRootWindowControllerTest;
 
 // Make sure that an event handler exists for entire display area.
 TEST_F(NoSessionRootWindowControllerTest, Event) {
-  aura::RootWindow* root = Shell::GetPrimaryRootWindow();
+  aura::Window* root = Shell::GetPrimaryRootWindow();
   const gfx::Size size = root->bounds().size();
   aura::Window* event_target = root->GetEventHandlerForPoint(gfx::Point(0, 0));
   EXPECT_TRUE(event_target);
@@ -639,8 +639,8 @@ TEST_F(VirtualKeyboardRootWindowControllerTest,
   UpdateDisplay("500x500,500x500");
 
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
-  aura::RootWindow* primary_root_window = Shell::GetPrimaryRootWindow();
-  aura::RootWindow* secondary_root_window =
+  aura::Window* primary_root_window = Shell::GetPrimaryRootWindow();
+  aura::Window* secondary_root_window =
       root_windows[0] == primary_root_window ?
           root_windows[1] : root_windows[0];
 
@@ -656,7 +656,7 @@ TEST_F(VirtualKeyboardRootWindowControllerTest,
 // events at blocked user session.
 TEST_F(VirtualKeyboardRootWindowControllerTest,
        ClickVirtualKeyboardInBlockedWindow) {
-  aura::RootWindow* root_window = Shell::GetPrimaryRootWindow();
+  aura::Window* root_window = Shell::GetPrimaryRootWindow();
   aura::Window* keyboard_container = Shell::GetContainer(root_window,
       internal::kShellWindowId_VirtualKeyboardContainer);
   ASSERT_TRUE(keyboard_container);
@@ -689,7 +689,7 @@ TEST_F(VirtualKeyboardRootWindowControllerTest,
 // GetWindowContainer().
 TEST_F(VirtualKeyboardRootWindowControllerTest,
        DeleteOldContainerOnVirtualKeyboardInit) {
-  aura::RootWindow* root_window = ash::Shell::GetPrimaryRootWindow();
+  aura::Window* root_window = ash::Shell::GetPrimaryRootWindow();
   aura::Window* keyboard_container = Shell::GetContainer(root_window,
       internal::kShellWindowId_VirtualKeyboardContainer);
   ASSERT_TRUE(keyboard_container);

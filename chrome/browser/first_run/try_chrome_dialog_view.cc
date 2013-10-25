@@ -283,7 +283,7 @@ TryChromeDialogView::Result TryChromeDialogView::ShowModal(
   HWND toast_window;
 #if defined(USE_AURA)
   toast_window =
-      popup_->GetNativeView()->GetRootWindow()->GetAcceleratedWidget();
+      popup_->GetNativeView()->GetDispatcher()->GetAcceleratedWidget();
 #else
   toast_window = popup_->GetNativeView();
 #endif

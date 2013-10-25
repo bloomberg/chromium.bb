@@ -19,7 +19,7 @@ namespace ash {
 class ASH_EXPORT ShelfAlignmentMenu : public ui::SimpleMenuModel,
                                       public ui::SimpleMenuModel::Delegate {
  public:
-  explicit ShelfAlignmentMenu(aura::RootWindow* root);
+  explicit ShelfAlignmentMenu(aura::Window* root);
   virtual ~ShelfAlignmentMenu();
 
   // ui::SimpleMenuModel::Delegate overrides:
@@ -38,7 +38,7 @@ class ASH_EXPORT ShelfAlignmentMenu : public ui::SimpleMenuModel,
     MENU_ALIGN_BOTTOM,
   };
 
-  aura::RootWindow* root_window_;
+  aura::Window* root_window_;
 
   DISALLOW_COPY_AND_ASSIGN(ShelfAlignmentMenu);
 };

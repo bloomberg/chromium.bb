@@ -382,13 +382,13 @@ TEST_F(DisplayManagerTest, TestDeviceScaleOnlyChange) {
     return;
 
   UpdateDisplay("1000x600");
-  EXPECT_EQ(1,
-            Shell::GetPrimaryRootWindow()->compositor()->device_scale_factor());
+  aura::WindowEventDispatcher* dispatcher =
+      Shell::GetPrimaryRootWindow()->GetDispatcher();
+  EXPECT_EQ(1, dispatcher->compositor()->device_scale_factor());
   EXPECT_EQ("1000x600",
             Shell::GetPrimaryRootWindow()->bounds().size().ToString());
   UpdateDisplay("1000x600*2");
-  EXPECT_EQ(2,
-            Shell::GetPrimaryRootWindow()->compositor()->device_scale_factor());
+  EXPECT_EQ(2, dispatcher->compositor()->device_scale_factor());
   EXPECT_EQ("500x300",
             Shell::GetPrimaryRootWindow()->bounds().size().ToString());
 }
@@ -590,8 +590,8 @@ TEST_F(DisplayManagerTest, MAYBE_TestNativeDisplaysChangedNoInternal) {
   EXPECT_EQ(1U, display_manager()->GetNumDisplays());
   EXPECT_EQ("1,1 100x100",
             GetDisplayInfoForId(10).bounds_in_native().ToString());
-  EXPECT_EQ("100x100",
-            ash::Shell::GetPrimaryRootWindow()->GetHostSize().ToString());
+  EXPECT_EQ("100x100", ash::Shell::GetPrimaryRootWindow()->GetDispatcher()->
+      GetHostSize().ToString());
 }
 
 #if defined(OS_WIN)

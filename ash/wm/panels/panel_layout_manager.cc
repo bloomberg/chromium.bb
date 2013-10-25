@@ -450,8 +450,7 @@ void PanelLayoutManager::OnLauncherIconPositionsChanged() {
 ////////////////////////////////////////////////////////////////////////////////
 // PanelLayoutManager, ash::ShellObserver implementation:
 
-void PanelLayoutManager::OnShelfAlignmentChanged(
-    aura::RootWindow* root_window) {
+void PanelLayoutManager::OnShelfAlignmentChanged(aura::Window* root_window) {
   if (panel_container_->GetRootWindow() == root_window)
     Relayout();
 }

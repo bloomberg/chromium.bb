@@ -15,7 +15,7 @@ WindowSelectorWindow::WindowSelectorWindow(aura::Window* window)
 WindowSelectorWindow::~WindowSelectorWindow() {
 }
 
-aura::RootWindow* WindowSelectorWindow::GetRootWindow() {
+aura::Window* WindowSelectorWindow::GetRootWindow() {
   return transform_window_.window()->GetRootWindow();
 }
 
@@ -46,7 +46,7 @@ void WindowSelectorWindow::PrepareForOverview() {
   transform_window_.PrepareForOverview();
 }
 
-void WindowSelectorWindow::SetItemBounds(aura::RootWindow* root_window,
+void WindowSelectorWindow::SetItemBounds(aura::Window* root_window,
                                          const gfx::Rect& target_bounds,
                                          bool animate) {
   gfx::Rect src_rect = transform_window_.GetBoundsInScreen();

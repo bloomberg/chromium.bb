@@ -45,7 +45,7 @@ const int kLockScreenBackgroundId =
 
 // Returns number of child windows in a shell window container.
 int ChildCountForContainer(int container_id) {
-  RootWindow* root = ash::Shell::GetPrimaryRootWindow();
+  Window* root = ash::Shell::GetPrimaryRootWindow();
   Window* container = root->GetChildById(container_id);
   return static_cast<int>(container->children().size());
 }

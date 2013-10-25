@@ -11,7 +11,6 @@
 #include "ui/gfx/transform.h"
 
 namespace aura {
-class RootWindow;
 class Window;
 }
 
@@ -74,7 +73,7 @@ class ScopedTransformOverviewWindow {
   // Sets |transform| on the window and a copy of the window if the target
   // |root_window| is not the window's root window. If |animate| the transform
   // is animated in, otherwise it is immediately applied.
-  void SetTransform(aura::RootWindow* root_window,
+  void SetTransform(aura::Window* root_window,
                     const gfx::Transform& transform,
                     bool animate);
 

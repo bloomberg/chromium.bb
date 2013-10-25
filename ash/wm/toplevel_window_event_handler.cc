@@ -335,7 +335,7 @@ aura::client::WindowMoveResult ToplevelWindowEventHandler::RunMoveLoop(
   DCHECK(!in_move_loop_);  // Can only handle one nested loop at a time.
   in_move_loop_ = true;
   move_cancelled_ = false;
-  aura::RootWindow* root_window = source->GetRootWindow();
+  aura::Window* root_window = source->GetRootWindow();
   DCHECK(root_window);
   gfx::Point drag_location;
   if (move_source == aura::client::WINDOW_MOVE_SOURCE_TOUCH &&
@@ -345,7 +345,7 @@ aura::client::WindowMoveResult ToplevelWindowEventHandler::RunMoveLoop(
         GetLastTouchPointForTarget(source, &drag_location);
     DCHECK(has_point);
   } else {
-    drag_location = root_window->GetLastMouseLocationInRoot();
+    drag_location = root_window->GetDispatcher()->GetLastMouseLocationInRoot();
     aura::Window::ConvertPointToTarget(
         root_window, source->parent(), &drag_location);
   }

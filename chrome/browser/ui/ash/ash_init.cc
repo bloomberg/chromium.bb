@@ -83,7 +83,7 @@ void OpenAsh() {
     chrome::StartKeepAlive();
   }
 #endif
-  ash::Shell::GetPrimaryRootWindow()->ShowRootWindow();
+  ash::Shell::GetPrimaryRootWindow()->GetDispatcher()->ShowRootWindow();
 }
 
 void CloseAsh() {

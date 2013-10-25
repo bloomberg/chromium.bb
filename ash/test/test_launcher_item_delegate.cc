@@ -31,7 +31,7 @@ base::string16 TestLauncherItemDelegate::GetTitle() {
 }
 
 ui::MenuModel* TestLauncherItemDelegate::CreateContextMenu(
-    aura::RootWindow* root_window) {
+    aura::Window* root_window) {
   return NULL;
 }
 

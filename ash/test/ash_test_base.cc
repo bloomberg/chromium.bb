@@ -60,7 +60,7 @@ class AshEventGeneratorDelegate : public aura::test::EventGeneratorDelegate {
     gfx::Screen* screen = Shell::GetScreen();
     gfx::Display display = screen->GetDisplayNearestPoint(point_in_screen);
     return Shell::GetInstance()->display_controller()->
-        GetRootWindowForDisplayId(display.id());
+        GetRootWindowForDisplayId(display.id())->GetDispatcher();
   }
 
   virtual aura::client::ScreenPositionClient* GetScreenPositionClient(
@@ -115,7 +115,7 @@ void AshTestBase::SetUp() {
   ash_test_helper_->SetUp(start_session_);
 
   Shell::GetPrimaryRootWindow()->Show();
-  Shell::GetPrimaryRootWindow()->ShowRootWindow();
+  Shell::GetPrimaryRootWindow()->GetDispatcher()->ShowRootWindow();
   // Move the mouse cursor to far away so that native events doesn't
   // interfere test expectations.
   Shell::GetPrimaryRootWindow()->MoveCursorTo(gfx::Point(-1000, -1000));
@@ -207,7 +207,7 @@ void AshTestBase::UpdateDisplay(const std::string& display_specs) {
   display_manager_test_api.UpdateDisplay(display_specs);
 }
 
-aura::RootWindow* AshTestBase::CurrentContext() {
+aura::Window* AshTestBase::CurrentContext() {
   return ash_test_helper_->CurrentContext();
 }
 
@@ -254,7 +254,7 @@ aura::Window* AshTestBase::CreateTestWindowInShellWithDelegateAndType(
   } else {
     gfx::Display display =
         Shell::GetScreen()->GetDisplayMatching(bounds);
-    aura::RootWindow* root = ash::Shell::GetInstance()->display_controller()->
+    aura::Window* root = ash::Shell::GetInstance()->display_controller()->
         GetRootWindowForDisplayId(display.id());
     gfx::Point origin = bounds.origin();
     wm::ConvertPointFromScreen(root, &origin);

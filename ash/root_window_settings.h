@@ -9,7 +9,7 @@
 #include "base/basictypes.h"
 
 namespace aura {
-class RootWindow;
+class Window;
 }
 
 namespace ash {
@@ -37,14 +37,14 @@ struct RootWindowSettings {
 
 // Initializes and returns RootWindowSettings for |root|.
 // It is owned by the |root|.
-RootWindowSettings* InitRootWindowSettings(aura::RootWindow* root);
+RootWindowSettings* InitRootWindowSettings(aura::Window* root);
 
 // Returns the RootWindowSettings for |root|.
-ASH_EXPORT RootWindowSettings* GetRootWindowSettings(aura::RootWindow* root);
+ASH_EXPORT RootWindowSettings* GetRootWindowSettings(aura::Window* root);
 
 // const version of GetRootWindowSettings.
 ASH_EXPORT const RootWindowSettings*
-GetRootWindowSettings(const aura::RootWindow* root);
+GetRootWindowSettings(const aura::Window* root);
 
 }  // namespace internal
 }  // namespace ash

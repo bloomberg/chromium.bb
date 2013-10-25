@@ -49,7 +49,7 @@ class PartialMagnificationController
   //  - Remove the magnifier from the current root window.
   //  - Create a magnifier in the new root_window |new_root_window|.
   //  - Switch the target window from current window to |new_root_window|.
-  void SwitchTargetRootWindow(aura::RootWindow* new_root_window);
+  void SwitchTargetRootWindow(aura::Window* new_root_window);
 
   // Returns the root window that contains the mouse cursor.
   aura::RootWindow* GetCurrentRootWindow();

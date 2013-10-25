@@ -34,7 +34,8 @@
 namespace aura {
 
 Window::Window(WindowDelegate* delegate)
-    : type_(client::WINDOW_TYPE_UNKNOWN),
+    : dispatcher_(NULL),
+      type_(client::WINDOW_TYPE_UNKNOWN),
       owned_by_parent_(true),
       delegate_(delegate),
       parent_(NULL),
@@ -63,9 +64,9 @@ Window::~Window() {
   FOR_EACH_OBSERVER(WindowObserver, observers_, OnWindowDestroying(this));
 
   // Let the root know so that it can remove any references to us.
-  RootWindow* root_window = GetRootWindow();
-  if (root_window)
-    root_window->OnWindowDestroying(this);
+  WindowEventDispatcher* dispatcher = GetDispatcher();
+  if (dispatcher)
+    dispatcher->OnWindowDestroying(this);
 
   // Then destroy the children.
   RemoveOrDestroyChildren();
@@ -174,13 +175,23 @@ void Window::SetTransparent(bool transparent) {
   transparent_ = transparent;
 }
 
-RootWindow* Window::GetRootWindow() {
-  return const_cast<RootWindow*>(
+Window* Window::GetRootWindow() {
+  return const_cast<Window*>(
       static_cast<const Window*>(this)->GetRootWindow());
 }
 
-const RootWindow* Window::GetRootWindow() const {
+const Window* Window::GetRootWindow() const {
   return parent_ ? parent_->GetRootWindow() : NULL;
+}
+
+WindowEventDispatcher* Window::GetDispatcher() {
+  return const_cast<WindowEventDispatcher*>(const_cast<const Window*>(this)->
+      GetDispatcher());
+}
+
+const WindowEventDispatcher* Window::GetDispatcher() const {
+  const Window* root_window = GetRootWindow();
+  return root_window ? root_window->dispatcher_ : NULL;
 }
 
 void Window::Show() {
@@ -217,7 +228,7 @@ gfx::Rect Window::GetBoundsInRootWindow() const {
 
 gfx::Rect Window::GetBoundsInScreen() const {
   gfx::Rect bounds(GetBoundsInRootWindow());
-  const RootWindow* root = GetRootWindow();
+  const Window* root = GetRootWindow();
   if (root) {
     aura::client::ScreenPositionClient* screen_position_client =
         aura::client::GetScreenPositionClient(root);
@@ -231,12 +242,12 @@ gfx::Rect Window::GetBoundsInScreen() const {
 }
 
 void Window::SetTransform(const gfx::Transform& transform) {
-  RootWindow* root_window = GetRootWindow();
-  bool contained_mouse = IsVisible() && root_window &&
-      ContainsPointInRoot(root_window->GetLastMouseLocationInRoot());
+  WindowEventDispatcher* dispatcher = GetDispatcher();
+  bool contained_mouse = IsVisible() && dispatcher &&
+      ContainsPointInRoot(dispatcher->GetLastMouseLocationInRoot());
   layer()->SetTransform(transform);
-  if (root_window)
-    root_window->OnWindowTransformed(this, contained_mouse);
+  if (dispatcher)
+    dispatcher->OnWindowTransformed(this, contained_mouse);
 }
 
 void Window::SetLayoutManager(LayoutManager* layout_manager) {
@@ -262,7 +273,7 @@ void Window::SetBounds(const gfx::Rect& new_bounds) {
 
 void Window::SetBoundsInScreen(const gfx::Rect& new_bounds_in_screen,
                                const gfx::Display& dst_display) {
-  RootWindow* root = GetRootWindow();
+  Window* root = GetRootWindow();
   if (root) {
     gfx::Point origin = new_bounds_in_screen.origin();
     aura::client::ScreenPositionClient* screen_position_client =
@@ -316,7 +327,7 @@ void Window::AddChild(Window* child) {
   params.phase = WindowObserver::HierarchyChangeParams::HIERARCHY_CHANGING;
   NotifyWindowHierarchyChange(params);
 
-  RootWindow* old_root = child->GetRootWindow();
+  Window* old_root = child->GetRootWindow();
 
   DCHECK(std::find(children_.begin(), children_.end(), child) ==
       children_.end());
@@ -332,9 +343,9 @@ void Window::AddChild(Window* child) {
   FOR_EACH_OBSERVER(WindowObserver, observers_, OnWindowAdded(child));
   child->OnParentChanged();
 
-  RootWindow* root_window = GetRootWindow();
+  Window* root_window = GetRootWindow();
   if (root_window && old_root != root_window) {
-    root_window->OnWindowAddedToRootWindow(child);
+    root_window->GetDispatcher()->OnWindowAddedToRootWindow(child);
     child->NotifyAddedToRootWindow();
   }
 
@@ -410,11 +421,11 @@ void Window::ConvertPointToTarget(const Window* source,
     return;
   if (source->GetRootWindow() != target->GetRootWindow()) {
     client::ScreenPositionClient* source_client =
-        GetScreenPositionClient(source->GetRootWindow());
+        client::GetScreenPositionClient(source->GetRootWindow());
     source_client->ConvertPointToScreen(source, point);
 
     client::ScreenPositionClient* target_client =
-        GetScreenPositionClient(target->GetRootWindow());
+        client::GetScreenPositionClient(target->GetRootWindow());
     target_client->ConvertPointFromScreen(target, point);
   } else {
     ui::Layer::ConvertPointToLayer(source->layer(), target->layer(), point);
@@ -422,11 +433,11 @@ void Window::ConvertPointToTarget(const Window* source,
 }
 
 void Window::MoveCursorTo(const gfx::Point& point_in_window) {
-  RootWindow* root_window = GetRootWindow();
+  Window* root_window = GetRootWindow();
   DCHECK(root_window);
   gfx::Point point_in_root(point_in_window);
   ConvertPointToTarget(this, root_window, &point_in_root);
-  root_window->MoveCursorTo(point_in_root);
+  root_window->GetDispatcher()->MoveCursorTo(point_in_root);
 }
 
 gfx::NativeCursor Window::GetCursor(const gfx::Point& point) const {
@@ -552,21 +563,21 @@ void Window::SetCapture() {
   if (!IsVisible())
     return;
 
-  RootWindow* root_window = GetRootWindow();
+  Window* root_window = GetRootWindow();
   if (!root_window)
     return;
   client::GetCaptureClient(root_window)->SetCapture(this);
 }
 
 void Window::ReleaseCapture() {
-  RootWindow* root_window = GetRootWindow();
+  Window* root_window = GetRootWindow();
   if (!root_window)
     return;
   client::GetCaptureClient(root_window)->ReleaseCapture(this);
 }
 
 bool Window::HasCapture() {
-  RootWindow* root_window = GetRootWindow();
+  Window* root_window = GetRootWindow();
   return root_window &&
       client::GetCaptureClient(root_window)->GetCaptureWindow() == this;
 }
@@ -692,9 +703,9 @@ void Window::SetVisible(bool visible) {
   FOR_EACH_OBSERVER(WindowObserver, observers_,
                     OnWindowVisibilityChanging(this, visible));
 
-  RootWindow* root_window = GetRootWindow();
-  if (root_window)
-    root_window->DispatchMouseExitToHidingWindow(this);
+  WindowEventDispatcher* dispatcher = GetDispatcher();
+  if (dispatcher)
+    dispatcher->DispatchMouseExitToHidingWindow(this);
 
   client::VisibilityClient* visibility_client =
       client::GetVisibilityClient(this);
@@ -712,8 +723,8 @@ void Window::SetVisible(bool visible) {
 
   NotifyWindowVisibilityChanged(this, visible);
 
-  if (root_window)
-    root_window->OnWindowVisibilityChanged(this, visible);
+  if (dispatcher)
+    dispatcher->OnWindowVisibilityChanged(this, visible);
 }
 
 void Window::SchedulePaint() {
@@ -780,10 +791,11 @@ void Window::RemoveChildImpl(Window* child, Window* new_parent) {
   if (layout_manager_)
     layout_manager_->OnWillRemoveWindowFromLayout(child);
   FOR_EACH_OBSERVER(WindowObserver, observers_, OnWillRemoveWindow(child));
-  RootWindow* root_window = child->GetRootWindow();
-  RootWindow* new_root_window = new_parent ? new_parent->GetRootWindow() : NULL;
+  Window* root_window = child->GetRootWindow();
+  Window* new_root_window = new_parent ? new_parent->GetRootWindow() : NULL;
   if (root_window && root_window != new_root_window) {
-    root_window->OnWindowRemovedFromRootWindow(child, new_root_window);
+    root_window->GetDispatcher()->OnWindowRemovedFromRootWindow(
+        child, new_root_window);
     child->NotifyRemovingFromRootWindow();
   }
   child->parent_ = NULL;
@@ -1082,9 +1094,9 @@ void Window::OnLayerBoundsChanged(const gfx::Rect& old_bounds,
   FOR_EACH_OBSERVER(WindowObserver,
                     observers_,
                     OnWindowBoundsChanged(this, old_bounds, bounds()));
-  RootWindow* root_window = GetRootWindow();
-  if (root_window)
-    root_window->OnWindowBoundsChanged(this, contained_mouse);
+  WindowEventDispatcher* dispatcher = GetDispatcher();
+  if (dispatcher)
+    dispatcher->OnWindowBoundsChanged(this, contained_mouse);
 }
 
 void Window::OnPaintLayer(gfx::Canvas* canvas) {
@@ -1132,9 +1144,9 @@ void Window::UpdateLayerName(const std::string& name) {
 bool Window::ContainsMouse() {
   bool contains_mouse = false;
   if (IsVisible()) {
-    RootWindow* root_window = GetRootWindow();
-    contains_mouse = root_window &&
-        ContainsPointInRoot(root_window->GetLastMouseLocationInRoot());
+    WindowEventDispatcher* dispatcher = GetDispatcher();
+    contains_mouse = dispatcher &&
+        ContainsPointInRoot(dispatcher->GetLastMouseLocationInRoot());
   }
   return contains_mouse;
 }

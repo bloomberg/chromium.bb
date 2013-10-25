@@ -535,7 +535,7 @@ TEST_F(FrameMaximizeButtonTest, MaximizeKeepFocus) {
 
 TEST_F(FrameMaximizeButtonTest, MaximizeTap) {
   aura::Window* window = widget()->GetNativeWindow();
-  aura::RootWindow* root_window = window->GetRootWindow();
+  aura::Window* root_window = window->GetRootWindow();
   ash::FrameMaximizeButton* maximize_button =
       FrameMaximizeButtonTest::maximize_button();
   gfx::Point button_pos = maximize_button->GetBoundsInScreen().CenterPoint();
@@ -544,12 +544,13 @@ TEST_F(FrameMaximizeButtonTest, MaximizeTap) {
       ui::GestureConfiguration::default_radius();
   ui::GestureConfiguration::set_default_radius(0);
 
+  aura::WindowEventDispatcher* dispatcher = root_window->GetDispatcher();
   const int kTouchId = 2;
   ui::TouchEvent press(ui::ET_TOUCH_PRESSED,
                        button_pos,
                        kTouchId,
                        ui::EventTimeForNow());
-  root_window->AsRootWindowHostDelegate()->OnHostTouchEvent(&press);
+  dispatcher->AsRootWindowHostDelegate()->OnHostTouchEvent(&press);
 
   button_pos.Offset(9, 8);
   ui::TouchEvent release(
@@ -557,7 +558,7 @@ TEST_F(FrameMaximizeButtonTest, MaximizeTap) {
       button_pos,
       kTouchId,
       press.time_stamp() + base::TimeDelta::FromMilliseconds(50));
-  root_window->AsRootWindowHostDelegate()->OnHostTouchEvent(&release);
+  dispatcher->AsRootWindowHostDelegate()->OnHostTouchEvent(&release);
 
   ui::GestureConfiguration::set_default_radius(touch_default_radius);
 }

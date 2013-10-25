@@ -7,7 +7,7 @@
 #include "base/basictypes.h"
 
 namespace aura {
-class RootWindow;
+class Window;
 }
 
 namespace ash {
@@ -20,7 +20,7 @@ namespace internal {
 // a new window using launcher's icon.
 class ScopedTargetRootWindow {
  public:
-  explicit ScopedTargetRootWindow(aura::RootWindow* root_window);
+  explicit ScopedTargetRootWindow(aura::Window* root_window);
   ~ScopedTargetRootWindow();
 
  private:

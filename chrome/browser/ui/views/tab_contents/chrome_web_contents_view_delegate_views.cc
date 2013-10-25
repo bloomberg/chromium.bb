@@ -24,7 +24,6 @@
 #if defined(USE_AURA)
 #include "chrome/browser/ui/aura/tab_contents/web_drag_bookmark_handler_aura.h"
 #include "ui/aura/client/screen_position_client.h"
-#include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #else
 #include "chrome/browser/ui/views/tab_contents/web_drag_bookmark_handler_win.h"
@@ -150,7 +149,7 @@ void ChromeWebContentsViewDelegateViews::ShowContextMenu(
   // Convert from content coordinates to window coordinates.
   aura::Window* web_contents_window =
       web_contents_->GetView()->GetNativeView();
-  aura::RootWindow* root_window = web_contents_window->GetRootWindow();
+  aura::Window* root_window = web_contents_window->GetRootWindow();
   aura::client::ScreenPositionClient* screen_position_client =
       aura::client::GetScreenPositionClient(root_window);
   if (screen_position_client) {

@@ -128,8 +128,8 @@ void AshTestHelper::RunAllPendingInMessageLoop() {
   run_loop.RunUntilIdle();
 }
 
-aura::RootWindow* AshTestHelper::CurrentContext() {
-  aura::RootWindow* root_window = Shell::GetTargetRootWindow();
+aura::Window* AshTestHelper::CurrentContext() {
+  aura::Window* root_window = Shell::GetTargetRootWindow();
   if (!root_window)
     root_window = Shell::GetPrimaryRootWindow();
   DCHECK(root_window);

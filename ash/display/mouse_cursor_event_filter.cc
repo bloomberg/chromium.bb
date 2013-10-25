@@ -49,7 +49,7 @@ MouseCursorEventFilter::~MouseCursorEventFilter() {
 }
 
 void MouseCursorEventFilter::ShowSharedEdgeIndicator(
-    const aura::RootWindow* from) {
+    const aura::Window* from) {
   HideSharedEdgeIndicator();
   if (Shell::GetScreen()->GetNumDisplays() <= 1 || from == NULL) {
     src_indicator_bounds_.SetRect(0, 0, 0, 0);
@@ -100,7 +100,7 @@ void MouseCursorEventFilter::OnMouseEvent(ui::MouseEvent* event) {
 }
 
 bool MouseCursorEventFilter::WarpMouseCursorIfNecessary(
-    aura::RootWindow* target_root,
+    aura::Window* target_root,
     const gfx::Point& point_in_screen) {
   if (Shell::GetScreen()->GetNumDisplays() <= 1 ||
       mouse_warp_mode_ == WARP_NONE)
@@ -116,7 +116,7 @@ bool MouseCursorEventFilter::WarpMouseCursorIfNecessary(
     return false;
   }
 
-  aura::RootWindow* root_at_point = wm::GetRootWindowAt(point_in_screen);
+  aura::Window* root_at_point = wm::GetRootWindowAt(point_in_screen);
   gfx::Point point_in_root = point_in_screen;
   wm::ConvertPointFromScreen(root_at_point, &point_in_root);
   gfx::Rect root_bounds = root_at_point->bounds();
@@ -149,7 +149,7 @@ bool MouseCursorEventFilter::WarpMouseCursorIfNecessary(
 
   gfx::Point point_in_dst_screen(point_in_screen);
   point_in_dst_screen.Offset(offset_x, offset_y);
-  aura::RootWindow* dst_root = wm::GetRootWindowAt(point_in_dst_screen);
+  aura::Window* dst_root = wm::GetRootWindowAt(point_in_dst_screen);
 
   // Warp the mouse cursor only if the location is in the indicator bounds
   // or the mouse pointer is in the destination root.

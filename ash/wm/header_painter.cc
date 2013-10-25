@@ -22,7 +22,6 @@
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
-#include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/layout.h"
@@ -172,7 +171,7 @@ bool IsSoloWindowHeaderCandidate(aura::Window* window) {
 
 // Returns a list of windows in |root_window|| that potentially could have
 // a transparent solo-window header.
-std::vector<Window*> GetWindowsForSoloHeaderUpdate(RootWindow* root_window) {
+std::vector<Window*> GetWindowsForSoloHeaderUpdate(Window* root_window) {
   std::vector<Window*> windows;
   // Avoid memory allocations for typical window counts.
   windows.reserve(16);
@@ -274,7 +273,7 @@ void HeaderPainter::SetSoloWindowHeadersEnabled(bool enabled) {
 }
 
 // static
-void HeaderPainter::UpdateSoloWindowHeader(RootWindow* root_window) {
+void HeaderPainter::UpdateSoloWindowHeader(Window* root_window) {
   // Use a separate function here so callers outside of HeaderPainter don't need
   // to know about "ignorable_window".
   UpdateSoloWindowInRoot(root_window, NULL /* ignorable_window */);
@@ -690,15 +689,15 @@ bool HeaderPainter::UseSoloWindowHeader() const {
   // Don't use transparent headers for panels, pop-ups, etc.
   if (!IsSoloWindowHeaderCandidate(window_))
     return false;
-  aura::RootWindow* root = window_->GetRootWindow();
+  aura::Window* root = window_->GetRootWindow();
   // Don't recompute every time, as it would require many window property
   // lookups.
   return internal::GetRootWindowSettings(root)->solo_window_header;
 }
 
 // static
-bool HeaderPainter::UseSoloWindowHeaderInRoot(RootWindow* root_window,
-                                             Window* ignore_window) {
+bool HeaderPainter::UseSoloWindowHeaderInRoot(Window* root_window,
+                                              Window* ignore_window) {
   int visible_window_count = 0;
   std::vector<Window*> windows = GetWindowsForSoloHeaderUpdate(root_window);
   for (std::vector<Window*>::const_iterator it = windows.begin();
@@ -722,8 +721,8 @@ bool HeaderPainter::UseSoloWindowHeaderInRoot(RootWindow* root_window,
 }
 
 // static
-void HeaderPainter::UpdateSoloWindowInRoot(RootWindow* root,
-                                          Window* ignore_window) {
+void HeaderPainter::UpdateSoloWindowInRoot(Window* root,
+                                           Window* ignore_window) {
 #if defined(OS_WIN)
   // Non-Ash Windows doesn't do solo-window counting for transparency effects,
   // as the desktop background and window frames are managed by the OS.

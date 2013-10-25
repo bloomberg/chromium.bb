@@ -54,7 +54,7 @@ void KeyboardUIHandler::HandleInsertTextMessage(const base::ListValue* args) {
     return;
   }
 
-  aura::RootWindow* root_window =
+  aura::Window* root_window =
       web_ui()->GetWebContents()->GetView()->GetNativeView()->GetRootWindow();
   if (!root_window) {
     LOG(ERROR) << "insertText failed: no root window";
@@ -75,7 +75,7 @@ void KeyboardUIHandler::HandleGetInputContextMessage(
   base::DictionaryValue results;
   results.SetInteger("requestId", request_id);
 
-  aura::RootWindow* root_window =
+  aura::Window* root_window =
       web_ui()->GetWebContents()->GetView()->GetNativeView()->GetRootWindow();
   if (!root_window) {
     LOG(ERROR) << "getInputContext failed: no root window";
@@ -113,10 +113,10 @@ void KeyboardUIHandler::HandleSendKeyEventMessage(
     return;
   }
 
-  aura::RootWindow* root_window =
-      web_ui()->GetWebContents()->GetView()->GetNativeView()->GetRootWindow();
-  if (!root_window) {
-    LOG(ERROR) << "sendKeyEvent failed: no root window";
+  aura::WindowEventDispatcher* dispatcher =
+      web_ui()->GetWebContents()->GetView()->GetNativeView()->GetDispatcher();
+  if (!dispatcher) {
+    LOG(ERROR) << "sendKeyEvent failed: no dispatcher";
     return;
   }
 
@@ -124,7 +124,7 @@ void KeyboardUIHandler::HandleSendKeyEventMessage(
                               char_value,
                               key_code,
                               modifiers,
-                              root_window)) {
+                              dispatcher)) {
     LOG(ERROR) << "sendKeyEvent failed";
   }
 }

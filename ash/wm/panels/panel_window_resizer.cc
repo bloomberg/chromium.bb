@@ -77,7 +77,7 @@ void PanelWindowResizer::Drag(const gfx::Point& location, int event_flags) {
     // complete it would begin positioning the panel.
     if (GetTarget()->parent() != panel_container_)
       GetPanelLayoutManager(panel_container_)->FinishDragging();
-    aura::RootWindow* dst_root = Shell::GetInstance()->display_controller()->
+    aura::Window* dst_root = Shell::GetInstance()->display_controller()->
         GetRootWindowForDisplayId(dst_display.id());
     panel_container_ = Shell::GetContainer(
         dst_root, internal::kShellWindowId_PanelContainer);
@@ -197,7 +197,7 @@ void PanelWindowResizer::StartedDragging() {
     // We use root window coordinates to ensure that during the drag the panel
     // is reparented to a container in the root window that has that window.
     aura::Window* target = GetTarget();
-    aura::RootWindow* target_root = target->GetRootWindow();
+    aura::Window* target_root = target->GetRootWindow();
     aura::client::ParentWindowWithContext(
         target, target_root, target_root->GetBoundsInScreen());
     wm::ReparentTransientChildrenOfChild(target->parent(), target);
@@ -212,7 +212,7 @@ void PanelWindowResizer::FinishDragging() {
     // We use last known location to ensure that after the drag the panel
     // is reparented to a container in the root window that has that location.
     aura::Window* target = GetTarget();
-    aura::RootWindow* target_root = target->GetRootWindow();
+    aura::Window* target_root = target->GetRootWindow();
     aura::client::ParentWindowWithContext(
         target, target_root, gfx::Rect(last_location_, gfx::Size()));
     wm::ReparentTransientChildrenOfChild(target->parent(), GetTarget());

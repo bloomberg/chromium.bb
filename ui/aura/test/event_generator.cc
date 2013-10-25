@@ -31,13 +31,13 @@ void DummyCallback(ui::EventType, const gfx::Vector2dF&) {
 
 class DefaultEventGeneratorDelegate : public EventGeneratorDelegate {
  public:
-  explicit DefaultEventGeneratorDelegate(RootWindow* root_window)
+  explicit DefaultEventGeneratorDelegate(Window* root_window)
       : root_window_(root_window) {}
   virtual ~DefaultEventGeneratorDelegate() {}
 
   // EventGeneratorDelegate overrides:
   virtual RootWindow* GetRootWindowAt(const gfx::Point& point) const OVERRIDE {
-    return root_window_;
+    return root_window_->GetDispatcher();
   }
 
   virtual client::ScreenPositionClient* GetScreenPositionClient(
@@ -46,7 +46,7 @@ class DefaultEventGeneratorDelegate : public EventGeneratorDelegate {
   }
 
  private:
-  RootWindow* root_window_;
+  Window* root_window_;
 
   DISALLOW_COPY_AND_ASSIGN(DefaultEventGeneratorDelegate);
 };
@@ -77,7 +77,7 @@ const int kAllButtonMask = ui::EF_LEFT_MOUSE_BUTTON | ui::EF_RIGHT_MOUSE_BUTTON;
 
 }  // namespace
 
-EventGenerator::EventGenerator(RootWindow* root_window)
+EventGenerator::EventGenerator(Window* root_window)
     : delegate_(new DefaultEventGeneratorDelegate(root_window)),
       current_root_window_(delegate_->GetRootWindowAt(current_location_)),
       flags_(0),
@@ -85,7 +85,7 @@ EventGenerator::EventGenerator(RootWindow* root_window)
       async_(false) {
 }
 
-EventGenerator::EventGenerator(RootWindow* root_window, const gfx::Point& point)
+EventGenerator::EventGenerator(Window* root_window, const gfx::Point& point)
     : delegate_(new DefaultEventGeneratorDelegate(root_window)),
       current_location_(point),
       current_root_window_(delegate_->GetRootWindowAt(current_location_)),
@@ -94,7 +94,7 @@ EventGenerator::EventGenerator(RootWindow* root_window, const gfx::Point& point)
       async_(false) {
 }
 
-EventGenerator::EventGenerator(RootWindow* root_window, Window* window)
+EventGenerator::EventGenerator(Window* root_window, Window* window)
     : delegate_(new DefaultEventGeneratorDelegate(root_window)),
       current_location_(CenterOfWindow(window)),
       current_root_window_(delegate_->GetRootWindowAt(current_location_)),

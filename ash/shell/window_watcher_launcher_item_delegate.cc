@@ -36,7 +36,7 @@ base::string16 WindowWatcherLauncherItemDelegate::GetTitle() {
 }
 
 ui::MenuModel* WindowWatcherLauncherItemDelegate::CreateContextMenu(
-    aura::RootWindow* root_window) {
+    aura::Window* root_window) {
   return NULL;
 }
 

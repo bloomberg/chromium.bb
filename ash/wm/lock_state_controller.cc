@@ -27,7 +27,7 @@ namespace ash {
 namespace {
 
 aura::Window* GetBackground() {
-  aura::RootWindow* root_window = Shell::GetPrimaryRootWindow();
+  aura::Window* root_window = Shell::GetPrimaryRootWindow();
   return Shell::GetContainer(root_window,
       internal::kShellWindowId_DesktopBackgroundContainer);
 }
@@ -156,11 +156,12 @@ LockStateController::LockStateController()
       shutdown_after_lock_(false),
       animating_lock_(false),
       can_cancel_lock_animation_(false) {
-  Shell::GetPrimaryRootWindow()->AddRootWindowObserver(this);
+  Shell::GetPrimaryRootWindow()->GetDispatcher()->AddRootWindowObserver(this);
 }
 
 LockStateController::~LockStateController() {
-  Shell::GetPrimaryRootWindow()->RemoveRootWindowObserver(this);
+  Shell::GetPrimaryRootWindow()->GetDispatcher()->RemoveRootWindowObserver(
+      this);
 }
 
 void LockStateController::SetDelegate(LockStateControllerDelegate* delegate) {

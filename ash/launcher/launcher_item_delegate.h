@@ -53,7 +53,7 @@ class ASH_EXPORT LauncherItemDelegate {
   // Returns the context menumodel for the specified item on
   // |root_window|.  Return NULL if there should be no context
   // menu. The caller takes ownership of the returned model.
-  virtual ui::MenuModel* CreateContextMenu(aura::RootWindow* root_window) = 0;
+  virtual ui::MenuModel* CreateContextMenu(aura::Window* root_window) = 0;
 
   // Returns the application menu model for the specified item. There are three
   // possible return values:

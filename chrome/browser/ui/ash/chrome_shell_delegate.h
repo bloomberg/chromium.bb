@@ -61,7 +61,7 @@ class ChromeShellDelegate : public ash::ShellDelegate,
   virtual void HandleMediaNextTrack() OVERRIDE;
   virtual void HandleMediaPlayPause() OVERRIDE;
   virtual void HandleMediaPrevTrack() OVERRIDE;
-  virtual ui::MenuModel* CreateContextMenu(aura::RootWindow* root) OVERRIDE;
+  virtual ui::MenuModel* CreateContextMenu(aura::Window* root) OVERRIDE;
   virtual ash::RootWindowHostFactory* CreateRootWindowHostFactory() OVERRIDE;
   virtual string16 GetProductName() const OVERRIDE;
 

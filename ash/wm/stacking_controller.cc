@@ -23,13 +23,13 @@ namespace {
 // coordinates is enabled and the bounds is specified, the root window
 // that matches the window's bound will be used. Otherwise, it'll
 // return the active root window.
-aura::RootWindow* FindContainerRoot(const gfx::Rect& bounds) {
+aura::Window* FindContainerRoot(const gfx::Rect& bounds) {
   if (bounds.x() == 0 && bounds.y() == 0 && bounds.IsEmpty())
     return Shell::GetTargetRootWindow();
   return wm::GetRootWindowMatching(bounds);
 }
 
-aura::Window* GetContainerById(aura::RootWindow* root, int id) {
+aura::Window* GetContainerById(aura::Window* root, int id) {
   return Shell::GetContainer(root, id);
 }
 
@@ -50,7 +50,7 @@ bool HasTransientParentWindow(aura::Window* window) {
 }
 
 internal::AlwaysOnTopController*
-GetAlwaysOnTopController(aura::RootWindow* root_window) {
+GetAlwaysOnTopController(aura::Window* root_window) {
   return internal::GetRootWindowController(root_window)->
       always_on_top_controller();
 }
@@ -72,7 +72,7 @@ StackingController::~StackingController() {
 aura::Window* StackingController::GetDefaultParent(aura::Window* context,
                                                    aura::Window* window,
                                                    const gfx::Rect& bounds) {
-  aura::RootWindow* target_root = NULL;
+  aura::Window* target_root = NULL;
   if (window->transient_parent()) {
     // Transient window should use the same root as its transient parent.
     target_root = window->transient_parent()->GetRootWindow();
@@ -115,7 +115,7 @@ aura::Window* StackingController::GetDefaultParent(aura::Window* context,
 // StackingController, private:
 
 aura::Window* StackingController::GetSystemModalContainer(
-    aura::RootWindow* root,
+    aura::Window* root,
     aura::Window* window) const {
   DCHECK(IsSystemModal(window));
 

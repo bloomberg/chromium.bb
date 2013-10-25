@@ -8,14 +8,11 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "ui/aura/window.h"
 #include "ui/base/ime/input_method_delegate.h"
 #include "ui/events/event_handler.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views/views_export.h"
-
-namespace aura {
-class RootWindow;
-}
 
 namespace ui {
 class InputMethod;
@@ -33,7 +30,7 @@ class VIEWS_EXPORT InputMethodEventFilter
   explicit InputMethodEventFilter(gfx::AcceleratedWidget widget);
   virtual ~InputMethodEventFilter();
 
-  void SetInputMethodPropertyInRootWindow(aura::RootWindow* root_window);
+  void SetInputMethodPropertyInRootWindow(aura::Window* root_window);
 
   ui::InputMethod* input_method() const { return input_method_.get(); }
 
@@ -49,9 +46,8 @@ class VIEWS_EXPORT InputMethodEventFilter
 
   scoped_ptr<ui::InputMethod> input_method_;
 
-  // The target root window to which the key event translated by IME will
-  // be dispatched.
-  aura::RootWindow* target_root_window_;
+  // The target dispatcher that will receive translated key events from the IME.
+  aura::WindowEventDispatcher* target_dispatcher_;
 
   DISALLOW_COPY_AND_ASSIGN(InputMethodEventFilter);
 };

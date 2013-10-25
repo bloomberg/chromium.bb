@@ -163,7 +163,7 @@ void AppListController::SetVisible(bool visible, aura::Window* window) {
     // will be released with AppListView on close.
     app_list::AppListView* view = new app_list::AppListView(
         Shell::GetInstance()->delegate()->CreateAppListViewDelegate());
-    aura::RootWindow* root_window = window->GetRootWindow();
+    aura::Window* root_window = window->GetRootWindow();
     aura::Window* container = GetRootWindowController(root_window)->
         GetContainer(kShellWindowId_AppListContainer);
     if (ash::switches::UseAlternateShelfLayout()) {
@@ -369,7 +369,7 @@ void AppListController::OnWidgetDestroying(views::Widget* widget) {
 
 ////////////////////////////////////////////////////////////////////////////////
 // AppListController, ShellObserver implementation:
-void AppListController::OnShelfAlignmentChanged(aura::RootWindow* root_window) {
+void AppListController::OnShelfAlignmentChanged(aura::Window* root_window) {
   if (view_)
     view_->SetBubbleArrow(GetBubbleArrow(view_->GetWidget()->GetNativeView()));
 }

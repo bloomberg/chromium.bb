@@ -15,7 +15,6 @@
 #include "ash/wm/workspace/workspace_window_resizer.h"
 #include "ui/aura/client/activation_client.h"
 #include "ui/aura/client/aura_constants.h"
-#include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/compositor/layer.h"
@@ -29,7 +28,7 @@ namespace internal {
 /////////////////////////////////////////////////////////////////////////////
 // BaseLayoutManager, public:
 
-BaseLayoutManager::BaseLayoutManager(aura::RootWindow* root_window)
+BaseLayoutManager::BaseLayoutManager(aura::Window* root_window)
     : root_window_(root_window) {
   Shell::GetInstance()->activation_client()->AddObserver(this);
   Shell::GetInstance()->AddShellObserver(this);

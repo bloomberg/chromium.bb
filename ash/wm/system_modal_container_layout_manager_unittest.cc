@@ -90,7 +90,7 @@ class EventTestWindow : public TestWindow {
                                          mouse_presses_(0) {}
   virtual ~EventTestWindow() {}
 
-  aura::Window* OpenTestWindowWithContext(aura::RootWindow* context) {
+  aura::Window* OpenTestWindowWithContext(aura::Window* context) {
     views::Widget* widget =
         views::Widget::CreateWindowWithContext(this, context);
     widget->Show();

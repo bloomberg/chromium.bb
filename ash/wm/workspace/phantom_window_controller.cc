@@ -104,7 +104,7 @@ void PhantomWindowController::Show(const gfx::Rect& bounds_in_screen) {
   if (bounds_in_screen == bounds_in_screen_)
     return;
   bounds_in_screen_ = bounds_in_screen;
-  aura::RootWindow* target_root = wm::GetRootWindowMatching(bounds_in_screen);
+  aura::Window* target_root = wm::GetRootWindowMatching(bounds_in_screen);
   // Show the phantom at the current bounds of the window. We'll animate to the
   // target bounds. If phantom exists, update the start bounds.
   if (!phantom_widget_)
@@ -122,7 +122,7 @@ void PhantomWindowController::Show(const gfx::Rect& bounds_in_screen) {
   // Create a secondary widget in a second screen if start_bounds_ lie at least
   // partially in that other screen. This allows animations to start or restart
   // in one root window and progress into another root.
-  aura::RootWindow* start_root = wm::GetRootWindowMatching(start_bounds_);
+  aura::Window* start_root = wm::GetRootWindowMatching(start_bounds_);
   if (start_root == target_root) {
     Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
     for (size_t i = 0; i < root_windows.size(); ++i) {
@@ -172,7 +172,7 @@ void PhantomWindowController::AnimationProgressed(
 }
 
 views::Widget* PhantomWindowController::CreatePhantomWidget(
-    aura::RootWindow* root_window,
+    aura::Window* root_window,
     const gfx::Rect& bounds_in_screen) {
   views::Widget* phantom_widget = new views::Widget;
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);

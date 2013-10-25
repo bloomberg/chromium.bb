@@ -283,7 +283,8 @@ void DispatchGesture(ui::EventType gesture_type, gfx::Point location) {
       ui::EventTimeForNow(),
       ui::GestureEventDetails(gesture_type, 0, 0),
       1);
-  Shell::GetPrimaryRootWindow()->DispatchGestureEvent(&gesture_event);
+  Shell::GetPrimaryRootWindow()->GetDispatcher()->DispatchGestureEvent(
+      &gesture_event);
 }
 
 bool IsGestureEventType(ui::EventType type) {
@@ -762,8 +763,8 @@ TEST_F(DragDropControllerTest, SyntheticEventsDuringDragDrop) {
     gfx::Point mouse_move_location = drag_view->bounds().CenterPoint();
     ui::MouseEvent mouse_move(ui::ET_MOUSE_MOVED, mouse_move_location,
                               mouse_move_location, 0);
-    Shell::GetPrimaryRootWindow()->AsRootWindowHostDelegate()->OnHostMouseEvent(
-        &mouse_move);
+    Shell::GetPrimaryRootWindow()->GetDispatcher()->AsRootWindowHostDelegate()->
+        OnHostMouseEvent(&mouse_move);
   }
 
   generator.ReleaseLeftButton();

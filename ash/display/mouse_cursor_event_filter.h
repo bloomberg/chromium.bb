@@ -14,6 +14,7 @@
 
 namespace aura {
 class RootWindow;
+class Window;
 }
 
 namespace ash {
@@ -43,7 +44,7 @@ class ASH_EXPORT MouseCursorEventFilter : public ui::EventHandler {
 
   // Shows/Hide the indicator for window dragging. The |from|
   // is the window where the dragging started.
-  void ShowSharedEdgeIndicator(const aura::RootWindow* from);
+  void ShowSharedEdgeIndicator(const aura::Window* from);
   void HideSharedEdgeIndicator();
 
   // Overridden from ui::EventHandler:
@@ -69,7 +70,7 @@ class ASH_EXPORT MouseCursorEventFilter : public ui::EventHandler {
   // hits or exceeds the edge of the |target_root| and the mouse cursor
   // is considered to be in an alternate display. Returns true if
   // the cursor was moved.
-  bool WarpMouseCursorIfNecessary(aura::RootWindow* target_root,
+  bool WarpMouseCursorIfNecessary(aura::Window* target_root,
                                   const gfx::Point& point_in_screen);
 
   void UpdateHorizontalIndicatorWindowBounds();
@@ -87,7 +88,7 @@ class ASH_EXPORT MouseCursorEventFilter : public ui::EventHandler {
   gfx::Rect dst_indicator_bounds_;
 
   // The root window in which the dragging started.
-  const aura::RootWindow* drag_source_root_;
+  const aura::Window* drag_source_root_;
 
   float scale_when_drag_started_;
 

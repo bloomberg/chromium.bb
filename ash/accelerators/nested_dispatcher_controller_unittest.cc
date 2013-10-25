@@ -88,16 +88,18 @@ void DispatchKeyReleaseA() {
                               ui::VKEY_A,
                               0,
                               &native_event);
-  ash::Shell::GetPrimaryRootWindow()->PostNativeEvent(&native_event);
+  aura::WindowEventDispatcher* dispatcher =
+      ash::Shell::GetPrimaryRootWindow()->GetDispatcher();
+  dispatcher->PostNativeEvent(&native_event);
   ui::InitXKeyEventForTesting(ui::ET_KEY_RELEASED,
                               ui::VKEY_A,
                               0,
                               &native_event);
-  ash::Shell::GetPrimaryRootWindow()->PostNativeEvent(&native_event);
+  dispatcher->PostNativeEvent(&native_event);
 #endif
 
   // Send noop event to signal dispatcher to exit.
-  ash::Shell::GetPrimaryRootWindow()->PostNativeEvent(ui::CreateNoopEvent());
+  dispatcher->PostNativeEvent(ui::CreateNoopEvent());
 }
 
 }  // namespace
@@ -111,7 +113,7 @@ TEST_F(NestedDispatcherTest, AssociatedWindowBelowLockScreen) {
 
   Shell::GetInstance()->session_state_delegate()->LockScreen();
   DispatchKeyReleaseA();
-  aura::RootWindow* root_window = ash::Shell::GetPrimaryRootWindow();
+  aura::Window* root_window = ash::Shell::GetPrimaryRootWindow();
   aura::client::GetDispatcherClient(root_window)->RunWithDispatcher(
       &inner_dispatcher,
       associated_window.get(),
@@ -132,7 +134,7 @@ TEST_F(NestedDispatcherTest, AssociatedWindowAboveLockScreen) {
       mock_lock_container.get()));
 
   DispatchKeyReleaseA();
-  aura::RootWindow* root_window = ash::Shell::GetPrimaryRootWindow();
+  aura::Window* root_window = ash::Shell::GetPrimaryRootWindow();
   aura::client::GetDispatcherClient(root_window)->RunWithDispatcher(
       &inner_dispatcher,
       associated_window.get(),
@@ -143,7 +145,7 @@ TEST_F(NestedDispatcherTest, AssociatedWindowAboveLockScreen) {
 // Test that the nested dispatcher handles accelerators.
 TEST_F(NestedDispatcherTest, AcceleratorsHandled) {
   MockDispatcher inner_dispatcher;
-  aura::RootWindow* root_window = ash::Shell::GetPrimaryRootWindow();
+  aura::Window* root_window = ash::Shell::GetPrimaryRootWindow();
 
   ui::Accelerator accelerator(ui::VKEY_A, ui::EF_NONE);
   accelerator.set_type(ui::ET_KEY_RELEASED);

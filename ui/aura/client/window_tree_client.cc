@@ -19,14 +19,14 @@ DEFINE_WINDOW_PROPERTY_KEY(
 void SetWindowTreeClient(Window* window, WindowTreeClient* window_tree_client) {
   DCHECK(window);
 
-  RootWindow* root_window = window->GetRootWindow();
+  Window* root_window = window->GetRootWindow();
   DCHECK(root_window);
   root_window->SetProperty(kRootWindowWindowTreeClientKey, window_tree_client);
 }
 
 WindowTreeClient* GetWindowTreeClient(Window* window) {
   DCHECK(window);
-  RootWindow* root_window = window->GetRootWindow();
+  Window* root_window = window->GetRootWindow();
   DCHECK(root_window);
   WindowTreeClient* client =
       root_window->GetProperty(kRootWindowWindowTreeClientKey);

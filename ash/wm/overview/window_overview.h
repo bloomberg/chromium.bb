@@ -14,14 +14,10 @@
 #include "ui/gfx/rect.h"
 
 namespace aura {
-
 class Window;
-class RootWindow;
-
 namespace client {
 class CursorClient;
 }
-
 }  // namespace aura
 
 namespace ui {
@@ -50,7 +46,7 @@ class WindowOverview : public ui::EventHandler {
   // given root window.
   WindowOverview(WindowSelector* window_selector,
                  WindowSelectorItemList* windows,
-                 aura::RootWindow* single_root_window);
+                 aura::Window* single_root_window);
   virtual ~WindowOverview();
 
   // Sets the selected window to be the window in position |index|.
@@ -60,7 +56,7 @@ class WindowOverview : public ui::EventHandler {
   void OnWindowsChanged();
 
   // Moves the overview to only |root_window|.
-  void MoveToSingleRootWindow(aura::RootWindow* root_window);
+  void MoveToSingleRootWindow(aura::Window* root_window);
 
   // ui::EventHandler:
   virtual void OnKeyEvent(ui::KeyEvent* event) OVERRIDE;
@@ -82,9 +78,9 @@ class WindowOverview : public ui::EventHandler {
   // Position all of the windows based on the current selection mode.
   void PositionWindows();
   // Position all of the windows from |root_window| on |root_window|.
-  void PositionWindowsFromRoot(aura::RootWindow* root_window);
+  void PositionWindowsFromRoot(aura::Window* root_window);
   // Position all of the |windows| to fit on the |root_window|.
-  void PositionWindowsOnRoot(aura::RootWindow* root_window,
+  void PositionWindowsOnRoot(aura::Window* root_window,
                              const std::vector<WindowSelectorItem*>& windows);
 
   // Creates the selection widget.
@@ -111,7 +107,7 @@ class WindowOverview : public ui::EventHandler {
   // If NULL, each root window displays an overview of the windows in that
   // display. Otherwise, all windows are in a single overview on
   // |single_root_window_|.
-  aura::RootWindow* single_root_window_;
+  aura::Window* single_root_window_;
 
   // The time when overview was started.
   base::Time overview_start_time_;

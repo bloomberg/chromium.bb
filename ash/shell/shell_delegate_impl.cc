@@ -155,7 +155,7 @@ void ShellDelegateImpl::HandleMediaPlayPause() {
 void ShellDelegateImpl::HandleMediaPrevTrack() {
 }
 
-ui::MenuModel* ShellDelegateImpl::CreateContextMenu(aura::RootWindow* root) {
+ui::MenuModel* ShellDelegateImpl::CreateContextMenu(aura::Window* root) {
   return new ContextMenu(root);
 }
 

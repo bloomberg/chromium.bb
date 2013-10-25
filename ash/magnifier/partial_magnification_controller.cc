@@ -79,7 +79,7 @@ void PartialMagnificationController::SetEnabled(bool enabled) {
 void PartialMagnificationController::OnMouseEvent(ui::MouseEvent* event) {
   if (IsPartialMagnified() && event->type() == ui::ET_MOUSE_MOVED) {
     aura::Window* target = static_cast<aura::Window*>(event->target());
-    aura::RootWindow* current_root = target->GetRootWindow();
+    aura::Window* current_root = target->GetRootWindow();
     // TODO(zork): Handle the case where the event is captured on a different
     // display, such as when a menu is opened.
     gfx::Rect root_bounds = current_root->bounds();
@@ -178,14 +178,14 @@ void PartialMagnificationController::CloseMagnifierWindow() {
 void PartialMagnificationController::RemoveZoomWidgetObservers() {
   DCHECK(zoom_widget_);
   zoom_widget_->RemoveObserver(this);
-  aura::RootWindow* root_window =
+  aura::Window* root_window =
       zoom_widget_->GetNativeView()->GetRootWindow();
   DCHECK(root_window);
   root_window->RemoveObserver(this);
 }
 
 void PartialMagnificationController::SwitchTargetRootWindow(
-    aura::RootWindow* new_root_window) {
+    aura::Window* new_root_window) {
   if (zoom_widget_ &&
       new_root_window == zoom_widget_->GetNativeView()->GetRootWindow())
     return;

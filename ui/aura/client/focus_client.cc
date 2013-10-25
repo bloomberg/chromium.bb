@@ -25,7 +25,7 @@ FocusClient* GetFocusClient(Window* window) {
 }
 
 FocusClient* GetFocusClient(const Window* window) {
-  const RootWindow* root_window = window->GetRootWindow();
+  const Window* root_window = window->GetRootWindow();
   return root_window ?
       root_window->GetProperty(kRootWindowFocusClientKey) : NULL;
 }

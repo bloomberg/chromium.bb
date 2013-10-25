@@ -110,7 +110,7 @@ void ReparentWindow(aura::Window* window, aura::Window* new_parent) {
 }
 
 // Reparents the appropriate set of windows from |src| to |dst|.
-void ReparentAllWindows(aura::RootWindow* src, aura::RootWindow* dst) {
+void ReparentAllWindows(aura::Window* src, aura::Window* dst) {
   // Set of windows to move.
   const int kContainerIdsToMove[] = {
     internal::kShellWindowId_DefaultContainer,
@@ -217,7 +217,7 @@ class EmptyWindowDelegate : public aura::WindowDelegate {
 namespace internal {
 
 void RootWindowController::CreateForPrimaryDisplay(
-    aura::RootWindow * root) {
+    aura::RootWindow* root) {
   RootWindowController* controller = new RootWindowController(root);
   controller->Init(true /* primary */,
                    Shell::GetInstance()->delegate()->IsFirstRunAfterBoot());
@@ -276,7 +276,7 @@ void RootWindowController::Shutdown() {
   // being removed triggers a relayout of the shelf it will try to build a
   // window list adding windows from the target root window's containers which
   // may have already gone away.
-  if (Shell::GetTargetRootWindow() == root_window_) {
+  if (Shell::GetTargetRootWindow()->GetDispatcher() == root_window_) {
     Shell::GetInstance()->set_target_root_window(
         Shell::GetPrimaryRootWindow() == root_window_.get() ?
         NULL : Shell::GetPrimaryRootWindow());
@@ -456,7 +456,7 @@ void RootWindowController::CloseChildWindows() {
   shelf_.reset(NULL);
 }
 
-void RootWindowController::MoveWindowsTo(aura::RootWindow* dst) {
+void RootWindowController::MoveWindowsTo(aura::Window* dst) {
   // Forget the shelf early so that shelf don't update itself using wrong
   // display info.
   workspace_controller_->SetShelf(NULL);
@@ -896,7 +896,7 @@ void RootWindowController::OnTouchHudProjectionToggled(bool enabled) {
 }
 
 RootWindowController* GetRootWindowController(
-    const aura::RootWindow* root_window) {
+    const aura::Window* root_window) {
   return root_window ? GetRootWindowSettings(root_window)->controller : NULL;
 }
 

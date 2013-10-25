@@ -18,7 +18,7 @@ namespace corewm {
 
 InputMethodEventFilter::InputMethodEventFilter(gfx::AcceleratedWidget widget)
     : input_method_(ui::CreateInputMethod(this, widget)),
-      target_root_window_(NULL) {
+      target_dispatcher_(NULL) {
   // TODO(yusukes): Check if the root window is currently focused and pass the
   // result to Init().
   input_method_->Init(true);
@@ -28,7 +28,7 @@ InputMethodEventFilter::~InputMethodEventFilter() {
 }
 
 void InputMethodEventFilter::SetInputMethodPropertyInRootWindow(
-    aura::RootWindow* root_window) {
+    aura::Window* root_window) {
   root_window->SetProperty(aura::client::kRootWindowInputMethodKey,
                            input_method_.get());
 }
@@ -45,10 +45,10 @@ void InputMethodEventFilter::OnKeyEvent(ui::KeyEvent* event) {
     static_cast<ui::TranslatedKeyEvent*>(event)->ConvertToKeyEvent();
   } else {
     // If the focused window is changed, all requests to IME will be
-    // discarded so it's safe to update the target_root_window_ here.
+    // discarded so it's safe to update the target_dispatcher_ here.
     aura::Window* target = static_cast<aura::Window*>(event->target());
-    target_root_window_ = target->GetRootWindow();
-    DCHECK(target_root_window_);
+    target_dispatcher_ = target->GetRootWindow()->GetDispatcher();
+    DCHECK(target_dispatcher_);
     bool handled = false;
     if (event->HasNativeEvent())
       handled = input_method_->DispatchKeyEvent(event->native_event());
@@ -68,7 +68,7 @@ bool InputMethodEventFilter::DispatchKeyEventPostIME(
   DCHECK(event.message != WM_CHAR);
 #endif
   ui::TranslatedKeyEvent aura_event(event, false /* is_char */);
-  return target_root_window_->AsRootWindowHostDelegate()->OnHostKeyEvent(
+  return target_dispatcher_->AsRootWindowHostDelegate()->OnHostKeyEvent(
       &aura_event);
 }
 
@@ -78,7 +78,7 @@ bool InputMethodEventFilter::DispatchFabricatedKeyEventPostIME(
     int flags) {
   ui::TranslatedKeyEvent aura_event(type == ui::ET_KEY_PRESSED, key_code,
                                     flags);
-  return target_root_window_->AsRootWindowHostDelegate()->OnHostKeyEvent(
+  return target_dispatcher_->AsRootWindowHostDelegate()->OnHostKeyEvent(
       &aura_event);
 }
 

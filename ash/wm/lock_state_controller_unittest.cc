@@ -46,7 +46,7 @@ void CheckCalledCallback(bool* flag) {
 }
 
 aura::Window* GetContainer(int container ) {
-  aura::RootWindow* root_window = Shell::GetPrimaryRootWindow();
+  aura::Window* root_window = Shell::GetPrimaryRootWindow();
   return Shell::GetContainer(root_window, container);
 }
 

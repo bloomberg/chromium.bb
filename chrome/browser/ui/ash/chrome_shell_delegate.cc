@@ -306,7 +306,7 @@ void ChromeShellDelegate::RecordUserMetricsAction(
   }
 }
 
-ui::MenuModel* ChromeShellDelegate::CreateContextMenu(aura::RootWindow* root) {
+ui::MenuModel* ChromeShellDelegate::CreateContextMenu(aura::Window* root) {
   DCHECK(launcher_delegate_);
   // Don't show context menu for exclusive app runtime mode.
   if (chrome::IsRunningInAppMode())

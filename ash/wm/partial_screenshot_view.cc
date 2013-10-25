@@ -163,7 +163,7 @@ void PartialScreenshotView::OnSelectionFinished() {
 
   is_dragging_ = false;
   if (screenshot_delegate_) {
-    aura::RootWindow *root_window =
+    aura::Window*root_window =
         GetWidget()->GetNativeWindow()->GetRootWindow();
     screenshot_delegate_->HandleTakePartialScreenshot(
         root_window,

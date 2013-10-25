@@ -80,7 +80,7 @@ class ASH_EXPORT TouchObserverHUD
   friend class TouchHudTest;
 
   const int64 display_id_;
-  aura::RootWindow* root_window_;
+  aura::Window* root_window_;
 
   views::Widget* widget_;
 

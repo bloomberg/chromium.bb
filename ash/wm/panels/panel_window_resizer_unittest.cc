@@ -102,7 +102,7 @@ class PanelWindowResizerTest : public test::AshTestBase {
   void DetachReattachTest(aura::Window* window, int dx, int dy) {
     wm::WindowState* window_state = wm::GetWindowState(window);
     EXPECT_TRUE(window_state->panel_attached());
-    aura::RootWindow* root_window = window->GetRootWindow();
+    aura::Window* root_window = window->GetRootWindow();
     EXPECT_EQ(internal::kShellWindowId_PanelContainer, window->parent()->id());
     DragStart(window);
     gfx::Rect initial_bounds = window->GetBoundsInScreen();

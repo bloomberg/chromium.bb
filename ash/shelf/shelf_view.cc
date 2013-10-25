@@ -327,7 +327,7 @@ void ReflectItemStatus(const ash::LauncherItem& item,
 gfx::Point GetPositionInScreen(const gfx::Point& root_location,
                                views::View* view) {
   gfx::Point root_location_in_screen = root_location;
-  aura::RootWindow* root_window =
+  aura::Window* root_window =
       view->GetWidget()->GetNativeWindow()->GetRootWindow();
   aura::client::GetScreenPositionClient(root_window->GetRootWindow())->
         ConvertPointToScreen(root_window, &root_location_in_screen);

@@ -9,7 +9,7 @@
 #include "ui/aura/client/activation_client.h"
 #include "ui/aura/client/dispatcher_client.h"
 #include "ui/aura/client/drag_drop_client.h"
-#include "ui/aura/root_window.h"
+#include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/widget/widget.h"
@@ -27,7 +27,7 @@ class ActivationChangeObserverImpl
       public ui::EventHandler {
  public:
   ActivationChangeObserverImpl(MenuController* controller,
-                               aura::RootWindow* root)
+                               aura::Window* root)
       : controller_(controller),
         root_(root) {
     aura::client::GetActivationClient(root_)->AddObserver(this);
@@ -71,12 +71,12 @@ class ActivationChangeObserverImpl
   }
 
   MenuController* controller_;
-  aura::RootWindow* root_;
+  aura::Window* root_;
 
   DISALLOW_COPY_AND_ASSIGN(ActivationChangeObserverImpl);
 };
 
-aura::RootWindow* GetOwnerRootWindow(views::Widget* owner) {
+aura::Window* GetOwnerRootWindow(views::Widget* owner) {
   return owner ? owner->GetNativeWindow()->GetRootWindow() : NULL;
 }
 
@@ -84,7 +84,7 @@ aura::RootWindow* GetOwnerRootWindow(views::Widget* owner) {
 
 void MenuController::RunMessageLoop(bool nested_menu) {
   // |owner_| may be NULL.
-  aura::RootWindow* root = GetOwnerRootWindow(owner_);
+  aura::Window* root = GetOwnerRootWindow(owner_);
   if (root) {
     scoped_ptr<ActivationChangeObserverImpl> observer;
     if (!nested_menu)
@@ -100,13 +100,13 @@ void MenuController::RunMessageLoop(bool nested_menu) {
 }
 
 bool MenuController::ShouldQuitNow() const {
-  aura::RootWindow* root = GetOwnerRootWindow(owner_);
+  aura::Window* root = GetOwnerRootWindow(owner_);
   return !aura::client::GetDragDropClient(root) ||
       !aura::client::GetDragDropClient(root)->IsDragDropInProgress();
 }
 
 gfx::Screen* MenuController::GetScreen() {
-  aura::RootWindow* root = GetOwnerRootWindow(owner_);
+  aura::Window* root = GetOwnerRootWindow(owner_);
   return root ?
       gfx::Screen::GetScreenFor(root) : gfx::Screen::GetNativeScreen();
 }

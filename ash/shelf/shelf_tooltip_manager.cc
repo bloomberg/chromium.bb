@@ -96,7 +96,7 @@ ShelfTooltipManager::ShelfTooltipBubble::ShelfTooltipBubble(
   SetLayoutManager(new views::FillLayout());
   // The anchor may not have the widget in tests.
   if (anchor->GetWidget() && anchor->GetWidget()->GetNativeView()) {
-    aura::RootWindow* root_window =
+    aura::Window* root_window =
         anchor->GetWidget()->GetNativeView()->GetRootWindow();
     set_parent_window(ash::Shell::GetInstance()->GetContainer(
         root_window, ash::internal::kShellWindowId_SettingBubbleContainer));

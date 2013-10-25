@@ -44,6 +44,7 @@ using testing::_;
 
 namespace content {
 namespace {
+
 class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
  public:
   MockRenderWidgetHostDelegate() {}
@@ -101,7 +102,7 @@ class FakeRenderWidgetHostViewAura : public RenderWidgetHostViewAura {
   }
 
   void RunOnCompositingDidCommit() {
-    OnCompositingDidCommit(window()->GetRootWindow()->compositor());
+    OnCompositingDidCommit(window()->GetDispatcher()->compositor());
   }
 
   // A lock that doesn't actually do anything to the compositor, and does not

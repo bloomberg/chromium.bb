@@ -16,7 +16,7 @@ WindowSelectorItem::WindowSelectorItem()
 WindowSelectorItem::~WindowSelectorItem() {
 }
 
-void WindowSelectorItem::SetBounds(aura::RootWindow* root_window,
+void WindowSelectorItem::SetBounds(aura::Window* root_window,
                                    const gfx::Rect& target_bounds) {
   if (in_bounds_update_)
     return;

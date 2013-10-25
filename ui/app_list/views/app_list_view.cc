@@ -168,7 +168,7 @@ HWND AppListView::GetHWND() const {
 #if defined(USE_AURA)
   gfx::NativeWindow window =
       GetWidget()->GetTopLevelWidget()->GetNativeWindow();
-  return window->GetRootWindow()->GetAcceleratedWidget();
+  return window->GetDispatcher()->GetAcceleratedWidget();
 #else
   return GetWidget()->GetTopLevelWidget()->GetNativeWindow();
 #endif

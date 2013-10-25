@@ -489,7 +489,7 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
       views::HWNDForWidget(GetWidget()));
 #elif defined(USE_AURA)
   dialog_window_id = static_cast<content::DesktopMediaID::Id>(
-      GetWidget()->GetNativeWindow()->GetRootWindow()->GetAcceleratedWidget());
+      GetWidget()->GetNativeWindow()->GetDispatcher()->GetAcceleratedWidget());
 #else
   dialog_window_id = 0;
   NOTIMPLEMENTED();

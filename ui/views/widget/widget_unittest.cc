@@ -1310,7 +1310,7 @@ void GenerateMouseEvents(Widget* widget, ui::EventType last_event_type) {
   ui::MouseEvent move_event(ui::ET_MOUSE_MOVED, screen_bounds.CenterPoint(),
                             screen_bounds.CenterPoint(), 0);
   aura::RootWindowHostDelegate* rwhd =
-      widget->GetNativeWindow()->GetRootWindow()->AsRootWindowHostDelegate();
+      widget->GetNativeWindow()->GetDispatcher()->AsRootWindowHostDelegate();
   rwhd->OnHostMouseEvent(&move_event);
   if (last_event_type == ui::ET_MOUSE_ENTERED)
     return;
@@ -2017,7 +2017,7 @@ TEST_F(WidgetTest, WindowMouseModalityTest) {
                            cursor_location_main,
                            cursor_location_main,
                            ui::EF_NONE);
-  top_level_widget.GetNativeView()->GetRootWindow()->
+  top_level_widget.GetNativeView()->GetDispatcher()->
       AsRootWindowHostDelegate()->OnHostMouseEvent(&move_main);
 
   EXPECT_EQ(1, widget_view->GetEventCount(ui::ET_MOUSE_ENTERED));
@@ -2043,7 +2043,7 @@ TEST_F(WidgetTest, WindowMouseModalityTest) {
                                    cursor_location_dialog,
                                    cursor_location_dialog,
                                    ui::EF_NONE);
-  top_level_widget.GetNativeView()->GetRootWindow()->
+  top_level_widget.GetNativeView()->GetDispatcher()->
       AsRootWindowHostDelegate()->OnHostMouseEvent(&mouse_down_dialog);
   EXPECT_EQ(1, dialog_widget_view->GetEventCount(ui::ET_MOUSE_PRESSED));
 
@@ -2054,7 +2054,7 @@ TEST_F(WidgetTest, WindowMouseModalityTest) {
                                  cursor_location_main2,
                                  cursor_location_main2,
                                  ui::EF_NONE);
-  top_level_widget.GetNativeView()->GetRootWindow()->
+  top_level_widget.GetNativeView()->GetDispatcher()->
       AsRootWindowHostDelegate()->OnHostMouseEvent(&mouse_down_main);
   EXPECT_EQ(0, widget_view->GetEventCount(ui::ET_MOUSE_MOVED));
 

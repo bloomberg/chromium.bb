@@ -75,7 +75,7 @@ TEST_F(MirrorWindowControllerTest, MAYBE_MirrorCursorBasic) {
   DisplayManager* display_manager = Shell::GetInstance()->display_manager();
   display_manager->SetSecondDisplayMode(DisplayManager::MIRRORING);
   UpdateDisplay("400x400,400x400");
-  aura::RootWindow* root = Shell::GetInstance()->GetPrimaryRootWindow();
+  aura::Window* root = Shell::GetInstance()->GetPrimaryRootWindow();
   scoped_ptr<aura::Window> window(aura::test::CreateTestWindowWithDelegate(
       &test_window_delegate,
       0,
@@ -132,7 +132,7 @@ TEST_F(MirrorWindowControllerTest, MAYBE_MirrorCursorRotate) {
   DisplayManager* display_manager = Shell::GetInstance()->display_manager();
   display_manager->SetSecondDisplayMode(DisplayManager::MIRRORING);
   UpdateDisplay("400x400,400x400");
-  aura::RootWindow* root = Shell::GetInstance()->GetPrimaryRootWindow();
+  aura::Window* root = Shell::GetInstance()->GetPrimaryRootWindow();
   scoped_ptr<aura::Window> window(aura::test::CreateTestWindowWithDelegate(
       &test_window_delegate,
       0,
@@ -199,7 +199,7 @@ TEST_F(MirrorWindowControllerTest, MAYBE_MirrorCursorLocations) {
   // Test with device scale factor.
   UpdateDisplay("400x600*2,400x600");
 
-  aura::RootWindow* root = Shell::GetInstance()->GetPrimaryRootWindow();
+  aura::Window* root = Shell::GetInstance()->GetPrimaryRootWindow();
   aura::test::EventGenerator generator(root);
   generator.MoveMouseToInHost(10, 20);
 

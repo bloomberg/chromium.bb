@@ -78,7 +78,7 @@ class AppNonClientFrameViewAshTest : public InProcessBrowserTest {
     return browser_frame->GetFrameView()->GetClassName();
   }
 
-  aura::RootWindow* GetRootWindow() const {
+  aura::Window* GetRootWindow() const {
     BrowserView* browser_view =
         static_cast<BrowserView*>(app_browser_->window());
     views::Widget* widget = browser_view->GetWidget();
@@ -137,7 +137,7 @@ IN_PROC_BROWSER_TEST_F(AppNonClientFrameViewAshTest, SwitchFrames) {
 // Ensure that we can click the close button when the controls are shown.
 // In particular make sure that we can click it on the top pixel of the button.
 IN_PROC_BROWSER_TEST_F(AppNonClientFrameViewAshTest, ClickClose) {
-  aura::RootWindow* root_window = GetRootWindow();
+  aura::Window* root_window = GetRootWindow();
   aura::test::EventGenerator eg(root_window, gfx::Point(0, 1));
 
   // Click close button.
@@ -154,7 +154,7 @@ IN_PROC_BROWSER_TEST_F(AppNonClientFrameViewAshTest, ClickClose) {
 // Ensure that closing a maximized app with Ctrl-W does not crash the
 // application.  crbug.com/147635
 IN_PROC_BROWSER_TEST_F(AppNonClientFrameViewAshTest, KeyboardClose) {
-  aura::RootWindow* root_window = GetRootWindow();
+  aura::Window* root_window = GetRootWindow();
   aura::test::EventGenerator eg(root_window);
 
   // Base browser and app browser.
@@ -176,7 +176,7 @@ IN_PROC_BROWSER_TEST_F(AppNonClientFrameViewAshTest, KeyboardClose) {
 
 // Ensure that snapping left with Alt-[ closes the control window.
 IN_PROC_BROWSER_TEST_F(AppNonClientFrameViewAshTest, SnapLeftClosesControls) {
-  aura::RootWindow* root_window = GetRootWindow();
+  aura::Window* root_window = GetRootWindow();
   aura::test::EventGenerator eg(root_window);
   aura::Window* native_window = app_browser()->window()->GetNativeWindow();
 
@@ -196,7 +196,7 @@ IN_PROC_BROWSER_TEST_F(AppNonClientFrameViewAshTest, SnapLeftClosesControls) {
 
 // Ensure that the controls are at the proper locations.
 IN_PROC_BROWSER_TEST_F(AppNonClientFrameViewAshTest, ControlsAtRightSide) {
-  aura::RootWindow* root_window = GetRootWindow();
+  aura::Window* root_window = GetRootWindow();
   aura::test::EventGenerator eg(root_window);
   aura::Window* native_window = app_browser()->window()->GetNativeWindow();
   const gfx::Rect work_area =

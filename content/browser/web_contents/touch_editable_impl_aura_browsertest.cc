@@ -189,7 +189,7 @@ class TouchEditableImplAuraTest : public ContentBrowserTest {
     NavigateToURL(shell(), test_url);
     aura::Window* content =
         shell()->web_contents()->GetView()->GetContentNativeView();
-    content->GetRootWindow()->SetHostSize(gfx::Size(800, 600));
+    content->GetDispatcher()->SetHostSize(gfx::Size(800, 600));
   }
 
   // TODO(mohsen): Remove logs if the test showed no flakiness anymore.

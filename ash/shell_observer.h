@@ -9,7 +9,7 @@
 #include "ash/system/user/login_status.h"
 
 namespace aura {
-class RootWindow;
+class Window;
 }
 
 namespace ash {
@@ -30,14 +30,14 @@ class ASH_EXPORT ShellObserver {
   virtual void OnLockStateChanged(bool locked) {}
 
   // Invoked when the shelf alignment in |root_window| is changed.
-  virtual void OnShelfAlignmentChanged(aura::RootWindow* root_window) {}
+  virtual void OnShelfAlignmentChanged(aura::Window* root_window) {}
 
   // Invoked when the projection touch HUD is toggled.
   virtual void OnTouchHudProjectionToggled(bool enabled) {}
 
   // Invoked when entering or exiting fullscreen mode in |root_window|.
   virtual void OnFullscreenStateChanged(bool is_fullscreen,
-                                        aura::RootWindow* root_window) {}
+                                        aura::Window* root_window) {}
 
  protected:
   virtual ~ShellObserver() {}

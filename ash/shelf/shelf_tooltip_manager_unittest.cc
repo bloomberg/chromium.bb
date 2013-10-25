@@ -180,7 +180,7 @@ TEST_F(ShelfTooltipManagerTest, ShouldHideForEvents) {
   ShowImmediately();
   ASSERT_TRUE(TooltipIsVisible());
 
-  aura::RootWindow* root_window = Shell::GetInstance()->GetPrimaryRootWindow();
+  aura::Window* root_window = Shell::GetInstance()->GetPrimaryRootWindow();
   ui::EventHandler* event_handler = GetEventHandler();
 
   // Should not hide for key events.
@@ -222,7 +222,7 @@ TEST_F(ShelfTooltipManagerTest, HideForMouseMoveEvent) {
   ShowImmediately();
   ASSERT_TRUE(TooltipIsVisible());
 
-  aura::RootWindow* root_window = Shell::GetInstance()->GetPrimaryRootWindow();
+  aura::Window* root_window = Shell::GetInstance()->GetPrimaryRootWindow();
   ui::EventHandler* event_handler = GetEventHandler();
 
   gfx::Rect tooltip_rect = GetTooltipWidget()->GetNativeWindow()->bounds();
@@ -251,7 +251,7 @@ TEST_F(ShelfTooltipManagerTest, HideForMouseClickEvent) {
   ShowImmediately();
   ASSERT_TRUE(TooltipIsVisible());
 
-  aura::RootWindow* root_window = Shell::GetInstance()->GetPrimaryRootWindow();
+  aura::Window* root_window = Shell::GetInstance()->GetPrimaryRootWindow();
   ui::EventHandler* event_handler = GetEventHandler();
 
   gfx::Rect tooltip_rect = GetTooltipWidget()->GetNativeWindow()->bounds();

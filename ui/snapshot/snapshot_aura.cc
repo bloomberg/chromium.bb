@@ -40,9 +40,9 @@ bool GrabWindowSnapshot(gfx::NativeWindow window,
   // We must take into account the window's position on the desktop.
   read_pixels_bounds.Offset(
       window->GetBoundsInRootWindow().origin().OffsetFromOrigin());
-  aura::RootWindow* root_window = window->GetRootWindow();
-  if (root_window)
-    root_window->GetRootTransform().TransformRect(&read_pixels_bounds);
+  aura::WindowEventDispatcher* dispatcher = window->GetDispatcher();
+  if (dispatcher)
+    dispatcher->GetRootTransform().TransformRect(&read_pixels_bounds);
 
   gfx::Rect read_pixels_bounds_in_pixel =
       gfx::ToEnclosingRect(read_pixels_bounds);

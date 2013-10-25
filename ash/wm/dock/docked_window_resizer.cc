@@ -42,7 +42,7 @@ DockedWindowLayoutManager* GetDockedLayoutManagerAtPoint(
   gfx::Display display = ScreenAsh::FindDisplayContainingPoint(point);
   if (!display.is_valid())
     return NULL;
-  aura::RootWindow* root = Shell::GetInstance()->display_controller()->
+  aura::Window* root = Shell::GetInstance()->display_controller()->
       GetRootWindowForDisplayId(display.id());
   aura::Window* dock_container = Shell::GetContainer(
       root, kShellWindowId_DockedContainer);

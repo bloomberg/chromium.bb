@@ -233,7 +233,7 @@ class TestV2AppLauncherItemController : public LauncherItemController {
     return items.Pass();
   }
   virtual ui::MenuModel* CreateContextMenu(
-      aura::RootWindow* root_window) OVERRIDE { return NULL; }
+      aura::Window* root_window) OVERRIDE { return NULL; }
   virtual ash::LauncherMenuModel* CreateApplicationMenu(
       int event_flags) OVERRIDE { return NULL; }
   virtual bool IsDraggable() OVERRIDE { return false; }

@@ -256,7 +256,7 @@ TEST_F(WorkspaceEventHandlerTest, DoubleClickCaptionTogglesMaximize) {
 
   wm::WindowState* window_state = wm::GetWindowState(window.get());
   EXPECT_FALSE(window_state->IsMaximized());
-  aura::RootWindow* root = Shell::GetPrimaryRootWindow();
+  aura::Window* root = Shell::GetPrimaryRootWindow();
   aura::test::EventGenerator generator(root, window.get());
   generator.DoubleClickLeftButton();
   EXPECT_NE("1,2 30x40", window->bounds().ToString());
@@ -272,11 +272,12 @@ TEST_F(WorkspaceEventHandlerTest, DoubleClickCaptionTogglesMaximize) {
   ui::MouseEvent press(ui::ET_MOUSE_PRESSED, generator.current_location(),
                        generator.current_location(),
                        ui::EF_MIDDLE_MOUSE_BUTTON | ui::EF_IS_DOUBLE_CLICK);
-  root->AsRootWindowHostDelegate()->OnHostMouseEvent(&press);
+  aura::WindowEventDispatcher* dispatcher = root->GetDispatcher();
+  dispatcher->AsRootWindowHostDelegate()->OnHostMouseEvent(&press);
   ui::MouseEvent release(ui::ET_MOUSE_RELEASED, generator.current_location(),
                          generator.current_location(),
                          ui::EF_IS_DOUBLE_CLICK);
-  root->AsRootWindowHostDelegate()->OnHostMouseEvent(&release);
+  dispatcher->AsRootWindowHostDelegate()->OnHostMouseEvent(&release);
 
   EXPECT_FALSE(window_state->IsMaximized());
   EXPECT_EQ("1,2 30x40", window->bounds().ToString());

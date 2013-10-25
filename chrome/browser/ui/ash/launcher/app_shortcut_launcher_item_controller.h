@@ -47,7 +47,7 @@ class AppShortcutLauncherItemController : public LauncherItemController {
   virtual void ItemSelected(const ui::Event& event) OVERRIDE;
   virtual base::string16 GetTitle() OVERRIDE;
   virtual ui::MenuModel* CreateContextMenu(
-      aura::RootWindow* root_window) OVERRIDE;
+      aura::Window* root_window) OVERRIDE;
   virtual ash::LauncherMenuModel* CreateApplicationMenu(
       int event_flags) OVERRIDE;
   virtual bool IsDraggable() OVERRIDE;

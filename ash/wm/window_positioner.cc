@@ -146,7 +146,7 @@ void AutoPlaceSingleWindow(aura::Window* window, bool animated) {
 }
 
 // Get the first open (non minimized) window which is on the screen defined.
-aura::Window* GetReferenceWindow(const aura::RootWindow* root_window,
+aura::Window* GetReferenceWindow(const aura::Window* root_window,
                                  const aura::Window* exclude,
                                  bool *single_window) {
   if (single_window)
@@ -220,7 +220,7 @@ void WindowPositioner::GetBoundsAndShowStateForNewWindow(
     ui::WindowShowState* show_state_out) {
 
   // Always open new window in the target display.
-  aura::RootWindow* target = Shell::GetTargetRootWindow();
+  aura::Window* target = Shell::GetTargetRootWindow();
 
   aura::Window* top_window = GetReferenceWindow(target, NULL, NULL);
   // Our window should not have any impact if we are already on top.

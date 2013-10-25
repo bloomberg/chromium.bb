@@ -80,7 +80,7 @@ class TabScrubberTest : public InProcessBrowserTest,
   // fling events.
   void SendScrubEvent(Browser* browser, int index) {
     aura::Window* window = browser->window()->GetNativeWindow();
-    aura::RootWindow* root = window->GetRootWindow();
+    aura::Window* root = window->GetRootWindow();
     aura::test::EventGenerator event_generator(root, window);
     int active_index = browser->tab_strip_model()->active_index();
     TabScrubber::Direction direction = index < active_index ?
@@ -107,7 +107,7 @@ class TabScrubberTest : public InProcessBrowserTest,
   // active.
   void Scrub(Browser* browser, int index, ScrubType scrub_type) {
     aura::Window* window = browser->window()->GetNativeWindow();
-    aura::RootWindow* root = window->GetRootWindow();
+    aura::Window* root = window->GetRootWindow();
     aura::test::EventGenerator event_generator(root, window);
     event_generator.set_async(true);
     activation_order_.clear();
@@ -150,7 +150,7 @@ class TabScrubberTest : public InProcessBrowserTest,
   // synchronously (as we don't have anything to wait for).
   void SendScrubSequence(Browser* browser, int x_offset, int index) {
     aura::Window* window = browser->window()->GetNativeWindow();
-    aura::RootWindow* root = window->GetRootWindow();
+    aura::Window* root = window->GetRootWindow();
     aura::test::EventGenerator event_generator(root, window);
     bool wait_for_active = false;
     if (index != browser->tab_strip_model()->active_index()) {

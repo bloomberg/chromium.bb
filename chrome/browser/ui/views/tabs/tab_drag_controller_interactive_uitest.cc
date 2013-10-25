@@ -223,14 +223,14 @@ bool GetTrackedByWorkspace(Browser* browser) {
 #if defined(USE_ASH) && !defined(OS_WIN)  // TODO(win_ash)
 class ScreenEventGeneratorDelegate : public aura::test::EventGeneratorDelegate {
  public:
-  explicit ScreenEventGeneratorDelegate(aura::RootWindow* root_window)
+  explicit ScreenEventGeneratorDelegate(aura::Window* root_window)
       : root_window_(root_window) {}
   virtual ~ScreenEventGeneratorDelegate() {}
 
   // EventGeneratorDelegate overrides:
   virtual aura::RootWindow* GetRootWindowAt(
       const gfx::Point& point) const OVERRIDE {
-    return root_window_;
+    return root_window_->GetDispatcher();
   }
 
   virtual aura::client::ScreenPositionClient* GetScreenPositionClient(
@@ -239,7 +239,7 @@ class ScreenEventGeneratorDelegate : public aura::test::EventGeneratorDelegate {
   }
 
  private:
-  aura::RootWindow* root_window_;
+  aura::Window* root_window_;
 
   DISALLOW_COPY_AND_ASSIGN(ScreenEventGeneratorDelegate);
 };

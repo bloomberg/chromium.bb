@@ -236,12 +236,12 @@ class PanelLayoutManagerTest : public test::AshTestBase {
     test_api.RunMessageLoopUntilAnimationsDone();
   }
 
-  void SetAlignment(aura::RootWindow* root_window, ShelfAlignment alignment) {
+  void SetAlignment(aura::Window* root_window, ShelfAlignment alignment) {
     ash::Shell* shell = ash::Shell::GetInstance();
     shell->SetShelfAlignment(alignment, root_window);
   }
 
-  ShelfAlignment GetAlignment(aura::RootWindow* root_window) {
+  ShelfAlignment GetAlignment(aura::Window* root_window) {
     ash::Shell* shell = ash::Shell::GetInstance();
     return shell->GetShelfAlignment(root_window);
   }

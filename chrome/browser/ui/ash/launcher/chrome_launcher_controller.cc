@@ -102,7 +102,7 @@ namespace {
 // will ignore it.
 const char kAppLauncherIdPlaceholder[] = "AppLauncherIDPlaceholder--------";
 
-std::string GetPrefKeyForRootWindow(aura::RootWindow* root_window) {
+std::string GetPrefKeyForRootWindow(aura::Window* root_window) {
   gfx::Display display = gfx::Screen::GetScreenFor(
       root_window)->GetDisplayNearestWindow(root_window);
   DCHECK(display.is_valid());
@@ -111,7 +111,7 @@ std::string GetPrefKeyForRootWindow(aura::RootWindow* root_window) {
 }
 
 void UpdatePerDisplayPref(PrefService* pref_service,
-                          aura::RootWindow* root_window,
+                          aura::Window* root_window,
                           const char* pref_key,
                           const std::string& value) {
   std::string key = GetPrefKeyForRootWindow(root_window);
@@ -144,7 +144,7 @@ void UpdatePerDisplayPref(PrefService* pref_service,
 //  * The default value for |local_path| if the value is not recommended by
 //    policy.
 std::string GetPrefForRootWindow(PrefService* pref_service,
-                                 aura::RootWindow* root_window,
+                                 aura::Window* root_window,
                                  const char* local_path,
                                  const char* path) {
   const PrefService::Preference* local_pref =
@@ -671,7 +671,7 @@ void ChromeLauncherController::SetAppImage(const std::string& id,
 }
 
 void ChromeLauncherController::OnAutoHideBehaviorChanged(
-    aura::RootWindow* root_window,
+    aura::Window* root_window,
     ash::ShelfAutoHideBehavior new_behavior) {
   SetShelfAutoHideBehaviorPrefs(new_behavior, root_window);
 }
@@ -802,7 +802,7 @@ Profile* ChromeLauncherController::profile() {
 }
 
 ash::ShelfAutoHideBehavior ChromeLauncherController::GetShelfAutoHideBehavior(
-    aura::RootWindow* root_window) const {
+    aura::Window* root_window) const {
   // Don't show the shelf in app mode.
   if (chrome::IsRunningInAppMode())
     return ash::SHELF_AUTO_HIDE_ALWAYS_HIDDEN;
@@ -824,13 +824,13 @@ ash::ShelfAutoHideBehavior ChromeLauncherController::GetShelfAutoHideBehavior(
 }
 
 bool ChromeLauncherController::CanUserModifyShelfAutoHideBehavior(
-    aura::RootWindow* root_window) const {
+    aura::Window* root_window) const {
   return profile_->GetPrefs()->
       FindPreference(prefs::kShelfAutoHideBehaviorLocal)->IsUserModifiable();
 }
 
 void ChromeLauncherController::ToggleShelfAutoHideBehavior(
-    aura::RootWindow* root_window) {
+    aura::Window* root_window) {
   ash::ShelfAutoHideBehavior behavior = GetShelfAutoHideBehavior(root_window) ==
       ash::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS ?
           ash::SHELF_AUTO_HIDE_BEHAVIOR_NEVER :
@@ -1084,7 +1084,7 @@ void ChromeLauncherController::Observe(
 }
 
 void ChromeLauncherController::OnShelfAlignmentChanged(
-    aura::RootWindow* root_window) {
+    aura::Window* root_window) {
   const char* pref_value = NULL;
   switch (ash::Shell::GetInstance()->GetShelfAlignment(root_window)) {
     case ash::SHELF_ALIGNMENT_BOTTOM:
@@ -1519,7 +1519,7 @@ void ChromeLauncherController::UpdateAppLaunchersFromPref() {
 
 void ChromeLauncherController::SetShelfAutoHideBehaviorPrefs(
     ash::ShelfAutoHideBehavior behavior,
-    aura::RootWindow* root_window) {
+    aura::Window* root_window) {
   const char* value = NULL;
   switch (behavior) {
     case ash::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS:

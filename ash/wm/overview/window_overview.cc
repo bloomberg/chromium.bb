@@ -117,7 +117,7 @@ void CleanupWidgetAfterAnimationObserver::OnLayerAnimationScheduled(
 
 WindowOverview::WindowOverview(WindowSelector* window_selector,
                                WindowSelectorItemList* windows,
-                               aura::RootWindow* single_root_window)
+                               aura::Window* single_root_window)
     : window_selector_(window_selector),
       windows_(windows),
       selection_index_(0),
@@ -239,7 +239,7 @@ void WindowOverview::OnWindowsChanged() {
   PositionWindows();
 }
 
-void WindowOverview::MoveToSingleRootWindow(aura::RootWindow* root_window) {
+void WindowOverview::MoveToSingleRootWindow(aura::Window* root_window) {
   single_root_window_ = root_window;
   PositionWindows();
 }
@@ -348,7 +348,7 @@ void WindowOverview::PositionWindows() {
   }
 }
 
-void WindowOverview::PositionWindowsFromRoot(aura::RootWindow* root_window) {
+void WindowOverview::PositionWindowsFromRoot(aura::Window* root_window) {
   std::vector<WindowSelectorItem*> windows;
   for (WindowSelectorItemList::iterator iter = windows_->begin();
        iter != windows_->end(); ++iter) {
@@ -359,7 +359,7 @@ void WindowOverview::PositionWindowsFromRoot(aura::RootWindow* root_window) {
 }
 
 void WindowOverview::PositionWindowsOnRoot(
-    aura::RootWindow* root_window,
+    aura::Window* root_window,
     const std::vector<WindowSelectorItem*>& windows) {
   if (windows.empty())
     return;

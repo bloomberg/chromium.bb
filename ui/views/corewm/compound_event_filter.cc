@@ -123,7 +123,7 @@ void CompoundEventFilter::UpdateCursor(aura::Window* target,
                                        ui::MouseEvent* event) {
   // If drag and drop is in progress, let the drag drop client set the cursor
   // instead of setting the cursor here.
-  aura::RootWindow* root_window = target->GetRootWindow();
+  aura::Window* root_window = target->GetRootWindow();
   aura::client::DragDropClient* drag_drop_client =
       aura::client::GetDragDropClient(root_window);
   if (drag_drop_client && drag_drop_client->IsDragDropInProgress())

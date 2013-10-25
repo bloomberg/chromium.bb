@@ -172,8 +172,9 @@ gfx::Rect TooltipAura::GetBoundsForTooltip(
   // (which comes from the RootWindow).
   if (screen_type_ == gfx::SCREEN_TYPE_NATIVE &&
       gfx::SCREEN_TYPE_NATIVE != gfx::SCREEN_TYPE_ALTERNATE) {
-    aura::RootWindow* root = tooltip_window_->GetRootWindow();
-    widget_bounds = gfx::Rect(root->GetHostOrigin(), root->GetHostSize());
+    aura::WindowEventDispatcher* dispatcher = tooltip_window_->GetDispatcher();
+    widget_bounds = gfx::Rect(dispatcher->GetHostOrigin(),
+                              dispatcher->GetHostSize());
   }
   gfx::Screen* screen = gfx::Screen::GetScreenByType(screen_type_);
   gfx::Rect bounds(screen->GetDisplayNearestPoint(origin).bounds());

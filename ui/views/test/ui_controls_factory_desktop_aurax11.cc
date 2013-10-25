@@ -125,32 +125,32 @@ class UIControlsDesktopX11 : public UIControlsAura {
       const base::Closure& closure) OVERRIDE {
     DCHECK(!command);  // No command key on Aura
 
-    aura::RootWindow* root_window = window->GetRootWindow();
+    aura::WindowEventDispatcher* dispatcher = window->GetDispatcher();
 
     XEvent xevent = {0};
     xevent.xkey.type = KeyPress;
     if (control) {
-      SetKeycodeAndSendThenMask(root_window, &xevent, XK_Control_L,
+      SetKeycodeAndSendThenMask(dispatcher, &xevent, XK_Control_L,
                                 ControlMask);
     }
     if (shift)
-      SetKeycodeAndSendThenMask(root_window, &xevent, XK_Shift_L, ShiftMask);
+      SetKeycodeAndSendThenMask(dispatcher, &xevent, XK_Shift_L, ShiftMask);
     if (alt)
-      SetKeycodeAndSendThenMask(root_window, &xevent, XK_Alt_L, Mod1Mask);
+      SetKeycodeAndSendThenMask(dispatcher, &xevent, XK_Alt_L, Mod1Mask);
     xevent.xkey.keycode =
         XKeysymToKeycode(x_display_,
                          ui::XKeysymForWindowsKeyCode(key, shift));
-    root_window->PostNativeEvent(&xevent);
+    dispatcher->PostNativeEvent(&xevent);
 
     // Send key release events.
     xevent.xkey.type = KeyRelease;
-    root_window->PostNativeEvent(&xevent);
+    dispatcher->PostNativeEvent(&xevent);
     if (alt)
-      UnmaskAndSetKeycodeThenSend(root_window, &xevent, Mod1Mask, XK_Alt_L);
+      UnmaskAndSetKeycodeThenSend(dispatcher, &xevent, Mod1Mask, XK_Alt_L);
     if (shift)
-      UnmaskAndSetKeycodeThenSend(root_window, &xevent, ShiftMask, XK_Shift_L);
+      UnmaskAndSetKeycodeThenSend(dispatcher, &xevent, ShiftMask, XK_Shift_L);
     if (control) {
-      UnmaskAndSetKeycodeThenSend(root_window, &xevent, ControlMask,
+      UnmaskAndSetKeycodeThenSend(dispatcher, &xevent, ControlMask,
                                   XK_Control_L);
     }
     DCHECK(!xevent.xkey.state);
@@ -168,7 +168,7 @@ class UIControlsDesktopX11 : public UIControlsAura {
       const base::Closure& closure) OVERRIDE {
     gfx::Point screen_point(x, y);
     gfx::Point window_point = screen_point;
-    aura::RootWindow* root_window = RootWindowForPoint(screen_point);
+    aura::Window* root_window = RootWindowForPoint(screen_point);
 
     aura::client::ScreenPositionClient* screen_position_client =
           aura::client::GetScreenPositionClient(root_window);
@@ -185,7 +185,7 @@ class UIControlsDesktopX11 : public UIControlsAura {
     xmotion->state = button_down_mask;
     xmotion->same_screen = True;
     // RootWindow will take care of other necessary fields.
-    root_window->PostNativeEvent(&xevent);
+    root_window->GetDispatcher()->PostNativeEvent(&xevent);
     RunClosureAfterAllPendingUIEvents(closure);
     return true;
   }
@@ -199,7 +199,7 @@ class UIControlsDesktopX11 : public UIControlsAura {
     XEvent xevent = {0};
     XButtonEvent* xbutton = &xevent.xbutton;
     gfx::Point mouse_loc = aura::Env::GetInstance()->last_mouse_location();
-    aura::RootWindow* root_window = RootWindowForPoint(mouse_loc);
+    aura::Window* root_window = RootWindowForPoint(mouse_loc);
     aura::client::ScreenPositionClient* screen_position_client =
           aura::client::GetScreenPositionClient(root_window);
     if (screen_position_client)
@@ -224,12 +224,12 @@ class UIControlsDesktopX11 : public UIControlsAura {
     // RootWindow will take care of other necessary fields.
     if (state & DOWN) {
       xevent.xbutton.type = ButtonPress;
-      root_window->PostNativeEvent(&xevent);
+      root_window->GetDispatcher()->PostNativeEvent(&xevent);
       button_down_mask |= xbutton->state;
     }
     if (state & UP) {
       xevent.xbutton.type = ButtonRelease;
-      root_window->PostNativeEvent(&xevent);
+      root_window->GetDispatcher()->PostNativeEvent(&xevent);
       button_down_mask = (button_down_mask | xbutton->state) ^ xbutton->state;
     }
     RunClosureAfterAllPendingUIEvents(closure);
@@ -255,7 +255,7 @@ class UIControlsDesktopX11 : public UIControlsAura {
     new EventWaiter(closure, &Matcher);
   }
  private:
-  aura::RootWindow* RootWindowForPoint(const gfx::Point& point) {
+  aura::Window* RootWindowForPoint(const gfx::Point& point) {
     // Most interactive_ui_tests run inside of the aura_test_helper
     // environment. This means that we can't rely on gfx::Screen and several
     // other things to work properly. Therefore we hack around this by

@@ -96,7 +96,7 @@ class TestEventHandler : public ui::EventHandler {
 
  private:
   gfx::Point mouse_location_;
-  aura::RootWindow* target_root_;
+  aura::Window* target_root_;
 
   float touch_radius_x_;
   float touch_radius_y_;

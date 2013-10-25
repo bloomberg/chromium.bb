@@ -100,7 +100,7 @@ bool MoveWindowToEventRoot(aura::Window* window, const ui::Event& event) {
   views::View* target = static_cast<views::View*>(event.target());
   if (!target)
     return false;
-  aura::RootWindow* target_root =
+  aura::Window* target_root =
       target->GetWidget()->GetNativeView()->GetRootWindow();
   if (!target_root || target_root == window->GetRootWindow())
     return false;

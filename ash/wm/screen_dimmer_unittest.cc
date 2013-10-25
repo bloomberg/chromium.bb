@@ -71,7 +71,7 @@ TEST_F(ScreenDimmerTest, ResizeLayer) {
   // When we resize the root window, the dimming layer should be resized to
   // match.
   gfx::Size kNewSize(400, 300);
-  Shell::GetPrimaryRootWindow()->SetHostSize(kNewSize);
+  Shell::GetPrimaryRootWindow()->GetDispatcher()->SetHostSize(kNewSize);
   EXPECT_EQ(kNewSize.ToString(), dimming_layer->bounds().size().ToString());
 }
 

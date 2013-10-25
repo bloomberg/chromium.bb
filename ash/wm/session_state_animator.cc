@@ -403,7 +403,7 @@ bool SessionStateAnimator::TestApi::ContainersAreAnimated(
 
 bool SessionStateAnimator::TestApi::RootWindowIsAnimated(AnimationType type)
     const {
-  aura::RootWindow* root_window = Shell::GetPrimaryRootWindow();
+  aura::Window* root_window = Shell::GetPrimaryRootWindow();
   ui::Layer* layer = root_window->layer();
   return IsLayerAnimated(layer, type);
 }
@@ -455,7 +455,7 @@ base::TimeDelta SessionStateAnimator::GetDuration(AnimationSpeed speed) {
 // Fills |containers| with the containers described by |container_mask|.
 void SessionStateAnimator::GetContainers(int container_mask,
                                          aura::Window::Windows* containers) {
-  aura::RootWindow* root_window = Shell::GetPrimaryRootWindow();
+  aura::Window* root_window = Shell::GetPrimaryRootWindow();
   containers->clear();
 
   if (container_mask & DESKTOP_BACKGROUND) {
@@ -542,7 +542,7 @@ void SessionStateAnimator::StartAnimationWithObserver(
 
 void SessionStateAnimator::StartGlobalAnimation(AnimationType type,
                                                 AnimationSpeed speed) {
-  aura::RootWindow* root_window = Shell::GetPrimaryRootWindow();
+  aura::Window* root_window = Shell::GetPrimaryRootWindow();
   RunAnimationForWindow(root_window, type, speed, NULL);
 }
 

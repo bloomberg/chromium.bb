@@ -38,7 +38,7 @@ bool HasSecondaryRootWindow() {
 
 // When there are two root windows, returns one of the root windows which is not
 // |root_window|. Returns NULL if only one root window exists.
-aura::RootWindow* GetAnotherRootWindow(aura::RootWindow* root_window) {
+aura::RootWindow* GetAnotherRootWindow(aura::Window* root_window) {
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
   if (root_windows.size() < 2)
     return NULL;
@@ -171,7 +171,7 @@ void DragWindowResizer::UpdateDragWindow(const gfx::Rect& bounds,
     return;
 
   // It's available. Show a phantom window on the display if needed.
-  aura::RootWindow* another_root =
+  aura::Window* another_root =
       GetAnotherRootWindow(GetTarget()->GetRootWindow());
   const gfx::Rect root_bounds_in_screen(another_root->GetBoundsInScreen());
   const gfx::Rect bounds_in_screen =

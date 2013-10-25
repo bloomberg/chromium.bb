@@ -5,6 +5,7 @@
 #include "ash/autoclick/autoclick_controller.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "ui/aura/root_window.h"
 #include "ui/aura/test/event_generator.h"
 #include "ui/aura/window.h"
 #include "ui/events/event.h"

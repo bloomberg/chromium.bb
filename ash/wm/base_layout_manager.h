@@ -19,7 +19,6 @@
 #include "ui/events/event_handler.h"
 
 namespace aura {
-class RootWindow;
 class Window;
 }
 
@@ -44,7 +43,7 @@ class ASH_EXPORT BaseLayoutManager
  public:
   typedef std::set<aura::Window*> WindowSet;
 
-  explicit BaseLayoutManager(aura::RootWindow* root_window);
+  explicit BaseLayoutManager(aura::Window* root_window);
   virtual ~BaseLayoutManager();
 
   const WindowSet& windows() const { return windows_; }
@@ -109,7 +108,7 @@ class ASH_EXPORT BaseLayoutManager
       wm::WindowState* window_state,
       AdjustWindowReason reason);
 
-  aura::RootWindow* root_window() { return root_window_; }
+  aura::Window* root_window() { return root_window_; }
 
  private:
   // Update window bounds based on a change in show state.
@@ -118,7 +117,7 @@ class ASH_EXPORT BaseLayoutManager
   // Set of windows we're listening to.
   WindowSet windows_;
 
-  aura::RootWindow* root_window_;
+  aura::Window* root_window_;
 
   DISALLOW_COPY_AND_ASSIGN(BaseLayoutManager);
 };

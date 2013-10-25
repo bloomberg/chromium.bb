@@ -171,7 +171,7 @@ TEST_F(WidgetTest, DesktopNativeWidgetAuraActivationAndFocusTest) {
   widget1.Init(init_params);
   widget1.SetContentsView(contents_view1);
   widget1.Show();
-  aura::RootWindow* root_window1= widget1.GetNativeView()->GetRootWindow();
+  aura::Window* root_window1= widget1.GetNativeView()->GetRootWindow();
   contents_view1->RequestFocus();
 
   EXPECT_TRUE(root_window1 != NULL);
@@ -191,9 +191,9 @@ TEST_F(WidgetTest, DesktopNativeWidgetAuraActivationAndFocusTest) {
   widget2.Init(init_params2);
   widget2.SetContentsView(contents_view2);
   widget2.Show();
-  aura::RootWindow* root_window2 = widget2.GetNativeView()->GetRootWindow();
+  aura::Window* root_window2 = widget2.GetNativeView()->GetRootWindow();
   contents_view2->RequestFocus();
-  ::SetActiveWindow(root_window2->GetAcceleratedWidget());
+  ::SetActiveWindow(root_window2->GetDispatcher()->GetAcceleratedWidget());
 
   aura::client::ActivationClient* activation_client2 =
       aura::client::GetActivationClient(root_window2);
@@ -205,7 +205,7 @@ TEST_F(WidgetTest, DesktopNativeWidgetAuraActivationAndFocusTest) {
   // Now set focus back to widget 1 and expect the active window to be its
   // window.
   contents_view1->RequestFocus();
-  ::SetActiveWindow(root_window1->GetAcceleratedWidget());
+  ::SetActiveWindow(root_window1->GetDispatcher()->GetAcceleratedWidget());
   EXPECT_EQ(activation_client2->GetActiveWindow(),
             reinterpret_cast<aura::Window*>(NULL));
   EXPECT_EQ(activation_client1->GetActiveWindow(), widget1.GetNativeView());
@@ -732,9 +732,8 @@ TEST_F(WidgetCaptureTest, MAYBE_MouseEventDispatchedToRightWindow) {
   // |widget2| has capture, |widget1| should still get the event.
   ui::MouseEvent mouse_event(ui::ET_MOUSE_EXITED, gfx::Point(), gfx::Point(),
                              ui::EF_NONE);
-  static_cast<aura::RootWindowHostDelegate*>(
-      widget1.GetNativeWindow()->GetRootWindow())->OnHostMouseEvent(
-          &mouse_event);
+  widget1.GetNativeWindow()->GetDispatcher()->AsRootWindowHostDelegate()->
+      OnHostMouseEvent(&mouse_event);
   EXPECT_TRUE(widget1.GetAndClearGotMouseEvent());
   EXPECT_FALSE(widget2.GetAndClearGotMouseEvent());
 }

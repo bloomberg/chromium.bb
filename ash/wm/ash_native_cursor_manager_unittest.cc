@@ -173,7 +173,7 @@ TEST_F(AshNativeCursorManagerTest, SetDeviceScaleFactorAndRotation) {
 }
 
 TEST_F(AshNativeCursorManagerTest, DisabledQueryMouseLocation) {
-  aura::RootWindow* root_window = Shell::GetInstance()->GetPrimaryRootWindow();
+  aura::Window* root_window = Shell::GetInstance()->GetPrimaryRootWindow();
 #if defined(OS_WIN)
   if (base::win::GetVersion() < base::win::VERSION_WIN8)
     return;
@@ -193,11 +193,12 @@ TEST_F(AshNativeCursorManagerTest, DisabledQueryMouseLocation) {
   Sleep(100);
   RunAllPendingInMessageLoop();
 #endif
+  aura::WindowEventDispatcher* dispatcher = root_window->GetDispatcher();
   gfx::Point mouse_location;
-  EXPECT_TRUE(root_window->QueryMouseLocationForTest(&mouse_location));
+  EXPECT_TRUE(dispatcher->QueryMouseLocationForTest(&mouse_location));
   EXPECT_EQ("10,10", mouse_location.ToString());
   Shell::GetInstance()->cursor_manager()->DisableMouseEvents();
-  EXPECT_FALSE(root_window->QueryMouseLocationForTest(&mouse_location));
+  EXPECT_FALSE(dispatcher->QueryMouseLocationForTest(&mouse_location));
   EXPECT_EQ("0,0", mouse_location.ToString());
 }
 

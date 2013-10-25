@@ -75,7 +75,7 @@ bool TrayEventFilter::ProcessLocatedEvent(ui::LocatedEvent* event) {
 
     gfx::Rect bounds = bubble_widget->GetWindowBoundsInScreen();
     bounds.Inset(wrapper->bubble_view()->GetBorderInsets());
-    aura::RootWindow* root = bubble_widget->GetNativeView()->GetRootWindow();
+    aura::Window* root = bubble_widget->GetNativeView()->GetRootWindow();
     aura::client::ScreenPositionClient* screen_position_client =
         aura::client::GetScreenPositionClient(root);
     gfx::Point screen_point(event->root_location());

@@ -40,7 +40,7 @@ StickyKeysHandlerDelegateImpl::~StickyKeysHandlerDelegateImpl() {
 void StickyKeysHandlerDelegateImpl::DispatchKeyEvent(ui::KeyEvent* event,
                                                      aura::Window* target) {
   DCHECK(target);
-  target->GetRootWindow()->AsRootWindowHostDelegate()->OnHostKeyEvent(event);
+  target->GetDispatcher()->AsRootWindowHostDelegate()->OnHostKeyEvent(event);
 }
 
 }  // namespace

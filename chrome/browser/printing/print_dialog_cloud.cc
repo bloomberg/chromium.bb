@@ -636,7 +636,7 @@ void CreateDialogImpl(content::BrowserContext* browser_context,
   if (window) {
     HWND dialog_handle;
 #if defined(USE_AURA)
-    dialog_handle = window->GetRootWindow()->GetAcceleratedWidget();
+    dialog_handle = window->GetDispatcher()->GetAcceleratedWidget();
 #else
     dialog_handle = window;
 #endif

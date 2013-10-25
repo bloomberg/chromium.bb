@@ -7,7 +7,6 @@
 #include "ash/display/display_controller.h"
 #include "ash/shell.h"
 #include "ui/aura/client/screen_position_client.h"
-#include "ui/aura/root_window.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
@@ -16,7 +15,7 @@
 namespace ash {
 namespace wm {
 
-aura::RootWindow* GetRootWindowAt(const gfx::Point& point) {
+aura::Window* GetRootWindowAt(const gfx::Point& point) {
   const gfx::Display& display =
       Shell::GetScreen()->GetDisplayNearestPoint(point);
   DCHECK(display.is_valid());
@@ -26,7 +25,7 @@ aura::RootWindow* GetRootWindowAt(const gfx::Point& point) {
       GetRootWindowForDisplayId(display.id());
 }
 
-aura::RootWindow* GetRootWindowMatching(const gfx::Rect& rect) {
+aura::Window* GetRootWindowMatching(const gfx::Rect& rect) {
   const gfx::Display& display = Shell::GetScreen()->GetDisplayMatching(rect);
   return Shell::GetInstance()->display_controller()->
       GetRootWindowForDisplayId(display.id());

@@ -8,11 +8,10 @@
 #include <string>
 
 #include "base/strings/string16.h"
+// TODO(beng): replace with forward decl once RootWindow is renamed.
+#include "ui/aura/window.h"
 #include "ui/keyboard/keyboard_export.h"
 
-namespace aura {
-class RootWindow;
-}
 struct GritResourceMap;
 
 namespace keyboard {
@@ -41,13 +40,13 @@ KEYBOARD_EXPORT bool IsKeyboardEnabled();
 // that this may convert |text| into ui::KeyEvents for injection in some
 // special circumstances (i.e. VKEY_RETURN, VKEY_BACK).
 KEYBOARD_EXPORT bool InsertText(const base::string16& text,
-                                aura::RootWindow* root_window);
+                                aura::Window* root_window);
 
 // Move cursor when swipe on the virtualkeyboard. Returns true if cursor was
 // successfully moved according to |swipe_direction|.
 KEYBOARD_EXPORT bool MoveCursor(int swipe_direction,
                                 int modifier_flags,
-                                aura::RootWindow* root_window);
+                                aura::WindowEventDispatcher* dispatcher);
 
 // Sends a fabricated key event, where |type| is the event type, |key_value|
 // is the unicode value of the character, |key_code| is the legacy key code
@@ -58,7 +57,7 @@ KEYBOARD_EXPORT bool SendKeyEvent(std::string type,
                                    int key_value,
                                    int key_code,
                                    int modifiers,
-                                   aura::RootWindow* root_window);
+                                   aura::WindowEventDispatcher* dispatcher);
 
 // Get the list of keyboard resources. |size| is populated with the number of
 // resources in the returned array.

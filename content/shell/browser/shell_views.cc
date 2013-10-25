@@ -361,7 +361,7 @@ void Shell::PlatformCreateWindow(int width, int height) {
   window_ = window_widget_->GetNativeWindow();
   // Call ShowRootWindow on RootWindow created by MinimalShell without
   // which XWindow owned by RootWindow doesn't get mapped.
-  window_->GetRootWindow()->ShowRootWindow();
+  window_->GetDispatcher()->ShowRootWindow();
   window_widget_->Show();
 }
 

@@ -93,7 +93,7 @@ class ASH_EXPORT PanelLayoutManager
   virtual void OnLauncherIconPositionsChanged() OVERRIDE;
 
   // Overridden from ash::ShellObserver
-  virtual void OnShelfAlignmentChanged(aura::RootWindow* root_window) OVERRIDE;
+  virtual void OnShelfAlignmentChanged(aura::Window* root_window) OVERRIDE;
 
   // Overridden from ash::wm::WindowStateObserver
   virtual void OnWindowShowTypeChanged(wm::WindowState* window_state,

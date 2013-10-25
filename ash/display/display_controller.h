@@ -93,10 +93,10 @@ class ASH_EXPORT DisplayController : public gfx::DisplayObserver,
   void RemoveObserver(Observer* observer);
 
   // Returns the root window for primary display.
-  aura::RootWindow* GetPrimaryRootWindow();
+  aura::Window* GetPrimaryRootWindow();
 
   // Returns the root window for |display_id|.
-  aura::RootWindow* GetRootWindowForDisplayId(int64 id);
+  aura::Window* GetRootWindowForDisplayId(int64 id);
 
   // Toggle mirror mode.
   void ToggleMirrorMode();

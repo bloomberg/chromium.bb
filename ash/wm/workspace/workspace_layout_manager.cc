@@ -55,7 +55,7 @@ void MoveToDisplayForRestore(wm::WindowState* window_state) {
         Shell::GetInstance()->display_controller();
     const gfx::Display& display =
         display_controller->GetDisplayMatching(restore_bounds);
-    aura::RootWindow* new_root =
+    aura::Window* new_root =
         display_controller->GetRootWindowForDisplayId(display.id());
     if (new_root != window_state->window()->GetRootWindow()) {
       aura::Window* new_container =

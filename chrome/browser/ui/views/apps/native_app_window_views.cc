@@ -49,7 +49,6 @@
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/window_tree_client.h"
-#include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #endif
 
@@ -268,7 +267,7 @@ void NativeAppWindowViews::InitializePanelWindow(
 #if defined(USE_ASH)
   if (ash::Shell::HasInstance()) {
     // Open a new panel on the target root.
-    aura::RootWindow* target = ash::Shell::GetTargetRootWindow();
+    aura::Window* target = ash::Shell::GetTargetRootWindow();
     params.bounds = ash::ScreenAsh::ConvertRectToScreen(
         target, gfx::Rect(preferred_size_));
   } else {

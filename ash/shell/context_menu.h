@@ -21,7 +21,7 @@ namespace shell {
 class ContextMenu : public ui::SimpleMenuModel,
                     public ui::SimpleMenuModel::Delegate {
  public:
-  explicit ContextMenu(aura::RootWindow* root);
+  explicit ContextMenu(aura::Window* root);
   virtual ~ContextMenu();
 
   // ui::SimpleMenuModel::Delegate overrides:
@@ -38,7 +38,7 @@ class ContextMenu : public ui::SimpleMenuModel,
     MENU_ALIGNMENT_MENU,
   };
 
-  aura::RootWindow* root_window_;
+  aura::Window* root_window_;
 
   ShelfAlignmentMenu alignment_menu_;
 

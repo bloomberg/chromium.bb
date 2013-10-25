@@ -208,7 +208,7 @@ class HeaderPainterTest : public ash::test::AshTestBase {
 TEST_F(HeaderPainterTest, CreateAndDeleteSingleWindow) {
   // Ensure that creating/deleting a window works well and doesn't cause
   // crashes.  See crbug.com/155634
-  aura::RootWindow* root = Shell::GetTargetRootWindow();
+  aura::Window* root = Shell::GetTargetRootWindow();
 
   scoped_ptr<Widget> widget(CreateTestWidget());
   scoped_ptr<HeaderPainter> painter(CreateTestPainter(widget.get()));

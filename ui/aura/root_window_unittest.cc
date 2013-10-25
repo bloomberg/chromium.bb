@@ -992,7 +992,7 @@ class RepostGestureEventRecorder : public EventFilterRecorder {
         EXPECT_NE(repost_target_, event->target());
         reposted_ = true;
         events().clear();
-        repost_target_->GetRootWindow()->RepostEvent(*event);
+        repost_target_->GetDispatcher()->RepostEvent(*event);
         // Ensure that the reposted gesture event above goes to the
         // repost_target_;
         repost_source_->GetRootWindow()->RemoveChild(repost_source_);

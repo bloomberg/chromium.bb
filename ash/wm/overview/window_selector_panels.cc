@@ -97,7 +97,7 @@ void WindowSelectorPanels::AddWindow(aura::Window* window) {
   transform_windows_.push_back(new ScopedTransformPanelWindow(window));
 }
 
-aura::RootWindow* WindowSelectorPanels::GetRootWindow() {
+aura::Window* WindowSelectorPanels::GetRootWindow() {
   return transform_windows_.front()->window()->GetRootWindow();
 }
 
@@ -146,7 +146,7 @@ void WindowSelectorPanels::PrepareForOverview() {
   }
 }
 
-void WindowSelectorPanels::SetItemBounds(aura::RootWindow* root_window,
+void WindowSelectorPanels::SetItemBounds(aura::Window* root_window,
                                          const gfx::Rect& target_bounds,
                                          bool animate) {
   gfx::Rect bounding_rect;

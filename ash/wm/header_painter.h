@@ -16,7 +16,6 @@
 #include "ui/gfx/rect.h"
 
 namespace aura {
-class RootWindow;
 class Window;
 }
 namespace gfx {
@@ -69,7 +68,7 @@ class ASH_EXPORT HeaderPainter : public aura::WindowObserver,
 
   // Updates the solo-window transparent header appearance for all windows
   // using frame painters in |root_window|.
-  static void UpdateSoloWindowHeader(aura::RootWindow* root_window);
+  static void UpdateSoloWindowHeader(aura::Window* root_window);
 
   // Returns the bounds of the client view for a window with |header_height|
   // and |window_bounds|. The return value and |window_bounds| are in the
@@ -198,7 +197,7 @@ class ASH_EXPORT HeaderPainter : public aura::WindowObserver,
   // Returns true if |root_window| has exactly one visible, normal-type window.
   // It ignores |ignore_window| while calculating the number of windows.
   // Pass NULL for |ignore_window| to consider all windows.
-  static bool UseSoloWindowHeaderInRoot(aura::RootWindow* root_window,
+  static bool UseSoloWindowHeaderInRoot(aura::Window* root_window,
                                         aura::Window* ignore_window);
 
   // Updates the solo-window transparent header appearance for all windows in
@@ -206,7 +205,7 @@ class ASH_EXPORT HeaderPainter : public aura::WindowObserver,
   // counting visible windows. This is useful for updates when a window is about
   // to be closed or is moving to another root. If the solo window status
   // changes it schedules paints as necessary.
-  static void UpdateSoloWindowInRoot(aura::RootWindow* root_window,
+  static void UpdateSoloWindowInRoot(aura::Window* root_window,
                                      aura::Window* ignore_window);
 
   // Schedules a paint for the header. Used when transitioning from no header to

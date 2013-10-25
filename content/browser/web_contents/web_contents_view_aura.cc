@@ -659,8 +659,8 @@ class WebContentsViewAura::WindowObserver
 
   virtual ~WindowObserver() {
     view_->window_->RemoveObserver(this);
-    if (view_->window_->GetRootWindow())
-      view_->window_->GetRootWindow()->RemoveRootWindowObserver(this);
+    if (view_->window_->GetDispatcher())
+      view_->window_->GetDispatcher()->RemoveRootWindowObserver(this);
     if (parent_)
       parent_->RemoveObserver(this);
   }
@@ -687,12 +687,12 @@ class WebContentsViewAura::WindowObserver
 
   virtual void OnWindowAddedToRootWindow(aura::Window* window) OVERRIDE {
     if (window != parent_)
-      window->GetRootWindow()->AddRootWindowObserver(this);
+      window->GetDispatcher()->AddRootWindowObserver(this);
   }
 
   virtual void OnWindowRemovingFromRootWindow(aura::Window* window) OVERRIDE {
     if (window != parent_)
-      window->GetRootWindow()->RemoveRootWindowObserver(this);
+      window->GetDispatcher()->RemoveRootWindowObserver(this);
   }
 
   // Overridden RootWindowObserver:
@@ -861,7 +861,7 @@ void WebContentsViewAura::SizeChangedCommon(const gfx::Size& size) {
 }
 
 void WebContentsViewAura::EndDrag(WebKit::WebDragOperationsMask ops) {
-  aura::RootWindow* root_window = GetNativeView()->GetRootWindow();
+  aura::Window* root_window = GetNativeView()->GetRootWindow();
   gfx::Point screen_loc =
       gfx::Screen::GetScreenFor(GetNativeView())->GetCursorScreenPoint();
   gfx::Point client_loc = screen_loc;
@@ -1146,7 +1146,7 @@ void WebContentsViewAura::CreateView(
   window_->SetType(aura::client::WINDOW_TYPE_CONTROL);
   window_->SetTransparent(false);
   window_->Init(ui::LAYER_NOT_DRAWN);
-  aura::RootWindow* root_window = context ? context->GetRootWindow() : NULL;
+  aura::Window* root_window = context ? context->GetRootWindow() : NULL;
   if (root_window) {
     // There are places where there is no context currently because object
     // hierarchies are built before they're attached to a Widget. (See
@@ -1282,7 +1282,7 @@ void WebContentsViewAura::StartDragging(
     const gfx::ImageSkia& image,
     const gfx::Vector2d& image_offset,
     const DragEventSourceInfo& event_info) {
-  aura::RootWindow* root_window = GetNativeView()->GetRootWindow();
+  aura::Window* root_window = GetNativeView()->GetRootWindow();
   if (!aura::client::GetDragDropClient(root_window)) {
     web_contents_->SystemDragEnded();
     return;

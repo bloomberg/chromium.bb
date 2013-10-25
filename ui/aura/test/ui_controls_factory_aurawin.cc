@@ -36,7 +36,7 @@ class UIControlsWin : public UIControlsAura {
                             bool alt,
                             bool command) {
     DCHECK(!command);  // No command key on Aura
-    HWND window = native_window->GetRootWindow()->GetAcceleratedWidget();
+    HWND window = native_window->GetDispatcher()->GetAcceleratedWidget();
     return SendKeyPressImpl(
         window, key, control, shift, alt, base::Closure());
   }
@@ -48,7 +48,7 @@ class UIControlsWin : public UIControlsAura {
                                           bool command,
                                           const base::Closure& task) {
     DCHECK(!command);  // No command key on Aura
-    HWND window = native_window->GetRootWindow()->GetAcceleratedWidget();
+    HWND window = native_window->GetDispatcher()->GetAcceleratedWidget();
     return SendKeyPressImpl(window, key, control, shift, alt, task);
   }
   virtual bool SendMouseMove(long x, long y) {

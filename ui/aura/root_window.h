@@ -241,8 +241,8 @@ class AURA_EXPORT RootWindow : public Window,
   gfx::Transform GetRootTransform() const;
 
   // Overridden from Window:
-  virtual RootWindow* GetRootWindow() OVERRIDE;
-  virtual const RootWindow* GetRootWindow() const OVERRIDE;
+  virtual Window* GetRootWindow() OVERRIDE;
+  virtual const Window* GetRootWindow() const OVERRIDE;
   virtual void SetTransform(const gfx::Transform& transform) OVERRIDE;
   virtual bool CanFocus() const OVERRIDE;
   virtual bool CanReceiveEvents() const OVERRIDE;
@@ -284,7 +284,7 @@ class AURA_EXPORT RootWindow : public Window,
 
   // Called when a Window is attached or detached from the RootWindow.
   void OnWindowAddedToRootWindow(Window* window);
-  void OnWindowRemovedFromRootWindow(Window* window, RootWindow* new_root);
+  void OnWindowRemovedFromRootWindow(Window* window, Window* new_root);
 
   // Called when a window becomes invisible, either by being removed
   // from root window hierarchy, via SetVisible(false) or being destroyed.

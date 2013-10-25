@@ -23,11 +23,12 @@ namespace {
 const char kKeyDown[] ="keydown";
 const char kKeyUp[] = "keyup";
 
-void SendProcessKeyEvent(ui::EventType type, aura::RootWindow* root_window) {
+void SendProcessKeyEvent(ui::EventType type,
+                         aura::WindowEventDispatcher* dispatcher) {
   ui::TranslatedKeyEvent event(type == ui::ET_KEY_PRESSED,
                                ui::VKEY_PROCESSKEY,
                                ui::EF_NONE);
-  root_window->AsRootWindowHostDelegate()->OnHostKeyEvent(&event);
+  dispatcher->AsRootWindowHostDelegate()->OnHostKeyEvent(&event);
 }
 
 }  // namespace
@@ -42,7 +43,7 @@ bool IsKeyboardEnabled() {
 
 }
 
-bool InsertText(const base::string16& text, aura::RootWindow* root_window) {
+bool InsertText(const base::string16& text, aura::Window* root_window) {
   if (!root_window)
     return false;
 
@@ -66,8 +67,8 @@ bool InsertText(const base::string16& text, aura::RootWindow* root_window) {
 // ui::TextInputClient from that (see above in InsertText()).
 bool MoveCursor(int swipe_direction,
                 int modifier_flags,
-                aura::RootWindow* root_window) {
-  if (!root_window)
+                aura::WindowEventDispatcher* dispatcher) {
+  if (!dispatcher)
     return false;
   ui::KeyboardCode codex = ui::VKEY_UNKNOWN;
   ui::KeyboardCode codey = ui::VKEY_UNKNOWN;
@@ -84,17 +85,17 @@ bool MoveCursor(int swipe_direction,
   // First deal with the x movement.
   if (codex != ui::VKEY_UNKNOWN) {
     ui::KeyEvent press_event(ui::ET_KEY_PRESSED, codex, modifier_flags, 0);
-    root_window->AsRootWindowHostDelegate()->OnHostKeyEvent(&press_event);
+    dispatcher->AsRootWindowHostDelegate()->OnHostKeyEvent(&press_event);
     ui::KeyEvent release_event(ui::ET_KEY_RELEASED, codex, modifier_flags, 0);
-    root_window->AsRootWindowHostDelegate()->OnHostKeyEvent(&release_event);
+    dispatcher->AsRootWindowHostDelegate()->OnHostKeyEvent(&release_event);
   }
 
   // Then deal with the y movement.
   if (codey != ui::VKEY_UNKNOWN) {
     ui::KeyEvent press_event(ui::ET_KEY_PRESSED, codey, modifier_flags, 0);
-    root_window->AsRootWindowHostDelegate()->OnHostKeyEvent(&press_event);
+    dispatcher->AsRootWindowHostDelegate()->OnHostKeyEvent(&press_event);
     ui::KeyEvent release_event(ui::ET_KEY_RELEASED, codey, modifier_flags, 0);
-    root_window->AsRootWindowHostDelegate()->OnHostKeyEvent(&release_event);
+    dispatcher->AsRootWindowHostDelegate()->OnHostKeyEvent(&release_event);
   }
   return true;
 }
@@ -103,7 +104,7 @@ bool SendKeyEvent(const std::string type,
                   int key_value,
                   int key_code,
                   int modifiers,
-                  aura::RootWindow* root_window) {
+                  aura::WindowEventDispatcher* dispatcher) {
   ui::EventType event_type = ui::ET_UNKNOWN;
   if (type == kKeyDown)
     event_type = ui::ET_KEY_PRESSED;
@@ -118,16 +119,16 @@ bool SendKeyEvent(const std::string type,
     // Handling of special printable characters (e.g. accented characters) for
     // which there is no key code.
     if (event_type == ui::ET_KEY_RELEASED) {
-      ui::InputMethod* input_method = root_window->GetProperty(
+      ui::InputMethod* input_method = dispatcher->GetProperty(
           aura::client::kRootWindowInputMethodKey);
       if (!input_method)
         return false;
 
       ui::TextInputClient* tic = input_method->GetTextInputClient();
 
-      SendProcessKeyEvent(ui::ET_KEY_PRESSED, root_window);
+      SendProcessKeyEvent(ui::ET_KEY_PRESSED, dispatcher);
       tic->InsertChar(static_cast<uint16>(key_value), ui::EF_NONE);
-      SendProcessKeyEvent(ui::ET_KEY_RELEASED, root_window);
+      SendProcessKeyEvent(ui::ET_KEY_RELEASED, dispatcher);
     }
   } else {
     if (event_type == ui::ET_KEY_RELEASED) {
@@ -146,7 +147,7 @@ bool SendKeyEvent(const std::string type,
     }
 
     ui::KeyEvent event(event_type, code, modifiers, false);
-    root_window->AsRootWindowHostDelegate()->OnHostKeyEvent(&event);
+    dispatcher->AsRootWindowHostDelegate()->OnHostKeyEvent(&event);
   }
   return true;
 }

@@ -10,11 +10,6 @@
 #include "base/memory/scoped_vector.h"
 #include "ui/gfx/rect.h"
 
-namespace aura {
-class RootWindow;
-class Window;
-}
-
 namespace ash {
 
 class ScopedTransformOverviewWindow;
@@ -32,14 +27,14 @@ class WindowSelectorPanels : public WindowSelectorItem {
   void AddWindow(aura::Window* window);
 
   // WindowSelectorItem:
-  virtual aura::RootWindow* GetRootWindow() OVERRIDE;
+  virtual aura::Window* GetRootWindow() OVERRIDE;
   virtual aura::Window* TargetedWindow(const aura::Window* target) OVERRIDE;
   virtual void RestoreWindowOnExit(aura::Window* window) OVERRIDE;
   virtual aura::Window* SelectionWindow() OVERRIDE;
   virtual void RemoveWindow(const aura::Window* window) OVERRIDE;
   virtual bool empty() const OVERRIDE;
   virtual void PrepareForOverview() OVERRIDE;
-  virtual void SetItemBounds(aura::RootWindow* root_window,
+  virtual void SetItemBounds(aura::Window* root_window,
                              const gfx::Rect& target_bounds,
                              bool animate) OVERRIDE;
 

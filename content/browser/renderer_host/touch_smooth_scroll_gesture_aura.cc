@@ -16,16 +16,15 @@ void InjectTouchEvent(const gfx::Point& location,
                       ui::EventType type,
                       aura::Window* window) {
   gfx::Point screen_location = location;
+  aura::Window* root_window = window->GetRootWindow();
   // First convert the location from Window to RootWindow.
-  aura::RootWindow* root_window = window->GetRootWindow();
   aura::Window::ConvertPointToTarget(window, root_window, &screen_location);
   // Then convert the location from RootWindow to screen.
-  root_window->ConvertPointToHost(&screen_location);
+  aura::WindowEventDispatcher* dispatcher = root_window->GetDispatcher();
+  dispatcher->ConvertPointToHost(&screen_location);
   ui::TouchEvent touch(type, screen_location, 0, 0, ui::EventTimeForNow(),
                        1.0f, 1.0f, 1.0f, 1.0f);
-  aura::RootWindowHostDelegate* root_window_host_delegate =
-        root_window->AsRootWindowHostDelegate();
-  root_window_host_delegate->OnHostTouchEvent(&touch);
+  dispatcher->AsRootWindowHostDelegate()->OnHostTouchEvent(&touch);
 }
 
 }  // namespace

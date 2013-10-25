@@ -98,7 +98,7 @@ class ScopedFocusNotificationObserver : public FocusNotificationObserver {
 
 class ScopedTargetFocusNotificationObserver : public FocusNotificationObserver {
  public:
-  ScopedTargetFocusNotificationObserver(aura::RootWindow* root_window, int id)
+  ScopedTargetFocusNotificationObserver(aura::Window* root_window, int id)
       : target_(root_window->GetChildById(id)) {
     aura::client::SetActivationChangeObserver(target_, this);
     aura::client::SetFocusChangeObserver(target_, this);

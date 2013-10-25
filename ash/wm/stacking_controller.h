@@ -11,12 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "ui/aura/client/window_tree_client.h"
 
-namespace aura{
-class RootWindow;
-}
-
 namespace ash {
-
 namespace internal {
 class AlwaysOnTopController;
 }
@@ -37,7 +32,7 @@ class ASH_EXPORT StackingController : public aura::client::WindowTreeClient {
   // normal modal container.
   // Otherwise those that originate from LockScreen container and above are
   // placed in the screen lock modal container.
-  aura::Window* GetSystemModalContainer(aura::RootWindow* root,
+  aura::Window* GetSystemModalContainer(aura::Window* root,
                                         aura::Window* window) const;
 
   DISALLOW_COPY_AND_ASSIGN(StackingController);

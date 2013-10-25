@@ -79,11 +79,12 @@ aura::Window* DesktopRootWindowHostWin::GetContentWindowForHWND(HWND hwnd) {
 ui::NativeTheme* DesktopRootWindowHost::GetNativeTheme(aura::Window* window) {
   // Use NativeThemeWin for windows shown on the desktop, those not on the
   // desktop come from Ash and get NativeThemeAura.
-  aura::RootWindow* root = window ? window->GetRootWindow() : NULL;
-  if (root) {
-    HWND root_hwnd = root->GetAcceleratedWidget();
-    if (root_hwnd &&
-        DesktopRootWindowHostWin::GetContentWindowForHWND(root_hwnd)) {
+  aura::WindowEventDispatcher* dispatcher =
+      window ? window->GetDispatcher() : NULL;
+  if (dispatcher) {
+    HWND host_hwnd = dispatcher->GetAcceleratedWidget();
+    if (host_hwnd &&
+        DesktopRootWindowHostWin::GetContentWindowForHWND(host_hwnd)) {
       return ui::NativeThemeWin::instance();
     }
   }
@@ -107,8 +108,8 @@ void DesktopRootWindowHostWin::Init(
                         native_widget_delegate_);
 
   HWND parent_hwnd = NULL;
-  if (params.parent && params.parent->GetRootWindow())
-    parent_hwnd = params.parent->GetRootWindow()->GetAcceleratedWidget();
+  if (params.parent && params.parent->GetDispatcher())
+    parent_hwnd = params.parent->GetDispatcher()->GetAcceleratedWidget();
 
   message_handler_->set_remove_standard_frame(params.remove_standard_frame);
 

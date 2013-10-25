@@ -23,9 +23,9 @@ namespace {
 
 // Adds the windows that can be cycled through for the specified window id to
 // |windows|.
-void AddTrackedWindows(aura::RootWindow* root,
-                     int container_id,
-                     MruWindowTracker::WindowList* windows) {
+void AddTrackedWindows(aura::Window* root,
+                       int container_id,
+                       MruWindowTracker::WindowList* windows) {
   aura::Window* container = Shell::GetContainer(root, container_id);
   const MruWindowTracker::WindowList& children(container->children());
   windows->insert(windows->end(), children.begin(), children.end());
@@ -59,7 +59,7 @@ MruWindowTracker::WindowList BuildWindowListInternal(
   MruWindowTracker::WindowList windows;
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
 
-  aura::RootWindow* active_root = Shell::GetTargetRootWindow();
+  aura::Window* active_root = Shell::GetTargetRootWindow();
   for (Shell::RootWindowList::const_iterator iter = root_windows.begin();
        iter != root_windows.end(); ++iter) {
     if (*iter == active_root)

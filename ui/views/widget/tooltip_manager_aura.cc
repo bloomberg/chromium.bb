@@ -48,9 +48,10 @@ const gfx::FontList& TooltipManagerAura::GetFontList() const {
 }
 
 void TooltipManagerAura::UpdateTooltip() {
-  aura::RootWindow* root_window = window_->GetRootWindow();
+  aura::Window* root_window = window_->GetRootWindow();
   if (aura::client::GetTooltipClient(root_window)) {
-    gfx::Point view_point = root_window->GetLastMouseLocationInRoot();
+    gfx::Point view_point =
+        root_window->GetDispatcher()->GetLastMouseLocationInRoot();
     aura::Window::ConvertPointToTarget(root_window, window_, &view_point);
     View* view = GetViewUnderPoint(view_point);
     UpdateTooltipForTarget(view, view_point, root_window);
@@ -58,9 +59,10 @@ void TooltipManagerAura::UpdateTooltip() {
 }
 
 void TooltipManagerAura::TooltipTextChanged(View* view)  {
-  aura::RootWindow* root_window = window_->GetRootWindow();
+  aura::Window* root_window = window_->GetRootWindow();
   if (aura::client::GetTooltipClient(root_window)) {
-    gfx::Point view_point = root_window->GetLastMouseLocationInRoot();
+    gfx::Point view_point =
+        root_window->GetDispatcher()->GetLastMouseLocationInRoot();
     aura::Window::ConvertPointToTarget(root_window, window_, &view_point);
     View* target = GetViewUnderPoint(view_point);
     if (target != view)
@@ -78,7 +80,7 @@ View* TooltipManagerAura::GetViewUnderPoint(const gfx::Point& point) {
 
 void TooltipManagerAura::UpdateTooltipForTarget(View* target,
                                                 const gfx::Point& point,
-                                                aura::RootWindow* root_window) {
+                                                aura::Window* root_window) {
   if (target) {
     gfx::Point view_point = point;
     View::ConvertPointFromWidget(target, &view_point);

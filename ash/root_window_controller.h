@@ -202,7 +202,7 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
   void CloseChildWindows();
 
   // Moves child windows to |dest|.
-  void MoveWindowsTo(aura::RootWindow* dest);
+  void MoveWindowsTo(aura::Window* dest);
 
   // Force the shelf to query for it's current visibility state.
   void UpdateShelfVisibility();
@@ -301,7 +301,7 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
 
 // Gets the RootWindowController for |root_window|.
 ASH_EXPORT RootWindowController* GetRootWindowController(
-    const aura::RootWindow* root_window);
+    const aura::Window* root_window);
 
 }  // namespace internal
 }  // ash

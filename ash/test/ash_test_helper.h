@@ -9,7 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 
 namespace aura {
-class RootWindow;
+class Window;
 }  // namespace aura
 
 namespace base {
@@ -41,10 +41,10 @@ class AshTestHelper {
   // Destroys the ash::Shell and performs associated cleanup.
   void TearDown();
 
-  // Returns a RootWindow. Usually this is the active RootWindow, but that
+  // Returns a root Window. Usually this is the active root Window, but that
   // method can return NULL sometimes, and in those cases, we fall back on the
-  // primary RootWindow.
-  aura::RootWindow* CurrentContext();
+  // primary root Window.
+  aura::Window* CurrentContext();
 
   void RunAllPendingInMessageLoop();
 

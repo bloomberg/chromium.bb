@@ -183,7 +183,7 @@ void BrowserStatusMonitor::OnDisplayBoundsChanged(
 
 void BrowserStatusMonitor::OnDisplayAdded(const gfx::Display& new_display) {
   // Add a new RootWindow and its ActivationClient to observed list.
-  aura::RootWindow* root_window = ash::Shell::GetInstance()->
+  aura::Window* root_window = ash::Shell::GetInstance()->
       display_controller()->GetRootWindowForDisplayId(new_display.id());
   // When the primary root window's display get removed, the existing root
   // window is taken over by the new display and the observer is already set.

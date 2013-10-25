@@ -73,7 +73,7 @@ struct WindowSelectorItemComparator
 // A comparator for locating a selector item for a given root.
 struct WindowSelectorItemForRoot
     : public std::unary_function<WindowSelectorItem*, bool> {
-  explicit WindowSelectorItemForRoot(const aura::RootWindow* root)
+  explicit WindowSelectorItemForRoot(const aura::Window* root)
       : root_window(root) {
   }
 
@@ -81,7 +81,7 @@ struct WindowSelectorItemForRoot
     return item->GetRootWindow() == root_window;
   }
 
-  const aura::RootWindow* root_window;
+  const aura::Window* root_window;
 };
 
 // Filter to watch for the termination of a keyboard gesture to cycle through

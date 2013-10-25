@@ -42,7 +42,7 @@ void SetGtkTransientForAura(GtkWidget* dialog, aura::Window* parent) {
   // display server ever happens. Otherwise, this will crash.
   XSetTransientForHint(GDK_WINDOW_XDISPLAY(gdk_window),
                        GDK_WINDOW_XID(gdk_window),
-                       parent->GetRootWindow()->GetAcceleratedWidget());
+                       parent->GetDispatcher()->GetAcceleratedWidget());
 
   // We also set the |parent| as a property of |dialog|, so that we can unlink
   // the two later.

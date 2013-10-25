@@ -105,7 +105,7 @@ aura::Window* AshFocusRules::GetNextActivatableWindow(
   int starting_container_index = 0;
   // If the container of the window losing focus is in the list, start from that
   // container.
-  aura::RootWindow* root = ignore->GetRootWindow();
+  aura::Window* root = ignore->GetRootWindow();
   if (!root)
     root = Shell::GetTargetRootWindow();
   int container_count = static_cast<int>(arraysize(kWindowContainerIds));
@@ -137,7 +137,7 @@ aura::Window* AshFocusRules::GetTopmostWindowToActivateForContainerIndex(
     int index,
     aura::Window* ignore) const {
   aura::Window* window = NULL;
-  aura::RootWindow* root = ignore ? ignore->GetRootWindow() : NULL;
+  aura::Window* root = ignore ? ignore->GetRootWindow() : NULL;
   aura::Window::Windows containers = Shell::GetContainersFromAllRootWindows(
       kWindowContainerIds[index], root);
   for (aura::Window::Windows::const_iterator iter = containers.begin();

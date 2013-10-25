@@ -8,12 +8,12 @@
 #include "ash/shelf/shelf_types.h"
 #include "ash/shell.h"
 #include "grit/ash_strings.h"
-#include "ui/aura/root_window.h"
+#include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace ash {
 
-ShelfAlignmentMenu::ShelfAlignmentMenu(aura::RootWindow* root)
+ShelfAlignmentMenu::ShelfAlignmentMenu(aura::Window* root)
     : ui::SimpleMenuModel(NULL),
       root_window_(root) {
   DCHECK(root_window_);

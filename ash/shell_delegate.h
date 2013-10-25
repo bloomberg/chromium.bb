@@ -182,7 +182,7 @@ class ASH_EXPORT ShellDelegate {
   virtual void HandleMediaPrevTrack() = 0;
 
   // Creates a menu model of the context for the |root_window|.
-  virtual ui::MenuModel* CreateContextMenu(aura::RootWindow* root_window) = 0;
+  virtual ui::MenuModel* CreateContextMenu(aura::Window* root_window) = 0;
 
   // Creates a root window host factory. Shell takes ownership of the returned
   // value.

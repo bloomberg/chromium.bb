@@ -83,7 +83,7 @@ class WorkAreaObserver : public ShelfLayoutManagerObserver,
 
   // Starts observing |shelf| and shell and sends the change to |collection|.
   void StartObserving(message_center::MessagePopupCollection* collection,
-                      aura::RootWindow* root_window);
+                      aura::Window* root_window);
 
   // Stops the observing session.
   void StopObserving();
@@ -99,7 +99,7 @@ class WorkAreaObserver : public ShelfLayoutManagerObserver,
   void UpdateShelf();
 
   message_center::MessagePopupCollection* collection_;
-  aura::RootWindow* root_window_;
+  aura::Window* root_window_;
   ShelfLayoutManager* shelf_;
   int system_tray_height_;
 
@@ -139,7 +139,7 @@ void WorkAreaObserver::SetSystemTrayHeight(int height) {
 
 void WorkAreaObserver::StartObserving(
     message_center::MessagePopupCollection* collection,
-    aura::RootWindow* root_window) {
+    aura::Window* root_window) {
   DCHECK(collection);
   collection_ = collection;
   root_window_ = root_window;
@@ -349,7 +349,7 @@ bool WebNotificationTray::ShowMessageCenterInternal(bool show_settings) {
       break;
     }
     case SHELF_ALIGNMENT_TOP: {
-      aura::RootWindow* root = status_area_window->GetRootWindow();
+      aura::Window* root = status_area_window->GetRootWindow();
       max_height =
           root->bounds().height() - status_area_window->bounds().height();
       break;

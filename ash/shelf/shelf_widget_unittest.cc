@@ -54,7 +54,7 @@ TEST_F(ShelfWidgetTest, DISABLED_ActivateAsFallback) {
   EXPECT_FALSE(shelf_widget->CanActivate());
 }
 
-void TestLauncherAlignment(aura::RootWindow* root,
+void TestLauncherAlignment(aura::Window* root,
                            ShelfAlignment alignment,
                            const std::string& expected) {
   Shell::GetInstance()->SetShelfAlignment(alignment, root);

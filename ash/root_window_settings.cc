@@ -22,17 +22,17 @@ RootWindowSettings::RootWindowSettings()
       controller(NULL) {
 }
 
-RootWindowSettings* InitRootWindowSettings(aura::RootWindow* root) {
+RootWindowSettings* InitRootWindowSettings(aura::Window* root) {
   RootWindowSettings* settings = new RootWindowSettings();
   root->SetProperty(kRootWindowSettingsKey, settings);
   return settings;
 }
 
-RootWindowSettings* GetRootWindowSettings(aura::RootWindow* root) {
+RootWindowSettings* GetRootWindowSettings(aura::Window* root) {
   return root->GetProperty(kRootWindowSettingsKey);
 }
 
-const RootWindowSettings* GetRootWindowSettings(const aura::RootWindow* root) {
+const RootWindowSettings* GetRootWindowSettings(const aura::Window* root) {
   return root->GetProperty(kRootWindowSettingsKey);
 }
 

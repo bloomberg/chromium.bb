@@ -36,7 +36,7 @@ base::string16 AppListShelfItemDelegate::GetTitle() {
 }
 
 ui::MenuModel* AppListShelfItemDelegate::CreateContextMenu(
-    aura::RootWindow* root_window) {
+    aura::Window* root_window) {
   return NULL;
 }
 

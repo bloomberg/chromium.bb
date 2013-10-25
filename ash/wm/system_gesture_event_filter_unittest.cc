@@ -243,7 +243,8 @@ void MoveToDeviceControlBezelStartPosition(
                         gfx::Point(-10, ypos + ypos_half),
                         touch_id,
                         ui::EventTimeForNow());
-  root_window->AsRootWindowHostDelegate()->OnHostTouchEvent(&press1);
+  root_window->GetDispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(
+      &press1);
 
   // There is a noise filter which will require several calls before it
   // allows the touch event through.
@@ -285,7 +286,7 @@ void MoveToDeviceControlBezelStartPosition(
 }
 
 TEST_P(SystemGestureEventFilterTest, LongPressAffordanceStateOnCaptureLoss) {
-  aura::RootWindow* root_window = Shell::GetPrimaryRootWindow();
+  aura::Window* root_window = Shell::GetPrimaryRootWindow();
 
   aura::test::TestWindowDelegate delegate;
   scoped_ptr<aura::Window> window0(
@@ -309,7 +310,8 @@ TEST_P(SystemGestureEventFilterTest, LongPressAffordanceStateOnCaptureLoss) {
                        gfx::Point(10, 10),
                        kTouchId,
                        ui::EventTimeForNow());
-  root_window->AsRootWindowHostDelegate()->OnHostTouchEvent(&press);
+  root_window->GetDispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(
+      &press);
   EXPECT_TRUE(window1->HasCapture());
 
   base::OneShotTimer<internal::LongPressAffordanceHandler>* timer =
@@ -344,7 +346,7 @@ TEST_P(SystemGestureEventFilterTest, LongPressAffordanceStateOnCaptureLoss) {
 }
 
 TEST_P(SystemGestureEventFilterTest, MultiFingerSwipeGestures) {
-  aura::RootWindow* root_window = Shell::GetPrimaryRootWindow();
+  aura::Window* root_window = Shell::GetPrimaryRootWindow();
   views::Widget* toplevel = views::Widget::CreateWindowWithContextAndBounds(
       new ResizableWidgetDelegate, root_window, gfx::Rect(0, 0, 600, 600));
   toplevel->Show();
@@ -403,7 +405,7 @@ TEST_P(SystemGestureEventFilterTest, MultiFingerSwipeGestures) {
 
 TEST_P(SystemGestureEventFilterTest, TwoFingerDrag) {
   gfx::Rect bounds(0, 0, 600, 600);
-  aura::RootWindow* root_window = Shell::GetPrimaryRootWindow();
+  aura::Window* root_window = Shell::GetPrimaryRootWindow();
   views::Widget* toplevel = views::Widget::CreateWindowWithContextAndBounds(
       new ResizableWidgetDelegate, root_window, bounds);
   toplevel->Show();
@@ -460,7 +462,7 @@ TEST_P(SystemGestureEventFilterTest, TwoFingerDrag) {
 }
 
 TEST_P(SystemGestureEventFilterTest, TwoFingerDragTwoWindows) {
-  aura::RootWindow* root_window = Shell::GetPrimaryRootWindow();
+  aura::Window* root_window = Shell::GetPrimaryRootWindow();
   ui::GestureConfiguration::set_max_separation_for_gesture_touches_in_pixels(0);
   views::Widget* first = views::Widget::CreateWindowWithContextAndBounds(
       new ResizableWidgetDelegate, root_window, gfx::Rect(0, 0, 50, 100));
@@ -495,7 +497,7 @@ TEST_P(SystemGestureEventFilterTest, TwoFingerDragTwoWindows) {
 
 TEST_P(SystemGestureEventFilterTest, WindowsWithMaxSizeDontSnap) {
   gfx::Rect bounds(150, 150, 100, 100);
-  aura::RootWindow* root_window = Shell::GetPrimaryRootWindow();
+  aura::Window* root_window = Shell::GetPrimaryRootWindow();
   views::Widget* toplevel = views::Widget::CreateWindowWithContextAndBounds(
       new MaxSizeWidgetDelegate, root_window, bounds);
   toplevel->Show();
@@ -554,7 +556,7 @@ TEST_P(SystemGestureEventFilterTest, WindowsWithMaxSizeDontSnap) {
 
 TEST_P(SystemGestureEventFilterTest, TwoFingerDragEdge) {
   gfx::Rect bounds(0, 0, 100, 100);
-  aura::RootWindow* root_window = Shell::GetPrimaryRootWindow();
+  aura::Window* root_window = Shell::GetPrimaryRootWindow();
   views::Widget* toplevel = views::Widget::CreateWindowWithContextAndBounds(
       new ResizableWidgetDelegate, root_window, bounds);
   toplevel->Show();
@@ -581,7 +583,7 @@ TEST_P(SystemGestureEventFilterTest, TwoFingerDragEdge) {
 
 TEST_P(SystemGestureEventFilterTest, TwoFingerDragDelayed) {
   gfx::Rect bounds(0, 0, 100, 100);
-  aura::RootWindow* root_window = Shell::GetPrimaryRootWindow();
+  aura::Window* root_window = Shell::GetPrimaryRootWindow();
   views::Widget* toplevel = views::Widget::CreateWindowWithContextAndBounds(
       new ResizableWidgetDelegate, root_window, bounds);
   toplevel->Show();
@@ -616,7 +618,7 @@ TEST_P(SystemGestureEventFilterTest, TwoFingerDragDelayed) {
 
 TEST_P(SystemGestureEventFilterTest, ThreeFingerGestureStopsDrag) {
   gfx::Rect bounds(0, 0, 100, 100);
-  aura::RootWindow* root_window = Shell::GetPrimaryRootWindow();
+  aura::Window* root_window = Shell::GetPrimaryRootWindow();
   views::Widget* toplevel = views::Widget::CreateWindowWithContextAndBounds(
       new ResizableWidgetDelegate, root_window, bounds);
   toplevel->Show();

@@ -9,7 +9,7 @@
 #include "ash/wm/overview/scoped_window_copy.h"
 #include "ash/wm/window_state.h"
 #include "ui/aura/client/aura_constants.h"
-#include "ui/aura/root_window.h"
+#include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/views/corewm/window_animations.h"
@@ -187,7 +187,7 @@ gfx::Transform ScopedTransformOverviewWindow::GetTransformForRect(
 }
 
 void ScopedTransformOverviewWindow::SetTransform(
-    aura::RootWindow* root_window,
+    aura::Window* root_window,
     const gfx::Transform& transform,
     bool animate) {
   DCHECK(overview_started_);

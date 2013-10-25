@@ -37,7 +37,7 @@ bool MenuItemHasLauncherContext(const extensions::MenuItem* item) {
 
 LauncherContextMenu::LauncherContextMenu(ChromeLauncherController* controller,
                                          const ash::LauncherItem* item,
-                                         aura::RootWindow* root)
+                                         aura::Window* root)
     : ui::SimpleMenuModel(NULL),
       controller_(controller),
       item_(*item),
@@ -49,7 +49,7 @@ LauncherContextMenu::LauncherContextMenu(ChromeLauncherController* controller,
 }
 
 LauncherContextMenu::LauncherContextMenu(ChromeLauncherController* controller,
-                                         aura::RootWindow* root)
+                                         aura::Window* root)
     : ui::SimpleMenuModel(NULL),
       controller_(controller),
       item_(ash::LauncherItem()),

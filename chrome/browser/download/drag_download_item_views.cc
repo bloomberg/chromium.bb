@@ -58,7 +58,7 @@ void DragDownloadItem(const content::DownloadItem* download,
 
 #if !defined(TOOLKIT_GTK)
 #if defined(USE_AURA)
-  aura::RootWindow* root_window = view->GetRootWindow();
+  aura::Window* root_window = view->GetRootWindow();
   if (!root_window || !aura::client::GetDragDropClient(root_window))
     return;
 

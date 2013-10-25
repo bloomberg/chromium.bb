@@ -10,7 +10,6 @@
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/client/drag_drop_client.h"
 #include "ui/aura/env.h"
-#include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/events/event.h"
 #include "ui/gfx/font.h"
@@ -234,7 +233,7 @@ bool TooltipController::IsDragDropInProgress() {
 bool TooltipController::IsCursorVisible() {
   if (!tooltip_window_)
     return false;
-  aura::RootWindow* root = tooltip_window_->GetRootWindow();
+  aura::Window* root = tooltip_window_->GetRootWindow();
   if (!root)
     return false;
   aura::client::CursorClient* cursor_client =

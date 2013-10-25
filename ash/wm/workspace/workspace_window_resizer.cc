@@ -394,7 +394,7 @@ void WorkspaceWindowResizer::Drag(const gfx::Point& location_in_parent,
   gfx::Point location_in_screen = location_in_parent;
   wm::ConvertPointToScreen(window()->parent(), &location_in_screen);
 
-  aura::RootWindow* root = NULL;
+  aura::Window* root = NULL;
   gfx::Display display =
       ScreenAsh::FindDisplayContainingPoint(location_in_screen);
   // Track the last screen that the pointer was on to keep the snap phantom

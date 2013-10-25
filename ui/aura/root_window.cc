@@ -151,6 +151,7 @@ RootWindow::RootWindow(const CreateParams& params)
       event_factory_(this),
       held_event_factory_(this),
       repostable_event_factory_(this) {
+  set_dispatcher(this);
   SetName("RootWindow");
 
   compositor_.reset(new ui::Compositor(params.use_software_renderer,
@@ -184,6 +185,8 @@ RootWindow::~RootWindow() {
   // Destroying/removing child windows may try to access |host_| (eg.
   // GetAcceleratedWidget())
   host_.reset(NULL);
+
+  set_dispatcher(NULL);
 }
 
 // static
@@ -523,11 +526,11 @@ gfx::Transform RootWindow::GetRootTransform() const {
 ////////////////////////////////////////////////////////////////////////////////
 // RootWindow, Window overrides:
 
-RootWindow* RootWindow::GetRootWindow() {
+Window* RootWindow::GetRootWindow() {
   return this;
 }
 
-const RootWindow* RootWindow::GetRootWindow() const {
+const Window* RootWindow::GetRootWindow() const {
   return this;
 }
 
@@ -616,7 +619,7 @@ void RootWindow::OnWindowAddedToRootWindow(Window* attached) {
 }
 
 void RootWindow::OnWindowRemovedFromRootWindow(Window* detached,
-                                               RootWindow* new_root) {
+                                               Window* new_root) {
   DCHECK(aura::client::GetCaptureWindow(this) != this);
 
   DispatchMouseExitToHidingWindow(detached);
@@ -940,15 +943,15 @@ void RootWindow::DispatchMouseEventRepost(ui::MouseEvent* event) {
   if (event->type() != ui::ET_MOUSE_PRESSED)
     return;
   Window* target = client::GetCaptureWindow(this);
-  RootWindow* root = this;
+  WindowEventDispatcher* dispatcher = this;
   if (!target) {
     target = GetEventHandlerForPoint(event->location());
   } else {
-    root = target->GetRootWindow();
-    CHECK(root);  // Capture window better be in valid root.
+    dispatcher = target->GetDispatcher();
+    CHECK(dispatcher);  // Capture window better be in valid root.
   }
-  root->mouse_pressed_handler_ = NULL;
-  root->DispatchMouseEventToTarget(event, target);
+  dispatcher->mouse_pressed_handler_ = NULL;
+  dispatcher->DispatchMouseEventToTarget(event, target);
 }
 
 bool RootWindow::DispatchMouseEventToTarget(ui::MouseEvent* event,

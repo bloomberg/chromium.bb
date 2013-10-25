@@ -202,12 +202,12 @@ Shell::RootWindowControllerList Shell::GetAllRootWindowControllers() {
 }
 
 // static
-aura::RootWindow* Shell::GetPrimaryRootWindow() {
+aura::Window* Shell::GetPrimaryRootWindow() {
   return GetInstance()->display_controller()->GetPrimaryRootWindow();
 }
 
 // static
-aura::RootWindow* Shell::GetTargetRootWindow() {
+aura::Window* Shell::GetTargetRootWindow() {
   Shell* shell = GetInstance();
   if (shell->scoped_target_root_window_)
     return shell->scoped_target_root_window_;
@@ -226,13 +226,13 @@ Shell::RootWindowList Shell::GetAllRootWindows() {
 }
 
 // static
-aura::Window* Shell::GetContainer(aura::RootWindow* root_window,
+aura::Window* Shell::GetContainer(aura::Window* root_window,
                                   int container_id) {
   return root_window->GetChildById(container_id);
 }
 
 // static
-const aura::Window* Shell::GetContainer(const aura::RootWindow* root_window,
+const aura::Window* Shell::GetContainer(const aura::Window* root_window,
                                         int container_id) {
   return root_window->GetChildById(container_id);
 }
@@ -240,7 +240,7 @@ const aura::Window* Shell::GetContainer(const aura::RootWindow* root_window,
 // static
 std::vector<aura::Window*> Shell::GetContainersFromAllRootWindows(
     int container_id,
-    aura::RootWindow* priority_root) {
+    aura::Window* priority_root) {
   std::vector<aura::Window*> containers;
   RootWindowList root_windows = GetAllRootWindows();
   for (RootWindowList::const_iterator it = root_windows.begin();
@@ -265,7 +265,7 @@ void Shell::ShowContextMenu(const gfx::Point& location_in_screen,
   if (session_state_delegate_->IsScreenLocked())
     return;
 
-  aura::RootWindow* root =
+  aura::Window* root =
       wm::GetRootWindowMatching(gfx::Rect(location_in_screen, gfx::Size()));
   internal::GetRootWindowController(root)->
       ShowContextMenu(location_in_screen, source_type);
@@ -402,19 +402,19 @@ void Shell::UpdateShelfVisibility() {
 }
 
 void Shell::SetShelfAutoHideBehavior(ShelfAutoHideBehavior behavior,
-                                     aura::RootWindow* root_window) {
+                                     aura::Window* root_window) {
   ash::internal::ShelfLayoutManager::ForLauncher(root_window)->
       SetAutoHideBehavior(behavior);
 }
 
 ShelfAutoHideBehavior Shell::GetShelfAutoHideBehavior(
-    aura::RootWindow* root_window) const {
+    aura::Window* root_window) const {
   return ash::internal::ShelfLayoutManager::ForLauncher(root_window)->
       auto_hide_behavior();
 }
 
 void Shell::SetShelfAlignment(ShelfAlignment alignment,
-                              aura::RootWindow* root_window) {
+                              aura::Window* root_window) {
   if (ash::internal::ShelfLayoutManager::ForLauncher(root_window)->
       SetAlignment(alignment)) {
     FOR_EACH_OBSERVER(
@@ -422,7 +422,7 @@ void Shell::SetShelfAlignment(ShelfAlignment alignment,
   }
 }
 
-ShelfAlignment Shell::GetShelfAlignment(aura::RootWindow* root_window) {
+ShelfAlignment Shell::GetShelfAlignment(aura::Window* root_window) {
   return internal::GetRootWindowController(root_window)->
       GetShelfLayoutManager()->GetAlignment();
 }
@@ -435,7 +435,7 @@ void Shell::SetDimming(bool should_dim) {
 }
 
 void Shell::NotifyFullscreenStateChange(bool is_fullscreen,
-                                        aura::RootWindow* root_window) {
+                                        aura::Window* root_window) {
   FOR_EACH_OBSERVER(ShellObserver, observers_, OnFullscreenStateChanged(
       is_fullscreen, root_window));
 }
@@ -744,7 +744,7 @@ void Shell::Init() {
 
   display_controller_->Start();
   display_controller_->InitPrimaryDisplay();
-  aura::RootWindow* root_window = display_controller_->GetPrimaryRootWindow();
+  aura::Window* root_window = display_controller_->GetPrimaryRootWindow();
   target_root_window_ = root_window;
 
   resolution_notification_controller_.reset(
@@ -769,7 +769,7 @@ void Shell::Init() {
   AddShellObserver(overlay_filter_.get());
 
   input_method_filter_.reset(new views::corewm::InputMethodEventFilter(
-                                 root_window->GetAcceleratedWidget()));
+      root_window->GetDispatcher()->GetAcceleratedWidget()));
   AddPreTargetHandler(input_method_filter_.get());
 
   accelerator_filter_.reset(new internal::AcceleratorFilter);
@@ -859,7 +859,8 @@ void Shell::Init() {
   // TODO(oshima): Initialize all RootWindowControllers once, and
   // initialize controller/delegates above when initializing the
   // primary root window controller.
-  internal::RootWindowController::CreateForPrimaryDisplay(root_window);
+  internal::RootWindowController::CreateForPrimaryDisplay(
+      root_window->GetDispatcher());
 
   display_controller_->InitSecondaryDisplays();
 

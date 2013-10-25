@@ -13,7 +13,6 @@
 #include "ui/gfx/rect.h"
 
 namespace aura {
-class RootWindow;
 class Window;
 }
 
@@ -65,7 +64,7 @@ class ASH_EXPORT PhantomWindowController : public gfx::AnimationDelegate {
 
   // Creates, shows and returns a phantom widget at |bounds|
   // with kShellWindowId_ShelfContainer in |root_window| as a parent.
-  views::Widget* CreatePhantomWidget(aura::RootWindow* root_window,
+  views::Widget* CreatePhantomWidget(aura::Window* root_window,
                                      const gfx::Rect& bounds_in_screen);
 
   // Window the phantom is placed beneath.

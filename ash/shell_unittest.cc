@@ -54,7 +54,7 @@ aura::Window* GetAlwaysOnTopContainer() {
 
 // Expect ALL the containers!
 void ExpectAllContainers() {
-  aura::RootWindow* root_window = Shell::GetPrimaryRootWindow();
+  aura::Window* root_window = Shell::GetPrimaryRootWindow();
   EXPECT_TRUE(Shell::GetContainer(
       root_window, internal::kShellWindowId_DesktopBackgroundContainer));
   EXPECT_TRUE(Shell::GetContainer(
@@ -397,8 +397,9 @@ TEST_F(ShellTest, ManagedWindowModeBasics) {
   EXPECT_TRUE(launcher_widget->IsVisible());
   // Launcher is at bottom-left of screen.
   EXPECT_EQ(0, launcher_widget->GetWindowBoundsInScreen().x());
-  EXPECT_EQ(Shell::GetPrimaryRootWindow()->GetHostSize().height(),
-            launcher_widget->GetWindowBoundsInScreen().bottom());
+  EXPECT_EQ(
+      Shell::GetPrimaryRootWindow()->GetDispatcher()->GetHostSize().height(),
+      launcher_widget->GetWindowBoundsInScreen().bottom());
   // We have a desktop background but not a bare layer.
   // TODO (antrim): enable once we find out why it fails component build.
   //  internal::DesktopBackgroundWidgetController* background =
@@ -482,7 +483,7 @@ TEST_F(ShellTest, ToggleAutoHide) {
   wm::ActivateWindow(window.get());
 
   Shell* shell = Shell::GetInstance();
-  aura::RootWindow* root_window = Shell::GetPrimaryRootWindow();
+  aura::Window* root_window = Shell::GetPrimaryRootWindow();
   shell->SetShelfAutoHideBehavior(ash::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS,
                                   root_window);
   EXPECT_EQ(ash::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS,

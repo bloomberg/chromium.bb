@@ -46,6 +46,9 @@ class RootWindow;
 class WindowDelegate;
 class WindowObserver;
 
+// TODO(beng): remove once RootWindow is renamed.
+typedef RootWindow WindowEventDispatcher;
+
 // Defined in window_property.h (which we do not include)
 template<typename T>
 struct WindowProperty;
@@ -108,10 +111,19 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   Window* parent() { return parent_; }
   const Window* parent() const { return parent_; }
 
-  // Returns the RootWindow that contains this Window or NULL if the Window is
-  // not contained by a RootWindow.
-  virtual RootWindow* GetRootWindow();
-  virtual const RootWindow* GetRootWindow() const;
+  // Returns the root Window that contains this Window. The root Window is
+  // defined as the Window that has a dispatcher. These functions return NULL if
+  // the Window is contained in a hierarchy that does not have a dispatcher at
+  // its root.
+  virtual Window* GetRootWindow();
+  virtual const Window* GetRootWindow() const;
+
+  WindowEventDispatcher* GetDispatcher();
+  const WindowEventDispatcher* GetDispatcher() const;
+  void set_dispatcher(WindowEventDispatcher* dispatcher) {
+    dispatcher_ = dispatcher;
+  }
+  bool HasDispatcher() const { return !!dispatcher_; }
 
   // The Window does not own this object.
   void set_user_data(void* user_data) { user_data_ = user_data; }
@@ -474,6 +486,8 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
 
   // Returns true if the mouse is currently within our bounds.
   bool ContainsMouse();
+
+  WindowEventDispatcher* dispatcher_;
 
   client::WindowType type_;
 

@@ -342,7 +342,7 @@ class ASH_EXPORT ShelfLayoutManager :
   // The RootWindow is cached so that we don't invoke Shell::GetInstance() from
   // our destructor. We avoid that as at the time we're deleted Shell is being
   // deleted too.
-  aura::RootWindow* root_window_;
+  aura::Window* root_window_;
 
   // True when inside UpdateBoundsAndOpacity() method. Used to prevent calling
   // UpdateBoundsAndOpacity() again from SetChildBounds().

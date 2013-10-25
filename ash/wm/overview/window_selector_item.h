@@ -9,7 +9,6 @@
 #include "ui/gfx/rect.h"
 
 namespace aura {
-class RootWindow;
 class Window;
 }
 
@@ -24,7 +23,7 @@ class WindowSelectorItem {
   virtual ~WindowSelectorItem();
 
   // Returns the root window on which this item is shown.
-  virtual aura::RootWindow* GetRootWindow() = 0;
+  virtual aura::Window* GetRootWindow() = 0;
 
   // Returns the targeted window given the event |target| window.
   // Returns NULL if no Window in this item was selected.
@@ -51,7 +50,7 @@ class WindowSelectorItem {
 
   // Sets the bounds of this window selector item to |target_bounds| in the
   // |root_window| root window.
-  void SetBounds(aura::RootWindow* root_window,
+  void SetBounds(aura::Window* root_window,
                  const gfx::Rect& target_bounds);
 
   // Recomputes the positions for the windows in this selection item. This is
@@ -64,7 +63,7 @@ class WindowSelectorItem {
  protected:
   // Sets the bounds of this selector item to |target_bounds| in |root_window|.
   // If |animate| the windows are animated from their current location.
-  virtual void SetItemBounds(aura::RootWindow* root_window,
+  virtual void SetItemBounds(aura::Window* root_window,
                              const gfx::Rect& target_bounds,
                              bool animate) = 0;
 
@@ -73,7 +72,7 @@ class WindowSelectorItem {
 
  private:
   // The root window this item is being displayed on.
-  aura::RootWindow* root_window_;
+  aura::Window* root_window_;
 
   // The target bounds this selector item is fit within.
   gfx::Rect target_bounds_;

@@ -137,7 +137,7 @@ void TestShellDelegate::HandleMediaPlayPause() {
 void TestShellDelegate::HandleMediaPrevTrack() {
 }
 
-ui::MenuModel* TestShellDelegate::CreateContextMenu(aura::RootWindow* root) {
+ui::MenuModel* TestShellDelegate::CreateContextMenu(aura::Window* root) {
   return NULL;
 }
 

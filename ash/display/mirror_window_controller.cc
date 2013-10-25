@@ -187,9 +187,9 @@ void MirrorWindowController::UpdateWindow(const DisplayInfo& display_info) {
     root_window_->AddChild(mirror_window);
     mirror_window->SetBounds(root_window_->bounds());
     mirror_window->Show();
-    reflector_ = ui::ContextFactory::GetInstance()->
-        CreateReflector(Shell::GetPrimaryRootWindow()->compositor(),
-                        mirror_window->layer());
+    reflector_ = ui::ContextFactory::GetInstance()->CreateReflector(
+        Shell::GetPrimaryRootWindow()->GetDispatcher()->compositor(),
+        mirror_window->layer());
 
     cursor_window_ = new aura::Window(cursor_window_delegate_.get());
     cursor_window_->SetTransparent(true);
@@ -244,7 +244,7 @@ void MirrorWindowController::UpdateCursorLocation() {
   if (cursor_window_) {
     // TODO(oshima): Rotate cursor image (including hotpoint).
     gfx::Point point = aura::Env::GetInstance()->last_mouse_location();
-    Shell::GetPrimaryRootWindow()->ConvertPointToHost(&point);
+    Shell::GetPrimaryRootWindow()->GetDispatcher()->ConvertPointToHost(&point);
     point.Offset(-hot_point_.x(), -hot_point_.y());
     gfx::Rect bounds = cursor_window_->bounds();
     bounds.set_origin(point);

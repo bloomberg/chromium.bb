@@ -32,7 +32,7 @@ class MagnificationControllerTest: public test::AshTestBase {
     AshTestBase::SetUp();
     UpdateDisplay(base::StringPrintf("%dx%d", kRootWidth, kRootHeight));
 
-    aura::RootWindow* root = GetRootWindow();
+    aura::Window* root = GetRootWindow();
     gfx::Rect root_bounds(root->bounds());
 
 #if defined(OS_WIN)
@@ -48,13 +48,13 @@ class MagnificationControllerTest: public test::AshTestBase {
   }
 
  protected:
-  aura::RootWindow* GetRootWindow() const {
+  aura::Window* GetRootWindow() const {
     return Shell::GetPrimaryRootWindow();
   }
 
   std::string GetHostMouseLocation() {
     gfx::Point point;
-    GetRootWindow()->QueryMouseLocationForTest(&point);
+    GetRootWindow()->GetDispatcher()->QueryMouseLocationForTest(&point);
     return point.ToString();
   }
 

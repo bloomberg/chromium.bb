@@ -143,8 +143,8 @@ class ASH_EXPORT DockedWindowLayoutManager
   // ash::ShellObserver:
   virtual void OnDisplayWorkAreaInsetsChanged() OVERRIDE;
   virtual void OnFullscreenStateChanged(bool is_fullscreen,
-                                        aura::RootWindow* root_window) OVERRIDE;
-  virtual void OnShelfAlignmentChanged(aura::RootWindow* root_window) OVERRIDE;
+                                        aura::Window* root_window) OVERRIDE;
+  virtual void OnShelfAlignmentChanged(aura::Window* root_window) OVERRIDE;
 
   // wm::WindowStateObserver:
   virtual void OnWindowShowTypeChanged(wm::WindowState* window_state,

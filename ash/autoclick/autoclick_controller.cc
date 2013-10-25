@@ -154,13 +154,15 @@ void AutoclickControllerImpl::OnTouchEvent(ui::TouchEvent* event) {
 void AutoclickControllerImpl::DoAutoclick() {
   gfx::Point screen_location =
       aura::Env::GetInstance()->last_mouse_location();
-  aura::RootWindow* root_window = wm::GetRootWindowAt(screen_location);
+  aura::Window* root_window = wm::GetRootWindowAt(screen_location);
   DCHECK(root_window) << "Root window not found while attempting autoclick.";
 
   gfx::Point click_location(screen_location);
   anchor_location_ = click_location;
   wm::ConvertPointFromScreen(root_window, &click_location);
-  root_window->ConvertPointToHost(&click_location);
+
+  aura::WindowEventDispatcher* dispatcher = root_window->GetDispatcher();
+  dispatcher->ConvertPointToHost(&click_location);
 
   ui::MouseEvent press_event(ui::ET_MOUSE_PRESSED,
                              click_location,
@@ -171,8 +173,8 @@ void AutoclickControllerImpl::DoAutoclick() {
                                click_location,
                                mouse_event_flags_ | ui::EF_LEFT_MOUSE_BUTTON);
 
-  root_window->AsRootWindowHostDelegate()->OnHostMouseEvent(&press_event);
-  root_window->AsRootWindowHostDelegate()->OnHostMouseEvent(&release_event);
+  dispatcher->AsRootWindowHostDelegate()->OnHostMouseEvent(&press_event);
+  dispatcher->AsRootWindowHostDelegate()->OnHostMouseEvent(&release_event);
 }
 
 // static.

@@ -56,8 +56,10 @@ bool VirtualKeyboardPrivateMoveCursorFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &swipe_direction));
   EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(1, &modifier_flags));
 
-  return keyboard::MoveCursor(swipe_direction, modifier_flags,
-                              ash::Shell::GetPrimaryRootWindow());
+  return keyboard::MoveCursor(
+      swipe_direction,
+      modifier_flags,
+      ash::Shell::GetPrimaryRootWindow()->GetDispatcher());
 #endif
   error_ = kNotYetImplementedError;
   return false;
@@ -81,11 +83,12 @@ bool VirtualKeyboardPrivateSendKeyEventFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(params->GetInteger("keyCode", &key_code));
   EXTENSION_FUNCTION_VALIDATE(params->GetInteger("modifiers", &modifiers));
 
-  return keyboard::SendKeyEvent(type,
-                                char_value,
-                                key_code,
-                                modifiers,
-                                ash::Shell::GetPrimaryRootWindow());
+  return keyboard::SendKeyEvent(
+      type,
+      char_value,
+      key_code,
+      modifiers,
+      ash::Shell::GetPrimaryRootWindow()->GetDispatcher());
 #endif
   error_ = kNotYetImplementedError;
   return false;

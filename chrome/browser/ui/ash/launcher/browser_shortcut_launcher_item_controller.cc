@@ -242,7 +242,7 @@ string16 BrowserShortcutLauncherItemController::GetTitle() {
 }
 
 ui::MenuModel* BrowserShortcutLauncherItemController::CreateContextMenu(
-    aura::RootWindow* root_window) {
+    aura::Window* root_window) {
   ash::LauncherItem item =
       *(launcher_controller()->model()->ItemByID(launcher_id()));
   return new LauncherContextMenu(launcher_controller(), &item, root_window);

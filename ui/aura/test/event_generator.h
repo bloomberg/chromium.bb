@@ -87,7 +87,7 @@ class EventGenerator {
  public:
   // Creates an EventGenerator with the mouse/touch location (0,0),
   // which uses the |root_window|'s coordinates.
-  explicit EventGenerator(RootWindow* root_window);
+  explicit EventGenerator(Window* root_window);
 
   // Create an EventGenerator with EventGeneratorDelegate,
   // which uses the coordinates used by |delegate|.
@@ -95,11 +95,11 @@ class EventGenerator {
 
   // Creates an EventGenerator with the mouse/touch location
   // at |initial_location|, which uses the |root_window|'s coordinates.
-  EventGenerator(RootWindow* root_window, const gfx::Point& initial_location);
+  EventGenerator(Window* root_window, const gfx::Point& initial_location);
 
   // Creates an EventGenerator with the mouse/touch location
   // centered over |window|, which uses the |root_window|'s coordinates.
-  EventGenerator(RootWindow* root_window, Window* window);
+  EventGenerator(Window* root_window, Window* window);
 
   virtual ~EventGenerator();
 

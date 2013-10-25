@@ -170,43 +170,43 @@ class TouchHudTest : public test::AshTestBase {
     return GetDisplayManager()->GetDisplayForId(external_display_id_);
   }
 
-  aura::RootWindow* GetInternalRootWindow() {
+  aura::Window* GetInternalRootWindow() {
     return GetDisplayController()->GetRootWindowForDisplayId(
         internal_display_id_);
   }
 
-  aura::RootWindow* GetExternalRootWindow() {
+  aura::Window* GetExternalRootWindow() {
     return GetDisplayController()->GetRootWindowForDisplayId(
         external_display_id_);
   }
 
-  aura::RootWindow* GetPrimaryRootWindow() {
+  aura::Window* GetPrimaryRootWindow() {
     const gfx::Display& display = GetPrimaryDisplay();
     return GetDisplayController()->GetRootWindowForDisplayId(display.id());
   }
 
-  aura::RootWindow* GetSecondaryRootWindow() {
+  aura::Window* GetSecondaryRootWindow() {
     const gfx::Display& display = GetSecondaryDisplay();
     return GetDisplayController()->GetRootWindowForDisplayId(display.id());
   }
 
   internal::RootWindowController* GetInternalRootController() {
-    aura::RootWindow* root = GetInternalRootWindow();
+    aura::Window* root = GetInternalRootWindow();
     return GetRootWindowController(root);
   }
 
   internal::RootWindowController* GetExternalRootController() {
-    aura::RootWindow* root = GetExternalRootWindow();
+    aura::Window* root = GetExternalRootWindow();
     return GetRootWindowController(root);
   }
 
   internal::RootWindowController* GetPrimaryRootController() {
-    aura::RootWindow* root = GetPrimaryRootWindow();
+    aura::Window* root = GetPrimaryRootWindow();
     return GetRootWindowController(root);
   }
 
   internal::RootWindowController* GetSecondaryRootController() {
-    aura::RootWindow* root = GetSecondaryRootWindow();
+    aura::Window* root = GetSecondaryRootWindow();
     return GetRootWindowController(root);
   }
 

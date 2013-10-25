@@ -21,7 +21,7 @@ namespace ash {
 namespace {
 
 // Creates a copy of |window| with |recreated_layer| in the |target_root|.
-views::Widget* CreateCopyOfWindow(aura::RootWindow* target_root,
+views::Widget* CreateCopyOfWindow(aura::Window* target_root,
                                   aura::Window* src_window,
                                   ui::Layer* recreated_layer) {
   // Save and remove the transform from the layer to later reapply to both the
@@ -158,7 +158,7 @@ void CleanupWidgetAfterAnimationObserver::MaybeDestruct() {
   delete this;
 }
 
-ScopedWindowCopy::ScopedWindowCopy(aura::RootWindow* target_root,
+ScopedWindowCopy::ScopedWindowCopy(aura::Window* target_root,
                                    aura::Window* src_window) {
   layer_ = views::corewm::RecreateWindowLayers(src_window, true);
   widget_ = CreateCopyOfWindow(target_root, src_window, layer_);

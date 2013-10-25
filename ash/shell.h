@@ -191,16 +191,16 @@ class ASH_EXPORT Shell
   // TODO(oshima): move this to |RootWindowController|
   static RootWindowControllerList GetAllRootWindowControllers();
 
-  // Returns the primary RootWindow. The primary RootWindow is the one
-  // that has a launcher.
-  static aura::RootWindow* GetPrimaryRootWindow();
+  // Returns the primary root Window. The primary root Window is the one that
+  // has a launcher.
+  static aura::Window* GetPrimaryRootWindow();
 
-  // Returns a RootWindow when used as a target when creating a new window.
+  // Returns a root Window when used as a target when creating a new window.
   // The root window of the active window is used in most cases, but can
   // be overridden by using ScopedTargetRootWindow().
-  // If you want to get a RootWindow of the active window, just use
+  // If you want to get the root Window of the active window, just use
   // |wm::GetActiveWindow()->GetRootWindow()|.
-  static aura::RootWindow* GetTargetRootWindow();
+  static aura::Window* GetTargetRootWindow();
 
   // Returns the global Screen object that's always active in ash.
   static gfx::Screen* GetScreen();
@@ -208,9 +208,9 @@ class ASH_EXPORT Shell
   // Returns all root windows.
   static RootWindowList GetAllRootWindows();
 
-  static aura::Window* GetContainer(aura::RootWindow* root_window,
+  static aura::Window* GetContainer(aura::Window* root_window,
                                     int container_id);
-  static const aura::Window* GetContainer(const aura::RootWindow* root_window,
+  static const aura::Window* GetContainer(const aura::Window* root_window,
                                           int container_id);
 
   // Returns the list of containers that match |container_id| in
@@ -218,9 +218,9 @@ class ASH_EXPORT Shell
   // in the |priority_root| will be inserted at the top of the list.
   static std::vector<aura::Window*> GetContainersFromAllRootWindows(
       int container_id,
-      aura::RootWindow* priority_root);
+      aura::Window* priority_root);
 
-  void set_target_root_window(aura::RootWindow* target_root_window) {
+  void set_target_root_window(aura::Window* target_root_window) {
     target_root_window_ = target_root_window;
   }
 
@@ -410,14 +410,14 @@ class ASH_EXPORT Shell
 
   // Sets/gets the shelf auto-hide behavior on |root_window|.
   void SetShelfAutoHideBehavior(ShelfAutoHideBehavior behavior,
-                                aura::RootWindow* root_window);
+                                aura::Window* root_window);
   ShelfAutoHideBehavior GetShelfAutoHideBehavior(
-      aura::RootWindow* root_window) const;
+      aura::Window* root_window) const;
 
   // Sets/gets shelf's alignment on |root_window|.
   void SetShelfAlignment(ShelfAlignment alignment,
-                         aura::RootWindow* root_window);
-  ShelfAlignment GetShelfAlignment(aura::RootWindow* root_window);
+                         aura::Window* root_window);
+  ShelfAlignment GetShelfAlignment(aura::Window* root_window);
 
   // Dims or undims the screen.
   void SetDimming(bool should_dim);
@@ -425,7 +425,7 @@ class ASH_EXPORT Shell
   // Notifies |observers_| when entering or exiting fullscreen mode in
   // |root_window|.
   void NotifyFullscreenStateChange(bool is_fullscreen,
-                                   aura::RootWindow* root_window);
+                                   aura::Window* root_window);
 
   // Creates a modal background (a partially-opaque fullscreen window)
   // on all displays for |window|.
@@ -566,8 +566,8 @@ class ASH_EXPORT Shell
   // created on |scoped_target_root_window_| , unless NULL in
   // which case they are created on |target_root_window_|.
   // |target_root_window_| never becomes NULL during the session.
-  aura::RootWindow* target_root_window_;
-  aura::RootWindow* scoped_target_root_window_;
+  aura::Window* target_root_window_;
+  aura::Window* scoped_target_root_window_;
 
   // The CompoundEventFilter owned by aura::Env object.
   scoped_ptr<views::corewm::CompoundEventFilter> env_filter_;

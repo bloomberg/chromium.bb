@@ -573,7 +573,7 @@ gfx::Rect TrayBackgroundView::GetBubbleAnchorRect(
 
   // TODO(jennyz): May need to add left/right alignment in the following code.
   if (rect.IsEmpty()) {
-    aura::RootWindow* target_root = anchor_widget ?
+    aura::Window* target_root = anchor_widget ?
         anchor_widget->GetNativeView()->GetRootWindow() :
         Shell::GetPrimaryRootWindow();
     rect = target_root->bounds();
@@ -622,7 +622,7 @@ void TrayBackgroundView::UpdateBubbleViewArrow(
   if (switches::UseAlternateShelfLayout())
     return;
 
-  aura::RootWindow* root_window =
+  aura::Window* root_window =
       bubble_view->GetWidget()->GetNativeView()->GetRootWindow();
   ash::internal::ShelfLayoutManager* shelf =
       ShelfLayoutManager::ForLauncher(root_window);

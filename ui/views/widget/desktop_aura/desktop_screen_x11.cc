@@ -187,10 +187,10 @@ gfx::Display DesktopScreenX11::GetDisplayNearestWindow(
   // create the aura::RootWindow. So we ask what the DRWHX11 believes the
   // window bounds are instead of going through the aura::Window's screen
   // bounds.
-  aura::RootWindow* root_window = window->GetRootWindow();
-  if (root_window) {
+  aura::WindowEventDispatcher* dispatcher = window->GetDispatcher();
+  if (dispatcher) {
     DesktopRootWindowHostX11* rwh = DesktopRootWindowHostX11::GetHostForXID(
-        root_window->GetAcceleratedWidget());
+        dispatcher->GetAcceleratedWidget());
     if (rwh)
       return GetDisplayMatching(rwh->GetX11RootWindowBounds());
   }

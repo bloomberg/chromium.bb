@@ -9,7 +9,7 @@ namespace ash {
 namespace internal {
 
 ScopedTargetRootWindow::ScopedTargetRootWindow(
-    aura::RootWindow* root_window) {
+    aura::Window* root_window) {
   Shell::GetInstance()->scoped_target_root_window_ = root_window;
 }
 

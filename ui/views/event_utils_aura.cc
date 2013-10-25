@@ -20,10 +20,11 @@ bool RepostLocatedEvent(gfx::NativeWindow window,
   if (!window)
     return false;
 
-  aura::RootWindow* root_window = window->GetRootWindow();
+  aura::Window* root_window = window->GetRootWindow();
 
   gfx::Point root_loc(event.location());
-  ScreenPositionClient* spc = GetScreenPositionClient(root_window);
+  ScreenPositionClient* spc =
+      aura::client::GetScreenPositionClient(root_window);
   if (!spc)
     return false;
 
@@ -43,7 +44,7 @@ bool RepostLocatedEvent(gfx::NativeWindow window,
   relocated->set_location(root_loc);
   relocated->set_root_location(root_loc);
 
-  root_window->RepostEvent(*relocated);
+  root_window->GetDispatcher()->RepostEvent(*relocated);
   return true;
 }
 

@@ -30,11 +30,12 @@ DEFINE_OWNED_WINDOW_PROPERTY_KEY(UIControlsAura, kUIControlsKey, NULL);
 // Returns the UIControls object for RootWindow.
 // kUIControlsKey is owned property and UIControls object
 // will be deleted when the root window is deleted.
-UIControlsAura* GetUIControlsForRootWindow(aura::RootWindow* root_window) {
+UIControlsAura* GetUIControlsForRootWindow(aura::Window* root_window) {
   UIControlsAura* native_ui_control =
       root_window->GetProperty(kUIControlsKey);
   if (!native_ui_control) {
-    native_ui_control = aura::test::CreateUIControlsAura(root_window);
+    native_ui_control =
+        aura::test::CreateUIControlsAura(root_window->GetDispatcher());
     // Pass the ownership to the |root_window|.
     root_window->SetProperty(kUIControlsKey, native_ui_control);
   }
@@ -47,7 +48,7 @@ UIControlsAura* GetUIControlsForRootWindow(aura::RootWindow* root_window) {
 // the |point_in_screen|.
 UIControlsAura* GetUIControlsAt(gfx::Point* point_in_screen) {
   // TODO(mazda): Support the case passive grab is taken.
-  aura::RootWindow* root = ash::wm::GetRootWindowAt(*point_in_screen);
+  aura::Window* root = ash::wm::GetRootWindowAt(*point_in_screen);
 
   aura::client::ScreenPositionClient* screen_position_client =
       aura::client::GetScreenPositionClient(root);
@@ -85,7 +86,7 @@ class UIControlsAsh : public UIControlsAura {
       bool alt,
       bool command,
       const base::Closure& closure) OVERRIDE {
-    aura::RootWindow* root =
+    aura::Window* root =
         window ? window->GetRootWindow() : ash::Shell::GetTargetRootWindow();
     UIControlsAura* ui_controls = GetUIControlsForRootWindow(root);
     return ui_controls && ui_controls->SendKeyPressNotifyWhenDone(

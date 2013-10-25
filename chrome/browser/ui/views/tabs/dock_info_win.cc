@@ -304,7 +304,7 @@ std::set<HWND> RemapIgnoreSet(const std::set<gfx::NativeView>& ignore) {
   std::set<HWND> hwnd_set;
   std::set<gfx::NativeView>::const_iterator it = ignore.begin();
   for (; it != ignore.end(); ++it) {
-    HWND w = (*it)->GetRootWindow()->GetAcceleratedWidget();
+    HWND w = (*it)->GetDispatcher()->GetAcceleratedWidget();
     if (w)
       hwnd_set.insert(w);
   }

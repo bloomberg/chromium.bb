@@ -502,7 +502,7 @@ void DockedWindowLayoutManager::OnDisplayWorkAreaInsetsChanged() {
 }
 
 void DockedWindowLayoutManager::OnFullscreenStateChanged(
-    bool is_fullscreen, aura::RootWindow* root_window) {
+    bool is_fullscreen, aura::Window* root_window) {
   if (dock_container_->GetRootWindow() != root_window)
     return;
   // Entering fullscreen mode (including immersive) hides docked windows.
@@ -534,7 +534,7 @@ void DockedWindowLayoutManager::OnFullscreenStateChanged(
 }
 
 void DockedWindowLayoutManager::OnShelfAlignmentChanged(
-    aura::RootWindow* root_window) {
+    aura::Window* root_window) {
   if (dock_container_->GetRootWindow() != root_window)
     return;
 

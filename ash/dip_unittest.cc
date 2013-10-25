@@ -35,7 +35,7 @@ typedef ash::test::AshTestBase DIPTest;
 TEST_F(DIPTest, WorkArea) {
   UpdateDisplay("1000x900*1.0f");
 
-  aura::RootWindow* root = Shell::GetPrimaryRootWindow();
+  aura::Window* root = Shell::GetPrimaryRootWindow();
   const gfx::Display display =
       Shell::GetScreen()->GetDisplayNearestWindow(root);
 
@@ -74,7 +74,7 @@ TEST_F(DIPTest, WorkAreaForLegacyShelfLayout) {
       ash::switches::kAshDisableAlternateShelfLayout);
   UpdateDisplay("1000x900*1.0f");
 
-  aura::RootWindow* root = Shell::GetPrimaryRootWindow();
+  aura::Window* root = Shell::GetPrimaryRootWindow();
   const gfx::Display display =
       Shell::GetScreen()->GetDisplayNearestWindow(root);
 
