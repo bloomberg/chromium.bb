@@ -2316,6 +2316,8 @@
         'browser/sync/sessions2/tab_node_pool2.h',
         'browser/sync/sync_global_error.cc',
         'browser/sync/sync_global_error.h',
+        'browser/sync/sync_policy_handler.cc',
+        'browser/sync/sync_policy_handler.h',
         'browser/sync/sync_prefs.cc',
         'browser/sync/sync_prefs.h',
         'browser/sync/sync_startup_tracker.cc',

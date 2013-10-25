@@ -1333,6 +1333,7 @@
         'browser/sync/sessions2/sessions_sync_manager_unittest.cc',
         'browser/sync/sessions2/tab_node_pool2_unittest.cc',
         'browser/sync/sync_global_error_unittest.cc',
+        'browser/sync/sync_policy_handler_unittest.cc',
         'browser/sync/sync_prefs_unittest.cc',
         'browser/sync/sync_startup_tracker_unittest.cc',
         'browser/sync/sync_ui_util_unittest.cc',

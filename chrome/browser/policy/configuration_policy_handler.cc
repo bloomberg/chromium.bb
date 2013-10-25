@@ -346,24 +346,6 @@ void SimplePolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
 }
 
 
-// SyncPolicyHandler implementation --------------------------------------------
-
-SyncPolicyHandler::SyncPolicyHandler(const char* pref_name)
-    : TypeCheckingPolicyHandler(key::kSyncDisabled, Value::TYPE_BOOLEAN),
-      pref_name_(pref_name) {}
-
-SyncPolicyHandler::~SyncPolicyHandler() {
-}
-
-void SyncPolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
-                                            PrefValueMap* prefs) {
-  const Value* value = policies.GetValue(policy_name());
-  bool disable_sync;
-  if (value && value->GetAsBoolean(&disable_sync) && disable_sync)
-    prefs->SetValue(pref_name_, value->DeepCopy());
-}
-
-
 // Android doesn't support these policies, and doesn't have a policy_path_parser
 // implementation.
 #if !defined(OS_ANDROID)

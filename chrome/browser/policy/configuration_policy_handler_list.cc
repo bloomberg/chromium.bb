@@ -20,6 +20,7 @@
 #include "chrome/browser/profiles/incognito_mode_policy_handler.h"
 #include "chrome/browser/search_engines/default_search_policy_handler.h"
 #include "chrome/browser/sessions/restore_on_startup_policy_handler.h"
+#include "chrome/browser/sync/sync_policy_handler.h"
 #include "chrome/common/pref_names.h"
 #include "components/policy/core/common/policy_pref_names.h"
 #include "extensions/common/manifest.h"
@@ -468,7 +469,7 @@ ConfigurationPolicyHandlerList::ConfigurationPolicyHandlerList() {
   handlers_.push_back(new JavascriptPolicyHandler());
   handlers_.push_back(new ProxyPolicyHandler());
   handlers_.push_back(new RestoreOnStartupPolicyHandler());
-  handlers_.push_back(new SyncPolicyHandler(prefs::kSyncManaged));
+  handlers_.push_back(new browser_sync::SyncPolicyHandler());
   handlers_.push_back(new URLBlacklistPolicyHandler(prefs::kUrlBlacklist));
 
   handlers_.push_back(new extensions::ExtensionListPolicyHandler(

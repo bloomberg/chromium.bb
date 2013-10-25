@@ -357,38 +357,6 @@ INSTANTIATE_TEST_CASE_P(
         PolicyAndPref(key::kMaxConnectionsPerProxy,
                       prefs::kMaxConnectionsPerProxy)));
 
-// Test cases for the Sync policy setting.
-class ConfigurationPolicyPrefStoreSyncTest
-    : public ConfigurationPolicyPrefStoreTest {};
-
-TEST_F(ConfigurationPolicyPrefStoreSyncTest, Default) {
-  EXPECT_FALSE(store_->GetValue(prefs::kSyncManaged, NULL));
-}
-
-TEST_F(ConfigurationPolicyPrefStoreSyncTest, Enabled) {
-  PolicyMap policy;
-  policy.Set(key::kSyncDisabled, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-             base::Value::CreateBooleanValue(false), NULL);
-  UpdateProviderPolicy(policy);
-  // Enabling Sync should not set the pref.
-  EXPECT_FALSE(store_->GetValue(prefs::kSyncManaged, NULL));
-}
-
-TEST_F(ConfigurationPolicyPrefStoreSyncTest, Disabled) {
-  PolicyMap policy;
-  policy.Set(key::kSyncDisabled, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-             base::Value::CreateBooleanValue(true), NULL);
-  UpdateProviderPolicy(policy);
-  // Sync should be flagged as managed.
-  const base::Value* value = NULL;
-  EXPECT_TRUE(store_->GetValue(prefs::kSyncManaged, &value));
-  ASSERT_TRUE(value);
-  bool sync_managed = false;
-  bool result = value->GetAsBoolean(&sync_managed);
-  ASSERT_TRUE(result);
-  EXPECT_TRUE(sync_managed);
-}
-
 // Test cases for how the AllowFileSelectionDialogs policy influences the
 // PromptForDownload preference.
 class ConfigurationPolicyPrefStorePromptDownloadTest
