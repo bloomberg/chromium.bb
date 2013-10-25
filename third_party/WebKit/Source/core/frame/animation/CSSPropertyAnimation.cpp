@@ -125,12 +125,6 @@ static inline PassRefPtr<ShapeValue> blendFunc(const AnimationBase*, ShapeValue*
     return ShapeValue::createShapeValue(toShape->blend(fromShape, progress));
 }
 
-static inline PassRefPtr<FilterOperation> blendFunc(const AnimationBase* anim, FilterOperation* fromOp, FilterOperation* toOp, double progress, bool blendToPassthrough = false)
-{
-    ASSERT(toOp);
-    return toOp->blend(fromOp, progress, blendToPassthrough);
-}
-
 static inline FilterOperations blendFunc(const AnimationBase* anim, const FilterOperations& from, const FilterOperations& to, double progress)
 {
     FilterOperations result;
@@ -141,18 +135,13 @@ static inline FilterOperations blendFunc(const AnimationBase* anim, const Filter
         size_t toSize = to.operations().size();
         size_t size = max(fromSize, toSize);
         for (size_t i = 0; i < size; i++) {
-            RefPtr<FilterOperation> fromOp = (i < fromSize) ? from.operations()[i].get() : 0;
-            RefPtr<FilterOperation> toOp = (i < toSize) ? to.operations()[i].get() : 0;
-            RefPtr<FilterOperation> blendedOp = toOp ? blendFunc(anim, fromOp.get(), toOp.get(), progress) : (fromOp ? blendFunc(anim, 0, fromOp.get(), progress, true) : 0);
+            const FilterOperation* fromOp = (i < fromSize) ? from.operations()[i].get() : 0;
+            const FilterOperation* toOp = (i < toSize) ? to.operations()[i].get() : 0;
+            RefPtr<FilterOperation> blendedOp = FilterOperation::blend(fromOp, toOp, progress);
             if (blendedOp)
                 result.operations().append(blendedOp);
-            else {
-                RefPtr<FilterOperation> identityOp = PassthroughFilterOperation::create();
-                if (progress > 0.5)
-                    result.operations().append(toOp ? toOp : identityOp);
-                else
-                    result.operations().append(fromOp ? fromOp : identityOp);
-            }
+            else
+                ASSERT_NOT_REACHED();
         }
     } else {
         // If the filter function lists don't match, we could try to cross-fade, but don't yet have a way to represent that in CSS.

@@ -31,121 +31,131 @@
 
 namespace WebCore {
 
-PassRefPtr<FilterOperation> BasicColorMatrixFilterOperation::blend(const FilterOperation* from, double progress, bool blendToPassthrough)
+PassRefPtr<FilterOperation> FilterOperation::blend(const FilterOperation* from, const FilterOperation* to, double progress)
 {
-    if (from && !from->isSameType(*this))
-        return this;
-
-    if (blendToPassthrough)
-        return BasicColorMatrixFilterOperation::create(WebCore::blend(m_amount, passthroughAmount(), progress), m_type);
-
-    const BasicColorMatrixFilterOperation* fromOp = static_cast<const BasicColorMatrixFilterOperation*>(from);
-    double fromAmount = fromOp ? fromOp->amount() : passthroughAmount();
-    return BasicColorMatrixFilterOperation::create(WebCore::blend(fromAmount, m_amount, progress), m_type);
+    ASSERT(from || to);
+    if (to)
+        return to->blend(from, progress);
+    return from->blend(0, 1 - progress);
 }
 
-double BasicColorMatrixFilterOperation::passthroughAmount() const
+PassRefPtr<FilterOperation> BasicColorMatrixFilterOperation::blend(const FilterOperation* from, double progress) const
 {
+    double fromAmount;
+    if (from) {
+        ASSERT_WITH_SECURITY_IMPLICATION(from->isSameType(*this));
+        fromAmount = static_cast<const BasicColorMatrixFilterOperation*>(from)->amount();
+    } else {
+        switch (m_type) {
+        case GRAYSCALE:
+        case SEPIA:
+        case HUE_ROTATE:
+            fromAmount = 0;
+            break;
+        case SATURATE:
+            fromAmount = 1;
+            break;
+        default:
+            ASSERT_NOT_REACHED();
+        }
+    }
+
+    double result = WebCore::blend(fromAmount, m_amount, progress);
     switch (m_type) {
+    case HUE_ROTATE:
+        break;
     case GRAYSCALE:
     case SEPIA:
-    case HUE_ROTATE:
-        return 0;
+        result = clampTo<double>(result, 0, 1);
+        break;
     case SATURATE:
-        return 1;
+        result = clampTo<double>(result, 0);
+        break;
     default:
         ASSERT_NOT_REACHED();
-        return 0;
     }
+    return BasicColorMatrixFilterOperation::create(result, m_type);
 }
 
-PassRefPtr<FilterOperation> BasicComponentTransferFilterOperation::blend(const FilterOperation* from, double progress, bool blendToPassthrough)
+PassRefPtr<FilterOperation> BasicComponentTransferFilterOperation::blend(const FilterOperation* from, double progress) const
 {
-    if (from && !from->isSameType(*this))
-        return this;
+    double fromAmount;
+    if (from) {
+        ASSERT_WITH_SECURITY_IMPLICATION(from->isSameType(*this));
+        fromAmount = static_cast<const BasicComponentTransferFilterOperation*>(from)->amount();
+    } else {
+        switch (m_type) {
+        case OPACITY:
+        case CONTRAST:
+        case BRIGHTNESS:
+            fromAmount = 1;
+            break;
+        case INVERT:
+            fromAmount = 0;
+            break;
+        default:
+            ASSERT_NOT_REACHED();
+        }
+    }
 
-    if (blendToPassthrough)
-        return BasicComponentTransferFilterOperation::create(WebCore::blend(m_amount, passthroughAmount(), progress), m_type);
-
-    const BasicComponentTransferFilterOperation* fromOp = static_cast<const BasicComponentTransferFilterOperation*>(from);
-    double fromAmount = fromOp ? fromOp->amount() : passthroughAmount();
-    return BasicComponentTransferFilterOperation::create(WebCore::blend(fromAmount, m_amount, progress), m_type);
-}
-
-double BasicComponentTransferFilterOperation::passthroughAmount() const
-{
+    double result = WebCore::blend(fromAmount, m_amount, progress);
     switch (m_type) {
-    case OPACITY:
-        return 1;
-    case INVERT:
-        return 0;
-    case CONTRAST:
-        return 1;
     case BRIGHTNESS:
-        return 1;
+    case CONTRAST:
+        result = clampTo<double>(result, 0);
+        break;
+    case INVERT:
+    case OPACITY:
+        result = clampTo<double>(result, 0, 1);
+        break;
     default:
         ASSERT_NOT_REACHED();
-        return 0;
     }
+    return BasicComponentTransferFilterOperation::create(result, m_type);
 }
 
-PassRefPtr<FilterOperation> GammaFilterOperation::blend(const FilterOperation* from, double progress, bool blendToPassthrough)
+PassRefPtr<FilterOperation> GammaFilterOperation::blend(const FilterOperation* from, double progress) const
 {
-    if (from && !from->isSameType(*this))
-        return this;
-
-    if (blendToPassthrough)
+    if (!from)
         return GammaFilterOperation::create(
             WebCore::blend(m_amplitude, 1.0, progress),
             WebCore::blend(m_exponent, 1.0, progress),
             WebCore::blend(m_offset, 0.0, progress), m_type);
 
+    ASSERT_WITH_SECURITY_IMPLICATION(from->isSameType(*this));
     const GammaFilterOperation* fromOp = static_cast<const GammaFilterOperation*>(from);
-    double fromAmplitude = fromOp ? fromOp->amplitude() : 1;
-    double fromExponent = fromOp ? fromOp->exponent() : 1;
-    double fromOffset = fromOp ? fromOp->offset() : 0;
     return GammaFilterOperation::create(
-        WebCore::blend(fromAmplitude, m_amplitude, progress),
-        WebCore::blend(fromExponent, m_exponent, progress),
-        WebCore::blend(fromOffset, m_offset, progress), m_type);
+        WebCore::blend(fromOp->amplitude(), m_amplitude, progress),
+        WebCore::blend(fromOp->exponent(), m_exponent, progress),
+        WebCore::blend(fromOp->offset(), m_offset, progress), m_type);
 }
 
-PassRefPtr<FilterOperation> BlurFilterOperation::blend(const FilterOperation* from, double progress, bool blendToPassthrough)
+PassRefPtr<FilterOperation> BlurFilterOperation::blend(const FilterOperation* from, double progress) const
 {
-    if (from && !from->isSameType(*this))
-        return this;
-
     LengthType lengthType = m_stdDeviation.type();
+    if (!from)
+        return BlurFilterOperation::create(m_stdDeviation.blend(Length(lengthType), progress, ValueRangeNonNegative), m_type);
 
-    if (blendToPassthrough)
-        return BlurFilterOperation::create(Length(lengthType).blend(m_stdDeviation, progress, ValueRangeNonNegative), m_type);
-
+    ASSERT_WITH_SECURITY_IMPLICATION(from->isSameType(*this));
     const BlurFilterOperation* fromOp = static_cast<const BlurFilterOperation*>(from);
-    Length fromLength = fromOp ? fromOp->m_stdDeviation : Length(lengthType);
-    return BlurFilterOperation::create(m_stdDeviation.blend(fromLength, progress, ValueRangeNonNegative), m_type);
+    return BlurFilterOperation::create(m_stdDeviation.blend(fromOp->m_stdDeviation, progress, ValueRangeNonNegative), m_type);
 }
 
-PassRefPtr<FilterOperation> DropShadowFilterOperation::blend(const FilterOperation* from, double progress, bool blendToPassthrough)
+PassRefPtr<FilterOperation> DropShadowFilterOperation::blend(const FilterOperation* from, double progress) const
 {
-    if (from && !from->isSameType(*this))
-        return this;
-
-    if (blendToPassthrough)
+    if (!from)
         return DropShadowFilterOperation::create(
-            WebCore::blend(m_location, IntPoint(), progress),
-            WebCore::blend(m_stdDeviation, 0, progress),
-            WebCore::blend(m_color, Color(Color::transparent), progress),
+            WebCore::blend(IntPoint(), m_location, progress),
+            WebCore::blend(0, m_stdDeviation, progress),
+            WebCore::blend(Color(Color::transparent), m_color, progress),
             m_type);
 
+    ASSERT_WITH_SECURITY_IMPLICATION(from->isSameType(*this));
     const DropShadowFilterOperation* fromOp = static_cast<const DropShadowFilterOperation*>(from);
-    IntPoint fromLocation = fromOp ? fromOp->location() : IntPoint();
-    int fromStdDeviation = fromOp ? fromOp->stdDeviation() : 0;
-    Color fromColor = fromOp ? fromOp->color() : Color(Color::transparent);
-
     return DropShadowFilterOperation::create(
-        WebCore::blend(fromLocation, m_location, progress),
-        WebCore::blend(fromStdDeviation, m_stdDeviation, progress),
-        WebCore::blend(fromColor, m_color, progress), m_type);
+        WebCore::blend(fromOp->location(), m_location, progress),
+        WebCore::blend(fromOp->stdDeviation(), m_stdDeviation, progress),
+        WebCore::blend(fromOp->color(), m_color, progress), m_type);
 }
 
 } // namespace WebCore

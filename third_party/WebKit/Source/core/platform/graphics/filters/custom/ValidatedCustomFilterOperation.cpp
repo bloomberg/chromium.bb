@@ -52,13 +52,10 @@ ValidatedCustomFilterOperation::~ValidatedCustomFilterOperation()
 {
 }
 
-PassRefPtr<FilterOperation> ValidatedCustomFilterOperation::blend(const FilterOperation*, double progress, bool blendToPassthrough)
+PassRefPtr<FilterOperation> ValidatedCustomFilterOperation::blend(const FilterOperation*, double) const
 {
-    UNUSED_PARAM(progress);
-    UNUSED_PARAM(blendToPassthrough);
-
     ASSERT_NOT_REACHED();
-    return this;
+    return const_cast<ValidatedCustomFilterOperation*>(this);
 }
 
 } // namespace WebCore

@@ -257,14 +257,7 @@ void ImplicitAnimation::checkForMatchingFilterFunctionLists()
     const FilterOperations* val = &m_fromStyle->filter();
     const FilterOperations* toVal = &m_toStyle->filter();
 
-    if (val->operations().isEmpty())
-        val = toVal;
-
-    if (val->operations().isEmpty())
-        return;
-
-    // An emtpy filter list matches anything.
-    if (val != toVal && !toVal->operations().isEmpty() && !val->operationsMatch(*toVal))
+    if (!val->canInterpolateWith(*toVal))
         return;
 
     // Filter lists match.

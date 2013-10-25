@@ -62,12 +62,12 @@ public:
     virtual bool affectsOpacity() const { return true; }
     virtual bool movesPixels() const { return true; }
 
-    virtual PassRefPtr<FilterOperation> blend(const FilterOperation* from, double progress, bool blendToPassthrough = false);
 
 protected:
     CustomFilterOperation(PassRefPtr<CustomFilterProgram>, const CustomFilterParameterList&, unsigned meshRows, unsigned meshColumns, CustomFilterMeshType);
 
 private:
+    virtual PassRefPtr<FilterOperation> blend(const FilterOperation* from, double progress) const OVERRIDE;
     virtual bool operator==(const FilterOperation& o) const
     {
         if (!isSameType(o))

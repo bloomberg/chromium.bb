@@ -1123,7 +1123,6 @@ static bool copyWebCoreFilterOperationsToWebFilterOperations(const FilterOperati
         case FilterOperation::CUSTOM:
         case FilterOperation::VALIDATED_CUSTOM:
             return false; // Not supported.
-        case FilterOperation::PASSTHROUGH:
         case FilterOperation::NONE:
             break;
         }

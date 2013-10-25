@@ -185,7 +185,6 @@ bool SkiaImageFilterBuilder::buildFilterOperations(const FilterOperations& opera
         case FilterOperation::VALIDATED_CUSTOM:
         case FilterOperation::CUSTOM:
             return false; // Not supported.
-        case FilterOperation::PASSTHROUGH:
         case FilterOperation::NONE:
             break;
         }

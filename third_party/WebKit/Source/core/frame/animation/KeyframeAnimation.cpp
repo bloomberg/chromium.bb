@@ -421,11 +421,7 @@ void KeyframeAnimation::checkForMatchingFilterFunctionLists()
         const KeyframeValue& currentKeyframe = m_keyframes[i];
         const FilterOperations* val = &currentKeyframe.style()->filter();
 
-        // An emtpy filter list matches anything.
-        if (val->operations().isEmpty())
-            continue;
-
-        if (!firstVal->operationsMatch(*val))
+        if (!firstVal->canInterpolateWith(*val))
             return;
     }
 

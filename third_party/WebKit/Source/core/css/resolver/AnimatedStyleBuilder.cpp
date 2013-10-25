@@ -34,6 +34,7 @@
 #include "core/animation/AnimatableClipPathOperation.h"
 #include "core/animation/AnimatableColor.h"
 #include "core/animation/AnimatableDouble.h"
+#include "core/animation/AnimatableFilterOperations.h"
 #include "core/animation/AnimatableImage.h"
 #include "core/animation/AnimatableLength.h"
 #include "core/animation/AnimatableLengthBox.h"
@@ -471,6 +472,9 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
         return;
     case CSSPropertyWebkitColumnRuleWidth:
         style->setColumnRuleWidth(animatableValueRoundClampTo<unsigned short>(value));
+        return;
+    case CSSPropertyWebkitFilter:
+        style->setFilter(toAnimatableFilterOperations(value)->operations());
         return;
     case CSSPropertyWebkitMaskBoxImageOutset:
         style->setMaskBoxImageOutset(animatableValueToLengthBox(value, state, NonNegativeValues));

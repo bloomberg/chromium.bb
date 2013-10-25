@@ -70,15 +70,20 @@ bool FilterOperations::operator==(const FilterOperations& o) const
     return true;
 }
 
-bool FilterOperations::operationsMatch(const FilterOperations& other) const
+bool FilterOperations::canInterpolateWith(const FilterOperations& other) const
 {
-    size_t numOperations = operations().size();
-    // If the sizes of the function lists don't match, the lists don't match
-    if (numOperations != other.operations().size())
-        return false;
+    for (size_t i = 0; i < operations().size(); ++i) {
+        if (!FilterOperation::canInterpolate(operations()[i]->getOperationType()))
+            return false;
+    }
 
-    // If the types of each function are not the same, the lists don't match
-    for (size_t i = 0; i < numOperations; ++i) {
+    for (size_t i = 0; i < other.operations().size(); ++i) {
+        if (!FilterOperation::canInterpolate(other.operations()[i]->getOperationType()))
+            return false;
+    }
+
+    size_t commonSize = std::min(operations().size(), other.operations().size());
+    for (size_t i = 0; i < commonSize; ++i) {
         if (!operations()[i]->isSameType(*other.operations()[i]))
             return false;
     }

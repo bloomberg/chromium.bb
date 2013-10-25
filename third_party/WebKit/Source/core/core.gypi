@@ -535,6 +535,8 @@
             'animation/AnimatableColor.h',
             'animation/AnimatableDouble.cpp',
             'animation/AnimatableDouble.h',
+            'animation/AnimatableFilterOperations.cpp',
+            'animation/AnimatableFilterOperations.h',
             'animation/AnimatableImage.cpp',
             'animation/AnimatableImage.h',
             'animation/AnimatableLength.cpp',

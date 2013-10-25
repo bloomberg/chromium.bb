@@ -35,6 +35,7 @@
 #include "core/animation/AnimatableClipPathOperation.h"
 #include "core/animation/AnimatableColor.h"
 #include "core/animation/AnimatableDouble.h"
+#include "core/animation/AnimatableFilterOperations.h"
 #include "core/animation/AnimatableImage.h"
 #include "core/animation/AnimatableLength.h"
 #include "core/animation/AnimatableLengthBox.h"
@@ -369,6 +370,8 @@ PassRefPtr<AnimatableValue> CSSAnimatableValueFactory::create(CSSPropertyID prop
         return createFromDouble(style->columnRuleWidth());
     case CSSPropertyWebkitColumnWidth:
         return createFromDouble(style->columnWidth());
+    case CSSPropertyWebkitFilter:
+        return AnimatableFilterOperations::create(style->filter());
     case CSSPropertyWebkitMaskBoxImageOutset:
         return createFromLengthBox(style->maskBoxImageOutset(), style);
     case CSSPropertyWebkitMaskBoxImageSlice:
