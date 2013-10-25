@@ -553,12 +553,10 @@ const gfx::Display& DisplayController::GetDisplayNearestWindow(
   DCHECK(id != gfx::Display::kInvalidDisplayID);
 
   internal::DisplayManager* display_manager = GetDisplayManager();
-  // RootWindow needs Display to determine its device scale factor.
-  // TODO(oshima): We don't need full display info for mirror
-  // window. Refactor so that RootWindow doesn't use it.
-  if (display_manager->mirrored_display().id() == id)
-    return display_manager->mirrored_display();
-
+  // RootWindow needs Display to determine its device scale factor
+  // for non desktop display.
+  if (display_manager->non_desktop_display().id() == id)
+    return display_manager->non_desktop_display();
   return display_manager->GetDisplayForId(id);
 }
 
@@ -675,12 +673,12 @@ void DisplayController::OnRootWindowHostResized(const aura::RootWindow* root) {
   }
 }
 
-void DisplayController::CreateOrUpdateMirrorWindow(
+void DisplayController::CreateOrUpdateNonDesktopDisplay(
     const internal::DisplayInfo& info) {
   mirror_window_controller_->UpdateWindow(info);
 }
 
-void DisplayController::CloseMirrorWindow() {
+void DisplayController::CloseNonDesktopDisplay() {
   mirror_window_controller_->Close();
 }
 

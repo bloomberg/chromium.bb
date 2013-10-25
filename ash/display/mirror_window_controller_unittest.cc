@@ -73,7 +73,7 @@ TEST_F(MirrorWindowControllerTest, MAYBE_MirrorCursorBasic) {
   test_window_delegate.set_window_component(HTTOP);
 
   DisplayManager* display_manager = Shell::GetInstance()->display_manager();
-  display_manager->SetSoftwareMirroring(true);
+  display_manager->SetSecondDisplayMode(DisplayManager::MIRRORING);
   UpdateDisplay("400x400,400x400");
   aura::RootWindow* root = Shell::GetInstance()->GetPrimaryRootWindow();
   scoped_ptr<aura::Window> window(aura::test::CreateTestWindowWithDelegate(
@@ -130,7 +130,7 @@ TEST_F(MirrorWindowControllerTest, MAYBE_MirrorCursorRotate) {
   test_window_delegate.set_window_component(HTTOP);
 
   DisplayManager* display_manager = Shell::GetInstance()->display_manager();
-  display_manager->SetSoftwareMirroring(true);
+  display_manager->SetSecondDisplayMode(DisplayManager::MIRRORING);
   UpdateDisplay("400x400,400x400");
   aura::RootWindow* root = Shell::GetInstance()->GetPrimaryRootWindow();
   scoped_ptr<aura::Window> window(aura::test::CreateTestWindowWithDelegate(
@@ -194,7 +194,7 @@ TEST_F(MirrorWindowControllerTest, MAYBE_MirrorCursorRotate) {
 TEST_F(MirrorWindowControllerTest, MAYBE_MirrorCursorLocations) {
   test::MirrorWindowTestApi test_api;
   DisplayManager* display_manager = Shell::GetInstance()->display_manager();
-  display_manager->SetSoftwareMirroring(true);
+  display_manager->SetSecondDisplayMode(DisplayManager::MIRRORING);
 
   // Test with device scale factor.
   UpdateDisplay("400x600*2,400x600");
@@ -246,7 +246,7 @@ TEST_F(MirrorWindowControllerTest, MAYBE_DockMode) {
       CreateDisplayInfo(external_id, gfx::Rect(1, 1, 100, 100));
   std::vector<DisplayInfo> display_info_list;
 
-  display_manager->SetSoftwareMirroring(true);
+  display_manager->SetSecondDisplayMode(DisplayManager::MIRRORING);
 
   // software mirroring.
   display_info_list.push_back(internal_display_info);
@@ -254,12 +254,12 @@ TEST_F(MirrorWindowControllerTest, MAYBE_DockMode) {
   display_manager->OnNativeDisplaysChanged(display_info_list);
   EXPECT_EQ(1U, display_manager->GetNumDisplays());
   EXPECT_TRUE(display_manager->IsMirrored());
-  EXPECT_EQ(external_id, display_manager->mirrored_display().id());
+  EXPECT_EQ(external_id, display_manager->mirrored_display_id());
 
   // dock mode.
   display_info_list.clear();
   display_info_list.push_back(external_display_info);
-  display_manager->SetSoftwareMirroring(true);
+  display_manager->SetSecondDisplayMode(DisplayManager::MIRRORING);
   display_manager->OnNativeDisplaysChanged(display_info_list);
   EXPECT_EQ(1U, display_manager->GetNumDisplays());
   EXPECT_FALSE(display_manager->IsMirrored());
@@ -268,11 +268,11 @@ TEST_F(MirrorWindowControllerTest, MAYBE_DockMode) {
   display_info_list.clear();
   display_info_list.push_back(internal_display_info);
   display_info_list.push_back(external_display_info);
-  display_manager->SetSoftwareMirroring(true);
+  display_manager->SetSecondDisplayMode(DisplayManager::MIRRORING);
   display_manager->OnNativeDisplaysChanged(display_info_list);
   EXPECT_EQ(1U, display_manager->GetNumDisplays());
   EXPECT_TRUE(display_manager->IsMirrored());
-  EXPECT_EQ(external_id, display_manager->mirrored_display().id());
+  EXPECT_EQ(external_id, display_manager->mirrored_display_id());
 }
 
 TEST_F(MirrorOnBootTest, MAYBE_MirrorOnBoot) {

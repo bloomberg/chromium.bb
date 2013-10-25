@@ -369,7 +369,7 @@ void DisplayInfoProvider::UpdateDisplayUnitInfoForPlatform(
   unit->name = display_manager->GetDisplayNameForId(display.id());
   if (display_manager->IsMirrored()) {
     unit->mirroring_source_id =
-        base::Int64ToString(display_manager->mirrored_display().id());
+        base::Int64ToString(display_manager->mirrored_display_id());
   }
 
   const float dpi = display.device_scale_factor() * kDpi96;

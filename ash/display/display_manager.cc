@@ -101,28 +101,28 @@ void MaybeInitInternalDisplay(int64 id) {
     gfx::Display::SetInternalDisplayId(id);
 }
 
-// Scoped objects used to either create or close the mirror window
+// Scoped objects used to either create or close the non desktop window
 // at specific timing.
-class MirrorWindowUpdater {
+class NonDesktopDisplayUpdater {
  public:
-  MirrorWindowUpdater(DisplayManager* manager,
-                      DisplayManager::Delegate* delegate)
+  NonDesktopDisplayUpdater(DisplayManager* manager,
+                           DisplayManager::Delegate* delegate)
       : manager_(manager),
         delegate_(delegate),
-        enabled_(manager_->software_mirroring_enabled() &&
-                 manager_->mirrored_display().is_valid()) {
+        enabled_(manager_->second_display_mode() != DisplayManager::EXTENDED &&
+                 manager_->non_desktop_display().is_valid()) {
   }
 
-  ~MirrorWindowUpdater() {
+  ~NonDesktopDisplayUpdater() {
     if (!delegate_)
       return;
 
     if (enabled_) {
       DisplayInfo display_info = manager_->GetDisplayInfo(
-          manager_->mirrored_display().id());
-      delegate_->CreateOrUpdateMirrorWindow(display_info);
+          manager_->non_desktop_display().id());
+      delegate_->CreateOrUpdateNonDesktopDisplay(display_info);
     } else {
-      delegate_->CloseMirrorWindow();
+      delegate_->CloseNonDesktopDisplay();
     }
   }
 
@@ -132,7 +132,7 @@ class MirrorWindowUpdater {
   DisplayManager* manager_;
   DisplayManager::Delegate* delegate_;
   bool enabled_;
-  DISALLOW_COPY_AND_ASSIGN(MirrorWindowUpdater);
+  DISALLOW_COPY_AND_ASSIGN(NonDesktopDisplayUpdater);
 };
 
 }  // namespace
@@ -147,7 +147,8 @@ DisplayManager::DisplayManager()
       num_connected_displays_(0),
       force_bounds_changed_(false),
       change_display_upon_host_resize_(false),
-      software_mirroring_enabled_(false) {
+      second_display_mode_(EXTENDED),
+      mirrored_display_id_(gfx::Display::kInvalidDisplayID) {
 #if defined(OS_CHROMEOS)
   change_display_upon_host_resize_ = !base::SysInfo::IsRunningOnChromeOS();
 #endif
@@ -216,7 +217,7 @@ void DisplayManager::InitFromCommandLine() {
     MaybeInitInternalDisplay(info_list[0].id());
   if (info_list.size() > 1 &&
       command_line->HasSwitch(switches::kAshEnableSoftwareMirroring)) {
-    SetSoftwareMirroring(true);
+    SetSecondDisplayMode(MIRRORING);
   }
   OnNativeDisplaysChanged(info_list);
 }
@@ -268,8 +269,7 @@ DisplayLayout DisplayManager::GetCurrentDisplayLayout() {
 DisplayIdPair DisplayManager::GetCurrentDisplayIdPair() const {
   if (IsMirrored()) {
     DCHECK_LE(2u, num_connected_displays());
-    int64 mirrored_id = mirrored_display().id();
-    return std::make_pair(displays_[0].id(), mirrored_id);
+    return std::make_pair(displays_[0].id(), mirrored_display_id_);
   } else {
     CHECK_GE(2u, displays_.size());
     int64 id_at_zero = displays_[0].id();
@@ -511,7 +511,8 @@ void DisplayManager::OnNativeDisplaysChanged(
 
   bool internal_display_connected = false;
   num_connected_displays_ = updated_displays.size();
-  mirrored_display_ = gfx::Display();
+  mirrored_display_id_ = gfx::Display::kInvalidDisplayID;
+  non_desktop_display_ = gfx::Display();
   DisplayInfoList new_display_info_list;
   for (DisplayInfoList::const_iterator iter = updated_displays.begin();
        iter != updated_displays.end();
@@ -522,7 +523,7 @@ void DisplayManager::OnNativeDisplaysChanged(
     gfx::Point origin = iter->bounds_in_native().origin();
     if (origins.find(origin) != origins.end()) {
       InsertAndUpdateDisplayInfo(*iter);
-      mirrored_display_ = CreateDisplayFromDisplayInfoById(iter->id());
+      mirrored_display_id_ = iter->id();
     } else {
       origins.insert(origin);
       new_display_info_list.push_back(*iter);
@@ -580,26 +581,26 @@ void DisplayManager::UpdateDisplays(
   // the root window so that it matches the external display's
   // resolution. This is necessary in order for scaling to work while
   // mirrored.
-  int64 mirrored_display_id = gfx::Display::kInvalidDisplayID;
-  if (software_mirroring_enabled_ && new_display_info_list.size() == 2) {
+  if (second_display_mode_ == MIRRORING && new_display_info_list.size() == 2) {
     bool zero_is_source =
         first_display_id_ == new_display_info_list[0].id() ||
         gfx::Display::InternalDisplayId() == new_display_info_list[0].id();
-    mirrored_display_id = new_display_info_list[zero_is_source ? 1 : 0].id();
+    mirrored_display_id_ = new_display_info_list[zero_is_source ? 1 : 0].id();
   }
 
   while (curr_iter != displays_.end() ||
          new_info_iter != new_display_info_list.end()) {
     if (new_info_iter != new_display_info_list.end() &&
-        mirrored_display_id == new_info_iter->id()) {
+        mirrored_display_id_ == new_info_iter->id()) {
       DisplayInfo info = *new_info_iter;
       info.SetOverscanInsets(gfx::Insets());
       InsertAndUpdateDisplayInfo(info);
-      mirrored_display_ = CreateDisplayFromDisplayInfoById(new_info_iter->id());
+      non_desktop_display_ =
+          CreateDisplayFromDisplayInfoById(mirrored_display_id_);
       ++new_info_iter;
       // Remove existing external dispaly if it is going to be mirrored.
       if (curr_iter != displays_.end() &&
-          curr_iter->id() == mirrored_display_id) {
+          curr_iter->id() == mirrored_display_id_) {
         removed_displays.push_back(*curr_iter);
         ++curr_iter;
       }
@@ -660,8 +661,8 @@ void DisplayManager::UpdateDisplays(
     }
   }
 
-  scoped_ptr<MirrorWindowUpdater> mirror_window_updater(
-      new MirrorWindowUpdater(this, delegate_));
+  scoped_ptr<NonDesktopDisplayUpdater> non_desktop_display_updater(
+      new NonDesktopDisplayUpdater(this, delegate_));
 
   // Do not update |displays_| if there's nothing to be updated. Without this,
   // it will not update the display layout, which causes the bug
@@ -700,8 +701,8 @@ void DisplayManager::UpdateDisplays(
   }
   // Close the mirror window here to avoid creating two compositor on
   // one display.
-  if (!mirror_window_updater->enabled())
-    mirror_window_updater.reset();
+  if (!non_desktop_display_updater->enabled())
+    non_desktop_display_updater.reset();
   for (std::vector<size_t>::iterator iter = added_display_indices.begin();
        iter != added_display_indices.end(); ++iter) {
     Shell::GetInstance()->screen()->NotifyDisplayAdded(displays_[*iter]);
@@ -709,7 +710,7 @@ void DisplayManager::UpdateDisplays(
   // Create the mirror window after all displays are added so that
   // it can mirror the display newly added. This can happen when switching
   // from dock mode to software mirror mode.
-  mirror_window_updater.reset();
+  non_desktop_display_updater.reset();
   for (std::vector<size_t>::iterator iter = changed_display_indices.begin();
        iter != changed_display_indices.end(); ++iter) {
     Shell::GetInstance()->screen()->NotifyBoundsChanged(displays_[*iter]);
@@ -742,7 +743,7 @@ size_t DisplayManager::GetNumDisplays() const {
 }
 
 bool DisplayManager::IsMirrored() const {
-  return mirrored_display_.id() != gfx::Display::kInvalidDisplayID;
+  return mirrored_display_id_ != gfx::Display::kInvalidDisplayID;
 }
 
 const DisplayInfo& DisplayManager::GetDisplayInfo(int64 display_id) const {
@@ -784,7 +785,8 @@ void DisplayManager::SetMirrorMode(bool mirrored) {
     return;
   }
 #endif
-  SetSoftwareMirroring(mirrored);
+  // This is fallback path to emulate mirroroing on desktop.
+  SetSecondDisplayMode(mirrored ? MIRRORING : EXTENDED);
   DisplayInfoList display_info_list;
   int count = 0;
   for (std::map<int64, DisplayInfo>::const_iterator iter =
@@ -815,7 +817,7 @@ void DisplayManager::AddRemoveDisplay() {
             "%d+%d-500x400", host_bounds.x(), host_bounds.bottom())));
   }
   num_connected_displays_ = new_display_info_list.size();
-  mirrored_display_ = gfx::Display();
+  mirrored_display_id_ = gfx::Display::kInvalidDisplayID;
   UpdateDisplays(new_display_info_list);
 }
 
@@ -833,9 +835,16 @@ void DisplayManager::ToggleDisplayScaleFactor() {
   UpdateDisplays(new_display_info_list);
 }
 
+#if defined(OS_CHROMEOS)
 void DisplayManager::SetSoftwareMirroring(bool enabled) {
-  software_mirroring_enabled_ = enabled;
-  mirrored_display_ = gfx::Display();
+  SetSecondDisplayMode(enabled ? MIRRORING : EXTENDED);
+}
+#endif
+
+void DisplayManager::SetSecondDisplayMode(SecondDisplayMode mode) {
+  second_display_mode_ = mode;
+  mirrored_display_id_ = gfx::Display::kInvalidDisplayID;
+  non_desktop_display_ = gfx::Display();
 }
 
 bool DisplayManager::UpdateDisplayBounds(int64 display_id,
@@ -843,7 +852,7 @@ bool DisplayManager::UpdateDisplayBounds(int64 display_id,
   if (change_display_upon_host_resize_) {
     display_info_[display_id].SetBounds(new_bounds);
     // Don't notify observers if the mirrored window has changed.
-    if (software_mirroring_enabled_ && mirrored_display_.id() == display_id)
+    if (software_mirroring_enabled() && mirrored_display_id_ == display_id)
       return false;
     gfx::Display* display = FindDisplayForId(display_id);
     display->SetSize(display_info_[display_id].size_in_pixel());
@@ -854,7 +863,7 @@ bool DisplayManager::UpdateDisplayBounds(int64 display_id,
 }
 
 void DisplayManager::CreateMirrorWindowIfAny() {
-  MirrorWindowUpdater updater(this, delegate_);
+  NonDesktopDisplayUpdater updater(this, delegate_);
 }
 
 gfx::Display* DisplayManager::FindDisplayForId(int64 id) {
@@ -869,8 +878,8 @@ gfx::Display* DisplayManager::FindDisplayForId(int64 id) {
 
 void DisplayManager::AddMirrorDisplayInfoIfAny(
     std::vector<DisplayInfo>* display_info_list) {
-  if (software_mirroring_enabled_ && mirrored_display_.is_valid())
-    display_info_list->push_back(GetDisplayInfo(mirrored_display_.id()));
+  if (software_mirroring_enabled() && IsMirrored())
+    display_info_list->push_back(GetDisplayInfo(mirrored_display_id_));
 }
 
 void DisplayManager::InsertAndUpdateDisplayInfo(const DisplayInfo& new_info) {

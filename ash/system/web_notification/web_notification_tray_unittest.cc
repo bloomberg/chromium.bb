@@ -286,12 +286,12 @@ TEST_F(WebNotificationTrayTest, MAYBE_PopupShownOnBothDisplays) {
   internal::DisplayManager* display_manager =
       Shell::GetInstance()->display_manager();
 
-  display_manager->SetSoftwareMirroring(true);
+  display_manager->SetSecondDisplayMode(internal::DisplayManager::MIRRORING);
   UpdateDisplay("400x400,200x200");
   EXPECT_TRUE(GetTray()->IsPopupVisible());
   EXPECT_FALSE(GetSecondaryTray());
 
-  display_manager->SetSoftwareMirroring(false);
+  display_manager->SetSecondDisplayMode(internal::DisplayManager::EXTENDED);
   UpdateDisplay("400x400,200x200");
   EXPECT_TRUE(GetTray()->IsPopupVisible());
   secondary_tray = GetSecondaryTray();

@@ -56,8 +56,10 @@ bool IsNonClientLocation(Window* target, const gfx::Point& location) {
 }
 
 float GetDeviceScaleFactorFromDisplay(Window* window) {
-  return gfx::Screen::GetScreenFor(window)->
-      GetDisplayNearestWindow(window).device_scale_factor();
+  gfx::Display display = gfx::Screen::GetScreenFor(window)->
+      GetDisplayNearestWindow(window);
+  DCHECK(display.is_valid());
+  return display.device_scale_factor();
 }
 
 Window* ConsumerToWindow(ui::GestureConsumer* consumer) {
