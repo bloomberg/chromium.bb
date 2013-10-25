@@ -12,17 +12,9 @@
 #include "crypto/signature_verifier.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(USE_OPENSSL)
-// Once ECSignatureCreator is implemented for OpenSSL, remove this #if block.
-// TODO(rch): When that happens, also add some exported keys from each to
+// TODO(rch): Add some exported keys from each to
 // test interop between NSS and OpenSSL.
-TEST(ECSignatureCreatorTest, OpenSSLStub) {
-  scoped_ptr<crypto::ECSignatureCreator> signer(
-      crypto::ECSignatureCreator::Create(NULL));
-  ASSERT_TRUE(signer.get());
-  EXPECT_FALSE(signer->Sign(NULL, 0, NULL));
-}
-#else
+
 TEST(ECSignatureCreatorTest, BasicTest) {
   // Do a verify round trip.
   scoped_ptr<crypto::ECPrivateKey> key_original(
@@ -81,4 +73,3 @@ TEST(ECSignatureCreatorTest, BasicTest) {
                         data.size());
   ASSERT_TRUE(verifier.VerifyFinal());
 }
-#endif  // !defined(USE_OPENSSL)
