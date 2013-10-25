@@ -5,12 +5,12 @@
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view.h"
 
 #include "base/prefs/pref_service.h"
-#include "chrome/browser/apps/app_launcher_util.h"
 #include "chrome/browser/bookmarks/bookmark_test_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/browser/ui/app_list/app_list_util.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/browser_with_test_window_test.h"

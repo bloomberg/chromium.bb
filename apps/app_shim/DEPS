@@ -1,9 +1,9 @@
 include_rules = [
   # TODO(benwells): move this whole folder out of apps and review these.
   # See http://crbug.com/266705.
-  "+chrome/browser/apps/app_launcher_util.h",
   "+chrome/browser/browser_process.h",
   "+chrome/browser/ui/app_list/app_list_service.h",
+  "+chrome/browser/ui/app_list/app_list_util.h",
   "+chrome/browser/ui/extensions/application_launch.h",
   "+chrome/browser/ui/web_applications/web_app_ui.h",
   "+chrome/browser/ui/webui/ntp/core_app_launcher_handler.h",

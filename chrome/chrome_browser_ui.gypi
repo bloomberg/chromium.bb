@@ -144,6 +144,8 @@
         'browser/ui/app_list/app_list_shower.h',
         'browser/ui/app_list/app_list_icon_win.cc',
         'browser/ui/app_list/app_list_icon_win.h',
+        'browser/ui/app_list/app_list_util.cc',
+        'browser/ui/app_list/app_list_util.h',
         'browser/ui/app_list/app_list_view_delegate.cc',
         'browser/ui/app_list/app_list_view_delegate.h',
         'browser/ui/app_list/chrome_signin_delegate.cc',
@@ -300,7 +302,7 @@
         'browser/ui/ash/launcher/shell_window_launcher_item_controller.h',
         'browser/ui/ash/launcher/shell_window_launcher_controller.cc',
         'browser/ui/ash/launcher/shell_window_launcher_controller.h',
-        'browser/ui/ash/multi_user_window_manager.h',        
+        'browser/ui/ash/multi_user_window_manager.h',
         'browser/ui/ash/screenshot_taker.cc',
         'browser/ui/ash/screenshot_taker.h',
         'browser/ui/ash/session_state_delegate_chromeos.cc',
@@ -2679,7 +2681,7 @@
           ],
           'sources': [
             'browser/ui/ash/multi_user_window_manager.cc',
-          ],      
+          ],
           'sources!': [
             'browser/first_run/upgrade_util.cc',
             'browser/first_run/upgrade_util.h',
@@ -3251,6 +3253,8 @@
           'sources/': [
             ['exclude', '^browser/ui/views/app_list/'],
             ['exclude', '^browser/ui/app_list/'],
+            ['include', '^browser/ui/app_list/app_list_util.h'],
+            ['include', '^browser/ui/app_list/app_list_util.cc'],
             ['include', '^browser/ui/app_list/app_list_service.h'],
             ['include', '^browser/ui/app_list/app_list_service_disabled.cc'],
           ],

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/apps/app_launcher_util.h"
+#include "chrome/browser/ui/app_list/app_list_util.h"
 
 #include "base/metrics/field_trial.h"
 #include "base/prefs/pref_registry_simple.h"
