@@ -83,8 +83,6 @@ void InspectorHistory::Action::merge(PassOwnPtr<Action>)
 
 InspectorHistory::InspectorHistory() : m_afterLastActionIndex(0) { }
 
-InspectorHistory::~InspectorHistory() { }
-
 bool InspectorHistory::perform(PassOwnPtr<Action> action, ExceptionState& es)
 {
     if (!action->perform(es))

@@ -63,7 +63,6 @@ public:
     };
 
     InspectorHistory();
-    virtual ~InspectorHistory();
 
     bool perform(PassOwnPtr<Action>, ExceptionState&);
     void markUndoableState();

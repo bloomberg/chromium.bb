@@ -82,8 +82,6 @@ DOMPatchSupport::DOMPatchSupport(DOMEditor* domEditor, Document& document)
 {
 }
 
-DOMPatchSupport::~DOMPatchSupport() { }
-
 void DOMPatchSupport::patchDocument(const String& markup)
 {
     RefPtr<Document> newDocument;

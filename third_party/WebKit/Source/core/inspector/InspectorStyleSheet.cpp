@@ -508,10 +508,6 @@ InspectorStyle::InspectorStyle(const InspectorCSSId& styleId, PassRefPtr<CSSStyl
     ASSERT(m_style);
 }
 
-InspectorStyle::~InspectorStyle()
-{
-}
-
 PassRefPtr<TypeBuilder::CSS::CSSStyle> InspectorStyle::buildObjectForStyle() const
 {
     RefPtr<TypeBuilder::CSS::CSSStyle> result = styleWithProperties();
