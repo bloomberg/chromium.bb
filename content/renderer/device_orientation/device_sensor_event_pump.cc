@@ -9,7 +9,10 @@
 
 namespace content {
 
-const int DeviceSensorEventPump::kDefaultPumpDelayMillis = 40;
+// Default interval between successive polls, should take into account the
+// value of |kInertialSensorIntervalMillis| in
+// content/browser/device_orientation/inertial_sensor_consts.h.
+const int DeviceSensorEventPump::kDefaultPumpDelayMillis = 50;
 
 int DeviceSensorEventPump::GetDelayMillis() const {
   return pump_delay_millis_;
