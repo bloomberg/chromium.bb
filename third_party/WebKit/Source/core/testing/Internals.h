@@ -98,7 +98,6 @@ public:
     bool hasShadowInsertionPoint(const Node*, ExceptionState&) const;
     bool hasContentElement(const Node*, ExceptionState&) const;
     size_t countElementShadow(const Node*, ExceptionState&) const;
-    Element* includerFor(Node*, ExceptionState&);
     String shadowPseudoId(Element*, ExceptionState&);
     void setShadowPseudoId(Element*, const String&, ExceptionState&);
 

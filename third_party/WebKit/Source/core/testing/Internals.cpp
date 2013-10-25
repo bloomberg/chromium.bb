@@ -638,18 +638,6 @@ String Internals::shadowRootType(const Node* root, ExceptionState& es) const
     }
 }
 
-Element* Internals::includerFor(Node* node, ExceptionState& es)
-{
-    if (!node) {
-        es.throwUninformativeAndGenericDOMException(InvalidAccessError);
-        return 0;
-    }
-
-    NodeRenderingTraversal::ParentDetails parentDetails;
-    NodeRenderingTraversal::parent(node, &parentDetails);
-    return parentDetails.insertionPoint();
-}
-
 String Internals::shadowPseudoId(Element* element, ExceptionState& es)
 {
     if (!element) {

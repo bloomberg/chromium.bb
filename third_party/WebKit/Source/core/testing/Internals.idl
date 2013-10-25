@@ -51,7 +51,6 @@
     [RaisesException] boolean hasShadowInsertionPoint(Node root);
     [RaisesException] boolean hasContentElement(Node root);
     [RaisesException] unsigned long countElementShadow(Node Root);
-    [RaisesException] Element includerFor(Node node);
     [RaisesException] DOMString shadowPseudoId(Element element);
     [RaisesException] void setShadowPseudoId(Element element, DOMString id);
     [RaisesException] Element createContentElement();
