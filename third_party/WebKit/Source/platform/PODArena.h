@@ -102,7 +102,6 @@ public:
     };
 
 protected:
-    virtual ~PODArena() { }
     friend class WTF::RefCounted<PODArena>;
 
     PODArena()
@@ -162,7 +161,7 @@ protected:
 
         // Frees the memory allocated from the Allocator in the
         // constructor.
-        virtual ~Chunk()
+        ~Chunk()
         {
             m_allocator->free(m_base);
         }
