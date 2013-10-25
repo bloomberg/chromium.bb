@@ -102,9 +102,6 @@ class ASH_EXPORT ShelfView : public views::View,
   // of the buttons area.
   bool ShouldHideTooltip(const gfx::Point& cursor_location);
 
-  int leading_inset() const { return leading_inset_; }
-  void set_leading_inset(int leading_inset) { leading_inset_ = leading_inset; }
-
   // Returns rectangle bounding all visible launcher items. Used screen
   // coordinate system.
   gfx::Rect GetVisibleItemsBoundsInScreen();
@@ -147,7 +144,7 @@ class ASH_EXPORT ShelfView : public views::View,
 
   enum RemovableState {
     REMOVABLE,     // Item can be removed when dragged away.
-    DRAGGABLE,     // Item can be removed, but will snap always back to origin.
+    DRAGGABLE,     // Item can be dragged, but will snap always back to origin.
     NOT_REMOVABLE, // Item is fixed and can never be removed.
   };
 
@@ -321,7 +318,7 @@ class ASH_EXPORT ShelfView : public views::View,
 
   // Index of first visible launcher item. When it it greater than 0,
   // ShelfView is hosted in an overflow bubble. In this mode, it does not
-  // show browser, app list and overflow button.
+  // show app list, panel, and overflow button.
   int first_visible_index_;
 
   // Last index of a launcher button that is visible

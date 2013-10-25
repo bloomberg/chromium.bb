@@ -139,7 +139,6 @@ class LauncherMenuModelAdapter
   DISALLOW_COPY_AND_ASSIGN(LauncherMenuModelAdapter);
 };
 
-
 LauncherMenuModelAdapter::LauncherMenuModelAdapter(
     ash::LauncherMenuModel* menu_model)
     : MenuModelAdapter(menu_model),
@@ -252,21 +251,6 @@ class LauncherButtonFocusBorder : public views::FocusBorder {
   }
 
   DISALLOW_COPY_AND_ASSIGN(LauncherButtonFocusBorder);
-};
-
-// AnimationDelegate that deletes a view when done. This is used when a launcher
-// item is removed, which triggers a remove animation. When the animation is
-// done we delete the view.
-class DeleteViewAnimationDelegate
-    : public views::BoundsAnimator::OwnedAnimationDelegate {
- public:
-  explicit DeleteViewAnimationDelegate(views::View* view) : view_(view) {}
-  virtual ~DeleteViewAnimationDelegate() {}
-
- private:
-  scoped_ptr<views::View> view_;
-
-  DISALLOW_COPY_AND_ASSIGN(DeleteViewAnimationDelegate);
 };
 
 // AnimationDelegate used when inserting a new item. This steadily increases the
@@ -722,7 +706,7 @@ void ShelfView::CalculateIdealBounds(IdealBounds* bounds) {
   // Initial x,y values account both leading_inset in primary
   // coordinate and secondary coordinate based on the dynamic edge of the
   // launcher (eg top edge on bottom-aligned launcher).
-  int inset = ash::switches::UseAlternateShelfLayout() ? 0 : leading_inset();
+  int inset = ash::switches::UseAlternateShelfLayout() ? 0 : leading_inset_;
   int x = layout_manager_->SelectValueForShelfAlignment(inset, 0, 0, inset);
   int y = layout_manager_->SelectValueForShelfAlignment(0, inset, inset, 0);
 
@@ -925,8 +909,8 @@ views::View* ShelfView::CreateViewForItem(const LauncherItem& item) {
     case TYPE_WINDOWED_APP:
     case TYPE_PLATFORM_APP:
     case TYPE_APP_PANEL: {
-      LauncherButton* button = LauncherButton::Create(
-          this, this, tooltip_->shelf_layout_manager());
+      LauncherButton* button =
+          LauncherButton::Create(this, this, layout_manager_);
       button->SetImage(item.image);
       ReflectItemStatus(item, button);
       view = button;
@@ -935,8 +919,9 @@ views::View* ShelfView::CreateViewForItem(const LauncherItem& item) {
 
     case TYPE_APP_LIST: {
       if (ash::switches::UseAlternateShelfLayout()) {
-        view = new AlternateAppListButton(this, this,
-            tooltip_->shelf_layout_manager()->shelf_widget());
+        view = new AlternateAppListButton(this,
+                                          this,
+                                          layout_manager_->shelf_widget());
       } else {
         // TODO(dave): turn this into a LauncherButton too.
         AppListButton* button = new AppListButton(this, this);
@@ -1240,7 +1225,7 @@ void ShelfView::ToggleOverflowBubble() {
     overflow_bubble_.reset(new OverflowBubble());
 
   ShelfView* overflow_view =
-      new ShelfView(model_, delegate_, tooltip_->shelf_layout_manager());
+      new ShelfView(model_, delegate_, layout_manager_);
   overflow_view->Init();
   overflow_view->set_owner_overflow_bubble(overflow_bubble_.get());
   overflow_view->OnShelfAlignmentChanged();
@@ -1260,8 +1245,8 @@ void ShelfView::UpdateFirstButtonPadding() {
   // and when shelf alignment changes.
   if (view_model_->view_size() > 0) {
     view_model_->view_at(0)->set_border(views::Border::CreateEmptyBorder(
-        layout_manager_->PrimaryAxisValue(0, leading_inset()),
-        layout_manager_->PrimaryAxisValue(leading_inset(), 0),
+        layout_manager_->PrimaryAxisValue(0, leading_inset_),
+        layout_manager_->PrimaryAxisValue(leading_inset_, 0),
         0,
         0));
   }
@@ -1360,12 +1345,12 @@ gfx::Size ShelfView::GetPreferredSize() {
           gfx::Rect(gfx::Size(preferred_size, preferred_size));
 
   if (layout_manager_->IsHorizontalAlignment()) {
-    return gfx::Size(last_button_bounds.right() + leading_inset(),
+    return gfx::Size(last_button_bounds.right() + leading_inset_,
                      preferred_size);
   }
 
   return gfx::Size(preferred_size,
-                   last_button_bounds.bottom() + leading_inset());
+                   last_button_bounds.bottom() + leading_inset_);
 }
 
 void ShelfView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
