@@ -579,6 +579,7 @@ bool CSSAnimations::isAnimatableProperty(CSSPropertyID property)
     case CSSPropertyStrokeMiterlimit:
     case CSSPropertyStrokeOpacity:
     case CSSPropertyStrokeWidth:
+    case CSSPropertyTextDecorationColor:
     case CSSPropertyTextIndent:
     case CSSPropertyTextShadow:
     case CSSPropertyTop:
