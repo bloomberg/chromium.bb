@@ -1443,9 +1443,9 @@ x11_destroy(struct weston_compositor *ec)
 	wl_event_source_remove(compositor->xcb_source);
 	x11_input_destroy(compositor);
 
-	weston_compositor_shutdown(ec); /* destroys outputs, too */
-
 	ec->renderer->destroy(ec);
+
+	weston_compositor_shutdown(ec); /* destroys outputs, too */
 
 	XCloseDisplay(compositor->dpy);
 	free(ec);

@@ -652,10 +652,11 @@ rpi_compositor_destroy(struct weston_compositor *base)
 	wl_list_for_each_safe(seat, next, &compositor->base.seat_list, link)
 		evdev_input_destroy(seat);
 
+	compositor->base.renderer->destroy(&compositor->base);
+
 	/* destroys outputs, too */
 	weston_compositor_shutdown(&compositor->base);
 
-	compositor->base.renderer->destroy(&compositor->base);
 	weston_launcher_destroy(compositor->base.launcher);
 
 	bcm_host_deinit();

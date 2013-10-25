@@ -43,8 +43,10 @@ struct pixman_surface_state {
 
 struct pixman_renderer {
 	struct weston_renderer base;
+
 	int repaint_debug;
 	pixman_image_t *debug_color;
+	struct weston_binding *debug_binding;
 };
 
 static inline struct pixman_output_state *
@@ -630,7 +632,11 @@ pixman_renderer_destroy_surface(struct weston_surface *surface)
 static void
 pixman_renderer_destroy(struct weston_compositor *ec)
 {
-	free(ec->renderer);
+	struct pixman_renderer *pr = get_renderer(ec);
+
+	weston_binding_destroy(pr->debug_binding);
+	free(pr);
+
 	ec->renderer = NULL;
 }
 
@@ -678,8 +684,9 @@ pixman_renderer_init(struct weston_compositor *ec)
 	ec->capabilities |= WESTON_CAP_ROTATION_ANY;
 	ec->capabilities |= WESTON_CAP_CAPTURE_YFLIP;
 
-	weston_compositor_add_debug_binding(ec, KEY_R,
-					    debug_binding, ec);
+	renderer->debug_binding =
+		weston_compositor_add_debug_binding(ec, KEY_R,
+						    debug_binding, ec);
 
 	wl_display_add_shm_format(ec->wl_display, WL_SHM_FORMAT_RGB565);
 

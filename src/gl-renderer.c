@@ -85,6 +85,8 @@ struct gl_renderer {
 	struct weston_renderer base;
 	int fragment_shader_debug;
 	int fan_debug;
+	struct weston_binding *fragment_binding;
+	struct weston_binding *fan_binding;
 
 	EGLDisplay egl_display;
 	EGLContext egl_context;
@@ -1567,6 +1569,9 @@ gl_renderer_destroy(struct weston_compositor *ec)
 	wl_array_release(&gr->indices);
 	wl_array_release(&gr->vtxcnt);
 
+	weston_binding_destroy(gr->fragment_binding);
+	weston_binding_destroy(gr->fan_binding);
+
 	free(gr);
 }
 
@@ -1859,10 +1864,14 @@ gl_renderer_setup(struct weston_compositor *ec, EGLSurface egl_surface)
 	if (compile_shaders(ec))
 		return -1;
 
-	weston_compositor_add_debug_binding(ec, KEY_S,
-					    fragment_debug_binding, ec);
-	weston_compositor_add_debug_binding(ec, KEY_F,
-					    fan_debug_repaint_binding, ec);
+	gr->fragment_binding =
+		weston_compositor_add_debug_binding(ec, KEY_S,
+						    fragment_debug_binding,
+						    ec);
+	gr->fan_binding =
+		weston_compositor_add_debug_binding(ec, KEY_F,
+						    fan_debug_repaint_binding,
+						    ec);
 
 	weston_log("GL ES 2 renderer features:\n");
 	weston_log_continue(STAMP_SPACE "read-back format: %s\n",
