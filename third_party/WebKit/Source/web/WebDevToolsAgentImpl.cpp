@@ -432,6 +432,11 @@ void WebDevToolsAgentImpl::setTraceEventCallback(TraceEventCallback callback)
     m_client->setTraceEventCallback(callback);
 }
 
+void WebDevToolsAgentImpl::setTraceEventCallback(TraceEventWithTimestampCallback callback)
+{
+    m_client->setTraceEventCallback(callback);
+}
+
 void WebDevToolsAgentImpl::dispatchKeyEvent(const PlatformKeyboardEvent& event)
 {
     m_generatingEvent = true;

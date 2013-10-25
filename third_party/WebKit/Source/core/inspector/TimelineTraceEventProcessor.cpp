@@ -75,7 +75,7 @@ public:
         }
         m_processors.remove(index);
         if (m_processors.isEmpty())
-            client->setTraceEventCallback(0);
+            client->setTraceEventCallback(static_cast<InspectorClient::TraceEventCallback>(0));
     }
 
 private:

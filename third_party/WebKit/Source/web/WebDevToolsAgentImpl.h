@@ -108,6 +108,7 @@ public:
     virtual void getAllocatedObjects(HashSet<const void*>&);
     virtual void dumpUncountedAllocatedObjects(const HashMap<const void*, size_t>&);
     virtual void setTraceEventCallback(TraceEventCallback);
+    virtual void setTraceEventCallback(TraceEventWithTimestampCallback);
 
     virtual void dispatchKeyEvent(const WebCore::PlatformKeyboardEvent&);
     virtual void dispatchMouseEvent(const WebCore::PlatformMouseEvent&);
