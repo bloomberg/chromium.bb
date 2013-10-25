@@ -1272,7 +1272,7 @@ OptionalCursor EventHandler::selectAutoCursor(const HitTestResult& result, Node*
     if (renderer) {
         if (RenderLayer* layer = renderer->enclosingLayer()) {
             if (FrameView* view = m_frame->view())
-                inResizer = layer->isPointInResizeControl(view->windowToContents(roundedIntPoint(result.localPoint())), ResizerForPointer);
+                inResizer = layer->isPointInResizeControl(result.roundedPointInMainFrame(), ResizerForPointer);
         }
     }
 
