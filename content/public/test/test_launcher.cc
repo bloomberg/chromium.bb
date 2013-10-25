@@ -367,7 +367,10 @@ void WrapperTestLauncherDelegate::GTestCallback(
 
   result.elapsed_time = elapsed_time;
 
-  result.output_snippet = GetTestOutputSnippet(result, output);
+  // TODO(phajdan.jr): Use base::PrintTestOutputSnippetOnFailure after migrating
+  // away from run_test_cases.py (http://crbug.com/236893).
+  fprintf(stdout, "%s", output.c_str());
+  fflush(stdout);
 
   if (ContainsKey(dependent_test_map_, test_name))
     RunDependentTest(test_launcher, dependent_test_map_[test_name], result);
@@ -436,7 +439,6 @@ int RunContentMain(int argc, char** argv,
 }
 
 int LaunchTests(TestLauncherDelegate* launcher_delegate,
-                int default_jobs,
                 int argc,
                 char** argv) {
   DCHECK(!g_launcher_delegate);
@@ -468,22 +470,22 @@ int LaunchTests(TestLauncherDelegate* launcher_delegate,
   if (ShouldRunContentMain())
     return RunContentMain(argc, argv, launcher_delegate);
 
-  base::AtExitManager at_exit;
-  testing::InitGoogleTest(&argc, argv);
-  TestTimeouts::Initialize();
-
-  int jobs = default_jobs;
-  if (!GetSwitchValueAsInt(switches::kTestLauncherJobs, &jobs))
-    return 1;
-
   fprintf(stdout,
-      "Starting tests (using %d parallel jobs)...\n"
+      "Starting tests...\n"
       "IMPORTANT DEBUGGING NOTE: each test is run inside its own process.\n"
       "For debugging a test inside a debugger, use the\n"
       "--gtest_filter=<your_test_name> flag along with either\n"
       "--single_process (to run the test in one launcher/browser process) or\n"
       "--single-process (to do the above, and also run Chrome in single-"
-          "process mode).\n", jobs);
+      "process mode).\n");
+
+  base::AtExitManager at_exit;
+  testing::InitGoogleTest(&argc, argv);
+  TestTimeouts::Initialize();
+
+  int jobs = 1;  // TODO(phajdan.jr): Default to half the number of CPU cores.
+  if (!GetSwitchValueAsInt(switches::kTestLauncherJobs, &jobs))
+    return 1;
 
   base::MessageLoopForIO message_loop;
 

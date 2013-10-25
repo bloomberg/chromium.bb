@@ -55,8 +55,6 @@
 #include "chrome/app/chrome_breakpad_client.h"
 #endif
 
-namespace {
-
 class ChromeTestLauncherDelegate : public content::TestLauncherDelegate {
  public:
   ChromeTestLauncherDelegate() {}
@@ -128,11 +126,29 @@ class ChromeTestLauncherDelegate : public content::TestLauncherDelegate {
   DISALLOW_COPY_AND_ASSIGN(ChromeTestLauncherDelegate);
 };
 
-}  // namespace
-
-int LaunchChromeTests(int default_jobs, int argc, char** argv) {
+int main(int argc, char** argv) {
 #if defined(OS_MACOSX)
   chrome_browser_application_mac::RegisterBrowserCrApp();
+#endif
+
+// Only allow ui_controls to be used in interactive_ui_tests, since they depend
+// on focus and can't be sharded.
+#if defined(INTERACTIVE_TESTS)
+  ui_controls::EnableUIControls();
+
+#if defined(OS_CHROMEOS)
+  ui_controls::InstallUIControlsAura(ash::test::CreateAshUIControls());
+#elif defined(USE_AURA)
+
+#if defined(OS_LINUX)
+  ui_controls::InstallUIControlsAura(
+    views::test::CreateUIControlsDesktopAura());
+#else
+  // TODO(win_ash): when running interactive_ui_tests for Win Ash, use above.
+  ui_controls::InstallUIControlsAura(aura::test::CreateUIControlsAura(NULL));
+#endif
+#endif
+
 #endif
 
 #if defined(OS_LINUX) || defined(OS_ANDROID)
@@ -145,5 +161,5 @@ int LaunchChromeTests(int default_jobs, int argc, char** argv) {
 #endif
 
   ChromeTestLauncherDelegate launcher_delegate;
-  return content::LaunchTests(&launcher_delegate, default_jobs, argc, argv);
+  return content::LaunchTests(&launcher_delegate, argc, argv);
 }
