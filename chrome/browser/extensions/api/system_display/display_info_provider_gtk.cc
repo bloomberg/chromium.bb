@@ -27,7 +27,8 @@ void DisplayInfoProvider::UpdateDisplayUnitInfoForPlatform(
   gint monitor_num = static_cast<gint>(display.id());
   char* monitor_name = reinterpret_cast<char*>(gdk_screen_get_monitor_plug_name(
        screen, monitor_num));
-  unit->name = std::string(monitor_name);
+  if (monitor_name)
+    unit->name = std::string(monitor_name);
 }
 
 }  // namespace extensions
