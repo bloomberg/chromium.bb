@@ -76,7 +76,9 @@ class PresubmitTest(unittest.TestCase):
     self._stubs.Restore()
 
   def assertResultCount(self, results, expected_errors, expected_notifications):
-    counts = collections.Counter([type(result) for result in results])
+    counts = collections.defaultdict(int)
+    for result in results:
+      counts[type(result)] += 1
     actual_errors = counts[OutputAPIStub.PresubmitError]
     actual_notifications = counts[OutputAPIStub.PresubmitNotifyResult]
     self.assertEqual(expected_errors, actual_errors,
