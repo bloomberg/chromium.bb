@@ -248,10 +248,12 @@ class DevToolsWindow : private content::NotificationObserver,
   bool IsDocked();
   void Restore();
   content::WebContents* GetInspectedWebContents();
+  void DocumentOnLoadCompletedInMainFrame();
 
   class InspectedWebContentsObserver;
   scoped_ptr<InspectedWebContentsObserver> inspected_contents_observer_;
   class FrontendWebContentsObserver;
+  friend class FrontendWebContentsObserver;
   scoped_ptr<FrontendWebContentsObserver> frontend_contents_observer_;
 
   Profile* profile_;

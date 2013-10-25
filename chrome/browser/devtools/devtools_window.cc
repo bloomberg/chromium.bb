@@ -176,20 +176,23 @@ DevToolsWindow::InspectedWebContentsObserver::~InspectedWebContentsObserver() {
 class DevToolsWindow::FrontendWebContentsObserver
     : public content::WebContentsObserver {
  public:
-  explicit FrontendWebContentsObserver(content::WebContents* web_contents);
+  explicit FrontendWebContentsObserver(DevToolsWindow* window);
   virtual ~FrontendWebContentsObserver();
 
  private:
   // contents::WebContentsObserver:
   virtual void AboutToNavigateRenderView(
       content::RenderViewHost* render_view_host) OVERRIDE;
+  virtual void DocumentOnLoadCompletedInMainFrame(int32 page_id) OVERRIDE;
 
+  DevToolsWindow* devtools_window_;
   DISALLOW_COPY_AND_ASSIGN(FrontendWebContentsObserver);
 };
 
 DevToolsWindow::FrontendWebContentsObserver::FrontendWebContentsObserver(
-    content::WebContents* web_contents)
-    : WebContentsObserver(web_contents) {
+    DevToolsWindow* devtools_window)
+    : WebContentsObserver(devtools_window->web_contents()),
+      devtools_window_(devtools_window) {
 }
 
 DevToolsWindow::FrontendWebContentsObserver::~FrontendWebContentsObserver() {
@@ -200,6 +203,10 @@ void DevToolsWindow::FrontendWebContentsObserver::AboutToNavigateRenderView(
   content::DevToolsClientHost::SetupDevToolsFrontendClient(render_view_host);
 }
 
+void DevToolsWindow::FrontendWebContentsObserver::
+    DocumentOnLoadCompletedInMainFrame(int32 page_id) {
+  devtools_window_->DocumentOnLoadCompletedInMainFrame();
+}
 
 // DevToolsWindow -------------------------------------------------------------
 
@@ -563,8 +570,7 @@ DevToolsWindow::DevToolsWindow(Profile* profile,
       weak_factory_(this) {
   web_contents_ =
       content::WebContents::Create(content::WebContents::CreateParams(profile));
-  frontend_contents_observer_.reset(
-      new FrontendWebContentsObserver(web_contents_));
+  frontend_contents_observer_.reset(new FrontendWebContentsObserver(this));
 
   web_contents_->GetController().LoadURL(url, content::Referrer(),
       content::PAGE_TRANSITION_AUTO_TOPLEVEL, std::string());
@@ -586,7 +592,6 @@ DevToolsWindow::DevToolsWindow(Profile* profile,
   // Register on-load actions.
   content::Source<content::NavigationController> nav_controller_source(
       &web_contents_->GetController());
-  registrar_.Add(this, content::NOTIFICATION_LOAD_STOP, nav_controller_source);
   registrar_.Add(this, chrome::NOTIFICATION_TAB_CLOSING, nav_controller_source);
   registrar_.Add(
       this, chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
@@ -724,14 +729,7 @@ DevToolsDockSide DevToolsWindow::SideFromString(
 void DevToolsWindow::Observe(int type,
                              const content::NotificationSource& source,
                              const content::NotificationDetails& details) {
-  if (type == content::NOTIFICATION_LOAD_STOP) {
-    if (!is_loaded_) {
-      is_loaded_ = true;
-      UpdateTheme();
-      DoAction();
-      AddDevToolsExtensionsToClient();
-    }
-  } else if (type == chrome::NOTIFICATION_TAB_CLOSING) {
+  if (type == chrome::NOTIFICATION_TAB_CLOSING) {
     if (content::Source<content::NavigationController>(source).ptr() ==
         &web_contents_->GetController()) {
       // This happens when browser closes all of its tabs as a result
@@ -1382,4 +1380,11 @@ void DevToolsWindow::Restore() {
 content::WebContents* DevToolsWindow::GetInspectedWebContents() {
   return inspected_contents_observer_ ?
       inspected_contents_observer_->web_contents() : NULL;
+}
+
+void DevToolsWindow::DocumentOnLoadCompletedInMainFrame() {
+  is_loaded_ = true;
+  UpdateTheme();
+  DoAction();
+  AddDevToolsExtensionsToClient();
 }
