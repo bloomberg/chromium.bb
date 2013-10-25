@@ -1084,6 +1084,7 @@
       'type': 'static_library',
       'dependencies': [
         'media',
+        'shared_memory_support',
         '../base/base.gyp:base',
         '../skia/skia.gyp:skia',
         '../testing/gmock.gyp:gmock',
