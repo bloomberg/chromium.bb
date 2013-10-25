@@ -426,9 +426,7 @@ def GypNinjaInstall(pepperdir, toolchains):
       ['minidump_stackwalk', 'minidump_stackwalk']
     ]
 
-  if platform != 'mac':
-    # Mac doesn't build 64-bit binaries.
-    tools_files.append(['sel_ldr64', 'sel_ldr_x86_64'])
+  tools_files.append(['sel_ldr64', 'sel_ldr_x86_64'])
 
   if platform == 'linux':
     tools_files.append(['nacl_helper_bootstrap',
@@ -479,16 +477,15 @@ def GypNinjaBuild_NaCl(rel_out_dir):
   platform = getos.GetPlatform()
   if platform == 'win':
     NinjaBuild('sel_ldr64', out_dir)
-  elif platform == 'linux':
+  else:
     out_dir_64 = MakeNinjaRelPath(rel_out_dir + '-64')
     GypNinjaBuild('x64', gyp_py, nacl_core_sdk_gyp, 'sel_ldr', out_dir_64)
 
     # We only need sel_ldr from the 64-bit out directory.
     # sel_ldr needs to be renamed, so we'll call it sel_ldr64.
-    files_to_copy = [
-      ('sel_ldr', 'sel_ldr64'),
-      ('nacl_helper_bootstrap', 'nacl_helper_bootstrap64'),
-    ]
+    files_to_copy = [('sel_ldr', 'sel_ldr64')]
+    if platform == 'linux':
+      files_to_copy.append(('nacl_helper_bootstrap', 'nacl_helper_bootstrap64'))
 
     for src, dst in files_to_copy:
       buildbot_common.CopyFile(
@@ -890,9 +887,8 @@ def main(args):
       dest='build_experimental')
   parser.add_option('--skip-toolchain', help='Skip toolchain untar',
       action='store_true')
-  parser.add_option('--mac_sdk',
-      help='Set the mac_sdk (e.g. 10.6) to use when building with ninja.',
-      dest='mac_sdk')
+  parser.add_option('--mac-sdk',
+      help='Set the mac-sdk (e.g. 10.6) to use when building with ninja.')
 
   global options
   options, args = parser.parse_args(args[1:])

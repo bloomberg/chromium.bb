@@ -59,8 +59,6 @@ def main(argv):
     raise Error('not a file: %s' % nexe)
 
   arch, dynamic = create_nmf.ParseElfHeader(nexe)
-  if osname == 'mac' and arch == 'x86-64':
-    raise Error('Running of x86-64 executables is not supported on mac')
 
   if arch == 'arm':
     raise Error('Cannot run ARM executables under sel_ldr')
