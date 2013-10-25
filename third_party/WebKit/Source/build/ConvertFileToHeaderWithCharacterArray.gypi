@@ -43,18 +43,19 @@
     {
       'action_name': 'ConvertFileToHeaderWithCharacterArray',
       'inputs': [
-        '../build/scripts/xxd.pl',
+        '../build/scripts/xxd.py',
         '<(input_file_path)',
       ],
       'outputs': [ '<@(output_file_path)', ],
       'action': [
-        '<(perl_exe)',
-        '../build/scripts/xxd.pl',
+        'python',
+        '../build/scripts/xxd.py',
         '<(character_array_name)',
         '<(input_file_path)',
         '<@(_outputs)'
       ],
       'message': 'Generating <(output_file_path) from <(input_file_path)',
+      'msvs_cygwin_shell': 0,
     },
   ],
 

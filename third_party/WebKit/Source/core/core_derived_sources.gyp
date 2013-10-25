@@ -110,15 +110,15 @@
           'outputs': [
             '<(SHARED_INTERMEDIATE_DIR)/blink/V8ArrayBufferViewCustomScript.h',
           ],
-          'msvs_cygwin_shell': 0,
           'action': [
-            '<(perl_exe)',
-            '../build/scripts/xxd.pl',
+            'python',
+            '../build/scripts/xxd.py',
             'V8ArrayBufferViewCustomScript_js',
             '<@(_inputs)',
             '<@(_outputs)'
           ],
           'message': 'Generating V8ArrayBufferViewCustomScript.h from V8ArrayBufferViewCustomScript.js',
+          'msvs_cygwin_shell': 0,
         },
         {
           'action_name': 'generateXMLViewerCSS',
@@ -128,14 +128,14 @@
           'outputs': [
             '<(SHARED_INTERMEDIATE_DIR)/blink/XMLViewerCSS.h',
           ],
-          'msvs_cygwin_shell': 0,
           'action': [
-            '<(perl_exe)',
-            '../build/scripts/xxd.pl',
+            'python',
+            '../build/scripts/xxd.py',
             'XMLViewer_css',
             '<@(_inputs)',
             '<@(_outputs)'
           ],
+          'msvs_cygwin_shell': 0,
         },
         {
           'action_name': 'generateXMLViewerJS',
@@ -145,14 +145,14 @@
           'outputs': [
             '<(SHARED_INTERMEDIATE_DIR)/blink/XMLViewerJS.h',
           ],
-          'msvs_cygwin_shell': 0,
           'action': [
-            '<(perl_exe)',
-            '../build/scripts/xxd.pl',
+            'python',
+            '../build/scripts/xxd.py',
             'XMLViewer_js',
             '<@(_inputs)',
             '<@(_outputs)'
           ],
+          'msvs_cygwin_shell': 0,
         },
         {
           'action_name': 'HTMLEntityTable',
