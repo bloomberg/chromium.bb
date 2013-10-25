@@ -73,21 +73,21 @@ v8::Local<v8::ObjectTemplate> cachedObjectTemplate(void* privateTemplateUniqueKe
 v8::Local<v8::ObjectTemplate> promiseAllEnvironmentObjectTemplate(v8::Isolate* isolate)
 {
     // This is only for getting a unique pointer which we can pass to privateTemplate.
-    static int privateTemplateUniqueKey = 0;
+    static int privateTemplateUniqueKey;
     return cachedObjectTemplate(&privateTemplateUniqueKey, V8PromiseCustom::PromiseAllEnvironmentFieldCount, isolate);
 }
 
 v8::Local<v8::ObjectTemplate> primitiveWrapperObjectTemplate(v8::Isolate* isolate)
 {
     // This is only for getting a unique pointer which we can pass to privateTemplate.
-    static int privateTemplateUniqueKey = 0;
+    static int privateTemplateUniqueKey;
     return cachedObjectTemplate(&privateTemplateUniqueKey, V8PromiseCustom::PrimitiveWrapperFieldCount, isolate);
 }
 
 v8::Local<v8::ObjectTemplate> internalObjectTemplate(v8::Isolate* isolate)
 {
     // This is only for getting a unique pointer which we can pass to privateTemplate.
-    static int privateTemplateUniqueKey = 0;
+    static int privateTemplateUniqueKey;
     return cachedObjectTemplate(&privateTemplateUniqueKey, V8PromiseCustom::InternalFieldCount, isolate);
 }
 
