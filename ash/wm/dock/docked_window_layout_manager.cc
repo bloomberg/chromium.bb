@@ -110,7 +110,8 @@ void UndockWindow(aura::Window* window) {
   aura::client::ParentWindowWithContext(window, window, gfx::Rect());
   if (window->parent() != previous_parent)
     wm::ReparentTransientChildrenOfChild(window->parent(), window);
-  // Animate maximize animation from previous window bounds.
+  // Start maximize or fullscreen (affecting packaged apps) animation from
+  // previous window bounds.
   window->layer()->SetBounds(previous_bounds);
 }
 
