@@ -63,10 +63,15 @@ void ActiveTabPermissionGranter::GrantIfRequested(const Extension* extension) {
     PermissionsData::UpdateTabSpecificPermissions(extension,
                                                   tab_id_,
                                                   new_permissions);
-    Send(new ExtensionMsg_UpdateTabSpecificPermissions(GetPageID(),
-                                                       tab_id_,
-                                                       extension->id(),
-                                                       new_hosts));
+    const content::NavigationEntry* navigation_entry =
+        web_contents()->GetController().GetVisibleEntry();
+    if (navigation_entry) {
+      Send(new ExtensionMsg_UpdateTabSpecificPermissions(
+          navigation_entry->GetPageID(),
+          tab_id_,
+          extension->id(),
+          new_hosts));
+    }
   }
 }
 
@@ -110,10 +115,6 @@ void ActiveTabPermissionGranter::ClearActiveExtensionsAndNotify() {
 
   Send(new ExtensionMsg_ClearTabSpecificPermissions(tab_id_, extension_ids));
   granted_extensions_.Clear();
-}
-
-int32 ActiveTabPermissionGranter::GetPageID() {
-  return web_contents()->GetController().GetVisibleEntry()->GetPageID();
 }
 
 }  // namespace extensions

@@ -55,9 +55,6 @@ class ActiveTabPermissionGranter : public content::WebContentsObserver,
   // notifies renderers.
   void ClearActiveExtensionsAndNotify();
 
-  // Gets the current page id.
-  int32 GetPageID();
-
   // The tab ID for this tab.
   int tab_id_;
 
