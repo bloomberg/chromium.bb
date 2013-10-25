@@ -79,6 +79,20 @@ def CheckPathNinja():
     return None
 
 
+@Check("build dependencies are satisfied")
+def CheckBuildDeps():
+    script_path = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'build',
+        'install-build-deps.sh')
+    proc = subprocess.Popen([script_path, '--quick-check'],
+                            stdout=subprocess.PIPE)
+    stdout = proc.communicate()[0]
+    if 'WARNING' in stdout:
+        return ("Your build dependencies are out-of-date.\n"
+                "Run '" + script_path + "' to update.")
+    return None
+
+
 def RunChecks():
     for name, check in all_checks:
         sys.stdout.write("* Checking %s: " % name)
