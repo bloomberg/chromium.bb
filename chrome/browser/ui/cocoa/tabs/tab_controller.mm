@@ -192,16 +192,13 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
 
 - (void)setTitle:(NSString*)title {
   [titleView_ setStringValue:title];
+  [[self view] setToolTip:title];
   if ([self mini] && ![self selected]) {
     TabView* tabView = static_cast<TabView*>([self view]);
     DCHECK([tabView isKindOfClass:[TabView class]]);
     [tabView startAlert];
   }
   [super setTitle:title];
-}
-
-- (void)setToolTip:(NSString*)toolTip {
-  [[self view] setToolTip:toolTip];
 }
 
 - (void)setActive:(BOOL)active {

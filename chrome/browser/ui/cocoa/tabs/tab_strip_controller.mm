@@ -1222,19 +1222,14 @@ NSImage* Overlay(NSImage* ground, NSImage* overlay, CGFloat alpha) {
 
 // Handles setting the title of the tab based on the given |contents|. Uses
 // a canned string if |contents| is NULL.
-- (void)setTabTitle:(TabController*)tab withContents:(WebContents*)contents {
-  // TODO(miu): Rectify inconsistent tooltip behavior.  http://crbug.com/310947
-
-  base::string16 title;
+- (void)setTabTitle:(NSViewController*)tab withContents:(WebContents*)contents {
+  NSString* titleString = nil;
   if (contents)
-    title = contents->GetTitle();
-  if (title.empty())
-    title = l10n_util::GetStringUTF16(IDS_BROWSER_WINDOW_MAC_TAB_UNTITLED);
-  [tab setTitle:base::SysUTF16ToNSString(title)];
-
-  const base::string16& toolTip = chrome::AssembleTabTooltipText(
-      title, chrome::GetTabMediaStateForContents(contents));
-  [tab setToolTip:base::SysUTF16ToNSString(toolTip)];
+    titleString = base::SysUTF16ToNSString(contents->GetTitle());
+  if (![titleString length]) {
+    titleString = l10n_util::GetNSString(IDS_BROWSER_WINDOW_MAC_TAB_UNTITLED);
+  }
+  [tab setTitle:titleString];
 }
 
 // Called when a notification is received from the model to insert a new tab
