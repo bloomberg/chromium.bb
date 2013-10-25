@@ -1571,6 +1571,8 @@
         'browser/policy/registry_dict_win.h',
         'browser/policy/url_blacklist_manager.cc',
         'browser/policy/url_blacklist_manager.h',
+        'browser/policy/url_blacklist_policy_handler.cc',
+        'browser/policy/url_blacklist_policy_handler.h',
         'browser/predictors/autocomplete_action_predictor.cc',
         'browser/predictors/autocomplete_action_predictor.h',
         'browser/predictors/autocomplete_action_predictor_factory.cc',

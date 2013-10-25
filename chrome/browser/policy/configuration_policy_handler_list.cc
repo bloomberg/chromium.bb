@@ -18,6 +18,7 @@
 #include "chrome/browser/policy/javascript_policy_handler.h"
 #include "chrome/browser/policy/policy_error_map.h"
 #include "chrome/browser/policy/policy_map.h"
+#include "chrome/browser/policy/url_blacklist_policy_handler.h"
 #include "chrome/browser/profiles/incognito_mode_policy_handler.h"
 #include "chrome/browser/search_engines/default_search_policy_handler.h"
 #include "chrome/browser/sessions/restore_on_startup_policy_handler.h"
@@ -523,7 +524,7 @@ scoped_ptr<ConfigurationPolicyHandlerList> BuildHandlerList() {
   handlers->AddHandler(make_scoped_ptr<ConfigurationPolicyHandler>(
       new browser_sync::SyncPolicyHandler()));
   handlers->AddHandler(make_scoped_ptr<ConfigurationPolicyHandler>(
-      new URLBlacklistPolicyHandler(prefs::kUrlBlacklist)));
+      new URLBlacklistPolicyHandler()));
 
   handlers->AddHandler(make_scoped_ptr<ConfigurationPolicyHandler>(
       new extensions::ExtensionListPolicyHandler(

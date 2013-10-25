@@ -17,7 +17,6 @@
 #include "chrome/browser/policy/policy_service_impl.h"
 #include "chrome/common/pref_names.h"
 #include "components/policy/core/common/policy_pref_names.h"
-#include "policy/policy_constants.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using testing::Mock;

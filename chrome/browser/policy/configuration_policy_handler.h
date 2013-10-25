@@ -245,23 +245,6 @@ class DiskCacheDirPolicyHandler : public TypeCheckingPolicyHandler {
 
 #endif  // !defined(OS_ANDROID)
 
-// Handles URLBlacklist policies.
-class URLBlacklistPolicyHandler : public ConfigurationPolicyHandler {
- public:
-  explicit URLBlacklistPolicyHandler(const char* pref_name);
-  virtual ~URLBlacklistPolicyHandler();
-
-  // ConfigurationPolicyHandler methods:
-  virtual bool CheckPolicySettings(const PolicyMap& policies,
-                                   PolicyErrorMap* errors) OVERRIDE;
-  virtual void ApplyPolicySettings(const PolicyMap& policies,
-                                   PrefValueMap* prefs) OVERRIDE;
-
- private:
-  const char* pref_name_;
-  DISALLOW_COPY_AND_ASSIGN(URLBlacklistPolicyHandler);
-};
-
 }  // namespace policy
 
 #endif  // CHROME_BROWSER_POLICY_CONFIGURATION_POLICY_HANDLER_H_

@@ -31,7 +31,9 @@ specific_include_rules = {
   r"profile_policy_connector|"
   r"profile_policy_connector_factory|"
   r"url_blacklist_manager|"
-  r"url_blacklist_manager_unittest)"
+  r"url_blacklist_manager_unittest|"
+  r"url_blacklist_policy_handler|"
+  r"url_blacklist_policy_handler_unittest)"
   r"\.(cc|h)": [
     "+chrome",
     "+chromeos",
