@@ -105,6 +105,8 @@ public:
     void clearChildRuleCSSOMWrappers();
     void reattachChildRuleCSSOMWrappers();
 
+    void registerExtraChildRuleCSSOMWrapper(PassRefPtr<CSSRule>);
+
     StyleSheetContents* contents() const { return m_contents.get(); }
 
     bool isInline() const { return m_isInlineStylesheet; }
@@ -132,6 +134,9 @@ private:
 
     mutable RefPtr<MediaList> m_mediaCSSOMWrapper;
     mutable Vector<RefPtr<CSSRule> > m_childRuleCSSOMWrappers;
+    // These are CSSOMWrappers that come from getMatchedCSSRules and thus don't map 1-1 to
+    // the StyleRules in the StyleSheetContents.
+    mutable Vector<RefPtr<CSSRule> > m_extraChildRuleCSSOMWrappers;
     mutable OwnPtr<CSSRuleList> m_ruleListCSSOMWrapper;
 };
 

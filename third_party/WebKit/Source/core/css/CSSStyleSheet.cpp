@@ -28,6 +28,7 @@
 #include "core/css/CSSImportRule.h"
 #include "core/css/CSSParser.h"
 #include "core/css/CSSRuleList.h"
+#include "core/css/CSSStyleRule.h"
 #include "core/css/MediaList.h"
 #include "core/css/StyleRule.h"
 #include "core/css/StyleSheetContents.h"
@@ -117,6 +118,9 @@ CSSStyleSheet::~CSSStyleSheet()
         if (m_childRuleCSSOMWrappers[i])
             m_childRuleCSSOMWrappers[i]->setParentStyleSheet(0);
     }
+    for (unsigned i = 0; i < m_extraChildRuleCSSOMWrappers.size(); ++i) {
+        m_extraChildRuleCSSOMWrappers[i]->setParentStyleSheet(0);
+    }
     if (m_mediaCSSOMWrapper)
         m_mediaCSSOMWrapper->clearParentStyleSheet();
 
@@ -162,6 +166,11 @@ void CSSStyleSheet::didMutate(StyleSheetUpdateType updateType)
     // because StyleSheetCollection::analyzeStyleSheetChange cannot detect partial rule update.
     StyleResolverUpdateMode updateMode = updateType != PartialRuleUpdate ? AnalyzedStyleUpdate : FullStyleUpdate;
     owner->modifiedStyleSheet(this, RecalcStyleDeferred, updateMode);
+}
+
+void CSSStyleSheet::registerExtraChildRuleCSSOMWrapper(PassRefPtr<CSSRule> rule)
+{
+    m_extraChildRuleCSSOMWrappers.append(rule);
 }
 
 void CSSStyleSheet::reattachChildRuleCSSOMWrappers()

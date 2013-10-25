@@ -27,6 +27,7 @@
 #include "core/css/resolver/ElementResolveContext.h"
 #include "core/css/resolver/MatchRequest.h"
 #include "core/css/resolver/MatchResult.h"
+#include "core/css/resolver/StyleResolverIncludes.h"
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
 
@@ -76,7 +77,7 @@ private:
 class ElementRuleCollector {
     WTF_MAKE_NONCOPYABLE(ElementRuleCollector);
 public:
-    ElementRuleCollector(const ElementResolveContext&, const SelectorFilter&, RenderStyle* = 0);
+    ElementRuleCollector(const ElementResolveContext&, const SelectorFilter&, RenderStyle* = 0, ShouldIncludeStyleSheetInCSSOMWrapper = IncludeStyleSheetInCSSOMWrapper);
     ~ElementRuleCollector();
 
     void setCanUseFastReject(bool canUseFastReject) { m_canUseFastReject = canUseFastReject; }
@@ -109,6 +110,8 @@ private:
     void collectMatchingRulesForList(const RuleData*, SelectorChecker::BehaviorAtBoundary, CascadeScope, CascadeOrder, const MatchRequest&, RuleRange&);
     bool ruleMatches(const RuleData&, const ContainerNode* scope, PseudoId&, SelectorChecker::BehaviorAtBoundary);
 
+    void appendCSSOMWrapperForRule(StyleRule*);
+
     void sortMatchedRules();
     void addMatchedRule(const RuleData*, CascadeScope, CascadeOrder);
 
@@ -125,6 +128,7 @@ private:
     bool m_canUseFastReject;
     bool m_sameOriginOnly;
     bool m_matchingUARules;
+    bool m_includeStyleSheet;
 
     OwnPtr<Vector<MatchedRule, 32> > m_matchedRules;
 
