@@ -161,7 +161,7 @@ bool GestureEventFilter::ShouldForwardForCoalescing(
     default:
       break;
   }
-  coalesced_gesture_events_.push_back(gesture_event);
+  EnqueueEvent(gesture_event);
 
   // Ensure that if the added event ignores its ack, it is fired and
   // removed from |coalesced_gesture_events_|.
@@ -217,7 +217,6 @@ void GestureEventFilter::ProcessGestureAck(InputEventAckState ack_result,
               WebInputEvent::GesturePinchUpdate) {
         client_->SendGestureEventImmediately(second_gesture_event);
         ignore_next_ack_ = true;
-        combined_scroll_pinch_ = gfx::Transform();
       }
     }
   }
@@ -272,18 +271,22 @@ void GestureEventFilter::SendScrollEndingEventsNow() {
 void GestureEventFilter::MergeOrInsertScrollAndPinchEvent(
     const GestureEventWithLatencyInfo& gesture_event) {
   if (coalesced_gesture_events_.size() <= 1) {
-    coalesced_gesture_events_.push_back(gesture_event);
+    EnqueueEvent(gesture_event);
     return;
   }
   GestureEventWithLatencyInfo* last_event = &coalesced_gesture_events_.back();
   if (last_event->CanCoalesceWith(gesture_event)) {
     last_event->CoalesceWith(gesture_event);
+    if (!combined_scroll_pinch_.IsIdentity()) {
+      combined_scroll_pinch_.ConcatTransform(
+          GetTransformForEvent(gesture_event));
+    }
     return;
   }
   if (coalesced_gesture_events_.size() == 2 ||
       (coalesced_gesture_events_.size() == 3 && ignore_next_ack_) ||
       !ShouldTryMerging(gesture_event, *last_event)) {
-    coalesced_gesture_events_.push_back(gesture_event);
+    EnqueueEvent(gesture_event);
     return;
   }
   GestureEventWithLatencyInfo scroll_event;
@@ -382,6 +385,14 @@ bool GestureEventFilter::ShouldIgnoreAckForGestureType(
     WebInputEvent::Type type) {
   return type == WebInputEvent::GestureTapDown ||
       type == WebInputEvent::GestureShowPress;
+}
+
+void GestureEventFilter::EnqueueEvent(
+    const GestureEventWithLatencyInfo& gesture_event) {
+  coalesced_gesture_events_.push_back(gesture_event);
+  // Scroll and pinch events contributing to |combined_scroll_pinch_| will be
+  // manually added to the queue in |MergeOrInsertScrollAndPinchEvent()|.
+  combined_scroll_pinch_ = gfx::Transform();
 }
 
 }  // namespace content

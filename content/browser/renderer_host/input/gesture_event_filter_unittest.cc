@@ -473,6 +473,99 @@ TEST_F(GestureEventFilterTest, CoalescesScrollAndPinchEvents) {
   EXPECT_EQ(0U, GestureEventLastQueueEventSize());
 }
 
+TEST_F(GestureEventFilterTest, CoalescesMultiplePinchEventSequences) {
+  // Turn off debounce handling for test isolation.
+  set_debounce_interval_time_ms(0);
+
+  // Simulate a pinch sequence.
+  SimulateGestureEvent(WebInputEvent::GestureScrollBegin,
+                       WebGestureEvent::Touchscreen);
+  SimulateGestureEvent(WebInputEvent::GesturePinchBegin,
+                       WebGestureEvent::Touchscreen);
+
+  SimulateGestureScrollUpdateEvent(8, -4, 1);
+  // Make sure that the queue contains what we think it should.
+  WebGestureEvent merged_event = GestureEventLastQueueEvent();
+  size_t expected_events_in_queue = 3;
+  EXPECT_EQ(expected_events_in_queue, GestureEventLastQueueEventSize());
+  EXPECT_EQ(WebInputEvent::GestureScrollUpdate, merged_event.type);
+
+  // Coalesced without changing event order. Note anchor at (60, 60). Anchoring
+  // from a poinht that is not the origin should still give us the wight scroll.
+  SimulateGesturePinchUpdateEvent(1.5, 60, 60, 1);
+  EXPECT_EQ(++expected_events_in_queue, GestureEventLastQueueEventSize());
+  merged_event = GestureEventLastQueueEvent();
+  EXPECT_EQ(WebInputEvent::GesturePinchUpdate, merged_event.type);
+  EXPECT_EQ(1.5, merged_event.data.pinchUpdate.scale);
+  EXPECT_EQ(1, merged_event.modifiers);
+  merged_event = GestureEventSecondFromLastQueueEvent();
+  EXPECT_EQ(WebInputEvent::GestureScrollUpdate, merged_event.type);
+  EXPECT_EQ(8, merged_event.data.scrollUpdate.deltaX);
+  EXPECT_EQ(-4, merged_event.data.scrollUpdate.deltaY);
+  EXPECT_EQ(1, merged_event.modifiers);
+
+  // Enqueued.
+  SimulateGestureScrollUpdateEvent(6, -3, 1);
+
+  // Check whether coalesced correctly.
+  EXPECT_EQ(expected_events_in_queue, GestureEventLastQueueEventSize());
+  merged_event = GestureEventLastQueueEvent();
+  EXPECT_EQ(WebInputEvent::GesturePinchUpdate, merged_event.type);
+  EXPECT_EQ(1.5, merged_event.data.pinchUpdate.scale);
+  EXPECT_EQ(1, merged_event.modifiers);
+  merged_event = GestureEventSecondFromLastQueueEvent();
+  EXPECT_EQ(WebInputEvent::GestureScrollUpdate, merged_event.type);
+  EXPECT_EQ(12, merged_event.data.scrollUpdate.deltaX);
+  EXPECT_EQ(-6, merged_event.data.scrollUpdate.deltaY);
+  EXPECT_EQ(1, merged_event.modifiers);
+
+  // Now start another sequence before the previous sequence has been ack'ed.
+  SimulateGestureEvent(WebInputEvent::GesturePinchEnd,
+                       WebGestureEvent::Touchscreen);
+  SimulateGestureEvent(WebInputEvent::GestureScrollEnd,
+                       WebGestureEvent::Touchscreen);
+  SimulateGestureEvent(WebInputEvent::GestureScrollBegin,
+                       WebGestureEvent::Touchscreen);
+  SimulateGestureEvent(WebInputEvent::GesturePinchBegin,
+                       WebGestureEvent::Touchscreen);
+
+  SimulateGestureScrollUpdateEvent(8, -4, 1);
+  // Make sure that the queue contains what we think it should.
+  expected_events_in_queue += 5;
+  merged_event = GestureEventLastQueueEvent();
+  EXPECT_EQ(expected_events_in_queue, GestureEventLastQueueEventSize());
+  EXPECT_EQ(WebInputEvent::GestureScrollUpdate, merged_event.type);
+
+  // Coalesced without changing event order. Note anchor at (60, 60). Anchoring
+  // from a poinht that is not the origin should still give us the wight scroll.
+  SimulateGesturePinchUpdateEvent(1.5, 30, 30, 1);
+  EXPECT_EQ(++expected_events_in_queue, GestureEventLastQueueEventSize());
+  merged_event = GestureEventLastQueueEvent();
+  EXPECT_EQ(WebInputEvent::GesturePinchUpdate, merged_event.type);
+  EXPECT_EQ(1.5, merged_event.data.pinchUpdate.scale);
+  EXPECT_EQ(1, merged_event.modifiers);
+  merged_event = GestureEventSecondFromLastQueueEvent();
+  EXPECT_EQ(WebInputEvent::GestureScrollUpdate, merged_event.type);
+  EXPECT_EQ(8, merged_event.data.scrollUpdate.deltaX);
+  EXPECT_EQ(-4, merged_event.data.scrollUpdate.deltaY);
+  EXPECT_EQ(1, merged_event.modifiers);
+
+  // Enqueued.
+  SimulateGestureScrollUpdateEvent(6, -3, 1);
+
+  // Check whether coalesced correctly.
+  EXPECT_EQ(expected_events_in_queue, GestureEventLastQueueEventSize());
+  merged_event = GestureEventLastQueueEvent();
+  EXPECT_EQ(WebInputEvent::GesturePinchUpdate, merged_event.type);
+  EXPECT_EQ(1.5, merged_event.data.pinchUpdate.scale);
+  EXPECT_EQ(1, merged_event.modifiers);
+  merged_event = GestureEventSecondFromLastQueueEvent();
+  EXPECT_EQ(WebInputEvent::GestureScrollUpdate, merged_event.type);
+  EXPECT_EQ(12, merged_event.data.scrollUpdate.deltaX);
+  EXPECT_EQ(-6, merged_event.data.scrollUpdate.deltaY);
+  EXPECT_EQ(1, merged_event.modifiers);
+}
+
 #if GTEST_HAS_PARAM_TEST
 TEST_P(GestureEventFilterWithSourceTest, GestureFlingCancelsFiltered) {
   WebGestureEvent::SourceDevice source_device = GetParam();

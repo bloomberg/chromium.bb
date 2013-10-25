@@ -160,6 +160,10 @@ class CONTENT_EXPORT GestureEventFilter {
   // head requires an ack.
   void SendEventsIgnoringAck();
 
+  // Adds |gesture_event| to the |coalesced_gesture_events_|, resetting the
+  // accumulation of |combined_scroll_pinch_|.
+  void EnqueueEvent(const GestureEventWithLatencyInfo& gesture_event);
+
   // The receiver of all forwarded gesture events.
   GestureEventFilterClient* client_;
 
