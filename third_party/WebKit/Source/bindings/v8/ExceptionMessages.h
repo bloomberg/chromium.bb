@@ -43,7 +43,11 @@ public:
     static String failedToSet(const String& property, const String& type, const String& detail);
     static String failedToDelete(const String& property, const String& type, const String& detail);
 
-    static String notASequenceType(const String& argument);
+    // If  > 0, the argument index that failed type check (1-indexed.)
+    // If <= 0, a (non-argument) value failed the same check.
+    static String notASequenceTypeArgumentOrValue(int argumentIndexOrValue);
+    static String notASequenceTypeProperty(const String& propertyName);
+
     static String notEnoughArguments(unsigned expected, unsigned providedleastNumMandatoryParams);
 };
 

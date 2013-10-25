@@ -1909,7 +1909,8 @@ END
             $code .= "        return;\n";
         }
     } else {
-        $code .= JSValueToNativeStatement($attribute->type, $attribute->extendedAttributes, "jsValue", "cppValue", "    ", "info.GetIsolate()");
+        my $asSetterValue = 0;
+        $code .= JSValueToNativeStatement($attribute->type, $attribute->extendedAttributes, $asSetterValue, "jsValue", "cppValue", "    ", "info.GetIsolate()");
     }
 
     if (IsEnumType($attrType)) {
@@ -2504,7 +2505,7 @@ sub GenerateParametersCheck
                 $parameterCheckString .= "    bool ${parameterName}IsNull = $jsValue->IsNull();\n";
                 $stringResourceParameterName .= "StringResource";
             }
-            $parameterCheckString .= JSValueToNativeStatement($parameter->type, $parameter->extendedAttributes, $jsValue, $stringResourceParameterName, "    ", "args.GetIsolate()");
+            $parameterCheckString .= JSValueToNativeStatement($parameter->type, $parameter->extendedAttributes, $humanFriendlyIndex, $jsValue, $stringResourceParameterName, "    ", "args.GetIsolate()");
             $parameterCheckString .= "    String $parameterName = $stringResourceParameterName;\n" if $isNullable;
             if (IsEnumType($parameter->type)) {
                 my @enumValues = ValidEnumValues($parameter->type);
@@ -2540,7 +2541,7 @@ sub GenerateParametersCheck
             my $jsValue = $parameter->isOptional && $default eq "NullString" ? "argumentOrNull(args, $paramIndex)" : "args[$paramIndex]";
             my $isNullable = $parameter->isNullable && !IsRefPtrType($parameter->type);
             $parameterCheckString .= "    bool ${parameterName}IsNull = $jsValue->IsNull();\n" if $isNullable;
-            $parameterCheckString .= JSValueToNativeStatement($parameter->type, $parameter->extendedAttributes, $jsValue, $parameterName, "    ", "args.GetIsolate()");
+            $parameterCheckString .= JSValueToNativeStatement($parameter->type, $parameter->extendedAttributes, $humanFriendlyIndex, $jsValue, $parameterName, "    ", "args.GetIsolate()");
             if ($nativeType eq 'Dictionary' or $nativeType eq 'ScriptPromise') {
                 $parameterCheckString .= "    if (!$parameterName.isUndefinedOrNull() && !$parameterName.isObject()) {\n";
                 if ($functionName eq "Constructor") {
@@ -3499,10 +3500,12 @@ sub GenerateImplementationIndexedPropertySetter
     my $raisesExceptions = $indexedSetterFunction->extendedAttributes->{"RaisesException"};
     my $treatNullAs = $indexedSetterFunction->parameters->[1]->extendedAttributes->{"TreatNullAs"};
     my $treatUndefinedAs = $indexedSetterFunction->parameters->[1]->extendedAttributes->{"TreatUndefinedAs"};
+    my $asSetterValue = 0;
+
     my $code = "static void indexedPropertySetter(uint32_t index, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<v8::Value>& info)\n";
     $code .= "{\n";
     $code .= "    ${implClassName}* collection = ${v8ClassName}::toNative(info.Holder());\n";
-    $code .= JSValueToNativeStatement($indexedSetterFunction->parameters->[1]->type, $indexedSetterFunction->extendedAttributes, "jsValue", "propertyValue", "    ", "info.GetIsolate()");
+    $code .= JSValueToNativeStatement($indexedSetterFunction->parameters->[1]->type, $indexedSetterFunction->extendedAttributes, $asSetterValue, "jsValue", "propertyValue", "    ", "info.GetIsolate()");
 
     my $extraArguments = "";
     if ($raisesExceptions) {
@@ -3801,6 +3804,7 @@ sub GenerateImplementationNamedPropertySetter
     my $raisesExceptions = $namedSetterFunction->extendedAttributes->{"RaisesException"};
     my $treatNullAs = $namedSetterFunction->parameters->[1]->extendedAttributes->{"TreatNullAs"};
     my $treatUndefinedAs = $namedSetterFunction->parameters->[1]->extendedAttributes->{"TreatUndefinedAs"};
+    my $asSetterValue = 0;
 
     my $code = "static void namedPropertySetter(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<v8::Value>& info)\n";
     $code .= "{\n";
@@ -3813,8 +3817,8 @@ sub GenerateImplementationNamedPropertySetter
         $code .= "        return;\n";
     }
     $code .= "    ${implClassName}* collection = ${v8ClassName}::toNative(info.Holder());\n";
-    $code .= JSValueToNativeStatement($namedSetterFunction->parameters->[0]->type, $namedSetterFunction->extendedAttributes, "name", "propertyName", "    ", "info.GetIsolate()");
-    $code .= JSValueToNativeStatement($namedSetterFunction->parameters->[1]->type, $namedSetterFunction->extendedAttributes, "jsValue", "propertyValue", "    ", "info.GetIsolate()");
+    $code .= JSValueToNativeStatement($namedSetterFunction->parameters->[0]->type, $namedSetterFunction->extendedAttributes, $asSetterValue, "name", "propertyName", "    ", "info.GetIsolate()");
+    $code .= JSValueToNativeStatement($namedSetterFunction->parameters->[1]->type, $namedSetterFunction->extendedAttributes, $asSetterValue, "jsValue", "propertyValue", "    ", "info.GetIsolate()");
     my $extraArguments = "";
     if ($raisesExceptions) {
         $code .= "    ExceptionState es(info.GetIsolate());\n";
@@ -5246,13 +5250,14 @@ sub JSValueToNativeStatement
 {
     my $type = shift;
     my $extendedAttributes = shift;
+    my $argIndexOrZero = shift;
     my $jsValue = shift;
     my $variableName = shift;
     my $indent = shift;
     my $getIsolate = shift;
 
     my $nativeType = GetNativeType($type, $extendedAttributes, "parameter");
-    my $native_value = JSValueToNative($type, $extendedAttributes, $jsValue, $getIsolate);
+    my $native_value = JSValueToNative($type, $extendedAttributes, $argIndexOrZero, $jsValue, $getIsolate);
     my $code = "";
     if ($type eq "DOMString" || IsEnumType($type)) {
         die "Wrong native type passed: $nativeType" unless $nativeType =~ /^V8StringResource/;
@@ -5274,6 +5279,8 @@ sub JSValueToNative
 {
     my $type = shift;
     my $extendedAttributes = shift;
+    # Argument position (1-indexed) or 0 if for a setter's value.
+    my $argIndexOrZero = shift;
     my $value = shift;
     my $getIsolate = shift;
 
@@ -5352,9 +5359,9 @@ sub JSValueToNative
     if ($arrayOrSequenceType) {
         if (IsRefPtrType($arrayOrSequenceType)) {
             AddToImplIncludes("V8${arrayOrSequenceType}.h");
-            return "(toRefPtrNativeArray<${arrayOrSequenceType}, V8${arrayOrSequenceType}>($value, $getIsolate))";
+            return "(toRefPtrNativeArray<${arrayOrSequenceType}, V8${arrayOrSequenceType}>($value, $argIndexOrZero, $getIsolate))";
         }
-        return "toNativeArray<" . GetNativeType($arrayOrSequenceType) . ">($value, $getIsolate)";
+        return "toNativeArray<" . GetNativeType($arrayOrSequenceType) . ">($value, $argIndexOrZero, $getIsolate)";
     }
 
     AddIncludesForType($type);

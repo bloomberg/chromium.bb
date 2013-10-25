@@ -38,7 +38,7 @@ function checkLineDash(testArray, shouldFail) {
     ctx.setLineDash([]);
     // Set line dash.
     if (shouldFail) {
-        shouldThrow("ctx.setLineDash(inputArray)", "'TypeError: Type error'");
+        shouldThrow("ctx.setLineDash(inputArray)", "'TypeError: First argument is neither an array, nor does it have indexed properties.'");
     } else {
         ctx.setLineDash(inputArray);
         lineDash = ctx.getLineDash();

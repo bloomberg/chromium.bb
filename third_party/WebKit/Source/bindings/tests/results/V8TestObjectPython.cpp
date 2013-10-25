@@ -1125,7 +1125,7 @@ static void stringArrayAttributeAttributeGetterCallback(v8::Local<v8::String> na
 static void stringArrayAttributeAttributeSetter(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(Vector<String>, cppValue, toNativeArray<String>(jsValue, info.GetIsolate()));
+    V8TRYCATCH_VOID(Vector<String>, cppValue, toNativeArray<String>(jsValue, 0, info.GetIsolate()));
     imp->setStringArrayAttribute(cppValue);
 }
 
@@ -1152,7 +1152,7 @@ static void testInterfaceEmptyArrayAttributeAttributeGetterCallback(v8::Local<v8
 static void testInterfaceEmptyArrayAttributeAttributeSetter(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(Vector<RefPtr<TestInterfaceEmpty> >, cppValue, (toRefPtrNativeArray<TestInterfaceEmpty, V8TestInterfaceEmpty>(jsValue, info.GetIsolate())));
+    V8TRYCATCH_VOID(Vector<RefPtr<TestInterfaceEmpty> >, cppValue, (toRefPtrNativeArray<TestInterfaceEmpty, V8TestInterfaceEmpty>(jsValue, 0, info.GetIsolate())));
     imp->setTestInterfaceEmptyArrayAttribute(cppValue);
 }
 
@@ -1179,7 +1179,7 @@ static void floatArrayAttributeAttributeGetterCallback(v8::Local<v8::String> nam
 static void floatArrayAttributeAttributeSetter(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(Vector<float>, cppValue, toNativeArray<float>(jsValue, info.GetIsolate()));
+    V8TRYCATCH_VOID(Vector<float>, cppValue, toNativeArray<float>(jsValue, 0, info.GetIsolate()));
     imp->setFloatArrayAttribute(cppValue);
 }
 

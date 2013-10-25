@@ -265,7 +265,7 @@ void V8Window::postMessageMethodCustom(const v8::FunctionCallbackInfo<v8::Value>
         bool notASequence = false;
         if (!extractTransferables(args[transferablesArgIndex], portArray, arrayBufferArray, notASequence, args.GetIsolate())) {
             if (notASequence)
-                throwTypeError(ExceptionMessages::failedToExecute("postMessage", "Window", ExceptionMessages::notASequenceType(transferablesArgIndex == 1 ? "Second" : "Third")), args.GetIsolate());
+                throwTypeError(ExceptionMessages::failedToExecute("postMessage", "Window", ExceptionMessages::notASequenceTypeArgumentOrValue(transferablesArgIndex + 1)), args.GetIsolate());
             return;
         }
     }

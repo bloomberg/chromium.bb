@@ -63,7 +63,9 @@ namespace WebCore {
     // then being responsible for generating a TypeError having a message that fits the context.
     // Returns true if the array was filled, or false if the passed value was not of an appropriate type.
     bool extractTransferables(v8::Local<v8::Value>, MessagePortArray&, ArrayBufferArray&, bool& notASequence, v8::Isolate*);
-    bool getMessagePortArray(v8::Local<v8::Value>, MessagePortArray&, v8::Isolate*);
+
+    bool getMessagePortArray(v8::Local<v8::Value>, const String& propertyName, MessagePortArray&, v8::Isolate*);
+    bool getMessagePortArray(v8::Local<v8::Value>, int argumentIndex, MessagePortArray&, v8::Isolate*);
 
 } // namespace WebCore
 

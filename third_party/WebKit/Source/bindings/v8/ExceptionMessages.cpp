@@ -58,9 +58,34 @@ String ExceptionMessages::failedToDelete(const String& property, const String& t
     return "Failed to delete the '" + property + "' property from '" + type + "': " + detail;
 }
 
-String ExceptionMessages::notASequenceType(const String& argument)
+String ExceptionMessages::notASequenceTypeArgumentOrValue(int argumentIndexOrValue)
 {
-    return argument + " argument is neither an array, nor does it have indexed properties.";
+    String kind(" argument");
+
+    String prefix;
+    switch (argumentIndexOrValue) {
+    case 1:
+        prefix = "First";
+        break;
+    case 2:
+        prefix = "Second";
+        break;
+    case 3:
+        prefix = "Third";
+        break;
+    default:
+        if (argumentIndexOrValue <= 0)
+            kind = "The value provided";
+        else
+            prefix = String::number(argumentIndexOrValue) + "th";
+        break;
+    }
+    return prefix + kind + " is neither an array, nor does it have indexed properties.";
+}
+
+String ExceptionMessages::notASequenceTypeProperty(const String& propertyName)
+{
+    return "'" + propertyName + "' property is neither an array, nor does it have indexed properties.";
 }
 
 String ExceptionMessages::notEnoughArguments(unsigned expected, unsigned provided)

@@ -32,6 +32,7 @@
 #include "bindings/v8/V8Utilities.h"
 
 #include "V8MessagePort.h"
+#include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ScriptState.h"
 #include "bindings/v8/V8AbstractEventListener.h"
 #include "bindings/v8/V8Binding.h"
@@ -76,7 +77,7 @@ bool extractTransferables(v8::Local<v8::Value> value, MessagePortArray& ports, A
         v8::Local<v8::Array> array = v8::Local<v8::Array>::Cast(value);
         length = array->Length();
     } else {
-        if (toV8Sequence(value, length, &notASequence, isolate).IsEmpty())
+        if (toV8Sequence(value, length, notASequence, isolate).IsEmpty())
             return false;
     }
 
@@ -109,18 +110,33 @@ bool extractTransferables(v8::Local<v8::Value> value, MessagePortArray& ports, A
     return true;
 }
 
-bool getMessagePortArray(v8::Local<v8::Value> value, MessagePortArray& ports, v8::Isolate* isolate)
+bool getMessagePortArray(v8::Local<v8::Value> value, const String& propertyName, MessagePortArray& ports, v8::Isolate* isolate)
 {
     if (isUndefinedOrNull(value)) {
         ports.resize(0);
         return true;
     }
     if (!value->IsArray()) {
-        throwUninformativeAndGenericTypeError(isolate);
+        throwTypeError(ExceptionMessages::notASequenceTypeProperty(propertyName), isolate);
         return false;
     }
     bool success = false;
-    ports = toRefPtrNativeArray<MessagePort, V8MessagePort>(value, isolate, &success);
+    ports = toRefPtrNativeArray<MessagePort, V8MessagePort>(value, propertyName, isolate, &success);
+    return success;
+}
+
+bool getMessagePortArray(v8::Local<v8::Value> value, int argumentIndex, MessagePortArray& ports, v8::Isolate* isolate)
+{
+    if (isUndefinedOrNull(value)) {
+        ports.resize(0);
+        return true;
+    }
+    if (!value->IsArray()) {
+        throwTypeError(ExceptionMessages::notASequenceTypeArgumentOrValue(argumentIndex), isolate);
+        return false;
+    }
+    bool success = false;
+    ports = toRefPtrNativeArray<MessagePort, V8MessagePort>(value, argumentIndex, isolate, &success);
     return success;
 }
 

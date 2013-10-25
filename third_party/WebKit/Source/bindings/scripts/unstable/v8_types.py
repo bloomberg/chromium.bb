@@ -405,11 +405,11 @@ def v8_value_to_cpp_value(idl_type, extended_attributes, v8_value, isolate):
 def v8_value_to_cpp_value_array_or_sequence(this_array_or_sequence_type, v8_value, isolate):
     if is_interface_type(this_array_or_sequence_type):
         this_cpp_type = None
-        expression_format = '(toRefPtrNativeArray<{array_or_sequence_type}, V8{array_or_sequence_type}>({v8_value}, {isolate}))'
+        expression_format = '(toRefPtrNativeArray<{array_or_sequence_type}, V8{array_or_sequence_type}>({v8_value}, 0, {isolate}))'
         includes.add('V8%s.h' % this_array_or_sequence_type)
     else:
         this_cpp_type = cpp_type(this_array_or_sequence_type)
-        expression_format = 'toNativeArray<{cpp_type}>({v8_value}, {isolate})'
+        expression_format = 'toNativeArray<{cpp_type}>({v8_value}, 0, {isolate})'
     expression = expression_format.format(array_or_sequence_type=this_array_or_sequence_type, cpp_type=this_cpp_type, isolate=isolate, v8_value=v8_value)
     return expression
 

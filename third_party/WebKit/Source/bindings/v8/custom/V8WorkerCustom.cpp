@@ -48,10 +48,11 @@ void V8Worker::postMessageMethodCustom(const v8::FunctionCallbackInfo<v8::Value>
     MessagePortArray ports;
     ArrayBufferArray arrayBuffers;
     if (args.Length() > 1) {
+        const int transferablesArgIndex = 1;
         bool notASequence = false;
-        if (!extractTransferables(args[1], ports, arrayBuffers, notASequence, args.GetIsolate())) {
+        if (!extractTransferables(args[transferablesArgIndex], ports, arrayBuffers, notASequence, args.GetIsolate())) {
             if (notASequence)
-                throwTypeError(ExceptionMessages::failedToExecute("postMessage", "Worker", ExceptionMessages::notASequenceType("Second")), args.GetIsolate());
+                throwTypeError(ExceptionMessages::failedToExecute("postMessage", "Worker", ExceptionMessages::notASequenceTypeArgumentOrValue(transferablesArgIndex + 1)), args.GetIsolate());
             return;
         }
     }

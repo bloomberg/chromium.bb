@@ -116,9 +116,10 @@ void V8MessageEvent::initMessageEventMethodCustom(const v8::FunctionCallbackInfo
     }
     OwnPtr<MessagePortArray> portArray;
 
-    if (!isUndefinedOrNull(args[7])) {
+    const int portArrayIndex = 7;
+    if (!isUndefinedOrNull(args[portArrayIndex])) {
         portArray = adoptPtr(new MessagePortArray);
-        if (!getMessagePortArray(args[7], *portArray, args.GetIsolate()))
+        if (!getMessagePortArray(args[portArrayIndex], portArrayIndex + 1, *portArray, args.GetIsolate()))
             return;
     }
     event->initMessageEvent(typeArg, canBubbleArg, cancelableArg, originArg, lastEventIdArg, sourceArg, portArray.release());

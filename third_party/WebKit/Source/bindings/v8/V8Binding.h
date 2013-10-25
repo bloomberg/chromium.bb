@@ -33,6 +33,7 @@
 #define V8Binding_h
 
 #include "bindings/v8/DOMWrapperWorld.h"
+#include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/V8BindingMacros.h"
 #include "bindings/v8/V8PerIsolateData.h"
 #include "bindings/v8/V8StringResource.h"
@@ -74,7 +75,7 @@ namespace WebCore {
 
     v8::ArrayBuffer::Allocator* v8ArrayBufferAllocator();
 
-    v8::Handle<v8::Value> toV8Sequence(v8::Handle<v8::Value>, uint32_t& length, bool* notASequence, v8::Isolate*);
+    v8::Handle<v8::Value> toV8Sequence(v8::Handle<v8::Value>, uint32_t& length, bool& notASequence, v8::Isolate*);
 
     inline v8::Handle<v8::Value> argumentOrNull(const v8::FunctionCallbackInfo<v8::Value>& args, int index)
     {
@@ -440,18 +441,8 @@ namespace WebCore {
     // Converts a JavaScript value to an array as per the Web IDL specification:
     // http://www.w3.org/TR/2012/CR-WebIDL-20120419/#es-array
     template <class T, class V8T>
-    Vector<RefPtr<T> > toRefPtrNativeArray(v8::Handle<v8::Value> value, v8::Isolate* isolate, bool* success = 0)
+    Vector<RefPtr<T> > toRefPtrNativeArrayUnchecked(v8::Local<v8::Value> v8Value, uint32_t length, v8::Isolate* isolate, bool* success = 0)
     {
-        if (success)
-            *success = true;
-
-        v8::Local<v8::Value> v8Value(v8::Local<v8::Value>::New(isolate, value));
-        uint32_t length = 0;
-        if (value->IsArray())
-            length = v8::Local<v8::Array>::Cast(v8Value)->Length();
-        else if (toV8Sequence(value, length, 0, isolate).IsEmpty())
-            return Vector<RefPtr<T> >();
-
         Vector<RefPtr<T> > result;
         result.reserveInitialCapacity(length);
         v8::Local<v8::Object> object = v8::Local<v8::Object>::Cast(v8Value);
@@ -471,17 +462,61 @@ namespace WebCore {
         return result;
     }
 
+    template <class T, class V8T>
+    Vector<RefPtr<T> > toRefPtrNativeArray(v8::Handle<v8::Value> value, int argumentIndex, v8::Isolate* isolate, bool* success = 0)
+    {
+        if (success)
+            *success = true;
+
+        v8::Local<v8::Value> v8Value(v8::Local<v8::Value>::New(isolate, value));
+        uint32_t length = 0;
+        bool notASequence = false;
+        if (value->IsArray()) {
+            length = v8::Local<v8::Array>::Cast(v8Value)->Length();
+        } else if (toV8Sequence(value, length, notASequence, isolate).IsEmpty()) {
+            if (notASequence)
+                throwTypeError(ExceptionMessages::notASequenceTypeArgumentOrValue(argumentIndex), isolate);
+            return Vector<RefPtr<T> >();
+        }
+
+        return toRefPtrNativeArrayUnchecked<T, V8T>(v8Value, length, isolate, success);
+    }
+
+    template <class T, class V8T>
+    Vector<RefPtr<T> > toRefPtrNativeArray(v8::Handle<v8::Value> value, const String& propertyName, v8::Isolate* isolate, bool* success = 0)
+    {
+        if (success)
+            *success = true;
+
+        v8::Local<v8::Value> v8Value(v8::Local<v8::Value>::New(isolate, value));
+        uint32_t length = 0;
+        bool notASequence = false;
+        if (value->IsArray()) {
+            length = v8::Local<v8::Array>::Cast(v8Value)->Length();
+        } else if (toV8Sequence(value, length, notASequence, isolate).IsEmpty()) {
+            if (notASequence)
+                throwTypeError(ExceptionMessages::notASequenceTypeProperty(propertyName), isolate);
+            return Vector<RefPtr<T> >();
+        }
+
+        return toRefPtrNativeArrayUnchecked<T, V8T>(v8Value, length, isolate, success);
+    }
+
     // Converts a JavaScript value to an array as per the Web IDL specification:
     // http://www.w3.org/TR/2012/CR-WebIDL-20120419/#es-array
     template <class T>
-    Vector<T> toNativeArray(v8::Handle<v8::Value> value, v8::Isolate* isolate)
+    Vector<T> toNativeArray(v8::Handle<v8::Value> value, int argumentIndex, v8::Isolate* isolate)
     {
         v8::Local<v8::Value> v8Value(v8::Local<v8::Value>::New(isolate, value));
         uint32_t length = 0;
-        if (value->IsArray())
+        bool notASequence = false;
+        if (value->IsArray()) {
             length = v8::Local<v8::Array>::Cast(v8Value)->Length();
-        else if (toV8Sequence(value, length, 0, isolate).IsEmpty())
+        } else if (toV8Sequence(value, length, notASequence, isolate).IsEmpty()) {
+            if (notASequence)
+                throwTypeError(ExceptionMessages::notASequenceTypeArgumentOrValue(argumentIndex), isolate);
             return Vector<T>();
+        }
 
         Vector<T> result;
         result.reserveInitialCapacity(length);
@@ -509,7 +544,7 @@ namespace WebCore {
 
     // Validates that the passed object is a sequence type per WebIDL spec
     // http://www.w3.org/TR/2012/CR-WebIDL-20120419/#es-sequence
-    inline v8::Handle<v8::Value> toV8Sequence(v8::Handle<v8::Value> value, uint32_t& length, bool* notASequence, v8::Isolate* isolate)
+    inline v8::Handle<v8::Value> toV8Sequence(v8::Handle<v8::Value> value, uint32_t& length, bool& notASequence, v8::Isolate* isolate)
     {
         // Attempt converting to a sequence if the value is not already an array but is
         // any kind of object except for a native Date object or a native RegExp object.
@@ -518,10 +553,7 @@ namespace WebCore {
         // https://www.w3.org/Bugs/Public/show_bug.cgi?id=22806
         if (!value->IsObject() || value->IsDate() || value->IsRegExp()) {
             // Signal that the caller must handle the type error.
-            if (notASequence)
-                *notASequence = true;
-            else
-                throwUninformativeAndGenericTypeError(isolate);
+            notASequence = true;
             return v8Undefined();
         }
 
@@ -534,11 +566,7 @@ namespace WebCore {
         V8TRYCATCH(v8::Local<v8::Value>, lengthValue, object->Get(v8::String::NewSymbol("length")));
 
         if (lengthValue->IsUndefined() || lengthValue->IsNull()) {
-            // Signal that the caller must handle the type error.
-            if (notASequence)
-                *notASequence = true;
-            else
-                throwUninformativeAndGenericTypeError(isolate);
+            notASequence = true;
             return v8Undefined();
         }
 
