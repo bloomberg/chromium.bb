@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_LIBGTK2UI_APP_INDICATOR_ICON_H_
 
 #include "base/files/file_path.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/libgtk2ui/gtk2_signal.h"
 #include "ui/views/linux_ui/status_icon_linux.h"
 
@@ -70,6 +71,8 @@ class AppIndicatorIcon : public views::StatusIconLinux {
   base::FilePath icon_file_path_;
   int icon_change_count_;
   bool block_activation_;
+
+  base::WeakPtrFactory<AppIndicatorIcon> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AppIndicatorIcon);
 };

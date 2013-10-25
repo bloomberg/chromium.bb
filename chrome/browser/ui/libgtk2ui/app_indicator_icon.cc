@@ -171,7 +171,8 @@ AppIndicatorIcon::AppIndicatorIcon(std::string id,
       gtk_menu_(NULL),
       menu_model_(NULL),
       icon_change_count_(0),
-      block_activation_(false) {
+      block_activation_(false),
+      weak_factory_(this) {
   EnsureMethodsLoaded();
   tool_tip_ = UTF16ToUTF8(tool_tip);
   SetImage(image);
@@ -213,7 +214,7 @@ void AppIndicatorIcon::SetImage(const gfx::ImageSkia& image) {
                  icon_change_count_,
                  id_),
       base::Bind(&AppIndicatorIcon::SetImageFromFile,
-                 base::Unretained(this)));
+                 weak_factory_.GetWeakPtr()));
 }
 
 void AppIndicatorIcon::SetPressedImage(const gfx::ImageSkia& image) {
