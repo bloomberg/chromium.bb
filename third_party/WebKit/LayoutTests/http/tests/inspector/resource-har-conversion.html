@@ -36,9 +36,9 @@ var test = function()
 
         function addCookieHeadersToRequest(request)
         {
-            request.requestHeaders = [
+            request.setRequestHeaders([
                 { name: "Cookie", value: "a=b; $Path=/path; $Domain=example.com; a1=b1\nc1=d1" }
-            ];
+            ]);
 
             request.responseHeaders = [
                 { name: "Set-Cookie", value: "x=y; Path=/path; Domain=example.com; Discard; httpOnly; Secure; Version=1\nx1=y1\nz2=y2" }

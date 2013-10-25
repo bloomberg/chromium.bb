@@ -14,10 +14,10 @@ var test = function()
 
     function setRequestValues(request)
     {
-        request.requestHeaders = [
+        request.setRequestHeaders([
             { name: "Request", value: "request-value" }
-        ];
-        request.requestHeadersText = "GET http://example.com/inspector-test.js HTTP/1.1\r\nRequest: headers-text";
+        ]);
+        request.setRequestHeadersText("GET http://example.com/inspector-test.js HTTP/1.1\r\nRequest: headers-text");
 
         request.responseHeaders = [
             { name: "Response", value: "response-value" }
@@ -35,11 +35,12 @@ var test = function()
 
     var testRequest = new WebInspector.NetworkRequest("testRequest", "http://example.com/inspector-test.js", 1); 
     setRequestValues(testRequest);
+    var headersText = testRequest.requestHeadersText();
     var requestResults = {
         "request": {
-            "headers": testRequest.requestHeaders,
-            "headersText": visibleNewlines(testRequest.requestHeadersText),
-            "headersSize": testRequest.requestHeadersSize,
+            "headers": testRequest.requestHeaders(),
+            "headersText": visibleNewlines(headersText),
+            "headersSize": headersText.length,
         },
         "response": {
             "headers": testRequest.responseHeaders,

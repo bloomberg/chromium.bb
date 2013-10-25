@@ -20,7 +20,7 @@ var test = function()
             headerList.push({name: "Content-Length", value: data.length});
             request.requestFormData = data;
         }
-        request.requestHeaders = headerList;
+        request.setRequestHeaders(headerList);
         return request;
     }
 
