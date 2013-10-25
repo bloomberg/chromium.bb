@@ -284,7 +284,8 @@ class COMPOSITOR_EXPORT Compositor
     : NON_EXPORTED_BASE(public cc::LayerTreeHostClient),
       public base::SupportsWeakPtr<Compositor> {
  public:
-  explicit Compositor(gfx::AcceleratedWidget widget);
+  Compositor(bool use_software_renderer,
+             gfx::AcceleratedWidget widget);
   virtual ~Compositor();
 
   // Set up the compositor ContextFactory for a test environment. Unit tests
@@ -404,6 +405,10 @@ class COMPOSITOR_EXPORT Compositor
   const cc::LayerTreeDebugState& GetLayerTreeDebugState() const;
   void SetLayerTreeDebugState(const cc::LayerTreeDebugState& debug_state);
 
+  // Should the compositor use a software output device. If false, it may still
+  // use a software output device if no GPU is available.
+  bool use_software_renderer() { return use_software_renderer_; }
+
  private:
   friend class base::RefCounted<Compositor>;
   friend class CompositorLock;
@@ -452,6 +457,8 @@ class COMPOSITOR_EXPORT Compositor
   bool draw_on_compositing_end_;
 
   base::WeakPtrFactory<Compositor> schedule_draw_factory_;
+
+  bool use_software_renderer_;
 
   DISALLOW_COPY_AND_ASSIGN(Compositor);
 };

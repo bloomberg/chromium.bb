@@ -130,8 +130,8 @@ class SimpleRootWindowTransformer : public RootWindowTransformer {
 
 RootWindow::CreateParams::CreateParams(const gfx::Rect& a_initial_bounds)
     : initial_bounds(a_initial_bounds),
-      host(NULL) {
-}
+      use_software_renderer(false),
+      host(NULL) {}
 
 ////////////////////////////////////////////////////////////////////////////////
 // RootWindow, public:
@@ -151,7 +151,8 @@ RootWindow::RootWindow(const CreateParams& params)
       repostable_event_factory_(this) {
   SetName("RootWindow");
 
-  compositor_.reset(new ui::Compositor(host_->GetAcceleratedWidget()));
+  compositor_.reset(new ui::Compositor(params.use_software_renderer,
+                                       host_->GetAcceleratedWidget()));
   DCHECK(compositor_.get());
 
   prop_.reset(new ui::ViewProp(host_->GetAcceleratedWidget(),

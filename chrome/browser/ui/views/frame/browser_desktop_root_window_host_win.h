@@ -31,14 +31,20 @@ class BrowserDesktopRootWindowHostWin : public BrowserDesktopRootWindowHost,
   virtual ~BrowserDesktopRootWindowHostWin();
 
  private:
+  void SetWindowTransparency();
+
   views::NativeMenuWin* GetSystemMenu();
 
   // Overridden from BrowserDesktopRootWindowHost:
   virtual DesktopRootWindowHost* AsDesktopRootWindowHost() OVERRIDE;
   virtual int GetMinimizeButtonOffset() const OVERRIDE;
   virtual bool UsesNativeSystemMenu() const OVERRIDE;
+  virtual void ToggleFullScreen() OVERRIDE;
 
   // Overridden from DesktopRootWindowHostWin:
+  virtual void OnRootWindowCreated(
+      aura::RootWindow* root,
+      const views::Widget::InitParams& params) OVERRIDE;
   virtual int GetInitialShowState() const OVERRIDE;
   virtual bool GetClientAreaInsets(gfx::Insets* insets) const OVERRIDE;
   virtual void HandleFrameChanged() OVERRIDE;
@@ -52,6 +58,7 @@ class BrowserDesktopRootWindowHostWin : public BrowserDesktopRootWindowHost,
   virtual bool IsUsingCustomFrame() const OVERRIDE;
   virtual bool ShouldUseNativeFrame() OVERRIDE;
   virtual void FrameTypeChanged() OVERRIDE;
+  virtual void SetFullscreen(bool fullscreen) OVERRIDE;
 
   void UpdateDWMFrame();
 

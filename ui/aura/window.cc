@@ -172,8 +172,6 @@ void Window::SetName(const std::string& name) {
 
 void Window::SetTransparent(bool transparent) {
   transparent_ = transparent;
-  if (layer())
-    layer_->SetFillsBoundsOpaquely(!transparent_);
 }
 
 RootWindow* Window::GetRootWindow() {

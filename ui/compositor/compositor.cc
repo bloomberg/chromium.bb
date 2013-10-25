@@ -375,7 +375,8 @@ PendingSwap::~PendingSwap() {
 
 namespace ui {
 
-Compositor::Compositor(gfx::AcceleratedWidget widget)
+Compositor::Compositor(bool use_software_renderer,
+                       gfx::AcceleratedWidget widget)
     : root_layer_(NULL),
       widget_(widget),
       posted_swaps_(new PostedSwapQueue()),
@@ -388,7 +389,8 @@ Compositor::Compositor(gfx::AcceleratedWidget widget)
       defer_draw_scheduling_(false),
       waiting_on_compositing_end_(false),
       draw_on_compositing_end_(false),
-      schedule_draw_factory_(this) {
+      schedule_draw_factory_(this),
+      use_software_renderer_(use_software_renderer) {
   DCHECK(g_compositor_initialized)
       << "Compositor::Initialize must be called before creating a Compositor.";
 

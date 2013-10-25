@@ -22,7 +22,8 @@ SoftwareOutputDeviceWin::SoftwareOutputDeviceWin(ui::Compositor* compositor)
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   LONG style = GetWindowLong(hwnd_, GWL_EXSTYLE);
-  is_hwnd_composited_ = !!(style & WS_EX_COMPOSITED);
+  is_hwnd_composited_ =
+      !!(style & WS_EX_COMPOSITED) || !!(style & WS_EX_LAYERED);
 }
 
 SoftwareOutputDeviceWin::~SoftwareOutputDeviceWin() {
