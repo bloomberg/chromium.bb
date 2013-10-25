@@ -4,8 +4,8 @@
 
 package org.chromium.chrome.browser.translate;
 
+import android.test.FlakyTest;
 import android.test.suitebuilder.annotation.MediumTest;
-
 
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.infobar.InfoBar;
@@ -41,9 +41,11 @@ public class TranslateInfoBarTest extends ChromiumTestShellTestBase {
 
     /**
      * Test the translate language panel.
+     * @MediumTest
+     * @Feature({"Browser", "Main"})
+     * http://crbug.com/311197
      */
-    @MediumTest
-    @Feature({"Browser", "Main"})
+    @FlakyTest
     public void testTranslateLanguagePanel() throws InterruptedException {
         List<InfoBar> infoBars = getActivity().getActiveTab().getInfoBarContainer().getInfoBars();
         loadUrlWithSanitization(TestHttpServerClient.getUrl(TRANSLATE_PAGE));
@@ -56,10 +58,12 @@ public class TranslateInfoBarTest extends ChromiumTestShellTestBase {
 
 
     /**
-     *  Test the "never translate" panel.
+     * Test the "never translate" panel.
+     * @MediumTest
+     * @Feature({"Browser", "Main"})
+     * http://crbug.com/311197
      */
-    @MediumTest
-    @Feature({"Browser", "Main"})
+    @FlakyTest
     public void testTranslateNeverPanel() throws InterruptedException {
         List<InfoBar> infoBars = getActivity().getActiveTab().getInfoBarContainer().getInfoBars();
         loadUrlWithSanitization(TestHttpServerClient.getUrl(TRANSLATE_PAGE));
