@@ -29,17 +29,16 @@
  */
 
 #include "config.h"
-#include "core/platform/graphics/chromium/FontUtilsChromiumWin.h"
+#include "core/platform/graphics/chromium/FontFallbackWin.h"
 
-#include <limits>
-
-#include <unicode/locid.h>
-#include <unicode/uchar.h>
 #include "core/platform/graphics/chromium/UniscribeHelper.h"
 #include "platform/win/HWndDC.h"
 #include "wtf/HashMap.h"
 #include "wtf/text/StringHash.h"
 #include "wtf/text/WTFString.h"
+#include <limits>
+#include <unicode/locid.h>
+#include <unicode/uchar.h>
 
 namespace WebCore {
 
@@ -47,8 +46,7 @@ namespace {
 
 bool isFontPresent(const UChar* fontName)
 {
-    HFONT hfont = CreateFont(12, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                             fontName);
+    HFONT hfont = CreateFont(12, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, fontName);
     if (!hfont)
         return false;
     HWndDC dc(0);
@@ -60,10 +58,11 @@ bool isFontPresent(const UChar* fontName)
     DeleteObject(hfont);
     // We don't have to worry about East Asian fonts with locale-dependent
     // names here for now.
+    // FIXME: Why not?
     return !wcscmp(fontName, actualFontName);
 }
 
-// A simple mapping from UScriptCode to family name.  This is a sparse array,
+// A simple mapping from UScriptCode to family name. This is a sparse array,
 // which works well since the range of UScriptCode values is small.
 typedef const UChar* ScriptToFontMap[USCRIPT_CODE_LIMIT];
 
@@ -175,13 +174,13 @@ void initializeScriptFontMap(ScriptToFontMap& scriptFontMap)
     // this ICU locale tells the current UI locale of Chrome.
     icu::Locale locale = icu::Locale::getDefault();
     const UChar* localeFamily = 0;
-    if (locale == icu::Locale::getJapanese())
+    if (locale == icu::Locale::getJapanese()) {
         localeFamily = scriptFontMap[USCRIPT_HIRAGANA];
-    else if (locale == icu::Locale::getKorean())
+    } else if (locale == icu::Locale::getKorean()) {
         localeFamily = scriptFontMap[USCRIPT_HANGUL];
-    else if (locale == icu::Locale::getTraditionalChinese())
+    } else if (locale == icu::Locale::getTraditionalChinese()) {
         localeFamily = scriptFontMap[USCRIPT_TRADITIONAL_HAN];
-    else {
+    } else {
         // For other locales, use the simplified Chinese font for Han.
         localeFamily = scriptFontMap[USCRIPT_SIMPLIFIED_HAN];
     }
@@ -253,7 +252,7 @@ UScriptCode getScript(int ucs4)
 //  - Update script_font_cache in response to WM_FONTCHANGE
 
 const UChar* getFontFamilyForScript(UScriptCode script,
-                                    FontDescription::GenericFamilyType generic)
+    FontDescription::GenericFamilyType generic)
 {
     static ScriptToFontMap scriptFontMap;
     static bool initialized = false;
@@ -276,10 +275,10 @@ const UChar* getFontFamilyForScript(UScriptCode script,
 //  - All the characters (or characters up to the point a single
 //    font can cover) need to be taken into account
 const UChar* getFallbackFamily(const UChar* characters,
-                               int length,
-                               FontDescription::GenericFamilyType generic,
-                               UChar32* charChecked,
-                               UScriptCode* scriptChecked)
+    int length,
+    FontDescription::GenericFamilyType generic,
+    UChar32* charChecked,
+    UScriptCode* scriptChecked)
 {
     ASSERT(characters && characters[0] && length > 0);
     UScriptCode script = USCRIPT_COMMON;
@@ -322,9 +321,9 @@ const UChar* getFallbackFamily(const UChar* characters,
             // but its coverage is rather sparse.
             // Eventually, this should be controlled by lang/xml:lang.
             if (icu::Locale::getDefault() == icu::Locale::getTraditionalChinese())
-              family = L"pmingliu-extb";
+                family = L"pmingliu-extb";
             else
-              family = L"simsun-extb";
+                family = L"simsun-extb";
             break;
         default:
             family = L"lucida sans unicode";

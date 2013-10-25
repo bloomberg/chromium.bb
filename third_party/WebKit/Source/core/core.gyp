@@ -738,6 +738,7 @@
             ['exclude', 'Posix\\.cpp$'],
 
             ['include', 'platform/ScrollbarThemeWin\\.(cpp|h)$'],
+            ['include', 'platform/graphics/chromium/FontFallbackWin\\.(cpp|h)$'],
             ['include', 'platform/graphics/chromium/TransparencyWin\\.(cpp|h)$'],
             ['include', 'platform/graphics/opentype/'],
             ['include', 'platform/graphics/skia/SkiaFontWin\\.(cpp|h)$'],

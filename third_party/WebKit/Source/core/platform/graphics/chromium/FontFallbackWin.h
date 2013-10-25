@@ -33,29 +33,29 @@
 // FIXME: Move all methods to the files that have their callsites and remove this file.
 // *Utils files are not very WebKit-ty.
 
-#ifndef FontUtilsChromiumWin_h
-#define FontUtilsChromiumWin_h
+#ifndef FontFallbackWin_h
+#define FontFallbackWin_h
 
-#include <windows.h>
+#include "core/platform/graphics/FontDescription.h"
+#include <unicode/uscript.h>
 #include <usp10.h>
 #include <wchar.h>
-
-#include <unicode/uscript.h>
-#include "core/platform/graphics/FontDescription.h"
+#include <windows.h>
 
 namespace WebCore {
 
 // Return a font family that can render |characters| based on
-// what script characters belong to. When char_checked is non-NULL,
+// what script characters belong to. When char_checked is non-zero,
 // it's filled with the character used to determine the script.
-// When script_checked is non-NULL, the script used to determine
+// When script_checked is non-zero, the script used to determine
 // the family is returned.
 // FIXME: This function needs a total overhaul.
-const UChar* getFallbackFamily(const UChar* characters, int length,
-                               FontDescription::GenericFamilyType,
-                               UChar32* charChecked,
-                               UScriptCode* scriptChecked);
+const UChar* getFallbackFamily(const UChar* characters,
+    int length,
+    FontDescription::GenericFamilyType,
+    UChar32* charChecked,
+    UScriptCode* scriptChecked);
 
-}  // namespace WebCore
+} // namespace WebCore
 
-#endif  // FontUtilsChromiumWin_h
+#endif // FontFallbackWin_h

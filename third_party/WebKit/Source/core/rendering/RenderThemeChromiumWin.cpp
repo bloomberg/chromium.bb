@@ -36,7 +36,6 @@
 #include "core/platform/ScrollbarTheme.h"
 #include "core/platform/graphics/FontSelector.h"
 #include "core/platform/graphics/GraphicsContext.h"
-#include "core/platform/graphics/chromium/FontUtilsChromiumWin.h"
 #include "core/platform/graphics/chromium/TransparencyWin.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderBox.h"

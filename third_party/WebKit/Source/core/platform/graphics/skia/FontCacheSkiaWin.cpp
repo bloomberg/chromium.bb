@@ -37,8 +37,8 @@
 #include "SkTypeface_win.h"
 #include "core/platform/graphics/Font.h"
 #include "core/platform/graphics/SimpleFontData.h"
+#include "core/platform/graphics/chromium/FontFallbackWin.h"
 #include "core/platform/graphics/chromium/FontPlatformDataChromiumWin.h"
-#include "core/platform/graphics/chromium/FontUtilsChromiumWin.h"
 
 namespace WebCore {
 
