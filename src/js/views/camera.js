@@ -577,6 +577,13 @@ camera.views.Camera.prototype.takePicture_ = function() {
     var img = document.createElement('img');
     img.src = dataURL;
     img.style.webkitTransform = 'rotate(' + (Math.random() * 40 - 20) + 'deg)';
+    img.addEventListener('click', function() {
+      // For simplicity, always navigate to the newest picture.
+      if (this.model_.length) {
+        this.model_.currentIndex = this.model_.length - 1;
+        this.router.navigate(camera.Router.ViewIdentifier.BROWSER);
+      }
+    }.bind(this));
 
     // Create the fly-away animation after two second.
     setTimeout(function() {
