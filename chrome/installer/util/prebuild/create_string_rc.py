@@ -35,9 +35,9 @@ from xml.dom import minidom
 from google import path_utils
 
 # Quick hack to fix the path.
-sys.path.append(os.path.abspath('../../tools/grit/grit/extern'))
-sys.path.append(os.path.abspath('../tools/grit/grit/extern'))
-import FP
+sys.path.append(os.path.abspath('../../tools/grit'))
+sys.path.append(os.path.abspath('../tools/grit'))
+from grit.extern import tclib
 
 # The IDs of strings we want to import from generated_resources.grd and include
 # in setup.exe's resources.
@@ -127,9 +127,9 @@ def CollectTranslatedStrings(branding):
                           x.getAttribute('name') == string_id][0])
   message_texts = [node.firstChild.nodeValue.strip() for node in message_nodes]
 
-  # The fingerprint of the string is the message ID in the translation files
-  # (xtb files).
-  translation_ids = [str(FP.FingerPrint(text)) for text in message_texts]
+  # Generate the message ID of the string to correlate it with its translations
+  # in the xtb files.
+  translation_ids = [tclib.GenerateMessageId(text) for text in message_texts]
 
   # Manually put _EN_US in the list of translated strings because it doesn't
   # have a .xtb file.
