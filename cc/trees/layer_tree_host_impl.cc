@@ -2341,10 +2341,8 @@ void LayerTreeHostImpl::MouseMoveAt(gfx::Point viewport_point) {
 
   bool should_animate = animation_controller->DidMouseMoveNear(
       CurrentPhysicalTimeTicks(), distance_to_scrollbar / device_scale_factor_);
-  if (should_animate) {
-    client_->SetNeedsRedrawOnImplThread();
+  if (should_animate)
     StartScrollbarAnimation();
-  }
 }
 
 bool LayerTreeHostImpl::HandleMouseOverScrollbar(LayerImpl* layer_impl,
@@ -2354,8 +2352,11 @@ bool LayerTreeHostImpl::HandleMouseOverScrollbar(LayerImpl* layer_impl,
     layer_impl = active_tree_->LayerById(scroll_layer_id);
     if (layer_impl && layer_impl->scrollbar_animation_controller()) {
       scroll_layer_id_when_mouse_over_scrollbar_ = scroll_layer_id;
-      layer_impl->scrollbar_animation_controller()->DidMouseMoveNear(
-          CurrentPhysicalTimeTicks(), 0);
+      bool should_animate =
+          layer_impl->scrollbar_animation_controller()->DidMouseMoveNear(
+              CurrentPhysicalTimeTicks(), 0);
+      if (should_animate)
+        StartScrollbarAnimation();
     } else {
       scroll_layer_id_when_mouse_over_scrollbar_ = 0;
     }

@@ -1329,20 +1329,17 @@ void LayerTreeHostImplTest::SetupMouseMoveAtWithDeviceScale(
   scrollbar_animation_controller->set_mouse_move_distance_for_test(100.f);
 
   host_impl_->MouseMoveAt(gfx::Point(1, 1));
-  EXPECT_FALSE(did_request_redraw_);
+  EXPECT_FALSE(scrollbar_animation_controller->mouse_is_near_scrollbar());
 
-  did_request_redraw_ = false;
   host_impl_->MouseMoveAt(gfx::Point(200, 50));
-  EXPECT_TRUE(did_request_redraw_);
+  EXPECT_TRUE(scrollbar_animation_controller->mouse_is_near_scrollbar());
 
-  did_request_redraw_ = false;
   host_impl_->MouseMoveAt(gfx::Point(184, 100));
-  EXPECT_FALSE(did_request_redraw_);
+  EXPECT_FALSE(scrollbar_animation_controller->mouse_is_near_scrollbar());
 
   scrollbar_animation_controller->set_mouse_move_distance_for_test(102.f);
-  did_request_redraw_ = false;
   host_impl_->MouseMoveAt(gfx::Point(184, 100));
-  EXPECT_TRUE(did_request_redraw_);
+  EXPECT_TRUE(scrollbar_animation_controller->mouse_is_near_scrollbar());
 
   did_request_redraw_ = false;
   EXPECT_EQ(0, host_impl_->scroll_layer_id_when_mouse_over_scrollbar());

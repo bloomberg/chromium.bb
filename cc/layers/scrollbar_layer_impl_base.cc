@@ -72,6 +72,13 @@ void ScrollbarLayerImplBase::SetVisibleToTotalLengthRatio(float ratio) {
   NoteLayerPropertyChanged();
 }
 
+void ScrollbarLayerImplBase::SetThumbThicknessScaleFactor(float factor) {
+  if (thumb_thickness_scale_factor_ == factor)
+    return;
+  thumb_thickness_scale_factor_ = factor;
+  NoteLayerPropertyChanged();
+}
+
 gfx::Rect ScrollbarLayerImplBase::ComputeThumbQuadRect() const {
   // Thumb extent is the length of the thumb in the scrolling direction, thumb
   // thickness is in the perpendicular direction. Here's an example of a

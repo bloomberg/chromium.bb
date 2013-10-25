@@ -44,9 +44,7 @@ class CC_EXPORT ScrollbarLayerImplBase : public LayerImpl {
   float thumb_thickness_scale_factor() {
     return thumb_thickness_scale_factor_;
   }
-  void set_thumb_thickness_scale_factor(float thumb_thickness_scale_factor) {
-    thumb_thickness_scale_factor_ = thumb_thickness_scale_factor;
-  }
+  void SetThumbThicknessScaleFactor(float thumb_thickness_scale_factor);
 
  protected:
   ScrollbarLayerImplBase(LayerTreeImpl* tree_impl,

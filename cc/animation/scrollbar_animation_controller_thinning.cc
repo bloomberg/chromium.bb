@@ -10,14 +10,22 @@
 #include "cc/layers/layer_impl.h"
 #include "cc/layers/scrollbar_layer_impl_base.h"
 
+namespace {
+const float kIdleThicknessScale = 0.4f;
+const float kIdleOpacity = 0.7f;
+const float kDefaultMouseMoveDistanceToTriggerAnimation = 25.f;
+const int kDefaultAnimationDelay = 500;
+const int kDefaultAnimationDuration = 300;
+}
+
 namespace cc {
 
 scoped_ptr<ScrollbarAnimationControllerThinning>
 ScrollbarAnimationControllerThinning::Create(LayerImpl* scroll_layer) {
   return make_scoped_ptr(new ScrollbarAnimationControllerThinning(
       scroll_layer,
-      base::TimeDelta::FromMilliseconds(500),
-      base::TimeDelta::FromMilliseconds(300)));
+      base::TimeDelta::FromMilliseconds(kDefaultAnimationDelay),
+      base::TimeDelta::FromMilliseconds(kDefaultAnimationDuration)));
 }
 
 scoped_ptr<ScrollbarAnimationControllerThinning>
@@ -33,11 +41,17 @@ ScrollbarAnimationControllerThinning::ScrollbarAnimationControllerThinning(
     base::TimeDelta animation_duration)
     : ScrollbarAnimationController(),
       scroll_layer_(scroll_layer),
-      scroll_gesture_in_progress_(false),
       mouse_is_over_scrollbar_(false),
+      mouse_is_near_scrollbar_(false),
+      thickness_change_(NONE),
+      opacity_change_(NONE),
+      should_delay_animation_(false),
       animation_delay_(animation_delay),
       animation_duration_(animation_duration),
-      mouse_move_distance_to_trigger_animation_(100.f) {}
+      mouse_move_distance_to_trigger_animation_(
+          kDefaultMouseMoveDistanceToTriggerAnimation) {
+  ApplyOpacityAndThumbThicknessScale(kIdleOpacity, kIdleThicknessScale);
+}
 
 ScrollbarAnimationControllerThinning::~ScrollbarAnimationControllerThinning() {
 }
@@ -48,92 +62,120 @@ bool ScrollbarAnimationControllerThinning::IsAnimating() const {
 
 base::TimeDelta ScrollbarAnimationControllerThinning::DelayBeforeStart(
     base::TimeTicks now) const {
+  if (!should_delay_animation_)
+    return base::TimeDelta();
   if (now > last_awaken_time_ + animation_delay_)
     return base::TimeDelta();
   return animation_delay_ - (now - last_awaken_time_);
 }
 
 bool ScrollbarAnimationControllerThinning::Animate(base::TimeTicks now) {
-  if (mouse_is_over_scrollbar_) {
-    ApplyOpacityAndThumbThicknessScale(1, 1);
-    return false;
-  }
   float progress = AnimationProgressAtTime(now);
   float opacity = OpacityAtAnimationProgress(progress);
   float thumb_thickness_scale = ThumbThicknessScaleAtAnimationProgress(
       progress);
   ApplyOpacityAndThumbThicknessScale(opacity, thumb_thickness_scale);
-  if (progress == 1.f)
+  if (progress == 1.f) {
+    opacity_change_ = NONE;
+    thickness_change_ = NONE;
     last_awaken_time_ = base::TimeTicks();
+  }
   return IsAnimating() && DelayBeforeStart(now) == base::TimeDelta();
 }
 
 void ScrollbarAnimationControllerThinning::DidScrollGestureBegin() {
-  ApplyOpacityAndThumbThicknessScale(1, 1);
-  last_awaken_time_ = base::TimeTicks();
-  scroll_gesture_in_progress_ = true;
 }
 
 void ScrollbarAnimationControllerThinning::DidScrollGestureEnd(
     base::TimeTicks now) {
-  last_awaken_time_ = now;
-  scroll_gesture_in_progress_ = false;
 }
 
 void ScrollbarAnimationControllerThinning::DidMouseMoveOffScrollbar(
     base::TimeTicks now) {
   mouse_is_over_scrollbar_ = false;
-  DidScrollUpdate(now);
+  mouse_is_near_scrollbar_ = false;
+  last_awaken_time_ = now;
+  should_delay_animation_ = false;
+  opacity_change_ = DECREASE;
+  thickness_change_ = DECREASE;
 }
 
 bool ScrollbarAnimationControllerThinning::DidScrollUpdate(
     base::TimeTicks now) {
-  ApplyOpacityAndThumbThicknessScale(1, 1);
+  ApplyOpacityAndThumbThicknessScale(
+    1, mouse_is_near_scrollbar_ ? 1.f : kIdleThicknessScale);
 
   last_awaken_time_ = now;
+  should_delay_animation_ = true;
+  if (!mouse_is_over_scrollbar_)
+    opacity_change_ = DECREASE;
   return true;
 }
 
 bool ScrollbarAnimationControllerThinning::DidMouseMoveNear(
     base::TimeTicks now, float distance) {
-  if (distance == 0.0) {
-    mouse_is_over_scrollbar_ = true;
+  bool mouse_is_over_scrollbar = distance == 0.0;
+  bool mouse_is_near_scrollbar =
+      distance < mouse_move_distance_to_trigger_animation_;
+
+  if (mouse_is_over_scrollbar == mouse_is_over_scrollbar_ &&
+      mouse_is_near_scrollbar == mouse_is_near_scrollbar_)
     return false;
+
+  if (mouse_is_over_scrollbar_ != mouse_is_over_scrollbar) {
+    mouse_is_over_scrollbar_ = mouse_is_over_scrollbar;
+    opacity_change_ = mouse_is_over_scrollbar_ ? INCREASE : DECREASE;
   }
 
-  if (distance < mouse_move_distance_to_trigger_animation_)
-    return DidScrollUpdate(now);
+  if (mouse_is_near_scrollbar_ != mouse_is_near_scrollbar) {
+    mouse_is_near_scrollbar_ = mouse_is_near_scrollbar;
+    thickness_change_ = mouse_is_near_scrollbar_ ? INCREASE : DECREASE;
+  }
 
-  return false;
+  last_awaken_time_ = now;
+  should_delay_animation_ = false;
+  return true;
 }
 
 float ScrollbarAnimationControllerThinning::AnimationProgressAtTime(
     base::TimeTicks now) {
-  if (scroll_gesture_in_progress_)
-    return 0;
-
   if (last_awaken_time_.is_null())
     return 1;
 
   base::TimeDelta delta = now - last_awaken_time_;
-  float progress = (delta - animation_delay_).InSecondsF() /
-      animation_duration_.InSecondsF();
+  if (should_delay_animation_)
+    delta -= animation_delay_;
+  float progress = delta.InSecondsF() / animation_duration_.InSecondsF();
   return std::max(std::min(progress, 1.f), 0.f);
 }
 
 float ScrollbarAnimationControllerThinning::OpacityAtAnimationProgress(
     float progress) {
-  const float kIdleOpacity = 0.7f;
-
-  return ((1.f - kIdleOpacity) * (1.f - progress)) + kIdleOpacity;
+  if (opacity_change_ == NONE)
+    return mouse_is_over_scrollbar_ ? 1.f : kIdleOpacity;
+  float factor = opacity_change_ == INCREASE ? progress : (1.f - progress);
+  float ret = ((1.f - kIdleOpacity) * factor) + kIdleOpacity;
+  return ret;
 }
 
 float
 ScrollbarAnimationControllerThinning::ThumbThicknessScaleAtAnimationProgress(
     float progress) {
-  const float kIdleThicknessScale = 0.4f;
+  if (thickness_change_ == NONE)
+    return mouse_is_near_scrollbar_ ? 1.f : kIdleThicknessScale;
+  float factor = thickness_change_ == INCREASE ? progress : (1.f - progress);
+  return ((1.f - kIdleThicknessScale) * factor) + kIdleThicknessScale;
+}
 
-  return ((1.f - kIdleThicknessScale) * (1.f - progress)) + kIdleThicknessScale;
+float ScrollbarAnimationControllerThinning::AdjustScale(
+    float new_value,
+    float current_value,
+    AnimationChange animation_change) {
+  if (animation_change == INCREASE && current_value > new_value)
+    return current_value;
+  if (animation_change == DECREASE && current_value < new_value)
+    return current_value;
+  return new_value;
 }
 
 void ScrollbarAnimationControllerThinning::ApplyOpacityAndThumbThicknessScale(
@@ -141,16 +183,25 @@ void ScrollbarAnimationControllerThinning::ApplyOpacityAndThumbThicknessScale(
   ScrollbarLayerImplBase* horizontal_scrollbar =
       scroll_layer_->horizontal_scrollbar_layer();
   if (horizontal_scrollbar) {
-    horizontal_scrollbar->SetOpacity(opacity);
-    horizontal_scrollbar->set_thumb_thickness_scale_factor(
-        thumb_thickness_scale);
+    horizontal_scrollbar->SetOpacity(
+        AdjustScale(opacity, horizontal_scrollbar->opacity(), opacity_change_));
+    horizontal_scrollbar->SetThumbThicknessScaleFactor(
+        AdjustScale(
+          thumb_thickness_scale,
+          horizontal_scrollbar->thumb_thickness_scale_factor(),
+          thickness_change_));
   }
 
   ScrollbarLayerImplBase* vertical_scrollbar =
       scroll_layer_->vertical_scrollbar_layer();
   if (vertical_scrollbar) {
-    vertical_scrollbar->SetOpacity(opacity);
-    vertical_scrollbar->set_thumb_thickness_scale_factor(thumb_thickness_scale);
+    vertical_scrollbar->SetOpacity(
+        AdjustScale(opacity, vertical_scrollbar->opacity(), opacity_change_));
+    vertical_scrollbar->SetThumbThicknessScaleFactor(
+        AdjustScale(
+          thumb_thickness_scale,
+          vertical_scrollbar->thumb_thickness_scale_factor(),
+          thickness_change_));
   }
 }
 
