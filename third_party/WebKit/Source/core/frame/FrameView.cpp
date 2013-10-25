@@ -2252,7 +2252,7 @@ void FrameView::performPostLayoutTasks()
         }
     }
 
-    m_frame->document()->fonts()->didLayout();
+    FontFaceSet::didLayout(m_frame->document());
 
     RenderView* renderView = this->renderView();
     if (renderView)

@@ -32,6 +32,7 @@
 #include "core/events/EventListener.h"
 #include "core/events/EventTarget.h"
 #include "core/events/ThreadLocalEventNames.h"
+#include "core/platform/RefCountedSupplement.h"
 #include "platform/AsyncMethodRunner.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
@@ -55,13 +56,9 @@ class FontsReadyPromiseResolver;
 class LoadFontPromiseResolver;
 class ExecutionContext;
 
-class FontFaceSet : public RefCounted<FontFaceSet>, public ActiveDOMObject, public EventTargetWithInlineData {
+class FontFaceSet : public RefCountedSupplement<Document, FontFaceSet>, public ActiveDOMObject, public EventTargetWithInlineData {
     REFCOUNTED_EVENT_TARGET(FontFaceSet);
 public:
-    static PassRefPtr<FontFaceSet> create(Document* document)
-    {
-        return adoptRef<FontFaceSet>(new FontFaceSet(document));
-    }
     virtual ~FontFaceSet();
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(loading);
@@ -91,7 +88,17 @@ public:
     virtual void resume() OVERRIDE;
     virtual void stop() OVERRIDE;
 
+    static PassRefPtr<FontFaceSet> from(Document*);
+    static void didLayout(Document*);
+
 private:
+    typedef RefCountedSupplement<Document, FontFaceSet> SupplementType;
+
+    static PassRefPtr<FontFaceSet> create(Document* document)
+    {
+        return adoptRef<FontFaceSet>(new FontFaceSet(document));
+    }
+
     class FontLoadHistogram {
     public:
         FontLoadHistogram() : m_count(0), m_recorded(false) { }

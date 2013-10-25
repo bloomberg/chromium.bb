@@ -167,8 +167,6 @@ callback CustomElementConstructor = Element ();
 
     [RuntimeEnabled=CSSRegions] WebKitNamedFlowCollection webkitGetNamedFlows();
 
-    [RuntimeEnabled=FontLoadEvents] readonly attribute FontFaceSet fonts;
-
     // Event handler attributes
     attribute EventHandler onbeforecopy;
     attribute EventHandler onbeforecut;

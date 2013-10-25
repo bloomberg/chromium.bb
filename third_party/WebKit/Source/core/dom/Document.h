@@ -1063,8 +1063,6 @@ public:
     virtual DOMWindow* executingWindow() OVERRIDE { return domWindow(); }
     virtual void userEventWasHandled() OVERRIDE { resetLastHandledUserGestureTimestamp(); }
 
-    // Can never return null.
-    FontFaceSet* fonts();
     DocumentLifecycleNotifier& lifecycleNotifier();
     bool isActive() const { return m_lifecyle.state() == DocumentLifecycle::Active; }
 
@@ -1390,8 +1388,6 @@ private:
 
     RefPtr<Document> m_templateDocument;
     Document* m_templateDocumentHost; // Manually managed weakref (backpointer from m_templateDocument).
-
-    RefPtr<FontFaceSet> m_fonts;
 
     Timer<Document> m_didAssociateFormControlsTimer;
     HashSet<RefPtr<Element> > m_associatedFormControls;

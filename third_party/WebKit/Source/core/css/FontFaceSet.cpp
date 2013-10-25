@@ -84,7 +84,7 @@ void LoadFontPromiseResolver::loaded(Document* document)
     if (m_numLoading || !document)
         return;
 
-    document->fonts()->scheduleResolve(this);
+    FontFaceSet::from(document)->scheduleResolve(this);
 }
 
 void LoadFontPromiseResolver::error(Document* document)
@@ -444,5 +444,28 @@ void FontFaceSet::FontLoadHistogram::record()
     m_recorded = true;
     HistogramSupport::histogramCustomCounts("WebFont.WebFontsInPage", m_count, 1, 100, 50);
 }
+
+static const char* supplementName()
+{
+    return "FontFaceSet";
+}
+
+PassRefPtr<FontFaceSet> FontFaceSet::from(Document* document)
+{
+    RefPtr<FontFaceSet> fonts = static_cast<FontFaceSet*>(SupplementType::from(document, supplementName()));
+    if (!fonts) {
+        fonts = FontFaceSet::create(document);
+        SupplementType::provideTo(document, supplementName(), fonts);
+    }
+
+    return fonts.release();
+}
+
+void FontFaceSet::didLayout(Document* document)
+{
+    if (FontFaceSet* fonts = static_cast<FontFaceSet*>(SupplementType::from(document, supplementName())))
+        fonts->didLayout();
+}
+
 
 } // namespace WebCore

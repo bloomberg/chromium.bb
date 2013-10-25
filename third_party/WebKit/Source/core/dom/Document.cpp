@@ -49,7 +49,6 @@
 #include "core/css/CSSFontSelector.h"
 #include "core/css/CSSStyleDeclaration.h"
 #include "core/css/CSSStyleSheet.h"
-#include "core/css/FontFaceSet.h"
 #include "core/css/MediaQueryMatcher.h"
 #include "core/css/StylePropertySet.h"
 #include "core/css/StyleSheetContents.h"
@@ -462,7 +461,6 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
     , m_timeline(DocumentTimeline::create(this))
     , m_transitionTimeline(TransitionTimeline::create(this))
     , m_templateDocumentHost(0)
-    , m_fonts(0)
     , m_didAssociateFormControlsTimer(this, &Document::didAssociateFormControlsTimerFired)
 {
     setClient(this);
@@ -5293,13 +5291,6 @@ Document& Document::ensureTemplateDocument()
     m_templateDocument->setTemplateDocumentHost(this); // balanced in dtor.
 
     return *m_templateDocument.get();
-}
-
-FontFaceSet* Document::fonts()
-{
-    if (!m_fonts)
-        m_fonts = FontFaceSet::create(this);
-    return m_fonts.get();
 }
 
 void Document::didAssociateFormControl(Element* element)
