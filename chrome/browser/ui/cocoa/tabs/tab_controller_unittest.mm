@@ -485,7 +485,8 @@ TEST_F(TabControllerTest, TitleViewLayout) {
 // throbber indicators, titile text, audio indicator, and close button) over all
 // relevant combinations of tab state.  This test overlaps with parts of the
 // other tests above.
-TEST_F(TabControllerTest, LayoutAndVisibilityOfSubviews) {
+// Flaky: https://code.google.com/p/chromium/issues/detail?id=311668
+TEST_F(TabControllerTest, DISABLED_LayoutAndVisibilityOfSubviews) {
   static const TabMediaState kMediaStatesToTest[] = {
     TAB_MEDIA_STATE_NONE, TAB_MEDIA_STATE_CAPTURING,
     TAB_MEDIA_STATE_AUDIO_PLAYING
