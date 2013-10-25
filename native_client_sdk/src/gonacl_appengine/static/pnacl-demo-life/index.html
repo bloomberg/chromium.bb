@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<!--
+Copyright (c) 2013 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+<head>
+  <meta charset="UTF-8">
+  <title>Life</title>
+  <script type="text/javascript" src="example.js"></script>
+  <link href="/static/common.css" rel="stylesheet" type="text/css">
+</head>
+<body>
+  <div class="absolute-fill">
+    <div class="flex-container">
+      <div class="main absolute-fill-parent">
+        <div class="absolute-fill">
+          <div class="flex-container flex-column flex-justify-center">
+            <div id="message">
+              <div id="statusField"></div>
+              <progress id="progress"></progress>
+            </div>
+          </div>
+        </div>
+        <div id="listener" class="absolute-fill"></div>
+      </div>
+      <div class="sidebar">
+        <h1>Life</h1>
+        <p>
+          This demo renders <a
+            href="http://en.wikipedia.org/wiki/Conway%27s_Game_of_Life">Conway's
+            Game of Life</a>.
+        </p>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

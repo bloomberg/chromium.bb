@@ -53,7 +53,7 @@ all:
 #
 # All projects built by this Makefile
 #
-PROJECTS = earth voronoi bullet
+PROJECTS = earth voronoi life bullet
 
 GS_URL_CONTINUOUS = gs://gonacl/demos/continuous
 GS_URL_PUBLISH = gs://gonacl/demos/publish
@@ -105,15 +105,28 @@ $(bullet_TGTS): $(bullet_SRCS)
 #
 # Voronoi
 #
-voronoi_SRC_DIR = $(CURDIR)/voronoi
-voronoi_TGT_DIR = $(CURDIR)/voronoi/pnacl/Release
+voronoi_SRC_DIR = voronoi
+voronoi_TGT_DIR = voronoi/pnacl/Release
 voronoi_SRCS = $(voronoi_SRC_DIR)/voronoi.cc \
-             $(voronoi_SRC_DIR)/Makefile
+               $(voronoi_SRC_DIR)/Makefile
 voronoi_TGTS = $(voronoi_TGT_DIR)/voronoi.pexe \
-             $(voronoi_TGT_DIR)/voronoi.nmf
+               $(voronoi_TGT_DIR)/voronoi.nmf
 
 $(voronoi_TGTS): $(voronoi_SRCS)
-	$(MAKE) -C $(CURDIR)/voronoi TOOLCHAIN=pnacl CONFIG=Release
+	$(MAKE) -C voronoi TOOLCHAIN=pnacl CONFIG=Release
+
+#
+# Life
+#
+life_SRC_DIR = life
+life_TGT_DIR = life/pnacl/Release
+life_SRCS = $(life_SRC_DIR)/life.c \
+            $(life_SRC_DIR)/Makefile
+life_TGTS = $(life_TGT_DIR)/life.pexe \
+            $(life_TGT_DIR)/life.nmf
+
+$(life_TGTS): $(life_SRCS)
+	$(MAKE) -C life TOOLCHAIN=pnacl CONFIG=Release
 
 ###############################################################################
 
