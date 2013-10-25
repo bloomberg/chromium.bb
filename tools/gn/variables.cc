@@ -492,7 +492,13 @@ const char kGypFile[] = "gyp_file";
 const char kGypFile_HelpShort[] =
     "gyp_file: [file name] Name of GYP file to write to in GYP mode.";
 const char kGypFile_Help[] =
-    "gyp_file: Name of GYP file to write to in GYP mode.\n";
+    "gyp_file: Name of GYP file to write to in GYP mode.\n"
+    "\n"
+    "  See \"gn help gyp\" for an overview of how this works.\n"
+    "\n"
+    "  Tip: If all targets in a given BUILD.gn file should go in the same\n"
+    "  GYP file, just put gyp_file = \"foo\" at the top of the file and\n"
+    "  the variable will be in scope for all targets.\n";
 
 const char kHardDep[] = "hard_dep";
 const char kHardDep_HelpShort[] =
