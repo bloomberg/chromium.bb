@@ -47,7 +47,6 @@ class GraphicsContext;
 class OpaqueRegionSkia {
 public:
     OpaqueRegionSkia();
-    virtual ~OpaqueRegionSkia();
 
     // The resulting opaque region as a single rect.
     IntRect asRect() const;

@@ -367,10 +367,6 @@ HarfBuzzShaper::HarfBuzzShaper(const Font* font, const TextRun& run)
     setFontFeatures();
 }
 
-HarfBuzzShaper::~HarfBuzzShaper()
-{
-}
-
 static void normalizeSpacesAndMirrorChars(const UChar* source, unsigned length, UChar* destination, unsigned* destinationLength, HarfBuzzShaper::NormalizeMode normalizeMode)
 {
     int position = 0;

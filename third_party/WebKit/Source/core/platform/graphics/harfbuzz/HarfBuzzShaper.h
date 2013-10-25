@@ -54,7 +54,6 @@ public:
     };
 
     HarfBuzzShaper(const Font*, const TextRun&);
-    virtual ~HarfBuzzShaper();
 
     void setDrawRange(int from, int to);
     bool shape(GlyphBuffer* = 0);

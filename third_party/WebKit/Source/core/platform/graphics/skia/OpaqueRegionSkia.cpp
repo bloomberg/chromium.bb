@@ -45,10 +45,6 @@ OpaqueRegionSkia::OpaqueRegionSkia()
 {
 }
 
-OpaqueRegionSkia::~OpaqueRegionSkia()
-{
-}
-
 IntRect OpaqueRegionSkia::asRect() const
 {
     // Returns the largest enclosed rect.
