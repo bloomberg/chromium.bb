@@ -450,7 +450,7 @@ body.show-shutter #shutter {
 #picture-preview {
   bottom: 25%;
   left: 25%;
-  pointer-events: none;
+  pointer-events: auto;
   position: absolute;
   right: 25%;
   top: 25%;
