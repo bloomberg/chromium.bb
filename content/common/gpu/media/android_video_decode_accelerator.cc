@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
+#include "base/metrics/histogram.h"
 #include "content/common/gpu/gpu_channel.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "media/base/bitstream_buffer.h"
@@ -59,7 +60,6 @@ AndroidVideoDecodeAccelerator::AndroidVideoDecodeAccelerator(
       state_(NO_ERROR),
       surface_texture_id_(0),
       picturebuffers_requested_(false),
-      io_task_is_posted_(false),
       decoder_met_eos_(false),
       gl_decoder_(decoder) {
 }
@@ -120,25 +120,12 @@ bool AndroidVideoDecodeAccelerator::Initialize(
 }
 
 void AndroidVideoDecodeAccelerator::DoIOTask() {
-  io_task_is_posted_ = false;
   if (state_ == ERROR) {
     return;
   }
 
   QueueInput();
   DequeueOutput();
-
-  if (!pending_bitstream_buffers_.empty() ||
-      !free_picture_ids_.empty()) {
-    io_task_is_posted_ = true;
-    // TODO(dwkang): PostDelayedTask() does not guarantee the task will awake
-    //               at the exact time. Need a better way for polling.
-    base::MessageLoop::current()->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(
-            &AndroidVideoDecodeAccelerator::DoIOTask, base::AsWeakPtr(this)),
-            DecodePollDelay());
-  }
 }
 
 void AndroidVideoDecodeAccelerator::QueueInput() {
@@ -156,14 +143,18 @@ void AndroidVideoDecodeAccelerator::QueueInput() {
     return;
   }
 
+  base::Time queued_time = pending_bitstream_buffers_.front().second;
+  UMA_HISTOGRAM_TIMES("Media.AVDA.InputQueueTime",
+                      base::Time::Now() - queued_time);
   media::BitstreamBuffer& bitstream_buffer =
-      pending_bitstream_buffers_.front();
+      pending_bitstream_buffers_.front().first;
 
   if (bitstream_buffer.id() == -1) {
     media_codec_->QueueEOS(input_buf_index);
     pending_bitstream_buffers_.pop();
     return;
   }
+
   // Abuse the presentation time argument to propagate the bitstream
   // buffer ID to the output, so we can report it back to the client in
   // PictureReady().
@@ -185,7 +176,6 @@ void AndroidVideoDecodeAccelerator::QueueInput() {
   RETURN_ON_FAILURE(status == media::MEDIA_CODEC_OK,
                     "Failed to QueueInputBuffer: " << status,
                     PLATFORM_FAILURE);
-
   pending_bitstream_buffers_.pop();
 
   // We should call NotifyEndOfBitstreamBuffer(), when no more decoded output
@@ -352,10 +342,10 @@ void AndroidVideoDecodeAccelerator::Decode(
     return;
   }
 
-  pending_bitstream_buffers_.push(bitstream_buffer);
+  pending_bitstream_buffers_.push(
+      std::make_pair(bitstream_buffer, base::Time::Now()));
 
-  if (!io_task_is_posted_)
-    DoIOTask();
+  DoIOTask();
 }
 
 void AndroidVideoDecodeAccelerator::AssignPictureBuffers(
@@ -375,8 +365,7 @@ void AndroidVideoDecodeAccelerator::AssignPictureBuffers(
                     "Invalid picture buffers were passed.",
                     INVALID_ARGUMENT);
 
-  if (!io_task_is_posted_)
-    DoIOTask();
+  DoIOTask();
 }
 
 void AndroidVideoDecodeAccelerator::ReusePictureBuffer(
@@ -384,8 +373,7 @@ void AndroidVideoDecodeAccelerator::ReusePictureBuffer(
   DCHECK(thread_checker_.CalledOnValidThread());
   free_picture_ids_.push(picture_buffer_id);
 
-  if (!io_task_is_posted_)
-    DoIOTask();
+  DoIOTask();
 }
 
 void AndroidVideoDecodeAccelerator::Flush() {
@@ -408,6 +396,10 @@ bool AndroidVideoDecodeAccelerator::ConfigureMediaCodec() {
            codec_, gfx::Size(320, 240), surface.j_surface().obj(), NULL)) {
     return false;
   }
+  io_timer_.Start(FROM_HERE,
+                  DecodePollDelay(),
+                  this,
+                  &AndroidVideoDecodeAccelerator::DoIOTask);
   return media_codec_->GetOutputBuffers();
 }
 
@@ -415,14 +407,13 @@ void AndroidVideoDecodeAccelerator::Reset() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   while (!pending_bitstream_buffers_.empty()) {
-    media::BitstreamBuffer& bitstream_buffer =
-        pending_bitstream_buffers_.front();
+    int32 bitstream_buffer_id = pending_bitstream_buffers_.front().first.id();
     pending_bitstream_buffers_.pop();
 
-    if (bitstream_buffer.id() != -1) {
+    if (bitstream_buffer_id != -1) {
       base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
           &AndroidVideoDecodeAccelerator::NotifyEndOfBitstreamBuffer,
-          base::AsWeakPtr(this), bitstream_buffer.id()));
+          base::AsWeakPtr(this), bitstream_buffer_id));
     }
   }
   bitstreams_notified_in_advance_.clear();
@@ -432,6 +423,7 @@ void AndroidVideoDecodeAccelerator::Reset() {
   } else {
     // MediaCodec should be usable after meeting EOS, but it is not on some
     // devices. b/8125974 To avoid the case, we recreate a new one.
+    io_timer_.Stop();
     media_codec_->Stop();
     ConfigureMediaCodec();
   }
@@ -445,8 +437,10 @@ void AndroidVideoDecodeAccelerator::Reset() {
 void AndroidVideoDecodeAccelerator::Destroy() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  if (media_codec_)
+  if (media_codec_) {
+    io_timer_.Stop();
     media_codec_->Stop();
+  }
   if (surface_texture_id_)
     glDeleteTextures(1, &surface_texture_id_);
   if (copier_)

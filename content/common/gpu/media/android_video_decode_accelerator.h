@@ -5,7 +5,6 @@
 #ifndef CONTENT_COMMON_GPU_MEDIA_ANDROID_VIDEO_DECODE_ACCELERATOR_H_
 #define CONTENT_COMMON_GPU_MEDIA_ANDROID_VIDEO_DECODE_ACCELERATOR_H_
 
-#include <dlfcn.h>
 #include <list>
 #include <map>
 #include <queue>
@@ -14,6 +13,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/threading/thread_checker.h"
+#include "base/timer/timer.h"
 #include "content/common/content_export.h"
 #include "content/common/gpu/media/video_decode_accelerator_impl.h"
 #include "gpu/command_buffer/service/gles2_cmd_copy_texture_chromium.h"
@@ -136,9 +136,6 @@ class CONTENT_EXPORT AndroidVideoDecodeAccelerator
   // Set to true after requesting picture buffers to the client.
   bool picturebuffers_requested_;
 
-  // Set to true when DoIOTask is in the message loop.
-  bool io_task_is_posted_;
-
   // Set to true when decoder outputs EOS (end of stream).
   bool decoder_met_eos_;
 
@@ -146,9 +143,11 @@ class CONTENT_EXPORT AndroidVideoDecodeAccelerator
   gfx::Size size_;
 
   // Encoded bitstream buffers to be passed to media codec, queued until an
-  // input buffer is available.
-  typedef std::queue<media::BitstreamBuffer> BitstreamBufferList;
-  BitstreamBufferList pending_bitstream_buffers_;
+  // input buffer is available, along with the time when they were first
+  // enqueued.
+  typedef std::queue<std::pair<media::BitstreamBuffer, base::Time> >
+      PendingBitstreamBuffers;
+  PendingBitstreamBuffers pending_bitstream_buffers_;
 
   // Keeps track of bitstream ids notified to the client with
   // NotifyEndOfBitstreamBuffer() before getting output from the bitstream.
@@ -159,6 +158,9 @@ class CONTENT_EXPORT AndroidVideoDecodeAccelerator
 
   // Used for copy the texture from |surface_texture_| to picture buffers.
   scoped_ptr<gpu::CopyTextureCHROMIUMResourceManager> copier_;
+
+  // Repeating timer responsible for draining pending IO to the codec.
+  base::RepeatingTimer<AndroidVideoDecodeAccelerator> io_timer_;
 
   friend class AndroidVideoDecodeAcceleratorTest;
 };
