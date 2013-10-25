@@ -6,6 +6,7 @@
 
 #include "base/callback.h"
 #include "base/prefs/pref_value_map.h"
+#include "base/values.h"
 #include "chrome/browser/policy/external_data_fetcher.h"
 #include "chrome/browser/policy/policy_error_map.h"
 #include "chrome/browser/policy/policy_map.h"
@@ -17,6 +18,58 @@
 namespace policy {
 
 namespace {
+
+// Test cases for the screen magnifier type policy setting.
+class ScreenMagnifierPolicyHandlerTest : public testing::Test {
+ protected:
+  PolicyMap policy_;
+  PrefValueMap prefs_;
+  ScreenMagnifierPolicyHandler handler_;
+};
+
+TEST_F(ScreenMagnifierPolicyHandlerTest, Default) {
+  handler_.ApplyPolicySettings(policy_, &prefs_);
+  EXPECT_FALSE(prefs_.GetValue(prefs::kScreenMagnifierEnabled, NULL));
+  EXPECT_FALSE(prefs_.GetValue(prefs::kScreenMagnifierType, NULL));
+}
+
+TEST_F(ScreenMagnifierPolicyHandlerTest, Disabled) {
+  policy_.Set(key::kScreenMagnifierType,
+              POLICY_LEVEL_MANDATORY,
+              POLICY_SCOPE_USER,
+              base::Value::CreateIntegerValue(0),
+              NULL);
+  handler_.ApplyPolicySettings(policy_, &prefs_);
+
+  const base::Value* enabled = NULL;
+  EXPECT_TRUE(prefs_.GetValue(prefs::kScreenMagnifierEnabled, &enabled));
+  ASSERT_TRUE(enabled);
+  EXPECT_TRUE(base::FundamentalValue(false).Equals(enabled));
+
+  const base::Value* type = NULL;
+  EXPECT_TRUE(prefs_.GetValue(prefs::kScreenMagnifierType, &type));
+  ASSERT_TRUE(type);
+  EXPECT_TRUE(base::FundamentalValue(0).Equals(type));
+}
+
+TEST_F(ScreenMagnifierPolicyHandlerTest, Enabled) {
+  policy_.Set(key::kScreenMagnifierType,
+              POLICY_LEVEL_MANDATORY,
+              POLICY_SCOPE_USER,
+              base::Value::CreateIntegerValue(1),
+              NULL);
+  handler_.ApplyPolicySettings(policy_, &prefs_);
+
+  const base::Value* enabled = NULL;
+  EXPECT_TRUE(prefs_.GetValue(prefs::kScreenMagnifierEnabled, &enabled));
+  ASSERT_TRUE(enabled);
+  EXPECT_TRUE(base::FundamentalValue(true).Equals(enabled));
+
+  const base::Value* type = NULL;
+  EXPECT_TRUE(prefs_.GetValue(prefs::kScreenMagnifierType, &type));
+  ASSERT_TRUE(type);
+  EXPECT_TRUE(base::FundamentalValue(1).Equals(type));
+}
 
 const char kLoginScreenPowerManagementPolicy[] =
     "{"

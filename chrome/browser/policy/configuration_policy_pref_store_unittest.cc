@@ -430,47 +430,6 @@ TEST_F(ConfigurationPolicyPrefStorePromptDownloadTest,
   EXPECT_FALSE(prompt_for_download);
 }
 
-#if defined(OS_CHROMEOS)
-// Test cases for the screen magnifier type policy setting.
-class ConfigurationPolicyPrefStoreScreenMagnifierTypeTest
-    : public ConfigurationPolicyPrefStoreTest {};
-
-TEST_F(ConfigurationPolicyPrefStoreScreenMagnifierTypeTest, Default) {
-  EXPECT_FALSE(store_->GetValue(prefs::kScreenMagnifierEnabled, NULL));
-  EXPECT_FALSE(store_->GetValue(prefs::kScreenMagnifierType, NULL));
-}
-
-TEST_F(ConfigurationPolicyPrefStoreScreenMagnifierTypeTest, Disabled) {
-  PolicyMap policy;
-  policy.Set(key::kScreenMagnifierType, POLICY_LEVEL_MANDATORY,
-             POLICY_SCOPE_USER, base::Value::CreateIntegerValue(0), NULL);
-  UpdateProviderPolicy(policy);
-  const base::Value* enabled = NULL;
-  EXPECT_TRUE(store_->GetValue(prefs::kScreenMagnifierEnabled, &enabled));
-  ASSERT_TRUE(enabled);
-  EXPECT_TRUE(base::FundamentalValue(false).Equals(enabled));
-  const base::Value* type = NULL;
-  EXPECT_TRUE(store_->GetValue(prefs::kScreenMagnifierType, &type));
-  ASSERT_TRUE(type);
-  EXPECT_TRUE(base::FundamentalValue(0).Equals(type));
-}
-
-TEST_F(ConfigurationPolicyPrefStoreScreenMagnifierTypeTest, Enabled) {
-  PolicyMap policy;
-  policy.Set(key::kScreenMagnifierType, POLICY_LEVEL_MANDATORY,
-             POLICY_SCOPE_USER, base::Value::CreateIntegerValue(1), NULL);
-  UpdateProviderPolicy(policy);
-  const base::Value* enabled = NULL;
-  EXPECT_TRUE(store_->GetValue(prefs::kScreenMagnifierEnabled, &enabled));
-  ASSERT_TRUE(enabled);
-  EXPECT_TRUE(base::FundamentalValue(true).Equals(enabled));
-  const base::Value* type = NULL;
-  EXPECT_TRUE(store_->GetValue(prefs::kScreenMagnifierType, &type));
-  ASSERT_TRUE(type);
-  EXPECT_TRUE(base::FundamentalValue(1).Equals(type));
-}
-#endif  // defined(OS_CHROMEOS)
-
 // Exercises the policy refresh mechanism.
 class ConfigurationPolicyPrefStoreRefreshTest
     : public ConfigurationPolicyPrefStoreTest {
