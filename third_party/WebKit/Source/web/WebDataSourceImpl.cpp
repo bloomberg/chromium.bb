@@ -81,6 +81,11 @@ WebURL WebDataSourceImpl::unreachableURL() const
     return DocumentLoader::unreachableURL();
 }
 
+void WebDataSourceImpl::appendRedirect(const WebURL& url)
+{
+    DocumentLoader::appendRedirect(url);
+}
+
 void WebDataSourceImpl::redirectChain(WebVector<WebURL>& result) const
 {
     result.assign(m_redirectChain);

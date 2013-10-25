@@ -2415,6 +2415,25 @@ TEST_F(WebFrameTest, ReloadWhileProvisional)
         webViewHelper.webView()->mainFrame()->dataSource()->request().url());
 }
 
+TEST_F(WebFrameTest, AppendRedirects)
+{
+    const std::string firstURL = "about:blank";
+    const std::string secondURL = "http://www.test.com";
+
+    FrameTestHelpers::WebViewHelper webViewHelper;
+    webViewHelper.initializeAndLoad(firstURL, true);
+
+    WebDataSource* dataSource = webViewHelper.webView()->mainFrame()->dataSource();
+    ASSERT_TRUE(dataSource);
+    dataSource->appendRedirect(toKURL(secondURL));
+
+    WebVector<WebURL> redirects;
+    dataSource->redirectChain(redirects);
+    ASSERT_EQ(2U, redirects.size());
+    EXPECT_EQ(toKURL(firstURL), toKURL(redirects[0].spec().data()));
+    EXPECT_EQ(toKURL(secondURL), toKURL(redirects[1].spec().data()));
+}
+
 TEST_F(WebFrameTest, IframeRedirect)
 {
     registerMockedHttpURLLoad("iframe_redirect.html");

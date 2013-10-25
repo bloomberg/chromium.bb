@@ -61,6 +61,7 @@ public:
     virtual const WebURLResponse& response() const;
     virtual bool hasUnreachableURL() const;
     virtual WebURL unreachableURL() const;
+    virtual void appendRedirect(const WebURL&);
     virtual void redirectChain(WebVector<WebURL>&) const;
     virtual bool isClientRedirect() const;
     virtual bool replacesCurrentHistoryItem() const;

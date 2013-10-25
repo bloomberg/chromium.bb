@@ -68,6 +68,10 @@ public:
     virtual bool hasUnreachableURL() const = 0;
     virtual WebURL unreachableURL() const = 0;
 
+    // Allows the embedder to append redirects to the chain as a navigation
+    // is starting, in case it is being transferred from another process.
+    virtual void appendRedirect(const WebURL&) = 0;
+
     // Returns all redirects that occurred (both client and server) before
     // at last committing the current page.  This will contain one entry
     // for each intermediate URL, and one entry for the last URL (so if
