@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
-#include "base/observer_list.h"
 #include "base/values.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "net/cert/x509_certificate.h"
@@ -20,9 +19,7 @@ namespace content {
 class WebContents;
 }
 
-namespace ui {
-class WebDialogObserver;
-}
+class ConstrainedWebDialogDelegate;
 
 // Dialog for displaying detailed certificate information. This is used in linux
 // and chromeos builds to display detailed information in a floating dialog when
@@ -39,11 +36,7 @@ class CertificateViewerDialog : private ui::WebDialogDelegate {
   // Show the dialog using the given parent window.
   void Show(content::WebContents* web_contents, gfx::NativeWindow parent);
 
-  // Add WebDialogObserver for this dialog.
-  void AddObserver(ui::WebDialogObserver* observer);
-
-  // Remove WebDialogObserver for this dialog.
-  void RemoveObserver(ui::WebDialogObserver* observer);
+  ConstrainedWebDialogDelegate* dialog() { return dialog_; }
 
  private:
   // Overridden from ui::WebDialogDelegate:
@@ -65,13 +58,10 @@ class CertificateViewerDialog : private ui::WebDialogDelegate {
   // The certificate being viewed.
   scoped_refptr<net::X509Certificate> cert_;
 
-  // The window displaying this dialog.
-  gfx::NativeWindow window_;
+  ConstrainedWebDialogDelegate* dialog_;
 
   // The title of the certificate viewer dialog, Certificate Viewer: CN.
   string16 title_;
-
-  ObserverList<ui::WebDialogObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(CertificateViewerDialog);
 };
@@ -80,7 +70,7 @@ class CertificateViewerDialog : private ui::WebDialogDelegate {
 // details and export the certificate.
 class CertificateViewerDialogHandler : public content::WebUIMessageHandler {
  public:
-  CertificateViewerDialogHandler(gfx::NativeWindow window,
+  CertificateViewerDialogHandler(CertificateViewerDialog* dialog,
                                  net::X509Certificate* cert);
   virtual ~CertificateViewerDialogHandler();
 
@@ -108,8 +98,8 @@ class CertificateViewerDialogHandler : public content::WebUIMessageHandler {
   // The certificate being viewed.
   scoped_refptr<net::X509Certificate> cert_;
 
-  // The dialog window.
-  gfx::NativeWindow window_;
+  // The dialog.
+  CertificateViewerDialog* dialog_;
 
   // The certificate chain.
   net::X509Certificate::OSCertHandles cert_chain_;

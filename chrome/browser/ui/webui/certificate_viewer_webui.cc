@@ -21,11 +21,9 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/size.h"
-#include "ui/web_dialogs/web_dialog_observer.h"
 
 using content::WebContents;
 using content::WebUIMessageHandler;
-using ui::WebDialogObserver;
 using web_modal::NativeWebContentsModalDialog;
 
 // Shows a certificate using the WebUI certificate viewer.
@@ -39,16 +37,8 @@ void ShowCertificateViewer(WebContents* web_contents,
 ////////////////////////////////////////////////////////////////////////////////
 // CertificateViewerDialog
 
-void CertificateViewerDialog::AddObserver(WebDialogObserver* observer) {
-  observers_.AddObserver(observer);
-}
-
-void CertificateViewerDialog::RemoveObserver(WebDialogObserver* observer) {
-  observers_.RemoveObserver(observer);
-}
-
 CertificateViewerDialog::CertificateViewerDialog(net::X509Certificate* cert)
-    : cert_(cert), window_(NULL) {
+    : cert_(cert), dialog_(NULL) {
   // Construct the dialog title from the certificate.
   net::X509Certificate::OSCertHandles cert_chain;
   x509_certificate_model::GetCertChainFromCert(cert_->os_cert_handle(),
@@ -64,12 +54,11 @@ void CertificateViewerDialog::Show(WebContents* web_contents,
                                    gfx::NativeWindow parent) {
   // TODO(bshe): UI tweaks needed for Aura HTML Dialog, such as adding padding
   // on the title for Aura ConstrainedWebDialogUI.
-  NativeWebContentsModalDialog dialog = CreateConstrainedWebDialog(
+  dialog_ = CreateConstrainedWebDialog(
       web_contents->GetBrowserContext(),
       this,
       NULL,
-      web_contents)->GetNativeDialog();
-  window_ = platform_util::GetTopLevel(dialog);
+      web_contents);
 }
 
 ui::ModalType CertificateViewerDialog::GetDialogModalType() const {
@@ -86,7 +75,8 @@ GURL CertificateViewerDialog::GetDialogContentURL() const {
 
 void CertificateViewerDialog::GetWebUIMessageHandlers(
     std::vector<WebUIMessageHandler*>* handlers) const {
-  handlers->push_back(new CertificateViewerDialogHandler(window_, cert_.get()));
+  handlers->push_back(new CertificateViewerDialogHandler(
+      const_cast<CertificateViewerDialog*>(this), cert_.get()));
 }
 
 void CertificateViewerDialog::GetDialogSize(gfx::Size* size) const {
@@ -195,9 +185,6 @@ std::string CertificateViewerDialog::GetDialogArgs() const {
 void CertificateViewerDialog::OnDialogShown(
     content::WebUI* webui,
     content::RenderViewHost* render_view_host) {
-  FOR_EACH_OBSERVER(WebDialogObserver,
-                    observers_,
-                    OnDialogShown(webui, render_view_host));
 }
 
 void CertificateViewerDialog::OnDialogClosed(const std::string& json_retval) {
@@ -217,8 +204,8 @@ bool CertificateViewerDialog::ShouldShowDialogTitle() const {
 // CertificateViewerDialogHandler
 
 CertificateViewerDialogHandler::CertificateViewerDialogHandler(
-    gfx::NativeWindow window,
-    net::X509Certificate* cert) : cert_(cert), window_(window) {
+    CertificateViewerDialog* dialog,
+    net::X509Certificate* cert) : cert_(cert), dialog_(dialog) {
   x509_certificate_model::GetCertChainFromCert(cert_->os_cert_handle(),
       &cert_chain_);
 }
@@ -241,8 +228,10 @@ void CertificateViewerDialogHandler::ExportCertificate(
   if (cert_index < 0)
     return;
 
+  NativeWebContentsModalDialog window =
+      platform_util::GetTopLevel(dialog_->dialog()->GetNativeDialog());
   ShowCertExportDialog(web_ui()->GetWebContents(),
-                       window_,
+                       window,
                        cert_chain_[cert_index]);
 }
 

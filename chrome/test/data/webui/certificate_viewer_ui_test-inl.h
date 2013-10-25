@@ -7,15 +7,16 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/certificate_viewer_webui.h"
+#include "chrome/browser/ui/webui/constrained_web_dialog_ui.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "chrome/test/base/web_ui_browsertest.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
+#include "content/public/test/browser_test_utils.h"
 #include "net/cert/x509_certificate.h"
 #include "net/test/test_certificate_data.h"
-#include "ui/web_dialogs/test/test_web_dialog_observer.h"
 
 // Test framework for chrome/test/data/webui/certificate_viewer_dialog_test.js.
 class CertificateViewerUITest : public WebUIBrowserTest {
@@ -35,15 +36,14 @@ void CertificateViewerUITest::ShowCertificateViewer() {
   ASSERT_TRUE(browser());
   ASSERT_TRUE(browser()->window());
 
-  ui::test::TestWebDialogObserver dialog_observer(this);
   CertificateViewerDialog* dialog =
       new CertificateViewerDialog(google_cert.get());
-  dialog->AddObserver(&dialog_observer);
   dialog->Show(browser()->tab_strip_model()->GetActiveWebContents(),
                browser()->window()->GetNativeWindow());
-  dialog->RemoveObserver(&dialog_observer);
-  content::WebUI* webui = dialog_observer.GetWebUI();
-  webui->GetWebContents()->GetRenderViewHost()->SetWebUIProperty(
+  content::WebContents* webui_webcontents = dialog->dialog()->GetWebContents();
+  content::WaitForLoadStop(webui_webcontents);
+  content::WebUI* webui = webui_webcontents->GetWebUI();
+  webui_webcontents->GetRenderViewHost()->SetWebUIProperty(
       "expectedUrl", chrome::kChromeUICertificateViewerURL);
   SetWebUIInstance(webui);
 }

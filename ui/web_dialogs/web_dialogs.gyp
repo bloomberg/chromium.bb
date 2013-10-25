@@ -23,7 +23,6 @@
         # All .cc, .h under web_dialogs, except unittests.
         'web_dialog_delegate.cc',
         'web_dialog_delegate.h',
-        'web_dialog_observer.h',
         'web_dialog_ui.cc',
         'web_dialog_ui.h',
         'web_dialog_web_contents_delegate.cc',
@@ -45,8 +44,6 @@
         'test/test_web_contents_handler.h',
         'test/test_web_dialog_delegate.cc',
         'test/test_web_dialog_delegate.h',
-        'test/test_web_dialog_observer.cc',
-        'test/test_web_dialog_observer.h',
       ],
     },
   ],
