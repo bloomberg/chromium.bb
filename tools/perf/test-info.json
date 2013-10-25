@@ -137,7 +137,7 @@
     "description":"Loading benchmark for the Polymer toolkit's [Pica](http://www.polymer-project.org/polymer-all/projects/pica/index.html) demo app"
   },
   "page_cycler.netsim.top_10":{
-    "description":"Page loading benchmark for a set of 25 top pages recorded in Q2, 2012.  Despite the name, network simulation has not actually been enabled on this test yet."
+    "description":"Page loading benchmark for a set of 10 top pages recorded in June, 2013.  Pages are loaded under the simplisticly simulated bandwidth and RTT constraints of a cable modem (5Mbit/s down, 1Mbit/s up, 28ms RTT). Contention is realistically simulated, but slow start is not. DNS lookups are 'free'."
   },
   "page_cycler.tough_layout_cases":{
     "description":"Page loading benchmark for the slowest layouts observed in the Alexa top 1 million sites in July 2013."
