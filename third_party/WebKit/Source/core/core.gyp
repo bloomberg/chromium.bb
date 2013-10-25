@@ -758,12 +758,12 @@
             },{ # ENABLE_GDI_FONTS_ON_WINDOWS!=1
               'sources/': [
                 ['include', 'platform/graphics/skia/SimpleFontDataSkia\\.cpp$'],
-                ['exclude', 'platform/graphics/skia/GlyphPageTreeNodeSkia\\.cpp$'],
+                ['include', 'platform/graphics/skia/GlyphPageTreeNodeSkia\\.cpp$'],
                 ['include', 'platform/graphics/skia/FontCacheSkiaWin\\.cpp$'],
                 ['include', 'platform/graphics/skia/FontCustomPlatformDataSkia\\.cpp$'],
                 ['include', 'platform/graphics/skia/FontCustomPlatformDataSkia\\.cpp$'],
                 ['exclude', 'platform/graphics/chromium/SimpleFontDataChromiumWin\\.cpp$'],
-                ['include', 'platform/graphics/chromium/GlyphPageTreeNodeChromiumWin\\.cpp$'],
+                ['exclude', 'platform/graphics/chromium/GlyphPageTreeNodeChromiumWin\\.cpp$'],
                 ['exclude', 'platform/graphics/chromium/FontCacheChromiumWin\\.cpp$'],
                 ['exclude', 'platform/graphics/win/FontCustomPlatformDataWin\\.cpp$'],
               ],
