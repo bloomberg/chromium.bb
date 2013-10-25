@@ -328,9 +328,6 @@ void DesktopNativeWidgetAura::InitNativeWidget(
   content_window_->SetType(GetAuraWindowTypeForWidgetType(params.type));
   content_window_->Init(params.layer_type);
   corewm::SetShadowType(content_window_, corewm::SHADOW_TYPE_NONE);
-#if defined(OS_LINUX)  // TODO(scottmg): http://crbug.com/180071
-  content_window_->Show();
-#endif
 
   content_window_container_ = new aura::Window(NULL);
   content_window_container_->Init(ui::LAYER_NOT_DRAWN);

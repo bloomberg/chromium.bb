@@ -55,12 +55,7 @@ TEST_F(DesktopNativeWidgetAuraTest, DesktopAuraWindowSizeTest) {
 
 // Verifies GetNativeView() is initially hidden. If the native view is initially
 // shown then animations can not be disabled.
-#if defined(OS_LINUX)
-#define MAYBE_NativeViewInitiallyHidden DISABLED_NativeViewInitiallyHidden
-#else
-#define MAYBE_NativeViewInitiallyHidden NativeViewInitiallyHidden
-#endif
-TEST_F(DesktopNativeWidgetAuraTest, MAYBE_NativeViewInitiallyHidden) {
+TEST_F(DesktopNativeWidgetAuraTest, NativeViewInitiallyHidden) {
   Widget widget;
   Widget::InitParams init_params =
       CreateParams(Widget::InitParams::TYPE_WINDOW);
