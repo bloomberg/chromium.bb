@@ -535,7 +535,7 @@ ResourcePtr<Resource> ResourceFetcher::requestResource(Resource::Type type, Fetc
 
     KURL url = request.resourceRequest().url();
 
-    LOG(ResourceLoading, "ResourceFetcher::requestResource '%s', charset '%s', priority=%d, forPreload=%u", url.elidedString().latin1().data(), request.charset().latin1().data(), request.priority(), request.forPreload());
+    LOG(ResourceLoading, "ResourceFetcher::requestResource '%s', charset '%s', priority=%d, forPreload=%u, type=%s", url.elidedString().latin1().data(), request.charset().latin1().data(), request.priority(), request.forPreload(), ResourceTypeName(type));
 
     // If only the fragment identifiers differ, it is the same resource.
     url = MemoryCache::removeFragmentIdentifierIfNeeded(url);

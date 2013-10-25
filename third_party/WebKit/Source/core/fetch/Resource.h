@@ -359,6 +359,11 @@ private:
     HashSet<ResourcePtrBase*> m_handlesToRevalidate;
 };
 
+#if !LOG_DISABLED
+// Intended to be used in LOG statements.
+const char* ResourceTypeName(Resource::Type);
+#endif
+
 }
 
 #endif

@@ -891,5 +891,40 @@ void Resource::ResourceCallback::timerFired(Timer<ResourceCallback>*)
         resources[i]->finishPendingClients();
 }
 
+#if !LOG_DISABLED
+const char* ResourceTypeName(Resource::Type type)
+{
+    switch (type) {
+    case Resource::MainResource:
+        return "MainResource";
+    case Resource::Image:
+        return "Image";
+    case Resource::CSSStyleSheet:
+        return "CSSStyleSheet";
+    case Resource::Script:
+        return "Script";
+    case Resource::Font:
+        return "Font";
+    case Resource::Raw:
+        return "Raw";
+    case Resource::SVGDocument:
+        return "SVGDocument";
+    case Resource::XSLStyleSheet:
+        return "XSLStyleSheet";
+    case Resource::LinkPrefetch:
+        return "LinkPrefetch";
+    case Resource::LinkSubresource:
+        return "LinkSubresource";
+    case Resource::TextTrack:
+        return "TextTrack";
+    case Resource::Shader:
+        return "Shader";
+    case Resource::ImportResource:
+        return "ImportResource";
+    }
+    ASSERT_NOT_REACHED();
+    return "Unknown";
 }
+#endif // !LOG_DISABLED
 
+}
