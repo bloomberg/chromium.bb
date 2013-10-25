@@ -5,6 +5,8 @@
 #include "chrome/renderer/media/cast_send_transport.h"
 
 #include "base/logging.h"
+#include "chrome/renderer/media/cast_session.h"
+#include "chrome/renderer/media/cast_udp_transport.h"
 
 CastCodecSpecificParam::CastCodecSpecificParam() {
 }
@@ -32,8 +34,8 @@ CastRtpCaps::~CastRtpCaps() {
 }
 
 CastSendTransport::CastSendTransport(
-    CastUdpTransport* udp_transport) {
-  NOTIMPLEMENTED();
+    CastUdpTransport* udp_transport)
+    : cast_session_(udp_transport->cast_session()) {
 }
 
 CastSendTransport::~CastSendTransport() {

@@ -9,11 +9,13 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/memory/ref_counted.h"
 
 namespace WebKit {
 class WebMediaStreamTrack;
 }  // namespace WebKit
 
+class CastSession;
 class CastUdpTransport;
 
 // A key value pair structure for codec specific parameters.
@@ -103,6 +105,8 @@ class CastSendTransport {
   void Stop();
 
  private:
+  const scoped_refptr<CastSession> cast_session_;
+
   DISALLOW_COPY_AND_ASSIGN(CastSendTransport);
 };
 

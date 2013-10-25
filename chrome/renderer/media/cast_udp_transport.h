@@ -6,11 +6,18 @@
 #define CHROME_RENDERER_MEDIA_CAST_UDP_TRANSPORT_H_
 
 #include "base/basictypes.h"
+#include "base/memory/ref_counted.h"
 #include "net/base/ip_endpoint.h"
+
+class CastSession;
 
 // This class represents an end point to which communication is done by
 // UDP. The interface does not allow direct access to a UDP socket but
 // represents a transport mechanism.
+//
+// CastUdpTransport creates a CastSession and then shares it with
+// multiple CastSendTransports. This is because CastSession corresponds
+// to only one remote peer.
 class CastUdpTransport {
  public:
   CastUdpTransport();
@@ -23,7 +30,13 @@ class CastUdpTransport {
   // Terminate the communication with the end point.
   void Stop();
 
+  scoped_refptr<CastSession> cast_session() const {
+    return cast_session_;
+  }
+
  private:
+  const scoped_refptr<CastSession> cast_session_;
+
   DISALLOW_COPY_AND_ASSIGN(CastUdpTransport);
 };
 

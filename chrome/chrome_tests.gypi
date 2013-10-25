@@ -1530,6 +1530,7 @@
         'renderer/autofill/password_autofill_agent_browsertest.cc',
         'renderer/autofill/password_generation_agent_browsertest.cc',
         'renderer/content_settings_observer_browsertest.cc',
+        'renderer/media/cast_session_browsertest.cc',
         'renderer/printing/print_web_view_helper_browsertest.cc',
         'renderer/safe_browsing/malware_dom_details_browsertest.cc',
         'renderer/safe_browsing/phishing_classifier_browsertest.cc',

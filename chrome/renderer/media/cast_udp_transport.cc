@@ -5,8 +5,10 @@
 #include "chrome/renderer/media/cast_udp_transport.h"
 
 #include "base/logging.h"
+#include "chrome/renderer/media/cast_session.h"
 
-CastUdpTransport::CastUdpTransport() {
+CastUdpTransport::CastUdpTransport()
+    : cast_session_(new CastSession()) {
 }
 
 CastUdpTransport::~CastUdpTransport() {

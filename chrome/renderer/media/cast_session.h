@@ -6,21 +6,35 @@
 #define CHROME_RENDERER_MEDIA_CAST_SESSION_H_
 
 #include "base/basictypes.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 
-// This class represents a Cast session which consists of the
-// following three major components:
-// 1. Video and audio input.
-// 2. Cast RTP transport.
-// 3. Network connection.
-//
-// This class connects the above three components to provide a Cast
-// service.
-class CastSession {
+namespace base {
+class MessageLoopProxy;
+}  // namespace base
+
+class CastSessionDelegate;
+
+// This class represents a Cast session and allows the session to be
+// configured on the main thread. Actual work is forwarded to
+// CastSessionDelegate on the IO thread.
+class CastSession : public base::RefCounted<CastSession> {
  public:
   CastSession();
-  ~CastSession();
 
  private:
+  friend class base::RefCounted<CastSession>;
+  virtual ~CastSession();
+
+  // This member should never be dereferenced on the main thread.
+  // CastSessionDelegate lives only on the IO thread. It is always
+  // safe to post task on the IO thread to access CastSessionDelegate
+  // because it is owned by this object.
+  scoped_ptr<CastSessionDelegate> delegate_;
+
+  // Proxy to the IO message loop.
+  const scoped_refptr<base::MessageLoopProxy> io_message_loop_proxy_;
+
   DISALLOW_COPY_AND_ASSIGN(CastSession);
 };
 

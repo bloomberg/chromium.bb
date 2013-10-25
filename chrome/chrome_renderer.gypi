@@ -167,6 +167,8 @@
         'renderer/media/cast_send_transport.h',
         'renderer/media/cast_session.cc',
         'renderer/media/cast_session.h',
+        'renderer/media/cast_session_delegate.cc',
+        'renderer/media/cast_session_delegate.h',
         'renderer/media/cast_udp_transport.cc',
         'renderer/media/cast_udp_transport.h',
         'renderer/media/chrome_key_systems.cc',

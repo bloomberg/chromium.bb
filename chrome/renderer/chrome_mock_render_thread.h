@@ -30,8 +30,16 @@ class ChromeMockRenderThread : public content::MockRenderThread {
   ChromeMockRenderThread();
   virtual ~ChromeMockRenderThread();
 
+  // content::RenderThread overrides.
+  virtual scoped_refptr<base::MessageLoopProxy> GetIOMessageLoopProxy()
+      OVERRIDE;
+
   //////////////////////////////////////////////////////////////////////////
   // The following functions are called by the test itself.
+
+  // Set IO message loop proxy.
+  void set_io_message_loop_proxy(
+      const scoped_refptr<base::MessageLoopProxy>& proxy);
 
 #if defined(ENABLE_PRINTING)
   // Returns the pseudo-printer instance.
@@ -103,6 +111,8 @@ class ChromeMockRenderThread : public content::MockRenderThread {
   // Number of pages to generate for print preview.
   int print_preview_pages_remaining_;
 #endif
+
+  scoped_refptr<base::MessageLoopProxy> io_message_loop_proxy_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeMockRenderThread);
 };
