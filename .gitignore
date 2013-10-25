@@ -31,3 +31,4 @@ cscope.out
 Makefile
 Makefile.in
 TAGS
+protocol/.*.valid
