@@ -4,6 +4,7 @@
 
 #include "base/android/sys_utils.h"
 
+#include "base/android/build_info.h"
 #include "base/sys_info.h"
 #include "jni/SysUtils_jni.h"
 
@@ -15,6 +16,9 @@
 
 const int64 kLowEndMemoryThreshold =
     1024 * 1024 * ANDROID_LOW_MEMORY_DEVICE_THRESHOLD_MB;
+
+// Only support low end device changes on builds greater than JB MR2.
+const int kLowEndSdkIntThreshold = 18;
 
 // Defined and called by JNI
 static jboolean IsLowEndDevice(JNIEnv* env, jclass clazz) {
@@ -29,7 +33,8 @@ bool SysUtils::Register(JNIEnv* env) {
 }
 
 bool SysUtils::IsLowEndDevice() {
-  return SysInfo::AmountOfPhysicalMemory() <= kLowEndMemoryThreshold;
+  return SysInfo::AmountOfPhysicalMemory() <= kLowEndMemoryThreshold &&
+      BuildInfo::GetInstance()->sdk_int() > kLowEndSdkIntThreshold;
 }
 
 SysUtils::SysUtils() { }
