@@ -757,7 +757,7 @@ class SSLClientSocketNSS::Core : public base::RefCountedThreadSafe<Core> {
   void UpdateConnectionStatus();
   // Record histograms for channel id support during full handshakes - resumed
   // handshakes are ignored.
-  void RecordChannelIDSupport();
+  void RecordChannelIDSupportOnNSSTaskRunner();
   // UpdateNextProto gets any application-layer protocol that may have been
   // negotiated by the TLS connection.
   void UpdateNextProto();
@@ -1009,19 +1009,12 @@ bool SSLClientSocketNSS::Core::Init(PRFileDesc* socket,
     return false;
   }
 
-  if (ssl_config_.channel_id_enabled) {
-    if (!server_bound_cert_service_) {
-      DVLOG(1) << "NULL server_bound_cert_service_, not enabling channel ID.";
-    } else if (!crypto::ECPrivateKey::IsSupported()) {
-      DVLOG(1) << "Elliptic Curve not supported, not enabling channel ID.";
-    } else if (!server_bound_cert_service_->IsSystemTimeValid()) {
-      DVLOG(1) << "System time is weird, not enabling channel ID.";
-    } else {
-      rv = SSL_SetClientChannelIDCallback(
-          nss_fd_, SSLClientSocketNSS::Core::ClientChannelIDHandler, this);
-      if (rv != SECSuccess)
-        LogFailedNSSFunction(*weak_net_log_, "SSL_SetClientChannelIDCallback",
-                             "");
+  if (IsChannelIDEnabled(ssl_config_, server_bound_cert_service_)) {
+    rv = SSL_SetClientChannelIDCallback(
+        nss_fd_, SSLClientSocketNSS::Core::ClientChannelIDHandler, this);
+    if (rv != SECSuccess) {
+      LogFailedNSSFunction(
+          *weak_net_log_, "SSL_SetClientChannelIDCallback", "");
     }
   }
 
@@ -1633,7 +1626,7 @@ void SSLClientSocketNSS::Core::HandshakeCallback(
     nss_state->resumed_handshake = false;
   }
 
-  core->RecordChannelIDSupport();
+  core->RecordChannelIDSupportOnNSSTaskRunner();
   core->UpdateServerCert();
   core->UpdateConnectionStatus();
   core->UpdateNextProto();
@@ -2506,7 +2499,7 @@ void SSLClientSocketNSS::Core::UpdateNextProto() {
   }
 }
 
-void SSLClientSocketNSS::Core::RecordChannelIDSupport() {
+void SSLClientSocketNSS::Core::RecordChannelIDSupportOnNSSTaskRunner() {
   DCHECK(OnNSSTaskRunner());
   if (nss_handshake_state_.resumed_handshake)
     return;
@@ -2529,30 +2522,10 @@ void SSLClientSocketNSS::Core::RecordChannelIDSupportOnNetworkTaskRunner(
     bool supports_ecc) const {
   DCHECK(OnNetworkTaskRunner());
 
-  // Since this enum is used for a histogram, do not change or re-use values.
-  enum {
-    DISABLED = 0,
-    CLIENT_ONLY = 1,
-    CLIENT_AND_SERVER = 2,
-    CLIENT_NO_ECC = 3,
-    CLIENT_BAD_SYSTEM_TIME = 4,
-    CLIENT_NO_SERVER_BOUND_CERT_SERVICE = 5,
-    DOMAIN_BOUND_CERT_USAGE_MAX
-  } supported = DISABLED;
-  if (negotiated_channel_id) {
-    supported = CLIENT_AND_SERVER;
-  } else if (channel_id_enabled) {
-    if (!server_bound_cert_service_)
-      supported = CLIENT_NO_SERVER_BOUND_CERT_SERVICE;
-    else if (!supports_ecc)
-      supported = CLIENT_NO_ECC;
-    else if (!server_bound_cert_service_->IsSystemTimeValid())
-      supported = CLIENT_BAD_SYSTEM_TIME;
-    else
-      supported = CLIENT_ONLY;
-  }
-  UMA_HISTOGRAM_ENUMERATION("DomainBoundCerts.Support", supported,
-                            DOMAIN_BOUND_CERT_USAGE_MAX);
+  RecordChannelIDSupport(server_bound_cert_service_,
+                         negotiated_channel_id,
+                         channel_id_enabled,
+                         supports_ecc);
 }
 
 int SSLClientSocketNSS::Core::DoBufferRecv(IOBuffer* read_buffer, int len) {

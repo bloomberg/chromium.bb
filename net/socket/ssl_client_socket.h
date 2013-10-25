@@ -18,6 +18,7 @@ namespace net {
 class CertVerifier;
 class ServerBoundCertService;
 class SSLCertRequestInfo;
+struct SSLConfig;
 class SSLInfo;
 class TransportSecurityState;
 
@@ -124,6 +125,20 @@ class NET_EXPORT SSLClientSocket : public SSLSocket {
   virtual bool WasChannelIDSent() const;
 
   virtual void set_channel_id_sent(bool channel_id_sent);
+
+ protected:
+  // Records histograms for channel id support during full handshakes - resumed
+  // handshakes are ignored.
+  static void RecordChannelIDSupport(
+      ServerBoundCertService* server_bound_cert_service,
+      bool negotiated_channel_id,
+      bool channel_id_enabled,
+      bool supports_ecc);
+
+  // Returns whether TLS channel ID is enabled.
+  static bool IsChannelIDEnabled(
+      const SSLConfig& ssl_config,
+      ServerBoundCertService* server_bound_cert_service);
 
  private:
   // True if NPN was responded to, independent of selecting SPDY or HTTP.

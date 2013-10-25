@@ -16,6 +16,7 @@
 #include "base/memory/singleton.h"
 #include "base/metrics/histogram.h"
 #include "base/synchronization/lock.h"
+#include "crypto/ec_private_key.h"
 #include "crypto/openssl_util.h"
 #include "net/base/net_errors.h"
 #include "net/cert/cert_verifier.h"
@@ -348,6 +349,7 @@ class SSLContext {
     SSL_CTX_set_timeout(ssl_ctx_.get(), kSessionCacheTimeoutSeconds);
     SSL_CTX_sess_set_cache_size(ssl_ctx_.get(), kSessionCacheMaxEntires);
     SSL_CTX_set_client_cert_cb(ssl_ctx_.get(), ClientCertCallback);
+    SSL_CTX_set_channel_id_cb(ssl_ctx_.get(), ChannelIDCallback);
 #if defined(OPENSSL_NPN_NEGOTIATED)
     // TODO(kristianm): Only select this if ssl_config_.next_proto is not empty.
     // It would be better if the callback were not a global setting,
@@ -382,6 +384,12 @@ class SSLContext {
     SSLClientSocketOpenSSL* socket = GetInstance()->GetClientSocketFromSSL(ssl);
     CHECK(socket);
     return socket->ClientCertRequestCallback(ssl, x509, pkey);
+  }
+
+  static void ChannelIDCallback(SSL* ssl, EVP_PKEY** pkey) {
+    SSLClientSocketOpenSSL* socket = GetInstance()->GetClientSocketFromSSL(ssl);
+    CHECK(socket);
+    socket->ChannelIDRequestCallback(ssl, pkey);
   }
 
   static int SelectNextProtoCallback(SSL* ssl,
@@ -437,6 +445,7 @@ SSLClientSocketOpenSSL::SSLClientSocketOpenSSL(
       completed_handshake_(false),
       client_auth_cert_needed_(false),
       cert_verifier_(context.cert_verifier),
+      server_bound_cert_service_(context.server_bound_cert_service),
       ssl_(NULL),
       transport_bio_(NULL),
       transport_(transport_socket.Pass()),
@@ -446,6 +455,8 @@ SSLClientSocketOpenSSL::SSLClientSocketOpenSSL(
       trying_cached_session_(false),
       next_handshake_state_(STATE_NONE),
       npn_status_(kNextProtoUnsupported),
+      channel_id_request_return_value_(ERR_UNEXPECTED),
+      channel_id_xtn_negotiated_(false),
       net_log_(transport_->socket()->NetLog()) {
 }
 
@@ -566,6 +577,12 @@ bool SSLClientSocketOpenSSL::Init() {
   // handshake at which point the appropriate error is bubbled up to the client.
   LOG_IF(WARNING, rv != 1) << "SSL_set_cipher_list('" << command << "') "
                               "returned " << rv;
+
+  // TLS channel ids.
+  if (IsChannelIDEnabled(ssl_config_, server_bound_cert_service_)) {
+    SSL_enable_tls_channel_id(ssl_);
+  }
+
   return true;
 }
 
@@ -618,6 +635,44 @@ int SSLClientSocketOpenSSL::ClientCertRequestCallback(SSL* ssl,
   return 0;
 }
 
+void SSLClientSocketOpenSSL::ChannelIDRequestCallback(SSL* ssl,
+                                                      EVP_PKEY** pkey) {
+  DVLOG(3) << "OpenSSL ChannelIDRequestCallback called";
+  DCHECK_EQ(ssl, ssl_);
+  DCHECK(!*pkey);
+
+  channel_id_xtn_negotiated_ = true;
+  if (!channel_id_private_key_.size()) {
+    channel_id_request_return_value_ =
+        server_bound_cert_service_->GetOrCreateDomainBoundCert(
+            host_and_port_.host(),
+            &channel_id_private_key_,
+            &channel_id_cert_,
+            base::Bind(&SSLClientSocketOpenSSL::OnHandshakeIOComplete,
+                       base::Unretained(this)),
+            &channel_id_request_handle_);
+    if (channel_id_request_return_value_ != OK)
+      return;
+  }
+
+  // Decode key.
+  std::vector<uint8> encrypted_private_key_info;
+  std::vector<uint8> subject_public_key_info;
+  encrypted_private_key_info.assign(
+      channel_id_private_key_.data(),
+      channel_id_private_key_.data() + channel_id_private_key_.size());
+  subject_public_key_info.assign(
+      channel_id_cert_.data(),
+      channel_id_cert_.data() + channel_id_cert_.size());
+  scoped_ptr<crypto::ECPrivateKey> ec_private_key(
+      crypto::ECPrivateKey::CreateFromEncryptedPrivateKeyInfo(
+          ServerBoundCertService::kEPKIPassword,
+          encrypted_private_key_info,
+          subject_public_key_info));
+  set_channel_id_sent(true);
+  *pkey = EVP_PKEY_dup(ec_private_key->key());
+}
+
 // SSLClientSocket methods
 
 bool SSLClientSocketOpenSSL::GetSSLInfo(SSLInfo* ssl_info) {
@@ -634,6 +689,11 @@ bool SSLClientSocketOpenSSL::GetSSLInfo(SSLInfo* ssl_info) {
   ssl_info->client_cert_sent =
       ssl_config_.send_client_cert && ssl_config_.client_cert.get();
   ssl_info->channel_id_sent = WasChannelIDSent();
+
+  RecordChannelIDSupport(server_bound_cert_service_,
+                         channel_id_xtn_negotiated_,
+                         ssl_config_.channel_id_enabled,
+                         crypto::ECPrivateKey::IsSupported());
 
   const SSL_CIPHER* cipher = SSL_get_current_cipher(ssl_);
   CHECK(cipher);
@@ -706,7 +766,7 @@ SSLClientSocket::NextProtoStatus SSLClientSocketOpenSSL::GetNextProto(
 
 ServerBoundCertService*
 SSLClientSocketOpenSSL::GetServerBoundCertService() const {
-  return NULL;
+  return server_bound_cert_service_;
 }
 
 void SSLClientSocketOpenSSL::DoReadCallback(int rv) {
@@ -863,7 +923,14 @@ int SSLClientSocketOpenSSL::DoHandshake() {
     GotoState(STATE_VERIFY_CERT);
   } else {
     int ssl_error = SSL_get_error(ssl_, rv);
-    net_error = MapOpenSSLError(ssl_error, err_tracer);
+
+    if (ssl_error == SSL_ERROR_WANT_CHANNEL_ID_LOOKUP) {
+      // The server supports TLS channel id and the lookup is asynchronous.
+      // Retrieve the error from the call to |server_bound_cert_service_|.
+      net_error = channel_id_request_return_value_;
+    } else {
+      net_error = MapOpenSSLError(ssl_error, err_tracer);
+    }
 
     // If not done, stay in this state
     if (net_error == ERR_IO_PENDING) {
