@@ -6,6 +6,7 @@
 #define ASH_WM_OVERVIEW_SCOPED_TRANSFORM_OVERVIEW_WINDOW_H_
 
 #include "base/compiler_specific.h"
+#include "base/memory/scoped_ptr.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/transform.h"
 
@@ -23,6 +24,8 @@ class Widget;
 }
 
 namespace ash {
+
+class ScopedWindowCopy;
 
 // Manages a window in the overview mode. This class allows transforming the
 // window with a helper to determine the best fit in certain bounds and
@@ -88,10 +91,7 @@ class ScopedTransformOverviewWindow {
   aura::Window* window_;
 
   // A copy of the window used to transition the window to another root.
-  views::Widget* window_copy_;
-
-  // A weak pointer to a deep copy of the window's layers.
-  ui::Layer* layer_;
+  scoped_ptr<ScopedWindowCopy> window_copy_;
 
   // If true, the window was minimized and should be restored if the window
   // was not selected.
