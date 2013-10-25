@@ -34,10 +34,13 @@ declare_args() {
   is_clang = false
 
   # ASH is enabled.
+  # TODO(brettw) this should be moved out of the main build config file.
   use_ash = false
   # Aura is enabled.
+  # TODO(brettw) this should be moved out of the main build config file.
   use_aura = false
   # Ozone is enabled.
+  # TODO(brettw) this should be moved out of the main build config file.
   use_ozone = false
 }
 
