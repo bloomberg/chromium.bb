@@ -42,7 +42,6 @@ class Page;
 class PageConsole {
 public:
     static PassOwnPtr<PageConsole> create(Page* page) { return adoptPtr(new PageConsole(page)); }
-    virtual ~PageConsole();
 
     void addMessage(MessageSource, MessageLevel, const String& message);
     void addMessage(MessageSource, MessageLevel, const String& message, const String& sourceURL, unsigned lineNumber, unsigned columnNumber = 0, PassRefPtr<ScriptCallStack> = 0, ScriptState* = 0, unsigned long requestIdentifier = 0);

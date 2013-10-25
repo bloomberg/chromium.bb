@@ -55,8 +55,6 @@ PageConsole::PageConsole(Page* page)
 {
 }
 
-PageConsole::~PageConsole() { }
-
 void PageConsole::addMessage(MessageSource source, MessageLevel level, const String& message)
 {
     addMessage(source, level, message, String(), 0, 0, 0, 0, 0);
