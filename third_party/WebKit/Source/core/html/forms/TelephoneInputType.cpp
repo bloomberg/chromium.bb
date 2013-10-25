@@ -43,7 +43,7 @@ PassRefPtr<InputType> TelephoneInputType::create(HTMLInputElement& element)
 
 void TelephoneInputType::countUsage()
 {
-    observeFeatureIfVisible(UseCounter::InputTypeTel);
+    countUsageIfVisible(UseCounter::InputTypeTel);
 }
 
 const AtomicString& TelephoneInputType::formControlType() const

@@ -87,7 +87,7 @@ RangeInputType::RangeInputType(HTMLInputElement& element)
 
 void RangeInputType::countUsage()
 {
-    observeFeatureIfVisible(UseCounter::InputTypeRange);
+    countUsageIfVisible(UseCounter::InputTypeRange);
 }
 
 bool RangeInputType::isRangeControl() const

@@ -48,9 +48,9 @@ void TextInputType::countUsage()
 {
     const AtomicString& type = element().fastGetAttribute(typeAttr);
     if (equalIgnoringCase(type, InputTypeNames::datetime()))
-        observeFeatureIfVisible(UseCounter::InputTypeDateTimeFallback);
+        countUsageIfVisible(UseCounter::InputTypeDateTimeFallback);
     else if (equalIgnoringCase(type, InputTypeNames::week()))
-        observeFeatureIfVisible(UseCounter::InputTypeWeekFallback);
+        countUsageIfVisible(UseCounter::InputTypeWeekFallback);
 }
 
 const AtomicString& TextInputType::formControlType() const

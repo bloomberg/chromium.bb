@@ -101,7 +101,7 @@ PassRefPtr<InputType> NumberInputType::create(HTMLInputElement& element)
 
 void NumberInputType::countUsage()
 {
-    observeFeatureIfVisible(UseCounter::InputTypeNumber);
+    countUsageIfVisible(UseCounter::InputTypeNumber);
 }
 
 const AtomicString& NumberInputType::formControlType() const

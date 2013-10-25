@@ -55,7 +55,7 @@ PassRefPtr<InputType> WeekInputType::create(HTMLInputElement& element)
 
 void WeekInputType::countUsage()
 {
-    observeFeatureIfVisible(UseCounter::InputTypeWeek);
+    countUsageIfVisible(UseCounter::InputTypeWeek);
 }
 
 const AtomicString& WeekInputType::formControlType() const

@@ -140,14 +140,14 @@ PassRefPtr<InputType> EmailInputType::create(HTMLInputElement& element)
 
 void EmailInputType::countUsage()
 {
-    observeFeatureIfVisible(UseCounter::InputTypeEmail);
+    countUsageIfVisible(UseCounter::InputTypeEmail);
     bool hasMaxLength = element().fastHasAttribute(HTMLNames::maxlengthAttr);
     if (hasMaxLength)
-        observeFeatureIfVisible(UseCounter::InputTypeEmailMaxLength);
+        countUsageIfVisible(UseCounter::InputTypeEmailMaxLength);
     if (element().multiple()) {
-        observeFeatureIfVisible(UseCounter::InputTypeEmailMultiple);
+        countUsageIfVisible(UseCounter::InputTypeEmailMultiple);
         if (hasMaxLength)
-            observeFeatureIfVisible(UseCounter::InputTypeEmailMultipleMaxLength);
+            countUsageIfVisible(UseCounter::InputTypeEmailMultipleMaxLength);
     }
 }
 

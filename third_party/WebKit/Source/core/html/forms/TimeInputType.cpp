@@ -63,7 +63,7 @@ PassRefPtr<InputType> TimeInputType::create(HTMLInputElement& element)
 
 void TimeInputType::countUsage()
 {
-    observeFeatureIfVisible(UseCounter::InputTypeTime);
+    countUsageIfVisible(UseCounter::InputTypeTime);
 }
 
 const AtomicString& TimeInputType::formControlType() const

@@ -244,7 +244,7 @@ protected:
     Chrome* chrome() const;
     Locale& locale() const;
     Decimal parseToNumberOrNaN(const String&) const;
-    void observeFeatureIfVisible(UseCounter::Feature) const;
+    void countUsageIfVisible(UseCounter::Feature) const;
 
 private:
     // Helper for stepUp()/stepDown(). Adds step value * count to the current value.

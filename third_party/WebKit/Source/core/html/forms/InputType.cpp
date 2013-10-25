@@ -992,7 +992,7 @@ void InputType::stepUpFromRenderer(int n)
     }
 }
 
-void InputType::observeFeatureIfVisible(UseCounter::Feature feature) const
+void InputType::countUsageIfVisible(UseCounter::Feature feature) const
 {
     if (RenderStyle* style = element().renderStyle()) {
         if (style->visibility() != HIDDEN)

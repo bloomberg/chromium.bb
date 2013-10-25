@@ -58,7 +58,7 @@ PassRefPtr<InputType> MonthInputType::create(HTMLInputElement& element)
 
 void MonthInputType::countUsage()
 {
-    observeFeatureIfVisible(UseCounter::InputTypeMonth);
+    countUsageIfVisible(UseCounter::InputTypeMonth);
 }
 
 const AtomicString& MonthInputType::formControlType() const

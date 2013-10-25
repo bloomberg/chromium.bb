@@ -79,7 +79,7 @@ ColorInputType::~ColorInputType()
 
 void ColorInputType::countUsage()
 {
-    observeFeatureIfVisible(UseCounter::InputTypeColor);
+    countUsageIfVisible(UseCounter::InputTypeColor);
 }
 
 bool ColorInputType::isColorControl() const

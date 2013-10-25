@@ -60,7 +60,7 @@ PassRefPtr<InputType> DateInputType::create(HTMLInputElement& element)
 
 void DateInputType::countUsage()
 {
-    observeFeatureIfVisible(UseCounter::InputTypeDate);
+    countUsageIfVisible(UseCounter::InputTypeDate);
 }
 
 const AtomicString& DateInputType::formControlType() const

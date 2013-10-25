@@ -57,7 +57,7 @@ PassRefPtr<InputType> DateTimeLocalInputType::create(HTMLInputElement& element)
 
 void DateTimeLocalInputType::countUsage()
 {
-    observeFeatureIfVisible(UseCounter::InputTypeDateTimeLocal);
+    countUsageIfVisible(UseCounter::InputTypeDateTimeLocal);
 }
 
 const AtomicString& DateTimeLocalInputType::formControlType() const

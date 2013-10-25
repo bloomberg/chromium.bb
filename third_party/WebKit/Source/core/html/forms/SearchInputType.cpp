@@ -59,7 +59,7 @@ PassRefPtr<InputType> SearchInputType::create(HTMLInputElement& element)
 
 void SearchInputType::countUsage()
 {
-    observeFeatureIfVisible(UseCounter::InputTypeSearch);
+    countUsageIfVisible(UseCounter::InputTypeSearch);
 }
 
 RenderObject* SearchInputType::createRenderer(RenderStyle*) const

@@ -45,7 +45,7 @@ PassRefPtr<InputType> URLInputType::create(HTMLInputElement& element)
 
 void URLInputType::countUsage()
 {
-    observeFeatureIfVisible(UseCounter::InputTypeURL);
+    countUsageIfVisible(UseCounter::InputTypeURL);
 }
 
 const AtomicString& URLInputType::formControlType() const
