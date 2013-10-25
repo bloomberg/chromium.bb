@@ -516,7 +516,6 @@
           'msvs_disabled_warnings': [ 4267, ],
         }, { # else: OS != "win"
           'sources!': [
-            'browser/ui/views/ssl_client_certificate_selector_browsertest.cc',
             'browser/ui/views/native_widget_win_interactive_uitest.cc',
           ],
         }],  # OS != "win"
