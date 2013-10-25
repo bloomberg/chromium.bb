@@ -45,7 +45,6 @@ public:
     {
         return adoptRef(new RTCIceServer(uri, username, credential));
     }
-    virtual ~RTCIceServer() { }
 
     const KURL& uri() { return m_uri; }
     const String& username() { return m_username; }
@@ -67,7 +66,6 @@ private:
 class RTCConfiguration : public RefCounted<RTCConfiguration> {
 public:
     static PassRefPtr<RTCConfiguration> create() { return adoptRef(new RTCConfiguration()); }
-    virtual ~RTCConfiguration() { }
 
     void appendServer(PassRefPtr<RTCIceServer> server) { m_servers.append(server); }
     size_t numberOfServers() { return m_servers.size(); }
