@@ -257,13 +257,18 @@ bool NaClForkDelegate::CanHelp(const std::string& process_type,
   *uma_name = "NaCl.Client.Helper.StateOnFork";
   *uma_sample = status_;
   *uma_boundary_value = kNaClHelperStatusBoundary;
-  return status_ == kNaClHelperSuccess;
+  return true;
 }
 
 pid_t NaClForkDelegate::Fork(const std::vector<int>& fds) {
   VLOG(1) << "NaClForkDelegate::Fork";
 
   DCHECK(fds.size() == kNumPassedFDs);
+
+  if (status_ != kNaClHelperSuccess) {
+    LOG(ERROR) << "Cannot launch NaCl process: nacl_helper failed to start";
+    return -1;
+  }
 
   // First, send a remote fork request.
   Pickle write_pickle;

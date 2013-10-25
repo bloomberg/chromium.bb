@@ -780,7 +780,10 @@ int ChromeMainDelegate::RunProcess(
       mac_relauncher::internal::RelauncherMain },
 #endif
 
-#if !defined(DISABLE_NACL) && !defined(CHROME_MULTIPLE_DLL_BROWSER)
+    // This entry is not needed on Linux, where the NaCl loader
+    // process is launched via nacl_helper instead.
+#if !defined(DISABLE_NACL) && !defined(CHROME_MULTIPLE_DLL_BROWSER) && \
+    !defined(OS_LINUX)
     { switches::kNaClLoaderProcess,  NaClMain },
 #else
     { "<invalid>", NULL },  // To avoid constant array of size 0
