@@ -38,7 +38,7 @@ class SVGPathByteStream;
 class SVGAnimatedType {
     WTF_MAKE_FAST_ALLOCATED;
 public:
-    virtual ~SVGAnimatedType();
+    ~SVGAnimatedType();
 
     static PassOwnPtr<SVGAnimatedType> createAngleAndEnumeration(std::pair<SVGAngle, unsigned>*);
     static PassOwnPtr<SVGAnimatedType> createBoolean(bool*);

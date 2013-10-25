@@ -35,8 +35,6 @@ class SVGTransformListPropertyTearOff;
 
 class SVGViewSpec : public RefCounted<SVGViewSpec>, public ScriptWrappable, public SVGZoomAndPan, public SVGFitToViewBox {
 public:
-    virtual ~SVGViewSpec() { }
-
     using RefCounted<SVGViewSpec>::ref;
     using RefCounted<SVGViewSpec>::deref;
 

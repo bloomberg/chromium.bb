@@ -30,10 +30,6 @@ SVGElementInstanceList::SVGElementInstanceList(PassRefPtr<SVGElementInstance> ro
     ScriptWrappable::init(this);
 }
 
-SVGElementInstanceList::~SVGElementInstanceList()
-{
-}
-
 unsigned SVGElementInstanceList::length() const
 {
     // NOTE: We could use the same caching facilities, like the ones "ChildNodeList" uses.
