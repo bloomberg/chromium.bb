@@ -412,7 +412,12 @@ TEST_F(ScrollingCoordinatorChromiumTest, iframeScrolling)
 #endif
 }
 
+// Failing on Windows: https://code.google.com/p/chromium/issues/detail?id=311425
+#if OS(WIN)
+TEST_F(ScrollingCoordinatorChromiumTest, DISABLED_rtlIframe)
+#else
 TEST_F(ScrollingCoordinatorChromiumTest, rtlIframe)
+#endif
 {
     registerMockedHttpURLLoad("rtl-iframe.html");
     registerMockedHttpURLLoad("rtl-iframe-inner.html");
