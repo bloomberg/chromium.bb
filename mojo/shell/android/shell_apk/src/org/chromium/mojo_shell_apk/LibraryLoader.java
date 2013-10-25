@@ -4,17 +4,17 @@
 
 package org.chromium.mojo_shell_apk;
 
-import java.lang.UnsatisfiedLinkError;
-import org.chromium.base.JNINamespace;
+import android.util.Log;
 
-@JNINamespace("mojo")
 public class LibraryLoader {
+    private static final String TAG = "LibraryLoader";
     private static Boolean sInitialized = false;
 
     public static void ensureInitialized() throws UnsatisfiedLinkError {
-        if (!sInitialized)
+        if (sInitialized)
             return;
         sInitialized = true;
         System.loadLibrary("mojo_shell");
+        Log.i(TAG, "libmojo_shell initialization success.");
     }
 }

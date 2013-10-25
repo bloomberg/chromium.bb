@@ -2,19 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/loader/job.h"
+#ifndef MOJO_SHELL_RUN_H_
+#define MOJO_SHELL_RUN_H_
 
 namespace mojo {
-namespace loader {
+namespace shell {
 
-Job::Delegate::~Delegate() {
-}
+void Run();
 
-Job::Job() {
-}
-
-Job::~Job() {
-}
-
-}  // namespace loader
+}  // namespace shell
 }  // namespace mojo
+
+#endif  // MOJO_SHELL_RUN_H_

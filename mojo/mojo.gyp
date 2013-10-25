@@ -149,6 +149,8 @@
         'loader/url_request_context_getter.h',
         'shell/app_container.cc',
         'shell/app_container.h',
+        'shell/run.cc',
+        'shell/run.h',
         'shell/storage.cc',
         'shell/storage.h',
         'shell/switches.cc',
@@ -175,7 +177,7 @@
         'mojo_system',
       ],
       'sources': [
-        'shell/shell.cc',
+        'shell/desktop/mojo_main.cc',
       ],
       'conditions': [
         ['OS == "win"', {
@@ -238,14 +240,46 @@
     ['OS=="android"', {
       'targets': [
         {
+          'target_name': 'java_set_jni_headers',
+          'type': 'none',
+          'variables': {
+            'jni_gen_package': 'mojo',
+            'input_java_class': 'java/util/HashSet.class',
+          },
+          'includes': [ '../build/jar_file_jni_generator.gypi' ],
+        },
+        {
+          'target_name': 'mojo_jni_headers',
+          'type': 'none',
+          'dependencies': [
+            'java_set_jni_headers',
+          ],
+          'direct_dependent_settings': {
+            'include_dirs': [
+              '<(SHARED_INTERMEDIATE_DIR)/mojo',
+            ],
+          },
+          'sources': [
+            'shell/android/shell_apk/src/org/chromium/mojo_shell_apk/MojoMain.java',
+          ],
+          'variables': {
+            'jni_gen_package': 'mojo'
+          },
+          'includes': [ '../build/jni_generator.gypi' ],
+        },
+        {
           'target_name': 'libmojo_shell',
           'type': 'shared_library',
           'dependencies': [
             '../base/base.gyp:base',
+            '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
+            'mojo_jni_headers',
             'mojo_shell_lib',
           ],
           'sources': [
             'shell/android/library_loader.cc',
+            'shell/android/mojo_main.cc',
+            'shell/android/mojo_main.h',
           ],
         },
         {

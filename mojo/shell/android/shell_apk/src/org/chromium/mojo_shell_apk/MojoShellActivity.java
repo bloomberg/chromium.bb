@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,7 @@ import android.app.Activity;
 import android.util.Log;
 
 import org.chromium.mojo_shell_apk.LibraryLoader;
+import org.chromium.mojo_shell_apk.MojoMain;
 
 /**
  * Activity for managing the Mojo Shell.
@@ -29,6 +30,7 @@ public class MojoShellActivity extends Activity {
             finish();
             return;
         }
-        Log.i(TAG, "libmojo_shell initialization success.");
+        MojoMain.initApplicationContext(this);
+        Log.i(TAG, "MojoMain.initApplicationContext() success.");
     }
 }

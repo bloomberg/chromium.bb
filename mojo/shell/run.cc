@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
@@ -15,35 +14,36 @@
 #include "mojo/system/core_impl.h"
 #include "url/gurl.h"
 
-int main(int argc, char** argv) {
-  base::AtExitManager at_exit;
-  CommandLine::Init(argc, argv);
+namespace mojo {
+namespace shell {
 
-  mojo::system::CoreImpl::Init();
+void Run() {
+  system::CoreImpl::Init();
 
-  base::MessageLoop message_loop(base::MessageLoop::TYPE_UI);
+#if defined(OS_ANDROID)
+  return;  // TODO(abarth): Run more of RunShell on Android.
+#endif
 
   // TODO(abarth): Group these objects into a "context" object.
-  mojo::shell::TaskRunners task_runners(message_loop.message_loop_proxy());
-  mojo::shell::Storage storage;
+  TaskRunners task_runners(base::MessageLoop::current()->message_loop_proxy());
+  Storage storage;
 
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   if (!command_line.HasSwitch(switches::kApp)) {
     LOG(ERROR) << "No app path specified.";
-    return 0;
+    return;
   }
 
-  mojo::loader::Loader loader(task_runners.io_runner(),
-                              task_runners.file_runner(),
-                              storage.profile_path());
+  loader::Loader loader(task_runners.io_runner(),
+                        task_runners.file_runner(),
+                        storage.profile_path());
 
-  scoped_ptr<mojo::shell::AppContainer> container(
-      new mojo::shell::AppContainer);
+  scoped_ptr<AppContainer> container(new AppContainer);
 
-  scoped_ptr<mojo::loader::Job> job = loader.Load(
+  scoped_ptr<loader::Job> job = loader.Load(
     GURL(command_line.GetSwitchValueASCII(switches::kApp)),
     container.get());
-
-  message_loop.Run();
-  return 0;
 }
+
+}  // namespace shell
+}  // namespace mojo
