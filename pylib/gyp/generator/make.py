@@ -1996,7 +1996,7 @@ def GenerateOutput(target_list, target_dicts, data, params):
     })
   elif flavor == 'solaris':
     header_params.update({
-        'flock': './gyp-sun-tool flock',
+        'flock': './gyp-flock-tool flock',
         'flock_index': 2,
     })
   elif flavor == 'freebsd':
@@ -2007,7 +2007,7 @@ def GenerateOutput(target_list, target_dicts, data, params):
   elif flavor == 'aix':
     header_params.update({
         'link_commands': LINK_COMMANDS_AIX,
-        'flock': './gyp-aix-tool flock',
+        'flock': './gyp-flock-tool flock',
         'flock_index': 2,
     })
 
