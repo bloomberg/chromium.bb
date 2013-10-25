@@ -660,7 +660,7 @@ pixman_renderer_init(struct weston_compositor *ec)
 {
 	struct pixman_renderer *renderer;
 
-	renderer = malloc(sizeof *renderer);
+	renderer = calloc(1, sizeof *renderer);
 	if (renderer == NULL)
 		return -1;
 
