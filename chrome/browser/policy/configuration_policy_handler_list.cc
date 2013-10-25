@@ -455,155 +455,15 @@ StringToIntEnumListPolicyHandler::MappingEntry kExtensionAllowedTypesMap[] = {
 }  // namespace
 
 ConfigurationPolicyHandlerList::ConfigurationPolicyHandlerList() {
-  for (size_t i = 0; i < arraysize(kSimplePolicyMap); ++i) {
-    handlers_.push_back(
-        new SimplePolicyHandler(kSimplePolicyMap[i].policy_name,
-                                kSimplePolicyMap[i].preference_path,
-                                kSimplePolicyMap[i].value_type));
-  }
-
-  handlers_.push_back(new AutofillPolicyHandler());
-  handlers_.push_back(new DefaultSearchPolicyHandler());
-  handlers_.push_back(new FileSelectionDialogsPolicyHandler());
-  handlers_.push_back(new IncognitoModePolicyHandler());
-  handlers_.push_back(new JavascriptPolicyHandler());
-  handlers_.push_back(new ProxyPolicyHandler());
-  handlers_.push_back(new RestoreOnStartupPolicyHandler());
-  handlers_.push_back(new browser_sync::SyncPolicyHandler());
-  handlers_.push_back(new URLBlacklistPolicyHandler(prefs::kUrlBlacklist));
-
-  handlers_.push_back(new extensions::ExtensionListPolicyHandler(
-      key::kExtensionInstallWhitelist,
-      prefs::kExtensionInstallAllowList,
-      false));
-  handlers_.push_back(new extensions::ExtensionListPolicyHandler(
-      key::kExtensionInstallBlacklist, prefs::kExtensionInstallDenyList, true));
-  handlers_.push_back(new extensions::ExtensionInstallForcelistPolicyHandler());
-  handlers_.push_back(new extensions::ExtensionURLPatternListPolicyHandler(
-      key::kExtensionInstallSources, prefs::kExtensionAllowedInstallSites));
-  handlers_.push_back(new StringToIntEnumListPolicyHandler(
-      key::kExtensionAllowedTypes,
-      prefs::kExtensionAllowedTypes,
-      kExtensionAllowedTypesMap,
-      kExtensionAllowedTypesMap + arraysize(kExtensionAllowedTypesMap)));
-#if defined(OS_CHROMEOS)
-  handlers_.push_back(new extensions::ExtensionListPolicyHandler(
-      key::kAttestationExtensionWhitelist,
-      prefs::kAttestationExtensionWhitelist,
-      false));
-#endif  // defined(OS_CHROMEOS)
-
-#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID) && !defined(OS_IOS)
-  handlers_.push_back(new DiskCacheDirPolicyHandler(prefs::kDiskCacheDir));
-  handlers_.push_back(new DownloadDirPolicyHandler);
-#endif  // !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
-
-#if defined(OS_CHROMEOS)
-  handlers_.push_back(
-      NetworkConfigurationPolicyHandler::CreateForDevicePolicy());
-  handlers_.push_back(NetworkConfigurationPolicyHandler::CreateForUserPolicy());
-  handlers_.push_back(new PinnedLauncherAppsPolicyHandler());
-  handlers_.push_back(new ScreenMagnifierPolicyHandler());
-  handlers_.push_back(new LoginScreenPowerManagementPolicyHandler);
-
-  handlers_.push_back(
-      new IntRangePolicyHandler(
-          key::kScreenDimDelayAC,
-          prefs::kPowerAcScreenDimDelayMs,
-          0, INT_MAX, true));
-  handlers_.push_back(
-      new IntRangePolicyHandler(
-          key::kScreenOffDelayAC,
-          prefs::kPowerAcScreenOffDelayMs,
-          0, INT_MAX, true));
-  handlers_.push_back(
-      new IntRangePolicyHandler(
-          key::kScreenLockDelayAC,
-          prefs::kPowerAcScreenLockDelayMs,
-          0, INT_MAX, true));
-  handlers_.push_back(
-      new IntRangePolicyHandler(
-          key::kIdleWarningDelayAC,
-          prefs::kPowerAcIdleWarningDelayMs,
-          0, INT_MAX, true));
-  handlers_.push_back(
-      new IntRangePolicyHandler(
-          key::kIdleDelayAC,
-          prefs::kPowerAcIdleDelayMs,
-          0, INT_MAX, true));
-  handlers_.push_back(
-      new IntRangePolicyHandler(
-          key::kScreenDimDelayBattery,
-          prefs::kPowerBatteryScreenDimDelayMs,
-          0, INT_MAX, true));
-  handlers_.push_back(
-      new IntRangePolicyHandler(
-          key::kScreenOffDelayBattery,
-          prefs::kPowerBatteryScreenOffDelayMs,
-          0, INT_MAX, true));
-  handlers_.push_back(
-      new IntRangePolicyHandler(
-          key::kScreenLockDelayBattery,
-          prefs::kPowerBatteryScreenLockDelayMs,
-          0, INT_MAX, true));
-  handlers_.push_back(
-      new IntRangePolicyHandler(
-          key::kIdleWarningDelayBattery,
-          prefs::kPowerBatteryIdleWarningDelayMs,
-          0, INT_MAX, true));
-  handlers_.push_back(
-      new IntRangePolicyHandler(
-          key::kIdleDelayBattery,
-          prefs::kPowerBatteryIdleDelayMs,
-          0, INT_MAX, true));
-  handlers_.push_back(
-      new IntRangePolicyHandler(
-          key::kIdleActionAC,
-          prefs::kPowerAcIdleAction,
-          chromeos::PowerPolicyController::ACTION_SUSPEND,
-          chromeos::PowerPolicyController::ACTION_DO_NOTHING,
-          false));
-  handlers_.push_back(
-      new IntRangePolicyHandler(
-          key::kIdleActionBattery,
-          prefs::kPowerBatteryIdleAction,
-          chromeos::PowerPolicyController::ACTION_SUSPEND,
-          chromeos::PowerPolicyController::ACTION_DO_NOTHING,
-          false));
-  handlers_.push_back(new DeprecatedIdleActionHandler());
-  handlers_.push_back(
-      new IntRangePolicyHandler(
-          key::kLidCloseAction,
-          prefs::kPowerLidClosedAction,
-          chromeos::PowerPolicyController::ACTION_SUSPEND,
-          chromeos::PowerPolicyController::ACTION_DO_NOTHING,
-          false));
-  handlers_.push_back(
-      new IntPercentageToDoublePolicyHandler(
-          key::kPresentationScreenDimDelayScale,
-          prefs::kPowerPresentationScreenDimDelayFactor,
-          100, INT_MAX, true));
-  handlers_.push_back(
-      new IntPercentageToDoublePolicyHandler(
-          key::kUserActivityScreenDimDelayScale,
-          prefs::kPowerUserActivityScreenDimDelayFactor,
-          100, INT_MAX, true));
-  handlers_.push_back(new IntRangePolicyHandler(key::kUptimeLimit,
-                                                prefs::kUptimeLimit,
-                                                3600, INT_MAX, true));
-  handlers_.push_back(new IntRangePolicyHandler(
-      key::kDeviceLoginScreenDefaultScreenMagnifierType,
-      NULL,
-      0, ash::MAGNIFIER_FULL, false));
-#endif  // defined(OS_CHROMEOS)
-
-#if defined(OS_ANDROID)
-  handlers_.push_back(new ManagedBookmarksPolicyHandler());
-#endif
 }
 
 ConfigurationPolicyHandlerList::~ConfigurationPolicyHandlerList() {
   STLDeleteElements(&handlers_);
+}
+
+void ConfigurationPolicyHandlerList::AddHandler(
+    scoped_ptr<ConfigurationPolicyHandler> handler) {
+  handlers_.push_back(handler.release());
 }
 
 void ConfigurationPolicyHandlerList::ApplyPolicySettings(
@@ -634,5 +494,198 @@ void ConfigurationPolicyHandlerList::PrepareForDisplaying(
   for (handler = handlers_.begin(); handler != handlers_.end(); ++handler)
     (*handler)->PrepareForDisplaying(policies);
 }
+
+#if !defined(OS_IOS)
+scoped_ptr<ConfigurationPolicyHandlerList> BuildHandlerList() {
+  scoped_ptr<ConfigurationPolicyHandlerList> handlers(
+      new ConfigurationPolicyHandlerList);
+  for (size_t i = 0; i < arraysize(kSimplePolicyMap); ++i) {
+    handlers->AddHandler(make_scoped_ptr<ConfigurationPolicyHandler>(
+        new SimplePolicyHandler(kSimplePolicyMap[i].policy_name,
+                                kSimplePolicyMap[i].preference_path,
+                                kSimplePolicyMap[i].value_type)));
+  }
+
+  handlers->AddHandler(make_scoped_ptr<ConfigurationPolicyHandler>(
+      new AutofillPolicyHandler()));
+  handlers->AddHandler(make_scoped_ptr<ConfigurationPolicyHandler>(
+      new DefaultSearchPolicyHandler()));
+  handlers->AddHandler(make_scoped_ptr<ConfigurationPolicyHandler>(
+      new FileSelectionDialogsPolicyHandler()));
+  handlers->AddHandler(make_scoped_ptr<ConfigurationPolicyHandler>(
+      new IncognitoModePolicyHandler()));
+  handlers->AddHandler(make_scoped_ptr<ConfigurationPolicyHandler>(
+      new JavascriptPolicyHandler()));
+  handlers->AddHandler(make_scoped_ptr<ConfigurationPolicyHandler>(
+      new ProxyPolicyHandler()));
+  handlers->AddHandler(make_scoped_ptr<ConfigurationPolicyHandler>(
+      new RestoreOnStartupPolicyHandler()));
+  handlers->AddHandler(make_scoped_ptr<ConfigurationPolicyHandler>(
+      new browser_sync::SyncPolicyHandler()));
+  handlers->AddHandler(make_scoped_ptr<ConfigurationPolicyHandler>(
+      new URLBlacklistPolicyHandler(prefs::kUrlBlacklist)));
+
+  handlers->AddHandler(make_scoped_ptr<ConfigurationPolicyHandler>(
+      new extensions::ExtensionListPolicyHandler(
+          key::kExtensionInstallWhitelist,
+          prefs::kExtensionInstallAllowList,
+          false)));
+  handlers->AddHandler(make_scoped_ptr<ConfigurationPolicyHandler>(
+      new extensions::ExtensionListPolicyHandler(
+          key::kExtensionInstallBlacklist,
+          prefs::kExtensionInstallDenyList,
+          true)));
+  handlers->AddHandler(make_scoped_ptr<ConfigurationPolicyHandler>(
+      new extensions::ExtensionInstallForcelistPolicyHandler()));
+  handlers->AddHandler(make_scoped_ptr<ConfigurationPolicyHandler>(
+      new extensions::ExtensionURLPatternListPolicyHandler(
+          key::kExtensionInstallSources,
+          prefs::kExtensionAllowedInstallSites)));
+  handlers->AddHandler(make_scoped_ptr<ConfigurationPolicyHandler>(
+      new StringToIntEnumListPolicyHandler(
+          key::kExtensionAllowedTypes,
+          prefs::kExtensionAllowedTypes,
+          kExtensionAllowedTypesMap,
+          kExtensionAllowedTypesMap + arraysize(kExtensionAllowedTypesMap))));
+#if defined(OS_CHROMEOS)
+  handlers->AddHandler(make_scoped_ptr<ConfigurationPolicyHandler>(
+      new extensions::ExtensionListPolicyHandler(
+          key::kAttestationExtensionWhitelist,
+          prefs::kAttestationExtensionWhitelist,
+          false)));
+#endif  // defined(OS_CHROMEOS)
+
+#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
+  handlers->AddHandler(make_scoped_ptr<ConfigurationPolicyHandler>(
+      new DiskCacheDirPolicyHandler(prefs::kDiskCacheDir)));
+  handlers->AddHandler(make_scoped_ptr<ConfigurationPolicyHandler>(
+      new DownloadDirPolicyHandler));
+#endif  // !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
+
+#if defined(OS_CHROMEOS)
+  handlers->AddHandler(make_scoped_ptr<ConfigurationPolicyHandler>(
+      NetworkConfigurationPolicyHandler::CreateForDevicePolicy()));
+  handlers->AddHandler(make_scoped_ptr<ConfigurationPolicyHandler>(
+      NetworkConfigurationPolicyHandler::CreateForUserPolicy()));
+  handlers->AddHandler(make_scoped_ptr<ConfigurationPolicyHandler>(
+      new PinnedLauncherAppsPolicyHandler()));
+  handlers->AddHandler(make_scoped_ptr<ConfigurationPolicyHandler>(
+      new ScreenMagnifierPolicyHandler()));
+  handlers->AddHandler(make_scoped_ptr<ConfigurationPolicyHandler>(
+      new LoginScreenPowerManagementPolicyHandler));
+
+  handlers->AddHandler(make_scoped_ptr<ConfigurationPolicyHandler>(
+      new IntRangePolicyHandler(key::kScreenDimDelayAC,
+                                prefs::kPowerAcScreenDimDelayMs,
+                                0,
+                                INT_MAX,
+                                true)));
+  handlers->AddHandler(make_scoped_ptr<ConfigurationPolicyHandler>(
+      new IntRangePolicyHandler(key::kScreenOffDelayAC,
+                                prefs::kPowerAcScreenOffDelayMs,
+                                0,
+                                INT_MAX,
+                                true)));
+  handlers->AddHandler(make_scoped_ptr<ConfigurationPolicyHandler>(
+      new IntRangePolicyHandler(key::kScreenLockDelayAC,
+                                prefs::kPowerAcScreenLockDelayMs,
+                                0,
+                                INT_MAX,
+                                true)));
+  handlers->AddHandler(make_scoped_ptr<ConfigurationPolicyHandler>(
+      new IntRangePolicyHandler(key::kIdleWarningDelayAC,
+                                prefs::kPowerAcIdleWarningDelayMs,
+                                0,
+                                INT_MAX,
+                                true)));
+  handlers->AddHandler(
+      make_scoped_ptr<ConfigurationPolicyHandler>(new IntRangePolicyHandler(
+          key::kIdleDelayAC, prefs::kPowerAcIdleDelayMs, 0, INT_MAX, true)));
+  handlers->AddHandler(make_scoped_ptr<ConfigurationPolicyHandler>(
+      new IntRangePolicyHandler(key::kScreenDimDelayBattery,
+                                prefs::kPowerBatteryScreenDimDelayMs,
+                                0,
+                                INT_MAX,
+                                true)));
+  handlers->AddHandler(make_scoped_ptr<ConfigurationPolicyHandler>(
+      new IntRangePolicyHandler(key::kScreenOffDelayBattery,
+                                prefs::kPowerBatteryScreenOffDelayMs,
+                                0,
+                                INT_MAX,
+                                true)));
+  handlers->AddHandler(make_scoped_ptr<ConfigurationPolicyHandler>(
+      new IntRangePolicyHandler(key::kScreenLockDelayBattery,
+                                prefs::kPowerBatteryScreenLockDelayMs,
+                                0,
+                                INT_MAX,
+                                true)));
+  handlers->AddHandler(make_scoped_ptr<ConfigurationPolicyHandler>(
+      new IntRangePolicyHandler(key::kIdleWarningDelayBattery,
+                                prefs::kPowerBatteryIdleWarningDelayMs,
+                                0,
+                                INT_MAX,
+                                true)));
+  handlers->AddHandler(make_scoped_ptr<ConfigurationPolicyHandler>(
+      new IntRangePolicyHandler(key::kIdleDelayBattery,
+                                prefs::kPowerBatteryIdleDelayMs,
+                                0,
+                                INT_MAX,
+                                true)));
+  handlers->AddHandler(
+      make_scoped_ptr<ConfigurationPolicyHandler>(new IntRangePolicyHandler(
+          key::kIdleActionAC,
+          prefs::kPowerAcIdleAction,
+          chromeos::PowerPolicyController::ACTION_SUSPEND,
+          chromeos::PowerPolicyController::ACTION_DO_NOTHING,
+          false)));
+  handlers->AddHandler(
+      make_scoped_ptr<ConfigurationPolicyHandler>(new IntRangePolicyHandler(
+          key::kIdleActionBattery,
+          prefs::kPowerBatteryIdleAction,
+          chromeos::PowerPolicyController::ACTION_SUSPEND,
+          chromeos::PowerPolicyController::ACTION_DO_NOTHING,
+          false)));
+  handlers->AddHandler(make_scoped_ptr<ConfigurationPolicyHandler>(
+      new DeprecatedIdleActionHandler()));
+  handlers->AddHandler(
+      make_scoped_ptr<ConfigurationPolicyHandler>(new IntRangePolicyHandler(
+          key::kLidCloseAction,
+          prefs::kPowerLidClosedAction,
+          chromeos::PowerPolicyController::ACTION_SUSPEND,
+          chromeos::PowerPolicyController::ACTION_DO_NOTHING,
+          false)));
+  handlers->AddHandler(make_scoped_ptr<ConfigurationPolicyHandler>(
+      new IntPercentageToDoublePolicyHandler(
+          key::kPresentationScreenDimDelayScale,
+          prefs::kPowerPresentationScreenDimDelayFactor,
+          100,
+          INT_MAX,
+          true)));
+  handlers->AddHandler(make_scoped_ptr<ConfigurationPolicyHandler>(
+      new IntPercentageToDoublePolicyHandler(
+          key::kUserActivityScreenDimDelayScale,
+          prefs::kPowerUserActivityScreenDimDelayFactor,
+          100,
+          INT_MAX,
+          true)));
+  handlers->AddHandler(
+      make_scoped_ptr<ConfigurationPolicyHandler>(new IntRangePolicyHandler(
+          key::kUptimeLimit, prefs::kUptimeLimit, 3600, INT_MAX, true)));
+  handlers->AddHandler(
+      make_scoped_ptr<ConfigurationPolicyHandler>(new IntRangePolicyHandler(
+          key::kDeviceLoginScreenDefaultScreenMagnifierType,
+          NULL,
+          0,
+          ash::MAGNIFIER_FULL,
+          false)));
+#endif  // defined(OS_CHROMEOS)
+
+#if defined(OS_ANDROID)
+  handlers->AddHandler(make_scoped_ptr<ConfigurationPolicyHandler>(
+      new ManagedBookmarksPolicyHandler()));
+#endif
+  return handlers.Pass();
+}
+#endif  // !defined(OS_IOS)
 
 }  // namespace policy

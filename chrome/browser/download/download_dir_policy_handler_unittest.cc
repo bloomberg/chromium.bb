@@ -12,7 +12,14 @@
 #include "policy/policy_constants.h"
 
 class DownloadDirPolicyHandlerTest
-    : public policy::ConfigurationPolicyPrefStoreTest {};
+    : public policy::ConfigurationPolicyPrefStoreTest {
+ public:
+  virtual void SetUp() OVERRIDE {
+    handler_list_.AddHandler(
+        make_scoped_ptr<policy::ConfigurationPolicyHandler>(
+            new DownloadDirPolicyHandler));
+  }
+};
 
 TEST_F(DownloadDirPolicyHandlerTest, SetDownloadDirectory) {
   policy::PolicyMap policy;

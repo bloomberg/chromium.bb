@@ -165,7 +165,7 @@ class BrowserPolicyConnector {
   // may trigger policy updates during shutdown, which will result in
   // |handler_list_| being consulted for policy translation.
   // Therefore, it's important to destroy |handler_list_| after the providers.
-  ConfigurationPolicyHandlerList handler_list_;
+  scoped_ptr<ConfigurationPolicyHandlerList> handler_list_;
 
   scoped_ptr<ConfigurationPolicyProvider> platform_provider_;
 

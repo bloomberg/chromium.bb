@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/policy/configuration_policy_pref_store.h"
 #include "chrome/browser/policy/configuration_policy_pref_store_unittest.h"
 #include "chrome/browser/search_engines/default_search_policy_handler.h"
@@ -18,6 +19,11 @@ class DefaultSearchPolicyHandlerTest
         "http://www.google.com/#q={searchTerms}");
     default_alternate_urls_.AppendString(
         "http://www.google.com/search#q={searchTerms}");
+  }
+
+  virtual void SetUp() OVERRIDE {
+    handler_list_.AddHandler(make_scoped_ptr<ConfigurationPolicyHandler>(
+        new DefaultSearchPolicyHandler));
   }
 
  protected:

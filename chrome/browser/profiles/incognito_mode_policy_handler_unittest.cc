@@ -5,6 +5,7 @@
 #include "chrome/browser/policy/configuration_policy_pref_store.h"
 #include "chrome/browser/policy/configuration_policy_pref_store_unittest.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
+#include "chrome/browser/profiles/incognito_mode_policy_handler.h"
 #include "chrome/common/pref_names.h"
 #include "grit/generated_resources.h"
 #include "policy/policy_constants.h"
@@ -14,6 +15,11 @@ namespace policy {
 // Tests Incognito mode availability preference setting.
 class IncognitoModePolicyHandlerTest
     : public ConfigurationPolicyPrefStoreTest {
+ public:
+  virtual void SetUp() OVERRIDE {
+    handler_list_.AddHandler(make_scoped_ptr<ConfigurationPolicyHandler>(
+          new IncognitoModePolicyHandler));
+  }
  protected:
   static const int kIncognitoModeAvailabilityNotSet = -1;
 

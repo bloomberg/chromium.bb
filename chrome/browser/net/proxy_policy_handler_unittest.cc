@@ -4,6 +4,7 @@
 
 #include <string>
 
+#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/net/proxy_policy_handler.h"
 #include "chrome/browser/policy/configuration_policy_pref_store.h"
@@ -19,6 +20,12 @@ namespace policy {
 // Test cases for the proxy policy settings.
 class ProxyPolicyHandlerTest
     : public ConfigurationPolicyPrefStoreTest {
+ public:
+  virtual void SetUp() OVERRIDE {
+    handler_list_.AddHandler(
+        make_scoped_ptr<ConfigurationPolicyHandler>(new ProxyPolicyHandler));
+  }
+
  protected:
   // Verify that all the proxy prefs are set to the specified expected values.
   void VerifyProxyPrefs(

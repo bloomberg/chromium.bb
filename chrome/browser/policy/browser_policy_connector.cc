@@ -200,6 +200,7 @@ class DeviceManagementServiceConfiguration
 BrowserPolicyConnector::BrowserPolicyConnector()
     : is_initialized_(false),
       local_state_(NULL),
+      handler_list_(BuildHandlerList().Pass()),
       weak_ptr_factory_(this) {
   // GetPolicyService() must be ready after the constructor is done.
   // The connector is created very early during startup, when the browser
@@ -415,7 +416,7 @@ scoped_ptr<PolicyService> BrowserPolicyConnector::CreatePolicyService(
 
 const ConfigurationPolicyHandlerList*
     BrowserPolicyConnector::GetHandlerList() const {
-  return &handler_list_;
+  return handler_list_.get();
 }
 
 UserAffiliation BrowserPolicyConnector::GetUserAffiliation(

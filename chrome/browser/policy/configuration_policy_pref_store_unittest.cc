@@ -24,6 +24,11 @@ using testing::Mock;
 using testing::Return;
 using testing::_;
 
+namespace {
+const char kTestPolicy[] = "test.policy";
+const char kTestPref[] = "test.pref";
+}  // namespace
+
 namespace policy {
 
 // Holds a set of test parameters, consisting of pref name and policy name.
@@ -67,306 +72,133 @@ void ConfigurationPolicyPrefStoreTest::UpdateProviderPolicy(
 
 // Test cases for list-valued policy settings.
 class ConfigurationPolicyPrefStoreListTest
-    : public ConfigurationPolicyPrefStoreTest,
-      public testing::WithParamInterface<PolicyAndPref> {};
+    : public ConfigurationPolicyPrefStoreTest {
+  virtual void SetUp() OVERRIDE {
+    handler_list_.AddHandler(
+        make_scoped_ptr<ConfigurationPolicyHandler>(new SimplePolicyHandler(
+            kTestPolicy, kTestPref, base::Value::TYPE_LIST)));
+  }
+};
 
-TEST_P(ConfigurationPolicyPrefStoreListTest, GetDefault) {
-  EXPECT_FALSE(store_->GetValue(GetParam().pref_name(), NULL));
+TEST_F(ConfigurationPolicyPrefStoreListTest, GetDefault) {
+  EXPECT_FALSE(store_->GetValue(kTestPref, NULL));
 }
 
-TEST_P(ConfigurationPolicyPrefStoreListTest, SetValue) {
+TEST_F(ConfigurationPolicyPrefStoreListTest, SetValue) {
   base::ListValue* in_value = new base::ListValue();
   in_value->Append(base::Value::CreateStringValue("test1"));
   in_value->Append(base::Value::CreateStringValue("test2,"));
   PolicyMap policy;
-  policy.Set(GetParam().policy_name(), POLICY_LEVEL_MANDATORY,
+  policy.Set(kTestPolicy, POLICY_LEVEL_MANDATORY,
              POLICY_SCOPE_USER, in_value, NULL);
   UpdateProviderPolicy(policy);
   const base::Value* value = NULL;
-  EXPECT_TRUE(store_->GetValue(GetParam().pref_name(), &value));
+  EXPECT_TRUE(store_->GetValue(kTestPref, &value));
   ASSERT_TRUE(value);
   EXPECT_TRUE(in_value->Equals(value));
 }
 
-INSTANTIATE_TEST_CASE_P(
-    ConfigurationPolicyPrefStoreListTestInstance,
-    ConfigurationPolicyPrefStoreListTest,
-    testing::Values(
-        PolicyAndPref(key::kRestoreOnStartupURLs,
-                      prefs::kURLsToRestoreOnStartup),
-        PolicyAndPref(key::kDisabledPlugins,
-                      prefs::kPluginsDisabledPlugins),
-        PolicyAndPref(key::kDisabledPluginsExceptions,
-                      prefs::kPluginsDisabledPluginsExceptions),
-        PolicyAndPref(key::kEnabledPlugins,
-                      prefs::kPluginsEnabledPlugins),
-        PolicyAndPref(key::kAutoSelectCertificateForUrls,
-                      prefs::kManagedAutoSelectCertificateForUrls),
-        PolicyAndPref(key::kURLBlacklist,
-                      prefs::kUrlBlacklist),
-        PolicyAndPref(key::kURLWhitelist,
-                      prefs::kUrlWhitelist)));
-
 // Test cases for string-valued policy settings.
 class ConfigurationPolicyPrefStoreStringTest
-    : public ConfigurationPolicyPrefStoreTest,
-      public testing::WithParamInterface<PolicyAndPref> {};
+    : public ConfigurationPolicyPrefStoreTest {
+  virtual void SetUp() OVERRIDE {
+    handler_list_.AddHandler(
+        make_scoped_ptr<ConfigurationPolicyHandler>(new SimplePolicyHandler(
+            kTestPolicy, kTestPref, base::Value::TYPE_STRING)));
+  }
+};
 
-TEST_P(ConfigurationPolicyPrefStoreStringTest, GetDefault) {
-  EXPECT_FALSE(store_->GetValue(GetParam().pref_name(), NULL));
+TEST_F(ConfigurationPolicyPrefStoreStringTest, GetDefault) {
+  EXPECT_FALSE(store_->GetValue(kTestPref, NULL));
 }
 
-TEST_P(ConfigurationPolicyPrefStoreStringTest, SetValue) {
+TEST_F(ConfigurationPolicyPrefStoreStringTest, SetValue) {
   PolicyMap policy;
-  policy.Set(GetParam().policy_name(), POLICY_LEVEL_MANDATORY,
+  policy.Set(kTestPolicy, POLICY_LEVEL_MANDATORY,
              POLICY_SCOPE_USER,
              base::Value::CreateStringValue("http://chromium.org"), NULL);
   UpdateProviderPolicy(policy);
   const base::Value* value = NULL;
-  EXPECT_TRUE(store_->GetValue(GetParam().pref_name(), &value));
+  EXPECT_TRUE(store_->GetValue(kTestPref, &value));
   ASSERT_TRUE(value);
   EXPECT_TRUE(base::StringValue("http://chromium.org").Equals(value));
 }
 
-INSTANTIATE_TEST_CASE_P(
-    ConfigurationPolicyPrefStoreStringTestInstance,
-    ConfigurationPolicyPrefStoreStringTest,
-    testing::Values(
-        PolicyAndPref(key::kRestrictSigninToPattern,
-                      prefs::kGoogleServicesUsernamePattern),
-        PolicyAndPref(key::kHomepageLocation,
-                      prefs::kHomePage),
-        PolicyAndPref(key::kApplicationLocaleValue,
-                      prefs::kApplicationLocale),
-        PolicyAndPref(key::kAuthSchemes,
-                      prefs::kAuthSchemes),
-        PolicyAndPref(key::kAuthServerWhitelist,
-                      prefs::kAuthServerWhitelist),
-        PolicyAndPref(key::kAuthNegotiateDelegateWhitelist,
-                      prefs::kAuthNegotiateDelegateWhitelist),
-        PolicyAndPref(key::kGSSAPILibraryName,
-                      prefs::kGSSAPILibraryName),
-        PolicyAndPref(key::kVariationsRestrictParameter,
-                      prefs::kVariationsRestrictParameter)));
-
-#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
-INSTANTIATE_TEST_CASE_P(
-    ConfigurationPolicyPrefStoreDownloadDirectoryInstance,
-    ConfigurationPolicyPrefStoreStringTest,
-    testing::Values(
-        PolicyAndPref(key::kDiskCacheDir,
-                      prefs::kDiskCacheDir),
-        PolicyAndPref(key::kDownloadDirectory,
-                      prefs::kDownloadDefaultDirectory)));
-#endif  // !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
-
 // Test cases for boolean-valued policy settings.
 class ConfigurationPolicyPrefStoreBooleanTest
-    : public ConfigurationPolicyPrefStoreTest,
-      public testing::WithParamInterface<PolicyAndPref> {};
+    : public ConfigurationPolicyPrefStoreTest {
+  virtual void SetUp() OVERRIDE {
+    handler_list_.AddHandler(
+        make_scoped_ptr<ConfigurationPolicyHandler>(new SimplePolicyHandler(
+            kTestPolicy, kTestPref, base::Value::TYPE_BOOLEAN)));
+  }
+};
 
-TEST_P(ConfigurationPolicyPrefStoreBooleanTest, GetDefault) {
-  EXPECT_FALSE(store_->GetValue(GetParam().pref_name(), NULL));
+TEST_F(ConfigurationPolicyPrefStoreBooleanTest, GetDefault) {
+  EXPECT_FALSE(store_->GetValue(kTestPref, NULL));
 }
 
-TEST_P(ConfigurationPolicyPrefStoreBooleanTest, SetValue) {
+TEST_F(ConfigurationPolicyPrefStoreBooleanTest, SetValue) {
   PolicyMap policy;
-  policy.Set(GetParam().policy_name(), POLICY_LEVEL_MANDATORY,
+  policy.Set(kTestPolicy, POLICY_LEVEL_MANDATORY,
              POLICY_SCOPE_USER, base::Value::CreateBooleanValue(false), NULL);
   UpdateProviderPolicy(policy);
   const base::Value* value = NULL;
-  EXPECT_TRUE(store_->GetValue(GetParam().pref_name(), &value));
+  EXPECT_TRUE(store_->GetValue(kTestPref, &value));
   ASSERT_TRUE(value);
   bool boolean_value = true;
   bool result = value->GetAsBoolean(&boolean_value);
   ASSERT_TRUE(result);
   EXPECT_FALSE(boolean_value);
 
-  policy.Set(GetParam().policy_name(), POLICY_LEVEL_MANDATORY,
+  policy.Set(kTestPolicy, POLICY_LEVEL_MANDATORY,
              POLICY_SCOPE_USER, base::Value::CreateBooleanValue(true), NULL);
   UpdateProviderPolicy(policy);
   value = NULL;
-  EXPECT_TRUE(store_->GetValue(GetParam().pref_name(), &value));
+  EXPECT_TRUE(store_->GetValue(kTestPref, &value));
   boolean_value = false;
   result = value->GetAsBoolean(&boolean_value);
   ASSERT_TRUE(result);
   EXPECT_TRUE(boolean_value);
 }
 
-INSTANTIATE_TEST_CASE_P(
-    ConfigurationPolicyPrefStoreBooleanTestInstance,
-    ConfigurationPolicyPrefStoreBooleanTest,
-    testing::Values(
-        PolicyAndPref(key::kHomepageIsNewTabPage,
-                      prefs::kHomePageIsNewTabPage),
-        PolicyAndPref(key::kAlternateErrorPagesEnabled,
-                      prefs::kAlternateErrorPagesEnabled),
-        PolicyAndPref(key::kSearchSuggestEnabled,
-                      prefs::kSearchSuggestEnabled),
-        PolicyAndPref(key::kDnsPrefetchingEnabled,
-                      prefs::kNetworkPredictionEnabled),
-        PolicyAndPref(key::kBuiltInDnsClientEnabled,
-                      prefs::kBuiltInDnsClientEnabled),
-        PolicyAndPref(key::kDisableSpdy,
-                      prefs::kDisableSpdy),
-        PolicyAndPref(key::kSafeBrowsingEnabled,
-                      prefs::kSafeBrowsingEnabled),
-        PolicyAndPref(key::kForceSafeSearch,
-                      prefs::kForceSafeSearch),
-        PolicyAndPref(key::kMetricsReportingEnabled,
-                      prefs::kMetricsReportingEnabled),
-        PolicyAndPref(key::kPasswordManagerEnabled,
-                      prefs::kPasswordManagerEnabled),
-        PolicyAndPref(key::kPasswordManagerAllowShowPasswords,
-                      prefs::kPasswordManagerAllowShowPasswords),
-        PolicyAndPref(key::kShowHomeButton,
-                      prefs::kShowHomeButton),
-        PolicyAndPref(key::kPrintingEnabled,
-                      prefs::kPrintingEnabled),
-        PolicyAndPref(key::kRemoteAccessHostFirewallTraversal,
-                      prefs::kRemoteAccessHostFirewallTraversal),
-        PolicyAndPref(key::kCloudPrintProxyEnabled,
-                      prefs::kCloudPrintProxyEnabled),
-        PolicyAndPref(key::kCloudPrintSubmitEnabled,
-                      prefs::kCloudPrintSubmitEnabled),
-        PolicyAndPref(key::kSavingBrowserHistoryDisabled,
-                      prefs::kSavingBrowserHistoryDisabled),
-        PolicyAndPref(key::kEnableOriginBoundCerts,
-                      prefs::kEnableOriginBoundCerts),
-        PolicyAndPref(key::kDisableSSLRecordSplitting,
-                      prefs::kDisableSSLRecordSplitting),
-        PolicyAndPref(key::kEnableOnlineRevocationChecks,
-                      prefs::kCertRevocationCheckingEnabled),
-        PolicyAndPref(key::kRequireOnlineRevocationChecksForLocalAnchors,
-                      prefs::kCertRevocationCheckingRequiredLocalAnchors),
-        PolicyAndPref(key::kDisableAuthNegotiateCnameLookup,
-                      prefs::kDisableAuthNegotiateCnameLookup),
-        PolicyAndPref(key::kEnableAuthNegotiatePort,
-                      prefs::kEnableAuthNegotiatePort),
-        PolicyAndPref(key::kDisablePluginFinder,
-                      prefs::kDisablePluginFinder),
-        PolicyAndPref(key::kDefaultBrowserSettingEnabled,
-                      prefs::kDefaultBrowserSettingEnabled),
-        PolicyAndPref(key::kDisable3DAPIs,
-                      prefs::kDisable3DAPIs),
-        PolicyAndPref(key::kTranslateEnabled,
-                      prefs::kEnableTranslate),
-        PolicyAndPref(key::kAllowOutdatedPlugins,
-                      prefs::kPluginsAllowOutdated),
-        PolicyAndPref(key::kAlwaysAuthorizePlugins,
-                      prefs::kPluginsAlwaysAuthorize),
-        PolicyAndPref(key::kBookmarkBarEnabled,
-                      prefs::kShowBookmarkBar),
-        PolicyAndPref(key::kEditBookmarksEnabled,
-                      prefs::kEditBookmarksEnabled),
-        PolicyAndPref(key::kAllowFileSelectionDialogs,
-                      prefs::kAllowFileSelectionDialogs),
-        PolicyAndPref(key::kAllowCrossOriginAuthPrompt,
-                      prefs::kAllowCrossOriginAuthPrompt),
-        PolicyAndPref(key::kImportBookmarks,
-                      prefs::kImportBookmarks),
-        PolicyAndPref(key::kImportHistory,
-                      prefs::kImportHistory),
-        PolicyAndPref(key::kImportHomepage,
-                      prefs::kImportHomepage),
-        PolicyAndPref(key::kImportSearchEngine,
-                      prefs::kImportSearchEngine),
-        PolicyAndPref(key::kImportSavedPasswords,
-                      prefs::kImportSavedPasswords),
-        PolicyAndPref(key::kEnableMemoryInfo,
-                      prefs::kEnableMemoryInfo),
-        PolicyAndPref(key::kDisablePrintPreview,
-                      prefs::kPrintPreviewDisabled),
-        PolicyAndPref(key::kDeveloperToolsDisabled,
-                      prefs::kDevToolsDisabled),
-        PolicyAndPref(key::kHideWebStoreIcon,
-                      prefs::kHideWebStoreIcon)));
-
-#if defined(OS_CHROMEOS)
-INSTANTIATE_TEST_CASE_P(
-    CrosConfigurationPolicyPrefStoreBooleanTestInstance,
-    ConfigurationPolicyPrefStoreBooleanTest,
-    testing::Values(
-        PolicyAndPref(key::kChromeOsLockOnIdleSuspend,
-                      prefs::kEnableScreenLock),
-        PolicyAndPref(key::kDriveDisabled,
-                      prefs::kDisableDrive),
-        PolicyAndPref(key::kDriveDisabledOverCellular,
-                      prefs::kDisableDriveOverCellular),
-        PolicyAndPref(key::kExternalStorageDisabled,
-                      prefs::kExternalStorageDisabled),
-        PolicyAndPref(key::kShowAccessibilityOptionsInSystemTrayMenu,
-                      prefs::kShouldAlwaysShowAccessibilityMenu),
-        PolicyAndPref(key::kLargeCursorEnabled,
-                      prefs::kLargeCursorEnabled),
-        PolicyAndPref(key::kSpokenFeedbackEnabled,
-                      prefs::kSpokenFeedbackEnabled),
-        PolicyAndPref(key::kHighContrastEnabled,
-                      prefs::kHighContrastEnabled),
-        PolicyAndPref(key::kAudioOutputAllowed,
-                      prefs::kAudioOutputAllowed),
-        PolicyAndPref(key::kAudioCaptureAllowed,
-                      prefs::kAudioCaptureAllowed),
-        PolicyAndPref(key::kAttestationEnabledForUser,
-                      prefs::kAttestationEnabled)));
-#endif  // defined(OS_CHROMEOS)
-
 // Test cases for integer-valued policy settings.
 class ConfigurationPolicyPrefStoreIntegerTest
-    : public ConfigurationPolicyPrefStoreTest,
-      public testing::WithParamInterface<PolicyAndPref> {};
+    : public ConfigurationPolicyPrefStoreTest {
+  virtual void SetUp() OVERRIDE {
+    handler_list_.AddHandler(
+        make_scoped_ptr<ConfigurationPolicyHandler>(new SimplePolicyHandler(
+            kTestPolicy, kTestPref, base::Value::TYPE_INTEGER)));
+  }
+};
 
-TEST_P(ConfigurationPolicyPrefStoreIntegerTest, GetDefault) {
-  EXPECT_FALSE(store_->GetValue(GetParam().pref_name(), NULL));
+TEST_F(ConfigurationPolicyPrefStoreIntegerTest, GetDefault) {
+  EXPECT_FALSE(store_->GetValue(kTestPref, NULL));
 }
 
-TEST_P(ConfigurationPolicyPrefStoreIntegerTest, SetValue) {
+TEST_F(ConfigurationPolicyPrefStoreIntegerTest, SetValue) {
   PolicyMap policy;
-  policy.Set(GetParam().policy_name(), POLICY_LEVEL_MANDATORY,
+  policy.Set(kTestPolicy, POLICY_LEVEL_MANDATORY,
              POLICY_SCOPE_USER, base::Value::CreateIntegerValue(2), NULL);
   UpdateProviderPolicy(policy);
   const base::Value* value = NULL;
-  EXPECT_TRUE(store_->GetValue(GetParam().pref_name(), &value));
+  EXPECT_TRUE(store_->GetValue(kTestPref, &value));
   EXPECT_TRUE(base::FundamentalValue(2).Equals(value));
 }
-
-INSTANTIATE_TEST_CASE_P(
-    ConfigurationPolicyPrefStoreIntegerTestInstance,
-    ConfigurationPolicyPrefStoreIntegerTest,
-    testing::Values(
-        PolicyAndPref(key::kDefaultCookiesSetting,
-                      prefs::kManagedDefaultCookiesSetting),
-        PolicyAndPref(key::kDefaultImagesSetting,
-                      prefs::kManagedDefaultImagesSetting),
-        PolicyAndPref(key::kDefaultPluginsSetting,
-                      prefs::kManagedDefaultPluginsSetting),
-        PolicyAndPref(key::kDefaultPopupsSetting,
-                      prefs::kManagedDefaultPopupsSetting),
-        PolicyAndPref(key::kDefaultNotificationsSetting,
-                      prefs::kManagedDefaultNotificationsSetting),
-        PolicyAndPref(key::kDefaultGeolocationSetting,
-                      prefs::kManagedDefaultGeolocationSetting),
-        PolicyAndPref(key::kRestoreOnStartup,
-                      prefs::kRestoreOnStartup),
-        PolicyAndPref(key::kDiskCacheSize,
-                      prefs::kDiskCacheSize),
-        PolicyAndPref(key::kMediaCacheSize,
-                      prefs::kMediaCacheSize),
-        PolicyAndPref(key::kPolicyRefreshRate,
-                      policy_prefs::kUserPolicyRefreshRate),
-        PolicyAndPref(key::kMaxConnectionsPerProxy,
-                      prefs::kMaxConnectionsPerProxy)));
 
 // Exercises the policy refresh mechanism.
 class ConfigurationPolicyPrefStoreRefreshTest
     : public ConfigurationPolicyPrefStoreTest {
  protected:
-  virtual void SetUp() {
+  virtual void SetUp() OVERRIDE {
     ConfigurationPolicyPrefStoreTest::SetUp();
     store_->AddObserver(&observer_);
+    handler_list_.AddHandler(
+        make_scoped_ptr<ConfigurationPolicyHandler>(new SimplePolicyHandler(
+            kTestPolicy, kTestPref, base::Value::TYPE_STRING)));
   }
 
-  virtual void TearDown() {
+  virtual void TearDown() OVERRIDE {
     store_->RemoveObserver(&observer_);
     ConfigurationPolicyPrefStoreTest::TearDown();
   }
@@ -376,26 +208,29 @@ class ConfigurationPolicyPrefStoreRefreshTest
 
 TEST_F(ConfigurationPolicyPrefStoreRefreshTest, Refresh) {
   const base::Value* value = NULL;
-  EXPECT_FALSE(store_->GetValue(prefs::kHomePage, NULL));
+  EXPECT_FALSE(store_->GetValue(kTestPolicy, NULL));
 
-  EXPECT_CALL(observer_, OnPrefValueChanged(prefs::kHomePage)).Times(1);
+  EXPECT_CALL(observer_, OnPrefValueChanged(kTestPref)).Times(1);
   PolicyMap policy;
-  policy.Set(key::kHomepageLocation, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-             base::Value::CreateStringValue("http://www.chromium.org"), NULL);
+  policy.Set(kTestPolicy,
+             POLICY_LEVEL_MANDATORY,
+             POLICY_SCOPE_USER,
+             base::Value::CreateStringValue("http://www.chromium.org"),
+             NULL);
   UpdateProviderPolicy(policy);
   Mock::VerifyAndClearExpectations(&observer_);
-  EXPECT_TRUE(store_->GetValue(prefs::kHomePage, &value));
+  EXPECT_TRUE(store_->GetValue(kTestPref, &value));
   EXPECT_TRUE(base::StringValue("http://www.chromium.org").Equals(value));
 
   EXPECT_CALL(observer_, OnPrefValueChanged(_)).Times(0);
   UpdateProviderPolicy(policy);
   Mock::VerifyAndClearExpectations(&observer_);
 
-  EXPECT_CALL(observer_, OnPrefValueChanged(prefs::kHomePage)).Times(1);
-  policy.Erase(key::kHomepageLocation);
+  EXPECT_CALL(observer_, OnPrefValueChanged(kTestPref)).Times(1);
+  policy.Erase(kTestPolicy);
   UpdateProviderPolicy(policy);
   Mock::VerifyAndClearExpectations(&observer_);
-  EXPECT_FALSE(store_->GetValue(prefs::kHomePage, NULL));
+  EXPECT_FALSE(store_->GetValue(kTestPref, NULL));
 }
 
 TEST_F(ConfigurationPolicyPrefStoreRefreshTest, Initialization) {

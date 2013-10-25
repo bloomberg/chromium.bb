@@ -4,6 +4,7 @@
 
 #include "chrome/browser/policy/configuration_policy_pref_store.h"
 #include "chrome/browser/policy/configuration_policy_pref_store_unittest.h"
+#include "chrome/browser/policy/javascript_policy_handler.h"
 #include "chrome/browser/policy/policy_error_map.h"
 #include "chrome/browser/policy/policy_map.h"
 #include "chrome/common/content_settings.h"
@@ -12,7 +13,12 @@
 
 namespace policy {
 
-class JavascriptPolicyHandlerTest : public ConfigurationPolicyPrefStoreTest {};
+class JavascriptPolicyHandlerTest : public ConfigurationPolicyPrefStoreTest {
+  virtual void SetUp() OVERRIDE {
+    handler_list_.AddHandler(make_scoped_ptr<ConfigurationPolicyHandler>(
+          new JavascriptPolicyHandler));
+  }
+};
 
 TEST_F(JavascriptPolicyHandlerTest, JavascriptEnabled) {
   // This is a boolean policy, but affects an integer preference.

@@ -5,6 +5,7 @@
 #include "chrome/browser/download/download_dir_policy_handler.h"
 
 #include "base/files/file_path.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_value_map.h"
 #include "base/values.h"
 #include "chrome/browser/download/download_prefs.h"
