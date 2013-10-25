@@ -391,7 +391,7 @@ void Program::Update() {
   name_buffer.reset(new char[max_len]);
 
   // Reads all the names.
-  std::vector<UniformData> uniform_data_;
+  std::vector<UniformData> uniform_data;
   for (GLint ii = 0; ii < num_uniforms; ++ii) {
     GLsizei length = 0;
     UniformData data;
@@ -405,7 +405,7 @@ void Program::Update() {
       GetCorrectedVariableInfo(
           true, name_buffer.get(), &data.corrected_name, &data.original_name,
           &data.size, &data.type);
-      uniform_data_.push_back(data);
+      uniform_data.push_back(data);
     }
   }
 
@@ -419,8 +419,8 @@ void Program::Update() {
 
   // Assigns the uniforms with bindings.
   size_t next_available_index = 0;
-  for (size_t ii = 0; ii < uniform_data_.size(); ++ii) {
-    UniformData& data = uniform_data_[ii];
+  for (size_t ii = 0; ii < uniform_data.size(); ++ii) {
+    UniformData& data = uniform_data[ii];
     data.location = glGetUniformLocation(
         service_id_, data.queried_name.c_str());
     // remove "[0]"
@@ -439,8 +439,8 @@ void Program::Update() {
   }
 
   // Assigns the uniforms that were not bound.
-  for (size_t ii = 0; ii < uniform_data_.size(); ++ii) {
-    const UniformData& data = uniform_data_[ii];
+  for (size_t ii = 0; ii < uniform_data.size(); ++ii) {
+    const UniformData& data = uniform_data[ii];
     if (!data.added) {
       AddUniformInfo(
           data.size, data.type, data.location, -1, data.corrected_name,
@@ -672,6 +672,9 @@ GLint Program::GetUniformFakeLocation(
       if (open_pos_2 == open_pos &&
           name.compare(0, open_pos, info.name, 0, open_pos) == 0) {
         if (index >= 0 && index < info.size) {
+          DCHECK_GT(static_cast<int>(info.element_locations.size()), index);
+          if (info.element_locations[index] == -1)
+            return -1;
           return ProgramManager::MakeFakeLocation(
               info.fake_location_base, index);
         }
@@ -1221,7 +1224,10 @@ void Program::GetProgramInfo(
       inputs->name_length = info.name.size();
       DCHECK(static_cast<size_t>(info.size) == info.element_locations.size());
       for (size_t jj = 0; jj < info.element_locations.size(); ++jj) {
-        *locations++ = ProgramManager::MakeFakeLocation(ii, jj);
+        if (info.element_locations[jj] == -1)
+          *locations++ = -1;
+        else
+          *locations++ = ProgramManager::MakeFakeLocation(ii, jj);
       }
       memcpy(strings, info.name.c_str(), info.name.size());
       strings += info.name.size();

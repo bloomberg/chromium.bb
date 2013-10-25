@@ -608,12 +608,19 @@ TEST_F(ProgramManagerWithShaderTest, AttachDetachShader) {
 TEST_F(ProgramManagerWithShaderTest, GetUniformFakeLocation) {
   const Program* program = manager_.GetProgram(kClientProgramId);
   ASSERT_TRUE(program != NULL);
+  // Emulate the situation that uniform3[1] isn't used and optimized out by
+  // a driver, so it's location is -1.
+  Program::UniformInfo* uniform = const_cast<Program::UniformInfo*>(
+      program->GetUniformInfo(2));
+  ASSERT_TRUE(uniform != NULL && kUniform3Size == 2);
+  EXPECT_EQ(kUniform3Size, uniform->size);
+  uniform->element_locations[1] = -1;
   EXPECT_EQ(kUniform1FakeLocation,
             program->GetUniformFakeLocation(kUniform1Name));
   EXPECT_EQ(kUniform2FakeLocation,
             program->GetUniformFakeLocation(kUniform2Name));
   EXPECT_EQ(kUniform3FakeLocation,
-             program->GetUniformFakeLocation(kUniform3BadName));
+            program->GetUniformFakeLocation(kUniform3BadName));
   // Check we can get uniform2 as "uniform2" even though the name is
   // "uniform2[0]"
   EXPECT_EQ(kUniform2FakeLocation,
@@ -628,8 +635,7 @@ TEST_F(ProgramManagerWithShaderTest, GetUniformFakeLocation) {
   EXPECT_EQ(ProgramManager::MakeFakeLocation(kUniform2FakeLocation, 2),
             program->GetUniformFakeLocation("uniform2[2]"));
   EXPECT_EQ(-1, program->GetUniformFakeLocation("uniform2[3]"));
-  EXPECT_EQ(ProgramManager::MakeFakeLocation(kUniform3FakeLocation, 1),
-            program->GetUniformFakeLocation("uniform3[1]"));
+  EXPECT_EQ(-1, program->GetUniformFakeLocation("uniform3[1]"));
   EXPECT_EQ(-1, program->GetUniformFakeLocation("uniform3[2]"));
 }
 
@@ -1065,6 +1071,50 @@ TEST_F(ProgramManagerWithShaderTest, ProgramInfoGetProgramInfo) {
   }
   EXPECT_EQ(header->num_attribs + header->num_uniforms,
             static_cast<uint32>(input - inputs));
+}
+
+// Some drivers optimize out unused uniform array elements, so their
+// location would be -1.
+TEST_F(ProgramManagerWithShaderTest, UnusedUniformArrayElements) {
+  CommonDecoder::Bucket bucket;
+  const Program* program = manager_.GetProgram(kClientProgramId);
+  ASSERT_TRUE(program != NULL);
+  // Emulate the situation that only the first element has a valid location.
+  // TODO(zmo): Don't assume these are in order.
+  for (size_t ii = 0; ii < arraysize(kUniforms); ++ii) {
+    Program::UniformInfo* uniform = const_cast<Program::UniformInfo*>(
+        program->GetUniformInfo(ii));
+    ASSERT_TRUE(uniform != NULL);
+    EXPECT_EQ(static_cast<size_t>(kUniforms[ii].size),
+              uniform->element_locations.size());
+    for (GLsizei jj = 1; jj < uniform->size; ++jj)
+      uniform->element_locations[jj] = -1;
+  }
+  program->GetProgramInfo(&manager_, &bucket);
+  ProgramInfoHeader* header =
+      bucket.GetDataAs<ProgramInfoHeader*>(0, sizeof(ProgramInfoHeader));
+  ASSERT_TRUE(header != NULL);
+  EXPECT_EQ(1u, header->link_status);
+  EXPECT_EQ(arraysize(kAttribs), header->num_attribs);
+  EXPECT_EQ(arraysize(kUniforms), header->num_uniforms);
+  const ProgramInput* inputs = bucket.GetDataAs<const ProgramInput*>(
+      sizeof(*header),
+      sizeof(ProgramInput) * (header->num_attribs + header->num_uniforms));
+  ASSERT_TRUE(inputs != NULL);
+  const ProgramInput* input = inputs + header->num_attribs;
+  for (uint32 ii = 0; ii < header->num_uniforms; ++ii) {
+    const UniformInfo& expected = kUniforms[ii];
+    EXPECT_EQ(expected.size, input->size);
+    const int32* locations = bucket.GetDataAs<const int32*>(
+        input->location_offset, sizeof(int32) * input->size);
+    ASSERT_TRUE(locations != NULL);
+    EXPECT_EQ(
+        ProgramManager::MakeFakeLocation(expected.fake_location, 0),
+        locations[0]);
+    for (int32 jj = 1; jj < input->size; ++jj)
+      EXPECT_EQ(-1, locations[jj]);
+    ++input;
+  }
 }
 
 TEST_F(ProgramManagerWithShaderTest, BindAttribLocationConflicts) {
