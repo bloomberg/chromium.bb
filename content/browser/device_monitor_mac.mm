@@ -112,7 +112,7 @@ void DeviceMonitorMacImpl::ConsolidateDevicesListAndNotify(
 
   if (video_device_added || video_device_removed)
     monitor_->NotifyDeviceChanged(base::SystemMonitor::DEVTYPE_VIDEO_CAPTURE);
-  if (audio_device_added || video_device_removed)
+  if (audio_device_added || audio_device_removed)
     monitor_->NotifyDeviceChanged(base::SystemMonitor::DEVTYPE_AUDIO_CAPTURE);
 }
 
