@@ -35,6 +35,7 @@
 
 #include "SkPaint.h"
 #include "SkTemplates.h"
+#include "SkTypeface.h"
 #include "SkUtils.h"
 
 namespace WebCore {
@@ -46,10 +47,6 @@ bool GlyphPage::fill(unsigned offset, unsigned length, UChar* buffer, unsigned b
         return false;
     }
 
-    SkPaint paint;
-    fontData->platformData().setupPaint(&paint);
-    paint.setTextEncoding(SkPaint::kUTF16_TextEncoding);
-
 #if OS(WIN)
     // FIXME: For some reason SkAutoSTMalloc fails to link on Windows.
     // SkAutoSTArray works fine though...
@@ -59,12 +56,8 @@ bool GlyphPage::fill(unsigned offset, unsigned length, UChar* buffer, unsigned b
 #endif
 
     uint16_t* glyphs = glyphStorage.get();
-    // textToGlyphs takes a byte count, not a glyph count so we multiply by two.
-    unsigned count = paint.textToGlyphs(buffer, bufferLength * 2, glyphs);
-    if (count != length) {
-        SkDebugf("%s count != length\n", __FUNCTION__);
-        return false;
-    }
+    SkTypeface* typeface = fontData->platformData().typeface();
+    typeface->charsToGlyphs(buffer, SkTypeface::kUTF16_Encoding, glyphs, length);
 
     unsigned allGlyphs = 0; // track if any of the glyphIDs are non-zero
     for (unsigned i = 0; i < length; i++) {
