@@ -57,13 +57,17 @@ void VibrationMessageFilter::OnVibrate(int64 milliseconds) {
             base::android::GetApplicationContext()));
   }
   Java_VibrationMessageFilter_vibrate(AttachCurrentThread(),
-                                j_vibration_message_filter_.obj(),
-                                milliseconds);
+                                      j_vibration_message_filter_.obj(),
+                                      milliseconds);
 }
 
 void VibrationMessageFilter::OnCancelVibration() {
+  // If somehow a cancel message is received before this object was
+  // instantiated, it means there is no current vibration anyway. Just return.
+  if (j_vibration_message_filter_.is_null())
+    return;
   Java_VibrationMessageFilter_cancelVibration(AttachCurrentThread(),
-                                        j_vibration_message_filter_.obj());
+      j_vibration_message_filter_.obj());
 }
 
 }  // namespace content
