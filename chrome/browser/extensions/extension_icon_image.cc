@@ -128,13 +128,13 @@ gfx::ImageSkiaRep IconImage::Source::GetImageForScale(float scale) {
 // IconImage
 
 IconImage::IconImage(
-    Profile* profile,
+    content::BrowserContext* context,
     const Extension* extension,
     const ExtensionIconSet& icon_set,
     int resource_size_in_dip,
     const gfx::ImageSkia& default_icon,
     Observer* observer)
-    : profile_(profile),
+    : browser_context_(context),
       extension_(extension),
       icon_set_(icon_set),
       resource_size_in_dip_(resource_size_in_dip),
@@ -194,7 +194,8 @@ gfx::ImageSkiaRep IconImage::LoadImageForScaleFactor(
           gfx::Size(resource_size_in_dip_, resource_size_in_dip_), scale)),
       scale_factor));
 
-  extensions::ImageLoader* loader = extensions::ImageLoader::Get(profile_);
+  extensions::ImageLoader* loader =
+      extensions::ImageLoader::Get(browser_context_);
   loader->LoadImagesAsync(extension_, info_list,
                           base::Bind(&IconImage::OnImageLoaded,
                                      weak_ptr_factory_.GetWeakPtr(),

@@ -10,6 +10,7 @@
 
 class ExtensionAction;
 class ExtensionIconSet;
+class Profile;
 
 namespace extensions {
 class Extension;

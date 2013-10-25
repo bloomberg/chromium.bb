@@ -8,18 +8,21 @@
 #include "base/memory/singleton.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service_factory.h"
 
-class Profile;
+namespace content {
+class BrowserContext;
+}
 
 namespace extensions {
 
 class ImageLoader;
 
 // Singleton that owns all ImageLoaders and associates them with
-// Profiles. Listens for the Profile's destruction notification and cleans up
-// the associated ImageLoader.
+// BrowserContexts. Listens for the BrowserContext's destruction notification
+// and cleans up the associated ImageLoader. Uses the original BrowserContext
+// for incognito contexts.
 class ImageLoaderFactory : public BrowserContextKeyedServiceFactory {
  public:
-  static ImageLoader* GetForProfile(Profile* profile);
+  static ImageLoader* GetForBrowserContext(content::BrowserContext* context);
 
   static ImageLoaderFactory* GetInstance();
 
@@ -31,7 +34,7 @@ class ImageLoaderFactory : public BrowserContextKeyedServiceFactory {
 
   // BrowserContextKeyedServiceFactory:
   virtual BrowserContextKeyedService* BuildServiceInstanceFor(
-      content::BrowserContext* profile) const OVERRIDE;
+      content::BrowserContext* context) const OVERRIDE;
   virtual bool ServiceIsCreatedWithBrowserContext() const OVERRIDE;
   virtual content::BrowserContext* GetBrowserContextToUse(
       content::BrowserContext* context) const OVERRIDE;

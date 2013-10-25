@@ -173,8 +173,8 @@ ImageLoader::~ImageLoader() {
 }
 
 // static
-ImageLoader* ImageLoader::Get(Profile* profile) {
-  return ImageLoaderFactory::GetForProfile(profile);
+ImageLoader* ImageLoader::Get(content::BrowserContext* context) {
+  return ImageLoaderFactory::GetForBrowserContext(context);
 }
 
 // A map from a resource path to the resource ID.  Used only by

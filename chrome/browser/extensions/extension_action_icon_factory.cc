@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/extension_action_icon_factory.h"
 
 #include "chrome/browser/extensions/extension_action.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "grit/theme_resources.h"

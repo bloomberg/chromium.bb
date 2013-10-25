@@ -52,7 +52,7 @@ ExtensionIconManager::ExtensionIconManager()
 ExtensionIconManager::~ExtensionIconManager() {
 }
 
-void ExtensionIconManager::LoadIcon(Profile* profile,
+void ExtensionIconManager::LoadIcon(content::BrowserContext* context,
                                     const extensions::Extension* extension) {
   extensions::ExtensionResource icon_resource =
       extensions::IconsInfo::GetIconResource(
@@ -63,7 +63,7 @@ void ExtensionIconManager::LoadIcon(Profile* profile,
     // Insert into pending_icons_ first because LoadImage can call us back
     // synchronously if the image is already cached.
     pending_icons_.insert(extension->id());
-    extensions::ImageLoader* loader = extensions::ImageLoader::Get(profile);
+    extensions::ImageLoader* loader = extensions::ImageLoader::Get(context);
     loader->LoadImageAsync(extension, icon_resource,
                            gfx::Size(gfx::kFaviconSize, gfx::kFaviconSize),
                            base::Bind(

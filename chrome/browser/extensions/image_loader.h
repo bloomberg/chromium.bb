@@ -16,7 +16,9 @@
 #include "ui/base/layout.h"
 #include "ui/gfx/size.h"
 
-class Profile;
+namespace content {
+class BrowserContext;
+}
 
 namespace gfx {
 class Image;
@@ -64,9 +66,9 @@ class ImageLoader : public BrowserContextKeyedService {
 
   struct LoadResult;
 
-  // Returns the instance for the given profile, or NULL if none. This is
-  // a convenience wrapper around ImageLoaderFactory::GetForProfile.
-  static ImageLoader* Get(Profile* profile);
+  // Returns the instance for the given |context| or NULL if none. This is
+  // a convenience wrapper around ImageLoaderFactory::GetForBrowserContext.
+  static ImageLoader* Get(content::BrowserContext* context);
 
   ImageLoader();
   virtual ~ImageLoader();
