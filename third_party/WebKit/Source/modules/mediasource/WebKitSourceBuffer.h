@@ -47,7 +47,7 @@ class WebKitSourceBuffer : public RefCounted<WebKitSourceBuffer>, public ScriptW
 public:
     static PassRefPtr<WebKitSourceBuffer> create(PassOwnPtr<SourceBufferPrivate>, PassRefPtr<WebKitMediaSource>);
 
-    virtual ~WebKitSourceBuffer();
+    ~WebKitSourceBuffer();
 
     // WebKitSourceBuffer.idl methods
     PassRefPtr<TimeRanges> buffered(ExceptionState&) const;
