@@ -117,8 +117,6 @@ struct SameSizeAsRenderObject {
     unsigned m_debugBitfields : 2;
 #endif
     unsigned m_bitfields;
-    LayoutRect m_dummyRectThatShouldntStickInTree1;
-    LayoutRect m_dummyRectThatShouldntStickInTree2;
 };
 
 COMPILE_ASSERT(sizeof(RenderObject) == sizeof(SameSizeAsRenderObject), RenderObject_should_stay_small);

@@ -1198,11 +1198,6 @@ private:
 private:
     // Store state between styleWillChange and styleDidChange
     static bool s_affectsParentBlock;
-
-    // FIXME: Those variables are here for some performance measurements.
-    // They shouldn't stick in the tree. If they do, poke jchaffraix!
-    LayoutRect m_dummyRectThatShouldntStickInTree1;
-    LayoutRect m_dummyRectThatShouldntStickInTree2;
 };
 
 inline bool RenderObject::documentBeingDestroyed() const
