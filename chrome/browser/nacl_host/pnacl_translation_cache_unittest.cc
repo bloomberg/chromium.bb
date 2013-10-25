@@ -27,7 +27,7 @@ class PnaclTranslationCacheTest : public testing::Test {
   PnaclTranslationCacheTest()
       : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {}
   virtual ~PnaclTranslationCacheTest() {}
-  virtual void SetUp() { cache_ = new PnaclTranslationCache(); }
+  virtual void SetUp() { cache_.reset(new PnaclTranslationCache()); }
   virtual void TearDown() {
     // The destructor of PnaclTranslationCacheWriteEntry posts a task to the IO
     // thread to close the backend cache entry. We want to make sure the entries
@@ -35,14 +35,14 @@ class PnaclTranslationCacheTest : public testing::Test {
     // for the memory backend has a DCHECK to verify this), so we run the loop
     // here to ensure the task gets processed.
     base::RunLoop().RunUntilIdle();
-    delete cache_;
+    cache_.reset();
   }
 
   void InitBackend(bool in_mem);
   void StoreNexe(const std::string& key, const std::string& nexe);
   std::string GetNexe(const std::string& key);
 
-  PnaclTranslationCache* cache_;
+  scoped_ptr<PnaclTranslationCache> cache_;
   content::TestBrowserThreadBundle thread_bundle_;
   base::ScopedTempDir temp_dir_;
 };

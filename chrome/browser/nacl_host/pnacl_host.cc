@@ -27,9 +27,16 @@ static const int kTranslationCacheInitializationDelayMs = 20;
 }
 
 PnaclHost::PnaclHost()
-    : cache_state_(CacheUninitialized), weak_factory_(this) {}
+    : pending_backend_operations_(0),
+      cache_state_(CacheUninitialized),
+      weak_factory_(this) {}
 
-PnaclHost::~PnaclHost() {}
+PnaclHost::~PnaclHost() {
+  // When PnaclHost is destroyed, it's too late to post anything to the cache
+  // thread (it will hang shutdown). So just leak the cache backend.
+  pnacl::PnaclTranslationCache* cache = disk_cache_.release();
+  (void)cache;
+}
 
 PnaclHost* PnaclHost::GetInstance() { return Singleton<PnaclHost>::get(); }
 
@@ -96,9 +103,11 @@ void PnaclHost::Init() {
     return;
   disk_cache_.reset(new pnacl::PnaclTranslationCache());
   cache_state_ = CacheInitializing;
-  disk_cache_->InitOnDisk(
+  int rv = disk_cache_->InitOnDisk(
       cache_path,
       base::Bind(&PnaclHost::OnCacheInitialized, weak_factory_.GetWeakPtr()));
+  if (rv != net::ERR_IO_PENDING)
+    OnCacheInitialized(rv);
 }
 
 // Initialize using the in-memory backend, and manually set the temporary file
@@ -108,8 +117,10 @@ void PnaclHost::InitForTest(base::FilePath temp_dir) {
   disk_cache_.reset(new pnacl::PnaclTranslationCache());
   cache_state_ = CacheInitializing;
   temp_dir_ = temp_dir;
-  disk_cache_->InitInMemory(
+  int rv = disk_cache_->InitInMemory(
       base::Bind(&PnaclHost::OnCacheInitialized, weak_factory_.GetWeakPtr()));
+  if (rv != net::ERR_IO_PENDING)
+    OnCacheInitialized(rv);
 }
 
 ///////////////////////////////////////// Temp files
@@ -216,6 +227,7 @@ void PnaclHost::GetNexeFd(int render_process_id,
 // request hits.
 void PnaclHost::SendCacheQueryAndTempFileRequest(const std::string& cache_key,
                                                  const TranslationID& id) {
+  pending_backend_operations_++;
   disk_cache_->GetNexe(
       cache_key,
       base::Bind(
@@ -236,9 +248,11 @@ void PnaclHost::OnCacheQueryReturn(
     int net_error,
     scoped_refptr<net::DrainableIOBuffer> buffer) {
   DCHECK(thread_checker_.CalledOnValidThread());
+  pending_backend_operations_--;
   PendingTranslationMap::iterator entry(pending_translations_.find(id));
   if (entry == pending_translations_.end()) {
     LOG(ERROR) << "OnCacheQueryReturn: id not found";
+    DeInitIfSafe();
     return;
   }
   PendingTranslation* pt = &entry->second;
@@ -433,7 +447,7 @@ void PnaclHost::StoreTranslatedNexe(
     LOG(ERROR) << "Error reading translated nexe";
     return;
   }
-
+  pending_backend_operations_++;
   disk_cache_->StoreNexe(it->second.cache_key,
                          buffer,
                          base::Bind(&PnaclHost::OnTranslatedNexeStored,
@@ -447,7 +461,11 @@ void PnaclHost::StoreTranslatedNexe(
 // could be cancelled before they get called).
 void PnaclHost::OnTranslatedNexeStored(const TranslationID& id, int net_error) {
   PendingTranslationMap::iterator entry(pending_translations_.find(id));
+  pending_backend_operations_--;
   if (entry == pending_translations_.end()) {
+    // If the renderer closed while we were storing the nexe, we land here.
+    // Make sure we try to de-init.
+    DeInitIfSafe();
     return;
   }
   std::string key(entry->second.cache_key);
@@ -467,6 +485,7 @@ void PnaclHost::RequeryMatchingTranslations(const std::string& key) {
       // Re-send the cache read request. This time we expect a hit, but if
       // something goes wrong, it will just handle it like a miss.
       it->second.got_cache_reply = false;
+      pending_backend_operations_++;
       disk_cache_->GetNexe(key,
                            base::Bind(&PnaclHost::OnCacheQueryReturn,
                                       weak_factory_.GetWeakPtr(),
@@ -535,12 +554,10 @@ void PnaclHost::RendererClosing(int render_process_id) {
         RequeryMatchingTranslations(key);
     }
   }
-  if (pending_translations_.empty()) {
-    cache_state_ = CacheUninitialized;
-    // Freeing the backend causes it to flush to disk, so do it when the
-    // last renderer closes rather than on destruction.
-    disk_cache_.reset();
-  }
+  BrowserThread::PostTask(
+      BrowserThread::IO,
+      FROM_HERE,
+      base::Bind(&PnaclHost::DeInitIfSafe, weak_factory_.GetWeakPtr()));
 }
 
 ////////////////// Cache data removal
@@ -566,15 +583,48 @@ void PnaclHost::ClearTranslationCacheEntriesBetween(
             kTranslationCacheInitializationDelayMs));
     return;
   }
+  pending_backend_operations_++;
   int rv = disk_cache_->DoomEntriesBetween(
       initial_time,
       end_time,
-      base::Bind(&PnaclHost::OnEntriesDoomed, callback));
+      base::Bind(
+          &PnaclHost::OnEntriesDoomed, weak_factory_.GetWeakPtr(), callback));
   if (rv != net::ERR_IO_PENDING)
     OnEntriesDoomed(callback, rv);
 }
 
-// static
 void PnaclHost::OnEntriesDoomed(const base::Closure& callback, int net_error) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, callback);
+  pending_backend_operations_--;
+  // When clearing the cache, the UI is blocked on all the cache-clearing
+  // operations, and freeing the backend actually blocks the IO thread. So
+  // instead of calling DeInitIfSafe directly, post it for later.
+  BrowserThread::PostTask(
+      BrowserThread::IO,
+      FROM_HERE,
+      base::Bind(&PnaclHost::DeInitIfSafe, weak_factory_.GetWeakPtr()));
+}
+
+// Destroying the cache backend causes it to post tasks to the cache thread to
+// flush to disk. Because PnaclHost is a singleton, it does not get destroyed
+// until all the browser threads have gone away and it's too late to post
+// anything (attempting to do so hangs shutdown).  So we make sure to destroy it
+// when we no longer have any outstanding operations that need it. These include
+// pending translations, cache clear requests, and requests to read or write
+// translated nexes.  We check when renderers close, when cache clear requests
+// finish, and when backend operations complete.
+
+// It is not safe to delete the backend while it is initializing, nor if it has
+// outstanding entry open requests; it is in theory safe to delete it with
+// outstanding read/write requests, but because that distinction is hidden
+// inside PnaclTranslationCache, we do not delete the backend if there are any
+// backend requests in flight.  As a last resort in the destructor, we just leak
+// the backend to avoid hanging shutdown.
+void PnaclHost::DeInitIfSafe() {
+  DCHECK(pending_backend_operations_ >= 0);
+  if (pending_translations_.empty() && pending_backend_operations_ <= 0) {
+    cache_state_ = CacheUninitialized;
+    disk_cache_.reset();
+  }
 }

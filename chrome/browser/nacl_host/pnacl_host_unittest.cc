@@ -32,10 +32,15 @@ class PnaclHostTest : public testing::Test {
     host_ = new PnaclHost();
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     host_->InitForTest(temp_dir_.path());
-    EXPECT_EQ(host_->cache_state_, PnaclHost::CacheReady);
+    base::RunLoop().RunUntilIdle();
+    EXPECT_EQ(PnaclHost::CacheReady, host_->cache_state_);
   }
   virtual void TearDown() {
     EXPECT_EQ(0U, host_->pending_translations());
+    // Give the host a chance to de-init the backend, and then delete it.
+    host_->RendererClosing(0);
+    FlushQueues();
+    EXPECT_EQ(PnaclHost::CacheUninitialized, host_->cache_state_);
     delete host_;
   }
   // Flush the blocking pool first, then any tasks it posted to the IO thread.
@@ -48,6 +53,14 @@ class PnaclHostTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
   }
   int GetCacheSize() { return host_->disk_cache_->Size(); }
+  int CacheIsInitialized() {
+    return host_->cache_state_ == PnaclHost::CacheReady;
+  }
+  void ReInitBackend() {
+    host_->InitForTest(temp_dir_.path());
+    base::RunLoop().RunUntilIdle();
+    EXPECT_EQ(PnaclHost::CacheReady, host_->cache_state_);
+  }
 
  public:  // Required for derived classes to bind this method
           // Callbacks used by tests which call GetNexeFd.
@@ -133,6 +146,9 @@ TEST_F(PnaclHostTest, BasicMiss) {
   EXPECT_EQ(2, temp_callback_count_);
   EXPECT_EQ(1U, host_->pending_translations());
   host_->RendererClosing(0);
+  FlushQueues();
+  // Check that the cache has de-initialized after the last renderer goes away.
+  EXPECT_FALSE(CacheIsInitialized());
 }
 
 TEST_F(PnaclHostTest, BadArguments) {
@@ -169,6 +185,10 @@ TEST_F(PnaclHostTest, TranslationErrors) {
   FlushQueues();
   EXPECT_EQ(0U, host_->pending_translations());
   EXPECT_EQ(0, temp_callback_count_);
+  // The backend will have been freed when the query comes back and there
+  // are no pending translations.
+  EXPECT_FALSE(CacheIsInitialized());
+  ReInitBackend();
   // Check that another request for the same info misses successfully.
   GET_NEXE_FD(0, 0, false, info, false);
   FlushQueues();
@@ -401,10 +421,12 @@ TEST_F(PnaclHostTest, ClearTranslationCache) {
   // Since we are using a memory backend, the clear should happen immediately.
   host_->ClearTranslationCacheEntriesBetween(
       base::Time(), base::Time(), base::Bind(cb.callback(), 0));
-  EXPECT_EQ(0, cb.GetResult(net::ERR_IO_PENDING));
-  // Check that the translation cache has been cleared
+  // Check that the translation cache has been cleared before flushing the
+  // queues, because the backend will be freed once it is.
   EXPECT_EQ(0, GetCacheSize());
-  host_->RendererClosing(0);
+  EXPECT_EQ(0, cb.GetResult(net::ERR_IO_PENDING));
+  // Now check that the backend has been freed.
+  EXPECT_FALSE(CacheIsInitialized());
 }
 
 }  // namespace pnacl
