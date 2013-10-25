@@ -14,7 +14,6 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "content/public/browser/render_view_host_observer.h"
 #include "content/public/browser/web_contents_observer.h"
 
 namespace content {
@@ -38,7 +37,6 @@ class CONTENT_EXPORT RenderViewDevToolsAgentHost
 
  private:
   friend class DevToolsAgentHost;
-  class DevToolsAgentHostRvhObserver;
 
   virtual ~RenderViewDevToolsAgentHost();
 
@@ -55,8 +53,10 @@ class CONTENT_EXPORT RenderViewDevToolsAgentHost
 
   // WebContentsObserver overrides.
   virtual void AboutToNavigateRenderView(RenderViewHost* dest_rvh) OVERRIDE;
+  virtual void RenderViewDeleted(RenderViewHost* rvh) OVERRIDE;
   virtual void RenderProcessGone(base::TerminationStatus status) OVERRIDE;
   virtual void DidAttachInterstitialPage() OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   // NotificationObserver overrides:
   virtual void Observe(int type,
@@ -66,9 +66,7 @@ class CONTENT_EXPORT RenderViewDevToolsAgentHost
   void SetRenderViewHost(RenderViewHost* rvh);
   void ClearRenderViewHost();
 
-  void RenderViewHostDestroyed(RenderViewHost* rvh);
   void RenderViewCrashed();
-  bool OnRvhMessageReceived(const IPC::Message& message);
   void OnSwapCompositorFrame(const IPC::Message& message);
 
   void OnDispatchOnInspectorFrontend(const std::string& message);
@@ -79,7 +77,6 @@ class CONTENT_EXPORT RenderViewDevToolsAgentHost
   void ClientDetachedFromRenderer();
 
   RenderViewHost* render_view_host_;
-  scoped_ptr<DevToolsAgentHostRvhObserver> rvh_observer_;
   scoped_ptr<RendererOverridesHandler> overrides_handler_;
   scoped_ptr<DevToolsTracingHandler> tracing_handler_;
   scoped_ptr<PowerSaveBlockerImpl> power_save_blocker_;

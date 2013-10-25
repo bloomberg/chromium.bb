@@ -29,6 +29,10 @@ WebContents* WebContentsObserver::web_contents() const {
 }
 
 void WebContentsObserver::Observe(WebContents* web_contents) {
+  if (web_contents == web_contents_) {
+    // Early exit to avoid infinite loops if we're in the middle of a callback.
+    return;
+  }
   if (web_contents_)
     web_contents_->RemoveObserver(this);
   web_contents_ = static_cast<WebContentsImpl*>(web_contents);

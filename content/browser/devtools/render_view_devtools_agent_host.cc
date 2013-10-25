@@ -48,28 +48,6 @@ static RenderViewDevToolsAgentHost* FindAgentHost(RenderViewHost* rvh) {
 
 }  // namespace
 
-class RenderViewDevToolsAgentHost::DevToolsAgentHostRvhObserver
-    : public RenderViewHostObserver {
- public:
-  DevToolsAgentHostRvhObserver(RenderViewHost* rvh,
-                               RenderViewDevToolsAgentHost* agent_host)
-      : RenderViewHostObserver(rvh),
-        agent_host_(agent_host) {
-  }
-  virtual ~DevToolsAgentHostRvhObserver() {}
-
-  // RenderViewHostObserver overrides.
-  virtual void RenderViewHostDestroyed(RenderViewHost* rvh) OVERRIDE {
-    agent_host_->RenderViewHostDestroyed(rvh);
-  }
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE {
-    return agent_host_->OnRvhMessageReceived(message);
-  }
- private:
-  RenderViewDevToolsAgentHost* agent_host_;
-  DISALLOW_COPY_AND_ASSIGN(DevToolsAgentHostRvhObserver);
-};
-
 // static
 scoped_refptr<DevToolsAgentHost>
 DevToolsAgentHost::GetOrCreateFor(RenderViewHost* rvh) {
@@ -152,9 +130,6 @@ RenderViewDevToolsAgentHost::RenderViewDevToolsAgentHost(
   overrides_handler_->SetNotifier(notifier);
   tracing_handler_->SetNotifier(notifier);
   g_instances.Get().push_back(this);
-  RenderViewHostDelegate* delegate = render_view_host_->GetDelegate();
-  if (delegate && delegate->GetAsWebContents())
-    WebContentsObserver::Observe(delegate->GetAsWebContents());
   AddRef();  // Balanced in RenderViewHostDestroyed.
 }
 
@@ -267,6 +242,17 @@ void RenderViewDevToolsAgentHost::AboutToNavigateRenderView(
   ConnectRenderViewHost(dest_rvh);
 }
 
+void RenderViewDevToolsAgentHost::RenderViewDeleted(RenderViewHost* rvh) {
+  if (rvh != render_view_host_)
+    return;
+
+  DCHECK(render_view_host_);
+  scoped_refptr<RenderViewDevToolsAgentHost> protect(this);
+  NotifyCloseListener();
+  ClearRenderViewHost();
+  Release();
+}
+
 void RenderViewDevToolsAgentHost::RenderProcessGone(
     base::TerminationStatus status) {
   switch(status) {
@@ -305,7 +291,9 @@ void RenderViewDevToolsAgentHost::Observe(int type,
 void RenderViewDevToolsAgentHost::SetRenderViewHost(RenderViewHost* rvh) {
   DCHECK(!render_view_host_);
   render_view_host_ = rvh;
-  rvh_observer_.reset(new DevToolsAgentHostRvhObserver(rvh, this));
+
+  WebContentsObserver::Observe(WebContents::FromRenderViewHost(rvh));
+
   registrar_.Add(
       this,
       content::NOTIFICATION_RENDER_WIDGET_VISIBILITY_CHANGED,
@@ -318,7 +306,6 @@ void RenderViewDevToolsAgentHost::ClearRenderViewHost() {
       this,
       content::NOTIFICATION_RENDER_WIDGET_VISIBILITY_CHANGED,
       content::Source<RenderWidgetHost>(render_view_host_));
-  rvh_observer_.reset(NULL);
   render_view_host_ = NULL;
 }
 
@@ -333,15 +320,6 @@ void RenderViewDevToolsAgentHost::DisconnectRenderViewHost() {
   ClearRenderViewHost();
 }
 
-void RenderViewDevToolsAgentHost::RenderViewHostDestroyed(
-    RenderViewHost* rvh) {
-  DCHECK(render_view_host_);
-  scoped_refptr<RenderViewDevToolsAgentHost> protect(this);
-  NotifyCloseListener();
-  ClearRenderViewHost();
-  Release();
-}
-
 void RenderViewDevToolsAgentHost::RenderViewCrashed() {
   scoped_refptr<DevToolsProtocol::Notification> notification =
       DevToolsProtocol::CreateNotification(
@@ -350,8 +328,11 @@ void RenderViewDevToolsAgentHost::RenderViewCrashed() {
       DispatchOnInspectorFrontend(this, notification->Serialize());
 }
 
-bool RenderViewDevToolsAgentHost::OnRvhMessageReceived(
+bool RenderViewDevToolsAgentHost::OnMessageReceived(
     const IPC::Message& msg) {
+  if (!render_view_host_)
+    return false;
+
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(RenderViewDevToolsAgentHost, msg)
     IPC_MESSAGE_HANDLER(DevToolsClientMsg_DispatchOnInspectorFrontend,
