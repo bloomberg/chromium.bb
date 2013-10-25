@@ -37,8 +37,12 @@ struct pixman_output_state {
 };
 
 struct pixman_surface_state {
+	struct weston_surface *surface;
+
 	pixman_image_t *image;
 	struct weston_buffer_reference buffer_ref;
+
+	struct wl_listener surface_destroy_listener;
 };
 
 struct pixman_renderer {
@@ -55,9 +59,15 @@ get_output_state(struct weston_output *output)
 	return (struct pixman_output_state *)output->renderer_state;
 }
 
+static int
+pixman_renderer_create_surface(struct weston_surface *surface);
+
 static inline struct pixman_surface_state *
 get_surface_state(struct weston_surface *surface)
 {
+	if (!surface->renderer_state)
+		pixman_renderer_create_surface(surface);
+
 	return (struct pixman_surface_state *)surface->renderer_state;
 }
 
@@ -582,6 +592,24 @@ pixman_renderer_attach(struct weston_surface *es, struct weston_buffer *buffer)
 		wl_shm_buffer_get_stride(shm_buffer));
 }
 
+static void
+surface_state_handle_surface_destroy(struct wl_listener *listener, void *data)
+{
+	struct pixman_surface_state *ps;
+
+	ps = container_of(listener, struct pixman_surface_state,
+			  surface_destroy_listener);
+
+	ps->surface->renderer_state = NULL;
+
+	if (ps->image) {
+		pixman_image_unref(ps->image);
+		ps->image = NULL;
+	}
+	weston_buffer_reference(&ps->buffer_ref, NULL);
+	free(ps);
+}
+
 static int
 pixman_renderer_create_surface(struct weston_surface *surface)
 {
@@ -592,6 +620,13 @@ pixman_renderer_create_surface(struct weston_surface *surface)
 		return -1;
 
 	surface->renderer_state = ps;
+
+	ps->surface = surface;
+
+	ps->surface_destroy_listener.notify =
+		surface_state_handle_surface_destroy;
+	wl_signal_add(&surface->destroy_signal,
+		      &ps->surface_destroy_listener);
 
 	return 0;
 }
@@ -614,19 +649,6 @@ pixman_renderer_surface_set_color(struct weston_surface *es,
 	}
 
 	ps->image = pixman_image_create_solid_fill(&color);
-}
-
-static void
-pixman_renderer_destroy_surface(struct weston_surface *surface)
-{
-	struct pixman_surface_state *ps = get_surface_state(surface);
-
-	if (ps->image) {
-		pixman_image_unref(ps->image);
-		ps->image = NULL;
-	}
-	weston_buffer_reference(&ps->buffer_ref, NULL);
-	free(ps);
 }
 
 static void
@@ -676,9 +698,7 @@ pixman_renderer_init(struct weston_compositor *ec)
 	renderer->base.repaint_output = pixman_renderer_repaint_output;
 	renderer->base.flush_damage = pixman_renderer_flush_damage;
 	renderer->base.attach = pixman_renderer_attach;
-	renderer->base.create_surface = pixman_renderer_create_surface;
 	renderer->base.surface_set_color = pixman_renderer_surface_set_color;
-	renderer->base.destroy_surface = pixman_renderer_destroy_surface;
 	renderer->base.destroy = pixman_renderer_destroy;
 	ec->renderer = &renderer->base;
 	ec->capabilities |= WESTON_CAP_ROTATION_ANY;

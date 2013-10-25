@@ -79,6 +79,10 @@ struct gl_surface_state {
 	int pitch; /* in pixels */
 	int height; /* in pixels */
 	int y_inverted;
+
+	struct weston_surface *surface;
+
+	struct wl_listener surface_destroy_listener;
 };
 
 struct gl_renderer {
@@ -134,9 +138,15 @@ get_output_state(struct weston_output *output)
 	return (struct gl_output_state *)output->renderer_state;
 }
 
+static int
+gl_renderer_create_surface(struct weston_surface *surface);
+
 static inline struct gl_surface_state *
 get_surface_state(struct weston_surface *surface)
 {
+	if (!surface->renderer_state)
+		gl_renderer_create_surface(surface);
+
 	return (struct gl_surface_state *)surface->renderer_state;
 }
 
@@ -997,6 +1007,8 @@ gl_renderer_attach_shm(struct weston_surface *es, struct weston_buffer *buffer,
 		gs->needs_full_upload = 1;
 		gs->y_inverted = 1;
 
+		gs->surface = es;
+
 		ensure_textures(gs, 1);
 		glBindTexture(GL_TEXTURE_2D, gs->textures[0]);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_BGRA_EXT,
@@ -1136,6 +1148,31 @@ gl_renderer_surface_set_color(struct weston_surface *surface,
 	gs->shader = &gr->solid_shader;
 }
 
+static void
+surface_state_handle_surface_destroy(struct wl_listener *listener, void *data)
+{
+	struct gl_surface_state *gs;
+	struct gl_renderer *gr;
+	struct weston_surface *surface = data;
+	int i;
+
+	gr = get_renderer(surface->compositor);
+
+	gs = container_of(listener, struct gl_surface_state,
+			  surface_destroy_listener);
+
+	gs->surface->renderer_state = NULL;
+
+	glDeleteTextures(gs->num_textures, gs->textures);
+
+	for (i = 0; i < gs->num_images; i++)
+		gr->destroy_image(gr->egl_display, gs->images[i]);
+
+	weston_buffer_reference(&gs->buffer_ref, NULL);
+	pixman_region32_fini(&gs->texture_damage);
+	free(gs);
+}
+
 static int
 gl_renderer_create_surface(struct weston_surface *surface)
 {
@@ -1155,24 +1192,12 @@ gl_renderer_create_surface(struct weston_surface *surface)
 	pixman_region32_init(&gs->texture_damage);
 	surface->renderer_state = gs;
 
+	gs->surface_destroy_listener.notify =
+		surface_state_handle_surface_destroy;
+	wl_signal_add(&surface->destroy_signal,
+		      &gs->surface_destroy_listener);
+
 	return 0;
-}
-
-static void
-gl_renderer_destroy_surface(struct weston_surface *surface)
-{
-	struct gl_surface_state *gs = get_surface_state(surface);
-	struct gl_renderer *gr = get_renderer(surface->compositor);
-	int i;
-
-	glDeleteTextures(gs->num_textures, gs->textures);
-
-	for (i = 0; i < gs->num_images; i++)
-		gr->destroy_image(gr->egl_display, gs->images[i]);
-
-	weston_buffer_reference(&gs->buffer_ref, NULL);
-	pixman_region32_fini(&gs->texture_damage);
-	free(gs);
 }
 
 static const char vertex_shader[] =
@@ -1655,9 +1680,7 @@ gl_renderer_create(struct weston_compositor *ec, EGLNativeDisplayType display,
 	gr->base.repaint_output = gl_renderer_repaint_output;
 	gr->base.flush_damage = gl_renderer_flush_damage;
 	gr->base.attach = gl_renderer_attach;
-	gr->base.create_surface = gl_renderer_create_surface;
 	gr->base.surface_set_color = gl_renderer_surface_set_color;
-	gr->base.destroy_surface = gl_renderer_destroy_surface;
 	gr->base.destroy = gl_renderer_destroy;
 
 	gr->egl_display = eglGetDisplay(display);

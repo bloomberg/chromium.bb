@@ -407,11 +407,6 @@ weston_surface_create(struct weston_compositor *compositor)
 	surface->compositor = compositor;
 	surface->ref_count = 1;
 
-	if (compositor->renderer->create_surface(surface) < 0) {
-		free(surface);
-		return NULL;
-	}
-
 	surface->buffer_transform = WL_OUTPUT_TRANSFORM_NORMAL;
 	surface->buffer_scale = 1;
 	surface->pending.buffer_transform = surface->buffer_transform;
@@ -1220,7 +1215,6 @@ weston_view_destroy(struct weston_view *view)
 WL_EXPORT void
 weston_surface_destroy(struct weston_surface *surface)
 {
-	struct weston_compositor *compositor = surface->compositor;
 	struct weston_frame_callback *cb, *next;
 	struct weston_view *ev, *nv;
 
@@ -1247,8 +1241,6 @@ weston_surface_destroy(struct weston_surface *surface)
 		wl_list_remove(&surface->pending.buffer_destroy_listener.link);
 
 	weston_buffer_reference(&surface->buffer_ref, NULL);
-
-	compositor->renderer->destroy_surface(surface);
 
 	pixman_region32_fini(&surface->damage);
 	pixman_region32_fini(&surface->opaque);

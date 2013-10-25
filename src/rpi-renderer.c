@@ -120,6 +120,8 @@ struct rpir_surface {
 
 	struct weston_buffer_reference buffer_ref;
 	enum buffer_type buffer_type;
+
+	struct wl_listener surface_destroy_listener;
 };
 
 struct rpir_view {
@@ -167,9 +169,15 @@ struct rpi_renderer {
 	int has_bind_display;
 };
 
+static int
+rpi_renderer_create_surface(struct weston_surface *base);
+
 static inline struct rpir_surface *
 to_rpir_surface(struct weston_surface *surface)
 {
+	if (!surface->renderer_state)
+		rpi_renderer_create_surface(surface);
+
 	return surface->renderer_state;
 }
 
@@ -1411,6 +1419,27 @@ rpi_renderer_attach(struct weston_surface *base, struct weston_buffer *buffer)
 	}
 }
 
+static void
+rpir_surface_handle_surface_destroy(struct wl_listener *listener, void *data)
+{
+	struct rpir_surface *surface;
+	struct weston_surface *base = data;
+
+	surface = container_of(listener, struct rpir_surface,
+			       surface_destroy_listener);
+
+	assert(surface);
+	assert(surface->surface == base);
+	if (!surface)
+		return;
+
+	surface->surface = NULL;
+	base->renderer_state = NULL;
+
+	if (wl_list_empty(&surface->views))
+		rpir_surface_destroy(surface);
+}
+
 static int
 rpi_renderer_create_surface(struct weston_surface *base)
 {
@@ -1425,6 +1454,12 @@ rpi_renderer_create_surface(struct weston_surface *base)
 
 	surface->surface = base;
 	base->renderer_state = surface;
+
+	surface->surface_destroy_listener.notify =
+		rpir_surface_handle_surface_destroy;
+	wl_signal_add(&base->destroy_signal,
+		      &surface->surface_destroy_listener);
+
 	return 0;
 }
 
@@ -1484,23 +1519,6 @@ rpi_renderer_surface_set_color(struct weston_surface *base,
 
 	/*pixman_region32_copy(&surface->prev_damage, damage);*/
 	surface->need_swap = 1;
-}
-
-static void
-rpi_renderer_destroy_surface(struct weston_surface *base)
-{
-	struct rpir_surface *surface = to_rpir_surface(base);
-
-	assert(surface);
-	assert(surface->surface == base);
-	if (!surface)
-		return;
-
-	surface->surface = NULL;
-	base->renderer_state = NULL;
-
-	if (wl_list_empty(&surface->views))
-		rpir_surface_destroy(surface);
 }
 
 static void
@@ -1564,10 +1582,8 @@ rpi_renderer_create(struct weston_compositor *compositor,
 	renderer->base.repaint_output = rpi_renderer_repaint_output;
 	renderer->base.flush_damage = rpi_renderer_flush_damage;
 	renderer->base.attach = rpi_renderer_attach;
-	renderer->base.create_surface = rpi_renderer_create_surface;
 	renderer->base.create_view = rpi_renderer_create_view;
 	renderer->base.surface_set_color = rpi_renderer_surface_set_color;
-	renderer->base.destroy_surface = rpi_renderer_destroy_surface;
 	renderer->base.destroy_view = rpi_renderer_destroy_view;
 	renderer->base.destroy = rpi_renderer_destroy;
 

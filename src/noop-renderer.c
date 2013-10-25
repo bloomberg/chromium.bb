@@ -51,20 +51,9 @@ noop_renderer_attach(struct weston_surface *es, struct weston_buffer *buffer)
 {
 }
 
-static int
-noop_renderer_create_surface(struct weston_surface *surface)
-{
-	return 0;
-}
-
 static void
 noop_renderer_surface_set_color(struct weston_surface *surface,
 		 float red, float green, float blue, float alpha)
-{
-}
-
-static void
-noop_renderer_destroy_surface(struct weston_surface *surface)
 {
 }
 
@@ -88,9 +77,7 @@ noop_renderer_init(struct weston_compositor *ec)
 	renderer->repaint_output = noop_renderer_repaint_output;
 	renderer->flush_damage = noop_renderer_flush_damage;
 	renderer->attach = noop_renderer_attach;
-	renderer->create_surface = noop_renderer_create_surface;
 	renderer->surface_set_color = noop_renderer_surface_set_color;
-	renderer->destroy_surface = noop_renderer_destroy_surface;
 	renderer->destroy = noop_renderer_destroy;
 	ec->renderer = renderer;
 
