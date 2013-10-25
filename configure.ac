@@ -75,7 +75,7 @@ AC_ARG_ENABLE(xkbcommon,
 	      enable_xkbcommon=yes)
 if test x$enable_xkbcommon = xyes; then
 	AC_DEFINE(ENABLE_XKBCOMMON, [1], [Build Weston with libxkbcommon support])
-	COMPOSITOR_MODULES="$COMPOSITOR_MODULES xkbcommon"
+	COMPOSITOR_MODULES="$COMPOSITOR_MODULES xkbcommon >= 0.3.0"
 fi
 
 AC_ARG_ENABLE(setuid-install, [  --enable-setuid-install],,
