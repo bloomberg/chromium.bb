@@ -570,9 +570,16 @@ input_method_context_grab_modifier(struct weston_keyboard_grab *grab, uint32_t s
 				   mods_locked, group);
 }
 
+static void
+input_method_context_grab_cancel(struct weston_keyboard_grab *grab)
+{
+	weston_keyboard_end_grab(grab->keyboard);
+}
+
 static const struct weston_keyboard_grab_interface input_method_context_grab = {
 	input_method_context_grab_key,
 	input_method_context_grab_modifier,
+	input_method_context_grab_cancel,
 };
 
 static void

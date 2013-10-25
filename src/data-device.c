@@ -344,10 +344,23 @@ drag_grab_button(struct weston_pointer_grab *grab,
 	}
 }
 
+static void
+drag_grab_cancel(struct weston_pointer_grab *grab)
+{
+	struct weston_drag *drag =
+		container_of(grab, struct weston_drag, grab);
+
+	if (drag->data_source)
+		wl_list_remove(&drag->data_source_listener.link);
+
+	data_device_end_drag_grab(drag);
+}
+
 static const struct weston_pointer_grab_interface drag_grab_interface = {
 	drag_grab_focus,
 	drag_grab_motion,
 	drag_grab_button,
+	drag_grab_cancel,
 };
 
 static void

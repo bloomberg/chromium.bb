@@ -1162,10 +1162,22 @@ touch_move_grab_motion(struct weston_touch_grab *grab, uint32_t time,
 	weston_compositor_schedule_repaint(es->compositor);
 }
 
+static void
+touch_move_grab_cancel(struct weston_touch_grab *grab)
+{
+	struct weston_touch_move_grab *move =
+		(struct weston_touch_move_grab *) container_of(
+			grab, struct shell_touch_grab, grab);
+
+	shell_touch_grab_end(&move->base);
+	free(move);
+}
+
 static const struct weston_touch_grab_interface touch_move_grab_interface = {
 	touch_move_grab_down,
 	touch_move_grab_up,
 	touch_move_grab_motion,
+	touch_move_grab_cancel,
 };
 
 static int
@@ -1236,10 +1248,21 @@ move_grab_button(struct weston_pointer_grab *grab,
 	}
 }
 
+static void
+move_grab_cancel(struct weston_pointer_grab *grab)
+{
+	struct shell_grab *shell_grab =
+		container_of(grab, struct shell_grab, grab);
+
+	shell_grab_end(shell_grab);
+	free(grab);
+}
+
 static const struct weston_pointer_grab_interface move_grab_interface = {
 	noop_grab_focus,
 	move_grab_motion,
 	move_grab_button,
+	move_grab_cancel,
 };
 
 static int
@@ -1366,10 +1389,20 @@ resize_grab_button(struct weston_pointer_grab *grab,
 	}
 }
 
+static void
+resize_grab_cancel(struct weston_pointer_grab *grab)
+{
+	struct weston_resize_grab *resize = (struct weston_resize_grab *) grab;
+
+	shell_grab_end(&resize->base);
+	free(grab);
+}
+
 static const struct weston_pointer_grab_interface resize_grab_interface = {
 	noop_grab_focus,
 	resize_grab_motion,
 	resize_grab_button,
+	resize_grab_cancel,
 };
 
 /*
@@ -1498,10 +1531,20 @@ busy_cursor_grab_button(struct weston_pointer_grab *base,
 	}
 }
 
+static void
+busy_cursor_grab_cancel(struct weston_pointer_grab *base)
+{
+	struct shell_grab *grab = (struct shell_grab *) base;
+
+	shell_grab_end(grab);
+	free(grab);
+}
+
 static const struct weston_pointer_grab_interface busy_cursor_grab_interface = {
 	busy_cursor_grab_focus,
 	busy_cursor_grab_motion,
 	busy_cursor_grab_button,
+	busy_cursor_grab_cancel,
 };
 
 static void
@@ -2267,10 +2310,17 @@ popup_grab_button(struct weston_pointer_grab *grab,
 		shseat->popup_grab.initial_up = 1;
 }
 
+static void
+popup_grab_cancel(struct weston_pointer_grab *grab)
+{
+	popup_grab_end(grab->pointer);
+}
+
 static const struct weston_pointer_grab_interface popup_grab_interface = {
 	popup_grab_focus,
 	popup_grab_motion,
 	popup_grab_button,
+	popup_grab_cancel,
 };
 
 static void
@@ -3114,10 +3164,21 @@ rotate_grab_button(struct weston_pointer_grab *grab,
 	}
 }
 
+static void
+rotate_grab_cancel(struct weston_pointer_grab *grab)
+{
+	struct rotate_grab *rotate =
+		container_of(grab, struct rotate_grab, base.grab);
+
+	shell_grab_end(&rotate->base);
+	free(rotate);
+}
+
 static const struct weston_pointer_grab_interface rotate_grab_interface = {
 	noop_grab_focus,
 	rotate_grab_motion,
 	rotate_grab_button,
+	rotate_grab_cancel,
 };
 
 static void
@@ -4349,9 +4410,18 @@ switcher_modifier(struct weston_keyboard_grab *grab, uint32_t serial,
 		switcher_destroy(switcher);
 }
 
+static void
+switcher_cancel(struct weston_keyboard_grab *grab)
+{
+	struct switcher *switcher = container_of(grab, struct switcher, grab);
+
+	switcher_destroy(switcher);
+}
+
 static const struct weston_keyboard_grab_interface switcher_grab = {
 	switcher_key,
 	switcher_modifier,
+	switcher_cancel,
 };
 
 static void
@@ -4505,9 +4575,19 @@ debug_binding_modifiers(struct weston_keyboard_grab *grab, uint32_t serial,
 	}
 }
 
+static void
+debug_binding_cancel(struct weston_keyboard_grab *grab)
+{
+	struct debug_binding_grab *db = (struct debug_binding_grab *) grab;
+
+	weston_keyboard_end_grab(grab->keyboard);
+	free(db);
+}
+
 struct weston_keyboard_grab_interface debug_binding_keyboard_grab = {
 	debug_binding_key,
-	debug_binding_modifiers
+	debug_binding_modifiers,
+	debug_binding_cancel,
 };
 
 static void

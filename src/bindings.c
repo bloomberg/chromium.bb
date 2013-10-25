@@ -210,9 +210,20 @@ binding_modifiers(struct weston_keyboard_grab *grab, uint32_t serial,
 	}
 }
 
+static void
+binding_cancel(struct weston_keyboard_grab *grab)
+{
+	struct binding_keyboard_grab *binding_grab =
+		container_of(grab, struct binding_keyboard_grab, grab);
+
+	weston_keyboard_end_grab(grab->keyboard);
+	free(binding_grab);
+}
+
 static const struct weston_keyboard_grab_interface binding_grab = {
 	binding_key,
 	binding_modifiers,
+	binding_cancel,
 };
 
 static void

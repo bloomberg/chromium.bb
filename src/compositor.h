@@ -240,6 +240,7 @@ struct weston_pointer_grab_interface {
 	void (*motion)(struct weston_pointer_grab *grab, uint32_t time);
 	void (*button)(struct weston_pointer_grab *grab,
 		       uint32_t time, uint32_t button, uint32_t state);
+	void (*cancel)(struct weston_pointer_grab *grab);
 };
 
 struct weston_pointer_grab {
@@ -254,6 +255,7 @@ struct weston_keyboard_grab_interface {
 	void (*modifiers)(struct weston_keyboard_grab *grab, uint32_t serial,
 			  uint32_t mods_depressed, uint32_t mods_latched,
 			  uint32_t mods_locked, uint32_t group);
+	void (*cancel)(struct weston_keyboard_grab *grab);
 };
 
 struct weston_keyboard_grab {
@@ -276,6 +278,7 @@ struct weston_touch_grab_interface {
 			int touch_id,
 			wl_fixed_t sx,
 			wl_fixed_t sy);
+	void (*cancel)(struct weston_touch_grab *grab);
 };
 
 struct weston_touch_grab {
