@@ -22,11 +22,11 @@ class RasterizeAndRecord(page_measurement.PageMeasurement):
                       'Higher values reduce variance, but can cause' +
                       'instability (timeouts, event buffer overflows, etc.).')
     parser.add_option('--start-wait-time', dest='start_wait_time',
-                      default=2,
+                      default=5,
                       help='Wait time before the benchmark is started ' +
                       '(must be long enought to load all content)')
     parser.add_option('--stop-wait-time', dest='stop_wait_time',
-                      default=5,
+                      default=10,
                       help='Wait time before measurement is taken ' +
                       '(must be long enough to render one frame)')
 
