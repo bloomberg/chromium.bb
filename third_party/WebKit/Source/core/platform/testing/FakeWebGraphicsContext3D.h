@@ -234,19 +234,47 @@ public:
 
     virtual void viewport(WGC3Dint x, WGC3Dint y, WGC3Dsizei width, WGC3Dsizei height) { }
 
+    virtual void genBuffers(WGC3Dsizei count, WebGLId* ids)
+    {
+        for (int i = 0; i < count; ++i)
+            ids[i] = 1;
+    }
+    virtual void genFramebuffers(WGC3Dsizei count, WebGLId* ids)
+    {
+        for (int i = 0; i < count; ++i)
+            ids[i] = 1;
+    }
+    virtual void genRenderbuffers(WGC3Dsizei count, WebGLId* ids)
+    {
+        for (int i = 0; i < count; ++i)
+            ids[i] = 1;
+    }
+    virtual void genTextures(WGC3Dsizei count, WebGLId* ids)
+    {
+        for (int i = 0; i < count; ++i)
+            ids[i] = m_nextTextureId++;
+    }
+
+    virtual void deleteBuffers(WGC3Dsizei count, WebGLId* ids) { }
+    virtual void deleteFramebuffers(WGC3Dsizei count, WebGLId* ids) { }
+    virtual void deleteRenderbuffers(WGC3Dsizei count, WebGLId* ids) { }
+    virtual void deleteTextures(WGC3Dsizei count, WebGLId* ids) { }
+
     virtual WebGLId createBuffer() { return 1; }
     virtual WebGLId createFramebuffer() { return 1; }
-    virtual WebGLId createProgram() { return 1; }
     virtual WebGLId createRenderbuffer() { return 1; }
-    virtual WebGLId createShader(WGC3Denum) { return 1; }
     virtual WebGLId createTexture() { return m_nextTextureId++; }
 
     virtual void deleteBuffer(WebGLId) { }
     virtual void deleteFramebuffer(WebGLId) { }
-    virtual void deleteProgram(WebGLId) { }
     virtual void deleteRenderbuffer(WebGLId) { }
-    virtual void deleteShader(WebGLId) { }
     virtual void deleteTexture(WebGLId) { }
+
+    virtual WebGLId createProgram() { return 1; }
+    virtual WebGLId createShader(WGC3Denum) { return 1; }
+
+    virtual void deleteProgram(WebGLId) { }
+    virtual void deleteShader(WebGLId) { }
 
     virtual void texStorage2DEXT(WGC3Denum target, WGC3Dint levels, WGC3Duint internalformat, WGC3Dint width, WGC3Dint height) { }
 
