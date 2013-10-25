@@ -4,7 +4,10 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "base/bind_helpers.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
+#include "chrome/browser/media/media_capture_devices_dispatcher.h"
+#include "chrome/browser/media/media_stream_capture_indicator.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #import "chrome/browser/ui/cocoa/new_tab_button.h"
@@ -12,10 +15,13 @@
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_controller.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_view.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_view.h"
+#include "chrome/browser/ui/tabs/tab_utils.h"
 #include "chrome/browser/ui/tabs/test_tab_strip_model_delegate.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/media_stream_request.h"
+#import "testing/gtest_mac.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 #include "ui/base/test/cocoa_test_event_utils.h"
@@ -174,7 +180,7 @@ TEST_F(TabStripControllerTest, RearrangeTabs) {
   // TODO(pinkerton): Implement http://crbug.com/10899
 }
 
-TEST_F(TabStripControllerTest, CorrectToolTipText) {
+TEST_F(TabStripControllerTest, CorrectToolTipMouseHoverBehavior) {
   // Set tab 1 tooltip.
   TabView* tab1 = CreateTab();
   [tab1 setToolTip:@"Tab1"];
@@ -226,6 +232,58 @@ TEST_F(TabStripControllerTest, CorrectToolTipText) {
         stringForToolTip:nil
                    point:NSZeroPoint
                 userData:nil] cStringUsingEncoding:NSASCIIStringEncoding]);
+}
+
+TEST_F(TabStripControllerTest, CorrectTitleAndToolTipTextFromSetTabTitle) {
+  using content::MediaStreamDevice;
+  using content::MediaStreamDevices;
+  using content::MediaStreamUI;
+
+  TabView* const tab = CreateTab();
+  TabController* const tabController = [tab controller];
+  WebContents* const contents = model_->GetActiveWebContents();
+
+  // Initially, tab title and tooltip text are equivalent.
+  EXPECT_EQ(TAB_MEDIA_STATE_NONE,
+            chrome::GetTabMediaStateForContents(contents));
+  [controller_ setTabTitle:tabController withContents:contents];
+  NSString* const baseTitle = [tabController title];
+  EXPECT_NSEQ(baseTitle, [tabController toolTip]);
+
+  // Simulate the start of tab video capture.  Tab title remains the same, but
+  // the tooltip text should include the following appended: 1) a line break;
+  // 2) a non-empty string with a localized description of the media state.
+  scoped_refptr<MediaStreamCaptureIndicator> indicator =
+      MediaCaptureDevicesDispatcher::GetInstance()->
+          GetMediaStreamCaptureIndicator();
+  const MediaStreamDevice dummyVideoCaptureDevice(
+      content::MEDIA_TAB_VIDEO_CAPTURE, "dummy_id", "dummy name");
+  scoped_ptr<MediaStreamUI> streamUi(indicator->RegisterMediaStream(
+      contents, MediaStreamDevices(1, dummyVideoCaptureDevice)));
+  streamUi->OnStarted(base::Bind(&base::DoNothing));
+  EXPECT_EQ(TAB_MEDIA_STATE_CAPTURING,
+            chrome::GetTabMediaStateForContents(contents));
+  [controller_ setTabTitle:tabController withContents:contents];
+  EXPECT_NSEQ(baseTitle, [tabController title]);
+  NSString* const toolTipText = [tabController toolTip];
+  if ([baseTitle length] > 0) {
+    EXPECT_TRUE(NSEqualRanges(NSMakeRange(0, [baseTitle length]),
+                              [toolTipText rangeOfString:baseTitle]));
+    EXPECT_TRUE(NSEqualRanges(NSMakeRange([baseTitle length], 1),
+                              [toolTipText rangeOfString:@"\n"]));
+    EXPECT_LT([baseTitle length] + 1, [toolTipText length]);
+  } else {
+    EXPECT_LT(0u, [toolTipText length]);
+  }
+
+  // Simulate the end of tab video capture.  Tab title and tooltip should become
+  // equivalent again.
+  streamUi.reset();
+  EXPECT_EQ(TAB_MEDIA_STATE_NONE,
+            chrome::GetTabMediaStateForContents(contents));
+  [controller_ setTabTitle:tabController withContents:contents];
+  EXPECT_NSEQ(baseTitle, [tabController title]);
+  EXPECT_NSEQ(baseTitle, [tabController toolTip]);
 }
 
 TEST_F(TabStripControllerTest, TabCloseDuringDrag) {

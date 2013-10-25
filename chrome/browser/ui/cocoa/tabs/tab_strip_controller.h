@@ -237,6 +237,11 @@ class WebContents;
 
 @end
 
+@interface TabStripController(TestingAPI)
+- (void)setTabTitle:(TabController*)tab
+       withContents:(content::WebContents*)contents;
+@end
+
 // Returns the parent view to use when showing a sheet for a given web contents.
 NSView* GetSheetParentViewForWebContents(content::WebContents* web_contents);
 

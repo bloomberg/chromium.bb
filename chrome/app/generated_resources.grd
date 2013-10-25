@@ -15662,6 +15662,7 @@ Do you accept?
     <message name="IDS_LOCAL_DISCOVERY_NOTIFICATIONS_DISABLE_BUTTON_LABEL" desc="Label for button disabling local device notifications">
       Don't show this again
     </message>
+
     <!-- People search strings -->
     <message name="IDS_PEOPLE_SEARCH_ACTION_EMAIL_TOOLTIP" desc="Tooltip text for sending an email to the person in the result">
       Email this person
@@ -15674,6 +15675,17 @@ Do you accept?
     </message>
     <message name="IDS_LOCAL_DISCOVERY_REGISTER_TIMEOUT_ON_PRINTER" desc="Label for when registration has timed out on the printer side">
       Printer registration has timed out. In order to register a printer, you must confirm registration on the printer.
+    </message>
+
+    <!--Tab media indicator tooltip strings-->
+    <message name="IDS_TOOLTIP_TAB_MEDIA_STATE_RECORDING" desc="Extra tool tip text, when the tab is recording media.">
+      This tab is using your camera or microphone.
+    </message>
+    <message name="IDS_TOOLTIP_TAB_MEDIA_STATE_CAPTURING" desc="Extra tool tip text, when the tab content is being captured.">
+      This tab's content is being shared.
+    </message>
+    <message name="IDS_TOOLTIP_TAB_MEDIA_STATE_AUDIO_PLAYING" desc="Extra tool tip text, when the tab is playing audio.">
+      This tab is playing audio.
     </message>
   </messages>
 

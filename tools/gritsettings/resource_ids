@@ -120,7 +120,7 @@
     "messages": [17500],
   },
   "webkit/glue/webkit_strings.grd": {
-    "messages": [18000],
+    "messages": [18500],
   },
 
   "chrome_frame/resources/chrome_frame_resources.grd": {

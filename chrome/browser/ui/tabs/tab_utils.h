@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_TABS_TAB_UTILS_H_
 
 #include "base/memory/scoped_ptr.h"
+#include "base/strings/string16.h"
 
 namespace content {
 class WebContents;
@@ -73,6 +74,11 @@ const gfx::Image& GetTabMediaIndicatorImage(TabMediaState media_state);
 // has started/stopped.
 scoped_ptr<gfx::Animation> CreateTabMediaIndicatorFadeAnimation(
     TabMediaState next_media_state);
+
+// Returns the text to show in a tab's tooltip: The contents |title|, followed
+// by a break, followed by a localized string describing the |media_state|.
+base::string16 AssembleTabTooltipText(const base::string16& title,
+                                      TabMediaState media_state);
 
 }  // namespace chrome
 
