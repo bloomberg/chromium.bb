@@ -34,7 +34,7 @@ namespace WebCore {
 static void initializeScriptWrappableForInterface({{cpp_class_name}}* object)
 {
     if (ScriptWrappable::wrapperCanBeStoredInObject(object))
-        ScriptWrappable::setTypeInfoInObject(object, &{{v8_class_name}}::info);
+        ScriptWrappable::setTypeInfoInObject(object, &{{v8_class_name}}::wrapperTypeInfo);
     else
         ASSERT_NOT_REACHED();
 }
@@ -51,7 +51,7 @@ void webCoreInitializeScriptWrappableForInterface(WebCore::{{cpp_class_name}}* o
 }
 
 namespace WebCore {
-const WrapperTypeInfo {{v8_class_name}}::info = { {{v8_class_name}}::GetTemplate, {{v8_class_name}}::derefObject, 0, 0, 0, {{v8_class_name}}::installPerContextEnabledPrototypeProperties, 0, WrapperTypeObjectPrototype };
+const WrapperTypeInfo {{v8_class_name}}::wrapperTypeInfo = { {{v8_class_name}}::GetTemplate, {{v8_class_name}}::derefObject, 0, 0, 0, {{v8_class_name}}::installPerContextEnabledPrototypeProperties, 0, WrapperTypeObjectPrototype };
 
 namespace {{cpp_class_name}}V8Internal {
 

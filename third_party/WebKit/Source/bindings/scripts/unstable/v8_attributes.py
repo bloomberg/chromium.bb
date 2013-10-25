@@ -100,7 +100,7 @@ def generate_attribute(interface, attribute):
     }
     if is_constructor_attribute(attribute):
         includes.update(v8_types.includes_for_type(idl_type))
-        return contents, includes
+        return contents
     if not has_custom_getter:
         generate_getter(interface, attribute, contents)
     if not attribute.is_read_only and not has_custom_setter:
@@ -346,7 +346,7 @@ def setter_callback_name_for_main_world(interface, attribute):
 def wrapper_type_info(attribute):
     if not is_constructor_attribute(attribute):
         return '0'
-    return '&V8%s::info' % v8_types.constructor_type(attribute.data_type)
+    return 'const_cast<WrapperTypeInfo*>(&V8%s::wrapperTypeInfo)' % v8_types.constructor_type(attribute.data_type)
 
 
 # [DoNotCheckSecurity], [DoNotCheckSecurityOnGetter], [DoNotCheckSecurityOnSetter], [Unforgeable]
