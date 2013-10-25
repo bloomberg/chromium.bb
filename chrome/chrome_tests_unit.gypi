@@ -1097,6 +1097,7 @@
         'browser/policy/configuration_policy_pref_store_unittest.h',
         'browser/policy/configuration_policy_provider_test.cc',
         'browser/policy/configuration_policy_provider_test.h',
+        'browser/policy/file_selection_dialogs_policy_handler_unittest.cc',
         'browser/policy/javascript_policy_handler_unittest.cc',
         'browser/policy/mock_policy_service.cc',
         'browser/policy/mock_policy_service.h',

@@ -357,47 +357,6 @@ INSTANTIATE_TEST_CASE_P(
         PolicyAndPref(key::kMaxConnectionsPerProxy,
                       prefs::kMaxConnectionsPerProxy)));
 
-// Test cases for how the AllowFileSelectionDialogs policy influences the
-// PromptForDownload preference.
-class ConfigurationPolicyPrefStorePromptDownloadTest
-    : public ConfigurationPolicyPrefStoreTest {};
-
-TEST_F(ConfigurationPolicyPrefStorePromptDownloadTest, Default) {
-  EXPECT_FALSE(store_->GetValue(prefs::kPromptForDownload, NULL));
-}
-
-TEST_F(ConfigurationPolicyPrefStorePromptDownloadTest,
-       EnableFileSelectionDialogs) {
-  PolicyMap policy;
-  EXPECT_FALSE(store_->GetValue(prefs::kPromptForDownload, NULL));
-  policy.Set(key::kAllowFileSelectionDialogs, POLICY_LEVEL_MANDATORY,
-             POLICY_SCOPE_USER, base::Value::CreateBooleanValue(true), NULL);
-  UpdateProviderPolicy(policy);
-
-  // Allowing file-selection dialogs should not influence the PromptForDownload
-  // pref.
-  EXPECT_FALSE(store_->GetValue(prefs::kPromptForDownload, NULL));
-}
-
-TEST_F(ConfigurationPolicyPrefStorePromptDownloadTest,
-       DisableFileSelectionDialogs) {
-  PolicyMap policy;
-  EXPECT_FALSE(store_->GetValue(prefs::kPromptForDownload, NULL));
-  policy.Set(key::kAllowFileSelectionDialogs, POLICY_LEVEL_MANDATORY,
-             POLICY_SCOPE_USER, base::Value::CreateBooleanValue(false), NULL);
-  UpdateProviderPolicy(policy);
-
-  // Disabling file-selection dialogs should disable the PromptForDownload pref.
-  const base::Value* value = NULL;
-  EXPECT_TRUE(store_->GetValue(prefs::kPromptForDownload,
-                                                 &value));
-  ASSERT_TRUE(value);
-  bool prompt_for_download = true;
-  bool result = value->GetAsBoolean(&prompt_for_download);
-  ASSERT_TRUE(result);
-  EXPECT_FALSE(prompt_for_download);
-}
-
 // Exercises the policy refresh mechanism.
 class ConfigurationPolicyPrefStoreRefreshTest
     : public ConfigurationPolicyPrefStoreTest {

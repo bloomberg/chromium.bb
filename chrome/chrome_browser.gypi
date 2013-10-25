@@ -1531,6 +1531,8 @@
         'browser/policy/external_data_fetcher.cc',
         'browser/policy/external_data_fetcher.h',
         'browser/policy/external_data_manager.h',
+        'browser/policy/file_selection_dialogs_policy_handler.cc',
+        'browser/policy/file_selection_dialogs_policy_handler.h',
         'browser/policy/javascript_policy_handler.cc',
         'browser/policy/javascript_policy_handler.h',
         'browser/policy/policy_bundle.cc',

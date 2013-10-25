@@ -14,6 +14,7 @@
 #include "chrome/browser/net/proxy_policy_handler.h"
 #include "chrome/browser/policy/autofill_policy_handler.h"
 #include "chrome/browser/policy/configuration_policy_handler.h"
+#include "chrome/browser/policy/file_selection_dialogs_policy_handler.h"
 #include "chrome/browser/policy/javascript_policy_handler.h"
 #include "chrome/browser/policy/policy_error_map.h"
 #include "chrome/browser/policy/policy_map.h"
@@ -463,8 +464,7 @@ ConfigurationPolicyHandlerList::ConfigurationPolicyHandlerList() {
 
   handlers_.push_back(new AutofillPolicyHandler());
   handlers_.push_back(new DefaultSearchPolicyHandler());
-  handlers_.push_back(new FileSelectionDialogsHandler(
-      prefs::kAllowFileSelectionDialogs, prefs::kPromptForDownload));
+  handlers_.push_back(new FileSelectionDialogsPolicyHandler());
   handlers_.push_back(new IncognitoModePolicyHandler());
   handlers_.push_back(new JavascriptPolicyHandler());
   handlers_.push_back(new ProxyPolicyHandler());

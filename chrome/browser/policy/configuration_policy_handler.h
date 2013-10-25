@@ -245,23 +245,6 @@ class DiskCacheDirPolicyHandler : public TypeCheckingPolicyHandler {
 
 #endif  // !defined(OS_ANDROID)
 
-// ConfigurationPolicyHandler for the FileSelectionDialogsHandler policy.
-class FileSelectionDialogsHandler : public TypeCheckingPolicyHandler {
- public:
-  FileSelectionDialogsHandler(const char* allow_dialogs_pref_name,
-                              const char* prompt_for_download_pref_name);
-  virtual ~FileSelectionDialogsHandler();
-
-  // ConfigurationPolicyHandler methods:
-  virtual void ApplyPolicySettings(const PolicyMap& policies,
-                                   PrefValueMap* prefs) OVERRIDE;
-
- private:
-  const char* allow_dialogs_pref_name_;
-  const char* prompt_for_download_pref_name_;
-  DISALLOW_COPY_AND_ASSIGN(FileSelectionDialogsHandler);
-};
-
 // Handles URLBlacklist policies.
 class URLBlacklistPolicyHandler : public ConfigurationPolicyHandler {
  public:

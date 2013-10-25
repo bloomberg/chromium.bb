@@ -373,35 +373,6 @@ void DiskCacheDirPolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
 #endif  // !defined(OS_ANDROID)
 
 
-// FileSelectionDialogsHandler implementation ----------------------------------
-
-FileSelectionDialogsHandler::FileSelectionDialogsHandler(
-    const char* allow_dialogs_pref_name,
-    const char* prompt_for_download_pref_name)
-    : TypeCheckingPolicyHandler(key::kAllowFileSelectionDialogs,
-                                Value::TYPE_BOOLEAN),
-      allow_dialogs_pref_name_(allow_dialogs_pref_name),
-      prompt_for_download_pref_name_(prompt_for_download_pref_name) {}
-
-FileSelectionDialogsHandler::~FileSelectionDialogsHandler() {
-}
-
-void FileSelectionDialogsHandler::ApplyPolicySettings(const PolicyMap& policies,
-                                                      PrefValueMap* prefs) {
-  bool allow_dialogs;
-  const Value* value = policies.GetValue(policy_name());
-  if (value && value->GetAsBoolean(&allow_dialogs)) {
-    prefs->SetValue(allow_dialogs_pref_name_,
-                    Value::CreateBooleanValue(allow_dialogs));
-    // Disallow selecting the download location if file dialogs are disabled.
-    if (!allow_dialogs) {
-      prefs->SetValue(prompt_for_download_pref_name_,
-                      Value::CreateBooleanValue(false));
-    }
-  }
-}
-
-
 // URLBlacklistPolicyHandler implementation ------------------------------------
 
 URLBlacklistPolicyHandler::URLBlacklistPolicyHandler(const char* pref_name)

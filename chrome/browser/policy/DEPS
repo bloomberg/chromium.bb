@@ -16,6 +16,8 @@ specific_include_rules = {
   # These files will stay.
   r"(browser_policy_connector|"
   r"configuration_policy_handler_list|"
+  r"file_selection_dialogs_policy_handler|"
+  r"file_selection_dialogs_policy_handler_unittest|"
   r"javascript_policy_handler|"
   r"javascript_policy_handler_unittest|"
   r"managed_mode_policy_provider|"
