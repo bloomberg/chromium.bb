@@ -133,6 +133,11 @@ void SetDeviceScaleFactor(RenderView* render_view, float factor) {
       ->SetDeviceScaleFactorForTesting(factor);
 }
 
+void UseSynchronousResizeMode(RenderView* render_view, bool enable) {
+  static_cast<RenderViewImpl*>(render_view)
+      ->UseSynchronousResizeModeForTesting(enable);
+}
+
 void EnableAutoResizeMode(RenderView* render_view,
                           const WebSize& min_size,
                           const WebSize& max_size) {

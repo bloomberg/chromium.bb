@@ -353,6 +353,10 @@ void WebKitTestRunner::setClientWindowRect(const WebRect& rect) {
   ForceResizeRenderView(render_view(), WebSize(rect.width, rect.height));
 }
 
+void WebKitTestRunner::useUnfortunateSynchronousResizeMode(bool enable) {
+  UseSynchronousResizeMode(render_view(), enable);
+}
+
 void WebKitTestRunner::enableAutoResizeMode(const WebSize& min_size,
                                             const WebSize& max_size) {
   EnableAutoResizeMode(render_view(), min_size, max_size);

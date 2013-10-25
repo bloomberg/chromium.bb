@@ -472,6 +472,8 @@
     'renderer/renderer_webcolorchooser_impl.h',
     'renderer/renderer_webkitplatformsupport_impl.cc',
     'renderer/renderer_webkitplatformsupport_impl.h',
+    'renderer/resizing_mode_selector.cc',
+    'renderer/resizing_mode_selector.h',
     'renderer/sad_plugin.cc',
     'renderer/sad_plugin.h',
     'renderer/savable_resources.cc',

@@ -387,6 +387,8 @@ class CONTENT_EXPORT RenderViewImpl
   // Change the device scale factor and force the compositor to resize.
   void SetDeviceScaleFactorForTesting(float factor);
 
+  void UseSynchronousResizeModeForTesting(bool enable);
+
   // Control autoresize mode.
   void EnableAutoResizeForTesting(const gfx::Size& min_size,
                                   const gfx::Size& max_size);

@@ -116,6 +116,7 @@
 #include "content/renderer/renderer_date_time_picker.h"
 #include "content/renderer/renderer_webapplicationcachehost_impl.h"
 #include "content/renderer/renderer_webcolorchooser_impl.h"
+#include "content/renderer/resizing_mode_selector.h"
 #include "content/renderer/savable_resources.h"
 #include "content/renderer/speech_recognition_dispatcher.h"
 #include "content/renderer/stats_collection_controller.h"
@@ -6533,6 +6534,10 @@ void RenderViewImpl::SetDeviceScaleFactorForTesting(float factor) {
   params.resizer_rect = WebRect();
   params.is_fullscreen = is_fullscreen();
   OnResize(params);
+}
+
+void RenderViewImpl::UseSynchronousResizeModeForTesting(bool enable) {
+  resizing_mode_selector_->set_is_synchronous_mode(enable);
 }
 
 void RenderViewImpl::EnableAutoResizeForTesting(const gfx::Size& min_size,

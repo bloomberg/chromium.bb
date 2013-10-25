@@ -68,6 +68,7 @@ class ExternalPopupMenu;
 class PepperPluginInstanceImpl;
 class RenderWidgetCompositor;
 class RenderWidgetTest;
+class ResizingModeSelector;
 struct ContextMenuParams;
 struct GpuRenderingStats;
 struct WebPluginGeometry;
@@ -247,8 +248,6 @@ class CONTENT_EXPORT RenderWidget
   friend class base::RefCounted<RenderWidget>;
   // For unit tests.
   friend class RenderWidgetTest;
-
-  class ResizingModeSelector;
 
   enum ResizeAck {
     SEND_RESIZE_ACK,
@@ -788,6 +787,8 @@ class CONTENT_EXPORT RenderWidget
   gfx::Point popup_view_origin_for_emulation_;
   gfx::Point popup_screen_origin_for_emulation_;
   float popup_origin_scale_for_emulation_;
+
+  scoped_ptr<ResizingModeSelector> resizing_mode_selector_;
 
   base::WeakPtrFactory<RenderWidget> weak_ptr_factory_;
 

@@ -41,6 +41,7 @@
 #include "content/renderer/render_process.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/renderer_webkitplatformsupport_impl.h"
+#include "content/renderer/resizing_mode_selector.h"
 #include "ipc/ipc_sync_message.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
@@ -315,30 +316,6 @@ void RenderWidget::ScreenMetricsEmulator::OnShowContextMenu(
   params->y *= scale_;
 }
 
-// RenderWidget::ResizingModeSelector ------------------------------------------
-
-class RenderWidget::ResizingModeSelector {
- public:
-  static bool ShouldAbortOnResize(RenderWidget* widget,
-                                  const ViewMsg_Resize_Params& params);
-  static bool IsLegacyMode();
-};
-
-bool RenderWidget::ResizingModeSelector::ShouldAbortOnResize(
-    RenderWidget* widget,
-    const ViewMsg_Resize_Params& params) {
-  return RenderThreadImpl::current() &&
-      RenderThreadImpl::current()->layout_test_mode() &&
-      params.is_fullscreen == widget->is_fullscreen_ &&
-      params.screen_info.deviceScaleFactor ==
-        widget->screen_info_.deviceScaleFactor;
-}
-
-bool RenderWidget::ResizingModeSelector::IsLegacyMode() {
-  return RenderThreadImpl::current() && // Will be NULL during unit tests.
-      RenderThreadImpl::current()->layout_test_mode();
-}
-
 // RenderWidget ---------------------------------------------------------------
 
 RenderWidget::RenderWidget(WebKit::WebPopupType popup_type,
@@ -387,6 +364,7 @@ RenderWidget::RenderWidget(WebKit::WebPopupType popup_type,
       outstanding_ime_acks_(0),
 #endif
       popup_origin_scale_for_emulation_(0.f),
+      resizing_mode_selector_(new ResizingModeSelector()),
       weak_ptr_factory_(this) {
   if (!swapped_out)
     RenderProcess::current()->AddRefProcess();
@@ -658,7 +636,7 @@ void RenderWidget::Resize(const gfx::Size& new_size,
                           const gfx::Rect& resizer_rect,
                           bool is_fullscreen,
                           ResizeAck resize_ack) {
-  if (!ResizingModeSelector::IsLegacyMode()) {
+  if (!resizing_mode_selector_->is_synchronous_mode()) {
     // A resize ack shouldn't be requested if we have not ACK'd the previous
     // one.
     DCHECK(resize_ack != SEND_RESIZE_ACK || !next_paint_is_resize_ack());
@@ -697,12 +675,12 @@ void RenderWidget::Resize(const gfx::Size& new_size,
     // send an ACK if we are resized to a non-empty rect.
     webwidget_->resize(new_size);
 
-    if (!ResizingModeSelector::IsLegacyMode()) {
+    if (!resizing_mode_selector_->is_synchronous_mode()) {
       // Resize should have caused an invalidation of the entire view.
       DCHECK(new_size.IsEmpty() || is_accelerated_compositing_active_ ||
              paint_aggregator_.HasPendingUpdate());
     }
-  } else if (!ResizingModeSelector::IsLegacyMode()) {
+  } else if (!resizing_mode_selector_->is_synchronous_mode()) {
     resize_ack = NO_RESIZE_ACK;
   }
 
@@ -754,7 +732,7 @@ void RenderWidget::OnCreatingNewAck() {
 }
 
 void RenderWidget::OnResize(const ViewMsg_Resize_Params& params) {
-  if (ResizingModeSelector::ShouldAbortOnResize(this, params))
+  if (resizing_mode_selector_->ShouldAbortOnResize(this, params))
     return;
 
   if (screen_metrics_emulator_) {
@@ -1767,7 +1745,7 @@ void RenderWidget::didAutoResize(const WebSize& new_size) {
     // with invalid damage rects.
     paint_aggregator_.ClearPendingUpdate();
 
-    if (ResizingModeSelector::IsLegacyMode()) {
+    if (resizing_mode_selector_->is_synchronous_mode()) {
       WebRect new_pos(rootWindowRect().x,
                       rootWindowRect().y,
                       new_size.width,
@@ -1778,7 +1756,7 @@ void RenderWidget::didAutoResize(const WebSize& new_size) {
 
     AutoResizeCompositor();
 
-    if (!ResizingModeSelector::IsLegacyMode())
+    if (!resizing_mode_selector_->is_synchronous_mode())
       need_update_rect_for_auto_resize_ = true;
   }
 }
@@ -2029,7 +2007,7 @@ void RenderWidget::setWindowRect(const WebRect& rect) {
         (pos.y - popup_view_origin_for_emulation_.y()) * scale;
   }
 
-  if (!ResizingModeSelector::IsLegacyMode()) {
+  if (!resizing_mode_selector_->is_synchronous_mode()) {
     if (did_show_) {
       Send(new ViewHostMsg_RequestMove(routing_id_, pos));
       SetPendingWindowRect(pos);

@@ -71,6 +71,7 @@ class WebKitTestRunner : public RenderViewObserver,
   virtual void applyPreferences();
   virtual std::string makeURLErrorDescription(const WebKit::WebURLError& error);
   virtual void setClientWindowRect(const WebKit::WebRect& rect);
+  virtual void useUnfortunateSynchronousResizeMode(bool enable);
   virtual void enableAutoResizeMode(const WebKit::WebSize& min_size,
                                     const WebKit::WebSize& max_size);
   virtual void disableAutoResizeMode(const WebKit::WebSize& new_size);
