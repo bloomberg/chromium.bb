@@ -135,8 +135,13 @@ static gfx::Vector2dF ComputeChangeOfBasisTranslation(
 
   gfx::Vector2dF translation;
   for (const LayerType* target = descendant_target; target != ancestor_target;
-       target = NextTargetSurface(target))
-    translation += target->render_surface()->draw_transform().To2dTranslation();
+       target = NextTargetSurface(target)) {
+    const gfx::Transform& trans = target->render_surface()->draw_transform();
+    // Ensure that this translation is truly 2d.
+    DCHECK(trans.IsIdentityOrTranslation());
+    DCHECK_EQ(0.f, trans.matrix().get(2, 3));
+    translation += trans.To2dTranslation();
+  }
 
   return translation;
 }
@@ -743,7 +748,8 @@ void ApplyPositionAdjustment(
 
 gfx::Transform ComputeScrollCompensationForThisLayer(
     LayerImpl* scrolling_layer,
-    const gfx::Transform& parent_matrix) {
+    const gfx::Transform& parent_matrix,
+    gfx::Vector2dF scroll_delta) {
   // For every layer that has non-zero scroll_delta, we have to compute a
   // transform that can undo the scroll_delta translation. In particular, we
   // want this matrix to premultiply a fixed-position layer's parent_matrix, so
@@ -765,7 +771,6 @@ gfx::Transform ComputeScrollCompensationForThisLayer(
   //
 
   gfx::Transform scroll_compensation_for_this_layer = parent_matrix;  // Step 3
-  gfx::Vector2dF scroll_delta = GetEffectiveScrollDelta(scrolling_layer);
   scroll_compensation_for_this_layer.Translate(
       scroll_delta.x(),
       scroll_delta.y());  // Step 2
@@ -783,7 +788,8 @@ gfx::Transform ComputeScrollCompensationForThisLayer(
 gfx::Transform ComputeScrollCompensationMatrixForChildren(
     Layer* current_layer,
     const gfx::Transform& current_parent_matrix,
-    const gfx::Transform& current_scroll_compensation) {
+    const gfx::Transform& current_scroll_compensation,
+    gfx::Vector2dF scroll_delta) {
   // The main thread (i.e. Layer) does not need to worry about scroll
   // compensation.  So we can just return an identity matrix here.
   return gfx::Transform();
@@ -792,7 +798,8 @@ gfx::Transform ComputeScrollCompensationMatrixForChildren(
 gfx::Transform ComputeScrollCompensationMatrixForChildren(
     LayerImpl* layer,
     const gfx::Transform& parent_matrix,
-    const gfx::Transform& current_scroll_compensation_matrix) {
+    const gfx::Transform& current_scroll_compensation_matrix,
+    gfx::Vector2dF scroll_delta) {
   // "Total scroll compensation" is the transform needed to cancel out all
   // scroll_delta translations that occurred since the nearest container layer,
   // even if there are render_surfaces in-between.
@@ -827,7 +834,6 @@ gfx::Transform ComputeScrollCompensationMatrixForChildren(
   // Avoid the overheads (including stack allocation and matrix
   // initialization/copy) if we know that the scroll compensation doesn't need
   // to be reset or adjusted.
-  gfx::Vector2dF scroll_delta = GetEffectiveScrollDelta(layer);
   if (!current_layer_resets_scroll_compensation_for_descendants &&
       scroll_delta.IsZero() && !layer->render_surface())
     return current_scroll_compensation_matrix;
@@ -846,7 +852,7 @@ gfx::Transform ComputeScrollCompensationMatrixForChildren(
   if (!scroll_delta.IsZero()) {
     gfx::Transform scroll_compensation_for_this_layer =
         ComputeScrollCompensationForThisLayer(
-            layer, parent_matrix);
+            layer, parent_matrix, scroll_delta);
     next_scroll_compensation_matrix.PreconcatTransform(
         scroll_compensation_for_this_layer);
   }
@@ -1490,12 +1496,19 @@ static void CalculateDrawPropertiesInternal(
     combined_transform.Translate(position.x(), position.y());
   }
 
+  gfx::Vector2dF effective_scroll_delta = GetEffectiveScrollDelta(layer);
   if (!animating_transform_to_target && layer->scrollable() &&
       combined_transform.IsScaleOrTranslation()) {
     // Align the scrollable layer's position to screen space pixels to avoid
     // blurriness.  To avoid side-effects, do this only if the transform is
     // simple.
+    gfx::Vector2dF previous_translation = combined_transform.To2dTranslation();
     RoundTranslationComponents(&combined_transform);
+    gfx::Vector2dF current_translation = combined_transform.To2dTranslation();
+
+    // This rounding changes the scroll delta, and so must be included
+    // in the scroll compensation matrix.
+    effective_scroll_delta -= current_translation - previous_translation;
   }
 
   // Apply adjustment from position constraints.
@@ -1871,7 +1884,8 @@ static void CalculateDrawPropertiesInternal(
         ComputeScrollCompensationMatrixForChildren(
             layer,
             data_from_ancestor.parent_matrix,
-            data_from_ancestor.scroll_compensation_matrix);
+            data_from_ancestor.scroll_compensation_matrix,
+            effective_scroll_delta);
     data_for_children.fixed_container =
         layer->IsContainerForFixedPositionLayers() ?
             layer : data_from_ancestor.fixed_container;

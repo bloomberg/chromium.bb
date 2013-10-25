@@ -389,10 +389,6 @@ void Transform::FlattenTo2d() {
 }
 
 Vector2dF Transform::To2dTranslation() const {
-  DCHECK(IsIdentityOrTranslation());
-  // Ensure that this translation is truly 2d.
-  const SkMScalar translate_z = matrix_.get(2, 3);
-  DCHECK_EQ(0.f, translate_z);
   return gfx::Vector2dF(SkMScalarToFloat(matrix_.get(0, 3)),
                         SkMScalarToFloat(matrix_.get(1, 3)));
 }

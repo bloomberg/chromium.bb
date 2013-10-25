@@ -9632,5 +9632,118 @@ TEST_F(LayerTreeHostCommonTest, DoNotClobberSorting) {
   EXPECT_EQ(4, root->render_surface()->layer_list().at(3)->id());
 }
 
+TEST_F(LayerTreeHostCommonTest, ScrollCompensationWithRounding) {
+  // This test verifies that a scrolling layer that gets snapped to
+  // integer coordinates doesn't move a fixed position child.
+  //
+  // + root
+  //   + container
+  //     + scroller
+  //       + fixed
+  //
+  FakeImplProxy proxy;
+  FakeLayerTreeHostImpl host_impl(&proxy);
+  host_impl.CreatePendingTree();
+  scoped_ptr<LayerImpl> root = LayerImpl::Create(host_impl.active_tree(), 1);
+  scoped_ptr<LayerImpl> container =
+      LayerImpl::Create(host_impl.active_tree(), 2);
+  LayerImpl* container_layer = container.get();
+  scoped_ptr<LayerImpl> scroller =
+      LayerImpl::Create(host_impl.active_tree(), 3);
+  LayerImpl* scroll_layer = scroller.get();
+  scoped_ptr<LayerImpl> fixed = LayerImpl::Create(host_impl.active_tree(), 4);
+  LayerImpl* fixed_layer = fixed.get();
+
+  container->SetIsContainerForFixedPositionLayers(true);
+
+  LayerPositionConstraint constraint;
+  constraint.set_is_fixed_position(true);
+  fixed->SetPositionConstraint(constraint);
+
+  scroller->SetScrollable(true);
+
+  gfx::Transform identity_transform;
+  gfx::Transform container_transform;
+  container_transform.Translate3d(10.0, 20.0, 0.0);
+  gfx::Vector2dF container_offset = container_transform.To2dTranslation();
+
+  SetLayerPropertiesForTesting(root.get(),
+                               identity_transform,
+                               identity_transform,
+                               gfx::PointF(),
+                               gfx::PointF(),
+                               gfx::Size(50, 50),
+                               false);
+  SetLayerPropertiesForTesting(container.get(),
+                               container_transform,
+                               identity_transform,
+                               gfx::PointF(),
+                               gfx::PointF(),
+                               gfx::Size(40, 40),
+                               false);
+  SetLayerPropertiesForTesting(scroller.get(),
+                               identity_transform,
+                               identity_transform,
+                               gfx::PointF(),
+                               gfx::PointF(),
+                               gfx::Size(30, 30),
+                               false);
+  SetLayerPropertiesForTesting(fixed.get(),
+                               identity_transform,
+                               identity_transform,
+                               gfx::PointF(),
+                               gfx::PointF(),
+                               gfx::Size(50, 50),
+                               false);
+
+  scroller->AddChild(fixed.Pass());
+  container->AddChild(scroller.Pass());
+  root->AddChild(container.Pass());
+
+  // Rounded to integers already.
+  {
+    gfx::Vector2dF scroll_delta(3.0, 5.0);
+    scroll_layer->SetScrollDelta(scroll_delta);
+
+    LayerImplList render_surface_layer_list;
+    LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
+        root.get(), root->bounds(), &render_surface_layer_list);
+    LayerTreeHostCommon::CalculateDrawProperties(&inputs);
+
+    EXPECT_TRANSFORMATION_MATRIX_EQ(
+        container_layer->draw_properties().screen_space_transform,
+        fixed_layer->draw_properties().screen_space_transform);
+    EXPECT_VECTOR_EQ(
+        fixed_layer->draw_properties().screen_space_transform.To2dTranslation(),
+        container_offset);
+    EXPECT_VECTOR_EQ(scroll_layer->draw_properties()
+                         .screen_space_transform.To2dTranslation(),
+                     container_offset - scroll_delta);
+  }
+
+  // Scroll delta requiring rounding.
+  {
+    gfx::Vector2dF scroll_delta(4.1f, 8.1f);
+    scroll_layer->SetScrollDelta(scroll_delta);
+
+    gfx::Vector2dF rounded_scroll_delta(4.f, 8.f);
+
+    LayerImplList render_surface_layer_list;
+    LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
+        root.get(), root->bounds(), &render_surface_layer_list);
+    LayerTreeHostCommon::CalculateDrawProperties(&inputs);
+
+    EXPECT_TRANSFORMATION_MATRIX_EQ(
+        container_layer->draw_properties().screen_space_transform,
+        fixed_layer->draw_properties().screen_space_transform);
+    EXPECT_VECTOR_EQ(
+        fixed_layer->draw_properties().screen_space_transform.To2dTranslation(),
+        container_offset);
+    EXPECT_VECTOR_EQ(scroll_layer->draw_properties()
+                         .screen_space_transform.To2dTranslation(),
+                     container_offset - rounded_scroll_delta);
+  }
+}
+
 }  // namespace
 }  // namespace cc
