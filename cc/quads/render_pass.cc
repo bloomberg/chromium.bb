@@ -65,10 +65,11 @@ void RenderPass::CopyAll(const ScopedPtrVector<RenderPass>& in,
           source->shared_quad_state_list[i]->Copy());
     }
     for (size_t i = 0, sqs_i = 0; i < source->quad_list.size(); ++i) {
-      if (source->quad_list[i]->shared_quad_state !=
-          source->shared_quad_state_list[sqs_i])
+      while (source->quad_list[i]->shared_quad_state !=
+             source->shared_quad_state_list[sqs_i]) {
         ++sqs_i;
-      DCHECK(sqs_i < source->shared_quad_state_list.size());
+        DCHECK_LT(sqs_i, source->shared_quad_state_list.size());
+      }
       DCHECK(source->quad_list[i]->shared_quad_state ==
              source->shared_quad_state_list[sqs_i]);
 
