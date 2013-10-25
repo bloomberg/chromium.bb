@@ -32,6 +32,7 @@
   'includes': [
     '../build/win/precompile.gypi',
     '../build/features.gypi',
+    '../build/scripts/scripts.gypi',
     '../modules/modules.gypi',
     '../bindings/bindings.gypi',
     'core.gypi',
@@ -218,6 +219,7 @@
         'injected_canvas_script_source',
         'injected_script_source',
         'debugger_script_source',
+        '../platform/platform_derived_sources.gyp:make_platform_derived_sources',
         '../wtf/wtf.gyp:wtf',
         '<(DEPTH)/skia/skia.gyp:skia',
         '<(DEPTH)/third_party/iccjpeg/iccjpeg.gyp:iccjpeg',
@@ -285,9 +287,6 @@
 
         # Generated from HTMLEntityNames.in
         '<(SHARED_INTERMEDIATE_DIR)/blink/HTMLEntityTable.cpp',
-
-        # Generated from RuntimeEnabledFeatures.in
-        '<(SHARED_INTERMEDIATE_DIR)/blink/RuntimeEnabledFeatures.cpp',
 
         # Generated from CSSParser-in.cpp
         '<(SHARED_INTERMEDIATE_DIR)/blink/CSSParser.cpp',

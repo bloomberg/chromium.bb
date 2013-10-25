@@ -30,10 +30,11 @@
 
 {
     'includes': [
-        '../build/win/precompile.gypi',
         '../bindings/bindings.gypi',
         '../core/core.gypi',
         '../build/features.gypi',
+        '../build/scripts/scripts.gypi',
+        '../build/win/precompile.gypi',
         '../modules/modules.gypi',
         '../wtf/wtf.gypi',
         'web.gypi',

@@ -4,11 +4,13 @@
 #ifndef RuntimeEnabledFeatures_h
 #define RuntimeEnabledFeatures_h
 
+#include "platform/PlatformExport.h"
+
 namespace WebCore {
 
 // A class that stores static enablers for all experimental features.
 
-class RuntimeEnabledFeatures {
+class PLATFORM_EXPORT RuntimeEnabledFeatures {
 public:
 
 {%- for feature_set in feature_sets %}

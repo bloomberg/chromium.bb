@@ -31,8 +31,9 @@
 {
     'includes': [
         '../bindings/bindings.gypi',
-        '../core/core.gypi',
         '../build/features.gypi',
+        '../build/scripts/scripts.gypi',
+        '../core/core.gypi',
         '../modules/modules.gypi',
         '../web/web.gypi',
         '../wtf/wtf.gypi',

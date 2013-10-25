@@ -58,6 +58,27 @@
             '<(SHARED_INTERMEDIATE_DIR)/blink',
           ],
         },
+        {
+          'action_name': 'RuntimeEnabledFeatures',
+          'inputs': [
+            '<@(scripts_for_in_files)',
+            '../build/scripts/make_runtime_features.py',
+            'RuntimeEnabledFeatures.in',
+            '../build/scripts/templates/RuntimeEnabledFeatures.cpp.tmpl',
+            '../build/scripts/templates/RuntimeEnabledFeatures.h.tmpl',
+          ],
+          'outputs': [
+            '<(SHARED_INTERMEDIATE_DIR)/blink/RuntimeEnabledFeatures.cpp',
+            '<(SHARED_INTERMEDIATE_DIR)/blink/RuntimeEnabledFeatures.h',
+          ],
+          'action': [
+            'python',
+            '../build/scripts/make_runtime_features.py',
+            'RuntimeEnabledFeatures.in',
+            '--output_dir',
+            '<(SHARED_INTERMEDIATE_DIR)/blink',
+          ],
+        },
       ]
     },
   ],

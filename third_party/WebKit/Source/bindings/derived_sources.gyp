@@ -30,6 +30,7 @@
 
 {
   'includes': [
+    '../build/scripts/scripts.gypi',
     '../build/win/precompile.gypi',
     '../core/core.gypi',
     '../modules/modules.gypi',
