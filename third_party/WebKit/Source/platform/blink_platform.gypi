@@ -202,6 +202,7 @@
       'exported/WebData.cpp',
       'exported/WebActiveGestureAnimation.cpp',
       'exported/WebActiveGestureAnimation.h',
+      'exported/WebFilterKeyframe.cpp',
       'exported/WebFloatQuad.cpp',
       'exported/WebHTTPBody.cpp',
       'exported/WebHTTPLoadInfo.cpp',

@@ -35,7 +35,7 @@
 #include "WebFilterOperations.h"
 #include "WebPrivateOwnPtr.h"
 
-#if BLINK_IMPLEMENTATION
+#if INSIDE_BLINK
 namespace WTF { template <typename T> class PassOwnPtr; }
 #endif
 
@@ -43,11 +43,11 @@ namespace WebKit {
 
 class WebFilterKeyframe {
 public:
-#if BLINK_IMPLEMENTATION
-    WebFilterKeyframe(double time, PassOwnPtr<WebFilterOperations>);
+#if INSIDE_BLINK
+    BLINK_PLATFORM_EXPORT WebFilterKeyframe(double time, PassOwnPtr<WebFilterOperations>);
 #endif
 
-    ~WebFilterKeyframe();
+    BLINK_PLATFORM_EXPORT ~WebFilterKeyframe();
 
     double time() const { return m_time; }
 
