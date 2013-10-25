@@ -107,11 +107,11 @@ class TestFileSystem(FileSystem):
   # Testing methods.
   #
 
-  def IncrementStat(self, path=None):
+  def IncrementStat(self, path=None, by=1):
     if path is not None:
-      self._path_stats[path] = self._path_stats.get(path, 0) + 1
+      self._path_stats[path] = self._path_stats.get(path, 0) + by
     else:
-      self._global_stat += 1
+      self._global_stat += by
 
   def GetIdentity(self):
     return self._identity
