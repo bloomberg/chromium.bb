@@ -335,7 +335,7 @@ static const char kAsanDefaultOptionsNaCl[] = "handle_segv=0";
 // __asan_default_options should not be instrumented, because it is called
 // before ASan is initialized.
 extern "C"
-__attribute__((no_address_safety_analysis))
+__attribute__((no_sanitize_address))
 const char* __asan_default_options() {
   return kAsanDefaultOptionsNaCl;
 }
