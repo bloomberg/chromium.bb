@@ -703,8 +703,7 @@ void Shell::Init() {
     display_error_observer_.reset(new internal::DisplayErrorObserver());
     output_configurator_->AddObserver(display_error_observer_.get());
     output_configurator_->set_state_controller(display_change_observer_.get());
-    if (!command_line->HasSwitch(ash::switches::kAshDisableSoftwareMirroring))
-      output_configurator_->set_mirroring_controller(display_manager_.get());
+    output_configurator_->set_mirroring_controller(display_manager_.get());
     output_configurator_->Start(
         delegate_->IsFirstRunAfterBoot() ? kChromeOsBootColor : 0);
     display_initialized = true;

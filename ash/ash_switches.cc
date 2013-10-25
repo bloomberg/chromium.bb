@@ -62,9 +62,6 @@ const char kAshDisableDisplayChangeLimiter[] =
     "ash-disable-display-change-limiter";
 
 #if defined(OS_CHROMEOS)
-// Disable compositor based mirroring.
-const char kAshDisableSoftwareMirroring[] = "ash-disable-software-mirroring";
-
 // Disable the notification when a low-power USB charger is connected.
 const char kAshDisableUsbChargerNotification[] =
     "ash-disable-usb-charger-notification";
