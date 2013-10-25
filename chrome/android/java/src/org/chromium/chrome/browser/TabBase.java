@@ -564,7 +564,7 @@ public abstract class TabBase implements NavigationClient {
      */
     @CalledByNative
     public String getUrl() {
-        return getPageInfo() != null ? getPageInfo().getUrl() : "";
+        return mContentView != null ? mContentView.getUrl() : "";
     }
 
     /**
