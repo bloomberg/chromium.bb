@@ -70,7 +70,7 @@ const WrapperTypeInfo V8TestNamedConstructorConstructor::wrapperTypeInfo = { V8T
 static void V8TestNamedConstructorConstructorCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     if (!args.IsConstructCall()) {
-        throwTypeError(ExceptionMessages::failedToConstruct("TestNamedConstructor", "Please use the 'new' operator, this DOM object constructor cannot be called as a function."), args.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToConstruct("Audio", "Please use the 'new' operator, this DOM object constructor cannot be called as a function."), args.GetIsolate());
         return;
     }
 

@@ -37,7 +37,7 @@ class HTMLImageElement FINAL : public HTMLElement {
 public:
     static PassRefPtr<HTMLImageElement> create(Document&);
     static PassRefPtr<HTMLImageElement> create(const QualifiedName&, Document&, HTMLFormElement*);
-    static PassRefPtr<HTMLImageElement> createForJSConstructor(Document&, const int* optionalWidth, const int* optionalHeight);
+    static PassRefPtr<HTMLImageElement> createForJSConstructor(Document&, int width, int height);
 
     virtual ~HTMLImageElement();
 
