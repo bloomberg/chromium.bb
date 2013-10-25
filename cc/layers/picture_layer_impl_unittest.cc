@@ -1121,6 +1121,26 @@ TEST_F(PictureLayerImplTest, SyncTilingAfterReleaseResource) {
   EXPECT_TRUE(active_layer_->tilings()->TilingAtScale(tile_scale));
 }
 
+TEST_F(PictureLayerImplTest, NoTilingIfDoesNotDrawContent) {
+  // Set up layers with tilings.
+  SetupDefaultTrees(gfx::Size(10, 10));
+  SetContentsScaleOnBothLayers(1.f, 1.f, 1.f, false);
+  pending_layer_->PushPropertiesTo(active_layer_);
+  EXPECT_TRUE(pending_layer_->DrawsContent());
+  EXPECT_TRUE(pending_layer_->CanHaveTilings());
+  EXPECT_GE(pending_layer_->num_tilings(), 0u);
+  EXPECT_GE(active_layer_->num_tilings(), 0u);
+
+  // Set content to false, which should make CanHaveTilings return false.
+  pending_layer_->SetDrawsContent(false);
+  EXPECT_FALSE(pending_layer_->DrawsContent());
+  EXPECT_FALSE(pending_layer_->CanHaveTilings());
+
+  // No tilings should be pushed to active layer.
+  pending_layer_->PushPropertiesTo(active_layer_);
+  EXPECT_EQ(0u, active_layer_->num_tilings());
+}
+
 class DeferredInitPictureLayerImplTest : public PictureLayerImplTest {
  public:
   DeferredInitPictureLayerImplTest()

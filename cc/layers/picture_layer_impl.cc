@@ -553,6 +553,7 @@ void PictureLayerImpl::SyncFromActiveLayer(const PictureLayerImpl* other) {
 
   if (!DrawsContent()) {
     ResetRasterScale();
+    tilings_->RemoveAllTilings();
     return;
   }
 
