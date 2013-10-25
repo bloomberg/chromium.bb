@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From private/ppb_nacl_private.idl modified Thu Aug 29 17:42:12 2013. */
+/* From private/ppb_nacl_private.idl modified Fri Oct 18 08:23:34 2013. */
 
 #ifndef PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
 #define PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
@@ -159,9 +159,6 @@ struct PPB_NaCl_Private_1_0 {
   /* Return true if we are off the record.
    */
   PP_Bool (*IsOffTheRecord)(void);
-  /* Return true if PNaCl is turned on.
-   */
-  PP_Bool (*IsPnaclEnabled)(void);
   /* Display a UI message to the user. */
   PP_ExternalPluginResult (*ReportNaClError)(PP_Instance instance,
                                              PP_NaClError message_id);

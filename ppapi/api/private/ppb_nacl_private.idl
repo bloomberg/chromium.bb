@@ -147,10 +147,6 @@ interface PPB_NaCl_Private {
    */
   PP_Bool IsOffTheRecord();
 
-  /* Return true if PNaCl is turned on.
-   */
-  PP_Bool IsPnaclEnabled();
-
   /* Display a UI message to the user. */
   PP_ExternalPluginResult ReportNaClError([in] PP_Instance instance,
                                           [in] PP_NaClError message_id);

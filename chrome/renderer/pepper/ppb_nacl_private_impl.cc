@@ -306,11 +306,6 @@ PP_Bool IsOffTheRecord() {
   return PP_FromBool(ChromeRenderProcessObserver::is_incognito_process());
 }
 
-PP_Bool IsPnaclEnabled() {
-  return PP_FromBool(
-      !CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisablePnacl));
-}
-
 PP_ExternalPluginResult ReportNaClError(PP_Instance instance,
                               PP_NaClError error_id) {
   IPC::Sender* sender = content::RenderThread::Get();
@@ -366,7 +361,6 @@ const PPB_NaCl_Private nacl_interface = {
   &GetNexeFd,
   &ReportTranslationFinished,
   &IsOffTheRecord,
-  &IsPnaclEnabled,
   &ReportNaClError,
   &OpenNaClExecutable
 };

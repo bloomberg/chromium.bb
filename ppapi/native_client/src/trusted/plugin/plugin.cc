@@ -1182,7 +1182,6 @@ void Plugin::ProcessNaClManifest(const nacl::string& manifest_json) {
     // Inform JavaScript that we found a nexe URL to load.
     EnqueueProgressEvent(kProgressEventProgress);
     if (pnacl_options.translate()) {
-      CHECK(nacl_interface()->IsPnaclEnabled());
       pp::CompletionCallback translate_callback =
           callback_factory_.NewCallback(&Plugin::BitcodeDidTranslate);
       // Will always call the callback on success or failure.

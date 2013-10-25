@@ -337,7 +337,6 @@ void PluginReverseInterface::OpenManifestEntry_MainThreadContinuation(
     NaClLog(4,
             "OpenManifestEntry_MainThreadContinuation: "
             "pulling down and translating.\n");
-    CHECK(plugin_->nacl_interface()->IsPnaclEnabled());
     pp::CompletionCallback translate_callback =
         WeakRefNewCallback(
             anchor_,
