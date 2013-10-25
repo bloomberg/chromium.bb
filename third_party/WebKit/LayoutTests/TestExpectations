@@ -673,3 +673,6 @@ crbug.com/311429 [ Mac ] fast/images/png-suite/test.html [ ImageOnlyFailure Pass
 crbug.com/311429 [ Mac ] virtual/deferred/fast/images/png-suite/test.html [ ImageOnlyFailure Pass ]
 
 crbug.com/311467 [ Win ] http/tests/xmlhttprequest/timeout/xmlhttprequest-timeout-worker-simple.html [ Failure Timeout Pass ]
+
+crbug.com/311469 [ Mac ] svg/custom/font-face-cascade-order.svg [ Crash Failure Pass ]
+crbug.com/311469 [ Mac ] svg/custom/getSubStringLength.html [ Failure Pass ]
