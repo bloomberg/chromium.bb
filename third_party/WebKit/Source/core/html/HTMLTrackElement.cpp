@@ -116,16 +116,6 @@ void HTMLTrackElement::parseAttribute(const QualifiedName& name, const AtomicStr
     HTMLElement::parseAttribute(name, value);
 }
 
-KURL HTMLTrackElement::src() const
-{
-    return document().completeURL(getAttribute(srcAttr));
-}
-
-void HTMLTrackElement::setSrc(const String& url)
-{
-    setAttribute(srcAttr, url);
-}
-
 String HTMLTrackElement::kind()
 {
     return track()->kind();

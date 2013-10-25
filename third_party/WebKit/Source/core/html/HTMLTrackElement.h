@@ -38,9 +38,6 @@ class HTMLTrackElement FINAL : public HTMLElement, public TextTrackClient {
 public:
     static PassRefPtr<HTMLTrackElement> create(const QualifiedName&, Document&);
 
-    KURL src() const;
-    void setSrc(const String&);
-
     String kind();
     void setKind(const String&);
 

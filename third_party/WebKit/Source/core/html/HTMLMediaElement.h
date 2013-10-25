@@ -134,7 +134,6 @@ public:
     PassRefPtr<TimeRanges> seekable() const;
     bool ended() const;
     bool autoplay() const;
-    void setAutoplay(bool b);
     bool loop() const;
     void setLoop(bool b);
     void play();

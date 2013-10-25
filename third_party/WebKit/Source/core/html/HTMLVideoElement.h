@@ -38,9 +38,6 @@ public:
     static PassRefPtr<HTMLVideoElement> create(Document& document) { return create(HTMLNames::videoTag, document, false); }
     static PassRefPtr<HTMLVideoElement> create(const QualifiedName&, Document&, bool);
 
-    unsigned width() const;
-    unsigned height() const;
-
     unsigned videoWidth() const;
     unsigned videoHeight() const;
 
