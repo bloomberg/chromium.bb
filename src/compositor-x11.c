@@ -290,6 +290,7 @@ x11_compositor_setup_xkb(struct x11_compositor *c)
 #endif
 }
 
+#ifdef HAVE_XCB_XKB
 static void
 update_xkb_keymap(struct x11_compositor *c)
 {
@@ -303,6 +304,7 @@ update_xkb_keymap(struct x11_compositor *c)
 	weston_seat_update_keymap(&c->core_seat, keymap);
 	xkb_keymap_unref(keymap);
 }
+#endif
 
 static int
 x11_input_create(struct x11_compositor *c, int no_input)
