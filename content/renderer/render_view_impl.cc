@@ -2470,6 +2470,7 @@ void RenderViewImpl::didAddMessageToConsole(
       log_severity = logging::LOG_VERBOSE;
       break;
     case WebConsoleMessage::LevelLog:
+    case WebConsoleMessage::LevelInfo:
       log_severity = logging::LOG_INFO;
       break;
     case WebConsoleMessage::LevelWarning:
