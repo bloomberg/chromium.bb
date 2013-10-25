@@ -27,7 +27,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/manifest_handlers/kiosk_mode_info.h"
-#include "chromeos/cryptohome/system_salt_getter.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
@@ -250,7 +249,7 @@ void StartupAppLauncher::BeginInstall() {
            <<  net::NetworkChangeNotifier::GetConnectionType();
 
   if (IsAppInstalled(profile_, app_id_)) {
-    EnsureSystemSaltIsLoaded();
+    OnReadyToLaunch();
     return;
   }
 
@@ -271,7 +270,7 @@ void StartupAppLauncher::InstallCallback(bool success,
     BrowserThread::PostTask(
         BrowserThread::UI,
         FROM_HERE,
-        base::Bind(&StartupAppLauncher::EnsureSystemSaltIsLoaded,
+        base::Bind(&StartupAppLauncher::OnReadyToLaunch,
                    AsWeakPtr()));
     return;
   }
@@ -280,20 +279,7 @@ void StartupAppLauncher::InstallCallback(bool success,
   OnLaunchFailure(KioskAppLaunchError::UNABLE_TO_INSTALL);
 }
 
-void StartupAppLauncher::EnsureSystemSaltIsLoaded() {
-  // Defer app launch until system salt is loaded to make sure that identity
-  // api works with the enterprise kiosk app.
-  SystemSaltGetter::Get()->GetSystemSalt(
-      base::Bind(&StartupAppLauncher::OnReadyToLaunch, AsWeakPtr()));
-}
-
-void StartupAppLauncher::OnReadyToLaunch(const std::string& system_salt) {
-  if (system_salt.empty()) {
-    LOG(ERROR) << "Could not load system salt.";
-    OnLaunchFailure(KioskAppLaunchError::CRYPTOHOMED_NOT_RUNNING);
-    return;
-  }
-
+void StartupAppLauncher::OnReadyToLaunch() {
   ready_to_launch_ = true;
   FOR_EACH_OBSERVER(Observer, observer_list_, OnReadyToLaunch());
 }
