@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.sync;
 
 import android.accounts.Account;
 import android.app.Activity;
-import android.test.FlakyTest;
 import android.util.Log;
 
 import org.chromium.base.ThreadUtils;
@@ -139,8 +138,6 @@ public class SyncTest extends ChromiumTestShellTestBase {
     }
 
     @HostDrivenTest
-    /* http://crbug.com/311091 */
-    @FlakyTest
     public void testDisableAndEnableSync() throws InterruptedException {
         setupTestAccountAndSignInToSync(FOREIGN_SESSION_TEST_MACHINE_ID);
         Account account =
