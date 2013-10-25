@@ -48,7 +48,6 @@ conformance_harness_script = r"""
 
   window.webglTestHarness = testHarness;
   window.parent.webglTestHarness = testHarness;
-  console.log("Harness injected.");
   window.console.log = testHarness.log;
 """
 

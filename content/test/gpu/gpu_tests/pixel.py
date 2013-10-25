@@ -36,7 +36,6 @@ test_harness_script = r"""
   }
 
   window.domAutomationController = domAutomationController;
-  console.log("Harness injected.");
 """
 
 class PixelTestFailure(Exception):
