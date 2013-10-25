@@ -77,8 +77,6 @@ void SetUpTestEnvironmentForUnitTests() {
   test_environment = new TestEnvironment;
   webkit_glue::SetUserAgent(webkit_glue::BuildUserAgentFromProduct(
       "DumpRenderTree/0.0.0.0"), false);
-
-  WebKit::initialize(test_environment->webkit_platform_support());
 }
 
 void TearDownTestEnvironment() {
