@@ -621,6 +621,8 @@ class VirtualKeyboardRootWindowControllerTest : public test::AshTestBase {
     CommandLine::ForCurrentProcess()->AppendSwitch(
         keyboard::switches::kEnableVirtualKeyboard);
     test::AshTestBase::SetUp();
+    Shell::GetPrimaryRootWindowController()->ActivateKeyboard(
+        Shell::GetInstance()->keyboard_controller());
   }
 
  private:

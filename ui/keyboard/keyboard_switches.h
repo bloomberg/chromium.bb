@@ -16,6 +16,9 @@ KEYBOARD_EXPORT extern const char kEnableSwipeSelection[];
 // Enables the virtual keyboard.
 KEYBOARD_EXPORT extern const char kEnableVirtualKeyboard[];
 
+// Enables the keyboard usability test.
+KEYBOARD_EXPORT extern const char kKeyboardUsabilityTest[];
+
 }  // namespace switches
 }  // namespace keyboard
 

@@ -338,6 +338,8 @@ void Shell::OnLoginStateChanged(user::LoginStatus status) {
     // TODO(bshe): Primary root window controller may not be the controller to
     // attach virtual keyboard. See http://crbug.com/303429
     InitKeyboard(GetPrimaryRootWindowController());
+    GetPrimaryRootWindowController()->ActivateKeyboard(
+        keyboard_controller_.get());
   }
   FOR_EACH_OBSERVER(ShellObserver, observers_, OnLoginStateChanged(status));
 }
@@ -914,7 +916,6 @@ void Shell::InitKeyboard(internal::RootWindowController* root) {
         delegate_->CreateKeyboardControllerProxy();
     keyboard_controller_.reset(
         new keyboard::KeyboardController(proxy));
-    root->ActivateKeyboard(keyboard_controller_.get());
   }
 }
 

@@ -148,9 +148,13 @@ void AshKeyboardControllerProxy::ShowKeyboardContainer(
     NOTIMPLEMENTED();
 
   KeyboardControllerProxy::ShowKeyboardContainer(container);
-  gfx::Rect showing_area =
-      ash::DisplayController::GetPrimaryDisplay().work_area();
-  GetInputMethod()->GetTextInputClient()->EnsureCaretInRect(showing_area);
+  // GetTextInputClient may return NULL when keyboard-usability-test flag is
+  // set.
+  if (GetInputMethod()->GetTextInputClient()) {
+    gfx::Rect showing_area =
+        ash::DisplayController::GetPrimaryDisplay().work_area();
+    GetInputMethod()->GetTextInputClient()->EnsureCaretInRect(showing_area);
+  }
 }
 
 void AshKeyboardControllerProxy::SetUpdateInputType(ui::TextInputType type) {

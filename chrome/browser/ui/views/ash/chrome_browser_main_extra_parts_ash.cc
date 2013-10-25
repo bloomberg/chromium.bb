@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/ash/chrome_browser_main_extra_parts_ash.h"
 
+#include "ash/root_window_controller.h"
 #include "ash/session_state_delegate.h"
 #include "ash/shell.h"
 #include "base/command_line.h"
@@ -88,9 +89,15 @@ void ChromeBrowserMainExtraPartsAsh::PreProfileInit() {
 }
 
 void ChromeBrowserMainExtraPartsAsh::PostProfileInit() {
+  if (!ash::Shell::HasInstance())
+    return;
+
   // Initialize TabScrubber after the Ash Shell has been initialized.
-  if (ash::Shell::HasInstance())
-    TabScrubber::GetInstance();
+  TabScrubber::GetInstance();
+  // Activate virtual keyboard after profile is initialized. It depends on the
+  // default profile.
+  ash::Shell::GetPrimaryRootWindowController()->ActivateKeyboard(
+      ash::Shell::GetInstance()->keyboard_controller());
 }
 
 void ChromeBrowserMainExtraPartsAsh::PostMainMessageLoopRun() {

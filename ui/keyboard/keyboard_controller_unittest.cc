@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -19,6 +20,7 @@
 #include "ui/gfx/rect.h"
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/keyboard/keyboard_controller_proxy.h"
+#include "ui/keyboard/keyboard_switches.h"
 
 namespace keyboard {
 namespace {
@@ -327,6 +329,41 @@ TEST_F(KeyboardControllerTest, VisibilityChangeWithTextInputTypeChange) {
 
   EXPECT_FALSE(WillHideKeyboard());
   EXPECT_TRUE(keyboard_container->IsVisible());
+}
+
+class KeyboardControllerUsabilityTest : public KeyboardControllerTest {
+ public:
+  KeyboardControllerUsabilityTest() {}
+  virtual ~KeyboardControllerUsabilityTest() {}
+
+  virtual void SetUp() OVERRIDE {
+    CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kKeyboardUsabilityTest);
+    KeyboardControllerTest::SetUp();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(KeyboardControllerUsabilityTest);
+};
+
+TEST_F(KeyboardControllerUsabilityTest, KeyboardAlwaysVisibleInUsabilityTest) {
+  const gfx::Rect& root_bounds = root_window()->bounds();
+
+  ui::InputMethod* input_method = proxy()->GetInputMethod();
+  TestTextInputClient input_client(ui::TEXT_INPUT_TYPE_TEXT);
+  TestTextInputClient no_input_client(ui::TEXT_INPUT_TYPE_NONE);
+  input_method->SetFocusedTextInputClient(&input_client);
+
+  aura::Window* keyboard_container(controller()->GetContainerWindow());
+  keyboard_container->SetBounds(root_bounds);
+  root_window()->AddChild(keyboard_container);
+
+  EXPECT_TRUE(keyboard_container->IsVisible());
+
+  input_method->SetFocusedTextInputClient(&no_input_client);
+  // Keyboard should not hide itself after lost focus.
+  EXPECT_TRUE(keyboard_container->IsVisible());
+  EXPECT_FALSE(WillHideKeyboard());
 }
 
 }  // namespace keyboard

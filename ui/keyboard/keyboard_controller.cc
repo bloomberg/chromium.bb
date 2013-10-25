@@ -5,6 +5,7 @@
 #include "ui/keyboard/keyboard_controller.h"
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
@@ -18,6 +19,7 @@
 #include "ui/gfx/skia_util.h"
 #include "ui/keyboard/keyboard_controller_observer.h"
 #include "ui/keyboard/keyboard_controller_proxy.h"
+#include "ui/keyboard/keyboard_switches.h"
 #include "ui/keyboard/keyboard_util.h"
 
 namespace {
@@ -188,7 +190,9 @@ void KeyboardController::OnTextInputStateChanged(
   bool should_show = was_showing;
   ui::TextInputType type =
       client ? client->GetTextInputType() : ui::TEXT_INPUT_TYPE_NONE;
-  if (type == ui::TEXT_INPUT_TYPE_NONE) {
+  if (type == ui::TEXT_INPUT_TYPE_NONE &&
+      !CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kKeyboardUsabilityTest)) {
     should_show = false;
   } else {
     if (container_->children().empty()) {
