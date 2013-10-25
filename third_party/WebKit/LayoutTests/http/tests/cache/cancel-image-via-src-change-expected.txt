@@ -1,5 +1,0 @@
-http://127.0.0.1:8000/cache/resources/empty.txt - willSendRequest <NSURLRequest URL http://127.0.0.1:8000/cache/resources/empty.txt, main document URL http://127.0.0.1:8000/cache/cancel-image-via-src-change.html, http method GET> redirectResponse (null)
-http://127.0.0.1:8000/cache/resources/compass-no-cache.jpg - willSendRequest <NSURLRequest URL http://127.0.0.1:8000/cache/resources/compass-no-cache.jpg, main document URL http://127.0.0.1:8000/cache/cancel-image-via-src-change.html, http method GET> redirectResponse (null)
-http://127.0.0.1:8000/cache/resources/compass-no-cache.jpg - didReceiveResponse <NSURLResponse http://127.0.0.1:8000/cache/resources/compass-no-cache.jpg, http status code 200>
-http://127.0.0.1:8000/cache/resources/compass-no-cache.jpg - didFinishLoading
-

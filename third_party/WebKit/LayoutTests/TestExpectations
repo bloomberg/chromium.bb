@@ -7,16 +7,9 @@ crbug.com/249087 [ Win Debug ] inspector/debugger/debugger-activation-crash2.htm
 
 crbug.com/273119 [ XP ] inspector/styles/styles-new-API.html [ Pass Failure ]
 
-# Sometimes the output includes an empty line, sometimes it doesn't. Flake.
-crbug.com/239874 http/tests/xmlhttprequest/send-data-view.html [ Failure Pass ]
-
 crbug.com/258949 fast/filesystem/workers/file-writer-truncate-extend.html [ Failure Pass ]
 
 crbug.com/307782 [ Win ] http/tests/cache/stopped-revalidation.html [ Pass Timeout ]
-
-crbug.com/255183 http/tests/cache/cancel-image-via-src-change.html [ Failure Pass ]
-
-crbug.com/239554 http/tests/security/frameNavigation/opener.html [ Pass Timeout ]
 
 # Transient - XHR mixed content type revert will be restored.
 crbug.com/305303 http/tests/security/mixedContent/insecure-sync-post-xhr-allowed.html [ Failure Pass ]
@@ -24,22 +17,6 @@ crbug.com/305303 http/tests/security/mixedContent/insecure-sync-post-xhr-blocked
 crbug.com/305303 http/tests/security/mixedContent/insecure-xhr-in-main-frame.html [ Failure Pass ]
 
 crbug.com/289002 http/tests/security/frame-loading-via-document-write.html [ Pass Failure ]
-
-# We expect V8 to crash in an orderly fashion instead of throwing a JavaScript out-of-memory error.
-webkit.org/b/103348 fast/js/string-replacement-outofmemory.html [ Crash ]
-
-# Skipped until/unless color-correction is reimplemented.
-crbug.com/28005 fast/css/parsing-color-correction.html [ Skip ]
-
-# Need a setAuthorAndUserStylesEnabled method in
-# testRunner. Now we have preference to enable/disable user
-# styles(not work now), we still need to add a preference to enable/disable
-# styles of both author and user.
-# SKIP because it causes an additional error message in:
-# fast/css/display-none-inline-style-change-crash.html   somehow
-# the message is dumped after the #EOF, which causes an additional
-# error in the header of the following test.
-crbug.com/24197 fast/css/disabled-author-styles.html [ Skip ]
 
 # -----------------------------------------------------------------
 # Inspector tests
@@ -49,23 +26,14 @@ crbug.com/24197 fast/css/disabled-author-styles.html [ Skip ]
 crbug.com/233124 http/tests/inspector/network/network-embed.html [ Skip ]
 crbug.com/233124 http/tests/inspector/network/network-content-replacement-embed.html [ Skip ]
 
-crbug.com/67662 http/tests/inspector/console-websocket-error.html [ Failure Timeout ]
-
 # Transferred size are not supported in DRT.
 crbug.com/233124 http/tests/inspector/network/network-size.html [ Skip ]
 crbug.com/233124 http/tests/inspector/network/network-size-chunked.html [ Skip ]
 crbug.com/233124 http/tests/inspector/network/network-size-sync.html [ Skip ]
 
-webkit.org/b/74654 http/tests/inspector/network/network-worker.html [ Skip ]
-
 # -----------------------------------------------------------------
 # Plugin tests
 # -----------------------------------------------------------------
-
-crbug.com/61799 webkit.org/b/64319 plugins/evaluate-js-after-removing-plugin-element.html [ Skip ]
-# Object.keys on an NPObject produces the wrong output.
-crbug.com/35387 [ Linux Win ] plugins/reentrant-update-widget-positions.html [ Timeout Pass ]
-crbug.com/35387 [ Mac ] plugins/reentrant-update-widget-positions.html [ Timeout Failure ]
 
 crbug.com/260351 [ Linux ] plugins/mouse-click-plugin-clears-selection.html [ ImageOnlyFailure Pass ]
 
@@ -107,45 +75,6 @@ crbug.com/264138 dom/xhtml/level3/core/nodecomparedocumentposition38.xhtml [ Fai
 
 # -----------------------------------------------------------------
 # End SVG TESTS
-# -----------------------------------------------------------------
-
-# -----------------------------------------------------------------
-# Accessibility layout tests
-#
-# AccessibilityController and AccessibilityUIElement are only
-# partially finished - about half the tests can't run yet.
-
-crbug.com/10322 accessibility/aria-activedescendant-crash.html [ Skip ]
-crbug.com/10322 accessibility/aria-combobox.html [ Skip ]
-crbug.com/10322 accessibility/aria-invalid.html [ Skip ]
-crbug.com/10322 accessibility/aria-menubar-menuitems.html [ Skip ]
-crbug.com/10322 accessibility/aria-tables.html [ Skip ]
-crbug.com/10322 accessibility/aria-used-on-image-maps.html [ Skip ]
-crbug.com/10322 accessibility/deleting-iframe-destroys-axcache.html [ Skip ]
-crbug.com/10322 accessibility/document-attributes.html [ Skip ]
-crbug.com/10322 accessibility/iframe-bastardization.html [ Skip ]
-crbug.com/10322 accessibility/image-map-update-parent-crash.html [ Skip ]
-crbug.com/10322 accessibility/image-map2.html [ Skip ]
-crbug.com/10322 accessibility/internal-link-anchors2.html [ Skip ]
-crbug.com/10322 accessibility/language-attribute.html [ Skip ]
-crbug.com/10322 accessibility/lists.html [ Skip ]
-crbug.com/10322 accessibility/media-element.html [ Skip ]
-crbug.com/10322 accessibility/placeholder.html [ Skip ]
-crbug.com/10322 accessibility/plugin.html [ Skip ]
-crbug.com/10322 accessibility/radio-button-group-members.html [ Skip ]
-crbug.com/10322 accessibility/table-attributes.html [ Skip ]
-crbug.com/10322 accessibility/table-sections.html [ Skip ]
-crbug.com/10322 accessibility/table-with-aria-role.html [ Skip ]
-crbug.com/10322 accessibility/transformed-element.html [ Skip ]
-crbug.com/10322 accessibility/visible-elements.html [ Skip ]
-
-webkit.org/b/96529 accessibility/hidden-legend.html [ Skip ]
-webkit.org/b/73912 accessibility/aria-checkbox-text.html [ Skip ]
-webkit.org/b/99665 accessibility/loading-iframe-sends-notification.html [ Skip ]
-webkit.org/b/109056 accessibility/html-html-element-is-ignored.html [ Skip ]
-
-# -----------------------------------------------------------------
-# End Accessibility layout tests
 # -----------------------------------------------------------------
 
 # The implementation of CSS Animations on the Web Animations model is still in progress
@@ -195,12 +124,6 @@ crbug.com/9797 crbug.com/9798 [ Win ] http/tests/xmlhttprequest/state-after-netw
 crbug.com/9798 [ Win Release ] http/tests/xmlhttprequest/small-chunks-response-text.html [ Pass Timeout ] # Also slow
 crbug.com/310882 [ Win ] http/tests/xmlhttprequest/origin-exact-matching.html [ Slow Timeout ]
 
-# These fail because chromium's appcache is async but webkit's is not.
-crbug.com/2844 http/tests/appcache/idempotent-update.html [ Failure Pass ]
-
-# This test fails because there is no setAppCacheMaximumSize API yet.
-crbug.com/2844 http/tests/appcache/max-size.html [ Skip ]
-
 crbug.com/299177 [ Release ] perf/compositor-touch-hit-rects.html [ Failure Pass Timeout ]
 
 # Vertical text needs to be implemented in platforms other than OS X.
@@ -208,49 +131,16 @@ crbug.com/65877 [ Linux Win ] fast/writing-mode/japanese-ruby-vertical-lr.html [
 crbug.com/65877 [ Linux Win ] fast/writing-mode/japanese-ruby-vertical-rl.html [ Failure Pass ]
 crbug.com/65877 [ Linux Win ] fast/writing-mode/japanese-ruby-horizontal-bt.html [ Failure Pass ]
 
-# Needs V8 investigation.  Skipped due to concern that this may be corrupting
-# memory and thus leading to unpredictable results.
-crbug.com/66099 fast/js/array-sort-modifying-tostring.html [ Pass Timeout ] # Also Slow
 # The result here is flaky. So a rebaseline won't make these [ Pass Timeout ].
 crbug.com/66751 [ Linux Mac ] http/tests/local/link-stylesheet-load-order-preload.html [ Failure ]
 crbug.com/66751 [ Linux Mac ] http/tests/local/link-stylesheet-load-order.html [ Failure ]
 crbug.com/66751 [ Win ] http/tests/local/link-stylesheet-load-order-preload.html [ Failure Timeout ]
 crbug.com/66751 [ Win ] http/tests/local/link-stylesheet-load-order.html [ Failure Timeout ]
 
-#///////////////////////////////////////////////////////////////////////////
-# GPU
-#///////////////////////////////////////////////////////////////////////////
-
-# These tests are too slow with our MESA backend.  We can re-enable when we have
-# bots running tests on real hardware.
-webkit.org/b/49629 compositing/lots-of-img-layers.html [ Skip ]
-webkit.org/b/49629 compositing/lots-of-img-layers-with-opacity.html [ Skip ]
-
-# Has been timing out, initiated at:
-# Webkit patches in range [r81976, r81981]
-# Chromium patches in range [r79428, r79442]
-crbug.com/77468 fast/forms/file/input-file-directory-upload.html [ Skip ]
-
-# Flaky, supposedly testRunner.setSerializeHTTPLoads would help.
-crbug.com/240970 fast/preloader/document-write-2.html [ Failure Pass ]
-crbug.com/240970 fast/preloader/document-write.html [ Failure Pass ]
-
-crbug.com/780807 http/tests/misc/webtiming-origins.html [ Failure Pass ]
-
 crbug.com/86340 fast/filesystem/workers/file-writer-write-overlapped.html [ Failure Pass ]
-
-# Flaky since added by r86478
-crbug.com/82881 http/tests/appcache/interrupted-update.html [ Failure Pass ]
 
 # CSS Regions tests for <dialog>
 crbug.com/244792 [ Mac ] fast/regions/dialog-fragmentation.html [ ImageOnlyFailure ]
-
-# These tests time out 50% of the time.
-crbug.com/259546 fast/loader/display-image-unset-can-block-image-and-can-reload-in-place.html [ Skip ]
-crbug.com/259546 fast/loader/images-enabled-unset-can-block-image-and-can-reload-in-place.html [ Skip ]
-
-# Crashes due to an OOM error on V8.
-crbug.com/108832 fast/js/array-splice.html [ Crash ]
 
 crbug.com/240374 compositing/overlap-blending/reflection-opacity-huge.html [ ImageOnlyFailure ]
 crbug.com/240374 virtual/softwarecompositing/overlap-blending/reflection-opacity-huge.html [ ImageOnlyFailure ]
@@ -300,13 +190,6 @@ crbug.com/310679 [ Mac ] virtual/gpu/compositedscrolling/scrollbars/custom-scrol
 crbug.com/310679 [ Mac ] fast/repaint/background-scaling.html [ ImageOnlyFailure Pass ]
 crbug.com/310679 [ Mac ] fast/repaint/scale-page-shrink.html [ ImageOnlyFailure Pass ]
 
-# No support for exposing in-band text tracks
-crbug.com/230708 media/track/track-in-band.html [ Skip ]
-crbug.com/230708 media/track/track-in-band-cues-added-once.html [ Skip ]
-crbug.com/230708 media/track/track-in-band-style.html [ Skip ]
-
-crbug.com/239549 inspector-protocol/heap-profiler/heap-snapshot-with-detached-dom-tree.html [ Failure Pass ]
-
 # Tests failing since applyPageScaleFactorInCompositor enabled
 crbug.com/225184 fast/repaint/relayout-fixed-position-after-scale.html [ ImageOnlyFailure ]
 
@@ -322,35 +205,22 @@ crbug.com/239811 crbug.com/229113 http/tests/history/redirect-js-location-assign
 
 crbug.com/231721 [ Win ] svg/custom/invisible-text-after-scrolling.xhtml [ Pass Timeout ]
 
-crbug.com/233223 http/tests/history/redirect-js-location-href-0-seconds.html [ Failure Pass ]
-
 crbug.com/234069 [ Mac Release ] fast/events/touch/gesture/long-press-drag-drop-touch-editing-combined.html [ Failure Pass ]
-
-crbug.com/227397 svg/animations/animateMotion-additive-1.svg [ ImageOnlyFailure ]
 
 # Gets a "Maximum call stack size exceeded" exception in debug that doesn't happen in release.
 crbug.com/14885 [ Mac Debug ] fast/js/JSON-stringify.html [ Failure ]
 crbug.com/306929 [ Mac Release ] fast/js/JSON-stringify.html [ Failure ]
 
-crbug.com/86338 fast/loader/file-protocol-fragment.html [ Failure Pass ]
 crbug.com/225184 [ Debug ] scrollingcoordinator/non-fast-scrollable-region-scaled-iframe.html [ ImageOnlyFailure Pass ]
-
-crbug.com/252344 http/tests/history/redirect-js-document-location-0-seconds.html [ Failure Pass ]
 
 crbug.com/231357 [ SnowLeopard Lion Win Linux Debug ] compositing/video-page-visibility.html [ ImageOnlyFailure ]
 crbug.com/231357 [ Win Linux Debug ] virtual/softwarecompositing/video-page-visibility.html [ ImageOnlyFailure ]
-
-crbug.com/249580 svg/text/font-size-below-point-five.svg [ Failure ImageOnlyFailure Pass ]
 
 crbug.com/237270 [ Win ] http/tests/history/replacestate-post-to-get-2.html [ Pass Timeout ]
 crbug.com/237270 [ Win ] http/tests/history/replacestate-post-to-get.html [ Pass Timeout ]
 crbug.com/237270 http/tests/images/jpeg-partial-load.html [ Pass Timeout ]
 crbug.com/237270 http/tests/images/png-partial-load.html [ Pass Timeout ]
 crbug.com/237270 http/tests/images/png-partial-load-no-alpha.html [ Pass Timeout ]
-
-crbug.com/240632 fast/loader/javascript-url-iframe-remove-on-navigate.html [ Skip ]
-
-crbug.com/244921 http/tests/navigation/back-twice-without-commit.html [ Failure Pass ]
 
 crbug.com/248938 virtual/threaded/animations/change-keyframes.html [ Pass Failure ]
 crbug.com/248938 virtual/threaded/animations/missing-values-last-keyframe.html [ Pass ImageOnlyFailure ]
@@ -392,53 +262,28 @@ crbug.com/248938 virtual/threaded/transitions/transition-end-event-unprefixed-04
 crbug.com/248938 virtual/threaded/transitions/transition-end-event-window.html [ Pass Failure ]
 
 # Switching to content shell failures
-crbug.com/223583 http/tests/filesystem/no-cache-filesystem-url.html [ Skip ]
-crbug.com/231863 compositing/visibility/visibility-composited-animation.html [ Pass ImageOnlyFailure ]
 crbug.com/231866 [ Lion ] fast/backgrounds/animated-gif-as-background.html [ Pass ImageOnlyFailure ]
-crbug.com/235449 fast/loader/stateobjects/state-attribute-history-getter.html [ Failure Pass ]
-crbug.com/235448 fast/loader/stateobjects/popstate-fires-on-history-traversal.html [ Failure Pass ]
 crbug.com/235110 [ Mac ] virtual/softwarecompositing [ Skip ]
 crbug.com/243353 animations/animation-direction-normal.html [ ImageOnlyFailure Pass ]
 crbug.com/243520 [ Mac ] fast/css/font-weight-1.html [ Failure ImageOnlyFailure Pass ]
-crbug.com/243523 http/tests/history/back-with-fragment-change.php [ Pass Timeout Failure ]
 crbug.com/243593 [ Win ] fast/media/color-does-not-include-alpha.html [ Failure ]
 crbug.com/243596 [ Win ] inspector-protocol/input/dispatchMouseEvent.html [ Failure ]
 crbug.com/243599 [ Debug ] http/tests/plugins/interrupted-get-url.html [ Crash Pass ]
-crbug.com/243725 http/tests/w3c/webperf/submission/Google/resource-timing/html/test_resource_cached.html [ Failure Pass ]
-crbug.com/243736 storage/websql/quota-tracking.html [ Failure Pass ]
 crbug.com/243782 fullscreen/full-screen-remove-ancestor.html [ Pass Timeout ]
 crbug.com/246077 fullscreen/full-screen-render-inline.html [ ImageOnlyFailure ]
-crbug.com/244111 svg/filters/feMorphology-crash.html [ Pass Timeout ]
-crbug.com/244341 css3/filters/composited-during-animation-layertree.html [ Failure Pass ]
-crbug.com/245566 editing/execCommand/delete-no-scroll.html [ Pass Timeout ]
-crbug.com/245567 http/tests/xmlhttprequest/send-undefined-and-null.html [ Failure Pass ]
 
 # Seems to be hit by the try jobs only.
 crbug.com/243599 [ Linux Win ] http/tests/xmlhttprequest/access-control-repeated-failed-preflight-crash.html [ Crash Pass Timeout ]
 
-# Test depends on timezone.
-crbug.com/244179 fast/js/date-parse-test.html [ Failure Pass ]
-
-# Makes the following test crash
-crbug.com/244225 inspector-protocol/dom/setFileInputFiles.html [ Skip ]
-
-crbug.com/245630 compositing/overflow/overflow-positioning.html [ ImageOnlyFailure Pass  ]
 crbug.com/245644 virtual/gpu/fast/canvas/2d.text.draw.fill.maxWidth.gradient.html [ Failure Pass ]
 
-crbug.com/246072 fast/forms/post-popup-no-multiple-windows.html [ Pass Timeout ]
-
-crbug.com/246549 http/tests/security/svg-image-leak.html [ Failure Pass ]
-
-crbug.com/247604 fast/workers/shared-worker-frame-lifecycle.html [ Skip ]
 crbug.com/310866 fast/workers/storage/use-same-database-in-page-and-workers.html [ Slow Timeout ]
-crbug.com/247888 fast/workers/worker-cloneport.html [ Failure Pass Timeout ]
 
 crbug.com/247982 [ Linux Mac Debug ] virtual/gpu/compositedscrolling/overflow/overflow-positioning.html [ ImageOnlyFailure Pass ]
 crbug.com/247982 [ Win ] virtual/gpu/compositedscrolling/overflow/overflow-positioning.html [ ImageOnlyFailure Pass ]
 crbug.com/248063 plugins/plugin-clip-subframe.html [ Pass Failure ]
 crbug.com/248067 fast/workers/shared-worker-storagequota-query-usage.html [ Pass Failure ]
 crbug.com/248067 storage/storageinfo-query-usage.html [ Pass Failure ]
-crbug.com/248128 inspector/console/console-url-and-line.html [ Pass Failure ]
 
 crbug.com/254332 [ SnowLeopard Debug ] fast/forms/checkbox/checkbox-focus-by-mouse-then-keydown.html [ ImageOnlyFailure Pass ]
 crbug.com/254332 [ XP ] fast/forms/submit/submit-focus-by-mouse.html [ ImageOnlyFailure Pass ]
@@ -446,12 +291,8 @@ crbug.com/254332 [ XP ] fast/forms/submit/submit-focus-by-mouse.html [ ImageOnly
 crbug.com/256506 [ Win7 Debug ] crypto/worker-random-values-limits.html [ Pass Crash ]
 
 crbug.com/244266 [ Win Debug ] virtual/threaded/animations/animation-controller-drt-api.html [ Failure Pass ]
-crbug.com/252038 editing/selection/fake-doubleclick.html [ Pass Failure ]
 
 crbug.com/252573 [ Mac Win ] fast/forms/empty-textarea-toggle-disabled.html [ Pass Timeout ]
-
-# Causes the test following it ( fast/loader/subresource-willSendRequest-null.html ) to Timeout.
-crbug.com/253619 fast/loader/subresource-load-failed-crash.html [ Skip ]
 
 crbug.com/265650 [ SnowLeopard Debug ] compositing/repaint/transform-style-change.html [ Pass ImageOnlyFailure ]
 
@@ -476,9 +317,6 @@ crbug.com/271243 [ Win ] http/tests/misc/acid3.html [ Failure ]
 
 # crbug.com/277110 also makes this test fail.
 crbug.com/130260 inspector/profiler/canvas2d/canvas2d-api-changes.html [ Failure ]
-
-# Rebase once v8 i18n rolled.
-Bug(jochen) fast/js/kde/inbuilt_function_tostring.html [ Pass Failure ]
 
 crbug.com/278497 [ Linux SnowLeopard Debug ] http/tests/security/contentSecurityPolicy/1.1/plugintypes-invalid.html [ Failure Pass  ]
 
@@ -655,7 +493,7 @@ crbug.com/310992 virtual/threaded/animations/play-state.html [ Pass Failure ]
 crbug.com/310992 virtual/web-animations-css/animations/play-state.html [ Pass Failure ]
 
 # This can't be rebaselined because it's a reftest.
-crbug.com/999999 animations/opacity-transform-animation.html [ ImageOnlyFailure ]
+Bug(steveblock) animations/opacity-transform-animation.html [ ImageOnlyFailure ]
 
 crbug.com/309369 perf/accessibility-title-ui-element.html [ Pass Timeout ]
 crbug.com/309370 [ Mac ] fast/css/font-face-html-as-svg.html [ Timeout ]
