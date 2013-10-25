@@ -63,17 +63,30 @@ void ShapeOutsideInfo::updateDeltasForContainingBlockLine(const RenderBlockFlow*
         m_shapeLineTop = lineTopInShapeCoordinates - logicalTopOffset();
         m_lineHeight = lineHeight;
 
+        LayoutUnit floatMarginBoxWidth = containingBlock->logicalWidthForFloat(floatingObject);
+
         if (lineOverlapsShapeBounds()) {
             SegmentList segments = computeSegmentsForLine(lineTopInShapeCoordinates, lineHeight);
             if (segments.size()) {
-                m_leftMarginBoxDelta = segments.first().logicalLeft + containingBlock->marginStartForChild(m_renderer);
-                m_rightMarginBoxDelta = segments.last().logicalRight - containingBlock->logicalWidthForChild(m_renderer) - containingBlock->marginEndForChild(m_renderer);
+                LayoutUnit rawLeftMarginBoxDelta = segments.first().logicalLeft + containingBlock->marginStartForChild(m_renderer);
+                m_leftMarginBoxDelta = clampTo<LayoutUnit>(rawLeftMarginBoxDelta, LayoutUnit(), floatMarginBoxWidth);
+
+                LayoutUnit rawRightMarginBoxDelta = segments.last().logicalRight - containingBlock->logicalWidthForChild(m_renderer) - containingBlock->marginEndForChild(m_renderer);
+                m_rightMarginBoxDelta = clampTo<LayoutUnit>(rawRightMarginBoxDelta, -floatMarginBoxWidth, LayoutUnit());
                 return;
             }
         }
 
-        m_leftMarginBoxDelta = containingBlock->logicalWidthForChild(m_renderer) + containingBlock->marginStartForChild(m_renderer);
-        m_rightMarginBoxDelta = -containingBlock->logicalWidthForChild(m_renderer) - containingBlock->marginEndForChild(m_renderer);
+        // Lines that do not overlap the shape should act as if the float
+        // wasn't there for layout purposes. So we set the deltas to remove the
+        // entire width of the float.
+        // FIXME: The latest CSS Shapes spec says that in this case, the
+        // content should interact with previously stacked floats on the line
+        // as if this outermost float did not exist. Perhaps obviously, this
+        // solution cannot do that, and will be revisted when that part of the
+        // spec is implemented.
+        m_leftMarginBoxDelta = floatMarginBoxWidth;
+        m_rightMarginBoxDelta = -floatMarginBoxWidth;
     }
 }
 

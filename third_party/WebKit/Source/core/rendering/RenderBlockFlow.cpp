@@ -2202,22 +2202,24 @@ LayoutUnit RenderBlockFlow::nextFloatLogicalBottomBelow(LayoutUnit logicalHeight
     if (!m_floatingObjects)
         return logicalHeight;
 
-    LayoutUnit bottom = LayoutUnit::max();
+    LayoutUnit logicalBottom = LayoutUnit::max();
     const FloatingObjectSet& floatingObjectSet = m_floatingObjects->set();
     FloatingObjectSetIterator end = floatingObjectSet.end();
     for (FloatingObjectSetIterator it = floatingObjectSet.begin(); it != end; ++it) {
         FloatingObject* floatingObject = *it;
-        LayoutUnit floatBottom;
+        LayoutUnit floatLogicalBottom = logicalBottomForFloat(floatingObject);
         ShapeOutsideInfo* shapeOutside = floatingObject->renderer()->shapeOutsideInfo();
-        if (offsetMode == ShapeOutsideFloatShapeOffset && shapeOutside)
-            floatBottom = logicalTopForFloat(floatingObject) + marginBeforeForChild(floatingObject->renderer()) + shapeOutside->shapeLogicalBottom();
-        else
-            floatBottom = logicalBottomForFloat(floatingObject);
-        if (floatBottom > logicalHeight)
-            bottom = min(floatBottom, bottom);
+        if (shapeOutside && (offsetMode == ShapeOutsideFloatShapeOffset)) {
+            LayoutUnit shapeLogicalBottom = logicalTopForFloat(floatingObject) + marginBeforeForChild(floatingObject->renderer()) + shapeOutside->shapeLogicalBottom();
+            // Use the shapeLogicalBottom unless it extends outside of the margin box, in which case it is clipped.
+            if (shapeLogicalBottom < floatLogicalBottom)
+                floatLogicalBottom = shapeLogicalBottom;
+        }
+        if (floatLogicalBottom > logicalHeight)
+            logicalBottom = min(floatLogicalBottom, logicalBottom);
     }
 
-    return bottom == LayoutUnit::max() ? LayoutUnit() : bottom;
+    return logicalBottom == LayoutUnit::max() ? LayoutUnit() : logicalBottom;
 }
 
 bool RenderBlockFlow::hitTestFloats(const HitTestRequest& request, HitTestResult& result, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset)
