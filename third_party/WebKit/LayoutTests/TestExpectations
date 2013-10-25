@@ -599,9 +599,6 @@ crbug.com/295605 [ Win Debug ] fast/dom/custom/document-register-reentrant-throw
 
 crbug.com/309675 compositing/gestures/gesture-tapHighlight-simple-longPress.html [ ImageOnlyFailure ]
 
-crbug.com/311469 svg/custom/repaint-shadow.svg [ NeedsRebaseline ]
-crbug.com/311469 svg/zoom/page/zoom-zoom-coords.xhtml [ NeedsRebaseline ]
-
 crbug.com/305345 fast/events/mouseover-mouseout.html [ Failure Pass ]
 
 # Android virtual suite shares the same expectation.
