@@ -46,8 +46,6 @@ class TextAutosizer {
 public:
     static PassOwnPtr<TextAutosizer> create(Document* document) { return adoptPtr(new TextAutosizer(document)); }
 
-    virtual ~TextAutosizer();
-
     bool processSubtree(RenderObject* layoutRoot);
     void recalculateMultipliers();
 

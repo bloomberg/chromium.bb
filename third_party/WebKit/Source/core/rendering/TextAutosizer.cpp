@@ -137,10 +137,6 @@ TextAutosizer::TextAutosizer(Document* document)
 {
 }
 
-TextAutosizer::~TextAutosizer()
-{
-}
-
 void TextAutosizer::recalculateMultipliers()
 {
     RenderObject* renderer = m_document->renderer();

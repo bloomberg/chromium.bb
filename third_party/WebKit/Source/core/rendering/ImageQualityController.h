@@ -47,7 +47,7 @@ typedef HashMap<RenderObject*, LayerSizeMap> ObjectLayerSizeMap;
 class ImageQualityController {
     WTF_MAKE_NONCOPYABLE(ImageQualityController); WTF_MAKE_FAST_ALLOCATED;
 public:
-    virtual ~ImageQualityController();
+    ~ImageQualityController();
 
     static ImageQualityController* imageQualityController();
 
