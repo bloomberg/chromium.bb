@@ -12,68 +12,59 @@
  * parameters they are called with see testharness.js
  */
 
-// Setup for WebKit JavaScript tests
-if (self.testRunner) {
+// Setup for WebKit JavaScript tests.
+if (window.testRunner) {
     testRunner.dumpAsText();
     testRunner.waitUntilDone();
 }
 
-// Function used to convert the test status code into
-// the corresponding string
-function convertResult(resultStatus){
-	if(resultStatus == 0)
-		return("PASS");
-	else if(resultStatus == 1)
-		return("FAIL");
-	else if(resultStatus == 2)
-		return("TIMEOUT");
-	else
-		return("NOTRUN");
+function convertResultStatusToString(resultStatus)
+{
+    switch (resultStatus) {
+    case 0:
+        return "PASS";
+    case 1:
+        return "FAIL";
+    case 2:
+        return "TIMEOUT";
+    default:
+        return "NOTRUN";
+    }
 }
 
-/* Disable the default output of testharness.js.  The default output formats
-*  test results into an HTML table.  When that table is dumped as text, no
-*  spacing between cells is preserved, and it is therefore not readable. By
-*  setting output to false, the HTML table will not be created
-*/
-setup({"output":false});
+// Disable the default output of testharness.js.  The default output formats
+// test results into an HTML table.  When that table is dumped as text, no
+// spacing between cells is preserved, and it is therefore not readable. By
+// setting output to false, the HTML table will not be created.
+setup({output: false});
 
-/*  Using a callback function, test results will be added to the page in a 
-*   manner that allows dumpAsText to produce readable test results
-*/
-add_completion_callback(function (tests, harness_status){
-	
-	// Create element to hold results
-	var results = document.createElement("pre");
-	
-	// Declare result string
-	var resultStr = "\n";
-	
-	// Check harness_status.  If it is not 0, tests did not
-	// execute correctly, output the error code and message
-	if(harness_status.status != 0){
-		resultStr += "Harness Error. harness_status.status = " + 
-					 harness_status.status +
-					 " , harness_status.message = " +
-					 harness_status.message;
-	}
-	else {
-		// Iterate through tests array and build string that contains
-		// results for all tests
-		for(var i=0; i<tests.length; i++){				 
-			resultStr += convertResult(tests[i].status) + " " + 
-						( (tests[i].name!=null) ? tests[i].name : "" ) + " " +
-						( (tests[i].message!=null) ? tests[i].message : "" ) + 
-						"\n";
-		}			
-	}
+// Using a callback function, test results will be added to the page in a
+// manner that allows dumpAsText to produce readable test results.
+add_completion_callback(function (tests, harnessStatus)
+{
+    // An array to hold string pieces, which will be joined later to produce the final result.
+    var resultsArray = ["\n"];
 
-	// Set results element's innerHTML to the results string
-	results.innerHTML = resultStr;
+    if (harnessStatus.status !== 0) {
+        resultsArray.push("Harness Error. harnessStatus.status = ",
+                          harnessStatus.status,
+                          " , harnessStatus.message = ",
+                          harnessStatus.message);
+    } else {
+        for (var i = 0; i < tests.length; i++) {
+            resultsArray.push(convertResultStatusToString(tests[i].status),
+                              " ",
+                              tests[i].name !== null ? tests[i].name : "",
+                              " ",
+                              tests[i].message !== null ? tests[i].message : "",
+                              "\n");
+        }
+    }
 
-	// Add results element to document
-	document.body.appendChild(results);
+    var resultElement = document.createElement("pre");
+    resultElement.textContent = resultsArray.join("");
+    document.body.appendChild(resultElement);
 
- 	if (self.testRunner)
- 		testRunner.notifyDone();
+    if (window.testRunner)
+        testRunner.notifyDone();
 });

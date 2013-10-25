@@ -1,14 +1,14 @@
  
 PASS TextTrackCue.getCueAsHTML(), creating the cue 
-PASS TextTrackCue.getCueAsHTML(),  
-PASS TextTrackCue.getCueAsHTML(),  
-PASS TextTrackCue.getCueAsHTML(),  
-PASS TextTrackCue.getCueAsHTML(),  
-PASS TextTrackCue.getCueAsHTML(),  
-PASS TextTrackCue.getCueAsHTML(),  
-PASS TextTrackCue.getCueAsHTML(),  
-PASS TextTrackCue.getCueAsHTML(),  
-PASS TextTrackCue.getCueAsHTML(),  
+PASS TextTrackCue.getCueAsHTML(), <c> 
+PASS TextTrackCue.getCueAsHTML(), <c.a.b> 
+PASS TextTrackCue.getCueAsHTML(), <i> 
+PASS TextTrackCue.getCueAsHTML(), <b> 
+PASS TextTrackCue.getCueAsHTML(), <u> 
+PASS TextTrackCue.getCueAsHTML(), <ruby> 
+PASS TextTrackCue.getCueAsHTML(), <rt> 
+PASS TextTrackCue.getCueAsHTML(), <v> 
+PASS TextTrackCue.getCueAsHTML(), <v a b> 
 PASS TextTrackCue.getCueAsHTML(), <00:00:00.500> 
 FAIL TextTrackCue.getCueAsHTML(), x\0 assert_equals: data expected "x\0" but got "x"
 

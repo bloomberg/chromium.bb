@@ -1,3 +1,3 @@
 
-PASS CSS Test: @viewport  - allow zero lengths 
+PASS CSS Test: @viewport <viewport-length> - allow zero lengths 
 
