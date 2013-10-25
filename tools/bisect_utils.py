@@ -102,6 +102,11 @@ def OutputAnnotationStepLink(label, url):
   sys.stdout.flush()
 
 
+def IsTelemetryCommand(command):
+  """Attempts to discern whether or not a given command is running telemetry."""
+  return ('tools/perf/run_' in command or 'tools\\perf\\run_' in command)
+
+
 def CreateAndChangeToSourceDirectory(working_directory):
   """Creates a directory 'bisect' as a subdirectory of 'working_directory'.  If
   the function is successful, the current working directory will change to that

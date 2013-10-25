@@ -1263,8 +1263,7 @@ class BisectPerformanceMetrics(object):
 
     # If running a telemetry test for cros, insert the remote ip, and
     # identity parameters.
-    is_telemetry = ('tools/perf/run_' in command_to_run or
-        'tools\\perf\\run_' in command_to_run)
+    is_telemetry = bisect_utils.IsTelemetryCommand(command_to_run)
     if self.opts.target_platform == 'cros' and is_telemetry:
       args.append('--remote=%s' % self.opts.cros_remote_ip)
       args.append('--identity=%s' % CROS_TEST_KEY_PATH)
@@ -2393,6 +2392,17 @@ class BisectPerformanceMetrics(object):
             ' not be narrowed down to a single commit.')
       print
       os.chdir(cwd)
+
+      # Print repro steps, since this step is scraped by the perf dashboard and
+      # often the first question is how to reproduce the test.
+      print
+      print 'To reproduce locally:'
+      print self.opts.command
+      print
+      if bisect_utils.IsTelemetryCommand(self.opts.command):
+        print ('Also consider passing --profiler=list to see available '
+            'profilers.')
+        print
 
       # Give a warning if the values were very close together
       good_std_dev = revision_data[first_working_revision]['value']['std_err']
