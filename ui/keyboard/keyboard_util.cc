@@ -102,7 +102,7 @@ bool MoveCursor(int swipe_direction,
 bool SendKeyEvent(const std::string type,
                   int key_value,
                   int key_code,
-                  bool shift_modifier,
+                  int modifiers,
                   aura::RootWindow* root_window) {
   ui::EventType event_type = ui::ET_UNKNOWN;
   if (type == kKeyDown)
@@ -111,10 +111,6 @@ bool SendKeyEvent(const std::string type,
     event_type = ui::ET_KEY_RELEASED;
   if (event_type == ui::ET_UNKNOWN)
     return false;
-
-  int flags = ui::EF_NONE;
-  if (shift_modifier)
-    flags = ui::EF_SHIFT_DOWN;
 
   ui::KeyboardCode code = static_cast<ui::KeyboardCode>(key_code);
 
@@ -149,7 +145,7 @@ bool SendKeyEvent(const std::string type,
       }
     }
 
-    ui::KeyEvent event(event_type, code, flags, false);
+    ui::KeyEvent event(event_type, code, modifiers, false);
     root_window->AsRootWindowHostDelegate()->OnHostKeyEvent(&event);
   }
   return true;

@@ -350,6 +350,8 @@
         var char = detail.char;
         switch(char) {
           case 'Shift':
+            this.classList.remove('caps-locked');
+            break;
           case 'Alt':
           case 'Ctrl':
             var modifier = char.toLowerCase() + "-active";
@@ -523,6 +525,7 @@
             }
           }
         }
+        this.lastPressedKey = null;
         switch(char) {
           case 'Invalid':
           case 'Shift':
@@ -549,7 +552,6 @@
           this.alt.onNonControlKeyUp();
         this.classList.remove('ctrl-active');
         this.classList.remove('alt-active');
-        this.lastPressedKey = null;
       },
 
       /*

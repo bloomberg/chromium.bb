@@ -51,13 +51,13 @@ KEYBOARD_EXPORT bool MoveCursor(int swipe_direction,
 
 // Sends a fabricated key event, where |type| is the event type, |key_value|
 // is the unicode value of the character, |key_code| is the legacy key code
-// value, and |shift_modifier| indicates if the shift key is being virtually
+// value, and |modifier| indicates if any modifier keys are being virtually
 // pressed. The event is dispatched to the active TextInputClient associated
 // with |root_window|. The type may be "keydown" or "keyup".
 KEYBOARD_EXPORT bool SendKeyEvent(std::string type,
                                    int key_value,
                                    int key_code,
-                                   bool shift_modifier,
+                                   int modifiers,
                                    aura::RootWindow* root_window);
 
 // Get the list of keyboard resources. |size| is populated with the number of

@@ -10,14 +10,14 @@
  * @param {string} candidateLabel The alternate character being typed.
  * @param {number} keyCode The keyCode for the alternate character, which may
  *     be zero for characters not found on a QWERTY keyboard.
- * @param {boolean} shiftModifier Indicates the state of the shift key when
- *     entering the character.
+ * @param {number} modifiers Indicates the state of the shift, control and alt
+ *     key when entering the character.
  * @param {Object.<string, boolean>=} opt_variant Optional test variant.
  */
 function mockLongPressType(label,
                            candidateLabel,
                            keyCode,
-                           shiftModifier,
+                           modifiers,
                            opt_variant) {
   // Verify that candidates popup window is initally hidden.
   var keyset = keyboard.querySelector('#' + keyboard.activeKeysetId);
@@ -59,13 +59,13 @@ function mockLongPressType(label,
       type: 'keydown',
       charValue: unicodeValue,
       keyCode: keyCode,
-      shiftKey: shiftModifier
+      modifiers: modifiers
     });
     send.addExpectation({
       type: 'keyup',
       charValue: unicodeValue,
       keyCode: keyCode,
-      shiftKey: shiftModifier
+      modifiers: modifiers
     });
   }
   if (altKey) {
@@ -94,13 +94,13 @@ function mockLongPressType(label,
 function testLowercaseKeysetAsync(testDoneCallback) {
   var runTest = function() {
     // Keyboard defaults to lowercase.
-    mockTypeCharacter('a', 0x41, false);
-    mockTypeCharacter('s', 0x53, false);
-    mockTypeCharacter('.', 0xBE, false);
-    mockTypeCharacter('\b', 0x08, false, 0x08);
-    mockTypeCharacter('\t', 0x09, false, 0x09);
-    mockTypeCharacter('\n', 0x0D, false, 0x0A);
-    mockTypeCharacter(' ', 0x20, false);
+    mockTypeCharacter('a', 0x41, Modifier.NONE);
+    mockTypeCharacter('s', 0x53, Modifier.NONE);
+    mockTypeCharacter('.', 0xBE, Modifier.NONE);
+    mockTypeCharacter('\b', 0x08, Modifier.NONE, 0x08);
+    mockTypeCharacter('\t', 0x09, Modifier.NONE, 0x09);
+    mockTypeCharacter('\n', 0x0D, Modifier.NONE, 0x0A);
+    mockTypeCharacter(' ', 0x20, Modifier.NONE);
   };
   onKeyboardReady('testLowercaseKeysetAsync', runTest, testDoneCallback);
 }
@@ -115,23 +115,23 @@ function testLongPressTypeAccentedCharacterAsync(testDoneCallback) {
     // Test popup for letters with candidate lists that are derived from a
     // single source (hintText or accents).
     // Type lowercase A grave
-    mockLongPressType('a', '\u00E0', 0, false);
+    mockLongPressType('a', '\u00E0', 0, Modifier.NONE);
     // Type the digit '1' (hintText on 'q' key).
-    mockLongPressType('q', '1', 0x31, false);
+    mockLongPressType('q', '1', 0x31, Modifier.NONE);
 
     // Test popup for letter that has a candidate list combining hintText and
     // accented letters.
     // Type lowercase E acute.
-    mockLongPressType('e', '\u00E9', 0, false);
+    mockLongPressType('e', '\u00E9', 0, Modifier.NONE);
     // Type the digit '3' (hintText on the 'e' key).
-    mockLongPressType('e', '3', 0x33, false);
+    mockLongPressType('e', '3', 0x33, Modifier.NONE);
 
     // Mock longpress typing a character that does not have alternate
     // candidates.
-    mockLongPressType('z', 'z', 0x5A, false, {noCandidates: true});
+    mockLongPressType('z', 'z', 0x5A, Modifier.NONE, {noCandidates: true});
 
     // Mock aborting a longpress selection.
-    mockLongPressType('e', '3', 0x33, false, {abortSelection: true});
+    mockLongPressType('e', '3', 0x33, Modifier.NONE, {abortSelection: true});
   };
   onKeyboardReady('testLongPressTypeAccentedCharacterAsync',
                   runTest,
@@ -152,17 +152,17 @@ function testAutoReleasePreviousKey(testDoneCallback) {
       type: 'keydown',
       charValue: unicodeValue,
       keyCode: 0x41,
-      shiftKey: false
+      modifiers: Modifier.NONE
     });
     send.addExpectation({
       type: 'keyup',
       charValue: unicodeValue,
       keyCode: 0x41,
-      shiftKey: false
+      modifiers: Modifier.NONE
     });
     var mockEvent = { pointerId:2 };
     key.down(mockEvent);
-    mockTypeCharacter('s', 0x53, false);
+    mockTypeCharacter('s', 0x53, Modifier.NONE);
   };
   onKeyboardReady('testAutoReleasePreviousKey', runTest, testDoneCallback);
 }
@@ -185,13 +185,13 @@ function testFingerOutType(testDoneCallback) {
       type: 'keydown',
       charValue: unicodeValue,
       keyCode: 0x41,
-      shiftKey: false
+      modifiers: Modifier.NONE
     });
     send.addExpectation({
       type: 'keyup',
       charValue: unicodeValue,
       keyCode: 0x41,
-      shiftKey: false
+      modifiers: Modifier.NONE
     });
     var mockEvent = { pointerId:2 };
     key.down(mockEvent);
@@ -206,17 +206,17 @@ function testFingerOutType(testDoneCallback) {
       type: 'keydown',
       charValue: unicodeValue,
       keyCode: 0x41,
-      shiftKey: false
+      modifiers: Modifier.NONE
     });
     send.addExpectation({
       type: 'keyup',
       charValue: unicodeValue,
       keyCode: 0x41,
-      shiftKey: false
+      modifiers: Modifier.NONE
     });
     key.down(mockEvent);
     key.out(mockEvent);
-    mockTypeCharacter('s', 0x53, false);
+    mockTypeCharacter('s', 0x53, Modifier.NONE);
   };
   onKeyboardReady('testFingerOutType', runTest, testDoneCallback);
 }

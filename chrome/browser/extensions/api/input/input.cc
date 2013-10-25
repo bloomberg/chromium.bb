@@ -72,19 +72,19 @@ bool VirtualKeyboardPrivateSendKeyEventFunction::RunImpl() {
   std::string type;
   int char_value;
   int key_code;
-  bool shift_modifier;
+  int modifiers;
 
   EXTENSION_FUNCTION_VALIDATE(args_->Get(0, &options_value));
   EXTENSION_FUNCTION_VALIDATE(options_value->GetAsDictionary(&params));
   EXTENSION_FUNCTION_VALIDATE(params->GetString("type", &type));
   EXTENSION_FUNCTION_VALIDATE(params->GetInteger("charValue", &char_value));
   EXTENSION_FUNCTION_VALIDATE(params->GetInteger("keyCode", &key_code));
-  EXTENSION_FUNCTION_VALIDATE(params->GetBoolean("shiftKey", &shift_modifier));
+  EXTENSION_FUNCTION_VALIDATE(params->GetInteger("modifiers", &modifiers));
 
   return keyboard::SendKeyEvent(type,
                                 char_value,
                                 key_code,
-                                shift_modifier,
+                                modifiers,
                                 ash::Shell::GetPrimaryRootWindow());
 #endif
   error_ = kNotYetImplementedError;

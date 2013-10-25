@@ -102,13 +102,13 @@ void KeyboardUIHandler::HandleSendKeyEventMessage(
   std::string type;
   int char_value;
   int key_code;
-  bool shift_modifier;
+  int modifiers;
 
   if (!args->GetDictionary(0, &params) ||
       !params->GetString("type", &type) ||
       !params->GetInteger("charValue", &char_value) ||
       !params->GetInteger("keyCode", &key_code) ||
-      !params->GetBoolean("shiftKey", &shift_modifier)) {
+      !params->GetInteger("modifiers", &modifiers)) {
     LOG(ERROR) << "SendKeyEvent failed: bad argument";
     return;
   }
@@ -123,7 +123,7 @@ void KeyboardUIHandler::HandleSendKeyEventMessage(
   if (!keyboard::SendKeyEvent(type,
                               char_value,
                               key_code,
-                              shift_modifier,
+                              modifiers,
                               root_window)) {
     LOG(ERROR) << "sendKeyEvent failed";
   }

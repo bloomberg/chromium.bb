@@ -45,7 +45,7 @@ function checkShiftChording(lowerShift, upperShift) {
   assertEquals(upper, keyboard.keyset,
       "Unexpected keyset transition on shift key down.");
   // Some alphanumeric character
-  mockTypeCharacter('A', 0x41, true);
+  mockTypeCharacter('A', 0x41, Modifier.SHIFT);
   assertEquals(upper, keyboard.keyset,
       "Did not remain in uppercase on key press while chording.");
   lowerShift.out(mockEventOnLower);
@@ -79,12 +79,12 @@ function checkShiftHighlight(lowerShift, upperShift) {
   assertEquals(locked, keyboard.keyset,
       "Unexpected keyset transition after typing shift.");
   // Some alphanumeric character.
-  mockTypeCharacter('A', 0x41, true);
+  mockTypeCharacter('A', 0x41, Modifier.SHIFT);
   // Check that we've reverted to lower case.
   assertEquals(unlocked, keyboard.keyset,
       "Did not revert to lower case after highlight.");
   // Check that we persist in lower case.
-  mockTypeCharacter('a', 0x41, false);
+  mockTypeCharacter('a', 0x41, Modifier.NONE);
   assertEquals(unlocked, keyboard.keyset,
       "Did not stay in lower case after highlight.");
 }
@@ -124,7 +124,7 @@ function checkShiftLongPress(lowerShift, upperShift) {
   mockTimer.tick(1000);
   // Type any caps character, make sure we remain in caps mode.
   upperShift.up(mockEvent);
-  mockTypeCharacter('A', 0x41, true);
+  mockTypeCharacter('A', 0x41, Modifier.SHIFT);
   assertEquals(locked, keyboard.keyset,
       "Did not remain in locked case after shift long press.");
   // Revert to lower case.
@@ -158,7 +158,7 @@ function checkShiftDoubleClick(lowerShift, upperShift) {
   // Check that we're capslocked.
   assertEquals(locked, keyboard.keyset,
       "Did not lock on double click.");
-  mockTypeCharacter('A', 0x41, true);
+  mockTypeCharacter('A', 0x41, Modifier.SHIFT);
   assertEquals(locked, keyboard.keyset,
       "Did not remain in locked case after typing another key.");
   // Reverts to lower case.

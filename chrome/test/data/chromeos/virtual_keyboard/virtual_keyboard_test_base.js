@@ -12,6 +12,18 @@ function TestRunner() {
   keyboard.addEventListener('stateChange', this.onStateChange.bind(this));
 }
 
+/**
+ * Flag values for the shift, control and alt modifiers as defined by
+ * EventFlags in "event_constants.h".
+ * @type {enum}
+ */
+var Modifier = {
+  NONE: 0,
+  SHIFT: 2,
+  CONTROL: 4,
+  ALT: 8
+};
+
 TestRunner.prototype = {
 
   /**
@@ -90,9 +102,9 @@ function setUp() {
     assertEquals(expectedEvent.keyCode,
                  observedEvent.keyCode,
                  'Mismatched key codes.');
-    assertEquals(expectedEvent.shiftKey,
-                 observedEvent.shiftKey,
-                 'Mismatched states for shift modifier.');
+    assertEquals(expectedEvent.modifiers,
+                 observedEvent.modifiers,
+                 'Mismatched states for modifiers.');
   };
   chrome.virtualKeyboardPrivate.sendKeyEvent.validateCall = validateSendCall;
 
@@ -132,12 +144,12 @@ function findKey(label) {
  * API calls to send viritual key events.
  * @param {string} label The character being typed.
  * @param {number} keyCode The legacy key code for the character.
- * @param {boolean} shiftModifier Indicates if the shift key is being
- *     virtually pressed.
+ * @param {number} modifiers Indicates which if any of the shift, control and
+ *     alt keys are being virtually pressed.
  * @param {number=} opt_unicode Optional unicode value for the character. Only
  *     required if it cannot be directly calculated from the label.
  */
-function mockTypeCharacter(label, keyCode, shiftModifier, opt_unicode) {
+function mockTypeCharacter(label, keyCode, modifiers, opt_unicode) {
   var key = findKey(label);
   assertTrue(!!key, 'Unable to find key labelled "' + label + '".');
   var unicodeValue = opt_unicode | label.charCodeAt(0);
@@ -146,13 +158,13 @@ function mockTypeCharacter(label, keyCode, shiftModifier, opt_unicode) {
     type: 'keydown',
     charValue: unicodeValue,
     keyCode: keyCode,
-    shiftKey: shiftModifier
+    modifiers: modifiers
   });
   send.addExpectation({
     type: 'keyup',
     charValue: unicodeValue,
     keyCode: keyCode,
-    shiftKey: shiftModifier
+    modifiers: modifiers
   });
   var mockEvent = { pointerId:1 };
   // Fake typing the key.

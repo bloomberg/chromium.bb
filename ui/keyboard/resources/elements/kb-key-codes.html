@@ -7,6 +7,17 @@
 <polymer-element name="kb-key-codes">
 <script>
   (function() {
+
+    // Flag values for ctrl, alt and shift as defined by EventFlags
+    // in "event_constants.h".
+    // @enum {number}
+    var Modifier = {
+      NONE: 0,
+      ALT: 8,
+      CONTROL: 4,
+      SHIFT: 2
+    }
+
     // Each virtual key event is assigned a unique ID.
     var nextRequestID = 0;
 
@@ -173,6 +184,9 @@
      createVirtualKeyEvent: function(detail, type) {
        var char = detail.char;
        var keyCode = detail.keyCode;
+       // The shift modifier is handled specially. Some charactares like '+'
+       // {keyCode: 0xBB, shiftModifier: true}, are available on non-upper
+       // keysets, and so we rely on caching the correct shiftModifier.
        var shiftModifier = detail.shiftModifier;
        if (keyCode == undefined) {
          var state = this.GetKeyCodeAndModifiers(char);
@@ -184,12 +198,16 @@
            return;
          }
        }
-       // TODO(rsadam@): Add ctrl and alt modifiers to the message being sent.
+       var modifiers = Modifier.NONE;
+       modifiers = shiftModifier ? modifiers | Modifier.SHIFT : modifiers;
+       modifiers = detail.controlModifier ?
+           modifiers | Modifier.CONTROL : modifiers;
+       modifiers = detail.altModifier ? modifiers | Modifier.ALT : modifiers;
        return {
          type: type,
          charValue: char.charCodeAt(0),
          keyCode: keyCode,
-         shiftKey: shiftModifier
+         modifiers: modifiers
        };
      },
     });
