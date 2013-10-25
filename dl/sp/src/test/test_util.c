@@ -88,7 +88,7 @@ void SetDefaultOptions(struct Options* options, int real_only,
   options->test_mode_ = 1;
   options->do_forward_tests_ = 1;
   options->do_inverse_tests_ = 1;
-  options->min_fft_order_ = 2;
+  options->min_fft_order_ = 1;
   options->max_fft_order_ = max_fft_order;
 
   /*

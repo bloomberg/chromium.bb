@@ -80,6 +80,11 @@ void GenerateTestSignalAndFFT(struct ComplexFloat* x,
           fft[k].Re = factor * -size / 2;
           fft[k].Im = factor * size / 2 * (sin(phase) / (1 - cos(phase)));
         }
+
+        /*
+         * Remove any roundoff for k = N/2 since sin(2*pi/N*N/2) = 0.
+         */
+        fft[size / 2].Im = 0;
       }
       break;
     case 2:
@@ -94,12 +99,23 @@ void GenerateTestSignalAndFFT(struct ComplexFloat* x,
           x[k].Im = 0;
         }
 
+        /*
+         * Remove any roundoff for k = N/2 since sin(2*pi/N*N/2) = 0.
+         */
+        x[size / 2 ].Re = 0;
+
         for (k = 0; k < size; ++k) {
           fft[k].Re = 0;
           fft[k].Im = 0;
         }
-        fft[1].Im = -signal_value * (size / 2);
-        fft[size - 1].Im = signal_value * (size / 2);
+
+        /*
+         * When size == 2, x[k] is identically zero, so the FFT is also zero.
+         */
+        if (size != 2) {
+          fft[1].Im = -signal_value * (size / 2);
+          fft[size - 1].Im = signal_value * (size / 2);
+        }
       }
       break;
     case 3:
@@ -117,9 +133,21 @@ void GenerateTestSignalAndFFT(struct ComplexFloat* x,
         x[1].Im = -signal_value;
         x[size-1].Im = signal_value;
 
-        for (k = 0; k < size; ++k) {
-          fft[k].Re = -2 * signal_value * sin(omega * k);
-          fft[k].Im = 0;
+        if (size == 2) {
+          fft[0].Re = 0;
+          fft[0].Im = signal_value;
+          fft[1].Re = 0;
+          fft[1].Im = -signal_value;
+        } else {
+          for (k = 0; k < size; ++k) {
+            fft[k].Re = -2 * signal_value * sin(omega * k);
+            fft[k].Im = 0;
+          }
+
+          /*
+           * Remove any roundoff for k = N/2 since sin(2*pi/N*N/2) = 0.
+           */
+          fft[size / 2].Re = 0;
         }
         break;
       }
