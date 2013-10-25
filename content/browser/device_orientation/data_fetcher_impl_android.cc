@@ -185,6 +185,8 @@ void DataFetcherImplAndroid::ClearInternalMotionBuffers() {
 
 void DataFetcherImplAndroid::SetOrientationBufferReadyStatus(bool ready) {
   device_orientation_buffer_->seqlock.WriteBegin();
+  device_orientation_buffer_->data.absolute = ready;
+  device_orientation_buffer_->data.hasAbsolute = ready;
   device_orientation_buffer_->data.allAvailableSensorsAreActive = ready;
   device_orientation_buffer_->seqlock.WriteEnd();
   is_orientation_buffer_ready_ = ready;

@@ -17,13 +17,12 @@ template<typename T> struct DefaultSingletonTraits;
 
 namespace content {
 
-// Android implementation of DeviceOrientation API.
-
-// Android's SensorManager has a push API, whereas Chrome wants to pull data.
-// To fit them together, we store incoming sensor events in a 1-element buffer.
-// SensorManager calls SetOrientation() which pushes a new value (discarding the
-// previous value if any). Chrome calls GetDeviceData() which reads the most
-// recent value. Repeated calls to GetDeviceData() will return the same value.
+// Android implementation of Device Orientation API.
+//
+// Android's SensorManager has a push API, so when Got*() methods are called
+// by the system the browser process puts the received data into a shared
+// memory buffer, which is read by the renderer processes.
+//
 
 // TODO(timvolodine): rename this class to SensorManagerAndroid.
 class CONTENT_EXPORT DataFetcherImplAndroid {
