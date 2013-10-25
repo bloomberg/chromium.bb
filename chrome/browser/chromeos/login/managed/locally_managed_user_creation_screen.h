@@ -71,6 +71,9 @@ class LocallyManagedUserCreationScreen
       const string16& display_name,
       const std::string& managed_user_password) OVERRIDE;
   virtual void ImportManagedUser(const std::string& user_id) OVERRIDE;
+  virtual void ImportManagedUserWithPassword(
+      const std::string& user_id,
+      const std::string& password) OVERRIDE;
   virtual void AuthenticateManager(
       const std::string& manager_id,
       const std::string& manager_password) OVERRIDE;

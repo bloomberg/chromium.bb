@@ -49,6 +49,10 @@ class LocallyManagedUserCreationScreenHandler : public BaseScreenHandler {
 
     // Starts managed user import flow for user identified with |user_id|.
     virtual void ImportManagedUser(const std::string& user_id) = 0;
+    // Starts managed user import flow for user identified with |user_id| and
+    // additional |password|.
+    virtual void ImportManagedUserWithPassword(const std::string& user_id,
+                                               const std::string& password) = 0;
 
     virtual void AbortFlow() = 0;
     virtual void FinishFlow() = 0;
@@ -115,6 +119,8 @@ class LocallyManagedUserCreationScreenHandler : public BaseScreenHandler {
   void HandleCreateManagedUser(const string16& new_raw_user_name,
                                const std::string& new_user_password);
   void HandleImportSupervisedUser(const std::string& user_id);
+  void HandleImportSupervisedUserWithPassword(const std::string& user_id,
+                                              const std::string& password);
 
   void HandleGetImages();
   void HandlePhotoTaken(const std::string& image_url);

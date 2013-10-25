@@ -693,7 +693,7 @@ login.createScreen('LocallyManagedUserCreationScreen',
           'import',
           'managedUserCreationFlow',
           this.importButtonPressed_.bind(this),
-          ['import'],
+          ['import', 'import-password'],
           []));
 
       buttons.push(this.makeButton(
@@ -759,16 +759,38 @@ login.createScreen('LocallyManagedUserCreationScreen',
      * @private
      */
     importSupervisedUser_: function() {
-      var selectedPod = this.importList_.selectedPod_;
-      if (!selectedPod)
+      if (this.disabled)
         return;
-      var userId = selectedPod.user.id;
+      if (this.currentPage_ == 'import-password') {
+        var firstPassword = this.getScreenElement('password').value;
+        var secondPassword = this.getScreenElement('password-confirm').value;
+        if (firstPassword != secondPassword) {
+          this.showPasswordError(
+              loadTimeData.getString('createManagedUserPasswordMismatchError'));
+          return;
+        }
+        var userId = this.context_.importUserId;
+        this.disabled = true;
+        chrome.send('importSupervisedUserWithPassword',
+            [userId, firstPassword]);
+        return;
+      } else {
+        var selectedPod = this.importList_.selectedPod_;
+        if (!selectedPod)
+          return;
+        var user = selectedPod.user;
+        var userId = user.id;
 
-      this.disabled = true;
-      this.context_.importUserId = userId;
-      this.context_.managedName = selectedPod.user.name;
-
-      chrome.send('importSupervisedUser', [userId]);
+        this.context_.importUserId = userId;
+        this.context_.managedName = user.name;
+        this.context_.selectedImageUrl = user.avatarurl;
+        if (!user.needPassword) {
+          this.disabled = true;
+          chrome.send('importSupervisedUser', [userId]);
+        } else {
+          this.setVisiblePage_('import-password');
+        }
+      }
     },
 
     /**
@@ -922,10 +944,16 @@ login.createScreen('LocallyManagedUserCreationScreen',
       var secondPassword = this.getScreenElement('password-confirm').value;
       var userName = this.getScreenElement('name').value;
 
+      var passwordOk = (firstPassword.length > 0) &&
+          (firstPassword.length == secondPassword.length);
+
+      if (this.currentPage_ == 'import-password') {
+        this.setButtonDisabledStatus('import', !passwordOk);
+        return passwordOk;
+      }
       var canProceed =
+          passwordOk &&
           (userName.length > 0) &&
-          (firstPassword.length > 0) &&
-          (firstPassword.length == secondPassword.length) &&
            this.lastVerifiedName_ &&
            (userName == this.lastVerifiedName_);
 
@@ -963,13 +991,18 @@ login.createScreen('LocallyManagedUserCreationScreen',
       var pageButtons = {'intro' : 'start',
                          'error' : 'error',
                          'import' : 'import',
+                         'import-password' : 'import',
                          'created' : 'gotit'};
       this.hideStatus_();
+      var pageToDisplay = visiblePage;
+      if (visiblePage == 'import-password')
+        pageToDisplay = 'username';
+
       for (i in pageNames) {
         var pageName = pageNames[i];
         var page = $('managed-user-creation-' + pageName);
-        page.hidden = (pageName != visiblePage);
-        if (pageName == visiblePage)
+        page.hidden = (pageName != pageToDisplay);
+        if (pageName == pageToDisplay)
           $('step-logo').hidden = page.classList.contains('step-no-logo');
       }
 
@@ -979,7 +1012,8 @@ login.createScreen('LocallyManagedUserCreationScreen',
         button.disabled = false;
       }
 
-      var pagesWithCancel = ['intro', 'manager', 'username', 'error', 'import'];
+      var pagesWithCancel = ['intro', 'manager', 'username', 'import-password',
+          'error', 'import'];
       var cancelButton = $('cancel-add-user-button');
       cancelButton.hidden = pagesWithCancel.indexOf(visiblePage) < 0;
       cancelButton.disabled = false;
@@ -999,11 +1033,20 @@ login.createScreen('LocallyManagedUserCreationScreen',
           this.managerList_.selectPod(this.managerList_.pods[0]);
       }
 
+      if (visiblePage == 'username' || visiblePage == 'import-password') {
+        var elements = this.getScreenElement(pageToDisplay).
+            querySelectorAll('.hide-on-import');
+        for (var i = 0; i < elements.length; i++) {
+          elements[i].classList.toggle('hidden-on-import',
+              visiblePage == 'import-password');
+        }
+      }
       if (visiblePage == 'username') {
         var imageGrid = this.getScreenElement('image-grid');
         // select some image.
         var selected = this.imagesData_[
             Math.floor(Math.random() * this.imagesData_.length)];
+        this.context_.selectedImageUrl = selected.url;
         imageGrid.selectedItemUrl = selected.url;
         chrome.send('supervisedUserSelectImage',
                     [selected.url, 'default']);
@@ -1013,6 +1056,25 @@ login.createScreen('LocallyManagedUserCreationScreen',
         this.getScreenElement('name').focus();
         this.getScreenElement('import-link').hidden =
             this.importList_.pods.length == 0;
+      } else if (visiblePage == 'import-password') {
+        var imageGrid = this.getScreenElement('image-grid');
+        var selected;
+        if ('selectedImageUrl' in this.context_) {
+          selected = this.context_.selectedImageUrl;
+        } else {
+          // select some image.
+          selected = this.imagesData_[
+              Math.floor(Math.random() * this.imagesData_.length)].url;
+          chrome.send('supervisedUserSelectImage',
+                      [selected, 'default']);
+        }
+        imageGrid.selectedItemUrl = selected;
+        this.getScreenElement('image-grid').redraw();
+
+        this.updateNextButtonForUser_();
+
+        this.getScreenElement('password').focus();
+        this.getScreenElement('import-link').hidden = true;
       } else {
         this.getScreenElement('image-grid').stopCamera();
       }
@@ -1306,6 +1368,7 @@ login.createScreen('LocallyManagedUserCreationScreen',
     handleSelect_: function(e) {
       var imageGrid = this.getScreenElement('image-grid');
       if (!(imageGrid.selectionType == 'camera' && imageGrid.cameraLive)) {
+        this.context_.selectedImageUrl = imageGrid.selectedItemUrl;
         chrome.send('supervisedUserSelectImage',
                     [imageGrid.selectedItemUrl, imageGrid.selectionType]);
       }

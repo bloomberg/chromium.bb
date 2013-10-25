@@ -159,6 +159,9 @@ void LocallyManagedUserCreationScreenHandler::RegisterMessages() {
   AddCallback("importSupervisedUser",
               &LocallyManagedUserCreationScreenHandler::
                   HandleImportSupervisedUser);
+  AddCallback("importSupervisedUserWithPassword",
+              &LocallyManagedUserCreationScreenHandler::
+                  HandleImportSupervisedUserWithPassword);
 
 
   // TODO(antrim) : this is an explicit code duplications with UserImageScreen.
@@ -328,6 +331,19 @@ void LocallyManagedUserCreationScreenHandler::HandleImportSupervisedUser(
       IDS_CREATE_LOCALLY_MANAGED_USER_CREATION_CREATION_PROGRESS_MESSAGE));
 
   delegate_->ImportManagedUser(user_id);
+}
+
+void LocallyManagedUserCreationScreenHandler::
+    HandleImportSupervisedUserWithPassword(
+        const std::string& user_id,
+        const std::string& password) {
+  if (!delegate_)
+    return;
+
+  ShowStatusMessage(true /* progress */, l10n_util::GetStringUTF16(
+      IDS_CREATE_LOCALLY_MANAGED_USER_CREATION_CREATION_PROGRESS_MESSAGE));
+
+  delegate_->ImportManagedUserWithPassword(user_id, password);
 }
 
 void LocallyManagedUserCreationScreenHandler::HandleAuthenticateManager(

@@ -41,6 +41,8 @@ const char kUserConflictImported[] = "imported";
 // There is another supervised user with same name.
 const char kUserConflictName[] = "name";
 
+const char kUserNeedPassword[] = "needPassword";
+
 const char kAvatarURLKey[] = "avatarurl";
 const char kRandomAvatarKey[] = "randomAvatar";
 const char kNameOfIntroScreen[] = "intro";
@@ -243,6 +245,50 @@ void LocallyManagedUserCreationScreen::ImportManagedUser(
                            master_key);
 }
 
+// TODO(antrim): Code duplication with previous method will be removed once
+// password sync is implemented.
+void LocallyManagedUserCreationScreen::ImportManagedUserWithPassword(
+    const std::string& user_id,
+    const std::string& password) {
+  DCHECK(controller_.get());
+  DCHECK(existing_users_.get());
+  VLOG(1) << "Importing user " << user_id;
+  DictionaryValue* user_info;
+  if (!existing_users_->GetDictionary(user_id, &user_info)) {
+    LOG(ERROR) << "Can not import non-existing user " << user_id;
+    return;
+  }
+  string16 display_name;
+  std::string master_key;
+  std::string avatar;
+  bool exists;
+  int avatar_index = LocallyManagedUserCreationController::kDummyAvatarIndex;
+  user_info->GetString(ManagedUserSyncService::kName, &display_name);
+  user_info->GetString(ManagedUserSyncService::kMasterKey, &master_key);
+  user_info->GetString(ManagedUserSyncService::kChromeOsAvatar, &avatar);
+  user_info->GetBoolean(kUserExists, &exists);
+
+  // We should not get here with existing user selected, so just display error.
+  if (exists) {
+    actor_->ShowErrorPage(
+        l10n_util::GetStringUTF16(
+            IDS_CREATE_LOCALLY_MANAGED_USER_GENERIC_ERROR_TITLE),
+        l10n_util::GetStringUTF16(
+            IDS_CREATE_LOCALLY_MANAGED_USER_GENERIC_ERROR),
+        l10n_util::GetStringUTF16(
+            IDS_CREATE_LOCALLY_MANAGED_USER_GENERIC_ERROR_BUTTON));
+    return;
+  }
+
+  ManagedUserSyncService::GetAvatarIndex(avatar, &avatar_index);
+
+  controller_->StartImport(display_name,
+                           password,
+                           avatar_index,
+                           user_id,
+                           master_key);
+}
+
 void LocallyManagedUserCreationScreen::OnManagerLoginFailure() {
   if (actor_)
     actor_->ShowManagerPasswordError();
@@ -261,10 +307,6 @@ void LocallyManagedUserCreationScreen::OnManagerFullyAuthenticated(
     actor_->ShowUsernamePage();
 
   last_page_ = kNameOfNewUserParametersScreen;
-
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (!command_line->HasSwitch(::switches::kAllowCreateExistingManagedUsers))
-    return;
 
   ManagedUserSyncServiceFactory::GetForProfile(manager_profile)->
       GetManagedUsersAsync(base::Bind(
@@ -455,6 +497,8 @@ void LocallyManagedUserCreationScreen::OnGetManagedUsers(
       ui_copy->SetString(kUserConflict, kUserConflictName);
     }
     ui_copy->SetString(ManagedUserSyncService::kName, display_name);
+    // TODO(antrim): For now mark all users as having no password.
+    ui_copy->SetBoolean(kUserNeedPassword, true);
     ui_copy->SetString("id", it.key());
 
     existing_users_->Set(it.key(), local_copy);

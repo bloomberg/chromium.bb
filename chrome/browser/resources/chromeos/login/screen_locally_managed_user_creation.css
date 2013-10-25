@@ -179,6 +179,13 @@ input.managed-user-creation-manager-password,
   overflow-y: auto;
 }
 
+/* This class will be set for elements with hide-on-import class by JS when
+ * page is used in 'import' mode
+ */
+#managed-user-creation .hidden-on-import {
+  display: none;
+}
+
 #managed-user-creation-error {
   padding: 175px 120px 0;
   text-align: center;
