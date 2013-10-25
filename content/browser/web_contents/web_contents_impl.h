@@ -114,16 +114,6 @@ class CONTENT_EXPORT WebContentsImpl
   // Returns the SavePackage which manages the page saving job. May be NULL.
   SavePackage* save_package() const { return save_package_.get(); }
 
-  // Called by InterstitialPageImpl when it creates a RenderViewHost.
-  void RenderViewForInterstitialPageCreated(RenderViewHost* render_view_host);
-
-  // Sets the passed interstitial as the currently showing interstitial.
-  // No interstitial page should already be attached.
-  void AttachInterstitialPage(InterstitialPageImpl* interstitial_page);
-
-  // Unsets the currently showing interstitial.
-  void DetachInterstitialPage();
-
 #if defined(OS_ANDROID)
   JavaBridgeDispatcherHostManager* java_bridge_dispatcher_host_manager() const {
     return java_bridge_dispatcher_host_manager_.get();
@@ -530,6 +520,26 @@ class CONTENT_EXPORT WebContentsImpl
       int merge_history_length,
       int32 minimum_page_id) OVERRIDE;
 
+  // Called by InterstitialPageImpl when it creates a RenderViewHost.
+  virtual void RenderViewForInterstitialPageCreated(
+      RenderViewHost* render_view_host) OVERRIDE;
+
+  // Sets the passed interstitial as the currently showing interstitial.
+  // No interstitial page should already be attached.
+  virtual void AttachInterstitialPage(
+      InterstitialPageImpl* interstitial_page) OVERRIDE;
+
+  // Unsets the currently showing interstitial.
+  virtual void DetachInterstitialPage() OVERRIDE;
+
+  // Changes the IsLoading state and notifies the delegate as needed.
+  // |details| is used to provide details on the load that just finished
+  // (but can be null if not applicable).
+  virtual void SetIsLoading(RenderViewHost* render_view_host,
+                            bool is_loading,
+                            LoadNotificationDetails* details) OVERRIDE;
+
+
  private:
   friend class NavigationControllerImpl;
   friend class WebContentsObserver;
@@ -656,13 +666,6 @@ class CONTENT_EXPORT WebContentsImpl
                            bool has_video,
                            bool has_audio,
                            bool is_playing);
-
-  // Changes the IsLoading state and notifies the delegate as needed.
-  // |details| is used to provide details on the load that just finished
-  // (but can be null if not applicable).
-  void SetIsLoading(RenderViewHost* render_view_host,
-                    bool is_loading,
-                    LoadNotificationDetails* details);
 
   // Called by derived classes to indicate that we're no longer waiting for a
   // response. This won't actually update the throbber, but it will get picked

@@ -12,7 +12,10 @@
 namespace content {
 
 struct LoadCommittedDetails;
+struct LoadNotificationDetails;
+struct NativeWebKeyboardEvent;
 class InterstitialPage;
+class InterstitialPageImpl;
 class RenderViewHost;
 class SiteInstance;
 class WebContents;
@@ -36,6 +39,7 @@ class NavigationControllerDelegate {
   virtual SiteInstance* GetPendingSiteInstance() const = 0;
   virtual int32 GetMaxPageID() = 0;
   virtual int32 GetMaxPageIDForSiteInstance(SiteInstance* site_instance) = 0;
+  virtual bool IsLoading() const = 0;
 
   // Methods from WebContentsImpl that NavigationControllerImpl needs to
   // call.
@@ -57,6 +61,17 @@ class NavigationControllerDelegate {
   // This method is needed, since we are no longer guaranteed that the
   // embedder for NavigationController will be a WebContents object.
   virtual WebContents* GetWebContents() = 0;
+
+  // Methods needed by InterstitialPageImpl.
+  virtual bool IsHidden() = 0;
+  virtual void RenderViewForInterstitialPageCreated(
+      RenderViewHost* render_view_host) = 0;
+  virtual void AttachInterstitialPage(
+      InterstitialPageImpl* interstitial_page) = 0;
+  virtual void DetachInterstitialPage() = 0;
+  virtual void SetIsLoading(RenderViewHost* render_view_host,
+                            bool is_loading,
+                            LoadNotificationDetails* details) = 0;
 };
 
 }  // namespace content

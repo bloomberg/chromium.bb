@@ -113,8 +113,9 @@ class TestInterstitialPage : public InterstitialPageImpl {
                        InterstitialState* state,
                        bool* deleted)
       : InterstitialPageImpl(
-            contents, new_navigation, url,
-            new TestInterstitialPageDelegate(this)),
+            contents,
+            static_cast<RenderWidgetHostDelegate*>(contents),
+            new_navigation, url, new TestInterstitialPageDelegate(this)),
         state_(state),
         deleted_(deleted),
         command_received_count_(0),

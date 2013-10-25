@@ -20,6 +20,7 @@
 
 namespace content {
 class NavigationEntry;
+class NavigationControllerImpl;
 class RenderViewHostImpl;
 class RenderWidgetHostView;
 class WebContentsView;
@@ -46,6 +47,7 @@ class CONTENT_EXPORT InterstitialPageImpl
   };
 
   InterstitialPageImpl(WebContents* web_contents,
+                       RenderWidgetHostDelegate* render_widget_host_delegate,
                        bool new_navigation,
                        const GURL& url,
                        InterstitialPageDelegate* delegate);
@@ -182,7 +184,13 @@ class CONTENT_EXPORT InterstitialPageImpl
   // The contents in which we are displayed.  This is valid until Hide is
   // called, at which point it will be set to NULL because the WebContents
   // itself may be deleted.
-  WebContentsImpl* web_contents_;
+  WebContents* web_contents_;
+
+  // The NavigationController for the content this page is being displayed over.
+  NavigationControllerImpl* controller_;
+
+  // Delegate for dispatching keyboard events and accessing the native view.
+  RenderWidgetHostDelegate* render_widget_host_delegate_;
 
   // The URL that is shown when the interstitial is showing.
   GURL url_;
