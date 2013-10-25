@@ -2717,7 +2717,6 @@
             'platform/chromium/KeyCodeConversionAndroid.cpp',
             'platform/chromium/KeyCodeConversionGtk.cpp',
             'platform/chromium/KeyboardCodes.h',
-            'platform/chromium/MemoryUsageSupportChromium.cpp',
             'platform/chromium/MIMETypeRegistryChromium.cpp',
             'platform/graphics/AlternateFontFamily.h',
             'platform/graphics/BitmapImage.cpp',

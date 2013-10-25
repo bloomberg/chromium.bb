@@ -49,7 +49,6 @@
 #include "core/inspector/TimelineTraceEventProcessor.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/page/PageConsole.h"
-#include "core/platform/MemoryUsageSupport.h"
 #include "core/platform/graphics/chromium/DeferredImageDecoder.h"
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/RenderView.h"

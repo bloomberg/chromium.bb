@@ -47,7 +47,7 @@
 #include "core/frame/ContentSecurityPolicy.h"
 #include "core/frame/DOMWindow.h"
 #include "core/frame/Frame.h"
-#include "core/platform/MemoryUsageSupport.h"
+#include "public/platform/Platform.h"
 #include "wtf/RefPtr.h"
 #include "wtf/text/WTFString.h"
 #include <v8-debug.h>
@@ -79,7 +79,7 @@ static Frame* findFrame(v8::Local<v8::Object> host, v8::Local<v8::Value> data, v
 
 static void reportFatalErrorInMainThread(const char* location, const char* message)
 {
-    int memoryUsageMB = MemoryUsageSupport::actualMemoryUsageMB();
+    int memoryUsageMB = WebKit::Platform::current()->actualMemoryUsageMB();
     printf("V8 error: %s (%s).  Current memory usage: %d MB\n", message, location, memoryUsageMB);
     CRASH();
 }
