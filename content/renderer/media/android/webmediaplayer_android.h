@@ -54,33 +54,6 @@ class MediaStreamAudioRenderer;
 class MediaStreamClient;
 #endif
 
-// This class acts as a proxy to a callback defined in |WebMediaPlayerAndroid|
-// to handle the situation where the callback method is invoked after
-// the player instance is already destroyed. Uses a flag |deleted_| to decide
-// whether or not to invoke the callback.
-// When passed to |Bind|, |base::Owned| should be used to let the caller own
-// the instance and destroy it after the callback is invoked.
-template<typename T>
-class CallbackProxy {
- public:
-  CallbackProxy(const base::Callback<void(T)>& cb)
-      : cb_(cb),
-        deleted_(false) { }
-
-  void UpdateNetworkState(T state) {
-    if (!deleted_)
-      cb_.Run(state);
-  }
-
-  void SetDeleted(bool deleted) {
-    deleted_ = deleted;
-  }
-
- private:
-    const base::Callback<void(T)>& cb_;
-    bool deleted_;
-};
-
 // This class implements WebKit::WebMediaPlayer by keeping the android
 // media player in the browser process. It listens to all the status changes
 // sent from the browser process and sends playback controls to the media
@@ -480,9 +453,6 @@ class WebMediaPlayerAndroid
   scoped_ptr<ProxyDecryptor> decryptor_;
 
   base::WeakPtrFactory<WebMediaPlayerAndroid> weak_factory_;
-
-  // Proxy to callback for |UpdateNetworkState|.
-  CallbackProxy<WebKit::WebMediaPlayer::NetworkState>* network_state_cb_;
 
   DISALLOW_COPY_AND_ASSIGN(WebMediaPlayerAndroid);
 };

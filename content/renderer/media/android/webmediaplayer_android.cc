@@ -122,8 +122,7 @@ WebMediaPlayerAndroid::WebMediaPlayerAndroid(
       current_time_(0),
       is_remote_(false),
       media_log_(media_log),
-      weak_factory_(this),
-      network_state_cb_(NULL) {
+      weak_factory_(this) {
   DCHECK(proxy_);
   DCHECK(manager_);
 
@@ -215,8 +214,6 @@ WebMediaPlayerAndroid::~WebMediaPlayerAndroid() {
     destroy_demuxer_cb_.Run();
   }
 #endif
-  if (network_state_cb_)
-    network_state_cb_->SetDeleted(true);
 }
 
 void WebMediaPlayerAndroid::load(LoadType load_type,
@@ -264,19 +261,15 @@ void WebMediaPlayerAndroid::load(LoadType load_type,
 
     // |media_source_delegate_| is owned, so Unretained() is safe here.
     if (player_type_ == MEDIA_PLAYER_TYPE_MEDIA_SOURCE) {
-      network_state_cb_ = new CallbackProxy<WebMediaPlayer::NetworkState>(
-          base::Bind(&WebMediaPlayerAndroid::UpdateNetworkState,
-                     base::Unretained(this)));
       media_source_delegate_->InitializeMediaSource(
           base::Bind(&WebMediaPlayerAndroid::OnMediaSourceOpened,
-                     base::Unretained(this)),
+                     weak_factory_.GetWeakPtr()),
           base::Bind(&WebMediaPlayerAndroid::OnNeedKey, base::Unretained(this)),
           set_decryptor_ready_cb,
-          base::Bind(&CallbackProxy<
-              WebMediaPlayer::NetworkState>::UpdateNetworkState,
-              base::Owned(network_state_cb_)),
+          base::Bind(&WebMediaPlayerAndroid::UpdateNetworkState,
+                     weak_factory_.GetWeakPtr()),
           base::Bind(&WebMediaPlayerAndroid::OnDurationChanged,
-                     base::Unretained(this)));
+                     weak_factory_.GetWeakPtr()));
     }
 #if defined(GOOGLE_TV)
     // TODO(xhwang): Pass set_decryptor_ready_cb in InitializeMediaStream() to
@@ -285,7 +278,7 @@ void WebMediaPlayerAndroid::load(LoadType load_type,
       media_source_delegate_->InitializeMediaStream(
           demuxer_,
           base::Bind(&WebMediaPlayerAndroid::UpdateNetworkState,
-                     base::Unretained(this)));
+                     weak_factory_.GetWeakPtr()));
       audio_renderer_ = media_stream_client_->GetAudioRenderer(url);
       if (audio_renderer_)
         audio_renderer_->Start();
