@@ -189,20 +189,32 @@ class MediaSourcePlayerTest : public testing::Test {
     player_.Start();
   }
 
+  AccessUnit CreateAccessUnitWithData(bool is_audio, int audio_packet_id) {
+    AccessUnit unit;
+
+    unit.status = DemuxerStream::kOk;
+    scoped_refptr<DecoderBuffer> buffer = ReadTestDataFile(
+        is_audio ? base::StringPrintf("vorbis-packet-%d", audio_packet_id)
+            : "vp8-I-frame-320x240");
+    unit.data = std::vector<uint8>(
+        buffer->data(), buffer->data() + buffer->data_size());
+
+    if (is_audio) {
+      // Vorbis needs 4 extra bytes padding on Android to decode properly. Check
+      // NuMediaExtractor.cpp in Android source code.
+      uint8 padding[4] = { 0xff , 0xff , 0xff , 0xff };
+      unit.data.insert(unit.data.end(), padding, padding + 4);
+    }
+
+    return unit;
+  }
+
+
   DemuxerData CreateReadFromDemuxerAckForAudio(int packet_id) {
     DemuxerData data;
     data.type = DemuxerStream::AUDIO;
     data.access_units.resize(1);
-    data.access_units[0].status = DemuxerStream::kOk;
-    scoped_refptr<DecoderBuffer> buffer = ReadTestDataFile(
-        base::StringPrintf("vorbis-packet-%d", packet_id));
-    data.access_units[0].data = std::vector<uint8>(
-        buffer->data(), buffer->data() + buffer->data_size());
-    // Vorbis needs 4 extra bytes padding on Android to decode properly. Check
-    // NuMediaExtractor.cpp in Android source code.
-    uint8 padding[4] = { 0xff , 0xff , 0xff , 0xff };
-    data.access_units[0].data.insert(
-        data.access_units[0].data.end(), padding, padding + 4);
+    data.access_units[0] = CreateAccessUnitWithData(true, packet_id);
     return data;
   }
 
@@ -210,11 +222,7 @@ class MediaSourcePlayerTest : public testing::Test {
     DemuxerData data;
     data.type = DemuxerStream::VIDEO;
     data.access_units.resize(1);
-    data.access_units[0].status = DemuxerStream::kOk;
-    scoped_refptr<DecoderBuffer> buffer =
-        ReadTestDataFile("vp8-I-frame-320x240");
-    data.access_units[0].data = std::vector<uint8>(
-        buffer->data(), buffer->data() + buffer->data_size());
+    data.access_units[0] = CreateAccessUnitWithData(false, 0);
     return data;
   }
 
@@ -268,6 +276,19 @@ class MediaSourcePlayerTest : public testing::Test {
 
     // No other seek should have been requested.
     EXPECT_EQ(original_num_seeks + 1, demuxer_->num_seek_requests());
+  }
+
+  DemuxerData CreateReadFromDemuxerAckWithConfigChanged(bool is_audio,
+                                                        int config_unit_index) {
+    DemuxerData data;
+    data.type = is_audio ? DemuxerStream::AUDIO : DemuxerStream::VIDEO;
+    data.access_units.resize(config_unit_index + 1);
+
+    for (int i = 0; i < config_unit_index; ++i)
+      data.access_units[i] = CreateAccessUnitWithData(is_audio, i);
+
+    data.access_units[config_unit_index].status = DemuxerStream::kConfigChanged;
+    return data;
   }
 
   base::TimeTicks StartTimeTicks() {
@@ -915,6 +936,120 @@ TEST_F(MediaSourcePlayerTest, PrerollContinuesAcrossConfigChange) {
   message_loop_.Run();
   EXPECT_LT(100.0, player_.GetCurrentTime().InMillisecondsF());
   EXPECT_FALSE(IsPrerolling(true));
+}
+
+TEST_F(MediaSourcePlayerTest, DemuxerConfigRequestedIfInPrefetchUnit0) {
+  SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
+
+  // Test that the player detects need for and requests demuxer configs if
+  // the |kConfigChanged| unit is the very first unit in the set of units
+  // received in OnDemuxerDataAvailable() ostensibly while
+  // |PREFETCH_DONE_EVENT_PENDING|.
+  StartAudioDecoderJob();
+  EXPECT_TRUE(player_.IsPlaying());
+  EXPECT_EQ(1, demuxer_->num_data_requests());
+  EXPECT_TRUE(GetMediaDecoderJob(true));
+  EXPECT_EQ(0, demuxer_->num_config_requests());
+
+  // Feed and decode a standalone |kConfigChanged| access unit.
+  player_.OnDemuxerDataAvailable(
+      CreateReadFromDemuxerAckWithConfigChanged(true, 0));
+  while (GetMediaDecoderJob(true)->is_decoding())
+    message_loop_.RunUntilIdle();
+
+  EXPECT_TRUE(player_.IsPlaying());
+  EXPECT_EQ(1, demuxer_->num_data_requests());
+  EXPECT_TRUE(GetMediaDecoderJob(true));
+  EXPECT_EQ(1, demuxer_->num_config_requests());
+}
+
+TEST_F(MediaSourcePlayerTest, DemuxerConfigRequestedIfInPrefetchUnit1) {
+  SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
+
+  // Test that the player detects need for and requests demuxer configs if
+  // the |kConfigChanged| unit is not the first unit in the set of units
+  // received in OnDemuxerDataAvailable() ostensibly while
+  // |PREFETCH_DONE_EVENT_PENDING|.
+  StartAudioDecoderJob();
+  EXPECT_TRUE(player_.IsPlaying());
+  EXPECT_EQ(1, demuxer_->num_data_requests());
+  EXPECT_TRUE(GetMediaDecoderJob(true));
+  EXPECT_EQ(0, demuxer_->num_config_requests());
+
+  // Feed and decode an audio access unit plus a |kConfigChanged| access unit.
+  player_.OnDemuxerDataAvailable(
+      CreateReadFromDemuxerAckWithConfigChanged(true, 1));
+  while (GetMediaDecoderJob(true)->is_decoding())
+    message_loop_.RunUntilIdle();
+
+  EXPECT_TRUE(player_.IsPlaying());
+  EXPECT_EQ(1, demuxer_->num_data_requests());
+  EXPECT_TRUE(GetMediaDecoderJob(true));
+  EXPECT_EQ(1, demuxer_->num_config_requests());
+}
+
+TEST_F(MediaSourcePlayerTest, DemuxerConfigRequestedIfInUnit0AfterPrefetch) {
+  SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
+
+  // Test that the player detects need for and requests demuxer configs if
+  // the |kConfigChanged| unit is the very first unit in the set of units
+  // received in OnDemuxerDataAvailable() from data requested ostensibly while
+  // not prefetching.
+  StartAudioDecoderJob();
+  EXPECT_TRUE(player_.IsPlaying());
+  EXPECT_EQ(1, demuxer_->num_data_requests());
+  EXPECT_TRUE(GetMediaDecoderJob(true));
+
+  // Feed and decode a standalone audio access unit.
+  player_.OnDemuxerDataAvailable(CreateReadFromDemuxerAckForAudio(0));
+  message_loop_.Run();
+
+  // We should have completed the prefetch phase at this point.
+  EXPECT_TRUE(player_.IsPlaying());
+  EXPECT_EQ(2, demuxer_->num_data_requests());
+  EXPECT_TRUE(GetMediaDecoderJob(true));
+  EXPECT_EQ(0, demuxer_->num_config_requests());
+  // Feed and decode a standalone |kConfigChanged| access unit.
+  player_.OnDemuxerDataAvailable(
+      CreateReadFromDemuxerAckWithConfigChanged(true, 0));
+  while (GetMediaDecoderJob(true)->is_decoding())
+    message_loop_.RunUntilIdle();
+  EXPECT_TRUE(player_.IsPlaying());
+  EXPECT_EQ(2, demuxer_->num_data_requests());
+  EXPECT_TRUE(GetMediaDecoderJob(true));
+  EXPECT_EQ(1, demuxer_->num_config_requests());
+}
+
+TEST_F(MediaSourcePlayerTest, DemuxerConfigRequestedIfInUnit1AfterPrefetch) {
+  SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
+
+  // Test that the player detects need for and requests demuxer configs if
+  // the |kConfigChanged| unit is not the first unit in the set of units
+  // received in OnDemuxerDataAvailable() from data requested ostensibly while
+  // not prefetching.
+  StartAudioDecoderJob();
+  EXPECT_TRUE(player_.IsPlaying());
+  EXPECT_EQ(1, demuxer_->num_data_requests());
+  EXPECT_TRUE(GetMediaDecoderJob(true));
+
+  // Feed and decode a standalone audio access unit.
+  player_.OnDemuxerDataAvailable(CreateReadFromDemuxerAckForAudio(0));
+  message_loop_.Run();
+
+  // We should have completed the prefetch phase at this point.
+  EXPECT_TRUE(player_.IsPlaying());
+  EXPECT_EQ(2, demuxer_->num_data_requests());
+  EXPECT_TRUE(GetMediaDecoderJob(true));
+  EXPECT_EQ(0, demuxer_->num_config_requests());
+  // Feed and decode 2 access units, the 2nd one has status |kConfigChanged|.
+  player_.OnDemuxerDataAvailable(
+      CreateReadFromDemuxerAckWithConfigChanged(true, 1));
+  while (GetMediaDecoderJob(true)->is_decoding())
+    message_loop_.RunUntilIdle();
+  EXPECT_TRUE(player_.IsPlaying());
+  EXPECT_EQ(2, demuxer_->num_data_requests());
+  EXPECT_TRUE(GetMediaDecoderJob(true));
+  EXPECT_EQ(1, demuxer_->num_config_requests());
 }
 
 // TODO(xhwang): Enable this test when the test devices are updated.

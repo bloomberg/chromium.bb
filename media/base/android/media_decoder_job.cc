@@ -77,7 +77,7 @@ void MediaDecoderJob::Prefetch(const base::Closure& prefetch_cb) {
 bool MediaDecoderJob::Decode(
     const base::TimeTicks& start_time_ticks,
     const base::TimeDelta& start_presentation_timestamp,
-    const MediaDecoderJob::DecoderCallback& callback) {
+    const DecoderCallback& callback) {
   DCHECK(decode_cb_.is_null());
   DCHECK(on_data_received_cb_.is_null());
   DCHECK(ui_loop_->BelongsToCurrentThread());
@@ -135,7 +135,9 @@ void MediaDecoderJob::BeginPrerolling(
 void MediaDecoderJob::Release() {
   DCHECK(ui_loop_->BelongsToCurrentThread());
 
-  destroy_pending_ = is_decoding();
+  // If the decoder job is not waiting for data, and is still decoding, we
+  // cannot delete the job immediately.
+  destroy_pending_ = on_data_received_cb_.is_null() && is_decoding();
 
   request_data_cb_.Reset();
   on_data_received_cb_.Reset();
@@ -231,6 +233,19 @@ void MediaDecoderJob::DecodeNextAccessUnit(
     const base::TimeDelta& start_presentation_timestamp) {
   DCHECK(ui_loop_->BelongsToCurrentThread());
   DCHECK(!decode_cb_.is_null());
+
+  // If the first access unit is a config change, request the player to dequeue
+  // the input buffer again so that it can request config data.
+  if (received_data_.access_units[access_unit_index_].status ==
+      DemuxerStream::kConfigChanged) {
+    ui_loop_->PostTask(FROM_HERE,
+                       base::Bind(&MediaDecoderJob::OnDecodeCompleted,
+                                  base::Unretained(this),
+                                  MEDIA_CODEC_DEQUEUE_INPUT_AGAIN_LATER,
+                                  kNoTimestamp(),
+                                  0));
+    return;
+  }
 
   decoder_loop_->PostTask(FROM_HERE, base::Bind(
       &MediaDecoderJob::DecodeInternal, base::Unretained(this),
