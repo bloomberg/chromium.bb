@@ -43,7 +43,6 @@
 #include "core/html/canvas/WebGLRenderingContext.h"
 #include "core/frame/Frame.h"
 #include "core/page/Settings.h"
-#include "core/platform/HistogramSupport.h"
 #include "core/platform/MIMETypeRegistry.h"
 #include "core/platform/graphics/GraphicsContextStateSaver.h"
 #include "core/platform/graphics/ImageBuffer.h"
@@ -169,7 +168,7 @@ CanvasRenderingContext* HTMLCanvasElement::getContext(const String& type, Canvas
         if (m_context && !m_context->is2d())
             return 0;
         if (!m_context) {
-            HistogramSupport::histogramEnumeration("Canvas.ContextType", Context2d, ContextTypeCount);
+            WebKit::Platform::current()->histogramEnumeration("Canvas.ContextType", Context2d, ContextTypeCount);
             m_context = CanvasRenderingContext2D::create(this, static_cast<Canvas2DContextAttributes*>(attrs), document().inQuirksMode());
             if (m_context)
                 scheduleLayerUpdate();
@@ -196,7 +195,7 @@ CanvasRenderingContext* HTMLCanvasElement::getContext(const String& type, Canvas
             if (m_context && !m_context->is3d())
                 return 0;
             if (!m_context) {
-                HistogramSupport::histogramEnumeration("Canvas.ContextType", contextType, ContextTypeCount);
+                WebKit::Platform::current()->histogramEnumeration("Canvas.ContextType", contextType, ContextTypeCount);
                 m_context = WebGLRenderingContext::create(this, static_cast<WebGLContextAttributes*>(attrs));
                 if (m_context)
                     scheduleLayerUpdate();

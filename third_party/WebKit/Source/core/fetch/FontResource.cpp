@@ -30,10 +30,10 @@
 #include "core/fetch/ResourceClient.h"
 #include "core/fetch/ResourceClientWalker.h"
 #include "core/fetch/TextResourceDecoder.h"
-#include "core/platform/HistogramSupport.h"
-#include "platform/SharedBuffer.h"
 #include "core/platform/graphics/FontCustomPlatformData.h"
 #include "core/platform/graphics/FontPlatformData.h"
+#include "platform/SharedBuffer.h"
+#include "public/platform/Platform.h"
 #include "wtf/CurrentTime.h"
 
 #if ENABLE(SVG_FONTS)
@@ -174,7 +174,7 @@ void FontResource::willUseFontData()
 FontResource::FontResourceHistograms::~FontResourceHistograms()
 {
     if (m_styledTime > 0)
-        HistogramSupport::histogramEnumeration("WebFont.Resource.UsageType", StyledButNotUsed, UsageTypeMax);
+        WebKit::Platform::current()->histogramEnumeration("WebFont.Resource.UsageType", StyledButNotUsed, UsageTypeMax);
 }
 
 void FontResource::FontResourceHistograms::willUseFontData()
@@ -188,11 +188,11 @@ void FontResource::FontResourceHistograms::loadStarted()
     if (m_styledTime < 0)
         return;
     if (!m_styledTime) {
-        HistogramSupport::histogramEnumeration("WebFont.Resource.UsageType", NotStyledButUsed, UsageTypeMax);
+        WebKit::Platform::current()->histogramEnumeration("WebFont.Resource.UsageType", NotStyledButUsed, UsageTypeMax);
     } else {
         int duration = static_cast<int>(currentTimeMS() - m_styledTime);
-        HistogramSupport::histogramCustomCounts("WebFont.Resource.StyleRecalcToDownloadLatency", duration, 0, 10000, 50);
-        HistogramSupport::histogramEnumeration("WebFont.Resource.UsageType", StyledAndUsed, UsageTypeMax);
+        WebKit::Platform::current()->histogramCustomCounts("WebFont.Resource.StyleRecalcToDownloadLatency", duration, 0, 10000, 50);
+        WebKit::Platform::current()->histogramEnumeration("WebFont.Resource.UsageType", StyledAndUsed, UsageTypeMax);
     }
     m_styledTime = -1;
 }

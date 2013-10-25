@@ -39,7 +39,7 @@
 #include "core/dom/shadow/InsertionPoint.h"
 #include "core/dom/shadow/ShadowRootRareData.h"
 #include "core/editing/markup.h"
-#include "core/platform/HistogramSupport.h"
+#include "public/platform/Platform.h"
 
 namespace WebCore {
 
@@ -73,7 +73,7 @@ ShadowRoot::ShadowRoot(Document* document, ShadowRootType type)
 
     if (type == ShadowRoot::AuthorShadowRoot) {
         ShadowRootUsageOriginType usageType = document->url().protocolIsInHTTPFamily() ? ShadowRootUsageOriginWeb : ShadowRootUsageOriginNotWeb;
-        HistogramSupport::histogramEnumeration("WebCore.ShadowRoot.constructor", usageType, ShadowRootUsageOriginMax);
+        WebKit::Platform::current()->histogramEnumeration("WebCore.ShadowRoot.constructor", usageType, ShadowRootUsageOriginMax);
     }
 }
 

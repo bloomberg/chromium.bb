@@ -45,7 +45,6 @@
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/loader/ThreadableLoader.h"
 #include "core/page/Settings.h"
-#include "core/platform/HistogramSupport.h"
 #include "core/xml/XMLHttpRequestProgressEvent.h"
 #include "core/xml/XMLHttpRequestUpload.h"
 #include "platform/Logging.h"
@@ -55,6 +54,7 @@
 #include "platform/network/ParsedContentType.h"
 #include "platform/network/ResourceError.h"
 #include "platform/network/ResourceRequest.h"
+#include "public/platform/Platform.h"
 #include "weborigin/SecurityOrigin.h"
 #include "wtf/ArrayBuffer.h"
 #include "wtf/ArrayBufferView.h"
@@ -720,7 +720,7 @@ void XMLHttpRequest::send(ArrayBuffer* body, ExceptionState& es)
     String consoleMessage("ArrayBuffer is deprecated in XMLHttpRequest.send(). Use ArrayBufferView instead.");
     executionContext()->addConsoleMessage(JSMessageSource, WarningMessageLevel, consoleMessage);
 
-    HistogramSupport::histogramEnumeration("WebCore.XHR.send.ArrayBufferOrView", XMLHttpRequestSendArrayBuffer, XMLHttpRequestSendArrayBufferOrViewMax);
+    WebKit::Platform::current()->histogramEnumeration("WebCore.XHR.send.ArrayBufferOrView", XMLHttpRequestSendArrayBuffer, XMLHttpRequestSendArrayBufferOrViewMax);
 
     sendBytesData(body->data(), body->byteLength(), es);
 }
@@ -729,7 +729,7 @@ void XMLHttpRequest::send(ArrayBufferView* body, ExceptionState& es)
 {
     LOG(Network, "XMLHttpRequest %p send() ArrayBufferView %p", this, body);
 
-    HistogramSupport::histogramEnumeration("WebCore.XHR.send.ArrayBufferOrView", XMLHttpRequestSendArrayBufferView, XMLHttpRequestSendArrayBufferOrViewMax);
+    WebKit::Platform::current()->histogramEnumeration("WebCore.XHR.send.ArrayBufferOrView", XMLHttpRequestSendArrayBufferView, XMLHttpRequestSendArrayBufferOrViewMax);
 
     sendBytesData(body->baseAddress(), body->byteLength(), es);
 }

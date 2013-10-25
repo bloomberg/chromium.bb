@@ -44,10 +44,10 @@
 #include "config.h"
 #include "core/rendering/RenderLayerStackingNode.h"
 
-#include "core/platform/HistogramSupport.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderLayerCompositor.h"
 #include "core/rendering/RenderView.h"
+#include "public/platform/Platform.h"
 
 namespace WebCore {
 
@@ -625,7 +625,7 @@ bool RenderLayerStackingNode::setNeedsToBeStackingContainer(bool needsToBeStacki
     // containers some point. This should be recorded at most once per
     // RenderLayer, so we check m_needsToBeStackingContainerHasBeenRecorded.
     if (layer()->acceleratedCompositingForOverflowScrollEnabled() && !m_needsToBeStackingContainerHasBeenRecorded) {
-        HistogramSupport::histogramEnumeration("Renderer.CompositedScrolling", RenderLayer::NeedsToBeStackingContainerBucket, RenderLayer::CompositedScrollingHistogramMax);
+        WebKit::Platform::current()->histogramEnumeration("Renderer.CompositedScrolling", RenderLayer::NeedsToBeStackingContainerBucket, RenderLayer::CompositedScrollingHistogramMax);
         m_needsToBeStackingContainerHasBeenRecorded = true;
     }
 

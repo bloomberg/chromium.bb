@@ -32,8 +32,8 @@
 #include "core/page/PagePopupController.h"
 
 #include "core/page/PagePopupClient.h"
-#include "core/platform/HistogramSupport.h"
 #include "platform/text/PlatformLocale.h"
+#include "public/platform/Platform.h"
 
 namespace WebCore {
 
@@ -101,7 +101,7 @@ void PagePopupController::clearPagePopupClient()
 
 void PagePopupController::histogramEnumeration(const String& name, int sample, int boundaryValue)
 {
-    HistogramSupport::histogramEnumeration(name.utf8().data(), sample, boundaryValue);
+    WebKit::Platform::current()->histogramEnumeration(name.utf8().data(), sample, boundaryValue);
 }
 
 }

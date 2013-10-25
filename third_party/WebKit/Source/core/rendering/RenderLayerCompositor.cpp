@@ -46,7 +46,6 @@
 #include "core/frame/animation/AnimationController.h"
 #include "core/page/scrolling/ScrollingConstraints.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
-#include "core/platform/HistogramSupport.h"
 #include "core/platform/ScrollbarTheme.h"
 #include "core/platform/graphics/GraphicsLayer.h"
 #include "core/platform/graphics/GraphicsLayerClient.h"
@@ -65,6 +64,7 @@
 #include "platform/Logging.h"
 #include "platform/TraceEvent.h"
 #include "platform/geometry/TransformState.h"
+#include "public/platform/Platform.h"
 #include "wtf/TemporaryChange.h"
 
 #if !LOG_DISABLED
@@ -1154,7 +1154,7 @@ void RenderLayerCompositor::rebuildCompositingLayerTree(RenderLayer* layer, Vect
 
     if (!depth) {
         int percentageIncreaseInPixels = static_cast<int>(pixelsAddedByPromotingAllTransitions / pixelsWithoutPromotingAllTransitions * 100);
-        HistogramSupport::histogramCustomCounts("Renderer.PixelIncreaseFromTransitions", percentageIncreaseInPixels, 0, 1000, 50);
+        WebKit::Platform::current()->histogramCustomCounts("Renderer.PixelIncreaseFromTransitions", percentageIncreaseInPixels, 0, 1000, 50);
     }
 }
 
@@ -1207,14 +1207,14 @@ void RenderLayerCompositor::frameViewDidScroll()
         m_scrollLayer->setPosition(-scrollPosition);
 
 
-    HistogramSupport::histogramEnumeration("Renderer.AcceleratedFixedRootBackground",
+    WebKit::Platform::current()->histogramEnumeration("Renderer.AcceleratedFixedRootBackground",
         ScrolledMainFrameBucket,
         AcceleratedFixedRootBackgroundHistogramMax);
 
     if (!m_renderView->rootBackgroundIsEntirelyFixed())
         return;
 
-    HistogramSupport::histogramEnumeration("Renderer.AcceleratedFixedRootBackground",
+    WebKit::Platform::current()->histogramEnumeration("Renderer.AcceleratedFixedRootBackground",
         !!fixedRootBackgroundLayer()
             ? ScrolledMainFrameWithAcceleratedFixedRootBackground
             : ScrolledMainFrameWithUnacceleratedFixedRootBackground,

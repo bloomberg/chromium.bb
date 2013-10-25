@@ -54,8 +54,8 @@
 #include "core/frame/ContentSecurityPolicy.h"
 #include "core/frame/Frame.h"
 #include "core/page/Page.h"
-#include "core/platform/HistogramSupport.h"
 #include "platform/TraceEvent.h"
+#include "public/platform/Platform.h"
 #include "weborigin/SecurityOrigin.h"
 #include "wtf/Assertions.h"
 #include "wtf/OwnPtr.h"
@@ -297,7 +297,7 @@ void V8WindowShell::createContext()
     const char* histogramName = "WebCore.V8WindowShell.createContext.MainWorld";
     if (!m_world->isMainWorld())
         histogramName = "WebCore.V8WindowShell.createContext.IsolatedWorld";
-    HistogramSupport::histogramCustomCounts(histogramName, contextCreationDurationInMilliseconds, 0, 10000, 50);
+    WebKit::Platform::current()->histogramCustomCounts(histogramName, contextCreationDurationInMilliseconds, 0, 10000, 50);
 }
 
 bool V8WindowShell::installDOMWindow()

@@ -34,7 +34,7 @@
 #include "core/frame/DOMWindow.h"
 #include "core/page/Page.h"
 #include "core/page/PageConsole.h"
-#include "core/platform/HistogramSupport.h"
+#include "public/platform/Platform.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
@@ -529,19 +529,19 @@ UseCounter::UseCounter()
 UseCounter::~UseCounter()
 {
     // We always log PageDestruction so that we have a scale for the rest of the features.
-    HistogramSupport::histogramEnumeration("WebCore.FeatureObserver", PageDestruction, NumberOfFeatures);
+    WebKit::Platform::current()->histogramEnumeration("WebCore.FeatureObserver", PageDestruction, NumberOfFeatures);
 
     updateMeasurements();
 }
 
 void UseCounter::updateMeasurements()
 {
-    HistogramSupport::histogramEnumeration("WebCore.FeatureObserver", PageVisits, NumberOfFeatures);
+    WebKit::Platform::current()->histogramEnumeration("WebCore.FeatureObserver", PageVisits, NumberOfFeatures);
 
     if (m_countBits) {
         for (unsigned i = 0; i < NumberOfFeatures; ++i) {
             if (m_countBits->quickGet(i))
-                HistogramSupport::histogramEnumeration("WebCore.FeatureObserver", i, NumberOfFeatures);
+                WebKit::Platform::current()->histogramEnumeration("WebCore.FeatureObserver", i, NumberOfFeatures);
         }
         // Clearing count bits is timing sensitive.
         m_countBits->clearAll();
@@ -554,13 +554,13 @@ void UseCounter::updateMeasurements()
     for (int i = firstCSSProperty; i <= lastCSSProperty; ++i) {
         if (m_CSSFeatureBits.quickGet(i)) {
             int cssSampleId = mapCSSPropertyIdToCSSSampleIdForHistogram(i);
-            HistogramSupport::histogramEnumeration("WebCore.FeatureObserver.CSSProperties", cssSampleId, maximumCSSSampleId());
+            WebKit::Platform::current()->histogramEnumeration("WebCore.FeatureObserver.CSSProperties", cssSampleId, maximumCSSSampleId());
             needsPagesMeasuredUpdate = true;
         }
     }
 
     if (needsPagesMeasuredUpdate)
-        HistogramSupport::histogramEnumeration("WebCore.FeatureObserver.CSSProperties", totalPagesMeasuredCSSSampleId(), maximumCSSSampleId());
+        WebKit::Platform::current()->histogramEnumeration("WebCore.FeatureObserver.CSSProperties", totalPagesMeasuredCSSSampleId(), maximumCSSSampleId());
 
     m_CSSFeatureBits.clearAll();
 }

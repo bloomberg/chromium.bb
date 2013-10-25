@@ -2713,7 +2713,6 @@
             'platform/chromium/FramelessScrollView.cpp',
             'platform/chromium/FramelessScrollView.h',
             'platform/chromium/FramelessScrollViewClient.h',
-            'platform/chromium/HistogramSupportChromium.cpp',
             'platform/chromium/KeyCodeConversion.h',
             'platform/chromium/KeyCodeConversionAndroid.cpp',
             'platform/chromium/KeyCodeConversionGtk.cpp',

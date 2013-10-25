@@ -60,7 +60,6 @@
 #include "core/page/UseCounter.h"
 #include "core/frame/animation/AnimationController.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
-#include "core/platform/HistogramSupport.h"
 #include "core/platform/graphics/GraphicsContextStateSaver.h"
 #include "core/platform/graphics/filters/ReferenceFilter.h"
 #include "core/platform/graphics/filters/SourceGraphic.h"
@@ -94,6 +93,7 @@
 #include "platform/geometry/FloatPoint3D.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/transforms/TransformationMatrix.h"
+#include "public/platform/Platform.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/UnusedParam.h"
 #include "wtf/text/CString.h"
@@ -1776,7 +1776,7 @@ void RenderLayer::updateNeedsCompositedScrolling()
     // relax composited scrolling requirements, thereby increasing the
     // number of composited overflow divs.
     if (acceleratedCompositingForOverflowScrollEnabled())
-        HistogramSupport::histogramEnumeration("Renderer.NeedsCompositedScrolling", needsCompositedScrolling, 2);
+        WebKit::Platform::current()->histogramEnumeration("Renderer.NeedsCompositedScrolling", needsCompositedScrolling, 2);
 
     const bool needsCompositedScrollingDidChange = setNeedsCompositedScrolling(needsCompositedScrolling);
 
@@ -1798,7 +1798,7 @@ bool RenderLayer::setNeedsCompositedScrolling(bool needsCompositedScrolling)
     // some point. This should be recorded at most once per RenderLayer, so we
     // check m_willUseCompositedScrollingHasBeenRecorded.
     if (acceleratedCompositingForOverflowScrollEnabled() && !m_willUseCompositedScrollingHasBeenRecorded) {
-        HistogramSupport::histogramEnumeration("Renderer.CompositedScrolling", WillUseCompositedScrollingBucket, CompositedScrollingHistogramMax);
+        WebKit::Platform::current()->histogramEnumeration("Renderer.CompositedScrolling", WillUseCompositedScrollingBucket, CompositedScrollingHistogramMax);
         m_willUseCompositedScrollingHasBeenRecorded = true;
     }
 
@@ -4336,7 +4336,7 @@ void RenderLayer::updateScrollableAreaSet(bool hasOverflow)
         // Count the total number of RenderLayers that are scrollable areas for
         // any period. We only want to record this at most once per RenderLayer.
         if (requiresScrollableArea && !m_isScrollableAreaHasBeenRecorded) {
-            HistogramSupport::histogramEnumeration("Renderer.CompositedScrolling", IsScrollableAreaBucket, CompositedScrollingHistogramMax);
+            WebKit::Platform::current()->histogramEnumeration("Renderer.CompositedScrolling", IsScrollableAreaBucket, CompositedScrollingHistogramMax);
             m_isScrollableAreaHasBeenRecorded = true;
         }
 

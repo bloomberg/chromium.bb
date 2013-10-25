@@ -32,7 +32,6 @@
 #include "core/dom/ExecutionContext.h"
 #include "core/events/EventQueue.h"
 #include "core/inspector/ScriptCallStack.h"
-#include "core/platform/HistogramSupport.h"
 #include "modules/indexeddb/IDBAny.h"
 #include "modules/indexeddb/IDBDatabaseCallbacks.h"
 #include "modules/indexeddb/IDBEventDispatcher.h"
@@ -43,8 +42,9 @@
 #include "modules/indexeddb/IDBTracing.h"
 #include "modules/indexeddb/IDBTransaction.h"
 #include "modules/indexeddb/IDBVersionChangeEvent.h"
-#include <limits>
+#include "public/platform/Platform.h"
 #include "wtf/Atomics.h"
+#include <limits>
 
 namespace WebCore {
 
@@ -186,7 +186,7 @@ PassRefPtr<IDBObjectStore> IDBDatabase::createObjectStore(const String& name, co
 PassRefPtr<IDBObjectStore> IDBDatabase::createObjectStore(const String& name, const IDBKeyPath& keyPath, bool autoIncrement, ExceptionState& es)
 {
     IDB_TRACE("IDBDatabase::createObjectStore");
-    HistogramSupport::histogramEnumeration("WebCore.IndexedDB.FrontEndAPICalls", IDBCreateObjectStoreCall, IDBMethodsMax);
+    WebKit::Platform::current()->histogramEnumeration("WebCore.IndexedDB.FrontEndAPICalls", IDBCreateObjectStoreCall, IDBMethodsMax);
     if (!m_versionChangeTransaction) {
         es.throwDOMException(InvalidStateError, IDBDatabase::notVersionChangeTransactionErrorMessage);
         return 0;
@@ -230,7 +230,7 @@ PassRefPtr<IDBObjectStore> IDBDatabase::createObjectStore(const String& name, co
 void IDBDatabase::deleteObjectStore(const String& name, ExceptionState& es)
 {
     IDB_TRACE("IDBDatabase::deleteObjectStore");
-    HistogramSupport::histogramEnumeration("WebCore.IndexedDB.FrontEndAPICalls", IDBDeleteObjectStoreCall, IDBMethodsMax);
+    WebKit::Platform::current()->histogramEnumeration("WebCore.IndexedDB.FrontEndAPICalls", IDBDeleteObjectStoreCall, IDBMethodsMax);
     if (!m_versionChangeTransaction) {
         es.throwDOMException(InvalidStateError, IDBDatabase::notVersionChangeTransactionErrorMessage);
         return;
@@ -258,7 +258,7 @@ void IDBDatabase::deleteObjectStore(const String& name, ExceptionState& es)
 PassRefPtr<IDBTransaction> IDBDatabase::transaction(ExecutionContext* context, const Vector<String>& scope, const String& modeString, ExceptionState& es)
 {
     IDB_TRACE("IDBDatabase::transaction");
-    HistogramSupport::histogramEnumeration("WebCore.IndexedDB.FrontEndAPICalls", IDBTransactionCall, IDBMethodsMax);
+    WebKit::Platform::current()->histogramEnumeration("WebCore.IndexedDB.FrontEndAPICalls", IDBTransactionCall, IDBMethodsMax);
     if (!scope.size()) {
         es.throwDOMException(InvalidAccessError, "The storeNames parameter was empty.");
         return 0;

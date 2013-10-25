@@ -38,11 +38,11 @@
 #include "core/inspector/ScriptCallStack.h"
 #include "core/loader/CookieJar.h"
 #include "core/platform/Cookie.h"
-#include "core/platform/HistogramSupport.h"
 #include "modules/websockets/WebSocket.h"
 #include "platform/Logging.h"
 #include "platform/network/HTTPHeaderMap.h"
 #include "platform/network/HTTPParsers.h"
+#include "public/platform/Platform.h"
 #include "weborigin/KURL.h"
 #include "weborigin/SecurityOrigin.h"
 #include "wtf/CryptographicallyRandomNumber.h"
@@ -148,7 +148,7 @@ WebSocketHandshake::WebSocketHandshake(const KURL& url, const String& protocol, 
 
 WebSocketHandshake::~WebSocketHandshake()
 {
-    HistogramSupport::histogramEnumeration("WebCore.WebSocket.HandshakeResult", m_mode, WebSocketHandshake::ModeMax);
+    WebKit::Platform::current()->histogramEnumeration("WebCore.WebSocket.HandshakeResult", m_mode, WebSocketHandshake::ModeMax);
 }
 
 const KURL& WebSocketHandshake::url() const

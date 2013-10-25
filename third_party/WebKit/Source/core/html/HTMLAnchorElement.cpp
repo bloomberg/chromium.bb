@@ -43,7 +43,6 @@
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
 #include "core/page/Settings.h"
-#include "core/platform/HistogramSupport.h"
 #include "core/rendering/RenderImage.h"
 #include "core/svg/graphics/SVGImage.h"
 #include "platform/PlatformMouseEvent.h"
@@ -587,7 +586,7 @@ void HTMLAnchorElement::PrefetchEventHandler::handleMouseOver(Event* event)
     if (m_mouseOverTimestamp == 0.0) {
         m_mouseOverTimestamp = event->timeStamp();
 
-        HistogramSupport::histogramEnumeration("MouseEventPrefetch.MouseOvers", 0, 2);
+        WebKit::Platform::current()->histogramEnumeration("MouseEventPrefetch.MouseOvers", 0, 2);
 
         prefetch(WebKit::WebPreconnectMotivationLinkMouseOver);
     }
@@ -597,7 +596,7 @@ void HTMLAnchorElement::PrefetchEventHandler::handleMouseOut(Event* event)
 {
     if (m_mouseOverTimestamp > 0.0) {
         double mouseOverDuration = convertDOMTimeStampToSeconds(event->timeStamp() - m_mouseOverTimestamp);
-        HistogramSupport::histogramCustomCounts("MouseEventPrefetch.MouseOverDuration_NoClick", mouseOverDuration * 1000, 0, 10000, 100);
+        WebKit::Platform::current()->histogramCustomCounts("MouseEventPrefetch.MouseOverDuration_NoClick", mouseOverDuration * 1000, 0, 10000, 100);
 
         m_mouseOverTimestamp = 0.0;
     }
@@ -607,7 +606,7 @@ void HTMLAnchorElement::PrefetchEventHandler::handleLeftMouseDown(Event* event)
 {
     m_mouseDownTimestamp = event->timeStamp();
 
-    HistogramSupport::histogramEnumeration("MouseEventPrefetch.MouseDowns", 0, 2);
+    WebKit::Platform::current()->histogramEnumeration("MouseEventPrefetch.MouseDowns", 0, 2);
 
     prefetch(WebKit::WebPreconnectMotivationLinkMouseDown);
 }
@@ -616,7 +615,7 @@ void HTMLAnchorElement::PrefetchEventHandler::handleGestureTapUnconfirmed(Event*
 {
     m_hadTapUnconfirmed = true;
 
-    HistogramSupport::histogramEnumeration("MouseEventPrefetch.TapUnconfirmeds", 0, 2);
+    WebKit::Platform::current()->histogramEnumeration("MouseEventPrefetch.TapUnconfirmeds", 0, 2);
 
     prefetch(WebKit::WebPreconnectMotivationLinkTapUnconfirmed);
 }
@@ -625,7 +624,7 @@ void HTMLAnchorElement::PrefetchEventHandler::handleGestureShowPress(Event* even
 {
     m_tapDownTimestamp = event->timeStamp();
 
-    HistogramSupport::histogramEnumeration("MouseEventPrefetch.TapDowns", 0, 2);
+    WebKit::Platform::current()->histogramEnumeration("MouseEventPrefetch.TapDowns", 0, 2);
 
     prefetch(WebKit::WebPreconnectMotivationLinkTapDown);
 }
@@ -636,27 +635,27 @@ void HTMLAnchorElement::PrefetchEventHandler::handleClick(Event* event)
     if (capturedMouseOver) {
         double mouseOverDuration = convertDOMTimeStampToSeconds(event->timeStamp() - m_mouseOverTimestamp);
 
-        HistogramSupport::histogramCustomCounts("MouseEventPrefetch.MouseOverDuration_Click", mouseOverDuration * 1000, 0, 10000, 100);
+        WebKit::Platform::current()->histogramCustomCounts("MouseEventPrefetch.MouseOverDuration_Click", mouseOverDuration * 1000, 0, 10000, 100);
     }
 
     bool capturedMouseDown = (m_mouseDownTimestamp > 0.0);
-    HistogramSupport::histogramEnumeration("MouseEventPrefetch.MouseDownFollowedByClick", capturedMouseDown, 2);
+    WebKit::Platform::current()->histogramEnumeration("MouseEventPrefetch.MouseDownFollowedByClick", capturedMouseDown, 2);
 
     if (capturedMouseDown) {
         double mouseDownDuration = convertDOMTimeStampToSeconds(event->timeStamp() - m_mouseDownTimestamp);
 
-        HistogramSupport::histogramCustomCounts("MouseEventPrefetch.MouseDownDuration_Click", mouseDownDuration * 1000, 0, 10000, 100);
+        WebKit::Platform::current()->histogramCustomCounts("MouseEventPrefetch.MouseDownDuration_Click", mouseDownDuration * 1000, 0, 10000, 100);
     }
 
     bool capturedTapDown = (m_tapDownTimestamp > 0.0);
     if (capturedTapDown) {
         double tapDownDuration = convertDOMTimeStampToSeconds(event->timeStamp() - m_tapDownTimestamp);
 
-        HistogramSupport::histogramCustomCounts("MouseEventPrefetch.TapDownDuration_Click", tapDownDuration * 1000, 0, 10000, 100);
+        WebKit::Platform::current()->histogramCustomCounts("MouseEventPrefetch.TapDownDuration_Click", tapDownDuration * 1000, 0, 10000, 100);
     }
 
     int flags = (m_hadTapUnconfirmed ? 2 : 0) | (capturedTapDown ? 1 : 0);
-    HistogramSupport::histogramEnumeration("MouseEventPrefetch.PreTapEventsFollowedByClick", flags, 4);
+    WebKit::Platform::current()->histogramEnumeration("MouseEventPrefetch.PreTapEventsFollowedByClick", flags, 4);
 }
 
 bool HTMLAnchorElement::PrefetchEventHandler::shouldPrefetch(const KURL& url)

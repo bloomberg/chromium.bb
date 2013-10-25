@@ -32,8 +32,8 @@
 #include "core/html/HTMLImport.h"
 #include "core/css/MediaList.h"
 #include "core/css/MediaQueryEvaluator.h"
-#include "core/platform/HistogramSupport.h"
 #include "core/rendering/RenderObject.h"
+#include "public/platform/Platform.h"
 
 namespace WebCore {
 
@@ -93,7 +93,7 @@ void HTMLResourcePreloader::preload(PassOwnPtr<PreloadRequest> preload)
         return;
 
     FetchRequest request = preload->resourceRequest(m_document);
-    HistogramSupport::histogramCustomCounts("WebCore.PreloadDelayMs", static_cast<int>(1000 * (monotonicallyIncreasingTime() - preload->discoveryTime())), 0, 2000, 20);
+    WebKit::Platform::current()->histogramCustomCounts("WebCore.PreloadDelayMs", static_cast<int>(1000 * (monotonicallyIncreasingTime() - preload->discoveryTime())), 0, 2000, 20);
     loadingDocument->fetcher()->preload(preload->resourceType(), request, preload->charset());
 }
 

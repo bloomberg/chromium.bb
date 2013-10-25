@@ -34,7 +34,6 @@
 #include "bindings/v8/IDBBindingUtilities.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/platform/HistogramSupport.h"
 #include "modules/indexeddb/IDBDatabase.h"
 #include "modules/indexeddb/IDBDatabaseCallbacksImpl.h"
 #include "modules/indexeddb/IDBFactoryBackendInterface.h"
@@ -42,6 +41,7 @@
 #include "modules/indexeddb/IDBKey.h"
 #include "modules/indexeddb/IDBOpenDBRequest.h"
 #include "modules/indexeddb/IDBTracing.h"
+#include "public/platform/Platform.h"
 #include "weborigin/DatabaseIdentifier.h"
 #include "weborigin/SecurityOrigin.h"
 
@@ -96,7 +96,7 @@ PassRefPtr<IDBOpenDBRequest> IDBFactory::open(ExecutionContext* context, const S
 
 PassRefPtr<IDBOpenDBRequest> IDBFactory::openInternal(ExecutionContext* context, const String& name, int64_t version, ExceptionState& es)
 {
-    HistogramSupport::histogramEnumeration("WebCore.IndexedDB.FrontEndAPICalls", IDBOpenCall, IDBMethodsMax);
+    WebKit::Platform::current()->histogramEnumeration("WebCore.IndexedDB.FrontEndAPICalls", IDBOpenCall, IDBMethodsMax);
     ASSERT(version >= 1 || version == IDBDatabaseMetadata::NoIntVersion);
     if (name.isNull()) {
         es.throwUninformativeAndGenericTypeError();
@@ -125,7 +125,7 @@ PassRefPtr<IDBOpenDBRequest> IDBFactory::open(ExecutionContext* context, const S
 PassRefPtr<IDBOpenDBRequest> IDBFactory::deleteDatabase(ExecutionContext* context, const String& name, ExceptionState& es)
 {
     IDB_TRACE("IDBFactory::deleteDatabase");
-    HistogramSupport::histogramEnumeration("WebCore.IndexedDB.FrontEndAPICalls", IDBDeleteDatabaseCall, IDBMethodsMax);
+    WebKit::Platform::current()->histogramEnumeration("WebCore.IndexedDB.FrontEndAPICalls", IDBDeleteDatabaseCall, IDBMethodsMax);
     if (name.isNull()) {
         es.throwUninformativeAndGenericTypeError();
         return 0;

@@ -41,7 +41,7 @@
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/Document.h"
 #include "core/frame/FrameView.h"
-#include "core/platform/HistogramSupport.h"
+#include "public/platform/Platform.h"
 
 namespace WebCore {
 
@@ -442,7 +442,7 @@ void FontFaceSet::FontLoadHistogram::record()
     if (m_recorded)
         return;
     m_recorded = true;
-    HistogramSupport::histogramCustomCounts("WebFont.WebFontsInPage", m_count, 1, 100, 50);
+    WebKit::Platform::current()->histogramCustomCounts("WebFont.WebFontsInPage", m_count, 1, 100, 50);
 }
 
 static const char* supplementName()

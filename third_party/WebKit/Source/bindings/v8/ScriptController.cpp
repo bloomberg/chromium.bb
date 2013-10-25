@@ -66,12 +66,12 @@
 #include "core/frame/Frame.h"
 #include "core/page/Page.h"
 #include "core/page/Settings.h"
-#include "core/platform/HistogramSupport.h"
 #include "core/plugins/PluginView.h"
 #include "platform/NotImplemented.h"
 #include "platform/TraceEvent.h"
 #include "platform/UserGestureIndicator.h"
 #include "platform/Widget.h"
+#include "public/platform/Platform.h"
 #include "weborigin/SecurityOrigin.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/StdLibExtras.h"
@@ -138,7 +138,7 @@ void ScriptController::clearForClose()
 {
     double start = currentTime();
     clearForClose(false);
-    HistogramSupport::histogramCustomCounts("WebCore.ScriptController.clearForClose", (currentTime() - start) * 1000, 0, 10000, 50);
+    WebKit::Platform::current()->histogramCustomCounts("WebCore.ScriptController.clearForClose", (currentTime() - start) * 1000, 0, 10000, 50);
 }
 
 void ScriptController::updateSecurityOrigin()
@@ -504,7 +504,7 @@ void ScriptController::clearWindowShell()
     for (IsolatedWorldMap::iterator iter = m_isolatedWorlds.begin(); iter != m_isolatedWorlds.end(); ++iter)
         iter->value->clearForNavigation();
     V8GCController::hintForCollectGarbage();
-    HistogramSupport::histogramCustomCounts("WebCore.ScriptController.clearWindowShell", (currentTime() - start) * 1000, 0, 10000, 50);
+    WebKit::Platform::current()->histogramCustomCounts("WebCore.ScriptController.clearWindowShell", (currentTime() - start) * 1000, 0, 10000, 50);
 }
 
 void ScriptController::setCaptureCallStackForUncaughtExceptions(bool value)

@@ -31,7 +31,7 @@
 #include "core/timing/Performance.h"
 #include "core/timing/PerformanceMark.h"
 #include "core/timing/PerformanceMeasure.h"
-#include "core/platform/HistogramSupport.h"
+#include "public/platform/Platform.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
@@ -108,7 +108,7 @@ void UserTiming::mark(const String& markName, ExceptionState& es)
 
     double startTime = m_performance->now();
     insertPerformanceEntry(m_marksMap, PerformanceMark::create(markName, startTime));
-    HistogramSupport::histogramCustomCounts("PLT.UserTiming_Mark", static_cast<int>(startTime), 0, 600000, 100);
+    WebKit::Platform::current()->histogramCustomCounts("PLT.UserTiming_Mark", static_cast<int>(startTime), 0, 600000, 100);
 }
 
 void UserTiming::clearMarks(const String& markName)
@@ -157,7 +157,7 @@ void UserTiming::measure(const String& measureName, const String& startMark, con
 
     insertPerformanceEntry(m_measuresMap, PerformanceMeasure::create(measureName, startTime, endTime));
     if (endTime >= startTime)
-        HistogramSupport::histogramCustomCounts("PLT.UserTiming_MeasureDuration", static_cast<int>(endTime - startTime), 0, 600000, 100);
+        WebKit::Platform::current()->histogramCustomCounts("PLT.UserTiming_MeasureDuration", static_cast<int>(endTime - startTime), 0, 600000, 100);
 }
 
 void UserTiming::clearMeasures(const String& measureName)
