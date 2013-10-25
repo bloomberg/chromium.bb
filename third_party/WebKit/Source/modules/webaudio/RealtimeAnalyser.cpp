@@ -67,10 +67,6 @@ RealtimeAnalyser::RealtimeAnalyser()
     m_analysisFrame = adoptPtr(new FFTFrame(DefaultFFTSize));
 }
 
-RealtimeAnalyser::~RealtimeAnalyser()
-{
-}
-
 void RealtimeAnalyser::reset()
 {
     m_writeIndex = 0;

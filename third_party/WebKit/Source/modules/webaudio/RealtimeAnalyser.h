@@ -35,11 +35,10 @@ namespace WebCore {
 class AudioBus;
 class FFTFrame;
 
-class RealtimeAnalyser {
+class RealtimeAnalyser FINAL {
     WTF_MAKE_NONCOPYABLE(RealtimeAnalyser);
 public:
     RealtimeAnalyser();
-    virtual ~RealtimeAnalyser();
 
     void reset();
 
