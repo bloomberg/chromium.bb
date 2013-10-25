@@ -40,7 +40,6 @@ ASH_EXPORT extern const char kAshEnableAudioDeviceMenu[];
 #endif
 ASH_EXPORT extern const char kAshEnableAdvancedGestures[];
 ASH_EXPORT extern const char kAshEnableAlternateFrameCaptionButtonStyle[];
-ASH_EXPORT extern const char kAshEnableAutoclick[];
 ASH_EXPORT extern const char kAshEnableBrightnessControl[];
 ASH_EXPORT extern const char kAshEnableDockedWindows[];
 #if defined(OS_CHROMEOS)

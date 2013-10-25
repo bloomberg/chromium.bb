@@ -84,9 +84,6 @@ const char kAshEnableAdvancedGestures[] = "ash-enable-advanced-gestures";
 const char kAshEnableAlternateFrameCaptionButtonStyle[] =
     "ash-enable-alternate-caption-button";
 
-// Enables settings ui to control the autoclick accessibility feature.
-const char kAshEnableAutoclick[] = "ash-enable-autoclick";
-
 // Always enable brightness control. Used by machines that don't report their
 // main monitor as internal.
 const char kAshEnableBrightnessControl[] = "ash-enable-brightness-control";

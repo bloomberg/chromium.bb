@@ -1668,13 +1668,6 @@ const Experiment kExperiments[] = {
     ENABLE_DISABLE_VALUE_TYPE(switches::kEnableStickyKeys,
                               switches::kDisableStickyKeys)
   },
-  {
-    "ash-enable-autoclick",
-    IDS_FLAGS_ENABLE_AUTOCLICK_NAME,
-    IDS_FLAGS_ENABLE_AUTOCLICK_DESCRIPTION,
-    kOsCrOS,
-    SINGLE_VALUE_TYPE(ash::switches::kAshEnableAutoclick)
-  },
 #endif
   {
     "enable-web-midi",

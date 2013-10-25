@@ -507,9 +507,6 @@ void BrowserOptionsHandler::GetLocalizedValues(DictionaryValue* values) {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   values->SetBoolean("enableStickyKeys",
                      command_line.HasSwitch(switches::kEnableStickyKeys));
-  values->SetBoolean("enableAutoclick",
-                     command_line.HasSwitch(
-                        ash::switches::kAshEnableAutoclick));
 #endif
 
 #if defined(OS_MACOSX)
