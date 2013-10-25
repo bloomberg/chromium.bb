@@ -512,6 +512,8 @@ crbug.com/286081 inspector/debugger/long-resume-vs-reload.html [ Failure Pass Ti
 crbug.com/286287 [ Linux Mac Android ] http/tests/inspector/network/network-initiator.html [ Failure Pass ]
 crbug.com/306228 [ Win ] http/tests/inspector/network/network-initiator.html [ Pass Failure Timeout ]
 
+Bug(senorblanco) css3/filters/effect-reference-subregion-hw.html [ NeedsRebaseline ]
+
 # Pixel captures are currently totally broken on Android Nexus4's at the moment.
 crbug.com/293932 [ Android ] css1/classification/list_style_image.html [ ImageOnlyFailure ]
 crbug.com/293932 [ Android ] css1/classification/list_style_position.html [ ImageOnlyFailure ]

@@ -246,7 +246,8 @@ PassRefPtr<SkImageFilter> FEBlend::createImageFilter(SkiaImageFilterBuilder* bui
     RefPtr<SkImageFilter> foreground(builder->build(inputEffect(0), operatingColorSpace()));
     RefPtr<SkImageFilter> background(builder->build(inputEffect(1), operatingColorSpace()));
     SkAutoTUnref<SkXfermode> mode(SkXfermode::Create(toSkiaMode(m_mode)));
-    return adoptRef(new SkXfermodeImageFilter(mode, background.get(), foreground.get()));
+    SkImageFilter::CropRect cropRect = getCropRect(builder->cropOffset());
+    return adoptRef(new SkXfermodeImageFilter(mode, background.get(), foreground.get(), &cropRect));
 }
 
 static TextStream& operator<<(TextStream& ts, const BlendModeType& type)
