@@ -16,19 +16,19 @@ rootSVGElement.appendChild(foreignObjectElement);
 
 function repaintTest() {
     debug("Check that SVGForeignObjectElement is initially displayed");
-    shouldBeEqualToString("document.defaultView.getComputedStyle(foreignObjectElement, null).display", "block");
+    shouldHaveBBox("foreignObjectElement", "200", "200");
     debug("Check that setting requiredFeatures to something invalid makes it not render");
     foreignObjectElement.setAttribute("requiredFeatures", "http://www.w3.org/TR/SVG11/feature#BogusFeature");
-    shouldBeEqualToString("document.defaultView.getComputedStyle(foreignObjectElement, null).display", "");
+    shouldHaveBBox("foreignObjectElement", "0", "0");
     debug("Check that setting requiredFeatures to something valid makes it render again");
     foreignObjectElement.setAttribute("requiredFeatures", "http://www.w3.org/TR/SVG11/feature#Shape");
-    shouldBeEqualToString("document.defaultView.getComputedStyle(foreignObjectElement, null).display", "block");
+    shouldHaveBBox("foreignObjectElement", "200", "200");
     debug("Check that adding something valid to requiredFeatures keeps rendering the element");
     foreignObjectElement.setAttribute("requiredFeatures", "http://www.w3.org/TR/SVG11/feature#Gradient");
-    shouldBeEqualToString("document.defaultView.getComputedStyle(foreignObjectElement, null).display", "block");
+    shouldHaveBBox("foreignObjectElement", "200", "200");
     debug("Check that adding something invalid to requiredFeatures makes it not render");
     foreignObjectElement.setAttribute("requiredFeatures", "http://www.w3.org/TR/SVG11/feature#BogusFeature");
-    shouldBeEqualToString("document.defaultView.getComputedStyle(foreignObjectElement, null).display", "");
+    shouldHaveBBox("foreignObjectElement", "0", "0");
 
     completeTest();
 }

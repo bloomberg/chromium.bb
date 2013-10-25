@@ -15,19 +15,19 @@ rootSVGElement.appendChild(lineElement);
 
 function repaintTest() {
     description("Check that SVGLineElement is initially displayed");
-    shouldBeEqualToString("document.defaultView.getComputedStyle(lineElement, null).display", "inline");
+    shouldHaveBBox("lineElement", "180", "180");
     description("Check that setting requiredFeatures to something invalid makes it not render");
     lineElement.requiredFeatures.appendItem("http://www.w3.org/TR/SVG11/feature#BogusFeature");
-    shouldBeEqualToString("document.defaultView.getComputedStyle(lineElement, null).display", "");
+    shouldHaveBBox("lineElement", "0", "0");
     description("Check that setting requiredFeatures to something valid makes it render again");
     lineElement.requiredFeatures.replaceItem("http://www.w3.org/TR/SVG11/feature#Shape", 0);
-    shouldBeEqualToString("document.defaultView.getComputedStyle(lineElement, null).display", "inline");
+    shouldHaveBBox("lineElement", "180", "180");
     debug("Check that adding something valid to requiredFeatures keeps rendering the element");
     lineElement.requiredFeatures.appendItem("http://www.w3.org/TR/SVG11/feature#Gradient");
-    shouldBeEqualToString("document.defaultView.getComputedStyle(lineElement, null).display", "inline");
+    shouldHaveBBox("lineElement", "180", "180");
     debug("Check that adding something invalid to requiredFeatures makes it not render");
     lineElement.requiredFeatures.appendItem("http://www.w3.org/TR/SVG11/feature#BogusFeature");
-    shouldBeEqualToString("document.defaultView.getComputedStyle(lineElement, null).display", "");
+    shouldHaveBBox("lineElement", "0", "0");
 
     completeTest();
 }

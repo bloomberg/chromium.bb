@@ -7,19 +7,19 @@ var svgElement = rootSVGElement;
 
 function repaintTest() {
     debug("Check that SVGSVGElement is initially displayed");
-    shouldBeEqualToString("document.defaultView.getComputedStyle(svgElement, null).display", "inline");
+    shouldBe("svgElement.getBoundingClientRect().width", "300");
     debug("Check that setting requiredFeatures to something invalid makes it not render");
     svgElement.setAttribute("requiredFeatures", "http://www.w3.org/TR/SVG11/feature#BogusFeature");
-    shouldBeEqualToString("document.defaultView.getComputedStyle(svgElement, null).display", "");
+    shouldBe("svgElement.getBoundingClientRect().width", "0");
     debug("Check that setting requiredFeatures to something valid makes it render again");
     svgElement.setAttribute("requiredFeatures", "http://www.w3.org/TR/SVG11/feature#Shape");
-    shouldBeEqualToString("document.defaultView.getComputedStyle(svgElement, null).display", "inline");
+    shouldBe("svgElement.getBoundingClientRect().width", "300");
     debug("Check that adding something valid to requiredFeatures keeps rendering the element");
     svgElement.setAttribute("requiredFeatures", "http://www.w3.org/TR/SVG11/feature#Gradient");
-    shouldBeEqualToString("document.defaultView.getComputedStyle(svgElement, null).display", "inline");
+    shouldBe("svgElement.getBoundingClientRect().width", "300");
     debug("Check that adding something invalid to requiredFeatures makes it not render");
     svgElement.setAttribute("requiredFeatures", "http://www.w3.org/TR/SVG11/feature#BogusFeature");
-    shouldBeEqualToString("document.defaultView.getComputedStyle(svgElement, null).display", "");
+    shouldBe("svgElement.getBoundingClientRect().width", "0");
 
     completeTest();
 }

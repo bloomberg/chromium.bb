@@ -10,19 +10,19 @@ rootSVGElement.appendChild(polygonElement);
 
 function repaintTest() {
     debug("Check that SVGPolygonElement is initially displayed");
-    shouldBeEqualToString("document.defaultView.getComputedStyle(polygonElement, null).display", "inline");
+    shouldHaveBBox("polygonElement", "200", "200");
     debug("Check that setting requiredFeatures to something invalid makes it not render");
     polygonElement.requiredFeatures.appendItem("http://www.w3.org/TR/SVG11/feature#BogusFeature");
-    shouldBeEqualToString("document.defaultView.getComputedStyle(polygonElement, null).display", "");
+    shouldHaveBBox("polygonElement", "0", "0");
     debug("Check that setting requiredFeatures to something valid makes it render again");
     polygonElement.requiredFeatures.replaceItem("http://www.w3.org/TR/SVG11/feature#Shape", 0);
-    shouldBeEqualToString("document.defaultView.getComputedStyle(polygonElement, null).display", "inline");
+    shouldHaveBBox("polygonElement", "200", "200");
     debug("Check that adding something valid to requiredFeatures keeps rendering the element");
     polygonElement.requiredFeatures.appendItem("http://www.w3.org/TR/SVG11/feature#Gradient");
-    shouldBeEqualToString("document.defaultView.getComputedStyle(polygonElement, null).display", "inline");
+    shouldHaveBBox("polygonElement", "200", "200");
     debug("Check that adding something invalid to requiredFeatures makes it not render");
     polygonElement.requiredFeatures.appendItem("http://www.w3.org/TR/SVG11/feature#BogusFeature");
-    shouldBeEqualToString("document.defaultView.getComputedStyle(polygonElement, null).display", "");
+    shouldHaveBBox("polygonElement", "0", "0");
 
     completeTest();
 }

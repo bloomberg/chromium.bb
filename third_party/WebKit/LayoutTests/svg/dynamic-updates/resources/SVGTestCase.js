@@ -12,6 +12,12 @@ function createSVGElement(name) {
     return document.createElementNS(svgNS, "svg:" + name);
 }
 
+function shouldHaveBBox(element, width, height)
+{
+    shouldBe(element + ".getBBox().width", width);
+    shouldBe(element + ".getBBox().height", height);
+}
+
 function createSVGTestCase() {
     if (window.testRunner)
         testRunner.waitUntilDone();

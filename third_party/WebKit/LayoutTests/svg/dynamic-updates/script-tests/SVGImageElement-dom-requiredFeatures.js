@@ -11,19 +11,19 @@ rootSVGElement.appendChild(imageElement);
 
 function repaintTest() {
     debug("Check that SVGImageElement is initially displayed");
-    shouldBeEqualToString("document.defaultView.getComputedStyle(imageElement, null).display", "inline");
+    shouldHaveBBox("imageElement", "200", "200");
     debug("Check that setting requiredFeatures to something invalid makes it not render");
     imageElement.setAttribute("requiredFeatures", "http://www.w3.org/TR/SVG11/feature#BogusFeature");
-    shouldBeEqualToString("document.defaultView.getComputedStyle(imageElement, null).display", "");
+    shouldHaveBBox("imageElement", "0", "0");
     debug("Check that setting requiredFeatures to something valid makes it render again");
     imageElement.setAttribute("requiredFeatures", "http://www.w3.org/TR/SVG11/feature#Shape");
-    shouldBeEqualToString("document.defaultView.getComputedStyle(imageElement, null).display", "inline");
+    shouldHaveBBox("imageElement", "200", "200");
     debug("Check that adding something valid to requiredFeatures keeps rendering the element");
     imageElement.setAttribute("requiredFeatures", "http://www.w3.org/TR/SVG11/feature#Gradient");
-    shouldBeEqualToString("document.defaultView.getComputedStyle(imageElement, null).display", "inline");
+    shouldHaveBBox("imageElement", "200", "200");
     debug("Check that adding something invalid to requiredFeatures makes it not render");
     imageElement.setAttribute("requiredFeatures", "http://www.w3.org/TR/SVG11/feature#BogusFeature");
-    shouldBeEqualToString("document.defaultView.getComputedStyle(imageElement, null).display", "");
+    shouldHaveBBox("imageElement", "0", "0");
 
     completeTest();
 }

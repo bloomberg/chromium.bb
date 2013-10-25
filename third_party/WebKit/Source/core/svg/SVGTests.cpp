@@ -146,23 +146,6 @@ bool SVGTests::isKnownAttribute(const QualifiedName& attrName)
         || attrName == SVGNames::systemLanguageAttr;
 }
 
-bool SVGTests::handleAttributeChange(SVGElement* targetElement, const QualifiedName& attrName)
-{
-    ASSERT(targetElement);
-    if (!isKnownAttribute(attrName))
-        return false;
-    if (!targetElement->inDocument())
-        return true;
-
-    bool valid = targetElement->isValid();
-    if (valid && !targetElement->confusingAndOftenMisusedAttached() && targetElement->parentNode()->confusingAndOftenMisusedAttached())
-        targetElement->lazyAttach();
-    else if (!valid && targetElement->confusingAndOftenMisusedAttached())
-        targetElement->detach();
-
-    return true;
-}
-
 void SVGTests::addSupportedAttributes(HashSet<QualifiedName>& supportedAttributes)
 {
     supportedAttributes.add(SVGNames::requiredFeaturesAttr);

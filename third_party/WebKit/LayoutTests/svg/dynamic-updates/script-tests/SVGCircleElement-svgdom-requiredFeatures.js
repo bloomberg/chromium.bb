@@ -10,19 +10,19 @@ rootSVGElement.appendChild(circleElement);
 
 function repaintTest() {
     debug("Check that SVGCircleElement is initially displayed");
-    shouldBeEqualToString("document.defaultView.getComputedStyle(circleElement, null).display", "inline");
+    shouldHaveBBox("circleElement", "400", "400");
     debug("Check that setting requiredFeatures to something invalid makes it not render");
     circleElement.requiredFeatures.appendItem("http://www.w3.org/TR/SVG11/feature#BogusFeature");
-    shouldBeEqualToString("document.defaultView.getComputedStyle(circleElement, null).display", "");
+    shouldHaveBBox("circleElement", "0", "0");
     debug("Check that setting requiredFeatures to something valid makes it render again");
     circleElement.requiredFeatures.replaceItem("http://www.w3.org/TR/SVG11/feature#Shape", 0);
-    shouldBeEqualToString("document.defaultView.getComputedStyle(circleElement, null).display", "inline");
+    shouldHaveBBox("circleElement", "400", "400");
     debug("Check that adding something valid to requiredFeatures keeps rendering the element");
     circleElement.requiredFeatures.appendItem("http://www.w3.org/TR/SVG11/feature#Gradient");
-    shouldBeEqualToString("document.defaultView.getComputedStyle(circleElement, null).display", "inline");
+    shouldHaveBBox("circleElement", "400", "400");
     debug("Check that adding something invalid to requiredFeatures makes it not render");
     circleElement.requiredFeatures.appendItem("http://www.w3.org/TR/SVG11/feature#BogusFeature");
-    shouldBeEqualToString("document.defaultView.getComputedStyle(circleElement, null).display", "");
+    shouldHaveBBox("circleElement", "0", "0");
 
     completeTest();
 }
