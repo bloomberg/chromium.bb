@@ -1,0 +1,9 @@
+{
+    "page_set": "../html5gaming.json", 
+    "description": "Describes the Web Page Replay archives for a page set. Don't edit by hand! Use record_wpr for updating.", 
+    "archives": {
+        "html5gaming_000.wpr": [
+            "http://html5-benchmark.com/"
+        ]
+    }
+}
