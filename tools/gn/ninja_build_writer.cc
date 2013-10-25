@@ -51,6 +51,12 @@ std::string GetSelfInvocationCommand(const BuildSettings* build_settings) {
 
   EscapeOptions escape_shell;
   escape_shell.mode = ESCAPE_SHELL;
+#if defined(OS_WIN)
+  // The command line code quoting varies by platform. We have one string,
+  // possibly with spaces, that we want to quote. The Windows command line
+  // quotes again, so we don't want quoting. The Posix one doesn't.
+  escape_shell.inhibit_quoting = true;
+#endif
 
   const CommandLine& our_cmdline = *CommandLine::ForCurrentProcess();
   const CommandLine::SwitchMap& switches = our_cmdline.GetSwitches();
