@@ -56,7 +56,7 @@ void* GetReturnAddress(void* frame_end) {
 // NOTE: we also want to compile this file with local compilers like so
 // g++ tests/toolchain/stack_frame.cc -m32
 // g++ tests/toolchain/stack_frame.cc -m64
-// toolchain/linux_arm-trusted/arm-2009q3/bin/arm-none-linux-gnueabi-g++
+// arm-none-linux-gnueabihf-g++
 //   tests/toolchain/stack_frame.cc
 //   -Wl,-T -Wl,toolchain/linux_arm-trusted/ld_script_arm_trusted
 #if defined(__arm__)

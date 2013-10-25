@@ -348,7 +348,7 @@ def SetUpArgumentBits(env):
   BitFromArgument(env, 'android', default=False,
                   desc='Build for Android target')
 
-  BitFromArgument(env, 'arm_hard_float', default=False,
+  BitFromArgument(env, 'arm_hard_float', default=True,
                   desc='Build for hard float ARM ABI')
 
   BitFromArgument(env, 'skip_nonstable_bitcode', default=False,

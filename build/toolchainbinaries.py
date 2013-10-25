@@ -65,6 +65,9 @@ def EncodeToolchainUrl(base_url, version, flavor):
   elif 'new' == flavor:
     return '%s/%s.tgz' % (
       base_url, version)
+  elif 'arm-trusted' in flavor:
+    return '%s/toolchain/%s/sysroot-arm-trusted.tgz' % (
+      base_url, version)
   else:
     return '%s/toolchain/%s/naclsdk_%s.tgz' % (
       base_url, version, flavor)

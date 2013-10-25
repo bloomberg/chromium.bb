@@ -6,6 +6,7 @@
 import json
 import hashlib
 import os
+import platform
 import sys
 
 from SCons.Errors import UserError
@@ -120,6 +121,17 @@ assert bitness in [32, 64]
 # Asan does not instrument DLLs (only executables), so we will be unable to
 # run tests under asan.
 python_can_load_dll = python_bitness == bitness and not env.Bit('asan')
+
+# On ARM we still have some test bots that are running an armel system
+# image (with armhf runtime supported added) which means that the python
+# executable is armel and cannot load binaries built by the arm cross
+# compiler that we use.
+# TODO(sbc): remove this once the testbots get upgraded to armhf:
+# https://code.google.com/p/nativeclient/issues/detail?id=3716
+if platform.machine() == 'armv7l':
+  with open(sys.executable) as infile:
+    if '/lib/ld-linux-armhf' not in infile.read(1024):
+      python_can_load_dll = False
 
 if python_can_load_dll:
   validator_py_test = env.AutoDepsCommand(
