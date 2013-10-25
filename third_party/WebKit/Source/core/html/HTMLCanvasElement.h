@@ -111,11 +111,6 @@ public:
     void makePresentationCopy();
     void clearPresentationCopy();
 
-    FloatRect convertLogicalToDevice(const FloatRect&) const;
-    FloatSize convertLogicalToDevice(const FloatSize&) const;
-
-    FloatSize convertDeviceToLogical(const FloatSize&) const;
-
     SecurityOrigin* securityOrigin() const;
     void setOriginTainted() { m_originClean = false; }
     bool originClean() const { return m_originClean; }
@@ -147,6 +142,7 @@ private:
     void clearImageBuffer();
 
     void setSurfaceSize(const IntSize&);
+    IntSize convertLogicalToDevice(const IntSize&) const;
 
     bool paintsIntoCanvasBuffer() const;
 

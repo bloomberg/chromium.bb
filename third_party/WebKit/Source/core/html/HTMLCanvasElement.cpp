@@ -60,10 +60,10 @@ static const int DefaultHeight = 150;
 // Firefox limits width/height to 32767 pixels, but slows down dramatically before it
 // reaches that limit. We limit by area instead, giving us larger maximum dimensions,
 // in exchange for a smaller maximum canvas size.
-static const float MaxCanvasArea = 32768 * 8192; // Maximum canvas area in CSS pixels
+static const int MaxCanvasArea = 32768 * 8192; // Maximum canvas area in CSS pixels
 
 //In Skia, we will also limit width/height to 32767.
-static const float MaxSkiaDim = 32767.0F; // Maximum width/height in CSS pixels.
+static const int MaxSkiaDim = 32767; // Maximum width/height in CSS pixels.
 
 HTMLCanvasElement::HTMLCanvasElement(const QualifiedName& tagName, Document& document)
     : HTMLElement(tagName, document)
@@ -410,35 +410,11 @@ PassRefPtr<ImageData> HTMLCanvasElement::getImageData()
     return ctx->paintRenderingResultsToImageData();
 }
 
-FloatRect HTMLCanvasElement::convertLogicalToDevice(const FloatRect& logicalRect) const
-{
-    FloatRect deviceRect(logicalRect);
-    deviceRect.scale(m_deviceScaleFactor);
-
-    float x = floorf(deviceRect.x());
-    float y = floorf(deviceRect.y());
-    float w = ceilf(deviceRect.maxX() - x);
-    float h = ceilf(deviceRect.maxY() - y);
-    deviceRect.setX(x);
-    deviceRect.setY(y);
-    deviceRect.setWidth(w);
-    deviceRect.setHeight(h);
-
-    return deviceRect;
-}
-
-FloatSize HTMLCanvasElement::convertLogicalToDevice(const FloatSize& logicalSize) const
+IntSize HTMLCanvasElement::convertLogicalToDevice(const IntSize& logicalSize) const
 {
     float width = ceilf(logicalSize.width() * m_deviceScaleFactor);
     float height = ceilf(logicalSize.height() * m_deviceScaleFactor);
-    return FloatSize(width, height);
-}
-
-FloatSize HTMLCanvasElement::convertDeviceToLogical(const FloatSize& deviceSize) const
-{
-    float width = ceilf(deviceSize.width() / m_deviceScaleFactor);
-    float height = ceilf(deviceSize.height() / m_deviceScaleFactor);
-    return FloatSize(width, height);
+    return IntSize(width, height);
 }
 
 SecurityOrigin* HTMLCanvasElement::securityOrigin() const
@@ -480,22 +456,17 @@ void HTMLCanvasElement::createImageBuffer()
     m_hasCreatedImageBuffer = true;
     m_didClearImageBuffer = true;
 
-    FloatSize logicalSize = size();
-    FloatSize deviceSize = convertLogicalToDevice(logicalSize);
-    if (!deviceSize.isExpressibleAsIntSize())
-        return;
-
+    IntSize deviceSize = convertLogicalToDevice(size());
     if (deviceSize.width() * deviceSize.height() > MaxCanvasArea)
         return;
 
     if (deviceSize.width() > MaxSkiaDim || deviceSize.height() > MaxSkiaDim)
         return;
 
-    IntSize bufferSize(deviceSize.width(), deviceSize.height());
-    if (!bufferSize.width() || !bufferSize.height())
+    if (!deviceSize.width() || !deviceSize.height())
         return;
 
-    RenderingMode renderingMode = shouldAccelerate(bufferSize) ? Accelerated : UnacceleratedNonPlatformBuffer;
+    RenderingMode renderingMode = shouldAccelerate(deviceSize) ? Accelerated : UnacceleratedNonPlatformBuffer;
     int msaaSampleCount = 0;
     if (renderingMode == Accelerated && document().settings()->antialiased2dCanvasEnabled())
         msaaSampleCount = document().settings()->accelerated2dCanvasMSAASampleCount();
@@ -579,9 +550,8 @@ void HTMLCanvasElement::clearCopiedImage()
 AffineTransform HTMLCanvasElement::baseTransform() const
 {
     ASSERT(m_hasCreatedImageBuffer);
-    FloatSize unscaledSize = size();
-    FloatSize deviceSize = convertLogicalToDevice(unscaledSize);
-    IntSize size(deviceSize.width(), deviceSize.height());
+    IntSize unscaledSize = size();
+    IntSize size = convertLogicalToDevice(unscaledSize);
     AffineTransform transform;
     if (size.width() && size.height())
         transform.scaleNonUniform(size.width() / unscaledSize.width(), size.height() / unscaledSize.height());
