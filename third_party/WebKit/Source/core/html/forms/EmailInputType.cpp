@@ -141,6 +141,14 @@ PassRefPtr<InputType> EmailInputType::create(HTMLInputElement& element)
 void EmailInputType::countUsage()
 {
     observeFeatureIfVisible(UseCounter::InputTypeEmail);
+    bool hasMaxLength = element().fastHasAttribute(HTMLNames::maxlengthAttr);
+    if (hasMaxLength)
+        observeFeatureIfVisible(UseCounter::InputTypeEmailMaxLength);
+    if (element().multiple()) {
+        observeFeatureIfVisible(UseCounter::InputTypeEmailMultiple);
+        if (hasMaxLength)
+            observeFeatureIfVisible(UseCounter::InputTypeEmailMultipleMaxLength);
+    }
 }
 
 const AtomicString& EmailInputType::formControlType() const
