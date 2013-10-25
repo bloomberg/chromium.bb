@@ -149,7 +149,6 @@ namespace WebCore {
     private:
         virtual void refExecutionContext() OVERRIDE { ref(); }
         virtual void derefExecutionContext() OVERRIDE { deref(); }
-        virtual PassOwnPtr<LifecycleNotifier<ExecutionContext> > createLifecycleNotifier() OVERRIDE;
 
         virtual const KURL& virtualURL() const OVERRIDE;
         virtual KURL virtualCompleteURL(const String&) const;

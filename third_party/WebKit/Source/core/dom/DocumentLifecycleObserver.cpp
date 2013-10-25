@@ -31,8 +31,18 @@
 
 namespace WebCore {
 
+template<> void observerContext(Document* context, LifecycleObserver<Document>* observer)
+{
+    static_cast<LifecycleContext<Document>*>(context)->wasObservedBy(observer);
+}
+
+template<> void unobserverContext(Document* context, LifecycleObserver<Document>* observer)
+{
+    static_cast<LifecycleContext<Document>*>(context)->wasUnobservedBy(observer);
+}
+
 DocumentLifecycleObserver::DocumentLifecycleObserver(Document* document)
-    : ContextLifecycleObserver(document, DocumentLifecycleObserverType)
+    : LifecycleObserver<Document>(document, DocumentLifecycleObserverType)
 {
 }
 

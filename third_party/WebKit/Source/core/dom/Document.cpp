@@ -5320,14 +5320,14 @@ float Document::devicePixelRatio() const
     return m_frame ? m_frame->devicePixelRatio() : 1.0;
 }
 
-PassOwnPtr<LifecycleNotifier<ExecutionContext> > Document::createLifecycleNotifier()
+PassOwnPtr<LifecycleNotifier<Document> > Document::createLifecycleNotifier()
 {
     return DocumentLifecycleNotifier::create(this);
 }
 
 DocumentLifecycleNotifier& Document::lifecycleNotifier()
 {
-    return static_cast<DocumentLifecycleNotifier&>(ExecutionContext::lifecycleNotifier());
+    return static_cast<DocumentLifecycleNotifier&>(LifecycleContext<Document>::lifecycleNotifier());
 }
 
 void Document::removedStyleSheet(StyleSheet* sheet, RecalcStyleTime when, StyleResolverUpdateMode updateMode)

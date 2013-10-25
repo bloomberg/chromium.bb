@@ -57,7 +57,7 @@ protected:
     Notifier& lifecycleNotifier();
 
 private:
-    virtual PassOwnPtr<Notifier> createLifecycleNotifier();
+    PassOwnPtr<Notifier> createLifecycleNotifier();
 
     OwnPtr<Notifier> m_lifecycleNotifier;
 };
@@ -80,7 +80,7 @@ template<typename T>
 inline typename LifecycleContext<T>::Notifier& LifecycleContext<T>::lifecycleNotifier()
 {
     if (!m_lifecycleNotifier)
-        m_lifecycleNotifier = const_cast<LifecycleContext*>(this)->createLifecycleNotifier();
+        m_lifecycleNotifier = static_cast<T*>(this)->createLifecycleNotifier();
     return *m_lifecycleNotifier;
 }
 

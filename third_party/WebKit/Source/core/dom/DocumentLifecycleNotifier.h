@@ -26,16 +26,17 @@
 #ifndef DocumentLifecycleNotifier_h
 #define DocumentLifecycleNotifier_h
 
-#include "core/dom/ContextLifecycleNotifier.h"
 #include "core/dom/DocumentLifecycleObserver.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/TemporaryChange.h"
 
 namespace WebCore {
 
-class DocumentLifecycleNotifier : public ContextLifecycleNotifier {
+class Document;
+
+class DocumentLifecycleNotifier : public LifecycleNotifier<Document> {
 public:
-    static PassOwnPtr<DocumentLifecycleNotifier> create(ExecutionContext*);
+    static PassOwnPtr<DocumentLifecycleNotifier> create(Document*);
 
     void notifyDocumentWasDetached();
     void notifyDocumentWasDisposed();
@@ -44,15 +45,15 @@ public:
     virtual void removeObserver(Observer*) OVERRIDE;
 
 private:
-    explicit DocumentLifecycleNotifier(ExecutionContext*);
+    explicit DocumentLifecycleNotifier(Document*);
 
     typedef HashSet<DocumentLifecycleObserver*> DocumentObserverSet;
     DocumentObserverSet m_documentObservers;
 };
 
-inline PassOwnPtr<DocumentLifecycleNotifier> DocumentLifecycleNotifier::create(ExecutionContext* context)
+inline PassOwnPtr<DocumentLifecycleNotifier> DocumentLifecycleNotifier::create(Document* document)
 {
-    return adoptPtr(new DocumentLifecycleNotifier(context));
+    return adoptPtr(new DocumentLifecycleNotifier(document));
 }
 
 inline void DocumentLifecycleNotifier::notifyDocumentWasDetached()

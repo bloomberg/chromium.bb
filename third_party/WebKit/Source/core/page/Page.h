@@ -238,6 +238,7 @@ public:
     void didCommitLoad(Frame*);
 
     static void networkStateChanged(bool online);
+    PassOwnPtr<LifecycleNotifier<Page> > createLifecycleNotifier();
 
 protected:
     PageLifecycleNotifier& lifecycleNotifier();
@@ -252,8 +253,6 @@ private:
 #endif
 
     void setTimerAlignmentInterval(double);
-
-    virtual PassOwnPtr<LifecycleNotifier<Page> > createLifecycleNotifier() OVERRIDE;
 
     const OwnPtr<AutoscrollController> m_autoscrollController;
     const OwnPtr<Chrome> m_chrome;

@@ -32,8 +32,8 @@
 
 namespace WebCore {
 
-DocumentLifecycleNotifier::DocumentLifecycleNotifier(ExecutionContext* context)
-    : ContextLifecycleNotifier(context)
+DocumentLifecycleNotifier::DocumentLifecycleNotifier(Document* document)
+    : LifecycleNotifier<Document>(document)
 {
 }
 
@@ -44,7 +44,7 @@ void DocumentLifecycleNotifier::addObserver(DocumentLifecycleNotifier::Observer*
         m_documentObservers.add(static_cast<DocumentLifecycleObserver*>(observer));
     }
 
-    ContextLifecycleNotifier::addObserver(observer);
+    LifecycleNotifier<Document>::addObserver(observer);
 }
 
 void DocumentLifecycleNotifier::removeObserver(DocumentLifecycleNotifier::Observer* observer)
@@ -54,7 +54,7 @@ void DocumentLifecycleNotifier::removeObserver(DocumentLifecycleNotifier::Observ
         m_documentObservers.remove(static_cast<DocumentLifecycleObserver*>(observer));
     }
 
-    ContextLifecycleNotifier::removeObserver(observer);
+    LifecycleNotifier<Document>::removeObserver(observer);
 }
 
 } // namespace WebCore

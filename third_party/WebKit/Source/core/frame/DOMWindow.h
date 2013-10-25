@@ -381,6 +381,8 @@ namespace WebCore {
 
         bool isInsecureScriptAccess(DOMWindow* activeWindow, const String& urlString);
 
+        PassOwnPtr<LifecycleNotifier<DOMWindow> > createLifecycleNotifier();
+
     protected:
         DOMWindowLifecycleNotifier& lifecycleNotifier();
 
@@ -388,8 +390,6 @@ namespace WebCore {
         explicit DOMWindow(Frame*);
 
         Page* page();
-
-        virtual PassOwnPtr<LifecycleNotifier<DOMWindow> > createLifecycleNotifier() OVERRIDE;
 
         virtual void frameDestroyed() OVERRIDE;
         virtual void willDetachPage() OVERRIDE;

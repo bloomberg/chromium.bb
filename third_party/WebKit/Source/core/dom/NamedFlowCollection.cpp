@@ -41,7 +41,7 @@
 namespace WebCore {
 
 NamedFlowCollection::NamedFlowCollection(Document* document)
-    : ContextLifecycleObserver(document)
+    : DocumentLifecycleObserver(document)
 {
     ASSERT(RuntimeEnabledFeatures::cssRegionsEnabled());
 }
@@ -103,8 +103,7 @@ void NamedFlowCollection::discardNamedFlow(NamedFlow* namedFlow)
 
 Document* NamedFlowCollection::document() const
 {
-    ExecutionContext* context = ContextLifecycleObserver::executionContext();
-    return toDocument(context);
+    return lifecycleContext();
 }
 
 PassRefPtr<DOMNamedFlowCollection> NamedFlowCollection::createCSSOMSnapshot()

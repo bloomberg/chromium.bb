@@ -26,14 +26,16 @@
 #ifndef DocumentLifecycleObserver_h
 #define DocumentLifecycleObserver_h
 
-#include "core/dom/ContextLifecycleNotifier.h"
-#include "core/dom/ContextLifecycleObserver.h"
+#include "core/platform/LifecycleContext.h"
 
 namespace WebCore {
 
 class Document;
 
-class DocumentLifecycleObserver : public ContextLifecycleObserver {
+template<> void observerContext(Document*, LifecycleObserver<Document>*);
+template<> void unobserverContext(Document*, LifecycleObserver<Document>*);
+
+class DocumentLifecycleObserver : public LifecycleObserver<Document> {
 public:
     explicit DocumentLifecycleObserver(Document*);
     virtual ~DocumentLifecycleObserver();

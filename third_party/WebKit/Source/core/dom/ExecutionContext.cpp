@@ -376,8 +376,7 @@ void ExecutionContext::postTask(PassOwnPtr<ExecutionContextTask> task)
 
 PassOwnPtr<LifecycleNotifier<ExecutionContext> > ExecutionContext::createLifecycleNotifier()
 {
-    RELEASE_ASSERT(m_client);
-    return m_client->createLifecycleNotifier();
+    return ContextLifecycleNotifier::create(this);
 }
 
 ContextLifecycleNotifier& ExecutionContext::lifecycleNotifier()

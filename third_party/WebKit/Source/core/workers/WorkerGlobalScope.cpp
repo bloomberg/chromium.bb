@@ -333,9 +333,4 @@ WorkerEventQueue* WorkerGlobalScope::eventQueue() const
     return m_eventQueue.get();
 }
 
-PassOwnPtr<LifecycleNotifier<ExecutionContext> > WorkerGlobalScope::createLifecycleNotifier()
-{
-    return ContextLifecycleNotifier::create(this);
-}
-
 } // namespace WebCore

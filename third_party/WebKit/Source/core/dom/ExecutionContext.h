@@ -123,6 +123,8 @@ public:
     bool isSandboxed(SandboxFlags mask) const { return m_sandboxFlags & mask; }
     void enforceSandboxFlags(SandboxFlags mask);
 
+    PassOwnPtr<LifecycleNotifier<ExecutionContext> > createLifecycleNotifier();
+
 protected:
 
     ContextLifecycleNotifier& lifecycleNotifier();
@@ -137,7 +139,6 @@ private:
     virtual void refExecutionContext() = 0;
     virtual void derefExecutionContext() = 0;
     // LifecycleContext implementation.
-    virtual PassOwnPtr<LifecycleNotifier<ExecutionContext> > createLifecycleNotifier() OVERRIDE;
 
     // Implementation details for DOMTimer. No other classes should call these functions.
     int installNewTimeout(PassOwnPtr<ScheduledAction>, int timeout, bool singleShot);

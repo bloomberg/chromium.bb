@@ -30,7 +30,7 @@
 #ifndef NamedFlowCollection_h
 #define NamedFlowCollection_h
 
-#include "core/dom/ContextLifecycleObserver.h"
+#include "core/dom/DocumentLifecycleObserver.h"
 #include "core/dom/NamedFlow.h"
 #include "wtf/Forward.h"
 #include "wtf/ListHashSet.h"
@@ -43,7 +43,7 @@ namespace WebCore {
 class Document;
 class DOMNamedFlowCollection;
 
-class NamedFlowCollection : public RefCounted<NamedFlowCollection>, public ContextLifecycleObserver {
+class NamedFlowCollection : public RefCounted<NamedFlowCollection>, public DocumentLifecycleObserver {
 public:
     static PassRefPtr<NamedFlowCollection> create(Document* doc) { return adoptRef(new NamedFlowCollection(doc)); }
 

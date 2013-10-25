@@ -66,7 +66,6 @@ public:
     virtual EventTarget* errorEventTarget() = 0;
     virtual void logExceptionToConsole(const String& errorMessage, const String& sourceURL, int lineNumber, int columnNumber, PassRefPtr<ScriptCallStack>) = 0;
     virtual double timerAlignmentInterval() const = 0;
-    virtual PassOwnPtr<LifecycleNotifier<ExecutionContext> > createLifecycleNotifier() = 0;
     virtual void didUpdateSecurityOrigin() = 0;
 
     void addConsoleMessage(MessageSource source, MessageLevel level, const String& message, const String& sourceURL, unsigned lineNumber) { addMessage(source, level, message, sourceURL, lineNumber, 0); }
