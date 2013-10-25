@@ -303,6 +303,11 @@ vc_dispmanx_get_handle_from_wl_buffer(struct wl_resource *_buffer)
 	return DISPMANX_NO_HANDLE;
 }
 
+static inline void
+vc_dispmanx_set_wl_buffer_in_use(struct wl_resource *_buffer, int in_use)
+{
+}
+
 /* from /opt/vc/include/EGL/eglplatform.h */
 
 typedef struct {

@@ -362,6 +362,28 @@ rpi_resource_update(struct rpi_resource *resource, struct weston_buffer *buffer,
 	return ret ? -1 : 0;
 }
 
+static void
+rpir_egl_buffer_destroy(struct rpir_egl_buffer *egl_buffer)
+{
+	struct weston_buffer *buffer;
+
+	if (egl_buffer == NULL)
+		return;
+
+	buffer = egl_buffer->buffer_ref.buffer;
+	if (buffer == NULL) {
+		/* The client has already destroyed the wl_buffer, the
+		 * compositor has the responsibility to delete the resource.
+		 */
+		vc_dispmanx_resource_delete(egl_buffer->resource_handle);
+	} else {
+		vc_dispmanx_set_wl_buffer_in_use(buffer->resource, 0);
+		weston_buffer_reference(&egl_buffer->buffer_ref, NULL);
+	}
+
+	free(egl_buffer);
+}
+
 static struct rpir_surface *
 rpir_surface_create(struct rpi_renderer *renderer)
 {
@@ -404,23 +426,9 @@ rpir_surface_destroy(struct rpir_surface *surface)
 	rpi_resource_release(&surface->resources[1]);
 	DBG("rpir_surface %p destroyed (%u)\n", surface, surface->visible_views);
 
-	if (surface->egl_back != NULL) {
-		weston_buffer_reference(&surface->egl_back->buffer_ref, NULL);
-		free(surface->egl_back);
-		surface->egl_back = NULL;
-	}
-
-	if (surface->egl_front != NULL) {
-		weston_buffer_reference(&surface->egl_front->buffer_ref, NULL);
-		free(surface->egl_front);
-		surface->egl_front = NULL;
-	}
-
-	if (surface->egl_old_front != NULL) {
-		weston_buffer_reference(&surface->egl_old_front->buffer_ref, NULL);
-		free(surface->egl_old_front);
-		surface->egl_old_front = NULL;
-	}
+	rpir_egl_buffer_destroy(surface->egl_back);
+	rpir_egl_buffer_destroy(surface->egl_front);
+	rpir_egl_buffer_destroy(surface->egl_old_front);
 
 	free(surface);
 }
@@ -1002,7 +1010,6 @@ rpir_view_update(struct rpir_view *view, struct rpir_output *output,
 	int ret;
 	int obscured;
 
-
 	obscured = is_view_not_visible(view->view);
 	if (obscured) {
 		DBG("rpir_view %p totally obscured.\n", view);
@@ -1260,17 +1267,22 @@ rpi_renderer_repaint_output(struct weston_output *base,
 				rpir_surface_swap_pointers(view->surface);
 		}
 
-		if (view->surface->buffer_type == BUFFER_TYPE_EGL &&
-		    view->surface->egl_front->buffer_ref.buffer == NULL) {
-			weston_log("warning: client destroyed current front buffer\n");
-
-			wl_list_remove(&view->link);
-			if (view->handle == DISPMANX_NO_HANDLE) {
-				wl_list_init(&view->link);
+		if (view->surface->buffer_type == BUFFER_TYPE_EGL) {
+			struct weston_buffer *buffer;
+			buffer = view->surface->egl_front->buffer_ref.buffer;
+			if (buffer != NULL) {
+				vc_dispmanx_set_wl_buffer_in_use(buffer->resource, 1);
 			} else {
-				rpir_view_dmx_remove(view, output->update);
-				wl_list_insert(&output->view_cleanup_list,
-					       &view->link);
+				weston_log("warning: client destroyed current front buffer\n");
+
+				wl_list_remove(&view->link);
+				if (view->handle == DISPMANX_NO_HANDLE) {
+					wl_list_init(&view->link);
+				} else {
+					rpir_view_dmx_remove(view, output->update);
+					wl_list_insert(&output->view_cleanup_list,
+						       &view->link);
+				}
 			}
 		}
 	}
@@ -1695,11 +1707,7 @@ rpi_renderer_finish_frame(struct weston_output *base)
 		if (view->surface->buffer_type != BUFFER_TYPE_EGL)
 			continue;
 
-		if (view->surface->egl_old_front == NULL)
-			continue;
-
-		weston_buffer_reference(&view->surface->egl_old_front->buffer_ref, NULL);
-		free(view->surface->egl_old_front);
+		rpir_egl_buffer_destroy(view->surface->egl_old_front);
 		view->surface->egl_old_front = NULL;
 	}
 
