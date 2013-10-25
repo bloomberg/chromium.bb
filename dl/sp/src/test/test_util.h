@@ -120,6 +120,13 @@ void ProcessCommandLine(struct Options* options, int argc, char* argv[],
 void DumpOptions(FILE*, const struct Options* options);
 
 /*
+ * Run FFT test for one case. May or may not include both forward and
+ * inverse tests.
+ */
+void TestOneFFT(int fft_log_size, int signal_type, float signal_value,
+                const struct TestInfo* info, const char* message);
+
+/*
  * Run one forward FFT test of the given size, signal type, and amplitude
  */
 float RunOneForwardTest(int fft_log_size, int signal_type,

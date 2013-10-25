@@ -34,11 +34,10 @@ struct KnownTestFailures known_failures[] = {
     {12, 0, 1},
     {12, 0, 2},
     {12, 0, 3},
-    { 6, 1, 3},
-    { 7, 1, 3},
-    { 8, 1, 3},
-    { 9, 1, 3},
-    {10, 1, 3},
+    { 9, 1, 1},
+    { 9, 1, 2},
+    {10, 1, 1},
+    {10, 1, 2},
     {11, 1, 1},
     {11, 1, 2},
     {11, 1, 3},
@@ -49,10 +48,9 @@ struct KnownTestFailures known_failures[] = {
     {-1, 0, 0}
 };
 
-void TestFFT(int fftLogSize, int scale_factor, int signalType);
-
 void main(int argc, char* argv[]) {
   struct Options options;
+  struct TestInfo info;
 
   SetDefaultOptions(&options, 0, MAX_FFT_ORDER);
 
@@ -69,27 +67,27 @@ void main(int argc, char* argv[]) {
   if (verbose > 255)
     DumpOptions(stderr, &options);
 
+  info.real_only_ = options.real_only_;
+  info.max_fft_order_ = options.max_fft_order_;
+  info.min_fft_order_ = options.min_fft_order_;
+  info.do_forward_tests_ = options.do_forward_tests_;
+  info.do_inverse_tests_ = options.do_inverse_tests_;
+  info.known_failures_ = known_failures;
+  /*
+   * These SNR threshold values critically depend on the
+   * signal_value that is set for the tests!
+   */
+  info.forward_threshold_ = 33.01;
+  info.inverse_threshold_ = 35.59;
+
   if (options.test_mode_) {
-    struct TestInfo info;
-
-    info.real_only_ = options.real_only_;
-    info.max_fft_order_ = options.max_fft_order_;
-    info.min_fft_order_ = options.min_fft_order_;
-    info.do_forward_tests_ = options.do_forward_tests_;
-    info.do_inverse_tests_ = options.do_inverse_tests_;
-    info.known_failures_ = known_failures;
-    /*
-     * These SNR threshold values critically depend on the
-     * signal_value that is set for the tests!
-     */
-    info.forward_threshold_ = 33.01;
-    info.inverse_threshold_ = 35.59;
-
     RunAllTests(&info);
   } else {
-    TestFFT(options.fft_log_size_,
-            options.signal_type_,
-            options.scale_factor_);
+    TestOneFFT(options.fft_log_size_,
+               options.signal_type_,
+               options.signal_value_,
+               &info,
+               "16-bit FFT");
   }
 }
 
@@ -117,23 +115,6 @@ void DumpFFTSpec(OMXFFTSpec_C_SC16* pSpec) {
   printf(" pTwiddle = %p\n", p->pTwiddle);
   printf(" pBuf     = %p\n", p->pBuf);
 }
-
-void TestFFT(int fft_log_size, int signal_type, int scale_factor) {
-  struct SnrResult snr;
-
-  RunOneForwardTest(fft_log_size, signal_type, signal_value, &snr);
-  printf("Forward float FFT\n");
-  printf("SNR:  real part    %f dB\n", snr.real_snr_);
-  printf("      imag part    %f dB\n", snr.imag_snr_);
-  printf("      complex part %f dB\n", snr.complex_snr_);
-
-  RunOneInverseTest(fft_log_size, signal_type, signal_value, &snr);
-  printf("Inverse float FFT\n");
-  printf("SNR:  real part    %f dB\n", snr.real_snr_);
-  printf("      imag part    %f dB\n", snr.imag_snr_);
-  printf("      complex part %f dB\n", snr.complex_snr_);
-}
-
 
 float RunOneForwardTest(int fft_log_size, int signal_type,
                         float unused_signal_value,

@@ -25,8 +25,13 @@ static double CalculateSNR(double signal_power, double noise_power) {
 }
 
 /*
- * Compute the SNR of the actual signal, returning the SNR of the real
- * and imaginary parts separately, and also the overall (complex SNR)
+ * Each of the following functions computes the SNR of the actual
+ * signal, returning the SNR of the real and imaginary parts
+ * separately, and also the overall (complex SNR).
+ *
+ * For tests that compare real signals (CompareReal32, CompareReal16,
+ * CompareFloat), the real SNR is also copied to the overall (complex)
+ * SNR result.
  */
 
 void CompareComplex32(struct SnrResult* snr, OMX_SC32* actual,
@@ -108,10 +113,6 @@ void CompareComplex16(struct SnrResult* snr, OMX_SC16* actual,
     snr->complex_snr_ = CalculateSNR(complexSignalPower, complexNoisePower);
 }
 
-/*
- * Compute the SNR of the actual real signal, returning the SNR.
- */
-
 void CompareReal32(struct SnrResult* snr, OMX_S32* actual,
                    OMX_S32* expected, int size) {
   double real_signal_power = 0;
@@ -132,7 +133,7 @@ void CompareReal32(struct SnrResult* snr, OMX_S32* actual,
 
   snr->real_snr_ = CalculateSNR(real_signal_power, real_noise_power);
   snr->imag_snr_ = -10000;
-  snr->complex_snr_ = -10000;
+  snr->complex_snr_ = snr->real_snr_;
 }
 
 void CompareReal16(struct SnrResult* snr, OMX_S16* actual,
@@ -155,7 +156,7 @@ void CompareReal16(struct SnrResult* snr, OMX_S16* actual,
 
   snr->real_snr_ = CalculateSNR(real_signal_power, real_noise_power);
   snr->imag_snr_ = -10000;
-  snr->complex_snr_ = -10000;
+  snr->complex_snr_ = snr->real_snr_;
 }
 
 void CompareComplexFloat(struct SnrResult* snr, OMX_FC32* actual,

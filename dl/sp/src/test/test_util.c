@@ -18,7 +18,7 @@
 #include "dl/sp/src/test/compare.h"
 
 /*
- * Test resuls from running either forward or inverse FFT tests
+ * Test results from running either forward or inverse FFT tests
  */
 struct TestResult {
   /* Number of tests that failed */
@@ -29,6 +29,12 @@ struct TestResult {
 
   /* Number of tests that were expected to fail */
   int expected_failure_count_;
+
+  /* Number of tests that were expected to fail but didn't */
+  int unexpected_pass_count_;
+
+  /* Number of tests that unexpectedly failed */
+  int unexpected_failure_count_;
 
   /* The minimum SNR found for all of the tests */
   float min_snr_;
@@ -200,6 +206,37 @@ int IsKnownFailure(int fft_order, int is_inverse_fft, int signal_type,
 }
 
 /*
+ * Run one FFT test
+ */
+void TestOneFFT(int fft_log_size,
+                int signal_type,
+                float signal_value,
+                const struct TestInfo* info,
+                const char* message) {
+  struct SnrResult snr;
+
+  if (info->do_forward_tests_) {
+    RunOneForwardTest(fft_log_size, signal_type, signal_value, &snr);
+    printf("Forward %s\n", message);
+    printf("SNR:  real part    %10.3f dB\n", snr.real_snr_);
+    printf("      imag part    %10.3f dB\n", snr.imag_snr_);
+    printf("      complex part %10.3f dB\n", snr.complex_snr_);
+  }
+
+  if (info->do_inverse_tests_) {
+    RunOneInverseTest(fft_log_size, signal_type, signal_value, &snr);
+    printf("Inverse %s\n", message);
+    if (info->real_only_) {
+      printf("SNR:  real         %10.3f dB\n", snr.real_snr_);
+    } else {
+      printf("SNR:  real part    %10.3f dB\n", snr.real_snr_);
+      printf("      imag part    %10.3f dB\n", snr.imag_snr_);
+      printf("      complex part %10.3f dB\n", snr.complex_snr_);
+    }
+  }
+}
+
+/*
  * Run a set of tests, printing out the result of each test.
  */
 void RunTests(struct TestResult* result,
@@ -214,6 +251,8 @@ void RunTests(struct TestResult* result,
   int tests = 0;
   int failures = 0;
   int expected_failures = 0;
+  int unexpected_failures = 0;
+  int unexpected_passes = 0;
   float min_snr = 1e10;
   struct SnrResult snrResults;
 
@@ -236,6 +275,7 @@ void RunTests(struct TestResult* result,
           ++expected_failures;
           printf(" *FAILED: %s ", id);
         } else {
+          ++unexpected_failures;
           printf("**FAILED: %s ", id);
         }
       } else {
@@ -248,6 +288,7 @@ void RunTests(struct TestResult* result,
         if (test_failed) {
           printf(" (expected failure)");
         } else {
+          ++unexpected_passes;
           printf(" (**Expected to fail, but passed)");
         }
       }
@@ -262,13 +303,19 @@ void RunTests(struct TestResult* result,
          id,
          tests,
          (100.0 * (tests - failures)) / tests);
-  if (expected_failures)
+  if (expected_failures || unexpected_passes || unexpected_failures) {
     printf("    (%d expected failures)\n", expected_failures);
+    printf("    (%d unexpected failures)\n", unexpected_failures);
+    printf("    (%d unexpected passes)\n", unexpected_passes);
+  }
+  
   printf("    (Minimum SNR = %.3f dB)\n", min_snr);
 
   result->failed_count_ = failures;
   result->test_count_ = tests;
   result->expected_failure_count_ = expected_failures;
+  result->unexpected_pass_count_ = unexpected_passes;
+  result->unexpected_failure_count_ = unexpected_failures;
   result->min_snr_ = min_snr;
 }
 
@@ -332,6 +379,12 @@ void RunAllTests(const struct TestInfo* info) {
       printf("  (%d expected failures)\n",
              forward_results.expected_failure_count_
              + inverse_results.expected_failure_count_);
+      printf("  (%d unexpected failures)\n",
+             forward_results.unexpected_failure_count_
+             + inverse_results.unexpected_failure_count_);
+      printf("  (%d unexpected passes)\n",
+             forward_results.unexpected_pass_count_
+             + inverse_results.unexpected_pass_count_);
     }
     printf("  Min forward SNR = %.3f dB, min inverse SNR = %.3f dB\n",
            min_forward_snr,

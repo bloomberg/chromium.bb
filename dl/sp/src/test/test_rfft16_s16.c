@@ -27,10 +27,9 @@ int verbose = 0;
 int signal_value = 32767;
 int scale_factor = 0;
 
-void TestFFT(int fftLogSize, int scale_factor, int signalType);
-
 void main(int argc, char* argv[]) {
   struct Options options;
+  struct TestInfo info;
 
   SetDefaultOptions(&options, 1, MAX_FFT_ORDER);
 
@@ -47,24 +46,24 @@ void main(int argc, char* argv[]) {
   if (verbose > 255)
     DumpOptions(stderr, &options);
 
+  info.real_only_ = options.real_only_;
+  info.max_fft_order_ = options.max_fft_order_;
+  info.min_fft_order_ = options.min_fft_order_;
+  info.do_forward_tests_ = options.do_forward_tests_;
+  info.do_inverse_tests_ = options.do_inverse_tests_;
+  /* No known failures */
+  info.known_failures_ = 0;
+  info.forward_threshold_ = 45;
+  info.inverse_threshold_ = 14;
+
   if (options.test_mode_) {
-    struct TestInfo info;
-
-    info.real_only_ = options.real_only_;
-    info.max_fft_order_ = options.max_fft_order_;
-    info.min_fft_order_ = options.min_fft_order_;
-    info.do_forward_tests_ = options.do_forward_tests_;
-    info.do_inverse_tests_ = options.do_inverse_tests_;
-    /* No known failures */
-    info.known_failures_ = 0;
-    info.forward_threshold_ = 45;
-    info.inverse_threshold_ = 14;
-
     RunAllTests(&info);
   } else {
-    TestFFT(options.fft_log_size_,
-            options.signal_type_,
-            options.scale_factor_);
+    TestOneFFT(options.fft_log_size_,
+               options.signal_type_,
+               options.signal_value_,
+               &info,
+               "16-bit Real FFT using 16-bit complex FFT");
   }
 }
 
@@ -85,20 +84,6 @@ void GenerateSignal(struct ComplexFloat* fft,
   }
 
   free(test_signal);
-}
-
-void TestFFT(int fft_log_size, int signal_type, int scale_factor) {
-  struct SnrResult snr;
-
-  RunOneForwardTest(fft_log_size, signal_type, signal_value, &snr);
-  printf("Forward float FFT\n");
-  printf("SNR:  real part    %f dB\n", snr.real_snr_);
-  printf("      imag part    %f dB\n", snr.imag_snr_);
-  printf("      complex part %f dB\n", snr.complex_snr_);
-
-  RunOneInverseTest(fft_log_size, signal_type, signal_value, &snr);
-  printf("Inverse float FFT\n");
-  printf("SNR:  %f dB\n", snr.real_snr_);
 }
 
 float RunOneForwardTest(int fft_log_size, int signal_type,
