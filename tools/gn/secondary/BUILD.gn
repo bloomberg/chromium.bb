@@ -9,6 +9,7 @@ group("root") {
     "//base(//build/toolchain/nacl:x86_newlib)",
     "//chrome",
     "//crypto",
+    "//device/usb:device_usb",
     "//ipc",
     "//net",
     "//net/third_party/nss:ssl",

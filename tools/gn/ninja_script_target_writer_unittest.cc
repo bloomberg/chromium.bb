@@ -126,9 +126,8 @@ TEST(NinjaScriptTargetWriter, InvokeOverSources) {
     // TODO(brettw) I think we'll need to worry about backslashes here
     // depending if we're on actual Windows or Linux pretending to be Windows.
     const char expected_win[] =
-        "arch = environment.x86\n"
         "rule __foo_bar___rule\n"
-        "  command = C:/python/python.exe gyp-win-tool action-wrapper $arch __foo_bar___rule.$unique_name.rsp\n"
+        "  command = C:/python/python.exe gyp-win-tool action-wrapper environment.x86 __foo_bar___rule.$unique_name.rsp\n"
         "  description = CUSTOM //foo:bar()\n"
         "  restat = 1\n"
         "  rspfile = __foo_bar___rule.$unique_name.rsp\n"

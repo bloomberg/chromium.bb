@@ -28,7 +28,6 @@ TEST(NinjaBinaryTargetWriter, SourceSet) {
     // TODO(brettw) I think we'll need to worry about backslashes here
     // depending if we're on actual Windows or Linux pretending to be Windows.
     const char expected_win[] =
-        "arch = environment.x86\n"
         "defines =\n"
         "includes =\n"
         "cflags =\n"
@@ -62,7 +61,6 @@ TEST(NinjaBinaryTargetWriter, SourceSet) {
     // TODO(brettw) I think we'll need to worry about backslashes here
     // depending if we're on actual Windows or Linux pretending to be Windows.
     const char expected_win[] =
-        "arch = environment.x86\n"
         "defines =\n"
         "includes =\n"
         "cflags =\n"

@@ -46,9 +46,6 @@ void BuildSettings::SetSecondarySourcePath(const SourceDir& d) {
 void BuildSettings::SetBuildDir(const SourceDir& d) {
   build_dir_ = d;
   build_to_source_dir_string_ = InvertDir(d);
-
-  DCHECK(!root_path_.empty());
-  file_util::CreateDirectory(build_dir_.Resolve(root_path_));
 }
 
 base::FilePath BuildSettings::GetFullPath(const SourceFile& file) const {

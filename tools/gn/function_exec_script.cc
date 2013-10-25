@@ -348,6 +348,14 @@ Value RunExecScript(Scope* scope,
 
   base::FilePath startup_dir =
       build_settings->GetFullPath(build_settings->build_dir());
+  // The first time a build is run, no targets will have been written so the
+  // build output directory won't exist. We need to make sure it does before
+  // running any scripts with this as its startup directory, although it will
+  // be relatively rare that the directory won't exist by the time we get here.
+  //
+  // If this shows up on benchmarks, we can cache whether we've done this
+  // or not and skip creating the directory.
+  file_util::CreateDirectory(startup_dir);
 
   // Execute the process.
   // TODO(brettw) set the environment block.

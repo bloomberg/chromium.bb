@@ -60,8 +60,7 @@ class BuildSettings {
 
   // The build directory is the root of all output files. The default toolchain
   // files go into here, and non-default toolchains will have separate
-  // toolchain-specific root directories inside this. This should be set after
-  // the root path for the proper directory to be created.
+  // toolchain-specific root directories inside this.
   const SourceDir& build_dir() const { return build_dir_; }
   void SetBuildDir(const SourceDir& dir);
 
