@@ -13695,13 +13695,13 @@ Some features may be unavailable.  Please check that the profile exists and you 
         Upper right
       </message>
       <message name="IDS_NOTIFICATION_WELCOME_BODY" desc="Notification body for the Welcome Notification">
-        With Google Now, stay connected to what you need to know, across all devices.
+        Stay connected to what you need to know, across all devices.
       </message>
       <message name="IDS_NOTIFICATION_WELCOME_DISPLAY_SOURCE" desc="Display source for the Welcome Notification">
         Notifications
       </message>
       <message name="IDS_NOTIFICATION_WELCOME_TITLE" desc="Notification title for the Welcome Notification">
-        Chrome notifications just got better!
+        Google Now on your desktop!
       </message>
       <if expr="is_macosx">
         <message name="IDS_MESSAGE_CENTER_FOOTER_WITH_PRODUCT_TITLE" desc="The label in the footer of the message center tray, with the product title.">
