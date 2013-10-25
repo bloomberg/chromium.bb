@@ -167,6 +167,12 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemContext
   typedef base::Callback<void(base::PlatformFileError result)>
       DeleteFileSystemCallback;
 
+  // Used for OpenPluginPrivateFileSystem.
+  typedef base::Callback<void(const GURL& root,
+                              const std::string& filesystem_id,
+                              base::PlatformFileError result)>
+      OpenPluginPrivateFileSystemCallback;
+
   // Opens the filesystem for the given |origin_url| and |type|, and dispatches
   // |callback| on completion.
   // If |create| is true this may actually set up a filesystem instance
@@ -254,7 +260,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemContext
       FileSystemType type,
       const std::string& plugin_id,
       OpenFileSystemMode mode,
-      const OpenFileSystemCallback& callback);
+      const OpenPluginPrivateFileSystemCallback& callback);
 
  private:
   typedef std::map<FileSystemType, FileSystemBackend*>

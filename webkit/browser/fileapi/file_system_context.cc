@@ -428,7 +428,7 @@ void FileSystemContext::OpenPluginPrivateFileSystem(
     FileSystemType type,
     const std::string& plugin_id,
     OpenFileSystemMode mode,
-    const OpenFileSystemCallback& callback) {
+    const OpenPluginPrivateFileSystemCallback& callback) {
   DCHECK(plugin_private_backend_);
   plugin_private_backend_->OpenPrivateFileSystem(
       origin_url, type, plugin_id, mode, callback);

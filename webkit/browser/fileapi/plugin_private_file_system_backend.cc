@@ -120,7 +120,7 @@ void PluginPrivateFileSystemBackend::OpenPrivateFileSystem(
     FileSystemType type,
     const std::string& plugin_id,
     OpenFileSystemMode mode,
-    const OpenFileSystemCallback& callback) {
+    const OpenPrivateFileSystemCallback& callback) {
   if (!CanHandleType(type) || file_system_options_.is_incognito()) {
     base::MessageLoopProxy::current()->PostTask(
         FROM_HERE, base::Bind(callback, GURL(), std::string(),
@@ -143,7 +143,7 @@ void PluginPrivateFileSystemBackend::OpenPrivateFileSystem(
       base::Bind(callback,
                  GURL(GetIsolatedFileSystemRootURIString(
                      origin_url, filesystem_id, name)),
-                 GetIsolatedFileSystemName(origin_url, filesystem_id)));
+                 filesystem_id));
 }
 
 bool PluginPrivateFileSystemBackend::CanHandleType(FileSystemType type) const {

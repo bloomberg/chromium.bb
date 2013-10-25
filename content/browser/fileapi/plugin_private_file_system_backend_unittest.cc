@@ -27,13 +27,13 @@ const std::string kPlugin2("plugin2");
 const FileSystemType kType = kFileSystemTypePluginPrivate;
 
 void DidOpenFileSystem(GURL* root_url_out,
-                       std::string* name_out,
+                       std::string* filesystem_id_out,
                        base::PlatformFileError* error_out,
                        const GURL& root_url,
-                       const std::string& name,
+                       const std::string& filesystem_id,
                        base::PlatformFileError error) {
   *root_url_out = root_url;
-  *name_out = name;
+  *filesystem_id_out = filesystem_id;
   *error_out = error;
 }
 
@@ -69,12 +69,12 @@ class PluginPrivateFileSystemBackendTest : public testing::Test {
 
 TEST_F(PluginPrivateFileSystemBackendTest, OpenFileSystemBasic) {
   GURL root_url;
-  std::string name;
+  std::string filesystem_id;
   base::PlatformFileError error = base::PLATFORM_FILE_ERROR_FAILED;
 
   backend()->OpenPrivateFileSystem(
       kOrigin, kType, kPlugin1, OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
-      base::Bind(&DidOpenFileSystem, &root_url, &name, &error));
+      base::Bind(&DidOpenFileSystem, &root_url, &filesystem_id, &error));
   base::RunLoop().RunUntilIdle();
   ASSERT_EQ(base::PLATFORM_FILE_OK, error);
 
@@ -82,7 +82,7 @@ TEST_F(PluginPrivateFileSystemBackendTest, OpenFileSystemBasic) {
   error = base::PLATFORM_FILE_ERROR_FAILED;
   backend()->OpenPrivateFileSystem(
       kOrigin, kType, kPlugin1, OPEN_FILE_SYSTEM_FAIL_IF_NONEXISTENT,
-      base::Bind(&DidOpenFileSystem, &root_url, &name, &error));
+      base::Bind(&DidOpenFileSystem, &root_url, &filesystem_id, &error));
   base::RunLoop().RunUntilIdle();
   ASSERT_EQ(base::PLATFORM_FILE_OK, error);
 
@@ -99,20 +99,20 @@ TEST_F(PluginPrivateFileSystemBackendTest, OpenFileSystemBasic) {
 
 TEST_F(PluginPrivateFileSystemBackendTest, PluginIsolation) {
   GURL root_url1, root_url2;
-  std::string name1, name2;
+  std::string filesystem_id1, filesystem_id2;
 
   // Open filesystem for kPlugin1 and kPlugin2.
   base::PlatformFileError error = base::PLATFORM_FILE_ERROR_FAILED;
   backend()->OpenPrivateFileSystem(
       kOrigin, kType, kPlugin1, OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
-      base::Bind(&DidOpenFileSystem, &root_url1, &name1, &error));
+      base::Bind(&DidOpenFileSystem, &root_url1, &filesystem_id1, &error));
   base::RunLoop().RunUntilIdle();
   ASSERT_EQ(base::PLATFORM_FILE_OK, error);
 
   error = base::PLATFORM_FILE_ERROR_FAILED;
   backend()->OpenPrivateFileSystem(
       kOrigin, kType, kPlugin2, OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
-      base::Bind(&DidOpenFileSystem, &root_url2, &name2, &error));
+      base::Bind(&DidOpenFileSystem, &root_url2, &filesystem_id2, &error));
   base::RunLoop().RunUntilIdle();
   ASSERT_EQ(base::PLATFORM_FILE_OK, error);
 
