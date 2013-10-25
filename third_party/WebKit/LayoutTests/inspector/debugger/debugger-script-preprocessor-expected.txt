@@ -13,16 +13,13 @@ Tests script preprocessor (ability to preprocess all scripts upon reload).
 
 Debugger was enabled.
 Page reloaded.
-sourceURLs[0]=
-sourceURLs[1]=inspector-test.js
-sourceURLs[2]=debugger-test.js
-sourceURLs[3]=script1.js.js
-sourceURLs[4]=
-sourceURLs[5]=debugger-script-preprocessor_html.js
-sourceURLs[6]=debugger-script-preprocessor.html
-sourceURLs[7]=dynamicScript1
-sourceURLs[8]=dynamicScript2
-sourceURLs[9]=
+sourceURLs[0]=inspector-test.js
+sourceURLs[1]=debugger-test.js
+sourceURLs[2]=script1.js.js
+sourceURLs[3]=debugger-script-preprocessor_html.js
+sourceURLs[4]=debugger-script-preprocessor.html
+sourceURLs[5]=dynamicScript1
+sourceURLs[6]=dynamicScript2
 Page reloaded.
 Page reloaded.
 Page reloaded.

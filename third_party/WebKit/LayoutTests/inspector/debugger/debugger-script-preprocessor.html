@@ -62,7 +62,7 @@ function test()
     {
         function accept(script)
         {
-            return true;
+            return !!script.sourceURL;
         }
         var scripts = InspectorTest.queryScripts(accept);
         for (var i = 0; i < scripts.length; ++i)
