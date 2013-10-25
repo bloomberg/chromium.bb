@@ -414,6 +414,11 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   void UpdateCursorIfOverSelf();
   bool ShouldSkipFrame(gfx::Size size_in_dip) const;
 
+  // Set the bounds of the window and handle size changes.  Assumes the caller
+  // has already adjusted the origin of |rect| to conform to whatever coordinate
+  // space is required by the aura::Window.
+  void InternalSetBounds(const gfx::Rect& rect);
+
   // Lazily grab a resize lock if the aura window size doesn't match the current
   // frame size, to give time to the renderer.
   void MaybeCreateResizeLock();
