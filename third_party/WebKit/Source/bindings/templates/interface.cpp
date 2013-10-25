@@ -3,7 +3,14 @@
 
 {##############################################################################}
 {% macro attribute_configuration(attribute) %}
-{"{{attribute.name}}", {{attribute.getter_callback_name}}, {{attribute.setter_callback_name}}, {{attribute.getter_callback_name_for_main_world}}, {{attribute.setter_callback_name_for_main_world}}, {{attribute.wrapper_type_info}}, static_cast<v8::AccessControl>({{attribute.access_control_list | join(' | ')}}), static_cast<v8::PropertyAttribute>({{attribute.property_attributes | join(' | ')}}), 0 /* on instance */}{% endmacro %}
+{"{{attribute.name}}", {{attribute.getter_callback_name}}, {{attribute.setter_callback_name}}, {{attribute.getter_callback_name_for_main_world}}, {{attribute.setter_callback_name_for_main_world}}, {{attribute.wrapper_type_info}}, static_cast<v8::AccessControl>({{attribute.access_control_list | join(' | ')}}), static_cast<v8::PropertyAttribute>({{attribute.property_attributes | join(' | ')}}), 0 /* on instance */}
+{%- endmacro %}
+
+
+{##############################################################################}
+{% macro method_configuration(method) %}
+{"{{method.name}}", {{interface_name}}V8Internal::{{method.name}}MethodCallback, 0, 0}
+{%- endmacro %}
 
 
 {##############################################################################}
@@ -62,6 +69,20 @@ static const V8DOMConfiguration::AttributeConfiguration {{v8_class_name}}Attribu
 
 
 {##############################################################################}
+{% block class_methods %}
+{# FIXME: rename to install_methods and put into configure_class_template #}
+{% if methods %}
+static const V8DOMConfiguration::MethodConfiguration {{v8_class_name}}Methods[] = {
+    {% for method in methods %}
+    {{method_configuration(method)}},
+    {% endfor %}
+};
+
+{% endif %}
+{% endblock %}
+
+
+{##############################################################################}
 {% block configure_class_template %}
 {# FIXME: rename to install_dom_template and Install{{v8_class_name}}DOMTemplate #}
 static v8::Handle<v8::FunctionTemplate> Configure{{v8_class_name}}Template(v8::Handle<v8::FunctionTemplate> desc, v8::Isolate* isolate, WrapperWorldType currentWorldType)
@@ -71,7 +92,7 @@ static v8::Handle<v8::FunctionTemplate> Configure{{v8_class_name}}Template(v8::H
     v8::Local<v8::Signature> defaultSignature;
     defaultSignature = V8DOMConfiguration::installDOMClassTemplate(desc, "{{interface_name}}", v8::Local<v8::FunctionTemplate>(), {{v8_class_name}}::internalFieldCount,
         {{installed_attributes}}, {{number_of_attributes}},
-        0, 0, isolate, currentWorldType);
+        {{installed_methods}}, {{number_of_methods}}, isolate, currentWorldType);
     UNUSED_PARAM(defaultSignature);
     {% if constants or has_runtime_enabled_attributes %}
     v8::Local<v8::ObjectTemplate> instance = desc->InstanceTemplate();

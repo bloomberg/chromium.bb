@@ -57,6 +57,7 @@ namespace {{cpp_class_name}}V8Internal {
 
 template <typename T> void V8_USE(T) { }
 
+{# Attributes #}
 {% from 'attributes.cpp' import attribute_getter, attribute_getter_callback,
        attribute_setter, attribute_setter_callback
    with context %}
@@ -76,9 +77,16 @@ template <typename T> void V8_USE(T) { }
 {% endfor %}
 {% block constructor_getter %}{% endblock %}
 {% block replaceable_attribute_setter_and_callback %}{% endblock %}
+{# Methods #}
+{% from 'methods.cpp' import generate_method, method_callback with context %}
+{% for method in methods %}
+{{generate_method(method)}}
+{{method_callback(method)}}
+{% endfor %}
 } // namespace {{cpp_class_name}}V8Internal
 
 {% block class_attributes %}{% endblock %}
+{% block class_methods %}{% endblock %}
 {% block configure_class_template %}{% endblock %}
 {% block get_template %}{% endblock %}
 {% block has_instance_and_has_instance_in_any_world %}{% endblock %}

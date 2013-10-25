@@ -37,6 +37,7 @@ For details, see bug http://crbug.com/239771
 
 import v8_attributes
 from v8_globals import includes
+import v8_methods
 from v8_utilities import cpp_name, runtime_enabled_function_name, v8_class_name
 
 
@@ -71,6 +72,7 @@ def generate_interface(interface):
         'header_includes': INTERFACE_H_INCLUDES,
     }
     template_contents.update(v8_attributes.generate_attributes(interface))
+    template_contents.update(v8_methods.generate_methods(interface))
     return template_contents
 
 

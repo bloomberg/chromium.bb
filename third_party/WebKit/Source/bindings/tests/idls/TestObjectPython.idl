@@ -168,4 +168,7 @@ interface TestObjectPython {
     [Reflect, URL] attribute DOMString urlStringAttribute;
     [Reflect=ReflectUrlAttribute, URL] attribute DOMString urlStringAttribute;
     [Unforgeable] attribute long unforgeableLongAttribute;
+
+    // Methods
+    void voidMethod();
 };
