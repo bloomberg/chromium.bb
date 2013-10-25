@@ -165,6 +165,22 @@ static Resource* resourceFromDataURIRequest(const ResourceRequest& request, cons
     return resource;
 }
 
+static void reportResourceTiming(ResourceTimingInfo* info, Resource* resource, double finishTime, Document* initiatorDocument, bool clearLoadTimings)
+{
+    if (resource->type() == Resource::MainResource)
+        initiatorDocument = initiatorDocument->parentDocument();
+    ASSERT(initiatorDocument);
+    info->setInitialRequest(resource->resourceRequest());
+    info->setFinalResponse(resource->response());
+    if (clearLoadTimings)
+        info->clearLoadTimings();
+    info->setLoadFinishTime(finishTime);
+    if (DOMWindow* initiatorWindow = initiatorDocument->domWindow()) {
+        if (Performance* performance = initiatorWindow->performance())
+            performance->addResourceTiming(*info, initiatorDocument);
+    }
+}
+
 ResourceFetcher::ResourceFetcher(DocumentLoader* documentLoader)
     : m_document(0)
     , m_documentLoader(documentLoader)
@@ -621,8 +637,15 @@ ResourcePtr<Resource> ResourceFetcher::requestResource(Resource::Type type, Fetc
             return 0;
     }
 
-    if (!request.resourceRequest().url().protocolIsData())
+    if (!request.resourceRequest().url().protocolIsData()) {
+        if (policy == Use && !m_validatedURLs.contains(request.resourceRequest().url())) {
+            // Resources loaded from memory cache should be reported the first time they're used.
+            RefPtr<ResourceTimingInfo> info = ResourceTimingInfo::create(request.options().initiatorInfo.name, monotonicallyIncreasingTime());
+            reportResourceTiming(info.get(), resource.get(), monotonicallyIncreasingTime(), document(), true);
+        }
+
         m_validatedURLs.add(request.resourceRequest().url());
+    }
 
     ASSERT(resource->url() == url.string());
     m_documentResources.set(resource->url(), resource);
@@ -966,19 +989,9 @@ void ResourceFetcher::didLoadResource(Resource* resource)
     if (resource && resource->response().isHTTP() && ((!resource->errorOccurred() && !resource->wasCanceled()) || resource->response().httpStatusCode() == 304) && document()) {
         ResourceTimingInfoMap::iterator it = m_resourceTimingInfoMap.find(resource);
         if (it != m_resourceTimingInfoMap.end()) {
-            Document* initiatorDocument = document();
-            if (resource->type() == Resource::MainResource)
-                initiatorDocument = document()->parentDocument();
-            ASSERT(initiatorDocument);
             RefPtr<ResourceTimingInfo> info = it->value;
             m_resourceTimingInfoMap.remove(it);
-            info->setInitialRequest(resource->resourceRequest());
-            info->setFinalResponse(resource->response());
-            info->setLoadFinishTime(resource->loadFinishTime());
-            if (DOMWindow* initiatorWindow = initiatorDocument->domWindow()) {
-                if (Performance* performance = initiatorWindow->performance())
-                    performance->addResourceTiming(*info, initiatorDocument);
-            }
+            reportResourceTiming(info.get(), resource, resource->loadFinishTime(), document(), false);
         }
     }
 

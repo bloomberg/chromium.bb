@@ -61,6 +61,13 @@ public:
     void addRedirect(const ResourceResponse& redirectResponse) { m_redirectChain.append(redirectResponse); }
     const Vector<ResourceResponse>& redirectChain() const { return m_redirectChain; }
 
+    void clearLoadTimings()
+    {
+        m_finalResponse.setResourceLoadTiming(0);
+        for (size_t i = 0; i < m_redirectChain.size(); ++i)
+            m_redirectChain[i].setResourceLoadTiming(0);
+    }
+
 private:
     ResourceTimingInfo(const AtomicString& type, const double time)
         : m_type(type)

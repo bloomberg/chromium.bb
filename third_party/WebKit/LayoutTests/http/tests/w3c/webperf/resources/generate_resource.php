@@ -49,7 +49,11 @@
   header("HTTP/1.1 $response_code");
   header("Content-type: $content_type");
   if (isset($_GET["cacheable"])) {
-    header("Etag: 7");
+    if ($_GET["cacheable"] == 1) {
+      header("Cache-control: max-age=120");
+    } else {
+      header("Etag: 7");
+    }
   } else {
     header("Cache-control: no-cache");
   }
