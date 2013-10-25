@@ -187,11 +187,16 @@ void RenderViewTest::SetUp() {
 
 void RenderViewTest::TearDown() {
   // Try very hard to collect garbage before shutting down.
-  GetMainFrame()->collectGarbage();
-  GetMainFrame()->collectGarbage();
+  // "5" was chosen following http://crbug.com/46571#c9
+  const int kGCIterations = 5;
+  for (int i = 0; i < kGCIterations; i++)
+    GetMainFrame()->collectGarbage();
 
   // Run the loop so the release task from the renderwidget executes.
   ProcessPendingMessages();
+
+  for (int i = 0; i < kGCIterations; i++)
+    GetMainFrame()->collectGarbage();
 
   render_thread_->SendCloseMessage();
   view_ = NULL;
