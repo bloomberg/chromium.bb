@@ -1120,11 +1120,17 @@ bool ExtensionWebRequestEventRouter::DispatchEvent(
     if ((*it)->extra_info_spec &
         (ExtraInfoSpec::BLOCKING | ExtraInfoSpec::ASYNC_BLOCKING)) {
       (*it)->blocked_requests.insert(request->identifier());
+      // If this is the first delegate blocking the request, go ahead and log
+      // it.
+      if (num_handlers_blocking == 0) {
+        std::string delegate_info =
+            l10n_util::GetStringFUTF8(IDS_LOAD_STATE_PARAMETER_EXTENSION,
+                                      UTF8ToUTF16((*it)->extension_name));
+        request->SetDelegateInfo(
+            delegate_info.c_str(),
+            net::URLRequest::DELEGATE_INFO_DISPLAY_TO_USER);
+      }
       ++num_handlers_blocking;
-
-      request->SetLoadStateParam(
-          l10n_util::GetStringFUTF16(IDS_LOAD_STATE_PARAMETER_EXTENSION,
-                                     UTF8ToUTF16((*it)->extension_name)));
     }
   }
 
@@ -1691,20 +1697,25 @@ void ExtensionWebRequestEventRouter::DecrementBlockCount(
   }
 
   if (num_handlers_blocking == 0) {
+    blocked_request.request->SetDelegateInfo(
+        NULL, net::URLRequest::DELEGATE_INFO_DEBUG_ONLY);
     ExecuteDeltas(profile, request_id, true);
   } else {
-    // Update the URLRequest to indicate it is now blocked on a different
-    // extension.
+    // Update the URLRequest to make sure it's tagged with an extension that's
+    // still blocking it.  This may end up being the same extension as before.
     std::set<EventListener>& listeners = listeners_[profile][event_name];
 
     for (std::set<EventListener>::iterator it = listeners.begin();
          it != listeners.end(); ++it) {
-      if (it->blocked_requests.count(request_id)) {
-        blocked_request.request->SetLoadStateParam(
-            l10n_util::GetStringFUTF16(IDS_LOAD_STATE_PARAMETER_EXTENSION,
-                                       UTF8ToUTF16(it->extension_name)));
-        break;
-      }
+      if (it->blocked_requests.count(request_id) == 0)
+        continue;
+      std::string delegate_info =
+          l10n_util::GetStringFUTF8(IDS_LOAD_STATE_PARAMETER_EXTENSION,
+                                    UTF8ToUTF16(it->extension_name));
+      blocked_request.request->SetDelegateInfo(
+          delegate_info.c_str(),
+          net::URLRequest::DELEGATE_INFO_DISPLAY_TO_USER);
+      break;
     }
   }
 }

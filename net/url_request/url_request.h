@@ -37,10 +37,12 @@ class TestAutomationProvider;
 class URLRequestAutomationJob;
 
 namespace base {
+class Value;
+
 namespace debug {
 class StackTrace;
-}
-}
+}  // namespace debug
+}  // namespace base
 
 // Temporary layering violation to allow existing users of a deprecated
 // interface.
@@ -131,6 +133,15 @@ class NET_EXPORT URLRequest : NON_EXPORTED_BASE(public base::NonThreadSafe),
   enum ReferrerPolicy {
     CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE,
     NEVER_CLEAR_REFERRER,
+  };
+
+  // Used with SetDelegateInfo to indicate how the string should be used.
+  // DELEGATE_INFO_DEBUG_ONLY indicates it should only be used when logged to
+  // NetLog, while DELEGATE_INFO_DISPLAY_TO_USER indicates it should also be
+  // returned by calls to GetLoadState for display to the user.
+  enum DelegateInfoUsage {
+    DELEGATE_INFO_DEBUG_ONLY,
+    DELEGATE_INFO_DISPLAY_TO_USER,
   };
 
   // This class handles network interception.  Use with
@@ -446,9 +457,19 @@ class NET_EXPORT URLRequest : NON_EXPORTED_BASE(public base::NonThreadSafe),
   // parameter describing details related to the load state. Not all load states
   // have a parameter.
   LoadStateWithParam GetLoadState() const;
-  void SetLoadStateParam(const base::string16& param) {
-    load_state_param_ = param;
-  }
+
+  // Returns a partial representation of the request's state as a value, for
+  // debugging.  Caller takes ownership of returned value.
+  base::Value* GetStateAsValue() const;
+
+  // Logs information about the delegate currently blocking the request.
+  // The delegate info must be cleared by sending NULL before resuming a
+  // request.  |delegate_info| will be copied as needed.  |delegate_info_usage|
+  // is used to indicate whether the value should be returned in the param field
+  // of GetLoadState.  |delegate_info_usage_| is ignored when |delegate_info| is
+  // NULL.
+  void SetDelegateInfo(const char* delegate_info,
+                       DelegateInfoUsage delegate_info_usage);
 
   // Returns the current upload progress in bytes. When the upload data is
   // chunked, size is set to zero, but position will not be.
@@ -754,10 +775,11 @@ class NET_EXPORT URLRequest : NON_EXPORTED_BASE(public base::NonThreadSafe),
                     CookieOptions* options) const;
   bool CanEnablePrivacyMode() const;
 
-  // Called when the delegate blocks or unblocks this request when intercepting
-  // certain requests.
-  void SetBlockedOnDelegate();
-  void SetUnblockedOnDelegate();
+  // Called just before calling a delegate that may block a request.
+  void OnCallToDelegate();
+  // Called when the delegate lets a request continue.  Also called on
+  // cancellation.
+  void OnCallToDelegateComplete();
 
   // Contextual information used for this request. Cannot be NULL. This contains
   // most of the dependencies which are shared between requests (disk cache,
@@ -824,13 +846,14 @@ class NET_EXPORT URLRequest : NON_EXPORTED_BASE(public base::NonThreadSafe),
   // A globally unique identifier for this request.
   const uint64 identifier_;
 
-  // True if this request is blocked waiting for the network delegate to resume
-  // it.
-  bool blocked_on_delegate_;
+  // True if this request is currently calling a delegate, or is blocked waiting
+  // for the URL request or network delegate to resume it.
+  bool calling_delegate_;
 
-  // An optional parameter that provides additional information about the load
-  // state. Only used with the LOAD_STATE_WAITING_FOR_DELEGATE state.
-  base::string16 load_state_param_;
+  // An optional parameter that provides additional information about the
+  // delegate |this| is currently blocked on.
+  std::string delegate_info_;
+  DelegateInfoUsage delegate_info_usage_;
 
   base::debug::LeakTracker<URLRequest> leak_tracker_;
 

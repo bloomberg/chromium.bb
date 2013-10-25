@@ -3548,6 +3548,682 @@ TEST_F(URLRequestTestHTTP, MultipleRedirectTest) {
   EXPECT_EQ(destination_url, req.url_chain()[2]);
 }
 
+// First and second pieces of information logged by delegates to URLRequests.
+const char kFirstDelegateInfo[] = "Wonderful delegate";
+const char kSecondDelegateInfo[] = "Exciting delegate";
+
+// Logs delegate information to a URLRequest.  The first string is logged
+// synchronously on Start(), using DELEGATE_INFO_DEBUG_ONLY.  The second is
+// logged asynchronously, using DELEGATE_INFO_DISPLAY_TO_USER.  Then
+// another asynchronous call is used to clear the delegate information
+// before calling a callback.  The object then deletes itself.
+class AsyncDelegateLogger : public base::RefCounted<AsyncDelegateLogger> {
+ public:
+  typedef base::Callback<void()> Callback;
+
+  // Each time delegate information is added to the URLRequest, the resulting
+  // load state is checked.  The expected load state after each request is
+  // passed in as an argument.
+  static void Run(URLRequest* url_request,
+                  LoadState expected_first_load_state,
+                  LoadState expected_second_load_state,
+                  LoadState expected_third_load_state,
+                  const Callback& callback) {
+    AsyncDelegateLogger* logger = new AsyncDelegateLogger(
+        url_request,
+        expected_first_load_state,
+        expected_second_load_state,
+        expected_third_load_state,
+        callback);
+    logger->Start();
+  }
+
+  // Checks that the log entries, starting with log_position, contain the
+  // DELEGATE_INFO NetLog events that an AsyncDelegateLogger should have
+  // recorded.  Returns the index of entry after the expected number of
+  // events this logged, or entries.size() if there aren't enough entries.
+  static size_t CheckDelegateInfo(
+      const CapturingNetLog::CapturedEntryList& entries, size_t log_position) {
+    // There should be 4 DELEGATE_INFO events: Two begins and two ends.
+    if (log_position + 3 >= entries.size()) {
+      ADD_FAILURE() << "Not enough log entries";
+      return entries.size();
+    }
+    std::string delegate_info;
+    EXPECT_EQ(NetLog::TYPE_DELEGATE_INFO, entries[log_position].type);
+    EXPECT_EQ(NetLog::PHASE_BEGIN, entries[log_position].phase);
+    EXPECT_TRUE(entries[log_position].GetStringValue("delegate_info",
+                                                     &delegate_info));
+    EXPECT_EQ(kFirstDelegateInfo, delegate_info);
+
+    ++log_position;
+    EXPECT_EQ(NetLog::TYPE_DELEGATE_INFO, entries[log_position].type);
+    EXPECT_EQ(NetLog::PHASE_END, entries[log_position].phase);
+
+    ++log_position;
+    EXPECT_EQ(NetLog::TYPE_DELEGATE_INFO, entries[log_position].type);
+    EXPECT_EQ(NetLog::PHASE_BEGIN, entries[log_position].phase);
+    EXPECT_TRUE(entries[log_position].GetStringValue("delegate_info",
+                                                     &delegate_info));
+    EXPECT_EQ(kSecondDelegateInfo, delegate_info);
+
+    ++log_position;
+    EXPECT_EQ(NetLog::TYPE_DELEGATE_INFO, entries[log_position].type);
+    EXPECT_EQ(NetLog::PHASE_END, entries[log_position].phase);
+
+    return log_position + 1;
+  }
+
+ private:
+  friend class base::RefCounted<AsyncDelegateLogger>;
+
+  AsyncDelegateLogger(URLRequest* url_request,
+                      LoadState expected_first_load_state,
+                      LoadState expected_second_load_state,
+                      LoadState expected_third_load_state,
+                      const Callback& callback)
+      : url_request_(url_request),
+        expected_first_load_state_(expected_first_load_state),
+        expected_second_load_state_(expected_second_load_state),
+        expected_third_load_state_(expected_third_load_state),
+        callback_(callback) {
+  }
+
+  ~AsyncDelegateLogger() {}
+
+  void Start() {
+    url_request_->SetDelegateInfo(kFirstDelegateInfo,
+                                  URLRequest::DELEGATE_INFO_DEBUG_ONLY);
+    LoadStateWithParam load_state = url_request_->GetLoadState();
+    EXPECT_EQ(expected_first_load_state_, load_state.state);
+    EXPECT_NE(ASCIIToUTF16(kFirstDelegateInfo), load_state.param);
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&AsyncDelegateLogger::LogSecondDelegate, this));
+  }
+
+  void LogSecondDelegate() {
+    url_request_->SetDelegateInfo(kSecondDelegateInfo,
+                                  URLRequest::DELEGATE_INFO_DISPLAY_TO_USER);
+    LoadStateWithParam load_state = url_request_->GetLoadState();
+    EXPECT_EQ(expected_second_load_state_, load_state.state);
+    if (expected_second_load_state_ == LOAD_STATE_WAITING_FOR_DELEGATE) {
+      EXPECT_EQ(ASCIIToUTF16(kSecondDelegateInfo), load_state.param);
+    } else {
+      EXPECT_NE(ASCIIToUTF16(kSecondDelegateInfo), load_state.param);
+    }
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&AsyncDelegateLogger::LogComplete, this));
+  }
+
+  void LogComplete() {
+    url_request_->SetDelegateInfo(
+        NULL, URLRequest::DELEGATE_INFO_DISPLAY_TO_USER);
+    LoadStateWithParam load_state = url_request_->GetLoadState();
+    EXPECT_EQ(expected_third_load_state_, load_state.state);
+    if (expected_second_load_state_ == LOAD_STATE_WAITING_FOR_DELEGATE)
+      EXPECT_EQ(string16(), load_state.param);
+    callback_.Run();
+  }
+
+  URLRequest* url_request_;
+  const int expected_first_load_state_;
+  const int expected_second_load_state_;
+  const int expected_third_load_state_;
+  const Callback callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(AsyncDelegateLogger);
+};
+
+// NetworkDelegate that logs delegate information before a request is started,
+// before headers are sent, when headers are read, and when auth information
+// is requested.  Uses AsyncDelegateLogger.
+class AsyncLoggingNetworkDelegate : public TestNetworkDelegate {
+ public:
+  AsyncLoggingNetworkDelegate() {}
+  virtual ~AsyncLoggingNetworkDelegate() {}
+
+  // NetworkDelegate implementation.
+  virtual int OnBeforeURLRequest(URLRequest* request,
+                                 const CompletionCallback& callback,
+                                 GURL* new_url) OVERRIDE {
+    TestNetworkDelegate::OnBeforeURLRequest(request, callback, new_url);
+    return RunCallbackAsynchronously(request, callback);
+  }
+
+  virtual int OnBeforeSendHeaders(URLRequest* request,
+                                  const CompletionCallback& callback,
+                                  HttpRequestHeaders* headers) OVERRIDE {
+    TestNetworkDelegate::OnBeforeSendHeaders(request, callback, headers);
+    return RunCallbackAsynchronously(request, callback);
+  }
+
+  virtual int OnHeadersReceived(
+      URLRequest* request,
+      const CompletionCallback& callback,
+      const HttpResponseHeaders* original_response_headers,
+      scoped_refptr<HttpResponseHeaders>* override_response_headers) OVERRIDE {
+    TestNetworkDelegate::OnHeadersReceived(request, callback,
+                                           original_response_headers,
+                                           override_response_headers);
+    return RunCallbackAsynchronously(request, callback);
+  }
+
+  virtual NetworkDelegate::AuthRequiredResponse OnAuthRequired(
+      URLRequest* request,
+      const AuthChallengeInfo& auth_info,
+      const AuthCallback& callback,
+      AuthCredentials* credentials) OVERRIDE {
+    AsyncDelegateLogger::Run(
+        request,
+        LOAD_STATE_WAITING_FOR_DELEGATE,
+        LOAD_STATE_WAITING_FOR_DELEGATE,
+        LOAD_STATE_WAITING_FOR_DELEGATE,
+        base::Bind(&AsyncLoggingNetworkDelegate::SetAuthAndResume,
+                   callback, credentials));
+    return AUTH_REQUIRED_RESPONSE_IO_PENDING;
+  }
+
+ private:
+  static int RunCallbackAsynchronously(
+      URLRequest* request,
+      const CompletionCallback& callback) {
+    AsyncDelegateLogger::Run(
+        request,
+        LOAD_STATE_WAITING_FOR_DELEGATE,
+        LOAD_STATE_WAITING_FOR_DELEGATE,
+        LOAD_STATE_WAITING_FOR_DELEGATE,
+        base::Bind(callback, OK));
+    return ERR_IO_PENDING;
+  }
+
+  static void SetAuthAndResume(const AuthCallback& callback,
+                               AuthCredentials* credentials) {
+    *credentials = AuthCredentials(kUser, kSecret);
+    callback.Run(NetworkDelegate::AUTH_REQUIRED_RESPONSE_SET_AUTH);
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(AsyncLoggingNetworkDelegate);
+};
+
+// URLRequest::Delegate that logs delegate information when the headers
+// are received, when each read completes, and during redirects.  Uses
+// AsyncDelegateLogger.  Can optionally cancel a request in any phase.
+//
+// Inherits from TestDelegate to reuse the TestDelegate code to handle
+// advancing to the next step in most cases, as well as cancellation.
+class AsyncLoggingUrlRequestDelegate : public TestDelegate {
+ public:
+  enum CancelStage {
+    NO_CANCEL = 0,
+    CANCEL_ON_RECEIVED_REDIRECT,
+    CANCEL_ON_RESPONSE_STARTED,
+    CANCEL_ON_READ_COMPLETED
+  };
+
+  explicit AsyncLoggingUrlRequestDelegate(CancelStage cancel_stage)
+      : cancel_stage_(cancel_stage) {
+    if (cancel_stage == CANCEL_ON_RECEIVED_REDIRECT)
+      set_cancel_in_received_redirect(true);
+    else if (cancel_stage == CANCEL_ON_RESPONSE_STARTED)
+      set_cancel_in_response_started(true);
+    else if (cancel_stage == CANCEL_ON_READ_COMPLETED)
+      set_cancel_in_received_data(true);
+  }
+  virtual ~AsyncLoggingUrlRequestDelegate() {}
+
+  // URLRequest::Delegate implementation:
+  void virtual OnReceivedRedirect(URLRequest* request,
+                                  const GURL& new_url,
+                                  bool* defer_redirect) OVERRIDE {
+    *defer_redirect = true;
+    AsyncDelegateLogger::Run(
+        request,
+        LOAD_STATE_WAITING_FOR_DELEGATE,
+        LOAD_STATE_WAITING_FOR_DELEGATE,
+        LOAD_STATE_WAITING_FOR_DELEGATE,
+        base::Bind(
+            &AsyncLoggingUrlRequestDelegate::OnReceivedRedirectLoggingComplete,
+            base::Unretained(this), request, new_url));
+  }
+
+  virtual void OnResponseStarted(URLRequest* request) OVERRIDE {
+    AsyncDelegateLogger::Run(
+      request,
+      LOAD_STATE_WAITING_FOR_DELEGATE,
+      LOAD_STATE_WAITING_FOR_DELEGATE,
+      LOAD_STATE_WAITING_FOR_DELEGATE,
+      base::Bind(
+          &AsyncLoggingUrlRequestDelegate::OnResponseStartedLoggingComplete,
+          base::Unretained(this), request));
+  }
+
+  virtual void OnReadCompleted(URLRequest* request,
+                               int bytes_read) OVERRIDE {
+    AsyncDelegateLogger::Run(
+        request,
+        LOAD_STATE_IDLE,
+        LOAD_STATE_IDLE,
+        LOAD_STATE_IDLE,
+        base::Bind(
+            &AsyncLoggingUrlRequestDelegate::AfterReadCompletedLoggingComplete,
+            base::Unretained(this), request, bytes_read));
+  }
+
+ private:
+  void OnReceivedRedirectLoggingComplete(URLRequest* request,
+                                         const GURL& new_url) {
+    bool defer_redirect = false;
+    TestDelegate::OnReceivedRedirect(request, new_url, &defer_redirect);
+    // FollowDeferredRedirect should not be called after cancellation.
+    if (cancel_stage_ == CANCEL_ON_RECEIVED_REDIRECT)
+      return;
+    if (!defer_redirect)
+      request->FollowDeferredRedirect();
+  }
+
+  void OnResponseStartedLoggingComplete(URLRequest* request) {
+    // The parent class continues the request.
+    TestDelegate::OnResponseStarted(request);
+  }
+
+  void AfterReadCompletedLoggingComplete(URLRequest* request, int bytes_read) {
+    // The parent class continues the request.
+    TestDelegate::OnReadCompleted(request, bytes_read);
+  }
+
+  const CancelStage cancel_stage_;
+
+  DISALLOW_COPY_AND_ASSIGN(AsyncLoggingUrlRequestDelegate);
+};
+
+// Tests handling of delegate info before a request starts.
+TEST_F(URLRequestTestHTTP, DelegateInfoBeforeStart) {
+  ASSERT_TRUE(test_server_.Start());
+
+  TestDelegate request_delegate;
+  TestURLRequestContext context(true);
+  context.set_network_delegate(NULL);
+  context.set_net_log(&net_log_);
+  context.Init();
+
+  {
+    URLRequest r(test_server_.GetURL("empty.html"),
+                 &request_delegate, &context);
+    LoadStateWithParam load_state = r.GetLoadState();
+    EXPECT_EQ(LOAD_STATE_IDLE, load_state.state);
+    EXPECT_EQ(string16(), load_state.param);
+
+    AsyncDelegateLogger::Run(
+        &r,
+        LOAD_STATE_WAITING_FOR_DELEGATE,
+        LOAD_STATE_WAITING_FOR_DELEGATE,
+        LOAD_STATE_IDLE,
+        base::Bind(&URLRequest::Start, base::Unretained(&r)));
+
+    base::RunLoop().Run();
+
+    EXPECT_EQ(200, r.GetResponseCode());
+    EXPECT_EQ(URLRequestStatus::SUCCESS, r.status().status());
+  }
+
+  CapturingNetLog::CapturedEntryList entries;
+  net_log_.GetEntries(&entries);
+  size_t log_position = ExpectLogContainsSomewhereAfter(
+      entries,
+      0,
+      NetLog::TYPE_DELEGATE_INFO,
+      NetLog::PHASE_BEGIN);
+
+  log_position = AsyncDelegateLogger::CheckDelegateInfo(entries, log_position);
+
+  // Nothing else should add any delegate info to the request.
+  EXPECT_FALSE(LogContainsEntryWithTypeAfter(
+      entries, log_position + 1, NetLog::TYPE_DELEGATE_INFO));
+}
+
+// Tests handling of delegate info from a network delegate.
+TEST_F(URLRequestTestHTTP, NetworkDelegateInfo) {
+  ASSERT_TRUE(test_server_.Start());
+
+  TestDelegate request_delegate;
+  AsyncLoggingNetworkDelegate network_delegate;
+  TestURLRequestContext context(true);
+  context.set_network_delegate(&network_delegate);
+  context.set_net_log(&net_log_);
+  context.Init();
+
+  {
+    URLRequest r(test_server_.GetURL("simple.html"),
+                 &request_delegate, &context);
+    LoadStateWithParam load_state = r.GetLoadState();
+    EXPECT_EQ(LOAD_STATE_IDLE, load_state.state);
+    EXPECT_EQ(string16(), load_state.param);
+
+    r.Start();
+    base::RunLoop().Run();
+
+    EXPECT_EQ(200, r.GetResponseCode());
+    EXPECT_EQ(URLRequestStatus::SUCCESS, r.status().status());
+    EXPECT_EQ(1, network_delegate.created_requests());
+    EXPECT_EQ(0, network_delegate.destroyed_requests());
+  }
+  EXPECT_EQ(1, network_delegate.destroyed_requests());
+
+  size_t log_position = 0;
+  CapturingNetLog::CapturedEntryList entries;
+  net_log_.GetEntries(&entries);
+  for (size_t i = 0; i < 3; ++i) {
+    log_position = ExpectLogContainsSomewhereAfter(
+        entries,
+        log_position + 1,
+        NetLog::TYPE_URL_REQUEST_DELEGATE,
+        NetLog::PHASE_BEGIN);
+
+    log_position = AsyncDelegateLogger::CheckDelegateInfo(entries,
+                                                          log_position + 1);
+
+    ASSERT_LT(log_position, entries.size());
+    EXPECT_EQ(NetLog::TYPE_URL_REQUEST_DELEGATE, entries[log_position].type);
+    EXPECT_EQ(NetLog::PHASE_END, entries[log_position].phase);
+  }
+
+  EXPECT_FALSE(LogContainsEntryWithTypeAfter(
+      entries, log_position + 1, NetLog::TYPE_DELEGATE_INFO));
+}
+
+// Tests handling of delegate info from a network delegate in the case of an
+// HTTP redirect.
+TEST_F(URLRequestTestHTTP, NetworkDelegateInfoRedirect) {
+  ASSERT_TRUE(test_server_.Start());
+
+  TestDelegate request_delegate;
+  AsyncLoggingNetworkDelegate network_delegate;
+  TestURLRequestContext context(true);
+  context.set_network_delegate(&network_delegate);
+  context.set_net_log(&net_log_);
+  context.Init();
+
+  {
+    URLRequest r(test_server_.GetURL("server-redirect?simple.html"),
+                 &request_delegate, &context);
+    LoadStateWithParam load_state = r.GetLoadState();
+    EXPECT_EQ(LOAD_STATE_IDLE, load_state.state);
+    EXPECT_EQ(string16(), load_state.param);
+
+    r.Start();
+    base::RunLoop().Run();
+
+    EXPECT_EQ(200, r.GetResponseCode());
+    EXPECT_EQ(URLRequestStatus::SUCCESS, r.status().status());
+    EXPECT_EQ(2, network_delegate.created_requests());
+    EXPECT_EQ(0, network_delegate.destroyed_requests());
+  }
+  EXPECT_EQ(1, network_delegate.destroyed_requests());
+
+  size_t log_position = 0;
+  CapturingNetLog::CapturedEntryList entries;
+  net_log_.GetEntries(&entries);
+  // The NetworkDelegate logged information in OnBeforeURLRequest,
+  // OnBeforeSendHeaders, and OnHeadersReceived.
+  for (size_t i = 0; i < 3; ++i) {
+    log_position = ExpectLogContainsSomewhereAfter(
+        entries,
+        log_position + 1,
+        NetLog::TYPE_URL_REQUEST_DELEGATE,
+        NetLog::PHASE_BEGIN);
+
+    log_position = AsyncDelegateLogger::CheckDelegateInfo(entries,
+                                                          log_position + 1);
+
+    ASSERT_LT(log_position, entries.size());
+    EXPECT_EQ(NetLog::TYPE_URL_REQUEST_DELEGATE, entries[log_position].type);
+    EXPECT_EQ(NetLog::PHASE_END, entries[log_position].phase);
+  }
+
+  // The URLRequest::Delegate then gets informed about the redirect.
+  log_position = ExpectLogContainsSomewhereAfter(
+      entries,
+      log_position + 1,
+      NetLog::TYPE_URL_REQUEST_DELEGATE,
+      NetLog::PHASE_BEGIN);
+
+  // The NetworkDelegate logged information in the same three events as before.
+  for (size_t i = 0; i < 3; ++i) {
+    log_position = ExpectLogContainsSomewhereAfter(
+        entries,
+        log_position + 1,
+        NetLog::TYPE_URL_REQUEST_DELEGATE,
+        NetLog::PHASE_BEGIN);
+
+    log_position = AsyncDelegateLogger::CheckDelegateInfo(entries,
+                                                          log_position + 1);
+
+    ASSERT_LT(log_position, entries.size());
+    EXPECT_EQ(NetLog::TYPE_URL_REQUEST_DELEGATE, entries[log_position].type);
+    EXPECT_EQ(NetLog::PHASE_END, entries[log_position].phase);
+  }
+
+  EXPECT_FALSE(LogContainsEntryWithTypeAfter(
+      entries, log_position + 1, NetLog::TYPE_DELEGATE_INFO));
+}
+
+// Tests handling of delegate info from a network delegate in the case of HTTP
+// AUTH.
+TEST_F(URLRequestTestHTTP, NetworkDelegateInfoAuth) {
+  ASSERT_TRUE(test_server_.Start());
+
+  TestDelegate request_delegate;
+  AsyncLoggingNetworkDelegate network_delegate;
+  TestURLRequestContext context(true);
+  context.set_network_delegate(&network_delegate);
+  context.set_net_log(&net_log_);
+  context.Init();
+
+  {
+    URLRequest r(test_server_.GetURL("auth-basic"),
+                 &request_delegate, &context);
+    LoadStateWithParam load_state = r.GetLoadState();
+    EXPECT_EQ(LOAD_STATE_IDLE, load_state.state);
+    EXPECT_EQ(string16(), load_state.param);
+
+    r.Start();
+    base::RunLoop().Run();
+
+    EXPECT_EQ(200, r.GetResponseCode());
+    EXPECT_EQ(URLRequestStatus::SUCCESS, r.status().status());
+    EXPECT_EQ(1, network_delegate.created_requests());
+    EXPECT_EQ(0, network_delegate.destroyed_requests());
+  }
+  EXPECT_EQ(1, network_delegate.destroyed_requests());
+
+  size_t log_position = 0;
+  CapturingNetLog::CapturedEntryList entries;
+  net_log_.GetEntries(&entries);
+  // The NetworkDelegate should have logged information in OnBeforeURLRequest,
+  // OnBeforeSendHeaders, OnHeadersReceived, OnAuthRequired, and then again in
+  // OnBeforeURLRequest and OnBeforeSendHeaders.
+  for (size_t i = 0; i < 6; ++i) {
+    log_position = ExpectLogContainsSomewhereAfter(
+        entries,
+        log_position + 1,
+        NetLog::TYPE_URL_REQUEST_DELEGATE,
+        NetLog::PHASE_BEGIN);
+
+    log_position = AsyncDelegateLogger::CheckDelegateInfo(entries,
+                                                          log_position + 1);
+
+    ASSERT_LT(log_position, entries.size());
+    EXPECT_EQ(NetLog::TYPE_URL_REQUEST_DELEGATE, entries[log_position].type);
+    EXPECT_EQ(NetLog::PHASE_END, entries[log_position].phase);
+  }
+
+  EXPECT_FALSE(LogContainsEntryWithTypeAfter(
+      entries, log_position + 1, NetLog::TYPE_DELEGATE_INFO));
+}
+
+// Tests handling of delegate info from a URLRequest::Delegate.
+TEST_F(URLRequestTestHTTP, URLRequestDelegateInfo) {
+  ASSERT_TRUE(test_server_.Start());
+
+  AsyncLoggingUrlRequestDelegate request_delegate(
+      AsyncLoggingUrlRequestDelegate::NO_CANCEL);
+  TestURLRequestContext context(true);
+  context.set_network_delegate(NULL);
+  context.set_net_log(&net_log_);
+  context.Init();
+
+  {
+    // A chunked response with delays between chunks is used to make sure that
+    // attempts by the URLRequest delegate to log information while reading the
+    // body are ignored.  Since they are ignored, this test is robust against
+    // the possability of multiple reads being combined in the unlikely event
+    // that it occurs.
+    URLRequest r(test_server_.GetURL("chunked?waitBetweenChunks=20"),
+                 &request_delegate, &context);
+    LoadStateWithParam load_state = r.GetLoadState();
+    r.Start();
+    base::RunLoop().Run();
+
+    EXPECT_EQ(200, r.GetResponseCode());
+    EXPECT_EQ(URLRequestStatus::SUCCESS, r.status().status());
+  }
+
+  CapturingNetLog::CapturedEntryList entries;
+  net_log_.GetEntries(&entries);
+
+  // The delegate info should only have been logged on header complete.  Other
+  // times it should silently be ignored.
+
+  size_t log_position = ExpectLogContainsSomewhereAfter(
+          entries,
+          0,
+          NetLog::TYPE_URL_REQUEST_DELEGATE,
+          NetLog::PHASE_BEGIN);
+
+  log_position = AsyncDelegateLogger::CheckDelegateInfo(entries,
+                                                        log_position + 1);
+
+  ASSERT_LT(log_position, entries.size());
+  EXPECT_EQ(NetLog::TYPE_URL_REQUEST_DELEGATE, entries[log_position].type);
+  EXPECT_EQ(NetLog::PHASE_END, entries[log_position].phase);
+
+  EXPECT_FALSE(LogContainsEntryWithTypeAfter(
+      entries, log_position + 1, NetLog::TYPE_DELEGATE_INFO));
+  EXPECT_FALSE(LogContainsEntryWithTypeAfter(
+      entries, log_position + 1, NetLog::TYPE_URL_REQUEST_DELEGATE));
+}
+
+// Tests handling of delegate info from a URLRequest::Delegate in the case of
+// an HTTP redirect.
+TEST_F(URLRequestTestHTTP, URLRequestDelegateInfoOnRedirect) {
+  ASSERT_TRUE(test_server_.Start());
+
+  AsyncLoggingUrlRequestDelegate request_delegate(
+      AsyncLoggingUrlRequestDelegate::NO_CANCEL);
+  TestURLRequestContext context(true);
+  context.set_network_delegate(NULL);
+  context.set_net_log(&net_log_);
+  context.Init();
+
+  {
+    URLRequest r(test_server_.GetURL("server-redirect?simple.html"),
+                 &request_delegate, &context);
+    LoadStateWithParam load_state = r.GetLoadState();
+    r.Start();
+    base::RunLoop().Run();
+
+    EXPECT_EQ(200, r.GetResponseCode());
+    EXPECT_EQ(URLRequestStatus::SUCCESS, r.status().status());
+  }
+
+  CapturingNetLog::CapturedEntryList entries;
+  net_log_.GetEntries(&entries);
+
+  // Delegate info should only have been logged in OnReceivedRedirect and
+  // OnResponseStarted.
+  size_t log_position = 0;
+  for (int i = 0; i < 2; ++i) {
+    log_position = ExpectLogContainsSomewhereAfter(
+            entries,
+            log_position,
+            NetLog::TYPE_URL_REQUEST_DELEGATE,
+            NetLog::PHASE_BEGIN);
+
+    log_position = AsyncDelegateLogger::CheckDelegateInfo(entries,
+                                                          log_position + 1);
+
+    ASSERT_LT(log_position, entries.size());
+    EXPECT_EQ(NetLog::TYPE_URL_REQUEST_DELEGATE, entries[log_position].type);
+    EXPECT_EQ(NetLog::PHASE_END, entries[log_position].phase);
+  }
+
+  EXPECT_FALSE(LogContainsEntryWithTypeAfter(
+      entries, log_position + 1, NetLog::TYPE_DELEGATE_INFO));
+  EXPECT_FALSE(LogContainsEntryWithTypeAfter(
+      entries, log_position + 1, NetLog::TYPE_URL_REQUEST_DELEGATE));
+}
+
+// Tests handling of delegate info from a URLRequest::Delegate in the case of
+// an HTTP redirect, with cancellation at various points.
+TEST_F(URLRequestTestHTTP, URLRequestDelegateOnRedirectCancelled) {
+  ASSERT_TRUE(test_server_.Start());
+
+  const AsyncLoggingUrlRequestDelegate::CancelStage kCancelStages[] = {
+    AsyncLoggingUrlRequestDelegate::CANCEL_ON_RECEIVED_REDIRECT,
+    AsyncLoggingUrlRequestDelegate::CANCEL_ON_RESPONSE_STARTED,
+    AsyncLoggingUrlRequestDelegate::CANCEL_ON_READ_COMPLETED,
+  };
+
+  for (size_t test_case = 0; test_case < arraysize(kCancelStages);
+       ++test_case) {
+    AsyncLoggingUrlRequestDelegate request_delegate(kCancelStages[test_case]);
+    TestURLRequestContext context(true);
+    CapturingNetLog net_log;
+    context.set_network_delegate(NULL);
+    context.set_net_log(&net_log);
+    context.Init();
+
+    {
+      URLRequest r(test_server_.GetURL("server-redirect?simple.html"),
+                   &request_delegate, &context);
+      LoadStateWithParam load_state = r.GetLoadState();
+      r.Start();
+      base::RunLoop().Run();
+      EXPECT_EQ(URLRequestStatus::CANCELED, r.status().status());
+    }
+
+    CapturingNetLog::CapturedEntryList entries;
+    net_log.GetEntries(&entries);
+
+    // Delegate info is always logged in both OnReceivedRedirect and
+    // OnResponseStarted.  In the CANCEL_ON_RECEIVED_REDIRECT, the
+    // OnResponseStarted delegate call is after cancellation, but logging is
+    // still currently supported in that call.
+    size_t log_position = 0;
+    for (int i = 0; i < 2; ++i) {
+      log_position = ExpectLogContainsSomewhereAfter(
+              entries,
+              log_position,
+              NetLog::TYPE_URL_REQUEST_DELEGATE,
+              NetLog::PHASE_BEGIN);
+
+      log_position = AsyncDelegateLogger::CheckDelegateInfo(entries,
+                                                            log_position + 1);
+
+      ASSERT_LT(log_position, entries.size());
+      EXPECT_EQ(NetLog::TYPE_URL_REQUEST_DELEGATE, entries[log_position].type);
+      EXPECT_EQ(NetLog::PHASE_END, entries[log_position].phase);
+    }
+
+    EXPECT_FALSE(LogContainsEntryWithTypeAfter(
+        entries, log_position + 1, NetLog::TYPE_DELEGATE_INFO));
+    EXPECT_FALSE(LogContainsEntryWithTypeAfter(
+        entries, log_position + 1, NetLog::TYPE_URL_REQUEST_DELEGATE));
+  }
+}
+
 namespace {
 
 const char kExtraHeader[] = "Allow-Snafu";

@@ -15,7 +15,9 @@
 #include "base/metrics/histogram.h"
 #include "base/metrics/stats_counters.h"
 #include "base/stl_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
+#include "base/values.h"
 #include "net/base/auth.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/load_flags.h"
@@ -216,7 +218,8 @@ URLRequest::URLRequest(const GURL& url,
       redirect_limit_(kMaxRedirects),
       priority_(DEFAULT_PRIORITY),
       identifier_(GenerateURLRequestIdentifier()),
-      blocked_on_delegate_(false),
+      calling_delegate_(false),
+      delegate_info_usage_(DELEGATE_INFO_DEBUG_ONLY),
       before_request_callback_(base::Bind(&URLRequest::BeforeRequestComplete,
                                           base::Unretained(this))),
       has_notified_completion_(false),
@@ -252,7 +255,8 @@ URLRequest::URLRequest(const GURL& url,
       redirect_limit_(kMaxRedirects),
       priority_(DEFAULT_PRIORITY),
       identifier_(GenerateURLRequestIdentifier()),
-      blocked_on_delegate_(false),
+      calling_delegate_(false),
+      delegate_info_usage_(DELEGATE_INFO_DEBUG_ONLY),
       before_request_callback_(base::Bind(&URLRequest::BeforeRequestComplete,
                                           base::Unretained(this))),
       has_notified_completion_(false),
@@ -380,12 +384,85 @@ bool URLRequest::GetFullRequestHeaders(HttpRequestHeaders* headers) const {
 }
 
 LoadStateWithParam URLRequest::GetLoadState() const {
-  if (blocked_on_delegate_) {
-    return LoadStateWithParam(LOAD_STATE_WAITING_FOR_DELEGATE,
-                              load_state_param_);
+  // The delegate_info_.empty() check allows |this| to report it's blocked on
+  // a delegate before it has been started.
+  if (calling_delegate_ || !delegate_info_.empty()) {
+    return LoadStateWithParam(
+        LOAD_STATE_WAITING_FOR_DELEGATE,
+        delegate_info_usage_ == DELEGATE_INFO_DISPLAY_TO_USER ?
+            UTF8ToUTF16(delegate_info_) : base::string16());
   }
   return LoadStateWithParam(job_.get() ? job_->GetLoadState() : LOAD_STATE_IDLE,
                             base::string16());
+}
+
+base::Value* URLRequest::GetStateAsValue() const {
+  DictionaryValue* dict = new DictionaryValue();
+  dict->SetString("url", original_url().possibly_invalid_spec());
+
+  if (url_chain_.size() > 1) {
+    ListValue* list = new ListValue();
+    for (std::vector<GURL>::const_iterator url = url_chain_.begin();
+         url != url_chain_.end(); ++url) {
+      list->AppendString(url->possibly_invalid_spec());
+    }
+    dict->Set("url_chain", list);
+  }
+
+  dict->SetInteger("load_flags", load_flags_);
+
+  LoadStateWithParam load_state = GetLoadState();
+  dict->SetInteger("load_state", load_state.state);
+  if (!load_state.param.empty())
+    dict->SetString("load_state_param", load_state.param);
+  if (!delegate_info_.empty())
+    dict->SetString("delegate_info", delegate_info_);
+
+  dict->SetString("method", method_);
+  dict->SetBoolean("has_upload", has_upload());
+  dict->SetBoolean("is_pending", is_pending_);
+
+  // Add the status of the request.  The status should always be IO_PENDING, and
+  // the error should always be OK, unless something is holding onto a request
+  // that has finished or a request was leaked.  Neither of these should happen.
+  switch (status_.status()) {
+    case URLRequestStatus::SUCCESS:
+      dict->SetString("status", "SUCCESS");
+      break;
+    case URLRequestStatus::IO_PENDING:
+      dict->SetString("status", "IO_PENDING");
+      break;
+    case URLRequestStatus::CANCELED:
+      dict->SetString("status", "CANCELED");
+      break;
+    case URLRequestStatus::FAILED:
+      dict->SetString("status", "FAILED");
+      break;
+  }
+  if (status_.error() != OK)
+    dict->SetInteger("net_error", status_.error());
+  return dict;
+}
+
+void URLRequest::SetDelegateInfo(const char* delegate_info,
+                                 DelegateInfoUsage delegate_info_usage) {
+  // Only log delegate information to NetLog during startup and certain
+  // deferring calls to delegates.  For all reads but the first, delegate info
+  // is currently ignored.
+  if (!calling_delegate_ && !response_info_.request_time.is_null())
+    return;
+
+  if (!delegate_info_.empty()) {
+    delegate_info_.clear();
+    net_log_.EndEvent(NetLog::TYPE_DELEGATE_INFO);
+  }
+  if (delegate_info) {
+    delegate_info_ = delegate_info;
+    delegate_info_usage_ = delegate_info_usage;
+    net_log_.BeginEvent(
+        NetLog::TYPE_DELEGATE_INFO,
+        NetLog::StringCallback("delegate_info", &delegate_info_));
+  }
 }
 
 UploadProgress URLRequest::GetUploadProgress() const {
@@ -539,6 +616,9 @@ void URLRequest::set_delegate(Delegate* delegate) {
 
 void URLRequest::Start() {
   DCHECK_EQ(network_delegate_, context_->network_delegate());
+  // Anything that set delegate information before start should have cleaned up
+  // after itself.
+  DCHECK(delegate_info_.empty());
 
   g_url_requests_started = true;
   response_info_.request_time = base::Time::Now();
@@ -549,14 +629,13 @@ void URLRequest::Start() {
 
   // Only notify the delegate for the initial request.
   if (network_delegate_) {
+    OnCallToDelegate();
     int error = network_delegate_->NotifyBeforeURLRequest(
         this, before_request_callback_, &delegate_redirect_url_);
-    if (error == net::ERR_IO_PENDING) {
-      // Paused on the delegate, will invoke |before_request_callback_| later.
-      SetBlockedOnDelegate();
-    } else {
+    // If ERR_IO_PENDING is returned, the delegate will invoke
+    // |before_request_callback_| later.
+    if (error != ERR_IO_PENDING)
       BeforeRequestComplete(error);
-    }
     return;
   }
 
@@ -574,8 +653,7 @@ void URLRequest::BeforeRequestComplete(int error) {
   // Check that there are no callbacks to already canceled requests.
   DCHECK_NE(URLRequestStatus::CANCELED, status_.status());
 
-  if (blocked_on_delegate_)
-    SetUnblockedOnDelegate();
+  OnCallToDelegateComplete();
 
   if (error != OK) {
     std::string source("delegate");
@@ -658,6 +736,11 @@ void URLRequest::CancelWithSSLError(int error, const SSLInfo& ssl_info) {
 
 void URLRequest::DoCancel(int error, const SSLInfo& ssl_info) {
   DCHECK(error < 0);
+  // If cancelled while calling a delegate, clear delegate info.
+  if (calling_delegate_) {
+    SetDelegateInfo(NULL, DELEGATE_INFO_DEBUG_ONLY);
+    OnCallToDelegateComplete();
+  }
 
   // If the URL request already has an error status, then canceling is a no-op.
   // Plus, we don't want to change the error status once it has been set.
@@ -691,6 +774,10 @@ bool URLRequest::Read(IOBuffer* dest, int dest_size, int* bytes_read) {
   DCHECK(job_.get());
   DCHECK(bytes_read);
   *bytes_read = 0;
+
+  // If this is the first read, end the delegate call that may have started in
+  // OnResponseStarted.
+  OnCallToDelegateComplete();
 
   // This handles a cancel that happens while paused.
   // TODO(ahendrickson): DCHECK() that it is not done after
@@ -732,6 +819,7 @@ void URLRequest::NotifyReceivedRedirect(const GURL& location,
   if (job) {
     RestartWithJob(job);
   } else if (delegate_) {
+    OnCallToDelegate();
     delegate_->OnReceivedRedirect(this, location, defer_redirect);
     // |this| may be have been destroyed here.
   }
@@ -762,6 +850,7 @@ void URLRequest::NotifyResponseStarted() {
       if (!has_notified_completion_ && !status_.is_success())
         NotifyRequestCompleted();
 
+      OnCallToDelegate();
       delegate_->OnResponseStarted(this);
       // Nothing may appear below this line as OnResponseStarted may delete
       // |this|.
@@ -837,6 +926,8 @@ void URLRequest::OrphanJob() {
 }
 
 int URLRequest::Redirect(const GURL& location, int http_status_code) {
+  // Matches call in NotifyReceivedRedirect.
+  OnCallToDelegateComplete();
   if (net_log_.IsLoggingAllEvents()) {
     net_log_.AddEvent(
         NetLog::TYPE_URL_REQUEST_REDIRECTED,
@@ -943,24 +1034,23 @@ void URLRequest::NotifyAuthRequired(AuthChallengeInfo* auth_info) {
       NetworkDelegate::AUTH_REQUIRED_RESPONSE_NO_ACTION;
   auth_info_ = auth_info;
   if (network_delegate_) {
+    OnCallToDelegate();
     rv = network_delegate_->NotifyAuthRequired(
         this,
         *auth_info,
         base::Bind(&URLRequest::NotifyAuthRequiredComplete,
                    base::Unretained(this)),
         &auth_credentials_);
+    if (rv == NetworkDelegate::AUTH_REQUIRED_RESPONSE_IO_PENDING)
+      return;
   }
 
-  if (rv == NetworkDelegate::AUTH_REQUIRED_RESPONSE_IO_PENDING) {
-    SetBlockedOnDelegate();
-  } else {
-    NotifyAuthRequiredComplete(rv);
-  }
+  NotifyAuthRequiredComplete(rv);
 }
 
 void URLRequest::NotifyAuthRequiredComplete(
     NetworkDelegate::AuthRequiredResponse result) {
-  SetUnblockedOnDelegate();
+  OnCallToDelegateComplete();
 
   // Check that there are no callbacks to already canceled requests.
   DCHECK_NE(URLRequestStatus::CANCELED, status_.status());
@@ -1085,22 +1175,20 @@ void URLRequest::NotifyRequestCompleted() {
     network_delegate_->NotifyCompleted(this, job_.get() != NULL);
 }
 
-void URLRequest::SetBlockedOnDelegate() {
-  blocked_on_delegate_ = true;
-  if (!load_state_param_.empty()) {
-    net_log_.BeginEvent(NetLog::TYPE_URL_REQUEST_BLOCKED_ON_DELEGATE,
-                        NetLog::StringCallback("delegate", &load_state_param_));
-  } else {
-    net_log_.BeginEvent(NetLog::TYPE_URL_REQUEST_BLOCKED_ON_DELEGATE);
-  }
+void URLRequest::OnCallToDelegate() {
+  DCHECK(!calling_delegate_);
+  DCHECK(delegate_info_.empty());
+  calling_delegate_ = true;
+  net_log_.BeginEvent(NetLog::TYPE_URL_REQUEST_DELEGATE);
 }
 
-void URLRequest::SetUnblockedOnDelegate() {
-  if (!blocked_on_delegate_)
+void URLRequest::OnCallToDelegateComplete() {
+  // Delegates should clear their info when it becomes outdated.
+  DCHECK(delegate_info_.empty());
+  if (!calling_delegate_)
     return;
-  blocked_on_delegate_ = false;
-  load_state_param_.clear();
-  net_log_.EndEvent(NetLog::TYPE_URL_REQUEST_BLOCKED_ON_DELEGATE);
+  calling_delegate_ = false;
+  net_log_.EndEvent(NetLog::TYPE_URL_REQUEST_DELEGATE);
 }
 
 void URLRequest::set_stack_trace(const base::debug::StackTrace& stack_trace) {

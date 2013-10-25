@@ -335,7 +335,13 @@ void FilterDisabledTests() {
     "URLRequestTest*.*_GetFullRequestHeaders",
 
     // IE redirects to data: URLs differently.
-    "URLRequestTestHTTP.RestrictDataRedirects"
+    "URLRequestTestHTTP.RestrictDataRedirects",
+
+    // Chrome frame doesn't use URLRequestHttpJob, so doesn't call into
+    // NetworkDelegates in OnStartCompleted, unlike Chrome.
+    "URLRequestTestHTTP.NetworkDelegateInfo",
+    "URLRequestTestHTTP.NetworkDelegateInfoAuth",
+    "URLRequestTestHTTP.NetworkDelegateInfoRedirect",
   };
 
   const char* ie9_disabled_tests[] = {

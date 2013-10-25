@@ -107,6 +107,23 @@ inline ::testing::AssertionResult LogContainsEntryWithType(
   return ::testing::AssertionSuccess();
 }
 
+// Check if the log contains any entry of the given type at |min_index| or
+// after.
+inline ::testing::AssertionResult LogContainsEntryWithTypeAfter(
+    const CapturingNetLog::CapturedEntryList& entries,
+    int min_index, // Negative indices are reverse indices.
+    NetLog::EventType type) {
+  // Negative indices are reverse indices.
+  size_t real_index = (min_index < 0) ?
+      static_cast<size_t>(static_cast<int>(entries.size()) + min_index) :
+      static_cast<size_t>(min_index);
+  for (size_t i = real_index; i < entries.size(); ++i) {
+    const CapturingNetLog::CapturedEntry& entry = entries[i];
+    if (entry.type == type)
+      return ::testing::AssertionSuccess();
+  }
+  return ::testing::AssertionFailure();
+}
 
 // Expect that the log contains an event, but don't care about where
 // as long as the first index where it is found is at least |min_index|.

@@ -439,15 +439,14 @@ void URLRequestHttpJob::DestroyTransaction() {
 
 void URLRequestHttpJob::StartTransaction() {
   if (network_delegate()) {
+    OnCallToDelegate();
     int rv = network_delegate()->NotifyBeforeSendHeaders(
         request_, notify_before_headers_sent_callback_,
         &request_info_.extra_headers);
     // If an extension blocks the request, we rely on the callback to
     // MaybeStartTransactionInternal().
-    if (rv == ERR_IO_PENDING) {
-      SetBlockedOnDelegate();
+    if (rv == ERR_IO_PENDING)
       return;
-    }
     MaybeStartTransactionInternal(rv);
     return;
   }
@@ -455,8 +454,6 @@ void URLRequestHttpJob::StartTransaction() {
 }
 
 void URLRequestHttpJob::NotifyBeforeSendHeadersCallback(int result) {
-  SetUnblockedOnDelegate();
-
   // Check that there are no callbacks to already canceled requests.
   DCHECK_NE(URLRequestStatus::CANCELED, GetStatus().status());
 
@@ -464,6 +461,7 @@ void URLRequestHttpJob::NotifyBeforeSendHeadersCallback(int result) {
 }
 
 void URLRequestHttpJob::MaybeStartTransactionInternal(int result) {
+  OnCallToDelegateComplete();
   if (result == OK) {
     StartTransactionInternal();
   } else {
@@ -659,6 +657,9 @@ void URLRequestHttpJob::DoStartTransaction() {
 }
 
 void URLRequestHttpJob::SaveCookiesAndNotifyHeadersComplete(int result) {
+  // End of the call started in OnStartCompleted.
+  OnCallToDelegateComplete();
+
   if (result != net::OK) {
     std::string source("delegate");
     request_->net_log().AddEvent(NetLog::TYPE_CANCELLED,
@@ -867,6 +868,7 @@ void URLRequestHttpJob::OnStartCompleted(int result) {
       // Note that |this| may not be deleted until
       // |on_headers_received_callback_| or
       // |NetworkDelegate::URLRequestDestroyed()| has been called.
+      OnCallToDelegate();
       int error = network_delegate()->NotifyHeadersReceived(
           request_,
           on_headers_received_callback_,
@@ -875,12 +877,12 @@ void URLRequestHttpJob::OnStartCompleted(int result) {
       if (error != net::OK) {
         if (error == net::ERR_IO_PENDING) {
           awaiting_callback_ = true;
-          SetBlockedOnDelegate();
         } else {
           std::string source("delegate");
           request_->net_log().AddEvent(NetLog::TYPE_CANCELLED,
                                        NetLog::StringCallback("source",
                                                               &source));
+          OnCallToDelegateComplete();
           NotifyStartError(URLRequestStatus(URLRequestStatus::FAILED, error));
         }
         return;
@@ -919,7 +921,6 @@ void URLRequestHttpJob::OnStartCompleted(int result) {
 }
 
 void URLRequestHttpJob::OnHeadersReceivedCallback(int result) {
-  SetUnblockedOnDelegate();
   awaiting_callback_ = false;
 
   // Check that there are no callbacks to already canceled requests.

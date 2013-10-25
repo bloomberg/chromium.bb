@@ -260,10 +260,9 @@ class NET_EXPORT URLRequestJob
   // Should only be called if the job has not started a resposne.
   void NotifyRestartRequired();
 
-  // Called when the network delegate blocks or unblocks this request when
-  // intercepting certain requests.
-  void SetBlockedOnDelegate();
-  void SetUnblockedOnDelegate();
+  // See corresponding functions in url_request.h.
+  void OnCallToDelegate();
+  void OnCallToDelegateComplete();
 
   // Called to read raw (pre-filtered) data from this Job.
   // If returning true, data was read from the job.  buf will contain
