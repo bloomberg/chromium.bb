@@ -492,11 +492,6 @@ Size RenderTextWin::GetStringSize() {
   return multiline_string_size_;
 }
 
-int RenderTextWin::GetBaseline() {
-  EnsureLayout();
-  return lines()[0].baseline;
-}
-
 SelectionModel RenderTextWin::FindCursorPosition(const Point& point) {
   if (text().empty())
     return SelectionModel();
@@ -538,6 +533,11 @@ std::vector<RenderText::FontSpan> RenderTextWin::GetFontSpansForTesting() {
   }
 
   return spans;
+}
+
+int RenderTextWin::GetLayoutTextBaseline() {
+  EnsureLayout();
+  return lines()[0].baseline;
 }
 
 SelectionModel RenderTextWin::AdjacentCharSelectionModel(

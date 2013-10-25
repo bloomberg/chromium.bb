@@ -605,11 +605,6 @@ void NativeTextfieldViews::UpdateVerticalMargins() {
   OnBoundsChanged(GetBounds());
 }
 
-void NativeTextfieldViews::UpdateVerticalAlignment() {
-  GetRenderText()->SetVerticalAlignment(textfield_->vertical_alignment());
-  SchedulePaint();
-}
-
 bool NativeTextfieldViews::SetFocus() {
   return false;
 }

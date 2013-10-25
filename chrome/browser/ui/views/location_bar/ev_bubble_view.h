@@ -14,7 +14,6 @@ class LocationBarView;
 class EVBubbleView : public IconLabelBubbleView {
  public:
   EVBubbleView(const gfx::FontList& font_list,
-               int font_y_offset,
                SkColor text_color,
                SkColor parent_background_color,
                LocationBarView* parent);
@@ -35,4 +34,3 @@ class EVBubbleView : public IconLabelBubbleView {
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_LOCATION_BAR_EV_BUBBLE_VIEW_H_
-

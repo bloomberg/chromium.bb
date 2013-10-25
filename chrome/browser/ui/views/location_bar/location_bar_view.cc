@@ -113,39 +113,44 @@ Browser* GetBrowserFromDelegate(LocationBarView::Delegate* delegate) {
   return contents ? chrome::FindBrowserWithWebContents(contents) : NULL;
 }
 
-// Given a containing |height| and a base |font_list|, shrinks the fonts until
-// the primary font will fit within |height| while having its cap height
-// vertically centered.  Returns the |font_y_offset| needed to produce this
-// centering.
-void CalculateFontAndOffsetForHeight(int height,
-                                     gfx::FontList* font_list,
-                                     int* font_y_offset) {
-#if defined(OS_WIN)
-  base::win::ScopedGetDC screen_dc(NULL);
-#endif
-
-  while (true) {
-    // TODO(pkasting): Expand the gfx::Font metrics (and underlying Skia
-    // metrics) enough to expose the cap height directly.
-#if defined(OS_WIN)
-    const gfx::Font& font = font_list->GetPrimaryFont();
-    base::win::ScopedSelectObject font_in_dc(screen_dc, font.GetNativeFont());
-    TEXTMETRIC tm = {0};
-    GetTextMetrics(screen_dc, &tm);
-    int cap_height = font.GetBaseline() - tm.tmInternalLeading;
-    *font_y_offset = ((height - cap_height) / 2) - tm.tmInternalLeading;
-#else
-    // Without cap height available, we fall back to centering the full height.
-    *font_y_offset = (height - font_list->GetHeight()) / 2;
-#endif
-
-    const int font_size = font_list->GetFontSize();
-    if (((*font_y_offset >= 0) &&
-         ((*font_y_offset + font_list->GetHeight()) <= height)) ||
-        (font_size <= 1))
-      return;
-    *font_list = font_list->DeriveFontListWithSize(font_size - 1);
+// Given a containing |height| and a |base_font_list|, shrinks the font size
+// until the font list will fit within |height| while having its cap height
+// vertically centered.  Returns the correctly-sized font list.
+//
+// The expected layout:
+//   +--------+-----------------------------------------------+------------+
+//   |        | y offset                                      | space      |
+//   |        +--------+-------------------+------------------+ above      |
+//   |        |        |                   | internal leading | cap height |
+//   | box    | font   | ascent (baseline) +------------------+------------+
+//   | height | height |                   | cap height                    |
+//   |        |        |-------------------+------------------+------------+
+//   |        |        | descent (height - baseline)          | space      |
+//   |        +--------+--------------------------------------+ below      |
+//   |        | space at bottom                               | cap height |
+//   +--------+-----------------------------------------------+------------+
+// Goal:
+//     center of box height == center of cap height
+//     (i.e. space above cap height == space below cap height)
+// Restrictions:
+//     y offset >= 0
+//     space at bottom >= 0
+//     (i.e. Entire font must be visible inside the box.)
+gfx::FontList GetLargestFontListWithHeightBound(
+    const gfx::FontList& base_font_list,
+    int height) {
+  gfx::FontList font_list = base_font_list;
+  for (int font_size = font_list.GetFontSize(); font_size > 1; --font_size) {
+    const int internal_leading =
+        font_list.GetBaseline() - font_list.GetCapHeight();
+    const int space = height - font_list.GetCapHeight();
+    const int y_offset = space / 2 - internal_leading;
+    const int space_at_bottom = height - (y_offset + font_list.GetHeight());
+    if ((y_offset >= 0) && (space_at_bottom >= 0))
+      break;
+    font_list = font_list.DeriveFontListWithSizeDelta(-1);
   }
+  return font_list;
 }
 
 }  // namespace
@@ -248,41 +253,35 @@ void LocationBarView::Init() {
     font_list = font_list.DeriveFontListWithSize(desired_font_size);
   // Shrink large fonts to make them fit.
   // TODO(pkasting): Stretch the location bar instead in this case.
-  int location_height = GetInternalHeight(true);
-  int font_y_offset;
-  CalculateFontAndOffsetForHeight(location_height, &font_list, &font_y_offset);
+  const int location_height = GetInternalHeight(true);
+  font_list = GetLargestFontListWithHeightBound(font_list, location_height);
 
-  // Determine the font for use inside the bubbles.
-  gfx::FontList bubble_font_list(font_list);
-  int bubble_font_y_offset;
-  // The bubble background images have 1 px thick edges, which we don't want to
-  // overlap.
+  // Determine the font for use inside the bubbles.  The bubble background
+  // images have 1 px thick edges, which we don't want to overlap.
   const int kBubbleInteriorVerticalPadding = 1;
-  CalculateFontAndOffsetForHeight(
-      location_height - ((kBubblePadding + kBubbleInteriorVerticalPadding) * 2),
-      &bubble_font_list, &bubble_font_y_offset);
-  bubble_font_y_offset += kBubbleInteriorVerticalPadding;
+  const int bubble_vertical_padding =
+      (kBubblePadding + kBubbleInteriorVerticalPadding) * 2;
+  const gfx::FontList bubble_font_list(
+      GetLargestFontListWithHeightBound(
+          font_list, location_height - bubble_vertical_padding));
 
   const SkColor background_color =
       GetColor(ToolbarModel::NONE, LocationBarView::BACKGROUND);
   ev_bubble_view_ = new EVBubbleView(
-      bubble_font_list, bubble_font_y_offset,
-      GetColor(ToolbarModel::EV_SECURE, SECURITY_TEXT), background_color, this);
+      bubble_font_list, GetColor(ToolbarModel::EV_SECURE, SECURITY_TEXT),
+      background_color, this);
   ev_bubble_view_->set_drag_controller(this);
   AddChildView(ev_bubble_view_);
 
   // Initialize the Omnibox view.
   location_entry_.reset(CreateOmniboxView(this, profile_, command_updater(),
-                                          is_popup_mode_, this, font_list,
-                                          font_y_offset));
+                                          is_popup_mode_, this, font_list));
   SetLocationEntryFocusable(true);
   location_entry_view_ = location_entry_->AddToView(this);
 
   // Initialize the inline autocomplete view which is visible only when IME is
   // turned on.  Use the same font with the omnibox and highlighted background.
   ime_inline_autocomplete_view_ = new views::Label(string16(), font_list);
-  ime_inline_autocomplete_view_->set_border(
-      views::Border::CreateEmptyBorder(font_y_offset, 0, 0, 0));
   ime_inline_autocomplete_view_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   ime_inline_autocomplete_view_->SetAutoColorReadabilityEnabled(false);
   ime_inline_autocomplete_view_->set_background(
@@ -296,13 +295,10 @@ void LocationBarView::Init() {
 
   const SkColor text_color = GetColor(ToolbarModel::NONE, TEXT);
   selected_keyword_view_ = new SelectedKeywordView(
-      bubble_font_list, bubble_font_y_offset, text_color, background_color,
-      profile_);
+      bubble_font_list, text_color, background_color, profile_);
   AddChildView(selected_keyword_view_);
 
   suggested_text_view_ = new views::Label(string16(), font_list);
-  suggested_text_view_->set_border(
-      views::Border::CreateEmptyBorder(font_y_offset, 0, 0, 0));
   suggested_text_view_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   suggested_text_view_->SetAutoColorReadabilityEnabled(false);
   suggested_text_view_->SetEnabledColor(GetColor(
@@ -311,7 +307,7 @@ void LocationBarView::Init() {
   AddChildView(suggested_text_view_);
 
   keyword_hint_view_ = new KeywordHintView(
-      profile_, font_list, font_y_offset,
+      profile_, font_list,
       GetColor(ToolbarModel::NONE, LocationBarView::DEEMPHASIZED_TEXT),
       background_color);
   AddChildView(keyword_hint_view_);
@@ -334,8 +330,8 @@ void LocationBarView::Init() {
   for (int i = 0; i < CONTENT_SETTINGS_NUM_TYPES; ++i) {
     ContentSettingImageView* content_blocked_view =
         new ContentSettingImageView(static_cast<ContentSettingsType>(i), this,
-                                    bubble_font_list, bubble_font_y_offset,
-                                    text_color, background_color);
+                                    bubble_font_list, text_color,
+                                    background_color);
     content_setting_views_.push_back(content_blocked_view);
     content_blocked_view->SetVisible(false);
     AddChildView(content_blocked_view);
@@ -804,8 +800,9 @@ void LocationBarView::Layout() {
       location_needed_width =
           std::min(location_needed_width,
                    location_bounds.width() - suggested_text_size.width());
-      gfx::Rect suggested_text_bounds(location_bounds.origin(),
-                                      suggested_text_size);
+      gfx::Rect suggested_text_bounds(location_bounds.x(), location_bounds.y(),
+                                      suggested_text_size.width(),
+                                      location_bounds.height());
       // TODO(sky): figure out why this needs the -1.
       suggested_text_bounds.Offset(location_needed_width - 1, 0);
       // For non-views the omnibox needs to be shrunk so that the suggest text
@@ -855,8 +852,7 @@ void LocationBarView::Layout() {
     location_bounds.set_width(x);
     ime_inline_autocomplete_view_->SetBounds(
         location_bounds.right(), location_bounds.y(),
-        std::min(width, entry_width),
-        ime_inline_autocomplete_view_->GetPreferredSize().height());
+        std::min(width, entry_width), location_bounds.height());
   }
 
   location_entry_view_->SetBoundsRect(location_bounds);

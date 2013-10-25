@@ -93,9 +93,6 @@ class VIEWS_EXPORT NativeTextfieldWrapper {
   // Updates the vertical margins for the native text field.
   virtual void UpdateVerticalMargins() = 0;
 
-  // Updates the vertical alignment for the native text field.
-  virtual void UpdateVerticalAlignment() = 0;
-
   // Sets the focus to the text field. Returns false if the wrapper
   // didn't take focus.
   virtual bool SetFocus() = 0;

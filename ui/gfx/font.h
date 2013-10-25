@@ -18,6 +18,15 @@ class PlatformFont;
 
 // Font provides a wrapper around an underlying font. Copy and assignment
 // operators are explicitly allowed, and cheap.
+//
+// Figure of font metrics:
+//   +--------+-------------------+------------------+
+//   |        |                   | internal leading |
+//   |        | ascent (baseline) +------------------+
+//   | height |                   | cap height       |
+//   |        |-------------------+------------------+
+//   |        | descent (height - baseline)          |
+//   +--------+--------------------------------------+
 class GFX_EXPORT Font {
  public:
   // The following constants indicate the font style.

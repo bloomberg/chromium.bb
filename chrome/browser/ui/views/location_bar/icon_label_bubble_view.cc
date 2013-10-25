@@ -19,7 +19,6 @@ IconLabelBubbleView::IconLabelBubbleView(const int background_images[],
                                          const int hover_background_images[],
                                          int contained_image,
                                          const gfx::FontList& font_list,
-                                         int font_y_offset,
                                          SkColor text_color,
                                          SkColor parent_background_color,
                                          bool elide_in_middle)
@@ -43,7 +42,6 @@ IconLabelBubbleView::IconLabelBubbleView(const int background_images[],
         views::Painter::CreateImageGridPainter(hover_background_images));
   }
 
-  label_->set_border(views::Border::CreateEmptyBorder(font_y_offset, 0, 0, 0));
   label_->SetEnabledColor(text_color);
   // Calculate the actual background color for the label.  The background images
   // are painted atop |parent_background_color|.  We grab the color of the
@@ -93,7 +91,7 @@ void IconLabelBubbleView::Layout() {
   const int pre_label_width = GetPreLabelWidth();
   label_->SetBounds(pre_label_width, 0,
                     width() - pre_label_width - GetBubbleOuterPadding(false),
-                    label_->GetPreferredSize().height());
+                    height());
 }
 
 gfx::Size IconLabelBubbleView::GetSizeForLabelWidth(int width) const {

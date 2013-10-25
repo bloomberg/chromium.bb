@@ -34,7 +34,6 @@ class KeywordHintView : public views::View {
  public:
   KeywordHintView(Profile* profile,
                   const gfx::FontList& font_list,
-                  int font_y_offset,
                   SkColor text_color,
                   SkColor background_color);
   virtual ~KeywordHintView();
@@ -49,7 +48,6 @@ class KeywordHintView : public views::View {
 
  private:
   views::Label* CreateLabel(const gfx::FontList& font_list,
-                            int font_y_offset,
                             SkColor text_color,
                             SkColor background_color);
 
