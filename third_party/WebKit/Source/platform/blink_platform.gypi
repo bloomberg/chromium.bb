@@ -205,6 +205,7 @@
       'exported/WebFloatQuad.cpp',
       'exported/WebHTTPBody.cpp',
       'exported/WebHTTPLoadInfo.cpp',
+      'exported/WebPrerenderingSupport.cpp',
       'exported/WebSocketStreamError.cpp',
       'exported/WebThreadSafeData.cpp',
       'exported/WebURL.cpp',
