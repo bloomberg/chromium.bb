@@ -531,6 +531,10 @@ class Chapter {
                 uint64 start_time_ns,
                 uint64 end_time_ns);
 
+  // Sets the uid for this chapter. Primarily used to enable
+  // deterministic output from the muxer.
+  void set_uid(const uint64 uid) { uid_ = uid; }
+
   // Add a title string to this chapter, per the semantics described
   // here:
   //  http://www.matroska.org/technical/specs/index.html
