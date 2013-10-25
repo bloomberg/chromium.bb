@@ -1501,6 +1501,8 @@ rpi_renderer_destroy_view(struct weston_view *base)
 	if (!view)
 		return;
 
+	view->view = NULL;
+
 	/* If guaranteed to not be on screen, just detroy it. */
 	if (wl_list_empty(&view->link))
 		rpir_view_destroy(view);
