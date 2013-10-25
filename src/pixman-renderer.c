@@ -43,6 +43,7 @@ struct pixman_surface_state {
 	struct weston_buffer_reference buffer_ref;
 
 	struct wl_listener surface_destroy_listener;
+	struct wl_listener renderer_destroy_listener;
 };
 
 struct pixman_renderer {
@@ -51,6 +52,8 @@ struct pixman_renderer {
 	int repaint_debug;
 	pixman_image_t *debug_color;
 	struct weston_binding *debug_binding;
+
+	struct wl_signal destroy_signal;
 };
 
 static inline struct pixman_output_state *
@@ -593,12 +596,11 @@ pixman_renderer_attach(struct weston_surface *es, struct weston_buffer *buffer)
 }
 
 static void
-surface_state_handle_surface_destroy(struct wl_listener *listener, void *data)
+pixman_renderer_surface_state_destroy(struct pixman_surface_state *ps)
 {
-	struct pixman_surface_state *ps;
+	wl_list_remove(&ps->surface_destroy_listener.link);
+	wl_list_remove(&ps->renderer_destroy_listener.link);
 
-	ps = container_of(listener, struct pixman_surface_state,
-			  surface_destroy_listener);
 
 	ps->surface->renderer_state = NULL;
 
@@ -610,10 +612,33 @@ surface_state_handle_surface_destroy(struct wl_listener *listener, void *data)
 	free(ps);
 }
 
+static void
+surface_state_handle_surface_destroy(struct wl_listener *listener, void *data)
+{
+	struct pixman_surface_state *ps;
+
+	ps = container_of(listener, struct pixman_surface_state,
+			  surface_destroy_listener);
+
+	pixman_renderer_surface_state_destroy(ps);
+}
+
+static void
+surface_state_handle_renderer_destroy(struct wl_listener *listener, void *data)
+{
+	struct pixman_surface_state *ps;
+
+	ps = container_of(listener, struct pixman_surface_state,
+			  renderer_destroy_listener);
+
+	pixman_renderer_surface_state_destroy(ps);
+}
+
 static int
 pixman_renderer_create_surface(struct weston_surface *surface)
 {
 	struct pixman_surface_state *ps;
+	struct pixman_renderer *pr = get_renderer(surface->compositor);
 
 	ps = calloc(1, sizeof *ps);
 	if (!ps)
@@ -627,6 +652,11 @@ pixman_renderer_create_surface(struct weston_surface *surface)
 		surface_state_handle_surface_destroy;
 	wl_signal_add(&surface->destroy_signal,
 		      &ps->surface_destroy_listener);
+
+	ps->renderer_destroy_listener.notify =
+		surface_state_handle_renderer_destroy;
+	wl_signal_add(&pr->destroy_signal,
+		      &ps->renderer_destroy_listener);
 
 	return 0;
 }
@@ -656,6 +686,7 @@ pixman_renderer_destroy(struct weston_compositor *ec)
 {
 	struct pixman_renderer *pr = get_renderer(ec);
 
+	wl_signal_emit(&pr->destroy_signal, pr);
 	weston_binding_destroy(pr->debug_binding);
 	free(pr);
 
@@ -709,6 +740,8 @@ pixman_renderer_init(struct weston_compositor *ec)
 						    debug_binding, ec);
 
 	wl_display_add_shm_format(ec->wl_display, WL_SHM_FORMAT_RGB565);
+
+	wl_signal_init(&renderer->destroy_signal);
 
 	return 0;
 }

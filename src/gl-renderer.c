@@ -83,6 +83,7 @@ struct gl_surface_state {
 	struct weston_surface *surface;
 
 	struct wl_listener surface_destroy_listener;
+	struct wl_listener renderer_destroy_listener;
 };
 
 struct gl_renderer {
@@ -130,6 +131,8 @@ struct gl_renderer {
 	struct gl_shader invert_color_shader;
 	struct gl_shader solid_shader;
 	struct gl_shader *current_shader;
+
+	struct wl_signal destroy_signal;
 };
 
 static inline struct gl_output_state *
@@ -1149,17 +1152,12 @@ gl_renderer_surface_set_color(struct weston_surface *surface,
 }
 
 static void
-surface_state_handle_surface_destroy(struct wl_listener *listener, void *data)
+surface_state_destroy(struct gl_surface_state *gs, struct gl_renderer *gr)
 {
-	struct gl_surface_state *gs;
-	struct gl_renderer *gr;
-	struct weston_surface *surface = data;
 	int i;
 
-	gr = get_renderer(surface->compositor);
-
-	gs = container_of(listener, struct gl_surface_state,
-			  surface_destroy_listener);
+	wl_list_remove(&gs->surface_destroy_listener.link);
+	wl_list_remove(&gs->renderer_destroy_listener.link);
 
 	gs->surface->renderer_state = NULL;
 
@@ -1173,10 +1171,39 @@ surface_state_handle_surface_destroy(struct wl_listener *listener, void *data)
 	free(gs);
 }
 
+static void
+surface_state_handle_surface_destroy(struct wl_listener *listener, void *data)
+{
+	struct gl_surface_state *gs;
+	struct gl_renderer *gr;
+
+	gs = container_of(listener, struct gl_surface_state,
+			  surface_destroy_listener);
+
+	gr = get_renderer(gs->surface->compositor);
+
+	surface_state_destroy(gs, gr);
+}
+
+static void
+surface_state_handle_renderer_destroy(struct wl_listener *listener, void *data)
+{
+	struct gl_surface_state *gs;
+	struct gl_renderer *gr;
+
+	gr = data;
+
+	gs = container_of(listener, struct gl_surface_state,
+			  renderer_destroy_listener);
+
+	surface_state_destroy(gs, gr);
+}
+
 static int
 gl_renderer_create_surface(struct weston_surface *surface)
 {
 	struct gl_surface_state *gs;
+	struct gl_renderer *gr = get_renderer(surface->compositor);
 
 	gs = calloc(1, sizeof *gs);
 	if (!gs)
@@ -1189,6 +1216,8 @@ gl_renderer_create_surface(struct weston_surface *surface)
 	gs->pitch = 1;
 	gs->y_inverted = 1;
 
+	gs->surface = surface;
+
 	pixman_region32_init(&gs->texture_damage);
 	surface->renderer_state = gs;
 
@@ -1196,6 +1225,11 @@ gl_renderer_create_surface(struct weston_surface *surface)
 		surface_state_handle_surface_destroy;
 	wl_signal_add(&surface->destroy_signal,
 		      &gs->surface_destroy_listener);
+
+	gs->renderer_destroy_listener.notify =
+		surface_state_handle_renderer_destroy;
+	wl_signal_add(&gr->destroy_signal,
+		      &gs->renderer_destroy_listener);
 
 	return 0;
 }
@@ -1579,6 +1613,8 @@ gl_renderer_destroy(struct weston_compositor *ec)
 {
 	struct gl_renderer *gr = get_renderer(ec);
 
+	wl_signal_emit(&gr->destroy_signal, gr);
+
 	if (gr->has_bind_display)
 		gr->unbind_display(gr->egl_display, ec->wl_display);
 
@@ -1704,6 +1740,8 @@ gl_renderer_create(struct weston_compositor *ec, EGLNativeDisplayType display,
 	ec->capabilities |= WESTON_CAP_CAPTURE_YFLIP;
 
 	wl_display_add_shm_format(ec->wl_display, WL_SHM_FORMAT_RGB565);
+
+	wl_signal_init(&gr->destroy_signal);
 
 	return 0;
 
