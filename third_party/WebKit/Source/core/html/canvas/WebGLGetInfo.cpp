@@ -209,10 +209,6 @@ WebGLGetInfo::WebGLGetInfo(PassRefPtr<WebGLVertexArrayObjectOES> value)
 {
 }
 
-WebGLGetInfo::~WebGLGetInfo()
-{
-}
-
 WebGLGetInfo::Type WebGLGetInfo::getType() const
 {
     return m_type;
