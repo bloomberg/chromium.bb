@@ -106,14 +106,6 @@ struct Highlight {
 class InspectorOverlay {
     WTF_MAKE_FAST_ALLOCATED;
 public:
-    // This must be kept in sync with the overrideEntries array in InspectorOverlayPage.html.
-    enum OverrideType {
-        ViewportOverride = 1,
-        UserAgentOverride = 1 << 1,
-        TouchOverride = 1 << 2,
-        SensorsOverride = 1 << 3,
-        CSSMediaOverride = 1 << 4
-    };
     static PassOwnPtr<InspectorOverlay> create(Page* page, InspectorClient* client)
     {
         return adoptPtr(new InspectorOverlay(page, client));
@@ -133,8 +125,6 @@ public:
 
     void setPausedInDebuggerMessage(const String*);
     void setInspectModeEnabled(bool);
-    void setOverride(OverrideType, bool);
-    void setOverridesTopOffset(int);
 
     void hideHighlight();
     void highlightNode(Node*, Node* eventTarget, const HighlightConfig&);
@@ -160,7 +150,6 @@ private:
     void drawQuadHighlight();
     void drawPausedInDebuggerMessage();
     void drawViewSize();
-    void drawOverridesMessage();
 
     Page* overlayPage();
     void reset(const IntSize& viewportSize, const IntSize& frameViewFullSize, int scrollX, int scrollY);
@@ -184,8 +173,6 @@ private:
     bool m_drawViewSize;
     bool m_drawViewSizeWithGrid;
     Timer<InspectorOverlay> m_timer;
-    unsigned m_overrides;
-    int m_overridesTopOffset;
 };
 
 } // namespace WebCore

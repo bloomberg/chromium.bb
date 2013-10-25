@@ -53,7 +53,6 @@ class Frame;
 class HTTPHeaderMap;
 class InspectorClient;
 class InspectorFrontend;
-class InspectorOverlay;
 class InspectorPageAgent;
 class InstrumentingAgents;
 class JSONObject;
@@ -75,9 +74,9 @@ typedef String ErrorString;
 
 class InspectorResourceAgent : public InspectorBaseAgent<InspectorResourceAgent>, public InspectorBackendDispatcher::NetworkCommandHandler {
 public:
-    static PassOwnPtr<InspectorResourceAgent> create(InstrumentingAgents* instrumentingAgents, InspectorPageAgent* pageAgent, InspectorClient* client, InspectorCompositeState* state, InspectorOverlay* overlay)
+    static PassOwnPtr<InspectorResourceAgent> create(InstrumentingAgents* instrumentingAgents, InspectorPageAgent* pageAgent, InspectorClient* client, InspectorCompositeState* state)
     {
-        return adoptPtr(new InspectorResourceAgent(instrumentingAgents, pageAgent, client, state, overlay));
+        return adoptPtr(new InspectorResourceAgent(instrumentingAgents, pageAgent, client, state));
     }
 
     virtual void setFrontend(InspectorFrontend*);
@@ -152,13 +151,12 @@ public:
     bool fetchResourceContent(Frame*, const KURL&, String* content, bool* base64Encoded);
 
 private:
-    InspectorResourceAgent(InstrumentingAgents*, InspectorPageAgent*, InspectorClient*, InspectorCompositeState*, InspectorOverlay*);
+    InspectorResourceAgent(InstrumentingAgents*, InspectorPageAgent*, InspectorClient*, InspectorCompositeState*);
 
     void enable();
 
     InspectorPageAgent* m_pageAgent;
     InspectorClient* m_client;
-    InspectorOverlay* m_overlay;
     InspectorFrontend::Network* m_frontend;
     String m_userAgentOverride;
     OwnPtr<NetworkResourcesData> m_resourcesData;

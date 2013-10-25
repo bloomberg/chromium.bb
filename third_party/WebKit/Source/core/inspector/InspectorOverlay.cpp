@@ -252,8 +252,6 @@ InspectorOverlay::InspectorOverlay(Page* page, InspectorClient* client)
     , m_drawViewSizeWithGrid(false)
     , m_timer(this, &InspectorOverlay::onTimer)
     , m_overlayHost(InspectorOverlayHost::create())
-    , m_overrides(0)
-    , m_overridesTopOffset(0)
 {
 }
 
@@ -353,25 +351,6 @@ void InspectorOverlay::setInspectModeEnabled(bool enabled)
     update();
 }
 
-void InspectorOverlay::setOverride(OverrideType type, bool enabled)
-{
-    bool currentEnabled = m_overrides & type;
-    if (currentEnabled == enabled)
-        return;
-    if (enabled)
-        m_overrides |= type;
-    else
-        m_overrides &= ~type;
-    update();
-}
-
-void InspectorOverlay::setOverridesTopOffset(int offset)
-{
-    m_overridesTopOffset = offset;
-    if (m_overrides)
-        update();
-}
-
 void InspectorOverlay::hideHighlight()
 {
     m_highlightNode.clear();
@@ -410,7 +389,7 @@ Node* InspectorOverlay::highlightedNode() const
 
 bool InspectorOverlay::isEmpty()
 {
-    bool hasAlwaysVisibleElements = m_highlightNode || m_eventTargetNode || m_highlightQuad || m_overrides || !m_size.isEmpty() || m_drawViewSize;
+    bool hasAlwaysVisibleElements = m_highlightNode || m_eventTargetNode || m_highlightQuad || !m_size.isEmpty() || m_drawViewSize;
     bool hasInvisibleInInspectModeElements = !m_pausedInDebuggerMessage.isNull();
     return !(hasAlwaysVisibleElements || (hasInvisibleInInspectModeElements && !m_inspectModeEnabled));
 }
@@ -443,7 +422,6 @@ void InspectorOverlay::update()
     if (!m_inspectModeEnabled)
         drawPausedInDebuggerMessage();
     drawViewSize();
-    drawOverridesMessage();
 
     // Position DOM elements.
     overlayPage()->mainFrame()->document()->recalcStyle(Force);
@@ -464,8 +442,6 @@ void InspectorOverlay::hide()
     m_size = IntSize();
     m_drawViewSize = false;
     m_drawViewSizeWithGrid = false;
-    m_overrides = 0;
-    m_overridesTopOffset = 0;
     update();
 }
 
@@ -598,16 +574,6 @@ void InspectorOverlay::drawViewSize()
 {
     if (m_drawViewSize)
         evaluateInOverlay("drawViewSize", m_drawViewSizeWithGrid ? "true" : "false");
-}
-
-void InspectorOverlay::drawOverridesMessage()
-{
-    RefPtr<JSONObject> data = JSONObject::create();
-    if (m_drawViewSize || m_highlightNode || m_highlightQuad)
-        data->setBoolean("hidden", true);
-    data->setNumber("overrides", m_overrides);
-    data->setNumber("topOffset", m_overridesTopOffset);
-    evaluateInOverlay("drawOverridesMessage", data.release());
 }
 
 Page* InspectorOverlay::overlayPage()

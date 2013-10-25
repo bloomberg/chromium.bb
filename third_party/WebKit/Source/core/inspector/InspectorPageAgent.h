@@ -186,8 +186,6 @@ private:
     bool deviceMetricsChanged(int width, int height, double fontScaleFactor, bool fitWindow, bool textAutosizing);
     void updateViewMetrics(int width, int height, double deviceScaleFactor, bool fitWindow, bool textAutosizing);
     void updateTouchEventEmulationInPage(bool);
-    void updateOverridesTopOffset();
-    void updateSensorsOverlayMessage();
 
     static bool dataContent(const char* data, unsigned size, const String& textEncodingName, bool withBase64Encode, String* result);
 

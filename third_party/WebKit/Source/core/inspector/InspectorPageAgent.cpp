@@ -695,8 +695,6 @@ void InspectorPageAgent::setShowFPSCounter(ErrorString*, bool show)
     bool viewMetricsOverride = m_state->getLong(PageAgentState::pageAgentScreenWidthOverride);
     m_state->setBoolean(PageAgentState::pageAgentShowFPSCounter, show);
     m_client->setShowFPSCounter(show && !viewMetricsOverride);
-
-    updateOverridesTopOffset();
 }
 
 void InspectorPageAgent::setContinuousPaintingEnabled(ErrorString*, bool enabled)
@@ -704,8 +702,6 @@ void InspectorPageAgent::setContinuousPaintingEnabled(ErrorString*, bool enabled
     bool viewMetricsOverride = m_state->getLong(PageAgentState::pageAgentScreenWidthOverride);
     m_state->setBoolean(PageAgentState::pageAgentContinuousPaintingEnabled, enabled);
     m_client->setContinuousPaintingEnabled(enabled && !viewMetricsOverride);
-
-    updateOverridesTopOffset();
 }
 
 void InspectorPageAgent::setShowScrollBottleneckRects(ErrorString*, bool show)
@@ -1067,13 +1063,11 @@ void InspectorPageAgent::updateViewMetrics(int width, int height, double deviceS
     if (document)
         document->styleResolverChanged(RecalcStyleImmediately);
     InspectorInstrumentation::mediaQueryResultChanged(document);
-    m_overlay->setOverride(InspectorOverlay::ViewportOverride, width && height);
 
     // FIXME: allow metrics override, fps counter and continuous painting at the same time: crbug.com/299837.
     bool override = width && height;
     m_client->setShowFPSCounter(m_state->getBoolean(PageAgentState::pageAgentShowFPSCounter) && !override);
     m_client->setContinuousPaintingEnabled(m_state->getBoolean(PageAgentState::pageAgentContinuousPaintingEnabled) && !override);
-    updateOverridesTopOffset();
 }
 
 void InspectorPageAgent::updateTouchEventEmulationInPage(bool enabled)
@@ -1081,27 +1075,6 @@ void InspectorPageAgent::updateTouchEventEmulationInPage(bool enabled)
     m_state->setBoolean(PageAgentState::touchEventEmulationEnabled, enabled);
     if (mainFrame() && mainFrame()->settings())
         mainFrame()->settings()->setTouchEventEmulationEnabled(enabled);
-    m_overlay->setOverride(InspectorOverlay::TouchOverride, enabled);
-}
-
-void InspectorPageAgent::updateOverridesTopOffset()
-{
-    static const int continousPaintingGraphHeight = 92;
-    static const int fpsGraphHeight = 73;
-    int topOffset = 0;
-    if (m_state->getBoolean(PageAgentState::pageAgentContinuousPaintingEnabled))
-        topOffset = continousPaintingGraphHeight;
-    else if (m_state->getBoolean(PageAgentState::pageAgentShowFPSCounter))
-        topOffset = fpsGraphHeight;
-    // FIXME: allow metrics override, fps counter and continuous painting at the same time: crbug.com/299837.
-    bool setOffset = false;
-    if (setOffset)
-        m_overlay->setOverridesTopOffset(topOffset);
-}
-
-void InspectorPageAgent::updateSensorsOverlayMessage()
-{
-    m_overlay->setOverride(InspectorOverlay::SensorsOverride, m_geolocationOverridden || m_deviceOrientation);
 }
 
 void InspectorPageAgent::setGeolocationOverride(ErrorString* error, const double* latitude, const double* longitude, const double* accuracy)
@@ -1123,7 +1096,6 @@ void InspectorPageAgent::setGeolocationOverride(ErrorString* error, const double
         m_geolocationPosition.clear();
 
     controller->positionChanged(0); // Kick location update.
-    updateSensorsOverlayMessage();
 }
 
 void InspectorPageAgent::clearGeolocationOverride(ErrorString*)
@@ -1136,7 +1108,6 @@ void InspectorPageAgent::clearGeolocationOverride(ErrorString*)
     GeolocationController* controller = GeolocationController::from(m_page);
     if (controller && m_platformGeolocationPosition.get())
         controller->positionChanged(m_platformGeolocationPosition.get());
-    updateSensorsOverlayMessage();
 }
 
 GeolocationPosition* InspectorPageAgent::overrideGeolocationPosition(GeolocationPosition* position)
@@ -1162,13 +1133,11 @@ void InspectorPageAgent::setDeviceOrientationOverride(ErrorString* error, double
 
     m_deviceOrientation = DeviceOrientationData::create(true, alpha, true, beta, true, gamma);
     controller->didChangeDeviceOrientation(m_deviceOrientation.get());
-    updateSensorsOverlayMessage();
 }
 
 void InspectorPageAgent::clearDeviceOrientationOverride(ErrorString*)
 {
     m_deviceOrientation.clear();
-    updateSensorsOverlayMessage();
 }
 
 DeviceOrientationData* InspectorPageAgent::overrideDeviceOrientation(DeviceOrientationData* deviceOrientation)
@@ -1206,7 +1175,6 @@ void InspectorPageAgent::setEmulatedMedia(ErrorString*, const String& media)
         document->styleResolverChanged(RecalcStyleImmediately);
         document->updateLayout();
     }
-    m_overlay->setOverride(InspectorOverlay::CSSMediaOverride, !media.isEmpty());
 }
 
 void InspectorPageAgent::applyEmulatedMedia(String* media)

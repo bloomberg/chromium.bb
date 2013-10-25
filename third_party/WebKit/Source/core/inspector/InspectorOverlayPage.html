@@ -166,44 +166,12 @@ body.platform-linux {
     position: absolute;
     background-color: darkgray;
 }
-
-#overrides-container {
-    display: inline-block;
-    padding: 0 0 10px 10px;
-    position: absolute;
-    top: 0;
-    right: 0;
-}
-
-#overrides-message > div:not(:first-child) {
-    text-indent: 8px;
-}
-
-#overrides-message {
-    display: inline-block;
-    font-size: 14px;
-    padding: 4px 6px;
-    color: red;
-    background-color: rgba(17, 17, 17, 0.843); /* Same as DebugColors::HUDBackgroundColor() */
-}
-
-#overrides-container:hover #overrides-message,
-#overrides-container.hidden #overrides-message {
-    visibility: hidden;
-}
 </style>
 <script>
 const lightGridColor = "rgba(0,0,0,0.2)";
 const darkGridColor = "rgba(0,0,0,0.7)";
 const transparentColor = "rgba(0, 0, 0, 0)";
 const gridBackgroundColor = "rgba(255, 255, 255, 0.8)";
-
-// The order must correspond to that in InspectorOverlay::OverrideType.
-const overrideEntries = ["Viewport", "User Agent", "Touch", "Sensors", "Media"];
-const overrideTouchBit = 1 << 2;
-
-var overridesContainer;
-var overridesMessageElement;
 
 function drawPausedInDebuggerMessage(message)
 {
@@ -442,41 +410,6 @@ function drawViewSize(drawViewSizeWithGrid)
     context.restore();
     if (drawGridBoolean)
         _drawGrid();
-}
-
-function drawOverridesMessage(data)
-{
-    overridesContainer.style.top = data.topOffset + "px";
-    overridesMessageElement.textContent = "";
-
-    var overrides = data.overrides;
-    if (!overrides)
-        document.body.classList.remove("touch");
-    if (!overrides || data.hidden) {
-        overridesContainer.classList.add("hidden");
-        return;
-    }
-
-    var header = document.createElement("div");
-    header.id = "overrides-header";
-    header.textContent = "Overrides:";
-    overridesMessageElement.appendChild(header);
-
-    var maskBit = 1;
-    for (var i = 0; i < overrideEntries.length; ++i, maskBit <<= 1) {
-        if (!(overrides & maskBit))
-            continue;
-        var item = document.createElement("div");
-        item.textContent = overrideEntries[i];
-        overridesMessageElement.appendChild(item);
-    }
-
-    overridesContainer.classList.remove("hidden");
-    var hasTouch = overrides & overrideTouchBit;
-    if (hasTouch)
-        document.body.classList.add("touch");
-    else
-        document.body.classList.remove("touch");
 }
 
 function reset(resetData)
@@ -758,31 +691,10 @@ function onStepOverClick()
     InspectorOverlayHost.stepOver();
 }
 
-function onMouseMotion(isOverElement)
-{
-    if (!overridesMessageElement.textContent.length)
-        return;
-    if (isOverElement)
-        overridesContainer.classList.add("hidden");
-    else
-        overridesContainer.classList.remove("hidden");
-}
-
-function onFocus()
-{
-    if (overridesMessageElement.textContent.length)
-        overridesContainer.classList.remove("hidden");
-}
-
 function onLoaded()
 {
-    overridesContainer = document.getElementById("overrides-container");
-    overridesMessageElement = document.getElementById("overrides-message");
     document.getElementById("resume-button").addEventListener("click", onResumeClick);
     document.getElementById("step-over-button").addEventListener("click", onStepOverClick);
-    overridesContainer.addEventListener("mousemove", onMouseMotion.bind(this, true));
-    overridesContainer.addEventListener("mouseout", onMouseMotion.bind(this, false));
-    window.addEventListener("focus", onFocus);
 }
 
 window.addEventListener("DOMContentLoaded", onLoaded);
@@ -803,8 +715,5 @@ window.addEventListener("DOMContentLoaded", onLoaded);
 </div>
 <div id="right-gutter"></div>
 <div id="bottom-gutter"></div>
-<div id="overrides-container">
-  <div id="overrides-message"></div>
-</div>
 <div id="log"></div>
 </html>
