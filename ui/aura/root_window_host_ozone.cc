@@ -13,7 +13,7 @@ RootWindowHostOzone::RootWindowHostOzone(const gfx::Rect& bounds)
    : delegate_(NULL),
       widget_(0),
       bounds_(bounds),
-      factory_(new ui::EventFactoryOzone()) {
+      factory_(ui::EventFactoryOzone::GetInstance()) {
   factory_->CreateStartupEventConverters();
   gfx::SurfaceFactoryOzone* surface_factory =
       gfx::SurfaceFactoryOzone::GetInstance();

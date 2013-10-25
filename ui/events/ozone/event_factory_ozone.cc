@@ -9,36 +9,31 @@
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "ui/events/event_switches.h"
-#include "ui/events/ozone/event_factory_delegate_ozone.h"
 
 #if defined(USE_OZONE_EVDEV)
-#include "ui/events/ozone/evdev/event_factory_delegate.h"
+#include "ui/events/ozone/evdev/event_factory.h"
 #endif
 
 namespace ui {
 
 namespace {
 
+EventFactoryOzone* CreateFactory(const std::string& event_factory) {
 #if defined(USE_OZONE_EVDEV)
-static const char kEventFactoryEvdev[] = "evdev";
+  if (event_factory == "evdev" || event_factory == "default")
+    return new EventFactoryEvdev;
 #endif
 
-EventFactoryDelegateOzone* CreateDelegate(const std::string& event_delegate) {
-#if defined(USE_OZONE_EVDEV)
-  if (event_delegate == "evdev" || event_delegate == "default")
-    return new EventFactoryDelegateEvdev;
-#endif
-
-  if (event_delegate == "none" || event_delegate == "default") {
+  if (event_factory == "none" || event_factory == "default") {
     LOG(WARNING) << "No ozone events implementation - limited input support";
-    return NULL;
+    return new EventFactoryOzone;
   }
 
-  LOG(FATAL) << "Invalid ozone events implementation: " << event_delegate;
+  LOG(FATAL) << "Invalid ozone events implementation: " << event_factory;
   return NULL;  // not reached
 }
 
-std::string GetRequestedDelegate() {
+std::string GetRequestedFactory() {
   if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kOzoneEvents))
     return "default";
   return CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
@@ -48,7 +43,7 @@ std::string GetRequestedDelegate() {
 }  // namespace
 
 // static
-EventFactoryDelegateOzone* EventFactoryOzone::delegate_ = NULL;
+EventFactoryOzone* EventFactoryOzone::impl_ = NULL;
 
 EventFactoryOzone::EventFactoryOzone() {}
 
@@ -58,22 +53,18 @@ EventFactoryOzone::~EventFactoryOzone() {
   STLDeleteValues<std::map<int, Converter> >(&converters_);
 }
 
-void EventFactoryOzone::CreateStartupEventConverters() {
-  if (!delegate_) {
-    std::string requested_delegate = GetRequestedDelegate();
-    SetEventFactoryDelegateOzone(CreateDelegate(requested_delegate));
+EventFactoryOzone* EventFactoryOzone::GetInstance() {
+  if (!impl_) {
+    std::string requested = GetRequestedFactory();
+    impl_ = CreateFactory(requested);
   }
-  if (delegate_)
-    delegate_->CreateStartupEventConverters(this);
+  CHECK(impl_) << "No EventFactoryOzone implementation set.";
+  return impl_;
 }
 
-// static
-void EventFactoryOzone::SetEventFactoryDelegateOzone(
-    EventFactoryDelegateOzone* delegate) {
-  // It should be unnecessary to call this more than once.
-  DCHECK(!delegate_);
-  delegate_ = delegate;
-}
+void EventFactoryOzone::SetInstance(EventFactoryOzone* impl) { impl_ = impl; }
+
+void EventFactoryOzone::CreateStartupEventConverters() {}
 
 void EventFactoryOzone::AddEventConverter(
     int fd,

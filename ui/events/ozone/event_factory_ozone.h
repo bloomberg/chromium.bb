@@ -14,8 +14,6 @@
 
 namespace ui {
 
-class EventFactoryDelegateOzone;
-
 // Creates and dispatches |ui.Event|'s. Ozone assumes that events arrive on file
 // descriptors with one  |EventConverterOzone| instance for each descriptor.
 // Ozone presumes that the set of file desctiprtors can vary at runtime so this
@@ -26,15 +24,15 @@ class EVENTS_EXPORT EventFactoryOzone {
   EventFactoryOzone();
   ~EventFactoryOzone();
 
-  // Sets an optional delegate responsible for creating the starting set of
-  // EventConvertOzones under management. This permits embedders to override the
-  // Linux /dev/input/*-based default as desired. The caller must manage the
-  // scope of this object.
-  static void SetEventFactoryDelegateOzone(EventFactoryDelegateOzone* delegate);
-
   // Called from RootWindowHostOzone to create the starting set of event
   // converters.
-  void CreateStartupEventConverters();
+  virtual void CreateStartupEventConverters();
+
+  // Returns the static instance last set using SetInstance().
+  static EventFactoryOzone* GetInstance();
+
+  // Sets the implementation delegate. Ownership is retained by the caller.
+  static void SetInstance(EventFactoryOzone*);
 
   // Add an |EventConverterOzone| instances for the given file descriptor.
   // Transfers ownership of the |EventConverterOzone| to this class.
@@ -50,7 +48,7 @@ class EVENTS_EXPORT EventFactoryOzone {
   std::map<int, Converter> converters_;
   std::map<int, FDWatcher> watchers_;
 
-  static EventFactoryDelegateOzone* delegate_;
+  static EventFactoryOzone* impl_;  // not owned
 
   DISALLOW_COPY_AND_ASSIGN(EventFactoryOzone);
 };

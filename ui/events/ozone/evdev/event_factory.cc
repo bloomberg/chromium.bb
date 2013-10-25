@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/events/ozone/evdev/event_factory_delegate.h"
+#include "ui/events/ozone/evdev/event_factory.h"
 
 #include <errno.h>
 #include <fcntl.h>
@@ -13,17 +13,15 @@
 #include "base/strings/stringprintf.h"
 #include "ui/events/ozone/evdev/key_event_converter.h"
 #include "ui/events/ozone/evdev/touch_event_converter.h"
-#include "ui/events/ozone/event_factory_delegate_ozone.h"
 #include "ui/events/ozone/event_factory_ozone.h"
 
 namespace ui {
 
-EventFactoryDelegateEvdev::EventFactoryDelegateEvdev() {}
+EventFactoryEvdev::EventFactoryEvdev() {}
 
-EventFactoryDelegateEvdev::~EventFactoryDelegateEvdev() {}
+EventFactoryEvdev::~EventFactoryEvdev() {}
 
-void EventFactoryDelegateEvdev::CreateStartupEventConverters(
-    EventFactoryOzone* factory) {
+void EventFactoryEvdev::CreateStartupEventConverters() {
   // The number of devices in the directory is unknown without reading
   // the contents of the directory. Further, with hot-plugging,  the entries
   // might decrease during the execution of this loop. So exciting from the
@@ -52,7 +50,7 @@ void EventFactoryDelegateEvdev::CreateStartupEventConverters(
       converter.reset(new KeyEventConverterEvdev(&modifiers_));
 
     if (converter) {
-      factory->AddEventConverter(fd, converter.Pass());
+      AddEventConverter(fd, converter.Pass());
     } else {
       close(fd);
     }

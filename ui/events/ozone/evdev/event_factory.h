@@ -7,23 +7,22 @@
 
 #include "base/compiler_specific.h"
 #include "ui/events/ozone/evdev/event_modifiers.h"
-#include "ui/events/ozone/event_factory_delegate_ozone.h"
+#include "ui/events/ozone/event_factory_ozone.h"
 
 namespace ui {
 
 // Ozone events implementation for the Linux input subsystem ("evdev").
-class EventFactoryDelegateEvdev : public EventFactoryDelegateOzone {
+class EventFactoryEvdev : public EventFactoryOzone {
  public:
-  EventFactoryDelegateEvdev();
-  virtual ~EventFactoryDelegateEvdev();
+  EventFactoryEvdev();
+  virtual ~EventFactoryEvdev();
 
-  virtual void CreateStartupEventConverters(
-      EventFactoryOzone* factory) OVERRIDE;
+  virtual void CreateStartupEventConverters() OVERRIDE;
 
  private:
   EventModifiersEvdev modifiers_;
 
-  DISALLOW_COPY_AND_ASSIGN(EventFactoryDelegateEvdev);
+  DISALLOW_COPY_AND_ASSIGN(EventFactoryEvdev);
 };
 
 }  // namespace ui
