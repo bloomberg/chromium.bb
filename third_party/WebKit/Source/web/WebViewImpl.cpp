@@ -2413,6 +2413,8 @@ WebColor WebViewImpl::backgroundColor() const
         return Color::transparent;
     if (!m_page)
         return m_baseBackgroundColor;
+    if (!m_page->mainFrame())
+        return m_baseBackgroundColor;
     FrameView* view = m_page->mainFrame()->view();
     Color backgroundColor = view->documentBackgroundColor();
     if (!backgroundColor.isValid())
@@ -3547,7 +3549,8 @@ void WebViewImpl::setBaseBackgroundColor(WebColor color)
 
     m_baseBackgroundColor = color;
 
-    m_page->mainFrame()->view()->setBaseBackgroundColor(color);
+    if (m_page->mainFrame())
+        m_page->mainFrame()->view()->setBaseBackgroundColor(color);
 
     if (m_layerTreeView)
         m_layerTreeView->setBackgroundColor(backgroundColor());

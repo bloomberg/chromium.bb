@@ -236,6 +236,16 @@ TEST_F(WebViewTest, SetBaseBackgroundColor)
     EXPECT_EQ(0xBFE93B32, webView->backgroundColor());
 }
 
+TEST_F(WebViewTest, SetBaseBackgroundColorBeforeMainFrame)
+{
+    const WebColor kBlue = 0xFF0000FF;
+    WebView* webView = WebViewImpl::create(0);
+    EXPECT_NE(kBlue, webView->backgroundColor());
+    // webView does not have a frame yet, but we should still be able to set the background color.
+    webView->setBaseBackgroundColor(kBlue);
+    EXPECT_EQ(kBlue, webView->backgroundColor());
+}
+
 TEST_F(WebViewTest, FocusIsInactive)
 {
     URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), "visible_iframe.html");
