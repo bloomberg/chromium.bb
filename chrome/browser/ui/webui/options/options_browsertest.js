@@ -668,3 +668,23 @@ TEST_F('OptionsWebUINavigationTest', 'OverlayBackToUnrelated', function() {
     });
   });
 });
+
+// An overlay's position should remain the same as it shows.
+TEST_F('OptionsWebUINavigationTest', 'OverlayShowDoesntShift', function() {
+  var searchEngineOverlay = $('search-engine-manager-page');
+  var frozenPages = document.getElementsByClassName('frozen');  // Gets updated.
+  expectEquals(0, frozenPages.length);
+
+  document.addEventListener('webkitTransitionEnd', function(e) {
+    if (e.target != searchEngineOverlay)
+      return;
+
+    assertFalse(searchEngineOverlay.classList.contains('transparent'));
+    expectEquals(numFrozenPages, frozenPages.length);
+    testDone();
+  });
+
+  OptionsPage.navigateToPage('searchEngines');
+  var numFrozenPages = frozenPages.length;
+  expectGT(numFrozenPages, 0);
+});

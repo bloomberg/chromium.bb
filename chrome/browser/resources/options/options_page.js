@@ -907,12 +907,14 @@ cr.define('options', function() {
                                                              true);
         }
         container.classList.remove('transparent');
+        this.onVisibilityChanged_();
       } else {
         // Kick change events for text fields.
         if (pageDiv.contains(document.activeElement))
           document.activeElement.blur();
         container.classList.add('transparent');
       }
+
       if (loading)
         this.fadeCompleted_();
     },
@@ -925,13 +927,15 @@ cr.define('options', function() {
       if (this.container.classList.contains('transparent')) {
         this.pageDiv.hidden = true;
         this.container.hidden = true;
+
         if (this.parentPage)
           this.parentPage.pageDiv.parentElement.removeAttribute('aria-hidden');
 
         if (this.nestingLevel == 1)
           uber.invokeMethodOnParent('stopInterceptingEvents');
+
+        this.onVisibilityChanged_();
       }
-      this.onVisibilityChanged_();
     },
 
     /**
