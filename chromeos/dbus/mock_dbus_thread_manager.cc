@@ -11,6 +11,7 @@
 #include "chromeos/dbus/fake_bluetooth_input_client.h"
 #include "chromeos/dbus/fake_bluetooth_profile_manager_client.h"
 #include "chromeos/dbus/fake_gsm_sms_client.h"
+#include "chromeos/dbus/fake_nfc_adapter_client.h"
 #include "chromeos/dbus/fake_nfc_manager_client.h"
 #include "chromeos/dbus/fake_shill_device_client.h"
 #include "chromeos/dbus/fake_shill_ipconfig_client.h"
@@ -56,6 +57,7 @@ MockDBusThreadManager::MockDBusThreadManager()
       fake_bluetooth_profile_manager_client_(
           new FakeBluetoothProfileManagerClient),
       fake_gsm_sms_client_(new FakeGsmSMSClient),
+      fake_nfc_adapter_client_(new FakeNfcAdapterClient()),
       fake_nfc_manager_client_(new FakeNfcManagerClient()),
       fake_shill_device_client_(new FakeShillDeviceClient),
       fake_shill_ipconfig_client_(new FakeShillIPConfigClient),
@@ -76,6 +78,8 @@ MockDBusThreadManager::MockDBusThreadManager()
       .WillRepeatedly(Return(fake_bluetooth_input_client_.get()));
   EXPECT_CALL(*this, GetBluetoothProfileManagerClient())
       .WillRepeatedly(Return(fake_bluetooth_profile_manager_client()));
+  EXPECT_CALL(*this, GetNfcAdapterClient())
+      .WillRepeatedly(Return(fake_nfc_adapter_client()));
   EXPECT_CALL(*this, GetNfcManagerClient())
       .WillRepeatedly(Return(fake_nfc_manager_client()));
   EXPECT_CALL(*this, GetShillDeviceClient())

@@ -42,6 +42,7 @@ class IBusEngineService;
 class ImageBurnerClient;
 class IntrospectableClient;
 class ModemMessagingClient;
+class NfcAdapterClient;
 class NfcManagerClient;
 class PermissionBrokerClient;
 class PowerManagerClient;
@@ -135,6 +136,7 @@ class CHROMEOS_EXPORT DBusThreadManager {
   virtual ImageBurnerClient* GetImageBurnerClient() = 0;
   virtual IntrospectableClient* GetIntrospectableClient() = 0;
   virtual ModemMessagingClient* GetModemMessagingClient() = 0;
+  virtual NfcAdapterClient* GetNfcAdapterClient() = 0;
   virtual NfcManagerClient* GetNfcManagerClient() = 0;
   virtual PermissionBrokerClient* GetPermissionBrokerClient() = 0;
   virtual PowerManagerClient* GetPowerManagerClient() = 0;

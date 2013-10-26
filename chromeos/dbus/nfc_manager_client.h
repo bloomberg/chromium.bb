@@ -32,6 +32,9 @@ class CHROMEOS_EXPORT NfcManagerClient : public DBusClient {
 
   // Interface for observing changes to the NFC manager. Use this interface
   // to be notified when NFC adapters get added or removed.
+  // NOTE: Users of the NFC D-Bus client code shouldn't need to observe changes
+  // from NfcManagerClient::Observer; to get notified of changes to the list of
+  // NFC adapters, use NfcAdapterClient::Observer instead.
   class Observer {
    public:
     virtual ~Observer() {}
@@ -62,6 +65,8 @@ class CHROMEOS_EXPORT NfcManagerClient : public DBusClient {
   static NfcManagerClient* Create(DBusClientImplementationType type);
 
  protected:
+  friend class NfcClientTest;
+
   NfcManagerClient();
 
  private:
