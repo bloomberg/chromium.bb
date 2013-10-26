@@ -343,6 +343,11 @@ void ThreadProxy::SetNeedsAnimate() {
 
 void ThreadProxy::SetNeedsUpdateLayers() {
   DCHECK(IsMainThread());
+
+  if (commit_request_sent_to_impl_thread_)
+    return;
+  TRACE_EVENT0("cc", "ThreadProxy::SetNeedsUpdateLayers");
+
   SendCommitRequestToImplThreadIfNeeded();
 }
 
@@ -520,6 +525,11 @@ void ThreadProxy::SetDeferCommits(bool defer_commits) {
 bool ThreadProxy::CommitRequested() const {
   DCHECK(IsMainThread());
   return commit_requested_;
+}
+
+bool ThreadProxy::BeginMainFrameRequested() const {
+  DCHECK(IsMainThread());
+  return commit_request_sent_to_impl_thread_;
 }
 
 void ThreadProxy::SetNeedsRedrawOnImplThread() {

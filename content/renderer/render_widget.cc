@@ -1127,7 +1127,7 @@ void RenderWidget::OnHandleInputEvent(const WebKit::WebInputEvent* input_event,
   bool frame_pending = paint_aggregator_.HasPendingUpdate();
   if (is_accelerated_compositing_active_) {
     frame_pending = compositor_ &&
-                    compositor_->commitRequested();
+                    compositor_->BeginMainFrameRequested();
   }
 
   // If we don't have a fast and accurate HighResNow, we assume the input

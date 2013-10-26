@@ -340,6 +340,10 @@ void RenderWidgetCompositor::SetSuppressScheduleComposite(bool suppress) {
   suppress_schedule_composite_ = suppress;
 }
 
+bool RenderWidgetCompositor::BeginMainFrameRequested() const {
+  return layer_tree_host_->BeginMainFrameRequested();
+}
+
 void RenderWidgetCompositor::Animate(base::TimeTicks time) {
   layer_tree_host_->UpdateClientAnimations(time);
 }

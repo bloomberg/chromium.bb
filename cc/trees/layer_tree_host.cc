@@ -572,6 +572,11 @@ bool LayerTreeHost::CommitRequested() const {
   return proxy_->CommitRequested();
 }
 
+bool LayerTreeHost::BeginMainFrameRequested() const {
+  return proxy_->BeginMainFrameRequested();
+}
+
+
 void LayerTreeHost::SetNextCommitWaitsForActivation() {
   proxy_->SetNextCommitWaitsForActivation();
 }

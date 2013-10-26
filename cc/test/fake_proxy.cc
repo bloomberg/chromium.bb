@@ -29,6 +29,8 @@ RendererCapabilities& FakeProxy::GetRendererCapabilities() {
   return capabilities_;
 }
 
+bool FakeProxy::BeginMainFrameRequested() const { return false; }
+
 bool FakeProxy::CommitRequested() const { return false; }
 
 size_t FakeProxy::MaxPartialTextureUpdates() const {

@@ -255,6 +255,8 @@ void SingleThreadProxy::SetDeferCommits(bool defer_commits) {
 
 bool SingleThreadProxy::CommitRequested() const { return false; }
 
+bool SingleThreadProxy::BeginMainFrameRequested() const { return false; }
+
 size_t SingleThreadProxy::MaxPartialTextureUpdates() const {
   return std::numeric_limits<size_t>::max();
 }

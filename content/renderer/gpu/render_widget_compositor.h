@@ -42,6 +42,7 @@ class RenderWidgetCompositor : public WebKit::WebLayerTreeView,
 
   const base::WeakPtr<cc::InputHandler>& GetInputHandler();
   void SetSuppressScheduleComposite(bool suppress);
+  bool BeginMainFrameRequested() const;
   void Animate(base::TimeTicks time);
   void Composite(base::TimeTicks frame_begin_time);
   void SetNeedsDisplayOnAllLayers();

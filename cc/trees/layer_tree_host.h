@@ -215,6 +215,7 @@ class CC_EXPORT LayerTreeHost : NON_EXPORTED_BASE(public RateLimiterClient) {
   void SetNeedsRedraw();
   void SetNeedsRedrawRect(gfx::Rect damage_rect);
   bool CommitRequested() const;
+  bool BeginMainFrameRequested() const;
 
   void SetNextCommitWaitsForActivation();
 

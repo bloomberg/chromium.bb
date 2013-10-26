@@ -56,6 +56,7 @@ class ThreadProxy : public Proxy,
   virtual void NotifyInputThrottledUntilCommit() OVERRIDE;
   virtual void SetDeferCommits(bool defer_commits) OVERRIDE;
   virtual bool CommitRequested() const OVERRIDE;
+  virtual bool BeginMainFrameRequested() const OVERRIDE;
   virtual void MainThreadHasStoppedFlinging() OVERRIDE;
   virtual void Start(scoped_ptr<OutputSurface> first_output_surface) OVERRIDE;
   virtual void Stop() OVERRIDE;
@@ -197,7 +198,7 @@ class ThreadProxy : public Proxy,
   bool animate_requested_;
   // Set only when SetNeedsCommit is called.
   bool commit_requested_;
-  // Set by SetNeedsCommit and SetNeedsAnimate.
+  // Set by SetNeedsAnimate, SetNeedsUpdateLayers, and SetNeedsCommit.
   bool commit_request_sent_to_impl_thread_;
   // Set by BeginMainFrame
   bool created_offscreen_context_provider_;
