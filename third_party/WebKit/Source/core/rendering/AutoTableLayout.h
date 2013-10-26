@@ -31,15 +31,14 @@ namespace WebCore {
 class RenderTable;
 class RenderTableCell;
 
-class AutoTableLayout FINAL : public TableLayout {
+class AutoTableLayout : public TableLayout {
 public:
     AutoTableLayout(RenderTable*);
     ~AutoTableLayout();
 
     virtual void computeIntrinsicLogicalWidths(LayoutUnit& minWidth, LayoutUnit& maxWidth) OVERRIDE;
     virtual void applyPreferredLogicalWidthQuirks(LayoutUnit& minWidth, LayoutUnit& maxWidth) const OVERRIDE;
-    virtual void layout() OVERRIDE;
-    virtual void willChangeTableLayout() OVERRIDE { }
+    virtual void layout();
 
 private:
     void fullRecalc();

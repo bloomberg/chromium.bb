@@ -29,14 +29,13 @@ namespace WebCore {
 
 class RenderTable;
 
-class FixedTableLayout FINAL : public TableLayout {
+class FixedTableLayout : public TableLayout {
 public:
     FixedTableLayout(RenderTable*);
 
     virtual void computeIntrinsicLogicalWidths(LayoutUnit& minWidth, LayoutUnit& maxWidth) OVERRIDE;
     virtual void applyPreferredLogicalWidthQuirks(LayoutUnit& minWidth, LayoutUnit& maxWidth) const OVERRIDE;
-    virtual void layout() OVERRIDE;
-    virtual void willChangeTableLayout() OVERRIDE;
+    virtual void layout();
 
 private:
     int calcWidthArray();
