@@ -15,8 +15,8 @@ function activate(data) {
   chrome.send('activate', [data]);
 }
 
-function close(data) {
-  chrome.send('close', [data]);
+function terminate(data) {
+  chrome.send('terminate', [data]);
 }
 
 function reload(data) {
@@ -69,7 +69,7 @@ function selectTab(id) {
   window.location.hash = id;
 }
 
-function populateWebContentsTargets(data) {
+function populateLists(data) {
   removeChildren('pages-list');
   removeChildren('extensions-list');
   removeChildren('apps-list');
@@ -78,7 +78,7 @@ function populateWebContentsTargets(data) {
   for (var i = 0; i < data.length; i++) {
     if (data[i].type === 'page')
       addToPagesList(data[i]);
-    else if (data[i].type === 'background_page')
+    else if (data[i].type === 'extension')
       addToExtensionsList(data[i]);
     else if (data[i].type === 'app')
       addToAppsList(data[i]);
@@ -87,14 +87,14 @@ function populateWebContentsTargets(data) {
   }
 }
 
-function populateWorkerTargets(data) {
+function populateWorkersList(data) {
   removeChildren('workers-list');
 
   for (var i = 0; i < data.length; i++)
     addToWorkersList(data[i]);
 }
 
-function populateRemoteTargets(devices) {
+function populateDeviceLists(devices) {
   if (!devices)
     return;
 
@@ -304,7 +304,7 @@ function populateRemoteTargets(devices) {
           addActionLink(row, 'reload', reload.bind(null, page), page.attached);
           if (majorChromeVersion >= MIN_VERSION_TAB_CLOSE) {
             addActionLink(
-                row, 'close', close.bind(null, page), page.attached);
+                row, 'close', terminate.bind(null, page), page.attached);
           }
         }
       }
@@ -335,9 +335,8 @@ function addToAppsList(data) {
 }
 
 function addToWorkersList(data) {
-  var row =
-      addTargetToList(data, $('workers-list'), ['name', 'description', 'url']);
-  addActionLink(row, 'terminate', close.bind(null, data), data.attached);
+  var row = addTargetToList(data, $('workers-list'), ['pid', 'url']);
+  addActionLink(row, 'terminate', terminate.bind(null, data), data.attached);
 }
 
 function addToOthersList(data) {
@@ -354,6 +353,9 @@ function formatValue(data, property) {
   var text = value ? String(value) : '';
   if (text.length > 100)
     text = text.substring(0, 100) + '\u2026';
+
+  if (property == 'pid')
+    text = 'Pid:' + text;
 
   var span = document.createElement('div');
   span.textContent = text;

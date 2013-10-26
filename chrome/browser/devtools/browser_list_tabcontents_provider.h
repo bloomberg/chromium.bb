@@ -12,6 +12,7 @@
 #include "base/compiler_specific.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "content/public/browser/devtools_http_handler_delegate.h"
+#include "content/public/browser/worker_service.h"
 
 class BrowserListTabContentsProvider
     : public content::DevToolsHttpHandlerDelegate {
@@ -25,14 +26,18 @@ class BrowserListTabContentsProvider
   virtual bool BundlesFrontendResources() OVERRIDE;
   virtual base::FilePath GetDebugFrontendDir() OVERRIDE;
   virtual std::string GetPageThumbnailData(const GURL& url) OVERRIDE;
-  virtual scoped_ptr<content::DevToolsTarget> CreateNewTarget(
-      const GURL& url) OVERRIDE;
+  virtual scoped_ptr<content::DevToolsTarget> CreateNewTarget() OVERRIDE;
   virtual void EnumerateTargets(TargetCallback callback) OVERRIDE;
   virtual scoped_ptr<net::StreamListenSocket> CreateSocketForTethering(
       net::StreamListenSocket::Delegate* delegate,
       std::string* name) OVERRIDE;
 
  private:
+  typedef std::vector<content::WorkerService::WorkerInfo> WorkerInfoList;
+  WorkerInfoList GetWorkerInfo();
+  void RespondWithTargetList(TargetCallback callback,
+                             const WorkerInfoList& worker_info_list);
+
   chrome::HostDesktopType host_desktop_type_;
   DISALLOW_COPY_AND_ASSIGN(BrowserListTabContentsProvider);
 };

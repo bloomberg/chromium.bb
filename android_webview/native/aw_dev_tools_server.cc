@@ -97,8 +97,7 @@ class AwDevToolsServerDelegate : public content::DevToolsHttpHandlerDelegate {
     return "";
   }
 
-  virtual scoped_ptr<content::DevToolsTarget> CreateNewTarget(
-      const GURL&) OVERRIDE {
+  virtual scoped_ptr<content::DevToolsTarget> CreateNewTarget() OVERRIDE {
     return scoped_ptr<content::DevToolsTarget>();
   }
 
