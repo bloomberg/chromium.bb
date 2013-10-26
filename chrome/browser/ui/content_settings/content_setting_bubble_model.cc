@@ -368,6 +368,7 @@ void ContentSettingSingleRadioGroup::SetRadioGroup() {
       CookieSettings::Factory::GetForProfile(profile()).get();
   ContentSetting most_restrictive_setting;
   SettingSource most_restrictive_setting_source = SETTING_SOURCE_NONE;
+  bool most_restrictive_setting_is_wildcard = false;
 
   if (resources.empty()) {
     if (content_type() == CONTENT_SETTINGS_TYPE_COOKIES) {
@@ -380,28 +381,45 @@ void ContentSettingSingleRadioGroup::SetRadioGroup() {
       most_restrictive_setting =
           content_settings::ValueToContentSetting(value.get());
       most_restrictive_setting_source = info.source;
+      most_restrictive_setting_is_wildcard =
+          info.primary_pattern == ContentSettingsPattern::Wildcard() &&
+          info.secondary_pattern == ContentSettingsPattern::Wildcard();
     }
   } else {
     most_restrictive_setting = CONTENT_SETTING_ALLOW;
     for (std::set<std::string>::const_iterator it = resources.begin();
          it != resources.end(); ++it) {
       SettingInfo info;
-      scoped_ptr<Value> value(map->GetWebsiteSetting(
+      scoped_ptr<Value> val(map->GetWebsiteSetting(
           url, url, content_type(), *it, &info));
       ContentSetting setting =
-          content_settings::ValueToContentSetting(value.get());
+          content_settings::ValueToContentSetting(val.get());
       if (setting == CONTENT_SETTING_BLOCK) {
         most_restrictive_setting = CONTENT_SETTING_BLOCK;
         most_restrictive_setting_source = info.source;
+        most_restrictive_setting_is_wildcard =
+            info.primary_pattern == ContentSettingsPattern::Wildcard() &&
+            info.secondary_pattern == ContentSettingsPattern::Wildcard();
         break;
       }
       if (setting == CONTENT_SETTING_ASK) {
         most_restrictive_setting = CONTENT_SETTING_ASK;
         most_restrictive_setting_source = info.source;
+        most_restrictive_setting_is_wildcard =
+            info.primary_pattern == ContentSettingsPattern::Wildcard() &&
+            info.secondary_pattern == ContentSettingsPattern::Wildcard();
       }
     }
   }
-  if (most_restrictive_setting == CONTENT_SETTING_ALLOW) {
+
+  if (content_type() == CONTENT_SETTINGS_TYPE_PLUGINS &&
+      most_restrictive_setting == CONTENT_SETTING_ALLOW &&
+      most_restrictive_setting_is_wildcard) {
+    // In the corner case of unrecognized plugins (which are now blocked by
+    // default) we indicate the blocked state in the UI and allow the user to
+    // whitelist.
+    radio_group.default_item = 1;
+  } else if (most_restrictive_setting == CONTENT_SETTING_ALLOW) {
     radio_group.default_item = 0;
     // |block_setting_| is already set to |CONTENT_SETTING_BLOCK|.
   } else {
