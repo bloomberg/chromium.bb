@@ -144,6 +144,8 @@ class BASE_EXPORT TraceEvent {
   char phase() const { return phase_; }
   int thread_id() const { return thread_id_; }
   TimeDelta duration() const { return duration_; }
+  unsigned long long id() const { return id_; }
+  unsigned char flags() const { return flags_; }
 
   // Exposed for unittesting:
 
@@ -452,6 +454,10 @@ class BASE_EXPORT TraceLog {
   // WARNING: It is possible for the previously set callback to be called
   // after a call to SetEventCallback() that replaces or clears the callback.
   // This callback may be invoked on any thread.
+  // TODO(wangxianzhu): For now for TRACE_EVENT_PHASE_COMPLETE events, the
+  // client will still receive pairs of TRACE_EVENT_PHASE_BEGIN and
+  // TRACE_EVENT_PHASE_END events. Should send TRACE_EVENT_PHASE_COMPLETE
+  // directly to clients if it is beneficial and feasible.
   typedef void (*EventCallback)(char phase,
                                 const unsigned char* category_group_enabled,
                                 const char* name,

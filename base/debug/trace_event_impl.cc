@@ -432,6 +432,13 @@ class TraceLog::OptionalAutoLock {
     }
   }
 
+  void EnsureReleased() {
+    if (locked_) {
+      lock_.Release();
+      locked_ = false;
+    }
+  }
+
  private:
   Lock& lock_;
   bool locked_;
@@ -1830,7 +1837,11 @@ TraceEventHandle TraceLog::AddTraceEventWithThreadIdAndTimestamp(
   EventCallback event_callback = reinterpret_cast<EventCallback>(
       subtle::NoBarrier_Load(&event_callback_));
   if (event_callback) {
-    event_callback(phase, category_group_enabled, name, id,
+    // TODO(wangxianzhu): Should send TRACE_EVENT_PHASE_COMPLETE directly to
+    // clients if it is beneficial and feasible.
+    event_callback(phase == TRACE_EVENT_PHASE_COMPLETE ?
+                       TRACE_EVENT_PHASE_BEGIN : phase,
+                   category_group_enabled, name, id,
                    num_args, arg_names, arg_types, arg_values,
                    flags);
   }
@@ -1918,6 +1929,7 @@ void TraceLog::UpdateTraceEventDuration(TraceEventHandle handle) {
     return;
   }
 
+  DCHECK(trace_event->phase() == TRACE_EVENT_PHASE_COMPLETE);
   trace_event->UpdateDuration();
 
 #if defined(OS_ANDROID)
@@ -1927,6 +1939,22 @@ void TraceLog::UpdateTraceEventDuration(TraceEventHandle handle) {
   if (trace_options() & ECHO_TO_CONSOLE) {
     lock.EnsureAcquired();
     OutputEventToConsoleWhileLocked(trace_event);
+  }
+
+  EventCallback event_callback = reinterpret_cast<EventCallback>(
+      subtle::NoBarrier_Load(&event_callback_));
+  if (event_callback) {
+    // The copy is needed when trace_event is from the main buffer in which case
+    // the lock has been locked.
+    TraceEvent event_copy;
+    event_copy.CopyFrom(*trace_event);
+    lock.EnsureReleased();
+    // TODO(wangxianzhu): Should send TRACE_EVENT_PHASE_COMPLETE directly to
+    // clients if it is beneficial and feasible.
+    event_callback(TRACE_EVENT_PHASE_END,
+                   event_copy.category_group_enabled(),
+                   event_copy.name(), event_copy.id(),
+                   0, NULL, NULL, NULL, event_copy.flags());
   }
 }
 

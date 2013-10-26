@@ -1995,6 +1995,7 @@ class TraceEventCallbackTest : public TraceEventTestFixture {
 
  protected:
   std::vector<std::string> collected_events_;
+  std::vector<unsigned char> collected_event_phases_;
 
   static TraceEventCallbackTest* s_instance;
   static void Callback(char phase,
@@ -2007,6 +2008,7 @@ class TraceEventCallbackTest : public TraceEventTestFixture {
                        const unsigned long long arg_values[],
                        unsigned char flags) {
     s_instance->collected_events_.push_back(name);
+    s_instance->collected_event_phases_.push_back(phase);
   }
 };
 
@@ -2020,12 +2022,21 @@ TEST_F(TraceEventCallbackTest, TraceEventCallback) {
   TraceLog::GetInstance()->SetEventCallback(Callback);
   TRACE_EVENT_INSTANT0("all", "event1", TRACE_EVENT_SCOPE_GLOBAL);
   TRACE_EVENT_INSTANT0("all", "event2", TRACE_EVENT_SCOPE_GLOBAL);
+  {
+    TRACE_EVENT0("all", "duration");
+  }
   TraceLog::GetInstance()->SetEventCallback(NULL);
   TRACE_EVENT_INSTANT0("all", "after callback removed",
                        TRACE_EVENT_SCOPE_GLOBAL);
-  ASSERT_EQ(2u, collected_events_.size());
+  ASSERT_EQ(4u, collected_events_.size());
   EXPECT_EQ("event1", collected_events_[0]);
+  EXPECT_EQ(TRACE_EVENT_PHASE_INSTANT, collected_event_phases_[0]);
   EXPECT_EQ("event2", collected_events_[1]);
+  EXPECT_EQ(TRACE_EVENT_PHASE_INSTANT, collected_event_phases_[1]);
+  EXPECT_EQ("duration", collected_events_[2]);
+  EXPECT_EQ(TRACE_EVENT_PHASE_BEGIN, collected_event_phases_[2]);
+  EXPECT_EQ("duration", collected_events_[3]);
+  EXPECT_EQ(TRACE_EVENT_PHASE_END, collected_event_phases_[3]);
 }
 
 TEST_F(TraceEventCallbackTest, TraceEventCallbackWhileFull) {
