@@ -24,6 +24,7 @@
 #include "content/public/browser/notification_service.h"
 
 #if defined(OS_WIN)
+#include "chrome/browser/ui/ash/system_tray_delegate_win.h"
 #include "chrome/browser/ui/ash/user_wallpaper_delegate_win.h"
 #endif
 
@@ -134,8 +135,11 @@ ash::SessionStateDelegate* ChromeShellDelegate::CreateSessionStateDelegate() {
 }
 
 ash::SystemTrayDelegate* ChromeShellDelegate::CreateSystemTrayDelegate() {
-  // TODO(sky): need to subclass and override Shutdown() in a meaningful way.
+#if defined(OS_WIN)
+  return CreateWindowsSystemTrayDelegate();
+#else
   return new ash::DefaultSystemTrayDelegate;
+#endif
 }
 
 ash::AccessibilityDelegate* ChromeShellDelegate::CreateAccessibilityDelegate() {

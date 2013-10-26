@@ -309,6 +309,8 @@
         'browser/ui/ash/session_state_delegate_chromeos.h',
         'browser/ui/ash/session_state_delegate_views.cc',
         'browser/ui/ash/session_state_delegate_views.h',
+        'browser/ui/ash/system_tray_delegate_win.cc',
+        'browser/ui/ash/system_tray_delegate_win.h',
         'browser/ui/ash/tabs/dock_info_ash.cc',
         'browser/ui/ash/tabs/dock_info_ash.h',
         'browser/ui/ash/tabs/dock_info_chromeos.cc',

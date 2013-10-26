@@ -195,6 +195,7 @@ void SystemTray::CreateItems(SystemTrayDelegate* delegate) {
   AddTrayItem(tray_date_);
 #elif defined(OS_WIN)
   AddTrayItem(tray_accessibility_);
+  AddTrayItem(new internal::TrayUpdate(this));
   AddTrayItem(tray_date_);
 #elif defined(OS_LINUX)
   AddTrayItem(new internal::TrayIME(this));
