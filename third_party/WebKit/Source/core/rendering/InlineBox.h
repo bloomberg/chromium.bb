@@ -302,11 +302,6 @@ private:
     InlineFlowBox* m_parent; // The box that contains us.
 
 public:
-    RenderObject* m_renderer;
-
-    FloatPoint m_topLeft;
-    float m_logicalWidth;
-
 #define ADD_BOOLEAN_BITFIELD(name, Name) \
     private:\
     unsigned m_##name : 1;\
@@ -385,9 +380,6 @@ public:
     };
 #undef ADD_BOOLEAN_BITFIELD
 
-private:
-    InlineBoxBitfields m_bitfields;
-
 protected:
     // For RootInlineBox
     bool endsWithBreak() const { return m_bitfields.endsWithBreak(); }
@@ -408,8 +400,15 @@ protected:
     // For InlineFlowBox and InlineTextBox
     bool extracted() const { return m_bitfields.extracted(); }
 
-#ifndef NDEBUG
+    RenderObject* m_renderer;
+
+    FloatPoint m_topLeft;
+    float m_logicalWidth;
+
 private:
+    InlineBoxBitfields m_bitfields;
+
+#ifndef NDEBUG
     bool m_hasBadParent;
 #endif
 };
