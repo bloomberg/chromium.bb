@@ -9,9 +9,11 @@
 
 #include "base/file_util.h"
 #include "base/json/json_file_value_serializer.h"
+#include "base/logging.h"
 #include "base/memory/scoped_handle.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "base/values.h"
 #include "chrome/browser/component_updater/component_patcher.h"
 #include "chrome/browser/component_updater/component_updater_service.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -85,26 +87,27 @@ class CRXValidator {
   std::vector<uint8> public_key_;
 };
 
-// Deserialize the CRX manifest. The top level must be a dictionary.
+}  // namespace.
+
 // TODO(cpu): add a specific attribute check to a component json that the
 // extension unpacker will reject, so that a component cannot be installed
 // as an extension.
-base::DictionaryValue* ReadManifest(const base::FilePath& unpack_path) {
+scoped_ptr<base::DictionaryValue> ReadManifest(
+    const base::FilePath& unpack_path) {
   base::FilePath manifest =
       unpack_path.Append(FILE_PATH_LITERAL("manifest.json"));
   if (!base::PathExists(manifest))
-    return NULL;
+    return scoped_ptr<base::DictionaryValue>();
   JSONFileValueSerializer serializer(manifest);
   std::string error;
   scoped_ptr<base::Value> root(serializer.Deserialize(NULL, &error));
   if (!root.get())
-    return NULL;
+    return scoped_ptr<base::DictionaryValue>();
   if (!root->IsType(base::Value::TYPE_DICTIONARY))
-    return NULL;
-  return static_cast<base::DictionaryValue*>(root.release());
+    return scoped_ptr<base::DictionaryValue>();
+  return scoped_ptr<base::DictionaryValue>(
+      static_cast<base::DictionaryValue*>(root.release())).Pass();
 }
-
-}  // namespace.
 
 ComponentUnpacker::ComponentUnpacker(const std::vector<uint8>& pk_hash,
                                      const base::FilePath& path,

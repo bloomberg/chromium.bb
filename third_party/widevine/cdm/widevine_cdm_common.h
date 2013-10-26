@@ -45,6 +45,16 @@ const char kWidevineCdmAdapterFileName[] =
     "libwidevinecdmadapter.so";
 #endif
 
+// The following strings are used to communicate supported codecs (from the
+// component manifest) via WebPluginInfo::WebPluginMimeType's additional params.
+const char kCdmSupportedCodecsParamName[] = "codecs";
+const char kCdmSupportedCodecsValueDelimiter = ',';
+const char kCdmSupportedCodecVorbis[] = "vorbis";
+const char kCdmSupportedCodecVp8[] = "vp8";
+#if defined(USE_PROPRIETARY_CODECS)
+const char kCdmSupportedCodecAac[] = "aac";
+const char kCdmSupportedCodecAvc1[] = "avc1";
+#endif  // defined(USE_PROPRIETARY_CODECS)
 
 #if defined(OS_MACOSX) || defined(OS_WIN)
 // CDM is installed by the component installer instead of the Chrome installer.

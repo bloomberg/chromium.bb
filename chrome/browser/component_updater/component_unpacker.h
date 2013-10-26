@@ -9,9 +9,15 @@
 #include <vector>
 #include "base/basictypes.h"
 #include "base/files/file_path.h"
+#include "base/json/json_file_value_serializer.h"
+#include "base/memory/scoped_ptr.h"
 
 class ComponentInstaller;
 class ComponentPatcher;
+
+// Deserializes the CRX manifest. The top level must be a dictionary.
+scoped_ptr<base::DictionaryValue> ReadManifest(
+    const base::FilePath& unpack_path);
 
 // In charge of unpacking the component CRX package and verifying that it is
 // well formed and the cryptographic signature is correct. If there is no

@@ -13,7 +13,10 @@
 #include "base/compiler_specific.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
+#include "base/logging.h"
 #include "base/path_service.h"
+#include "base/strings/string16.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/component_updater/component_updater_service.h"
@@ -75,9 +78,12 @@ base::FilePath GetPlatformDirectory(const base::FilePath& base_path) {
   return base_path.AppendASCII("_platform_specific").AppendASCII(platform_arch);
 }
 
-bool MakeWidevineCdmPluginInfo(const base::FilePath& path,
-                               const base::Version& version,
-                               content::PepperPluginInfo* plugin_info) {
+bool MakeWidevineCdmPluginInfo(
+    const base::Version& version,
+    const base::FilePath& path,
+    const std::vector<base::string16>& additional_param_names,
+    const std::vector<base::string16>& additional_param_values,
+    content::PepperPluginInfo* plugin_info) {
   if (!version.IsValid() ||
       version.components().size() !=
           static_cast<size_t>(kWidevineCdmVersionNumComponents)) {
@@ -95,19 +101,52 @@ bool MakeWidevineCdmPluginInfo(const base::FilePath& path,
       kWidevineCdmPluginMimeType,
       kWidevineCdmPluginExtension,
       kWidevineCdmPluginMimeTypeDescription);
+  widevine_cdm_mime_type.additional_param_names = additional_param_names;
+  widevine_cdm_mime_type.additional_param_values = additional_param_values;
   plugin_info->mime_types.push_back(widevine_cdm_mime_type);
   plugin_info->permissions = kWidevineCdmPluginPermissions;
 
   return true;
 }
 
-void RegisterWidevineCdmWithChrome(const base::FilePath& path,
-                                   const base::Version& version) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  content::PepperPluginInfo plugin_info;
-  if (!MakeWidevineCdmPluginInfo(path, version, &plugin_info))
-    return;
+void GetAdditionalParams(const base::DictionaryValue& manifest,
+                         std::vector<base::string16>* additional_param_names,
+                         std::vector<base::string16>* additional_param_values) {
+  base::string16 codecs;
+  if (manifest.GetString("x-cdm-codecs", &codecs)) {
+    DLOG_IF(WARNING, codecs.empty())
+        << "Widevine CDM component manifest has empty codecs list";
+    additional_param_names->push_back(
+        base::ASCIIToUTF16(kCdmSupportedCodecsParamName));
+    additional_param_values->push_back(codecs);
+  } else {
+    DLOG(WARNING) << "Widevine CDM component manifest is missing codecs";
+    // TODO(ddorwin): Remove this once all users have been updated.
+    // The original manifests did not include this string, so add the base set.
+    additional_param_names->push_back(
+        base::ASCIIToUTF16(kCdmSupportedCodecsParamName));
+    additional_param_values->push_back(base::ASCIIToUTF16("vp8,vorbis"));
+  }
+}
 
+void RegisterWidevineCdmWithChrome(const base::Version& version,
+                                   const base::FilePath& path,
+                                   scoped_ptr<base::DictionaryValue> manifest) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  std::vector<base::string16> additional_param_names;
+  std::vector<base::string16> additional_param_values;
+  GetAdditionalParams(
+      *manifest, &additional_param_names, &additional_param_values);
+  content::PepperPluginInfo plugin_info;
+  if (!MakeWidevineCdmPluginInfo(version,
+                                 path,
+                                 additional_param_names,
+                                 additional_param_values,
+                                 &plugin_info)) {
+    return;
+  }
+
+  // true = Add to beginning of list to override any existing registrations.
   PluginService::GetInstance()->RegisterInternalPlugin(
       plugin_info.ToWebPluginInfo(), true);
   PluginService::GetInstance()->RefreshPlugins();
@@ -127,8 +166,10 @@ class WidevineCdmComponentInstallerTraits : public ComponentInstallerTraits {
                                const base::FilePath& install_dir) OVERRIDE;
   virtual bool VerifyInstallation(
       const base::FilePath& install_dir) const OVERRIDE;
-  virtual void ComponentReady(const base::Version& version,
-                              const base::FilePath& path) OVERRIDE;
+  virtual void ComponentReady(
+      const base::Version& version,
+      const base::FilePath& path,
+      scoped_ptr<base::DictionaryValue> manifest) OVERRIDE;
   virtual base::FilePath GetBaseDirectory() const OVERRIDE;
   virtual void GetHash(std::vector<uint8>* hash) const OVERRIDE;
   virtual std::string GetName() const OVERRIDE;
@@ -156,11 +197,14 @@ bool WidevineCdmComponentInstallerTraits::OnCustomInstall(
 // Once the component is installed, register the new version with Chrome.
 void WidevineCdmComponentInstallerTraits::ComponentReady(
     const base::Version& version,
-    const base::FilePath& path) {
+    const base::FilePath& path,
+    scoped_ptr<base::DictionaryValue> manifest) {
+  // TODO(ddorwin): Check API version compatibility. Return if fails.
   base::FilePath adapter_install_path = GetPlatformDirectory(path)
       .AppendASCII(kWidevineCdmAdapterFileName);
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, base::Bind(
-      &RegisterWidevineCdmWithChrome, adapter_install_path, version));
+      &RegisterWidevineCdmWithChrome,
+      version, adapter_install_path, base::Passed(&manifest)));
 }
 
 bool WidevineCdmComponentInstallerTraits::VerifyInstallation(

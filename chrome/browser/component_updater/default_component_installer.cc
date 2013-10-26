@@ -8,6 +8,8 @@
 #include "base/files/file_path.h"
 #include "base/values.h"
 #include "base/version.h"
+// TODO(ddorwin): Find a better place for ReadManifest.
+#include "chrome/browser/component_updater/component_unpacker.h"
 #include "chrome/browser/component_updater/default_component_installer.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -16,6 +18,9 @@ namespace {
 // we represent it as a dotted quad.
 const char kNullVersion[] = "0.0.0.0";
 }  // namespace
+
+ComponentInstallerTraits::~ComponentInstallerTraits() {
+}
 
 DefaultComponentInstaller::DefaultComponentInstaller(
     scoped_ptr<ComponentInstallerTraits> installer_traits)
@@ -76,7 +81,13 @@ bool DefaultComponentInstaller::Install(const base::DictionaryValue& manifest,
     return false;
   }
   current_version_ = version;
-  installer_traits_->ComponentReady(current_version_, GetInstallDirectory());
+  // TODO(ddorwin): Change the parameter to scoped_ptr<base::DictionaryValue>
+  // so we can avoid this DeepCopy.
+  current_manifest_.reset(manifest.DeepCopy());
+  installer_traits_->ComponentReady(
+      current_version_,
+      GetInstallDirectory(),
+      scoped_ptr<base::DictionaryValue>(current_manifest_->DeepCopy()).Pass());
   return true;
 }
 
@@ -133,8 +144,17 @@ void DefaultComponentInstaller::StartRegistration(
 
   if (found) {
     current_version_ = latest_version;
+    // TODO(ddorwin): Remove these members and pass them directly to
+    // FinishRegistration().
     base::ReadFileToString(latest_dir.AppendASCII("manifest.fingerprint"),
                            &current_fingerprint_);
+    current_manifest_= ReadManifest(latest_dir);
+    if (!current_manifest_) {
+      DLOG(ERROR) << "Failed to read manifest for "
+                  << installer_traits_->GetName() << " ("
+                  << base_dir.MaybeAsASCII() << ").";
+      return;
+    }
   }
 
   // Remove older versions of the component. None should be in use during
@@ -176,11 +196,16 @@ void DefaultComponentInstaller::FinishRegistration(
   }
 
   if (current_version_.CompareTo(base::Version(kNullVersion)) > 0) {
+    // TODO(ddorwin): Call this function directly the UI thread. The only
+    // implementation posts back to the UI thread. Then post to UI in Install().
+    scoped_ptr<base::DictionaryValue> manifest_copy(
+        current_manifest_->DeepCopy());
     content::BrowserThread::PostTask(
         content::BrowserThread::FILE, FROM_HERE,
         base::Bind(&ComponentInstallerTraits::ComponentReady,
                    base::Unretained(installer_traits_.get()),
                    current_version_,
-                   GetInstallDirectory()));
+                   GetInstallDirectory(),
+                   base::Passed(&manifest_copy)));
   }
 }
