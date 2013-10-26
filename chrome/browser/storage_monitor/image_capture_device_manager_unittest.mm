@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-
 #import <Foundation/Foundation.h>
 #import <ImageCaptureCore/ImageCaptureCore.h>
 
@@ -11,12 +10,12 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/mac/foundation_util.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "chrome/browser/storage_monitor/image_capture_device.h"
 #include "chrome/browser/storage_monitor/image_capture_device_manager.h"
 #include "chrome/browser/storage_monitor/test_storage_monitor.h"
-#include "chrome/test/base/testing_browser_process.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/browser/browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if !defined(MAC_OS_X_VERSION_10_7) || \
@@ -256,9 +255,6 @@ class TestCameraListener
 class ImageCaptureDeviceManagerTest : public testing::Test {
  public:
   virtual void SetUp() OVERRIDE {
-    ui_thread_.reset(new content::TestBrowserThread(
-        content::BrowserThread::UI, &message_loop_));
-
     monitor_ = TestStorageMonitor::CreateAndInstall();
   }
 
@@ -282,9 +278,7 @@ class ImageCaptureDeviceManagerTest : public testing::Test {
   }
 
  protected:
-  base::MessageLoopForUI message_loop_;
-  scoped_ptr<content::TestBrowserThread> ui_thread_;
-
+  content::TestBrowserThreadBundle thread_bundle_;
   TestStorageMonitor* monitor_;
   TestCameraListener listener_;
 };
@@ -354,10 +348,6 @@ TEST_F(ImageCaptureDeviceManagerTest, RemoveCamera) {
 }
 
 TEST_F(ImageCaptureDeviceManagerTest, DownloadFile) {
-  scoped_ptr<content::TestBrowserThread> file_thread(
-      new content::TestBrowserThread(
-          content::BrowserThread::FILE, &message_loop_));
-
   ImageCaptureDeviceManager manager;
   manager.SetNotifications(monitor_->receiver());
   MockICCameraDevice* device = AttachDevice(&manager);
@@ -384,7 +374,7 @@ TEST_F(ImageCaptureDeviceManagerTest, DownloadFile) {
   // return us a not-found error.
   base::FilePath temp_file = temp_dir.path().Append("tempfile");
   [camera downloadFile:std::string("nonexistent") localPath:temp_file];
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   ASSERT_EQ(1U, listener_.downloads().size());
   EXPECT_EQ("nonexistent", listener_.downloads()[0]);
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND, listener_.last_error());
@@ -395,7 +385,7 @@ TEST_F(ImageCaptureDeviceManagerTest, DownloadFile) {
   // library behavior. Our code then renames the file onto the requested
   // destination.
   [camera downloadFile:kTestFileName localPath:temp_file];
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   ASSERT_EQ(2U, listener_.downloads().size());
   EXPECT_EQ(kTestFileName, listener_.downloads()[1]);
@@ -410,10 +400,6 @@ TEST_F(ImageCaptureDeviceManagerTest, DownloadFile) {
 }
 
 TEST_F(ImageCaptureDeviceManagerTest, TestSubdirectories) {
-  scoped_ptr<content::TestBrowserThread> file_thread(
-      new content::TestBrowserThread(
-          content::BrowserThread::FILE, &message_loop_));
-
   ImageCaptureDeviceManager manager;
   manager.SetNotifications(monitor_->receiver());
   MockICCameraDevice* device = AttachDevice(&manager);
@@ -436,7 +422,7 @@ TEST_F(ImageCaptureDeviceManagerTest, TestSubdirectories) {
   base::FilePath temp_file = temp_dir.path().Append("tempfile");
 
   [camera downloadFile:("dir/" + kTestFileName) localPath:temp_file];
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   char file_contents[5];
   ASSERT_EQ(4, file_util::ReadFile(temp_file, file_contents,

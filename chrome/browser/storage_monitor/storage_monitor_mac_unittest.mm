@@ -7,7 +7,6 @@
 #include "base/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/mac/foundation_util.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -16,7 +15,7 @@
 #include "chrome/browser/storage_monitor/storage_info.h"
 #include "chrome/browser/storage_monitor/test_storage_monitor.h"
 #include "chrome/test/base/testing_browser_process.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 uint64 kTestSize = 1000000ULL;
@@ -38,10 +37,7 @@ StorageInfo CreateStorageInfo(
 
 class StorageMonitorMacTest : public testing::Test {
  public:
-  StorageMonitorMacTest()
-      : ui_thread_(content::BrowserThread::UI, &message_loop_),
-        file_thread_(content::BrowserThread::FILE, &message_loop_) {
-  }
+  StorageMonitorMacTest() {}
 
   virtual void SetUp() OVERRIDE {
     TestStorageMonitor::RemoveSingleton();
@@ -71,10 +67,7 @@ class StorageMonitorMacTest : public testing::Test {
   }
 
  protected:
-  // The message loop and file thread to run tests on.
-  base::MessageLoopForUI message_loop_;
-  content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread file_thread_;
+  content::TestBrowserThreadBundle thread_bundle_;
 
   scoped_ptr<MockRemovableStorageObserver> mock_storage_observer_;
 
@@ -119,7 +112,7 @@ TEST_F(StorageMonitorMacTest, UpdateVolumeName) {
   StorageInfo info2 = CreateStorageInfo(
       device_id_, "", mount_point_, kTestSize * 2);
   UpdateDisk(info2, StorageMonitorMac::UPDATE_DEVICE_CHANGED);
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(1, mock_storage_observer_->detach_calls());
   EXPECT_EQ(device_id_, mock_storage_observer_->last_detached().device_id());

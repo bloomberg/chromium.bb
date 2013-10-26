@@ -15,7 +15,6 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/storage_monitor/mock_removable_storage_observer.h"
@@ -25,7 +24,7 @@
 #include "chrome/browser/storage_monitor/test_media_transfer_protocol_manager_linux.h"
 #include "chrome/browser/storage_monitor/test_storage_monitor.h"
 #include "chrome/test/base/testing_browser_process.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -122,10 +121,8 @@ std::string GetDeviceId(const std::string& device) {
 
 class TestStorageMonitorLinux : public StorageMonitorLinux {
  public:
-  TestStorageMonitorLinux(const base::FilePath& path,
-                          base::MessageLoop* message_loop)
-      : StorageMonitorLinux(path),
-        message_loop_(message_loop) {
+  explicit TestStorageMonitorLinux(const base::FilePath& path)
+      : StorageMonitorLinux(path) {
     SetMediaTransferProtocolManagerForTest(
         new TestMediaTransferProtocolManagerLinux());
     SetGetDeviceInfoCallbackForTest(base::Bind(&GetDeviceInfo));
@@ -136,10 +133,9 @@ class TestStorageMonitorLinux : public StorageMonitorLinux {
   virtual void UpdateMtab(
       const MtabWatcherLinux::MountPointDeviceMap& new_mtab) OVERRIDE {
     StorageMonitorLinux::UpdateMtab(new_mtab);
-    message_loop_->PostTask(FROM_HERE, base::MessageLoop::QuitClosure());
+    base::MessageLoopProxy::current()->PostTask(
+        FROM_HERE, base::MessageLoop::QuitClosure());
   }
-
-  base::MessageLoop* message_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(TestStorageMonitorLinux);
 };
@@ -161,10 +157,7 @@ class StorageMonitorLinuxTest : public testing::Test {
   };
 
   StorageMonitorLinuxTest()
-      : message_loop_(base::MessageLoop::TYPE_IO),
-        ui_thread_(content::BrowserThread::UI, &message_loop_),
-        file_thread_(content::BrowserThread::FILE, &message_loop_) {
-  }
+      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {}
   virtual ~StorageMonitorLinuxTest() {}
 
  protected:
@@ -182,7 +175,7 @@ class StorageMonitorLinuxTest : public testing::Test {
                 true  /* overwrite */);
 
     TestStorageMonitor::RemoveSingleton();
-    monitor_ = new TestStorageMonitorLinux(mtab_file_, &message_loop_);
+    monitor_ = new TestStorageMonitorLinux(mtab_file_);
     scoped_ptr<StorageMonitor> pass_monitor(monitor_);
     TestingBrowserProcess* browser_process = TestingBrowserProcess::GetGlobal();
     DCHECK(browser_process);
@@ -202,21 +195,20 @@ class StorageMonitorLinuxTest : public testing::Test {
 
     // Linux storage monitor must be destroyed on the UI thread, so do it here.
     TestStorageMonitor::RemoveSingleton();
-    base::RunLoop().RunUntilIdle();
   }
 
   // Append mtab entries from the |data| array of size |data_size| to the mtab
   // file, and run the message loop.
   void AppendToMtabAndRunLoop(const MtabTestData* data, size_t data_size) {
     WriteToMtab(data, data_size, false  /* do not overwrite */);
-    message_loop_.Run();
+    base::RunLoop().Run();
   }
 
   // Overwrite the mtab file with mtab entries from the |data| array of size
   // |data_size|, and run the message loop.
   void OverwriteMtabAndRunLoop(const MtabTestData* data, size_t data_size) {
     WriteToMtab(data, data_size, true  /* overwrite */);
-    message_loop_.Run();
+    base::RunLoop().Run();
   }
 
   // Simplied version of OverwriteMtabAndRunLoop() that just deletes all the
@@ -312,10 +304,7 @@ class StorageMonitorLinuxTest : public testing::Test {
     ASSERT_EQ(1, endmntent(file));
   }
 
-  // The message loop and file thread to run tests on.
-  base::MessageLoop message_loop_;
-  content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread file_thread_;
+  content::TestBrowserThreadBundle thread_bundle_;
 
   scoped_ptr<MockRemovableStorageObserver> mock_storage_observer_;
 

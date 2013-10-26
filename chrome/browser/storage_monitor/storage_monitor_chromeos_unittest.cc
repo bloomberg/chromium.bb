@@ -10,7 +10,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/storage_monitor/mock_removable_storage_observer.h"
 #include "chrome/browser/storage_monitor/removable_device_constants.h"
@@ -19,7 +19,8 @@
 #include "chrome/browser/storage_monitor/test_storage_monitor.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chromeos/disks/mock_disk_mount_manager.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/browser/browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -131,8 +132,6 @@ class StorageMonitorCrosTest : public testing::Test {
     return *mock_storage_observer_;
   }
 
-  base::MessageLoop ui_loop_;
-
   TestStorageMonitorCros* monitor_;
 
   // Owned by DiskMountManager.
@@ -141,8 +140,7 @@ class StorageMonitorCrosTest : public testing::Test {
   StorageMonitor::EjectStatus status_;
 
  private:
-  content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread file_thread_;
+  content::TestBrowserThreadBundle thread_bundle_;
 
   // Temporary directory for created test data.
   base::ScopedTempDir scoped_temp_dir_;
@@ -154,10 +152,10 @@ class StorageMonitorCrosTest : public testing::Test {
 };
 
 StorageMonitorCrosTest::StorageMonitorCrosTest()
-    : disk_mount_manager_mock_(NULL),
+    : monitor_(NULL),
+      disk_mount_manager_mock_(NULL),
       status_(StorageMonitor::EJECT_FAILURE),
-      ui_thread_(BrowserThread::UI, &ui_loop_),
-      file_thread_(BrowserThread::FILE) {
+      thread_bundle_(content::TestBrowserThreadBundle::REAL_FILE_THREAD) {
 }
 
 StorageMonitorCrosTest::~StorageMonitorCrosTest() {
@@ -166,7 +164,6 @@ StorageMonitorCrosTest::~StorageMonitorCrosTest() {
 void StorageMonitorCrosTest::SetUp() {
   ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::UI));
   ASSERT_TRUE(scoped_temp_dir_.CreateUniqueTempDir());
-  file_thread_.Start();
   disk_mount_manager_mock_ = new disks::MockDiskMountManager();
   DiskMountManager::InitializeForTesting(disk_mount_manager_mock_);
   disk_mount_manager_mock_->SetupDefaultReplies();
@@ -477,7 +474,7 @@ TEST_F(StorageMonitorCrosTest, EjectTest) {
   monitor_->EjectDevice(observer().last_attached().device_id(),
                         base::Bind(&StorageMonitorCrosTest::EjectNotify,
                                    base::Unretained(this)));
-  ui_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(StorageMonitor::EJECT_OK, status_);
 }

@@ -6,7 +6,7 @@
 
 #include "base/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
 #include "chrome/browser/storage_monitor/media_storage_util.h"
@@ -15,7 +15,7 @@
 #include "chrome/browser/storage_monitor/test_storage_monitor.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -29,17 +29,16 @@ using content::BrowserThread;
 class MediaStorageUtilTest : public testing::Test {
  public:
   MediaStorageUtilTest()
-        : ui_thread_(BrowserThread::UI, &message_loop_),
-          file_thread_(BrowserThread::FILE) {}
-  virtual ~MediaStorageUtilTest() { }
+      : thread_bundle_(content::TestBrowserThreadBundle::REAL_FILE_THREAD) {}
+  virtual ~MediaStorageUtilTest() {}
 
   // Verify mounted device type.
-  void CheckDeviceType(const base::FilePath& mount_point,
-                       bool expected_val) {
-    if (expected_val)
-      EXPECT_TRUE(MediaStorageUtil::HasDcim(mount_point));
-    else
-      EXPECT_FALSE(MediaStorageUtil::HasDcim(mount_point));
+  void CheckDCIMDeviceType(const base::FilePath& mount_point) {
+    EXPECT_TRUE(MediaStorageUtil::HasDcim(mount_point));
+  }
+
+  void CheckNonDCIMDeviceType(const base::FilePath& mount_point) {
+    EXPECT_FALSE(MediaStorageUtil::HasDcim(mount_point));
   }
 
   void ProcessAttach(const std::string& id,
@@ -63,7 +62,6 @@ class MediaStorageUtilTest : public testing::Test {
   virtual void SetUp() OVERRIDE {
     monitor_ = TestStorageMonitor::CreateAndInstall();
     ASSERT_TRUE(scoped_temp_dir_.CreateUniqueTempDir());
-    file_thread_.Start();
   }
 
   virtual void TearDown() OVERRIDE {
@@ -84,12 +82,9 @@ class MediaStorageUtilTest : public testing::Test {
     base::MessageLoop::current()->Run();
   }
 
-  base::MessageLoop message_loop_;
-
  private:
+  content::TestBrowserThreadBundle thread_bundle_;
   TestStorageMonitor* monitor_;
-  content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread file_thread_;
   base::ScopedTempDir scoped_temp_dir_;
 };
 
@@ -98,11 +93,12 @@ class MediaStorageUtilTest : public testing::Test {
 TEST_F(MediaStorageUtilTest, MediaDeviceAttached) {
   // Create a dummy mount point with DCIM Directory.
   base::FilePath mount_point(CreateMountPoint(true));
+  ASSERT_FALSE(mount_point.empty());
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      base::Bind(&MediaStorageUtilTest::CheckDeviceType,
-                 base::Unretained(this), mount_point, true));
-  message_loop_.RunUntilIdle();
+      base::Bind(&MediaStorageUtilTest::CheckDCIMDeviceType,
+                 base::Unretained(this), mount_point));
+  base::RunLoop().RunUntilIdle();
 }
 
 // Test to verify that HasDcim() function returns false for a given non-media
@@ -110,11 +106,12 @@ TEST_F(MediaStorageUtilTest, MediaDeviceAttached) {
 TEST_F(MediaStorageUtilTest, NonMediaDeviceAttached) {
   // Create a dummy mount point without DCIM Directory.
   base::FilePath mount_point(CreateMountPoint(false));
+  ASSERT_FALSE(mount_point.empty());
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      base::Bind(&MediaStorageUtilTest::CheckDeviceType,
-                 base::Unretained(this), mount_point, false));
-  message_loop_.RunUntilIdle();
+      base::Bind(&MediaStorageUtilTest::CheckNonDCIMDeviceType,
+                 base::Unretained(this), mount_point));
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(MediaStorageUtilTest, CanCreateFileSystemForImageCapture) {
