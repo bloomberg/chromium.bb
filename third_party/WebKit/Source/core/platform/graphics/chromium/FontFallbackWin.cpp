@@ -274,42 +274,30 @@ const UChar* getFontFamilyForScript(UScriptCode script,
 //    and just return it.
 //  - All the characters (or characters up to the point a single
 //    font can cover) need to be taken into account
-const UChar* getFallbackFamily(const UChar* characters,
-    int length,
+const UChar* getFallbackFamily(UChar32 character,
     FontDescription::GenericFamilyType generic,
-    UChar32* charChecked,
     UScriptCode* scriptChecked)
 {
-    ASSERT(characters && characters[0] && length > 0);
-    UScriptCode script = USCRIPT_COMMON;
-
-    // Sometimes characters common to script (e.g. space) is at
-    // the beginning of a string so that we need to skip them
-    // to get a font required to render the string.
-    int i = 0;
-    UChar32 ucs4 = 0;
-    while (i < length && script == USCRIPT_COMMON) {
-        U16_NEXT(characters, i, length, ucs4);
-        script = getScript(ucs4);
-    }
+    ASSERT(character);
+    UScriptCode script = getScript(character);
 
     // For the full-width ASCII characters (U+FF00 - U+FF5E), use the font for
     // Han (determined in a locale-dependent way above). Full-width ASCII
     // characters are rather widely used in Japanese and Chinese documents and
     // they're fully covered by Chinese, Japanese and Korean fonts.
-    if (0xFF00 < ucs4 && ucs4 < 0xFF5F)
+    if (0xFF00 < character && character < 0xFF5F)
         script = USCRIPT_HAN;
 
     if (script == USCRIPT_COMMON)
-        script = getScriptBasedOnUnicodeBlock(ucs4);
+        script = getScriptBasedOnUnicodeBlock(character);
 
     const UChar* family = getFontFamilyForScript(script, generic);
     // Another lame work-around to cover non-BMP characters.
     // If the font family for script is not found or the character is
     // not in BMP (> U+FFFF), we resort to the hard-coded list of
     // fallback fonts for now.
-    if (!family || ucs4 > 0xFFFF) {
-        int plane = ucs4 >> 16;
+    if (!family || character > 0xFFFF) {
+        int plane = character >> 16;
         switch (plane) {
         case 1:
             family = L"code2001";
@@ -330,10 +318,31 @@ const UChar* getFallbackFamily(const UChar* characters,
         }
     }
 
-    if (charChecked)
-        *charChecked = ucs4;
     if (scriptChecked)
         *scriptChecked = script;
+    return family;
+}
+
+
+const UChar* getFallbackFamilyForFirstNonCommonCharacter(const UChar* characters,
+    int length,
+    FontDescription::GenericFamilyType generic)
+{
+    ASSERT(characters && characters[0] && length > 0);
+    UScriptCode script = USCRIPT_COMMON;
+
+    // Sometimes characters common to script (e.g. space) is at
+    // the beginning of a string so that we need to skip them
+    // to get a font required to render the string.
+    int i = 0;
+    UChar32 ucs4 = 0;
+    while (i < length && script == USCRIPT_COMMON) {
+        U16_NEXT(characters, i, length, ucs4);
+        script = getScript(ucs4);
+    }
+
+    const UChar* family = getFallbackFamily(ucs4, generic, 0);
+
     return family;
 }
 

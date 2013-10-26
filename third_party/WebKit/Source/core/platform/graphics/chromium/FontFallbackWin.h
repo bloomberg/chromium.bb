@@ -45,15 +45,18 @@
 namespace WebCore {
 
 // Return a font family that can render |characters| based on
-// what script characters belong to. When char_checked is non-zero,
-// it's filled with the character used to determine the script.
-// When script_checked is non-zero, the script used to determine
-// the family is returned.
+// what script characters belong to.
 // FIXME: This function needs a total overhaul.
-const UChar* getFallbackFamily(const UChar* characters,
+const UChar* getFallbackFamilyForFirstNonCommonCharacter(const UChar* characters,
     int length,
+    FontDescription::GenericFamilyType);
+
+// Return a font family that can render |character| based on what script
+// that characters belong to.
+// When scriptChecked is non-zero, the script used to determine
+// the family is returned.
+const UChar* getFallbackFamily(UChar32 character,
     FontDescription::GenericFamilyType,
-    UChar32* charChecked,
     UScriptCode* scriptChecked);
 
 } // namespace WebCore

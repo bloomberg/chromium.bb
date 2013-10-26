@@ -841,8 +841,8 @@ bool UniscribeHelper::shape(const UChar* input,
 
             // TODO(jungshik): generic type should come from webkit for
             // UniscribeHelperTextRun (a derived class used in webkit).
-            const UChar *family = getFallbackFamily(input, itemLength,
-                FontDescription::StandardFamily, 0, 0);
+            const UChar *family = getFallbackFamilyForFirstNonCommonCharacter(input, itemLength,
+                FontDescription::StandardFamily);
             bool fontOk = getDerivedFontData(family, m_style, &m_logfont,
                                              &ascent, &hfont, &scriptCache,
                                              &spaceGlyph);
