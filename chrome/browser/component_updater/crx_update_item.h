@@ -19,12 +19,13 @@
 // is modified as the item is processed by the update pipeline. The expected
 // transition graph is:
 //
-//                                 kNew
-//                                  |
-//                                  V
-//     +----------------------> kChecking -<---------+-----<-------+
-//     |                            |                |             |
-//     |              error         V       no       |             |
+//                  on-demand                on-demand
+//   +---------------------------> kNew <--------------+-------------+
+//   |                              |                  |             |
+//   |                              V                  |             |
+//   |   +--------------------> kChecking -<-------+---|---<-----+   |
+//   |   |                          |              |   |         |   |
+//   |   |            error         V       no     |   |         |   |
 //  kNoUpdate <---------------- [update?] ->---- kUpToDate     kUpdated
 //     ^                            |                              ^
 //     |                        yes |                              |
@@ -63,7 +64,10 @@ struct CrxUpdateItem {
     kLastStatus
   };
 
+  // Call CrxUpdateService::ChangeItemState to change |status|. The function may
+  // enforce conditions or notify observers of the change.
   Status status;
+
   std::string id;
   CrxComponent component;
 
@@ -78,6 +82,9 @@ struct CrxUpdateItem {
   Version next_version;
   std::string previous_fp;
   std::string next_fp;
+
+  // True if the current update check cycle is on-demand.
+  bool on_demand;
 
   // True if the differential update failed for any reason.
   bool diff_update_failed;

@@ -53,18 +53,6 @@ int TestConfigurator::NextCheckDelay() {
     quit_closure_.Run();
     return 0;
   }
-
-  // Look for checks to issue in the middle of the loop.
-  for (std::list<CheckAtLoopCount>::iterator
-           i = components_to_check_.begin();
-       i != components_to_check_.end(); ) {
-    if (i->second == times_) {
-      cus_->CheckForUpdateSoon(GetCrxComponentID(*i->first));
-      i = components_to_check_.erase(i);
-    } else {
-      ++i;
-    }
-  }
   return 1;
 }
 
@@ -120,11 +108,6 @@ void TestConfigurator::SetRecheckTime(int seconds) {
 
 void TestConfigurator::SetOnDemandTime(int seconds) {
   ondemand_time_ = seconds;
-}
-
-void TestConfigurator::AddComponentToCheck(CrxComponent* com,
-                                           int at_loop_iter) {
-  components_to_check_.push_back(std::make_pair(com, at_loop_iter));
 }
 
 void TestConfigurator::SetComponentUpdateService(ComponentUpdateService* cus) {
@@ -254,6 +237,11 @@ std::string PingChecker::GetPings() const {
   return pings_str;
 }
 
+ComponentUpdateService::Status OnDemandTester::OnDemand(
+    ComponentUpdateService* cus, const std::string& component_id) {
+  return cus->OnDemandUpdate(component_id);
+}
+
 // Verify that our test fixture work and the component updater can
 // be created and destroyed with no side effects.
 TEST_F(ComponentUpdaterTest, VerifyFixture) {
@@ -303,6 +291,10 @@ TEST_F(ComponentUpdaterTest, CheckCrxSleep) {
   EXPECT_CALL(observer,
               OnEvent(ComponentObserver::COMPONENT_UPDATER_SLEEPING, 0))
               .Times(2);
+
+  EXPECT_CALL(observer,
+              OnEvent(ComponentObserver::COMPONENT_NOT_UPDATED, 0))
+              .Times(2);
   RunThreads();
 
   EXPECT_EQ(2, interceptor.GetHitCount());
@@ -327,6 +319,9 @@ TEST_F(ComponentUpdaterTest, CheckCrxSleep) {
 
   EXPECT_CALL(observer,
               OnEvent(ComponentObserver::COMPONENT_UPDATER_SLEEPING, 0))
+              .Times(2);
+  EXPECT_CALL(observer,
+              OnEvent(ComponentObserver::COMPONENT_NOT_UPDATED, 0))
               .Times(2);
   RunThreads();
 
@@ -370,8 +365,17 @@ TEST_F(ComponentUpdaterTest, InstallCrx) {
                 OnEvent(ComponentObserver::COMPONENT_UPDATE_READY, 0))
                 .Times(1);
     EXPECT_CALL(observer1,
+                OnEvent(ComponentObserver::COMPONENT_UPDATED, 0))
+                .Times(1);
+    EXPECT_CALL(observer1,
                 OnEvent(ComponentObserver::COMPONENT_UPDATER_SLEEPING, 0))
-                .Times(2);
+                .Times(1);
+    EXPECT_CALL(observer1,
+                OnEvent(ComponentObserver::COMPONENT_NOT_UPDATED, 0))
+                .Times(1);
+    EXPECT_CALL(observer1,
+                OnEvent(ComponentObserver::COMPONENT_UPDATER_SLEEPING, 0))
+                .Times(1);
   }
 
   MockComponentObserver observer2;
@@ -381,8 +385,17 @@ TEST_F(ComponentUpdaterTest, InstallCrx) {
                 OnEvent(ComponentObserver::COMPONENT_UPDATER_STARTED, 0))
                 .Times(1);
     EXPECT_CALL(observer2,
+                OnEvent(ComponentObserver::COMPONENT_NOT_UPDATED, 0))
+                .Times(1);
+    EXPECT_CALL(observer2,
                 OnEvent(ComponentObserver::COMPONENT_UPDATER_SLEEPING, 0))
-                .Times(2);
+                .Times(1);
+    EXPECT_CALL(observer2,
+                OnEvent(ComponentObserver::COMPONENT_NOT_UPDATED, 0))
+                .Times(1);
+    EXPECT_CALL(observer2,
+                OnEvent(ComponentObserver::COMPONENT_UPDATER_SLEEPING, 0))
+                .Times(1);
   }
 
   TestInstaller installer1;
@@ -469,7 +482,7 @@ TEST_F(ComponentUpdaterTest, ProdVersionCheck) {
 //    nothing happens.
 //  - We ping.
 //  - This triggers a second loop, which has a reply that triggers an install.
-TEST_F(ComponentUpdaterTest, CheckForUpdateSoon) {
+TEST_F(ComponentUpdaterTest, OnDemandUpdate) {
   std::map<std::string, std::string> map;
   map.insert(std::pair<std::string, std::string>("eventtype", "\"3\""));
   map.insert(std::pair<std::string, std::string>("eventresult", "\"1\""));
@@ -487,7 +500,16 @@ TEST_F(ComponentUpdaterTest, CheckForUpdateSoon) {
                 OnEvent(ComponentObserver::COMPONENT_UPDATER_STARTED, 0))
                 .Times(1);
     EXPECT_CALL(observer1,
+                OnEvent(ComponentObserver::COMPONENT_NOT_UPDATED, 0))
+                .Times(1);
+    EXPECT_CALL(observer1,
                 OnEvent(ComponentObserver::COMPONENT_UPDATER_SLEEPING, 0))
+                .Times(1);
+    EXPECT_CALL(observer1,
+                OnEvent(ComponentObserver::COMPONENT_UPDATER_STARTED, 0))
+                .Times(1);
+    EXPECT_CALL(observer1,
+                OnEvent(ComponentObserver::COMPONENT_NOT_UPDATED, 0))
                 .Times(1);
     EXPECT_CALL(observer1,
                 OnEvent(ComponentObserver::COMPONENT_UPDATER_SLEEPING, 0))
@@ -501,13 +523,22 @@ TEST_F(ComponentUpdaterTest, CheckForUpdateSoon) {
                 OnEvent(ComponentObserver::COMPONENT_UPDATER_STARTED, 0))
                 .Times(1);
     EXPECT_CALL(observer2,
+                OnEvent(ComponentObserver::COMPONENT_NOT_UPDATED, 0))
+                .Times(1);
+    EXPECT_CALL(observer2,
                 OnEvent(ComponentObserver::COMPONENT_UPDATER_SLEEPING, 0))
+                .Times(1);
+    EXPECT_CALL(observer2,
+                OnEvent(ComponentObserver::COMPONENT_UPDATER_STARTED, 0))
                 .Times(1);
     EXPECT_CALL(observer2,
                 OnEvent(ComponentObserver::COMPONENT_UPDATE_FOUND, 0))
                 .Times(1);
     EXPECT_CALL(observer2,
                 OnEvent(ComponentObserver::COMPONENT_UPDATE_READY, 0))
+                .Times(1);
+    EXPECT_CALL(observer2,
+                OnEvent(ComponentObserver::COMPONENT_UPDATED, 0))
                 .Times(1);
     EXPECT_CALL(observer2,
                 OnEvent(ComponentObserver::COMPONENT_UPDATER_SLEEPING, 0))
@@ -540,9 +571,17 @@ TEST_F(ComponentUpdaterTest, CheckForUpdateSoon) {
                           test_file("updatecheck_reply_1.xml"));
   interceptor.SetResponse(GURL(expected_crx_url),
                           test_file("jebgalgnebhfojomionfpkfelancnnkf.crx"));
-  // Test success.
-  test_configurator()->SetLoopCount(2);
-  test_configurator()->AddComponentToCheck(&com2, 1);
+  // No update normally.
+  test_configurator()->SetLoopCount(1);
+  component_updater()->Start();
+  RunThreads();
+  component_updater()->Stop();
+
+  // Update after an on-demand check is issued.
+  EXPECT_EQ(ComponentUpdateService::kOk,
+            OnDemandTester::OnDemand(component_updater(),
+                                     GetCrxComponentID(com2)));
+  test_configurator()->SetLoopCount(1);
   component_updater()->Start();
   RunThreads();
 
@@ -556,7 +595,8 @@ TEST_F(ComponentUpdaterTest, CheckForUpdateSoon) {
   // Also check what happens if previous check too soon.
   test_configurator()->SetOnDemandTime(60 * 60);
   EXPECT_EQ(ComponentUpdateService::kError,
-            component_updater()->CheckForUpdateSoon(GetCrxComponentID(com2)));
+            OnDemandTester::OnDemand(component_updater(),
+                                     GetCrxComponentID(com2)));
   // Okay, now reset to 0 for the other tests.
   test_configurator()->SetOnDemandTime(0);
   component_updater()->Stop();
@@ -570,6 +610,9 @@ TEST_F(ComponentUpdaterTest, CheckForUpdateSoon) {
                 OnEvent(ComponentObserver::COMPONENT_UPDATER_STARTED, 0))
                 .Times(1);
     EXPECT_CALL(observer1,
+                OnEvent(ComponentObserver::COMPONENT_NOT_UPDATED, 0))
+                .Times(1);
+    EXPECT_CALL(observer1,
                 OnEvent(ComponentObserver::COMPONENT_UPDATER_SLEEPING, 0))
                 .Times(1);
   }
@@ -578,6 +621,9 @@ TEST_F(ComponentUpdaterTest, CheckForUpdateSoon) {
     InSequence seq;
     EXPECT_CALL(observer2,
                 OnEvent(ComponentObserver::COMPONENT_UPDATER_STARTED, 0))
+                .Times(1);
+    EXPECT_CALL(observer2,
+                OnEvent(ComponentObserver::COMPONENT_NOT_UPDATED, 0))
                 .Times(1);
     EXPECT_CALL(observer2,
                 OnEvent(ComponentObserver::COMPONENT_UPDATER_SLEEPING, 0))
@@ -595,7 +641,8 @@ TEST_F(ComponentUpdaterTest, CheckForUpdateSoon) {
   test_configurator()->SetLoopCount(1);
   component_updater()->Start();
   EXPECT_EQ(ComponentUpdateService::kOk,
-            component_updater()->CheckForUpdateSoon(GetCrxComponentID(com2)));
+            OnDemandTester::OnDemand(component_updater(),
+                                     GetCrxComponentID(com2)));
 
   RunThreads();
 
@@ -609,6 +656,9 @@ TEST_F(ComponentUpdaterTest, CheckForUpdateSoon) {
                 OnEvent(ComponentObserver::COMPONENT_UPDATER_STARTED, 0))
                 .Times(1);
     EXPECT_CALL(observer1,
+                OnEvent(ComponentObserver::COMPONENT_NOT_UPDATED, 0))
+                .Times(1);
+    EXPECT_CALL(observer1,
                 OnEvent(ComponentObserver::COMPONENT_UPDATER_SLEEPING, 0))
                 .Times(1);
   }
@@ -617,6 +667,9 @@ TEST_F(ComponentUpdaterTest, CheckForUpdateSoon) {
     InSequence seq;
     EXPECT_CALL(observer2,
                 OnEvent(ComponentObserver::COMPONENT_UPDATER_STARTED, 0))
+                .Times(1);
+    EXPECT_CALL(observer2,
+                OnEvent(ComponentObserver::COMPONENT_NOT_UPDATED, 0))
                 .Times(1);
     EXPECT_CALL(observer2,
                 OnEvent(ComponentObserver::COMPONENT_UPDATER_SLEEPING, 0))
@@ -628,7 +681,8 @@ TEST_F(ComponentUpdaterTest, CheckForUpdateSoon) {
   test_configurator()->SetLoopCount(1);
   component_updater()->Start();
   EXPECT_EQ(ComponentUpdateService::kOk,
-            component_updater()->CheckForUpdateSoon(GetCrxComponentID(com2)));
+            OnDemandTester::OnDemand(component_updater(),
+                                     GetCrxComponentID(com2)));
 
   RunThreads();
 
@@ -664,7 +718,13 @@ TEST_F(ComponentUpdaterTest, CheckReRegistration) {
                 OnEvent(ComponentObserver::COMPONENT_UPDATE_READY, 0))
                 .Times(1);
     EXPECT_CALL(observer1,
+                OnEvent(ComponentObserver::COMPONENT_UPDATED, 0))
+                .Times(1);
+    EXPECT_CALL(observer1,
                 OnEvent(ComponentObserver::COMPONENT_UPDATER_SLEEPING, 0))
+                .Times(1);
+    EXPECT_CALL(observer1,
+                OnEvent(ComponentObserver::COMPONENT_NOT_UPDATED, 0))
                 .Times(1);
     EXPECT_CALL(observer1,
                 OnEvent(ComponentObserver::COMPONENT_UPDATER_SLEEPING, 0))
@@ -678,7 +738,13 @@ TEST_F(ComponentUpdaterTest, CheckReRegistration) {
                 OnEvent(ComponentObserver::COMPONENT_UPDATER_STARTED, 0))
                 .Times(1);
     EXPECT_CALL(observer2,
+                OnEvent(ComponentObserver::COMPONENT_NOT_UPDATED, 0))
+                .Times(1);
+    EXPECT_CALL(observer2,
                 OnEvent(ComponentObserver::COMPONENT_UPDATER_SLEEPING, 0))
+                .Times(1);
+    EXPECT_CALL(observer2,
+                OnEvent(ComponentObserver::COMPONENT_NOT_UPDATED, 0))
                 .Times(1);
     EXPECT_CALL(observer2,
                 OnEvent(ComponentObserver::COMPONENT_UPDATER_SLEEPING, 0))
@@ -738,6 +804,9 @@ TEST_F(ComponentUpdaterTest, CheckReRegistration) {
                 OnEvent(ComponentObserver::COMPONENT_UPDATER_STARTED, 0))
                 .Times(1);
     EXPECT_CALL(observer1,
+                OnEvent(ComponentObserver::COMPONENT_NOT_UPDATED, 0))
+                .Times(1);
+    EXPECT_CALL(observer1,
                 OnEvent(ComponentObserver::COMPONENT_UPDATER_SLEEPING, 0))
                 .Times(1);
   }
@@ -747,6 +816,9 @@ TEST_F(ComponentUpdaterTest, CheckReRegistration) {
     InSequence seq;
     EXPECT_CALL(observer2,
                 OnEvent(ComponentObserver::COMPONENT_UPDATER_STARTED, 0))
+                .Times(1);
+    EXPECT_CALL(observer2,
+                OnEvent(ComponentObserver::COMPONENT_NOT_UPDATED, 0))
                 .Times(1);
     EXPECT_CALL(observer2,
                 OnEvent(ComponentObserver::COMPONENT_UPDATER_SLEEPING, 0))

@@ -66,6 +66,13 @@ class ComponentObserver {
     // Sent when the new component has been downloaded and an installation
     // or upgrade is about to be attempted.
     COMPONENT_UPDATE_READY,
+
+    // Sent when a component has been successfully updated.
+    COMPONENT_UPDATED,
+
+    // Sent when a component has not been updated following an update check:
+    // either there was no update available, or an update failed.
+    COMPONENT_NOT_UPDATED,
   };
 
   virtual ~ComponentObserver() {}
@@ -178,21 +185,25 @@ class ComponentUpdateService {
   // before calling Start().
   virtual Status RegisterComponent(const CrxComponent& component) = 0;
 
-  // Ask the component updater to do an update check for a previously
-  // registered component, soon. If an update or check is already in progress,
-  // returns |kInProgress|. The same component cannot be checked repeatedly
-  // in a short interval either (returns |kError| if so).
-  // There is no guarantee that the item will actually be updated,
-  // since another item may be chosen to be updated. Since there is
-  // no time guarantee, there is no notification if the item is not updated.
-  // However, the ComponentInstaller should know if an update succeeded
-  // via the Install() hook.
-  virtual Status CheckForUpdateSoon(const std::string& component_id) = 0;
-
   // Returns a list of registered components.
   virtual void GetComponents(std::vector<CrxComponentInfo>* components) = 0;
 
   virtual ~ComponentUpdateService() {}
+
+  // TODO(waffles): Remove PNaCl as a friend once an alternative on-demand
+  // trigger is available.
+  friend class ComponentsUI;
+  friend class PnaclComponentInstaller;
+  friend class OnDemandTester;
+
+ private:
+  // Ask the component updater to do an update check for a previously
+  // registered component, immediately. If an update or check is already
+  // in progress, returns |kInProgress|.
+  // There is no guarantee that the item will actually be updated,
+  // since an update may not be available. Listeners for the component will
+  // know the outcome of the check.
+  virtual Status OnDemandUpdate(const std::string& component_id) = 0;
 };
 
 // Creates the component updater. You must pass a valid |config| allocated on

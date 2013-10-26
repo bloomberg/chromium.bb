@@ -159,18 +159,20 @@ base::FilePath DefaultComponentInstaller::GetInstallDirectory() {
 void DefaultComponentInstaller::FinishRegistration(
     ComponentUpdateService* cus) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  CrxComponent crx;
-  crx.name = installer_traits_->GetName();
-  crx.installer = this;
-  crx.version = current_version_;
-  crx.fingerprint = current_fingerprint_;
-  installer_traits_->GetHash(&crx.pk_hash);
-  ComponentUpdateService::Status status = cus->RegisterComponent(crx);
-  if (status != ComponentUpdateService::kOk &&
-      status != ComponentUpdateService::kReplaced) {
-    NOTREACHED() << "Component registration failed for "
-                 << installer_traits_->GetName();
-    return;
+  if (installer_traits_->CanAutoUpdate()) {
+    CrxComponent crx;
+    crx.name = installer_traits_->GetName();
+    crx.installer = this;
+    crx.version = current_version_;
+    crx.fingerprint = current_fingerprint_;
+    installer_traits_->GetHash(&crx.pk_hash);
+    ComponentUpdateService::Status status = cus->RegisterComponent(crx);
+    if (status != ComponentUpdateService::kOk &&
+        status != ComponentUpdateService::kReplaced) {
+      NOTREACHED() << "Component registration failed for "
+                   << installer_traits_->GetName();
+      return;
+    }
   }
 
   if (current_version_.CompareTo(base::Version(kNullVersion)) > 0) {

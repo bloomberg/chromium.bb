@@ -20,6 +20,8 @@ class ComponentsUI : public content::WebUIController {
  public:
   explicit ComponentsUI(content::WebUI* web_ui);
 
+  static void OnDemandUpdate(const std::string& component_id);
+
   static base::RefCountedMemory* GetFaviconResourceBytes(
       ui::ScaleFactor scale_factor);
 

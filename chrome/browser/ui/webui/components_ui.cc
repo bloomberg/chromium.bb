@@ -115,8 +115,7 @@ void ComponentsDOMHandler::HandleCheckUpdate(const ListValue* args) {
     return;
   }
 
-  ComponentUpdateService* cus = g_browser_process->component_updater();
-  cus->CheckForUpdateSoon(component_id);
+  ComponentsUI::OnDemandUpdate(component_id);
 }
 
 void ComponentsDOMHandler::LoadComponents() {
@@ -156,6 +155,12 @@ ComponentsUI::ComponentsUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   // Set up the chrome://components/ source.
   Profile* profile = Profile::FromWebUI(web_ui);
   content::WebUIDataSource::Add(profile, CreateComponentsUIHTMLSource());
+}
+
+// static
+void ComponentsUI::OnDemandUpdate(const std::string& component_id) {
+  ComponentUpdateService* cus = g_browser_process->component_updater();
+  cus->OnDemandUpdate(component_id);
 }
 
 // static

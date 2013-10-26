@@ -87,8 +87,6 @@ class TestConfigurator : public ComponentUpdateService::Configurator {
 
   void SetOnDemandTime(int seconds);
 
-  void AddComponentToCheck(CrxComponent* com, int at_loop_iter);
-
   void SetComponentUpdateService(ComponentUpdateService* cus);
 
   void SetQuitClosure(const base::Closure& quit_closure);
@@ -98,7 +96,6 @@ class TestConfigurator : public ComponentUpdateService::Configurator {
   int recheck_time_;
   int ondemand_time_;
 
-  std::list<CheckAtLoopCount> components_to_check_;
   ComponentUpdateService* cus_;
   scoped_refptr<net::TestURLRequestContextGetter> context_;
   base::Closure quit_closure_;
@@ -173,6 +170,12 @@ class MockComponentObserver : public ComponentObserver {
   MockComponentObserver();
   ~MockComponentObserver();
   MOCK_METHOD2(OnEvent, void(Events event, int extra));
+};
+
+class OnDemandTester {
+ public:
+  static ComponentUpdateService::Status OnDemand(
+      ComponentUpdateService* cus, const std::string& component_id);
 };
 
 #endif  // CHROME_BROWSER_COMPONENT_UPDATER_TEST_COMPONENT_UPDATER_SERVICE_UNITTEST_H_
