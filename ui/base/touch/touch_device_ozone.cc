@@ -11,4 +11,8 @@ bool IsTouchDevicePresent() {
   return true;
 }
 
+int MaxTouchPoints() {
+  return kMaxTouchPointsUnknown;
+}
+
 }  // namespace ui

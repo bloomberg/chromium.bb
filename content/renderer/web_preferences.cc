@@ -298,6 +298,7 @@ void ApplyWebPreferences(const WebPreferences& prefs, WebView* web_view) {
 
   WebRuntimeFeatures::enableLazyLayout(prefs.lazy_layout_enabled);
   WebRuntimeFeatures::enableTouch(prefs.touch_enabled);
+  settings->setMaxTouchPoints(prefs.pointer_events_max_touch_points);
   settings->setDeviceSupportsTouch(prefs.device_supports_touch);
   settings->setDeviceSupportsMouse(prefs.device_supports_mouse);
   settings->setEnableTouchAdjustment(prefs.touch_adjustment_enabled);

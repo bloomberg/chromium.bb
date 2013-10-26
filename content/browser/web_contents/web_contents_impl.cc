@@ -611,10 +611,12 @@ WebPreferences WebContentsImpl::GetWebkitPrefs(RenderViewHost* rvh,
   prefs.device_supports_mouse = false;
 #endif
 
-   prefs.touch_adjustment_enabled =
-       !command_line.HasSwitch(switches::kDisableTouchAdjustment);
-   prefs.compositor_touch_hit_testing =
-       !command_line.HasSwitch(cc::switches::kDisableCompositorTouchHitTesting);
+  prefs.pointer_events_max_touch_points = ui::MaxTouchPoints();
+
+  prefs.touch_adjustment_enabled =
+      !command_line.HasSwitch(switches::kDisableTouchAdjustment);
+  prefs.compositor_touch_hit_testing =
+      !command_line.HasSwitch(cc::switches::kDisableCompositorTouchHitTesting);
 
 #if defined(OS_MACOSX) || defined(OS_CHROMEOS)
   bool default_enable_scroll_animator = true;

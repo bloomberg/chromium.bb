@@ -11,4 +11,8 @@ bool IsTouchDevicePresent() {
   return ui::TouchFactory::GetInstance()->IsTouchDevicePresent();
 }
 
+int MaxTouchPoints() {
+  return kMaxTouchPointsUnknown;
+}
+
 }  // namespace ui

@@ -14,4 +14,8 @@ bool IsTouchDevicePresent() {
       ((value & NID_INTEGRATED_TOUCH) || (value & NID_EXTERNAL_TOUCH));
 }
 
+int MaxTouchPoints() {
+  return GetSystemMetrics(SM_MAXIMUMTOUCHES);
+}
+
 }  // namespace ui
