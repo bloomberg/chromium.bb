@@ -85,6 +85,9 @@ class WebCryptoAlgorithmPrivate;
 //   * Immutable
 //   * Threadsafe
 //   * Copiable (cheaply)
+//
+// If WebCryptoAlgorithm "isNull()" then it is invalid to call any of the other
+// methods on it (other than destruction, assignment, or isNull()).
 class WebCryptoAlgorithm {
 public:
 #if BLINK_IMPLEMENTATION
@@ -92,6 +95,7 @@ public:
     WebCryptoAlgorithm(WebCryptoAlgorithmId, PassOwnPtr<WebCryptoAlgorithmParams>);
 #endif
 
+    BLINK_EXPORT static WebCryptoAlgorithm createNull();
     BLINK_EXPORT static WebCryptoAlgorithm adoptParamsAndCreate(WebCryptoAlgorithmId, WebCryptoAlgorithmParams*);
 
     ~WebCryptoAlgorithm() { reset(); }
@@ -102,6 +106,8 @@ public:
         assign(other);
         return *this;
     }
+
+    BLINK_EXPORT bool isNull() const;
 
     BLINK_EXPORT WebCryptoAlgorithmId id() const;
 

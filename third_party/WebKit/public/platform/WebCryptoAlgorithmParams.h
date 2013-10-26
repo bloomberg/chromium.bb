@@ -56,7 +56,7 @@ public:
     WebCryptoAlgorithmParamsType type() const { return m_type; }
 
 private:
-    WebCryptoAlgorithmParamsType m_type;
+    const WebCryptoAlgorithmParamsType m_type;
 };
 
 class WebCryptoAesCbcParams : public WebCryptoAlgorithmParams {
@@ -93,12 +93,13 @@ public:
         : WebCryptoAlgorithmParams(WebCryptoAlgorithmParamsTypeHmacParams)
         , m_hash(hash)
     {
+        BLINK_ASSERT(!hash.isNull());
     }
 
     const WebCryptoAlgorithm& hash() const { return m_hash; }
 
 private:
-    WebCryptoAlgorithm m_hash;
+    const WebCryptoAlgorithm m_hash;
 };
 
 class WebCryptoHmacKeyParams : public WebCryptoAlgorithmParams {
@@ -109,6 +110,7 @@ public:
         , m_hasLength(hasLength)
         , m_length(length)
     {
+        BLINK_ASSERT(!hash.isNull());
     }
 
     const WebCryptoAlgorithm& hash() const { return m_hash; }
@@ -124,9 +126,9 @@ public:
     }
 
 private:
-    WebCryptoAlgorithm m_hash;
-    bool m_hasLength;
-    unsigned m_length;
+    const WebCryptoAlgorithm m_hash;
+    const bool m_hasLength;
+    const unsigned m_length;
 };
 
 class WebCryptoRsaSsaParams : public WebCryptoAlgorithmParams {
@@ -135,12 +137,13 @@ public:
         : WebCryptoAlgorithmParams(WebCryptoAlgorithmParamsTypeRsaSsaParams)
         , m_hash(hash)
     {
+        BLINK_ASSERT(!hash.isNull());
     }
 
     const WebCryptoAlgorithm& hash() const { return m_hash; }
 
 private:
-    WebCryptoAlgorithm m_hash;
+    const WebCryptoAlgorithm m_hash;
 };
 
 class WebCryptoRsaKeyGenParams : public WebCryptoAlgorithmParams {
@@ -208,6 +211,7 @@ public:
         , m_hasLabel(hasLabel)
         , m_label(label, labelSize)
     {
+        BLINK_ASSERT(!hash.isNull());
     }
 
     const WebCryptoAlgorithm& hash() const { return m_hash; }

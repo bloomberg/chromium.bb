@@ -46,6 +46,7 @@ public:
         , algorithm(algorithm)
         , usages(usages)
     {
+        ASSERT(!algorithm.isNull());
     }
 
     const OwnPtr<WebCryptoKeyHandle> handle;
