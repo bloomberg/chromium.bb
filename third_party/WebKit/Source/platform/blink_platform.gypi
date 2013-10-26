@@ -209,6 +209,7 @@
       'exported/WebPrerenderingSupport.cpp',
       'exported/WebRTCICECandidate.cpp',
       'exported/WebSocketStreamError.cpp',
+      'exported/WebSourceInfo.cpp',
       'exported/WebThreadSafeData.cpp',
       'exported/WebURL.cpp',
       'exported/WebURLError.cpp',
