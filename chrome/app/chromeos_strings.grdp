@@ -3830,13 +3830,13 @@ Battery full
 
   <!-- HDCP verification UI -->
   <message name="IDS_PLATFORM_VERIFICATION_DIALOG_HEADLINE" desc="The label to describe what the dialog wants to confirm.">
-    Google needs to uniquely identify your device to authorize the playback of HD content. <ph name="LEARN_MORE">$1<ex>Learn more</ex></ph>.
+    <ph name="DOMAIN">$1<ex>example.com</ex></ph> requires unique identification of your device, by Google, to play HD content. <ph name="LEARN_MORE">$2<ex>Learn more</ex></ph>.
   </message>
   <message name="IDS_PLATFORM_VERIFICATION_DIALOG_ALLOW" desc="The button label to allow access of HD playback.">
     Okay, got it
   </message>
   <message name="IDS_PLATFORM_VERIFICATION_DIALOG_DENY" desc="The button label to deny access of HD playback.">
-    No, disable HD
+    Disable HD on <ph name="DOMAIN">$1<ex>example.com</ex></ph>
   </message>
 
 </grit-part>

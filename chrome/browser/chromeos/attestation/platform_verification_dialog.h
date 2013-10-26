@@ -36,6 +36,7 @@ class PlatformVerificationDialog : public views::DialogDelegateView,
  private:
   PlatformVerificationDialog(
       Browser* browser,
+      const base::string16& domain,
       const PlatformVerificationFlow::Delegate::ConsentCallback& callback);
 
   // Overridden from views::DialogDelegate:
@@ -54,8 +55,9 @@ class PlatformVerificationDialog : public views::DialogDelegateView,
   virtual void StyledLabelLinkClicked(const gfx::Range& range,
                                       int event_flags) OVERRIDE;
 
-  PlatformVerificationFlow::Delegate::ConsentCallback callback_;
   Browser* browser_;
+  base::string16 domain_;
+  PlatformVerificationFlow::Delegate::ConsentCallback callback_;
 
   DISALLOW_COPY_AND_ASSIGN(PlatformVerificationDialog);
 };
