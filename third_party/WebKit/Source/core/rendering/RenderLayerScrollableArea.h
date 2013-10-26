@@ -158,6 +158,8 @@ public:
     // area.
     bool isPointInResizeControl(const IntPoint& absolutePoint, ResizerHitTestType) const;
 
+    LayoutRect exposeRect(const LayoutRect&, const ScrollAlignment& alignX, const ScrollAlignment& alignY);
+
 private:
     bool hasHorizontalOverflow() const;
     bool hasVerticalOverflow() const;

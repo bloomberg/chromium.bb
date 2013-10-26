@@ -576,11 +576,11 @@ RenderLayer* RenderObject::enclosingLayer() const
 
 bool RenderObject::scrollRectToVisible(const LayoutRect& rect, const ScrollAlignment& alignX, const ScrollAlignment& alignY)
 {
-    RenderLayer* enclosingLayer = this->enclosingLayer();
-    if (!enclosingLayer)
+    RenderBox* enclosingBox = this->enclosingBox();
+    if (!enclosingBox)
         return false;
 
-    enclosingLayer->scrollRectToVisible(rect, alignX, alignY);
+    enclosingBox->scrollRectToVisible(rect, alignX, alignY);
     return true;
 }
 

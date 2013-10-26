@@ -1286,4 +1286,21 @@ void RenderLayerScrollableArea::resize(const PlatformEvent& evt, const LayoutSiz
     // FIXME (Radar 4118564): We should also autoscroll the window as necessary to keep the point under the cursor in view.
 }
 
+LayoutRect RenderLayerScrollableArea::exposeRect(const LayoutRect& rect, const ScrollAlignment& alignX, const ScrollAlignment& alignY)
+{
+    LayoutRect localExposeRect(m_box->absoluteToLocalQuad(FloatQuad(FloatRect(rect)), UseTransforms).boundingBox());
+    LayoutRect layerBounds(0, 0, m_box->clientWidth(), m_box->clientHeight());
+    LayoutRect r = ScrollAlignment::getRectToExpose(layerBounds, localExposeRect, alignX, alignY);
+
+    IntSize clampedScrollOffset = clampScrollOffset(adjustedScrollOffset() + toIntSize(roundedIntRect(r).location()));
+    if (clampedScrollOffset == adjustedScrollOffset())
+        return rect;
+
+    IntSize oldScrollOffset = adjustedScrollOffset();
+    scrollToOffset(clampedScrollOffset);
+    IntSize scrollOffsetDifference = adjustedScrollOffset() - oldScrollOffset;
+    localExposeRect.move(-scrollOffsetDifference);
+    return LayoutRect(m_box->localToAbsoluteQuad(FloatQuad(FloatRect(localExposeRect)), UseTransforms).boundingBox());
+}
+
 } // Namespace WebCore

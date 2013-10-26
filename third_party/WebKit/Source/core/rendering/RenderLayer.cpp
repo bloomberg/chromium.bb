@@ -98,8 +98,6 @@
 #include "wtf/UnusedParam.h"
 #include "wtf/text/CString.h"
 
-#define MIN_INTERSECT_FOR_REVEAL 32
-
 using namespace std;
 
 namespace WebCore {
@@ -1832,97 +1830,6 @@ void RenderLayer::didUpdateNeedsCompositedScrolling()
     compositor()->setCompositingLayersNeedRebuild();
 }
 
-static inline bool frameElementAndViewPermitScroll(HTMLFrameElementBase* frameElementBase, FrameView* frameView)
-{
-    // If scrollbars aren't explicitly forbidden, permit scrolling.
-    if (frameElementBase && frameElementBase->scrollingMode() != ScrollbarAlwaysOff)
-        return true;
-
-    // If scrollbars are forbidden, user initiated scrolls should obviously be ignored.
-    if (frameView->wasScrolledByUser())
-        return false;
-
-    // Forbid autoscrolls when scrollbars are off, but permits other programmatic scrolls,
-    // like navigation to an anchor.
-    Page* page = frameView->frame().page();
-    if (!page)
-        return false;
-    return !page->autoscrollInProgress();
-}
-
-void RenderLayer::scrollRectToVisible(const LayoutRect& rect, const ScrollAlignment& alignX, const ScrollAlignment& alignY)
-{
-    RenderLayer* parentLayer = 0;
-    LayoutRect newRect = rect;
-
-    bool restrictedByLineClamp = false;
-    if (renderer()->parent()) {
-        parentLayer = renderer()->parent()->enclosingLayer();
-        restrictedByLineClamp = !renderer()->parent()->style()->lineClamp().isNone();
-    }
-
-    if (renderer()->hasOverflowClip() && !restrictedByLineClamp) {
-        // Don't scroll to reveal an overflow layer that is restricted by the -webkit-line-clamp property.
-        // This will prevent us from revealing text hidden by the slider in Safari RSS.
-        RenderBox* box = renderBox();
-        ASSERT(box);
-        LayoutRect localExposeRect(box->absoluteToLocalQuad(FloatQuad(FloatRect(rect)), UseTransforms).boundingBox());
-        LayoutRect layerBounds(0, 0, box->clientWidth(), box->clientHeight());
-        LayoutRect r = getRectToExpose(layerBounds, localExposeRect, alignX, alignY);
-
-        IntSize clampedScrollOffset = scrollableArea()->clampScrollOffset(scrollableArea()->adjustedScrollOffset() + toIntSize(roundedIntRect(r).location()));
-        if (clampedScrollOffset != scrollableArea()->adjustedScrollOffset()) {
-            IntSize oldScrollOffset = scrollableArea()->adjustedScrollOffset();
-            m_scrollableArea->scrollToOffset(clampedScrollOffset);
-            IntSize scrollOffsetDifference = scrollableArea()->adjustedScrollOffset() - oldScrollOffset;
-            localExposeRect.move(-scrollOffsetDifference);
-            newRect = LayoutRect(box->localToAbsoluteQuad(FloatQuad(FloatRect(localExposeRect)), UseTransforms).boundingBox());
-        }
-    } else if (!parentLayer && renderer()->isBox() && renderBox()->canBeProgramaticallyScrolled()) {
-        if (FrameView* frameView = renderer()->frameView()) {
-            Element* ownerElement = renderer()->document().ownerElement();
-
-            if (ownerElement && ownerElement->renderer()) {
-                HTMLFrameElementBase* frameElementBase = 0;
-
-                if (ownerElement->hasTagName(frameTag) || ownerElement->hasTagName(iframeTag))
-                    frameElementBase = toHTMLFrameElementBase(ownerElement);
-
-                if (frameElementAndViewPermitScroll(frameElementBase, frameView)) {
-                    LayoutRect viewRect = frameView->visibleContentRect();
-                    LayoutRect exposeRect = getRectToExpose(viewRect, rect, alignX, alignY);
-
-                    int xOffset = roundToInt(exposeRect.x());
-                    int yOffset = roundToInt(exposeRect.y());
-                    // Adjust offsets if they're outside of the allowable range.
-                    xOffset = max(0, min(frameView->contentsWidth(), xOffset));
-                    yOffset = max(0, min(frameView->contentsHeight(), yOffset));
-
-                    frameView->setScrollPosition(IntPoint(xOffset, yOffset));
-                    if (frameView->safeToPropagateScrollToParent()) {
-                        parentLayer = ownerElement->renderer()->enclosingLayer();
-                        // FIXME: This doesn't correctly convert the rect to
-                        // absolute coordinates in the parent.
-                        newRect.setX(rect.x() - frameView->scrollX() + frameView->x());
-                        newRect.setY(rect.y() - frameView->scrollY() + frameView->y());
-                    } else
-                        parentLayer = 0;
-                }
-            } else {
-                LayoutRect viewRect = frameView->visibleContentRect();
-                LayoutRect r = getRectToExpose(viewRect, rect, alignX, alignY);
-                frameView->setScrollPosition(roundedIntPoint(r.location()));
-            }
-        }
-    }
-
-    if (renderer()->frame()->page()->autoscrollInProgress())
-        parentLayer = enclosingScrollableLayer();
-
-    if (parentLayer)
-        parentLayer->scrollRectToVisible(newRect, alignX, alignY);
-}
-
 void RenderLayer::updateCompositingLayersAfterScroll()
 {
     if (compositor()->inCompositingMode()) {
@@ -1953,89 +1860,6 @@ void RenderLayer::updateScrollableArea()
         m_scrollableArea = nullptr;
 }
 
-LayoutRect RenderLayer::getRectToExpose(const LayoutRect &visibleRect, const LayoutRect &exposeRect, const ScrollAlignment& alignX, const ScrollAlignment& alignY)
-{
-    // Determine the appropriate X behavior.
-    ScrollBehavior scrollX;
-    LayoutRect exposeRectX(exposeRect.x(), visibleRect.y(), exposeRect.width(), visibleRect.height());
-    LayoutUnit intersectWidth = intersection(visibleRect, exposeRectX).width();
-    if (intersectWidth == exposeRect.width() || intersectWidth >= MIN_INTERSECT_FOR_REVEAL)
-        // If the rectangle is fully visible, use the specified visible behavior.
-        // If the rectangle is partially visible, but over a certain threshold,
-        // then treat it as fully visible to avoid unnecessary horizontal scrolling
-        scrollX = ScrollAlignment::getVisibleBehavior(alignX);
-    else if (intersectWidth == visibleRect.width()) {
-        // If the rect is bigger than the visible area, don't bother trying to center. Other alignments will work.
-        scrollX = ScrollAlignment::getVisibleBehavior(alignX);
-        if (scrollX == alignCenter)
-            scrollX = noScroll;
-    } else if (intersectWidth > 0)
-        // If the rectangle is partially visible, but not above the minimum threshold, use the specified partial behavior
-        scrollX = ScrollAlignment::getPartialBehavior(alignX);
-    else
-        scrollX = ScrollAlignment::getHiddenBehavior(alignX);
-    if (scrollX == alignToClosestEdge) {
-        // Closest edge is the right in two cases:
-        // (1) exposeRect to the right of and smaller than visibleRect
-        // (2) exposeRect to the left of and larger than visibleRect
-        if ((exposeRect.maxX() > visibleRect.maxX() && exposeRect.width() < visibleRect.width())
-            || (exposeRect.maxX() < visibleRect.maxX() && exposeRect.width() > visibleRect.width())) {
-            scrollX = alignRight;
-        }
-    }
-
-    // Given the X behavior, compute the X coordinate.
-    LayoutUnit x;
-    if (scrollX == noScroll)
-        x = visibleRect.x();
-    else if (scrollX == alignRight)
-        x = exposeRect.maxX() - visibleRect.width();
-    else if (scrollX == alignCenter)
-        x = exposeRect.x() + (exposeRect.width() - visibleRect.width()) / 2;
-    else
-        x = exposeRect.x();
-
-    // Determine the appropriate Y behavior.
-    ScrollBehavior scrollY;
-    LayoutRect exposeRectY(visibleRect.x(), exposeRect.y(), visibleRect.width(), exposeRect.height());
-    LayoutUnit intersectHeight = intersection(visibleRect, exposeRectY).height();
-    if (intersectHeight == exposeRect.height())
-        // If the rectangle is fully visible, use the specified visible behavior.
-        scrollY = ScrollAlignment::getVisibleBehavior(alignY);
-    else if (intersectHeight == visibleRect.height()) {
-        // If the rect is bigger than the visible area, don't bother trying to center. Other alignments will work.
-        scrollY = ScrollAlignment::getVisibleBehavior(alignY);
-        if (scrollY == alignCenter)
-            scrollY = noScroll;
-    } else if (intersectHeight > 0)
-        // If the rectangle is partially visible, use the specified partial behavior
-        scrollY = ScrollAlignment::getPartialBehavior(alignY);
-    else
-        scrollY = ScrollAlignment::getHiddenBehavior(alignY);
-    if (scrollY == alignToClosestEdge) {
-        // Closest edge is the bottom in two cases:
-        // (1) exposeRect below and smaller than visibleRect
-        // (2) exposeRect above and larger than visibleRect
-        if ((exposeRect.maxY() > visibleRect.maxY() && exposeRect.height() < visibleRect.height())
-            || (exposeRect.maxY() < visibleRect.maxY() && exposeRect.height() > visibleRect.height())) {
-            scrollY = alignBottom;
-        }
-    }
-
-    // Given the Y behavior, compute the Y coordinate.
-    LayoutUnit y;
-    if (scrollY == noScroll)
-        y = visibleRect.y();
-    else if (scrollY == alignBottom)
-        y = exposeRect.maxY() - visibleRect.height();
-    else if (scrollY == alignCenter)
-        y = exposeRect.y() + (exposeRect.height() - visibleRect.height()) / 2;
-    else
-        y = exposeRect.y();
-
-    return LayoutRect(LayoutPoint(x, y), visibleRect.size());
-}
-
 void RenderLayer::autoscroll(const IntPoint& position)
 {
     Frame* frame = renderer()->frame();
@@ -2047,7 +1871,7 @@ void RenderLayer::autoscroll(const IntPoint& position)
         return;
 
     IntPoint currentDocumentPosition = frameView->windowToContents(position);
-    scrollRectToVisible(LayoutRect(currentDocumentPosition, LayoutSize(1, 1)), ScrollAlignment::alignToEdgeIfNeeded, ScrollAlignment::alignToEdgeIfNeeded);
+    renderer()->enclosingBox()->scrollRectToVisible(LayoutRect(currentDocumentPosition, LayoutSize(1, 1)), ScrollAlignment::alignToEdgeIfNeeded, ScrollAlignment::alignToEdgeIfNeeded);
 }
 
 IntSize RenderLayer::offsetFromResizeCorner(const IntPoint& absolutePoint) const
