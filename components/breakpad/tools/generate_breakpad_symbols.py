@@ -5,7 +5,7 @@
 
 """A tool to generate symbols for a binary suitable for breakpad.
 
-Currently, the tool only supports Linux and Android. Support for other
+Currently, the tool only supports Linux, Android, and Mac. Support for other
 platforms is planned.
 """
 
@@ -54,29 +54,74 @@ def GetDumpSymsBinary(dump_syms_dir=None):
   return dump_syms_bin
 
 
-def FindLib(lib, rpaths):
-  """Resolves the given library relative to a list of rpaths."""
-  if lib.find('@rpath') == -1:
-    return lib
-  for rpath in rpaths:
-    real_lib = re.sub('@rpath', rpath, lib)
-    if os.access(real_lib, os.X_OK):
-      return real_lib
+def Resolve(path, exe_path, loader_path, rpaths):
+  """Resolve a dyld path.
 
-  print 'Could not find "%s"' % lib
-  return None
+  @executable_path is replaced with |exe_path|
+  @loader_path is replaced with |loader_path|
+  @rpath is replaced with the first path in |rpaths| where the referenced file
+      is found
+  """
+  path.replace('@loader_path', loader_path)
+  path.replace('@executable_path', exe_path)
+  if path.find('@rpath') != -1:
+    for rpath in rpaths:
+      new_path = Resolve(path.replace('@rpath', rpath), exe_path, loader_path,
+                         [])
+      if os.access(new_path, os.X_OK):
+        return new_path
+    return ''
+  return path
 
 
-def GetSharedLibraryDependencies(binary):
-  """Return absolute paths to all shared library dependecies of the binary."""
+def GetSharedLibraryDependenciesLinux(binary):
+  """Return absolute paths to all shared library dependecies of the binary.
+
+  This implementation assumes that we're running on a Linux system."""
   ldd = GetCommandOutput(['ldd', binary])
-  lib_re = re.compile('^\t.* => (.+) \(.*\)$')
+  lib_re = re.compile('\t.* => (.+) \(.*\)$')
   result = []
   for line in ldd.splitlines():
     m = lib_re.match(line)
     if m:
       result.append(m.group(1))
   return result
+
+
+def GetSharedLibraryDependenciesMac(binary, exe_path):
+  """Return absolute paths to all shared library dependecies of the binary.
+
+  This implementation assumes that we're running on a Mac system."""
+  loader_path = os.path.dirname(binary)
+  otool = GetCommandOutput(['otool', '-l', binary]).splitlines()
+  rpaths = []
+  for idx, line in enumerate(otool):
+    if line.find('cmd LC_RPATH') != -1:
+      m = re.match(' *path (.*) \(offset .*\)$', otool[idx+2])
+      rpaths.append(m.group(1))
+
+  otool = GetCommandOutput(['otool', '-L', binary]).splitlines()
+  lib_re = re.compile('\t(.*) \(compatibility .*\)$')
+  deps = []
+  for line in otool:
+    m = lib_re.match(line)
+    if m:
+      dep = Resolve(m.group(1), exe_path, loader_path, rpaths)
+      if dep and os.access(dep, os.X_OK):
+        deps.append(os.path.normpath(dep))
+  return deps
+
+
+def GetSharedLibraryDependencies(binary, exe_path):
+  """Return absolute paths to all shared library dependecies of the binary."""
+  if sys.platform.startswith('linux'):
+    return GetSharedLibraryDependenciesLinux(binary)
+
+  if sys.platform == 'darwin':
+    return GetSharedLibraryDependenciesMac(binary, exe_path)
+
+  print "Platform not supported."
+  sys.exit(1)
 
 
 def mkdir_p(path):
@@ -92,7 +137,7 @@ def mkdir_p(path):
 def GenerateSymbols(dump_syms_dir, symbol_dir, binary):
   """Dumps the symbols of binary and places them in the given directory."""
   syms = GetCommandOutput([GetDumpSymsBinary(dump_syms_dir), binary])
-  module_line = re.match("^MODULE [^ ]+ [^ ]+ ([0-9A-F]+) (.*)\n", syms)
+  module_line = re.match("MODULE [^ ]+ [^ ]+ ([0-9A-F]+) (.*)\n", syms)
   output_path = os.path.join(symbol_dir, module_line.group(2),
                              module_line.group(1))
   mkdir_p(output_path)
@@ -102,10 +147,6 @@ def GenerateSymbols(dump_syms_dir, symbol_dir, binary):
 
 
 def main():
-  if not sys.platform.startswith('linux'):
-    print "Currently only supported on Linux."
-    return 1
-
   parser = optparse.OptionParser()
   parser.add_option('', '--dump-syms-dir', default='',
                     help='The directory where dump_syms is installed. '
@@ -141,8 +182,9 @@ def main():
   # Build the transitive closure of all dependencies.
   binaries = set([options.binary])
   queue = [options.binary]
+  exe_path = os.path.dirname(options.binary)
   while queue:
-    deps = GetSharedLibraryDependencies(queue.pop(0))
+    deps = GetSharedLibraryDependencies(queue.pop(0), exe_path)
     new_deps = set(deps) - binaries
     binaries |= new_deps
     queue.extend(list(new_deps))

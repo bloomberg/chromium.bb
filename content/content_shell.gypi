@@ -592,6 +592,31 @@
             '../breakpad/breakpad.gyp:dump_syms#host',
           ],
         }],  # OS=="android"
+        ['OS=="mac"', {
+          'actions': [
+            {
+              'action_name': 'dump_symbols',
+              'inputs': [
+                '<(DEPTH)/components/breakpad/tools/generate_breakpad_symbols.py',
+                '<(PRODUCT_DIR)/dump_syms',
+                '<(PRODUCT_DIR)/Content Shell.app/Contents/MacOS/Content Shell',
+              ],
+              'outputs': [
+                '<(PRODUCT_DIR)/content_shell.breakpad.<(target_arch)',
+              ],
+              'action': ['<(DEPTH)/components/breakpad/tools/generate_breakpad_symbols.py',
+                         '--dump-syms-dir=<(PRODUCT_DIR)',
+                         '--symbols-dir=<(PRODUCT_DIR)/content_shell.breakpad.<(target_arch)',
+                         '--binary=<(PRODUCT_DIR)/Content Shell.app/Contents/MacOS/Content Shell',
+                         '--clear'],
+              'message': 'Dumping breakpad symbols to <(_outputs)',
+            },
+          ],
+          'dependencies': [
+            'content_shell',
+            '../breakpad/breakpad.gyp:dump_syms',
+          ],
+        }],  # OS=="mac"
       ],
     },
   ],
