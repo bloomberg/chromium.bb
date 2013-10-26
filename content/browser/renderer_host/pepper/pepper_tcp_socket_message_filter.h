@@ -187,7 +187,14 @@ class CONTENT_EXPORT PepperTCPSocketMessageFilter
   PP_NetAddress_Private bind_input_addr_;
 
   scoped_ptr<net::SingleRequestHostResolver> resolver_;
+
+  // |address_list_| may store multiple addresses when
+  // PPB_TCPSocket_Private.Connect() is used, which involves name resolution.
+  // In that case, we will try each address in the list until a connection is
+  // successfully established.
   net::AddressList address_list_;
+  // Where we are in the above list.
+  size_t address_index_;
 
   // Non-null unless an SSL connection is requested.
   scoped_ptr<net::TCPSocket> socket_;

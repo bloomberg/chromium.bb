@@ -63,6 +63,7 @@ PepperTCPSocketMessageFilter::PepperTCPSocketMessageFilter(
       state_(TCPSocketState::INITIAL),
       end_of_file_reached_(false),
       bind_input_addr_(NetAddressPrivateImpl::kInvalidNetAddress),
+      address_index_(0),
       socket_(new net::TCPSocket(NULL, net::NetLog::Source())),
       ssl_context_helper_(host->ssl_context_helper()),
       pending_accept_(false) {
@@ -90,6 +91,7 @@ PepperTCPSocketMessageFilter::PepperTCPSocketMessageFilter(
       state_(TCPSocketState::CONNECTED),
       end_of_file_reached_(false),
       bind_input_addr_(NetAddressPrivateImpl::kInvalidNetAddress),
+      address_index_(0),
       socket_(socket.Pass()),
       ssl_context_helper_(host->ssl_context_helper()),
       pending_accept_(false) {
@@ -549,6 +551,8 @@ void PepperTCPSocketMessageFilter::DoConnect(
   }
 
   state_.SetPendingTransition(TCPSocketState::CONNECT);
+  address_index_ = 0;
+  address_list_.clear();
   net::HostResolver::RequestInfo request_info(net::HostPortPair(host, port));
   resolver_.reset(new net::SingleRequestHostResolver(
       resource_context->GetHostResolver()));
@@ -585,6 +589,7 @@ void PepperTCPSocketMessageFilter::DoConnectWithNetAddress(
   }
 
   // Copy the single IPEndPoint to address_list_.
+  address_index_ = 0;
   address_list_.clear();
   address_list_.push_back(net::IPEndPoint(address, port));
   StartConnect(context);
@@ -661,14 +666,15 @@ void PepperTCPSocketMessageFilter::StartConnect(
     const ppapi::host::ReplyMessageContext& context) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(state_.IsPending(TCPSocketState::CONNECT));
+  DCHECK_LT(address_index_, address_list_.size());
 
   int net_result = net::OK;
   if (!socket_->IsValid())
-    net_result = socket_->Open(address_list_[0].GetFamily());
+    net_result = socket_->Open(address_list_[address_index_].GetFamily());
 
   if (net_result == net::OK) {
     net_result = socket_->Connect(
-        address_list_[0],
+        address_list_[address_index_],
         base::Bind(&PepperTCPSocketMessageFilter::OnConnectCompleted,
                    base::Unretained(this), context));
   }
@@ -725,17 +731,27 @@ void PepperTCPSocketMessageFilter::OnConnectCompleted(
     return;
   } while (false);
 
-  SendConnectError(context, pp_result);
   if (version_ == ppapi::TCP_SOCKET_VERSION_1_1_OR_ABOVE) {
+    DCHECK_EQ(1u, address_list_.size());
+
+    SendConnectError(context, pp_result);
     state_.CompletePendingTransition(false);
   } else {
-    // In order to maintain backward compatibility, allow further attempts to
-    // connect the socket.
-    state_ = TCPSocketState(TCPSocketState::INITIAL);
     // We have to recreate |socket_| because it doesn't allow a second connect
     // attempt. We won't lose any state such as bound address or set options,
     // because in the private or v1.0 API, connect must be the first operation.
     socket_.reset(new net::TCPSocket(NULL, net::NetLog::Source()));
+
+    if (address_index_ + 1 < address_list_.size()) {
+      DCHECK_EQ(version_, ppapi::TCP_SOCKET_VERSION_PRIVATE);
+      address_index_++;
+      StartConnect(context);
+    } else {
+      SendConnectError(context, pp_result);
+      // In order to maintain backward compatibility, allow further attempts to
+      // connect the socket.
+      state_ = TCPSocketState(TCPSocketState::INITIAL);
+    }
   }
 }
 
