@@ -13,9 +13,9 @@ public class MojoMain {
     /**
      * Initialize application context in native side.
      **/
-    public static void initApplicationContext(Context context) {
-        nativeInitApplicationContext(context);
+    public static void start(Context context) {
+        nativeStart(context);
     }
 
-    private static native void nativeInitApplicationContext(Context context);
+    private static native void nativeStart(Context context);
 };

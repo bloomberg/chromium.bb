@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "mojo/shell/run.h"
+
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
@@ -19,10 +21,6 @@ namespace shell {
 
 void Run() {
   system::CoreImpl::Init();
-
-#if defined(OS_ANDROID)
-  return;  // TODO(abarth): Run more of RunShell on Android.
-#endif
 
   // TODO(abarth): Group these objects into a "context" object.
   TaskRunners task_runners(base::MessageLoop::current()->message_loop_proxy());

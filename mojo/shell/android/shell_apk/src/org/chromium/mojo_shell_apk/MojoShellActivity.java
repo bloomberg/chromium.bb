@@ -30,7 +30,7 @@ public class MojoShellActivity extends Activity {
             finish();
             return;
         }
-        MojoMain.initApplicationContext(this);
-        Log.i(TAG, "MojoMain.initApplicationContext() success.");
+        MojoMain.start(this);
+        Log.i(TAG, "Mojo started.");
     }
 }
