@@ -218,6 +218,7 @@ namespace WebCore {
         bool matchesPseudoElement() const;
         bool isUnknownPseudoElement() const;
         bool isCustomPseudoElement() const;
+        bool isDirectAdjacentSelector() const { return m_relation == DirectAdjacent; }
         bool isSiblingSelector() const;
         bool isAttributeSelector() const;
         bool isDistributedPseudoElement() const;

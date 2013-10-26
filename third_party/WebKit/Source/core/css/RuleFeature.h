@@ -48,6 +48,7 @@ class RuleFeatureSet {
 public:
     RuleFeatureSet()
         : m_usesFirstLineRules(false)
+        , m_maxDirectAdjacentSelectors(0)
     { }
 
     void add(const RuleFeatureSet&);
@@ -57,6 +58,9 @@ public:
 
     bool usesSiblingRules() const { return !siblingRules.isEmpty(); }
     bool usesFirstLineRules() const { return m_usesFirstLineRules; }
+
+    unsigned maxDirectAdjacentSelectors() const { return m_maxDirectAdjacentSelectors; }
+    void setMaxDirectAdjacentSelectors(unsigned value)  { m_maxDirectAdjacentSelectors = std::max(value, m_maxDirectAdjacentSelectors); }
 
     inline bool hasSelectorForAttribute(const AtomicString& attributeName) const
     {
@@ -85,6 +89,7 @@ private:
     void collectFeaturesFromSelectorList(const CSSSelectorList*);
 
     bool m_usesFirstLineRules;
+    unsigned m_maxDirectAdjacentSelectors;
 };
 
 } // namespace WebCore

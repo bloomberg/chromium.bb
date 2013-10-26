@@ -64,6 +64,7 @@ StyleEngine::StyleEngine(Document& document)
     , m_usesRemUnits(false)
     , m_documentStyleSheetCollection(document)
     , m_needsDocumentStyleSheetsUpdate(true)
+    , m_maxDirectAdjacentSelectors(0)
 {
 }
 
@@ -159,12 +160,14 @@ void StyleEngine::combineCSSFeatureFlags(const RuleFeatureSet& features)
     // Delay resetting the flags until after next style recalc since unapplying the style may not work without these set (this is true at least with before/after).
     m_usesSiblingRules = m_usesSiblingRules || features.usesSiblingRules();
     m_usesFirstLineRules = m_usesFirstLineRules || features.usesFirstLineRules();
+    m_maxDirectAdjacentSelectors = max(m_maxDirectAdjacentSelectors, features.maxDirectAdjacentSelectors());
 }
 
 void StyleEngine::resetCSSFeatureFlags(const RuleFeatureSet& features)
 {
     m_usesSiblingRules = features.usesSiblingRules();
     m_usesFirstLineRules = features.usesFirstLineRules();
+    m_maxDirectAdjacentSelectors = features.maxDirectAdjacentSelectors();
 }
 
 CSSStyleSheet* StyleEngine::pageUserSheet()

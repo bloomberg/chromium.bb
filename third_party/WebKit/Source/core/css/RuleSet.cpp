@@ -224,18 +224,27 @@ RuleData::RuleData(StyleRule* rule, unsigned selectorIndex, unsigned position, A
 static void collectFeaturesFromRuleData(RuleFeatureSet& features, const RuleData& ruleData)
 {
     bool foundSiblingSelector = false;
+    unsigned maxDirectAdjacentSelectors = 0;
     for (const CSSSelector* selector = ruleData.selector(); selector; selector = selector->tagHistory()) {
         features.collectFeaturesFromSelector(selector);
 
         if (const CSSSelectorList* selectorList = selector->selectorList()) {
             for (const CSSSelector* subSelector = selectorList->first(); subSelector; subSelector = CSSSelectorList::next(subSelector)) {
+                // FIXME: Shouldn't this be checking subSelector->isSiblingSelector()?
                 if (!foundSiblingSelector && selector->isSiblingSelector())
                     foundSiblingSelector = true;
+                if (subSelector->isDirectAdjacentSelector())
+                    maxDirectAdjacentSelectors++;
                 features.collectFeaturesFromSelector(subSelector);
             }
-        } else if (!foundSiblingSelector && selector->isSiblingSelector())
-            foundSiblingSelector = true;
+        } else {
+            if (!foundSiblingSelector && selector->isSiblingSelector())
+                foundSiblingSelector = true;
+            if (selector->isDirectAdjacentSelector())
+                maxDirectAdjacentSelectors++;
+        }
     }
+    features.setMaxDirectAdjacentSelectors(maxDirectAdjacentSelectors);
     if (foundSiblingSelector)
         features.siblingRules.append(RuleFeature(ruleData.rule(), ruleData.selectorIndex(), ruleData.hasDocumentSecurityOrigin()));
     if (ruleData.containsUncommonAttributeSelector())

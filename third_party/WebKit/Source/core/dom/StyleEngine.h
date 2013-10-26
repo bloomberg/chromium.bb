@@ -94,6 +94,7 @@ public:
 
     bool hasPendingSheets() const { return m_pendingStylesheets > 0; }
 
+    unsigned maxDirectAdjacentSelectors() const { return m_maxDirectAdjacentSelectors; }
     bool usesSiblingRules() const { return m_usesSiblingRules || m_usesSiblingRulesOverride; }
     void setUsesSiblingRulesOverride(bool b) { m_usesSiblingRulesOverride = b; }
     bool usesFirstLineRules() const { return m_usesFirstLineRules; }
@@ -155,6 +156,7 @@ private:
     bool m_usesFirstLineRules;
     bool m_usesFirstLetterRules;
     bool m_usesRemUnits;
+    unsigned m_maxDirectAdjacentSelectors;
 };
 
 }

@@ -1613,12 +1613,9 @@ void Element::recalcChildStyle(StyleRecalcChange change)
     if (shouldRecalcStyle(change, this))
         updatePseudoElement(BEFORE, change);
 
-    // FIXME: This check is good enough for :hover + foo, but it is not good enough for :hover + foo + bar.
-    // For now we will just worry about the common case, since it's a lot trickier to get the second case right
-    // without doing way too much re-resolution.
     bool hasDirectAdjacentRules = childrenAffectedByDirectAdjacentRules();
     bool hasIndirectAdjacentRules = childrenAffectedByForwardPositionalRules();
-    bool forceCheckOfNextElementSibling = false;
+    unsigned forceCheckOfNextElementCount = 0;
     bool forceCheckOfAnyElementSibling = false;
     if (hasDirectAdjacentRules || hasIndirectAdjacentRules) {
         for (Node* child = firstChild(); child; child = child->nextSibling()) {
@@ -1626,9 +1623,16 @@ void Element::recalcChildStyle(StyleRecalcChange change)
                 continue;
             Element* element = toElement(child);
             bool childRulesChanged = element->needsStyleRecalc() && element->styleChangeType() >= SubtreeStyleChange;
-            if (forceCheckOfNextElementSibling || forceCheckOfAnyElementSibling)
+
+            if (forceCheckOfNextElementCount || forceCheckOfAnyElementSibling)
                 element->setNeedsStyleRecalc();
-            forceCheckOfNextElementSibling = childRulesChanged && hasDirectAdjacentRules;
+
+            if (forceCheckOfNextElementCount)
+                forceCheckOfNextElementCount--;
+
+            if (childRulesChanged && hasDirectAdjacentRules)
+                forceCheckOfNextElementCount = document().styleEngine()->maxDirectAdjacentSelectors();
+
             forceCheckOfAnyElementSibling = forceCheckOfAnyElementSibling || (childRulesChanged && hasIndirectAdjacentRules);
         }
     }

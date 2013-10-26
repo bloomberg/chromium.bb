@@ -84,6 +84,7 @@ void RuleFeatureSet::add(const RuleFeatureSet& other)
     siblingRules.append(other.siblingRules);
     uncommonAttributeRules.append(other.uncommonAttributeRules);
     m_usesFirstLineRules = m_usesFirstLineRules || other.m_usesFirstLineRules;
+    m_maxDirectAdjacentSelectors = std::max(m_maxDirectAdjacentSelectors, other.maxDirectAdjacentSelectors());
 }
 
 void RuleFeatureSet::clear()
@@ -94,6 +95,7 @@ void RuleFeatureSet::clear()
     siblingRules.clear();
     uncommonAttributeRules.clear();
     m_usesFirstLineRules = false;
+    m_maxDirectAdjacentSelectors = 0;
 }
 
 } // namespace WebCore
