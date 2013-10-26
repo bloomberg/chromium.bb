@@ -10,6 +10,7 @@
 #include "chrome/browser/notifications/sync_notifier/synced_notification.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/user_metrics.h"
 
@@ -74,12 +75,16 @@ void ChromeNotifierDelegate::NavigateToUrl(const GURL& destination) const {
   content::OpenURLParams openParams(destination, content::Referrer(),
                                     NEW_FOREGROUND_TAB,
                                     content::PAGE_TRANSITION_LINK, false);
-  Browser* browser = chrome::FindLastActiveWithProfile(
+  Browser* browser = chrome::FindOrCreateTabbedBrowser(
       chrome_notifier_->profile(),
       chrome::GetActiveDesktop());
   // Navigate to the URL in a new tab.
-  if (browser != NULL)
+  if (browser != NULL) {
     browser->OpenURL(openParams);
+    browser->window()->Activate();
+  } else {
+    DVLOG(2) << "NavigateToUrl failed to create a browser.";
+  }
 
 }
 
