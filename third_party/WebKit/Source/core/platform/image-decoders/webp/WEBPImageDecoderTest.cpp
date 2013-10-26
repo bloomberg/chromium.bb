@@ -351,10 +351,39 @@ TEST_F(AnimatedWebPTests, parseAndDecodeByteByByte)
 
 TEST_F(AnimatedWebPTests, invalidImages)
 {
-    // crbug.com/229641
+    // ANMF chunk size is smaller than ANMF header size.
     testInvalidImage("/LayoutTests/fast/images/resources/invalid-animated-webp.webp");
-    // crbug.com/310257
+    // One of the frame rectangles extends outside the image boundary.
     testInvalidImage("/LayoutTests/fast/images/resources/invalid-animated-webp3.webp");
+}
+
+TEST_F(AnimatedWebPTests, truncatedLastFrame)
+{
+    OwnPtr<WEBPImageDecoder> decoder = createDecoder();
+
+    RefPtr<SharedBuffer> data = readFile("/LayoutTests/fast/images/resources/invalid-animated-webp2.webp");
+    ASSERT_TRUE(data.get());
+    decoder->setData(data.get(), true);
+
+    unsigned frameCount = 8;
+    EXPECT_EQ(frameCount, decoder->frameCount());
+    ImageFrame* frame = decoder->frameBufferAtIndex(frameCount - 1);
+    EXPECT_FALSE(frame);
+    frame = decoder->frameBufferAtIndex(0);
+    EXPECT_FALSE(frame);
+}
+
+TEST_F(AnimatedWebPTests, truncatedInBetweenFrame)
+{
+    OwnPtr<WEBPImageDecoder> decoder = createDecoder();
+
+    RefPtr<SharedBuffer> fullData = readFile("/LayoutTests/fast/images/resources/invalid-animated-webp4.webp");
+    ASSERT_TRUE(fullData.get());
+    RefPtr<SharedBuffer> data = SharedBuffer::create(fullData->data(), fullData->size() - 1);
+    decoder->setData(data.get(), false);
+
+    ImageFrame* frame = decoder->frameBufferAtIndex(2);
+    EXPECT_FALSE(frame);
 }
 
 // Reproduce a crash that used to happen for a specific file with specific sequence of method calls.
@@ -534,4 +563,16 @@ TEST_F(AnimatedWebPTests, decodeAfterReallocatingData)
 {
     testDecodeAfterReallocatingData("/LayoutTests/fast/images/resources/webp-animated.webp");
     testDecodeAfterReallocatingData("/LayoutTests/fast/images/resources/webp-animated-icc-xmp.webp");
+}
+
+TEST(StaticWebPTests, truncatedImage)
+{
+    OwnPtr<WEBPImageDecoder> decoder = createDecoder();
+
+    RefPtr<SharedBuffer> data = readFile("/LayoutTests/fast/images/resources/truncated.webp");
+    ASSERT_TRUE(data.get());
+    decoder->setData(data.get(), true);
+
+    ImageFrame* frame = decoder->frameBufferAtIndex(0);
+    EXPECT_FALSE(frame);
 }
