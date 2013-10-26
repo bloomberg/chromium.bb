@@ -12,7 +12,8 @@ SearchIPCRouter::SearchIPCRouter(content::WebContents* web_contents,
                                  Delegate* delegate, scoped_ptr<Policy> policy)
     : WebContentsObserver(web_contents),
       delegate_(delegate),
-      policy_(policy.Pass()) {
+      policy_(policy.Pass()),
+      is_active_tab_(false) {
   DCHECK(web_contents);
   DCHECK(delegate);
   DCHECK(policy_.get());
@@ -74,6 +75,14 @@ void SearchIPCRouter::Submit(const string16& text) {
   Send(new ChromeViewMsg_SearchBoxSubmit(routing_id(), text));
 }
 
+void SearchIPCRouter::OnTabActivated() {
+  is_active_tab_ = true;
+}
+
+void SearchIPCRouter::OnTabDeactivated() {
+  is_active_tab_ = false;
+}
+
 bool SearchIPCRouter::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(SearchIPCRouter, message)
@@ -121,7 +130,7 @@ void SearchIPCRouter::OnFocusOmnibox(int page_id,
     return;
 
   delegate_->OnInstantSupportDetermined(true);
-  if (!policy_->ShouldProcessFocusOmnibox())
+  if (!policy_->ShouldProcessFocusOmnibox(is_active_tab_))
     return;
 
   delegate_->FocusOmnibox(state);

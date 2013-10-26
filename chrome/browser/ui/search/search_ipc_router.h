@@ -64,7 +64,7 @@ class SearchIPCRouter : public content::WebContentsObserver {
     // SearchIPCRouter calls these functions before sending/receiving messages
     // to/from the page.
     virtual bool ShouldProcessSetVoiceSearchSupport() = 0;
-    virtual bool ShouldProcessFocusOmnibox() = 0;
+    virtual bool ShouldProcessFocusOmnibox(bool is_active_tab) = 0;
     virtual bool ShouldProcessDeleteMostVisitedItem() = 0;
     virtual bool ShouldProcessUndoMostVisitedDeletion() = 0;
     virtual bool ShouldProcessUndoAllMostVisitedDeletions() = 0;
@@ -103,6 +103,12 @@ class SearchIPCRouter : public content::WebContentsObserver {
 
   // Tells the page that the user pressed Enter in the omnibox.
   void Submit(const string16& text);
+
+  // Called when the tab corresponding to |this| instance is activated.
+  void OnTabActivated();
+
+  // Called when the tab corresponding to |this| instance is deactivated.
+  void OnTabDeactivated();
 
  private:
   friend class SearchIPCRouterTest;
@@ -144,10 +150,13 @@ class SearchIPCRouter : public content::WebContentsObserver {
                            ProcessUndoAllMostVisitedDeletions);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest,
                            DoNotProcessMessagesForIncognitoPage);
+  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest,
+                           DoNotProcessMessagesForInactiveTab);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest, ProcessVoiceSearchSupportMsg);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest, IgnoreVoiceSearchSupportMsg);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest, ProcessFocusOmniboxMsg);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest, IgnoreFocusOmniboxMsg);
+  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest, HandleTabChangedEvents);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest, SendSetPromoInformationMsg);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest,
                            DoNotSendSetPromoInformationMsg);
@@ -191,6 +200,9 @@ class SearchIPCRouter : public content::WebContentsObserver {
 
   Delegate* delegate_;
   scoped_ptr<Policy> policy_;
+
+  // Set to true, when the tab corresponding to |this| instance is active.
+  bool is_active_tab_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchIPCRouter);
 };

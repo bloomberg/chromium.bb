@@ -4,28 +4,9 @@
 
 #include "chrome/browser/ui/search/search_ipc_router_policy_impl.h"
 
-#include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/search.h"
-#include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "content/public/browser/web_contents.h"
-
-namespace {
-
-// Returns true if |web_contents| corresponds to the current active tab.
-bool IsActiveWebContents(const content::WebContents* web_contents) {
-  Browser* browser = NULL;
-
-// iOS and Android doesn't use the Instant framework.
-#if !defined(OS_IOS) && !defined(OS_ANDROID)
-  browser = chrome::FindBrowserWithWebContents(web_contents);
-#endif
-  return browser && web_contents &&
-      (browser->tab_strip_model()->GetActiveWebContents() == web_contents);
-}
-
-}  // namespace
 
 SearchIPCRouterPolicyImpl::SearchIPCRouterPolicyImpl(
     const content::WebContents* web_contents)
@@ -45,8 +26,8 @@ bool SearchIPCRouterPolicyImpl::ShouldProcessSetVoiceSearchSupport() {
   return true;
 }
 
-bool SearchIPCRouterPolicyImpl::ShouldProcessFocusOmnibox() {
-  return !is_incognito_ && chrome::IsInstantNTP(web_contents_);
+bool SearchIPCRouterPolicyImpl::ShouldProcessFocusOmnibox(bool is_active_tab) {
+  return is_active_tab && !is_incognito_ && chrome::IsInstantNTP(web_contents_);
 }
 
 bool SearchIPCRouterPolicyImpl::ShouldProcessDeleteMostVisitedItem() {

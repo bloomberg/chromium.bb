@@ -207,6 +207,14 @@ void SearchTabHelper::Submit(const string16& text) {
   ipc_router_.Submit(text);
 }
 
+void SearchTabHelper::OnTabActivated() {
+  ipc_router_.OnTabActivated();
+}
+
+void SearchTabHelper::OnTabDeactivated() {
+  ipc_router_.OnTabDeactivated();
+}
+
 void SearchTabHelper::Observe(
     int type,
     const content::NotificationSource& source,

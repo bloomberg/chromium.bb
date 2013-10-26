@@ -119,6 +119,7 @@
 #include "chrome/browser/ui/omnibox/location_bar.h"
 #include "chrome/browser/ui/search/search_delegate.h"
 #include "chrome/browser/ui/search/search_model.h"
+#include "chrome/browser/ui/search/search_tab_helper.h"
 #include "chrome/browser/ui/search_engines/search_engine_tab_helper.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/status_bubble.h"
@@ -1023,6 +1024,7 @@ void Browser::TabDetachedAt(WebContents* contents, int index) {
 void Browser::TabDeactivated(WebContents* contents) {
   fullscreen_controller_->OnTabDeactivated(contents);
   search_delegate_->OnTabDeactivated(contents);
+  SearchTabHelper::FromWebContents(contents)->OnTabDeactivated();
 
   // Save what the user's currently typing, so it can be restored when we
   // switch back to this tab.
@@ -1103,6 +1105,7 @@ void Browser::ActiveTabChanged(WebContents* old_contents,
 
   autofill::TabAutofillManagerDelegate::FromWebContents(new_contents)->
       TabActivated(reason);
+  SearchTabHelper::FromWebContents(new_contents)->OnTabActivated();
 }
 
 void Browser::TabMoved(WebContents* contents,

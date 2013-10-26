@@ -7,18 +7,20 @@
 #include "base/command_line.h"
 #include "chrome/browser/ui/search/search_ipc_router_policy_impl.h"
 #include "chrome/browser/ui/search/search_tab_helper.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
-#include "chrome/test/base/chrome_render_view_host_test_harness.h"
+#include "chrome/test/base/browser_with_test_window_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
-class SearchIPCRouterPolicyTest : public ChromeRenderViewHostTestHarness {
+class SearchIPCRouterPolicyTest : public BrowserWithTestWindowTest {
  public:
   virtual void SetUp() {
     CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kEnableInstantExtendedAPI);
-    ChromeRenderViewHostTestHarness::SetUp();
+    BrowserWithTestWindowTest::SetUp();
+    AddTab(browser(), GURL("chrome://blank"));
     SearchTabHelper::CreateForWebContents(web_contents());
   }
 
@@ -29,54 +31,59 @@ class SearchIPCRouterPolicyTest : public ChromeRenderViewHostTestHarness {
     return search_tab_helper;
   }
 
+  content::WebContents* web_contents() {
+    return browser()->tab_strip_model()->GetActiveWebContents();
+  }
 };
 
 TEST_F(SearchIPCRouterPolicyTest, ProcessVoiceSearchSupportMsg) {
-  NavigateAndCommit(GURL("chrome-search://foo/bar"));
+  NavigateAndCommitActiveTab(GURL("chrome-search://foo/bar"));
   EXPECT_TRUE(GetSearchTabHelper()->ipc_router().policy()->
       ShouldProcessSetVoiceSearchSupport());
 }
 
 TEST_F(SearchIPCRouterPolicyTest, ProcessFocusOmnibox) {
-  NavigateAndCommit(GURL(chrome::kChromeSearchLocalNtpUrl));
-  EXPECT_TRUE(GetSearchTabHelper()->ipc_router().policy()->
-      ShouldProcessFocusOmnibox());
+  NavigateAndCommitActiveTab(GURL(chrome::kChromeSearchLocalNtpUrl));
+  SearchTabHelper* search_tab_helper = GetSearchTabHelper();
+  EXPECT_TRUE(search_tab_helper->ipc_router().policy()->
+      ShouldProcessFocusOmnibox(true));
 }
 
 TEST_F(SearchIPCRouterPolicyTest, DoNotProcessFocusOmnibox) {
   // Process message only if the underlying page is an InstantNTP.
-  NavigateAndCommit(GURL("chrome-search://foo/bar"));
-  EXPECT_FALSE(GetSearchTabHelper()->ipc_router().policy()->
-      ShouldProcessFocusOmnibox());
+  NavigateAndCommitActiveTab(GURL("chrome-search://foo/bar"));
+  SearchTabHelper* search_tab_helper = GetSearchTabHelper();
+  EXPECT_FALSE(search_tab_helper->ipc_router().policy()->
+      ShouldProcessFocusOmnibox(true));
 }
 
 TEST_F(SearchIPCRouterPolicyTest, SendSetPromoInformation) {
-  NavigateAndCommit(GURL(chrome::kChromeSearchLocalNtpUrl));
+  NavigateAndCommitActiveTab(GURL(chrome::kChromeSearchLocalNtpUrl));
   EXPECT_TRUE(GetSearchTabHelper()->ipc_router().policy()->
       ShouldSendSetPromoInformation());
 }
 
 TEST_F(SearchIPCRouterPolicyTest, DoNotSendSetPromoInformation) {
   // Send promo information only if the underlying page is an InstantNTP.
-  NavigateAndCommit(GURL("chrome-search://foo/bar"));
+  NavigateAndCommitActiveTab(GURL("chrome-search://foo/bar"));
   EXPECT_FALSE(GetSearchTabHelper()->ipc_router().policy()->
       ShouldSendSetPromoInformation());
 }
 
 TEST_F(SearchIPCRouterPolicyTest, ProcessDeleteMostVisitedItem) {
-  NavigateAndCommit(GURL(chrome::kChromeSearchLocalNtpUrl));
+  NavigateAndCommitActiveTab(GURL(chrome::kChromeSearchLocalNtpUrl));
   EXPECT_TRUE(GetSearchTabHelper()->ipc_router().policy()->
       ShouldProcessDeleteMostVisitedItem());
 }
 
 TEST_F(SearchIPCRouterPolicyTest, ProcessUndoMostVisitedDeletion) {
-  NavigateAndCommit(GURL(chrome::kChromeSearchLocalNtpUrl));
+  NavigateAndCommitActiveTab(GURL(chrome::kChromeSearchLocalNtpUrl));
   EXPECT_TRUE(GetSearchTabHelper()->ipc_router().policy()->
       ShouldProcessUndoMostVisitedDeletion());
 }
 
 TEST_F(SearchIPCRouterPolicyTest, ProcessUndoAllMostVisitedDeletions) {
-  NavigateAndCommit(GURL(chrome::kChromeSearchLocalNtpUrl));
+  NavigateAndCommitActiveTab(GURL(chrome::kChromeSearchLocalNtpUrl));
   SearchTabHelper* search_tab_helper =
       SearchTabHelper::FromWebContents(web_contents());
   ASSERT_NE(static_cast<SearchTabHelper*>(NULL), search_tab_helper);
@@ -85,28 +92,28 @@ TEST_F(SearchIPCRouterPolicyTest, ProcessUndoAllMostVisitedDeletions) {
 }
 
 TEST_F(SearchIPCRouterPolicyTest, ProcessLogEvent) {
-  NavigateAndCommit(GURL(chrome::kChromeSearchLocalNtpUrl));
+  NavigateAndCommitActiveTab(GURL(chrome::kChromeSearchLocalNtpUrl));
   EXPECT_TRUE(GetSearchTabHelper()->ipc_router().policy()->
       ShouldProcessLogEvent());
 }
 
 TEST_F(SearchIPCRouterPolicyTest, DoNotProcessLogEvent) {
   // Process message only if the underlying page is an InstantNTP.
-  NavigateAndCommit(GURL("chrome-search://foo/bar"));
+  NavigateAndCommitActiveTab(GURL("chrome-search://foo/bar"));
   EXPECT_FALSE(GetSearchTabHelper()->ipc_router().policy()->
       ShouldProcessLogEvent());
 }
 
 TEST_F(SearchIPCRouterPolicyTest, DoNotProcessMessagesForIncognitoPage) {
-  NavigateAndCommit(GURL(chrome::kChromeSearchLocalNtpUrl));
+  NavigateAndCommitActiveTab(GURL(chrome::kChromeSearchLocalNtpUrl));
   SearchTabHelper* search_tab_helper = GetSearchTabHelper();
   SearchIPCRouterPolicyImpl* policy =
       static_cast<SearchIPCRouterPolicyImpl*>(
           search_tab_helper->ipc_router().policy());
   policy->set_is_incognito(true);
 
-  EXPECT_FALSE(GetSearchTabHelper()->ipc_router().policy()->
-      ShouldProcessFocusOmnibox());
+  EXPECT_FALSE(search_tab_helper->ipc_router().policy()->
+      ShouldProcessFocusOmnibox(true));
   EXPECT_FALSE(search_tab_helper->ipc_router().policy()->
       ShouldProcessDeleteMostVisitedItem());
   EXPECT_FALSE(search_tab_helper->ipc_router().policy()->
@@ -117,14 +124,22 @@ TEST_F(SearchIPCRouterPolicyTest, DoNotProcessMessagesForIncognitoPage) {
       ShouldProcessLogEvent());
 }
 
+TEST_F(SearchIPCRouterPolicyTest, DoNotProcessMessagesForInactiveTab) {
+  NavigateAndCommitActiveTab(GURL(chrome::kChromeSearchLocalNtpUrl));
+
+  // Assume the NTP is deactivated.
+  EXPECT_FALSE(GetSearchTabHelper()->ipc_router().policy()->
+      ShouldProcessFocusOmnibox(false));
+}
+
 TEST_F(SearchIPCRouterPolicyTest, SendSetDisplayInstantResults) {
-  NavigateAndCommit(GURL("chrome-search://foo/bar"));
+  NavigateAndCommitActiveTab(GURL("chrome-search://foo/bar"));
   EXPECT_TRUE(GetSearchTabHelper()->ipc_router().policy()->
       ShouldSendSetDisplayInstantResults());
 }
 
 TEST_F(SearchIPCRouterPolicyTest, SendSetSuggestionToPrefetch) {
-  NavigateAndCommit(GURL("chrome-search://foo/bar"));
+  NavigateAndCommitActiveTab(GURL("chrome-search://foo/bar"));
   SearchTabHelper* search_tab_helper =
       SearchTabHelper::FromWebContents(web_contents());
   ASSERT_NE(static_cast<SearchTabHelper*>(NULL), search_tab_helper);
@@ -134,7 +149,7 @@ TEST_F(SearchIPCRouterPolicyTest, SendSetSuggestionToPrefetch) {
 
 TEST_F(SearchIPCRouterPolicyTest,
        DoNotSendSetMessagesForIncognitoPage) {
-  NavigateAndCommit(GURL(chrome::kChromeSearchLocalNtpUrl));
+  NavigateAndCommitActiveTab(GURL(chrome::kChromeSearchLocalNtpUrl));
   SearchTabHelper* search_tab_helper = GetSearchTabHelper();
   SearchIPCRouterPolicyImpl* policy =
       static_cast<SearchIPCRouterPolicyImpl*>(
@@ -155,7 +170,7 @@ TEST_F(SearchIPCRouterPolicyTest,
 
 TEST_F(SearchIPCRouterPolicyTest,
        AppropriateMessagesSentToIncognitoPages) {
-  NavigateAndCommit(GURL("chrome-search://foo/bar"));
+  NavigateAndCommitActiveTab(GURL("chrome-search://foo/bar"));
   SearchTabHelper* search_tab_helper =
       SearchTabHelper::FromWebContents(web_contents());
   ASSERT_NE(static_cast<SearchTabHelper*>(NULL), search_tab_helper);
@@ -168,7 +183,7 @@ TEST_F(SearchIPCRouterPolicyTest,
 }
 
 TEST_F(SearchIPCRouterPolicyTest, SendMostVisitedItems) {
-  NavigateAndCommit(GURL(chrome::kChromeSearchLocalNtpUrl));
+  NavigateAndCommitActiveTab(GURL(chrome::kChromeSearchLocalNtpUrl));
   SearchTabHelper* search_tab_helper = GetSearchTabHelper();
   EXPECT_TRUE(search_tab_helper->ipc_router().policy()->
       ShouldSendMostVisitedItems());
@@ -176,14 +191,14 @@ TEST_F(SearchIPCRouterPolicyTest, SendMostVisitedItems) {
 
 TEST_F(SearchIPCRouterPolicyTest, DoNotSendMostVisitedItems) {
   // Send most visited items only if the current tab is an Instant NTP.
-  NavigateAndCommit(GURL("chrome-search://foo/bar"));
+  NavigateAndCommitActiveTab(GURL("chrome-search://foo/bar"));
   SearchTabHelper* search_tab_helper = GetSearchTabHelper();
   EXPECT_FALSE(search_tab_helper->ipc_router().policy()->
       ShouldSendMostVisitedItems());
 }
 
 TEST_F(SearchIPCRouterPolicyTest, SendThemeBackgroundInfo) {
-  NavigateAndCommit(GURL(chrome::kChromeSearchLocalNtpUrl));
+  NavigateAndCommitActiveTab(GURL(chrome::kChromeSearchLocalNtpUrl));
   SearchTabHelper* search_tab_helper = GetSearchTabHelper();
   EXPECT_TRUE(search_tab_helper->ipc_router().policy()->
       ShouldSendThemeBackgroundInfo());
@@ -192,14 +207,14 @@ TEST_F(SearchIPCRouterPolicyTest, SendThemeBackgroundInfo) {
 TEST_F(SearchIPCRouterPolicyTest, DoNotSendThemeBackgroundInfo) {
   // Send theme background information only if the current tab is an
   // Instant NTP.
-  NavigateAndCommit(GURL("chrome-search://foo/bar"));
+  NavigateAndCommitActiveTab(GURL("chrome-search://foo/bar"));
   SearchTabHelper* search_tab_helper = GetSearchTabHelper();
   EXPECT_FALSE(search_tab_helper->ipc_router().policy()->
       ShouldSendThemeBackgroundInfo());
 }
 
 TEST_F(SearchIPCRouterPolicyTest, SubmitQuery) {
-  NavigateAndCommit(GURL("chrome-search://foo/bar"));
+  NavigateAndCommitActiveTab(GURL("chrome-search://foo/bar"));
   SearchTabHelper* search_tab_helper =
       SearchTabHelper::FromWebContents(web_contents());
   ASSERT_NE(static_cast<SearchTabHelper*>(NULL), search_tab_helper);
