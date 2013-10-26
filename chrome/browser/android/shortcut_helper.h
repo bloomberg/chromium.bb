@@ -43,7 +43,8 @@ class ShortcutBuilder : public content::WebContentsObserver {
   };
 
   explicit ShortcutBuilder(content::WebContents* web_contents,
-                           const string16& title);
+                           const string16& title,
+                           int launcher_large_icon_size);
   virtual ~ShortcutBuilder() {}
 
   void OnDidRetrieveWebappInformation(bool success,
@@ -63,6 +64,7 @@ class ShortcutBuilder : public content::WebContentsObserver {
 
   GURL url_;
   string16 title_;
+  int launcher_large_icon_size_;
   ShortcutType shortcut_type_;
   CancelableTaskTracker cancelable_task_tracker_;
 
@@ -74,7 +76,8 @@ class ShortcutHelper {
   // Adds a shortcut to the current URL to the Android home screen, firing
   // background tasks to pull all the data required.
   static void AddShortcut(content::WebContents* web_contents,
-                          const string16& title);
+                          const string16& title,
+                          int launcher_larger_icon_size);
 
   // Adds a shortcut to the launcher.  Must be called from a WorkerPool task.
   static void AddShortcutInBackground(

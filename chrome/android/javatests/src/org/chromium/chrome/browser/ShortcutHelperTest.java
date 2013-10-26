@@ -162,7 +162,8 @@ public class ShortcutHelperTest extends ChromiumTestShellTestBase {
         getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
-                ShortcutHelper.addShortcut(mActivity.getActiveTab(), title);
+                ShortcutHelper.addShortcut(mActivity.getApplicationContext(),
+                        mActivity.getActiveTab(), title);
             }
         });
 

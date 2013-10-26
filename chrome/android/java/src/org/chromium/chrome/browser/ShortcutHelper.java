@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser;
 
+import android.app.ActivityManager;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -38,15 +39,18 @@ public class ShortcutHelper {
 
     /**
      * Adds a shortcut for the current Tab.
+     * @param appContext The application context.
      * @param tab Tab to create a shortcut for.
      * @param userRequestedTitle Updated title for the shortcut.
      */
-    public static void addShortcut(TabBase tab, String userRequestedTitle) {
+    public static void addShortcut(Context appContext, TabBase tab, String userRequestedTitle) {
         if (TextUtils.isEmpty(sFullScreenAction)) {
             Log.e("ShortcutHelper", "ShortcutHelper is uninitialized.  Aborting.");
             return;
         }
-        nativeAddShortcut(tab.getNativePtr(), userRequestedTitle);
+        ActivityManager am = (ActivityManager) appContext.getSystemService(
+                Context.ACTIVITY_SERVICE);
+        nativeAddShortcut(tab.getNativePtr(), userRequestedTitle, am.getLauncherLargeIconSize());
     }
 
     /**
@@ -91,5 +95,6 @@ public class ShortcutHelper {
         context.startActivity(homeIntent);
     }
 
-    private static native void nativeAddShortcut(int tabAndroidPtr, String userRequestedTitle);
+    private static native void nativeAddShortcut(int tabAndroidPtr, String userRequestedTitle,
+            int launcherLargeIconSize);
 }

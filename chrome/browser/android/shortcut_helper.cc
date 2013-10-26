@@ -25,11 +25,14 @@
 #include "ui/gfx/android/java_bitmap.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/color_analysis.h"
+#include "ui/gfx/favicon_size.h"
 #include "url/gurl.h"
 
 ShortcutBuilder::ShortcutBuilder(content::WebContents* web_contents,
-                                 const string16& title)
-    : shortcut_type_(BOOKMARK) {
+                                 const string16& title,
+                                 int launcher_large_icon_size)
+    : launcher_large_icon_size_(launcher_large_icon_size),
+      shortcut_type_(BOOKMARK) {
   Observe(web_contents);
   url_ = web_contents->GetURL();
   if (title.length() > 0)
@@ -71,18 +74,17 @@ void ShortcutBuilder::OnDidRetrieveWebappInformation(
   // Grab the best, largest icon we can find to represent this bookmark.
   // TODO(dfalcantara): Try combining with the new BookmarksHandler once its
   //                    rewrite is further along.
-  FaviconService::FaviconForURLParams favicon_params(
-      profile,
-      url_,
-      chrome::TOUCH_PRECOMPOSED_ICON | chrome::TOUCH_ICON | chrome::FAVICON,
-      0);
-
+  std::vector<int> icon_types;
+  icon_types.push_back(chrome::FAVICON);
+  icon_types.push_back(chrome::TOUCH_PRECOMPOSED_ICON | chrome::TOUCH_ICON);
   FaviconService* favicon_service = FaviconServiceFactory::GetForProfile(
       profile, Profile::EXPLICIT_ACCESS);
 
-  favicon_service->GetRawFaviconForURL(
-      favicon_params,
-      ui::SCALE_FACTOR_100P,
+  // Using favicon if its size is not smaller than platform required size,
+  // otherwise using the largest icon among all avaliable icons.
+  int threshold_to_get_any_largest_icon = launcher_large_icon_size_ - 1;
+  favicon_service->GetLargestRawFaviconForURL(profile, url_, icon_types,
+      threshold_to_get_any_largest_icon,
       base::Bind(&ShortcutBuilder::FinishAddingShortcut,
                  base::Unretained(this)),
       &cancelable_task_tracker_);
@@ -123,9 +125,10 @@ void ShortcutBuilder::Destroy() {
 }
 
 void ShortcutHelper::AddShortcut(content::WebContents* web_contents,
-                                 const string16& title) {
+                                 const string16& title,
+                                 int launcher_large_icon_size) {
   // The ShortcutBuilder deletes itself when it's done.
-  new ShortcutBuilder(web_contents, title);
+  new ShortcutBuilder(web_contents, title, launcher_large_icon_size);
 }
 
 bool ShortcutHelper::RegisterShortcutHelper(JNIEnv* env) {
@@ -203,9 +206,11 @@ void ShortcutHelper::AddShortcutInBackground(
 static void AddShortcut(JNIEnv* env,
                         jclass clazz,
                         jint tab_android_ptr,
-                        jstring title) {
+                        jstring title,
+                        jint launcher_large_icon_size) {
   TabAndroid* tab = reinterpret_cast<TabAndroid*>(tab_android_ptr);
   ShortcutHelper::AddShortcut(
       tab->web_contents(),
-      base::android::ConvertJavaStringToUTF16(env, title));
+      base::android::ConvertJavaStringToUTF16(env, title),
+      launcher_large_icon_size);
 }
