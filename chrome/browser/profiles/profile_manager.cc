@@ -227,7 +227,7 @@ bool ProfileManager::IsGetDefaultProfileAllowed() {
 // TODO(nkostylev): Remove this method once all clients are migrated.
 Profile* ProfileManager::GetDefaultProfile() {
   CHECK(s_allow_get_default_profile)
-      << "GetDefaultProfile() caled befofre allowed.";
+      << "GetDefaultProfile() called before allowed.";
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   return profile_manager->GetDefaultProfile(profile_manager->user_data_dir_);
 }
@@ -236,7 +236,7 @@ Profile* ProfileManager::GetDefaultProfile() {
 // TODO(nkostylev): Remove this method once all clients are migrated.
 Profile* ProfileManager::GetDefaultProfileOrOffTheRecord() {
   CHECK(s_allow_get_default_profile)
-      << "GetDefaultProfileOrOffTheRecord() caled befofre allowed.";
+      << "GetDefaultProfileOrOffTheRecord() called before allowed.";
   // TODO (mukai,nkostylev): In the long term we should fix those cases that
   // crash on Guest mode and have only one GetDefaultProfile() method.
   Profile* profile = GetDefaultProfile();
