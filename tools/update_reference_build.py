@@ -34,9 +34,18 @@ import zipfile
 CHROMIUM_URL_FMT = ('http://commondatastorage.googleapis.com/'
                     'chromium-browser-snapshots/%s/%s/%s')
 
-# Example Chrome build location (no public wed URL's):
+# Chrome official build storage
+# https://wiki.corp.google.com/twiki/bin/view/Main/ChromeOfficialBuilds
+
+# Internal Google archive of official Chrome builds, example:
+# https://goto.google.com/chrome_official_builds/
+# 32.0.1677.0/precise32bit/chrome-precise32bit.zip
+CHROME_INTERNAL_URL_FMT = ('http://master.chrome.corp.google.com/'
+                           'official_builds/%s/%s/%s')
+
+# Google storage location (no public web URL's), example:
 # gs://chrome-archive/30/30.0.1595.0/precise32bit/chrome-precise32bit.zip
-CHROME_URL_FMT = ('gs://chrome-archive/%s/%s/%s/%s')
+CHROME_GS_URL_FMT = ('gs://chrome-archive/%s/%s/%s/%s')
 
 
 class BuildUpdater(object):
@@ -91,6 +100,7 @@ class BuildUpdater(object):
     self._platforms = options.platforms.split(',')
     self._revision = options.build_number or int(options.revision)
     self._use_build_number = bool(options.build_number)
+    self._use_gs = options.use_gs
 
   @staticmethod
   def _GetCmdStatusAndOutput(args, cwd=None, shell=False):
@@ -117,28 +127,41 @@ class BuildUpdater(object):
 
   def _GetBuildUrl(self, platform, revision, filename):
     if self._use_build_number:
-      release = revision[:revision.find('.')]
-      return (CHROME_URL_FMT %
-              (release, revision, self._BUILD_PLATFORM_MAP[platform], filename))
+      # Chrome Google storage bucket.
+      if self._use_gs:
+        release = revision[:revision.find('.')]
+        return (CHROME_GS_URL_FMT % (
+            release,
+            revision,
+            self._BUILD_PLATFORM_MAP[platform],
+            filename))
+      # Chrome internal archive.
+      return (CHROME_INTERNAL_URL_FMT % (
+          revision,
+          self._BUILD_PLATFORM_MAP[platform],
+          filename))
+    # Chromium archive.
     return CHROMIUM_URL_FMT % (urllib.quote_plus(platform), revision, filename)
 
   def _FindBuildRevision(self, platform, revision, filename):
     # TODO(shadi): Iterate over build numbers to find a valid one.
     if self._use_build_number:
       return (revision
-              if self._DoesChromeBuildExist(platform, revision, filename) else
-              None)
+              if self._DoesBuildExist(platform, revision, filename) else None)
 
     MAX_REVISIONS_PER_BUILD = 100
     for revision_guess in xrange(revision, revision + MAX_REVISIONS_PER_BUILD):
-      if self._DoesChromiumBuildExist(platform, revision_guess, filename):
+      if self._DoesBuildExist(platform, revision_guess, filename):
         return revision_guess
       else:
         time.sleep(.1)
     return None
 
-  def _DoesChromiumBuildExist(self, platform, build_number, filename):
+  def _DoesBuildExist(self, platform, build_number, filename):
     url = self._GetBuildUrl(platform, build_number, filename)
+    if self._use_gs:
+      return self._DoesGSFileExist(url)
+
     r = urllib2.Request(url)
     r.get_method = lambda: 'HEAD'
     try:
@@ -148,16 +171,9 @@ class BuildUpdater(object):
       if err.code == 404:
         return False
 
-  def _DoesChromeBuildExist(self, platform, build_number, filename):
-    release = build_number[:build_number.find('.')]
-    gs_file = (CHROME_URL_FMT %
-               (release,
-                build_number,
-                self._BUILD_PLATFORM_MAP[platform],
-                filename))
-    (exit_code, stdout) = BuildUpdater._GetCmdStatusAndOutput(
-        ['gsutil', 'ls', gs_file])
-
+  def _DoesGSFileExist(self, gs_file_name):
+    exit_code = BuildUpdater._GetCmdStatusAndOutput(
+        ['gsutil', 'ls', gs_file_name])[0]
     return not exit_code
 
   def _GetPlatformFiles(self, platform):
@@ -171,12 +187,12 @@ class BuildUpdater(object):
         output = os.path.join('dl', platform,
                               '%s_%s_%s' % (platform, self._revision, f))
         if os.path.exists(output):
-          logging.info('%s alread exists, skipping download' % output)
+          logging.info('%s alread exists, skipping download', output)
           continue
         build_revision = self._FindBuildRevision(platform, self._revision, f)
         if not build_revision:
-          logging.critical('Failed to find %s build for r%s\n' % (
-              platform, self._revision))
+          logging.critical('Failed to find %s build for r%s\n', platform,
+                           self._revision)
           sys.exit(1)
         dirname = os.path.dirname(output)
         if dirname and not os.path.exists(dirname):
@@ -185,8 +201,8 @@ class BuildUpdater(object):
         self._DownloadFile(url, output)
 
   def _DownloadFile(self, url, output):
-    logging.info('Downloading %s, saving to %s' % (url, output))
-    if self._use_build_number:
+    logging.info('Downloading %s, saving to %s', url, output)
+    if self._use_build_number and self._use_gs:
       BuildUpdater._GetCmdStatusAndOutput(['gsutil', 'cp', url, output])
     else:
       r = urllib2.urlopen(url)
@@ -206,7 +222,7 @@ class BuildUpdater(object):
   def _UnzipFile(self, dl_file, dest_dir):
     if not zipfile.is_zipfile(dl_file):
       return False
-    logging.info('Opening %s' % dl_file)
+    logging.info('Opening %s', dl_file)
     with zipfile.ZipFile(dl_file, 'r') as z:
       for content in z.namelist():
         dest = os.path.join(dest_dir, content[content.find('/')+1:])
@@ -217,7 +233,7 @@ class BuildUpdater(object):
         if not os.path.basename(dest):
           continue
         with z.open(content) as unzipped_content:
-          logging.info('Extracting %s to %s (%s)' % (content, dest, dl_file))
+          logging.info('Extracting %s to %s (%s)', content, dest, dl_file)
           with file(dest, 'wb') as dest_file:
             dest_file.write(unzipped_content.read())
           permissions = z.getinfo(content).external_attr >> 16
@@ -246,15 +262,18 @@ class BuildUpdater(object):
         for dl_file in dl_files:
           dl_file = os.path.join(root, dl_file)
           if not self._UnzipFile(dl_file, dest_dir):
-            logging.info('Copying %s to %s' % (dl_file, dest_dir))
+            logging.info('Copying %s to %s', dl_file, dest_dir)
             shutil.copy(dl_file, dest_dir)
 
   def _SvnAddAndRemove(self):
     svn_dir = os.path.join('reference_builds', 'reference_builds')
-    stat = BuildUpdater._GetCmdStatusAndOutput(['svn', 'stat'], svn_dir)[1]
+    # List all changes without ignoring any files.
+    stat = BuildUpdater._GetCmdStatusAndOutput(['svn', 'stat', '--no-ignore'],
+                                               svn_dir)[1]
     for line in stat.splitlines():
       action, filename = line.split(None, 1)
-      if action == '?':
+      # Add new and ignored files.
+      if action == '?' or action == 'I':
         BuildUpdater._GetCmdStatusAndOutput(
             ['svn', 'add', filename], svn_dir)
       elif action == '!':
@@ -278,18 +297,25 @@ def ParseOptions(argv):
   parser.set_usage(usage)
   parser.add_option('-b', dest='build_number',
                     help='Chrome official build number to pick up.')
-  parser.add_option('-r', dest='revision',
-                    help='Revision to pick up.')
+  parser.add_option('--gs', dest='use_gs', action='store_true', default=False,
+                    help='Use Google storage for official builds. Used with -b '
+                         'option. Default is false (i.e. use internal storage.')
   parser.add_option('-p', dest='platforms',
                     default='Win,Mac,Linux,Linux_x64',
                     help='Comma separated list of platforms to download '
                          '(as defined by the chromium builders).')
+  parser.add_option('-r', dest='revision',
+                    help='Revision to pick up.')
+
   (options, _) = parser.parse_args(argv)
   if not options.revision and not options.build_number:
     logging.critical('Must specify either -r or -b.\n')
     sys.exit(1)
   if options.revision and options.build_number:
     logging.critical('Must specify either -r or -b but not both.\n')
+    sys.exit(1)
+  if options.use_gs and not options.build_number:
+    logging.critical('Can only use --gs with -b option.\n')
     sys.exit(1)
 
   return options
