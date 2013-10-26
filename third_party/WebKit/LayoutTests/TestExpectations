@@ -171,25 +171,6 @@ crbug.com/306222 virtual/gpu/fast/hidpi/image-srcset-relative-svg-canvas-2x.html
 
 crbug.com/304953 fast/css/font-face-download-error.html [ Pass Timeout ]
 
-crbug.com/309740 svg/W3C-SVG-1.1/coords-units-02-b.svg [ NeedsRebaseline ]
-crbug.com/309740 svg/W3C-SVG-1.1/filters-blend-01-b.svg [ NeedsRebaseline ]
-crbug.com/309740 svg/W3C-SVG-1.1/filters-gauss-01-b.svg [ NeedsRebaseline ]
-crbug.com/309740 svg/W3C-SVG-1.1/pservers-grad-13-b.svg [ NeedsRebaseline ]
-crbug.com/309740 svg/W3C-SVG-1.1/script-handle-01-b.svg [ NeedsRebaseline ]
-crbug.com/309740 [ Mac Win7 Linux ] svg/batik/text/smallFonts.svg [ NeedsRebaseline ]
-crbug.com/309740 svg/custom/image-small-width-height.svg [ NeedsRebaseline ]
-crbug.com/309740 svg/custom/js-update-style.svg [ NeedsRebaseline ]
-crbug.com/309740 svg/custom/marker-orient-auto.html [ NeedsRebaseline ]
-crbug.com/309740 svg/custom/path-zero-strokewidth.svg [ NeedsRebaseline ]
-crbug.com/309740 svg/custom/use-forward-refs.svg [ NeedsRebaseline ]
-crbug.com/309740 svg/filters/subRegion-one-effect.svg [ NeedsRebaseline ]
-crbug.com/309740 svg/filters/subRegion-two-effects.svg [ NeedsRebaseline ]
-crbug.com/309740 svg/hixie/perf/001.xml [ NeedsRebaseline ]
-crbug.com/309740 svg/hixie/perf/002.xml [ NeedsRebaseline ]
-crbug.com/309740 svg/text/small-fonts-3.svg [ NeedsRebaseline ]
-crbug.com/309740 svg/W3C-SVG-1.1/masking-intro-01-f.svg [ NeedsRebaseline ]
-crbug.com/309740 svg/hixie/perf/007.xml [ NeedsRebaseline ]
-
 # This batch were marked as NeedsRebaseline for crbug.com/133097 but are flaky:
 crbug.com/310679 [ Mac ] compositing/fixed-body-background-positioned.html [ Failure Pass ]
 crbug.com/310679 [ Mac ] compositing/rubberbanding/transform-overhang-e.html [ ImageOnlyFailure Pass ]
