@@ -644,6 +644,11 @@ public class ContentViewGestureHandlerTest extends InstrumentationTestCase {
                 mockDelegate.mMostRecentGestureEvent.mType);
         assertEquals("Only tapDown, scrollBegin and scrollBy should have been sent",
                 3, mockDelegate.mGestureTypeList.size());
+        assertEquals("scrollBegin should be sent before scrollBy",
+                ContentViewGestureHandler.GESTURE_SCROLL_START,
+                (int) mockDelegate.mGestureTypeList.get(1));
+        assertEquals("scrollBegin should have the time of the ACTION_MOVE",
+                eventTime + 1000, (long) mockDelegate.mGestureTimeList.get(1));
 
         event = MotionEvent.obtain(
                 downTime, eventTime + 1000, endActionType, scrollToX, scrollToY, 0);
@@ -654,7 +659,7 @@ public class ContentViewGestureHandlerTest extends InstrumentationTestCase {
                         ContentViewGestureHandler.GESTURE_SCROLL_END));
         assertEquals("We should have stopped scrolling",
                 ContentViewGestureHandler.GESTURE_SCROLL_END,
-                mockDelegate.mMostRecentGestureEvent.mType);
+                (int) mockDelegate.mMostRecentGestureEvent.mType);
         assertEquals("Only tapDown, scrollBegin and scrollBy and scrollEnd should have been sent",
                 4, mockDelegate.mGestureTypeList.size());
     }
@@ -695,6 +700,11 @@ public class ContentViewGestureHandlerTest extends InstrumentationTestCase {
                 mockDelegate.mMostRecentGestureEvent.mType);
         assertEquals("Only tapDown, scrollBegin and scrollBy should have been sent",
                 3, mockDelegate.mGestureTypeList.size());
+        assertEquals("scrollBegin should be sent before scrollBy",
+                ContentViewGestureHandler.GESTURE_SCROLL_START,
+                (int) mockDelegate.mGestureTypeList.get(1));
+        assertEquals("scrollBegin should have the time of the ACTION_MOVE",
+                eventTime + 10, (long) mockDelegate.mGestureTimeList.get(1));
 
         event = MotionEvent.obtain(
                 downTime, eventTime + 15, MotionEvent.ACTION_UP,
@@ -709,6 +719,8 @@ public class ContentViewGestureHandlerTest extends InstrumentationTestCase {
                         ContentViewGestureHandler.GESTURE_SCROLL_END));
         assertEquals("The last up should have caused flingStart to be sent",
                 4, mockDelegate.mGestureTypeList.size());
+        assertEquals("flingStart should have the time of the ACTION_UP",
+                eventTime + 15, (long) mockDelegate.mGestureTimeList.get(3));
 
         event = motionEvent(MotionEvent.ACTION_DOWN, downTime + 50, downTime + 50);
         assertTrue(mGestureHandler.onTouchEvent(event));
@@ -1211,6 +1223,7 @@ public class ContentViewGestureHandlerTest extends InstrumentationTestCase {
         private boolean mMostRecentGestureEventWasLastForVSync;
         private int mTotalSentLastGestureForVSyncCount;
         private final ArrayList<Integer> mGestureTypeList = new ArrayList<Integer>();
+        private final ArrayList<Long> mGestureTimeList = new ArrayList<Long>();
 
         @Override
         public boolean sendTouchEvent(long timeMs, int action, TouchPoint[] pts) {
@@ -1224,6 +1237,7 @@ public class ContentViewGestureHandlerTest extends InstrumentationTestCase {
             mMostRecentGestureEvent = new GestureEvent(type, timeMs, x, y, extraParams);
             mMostRecentGestureEventWasLastForVSync = false;
             mGestureTypeList.add(mMostRecentGestureEvent.mType);
+            mGestureTimeList.add(timeMs);
             return true;
         }
 

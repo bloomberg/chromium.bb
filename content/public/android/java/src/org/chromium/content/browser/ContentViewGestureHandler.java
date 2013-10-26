@@ -402,6 +402,7 @@ class ContentViewGestureHandler implements LongPressDelegate {
                     @Override
                     public boolean onScroll(MotionEvent e1, MotionEvent e2,
                             float distanceX, float distanceY) {
+                        assert e1.getEventTime() <= e2.getEventTime();
                         if (!mSeenFirstScrollEvent) {
                             // Remove the touch slop region from the first scroll event to avoid a
                             // jump.
@@ -433,7 +434,8 @@ class ContentViewGestureHandler implements LongPressDelegate {
                         if (!mTouchScrolling) {
                             sendShowPressCancelIfNecessary(e1);
                             endFlingIfNecessary(e2.getEventTime());
-                            if (sendMotionEventAsGesture(GESTURE_SCROLL_START, e1, null)) {
+                            if (sendGesture(GESTURE_SCROLL_START, e2.getEventTime(),
+                                        (int) e1.getX(), (int) e1.getY(), null)) {
                                 mTouchScrolling = true;
                             }
                         }
@@ -466,6 +468,7 @@ class ContentViewGestureHandler implements LongPressDelegate {
                     @Override
                     public boolean onFling(MotionEvent e1, MotionEvent e2,
                             float velocityX, float velocityY) {
+                        assert e1.getEventTime() <= e2.getEventTime();
                         if (mSnapScrollController.isSnappingScrolls()) {
                             if (mSnapScrollController.isSnapHorizontal()) {
                                 velocityY = 0;
@@ -474,7 +477,7 @@ class ContentViewGestureHandler implements LongPressDelegate {
                             }
                         }
 
-                        fling(e1.getEventTime(),(int) e1.getX(0), (int) e1.getY(0),
+                        fling(e2.getEventTime(),(int) e1.getX(0), (int) e1.getY(0),
                                         (int) velocityX, (int) velocityY);
                         return true;
                     }
