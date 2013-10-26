@@ -255,9 +255,9 @@ inline Element* SharedStyleFinder::findElementForStyleSharing() const
 {
     StyleSharingList& styleSharingList = m_styleResolver.styleSharingList();
     for (StyleSharingList::iterator it = styleSharingList.begin(); it != styleSharingList.end(); ++it) {
-        Element* element = *it;
-        if (!canShareStyleWithElement(*element))
+        if (!canShareStyleWithElement(**it))
             continue;
+        Element* element = it->get();
         if (it != styleSharingList.begin()) {
             // Move the element to the front of the LRU
             styleSharingList.remove(it);
