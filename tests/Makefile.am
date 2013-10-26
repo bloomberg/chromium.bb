@@ -1,6 +1,6 @@
 SUBDIRS = tables doctests harness harnessSources
 
-AM_CPPFLAGS = -I$(top_srcdir)/liblouis -g
+AM_CPPFLAGS = -I$(top_srcdir)/liblouis
 
 LDADD = $(top_builddir)/liblouis/liblouis.la
 
@@ -58,11 +58,6 @@ letterDefTest_SOURCES = 	\
 	brl_checks.c		\
 	brl_checks.h		\
 	letterDefTest.c
-
-mesar_SOURCES =	\
-	brl_checks.c		\
-	brl_checks.h		\
-	mesar.c
 
 uplow_with_unicode_SOURCES = 	\
 	brl_checks.c		\
@@ -142,8 +137,7 @@ check_PROGRAMS =				\
 	getTable				\
 	typeform				\
 	pass0_typebuf				\
-	hash_collision \
-	mesar
+	hash_collision
 
 
 dist_check_SCRIPTS =		\
