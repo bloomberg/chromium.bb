@@ -5,8 +5,12 @@
   'variables': {
     'chromium_code': 1,
   },
-  'includes': [
-    'android_webview_tests.gypi',
+  'conditions': [
+    ['android_webview_build==0', {
+      'includes': [
+        'android_webview_tests.gypi',
+      ],
+    }],
   ],
   'targets': [
     {
