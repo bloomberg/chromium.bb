@@ -111,7 +111,7 @@ class CC_EXPORT PrioritizedResource {
             ResourceFormat format);
     ~Backing();
     void UpdatePriority();
-    void UpdateInDrawingImplTree();
+    void UpdateState(ResourceProvider* resource_provider);
 
     PrioritizedResource* owner() { return owner_; }
     bool CanBeRecycled() const;
@@ -122,6 +122,7 @@ class CC_EXPORT PrioritizedResource {
       return was_above_priority_cutoff_at_last_priority_update_;
     }
     bool in_drawing_impl_tree() const { return in_drawing_impl_tree_; }
+    bool in_parent_compositor() const { return in_parent_compositor_; }
 
     void DeleteResource(ResourceProvider* resource_provider);
     bool ResourceHasBeenDeleted() const;
@@ -137,6 +138,8 @@ class CC_EXPORT PrioritizedResource {
 
     // Set if this is currently-drawing impl tree.
     bool in_drawing_impl_tree_;
+    // Set if this is in the parent compositor.
+    bool in_parent_compositor_;
 
     bool resource_has_been_deleted_;
 

@@ -125,7 +125,7 @@ class CC_EXPORT PrioritizedResourceManager {
   void PushTexturePrioritiesToBackings();
 
   // Mark all textures' backings as being in the drawing impl tree.
-  void UpdateBackingsInDrawingImplTree();
+  void UpdateBackingsState(ResourceProvider* resource_provider);
 
   const Proxy* ProxyForDebug() const;
 
@@ -155,6 +155,10 @@ class CC_EXPORT PrioritizedResourceManager {
     // Make textures that can be recycled appear first
     if (a->CanBeRecycled() != b->CanBeRecycled())
       return (a->CanBeRecycled() > b->CanBeRecycled());
+    // Put textures in the parent compositor last since they can't be
+    // freed when they are evicted anyhow.
+    if (a->in_parent_compositor() != b->in_parent_compositor())
+      return (a->in_parent_compositor() < b->in_parent_compositor());
     // Then sort by being above or below the priority cutoff.
     if (a->was_above_priority_cutoff_at_last_priority_update() !=
         b->was_above_priority_cutoff_at_last_priority_update())

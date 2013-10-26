@@ -160,7 +160,8 @@ void PrioritizedResourceManager::PushTexturePrioritiesToBackings() {
       memory_visible_and_nearby_bytes_;
 }
 
-void PrioritizedResourceManager::UpdateBackingsInDrawingImplTree() {
+void PrioritizedResourceManager::UpdateBackingsState(
+    ResourceProvider* resource_provider) {
   TRACE_EVENT0("cc",
                "PrioritizedResourceManager::UpdateBackingsInDrawingImplTree");
   DCHECK(proxy_->IsImplThread() && proxy_->IsMainThreadBlocked());
@@ -169,7 +170,7 @@ void PrioritizedResourceManager::UpdateBackingsInDrawingImplTree() {
   for (BackingList::iterator it = backings_.begin(); it != backings_.end();
        ++it) {
     PrioritizedResource::Backing* backing = (*it);
-    backing->UpdateInDrawingImplTree();
+    backing->UpdateState(resource_provider);
   }
   SortBackings();
   AssertInvariants();
@@ -320,8 +321,7 @@ void PrioritizedResourceManager::ReduceWastedMemory(
        ++it) {
     if ((*it)->owner())
       break;
-    if (resource_provider->InUseByConsumer((*it)->id()) &&
-        !resource_provider->IsLost((*it)->id()))
+    if ((*it)->in_parent_compositor())
       continue;
     wasted_memory += (*it)->bytes();
   }

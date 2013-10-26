@@ -313,7 +313,8 @@ void LayerTreeHost::FinishCommitOnImplThread(LayerTreeHostImpl* host_impl) {
     host_impl->set_max_memory_needed_bytes(
         contents_texture_manager_->MaxMemoryNeededBytes());
 
-    contents_texture_manager_->UpdateBackingsInDrawingImplTree();
+    contents_texture_manager_->UpdateBackingsState(
+        host_impl->resource_provider());
   }
 
   // In impl-side painting, synchronize to the pending tree so that it has
