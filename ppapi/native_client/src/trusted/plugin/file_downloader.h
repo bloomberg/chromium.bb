@@ -149,6 +149,11 @@ class FileDownloader {
   int status_code() const { return status_code_; }
   nacl::string GetResponseHeaders() const;
 
+  void set_request_headers(const nacl::string& extra_request_headers) {
+    extra_request_headers_ = extra_request_headers;
+  }
+
+
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(FileDownloader);
   // This class loads and opens the file in three steps for DOWNLOAD_TO_FILE:
@@ -175,6 +180,7 @@ class FileDownloader {
   Plugin* instance_;
   nacl::string url_to_open_;
   nacl::string url_;
+  nacl::string extra_request_headers_;
   pp::URLResponseInfo url_response_;
   pp::CompletionCallback file_open_notify_callback_;
   pp::CompletionCallback stream_finish_callback_;

@@ -112,6 +112,9 @@ bool FileDownloader::Open(
   if (!instance_->DocumentCanRequest(url))
     url_request.SetAllowCrossOriginRequests(true);
 
+  if (!extra_request_headers_.empty())
+    url_request.SetHeaders(extra_request_headers_);
+
   do {
     // Reset the url loader and file reader.
     // Note that we have the only reference to the underlying objects, so

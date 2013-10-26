@@ -233,13 +233,11 @@ PnaclCoordinator* PnaclCoordinator::BitcodeToNative(
                  reinterpret_cast<const void*>(coordinator->manifest_.get()),
                  coordinator->off_the_record_));
 
-  // First check that PNaCl is installed.
-  pp::CompletionCallback pnacl_installed_cb =
-      coordinator->callback_factory_.NewCallback(
-          &PnaclCoordinator::DidCheckPnaclInstalled);
-  plugin->nacl_interface()->EnsurePnaclInstalled(
-      plugin->pp_instance(),
-      pnacl_installed_cb.pp_completion_callback());
+  // First start a network request for the pexe, to tickle the component
+  // updater's On-Demand resource throttler, and to get Last-Modified/ETag
+  // cache information. We can cancel the request later if there's
+  // a bitcode->nexe cache hit.
+  coordinator->OpenBitcodeStream();
   return coordinator;
 }
 
@@ -470,13 +468,45 @@ void PnaclCoordinator::ResourcesDidLoad(int32_t pp_error) {
     return;
   }
 
-  OpenBitcodeStream();
+  // Okay, now that we've started the HTTP request for the pexe
+  // and we've ensured that the PNaCl compiler + metadata is installed,
+  // get the cache key from the response headers and from the
+  // compiler's version metadata.
+  nacl::string headers = streaming_downloader_->GetResponseHeaders();
+  NaClHttpResponseHeaders parser;
+  parser.Parse(headers);
+
+  temp_nexe_file_.reset(new TempFile(plugin_));
+  pp::CompletionCallback cb =
+      callback_factory_.NewCallback(&PnaclCoordinator::NexeFdDidOpen);
+  int32_t nexe_fd_err =
+      plugin_->nacl_interface()->GetNexeFd(
+          plugin_->pp_instance(),
+          streaming_downloader_->url().c_str(),
+          // TODO(dschuff): Get this value from the pnacl json file after it
+          // rolls in from NaCl.
+          1,
+          pnacl_options_.opt_level(),
+          parser.GetHeader("last-modified").c_str(),
+          parser.GetHeader("etag").c_str(),
+          PP_FromBool(parser.CacheControlNoStore()),
+          &is_cache_hit_,
+          temp_nexe_file_->existing_handle(),
+          cb.pp_completion_callback());
+  if (nexe_fd_err < PP_OK_COMPLETIONPENDING) {
+    ReportPpapiError(ERROR_PNACL_CREATE_TEMP, nexe_fd_err,
+                     nacl::string("Call to GetNexeFd failed"));
+  }
 }
 
 void PnaclCoordinator::OpenBitcodeStream() {
   // Now open the pexe stream.
   streaming_downloader_.reset(new FileDownloader());
   streaming_downloader_->Initialize(plugin_);
+  // Mark the request as requesting a PNaCl bitcode file,
+  // so that component updater can detect this user action.
+  streaming_downloader_->set_request_headers(
+      "Accept: application/x-pnacl, */*");
 
   // Even though we haven't started downloading, create the translation
   // thread object immediately. This ensures that any pieces of the file
@@ -509,32 +539,14 @@ void PnaclCoordinator::BitcodeStreamDidOpen(int32_t pp_error) {
     return;
   }
 
-  // Get the cache key and try to open an existing entry.
-  nacl::string headers = streaming_downloader_->GetResponseHeaders();
-  NaClHttpResponseHeaders parser;
-  parser.Parse(headers);
-
-  temp_nexe_file_.reset(new TempFile(plugin_));
-  pp::CompletionCallback cb =
-      callback_factory_.NewCallback(&PnaclCoordinator::NexeFdDidOpen);
-  int32_t nexe_fd_err =
-      plugin_->nacl_interface()->GetNexeFd(
-          plugin_->pp_instance(),
-          streaming_downloader_->url().c_str(),
-          // TODO(dschuff): Get this value from the pnacl json file after it
-          // rolls in from NaCl.
-          1,
-          pnacl_options_.opt_level(),
-          parser.GetHeader("last-modified").c_str(),
-          parser.GetHeader("etag").c_str(),
-          PP_FromBool(parser.CacheControlNoStore()),
-          &is_cache_hit_,
-          temp_nexe_file_->existing_handle(),
-          cb.pp_completion_callback());
-  if (nexe_fd_err < PP_OK_COMPLETIONPENDING) {
-    ReportPpapiError(ERROR_PNACL_CREATE_TEMP, nexe_fd_err,
-                     nacl::string("Call to GetNexeFd failed"));
-  }
+  // Now that we've started the url request for the response headers and
+  // for tickling the component updater's On-Demand API, check that the
+  // compiler is present, or block until it is present or an error is hit.
+  pp::CompletionCallback pnacl_installed_cb =
+      callback_factory_.NewCallback(&PnaclCoordinator::DidCheckPnaclInstalled);
+  plugin_->nacl_interface()->EnsurePnaclInstalled(
+      plugin_->pp_instance(),
+      pnacl_installed_cb.pp_completion_callback());
 }
 
 void PnaclCoordinator::NexeFdDidOpen(int32_t pp_error) {

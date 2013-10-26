@@ -54,10 +54,10 @@ class TempFile;
 // (2) ld links the object code in obj_file_ and produces a nexe in nexe_file_.
 //
 // The coordinator proceeds through several states.  They are
-// LOAD_TRANSLATOR_BINARIES
-//     Complete when ResourcesDidLoad is invoked.
 // OPEN_BITCODE_STREAM
 //       Complete when BitcodeStreamDidOpen is invoked
+// LOAD_TRANSLATOR_BINARIES
+//     Complete when ResourcesDidLoad is invoked.
 // GET_NEXE_FD
 //       Get an FD which contains the cached nexe, or is writeable for
 //       translation output. Complete when NexeFdDidOpen is called.
@@ -139,6 +139,12 @@ class PnaclCoordinator: public CallbackSource<FileStreamData> {
                    const PnaclOptions& pnacl_options,
                    const pp::CompletionCallback& translate_notify_callback);
 
+  // Invoke to issue a GET request for bitcode.
+  void OpenBitcodeStream();
+  // Invoked when we've started an URL fetch for the pexe to check for
+  // caching metadata.
+  void BitcodeStreamDidOpen(int32_t pp_error);
+
   // Callback for when we know PNaCl is installed.
   void DidCheckPnaclInstalled(int32_t pp_error);
 
@@ -147,14 +153,6 @@ class PnaclCoordinator: public CallbackSource<FileStreamData> {
 
   // Callback for when llc and ld have been downloaded.
   void ResourcesDidLoad(int32_t pp_error);
-
-  // Callbacks for temporary file related stages.
-  // They are invoked from ResourcesDidLoad and proceed in declaration order.
-  // Invoke to issue a GET request for bitcode.
-  void OpenBitcodeStream();
-  // Invoked when we've started an URL fetch for the pexe to check for
-  // caching metadata.
-  void BitcodeStreamDidOpen(int32_t pp_error);
   // Invoked when we've gotten a temp FD for the nexe, either with the nexe
   // data, or a writeable fd to save to.
   void NexeFdDidOpen(int32_t pp_error);
