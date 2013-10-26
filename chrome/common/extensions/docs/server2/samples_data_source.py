@@ -191,21 +191,9 @@ class SamplesDataSource(object):
     only the samples that use the API |api_name|. |key| is either 'apps' or
     'extensions'.
     '''
-    api_search = api_name.replace('.', '_') + '_'
-    samples_list = []
-    try:
-      for sample in self.get(key):
-        api_calls_unix = [model.UnixName(call['name'])
-                          for call in sample['api_calls']]
-        for call in api_calls_unix:
-          if call.startswith(api_search):
-            samples_list.append(sample)
-            break
-    except NotImplementedError:
-      # If we're testing, the GithubFileSystem can't fetch samples.
-      # Bug: http://crbug.com/141910
-      return []
-    return samples_list
+    return [sample for sample in self.get(key) if any(
+        call['name'].startswith(api_name + '.')
+        for call in sample['api_calls'])]
 
   def _CreateSamplesDict(self, key):
     if key == 'apps':
