@@ -1313,6 +1313,24 @@ internal_paladin.add_config('sonic-paladin',
 )
 
 # amd64 full unit tests
+internal_paladin.add_config('monroe-paladin',
+  boards=['monroe'],
+  hw_tests=[],
+  important=False,
+  quick_unit=False,
+  vm_tests=None,
+  paladin_builder_name='monroe paladin',
+)
+
+internal_paladin.add_config('panther-paladin',
+  boards=['panther'],
+  hw_tests=[],
+  important=False,
+  quick_unit=False,
+  vm_tests=None,
+  paladin_builder_name='panther paladin',
+)
+
 internal_paladin.add_config('stout-paladin',
   boards=['stout'],
   quick_unit=False,
@@ -1555,6 +1573,18 @@ _release.add_config('lumpy-release',
   critical_for_chrome=True,
 )
 
+_release.add_config('monroe-release',
+  boards=['monroe'],
+  hw_tests=[],
+  vm_tests=None,
+)
+
+_release.add_config('panther-release',
+  boards=['panther'],
+  hw_tests=[],
+  vm_tests=None,
+)
+
 _release.add_config('parrot-release',
   boards=['parrot'],
 )
@@ -1675,6 +1705,8 @@ _x86_firmware_boards = (
   'leon',
   'link',
   'lumpy',
+  'monroe',
+  'panther',
   'parrot',
   'peppy',
   'rambi',
