@@ -97,6 +97,7 @@
 #include "content/public/browser/url_data_source.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/error_utils.h"
+#include "extensions/common/extensions_client.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/permissions/permission_message_provider.h"
@@ -2842,7 +2843,7 @@ void ExtensionService::Observe(int type,
       // Scripting whitelist. This is modified by tests and must be communicated
       // to renderers.
       process->Send(new ExtensionMsg_SetScriptingWhitelist(
-          *Extension::GetScriptingWhitelist()));
+          extensions::ExtensionsClient::Get()->GetScriptingWhitelist()));
 
       // Loaded extensions.
       std::vector<ExtensionMsg_Loaded_Params> loaded_extensions;

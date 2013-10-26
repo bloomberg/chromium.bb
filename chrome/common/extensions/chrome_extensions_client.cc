@@ -5,6 +5,7 @@
 #include "chrome/common/extensions/chrome_extensions_client.h"
 
 #include "chrome/common/extensions/chrome_manifest_handlers.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/features/base_feature_provider.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/common/url_constants.h"
@@ -28,6 +29,20 @@ ChromeExtensionsClient::~ChromeExtensionsClient() {
 
 void ChromeExtensionsClient::Initialize() {
   RegisterChromeManifestHandlers();
+
+  // Set up the scripting whitelist.
+  // Whitelist ChromeVox, an accessibility extension from Google that needs
+  // the ability to script webui pages. This is temporary and is not
+  // meant to be a general solution.
+  // TODO(dmazzoni): remove this once we have an extension API that
+  // allows any extension to request read-only access to webui pages.
+  scripting_whitelist_.push_back(extension_misc::kChromeVoxExtensionId);
+
+  // Whitelist "Discover DevTools Companion" extension from Google that
+  // needs the ability to script DevTools pages. Companion will assist
+  // online courses and will be needed while the online educational programs
+  // are in place.
+  scripting_whitelist_.push_back("angkfkebojeancgemegoedelbnjgcgme");
 }
 
 const PermissionsProvider&
@@ -65,6 +80,16 @@ void ChromeExtensionsClient::FilterHostPermissions(
       new_hosts->AddPattern(*i);
     }
   }
+}
+
+void ChromeExtensionsClient::SetScriptingWhitelist(
+    const ExtensionsClient::ScriptingWhitelist& whitelist) {
+  scripting_whitelist_ = whitelist;
+}
+
+const ExtensionsClient::ScriptingWhitelist&
+ChromeExtensionsClient::GetScriptingWhitelist() const {
+  return scripting_whitelist_;
 }
 
 // static

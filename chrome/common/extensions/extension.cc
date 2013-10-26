@@ -62,41 +62,6 @@ const char kKeyInfoEndMarker[] = "KEY-----";
 const char kPublic[] = "PUBLIC";
 const char kPrivate[] = "PRIVATE";
 
-// A singleton object containing global data needed by the extension objects.
-class ExtensionConfig {
- public:
-  static ExtensionConfig* GetInstance() {
-    return Singleton<ExtensionConfig>::get();
-  }
-
-  Extension::ScriptingWhitelist* whitelist() { return &scripting_whitelist_; }
-
- private:
-  friend struct DefaultSingletonTraits<ExtensionConfig>;
-
-  ExtensionConfig() {
-    // Whitelist ChromeVox, an accessibility extension from Google that needs
-    // the ability to script webui pages. This is temporary and is not
-    // meant to be a general solution.
-    // TODO(dmazzoni): remove this once we have an extension API that
-    // allows any extension to request read-only access to webui pages.
-    scripting_whitelist_.push_back(extension_misc::kChromeVoxExtensionId);
-
-    // Whitelist "Discover DevTools Companion" extension from Google that
-    // needs the ability to script DevTools pages. Companion will assist
-    // online courses and will be needed while the online educational programs
-    // are in place.
-    scripting_whitelist_.push_back("angkfkebojeancgemegoedelbnjgcgme");
-  }
-  ~ExtensionConfig() { }
-
-  // A whitelist of extensions that can script anywhere. Do not add to this
-  // list (except in tests) without consulting the Extensions team first.
-  // Note: Component extensions have this right implicitly and do not need to be
-  // added to this list.
-  Extension::ScriptingWhitelist scripting_whitelist_;
-};
-
 bool ContainsReservedCharacters(const base::FilePath& path) {
   // We should disallow backslash '\\' as file path separator even on Windows,
   // because the backslash is not regarded as file path separator on Linux/Mac.
@@ -109,11 +74,6 @@ bool ContainsReservedCharacters(const base::FilePath& path) {
 }
 
 }  // namespace
-
-#if defined(OS_WIN)
-const char Extension::kExtensionRegistryPath[] =
-    "Software\\Google\\Chrome\\Extensions";
-#endif
 
 const char Extension::kMimeType[] = "application/x-chrome-extension";
 
@@ -327,23 +287,6 @@ bool Extension::FormatPEMForFileOutput(const std::string& input,
 GURL Extension::GetBaseURLFromExtensionId(const std::string& extension_id) {
   return GURL(std::string(extensions::kExtensionScheme) +
               content::kStandardSchemeSeparator + extension_id + "/");
-}
-
-// static
-void Extension::SetScriptingWhitelist(
-    const Extension::ScriptingWhitelist& whitelist) {
-  ScriptingWhitelist* current_whitelist =
-      ExtensionConfig::GetInstance()->whitelist();
-  current_whitelist->clear();
-  for (ScriptingWhitelist::const_iterator it = whitelist.begin();
-       it != whitelist.end(); ++it) {
-    current_whitelist->push_back(*it);
-  }
-}
-
-// static
-const Extension::ScriptingWhitelist* Extension::GetScriptingWhitelist() {
-  return ExtensionConfig::GetInstance()->whitelist();
 }
 
 bool Extension::HasAPIPermission(APIPermission::ID permission) const {

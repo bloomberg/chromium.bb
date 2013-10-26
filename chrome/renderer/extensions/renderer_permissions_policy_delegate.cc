@@ -8,6 +8,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/renderer/extensions/dispatcher.h"
+#include "extensions/common/extensions_client.h"
 #include "extensions/common/manifest_constants.h"
 
 namespace extensions {
@@ -30,10 +31,10 @@ bool RendererPermissionsPolicyDelegate::CanExecuteScriptOnPage(
     const UserScript* script,
     int process_id,
     std::string* error) {
-  const Extension::ScriptingWhitelist* whitelist =
-      Extension::GetScriptingWhitelist();
-  if (std::find(whitelist->begin(), whitelist->end(), extension->id()) !=
-      whitelist->end()) {
+  const ExtensionsClient::ScriptingWhitelist& whitelist =
+      ExtensionsClient::Get()->GetScriptingWhitelist();
+  if (std::find(whitelist.begin(), whitelist.end(), extension->id()) !=
+      whitelist.end()) {
     return true;
   }
 

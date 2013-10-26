@@ -25,6 +25,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/fake_speech_recognition_manager.h"
+#include "extensions/common/extensions_client.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
@@ -1747,10 +1748,10 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, DownloadPermission) {
 // extension which has content script whitelisted/forced.
 IN_PROC_BROWSER_TEST_F(WebViewTest, WhitelistedContentScript) {
   // Whitelist the extension for running content script we are going to load.
-  extensions::Extension::ScriptingWhitelist whitelist;
+  extensions::ExtensionsClient::ScriptingWhitelist whitelist;
   const std::string extension_id = "imeongpbjoodlnmlakaldhlcmijmhpbb";
   whitelist.push_back(extension_id);
-  extensions::Extension::SetScriptingWhitelist(whitelist);
+  extensions::ExtensionsClient::Get()->SetScriptingWhitelist(whitelist);
 
   // Load the extension.
   const extensions::Extension* content_script_whitelisted_extension =

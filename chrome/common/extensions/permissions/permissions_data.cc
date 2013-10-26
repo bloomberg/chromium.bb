@@ -18,6 +18,7 @@
 #include "content/public/common/url_constants.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/error_utils.h"
+#include "extensions/common/extensions_client.h"
 #include "extensions/common/features/feature.h"
 #include "extensions/common/features/feature_provider.h"
 #include "extensions/common/manifest.h"
@@ -538,16 +539,11 @@ bool PermissionsData::CanExecuteScriptEverywhere(const Extension* extension) {
   if (extension->location() == Manifest::COMPONENT)
     return true;
 
-  const Extension::ScriptingWhitelist* whitelist =
-      Extension::GetScriptingWhitelist();
+  const ExtensionsClient::ScriptingWhitelist& whitelist =
+      ExtensionsClient::Get()->GetScriptingWhitelist();
 
-  for (Extension::ScriptingWhitelist::const_iterator iter = whitelist->begin();
-       iter != whitelist->end(); ++iter) {
-    if (extension->id() == *iter)
-      return true;
-  }
-
-  return false;
+  return std::find(whitelist.begin(), whitelist.end(), extension->id()) !=
+      whitelist.end();
 }
 
 // static

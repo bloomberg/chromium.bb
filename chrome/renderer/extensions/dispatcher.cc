@@ -655,8 +655,8 @@ void Dispatcher::OnUnloaded(const std::string& id) {
 }
 
 void Dispatcher::OnSetScriptingWhitelist(
-    const Extension::ScriptingWhitelist& extension_ids) {
-  Extension::SetScriptingWhitelist(extension_ids);
+    const ExtensionsClient::ScriptingWhitelist& extension_ids) {
+  ExtensionsClient::Get()->SetScriptingWhitelist(extension_ids);
 }
 
 bool Dispatcher::IsExtensionActive(

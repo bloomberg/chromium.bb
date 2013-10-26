@@ -32,6 +32,9 @@ class ChromeExtensionsClient : public ExtensionsClient {
       const URLPatternSet& hosts,
       URLPatternSet* new_hosts,
       std::set<PermissionMessage>* messages) const OVERRIDE;
+  virtual void SetScriptingWhitelist(const ScriptingWhitelist& whitelist)
+      OVERRIDE;
+  virtual const ScriptingWhitelist& GetScriptingWhitelist() const OVERRIDE;
 
   // Get the LazyInstance for ChromeExtensionsClient.
   static ChromeExtensionsClient* GetInstance();
@@ -39,6 +42,12 @@ class ChromeExtensionsClient : public ExtensionsClient {
  private:
   const ChromeAPIPermissions chrome_api_permissions_;
   const ChromePermissionMessageProvider permission_message_provider_;
+
+  // A whitelist of extensions that can script anywhere. Do not add to this
+  // list (except in tests) without consulting the Extensions team first.
+  // Note: Component extensions have this right implicitly and do not need to be
+  // added to this list.
+  ScriptingWhitelist scripting_whitelist_;
 
   friend struct base::DefaultLazyInstanceTraits<ChromeExtensionsClient>;
 

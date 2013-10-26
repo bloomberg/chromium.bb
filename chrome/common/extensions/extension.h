@@ -55,7 +55,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
  public:
   struct ManifestData;
 
-  typedef std::vector<std::string> ScriptingWhitelist;
   typedef std::map<const std::string, linked_ptr<ManifestData> >
       ManifestDataMap;
 
@@ -176,10 +175,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // Valid schemes for host permission URLPatterns.
   static const int kValidHostPermissionSchemes;
 
-#if defined(OS_WIN)
-  static const char kExtensionRegistryPath[];
-#endif
-
   // The mimetype used for extensions.
   static const char kMimeType[];
 
@@ -228,10 +223,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
 
   // Returns the base extension url for a given |extension_id|.
   static GURL GetBaseURLFromExtensionId(const std::string& extension_id);
-
-  // Adds an extension to the scripting whitelist. Used for testing only.
-  static void SetScriptingWhitelist(const ScriptingWhitelist& whitelist);
-  static const ScriptingWhitelist* GetScriptingWhitelist();
 
   // DEPRECATED: These methods have been moved to PermissionsData.
   // TODO(rdevlin.cronin): remove these once all calls have been updated.

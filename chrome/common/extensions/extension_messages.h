@@ -21,6 +21,7 @@
 #include "content/public/common/common_param_traits.h"
 #include "content/public/common/socket_permission_request.h"
 #include "extensions/common/draggable_region.h"
+#include "extensions/common/extensions_client.h"
 #include "extensions/common/url_pattern.h"
 #include "extensions/common/url_pattern_set.h"
 #include "extensions/common/view_type.h"
@@ -347,7 +348,7 @@ IPC_MESSAGE_CONTROL1(ExtensionMsg_Unloaded,
 // only used for testing.
 IPC_MESSAGE_CONTROL1(ExtensionMsg_SetScriptingWhitelist,
                      // extension ids
-                     extensions::Extension::ScriptingWhitelist)
+                     extensions::ExtensionsClient::ScriptingWhitelist)
 
 // Notification that renderer should run some JavaScript code.
 IPC_MESSAGE_ROUTED1(ExtensionMsg_ExecuteCode,
