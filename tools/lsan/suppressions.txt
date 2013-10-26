@@ -72,5 +72,7 @@ leak:gtk_util::*AppModal
 # http://crbug.com/62154 is fixed.
 leak:chrome::ShowBadFlagsPrompt
 leak:TranslateInfoBarDelegate::Create
+leak:TranslateLanguageList::TranslateLanguageList
+leak:SimpleAlertInfoBarDelegate::Create
 
 # PLEASE DO NOT ADD NEW SUPPRESSIONS HERE. See the comment above.
