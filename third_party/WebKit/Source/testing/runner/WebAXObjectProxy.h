@@ -101,29 +101,17 @@ private:
 
     // Bound methods.
     void allAttributesCallback(const CppArgumentList&, CppVariant*);
-    void attributesOfLinkedUIElementsCallback(const CppArgumentList&, CppVariant*);
-    void attributesOfDocumentLinksCallback(const CppArgumentList&, CppVariant*);
     void attributesOfChildrenCallback(const CppArgumentList&, CppVariant*);
-    void parametrizedAttributeNamesCallback(const CppArgumentList&, CppVariant*);
     void lineForIndexCallback(const CppArgumentList&, CppVariant*);
     void boundsForRangeCallback(const CppArgumentList&, CppVariant*);
-    void stringForRangeCallback(const CppArgumentList&, CppVariant*);
     void childAtIndexCallback(const CppArgumentList&, CppVariant*);
     void elementAtPointCallback(const CppArgumentList&, CppVariant*);
-    void attributesOfColumnHeadersCallback(const CppArgumentList&, CppVariant*);
-    void attributesOfRowHeadersCallback(const CppArgumentList&, CppVariant*);
-    void attributesOfColumnsCallback(const CppArgumentList&, CppVariant*);
-    void attributesOfRowsCallback(const CppArgumentList&, CppVariant*);
-    void attributesOfVisibleCellsCallback(const CppArgumentList&, CppVariant*);
-    void attributesOfHeaderCallback(const CppArgumentList&, CppVariant*);
     void tableHeaderCallback(const CppArgumentList&, CppVariant*);
-    void indexInTableCallback(const CppArgumentList&, CppVariant*);
     void rowIndexRangeCallback(const CppArgumentList&, CppVariant*);
     void columnIndexRangeCallback(const CppArgumentList&, CppVariant*);
     void cellForColumnAndRowCallback(const CppArgumentList&, CppVariant*);
     void titleUIElementCallback(const CppArgumentList&, CppVariant*);
     void setSelectedTextRangeCallback(const CppArgumentList&, CppVariant*);
-    void attributeValueCallback(const CppArgumentList&, CppVariant*);
     void isAttributeSettableCallback(const CppArgumentList&, CppVariant*);
     void isPressActionSupportedCallback(const CppArgumentList&, CppVariant*);
     void isIncrementActionSupportedCallback(const CppArgumentList&, CppVariant*);

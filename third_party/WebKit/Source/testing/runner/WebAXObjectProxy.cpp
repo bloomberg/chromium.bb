@@ -525,28 +525,17 @@ WebAXObjectProxy::WebAXObjectProxy(const WebAXObject& object, Factory* factory)
     //
 
     bindMethod("allAttributes", &WebAXObjectProxy::allAttributesCallback);
-    bindMethod("attributesOfLinkedUIElements", &WebAXObjectProxy::attributesOfLinkedUIElementsCallback);
-    bindMethod("attributesOfDocumentLinks", &WebAXObjectProxy::attributesOfDocumentLinksCallback);
     bindMethod("attributesOfChildren", &WebAXObjectProxy::attributesOfChildrenCallback);
     bindMethod("lineForIndex", &WebAXObjectProxy::lineForIndexCallback);
     bindMethod("boundsForRange", &WebAXObjectProxy::boundsForRangeCallback);
-    bindMethod("stringForRange", &WebAXObjectProxy::stringForRangeCallback);
     bindMethod("childAtIndex", &WebAXObjectProxy::childAtIndexCallback);
     bindMethod("elementAtPoint", &WebAXObjectProxy::elementAtPointCallback);
-    bindMethod("attributesOfColumnHeaders", &WebAXObjectProxy::attributesOfColumnHeadersCallback);
-    bindMethod("attributesOfRowHeaders", &WebAXObjectProxy::attributesOfRowHeadersCallback);
-    bindMethod("attributesOfColumns", &WebAXObjectProxy::attributesOfColumnsCallback);
-    bindMethod("attributesOfRows", &WebAXObjectProxy::attributesOfRowsCallback);
-    bindMethod("attributesOfVisibleCells", &WebAXObjectProxy::attributesOfVisibleCellsCallback);
-    bindMethod("attributesOfHeader", &WebAXObjectProxy::attributesOfHeaderCallback);
     bindMethod("tableHeader", &WebAXObjectProxy::tableHeaderCallback);
-    bindMethod("indexInTable", &WebAXObjectProxy::indexInTableCallback);
     bindMethod("rowIndexRange", &WebAXObjectProxy::rowIndexRangeCallback);
     bindMethod("columnIndexRange", &WebAXObjectProxy::columnIndexRangeCallback);
     bindMethod("cellForColumnAndRow", &WebAXObjectProxy::cellForColumnAndRowCallback);
     bindMethod("titleUIElement", &WebAXObjectProxy::titleUIElementCallback);
     bindMethod("setSelectedTextRange", &WebAXObjectProxy::setSelectedTextRangeCallback);
-    bindMethod("attributeValue", &WebAXObjectProxy::attributeValueCallback);
     bindMethod("isAttributeSettable", &WebAXObjectProxy::isAttributeSettableCallback);
     bindMethod("isPressActionSupported", &WebAXObjectProxy::isPressActionSupportedCallback);
     bindMethod("isIncrementActionSupported", &WebAXObjectProxy::isIncrementActionSupportedCallback);
@@ -812,16 +801,6 @@ void WebAXObjectProxy::allAttributesCallback(const CppArgumentList&, CppVariant*
     result->set(getAttributes(accessibilityObject()));
 }
 
-void WebAXObjectProxy::attributesOfLinkedUIElementsCallback(const CppArgumentList&, CppVariant* result)
-{
-    result->setNull();
-}
-
-void WebAXObjectProxy::attributesOfDocumentLinksCallback(const CppArgumentList&, CppVariant* result)
-{
-    result->setNull();
-}
-
 void WebAXObjectProxy::attributesOfChildrenCallback(const CppArgumentList& arguments, CppVariant* result)
 {
     AttributesCollector collector;
@@ -829,11 +808,6 @@ void WebAXObjectProxy::attributesOfChildrenCallback(const CppArgumentList& argum
     for (unsigned i = 0; i < size; ++i)
         collector.collectAttributes(accessibilityObject().childAt(i));
     result->set(collector.attributes());
-}
-
-void WebAXObjectProxy::parametrizedAttributeNamesCallback(const CppArgumentList&, CppVariant* result)
-{
-    result->setNull();
 }
 
 void WebAXObjectProxy::lineForIndexCallback(const CppArgumentList& arguments, CppVariant* result)
@@ -886,11 +860,6 @@ void WebAXObjectProxy::boundsForRangeCallback(const CppArgumentList& arguments, 
     result->set(string(buffer));
 }
 
-void WebAXObjectProxy::stringForRangeCallback(const CppArgumentList&, CppVariant* result)
-{
-    result->setNull();
-}
-
 void WebAXObjectProxy::childAtIndexCallback(const CppArgumentList& arguments, CppVariant* result)
 {
     if (!arguments.size() || !arguments[0].isNumber()) {
@@ -924,36 +893,6 @@ void WebAXObjectProxy::elementAtPointCallback(const CppArgumentList& arguments, 
     result->set(*(m_factory->getOrCreate(obj)->getAsCppVariant()));
 }
 
-void WebAXObjectProxy::attributesOfColumnHeadersCallback(const CppArgumentList&, CppVariant* result)
-{
-    result->setNull();
-}
-
-void WebAXObjectProxy::attributesOfRowHeadersCallback(const CppArgumentList&, CppVariant* result)
-{
-    result->setNull();
-}
-
-void WebAXObjectProxy::attributesOfColumnsCallback(const CppArgumentList&, CppVariant* result)
-{
-    result->setNull();
-}
-
-void WebAXObjectProxy::attributesOfRowsCallback(const CppArgumentList&, CppVariant* result)
-{
-    result->setNull();
-}
-
-void WebAXObjectProxy::attributesOfVisibleCellsCallback(const CppArgumentList&, CppVariant* result)
-{
-    result->setNull();
-}
-
-void WebAXObjectProxy::attributesOfHeaderCallback(const CppArgumentList&, CppVariant* result)
-{
-    result->setNull();
-}
-
 void WebAXObjectProxy::tableHeaderCallback(const CppArgumentList&, CppVariant* result)
 {
     WebAXObject obj = accessibilityObject().headerContainerObject();
@@ -963,11 +902,6 @@ void WebAXObjectProxy::tableHeaderCallback(const CppArgumentList&, CppVariant* r
     }
 
     result->set(*(m_factory->getOrCreate(obj)->getAsCppVariant()));
-}
-
-void WebAXObjectProxy::indexInTableCallback(const CppArgumentList&, CppVariant* result)
-{
-    result->setNull();
 }
 
 void WebAXObjectProxy::rowIndexRangeCallback(const CppArgumentList&, CppVariant* result)
@@ -1027,11 +961,6 @@ void WebAXObjectProxy::setSelectedTextRangeCallback(const CppArgumentList&argume
     accessibilityObject().setSelectedTextRange(selectionStart, selectionEnd);
 }
 
-void WebAXObjectProxy::attributeValueCallback(const CppArgumentList&, CppVariant* result)
-{
-    result->setNull();
-}
-
 void WebAXObjectProxy::isAttributeSettableCallback(const CppArgumentList& arguments, CppVariant* result)
 {
     if (arguments.size() < 1 && !arguments[0].isString()) {
@@ -1063,7 +992,10 @@ void WebAXObjectProxy::isDecrementActionSupportedCallback(const CppArgumentList&
 
 void WebAXObjectProxy::parentElementCallback(const CppArgumentList&, CppVariant* result)
 {
-    WebAXObjectProxy* parent = m_factory->getOrCreate(accessibilityObject().parentObject());
+    WebAXObject parentObject = accessibilityObject().parentObject();
+    while (parentObject.accessibilityIsIgnored())
+        parentObject = parentObject.parentObject();
+    WebAXObjectProxy* parent = m_factory->getOrCreate(parentObject);
     if (!parent) {
         result->setNull();
         return;
@@ -1203,7 +1135,6 @@ void WebAXObjectProxy::wordEndCallback(const CppArgumentList& arguments, CppVari
 
 void WebAXObjectProxy::fallbackCallback(const CppArgumentList &, CppVariant* result)
 {
-    // FIXME: Implement this.
     result->setNull();
 }
 
