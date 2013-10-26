@@ -23,6 +23,7 @@ scoped_ptr<UIResourceLayerImpl> GenerateUIResourceLayer(
     FakeUIResourceLayerTreeHostImpl* host_impl,
     gfx::Size bitmap_size,
     gfx::Size layer_size,
+    bool opaque,
     UIResourceId uid) {
   gfx::Rect visible_content_rect(layer_size);
   scoped_ptr<UIResourceLayerImpl> layer =
@@ -38,6 +39,7 @@ scoped_ptr<UIResourceLayerImpl> GenerateUIResourceLayer(
       SkBitmap::kARGB_8888_Config, bitmap_size.width(), bitmap_size.height());
   skbitmap.allocPixels();
   skbitmap.setImmutable();
+  skbitmap.setIsOpaque(opaque);
   UIResourceBitmap bitmap(skbitmap);
 
   host_impl->CreateUIResource(uid, bitmap);
@@ -64,10 +66,12 @@ TEST(UIResourceLayerImplTest, VerifyDrawQuads) {
   gfx::Size bitmap_size(100, 100);
   gfx::Size layer_size(100, 100);;
   size_t expected_quad_size = 1;
+  bool opaque = true;
   UIResourceId uid = 1;
   scoped_ptr<UIResourceLayerImpl> layer = GenerateUIResourceLayer(&host_impl,
                                                                   bitmap_size,
                                                                   layer_size,
+                                                                  opaque,
                                                                   uid);
   QuadSizeTest(layer.Pass(), expected_quad_size);
 
@@ -77,6 +81,7 @@ TEST(UIResourceLayerImplTest, VerifyDrawQuads) {
   layer = GenerateUIResourceLayer(&host_impl,
                                   bitmap_size,
                                   layer_size,
+                                  opaque,
                                   uid);
   QuadSizeTest(layer.Pass(), expected_quad_size);
 }
@@ -94,26 +99,48 @@ void OpaqueBoundsTest(scoped_ptr<UIResourceLayerImpl> layer,
   EXPECT_EQ(expected_opaque_bounds, opaque_rect);
 }
 
-TEST(UIResourceLayerImplTest, VerifyOpaqueBounds) {
+TEST(UIResourceLayerImplTest, VerifySetOpaqueOnSkBitmap) {
   FakeImplProxy proxy;
   FakeUIResourceLayerTreeHostImpl host_impl(&proxy);
 
   gfx::Size bitmap_size(100, 100);
   gfx::Size layer_size(100, 100);;
+  bool opaque = false;
   UIResourceId uid = 1;
   scoped_ptr<UIResourceLayerImpl> layer = GenerateUIResourceLayer(&host_impl,
                                                                   bitmap_size,
                                                                   layer_size,
+                                                                  opaque,
                                                                   uid);
+  gfx::Rect expected_opaque_bounds;
+  OpaqueBoundsTest(layer.Pass(), expected_opaque_bounds);
+
+  opaque = true;
+  layer = GenerateUIResourceLayer(&host_impl,
+                                  bitmap_size,
+                                  layer_size,
+                                  opaque,
+                                  uid);
+  expected_opaque_bounds = gfx::Rect(layer->bounds());
+  OpaqueBoundsTest(layer.Pass(), expected_opaque_bounds);
+}
+
+TEST(UIResourceLayerImplTest, VerifySetOpaqueOnLayer) {
+  FakeImplProxy proxy;
+  FakeUIResourceLayerTreeHostImpl host_impl(&proxy);
+
+  gfx::Size bitmap_size(100, 100);
+  gfx::Size layer_size(100, 100);
+  bool skbitmap_opaque = false;
+  UIResourceId uid = 1;
+  scoped_ptr<UIResourceLayerImpl> layer = GenerateUIResourceLayer(
+      &host_impl, bitmap_size, layer_size, skbitmap_opaque, uid);
   layer->SetContentsOpaque(false);
   gfx::Rect expected_opaque_bounds;
   OpaqueBoundsTest(layer.Pass(), expected_opaque_bounds);
 
-  layer = GenerateUIResourceLayer(&host_impl,
-                                  bitmap_size,
-                                  layer_size,
-                                  uid);
-
+  layer = GenerateUIResourceLayer(
+      &host_impl, bitmap_size, layer_size, skbitmap_opaque, uid);
   layer->SetContentsOpaque(true);
   expected_opaque_bounds = gfx::Rect(layer->bounds());
   OpaqueBoundsTest(layer.Pass(), expected_opaque_bounds);

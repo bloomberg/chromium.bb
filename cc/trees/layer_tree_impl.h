@@ -212,6 +212,8 @@ class CC_EXPORT LayerTreeImpl {
   ResourceProvider::ResourceId ResourceIdForUIResource(UIResourceId uid) const;
   void ProcessUIResourceRequestQueue();
 
+  bool IsUIResourceOpaque(UIResourceId uid) const;
+
   void AddLayerWithCopyOutputRequest(LayerImpl* layer);
   void RemoveLayerWithCopyOutputRequest(LayerImpl* layer);
   const std::vector<LayerImpl*> LayersWithCopyOutputRequest() const;

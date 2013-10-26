@@ -710,6 +710,10 @@ ResourceProvider::ResourceId LayerTreeImpl::ResourceIdForUIResource(
   return layer_tree_host_impl_->ResourceIdForUIResource(uid);
 }
 
+bool LayerTreeImpl::IsUIResourceOpaque(UIResourceId uid) const {
+  return layer_tree_host_impl_->IsUIResourceOpaque(uid);
+}
+
 void LayerTreeImpl::ProcessUIResourceRequestQueue() {
   while (ui_resource_request_queue_.size() > 0) {
     UIResourceRequest req = ui_resource_request_queue_.front();

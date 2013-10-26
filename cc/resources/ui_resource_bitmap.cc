@@ -21,8 +21,9 @@ void UIResourceBitmap::Create(const skia::RefPtr<SkPixelRef>& pixel_ref,
   size_ = size;
   pixel_ref_ = pixel_ref;
 
-  // Wrap mode defaults to CLAMP_TO_EDGE.
+  // Default values for secondary parameters.
   wrap_mode_ = CLAMP_TO_EDGE;
+  opaque_ = (format == ETC1);
 }
 
 UIResourceBitmap::UIResourceBitmap(const SkBitmap& skbitmap) {
@@ -34,6 +35,8 @@ UIResourceBitmap::UIResourceBitmap(const SkBitmap& skbitmap) {
   Create(pixel_ref,
          UIResourceBitmap::RGBA8,
          gfx::Size(skbitmap.width(), skbitmap.height()));
+
+  SetOpaque(skbitmap.isOpaque());
 }
 
 UIResourceBitmap::UIResourceBitmap(const skia::RefPtr<SkPixelRef>& pixel_ref,

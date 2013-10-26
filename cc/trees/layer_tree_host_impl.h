@@ -401,9 +401,12 @@ class CC_EXPORT LayerTreeHostImpl
   virtual ResourceProvider::ResourceId ResourceIdForUIResource(
       UIResourceId uid) const;
 
+  virtual bool IsUIResourceOpaque(UIResourceId uid) const;
+
   struct UIResourceData {
     ResourceProvider::ResourceId resource_id;
     gfx::Size size;
+    bool opaque;
   };
 
  protected:

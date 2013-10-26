@@ -18,7 +18,12 @@ void FakeUIResourceLayerTreeHostImpl::CreateUIResource(
     const UIResourceBitmap& bitmap) {
   if (ResourceIdForUIResource(uid))
     DeleteUIResource(uid);
-  fake_ui_resource_map_[uid] = fake_next_resource_id_;
+
+  UIResourceData data;
+  data.resource_id = fake_next_resource_id_++;
+  data.size = bitmap.GetSize();
+  data.opaque = bitmap.GetOpaque();
+  fake_ui_resource_map_[uid] = data;
 }
 
 void FakeUIResourceLayerTreeHostImpl::DeleteUIResource(UIResourceId uid) {
@@ -32,8 +37,15 @@ ResourceProvider::ResourceId
         UIResourceId uid) const {
   UIResourceMap::const_iterator iter = fake_ui_resource_map_.find(uid);
   if (iter != fake_ui_resource_map_.end())
-    return iter->second;
+    return iter->second.resource_id;
   return 0;
+}
+
+bool FakeUIResourceLayerTreeHostImpl::IsUIResourceOpaque(UIResourceId uid)
+    const {
+  UIResourceMap::const_iterator iter = fake_ui_resource_map_.find(uid);
+  DCHECK(iter != fake_ui_resource_map_.end());
+  return iter->second.opaque;
 }
 
 }  // namespace cc

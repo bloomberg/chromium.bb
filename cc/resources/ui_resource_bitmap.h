@@ -36,6 +36,8 @@ class CC_EXPORT UIResourceBitmap {
   UIResourceFormat GetFormat() const { return format_; }
   UIResourceWrapMode GetWrapMode() const { return wrap_mode_; }
   void SetWrapMode(UIResourceWrapMode wrap_mode) { wrap_mode_ = wrap_mode; }
+  bool GetOpaque() const { return opaque_; }
+  void SetOpaque(bool opaque) { opaque_ = opaque; }
 
   // The constructor for the UIResourceBitmap.  User must ensure that |skbitmap|
   // is immutable.  The SkBitmap format should be in 32-bit RGBA.  Wrap mode is
@@ -58,6 +60,7 @@ class CC_EXPORT UIResourceBitmap {
   UIResourceFormat format_;
   UIResourceWrapMode wrap_mode_;
   gfx::Size size_;
+  bool opaque_;
 };
 
 class CC_EXPORT AutoLockUIResourceBitmap {

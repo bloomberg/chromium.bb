@@ -2752,6 +2752,7 @@ void LayerTreeHostImpl::CreateUIResource(UIResourceId uid,
   UIResourceData data;
   data.resource_id = id;
   data.size = bitmap.GetSize();
+  data.opaque = bitmap.GetOpaque();
 
   ui_resource_map_[uid] = data;
 
@@ -2796,6 +2797,12 @@ ResourceProvider::ResourceId LayerTreeHostImpl::ResourceIdForUIResource(
   if (iter != ui_resource_map_.end())
     return iter->second.resource_id;
   return 0;
+}
+
+bool LayerTreeHostImpl::IsUIResourceOpaque(UIResourceId uid) const {
+  UIResourceMap::const_iterator iter = ui_resource_map_.find(uid);
+  DCHECK(iter != ui_resource_map_.end());
+  return iter->second.opaque;
 }
 
 bool LayerTreeHostImpl::EvictedUIResourcesExist() const {

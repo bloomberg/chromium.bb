@@ -113,8 +113,9 @@ void UIResourceLayerImpl::AppendQuads(QuadSink* quad_sink,
 
   gfx::Rect quad_rect(bounds());
 
-  // TODO(clholgat): Properly calculate opacity: crbug.com/300027
-  gfx::Rect opaque_rect(contents_opaque() ? quad_rect : gfx::Rect());
+  bool opaque = layer_tree_impl()->IsUIResourceOpaque(ui_resource_id_) ||
+                contents_opaque();
+  gfx::Rect opaque_rect(opaque ? quad_rect : gfx::Rect());
   scoped_ptr<TextureDrawQuad> quad;
 
   quad = TextureDrawQuad::Create();
