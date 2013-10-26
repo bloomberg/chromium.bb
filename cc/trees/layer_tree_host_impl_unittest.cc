@@ -137,7 +137,6 @@ class LayerTreeHostImplTest : public testing::Test,
     current_priority_cutoff_value_ = priority_cutoff;
     return reduce_memory_result_;
   }
-  virtual void ReduceWastedContentsTextureMemoryOnImplThread() OVERRIDE {}
   virtual void SendManagedMemoryStats() OVERRIDE {}
   virtual bool IsInsideDraw() OVERRIDE { return false; }
   virtual void RenewTreePriority() OVERRIDE {}

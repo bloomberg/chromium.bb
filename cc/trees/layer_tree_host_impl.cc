@@ -1514,10 +1514,6 @@ void LayerTreeHostImpl::ActivatePendingTree() {
   active_tree_->SetRootLayerScrollOffsetDelegate(
       root_layer_scroll_offset_delegate_);
 
-  // Reduce wasted memory now that unlinked resources are guaranteed not
-  // to be used.
-  client_->ReduceWastedContentsTextureMemoryOnImplThread();
-
   client_->OnCanDrawStateChanged(CanDraw());
   client_->SetNeedsRedrawOnImplThread();
   client_->RenewTreePriority();

@@ -96,10 +96,6 @@ class CC_EXPORT PrioritizedResourceManager {
                                 int priority_cutoff,
                                 ResourceProvider* resource_provider);
 
-  // Delete contents textures' backing resources that can be recycled. This
-  // may be called on the impl thread while the main thread is running.
-  void ReduceWastedMemoryOnImplThread(ResourceProvider* resource_provider);
-
   // Returns true if there exist any textures that are linked to backings that
   // have had their resources evicted. Only when we commit a tree that has no
   // textures linked to evicted backings may we allow drawing. After an

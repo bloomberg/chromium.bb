@@ -74,7 +74,6 @@ class LayerTreeHostImplClient {
   virtual bool ReduceContentsTextureMemoryOnImplThread(
       size_t limit_bytes,
       int priority_cutoff) = 0;
-  virtual void ReduceWastedContentsTextureMemoryOnImplThread() = 0;
   virtual void SendManagedMemoryStats() = 0;
   virtual bool IsInsideDraw() = 0;
   virtual void RenewTreePriority() = 0;

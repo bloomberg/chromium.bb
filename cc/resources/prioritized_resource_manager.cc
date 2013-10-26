@@ -380,18 +380,6 @@ bool PrioritizedResourceManager::ReduceMemoryOnImplThread(
                                      resource_provider);
 }
 
-void PrioritizedResourceManager::ReduceWastedMemoryOnImplThread(
-    ResourceProvider* resource_provider) {
-  DCHECK(proxy_->IsImplThread());
-  DCHECK(resource_provider);
-  // If we are in the process of uploading a new frame then the backings at the
-  // very end of the list are not sorted by priority. Sort them before doing the
-  // eviction.
-  if (backings_tail_not_sorted_)
-    SortBackings();
-  ReduceWastedMemory(resource_provider);
-}
-
 void PrioritizedResourceManager::UnlinkAndClearEvictedBackings() {
   DCHECK(proxy_->IsMainThread());
   base::AutoLock scoped_lock(evicted_backings_lock_);
