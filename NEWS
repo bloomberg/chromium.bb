@@ -17,7 +17,7 @@ liblouis NEWS -- history of user-visible changes.  	-*- org -*-
    - en-us-g2.ctb, en-ueb-g2.ctb: Fixes for that's, can't and s'
      thanks to Ken Perry.
    - en-us-g2.ctb: Fix for backtranslation of things like
-     http://address.com, thanks to Ken Perry.
+     http://address.com, words including after, capsigns. thanks to Ken Perry.
    - Further corrections and testcases to the Hungarian tables thanks
      to Hammer Attila
    - UEB chardefs - correct title and fixed a long standing bug where
