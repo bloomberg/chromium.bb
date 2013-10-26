@@ -5,13 +5,23 @@
 // Custom binding for the webrtc custom transport API.
 
 var binding = require('binding').Binding.create('webrtc.castUdpTransport');
+var webrtc = requireNative('webrtc_natives');
 
 binding.registerCustomHook(function(bindingsAPI, extensionId) {
   var apiFunctions = bindingsAPI.apiFunctions;
 
-  apiFunctions.setHandleRequest('create',
-                                function(callback) {
-    // invoke impl here.
+  apiFunctions.setHandleRequest('create', function(callback) {
+    webrtc.CreateCastUdpTransport(callback);
+  });
+  apiFunctions.setHandleRequest('destroy', function(transportId) {
+    webrtc.DestroyCastUdpTransport(transportId);
+  });
+  apiFunctions.setHandleRequest('start',
+      function(transportId, remoteParams) {
+        webrtc.StartCastUdpTransport(transportId, remoteParams);
+  });
+  apiFunctions.setHandleRequest('stop', function(transportId) {
+    webrtc.StopCastUdpTransport(transportId);
   });
 });
 

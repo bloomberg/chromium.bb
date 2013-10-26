@@ -63,56 +63,60 @@ namespace webrtc.castSendTransport {
   // Result of <code>create</code> call.
   dictionary CreateInfo {
     // The ID of the newly created transport.
-    long id;
+    long transportId;
   };
 
   // Callback from the <code>create</code> method.
   // |id| : The transport id.
-  // A null value indicates an error.
-  callback CreateCallback = void (CreateInfo id);
+  callback CreateCallback = void (CreateInfo info);
 
   // Callback from the <code>createParams</code> method.
   // |params| : The cast transport params.
-  // A null value indicates an error.
   callback CreateParamsCallback = void (CastTransportParams params);
+
+  // Callback from the <code>getCaps</code> method.
+  // |caps| : Capabilities of the cast transport.
+  callback GetCapsCallback = void (CastTransportCaps caps);
 
   interface Functions {
     // Creates a cast send transport.
+    // |track| : the media track encoded by this transport.
     // |innerTransportId| : the ID of the inner transport. The transport to be
     //   created will send data on the inner transport.
     // |callback| : Called when the transport has been created.
-    [nocompile] static void create(long innerTransportId,
+    [nocompile] static void create(
+        [instanceOf=MediaStreamTrack] object track,
+        long innerTransportId,
         CreateCallback callback);
+
+    // Destroys a cast send transport.
+    // |transportId| : The transport ID.
+    [nocompile] static void destroy(long transportId);
 
     // Creates suitable params given the capabilities.
     // |caps| : the capabilities.
-    // |callback| : Called when the params has been created.
-    [nocompile] static void createParams(CastTransportCaps caps,
-        CreateParamsCallback callback);
+    // |callback| : Called when the params have been created.
+    [nocompile] static void getCaps(long transportId,
+        GetCapsCallback callback);
 
-    // Set the source of media.
-    // |transportId| : the transport ID.
-    // |track| : A media stream track.
-    [nocompile] static void setTrack(long transportId,
-        [instanceOf=MediaStreamTrack] object track);
+    // Creates suitable params given the capabilities.
+    // |transportId| : The transport ID.
+    // |remoteCaps| : Capabilities of remote peer.
+    // |callback| : Called when the params has been created.
+    [nocompile] static void createParams(
+        long transportId,
+        CastTransportCaps remoteCaps,
+        CreateParamsCallback callback);
 
     // Starts to use the transport by providing remote params info.
     // |transportId| : The transport ID.
-    // |remoteParams| : The remote params.
+    // |params| : Parameters set for this transport.
     [nocompile] static void start(long transportId,
-        CastTransportParams remoteParams);
+        CastTransportParams params);
 
     // Stops using the transport.
     // |transportId| : The transport ID.
     [nocompile] static void stop(long transportId);
-
-    // Mutes the media track.
-    // |transportId| : The transport ID.
-    [nocompile] static void mute(long transportId);
-
-    // Unmute the media track.
-    // |transportId| : The transport ID.
-    [nocompile] static void unmute(long transportId);
   };
 
   interface Events {

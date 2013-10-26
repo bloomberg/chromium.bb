@@ -70,6 +70,7 @@
 #include "chrome/renderer/extensions/tab_finder.h"
 #include "chrome/renderer/extensions/tabs_custom_bindings.h"
 #include "chrome/renderer/extensions/user_script_slave.h"
+#include "chrome/renderer/extensions/webrtc_native_handler.h"
 #include "chrome/renderer/extensions/webstore_bindings.h"
 #include "chrome/renderer/resource_bundle_source_map.h"
 #include "content/public/renderer/render_thread.h"
@@ -937,6 +938,8 @@ void Dispatcher::RegisterNativeHandlers(ModuleSystem* module_system,
       scoped_ptr<NativeHandler>(new TabsCustomBindings(this, context)));
   module_system->RegisterNativeHandler("webstore",
       scoped_ptr<NativeHandler>(new WebstoreBindings(this, context)));
+  module_system->RegisterNativeHandler("webrtc_natives",
+      scoped_ptr<NativeHandler>(new WebRtcNativeHandler(context)));
 }
 
 void Dispatcher::PopulateSourceMap() {

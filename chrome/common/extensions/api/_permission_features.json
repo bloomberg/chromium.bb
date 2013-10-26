@@ -788,7 +788,7 @@
     "extension_types": ["extension", "legacy_packaged_app"]
   },
   "webrtc": {
-    "channel": "trunk",
+    "channel": "dev",
     "extension_types": ["extension"]
   },
   "webrtcAudioPrivate": {

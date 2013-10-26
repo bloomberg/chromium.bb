@@ -158,6 +158,8 @@
         'renderer/extensions/user_script_slave.h',
         'renderer/extensions/v8_schema_registry.cc',
         'renderer/extensions/v8_schema_registry.h',
+        'renderer/extensions/webrtc_native_handler.cc',
+        'renderer/extensions/webrtc_native_handler.h',
         'renderer/extensions/webstore_bindings.cc',
         'renderer/extensions/webstore_bindings.h',
         'renderer/isolated_world_ids.h',

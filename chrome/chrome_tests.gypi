@@ -1256,6 +1256,7 @@
         'browser/extensions/test_extension_dir.cc',
         'browser/extensions/test_extension_dir.h',
         'browser/extensions/web_contents_browsertest.cc',
+        'browser/extensions/webrtc_cast_apitest.cc',
         'browser/extensions/webstore_inline_installer_browsertest.cc',
         'browser/extensions/webstore_installer_test.cc',
         'browser/extensions/webstore_installer_test.h',
