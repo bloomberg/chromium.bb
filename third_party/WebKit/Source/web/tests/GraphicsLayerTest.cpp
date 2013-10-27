@@ -27,9 +27,9 @@
 #include "core/platform/graphics/GraphicsLayer.h"
 
 #include "core/platform/ScrollableArea.h"
-#include "platform/transforms/Matrix3DTransformOperation.h"
-#include "platform/transforms/RotateTransformOperation.h"
-#include "platform/transforms/TranslateTransformOperation.h"
+#include "core/platform/graphics/transforms/Matrix3DTransformOperation.h"
+#include "core/platform/graphics/transforms/RotateTransformOperation.h"
+#include "core/platform/graphics/transforms/TranslateTransformOperation.h"
 #include "wtf/PassOwnPtr.h"
 
 #include <gtest/gtest.h>

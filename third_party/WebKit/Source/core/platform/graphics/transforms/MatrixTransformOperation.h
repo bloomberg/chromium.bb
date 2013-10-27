@@ -25,12 +25,12 @@
 #ifndef MatrixTransformOperation_h
 #define MatrixTransformOperation_h
 
-#include "platform/transforms/TransformOperation.h"
+#include "core/platform/graphics/transforms/TransformOperation.h"
 #include "platform/transforms/TransformationMatrix.h"
 
 namespace WebCore {
 
-class PLATFORM_EXPORT MatrixTransformOperation : public TransformOperation {
+class MatrixTransformOperation : public TransformOperation {
 public:
     static PassRefPtr<MatrixTransformOperation> create(double a, double b, double c, double d, double e, double f)
     {

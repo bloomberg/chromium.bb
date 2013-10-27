@@ -25,14 +25,14 @@
 #ifndef TransformOperations_h
 #define TransformOperations_h
 
+#include "core/platform/graphics/transforms/TransformOperation.h"
 #include "platform/geometry/LayoutSize.h"
-#include "platform/transforms/TransformOperation.h"
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
 
 namespace WebCore {
 
-class PLATFORM_EXPORT TransformOperations {
+class TransformOperations {
     WTF_MAKE_FAST_ALLOCATED;
 public:
     explicit TransformOperations(bool makeIdentity = false);

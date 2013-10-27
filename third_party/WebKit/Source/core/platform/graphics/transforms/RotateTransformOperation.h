@@ -25,11 +25,11 @@
 #ifndef RotateTransformOperation_h
 #define RotateTransformOperation_h
 
-#include "platform/transforms/TransformOperation.h"
+#include "core/platform/graphics/transforms/TransformOperation.h"
 
 namespace WebCore {
 
-class PLATFORM_EXPORT RotateTransformOperation : public TransformOperation {
+class RotateTransformOperation : public TransformOperation {
 public:
     static PassRefPtr<RotateTransformOperation> create(double angle, OperationType type)
     {

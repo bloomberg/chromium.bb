@@ -20,7 +20,7 @@
  */
 
 #include "config.h"
-#include "platform/transforms/RotateTransformOperation.h"
+#include "core/platform/graphics/transforms/RotateTransformOperation.h"
 
 #include "platform/animation/AnimationUtilities.h"
 #include "wtf/MathExtras.h"

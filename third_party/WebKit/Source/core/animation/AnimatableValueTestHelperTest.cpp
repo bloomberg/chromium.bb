@@ -32,11 +32,11 @@
 
 #include "core/animation/AnimatableValueTestHelper.h"
 
+#include "core/platform/graphics/transforms/ScaleTransformOperation.h"
+#include "core/platform/graphics/transforms/TranslateTransformOperation.h"
 #include "core/rendering/ClipPathOperation.h"
 #include "core/rendering/style/BasicShapes.h"
 #include "core/svg/SVGLengthContext.h"
-#include "platform/transforms/ScaleTransformOperation.h"
-#include "platform/transforms/TranslateTransformOperation.h"
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>

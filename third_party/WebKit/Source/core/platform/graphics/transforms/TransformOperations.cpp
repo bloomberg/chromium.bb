@@ -20,11 +20,11 @@
  */
 
 #include "config.h"
-#include "platform/transforms/TransformOperations.h"
+#include "core/platform/graphics/transforms/TransformOperations.h"
 
-#include "platform/transforms/IdentityTransformOperation.h"
-#include "platform/transforms/InterpolatedTransformOperation.h"
 #include <algorithm>
+#include "core/platform/graphics/transforms/IdentityTransformOperation.h"
+#include "core/platform/graphics/transforms/InterpolatedTransformOperation.h"
 
 using namespace std;
 

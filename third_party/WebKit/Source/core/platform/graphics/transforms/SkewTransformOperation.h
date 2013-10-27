@@ -22,32 +22,25 @@
  *
  */
 
-#ifndef ScaleTransformOperation_h
-#define ScaleTransformOperation_h
+#ifndef SkewTransformOperation_h
+#define SkewTransformOperation_h
 
-#include "platform/transforms/TransformOperation.h"
+#include "core/platform/graphics/transforms/TransformOperation.h"
 
 namespace WebCore {
 
-class PLATFORM_EXPORT ScaleTransformOperation : public TransformOperation {
+class SkewTransformOperation : public TransformOperation {
 public:
-    static PassRefPtr<ScaleTransformOperation> create(double sx, double sy, OperationType type)
+    static PassRefPtr<SkewTransformOperation> create(double angleX, double angleY, OperationType type)
     {
-        return adoptRef(new ScaleTransformOperation(sx, sy, 1, type));
+        return adoptRef(new SkewTransformOperation(angleX, angleY, type));
     }
 
-    static PassRefPtr<ScaleTransformOperation> create(double sx, double sy, double sz, OperationType type)
-    {
-        return adoptRef(new ScaleTransformOperation(sx, sy, sz, type));
-    }
-
-    double x() const { return m_x; }
-    double y() const { return m_y; }
-    double z() const { return m_z; }
+    double angleX() const { return m_angleX; }
+    double angleY() const { return m_angleY; }
 
 private:
-    virtual bool isIdentity() const { return m_x == 1 &&  m_y == 1 &&  m_z == 1; }
-
+    virtual bool isIdentity() const { return m_angleX == 0 && m_angleY == 0; }
     virtual OperationType getOperationType() const { return m_type; }
     virtual bool isSameType(const TransformOperation& o) const { return o.getOperationType() == m_type; }
 
@@ -55,33 +48,30 @@ private:
     {
         if (!isSameType(o))
             return false;
-        const ScaleTransformOperation* s = static_cast<const ScaleTransformOperation*>(&o);
-        return m_x == s->m_x && m_y == s->m_y && m_z == s->m_z;
+        const SkewTransformOperation* s = static_cast<const SkewTransformOperation*>(&o);
+        return m_angleX == s->m_angleX && m_angleY == s->m_angleY;
     }
 
     virtual bool apply(TransformationMatrix& transform, const FloatSize&) const
     {
-        transform.scale3d(m_x, m_y, m_z);
+        transform.skew(m_angleX, m_angleY);
         return false;
     }
 
     virtual PassRefPtr<TransformOperation> blend(const TransformOperation* from, double progress, bool blendToIdentity = false);
 
-    ScaleTransformOperation(double sx, double sy, double sz, OperationType type)
-        : m_x(sx)
-        , m_y(sy)
-        , m_z(sz)
+    SkewTransformOperation(double angleX, double angleY, OperationType type)
+        : m_angleX(angleX)
+        , m_angleY(angleY)
         , m_type(type)
     {
-        ASSERT(type == ScaleX || type == ScaleY || type == ScaleZ || type == Scale || type == Scale3D);
     }
 
-    double m_x;
-    double m_y;
-    double m_z;
+    double m_angleX;
+    double m_angleY;
     OperationType m_type;
 };
 
 } // namespace WebCore
 
-#endif // ScaleTransformOperation_h
+#endif // SkewTransformOperation_h

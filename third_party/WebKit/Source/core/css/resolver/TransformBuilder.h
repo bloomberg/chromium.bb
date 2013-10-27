@@ -31,7 +31,7 @@
 #ifndef TransformBuilder_h
 #define TransformBuilder_h
 
-#include "platform/transforms/TransformOperations.h"
+#include "core/platform/graphics/transforms/TransformOperations.h"
 #include "wtf/Noncopyable.h"
 
 namespace WebCore {

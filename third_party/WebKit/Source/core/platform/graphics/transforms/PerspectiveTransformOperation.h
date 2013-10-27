@@ -23,52 +23,54 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef Matrix3DTransformOperation_h
-#define Matrix3DTransformOperation_h
+#ifndef PerspectiveTransformOperation_h
+#define PerspectiveTransformOperation_h
 
-#include "platform/transforms/TransformOperation.h"
+#include "core/platform/graphics/transforms/TransformOperation.h"
+#include "platform/Length.h"
+#include "platform/LengthFunctions.h"
 
 namespace WebCore {
 
-class PLATFORM_EXPORT Matrix3DTransformOperation : public TransformOperation {
+class PerspectiveTransformOperation : public TransformOperation {
 public:
-    static PassRefPtr<Matrix3DTransformOperation> create(const TransformationMatrix& matrix)
+    static PassRefPtr<PerspectiveTransformOperation> create(const Length& p)
     {
-        return adoptRef(new Matrix3DTransformOperation(matrix));
+        return adoptRef(new PerspectiveTransformOperation(p));
     }
 
-    TransformationMatrix matrix() const {return m_matrix; }
+    Length perspective() const { return m_p; }
 
 private:
-    virtual bool isIdentity() const { return m_matrix.isIdentity(); }
-
-    virtual OperationType getOperationType() const { return Matrix3D; }
-    virtual bool isSameType(const TransformOperation& o) const { return o.getOperationType() == Matrix3D; }
+    virtual bool isIdentity() const { return !floatValueForLength(m_p, 1); }
+    virtual OperationType getOperationType() const { return Perspective; }
+    virtual bool isSameType(const TransformOperation& o) const { return o.getOperationType() == Perspective; }
 
     virtual bool operator==(const TransformOperation& o) const
     {
         if (!isSameType(o))
             return false;
-        const Matrix3DTransformOperation* m = static_cast<const Matrix3DTransformOperation*>(&o);
-        return m_matrix == m->m_matrix;
+        const PerspectiveTransformOperation* p = static_cast<const PerspectiveTransformOperation*>(&o);
+        return m_p == p->m_p;
     }
 
     virtual bool apply(TransformationMatrix& transform, const FloatSize&) const
     {
-        transform.multiply(TransformationMatrix(m_matrix));
+        transform.applyPerspective(floatValueForLength(m_p, 1));
         return false;
     }
 
     virtual PassRefPtr<TransformOperation> blend(const TransformOperation* from, double progress, bool blendToIdentity = false);
 
-    Matrix3DTransformOperation(const TransformationMatrix& mat)
+    PerspectiveTransformOperation(const Length& p)
+        : m_p(p)
     {
-        m_matrix = mat;
+        ASSERT(p.isFixed());
     }
 
-    TransformationMatrix m_matrix;
+    Length m_p;
 };
 
 } // namespace WebCore
 
-#endif // Matrix3DTransformOperation_h
+#endif // PerspectiveTransformOperation_h

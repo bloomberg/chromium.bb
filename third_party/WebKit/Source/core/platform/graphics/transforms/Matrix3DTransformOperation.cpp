@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "platform/transforms/Matrix3DTransformOperation.h"
+#include "core/platform/graphics/transforms/Matrix3DTransformOperation.h"
 
 #include <algorithm>
 
