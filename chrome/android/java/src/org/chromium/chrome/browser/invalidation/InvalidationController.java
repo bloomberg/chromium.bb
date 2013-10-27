@@ -1,18 +1,23 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.sync.notifier;
+package org.chromium.chrome.browser.invalidation;
 
 import android.accounts.Account;
 import android.content.Context;
 import android.content.Intent;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 
 import org.chromium.base.ActivityStatus;
 import org.chromium.base.CalledByNative;
 import org.chromium.sync.internal_api.pub.base.ModelType;
+import org.chromium.sync.notifier.InvalidationIntentProtocol;
+import org.chromium.sync.notifier.InvalidationPreferences;
+import org.chromium.sync.notifier.InvalidationService;
+import org.chromium.sync.notifier.SyncStatusHelper;
 
 import java.util.Set;
 
@@ -69,8 +74,8 @@ public class InvalidationController implements ActivityStatus.StateListener {
         InvalidationPreferences invalidationPreferences = new InvalidationPreferences(mContext);
         Account account = invalidationPreferences.getSavedSyncedAccount();
         Intent registerIntent =
-                InvalidationIntentProtocol.createRegisterIntent(account, objectSources,
-                objectNames);
+                InvalidationIntentProtocol.createRegisterIntent(
+                        account, objectSources, objectNames);
         registerIntent.setClass(mContext, InvalidationService.class);
         mContext.startService(registerIntent);
     }
@@ -110,6 +115,7 @@ public class InvalidationController implements ActivityStatus.StateListener {
     /**
      * Creates an instance using {@code context} to send intents.
      */
+    @VisibleForTesting
     InvalidationController(Context context) {
         mContext = Preconditions.checkNotNull(context.getApplicationContext());
         ActivityStatus.registerStateListener(this);

@@ -10,7 +10,6 @@ import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
-import org.chromium.sync.notifier.InvalidationController;
 import org.chromium.sync.notifier.SyncStatusHelper;
 import org.chromium.sync.signin.ChromeSigninController;
 import org.chromium.sync.test.util.MockSyncContentResolverDelegate;

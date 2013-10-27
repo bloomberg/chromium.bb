@@ -16,10 +16,10 @@ import android.util.Log;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.ThreadUtils;
+import org.chromium.chrome.browser.invalidation.InvalidationController;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.chrome.R;
 import org.chromium.sync.internal_api.pub.base.ModelType;
-import org.chromium.sync.notifier.InvalidationController;
 import org.chromium.sync.notifier.SyncStatusHelper;
 import org.chromium.sync.signin.ChromeSigninController;
 

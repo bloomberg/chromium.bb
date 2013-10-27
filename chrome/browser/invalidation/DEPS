@@ -5,5 +5,5 @@ include_rules = [
   "+sync/internal_api/public/base",
 
   # Needed for InvalidationController JNI methods.
-  "+sync/jni/InvalidationController_jni.h",
+  "+chrome/jni/InvalidationController_jni.h",
 ]

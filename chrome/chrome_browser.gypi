@@ -3193,7 +3193,6 @@
         ['OS=="android"', {
           'dependencies': [
             '../components/components.gyp:web_contents_delegate_android',
-            '../sync/sync.gyp:sync_jni_headers',
             'chrome_browser_jni_headers',
           ],
           'dependencies!': [
@@ -3678,6 +3677,7 @@
             'android/java/src/org/chromium/chrome/browser/infobar/InfoBar.java',
             'android/java/src/org/chromium/chrome/browser/infobar/InfoBarContainer.java',
             'android/java/src/org/chromium/chrome/browser/infobar/TranslateInfoBarDelegate.java',
+            'android/java/src/org/chromium/chrome/browser/invalidation/InvalidationController.java'
           ],
           'variables': {
             'jni_gen_package': 'chrome',

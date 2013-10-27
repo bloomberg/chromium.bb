@@ -8,8 +8,8 @@
 #include <vector>
 
 #include "base/android/jni_array.h"
+#include "chrome/jni/InvalidationController_jni.h"
 #include "google/cacheinvalidation/include/types.h"
-#include "sync/jni/InvalidationController_jni.h"
 
 namespace invalidation {
 

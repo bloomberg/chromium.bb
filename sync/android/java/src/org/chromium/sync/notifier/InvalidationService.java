@@ -22,7 +22,7 @@ import com.google.protos.ipc.invalidation.Types.ClientType;
 import org.chromium.base.ActivityStatus;
 import org.chromium.base.CollectionUtil;
 import org.chromium.sync.internal_api.pub.base.ModelType;
-import org.chromium.sync.notifier.InvalidationController.IntentProtocol;
+import org.chromium.sync.notifier.InvalidationIntentProtocol;
 import org.chromium.sync.notifier.InvalidationPreferences.EditContext;
 import org.chromium.sync.signin.AccountManagerHelper;
 import org.chromium.sync.signin.ChromeSigninController;
@@ -82,21 +82,22 @@ public class InvalidationService extends AndroidListener {
         // match the stored account. Then, if a client should be running, ensureClientStartState
         // will start a new one if needed. I.e., these two functions work together to restart the
         // client when the account changes.
-        Account account = intent.hasExtra(IntentProtocol.EXTRA_ACCOUNT) ?
-                (Account) intent.getParcelableExtra(IntentProtocol.EXTRA_ACCOUNT) : null;
+        Account account = intent.hasExtra(InvalidationIntentProtocol.EXTRA_ACCOUNT) ?
+                (Account) intent.getParcelableExtra(InvalidationIntentProtocol.EXTRA_ACCOUNT)
+                : null;
         ensureAccount(account);
         ensureClientStartState();
 
         // Handle the intent.
-        if (IntentProtocol.isStop(intent) && sIsClientStarted) {
+        if (InvalidationIntentProtocol.isStop(intent) && sIsClientStarted) {
             // If the intent requests that the client be stopped, stop it.
             stopClient();
-        } else if (IntentProtocol.isRegisteredTypesChange(intent)) {
+        } else if (InvalidationIntentProtocol.isRegisteredTypesChange(intent)) {
             // If the intent requests a change in registrations, change them.
-            List<String> regTypes =
-                    intent.getStringArrayListExtra(IntentProtocol.EXTRA_REGISTERED_TYPES);
+            List<String> regTypes = intent.getStringArrayListExtra(
+                    InvalidationIntentProtocol.EXTRA_REGISTERED_TYPES);
             setRegisteredTypes(regTypes != null ? new HashSet<String>(regTypes) : null,
-                    IntentProtocol.getRegisteredObjectIds(intent));
+                    InvalidationIntentProtocol.getRegisteredObjectIds(intent));
         } else {
             // Otherwise, we don't recognize the intent. Pass it to the notification client service.
             super.onHandleIntent(intent);

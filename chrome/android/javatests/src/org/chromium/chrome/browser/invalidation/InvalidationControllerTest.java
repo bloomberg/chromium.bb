@@ -1,8 +1,8 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.sync.notifier;
+package org.chromium.chrome.browser.invalidation;
 
 import android.accounts.Account;
 import android.app.Activity;
@@ -20,7 +20,10 @@ import org.chromium.base.CollectionUtil;
 import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.base.test.util.Feature;
 import org.chromium.sync.internal_api.pub.base.ModelType;
-import org.chromium.sync.notifier.InvalidationController.IntentProtocol;
+import org.chromium.sync.notifier.InvalidationIntentProtocol;
+import org.chromium.sync.notifier.InvalidationPreferences;
+import org.chromium.sync.notifier.InvalidationService;
+import org.chromium.sync.notifier.SyncStatusHelper;
 import org.chromium.sync.signin.AccountManagerHelper;
 import org.chromium.sync.signin.ChromeSigninController;
 import org.chromium.sync.test.util.MockSyncContentResolverDelegate;
@@ -68,8 +71,8 @@ public class InvalidationControllerTest extends InstrumentationTestCase {
         Intent intent = mContext.getStartedIntent(0);
         validateIntentComponent(intent);
         assertEquals(1, intent.getExtras().size());
-        assertTrue(intent.hasExtra(IntentProtocol.EXTRA_STOP));
-        assertTrue(intent.getBooleanExtra(IntentProtocol.EXTRA_STOP, false));
+        assertTrue(intent.hasExtra(InvalidationIntentProtocol.EXTRA_STOP));
+        assertTrue(intent.getBooleanExtra(InvalidationIntentProtocol.EXTRA_STOP, false));
     }
 
     @SmallTest
@@ -103,8 +106,8 @@ public class InvalidationControllerTest extends InstrumentationTestCase {
         Intent intent = mContext.getStartedIntent(0);
         validateIntentComponent(intent);
         assertEquals(1, intent.getExtras().size());
-        assertTrue(intent.hasExtra(IntentProtocol.EXTRA_STOP));
-        assertTrue(intent.getBooleanExtra(IntentProtocol.EXTRA_STOP, false));
+        assertTrue(intent.hasExtra(InvalidationIntentProtocol.EXTRA_STOP));
+        assertTrue(intent.getBooleanExtra(InvalidationIntentProtocol.EXTRA_STOP, false));
     }
 
     @SmallTest
@@ -161,19 +164,21 @@ public class InvalidationControllerTest extends InstrumentationTestCase {
         // Validate destination.
         Intent intent = mContext.getStartedIntent(0);
         validateIntentComponent(intent);
-        assertEquals(IntentProtocol.ACTION_REGISTER, intent.getAction());
+        assertEquals(InvalidationIntentProtocol.ACTION_REGISTER, intent.getAction());
 
         // Validate account.
-        Account intentAccount = intent.getParcelableExtra(IntentProtocol.EXTRA_ACCOUNT);
+        Account intentAccount =
+                intent.getParcelableExtra(InvalidationIntentProtocol.EXTRA_ACCOUNT);
         assertEquals(account, intentAccount);
 
         // Validate registered types.
         Set<String> expectedTypes = CollectionUtil.newHashSet(ModelType.BOOKMARK.name(),
                 ModelType.SESSION.name());
         Set<String> actualTypes = new HashSet<String>();
-        actualTypes.addAll(intent.getStringArrayListExtra(IntentProtocol.EXTRA_REGISTERED_TYPES));
+        actualTypes.addAll(intent.getStringArrayListExtra(
+                                InvalidationIntentProtocol.EXTRA_REGISTERED_TYPES));
         assertEquals(expectedTypes, actualTypes);
-        assertNull(IntentProtocol.getRegisteredObjectIds(intent));
+        assertNull(InvalidationIntentProtocol.getRegisteredObjectIds(intent));
     }
 
     @SmallTest
@@ -187,18 +192,20 @@ public class InvalidationControllerTest extends InstrumentationTestCase {
         // Validate destination.
         Intent intent = mContext.getStartedIntent(0);
         validateIntentComponent(intent);
-        assertEquals(IntentProtocol.ACTION_REGISTER, intent.getAction());
+        assertEquals(InvalidationIntentProtocol.ACTION_REGISTER, intent.getAction());
 
         // Validate account.
-        Account intentAccount = intent.getParcelableExtra(IntentProtocol.EXTRA_ACCOUNT);
+        Account intentAccount =
+                intent.getParcelableExtra(InvalidationIntentProtocol.EXTRA_ACCOUNT);
         assertEquals(account, intentAccount);
 
         // Validate registered types.
         Set<String> expectedTypes = CollectionUtil.newHashSet(ModelType.ALL_TYPES_TYPE);
         Set<String> actualTypes = new HashSet<String>();
-        actualTypes.addAll(intent.getStringArrayListExtra(IntentProtocol.EXTRA_REGISTERED_TYPES));
+        actualTypes.addAll(intent.getStringArrayListExtra(
+                                InvalidationIntentProtocol.EXTRA_REGISTERED_TYPES));
         assertEquals(expectedTypes, actualTypes);
-        assertNull(IntentProtocol.getRegisteredObjectIds(intent));
+        assertNull(InvalidationIntentProtocol.getRegisteredObjectIds(intent));
     }
 
     @SmallTest
@@ -246,9 +253,9 @@ public class InvalidationControllerTest extends InstrumentationTestCase {
     @SmallTest
     @Feature({"Sync"})
     public void testRefreshShouldReadValuesFromDiskWithAllTypes() {
-        // Store preferences for the ModelType.ALL_TYPES_TYPE and account. We are using the
-        // helper class for this, so we don't have to deal with low-level details such as preference
-        // keys.
+        // Store preferences for the ModelType.ALL_TYPES_TYPE and account. We
+        // are using the helper class for this, so we don't have to deal with
+        // low-level details such as preference keys.
         InvalidationPreferences invalidationPreferences = new InvalidationPreferences(mContext);
         InvalidationPreferences.EditContext edit = invalidationPreferences.edit();
         List<String> storedModelTypes = new ArrayList<String>();
@@ -293,12 +300,13 @@ public class InvalidationControllerTest extends InstrumentationTestCase {
         // Validate destination.
         Intent intent = mContext.getStartedIntent(0);
         validateIntentComponent(intent);
-        assertEquals(IntentProtocol.ACTION_REGISTER, intent.getAction());
+        assertEquals(InvalidationIntentProtocol.ACTION_REGISTER, intent.getAction());
 
         // Validate registered object ids. The bookmark object should not be registered since it is
         // a Sync type.
-        assertNull(intent.getStringArrayListExtra(IntentProtocol.EXTRA_REGISTERED_TYPES));
-        Set<ObjectId> objectIds = IntentProtocol.getRegisteredObjectIds(intent);
+        assertNull(intent.getStringArrayListExtra(
+                                InvalidationIntentProtocol.EXTRA_REGISTERED_TYPES));
+        Set<ObjectId> objectIds = InvalidationIntentProtocol.getRegisteredObjectIds(intent);
         assertEquals(2, objectIds.size());
         assertTrue(objectIds.contains(ObjectId.newInstance(1, "a".getBytes())));
         assertTrue(objectIds.contains(ObjectId.newInstance(2, "b".getBytes())));
