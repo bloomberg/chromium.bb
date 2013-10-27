@@ -36,7 +36,7 @@ class QuicSessionOwner {
  public:
   virtual ~QuicSessionOwner() {}
 
-  virtual void OnConnectionClose(QuicGuid guid, QuicErrorCode error) = 0;
+  virtual void OnConnectionClosed(QuicGuid guid, QuicErrorCode error) = 0;
 };
 
 class QuicServerSession : public QuicSession {
@@ -46,7 +46,7 @@ class QuicServerSession : public QuicSession {
                     QuicSessionOwner* owner);
 
   // Override the base class to notify the owner of the connection close.
-  virtual void ConnectionClose(QuicErrorCode error, bool from_peer) OVERRIDE;
+  virtual void OnConnectionClosed(QuicErrorCode error, bool from_peer) OVERRIDE;
 
   virtual ~QuicServerSession();
 

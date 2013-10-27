@@ -121,20 +121,20 @@ class QuicConnectionHelperTest : public ::testing::Test {
                                           net_log_.net_log()));
     socket_->Connect(IPEndPoint());
     runner_ = new TestTaskRunner(&clock_);
-    helper_ = new QuicConnectionHelper(runner_.get(), &clock_,
-                                       &random_generator_);
+    helper_.reset(new QuicConnectionHelper(runner_.get(), &clock_,
+                                           &random_generator_));
     send_algorithm_ = new testing::StrictMock<MockSendAlgorithm>();
     EXPECT_CALL(*send_algorithm_, TimeUntilSend(_, _, _, _)).
         WillRepeatedly(Return(QuicTime::Delta::Zero()));
-    EXPECT_CALL(*send_algorithm_, BandwidthEstimate()).WillRepeatedly(
-        Return(QuicBandwidth::FromKBitsPerSecond(100)));
-    EXPECT_CALL(*send_algorithm_, SmoothedRtt()).WillRepeatedly(
-        Return(QuicTime::Delta::FromMilliseconds(100)));
+    EXPECT_CALL(*send_algorithm_, BandwidthEstimate()).WillRepeatedly(Return(
+        QuicBandwidth::FromKBitsPerSecond(100)));
+    EXPECT_CALL(*send_algorithm_, SmoothedRtt()).WillRepeatedly(Return(
+        QuicTime::Delta::FromMilliseconds(100)));
     ON_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _))
         .WillByDefault(Return(true));
     EXPECT_CALL(visitor_, HasPendingHandshake()).Times(AnyNumber());
     writer_.reset(new QuicDefaultPacketWriter(socket_.get()));
-    connection_.reset(new TestConnection(guid_, IPEndPoint(), helper_,
+    connection_.reset(new TestConnection(guid_, IPEndPoint(), helper_.get(),
                                          writer_.get()));
     connection_->set_visitor(&visitor_);
     connection_->SetSendAlgorithm(send_algorithm_);
@@ -200,14 +200,14 @@ class QuicConnectionHelperTest : public ::testing::Test {
 
   testing::StrictMock<MockSendAlgorithm>* send_algorithm_;
   scoped_refptr<TestTaskRunner> runner_;
-  QuicConnectionHelper* helper_;
+  scoped_ptr<QuicConnectionHelper> helper_;
+  scoped_ptr<TestConnection> connection_;
+  testing::StrictMock<MockConnectionVisitor> visitor_;
   scoped_ptr<QuicDefaultPacketWriter> writer_;
   scoped_ptr<MockUDPClientSocket> socket_;
   scoped_ptr<MockWrite[]> mock_writes_;
   MockClock clock_;
   MockRandom random_generator_;
-  scoped_ptr<TestConnection> connection_;
-  testing::StrictMock<MockConnectionVisitor> visitor_;
 
  private:
   void InitializeHeader(QuicPacketSequenceNumber sequence_number) {
@@ -430,7 +430,7 @@ TEST_F(QuicConnectionHelperTest, InitialTimeout) {
   EXPECT_CALL(*send_algorithm_, RetransmissionDelay()).WillOnce(
       Return(QuicTime::Delta::FromMicroseconds(1)));
   // After we run the next task, we should close the connection.
-  EXPECT_CALL(visitor_, ConnectionClose(QUIC_CONNECTION_TIMED_OUT, false));
+  EXPECT_CALL(visitor_, OnConnectionClosed(QUIC_CONNECTION_TIMED_OUT, false));
 
   runner_->RunNextTask();
   EXPECT_EQ(QuicTime::Zero().Add(QuicTime::Delta::FromSeconds(
@@ -468,7 +468,8 @@ TEST_F(QuicConnectionHelperTest, TimeoutAfterSend) {
   EXPECT_TRUE(connection_->connected());
 
   // This time, we should time out.
-  EXPECT_CALL(visitor_, ConnectionClose(QUIC_CONNECTION_TIMED_OUT, !kFromPeer));
+  EXPECT_CALL(visitor_,
+              OnConnectionClosed(QUIC_CONNECTION_TIMED_OUT, !kFromPeer));
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, 2, _, NOT_RETRANSMISSION,
                                              HAS_RETRANSMITTABLE_DATA));
   EXPECT_CALL(*send_algorithm_, RetransmissionDelay()).WillOnce(

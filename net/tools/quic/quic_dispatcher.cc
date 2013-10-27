@@ -47,6 +47,7 @@ QuicDispatcher::QuicDispatcher(const QuicConfig& config,
       epoll_server_(epoll_server),
       fd_(fd),
       write_blocked_(false),
+      helper_(new QuicEpollConnectionHelper(epoll_server_)),
       writer_(new QuicDefaultPacketWriter(fd)) {
 }
 
@@ -176,7 +177,7 @@ void QuicDispatcher::Shutdown() {
   DeleteSessions();
 }
 
-void QuicDispatcher::OnConnectionClose(QuicGuid guid, QuicErrorCode error) {
+void QuicDispatcher::OnConnectionClosed(QuicGuid guid, QuicErrorCode error) {
   SessionMap::iterator it = session_map_.find(guid);
   if (it == session_map_.end()) {
     LOG(DFATAL) << "GUID " << guid << " does not exist in the session map.  "
@@ -199,10 +200,8 @@ void QuicDispatcher::OnConnectionClose(QuicGuid guid, QuicErrorCode error) {
 QuicSession* QuicDispatcher::CreateQuicSession(
     QuicGuid guid,
     const IPEndPoint& client_address) {
-  QuicConnectionHelperInterface* helper =
-      new QuicEpollConnectionHelper(epoll_server_);
   QuicServerSession* session = new QuicServerSession(
-      config_, new QuicConnection(guid, client_address, helper, this,
+      config_, new QuicConnection(guid, client_address, helper_.get(), this,
                                   true, QuicVersionMax()), this);
   session->InitializeSession(crypto_config_);
   return session;

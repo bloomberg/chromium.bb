@@ -521,7 +521,7 @@ class QuicConnectionTest : public ::testing::TestWithParam<bool> {
         send_algorithm_(new StrictMock<MockSendAlgorithm>),
         helper_(new TestConnectionHelper(&clock_, &random_generator_)),
         writer_(new TestPacketWriter()),
-        connection_(guid_, IPEndPoint(), helper_, writer_.get(), false),
+        connection_(guid_, IPEndPoint(), helper_.get(), writer_.get(), false),
         frame1_(1, false, 0, data1),
         frame2_(1, false, 3, data2),
         accept_packet_(true) {
@@ -798,7 +798,7 @@ class QuicConnectionTest : public ::testing::TestWithParam<bool> {
   TestReceiveAlgorithm* receive_algorithm_;
   MockClock clock_;
   MockRandom random_generator_;
-  TestConnectionHelper* helper_;
+  scoped_ptr<TestConnectionHelper> helper_;
   scoped_ptr<TestPacketWriter> writer_;
   TestConnection connection_;
   StrictMock<MockConnectionVisitor> visitor_;
@@ -915,7 +915,7 @@ TEST_P(QuicConnectionTest, PacketsOutOfOrderWithAdditionsAndLeastAwaiting) {
 TEST_P(QuicConnectionTest, RejectPacketTooFarOut) {
   // Call ProcessDataPacket rather than ProcessPacket, as we should not get a
   // packet call to the visitor.
-  EXPECT_CALL(visitor_, ConnectionClose(QUIC_INVALID_PACKET_HEADER, false));
+  EXPECT_CALL(visitor_, OnConnectionClosed(QUIC_INVALID_PACKET_HEADER, false));
   ProcessDataPacket(6000, 0, !kEntropyFlag);
 }
 
@@ -1055,7 +1055,7 @@ TEST_P(QuicConnectionTest, LeastUnackedLower) {
 
   // Now claim it's one, but set the ordering so it was sent "after" the first
   // one.  This should cause a connection error.
-  EXPECT_CALL(visitor_, ConnectionClose(QUIC_INVALID_ACK_DATA, false));
+  EXPECT_CALL(visitor_, OnConnectionClosed(QUIC_INVALID_ACK_DATA, false));
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _));
   creator_.set_sequence_number(7);
   ProcessAckPacket(&frame2);
@@ -1077,14 +1077,14 @@ TEST_P(QuicConnectionTest, LargestObservedLower) {
 
   // Now change it to 1, and it should cause a connection error.
   QuicAckFrame frame2(1, QuicTime::Zero(), 0);
-  EXPECT_CALL(visitor_, ConnectionClose(QUIC_INVALID_ACK_DATA, false));
+  EXPECT_CALL(visitor_, OnConnectionClosed(QUIC_INVALID_ACK_DATA, false));
   EXPECT_CALL(visitor_, OnCanWrite()).Times(0);
   ProcessAckPacket(&frame2);
 }
 
 TEST_P(QuicConnectionTest, LeastUnackedGreaterThanPacketSequenceNumber) {
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
-  EXPECT_CALL(visitor_, ConnectionClose(QUIC_INVALID_ACK_DATA, false));
+  EXPECT_CALL(visitor_, OnConnectionClosed(QUIC_INVALID_ACK_DATA, false));
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _));
   // Create an ack with least_unacked is 2 in packet number 1.
   creator_.set_sequence_number(0);
@@ -1101,7 +1101,7 @@ TEST_P(QuicConnectionTest,
   SendStreamDataToPeer(1, "bar", 3, !kFin, NULL);
   SendStreamDataToPeer(1, "eep", 6, !kFin, NULL);
 
-  EXPECT_CALL(visitor_, ConnectionClose(QUIC_INVALID_ACK_DATA, false));
+  EXPECT_CALL(visitor_, OnConnectionClosed(QUIC_INVALID_ACK_DATA, false));
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _));
   QuicAckFrame frame(0, QuicTime::Zero(), 1);
   frame.received_info.missing_packets.insert(3);
@@ -1111,7 +1111,7 @@ TEST_P(QuicConnectionTest,
 
 TEST_P(QuicConnectionTest, AckUnsentData) {
   // Ack a packet which has not been sent.
-  EXPECT_CALL(visitor_, ConnectionClose(QUIC_INVALID_ACK_DATA, false));
+  EXPECT_CALL(visitor_, OnConnectionClosed(QUIC_INVALID_ACK_DATA, false));
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _));
   QuicAckFrame frame(1, QuicTime::Zero(), 0);
@@ -2296,7 +2296,7 @@ TEST_P(QuicConnectionTest, DontUpdateQuicCongestionFeedbackFrameForRevived) {
 
 TEST_P(QuicConnectionTest, InitialTimeout) {
   EXPECT_TRUE(connection_.connected());
-  EXPECT_CALL(visitor_, ConnectionClose(QUIC_CONNECTION_TIMED_OUT, false));
+  EXPECT_CALL(visitor_, OnConnectionClosed(QUIC_CONNECTION_TIMED_OUT, false));
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _));
 
   QuicTime default_timeout = clock_.ApproximateNow().Add(
@@ -2337,7 +2337,7 @@ TEST_P(QuicConnectionTest, TimeoutAfterSend) {
             connection_.GetTimeoutAlarm()->deadline());
 
   // This time, we should time out.
-  EXPECT_CALL(visitor_, ConnectionClose(QUIC_CONNECTION_TIMED_OUT, false));
+  EXPECT_CALL(visitor_, OnConnectionClosed(QUIC_CONNECTION_TIMED_OUT, false));
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _));
   clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(5));
   EXPECT_EQ(default_timeout.Add(QuicTime::Delta::FromMilliseconds(5)),
@@ -2605,14 +2605,14 @@ TEST_P(QuicConnectionTest, NoAckForClose) {
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
   ProcessPacket(1);
   EXPECT_CALL(*send_algorithm_, OnIncomingAck(_, _, _)).Times(0);
-  EXPECT_CALL(visitor_, ConnectionClose(QUIC_PEER_GOING_AWAY, true));
+  EXPECT_CALL(visitor_, OnConnectionClosed(QUIC_PEER_GOING_AWAY, true));
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(0);
   ProcessClosePacket(2, 0);
 }
 
 TEST_P(QuicConnectionTest, SendWhenDisconnected) {
   EXPECT_TRUE(connection_.connected());
-  EXPECT_CALL(visitor_, ConnectionClose(QUIC_PEER_GOING_AWAY, false));
+  EXPECT_CALL(visitor_, OnConnectionClosed(QUIC_PEER_GOING_AWAY, false));
   connection_.CloseConnection(QUIC_PEER_GOING_AWAY, false);
   EXPECT_FALSE(connection_.connected());
   QuicPacket* packet = ConstructDataPacket(1, 0, !kEntropyFlag);
@@ -2629,7 +2629,7 @@ TEST_P(QuicConnectionTest, PublicReset) {
   header.rejected_sequence_number = 10101;
   scoped_ptr<QuicEncryptedPacket> packet(
       framer_.BuildPublicResetPacket(header));
-  EXPECT_CALL(visitor_, ConnectionClose(QUIC_PUBLIC_RESET, true));
+  EXPECT_CALL(visitor_, OnConnectionClosed(QUIC_PUBLIC_RESET, true));
   connection_.ProcessUdpPacket(IPEndPoint(), IPEndPoint(), *packet);
 }
 
@@ -2898,8 +2898,9 @@ TEST_P(QuicConnectionTest, BadVersionNegotiation) {
 
   // Send a version negotiation packet with the version the client started with.
   // It should be rejected.
-  EXPECT_CALL(visitor_, ConnectionClose(QUIC_INVALID_VERSION_NEGOTIATION_PACKET,
-                                        false));
+  EXPECT_CALL(visitor_,
+              OnConnectionClosed(QUIC_INVALID_VERSION_NEGOTIATION_PACKET,
+                                 false));
   scoped_ptr<QuicEncryptedPacket> encrypted(
       framer_.BuildVersionNegotiationPacket(
           header.public_header, supported_versions));
@@ -3033,7 +3034,7 @@ TEST_P(QuicConnectionTest, DontProcessFramesIfPacketClosedConnection) {
   scoped_ptr<QuicEncryptedPacket> encrypted(framer_.EncryptPacket(
       ENCRYPTION_NONE, 1, *packet));
 
-  EXPECT_CALL(visitor_, ConnectionClose(QUIC_PEER_GOING_AWAY, true));
+  EXPECT_CALL(visitor_, OnConnectionClosed(QUIC_PEER_GOING_AWAY, true));
   EXPECT_CALL(visitor_, OnStreamFrames(_)).Times(0);
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
 
@@ -3078,7 +3079,7 @@ TEST_P(QuicConnectionTest, ConnectionCloseWhenNotWriteBlocked) {
   EXPECT_EQ(1u, writer_->packets_write_attempts());
 
   // Send an erroneous packet to close the connection.
-  EXPECT_CALL(visitor_, ConnectionClose(QUIC_INVALID_PACKET_HEADER, false));
+  EXPECT_CALL(visitor_, OnConnectionClosed(QUIC_INVALID_PACKET_HEADER, false));
   ProcessDataPacket(6000, 0, !kEntropyFlag);
   EXPECT_EQ(2u, writer_->packets_write_attempts());
 }
@@ -3093,7 +3094,7 @@ TEST_P(QuicConnectionTest, ConnectionCloseWhenWriteBlocked) {
   EXPECT_EQ(1u, writer_->packets_write_attempts());
 
   // Send an erroneous packet to close the connection.
-  EXPECT_CALL(visitor_, ConnectionClose(QUIC_INVALID_PACKET_HEADER, false));
+  EXPECT_CALL(visitor_, OnConnectionClosed(QUIC_INVALID_PACKET_HEADER, false));
   ProcessDataPacket(6000, 0, !kEntropyFlag);
   EXPECT_EQ(1u, writer_->packets_write_attempts());
 }
@@ -3102,7 +3103,7 @@ TEST_P(QuicConnectionTest, ConnectionCloseWhenNothingPending) {
   writer_->set_blocked(true);
 
   // Send an erroneous packet to close the connection.
-  EXPECT_CALL(visitor_, ConnectionClose(QUIC_INVALID_PACKET_HEADER, false));
+  EXPECT_CALL(visitor_, OnConnectionClosed(QUIC_INVALID_PACKET_HEADER, false));
   ProcessDataPacket(6000, 0, !kEntropyFlag);
   EXPECT_EQ(1u, writer_->packets_write_attempts());
 }

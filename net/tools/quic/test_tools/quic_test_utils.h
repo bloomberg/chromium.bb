@@ -87,6 +87,7 @@ class MockConnection : public QuicConnection {
  private:
   const bool has_mock_helper_;
   scoped_ptr<QuicPacketWriter> writer_;
+  scoped_ptr<QuicConnectionHelperInterface> helper_;
 
   DISALLOW_COPY_AND_ASSIGN(MockConnection);
 };
@@ -129,7 +130,7 @@ class MockQuicSessionOwner : public QuicSessionOwner {
  public:
   MockQuicSessionOwner();
   ~MockQuicSessionOwner();
-  MOCK_METHOD2(OnConnectionClose, void(QuicGuid guid, QuicErrorCode error));
+  MOCK_METHOD2(OnConnectionClosed, void(QuicGuid guid, QuicErrorCode error));
 };
 
 class TestDecompressorVisitor : public QuicSpdyDecompressor::Visitor {

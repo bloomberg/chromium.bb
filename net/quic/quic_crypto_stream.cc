@@ -24,7 +24,8 @@ QuicCryptoStream::QuicCryptoStream(QuicSession* session)
 }
 
 void QuicCryptoStream::OnError(CryptoFramer* framer) {
-  session()->ConnectionClose(framer->error(), false);
+  DLOG(WARNING) << "Error processing crypto data: "
+                << QuicUtils::ErrorToString(framer->error());
 }
 
 void QuicCryptoStream::OnHandshakeMessage(
@@ -44,15 +45,6 @@ uint32 QuicCryptoStream::ProcessData(const char* data,
     return 0;
   }
   return data_len;
-}
-
-void QuicCryptoStream::CloseConnection(QuicErrorCode error) {
-  session()->connection()->SendConnectionClose(error);
-}
-
-void QuicCryptoStream::CloseConnectionWithDetails(QuicErrorCode error,
-                                                  const string& details) {
-  session()->connection()->SendConnectionCloseWithDetails(error, details);
 }
 
 void QuicCryptoStream::SendHandshakeMessage(

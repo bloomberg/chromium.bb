@@ -59,8 +59,9 @@ class VisitorShim : public QuicConnectionVisitorInterface {
     session_->OnSuccessfulVersionNegotiation(version);
   }
 
-  virtual void ConnectionClose(QuicErrorCode error, bool from_peer) OVERRIDE {
-    session_->ConnectionClose(error, from_peer);
+  virtual void OnConnectionClosed(QuicErrorCode error,
+                                  bool from_peer) OVERRIDE {
+    session_->OnConnectionClosed(error, from_peer);
     // The session will go away, so don't bother with cleanup.
   }
 
@@ -183,7 +184,7 @@ void QuicSession::OnGoAway(const QuicGoAwayFrame& frame) {
   goaway_received_ = true;
 }
 
-void QuicSession::ConnectionClose(QuicErrorCode error, bool from_peer) {
+void QuicSession::OnConnectionClosed(QuicErrorCode error, bool from_peer) {
   DCHECK(!connection_->connected());
   if (error_ == QUIC_NO_ERROR) {
     error_ = error;
@@ -192,10 +193,11 @@ void QuicSession::ConnectionClose(QuicErrorCode error, bool from_peer) {
   while (stream_map_.size() != 0) {
     ReliableStreamMap::iterator it = stream_map_.begin();
     QuicStreamId id = it->first;
-    it->second->ConnectionClose(error, from_peer);
-    // The stream should call CloseStream as part of ConnectionClose.
+    it->second->OnConnectionClosed(error, from_peer);
+    // The stream should call CloseStream as part of OnConnectionClosed.
     if (stream_map_.find(id) != stream_map_.end()) {
-      LOG(DFATAL) << ENDPOINT << "Stream failed to close under ConnectionClose";
+      LOG(DFATAL) << ENDPOINT
+                  << "Stream failed to close under OnConnectionClosed";
       CloseStream(id);
     }
   }

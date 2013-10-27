@@ -197,10 +197,10 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<bool> {
         Return(QuicTime::Delta::Zero()));
     EXPECT_CALL(*send_algorithm_, BandwidthEstimate()).WillRepeatedly(
         Return(QuicBandwidth::Zero()));
-    helper_ = new QuicConnectionHelper(runner_.get(), &clock_,
-                                       &random_generator_);
+    helper_.reset(new QuicConnectionHelper(runner_.get(), &clock_,
+                                           &random_generator_));
     writer_.reset(new QuicDefaultPacketWriter(socket));
-    connection_ = new TestQuicConnection(guid_, peer_addr_, helper_,
+    connection_ = new TestQuicConnection(guid_, peer_addr_, helper_.get(),
                                          writer_.get());
     connection_->set_visitor(&visitor_);
     connection_->SetSendAlgorithm(send_algorithm_);
@@ -305,7 +305,7 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<bool> {
   MockClock clock_;
   MockRandom random_generator_;
   TestQuicConnection* connection_;
-  QuicConnectionHelper* helper_;
+  scoped_ptr<QuicConnectionHelper> helper_;
   testing::StrictMock<MockConnectionVisitor> visitor_;
   scoped_ptr<QuicHttpStream> stream_;
   scoped_ptr<QuicDefaultPacketWriter> writer_;

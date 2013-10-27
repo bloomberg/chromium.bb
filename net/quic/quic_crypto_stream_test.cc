@@ -78,12 +78,6 @@ TEST_F(QuicCryptoStreamTest, NotInitiallyConected) {
   EXPECT_FALSE(stream_.handshake_confirmed());
 }
 
-TEST_F(QuicCryptoStreamTest, OnErrorClosesConnection) {
-  CryptoFramer framer;
-  EXPECT_CALL(session_, ConnectionClose(QUIC_NO_ERROR, false));
-  stream_.OnError(&framer);
-}
-
 TEST_F(QuicCryptoStreamTest, ProcessData) {
   EXPECT_EQ(message_data_->length(),
             stream_.ProcessData(message_data_->data(),

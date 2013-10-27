@@ -440,15 +440,16 @@ QuicClientSession* QuicStreamFactory::CreateSession(
   // wrong encryption level, when the send buffer is full.
   socket->SetSendBufferSize(kMaxPacketSize * 20); // Support 20 packets.
 
-  QuicConnectionHelper* helper = new QuicConnectionHelper(
-      base::MessageLoop::current()->message_loop_proxy().get(),
-      clock_.get(),
-      random_generator_);
-
   scoped_ptr<QuicDefaultPacketWriter> writer(
       new QuicDefaultPacketWriter(socket.get()));
 
-  QuicConnection* connection = new QuicConnection(guid, addr, helper,
+  if (!helper_.get()) {
+    helper_.reset(new QuicConnectionHelper(
+        base::MessageLoop::current()->message_loop_proxy().get(),
+        clock_.get(), random_generator_));
+  }
+
+  QuicConnection* connection = new QuicConnection(guid, addr, helper_.get(),
                                                   writer.get(), false,
                                                   QuicVersionMax());
   writer->SetConnection(connection);

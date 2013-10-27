@@ -80,7 +80,8 @@ bool QuicStreamSequencer::OnStreamFrame(const QuicStreamFrame& frame) {
 
   if (data_len == 0 && !frame.fin) {
     // Stream frames must have data or a fin flag.
-    stream_->ConnectionClose(QUIC_INVALID_STREAM_FRAME, false);
+    stream_->CloseConnectionWithDetails(QUIC_INVALID_STREAM_FRAME,
+                                        "Empty stream frame without FIN set.");
     return false;
   }
 

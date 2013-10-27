@@ -183,7 +183,7 @@ base::Value* NetLogQuicCryptoHandshakeMessageCallback(
   return dict;
 }
 
-base::Value* NetLogQuicConnectionClosedCallback(
+base::Value* NetLogQuicOnConnectionClosedCallback(
     QuicErrorCode error,
     bool from_peer,
     NetLog::LogLevel /* log_level */) {
@@ -416,11 +416,11 @@ void QuicConnectionLogger::OnCryptoHandshakeMessageSent(
       base::Bind(&NetLogQuicCryptoHandshakeMessageCallback, &message));
 }
 
-void QuicConnectionLogger::OnConnectionClose(QuicErrorCode error,
-                                             bool from_peer) {
+void QuicConnectionLogger::OnConnectionClosed(QuicErrorCode error,
+                                              bool from_peer) {
   net_log_.AddEvent(
       NetLog::TYPE_QUIC_SESSION_CLOSED,
-      base::Bind(&NetLogQuicConnectionClosedCallback, error, from_peer));
+      base::Bind(&NetLogQuicOnConnectionClosedCallback, error, from_peer));
 }
 
 void QuicConnectionLogger::OnSuccessfulVersionNegotiation(

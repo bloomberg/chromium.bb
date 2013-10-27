@@ -11,6 +11,7 @@
 #include <list>
 
 #include "base/containers/hash_tables.h"
+#include "base/memory/scoped_ptr.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/linked_hash_map.h"
 #include "net/quic/quic_blocked_writer_interface.h"
@@ -46,6 +47,8 @@ class QuicDispatcherPeer;
 }  // namespace test
 
 class DeleteSessionsAlarm;
+class QuicEpollConnectionHelper;
+
 class QuicDispatcher : public QuicPacketWriter, public QuicSessionOwner {
  public:
   // Ideally we'd have a linked_hash_set: the  boolean is unused.
@@ -82,7 +85,7 @@ class QuicDispatcher : public QuicPacketWriter, public QuicSessionOwner {
   void Shutdown();
 
   // Ensure that the closed connection is cleaned up asynchronously.
-  virtual void OnConnectionClose(QuicGuid guid, QuicErrorCode error) OVERRIDE;
+  virtual void OnConnectionClosed(QuicGuid guid, QuicErrorCode error) OVERRIDE;
 
   // Sets the fd and creates a default packet writer with that fd.
   void set_fd(int fd);
@@ -112,6 +115,7 @@ class QuicDispatcher : public QuicPacketWriter, public QuicSessionOwner {
     return time_wait_list_manager_.get();
   }
 
+  QuicEpollConnectionHelper* helper() { return helper_.get(); }
   EpollServer* epoll_server() { return epoll_server_; }
 
  private:
@@ -143,6 +147,9 @@ class QuicDispatcher : public QuicPacketWriter, public QuicSessionOwner {
   // True if the session is write blocked due to the socket returning EAGAIN.
   // False if we have gotten a call to OnCanWrite after the last failed write.
   bool write_blocked_;
+
+  // The helper used for all connections.
+  scoped_ptr<QuicEpollConnectionHelper> helper_;
 
   // The writer to write to the socket with.
   scoped_ptr<QuicPacketWriter> writer_;

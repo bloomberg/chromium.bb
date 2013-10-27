@@ -154,7 +154,7 @@ void QuicConnectionPeer::SwapCrypters(QuicConnection* connection,
 // static
 QuicConnectionHelperInterface* QuicConnectionPeer::GetHelper(
     QuicConnection* connection) {
-  return connection->helper_.get();
+  return connection->helper_;
 }
 
 // static

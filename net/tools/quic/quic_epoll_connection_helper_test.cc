@@ -85,8 +85,8 @@ class QuicEpollConnectionHelperTest : public ::testing::Test {
       : guid_(42),
         framer_(QuicVersionMax(), QuicTime::Zero(), false),
         send_algorithm_(new testing::StrictMock<MockSendAlgorithm>),
-        helper_(new QuicEpollConnectionHelper(&epoll_server_)),
-        connection_(guid_, IPEndPoint(), helper_, &writer_),
+        helper_(&epoll_server_),
+        connection_(guid_, IPEndPoint(), &helper_, &writer_),
         frame_(3, false, 0, kData) {
     connection_.set_visitor(&visitor_);
     connection_.SetSendAlgorithm(send_algorithm_);
@@ -122,7 +122,7 @@ class QuicEpollConnectionHelperTest : public ::testing::Test {
 
   MockEpollServer epoll_server_;
   testing::StrictMock<MockSendAlgorithm>* send_algorithm_;
-  QuicEpollConnectionHelper* helper_;
+  QuicEpollConnectionHelper helper_;
   TestWriter writer_;
   TestConnection connection_;
   testing::StrictMock<MockConnectionVisitor> visitor_;
@@ -165,7 +165,8 @@ TEST_F(QuicEpollConnectionHelperTest, InitialTimeout) {
                                              HAS_RETRANSMITTABLE_DATA));
   EXPECT_CALL(*send_algorithm_, RetransmissionDelay()).WillOnce(
       Return(QuicTime::Delta::FromMicroseconds(1)));
-  EXPECT_CALL(visitor_, ConnectionClose(QUIC_CONNECTION_TIMED_OUT, !kFromPeer));
+  EXPECT_CALL(visitor_,
+              OnConnectionClosed(QUIC_CONNECTION_TIMED_OUT, !kFromPeer));
   epoll_server_.WaitForEventsAndExecuteCallbacks();
   EXPECT_FALSE(connection_.connected());
   EXPECT_EQ(kDefaultInitialTimeoutSecs * 1000000, epoll_server_.NowInUsec());
@@ -191,7 +192,8 @@ TEST_F(QuicEpollConnectionHelperTest, TimeoutAfterSend) {
   EXPECT_EQ(kDefaultInitialTimeoutSecs * 1000000, epoll_server_.NowInUsec());
 
   // This time, we should time out.
-  EXPECT_CALL(visitor_, ConnectionClose(QUIC_CONNECTION_TIMED_OUT, !kFromPeer));
+  EXPECT_CALL(visitor_,
+              OnConnectionClosed(QUIC_CONNECTION_TIMED_OUT, !kFromPeer));
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, 2, _, NOT_RETRANSMISSION,
                                              HAS_RETRANSMITTABLE_DATA));
   EXPECT_CALL(*send_algorithm_, RetransmissionDelay()).WillOnce(

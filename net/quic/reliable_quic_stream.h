@@ -66,7 +66,7 @@ class NET_EXPORT_PRIVATE ReliableQuicStream : public
   // Called when we get or send a connection close, and should immediately
   // close the stream.  This is not passed through the sequencer,
   // but is handled immediately.
-  virtual void ConnectionClose(QuicErrorCode error, bool from_peer);
+  virtual void OnConnectionClosed(QuicErrorCode error, bool from_peer);
 
   // Called when we should process a stream termination or
   // stream close from the peer.
@@ -82,6 +82,11 @@ class NET_EXPORT_PRIVATE ReliableQuicStream : public
 
   // Called to close the stream from this end.
   virtual void Close(QuicRstStreamErrorCode error);
+
+  // Called to close the entire connection from this end.
+  virtual void CloseConnection(QuicErrorCode error);
+  virtual void CloseConnectionWithDetails(QuicErrorCode error,
+                                          const string& details);
 
   // This block of functions wraps the sequencer's functions of the same
   // name.  These methods return uncompressed data until that has

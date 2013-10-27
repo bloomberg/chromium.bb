@@ -133,8 +133,10 @@ class EndToEndTest : public ::testing::TestWithParam<QuicVersion> {
     server_thread_->listening()->Wait();
     server_address_ = IPEndPoint(server_address_.address(),
                                  server_thread_->GetPort());
-    QuicDispatcher* dispatcher = QuicServerPeer::GetDispatcher(
-        server_thread_->server());
+    QuicDispatcher* dispatcher =
+        QuicServerPeer::GetDispatcher(server_thread_->server());
+    server_writer_->SetConnectionHelper(
+        QuicDispatcherPeer::GetHelper(dispatcher));
     QuicDispatcherPeer::UseWriter(dispatcher, server_writer_);
     server_started_ = true;
   }
@@ -165,21 +167,18 @@ class EndToEndTest : public ::testing::TestWithParam<QuicVersion> {
     // server_writer_->set_fake_packet_loss_percentage(loss);
   }
 
-  void SetRTT(QuicTime::Delta rtt) {
-    // TODO(ianswett): For now, the RTT is entirely simulated on the client
-    // side, because the server's writer does not have a ConnectionHelper.
+  void SetPacketSendDelay(QuicTime::Delta delay) {
     // TODO(rtenneti): enable when we can do random packet loss tests in
     // chrome's tree.
-    // client_writer_->set_fake_packet_delay(rtt);
+    // client_writer_->set_fake_packet_delay(delay);
+    // server_writer_->set_fake_packet_delay(delay);
   }
 
   void SetReorderPercentage(int32 reorder) {
-    // TODO(ianswett): For now, the reordering is entirely simulated on the
-    // client side, because the server's writer does not have a
-    // ConnectionHelper.
     // TODO(rtenneti): enable when we can do random packet loss tests in
     // chrome's tree.
     // client_writer_->set_fake_reorder_percentage(reorder);
+    // server_writer_->set_fake_reorder_percentage(reorder);
   }
 
   IPEndPoint server_address_;
@@ -391,10 +390,11 @@ TEST_P(EndToEndTest, LargePostWithPacketLoss) {
 
 TEST_P(EndToEndTest, LargePostNoPacketLossWithDelayAndReordering) {
   ASSERT_TRUE(Initialize());
-  SetRTT(QuicTime::Delta::FromMilliseconds(2));
-  SetReorderPercentage(30);
 
   client_->client()->WaitForCryptoHandshakeConfirmed();
+  // Both of these must be called when the writer is not actively used.
+  SetPacketSendDelay(QuicTime::Delta::FromMilliseconds(2));
+  SetReorderPercentage(30);
 
   // 1 Mb body.
   string body;

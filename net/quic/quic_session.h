@@ -63,7 +63,7 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
       const std::vector<QuicStreamFrame>& frames) OVERRIDE;
   virtual void OnRstStream(const QuicRstStreamFrame& frame) OVERRIDE;
   virtual void OnGoAway(const QuicGoAwayFrame& frame) OVERRIDE;
-  virtual void ConnectionClose(QuicErrorCode error, bool from_peer) OVERRIDE;
+  virtual void OnConnectionClosed(QuicErrorCode error, bool from_peer) OVERRIDE;
   virtual void OnSuccessfulVersionNegotiation(
       const QuicVersion& version) OVERRIDE{}
   // Not needed for HTTP.

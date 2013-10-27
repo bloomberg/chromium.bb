@@ -211,7 +211,8 @@ MockConnection::MockConnection(QuicGuid guid,
                      new testing::NiceMock<MockPacketWriter>(),
                      is_server, QuicVersionMax()),
       has_mock_helper_(true),
-      writer_(QuicConnectionPeer::GetWriter(this)) {
+      writer_(QuicConnectionPeer::GetWriter(this)),
+      helper_(helper()) {
 }
 
 MockConnection::MockConnection(QuicGuid guid,

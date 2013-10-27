@@ -183,6 +183,9 @@ class QuicClient : public EpollCallbackInterface,
   // UDP socket.
   int fd_;
 
+  // Helper to be used by created connections.
+  scoped_ptr<QuicEpollConnectionHelper> helper_;
+
   // Writer used to actually send packets to the wire.
   scoped_ptr<QuicPacketWriter> writer_;
 

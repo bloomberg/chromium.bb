@@ -178,7 +178,7 @@ class MockConnectionVisitor : public QuicConnectionVisitorInterface {
   MOCK_METHOD1(OnStreamFrames, bool(const std::vector<QuicStreamFrame>& frame));
   MOCK_METHOD1(OnRstStream, void(const QuicRstStreamFrame& frame));
   MOCK_METHOD1(OnGoAway, void(const QuicGoAwayFrame& frame));
-  MOCK_METHOD2(ConnectionClose, void(QuicErrorCode error, bool from_peer));
+  MOCK_METHOD2(OnConnectionClosed, void(QuicErrorCode error, bool from_peer));
   MOCK_METHOD0(OnCanWrite, bool());
   MOCK_CONST_METHOD0(HasPendingHandshake, bool());
   MOCK_METHOD1(OnSuccessfulVersionNegotiation,
@@ -246,6 +246,7 @@ class MockConnection : public QuicConnection {
  private:
   const bool has_mock_helper_;
   scoped_ptr<QuicPacketWriter> writer_;
+  scoped_ptr<QuicConnectionHelperInterface> helper_;
 
   DISALLOW_COPY_AND_ASSIGN(MockConnection);
 };
@@ -280,7 +281,7 @@ class MockSession : public QuicSession {
                               const IPEndPoint& peer_address,
                               const QuicPacketHeader& header,
                               const std::vector<QuicStreamFrame>& frame));
-  MOCK_METHOD2(ConnectionClose, void(QuicErrorCode error, bool from_peer));
+  MOCK_METHOD2(OnConnectionClosed, void(QuicErrorCode error, bool from_peer));
   MOCK_METHOD1(CreateIncomingReliableStream,
                ReliableQuicStream*(QuicStreamId id));
   MOCK_METHOD0(GetCryptoStream, QuicCryptoStream*());

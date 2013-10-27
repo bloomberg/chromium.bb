@@ -98,15 +98,6 @@ QuicServerConfigProtobuf* QuicCryptoServerConfig::DefaultConfig(
       Curve25519KeyExchange::New(curve25519_private_key));
   StringPiece curve25519_public_value = curve25519->public_value();
 
-  string p256_private_key;
-  StringPiece p256_public_value;
-  scoped_ptr<P256KeyExchange> p256;
-  if (options.p256) {
-    p256_private_key = P256KeyExchange::NewPrivateKey();
-    p256.reset(P256KeyExchange::New(p256_private_key));
-    p256_public_value = p256->public_value();
-  }
-
   string encoded_public_values;
   // First three bytes encode the length of the public value.
   encoded_public_values.push_back(curve25519_public_value.size());
@@ -114,11 +105,19 @@ QuicServerConfigProtobuf* QuicCryptoServerConfig::DefaultConfig(
   encoded_public_values.push_back(curve25519_public_value.size() >> 16);
   encoded_public_values.append(curve25519_public_value.data(),
                                curve25519_public_value.size());
-  encoded_public_values.push_back(p256_public_value.size());
-  encoded_public_values.push_back(p256_public_value.size() >> 8);
-  encoded_public_values.push_back(p256_public_value.size() >> 16);
-  encoded_public_values.append(p256_public_value.data(),
-                               p256_public_value.size());
+
+  string p256_private_key;
+  if (options.p256) {
+    p256_private_key = P256KeyExchange::NewPrivateKey();
+    scoped_ptr<P256KeyExchange> p256(P256KeyExchange::New(p256_private_key));
+    StringPiece p256_public_value = p256->public_value();
+
+    encoded_public_values.push_back(p256_public_value.size());
+    encoded_public_values.push_back(p256_public_value.size() >> 8);
+    encoded_public_values.push_back(p256_public_value.size() >> 16);
+    encoded_public_values.append(p256_public_value.data(),
+                                 p256_public_value.size());
+  }
 
   msg.set_tag(kSCFG);
   if (options.p256) {
@@ -140,14 +139,6 @@ QuicServerConfigProtobuf* QuicCryptoServerConfig::DefaultConfig(
     msg.SetValue(kEXPY, options.expiry_time.ToUNIXSeconds());
   }
 
-  if (options.id.empty()) {
-    char scid_bytes[16];
-    rand->RandBytes(scid_bytes, sizeof(scid_bytes));
-    msg.SetStringPiece(kSCID, StringPiece(scid_bytes, sizeof(scid_bytes)));
-  } else {
-    msg.SetStringPiece(kSCID, options.id);
-  }
-
   char orbit_bytes[kOrbitSize];
   if (options.orbit.size() == sizeof(orbit_bytes)) {
     memcpy(orbit_bytes, options.orbit.data(), sizeof(orbit_bytes));
@@ -160,6 +151,24 @@ QuicServerConfigProtobuf* QuicCryptoServerConfig::DefaultConfig(
   if (options.channel_id_enabled) {
     msg.SetTaglist(kPDMD, kCHID, 0);
   }
+
+  if (options.id.empty()) {
+    // We need to ensure that the SCID changes whenever the server config does
+    // thus we make it a hash of the rest of the server config.
+    scoped_ptr<QuicData> serialized(
+        CryptoFramer::ConstructHandshakeMessage(msg));
+    scoped_ptr<SecureHash> hash(SecureHash::Create(SecureHash::SHA256));
+    hash->Update(serialized->data(), serialized->length());
+
+    char scid_bytes[16];
+    hash->Finish(scid_bytes, sizeof(scid_bytes));
+    msg.SetStringPiece(kSCID, StringPiece(scid_bytes, sizeof(scid_bytes)));
+  } else {
+    msg.SetStringPiece(kSCID, options.id);
+  }
+  // Don't put new tags below this point. The SCID generation should hash over
+  // everything but itself and so extra tags should be added prior to the
+  // preceeding if block.
 
   scoped_ptr<QuicData> serialized(CryptoFramer::ConstructHandshakeMessage(msg));
 

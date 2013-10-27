@@ -78,8 +78,8 @@ class NET_EXPORT_PRIVATE QuicConnectionVisitorInterface {
 
   // Called when the connection is closed either locally by the framer, or
   // remotely by the peer.
-  virtual void ConnectionClose(QuicErrorCode error,
-                               bool from_peer) = 0;
+  virtual void OnConnectionClosed(QuicErrorCode error,
+                                  bool from_peer) = 0;
 
   // Called once a specific QUIC version is agreed by both endpoints.
   virtual void OnSuccessfulVersionNegotiation(const QuicVersion& version) = 0;
@@ -189,7 +189,7 @@ class NET_EXPORT_PRIVATE QuicConnection
   };
 
   // Constructs a new QuicConnection for the specified |guid| and |address|.
-  // |helper| will be owned by this connection.
+  // |helper| and |writer| must outlive this connection.
   QuicConnection(QuicGuid guid,
                  IPEndPoint address,
                  QuicConnectionHelperInterface* helper,
@@ -441,7 +441,7 @@ class NET_EXPORT_PRIVATE QuicConnection
   // Make sure an ack we got from our peer is sane.
   bool ValidateAckFrame(const QuicAckFrame& incoming_ack);
 
-  QuicConnectionHelperInterface* helper() { return helper_.get(); }
+  QuicConnectionHelperInterface* helper() { return helper_; }
 
   // Selects and updates the version of the protocol being used by selecting a
   // version from |available_versions| which is also supported. Returns true if
@@ -648,8 +648,8 @@ class NET_EXPORT_PRIVATE QuicConnection
   // Closes any FEC groups protecting packets before |sequence_number|.
   void CloseFecGroupsBefore(QuicPacketSequenceNumber sequence_number);
 
-  scoped_ptr<QuicConnectionHelperInterface> helper_;
-  QuicPacketWriter* writer_;
+  QuicConnectionHelperInterface* helper_;  // Not owned.
+  QuicPacketWriter* writer_;  // Not owned.
   EncryptionLevel encryption_level_;
   const QuicClock* clock_;
   QuicRandom* random_generator_;

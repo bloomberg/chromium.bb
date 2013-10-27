@@ -1742,7 +1742,7 @@ void QuicConnection::SendConnectionClosePacket(QuicErrorCode error,
 void QuicConnection::CloseConnection(QuicErrorCode error, bool from_peer) {
   DCHECK(connected_);
   connected_ = false;
-  visitor_->ConnectionClose(error, from_peer);
+  visitor_->OnConnectionClosed(error, from_peer);
 }
 
 void QuicConnection::SendGoAway(QuicErrorCode error,

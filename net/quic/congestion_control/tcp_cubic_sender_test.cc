@@ -12,7 +12,7 @@
 namespace net {
 namespace test {
 
-const uint32 kDefaultWindowTCP = 10 * kMaxPacketSize;
+const uint32 kDefaultWindowTCP = 10 * kDefaultTCPMSS;
 // TODO(ianswett): Remove 10000 once b/10075719 is fixed.
 const QuicTcpCongestionWindow kDefaultMaxCongestionWindowTCP = 10000;
 
@@ -43,7 +43,7 @@ class TcpCubicSenderTest : public ::testing::Test {
   void SendAvailableSendWindow() {
     QuicByteCount bytes_to_send = sender_->AvailableSendWindow();
     while (bytes_to_send > 0) {
-      QuicByteCount bytes_in_packet = std::min(kMaxPacketSize, bytes_to_send);
+      QuicByteCount bytes_in_packet = std::min(kDefaultTCPMSS, bytes_to_send);
       sender_->OnPacketSent(clock_.Now(), sequence_number_++, bytes_in_packet,
                             NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA);
       bytes_to_send -= bytes_in_packet;
@@ -57,7 +57,7 @@ class TcpCubicSenderTest : public ::testing::Test {
   void AckNPackets(int n) {
     for (int i = 0; i < n; ++i) {
       acked_sequence_number_++;
-      sender_->OnIncomingAck(acked_sequence_number_, kMaxPacketSize, rtt_);
+      sender_->OnIncomingAck(acked_sequence_number_, kDefaultTCPMSS, rtt_);
     }
     clock_.AdvanceTime(one_ms_);  // 1 millisecond.
   }
@@ -115,7 +115,7 @@ TEST_F(TcpCubicSenderTest, ExponentialSlowStart) {
     AckNPackets(2);
   }
   QuicByteCount bytes_to_send = sender_->SendWindow();
-  EXPECT_EQ(kDefaultWindowTCP + kMaxPacketSize * 2 * kNumberOfAck,
+  EXPECT_EQ(kDefaultWindowTCP + kDefaultTCPMSS * 2 * kNumberOfAck,
             bytes_to_send);
 }
 
@@ -144,12 +144,12 @@ TEST_F(TcpCubicSenderTest, SlowStartAckTrain) {
     AckNPackets(2);
   }
   QuicByteCount expected_send_window =
-      kDefaultWindowTCP + (kMaxPacketSize * 2 * kNumberOfAck);
+      kDefaultWindowTCP + (kDefaultTCPMSS * 2 * kNumberOfAck);
   EXPECT_EQ(expected_send_window, sender_->SendWindow());
   // We should now have fallen out of slow start.
   SendAvailableSendWindow();
   AckNPackets(2);
-  expected_send_window += kMaxPacketSize;
+  expected_send_window += kDefaultTCPMSS;
   EXPECT_EQ(expected_send_window, sender_->SendWindow());
 
   // Testing Reno phase.
@@ -162,7 +162,7 @@ TEST_F(TcpCubicSenderTest, SlowStartAckTrain) {
   }
   SendAvailableSendWindow();
   AckNPackets(2);
-  expected_send_window += kMaxPacketSize;
+  expected_send_window += kDefaultTCPMSS;
   EXPECT_EQ(expected_send_window, sender_->SendWindow());
 }
 
@@ -188,7 +188,7 @@ TEST_F(TcpCubicSenderTest, SlowStartPacketLoss) {
   }
   SendAvailableSendWindow();
   QuicByteCount expected_send_window = kDefaultWindowTCP +
-      (kMaxPacketSize * 2 * kNumberOfAck);
+      (kDefaultTCPMSS * 2 * kNumberOfAck);
   EXPECT_EQ(expected_send_window, sender_->SendWindow());
 
   sender_->OnIncomingLoss(clock_.Now());
@@ -204,13 +204,13 @@ TEST_F(TcpCubicSenderTest, SlowStartPacketLoss) {
 
   // Testing Reno phase.
   // We need to ack half of the pending packet before we can send again.
-  int number_of_packets_in_window = expected_send_window / kMaxPacketSize;
+  int number_of_packets_in_window = expected_send_window / kDefaultTCPMSS;
   AckNPackets(number_of_packets_in_window);
   EXPECT_EQ(expected_send_window, sender_->SendWindow());
   EXPECT_EQ(0u, sender_->AvailableSendWindow());
 
   AckNPackets(1);
-  expected_send_window += kMaxPacketSize;
+  expected_send_window += kDefaultTCPMSS;
   number_of_packets_in_window++;
   EXPECT_EQ(expected_send_window, sender_->SendWindow());
 
@@ -223,7 +223,7 @@ TEST_F(TcpCubicSenderTest, SlowStartPacketLoss) {
   }
   SendAvailableSendWindow();
   AckNPackets(1);
-  expected_send_window += kMaxPacketSize;
+  expected_send_window += kDefaultTCPMSS;
   EXPECT_EQ(expected_send_window, sender_->SendWindow());
 }
 
@@ -280,7 +280,7 @@ TEST_F(TcpCubicSenderTest, SlowStartMaxSendWindow) {
     AckNPackets(2);
   }
   QuicByteCount expected_send_window =
-      kMaxCongestionWindowTCP * kMaxPacketSize;
+      kMaxCongestionWindowTCP * kDefaultTCPMSS;
   EXPECT_EQ(expected_send_window, sender_->SendWindow());
 }
 
@@ -314,7 +314,7 @@ TEST_F(TcpCubicSenderTest, TcpRenoMaxCongestionWindow) {
   }
 
   QuicByteCount expected_send_window =
-      kMaxCongestionWindowTCP * kMaxPacketSize;
+      kMaxCongestionWindowTCP * kDefaultTCPMSS;
   EXPECT_EQ(expected_send_window, sender_->SendWindow());
 }
 
@@ -348,7 +348,7 @@ TEST_F(TcpCubicSenderTest, TcpCubicMaxCongestionWindow) {
   }
 
   QuicByteCount expected_send_window =
-      kMaxCongestionWindowTCP * kMaxPacketSize;
+      kMaxCongestionWindowTCP * kDefaultTCPMSS;
   EXPECT_EQ(expected_send_window, sender_->SendWindow());
 }
 
@@ -357,7 +357,7 @@ TEST_F(TcpCubicSenderTest, SendWindowNotAffectedByAcks) {
 
   // Send a packet with no retransmittable data, and ensure that the congestion
   // window doesn't change.
-  QuicByteCount bytes_in_packet = std::min(kMaxPacketSize, send_window);
+  QuicByteCount bytes_in_packet = std::min(kDefaultTCPMSS, send_window);
   sender_->OnPacketSent(clock_.Now(), sequence_number_++, bytes_in_packet,
                         NOT_RETRANSMISSION, NO_RETRANSMITTABLE_DATA);
   EXPECT_EQ(send_window, sender_->AvailableSendWindow());

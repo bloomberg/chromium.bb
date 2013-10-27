@@ -36,6 +36,12 @@ QuicPacketWriter* QuicDispatcherPeer::GetWriter(QuicDispatcher* dispatcher) {
   return dispatcher->writer_.get();
 }
 
+// static
+QuicEpollConnectionHelper* QuicDispatcherPeer::GetHelper(
+    QuicDispatcher* dispatcher) {
+  return dispatcher->helper_.get();
+}
+
 }  // namespace test
 }  // namespace tools
 }  // namespace net

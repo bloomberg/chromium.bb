@@ -99,7 +99,8 @@ void ReliableQuicStream::OnStreamReset(QuicRstStreamErrorCode error) {
   TerminateFromPeer(false);  // Full close.
 }
 
-void ReliableQuicStream::ConnectionClose(QuicErrorCode error, bool from_peer) {
+void ReliableQuicStream::OnConnectionClosed(QuicErrorCode error,
+                                            bool from_peer) {
   if (read_side_closed_ && write_side_closed_) {
     return;
   }
@@ -131,6 +132,15 @@ void ReliableQuicStream::Close(QuicRstStreamErrorCode error) {
   } else {
     session_->CloseStream(id());
   }
+}
+
+void ReliableQuicStream::CloseConnection(QuicErrorCode error) {
+  session()->connection()->SendConnectionClose(error);
+}
+
+void ReliableQuicStream::CloseConnectionWithDetails(QuicErrorCode error,
+                                                    const string& details) {
+  session()->connection()->SendConnectionCloseWithDetails(error, details);
 }
 
 size_t ReliableQuicStream::Readv(const struct iovec* iov, size_t iov_len) {

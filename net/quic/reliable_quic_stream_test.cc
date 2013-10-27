@@ -222,7 +222,7 @@ TEST_F(ReliableQuicStreamTest, ConnectionCloseAfterStreamClose) {
   stream_->CloseWriteSide();
   EXPECT_EQ(QUIC_STREAM_NO_ERROR, stream_->stream_error());
   EXPECT_EQ(QUIC_NO_ERROR, stream_->connection_error());
-  stream_->ConnectionClose(QUIC_INTERNAL_ERROR, false);
+  stream_->OnConnectionClosed(QUIC_INTERNAL_ERROR, false);
   EXPECT_EQ(QUIC_STREAM_NO_ERROR, stream_->stream_error());
   EXPECT_EQ(QUIC_NO_ERROR, stream_->connection_error());
 }

@@ -27,7 +27,8 @@ MockConnection::MockConnection(QuicGuid guid,
                      new QuicDefaultPacketWriter(fd), is_server,
                      QuicVersionMax()),
       has_mock_helper_(false),
-      writer_(net::test::QuicConnectionPeer::GetWriter(this)) {
+      writer_(net::test::QuicConnectionPeer::GetWriter(this)),
+      helper_(helper()) {
 }
 
 MockConnection::MockConnection(QuicGuid guid,
@@ -37,7 +38,8 @@ MockConnection::MockConnection(QuicGuid guid,
                      new testing::NiceMock<MockPacketWriter>(),
                      is_server, QuicVersionMax()),
       has_mock_helper_(true),
-      writer_(net::test::QuicConnectionPeer::GetWriter(this)) {
+      writer_(net::test::QuicConnectionPeer::GetWriter(this)),
+      helper_(helper()) {
 }
 
 MockConnection::MockConnection(QuicGuid guid,

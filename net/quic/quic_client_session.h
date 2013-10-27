@@ -127,7 +127,7 @@ class NET_EXPORT_PRIVATE QuicClientSession : public QuicSession {
   virtual bool GetSSLInfo(SSLInfo* ssl_info) OVERRIDE;
 
   // QuicConnectionVisitorInterface methods:
-  virtual void ConnectionClose(QuicErrorCode error, bool from_peer) OVERRIDE;
+  virtual void OnConnectionClosed(QuicErrorCode error, bool from_peer) OVERRIDE;
   virtual void OnSuccessfulVersionNegotiation(
       const QuicVersion& version) OVERRIDE;
 

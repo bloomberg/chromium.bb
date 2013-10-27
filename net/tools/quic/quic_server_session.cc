@@ -32,9 +32,10 @@ QuicCryptoServerStream* QuicServerSession::CreateQuicCryptoServerStream(
   return new QuicCryptoServerStream(crypto_config, this);
 }
 
-void QuicServerSession::ConnectionClose(QuicErrorCode error, bool from_peer) {
-  QuicSession::ConnectionClose(error, from_peer);
-  owner_->OnConnectionClose(connection()->guid(), error);
+void QuicServerSession::OnConnectionClosed(QuicErrorCode error,
+                                           bool from_peer) {
+  QuicSession::OnConnectionClosed(error, from_peer);
+  owner_->OnConnectionClosed(connection()->guid(), error);
 }
 
 bool QuicServerSession::ShouldCreateIncomingReliableStream(QuicStreamId id) {

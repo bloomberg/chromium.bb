@@ -71,7 +71,8 @@ class MockStream : public ReliableQuicStream {
 
   MOCK_METHOD1(TerminateFromPeer, void(bool half_close));
   MOCK_METHOD2(ProcessData, uint32(const char* data, uint32 data_len));
-  MOCK_METHOD2(ConnectionClose, void(QuicErrorCode error, bool from_peer));
+  MOCK_METHOD2(CloseConnectionWithDetails, void(QuicErrorCode error,
+                                                const string& details));
   MOCK_METHOD1(Close, void(QuicRstStreamErrorCode error));
   MOCK_METHOD0(OnCanWrite, void());
 };
@@ -183,7 +184,8 @@ TEST_F(QuicStreamSequencerTest, FullFrameConsumed) {
 }
 
 TEST_F(QuicStreamSequencerTest, EmptyFrame) {
-  EXPECT_CALL(stream_, ConnectionClose(QUIC_INVALID_STREAM_FRAME, false));
+  EXPECT_CALL(stream_,
+              CloseConnectionWithDetails(QUIC_INVALID_STREAM_FRAME, _));
   EXPECT_FALSE(sequencer_->OnFrame(0, ""));
   EXPECT_EQ(0u, sequencer_->frames()->size());
   EXPECT_EQ(0u, sequencer_->num_bytes_consumed());

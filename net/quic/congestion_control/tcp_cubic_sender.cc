@@ -13,7 +13,7 @@ namespace net {
 namespace {
 // Constants based on TCP defaults.
 const int64 kHybridStartLowWindow = 16;
-const QuicByteCount kMaxSegmentSize = kMaxPacketSize;
+const QuicByteCount kMaxSegmentSize = kDefaultTCPMSS;
 const QuicByteCount kDefaultReceiveWindow = 64000;
 const int64 kInitialCongestionWindow = 10;
 const int kMaxBurstLength = 3;

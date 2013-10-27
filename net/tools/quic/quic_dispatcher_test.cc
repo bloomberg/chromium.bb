@@ -63,9 +63,9 @@ class MockServerConnection : public MockConnection {
       : MockConnection(guid, address, fd, eps, true),
         dispatcher_(dispatcher) {
   }
-  void UnregisterOnConnectionClose() {
+  void UnregisterOnConnectionClosed() {
     LOG(ERROR) << "Unregistering " << guid();
-    dispatcher_->OnConnectionClose(guid(), QUIC_NO_ERROR);
+    dispatcher_->OnConnectionClosed(guid(), QUIC_NO_ERROR);
   }
  private:
   QuicDispatcher* dispatcher_;
@@ -81,7 +81,7 @@ QuicSession* CreateSession(QuicDispatcher* dispatcher,
   *session = new MockSession(connection, true);
   ON_CALL(*connection, SendConnectionClose(_)).WillByDefault(
       WithoutArgs(Invoke(
-          connection, &MockServerConnection::UnregisterOnConnectionClose)));
+          connection, &MockServerConnection::UnregisterOnConnectionClosed)));
   EXPECT_CALL(*reinterpret_cast<MockConnection*>((*session)->connection()),
               ProcessUdpPacket(_, addr, _));
 
@@ -207,10 +207,10 @@ TEST_F(QuicDispatcherTest, TimeWaitListManager) {
   packet.nonce_proof = 132232;
   scoped_ptr<QuicEncryptedPacket> encrypted(
       QuicFramer::BuildPublicResetPacket(packet));
-  EXPECT_CALL(*session1_, ConnectionClose(QUIC_PUBLIC_RESET, true)).Times(1)
+  EXPECT_CALL(*session1_, OnConnectionClosed(QUIC_PUBLIC_RESET, true)).Times(1)
       .WillOnce(WithoutArgs(Invoke(
           reinterpret_cast<MockServerConnection*>(session1_->connection()),
-          &MockServerConnection::UnregisterOnConnectionClose)));
+          &MockServerConnection::UnregisterOnConnectionClosed)));
   EXPECT_CALL(*reinterpret_cast<MockConnection*>(session1_->connection()),
               ProcessUdpPacket(_, _, _))
       .WillOnce(Invoke(

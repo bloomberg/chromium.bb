@@ -42,9 +42,6 @@ class NET_EXPORT_PRIVATE QuicConnectionHelper
   virtual QuicAlarm* CreateAlarm(QuicAlarm::Delegate* delegate) OVERRIDE;
 
  private:
-  // A completion callback invoked when a write completes.
-  void OnWriteComplete(int rv);
-
   base::WeakPtrFactory<QuicConnectionHelper> weak_factory_;
   base::TaskRunner* task_runner_;
   const QuicClock* clock_;

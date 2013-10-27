@@ -28,6 +28,7 @@ class HostResolver;
 class HttpServerProperties;
 class QuicClock;
 class QuicClientSession;
+class QuicConnectionHelper;
 class QuicCryptoClientStreamFactory;
 class QuicRandom;
 class QuicStreamFactory;
@@ -136,6 +137,8 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
     require_confirmation_ = require_confirmation;
   }
 
+  QuicConnectionHelper* helper() { return helper_.get(); }
+
  private:
   class Job;
   friend class test::QuicStreamFactoryPeer;
@@ -181,6 +184,9 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   QuicCryptoClientStreamFactory* quic_crypto_client_stream_factory_;
   QuicRandom* random_generator_;
   scoped_ptr<QuicClock> clock_;
+
+  // The helper used for all connections.
+  scoped_ptr<QuicConnectionHelper> helper_;
 
   // Contains owning pointers to all sessions that currently exist.
   SessionSet all_sessions_;

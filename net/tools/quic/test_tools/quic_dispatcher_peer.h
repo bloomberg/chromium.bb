@@ -24,6 +24,8 @@ class QuicDispatcherPeer {
                         net::test::QuicTestWriter* writer);
 
   static QuicPacketWriter* GetWriter(QuicDispatcher* dispatcher);
+
+  static QuicEpollConnectionHelper* GetHelper(QuicDispatcher* dispatcher);
 };
 
 }  // namespace test
