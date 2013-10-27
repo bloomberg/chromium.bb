@@ -179,8 +179,7 @@ void PrioritizedResource::Backing::UpdateState(
   DCHECK(!proxy() ||
          (proxy()->IsImplThread() && proxy()->IsMainThreadBlocked()));
   in_drawing_impl_tree_ = !!owner();
-  in_parent_compositor_ = resource_provider->InUseByConsumer(id()) &&
-                          !resource_provider->IsLost(id());
+  in_parent_compositor_ = resource_provider->InUseByConsumer(id());
   if (!in_drawing_impl_tree_) {
     DCHECK_EQ(priority_at_last_priority_update_,
               PriorityCalculator::LowestPriority());
