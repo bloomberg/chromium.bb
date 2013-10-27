@@ -149,6 +149,8 @@
         'loader/url_request_context_getter.h',
         'shell/app_container.cc',
         'shell/app_container.h',
+        'shell/context.cc',
+        'shell/context.h',
         'shell/run.cc',
         'shell/run.h',
         'shell/storage.cc',

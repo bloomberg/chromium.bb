@@ -19,11 +19,15 @@ class Thread;
 namespace mojo {
 namespace shell {
 
+class Context;
+
 // A container class that runs an app on its own thread.
 class AppContainer : public loader::Job::Delegate {
  public:
-  AppContainer();
+  explicit AppContainer(Context* context);
   virtual ~AppContainer();
+
+  void Load(const GURL& app_url);
 
  private:
   // From loader::Job::Delegate
@@ -32,6 +36,8 @@ class AppContainer : public loader::Job::Delegate {
 
   void AppCompleted();
 
+  Context* context_;
+  scoped_ptr<loader::Job> request_;
   scoped_ptr<base::Thread> thread_;
 
   // Following members are valid only on app thread.

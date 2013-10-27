@@ -12,6 +12,7 @@
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/thread.h"
 #include "mojo/public/system/core.h"
+#include "mojo/shell/context.h"
 
 typedef MojoResult (*MojoMainFunction)(mojo::Handle pipe);
 
@@ -44,17 +45,24 @@ void LaunchAppOnThread(
     goto completed;
   }
 
+  LOG(INFO) << "MojoMain succeeded: " << result;
+
 completed:
   base::UnloadNativeLibrary(app_library);
   base::DeleteFile(app_path, false);
   Close(app_handle);
 }
 
-AppContainer::AppContainer()
-    : weak_factory_(this) {
+AppContainer::AppContainer(Context* context)
+    : context_(context)
+    , weak_factory_(this) {
 }
 
 AppContainer::~AppContainer() {
+}
+
+void AppContainer::Load(const GURL& app_url) {
+  request_ = context_->loader()->Load(app_url, this);
 }
 
 void AppContainer::DidCompleteLoad(const GURL& app_url,
@@ -82,7 +90,6 @@ void AppContainer::DidCompleteLoad(const GURL& app_url,
     // Failure..
   }
 }
-
 
 void AppContainer::AppCompleted() {
   thread_.reset();

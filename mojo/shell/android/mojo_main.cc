@@ -24,6 +24,9 @@ base::AtExitManager* g_at_exit = 0;
 LazyInstance<scoped_ptr<base::Thread> > g_main_thread =
     LAZY_INSTANCE_INITIALIZER;
 
+LazyInstance<scoped_ptr<shell::Context> > g_context =
+    LAZY_INSTANCE_INITIALIZER;
+
 void InitializeLogging() {
   logging::LoggingSettings settings;
   settings.logging_dest = logging::LOG_TO_SYSTEM_DEBUG_LOG;
@@ -37,11 +40,9 @@ void InitializeLogging() {
                        false);   // Tick count
 }
 
-void RunShell() {
-  g_main_thread.Get().reset(new base::Thread("shell_thread"));
-  g_main_thread.Get()->Start();
-  g_main_thread.Get()->message_loop()->PostTask(FROM_HERE,
-      base::Bind(shell::Run));
+void StartOnShellThread() {
+  g_context.Get().reset(new shell::Context());
+  shell::Run(g_context.Get().get());
 }
 
 }  // namspace
@@ -56,7 +57,12 @@ static void Start(JNIEnv* env, jclass clazz, jobject context) {
 
   CommandLine::Init(0, 0);
   InitializeLogging();
-  RunShell();
+
+  g_main_thread.Get().reset(new base::Thread("shell_thread"));
+  g_main_thread.Get()->Start();
+  g_main_thread.Get()->message_loop()->PostTask(FROM_HERE,
+      base::Bind(StartOnShellThread));
+
   // TODO(abarth): Currently we leak g_at_exit and g_main_thread.
 }
 

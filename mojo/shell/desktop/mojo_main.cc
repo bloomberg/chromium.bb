@@ -13,7 +13,10 @@ int main(int argc, char** argv) {
   CommandLine::Init(argc, argv);
 
   base::MessageLoop message_loop(base::MessageLoop::TYPE_UI);
-  message_loop.PostTask(FROM_HERE, base::Bind(mojo::shell::Run));
+  mojo::shell::Context context;
+
+  message_loop.PostTask(FROM_HERE, base::Bind(mojo::shell::Run,
+                                              &context));
   message_loop.Run();
 
   return 0;

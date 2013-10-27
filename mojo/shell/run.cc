@@ -5,42 +5,24 @@
 #include "mojo/shell/run.h"
 
 #include "base/command_line.h"
-#include "base/files/file_path.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
-#include "mojo/loader/loader.h"
 #include "mojo/shell/app_container.h"
-#include "mojo/shell/storage.h"
 #include "mojo/shell/switches.h"
-#include "mojo/shell/task_runners.h"
-#include "mojo/system/core_impl.h"
 #include "url/gurl.h"
 
 namespace mojo {
 namespace shell {
 
-void Run() {
-  system::CoreImpl::Init();
-
-  // TODO(abarth): Group these objects into a "context" object.
-  TaskRunners task_runners(base::MessageLoop::current()->message_loop_proxy());
-  Storage storage;
-
+void Run(Context* context) {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   if (!command_line.HasSwitch(switches::kApp)) {
     LOG(ERROR) << "No app path specified.";
     return;
   }
 
-  loader::Loader loader(task_runners.io_runner(),
-                        task_runners.file_runner(),
-                        storage.profile_path());
-
-  scoped_ptr<AppContainer> container(new AppContainer);
-
-  scoped_ptr<loader::Job> job = loader.Load(
-    GURL(command_line.GetSwitchValueASCII(switches::kApp)),
-    container.get());
+  AppContainer* container = new AppContainer(context);
+  container->Load(GURL(command_line.GetSwitchValueASCII(switches::kApp)));
+  // TODO(abarth): Currently we leak |container|.
 }
 
 }  // namespace shell
