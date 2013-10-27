@@ -67,7 +67,7 @@
         }],
         ['<(toolkit_uses_gtk) != 1', {
             'sources/': [
-              ['exclude', 'Gtk\\.cpp$']
+              ['exclude', 'Gtk(Test)?\\.(h|cpp)$']
             ]
         }],
         ['OS!="android"', {

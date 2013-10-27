@@ -287,6 +287,7 @@
       'tests/GraphicsLayerTest.cpp',
       'tests/ImageFilterBuilderTest.cpp',
       'tests/ImageLayerChromiumTest.cpp',
+      'tests/KeyCodeConversionGtkTest.cpp',
       'tests/KeyboardTest.cpp',
       'tests/LinkHighlightTest.cpp',
       'tests/ListenerLeakTest.cpp',
@@ -306,6 +307,7 @@
       'tests/WebFrameTest.cpp',
       'tests/WebImageTest.cpp',
       'tests/WebInputEventConversionTest.cpp',
+      'tests/WebInputEventFactoryGtkTest.cpp',
       'tests/WebInputEventFactoryTestMac.mm',
       'tests/WebPageNewSerializerTest.cpp',
       'tests/WebPageSerializerTest.cpp',
@@ -349,14 +351,6 @@
         {
           'web_unittest_files': [
             'tests/LocaleICUTest.cpp',
-          ],
-        }
-      ],
-      ['toolkit_uses_gtk == 1',
-        {
-          'web_unittest_files': [
-            'tests/KeyCodeConversionTestGtk.cpp',
-            'tests/WebInputEventFactoryTestGtk.cpp',
           ],
         }
       ],

@@ -29,15 +29,14 @@
  */
 
 #include "config.h"
-
-#include <gdk/gdk.h>
-#include <gdk/gdkkeysyms.h>
-#include <gtest/gtest.h>
+#include "WebInputEventFactory.h"
 
 #include "WebInputEvent.h"
 #include "WebInputEventConversion.h"
-#include "WebInputEventFactory.h"
 #include "core/events/KeyboardEvent.h"
+#include <gdk/gdk.h>
+#include <gdk/gdkkeysyms.h>
+#include <gtest/gtest.h>
 
 using WebKit::WebInputEvent;
 using WebKit::WebKeyboardEvent;
