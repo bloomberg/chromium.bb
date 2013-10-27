@@ -36,11 +36,12 @@ interface HTMLFrameSetElement : HTMLElement {
 
     [Conditional=ORIENTATION_EVENTS] attribute EventHandler onorientationchange;
 
-    // Overrides of Element attributes (with different implementation in bindings).
+    // Overrides of GlobalEventHandler attributes
     attribute EventHandler onblur;
     attribute EventHandler onerror;
     attribute EventHandler onfocus;
     attribute EventHandler onload;
+    attribute EventHandler onscroll;
 
     // Not implemented yet.
     // attribute EventHandler onafterprint;

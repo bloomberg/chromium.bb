@@ -31,9 +31,11 @@
 #include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ScriptController.h"
+#include "bindings/v8/V8AbstractEventListener.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8DOMConfiguration.h"
 #include "bindings/v8/V8DOMWrapper.h"
+#include "bindings/v8/V8EventListenerList.h"
 #include "bindings/v8/V8ObjectConstructor.h"
 #include "core/dom/ContextFeatures.h"
 #include "core/dom/Document.h"
@@ -185,6 +187,34 @@ static void implementsNodeAttributeSetterCallback(v8::Local<v8::String> name, v8
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
     TestInterfaceV8Internal::implementsNodeAttributeSetter(name, jsValue, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
+static void eventHandlerAttributeAttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TestInterface* imp = V8TestInterface::toNative(info.Holder());
+    EventListener* jsValue = TestImplements::eventHandlerAttribute(imp, isolatedWorldForIsolate(info.GetIsolate()));
+    v8SetReturnValue(info, jsValue ? v8::Handle<v8::Value>(V8AbstractEventListener::cast(jsValue)->getListenerObject(imp->executionContext())) : v8::Handle<v8::Value>(v8::Null(info.GetIsolate())));
+}
+
+static void eventHandlerAttributeAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
+    TestInterfaceV8Internal::eventHandlerAttributeAttributeGetter(name, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
+static void eventHandlerAttributeAttributeSetter(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
+{
+    TestInterface* imp = V8TestInterface::toNative(info.Holder());
+    transferHiddenDependency(info.Holder(), TestImplements::eventHandlerAttribute(imp, isolatedWorldForIsolate(info.GetIsolate())), jsValue, V8TestInterface::eventListenerCacheIndex, info.GetIsolate());
+    TestImplements::setEventHandlerAttribute(imp, V8EventListenerList::getEventListener(jsValue, true, ListenerFindOrCreate), isolatedWorldForIsolate(info.GetIsolate()));
+}
+
+static void eventHandlerAttributeAttributeSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
+    TestInterfaceV8Internal::eventHandlerAttributeAttributeSetter(name, jsValue, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
@@ -763,6 +793,7 @@ static const V8DOMConfiguration::AttributeConfiguration V8TestInterfaceAttribute
     {"implementsStr2", TestInterfaceV8Internal::implementsStr2AttributeGetterCallback, TestInterfaceV8Internal::implementsStr2AttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"implementsStr3", TestInterfaceV8Internal::implementsStr3AttributeGetterCallback, TestInterfaceV8Internal::implementsStr3AttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"implementsNode", TestInterfaceV8Internal::implementsNodeAttributeGetterCallback, TestInterfaceV8Internal::implementsNodeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"eventHandlerAttribute", TestInterfaceV8Internal::eventHandlerAttributeAttributeGetterCallback, TestInterfaceV8Internal::eventHandlerAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
 #if ENABLE(Condition11) || ENABLE(Condition12)
     {"supplementalStr1", TestInterfaceV8Internal::supplementalStr1AttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
 #endif // ENABLE(Condition11) || ENABLE(Condition12)

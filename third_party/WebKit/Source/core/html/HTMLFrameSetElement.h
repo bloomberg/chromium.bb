@@ -47,7 +47,6 @@ public:
 
     DOMWindow* anonymousNamedGetter(const AtomicString&);
 
-    // Declared virtual in Element
     DEFINE_WINDOW_ATTRIBUTE_EVENT_LISTENER(blur);
     DEFINE_WINDOW_ATTRIBUTE_EVENT_LISTENER(error);
     DEFINE_WINDOW_ATTRIBUTE_EVENT_LISTENER(focus);

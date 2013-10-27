@@ -35,6 +35,7 @@ interface TestImplements {
     attribute DOMString implementsStr2;
     [Custom] attribute DOMString implementsStr3;
     attribute Node implementsNode;
+    attribute EventHandler eventHandlerAttribute;
 
     void implementsMethod1();
     [CallWith=ExecutionContext, RaisesException] TestObject implementsMethod2(DOMString strArg, TestObject objArg);

@@ -1635,9 +1635,18 @@ END
         }
     } elsif ($attribute->type eq "EventHandler") {
         AddToImplIncludes("bindings/v8/V8AbstractEventListener.h");
-        my $getterFunc = ToMethodName($attribute->name);
         # FIXME: Pass the main world ID for main-world-only getters.
-        $code .= "    EventListener* jsValue = imp->${getterFunc}(isolatedWorldForIsolate(info.GetIsolate()));\n";
+        my ($functionName, @arguments) = GetterExpression($interfaceName, $attribute);
+        my $implementedBy = $attribute->extendedAttributes->{"ImplementedBy"};
+        if ($implementedBy) {
+            my $implementedByImplName = GetImplNameFromImplementedBy($implementedBy);
+            $functionName = "${implementedByImplName}::${functionName}";
+            push(@arguments, "imp");
+        } else {
+            $functionName = "imp->${functionName}";
+        }
+        push(@arguments, "isolatedWorldForIsolate(info.GetIsolate())");
+        $code .= "    EventListener* jsValue = ${functionName}(" . join(", ", @arguments) . ");\n";
         $code .= "    v8SetReturnValue(info, jsValue ? v8::Handle<v8::Value>(V8AbstractEventListener::cast(jsValue)->getListenerObject(imp->executionContext())) : v8::Handle<v8::Value>(v8::Null(info.GetIsolate())));\n";
     } else {
         my $nativeValue = NativeToJSValue($attribute->type, $attribute->extendedAttributes, $expression, "    ", "", "info.Holder()", "info.GetIsolate()", "info", "imp", $forMainWorldSuffix, "return");
@@ -1956,17 +1965,38 @@ END
     }
 
     if ($attribute->type eq "EventHandler") {
-        my $implSetterFunctionName = FirstLetterToUpperCase($attrName);
+        my $implementedBy = $attribute->extendedAttributes->{"ImplementedBy"};
+        my $implementedByImplName;
+        if ($implementedBy) {
+            $implementedByImplName = GetImplNameFromImplementedBy($implementedBy);
+        }
         if (!InheritsInterface($interface, "Node")) {
             my $attrImplName = GetImplName($attribute);
-            $code .= "    transferHiddenDependency(info.Holder(), imp->${attrImplName}(isolatedWorldForIsolate(info.GetIsolate())), jsValue, ${v8ClassName}::eventListenerCacheIndex, info.GetIsolate());\n";
+            my @arguments;
+            if ($implementedBy) {
+                $attrImplName = "${implementedByImplName}::${attrImplName}";
+                push(@arguments, "imp");
+            } else {
+                $attrImplName = "imp->${attrImplName}";
+            }
+            push(@arguments, "isolatedWorldForIsolate(info.GetIsolate())");
+            $code .= "    transferHiddenDependency(info.Holder(), ${attrImplName}(" . join(", ", @arguments) . "), jsValue, ${v8ClassName}::eventListenerCacheIndex, info.GetIsolate());\n";
+        }
+        my ($functionName, @arguments) = SetterExpression($interfaceName, $attribute);
+        if ($implementedBy) {
+            $functionName = "${implementedByImplName}::${functionName}";
+            push(@arguments, "imp");
+        } else {
+            $functionName = "imp->${functionName}";
         }
         if (($interfaceName eq "Window" or $interfaceName eq "WorkerGlobalScope") and $attribute->name eq "onerror") {
             AddToImplIncludes("bindings/v8/V8ErrorHandler.h");
-            $code .= "    imp->set$implSetterFunctionName(V8EventListenerList::findOrCreateWrapper<V8ErrorHandler>(jsValue, true, info.GetIsolate()), isolatedWorldForIsolate(info.GetIsolate()));\n";
+            push(@arguments, "V8EventListenerList::findOrCreateWrapper<V8ErrorHandler>(jsValue, true, info.GetIsolate())");
         } else {
-            $code .= "    imp->set$implSetterFunctionName(V8EventListenerList::getEventListener(jsValue, true, ListenerFindOrCreate), isolatedWorldForIsolate(info.GetIsolate()));\n";
+            push(@arguments, "V8EventListenerList::getEventListener(jsValue, true, ListenerFindOrCreate)");
         }
+        push(@arguments, "isolatedWorldForIsolate(info.GetIsolate())");
+        $code .= "    ${functionName}(" . join(", ", @arguments) . ");\n";
     } else {
         my ($functionName, @arguments) = SetterExpression($interfaceName, $attribute);
         push(@arguments, $expression);
