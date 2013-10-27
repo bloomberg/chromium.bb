@@ -1186,6 +1186,23 @@ void WebGraphicsContext3DCommandBufferImpl::vertexAttribPointer(
 DELEGATE_TO_GL_4(viewport, Viewport,
                  WGC3Dint, WGC3Dint, WGC3Dsizei, WGC3Dsizei)
 
+DELEGATE_TO_GL_2(genBuffers, GenBuffers, WGC3Dsizei, WebGLId*);
+
+DELEGATE_TO_GL_2(genFramebuffers, GenFramebuffers, WGC3Dsizei, WebGLId*);
+
+DELEGATE_TO_GL_2(genRenderbuffers, GenRenderbuffers, WGC3Dsizei, WebGLId*);
+
+DELEGATE_TO_GL_2(genTextures, GenTextures, WGC3Dsizei, WebGLId*);
+
+DELEGATE_TO_GL_2(deleteBuffers, DeleteBuffers, WGC3Dsizei, WebGLId*);
+
+DELEGATE_TO_GL_2(deleteFramebuffers, DeleteFramebuffers, WGC3Dsizei, WebGLId*);
+
+DELEGATE_TO_GL_2(deleteRenderbuffers, DeleteRenderbuffers, WGC3Dsizei,
+                 WebGLId*);
+
+DELEGATE_TO_GL_2(deleteTextures, DeleteTextures, WGC3Dsizei, WebGLId*);
+
 WebGLId WebGraphicsContext3DCommandBufferImpl::createBuffer() {
   GLuint o;
   gl_->GenBuffers(1, &o);
@@ -1198,15 +1215,11 @@ WebGLId WebGraphicsContext3DCommandBufferImpl::createFramebuffer() {
   return o;
 }
 
-DELEGATE_TO_GL_R(createProgram, CreateProgram, WebGLId)
-
 WebGLId WebGraphicsContext3DCommandBufferImpl::createRenderbuffer() {
   GLuint o;
   gl_->GenRenderbuffers(1, &o);
   return o;
 }
-
-DELEGATE_TO_GL_1R(createShader, CreateShader, WGC3Denum, WebGLId)
 
 WebGLId WebGraphicsContext3DCommandBufferImpl::createTexture() {
   GLuint o;
@@ -1223,18 +1236,22 @@ void WebGraphicsContext3DCommandBufferImpl::deleteFramebuffer(
   gl_->DeleteFramebuffers(1, &framebuffer);
 }
 
-DELEGATE_TO_GL_1(deleteProgram, DeleteProgram, WebGLId)
-
 void WebGraphicsContext3DCommandBufferImpl::deleteRenderbuffer(
     WebGLId renderbuffer) {
   gl_->DeleteRenderbuffers(1, &renderbuffer);
 }
 
-DELEGATE_TO_GL_1(deleteShader, DeleteShader, WebGLId)
-
 void WebGraphicsContext3DCommandBufferImpl::deleteTexture(WebGLId texture) {
   gl_->DeleteTextures(1, &texture);
 }
+
+DELEGATE_TO_GL_R(createProgram, CreateProgram, WebGLId)
+
+DELEGATE_TO_GL_1R(createShader, CreateShader, WGC3Denum, WebGLId)
+
+DELEGATE_TO_GL_1(deleteProgram, DeleteProgram, WebGLId)
+
+DELEGATE_TO_GL_1(deleteShader, DeleteShader, WebGLId)
 
 bool WebGraphicsContext3DCommandBufferImpl::ShouldUseSwapClient() {
   return !!swap_client_.get();

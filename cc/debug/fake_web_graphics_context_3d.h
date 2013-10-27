@@ -530,19 +530,33 @@ class CC_EXPORT FakeWebGraphicsContext3D
       WebKit::WGC3Dsizei width,
       WebKit::WGC3Dsizei height) {}
 
+  virtual void genBuffers(WebKit::WGC3Dsizei count, WebKit::WebGLId* ids);
+  virtual void genFramebuffers(WebKit::WGC3Dsizei count, WebKit::WebGLId* ids);
+  virtual void genRenderbuffers(WebKit::WGC3Dsizei count, WebKit::WebGLId* ids);
+  virtual void genTextures(WebKit::WGC3Dsizei count, WebKit::WebGLId* ids);
+
+  virtual void deleteBuffers(WebKit::WGC3Dsizei count, WebKit::WebGLId* ids);
+  virtual void deleteFramebuffers(
+      WebKit::WGC3Dsizei count, WebKit::WebGLId* ids);
+  virtual void deleteRenderbuffers(
+      WebKit::WGC3Dsizei count, WebKit::WebGLId* ids);
+  virtual void deleteTextures(WebKit::WGC3Dsizei count, WebKit::WebGLId* ids);
+
   virtual WebKit::WebGLId createBuffer();
   virtual WebKit::WebGLId createFramebuffer();
-  virtual WebKit::WebGLId createProgram();
   virtual WebKit::WebGLId createRenderbuffer();
-  virtual WebKit::WebGLId createShader(WebKit::WGC3Denum);
   virtual WebKit::WebGLId createTexture();
 
   virtual void deleteBuffer(WebKit::WebGLId id);
   virtual void deleteFramebuffer(WebKit::WebGLId id);
-  virtual void deleteProgram(WebKit::WebGLId id);
   virtual void deleteRenderbuffer(WebKit::WebGLId id);
+  virtual void deleteTexture(WebKit::WebGLId id);
+
+  virtual WebKit::WebGLId createProgram();
+  virtual WebKit::WebGLId createShader(WebKit::WGC3Denum);
+
+  virtual void deleteProgram(WebKit::WebGLId id);
   virtual void deleteShader(WebKit::WebGLId id);
-  virtual void deleteTexture(WebKit::WebGLId texture_id);
 
   virtual void texStorage2DEXT(
       WebKit::WGC3Denum target,

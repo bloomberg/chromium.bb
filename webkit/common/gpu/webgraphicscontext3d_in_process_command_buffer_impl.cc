@@ -243,6 +243,12 @@ void WebGraphicsContext3DInProcessCommandBufferImpl::name() {           \
   gl_->glname();                                                        \
 }
 
+#define DELEGATE_TO_GL_R(name, glname, rt)                              \
+rt WebGraphicsContext3DInProcessCommandBufferImpl::name() {             \
+  ClearContext();                                                       \
+  return gl_->glname();                                                 \
+}
+
 #define DELEGATE_TO_GL_1(name, glname, t1)                              \
 void WebGraphicsContext3DInProcessCommandBufferImpl::name(t1 a1) {      \
   ClearContext();                                                       \
@@ -982,6 +988,23 @@ void WebGraphicsContext3DInProcessCommandBufferImpl::vertexAttribPointer(
 DELEGATE_TO_GL_4(viewport, Viewport,
                  WGC3Dint, WGC3Dint, WGC3Dsizei, WGC3Dsizei)
 
+DELEGATE_TO_GL_2(genBuffers, GenBuffers, WGC3Dsizei, WebGLId*);
+
+DELEGATE_TO_GL_2(genFramebuffers, GenFramebuffers, WGC3Dsizei, WebGLId*);
+
+DELEGATE_TO_GL_2(genRenderbuffers, GenRenderbuffers, WGC3Dsizei, WebGLId*);
+
+DELEGATE_TO_GL_2(genTextures, GenTextures, WGC3Dsizei, WebGLId*);
+
+DELEGATE_TO_GL_2(deleteBuffers, DeleteBuffers, WGC3Dsizei, WebGLId*);
+
+DELEGATE_TO_GL_2(deleteFramebuffers, DeleteFramebuffers, WGC3Dsizei, WebGLId*);
+
+DELEGATE_TO_GL_2(deleteRenderbuffers, DeleteRenderbuffers, WGC3Dsizei,
+                 WebGLId*);
+
+DELEGATE_TO_GL_2(deleteTextures, DeleteTextures, WGC3Dsizei, WebGLId*);
+
 WebGLId WebGraphicsContext3DInProcessCommandBufferImpl::createBuffer() {
   ClearContext();
   GLuint o;
@@ -996,19 +1019,12 @@ WebGLId WebGraphicsContext3DInProcessCommandBufferImpl::createFramebuffer() {
   return o;
 }
 
-WebGLId WebGraphicsContext3DInProcessCommandBufferImpl::createProgram() {
-  ClearContext();
-  return gl_->CreateProgram();
-}
-
 WebGLId WebGraphicsContext3DInProcessCommandBufferImpl::createRenderbuffer() {
   ClearContext();
   GLuint o;
   gl_->GenRenderbuffers(1, &o);
   return o;
 }
-
-DELEGATE_TO_GL_1R(createShader, CreateShader, WGC3Denum, WebGLId);
 
 WebGLId WebGraphicsContext3DInProcessCommandBufferImpl::createTexture() {
   ClearContext();
@@ -1029,22 +1045,10 @@ void WebGraphicsContext3DInProcessCommandBufferImpl::deleteFramebuffer(
   gl_->DeleteFramebuffers(1, &framebuffer);
 }
 
-void WebGraphicsContext3DInProcessCommandBufferImpl::deleteProgram(
-    WebGLId program) {
-  ClearContext();
-  gl_->DeleteProgram(program);
-}
-
 void WebGraphicsContext3DInProcessCommandBufferImpl::deleteRenderbuffer(
     WebGLId renderbuffer) {
   ClearContext();
   gl_->DeleteRenderbuffers(1, &renderbuffer);
-}
-
-void WebGraphicsContext3DInProcessCommandBufferImpl::deleteShader(
-    WebGLId shader) {
-  ClearContext();
-  gl_->DeleteShader(shader);
 }
 
 void WebGraphicsContext3DInProcessCommandBufferImpl::deleteTexture(
@@ -1052,6 +1056,14 @@ void WebGraphicsContext3DInProcessCommandBufferImpl::deleteTexture(
   ClearContext();
   gl_->DeleteTextures(1, &texture);
 }
+
+DELEGATE_TO_GL_R(createProgram, CreateProgram, WebGLId);
+
+DELEGATE_TO_GL_1R(createShader, CreateShader, WGC3Denum, WebGLId);
+
+DELEGATE_TO_GL_1(deleteProgram, DeleteProgram, WebGLId);
+
+DELEGATE_TO_GL_1(deleteShader, DeleteShader, WebGLId);
 
 void WebGraphicsContext3DInProcessCommandBufferImpl::OnSwapBuffersComplete() {
 }

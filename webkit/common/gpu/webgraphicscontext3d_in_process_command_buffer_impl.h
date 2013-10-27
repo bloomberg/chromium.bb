@@ -394,19 +394,31 @@ class WEBKIT_GPU_EXPORT WebGraphicsContext3DInProcessCommandBufferImpl
                         WGC3Dsizei width, WGC3Dsizei height);
 
   // Support for buffer creation and deletion
+  virtual void genBuffers(WGC3Dsizei count, WebGLId* ids);
+  virtual void genFramebuffers(WGC3Dsizei count, WebGLId* ids);
+  virtual void genRenderbuffers(WGC3Dsizei count, WebGLId* ids);
+  virtual void genTextures(WGC3Dsizei count, WebGLId* ids);
+
+  virtual void deleteBuffers(WGC3Dsizei count, WebGLId* ids);
+  virtual void deleteFramebuffers(WGC3Dsizei count, WebGLId* ids);
+  virtual void deleteRenderbuffers(WGC3Dsizei count, WebGLId* ids);
+  virtual void deleteTextures(WGC3Dsizei count, WebGLId* ids);
+
   virtual WebGLId createBuffer();
   virtual WebGLId createFramebuffer();
-  virtual WebGLId createProgram();
   virtual WebGLId createRenderbuffer();
-  virtual WebGLId createShader(WGC3Denum);
   virtual WebGLId createTexture();
 
   virtual void deleteBuffer(WebGLId);
   virtual void deleteFramebuffer(WebGLId);
-  virtual void deleteProgram(WebGLId);
   virtual void deleteRenderbuffer(WebGLId);
-  virtual void deleteShader(WebGLId);
   virtual void deleteTexture(WebGLId);
+
+  virtual WebGLId createProgram();
+  virtual WebGLId createShader(WGC3Denum);
+
+  virtual void deleteProgram(WebGLId);
+  virtual void deleteShader(WebGLId);
 
   virtual void synthesizeGLError(WGC3Denum);
 

@@ -188,56 +188,109 @@ WGC3Dboolean TestWebGraphicsContext3D::isTexture(
   return false;
 }
 
-WebGLId TestWebGraphicsContext3D::createBuffer() {
-  return NextBufferId();
+void TestWebGraphicsContext3D::genBuffers(WGC3Dsizei count, WebGLId* ids) {
+  for (int i = 0; i < count; ++i)
+    ids[i] = NextBufferId();
 }
 
-void TestWebGraphicsContext3D::deleteBuffer(WebGLId id) {
+void TestWebGraphicsContext3D::genFramebuffers(
+    WGC3Dsizei count, WebGLId* ids) {
+  for (int i = 0; i < count; ++i)
+    ids[i] = kFramebufferId | context_id_ << 16;
+}
+
+void TestWebGraphicsContext3D::genRenderbuffers(
+    WGC3Dsizei count, WebGLId* ids) {
+  for (int i = 0; i < count; ++i)
+    ids[i] = kRenderbufferId | context_id_ << 16;
+}
+
+void TestWebGraphicsContext3D::genTextures(WGC3Dsizei count, WebGLId* ids) {
+  for (int i = 0; i < count; ++i) {
+    ids[i] = NextTextureId();
+    DCHECK_NE(ids[i], kExternalTextureId);
+  }
   base::AutoLock lock(namespace_->lock);
-  unsigned context_id = id >> 17;
-  unsigned buffer_id = id & 0x1ffff;
-  DCHECK(buffer_id && buffer_id < namespace_->next_buffer_id);
-  DCHECK_EQ(context_id, context_id_);
+  for (int i = 0; i < count; ++i)
+    namespace_->textures.Append(ids[i], new TestTexture());
+}
+
+void TestWebGraphicsContext3D::deleteBuffers(WGC3Dsizei count, WebGLId* ids) {
+  base::AutoLock lock(namespace_->lock);
+  for (int i = 0; i < count; ++i) {
+    unsigned context_id = ids[i] >> 17;
+    unsigned buffer_id = ids[i] & 0x1ffff;
+    DCHECK(buffer_id && buffer_id < namespace_->next_buffer_id);
+    DCHECK_EQ(context_id, context_id_);
+  }
+}
+
+void TestWebGraphicsContext3D::deleteFramebuffers(
+    WGC3Dsizei count, WebGLId* ids) {
+  for (int i = 0; i < count; ++i)
+    DCHECK_EQ(kFramebufferId | context_id_ << 16, ids[i]);
+}
+
+void TestWebGraphicsContext3D::deleteRenderbuffers(
+    WGC3Dsizei count, WebGLId* ids) {
+  for (int i = 0; i < count; ++i)
+    DCHECK_EQ(kRenderbufferId | context_id_ << 16, ids[i]);
+}
+
+void TestWebGraphicsContext3D::deleteTextures(WGC3Dsizei count, WebGLId* ids) {
+  base::AutoLock lock(namespace_->lock);
+  for (int i = 0; i < count; ++i) {
+    namespace_->textures.Remove(ids[i]);
+    texture_targets_.UnbindTexture(ids[i]);
+  }
+}
+
+WebGLId TestWebGraphicsContext3D::createBuffer() {
+  WebGLId id;
+  genBuffers(1, &id);
+  return id;
 }
 
 WebGLId TestWebGraphicsContext3D::createFramebuffer() {
-  return kFramebufferId | context_id_ << 16;
+  WebGLId id;
+  genFramebuffers(1, &id);
+  return id;
+}
+
+WebGLId TestWebGraphicsContext3D::createRenderbuffer() {
+  WebGLId id;
+  genRenderbuffers(1, &id);
+  return id;
+}
+
+WebGLId TestWebGraphicsContext3D::createTexture() {
+  WebGLId id;
+  genTextures(1, &id);
+  return id;
+}
+
+void TestWebGraphicsContext3D::deleteBuffer(WebGLId id) {
+  deleteBuffers(1, &id);
 }
 
 void TestWebGraphicsContext3D::deleteFramebuffer(WebGLId id) {
-  DCHECK_EQ(kFramebufferId | context_id_ << 16, id);
+  deleteFramebuffers(1, &id);
+}
+
+void TestWebGraphicsContext3D::deleteRenderbuffer(WebGLId id) {
+  deleteRenderbuffers(1, &id);
+}
+
+void TestWebGraphicsContext3D::deleteTexture(WebGLId id) {
+  deleteTextures(1, &id);
 }
 
 WebGLId TestWebGraphicsContext3D::createProgram() {
   return kProgramId | context_id_ << 16;
 }
 
-void TestWebGraphicsContext3D::deleteProgram(WebGLId id) {
-  DCHECK_EQ(kProgramId | context_id_ << 16, id);
-}
-
-WebGLId TestWebGraphicsContext3D::createRenderbuffer() {
-  return kRenderbufferId | context_id_ << 16;
-}
-
-void TestWebGraphicsContext3D::deleteRenderbuffer(WebGLId id) {
-  DCHECK_EQ(kRenderbufferId | context_id_ << 16, id);
-}
-
 WebGLId TestWebGraphicsContext3D::createShader(WGC3Denum) {
   return kShaderId | context_id_ << 16;
-}
-
-void TestWebGraphicsContext3D::deleteShader(WebGLId id) {
-  DCHECK_EQ(kShaderId | context_id_ << 16, id);
-}
-
-WebGLId TestWebGraphicsContext3D::createTexture() {
-  WebGLId texture_id = NextTextureId();
-  DCHECK_NE(texture_id, kExternalTextureId);
-  base::AutoLock lock(namespace_->lock);
-  namespace_->textures.Append(texture_id, new TestTexture());
-  return texture_id;
 }
 
 WebGLId TestWebGraphicsContext3D::createExternalTexture() {
@@ -246,10 +299,12 @@ WebGLId TestWebGraphicsContext3D::createExternalTexture() {
   return kExternalTextureId;
 }
 
-void TestWebGraphicsContext3D::deleteTexture(WebGLId texture_id) {
-  base::AutoLock lock(namespace_->lock);
-  namespace_->textures.Remove(texture_id);
-  texture_targets_.UnbindTexture(texture_id);
+void TestWebGraphicsContext3D::deleteProgram(WebGLId id) {
+  DCHECK_EQ(kProgramId | context_id_ << 16, id);
+}
+
+void TestWebGraphicsContext3D::deleteShader(WebGLId id) {
+  DCHECK_EQ(kShaderId | context_id_ << 16, id);
 }
 
 void TestWebGraphicsContext3D::attachShader(WebGLId program, WebGLId shader) {

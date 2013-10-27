@@ -9,6 +9,7 @@
 
 using WebKit::WGC3Dboolean;
 using WebKit::WGC3Denum;
+using WebKit::WGC3Dsizei;
 using WebKit::WebGLId;
 using WebKit::WebGraphicsContext3D;
 
@@ -234,46 +235,82 @@ WGC3Dboolean FakeWebGraphicsContext3D::isTexture(
   return false;
 }
 
-WebGLId FakeWebGraphicsContext3D::createBuffer() {
-  return 1;
+void FakeWebGraphicsContext3D::genBuffers(WGC3Dsizei count, WebGLId* ids) {
+  for (int i = 0; i < count; ++i)
+    ids[i] = 1;
 }
 
-void FakeWebGraphicsContext3D::deleteBuffer(WebKit::WebGLId id) {
+void FakeWebGraphicsContext3D::genFramebuffers(
+    WGC3Dsizei count, WebGLId* ids) {
+  for (int i = 0; i < count; ++i)
+    ids[i] = 1;
+}
+
+void FakeWebGraphicsContext3D::genRenderbuffers(
+    WGC3Dsizei count, WebGLId* ids) {
+  for (int i = 0; i < count; ++i)
+    ids[i] = 1;
+}
+
+void FakeWebGraphicsContext3D::genTextures(WGC3Dsizei count, WebGLId* ids) {
+  for (int i = 0; i < count; ++i)
+    ids[i] = 1;
+}
+
+void FakeWebGraphicsContext3D::deleteBuffers(WGC3Dsizei count, WebGLId* ids) {
+}
+
+void FakeWebGraphicsContext3D::deleteFramebuffers(
+    WGC3Dsizei count, WebGLId* ids) {
+}
+
+void FakeWebGraphicsContext3D::deleteRenderbuffers(
+    WGC3Dsizei count, WebGLId* ids) {
+}
+
+void FakeWebGraphicsContext3D::deleteTextures(WGC3Dsizei count, WebGLId* ids) {
+}
+
+WebGLId FakeWebGraphicsContext3D::createBuffer() {
+  return 1;
 }
 
 WebGLId FakeWebGraphicsContext3D::createFramebuffer() {
   return 1;
 }
 
-void FakeWebGraphicsContext3D::deleteFramebuffer(WebKit::WebGLId id) {
-}
-
-WebGLId FakeWebGraphicsContext3D::createProgram() {
-  return 1;
-}
-
-void FakeWebGraphicsContext3D::deleteProgram(WebKit::WebGLId id) {
-}
-
 WebGLId FakeWebGraphicsContext3D::createRenderbuffer() {
   return 1;
-}
-
-void FakeWebGraphicsContext3D::deleteRenderbuffer(WebKit::WebGLId id) {
-}
-
-WebGLId FakeWebGraphicsContext3D::createShader(WGC3Denum) {
-  return 1;
-}
-
-void FakeWebGraphicsContext3D::deleteShader(WebKit::WebGLId id) {
 }
 
 WebGLId FakeWebGraphicsContext3D::createTexture() {
   return 1;
 }
 
+void FakeWebGraphicsContext3D::deleteBuffer(WebKit::WebGLId id) {
+}
+
+void FakeWebGraphicsContext3D::deleteFramebuffer(WebKit::WebGLId id) {
+}
+
+void FakeWebGraphicsContext3D::deleteRenderbuffer(WebKit::WebGLId id) {
+}
+
 void FakeWebGraphicsContext3D::deleteTexture(WebGLId texture_id) {
+}
+
+WebGLId FakeWebGraphicsContext3D::createProgram() {
+  return 1;
+}
+
+WebGLId FakeWebGraphicsContext3D::createShader(WGC3Denum) {
+  return 1;
+}
+
+void FakeWebGraphicsContext3D::deleteProgram(WebKit::WebGLId id) {
+}
+
+void FakeWebGraphicsContext3D::deleteShader(WebKit::WebGLId id) {
 }
 
 void FakeWebGraphicsContext3D::attachShader(WebGLId program, WebGLId shader) {
