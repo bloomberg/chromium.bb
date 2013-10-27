@@ -680,7 +680,9 @@ int DownloadManagerImpl::NonMaliciousInProgressCount() const {
     if (it->second->GetState() == DownloadItem::IN_PROGRESS &&
         it->second->GetDangerType() != DOWNLOAD_DANGER_TYPE_DANGEROUS_URL &&
         it->second->GetDangerType() != DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT &&
-        it->second->GetDangerType() != DOWNLOAD_DANGER_TYPE_DANGEROUS_HOST) {
+        it->second->GetDangerType() != DOWNLOAD_DANGER_TYPE_DANGEROUS_HOST &&
+        it->second->GetDangerType() !=
+            DOWNLOAD_DANGER_TYPE_POTENTIALLY_UNWANTED) {
       ++count;
     }
   }

@@ -103,8 +103,19 @@ void DownloadDangerPromptImpl::OnDownloadUpdated(
 string16 DownloadDangerPromptImpl::GetTitle() {
   if (show_context_)
     return l10n_util::GetStringUTF16(IDS_CONFIRM_KEEP_DANGEROUS_DOWNLOAD_TITLE);
-  else
-    return l10n_util::GetStringUTF16(IDS_RESTORE_KEEP_DANGEROUS_DOWNLOAD_TITLE);
+  switch (download_->GetDangerType()) {
+    case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL:
+    case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT:
+    case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_HOST:
+    case content::DOWNLOAD_DANGER_TYPE_POTENTIALLY_UNWANTED: {
+      return l10n_util::GetStringUTF16(
+          IDS_RESTORE_KEEP_DANGEROUS_DOWNLOAD_TITLE);
+    }
+    default: {
+      return l10n_util::GetStringUTF16(
+          IDS_CONFIRM_KEEP_DANGEROUS_DOWNLOAD_TITLE);
+    }
+  }
 }
 
 string16 DownloadDangerPromptImpl::GetMessage() {
@@ -129,7 +140,7 @@ string16 DownloadDangerPromptImpl::GetMessage() {
       }
       case content::DOWNLOAD_DANGER_TYPE_POTENTIALLY_UNWANTED: {
         return l10n_util::GetStringFUTF16(
-            IDS_PROMPT_DOWNLOAD_CHANGES_SEARCH_SETTINGS,
+            IDS_PROMPT_DOWNLOAD_CHANGES_SETTINGS,
             download_->GetFileNameToReportUser().LossyDisplayName());
       }
       case content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS:
@@ -166,7 +177,8 @@ string16 DownloadDangerPromptImpl::GetAcceptButtonTitle() {
   switch (download_->GetDangerType()) {
     case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL:
     case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT:
-    case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_HOST: {
+    case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_HOST:
+    case content::DOWNLOAD_DANGER_TYPE_POTENTIALLY_UNWANTED: {
       return l10n_util::GetStringUTF16(IDS_CONFIRM_DOWNLOAD_AGAIN_MALICIOUS);
     }
     default:
@@ -180,7 +192,8 @@ string16 DownloadDangerPromptImpl::GetCancelButtonTitle() {
   switch (download_->GetDangerType()) {
     case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL:
     case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT:
-    case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_HOST: {
+    case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_HOST:
+    case content::DOWNLOAD_DANGER_TYPE_POTENTIALLY_UNWANTED: {
       return l10n_util::GetStringUTF16(IDS_CONFIRM_CANCEL_AGAIN_MALICIOUS);
     }
     default:

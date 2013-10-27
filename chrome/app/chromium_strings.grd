@@ -661,13 +661,8 @@ Chromium is unable to recover your settings.
       </message>
 
       <message name="IDS_PROMPT_DOWNLOAD_CHANGES_SETTINGS"
-               desc="Message shown on the download shelf when the download is known to change browser settings.">
-        <ph name="FILE_NAME">$1<ex>bla.exe</ex></ph> may change your Chromium settings.
-      </message>
-
-      <message name="IDS_PROMPT_DOWNLOAD_CHANGES_SEARCH_SETTINGS"
-               desc="Message shown on the download shelf when the download is known to change search engine settings in the browser.">
-        <ph name="FILE_NAME">$1<ex>bla.exe</ex></ph> may change how your searches work in Chromium.
+               desc="Message shown on the download shelf when the download is known to change settings in the browser in a malicious way.">
+        <ph name="FILE_NAME">$1<ex>bla.exe</ex></ph> makes settings changes similar to some malware, so Chromium has blocked it.
       </message>
 
       <message name="IDS_PROMPT_MALICIOUS_DOWNLOAD_URL"

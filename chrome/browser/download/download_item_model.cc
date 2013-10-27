@@ -367,7 +367,7 @@ string16 DownloadItemModel::GetWarningText(const gfx::FontList& font_list,
     }
     case content::DOWNLOAD_DANGER_TYPE_POTENTIALLY_UNWANTED: {
       return l10n_util::GetStringFUTF16(
-          IDS_PROMPT_DOWNLOAD_CHANGES_SEARCH_SETTINGS, elided_filename);
+          IDS_PROMPT_DOWNLOAD_CHANGES_SETTINGS, elided_filename);
     }
     case content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS:
     case content::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT:
@@ -446,6 +446,7 @@ bool DownloadItemModel::IsMalicious() const {
     case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL:
     case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT:
     case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_HOST:
+    case content::DOWNLOAD_DANGER_TYPE_POTENTIALLY_UNWANTED:
       return true;
 
     case content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS:
@@ -457,7 +458,6 @@ bool DownloadItemModel::IsMalicious() const {
       NOTREACHED();
       // Fallthrough.
     case content::DOWNLOAD_DANGER_TYPE_UNCOMMON_CONTENT:
-    case content::DOWNLOAD_DANGER_TYPE_POTENTIALLY_UNWANTED:
       return false;
   }
   NOTREACHED();

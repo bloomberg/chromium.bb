@@ -590,7 +590,7 @@ Download.prototype.updateDangerousFile = function() {
     }
     case Download.DangerType.POTENTIALLY_UNWANTED: {
       this.dangerDesc_.textContent = loadTimeData.getStringF(
-          'danger_potentially_unwanted_desc', this.fileName_);
+          'danger_settings_desc', this.fileName_);
       break;
     }
   }
@@ -609,7 +609,8 @@ Download.prototype.updateDangerousFile = function() {
 
   if (this.dangerType_ == Download.DangerType.DANGEROUS_CONTENT ||
       this.dangerType_ == Download.DangerType.DANGEROUS_HOST ||
-      this.dangerType_ == Download.DangerType.DANGEROUS_URL) {
+      this.dangerType_ == Download.DangerType.DANGEROUS_URL ||
+      this.dangerType_ == Download.DangerType.POTENTIALLY_UNWANTED) {
     this.malwareNodeControls_.style.display = 'block';
     this.dangerDiscard_.style.display = 'none';
     this.dangerSave_.style.display = 'none';

@@ -311,7 +311,7 @@ string16 DownloadDangerPromptViews::GetMessageBody() const {
       }
       case content::DOWNLOAD_DANGER_TYPE_POTENTIALLY_UNWANTED: {
         return l10n_util::GetStringFUTF16(
-            IDS_PROMPT_DOWNLOAD_CHANGES_SEARCH_SETTINGS,
+            IDS_PROMPT_DOWNLOAD_CHANGES_SETTINGS,
             download_->GetFileNameToReportUser().LossyDisplayName());
       }
       case content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS:

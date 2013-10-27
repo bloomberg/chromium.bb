@@ -1100,6 +1100,7 @@ void DownloadItemView::ShowWarningDialog() {
     case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT:
     case content::DOWNLOAD_DANGER_TYPE_UNCOMMON_CONTENT:
     case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_HOST:
+    case content::DOWNLOAD_DANGER_TYPE_POTENTIALLY_UNWANTED:
       warning_icon_ = rb.GetImageSkiaNamed(IDR_SAFEBROWSING_WARNING);
       break;
 
@@ -1111,7 +1112,6 @@ void DownloadItemView::ShowWarningDialog() {
       // fallthrough
 
     case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE:
-    case content::DOWNLOAD_DANGER_TYPE_POTENTIALLY_UNWANTED:
       warning_icon_ = rb.GetImageSkiaNamed(IDR_WARNING);
   }
   string16 dangerous_label = model_.GetWarningText(font_list_, kTextWidth);

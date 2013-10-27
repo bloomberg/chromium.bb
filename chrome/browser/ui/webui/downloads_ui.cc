@@ -60,8 +60,8 @@ content::WebUIDataSource* CreateDownloadsUIHTMLSource(Profile* profile) {
                              IDS_PROMPT_MALICIOUS_DOWNLOAD_CONTENT);
   source->AddLocalizedString("danger_uncommon_desc",
                              IDS_PROMPT_UNCOMMON_DOWNLOAD_CONTENT);
-  source->AddLocalizedString("danger_potentially_unwanted_desc",
-                             IDS_PROMPT_DOWNLOAD_CHANGES_SEARCH_SETTINGS);
+  source->AddLocalizedString("danger_settings_desc",
+                             IDS_PROMPT_DOWNLOAD_CHANGES_SETTINGS);
   source->AddLocalizedString("danger_save", IDS_CONFIRM_DOWNLOAD);
   source->AddLocalizedString("danger_restore", IDS_CONFIRM_DOWNLOAD_RESTORE);
   source->AddLocalizedString("danger_discard", IDS_DISCARD_DOWNLOAD);
