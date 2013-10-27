@@ -25,11 +25,11 @@
 #ifndef IdentityTransformOperation_h
 #define IdentityTransformOperation_h
 
-#include "core/platform/graphics/transforms/TransformOperation.h"
+#include "platform/transforms/TransformOperation.h"
 
 namespace WebCore {
 
-class IdentityTransformOperation : public TransformOperation {
+class PLATFORM_EXPORT IdentityTransformOperation : public TransformOperation {
 public:
     static PassRefPtr<IdentityTransformOperation> create()
     {

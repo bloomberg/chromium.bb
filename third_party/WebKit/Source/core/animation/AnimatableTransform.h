@@ -32,7 +32,7 @@
 #define AnimatableTransform_h
 
 #include "core/animation/AnimatableValue.h"
-#include "core/platform/graphics/transforms/TransformOperations.h"
+#include "platform/transforms/TransformOperations.h"
 
 namespace WebCore {
 

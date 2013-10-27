@@ -31,15 +31,15 @@
 
 #include "core/css/CSSPrimitiveValueMappings.h"
 #include "core/css/CSSTransformValue.h"
-#include "core/platform/graphics/transforms/Matrix3DTransformOperation.h"
-#include "core/platform/graphics/transforms/MatrixTransformOperation.h"
-#include "core/platform/graphics/transforms/PerspectiveTransformOperation.h"
-#include "core/platform/graphics/transforms/RotateTransformOperation.h"
-#include "core/platform/graphics/transforms/ScaleTransformOperation.h"
-#include "core/platform/graphics/transforms/SkewTransformOperation.h"
-#include "platform/transforms/TransformationMatrix.h"
-#include "core/platform/graphics/transforms/TranslateTransformOperation.h"
 #include "core/rendering/style/RenderStyle.h"
+#include "platform/transforms/Matrix3DTransformOperation.h"
+#include "platform/transforms/MatrixTransformOperation.h"
+#include "platform/transforms/PerspectiveTransformOperation.h"
+#include "platform/transforms/RotateTransformOperation.h"
+#include "platform/transforms/ScaleTransformOperation.h"
+#include "platform/transforms/SkewTransformOperation.h"
+#include "platform/transforms/TransformationMatrix.h"
+#include "platform/transforms/TranslateTransformOperation.h"
 
 namespace WebCore {
 
