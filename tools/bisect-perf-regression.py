@@ -69,13 +69,15 @@ DEPOT_DEPS_NAME = {
     "src" : "src/",
     "recurse" : True,
     "depends" : None,
-    "from" : 'cros'
+    "from" : 'cros',
+    'viewvc': 'http://src.chromium.org/viewvc/chrome?view=revision&revision='
   },
   'webkit' : {
     "src" : "src/third_party/WebKit",
     "recurse" : True,
     "depends" : None,
-    "from" : 'chromium'
+    "from" : 'chromium',
+    'viewvc': 'http://src.chromium.org/viewvc/blink?view=revision&revision='
   },
   'angle' : {
     "src" : "src/third_party/angle_dx11",
@@ -90,7 +92,8 @@ DEPOT_DEPS_NAME = {
     "recurse" : True,
     "depends" : None,
     "from" : 'chromium',
-    "custom_deps": bisect_utils.GCLIENT_CUSTOM_DEPS_V8
+    "custom_deps": bisect_utils.GCLIENT_CUSTOM_DEPS_V8,
+    'viewvc': 'https://code.google.com/p/v8/source/detail?r=',
   },
   'v8_bleeding_edge' : {
     "src" : "src/v8_bleeding_edge",
@@ -98,27 +101,31 @@ DEPOT_DEPS_NAME = {
     "depends" : None,
     "svn": "https://v8.googlecode.com/svn/branches/bleeding_edge",
     "from" : 'v8',
+    'viewvc': 'https://code.google.com/p/v8/source/detail?r=',
   },
   'skia/src' : {
     "src" : "src/third_party/skia/src",
     "recurse" : True,
     "svn" : "http://skia.googlecode.com/svn/trunk/src",
     "depends" : ['skia/include', 'skia/gyp'],
-    "from" : 'chromium'
+    "from" : 'chromium',
+    'viewvc': 'https://code.google.com/p/skia/source/detail?r=',
   },
   'skia/include' : {
     "src" : "src/third_party/skia/include",
     "recurse" : False,
     "svn" : "http://skia.googlecode.com/svn/trunk/include",
     "depends" : None,
-    "from" : 'chromium'
+    "from" : 'chromium',
+    'viewvc': 'https://code.google.com/p/skia/source/detail?r=',
   },
   'skia/gyp' : {
     "src" : "src/third_party/skia/gyp",
     "recurse" : False,
     "svn" : "http://skia.googlecode.com/svn/trunk/gyp",
     "depends" : None,
-    "from" : 'chromium'
+    "from" : 'chromium',
+    'viewvc': 'https://code.google.com/p/skia/source/detail?r=',
   }
 }
 
@@ -826,12 +833,13 @@ class GitSourceControl(SourceControl):
         'email': %s,
         'date': %s,
         'subject': %s,
+        'body': %s,
       }
     """
     commit_info = {}
 
-    formats = ['%cN', '%cE', '%s', '%cD']
-    targets = ['author', 'email', 'subject', 'date']
+    formats = ['%cN', '%cE', '%s', '%cD', '%b']
+    targets = ['author', 'email', 'subject', 'date', 'body']
 
     for i in xrange(len(formats)):
       cmd = ['log', '--format=%s' % formats[i], '-1', revision]
@@ -2157,7 +2165,7 @@ class BisectPerformanceMetrics(object):
 
     return results
 
-  def _PrintRevisionInfo(self, cl, info):
+  def _PrintRevisionInfo(self, cl, info, depot=None):
     # The perf dashboard specifically looks for the string
     # "Author  : " to parse out who to cc on a bug. If you change the
     # formatting here, please update the perf dashboard as well.
@@ -2167,6 +2175,23 @@ class BisectPerformanceMetrics(object):
     print 'Email   : %s' % info['email']
     print 'Date    : %s' % info['date']
     print 'Subject : %s' % info['subject']
+
+    if depot and DEPOT_DEPS_NAME[depot].has_key('viewvc'):
+      try:
+        # Format is "git-svn-id: svn://....@123456 <other data>"
+        svn_line = [i for i in info['body'].splitlines() if 'git-svn-id:' in i]
+        svn_revision = svn_line[0].split('@')
+        svn_revision = svn_revision[1].split(' ')[0]
+
+        url = DEPOT_DEPS_NAME[depot]['viewvc'] + svn_revision
+        print
+        print 'See revision at: %s' % url
+      except IndexError:
+        print
+        print 'Failed to parse svn revision from body:'
+        print
+        print info['body']
+        print
 
   def FormatAndPrintResults(self, bisect_results):
     """Prints the results from a bisection run in a readable format.
@@ -2384,7 +2409,7 @@ class BisectPerformanceMetrics(object):
 
           info = self.source_control.QueryRevisionInfo(k)
 
-          self._PrintRevisionInfo(k, info)
+          self._PrintRevisionInfo(k, info, v['depot'])
 
           multiple_commits += 1
         if multiple_commits > 1:
