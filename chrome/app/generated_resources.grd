@@ -3987,6 +3987,9 @@ Make sure you do not expose any sensitive information.
       <message name="IDS_EXTENSION_FIRST_RUN_PROMPT_TITLE" desc="Titlebar of the extension or app permissions prompt window">
         Confirm Permissions
       </message>
+      <message name="IDS_EXTENSION_LAUNCH_APP_PROMPT_TITLE" desc="Titlebar of the app launch prompt window">
+        Confirm Launch App
+      </message>
       <message name="IDS_EXTENSION_INSTALL_PROMPT_HEADING" desc="First bold line in the content area of the extension or app installation prompt. Asks the user if they want to install a particular extension or app.">
         Add "<ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph>"?
       </message>
@@ -4013,6 +4016,9 @@ Make sure you do not expose any sensitive information.
       </message>
       <message name="IDS_EXTENSION_FIRST_RUN_PROMPT_HEADING" desc="First bold line in the content area of the extension or app permissions prompt. Asks the user if they want to accept permission for a particular app.">
         Enable "<ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph>"?
+      </message>
+      <message name="IDS_EXTENSION_LAUNCH_APP_PROMPT_HEADING" desc="First bold line in the content area of the app launch prompt. Asks the user if they want to launch a particular app.">
+        Launch "<ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph>"?
       </message>
 
       <!-- Extension alerts. -->
@@ -4970,6 +4976,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
 
       <message name="IDS_EXTENSION_PROMPT_INSTALL_BUTTON" desc="Text for the install button on the extension install prompt">
         Add
+      </message>
+      <message name="IDS_EXTENSION_PROMPT_LAUNCH_BUTTON" desc="Text for the launch button on the extension install prompt">
+        Launch
       </message>
       <message name="IDS_EXTENSION_PROMPT_UNINSTALL_BUTTON" desc="Text for the uninstall button on the extension uninstall prompt">
         Remove
@@ -15501,6 +15510,17 @@ Do you accept?
     </message>
     <message name="IDS_WEBSTORE_NAME_MORE_APPS" desc="Name for the WebStore app in the app launcher.">
       More Apps
+    </message>
+
+    <!-- WebStore search results -->
+    <message name="IDS_WEBSTORE_RESULT_INSTALL" desc="Text of button on WebStore search result for installing an extension/app.">
+      Add
+    </message>
+    <message name="IDS_WEBSTORE_RESULT_LAUNCH" desc="Text of button on WebStore search result for launching an ephemeral app.">
+      Launch
+    </message>
+    <message name="IDS_WEBSTORE_RESULT_LAUNCH_APP_TOOLTIP" desc="Tooltip of button on WebStore search result for launching an ephemeral app.">
+      Launch app
     </message>
 
     <!-- Synced Notification display strings -->

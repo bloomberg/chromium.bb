@@ -872,6 +872,8 @@
         'browser/extensions/webstore_data_fetcher.cc',
         'browser/extensions/webstore_data_fetcher.h',
         'browser/extensions/webstore_data_fetcher_delegate.h',
+        'browser/extensions/webstore_ephemeral_installer.cc',
+        'browser/extensions/webstore_ephemeral_installer.h',
         'browser/extensions/webstore_inline_installer.cc',
         'browser/extensions/webstore_inline_installer.h',
         'browser/extensions/webstore_inline_installer_factory.cc',

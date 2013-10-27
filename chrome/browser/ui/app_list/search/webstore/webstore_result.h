@@ -43,7 +43,7 @@ class WebstoreResult : public ChromeSearchResult,
   void SetDefaultDetails();
   void OnIconLoaded();
 
-  void StartInstall();
+  void StartInstall(bool launch_ephemeral_app);
   void InstallCallback(bool success, const std::string& error);
 
   void StartObservingInstall();

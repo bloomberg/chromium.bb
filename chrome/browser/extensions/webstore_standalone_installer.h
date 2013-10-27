@@ -124,6 +124,9 @@ class WebstoreStandaloneInstaller
   WebstoreInstaller::InstallSource install_source() const {
     return install_source_;
   }
+  Profile* profile() const { return profile_; }
+  const std::string& id() const { return id_; }
+  const DictionaryValue* manifest() const { return manifest_.get(); }
 
  private:
   friend class base::RefCountedThreadSafe<WebstoreStandaloneInstaller>;
