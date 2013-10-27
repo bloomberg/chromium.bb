@@ -107,11 +107,6 @@ class PrivetRegisterOperationImpl
 
   bool PrivetErrorTransient(const std::string& error);
 
-  static GURL GetURLForActionAndUser(
-      PrivetHTTPClientImpl* privet_client,
-      const std::string& action,
-      const std::string& user);
-
   std::string user_;
   std::string current_action_;
   scoped_ptr<PrivetURLFetcher> url_fetcher_;
@@ -147,12 +142,14 @@ class PrivetHTTPClientImpl : public PrivetHTTPClient {
 
   virtual const std::string& GetName() OVERRIDE;
 
-  const PrivetURLFetcherFactory& fetcher_factory() const {
-    return fetcher_factory_;
-  }
-  const net::HostPortPair& host_port() const { return host_port_; }
+  scoped_ptr<PrivetURLFetcher> CreateURLFetcher(
+      const GURL& url,
+      net::URLFetcher::RequestType request_type,
+      PrivetURLFetcher::Delegate* delegate) const;
 
   void CacheInfo(const base::DictionaryValue* cached_info);
+
+  bool HasToken() const;
 
  private:
   std::string name_;

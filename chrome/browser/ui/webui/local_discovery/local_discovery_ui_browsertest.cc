@@ -228,17 +228,17 @@ const char kResponseGaiaToken[] = "{"
 const char kURLInfo[] = "http://1.2.3.4:8888/privet/info";
 
 const char kURLRegisterStart[] =
-    "http://1.2.3.4:8888/privet/register?action=start&user=user@host.com";
+    "http://1.2.3.4:8888/privet/register?action=start&user=user%40host.com";
 
 const char kURLRegisterClaimToken[] =
     "http://1.2.3.4:8888/privet/register?action=getClaimToken&"
-    "user=user@host.com";
+    "user=user%40host.com";
 
 const char kURLCloudPrintConfirm[] =
     "https://www.google.com/cloudprint/confirm?token=MySampleToken";
 
 const char kURLRegisterComplete[] =
-    "http://1.2.3.4:8888/privet/register?action=complete&user=user@host.com";
+    "http://1.2.3.4:8888/privet/register?action=complete&user=user%40host.com";
 
 const char kURLGaiaToken[] =
     "https://accounts.google.com/o/oauth2/token";
@@ -370,8 +370,7 @@ class LocalDiscoveryUITest : public WebUIBrowserTest {
     ProfileOAuth2TokenService* token_service =
         ProfileOAuth2TokenServiceFactory::GetForProfile(browser()->profile());
 
-    token_service->UpdateCredentials("user@host.com",
-                                     "MyFakeToken");
+    token_service->UpdateCredentials("user@host.com", "MyFakeToken");
 
     AddLibrary(base::FilePath(FILE_PATH_LITERAL("local_discovery_ui_test.js")));
   }

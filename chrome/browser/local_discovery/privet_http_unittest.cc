@@ -319,6 +319,8 @@ class PrivetRegisterTest : public PrivetHTTPTest {
   bool SuccessfulResponseToURL(const GURL& url,
                                const std::string& response) {
     net::TestURLFetcher* fetcher = fetcher_factory_.GetFetcherByID(0);
+    EXPECT_TRUE(fetcher);
+    EXPECT_EQ(url, fetcher->GetOriginalURL());
     if (!fetcher || url != fetcher->GetOriginalURL())
       return false;
 
@@ -362,7 +364,7 @@ TEST_F(PrivetRegisterTest, RegisterSuccessSimple) {
 
   EXPECT_TRUE(SuccessfulResponseToURL(
       GURL("http://10.0.0.8:6006/privet/register?"
-           "action=start&user=example@google.com"),
+           "action=start&user=example%40google.com"),
       kSampleRegisterStartResponse));
 
   EXPECT_CALL(register_delegate_, OnPrivetRegisterClaimTokenInternal(
@@ -371,14 +373,14 @@ TEST_F(PrivetRegisterTest, RegisterSuccessSimple) {
 
   EXPECT_TRUE(SuccessfulResponseToURL(
       GURL("http://10.0.0.8:6006/privet/register?"
-           "action=getClaimToken&user=example@google.com"),
+           "action=getClaimToken&user=example%40google.com"),
       kSampleRegisterGetClaimTokenResponse));
 
   register_operation_->CompleteRegistration();
 
   EXPECT_TRUE(SuccessfulResponseToURL(
       GURL("http://10.0.0.8:6006/privet/register?"
-           "action=complete&user=example@google.com"),
+           "action=complete&user=example%40google.com"),
       kSampleRegisterCompleteResponse));
 
   EXPECT_CALL(register_delegate_, OnPrivetRegisterDoneInternal(
@@ -398,7 +400,7 @@ TEST_F(PrivetRegisterTest, RegisterNoInfoCall) {
 
   EXPECT_TRUE(SuccessfulResponseToURL(
       GURL("http://10.0.0.8:6006/privet/register?"
-           "action=start&user=example@google.com"),
+           "action=start&user=example%40google.com"),
       kSampleRegisterStartResponse));
 }
 
@@ -411,12 +413,12 @@ TEST_F(PrivetRegisterTest, RegisterXSRFFailure) {
 
   EXPECT_TRUE(SuccessfulResponseToURL(
       GURL("http://10.0.0.8:6006/privet/register?"
-           "action=start&user=example@google.com"),
+           "action=start&user=example%40google.com"),
       kSampleRegisterStartResponse));
 
   EXPECT_TRUE(SuccessfulResponseToURL(
       GURL("http://10.0.0.8:6006/privet/register?"
-           "action=getClaimToken&user=example@google.com"),
+           "action=getClaimToken&user=example%40google.com"),
       kSampleXPrivetErrorResponse));
 
   EXPECT_TRUE(SuccessfulResponseToURL(
@@ -428,7 +430,7 @@ TEST_F(PrivetRegisterTest, RegisterXSRFFailure) {
 
   EXPECT_TRUE(SuccessfulResponseToURL(
       GURL("http://10.0.0.8:6006/privet/register?"
-           "action=getClaimToken&user=example@google.com"),
+           "action=getClaimToken&user=example%40google.com"),
       kSampleRegisterGetClaimTokenResponse));
 }
 
@@ -441,7 +443,7 @@ TEST_F(PrivetRegisterTest, TransientFailure) {
 
   EXPECT_TRUE(SuccessfulResponseToURL(
       GURL("http://10.0.0.8:6006/privet/register?"
-           "action=start&user=example@google.com"),
+           "action=start&user=example%40google.com"),
       kSampleRegisterErrorTransient));
 
   EXPECT_CALL(fetcher_delegate_, OnRequestStart(0));
@@ -452,7 +454,7 @@ TEST_F(PrivetRegisterTest, TransientFailure) {
 
   EXPECT_TRUE(SuccessfulResponseToURL(
       GURL("http://10.0.0.8:6006/privet/register?"
-           "action=start&user=example@google.com"),
+           "action=start&user=example%40google.com"),
       kSampleRegisterStartResponse));
 }
 
@@ -465,7 +467,7 @@ TEST_F(PrivetRegisterTest, PermanentFailure) {
 
   EXPECT_TRUE(SuccessfulResponseToURL(
       GURL("http://10.0.0.8:6006/privet/register?"
-           "action=start&user=example@google.com"),
+           "action=start&user=example%40google.com"),
       kSampleRegisterStartResponse));
 
   EXPECT_CALL(register_delegate_,
@@ -476,7 +478,7 @@ TEST_F(PrivetRegisterTest, PermanentFailure) {
 
   EXPECT_TRUE(SuccessfulResponseToURL(
       GURL("http://10.0.0.8:6006/privet/register?"
-           "action=getClaimToken&user=example@google.com"),
+           "action=getClaimToken&user=example%40google.com"),
       kSampleRegisterErrorPermanent));
 }
 
@@ -507,14 +509,14 @@ TEST_F(PrivetRegisterTest, RegisterCancel) {
 
   EXPECT_TRUE(SuccessfulResponseToURL(
       GURL("http://10.0.0.8:6006/privet/register?"
-           "action=start&user=example@google.com"),
+           "action=start&user=example%40google.com"),
       kSampleRegisterStartResponse));
 
   register_operation_->Cancel();
 
   EXPECT_TRUE(SuccessfulResponseToURL(
       GURL("http://10.0.0.8:6006/privet/register?"
-           "action=cancel&user=example@google.com"),
+           "action=cancel&user=example%40google.com"),
       kSampleRegisterCancelResponse));
 
   // Must keep mocks alive for 3 seconds so the cancelation object can be

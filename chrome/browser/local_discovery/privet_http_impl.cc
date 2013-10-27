@@ -7,23 +7,37 @@
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "base/rand_util.h"
-#include "base/strings/stringprintf.h"
+#include "base/strings/string_number_conversions.h"
 #include "chrome/browser/local_discovery/privet_constants.h"
+#include "net/base/url_util.h"
 #include "url/gurl.h"
 
 namespace local_discovery {
 
 namespace {
-// First format argument (string) is the host, second format argument (int) is
-// the port.
-const char kPrivetInfoURLFormat[] = "http://%s:%d/privet/info";
-// First format argument (string) is the host, second format argument (int) is
-// the port, third argument (string) is the action name, fourth argument
-// (string) is the user name.
-const char kPrivetRegisterURLFormat[] =
-    "http://%s:%d/privet/register?action=%s&user=%s";
+
+const char kUrlPlaceHolder[] = "http://host/";
+const char kPrivetInfoPath[] = "/privet/info";
+const char kPrivetRegisterPath[] = "/privet/register";
+const char kPrivetRegisterActionArgName[] = "action";
+const char kPrivetRegisterUserArgName[] = "user";
 
 const int kPrivetCancelationTimeoutSeconds = 3;
+
+GURL CreatePrivetURL(const std::string& path) {
+  GURL url(kUrlPlaceHolder);
+  GURL::Replacements replacements;
+  replacements.SetPathStr(path);
+  return url.ReplaceComponents(replacements);
+}
+
+GURL CreatePrivetRegisterURL(const std::string& action,
+                             const std::string& user) {
+  GURL url = CreatePrivetURL(kPrivetRegisterPath);
+  url = net::AppendQueryParameter(url, kPrivetRegisterActionArgName, action);
+  return net::AppendQueryParameter(url, kPrivetRegisterUserArgName, user);
+}
+
 }  // namespace
 
 PrivetInfoOperationImpl::PrivetInfoOperationImpl(
@@ -36,14 +50,8 @@ PrivetInfoOperationImpl::~PrivetInfoOperationImpl() {
 }
 
 void PrivetInfoOperationImpl::Start() {
-  std::string url = base::StringPrintf(
-      kPrivetInfoURLFormat,
-      privet_client_->host_port().host().c_str(),
-      privet_client_->host_port().port());
-
-  url_fetcher_ = privet_client_->fetcher_factory().CreateURLFetcher(
-      GURL(url), net::URLFetcher::GET, this);
-
+  url_fetcher_ = privet_client_->CreateURLFetcher(
+      CreatePrivetURL(kPrivetInfoPath), net::URLFetcher::GET, this);
   url_fetcher_->Start();
 }
 
@@ -80,7 +88,7 @@ PrivetRegisterOperationImpl::~PrivetRegisterOperationImpl() {
 }
 
 void PrivetRegisterOperationImpl::Start() {
-  if (privet_client_->fetcher_factory().get_token() == "") {
+  if (!privet_client_->HasToken()) {
     StartInfoOperation();
     return;
   }
@@ -190,11 +198,9 @@ void PrivetRegisterOperationImpl::OnParsedJson(
 }
 
 void PrivetRegisterOperationImpl::SendRequest(const std::string& action) {
-  GURL url = GetURLForActionAndUser(privet_client_, action, user_);
-
   current_action_ = action;
-  url_fetcher_ = privet_client_->fetcher_factory().CreateURLFetcher(
-      url, net::URLFetcher::POST, this);
+  url_fetcher_ = privet_client_->CreateURLFetcher(
+      CreatePrivetRegisterURL(action, user_), net::URLFetcher::POST, this);
   url_fetcher_->Start();
 }
 
@@ -343,26 +349,13 @@ bool PrivetRegisterOperationImpl::PrivetErrorTransient(
          (error == kPrivetErrorPendingUserAction);
 }
 
-// static
-GURL PrivetRegisterOperationImpl::GetURLForActionAndUser(
-    PrivetHTTPClientImpl* privet_client,
-    const std::string& action,
-    const std::string& user) {
-  return GURL(base::StringPrintf(kPrivetRegisterURLFormat,
-                                 privet_client->host_port().host().c_str(),
-                                 privet_client->host_port().port(),
-                                 action.c_str(),
-                                 user.c_str()));
-}
-
 PrivetRegisterOperationImpl::Cancelation::Cancelation(
     PrivetHTTPClientImpl* privet_client,
     const std::string& user) {
-  GURL url = GetURLForActionAndUser(privet_client,
-                                    kPrivetActionCancel,
-                                    user);
-  url_fetcher_ = privet_client->fetcher_factory().CreateURLFetcher(
-      url, net::URLFetcher::POST, this);
+  url_fetcher_ =
+      privet_client->CreateURLFetcher(
+          CreatePrivetRegisterURL(kPrivetActionCancel, user),
+          net::URLFetcher::POST, this);
   url_fetcher_->Start();
 }
 
@@ -420,6 +413,18 @@ const std::string& PrivetHTTPClientImpl::GetName() {
   return name_;
 }
 
+scoped_ptr<PrivetURLFetcher> PrivetHTTPClientImpl::CreateURLFetcher(
+    const GURL& url, net::URLFetcher::RequestType request_type,
+    PrivetURLFetcher::Delegate* delegate) const {
+  GURL::Replacements replacements;
+  replacements.SetHostStr(host_port_.host());
+  std::string port(base::IntToString(host_port_.port()));  // Keep string alive.
+  replacements.SetPortStr(port);
+  GURL url2 = url.ReplaceComponents(replacements);
+  return fetcher_factory_.CreateURLFetcher(url.ReplaceComponents(replacements),
+                                           request_type, delegate);
+}
+
 void PrivetHTTPClientImpl::CacheInfo(const base::DictionaryValue* cached_info) {
   cached_info_.reset(cached_info->DeepCopy());
   std::string token;
@@ -427,5 +432,9 @@ void PrivetHTTPClientImpl::CacheInfo(const base::DictionaryValue* cached_info) {
     fetcher_factory_.set_token(token);
   }
 }
+
+bool PrivetHTTPClientImpl::HasToken() const {
+  return fetcher_factory_.get_token() != "";
+};
 
 }  // namespace local_discovery

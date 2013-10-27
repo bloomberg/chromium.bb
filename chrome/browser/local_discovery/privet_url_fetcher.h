@@ -66,7 +66,8 @@ class PrivetURLFetcherFactory {
   ~PrivetURLFetcherFactory();
 
   scoped_ptr<PrivetURLFetcher> CreateURLFetcher(
-      const GURL& url, net::URLFetcher::RequestType request_type,
+      const GURL& url,
+      net::URLFetcher::RequestType request_type,
       PrivetURLFetcher::Delegate* delegate) const;
 
   void set_token(const std::string& token) { token_ = token; }
