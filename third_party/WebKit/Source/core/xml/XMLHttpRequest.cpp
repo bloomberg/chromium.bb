@@ -1057,10 +1057,8 @@ String XMLHttpRequest::getRequestHeader(const AtomicString& name) const
 
 String XMLHttpRequest::getAllResponseHeaders(ExceptionState& es) const
 {
-    if (m_state < HEADERS_RECEIVED) {
-        es.throwDOMException(InvalidStateError, ExceptionMessages::failedToExecute("getAllResponseHeaders", "XMLHttpRequest", "the object's state must not be UNSENT or OPENED."));
+    if (m_state < HEADERS_RECEIVED || m_error)
         return "";
-    }
 
     StringBuilder stringBuilder;
 
@@ -1093,10 +1091,8 @@ String XMLHttpRequest::getAllResponseHeaders(ExceptionState& es) const
 
 String XMLHttpRequest::getResponseHeader(const AtomicString& name, ExceptionState& es) const
 {
-    if (m_state < HEADERS_RECEIVED) {
-        es.throwDOMException(InvalidStateError, ExceptionMessages::failedToExecute("getResponseHeader", "XMLHttpRequest", "the object's state must not be UNSENT or OPENED."));
+    if (m_state < HEADERS_RECEIVED || m_error)
         return String();
-    }
 
     // See comment in getAllResponseHeaders above.
     if (isSetCookieHeader(name) && !securityOrigin()->canLoadLocalResources()) {
