@@ -21,11 +21,6 @@
 
 #include "widevine_cdm_version.h"  // In SHARED_INTERMEDIATE_DIR.
 
-#if defined(WIDEVINE_CDM_AVAILABLE) && \
-    defined(OS_LINUX) && !defined(OS_CHROMEOS)
-#include <gnu/libc-version.h>
-#endif
-
 #if defined(USE_PROPRIETARY_CODECS)
 #define EXPECT_PROPRIETARY EXPECT_TRUE
 #else
@@ -43,13 +38,7 @@
 
 // Expectations for Widevine.
 #if defined(WIDEVINE_CDM_AVAILABLE)
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-// TODO(ddorwin): Remove after bots switch to Precise.
-#define EXPECT_WV(a) \
-    EXPECT_EQ((std::string(gnu_get_libc_version()) != "2.11.1"), (a))
-#else
 #define EXPECT_WV EXPECT_TRUE
-#endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS)
 
 #if defined(WIDEVINE_CDM_AVC1_SUPPORT_AVAILABLE)
 #define EXPECT_WVAVC1 EXPECT_TRUE

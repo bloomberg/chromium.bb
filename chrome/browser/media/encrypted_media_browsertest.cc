@@ -17,10 +17,6 @@
 
 #include "widevine_cdm_version.h"  // In SHARED_INTERMEDIATE_DIR.
 
-#if defined(WIDEVINE_CDM_AVAILABLE) && defined(OS_LINUX)
-#include <gnu/libc-version.h>
-#endif  // defined(WIDEVINE_CDM_AVAILABLE) && defined(OS_LINUX)
-
 #if defined(ENABLE_PEPPER_CDMS)
 // Platform-specific filename relative to the chrome executable.
 const char kClearKeyCdmAdapterFileName[] =
@@ -116,16 +112,6 @@ class EncryptedMediaTestBase : public MediaBrowserTest {
       // - webkitGenerateKeyRequest() does not fail.
       // - webkitkeymessage is fired.
       // - webkitAddKey() triggers a WebKitKeyError since no real key is added.
-      // TODO(shadi): Remove after bots upgrade to precise.
-      // Don't run on lucid bots since the CDM is not compatible (glibc < 2.14)
-#if defined(OS_LINUX)
-      if (strcmp(gnu_get_libc_version(), "2.11.1") == 0) {
-        LOG(INFO) << "Skipping test; not supported on glibc version: "
-            << gnu_get_libc_version();
-        return;
-      }
-#endif  // defined(OS_LINUX)
-
       RunEncryptedMediaTest("encrypted_media_player.html", media_file,
                             media_type, key_system, src_type, kEmeKeyError);
 
