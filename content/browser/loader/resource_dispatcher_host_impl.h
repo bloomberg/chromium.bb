@@ -27,7 +27,6 @@
 #include "content/browser/download/download_resource_handler.h"
 #include "content/browser/loader/global_routing_id.h"
 #include "content/browser/loader/offline_policy.h"
-#include "content/browser/loader/render_view_host_tracker.h"
 #include "content/browser/loader/resource_loader.h"
 #include "content/browser/loader/resource_loader_delegate.h"
 #include "content/browser/loader/resource_scheduler.h"
@@ -502,8 +501,6 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   DelegateMap delegate_map_;
 
   scoped_ptr<ResourceScheduler> scheduler_;
-
-  RenderViewHostTracker tracker_;  // Lives on UI thread.
 
   typedef std::map<GlobalRoutingID, OfflinePolicy*> OfflineMap;
 

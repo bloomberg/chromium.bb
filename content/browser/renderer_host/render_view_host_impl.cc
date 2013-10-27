@@ -27,6 +27,7 @@
 #include "content/browser/dom_storage/session_storage_namespace_impl.h"
 #include "content/browser/gpu/gpu_surface_tracker.h"
 #include "content/browser/host_zoom_map_impl.h"
+#include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/renderer_host/dip_util.h"
 #include "content/browser/renderer_host/frame_tree.h"
 #include "content/browser/renderer_host/media/audio_renderer_host.h"
@@ -196,6 +197,14 @@ RenderViewHostImpl::RenderViewHostImpl(
   if (!swapped_out)
     instance_->increment_active_view_count();
 
+  if (ResourceDispatcherHostImpl::Get()) {
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(&ResourceDispatcherHostImpl::OnRenderViewHostCreated,
+                   base::Unretained(ResourceDispatcherHostImpl::Get()),
+                   GetProcess()->GetID(), GetRoutingID()));
+  }
+
 #if defined(OS_ANDROID)
   media_player_manager_.reset(BrowserMediaPlayerManager::Create(this));
 #endif
@@ -205,7 +214,15 @@ RenderViewHostImpl::~RenderViewHostImpl() {
   FOR_EACH_OBSERVER(
       RenderViewHostObserver, observers_, RenderViewHostDestruction());
 
-  GetDelegate()->RenderViewDeleted(this);
+  if (ResourceDispatcherHostImpl::Get()) {
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(&ResourceDispatcherHostImpl::OnRenderViewHostDeleted,
+                   base::Unretained(ResourceDispatcherHostImpl::Get()),
+                   GetProcess()->GetID(), GetRoutingID()));
+  }
+
+  delegate_->RenderViewDeleted(this);
 
   // Be sure to clean up any leftover state from cross-site requests.
   CrossSiteRequestManager::GetInstance()->SetHasPendingCrossSiteRequest(

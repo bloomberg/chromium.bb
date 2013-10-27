@@ -645,8 +645,6 @@
     'browser/loader/power_save_block_resource_throttle.h',
     'browser/loader/redirect_to_file_resource_handler.cc',
     'browser/loader/redirect_to_file_resource_handler.h',
-    'browser/loader/render_view_host_tracker.cc',
-    'browser/loader/render_view_host_tracker.h',
     'browser/loader/resource_buffer.cc',
     'browser/loader/resource_buffer.h',
     'browser/loader/resource_dispatcher_host_impl.cc',
