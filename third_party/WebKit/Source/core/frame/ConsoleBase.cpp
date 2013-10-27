@@ -60,7 +60,7 @@ void ConsoleBase::error(ScriptState* state, PassRefPtr<ScriptArguments> argument
 
 void ConsoleBase::info(ScriptState* state, PassRefPtr<ScriptArguments> arguments)
 {
-    log(state, arguments);
+    internalAddMessage(LogMessageType, InfoMessageLevel, state, arguments);
 }
 
 void ConsoleBase::log(ScriptState* state, PassRefPtr<ScriptArguments> arguments)

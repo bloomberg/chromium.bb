@@ -1,6 +1,6 @@
 CONSOLE MESSAGE: line 9: log
 CONSOLE DEBUG: line 10: debug
-CONSOLE MESSAGE: line 11: info
+CONSOLE INFO: line 11: info
 CONSOLE WARNING: line 12: warn
 CONSOLE ERROR: line 13: error
 CONSOLE MESSAGE: line 15: repeated
@@ -23,7 +23,7 @@ Tests that console logging dumps proper messages.
 
 log console-tests.html:9 console-message console-log-level
 debug console-tests.html:10 console-message console-debug-level
-info console-tests.html:11 console-message console-log-level
+info console-tests.html:11 console-message console-info-level
 warn console-tests.html:12 console-message console-warning-level
 error console-tests.html:13 console-message console-error-level
 5repeated console-tests.html:15 console-message console-log-level repeated-message

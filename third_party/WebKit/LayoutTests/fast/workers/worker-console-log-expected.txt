@@ -3,7 +3,7 @@ CONSOLE MESSAGE: line 3: function
 CONSOLE MESSAGE: line 4: function log() { [native code] }
 CONSOLE ERROR: line 5: error
 CONSOLE WARNING: line 6: warn
-CONSOLE MESSAGE: line 7: info
+CONSOLE INFO: line 7: info
 CONSOLE DEBUG: line 8: debug
 This tests that 'console.log' and friends function correctly from workers.
 

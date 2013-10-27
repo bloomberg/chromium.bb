@@ -184,6 +184,7 @@ static TypeBuilder::Console::ConsoleMessage::Level::Enum messageLevelValue(Messa
     case LogMessageLevel: return TypeBuilder::Console::ConsoleMessage::Level::Log;
     case WarningMessageLevel: return TypeBuilder::Console::ConsoleMessage::Level::Warning;
     case ErrorMessageLevel: return TypeBuilder::Console::ConsoleMessage::Level::Error;
+    case InfoMessageLevel: return TypeBuilder::Console::ConsoleMessage::Level::Info;
     }
     return TypeBuilder::Console::ConsoleMessage::Level::Log;
 }
