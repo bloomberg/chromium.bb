@@ -904,7 +904,6 @@
             'browser/fileapi/file_system_browsertest.cc',
             'browser/gpu/compositor_util_browsertest.cc',
             'browser/gpu/gpu_functional_browsertest.cc',
-            'browser/gpu/gpu_info_browsertest.cc',
             'browser/gpu/gpu_ipc_browsertests.cc',
             'browser/indexed_db/indexed_db_browsertest.cc',
             'browser/loader/resource_dispatcher_host_browsertest.cc',
