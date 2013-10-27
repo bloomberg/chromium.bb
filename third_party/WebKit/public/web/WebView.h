@@ -226,9 +226,6 @@ public:
     // change.
     virtual double setZoomLevel(double) = 0;
 
-    // FIXME: Deprecated, delete once Chromium side is updated.
-    virtual double setZoomLevel(bool textOnly, double zoomLevel) = 0;
-
     // Updates the zoom limits for this view.
     virtual void zoomLimitsChanged(double minimumZoomLevel,
                                    double maximumZoomLevel) = 0;

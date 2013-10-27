@@ -2755,16 +2755,6 @@ double WebViewImpl::setZoomLevel(double zoomLevel)
     return m_zoomLevel;
 }
 
-double WebViewImpl::setZoomLevel(bool textOnly, double zoomLevel)
-{
-    if (textOnly) {
-        setZoomLevel(0.0f);
-        return setTextZoomFactor(static_cast<float>(zoomLevelToZoomFactor(zoomLevel)));
-    }
-    setTextZoomFactor(1.0f);
-    return setZoomLevel(zoomLevel);
-}
-
 void WebViewImpl::zoomLimitsChanged(double minimumZoomLevel,
                                     double maximumZoomLevel)
 {

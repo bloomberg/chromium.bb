@@ -212,7 +212,6 @@ public:
     virtual void advanceFocus(bool reverse);
     virtual double zoomLevel();
     virtual double setZoomLevel(double);
-    virtual double setZoomLevel(bool textOnly, double zoomLevel);
     virtual void zoomLimitsChanged(double minimumZoomLevel,
                                    double maximumZoomLevel);
     virtual float textZoomFactor();
