@@ -5,13 +5,7 @@
 #import "chrome/browser/ui/cocoa/animatable_image.h"
 
 #include "base/logging.h"
-#import "base/mac/mac_util.h"
-#include "base/mac/scoped_cftyperef.h"
 #import "third_party/GTM/AppKit/GTMNSAnimation+Duration.h"
-
-@interface AnimatableImage (Private)
-- (void)setLayerContents:(CALayer*)layer;
-@end
 
 @implementation AnimatableImage
 
@@ -53,7 +47,7 @@
 
   // Create the layer that will be animated.
   CALayer* layer = [CALayer layer];
-  [self setLayerContents:layer];
+  [layer setContents:image_.get()];
   [layer setAnchorPoint:CGPointMake(0, 1)];
   [layer setFrame:[self startFrame]];
   [layer setNeedsDisplayOnBoundsChange:YES];
@@ -125,15 +119,6 @@
   [layer addAnimation:positionAnimation forKey:@"position"];
   [layer addAnimation:opacityAnimation forKey:@"opacity"];
   [CATransaction commit];
-}
-
-// Sets the layer contents by converting the NSImage to a CGImageRef.  This will
-// rasterize PDF resources.
-- (void)setLayerContents:(CALayer*)layer {
-  base::ScopedCFTypeRef<CGImageRef> image(
-      base::mac::CopyNSImageToCGImage(image_.get()));
-  // Create the layer that will be animated.
-  [layer setContents:(id)image.get()];
 }
 
 // CAAnimation delegate method called when the animation is complete.

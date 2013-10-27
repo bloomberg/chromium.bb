@@ -92,13 +92,6 @@ BASE_EXPORT bool AmIForeground();
 // Excludes the file given by |file_path| from being backed up by Time Machine.
 BASE_EXPORT bool SetFileBackupExclusion(const FilePath& file_path);
 
-// Converts a NSImage to a CGImageRef.  Normally, the system frameworks can do
-// this fine, especially on 10.6.  On 10.5, however, CGImage cannot handle
-// converting a PDF-backed NSImage into a CGImageRef.  This function will
-// rasterize the PDF into a bitmap CGImage.  The caller is responsible for
-// releasing the return value.
-BASE_EXPORT CGImageRef CopyNSImageToCGImage(NSImage* image);
-
 // Checks if the current application is set as a Login Item, so it will launch
 // on Login. If a non-NULL pointer to is_hidden is passed, the Login Item also
 // is queried for the 'hide on launch' flag.

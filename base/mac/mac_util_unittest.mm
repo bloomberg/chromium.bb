@@ -124,20 +124,6 @@ TEST_F(MacUtilTest, TestExcludeFileFromBackups) {
   EXPECT_FALSE(excluded_by_path);
 }
 
-TEST_F(MacUtilTest, CopyNSImageToCGImage) {
-  base::scoped_nsobject<NSImage> nsImage(
-      [[NSImage alloc] initWithSize:NSMakeSize(20, 20)]);
-  [nsImage lockFocus];
-  [[NSColor redColor] set];
-  NSRect rect = NSZeroRect;
-  rect.size = [nsImage size];
-  NSRectFill(rect);
-  [nsImage unlockFocus];
-
-  ScopedCFTypeRef<CGImageRef> cgImage(CopyNSImageToCGImage(nsImage.get()));
-  EXPECT_TRUE(cgImage.get());
-}
-
 TEST_F(MacUtilTest, NSObjectRetainRelease) {
   base::scoped_nsobject<NSArray> array(
       [[NSArray alloc] initWithObjects:@"foo", nil]);

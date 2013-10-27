@@ -942,10 +942,8 @@ void AnimateCALayerOpacityFromTo(
     tileSet_.reset(new tabpose::TileSet);
     tabStripModelObserverBridge_.reset(
         new TabStripModelObserverBridge(tabStripModel_, self));
-    NSImage* nsCloseIcon =
-        ResourceBundle::GetSharedInstance().GetNativeImageNamed(
-            IDR_TABPOSE_CLOSE).ToNSImage();
-    closeIcon_.reset(base::mac::CopyNSImageToCGImage(nsCloseIcon));
+    closeIcon_.reset([ResourceBundle::GetSharedInstance().GetNativeImageNamed(
+            IDR_TABPOSE_CLOSE).ToNSImage() retain]);
     [self setReleasedWhenClosed:YES];
     [self setOpaque:NO];
     [self setBackgroundColor:[NSColor clearColor]];
@@ -1005,10 +1003,9 @@ void AnimateCALayerOpacityFromTo(
 
   // Add a close button to the thumb layer.
   CALayer* closeLayer = [CALayer layer];
-  closeLayer.contents = reinterpret_cast<id>(closeIcon_.get());
+  closeLayer.contents = closeIcon_.get();
   CGRect closeBounds = {};
-  closeBounds.size.width = CGImageGetWidth(closeIcon_);
-  closeBounds.size.height = CGImageGetHeight(closeIcon_);
+  closeBounds.size = NSSizeToCGSize([closeIcon_ size]);
   closeLayer.bounds = closeBounds;
   closeLayer.hidden = YES;
 
@@ -1031,9 +1028,6 @@ void AnimateCALayerOpacityFromTo(
   NSFont* font = [NSFont systemFontOfSize:tile.title_font_size()];
   tile.set_font_metrics([font ascender], -[font descender]);
 
-  base::ScopedCFTypeRef<CGImageRef> favicon(
-      base::mac::CopyNSImageToCGImage(tile.favicon()));
-
   CALayer* faviconLayer = [CALayer layer];
   if (showZoom) {
     AnimateCALayerFrameFromTo(
@@ -1046,7 +1040,7 @@ void AnimateCALayerOpacityFromTo(
   } else {
     faviconLayer.frame = NSRectToCGRect(tile.favicon_rect());
   }
-  faviconLayer.contents = (id)favicon.get();
+  faviconLayer.contents = tile.favicon();
   faviconLayer.zPosition = 1;  // On top of the thumb shadow.
   [bgLayer_ addSublayer:faviconLayer];
   [allFaviconLayers_ addObject:faviconLayer];

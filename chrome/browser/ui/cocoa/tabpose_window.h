@@ -77,7 +77,7 @@ class TabStripModelObserverBridge;
   scoped_ptr<TabStripModelObserverBridge> tabStripModelObserverBridge_;
 
   // The icon used for the closebutton layers.
-  base::ScopedCFTypeRef<CGImageRef> closeIcon_;
+  base::scoped_nsobject<NSImage> closeIcon_;
 
   // True if all close layers should be shown (as opposed to just the close
   // layer of the currently selected thumbnail).
