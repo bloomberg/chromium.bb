@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/command_line.h"
+#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string16.h"
@@ -30,6 +31,9 @@ void SendProcessKeyEvent(ui::EventType type,
                                ui::EF_NONE);
   dispatcher->AsRootWindowHostDelegate()->OnHostKeyEvent(&event);
 }
+
+base::LazyInstance<base::Time> g_keyboard_load_time_start =
+    LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 
@@ -150,6 +154,26 @@ bool SendKeyEvent(const std::string type,
     dispatcher->AsRootWindowHostDelegate()->OnHostKeyEvent(&event);
   }
   return true;
+}
+
+const void MarkKeyboardLoadStarted() {
+  if (!g_keyboard_load_time_start.Get().ToInternalValue())
+    g_keyboard_load_time_start.Get() = base::Time::Now();
+}
+
+const void MarkKeyboardLoadFinished() {
+  // It should not be possible to finish loading the keyboard without starting
+  // to load it first.
+  DCHECK(g_keyboard_load_time_start.Get().ToInternalValue());
+
+  static bool logged = false;
+  if (!logged) {
+    // Log the delta only once.
+    UMA_HISTOGRAM_TIMES(
+        "VirtualKeyboard.FirstLoadTime",
+        base::Time::Now() - g_keyboard_load_time_start.Get());
+    logged = true;
+  }
 }
 
 const GritResourceMap* GetKeyboardExtensionResources(size_t* size) {

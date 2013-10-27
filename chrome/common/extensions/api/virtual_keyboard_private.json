@@ -90,6 +90,19 @@
             "parameters": []
           }
         ]
+      },
+      {
+        "name": "keyboardLoaded",
+        "type": "function",
+        "description": "Inform the system that the keyboard has loaded.",
+        "parameters": [
+          { "type": "function",
+            "name": "callback",
+            "optional": true,
+            "description": "Called when load acknowledgement is complete.",
+            "parameters": []
+          }
+        ]
       }
     ],
     "events": [

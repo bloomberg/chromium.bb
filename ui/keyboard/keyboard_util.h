@@ -59,6 +59,15 @@ KEYBOARD_EXPORT bool SendKeyEvent(std::string type,
                                    int modifiers,
                                    aura::WindowEventDispatcher* dispatcher);
 
+// Marks that the keyboard load has started. This is used to measure the time it
+// takes to fully load the keyboard. This should be called before
+// MarkKeyboardLoadFinished.
+KEYBOARD_EXPORT const void MarkKeyboardLoadStarted();
+
+// Marks that the keyboard load has ended. This finishes measuring that the
+// keyboard is loaded.
+KEYBOARD_EXPORT const void MarkKeyboardLoadFinished();
+
 // Get the list of keyboard resources. |size| is populated with the number of
 // resources in the returned array.
 KEYBOARD_EXPORT const GritResourceMap* GetKeyboardExtensionResources(

@@ -114,6 +114,18 @@ bool VirtualKeyboardPrivateHideKeyboardFunction::RunImpl() {
   return false;
 }
 
+bool VirtualKeyboardPrivateKeyboardLoadedFunction::RunImpl() {
+#if defined(USE_ASH)
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+
+  keyboard::MarkKeyboardLoadFinished();
+
+  return true;
+#endif
+  error_ = kNotYetImplementedError;
+  return false;
+}
+
 InputAPI::InputAPI(Profile* profile) {
 }
 

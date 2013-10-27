@@ -14,6 +14,10 @@ function hideKeyboard() {
   chrome.send('hideKeyboard');
 }
 
+function keyboardLoaded() {
+  chrome.send('keyboardLoaded');
+}
+
 (function(exports) {
   /**
    * An array to save callbacks of each request.

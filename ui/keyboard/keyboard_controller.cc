@@ -196,6 +196,7 @@ void KeyboardController::OnTextInputStateChanged(
     should_show = false;
   } else {
     if (container_->children().empty()) {
+      keyboard::MarkKeyboardLoadStarted();
       aura::Window* keyboard = proxy_->GetKeyboardWindow();
       keyboard->Show();
       container_->AddChild(keyboard);
