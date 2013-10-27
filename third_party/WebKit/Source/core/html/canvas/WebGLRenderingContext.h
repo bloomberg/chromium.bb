@@ -543,7 +543,7 @@ public:
 
     class ExtensionTracker {
     public:
-        ExtensionTracker(ExtensionFlags flags, const char** prefixes)
+        ExtensionTracker(ExtensionFlags flags, const char* const* prefixes)
             : m_privileged(flags & PrivilegedExtension)
             , m_draft(flags & DraftExtension)
             , m_prefixed(flags & PrefixedExtension)
@@ -581,13 +581,13 @@ public:
         bool m_privileged;
         bool m_draft;
         bool m_prefixed;
-        const char** m_prefixes;
+        const char* const* m_prefixes;
     };
 
     template <typename T>
     class TypedExtensionTracker : public ExtensionTracker {
     public:
-        TypedExtensionTracker(RefPtr<T>& extensionField, ExtensionFlags flags, const char** prefixes)
+        TypedExtensionTracker(RefPtr<T>& extensionField, ExtensionFlags flags, const char* const* prefixes)
             : ExtensionTracker(flags, prefixes)
             , m_extensionField(extensionField)
         {
@@ -635,7 +635,7 @@ public:
     Vector<ExtensionTracker*> m_extensions;
 
     template <typename T>
-    void registerExtension(RefPtr<T>& extensionPtr, ExtensionFlags flags = ApprovedExtension, const char** prefixes = 0)
+    void registerExtension(RefPtr<T>& extensionPtr, ExtensionFlags flags = ApprovedExtension, const char* const* prefixes = 0)
     {
         m_extensions.append(new TypedExtensionTracker<T>(extensionPtr, flags, prefixes));
     }

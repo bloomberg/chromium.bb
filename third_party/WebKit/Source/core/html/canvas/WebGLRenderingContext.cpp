@@ -601,8 +601,8 @@ WebGLRenderingContext::WebGLRenderingContext(HTMLCanvasElement* passedCanvas, Pa
     }
 
     // Register extensions.
-    static const char* webkitPrefix[] = { "WEBKIT_", 0, };
-    static const char* bothPrefixes[] = { "", "WEBKIT_", 0, };
+    static const char* const webkitPrefix[] = { "WEBKIT_", 0, };
+    static const char* const bothPrefixes[] = { "", "WEBKIT_", 0, };
 
     registerExtension<ANGLEInstancedArrays>(m_angleInstancedArrays);
     registerExtension<EXTTextureFilterAnisotropic>(m_extTextureFilterAnisotropic, PrefixedExtension, webkitPrefix);
@@ -2157,9 +2157,9 @@ GC3Denum WebGLRenderingContext::getError()
 
 bool WebGLRenderingContext::ExtensionTracker::matchesNameWithPrefixes(const String& name) const
 {
-    static const char* unprefixed[] = { "", 0, };
+    static const char* const unprefixed[] = { "", 0, };
 
-    const char** prefixes = m_prefixes ? m_prefixes : unprefixed;
+    const char* const* prefixes = m_prefixes ? m_prefixes : unprefixed;
     for (; *prefixes; ++prefixes) {
         String prefixedName = String(*prefixes) + extensionName();
         if (equalIgnoringCase(prefixedName, name)) {
