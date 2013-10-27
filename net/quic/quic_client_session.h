@@ -208,6 +208,8 @@ class NET_EXPORT_PRIVATE QuicClientSession : public QuicSession {
   size_t num_total_streams_;
   BoundNetLog net_log_;
   QuicConnectionLogger logger_;
+  // Number of packets read in the current read loop.
+  size_t num_packets_read_;
   base::WeakPtrFactory<QuicClientSession> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicClientSession);

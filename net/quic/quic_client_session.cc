@@ -100,6 +100,7 @@ QuicClientSession::QuicClientSession(
       num_total_streams_(0),
       net_log_(BoundNetLog::Make(net_log, NetLog::SOURCE_QUIC_SESSION)),
       logger_(net_log_),
+      num_packets_read_(0),
       weak_factory_(this) {
   crypto_stream_.reset(
       crypto_client_stream_factory ?
@@ -390,16 +391,22 @@ void QuicClientSession::StartReading() {
                          base::Bind(&QuicClientSession::OnReadComplete,
                                     weak_factory_.GetWeakPtr()));
   if (rv == ERR_IO_PENDING) {
+    num_packets_read_ = 0;
     return;
   }
 
-  // Data was read, process it.
-  // Schedule the work through the message loop to avoid recursive
-  // callbacks.
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&QuicClientSession::OnReadComplete,
-                 weak_factory_.GetWeakPtr(), rv));
+  if (++num_packets_read_ > 32) {
+    num_packets_read_ = 0;
+    // Data was read, process it.
+    // Schedule the work through the message loop to avoid recursive
+    // callbacks.
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&QuicClientSession::OnReadComplete,
+                   weak_factory_.GetWeakPtr(), rv));
+  } else {
+    OnReadComplete(rv);
+  }
 }
 
 void QuicClientSession::CloseSessionOnError(int error) {
