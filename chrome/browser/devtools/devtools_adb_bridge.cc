@@ -55,6 +55,7 @@ const char kPageListRequest[] = "GET /json HTTP/1.1\r\n\r\n";
 const char kVersionRequest[] = "GET /json/version HTTP/1.1\r\n\r\n";
 const char kClosePageRequest[] = "GET /json/close/%s HTTP/1.1\r\n\r\n";
 const char kNewPageRequest[] = "GET /json/new HTTP/1.1\r\n\r\n";
+const char kNewPageRequestWithURL[] = "GET /json/new?%s HTTP/1.1\r\n\r\n";
 const char kActivatePageRequest[] =
     "GET /json/activate/%s HTTP/1.1\r\n\r\n";
 const int kAdbPollingIntervalMs = 1000;
@@ -63,8 +64,11 @@ const char kUrlParam[] = "url";
 const char kPageReloadCommand[] = "Page.reload";
 const char kPageNavigateCommand[] = "Page.navigate";
 
+const char kChromeProductName[] = "Chrome";
+const int kMinVersionNewWithURL = 32;
+const int kNewPageNavigateDelayMs = 500;
+
 #if defined(DEBUG_DEVTOOLS)
-const char kChrome[] = "Chrome";
 const char kLocalChrome[] = "Local Chrome";
 #endif  // defined(DEBUG_DEVTOOLS)
 
@@ -183,7 +187,7 @@ void AdbPagesCommand::ProcessSerials() {
     scoped_refptr<DevToolsAdbBridge::RemoteBrowser> remote_browser =
         new DevToolsAdbBridge::RemoteBrowser(
             adb_thread_, device, std::string());
-    remote_browser->set_product(kChrome);
+    remote_browser->set_product(kChromeProductName);
     remote_devices_->back()->AddBrowser(remote_browser);
     browsers_.push_back(remote_browser);
     device->HttpQuery(
@@ -744,6 +748,23 @@ DevToolsAdbBridge::RemoteBrowser::RemoteBrowser(
       socket_(socket) {
 }
 
+bool DevToolsAdbBridge::RemoteBrowser::IsChrome() const {
+  return product_.find(kChromeProductName) == 0;
+}
+
+DevToolsAdbBridge::RemoteBrowser::ParsedVersion
+DevToolsAdbBridge::RemoteBrowser::GetParsedVersion() const {
+  ParsedVersion result;
+  std::vector<std::string> parts;
+  Tokenize(version_, ".", &parts);
+  for (size_t i = 0; i != parts.size(); ++i) {
+    int value = 0;
+    base::StringToInt(parts[i], &value);
+    result.push_back(value);
+  }
+  return result;
+}
+
 std::vector<DevToolsTargetImpl*>
 DevToolsAdbBridge::RemoteBrowser::CreatePageTargets() {
   std::vector<DevToolsTargetImpl*> result;
@@ -790,20 +811,37 @@ void DevToolsAdbBridge::RemoteBrowser::SendProtocolCommand(
       adb_thread_, device_, socket_, debug_url, command.Serialize());
 }
 
+static void NoOp(int, const std::string&) {}
+
 void DevToolsAdbBridge::RemoteBrowser::Open(const std::string& url) {
-  adb_thread_->message_loop()->PostTask(FROM_HERE,
-      base::Bind(&AndroidDevice::HttpQuery,
-          device_, socket_, kNewPageRequest,
-          base::Bind(&RemoteBrowser::PageCreatedOnHandlerThread, this, url)));
+  ParsedVersion parsed_version = GetParsedVersion();
+  if (IsChrome() &&
+      !parsed_version.empty() &&
+      parsed_version[0] >= kMinVersionNewWithURL) {
+    std::string query = net::EscapeQueryParamValue(url, false /* use_plus */);
+    std::string request =
+        base::StringPrintf(kNewPageRequestWithURL, query.c_str());
+    adb_thread_->message_loop()->PostTask(FROM_HERE,
+        base::Bind(&AndroidDevice::HttpQuery,
+            device_, socket_, request, base::Bind(&NoOp)));
+  } else {
+    adb_thread_->message_loop()->PostTask(FROM_HERE,
+        base::Bind(&AndroidDevice::HttpQuery,
+            device_, socket_, kNewPageRequest,
+            base::Bind(&RemoteBrowser::PageCreatedOnHandlerThread, this, url)));
+  }
 }
 
 void DevToolsAdbBridge::RemoteBrowser::PageCreatedOnHandlerThread(
     const std::string& url, int result, const std::string& response) {
   if (result < 0)
     return;
-  BrowserThread::PostTask(
+  // Navigating too soon after the page creation breaks navigation history
+  // (crbug.com/311014). This can be avoided by adding a moderate delay.
+  BrowserThread::PostDelayedTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&RemoteBrowser::PageCreatedOnUIThread, this, response, url));
+      base::Bind(&RemoteBrowser::PageCreatedOnUIThread, this, response, url),
+      base::TimeDelta::FromMilliseconds(kNewPageNavigateDelayMs));
 }
 
 void DevToolsAdbBridge::RemoteBrowser::PageCreatedOnUIThread(

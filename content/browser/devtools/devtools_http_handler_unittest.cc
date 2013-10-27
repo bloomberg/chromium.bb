@@ -65,7 +65,7 @@ class DummyDelegate : public DevToolsHttpHandlerDelegate {
   virtual std::string GetPageThumbnailData(const GURL& url) OVERRIDE {
     return std::string();
   }
-  virtual scoped_ptr<DevToolsTarget> CreateNewTarget() OVERRIDE {
+  virtual scoped_ptr<DevToolsTarget> CreateNewTarget(const GURL& url) OVERRIDE {
     return scoped_ptr<DevToolsTarget>();
   }
   virtual void EnumerateTargets(TargetCallback callback) OVERRIDE {
