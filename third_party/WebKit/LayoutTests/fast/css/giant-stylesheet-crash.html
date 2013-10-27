@@ -1,5 +1,9 @@
 <head>
 <script>
+// GC unreferenced strings to avoid that this test times out.
+if (window.GCController)
+    GCController.collect();
+
 if (window.testRunner)
     testRunner.dumpAsText();
 </script>
@@ -17,7 +21,13 @@ for (var i = 0; i < 1+(1<<16); i++){
     styleElement.appendChild(txt);
 }
 
-document.getElementsByTagName('head')[0].appendChild(styleElement); 
+str = null;
+
+// GC the large str strings to avoid timeouts for subsequent tests.
+if (window.GCController)
+    GCController.collect();
+
+document.getElementsByTagName('head')[0].appendChild(styleElement);
 </script>
 </head>
 <body>

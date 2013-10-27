@@ -25,6 +25,13 @@ document.getElementById("test1").innerHTML = '<a href="about:test?slashes' + one
 document.getElementById("test2").innerHTML = '<a href="about:test?slashes' + oneMillionSlashesAndDots + '">Link with tons of slashes with dots</a>';
 document.getElementById("test3").innerHTML = '<a href="about:test?slashes' + oneMillionSlashesAndDoubleDots + '">Link with tons of slashes with double dots</a>';
 
-document.getElementById("result").firstChild.data = "TEST PASSED";
+// GC these large strings so that they don't cause the next test to timeout.
+if (window.GCController) {
+    oneMillionSlashes = null;
+    oneMillionSlashesAndDots = null;
+    oneMillionSlashesAndDoubleDots = null;
+    GCController.collect();
+}
 
+document.getElementById("result").firstChild.data = "TEST PASSED";
 </script>
