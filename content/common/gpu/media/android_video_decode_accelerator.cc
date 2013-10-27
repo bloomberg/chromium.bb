@@ -84,6 +84,10 @@ bool AndroidVideoDecodeAccelerator::Initialize(
     return false;
   }
 
+  // Only consider using MediaCodec if it's likely backed by hardware.
+  if (media::VideoCodecBridge::IsKnownUnaccelerated(codec_))
+    return false;
+
   if (!make_context_current_.Run()) {
     LOG(ERROR) << "Failed to make this decoder's GL context current.";
     return false;
