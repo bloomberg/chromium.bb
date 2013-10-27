@@ -271,9 +271,9 @@ class TestReceiverAudioCallback :
 
     // We need to convert our "coded" audio frame to our raw format.
     std::vector<int16> output_audio_samples;
-    int number_of_samples = audio_frame->data.size() / 2;
+    size_t number_of_samples = audio_frame->data.size() / 2;
 
-    for (int i = 0; i < number_of_samples; ++i) {
+    for (size_t i = 0; i < number_of_samples; ++i) {
       uint16 sample = (audio_frame->data[1 + i * sizeof(uint16)]) +
             (static_cast<uint16>(audio_frame->data[i * sizeof(uint16)]) << 8);
       output_audio_samples.push_back(static_cast<int16>(sample));
