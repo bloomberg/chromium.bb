@@ -10,7 +10,6 @@
 #include "base/platform_file.h"
 #include "content/child/webkitplatformsupport_impl.h"
 #include "content/common/content_export.h"
-#include "third_party/WebKit/public/web/WebSharedWorkerRepository.h"
 #include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
 #include "third_party/WebKit/public/platform/WebIDBFactory.h"
 #include "webkit/renderer/compositor_bindings/web_compositor_support_impl.h"
@@ -42,7 +41,6 @@ class ThreadSafeSender;
 class WebClipboardImpl;
 class WebCryptoImpl;
 class WebFileSystemImpl;
-class WebSharedWorkerRepositoryImpl;
 
 class CONTENT_EXPORT RendererWebKitPlatformSupportImpl
     : public WebKitPlatformSupportImpl {
@@ -92,7 +90,6 @@ class CONTENT_EXPORT RendererWebKitPlatformSupportImpl
   virtual void screenColorProfile(WebKit::WebVector<char>* to_profile);
   virtual WebKit::WebIDBFactory* idbFactory();
   virtual WebKit::WebFileSystem* fileSystem();
-  virtual WebKit::WebSharedWorkerRepository* sharedWorkerRepository();
   virtual bool canAccelerate2dCanvas();
   virtual bool isThreadedCompositingEnabled();
   virtual double audioHardwareSampleRate();
@@ -195,10 +192,6 @@ class CONTENT_EXPORT RendererWebKitPlatformSupportImpl
 
   // If true, then a GetPlugins call is allowed to rescan the disk.
   bool plugin_refresh_allowed_;
-
-  // Implementation of the WebSharedWorkerRepository APIs (provides an interface
-  // to WorkerService on the browser thread.
-  scoped_ptr<WebSharedWorkerRepositoryImpl> shared_worker_repository_;
 
   scoped_ptr<WebKit::WebIDBFactory> web_idb_factory_;
 

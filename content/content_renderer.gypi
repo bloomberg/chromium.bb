@@ -482,6 +482,8 @@
     'renderer/scoped_clipboard_writer_glue.h',
     'renderer/shared_memory_seqlock_reader.cc',
     'renderer/shared_memory_seqlock_reader.h',
+    'renderer/shared_worker_repository.cc',
+    'renderer/shared_worker_repository.h',
     'renderer/skia_benchmarking_extension.cc',
     'renderer/skia_benchmarking_extension.h',
     'renderer/speech_recognition_dispatcher.cc',
@@ -507,8 +509,6 @@
     'renderer/webcrypto/webcrypto_impl_openssl.cc',
     'renderer/websharedworker_proxy.cc',
     'renderer/websharedworker_proxy.h',
-    'renderer/websharedworkerrepository_impl.cc',
-    'renderer/websharedworkerrepository_impl.h',
   ],
   'conditions': [
     ['notifications==0', {

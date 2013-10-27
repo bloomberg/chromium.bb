@@ -47,7 +47,6 @@
 #include "content/renderer/renderer_clipboard_client.h"
 #include "content/renderer/webclipboard_impl.h"
 #include "content/renderer/webcrypto/webcrypto_impl.h"
-#include "content/renderer/websharedworkerrepository_impl.h"
 #include "gpu/config/gpu_info.h"
 #include "ipc/ipc_sync_message_filter.h"
 #include "media/audio/audio_output_device.h"
@@ -205,7 +204,6 @@ RendererWebKitPlatformSupportImpl::RendererWebKitPlatformSupportImpl()
       mime_registry_(new RendererWebKitPlatformSupportImpl::MimeRegistry),
       sudden_termination_disables_(0),
       plugin_refresh_allowed_(true),
-      shared_worker_repository_(new WebSharedWorkerRepositoryImpl),
       child_thread_loop_(base::MessageLoopProxy::current()) {
   if (g_sandbox_enabled && sandboxEnabled()) {
     sandbox_support_.reset(
@@ -605,22 +603,6 @@ long long RendererWebKitPlatformSupportImpl::databaseGetSpaceAvailableForOrigin(
     const WebString& origin_identifier) {
   return DatabaseUtil::DatabaseGetSpaceAvailable(origin_identifier,
                                                  sync_message_filter_.get());
-}
-
-WebKit::WebSharedWorkerRepository*
-RendererWebKitPlatformSupportImpl::sharedWorkerRepository() {
-#if !defined(OS_ANDROID)
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableSharedWorkers)) {
-    return shared_worker_repository_.get();
-  } else {
-    return NULL;
-  }
-#else
-  // Shared workers are unsupported on Android. Returning NULL will prevent the
-  // window.SharedWorker constructor from being exposed. http://crbug.com/154571
-  return NULL;
-#endif
 }
 
 bool RendererWebKitPlatformSupportImpl::canAccelerate2dCanvas() {

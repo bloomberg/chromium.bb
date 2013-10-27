@@ -168,34 +168,6 @@ WebKit::WebPlugin* RenderFrameImpl::createPlugin(
 #endif  // defined(ENABLE_PLUGINS)
 }
 
-WebKit::WebSharedWorker* RenderFrameImpl::createSharedWorker(
-    WebKit::WebFrame* frame,
-    const WebKit::WebURL& url,
-    const WebKit::WebString& name,
-    unsigned long long document_id) {
-  int route_id = MSG_ROUTING_NONE;
-  bool exists = false;
-  bool url_mismatch = false;
-  ViewHostMsg_CreateWorker_Params params;
-  params.url = url;
-  params.name = name;
-  params.document_id = document_id;
-  params.render_view_route_id = render_view_->GetRoutingID();
-  params.route_id = MSG_ROUTING_NONE;
-  params.script_resource_appcache_id = 0;
-  render_view_->Send(new ViewHostMsg_LookupSharedWorker(
-      params, &exists, &route_id, &url_mismatch));
-  if (url_mismatch) {
-    return NULL;
-  } else {
-    return new WebSharedWorkerProxy(RenderThreadImpl::current(),
-                                    document_id,
-                                    exists,
-                                    route_id,
-                                    render_view_->GetRoutingID());
-  }
-}
-
 WebKit::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
     WebKit::WebFrame* frame,
     const WebKit::WebURL& url,

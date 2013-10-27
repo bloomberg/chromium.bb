@@ -44,6 +44,8 @@ static void SetRuntimeFeatureDefaultsForPlatform() {
   WebRuntimeFeatures::enableDataListElement(false);
   // Android does not yet support the Web Notification API. crbug.com/115320
   WebRuntimeFeatures::enableNotifications(false);
+  // Android does not yet support SharedWorker. crbug.com/154571
+  WebRuntimeFeatures::enableSharedWorker(false);
 #endif  // defined(OS_ANDROID)
 }
 
@@ -79,6 +81,9 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
 
   if (command_line.HasSwitch(switches::kDisableUnprefixedMediaSource))
     WebRuntimeFeatures::enableMediaSource(false);
+
+  if (command_line.HasSwitch(switches::kDisableSharedWorkers))
+    WebRuntimeFeatures::enableSharedWorker(false);
 
 #if defined(OS_ANDROID)
   if (command_line.HasSwitch(switches::kDisableWebRTC)) {

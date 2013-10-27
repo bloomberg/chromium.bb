@@ -40,11 +40,6 @@ class CONTENT_EXPORT RenderFrameImpl
   virtual WebKit::WebPlugin* createPlugin(
       WebKit::WebFrame* frame,
       const WebKit::WebPluginParams& params);
-  virtual WebKit::WebSharedWorker* createSharedWorker(
-      WebKit::WebFrame* frame,
-      const WebKit::WebURL& url,
-      const WebKit::WebString& name,
-      unsigned long long document_id);
   virtual WebKit::WebMediaPlayer* createMediaPlayer(
       WebKit::WebFrame* frame,
       const WebKit::WebURL& url,

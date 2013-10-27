@@ -118,6 +118,7 @@
 #include "content/renderer/renderer_webcolorchooser_impl.h"
 #include "content/renderer/resizing_mode_selector.h"
 #include "content/renderer/savable_resources.h"
+#include "content/renderer/shared_worker_repository.h"
 #include "content/renderer/speech_recognition_dispatcher.h"
 #include "content/renderer/stats_collection_controller.h"
 #include "content/renderer/stats_collection_observer.h"
@@ -316,7 +317,6 @@ using WebKit::WebSecurityOrigin;
 using WebKit::WebSecurityPolicy;
 using WebKit::WebSerializedScriptValue;
 using WebKit::WebSettings;
-using WebKit::WebSharedWorker;
 using WebKit::WebSize;
 using WebKit::WebSocketStreamHandle;
 using WebKit::WebStorageNamespace;
@@ -982,6 +982,8 @@ void RenderViewImpl::Initialize(RenderViewImplParams* params) {
 #if defined(OS_MACOSX)
   new TextInputClientObserver(this);
 #endif  // defined(OS_MACOSX)
+
+  new SharedWorkerRepository(this);
 
 #if defined(OS_ANDROID)
   media_player_manager_.reset(new RendererMediaPlayerManager());
