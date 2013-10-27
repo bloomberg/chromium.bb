@@ -55,19 +55,24 @@ class MultiUserWindowManager : public ash::SessionStateObserver,
  public:
   // The multi profile mode in use.
   enum MultiProfileMode {
-    MULTI_PROFILE_MODE_INVALID,    // Used for initialization.
-    MULTI_PROFILE_MODE_OFF,        // Single user mode.
-    MULTI_PROFILE_MODE_SEPARATED,  // Each user has his own desktop.
-    MULTI_PROFILE_MODE_MIXED       // All users mix windows freely.
+    MULTI_PROFILE_MODE_UNINITIALIZED,  // Not initialized yet.
+    MULTI_PROFILE_MODE_OFF,            // Single user mode.
+    MULTI_PROFILE_MODE_SEPARATED,      // Each user has his own desktop.
+    MULTI_PROFILE_MODE_MIXED           // All users mix windows freely.
   };
 
+  // Creates an instance of the MultiUserWindowManager.
+  // Note: This function might fail if due to the desired mode the
+  // MultiUserWindowManager is not required.
+  static MultiUserWindowManager* CreateInstance();
+
   // Gets the instance of the object. If the multi profile mode is not enabled
-  // this will return NULL. If it wasn't created yet, it will create an instance
-  // using the currently active user as the active user - otherwise it will
-  // return the previously created instance.
+  // this will return NULL.
   static MultiUserWindowManager* GetInstance();
 
-  // Return the current multi profile mode operation.
+  // Return the current multi profile mode operation. If CreateInstance was not
+  // yet called (or was already destroyed), MULTI_PROFILE_MODE_UNINITIALIZED
+  // will get returned.
   static MultiProfileMode GetMultiProfileMode();
 
   // Removes the instance.

@@ -298,6 +298,8 @@
         'browser/ui/ash/launcher/launcher_item_controller.h',
         'browser/ui/ash/launcher/launcher_application_menu_item_model.cc',
         'browser/ui/ash/launcher/launcher_application_menu_item_model.h',
+        'browser/ui/ash/launcher/multi_profile_browser_status_monitor.cc',
+        'browser/ui/ash/launcher/multi_profile_browser_status_monitor.h',        
         'browser/ui/ash/launcher/shell_window_launcher_item_controller.cc',
         'browser/ui/ash/launcher/shell_window_launcher_item_controller.h',
         'browser/ui/ash/launcher/shell_window_launcher_controller.cc',

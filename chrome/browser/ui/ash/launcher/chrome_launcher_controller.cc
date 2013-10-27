@@ -84,6 +84,7 @@
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/wallpaper_manager.h"
 #include "chrome/browser/ui/ash/chrome_shell_delegate.h"
+#include "chrome/browser/ui/ash/launcher/multi_profile_browser_status_monitor.h"
 #include "chrome/browser/ui/ash/multi_user_window_manager.h"
 #endif
 
@@ -272,7 +273,18 @@ ChromeLauncherController::ChromeLauncherController(
   // All profile relevant settings get bound to the current profile.
   AttachProfile(profile_);
 
-  browser_status_monitor_.reset(new BrowserStatusMonitor(this));
+#if defined(OS_CHROMEOS)
+  // In multi profile mode we might have a window manager. We try to create it
+  // here. If the instantiation fails, the manager is not needed.
+  chrome::MultiUserWindowManager::CreateInstance();
+  // If we have a separated destkop mode we create the multi profile version of
+  // the browser status monitor.
+  if (chrome::MultiUserWindowManager::GetMultiProfileMode() ==
+          chrome::MultiUserWindowManager::MULTI_PROFILE_MODE_SEPARATED)
+    browser_status_monitor_.reset(new MultiProfileBrowserStatusMonitor(this));
+  else
+#endif
+    browser_status_monitor_.reset(new BrowserStatusMonitor(this));
   model_->AddObserver(this);
   // Right now ash::Shell isn't created for tests.
   // TODO(mukai): Allows it to observe display change and write tests.
@@ -298,9 +310,6 @@ ChromeLauncherController::ChromeLauncherController(
       ChromeShellDelegate::instance()->IsMultiProfilesEnabled()) {
     user_switch_observer_.reset(
         new ChromeLauncherControllerUserSwitchObserverChromeOS(this));
-    // TODO(skuhne): Find a better place where to instantiate this. Note that
-    // once we start using the manager for other operations it will load itself.
-    chrome::MultiUserWindowManager::GetInstance();
   }
 #endif
 }
@@ -339,8 +348,6 @@ ChromeLauncherController::~ChromeLauncherController() {
     instance_ = NULL;
 #if defined(OS_CHROMEOS)
   // Get rid of the multi user window manager instance.
-  // TODO(skuhne): Find a better place where this can be deleted. Looked at
-  // ash_init.cc, but it could only be deleted there, not created.
   chrome::MultiUserWindowManager::DeleteInstance();
 #endif
 }
@@ -1032,6 +1039,8 @@ void ChromeLauncherController::ActiveUserChanged(
   // resources get released and the new profile gets attached instead.
   ReleaseProfile();
   AttachProfile(ProfileManager::GetDefaultProfile());
+  // Update the V1 applications.
+  browser_status_monitor_->ActiveUserChanged(user_email);
   // Update the user specific shell properties from the new user profile.
   UpdateAppLaunchersFromPref();
   SetShelfAlignmentFromPrefs();

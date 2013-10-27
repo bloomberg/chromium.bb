@@ -42,6 +42,12 @@ class BrowserStatusMonitor : public aura::client::ActivationChangeObserver,
   explicit BrowserStatusMonitor(ChromeLauncherController* launcher_controller);
   virtual ~BrowserStatusMonitor();
 
+  // A function which gets called when the current user has changed.
+  // Note that this function is called by the ChromeLauncherController to be
+  // able to do the activation in a proper order - rather then setting an
+  // observer.
+  virtual void ActiveUserChanged(const std::string& user_email) {}
+
   // A shortcut to call the ChromeLauncherController's UpdateAppState().
   void UpdateAppItemState(content::WebContents* contents,
                           ChromeLauncherController::AppState app_state);
@@ -81,6 +87,18 @@ class BrowserStatusMonitor : public aura::client::ActivationChangeObserver,
   virtual void TabClosingAt(TabStripModel* tab_strip_mode,
                             content::WebContents* contents,
                             int index) OVERRIDE;
+
+ protected:
+  // Add a V1 application to the shelf. This can get overwritten for multi
+  // profile implementations.
+  virtual void AddV1AppToShelf(Browser* browser);
+
+  // Remove a V1 application from the shelf. This can get overwritten for multi
+  // profile implementations.
+  virtual void RemoveV1AppFromShelf(Browser* browser);
+
+  // Check if V1 application is currently in the shelf.
+  bool IsV1AppInShelf(Browser* browser);
 
  private:
   // This class monitors the WebContent of the all tab and notifies a navigation

@@ -40,7 +40,7 @@ namespace chrome {
 // used is quite expensive.
 chrome::MultiUserWindowManager::MultiProfileMode
     chrome::MultiUserWindowManager::multi_user_mode_ =
-        chrome::MultiUserWindowManager::MULTI_PROFILE_MODE_INVALID;
+        chrome::MultiUserWindowManager::MULTI_PROFILE_MODE_UNINITIALIZED;
 
 // A class to disable updates to the MRU window list and the auto positioning
 // logic while the user gets switched.
@@ -90,11 +90,20 @@ class AppObserver : public apps::ShellWindowRegistry::Observer {
 
 // static
 MultiUserWindowManager* MultiUserWindowManager::GetInstance() {
+  return g_instance;
+}
+
+MultiUserWindowManager* MultiUserWindowManager::CreateInstance() {
   if (!g_instance &&
       ash::Shell::GetInstance()->delegate()->IsMultiProfilesEnabled() &&
       !ash::switches::UseFullMultiProfileMode()) {
     g_instance = CreateInstanceInternal(
         ash::Shell::GetInstance()->session_state_delegate()->GetUserID(0));
+    multi_user_mode_ = MULTI_PROFILE_MODE_SEPARATED;
+  } else if (ash::Shell::GetInstance()->delegate()->IsMultiProfilesEnabled()) {
+    multi_user_mode_ = MULTI_PROFILE_MODE_MIXED;
+  } else {
+    multi_user_mode_ = MULTI_PROFILE_MODE_OFF;
   }
   return g_instance;
 }
@@ -102,16 +111,6 @@ MultiUserWindowManager* MultiUserWindowManager::GetInstance() {
 // static
 MultiUserWindowManager::MultiProfileMode
 MultiUserWindowManager::GetMultiProfileMode() {
-  if (multi_user_mode_ != MULTI_PROFILE_MODE_INVALID)
-    return multi_user_mode_;
-
-  if (GetInstance())
-    multi_user_mode_ = MULTI_PROFILE_MODE_SEPARATED;
-  else if (ash::Shell::GetInstance()->delegate()->IsMultiProfilesEnabled())
-    multi_user_mode_ = MULTI_PROFILE_MODE_MIXED;
-  else
-    multi_user_mode_ = MULTI_PROFILE_MODE_OFF;
-
   return multi_user_mode_;
 }
 
@@ -120,8 +119,7 @@ void MultiUserWindowManager::DeleteInstance() {
   if (g_instance)
     delete g_instance;
   g_instance = NULL;
-  // With valgrind we might change modes and have therefore to reset the mode.
-  multi_user_mode_ = MULTI_PROFILE_MODE_INVALID;
+  multi_user_mode_ = MULTI_PROFILE_MODE_UNINITIALIZED;
 }
 
 // static

@@ -376,6 +376,11 @@ class ChromeLauncherController : public ash::LauncherDelegate,
   // Returns true if |browser| is owned by the active user.
   bool IsBrowserFromActiveUser(Browser* browser);
 
+  // Access to the BrowserStatusMonitor for tests.
+  BrowserStatusMonitor* browser_status_monitor_for_test() {
+    return browser_status_monitor_.get();
+  }
+
  protected:
   // Creates a new app shortcut item and controller on the launcher at |index|.
   // Use kInsertItemAtEnd to add a shortcut as the last item.
