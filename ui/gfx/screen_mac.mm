@@ -140,6 +140,8 @@ class ScreenMac : public gfx::Screen {
     if (!window)
       return GetPrimaryDisplay();
     NSScreen* match_screen = [window screen];
+    if (!match_screen)
+      return GetPrimaryDisplay();
     return GetDisplayForScreen(match_screen, false /* may not be primary */);
   }
 
