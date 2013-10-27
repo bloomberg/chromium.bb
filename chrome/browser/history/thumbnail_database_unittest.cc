@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/file_util.h"
+#include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted_memory.h"
@@ -976,6 +977,35 @@ TEST_F(ThumbnailDatabaseTest, Recovery6) {
 
     // Check that the expected tables exist.
     VerifyTablesAndColumns(&raw_db);
+  }
+}
+
+// Test that various broken schema found in the wild can be opened
+// successfully, and result in the correct schema.
+TEST_F(ThumbnailDatabaseTest, WildSchema) {
+  base::FilePath sql_path;
+  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &sql_path));
+  sql_path = sql_path.AppendASCII("History").AppendASCII("thumbnail_wild");
+
+  base::FileEnumerator fe(
+      sql_path, false, base::FileEnumerator::FILES, FILE_PATH_LITERAL("*.sql"));
+  for (base::FilePath name = fe.Next(); !name.empty(); name = fe.Next()) {
+    SCOPED_TRACE(name.BaseName().AsUTF8Unsafe());
+    // Generate a database path based on the golden's basename.
+    base::FilePath db_base_name =
+        name.BaseName().ReplaceExtension(FILE_PATH_LITERAL("db"));
+    base::FilePath db_path = file_name_.DirName().Append(db_base_name);
+    ASSERT_TRUE(sql::test::CreateDatabaseFromSQL(db_path, name));
+
+    // All schema flaws should be cleaned up by Init().
+    // TODO(shess): Differentiate between databases which need Raze()
+    // and those which can be salvaged.
+    ThumbnailDatabase db;
+    ASSERT_EQ(sql::INIT_OK, db.Init(db_path));
+
+    // Verify that the resulting schema is correct, whether it
+    // involved razing the file or fixing things in place.
+    VerifyTablesAndColumns(&db.db_);
   }
 }
 

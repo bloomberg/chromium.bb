@@ -39,13 +39,6 @@ class ThumbnailDatabase {
   // When not INIT_OK, no other functions should be called.
   sql::InitStatus Init(const base::FilePath& db_name);
 
-  // Open database on a given filename. If the file does not exist,
-  // it is created.
-  // |db| is the database to open.
-  // |db_name| is a path to the database file.
-  static sql::InitStatus OpenDatabase(sql::Connection* db,
-                                      const base::FilePath& db_name);
-
   // Computes and records various metrics for the database. Should only be
   // called once and only upon successful Init.
   void ComputeDatabaseMetrics();
@@ -237,16 +230,25 @@ class ThumbnailDatabase {
   bool RetainDataForPageUrls(const std::vector<GURL>& urls_to_keep);
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(ThumbnailDatabaseTest, RetainDataForPageUrls);
   FRIEND_TEST_ALL_PREFIXES(ThumbnailDatabaseTest, Version3);
   FRIEND_TEST_ALL_PREFIXES(ThumbnailDatabaseTest, Version4);
   FRIEND_TEST_ALL_PREFIXES(ThumbnailDatabaseTest, Version5);
   FRIEND_TEST_ALL_PREFIXES(ThumbnailDatabaseTest, Version6);
   FRIEND_TEST_ALL_PREFIXES(ThumbnailDatabaseTest, Version7);
-  FRIEND_TEST_ALL_PREFIXES(ThumbnailDatabaseTest, RetainDataForPageUrls);
+  FRIEND_TEST_ALL_PREFIXES(ThumbnailDatabaseTest, WildSchema);
 
-  // Creates the thumbnail table, returning true if the table already exists
-  // or was successfully created.
-  bool InitThumbnailTable();
+  // Open database on a given filename. If the file does not exist,
+  // it is created.
+  // |db| is the database to open.
+  // |db_name| is a path to the database file.
+  static sql::InitStatus OpenDatabase(sql::Connection* db,
+                                      const base::FilePath& db_name);
+
+  // Helper function to implement internals of Init().  This allows
+  // Init() to retry in case of failure, since some failures run
+  // recovery code.
+  sql::InitStatus InitImpl(const base::FilePath& db_name);
 
   // Helper function to handle cleanup on upgrade failures.
   sql::InitStatus CantUpgradeToVersion(int cur_version);
@@ -259,9 +261,6 @@ class ThumbnailDatabase {
 
   // Returns true if the |favicons| database is missing a column.
   bool IsFaviconDBStructureIncorrect();
-
-  // Returns True if the current database is latest.
-  bool IsLatestVersion();
 
   sql::Connection db_;
   sql::MetaTable meta_table_;
