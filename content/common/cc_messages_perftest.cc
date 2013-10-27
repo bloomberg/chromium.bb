@@ -44,17 +44,22 @@ TEST_F(CCMessagesPerfTest, DelegatedFrame_ManyQuads_1_4000) {
     IPC::ParamTraits<CompositorFrame>::Write(&msg, *frame);
   }
 
-  base::TimeTicks start = base::TimeTicks::HighResNow();
+  base::TimeDelta min_time_delta;
   for (int i = 0; i < kNumRuns; ++i) {
+    base::TimeTicks start = base::TimeTicks::HighResNow();
     IPC::Message msg(1, 2, IPC::Message::PRIORITY_NORMAL);
     IPC::ParamTraits<CompositorFrame>::Write(&msg, *frame);
+    base::TimeTicks end = base::TimeTicks::HighResNow();
+    if (i == 0 || end - start < min_time_delta)
+      min_time_delta = end - start;
   }
-  base::TimeTicks end = base::TimeTicks::HighResNow();
 
-  base::TimeDelta mean_time_delta = (end - start) / kNumRuns;
-  perf_test::PrintResult("mean_frame_serialization_time", "",
+  perf_test::PrintResult("min_frame_serialization_time",
+                         "",
                          "DelegatedFrame_ManyQuads_1_4000",
-                         mean_time_delta.InMicroseconds(), "us", true);
+                         min_time_delta.InMicroseconds(),
+                         "us",
+                         true);
 }
 
 TEST_F(CCMessagesPerfTest, DelegatedFrame_ManyQuads_1_100000) {
@@ -75,17 +80,22 @@ TEST_F(CCMessagesPerfTest, DelegatedFrame_ManyQuads_1_100000) {
     IPC::ParamTraits<CompositorFrame>::Write(&msg, *frame);
   }
 
-  base::TimeTicks start = base::TimeTicks::HighResNow();
+  base::TimeDelta min_time_delta;
   for (int i = 0; i < kNumRuns; ++i) {
+    base::TimeTicks start = base::TimeTicks::HighResNow();
     IPC::Message msg(1, 2, IPC::Message::PRIORITY_NORMAL);
     IPC::ParamTraits<CompositorFrame>::Write(&msg, *frame);
+    base::TimeTicks end = base::TimeTicks::HighResNow();
+    if (i == 0 || end - start < min_time_delta)
+      min_time_delta = end - start;
   }
-  base::TimeTicks end = base::TimeTicks::HighResNow();
 
-  base::TimeDelta mean_time_delta = (end - start) / kNumRuns;
-  perf_test::PrintResult("mean_frame_serialization_time", "",
+  perf_test::PrintResult("min_frame_serialization_time",
+                         "",
                          "DelegatedFrame_ManyQuads_1_100000",
-                         mean_time_delta.InMicroseconds(), "us", true);
+                         min_time_delta.InMicroseconds(),
+                         "us",
+                         true);
 }
 
 TEST_F(CCMessagesPerfTest, DelegatedFrame_ManyQuads_4000_4000) {
@@ -106,17 +116,22 @@ TEST_F(CCMessagesPerfTest, DelegatedFrame_ManyQuads_4000_4000) {
     IPC::ParamTraits<CompositorFrame>::Write(&msg, *frame);
   }
 
-  base::TimeTicks start = base::TimeTicks::HighResNow();
+  base::TimeDelta min_time_delta;
   for (int i = 0; i < kNumRuns; ++i) {
+    base::TimeTicks start = base::TimeTicks::HighResNow();
     IPC::Message msg(1, 2, IPC::Message::PRIORITY_NORMAL);
     IPC::ParamTraits<CompositorFrame>::Write(&msg, *frame);
+    base::TimeTicks end = base::TimeTicks::HighResNow();
+    if (i == 0 || end - start < min_time_delta)
+      min_time_delta = end - start;
   }
-  base::TimeTicks end = base::TimeTicks::HighResNow();
 
-  base::TimeDelta mean_time_delta = (end - start) / kNumRuns;
-  perf_test::PrintResult("mean_frame_serialization_time", "",
+  perf_test::PrintResult("min_frame_serialization_time",
+                         "",
                          "DelegatedFrame_ManyQuads_4000_4000",
-                         mean_time_delta.InMicroseconds(), "us", true);
+                         min_time_delta.InMicroseconds(),
+                         "us",
+                         true);
 }
 
 TEST_F(CCMessagesPerfTest, DelegatedFrame_ManyQuads_100000_100000) {
@@ -137,17 +152,22 @@ TEST_F(CCMessagesPerfTest, DelegatedFrame_ManyQuads_100000_100000) {
     IPC::ParamTraits<CompositorFrame>::Write(&msg, *frame);
   }
 
-  base::TimeTicks start = base::TimeTicks::HighResNow();
+  base::TimeDelta min_time_delta;
   for (int i = 0; i < kNumRuns; ++i) {
+    base::TimeTicks start = base::TimeTicks::HighResNow();
     IPC::Message msg(1, 2, IPC::Message::PRIORITY_NORMAL);
     IPC::ParamTraits<CompositorFrame>::Write(&msg, *frame);
+    base::TimeTicks end = base::TimeTicks::HighResNow();
+    if (i == 0 || end - start < min_time_delta)
+      min_time_delta = end - start;
   }
-  base::TimeTicks end = base::TimeTicks::HighResNow();
 
-  base::TimeDelta mean_time_delta = (end - start) / kNumRuns;
-  perf_test::PrintResult("mean_frame_serialization_time", "",
+  perf_test::PrintResult("min_frame_serialization_time",
+                         "",
                          "DelegatedFrame_ManyQuads_100000_100000",
-                         mean_time_delta.InMicroseconds(), "us", true);
+                         min_time_delta.InMicroseconds(),
+                         "us",
+                         true);
 }
 
 TEST_F(CCMessagesPerfTest,
@@ -170,17 +190,22 @@ TEST_F(CCMessagesPerfTest,
     IPC::ParamTraits<CompositorFrame>::Write(&msg, *frame);
   }
 
-  base::TimeTicks start = base::TimeTicks::HighResNow();
+  base::TimeDelta min_time_delta;
   for (int i = 0; i < kNumRuns; ++i) {
+    base::TimeTicks start = base::TimeTicks::HighResNow();
     IPC::Message msg(1, 2, IPC::Message::PRIORITY_NORMAL);
     IPC::ParamTraits<CompositorFrame>::Write(&msg, *frame);
+    base::TimeTicks end = base::TimeTicks::HighResNow();
+    if (i == 0 || end - start < min_time_delta)
+      min_time_delta = end - start;
   }
-  base::TimeTicks end = base::TimeTicks::HighResNow();
 
-  base::TimeDelta mean_time_delta = (end - start) / kNumRuns;
-  perf_test::PrintResult("mean_frame_serialization_time", "",
+  perf_test::PrintResult("min_frame_serialization_time",
+                         "",
                          "DelegatedFrame_ManyRenderPasses_10000_100",
-                         mean_time_delta.InMicroseconds(), "us", true);
+                         min_time_delta.InMicroseconds(),
+                         "us",
+                         true);
 }
 
 }  // namespace
