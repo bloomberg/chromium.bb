@@ -526,3 +526,8 @@ crbug.com/311319 webaudio/waveshaper-oversample-4x.html [ Pass Failure ]
 crbug.com/311804 [ Mac Win Linux ] storage/storagequota-query-usage.html [ Failure Pass ]
 crbug.com/311805 [ Mac ] http/tests/w3c/webperf/submission/Google/resource-timing/html/test_resource_reparenting.html [ Failure Pass ]
 crbug.com/311812 [ Mac ] http/tests/security/redirect-BLOCKED-to-localURL.html [ Failure Pass ]
+
+crbug.com/312060 [ Win ] virtual/threaded/animations/3d/matrix-transform-type-animation.html [ ImageOnlyFailure ]
+crbug.com/312060 [ Win ] virtual/threaded/animations/additive-transform-animations.html [ ImageOnlyFailure ]
+crbug.com/312060 [ Win ] virtual/threaded/animations/keyframe-multiple-timing-functions-transform.html [ ImageOnlyFailure ]
+crbug.com/312060 [ Win ] virtual/threaded/animations/missing-values-first-keyframe.html [ ImageOnlyFailure ]
