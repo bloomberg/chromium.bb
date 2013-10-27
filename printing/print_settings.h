@@ -48,10 +48,6 @@ class PRINTING_EXPORT PrintSettings {
   bool Equals(const PrintSettings& rhs) const;
 
   void set_landscape(bool landscape) { landscape_ = landscape; }
-  void set_printer_name(const base::string16& printer_name) {
-    printer_name_ = printer_name;
-  }
-  const base::string16& printer_name() const { return printer_name_; }
   void set_device_name(const base::string16& device_name) {
     device_name_ = device_name;
   }
@@ -121,9 +117,6 @@ class PRINTING_EXPORT PrintSettings {
  private:
   //////////////////////////////////////////////////////////////////////////////
   // Settings that can't be changed without side-effects.
-
-  // Printer name as shown to the user.
-  base::string16 printer_name_;
 
   // Printer device name as opened by the OS.
   base::string16 device_name_;

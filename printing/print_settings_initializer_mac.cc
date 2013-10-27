@@ -18,8 +18,6 @@ void PrintSettingsInitializerMac::InitPrintSettings(
     PrintSettings* print_settings) {
   DCHECK(print_settings);
 
-  print_settings->set_printer_name(
-      base::SysCFStringRefToUTF16(PMPrinterGetName(printer)));
   print_settings->set_device_name(
       base::SysCFStringRefToUTF16(PMPrinterGetID(printer)));
   print_settings->ranges = new_ranges;

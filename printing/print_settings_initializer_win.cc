@@ -21,7 +21,6 @@ void PrintSettingsInitializerWin::InitPrintSettings(
   DCHECK(hdc);
   DCHECK(print_settings);
 
-  print_settings->set_printer_name(dev_mode.dmDeviceName);
   print_settings->set_device_name(new_device_name);
   print_settings->ranges = const_cast<PageRanges&>(new_ranges);
   print_settings->set_landscape(dev_mode.dmOrientation == DMORIENT_LANDSCAPE);

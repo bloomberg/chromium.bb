@@ -135,7 +135,6 @@ void PrintSettings::Clear() {
   title = base::string16();
   url = base::string16();
   display_header_footer = false;
-  printer_name_.clear();
   device_name_.clear();
   page_setup_device_units_.Clear();
   dpi_ = 0;
