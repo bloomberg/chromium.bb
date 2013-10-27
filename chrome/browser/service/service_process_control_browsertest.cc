@@ -6,15 +6,20 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/command_line.h"
+#include "base/path_service.h"
 #include "base/process/kill.h"
 #include "base/process/process_handle.h"
 #include "base/process/process_iterator.h"
 #include "base/test/test_timeouts.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/service_process_util.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/common/content_paths.h"
+#include "content/public/common/content_switches.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 class ServiceProcessControlBrowserTest
@@ -110,11 +115,49 @@ class ServiceProcessControlBrowserTest
   base::ProcessHandle service_process_handle_;
 };
 
+class RealServiceProcessControlBrowserTest
+      : public ServiceProcessControlBrowserTest {
+ public:
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    ServiceProcessControlBrowserTest::SetUpCommandLine(command_line);
+    base::FilePath exe;
+    PathService::Get(base::DIR_EXE, &exe);
+#if defined(OS_MACOSX)
+    exe = exe.DirName().DirName().DirName();
+#endif
+    exe = exe.Append(chrome::kHelperProcessExecutablePath);
+    // Run chrome instead of browser_tests.exe.
+    EXPECT_TRUE(base::PathExists(exe));
+    command_line->AppendSwitchPath(switches::kBrowserSubprocessPath, exe);
+  }
+};
+
+#if defined(OS_MACOSX)
+// Does not work on MACOSX.
+#define MAYBE_LaunchAndIPC DISABLED_LaunchAndIPC
+#else
+#define MAYBE_LaunchAndIPC LaunchAndIPC
+#endif
+
+IN_PROC_BROWSER_TEST_F(RealServiceProcessControlBrowserTest,
+                       MAYBE_LaunchAndIPC) {
+  LaunchServiceProcessControl();
+
+  // Make sure we are connected to the service process.
+  ASSERT_TRUE(ServiceProcessControl::GetInstance()->IsConnected());
+  ServiceProcessControl::GetInstance()->GetCloudPrintProxyInfo(
+        base::Bind(&ServiceProcessControlBrowserTest::CloudPrintInfoCallback));
+  content::RunMessageLoop();
+
+  // And then shutdown the service process.
+  EXPECT_TRUE(ServiceProcessControl::GetInstance()->Shutdown());
+}
+
 IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest, LaunchAndIPC) {
   LaunchServiceProcessControl();
 
   // Make sure we are connected to the service process.
-  EXPECT_TRUE(ServiceProcessControl::GetInstance()->IsConnected());
+  ASSERT_TRUE(ServiceProcessControl::GetInstance()->IsConnected());
   ServiceProcessControl::GetInstance()->GetCloudPrintProxyInfo(
         base::Bind(&ServiceProcessControlBrowserTest::CloudPrintInfoCallback));
   content::RunMessageLoop();
@@ -130,14 +173,14 @@ IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest, LaunchTwice) {
   LaunchServiceProcessControl();
 
   // Make sure we are connected to the service process.
-  EXPECT_TRUE(ServiceProcessControl::GetInstance()->IsConnected());
+  ASSERT_TRUE(ServiceProcessControl::GetInstance()->IsConnected());
   EXPECT_TRUE(ServiceProcessControl::GetInstance()->GetCloudPrintProxyInfo(
         base::Bind(&ServiceProcessControlBrowserTest::CloudPrintInfoCallback)));
   content::RunMessageLoop();
 
   // Launch the service process again.
   LaunchServiceProcessControl();
-  EXPECT_TRUE(ServiceProcessControl::GetInstance()->IsConnected());
+  ASSERT_TRUE(ServiceProcessControl::GetInstance()->IsConnected());
   EXPECT_TRUE(ServiceProcessControl::GetInstance()->GetCloudPrintProxyInfo(
         base::Bind(&ServiceProcessControlBrowserTest::CloudPrintInfoCallback)));
   content::RunMessageLoop();
@@ -186,7 +229,7 @@ IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest, DieOnDisconnect) {
   // Launch the service process.
   LaunchServiceProcessControl();
   // Make sure we are connected to the service process.
-  EXPECT_TRUE(ServiceProcessControl::GetInstance()->IsConnected());
+  ASSERT_TRUE(ServiceProcessControl::GetInstance()->IsConnected());
   Disconnect();
 }
 
@@ -194,7 +237,7 @@ IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest, ForceShutdown) {
   // Launch the service process.
   LaunchServiceProcessControl();
   // Make sure we are connected to the service process.
-  EXPECT_TRUE(ServiceProcessControl::GetInstance()->IsConnected());
+  ASSERT_TRUE(ServiceProcessControl::GetInstance()->IsConnected());
   base::ProcessId service_pid;
   EXPECT_TRUE(GetServiceProcessData(NULL, &service_pid));
   EXPECT_NE(static_cast<base::ProcessId>(0), service_pid);
