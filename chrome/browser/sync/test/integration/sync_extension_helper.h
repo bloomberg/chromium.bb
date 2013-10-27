@@ -44,12 +44,6 @@ class SyncExtensionHelper {
   // on |profile|.
   std::vector<std::string> GetInstalledExtensionNames(Profile* profile) const;
 
-  // Enables the extension with the given name on |profile|.
-  void EnableExtension(Profile* profile, const std::string& name);
-
-  // Disables the extension with the given name on |profile|.
-  void DisableExtension(Profile* profile, const std::string& name);
-
   // Returns true if the extension with the given name is enabled on |profile|.
   bool IsExtensionEnabled(Profile* profile, const std::string& name) const;
 

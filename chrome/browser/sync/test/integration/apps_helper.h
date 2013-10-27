@@ -42,12 +42,6 @@ void UninstallApp(Profile* profile, int index);
 // Installs all pending synced apps for |profile|.
 void InstallAppsPendingForSync(Profile* profile);
 
-// Enables the app for the given index on |profile|.
-void EnableApp(Profile* profile, int index);
-
-// Disables the app for the given index on |profile|.
-void DisableApp(Profile* profile, int index);
-
 // Enables the app for the given index in incognito mode on |profile|.
 void IncognitoEnableApp(Profile* profile, int index);
 

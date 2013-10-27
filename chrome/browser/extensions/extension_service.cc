@@ -1541,14 +1541,6 @@ bool ExtensionService::ProcessExtensionSyncDataHelper(
   }
 
   // Set user settings.
-  // If the extension has been disabled from sync, it may not have
-  // been installed yet, so we don't know if the disable reason was a
-  // permissions increase.  That will be updated once CheckPermissionsIncrease
-  // is called for it.
-  if (extension_sync_data.enabled())
-    EnableExtension(id);
-  else if (!IsPendingEnable(id))
-    DisableExtension(id, Extension::DISABLE_UNKNOWN_FROM_SYNC);
 
   // We need to cache some version information here because setting the
   // incognito flag invalidates the |extension| pointer (it reloads the
@@ -2236,6 +2228,7 @@ void ExtensionService::CheckPermissionsIncrease(const Extension* extension,
     }
     // Extensions that came to us disabled from sync need a similar inference,
     // except based on the new version's permissions.
+    // TODO(yoz): Since we no longer sync disabled state, simplify this.
     if (previously_disabled &&
         disable_reasons == Extension::DISABLE_UNKNOWN_FROM_SYNC) {
       // Remove the DISABLE_UNKNOWN_FROM_SYNC reason.

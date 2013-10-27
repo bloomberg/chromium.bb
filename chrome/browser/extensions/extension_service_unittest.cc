@@ -5285,89 +5285,6 @@ TEST_F(ExtensionServiceTest, DeferredSyncStartupOnInstall) {
   ASSERT_EQ(syncer::UNSPECIFIED, triggered_type);
 }
 
-TEST_F(ExtensionServiceTest, DisableExtensionFromSync) {
-  // Start the extensions service with one external extension already installed.
-  base::FilePath source_install_dir = data_dir_
-      .AppendASCII("good")
-      .AppendASCII("Extensions");
-  base::FilePath pref_path = source_install_dir
-      .DirName()
-      .AppendASCII("Preferences");
-
-  InitializeInstalledExtensionService(pref_path, source_install_dir);
-
-  // The user has enabled sync.
-  ProfileSyncService* sync_service =
-      ProfileSyncServiceFactory::GetForProfile(profile_.get());
-  sync_service->SetSyncSetupCompleted();
-
-  service_->Init();
-  ASSERT_TRUE(service_->is_ready());
-
-  ASSERT_EQ(3u, loaded_.size());
-
-  // We start enabled.
-  const Extension* extension = service_->GetExtensionById(good0, true);
-  ASSERT_TRUE(extension);
-  ASSERT_TRUE(service_->IsExtensionEnabled(good0));
-  extensions::ExtensionSyncData disable_good_crx(*extension, false, false);
-
-  // Then sync data arrives telling us to disable |good0|.
-  syncer::SyncDataList sync_data;
-  sync_data.push_back(disable_good_crx.GetSyncData());
-  service_->MergeDataAndStartSyncing(
-      syncer::EXTENSIONS, sync_data,
-      scoped_ptr<syncer::SyncChangeProcessor>(new TestSyncProcessorStub),
-      scoped_ptr<syncer::SyncErrorFactory>(new syncer::SyncErrorFactoryMock()));
-  ASSERT_FALSE(service_->IsExtensionEnabled(good0));
-}
-
-TEST_F(ExtensionServiceTest, DontDisableExtensionWithPendingEnableFromSync) {
-  // Start the extensions service with one external extension already installed.
-  base::FilePath source_install_dir = data_dir_
-      .AppendASCII("good")
-      .AppendASCII("Extensions");
-  base::FilePath pref_path = source_install_dir
-      .DirName()
-      .AppendASCII("Preferences");
-
-  InitializeInstalledExtensionService(pref_path, source_install_dir);
-
-  // The user has enabled sync.
-  ProfileSyncService* sync_service =
-      ProfileSyncServiceFactory::GetForProfile(profile_.get());
-  sync_service->SetSyncSetupCompleted();
-
-  service_->Init();
-  ASSERT_TRUE(service_->is_ready());
-  ASSERT_EQ(3u, loaded_.size());
-
-  const Extension* extension = service_->GetExtensionById(good0, true);
-  ASSERT_TRUE(service_->IsExtensionEnabled(good0));
-
-  // Disable extension before first sync data arrives.
-  service_->DisableExtension(good0, Extension::DISABLE_USER_ACTION);
-  ASSERT_FALSE(service_->IsExtensionEnabled(good0));
-
-  // Enable extension - this is now the most recent state.
-  service_->EnableExtension(good0);
-  ASSERT_TRUE(service_->IsExtensionEnabled(good0));
-
-  // Now sync data comes in that says to disable good0. This should be
-  // ignored.
-  extensions::ExtensionSyncData disable_good_crx(*extension, false, false);
-  syncer::SyncDataList sync_data;
-  sync_data.push_back(disable_good_crx.GetSyncData());
-  service_->MergeDataAndStartSyncing(
-      syncer::EXTENSIONS, sync_data,
-      scoped_ptr<syncer::SyncChangeProcessor>(new TestSyncProcessorStub),
-      scoped_ptr<syncer::SyncErrorFactory>(new syncer::SyncErrorFactoryMock()));
-
-  // The extension was enabled locally before the sync data arrived, so it
-  // should still be enabled now.
-  ASSERT_TRUE(service_->IsExtensionEnabled(good0));
-}
-
 TEST_F(ExtensionServiceTest, GetSyncData) {
   InitializeEmptyExtensionService();
   InstallCRX(data_dir_.AppendASCII("good.crx"), INSTALL_NEW);
@@ -5384,7 +5301,6 @@ TEST_F(ExtensionServiceTest, GetSyncData) {
   extensions::ExtensionSyncData data(list[0]);
   EXPECT_EQ(extension->id(), data.id());
   EXPECT_FALSE(data.uninstalled());
-  EXPECT_EQ(service_->IsExtensionEnabled(good_crx), data.enabled());
   EXPECT_EQ(extension_util::IsIncognitoEnabled(good_crx, service_),
             data.incognito_enabled());
   EXPECT_TRUE(data.version().Equals(*extension->version()));
@@ -5411,7 +5327,6 @@ TEST_F(ExtensionServiceTest, GetSyncDataTerminated) {
   extensions::ExtensionSyncData data(list[0]);
   EXPECT_EQ(extension->id(), data.id());
   EXPECT_FALSE(data.uninstalled());
-  EXPECT_EQ(service_->IsExtensionEnabled(good_crx), data.enabled());
   EXPECT_EQ(extension_util::IsIncognitoEnabled(good_crx, service_),
             data.incognito_enabled());
   EXPECT_TRUE(data.version().Equals(*extension->version()));
@@ -5437,6 +5352,7 @@ TEST_F(ExtensionServiceTest, GetSyncDataFilter) {
 
 TEST_F(ExtensionServiceTest, GetSyncExtensionDataUserSettings) {
   InitializeEmptyExtensionService();
+  InitializeExtensionProcessManager();
   InstallCRX(data_dir_.AppendASCII("good.crx"), INSTALL_NEW);
   const Extension* extension = service_->GetInstalledExtension(good_crx);
   ASSERT_TRUE(extension);
@@ -5451,16 +5367,6 @@ TEST_F(ExtensionServiceTest, GetSyncExtensionDataUserSettings) {
     syncer::SyncDataList list = service_->GetAllSyncData(syncer::EXTENSIONS);
     ASSERT_EQ(list.size(), 1U);
     extensions::ExtensionSyncData data(list[0]);
-    EXPECT_TRUE(data.enabled());
-    EXPECT_FALSE(data.incognito_enabled());
-  }
-
-  service_->DisableExtension(good_crx, Extension::DISABLE_USER_ACTION);
-  {
-    syncer::SyncDataList list = service_->GetAllSyncData(syncer::EXTENSIONS);
-    ASSERT_EQ(list.size(), 1U);
-    extensions::ExtensionSyncData data(list[0]);
-    EXPECT_FALSE(data.enabled());
     EXPECT_FALSE(data.incognito_enabled());
   }
 
@@ -5469,16 +5375,6 @@ TEST_F(ExtensionServiceTest, GetSyncExtensionDataUserSettings) {
     syncer::SyncDataList list = service_->GetAllSyncData(syncer::EXTENSIONS);
     ASSERT_EQ(list.size(), 1U);
     extensions::ExtensionSyncData data(list[0]);
-    EXPECT_FALSE(data.enabled());
-    EXPECT_TRUE(data.incognito_enabled());
-  }
-
-  service_->EnableExtension(good_crx);
-  {
-    syncer::SyncDataList list = service_->GetAllSyncData(syncer::EXTENSIONS);
-    ASSERT_EQ(list.size(), 1U);
-    extensions::ExtensionSyncData data(list[0]);
-    EXPECT_TRUE(data.enabled());
     EXPECT_TRUE(data.incognito_enabled());
   }
 }
@@ -5505,7 +5401,6 @@ TEST_F(ExtensionServiceTest, SyncForUninstalledExternalExtension) {
       app_specifics->mutable_extension();
   extension_specifics->set_id(good_crx);
   extension_specifics->set_version("1.0");
-  extension_specifics->set_enabled(true);
 
   syncer::SyncData sync_data =
       syncer::SyncData::CreateLocalData(good_crx, "Name", specifics);
@@ -5685,7 +5580,6 @@ TEST_F(ExtensionServiceTest, ProcessSyncDataWrongType) {
       service_->GetInstalledExtension(good_crx)->version()->GetString());
 
   {
-    extension_specifics->set_enabled(true);
     syncer::SyncData sync_data =
         syncer::SyncData::CreateLocalData(good_crx, "Name", specifics);
     syncer::SyncChange sync_change(FROM_HERE,
@@ -5700,7 +5594,6 @@ TEST_F(ExtensionServiceTest, ProcessSyncDataWrongType) {
   }
 
   {
-    extension_specifics->set_enabled(false);
     syncer::SyncData sync_data =
         syncer::SyncData::CreateLocalData(good_crx, "Name", specifics);
     syncer::SyncChange sync_change(FROM_HERE,
@@ -5733,7 +5626,6 @@ TEST_F(ExtensionServiceTest, ProcessSyncDataSettings) {
   ext_specifics->set_id(good_crx);
   ext_specifics->set_version(
       service_->GetInstalledExtension(good_crx)->version()->GetString());
-  ext_specifics->set_enabled(false);
 
   {
     syncer::SyncData sync_data =
@@ -5744,26 +5636,12 @@ TEST_F(ExtensionServiceTest, ProcessSyncDataSettings) {
     syncer::SyncChangeList list(1);
     list[0] = sync_change;
     service_->ProcessSyncChanges(FROM_HERE, list);
-    EXPECT_FALSE(service_->IsExtensionEnabled(good_crx));
     EXPECT_FALSE(extension_util::IsIncognitoEnabled(good_crx, service_));
   }
 
   {
-    ext_specifics->set_enabled(true);
-    ext_specifics->set_incognito_enabled(true);
-    syncer::SyncData sync_data =
-        syncer::SyncData::CreateLocalData(good_crx, "Name", specifics);
-    syncer::SyncChange sync_change(FROM_HERE,
-                                   syncer::SyncChange::ACTION_UPDATE,
-                                   sync_data);
-    syncer::SyncChangeList list(1);
-    list[0] = sync_change;
-    service_->ProcessSyncChanges(FROM_HERE, list);
-    EXPECT_TRUE(service_->IsExtensionEnabled(good_crx));
-    EXPECT_TRUE(extension_util::IsIncognitoEnabled(good_crx, service_));
-  }
-
-  {
+    // Note: enabled is a deprecated field. Although clients may set it,
+    // we should ignore it.
     ext_specifics->set_enabled(false);
     ext_specifics->set_incognito_enabled(true);
     syncer::SyncData sync_data =
@@ -5774,7 +5652,7 @@ TEST_F(ExtensionServiceTest, ProcessSyncDataSettings) {
     syncer::SyncChangeList list(1);
     list[0] = sync_change;
     service_->ProcessSyncChanges(FROM_HERE, list);
-    EXPECT_FALSE(service_->IsExtensionEnabled(good_crx));
+    EXPECT_TRUE(service_->IsExtensionEnabled(good_crx));
     EXPECT_TRUE(extension_util::IsIncognitoEnabled(good_crx, service_));
   }
 
@@ -5799,7 +5677,6 @@ TEST_F(ExtensionServiceTest, ProcessSyncDataTerminatedExtension) {
   ext_specifics->set_id(good_crx);
   ext_specifics->set_version(
       service_->GetInstalledExtension(good_crx)->version()->GetString());
-  ext_specifics->set_enabled(false);
   ext_specifics->set_incognito_enabled(true);
   syncer::SyncData sync_data =
       syncer::SyncData::CreateLocalData(good_crx, "Name", specifics);
@@ -5810,7 +5687,6 @@ TEST_F(ExtensionServiceTest, ProcessSyncDataTerminatedExtension) {
   list[0] = sync_change;
 
   service_->ProcessSyncChanges(FROM_HERE, list);
-  EXPECT_FALSE(service_->IsExtensionEnabled(good_crx));
   EXPECT_TRUE(extension_util::IsIncognitoEnabled(good_crx, service_));
 
   EXPECT_FALSE(service_->pending_extension_manager()->IsIdPending(good_crx));
@@ -5831,7 +5707,6 @@ TEST_F(ExtensionServiceTest, ProcessSyncDataVersionCheck) {
   sync_pb::EntitySpecifics specifics;
   sync_pb::ExtensionSpecifics* ext_specifics = specifics.mutable_extension();
   ext_specifics->set_id(good_crx);
-  ext_specifics->set_enabled(true);
 
   {
     ext_specifics->set_version(
@@ -5894,7 +5769,6 @@ TEST_F(ExtensionServiceTest, ProcessSyncDataNotInstalled) {
   sync_pb::EntitySpecifics specifics;
   sync_pb::ExtensionSpecifics* ext_specifics = specifics.mutable_extension();
   ext_specifics->set_id(good_crx);
-  ext_specifics->set_enabled(false);
   ext_specifics->set_incognito_enabled(true);
   ext_specifics->set_update_url("http://www.google.com/");
   ext_specifics->set_version("1.2.3.4");
@@ -5911,7 +5785,6 @@ TEST_F(ExtensionServiceTest, ProcessSyncDataNotInstalled) {
   EXPECT_FALSE(extension_util::IsIncognitoEnabled(good_crx, service_));
   service_->ProcessSyncChanges(FROM_HERE, list);
   EXPECT_TRUE(service_->updater()->WillCheckSoon());
-  EXPECT_FALSE(service_->IsExtensionEnabled(good_crx));
   EXPECT_TRUE(extension_util::IsIncognitoEnabled(good_crx, service_));
 
   const extensions::PendingExtensionInfo* info;

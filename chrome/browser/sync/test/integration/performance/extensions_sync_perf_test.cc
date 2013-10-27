@@ -10,8 +10,6 @@
 
 using extensions_helper::AllProfilesHaveSameExtensions;
 using extensions_helper::AllProfilesHaveSameExtensionsAsVerifier;
-using extensions_helper::DisableExtension;
-using extensions_helper::EnableExtension;
 using extensions_helper::GetInstalledExtensions;
 using extensions_helper::InstallExtension;
 using extensions_helper::InstallExtensionsPendingForSync;
@@ -31,9 +29,6 @@ class ExtensionsSyncPerfTest : public SyncTest {
   // Adds |num_extensions| new unique extensions to |profile|.
   void AddExtensions(int profile, int num_extensions);
 
-  // Updates the enabled/disabled state for all extensions in |profile|.
-  void UpdateExtensions(int profile);
-
   // Uninstalls all currently installed extensions from |profile|.
   void RemoveExtensions(int profile);
 
@@ -48,18 +43,6 @@ class ExtensionsSyncPerfTest : public SyncTest {
 void ExtensionsSyncPerfTest::AddExtensions(int profile, int num_extensions) {
   for (int i = 0; i < num_extensions; ++i) {
     InstallExtension(GetProfile(profile), extension_number_++);
-  }
-}
-
-void ExtensionsSyncPerfTest::UpdateExtensions(int profile) {
-  std::vector<int> extensions = GetInstalledExtensions(GetProfile(profile));
-  for (std::vector<int>::iterator it = extensions.begin();
-       it != extensions.end(); ++it) {
-    if (IsExtensionEnabled(GetProfile(profile), *it)) {
-      DisableExtension(GetProfile(profile), *it);
-    } else {
-      EnableExtension(GetProfile(profile), *it);
-    }
   }
 }
 
@@ -87,12 +70,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionsSyncPerfTest, P0) {
   InstallExtensionsPendingForSync(GetProfile(1));
   ASSERT_EQ(expected_extension_count, GetExtensionCount(1));
   SyncTimingHelper::PrintResult("extensions", "add_extensions", dt);
-
-  // TCM ID - 7655397.
-  UpdateExtensions(0);
-  dt = SyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
-  ASSERT_EQ(expected_extension_count, GetExtensionCount(1));
-  SyncTimingHelper::PrintResult("extensions", "update_extensions", dt);
 
   // TCM ID - 7567721.
   RemoveExtensions(0);

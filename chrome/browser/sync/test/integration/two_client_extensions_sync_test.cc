@@ -8,8 +8,6 @@
 #include "chrome/browser/sync/test/integration/sync_test.h"
 
 using extensions_helper::AllProfilesHaveSameExtensionsAsVerifier;
-using extensions_helper::DisableExtension;
-using extensions_helper::EnableExtension;
 using extensions_helper::HasSameExtensionsAsVerifier;
 using extensions_helper::IncognitoDisableExtension;
 using extensions_helper::IncognitoEnableExtension;
@@ -178,35 +176,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientExtensionsSyncTest, Merge) {
   ASSERT_TRUE(AwaitQuiescence());
   InstallExtensionsPendingForSync(GetProfile(0));
   InstallExtensionsPendingForSync(GetProfile(1));
-  ASSERT_TRUE(AllProfilesHaveSameExtensionsAsVerifier());
-}
-
-// TCM ID - 3605300.
-IN_PROC_BROWSER_TEST_F(TwoClientExtensionsSyncTest,
-                       UpdateEnableDisableExtension) {
-  ASSERT_TRUE(SetupSync());
-  ASSERT_TRUE(AllProfilesHaveSameExtensionsAsVerifier());
-
-  InstallExtension(GetProfile(0), 0);
-  InstallExtension(GetProfile(1), 0);
-  InstallExtension(verifier(), 0);
-  ASSERT_TRUE(AwaitQuiescence());
-  ASSERT_TRUE(AllProfilesHaveSameExtensionsAsVerifier());
-
-  DisableExtension(GetProfile(0), 0);
-  DisableExtension(verifier(), 0);
-  ASSERT_TRUE(HasSameExtensionsAsVerifier(0));
-  ASSERT_FALSE(HasSameExtensionsAsVerifier(1));
-
-  ASSERT_TRUE(AwaitQuiescence());
-  ASSERT_TRUE(AllProfilesHaveSameExtensionsAsVerifier());
-
-  EnableExtension(GetProfile(1), 0);
-  EnableExtension(verifier(), 0);
-  ASSERT_TRUE(HasSameExtensionsAsVerifier(1));
-  ASSERT_FALSE(HasSameExtensionsAsVerifier(0));
-
-  ASSERT_TRUE(AwaitQuiescence());
   ASSERT_TRUE(AllProfilesHaveSameExtensionsAsVerifier());
 }
 
