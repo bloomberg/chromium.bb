@@ -237,6 +237,13 @@ void DelegatedRendererLayerImpl::AppendContributingRenderPasses(
     RenderPassSink* render_pass_sink) {
   DCHECK(HasContributingDelegatedRenderPasses());
 
+  const RenderPass* root_delegated_render_pass =
+      render_passes_in_draw_order_.back();
+  gfx::Size frame_size = root_delegated_render_pass->output_rect.size();
+  gfx::Transform delegated_frame_to_root_transform =
+      screen_space_transform() *
+      DelegatedFrameToLayerSpaceTransform(frame_size);
+
   for (size_t i = 0; i < render_passes_in_draw_order_.size() - 1; ++i) {
     RenderPass::Id output_render_pass_id(-1, -1);
     bool present =
@@ -248,8 +255,11 @@ void DelegatedRendererLayerImpl::AppendContributingRenderPasses(
                     << render_passes_in_draw_order_[i]->id.index;
     DCHECK_GT(output_render_pass_id.index, 0);
 
-    render_pass_sink->AppendRenderPass(
-        render_passes_in_draw_order_[i]->Copy(output_render_pass_id));
+    scoped_ptr<RenderPass> copy_pass =
+        render_passes_in_draw_order_[i]->Copy(output_render_pass_id);
+    copy_pass->transform_to_root_target.ConcatTransform(
+        delegated_frame_to_root_transform);
+    render_pass_sink->AppendRenderPass(copy_pass.Pass());
   }
 }
 

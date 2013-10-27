@@ -89,24 +89,21 @@ class DelegatedRendererLayerImplTestSimple
     delegated_renderer_layer->SetTransform(transform);
 
     ScopedPtrVector<RenderPass> delegated_render_passes;
-    TestRenderPass* pass1 = AddRenderPass(
-        &delegated_render_passes,
-        RenderPass::Id(9, 6),
-        gfx::Rect(6, 6, 6, 6),
-        gfx::Transform());
+    TestRenderPass* pass1 = AddRenderPass(&delegated_render_passes,
+                                          RenderPass::Id(9, 6),
+                                          gfx::Rect(6, 6, 6, 6),
+                                          gfx::Transform(1, 0, 0, 1, 5, 6));
     AddQuad(pass1, gfx::Rect(0, 0, 6, 6), 33u);
-    TestRenderPass* pass2 = AddRenderPass(
-        &delegated_render_passes,
-        RenderPass::Id(9, 7),
-        gfx::Rect(7, 7, 7, 7),
-        gfx::Transform());
+    TestRenderPass* pass2 = AddRenderPass(&delegated_render_passes,
+                                          RenderPass::Id(9, 7),
+                                          gfx::Rect(7, 7, 7, 7),
+                                          gfx::Transform(1, 0, 0, 1, 7, 8));
     AddQuad(pass2, gfx::Rect(0, 0, 7, 7), 22u);
     AddRenderPassQuad(pass2, pass1);
-    TestRenderPass* pass3 = AddRenderPass(
-        &delegated_render_passes,
-        RenderPass::Id(9, 8),
-        gfx::Rect(0, 0, 8, 8),
-        gfx::Transform());
+    TestRenderPass* pass3 = AddRenderPass(&delegated_render_passes,
+                                          RenderPass::Id(9, 8),
+                                          gfx::Rect(0, 0, 8, 8),
+                                          gfx::Transform(1, 0, 0, 1, 9, 10));
     AddRenderPassQuad(pass3, pass2);
     delegated_renderer_layer->SetFrameDataForRenderPasses(
         &delegated_render_passes);
@@ -264,6 +261,42 @@ TEST_F(DelegatedRendererLayerImplTestSimple,
       gfx::Transform(), frame.render_passes[1]->quad_list[0]->quadTransform());
 
   host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
+  host_impl_->DidDrawAllLayers(frame);
+}
+
+TEST_F(DelegatedRendererLayerImplTestSimple, RenderPassTransformIsModified) {
+  LayerTreeHostImpl::FrameData frame;
+  EXPECT_TRUE(host_impl_->PrepareToDraw(&frame, gfx::Rect()));
+
+  // The delegated layer has a surface between it and the root.
+  EXPECT_TRUE(delegated_renderer_layer_->render_target()->parent());
+
+  // Each non-DelegatedRendererLayer added one RenderPass. The
+  // DelegatedRendererLayer added two contributing passes.
+  ASSERT_EQ(5u, frame.render_passes.size());
+
+  // The DelegatedRendererLayer is at position 9,9 compared to the root, so all
+  // render pass' transforms to the root should be shifted by this amount.
+  // The DelegatedRendererLayer has a size of 10x10, but the root delegated
+  // RenderPass has a size of 8x8, so any render passes should be scaled by
+  // 10/8.
+  gfx::Transform transform;
+  transform.Translate(9.0, 9.0);
+  transform.Scale(10.0 / 8.0, 10.0 / 8.0);
+
+  // The first contributing surface has a translation of 5, 6.
+  gfx::Transform five_six(1, 0, 0, 1, 5, 6);
+
+  // The second contributing surface has a translation of 7, 8.
+  gfx::Transform seven_eight(1, 0, 0, 1, 7, 8);
+
+  EXPECT_TRANSFORMATION_MATRIX_EQ(
+      transform * five_six, frame.render_passes[1]->transform_to_root_target);
+  EXPECT_TRANSFORMATION_MATRIX_EQ(
+      transform * seven_eight,
+      frame.render_passes[2]->transform_to_root_target);
+
+  host_impl_->DrawLayers(&frame, base::TimeTicks::Now());
   host_impl_->DidDrawAllLayers(frame);
 }
 
