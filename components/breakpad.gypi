@@ -101,6 +101,9 @@
           'variables': {
             'breakpad_component_target': 1,
           },
+          'defines': [
+            'COMPILE_CONTENT_STATICALLY',
+          ],
           'dependencies': [
             '../base/base.gyp:base_nacl_win64',
             '../breakpad/breakpad.gyp:breakpad_handler_win64',

@@ -53,6 +53,9 @@
         {
           'target_name': 'nacl_common_win64',
           'type': 'static_library',
+          'defines': [
+            'COMPILE_CONTENT_STATICALLY',
+          ],
           'sources': [
             'nacl/common/nacl_cmd_line.cc',
             'nacl/common/nacl_cmd_line.h',
