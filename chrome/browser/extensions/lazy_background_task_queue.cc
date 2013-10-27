@@ -44,6 +44,7 @@ bool LazyBackgroundTaskQueue::ShouldEnqueueTask(
   if (BackgroundInfo::HasBackgroundPage(extension)) {
     ExtensionProcessManager* pm = ExtensionSystem::Get(profile)->
         process_manager();
+    DCHECK(pm);
     ExtensionHost* background_host =
         pm->GetBackgroundHostForExtension(extension->id());
     if (!background_host || !background_host->did_stop_loading())
@@ -70,9 +71,11 @@ void LazyBackgroundTaskQueue::AddPendingTask(
     tasks_list = new PendingTasksList();
     pending_tasks_[key] = linked_ptr<PendingTasksList>(tasks_list);
 
+    ExtensionService* extension_service =
+        ExtensionSystem::Get(profile)->extension_service();
+    DCHECK(extension_service);
     const Extension* extension =
-        ExtensionSystem::Get(profile)->extension_service()->
-            extensions()->GetByID(extension_id);
+        extension_service->extensions()->GetByID(extension_id);
     if (extension && BackgroundInfo::HasLazyBackgroundPage(extension)) {
       // If this is the first enqueued task, and we're not waiting for the
       // background page to unload, ensure the background page is loaded.

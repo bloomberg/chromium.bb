@@ -10,6 +10,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/callback_forward.h"
+#include "base/gtest_prod_util.h"
 #include "base/memory/linked_ptr.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -33,6 +34,9 @@ class LazyBackgroundTaskQueue : public content::NotificationObserver {
   explicit LazyBackgroundTaskQueue(Profile* profile);
   virtual ~LazyBackgroundTaskQueue();
 
+  // Returns the number of extensions having pending tasks.
+  size_t extensions_with_pending_tasks() { return pending_tasks_.size(); }
+
   // Returns true if the task should be added to the queue (that is, if the
   // extension has a lazy background page that isn't ready yet). If the
   // extension has a lazy background page that is being suspended this method
@@ -50,6 +54,8 @@ class LazyBackgroundTaskQueue : public content::NotificationObserver {
       const PendingTask& task);
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(LazyBackgroundTaskQueueTest, ProcessPendingTasks);
+
   // A map between an extension_id,Profile pair and the queue of tasks pending
   // the load of its background page.
   typedef std::string ExtensionID;

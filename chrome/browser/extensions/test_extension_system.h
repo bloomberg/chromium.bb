@@ -48,6 +48,10 @@ class TestExtensionSystem : public ExtensionSystem {
   // ExtensionProcessManager is NULL.
   void CreateExtensionProcessManager();
 
+  // Allows the ExtensionProcessManager to be overriden, for example by a
+  // stub implementation. Takes ownership of |manager|.
+  void SetExtensionProcessManager(ExtensionProcessManager* manager);
+
   void CreateSocketManager();
 
   virtual void InitForRegularProfile(bool extensions_enabled,

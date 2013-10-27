@@ -48,6 +48,11 @@ void TestExtensionSystem::CreateExtensionProcessManager() {
   extension_process_manager_.reset(ExtensionProcessManager::Create(profile_));
 }
 
+void TestExtensionSystem::SetExtensionProcessManager(
+    ExtensionProcessManager* manager) {
+  extension_process_manager_.reset(manager);
+}
+
 ExtensionPrefs* TestExtensionSystem::CreateExtensionPrefs(
     const CommandLine* command_line,
     const base::FilePath& install_directory) {
