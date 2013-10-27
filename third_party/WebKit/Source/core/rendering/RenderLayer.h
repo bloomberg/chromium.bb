@@ -136,6 +136,11 @@ public:
 
     LayoutRect rect() const { return LayoutRect(location(), size()); }
 
+    // Scrolling methods for layers that can scroll their overflow.
+    void scrollRectToVisible(const LayoutRect&, const ScrollAlignment& alignX, const ScrollAlignment& alignY);
+
+    LayoutRect getRectToExpose(const LayoutRect& visibleRect, const LayoutRect& exposeRect, const ScrollAlignment& alignX, const ScrollAlignment& alignY);
+
     bool hitTestOverflowControls(HitTestResult&, const IntPoint& localPoint);
     IntSize offsetFromResizeCorner(const IntPoint& absolutePoint) const;
 

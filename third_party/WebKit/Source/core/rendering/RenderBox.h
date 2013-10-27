@@ -254,7 +254,6 @@ public:
 
     void scrollToOffset(const IntSize&);
     void scrollByRecursively(const IntSize& delta, ScrollOffsetClamping = ScrollOffsetUnclamped);
-    void scrollRectToVisible(const LayoutRect&, const ScrollAlignment& alignX, const ScrollAlignment& alignY);
 
     virtual LayoutUnit marginTop() const OVERRIDE { return m_marginBox.top(); }
     virtual LayoutUnit marginBottom() const OVERRIDE { return m_marginBox.bottom(); }

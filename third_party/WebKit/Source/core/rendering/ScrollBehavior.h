@@ -56,15 +56,10 @@ enum ScrollBehavior {
     alignToClosestEdge
 };
 
-class LayoutRect;
-
 struct ScrollAlignment {
     static ScrollBehavior getVisibleBehavior(const ScrollAlignment& s) { return s.m_rectVisible; }
     static ScrollBehavior getPartialBehavior(const ScrollAlignment& s) { return s.m_rectPartial; }
     static ScrollBehavior getHiddenBehavior(const ScrollAlignment& s) { return s.m_rectHidden; }
-
-    // FIXME: This function should probably go somewhere else but where?
-    static LayoutRect getRectToExpose(const LayoutRect& visibleRect, const LayoutRect& exposeRect, const ScrollAlignment& alignX, const ScrollAlignment& alignY);
 
     static const ScrollAlignment alignCenterIfNeeded;
     static const ScrollAlignment alignToEdgeIfNeeded;
