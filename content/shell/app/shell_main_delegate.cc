@@ -169,6 +169,11 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
     command_line.AppendSwitch(switches::kEnableInbandTextTracks);
     command_line.AppendSwitch(switches::kMuteAudio);
 
+#if defined(USE_AURA)
+    // TODO: crbug.com/311404 Make layout tests work w/ delegated renderer.
+    command_line.AppendSwitch(switches::kDisableDelegatedRenderer);
+#endif
+
     net::CookieMonster::EnableFileScheme();
 
     // Unless/until WebM files are added to the media layout tests, we need to
