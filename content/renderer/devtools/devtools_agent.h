@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/atomicops.h"
 #include "base/basictypes.h"
 #include "content/public/common/console_message_level.h"
 #include "content/public/renderer/render_view_observer.h"
@@ -53,6 +54,7 @@ class DevToolsAgent : public RenderViewObserver,
   virtual void clearBrowserCookies();
   virtual void visitAllocatedObjects(AllocatedObjectVisitor* visitor);
   virtual void setTraceEventCallback(TraceEventCallback cb);
+  virtual void setTraceEventCallback(TraceEventWithTimestampCallback cb);
   virtual void enableDeviceEmulation(
       const WebKit::WebSize& device_size,
       const WebKit::WebRect& view_rect, float device_scale_factor,
@@ -69,8 +71,22 @@ class DevToolsAgent : public RenderViewObserver,
   void ContinueProgram();
   void OnSetupDevToolsClient();
 
+  static void TraceEventCallbackWrapper(
+      char phase,
+      const unsigned char* category_group_enabled,
+      const char* name,
+      unsigned long long id,
+      int num_args,
+      const char* const arg_names[],
+      const unsigned char arg_types[],
+      const unsigned long long arg_values[],
+      unsigned char flags);
+
   bool is_attached_;
   bool is_devtools_client_;
+
+  static base::subtle::AtomicWord
+      /* TraceEventWithTimestampCallback */ event_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsAgent);
 };

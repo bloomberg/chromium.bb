@@ -43,6 +43,8 @@ using base::debug::TraceLog;
 
 namespace content {
 
+base::subtle::AtomicWord DevToolsAgent::event_callback_;
+
 namespace {
 
 class WebKitClientMessageLoopImpl
@@ -142,6 +144,33 @@ void DevToolsAgent::setTraceEventCallback(TraceEventCallback cb) {
         TraceLog::RECORD_UNTIL_FULL);
   } else {
     trace_log->SetDisabled();
+  }
+}
+
+void DevToolsAgent::setTraceEventCallback(TraceEventWithTimestampCallback cb) {
+  base::subtle::NoBarrier_Store(&event_callback_,
+                                reinterpret_cast<base::subtle::AtomicWord>(cb));
+  setTraceEventCallback(cb ? TraceEventCallbackWrapper : 0);
+}
+
+void DevToolsAgent::TraceEventCallbackWrapper(
+    char phase,
+    const unsigned char* category_group_enabled,
+    const char* name,
+    unsigned long long id,
+    int num_args,
+    const char* const arg_names[],
+    const unsigned char arg_types[],
+    const unsigned long long arg_values[],
+    unsigned char flags) {
+  TraceEventWithTimestampCallback callback =
+      reinterpret_cast<TraceEventWithTimestampCallback>(
+          base::subtle::NoBarrier_Load(&event_callback_));
+  if (callback) {
+    double timestamp = base::TimeTicks::Now().ToInternalValue() /
+      static_cast<double>(base::Time::kMicrosecondsPerSecond);
+    callback(phase, category_group_enabled, name, id, num_args,
+             arg_names, arg_types, arg_values, flags, timestamp);
   }
 }
 
