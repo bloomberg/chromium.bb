@@ -24,6 +24,7 @@ template<typename T> struct DefaultSingletonTraits;
 namespace base {
 class MessageLoop;
 class DictionaryValue;
+class ListValue;
 class Thread;
 }
 
@@ -35,6 +36,7 @@ namespace crypto {
 class RSAPrivateKey;
 }
 
+class DevToolsTargetImpl;
 class Profile;
 
 // The format used for constructing DevTools server socket names.
@@ -80,63 +82,14 @@ class DevToolsAdbBridge
     DISALLOW_COPY_AND_ASSIGN(Factory);
   };
 
-  class RemotePage : public base::RefCounted<RemotePage> {
-   public:
-    RemotePage(scoped_refptr<RefCountedAdbThread> adb_thread,
-               scoped_refptr<AndroidDevice> device,
-               const std::string& socket,
-               const base::DictionaryValue& value);
-
-    std::string id() { return id_; }
-    std::string url() { return url_; }
-    std::string title() { return title_; }
-    std::string description() { return description_; }
-    std::string favicon_url() { return favicon_url_; }
-    bool attached() { return debug_url_.empty(); }
-
-    bool HasDevToolsWindow();
-
-    void Inspect(Profile* profile);
-    void Activate();
-    void Close();
-    void Reload();
-
-    void SendProtocolCommand(const std::string& method,
-                             base::DictionaryValue* params);
-
-   private:
-    friend class base::RefCounted<RemotePage>;
-    virtual ~RemotePage();
-
-    void RequestActivate(const AndroidDevice::CommandCallback& callback);
-
-    void InspectOnHandlerThread(
-        Profile* profile, int result, const std::string& response);
-
-    void InspectOnUIThread(Profile* profile);
-
-    scoped_refptr<RefCountedAdbThread> adb_thread_;
-    scoped_refptr<AndroidDevice> device_;
-    std::string socket_;
-    std::string id_;
-    std::string url_;
-    std::string title_;
-    std::string description_;
-    std::string favicon_url_;
-    std::string debug_url_;
-    std::string frontend_url_;
-    std::string agent_id_;
-    DISALLOW_COPY_AND_ASSIGN(RemotePage);
-  };
-
-  typedef std::vector<scoped_refptr<RemotePage> > RemotePages;
-
   class RemoteBrowser : public base::RefCounted<RemoteBrowser> {
    public:
     RemoteBrowser(
         scoped_refptr<RefCountedAdbThread> adb_thread,
         scoped_refptr<AndroidDevice> device,
         const std::string& socket);
+
+    scoped_refptr<RefCountedAdbThread> adb_thread() { return adb_thread_; }
 
     scoped_refptr<AndroidDevice> device() { return device_; }
     std::string socket() { return socket_; }
@@ -150,8 +103,13 @@ class DevToolsAdbBridge
     std::string package() { return package_; }
     void set_package(const std::string& package) { package_ = package; }
 
-    RemotePages& pages() { return pages_; }
-    void AddPage(scoped_refptr<RemotePage> page) { pages_.push_back(page); }
+    std::vector<DevToolsTargetImpl*> CreatePageTargets();
+    void SetPageDescriptors(const base::ListValue&);
+
+    void SendJsonRequest(const std::string& request, base::Closure callback);
+    void SendProtocolCommand(const std::string& debug_url,
+                             const std::string& method,
+                             base::DictionaryValue* params);
 
     void Open(const std::string& url);
 
@@ -172,7 +130,7 @@ class DevToolsAdbBridge
     std::string version_;
     std::string pid_;
     std::string package_;
-    RemotePages pages_;
+    scoped_ptr<base::ListValue> page_descriptors_;
 
     DISALLOW_COPY_AND_ASSIGN(RemoteBrowser);
   };
@@ -223,6 +181,7 @@ class DevToolsAdbBridge
   void set_device_providers(DeviceProviders device_providers) {
     device_providers_ = device_providers;
   }
+  static bool HasDevToolsWindow(const std::string& agent_id);
 
  private:
   friend struct content::BrowserThread::DeleteOnThread<
