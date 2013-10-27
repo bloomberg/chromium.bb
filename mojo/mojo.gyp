@@ -192,7 +192,7 @@
     },
     {
       'target_name': 'sample_app',
-      'type': '<(component)',
+      'type': 'shared_library',
       'dependencies': [
         '../base/base.gyp:base',
         'mojo_system',

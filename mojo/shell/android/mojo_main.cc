@@ -4,6 +4,7 @@
 
 #include "mojo/shell/android/mojo_main.h"
 
+#include "base/android/jni_string.h"
 #include "base/at_exit.h"
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -47,7 +48,7 @@ void StartOnShellThread() {
 
 }  // namspace
 
-static void Start(JNIEnv* env, jclass clazz, jobject context) {
+static void Start(JNIEnv* env, jclass clazz, jobject context, jstring jurl) {
   base::android::ScopedJavaLocalRef<jobject> scoped_context(env, context);
   base::android::InitApplicationContext(scoped_context);
 
@@ -57,6 +58,14 @@ static void Start(JNIEnv* env, jclass clazz, jobject context) {
 
   CommandLine::Init(0, 0);
   InitializeLogging();
+
+  if (jurl) {
+    std::string app_url = base::android::ConvertJavaStringToUTF8(env, jurl);
+    std::vector<std::string> argv;
+    argv.push_back("mojo_shell");
+    argv.push_back("--app=" + app_url);
+    CommandLine::ForCurrentProcess()->InitFromArgv(argv);
+  }
 
   g_main_thread.Get().reset(new base::Thread("shell_thread"));
   g_main_thread.Get()->Start();
