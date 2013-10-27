@@ -15,6 +15,9 @@ leak:net::(anonymous namespace)::ProxyResolverV8WithMockBindings::SetPacScriptFr
 leak:net::(anonymous namespace)::InitResolver
 leak:net::ProxyResolverScriptData::FromUTF8
 
+# A small string is leaked here (57 bytes per process). http://crbug.com/46571#c9
+leak:WebCore::V8GCController::collectGarbage
+
 # http://crbug.com/270180
 leak:net::ProxyResolverV8::Context::ResolveProxy
 
