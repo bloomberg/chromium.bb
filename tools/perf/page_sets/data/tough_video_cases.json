@@ -1,0 +1,20 @@
+{
+    "page_set": "../tough_video_cases.json", 
+    "description": "Describes the Web Page Replay archives for a page set. Don't edit by hand! Use record_wpr for updating.", 
+    "archives": {
+        "tough_video_cases_000.wpr": [
+            "http://localhost/tough_video_cases/video.html?src=crowd.wav&type=audio", 
+            "http://localhost/tough_video_cases/video.html?src=crowd.ogg&type=audio", 
+            "http://localhost/tough_video_cases/video.html?src=crowd1080.ogv&type=video", 
+            "http://localhost/tough_video_cases/video.html?src=crowd1080.webm&type=video", 
+            "http://localhost/tough_video_cases/video.html?src=crowd2160.ogv&type=video", 
+            "http://localhost/tough_video_cases/video.html?src=crowd2160.webm&type=video", 
+            "http://localhost/tough_video_cases/video.html?src=tulip2.ogg&type=audio", 
+            "http://localhost/tough_video_cases/video.html?src=tulip2.wav&type=audio", 
+            "http://localhost/tough_video_cases/video.html?src=tulip2.ogv&type=video", 
+            "http://localhost/tough_video_cases/video.html?src=tulip2.webm&type=video", 
+            "http://localhost/tough_video_cases/audio_playback.html?id=single_audio", 
+            "http://localhost/tough_video_cases/audio_playback.html?id=mixed_audio"
+        ]
+    }
+}
