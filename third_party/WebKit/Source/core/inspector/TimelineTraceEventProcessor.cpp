@@ -75,7 +75,7 @@ public:
         }
         m_processors.remove(index);
         if (m_processors.isEmpty())
-            client->setTraceEventCallback(static_cast<InspectorClient::TraceEventCallback>(0));
+            client->setTraceEventCallback(0);
     }
 
 private:
@@ -83,7 +83,7 @@ private:
 
     static void dispatchEventOnAnyThread(char phase, const unsigned char*, const char* name, unsigned long long id,
         int numArgs, const char* const* argNames, const unsigned char* argTypes, const unsigned long long* argValues,
-        unsigned char flags)
+        unsigned char flags, double timestamp)
     {
         TraceEventDispatcher* self = instance();
         Vector<RefPtr<TimelineTraceEventProcessor> > processors;
@@ -92,7 +92,7 @@ private:
             processors = self->m_processors;
         }
         for (int i = 0, size = processors.size(); i < size; ++i)
-            processors[i]->processEventOnAnyThread(phase, name, id, numArgs, argNames, argTypes, argValues, flags);
+            processors[i]->processEventOnAnyThread(timestamp, phase, name, id, numArgs, argNames, argTypes, argValues, flags);
     }
 
     Mutex m_mutex;
@@ -215,7 +215,7 @@ const TraceEvent::TraceValueUnion& TimelineTraceEventProcessor::TraceEvent::para
     return *reinterpret_cast<const WebCore::TraceEvent::TraceValueUnion*>(m_argumentValues + index);
 }
 
-void TimelineTraceEventProcessor::processEventOnAnyThread(char phase, const char* name, unsigned long long id,
+void TimelineTraceEventProcessor::processEventOnAnyThread(double timestamp, char phase, const char* name, unsigned long long id,
     int numArgs, const char* const* argNames, const unsigned char* argTypes, const unsigned long long* argValues,
     unsigned char)
 {
@@ -223,7 +223,6 @@ void TimelineTraceEventProcessor::processEventOnAnyThread(char phase, const char
     if (it == m_handlersByType.end())
         return;
 
-    double timestamp = WTF::monotonicallyIncreasingTime();
     TraceEvent event(timestamp, phase, name, id, currentThread(), numArgs, argNames, argTypes, argValues);
 
     if (!isMainThread()) {

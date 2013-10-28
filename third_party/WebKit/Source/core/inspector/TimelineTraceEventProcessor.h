@@ -85,7 +85,7 @@ public:
     ~TimelineTraceEventProcessor();
 
     void shutdown();
-    void processEventOnAnyThread(char, const char* name, unsigned long long id,
+    void processEventOnAnyThread(double timestamp, char, const char* name, unsigned long long id,
         int numArgs, const char* const* argNames, const unsigned char* argTypes, const unsigned long long* argValues,
         unsigned char flags);
 

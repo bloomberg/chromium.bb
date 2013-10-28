@@ -427,11 +427,6 @@ void WebDevToolsAgentImpl::dumpUncountedAllocatedObjects(const HashMap<const voi
     m_client->dumpUncountedAllocatedObjects(&provider);
 }
 
-void WebDevToolsAgentImpl::setTraceEventCallback(TraceEventCallback callback)
-{
-    m_client->setTraceEventCallback(callback);
-}
-
 void WebDevToolsAgentImpl::setTraceEventCallback(TraceEventWithTimestampCallback callback)
 {
     m_client->setTraceEventCallback(callback);

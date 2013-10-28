@@ -53,7 +53,6 @@ public:
     typedef void (*TraceEventWithTimestampCallback)(char phase, const unsigned char*, const char* name, unsigned long long id,
         int numArgs, const char* const* argNames, const unsigned char* argTypes, const unsigned long long* argValues,
         unsigned char flags, double timestamp);
-    virtual void setTraceEventCallback(TraceEventCallback) { }
     virtual void setTraceEventCallback(TraceEventWithTimestampCallback) { }
 
     virtual void overrideDeviceMetrics(int /*width*/, int /*height*/, float /*deviceScaleFactor*/, bool /*fitWindow*/) { }

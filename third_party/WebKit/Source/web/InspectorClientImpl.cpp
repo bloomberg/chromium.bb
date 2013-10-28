@@ -155,7 +155,7 @@ void InspectorClientImpl::dispatchMouseEvent(const PlatformMouseEvent& event)
         agent->dispatchMouseEvent(event);
 }
 
-void InspectorClientImpl::setTraceEventCallback(TraceEventCallback callback)
+void InspectorClientImpl::setTraceEventCallback(TraceEventWithTimestampCallback callback)
 {
     if (WebDevToolsAgentImpl* agent = devToolsAgent())
         agent->setTraceEventCallback(callback);
