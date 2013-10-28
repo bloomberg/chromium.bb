@@ -37,6 +37,7 @@ class NavigationController;
 - (void)loadSignInPage;
 - (content::NavigationController*)navigationController;
 - (void)constrainSizeToMinimum:(NSSize)minSize maximum:(NSSize)maximum;
+- (content::WebContents*)webContents;
 
 @end
 

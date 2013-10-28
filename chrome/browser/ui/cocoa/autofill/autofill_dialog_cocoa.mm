@@ -212,6 +212,10 @@ gfx::Size AutofillDialogCocoa::GetSize() const {
   return gfx::Size(NSSizeToCGSize([[sheet_delegate_ window] frame].size));
 }
 
+content::WebContents* AutofillDialogCocoa::GetSignInWebContents() {
+  return [sheet_delegate_ getSignInWebContents];
+}
+
 void AutofillDialogCocoa::OnConstrainedWindowClosed(
     ConstrainedWindowMac* window) {
   constrained_window_.reset();
@@ -614,6 +618,10 @@ void AutofillDialogCocoa::OnConstrainedWindowClosed(
     autofill::DialogSection section = static_cast<autofill::DialogSection>(i);
     [[mainContainer_ sectionForId:section] activateFieldForInput:input];
   }
+}
+
+- (content::WebContents*)getSignInWebContents {
+  return [signInContainer_ webContents];
 }
 
 @end

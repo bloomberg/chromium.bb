@@ -113,6 +113,8 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
   virtual string16 LegalDocumentsText() OVERRIDE;
   virtual bool ShouldDisableSignInLink() const OVERRIDE;
   virtual bool ShouldShowSpinner() const OVERRIDE;
+  virtual bool ShouldShowSignInWebView() const OVERRIDE;
+  virtual GURL SignInUrl() const OVERRIDE;
   virtual bool ShouldOfferToSaveInChrome() const OVERRIDE;
   virtual bool ShouldSaveInChrome() const OVERRIDE;
   virtual ui::MenuModel* MenuModelForAccountChooser() OVERRIDE;
@@ -307,6 +309,12 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
 
   // Resets |last_wallet_items_fetch_timestamp_| for testing.
   void ClearLastWalletItemsFetchTimestampForTesting();
+
+  // Allows tests to inspect the state of the account chooser.
+  const AccountChooserModel& AccountChooserModelForTesting() const;
+
+  // Returns whether |url| matches the sign in continue URL.
+  virtual bool IsSignInContinueUrl(const GURL& url) const;
 
  private:
   enum DialogSignedInState {

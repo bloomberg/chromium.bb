@@ -17,14 +17,6 @@
 #include "testing/platform_test.h"
 #import "ui/base/test/ui_cocoa_test_helper.h"
 
-@interface AutofillSignInContainer (ExposedForTesting)
-- (content::WebContents*)webContents;
-@end
-
-@implementation AutofillSignInContainer (ExposedForTesting)
-- (content::WebContents*)webContents { return webContents_.get(); }
-@end
-
 namespace {
 
 class AutofillSignInContainerTest : public ChromeRenderViewHostTestHarness {

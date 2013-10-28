@@ -112,6 +112,7 @@ class AutofillDialogViews : public AutofillDialogView,
       const base::string16& text) OVERRIDE;
   virtual void ActivateInput(const DetailInput& input) OVERRIDE;
   virtual gfx::Size GetSize() const OVERRIDE;
+  virtual content::WebContents* GetSignInWebContents() OVERRIDE;
 
   // views::View implementation.
   virtual gfx::Size GetPreferredSize() OVERRIDE;
@@ -168,6 +169,13 @@ class AutofillDialogViews : public AutofillDialogView,
                                    const gfx::Point& point) OVERRIDE;
 
  protected:
+  // Exposed for testing.
+  views::View* GetLoadingShieldForTesting();
+  views::WebView* GetSignInWebViewForTesting();
+  views::View* GetNotificationAreaForTesting();
+  views::View* GetScrollableAreaForTesting();
+
+ private:
   // What the entire dialog should be doing (e.g. gathering info from the user,
   // asking the user to sign in, etc.).
   enum DialogMode {
@@ -176,18 +184,6 @@ class AutofillDialogViews : public AutofillDialogView,
     SIGN_IN,
   };
 
-  // Changes the function of the whole dialog. Currently this can show a loading
-  // shield, an embedded sign in web view, or the more typical detail input mode
-  // (suggestions and form inputs).
-  void ShowDialogInMode(DialogMode dialog_mode);
-
-  // Exposed for testing.
-  views::View* GetLoadingShieldForTesting();
-  views::WebView* GetSignInWebViewForTesting();
-  views::View* GetNotificationAreaForTesting();
-  views::View* GetScrollableAreaForTesting();
-
- private:
   // A class that creates and manages a widget for error messages.
   class ErrorBubble : public views::BubbleDelegateView {
    public:
@@ -553,6 +549,11 @@ class AutofillDialogViews : public AutofillDialogView,
   // in the appropriate DetailsGroup. The top level View in the hierarchy is
   // returned.
   views::View* InitInputsView(DialogSection section);
+
+  // Changes the function of the whole dialog. Currently this can show a loading
+  // shield, an embedded sign in web view, or the more typical detail input mode
+  // (suggestions and form inputs).
+  void ShowDialogInMode(DialogMode dialog_mode);
 
   // Updates the given section to match the state provided by |delegate_|. If
   // |clobber_inputs| is true, the current state of the textfields will be

@@ -804,6 +804,14 @@ bool AutofillDialogControllerImpl::ShouldShowSpinner() const {
          SignedInState() == REQUIRES_RESPONSE;
 }
 
+bool AutofillDialogControllerImpl::ShouldShowSignInWebView() const {
+  return !signin_registrar_.IsEmpty();
+}
+
+GURL AutofillDialogControllerImpl::SignInUrl() const {
+  return wallet::GetSignInUrl();
+}
+
 bool AutofillDialogControllerImpl::ShouldOfferToSaveInChrome() const {
   return !IsPayingWithWallet() &&
       !profile_->IsOffTheRecord() &&
@@ -2170,11 +2178,16 @@ void AutofillDialogControllerImpl::Observe(
   DCHECK_EQ(type, content::NOTIFICATION_NAV_ENTRY_COMMITTED);
   content::LoadCommittedDetails* load_details =
       content::Details<content::LoadCommittedDetails>(details).ptr();
-  if (wallet::IsSignInContinueUrl(load_details->entry->GetVirtualURL())) {
+  if (IsSignInContinueUrl(load_details->entry->GetVirtualURL())) {
     // TODO(estade): will need to update this when we fix <crbug.com/247755>.
     account_chooser_model_.SelectActiveWalletAccount();
     FetchWalletCookieAndUserName();
-    HideSignIn();
+
+    // NOTE: |HideSignIn()| may delete the WebContents which doesn't expect to
+    // be deleted while committing a nav entry. Just call |HideSignIn()| later.
+    base::MessageLoop::current()->PostTask(FROM_HERE,
+        base::Bind(&AutofillDialogControllerImpl::HideSignIn,
+                   base::Unretained(this)));
   }
 }
 
@@ -2483,6 +2496,15 @@ void AutofillDialogControllerImpl::SubmitButtonDelayEndForTesting() {
 void AutofillDialogControllerImpl::
     ClearLastWalletItemsFetchTimestampForTesting() {
   last_wallet_items_fetch_timestamp_ = base::TimeTicks();
+}
+
+const AccountChooserModel& AutofillDialogControllerImpl::
+    AccountChooserModelForTesting() const {
+  return account_chooser_model_;
+}
+
+bool AutofillDialogControllerImpl::IsSignInContinueUrl(const GURL& url) const {
+  return wallet::IsSignInContinueUrl(url);
 }
 
 AutofillDialogControllerImpl::AutofillDialogControllerImpl(

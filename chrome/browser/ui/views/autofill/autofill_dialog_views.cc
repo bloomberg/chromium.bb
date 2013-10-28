@@ -644,30 +644,6 @@ void AutofillDialogViews::AccountChooser::OnMenuButtonClicked(
   }
 }
 
-void AutofillDialogViews::ShowDialogInMode(DialogMode dialog_mode) {
-  std::vector<views::View*> visible;
-
-  if (dialog_mode == LOADING) {
-    visible.push_back(loading_shield_);
-  } else if (dialog_mode == SIGN_IN) {
-    visible.push_back(sign_in_web_view_);
-  } else {
-    DCHECK_EQ(DETAIL_INPUT, dialog_mode);
-    visible.push_back(notification_area_);
-    visible.push_back(scrollable_area_);
-  }
-
-  for (size_t i = 0; i < visible.size(); ++i) {
-    DCHECK_GE(GetIndexOf(visible[i]), 0);
-  }
-
-  for (int i = 0; i < child_count(); ++i) {
-    views::View* child = child_at(i);
-    child->SetVisible(
-        std::find(visible.begin(), visible.end(), child) != visible.end());
-  }
-}
-
 views::View* AutofillDialogViews::GetLoadingShieldForTesting() {
   return loading_shield_;
 }
@@ -1395,7 +1371,8 @@ void AutofillDialogViews::UpdateAccountChooser() {
                                         GetContentsBounds().height());
       ShowDialogInMode(LOADING);
     } else {
-      ShowDialogInMode(DETAIL_INPUT);
+      bool show_sign_in = delegate_->ShouldShowSignInWebView();
+      ShowDialogInMode(show_sign_in ? SIGN_IN : DETAIL_INPUT);
     }
 
     InvalidateLayout();
@@ -1527,26 +1504,35 @@ bool AutofillDialogViews::SaveDetailsLocally() {
 }
 
 const content::NavigationController* AutofillDialogViews::ShowSignIn() {
-  // TODO(abodenha) We should be able to use the WebContents of the WebView
-  // to navigate instead of LoadInitialURL.  Figure out why it doesn't work.
-
+  // TODO(abodenha): We should be able to use the WebContents of the WebView
+  // to navigate instead of LoadInitialURL. Figure out why it doesn't work.
   sign_in_delegate_.reset(
       new AutofillDialogSignInDelegate(
           this, sign_in_web_view_->GetWebContents(),
           delegate_->GetWebContents()->GetDelegate(),
           GetMinimumSignInViewSize(), GetMaximumSignInViewSize()));
-  sign_in_web_view_->LoadInitialURL(wallet::GetSignInUrl());
+  sign_in_web_view_->LoadInitialURL(delegate_->SignInUrl());
 
   ShowDialogInMode(SIGN_IN);
   sign_in_web_view_->RequestFocus();
 
   UpdateButtonStrip();
   ContentsPreferredSizeChanged();
+
   return &sign_in_web_view_->web_contents()->GetController();
 }
 
 void AutofillDialogViews::HideSignIn() {
-  ShowDialogInMode(DETAIL_INPUT);
+  sign_in_web_view_->SetWebContents(NULL);
+
+  if (delegate_->ShouldShowSpinner()) {
+    UpdateAccountChooser();
+  } else {
+    ShowDialogInMode(DETAIL_INPUT);
+    InvalidateLayout();
+  }
+  DCHECK(!sign_in_web_view_->visible());
+
   UpdateButtonStrip();
   ContentsPreferredSizeChanged();
 }
@@ -1629,6 +1615,10 @@ void AutofillDialogViews::ActivateInput(const DetailInput& input) {
 
 gfx::Size AutofillDialogViews::GetSize() const {
   return GetWidget() ? GetWidget()->GetRootView()->size() : gfx::Size();
+}
+
+content::WebContents* AutofillDialogViews::GetSignInWebContents() {
+  return sign_in_web_view_->web_contents();
 }
 
 gfx::Size AutofillDialogViews::GetPreferredSize() {
@@ -2134,6 +2124,13 @@ views::View* AutofillDialogViews::InitInputsView(DialogSection section) {
   SetIconsForSection(section);
 
   return view;
+}
+
+void AutofillDialogViews::ShowDialogInMode(DialogMode dialog_mode) {
+  loading_shield_->SetVisible(dialog_mode == LOADING);
+  sign_in_web_view_->SetVisible(dialog_mode == SIGN_IN);
+  notification_area_->SetVisible(dialog_mode == DETAIL_INPUT);
+  scrollable_area_->SetVisible(dialog_mode == DETAIL_INPUT);
 }
 
 void AutofillDialogViews::UpdateSectionImpl(

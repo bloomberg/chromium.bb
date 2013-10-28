@@ -29,6 +29,8 @@ class MockAutofillDialogViewDelegate : public AutofillDialogViewDelegate {
   MOCK_METHOD0(LegalDocumentsText, string16());
   MOCK_CONST_METHOD0(ShouldDisableSignInLink, bool());
   MOCK_CONST_METHOD0(ShouldShowSpinner, bool());
+  MOCK_CONST_METHOD0(ShouldShowSignInWebView, bool());
+  MOCK_CONST_METHOD0(SignInUrl, GURL());
   MOCK_CONST_METHOD0(ShouldOfferToSaveInChrome, bool());
   MOCK_CONST_METHOD0(ShouldSaveInChrome, bool());
   MOCK_METHOD0(MenuModelForAccountChooser, ui::MenuModel*());
@@ -83,6 +85,9 @@ class MockAutofillDialogViewDelegate : public AutofillDialogViewDelegate {
 
   // Set which web contents initiated showing the dialog.
   void SetWebContents(content::WebContents* contents);
+
+  // Set which profile to use for mock |profile()| calls.
+  void SetProfile(Profile* profile);
 
  private:
   DetailInputs default_inputs_;

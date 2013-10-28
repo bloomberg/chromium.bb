@@ -35,6 +35,9 @@ class TestableAutofillDialogView {
 
   // Get the size of the entire view.
   virtual gfx::Size GetSize() const = 0;
+
+  // Get the web contents used to sign in to Google.
+  virtual content::WebContents* GetSignInWebContents() = 0;
 };
 
 }  // namespace autofill

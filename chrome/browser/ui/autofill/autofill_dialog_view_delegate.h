@@ -16,6 +16,7 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/range/range.h"
 
+class GURL;
 class Profile;
 
 namespace content {
@@ -58,9 +59,15 @@ class AutofillDialogViewDelegate {
   // Whether the sign-in link should be disabled.
   virtual bool ShouldDisableSignInLink() const = 0;
 
-  // Whether the dialog is in a not exactly well-defined state
-  // (while attempting to sign-in or retrieving the wallet data etc).
+  // Whether a loading animation should be shown (e.g. while signing in,
+  // retreiving Wallet data, etc.).
   virtual bool ShouldShowSpinner() const = 0;
+
+  // Whether the sign in web view should be displayed.
+  virtual bool ShouldShowSignInWebView() const = 0;
+
+  // The URL to sign in to Google.
+  virtual GURL SignInUrl() const = 0;
 
   // Whether to show the checkbox to save data locally (in Autofill).
   virtual bool ShouldOfferToSaveInChrome() const = 0;

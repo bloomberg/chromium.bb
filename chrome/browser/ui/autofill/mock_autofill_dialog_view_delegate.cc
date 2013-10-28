@@ -21,6 +21,7 @@ MockAutofillDialogViewDelegate::MockAutofillDialogViewDelegate() {
   // breaking because of this, use ON_CALL instead.
   DefaultValue<const DetailInputs&>::Set(default_inputs_);
   DefaultValue<string16>::Set(string16());
+  DefaultValue<GURL>::Set(GURL());
   DefaultValue<ValidityMessages>::Set(ValidityMessages());
   DefaultValue<gfx::Image>::Set(gfx::Image());
   DefaultValue<SuggestionState>::Set(SuggestionState(false,
@@ -57,6 +58,10 @@ void MockAutofillDialogViewDelegate::SetWebContents(
   testing::DefaultValue<content::WebContents*>::Set(contents);
 }
 
+void MockAutofillDialogViewDelegate::SetProfile(Profile* profile) {
+  testing::DefaultValue<Profile*>::Set(profile);
+}
+
 MockAutofillDialogViewDelegate::~MockAutofillDialogViewDelegate() {
   using testing::DefaultValue;
 
@@ -64,10 +69,12 @@ MockAutofillDialogViewDelegate::~MockAutofillDialogViewDelegate() {
   DefaultValue<gfx::Image>::Clear();
   DefaultValue<ValidityMessages>::Clear();
   DefaultValue<string16>::Clear();
+  DefaultValue<GURL>::Clear();
   DefaultValue<const DetailInputs&>::Clear();
   DefaultValue<FieldIconMap>::Clear();
   DefaultValue<std::vector<DialogNotification> >::Clear();
   DefaultValue<content::WebContents*>::Clear();
+  DefaultValue<Profile*>::Clear();
 }
 
 }  // namespace autofill

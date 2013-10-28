@@ -78,6 +78,7 @@ class AutofillDialogCocoa : public AutofillDialogView,
       const base::string16& text) OVERRIDE;
   virtual void ActivateInput(const DetailInput& input) OVERRIDE;
   virtual gfx::Size GetSize() const OVERRIDE;
+  virtual content::WebContents* GetSignInWebContents() OVERRIDE;
 
   // ConstrainedWindowMacDelegate implementation:
   virtual void OnConstrainedWindowClosed(
@@ -164,6 +165,7 @@ class AutofillDialogCocoa : public AutofillDialogView,
 - (void)setTextContents:(NSString*)text
  ofSuggestionForSection:(autofill::DialogSection)section;
 - (void)activateFieldForInput:(const autofill::DetailInput&)input;
+- (content::WebContents*)getSignInWebContents;
 
 @end
 

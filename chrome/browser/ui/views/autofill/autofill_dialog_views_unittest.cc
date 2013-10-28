@@ -23,6 +23,7 @@ namespace autofill {
 
 namespace {
 
+using testing::Return;
 using web_modal::WebContentsModalDialogManager;
 
 // A views implementation of the Autofill dialog with slightly more testability.
@@ -31,10 +32,6 @@ class TestAutofillDialogViews : public AutofillDialogViews {
   explicit TestAutofillDialogViews(AutofillDialogViewDelegate* delegate)
       : AutofillDialogViews(delegate) {}
   virtual ~TestAutofillDialogViews() {}
-
-  void ShowLoadingMode() { ShowDialogInMode(LOADING); }
-  void ShowSignInMode() { ShowDialogInMode(SIGN_IN); }
-  void ShowDetailInputMode() { ShowDialogInMode(DETAIL_INPUT); }
 
   using AutofillDialogViews::GetLoadingShieldForTesting;
   using AutofillDialogViews::GetSignInWebViewForTesting;
@@ -55,6 +52,8 @@ class AutofillDialogViewsTest : public TestWithBrowserView {
   // TestWithBrowserView:
   virtual void SetUp() OVERRIDE {
     TestWithBrowserView::SetUp();
+
+    view_delegate_.SetProfile(profile());
 
     AddTab(browser(), GURL());
     TabStripModel* tab_strip_model = browser()->tab_strip_model();
@@ -79,19 +78,20 @@ class AutofillDialogViewsTest : public TestWithBrowserView {
 
   virtual void TearDown() OVERRIDE {
     dialog_->GetWidget()->CloseNow();
+    dialog_.reset();
 
     TestWithBrowserView::TearDown();
   }
 
+  MockAutofillDialogViewDelegate* delegate() { return &view_delegate_; }
+
   TestAutofillDialogViews* dialog() { return dialog_.get(); }
 
  protected:
-  // Allows each main section (e.g. loading shield, sign in web view,
-  // notification area, and scrollable area) to get focus. Used in focus-related
-  // tests.
   void SetSectionsFocusable() {
     dialog()->GetLoadingShieldForTesting()->set_focusable(true);
-    // The sign in web view has a different implementation of IsFocusable().
+    // The sign in web view is not focusable until a web contents is created.
+    // TODO(dbeam): figure out how to create a web contents on the right thread.
     dialog()->GetNotificationAreaForTesting()->set_focusable(true);
     dialog()->GetScrollableAreaForTesting()->set_focusable(true);
   }
@@ -107,80 +107,73 @@ class AutofillDialogViewsTest : public TestWithBrowserView {
   scoped_ptr<TestAutofillDialogViews> dialog_;
 };
 
-TEST_F(AutofillDialogViewsTest, ShowLoadingMode) {
+TEST_F(AutofillDialogViewsTest, SignInFocus) {
   SetSectionsFocusable();
 
-  dialog()->ShowLoadingMode();
-
   views::View* loading_shield = dialog()->GetLoadingShieldForTesting();
-  EXPECT_TRUE(loading_shield->visible());
-  EXPECT_TRUE(loading_shield->IsFocusable());
-
-  loading_shield->RequestFocus();
-  EXPECT_TRUE(loading_shield->HasFocus());
-
   views::View* sign_in_web_view = dialog()->GetSignInWebViewForTesting();
-  EXPECT_FALSE(sign_in_web_view->visible());
-  EXPECT_FALSE(sign_in_web_view->IsFocusable());
-
   views::View* notification_area = dialog()->GetNotificationAreaForTesting();
-  EXPECT_FALSE(notification_area->visible());
-  EXPECT_FALSE(notification_area->IsFocusable());
-
   views::View* scrollable_area = dialog()->GetScrollableAreaForTesting();
-  EXPECT_FALSE(scrollable_area->visible());
-  EXPECT_FALSE(scrollable_area->IsFocusable());
-}
 
-TEST_F(AutofillDialogViewsTest, ShowSignInMode) {
-  SetSectionsFocusable();
+  dialog()->ShowSignIn();
 
-  dialog()->ShowSignInMode();
-
-  views::View* loading_shield = dialog()->GetLoadingShieldForTesting();
-  EXPECT_FALSE(loading_shield->visible());
+  // The sign in view should be the only showing and focusable view.
+  EXPECT_TRUE(sign_in_web_view->IsFocusable());
   EXPECT_FALSE(loading_shield->IsFocusable());
-
-  views::View* sign_in_web_view = dialog()->GetSignInWebViewForTesting();
-  EXPECT_TRUE(sign_in_web_view->visible());
-  // NOTE: |sign_in_web_view| is not focusable until a web contents is created.
-  // TODO(dbeam): figure out how to create a web contents on the right thread.
-
-  views::View* notification_area = dialog()->GetNotificationAreaForTesting();
-  EXPECT_FALSE(notification_area->visible());
   EXPECT_FALSE(notification_area->IsFocusable());
-
-  views::View* scrollable_area = dialog()->GetScrollableAreaForTesting();
-  EXPECT_FALSE(scrollable_area->visible());
   EXPECT_FALSE(scrollable_area->IsFocusable());
-}
 
-TEST_F(AutofillDialogViewsTest, ShowDetailInputMode) {
-  SetSectionsFocusable();
+  EXPECT_CALL(*delegate(), ShouldShowSpinner()).WillRepeatedly(Return(false));
+  dialog()->HideSignIn();
 
-  dialog()->ShowDetailInputMode();
-
-  views::View* loading_shield = dialog()->GetLoadingShieldForTesting();
-  EXPECT_FALSE(loading_shield->visible());
-  EXPECT_FALSE(loading_shield->IsFocusable());
-
-  views::View* sign_in_web_view = dialog()->GetSignInWebViewForTesting();
-  EXPECT_FALSE(sign_in_web_view->visible());
-  EXPECT_FALSE(sign_in_web_view->IsFocusable());
-
-  views::View* notification_area = dialog()->GetNotificationAreaForTesting();
-  EXPECT_TRUE(notification_area->visible());
+  // Hide sign in while not loading Wallet items as if the user clicked "Back".
   EXPECT_TRUE(notification_area->IsFocusable());
-
-  views::View* scrollable_area = dialog()->GetScrollableAreaForTesting();
-  EXPECT_TRUE(scrollable_area->visible());
   EXPECT_TRUE(scrollable_area->IsFocusable());
+  EXPECT_FALSE(loading_shield->IsFocusable());
+  EXPECT_FALSE(sign_in_web_view->IsFocusable());
 
-  notification_area->RequestFocus();
-  EXPECT_TRUE(notification_area->HasFocus());
+  dialog()->ShowSignIn();
 
-  scrollable_area->RequestFocus();
-  EXPECT_TRUE(scrollable_area->HasFocus());
+  EXPECT_TRUE(sign_in_web_view->IsFocusable());
+  EXPECT_FALSE(loading_shield->IsFocusable());
+  EXPECT_FALSE(notification_area->IsFocusable());
+  EXPECT_FALSE(scrollable_area->IsFocusable());
+
+  EXPECT_CALL(*delegate(), ShouldShowSpinner()).WillRepeatedly(Return(true));
+  dialog()->HideSignIn();
+
+  // Hide sign in while pretending to load Wallet data.
+  EXPECT_TRUE(loading_shield->IsFocusable());
+  EXPECT_FALSE(notification_area->IsFocusable());
+  EXPECT_FALSE(scrollable_area->IsFocusable());
+  EXPECT_FALSE(sign_in_web_view->IsFocusable());
+}
+
+TEST_F(AutofillDialogViewsTest, LoadingFocus) {
+  SetSectionsFocusable();
+
+  views::View* loading_shield = dialog()->GetLoadingShieldForTesting();
+  views::View* sign_in_web_view = dialog()->GetSignInWebViewForTesting();
+  views::View* notification_area = dialog()->GetNotificationAreaForTesting();
+  views::View* scrollable_area = dialog()->GetScrollableAreaForTesting();
+
+  // Pretend as if loading Wallet data.
+  EXPECT_CALL(*delegate(), ShouldShowSpinner()).WillRepeatedly(Return(true));
+  dialog()->UpdateAccountChooser();
+
+  EXPECT_TRUE(loading_shield->IsFocusable());
+  EXPECT_FALSE(notification_area->IsFocusable());
+  EXPECT_FALSE(scrollable_area->IsFocusable());
+  EXPECT_FALSE(sign_in_web_view->IsFocusable());
+
+  // Pretend as if Wallet data has finished loading.
+  EXPECT_CALL(*delegate(), ShouldShowSpinner()).WillRepeatedly(Return(false));
+  dialog()->UpdateAccountChooser();
+
+  EXPECT_TRUE(notification_area->IsFocusable());
+  EXPECT_TRUE(scrollable_area->IsFocusable());
+  EXPECT_FALSE(loading_shield->IsFocusable());
+  EXPECT_FALSE(sign_in_web_view->IsFocusable());
 }
 
 }  // namespace autofill

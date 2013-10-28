@@ -48,7 +48,7 @@
           gfx::Size(NSSizeToCGSize(minSize_)),
           gfx::Size(NSSizeToCGSize(maxSize_))));
   webContents_->GetController().LoadURL(
-      autofill::wallet::GetSignInUrl(),
+      dialog_->delegate()->SignInUrl(),
       content::Referrer(),
       content::PAGE_TRANSITION_AUTO_TOPLEVEL,
       std::string());
@@ -56,6 +56,10 @@
 
 - (content::NavigationController*)navigationController {
   return &webContents_->GetController();
+}
+
+- (content::WebContents*)webContents {
+  return webContents_.get();
 }
 
 - (void)constrainSizeToMinimum:(NSSize)minSize maximum:(NSSize)maxSize {
