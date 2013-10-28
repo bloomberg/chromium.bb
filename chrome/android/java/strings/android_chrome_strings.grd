@@ -118,7 +118,7 @@ You are signing in with a managed account and giving its administrator control o
       <message name="IDS_TRANSLATE_NEVER_TRANSLATE_SITE" desc="Text to display on the never translate site (like www.google.com) button. [CHAR-LIMIT=64]">
         Never translate this site
       </message>
-      <message name="IDS_TRANSLATE_NEVER_TRANSLATE_LANGUAGE" desc="Text to display on the never translate language button. [CHAR-LIMIT=64]">
+      <message name="IDS_TRANSLATE_NEVER_TRANSLATE_LANGUAGE" meaning="Android" desc="Text to display on the never translate language button. [CHAR-LIMIT=64]">
         Never translate <ph name="LANGUAGE">%1$s<ex>French</ex></ph>
       </message>
     </messages>
