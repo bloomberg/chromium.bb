@@ -60,7 +60,7 @@ $methodInCode
 
 $errorCook${responseCook}
     }
-    sendResponse(callId, result, commandNames[$commandNameIndex], protocolErrors, error, resultErrorData);
+    sendResponse(callId, result, commandName($commandNameIndex), protocolErrors, error, resultErrorData);
 }
 """)
 
@@ -196,7 +196,11 @@ $methodNamesEnumContent
         kMethodNamesEnumSize
     };
 
-    static const char* commandNames[];
+    static const char* commandName(MethodNames);
+
+private:
+    static const char commandNames[];
+    static const size_t commandNamesIndex[];
 };
 
 } // namespace WebCore
@@ -220,10 +224,18 @@ backend_cpp = (
 
 namespace WebCore {
 
-const char* InspectorBackendDispatcher::commandNames[] = {
+const char InspectorBackendDispatcher::commandNames[] = {
 $methodNameDeclarations
 };
 
+const size_t InspectorBackendDispatcher::commandNamesIndex[] = {
+$methodNameDeclarationsIndex
+};
+
+const char* InspectorBackendDispatcher::commandName(MethodNames index) {
+    COMPILE_ASSERT(static_cast<int>(kMethodNamesEnumSize) == WTF_ARRAY_LENGTH(commandNamesIndex), command_name_array_problem);
+    return commandNames + commandNamesIndex[index];
+}
 
 class InspectorBackendDispatcherImpl : public InspectorBackendDispatcher {
 public:
@@ -281,9 +293,8 @@ void InspectorBackendDispatcherImpl::dispatch(const String& message)
         static CallHandler handlers[] = {
 $messageHandlers
         };
-        size_t length = WTF_ARRAY_LENGTH(commandNames);
-        for (size_t i = 0; i < length; ++i)
-            dispatchMap.add(commandNames[i], handlers[i]);
+        for (size_t i = 0; i < kMethodNamesEnumSize; ++i)
+            dispatchMap.add(commandName(static_cast<MethodNames>(i)), handlers[i]);
     }
 
     RefPtr<JSONValue> parsedMessage = parseJSON(message);
@@ -502,8 +513,6 @@ void InspectorBackendDispatcher::CallbackBase::sendIfActive(PassRefPtr<JSONObjec
     m_backendImpl->sendResponse(m_id, partialMessage, invocationError, errorData);
     m_alreadySent = true;
 }
-
-COMPILE_ASSERT(static_cast<int>(InspectorBackendDispatcher::kMethodNamesEnumSize) == WTF_ARRAY_LENGTH(InspectorBackendDispatcher::commandNames), command_name_array_problem);
 
 } // namespace WebCore
 

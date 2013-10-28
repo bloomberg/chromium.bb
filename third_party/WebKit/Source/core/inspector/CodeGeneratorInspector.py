@@ -1773,6 +1773,8 @@ class Generator:
     backend_method_declaration_list = []
     backend_method_implementation_list = []
     backend_method_name_declaration_list = []
+    backend_method_name_declaration_index_list = []
+    backend_method_name_declaration_current_index = 0
     method_handler_list = []
     frontend_method_list = []
 
@@ -1796,6 +1798,7 @@ class Generator:
             Generator.backend_method_declaration_list,
             Generator.backend_method_implementation_list,
             Generator.backend_method_name_declaration_list,
+            Generator.backend_method_name_declaration_index_list,
             Generator.backend_agent_interface_list,
             Generator.frontend_class_field_lines,
             Generator.frontend_constructor_init_list,
@@ -2063,7 +2066,10 @@ class Generator:
             responseCook=normal_response_cook_text,
             errorCook=error_response_cook_text,
             commandNameIndex=cmd_enum_name))
-        Generator.backend_method_name_declaration_list.append("    \"%s.%s\"," % (domain_name, json_command_name))
+        declaration_command_name = "%s.%s\\0" % (domain_name, json_command_name)
+        Generator.backend_method_name_declaration_list.append("    \"%s\"" % declaration_command_name)
+        Generator.backend_method_name_declaration_index_list.append("    %d," % Generator.backend_method_name_declaration_current_index)
+        Generator.backend_method_name_declaration_current_index += len(declaration_command_name) - 1
 
         Generator.backend_agent_interface_list.append(") = 0;\n")
 
@@ -2307,6 +2313,7 @@ backend_cpp_file.write(Templates.backend_cpp.substitute(None,
     setters="\n".join(Generator.backend_setters_list),
     fieldDeclarations="\n".join(Generator.backend_field_list),
     methodNameDeclarations="\n".join(Generator.backend_method_name_declaration_list),
+    methodNameDeclarationsIndex="\n".join(Generator.backend_method_name_declaration_index_list),
     methods="\n".join(Generator.backend_method_implementation_list),
     methodDeclarations="\n".join(Generator.backend_method_declaration_list),
     messageHandlers="\n".join(Generator.method_handler_list)))
