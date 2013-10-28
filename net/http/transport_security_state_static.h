@@ -246,6 +246,10 @@ static const char kSPKIHash_CryptoCat1[] =
     "\x4c\x87\xce\x85\x2c\xf4\xc0\x4d\x67\xa9"
     "\xe0\xec\x51\x0c\x7f\x3b\x14\xb3\xe9\xc9";
 
+static const char kSPKIHash_Libertylavabitcom[] =
+    "\x41\xbb\x3b\x8b\xc7\xcf\x3d\x13\x3f\x17"
+    "\xb3\x25\x7e\xe4\x03\xca\x8a\x5c\x6d\x36";
+
 // The following is static data describing the hosts that are hardcoded with
 // certificate pins or HSTS information.
 
@@ -396,6 +400,15 @@ static const char* const kCryptoCatAcceptableCerts[] = {
 };
 #define kCryptoCatPins { \
   kCryptoCatAcceptableCerts, \
+  kNoRejectedPublicKeys, \
+}
+
+static const char* const kLavabitAcceptableCerts[] = {
+  kSPKIHash_Libertylavabitcom,
+  NULL,
+};
+#define kLavabitPins { \
+  kLavabitAcceptableCerts, \
   kNoRejectedPublicKeys, \
 }
 
@@ -880,6 +893,7 @@ static const struct HSTSPreload kPreloadedSTS[] = {
   {12, true, "\006cybozu\003com", true, kNoPins, DOMAIN_NOT_PINNED },
   {17, true, "\013davidlyness\003com", true, kNoPins, DOMAIN_NOT_PINNED },
   {12, true, "\006medium\003com", true, kNoPins, DOMAIN_NOT_PINNED },
+  {21, true, "\007liberty\007lavabit\003com", true, kLavabitPins, DOMAIN_LAVABIT_COM },
 };
 static const size_t kNumPreloadedSTS = ARRAYSIZE_UNSAFE(kPreloadedSTS);
 

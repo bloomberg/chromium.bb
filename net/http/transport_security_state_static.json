@@ -156,6 +156,12 @@
         "DigiCertEVRoot",
         "CryptoCat1"
       ]
+    },
+    {
+      "name": "lavabit",
+      "static_spki_hashes": [
+        "Libertylavabitcom"
+      ]
     }
   ],
 
@@ -654,6 +660,7 @@
     { "name": "cybozu.com", "include_subdomains": true,  "mode": "force-https" },
     { "name": "davidlyness.com", "include_subdomains": true,  "mode": "force-https" },
     { "name": "medium.com", "include_subdomains": true,  "mode": "force-https" },
+    { "name": "liberty.lavabit.com", "include_subdomains": true, "mode": "force-https", "pins": "lavabit" },
 
     // Entries that are only valid if the client supports SNI.
     { "name": "gmail.com", "mode": "force-https", "pins": "google", "snionly": true },
