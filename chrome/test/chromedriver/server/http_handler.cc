@@ -179,6 +179,10 @@ HttpHandler::HttpHandler(
           kGet,
           "session/:sessionId/screenshot",
           WrapToCommand("Screenshot", base::Bind(&ExecuteScreenshot))),
+      CommandMapping(
+          kGet,
+          "session/:sessionId/chromium/heap_snapshot",
+          WrapToCommand("HeapSnapshot", base::Bind(&ExecuteTakeHeapSnapshot))),
       CommandMapping(kPost,
                      "session/:sessionId/visible",
                      base::Bind(&UnimplementedCommand)),

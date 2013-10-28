@@ -862,3 +862,11 @@ Status ExecuteSetLocation(
     session->overridden_geoposition.reset(new Geoposition(geoposition));
   return status;
 }
+
+Status ExecuteTakeHeapSnapshot(
+    Session* session,
+    WebView* web_view,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* value) {
+  return web_view->TakeHeapSnapshot(value);
+}
