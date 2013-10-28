@@ -47,6 +47,7 @@
 #include "core/css/PseudoStyleRequest.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/editing/FrameSelection.h"
+#include "core/html/HTMLFrameOwnerElement.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/page/EventHandler.h"
 #include "core/page/FocusController.h"
@@ -66,6 +67,7 @@
 #include "core/rendering/RenderView.h"
 #include "platform/PlatformGestureEvent.h"
 #include "platform/PlatformMouseEvent.h"
+#include "public/platform/Platform.h"
 
 namespace WebCore {
 
@@ -76,6 +78,8 @@ RenderLayerScrollableArea::RenderLayerScrollableArea(RenderBox* box)
     , m_inResizeMode(false)
     , m_scrollDimensionsDirty(true)
     , m_inOverflowRelayout(false)
+    , m_isScrollableAreaHasBeenRecorded(false)
+    , m_willUseCompositedScrollingHasBeenRecorded(false)
     , m_scrollCorner(0)
     , m_resizer(0)
 {
@@ -142,11 +146,6 @@ ScrollableArea* RenderLayerScrollableArea::enclosingScrollableArea() const
     return 0;
 }
 
-void RenderLayerScrollableArea::updateNeedsCompositedScrolling()
-{
-    layer()->updateNeedsCompositedScrolling();
-}
-
 GraphicsLayer* RenderLayerScrollableArea::layerForScrolling() const
 {
     return m_box->compositedLayerMapping() ? m_box->compositedLayerMapping()->scrollingContentsLayer() : 0;
@@ -165,11 +164,6 @@ GraphicsLayer* RenderLayerScrollableArea::layerForVerticalScrollbar() const
 GraphicsLayer* RenderLayerScrollableArea::layerForScrollCorner() const
 {
     return m_box->compositedLayerMapping() ? m_box->compositedLayerMapping()->layerForScrollCorner() : 0;
-}
-
-bool RenderLayerScrollableArea::usesCompositedScrolling() const
-{
-    return layer()->usesCompositedScrolling();
 }
 
 void RenderLayerScrollableArea::invalidateScrollbarRect(Scrollbar* scrollbar, const IntRect& rect)
@@ -353,7 +347,7 @@ void RenderLayerScrollableArea::setScrollOffset(const IntPoint& newScrollOffset)
             view->updateWidgetPositions();
         }
 
-        layer()->updateCompositingLayersAfterScroll();
+        updateCompositingLayersAfterScroll();
     }
 
     RenderLayerModelObject* repaintContainer = m_box->containerForRepaint();
@@ -369,7 +363,7 @@ void RenderLayerScrollableArea::setScrollOffset(const IntPoint& newScrollOffset)
 
     bool requiresRepaint = true;
 
-    if (m_box->view()->compositor()->inCompositingMode() && layer()->usesCompositedScrolling())
+    if (m_box->view()->compositor()->inCompositingMode() && usesCompositedScrolling())
         requiresRepaint = false;
 
     // Just schedule a full repaint of our object.
@@ -600,7 +594,7 @@ void RenderLayerScrollableArea::updateAfterLayout()
         verticalScrollbar->setProportion(clientHeight, overflowRect().height());
     }
 
-    layer()->updateScrollableAreaSet(hasScrollableHorizontalOverflow() || hasScrollableVerticalOverflow());
+    updateScrollableAreaSet(hasScrollableHorizontalOverflow() || hasScrollableVerticalOverflow());
 
     // Composited scrolling may need to be enabled or disabled if the amount of overflow changed.
     if (m_box->view() && m_box->view()->compositor()->updateLayerCompositingState(m_box->layer()))
@@ -648,7 +642,7 @@ void RenderLayerScrollableArea::updateAfterStyleChange(const RenderStyle* oldSty
         return;
 
     if (!m_scrollDimensionsDirty)
-        layer()->updateScrollableAreaSet(hasScrollableHorizontalOverflow() || hasScrollableVerticalOverflow());
+        updateScrollableAreaSet(hasScrollableHorizontalOverflow() || hasScrollableVerticalOverflow());
 
     EOverflow overflowX = m_box->style()->overflowX();
     EOverflow overflowY = m_box->style()->overflowY();
@@ -901,6 +895,14 @@ void RenderLayerScrollableArea::positionNewlyCreatedOverflowControls()
 
     LayoutPoint offsetFromRoot = LayoutPoint(geometryMap.absolutePoint(FloatPoint()));
     positionOverflowControls(toIntSize(roundedIntPoint(offsetFromRoot)));
+}
+
+bool RenderLayerScrollableArea::scrollsOverflow() const
+{
+    if (FrameView* frameView = m_box->view()->frameView())
+        return frameView->containsScrollableArea(this);
+
+    return false;
 }
 
 void RenderLayerScrollableArea::updateScrollCornerStyle()
@@ -1319,6 +1321,127 @@ LayoutRect RenderLayerScrollableArea::exposeRect(const LayoutRect& rect, const S
     IntSize scrollOffsetDifference = adjustedScrollOffset() - oldScrollOffset;
     localExposeRect.move(-scrollOffsetDifference);
     return LayoutRect(m_box->localToAbsoluteQuad(FloatQuad(FloatRect(localExposeRect)), UseTransforms).boundingBox());
+}
+
+void RenderLayerScrollableArea::updateScrollableAreaSet(bool hasOverflow)
+{
+    Frame* frame = m_box->frame();
+    if (!frame)
+        return;
+
+    FrameView* frameView = frame->view();
+    if (!frameView)
+        return;
+
+    bool isVisibleToHitTest = m_box->visibleToHitTesting();
+    if (HTMLFrameOwnerElement* owner = frame->ownerElement())
+        isVisibleToHitTest &= owner->renderer() && owner->renderer()->visibleToHitTesting();
+
+    bool requiresScrollableArea = hasOverflow && isVisibleToHitTest;
+    bool updatedScrollableAreaSet = false;
+    if (requiresScrollableArea) {
+        if (frameView->addScrollableArea(this))
+            updatedScrollableAreaSet = true;
+    } else {
+        if (frameView->removeScrollableArea(this))
+            updatedScrollableAreaSet = true;
+    }
+
+    if (updatedScrollableAreaSet) {
+        // Count the total number of RenderLayers that are scrollable areas for
+        // any period. We only want to record this at most once per RenderLayer.
+        if (requiresScrollableArea && !m_isScrollableAreaHasBeenRecorded) {
+            WebKit::Platform::current()->histogramEnumeration("Renderer.CompositedScrolling", RenderLayer::IsScrollableAreaBucket, RenderLayer::CompositedScrollingHistogramMax);
+            m_isScrollableAreaHasBeenRecorded = true;
+        }
+
+        // We always want composited scrolling if compositor driven accelerated
+        // scrolling is enabled. Since we will not update needs composited scrolling
+        // in this case, we must force our state to update.
+        if (layer()->compositorDrivenAcceleratedScrollingEnabled())
+            layer()->didUpdateNeedsCompositedScrolling();
+        else if (requiresScrollableArea)
+            m_box->view()->compositor()->setNeedsUpdateCompositingRequirementsState();
+        else
+            setNeedsCompositedScrolling(false);
+    }
+}
+
+void RenderLayerScrollableArea::updateNeedsCompositedScrolling()
+{
+    TRACE_EVENT0("comp-scroll", "RenderLayer::updateNeedsCompositedScrolling");
+
+    layer()->stackingNode()->updateDescendantsAreContiguousInStackingOrder();
+    layer()->updateDescendantDependentFlags();
+
+    ASSERT(scrollsOverflow());
+    const bool needsToBeStackingContainer = layer()->acceleratedCompositingForOverflowScrollEnabled()
+        && layer()->stackingNode()->descendantsAreContiguousInStackingOrder()
+        && !layer()->hasUnclippedDescendant();
+
+    const bool needsToBeStackingContainerDidChange = layer()->stackingNode()->setNeedsToBeStackingContainer(needsToBeStackingContainer);
+
+    const bool needsCompositedScrolling = needsToBeStackingContainer
+        || layer()->compositorDrivenAcceleratedScrollingEnabled();
+
+    // We gather a boolean value for use with Google UMA histograms to
+    // quantify the actual effects of a set of patches attempting to
+    // relax composited scrolling requirements, thereby increasing the
+    // number of composited overflow divs.
+    if (layer()->acceleratedCompositingForOverflowScrollEnabled())
+        WebKit::Platform::current()->histogramEnumeration("Renderer.NeedsCompositedScrolling", needsCompositedScrolling, 2);
+
+    const bool needsCompositedScrollingDidChange = setNeedsCompositedScrolling(needsCompositedScrolling);
+
+    if (needsToBeStackingContainerDidChange || needsCompositedScrollingDidChange) {
+        // Note, the z-order lists may need to be rebuilt, but our code guarantees
+        // that we have not affected stacking, so we will not dirty
+        // m_descendantsAreContiguousInStackingOrder for either us or our stacking
+        // context or container.
+        layer()->didUpdateNeedsCompositedScrolling();
+    }
+}
+
+bool RenderLayerScrollableArea::setNeedsCompositedScrolling(bool needsCompositedScrolling)
+{
+    if (layer()->m_needsCompositedScrolling == needsCompositedScrolling)
+        return false;
+
+    // Count the total number of RenderLayers which need composited scrolling at
+    // some point. This should be recorded at most once per RenderLayer, so we
+    // check m_willUseCompositedScrollingHasBeenRecorded.
+    if (layer()->acceleratedCompositingForOverflowScrollEnabled() && !m_willUseCompositedScrollingHasBeenRecorded) {
+        WebKit::Platform::current()->histogramEnumeration("Renderer.CompositedScrolling", RenderLayer::WillUseCompositedScrollingBucket, RenderLayer::CompositedScrollingHistogramMax);
+        m_willUseCompositedScrollingHasBeenRecorded = true;
+    }
+
+    layer()->m_needsCompositedScrolling = needsCompositedScrolling;
+
+    return true;
+}
+
+void RenderLayerScrollableArea::updateCompositingLayersAfterScroll()
+{
+    RenderLayerCompositor* compositor = m_box->view()->compositor();
+    if (compositor->inCompositingMode()) {
+        // Our stacking container is guaranteed to contain all of our descendants that may need
+        // repositioning, so update compositing layers from there.
+        if (RenderLayer* compositingAncestor = m_box->layer()->stackingNode()->ancestorStackingContainerNode()->layer()->enclosingCompositingLayer()) {
+            if (usesCompositedScrolling())
+                compositor->updateCompositingLayers(CompositingUpdateOnCompositedScroll, compositingAncestor);
+            else
+                compositor->updateCompositingLayers(CompositingUpdateOnScroll, compositingAncestor);
+        }
+    }
+}
+
+bool RenderLayerScrollableArea::usesCompositedScrolling() const
+{
+    // Scroll form controls on the main thread so they exhibit correct touch scroll event bubbling
+    if (m_box && (m_box->isIntristicallyScrollable(VerticalScrollbar) || m_box->isIntristicallyScrollable(HorizontalScrollbar)))
+        return false;
+
+    return m_box->compositedLayerMapping() && m_box->compositedLayerMapping()->scrollingLayer();
 }
 
 } // Namespace WebCore

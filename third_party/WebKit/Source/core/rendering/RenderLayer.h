@@ -549,20 +549,9 @@ private:
 
     bool shouldBeSelfPaintingLayer() const;
 
-    // Start of ScrollableArea interface
-    // To be moved to RenderLayerScrollableArea
-    void updateNeedsCompositedScrolling();
-
-public:
-    bool usesCompositedScrolling() const;
-
-    // End of ScrollableArea interface
-
 private:
     // Rectangle encompassing the scroll corner and resizer rect.
     IntRect scrollCornerAndResizerRect() const;
-
-    void updateCompositingLayersAfterScroll();
 
     // FIXME: We should only create the stacking node if needed.
     bool requiresStackingNode() const { return true; }
@@ -574,8 +563,6 @@ private:
     // but for now, we are always allocating it for RenderBox as it's safer.
     bool requiresScrollableArea() const { return renderBox(); }
     void updateScrollableArea();
-
-    void updateScrollableAreaSet(bool hasOverflow);
 
     // Returns true our scrollable area is in the FrameView's collection of scrollable areas. This can
     // only happen if we're both scrollable, and we do in fact overflow.
@@ -642,9 +629,6 @@ protected:
     unsigned m_isUnclippedDescendant : 1;
 
     unsigned m_needsCompositedScrolling : 1;
-    unsigned m_willUseCompositedScrollingHasBeenRecorded : 1;
-
-    unsigned m_isScrollableAreaHasBeenRecorded : 1;
 
     const unsigned m_isRootLayer : 1;
 

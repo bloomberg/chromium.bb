@@ -72,8 +72,6 @@ public:
     virtual Scrollbar* verticalScrollbar() const OVERRIDE { return m_vBar.get(); }
     virtual ScrollableArea* enclosingScrollableArea() const OVERRIDE;
 
-    virtual void updateNeedsCompositedScrolling() OVERRIDE;
-
     virtual GraphicsLayer* layerForScrolling() const OVERRIDE;
     virtual GraphicsLayer* layerForHorizontalScrollbar() const OVERRIDE;
     virtual GraphicsLayer* layerForVerticalScrollbar() const OVERRIDE;
@@ -161,6 +159,8 @@ public:
 
     LayoutRect exposeRect(const LayoutRect&, const ScrollAlignment& alignX, const ScrollAlignment& alignY);
 
+    bool scrollsOverflow() const;
+
 private:
     bool hasHorizontalOverflow() const;
     bool hasVerticalOverflow() const;
@@ -199,6 +199,12 @@ private:
 
     RenderLayer* layer() const;
 
+    void updateScrollableAreaSet(bool hasOverflow);
+
+    void updateCompositingLayersAfterScroll();
+    virtual void updateNeedsCompositedScrolling() OVERRIDE;
+    bool setNeedsCompositedScrolling(bool);
+
     RenderBox* m_box;
 
     // Keeps track of whether the layer is currently resizing, so events can cause resizing to start and stop.
@@ -206,6 +212,10 @@ private:
 
     unsigned m_scrollDimensionsDirty : 1;
     unsigned m_inOverflowRelayout : 1;
+
+    unsigned m_willUseCompositedScrollingHasBeenRecorded : 1;
+
+    unsigned m_isScrollableAreaHasBeenRecorded : 1;
 
     // The width/height of our scrolled area.
     LayoutRect m_overflowRect;

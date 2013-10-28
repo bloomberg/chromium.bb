@@ -130,7 +130,7 @@ RenderLayer* LinkHighlight::computeEnclosingCompositingLayer()
     m_clipLayer->setSublayerTransform(SkMatrix44());
 
     if (!newGraphicsLayer->drawsContent()) {
-        if (renderLayer->usesCompositedScrolling()) {
+        if (renderLayer->scrollableArea()->usesCompositedScrolling()) {
             ASSERT(renderLayer->compositedLayerMapping() && renderLayer->compositedLayerMapping()->scrollingContentsLayer());
             newGraphicsLayer = renderLayer->compositedLayerMapping()->scrollingContentsLayer();
         } else

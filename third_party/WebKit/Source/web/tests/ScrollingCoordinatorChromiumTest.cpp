@@ -287,19 +287,19 @@ TEST_F(ScrollingCoordinatorChromiumTest, overflowScrolling)
     ASSERT(scrollableElement);
 
     RenderObject* renderer = scrollableElement->renderer();
-    ASSERT_TRUE(renderer->isBoxModelObject());
+    ASSERT_TRUE(renderer->isBox());
     ASSERT_TRUE(renderer->hasLayer());
 
-    RenderLayer* layer = toRenderBoxModelObject(renderer)->layer();
-    ASSERT_TRUE(layer->usesCompositedScrolling());
-    ASSERT_EQ(PaintsIntoOwnBacking, layer->compositingState());
+    RenderBox* box = toRenderBox(renderer);
+    ASSERT_TRUE(box->usesCompositedScrolling());
+    ASSERT_EQ(PaintsIntoOwnBacking, box->layer()->compositingState());
 
-    CompositedLayerMapping* compositedLayerMapping = layer->compositedLayerMapping();
+    CompositedLayerMapping* compositedLayerMapping = box->layer()->compositedLayerMapping();
     ASSERT_TRUE(compositedLayerMapping->hasScrollingLayer());
     ASSERT(compositedLayerMapping->scrollingContentsLayer());
 
     GraphicsLayer* graphicsLayer = compositedLayerMapping->scrollingContentsLayer();
-    ASSERT_EQ(layer->scrollableArea(), graphicsLayer->scrollableArea());
+    ASSERT_EQ(box->layer()->scrollableArea(), graphicsLayer->scrollableArea());
 
     WebLayer* webScrollLayer = compositedLayerMapping->scrollingContentsLayer()->platformLayer();
     ASSERT_TRUE(webScrollLayer->scrollable());
@@ -326,19 +326,19 @@ TEST_F(ScrollingCoordinatorChromiumTest, overflowHidden)
     ASSERT(overflowElement);
 
     RenderObject* renderer = overflowElement->renderer();
-    ASSERT_TRUE(renderer->isBoxModelObject());
+    ASSERT_TRUE(renderer->isBox());
     ASSERT_TRUE(renderer->hasLayer());
 
-    RenderLayer* layer = toRenderBoxModelObject(renderer)->layer();
-    ASSERT_TRUE(layer->usesCompositedScrolling());
-    ASSERT_EQ(PaintsIntoOwnBacking, layer->compositingState());
+    RenderBox* box = toRenderBox(renderer);
+    ASSERT_TRUE(box->usesCompositedScrolling());
+    ASSERT_EQ(PaintsIntoOwnBacking, box->layer()->compositingState());
 
-    CompositedLayerMapping* compositedLayerMapping = layer->compositedLayerMapping();
+    CompositedLayerMapping* compositedLayerMapping = box->layer()->compositedLayerMapping();
     ASSERT_TRUE(compositedLayerMapping->hasScrollingLayer());
     ASSERT(compositedLayerMapping->scrollingContentsLayer());
 
     GraphicsLayer* graphicsLayer = compositedLayerMapping->scrollingContentsLayer();
-    ASSERT_EQ(layer->scrollableArea(), graphicsLayer->scrollableArea());
+    ASSERT_EQ(box->layer()->scrollableArea(), graphicsLayer->scrollableArea());
 
     WebLayer* webScrollLayer = compositedLayerMapping->scrollingContentsLayer()->platformLayer();
     ASSERT_TRUE(webScrollLayer->scrollable());
@@ -349,19 +349,19 @@ TEST_F(ScrollingCoordinatorChromiumTest, overflowHidden)
     ASSERT(overflowElement);
 
     renderer = overflowElement->renderer();
-    ASSERT_TRUE(renderer->isBoxModelObject());
+    ASSERT_TRUE(renderer->isBox());
     ASSERT_TRUE(renderer->hasLayer());
 
-    layer = toRenderBoxModelObject(renderer)->layer();
-    ASSERT_TRUE(layer->usesCompositedScrolling());
-    ASSERT_EQ(PaintsIntoOwnBacking, layer->compositingState());
+    box = toRenderBox(renderer);
+    ASSERT_TRUE(box->scrollableArea()->usesCompositedScrolling());
+    ASSERT_EQ(PaintsIntoOwnBacking, box->layer()->compositingState());
 
-    compositedLayerMapping = layer->compositedLayerMapping();
+    compositedLayerMapping = box->layer()->compositedLayerMapping();
     ASSERT_TRUE(compositedLayerMapping->hasScrollingLayer());
     ASSERT(compositedLayerMapping->scrollingContentsLayer());
 
     graphicsLayer = compositedLayerMapping->scrollingContentsLayer();
-    ASSERT_EQ(layer->scrollableArea(), graphicsLayer->scrollableArea());
+    ASSERT_EQ(box->layer()->scrollableArea(), graphicsLayer->scrollableArea());
 
     webScrollLayer = compositedLayerMapping->scrollingContentsLayer()->platformLayer();
     ASSERT_TRUE(webScrollLayer->scrollable());
