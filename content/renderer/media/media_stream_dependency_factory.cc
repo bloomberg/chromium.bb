@@ -11,6 +11,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "content/public/common/content_switches.h"
 #include "content/renderer/media/media_stream_source_extra_data.h"
+#include "content/renderer/media/media_stream_track_extra_data.h"
 #include "content/renderer/media/peer_connection_identity_service.h"
 #include "content/renderer/media/rtc_media_constraints.h"
 #include "content/renderer/media/rtc_peer_connection_handler.h"
@@ -441,6 +442,8 @@ bool MediaStreamDependencyFactory::AddNativeMediaStreamTrack(
                               webaudio_source.get(),
                               source_data->local_audio_source(),
                               &track_constraints));
+    AddNativeTrackToBlinkTrack(audio_track.get(), track);
+
     audio_track->set_enabled(track.isEnabled());
     if (capturer.get()) {
       WebKit::WebMediaStreamTrack writable_track = track;
@@ -451,6 +454,7 @@ bool MediaStreamDependencyFactory::AddNativeMediaStreamTrack(
     DCHECK(source.type() == WebKit::WebMediaStreamSource::TypeVideo);
     scoped_refptr<webrtc::VideoTrackInterface> video_track(
         CreateLocalVideoTrack(track_id, source_data->video_source()));
+    AddNativeTrackToBlinkTrack(video_track.get(), track);
     video_track->set_enabled(track.isEnabled());
     return native_stream->AddTrack(video_track.get());
   }
@@ -483,7 +487,9 @@ bool MediaStreamDependencyFactory::AddNativeVideoMediaTrack(
   WebKit::WebMediaStreamSource::Type type =
       WebKit::WebMediaStreamSource::TypeVideo;
   webkit_source.initialize(webkit_track_id, type, webkit_track_id);
+
   webkit_track.initialize(webkit_track_id, webkit_source);
+  AddNativeTrackToBlinkTrack(native_track.get(), webkit_track);
 
   // Add the track to WebMediaStream.
   stream->addTrack(webkit_track);
@@ -502,10 +508,12 @@ bool MediaStreamDependencyFactory::RemoveNativeMediaStreamTrack(
   DCHECK(type == WebKit::WebMediaStreamSource::TypeAudio ||
          type == WebKit::WebMediaStreamSource::TypeVideo);
 
+  WebKit::WebMediaStreamTrack writable_track = track;
+  writable_track.setExtraData(NULL);
+
   std::string track_id = UTF16ToUTF8(track.id());
   if (type == WebKit::WebMediaStreamSource::TypeAudio) {
     // Remove the source provider as the track is going away.
-    WebKit::WebMediaStreamTrack writable_track = track;
     writable_track.setSourceProvider(NULL);
     return native_stream->RemoveTrack(native_stream->FindAudioTrack(track_id));
   }
@@ -843,6 +851,34 @@ MediaStreamDependencyFactory::MaybeCreateAudioCapturer(
     GetWebRtcAudioDevice()->AddAudioCapturer(capturer);
 
   return capturer;
+}
+
+void MediaStreamDependencyFactory::AddNativeTrackToBlinkTrack(
+    webrtc::MediaStreamTrackInterface* native_track,
+    const WebKit::WebMediaStreamTrack& webkit_track) {
+  DCHECK(!webkit_track.isNull() && !webkit_track.extraData());
+  WebKit::WebMediaStreamTrack track = webkit_track;
+  track.setExtraData(new MediaStreamTrackExtraData(native_track));
+}
+
+webrtc::MediaStreamInterface*
+MediaStreamDependencyFactory::GetNativeMediaStream(
+    const WebKit::WebMediaStream& stream) {
+  if (stream.isNull())
+    return NULL;
+  MediaStreamExtraData* extra_data =
+      static_cast<MediaStreamExtraData*>(stream.extraData());
+  return extra_data ? extra_data->stream().get() : NULL;
+}
+
+webrtc::MediaStreamTrackInterface*
+MediaStreamDependencyFactory::GetNativeMediaStreamTrack(
+      const WebKit::WebMediaStreamTrack& track) {
+  if (track.isNull())
+    return NULL;
+  MediaStreamTrackExtraData* extra_data =
+      static_cast<MediaStreamTrackExtraData*>(track.extraData());
+  return extra_data ? extra_data->track().get() : NULL;
 }
 
 }  // namespace content

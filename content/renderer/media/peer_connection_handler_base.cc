@@ -15,16 +15,6 @@
 
 namespace content {
 
-// TODO(hta): Unify implementations of these functions from MediaStreamCenter
-static webrtc::MediaStreamInterface* GetNativeMediaStream(
-    const WebKit::WebMediaStream& stream) {
-  MediaStreamExtraData* extra_data =
-      static_cast<MediaStreamExtraData*>(stream.extraData());
-  if (extra_data)
-    return extra_data->stream().get();
-  return NULL;
-}
-
 PeerConnectionHandlerBase::PeerConnectionHandlerBase(
     MediaStreamDependencyFactory* dependency_factory)
     : dependency_factory_(dependency_factory),
@@ -37,7 +27,8 @@ PeerConnectionHandlerBase::~PeerConnectionHandlerBase() {
 bool PeerConnectionHandlerBase::AddStream(
     const WebKit::WebMediaStream& stream,
     const webrtc::MediaConstraintsInterface* constraints) {
-  webrtc::MediaStreamInterface* native_stream = GetNativeMediaStream(stream);
+  webrtc::MediaStreamInterface* native_stream =
+      MediaStreamDependencyFactory::GetNativeMediaStream(stream);
   if (!native_stream)
     return false;
   return native_peer_connection_->AddStream(native_stream, constraints);
@@ -45,29 +36,11 @@ bool PeerConnectionHandlerBase::AddStream(
 
 void PeerConnectionHandlerBase::RemoveStream(
     const WebKit::WebMediaStream& stream) {
-  webrtc::MediaStreamInterface* native_stream = GetNativeMediaStream(stream);
+  webrtc::MediaStreamInterface* native_stream =
+      MediaStreamDependencyFactory::GetNativeMediaStream(stream);
   if (native_stream)
     native_peer_connection_->RemoveStream(native_stream);
   DCHECK(native_stream);
-}
-
-webrtc::MediaStreamTrackInterface*
-PeerConnectionHandlerBase::GetNativeMediaStreamTrack(
-    const WebKit::WebMediaStream& stream,
-    const WebKit::WebMediaStreamTrack& track) {
-  std::string track_id = UTF16ToUTF8(track.id());
-  webrtc::MediaStreamInterface* native_stream = GetNativeMediaStream(stream);
-  if (!native_stream) {
-    return NULL;
-  }
-  if (track.source().type() == WebKit::WebMediaStreamSource::TypeAudio) {
-    return native_stream->FindAudioTrack(track_id);
-  }
-  if (track.source().type() == WebKit::WebMediaStreamSource::TypeVideo) {
-    return native_stream->FindVideoTrack(track_id);
-  }
-  NOTIMPLEMENTED();  // We have an unknown type of media stream track.
-  return NULL;
 }
 
 }  // namespace content

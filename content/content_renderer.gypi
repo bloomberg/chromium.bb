@@ -212,6 +212,8 @@
     'renderer/media/media_stream_dispatcher.h',
     'renderer/media/media_stream_dispatcher_eventhandler.h',
     'renderer/media/media_stream_impl.h',
+    'renderer/media/media_stream_track_extra_data.cc',
+    'renderer/media/media_stream_track_extra_data.h',
     'renderer/media/midi_dispatcher.cc',
     'renderer/media/midi_dispatcher.h',
     'renderer/media/midi_message_filter.cc',

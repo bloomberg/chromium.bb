@@ -76,14 +76,10 @@ class MockRTCStatsRequest : public LocalRTCStatsRequest {
  public:
   MockRTCStatsRequest()
       : has_selector_(false),
-        stream_(),
         request_succeeded_called_(false) {}
 
   virtual bool hasSelector() const OVERRIDE {
     return has_selector_;
-  }
-  virtual WebKit::WebMediaStream stream() const OVERRIDE {
-    return stream_;
   }
   virtual WebKit::WebMediaStreamTrack component() const OVERRIDE {
     return component_;
@@ -101,10 +97,8 @@ class MockRTCStatsRequest : public LocalRTCStatsRequest {
   }
 
   // Function for setting whether or not a selector is available.
-  void setSelector(const WebKit::WebMediaStream& stream,
-                   const WebKit::WebMediaStreamTrack& component) {
+  void setSelector(const WebKit::WebMediaStreamTrack& component) {
     has_selector_ = true;
-    stream_ = stream;
     component_ = component;
   }
 
@@ -119,7 +113,6 @@ class MockRTCStatsRequest : public LocalRTCStatsRequest {
 
  private:
   bool has_selector_;
-  WebKit::WebMediaStream stream_;
   WebKit::WebMediaStreamTrack component_;
   scoped_refptr<MockRTCStatsResponse> response_;
   bool request_succeeded_called_;
@@ -255,6 +248,8 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
         mock_dependency_factory_->CreateLocalAudioTrack(
             audio_track_id, capturer, NULL, NULL,
             &audio_constraints));
+    MediaStreamDependencyFactory::AddNativeTrackToBlinkTrack(
+        audio_track.get(), audio_tracks[0]);
     native_stream->AddTrack(audio_track.get());
 
     local_stream.videoTracks(video_tracks);
@@ -263,6 +258,8 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
     scoped_refptr<webrtc::VideoTrackInterface> video_track(
         mock_dependency_factory_->CreateLocalVideoTrack(
             video_track_id, source));
+    MediaStreamDependencyFactory::AddNativeTrackToBlinkTrack(
+        video_track.get(), video_tracks[0]);
     native_stream->AddTrack(video_track.get());
 
     local_stream.setExtraData(
@@ -466,7 +463,7 @@ TEST_F(RTCPeerConnectionHandlerTest, GetStatsWithLocalSelector) {
 
   scoped_refptr<MockRTCStatsRequest> request(
       new talk_base::RefCountedObject<MockRTCStatsRequest>());
-  request->setSelector(local_stream, tracks[0]);
+  request->setSelector(tracks[0]);
   pc_handler_->getStats(request.get());
   EXPECT_EQ(1, request->result()->report_count());
 }
@@ -483,7 +480,7 @@ TEST_F(RTCPeerConnectionHandlerTest, GetStatsWithRemoteSelector) {
 
   scoped_refptr<MockRTCStatsRequest> request(
       new talk_base::RefCountedObject<MockRTCStatsRequest>());
-  request->setSelector(remote_stream, tracks[0]);
+  request->setSelector(tracks[0]);
   pc_handler_->getStats(request.get());
   EXPECT_EQ(1, request->result()->report_count());
 }
@@ -502,7 +499,7 @@ TEST_F(RTCPeerConnectionHandlerTest, GetStatsWithBadSelector) {
 
   scoped_refptr<MockRTCStatsRequest> request(
       new talk_base::RefCountedObject<MockRTCStatsRequest>());
-  request->setSelector(local_stream, component);
+  request->setSelector(component);
   pc_handler_->getStats(request.get());
   EXPECT_EQ(0, request->result()->report_count());
 }

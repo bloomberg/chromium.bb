@@ -281,10 +281,6 @@ bool LocalRTCStatsRequest::hasSelector() const {
   return impl_.hasSelector();
 }
 
-WebKit::WebMediaStream LocalRTCStatsRequest::stream() const {
-  return impl_.stream();
-}
-
 WebKit::WebMediaStreamTrack LocalRTCStatsRequest::component() const {
   return impl_.component();
 }
@@ -564,8 +560,8 @@ void RTCPeerConnectionHandler::getStats(LocalRTCStatsRequest* request) {
       new talk_base::RefCountedObject<StatsResponse>(request));
   webrtc::MediaStreamTrackInterface* track = NULL;
   if (request->hasSelector()) {
-      track = GetNativeMediaStreamTrack(request->stream(),
-                                        request->component());
+      track = MediaStreamDependencyFactory::GetNativeMediaStreamTrack(
+          request->component());
     if (!track) {
       DVLOG(1) << "GetStats: Track not found.";
       // TODO(hta): Consider how to get an error back.
@@ -628,7 +624,7 @@ WebKit::WebRTCDTMFSenderHandler* RTCPeerConnectionHandler::createDTMFSender(
 
   webrtc::AudioTrackInterface* audio_track =
       static_cast<webrtc::AudioTrackInterface*>(
-          GetNativeMediaStreamTrack(track.stream(), track));
+          MediaStreamDependencyFactory::GetNativeMediaStreamTrack(track));
 
   talk_base::scoped_refptr<webrtc::DtmfSenderInterface> sender(
       native_peer_connection_->CreateDtmfSender(audio_track));

@@ -142,6 +142,16 @@ class CONTENT_EXPORT MediaStreamDependencyFactory
   RTCVideoDecoderFactoryTv* decoder_factory_tv() { return decoder_factory_tv_; }
 #endif
 
+  static void AddNativeTrackToBlinkTrack(
+      webrtc::MediaStreamTrackInterface* native_track,
+      const WebKit::WebMediaStreamTrack& webkit_track);
+
+  static webrtc::MediaStreamInterface* GetNativeMediaStream(
+      const WebKit::WebMediaStream& stream);
+
+  static webrtc::MediaStreamTrackInterface* GetNativeMediaStreamTrack(
+      const WebKit::WebMediaStreamTrack& track);
+
  protected:
   // Asks the PeerConnection factory to create a Local MediaStream object.
   virtual scoped_refptr<webrtc::MediaStreamInterface>

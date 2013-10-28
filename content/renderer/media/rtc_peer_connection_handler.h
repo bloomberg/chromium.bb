@@ -54,7 +54,6 @@ class CONTENT_EXPORT LocalRTCStatsRequest
   LocalRTCStatsRequest();
 
   virtual bool hasSelector() const;
-  virtual WebKit::WebMediaStream stream() const;
   virtual WebKit::WebMediaStreamTrack component() const;
   virtual void requestSucceeded(const LocalRTCStatsResponse* response);
   virtual scoped_refptr<LocalRTCStatsResponse> createResponse();

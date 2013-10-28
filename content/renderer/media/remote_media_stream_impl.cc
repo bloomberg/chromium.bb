@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
+#include "content/renderer/media/media_stream_dependency_factory.h"
 #include "content/renderer/media/media_stream_extra_data.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 
@@ -52,6 +53,8 @@ void InitializeWebkitTrack(webrtc::MediaStreamTrackInterface* track,
 
   webkit_source.initialize(webkit_track_id, type, webkit_track_id);
   webkit_track->initialize(webkit_track_id, webkit_source);
+  content::MediaStreamDependencyFactory::AddNativeTrackToBlinkTrack(track,
+      *webkit_track);
 }
 
 content::RemoteMediaStreamTrackObserver* FindTrackObserver(

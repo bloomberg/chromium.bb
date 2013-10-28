@@ -33,30 +33,6 @@ using WebKit::WebView;
 
 namespace content {
 
-static webrtc::MediaStreamInterface* GetNativeMediaStream(
-    const WebKit::WebMediaStream& stream) {
-  MediaStreamExtraData* extra_data =
-      static_cast<MediaStreamExtraData*>(stream.extraData());
-  return extra_data->stream().get();
-}
-
-static webrtc::MediaStreamTrackInterface* GetNativeMediaStreamTrack(
-      const WebKit::WebMediaStream& stream,
-      const WebKit::WebMediaStreamTrack& component) {
-  std::string track_id = UTF16ToUTF8(component.id());
-  webrtc::MediaStreamInterface* native_stream = GetNativeMediaStream(stream);
-  if (native_stream) {
-    if (component.source().type() == WebKit::WebMediaStreamSource::TypeAudio) {
-      return native_stream->FindAudioTrack(track_id);
-    }
-    if (component.source().type() == WebKit::WebMediaStreamSource::TypeVideo) {
-      return native_stream->FindVideoTrack(track_id);
-    }
-  }
-  NOTREACHED();
-  return NULL;
-}
-
 MediaStreamCenter::MediaStreamCenter(WebKit::WebMediaStreamCenterClient* client,
                                      MediaStreamDependencyFactory* factory)
     : rtc_factory_(factory), next_request_id_(0) {}
@@ -80,7 +56,7 @@ void MediaStreamCenter::didEnableMediaStreamTrack(
     const WebKit::WebMediaStream& stream,
     const WebKit::WebMediaStreamTrack& component) {
   webrtc::MediaStreamTrackInterface* track =
-      GetNativeMediaStreamTrack(stream, component);
+      MediaStreamDependencyFactory::GetNativeMediaStreamTrack(component);
   if (track)
     track->set_enabled(true);
 }
@@ -89,7 +65,7 @@ void MediaStreamCenter::didDisableMediaStreamTrack(
     const WebKit::WebMediaStream& stream,
     const WebKit::WebMediaStreamTrack& component) {
   webrtc::MediaStreamTrackInterface* track =
-      GetNativeMediaStreamTrack(stream, component);
+      MediaStreamDependencyFactory::GetNativeMediaStreamTrack(component);
   if (track)
     track->set_enabled(false);
 }
