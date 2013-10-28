@@ -398,12 +398,10 @@ bool ExynosVideoDecodeAccelerator::Initialize(
     return false;
 
   // MFC output format has to be setup before streaming starts.
-  // TODO(hshi): set format back to tiled (V4L2_PIX_FMT_NV12MT_16X16) when we
-  // fix the underlying driver/firmware issue. http://crbug.com/303300.
   struct v4l2_format format;
   memset(&format, 0, sizeof(format));
   format.type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
-  format.fmt.pix_mp.pixelformat = V4L2_PIX_FMT_NV12M;
+  format.fmt.pix_mp.pixelformat = V4L2_PIX_FMT_NV12MT_16X16;
   IOCTL_OR_ERROR_RETURN_FALSE(mfc_fd_, VIDIOC_S_FMT, &format);
 
   // Subscribe to the resolution change event.
@@ -2113,7 +2111,7 @@ bool ExynosVideoDecodeAccelerator::CreateBuffersForFormat(
   mfc_output_buffer_size_[0] = format.fmt.pix_mp.plane_fmt[0].sizeimage;
   mfc_output_buffer_size_[1] = format.fmt.pix_mp.plane_fmt[1].sizeimage;
   mfc_output_buffer_pixelformat_ = format.fmt.pix_mp.pixelformat;
-  DCHECK_EQ(mfc_output_buffer_pixelformat_, V4L2_PIX_FMT_NV12M);
+  DCHECK_EQ(mfc_output_buffer_pixelformat_, V4L2_PIX_FMT_NV12MT_16X16);
   DVLOG(3) << "CreateBuffersForFormat(): new resolution: "
            << frame_buffer_size_.ToString();
 
