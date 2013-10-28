@@ -37,8 +37,6 @@
 #include "WebThreadSafeData.h"
 #include "WebURL.h"
 
-#define USE_BLOB_UUIDS
-
 namespace WebCore { class BlobData; }
 #if INSIDE_BLINK
 namespace WTF { template <typename T> class PassOwnPtr; }
