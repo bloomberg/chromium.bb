@@ -194,6 +194,8 @@ static void
 wayland_output_start_repaint_loop(struct weston_output *output_base)
 {
 	struct wayland_output *output = (struct wayland_output *) output_base;
+	struct wayland_compositor *wc =
+		(struct wayland_compositor *)output->base.compositor;
 	struct wl_callback *callback;
 
 	/* If this is the initial frame, we need to attach a buffer so that
@@ -210,6 +212,7 @@ wayland_output_start_repaint_loop(struct weston_output *output_base)
 	callback = wl_surface_frame(output->parent.surface);
 	wl_callback_add_listener(callback, &frame_listener, output);
 	wl_surface_commit(output->parent.surface);
+	wl_display_flush(wc->parent.wl_display);
 }
 
 static int
