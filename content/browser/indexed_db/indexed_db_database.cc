@@ -1680,13 +1680,13 @@ void IndexedDBDatabase::Close(IndexedDBConnection* connection, bool forced) {
       !pending_delete_calls_.size()) {
     DCHECK(transactions_.empty());
 
-    const std::string backing_store_identifier = backing_store_->identifier();
+    const GURL origin_url = backing_store_->origin_url();
     backing_store_ = NULL;
 
     // factory_ should only be null in unit tests.
     // TODO(jsbell): DCHECK(factory_ || !in_unit_tests) - somehow.
     if (factory_) {
-      factory_->ReleaseDatabase(identifier_, backing_store_identifier, forced);
+      factory_->ReleaseDatabase(identifier_, origin_url, forced);
       factory_ = NULL;
     }
   }

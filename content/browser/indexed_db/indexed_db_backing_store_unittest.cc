@@ -19,8 +19,8 @@ class IndexedDBBackingStoreTest : public testing::Test {
  public:
   IndexedDBBackingStoreTest() {}
   virtual void SetUp() {
-    std::string file_identifier;
-    backing_store_ = IndexedDBBackingStore::OpenInMemory(file_identifier);
+    const GURL origin("http://localhost:81");
+    backing_store_ = IndexedDBBackingStore::OpenInMemory(origin);
 
     // useful keys and values during tests
     m_value1 = "value1";

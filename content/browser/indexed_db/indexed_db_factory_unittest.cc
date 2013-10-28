@@ -41,21 +41,18 @@ class MockIDBFactory : public IndexedDBFactory {
         WebKit::WebIDBCallbacks::DataLossNone;
     bool disk_full;
     scoped_refptr<IndexedDBBackingStore> backing_store =
-        OpenBackingStore(webkit_database::GetIdentifierFromOrigin(origin),
-                         data_directory,
-                         &data_loss,
-                         &disk_full);
+        OpenBackingStore(origin, data_directory, &data_loss, &disk_full);
     EXPECT_EQ(WebKit::WebIDBCallbacks::DataLossNone, data_loss);
     return backing_store;
   }
 
   void TestCloseBackingStore(IndexedDBBackingStore* backing_store) {
-    CloseBackingStore(backing_store->identifier());
+    CloseBackingStore(backing_store->origin_url());
   }
 
   void TestReleaseBackingStore(IndexedDBBackingStore* backing_store,
                                bool immediate) {
-    ReleaseBackingStore(backing_store->identifier(), immediate);
+    ReleaseBackingStore(backing_store->origin_url(), immediate);
   }
 
  private:
@@ -177,7 +174,7 @@ class DiskFullFactory : public IndexedDBFactory {
  private:
   virtual ~DiskFullFactory() {}
   virtual scoped_refptr<IndexedDBBackingStore> OpenBackingStore(
-      const std::string& origin_identifier,
+      const GURL& origin_url,
       const base::FilePath& data_directory,
       WebKit::WebIDBCallbacks::DataLoss* data_loss,
       bool* disk_full) OVERRIDE {
@@ -201,6 +198,8 @@ class LookingForQuotaErrorMockCallbacks : public IndexedDBCallbacks {
 };
 
 TEST_F(IndexedDBFactoryTest, QuotaErrorOnDiskFull) {
+  const GURL origin("http://localhost:81");
+
   scoped_refptr<DiskFullFactory> factory = new DiskFullFactory;
   scoped_refptr<LookingForQuotaErrorMockCallbacks> callbacks =
       new LookingForQuotaErrorMockCallbacks;
@@ -212,7 +211,7 @@ TEST_F(IndexedDBFactoryTest, QuotaErrorOnDiskFull) {
                 2, /* transaction_id */
                 callbacks,
                 dummy_database_callbacks,
-                "origin",
+                origin,
                 base::FilePath(FILE_PATH_LITERAL("/dummy")));
 }
 
@@ -258,21 +257,19 @@ TEST_F(IndexedDBFactoryTest, BackingStoreReleasedOnForcedClose) {
   scoped_refptr<FakeDatabaseCallbacks> db_callbacks(
       new FakeDatabaseCallbacks());
   const int64 transaction_id = 1;
-  const std::string origin_identifier =
-      webkit_database::GetIdentifierFromOrigin(origin);
   factory->Open(ASCIIToUTF16("db"),
                 IndexedDBDatabaseMetadata::DEFAULT_INT_VERSION,
                 transaction_id,
                 callbacks,
                 db_callbacks,
-                origin_identifier,
+                origin,
                 temp_directory.path());
 
   EXPECT_TRUE(callbacks->connection());
 
-  EXPECT_TRUE(factory->IsBackingStoreOpenForTesting(origin_identifier));
+  EXPECT_TRUE(factory->IsBackingStoreOpenForTesting(origin));
   callbacks->connection()->ForceClose();
-  EXPECT_FALSE(factory->IsBackingStoreOpenForTesting(origin_identifier));
+  EXPECT_FALSE(factory->IsBackingStoreOpenForTesting(origin));
 }
 
 TEST_F(IndexedDBFactoryTest, BackingStoreReleaseDelayedOnClose) {
@@ -287,14 +284,12 @@ TEST_F(IndexedDBFactoryTest, BackingStoreReleaseDelayedOnClose) {
   scoped_refptr<FakeDatabaseCallbacks> db_callbacks(
       new FakeDatabaseCallbacks());
   const int64 transaction_id = 1;
-  const std::string origin_identifier =
-      webkit_database::GetIdentifierFromOrigin(origin);
   factory->Open(ASCIIToUTF16("db"),
                 IndexedDBDatabaseMetadata::DEFAULT_INT_VERSION,
                 transaction_id,
                 callbacks,
                 db_callbacks,
-                origin_identifier,
+                origin,
                 temp_directory.path());
 
   EXPECT_TRUE(callbacks->connection());
@@ -302,10 +297,10 @@ TEST_F(IndexedDBFactoryTest, BackingStoreReleaseDelayedOnClose) {
       callbacks->connection()->database()->backing_store();
   EXPECT_FALSE(store->HasOneRef());  // Factory and database.
 
-  EXPECT_TRUE(factory->IsBackingStoreOpenForTesting(origin_identifier));
+  EXPECT_TRUE(factory->IsBackingStoreOpenForTesting(origin));
   callbacks->connection()->Close();
   EXPECT_TRUE(store->HasOneRef());  // Factory.
-  EXPECT_TRUE(factory->IsBackingStoreOpenForTesting(origin_identifier));
+  EXPECT_TRUE(factory->IsBackingStoreOpenForTesting(origin));
   EXPECT_TRUE(store->close_timer()->IsRunning());
 
   // Take a ref so it won't be destroyed out from under the test.
@@ -314,7 +309,7 @@ TEST_F(IndexedDBFactoryTest, BackingStoreReleaseDelayedOnClose) {
   factory->ContextDestroyed();
   EXPECT_TRUE(store->HasOneRef());  // Local.
   EXPECT_FALSE(store->close_timer()->IsRunning());
-  EXPECT_FALSE(factory->IsBackingStoreOpenForTesting(origin_identifier));
+  EXPECT_FALSE(factory->IsBackingStoreOpenForTesting(origin));
 }
 
 }  // namespace

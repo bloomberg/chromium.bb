@@ -23,10 +23,25 @@
 #include "third_party/WebKit/public/platform/WebIDBTypes.h"
 #include "third_party/WebKit/public/web/WebSerializedScriptValueVersion.h"
 #include "third_party/leveldatabase/env_chromium.h"
+#include "webkit/common/database/database_identifier.h"
 
 using base::StringPiece;
 
 namespace content {
+
+namespace {
+
+static std::string ComputeOriginIdentifier(const GURL& origin_url) {
+  return webkit_database::GetIdentifierFromOrigin(origin_url) + "@1";
+}
+
+static base::FilePath ComputeFileName(const GURL& origin_url) {
+  return base::FilePath()
+      .AppendASCII(webkit_database::GetIdentifierFromOrigin(origin_url))
+      .AddExtension(FILE_PATH_LITERAL(".indexeddb.leveldb"));
+}
+
+}  // namespace
 
 static const int64 kKeyGeneratorInitialNumber =
     1;  // From the IndexedDB specification.
@@ -360,10 +375,13 @@ class DefaultLevelDBFactory : public LevelDBFactory {
 };
 
 IndexedDBBackingStore::IndexedDBBackingStore(
-    const std::string& identifier,
+    const GURL& origin_url,
     scoped_ptr<LevelDBDatabase> db,
     scoped_ptr<LevelDBComparator> comparator)
-    : identifier_(identifier), db_(db.Pass()), comparator_(comparator.Pass()) {}
+    : origin_url_(origin_url),
+      origin_identifier_(ComputeOriginIdentifier(origin_url)),
+      db_(db.Pass()),
+      comparator_(comparator.Pass()) {}
 
 IndexedDBBackingStore::~IndexedDBBackingStore() {
   // db_'s destructor uses comparator_. The order of destruction is important.
@@ -402,20 +420,16 @@ enum IndexedDBBackingStoreOpenResult {
   INDEXED_DB_BACKING_STORE_OPEN_MAX,
 };
 
+// static
 scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Open(
-    const std::string& origin_identifier,
+    const GURL& origin_url,
     const base::FilePath& path_base,
-    const std::string& file_identifier,
     WebKit::WebIDBCallbacks::DataLoss* data_loss,
     bool* disk_full) {
   *data_loss = WebKit::WebIDBCallbacks::DataLossNone;
   DefaultLevelDBFactory leveldb_factory;
-  return IndexedDBBackingStore::Open(origin_identifier,
-                                     path_base,
-                                     file_identifier,
-                                     data_loss,
-                                     disk_full,
-                                     &leveldb_factory);
+  return IndexedDBBackingStore::Open(
+      origin_url, path_base, data_loss, disk_full, &leveldb_factory);
 }
 
 static void HistogramOpenStatus(IndexedDBBackingStoreOpenResult result) {
@@ -454,10 +468,10 @@ static bool IsPathTooLong(const base::FilePath& leveldb_dir) {
   return false;
 }
 
+// static
 scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Open(
-    const std::string& origin_identifier,
+    const GURL& origin_url,
     const base::FilePath& path_base,
-    const std::string& file_identifier,
     WebKit::WebIDBCallbacks::DataLoss* data_loss,
     bool* is_disk_full,
     LevelDBFactory* leveldb_factory) {
@@ -478,9 +492,8 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Open(
     return scoped_refptr<IndexedDBBackingStore>();
   }
 
-  base::FilePath file_path =
-      path_base.AppendASCII(origin_identifier)
-          .AddExtension(FILE_PATH_LITERAL(".indexeddb.leveldb"));
+  const base::FilePath file_path =
+      path_base.Append(ComputeFileName(origin_url));
 
   if (IsPathTooLong(file_path)) {
     HistogramOpenStatus(INDEXED_DB_BACKING_STORE_OPEN_ORIGIN_TOO_LONG);
@@ -546,17 +559,19 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Open(
     return scoped_refptr<IndexedDBBackingStore>();
   }
 
-  return Create(file_identifier, db.Pass(), comparator.Pass());
+  return Create(origin_url, db.Pass(), comparator.Pass());
 }
 
+// static
 scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::OpenInMemory(
-    const std::string& file_identifier) {
+    const GURL& origin_url) {
   DefaultLevelDBFactory leveldb_factory;
-  return IndexedDBBackingStore::OpenInMemory(file_identifier, &leveldb_factory);
+  return IndexedDBBackingStore::OpenInMemory(origin_url, &leveldb_factory);
 }
 
+// static
 scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::OpenInMemory(
-    const std::string& file_identifier,
+    const GURL& origin_url,
     LevelDBFactory* leveldb_factory) {
   IDB_TRACE("IndexedDBBackingStore::OpenInMemory");
 
@@ -570,18 +585,20 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::OpenInMemory(
   }
   HistogramOpenStatus(INDEXED_DB_BACKING_STORE_OPEN_MEMORY_SUCCESS);
 
-  return Create(file_identifier, db.Pass(), comparator.Pass());
+  return Create(origin_url, db.Pass(), comparator.Pass());
 }
 
+// static
 scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Create(
-    const std::string& identifier,
+    const GURL& origin_url,
     scoped_ptr<LevelDBDatabase> db,
     scoped_ptr<LevelDBComparator> comparator) {
   // TODO(jsbell): Handle comparator name changes.
-  scoped_refptr<IndexedDBBackingStore> backing_store(
-      new IndexedDBBackingStore(identifier, db.Pass(), comparator.Pass()));
 
-  if (!SetUpMetadata(backing_store->db_.get(), identifier))
+  scoped_refptr<IndexedDBBackingStore> backing_store(
+      new IndexedDBBackingStore(origin_url, db.Pass(), comparator.Pass()));
+  if (!SetUpMetadata(backing_store->db_.get(),
+                     backing_store->origin_identifier_))
     return scoped_refptr<IndexedDBBackingStore>();
 
   return backing_store;
@@ -590,9 +607,9 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Create(
 std::vector<string16> IndexedDBBackingStore::GetDatabaseNames() {
   std::vector<string16> found_names;
   const std::string start_key =
-      DatabaseNameKey::EncodeMinKeyForOrigin(identifier_);
+      DatabaseNameKey::EncodeMinKeyForOrigin(origin_identifier_);
   const std::string stop_key =
-      DatabaseNameKey::EncodeStopKeyForOrigin(identifier_);
+      DatabaseNameKey::EncodeStopKeyForOrigin(origin_identifier_);
 
   DCHECK(found_names.empty());
 
@@ -615,7 +632,7 @@ bool IndexedDBBackingStore::GetIDBDatabaseMetaData(
     const string16& name,
     IndexedDBDatabaseMetadata* metadata,
     bool* found) {
-  const std::string key = DatabaseNameKey::Encode(identifier_, name);
+  const std::string key = DatabaseNameKey::Encode(origin_identifier_, name);
   *found = false;
 
   bool ok = GetInt(db_.get(), key, &metadata->id, found);
@@ -672,8 +689,8 @@ WARN_UNUSED_RESULT static bool GetNewDatabaseId(LevelDBTransaction* transaction,
   *new_id = -1;
   int64 max_database_id = -1;
   bool found = false;
-  bool ok = GetInt(
-      transaction, MaxDatabaseIdKey::Encode(), &max_database_id, &found);
+  bool ok =
+      GetInt(transaction, MaxDatabaseIdKey::Encode(), &max_database_id, &found);
   if (!ok) {
     INTERNAL_READ_ERROR(GET_NEW_DATABASE_ID);
     return false;
@@ -704,8 +721,9 @@ bool IndexedDBBackingStore::CreateIDBDatabaseMetaData(const string16& name,
   if (int_version == IndexedDBDatabaseMetadata::NO_INT_VERSION)
     int_version = IndexedDBDatabaseMetadata::DEFAULT_INT_VERSION;
 
-  PutInt(
-      transaction.get(), DatabaseNameKey::Encode(identifier_, name), *row_id);
+  PutInt(transaction.get(),
+         DatabaseNameKey::Encode(origin_identifier_, name),
+         *row_id);
   PutString(
       transaction.get(),
       DatabaseMetaDataKey::Encode(*row_id, DatabaseMetaDataKey::USER_VERSION),
@@ -778,7 +796,7 @@ bool IndexedDBBackingStore::DeleteDatabase(const string16& name) {
        it->Next())
     transaction->Remove(it->Key());
 
-  const std::string key = DatabaseNameKey::Encode(identifier_, name);
+  const std::string key = DatabaseNameKey::Encode(origin_identifier_, name);
   transaction->Remove(key);
 
   if (!transaction->Commit()) {

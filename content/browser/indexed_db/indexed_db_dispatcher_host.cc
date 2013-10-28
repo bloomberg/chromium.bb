@@ -221,10 +221,13 @@ void IndexedDBDispatcherHost::OnIDBFactoryGetDatabaseNames(
   DCHECK(indexed_db_context_->TaskRunner()->RunsTasksOnCurrentThread());
   base::FilePath indexed_db_path = indexed_db_context_->data_path();
 
+  GURL origin_url =
+      webkit_database::GetOriginFromIdentifier(params.database_identifier);
+
   Context()->GetIDBFactory()->GetDatabaseNames(
       new IndexedDBCallbacks(
           this, params.ipc_thread_id, params.ipc_callbacks_id),
-      params.database_identifier,
+      origin_url,
       indexed_db_path);
 }
 
@@ -255,19 +258,21 @@ void IndexedDBDispatcherHost::OnIDBFactoryOpen(
                                    host_transaction_id,
                                    callbacks,
                                    database_callbacks,
-                                   params.database_identifier,
+                                   origin_url,
                                    indexed_db_path);
 }
 
 void IndexedDBDispatcherHost::OnIDBFactoryDeleteDatabase(
     const IndexedDBHostMsg_FactoryDeleteDatabase_Params& params) {
   DCHECK(indexed_db_context_->TaskRunner()->RunsTasksOnCurrentThread());
+  GURL origin_url =
+      webkit_database::GetOriginFromIdentifier(params.database_identifier);
   base::FilePath indexed_db_path = indexed_db_context_->data_path();
   Context()->GetIDBFactory()->DeleteDatabase(
       params.name,
       new IndexedDBCallbacks(
           this, params.ipc_thread_id, params.ipc_callbacks_id),
-      params.database_identifier,
+      origin_url,
       indexed_db_path);
 }
 

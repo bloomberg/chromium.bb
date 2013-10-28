@@ -76,7 +76,7 @@ class CONTENT_EXPORT IndexedDBContextImpl
 
   base::ListValue* GetAllOriginsDetails();
   void ForceClose(const GURL& origin_url);
-  base::FilePath GetFilePath(const GURL& origin_url);
+  base::FilePath GetFilePath(const GURL& origin_url) const;
   base::FilePath data_path() const { return data_path_; }
   bool IsInOriginSet(const GURL& origin_url) {
     std::set<GURL>* set = GetOriginSet();

@@ -18,6 +18,7 @@
 #include "content/browser/indexed_db/indexed_db_metadata.h"
 #include "content/browser/indexed_db/indexed_db_transaction_coordinator.h"
 #include "content/browser/indexed_db/list_set.h"
+#include "url/gurl.h"
 
 namespace content {
 
@@ -44,8 +45,8 @@ class CONTENT_EXPORT IndexedDBDatabase
   };
 
   typedef std::vector<IndexedDBKey> IndexKeys;
-  // Identifier is pair of (origin identifier, database name).
-  typedef std::pair<std::string, base::string16> Identifier;
+  // Identifier is pair of (origin url, database name).
+  typedef std::pair<GURL, base::string16> Identifier;
 
   static const int64 kInvalidId = 0;
   static const int64 kMinimumIndexId = 30;
