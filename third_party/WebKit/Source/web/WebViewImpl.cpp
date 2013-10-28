@@ -479,10 +479,6 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
         setVisibilityState(m_client->visibilityState(), true);
     }
 
-    // FIXME: Remove this when the embedder starts to call
-    // setSharedWorkerRepositoryClient().
-    setSharedWorkerRepositoryClient(0);
-
     m_inspectorSettingsMap = adoptPtr(new SettingsMap);
 }
 

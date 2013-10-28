@@ -36,7 +36,6 @@
 #include "WebFrameImpl.h"
 #include "WebKit.h"
 #include "WebSharedWorker.h"
-#include "WebSharedWorkerRepository.h"
 #include "WebSharedWorkerRepositoryClient.h"
 #include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
@@ -58,20 +57,6 @@
 using namespace WebCore;
 
 namespace WebKit {
-
-// FIXME: Deprecate these static methods.
-WebSharedWorkerRepository* s_sharedWorkerRepository = 0;
-
-void setSharedWorkerRepository(WebSharedWorkerRepository* repository)
-{
-    s_sharedWorkerRepository = repository;
-}
-
-static WebSharedWorkerRepository* sharedWorkerRepository()
-{
-    // Will only be non-zero if the embedder has set the shared worker repository upon initialization. Nothing in WebKit sets this.
-    return s_sharedWorkerRepository;
-}
 
 // Callback class that keeps the SharedWorker and WebSharedWorker objects alive while loads are potentially happening, and also translates load errors into error events on the worker.
 class SharedWorkerScriptLoader : private WorkerScriptLoaderClient, private WebSharedWorker::ConnectListener {
@@ -164,35 +149,25 @@ void SharedWorkerScriptLoader::connected()
     delete this;
 }
 
-static WebSharedWorkerRepository::DocumentID getId(void* document)
+static WebSharedWorkerRepositoryClient::DocumentID getId(void* document)
 {
     ASSERT(document);
-    return reinterpret_cast<WebSharedWorkerRepository::DocumentID>(document);
+    return reinterpret_cast<WebSharedWorkerRepositoryClient::DocumentID>(document);
 }
 
 void SharedWorkerRepositoryClientImpl::connect(PassRefPtr<SharedWorker> worker, PassRefPtr<MessagePortChannel> port, const KURL& url, const String& name, ExceptionState& es)
 {
+    ASSERT(m_client);
+
     // No nested workers (for now) - connect() should only be called from document context.
     ASSERT(worker->executionContext()->isDocument());
     Document* document = toDocument(worker->executionContext());
-    WebFrameImpl* webFrame = WebFrameImpl::fromFrame(document->frame());
-    OwnPtr<WebSharedWorker> webWorker;
-    if (m_client) {
-        webWorker = adoptPtr(m_client->createSharedWorker(url, name, getId(document)));
-    } else {
-        // FIXME: Deprecate this once client is implemented.
-        webWorker = adoptPtr(webFrame->client()->createSharedWorker(webFrame, url, name, getId(document)));
-    }
-
+    OwnPtr<WebSharedWorker> webWorker = adoptPtr(m_client->createSharedWorker(url, name, getId(document)));
     if (!webWorker) {
         // Existing worker does not match this url, so return an error back to the caller.
         es.throwDOMException(URLMismatchError, ExceptionMessages::failedToConstruct("SharedWorker", "The location of the SharedWorker named '" + name + "' does not exactly match the provided URL ('" + url.elidedString() + "')."));
         return;
     }
-
-    WebKit::WebSharedWorkerRepository* repository = WebKit::sharedWorkerRepository();
-    if (repository)
-        repository->addSharedWorker(webWorker.get(), getId(document));
 
     // The loader object manages its own lifecycle (and the lifecycles of the two worker objects).
     // It will free itself once loading is completed.
@@ -202,15 +177,8 @@ void SharedWorkerRepositoryClientImpl::connect(PassRefPtr<SharedWorker> worker, 
 
 void SharedWorkerRepositoryClientImpl::documentDetached(Document* document)
 {
-    if (m_client) {
-        m_client->documentDetached(getId(document));
-        return;
-    }
-
-    // FIXME: Deprecate this once client is implemented.
-    WebSharedWorkerRepository* repository = sharedWorkerRepository();
-    if (repository)
-        repository->documentDetached(getId(document));
+    ASSERT(m_client);
+    m_client->documentDetached(getId(document));
 }
 
 SharedWorkerRepositoryClientImpl::SharedWorkerRepositoryClientImpl(WebSharedWorkerRepositoryClient* client)
