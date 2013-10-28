@@ -162,7 +162,8 @@ bool IsLCDTextEnabled() {
 #endif
 }
 
-bool IsImplSidePaintingEnabled() {
+namespace {
+bool CheckImplSidePaintingStatus() {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
 
   if (command_line.HasSwitch(cc::switches::kDisableImplSidePainting))
@@ -175,6 +176,12 @@ bool IsImplSidePaintingEnabled() {
 #else
   return false;
 #endif
+}
+}  // namespace
+
+bool IsImplSidePaintingEnabled() {
+  static bool enabled = CheckImplSidePaintingStatus();
+  return enabled;
 }
 
 bool IsMapImageEnabled() {
