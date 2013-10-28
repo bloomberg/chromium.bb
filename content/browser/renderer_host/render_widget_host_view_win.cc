@@ -324,7 +324,7 @@ void GetScreenInfoForWindow(gfx::NativeViewId id,
 
   WebKit::WebScreenInfo screen_info;
   screen_info.depth = dev_mode.dmBitsPerPel;
-  screen_info.depthPerComponent = dev_mode.dmBitsPerPel / 3;  // Assumes RGB
+  screen_info.depthPerComponent = 8;
   screen_info.deviceScaleFactor = gfx::win::GetDeviceScaleFactor();
   screen_info.isMonochrome = dev_mode.dmColor == DMCOLOR_MONOCHROME;
   screen_info.rect = gfx::Rect(monitor_info.rcMonitor);
