@@ -157,6 +157,7 @@ def GenerateManifest(srcroot, dstroot, desc):
       'name': desc['TITLE'],
       'description': '%s Example' % desc['TITLE'],
       'key': True,
+      'channel': None,
       'permissions': pretty_permissions,
       'version': build_version.ChromeVersionNoTrunk()
   }

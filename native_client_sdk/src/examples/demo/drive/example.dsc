@@ -8,13 +8,6 @@
       'LIBS': ['jsoncpp', 'ppapi_cpp', 'ppapi', 'pthread']
     }
   ],
-  'PRE': """
-#
-# We use the chrome.experimental.identity API, which requires the
-# --enable-experimental-expension-apis flag.
-#
-CHROME_ARGS += --enable-experimental-extension-apis
-""",
   'DATA': [
     'example.js',
   ],
@@ -23,7 +16,7 @@ CHROME_ARGS += --enable-experimental-extension-apis
   'TITLE': 'Google Drive',
   'GROUP': 'Demo',
   'PERMISSIONS': [
-    'experimental',
+    'identity',
     'https://www.googleapis.com/*/drive/*',
     'https://*.googleusercontent.com/*'
   ]

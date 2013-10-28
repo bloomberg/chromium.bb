@@ -31,8 +31,13 @@ def RemoveBuildCruft(outdir):
     for f in files:
       path = os.path.join(root, f)
       ext = os.path.splitext(path)[1]
+      # Remove unwanted files from the package. Also remove manifest.json files
+      # (which we usually want). These ones are the manifests of the invidual
+      # examples, though, which CWS complains about. The master manifest.json
+      # is generated after we call RemoveBuildCruft.
       if (ext in ('.d', '.o') or
           f == 'dir.stamp' or
+          f == 'manifest.json' or
           re.search(r'_unstripped_.*?\.nexe', f)):
         buildbot_common.RemoveFile(path)
 
@@ -73,7 +78,13 @@ def GetStrip(pepperdir, platform, arch, toolchain):
 
 def main(args):
   parser = optparse.OptionParser()
-  _, args = parser.parse_args(args[1:])
+  parser.add_option('-c', '--channel',
+      help='Channel to display in the name of the package.')
+  options, args = parser.parse_args(args[1:])
+
+  if options.channel:
+    if options.channel not in ('Dev', 'Beta'):
+      parser.error('Unknown channel: %s' % options.channel)
 
   toolchains = ['newlib', 'glibc']
 
@@ -120,18 +131,6 @@ def main(args):
     all_permissions.append({'socket': all_socket_permissions})
   pretty_permissions = json.dumps(all_permissions, sort_keys=True, indent=4)
 
-  template_dict = {
-    'name': 'Native Client SDK',
-    'description':
-        'Native Client SDK examples, showing API use and key concepts.',
-    'key': False,  # manifests with "key" are rejected when uploading to CWS.
-    'permissions': pretty_permissions,
-    'version': build_version.ChromeVersionNoTrunk()
-  }
-  easy_template.RunTemplateFile(
-      os.path.join(sdk_resources_dir, 'manifest.json.template'),
-      os.path.join(app_examples_dir, 'manifest.json'),
-      template_dict)
   for filename in ['background.js', 'icon128.png']:
     buildbot_common.CopyFile(os.path.join(sdk_resources_dir, filename),
                              os.path.join(app_examples_dir, filename))
@@ -143,6 +142,25 @@ def main(args):
 
   RemoveBuildCruft(app_dir)
   StripNexes(app_dir, platform, pepperdir)
+
+  # Add manifest.json after RemoveBuildCruft... that function removes the
+  # manifest.json files for the individual examples.
+  name = 'Native Client SDK'
+  if options.channel:
+    name += ' (%s)' % options.channel
+  template_dict = {
+    'name': name,
+    'channel': options.channel,
+    'description':
+        'Native Client SDK examples, showing API use and key concepts.',
+    'key': False,  # manifests with "key" are rejected when uploading to CWS.
+    'permissions': pretty_permissions,
+    'version': build_version.ChromeVersionNoTrunk()
+  }
+  easy_template.RunTemplateFile(
+      os.path.join(sdk_resources_dir, 'manifest.json.template'),
+      os.path.join(app_examples_dir, 'manifest.json'),
+      template_dict)
 
   app_zip = os.path.join(app_dir, 'examples.zip')
   os.chdir(app_examples_dir)

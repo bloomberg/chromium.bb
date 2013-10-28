@@ -7,7 +7,7 @@
 var authToken = '';
 
 function getAuthToken(interactive) {
-  chrome.experimental.identity.getAuthToken(
+  chrome.identity.getAuthToken(
       {'interactive': interactive}, onGetAuthToken);
 }
 
@@ -38,7 +38,7 @@ function moduleDidLoad() {
 
   // Make sure this example is running as a packaged app. If not, display a
   // warning.
-  if (!chrome.experimental) {
+  if (!chrome.identity) {
     common.updateStatus('Error: must be run as a packged app.');
     return;
   }
