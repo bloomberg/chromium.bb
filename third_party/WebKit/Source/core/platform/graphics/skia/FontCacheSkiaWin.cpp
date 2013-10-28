@@ -34,6 +34,7 @@
 
 #include "RuntimeEnabledFeatures.h"
 #include "SkFontMgr.h"
+#include "SkTypeface.h"
 #include "SkTypeface_win.h"
 #include "core/platform/graphics/Font.h"
 #include "core/platform/graphics/SimpleFontData.h"
@@ -57,16 +58,10 @@ FontCache::FontCache()
     m_fontManager = adoptPtr(fontManager);
 }
 
-
-static bool fontContainsCharacter(const FontPlatformData* fontData, const wchar_t* family, UChar32 character)
+static bool fontContainsCharacter(const FontPlatformData* platformData, const wchar_t* family, UChar32 character)
 {
-    SkPaint paint;
-    fontData->setupPaint(&paint);
-    paint.setTextEncoding(SkPaint::kUTF32_TextEncoding);
-
-    uint16_t glyph;
-    paint.textToGlyphs(&character, sizeof(character), &glyph);
-    return glyph != 0;
+    SkTypeface* typeface = platformData->typeface();
+    return typeface->charsToGlyphs(&character, SkTypeface::kUTF32_Encoding, 0 /* glyph */, 1 /* length */) == 1;
 }
 
 // Given the desired base font, this will create a SimpleFontData for a specific
