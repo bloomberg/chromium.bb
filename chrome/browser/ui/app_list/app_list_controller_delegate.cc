@@ -6,9 +6,10 @@
 
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
-#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/extensions/management_policy.h"
 #include "chrome/browser/ui/app_list/extension_uninstaller.h"
 #include "chrome/browser/ui/browser_navigator.h"
+#include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
 #include "net/base/url_util.h"
@@ -44,12 +45,29 @@ std::string AppListControllerDelegate::AppListSourceToString(
   }
 }
 
+bool AppListControllerDelegate::UserMayModifySettings(
+    Profile* profile,
+    const std::string& app_id) {
+  const extensions::Extension* extension = GetExtension(profile, app_id);
+  const extensions::ManagementPolicy* policy =
+      extensions::ExtensionSystem::Get(profile)->management_policy();
+  return extension &&
+         policy->UserMayModifySettings(extension, NULL);
+}
+
 void AppListControllerDelegate::UninstallApp(Profile* profile,
                                              const std::string& app_id) {
   // ExtensionUninstall deletes itself when done or aborted.
   ExtensionUninstaller* uninstaller =
       new ExtensionUninstaller(profile, app_id, this);
   uninstaller->Run();
+}
+
+bool AppListControllerDelegate::IsAppFromWebStore(
+    Profile* profile,
+    const std::string& app_id) {
+  const extensions::Extension* extension = GetExtension(profile, app_id);
+  return extension && extension->from_webstore();
 }
 
 void AppListControllerDelegate::ShowAppInWebStore(
@@ -76,7 +94,18 @@ void AppListControllerDelegate::ShowAppInWebStore(
   chrome::Navigate(&params);
 }
 
-void AppListControllerDelegate::ShowExtensionOptions(
+bool AppListControllerDelegate::HasOptionsPage(
+    Profile* profile,
+    const std::string& app_id) {
+  const ExtensionService* service =
+      extensions::ExtensionSystem::Get(profile)->extension_service();
+  const extensions::Extension* extension = GetExtension(profile, app_id);
+  return service->IsExtensionEnabledForLauncher(app_id) &&
+         extension &&
+         !extensions::ManifestURL::GetOptionsPage(extension).is_empty();
+}
+
+void AppListControllerDelegate::ShowOptionsPage(
     Profile* profile,
     const std::string& app_id) {
   const extensions::Extension* extension = GetExtension(profile, app_id);
@@ -108,4 +137,9 @@ void AppListControllerDelegate::SetExtensionLaunchType(
   ExtensionService* service =
       extensions::ExtensionSystem::Get(profile)->extension_service();
   service->extension_prefs()->SetLaunchType(extension_id, launch_type);
+}
+
+bool AppListControllerDelegate::IsExtensionInstalled(
+    Profile* profile, const std::string& app_id) {
+  return !!GetExtension(profile, app_id);
 }

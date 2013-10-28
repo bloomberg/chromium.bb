@@ -100,16 +100,26 @@ class AppListControllerDelegate {
 
   static std::string AppListSourceToString(AppListSource source);
 
+  // True if the user has permission to modify the given app's settings.
+  bool UserMayModifySettings(Profile* profile, const std::string& app_id);
+
   // Uninstall the app identified by |app_id| from |profile|.
   void UninstallApp(Profile* profile, const std::string& app_id);
+
+  // True if the app was installed from the web store.
+  bool IsAppFromWebStore(Profile* profile,
+                         const std::string& app_id);
 
   // Shows the user the webstore site for the given app.
   void ShowAppInWebStore(Profile* profile,
                          const std::string& app_id,
                          bool is_search_result);
 
+  // True if the given extension has an options page.
+  bool HasOptionsPage(Profile* profile, const std::string& app_id);
+
   // Shows the user the options page for the app.
-  void ShowExtensionOptions(Profile* profile, const std::string& app_id);
+  void ShowOptionsPage(Profile* profile, const std::string& app_id);
 
   // Gets/sets the launch type for an app.
   // The launch type specifies whether a hosted app should launch as a separate
@@ -120,6 +130,10 @@ class AppListControllerDelegate {
       Profile* profile,
       const std::string& extension_id,
       extensions::ExtensionPrefs::LaunchType launch_type);
+
+  // Returns true if the given extension is installed.
+  bool IsExtensionInstalled(Profile* profile, const std::string& app_id);
+
 };
 
 #endif  // CHROME_BROWSER_UI_APP_LIST_APP_LIST_CONTROLLER_DELEGATE_H_

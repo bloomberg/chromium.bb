@@ -7,9 +7,6 @@
 #include "base/command_line.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/extensions/context_menu_matcher.h"
-#include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_system.h"
-#include "chrome/browser/extensions/management_policy.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_context_menu_delegate.h"
@@ -24,8 +21,6 @@
 #if defined(USE_ASH)
 #include "ash/shell.h"
 #endif
-
-using extensions::Extension;
 
 namespace app_list {
 
@@ -72,8 +67,7 @@ AppContextMenu::AppContextMenu(AppContextMenuDelegate* delegate,
 AppContextMenu::~AppContextMenu() {}
 
 ui::MenuModel* AppContextMenu::GetMenuModel() {
-  const Extension* extension = GetExtension();
-  if (!extension)
+  if (!controller_->IsExtensionInstalled(profile_, app_id_))
     return NULL;
 
   if (menu_model_.get())
@@ -163,13 +157,6 @@ ui::MenuModel* AppContextMenu::GetMenuModel() {
   return menu_model_.get();
 }
 
-const Extension* AppContextMenu::GetExtension() const {
-  const ExtensionService* service =
-      extensions::ExtensionSystem::Get(profile_)->extension_service();
-  const Extension* extension = service->GetInstalledExtension(app_id_);
-  return extension;
-}
-
 bool AppContextMenu::IsItemForCommandIdDynamic(int command_id) const {
   return command_id == TOGGLE_PIN || command_id == LAUNCH_NEW;
 }
@@ -212,21 +199,11 @@ bool AppContextMenu::IsCommandIdEnabled(int command_id) const {
     return controller_->GetPinnable() ==
         AppListControllerDelegate::PIN_EDITABLE;
   } else if (command_id == OPTIONS) {
-    const ExtensionService* service =
-        extensions::ExtensionSystem::Get(profile_)->extension_service();
-    const Extension* extension = GetExtension();
-    return service->IsExtensionEnabledForLauncher(app_id_) &&
-           extension &&
-           !extensions::ManifestURL::GetOptionsPage(extension).is_empty();
+    return controller_->HasOptionsPage(profile_, app_id_);
   } else if (command_id == UNINSTALL) {
-    const Extension* extension = GetExtension();
-    const extensions::ManagementPolicy* policy =
-        extensions::ExtensionSystem::Get(profile_)->management_policy();
-    return extension &&
-           policy->UserMayModifySettings(extension, NULL);
+    return controller_->UserMayModifySettings(profile_, app_id_);
   } else if (command_id == DETAILS) {
-    const Extension* extension = GetExtension();
-    return extension && extension->from_webstore();
+    return controller_->IsAppFromWebStore(profile_, app_id_);
   } else if (command_id >= IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST &&
              command_id <= IDC_EXTENSIONS_CONTEXT_CUSTOM_LAST) {
     return extension_menu_items_->IsCommandIdEnabled(command_id);
@@ -277,7 +254,7 @@ void AppContextMenu::ExecuteCommand(int command_id, int event_flags) {
                                         app_id_,
                                         launch_type);
   } else if (command_id == OPTIONS) {
-    controller_->ShowExtensionOptions(profile_, app_id_);
+    controller_->ShowOptionsPage(profile_, app_id_);
   } else if (command_id == UNINSTALL) {
     controller_->UninstallApp(profile_, app_id_);
   } else if (command_id == DETAILS) {
