@@ -183,7 +183,13 @@ frame_pointer_motion(struct frame *frame, void *pointer, int x, int y);
 void
 frame_pointer_leave(struct frame *frame, void *pointer);
 
-/* May set:
+/* Call to indicate that a button has been pressed/released.  The return
+ * value for a button release will be the same as for the corresponding
+ * press.  This allows you to more easily track grabs.  If you want the
+ * actual location, simply keep the location from the last
+ * frame_pointer_motion call.
+ *
+ * May set:
  *	FRAME_STATUS_MINIMIZE
  *	FRAME_STATUS_MAXIMIZE
  *	FRAME_STATUS_CLOSE

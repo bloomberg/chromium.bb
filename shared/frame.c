@@ -54,6 +54,13 @@ struct frame_button {
 	enum frame_status status_effect;
 };
 
+struct frame_pointer_button {
+	struct wl_list link;
+	uint32_t button;
+	enum theme_location press_location;
+	struct frame_button *frame_button;
+};
+
 struct frame_pointer {
 	struct wl_list link;
 	void *data;
@@ -61,7 +68,7 @@ struct frame_pointer {
 	int x, y;
 
 	struct frame_button *hover_button;
-	int active;
+	struct wl_list down_buttons;
 };
 
 struct frame_touch {
@@ -141,10 +148,6 @@ frame_button_leave(struct frame_button *button, struct frame_pointer *pointer)
 	button->hover_count--;
 	if (!button->hover_count)
 		button->frame->status |= FRAME_STATUS_REPAINT;
-
-	/* In this case, we won't get a release */
-	if (pointer->active)
-		button->press_count--;
 }
 
 static void
@@ -162,11 +165,21 @@ static void
 frame_button_release(struct frame_button *button)
 {
 	button->press_count--;
-	if (!button->press_count)
-		button->frame->status |= FRAME_STATUS_REPAINT;
+	if (button->press_count)
+		return;
+
+	button->frame->status |= FRAME_STATUS_REPAINT;
 
 	if (!(button->flags & FRAME_BUTTON_CLICK_DOWN))
 		button->frame->status |= button->status_effect;
+}
+
+static void
+frame_button_cancel(struct frame_button *button)
+{
+	button->press_count--;
+	if (!button->press_count)
+		button->frame->status |= FRAME_STATUS_REPAINT;
 }
 
 static void
@@ -225,6 +238,7 @@ frame_pointer_get(struct frame *frame, void *data)
 		return NULL;
 
 	pointer->data = data;
+	wl_list_init(&pointer->down_buttons);
 	wl_list_insert(&frame->pointers, &pointer->link);
 
 	return pointer;
@@ -616,8 +630,6 @@ frame_pointer_motion(struct frame *frame, void *data, int x, int y)
 	if (pointer->hover_button)
 		frame_button_leave(pointer->hover_button, pointer);
 
-	/* No drags */
-	pointer->active = 0;
 	pointer->hover_button = button;
 
 	if (pointer->hover_button)
@@ -626,48 +638,32 @@ frame_pointer_motion(struct frame *frame, void *data, int x, int y)
 	return location;
 }
 
-void
-frame_pointer_leave(struct frame *frame, void *data)
+static void
+frame_pointer_button_destroy(struct frame_pointer_button *button)
 {
-	struct frame_pointer *pointer = frame_pointer_get(frame, data);
-	if (!pointer)
-		return;
-
-	if (pointer->hover_button)
-		frame_button_leave(pointer->hover_button, pointer);
-
-	frame_pointer_destroy(pointer);
+	wl_list_remove(&button->link);
+	free(button);
 }
 
-enum theme_location
-frame_pointer_button(struct frame *frame, void *data,
-		     uint32_t button, enum frame_button_state state)
+static void
+frame_pointer_button_press(struct frame *frame, struct frame_pointer *pointer,
+			   struct frame_pointer_button *button)
 {
-	struct frame_pointer *pointer = frame_pointer_get(frame, data);
-	enum theme_location location;
-
-	location = theme_get_location(frame->theme, pointer->x, pointer->y,
-				      frame->width, frame->height,
-				      frame->flags & FRAME_FLAG_MAXIMIZED ?
-				      THEME_FRAME_MAXIMIZED : 0);
-
-	if (!pointer)
-		return location;
-
-	if (button == BTN_RIGHT) {
-		if (state == FRAME_BUTTON_PRESSED &&
-		    location == THEME_LOCATION_TITLEBAR)
+	if (button->button == BTN_RIGHT) {
+		if (button->press_location == THEME_LOCATION_TITLEBAR)
 			frame->status |= FRAME_STATUS_MENU;
 
-	} else if (button == BTN_LEFT && state == FRAME_BUTTON_PRESSED) {
+		frame_pointer_button_destroy(button);
+
+	} else if (button->button == BTN_LEFT) {
 		if (pointer->hover_button) {
-			pointer->active = 1;
 			frame_button_press(pointer->hover_button);
-			return location;
 		} else {
-			switch (location) {
+			switch (button->press_location) {
 			case THEME_LOCATION_TITLEBAR:
 				frame->status |= FRAME_STATUS_MOVE;
+
+				frame_pointer_button_destroy(button);
 				break;
 			case THEME_LOCATION_RESIZING_TOP:
 			case THEME_LOCATION_RESIZING_BOTTOM:
@@ -678,16 +674,94 @@ frame_pointer_button(struct frame *frame, void *data,
 			case THEME_LOCATION_RESIZING_BOTTOM_LEFT:
 			case THEME_LOCATION_RESIZING_BOTTOM_RIGHT:
 				frame->status |= FRAME_STATUS_RESIZE;
+
+				frame_pointer_button_destroy(button);
 				break;
 			default:
 				break;
 			}
 		}
-	} else if (button == BTN_LEFT && state == FRAME_BUTTON_RELEASED) {
-		if (pointer->hover_button && pointer->active)
-			frame_button_release(pointer->hover_button);
+	}
+}
 
-		pointer->active = 0;
+static void
+frame_pointer_button_release(struct frame *frame, struct frame_pointer *pointer,
+			     struct frame_pointer_button *button)
+{
+	if (button->button == BTN_LEFT && button->frame_button) {
+		if (button->frame_button == pointer->hover_button)
+			frame_button_release(button->frame_button);
+		else
+			frame_button_cancel(button->frame_button);
+	}
+}
+
+static void
+frame_pointer_button_cancel(struct frame *frame, struct frame_pointer *pointer,
+			    struct frame_pointer_button *button)
+{
+	if (button->frame_button)
+		frame_button_cancel(button->frame_button);
+}
+
+void
+frame_pointer_leave(struct frame *frame, void *data)
+{
+	struct frame_pointer *pointer = frame_pointer_get(frame, data);
+	struct frame_pointer_button *button, *next;
+	if (!pointer)
+		return;
+
+	if (pointer->hover_button)
+		frame_button_leave(pointer->hover_button, pointer);
+
+	wl_list_for_each_safe(button, next, &pointer->down_buttons, link) {
+		frame_pointer_button_cancel(frame, pointer, button);
+		frame_pointer_button_destroy(button);
+	}
+
+	frame_pointer_destroy(pointer);
+}
+
+enum theme_location
+frame_pointer_button(struct frame *frame, void *data,
+		     uint32_t btn, enum frame_button_state state)
+{
+	struct frame_pointer *pointer = frame_pointer_get(frame, data);
+	struct frame_pointer_button *button;
+	enum theme_location location;
+
+	location = theme_get_location(frame->theme, pointer->x, pointer->y,
+				      frame->width, frame->height,
+				      frame->flags & FRAME_FLAG_MAXIMIZED ?
+				      THEME_FRAME_MAXIMIZED : 0);
+
+	if (!pointer)
+		return location;
+
+	if (state == FRAME_BUTTON_PRESSED) {
+		button = malloc(sizeof *button);
+		if (!button)
+			return location;
+
+		button->button = btn;
+		button->press_location = location;
+		button->frame_button = pointer->hover_button;
+		wl_list_insert(&pointer->down_buttons, &button->link);
+
+		frame_pointer_button_press(frame, pointer, button);
+	} else if (state == FRAME_BUTTON_RELEASED) {
+		button = NULL;
+		wl_list_for_each(button, &pointer->down_buttons, link)
+			if (button->button == btn)
+				break;
+		/* Make sure we didn't hit the end */
+		if (&button->link == &pointer->down_buttons)
+			return location;
+
+		location = button->press_location;
+		frame_pointer_button_release(frame, pointer, button);
+		frame_pointer_button_destroy(button);
 	}
 
 	return location;
