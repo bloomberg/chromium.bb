@@ -552,14 +552,8 @@ class PicasaDataProviderInvalidateInflightAlbumsIndexerTest
   }
 };
 
-// Flaky on Mac. crbug.com/309160.
-#if defined(OS_MACOSX)
-#define MAYBE_InvalidateInflightAlbumsIndexerTest DISABLED_InvalidateInflightAlbumsIndexerTest
-#else
-#define MAYBE_InvalidateInflightAlbumsIndexerTest InvalidateInflightAlbumsIndexerTest
-#endif
 IN_PROC_BROWSER_TEST_F(PicasaDataProviderInvalidateInflightAlbumsIndexerTest,
-                       MAYBE_InvalidateInflightAlbumsIndexerTest) {
+                       InvalidateInflightAlbumsIndexerTest) {
   RunTest();
 }
 
