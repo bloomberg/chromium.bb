@@ -547,7 +547,7 @@ If given args those are passed to the chroot environment, and executed."""
 
       sdk_cache = os.path.join(options.cache_dir, 'sdks')
       distfiles_cache = os.path.join(options.cache_dir, 'distfiles')
-      osutils.SafeMakedirs(options.cache_dir)
+      osutils.SafeMakedirsNonRoot(options.cache_dir)
 
       for target in (sdk_cache, distfiles_cache):
         src = os.path.join(constants.SOURCE_ROOT, os.path.basename(target))

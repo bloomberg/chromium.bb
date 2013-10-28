@@ -1308,7 +1308,7 @@ def _PostParseCheck(parser, options, args):
     options.cache_dir = os.path.abspath(options.cache_dir)
     parser.ConfigureCacheDir(options.cache_dir)
 
-  osutils.SafeMakedirs(options.cache_dir)
+  osutils.SafeMakedirsNonRoot(options.cache_dir)
 
   if options.local_patches:
     options.local_patches = _CheckLocalPatches(

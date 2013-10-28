@@ -7,6 +7,7 @@
 import errno
 import logging
 import os
+import pwd
 import shutil
 import signal
 import cStringIO
@@ -17,6 +18,26 @@ from chromite.lib import cros_build_lib
 # needs to match python's tempfile module and match normal
 # unix standards.
 _TEMPDIR_ENV_VARS = ('TMPDIR', 'TEMP', 'TMP')
+
+
+def GetNonRootUser():
+  """Returns a non-root user. Defaults to the current user.
+
+  If the current user is root, returns the username of the person who
+  ran the emerge command. If running using sudo, returns the username
+  of the person who ran the sudo command. If no non-root user is
+  found, returns None.
+"""
+  uid = os.getuid()
+  if uid == 0:
+    user = os.environ.get('PORTAGE_USERNAME', os.environ.get('SUDO_USER'))
+  else:
+    user = pwd.getpwuid(os.getuid()).pw_name
+
+  if user == 'root':
+    return None
+  else:
+    return user
 
 
 def ExpandPath(path):
@@ -106,7 +127,7 @@ def SafeUnlink(path, sudo=False):
   return False
 
 
-def SafeMakedirs(path, mode=0o775, sudo=False):
+def SafeMakedirs(path, mode=0o775, sudo=False, user='root'):
   """Make parent directories if needed.  Ignore if existing.
 
   Arguments:
@@ -114,6 +135,7 @@ def SafeMakedirs(path, mode=0o775, sudo=False):
           needed.
     mode: The access permissions in the style of chmod.
     sudo: If True, create it via sudo, thus root owned.
+    user: If |sudo| is True, run sudo as |user|.
   Raises:
     EnvironmentError: if the makedir failed and it was non sudo.
     RunCommandError: If sudo mode, and the command failed for any reason.
@@ -125,7 +147,7 @@ def SafeMakedirs(path, mode=0o775, sudo=False):
     if os.path.isdir(path):
       return False
     cros_build_lib.SudoRunCommand(
-        ['mkdir', '-p', '--mode', oct(mode), path], print_cmd=False,
+        ['mkdir', '-p', '--mode', oct(mode), path], user=user, print_cmd=False,
         redirect_stderr=True, redirect_stdout=True)
     return True
 
@@ -137,6 +159,34 @@ def SafeMakedirs(path, mode=0o775, sudo=False):
       raise
 
   return False
+
+
+class MakingDirsAsRoot(Exception):
+  """Raised when creating directories as root."""
+
+
+def SafeMakedirsNonRoot(path, mode=0o775, user=None):
+  """Create directories and make sure they are not owned by root.
+
+  See SafeMakedirs for the arguments and returns.
+  """
+  if user is None:
+    user = GetNonRootUser()
+
+  if user is None or user == 'root':
+    raise MakingDirsAsRoot('Refusing to create %s as root!' % path)
+
+  created = SafeMakedirs(path, mode=mode, user=user)
+  # Temporary fix: if the directory already exists and is owned by
+  # root, chown it. This corrects existing root-owned directories.
+  if not created:
+    stat_info = os.stat(path)
+    if stat_info.st_uid == 0:
+      cros_build_lib.SudoRunCommand(['chown', user, path],
+                                    print_cmd=False,
+                                    redirect_stderr=True,
+                                    redirect_stdout=True)
+  return created
 
 
 def RmDir(path, ignore_missing=False, sudo=False):
