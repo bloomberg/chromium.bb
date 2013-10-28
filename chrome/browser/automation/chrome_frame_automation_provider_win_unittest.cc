@@ -35,7 +35,7 @@ TEST_F(AutomationProviderTest, TestInvalidChromeFrameMessage) {
   base::MessageLoop message_loop;
   content::TestBrowserThread ui_thread(BrowserThread::UI, &message_loop);
 
-  IPC::Message bad_msg(1, -1, IPC::Message::PRIORITY_NORMAL);
+  IPC::Message bad_msg(1, -1);
 
   scoped_refptr<MockChromeFrameAutomationProvider>
       mock(new MockChromeFrameAutomationProvider(NULL));

@@ -66,8 +66,7 @@ TEST(SpellCheckMessageFilterTest, TestOverrideThread) {
   scoped_refptr<TestingSpellCheckMessageFilter> filter(
       new TestingSpellCheckMessageFilter);
   for (size_t i = 0; i < arraysize(kSpellcheckMessages); ++i) {
-    message.SetHeaderValues(
-        0, kSpellcheckMessages[i], IPC::Message::PRIORITY_NORMAL);
+    message.SetHeaderValues(0, kSpellcheckMessages[i], 0  /* flags */);
     thread = content::BrowserThread::IO;
     filter->OverrideThreadForMessage(message, &thread);
     EXPECT_EQ(content::BrowserThread::UI, thread);

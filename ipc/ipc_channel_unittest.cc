@@ -23,9 +23,7 @@ const size_t kLongMessageStringNumBytes = 50000;
 static void Send(IPC::Sender* sender, const char* text) {
   static int message_index = 0;
 
-  IPC::Message* message = new IPC::Message(0,
-                                           2,
-                                           IPC::Message::PRIORITY_NORMAL);
+  IPC::Message* message = new IPC::Message(0, 2);
   message->WriteInt(message_index++);
   message->WriteString(std::string(text));
 
@@ -94,7 +92,7 @@ TEST_F(IPCChannelTest, BasicMessageTest) {
   std::string v2("foobar");
   std::wstring v3(L"hello world");
 
-  IPC::Message m(0, 1, IPC::Message::PRIORITY_NORMAL);
+  IPC::Message m(0, 1);
   EXPECT_TRUE(m.WriteInt(v1));
   EXPECT_TRUE(m.WriteString(v2));
   EXPECT_TRUE(m.WriteWString(v3));

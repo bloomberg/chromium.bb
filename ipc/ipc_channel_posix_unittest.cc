@@ -244,9 +244,8 @@ TEST_F(IPCChannelPosixTest, AdvancedConnected) {
   SpinRunLoop(TestTimeouts::action_max_timeout());
   ASSERT_EQ(IPCChannelPosixTestListener::CONNECTED, listener.status());
   ASSERT_TRUE(channel.HasAcceptedConnection());
-  IPC::Message* message = new IPC::Message(0,  // routing_id
-                                           kQuitMessage,  // message type
-                                           IPC::Message::PRIORITY_NORMAL);
+  IPC::Message* message = new IPC::Message(0, /* routing_id */
+                                           kQuitMessage /* message type */);
   channel.Send(message);
   SpinRunLoop(TestTimeouts::action_timeout());
   int exit_code = 0;
@@ -283,9 +282,8 @@ TEST_F(IPCChannelPosixTest, ResetState) {
   SpinRunLoop(TestTimeouts::action_max_timeout());
   ASSERT_EQ(IPCChannelPosixTestListener::CONNECTED, listener.status());
   ASSERT_TRUE(channel.HasAcceptedConnection());
-  IPC::Message* message = new IPC::Message(0,  // routing_id
-                                           kQuitMessage,  // message type
-                                           IPC::Message::PRIORITY_NORMAL);
+  IPC::Message* message = new IPC::Message(0, /* routing_id */
+                                           kQuitMessage /* message type */);
   channel.Send(message);
   SpinRunLoop(TestTimeouts::action_timeout());
   EXPECT_TRUE(base::KillProcess(handle, 0, false));
@@ -342,9 +340,8 @@ TEST_F(IPCChannelPosixTest, MultiConnection) {
   EXPECT_EQ(exit_code, 0);
   ASSERT_EQ(IPCChannelPosixTestListener::DENIED, listener.status());
   ASSERT_TRUE(channel.HasAcceptedConnection());
-  IPC::Message* message = new IPC::Message(0,  // routing_id
-                                           kQuitMessage,  // message type
-                                           IPC::Message::PRIORITY_NORMAL);
+  IPC::Message* message = new IPC::Message(0, /* routing_id */
+                                           kQuitMessage /* message type */);
   channel.Send(message);
   SpinRunLoop(TestTimeouts::action_timeout());
   EXPECT_TRUE(base::WaitForExitCode(handle, &exit_code));

@@ -203,7 +203,7 @@ TEST_F(CCMessagesTest, AllQuads) {
   if (!command_line.HasSwitch(switches::kAllowFiltersOverIPC))
     command_line.AppendSwitch(switches::kAllowFiltersOverIPC);
 
-  IPC::Message msg(1, 2, IPC::Message::PRIORITY_NORMAL);
+  IPC::Message msg(1, 2);
 
   Transform arbitrary_matrix;
   arbitrary_matrix.Scale(3, 3);
@@ -497,7 +497,7 @@ TEST_F(CCMessagesTest, AllQuads) {
 }
 
 TEST_F(CCMessagesTest, Resources) {
-  IPC::Message msg(1, 2, IPC::Message::PRIORITY_NORMAL);
+  IPC::Message msg(1, 2);
   gfx::Size arbitrary_size(757, 1281);
   unsigned int arbitrary_uint1 = 71234838;
   unsigned int arbitrary_uint2 = 53589793;

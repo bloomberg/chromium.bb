@@ -745,8 +745,7 @@ int Channel::ChannelImpl::GetHelloMessageProcId() {
 void Channel::ChannelImpl::QueueHelloMessage() {
   // Create the Hello message
   scoped_ptr<Message> msg(new Message(MSG_ROUTING_NONE,
-                                      HELLO_MESSAGE_TYPE,
-                                      IPC::Message::PRIORITY_NORMAL));
+                                      HELLO_MESSAGE_TYPE));
   if (!msg->WriteInt(GetHelloMessageProcId())) {
     NOTREACHED() << "Unable to pickle hello message proc id";
   }
@@ -939,8 +938,7 @@ void Channel::ChannelImpl::QueueCloseFDMessage(int fd, int hops) {
     case 2: {
       // Create the message
       scoped_ptr<Message> msg(new Message(MSG_ROUTING_NONE,
-                                          CLOSE_FD_MESSAGE_TYPE,
-                                          IPC::Message::PRIORITY_NORMAL));
+                                          CLOSE_FD_MESSAGE_TYPE));
       if (!msg->WriteInt(hops - 1) || !msg->WriteInt(fd)) {
         NOTREACHED() << "Unable to pickle close fd.";
       }

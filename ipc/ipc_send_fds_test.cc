@@ -106,8 +106,7 @@ class IPCSendFdsTest : public IPCTestBase {
       ASSERT_GE(fd, 0);
       base::FileDescriptor descriptor(fd, true);
 
-      IPC::Message* message =
-          new IPC::Message(0, 3, IPC::Message::PRIORITY_NORMAL);
+      IPC::Message* message = new IPC::Message(0, 3);
       IPC::ParamTraits<base::FileDescriptor>::Write(message, descriptor);
       ASSERT_TRUE(sender()->Send(message));
     }
@@ -280,8 +279,7 @@ class PipeChannelHelper {
     ASSERT_GE(fd, 0);
     base::FileDescriptor descriptor(fd, true);
 
-    IPC::Message* message =
-        new IPC::Message(0, 3, IPC::Message::PRIORITY_NORMAL);
+    IPC::Message* message = new IPC::Message(0, 3);
     IPC::ParamTraits<base::FileDescriptor>::Write(message, descriptor);
     ASSERT_TRUE(in->Send(message));
   }

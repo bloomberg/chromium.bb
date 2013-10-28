@@ -38,7 +38,7 @@ TEST(IPCMessageIntegrity, ReadBeyondBufferStr) {
   //This was BUG 984408.
   uint32 v1 = kuint32max - 1;
   int v2 = 666;
-  IPC::Message m(0, 1, IPC::Message::PRIORITY_NORMAL);
+  IPC::Message m(0, 1);
   EXPECT_TRUE(m.WriteInt(v1));
   EXPECT_TRUE(m.WriteInt(v2));
 
@@ -51,7 +51,7 @@ TEST(IPCMessageIntegrity, ReadBeyondBufferWStr) {
   //This was BUG 984408.
   uint32 v1 = kuint32max - 1;
   int v2 = 777;
-  IPC::Message m(0, 1, IPC::Message::PRIORITY_NORMAL);
+  IPC::Message m(0, 1);
   EXPECT_TRUE(m.WriteInt(v1));
   EXPECT_TRUE(m.WriteInt(v2));
 
@@ -62,7 +62,7 @@ TEST(IPCMessageIntegrity, ReadBeyondBufferWStr) {
 
 TEST(IPCMessageIntegrity, ReadBytesBadIterator) {
   // This was BUG 1035467.
-  IPC::Message m(0, 1, IPC::Message::PRIORITY_NORMAL);
+  IPC::Message m(0, 1);
   EXPECT_TRUE(m.WriteInt(1));
   EXPECT_TRUE(m.WriteInt(2));
 
@@ -75,7 +75,7 @@ TEST(IPCMessageIntegrity, ReadVectorNegativeSize) {
   // A slight variation of BUG 984408. Note that the pickling of vector<char>
   // has a specialized template which is not vulnerable to this bug. So here
   // try to hit the non-specialized case vector<P>.
-  IPC::Message m(0, 1, IPC::Message::PRIORITY_NORMAL);
+  IPC::Message m(0, 1);
   EXPECT_TRUE(m.WriteInt(-1));   // This is the count of elements.
   EXPECT_TRUE(m.WriteInt(1));
   EXPECT_TRUE(m.WriteInt(2));
@@ -89,7 +89,7 @@ TEST(IPCMessageIntegrity, ReadVectorNegativeSize) {
 TEST(IPCMessageIntegrity, ReadVectorTooLarge1) {
   // This was BUG 1006367. This is the large but positive length case. Again
   // we try to hit the non-specialized case vector<P>.
-  IPC::Message m(0, 1, IPC::Message::PRIORITY_NORMAL);
+  IPC::Message m(0, 1);
   EXPECT_TRUE(m.WriteInt(0x21000003));   // This is the count of elements.
   EXPECT_TRUE(m.WriteInt64(1));
   EXPECT_TRUE(m.WriteInt64(2));
@@ -103,7 +103,7 @@ TEST(IPCMessageIntegrity, ReadVectorTooLarge2) {
   // This was BUG 1006367. This is the large but positive with an additional
   // integer overflow when computing the actual byte size. Again we try to hit
   // the non-specialized case vector<P>.
-  IPC::Message m(0, 1, IPC::Message::PRIORITY_NORMAL);
+  IPC::Message m(0, 1);
   EXPECT_TRUE(m.WriteInt(0x71000000));   // This is the count of elements.
   EXPECT_TRUE(m.WriteInt64(1));
   EXPECT_TRUE(m.WriteInt64(2));
@@ -164,8 +164,7 @@ class FuzzerServerListener : public SimpleListener {
   }
 
   bool RoundtripAckReply(int routing, uint32 type_id, int reply) {
-    IPC::Message* message = new IPC::Message(routing, type_id,
-                                             IPC::Message::PRIORITY_NORMAL);
+    IPC::Message* message = new IPC::Message(routing, type_id);
     message->WriteInt(reply + 1);
     message->WriteInt(reply);
     return other_->Send(message);
@@ -298,8 +297,7 @@ TEST_F(IPCFuzzingTest, MsgBadPayloadShort) {
   ASSERT_TRUE(ConnectChannel());
   ASSERT_TRUE(StartClient());
 
-  IPC::Message* msg = new IPC::Message(MSG_ROUTING_CONTROL, MsgClassIS::ID,
-                                       IPC::Message::PRIORITY_NORMAL);
+  IPC::Message* msg = new IPC::Message(MSG_ROUTING_CONTROL, MsgClassIS::ID);
   msg->WriteInt(666);
   sender()->Send(msg);
   EXPECT_TRUE(listener.ExpectMsgNotHandled(MsgClassIS::ID));
@@ -326,8 +324,7 @@ TEST_F(IPCFuzzingTest, MsgBadPayloadArgs) {
   ASSERT_TRUE(ConnectChannel());
   ASSERT_TRUE(StartClient());
 
-  IPC::Message* msg = new IPC::Message(MSG_ROUTING_CONTROL, MsgClassSI::ID,
-                                       IPC::Message::PRIORITY_NORMAL);
+  IPC::Message* msg = new IPC::Message(MSG_ROUTING_CONTROL, MsgClassSI::ID);
   msg->WriteWString(L"d");
   msg->WriteInt(0);
   msg->WriteInt(0x65);  // Extra argument.
@@ -393,14 +390,12 @@ TEST_F(IPCFuzzingTest, MsgMapExMacro) {
 
 #if defined(NDEBUG) && !defined(DCHECK_ALWAYS_ON)
   // Test a bad message.
-  msg = new IPC::Message(MSG_ROUTING_CONTROL, MsgClassSI::ID,
-                         IPC::Message::PRIORITY_NORMAL);
+  msg = new IPC::Message(MSG_ROUTING_CONTROL, MsgClassSI::ID);
   msg->WriteInt(2);
   EXPECT_FALSE(server.OnMessageReceived(*msg));
   delete msg;
 
-  msg = new IPC::Message(MSG_ROUTING_CONTROL, MsgClassIS::ID,
-                         IPC::Message::PRIORITY_NORMAL);
+  msg = new IPC::Message(MSG_ROUTING_CONTROL, MsgClassIS::ID);
   msg->WriteInt(0x64);
   msg->WriteInt(0x32);
   EXPECT_FALSE(server.OnMessageReceived(*msg));

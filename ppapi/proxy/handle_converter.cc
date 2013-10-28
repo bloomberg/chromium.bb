@@ -227,17 +227,14 @@ bool HandleConverter::ConvertNativeHandlesToPosix(
   // compatible with Windows IPC deserialization code; it is intended to be
   // passed to NaCl.
 #if defined(OS_WIN)
-  new_msg_ptr->reset(
-      new IPC::Message(msg.routing_id(), msg.type(), msg.priority()));
+  new_msg_ptr->reset(new IPC::Message(msg.routing_id(), msg.type()));
 #else
   // Even on POSIX, we have to rewrite messages to create channels, because
   // these contain a handle with an invalid (place holder) descriptor. The
   // message sending code sees this and doesn't pass the descriptor over
   // correctly.
-  if (msg.type() == PpapiMsg_CreateNaClChannel::ID) {
-    new_msg_ptr->reset(
-        new IPC::Message(msg.routing_id(), msg.type(), msg.priority()));
-  }
+  if (msg.type() == PpapiMsg_CreateNaClChannel::ID)
+    new_msg_ptr->reset(new IPC::Message(msg.routing_id(), msg.type()));
 #endif
 
   switch (msg.type()) {

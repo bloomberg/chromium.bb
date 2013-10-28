@@ -16,16 +16,14 @@ TEST(IPCMessageUtilsTest, NestedMessages) {
   int32 nested_routing = 12;
   uint32 nested_type = 78;
   int nested_content = 456789;
-  Message::PriorityValue nested_priority = Message::PRIORITY_HIGH;
-  Message nested_msg(nested_routing, nested_type, nested_priority);
+  Message nested_msg(nested_routing, nested_type);
   nested_msg.set_sync();
   ParamTraits<int>::Write(&nested_msg, nested_content);
 
   // Outer message contains the nested one as its parameter.
   int32 outer_routing = 91;
   uint32 outer_type = 88;
-  Message::PriorityValue outer_priority = Message::PRIORITY_NORMAL;
-  Message outer_msg(outer_routing, outer_type, outer_priority);
+  Message outer_msg(outer_routing, outer_type);
   ParamTraits<Message>::Write(&outer_msg, nested_msg);
 
   // Read back the nested message.
@@ -36,7 +34,6 @@ TEST(IPCMessageUtilsTest, NestedMessages) {
   // Verify nested message headers.
   EXPECT_EQ(nested_msg.routing_id(), result_msg.routing_id());
   EXPECT_EQ(nested_msg.type(), result_msg.type());
-  EXPECT_EQ(nested_msg.priority(), result_msg.priority());
   EXPECT_EQ(nested_msg.flags(), result_msg.flags());
 
   // Verify nested message content

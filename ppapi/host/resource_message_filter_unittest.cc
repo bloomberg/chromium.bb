@@ -64,8 +64,7 @@ class MyResourceHost : public ResourceHost {
       HostMessageContext* context) OVERRIDE {
     last_handled_msg_ = msg;
     if (msg.type() == msg_type_) {
-      context->reply_msg = IPC::Message(0, reply_msg_type_,
-                                        IPC::Message::PRIORITY_NORMAL);
+      context->reply_msg = IPC::Message(0, reply_msg_type_);
       return PP_OK;
     }
     return PP_ERROR_FAILED;
@@ -123,8 +122,7 @@ class MyResourceFilter : public ResourceMessageFilter {
     last_handled_msg_ = msg;
     last_message_loop_ = base::MessageLoop::current();
     if (msg.type() == msg_type_) {
-      context->reply_msg = IPC::Message(0, reply_msg_type_,
-                                        IPC::Message::PRIORITY_NORMAL);
+      context->reply_msg = IPC::Message(0, reply_msg_type_);
       return PP_OK;
     }
     return PP_ERROR_FAILED;
@@ -166,9 +164,9 @@ TEST_F(ResourceMessageFilterTest, TestHandleMessage) {
   proxy::ResourceMessageCallParams params(resource, 1);
   params.set_has_callback();
   HostMessageContext context(params);
-  IPC::Message message1(0, MSG1_TYPE, IPC::Message::PRIORITY_NORMAL);
-  IPC::Message message2(0, MSG2_TYPE, IPC::Message::PRIORITY_NORMAL);
-  IPC::Message message3(0, MSG3_TYPE, IPC::Message::PRIORITY_NORMAL);
+  IPC::Message message1(0, MSG1_TYPE);
+  IPC::Message message2(0, MSG2_TYPE);
+  IPC::Message message3(0, MSG3_TYPE);
 
   // Message 1 handled by the first filter.
   host.HandleMessage(message1, &context);
