@@ -870,3 +870,94 @@ camera.util.MouseScroller.prototype.onMouseUp_ = function(event) {
   this.startScrollPosition_ = null;
 };
 
+/**
+ * Monitors performance by calculating FPS.
+ * @constructor
+ */
+camera.util.PerformanceMonitor = function() {
+  /**
+   * @type {?number}
+   * @private
+   */
+  this.timer_ = null;
+
+  /**
+   * @type {number}
+   * @private
+   */
+  this.framesCount_ = 0;
+
+  /**
+   * @type {number}
+   * @private
+   */
+  this.timesSum_ = 0;
+
+  /**
+   * @type {number}
+   * @private
+   */
+  this.fps_ = 0;
+};
+
+camera.util.PerformanceMonitor.prototype = {
+  get fps() {
+    return this.fps_;
+  }
+};
+
+/**
+ * Starts the monitor.
+ */
+camera.util.PerformanceMonitor.prototype.start = function() {
+  if (this.timer_)
+    return;
+
+  this.timer_ = setInterval(this.flushStats_.bind(this), 1000);
+};
+
+/**
+ * Stops the monitor.
+ */
+camera.util.PerformanceMonitor.prototype.stop = function() {
+  if (!this.timer_)
+    return;
+
+  clearTimeout(this.timer_);
+  this.timer_ = null;
+};
+
+/**
+ * Flushes current stats and convert them to a FPS value.
+ * @private
+ */
+camera.util.PerformanceMonitor.prototype.flushStats_ = function() {
+  if (!this.framesCount_) {
+    this.fps_ = 0;
+    return;
+  }
+
+  this.fps_ = (this.framesCount_ / this.timesSum_);
+  this.framesCount_ = 0;
+  this.timesSum_ = 0;
+};
+
+/**
+ * Stars measuring a task execution time.
+ * @return {function()} Callback to be called, when the frame is finished.
+ */
+camera.util.PerformanceMonitor.prototype.startMeasuring = function() {
+  var startTime = performance.now();
+  return this.finishMeasuring_.bind(this, startTime);
+};
+
+/**
+ * Finishes measuring.
+ * @private
+ */
+camera.util.PerformanceMonitor.prototype.finishMeasuring_ = function(
+    startTime) {
+  this.framesCount_++;
+  this.timesSum_ += (performance.now() - startTime) / 1000;
+};
+

@@ -34,6 +34,12 @@ camera.Tracker = function(input) {
    */
   this.busy_ = false;
 
+  /**
+   * @type {camera.util.PerformanceMonitor}
+   * @private
+   */
+  this.performanceMonitor_ = new camera.util.PerformanceMonitor();
+
   // End of properties. Seal the object.
   Object.seal(this);
 };
@@ -208,7 +214,29 @@ camera.Tracker.prototype = {
   */
   get face() {
     return this.face_;
+  },
+
+  /**
+   * Returns number of frames analyzed per second (without interpolating).
+   * @return {number}
+   */
+  get fps() {
+    return this.performanceMonitor_.fps;
   }
+};
+
+/**
+ * Starts the tracker. Note, that detect() and update() still need to be called.
+ */
+camera.Tracker.prototype.start = function() {
+  this.performanceMonitor_.start();
+};
+
+/**
+ * Stops the tracker.
+ */
+camera.Tracker.prototype.stop = function() {
+  this.performanceMonitor_.stop();
 };
 
 /**
@@ -218,6 +246,7 @@ camera.Tracker.prototype.detect = function() {
   if (this.busy_)
     return;
   this.busy_ = true;
+  var finishMeasuring = this.performanceMonitor_.startMeasuring();
 
   var result = ccv.detect_objects({
     canvas: this.input_,
@@ -238,6 +267,7 @@ camera.Tracker.prototype.detect = function() {
       this.face_.targetConfidence = 1;
     }
     this.busy_ = false;
+    finishMeasuring();
   }.bind(this));
 };
 
