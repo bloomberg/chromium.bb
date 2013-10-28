@@ -1377,10 +1377,26 @@ CommandLineAPIImpl.prototype = {
 
     /**
      * @param {Node} node
+     * @return {{type: string, listener: function(), useCapture: boolean, remove: function()}|undefined}
      */
     getEventListeners: function(node)
     {
-        return InjectedScriptHost.getEventListeners(node);
+        var result = InjectedScriptHost.getEventListeners(node);
+        if (!result)
+            return result;
+        /** @this {{type: string, listener: function(), useCapture: boolean}} */
+        var removeFunc = function()
+        {
+            node.removeEventListener(this.type, this.listener, this.useCapture);
+        }
+        for (var type in result) {
+            var listeners = result[type];
+            for (var i = 0, listener; listener = listeners[i]; ++i) {
+                listener["type"] = type;
+                listener["remove"] = removeFunc;
+            }
+        }
+        return result;
     },
 
     debug: function(fn)

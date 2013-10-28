@@ -73,6 +73,10 @@ function dumpObject(object, prefix)
 function runTestsInPage(getEventListeners)
 {
     output("- inner -");
+    var innerListeners = getEventListeners(document.getElementById("inner"));
+    dumpObject(innerListeners);
+    innerListeners.keydown[0].remove();
+    output("- inner after a removal -");
     dumpObject(getEventListeners(document.getElementById("inner")));
     output("- outer -");
     dumpObject(getEventListeners(document.getElementById("outer")));
