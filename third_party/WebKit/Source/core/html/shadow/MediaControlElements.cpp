@@ -476,7 +476,7 @@ PassRefPtr<MediaControlTimelineElement> MediaControlTimelineElement::create(Docu
     RefPtr<MediaControlTimelineElement> timeline = adoptRef(new MediaControlTimelineElement(document, controls));
     timeline->ensureUserAgentShadowRoot();
     timeline->setType("range");
-    timeline->setAttribute(precisionAttr, "float");
+    timeline->setAttribute(stepAttr, "any");
     return timeline.release();
 }
 
@@ -543,7 +543,7 @@ PassRefPtr<MediaControlPanelVolumeSliderElement> MediaControlPanelVolumeSliderEl
     RefPtr<MediaControlPanelVolumeSliderElement> slider = adoptRef(new MediaControlPanelVolumeSliderElement(document));
     slider->ensureUserAgentShadowRoot();
     slider->setType("range");
-    slider->setAttribute(precisionAttr, "float");
+    slider->setAttribute(stepAttr, "any");
     slider->setAttribute(maxAttr, "1");
     return slider.release();
 }
