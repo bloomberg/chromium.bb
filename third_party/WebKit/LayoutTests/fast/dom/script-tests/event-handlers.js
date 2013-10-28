@@ -58,6 +58,19 @@ function testReflect(interface, attribute) {
         element.removeAttribute(attribute);
     }, "Reflect " + interface + "." + attribute);
 }
+function testForwardToWindow(interface, attribute) {
+    test(function() {
+        var element = getObject(interface);
+        window[attribute] = null;
+        element.setAttribute(attribute, "return");
+        assert_equals(typeof window[attribute], "function", "Convert to function");
+        assert_equals(window[attribute], element[attribute], "Forward content attribute");
+        function nop() {}
+        element[attribute] = nop;
+        assert_equals(window[attribute], nop, "Forward IDL attribute");
+        window[attribute] = null;
+    }, "Forward " + interface + "." + attribute + " to Window");
+}
 // Object.propertyIsEnumerable cannot be used because it doesn't
 // work with properties inherited through the prototype chain.
 function getEnumerable(interface) {

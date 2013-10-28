@@ -118,6 +118,8 @@ void HTMLFrameSetElement::parseAttribute(const QualifiedName& name, const Atomic
         document().setWindowAttributeEventListener(EventTypeNames::unload, createAttributeEventListener(document().frame(), name, value));
     else if (name == onblurAttr)
         document().setWindowAttributeEventListener(EventTypeNames::blur, createAttributeEventListener(document().frame(), name, value));
+    else if (name == onerrorAttr)
+        document().setWindowAttributeEventListener(EventTypeNames::error, createAttributeEventListener(document().frame(), name, value));
     else if (name == onfocusAttr)
         document().setWindowAttributeEventListener(EventTypeNames::focus, createAttributeEventListener(document().frame(), name, value));
     else if (name == onfocusinAttr)
