@@ -71,7 +71,6 @@ static void methodMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
     TestMediaQueryListListener* imp = V8TestMediaQueryListListener::toNative(args.Holder());
     V8TRYCATCH_VOID(RefPtr<MediaQueryListListener>, listener, MediaQueryListListener::create(ScriptValue(args[0], args.GetIsolate())));
     imp->method(listener);
-
     return;
 }
 

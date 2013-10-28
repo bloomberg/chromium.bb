@@ -3237,7 +3237,6 @@ static void voidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(args.Holder());
     imp->voidMethod();
-
     return;
 }
 

@@ -296,7 +296,6 @@ static void supplementalMethod1Method(const v8::FunctionCallbackInfo<v8::Value>&
 {
     SupportTestInterface* imp = V8SupportTestInterface::toNative(args.Holder());
     SupportTestPartialInterface::supplementalMethod1(imp);
-
     return;
 }
 
@@ -362,7 +361,6 @@ static void supplementalMethod3MethodCallback(const v8::FunctionCallbackInfo<v8:
 static void supplementalMethod4Method(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     SupportTestPartialInterface::supplementalMethod4();
-
     return;
 }
 

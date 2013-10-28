@@ -267,12 +267,10 @@ static void funcMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
     TestTypedefs* imp = V8TestTypedefs::toNative(args.Holder());
     if (UNLIKELY(args.Length() <= 0)) {
         imp->func();
-
         return;
     }
     V8TRYCATCH_VOID(Vector<int>, x, toNativeArray<int>(args[0], 1, args.GetIsolate()));
     imp->func(x);
-
     return;
 }
 
@@ -295,18 +293,15 @@ static void setShadowMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
     V8TRYCATCH_VOID(float, blur, static_cast<float>(args[2]->NumberValue()));
     if (UNLIKELY(args.Length() <= 3)) {
         imp->setShadow(width, height, blur);
-
         return;
     }
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, color, args[3]);
     if (UNLIKELY(args.Length() <= 4)) {
         imp->setShadow(width, height, blur, color);
-
         return;
     }
     V8TRYCATCH_VOID(float, alpha, static_cast<float>(args[4]->NumberValue()));
     imp->setShadow(width, height, blur, color, alpha);
-
     return;
 }
 
@@ -346,7 +341,6 @@ static void nullableArrayArgMethod(const v8::FunctionCallbackInfo<v8::Value>& ar
     bool arrayArgIsNull = args[0]->IsNull();
     V8TRYCATCH_VOID(Vector<String>, arrayArg, toNativeArray<String>(args[0], 1, args.GetIsolate()));
     imp->nullableArrayArg(arrayArgIsNull ? 0 : &arrayArg);
-
     return;
 }
 
@@ -370,7 +364,6 @@ static void funcWithClampMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
         arg1 = clampTo<unsigned long long>(arg1NativeValue);
     if (UNLIKELY(args.Length() <= 1)) {
         imp->funcWithClamp(arg1);
-
         return;
     }
     unsigned long long arg2 = 0;
@@ -378,7 +371,6 @@ static void funcWithClampMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
     if (!std::isnan(arg2NativeValue))
         arg2 = clampTo<unsigned long long>(arg2NativeValue);
     imp->funcWithClamp(arg1, arg2);
-
     return;
 }
 
@@ -456,7 +448,6 @@ static void methodWithExceptionMethod(const v8::FunctionCallbackInfo<v8::Value>&
     imp->methodWithException(es);
     if (es.throwIfNeeded())
         return;
-
     return;
 }
 

@@ -5190,7 +5190,9 @@ END
         $nativeValue = NativeToJSValue($function->type, $function->extendedAttributes, $return, $indent, "", "args.Holder()", "args.GetIsolate()", "args", 0, $forMainWorldSuffix, "return");
     }
 
-    $code .= $nativeValue . "\n";
+    if ($nativeValue) {  # Skip blank line for void return type
+        $code .= $nativeValue . "\n";
+    }
     $code .= $indent . "return;\n";
 
     return $code;
