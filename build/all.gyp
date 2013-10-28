@@ -33,6 +33,7 @@
           'dependencies': [
             '../cc/cc_tests.gyp:*',
             '../components/components.gyp:*',
+            '../components/components_tests.gyp:*',
             '../device/bluetooth/bluetooth.gyp:*',
             '../device/device_tests.gyp:*',
             '../device/usb/usb.gyp:*',
