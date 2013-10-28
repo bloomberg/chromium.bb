@@ -5901,6 +5901,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_NTP_SUGGESTIONS_PAGE_DESCRIPTION" desc="Description of the 'Enable suggestions page' lab.">
         Add 'Suggestions' card to the new tab page, which suggests the pages to be opened.
       </message>
+      <message name="IDS_FLAGS_ENABLE_IME_MODE_INDICATOR" desc="Title for the flag to enable the new indicator for the active keyboard input mode.">
+        Enable the new indicator for the active keyboard input method
+      </message>
+      <message name="IDS_FLAGS_ENABLE_IME_MODE_INDICATOR_DESCRIPTION" desc="Description for the flag to enable the new indicator for the active keyboard input method.">
+        Shows the active input method near the caret when switching between keyboard input methods.
+      </message>
       <message name="IDS_FLAGS_ENABLE_INSTANT_EXTENDED_API" desc="Title for the flag to enable the Instant extended API.">
         Enable Instant Extended API
       </message>

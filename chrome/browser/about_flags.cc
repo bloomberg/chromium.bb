@@ -1822,6 +1822,15 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE("disable-click-delay")
   },
 #endif
+#if defined(OS_CHROMEOS)
+  {
+    "enable-ime-mode-indicator",
+    IDS_FLAGS_ENABLE_IME_MODE_INDICATOR,
+    IDS_FLAGS_ENABLE_IME_MODE_INDICATOR_DESCRIPTION,
+    kOsCrOS,
+    SINGLE_VALUE_TYPE(chromeos::switches::kEnableIMEModeIndicator)
+  },
+#endif
 };
 
 const Experiment* experiments = kExperiments;
