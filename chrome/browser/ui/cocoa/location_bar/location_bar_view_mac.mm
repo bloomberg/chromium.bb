@@ -515,7 +515,8 @@ const ToolbarModel* LocationBarViewMac::GetToolbarModel() const {
 NSImage* LocationBarViewMac::GetKeywordImage(const string16& keyword) {
   const TemplateURL* template_url = TemplateURLServiceFactory::GetForProfile(
       profile_)->GetTemplateURLForKeyword(keyword);
-  if (template_url && template_url->IsExtensionKeyword()) {
+  if (template_url &&
+      (template_url->GetType() == TemplateURL::OMNIBOX_API_EXTENSION)) {
     return extensions::OmniboxAPI::Get(profile_)->
         GetOmniboxIcon(template_url->GetExtensionId()).AsNSImage();
   }

@@ -642,7 +642,7 @@ bool KeywordTable::MigrateKeywordsTableForVersion45(const std::string& name) {
     TemplateURL turl(NULL, data);
     // Don't persist extension keywords to disk.  These will get added to the
     // TemplateURLService as the extensions are loaded.
-    bool delete_entry = turl.IsExtensionKeyword();
+    bool delete_entry = turl.GetType() == TemplateURL::OMNIBOX_API_EXTENSION;
     if (!delete_entry && generate_keyword) {
       // Explicitly generate keywords for all rows with the autogenerate bit set
       // or where the keyword is empty.

@@ -678,7 +678,8 @@ void LocationBarView::Layout() {
       const TemplateURL* template_url =
           TemplateURLServiceFactory::GetForProfile(profile_)->
           GetTemplateURLForKeyword(keyword);
-      if (template_url && template_url->IsExtensionKeyword()) {
+      if (template_url &&
+          (template_url->GetType() == TemplateURL::OMNIBOX_API_EXTENSION)) {
         gfx::Image image = extensions::OmniboxAPI::Get(profile_)->
             GetOmniboxIcon(template_url->GetExtensionId());
         selected_keyword_view_->SetImage(image.AsImageSkia());

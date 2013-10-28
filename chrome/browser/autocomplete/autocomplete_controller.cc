@@ -529,7 +529,7 @@ void AutocompleteController::UpdateKeywordDescriptions(
           // name -- don't assume that the normal search keyword description is
           // applicable.
           i->description = template_url->AdjustedShortNameForLocaleDirection();
-          if (!template_url->IsExtensionKeyword()) {
+          if (template_url->GetType() != TemplateURL::OMNIBOX_API_EXTENSION) {
             i->description = l10n_util::GetStringFUTF16(
                 IDS_AUTOCOMPLETE_SEARCH_DESCRIPTION, i->description);
           }

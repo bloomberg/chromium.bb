@@ -1117,7 +1117,7 @@ bool TemplateURL::SupportsReplacementUsingTermsData(
 }
 
 bool TemplateURL::IsGoogleSearchURLWithReplaceableKeyword() const {
-  return !IsExtensionKeyword() && url_ref_.HasGoogleBaseURLs() &&
+  return (GetType() == NORMAL) && url_ref_.HasGoogleBaseURLs() &&
       google_util::IsGoogleHostname(UTF16ToUTF8(data_.keyword()),
                                     google_util::DISALLOW_SUBDOMAIN);
 }
@@ -1128,13 +1128,17 @@ bool TemplateURL::HasSameKeywordAs(const TemplateURL& other) const {
        other.IsGoogleSearchURLWithReplaceableKeyword());
 }
 
-std::string TemplateURL::GetExtensionId() const {
-  DCHECK(IsExtensionKeyword());
-  return GURL(data_.url()).host();
+TemplateURL::Type TemplateURL::GetType() const {
+  if (extension_info_)
+    return NORMAL_CONTROLLED_BY_EXTENSION;
+  return GURL(data_.url()).SchemeIs(extensions::kExtensionScheme) ?
+      OMNIBOX_API_EXTENSION : NORMAL;
 }
 
-bool TemplateURL::IsExtensionKeyword() const {
-  return GURL(data_.url()).SchemeIs(extensions::kExtensionScheme);
+std::string TemplateURL::GetExtensionId() const {
+  DCHECK_NE(NORMAL, GetType());
+  return extension_info_ ?
+      extension_info_->extension_id : GURL(data_.url()).host();
 }
 
 size_t TemplateURL::URLCount() const {
@@ -1284,7 +1288,7 @@ void TemplateURL::SetPrepopulateId(int id) {
 
 void TemplateURL::ResetKeywordIfNecessary(bool force) {
   if (IsGoogleSearchURLWithReplaceableKeyword() || force) {
-    DCHECK(!IsExtensionKeyword());
+    DCHECK(GetType() != OMNIBOX_API_EXTENSION);
     GURL url(TemplateURLService::GenerateSearchURL(this));
     if (url.is_valid())
       data_.SetKeyword(TemplateURLService::GenerateKeyword(url));

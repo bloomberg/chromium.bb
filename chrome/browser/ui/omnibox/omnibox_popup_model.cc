@@ -192,7 +192,8 @@ gfx::Image OmniboxPopupModel::GetIconIfExtensionMatch(
     const AutocompleteMatch& match) const {
   Profile* profile = edit_model_->profile();
   const TemplateURL* template_url = match.GetTemplateURL(profile, false);
-  if (template_url && template_url->IsExtensionKeyword()) {
+  if (template_url &&
+      (template_url->GetType() == TemplateURL::OMNIBOX_API_EXTENSION)) {
     return extensions::OmniboxAPI::Get(profile)->GetOmniboxPopupIcon(
         template_url->GetExtensionId());
   }

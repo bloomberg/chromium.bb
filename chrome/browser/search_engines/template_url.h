@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/gtest_prod_util.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "chrome/browser/autocomplete/autocomplete_input.h"
 #include "chrome/browser/search_engines/template_url_id.h"
@@ -508,6 +509,22 @@ struct TemplateURLData {
 };
 
 
+// AssociatedExtensionInfo ----------------------------------------------------
+
+// An AssociatedExtensionInfo represents information about the extension that
+// added the search engine using the Override Settings API.
+struct AssociatedExtensionInfo {
+  std::string extension_id;
+
+  // Whether the search engine is supposed to be default.
+  bool wants_to_be_default_engine;
+
+  // Used to resolve conflicts when there are multiple extensions specifying the
+  // default search engine. The most recently-installed wins.
+  base::Time install_time;
+};
+
+
 // TemplateURL ----------------------------------------------------------------
 
 // A TemplateURL represents a single "search engine", defined primarily as a
@@ -523,6 +540,14 @@ struct TemplateURLData {
 // is made a friend so that it can be the exception to this pattern.
 class TemplateURL {
  public:
+  enum Type {
+    // Regular search engine.
+    NORMAL,
+    // Installed by extension through Override Settings API.
+    NORMAL_CONTROLLED_BY_EXTENSION,
+    // The keyword associated with an extension that uses the Omnibox API.
+    OMNIBOX_API_EXTENSION,
+  };
   // |profile| may be NULL.  This will affect the results of e.g. calling
   // ReplaceSearchTerms() on the member TemplateURLRefs.
   TemplateURL(Profile* profile, const TemplateURLData& data);
@@ -618,8 +643,12 @@ class TemplateURL {
   // IsGoogleSearchURLWithReplaceableKeyword() is true for both TemplateURLs.
   bool HasSameKeywordAs(const TemplateURL& other) const;
 
+  Type GetType() const;
+
+  // Returns the id of the extension that added this search engine. Only call
+  // this for TemplateURLs of type NORMAL_CONTROLLED_BY_EXTENSION or
+  // OMNIBOX_API_EXTENSION.
   std::string GetExtensionId() const;
-  bool IsExtensionKeyword() const;
 
   // Returns the total number of URLs comprised in this template, including
   // search and alternate URLs.
@@ -724,6 +753,7 @@ class TemplateURL {
   TemplateURLRef instant_url_ref_;
   TemplateURLRef image_url_ref_;
   TemplateURLRef new_tab_url_ref_;
+  scoped_ptr<AssociatedExtensionInfo> extension_info_;
 
   // TODO(sky): Add date last parsed OSD file.
 

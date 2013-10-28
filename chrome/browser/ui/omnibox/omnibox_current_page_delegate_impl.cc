@@ -67,7 +67,7 @@ bool OmniboxCurrentPageDelegateImpl::ProcessExtensionKeyword(
     TemplateURL* template_url,
     const AutocompleteMatch& match,
     WindowOpenDisposition disposition) {
-  if (!template_url->IsExtensionKeyword())
+  if (template_url->GetType() != TemplateURL::OMNIBOX_API_EXTENSION)
     return false;
 
   // Strip the keyword + leading space off the input.

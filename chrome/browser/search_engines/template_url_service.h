@@ -166,9 +166,18 @@ class TemplateURLService : public WebDataServiceConsumer,
                         const string16& keyword,
                         const std::string& url);
 
+  // Add the search engine of type NORMAL_CONTROLLED_BY_EXTENSION.
+  void AddExtensionControlledTURL(TemplateURL* template_url,
+                                  scoped_ptr<AssociatedExtensionInfo> info);
+
   // Removes the keyword from the model. This deletes the supplied TemplateURL.
   // This fails if the supplied template_url is the default search provider.
   void Remove(TemplateURL* template_url);
+
+  // Removes any TemplateURL of type NORMAL_CONTROLLED_BY_EXTENSION associated
+  // with |extension_id|. Unlike with Remove(), this can be called when the
+  // TemplateURL in question is the current default search provider.
+  void RemoveExtensionControlledTURL(const std::string& extension_id);
 
   // Removes all auto-generated keywords that were created on or after the
   // date passed in.
@@ -189,17 +198,13 @@ class TemplateURLService : public WebDataServiceConsumer,
   // Adds a TemplateURL for an extension with an omnibox keyword.
   // Only 1 keyword is allowed for a given extension. If a keyword
   // already exists for this extension, does nothing.
-  void RegisterExtensionKeyword(const std::string& extension_id,
-                                const std::string& extension_name,
-                                const std::string& keyword);
+  void RegisterOmniboxKeyword(const std::string& extension_id,
+                              const std::string& extension_name,
+                              const std::string& keyword);
 
   // Removes the TemplateURL containing the keyword for the extension with the
   // given ID, if any.
-  void UnregisterExtensionKeyword(const std::string& extension_id);
-
-  // Returns the TemplateURL associated with the keyword for this extension.
-  // This will work even if the user changed the keyword.
-  TemplateURL* GetTemplateURLForExtension(const std::string& extension_id);
+  void UnregisterOmniboxKeyword(const std::string& extension_id);
 
   // Returns the set of URLs describing the keywords. The elements are owned
   // by TemplateURLService and should not be deleted.
@@ -287,9 +292,9 @@ class TemplateURLService : public WebDataServiceConsumer,
 
   // Returns the locale-direction-adjusted short name for the given keyword.
   // Also sets the out param to indicate whether the keyword belongs to an
-  // extension.
+  // Omnibox extension.
   string16 GetKeywordShortName(const string16& keyword,
-                               bool* is_extension_keyword);
+                               bool* is_omnibox_api_extension_keyword);
 
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
@@ -416,6 +421,8 @@ class TemplateURLService : public WebDataServiceConsumer,
     DSP_CHANGE_OTHER,
     // Changed through "Profile Reset" feature.
     DSP_CHANGE_PROFILE_RESET,
+    // Changed by an extension through the Override Settings API.
+    DSP_CHANGE_OVERRIDE_SETTINGS_EXTENSION,
     // Boundary value.
     DSP_CHANGE_MAX,
   };
@@ -427,11 +434,6 @@ class TemplateURLService : public WebDataServiceConsumer,
   void Init(const Initializer* initializers, int num_initializers);
 
   void RemoveFromMaps(TemplateURL* template_url);
-
-  // Removes the supplied template_url from the keyword maps. This searches
-  // through all entries in the keyword map and does not generate the host or
-  // keyword. This is used when the cached content of the TemplateURL changes.
-  void RemoveFromKeywordMapByPointer(TemplateURL* template_url);
 
   void AddToMaps(TemplateURL* template_url);
 
@@ -520,7 +522,13 @@ class TemplateURLService : public WebDataServiceConsumer,
 
   // Set the default search provider even if it is managed. |url| may be null.
   // Caller is responsible for notifying observers.  Returns whether |url| was
-  // found in |template_urls_| and thus could be made default.
+  // found in |template_urls_|.
+  // If |url| is an extension-controlled search engine then preferences and the
+  // database are left untouched.
+  // If |url| is a normal search engine and the existing default search engine
+  // is controlled by an extension then |url| is propagated to the database and
+  // prefs but the extension-controlled default engine will continue to hide
+  // this value until the extension is uninstalled.
   bool SetDefaultSearchProviderNoNotify(TemplateURL* url);
 
   // Adds a new TemplateURL to this model. TemplateURLService will own the
@@ -643,6 +651,21 @@ class TemplateURLService : public WebDataServiceConsumer,
   // Returns a new TemplateURL for the given extension.
   TemplateURL* CreateTemplateURLForExtension(
       const ExtensionKeyword& extension_keyword) const;
+
+  // Returns the TemplateURL associated with |extension_id|, if any.
+  TemplateURL* FindTemplateURLForExtension(const std::string& extension_id,
+                                           TemplateURL::Type type) const;
+
+  // Finds the most recently-installed NORMAL_CONTROLLED_BY_EXTENSION engine
+  // that supports replacement and wants to be default, if any.
+  TemplateURL* FindExtensionDefaultSearchEngine() const;
+
+  // Sets the default search provider to:
+  // (1) BestDefaultExtensionControlledTURL(), if any; or,
+  // (2) LoadDefaultSearchProviderFromPrefs(), if we have a TURL with that ID;
+  // or,
+  // (3) FindNewDefaultSearchProvider().
+  void SetDefaultSearchProviderAfterRemovingDefaultExtension();
 
   content::NotificationRegistrar notification_registrar_;
   PrefChangeRegistrar pref_change_registrar_;

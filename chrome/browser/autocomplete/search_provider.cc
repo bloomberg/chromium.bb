@@ -1099,7 +1099,8 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
     // Note: in this provider, SEARCH_OTHER_ENGINE must correspond
     // to the keyword verbatim search query.  Do not create other matches
     // of type SEARCH_OTHER_ENGINE.
-    if (keyword_url && !keyword_url->IsExtensionKeyword()) {
+    if (keyword_url &&
+        (keyword_url->GetType() != TemplateURL::OMNIBOX_API_EXTENSION)) {
       bool keyword_relevance_from_server;
       const int keyword_verbatim_relevance =
           GetKeywordVerbatimRelevance(&keyword_relevance_from_server);

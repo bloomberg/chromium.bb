@@ -87,7 +87,7 @@ struct QueryHistoryCallbackImpl {
   history::VisitVector visits;
 };
 
-TemplateURL* AddKeywordWithDate(
+TemplateURL* CreateKeywordWithDate(
     TemplateURLService* model,
     const std::string& short_name,
     const std::string& keyword,
@@ -111,7 +111,24 @@ TemplateURL* AddKeywordWithDate(
   base::SplitString(encodings, ';', &data.input_encodings);
   data.date_created = date_created;
   data.last_modified = last_modified;
-  TemplateURL* t_url = new TemplateURL(model->profile(), data);
+  return new TemplateURL(model->profile(), data);
+}
+
+TemplateURL* AddKeywordWithDate(
+    TemplateURLService* model,
+    const std::string& short_name,
+    const std::string& keyword,
+    const std::string& url,
+    const std::string& suggest_url,
+    const std::string& alternate_url,
+    const std::string& favicon_url,
+    bool safe_for_autoreplace,
+    const std::string& encodings,
+    Time date_created,
+    Time last_modified) {
+  TemplateURL* t_url = CreateKeywordWithDate(
+      model, short_name, keyword, url, suggest_url, alternate_url,favicon_url,
+      safe_for_autoreplace, encodings, date_created, last_modified);
   model->Add(t_url);
   EXPECT_NE(0, t_url->id());
   return t_url;
@@ -912,7 +929,7 @@ TEST_F(TemplateURLServiceTest, RepairPrepopulatedSearchEngines) {
   EXPECT_FALSE(model()->GetTemplateURLForKeyword(ASCIIToUTF16("bing.com")));
 
   // Register an extension with bing keyword.
-  model()->RegisterExtensionKeyword("abcdefg", "extension_name", "bing.com");
+  model()->RegisterOmniboxKeyword("abcdefg", "extension_name", "bing.com");
   EXPECT_TRUE(model()->GetTemplateURLForKeyword(ASCIIToUTF16("bing.com")));
 
   model()->RepairPrepopulatedSearchEngines();
@@ -927,7 +944,7 @@ TEST_F(TemplateURLServiceTest, RepairPrepopulatedSearchEngines) {
   // Bing was repaired.
   bing = model()->GetTemplateURLForKeyword(ASCIIToUTF16("bing.com"));
   ASSERT_TRUE(bing);
-  EXPECT_FALSE(bing->IsExtensionKeyword());
+  EXPECT_EQ(TemplateURL::NORMAL, bing->GetType());
 
   // User search engine is preserved.
   EXPECT_EQ(user_dse, model()->GetTemplateURLForHost("www.goo.com"));
@@ -1556,4 +1573,112 @@ TEST_F(TemplateURLServiceTest, DuplicateInputEncodings) {
   loaded_url = model()->GetTemplateURLForKeyword(ASCIIToUTF16("keyword"));
   ASSERT_FALSE(loaded_url == NULL);
   EXPECT_EQ(4U, loaded_url->input_encodings().size());
+}
+
+TEST_F(TemplateURLServiceTest, DefaultExtensionEngine) {
+  test_util_.VerifyLoad();
+  // Add third-party default search engine.
+  TemplateURL* user_dse = AddKeywordWithDate(
+      "user", "user", "http://www.goo.com/s?q={searchTerms}",
+      std::string(), std::string(), std::string(),
+      true, "UTF-8", Time(), Time());
+  model()->SetDefaultSearchProvider(user_dse);
+  EXPECT_EQ(user_dse, model()->GetDefaultSearchProvider());
+
+  TemplateURL* ext_dse = CreateKeywordWithDate(
+      model(), "ext", "ext", "http://www.search.com/s?q={searchTerms}",
+      std::string(), std::string(), std::string(),
+      true, "UTF-8", Time(), Time());
+  scoped_ptr<AssociatedExtensionInfo> extension_info(
+      new AssociatedExtensionInfo);
+  extension_info->wants_to_be_default_engine = true;
+  extension_info->extension_id = "ext";
+  model()->AddExtensionControlledTURL(ext_dse, extension_info.Pass());
+  EXPECT_EQ(ext_dse, model()->GetDefaultSearchProvider());
+
+  model()->RemoveExtensionControlledTURL("ext");
+  ExpectSimilar(user_dse, model()->GetDefaultSearchProvider());
+}
+
+TEST_F(TemplateURLServiceTest, ExtensionEnginesNotPersist) {
+  test_util_.VerifyLoad();
+  // Add third-party default search engine.
+  TemplateURL* user_dse = AddKeywordWithDate(
+      "user", "user", "http://www.goo.com/s?q={searchTerms}",
+      std::string(), std::string(), std::string(),
+      true, "UTF-8", Time(), Time());
+  model()->SetDefaultSearchProvider(user_dse);
+  EXPECT_EQ(user_dse, model()->GetDefaultSearchProvider());
+
+  TemplateURL* ext_dse = CreateKeywordWithDate(
+      model(), "ext1", "ext1", "http://www.ext1.com/s?q={searchTerms}",
+      std::string(), std::string(), std::string(),
+      true, "UTF-8", Time(), Time());
+  scoped_ptr<AssociatedExtensionInfo> extension_info(
+      new AssociatedExtensionInfo);
+  extension_info->wants_to_be_default_engine = false;
+  extension_info->extension_id = "ext1";
+  model()->AddExtensionControlledTURL(ext_dse, extension_info.Pass());
+  EXPECT_EQ(user_dse, model()->GetDefaultSearchProvider());
+
+  ext_dse = CreateKeywordWithDate(
+      model(), "ext2", "ext2", "http://www.ext2.com/s?q={searchTerms}",
+      std::string(), std::string(), std::string(),
+      true, "UTF-8", Time(), Time());
+  extension_info.reset(new AssociatedExtensionInfo);
+  extension_info->wants_to_be_default_engine = true;
+  extension_info->extension_id = "ext2";
+  model()->AddExtensionControlledTURL(ext_dse, extension_info.Pass());
+  EXPECT_EQ(ext_dse, model()->GetDefaultSearchProvider());
+
+  test_util_.ResetModel(true);
+  user_dse = model()->GetTemplateURLForKeyword(ASCIIToUTF16("user"));
+  ExpectSimilar(user_dse, model()->GetDefaultSearchProvider());
+  EXPECT_FALSE(model()->GetTemplateURLForKeyword(ASCIIToUTF16("ext1")));
+  EXPECT_FALSE(model()->GetTemplateURLForKeyword(ASCIIToUTF16("ext2")));
+}
+
+TEST_F(TemplateURLServiceTest, ExtensionEngineVsPolicy) {
+  // Set a managed preference that establishes a default search provider.
+  const char kName[] = "test";
+  const char kKeyword[] = "test.com";
+  const char kSearchURL[] = "http://test.com/search?t={searchTerms}";
+  const char kIconURL[] = "http://test.com/icon.jpg";
+  const char kEncodings[] = "UTF-16;UTF-32";
+  const char kAlternateURL[] = "http://test.com/search#t={searchTerms}";
+  const char kSearchTermsReplacementKey[] = "espv";
+  test_util_.SetManagedDefaultSearchPreferences(
+      true, kName, kKeyword, kSearchURL, std::string(), kIconURL, kEncodings,
+      kAlternateURL, kSearchTermsReplacementKey);
+  test_util_.VerifyLoad();
+  // Verify that the default manager we are getting is the managed one.
+  TemplateURLData data;
+  data.short_name = ASCIIToUTF16(kName);
+  data.SetKeyword(ASCIIToUTF16(kKeyword));
+  data.SetURL(kSearchURL);
+  data.favicon_url = GURL(kIconURL);
+  data.show_in_default_list = true;
+  base::SplitString(kEncodings, ';', &data.input_encodings);
+  data.alternate_urls.push_back(kAlternateURL);
+  data.search_terms_replacement_key = kSearchTermsReplacementKey;
+  scoped_ptr<TemplateURL> expected_managed_default(new TemplateURL(
+      test_util_.profile(), data));
+  EXPECT_TRUE(model()->is_default_search_managed());
+  const TemplateURL* actual_managed_default =
+      model()->GetDefaultSearchProvider();
+  ExpectSimilar(expected_managed_default.get(), actual_managed_default);
+
+  TemplateURL* ext_dse = CreateKeywordWithDate(
+      model(), "ext1", "ext1", "http://www.ext1.com/s?q={searchTerms}",
+      std::string(), std::string(), std::string(),
+      true, "UTF-8", Time(), Time());
+  scoped_ptr<AssociatedExtensionInfo> extension_info(
+      new AssociatedExtensionInfo);
+  extension_info->wants_to_be_default_engine = true;
+  extension_info->extension_id = "ext1";
+  model()->AddExtensionControlledTURL(ext_dse, extension_info.Pass());
+  EXPECT_EQ(ext_dse, model()->GetTemplateURLForKeyword(ASCIIToUTF16("ext1")));
+  EXPECT_TRUE(model()->is_default_search_managed());
+  actual_managed_default = model()->GetDefaultSearchProvider();
+  ExpectSimilar(expected_managed_default.get(), actual_managed_default);
 }
