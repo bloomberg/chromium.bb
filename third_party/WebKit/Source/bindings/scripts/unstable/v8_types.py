@@ -473,6 +473,7 @@ def v8_conversion_type(idl_type, extended_attributes):
     or v8SetReturnValue* function; it can be an idl_type, a cpp_type, or a
     separate name for the type of conversion (e.g., 'DOMWrapper').
     """
+    extended_attributes = extended_attributes or {}
     # Basic types, without additional includes
     if idl_type in CPP_INT_TYPES:
         return 'int'

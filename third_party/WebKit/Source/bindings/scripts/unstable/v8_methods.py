@@ -35,8 +35,19 @@ Until then, please work on the Perl IDL compiler.
 For details, see bug http://crbug.com/239771
 """
 
+import v8_types
 import v8_utilities
 
 
 def generate_method(method):
-    return {'name': method.name}
+    idl_type = method.data_type
+    name = method.name
+    cpp_value = 'imp->%s()' % method.name
+    contents = {
+        'cpp_value': cpp_value,
+        'idl_type': idl_type,
+        'name': name,
+    }
+    if idl_type != 'void':
+        contents['v8_set_return_value'] = v8_types.v8_set_return_value(idl_type, cpp_value, callback_info='args', isolate='args.GetIsolate()', script_wrappable='imp')
+    return contents

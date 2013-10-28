@@ -171,4 +171,19 @@ interface TestObjectPython {
 
     // Methods
     void voidMethod();
+    // Basic types
+    Date dateMethod();
+    DOMString stringMethod();
+    DOMTimeStamp readonlyDOMTimeStampMethod();
+    boolean booleanMethod();
+    byte byteMethod();
+    double doubleMethod();
+    float floatMethod();
+    long longMethod();
+    long long longLongMethod();
+    octet octetMethod();
+    short shortMethod();
+    unsigned long unsignedLongMethod();
+    unsigned long long unsignedLongLongMethod();
+    unsigned short unsignedShortMethod();
 };
