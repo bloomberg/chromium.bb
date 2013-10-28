@@ -104,6 +104,9 @@ class TemplateURLRef {
     // True for searches issued with the bookmark bar pref set to shown.
     bool bookmark_bar_pinned;
 
+    // Additional query params provided by the suggest server.
+    std::string suggest_query_params;
+
     // If set, ReplaceSearchTerms() will automatically append any extra query
     // params specified via the --extra-search-query-params command-line
     // argument.  Generally, this should be set when dealing with the search or

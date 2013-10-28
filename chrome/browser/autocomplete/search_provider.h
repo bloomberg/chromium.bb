@@ -79,13 +79,16 @@ class SearchProvider : public AutocompleteProvider,
   // command-line-specified query params.
   static AutocompleteMatch CreateSearchSuggestion(
       AutocompleteProvider* autocomplete_provider,
+      const AutocompleteInput& input,
+      const string16& input_text,
       int relevance,
       AutocompleteMatch::Type type,
+      bool is_keyword,
+      const string16& match_contents,
+      const string16& annotation,
       const TemplateURL* template_url,
       const string16& query_string,
-      const string16& input_text,
-      const AutocompleteInput& input,
-      bool is_keyword,
+      const std::string& suggest_query_params,
       int accepted_suggestion,
       int omnibox_start_margin,
       bool append_extra_query_params);
@@ -221,6 +224,9 @@ class SearchProvider : public AutocompleteProvider,
   class SuggestResult : public Result {
    public:
     SuggestResult(const string16& suggestion,
+                  const string16& match_contents,
+                  const string16& annotation,
+                  const std::string& suggest_query_params,
                   bool from_keyword_provider,
                   int relevance,
                   bool relevance_from_server,
@@ -228,6 +234,11 @@ class SearchProvider : public AutocompleteProvider,
     virtual ~SuggestResult();
 
     const string16& suggestion() const { return suggestion_; }
+    const string16& match_contents() const { return match_contents_; }
+    const string16& annotation() const { return annotation_; }
+    const std::string& suggest_query_params() const {
+      return suggest_query_params_;
+    }
     bool should_prefetch() const { return should_prefetch_; }
 
     // Result:
@@ -237,8 +248,19 @@ class SearchProvider : public AutocompleteProvider,
         bool keyword_provider_requested) const OVERRIDE;
 
    private:
-    // The search suggestion string.
+    // The search terms to be used for this suggestion.
     string16 suggestion_;
+
+    // The contents to be displayed in the autocomplete match.
+    string16 match_contents_;
+
+    // Optional annotation for the |match_contents_| for disambiguation.
+    // This may be displayed in the autocomplete match contents, but is defined
+    // separately to facilitate different formatting.
+    string16 annotation_;
+
+    // Optional additional parameters to be added to the search URL.
+    std::string suggest_query_params_;
 
     // Should this result be prefetched?
     bool should_prefetch_;
@@ -283,7 +305,8 @@ class SearchProvider : public AutocompleteProvider,
   typedef std::vector<SuggestResult> SuggestResults;
   typedef std::vector<NavigationResult> NavigationResults;
   typedef std::vector<history::KeywordSearchTermVisit> HistoryResults;
-  typedef std::map<string16, AutocompleteMatch> MatchMap;
+  typedef std::pair<string16, std::string> MatchKey;
+  typedef std::map<MatchKey, AutocompleteMatch> MatchMap;
 
   // A simple structure bundling most of the information (including
   // both SuggestResults and NavigationResults) returned by a call to
@@ -465,15 +488,18 @@ class SearchProvider : public AutocompleteProvider,
   // Creates an AutocompleteMatch for "Search <engine> for |query_string|" with
   // the supplied relevance.  Adds this match to |map|; if such a match already
   // exists, whichever one has lower relevance is eliminated.
-  void AddMatchToMap(const string16& query_string,
-                     const string16& input_text,
+  void AddMatchToMap(const string16& input_text,
                      int relevance,
                      bool relevance_from_server,
                      bool should_prefetch,
                      const std::string& metadata,
                      AutocompleteMatch::Type type,
-                     int accepted_suggestion,
                      bool is_keyword,
+                     const string16& match_contents,
+                     const string16& annotation,
+                     const string16& query_string,
+                     int accepted_suggestion,
+                     const std::string& suggest_query_params,
                      MatchMap* map);
 
   // Returns an AutocompleteMatch for a navigational suggestion.

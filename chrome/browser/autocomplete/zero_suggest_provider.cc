@@ -316,7 +316,8 @@ void ZeroSuggestProvider::FillResults(
       }
     } else {
       suggest_results->push_back(SearchProvider::SuggestResult(
-          result, false, relevance, relevances != NULL, false));
+          result, result, string16(), std::string(), false, relevance,
+          relevances != NULL, false));
     }
   }
 }
@@ -341,16 +342,19 @@ void ZeroSuggestProvider::AddMatchToMap(int relevance,
   // TODO(samarth|melevin): use the actual omnibox margin here as well instead
   // of passing in -1.
   AutocompleteMatch match = SearchProvider::CreateSearchSuggestion(
-      this, relevance, type, template_url, query_string, query_string,
-      AutocompleteInput(), false, accepted_suggestion, -1, true);
+      this, AutocompleteInput(), query_string, relevance, type, false,
+      query_string, string16(), template_url, query_string, std::string(),
+      accepted_suggestion, -1, true);
   if (!match.destination_url.is_valid())
     return;
 
   // Try to add |match| to |map|.  If a match for |query_string| is already in
   // |map|, replace it if |match| is more relevant.
   // NOTE: Keep this ToLower() call in sync with url_database.cc.
+  SearchProvider::MatchKey match_key(
+      std::make_pair(base::i18n::ToLower(query_string), std::string()));
   const std::pair<SearchProvider::MatchMap::iterator, bool> i(map->insert(
-      std::make_pair(base::i18n::ToLower(query_string), match)));
+      std::make_pair(match_key, match)));
   // NOTE: We purposefully do a direct relevance comparison here instead of
   // using AutocompleteMatch::MoreRelevant(), so that we'll prefer "items added
   // first" rather than "items alphabetically first" when the scores are equal.

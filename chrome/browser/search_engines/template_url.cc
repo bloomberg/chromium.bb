@@ -4,6 +4,9 @@
 
 #include "chrome/browser/search_engines/template_url.h"
 
+#include <string>
+#include <vector>
+
 #include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/format_macros.h"
@@ -334,23 +337,30 @@ std::string TemplateURLRef::ReplaceSearchTermsUsingTermsData(
   std::string url(HandleReplacements(search_terms_args, search_terms_data,
                                      post_content));
 
-  // If the user specified additional query params on the command line, add
-  // them.
-  if (search_terms_args.append_extra_query_params) {
-    std::string query_params(CommandLine::ForCurrentProcess()->
-        GetSwitchValueASCII(switches::kExtraSearchQueryParams));
-    GURL gurl(url);
-    if (!query_params.empty() && gurl.is_valid()) {
-      GURL::Replacements replacements;
-      const std::string existing_query_params(gurl.query());
-      if (!existing_query_params.empty())
-        query_params += "&" + existing_query_params;
-      replacements.SetQueryStr(query_params);
-      return gurl.ReplaceComponents(replacements).possibly_invalid_spec();
-    }
-  }
+  GURL gurl(url);
+  if (!gurl.is_valid())
+    return url;
 
-  return url;
+  std::vector<std::string> query_params;
+  if (search_terms_args.append_extra_query_params) {
+    std::string extra_params(
+        CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+            switches::kExtraSearchQueryParams));
+    if (!extra_params.empty())
+      query_params.push_back(extra_params);
+  }
+  if (!search_terms_args.suggest_query_params.empty())
+    query_params.push_back(search_terms_args.suggest_query_params);
+  if (!gurl.query().empty())
+    query_params.push_back(gurl.query());
+
+  if (query_params.empty())
+    return url;
+
+  GURL::Replacements replacements;
+  std::string query_str = JoinString(query_params, "&");
+  replacements.SetQueryStr(query_str);
+  return gurl.ReplaceComponents(replacements).possibly_invalid_spec();
 }
 
 bool TemplateURLRef::IsValid() const {
