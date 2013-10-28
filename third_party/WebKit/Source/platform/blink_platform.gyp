@@ -32,6 +32,7 @@
     '../build/features.gypi',
     '../build/scripts/scripts.gypi',
     '../build/win/precompile.gypi',
+    '../config.gypi',
     'blink_platform.gypi',
   ],
   'targets': [{

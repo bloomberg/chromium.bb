@@ -51,30 +51,6 @@
             'USING_V8_SHARED',
           ],
         }],
-        ['OS=="win"', {
-          'sources/': [
-            ['exclude', 'Posix\\.cpp$'],
-          ],
-        },{ # OS!="win"
-          'sources/': [
-            ['exclude', 'Win\\.cpp$'],
-          ],
-        }],
-        ['OS!="mac"', {
-          'sources/': [
-            ['exclude', 'Mac\\.mm$'],
-          ],
-        }],
-        ['<(toolkit_uses_gtk) != 1', {
-            'sources/': [
-              ['exclude', 'Gtk\\.cpp$']
-            ]
-        }],
-        ['OS!="android"', {
-          'sources/': [
-            ['exclude', 'Android\\.cpp$'],
-          ],
-        }],
         ['OS!="win" and remove_webcore_debug_symbols==1', {
           # Remove -g from all targets defined here.
           'cflags!': ['-g'],
