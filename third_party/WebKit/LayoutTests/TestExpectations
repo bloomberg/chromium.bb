@@ -1,5 +1,7 @@
 # See http://www.chromium.org/developers/testing/webkit-layout-tests/testexpectations for more information on this file.
 
+crbug.com/232333 [ Win Mac ] fast/forms/search-rtl.html [ NeedsRebaseline ]
+
 # This test can't just be rebaselined because it has absolute file paths in the output.
 crbug.com/257132 http/tests/inspector/network/network-xhr-replay.html [ Failure ]
 
