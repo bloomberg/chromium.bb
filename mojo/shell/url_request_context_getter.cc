@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/loader/url_request_context_getter.h"
+#include "mojo/shell/url_request_context_getter.h"
 
 #include "net/cookies/cookie_monster.h"
 #include "net/http/http_cache.h"
@@ -15,7 +15,7 @@
 #include "net/url_request/url_request_job_factory_impl.h"
 
 namespace mojo {
-namespace loader {
+namespace shell {
 
 URLRequestContextGetter::URLRequestContextGetter(
     base::FilePath base_path,
@@ -90,5 +90,5 @@ URLRequestContextGetter::GetNetworkTaskRunner() const {
   return network_task_runner_;
 }
 
-}  // namespace loader
+}  // namespace shell
 }  // namespace mojo

@@ -5,7 +5,7 @@
 #ifndef MOJO_SHELL_CONTEXT_H_
 #define MOJO_SHELL_CONTEXT_H_
 
-#include "mojo/loader/loader.h"
+#include "mojo/shell/loader.h"
 #include "mojo/shell/storage.h"
 #include "mojo/shell/task_runners.h"
 
@@ -19,12 +19,12 @@ class Context {
 
   TaskRunners* task_runners() { return &task_runners_; }
   Storage* storage() { return &storage_; }
-  loader::Loader* loader() { return &loader_; }
+  Loader* loader() { return &loader_; }
 
  private:
   TaskRunners task_runners_;
   Storage storage_;
-  loader::Loader loader_;
+  Loader loader_;
 
   DISALLOW_COPY_AND_ASSIGN(Context);
 };

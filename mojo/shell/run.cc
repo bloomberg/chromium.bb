@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/message_loop/message_loop.h"
 #include "mojo/shell/app_container.h"
 #include "mojo/shell/switches.h"
 #include "url/gurl.h"
@@ -17,6 +18,7 @@ void Run(Context* context) {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   if (!command_line.HasSwitch(switches::kApp)) {
     LOG(ERROR) << "No app path specified.";
+    base::MessageLoop::current()->Quit();
     return;
   }
 

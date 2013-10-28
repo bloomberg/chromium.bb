@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_URL_REQUEST_CONTEXT_GETTER_H_
-#define MOJO_URL_REQUEST_CONTEXT_GETTER_H_
+#ifndef MOJO_SHELL_URL_REQUEST_CONTEXT_GETTER_H_
+#define MOJO_SHELL_URL_REQUEST_CONTEXT_GETTER_H_
 
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
@@ -12,7 +12,7 @@
 #include "net/url_request/url_request_context_storage.h"
 
 namespace mojo {
-namespace loader {
+namespace shell {
 
 class URLRequestContextGetter : public net::URLRequestContextGetter {
  public:
@@ -39,7 +39,7 @@ class URLRequestContextGetter : public net::URLRequestContextGetter {
   DISALLOW_COPY_AND_ASSIGN(URLRequestContextGetter);
 };
 
-}  // namespace loader
+}  // namespace shell
 }  // namespace mojo
 
-#endif  // MOJO_URL_REQUEST_CONTEXT_GETTER_H_
+#endif  // MOJO_SHELL_URL_REQUEST_CONTEXT_GETTER_H_

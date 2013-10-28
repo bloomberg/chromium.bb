@@ -141,16 +141,12 @@
         'mojo_system',
       ],
       'sources': [
-        'loader/job.cc',
-        'loader/job.h',
-        'loader/loader.cc',
-        'loader/loader.h',
-        'loader/url_request_context_getter.cc',
-        'loader/url_request_context_getter.h',
         'shell/app_container.cc',
         'shell/app_container.h',
         'shell/context.cc',
         'shell/context.h',
+        'shell/loader.cc',
+        'shell/loader.h',
         'shell/run.cc',
         'shell/run.h',
         'shell/storage.cc',
@@ -159,6 +155,8 @@
         'shell/switches.h',
         'shell/task_runners.cc',
         'shell/task_runners.h',
+        'shell/url_request_context_getter.cc',
+        'shell/url_request_context_getter.h',
       ],
       'conditions': [
         ['OS == "win"', {
@@ -198,7 +196,7 @@
         'mojo_system',
       ],
       'sources': [
-        'shell/sample_app.cc',
+        'examples/sample_app/sample_app.cc',
       ],
     },
     {
@@ -262,7 +260,7 @@
             ],
           },
           'sources': [
-            'shell/android/shell_apk/src/org/chromium/mojo_shell_apk/MojoMain.java',
+            'shell/android/apk/src/org/chromium/mojo_shell_apk/MojoMain.java',
           ],
           'variables': {
             'jni_gen_package': 'mojo'
@@ -294,8 +292,8 @@
           ],
           'variables': {
             'apk_name': 'MojoShell',
-            'java_in_dir': '<(DEPTH)/mojo/shell/android/shell_apk',
-            'resource_dir': '<(DEPTH)/mojo/shell/android/shell_apk/res',
+            'java_in_dir': '<(DEPTH)/mojo/shell/android/apk',
+            'resource_dir': '<(DEPTH)/mojo/shell/android/apk/res',
             'native_lib_target': 'libmojo_shell',
           },
           'includes': [ '../build/java_apk.gypi' ],
