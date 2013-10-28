@@ -38,10 +38,11 @@ class BrowserDemuxerAndroid::Internal : public media::DemuxerAndroid {
   }
 
   virtual void RequestDemuxerSeek(
-      const base::TimeDelta& time_to_seek) OVERRIDE {
+      const base::TimeDelta& time_to_seek,
+      bool is_browser_seek) OVERRIDE {
     DCHECK(ClientIDExists()) << demuxer_client_id_;
     demuxer_->Send(new MediaPlayerMsg_DemuxerSeekRequest(
-        demuxer_client_id_, time_to_seek));
+        demuxer_client_id_, time_to_seek, is_browser_seek));
   }
 
  private:
@@ -127,11 +128,13 @@ void BrowserDemuxerAndroid::OnReadFromDemuxerAck(
     client->OnDemuxerDataAvailable(data);
 }
 
-void BrowserDemuxerAndroid::OnDemuxerSeekDone(int demuxer_client_id) {
+void BrowserDemuxerAndroid::OnDemuxerSeekDone(
+    int demuxer_client_id,
+    const base::TimeDelta& actual_browser_seek_time) {
   media::DemuxerAndroidClient* client =
       demuxer_clients_.Lookup(demuxer_client_id);
   if (client)
-    client->OnDemuxerSeekDone();
+    client->OnDemuxerSeekDone(actual_browser_seek_time);
 }
 
 void BrowserDemuxerAndroid::OnDurationChanged(int demuxer_client_id,

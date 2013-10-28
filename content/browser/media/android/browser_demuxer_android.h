@@ -49,7 +49,8 @@ class CONTENT_EXPORT BrowserDemuxerAndroid : public BrowserMessageFilter {
                       const media::DemuxerConfigs& configs);
   void OnReadFromDemuxerAck(int demuxer_client_id,
                             const media::DemuxerData& data);
-  void OnDemuxerSeekDone(int demuxer_client_id);
+  void OnDemuxerSeekDone(int demuxer_client_id,
+                         const base::TimeDelta& actual_browser_seek_time);
   void OnDurationChanged(int demuxer_client_id,
                          const base::TimeDelta& duration);
 

@@ -64,9 +64,11 @@ void RendererDemuxerAndroid::ReadFromDemuxerAck(
       demuxer_client_id, data));
 }
 
-void RendererDemuxerAndroid::DemuxerSeekDone(int demuxer_client_id) {
+void RendererDemuxerAndroid::DemuxerSeekDone(
+    int demuxer_client_id,
+    const base::TimeDelta& actual_browser_seek_time) {
   thread_safe_sender_->Send(new MediaPlayerHostMsg_DemuxerSeekDone(
-      demuxer_client_id));
+      demuxer_client_id, actual_browser_seek_time));
 }
 
 void RendererDemuxerAndroid::DurationChanged(int demuxer_client_id,
@@ -93,10 +95,11 @@ void RendererDemuxerAndroid::OnReadFromDemuxer(
 
 void RendererDemuxerAndroid::OnDemuxerSeekRequest(
     int demuxer_client_id,
-    const base::TimeDelta& time_to_seek) {
+    const base::TimeDelta& time_to_seek,
+    bool is_browser_seek) {
   MediaSourceDelegate* delegate = delegates_.Lookup(demuxer_client_id);
   if (delegate)
-    delegate->Seek(time_to_seek);
+    delegate->Seek(time_to_seek, is_browser_seek);
 }
 
 void RendererDemuxerAndroid::OnMediaConfigRequest(int demuxer_client_id) {

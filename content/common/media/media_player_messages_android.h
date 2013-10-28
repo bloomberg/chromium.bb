@@ -95,6 +95,18 @@ IPC_ENUM_TRAITS(MediaPlayerHostMsg_Initialize_Type)
 // 1.1 Browser->Renderer MediaPlayerMsg_DemuxerSeekRequest
 // 1.2 Renderer->Browser MediaPlayerHostMsg_DemuxerSeekDone
 
+// Only in short-term hack to seek to reach I-Frame to feed a newly constructed
+// video decoder may the above IPC sequence be modified to exclude SeekRequest,
+// Seek and SeekCompleted, with condition that DemuxerSeekRequest's
+// |is_browser_seek| parameter be true. Regular seek messages must still be
+// handled even when a hack browser seek is in progress. In this case, the
+// browser seek request's |time_to_seek| may no longer be buffered and the
+// demuxer may instead seek to a future buffered time. The resulting
+// DemuxerSeekDone message's |actual_browser_seek_time| is the time actually
+// seeked-to, and is only meaningful for these hack browser seeks.
+// TODO(wolenetz): Instead of doing browser seek, replay cached data since last
+// keyframe. See http://crbug.com/304234.
+
 // Messages for notifying the render process of media playback status -------
 
 // Media buffering has updated.
@@ -161,9 +173,10 @@ IPC_MESSAGE_ROUTED1(MediaPlayerMsg_DidMediaPlayerPause,
                     int /* player_id */)
 
 // Requests renderer demuxer seek.
-IPC_MESSAGE_CONTROL2(MediaPlayerMsg_DemuxerSeekRequest,
+IPC_MESSAGE_CONTROL3(MediaPlayerMsg_DemuxerSeekRequest,
                      int /* demuxer_client_id */,
-                     base::TimeDelta /* time_to_seek */)
+                     base::TimeDelta /* time_to_seek */,
+                     bool /* is_browser_seek */)
 
 // The media source player reads data from demuxer
 IPC_MESSAGE_CONTROL2(MediaPlayerMsg_ReadFromDemuxer,
@@ -234,8 +247,9 @@ IPC_MESSAGE_ROUTED1(MediaPlayerHostMsg_EnterFullscreen, int /* player_id */)
 IPC_MESSAGE_ROUTED1(MediaPlayerHostMsg_ExitFullscreen, int /* player_id */)
 
 // Sent after the renderer demuxer has seeked.
-IPC_MESSAGE_CONTROL1(MediaPlayerHostMsg_DemuxerSeekDone,
-                     int /* demuxer_client_id */)
+IPC_MESSAGE_CONTROL2(MediaPlayerHostMsg_DemuxerSeekDone,
+                     int /* demuxer_client_id */,
+                     base::TimeDelta /* actual_browser_seek_time */)
 
 // Inform the media source player that the demuxer is ready.
 IPC_MESSAGE_CONTROL2(MediaPlayerHostMsg_DemuxerReady,

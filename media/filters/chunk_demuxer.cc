@@ -1045,7 +1045,7 @@ void ChunkDemuxer::AppendData(const std::string& id,
       base::ResetAndReturn(&seek_cb_).Run(PIPELINE_OK);
     }
 
-    ranges = GetBufferedRanges();
+    ranges = GetBufferedRanges_Locked();
   }
 
   for (size_t i = 0; i < ranges.size(); ++i)
@@ -1405,7 +1405,8 @@ void ChunkDemuxer::IncreaseDurationIfNecessary(
 }
 
 void ChunkDemuxer::DecreaseDurationIfNecessary() {
-  Ranges<TimeDelta> ranges = GetBufferedRanges();
+  lock_.AssertAcquired();
+  Ranges<TimeDelta> ranges = GetBufferedRanges_Locked();
   if (ranges.size() == 0u)
     return;
 
@@ -1415,6 +1416,12 @@ void ChunkDemuxer::DecreaseDurationIfNecessary() {
 }
 
 Ranges<TimeDelta> ChunkDemuxer::GetBufferedRanges() const {
+  base::AutoLock auto_lock(lock_);
+  return GetBufferedRanges_Locked();
+}
+
+Ranges<TimeDelta> ChunkDemuxer::GetBufferedRanges_Locked() const {
+  lock_.AssertAcquired();
   if (audio_ && !video_)
     return audio_->GetBufferedRanges(duration_);
   else if (!audio_ && video_)

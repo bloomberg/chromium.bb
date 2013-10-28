@@ -79,16 +79,26 @@ class MediaSourceDelegate : public media::DemuxerHost {
   size_t AudioDecodedByteCount() const;
   size_t VideoDecodedByteCount() const;
 
-  // In MSE case, calls ChunkDemuxer::CancelPendingSeek().
+  // In MSE case, calls ChunkDemuxer::CancelPendingSeek(). Also sets the
+  // expectation that a regular seek will be arriving and to trivially finish
+  // any browser seeks that may be requested prior to the regular seek.
   void CancelPendingSeek(const base::TimeDelta& seek_time);
 
-  // In MSE case, calls ChunkDemuxer::StartWaitingForSeek().
+  // In MSE case, calls ChunkDemuxer::StartWaitingForSeek(), first calling
+  // ChunkDemuxer::CancelPendingSeek() if a browser seek is in progress.
+  // Also sets the expectation that a regular seek will be arriving and to
+  // trivially finish any browser seeks that may be requested prior to the
+  // regular seek.
   void StartWaitingForSeek(const base::TimeDelta& seek_time);
 
   // Seeks the demuxer and later calls OnDemuxerSeekDone() after the seek has
   // been completed. There must be no other seek of the demuxer currently in
   // process when this method is called.
-  void Seek(const base::TimeDelta& seek_time);
+  // If |is_browser_seek| is true, then this is a short-term hack browser
+  // seek.
+  // TODO(wolenetz): Instead of doing browser seek, browser player should replay
+  // cached data since last keyframe. See http://crbug.com/304234.
+  void Seek(const base::TimeDelta& seek_time, bool is_browser_seek);
 
   void NotifyKeyAdded(const std::string& key_system);
 
@@ -167,8 +177,15 @@ class MediaSourceDelegate : public media::DemuxerHost {
 
   bool HasEncryptedStream();
 
-  void SetSeeking(bool seeking);
   bool IsSeeking() const;
+
+  // Returns |seek_time| if it is still buffered or if there is no currently
+  // buffered range including or soon after |seek_time|. If |seek_time| is not
+  // buffered, but there is a later range buffered near to |seek_time|, returns
+  // next buffered range's start time instead. Only call this for browser seeks.
+  // |seeking_lock_| must be held by caller.
+  base::TimeDelta FindBufferedBrowserSeekTime_Locked(
+      const base::TimeDelta& seek_time) const;
 
   // Message loop for main renderer thread and corresponding weak pointer.
   const scoped_refptr<base::MessageLoopProxy> main_loop_;
@@ -217,6 +234,15 @@ class MediaSourceDelegate : public media::DemuxerHost {
   // Lock used to serialize access for |seeking_|.
   mutable base::Lock seeking_lock_;
   bool seeking_;
+
+  // Track if we are currently performing a browser seek, and track whether or
+  // not a regular seek is expected soon. If a regular seek is expected soon,
+  // then any in-progress browser seek will be canceled pending the
+  // regular seek, if using |chunk_demuxer_|, and any requested browser seek
+  // will be trivially finished. Access is serialized by |seeking_lock_|.
+  bool doing_browser_seek_;
+  base::TimeDelta browser_seek_time_;
+  bool expecting_regular_seek_;
 
 #if defined(GOOGLE_TV)
   bool key_added_;

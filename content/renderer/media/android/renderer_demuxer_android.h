@@ -51,7 +51,8 @@ class RendererDemuxerAndroid : public IPC::ChannelProxy::MessageFilter {
                     const media::DemuxerConfigs& configs);
   void ReadFromDemuxerAck(int demuxer_client_id,
                           const media::DemuxerData& data);
-  void DemuxerSeekDone(int demuxer_client_id);
+  void DemuxerSeekDone(int demuxer_client_id,
+                       const base::TimeDelta& actual_browser_seek_time);
   void DurationChanged(int demuxer_client_id, const base::TimeDelta& duration);
 
  protected:
@@ -63,7 +64,8 @@ class RendererDemuxerAndroid : public IPC::ChannelProxy::MessageFilter {
   void OnReadFromDemuxer(int demuxer_client_id,
                          media::DemuxerStream::Type type);
   void OnDemuxerSeekRequest(int demuxer_client_id,
-                            const base::TimeDelta& time_to_seek);
+                            const base::TimeDelta& time_to_seek,
+                            bool is_browser_seek);
   void OnMediaConfigRequest(int demuxer_client_id);
 
   base::AtomicSequenceNumber next_demuxer_client_id_;

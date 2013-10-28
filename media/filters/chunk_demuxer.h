@@ -140,6 +140,12 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
 
   void SetMemoryLimitsForTesting(int memory_limit);
 
+  // Returns the ranges representing the buffered data in the demuxer.
+  // TODO(wolenetz): Remove this method once MediaSourceDelegate no longer
+  // requires it for doing hack browser seeks to I-frame on Android. See
+  // http://crbug.com/304234.
+  Ranges<base::TimeDelta> GetBufferedRanges() const;
+
  private:
   enum State {
     WAITING_FOR_INIT,
@@ -203,7 +209,7 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
   void UpdateDuration(base::TimeDelta new_duration);
 
   // Returns the ranges representing the buffered data in the demuxer.
-  Ranges<base::TimeDelta> GetBufferedRanges() const;
+  Ranges<base::TimeDelta> GetBufferedRanges_Locked() const;
 
   // Start returning data on all DemuxerStreams.
   void StartReturningData();
@@ -230,6 +236,10 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
   LogCB log_cb_;
 
   PipelineStatusCB init_cb_;
+  // Callback to execute upon seek completion.
+  // TODO(wolenetz/acolwell): Protect against possible double-locking by first
+  // releasing |lock_| before executing this callback. See
+  // http://crbug.com/308226
   PipelineStatusCB seek_cb_;
 
   scoped_ptr<ChunkDemuxerStream> audio_;

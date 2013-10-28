@@ -70,7 +70,8 @@ class MEDIA_EXPORT MediaSourcePlayer : public MediaPlayerAndroid,
   // DemuxerAndroidClient implementation.
   virtual void OnDemuxerConfigsAvailable(const DemuxerConfigs& params) OVERRIDE;
   virtual void OnDemuxerDataAvailable(const DemuxerData& params) OVERRIDE;
-  virtual void OnDemuxerSeekDone() OVERRIDE;
+  virtual void OnDemuxerSeekDone(
+      const base::TimeDelta& actual_browser_seek_time) OVERRIDE;
   virtual void OnDemuxerDurationChanged(base::TimeDelta duration) OVERRIDE;
 
  private:
@@ -127,8 +128,18 @@ class MEDIA_EXPORT MediaSourcePlayer : public MediaPlayerAndroid,
   void StartStarvationCallback(const base::TimeDelta& presentation_timestamp);
 
   // Schedules a seek event in |pending_events_| and calls StopDecode() on all
-  // the MediaDecoderJobs.
-  void ScheduleSeekEventAndStopDecoding();
+  // the MediaDecoderJobs. Sets clock to |seek_time|, and resets
+  // |pending_seek_|. There must not already be a seek event in
+  // |pending_events_|.
+  void ScheduleSeekEventAndStopDecoding(const base::TimeDelta& seek_time);
+
+  // Schedules a browser seek event. We must not currently be processing any
+  // seek. Note that there is possibility that browser seek of renderer demuxer
+  // may unexpectedly stall due to lack of buffered data at or after the browser
+  // seek time.
+  // TODO(wolenetz): Instead of doing hack browser seek, replay cached data
+  // since last keyframe. See http://crbug.com/304234.
+  void BrowserSeekToCurrentTime();
 
   // Helper function to set the volume.
   void SetVolumeInternal();
@@ -197,8 +208,25 @@ class MEDIA_EXPORT MediaSourcePlayer : public MediaPlayerAndroid,
   // The surface object currently owned by the player.
   gfx::ScopedJavaSurface surface_;
 
-  // Tracks whether or not the player has previously ever set |surface_|.
-  bool surface_ever_set_;
+  // Track whether or not the player has received any video data since the most
+  // recent of player construction, end of last seek, or receiving and
+  // detecting a |kConfigChanged| access unit from the demuxer.
+  // If no such video data has been received, the next video data begins with
+  // an I-frame. Otherwise, we have no such guarantee.
+  bool next_video_data_is_iframe_;
+
+  // Flag that is true if doing a hack browser seek or false if doing a
+  // regular seek. Only valid when |SEEK_EVENT_PENDING| is pending.
+  // TODO(wolenetz): Instead of doing hack browser seek, replay cached data
+  // since last keyframe. See http://crbug.com/304234.
+  bool doing_browser_seek_;
+
+  // If already doing a browser seek when a regular seek request arrives,
+  // these fields remember the regular seek so OnDemuxerSeekDone() can trigger
+  // it when the browser seek is done. These are only valid when
+  // |SEEK_EVENT_PENDING| is pending.
+  bool pending_seek_;
+  base::TimeDelta pending_seek_time_;
 
   // Decoder jobs.
   scoped_ptr<AudioDecoderJob, MediaDecoderJob::Deleter> audio_decoder_job_;
