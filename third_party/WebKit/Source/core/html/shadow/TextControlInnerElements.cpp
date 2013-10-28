@@ -97,6 +97,7 @@ PassRefPtr<RenderStyle> EditingViewPortElement::customStyleForRenderer()
     // We don't want the shadow dom to be editable, so we set this block to
     // read-only in case the input itself is editable.
     style->setUserModify(READ_ONLY);
+    style->setUnique();
 
     return style.release();
 }

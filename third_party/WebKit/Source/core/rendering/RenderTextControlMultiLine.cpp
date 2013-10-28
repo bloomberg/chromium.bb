@@ -83,6 +83,7 @@ PassRefPtr<RenderStyle> RenderTextControlMultiLine::createInnerTextStyle(const R
     textBlockStyle->inheritFrom(startStyle);
     adjustInnerTextStyle(textBlockStyle.get());
     textBlockStyle->setDisplay(BLOCK);
+    textBlockStyle->setUnique();
 
     return textBlockStyle.release();
 }

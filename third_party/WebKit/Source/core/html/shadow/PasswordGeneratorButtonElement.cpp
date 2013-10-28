@@ -85,6 +85,7 @@ PassRefPtr<RenderStyle> PasswordGeneratorButtonElement::customStyleForRenderer()
     ASSERT(inputStyle);
     style->setWidth(Length(inputStyle->fontSize(), Fixed));
     style->setHeight(Length(inputStyle->fontSize(), Fixed));
+    style->setUnique();
     updateImage();
     return style.release();
 }

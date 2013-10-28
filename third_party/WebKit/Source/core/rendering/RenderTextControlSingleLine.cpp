@@ -376,6 +376,7 @@ PassRefPtr<RenderStyle> RenderTextControlSingleLine::createInnerTextStyle(const 
         textBlockStyle->setLineHeight(RenderStyle::initialLineHeight());
 
     textBlockStyle->setDisplay(BLOCK);
+    textBlockStyle->setUnique();
 
     return textBlockStyle.release();
 }

@@ -512,6 +512,7 @@ PassRefPtr<RenderStyle> DateTimeEditElement::customStyleForRenderer()
         }
     }
     style->setWidth(Length(ceilf(width), Fixed));
+    style->setUnique();
     return style.release();
 }
 
