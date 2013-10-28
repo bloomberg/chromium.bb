@@ -142,7 +142,8 @@ volumeManagerUtil.createVolumeInfo = function(volumeMetadata, callback) {
       },
       function(fileError) {
         console.error('Root entry is not found: ' +
-            mountPath + ', ' + util.getFileErrorMnemonic(fileError.code));
+            volumeMetadata.mountPath + ', ' +
+            util.getFileErrorMnemonic(fileError.code));
         callback(new VolumeInfo(
             volumeMetadata.volumeType,
             volumeMetadata.mountPath,
