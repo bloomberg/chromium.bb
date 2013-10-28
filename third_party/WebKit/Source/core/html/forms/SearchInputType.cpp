@@ -95,14 +95,8 @@ void SearchInputType::createShadowSubtree()
     ASSERT(container);
     ASSERT(viewPort);
 
-    AtomicString dirAttributeValue = element().fastGetAttribute(dirAttr);
-    if (dirAttributeValue.isEmpty() || equalIgnoringCase(dirAttributeValue, "ltr")) {
-        container->insertBefore(SearchFieldDecorationElement::create(element().document()), viewPort);
-        container->insertBefore(SearchFieldCancelButtonElement::create(element().document()), viewPort->nextSibling());
-    } else {
-        container->insertBefore(SearchFieldCancelButtonElement::create(element().document()), viewPort);
-        container->insertBefore(SearchFieldDecorationElement::create(element().document()), viewPort->nextSibling());
-    }
+    container->insertBefore(SearchFieldDecorationElement::create(element().document()), viewPort);
+    container->insertBefore(SearchFieldCancelButtonElement::create(element().document()), viewPort->nextSibling());
 }
 
 void SearchInputType::handleKeydownEvent(KeyboardEvent* event)

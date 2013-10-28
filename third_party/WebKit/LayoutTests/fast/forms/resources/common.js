@@ -102,13 +102,6 @@ function searchCancelButtonPosition(element) {
     return pos;
 }
 
-function searchCancelButtonPositionRTL(element) {
-    var pos = {};
-    pos.x = element.offsetLeft + 9;
-    pos.y = element.offsetTop + element.offsetHeight / 2;
-    return pos;
-}
-
 function mouseMoveToIndexInListbox(index, listboxId) {
     var listbox = document.getElementById(listboxId);
     var itemHeight = Math.floor(listbox.offsetHeight / listbox.size);
