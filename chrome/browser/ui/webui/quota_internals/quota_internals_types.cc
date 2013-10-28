@@ -19,6 +19,8 @@ std::string StorageTypeToString(quota::StorageType type) {
       return "persistent";
     case quota::kStorageTypeSyncable:
       return "syncable";
+    case quota::kStorageTypeQuotaNotManaged:
+      return "quota not managed";
     case quota::kStorageTypeUnknown:
       return "unknown";
   }

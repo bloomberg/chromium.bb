@@ -504,6 +504,7 @@ class QuotaManager::GetUsageInfoTask : public QuotaTask {
   }
 
   void DidGetGlobalUsage(StorageType type, int64, int64) {
+    DCHECK(manager()->GetUsageTracker(type));
     AddEntries(type, manager()->GetUsageTracker(type));
   }
 
@@ -851,6 +852,7 @@ void QuotaManager::GetUsageAndQuotaForWebApps(
     }
   }
 
+  DCHECK(GetUsageTracker(type));
   GetUsageTracker(type)->GetHostUsage(net::GetHostOrSpecFromURL(origin),
                                       dispatcher->GetHostUsageCallback());
 
@@ -909,6 +911,7 @@ void QuotaManager::SetUsageCacheEnabled(QuotaClient::ID client_id,
                                         StorageType type,
                                         bool enabled) {
   LazyInitialize();
+  DCHECK(GetUsageTracker(type));
   GetUsageTracker(type)->SetUsageCacheEnabled(client_id, origin, enabled);
 }
 
@@ -1066,6 +1069,7 @@ void QuotaManager::SetPersistentHostQuota(const std::string& host,
 void QuotaManager::GetGlobalUsage(StorageType type,
                                   const GlobalUsageCallback& callback) {
   LazyInitialize();
+  DCHECK(GetUsageTracker(type));
   GetUsageTracker(type)->GetGlobalUsage(callback);
 }
 
@@ -1073,6 +1077,7 @@ void QuotaManager::GetHostUsage(const std::string& host,
                                 StorageType type,
                                 const UsageCallback& callback) {
   LazyInitialize();
+  DCHECK(GetUsageTracker(type));
   GetUsageTracker(type)->GetHostUsage(host, callback);
 }
 
@@ -1081,6 +1086,7 @@ void QuotaManager::GetHostUsage(const std::string& host,
                                 QuotaClient::ID client_id,
                                 const UsageCallback& callback) {
   LazyInitialize();
+  DCHECK(GetUsageTracker(type));
   ClientUsageTracker* tracker =
       GetUsageTracker(type)->GetClientTracker(client_id);
   if (!tracker) {
@@ -1092,7 +1098,8 @@ void QuotaManager::GetHostUsage(const std::string& host,
 
 bool QuotaManager::IsTrackingHostUsage(StorageType type,
                                        QuotaClient::ID client_id) const {
-  return GetUsageTracker(type)->GetClientTracker(client_id) != NULL;
+  UsageTracker* tracker = GetUsageTracker(type);
+  return tracker && tracker->GetClientTracker(client_id);
 }
 
 void QuotaManager::GetStatistics(
@@ -1114,8 +1121,10 @@ bool QuotaManager::IsStorageUnlimited(const GURL& origin,
   // quota must be capped by the server limit).
   if (type == kStorageTypeSyncable)
     return false;
+  if (type == kStorageTypeQuotaNotManaged)
+    return true;
   return special_storage_policy_.get() &&
-          special_storage_policy_->IsStorageUnlimited(origin);
+         special_storage_policy_->IsStorageUnlimited(origin);
 }
 
 void QuotaManager::GetOriginsModifiedSince(StorageType type,
@@ -1218,7 +1227,9 @@ UsageTracker* QuotaManager::GetUsageTracker(StorageType type) const {
       return persistent_usage_tracker_.get();
     case kStorageTypeSyncable:
       return syncable_usage_tracker_.get();
-    default:
+    case kStorageTypeQuotaNotManaged:
+      return NULL;
+    case kStorageTypeUnknown:
       NOTREACHED();
   }
   return NULL;
@@ -1259,6 +1270,7 @@ void QuotaManager::NotifyStorageModifiedInternal(
     int64 delta,
     base::Time modified_time) {
   LazyInitialize();
+  DCHECK(GetUsageTracker(type));
   GetUsageTracker(type)->UpdateUsageCache(client_id, origin, delta);
 
   PostTaskAndReplyWithResultForDBThread(

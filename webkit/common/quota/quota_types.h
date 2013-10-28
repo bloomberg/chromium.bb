@@ -13,6 +13,7 @@ enum StorageType {
   kStorageTypeTemporary,
   kStorageTypePersistent,
   kStorageTypeSyncable,
+  kStorageTypeQuotaNotManaged,
   kStorageTypeUnknown,
 };
 

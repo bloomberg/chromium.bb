@@ -193,6 +193,7 @@ FileSystemType QuotaStorageTypeToFileSystemType(
       return kFileSystemTypePersistent;
     case quota::kStorageTypeSyncable:
       return kFileSystemTypeSyncable;
+    case quota::kStorageTypeQuotaNotManaged:
     case quota::kStorageTypeUnknown:
       return kFileSystemTypeUnknown;
   }
@@ -208,6 +209,8 @@ quota::StorageType FileSystemTypeToQuotaStorageType(FileSystemType type) {
     case kFileSystemTypeSyncable:
     case kFileSystemTypeSyncableForInternalSync:
       return quota::kStorageTypeSyncable;
+    case kFileSystemTypePluginPrivate:
+      return quota::kStorageTypeQuotaNotManaged;
     default:
       return quota::kStorageTypeUnknown;
   }
