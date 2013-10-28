@@ -408,6 +408,8 @@
     },
     'ozone': {
       'filepath': 'ui/base/ozone/|'\
+        'ui/events/ozone/|'\
+        'ui/gfx/ozone/|'\
         'ui/gl/gl_.*egl.*|'\
         'ui/gl/gl_.*ozone.*'
     },
@@ -753,7 +755,8 @@
             'pedrosimonetti+watch@chromium.org'],
     'omnibox': ['suzhe@chromium.org'],
     'options': ['dbeam+watch-options@chromium.org'],
-    'ozone': ['rjkroege@chromium.org', 'kalyan.kondapally@intel.com'],
+    'ozone': ['kalyan.kondapally@intel.com', 'ozone-reviews@chromium.org',
+              'rjkroege@chromium.org'],
     'panels': ['dimich@chromium.org', 'jennb@chromium.org',
                'dcheng@chromium.org', 'jianli@chromium.org'],
     'pepper_api': ['piman+watch@chromium.org',
