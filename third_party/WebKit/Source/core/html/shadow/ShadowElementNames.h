@@ -41,6 +41,7 @@ const AtomicString& dateTimeEdit();
 const AtomicString& spinButton();
 const AtomicString& clearButton();
 const AtomicString& editingViewPort();
+const AtomicString& innerEditor();
 const AtomicString& passwordGenerator();
 const AtomicString& pickerIndicator();
 const AtomicString& placeholder();

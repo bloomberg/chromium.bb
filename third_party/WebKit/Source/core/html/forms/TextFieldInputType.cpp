@@ -184,7 +184,7 @@ void TextFieldInputType::forwardEvent(Event* event)
     if (element().renderer() && (event->isMouseEvent() || event->isDragEvent() || event->hasInterface(EventNames::WheelEvent) || event->type() == EventTypeNames::blur || event->type() == EventTypeNames::focus)) {
         RenderTextControlSingleLine* renderTextControl = toRenderTextControlSingleLine(element().renderer());
         if (event->type() == EventTypeNames::blur) {
-            if (RenderBox* innerTextRenderer = innerTextElement()->renderBox()) {
+            if (RenderBox* innerTextRenderer = element().innerTextElement()->renderBox()) {
                 // FIXME: This class has no need to know about RenderLayer!
                 if (RenderLayer* innerLayer = innerTextRenderer->layer()) {
                     RenderLayerScrollableArea* innerScrollableArea = innerLayer->scrollableArea();
@@ -248,9 +248,9 @@ void TextFieldInputType::createShadowSubtree()
     bool shouldHaveSpinButton = this->shouldHaveSpinButton();
     bool createsContainer = shouldHaveSpinButton || needsContainer();
 
-    m_innerText = TextControlInnerTextElement::create(document);
+    RefPtr<TextControlInnerTextElement> innerEditor = TextControlInnerTextElement::create(document);
     if (!createsContainer) {
-        shadowRoot->appendChild(m_innerText);
+        shadowRoot->appendChild(innerEditor.release());
         return;
     }
 
@@ -259,7 +259,7 @@ void TextFieldInputType::createShadowSubtree()
     shadowRoot->appendChild(container);
 
     RefPtr<EditingViewPortElement> editingViewPort = EditingViewPortElement::create(document);
-    editingViewPort->appendChild(m_innerText);
+    editingViewPort->appendChild(innerEditor.release());
     container->appendChild(editingViewPort.release());
 
 #if ENABLE(INPUT_SPEECH)
@@ -276,16 +276,9 @@ Element* TextFieldInputType::containerElement() const
     return element().userAgentShadowRoot()->getElementById(ShadowElementNames::textFieldContainer());
 }
 
-HTMLElement* TextFieldInputType::innerTextElement() const
-{
-    ASSERT(m_innerText);
-    return m_innerText.get();
-}
-
 void TextFieldInputType::destroyShadowSubtree()
 {
     InputType::destroyShadowSubtree();
-    m_innerText.clear();
     if (SpinButtonElement* spinButton = spinButtonElement())
         spinButton->removeSpinButtonOwner();
 }
@@ -405,7 +398,7 @@ void TextFieldInputType::updatePlaceholderText()
         placeholder->setPart(AtomicString("-webkit-input-placeholder", AtomicString::ConstructFromLiteral));
         placeholder->setAttribute(idAttr, ShadowElementNames::placeholder());
         Element* container = containerElement();
-        Node* previous = container ? container : innerTextElement();
+        Node* previous = container ? container : element().innerTextElement();
         previous->parentNode()->insertBefore(placeholder, previous->nextSibling());
         ASSERT_WITH_SECURITY_IMPLICATION(placeholder->parentNode() == previous->parentNode());
     }

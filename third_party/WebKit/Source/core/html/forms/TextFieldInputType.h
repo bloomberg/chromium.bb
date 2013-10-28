@@ -48,8 +48,6 @@ protected:
     virtual void handleKeydownEvent(KeyboardEvent*) OVERRIDE;
     void handleKeydownEventForSpinButton(KeyboardEvent*);
 
-    virtual HTMLElement* innerTextElement() const OVERRIDE;
-
 protected:
     virtual bool needsContainer() const;
     virtual bool shouldHaveSpinButton() const;
@@ -96,8 +94,6 @@ private:
     virtual void spinButtonStepUp() OVERRIDE;
 
     SpinButtonElement* spinButtonElement() const;
-
-    RefPtr<HTMLElement> m_innerText;
 };
 
 } // namespace WebCore

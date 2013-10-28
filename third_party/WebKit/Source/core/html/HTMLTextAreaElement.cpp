@@ -319,13 +319,6 @@ String HTMLTextAreaElement::sanitizeUserInputValue(const String& proposedValue, 
     return proposedValue.left(maxLength);
 }
 
-HTMLElement* HTMLTextAreaElement::innerTextElement() const
-{
-    Node* node = userAgentShadowRoot()->firstChild();
-    ASSERT(!node || node->hasTagName(divTag));
-    return toHTMLElement(node);
-}
-
 void HTMLTextAreaElement::rendererWillBeDestroyed()
 {
     updateValue();

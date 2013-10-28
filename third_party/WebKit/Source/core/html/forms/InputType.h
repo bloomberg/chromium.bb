@@ -170,8 +170,6 @@ public:
     virtual void createShadowSubtree();
     virtual void destroyShadowSubtree();
 
-    virtual HTMLElement* innerTextElement() const { return 0; }
-
     // Miscellaneous functions
 
     virtual bool rendererIsNeeded();

@@ -77,7 +77,7 @@ public:
     virtual int maxLength() const = 0;
     virtual String value() const = 0;
 
-    virtual HTMLElement* innerTextElement() const = 0;
+    HTMLElement* innerTextElement() const;
 
     void selectionChanged(bool userTriggered);
     bool lastChangeWasUserEdit() const;

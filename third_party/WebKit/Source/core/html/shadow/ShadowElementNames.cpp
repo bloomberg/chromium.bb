@@ -59,6 +59,12 @@ const AtomicString& editingViewPort()
     return name;
 }
 
+const AtomicString& innerEditor()
+{
+    DEFINE_STATIC_LOCAL(AtomicString, name, ("inner-editor", AtomicString::ConstructFromLiteral));
+    return name;
+}
+
 const AtomicString& passwordGenerator()
 {
     DEFINE_STATIC_LOCAL(AtomicString, name, ("password-generator", AtomicString::ConstructFromLiteral));

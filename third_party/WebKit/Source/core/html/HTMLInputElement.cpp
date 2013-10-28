@@ -176,11 +176,6 @@ Vector<FileChooserFileInfo> HTMLInputElement::filesFromFileInputFormControlState
     return FileInputType::filesFromFormControlState(state);
 }
 
-HTMLElement* HTMLInputElement::innerTextElement() const
-{
-    return m_inputType->innerTextElement();
-}
-
 HTMLElement* HTMLInputElement::passwordGeneratorButtonElement() const
 {
     return toHTMLElement(userAgentShadowRoot()->getElementById(ShadowElementNames::passwordGenerator()));

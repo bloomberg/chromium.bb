@@ -651,4 +651,9 @@ String HTMLTextFormControlElement::directionForFormData() const
     return "ltr";
 }
 
+HTMLElement* HTMLTextFormControlElement::innerTextElement() const
+{
+    return toHTMLElement(userAgentShadowRoot()->getElementById(ShadowElementNames::innerEditor()));
+}
+
 } // namespace Webcore

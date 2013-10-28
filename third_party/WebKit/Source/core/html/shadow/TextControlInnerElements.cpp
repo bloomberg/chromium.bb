@@ -111,7 +111,9 @@ inline TextControlInnerTextElement::TextControlInnerTextElement(Document& docume
 
 PassRefPtr<TextControlInnerTextElement> TextControlInnerTextElement::create(Document& document)
 {
-    return adoptRef(new TextControlInnerTextElement(document));
+    RefPtr<TextControlInnerTextElement> element = adoptRef(new TextControlInnerTextElement(document));
+    element->setAttribute(idAttr, ShadowElementNames::innerEditor());
+    return element.release();
 }
 
 void TextControlInnerTextElement::defaultEventHandler(Event* event)
