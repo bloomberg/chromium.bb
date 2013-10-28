@@ -25,7 +25,7 @@
 #include "ui/gfx/range/range.h"
 
 @interface AutofillMainContainer (Private)
-- (void)buildWindowButtonsForFrame:(NSRect)frame;
+- (void)buildWindowButtons;
 - (void)layoutButtons;
 - (NSSize)preferredLegalDocumentSizeForWidth:(CGFloat)width;
 @end
@@ -43,7 +43,7 @@
 }
 
 - (void)loadView {
-  [self buildWindowButtonsForFrame:NSZeroRect];
+  [self buildWindowButtons];
 
   base::scoped_nsobject<NSView> view([[NSView alloc] initWithFrame:NSZeroRect]);
   [view setAutoresizesSubviews:YES];
@@ -174,7 +174,7 @@
   [notificationContainer_ performLayout];
 }
 
-- (void)buildWindowButtonsForFrame:(NSRect)frame {
+- (void)buildWindowButtons {
   if (buttonContainer_.get())
     return;
 
@@ -203,11 +203,9 @@
   [button sizeToFit];
   [buttonContainer_ addSubview:button];
 
-  frame = NSMakeRect(
-      NSWidth(frame) - NSMaxX([button frame]), 0,
+  NSRect frame = NSMakeRect(
+      -NSMaxX([button frame]) - chrome_style::kHorizontalPadding, 0,
       NSMaxX([button frame]), NSHeight([button frame]));
-  frame = NSOffsetRect(frame, -chrome_style::kHorizontalPadding, 0);
-
   [buttonContainer_ setFrame:frame];
 }
 
