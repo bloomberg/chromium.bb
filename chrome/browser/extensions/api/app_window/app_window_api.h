@@ -5,11 +5,11 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_APP_WINDOW_APP_WINDOW_API_H_
 #define CHROME_BROWSER_EXTENSIONS_API_APP_WINDOW_APP_WINDOW_API_H_
 
-#include "chrome/browser/extensions/extension_function.h"
+#include "chrome/browser/extensions/chrome_extension_function.h"
 
 namespace extensions {
 
-class AppWindowCreateFunction : public AsyncExtensionFunction {
+class AppWindowCreateFunction : public ChromeAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("app.window.create", APP_WINDOW_CREATE)
 

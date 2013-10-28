@@ -55,7 +55,7 @@ SocketAsyncApiFunction::~SocketAsyncApiFunction() {
 
 bool SocketAsyncApiFunction::PrePrepare() {
   manager_ = CreateSocketResourceManager();
-  return manager_->SetProfile(profile());
+  return manager_->SetProfile(GetProfile());
 }
 
 bool SocketAsyncApiFunction::Respond() {

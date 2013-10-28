@@ -41,7 +41,7 @@ SerialAsyncApiFunction::~SerialAsyncApiFunction() {
 }
 
 bool SerialAsyncApiFunction::PrePrepare() {
-  manager_ = ApiResourceManager<SerialConnection>::Get(profile());
+  manager_ = ApiResourceManager<SerialConnection>::Get(GetProfile());
   DCHECK(manager_);
   return true;
 }

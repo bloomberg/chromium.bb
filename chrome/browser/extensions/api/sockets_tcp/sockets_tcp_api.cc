@@ -158,7 +158,7 @@ bool SocketsTcpSetPausedFunction::Prepare() {
   params_ = api::sockets_tcp::SetPaused::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params_.get());
 
-  socket_event_dispatcher_ = TCPSocketEventDispatcher::Get(profile());
+  socket_event_dispatcher_ = TCPSocketEventDispatcher::Get(GetProfile());
   DCHECK(socket_event_dispatcher_) << "There is no socket event dispatcher. "
     "If this assertion is failing during a test, then it is likely that "
     "TestExtensionSystem is failing to provide an instance of "
@@ -243,7 +243,7 @@ bool SocketsTcpConnectFunction::Prepare() {
   params_ = sockets_tcp::Connect::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params_.get());
 
-  socket_event_dispatcher_ = TCPSocketEventDispatcher::Get(profile());
+  socket_event_dispatcher_ = TCPSocketEventDispatcher::Get(GetProfile());
   DCHECK(socket_event_dispatcher_) << "There is no socket event dispatcher. "
     "If this assertion is failing during a test, then it is likely that "
     "TestExtensionSystem is failing to provide an instance of "

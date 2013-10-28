@@ -8,7 +8,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/system_monitor/system_monitor.h"
 #include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
-#include "chrome/browser/extensions/extension_function.h"
+#include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/webrtc_audio_private.h"
 #include "content/public/browser/render_view_host.h"
@@ -47,8 +47,7 @@ class WebrtcAudioPrivateEventService
   Profile* profile_;
 };
 
-class WebrtcAudioPrivateGetSinksFunction
-    : public AsyncExtensionFunction {
+class WebrtcAudioPrivateGetSinksFunction : public ChromeAsyncExtensionFunction {
  protected:
   virtual ~WebrtcAudioPrivateGetSinksFunction() {}
 
@@ -63,7 +62,7 @@ class WebrtcAudioPrivateGetSinksFunction
 
 // Common base for functions that start by retrieving the list of
 // controllers for the specified tab.
-class WebrtcAudioPrivateTabIdFunction : public AsyncExtensionFunction {
+class WebrtcAudioPrivateTabIdFunction : public ChromeAsyncExtensionFunction {
  protected:
   virtual ~WebrtcAudioPrivateTabIdFunction() {}
 
@@ -120,7 +119,7 @@ class WebrtcAudioPrivateSetActiveSinkFunction
 };
 
 class WebrtcAudioPrivateGetAssociatedSinkFunction
-    : public AsyncExtensionFunction {
+    : public ChromeAsyncExtensionFunction {
  protected:
   virtual ~WebrtcAudioPrivateGetAssociatedSinkFunction();
 

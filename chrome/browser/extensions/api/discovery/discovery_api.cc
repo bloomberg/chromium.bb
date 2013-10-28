@@ -40,7 +40,7 @@ bool DiscoverySuggestFunction::RunImpl() {
     url_image = params->details.url_image.get();
 
   extensions::SuggestedLinksRegistry* registry =
-      extensions::SuggestedLinksRegistryFactory::GetForProfile(profile());
+      extensions::SuggestedLinksRegistryFactory::GetForProfile(GetProfile());
   scoped_ptr<extensions::SuggestedLink> suggested_link(
       new extensions::SuggestedLink(params->details.link_url,
                                     params->details.link_text,
@@ -56,7 +56,7 @@ bool DiscoveryRemoveSuggestionFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   extensions::SuggestedLinksRegistry* registry =
-      extensions::SuggestedLinksRegistryFactory::GetForProfile(profile());
+      extensions::SuggestedLinksRegistryFactory::GetForProfile(GetProfile());
   registry->Remove(extension_id(), params->link_url);
 
   return true;
@@ -64,7 +64,7 @@ bool DiscoveryRemoveSuggestionFunction::RunImpl() {
 
 bool DiscoveryClearAllSuggestionsFunction::RunImpl() {
   extensions::SuggestedLinksRegistry* registry =
-      extensions::SuggestedLinksRegistryFactory::GetForProfile(profile());
+      extensions::SuggestedLinksRegistryFactory::GetForProfile(GetProfile());
   registry->ClearAll(extension_id());
 
   return true;

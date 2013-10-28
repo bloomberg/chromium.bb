@@ -9,8 +9,8 @@
 
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
+#include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/browser/extensions/extension_action.h"
-#include "chrome/browser/extensions/extension_function.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
@@ -120,7 +120,7 @@ class ExtensionActionStorageManager
 // have required tabIds while browserAction's are optional, they have different
 // internal browser notification requirements, and not all functions are defined
 // for all APIs).
-class ExtensionActionFunction : public SyncExtensionFunction {
+class ExtensionActionFunction : public ChromeSyncExtensionFunction {
  public:
   static bool ParseCSSColorString(const std::string& color_string,
                                   SkColor* result);
@@ -343,7 +343,7 @@ class BrowserActionDisableFunction : public ExtensionActionHideFunction {
   virtual ~BrowserActionDisableFunction() {}
 };
 
-class BrowserActionOpenPopupFunction : public UIThreadExtensionFunction,
+class BrowserActionOpenPopupFunction : public ChromeAsyncExtensionFunction,
                                        public content::NotificationObserver {
  public:
   DECLARE_EXTENSION_FUNCTION("browserAction.openPopup",
@@ -467,7 +467,7 @@ class PageActionGetPopupFunction
 };
 
 // Base class for deprecated page actions APIs
-class PageActionsFunction : public SyncExtensionFunction {
+class PageActionsFunction : public ChromeSyncExtensionFunction {
  protected:
   PageActionsFunction();
   virtual ~PageActionsFunction();

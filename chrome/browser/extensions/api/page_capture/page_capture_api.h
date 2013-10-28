@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/memory/ref_counted.h"
-#include "chrome/browser/extensions/extension_function.h"
+#include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/common/extensions/api/page_capture.h"
 #include "webkit/common/blob/shareable_file_reference.h"
 
@@ -22,7 +22,7 @@ class WebContents;
 
 namespace extensions {
 
-class PageCaptureSaveAsMHTMLFunction : public AsyncExtensionFunction {
+class PageCaptureSaveAsMHTMLFunction : public ChromeAsyncExtensionFunction {
  public:
   PageCaptureSaveAsMHTMLFunction();
 

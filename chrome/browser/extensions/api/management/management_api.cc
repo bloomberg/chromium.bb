@@ -225,16 +225,16 @@ void AddExtensionInfo(const ExtensionSet& extensions,
 } // namespace
 
 ExtensionService* ManagementFunction::service() {
-  return profile()->GetExtensionService();
+  return GetProfile()->GetExtensionService();
 }
 
 ExtensionService* AsyncManagementFunction::service() {
-  return profile()->GetExtensionService();
+  return GetProfile()->GetExtensionService();
 }
 
 bool ManagementGetAllFunction::RunImpl() {
   ExtensionInfoList extensions;
-  ExtensionSystem* system = ExtensionSystem::Get(profile());
+  ExtensionSystem* system = ExtensionSystem::Get(GetProfile());
 
   AddExtensionInfo(*service()->extensions(), system, &extensions);
   AddExtensionInfo(*service()->disabled_extensions(), system, &extensions);
@@ -256,8 +256,8 @@ bool ManagementGetFunction::RunImpl() {
     return false;
   }
 
-  scoped_ptr<management::ExtensionInfo> info = CreateExtensionInfo(
-      *extension, ExtensionSystem::Get(profile()));
+  scoped_ptr<management::ExtensionInfo> info =
+      CreateExtensionInfo(*extension, ExtensionSystem::Get(GetProfile()));
   results_ = management::Get::Results::Create(*info);
 
   return true;
@@ -438,8 +438,8 @@ bool ManagementLaunchAppFunction::RunImpl() {
   extension_misc::LaunchContainer launch_container =
       service()->extension_prefs()->GetLaunchContainer(
           extension, ExtensionPrefs::LAUNCH_DEFAULT);
-  OpenApplication(AppLaunchParams(profile(), extension, launch_container,
-                                  NEW_FOREGROUND_TAB));
+  OpenApplication(AppLaunchParams(
+      GetProfile(), extension, launch_container, NEW_FOREGROUND_TAB));
 #if !defined(OS_ANDROID)
   CoreAppLauncherHandler::RecordAppLaunchType(
       extension_misc::APP_LAUNCH_EXTENSION_API,
@@ -469,8 +469,8 @@ bool ManagementSetEnabledFunction::RunImpl() {
     return false;
   }
 
-  const ManagementPolicy* policy = ExtensionSystem::Get(profile())->
-      management_policy();
+  const ManagementPolicy* policy =
+      ExtensionSystem::Get(GetProfile())->management_policy();
   if (!policy->UserMayModifySettings(extension, NULL)) {
     error_ = ErrorUtils::FormatErrorMessage(
         keys::kUserCantModifyError, extension_id_);
@@ -534,8 +534,9 @@ bool ManagementUninstallFunctionBase::Uninstall(
     return false;
   }
 
-  if (!ExtensionSystem::Get(profile())->management_policy()->
-      UserMayModifySettings(extension, NULL)) {
+  if (!ExtensionSystem::Get(GetProfile())
+           ->management_policy()
+           ->UserMayModifySettings(extension, NULL)) {
     error_ = ErrorUtils::FormatErrorMessage(
         keys::kUserCantModifyError, extension_id_);
     return false;
@@ -545,7 +546,7 @@ bool ManagementUninstallFunctionBase::Uninstall(
     if (show_confirm_dialog) {
       AddRef(); // Balanced in ExtensionUninstallAccepted/Canceled
       extension_uninstall_dialog_.reset(ExtensionUninstallDialog::Create(
-          profile(), GetCurrentBrowser(), this));
+          GetProfile(), GetCurrentBrowser(), this));
       extension_uninstall_dialog_->ConfirmUninstall(extension);
     } else {
       Finish(true);

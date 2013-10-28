@@ -38,9 +38,9 @@ bool FileBrowserPrivateLogoutUserFunction::RunImpl() {
 
 bool FileBrowserPrivateGetPreferencesFunction::RunImpl() {
   api::file_browser_private::GetPreferences::Results::Result result;
-  const PrefService* const service = profile_->GetPrefs();
+  const PrefService* const service = GetProfile()->GetPrefs();
 
-  result.drive_enabled = drive::util::IsDriveEnabledForProfile(profile_);
+  result.drive_enabled = drive::util::IsDriveEnabledForProfile(GetProfile());
   result.cellular_disabled =
       service->GetBoolean(prefs::kDisableDriveOverCellular);
   result.hosted_files_disabled =
@@ -64,7 +64,7 @@ bool FileBrowserPrivateSetPreferencesFunction::RunImpl() {
   const scoped_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  PrefService* const service = profile_->GetPrefs();
+  PrefService* const service = GetProfile()->GetPrefs();
 
   if (params->change_info.cellular_disabled)
     service->SetBoolean(prefs::kDisableDriveOverCellular,
@@ -94,7 +94,7 @@ bool FileBrowserPrivateZipSelectionFunction::RunImpl() {
     return false;
 
   base::FilePath src_dir = file_manager::util::GetLocalPathFromURL(
-      render_view_host(), profile(), GURL(params->dir_url));
+      render_view_host(), GetProfile(), GURL(params->dir_url));
   if (src_dir.empty())
     return false;
 
@@ -105,7 +105,7 @@ bool FileBrowserPrivateZipSelectionFunction::RunImpl() {
   std::vector<base::FilePath> files;
   for (size_t i = 0; i < params->selection_urls.size(); ++i) {
     base::FilePath path = file_manager::util::GetLocalPathFromURL(
-        render_view_host(), profile(), GURL(params->selection_urls[i]));
+        render_view_host(), GetProfile(), GURL(params->selection_urls[i]));
     if (path.empty())
       return false;
     files.push_back(path);
@@ -192,7 +192,7 @@ bool FileBrowserPrivateInstallWebstoreItemFunction::RunImpl() {
       new file_manager::FileManagerInstaller(
           GetAssociatedWebContents(),  // web_contents(),
           params->item_id,
-          profile(),
+          GetProfile(),
           callback));
   // installer will be AddRef()'d in BeginInstall().
   installer->BeginInstall();
@@ -230,7 +230,7 @@ bool FileBrowserPrivateRequestWebStoreAccessTokenFunction::RunImpl() {
   scopes.push_back(kCWSScope);
 
   ProfileOAuth2TokenService* oauth_service =
-      ProfileOAuth2TokenServiceFactory::GetForProfile(profile());
+      ProfileOAuth2TokenServiceFactory::GetForProfile(GetProfile());
   net::URLRequestContextGetter* url_request_context_getter =
       g_browser_process->system_request_context();
 

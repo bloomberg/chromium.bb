@@ -8,7 +8,7 @@
 #include <map>
 
 #include "base/platform_file.h"
-#include "chrome/browser/extensions/extension_function.h"
+#include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/browser/sync_file_system/conflict_resolution_policy.h"
 #include "chrome/browser/sync_file_system/sync_file_status.h"
 #include "chrome/browser/sync_file_system/sync_status_code.h"
@@ -23,7 +23,7 @@ class FileSystemContext;
 namespace extensions {
 
 class SyncFileSystemDeleteFileSystemFunction
-    : public AsyncExtensionFunction {
+    : public ChromeAsyncExtensionFunction {
  public:
   // TODO(kinuko,calvinlo): Uncomment this or delete this class when
   // we decide if we want to revive this function.
@@ -38,9 +38,8 @@ class SyncFileSystemDeleteFileSystemFunction
   void DidDeleteFileSystem(base::PlatformFileError error);
 };
 
-
 class SyncFileSystemGetFileStatusFunction
-    : public AsyncExtensionFunction {
+    : public ChromeAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("syncFileSystem.getFileStatus",
                              SYNCFILESYSTEM_GETFILESYNCSTATUS)
@@ -56,7 +55,7 @@ class SyncFileSystemGetFileStatusFunction
 };
 
 class SyncFileSystemGetFileStatusesFunction
-    : public AsyncExtensionFunction {
+    : public ChromeAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("syncFileSystem.getFileStatuses",
                              SYNCFILESYSTEM_GETFILESYNCSTATUSES)
@@ -83,7 +82,7 @@ class SyncFileSystemGetFileStatusesFunction
 };
 
 class SyncFileSystemGetUsageAndQuotaFunction
-    : public AsyncExtensionFunction {
+    : public ChromeAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("syncFileSystem.getUsageAndQuota",
                              SYNCFILESYSTEM_GETUSAGEANDQUOTA)
@@ -99,7 +98,7 @@ class SyncFileSystemGetUsageAndQuotaFunction
 };
 
 class SyncFileSystemRequestFileSystemFunction
-    : public AsyncExtensionFunction {
+    : public ChromeAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("syncFileSystem.requestFileSystem",
                              SYNCFILESYSTEM_REQUESTFILESYSTEM)
@@ -120,7 +119,7 @@ class SyncFileSystemRequestFileSystemFunction
 };
 
 class SyncFileSystemSetConflictResolutionPolicyFunction
-    : public SyncExtensionFunction {
+    : public ChromeSyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("syncFileSystem.setConflictResolutionPolicy",
                              SYNCFILESYSTEM_SETCONFLICTRESOLUTIONPOLICY)
@@ -131,7 +130,7 @@ class SyncFileSystemSetConflictResolutionPolicyFunction
 };
 
 class SyncFileSystemGetConflictResolutionPolicyFunction
-    : public SyncExtensionFunction {
+    : public ChromeSyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("syncFileSystem.getConflictResolutionPolicy",
                              SYNCFILESYSTEM_GETCONFLICTRESOLUTIONPOLICY)
@@ -141,7 +140,8 @@ class SyncFileSystemGetConflictResolutionPolicyFunction
   virtual bool RunImpl() OVERRIDE;
 };
 
-class SyncFileSystemGetServiceStatusFunction : public SyncExtensionFunction {
+class SyncFileSystemGetServiceStatusFunction
+    : public ChromeSyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("syncFileSystem.getServiceStatus",
                              SYNCFILESYSTEM_GETSERVICESTATUS)

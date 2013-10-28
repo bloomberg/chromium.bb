@@ -628,6 +628,8 @@
         'browser/extensions/browser_permissions_policy_delegate.h',
         'browser/extensions/bundle_installer.cc',
         'browser/extensions/bundle_installer.h',
+        'browser/extensions/chrome_extension_function.cc',
+        'browser/extensions/chrome_extension_function.h',
         'browser/extensions/component_loader.cc',
         'browser/extensions/component_loader.h',
         'browser/extensions/context_menu_matcher.cc',

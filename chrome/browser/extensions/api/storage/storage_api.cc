@@ -49,7 +49,7 @@ bool SettingsFunction::RunImpl() {
       settings_namespace_ != settings_namespace::INVALID);
 
   SettingsFrontend* frontend =
-      profile()->GetExtensionService()->settings_frontend();
+      GetProfile()->GetExtensionService()->settings_frontend();
   if (!frontend->IsStorageEnabled(settings_namespace_)) {
     error_ = base::StringPrintf(
         "\"%s\" is not available in this instance of Chrome",

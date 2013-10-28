@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_WEBRTC_LOGGING_PRIVATE_WEBRTC_LOGGING_PRIVATE_API_H_
 #define CHROME_BROWSER_EXTENSIONS_API_WEBRTC_LOGGING_PRIVATE_WEBRTC_LOGGING_PRIVATE_API_H_
 
-#include "chrome/browser/extensions/extension_function.h"
+#include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/common/extensions/api/webrtc_logging_private.h"
 
 namespace content {
@@ -17,7 +17,7 @@ class RenderProcessHost;
 namespace extensions {
 
 // TODO(grunell). Merge this with WebrtcAudioPrivateTabIdFunction.
-class WebrtcLoggingPrivateTabIdFunction : public AsyncExtensionFunction {
+class WebrtcLoggingPrivateTabIdFunction : public ChromeAsyncExtensionFunction {
  protected:
   virtual ~WebrtcLoggingPrivateTabIdFunction() {}
 

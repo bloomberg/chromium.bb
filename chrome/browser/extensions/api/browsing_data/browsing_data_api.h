@@ -12,7 +12,7 @@
 #include <string>
 
 #include "chrome/browser/browsing_data/browsing_data_remover.h"
-#include "chrome/browser/extensions/extension_function.h"
+#include "chrome/browser/extensions/chrome_extension_function.h"
 
 class PluginPrefs;
 
@@ -51,8 +51,7 @@ extern const char kOneAtATimeError[];
 
 }  // namespace extension_browsing_data_api_constants
 
-
-class BrowsingDataSettingsFunction : public SyncExtensionFunction {
+class BrowsingDataSettingsFunction : public ChromeSyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("browsingData.settings", BROWSINGDATA_SETTINGS)
 
@@ -80,8 +79,8 @@ class BrowsingDataSettingsFunction : public SyncExtensionFunction {
 //
 // Each child class must implement GetRemovalMask(), which returns the bitmask
 // of data types to remove.
-class BrowsingDataRemoverFunction : public AsyncExtensionFunction,
-                                   public BrowsingDataRemover::Observer {
+class BrowsingDataRemoverFunction : public ChromeAsyncExtensionFunction,
+                                    public BrowsingDataRemover::Observer {
  public:
   // BrowsingDataRemover::Observer interface method.
   virtual void OnBrowsingDataRemoverDone() OVERRIDE;

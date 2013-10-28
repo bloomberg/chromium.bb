@@ -10,7 +10,7 @@
 
 #include <string>
 
-#include "chrome/browser/extensions/extension_function.h"
+#include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/common/extensions/api/debugger.h"
 #include "content/public/browser/worker_service.h"
 
@@ -29,7 +29,7 @@ class DevToolsAgentHost;
 class WebContents;
 }
 
-class DebuggerFunction : public AsyncExtensionFunction {
+class DebuggerFunction : public ChromeAsyncExtensionFunction {
  protected:
   DebuggerFunction();
   virtual ~DebuggerFunction();

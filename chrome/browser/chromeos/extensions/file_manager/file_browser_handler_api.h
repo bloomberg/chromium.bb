@@ -16,7 +16,7 @@
 #include <vector>
 
 #include "base/files/file_path.h"
-#include "chrome/browser/extensions/extension_function.h"
+#include "chrome/browser/extensions/chrome_extension_function.h"
 
 class Browser;
 class FileBrowserHandlerInternalSelectFileFunction;
@@ -76,7 +76,7 @@ class FileSelectorFactory {
 // The fileBrowserHandlerInternal.selectFile extension function implementation.
 // See the file description for more info.
 class FileBrowserHandlerInternalSelectFileFunction
-    : public AsyncExtensionFunction {
+    : public ChromeAsyncExtensionFunction {
  public:
   // Default constructor used in production code.
   // It will create its own FileSelectorFactory implementation, and set the

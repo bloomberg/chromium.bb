@@ -7,7 +7,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/extensions/extension_function.h"
+#include "chrome/browser/extensions/chrome_extension_function.h"
 
 namespace device {
 
@@ -22,7 +22,7 @@ namespace api {
 // Base class for bluetooth extension functions. This class initializes
 // bluetooth adapter and calls DoWork() implemented by individual bluetooth
 // extension functions.
-class BluetoothExtensionFunction : public AsyncExtensionFunction {
+class BluetoothExtensionFunction : public ChromeAsyncExtensionFunction {
  public:
   BluetoothExtensionFunction();
 

@@ -39,13 +39,13 @@ bool FileBrowserPrivateSelectFileFunction::RunImpl() {
 
   file_manager::util::GetSelectedFileInfo(
       render_view_host(),
-      profile(),
+      GetProfile(),
       file_paths,
       option,
-      base::Bind(&FileBrowserPrivateSelectFileFunction::
-                     GetSelectedFileInfoResponse,
-                 this,
-                 params->index));
+      base::Bind(
+          &FileBrowserPrivateSelectFileFunction::GetSelectedFileInfoResponse,
+          this,
+          params->index));
   return true;
 }
 
@@ -76,13 +76,14 @@ bool FileBrowserPrivateSelectFilesFunction::RunImpl() {
 
   file_manager::util::GetSelectedFileInfo(
       render_view_host(),
-      profile(),
+      GetProfile(),
       file_urls,
       params->should_return_local_path ?
           file_manager::util::NEED_LOCAL_PATH_FOR_OPENING :
           file_manager::util::NO_LOCAL_PATH_RESOLUTION,
-      base::Bind(&FileBrowserPrivateSelectFilesFunction::
-                     GetSelectedFileInfoResponse, this));
+      base::Bind(
+          &FileBrowserPrivateSelectFilesFunction::GetSelectedFileInfoResponse,
+          this));
   return true;
 }
 

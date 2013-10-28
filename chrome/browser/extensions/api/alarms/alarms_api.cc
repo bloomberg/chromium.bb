@@ -120,8 +120,8 @@ bool AlarmsCreateFunction::RunImpl() {
                   Manifest::IsUnpackedLocation(GetExtension()->location()) ?
                   kDevDelayMinimum : kReleaseDelayMinimum),
               clock_->Now());
-  AlarmManager::Get(profile())->AddAlarm(extension_id(), alarm, base::Bind(
-      &AlarmsCreateFunction::Callback, this));
+  AlarmManager::Get(GetProfile())->AddAlarm(
+      extension_id(), alarm, base::Bind(&AlarmsCreateFunction::Callback, this));
 
   return true;
 }
@@ -135,8 +135,10 @@ bool AlarmsGetFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   std::string name = params->name.get() ? *params->name : kDefaultAlarmName;
-  AlarmManager::Get(profile())->GetAlarm(extension_id(), name, base::Bind(
-      &AlarmsGetFunction::Callback, this, name));
+  AlarmManager::Get(GetProfile())
+      ->GetAlarm(extension_id(),
+                 name,
+                 base::Bind(&AlarmsGetFunction::Callback, this, name));
 
   return true;
 }
@@ -153,8 +155,8 @@ void AlarmsGetFunction::Callback(
 }
 
 bool AlarmsGetAllFunction::RunImpl() {
-  AlarmManager::Get(profile())->GetAllAlarms(extension_id(), base::Bind(
-      &AlarmsGetAllFunction::Callback, this));
+  AlarmManager::Get(GetProfile())->GetAllAlarms(
+      extension_id(), base::Bind(&AlarmsGetAllFunction::Callback, this));
   return true;
 }
 
@@ -178,8 +180,10 @@ bool AlarmsClearFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   std::string name = params->name.get() ? *params->name : kDefaultAlarmName;
-  AlarmManager::Get(profile())->RemoveAlarm(extension_id(), name, base::Bind(
-      &AlarmsClearFunction::Callback, this, name));
+  AlarmManager::Get(GetProfile())
+      ->RemoveAlarm(extension_id(),
+                    name,
+                    base::Bind(&AlarmsClearFunction::Callback, this, name));
 
   return true;
 }
@@ -192,8 +196,8 @@ void AlarmsClearFunction::Callback(const std::string& name, bool success) {
 }
 
 bool AlarmsClearAllFunction::RunImpl() {
-  AlarmManager::Get(profile())->RemoveAllAlarms(extension_id(), base::Bind(
-      &AlarmsClearAllFunction::Callback, this));
+  AlarmManager::Get(GetProfile())->RemoveAllAlarms(
+      extension_id(), base::Bind(&AlarmsClearAllFunction::Callback, this));
   return true;
 }
 

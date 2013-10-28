@@ -120,7 +120,7 @@ bool NetworkingPrivateGetManagedPropertiesFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(params);
 
   std::string user_id_hash;
-  GetUserIdHash(profile());
+  GetUserIdHash(GetProfile());
   NetworkHandler::Get()->managed_network_configuration_handler()->
       GetManagedProperties(
           user_id_hash,
@@ -231,7 +231,7 @@ bool NetworkingPrivateCreateNetworkFunction::RunImpl() {
 
   std::string user_id_hash;
   if (!params->shared)
-    user_id_hash = GetUserIdHash(profile());
+    user_id_hash = GetUserIdHash(GetProfile());
 
   scoped_ptr<base::DictionaryValue> properties_dict(
       params->properties.ToValue());

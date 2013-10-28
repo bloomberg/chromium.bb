@@ -551,16 +551,18 @@ bool GetProcessIdForTabFunction::RunImpl() {
   // which will invoke the callback once we have returned from this function.
   // Otherwise, wait for the notification that the task manager is done with
   // the data gathering.
-  if (ProcessesAPI::Get(profile_)->processes_event_router()->
-      is_task_manager_listening()) {
+  if (ProcessesAPI::Get(GetProfile())
+          ->processes_event_router()
+          ->is_task_manager_listening()) {
     base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
         &GetProcessIdForTabFunction::GetProcessIdForTab, this));
   } else {
     TaskManager::GetInstance()->model()->RegisterOnDataReadyCallback(
         base::Bind(&GetProcessIdForTabFunction::GetProcessIdForTab, this));
 
-    ProcessesAPI::Get(profile_)->processes_event_router()->
-        StartTaskManagerListening();
+    ProcessesAPI::Get(GetProfile())
+        ->processes_event_router()
+        ->StartTaskManagerListening();
   }
 
   return true;
@@ -573,8 +575,13 @@ bool GetProcessIdForTabFunction::RunImpl() {
 void GetProcessIdForTabFunction::GetProcessIdForTab() {
   content::WebContents* contents = NULL;
   int tab_index = -1;
-  if (!ExtensionTabUtil::GetTabById(tab_id_, profile(), include_incognito(),
-                                    NULL, NULL, &contents, &tab_index)) {
+  if (!ExtensionTabUtil::GetTabById(tab_id_,
+                                    GetProfile(),
+                                    include_incognito(),
+                                    NULL,
+                                    NULL,
+                                    &contents,
+                                    &tab_index)) {
     error_ = ErrorUtils::FormatErrorMessage(
         extensions::tabs_constants::kTabNotFoundError,
         base::IntToString(tab_id_));
@@ -605,16 +612,18 @@ bool TerminateFunction::RunImpl() {
   // which will invoke the callback once we have returned from this function.
   // Otherwise, wait for the notification that the task manager is done with
   // the data gathering.
-  if (ProcessesAPI::Get(profile_)->processes_event_router()->
-      is_task_manager_listening()) {
+  if (ProcessesAPI::Get(GetProfile())
+          ->processes_event_router()
+          ->is_task_manager_listening()) {
     base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
         &TerminateFunction::TerminateProcess, this));
   } else {
     TaskManager::GetInstance()->model()->RegisterOnDataReadyCallback(
         base::Bind(&TerminateFunction::TerminateProcess, this));
 
-    ProcessesAPI::Get(profile_)->processes_event_router()->
-        StartTaskManagerListening();
+    ProcessesAPI::Get(GetProfile())
+        ->processes_event_router()
+        ->StartTaskManagerListening();
   }
 
   return true;
@@ -685,16 +694,18 @@ bool GetProcessInfoFunction::RunImpl() {
   // which will invoke the callback once we have returned from this function.
   // Otherwise, wait for the notification that the task manager is done with
   // the data gathering.
-  if (ProcessesAPI::Get(profile_)->processes_event_router()->
-      is_task_manager_listening()) {
+  if (ProcessesAPI::Get(GetProfile())
+          ->processes_event_router()
+          ->is_task_manager_listening()) {
     base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
         &GetProcessInfoFunction::GatherProcessInfo, this));
   } else {
     TaskManager::GetInstance()->model()->RegisterOnDataReadyCallback(
         base::Bind(&GetProcessInfoFunction::GatherProcessInfo, this));
 
-    ProcessesAPI::Get(profile_)->processes_event_router()->
-        StartTaskManagerListening();
+    ProcessesAPI::Get(GetProfile())
+        ->processes_event_router()
+        ->StartTaskManagerListening();
   }
   return true;
 

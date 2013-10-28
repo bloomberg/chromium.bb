@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_EXTENSIONS_API_TEST_TEST_API_H_
 
 #include "base/values.h"
-#include "chrome/browser/extensions/extension_function.h"
+#include "chrome/browser/extensions/chrome_extension_function.h"
 
 template <typename T> struct DefaultSingletonTraits;
 
@@ -14,7 +14,7 @@ namespace extensions {
 
 // A function that is only available in tests.
 // Prior to running, checks that we are in an extension process.
-class TestExtensionFunction : public SyncExtensionFunction {
+class TestExtensionFunction : public ChromeSyncExtensionFunction {
  protected:
   virtual ~TestExtensionFunction();
 
@@ -77,7 +77,7 @@ class TestCreateIncognitoTabFunction : public TestExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
 };
 
-class TestSendMessageFunction : public AsyncExtensionFunction {
+class TestSendMessageFunction : public ChromeAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("test.sendMessage", UNKNOWN)
 
@@ -92,7 +92,7 @@ class TestSendMessageFunction : public AsyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
 };
 
-class TestGetConfigFunction : public SyncExtensionFunction {
+class TestGetConfigFunction : public ChromeSyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("test.getConfig", UNKNOWN)
 

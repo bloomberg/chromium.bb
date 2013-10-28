@@ -11,7 +11,7 @@
 #include "base/memory/singleton.h"
 #include "base/values.h"
 #include "chrome/browser/accessibility/accessibility_events.h"
-#include "chrome/browser/extensions/extension_function.h"
+#include "chrome/browser/extensions/chrome_extension_function.h"
 #include "ui/base/accessibility/accessibility_types.h"
 
 // Observes the profile and routes accessibility notifications as events
@@ -85,7 +85,7 @@ class ExtensionAccessibilityEventRouter {
 // listeners are only installed when accessibility support is enabled, to
 // minimize the impact.
 class AccessibilitySetAccessibilityEnabledFunction
-    : public SyncExtensionFunction {
+    : public ChromeSyncExtensionFunction {
   virtual ~AccessibilitySetAccessibilityEnabledFunction() {}
   virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION(
@@ -95,7 +95,7 @@ class AccessibilitySetAccessibilityEnabledFunction
 
 // API function that enables or disables web content accessibility support.
 class AccessibilitySetNativeAccessibilityEnabledFunction
-    : public SyncExtensionFunction {
+    : public ChromeSyncExtensionFunction {
   virtual ~AccessibilitySetNativeAccessibilityEnabledFunction() {}
   virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION(
@@ -104,7 +104,8 @@ class AccessibilitySetNativeAccessibilityEnabledFunction
 };
 
 // API function that returns the most recent focused control.
-class AccessibilityGetFocusedControlFunction : public SyncExtensionFunction {
+class AccessibilityGetFocusedControlFunction
+    : public ChromeSyncExtensionFunction {
   virtual ~AccessibilityGetFocusedControlFunction() {}
   virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION(
@@ -113,7 +114,8 @@ class AccessibilityGetFocusedControlFunction : public SyncExtensionFunction {
 };
 
 // API function that returns alerts being shown on the give tab.
-class AccessibilityGetAlertsForTabFunction : public SyncExtensionFunction {
+class AccessibilityGetAlertsForTabFunction
+    : public ChromeSyncExtensionFunction {
   virtual ~AccessibilityGetAlertsForTabFunction() {}
   virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION(

@@ -153,8 +153,8 @@ DialDiscoverNowFunction::DialDiscoverNowFunction()
 
 bool DialDiscoverNowFunction::Prepare() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(profile());
-  dial_ = DialAPIFactory::GetForProfile(profile()).get();
+  DCHECK(GetProfile());
+  dial_ = DialAPIFactory::GetForProfile(GetProfile()).get();
   return true;
 }
 

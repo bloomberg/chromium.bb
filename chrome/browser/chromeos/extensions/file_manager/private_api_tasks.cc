@@ -76,7 +76,7 @@ bool FileBrowserPrivateExecuteTaskFunction::RunImpl() {
 
   const scoped_refptr<fileapi::FileSystemContext> file_system_context =
       file_manager::util::GetFileSystemContextForRenderViewHost(
-          profile(), render_view_host());
+          GetProfile(), render_view_host());
 
   std::vector<FileSystemURL> file_urls;
   for (size_t i = 0; i < params->file_urls.size(); i++) {
@@ -91,7 +91,7 @@ bool FileBrowserPrivateExecuteTaskFunction::RunImpl() {
 
   const int32 tab_id = file_manager::util::GetTabId(dispatcher());
   return file_manager::file_tasks::ExecuteFileTask(
-      profile(),
+      GetProfile(),
       source_url(),
       extension_->id(),
       tab_id,
@@ -120,7 +120,7 @@ bool FileBrowserPrivateGetFileTasksFunction::RunImpl() {
 
   const scoped_refptr<fileapi::FileSystemContext> file_system_context =
       file_manager::util::GetFileSystemContextForRenderViewHost(
-          profile(), render_view_host());
+          GetProfile(), render_view_host());
 
   // Collect all the URLs, convert them to GURLs, and crack all the urls into
   // file paths.
@@ -149,8 +149,8 @@ bool FileBrowserPrivateGetFileTasksFunction::RunImpl() {
 
   std::vector<file_manager::file_tasks::FullTaskDescriptor> tasks;
   file_manager::file_tasks::FindAllTypesOfTasks(
-      profile_,
-      drive::util::GetDriveAppRegistryByProfile(profile_),
+      GetProfile(),
+      drive::util::GetDriveAppRegistryByProfile(GetProfile()),
       path_mime_set,
       file_urls,
       &tasks);
@@ -182,7 +182,7 @@ bool FileBrowserPrivateSetDefaultTaskFunction::RunImpl() {
 
   const scoped_refptr<fileapi::FileSystemContext> file_system_context =
       file_manager::util::GetFileSystemContextForRenderViewHost(
-          profile(), render_view_host());
+          GetProfile(), render_view_host());
 
   const std::set<std::string> suffixes =
       GetUniqueSuffixes(params->file_urls, file_system_context.get());
@@ -206,10 +206,8 @@ bool FileBrowserPrivateSetDefaultTaskFunction::RunImpl() {
     return true;
   }
 
-  file_manager::file_tasks::UpdateDefaultTask(profile_->GetPrefs(),
-                                              params->task_id,
-                                              suffixes,
-                                              mime_types);
+  file_manager::file_tasks::UpdateDefaultTask(
+      GetProfile()->GetPrefs(), params->task_id, suffixes, mime_types);
   return true;
 }
 

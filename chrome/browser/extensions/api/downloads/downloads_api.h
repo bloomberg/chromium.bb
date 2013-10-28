@@ -15,8 +15,8 @@
 #include "chrome/browser/download/all_download_item_notifier.h"
 #include "chrome/browser/download/download_danger_prompt.h"
 #include "chrome/browser/download/download_path_reservation_tracker.h"
+#include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/browser/extensions/event_router.h"
-#include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/extensions/extension_warning_set.h"
 #include "chrome/common/extensions/api/downloads.h"
 #include "content/public/browser/download_item.h"
@@ -85,7 +85,7 @@ class DownloadedByExtension : public base::SupportsUserData::Data {
   DISALLOW_COPY_AND_ASSIGN(DownloadedByExtension);
 };
 
-class DownloadsDownloadFunction : public AsyncExtensionFunction {
+class DownloadsDownloadFunction : public ChromeAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("downloads.download", DOWNLOADS_DOWNLOAD)
   DownloadsDownloadFunction();
@@ -105,7 +105,7 @@ class DownloadsDownloadFunction : public AsyncExtensionFunction {
   DISALLOW_COPY_AND_ASSIGN(DownloadsDownloadFunction);
 };
 
-class DownloadsSearchFunction : public SyncExtensionFunction {
+class DownloadsSearchFunction : public ChromeSyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("downloads.search", DOWNLOADS_SEARCH)
   DownloadsSearchFunction();
@@ -118,7 +118,7 @@ class DownloadsSearchFunction : public SyncExtensionFunction {
   DISALLOW_COPY_AND_ASSIGN(DownloadsSearchFunction);
 };
 
-class DownloadsPauseFunction : public SyncExtensionFunction {
+class DownloadsPauseFunction : public ChromeSyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("downloads.pause", DOWNLOADS_PAUSE)
   DownloadsPauseFunction();
@@ -131,7 +131,7 @@ class DownloadsPauseFunction : public SyncExtensionFunction {
   DISALLOW_COPY_AND_ASSIGN(DownloadsPauseFunction);
 };
 
-class DownloadsResumeFunction : public SyncExtensionFunction {
+class DownloadsResumeFunction : public ChromeSyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("downloads.resume", DOWNLOADS_RESUME)
   DownloadsResumeFunction();
@@ -144,7 +144,7 @@ class DownloadsResumeFunction : public SyncExtensionFunction {
   DISALLOW_COPY_AND_ASSIGN(DownloadsResumeFunction);
 };
 
-class DownloadsCancelFunction : public SyncExtensionFunction {
+class DownloadsCancelFunction : public ChromeSyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("downloads.cancel", DOWNLOADS_CANCEL)
   DownloadsCancelFunction();
@@ -157,7 +157,7 @@ class DownloadsCancelFunction : public SyncExtensionFunction {
   DISALLOW_COPY_AND_ASSIGN(DownloadsCancelFunction);
 };
 
-class DownloadsEraseFunction : public SyncExtensionFunction {
+class DownloadsEraseFunction : public ChromeSyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("downloads.erase", DOWNLOADS_ERASE)
   DownloadsEraseFunction();
@@ -170,7 +170,7 @@ class DownloadsEraseFunction : public SyncExtensionFunction {
   DISALLOW_COPY_AND_ASSIGN(DownloadsEraseFunction);
 };
 
-class DownloadsRemoveFileFunction : public AsyncExtensionFunction,
+class DownloadsRemoveFileFunction : public ChromeAsyncExtensionFunction,
                                     public content::DownloadItem::Observer {
  public:
   DECLARE_EXTENSION_FUNCTION("downloads.removeFile", DOWNLOADS_REMOVEFILE)
@@ -189,7 +189,7 @@ class DownloadsRemoveFileFunction : public AsyncExtensionFunction,
   DISALLOW_COPY_AND_ASSIGN(DownloadsRemoveFileFunction);
 };
 
-class DownloadsAcceptDangerFunction : public AsyncExtensionFunction {
+class DownloadsAcceptDangerFunction : public ChromeAsyncExtensionFunction {
  public:
   typedef base::Callback<void(DownloadDangerPrompt*)> OnPromptCreatedCallback;
   static void OnPromptCreatedForTesting(
@@ -213,7 +213,7 @@ class DownloadsAcceptDangerFunction : public AsyncExtensionFunction {
   DISALLOW_COPY_AND_ASSIGN(DownloadsAcceptDangerFunction);
 };
 
-class DownloadsShowFunction : public AsyncExtensionFunction {
+class DownloadsShowFunction : public ChromeAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("downloads.show", DOWNLOADS_SHOW)
   DownloadsShowFunction();
@@ -226,7 +226,7 @@ class DownloadsShowFunction : public AsyncExtensionFunction {
   DISALLOW_COPY_AND_ASSIGN(DownloadsShowFunction);
 };
 
-class DownloadsShowDefaultFolderFunction : public AsyncExtensionFunction {
+class DownloadsShowDefaultFolderFunction : public ChromeAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION(
       "downloads.showDefaultFolder", DOWNLOADS_SHOWDEFAULTFOLDER)
@@ -240,7 +240,7 @@ class DownloadsShowDefaultFolderFunction : public AsyncExtensionFunction {
   DISALLOW_COPY_AND_ASSIGN(DownloadsShowDefaultFolderFunction);
 };
 
-class DownloadsOpenFunction : public SyncExtensionFunction {
+class DownloadsOpenFunction : public ChromeSyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("downloads.open", DOWNLOADS_OPEN)
   DownloadsOpenFunction();
@@ -253,7 +253,7 @@ class DownloadsOpenFunction : public SyncExtensionFunction {
   DISALLOW_COPY_AND_ASSIGN(DownloadsOpenFunction);
 };
 
-class DownloadsSetShelfEnabledFunction : public SyncExtensionFunction {
+class DownloadsSetShelfEnabledFunction : public ChromeSyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("downloads.setShelfEnabled",
                              DOWNLOADS_SETSHELFENABLED)
@@ -267,7 +267,7 @@ class DownloadsSetShelfEnabledFunction : public SyncExtensionFunction {
   DISALLOW_COPY_AND_ASSIGN(DownloadsSetShelfEnabledFunction);
 };
 
-class DownloadsDragFunction : public AsyncExtensionFunction {
+class DownloadsDragFunction : public ChromeAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("downloads.drag", DOWNLOADS_DRAG)
   DownloadsDragFunction();
@@ -280,7 +280,7 @@ class DownloadsDragFunction : public AsyncExtensionFunction {
   DISALLOW_COPY_AND_ASSIGN(DownloadsDragFunction);
 };
 
-class DownloadsGetFileIconFunction : public AsyncExtensionFunction {
+class DownloadsGetFileIconFunction : public ChromeAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("downloads.getFileIcon", DOWNLOADS_GETFILEICON)
   DownloadsGetFileIconFunction();

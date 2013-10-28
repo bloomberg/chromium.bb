@@ -5,11 +5,11 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_LOCATION_LOCATION_API_H_
 #define CHROME_BROWSER_EXTENSIONS_API_LOCATION_LOCATION_API_H_
 
-#include "chrome/browser/extensions/api/api_function.h"
+#include "chrome/browser/extensions/chrome_extension_function.h"
 
 namespace extensions {
 
-class LocationWatchLocationFunction : public SyncExtensionFunction {
+class LocationWatchLocationFunction : public ChromeSyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("location.watchLocation",
                              LOCATION_WATCHLOCATION)
@@ -21,7 +21,7 @@ class LocationWatchLocationFunction : public SyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
 };
 
-class LocationClearWatchFunction : public SyncExtensionFunction {
+class LocationClearWatchFunction : public ChromeSyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("location.clearWatch",
                              LOCATION_CLEARWATCH)

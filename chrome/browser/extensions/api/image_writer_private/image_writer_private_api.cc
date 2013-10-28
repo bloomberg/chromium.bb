@@ -46,7 +46,7 @@ bool ImageWriterPrivateWriteFromUrlFunction::RunImpl() {
     hash = *params->options->image_hash;
   }
 
-  image_writer::OperationManager::Get(profile())->StartWriteFromUrl(
+  image_writer::OperationManager::Get(GetProfile())->StartWriteFromUrl(
       extension_id(),
       url,
       render_view_host(),
@@ -81,7 +81,7 @@ bool ImageWriterPrivateWriteFromFileFunction::RunImpl() {
       image_writer_api::WriteFromFile::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  image_writer::OperationManager::Get(profile())->StartWriteFromFile(
+  image_writer::OperationManager::Get(GetProfile())->StartWriteFromFile(
       extension_id(),
       params->storage_unit_id,
       base::Bind(&ImageWriterPrivateWriteFromFileFunction::OnWriteStarted,
@@ -106,11 +106,10 @@ ImageWriterPrivateCancelWriteFunction::
 }
 
 bool ImageWriterPrivateCancelWriteFunction::RunImpl() {
-  image_writer::OperationManager::Get(profile())->
-      CancelWrite(
-          extension_id(),
-          base::Bind(&ImageWriterPrivateCancelWriteFunction::OnWriteCancelled,
-                     this));
+  image_writer::OperationManager::Get(GetProfile())->CancelWrite(
+      extension_id(),
+      base::Bind(&ImageWriterPrivateCancelWriteFunction::OnWriteCancelled,
+                 this));
   return true;
 }
 

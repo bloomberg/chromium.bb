@@ -218,8 +218,8 @@ void MediaGalleriesGetMediaFileSystemsFunction::ShowDialog() {
     // If there is no WebContentsModalDialogManager, then this contents is
     // probably the background page for an app. Try to find a shell window to
     // host the dialog.
-    ShellWindow* window = apps::ShellWindowRegistry::Get(profile())->
-        GetCurrentShellWindowForApp(GetExtension()->id());
+    ShellWindow* window = apps::ShellWindowRegistry::Get(
+        GetProfile())->GetCurrentShellWindowForApp(GetExtension()->id());
     if (window) {
       contents = window->web_contents();
     } else {
@@ -241,8 +241,9 @@ void MediaGalleriesGetMediaFileSystemsFunction::GetMediaFileSystemsForExtension(
     cb.Run(std::vector<MediaFileSystemInfo>());
     return;
   }
-  DCHECK(g_browser_process->media_file_system_registry()->
-             GetPreferences(profile_)->IsInitialized());
+  DCHECK(g_browser_process->media_file_system_registry()
+             ->GetPreferences(GetProfile())
+             ->IsInitialized());
   MediaFileSystemRegistry* registry =
       g_browser_process->media_file_system_registry();
   registry->GetMediaFileSystemsForExtension(

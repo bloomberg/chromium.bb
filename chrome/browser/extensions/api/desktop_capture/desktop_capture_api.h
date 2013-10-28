@@ -8,7 +8,7 @@
 #include <map>
 
 #include "base/memory/singleton.h"
-#include "chrome/browser/extensions/api/api_function.h"
+#include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/browser/media/desktop_media_picker.h"
 #include "chrome/browser/media/desktop_media_picker_model.h"
 #include "chrome/common/extensions/api/desktop_capture.h"
@@ -16,7 +16,8 @@
 
 namespace extensions {
 
-class DesktopCaptureChooseDesktopMediaFunction : public AsyncExtensionFunction {
+class DesktopCaptureChooseDesktopMediaFunction
+    : public ChromeAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("desktopCapture.chooseDesktopMedia",
                              DESKTOPCAPTURE_CHOOSEDESKTOPMEDIA)
@@ -61,7 +62,7 @@ class DesktopCaptureChooseDesktopMediaFunction : public AsyncExtensionFunction {
 };
 
 class DesktopCaptureCancelChooseDesktopMediaFunction
-    : public SyncExtensionFunction {
+    : public ChromeSyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("desktopCapture.cancelChooseDesktopMedia",
                              DESKTOPCAPTURE_CANCELCHOOSEDESKTOPMEDIA)

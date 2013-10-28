@@ -10,8 +10,8 @@
 #include "base/prefs/pref_change_registrar.h"
 #include "chrome/browser/extensions/api/content_settings/content_settings_store.h"
 #include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
+#include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/browser/extensions/event_router.h"
-#include "chrome/browser/extensions/extension_function.h"
 #include "content/public/browser/notification_observer.h"
 #include "extensions/browser/extension_prefs_scope.h"
 
@@ -175,7 +175,7 @@ class PrefTransformerInterface {
 
 // A base class to provide functionality common to the other *PreferenceFunction
 // classes.
-class PreferenceFunction : public SyncExtensionFunction {
+class PreferenceFunction : public ChromeSyncExtensionFunction {
  protected:
   virtual ~PreferenceFunction();
 

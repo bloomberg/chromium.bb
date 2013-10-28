@@ -170,7 +170,7 @@ bool CookiesFunction::ParseStoreContext(
   Profile* store_profile = NULL;
   if (!store_id->empty()) {
     store_profile = cookies_helpers::ChooseProfileFromStoreId(
-        *store_id, profile(), include_incognito());
+        *store_id, GetProfile(), include_incognito());
     if (!store_profile) {
       error_ = ErrorUtils::FormatErrorMessage(
           keys::kInvalidStoreIdError, *store_id);
@@ -513,13 +513,13 @@ void CookiesRemoveFunction::RespondOnUIThread() {
 }
 
 bool CookiesGetAllCookieStoresFunction::RunImpl() {
-  Profile* original_profile = profile();
+  Profile* original_profile = GetProfile();
   DCHECK(original_profile);
   scoped_ptr<base::ListValue> original_tab_ids(new base::ListValue());
   Profile* incognito_profile = NULL;
   scoped_ptr<base::ListValue> incognito_tab_ids;
-  if (include_incognito() && profile()->HasOffTheRecordProfile()) {
-    incognito_profile = profile()->GetOffTheRecordProfile();
+  if (include_incognito() && GetProfile()->HasOffTheRecordProfile()) {
+    incognito_profile = GetProfile()->GetOffTheRecordProfile();
     if (incognito_profile)
       incognito_tab_ids.reset(new base::ListValue());
   }

@@ -8,7 +8,7 @@
 #define CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_PRIVATE_API_BASE_H_
 
 #include "base/time/time.h"
-#include "chrome/browser/extensions/extension_function.h"
+#include "chrome/browser/extensions/chrome_extension_function.h"
 
 namespace extensions {
 
@@ -20,7 +20,7 @@ namespace extensions {
 // set_log_on_completion(true) to enable it, if they want. However, even if
 // the logging is turned off, a warning is emitted when a function call is
 // very slow. See the implementation of SendResponse() for details.
-class LoggedAsyncExtensionFunction : public AsyncExtensionFunction {
+class LoggedAsyncExtensionFunction : public ChromeAsyncExtensionFunction {
  public:
   LoggedAsyncExtensionFunction();
 

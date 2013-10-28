@@ -238,14 +238,15 @@ void RuntimeEventRouter::OnExtensionUninstalled(
 }
 
 bool RuntimeGetBackgroundPageFunction::RunImpl() {
-  ExtensionSystem* system = ExtensionSystem::Get(profile());
+  ExtensionSystem* system = ExtensionSystem::Get(GetProfile());
   ExtensionHost* host = system->process_manager()->
       GetBackgroundHostForExtension(extension_id());
-  if (system->lazy_background_task_queue()->ShouldEnqueueTask(
-          profile(), GetExtension())) {
+  if (system->lazy_background_task_queue()->ShouldEnqueueTask(GetProfile(),
+                                                              GetExtension())) {
     system->lazy_background_task_queue()->AddPendingTask(
-       profile(), extension_id(),
-       base::Bind(&RuntimeGetBackgroundPageFunction::OnPageLoaded, this));
+        GetProfile(),
+        extension_id(),
+        base::Bind(&RuntimeGetBackgroundPageFunction::OnPageLoaded, this));
   } else if (host) {
     OnPageLoaded(host);
   } else {
@@ -275,7 +276,8 @@ bool RuntimeSetUninstallUrlFunction::RunImpl() {
     return false;
   }
 
-  SetUninstallUrl(ExtensionPrefs::Get(profile()), extension_id(), url_string);
+  SetUninstallUrl(
+      ExtensionPrefs::Get(GetProfile()), extension_id(), url_string);
   return true;
 }
 
@@ -283,9 +285,10 @@ bool RuntimeReloadFunction::RunImpl() {
   // We can't call ReloadExtension directly, since when this method finishes
   // it tries to decrease the reference count for the extension, which fails
   // if the extension has already been reloaded; so instead we post a task.
-  base::MessageLoop::current()->PostTask(FROM_HERE,
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE,
       base::Bind(&ExtensionService::ReloadExtension,
-                 profile()->GetExtensionService()->AsWeakPtr(),
+                 GetProfile()->GetExtensionService()->AsWeakPtr(),
                  extension_id()));
   return true;
 }
@@ -296,7 +299,7 @@ RuntimeRequestUpdateCheckFunction::RuntimeRequestUpdateCheckFunction() {
 }
 
 bool RuntimeRequestUpdateCheckFunction::RunImpl() {
-  ExtensionSystem* system = ExtensionSystem::Get(profile());
+  ExtensionSystem* system = ExtensionSystem::Get(GetProfile());
   ExtensionService* service = system->extension_service();
   ExtensionUpdater* updater = service->updater();
   if (!updater) {
@@ -324,7 +327,7 @@ void RuntimeRequestUpdateCheckFunction::CheckComplete() {
   // that no update is found, but a previous update check might have already
   // queued up an update, so check for that here to make sure we return the
   // right value.
-  ExtensionSystem* system = ExtensionSystem::Get(profile());
+  ExtensionSystem* system = ExtensionSystem::Get(GetProfile());
   ExtensionService* service = system->extension_service();
   const Extension* update = service->GetPendingExtensionUpdate(extension_id());
   if (update) {

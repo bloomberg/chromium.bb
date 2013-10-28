@@ -82,14 +82,15 @@ bool ContentSettingsContentSettingClearFunction::RunImpl() {
   } else {
     // Incognito profiles can't access regular mode ever, they only exist in
     // split mode.
-    if (profile()->IsOffTheRecord()) {
+    if (GetProfile()->IsOffTheRecord()) {
       error_ = keys::kIncognitoContextError;
       return false;
     }
   }
 
-  ContentSettingsStore* store = extensions::ExtensionSystem::Get(profile_)->
-      extension_service()->GetContentSettingsStore();
+  ContentSettingsStore* store = extensions::ExtensionSystem::Get(GetProfile())
+                                    ->extension_service()
+                                    ->GetContentSettingsStore();
   store->ClearContentSettingsForExtension(extension_id(), scope);
 
   return true;
@@ -134,18 +135,19 @@ bool ContentSettingsContentSettingGetFunction::RunImpl() {
   HostContentSettingsMap* map;
   CookieSettings* cookie_settings;
   if (incognito) {
-    if (!profile()->HasOffTheRecordProfile()) {
+    if (!GetProfile()->HasOffTheRecordProfile()) {
       // TODO(bauerb): Allow reading incognito content settings
       // outside of an incognito session.
       error_ = keys::kIncognitoSessionOnlyError;
       return false;
     }
-    map = profile()->GetOffTheRecordProfile()->GetHostContentSettingsMap();
+    map = GetProfile()->GetOffTheRecordProfile()->GetHostContentSettingsMap();
     cookie_settings = CookieSettings::Factory::GetForProfile(
-        profile()->GetOffTheRecordProfile()).get();
+        GetProfile()->GetOffTheRecordProfile()).get();
   } else {
-    map = profile()->GetHostContentSettingsMap();
-    cookie_settings = CookieSettings::Factory::GetForProfile(profile()).get();
+    map = GetProfile()->GetHostContentSettingsMap();
+    cookie_settings =
+        CookieSettings::Factory::GetForProfile(GetProfile()).get();
   }
 
   ContentSetting setting;
@@ -206,10 +208,8 @@ bool ContentSettingsContentSettingSetFunction::RunImpl() {
   ContentSetting setting;
   EXTENSION_FUNCTION_VALIDATE(
       helpers::StringToContentSetting(setting_str, &setting));
-  EXTENSION_FUNCTION_VALIDATE(
-      HostContentSettingsMap::IsSettingAllowedForType(profile()->GetPrefs(),
-                                                      setting,
-                                                      content_type));
+  EXTENSION_FUNCTION_VALIDATE(HostContentSettingsMap::IsSettingAllowedForType(
+      GetProfile()->GetPrefs(), setting, content_type));
 
   ExtensionPrefsScope scope = kExtensionPrefsScopeRegular;
   bool incognito = false;
@@ -221,27 +221,28 @@ bool ContentSettingsContentSettingSetFunction::RunImpl() {
 
   if (incognito) {
     // Regular profiles can't access incognito unless include_incognito is true.
-    if (!profile()->IsOffTheRecord() && !include_incognito()) {
+    if (!GetProfile()->IsOffTheRecord() && !include_incognito()) {
       error_ = pref_keys::kIncognitoErrorMessage;
       return false;
     }
   } else {
     // Incognito profiles can't access regular mode ever, they only exist in
     // split mode.
-    if (profile()->IsOffTheRecord()) {
+    if (GetProfile()->IsOffTheRecord()) {
       error_ = keys::kIncognitoContextError;
       return false;
     }
   }
 
   if (scope == kExtensionPrefsScopeIncognitoSessionOnly &&
-      !profile_->HasOffTheRecordProfile()) {
+      !GetProfile()->HasOffTheRecordProfile()) {
     error_ = pref_keys::kIncognitoSessionOnlyErrorMessage;
     return false;
   }
 
-  ContentSettingsStore* store = extensions::ExtensionSystem::Get(profile_)->
-      extension_service()->GetContentSettingsStore();
+  ContentSettingsStore* store = extensions::ExtensionSystem::Get(GetProfile())
+                                    ->extension_service()
+                                    ->GetContentSettingsStore();
   store->SetExtensionContentSetting(extension_id(), primary_pattern,
                                     secondary_pattern, content_type,
                                     resource_identifier, setting, scope);

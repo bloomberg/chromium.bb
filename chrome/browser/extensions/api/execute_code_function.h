@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_EXECUTE_CODE_FUNCTION_H_
 #define CHROME_BROWSER_EXTENSIONS_API_EXECUTE_CODE_FUNCTION_H_
 
-#include "chrome/browser/extensions/extension_function.h"
+#include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/browser/extensions/script_executor.h"
 #include "chrome/common/extensions/api/tabs.h"
 
@@ -14,7 +14,7 @@ namespace extensions {
 // Base class for javascript code injection.
 // This is used by both chrome.webview.executeScript and
 // chrome.tabs.executeScript.
-class ExecuteCodeFunction : public AsyncExtensionFunction {
+class ExecuteCodeFunction : public ChromeAsyncExtensionFunction {
  public:
   ExecuteCodeFunction();
 

@@ -289,7 +289,7 @@ bool OmniboxSendSuggestionsFunction::RunImpl() {
 
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_EXTENSION_OMNIBOX_SUGGESTIONS_READY,
-      content::Source<Profile>(profile_->GetOriginalProfile()),
+      content::Source<Profile>(GetProfile()->GetOriginalProfile()),
       content::Details<SendSuggestions::Params>(params.get()));
 
   return true;
@@ -300,12 +300,11 @@ bool OmniboxSetDefaultSuggestionFunction::RunImpl() {
       SetDefaultSuggestion::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  if (SetOmniboxDefaultSuggestion(profile(),
-                                  extension_id(),
-                                  params->suggestion)) {
+  if (SetOmniboxDefaultSuggestion(
+          GetProfile(), extension_id(), params->suggestion)) {
     content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_EXTENSION_OMNIBOX_DEFAULT_SUGGESTION_CHANGED,
-        content::Source<Profile>(profile_->GetOriginalProfile()),
+        content::Source<Profile>(GetProfile()->GetOriginalProfile()),
         content::NotificationService::NoDetails());
   }
 

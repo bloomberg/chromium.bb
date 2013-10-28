@@ -10,7 +10,7 @@
 
 #include <vector>
 
-#include "chrome/browser/extensions/extension_function.h"
+#include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/browser/media_galleries/media_file_system_registry.h"
 #include "chrome/common/extensions/api/media_galleries.h"
 
@@ -19,7 +19,7 @@ namespace MediaGalleries = extensions::api::media_galleries;
 namespace extensions {
 
 class MediaGalleriesGetMediaFileSystemsFunction
-    : public AsyncExtensionFunction {
+    : public ChromeAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("mediaGalleries.getMediaFileSystems",
                              MEDIAGALLERIES_GETMEDIAFILESYSTEMS)

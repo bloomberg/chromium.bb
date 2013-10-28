@@ -39,16 +39,14 @@ bool ExtensionSetUpdateUrlDataFunction::RunImpl() {
   std::string data;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &data));
 
-  ExtensionPrefs::Get(profile())->UpdateExtensionPref(
-      extension_id(),
-      extension::kUpdateURLData,
-      new base::StringValue(data));
+  ExtensionPrefs::Get(GetProfile())->UpdateExtensionPref(
+      extension_id(), extension::kUpdateURLData, new base::StringValue(data));
   return true;
 }
 
 bool ExtensionIsAllowedIncognitoAccessFunction::RunImpl() {
   ExtensionService* ext_service =
-      ExtensionSystem::Get(profile())->extension_service();
+      ExtensionSystem::Get(GetProfile())->extension_service();
   const Extension* extension = GetExtension();
 
   SetResult(new base::FundamentalValue(
@@ -58,7 +56,7 @@ bool ExtensionIsAllowedIncognitoAccessFunction::RunImpl() {
 
 bool ExtensionIsAllowedFileSchemeAccessFunction::RunImpl() {
   ExtensionService* ext_service =
-      ExtensionSystem::Get(profile())->extension_service();
+      ExtensionSystem::Get(GetProfile())->extension_service();
   const Extension* extension = GetExtension();
 
   SetResult(new base::FundamentalValue(

@@ -8,7 +8,7 @@
 #include <string>
 
 #include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
-#include "chrome/browser/extensions/extension_function.h"
+#include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
 #include "chrome/browser/sessions/tab_restore_service_observer.h"
 #include "chrome/common/extensions/api/sessions.h"
@@ -25,7 +25,7 @@ namespace extensions {
 
 class SessionId;
 
-class SessionsGetRecentlyClosedFunction : public SyncExtensionFunction {
+class SessionsGetRecentlyClosedFunction : public ChromeSyncExtensionFunction {
  protected:
   virtual ~SessionsGetRecentlyClosedFunction() {}
   virtual bool RunImpl() OVERRIDE;
@@ -43,7 +43,7 @@ class SessionsGetRecentlyClosedFunction : public SyncExtensionFunction {
       const TabRestoreService::Entry* entry);
 };
 
-class SessionsGetDevicesFunction : public SyncExtensionFunction {
+class SessionsGetDevicesFunction : public ChromeSyncExtensionFunction {
  protected:
   virtual ~SessionsGetDevicesFunction() {}
   virtual bool RunImpl() OVERRIDE;
@@ -64,7 +64,7 @@ class SessionsGetDevicesFunction : public SyncExtensionFunction {
       const browser_sync::SyncedSession* session);
 };
 
-class SessionsRestoreFunction : public SyncExtensionFunction {
+class SessionsRestoreFunction : public ChromeSyncExtensionFunction {
  protected:
   virtual ~SessionsRestoreFunction() {}
   virtual bool RunImpl() OVERRIDE;

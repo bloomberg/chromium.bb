@@ -352,7 +352,7 @@ void ExtensionFunctionDispatcher::DispatchWithCallback(
   }
   function_ui->SetRenderViewHost(render_view_host);
   function_ui->set_dispatcher(AsWeakPtr());
-  function_ui->set_profile(profile_);
+  function_ui->set_context(profile_);
   function->set_include_incognito(extension_util::CanCrossIncognito(extension,
                                                                     service));
 

@@ -14,7 +14,7 @@
 #include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
 #include "chrome/browser/extensions/api/push_messaging/obfuscated_gaia_id_fetcher.h"
 #include "chrome/browser/extensions/api/push_messaging/push_messaging_invalidation_handler_delegate.h"
-#include "chrome/browser/extensions/extension_function.h"
+#include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -52,7 +52,7 @@ class PushMessagingEventRouter
 };
 
 class PushMessagingGetChannelIdFunction
-    : public AsyncExtensionFunction,
+    : public ChromeAsyncExtensionFunction,
       public ObfuscatedGaiaIdFetcher::Delegate,
       public OAuth2TokenService::Observer,
       public OAuth2TokenService::Consumer {

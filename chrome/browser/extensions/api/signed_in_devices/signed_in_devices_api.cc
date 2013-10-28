@@ -107,8 +107,8 @@ bool SignedInDevicesGetFunction::RunImpl() {
   bool is_local = params->is_local.get() ? *params->is_local : false;
 
   if (is_local) {
-    scoped_ptr<DeviceInfo> device = GetLocalDeviceInfo(extension_id(),
-                                                       profile());
+    scoped_ptr<DeviceInfo> device =
+        GetLocalDeviceInfo(extension_id(), GetProfile());
     base::ListValue* result = new base::ListValue();
     if (device.get()) {
       result->Append(device->ToValue());
@@ -117,8 +117,8 @@ bool SignedInDevicesGetFunction::RunImpl() {
     return true;
   }
 
-  ScopedVector<DeviceInfo> devices = GetAllSignedInDevices(extension_id(),
-                                                           profile());
+  ScopedVector<DeviceInfo> devices =
+      GetAllSignedInDevices(extension_id(), GetProfile());
 
   scoped_ptr<base::ListValue> result(new base::ListValue());
 

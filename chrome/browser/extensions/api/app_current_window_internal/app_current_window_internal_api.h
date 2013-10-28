@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_APP_CURRENT_WINDOW_INTERNAL_APP_CURRENT_WINDOW_INTERNAL_API_H_
 #define CHROME_BROWSER_EXTENSIONS_API_APP_CURRENT_WINDOW_INTERNAL_APP_CURRENT_WINDOW_INTERNAL_API_H_
 
-#include "chrome/browser/extensions/extension_function.h"
+#include "chrome/browser/extensions/chrome_extension_function.h"
 
 namespace apps {
 class ShellWindow;
@@ -13,7 +13,8 @@ class ShellWindow;
 
 namespace extensions {
 
-class AppCurrentWindowInternalExtensionFunction : public SyncExtensionFunction {
+class AppCurrentWindowInternalExtensionFunction
+    : public ChromeSyncExtensionFunction {
  protected:
   virtual ~AppCurrentWindowInternalExtensionFunction() {}
 

@@ -114,8 +114,9 @@ void TerminalPrivateOpenTerminalProcessFunction::OpenOnFileThread() {
       chromeos::ProcessProxyRegistry::Get();
   pid_t pid;
   if (!registry->OpenProcess(
-          command_, &pid,
-          base::Bind(&NotifyProcessOutput, profile_, extension_id()))) {
+           command_,
+           &pid,
+           base::Bind(&NotifyProcessOutput, GetProfile(), extension_id()))) {
     // If new process could not be opened, we return -1.
     pid = -1;
   }

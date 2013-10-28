@@ -48,11 +48,11 @@ bool LocationWatchLocationFunction::RunImpl() {
   }
 
   // TODO(vadimt): validate and use params->request_info.maximumAge
-  LocationManager::Get(profile())->AddLocationRequest(
-      extension_id(),
-      params->name,
-      min_distance_in_meters,
-      min_time_in_milliseconds);
+  LocationManager::Get(GetProfile())
+      ->AddLocationRequest(extension_id(),
+                           params->name,
+                           min_distance_in_meters,
+                           min_time_in_milliseconds);
 
   return true;
 }
@@ -62,8 +62,8 @@ bool LocationClearWatchFunction::RunImpl() {
       ClearWatch::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  LocationManager::Get(profile())->RemoveLocationRequest(
-      extension_id(), params->name);
+  LocationManager::Get(GetProfile())
+      ->RemoveLocationRequest(extension_id(), params->name);
 
   return true;
 }

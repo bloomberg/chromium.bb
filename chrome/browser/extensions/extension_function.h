@@ -22,13 +22,11 @@
 #include "content/public/common/console_message_level.h"
 #include "ipc/ipc_message.h"
 
-class Browser;
 class ChromeRenderMessageFilter;
 class ExtensionFunction;
 class ExtensionFunctionDispatcher;
 class UIThreadExtensionFunction;
 class IOThreadExtensionFunction;
-class Profile;
 class QuotaLimitHeuristic;
 
 namespace base {
@@ -37,12 +35,9 @@ class Value;
 }
 
 namespace content {
+class BrowserContext;
 class RenderViewHost;
 class WebContents;
-}
-
-namespace extensions {
-class WindowController;
 }
 
 #ifdef NDEBUG
@@ -218,7 +213,7 @@ class ExtensionFunction
   // Id of this request, used to map the response back to the caller.
   int request_id_;
 
-  // The Profile of this function's extension.
+  // The id of the profile of this function's extension.
   void* profile_id_;
 
   // The extension that called this function.
@@ -294,10 +289,10 @@ class UIThreadExtensionFunction : public ExtensionFunction {
   // Should return true if it processed the message.
   virtual bool OnMessageReceivedFromRenderView(const IPC::Message& message);
 
-  // Set the profile which contains the extension that has originated this
-  // function call.
-  void set_profile(Profile* profile) { profile_ = profile; }
-  Profile* profile() const { return profile_; }
+  // Set the browser context which contains the extension that has originated
+  // this function call.
+  void set_context(content::BrowserContext* context) { context_ = context; }
+  content::BrowserContext* context() const { return context_; }
 
   void SetRenderViewHost(content::RenderViewHost* render_view_host);
   content::RenderViewHost* render_view_host() const {
@@ -312,37 +307,9 @@ class UIThreadExtensionFunction : public ExtensionFunction {
     return dispatcher_.get();
   }
 
-  // Gets the "current" browser, if any.
-  //
-  // Many extension APIs operate relative to the current browser, which is the
-  // browser the calling code is running inside of. For example, popups, tabs,
-  // and infobars all have a containing browser, but background pages and
-  // notification bubbles do not.
-  //
-  // If there is no containing window, the current browser defaults to the
-  // foremost one.
-  //
-  // Incognito browsers are not considered unless the calling extension has
-  // incognito access enabled.
-  //
-  // This method can return NULL if there is no matching browser, which can
-  // happen if only incognito windows are open, or early in startup or shutdown
-  // shutdown when there are no active windows.
-  //
-  // TODO(stevenjb): Replace this with GetExtensionWindowController().
-  Browser* GetCurrentBrowser();
-
   // Gets the "current" web contents if any. If there is no associated web
   // contents then defaults to the foremost one.
-  content::WebContents* GetAssociatedWebContents();
-
-  // Same as above but uses WindowControllerList instead of BrowserList.
-  extensions::WindowController* GetExtensionWindowController();
-
-  // Returns true if this function (and the profile and extension that it was
-  // invoked from) can operate on the window wrapped by |window_controller|.
-  bool CanOperateOnWindow(
-      const extensions::WindowController* window_controller) const;
+  virtual content::WebContents* GetAssociatedWebContents();
 
  protected:
   // Emits a message to the extension's devtools console.
@@ -363,8 +330,8 @@ class UIThreadExtensionFunction : public ExtensionFunction {
   // The RenderViewHost we will send responses too.
   content::RenderViewHost* render_view_host_;
 
-  // The Profile of this function's extension.
-  Profile* profile_;
+  // The content::BrowserContext of this function's extension.
+  content::BrowserContext* context_;
 
  private:
   class RenderViewHostTracker;

@@ -96,16 +96,16 @@ bool FileBrowserPrivateGetDriveEntryPropertiesFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(params);
 
   const GURL file_url = GURL(params->file_url);
-  file_path_ = drive::util::ExtractDrivePath(
-      file_manager::util::GetLocalPathFromURL(
-          render_view_host(), profile(), file_url));
+  file_path_ =
+      drive::util::ExtractDrivePath(file_manager::util::GetLocalPathFromURL(
+          render_view_host(), GetProfile(), file_url));
 
   properties_.reset(new extensions::api::file_browser_private::
                     DriveEntryProperties);
 
   // Start getting the file info.
   drive::FileSystemInterface* file_system =
-      drive::util::GetFileSystemByProfile(profile());
+      drive::util::GetFileSystemByProfile(GetProfile());
   if (!file_system) {
     // |file_system| is NULL if Drive is disabled or not mounted.
     CompleteGetFileProperties(drive::FILE_ERROR_FAILED);
@@ -133,9 +133,9 @@ void FileBrowserPrivateGetDriveEntryPropertiesFunction::OnGetFileInfo(
   FillDriveEntryPropertiesValue(*entry, properties_.get());
 
   drive::FileSystemInterface* file_system =
-      drive::util::GetFileSystemByProfile(profile_);
+      drive::util::GetFileSystemByProfile(GetProfile());
   drive::DriveAppRegistry* app_registry =
-      drive::util::GetDriveAppRegistryByProfile(profile_);
+      drive::util::GetDriveAppRegistryByProfile(GetProfile());
   if (!file_system || !app_registry) {
     // |file_system| or |app_registry| is NULL if Drive is disabled.
     CompleteGetFileProperties(drive::FILE_ERROR_FAILED);
@@ -161,7 +161,7 @@ void FileBrowserPrivateGetDriveEntryPropertiesFunction::OnGetFileInfo(
   if (!drive_apps.empty()) {
     std::string default_task_id =
         file_manager::file_tasks::GetDefaultTaskIdFromPrefs(
-            *profile_->GetPrefs(),
+            *GetProfile()->GetPrefs(),
             file_specific_info.content_mime_type(),
             file_path_.Extension());
     file_manager::file_tasks::TaskDescriptor default_task;
@@ -211,13 +211,13 @@ bool FileBrowserPrivatePinDriveFileFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(params);
 
   drive::FileSystemInterface* const file_system =
-      drive::util::GetFileSystemByProfile(profile());
+      drive::util::GetFileSystemByProfile(GetProfile());
   if (!file_system)  // |file_system| is NULL if Drive is disabled.
     return false;
 
   const base::FilePath drive_path =
       drive::util::ExtractDrivePath(file_manager::util::GetLocalPathFromURL(
-          render_view_host(), profile(), GURL(params->file_url)));
+          render_view_host(), GetProfile(), GURL(params->file_url)));
   if (params->pin) {
     file_system->Pin(drive_path,
                      base::Bind(&FileBrowserPrivatePinDriveFileFunction::
@@ -258,7 +258,7 @@ bool FileBrowserPrivateGetDriveFilesFunction::RunImpl() {
   // Convert the list of strings to a list of GURLs.
   for (size_t i = 0; i < params->file_urls.size(); ++i) {
     const base::FilePath path = file_manager::util::GetLocalPathFromURL(
-        render_view_host(), profile(), GURL(params->file_urls[i]));
+        render_view_host(), GetProfile(), GURL(params->file_urls[i]));
     DCHECK(drive::util::IsUnderDriveMountPoint(path));
     base::FilePath drive_path = drive::util::ExtractDrivePath(path);
     remaining_drive_paths_.push(drive_path);
@@ -281,7 +281,7 @@ void FileBrowserPrivateGetDriveFilesFunction::GetFileOrSendResponse() {
   base::FilePath drive_path = remaining_drive_paths_.front();
 
   drive::FileSystemInterface* file_system =
-      drive::util::GetFileSystemByProfile(profile());
+      drive::util::GetFileSystemByProfile(GetProfile());
   if (!file_system) {
     // |file_system| is NULL if Drive is disabled or not mounted.
     OnFileReady(drive::FILE_ERROR_FAILED, drive_path,
@@ -328,7 +328,7 @@ bool FileBrowserPrivateCancelFileTransfersFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(params);
 
   drive::DriveIntegrationService* integration_service =
-      drive::DriveIntegrationServiceFactory::FindForProfile(profile_);
+      drive::DriveIntegrationServiceFactory::FindForProfile(GetProfile());
   if (!integration_service || !integration_service->IsMounted())
     return false;
 
@@ -349,7 +349,7 @@ bool FileBrowserPrivateCancelFileTransfersFunction::RunImpl() {
                          FileTransferCancelStatus> > responses;
   for (size_t i = 0; i < params->file_urls.size(); ++i) {
     base::FilePath file_path = file_manager::util::GetLocalPathFromURL(
-        render_view_host(), profile(), GURL(params->file_urls[i]));
+        render_view_host(), GetProfile(), GURL(params->file_urls[i]));
     if (file_path.empty())
       continue;
 
@@ -382,7 +382,7 @@ bool FileBrowserPrivateSearchDriveFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(params);
 
   drive::FileSystemInterface* const file_system =
-      drive::util::GetFileSystemByProfile(profile());
+      drive::util::GetFileSystemByProfile(GetProfile());
   if (!file_system) {
     // |file_system| is NULL if Drive is disabled.
     return false;
@@ -442,7 +442,7 @@ bool FileBrowserPrivateSearchDriveMetadataFunction::RunImpl() {
   set_log_on_completion(true);
 
   drive::FileSystemInterface* const file_system =
-      drive::util::GetFileSystemByProfile(profile());
+      drive::util::GetFileSystemByProfile(GetProfile());
   if (!file_system) {
     // |file_system| is NULL if Drive is disabled.
     return false;
@@ -517,7 +517,7 @@ void FileBrowserPrivateSearchDriveMetadataFunction::OnSearchMetadata(
 
 bool FileBrowserPrivateClearDriveCacheFunction::RunImpl() {
   drive::DriveIntegrationService* integration_service =
-      drive::DriveIntegrationServiceFactory::FindForProfile(profile_);
+      drive::DriveIntegrationServiceFactory::FindForProfile(GetProfile());
   if (!integration_service || !integration_service->IsMounted())
     return false;
 
@@ -532,7 +532,7 @@ bool FileBrowserPrivateClearDriveCacheFunction::RunImpl() {
 
 bool FileBrowserPrivateGetDriveConnectionStateFunction::RunImpl() {
   drive::DriveServiceInterface* const drive_service =
-      drive::util::GetDriveServiceByProfile(profile());
+      drive::util::GetDriveServiceByProfile(GetProfile());
 
   api::file_browser_private::GetDriveConnectionState::Results::Result result;
 
@@ -551,7 +551,8 @@ bool FileBrowserPrivateGetDriveConnectionStateFunction::RunImpl() {
       result.reasons.push_back(kDriveConnectionReasonNoService);
   } else if (
       is_connection_cellular &&
-      profile_->GetPrefs()->GetBoolean(prefs::kDisableDriveOverCellular)) {
+      GetProfile()->GetPrefs()->GetBoolean(
+        prefs::kDisableDriveOverCellular)) {
     result.type = kDriveConnectionTypeMetered;
   } else {
     result.type = kDriveConnectionTypeOnline;
@@ -570,7 +571,7 @@ bool FileBrowserPrivateRequestAccessTokenFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(params);
 
   drive::DriveServiceInterface* const drive_service =
-      drive::util::GetDriveServiceByProfile(profile());
+      drive::util::GetDriveServiceByProfile(GetProfile());
 
   if (!drive_service) {
     // DriveService is not available.
@@ -604,13 +605,13 @@ bool FileBrowserPrivateGetShareUrlFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(params);
 
   const base::FilePath path = file_manager::util::GetLocalPathFromURL(
-      render_view_host(), profile(), GURL(params->url));
+      render_view_host(), GetProfile(), GURL(params->url));
   DCHECK(drive::util::IsUnderDriveMountPoint(path));
 
   const base::FilePath drive_path = drive::util::ExtractDrivePath(path);
 
   drive::FileSystemInterface* const file_system =
-      drive::util::GetFileSystemByProfile(profile());
+      drive::util::GetFileSystemByProfile(GetProfile());
   if (!file_system) {
     // |file_system| is NULL if Drive is disabled.
     return false;

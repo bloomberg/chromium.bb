@@ -113,7 +113,7 @@ bool EPKPChallengeKeyBase::IsEnterpriseDevice() const {
 
 bool EPKPChallengeKeyBase::IsExtensionWhitelisted() const {
   const base::ListValue* list =
-      profile()->GetPrefs()->GetList(prefs::kAttestationExtensionWhitelist);
+      GetProfile()->GetPrefs()->GetList(prefs::kAttestationExtensionWhitelist);
   StringValue value(extension_->id());
   return list->Find(value) != list->end();
 }
@@ -133,7 +133,7 @@ std::string EPKPChallengeKeyBase::GetEnterpriseDomain() const {
 
 std::string EPKPChallengeKeyBase::GetUserEmail() const {
   SigninManagerBase* signin_manager =
-      SigninManagerFactory::GetForProfile(profile());
+      SigninManagerFactory::GetForProfile(GetProfile());
   if (!signin_manager)
     return std::string();
 
@@ -521,7 +521,7 @@ void EPKPChallengeUserKey::RegisterKeyCallback(
 }
 
 bool EPKPChallengeUserKey::IsRemoteAttestationEnabledForUser() const {
-  return profile()->GetPrefs()->GetBoolean(prefs::kAttestationEnabled);
+  return GetProfile()->GetPrefs()->GetBoolean(prefs::kAttestationEnabled);
 }
 
 }  // namespace extensions

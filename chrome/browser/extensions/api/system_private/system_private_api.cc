@@ -62,7 +62,7 @@ namespace extensions {
 namespace system_private = api::system_private;
 
 bool SystemPrivateGetIncognitoModeAvailabilityFunction::RunImpl() {
-  PrefService* prefs = profile_->GetPrefs();
+  PrefService* prefs = GetProfile()->GetPrefs();
   int value = prefs->GetInteger(prefs::kIncognitoModeAvailability);
   EXTENSION_FUNCTION_VALIDATE(
       value >= 0 &&

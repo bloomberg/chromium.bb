@@ -145,9 +145,9 @@ bool AppWindowCreateFunction::RunImpl() {
       create_params.window_key = *options->id;
 
       if (!options->singleton || *options->singleton) {
-        ShellWindow* window = apps::ShellWindowRegistry::Get(profile())->
-            GetShellWindowForAppAndKey(extension_id(),
-                                       create_params.window_key);
+        ShellWindow* window = apps::ShellWindowRegistry::Get(
+            GetProfile())->GetShellWindowForAppAndKey(extension_id(),
+                                                      create_params.window_key);
         if (window) {
           content::RenderViewHost* created_view =
               window->web_contents()->GetRenderViewHost();
@@ -273,9 +273,8 @@ bool AppWindowCreateFunction::RunImpl() {
   create_params.creator_process_id =
       render_view_host_->GetProcess()->GetID();
 
-  ShellWindow* shell_window = new ShellWindow(profile(),
-                                              new ChromeShellWindowDelegate(),
-                                              GetExtension());
+  ShellWindow* shell_window = new ShellWindow(
+      GetProfile(), new ChromeShellWindowDelegate(), GetExtension());
   shell_window->Init(url,
                      new apps::AppWindowContents(shell_window),
                      create_params);
@@ -297,8 +296,8 @@ bool AppWindowCreateFunction::RunImpl() {
   SetCreateResultFromShellWindow(shell_window, result);
   SetResult(result);
 
-  if (apps::ShellWindowRegistry::Get(profile())->
-          HadDevToolsAttached(created_view)) {
+  if (apps::ShellWindowRegistry::Get(GetProfile())
+          ->HadDevToolsAttached(created_view)) {
     new DevToolsRestorer(this, created_view);
     return true;
   }

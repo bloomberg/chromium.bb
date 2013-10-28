@@ -396,7 +396,7 @@ UsbAsyncApiFunction::~UsbAsyncApiFunction() {
 }
 
 bool UsbAsyncApiFunction::PrePrepare() {
-  manager_ = ApiResourceManager<UsbDeviceResource>::Get(profile());
+  manager_ = ApiResourceManager<UsbDeviceResource>::Get(GetProfile());
   set_work_thread_id(BrowserThread::FILE);
   return manager_ != NULL;
 }

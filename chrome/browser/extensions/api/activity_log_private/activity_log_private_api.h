@@ -13,8 +13,8 @@
 #include "chrome/browser/extensions/activity_log/activity_actions.h"
 #include "chrome/browser/extensions/activity_log/activity_log.h"
 #include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
+#include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/browser/extensions/event_router.h"
-#include "chrome/browser/extensions/extension_function.h"
 
 namespace extensions {
 
@@ -66,7 +66,7 @@ void ProfileKeyedAPIFactory<ActivityLogAPI>::DeclareFactoryDependencies();
 
 // The implementation of activityLogPrivate.getExtensionActivities
 class ActivityLogPrivateGetExtensionActivitiesFunction
-    : public AsyncExtensionFunction {
+    : public ChromeAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("activityLogPrivate.getExtensionActivities",
                              ACTIVITYLOGPRIVATE_GETEXTENSIONACTIVITIES)
@@ -84,7 +84,7 @@ class ActivityLogPrivateGetExtensionActivitiesFunction
 
 // The implementation of activityLogPrivate.deleteDatabase
 class ActivityLogPrivateDeleteDatabaseFunction
-    : public AsyncExtensionFunction {
+    : public ChromeAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("activityLogPrivate.deleteDatabase",
                              ACTIVITYLOGPRIVATE_DELETEDATABASE)
@@ -98,7 +98,7 @@ class ActivityLogPrivateDeleteDatabaseFunction
 
 // The implementation of activityLogPrivate.deleteUrls
 class ActivityLogPrivateDeleteUrlsFunction
-    : public AsyncExtensionFunction {
+    : public ChromeAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("activityLogPrivate.deleteUrls",
                              ACTIVITYLOGPRIVATE_DELETEURLS)

@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_TABS_WINDOWS_UTIL_H__
 #define CHROME_BROWSER_EXTENSIONS_API_TABS_WINDOWS_UTIL_H__
 
-class UIThreadExtensionFunction;
+class ChromeAsyncExtensionFunction;
 
 namespace extensions {
 class WindowController;
@@ -15,7 +15,7 @@ namespace windows_util {
 
 // Populates |controller| for given |window_id|. If the window is not found,
 // returns false and sets UIThreadExtensionFunction error_.
-bool GetWindowFromWindowID(UIThreadExtensionFunction* function,
+bool GetWindowFromWindowID(ChromeAsyncExtensionFunction* function,
                            int window_id,
                            extensions::WindowController** controller);
 

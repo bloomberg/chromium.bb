@@ -12,8 +12,8 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/extensions/api/media_galleries_private/gallery_watch_state_tracker.h"
 #include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
+#include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/browser/extensions/event_router.h"
-#include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/media_galleries/media_galleries_preferences.h"
 #include "chrome/common/extensions/api/media_galleries_private.h"
 
@@ -74,7 +74,7 @@ class MediaGalleriesPrivateAPI : public ProfileKeyedAPI,
 
 // Implements the chrome.mediaGalleriesPrivate.addGalleryWatch method.
 class MediaGalleriesPrivateAddGalleryWatchFunction
-    : public AsyncExtensionFunction {
+    : public ChromeAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("mediaGalleriesPrivate.addGalleryWatch",
                              MEDIAGALLERIESPRIVATE_ADDGALLERYWATCH);
@@ -94,7 +94,7 @@ class MediaGalleriesPrivateAddGalleryWatchFunction
 
 // Implements the chrome.mediaGalleriesPrivate.removeGalleryWatch method.
 class MediaGalleriesPrivateRemoveGalleryWatchFunction
-    : public AsyncExtensionFunction {
+    : public ChromeAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("mediaGalleriesPrivate.removeGalleryWatch",
                              MEDIAGALLERIESPRIVATE_REMOVEGALLERYWATCH);
@@ -111,7 +111,7 @@ class MediaGalleriesPrivateRemoveGalleryWatchFunction
 
 // Implements the chrome.mediaGalleriesPrivate.getAllGalleryWatch method.
 class MediaGalleriesPrivateGetAllGalleryWatchFunction
-    : public AsyncExtensionFunction {
+    : public ChromeAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("mediaGalleriesPrivate.getAllGalleryWatch",
                              MEDIAGALLERIESPRIVATE_GETALLGALLERYWATCH);
@@ -127,7 +127,7 @@ class MediaGalleriesPrivateGetAllGalleryWatchFunction
 
 // Implements the chrome.mediaGalleriesPrivate.removeAllGalleryWatch method.
 class MediaGalleriesPrivateRemoveAllGalleryWatchFunction
-    : public AsyncExtensionFunction {
+    : public ChromeAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("mediaGalleriesPrivate.removeAllGalleryWatch",
                              MEDIAGALLERIESPRIVATE_REMOVEALLGALLERYWATCH);
@@ -143,7 +143,7 @@ class MediaGalleriesPrivateRemoveAllGalleryWatchFunction
 
 // Implements the chrome.mediaGalleriesPrivate.getHandlers method.
 class MediaGalleriesPrivateGetHandlersFunction
-    : public AsyncExtensionFunction {
+    : public ChromeAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("mediaGalleriesPrivate.getHandlers",
                              MEDIAGALLERIESPRIVATE_GETHANDLERS);

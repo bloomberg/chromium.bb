@@ -293,9 +293,10 @@ bool WebstorePrivateBeginInstallWithManifest3Function::RunImpl() {
       *params_->details.icon_data : std::string();
 
   ExtensionService* service =
-    extensions::ExtensionSystem::Get(profile_)->extension_service();
+      extensions::ExtensionSystem::Get(GetProfile())->extension_service();
   if (service->GetInstalledExtension(params_->details.id) ||
-      !g_pending_installs.Get().InsertInstall(profile_, params_->details.id)) {
+      !g_pending_installs.Get().InsertInstall(GetProfile(),
+                                              params_->details.id)) {
     SetResultCode(ALREADY_INSTALLED);
     error_ = kAlreadyInstalledError;
     return false;
@@ -303,7 +304,7 @@ bool WebstorePrivateBeginInstallWithManifest3Function::RunImpl() {
 
   net::URLRequestContextGetter* context_getter = NULL;
   if (!icon_url.is_empty())
-    context_getter = profile()->GetRequestContext();
+    context_getter = GetProfile()->GetRequestContext();
 
   scoped_refptr<WebstoreInstallHelper> helper = new WebstoreInstallHelper(
       this, params_->details.id, params_->details.manifest, icon_data, icon_url,
@@ -384,12 +385,12 @@ void WebstorePrivateBeginInstallWithManifest3Function::OnWebstoreParseSuccess(
   }
 
   SigninManagerBase* signin_manager =
-      SigninManagerFactory::GetForProfile(profile());
+      SigninManagerFactory::GetForProfile(GetProfile());
   if (dummy_extension_->is_platform_app() &&
       signin_manager &&
       signin_manager->GetAuthenticatedUsername().empty() &&
       signin_manager->AuthInProgress()) {
-    signin_tracker_.reset(new SigninTracker(profile(), this));
+    signin_tracker_.reset(new SigninTracker(GetProfile(), this));
     return;
   }
 
@@ -417,7 +418,7 @@ void WebstorePrivateBeginInstallWithManifest3Function::OnWebstoreParseFailure(
       CHECK(false);
   }
   error_ = error_message;
-  g_pending_installs.Get().EraseInstall(profile_, id);
+  g_pending_installs.Get().EraseInstall(GetProfile(), id);
   SendResponse(false);
 
   // Matches the AddRef in RunImpl().
@@ -430,7 +431,7 @@ void WebstorePrivateBeginInstallWithManifest3Function::SigninFailed(
 
   SetResultCode(SIGNIN_FAILED);
   error_ = error.ToString();
-  g_pending_installs.Get().EraseInstall(profile_, params_->details.id);
+  g_pending_installs.Get().EraseInstall(GetProfile(), params_->details.id);
   SendResponse(false);
 
   // Matches the AddRef in RunImpl().
@@ -463,7 +464,7 @@ void WebstorePrivateBeginInstallWithManifest3Function::InstallUIProceed() {
   // entry is only valid for some number of minutes.
   scoped_ptr<WebstoreInstaller::Approval> approval(
       WebstoreInstaller::Approval::CreateWithNoInstallPrompt(
-          profile(), params_->details.id, parsed_manifest_.Pass(), false));
+          GetProfile(), params_->details.id, parsed_manifest_.Pass(), false));
   approval->use_app_installed_bubble = params_->details.app_install_bubble;
   approval->enable_launcher = params_->details.enable_launcher;
   // If we are enabling the launcher, we should not show the app list in order
@@ -490,7 +491,7 @@ void WebstorePrivateBeginInstallWithManifest3Function::InstallUIAbort(
     bool user_initiated) {
   error_ = kUserCancelledError;
   SetResultCode(USER_CANCELLED);
-  g_pending_installs.Get().EraseInstall(profile_, params_->details.id);
+  g_pending_installs.Get().EraseInstall(GetProfile(), params_->details.id);
   SendResponse(false);
 
   // The web store install histograms are a subset of the install histograms.
@@ -527,8 +528,9 @@ bool WebstorePrivateCompleteInstallFunction::RunImpl() {
     return false;
   }
 
-  approval_ = g_pending_approvals.Get().PopApproval(profile(),
-      params->expected_id).Pass();
+  approval_ = g_pending_approvals.Get()
+                  .PopApproval(GetProfile(), params->expected_id)
+                  .Pass();
   if (!approval_) {
     error_ = ErrorUtils::FormatErrorMessage(
         kNoPreviousBeginInstallWithManifestError, params->expected_id);
@@ -541,23 +543,25 @@ bool WebstorePrivateCompleteInstallFunction::RunImpl() {
       AppListService::Get(GetCurrentBrowser()->host_desktop_type());
 
   if (approval_->enable_launcher)
-    app_list_service->EnableAppList(profile());
+    app_list_service->EnableAppList(GetProfile());
 
   if (IsAppLauncherEnabled() && approval_->manifest->is_app()) {
     // Show the app list to show download is progressing. Don't show the app
     // list on first app install so users can be trained to open it themselves.
     if (approval_->enable_launcher)
-      app_list_service->CreateForProfile(profile());
+      app_list_service->CreateForProfile(GetProfile());
     else
-      app_list_service->ShowForProfile(profile());
+      app_list_service->ShowForProfile(GetProfile());
   }
 
   // The extension will install through the normal extension install flow, but
   // the whitelist entry will bypass the normal permissions install dialog.
   scoped_refptr<WebstoreInstaller> installer = new WebstoreInstaller(
-      profile(), this,
+      GetProfile(),
+      this,
       &(dispatcher()->delegate()->GetAssociatedWebContents()->GetController()),
-      params->expected_id, approval_.Pass(),
+      params->expected_id,
+      approval_.Pass(),
       WebstoreInstaller::INSTALL_SOURCE_OTHER);
   installer->Start();
 
@@ -570,7 +574,7 @@ void WebstorePrivateCompleteInstallFunction::OnExtensionInstallSuccess(
     test_webstore_installer_delegate->OnExtensionInstallSuccess(id);
 
   LOG(INFO) << "Install success, sending response";
-  g_pending_installs.Get().EraseInstall(profile_, id);
+  g_pending_installs.Get().EraseInstall(GetProfile(), id);
   SendResponse(true);
 
   // Matches the AddRef in RunImpl().
@@ -588,7 +592,7 @@ void WebstorePrivateCompleteInstallFunction::OnExtensionInstallFailure(
 
   error_ = error;
   LOG(INFO) << "Install failed, sending response";
-  g_pending_installs.Get().EraseInstall(profile_, id);
+  g_pending_installs.Get().EraseInstall(GetProfile(), id);
   SendResponse(false);
 
   // Matches the AddRef in RunImpl().
@@ -603,20 +607,20 @@ WebstorePrivateEnableAppLauncherFunction::
 
 bool WebstorePrivateEnableAppLauncherFunction::RunImpl() {
   AppListService::Get(GetCurrentBrowser()->host_desktop_type())->
-      EnableAppList(profile());
+      EnableAppList(GetProfile());
   return true;
 }
 
 bool WebstorePrivateGetBrowserLoginFunction::RunImpl() {
   GetBrowserLogin::Results::Info info;
-  info.login = profile_->GetOriginalProfile()->GetPrefs()->GetString(
+  info.login = GetProfile()->GetOriginalProfile()->GetPrefs()->GetString(
       prefs::kGoogleServicesUsername);
   results_ = GetBrowserLogin::Results::Create(info);
   return true;
 }
 
 bool WebstorePrivateGetStoreLoginFunction::RunImpl() {
-  results_ = GetStoreLogin::Results::Create(GetWebstoreLogin(profile_));
+  results_ = GetStoreLogin::Results::Create(GetWebstoreLogin(GetProfile()));
   return true;
 }
 
@@ -624,7 +628,7 @@ bool WebstorePrivateSetStoreLoginFunction::RunImpl() {
   scoped_ptr<SetStoreLogin::Params> params(
       SetStoreLogin::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
-  SetWebstoreLogin(profile_, params->login);
+  SetWebstoreLogin(GetProfile(), params->login);
   return true;
 }
 
@@ -661,7 +665,7 @@ bool WebstorePrivateGetIsLauncherEnabledFunction::RunImpl() {
 
 bool WebstorePrivateIsInIncognitoModeFunction::RunImpl() {
   results_ = IsInIncognitoMode::Results::Create(
-      profile_ != profile_->GetOriginalProfile());
+      GetProfile() != GetProfile()->GetOriginalProfile());
   return true;
 }
 

@@ -25,7 +25,7 @@ bool GetAllCommandsFunction::RunImpl() {
   base::ListValue* command_list = new base::ListValue();
 
   extensions::CommandService* command_service =
-      extensions::CommandService::Get(profile_);
+      extensions::CommandService::Get(GetProfile());
 
   extensions::Command browser_action;
   bool active = false;

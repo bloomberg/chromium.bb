@@ -10,8 +10,8 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
+#include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/browser/extensions/event_router.h"
-#include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/task_manager/task_manager.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
 #include "content/public/browser/notification_registrar.h"
@@ -131,7 +131,7 @@ class ProcessesAPI : public ProfileKeyedAPI,
 
 // This extension function returns the Process object for the renderer process
 // currently in use by the specified Tab.
-class GetProcessIdForTabFunction : public AsyncExtensionFunction {
+class GetProcessIdForTabFunction : public ChromeAsyncExtensionFunction {
  public:
   GetProcessIdForTabFunction();
 
@@ -153,7 +153,7 @@ class GetProcessIdForTabFunction : public AsyncExtensionFunction {
 // Using unique IDs instead of OS process IDs allows two advantages:
 // * guaranteed uniqueness, since OS process IDs can be reused
 // * guards against killing non-Chrome processes
-class TerminateFunction : public AsyncExtensionFunction {
+class TerminateFunction : public ChromeAsyncExtensionFunction {
  public:
   TerminateFunction();
 
@@ -173,7 +173,7 @@ class TerminateFunction : public AsyncExtensionFunction {
 
 // Extension function which returns a set of Process objects, containing the
 // details corresponding to the process IDs supplied as input.
-class GetProcessInfoFunction : public AsyncExtensionFunction {
+class GetProcessInfoFunction : public ChromeAsyncExtensionFunction {
  public:
   GetProcessInfoFunction();
 

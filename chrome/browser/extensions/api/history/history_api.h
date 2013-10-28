@@ -11,8 +11,8 @@
 #include "base/compiler_specific.h"
 #include "base/memory/linked_ptr.h"
 #include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
+#include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/browser/extensions/event_router.h"
-#include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/history/history_notifications.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/common/cancelable_task_tracker.h"
@@ -88,7 +88,7 @@ template<>
 void ProfileKeyedAPIFactory<HistoryAPI>::DeclareFactoryDependencies();
 
 // Base class for history function APIs.
-class HistoryFunction : public AsyncExtensionFunction {
+class HistoryFunction : public ChromeAsyncExtensionFunction {
  protected:
   virtual ~HistoryFunction() {}
   virtual void Run() OVERRIDE;

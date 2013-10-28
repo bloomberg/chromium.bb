@@ -13,7 +13,7 @@
 #include "base/strings/string16.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
-#include "chrome/browser/extensions/extension_function.h"
+#include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/browser/extensions/extension_icon_manager.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/common/extensions/api/omnibox.h"
@@ -71,7 +71,7 @@ class ExtensionOmniboxEventRouter {
   DISALLOW_COPY_AND_ASSIGN(ExtensionOmniboxEventRouter);
 };
 
-class OmniboxSendSuggestionsFunction : public SyncExtensionFunction {
+class OmniboxSendSuggestionsFunction : public ChromeSyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("omnibox.sendSuggestions", OMNIBOX_SENDSUGGESTIONS)
 
@@ -144,7 +144,7 @@ class OmniboxAPI : public ProfileKeyedAPI,
 template <>
 void ProfileKeyedAPIFactory<OmniboxAPI>::DeclareFactoryDependencies();
 
-class OmniboxSetDefaultSuggestionFunction : public SyncExtensionFunction {
+class OmniboxSetDefaultSuggestionFunction : public ChromeSyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("omnibox.setDefaultSuggestion",
                              OMNIBOX_SETDEFAULTSUGGESTION)

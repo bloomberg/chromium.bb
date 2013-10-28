@@ -176,7 +176,7 @@ class FileBrowserPrivateClearDriveCacheFunction
 
 // Implements the chrome.fileBrowserPrivate.getDriveConnectionState method.
 class FileBrowserPrivateGetDriveConnectionStateFunction
-    : public SyncExtensionFunction {
+    : public ChromeSyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION(
       "fileBrowserPrivate.getDriveConnectionState",

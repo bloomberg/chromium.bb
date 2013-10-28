@@ -7,7 +7,7 @@
 
 #include <vector>
 
-#include "chrome/browser/extensions/extension_function.h"
+#include "chrome/browser/extensions/chrome_extension_function.h"
 
 namespace base {
 class Clock;
@@ -17,7 +17,7 @@ namespace extensions {
 struct Alarm;
 typedef std::vector<Alarm> AlarmList;
 
-class AlarmsCreateFunction : public AsyncExtensionFunction {
+class AlarmsCreateFunction : public ChromeAsyncExtensionFunction {
  public:
   AlarmsCreateFunction();
   // Use |clock| instead of the default clock. Does not take ownership
@@ -39,7 +39,7 @@ class AlarmsCreateFunction : public AsyncExtensionFunction {
   bool owns_clock_;
 };
 
-class AlarmsGetFunction : public AsyncExtensionFunction {
+class AlarmsGetFunction : public ChromeAsyncExtensionFunction {
  protected:
   virtual ~AlarmsGetFunction() {}
 
@@ -51,7 +51,7 @@ class AlarmsGetFunction : public AsyncExtensionFunction {
   DECLARE_EXTENSION_FUNCTION("alarms.get", ALARMS_GET)
 };
 
-class AlarmsGetAllFunction : public AsyncExtensionFunction {
+class AlarmsGetAllFunction : public ChromeAsyncExtensionFunction {
  protected:
   virtual ~AlarmsGetAllFunction() {}
 
@@ -62,7 +62,7 @@ class AlarmsGetAllFunction : public AsyncExtensionFunction {
   DECLARE_EXTENSION_FUNCTION("alarms.getAll", ALARMS_GETALL)
 };
 
-class AlarmsClearFunction : public AsyncExtensionFunction {
+class AlarmsClearFunction : public ChromeAsyncExtensionFunction {
  protected:
   virtual ~AlarmsClearFunction() {}
 
@@ -73,7 +73,7 @@ class AlarmsClearFunction : public AsyncExtensionFunction {
   DECLARE_EXTENSION_FUNCTION("alarms.clear", ALARMS_CLEAR)
 };
 
-class AlarmsClearAllFunction : public AsyncExtensionFunction {
+class AlarmsClearAllFunction : public ChromeAsyncExtensionFunction {
  protected:
   virtual ~AlarmsClearAllFunction() {}
 

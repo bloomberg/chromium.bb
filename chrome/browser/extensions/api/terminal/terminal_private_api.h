@@ -7,12 +7,12 @@
 
 #include <string>
 
-#include "chrome/browser/extensions/extension_function.h"
+#include "chrome/browser/extensions/chrome_extension_function.h"
 
 namespace extensions {
 // Base class for all terminalPrivate function classes. Main purpose is to run
 // permission check before calling actual function implementation.
-class TerminalPrivateFunction : public AsyncExtensionFunction {
+class TerminalPrivateFunction : public ChromeAsyncExtensionFunction {
  public:
   TerminalPrivateFunction();
 

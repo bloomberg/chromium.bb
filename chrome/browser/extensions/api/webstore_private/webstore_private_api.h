@@ -8,7 +8,7 @@
 #include <string>
 
 #include "chrome/browser/extensions/bundle_installer.h"
-#include "chrome/browser/extensions/extension_function.h"
+#include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/webstore_install_helper.h"
 #include "chrome/browser/extensions/webstore_installer.h"
@@ -43,8 +43,9 @@ class WebstorePrivateApi {
       Profile* profile, const std::string& extension_id);
 };
 
-class WebstorePrivateInstallBundleFunction : public AsyncExtensionFunction,
-                              public extensions::BundleInstaller::Delegate {
+class WebstorePrivateInstallBundleFunction
+    : public ChromeAsyncExtensionFunction,
+      public extensions::BundleInstaller::Delegate {
  public:
   DECLARE_EXTENSION_FUNCTION("webstorePrivate.installBundle",
                              WEBSTOREPRIVATE_INSTALLBUNDLE)
@@ -72,7 +73,7 @@ class WebstorePrivateInstallBundleFunction : public AsyncExtensionFunction,
 };
 
 class WebstorePrivateBeginInstallWithManifest3Function
-    : public AsyncExtensionFunction,
+    : public ChromeAsyncExtensionFunction,
       public ExtensionInstallPrompt::Delegate,
       public WebstoreInstallHelper::Delegate,
       public SigninTracker::Observer {
@@ -167,7 +168,7 @@ class WebstorePrivateBeginInstallWithManifest3Function
 };
 
 class WebstorePrivateCompleteInstallFunction
-    : public AsyncExtensionFunction,
+    : public ChromeAsyncExtensionFunction,
       public WebstoreInstaller::Delegate {
  public:
   DECLARE_EXTENSION_FUNCTION("webstorePrivate.completeInstall",
@@ -193,7 +194,7 @@ class WebstorePrivateCompleteInstallFunction
 };
 
 class WebstorePrivateEnableAppLauncherFunction
-    : public SyncExtensionFunction {
+    : public ChromeSyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("webstorePrivate.enableAppLauncher",
                              WEBSTOREPRIVATE_ENABLEAPPLAUNCHER)
@@ -207,7 +208,8 @@ class WebstorePrivateEnableAppLauncherFunction
   virtual bool RunImpl() OVERRIDE;
 };
 
-class WebstorePrivateGetBrowserLoginFunction : public SyncExtensionFunction {
+class WebstorePrivateGetBrowserLoginFunction
+    : public ChromeSyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("webstorePrivate.getBrowserLogin",
                              WEBSTOREPRIVATE_GETBROWSERLOGIN)
@@ -219,7 +221,8 @@ class WebstorePrivateGetBrowserLoginFunction : public SyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
 };
 
-class WebstorePrivateGetStoreLoginFunction : public SyncExtensionFunction {
+class WebstorePrivateGetStoreLoginFunction
+    : public ChromeSyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("webstorePrivate.getStoreLogin",
                              WEBSTOREPRIVATE_GETSTORELOGIN)
@@ -231,7 +234,8 @@ class WebstorePrivateGetStoreLoginFunction : public SyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
 };
 
-class WebstorePrivateSetStoreLoginFunction : public SyncExtensionFunction {
+class WebstorePrivateSetStoreLoginFunction
+    : public ChromeSyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("webstorePrivate.setStoreLogin",
                              WEBSTOREPRIVATE_SETSTORELOGIN)
@@ -243,7 +247,8 @@ class WebstorePrivateSetStoreLoginFunction : public SyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
 };
 
-class WebstorePrivateGetWebGLStatusFunction : public AsyncExtensionFunction {
+class WebstorePrivateGetWebGLStatusFunction
+    : public ChromeAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("webstorePrivate.getWebGLStatus",
                              WEBSTOREPRIVATE_GETWEBGLSTATUS)
@@ -265,7 +270,7 @@ class WebstorePrivateGetWebGLStatusFunction : public AsyncExtensionFunction {
 };
 
 class WebstorePrivateGetIsLauncherEnabledFunction
-    : public SyncExtensionFunction {
+    : public ChromeSyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("webstorePrivate.getIsLauncherEnabled",
                              WEBSTOREPRIVATE_GETISLAUNCHERENABLED)
@@ -282,7 +287,8 @@ class WebstorePrivateGetIsLauncherEnabledFunction
   void OnIsLauncherCheckCompleted(bool is_enabled);
 };
 
-class WebstorePrivateIsInIncognitoModeFunction : public SyncExtensionFunction {
+class WebstorePrivateIsInIncognitoModeFunction
+    : public ChromeSyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("webstorePrivate.isInIncognitoMode",
                              WEBSTOREPRIVATE_ISININCOGNITOMODEFUNCTION)

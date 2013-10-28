@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_API_FUNCTION_H_
 #define CHROME_BROWSER_EXTENSIONS_API_API_FUNCTION_H_
 
-#include "chrome/browser/extensions/extension_function.h"
+#include "chrome/browser/extensions/chrome_extension_function.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace extensions {
@@ -13,7 +13,7 @@ namespace extensions {
 // Base class for API functions. TODO(miket): there isn't much here anymore
 // since the removal of ApiResourceEventRouter. Should we promote all its
 // subclasses to UIThreadExtensionFunctions?
-class ApiFunction : public UIThreadExtensionFunction {
+class ApiFunction : public ChromeAsyncExtensionFunction {
  protected:
   ApiFunction();
   virtual ~ApiFunction();

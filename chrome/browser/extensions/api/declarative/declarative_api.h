@@ -8,11 +8,11 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/extensions/api/declarative/rules_registry.h"
-#include "chrome/browser/extensions/extension_function.h"
+#include "chrome/browser/extensions/chrome_extension_function.h"
 
 namespace extensions {
 
-class RulesFunction : public AsyncExtensionFunction {
+class RulesFunction : public ChromeAsyncExtensionFunction {
  public:
   RulesFunction();
 

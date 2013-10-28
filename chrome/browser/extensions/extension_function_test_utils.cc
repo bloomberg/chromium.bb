@@ -12,6 +12,7 @@
 #include "chrome/browser/extensions/api/tabs/tabs_constants.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -254,7 +255,7 @@ bool RunFunction(UIThreadExtensionFunction* function,
       browser->profile(), &dispatcher_delegate);
   function->set_dispatcher(dispatcher.AsWeakPtr());
 
-  function->set_profile(browser->profile());
+  function->set_context(browser->profile());
   function->set_include_incognito(flags & INCLUDE_INCOGNITO);
   function->Run();
 

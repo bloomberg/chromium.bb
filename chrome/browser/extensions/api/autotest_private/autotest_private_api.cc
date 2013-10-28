@@ -21,14 +21,14 @@ namespace extensions {
 
 bool AutotestPrivateLogoutFunction::RunImpl() {
   DVLOG(1) << "AutotestPrivateLogoutFunction";
-  if (!AutotestPrivateAPIFactory::GetForProfile(profile())->test_mode())
+  if (!AutotestPrivateAPIFactory::GetForProfile(GetProfile())->test_mode())
     chrome::AttemptUserExit();
   return true;
 }
 
 bool AutotestPrivateRestartFunction::RunImpl() {
   DVLOG(1) << "AutotestPrivateRestartFunction";
-  if (!AutotestPrivateAPIFactory::GetForProfile(profile())->test_mode())
+  if (!AutotestPrivateAPIFactory::GetForProfile(GetProfile())->test_mode())
     chrome::AttemptRestart();
   return true;
 }
@@ -42,12 +42,12 @@ bool AutotestPrivateShutdownFunction::RunImpl() {
 
 #if defined(OS_CHROMEOS)
   if (params->force) {
-    if (!AutotestPrivateAPIFactory::GetForProfile(profile())->test_mode())
+    if (!AutotestPrivateAPIFactory::GetForProfile(GetProfile())->test_mode())
       chrome::ExitCleanly();
     return true;
   }
 #endif
-  if (!AutotestPrivateAPIFactory::GetForProfile(profile())->test_mode())
+  if (!AutotestPrivateAPIFactory::GetForProfile(GetProfile())->test_mode())
     chrome::AttemptExit();
   return true;
 }
@@ -113,7 +113,7 @@ static int AccessArray(const volatile int arr[], const volatile int *index) {
 
 bool AutotestPrivateSimulateAsanMemoryBugFunction::RunImpl() {
   DVLOG(1) << "AutotestPrivateSimulateAsanMemoryBugFunction";
-  if (!AutotestPrivateAPIFactory::GetForProfile(profile())->test_mode()) {
+  if (!AutotestPrivateAPIFactory::GetForProfile(GetProfile())->test_mode()) {
     // This array is volatile not to let compiler optimize us out.
     volatile int testarray[3] = {0, 0, 0};
 

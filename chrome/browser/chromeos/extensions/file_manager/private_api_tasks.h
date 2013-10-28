@@ -53,7 +53,8 @@ class FileBrowserPrivateGetFileTasksFunction
 };
 
 // Implements the chrome.fileBrowserPrivate.setDefaultTask method.
-class FileBrowserPrivateSetDefaultTaskFunction : public SyncExtensionFunction {
+class FileBrowserPrivateSetDefaultTaskFunction
+    : public ChromeSyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.setDefaultTask",
                              FILEBROWSERPRIVATE_SETDEFAULTTASK)

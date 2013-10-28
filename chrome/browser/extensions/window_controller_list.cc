@@ -6,7 +6,7 @@
 
 #include <algorithm>
 
-#include "chrome/browser/extensions/extension_function.h"
+#include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/browser/extensions/window_controller_list_observer.h"
 #include "chrome/browser/sessions/session_id.h"
 #include "ui/base/base_window.h"
@@ -62,7 +62,7 @@ WindowController* WindowControllerList::FindWindowById(int id) const {
 }
 
 WindowController* WindowControllerList::FindWindowForFunctionById(
-    const UIThreadExtensionFunction* function,
+    const ChromeAsyncExtensionFunction* function,
     int id) const {
   WindowController* controller = FindWindowById(id);
   if (controller && function->CanOperateOnWindow(controller))
@@ -71,7 +71,7 @@ WindowController* WindowControllerList::FindWindowForFunctionById(
 }
 
 WindowController* WindowControllerList::CurrentWindowForFunction(
-    const UIThreadExtensionFunction* function) const {
+    const ChromeAsyncExtensionFunction* function) const {
   WindowController* result = NULL;
   // Returns either the focused window (if any), or the last window in the list.
   for (ControllerList::const_iterator iter = windows().begin();

@@ -14,8 +14,8 @@
 #include "base/prefs/pref_change_registrar.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
+#include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/browser/extensions/event_router.h"
-#include "chrome/browser/extensions/extension_function.h"
 
 class Profile;
 
@@ -91,7 +91,7 @@ class FontSettingsAPI : public ProfileKeyedAPI {
 };
 
 // fontSettings.clearFont API function.
-class FontSettingsClearFontFunction : public SyncExtensionFunction {
+class FontSettingsClearFontFunction : public ChromeSyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fontSettings.clearFont", FONTSETTINGS_CLEARFONT)
 
@@ -105,7 +105,7 @@ class FontSettingsClearFontFunction : public SyncExtensionFunction {
 };
 
 // fontSettings.getFont API function.
-class FontSettingsGetFontFunction : public SyncExtensionFunction {
+class FontSettingsGetFontFunction : public ChromeSyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fontSettings.getFont", FONTSETTINGS_GETFONT)
 
@@ -117,7 +117,7 @@ class FontSettingsGetFontFunction : public SyncExtensionFunction {
 };
 
 // fontSettings.setFont API function.
-class FontSettingsSetFontFunction : public SyncExtensionFunction {
+class FontSettingsSetFontFunction : public ChromeSyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fontSettings.setFont", FONTSETTINGS_SETFONT)
 
@@ -129,7 +129,7 @@ class FontSettingsSetFontFunction : public SyncExtensionFunction {
 };
 
 // fontSettings.getFontList API function.
-class FontSettingsGetFontListFunction : public AsyncExtensionFunction {
+class FontSettingsGetFontListFunction : public ChromeAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fontSettings.getFontList",
                              FONTSETTINGS_GETFONTLIST)
@@ -146,7 +146,7 @@ class FontSettingsGetFontListFunction : public AsyncExtensionFunction {
 };
 
 // Base class for extension API functions that clear a browser font pref.
-class ClearFontPrefExtensionFunction : public SyncExtensionFunction {
+class ClearFontPrefExtensionFunction : public ChromeSyncExtensionFunction {
  protected:
   virtual ~ClearFontPrefExtensionFunction() {}
 
@@ -159,7 +159,7 @@ class ClearFontPrefExtensionFunction : public SyncExtensionFunction {
 };
 
 // Base class for extension API functions that get a browser font pref.
-class GetFontPrefExtensionFunction : public SyncExtensionFunction {
+class GetFontPrefExtensionFunction : public ChromeSyncExtensionFunction {
  protected:
   virtual ~GetFontPrefExtensionFunction() {}
 
@@ -176,7 +176,7 @@ class GetFontPrefExtensionFunction : public SyncExtensionFunction {
 };
 
 // Base class for extension API functions that set a browser font pref.
-class SetFontPrefExtensionFunction : public SyncExtensionFunction {
+class SetFontPrefExtensionFunction : public ChromeSyncExtensionFunction {
  protected:
   virtual ~SetFontPrefExtensionFunction() {}
 

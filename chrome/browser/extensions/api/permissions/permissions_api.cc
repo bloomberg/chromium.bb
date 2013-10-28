@@ -54,11 +54,10 @@ bool PermissionsContainsFunction::RunImpl() {
   scoped_ptr<Contains::Params> params(Contains::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  scoped_refptr<PermissionSet> permissions =
-      helpers::UnpackPermissionSet(
-          params->permissions,
-          ExtensionPrefs::Get(profile_)->AllowFileAccess(extension_->id()),
-          &error_);
+  scoped_refptr<PermissionSet> permissions = helpers::UnpackPermissionSet(
+      params->permissions,
+      ExtensionPrefs::Get(GetProfile())->AllowFileAccess(extension_->id()),
+      &error_);
   if (!permissions.get())
     return false;
 
@@ -78,11 +77,10 @@ bool PermissionsRemoveFunction::RunImpl() {
   scoped_ptr<Remove::Params> params(Remove::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  scoped_refptr<PermissionSet> permissions =
-      helpers::UnpackPermissionSet(
-          params->permissions,
-          ExtensionPrefs::Get(profile_)->AllowFileAccess(extension_->id()),
-          &error_);
+  scoped_refptr<PermissionSet> permissions = helpers::UnpackPermissionSet(
+      params->permissions,
+      ExtensionPrefs::Get(GetProfile())->AllowFileAccess(extension_->id()),
+      &error_);
   if (!permissions.get())
     return false;
 
@@ -109,7 +107,8 @@ bool PermissionsRemoveFunction::RunImpl() {
     return false;
   }
 
-  PermissionsUpdater(profile()).RemovePermissions(extension, permissions.get());
+  PermissionsUpdater(GetProfile())
+      .RemovePermissions(extension, permissions.get());
   results_ = Remove::Results::Create(true);
   return true;
 }
@@ -128,7 +127,7 @@ void PermissionsRequestFunction::SetIgnoreUserGestureForTests(
 PermissionsRequestFunction::PermissionsRequestFunction() {}
 
 void PermissionsRequestFunction::InstallUIProceed() {
-  PermissionsUpdater perms_updater(profile());
+  PermissionsUpdater perms_updater(GetProfile());
   perms_updater.AddPermissions(GetExtension(), requested_permissions_.get());
 
   results_ = Request::Results::Create(true);
@@ -158,11 +157,10 @@ bool PermissionsRequestFunction::RunImpl() {
   scoped_ptr<Request::Params> params(Request::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  requested_permissions_ =
-      helpers::UnpackPermissionSet(
-          params->permissions,
-          ExtensionPrefs::Get(profile_)->AllowFileAccess(extension_->id()),
-          &error_);
+  requested_permissions_ = helpers::UnpackPermissionSet(
+      params->permissions,
+      ExtensionPrefs::Get(GetProfile())->AllowFileAccess(extension_->id()),
+      &error_);
   if (!requested_permissions_.get())
     return false;
 
@@ -186,11 +184,10 @@ bool PermissionsRequestFunction::RunImpl() {
 
   // We don't need to prompt the user if the requested permissions are a subset
   // of the granted permissions set.
-  scoped_refptr<const PermissionSet> granted =
-      ExtensionPrefs::Get(profile_)->
-          GetGrantedPermissions(GetExtension()->id());
+  scoped_refptr<const PermissionSet> granted = ExtensionPrefs::Get(
+      GetProfile())->GetGrantedPermissions(GetExtension()->id());
   if (granted.get() && granted->Contains(*requested_permissions_.get())) {
-    PermissionsUpdater perms_updater(profile());
+    PermissionsUpdater perms_updater(GetProfile());
     perms_updater.AddPermissions(GetExtension(), requested_permissions_.get());
     results_ = Request::Results::Create(true);
     SendResponse(true);

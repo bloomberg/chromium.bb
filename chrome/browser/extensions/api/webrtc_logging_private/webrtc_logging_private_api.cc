@@ -36,8 +36,8 @@ content::RenderProcessHost*
 WebrtcLoggingPrivateTabIdFunction::RphFromTabIdAndSecurityOrigin(
     int tab_id, const std::string& security_origin) {
   content::WebContents* contents = NULL;
-  if (!ExtensionTabUtil::GetTabById(tab_id, profile(), true,
-                                    NULL, NULL, &contents, NULL)) {
+  if (!ExtensionTabUtil::GetTabById(
+           tab_id, GetProfile(), true, NULL, NULL, &contents, NULL)) {
     error_ = extensions::ErrorUtils::FormatErrorMessage(
         extensions::tabs_constants::kTabNotFoundError,
         base::IntToString(tab_id));

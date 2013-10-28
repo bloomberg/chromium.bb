@@ -43,12 +43,12 @@ BluetoothExtensionFunction::~BluetoothExtensionFunction() {
 }
 
 bool BluetoothExtensionFunction::RunImpl() {
-  if (!IsBluetoothSupported(profile())) {
+  if (!IsBluetoothSupported(GetProfile())) {
     SetError(kPlatformNotSupported);
     return false;
   }
   GetAdapter(base::Bind(&BluetoothExtensionFunction::RunOnAdapterReady, this),
-             profile());
+             GetProfile());
 
   return true;
 }

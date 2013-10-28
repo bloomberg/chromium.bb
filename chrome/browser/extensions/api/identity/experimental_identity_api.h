@@ -13,7 +13,7 @@
 #include "chrome/browser/extensions/api/identity/experimental_web_auth_flow.h"
 #include "chrome/browser/extensions/api/identity/identity_mint_queue.h"
 #include "chrome/browser/extensions/api/identity/identity_signin_flow.h"
-#include "chrome/browser/extensions/extension_function.h"
+#include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "google_apis/gaia/oauth2_mint_token_flow.h"
 #include "google_apis/gaia/oauth2_token_service.h"
@@ -42,7 +42,7 @@ namespace extensions {
 // new login token, there is a sign-in flow. If that flow completes
 // successfully, getAuthToken proceeds to the non-interactive flow.
 class ExperimentalIdentityGetAuthTokenFunction
-    : public AsyncExtensionFunction,
+    : public ChromeAsyncExtensionFunction,
       public ExtensionInstallPrompt::Delegate,
       public OAuth2MintTokenFlow::Delegate,
       public IdentitySigninFlow::Delegate,
@@ -124,7 +124,7 @@ class ExperimentalIdentityGetAuthTokenFunction
 };
 
 class ExperimentalIdentityLaunchWebAuthFlowFunction
-    : public AsyncExtensionFunction,
+    : public ChromeAsyncExtensionFunction,
       public ExperimentalWebAuthFlow::Delegate {
  public:
   DECLARE_EXTENSION_FUNCTION("experimental.identity.launchWebAuthFlow",

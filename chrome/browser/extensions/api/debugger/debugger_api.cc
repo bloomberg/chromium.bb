@@ -487,9 +487,13 @@ void DebuggerFunction::FormatErrorMessage(const std::string& format) {
 bool DebuggerFunction::InitAgentHost() {
   if (debuggee_.tab_id) {
     WebContents* web_contents = NULL;
-    bool result = ExtensionTabUtil::GetTabById(
-        *debuggee_.tab_id, profile(), include_incognito(), NULL, NULL,
-        &web_contents, NULL);
+    bool result = ExtensionTabUtil::GetTabById(*debuggee_.tab_id,
+                                               GetProfile(),
+                                               include_incognito(),
+                                               NULL,
+                                               NULL,
+                                               &web_contents,
+                                               NULL);
     if (result && web_contents) {
       if (content::HasWebUIScheme(web_contents->GetURL())) {
         error_ = ErrorUtils::FormatErrorMessage(
@@ -502,8 +506,9 @@ bool DebuggerFunction::InitAgentHost() {
     }
   } else if (debuggee_.extension_id) {
     extensions::ExtensionHost* extension_host =
-        extensions::ExtensionSystem::Get(profile())->process_manager()->
-            GetBackgroundHostForExtension(*debuggee_.extension_id);
+        extensions::ExtensionSystem::Get(GetProfile())
+            ->process_manager()
+            ->GetBackgroundHostForExtension(*debuggee_.extension_id);
     if (extension_host) {
       agent_host_ = DevToolsAgentHost::GetOrCreateFor(
           extension_host->render_view_host());
@@ -581,9 +586,12 @@ bool DebuggerAttachFunction::RunImpl() {
     }
   }
 
-  new ExtensionDevToolsClientHost(profile(), agent_host_.get(),
-                                  GetExtension()->id(), GetExtension()->name(),
-                                  debuggee_, infobar);
+  new ExtensionDevToolsClientHost(GetProfile(),
+                                  agent_host_.get(),
+                                  GetExtension()->id(),
+                                  GetExtension()->name(),
+                                  debuggee_,
+                                  infobar);
   SendResponse(true);
   return true;
 }

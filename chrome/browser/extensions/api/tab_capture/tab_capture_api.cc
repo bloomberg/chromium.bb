@@ -69,9 +69,8 @@ bool TabCaptureCaptureFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   // Figure out the active WebContents and retrieve the needed ids.
-  Browser* target_browser = chrome::FindAnyBrowser(profile(),
-                                                   include_incognito(),
-                                                   chrome::GetActiveDesktop());
+  Browser* target_browser = chrome::FindAnyBrowser(
+      GetProfile(), include_incognito(), chrome::GetActiveDesktop());
   if (!target_browser) {
     error_ = kFindingTabError;
     return false;
@@ -145,7 +144,7 @@ bool TabCaptureCaptureFunction::RunImpl() {
   }
 
   extensions::TabCaptureRegistry* registry =
-      extensions::TabCaptureRegistry::Get(profile());
+      extensions::TabCaptureRegistry::Get(GetProfile());
   if (!registry->AddRequest(render_process_id,
                             routing_id,
                             extension_id,
@@ -167,7 +166,7 @@ bool TabCaptureCaptureFunction::RunImpl() {
 
 bool TabCaptureGetCapturedTabsFunction::RunImpl() {
   extensions::TabCaptureRegistry* registry =
-      extensions::TabCaptureRegistry::Get(profile());
+      extensions::TabCaptureRegistry::Get(GetProfile());
 
   const TabCaptureRegistry::RegistryCaptureInfo& captured_tabs =
       registry->GetCapturedTabs(GetExtension()->id());

@@ -13,7 +13,7 @@
 #include "chrome/browser/extensions/window_controller.h"
 
 class Profile;
-class UIThreadExtensionFunction;
+class ChromeAsyncExtensionFunction;
 
 namespace extensions {
 
@@ -38,13 +38,13 @@ class WindowControllerList {
 
   // Returns a window matching the context the function was invoked in.
   WindowController* FindWindowForFunctionById(
-      const UIThreadExtensionFunction* function,
+      const ChromeAsyncExtensionFunction* function,
       int id) const;
 
   // Returns the focused or last added window matching the context the function
   // was invoked in.
   WindowController* CurrentWindowForFunction(
-      const UIThreadExtensionFunction* function) const;
+      const ChromeAsyncExtensionFunction* function) const;
 
   const ControllerList& windows() const { return windows_; }
 

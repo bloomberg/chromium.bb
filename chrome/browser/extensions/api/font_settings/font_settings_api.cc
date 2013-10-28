@@ -220,7 +220,7 @@ ProfileKeyedAPIFactory<FontSettingsAPI>* FontSettingsAPI::GetFactoryInstance() {
 }
 
 bool FontSettingsClearFontFunction::RunImpl() {
-  if (profile_->IsOffTheRecord()) {
+  if (GetProfile()->IsOffTheRecord()) {
     error_ = kSetFromIncognitoError;
     return false;
   }
@@ -234,9 +234,9 @@ bool FontSettingsClearFontFunction::RunImpl() {
 
   // Ensure |pref_path| really is for a registered per-script font pref.
   EXTENSION_FUNCTION_VALIDATE(
-      profile_->GetPrefs()->FindPreference(pref_path.c_str()));
+      GetProfile()->GetPrefs()->FindPreference(pref_path.c_str()));
 
-  PreferenceAPI::Get(profile_)->RemoveExtensionControlledPref(
+  PreferenceAPI::Get(GetProfile())->RemoveExtensionControlledPref(
       extension_id(), pref_path.c_str(), kExtensionPrefsScopeRegular);
   return true;
 }
@@ -249,7 +249,7 @@ bool FontSettingsGetFontFunction::RunImpl() {
   std::string pref_path = GetFontNamePrefPath(params->details.generic_family,
                                               params->details.script);
 
-  PrefService* prefs = profile_->GetPrefs();
+  PrefService* prefs = GetProfile()->GetPrefs();
   const PrefService::Preference* pref =
       prefs->FindPreference(pref_path.c_str());
 
@@ -262,10 +262,8 @@ bool FontSettingsGetFontFunction::RunImpl() {
   // getting level of control.
   const bool kIncognito = false;
   std::string level_of_control =
-      extensions::preference_helpers::GetLevelOfControl(profile_,
-                                                        extension_id(),
-                                                        pref_path,
-                                                        kIncognito);
+      extensions::preference_helpers::GetLevelOfControl(
+          GetProfile(), extension_id(), pref_path, kIncognito);
 
   base::DictionaryValue* result = new base::DictionaryValue();
   result->SetString(kFontIdKey, font_name);
@@ -275,7 +273,7 @@ bool FontSettingsGetFontFunction::RunImpl() {
 }
 
 bool FontSettingsSetFontFunction::RunImpl() {
-  if (profile_->IsOffTheRecord()) {
+  if (GetProfile()->IsOffTheRecord()) {
     error_ = kSetFromIncognitoError;
     return false;
   }
@@ -289,9 +287,9 @@ bool FontSettingsSetFontFunction::RunImpl() {
 
   // Ensure |pref_path| really is for a registered font pref.
   EXTENSION_FUNCTION_VALIDATE(
-      profile_->GetPrefs()->FindPreference(pref_path.c_str()));
+      GetProfile()->GetPrefs()->FindPreference(pref_path.c_str()));
 
-  PreferenceAPI::Get(profile_)->SetExtensionControlledPref(
+  PreferenceAPI::Get(GetProfile())->SetExtensionControlledPref(
       extension_id(),
       pref_path.c_str(),
       kExtensionPrefsScopeRegular,
@@ -345,18 +343,18 @@ bool FontSettingsGetFontListFunction::CopyFontsToResult(
 }
 
 bool ClearFontPrefExtensionFunction::RunImpl() {
-  if (profile_->IsOffTheRecord()) {
+  if (GetProfile()->IsOffTheRecord()) {
     error_ = kSetFromIncognitoError;
     return false;
   }
 
-  PreferenceAPI::Get(profile_)->RemoveExtensionControlledPref(
+  PreferenceAPI::Get(GetProfile())->RemoveExtensionControlledPref(
       extension_id(), GetPrefName(), kExtensionPrefsScopeRegular);
   return true;
 }
 
 bool GetFontPrefExtensionFunction::RunImpl() {
-  PrefService* prefs = profile_->GetPrefs();
+  PrefService* prefs = GetProfile()->GetPrefs();
   const PrefService::Preference* pref = prefs->FindPreference(GetPrefName());
   EXTENSION_FUNCTION_VALIDATE(pref);
 
@@ -365,10 +363,8 @@ bool GetFontPrefExtensionFunction::RunImpl() {
   const bool kIncognito = false;
 
   std::string level_of_control =
-      extensions::preference_helpers::GetLevelOfControl(profile_,
-                                                        extension_id(),
-                                                        GetPrefName(),
-                                                        kIncognito);
+      extensions::preference_helpers::GetLevelOfControl(
+          GetProfile(), extension_id(), GetPrefName(), kIncognito);
 
   base::DictionaryValue* result = new base::DictionaryValue();
   result->Set(GetKey(), pref->GetValue()->DeepCopy());
@@ -378,7 +374,7 @@ bool GetFontPrefExtensionFunction::RunImpl() {
 }
 
 bool SetFontPrefExtensionFunction::RunImpl() {
-  if (profile_->IsOffTheRecord()) {
+  if (GetProfile()->IsOffTheRecord()) {
     error_ = kSetFromIncognitoError;
     return false;
   }
@@ -389,11 +385,11 @@ bool SetFontPrefExtensionFunction::RunImpl() {
   Value* value;
   EXTENSION_FUNCTION_VALIDATE(details->Get(GetKey(), &value));
 
-  PreferenceAPI::Get(profile_)->SetExtensionControlledPref(
-      extension_id(),
-      GetPrefName(),
-      kExtensionPrefsScopeRegular,
-      value->DeepCopy());
+  PreferenceAPI::Get(GetProfile())
+      ->SetExtensionControlledPref(extension_id(),
+                                   GetPrefName(),
+                                   kExtensionPrefsScopeRegular,
+                                   value->DeepCopy());
   return true;
 }
 

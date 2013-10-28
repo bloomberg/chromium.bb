@@ -332,7 +332,7 @@ void FileBrowserHandlerInternalSelectFileFunction::OnFilePathSelected(
 void FileBrowserHandlerInternalSelectFileFunction::GrantPermissions() {
   fileapi::ExternalFileSystemBackend* external_backend =
       file_manager::util::GetFileSystemContextForRenderViewHost(
-          profile_, render_view_host())->external_backend();
+          GetProfile(), render_view_host())->external_backend();
   DCHECK(external_backend);
 
   external_backend->GetVirtualPath(full_path_, &virtual_path_);

@@ -494,7 +494,7 @@ ExtensionActionFunction::~ExtensionActionFunction() {
 }
 
 bool ExtensionActionFunction::RunImpl() {
-  ExtensionActionManager* manager = ExtensionActionManager::Get(profile_);
+  ExtensionActionManager* manager = ExtensionActionManager::Get(GetProfile());
   const Extension* extension = GetExtension();
   if (StartsWithASCII(name(), "scriptBadge.", false)) {
     extension_action_ = manager->GetScriptBadge(*extension);
@@ -519,8 +519,13 @@ bool ExtensionActionFunction::RunImpl() {
 
   // Find the WebContents that contains this tab id if one is required.
   if (tab_id_ != ExtensionAction::kDefaultTabId) {
-    ExtensionTabUtil::GetTabById(
-        tab_id_, profile(), include_incognito(), NULL, NULL, &contents_, NULL);
+    ExtensionTabUtil::GetTabById(tab_id_,
+                                 GetProfile(),
+                                 include_incognito(),
+                                 NULL,
+                                 NULL,
+                                 &contents_,
+                                 NULL);
     if (!contents_) {
       error_ = ErrorUtils::FormatErrorMessage(
           kNoTabError, base::IntToString(tab_id_));
@@ -587,10 +592,10 @@ void ExtensionActionFunction::NotifyChange() {
   switch (extension_action_->action_type()) {
     case ActionInfo::TYPE_BROWSER:
     case ActionInfo::TYPE_PAGE:
-      if (ExtensionActionManager::Get(profile_)
+      if (ExtensionActionManager::Get(GetProfile())
               ->GetBrowserAction(*extension_.get())) {
         NotifyBrowserActionChange();
-      } else if (ExtensionActionManager::Get(profile_)
+      } else if (ExtensionActionManager::Get(GetProfile())
                      ->GetPageAction(*extension_.get())) {
         NotifyLocationBarChange();
       }
@@ -609,7 +614,7 @@ void ExtensionActionFunction::NotifyBrowserActionChange() {
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_EXTENSION_BROWSER_ACTION_UPDATED,
       content::Source<ExtensionAction>(extension_action_),
-      content::Details<Profile>(profile()));
+      content::Details<Profile>(GetProfile()));
 }
 
 void ExtensionActionFunction::NotifyLocationBarChange() {
@@ -620,7 +625,7 @@ void ExtensionActionFunction::NotifyLocationBarChange() {
 void ExtensionActionFunction::NotifySystemIndicatorChange() {
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_EXTENSION_SYSTEM_INDICATOR_UPDATED,
-      content::Source<Profile>(profile()),
+      content::Source<Profile>(GetProfile()),
       content::Details<ExtensionAction>(extension_action_));
 }
 
@@ -814,8 +819,9 @@ BrowserActionOpenPopupFunction::BrowserActionOpenPopupFunction()
 }
 
 bool BrowserActionOpenPopupFunction::RunImpl() {
-  ExtensionToolbarModel* model = extensions::ExtensionSystem::Get(profile_)->
-      extension_service()->toolbar_model();
+  ExtensionToolbarModel* model = extensions::ExtensionSystem::Get(GetProfile())
+                                     ->extension_service()
+                                     ->toolbar_model();
   if (!model) {
     error_ = kInternalError;
     return false;
@@ -826,8 +832,9 @@ bool BrowserActionOpenPopupFunction::RunImpl() {
     return false;
   }
 
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING,
-      content::Source<Profile>(profile_));
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING,
+                 content::Source<Profile>(GetProfile()));
 
   // Set a timeout for waiting for the notification that the popup is loaded.
   // Waiting is required so that the popup view can be retrieved by the custom
@@ -911,9 +918,8 @@ bool PageActionsFunction::SetPageActionEnabled(bool enable) {
           page_actions_keys::kTitleKey, &title));
   }
 
-  ExtensionAction* page_action =
-      extensions::ExtensionActionManager::Get(profile())->
-      GetPageAction(*GetExtension());
+  ExtensionAction* page_action = extensions::ExtensionActionManager::Get(
+      GetProfile())->GetPageAction(*GetExtension());
   if (!page_action) {
     error_ = extensions::kNoPageActionError;
     return false;
@@ -922,7 +928,7 @@ bool PageActionsFunction::SetPageActionEnabled(bool enable) {
   // Find the WebContents that contains this tab id.
   WebContents* contents = NULL;
   bool result = ExtensionTabUtil::GetTabById(
-      tab_id, profile(), include_incognito(), NULL, NULL, &contents, NULL);
+      tab_id, GetProfile(), include_incognito(), NULL, NULL, &contents, NULL);
   if (!result || !contents) {
     error_ = extensions::ErrorUtils::FormatErrorMessage(
         extensions::kNoTabError, base::IntToString(tab_id));

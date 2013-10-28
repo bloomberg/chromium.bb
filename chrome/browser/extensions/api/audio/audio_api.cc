@@ -50,7 +50,7 @@ void AudioAPI::OnDeviceChanged() {
 
 bool AudioGetInfoFunction::RunImpl() {
   AudioService* service =
-      AudioAPI::GetFactoryInstance()->GetForProfile(profile())->GetService();
+      AudioAPI::GetFactoryInstance()->GetForProfile(GetProfile())->GetService();
   DCHECK(service);
   service->StartGetInfo(base::Bind(&AudioGetInfoFunction::OnGetInfoCompleted,
                                    this));
@@ -73,7 +73,7 @@ bool AudioSetActiveDevicesFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   AudioService* service =
-      AudioAPI::GetFactoryInstance()->GetForProfile(profile())->GetService();
+      AudioAPI::GetFactoryInstance()->GetForProfile(GetProfile())->GetService();
   DCHECK(service);
 
   service->SetActiveDevices(params->ids);
@@ -86,7 +86,7 @@ bool AudioSetPropertiesFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   AudioService* service =
-      AudioAPI::GetFactoryInstance()->GetForProfile(profile())->GetService();
+      AudioAPI::GetFactoryInstance()->GetForProfile(GetProfile())->GetService();
   DCHECK(service);
 
   int volume_value = params->properties.volume.get() ?

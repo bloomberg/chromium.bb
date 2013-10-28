@@ -12,6 +12,7 @@
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/extensions/api/identity/oauth2_manifest_handler.h"
@@ -94,7 +95,7 @@ class AsyncExtensionBrowserTest : public ExtensionBrowserTest {
       function->set_extension(empty_extension.get());
     }
 
-    function->set_profile(browser()->profile());
+    function->set_context(browser()->profile());
     function->set_has_callback(true);
     function->Run();
   }

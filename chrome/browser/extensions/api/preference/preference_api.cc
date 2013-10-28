@@ -570,8 +570,8 @@ bool GetPreferenceFunction::RunImpl() {
   std::string browser_pref;
   if (!ValidateBrowserPref(pref_key, &browser_pref))
     return false;
-  PrefService* prefs = incognito ? profile_->GetOffTheRecordPrefs()
-                                 : profile_->GetPrefs();
+  PrefService* prefs = incognito ? GetProfile()->GetOffTheRecordPrefs()
+                                 : GetProfile()->GetPrefs();
   const PrefService::Preference* pref =
       prefs->FindPreference(browser_pref.c_str());
   CHECK(pref);
@@ -579,9 +579,8 @@ bool GetPreferenceFunction::RunImpl() {
   scoped_ptr<DictionaryValue> result(new DictionaryValue);
 
   // Retrieve level of control.
-  std::string level_of_control =
-      helpers::GetLevelOfControl(profile_, extension_id(), browser_pref,
-                                 incognito);
+  std::string level_of_control = helpers::GetLevelOfControl(
+      GetProfile(), extension_id(), browser_pref, incognito);
   result->SetString(keys::kLevelOfControl, level_of_control);
 
   // Retrieve pref value.
@@ -599,7 +598,7 @@ bool GetPreferenceFunction::RunImpl() {
 
   // Retrieve incognito status.
   if (incognito) {
-    ExtensionPrefs* ep = ExtensionPrefs::Get(profile_);
+    ExtensionPrefs* ep = ExtensionPrefs::Get(GetProfile());
     result->SetBoolean(keys::kIncognitoSpecific,
                        ep->HasIncognitoPrefValue(browser_pref));
   }
@@ -634,21 +633,21 @@ bool SetPreferenceFunction::RunImpl() {
        scope == kExtensionPrefsScopeIncognitoSessionOnly);
   if (incognito) {
     // Regular profiles can't access incognito unless include_incognito is true.
-    if (!profile()->IsOffTheRecord() && !include_incognito()) {
+    if (!GetProfile()->IsOffTheRecord() && !include_incognito()) {
       error_ = keys::kIncognitoErrorMessage;
       return false;
     }
   } else {
     // Incognito profiles can't access regular mode ever, they only exist in
     // split mode.
-    if (profile()->IsOffTheRecord()) {
+    if (GetProfile()->IsOffTheRecord()) {
       error_ = "Can't modify regular settings from an incognito context.";
       return false;
     }
   }
 
   if (scope == kExtensionPrefsScopeIncognitoSessionOnly &&
-      !profile_->HasOffTheRecordProfile()) {
+      !GetProfile()->HasOffTheRecordProfile()) {
     error_ = keys::kIncognitoSessionOnlyErrorMessage;
     return false;
   }
@@ -657,7 +656,7 @@ bool SetPreferenceFunction::RunImpl() {
   std::string browser_pref;
   if (!ValidateBrowserPref(pref_key, &browser_pref))
     return false;
-  ExtensionPrefs* prefs = ExtensionPrefs::Get(profile_);
+  ExtensionPrefs* prefs = ExtensionPrefs::Get(GetProfile());
   const PrefService::Preference* pref =
       prefs->pref_service()->FindPreference(browser_pref.c_str());
   CHECK(pref);
@@ -687,11 +686,8 @@ bool SetPreferenceFunction::RunImpl() {
     return false;
   }
 
-  PreferenceAPI::Get(profile())->SetExtensionControlledPref(
-      extension_id(),
-      browser_pref,
-      scope,
-      browser_pref_value.release());
+  PreferenceAPI::Get(GetProfile())->SetExtensionControlledPref(
+      extension_id(), browser_pref, scope, browser_pref_value.release());
   return true;
 }
 
@@ -722,7 +718,7 @@ bool ClearPreferenceFunction::RunImpl() {
   } else {
     // Incognito profiles can't access regular mode ever, they only exist in
     // split mode.
-    if (profile()->IsOffTheRecord()) {
+    if (GetProfile()->IsOffTheRecord()) {
       error_ = "Can't modify regular settings from an incognito context.";
       return false;
     }
@@ -732,8 +728,8 @@ bool ClearPreferenceFunction::RunImpl() {
   if (!ValidateBrowserPref(pref_key, &browser_pref))
     return false;
 
-  PreferenceAPI::Get(profile())->RemoveExtensionControlledPref(
-      extension_id(), browser_pref, scope);
+  PreferenceAPI::Get(GetProfile())
+      ->RemoveExtensionControlledPref(extension_id(), browser_pref, scope);
   return true;
 }
 

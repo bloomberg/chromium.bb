@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_PRINCIPALS_PRIVATE_PRINCIPALS_PRIVATE_API_H_
 #define CHROME_BROWSER_EXTENSIONS_API_PRINCIPALS_PRIVATE_PRINCIPALS_PRIVATE_API_H_
 
-#include "chrome/browser/extensions/extension_function.h"
+#include "chrome/browser/extensions/chrome_extension_function.h"
 
 // WARNING: chrome.principalsPrivate is a set of experimental APIs for the new
 // profile management flows. Every new API must extend
@@ -14,7 +14,7 @@
 
 namespace extensions {
 
-class PrincipalsPrivateExtensionFunction : public SyncExtensionFunction {
+class PrincipalsPrivateExtensionFunction : public ChromeSyncExtensionFunction {
  public:
   PrincipalsPrivateExtensionFunction() {}
 

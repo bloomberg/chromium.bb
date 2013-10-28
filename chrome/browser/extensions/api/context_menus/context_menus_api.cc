@@ -153,7 +153,7 @@ namespace Remove = api::context_menus::Remove;
 namespace Update = api::context_menus::Update;
 
 bool ContextMenusCreateFunction::RunImpl() {
-  MenuItem::Id id(profile()->IsOffTheRecord(), extension_id());
+  MenuItem::Id id(GetProfile()->IsOffTheRecord(), extension_id());
   scoped_ptr<Create::Params> params(Create::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
@@ -176,7 +176,8 @@ bool ContextMenusCreateFunction::RunImpl() {
   if (params->create_properties.title.get())
     title = *params->create_properties.title;
 
-  MenuManager* menu_manager = profile()->GetExtensionService()->menu_manager();
+  MenuManager* menu_manager =
+      GetProfile()->GetExtensionService()->menu_manager();
 
   if (menu_manager->GetItemById(id)) {
     error_ = ErrorUtils::FormatErrorMessage(kDuplicateIDError,
@@ -229,7 +230,7 @@ bool ContextMenusCreateFunction::RunImpl() {
 
   bool success = true;
   scoped_ptr<MenuItem::Id> parent_id(GetParentId(params->create_properties,
-                                                 profile()->IsOffTheRecord(),
+                                                 GetProfile()->IsOffTheRecord(),
                                                  extension_id()));
   if (parent_id.get()) {
     MenuItem* parent = GetParent(*parent_id, menu_manager, &error_);
@@ -249,7 +250,7 @@ bool ContextMenusCreateFunction::RunImpl() {
 
 bool ContextMenusUpdateFunction::RunImpl() {
   bool radio_item_updated = false;
-  MenuItem::Id item_id(profile()->IsOffTheRecord(), extension_id());
+  MenuItem::Id item_id(GetProfile()->IsOffTheRecord(), extension_id());
   scoped_ptr<Update::Params> params(Update::Params::Create(*args_));
 
   EXTENSION_FUNCTION_VALIDATE(params.get());
@@ -260,7 +261,7 @@ bool ContextMenusUpdateFunction::RunImpl() {
   else
     NOTREACHED();
 
-  ExtensionService* service = profile()->GetExtensionService();
+  ExtensionService* service = GetProfile()->GetExtensionService();
   MenuManager* manager = service->menu_manager();
   MenuItem* item = manager->GetItemById(item_id);
   if (!item || item->extension_id() != extension_id()) {
@@ -328,7 +329,7 @@ bool ContextMenusUpdateFunction::RunImpl() {
   // Parent id.
   MenuItem* parent = NULL;
   scoped_ptr<MenuItem::Id> parent_id(GetParentId(params->update_properties,
-                                                 profile()->IsOffTheRecord(),
+                                                 GetProfile()->IsOffTheRecord(),
                                                  extension_id()));
   if (parent_id.get()) {
     MenuItem* parent = GetParent(*parent_id, manager, &error_);
@@ -356,10 +357,10 @@ bool ContextMenusRemoveFunction::RunImpl() {
   scoped_ptr<Remove::Params> params(Remove::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  ExtensionService* service = profile()->GetExtensionService();
+  ExtensionService* service = GetProfile()->GetExtensionService();
   MenuManager* manager = service->menu_manager();
 
-  MenuItem::Id id(profile()->IsOffTheRecord(), extension_id());
+  MenuItem::Id id(GetProfile()->IsOffTheRecord(), extension_id());
   if (params->menu_item_id.as_string)
     id.string_uid = *params->menu_item_id.as_string;
   else if (params->menu_item_id.as_integer)
@@ -382,7 +383,7 @@ bool ContextMenusRemoveFunction::RunImpl() {
 }
 
 bool ContextMenusRemoveAllFunction::RunImpl() {
-  ExtensionService* service = profile()->GetExtensionService();
+  ExtensionService* service = GetProfile()->GetExtensionService();
   MenuManager* manager = service->menu_manager();
   manager->RemoveAllContextItems(GetExtension()->id());
   manager->WriteToStorage(GetExtension());

@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/memory/scoped_vector.h"
-#include "chrome/browser/extensions/extension_function.h"
+#include "chrome/browser/extensions/chrome_extension_function.h"
 
 namespace browser_sync {
 class DeviceInfo;
@@ -37,7 +37,7 @@ ScopedVector<browser_sync::DeviceInfo> GetAllSignedInDevices(
     ProfileSyncService* pss,
     ExtensionPrefs* extension_prefs);
 
-class SignedInDevicesGetFunction : public SyncExtensionFunction {
+class SignedInDevicesGetFunction : public ChromeSyncExtensionFunction {
  protected:
   virtual ~SignedInDevicesGetFunction() {}
 

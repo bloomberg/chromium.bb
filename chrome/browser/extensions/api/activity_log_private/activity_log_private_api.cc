@@ -144,7 +144,7 @@ bool ActivityLogPrivateGetExtensionActivitiesFunction::RunImpl() {
     days_ago = *filter->days_ago;
 
   // Call the ActivityLog.
-  ActivityLog* activity_log = ActivityLog::GetInstance(profile_);
+  ActivityLog* activity_log = ActivityLog::GetInstance(GetProfile());
   DCHECK(activity_log);
   activity_log->GetFilteredActions(
       extension_id,
@@ -181,7 +181,7 @@ void ActivityLogPrivateGetExtensionActivitiesFunction::OnLookupCompleted(
 }
 
 bool ActivityLogPrivateDeleteDatabaseFunction::RunImpl() {
-  ActivityLog* activity_log = ActivityLog::GetInstance(profile_);
+  ActivityLog* activity_log = ActivityLog::GetInstance(GetProfile());
   DCHECK(activity_log);
   activity_log->DeleteDatabase();
   return true;
@@ -201,7 +201,7 @@ bool ActivityLogPrivateDeleteUrlsFunction::RunImpl() {
     gurls.push_back(GURL(*it));
   }
 
-  ActivityLog* activity_log = ActivityLog::GetInstance(profile_);
+  ActivityLog* activity_log = ActivityLog::GetInstance(GetProfile());
   DCHECK(activity_log);
   activity_log->RemoveURLs(gurls);
   return true;

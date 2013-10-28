@@ -141,7 +141,7 @@ bool is_window_entry(const TabRestoreService::Entry* entry) {
 
 scoped_ptr<tabs::Tab> SessionsGetRecentlyClosedFunction::CreateTabModel(
     const TabRestoreService::Tab& tab, int session_id, int selected_index) {
-  return CreateTabModelHelper(profile(),
+  return CreateTabModelHelper(GetProfile(),
                               tab.navigations[tab.current_navigation_index],
                               base::IntToString(session_id),
                               tab.tabstrip_index,
@@ -204,7 +204,7 @@ bool SessionsGetRecentlyClosedFunction::RunImpl() {
 
   std::vector<linked_ptr<api::sessions::Session> > result;
   TabRestoreService* tab_restore_service =
-      TabRestoreServiceFactory::GetForProfile(profile());
+      TabRestoreServiceFactory::GetForProfile(GetProfile());
   DCHECK(tab_restore_service);
 
   // List of entries. They are ordered from most to least recent.
@@ -228,7 +228,7 @@ scoped_ptr<tabs::Tab> SessionsGetDevicesFunction::CreateTabModel(
     int tab_index,
     int selected_index) {
   std::string session_id = SessionId(session_tag, tab.tab_id.id()).ToString();
-  return CreateTabModelHelper(profile(),
+  return CreateTabModelHelper(GetProfile(),
                               tab.navigations[tab.current_navigation_index],
                               session_id,
                               tab_index,
@@ -250,7 +250,7 @@ scoped_ptr<windows::Window> SessionsGetDevicesFunction::CreateWindowModel(
       continue;
     const sessions::SerializedNavigationEntry& current_navigation =
         tab->navigations.at(tab->normalized_navigation_index());
-    if (chrome::IsNTPURL(current_navigation.virtual_url(), profile())) {
+    if (chrome::IsNTPURL(current_navigation.virtual_url(), GetProfile())) {
       continue;
     }
     tabs_in_window.push_back(tab);
@@ -351,7 +351,7 @@ scoped_ptr<api::sessions::Device> SessionsGetDevicesFunction::CreateDeviceModel(
 
 bool SessionsGetDevicesFunction::RunImpl() {
   ProfileSyncService* service =
-      ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile());
+      ProfileSyncServiceFactory::GetInstance()->GetForProfile(GetProfile());
   if (!(service && service->GetPreferredDataTypes().Has(syncer::SESSIONS))) {
     // Sync not enabled.
     results_ = GetDevices::Results::Create(
@@ -419,7 +419,7 @@ bool SessionsRestoreFunction::SetResultRestoredWindow(int window_id) {
 
 bool SessionsRestoreFunction::RestoreMostRecentlyClosed(Browser* browser) {
   TabRestoreService* tab_restore_service =
-      TabRestoreServiceFactory::GetForProfile(profile());
+      TabRestoreServiceFactory::GetForProfile(GetProfile());
   chrome::HostDesktopType host_desktop_type = browser->host_desktop_type();
   TabRestoreService::Entries entries = tab_restore_service->entries();
 
@@ -448,7 +448,7 @@ bool SessionsRestoreFunction::RestoreMostRecentlyClosed(Browser* browser) {
 bool SessionsRestoreFunction::RestoreLocalSession(const SessionId& session_id,
                                                   Browser* browser) {
   TabRestoreService* tab_restore_service =
-      TabRestoreServiceFactory::GetForProfile(profile());
+      TabRestoreServiceFactory::GetForProfile(GetProfile());
   chrome::HostDesktopType host_desktop_type = browser->host_desktop_type();
   TabRestoreService::Entries entries = tab_restore_service->entries();
 
@@ -496,7 +496,7 @@ bool SessionsRestoreFunction::RestoreLocalSession(const SessionId& session_id,
 bool SessionsRestoreFunction::RestoreForeignSession(const SessionId& session_id,
                                                     Browser* browser) {
   ProfileSyncService* service =
-      ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile());
+      ProfileSyncServiceFactory::GetInstance()->GetForProfile(GetProfile());
   if (!(service && service->GetPreferredDataTypes().Has(syncer::SESSIONS))) {
     SetError(kSessionSyncError);
     return false;
@@ -541,9 +541,8 @@ bool SessionsRestoreFunction::RestoreForeignSession(const SessionId& session_id,
 
   chrome::HostDesktopType host_desktop_type = browser->host_desktop_type();
   // Only restore one window at a time.
-  std::vector<Browser*> browsers =
-      SessionRestore::RestoreForeignSessionWindows(profile(), host_desktop_type,
-                                                   window, window + 1);
+  std::vector<Browser*> browsers = SessionRestore::RestoreForeignSessionWindows(
+      GetProfile(), host_desktop_type, window, window + 1);
   // Will always create one browser because we only restore one window per call.
   DCHECK_EQ(1u, browsers.size());
   return SetResultRestoredWindow(ExtensionTabUtil::GetWindowId(browsers[0]));
@@ -553,9 +552,8 @@ bool SessionsRestoreFunction::RunImpl() {
   scoped_ptr<Restore::Params> params(Restore::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  Browser* browser =
-      chrome::FindBrowserWithProfile(profile(),
-                                     chrome::HOST_DESKTOP_TYPE_NATIVE);
+  Browser* browser = chrome::FindBrowserWithProfile(
+      GetProfile(), chrome::HOST_DESKTOP_TYPE_NATIVE);
   if (!browser) {
     SetError(kNoBrowserToRestoreSession);
     return false;

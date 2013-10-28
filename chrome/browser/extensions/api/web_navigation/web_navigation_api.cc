@@ -723,9 +723,10 @@ bool WebNavigationGetFrameFunction::RunImpl() {
 
   content::WebContents* web_contents;
   if (!ExtensionTabUtil::GetTabById(tab_id,
-                                    profile(),
+                                    GetProfile(),
                                     include_incognito(),
-                                    NULL, NULL,
+                                    NULL,
+                                    NULL,
                                     &web_contents,
                                     NULL) ||
       !web_contents) {
@@ -777,9 +778,10 @@ bool WebNavigationGetAllFramesFunction::RunImpl() {
 
   content::WebContents* web_contents;
   if (!ExtensionTabUtil::GetTabById(tab_id,
-                                    profile(),
+                                    GetProfile(),
                                     include_incognito(),
-                                    NULL, NULL,
+                                    NULL,
+                                    NULL,
                                     &web_contents,
                                     NULL) ||
       !web_contents) {

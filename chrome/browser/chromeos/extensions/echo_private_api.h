@@ -7,7 +7,7 @@
 
 #include "base/compiler_specific.h"
 #include "chrome/browser/chromeos/ui/echo_dialog_listener.h"
-#include "chrome/browser/extensions/extension_function.h"
+#include "chrome/browser/extensions/chrome_extension_function.h"
 
 class PrefRegistrySimple;
 
@@ -24,7 +24,8 @@ void RegisterPrefs(PrefRegistrySimple* registry);
 
 }  // namespace chromeos
 
-class EchoPrivateGetRegistrationCodeFunction : public SyncExtensionFunction {
+class EchoPrivateGetRegistrationCodeFunction
+    : public ChromeSyncExtensionFunction {
  public:
   EchoPrivateGetRegistrationCodeFunction();
 
@@ -38,7 +39,8 @@ class EchoPrivateGetRegistrationCodeFunction : public SyncExtensionFunction {
                              ECHOPRIVATE_GETREGISTRATIONCODE)
 };
 
-class EchoPrivateGetOobeTimestampFunction : public AsyncExtensionFunction {
+class EchoPrivateGetOobeTimestampFunction
+    : public ChromeAsyncExtensionFunction {
  public:
   EchoPrivateGetOobeTimestampFunction();
 
@@ -52,7 +54,7 @@ class EchoPrivateGetOobeTimestampFunction : public AsyncExtensionFunction {
                              ECHOPRIVATE_GETOOBETIMESTAMP)
 };
 
-class EchoPrivateSetOfferInfoFunction : public SyncExtensionFunction {
+class EchoPrivateSetOfferInfoFunction : public ChromeSyncExtensionFunction {
  public:
   EchoPrivateSetOfferInfoFunction();
 
@@ -65,7 +67,7 @@ class EchoPrivateSetOfferInfoFunction : public SyncExtensionFunction {
                              ECHOPRIVATE_SETOFFERINFO)
 };
 
-class EchoPrivateGetOfferInfoFunction : public SyncExtensionFunction {
+class EchoPrivateGetOfferInfoFunction : public ChromeSyncExtensionFunction {
  public:
   EchoPrivateGetOfferInfoFunction();
 
@@ -83,9 +85,8 @@ class EchoPrivateGetOfferInfoFunction : public SyncExtensionFunction {
 // either asks user's consent to verify the device's eligibility for the offer,
 // or informs the user that the offers redeeming is disabled.
 // It returns whether the user consent was given.
-class EchoPrivateGetUserConsentFunction
-    : public AsyncExtensionFunction,
-      public chromeos::EchoDialogListener {
+class EchoPrivateGetUserConsentFunction : public ChromeAsyncExtensionFunction,
+                                          public chromeos::EchoDialogListener {
  public:
   // Type for the dialog shown callback used in tests.
   typedef base::Callback<void(chromeos::EchoDialogView* dialog)>

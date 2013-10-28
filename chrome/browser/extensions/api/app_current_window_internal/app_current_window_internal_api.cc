@@ -43,7 +43,7 @@ const char kDevChannelOnly[] =
 
 bool AppCurrentWindowInternalExtensionFunction::RunImpl() {
   apps::ShellWindowRegistry* registry =
-      apps::ShellWindowRegistry::Get(profile());
+      apps::ShellWindowRegistry::Get(GetProfile());
   DCHECK(registry);
   content::RenderViewHost* rvh = render_view_host();
   if (!rvh)

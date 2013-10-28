@@ -221,8 +221,13 @@ bool AccessibilityGetAlertsForTabFunction::RunImpl() {
   TabStripModel* tab_strip = NULL;
   content::WebContents* contents = NULL;
   int tab_index = -1;
-  if (!ExtensionTabUtil::GetTabById(tab_id, profile(), include_incognito(),
-                                    NULL, &tab_strip, &contents, &tab_index)) {
+  if (!ExtensionTabUtil::GetTabById(tab_id,
+                                    GetProfile(),
+                                    include_incognito(),
+                                    NULL,
+                                    &tab_strip,
+                                    &contents,
+                                    &tab_index)) {
     error_ = extensions::ErrorUtils::FormatErrorMessage(
         extensions::tabs_constants::kTabNotFoundError,
         base::IntToString(tab_id));

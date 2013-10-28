@@ -522,11 +522,11 @@ bool FileBrowserPrivateGetStringsFunction::RunImpl() {
 #undef SET_STRING
 
   dict->SetBoolean("PDF_VIEW_ENABLED",
-                   file_manager::util::ShouldBeOpenedWithPlugin(profile(),
-                                                  FILE_PATH_LITERAL(".pdf")));
+                   file_manager::util::ShouldBeOpenedWithPlugin(
+                       GetProfile(), FILE_PATH_LITERAL(".pdf")));
   dict->SetBoolean("SWF_VIEW_ENABLED",
-                   file_manager::util::ShouldBeOpenedWithPlugin(profile(),
-                                                  FILE_PATH_LITERAL(".swf")));
+                   file_manager::util::ShouldBeOpenedWithPlugin(
+                       GetProfile(), FILE_PATH_LITERAL(".swf")));
 
   webui::SetFontAndTextDirection(dict);
 

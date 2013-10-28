@@ -53,7 +53,7 @@ ExperimentalIdentityGetAuthTokenFunction::
     ~ExperimentalIdentityGetAuthTokenFunction() {}
 
 bool ExperimentalIdentityGetAuthTokenFunction::RunImpl() {
-  if (profile()->IsOffTheRecord()) {
+  if (GetProfile()->IsOffTheRecord()) {
     error_ = identity_constants::kOffTheRecord;
     return false;
   }
@@ -144,7 +144,7 @@ void ExperimentalIdentityGetAuthTokenFunction::StartMintTokenFlow(
     install_ui_.reset(
         GetAssociatedWebContents()
             ? new ExtensionInstallPrompt(GetAssociatedWebContents())
-            : new ExtensionInstallPrompt(profile(), NULL, NULL));
+            : new ExtensionInstallPrompt(GetProfile(), NULL, NULL));
     ShowOAuthApprovalDialog(issue_advice_);
   }
 }
@@ -160,8 +160,9 @@ void ExperimentalIdentityGetAuthTokenFunction::OnMintTokenFailure(
     case GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS:
     case GoogleServiceAuthError::ACCOUNT_DELETED:
     case GoogleServiceAuthError::ACCOUNT_DISABLED:
-      extensions::IdentityAPI::GetFactoryInstance()->GetForProfile(
-          profile())->ReportAuthError(error);
+      extensions::IdentityAPI::GetFactoryInstance()
+          ->GetForProfile(GetProfile())
+          ->ReportAuthError(error);
       if (should_prompt_for_signin_) {
         // Display a login prompt and try again (once).
         StartSigninFlow();
@@ -227,7 +228,7 @@ void ExperimentalIdentityGetAuthTokenFunction::OnGetTokenFailure(
 
 void ExperimentalIdentityGetAuthTokenFunction::StartLoginAccessTokenRequest() {
   ProfileOAuth2TokenService* service =
-      ProfileOAuth2TokenServiceFactory::GetForProfile(profile());
+      ProfileOAuth2TokenServiceFactory::GetForProfile(GetProfile());
 #if defined(OS_CHROMEOS)
   if (chrome::IsRunningInForcedAppMode()) {
     std::string app_client_id;
@@ -256,7 +257,7 @@ void ExperimentalIdentityGetAuthTokenFunction::StartGaiaRequest(
 }
 
 void ExperimentalIdentityGetAuthTokenFunction::ShowLoginPopup() {
-  signin_flow_.reset(new IdentitySigninFlow(this, profile()));
+  signin_flow_.reset(new IdentitySigninFlow(this, GetProfile()));
   signin_flow_->Start();
 }
 
@@ -275,22 +276,20 @@ ExperimentalIdentityGetAuthTokenFunction::CreateMintTokenFlow(
 #endif
 
   const OAuth2Info& oauth2_info = OAuth2Info::GetOAuth2Info(GetExtension());
-  OAuth2MintTokenFlow* mint_token_flow =
-      new OAuth2MintTokenFlow(
-          profile()->GetRequestContext(),
-          this,
-          OAuth2MintTokenFlow::Parameters(
-              login_access_token,
-              GetExtension()->id(),
-              oauth2_info.client_id,
-              oauth2_info.scopes,
-              gaia_mint_token_mode_));
+  OAuth2MintTokenFlow* mint_token_flow = new OAuth2MintTokenFlow(
+      GetProfile()->GetRequestContext(),
+      this,
+      OAuth2MintTokenFlow::Parameters(login_access_token,
+                                      GetExtension()->id(),
+                                      oauth2_info.client_id,
+                                      oauth2_info.scopes,
+                                      gaia_mint_token_mode_));
   return mint_token_flow;
 }
 
 bool ExperimentalIdentityGetAuthTokenFunction::HasLoginToken() const {
   ProfileOAuth2TokenService* token_service =
-      ProfileOAuth2TokenServiceFactory::GetForProfile(profile());
+      ProfileOAuth2TokenServiceFactory::GetForProfile(GetProfile());
   return token_service->RefreshTokenIsAvailable(
       token_service->GetPrimaryAccountId());
 }
@@ -305,7 +304,7 @@ ExperimentalIdentityLaunchWebAuthFlowFunction::
 }
 
 bool ExperimentalIdentityLaunchWebAuthFlowFunction::RunImpl() {
-  if (profile()->IsOffTheRecord()) {
+  if (GetProfile()->IsOffTheRecord()) {
     error_ = identity_constants::kOffTheRecord;
     return false;
   }
@@ -342,8 +341,7 @@ bool ExperimentalIdentityLaunchWebAuthFlowFunction::RunImpl() {
   chrome::HostDesktopType host_desktop_type = current_browser ?
       current_browser->host_desktop_type() : chrome::GetActiveDesktop();
   auth_flow_.reset(new ExperimentalWebAuthFlow(
-      this, profile(), auth_url, mode, initial_bounds,
-      host_desktop_type));
+      this, GetProfile(), auth_url, mode, initial_bounds, host_desktop_type));
   auth_flow_->Start();
   return true;
 }

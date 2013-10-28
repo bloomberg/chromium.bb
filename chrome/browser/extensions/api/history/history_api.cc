@@ -253,7 +253,7 @@ bool HistoryFunction::ValidateUrl(const std::string& url_string, GURL* url) {
 }
 
 bool HistoryFunction::VerifyDeleteAllowed() {
-  PrefService* prefs = profile()->GetPrefs();
+  PrefService* prefs = GetProfile()->GetPrefs();
   if (!prefs->GetBoolean(prefs::kAllowDeletingBrowserHistory)) {
     error_ = kDeleteProhibitedError;
     return false;
@@ -313,8 +313,8 @@ bool HistoryGetMostVisitedFunction::RunAsyncImpl() {
   int max_results = 100;
   if (params->details.max_results.get())
     max_results = *params->details.max_results;
-  HistoryService* hs =
-      HistoryServiceFactory::GetForProfile(profile(), Profile::EXPLICIT_ACCESS);
+  HistoryService* hs = HistoryServiceFactory::GetForProfile(
+      GetProfile(), Profile::EXPLICIT_ACCESS);
   hs->QueryFilteredURLs(max_results, filter, false, &cancelable_consumer_,
       base::Bind(&HistoryGetMostVisitedFunction::QueryComplete,
                  base::Unretained(this)));
@@ -344,9 +344,8 @@ bool HistoryGetVisitsFunction::RunAsyncImpl() {
   if (!ValidateUrl(params->details.url, &url))
     return false;
 
-  HistoryService* hs =
-      HistoryServiceFactory::GetForProfile(profile(),
-                                           Profile::EXPLICIT_ACCESS);
+  HistoryService* hs = HistoryServiceFactory::GetForProfile(
+      GetProfile(), Profile::EXPLICIT_ACCESS);
   hs->QueryURL(url,
                true,  // Retrieve full history of a URL.
                &cancelable_consumer_,
@@ -392,9 +391,8 @@ bool HistorySearchFunction::RunAsyncImpl() {
   if (params->query.max_results.get())
     options.max_count = *params->query.max_results;
 
-  HistoryService* hs =
-      HistoryServiceFactory::GetForProfile(profile(),
-                                           Profile::EXPLICIT_ACCESS);
+  HistoryService* hs = HistoryServiceFactory::GetForProfile(
+      GetProfile(), Profile::EXPLICIT_ACCESS);
   hs->QueryHistory(search_text, options, &cancelable_consumer_,
                    base::Bind(&HistorySearchFunction::SearchComplete,
                               base::Unretained(this)));
@@ -427,9 +425,8 @@ bool HistoryAddUrlFunction::RunImpl() {
   if (!ValidateUrl(params->details.url, &url))
     return false;
 
-  HistoryService* hs =
-      HistoryServiceFactory::GetForProfile(profile(),
-                                           Profile::EXPLICIT_ACCESS);
+  HistoryService* hs = HistoryServiceFactory::GetForProfile(
+      GetProfile(), Profile::EXPLICIT_ACCESS);
   hs->AddPage(url, base::Time::Now(), history::SOURCE_EXTENSION);
 
   SendResponse(true);
@@ -447,9 +444,8 @@ bool HistoryDeleteUrlFunction::RunImpl() {
   if (!ValidateUrl(params->details.url, &url))
     return false;
 
-  HistoryService* hs =
-      HistoryServiceFactory::GetForProfile(profile(),
-                                           Profile::EXPLICIT_ACCESS);
+  HistoryService* hs = HistoryServiceFactory::GetForProfile(
+      GetProfile(), Profile::EXPLICIT_ACCESS);
   hs->DeleteURL(url);
 
   // Also clean out from the activity log. If the activity log testing flag is
@@ -457,7 +453,7 @@ bool HistoryDeleteUrlFunction::RunImpl() {
   // extensions have been trying to clean from their logs.
   if (!CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableExtensionActivityLogTesting)) {
-    ActivityLog* activity_log = ActivityLog::GetInstance(profile_);
+    ActivityLog* activity_log = ActivityLog::GetInstance(GetProfile());
     DCHECK(activity_log);
     activity_log->RemoveURL(url);
   }
@@ -477,9 +473,8 @@ bool HistoryDeleteRangeFunction::RunAsyncImpl() {
   base::Time end_time = GetTime(params->range.end_time);
 
   std::set<GURL> restrict_urls;
-  HistoryService* hs =
-      HistoryServiceFactory::GetForProfile(profile(),
-                                           Profile::EXPLICIT_ACCESS);
+  HistoryService* hs = HistoryServiceFactory::GetForProfile(
+      GetProfile(), Profile::EXPLICIT_ACCESS);
   hs->ExpireHistoryBetween(
       restrict_urls,
       start_time,
@@ -491,7 +486,7 @@ bool HistoryDeleteRangeFunction::RunAsyncImpl() {
   // Also clean from the activity log unless in testing mode.
   if (!CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableExtensionActivityLogTesting)) {
-    ActivityLog* activity_log = ActivityLog::GetInstance(profile_);
+    ActivityLog* activity_log = ActivityLog::GetInstance(GetProfile());
     DCHECK(activity_log);
     activity_log->RemoveURLs(restrict_urls);
   }
@@ -508,9 +503,8 @@ bool HistoryDeleteAllFunction::RunAsyncImpl() {
     return false;
 
   std::set<GURL> restrict_urls;
-  HistoryService* hs =
-      HistoryServiceFactory::GetForProfile(profile(),
-                                           Profile::EXPLICIT_ACCESS);
+  HistoryService* hs = HistoryServiceFactory::GetForProfile(
+      GetProfile(), Profile::EXPLICIT_ACCESS);
   hs->ExpireHistoryBetween(
       restrict_urls,
       base::Time(),      // Unbounded beginning...
@@ -522,7 +516,7 @@ bool HistoryDeleteAllFunction::RunAsyncImpl() {
   // Also clean from the activity log unless in testing mode.
   if (!CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableExtensionActivityLogTesting)) {
-    ActivityLog* activity_log = ActivityLog::GetInstance(profile_);
+    ActivityLog* activity_log = ActivityLog::GetInstance(GetProfile());
     DCHECK(activity_log);
     activity_log->RemoveURLs(restrict_urls);
   }

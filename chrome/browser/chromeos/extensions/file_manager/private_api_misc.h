@@ -19,7 +19,8 @@ class AuthServiceInterface;
 namespace extensions {
 
 // Implements the chrome.fileBrowserPrivate.logoutUser method.
-class FileBrowserPrivateLogoutUserFunction : public SyncExtensionFunction {
+class FileBrowserPrivateLogoutUserFunction
+    : public ChromeSyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.logoutUser",
                              FILEBROWSERPRIVATE_LOGOUTUSER)
@@ -33,7 +34,8 @@ class FileBrowserPrivateLogoutUserFunction : public SyncExtensionFunction {
 
 // Implements the chrome.fileBrowserPrivate.getPreferences method.
 // Gets settings for Files.app.
-class FileBrowserPrivateGetPreferencesFunction : public SyncExtensionFunction {
+class FileBrowserPrivateGetPreferencesFunction
+    : public ChromeSyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.getPreferences",
                              FILEBROWSERPRIVATE_GETPREFERENCES)
@@ -46,7 +48,8 @@ class FileBrowserPrivateGetPreferencesFunction : public SyncExtensionFunction {
 
 // Implements the chrome.fileBrowserPrivate.setPreferences method.
 // Sets settings for Files.app.
-class FileBrowserPrivateSetPreferencesFunction : public SyncExtensionFunction {
+class FileBrowserPrivateSetPreferencesFunction
+    : public ChromeSyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.setPreferences",
                              FILEBROWSERPRIVATE_SETPREFERENCES)
@@ -85,7 +88,7 @@ class FileBrowserPrivateZipSelectionFunction
 // Changes the zoom level of the file manager by internally calling
 // RenderViewHost::Zoom(). TODO(hirono): Remove this function once the zoom
 // level change is supported for all apps. crbug.com/227175.
-class FileBrowserPrivateZoomFunction : public SyncExtensionFunction {
+class FileBrowserPrivateZoomFunction : public ChromeSyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.zoom",
                              FILEBROWSERPRIVATE_ZOOM);

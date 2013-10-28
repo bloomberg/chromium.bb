@@ -100,7 +100,7 @@ CastChannelAsyncApiFunction::CastChannelAsyncApiFunction()
 CastChannelAsyncApiFunction::~CastChannelAsyncApiFunction() { }
 
 bool CastChannelAsyncApiFunction::PrePrepare() {
-  manager_ = ApiResourceManager<CastSocket>::Get(profile());
+  manager_ = ApiResourceManager<CastSocket>::Get(GetProfile());
   return true;
 }
 
@@ -168,7 +168,7 @@ CastChannelOpenFunction::CastChannelOpenFunction()
 CastChannelOpenFunction::~CastChannelOpenFunction() { }
 
 bool CastChannelOpenFunction::PrePrepare() {
-  api_ = CastChannelAPI::Get(profile());
+  api_ = CastChannelAPI::Get(GetProfile());
   return CastChannelAsyncApiFunction::PrePrepare();
 }
 

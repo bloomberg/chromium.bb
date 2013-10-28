@@ -114,7 +114,7 @@ bool IsRemovalPermitted(int removal_mask, PrefService* prefs) {
 
 
 bool BrowsingDataSettingsFunction::RunImpl() {
-  PrefService* prefs = profile()->GetPrefs();
+  PrefService* prefs = GetProfile()->GetPrefs();
 
   // Fill origin types.
   // The "cookies" and "hosted apps" UI checkboxes both map to
@@ -211,8 +211,8 @@ void BrowsingDataSettingsFunction::SetDetails(
     base::DictionaryValue* permitted_dict,
     const char* data_type,
     bool is_selected) {
-  bool is_permitted = IsRemovalPermitted(MaskForKey(data_type),
-                                         profile()->GetPrefs());
+  bool is_permitted =
+      IsRemovalPermitted(MaskForKey(data_type), GetProfile()->GetPrefs());
   selected_dict->SetBoolean(data_type, is_selected && is_permitted);
   permitted_dict->SetBoolean(data_type, is_permitted);
 }
@@ -226,7 +226,7 @@ void BrowsingDataRemoverFunction::OnBrowsingDataRemoverDone() {
 
 bool BrowsingDataRemoverFunction::RunImpl() {
   // If we don't have a profile, something's pretty wrong.
-  DCHECK(profile());
+  DCHECK(GetProfile());
 
   // Grab the initial |options| parameter, and parse out the arguments.
   base::DictionaryValue* options;
@@ -254,7 +254,7 @@ bool BrowsingDataRemoverFunction::RunImpl() {
     return false;
 
   // Check for prohibited data types.
-  if (!IsRemovalPermitted(removal_mask_, profile()->GetPrefs())) {
+  if (!IsRemovalPermitted(removal_mask_, GetProfile()->GetPrefs())) {
     error_ = extension_browsing_data_api_constants::kDeleteProhibitedError;
     return false;
   }
@@ -263,11 +263,12 @@ bool BrowsingDataRemoverFunction::RunImpl() {
     // If we're being asked to remove plugin data, check whether it's actually
     // supported.
     BrowserThread::PostTask(
-        BrowserThread::FILE, FROM_HERE,
+        BrowserThread::FILE,
+        FROM_HERE,
         base::Bind(
             &BrowsingDataRemoverFunction::CheckRemovingPluginDataSupported,
             this,
-            PluginPrefs::GetForProfile(profile())));
+            PluginPrefs::GetForProfile(GetProfile())));
   } else {
     StartRemoving();
   }
@@ -300,8 +301,8 @@ void BrowsingDataRemoverFunction::StartRemoving() {
   // that we're notified after removal) and call remove() with the arguments
   // we've generated above. We can use a raw pointer here, as the browsing data
   // remover is responsible for deleting itself once data removal is complete.
-  BrowsingDataRemover* remover = BrowsingDataRemover::CreateForRange(profile(),
-      remove_since_, base::Time::Max());
+  BrowsingDataRemover* remover = BrowsingDataRemover::CreateForRange(
+      GetProfile(), remove_since_, base::Time::Max());
   remover->AddObserver(this);
   remover->Remove(removal_mask_, origin_set_mask_);
 }

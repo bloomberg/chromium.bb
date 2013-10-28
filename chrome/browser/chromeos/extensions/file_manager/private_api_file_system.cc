@@ -352,7 +352,7 @@ bool FileBrowserPrivateRequestFileSystemFunction::RunImpl() {
 
   scoped_refptr<fileapi::FileSystemContext> file_system_context =
       file_manager::util::GetFileSystemContextForRenderViewHost(
-          profile(), render_view_host());
+          GetProfile(), render_view_host());
 
   // Set up file permission access.
   const int child_id = render_view_host()->GetProcess()->GetID();
@@ -370,7 +370,8 @@ bool FileBrowserPrivateRequestFileSystemFunction::RunImpl() {
   // Note that we call this function even when Drive is disabled by the
   // setting. Otherwise, we need to call this when the setting is changed at
   // a later time, which complicates the code.
-  SetDriveMountPointPermissions(profile_, extension_id(), render_view_host());
+  SetDriveMountPointPermissions(
+      GetProfile(), extension_id(), render_view_host());
 
   fileapi::FileSystemInfo info =
       fileapi::GetFileSystemInfoForChromeOS(source_url_.GetOrigin());
@@ -404,7 +405,7 @@ bool FileWatchFunctionBase::RunImpl() {
 
   scoped_refptr<fileapi::FileSystemContext> file_system_context =
       file_manager::util::GetFileSystemContextForRenderViewHost(
-          profile(), render_view_host());
+          GetProfile(), render_view_host());
 
   FileSystemURL file_watch_url = file_system_context->CrackURL(GURL(url));
   base::FilePath local_path = file_watch_url.path();
@@ -425,7 +426,7 @@ void FileBrowserPrivateAddFileWatchFunction::PerformFileWatchOperation(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   file_manager::EventRouter* event_router =
-      file_manager::FileBrowserPrivateAPI::Get(profile_)->event_router();
+      file_manager::FileBrowserPrivateAPI::Get(GetProfile())->event_router();
   event_router->AddFileWatch(
       local_path,
       virtual_path,
@@ -440,7 +441,7 @@ void FileBrowserPrivateRemoveFileWatchFunction::PerformFileWatchOperation(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   file_manager::EventRouter* event_router =
-      file_manager::FileBrowserPrivateAPI::Get(profile_)->event_router();
+      file_manager::FileBrowserPrivateAPI::Get(GetProfile())->event_router();
   event_router->RemoveFileWatch(local_path, extension_id);
   Respond(true);
 }
@@ -451,13 +452,13 @@ bool FileBrowserPrivateGetSizeStatsFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(params);
 
   base::FilePath file_path = file_manager::util::GetLocalPathFromURL(
-      render_view_host(), profile(), GURL(params->mount_path));
+      render_view_host(), GetProfile(), GURL(params->mount_path));
   if (file_path.empty())
     return false;
 
   if (file_path == drive::util::GetDriveMountPointPath()) {
     drive::FileSystemInterface* file_system =
-        drive::util::GetFileSystemByProfile(profile());
+        drive::util::GetFileSystemByProfile(GetProfile());
     if (!file_system) {
       // |file_system| is NULL if Drive is disabled.
       // If stats couldn't be gotten for drive, result should be left
@@ -522,7 +523,7 @@ bool FileBrowserPrivateValidatePathNameLengthFunction::RunImpl() {
 
   scoped_refptr<fileapi::FileSystemContext> file_system_context =
       file_manager::util::GetFileSystemContextForRenderViewHost(
-          profile(), render_view_host());
+          GetProfile(), render_view_host());
 
   fileapi::FileSystemURL filesystem_url(
       file_system_context->CrackURL(GURL(params->parent_directory_url)));
@@ -560,7 +561,7 @@ bool FileBrowserPrivateFormatDeviceFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(params);
 
   base::FilePath file_path = file_manager::util::GetLocalPathFromURL(
-      render_view_host(), profile(), GURL(params->mount_path));
+      render_view_host(), GetProfile(), GURL(params->mount_path));
   if (file_path.empty())
     return false;
 
@@ -585,7 +586,7 @@ bool FileBrowserPrivateStartCopyFunction::RunImpl() {
 
   scoped_refptr<fileapi::FileSystemContext> file_system_context =
       file_manager::util::GetFileSystemContextForRenderViewHost(
-          profile(), render_view_host());
+          GetProfile(), render_view_host());
 
   fileapi::FileSystemURL source_url(
       file_system_context->CrackURL(GURL(params->source_url)));
@@ -602,7 +603,10 @@ bool FileBrowserPrivateStartCopyFunction::RunImpl() {
       BrowserThread::IO,
       FROM_HERE,
       base::Bind(&StartCopyOnIOThread,
-                 profile(), file_system_context, source_url, destination_url),
+                 GetProfile(),
+                 file_system_context,
+                 source_url,
+                 destination_url),
       base::Bind(&FileBrowserPrivateStartCopyFunction::RunAfterStartCopy,
                  this));
 }
@@ -624,7 +628,7 @@ bool FileBrowserPrivateCancelCopyFunction::RunImpl() {
 
   scoped_refptr<fileapi::FileSystemContext> file_system_context =
       file_manager::util::GetFileSystemContextForRenderViewHost(
-          profile(), render_view_host());
+          GetProfile(), render_view_host());
 
   // We don't much take care about the result of cancellation.
   BrowserThread::PostTask(

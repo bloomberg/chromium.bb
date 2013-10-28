@@ -49,15 +49,15 @@ bool CloudPrintPrivateSetupConnectorFunction::RunImpl() {
         params->credentials,
         params->user_settings);
   } else {
-    if (!CloudPrintProxyServiceFactory::GetForProfile(profile_))
+    if (!CloudPrintProxyServiceFactory::GetForProfile(GetProfile()))
       return false;
     scoped_ptr<base::DictionaryValue> user_setings(
         params->user_settings.ToValue());
-    CloudPrintProxyServiceFactory::GetForProfile(profile_)->
-        EnableForUserWithRobot(params->credentials,
-                               params->robot_email,
-                               params->user_email,
-                               *user_setings);
+    CloudPrintProxyServiceFactory::GetForProfile(GetProfile())
+        ->EnableForUserWithRobot(params->credentials,
+                                 params->robot_email,
+                                 params->user_email,
+                                 *user_setings);
   }
   SendResponse(true);
 #endif

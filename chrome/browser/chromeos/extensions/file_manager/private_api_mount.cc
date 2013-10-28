@@ -39,7 +39,7 @@ bool FileBrowserPrivateAddMountFunction::RunImpl() {
   set_log_on_completion(true);
 
   const base::FilePath path = file_manager::util::GetLocalPathFromURL(
-      render_view_host(), profile(), GURL(params->source));
+      render_view_host(), GetProfile(), GURL(params->source));
 
   if (path.empty())
     return false;
@@ -47,7 +47,7 @@ bool FileBrowserPrivateAddMountFunction::RunImpl() {
   // Check if the source path is under Drive cache directory.
   if (drive::util::IsUnderDriveMountPoint(path)) {
     drive::FileSystemInterface* file_system =
-        drive::util::GetFileSystemByProfile(profile());
+        drive::util::GetFileSystemByProfile(GetProfile());
     if (!file_system)
       return false;
 
@@ -103,11 +103,12 @@ bool FileBrowserPrivateRemoveMountFunction::RunImpl() {
   file_paths.push_back(GURL(params->mount_path));
   file_manager::util::GetSelectedFileInfo(
       render_view_host(),
-      profile(),
+      GetProfile(),
       file_paths,
       file_manager::util::NEED_LOCAL_PATH_FOR_OPENING,
-      base::Bind(&FileBrowserPrivateRemoveMountFunction::
-                     GetSelectedFileInfoResponse, this));
+      base::Bind(
+          &FileBrowserPrivateRemoveMountFunction::GetSelectedFileInfoResponse,
+          this));
   return true;
 }
 
@@ -135,7 +136,7 @@ bool FileBrowserPrivateGetVolumeMetadataListFunction::RunImpl() {
     return false;
 
   const std::vector<file_manager::VolumeInfo>& volume_info_list =
-      file_manager::VolumeManager::Get(profile_)->GetVolumeInfoList();
+      file_manager::VolumeManager::Get(GetProfile())->GetVolumeInfoList();
 
   std::string log_string;
   std::vector<linked_ptr<file_browser_private::VolumeMetadata> > result;
@@ -143,7 +144,7 @@ bool FileBrowserPrivateGetVolumeMetadataListFunction::RunImpl() {
     linked_ptr<file_browser_private::VolumeMetadata> volume_metadata(
         new file_browser_private::VolumeMetadata);
     file_manager::util::VolumeInfoToVolumeMetadata(
-        profile(), volume_info_list[i], volume_metadata.get());
+        GetProfile(), volume_info_list[i], volume_metadata.get());
     result.push_back(volume_metadata);
     if (!log_string.empty())
       log_string += ", ";

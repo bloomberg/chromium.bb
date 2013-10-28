@@ -7,7 +7,7 @@
 
 #include "chrome/browser/extensions/api/audio/audio_service.h"
 #include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
-#include "chrome/browser/extensions/extension_function.h"
+#include "chrome/browser/extensions/chrome_extension_function.h"
 
 namespace extensions {
 
@@ -39,7 +39,7 @@ class AudioAPI : public ProfileKeyedAPI,
   AudioService* service_;
 };
 
-class AudioGetInfoFunction : public AsyncExtensionFunction {
+class AudioGetInfoFunction : public ChromeAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("audio.getInfo",
                              AUDIO_GETINFO);
@@ -54,7 +54,7 @@ class AudioGetInfoFunction : public AsyncExtensionFunction {
                           bool success);
 };
 
-class AudioSetActiveDevicesFunction : public SyncExtensionFunction {
+class AudioSetActiveDevicesFunction : public ChromeSyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("audio.setActiveDevices",
                              AUDIO_SETACTIVEDEVICES);
@@ -64,7 +64,7 @@ class AudioSetActiveDevicesFunction : public SyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
 };
 
-class AudioSetPropertiesFunction : public SyncExtensionFunction {
+class AudioSetPropertiesFunction : public ChromeSyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("audio.setProperties",
                              AUDIO_SETPROPERTIES);

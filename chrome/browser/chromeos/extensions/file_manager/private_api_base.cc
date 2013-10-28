@@ -40,7 +40,7 @@ void LoggedAsyncExtensionFunction::SendResponse(bool success) {
         base::Int64ToString(elapsed).c_str());
   }
 
-  AsyncExtensionFunction::SendResponse(success);
+  ChromeAsyncExtensionFunction::SendResponse(success);
 }
 
 }  // namespace extensions

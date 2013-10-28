@@ -256,7 +256,7 @@ bool TtsSpeakFunction::RunImpl() {
   continuous_params.pitch = pitch;
   continuous_params.volume = volume;
 
-  Utterance* utterance = new Utterance(profile());
+  Utterance* utterance = new Utterance(GetProfile());
   utterance->set_text(text);
   utterance->set_voice_name(voice_name);
   utterance->set_src_extension_id(extension_id());
@@ -300,7 +300,7 @@ bool TtsIsSpeakingFunction::RunImpl() {
 
 bool TtsGetVoicesFunction::RunImpl() {
   std::vector<VoiceData> voices;
-  TtsController::GetInstance()->GetVoices(profile(), &voices);
+  TtsController::GetInstance()->GetVoices(GetProfile(), &voices);
 
   scoped_ptr<ListValue> result_voices(new ListValue());
   for (size_t i = 0; i < voices.size(); ++i) {

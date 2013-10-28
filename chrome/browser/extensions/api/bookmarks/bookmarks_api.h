@@ -13,8 +13,8 @@
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/bookmarks/base_bookmark_model_observer.h"
 #include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
+#include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/browser/extensions/event_router.h"
-#include "chrome/browser/extensions/extension_function.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 
 class Profile;
@@ -100,7 +100,7 @@ class BookmarksAPI : public ProfileKeyedAPI,
   scoped_ptr<BookmarkEventRouter> bookmark_event_router_;
 };
 
-class BookmarksFunction : public AsyncExtensionFunction,
+class BookmarksFunction : public ChromeAsyncExtensionFunction,
                           public BaseBookmarkModelObserver {
  public:
   // AsyncExtensionFunction:

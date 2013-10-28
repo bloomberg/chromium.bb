@@ -57,7 +57,7 @@ class BluetoothAPI : public BrowserContextKeyedService,
 
 namespace api {
 
-class BluetoothAddProfileFunction : public AsyncExtensionFunction {
+class BluetoothAddProfileFunction : public ChromeAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("bluetooth.addProfile", BLUETOOTH_ADDPROFILE)
 
@@ -77,7 +77,7 @@ class BluetoothAddProfileFunction : public AsyncExtensionFunction {
   std::string uuid_;
 };
 
-class BluetoothRemoveProfileFunction : public SyncExtensionFunction {
+class BluetoothRemoveProfileFunction : public ChromeSyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("bluetooth.removeProfile",
                              BLUETOOTH_REMOVEPROFILE)
@@ -161,7 +161,7 @@ class BluetoothConnectFunction : public BluetoothExtensionFunction {
   void OnErrorCallback();
 };
 
-class BluetoothDisconnectFunction : public SyncExtensionFunction {
+class BluetoothDisconnectFunction : public ChromeSyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("bluetooth.disconnect", BLUETOOTH_DISCONNECT)
 

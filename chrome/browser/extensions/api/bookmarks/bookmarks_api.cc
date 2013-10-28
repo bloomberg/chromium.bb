@@ -97,7 +97,7 @@ base::FilePath GetDefaultFilepathForBookmarkExport() {
 }  // namespace
 
 void BookmarksFunction::Run() {
-  BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
+  BookmarkModel* model = BookmarkModelFactory::GetForProfile(GetProfile());
   if (!model->loaded()) {
     // Bookmarks are not ready yet.  We'll wait.
     model->AddObserver(this);
@@ -125,7 +125,7 @@ bool BookmarksFunction::GetBookmarkIdAsInt64(const std::string& id_string,
 }
 
 bool BookmarksFunction::EditBookmarksEnabled() {
-  PrefService* prefs = user_prefs::UserPrefs::Get(profile_);
+  PrefService* prefs = user_prefs::UserPrefs::Get(GetProfile());
   if (prefs->GetBoolean(prefs::kEditBookmarksEnabled))
     return true;
   error_ = keys::kEditBookmarksDisabled;
@@ -326,7 +326,7 @@ bool BookmarksGetFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   std::vector<linked_ptr<BookmarkTreeNode> > nodes;
-  BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
+  BookmarkModel* model = BookmarkModelFactory::GetForProfile(GetProfile());
   if (params->id_or_id_list.as_strings) {
     std::vector<std::string>& ids = *params->id_or_id_list.as_strings;
     size_t count = ids.size();
@@ -370,7 +370,7 @@ bool BookmarksGetChildrenFunction::RunImpl() {
 
   std::vector<linked_ptr<BookmarkTreeNode> > nodes;
   const BookmarkNode* node =
-      BookmarkModelFactory::GetForProfile(profile())->GetNodeByID(id);
+      BookmarkModelFactory::GetForProfile(GetProfile())->GetNodeByID(id);
   if (!node) {
     error_ = keys::kNoNodeError;
     return false;
@@ -394,7 +394,7 @@ bool BookmarksGetRecentFunction::RunImpl() {
 
   std::vector<const BookmarkNode*> nodes;
   bookmark_utils::GetMostRecentlyAddedEntries(
-      BookmarkModelFactory::GetForProfile(profile()),
+      BookmarkModelFactory::GetForProfile(GetProfile()),
       params->number_of_items,
       &nodes);
 
@@ -412,7 +412,7 @@ bool BookmarksGetRecentFunction::RunImpl() {
 bool BookmarksGetTreeFunction::RunImpl() {
   std::vector<linked_ptr<BookmarkTreeNode> > nodes;
   const BookmarkNode* node =
-      BookmarkModelFactory::GetForProfile(profile())->root_node();
+      BookmarkModelFactory::GetForProfile(GetProfile())->root_node();
   bookmark_api_helpers::AddNode(node, &nodes, true);
   results_ = bookmarks::GetTree::Results::Create(nodes);
   return true;
@@ -428,7 +428,7 @@ bool BookmarksGetSubTreeFunction::RunImpl() {
     return false;
 
   const BookmarkNode* node =
-      BookmarkModelFactory::GetForProfile(profile())->GetNodeByID(id);
+      BookmarkModelFactory::GetForProfile(GetProfile())->GetNodeByID(id);
   if (!node) {
     error_ = keys::kNoNodeError;
     return false;
@@ -445,11 +445,11 @@ bool BookmarksSearchFunction::RunImpl() {
       bookmarks::Search::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  PrefService* prefs = user_prefs::UserPrefs::Get(profile_);
+  PrefService* prefs = user_prefs::UserPrefs::Get(GetProfile());
   std::string lang = prefs->GetString(prefs::kAcceptLanguages);
   std::vector<const BookmarkNode*> nodes;
   bookmark_utils::GetBookmarksContainingText(
-      BookmarkModelFactory::GetForProfile(profile()),
+      BookmarkModelFactory::GetForProfile(GetProfile()),
       UTF8ToUTF16(params->query),
       std::numeric_limits<int>::max(),
       lang,
@@ -498,7 +498,7 @@ bool BookmarksRemoveFunction::RunImpl() {
   if (name() == BookmarksRemoveTreeFunction::function_name())
     recursive = true;
 
-  BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
+  BookmarkModel* model = BookmarkModelFactory::GetForProfile(GetProfile());
   if (!bookmark_api_helpers::RemoveNode(model, id, recursive, &error_))
     return false;
 
@@ -513,7 +513,7 @@ bool BookmarksCreateFunction::RunImpl() {
       bookmarks::Create::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
+  BookmarkModel* model = BookmarkModelFactory::GetForProfile(GetProfile());
   int64 parentId;
 
   if (!params->bookmark.parent_id.get()) {
@@ -598,7 +598,7 @@ bool BookmarksMoveFunction::RunImpl() {
     return false;
   }
 
-  BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
+  BookmarkModel* model = BookmarkModelFactory::GetForProfile(GetProfile());
   const BookmarkNode* node = model->GetNodeByID(id);
   if (!node) {
     error_ = keys::kNoNodeError;
@@ -672,7 +672,7 @@ bool BookmarksUpdateFunction::RunImpl() {
     return false;
   }
 
-  BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
+  BookmarkModel* model = BookmarkModelFactory::GetForProfile(GetProfile());
 
   // Optional but we need to distinguish non present from an empty title.
   string16 title;
@@ -877,7 +877,7 @@ class BookmarksQuotaLimitFactory {
 // And finally, building the individual heuristics for each function.
 void BookmarksRemoveFunction::GetQuotaLimitHeuristics(
     QuotaLimitHeuristics* heuristics) const {
-  BookmarksQuotaLimitFactory::BuildForRemove(heuristics, profile());
+  BookmarksQuotaLimitFactory::BuildForRemove(heuristics, GetProfile());
 }
 
 void BookmarksMoveFunction::GetQuotaLimitHeuristics(
@@ -892,7 +892,7 @@ void BookmarksUpdateFunction::GetQuotaLimitHeuristics(
 
 void BookmarksCreateFunction::GetQuotaLimitHeuristics(
     QuotaLimitHeuristics* heuristics) const {
-  BookmarksQuotaLimitFactory::BuildForCreate(heuristics, profile());
+  BookmarksQuotaLimitFactory::BuildForCreate(heuristics, GetProfile());
 }
 
 BookmarksIOFunction::BookmarksIOFunction() {}
@@ -996,9 +996,9 @@ void BookmarksImportFunction::FileSelected(const base::FilePath& path,
   source_profile.importer_type = importer::TYPE_BOOKMARKS_FILE;
   source_profile.source_path = path;
   importer_host->StartImportSettings(source_profile,
-                                     profile(),
+                                     GetProfile(),
                                      importer::FAVORITES,
-                                     new ProfileWriter(profile()));
+                                     new ProfileWriter(GetProfile()));
 
   importer::LogImporterUseToMetrics("BookmarksAPI",
                                     importer::TYPE_BOOKMARKS_FILE);
@@ -1018,7 +1018,7 @@ void BookmarksExportFunction::FileSelected(const base::FilePath& path,
   // Android does not have support for the standard exporter.
   // TODO(jgreenwald): remove ifdef once extensions are no longer built on
   // Android.
-  bookmark_html_writer::WriteBookmarks(profile(), path, NULL);
+  bookmark_html_writer::WriteBookmarks(GetProfile(), path, NULL);
 #endif
   Release();  // Balanced in BookmarksIOFunction::SelectFile()
 }

@@ -64,9 +64,9 @@ bool SyncFileSystemDeleteFileSystemFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &url));
 
   scoped_refptr<fileapi::FileSystemContext> file_system_context =
-      BrowserContext::GetStoragePartition(
-          profile(),
-          render_view_host()->GetSiteInstance())->GetFileSystemContext();
+      BrowserContext::GetStoragePartition(GetProfile(),
+                                          render_view_host()->GetSiteInstance())
+          ->GetFileSystemContext();
   fileapi::FileSystemURL file_system_url(
       file_system_context->CrackURL(GURL(url)));
 
@@ -111,7 +111,7 @@ bool SyncFileSystemRequestFileSystemFunction::RunImpl() {
   // SyncFileSystem initialization is done in OpenFileSystem below, but we call
   // GetSyncFileSystemService here too to initialize sync event observer for
   // extensions API.
-  GetSyncFileSystemService(profile());
+  GetSyncFileSystemService(GetProfile());
 
   // Initializes sync context for this extension and continue to open
   // a new file system.
@@ -130,8 +130,8 @@ fileapi::FileSystemContext*
 SyncFileSystemRequestFileSystemFunction::GetFileSystemContext() {
   DCHECK(render_view_host());
   return BrowserContext::GetStoragePartition(
-      profile(),
-      render_view_host()->GetSiteInstance())->GetFileSystemContext();
+      GetProfile(), render_view_host()->GetSiteInstance())
+      ->GetFileSystemContext();
 }
 
 void SyncFileSystemRequestFileSystemFunction::DidOpenFileSystem(
@@ -167,16 +167,15 @@ bool SyncFileSystemGetFileStatusFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &url));
 
   scoped_refptr<fileapi::FileSystemContext> file_system_context =
-      BrowserContext::GetStoragePartition(
-          profile(),
-          render_view_host()->GetSiteInstance())->GetFileSystemContext();
+      BrowserContext::GetStoragePartition(GetProfile(),
+                                          render_view_host()->GetSiteInstance())
+          ->GetFileSystemContext();
   fileapi::FileSystemURL file_system_url(
       file_system_context->CrackURL(GURL(url)));
 
-  GetSyncFileSystemService(profile())->GetFileSyncStatus(
+  GetSyncFileSystemService(GetProfile())->GetFileSyncStatus(
       file_system_url,
-      Bind(&SyncFileSystemGetFileStatusFunction::DidGetFileStatus,
-           this));
+      Bind(&SyncFileSystemGetFileStatusFunction::DidGetFileStatus, this));
   return true;
 }
 
@@ -208,9 +207,9 @@ bool SyncFileSystemGetFileStatusesFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(args_->GetList(0, &file_entry_urls));
 
   scoped_refptr<fileapi::FileSystemContext> file_system_context =
-      BrowserContext::GetStoragePartition(
-          profile(),
-          render_view_host()->GetSiteInstance())->GetFileSystemContext();
+      BrowserContext::GetStoragePartition(GetProfile(),
+                                          render_view_host()->GetSiteInstance())
+          ->GetFileSystemContext();
 
   // Map each file path->SyncFileStatus in the callback map.
   // TODO(calvinlo): Overload GetFileSyncStatus to take in URL array.
@@ -218,7 +217,7 @@ bool SyncFileSystemGetFileStatusesFunction::RunImpl() {
   num_results_received_ = 0;
   file_sync_statuses_.clear();
   sync_file_system::SyncFileSystemService* sync_file_system_service =
-      GetSyncFileSystemService(profile());
+      GetSyncFileSystemService(GetProfile());
   for (unsigned int i = 0; i < num_expected_results_; i++) {
     std::string url;
     file_entry_urls->GetString(i, &url);
@@ -285,16 +284,16 @@ bool SyncFileSystemGetUsageAndQuotaFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &url));
 
   scoped_refptr<fileapi::FileSystemContext> file_system_context =
-      BrowserContext::GetStoragePartition(
-          profile(),
-          render_view_host()->GetSiteInstance())->GetFileSystemContext();
+      BrowserContext::GetStoragePartition(GetProfile(),
+                                          render_view_host()->GetSiteInstance())
+          ->GetFileSystemContext();
   fileapi::FileSystemURL file_system_url(
       file_system_context->CrackURL(GURL(url)));
 
   scoped_refptr<quota::QuotaManager> quota_manager =
-      BrowserContext::GetStoragePartition(
-          profile(),
-          render_view_host()->GetSiteInstance())->GetQuotaManager();
+      BrowserContext::GetStoragePartition(GetProfile(),
+                                          render_view_host()->GetSiteInstance())
+          ->GetQuotaManager();
 
   BrowserThread::PostTask(
       BrowserThread::IO,
@@ -346,8 +345,8 @@ bool SyncFileSystemSetConflictResolutionPolicyFunction::RunImpl() {
                                 policy_string.c_str()));
     return false;
   }
-  sync_file_system::SyncFileSystemService* service = GetSyncFileSystemService(
-      profile());
+  sync_file_system::SyncFileSystemService* service =
+      GetSyncFileSystemService(GetProfile());
   DCHECK(service);
   SyncStatusCode status = service->SetConflictResolutionPolicy(policy);
   if (status != sync_file_system::SYNC_STATUS_OK) {
@@ -358,8 +357,8 @@ bool SyncFileSystemSetConflictResolutionPolicyFunction::RunImpl() {
 }
 
 bool SyncFileSystemGetConflictResolutionPolicyFunction::RunImpl() {
-  sync_file_system::SyncFileSystemService* service = GetSyncFileSystemService(
-      profile());
+  sync_file_system::SyncFileSystemService* service =
+      GetSyncFileSystemService(GetProfile());
   DCHECK(service);
   api::sync_file_system::ConflictResolutionPolicy policy =
       ConflictResolutionPolicyToExtensionEnum(
@@ -370,8 +369,8 @@ bool SyncFileSystemGetConflictResolutionPolicyFunction::RunImpl() {
 }
 
 bool SyncFileSystemGetServiceStatusFunction::RunImpl() {
-  sync_file_system::SyncFileSystemService* service = GetSyncFileSystemService(
-      profile());
+  sync_file_system::SyncFileSystemService* service =
+      GetSyncFileSystemService(GetProfile());
   results_ = api::sync_file_system::GetServiceStatus::Results::Create(
       SyncServiceStateToExtensionEnum(service->GetSyncServiceState()));
   return true;

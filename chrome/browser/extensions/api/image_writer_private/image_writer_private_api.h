@@ -5,12 +5,13 @@
 #define CHROME_BROWSER_EXTENSIONS_API_IMAGE_WRITER_PRIVATE_IMAGE_WRITER_PRIVATE_API_H_
 
 #include "chrome/browser/extensions/api/image_writer_private/removable_storage_provider.h"
-#include "chrome/browser/extensions/extension_function.h"
+#include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/common/extensions/api/image_writer_private.h"
 
 namespace extensions {
 
-class ImageWriterPrivateWriteFromUrlFunction : public AsyncExtensionFunction {
+class ImageWriterPrivateWriteFromUrlFunction
+    : public ChromeAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("imageWriterPrivate.writeFromUrl",
                              IMAGEWRITER_WRITEFROMURL)
@@ -22,7 +23,8 @@ class ImageWriterPrivateWriteFromUrlFunction : public AsyncExtensionFunction {
   void OnWriteStarted(bool success, const std::string& error);
 };
 
-class ImageWriterPrivateWriteFromFileFunction : public AsyncExtensionFunction {
+class ImageWriterPrivateWriteFromFileFunction
+    : public ChromeAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("imageWriterPrivate.writeFromFile",
                              IMAGEWRITER_WRITEFROMFILE)
@@ -34,7 +36,8 @@ class ImageWriterPrivateWriteFromFileFunction : public AsyncExtensionFunction {
   void OnWriteStarted(bool success, const std::string& error);
 };
 
-class ImageWriterPrivateCancelWriteFunction : public AsyncExtensionFunction {
+class ImageWriterPrivateCancelWriteFunction
+    : public ChromeAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("imageWriterPrivate.cancelWrite",
                              IMAGEWRITER_CANCELWRITE)
@@ -47,7 +50,7 @@ class ImageWriterPrivateCancelWriteFunction : public AsyncExtensionFunction {
 };
 
 class ImageWriterPrivateDestroyPartitionsFunction
-    : public AsyncExtensionFunction {
+    : public ChromeAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("imageWriterPrivate.destroyPartitions",
                              IMAGEWRITER_DESTROYPARTITIONS)
@@ -59,7 +62,7 @@ class ImageWriterPrivateDestroyPartitionsFunction
 };
 
 class ImageWriterPrivateListRemovableStorageDevicesFunction
-  : public AsyncExtensionFunction {
+    : public ChromeAsyncExtensionFunction {
   public:
     DECLARE_EXTENSION_FUNCTION("imageWriterPrivate.listRemovableStorageDevices",
                                IMAGEWRITER_LISTREMOVABLESTORAGEDEVICES);

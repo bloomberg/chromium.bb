@@ -10,7 +10,7 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/extensions/extension_function.h"
+#include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/common/extensions/api/enterprise_platform_keys_private.h"
 #include "chromeos/attestation/attestation_constants.h"
 #include "chromeos/attestation/attestation_flow.h"
@@ -38,7 +38,7 @@ class PrefRegistrySyncable;
 
 namespace extensions {
 
-class EPKPChallengeKeyBase : public AsyncExtensionFunction {
+class EPKPChallengeKeyBase : public ChromeAsyncExtensionFunction {
  public:
   static const char kChallengeBadBase64Error[];
   static const char kDevicePolicyDisabledError[];

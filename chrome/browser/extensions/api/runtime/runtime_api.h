@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "chrome/browser/extensions/extension_function.h"
+#include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/common/extensions/api/runtime.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -54,7 +54,7 @@ class RuntimeEventRouter {
                                      const std::string& extension_id);
 };
 
-class RuntimeGetBackgroundPageFunction : public AsyncExtensionFunction {
+class RuntimeGetBackgroundPageFunction : public ChromeAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("runtime.getBackgroundPage",
                              RUNTIME_GETBACKGROUNDPAGE)
@@ -67,7 +67,7 @@ class RuntimeGetBackgroundPageFunction : public AsyncExtensionFunction {
   void OnPageLoaded(ExtensionHost*);
 };
 
-class RuntimeSetUninstallUrlFunction : public SyncExtensionFunction {
+class RuntimeSetUninstallUrlFunction : public ChromeSyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("runtime.setUninstallUrl",
                              RUNTIME_SETUNINSTALLURL)
@@ -77,7 +77,7 @@ class RuntimeSetUninstallUrlFunction : public SyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
 };
 
-class RuntimeReloadFunction : public SyncExtensionFunction {
+class RuntimeReloadFunction : public ChromeSyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("runtime.reload", RUNTIME_RELOAD)
 
@@ -86,7 +86,7 @@ class RuntimeReloadFunction : public SyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
 };
 
-class RuntimeRequestUpdateCheckFunction : public AsyncExtensionFunction,
+class RuntimeRequestUpdateCheckFunction : public ChromeAsyncExtensionFunction,
                                           public content::NotificationObserver {
  public:
   DECLARE_EXTENSION_FUNCTION("runtime.requestUpdateCheck",
@@ -109,7 +109,7 @@ class RuntimeRequestUpdateCheckFunction : public AsyncExtensionFunction,
   bool did_reply_;
 };
 
-class RuntimeRestartFunction : public SyncExtensionFunction {
+class RuntimeRestartFunction : public ChromeSyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("runtime.restart", RUNTIME_RESTART)
 
@@ -118,7 +118,7 @@ class RuntimeRestartFunction : public SyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
 };
 
-class RuntimeGetPlatformInfoFunction : public SyncExtensionFunction {
+class RuntimeGetPlatformInfoFunction : public ChromeSyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("runtime.getPlatformInfo",
                              RUNTIME_GETPLATFORMINFO);
@@ -127,7 +127,8 @@ class RuntimeGetPlatformInfoFunction : public SyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
 };
 
-class RuntimeGetPackageDirectoryEntryFunction : public SyncExtensionFunction {
+class RuntimeGetPackageDirectoryEntryFunction
+    : public ChromeSyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("runtime.getPackageDirectoryEntry",
                              RUNTIME_GETPACKAGEDIRECTORYENTRY)

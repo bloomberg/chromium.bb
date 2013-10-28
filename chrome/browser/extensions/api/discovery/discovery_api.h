@@ -5,11 +5,11 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_DISCOVERY_DISCOVERY_API_H_
 #define CHROME_BROWSER_EXTENSIONS_API_DISCOVERY_DISCOVERY_API_H_
 
-#include "chrome/browser/extensions/extension_function.h"
+#include "chrome/browser/extensions/chrome_extension_function.h"
 
 namespace extensions {
 
-class DiscoverySuggestFunction : public SyncExtensionFunction {
+class DiscoverySuggestFunction : public ChromeSyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("experimental.discovery.suggest",
                              EXPERIMENTAL_DISCOVERY_SUGGEST)
@@ -19,7 +19,7 @@ class DiscoverySuggestFunction : public SyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
 };
 
-class DiscoveryRemoveSuggestionFunction : public SyncExtensionFunction {
+class DiscoveryRemoveSuggestionFunction : public ChromeSyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("experimental.discovery.removeSuggestion",
                              EXPERIMENTAL_DISCOVERY_REMOVESUGGESTION)
@@ -29,7 +29,8 @@ class DiscoveryRemoveSuggestionFunction : public SyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
 };
 
-class DiscoveryClearAllSuggestionsFunction : public SyncExtensionFunction {
+class DiscoveryClearAllSuggestionsFunction
+    : public ChromeSyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("experimental.discovery.clearAllSuggestions",
                              EXPERIMENTAL_DISCOVERY_CLEARALLSUGGESTIONS)

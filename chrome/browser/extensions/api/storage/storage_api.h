@@ -9,13 +9,13 @@
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/extensions/api/storage/settings_namespace.h"
 #include "chrome/browser/extensions/api/storage/settings_observer.h"
-#include "chrome/browser/extensions/extension_function.h"
+#include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/browser/value_store/value_store.h"
 
 namespace extensions {
 
 // Superclass of all settings functions.
-class SettingsFunction : public AsyncExtensionFunction {
+class SettingsFunction : public ChromeAsyncExtensionFunction {
  protected:
   SettingsFunction();
   virtual ~SettingsFunction();

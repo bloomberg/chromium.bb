@@ -8,12 +8,12 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_SYSTEM_PRIVATE_SYSTEM_PRIVATE_API_H_
 #define CHROME_BROWSER_EXTENSIONS_API_SYSTEM_PRIVATE_SYSTEM_PRIVATE_API_H_
 
-#include "chrome/browser/extensions/extension_function.h"
+#include "chrome/browser/extensions/chrome_extension_function.h"
 
 namespace extensions {
 
 class SystemPrivateGetIncognitoModeAvailabilityFunction
-    : public SyncExtensionFunction {
+    : public ChromeSyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("systemPrivate.getIncognitoModeAvailability",
                              SYSTEMPRIVATE_GETINCOGNITOMODEAVAILABILITY)
@@ -26,7 +26,8 @@ class SystemPrivateGetIncognitoModeAvailabilityFunction
 };
 
 // API function which returns the status of system update.
-class SystemPrivateGetUpdateStatusFunction : public SyncExtensionFunction {
+class SystemPrivateGetUpdateStatusFunction
+    : public ChromeSyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("systemPrivate.getUpdateStatus",
                              SYSTEMPRIVATE_GETUPDATESTATUS)

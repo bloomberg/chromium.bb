@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_FILE_SYSTEM_FILE_SYSTEM_API_H_
 #define CHROME_BROWSER_EXTENSIONS_API_FILE_SYSTEM_FILE_SYSTEM_API_H_
 
-#include "chrome/browser/extensions/extension_function.h"
+#include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/common/extensions/api/file_system.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 
@@ -33,7 +33,7 @@ void SetLastChooseEntryDirectory(ExtensionPrefs* prefs,
 
 }  // namespace file_system_api
 
-class FileSystemGetDisplayPathFunction : public SyncExtensionFunction {
+class FileSystemGetDisplayPathFunction : public ChromeSyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileSystem.getDisplayPath",
                              FILESYSTEM_GETDISPLAYPATH)
@@ -43,7 +43,7 @@ class FileSystemGetDisplayPathFunction : public SyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
 };
 
-class FileSystemEntryFunction : public AsyncExtensionFunction {
+class FileSystemEntryFunction : public ChromeAsyncExtensionFunction {
  protected:
   FileSystemEntryFunction();
 
@@ -98,7 +98,7 @@ class FileSystemGetWritableEntryFunction : public FileSystemEntryFunction {
   base::FilePath path_;
 };
 
-class FileSystemIsWritableEntryFunction : public SyncExtensionFunction {
+class FileSystemIsWritableEntryFunction : public ChromeSyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileSystem.isWritableEntry",
                              FILESYSTEM_ISWRITABLEENTRY)
@@ -170,7 +170,7 @@ class FileSystemChooseEntryFunction : public FileSystemEntryFunction {
   base::FilePath initial_path_;
 };
 
-class FileSystemRetainEntryFunction : public AsyncExtensionFunction {
+class FileSystemRetainEntryFunction : public ChromeAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileSystem.retainEntry", FILESYSTEM_RETAINENTRY)
 
@@ -192,7 +192,7 @@ class FileSystemRetainEntryFunction : public AsyncExtensionFunction {
   base::FilePath path_;
 };
 
-class FileSystemIsRestorableFunction : public SyncExtensionFunction {
+class FileSystemIsRestorableFunction : public ChromeSyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileSystem.isRestorable", FILESYSTEM_ISRESTORABLE)
 
