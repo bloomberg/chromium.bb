@@ -48,9 +48,4 @@
 #
 # START OVERRIDES HERE
 
-# The roll to r11833 altered the following 3 images
-crbug.com/308500 svg/W3C-SVG-1.1/pservers-grad-14-b.svg [ ImageOnlyFailure ]
-crbug.com/308500 virtual/gpu/fast/canvas/canvas-composite-transformclip.html [ ImageOnlyFailure ]
-crbug.com/308500 virtual/gpu/fast/canvas/canvas-composite.html [ ImageOnlyFailure ]
-
 # END OVERRIDES HERE (this line ensures that the file is newline-terminated)
