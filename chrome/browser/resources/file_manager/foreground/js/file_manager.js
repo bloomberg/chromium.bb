@@ -2065,54 +2065,8 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       var tasks = selection.tasks;
       var urls = selection.urls;
       var mimeTypes = selection.mimeTypes;
-      if (tasks) {
-        tasks.executeDefault(function(result) {
-          if (result)
-            return;
-
-          var showAlert = function() {
-            var filename = decodeURIComponent(urls[0]);
-            if (filename.indexOf('/') != -1)
-              filename = filename.substr(filename.lastIndexOf('/') + 1);
-            var extension = filename.lastIndexOf('.') != -1 ?
-                filename.substr(filename.lastIndexOf('.') + 1) : '';
-            var mimeType = mimeTypes && mimeTypes[0];
-
-            var messageString =
-                extension == 'exe' ? 'NO_ACTION_FOR_EXECUTABLE' :
-                                     'NO_ACTION_FOR_FILE';
-            var webStoreUrl = FileTasks.createWebStoreLink(extension, mimeType);
-            var text = loadTimeData.getStringF(
-                messageString,
-                webStoreUrl,
-                FileTasks.NO_ACTION_FOR_FILE_URL);
-            this.alert.showHtml(filename, text, function() {});
-          }.bind(this);
-
-          // TODO(yoshiki): Remove the flag when the feature is launched.
-          if (!this.enableExperimentalWebstoreIntegration_) {
-            showAlert();
-            return;
-          }
-
-          if (this.isDriveOffline()) {
-            showAlert();
-            return;
-          }
-
-          this.openSuggestAppsDialog_(urls,
-            // Success callback.
-            function() {
-              var tasks = new FileTasks(this);
-              tasks.init(urls, mimeTypes);
-              tasks.executeDefault();
-            }.bind(this),
-            // Cancelled callback.
-            function() {},
-            // Failure callback.
-            showAlert);
-        }.bind(this));
-      }
+      if (tasks)
+        tasks.executeDefault();
       return true;
     }
     if (!this.okButton_.disabled) {
@@ -2125,26 +2079,26 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
   /**
    * Opens the suggest file dialog.
    *
-   * @param {Array.<string>} urls List of URLs of files.
+   * @param {string} url URL of files.
    * @param {function()} onSuccess Success callback.
    * @param {function()} onCancelled User-cancelled callback.
    * @param {function()} onFailure Failure callback.
    * @private
    */
-  FileManager.prototype.openSuggestAppsDialog_ =
-      function(urls, onSuccess, onCancelled, onFailure) {
-    if (!urls || urls.length != 1) {
+  FileManager.prototype.openSuggestAppsDialog =
+      function(url, onSuccess, onCancelled, onFailure) {
+    if (!url) {
       onFailure();
       return;
     }
 
-    this.metadataCache_.get(urls, 'drive', function(props) {
+    this.metadataCache_.get([url], 'drive', function(props) {
       if (!props || !props[0] || !props[0].contentMimeType) {
         onFailure();
         return;
       }
 
-      var filename = util.extractFilePath(urls[0]);
+      var filename = util.extractFilePath(url);
       var extension = PathUtil.extractExtension(filename);
       var mime = props[0].contentMimeType;
 

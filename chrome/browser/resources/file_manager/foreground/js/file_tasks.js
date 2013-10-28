@@ -83,9 +83,11 @@ FileTasks.createWebStoreLink = function(extension, mimeType) {
  */
 FileTasks.prototype.init = function(urls, opt_mimeTypes) {
   this.urls_ = urls;
-  if (urls.length > 0)
-    chrome.fileBrowserPrivate.getFileTasks(urls, opt_mimeTypes || [],
-      this.onTasks_.bind(this));
+  this.mimeTypes_ = opt_mimeTypes || [];
+  if (urls.length > 0) {
+    chrome.fileBrowserPrivate.getFileTasks(urls, this.mimeTypes_,
+        this.onTasks_.bind(this));
+  }
 };
 
 /**
@@ -296,11 +298,61 @@ FileTasks.prototype.executeDefaultInternal_ = function(urls, opt_callback) {
 
   // We don't have tasks, so try to show a file in a browser tab.
   // We only do that for single selection to avoid confusion.
-  if (urls.length != 1)
+  if (urls.length != 1 || !urls[0])
     return;
 
+  var filename = decodeURIComponent(urls[0]);
+  if (filename.indexOf('/') != -1)
+    filename = filename.substr(filename.lastIndexOf('/') + 1);
+  var extension = filename.lastIndexOf('.') != -1 ?
+      filename.substr(filename.lastIndexOf('.') + 1) : '';
+  var mimeType = this.mimeTypes_[0];
+
+  var showAlert = function() {
+    var messageString =
+        extension == 'exe' ? 'NO_ACTION_FOR_EXECUTABLE' :
+                             'NO_ACTION_FOR_FILE';
+    var webStoreUrl = FileTasks.createWebStoreLink(extension, mimeType);
+    var text = loadTimeData.getStringF(
+        messageString,
+        webStoreUrl,
+        FileTasks.NO_ACTION_FOR_FILE_URL);
+    this.fileManager_.alert.showHtml(filename, text, function() {});
+    callback(false, urls);
+  }.bind(this);
+
+  var onViewFilesFailure = function() {
+    var fm = this.fileManager_;
+    if (fm.enableExperimentalWebStoreIntegration_) {
+      showAlert();
+      return;
+    }
+
+    if (!fm.isOnDrive() || !urls[0]) {
+      showAlert();
+      return;
+    }
+
+    fm.openSuggestAppsDialog(
+        urls[0],
+        function() {
+          var newTasks = new FileTasks(fm);
+          tasks.init(urls, this.mimeTypes_);
+          tasks.executeDefault();
+          callback(true, urls);
+        }.bind(this),
+        // Cancelled callback.
+        function() {
+          callback(false, urls);
+        },
+        showAlert);
+  }.bind(this);
+
   var onViewFiles = function(success) {
-    callback(success, urls);
+    if (success)
+      callback(success, urls);
+    else
+      onViewFilesFailure();
   }.bind(this);
 
   this.checkAvailability_(function() {
