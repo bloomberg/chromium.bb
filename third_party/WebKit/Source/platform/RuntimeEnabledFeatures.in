@@ -109,7 +109,7 @@ SVGPaintOrder status=experimental
 Touch status=stable
 
 UserSelectAll status=experimental
-Vibration status=experimental
+Vibration status=stable
 VideoTrack status=stable
 WebAnimations
 WebAnimationsCSS depends_on=WebAnimations
