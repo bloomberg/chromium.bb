@@ -215,28 +215,10 @@ void RenderTheme::adjustStyle(RenderStyle* style, Element* e, const CachedUAStyl
     case InnerSpinButtonPart:
         return adjustInnerSpinButtonStyle(style, e);
 #endif
-    case TextFieldPart:
-        return adjustTextFieldStyle(style, e);
-    case TextAreaPart:
-        return adjustTextAreaStyle(style, e);
     case MenulistPart:
         return adjustMenuListStyle(style, e);
     case MenulistButtonPart:
         return adjustMenuListButtonStyle(style, e);
-    case MediaPlayButtonPart:
-    case MediaCurrentTimePart:
-    case MediaTimeRemainingPart:
-    case MediaEnterFullscreenButtonPart:
-    case MediaExitFullscreenButtonPart:
-    case MediaMuteButtonPart:
-    case MediaVolumeSliderContainerPart:
-        return adjustMediaControlStyle(style, e);
-    case MediaSliderPart:
-    case MediaVolumeSliderPart:
-    case MediaFullScreenVolumeSliderPart:
-    case SliderHorizontalPart:
-    case SliderVerticalPart:
-        return adjustSliderTrackStyle(style, e);
     case SliderThumbHorizontalPart:
     case SliderThumbVerticalPart:
         return adjustSliderThumbStyle(style, e);
@@ -248,14 +230,6 @@ void RenderTheme::adjustStyle(RenderStyle* style, Element* e, const CachedUAStyl
         return adjustSearchFieldDecorationStyle(style, e);
     case SearchFieldResultsDecorationPart:
         return adjustSearchFieldResultsDecorationStyle(style, e);
-    case ProgressBarPart:
-        return adjustProgressBarStyle(style, e);
-    case MeterPart:
-    case RelevancyLevelIndicatorPart:
-    case ContinuousCapacityLevelIndicatorPart:
-    case DiscreteCapacityLevelIndicatorPart:
-    case RatingLevelIndicatorPart:
-        return adjustMeterStyle(style, e);
 #if ENABLE(INPUT_SPEECH)
     case InputSpeechButtonPart:
         return adjustInputFieldSpeechButtonStyle(style, e);
@@ -893,24 +867,12 @@ void RenderTheme::adjustRadioStyle(RenderStyle* style, Element*) const
 
 void RenderTheme::adjustButtonStyle(RenderStyle* style, Element*) const
 {
-    // Most platforms will completely honor all CSS, and so we have no need to
-    // adjust the style at all by default. We will still allow the theme a crack
-    // at setting up a desired vertical size.
-    setButtonSize(style);
 }
 
 void RenderTheme::adjustInnerSpinButtonStyle(RenderStyle*, Element*) const
 {
 }
 #endif
-
-void RenderTheme::adjustTextFieldStyle(RenderStyle*, Element*) const
-{
-}
-
-void RenderTheme::adjustTextAreaStyle(RenderStyle*, Element*) const
-{
-}
 
 void RenderTheme::adjustMenuListStyle(RenderStyle*, Element*) const
 {
@@ -928,10 +890,6 @@ bool RenderTheme::paintInputFieldSpeechButton(RenderObject* object, const PaintI
 }
 #endif
 
-void RenderTheme::adjustMeterStyle(RenderStyle* style, Element*) const
-{
-}
-
 IntSize RenderTheme::meterSizeForBounds(const RenderMeter*, const IntRect& bounds) const
 {
     return bounds.size();
@@ -945,11 +903,6 @@ bool RenderTheme::supportsMeter(ControlPart) const
 bool RenderTheme::paintMeter(RenderObject*, const PaintInfo&, const IntRect&)
 {
     return true;
-}
-
-LayoutUnit RenderTheme::sliderTickSnappingThreshold() const
-{
-    return 5;
 }
 
 void RenderTheme::paintSliderTicks(RenderObject* o, const PaintInfo& paintInfo, const IntRect& rect)
@@ -1041,24 +994,12 @@ double RenderTheme::animationDurationForProgressBar(RenderProgress*) const
     return 0;
 }
 
-void RenderTheme::adjustProgressBarStyle(RenderStyle*, Element*) const
-{
-}
-
 bool RenderTheme::shouldHaveSpinButton(HTMLInputElement* inputElement) const
 {
     return inputElement->isSteppable() && !inputElement->isRangeControl();
 }
 
 void RenderTheme::adjustMenuListButtonStyle(RenderStyle*, Element*) const
-{
-}
-
-void RenderTheme::adjustMediaControlStyle(RenderStyle*, Element*) const
-{
-}
-
-void RenderTheme::adjustSliderTrackStyle(RenderStyle*, Element*) const
 {
 }
 

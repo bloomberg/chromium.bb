@@ -287,16 +287,14 @@ void SliderThumbElement::setPositionFromPoint(const LayoutPoint& point)
     StepRange stepRange(input->createStepRange(RejectAny));
     Decimal value = stepRange.clampValue(stepRange.valueFromProportion(fraction));
 
-    const LayoutUnit snappingThreshold = RenderTheme::theme().sliderTickSnappingThreshold();
-    if (snappingThreshold > 0) {
-        Decimal closest = input->findClosestTickMarkValue(value);
-        if (closest.isFinite()) {
-            double closestFraction = stepRange.proportionFromValue(closest).toDouble();
-            double closestRatio = isVertical || !isLeftToRightDirection ? 1.0 - closestFraction : closestFraction;
-            LayoutUnit closestPosition = trackSize * closestRatio;
-            if ((closestPosition - position).abs() <= snappingThreshold)
-                value = closest;
-        }
+    Decimal closest = input->findClosestTickMarkValue(value);
+    if (closest.isFinite()) {
+        double closestFraction = stepRange.proportionFromValue(closest).toDouble();
+        double closestRatio = isVertical || !isLeftToRightDirection ? 1.0 - closestFraction : closestFraction;
+        LayoutUnit closestPosition = trackSize * closestRatio;
+        const LayoutUnit snappingThreshold = 5;
+        if ((closestPosition - position).abs() <= snappingThreshold)
+            value = closest;
     }
 
     String valueString = serializeForNumberType(value);

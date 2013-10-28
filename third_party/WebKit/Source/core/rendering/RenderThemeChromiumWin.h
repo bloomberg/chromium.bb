@@ -82,7 +82,6 @@ public:
 
     virtual double animationRepeatIntervalForProgressBar(RenderProgress*) const OVERRIDE;
     virtual double animationDurationForProgressBar(RenderProgress*) const OVERRIDE;
-    virtual void adjustProgressBarStyle(RenderStyle*, Element*) const OVERRIDE;
     virtual bool paintProgressBar(RenderObject*, const PaintInfo&, const IntRect&) OVERRIDE;
 
     virtual bool shouldOpenPickerWithF4Key() const OVERRIDE;

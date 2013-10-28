@@ -780,10 +780,6 @@ bool RenderThemeChromiumMac::paintTextField(RenderObject* o, const PaintInfo& pa
     return false;
 }
 
-void RenderThemeChromiumMac::adjustTextFieldStyle(RenderStyle*, Element*) const
-{
-}
-
 bool RenderThemeChromiumMac::paintCapsLockIndicator(RenderObject*, const PaintInfo& paintInfo, const IntRect& r)
 {
     if (paintInfo.context->paintingDisabled())
@@ -851,10 +847,6 @@ bool RenderThemeChromiumMac::paintTextArea(RenderObject* o, const PaintInfo& pai
     LocalCurrentGraphicsContext localContext(paintInfo.context);
     _NSDrawCarbonThemeListBox(r, isEnabled(o) && !isReadOnlyControl(o), YES, YES);
     return false;
-}
-
-void RenderThemeChromiumMac::adjustTextAreaStyle(RenderStyle*, Element*) const
-{
 }
 
 const int* RenderThemeChromiumMac::popupButtonMargins() const
@@ -1056,10 +1048,6 @@ double RenderThemeChromiumMac::animationRepeatIntervalForProgressBar(RenderProgr
 double RenderThemeChromiumMac::animationDurationForProgressBar(RenderProgress*) const
 {
     return progressAnimationNumFrames * progressAnimationFrameRate;
-}
-
-void RenderThemeChromiumMac::adjustProgressBarStyle(RenderStyle*, Element*) const
-{
 }
 
 bool RenderThemeChromiumMac::paintProgressBar(RenderObject* renderObject, const PaintInfo& paintInfo, const IntRect& rect)

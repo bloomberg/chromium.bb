@@ -57,6 +57,8 @@ static const AtomicString& getMediaControlCurrentTimeDisplayElementShadowPseudoI
 static const AtomicString& getMediaControlTimeRemainingDisplayElementShadowPseudoId();
 
 static const char* textTracksOffAttrValue = "-1"; // This must match HTMLMediaElement::textTracksOffIndex()
+static const double fadeInDuration = 0.1;
+static const double fadeOutDuration = 0.3;
 
 MediaControlPanelElement::MediaControlPanelElement(Document& document)
     : MediaControlDivElement(document, MediaControlsPanel)
@@ -134,8 +136,8 @@ void MediaControlPanelElement::startTimer()
     // The timer is required to set the property display:'none' on the panel,
     // such that captions are correctly displayed at the bottom of the video
     // at the end of the fadeout transition.
-    double duration = RenderTheme::theme().mediaControlsFadeOutDuration();
-    m_transitionTimer.startOneShot(duration);
+    // FIXME: Racing a transition with a setTimeout like this is wrong.
+    m_transitionTimer.startOneShot(fadeOutDuration);
 }
 
 void MediaControlPanelElement::stopTimer()
@@ -185,10 +187,8 @@ void MediaControlPanelElement::makeOpaque()
     if (m_opaque)
         return;
 
-    double duration = RenderTheme::theme().mediaControlsFadeInDuration();
-
     setInlineStyleProperty(CSSPropertyTransitionProperty, CSSPropertyOpacity);
-    setInlineStyleProperty(CSSPropertyTransitionDuration, duration, CSSPrimitiveValue::CSS_S);
+    setInlineStyleProperty(CSSPropertyTransitionDuration, fadeInDuration, CSSPrimitiveValue::CSS_S);
     setInlineStyleProperty(CSSPropertyOpacity, 1.0, CSSPrimitiveValue::CSS_NUMBER);
 
     m_opaque = true;
@@ -202,10 +202,8 @@ void MediaControlPanelElement::makeTransparent()
     if (!m_opaque)
         return;
 
-    double duration = RenderTheme::theme().mediaControlsFadeOutDuration();
-
     setInlineStyleProperty(CSSPropertyTransitionProperty, CSSPropertyOpacity);
-    setInlineStyleProperty(CSSPropertyTransitionDuration, duration, CSSPrimitiveValue::CSS_S);
+    setInlineStyleProperty(CSSPropertyTransitionDuration, fadeOutDuration, CSSPrimitiveValue::CSS_S);
     setInlineStyleProperty(CSSPropertyOpacity, 0.0, CSSPrimitiveValue::CSS_NUMBER);
 
     m_opaque = false;
