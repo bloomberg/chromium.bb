@@ -34,7 +34,7 @@ crbug.com/233124 http/tests/inspector/network/network-size-sync.html [ Skip ]
 # Plugin tests
 # -----------------------------------------------------------------
 
-#crbug.com/260351 [ Linux ] plugins/mouse-click-plugin-clears-selection.html [ ImageOnlyFailure Pass ]
+crbug.com/260351 [ Linux ] plugins/mouse-click-plugin-clears-selection.html [ ImageOnlyFailure Pass ]
 
 # -----------------------------------------------------------------
 # SVG TESTS
@@ -199,8 +199,6 @@ crbug.com/192172 [ Debug ] compositing/rtl/rtl-iframe-fixed-overflow-scrolled.ht
 crbug.com/192172 [ Debug ] virtual/softwarecompositing/rtl/rtl-iframe-fixed-overflow-scrolled.html [ Failure Pass ]
 crbug.com/192172 [ Debug ] compositing/rtl/rtl-iframe-fixed-overflow.html [ Failure Pass ]
 crbug.com/192172 [ Debug ] virtual/softwarecompositing/rtl/rtl-iframe-fixed-overflow.html [ Failure Pass ]
-
-crbug.com/255061 [ Linux ] plugins/mouse-click-plugin-clears-selection.html [ NeedsManualRebaseline ]
 
 crbug.com/239811 crbug.com/229113 http/tests/history/redirect-js-location-assign-0-seconds.html [ Failure Pass ]
 
