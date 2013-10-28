@@ -3098,7 +3098,7 @@ weston_output_init(struct weston_output *output, struct weston_compositor *c,
 
 WL_EXPORT void
 weston_output_transform_coordinate(struct weston_output *output,
-				   int device_x, int device_y,
+				   wl_fixed_t device_x, wl_fixed_t device_y,
 				   wl_fixed_t *x, wl_fixed_t *y)
 {
 	wl_fixed_t tx, ty;
@@ -3110,36 +3110,36 @@ weston_output_transform_coordinate(struct weston_output *output,
 	switch(output->transform) {
 	case WL_OUTPUT_TRANSFORM_NORMAL:
 	default:
-		tx = wl_fixed_from_int(device_x);
-		ty = wl_fixed_from_int(device_y);
+		tx = device_x;
+		ty = device_y;
 		break;
 	case WL_OUTPUT_TRANSFORM_90:
-		tx = wl_fixed_from_int(device_y);
-		ty = height - wl_fixed_from_int(device_x);
+		tx = device_y;
+		ty = height - device_x;
 		break;
 	case WL_OUTPUT_TRANSFORM_180:
-		tx = width - wl_fixed_from_int(device_x);
-		ty = height - wl_fixed_from_int(device_y);
+		tx = width - device_x;
+		ty = height - device_y;
 		break;
 	case WL_OUTPUT_TRANSFORM_270:
-		tx = width - wl_fixed_from_int(device_y);
-		ty = wl_fixed_from_int(device_x);
+		tx = width - device_y;
+		ty = device_x;
 		break;
 	case WL_OUTPUT_TRANSFORM_FLIPPED:
-		tx = width - wl_fixed_from_int(device_x);
-		ty = wl_fixed_from_int(device_y);
+		tx = width - device_x;
+		ty = device_y;
 		break;
 	case WL_OUTPUT_TRANSFORM_FLIPPED_90:
-		tx = width - wl_fixed_from_int(device_y);
-		ty = height - wl_fixed_from_int(device_x);
+		tx = width - device_y;
+		ty = height - device_x;
 		break;
 	case WL_OUTPUT_TRANSFORM_FLIPPED_180:
-		tx = wl_fixed_from_int(device_x);
-		ty = height - wl_fixed_from_int(device_y);
+		tx = device_x;
+		ty = height - device_y;
 		break;
 	case WL_OUTPUT_TRANSFORM_FLIPPED_270:
-		tx = wl_fixed_from_int(device_y);
-		ty = wl_fixed_from_int(device_x);
+		tx = device_y;
+		ty = device_x;
 		break;
 	}
 

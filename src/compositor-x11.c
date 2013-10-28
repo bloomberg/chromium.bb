@@ -1097,8 +1097,9 @@ x11_compositor_deliver_motion_event(struct x11_compositor *c,
 		update_xkb_state_from_core(c, motion_notify->state);
 	output = x11_compositor_find_output(c, motion_notify->event);
 	weston_output_transform_coordinate(&output->base,
-					   motion_notify->event_x,
-					   motion_notify->event_y, &x, &y);
+					   wl_fixed_from_int(motion_notify->event_x),
+					   wl_fixed_from_int(motion_notify->event_y),
+					   &x, &y);
 
 	notify_motion(&c->core_seat, weston_compositor_get_time(),
 		      x - c->prev_x, y - c->prev_y);
@@ -1122,8 +1123,8 @@ x11_compositor_deliver_enter_event(struct x11_compositor *c,
 		update_xkb_state_from_core(c, enter_notify->state);
 	output = x11_compositor_find_output(c, enter_notify->event);
 	weston_output_transform_coordinate(&output->base,
-					   enter_notify->event_x,
-					   enter_notify->event_y, &x, &y);
+					   wl_fixed_from_int(enter_notify->event_x),
+					   wl_fixed_from_int(enter_notify->event_y), &x, &y);
 
 	notify_pointer_focus(&c->core_seat, &output->base, x, y);
 
