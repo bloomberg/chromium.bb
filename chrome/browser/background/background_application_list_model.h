@@ -139,6 +139,13 @@ class BackgroundApplicationListModel : public content::NotificationObserver {
   // Refresh the list of background applications and generate notifications.
   void Update();
 
+  // Determines if the given extension has to be considered a "background app"
+  // due to its use of PushMessaging. Normally every extension that expectes
+  // push messages is classified as "background app", however there are some
+  // rare exceptions, so this function implements a whitelist.
+  static bool RequiresBackgroundModeForPushMessaging(
+      const extensions::Extension& extension);
+
   ApplicationMap applications_;
   extensions::ExtensionList extensions_;
   ObserverList<Observer> observers_;
