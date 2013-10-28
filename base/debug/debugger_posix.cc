@@ -195,7 +195,8 @@ bool BeingDebugged() {
 // +-------+-----------------+-----------------+
 //
 // Thus we do the following:
-// Linux: Debug mode, send SIGTRAP; Release mode, send SIGABRT.
+// Linux: Debug mode if a debugger is attached, send SIGTRAP; otherwise send
+//        SIGABRT
 // Mac: Always send SIGTRAP.
 
 #if defined(NDEBUG) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
@@ -205,7 +206,7 @@ bool BeingDebugged() {
 // should ask for advice from some NaCl experts about the optimum thing here.
 // http://code.google.com/p/nativeclient/issues/detail?id=645
 #define DEBUG_BREAK() abort()
-#elif defined(OS_ANDROID)
+#elif !defined(OS_MACOSX)
 // Though Android has a "helpful" process called debuggerd to catch native
 // signals on the general assumption that they are fatal errors. If no debugger
 // is attached, we call abort since Breakpad needs SIGABRT to create a dump.
@@ -214,12 +215,20 @@ bool BeingDebugged() {
 // difficulty continuing in a debugger once we stop from SIG triggered by native
 // code, use GDB to set |go| to 1 to resume execution; for X86 platform, use
 // "int3" to setup breakpiont and raise SIGTRAP.
+//
+// On other POSIX architectures, except Mac OS X, we use the same logic to
+// ensure that breakpad creates a dump on crashes while it is still possible to
+// use a debugger.
 namespace {
 void DebugBreak() {
   if (!BeingDebugged()) {
     abort();
   } else {
-#if defined(ARCH_CPU_X86_FAMILY)
+#if defined(ARCH_CPU_ARM_FAMILY) && !defined(OS_ANDROID)
+    asm("bkpt 0")
+#elif defined(ARCH_CPU_MIPS_FAMILY)
+    asm("break 2")
+#elif defined(ARCH_CPU_X86_FAMILY) || !defined(OS_ANDROID)
     asm("int3");
 #else
     volatile int go = 0;
@@ -231,12 +240,7 @@ void DebugBreak() {
 }
 }  // namespace
 #define DEBUG_BREAK() DebugBreak()
-#elif defined(ARCH_CPU_ARM_FAMILY)
-// ARM && !ANDROID
-#define DEBUG_BREAK() asm("bkpt 0")
-#elif defined(ARCH_CPU_MIPS_FAMILY)
-#define DEBUG_BREAK() asm("break 2")
-#else
+#else  // defined(OS_MACOSX)
 #define DEBUG_BREAK() asm("int3")
 #endif
 
