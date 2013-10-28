@@ -20,8 +20,8 @@
       'variables': {
         'command': [
           '../testing/test_env.py',
+          '../tools/swarm_client/googletest/run_test_cases.py',
           '<(PRODUCT_DIR)/net_unittests<(EXECUTABLE_SUFFIX)',
-          '--brave-new-test-launcher',
         ],
         'isolate_dependency_tracked': [
           '../testing/test_env.py',

@@ -43,11 +43,7 @@ class TestLauncherDelegate {
   virtual ~TestLauncherDelegate();
 };
 
-// Launches tests using |launcher_delegate|. |default_jobs| is number
-// of test jobs to be run in parallel, unless overridden from the command line.
-// Returns exit code.
 int LaunchTests(TestLauncherDelegate* launcher_delegate,
-                int default_jobs,
                 int argc,
                 char** argv) WARN_UNUSED_RESULT;
 

@@ -74,24 +74,6 @@
   ],
   'targets': [
     {
-      'target_name': 'test_support_chrome',
-      'type': 'static_library',
-      'dependencies': [
-        'test_support_common',
-        '../testing/gtest.gyp:gtest',
-      ],
-      'export_dependent_settings': [
-        'test_support_common',
-      ],
-      'include_dirs': [
-        '..',
-      ],
-      'sources': [
-        'test/base/chrome_test_launcher.cc',
-        'test/base/chrome_test_launcher.h',
-      ],
-    },
-    {
       'target_name': 'test_support_ui_runner',
       'type': 'static_library',
       'dependencies': [
@@ -169,7 +151,6 @@
         'common/extensions/api/api.gyp:api',
         'debugger',
         'renderer',
-        'test_support_chrome',
         'test_support_common',
         # NOTE: don't add test_support_ui, no more UITests. See
         # http://crbug.com/137365
@@ -197,6 +178,7 @@
       ],
       'defines': [
         'HAS_OUT_OF_PROC_TEST_RUNNER',
+        'INTERACTIVE_TESTS',
       ],
       'variables': {
         'win_use_external_manifest': 1,
@@ -284,6 +266,7 @@
         'browser/ui/views/tabs/tab_drag_controller_interactive_uitest.cc',
         'browser/ui/views/tabs/tab_drag_controller_interactive_uitest.h',
         'browser/ui/views/tabs/tab_drag_controller_interactive_uitest_win.cc',
+        'test/base/chrome_test_launcher.cc',
         'test/base/interactive_test_utils.cc',
         'test/base/interactive_test_utils.h',
         'test/base/interactive_test_utils_aura.cc',
@@ -292,7 +275,6 @@
         'test/base/interactive_test_utils_mac.mm',
         'test/base/interactive_test_utils_views.cc',
         'test/base/interactive_test_utils_win.cc',
-        'test/base/interactive_ui_tests_main.cc',
         'test/base/view_event_test_base.cc',
         'test/base/view_event_test_base.h',
         'test/ppapi/ppapi_interactive_browsertest.cc',
@@ -940,7 +922,6 @@
         'common/extensions/api/api.gyp:api',
         'renderer',
         'test/perf/perf_test.gyp:*',
-        'test_support_chrome',
         'test_support_common',
         'test_support_unit',
         '../base/base.gyp:base',
@@ -1560,9 +1541,9 @@
         'renderer/safe_browsing/phishing_dom_feature_extractor_browsertest.cc',
         'renderer/translate/translate_helper_browsertest.cc',
         'renderer/translate/translate_script_browsertest.cc',
-        'test/base/browser_tests_main.cc',
         'test/base/chrome_render_view_test.cc',
         'test/base/chrome_render_view_test.h',
+        'test/base/chrome_test_launcher.cc',
         'test/base/web_ui_browsertest.cc',
         'test/base/web_ui_browsertest.h',
         'test/base/in_process_browser_test_browsertest.cc',
@@ -2019,7 +2000,6 @@
         'chrome_resources.gyp:packed_resources',
         'renderer',
         'test/perf/perf_test.gyp:*',
-        'test_support_chrome',
         'test_support_common',
         '../base/base.gyp:base',
         '../base/base.gyp:base_i18n',
@@ -2056,9 +2036,9 @@
         'browser/extensions/extension_apitest.cc',
         'browser/extensions/extension_browsertest.cc',
         'browser/extensions/extension_test_notification_observer.cc',
-        'test/base/browser_tests_main.cc',
         'test/base/chrome_render_view_test.cc',
         'test/base/chrome_render_view_test.h',
+        'test/base/chrome_test_launcher.cc',
         'test/perf/browser_perf_test.cc',
         'test/perf/browser_perf_test.h',
         'test/perf/rendering/throughput_tests.cc',
@@ -2287,7 +2267,6 @@
         'common',
         'common/extensions/api/api.gyp:api',
         'renderer',
-        'test_support_chrome',
         'test_support_common',
         '../net/net.gyp:net',
         '../printing/printing.gyp:printing',
@@ -2316,7 +2295,7 @@
         'app/chrome_dll.rc',
         'app/chrome_dll_resource.h',
         'app/chrome_version.rc.version',
-        'test/base/browser_tests_main.cc',
+        'test/base/chrome_test_launcher.cc',
         'test/data/resource.rc',
         'browser/sync/test/integration/apps_helper.cc',
         'browser/sync/test/integration/apps_helper.h',
@@ -2468,7 +2447,6 @@
         'chrome',
         'common/extensions/api/api.gyp:api',
         'test/perf/perf_test.gyp:*',
-        'test_support_chrome',
         'test_support_common',
         '../skia/skia.gyp:skia',
         '../sync/sync.gyp:sync',
@@ -2520,7 +2498,7 @@
         'browser/sync/test/integration/sync_test.h',
         'browser/sync/test/integration/typed_urls_helper.cc',
         'browser/sync/test/integration/typed_urls_helper.h',
-        'test/base/browser_tests_main.cc',
+        'test/base/chrome_test_launcher.cc',
         'test/data/resource.rc',
       ],
       'conditions': [

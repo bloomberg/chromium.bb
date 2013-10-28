@@ -16,8 +16,8 @@
         'command': [
           '../testing/xvfb.py',
           '<(PRODUCT_DIR)',
+          '../tools/swarm_client/googletest/run_test_cases.py',
           '<(PRODUCT_DIR)/base_unittests<(EXECUTABLE_SUFFIX)',
-          '--brave-new-test-launcher',
         ],
         'isolate_dependency_tracked': [
           '../testing/xvfb.py',
@@ -40,8 +40,8 @@
       'variables': {
         'command': [
           '../testing/test_env.py',
+          '../tools/swarm_client/googletest/run_test_cases.py',
           '<(PRODUCT_DIR)/base_unittests<(EXECUTABLE_SUFFIX)',
-          '--brave-new-test-launcher',
         ],
       },
     }],
