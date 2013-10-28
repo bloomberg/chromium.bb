@@ -60,7 +60,7 @@ public:
     virtual bool isOverlayScrollbar() const { return false; }
 
 private:
-    virtual void setParent(ScrollView*);
+    virtual void setParent(Widget*) OVERRIDE;
     virtual void setEnabled(bool);
 
     virtual void paint(GraphicsContext*, const IntRect& damageRect);
