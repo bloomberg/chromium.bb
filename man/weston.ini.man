@@ -236,7 +236,8 @@ currently only recognized by the drm and x11 backends.
 .TP 7
 .BI "name=" name
 sets a name for the output (string). The backend uses the name to
-identify the output. All X11 output names start with a letter X. The available
+identify the output. All X11 output names start with a letter X.  All
+Wayland output names start with the letters WL.  The available
 output names for DRM backend are listed in the
 .B "weston-launch(1)"
 output.
@@ -247,6 +248,7 @@ Examples of usage:
 .BR "LVDS1    " "DRM backend, Laptop internal panel no.1"
 .BR "VGA1     " "DRM backend, VGA connector no.1"
 .BR "X1       " "X11 backend, X window no.1"
+.BR "WL1      " "Wayland backend, Wayland window no.1"
 .fi
 .RE
 .RS

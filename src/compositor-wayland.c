@@ -42,6 +42,15 @@
 #include "../shared/os-compatibility.h"
 #include "../shared/cairo-util.h"
 
+#define WINDOW_TITLE "Weston Compositor"
+
+struct wayland_backend_options {
+	int width, height;
+	char *display_name;
+	int use_pixman;
+	int count;
+};
+
 struct wayland_compositor {
 	struct weston_compositor base;
 
@@ -100,6 +109,7 @@ struct wayland_output {
 	} shm;
 
 	struct weston_mode mode;
+	uint32_t scale;
 };
 
 struct wayland_shm_buffer {
@@ -202,8 +212,8 @@ wayland_output_get_shm_buffer(struct wayland_output *output)
 		width = frame_width(output->frame);
 		height = frame_height(output->frame);
 	} else {
-		width = output->mode.width;
-		height = output->mode.height;
+		width = output->base.current_mode->width;
+		height = output->base.current_mode->height;
 	}
 
 	stride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, width);
@@ -457,13 +467,18 @@ wayland_shm_buffer_attach(struct wayland_shm_buffer *sb)
 	int32_t ix, iy, iwidth, iheight, fwidth, fheight;
 	int i, n;
 
+	pixman_region32_init(&damage);
+	weston_transformed_region(sb->output->base.width,
+				  sb->output->base.height,
+				  sb->output->base.transform,
+				  sb->output->base.current_scale,
+				  &sb->damage, &damage);
+
 	if (sb->output->frame) {
 		frame_interior(sb->output->frame, &ix, &iy, &iwidth, &iheight);
 		fwidth = frame_width(sb->output->frame);
 		fheight = frame_height(sb->output->frame);
 
-		pixman_region32_init(&damage);
-		pixman_region32_copy(&damage, &sb->damage);
 		pixman_region32_translate(&damage, ix, iy);
 
 		if (sb->frame_damaged) {
@@ -478,11 +493,9 @@ wayland_shm_buffer_attach(struct wayland_shm_buffer *sb)
 						   0, iy + iheight,
 						   fwidth, fheight - (iy + iheight));
 		}
-		rects = pixman_region32_rectangles(&damage, &n);
-	} else {
-		rects = pixman_region32_rectangles(&sb->damage, &n);
 	}
 
+	rects = pixman_region32_rectangles(&damage, &n);
 	wl_surface_attach(sb->output->parent.surface, sb->buffer, 0, 0);
 	for (i = 0; i < n; ++i)
 		wl_surface_damage(sb->output->parent.surface, rects[i].x1,
@@ -576,8 +589,8 @@ wayland_output_init_gl_renderer(struct wayland_output *output)
 		fwidth = frame_width(output->frame);
 		fheight = frame_height(output->frame);
 	} else {
-		fwidth = output->base.width;
-		fheight = output->base.height;
+		fwidth = output->base.current_mode->width;
+		fheight = output->base.current_mode->height;
 	}
 
 	output->gl.egl_window =
@@ -605,34 +618,41 @@ wayland_output_init_pixman_renderer(struct wayland_output *output)
 	return pixman_renderer_output_create(&output->base);
 }
 
-static int
-wayland_compositor_create_output(struct wayland_compositor *c,
-				 int width, int height)
+static struct wayland_output *
+wayland_output_create(struct wayland_compositor *c, int x, int y,
+		      int width, int height, const char *name,
+		      uint32_t transform, int32_t scale)
 {
 	struct wayland_output *output;
 	int32_t fx, fy, fwidth, fheight;
+	int output_width, output_height;
 	struct wl_region *region;
 
 	output = zalloc(sizeof *output);
 	if (output == NULL)
-		return -1;
+		return NULL;
+
+	output_width = width * scale;
+	output_height = height * scale;
 
 	output->mode.flags =
 		WL_OUTPUT_MODE_CURRENT | WL_OUTPUT_MODE_PREFERRED;
-	output->mode.width = width;
-	output->mode.height = height;
-	output->mode.refresh = 60;
+	output->mode.width = output_width;
+	output->mode.height = output_height;
+	output->mode.refresh = 60000;
+	output->scale = scale;
 	wl_list_init(&output->base.mode_list);
 	wl_list_insert(&output->base.mode_list, &output->mode.link);
 
+	weston_log("Creating %dx%d wayland output at (%d, %d)\n",
+		   width, height, x, y);
+
 	output->base.current_mode = &output->mode;
-	weston_output_init(&output->base, &c->base, 0, 0, width, height,
-			   WL_OUTPUT_TRANSFORM_NORMAL, 1);
+	weston_output_init(&output->base, &c->base, x, y, width, height,
+			   transform, scale);
 
 	output->base.make = "waywayland";
 	output->base.model = "none";
-
-	weston_output_move(&output->base, 0, 0);
 
 	wl_list_init(&output->shm.buffers);
 	wl_list_init(&output->shm.free_buffers);
@@ -640,10 +660,8 @@ wayland_compositor_create_output(struct wayland_compositor *c,
 	if (!c->theme)
 		c->theme = theme_create();
 	output->frame = frame_create(c->theme, width, height,
-				     FRAME_BUTTON_CLOSE, "Weston");
-	frame_resize_inside(output->frame, width, height);
-
-	weston_log("Creating %dx%d wayland output\n", width, height);
+				     FRAME_BUTTON_CLOSE, name);
+	frame_resize_inside(output->frame, output_width, output_height);
 
 	output->parent.surface =
 		wl_compositor_create_surface(c->parent.compositor);
@@ -688,13 +706,85 @@ wayland_compositor_create_output(struct wayland_compositor *c,
 
 	wl_list_insert(c->base.output_list.prev, &output->base.link);
 
-	return 0;
+	return output;
 
 cleanup_output:
 	/* FIXME: cleanup weston_output */
 	free(output);
 
-	return -1;
+	return NULL;
+}
+
+static struct wayland_output *
+wayland_output_create_for_config(struct wayland_compositor *c,
+				 struct wayland_backend_options *options,
+				 struct weston_config_section *config_section,
+				 int32_t x, int32_t y)
+{
+	struct wayland_output *output;
+	char *mode, *t, *name, *str;
+	int width, height, scale;
+	uint32_t transform;
+	unsigned int i, slen;
+
+	static const struct { const char *name; uint32_t token; } transform_names[] = {
+		{ "normal",	WL_OUTPUT_TRANSFORM_NORMAL },
+		{ "90",		WL_OUTPUT_TRANSFORM_90 },
+		{ "180",	WL_OUTPUT_TRANSFORM_180 },
+		{ "270",	WL_OUTPUT_TRANSFORM_270 },
+		{ "flipped",	WL_OUTPUT_TRANSFORM_FLIPPED },
+		{ "flipped-90",	WL_OUTPUT_TRANSFORM_FLIPPED_90 },
+		{ "flipped-180", WL_OUTPUT_TRANSFORM_FLIPPED_180 },
+		{ "flipped-270", WL_OUTPUT_TRANSFORM_FLIPPED_270 },
+	};
+
+	weston_config_section_get_string(config_section, "name", &name, NULL);
+	if (name) {
+		slen = strlen(name);
+		slen += strlen(WINDOW_TITLE " - ");
+		str = malloc(slen + 1);
+		if (str)
+			snprintf(str, slen + 1, WINDOW_TITLE " - %s", name);
+		free(name);
+		name = str;
+	}
+	if (!name)
+		name = WINDOW_TITLE;
+
+	weston_config_section_get_string(config_section,
+					 "mode", &mode, "1024x600");
+	if (sscanf(mode, "%dx%d", &width, &height) != 2) {
+		weston_log("Invalid mode \"%s\" for output %s\n",
+			   mode, name);
+		width = 1024;
+		height = 640;
+	}
+	free(mode);
+
+	if (options->width)
+		width = options->width;
+	if (options->height)
+		height = options->height;
+
+	weston_config_section_get_int(config_section, "scale", &scale, 1);
+
+	weston_config_section_get_string(config_section,
+					 "transform", &t, "normal");
+	transform = WL_OUTPUT_TRANSFORM_NORMAL;
+	for (i = 0; i < ARRAY_LENGTH(transform_names); i++) {
+		if (strcmp(transform_names[i].name, t) == 0) {
+			transform = transform_names[i].token;
+			break;
+		}
+	}
+	if (i >= ARRAY_LENGTH(transform_names))
+		weston_log("Invalid transform \"%s\" for output %s\n", t, name);
+	free(t);
+
+	output = wayland_output_create(c, x, y, width, height, name, transform, scale);
+	free(name);
+
+	return output;
 }
 
 static void
@@ -817,6 +907,7 @@ input_handle_pointer_enter(void *data, struct wl_pointer *pointer,
 
 	x += wl_fixed_from_int(input->output->base.x);
 	y += wl_fixed_from_int(input->output->base.y);
+	weston_output_transform_coordinate(&input->output->base, x, y, &x, &y);
 
 	if (location == THEME_LOCATION_CLIENT_AREA) {
 		input->focus = 1;
@@ -872,6 +963,7 @@ input_handle_motion(void *data, struct wl_pointer *pointer,
 
 	x += wl_fixed_from_int(input->output->base.x);
 	y += wl_fixed_from_int(input->output->base.y);
+	weston_output_transform_coordinate(&input->output->base, x, y, &x, &y);
 
 	if (input->focus && location != THEME_LOCATION_CLIENT_AREA) {
 		input_set_cursor(input);
@@ -1256,14 +1348,19 @@ create_cursor(struct wayland_compositor *c, struct weston_config *config)
 }
 
 static struct weston_compositor *
-wayland_compositor_create(struct wl_display *display, int use_pixman,
-			  int width, int height, const char *display_name,
+wayland_compositor_create(struct wl_display *display,
+			  struct wayland_backend_options *options,
 			  int *argc, char *argv[],
 			  struct weston_config *config)
 {
 	struct wayland_compositor *c;
+	struct wayland_output *wo;
 	struct wl_event_loop *loop;
-	int fd;
+	struct weston_config_section *section;
+	struct weston_output *output;
+	char *name;
+	const char *section_name;
+	int fd, x, count, width, height;
 
 	c = zalloc(sizeof *c);
 	if (c == NULL)
@@ -1273,7 +1370,7 @@ wayland_compositor_create(struct wl_display *display, int use_pixman,
 				   config) < 0)
 		goto err_free;
 
-	c->parent.wl_display = wl_display_connect(display_name);
+	c->parent.wl_display = wl_display_connect(options->display_name);
 
 	if (c->parent.wl_display == NULL) {
 		weston_log("failed to create display: %m\n");
@@ -1289,13 +1386,16 @@ wayland_compositor_create(struct wl_display *display, int use_pixman,
 
 	c->base.wl_display = display;
 
-	gl_renderer = weston_load_module("gl-renderer.so",
-					 "gl_renderer_interface");
-	if (!gl_renderer)
-		goto err_display;
+	c->use_pixman = options->use_pixman;
 
-	c->use_pixman = use_pixman;
-	if (!use_pixman) {
+	if (!c->use_pixman) {
+		gl_renderer = weston_load_module("gl-renderer.so",
+						 "gl_renderer_interface");
+		if (!gl_renderer)
+			c->use_pixman = 1;
+	}
+
+	if (!c->use_pixman) {
 		if (gl_renderer->create(&c->base, c->parent.wl_display,
 				gl_renderer->alpha_attribs,
 				NULL) < 0) {
@@ -1315,9 +1415,39 @@ wayland_compositor_create(struct wl_display *display, int use_pixman,
 	c->base.destroy = wayland_destroy;
 	c->base.restore = wayland_restore;
 
-	/* requires border fields */
-	if (wayland_compositor_create_output(c, width, height) < 0)
-		goto err_gl;
+	section = NULL;
+	x = 0;
+	count = 0;
+	while (weston_config_next_section(config, &section, &section_name)) {
+		if (!section_name || strcmp(section_name, "output") != 0)
+			continue;
+		weston_config_section_get_string(section, "name", &name, NULL);
+		if (name == NULL)
+			continue;
+
+		if (name[0] != 'W' || name[1] != 'L') {
+			free(name);
+			continue;
+		}
+		free(name);
+
+		wo = wayland_output_create_for_config(c, options, section, x, 0);
+		if (!wo)
+			goto err_outputs;
+		x += wo->base.width;
+		++count;
+	}
+
+
+	width = options->width > 0 ? options->width : 1024;
+	height = options->height > 0 ? options->height : 640;
+	while (count < options->count) {
+		if (!wayland_output_create(c, x, 0, width, height,
+					   WINDOW_TITLE, 0, 1))
+			goto err_outputs;
+		x += width;
+		++count;
+	}
 
 	loop = wl_display_get_event_loop(c->base.wl_display);
 
@@ -1326,13 +1456,15 @@ wayland_compositor_create(struct wl_display *display, int use_pixman,
 		wl_event_loop_add_fd(loop, fd, WL_EVENT_READABLE,
 				     wayland_compositor_handle_event, c);
 	if (c->parent.wl_source == NULL)
-		goto err_gl;
+		goto err_outputs;
 
 	wl_event_source_check(c->parent.wl_source);
 
 	return &c->base;
+err_outputs:
+	wl_list_for_each(output, &c->base.output_list, link)
+		wayland_output_destroy(output);
 
-err_gl:
 	c->base.renderer->destroy(&c->base);
 err_display:
 	wl_display_disconnect(c->parent.wl_display);
@@ -1347,20 +1479,22 @@ WL_EXPORT struct weston_compositor *
 backend_init(struct wl_display *display, int *argc, char *argv[],
 	     struct weston_config *config)
 {
-	int width = 1024, height = 640;
-	char *display_name = NULL;
-	int use_pixman = 0;
+	struct wayland_backend_options options;
+	memset(&options, 0, sizeof options);
 
 	const struct weston_option wayland_options[] = {
-		{ WESTON_OPTION_INTEGER, "width", 0, &width },
-		{ WESTON_OPTION_INTEGER, "height", 0, &height },
-		{ WESTON_OPTION_STRING, "display", 0, &display_name },
-		{ WESTON_OPTION_BOOLEAN, "use-pixman", 0, &use_pixman },
+		{ WESTON_OPTION_INTEGER, "width", 0, &options.width },
+		{ WESTON_OPTION_INTEGER, "height", 0, &options.height },
+		{ WESTON_OPTION_STRING, "display", 0, &options.display_name },
+		{ WESTON_OPTION_BOOLEAN, "use-pixman", 0, &options.use_pixman },
+		{ WESTON_OPTION_INTEGER, "output-count", 0, &options.count },
 	};
+
+	options.count = 1;
 
 	parse_options(wayland_options,
 		      ARRAY_LENGTH(wayland_options), argc, argv);
 
-	return wayland_compositor_create(display, use_pixman, width, height,
-					 display_name, argc, argv, config);
+	return wayland_compositor_create(display, &options,
+					 argc, argv, config);
 }

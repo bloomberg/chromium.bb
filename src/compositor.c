@@ -3700,6 +3700,7 @@ usage(int error_code)
 		"  --width=WIDTH\t\tWidth of Wayland surface\n"
 		"  --height=HEIGHT\tHeight of Wayland surface\n"
 		"  --use-pixman\t\tUse the pixman (CPU) renderer\n"
+		"  --output-count=COUNT\tCreate multiple outputs\n"
 		"  --display=DISPLAY\tWayland display to connect to\n\n");
 
 #if defined(BUILD_RPI_COMPOSITOR) && defined(HAVE_BCM_HOST)
