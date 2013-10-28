@@ -38,21 +38,11 @@ def GetCommandOutput(command):
   return output
 
 
-def GetDumpSymsBinary(dump_syms_dir=None):
+def GetDumpSymsBinary(build_dir=None):
   """Returns the path to the dump_syms binary."""
   DUMP_SYMS = 'dump_syms'
-  dump_syms_bin = None
-  if dump_syms_dir:
-    bin = os.path.join(os.path.expanduser(dump_syms_dir), DUMP_SYMS)
-    if os.access(bin, os.X_OK):
-      dump_syms_bin = bin
-  else:
-    for path in os.environ['PATH'].split(':'):
-      bin = os.path.join(path, DUMP_SYMS)
-      if os.access(bin, os.X_OK):
-        dump_syms_bin = bin
-        break
-  if not dump_syms_bin:
+  dump_syms_bin = os.path.join(os.path.expanduser(build_dir), DUMP_SYMS)
+  if not os.access(dump_syms_bin, os.X_OK):
     print 'Cannot find %s.' % DUMP_SYMS
     sys.exit(1)
 
@@ -67,8 +57,8 @@ def Resolve(path, exe_path, loader_path, rpaths):
   @rpath is replaced with the first path in |rpaths| where the referenced file
       is found
   """
-  path.replace('@loader_path', loader_path)
-  path.replace('@executable_path', exe_path)
+  path = path.replace('@loader_path', loader_path)
+  path = path.replace('@executable_path', exe_path)
   if path.find('@rpath') != -1:
     for rpath in rpaths:
       new_path = Resolve(path.replace('@rpath', rpath), exe_path, loader_path,
@@ -112,21 +102,29 @@ def GetSharedLibraryDependenciesMac(binary, exe_path):
     m = lib_re.match(line)
     if m:
       dep = Resolve(m.group(1), exe_path, loader_path, rpaths)
-      if dep and os.access(dep, os.X_OK):
+      if dep:
         deps.append(os.path.normpath(dep))
   return deps
 
 
-def GetSharedLibraryDependencies(binary, exe_path):
+def GetSharedLibraryDependencies(options, binary, exe_path):
   """Return absolute paths to all shared library dependecies of the binary."""
+  deps = []
   if sys.platform.startswith('linux'):
-    return GetSharedLibraryDependenciesLinux(binary)
+    deps = GetSharedLibraryDependenciesLinux(binary)
+  elif sys.platform == 'darwin':
+    deps = GetSharedLibraryDependenciesMac(binary, exe_path)
+  else:
+    print "Platform not supported."
+    sys.exit(1)
 
-  if sys.platform == 'darwin':
-    return GetSharedLibraryDependenciesMac(binary, exe_path)
-
-  print "Platform not supported."
-  sys.exit(1)
+  result = []
+  build_dir = os.path.abspath(options.build_dir)
+  for dep in deps:
+    if (os.access(dep, os.X_OK) and
+        os.path.abspath(os.path.dirname(dep)).startswith(build_dir)):
+      result.append(dep)
+  return result
 
 
 def mkdir_p(path):
@@ -148,7 +146,7 @@ def GenerateSymbols(options, binaries):
     while True:
       binary = queue.get()
 
-      syms = GetCommandOutput([GetDumpSymsBinary(options.dump_syms_dir),
+      syms = GetCommandOutput([GetDumpSymsBinary(options.build_dir),
                                binary])
       module_line = re.match("MODULE [^ ]+ [^ ]+ ([0-9A-F]+) (.*)\n", syms)
       output_path = os.path.join(options.symbols_dir, module_line.group(2),
@@ -174,9 +172,8 @@ def GenerateSymbols(options, binaries):
 
 def main():
   parser = optparse.OptionParser()
-  parser.add_option('', '--dump-syms-dir', default='',
-                    help='The directory where dump_syms is installed. '
-                         'Searches $PATH by default')
+  parser.add_option('', '--build-dir', default='',
+                    help='The build output directory.')
   parser.add_option('', '--symbols-dir', default='',
                     help='The directory where to write the symbols file.')
   parser.add_option('', '--binary', default='',
@@ -191,6 +188,10 @@ def main():
 
   if not options.symbols_dir:
     print "Required option --symbols-dir missing."
+    return 1
+
+  if not options.build_dir:
+    print "Required option --build-dir missing."
     return 1
 
   if not options.binary:
@@ -212,7 +213,7 @@ def main():
   queue = [options.binary]
   exe_path = os.path.dirname(options.binary)
   while queue:
-    deps = GetSharedLibraryDependencies(queue.pop(0), exe_path)
+    deps = GetSharedLibraryDependencies(options, queue.pop(0), exe_path)
     new_deps = set(deps) - binaries
     binaries |= new_deps
     queue.extend(list(new_deps))
