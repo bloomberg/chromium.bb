@@ -2087,6 +2087,11 @@ const char kVideoCaptureAllowedUrls[] = "hardware.video_capture_allowed_urls";
 // trigger.
 const char kHotwordSearchEnabled[] = "hotword.search_enabled";
 
+// A boolean pref that controls the enabled-state of hotword search voice
+// trigger when using incognito mode.
+const char kHotwordSearchIncognitoEnabled[] =
+    "hotword.incognito_search_enabled";
+
 #if defined(OS_ANDROID)
 // Boolean that controls the global enabled-state of protected media identifier.
 const char kProtectedMediaIdentifierEnabled[] =

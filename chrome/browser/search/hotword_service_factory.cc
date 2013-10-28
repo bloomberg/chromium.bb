@@ -14,7 +14,9 @@
 
 // static
 HotwordService* HotwordServiceFactory::GetForProfile(Profile* profile) {
-  if (!profile->GetPrefs()->GetBoolean(prefs::kHotwordSearchEnabled))
+  if (!profile->GetPrefs()->GetBoolean(prefs::kHotwordSearchEnabled) ||
+      (profile->IsOffTheRecord() &&
+       !profile->GetPrefs()->GetBoolean(prefs::kHotwordSearchIncognitoEnabled)))
     return NULL;
 
   return static_cast<HotwordService*>(
@@ -39,6 +41,9 @@ HotwordServiceFactory::~HotwordServiceFactory() {
 void HotwordServiceFactory::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* prefs) {
   prefs->RegisterBooleanPref(prefs::kHotwordSearchEnabled,
+                             false,
+                             user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  prefs->RegisterBooleanPref(prefs::kHotwordSearchIncognitoEnabled,
                              false,
                              user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
