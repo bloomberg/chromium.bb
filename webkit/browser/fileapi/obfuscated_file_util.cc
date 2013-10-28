@@ -948,6 +948,37 @@ int64 ObfuscatedFileUtil::ComputeFilePathCost(const base::FilePath& path) {
   return UsageForPath(VirtualPath::BaseName(path).value().size());
 }
 
+void ObfuscatedFileUtil::MaybePrepopulateDatabase(
+    const std::vector<std::string>& type_strings_to_prepopulate) {
+  SandboxPrioritizedOriginDatabase database(file_system_directory_);
+  std::string origin_string = database.GetPrimaryOrigin();
+  if (origin_string.empty() || !database.HasOriginPath(origin_string))
+    return;
+  const GURL origin = webkit_database::GetOriginFromIdentifier(origin_string);
+
+  // Prepopulate the directory database(s) if and only if this instance
+  // has primary origin and the directory database is already there.
+  for (size_t i = 0; i < type_strings_to_prepopulate.size(); ++i) {
+    const std::string type_string = type_strings_to_prepopulate[i];
+    // Only handles known types.
+    if (!ContainsKey(known_type_strings_, type_string))
+      continue;
+    PlatformFileError error = base::PLATFORM_FILE_ERROR_FAILED;
+    base::FilePath path = GetDirectoryForOriginAndType(
+        origin, type_string, false, &error);
+    if (error != base::PLATFORM_FILE_OK)
+      continue;
+    scoped_ptr<SandboxDirectoryDatabase> db(new SandboxDirectoryDatabase(path));
+    if (db->Init(SandboxDirectoryDatabase::FAIL_ON_CORRUPTION)) {
+      directories_[GetDirectoryDatabaseKey(origin, type_string)] = db.release();
+      MarkUsed();
+      // Don't populate more than one database, as it may rather hurt
+      // performance.
+      break;
+    }
+  }
+}
+
 base::FilePath ObfuscatedFileUtil::GetDirectoryForURL(
     const FileSystemURL& url,
     bool create,
