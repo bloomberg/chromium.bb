@@ -54,15 +54,13 @@ RenderSVGResourceContainer::~RenderSVGResourceContainer()
 
 void RenderSVGResourceContainer::layout()
 {
+    // FIXME: Investigate a way to detect and break resource layout dependency cycles early.
+    // Then we can remove this method altogether, and fall back onto RenderSVGHiddenContainer::layout().
     ASSERT(needsLayout());
     if (m_isInLayout)
         return;
 
     TemporaryChange<bool> inLayoutChange(m_isInLayout, true);
-
-    // Invalidate all resources if our layout changed.
-    if (everHadLayout() && selfNeedsLayout())
-        removeAllClientsFromCache();
 
     RenderSVGHiddenContainer::layout();
 }
@@ -181,6 +179,17 @@ void RenderSVGResourceContainer::removeClientRenderLayer(RenderLayer* client)
 {
     ASSERT(client);
     m_clientLayers.remove(client);
+}
+
+void RenderSVGResourceContainer::invalidateCacheAndMarkForLayout()
+{
+    if (selfNeedsLayout())
+        return;
+
+    setNeedsLayout();
+
+    if (everHadLayout())
+        removeAllClientsFromCache();
 }
 
 void RenderSVGResourceContainer::registerResource()

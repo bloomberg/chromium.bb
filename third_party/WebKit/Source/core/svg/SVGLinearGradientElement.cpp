@@ -109,8 +109,9 @@ void SVGLinearGradientElement::svgAttributeChanged(const QualifiedName& attrName
 
     updateRelativeLengthsInformation();
 
-    if (RenderObject* object = renderer())
-        object->setNeedsLayout();
+    RenderSVGResourceContainer* renderer = toRenderSVGResourceContainer(this->renderer());
+    if (renderer)
+        renderer->invalidateCacheAndMarkForLayout();
 }
 
 RenderObject* SVGLinearGradientElement::createRenderer(RenderStyle*)

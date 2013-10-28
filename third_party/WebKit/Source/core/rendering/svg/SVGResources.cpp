@@ -296,6 +296,16 @@ void SVGResources::layoutIfNeeded()
         if (RenderSVGResourceMarker* marker = m_markerData->markerEnd)
             marker->layoutIfNeeded();
     }
+
+    if (m_fillStrokeData) {
+        if (RenderSVGResourceContainer* fill = m_fillStrokeData->fill)
+            fill->layoutIfNeeded();
+        if (RenderSVGResourceContainer* stroke = m_fillStrokeData->stroke)
+            stroke->layoutIfNeeded();
+    }
+
+    if (m_linkedResource)
+        m_linkedResource->layoutIfNeeded();
 }
 
 void SVGResources::removeClientFromCache(RenderObject* object, bool markForInvalidation) const

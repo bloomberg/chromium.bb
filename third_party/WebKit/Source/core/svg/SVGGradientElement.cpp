@@ -121,8 +121,9 @@ void SVGGradientElement::svgAttributeChanged(const QualifiedName& attrName)
 
     SVGElementInstance::InvalidationGuard invalidationGuard(this);
 
-    if (RenderObject* object = renderer())
-        object->setNeedsLayout();
+    RenderSVGResourceContainer* renderer = toRenderSVGResourceContainer(this->renderer());
+    if (renderer)
+        renderer->invalidateCacheAndMarkForLayout();
 }
 
 void SVGGradientElement::childrenChanged(bool changedByParser, Node* beforeChange, Node* afterChange, int childCountDelta)

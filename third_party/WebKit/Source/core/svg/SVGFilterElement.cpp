@@ -96,8 +96,9 @@ void SVGFilterElement::setFilterRes(unsigned filterResX, unsigned filterResY)
     setFilterResXBaseValue(filterResX);
     setFilterResYBaseValue(filterResY);
 
-    if (RenderObject* object = renderer())
-        object->setNeedsLayout();
+    RenderSVGResourceContainer* renderer = toRenderSVGResourceContainer(this->renderer());
+    if (renderer)
+        renderer->invalidateCacheAndMarkForLayout();
 }
 
 bool SVGFilterElement::isSupportedAttribute(const QualifiedName& attrName)
@@ -168,8 +169,9 @@ void SVGFilterElement::svgAttributeChanged(const QualifiedName& attrName)
         || attrName == SVGNames::heightAttr)
         updateRelativeLengthsInformation();
 
-    if (RenderObject* object = renderer())
-        object->setNeedsLayout();
+    RenderSVGResourceContainer* renderer = toRenderSVGResourceContainer(this->renderer());
+    if (renderer)
+        renderer->invalidateCacheAndMarkForLayout();
 }
 
 void SVGFilterElement::childrenChanged(bool changedByParser, Node* beforeChange, Node* afterChange, int childCountDelta)

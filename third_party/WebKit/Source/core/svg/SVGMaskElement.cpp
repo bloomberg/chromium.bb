@@ -137,8 +137,9 @@ void SVGMaskElement::svgAttributeChanged(const QualifiedName& attrName)
         || attrName == SVGNames::heightAttr)
         updateRelativeLengthsInformation();
 
-    if (RenderObject* object = renderer())
-        object->setNeedsLayout();
+    RenderSVGResourceContainer* renderer = toRenderSVGResourceContainer(this->renderer());
+    if (renderer)
+        renderer->invalidateCacheAndMarkForLayout();
 }
 
 void SVGMaskElement::childrenChanged(bool changedByParser, Node* beforeChange, Node* afterChange, int childCountDelta)

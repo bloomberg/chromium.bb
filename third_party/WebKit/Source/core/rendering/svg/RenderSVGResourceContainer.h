@@ -46,6 +46,8 @@ public:
     void addClientRenderLayer(RenderLayer*);
     void removeClientRenderLayer(RenderLayer*);
 
+    void invalidateCacheAndMarkForLayout();
+
 protected:
     enum InvalidationMode {
         LayoutAndBoundariesInvalidation,
