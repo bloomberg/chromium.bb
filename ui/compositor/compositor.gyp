@@ -131,11 +131,6 @@
         'test/test_utils.h',
         'transform_animation_curve_adapter_unittest.cc',
       ],
-      'msvs_settings': {
-        'VCCLCompilerTool': {
-          'ForcedIncludeFiles': [ 'build/intsafe_workaround.h' ],
-        },
-      },
       'conditions': [
         # osmesa GL implementation is used on linux.
         ['OS=="linux"', {

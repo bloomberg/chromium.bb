@@ -459,9 +459,6 @@
                 'dwmapi.lib',
               ],
             },
-            'VCCLCompilerTool': {
-              'ForcedIncludeFiles': [ 'build/intsafe_workaround.h' ],
-            },
           },
           'link_settings': {
             'libraries': [

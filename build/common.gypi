@@ -4434,6 +4434,20 @@
               '<(windows_driver_kit_path)/inc/mfc42',
             ],
           }],
+          # Workaround for intsafe in 2010 Express + WDK. ATL code uses
+          # intsafe.h and both intsafe.h and stdint.h define INT8_MIN et al.
+          # We can't use this workaround in third_party code because it has
+          # various levels of intolerance for including stdint.h.
+          ['msvs_express and chromium_code', {
+            'msvs_system_include_dirs': [
+              '<(DEPTH)/build',
+            ],
+            'msvs_settings': {
+              'VCCLCompilerTool': {
+                'ForcedIncludeFiles': [ 'intsafe_workaround.h', ],
+              },
+            },
+          }],
         ],
         'msvs_system_include_dirs': [
           '<(windows_sdk_path)/Include/shared',

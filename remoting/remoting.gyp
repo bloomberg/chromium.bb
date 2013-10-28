@@ -522,7 +522,6 @@
                   # /MP conflicts with #import directive so we limit the number
                   # of processes to spawn to 1.
                   'AdditionalOptions': ['/MP1'],
-                  'ForcedIncludeFiles': [ 'build/intsafe_workaround.h' ],
                 },
               },
             }],
@@ -2912,11 +2911,6 @@
               '-lrpcrt4.lib',
               '-lwtsapi32.lib',
             ],
-          },
-          'msvs_settings': {
-            'VCCLCompilerTool': {
-              'ForcedIncludeFiles': [ 'build/intsafe_workaround.h' ],
-            },
           },
         }],
         [ 'OS=="mac" or (OS=="linux" and chromeos==0)', {
