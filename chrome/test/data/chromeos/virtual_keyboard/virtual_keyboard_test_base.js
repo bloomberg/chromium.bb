@@ -7,9 +7,11 @@
 /**
  * Queue for running tests asynchronously.
  */
-function TestRunner() {
+function TestRunner(subtaskRunner) {
   this.queue = [];
   keyboard.addEventListener('stateChange', this.onStateChange.bind(this));
+  this.isBlocked = false;
+  this.subtaskRunner = subtaskRunner;
 }
 
 /**
@@ -40,31 +42,135 @@ TestRunner.prototype = {
    * @param {Object} event The state change event.
    */
   onStateChange: function(event) {
+    if (this.isBlocked)
+      return;
     if (event.detail.state == 'keysetLoaded') {
-      for (var i = 0; i < this.queue.length; i++)
-        this.runTest(this.queue[i]);
-      this.queue = [];
+      while(this.queue.length > 0) {
+        var test = this.queue.shift();
+        var blocks = this.runTest(test);
+        if (blocks) {
+          return;
+        }
+      }
     }
   },
 
   /**
    * Runs a single test, notifying the test harness of the results.
-   * @param {Funciton} callback The callback function containing the test.
+   * @param {function} callback The callback function containing the test.
+   * @return {boolean} If this test blocks the testRunner.
    */
   runTest: function(callback) {
     var testFailure = false;
     try {
+      // Defers any subtasks to the subtaskRunner.
+      if (callback.subTasks) {
+        subTaskRunner.appendAll(callback.subTasks,
+                                callback.testName,
+                                function(failure) {
+          callback.onTestComplete(failure);
+          this.unblock();
+        });
+        // Call the function after scheduling the subtasks since the subtasks
+        // will be waiting for state changes triggered by the original callback.
+        callback();
+        return true;
+      }
+      // No subtasks, run as normal.
       callback();
+
     } catch(err) {
       console.error('Failure in test "' + callback.testName + '"\n' + err);
       console.log(err.stack);
       testFailure = true;
     }
     callback.onTestComplete(testFailure);
+    return false;
   },
+
+  /**
+   * Unblocks the test runner and continues running tests.
+   */
+  unblock: function() {
+    this.isBlocked = false;
+    this.onStateChange({detail:{state:"keysetLoaded"}});
+  }
 };
 
+/**
+ * Handles subtasks that require keyset loading between each task.
+ */
+function SubTaskRunner() {
+  this.queue = [];
+  this.onCompletion = undefined;
+  this.testName = undefined;
+}
+
+SubTaskRunner.prototype = {
+
+  /**
+   * Schedules subTasks to run in order. Each subTask waits for the keyboard
+   * to load a new keyset before running. This is useful for tests that change
+   * layouts after the original layout has been loaded.
+   * @param {Array.<function>} subtasks  The subtasks to schedule.
+   * @param {string} testName The name of the test being run.
+   * @param {function(boolean)} onCompletion Callback function to call on
+   *     completion.
+   */
+  appendAll: function(subtasks, testName, onCompletion) {
+    this.queue = this.queue.concat(subtasks);
+    this.onCompletion = onCompletion;
+    this.testName = testName;
+    keyboard.addEventListener('stateChange', this.onStateChange.bind(this));
+  },
+
+  /**
+   * Notification of a change in the state of the keyboard. Runs the task at the
+   * head of the queue in response, if the event was caused by a keysetLoaded.
+   * @param {Object} event The event that triggered the state change.
+   */
+  onStateChange: function(event) {
+    if (event.detail.state == 'keysetLoaded') {
+      if (this.queue.length > 0) {
+        var headSubTask = this.queue.shift();
+        headSubTask();
+      }
+      if (this.queue.length == 0) {
+        this.onCompletion(false);
+        this.reset();
+      }
+    }
+  },
+
+  /**
+   * Resets the subTaskRunner.
+   */
+  reset: function() {
+    keyboard.removeEventListener('stateChange', this.onStateChange);
+    this.onCompletion = undefined;
+    this.testName = undefined;
+    this.queue = [];
+  },
+
+  /**
+   * Runs a single task. Aborts all subtasks if this task fails.
+   * @param {function} task The task to run.
+   */
+  runTask: function(task) {
+    try {
+      task();
+    } catch(err) {
+      console.error('Failure in subtask of test "' +
+          this.testName + '"\n' + err);
+      console.log(err.stack);
+      callback.onTestComplete(true);
+      this.reset();
+    }
+  },
+}
+
 var testRunner;
+var subTaskRunner;
 var mockController;
 var mockTimer;
 
@@ -73,7 +179,8 @@ var mockTimer;
  * calls must set expectations for call signatures.
  */
 function setUp() {
-  testRunner = new TestRunner();
+  subTaskRunner = new SubTaskRunner();
+  testRunner = new TestRunner(subTaskRunner);
   mockController = new MockController();
   mockTimer = new MockTimer();
 
@@ -180,11 +287,15 @@ function mockTypeCharacter(label, keyCode, modifiers, opt_unicode) {
  *     asynchronous test.
  * @param {Function} testDoneCallback Callback function to indicate completion
  *     of a test.
+ * @param {Array.<function>=} opt_testSubtasks Subtasks, each of which require
+ *     the keyboard to load a new keyset before running.
  */
-function onKeyboardReady(testName, runTestCallback, testDoneCallback) {
+function onKeyboardReady(testName, runTestCallback, testDoneCallback,
+                         opt_testSubtasks) {
   runTestCallback.testName = testName;
   runTestCallback.onTestComplete = testDoneCallback;
-  if (keyboard.initialized)
+  runTestCallback.subTasks = opt_testSubtasks;
+  if (keyboard.initialized && !testRunner.isBlocked)
     testRunner.runTest(runTestCallback);
   else
     testRunner.append(runTestCallback);

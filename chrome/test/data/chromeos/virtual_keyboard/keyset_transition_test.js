@@ -142,7 +142,7 @@ function checkPersistantCapitalization(alignment) {
 /**
  * Tests that capitalizion persists on keyset transitions.
  * The test is run asynchronously since the keyboard loads keysets dynamically.
- * @param {function} testDoneCallBack The function to be called on completion.
+ * @param {function} testDoneCallback The function to be called on completion.
  */
 function testPersistantCapitalizationAsync(testDoneCallback) {
   var runTest = function() {
@@ -152,16 +152,24 @@ function testPersistantCapitalizationAsync(testDoneCallback) {
     }
   };
   onKeyboardReady('testPersistantCapitalizationAsync',
-     runTest, testDoneCallback);
+      runTest, testDoneCallback);
 }
 
 /**
  * Tests that changing the input type changes the layout. The test is run
  * asynchronously since the keyboard loads keysets dynamically.
- * @param {function} testDoneCallBack The function to be called on completion.
+ * @param {function} testDoneCallback The function to be called on completion.
  */
 function testInputTypeResponsivenessAsync(testDoneCallback) {
-  var runTest = function() {
+  var testName = "testInputTypeResponsivenessAsync";
+  var transition = function (expectedKeyset, nextInputType, error) {
+    return function() {
+      assertEquals(expectedKeyset, keyboard.activeKeysetId, error);
+      keyboard.inputTypeValue = nextInputType;
+    }
+  }
+
+  var setupWork = function() {
     // Check initial state.
     assertEquals('qwerty-lower', keyboard.activeKeysetId,
         "Unexpected initial active keyset");
@@ -175,29 +183,27 @@ function testInputTypeResponsivenessAsync(testDoneCallback) {
     assertEquals('qwerty-upper', keyboard.activeKeysetId,
         "Unexpected transition on long press.");
     keyboard.inputTypeValue = 'text';
-    assertEquals('qwerty-lower', keyboard.activeKeysetId,
-        "Did not reset keyboard on focus change.");
-    // Check numeric keyboard.
-    keyboard.inputTypeValue = 'number';
-    assertEquals('numeric-symbol', keyboard.activeKeysetId,
-        "Did not transition to numeric layout.");
-    // Check password keyboard.
-    keyboard.inputTypeValue = 'password';
-    assertEquals('system-qwerty-lower', keyboard.activeKeysetId,
-        "Did not transition to password layout.");
-    // Clean up.
-    keyboard.inputTypeValue = 'text';
-    assertEquals('qwerty-lower', keyboard.activeKeysetId,
-        "Did not reset keyboard when inputType changes.");
-  };
-  onKeyboardReady('testInputTypeResponsivenessAsync',
-      runTest, testDoneCallback);
+  }
+
+  var subtasks = [];
+  subtasks.push(transition('qwerty-lower', 'number',
+      "Did not reset keyboard on focus change"));
+  subtasks.push(transition('numeric-symbol', 'password',
+      "Did not switch to numeric keypad."));
+  subtasks.push(transition('system-qwerty-lower', 'text',
+      "Did not switch to numeric keypad."));
+  // Clean up
+  subtasks.push(function() {
+   assertEquals('qwerty-lower', keyboard.activeKeysetId,
+        "Unexpected final active keyset");
+  });
+  onKeyboardReady(testName, setupWork, testDoneCallback, subtasks);
 }
 
  /**
  * Tests that keyset transitions work as expected.
  * The test is run asynchronously since the keyboard loads keysets dynamically.
- * @param {function} testDoneCallBack The function to be called on completion.
+ * @param {function} testDoneCallback The function to be called on completion.
  */
 function testKeysetTransitionsAsync(testDoneCallback) {
   var runTest = function() {
