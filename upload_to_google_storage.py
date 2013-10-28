@@ -10,6 +10,7 @@ import optparse
 import os
 import Queue
 import re
+import stat
 import sys
 import threading
 import time
@@ -102,6 +103,18 @@ def _upload_worker(
            'Encountered error on uploading %s to %s\n%s' %
            (filename, file_url, err)))
       continue
+
+    # Mark executable files with the header "x-goog-meta-executable: 1" which
+    # the download script will check for to preserve the executable bit.
+    if not sys.platform.startswith('win'):
+      if os.stat(filename).st_mode & stat.S_IEXEC:
+        code, _, err = gsutil.check_call('setmeta', '-h',
+                                         'x-goog-meta-executable:1', file_url)
+        if code:
+          ret_codes.put(
+              (code,
+               'Encountered error on setting metadata on %s\n%s' %
+               (file_url, err)))
 
 
 def get_targets(args, parser, use_null_terminator):

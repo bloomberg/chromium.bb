@@ -11,6 +11,7 @@ import optparse
 import os
 import Queue
 import re
+import stat
 import sys
 import threading
 import time
@@ -185,6 +186,20 @@ def _downloader_worker_thread(thread_num, q, force, base_url,
       out_q.put('%d> %s' % (thread_num, err))
       ret_codes.put((code, err))
 
+    # Mark executable if necessary. We key off of the custom header
+    # "x-goog-meta-executable".
+    #
+    # TODO(hinoka): It is supposedly faster to use "gsutil stat" but that
+    # doesn't appear to be supported by the gsutil currently in our tree. When
+    # we update, this code should use that instead of "gsutil ls -L".
+    if not sys.platform.startswith('win'):
+      code, out, _ = gsutil.check_call('ls', '-L', file_url)
+      if code != 0:
+        out_q.put('%d> %s' % (thread_num, err))
+        ret_codes.put((code, err))
+      elif re.search('x-goog-meta-executable:', out):
+        st = os.stat(output_filename)
+        os.chmod(output_filename, st.st_mode | stat.S_IEXEC)
 
 def printer_worker(output_queue):
   while True:
@@ -282,9 +297,21 @@ def main(args):
                     help='Alias for "gsutil config".  Run this if you want '
                          'to initialize your saved Google Storage '
                          'credentials.')
+  parser.add_option('-p', '--platform', 
+                    help='A regular expression that is compared against '
+                         'Python\'s sys.platform. If this option is specified, '
+                         'the download will happen only if there is a match.')
 
   (options, args) = parser.parse_args()
-  # First, make sure we can find a working instance of gsutil.
+
+  # Make sure we should run at all based on platform matching.
+  if options.platform:
+    if not re.match(options.platform, sys.platform):
+      print('The current platform doesn\'t match "%s", skipping.' %
+            options.platform)
+      return 0
+
+  # Make sure we can find a working instance of gsutil.
   if os.path.exists(GSUTIL_DEFAULT_PATH):
     gsutil = Gsutil(GSUTIL_DEFAULT_PATH, boto_path=options.boto)
   else:
