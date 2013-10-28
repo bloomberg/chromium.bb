@@ -132,8 +132,6 @@ public:
 private:
     friend class StyleResolveScope;
 
-    void initElement(Element*);
-
     ElementResolveContext m_elementContext;
     Document& m_document;
 
