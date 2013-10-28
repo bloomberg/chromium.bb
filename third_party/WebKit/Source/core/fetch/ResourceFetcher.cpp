@@ -181,6 +181,40 @@ static void reportResourceTiming(ResourceTimingInfo* info, Resource* resource, d
     }
 }
 
+static ResourceRequest::TargetType requestTargetType(const ResourceFetcher* fetcher, const ResourceRequest& request, Resource::Type type)
+{
+    switch (type) {
+    case Resource::MainResource:
+        if (fetcher->frame()->tree().parent())
+            return ResourceRequest::TargetIsSubframe;
+        return ResourceRequest::TargetIsMainFrame;
+    case Resource::XSLStyleSheet:
+        ASSERT(RuntimeEnabledFeatures::xsltEnabled());
+    case Resource::CSSStyleSheet:
+        return ResourceRequest::TargetIsStyleSheet;
+    case Resource::Script:
+        return ResourceRequest::TargetIsScript;
+    case Resource::Font:
+        return ResourceRequest::TargetIsFont;
+    case Resource::Image:
+        return ResourceRequest::TargetIsImage;
+    case Resource::Shader:
+    case Resource::Raw:
+    case Resource::ImportResource:
+        return ResourceRequest::TargetIsSubresource;
+    case Resource::LinkPrefetch:
+        return ResourceRequest::TargetIsPrefetch;
+    case Resource::LinkSubresource:
+        return ResourceRequest::TargetIsSubresource;
+    case Resource::TextTrack:
+        return ResourceRequest::TargetIsTextTrack;
+    case Resource::SVGDocument:
+        return ResourceRequest::TargetIsImage;
+    }
+    ASSERT_NOT_REACHED();
+    return ResourceRequest::TargetIsSubresource;
+}
+
 ResourceFetcher::ResourceFetcher(DocumentLoader* documentLoader)
     : m_document(0)
     , m_documentLoader(documentLoader)
@@ -480,7 +514,7 @@ bool ResourceFetcher::canRequest(Resource::Type type, const KURL& url, const Res
     case Resource::LinkSubresource:
         break;
     case Resource::TextTrack:
-        // Cues aren't called out in the CPS spec yet, but they only work with a media element
+        // Cues aren't called out in the CSP spec yet, but they only work with a media element
         // so use the media policy.
         if (!shouldBypassMainWorldContentSecurityPolicy && !m_document->contentSecurityPolicy()->allowMediaFromSource(url))
             return false;
@@ -654,51 +688,7 @@ ResourcePtr<Resource> ResourceFetcher::requestResource(Resource::Type type, Fetc
 
 void ResourceFetcher::determineTargetType(ResourceRequest& request, Resource::Type type)
 {
-    ResourceRequest::TargetType targetType;
-
-    switch (type) {
-    case Resource::MainResource:
-        if (frame()->tree().parent())
-            targetType = ResourceRequest::TargetIsSubframe;
-        else
-            targetType = ResourceRequest::TargetIsMainFrame;
-        break;
-    case Resource::XSLStyleSheet:
-        ASSERT(RuntimeEnabledFeatures::xsltEnabled());
-    case Resource::CSSStyleSheet:
-        targetType = ResourceRequest::TargetIsStyleSheet;
-        break;
-    case Resource::Script:
-        targetType = ResourceRequest::TargetIsScript;
-        break;
-    case Resource::Font:
-        targetType = ResourceRequest::TargetIsFont;
-        break;
-    case Resource::Image:
-        targetType = ResourceRequest::TargetIsImage;
-        break;
-    case Resource::Shader:
-    case Resource::Raw:
-    case Resource::ImportResource:
-        targetType = ResourceRequest::TargetIsSubresource;
-        break;
-    case Resource::LinkPrefetch:
-        targetType = ResourceRequest::TargetIsPrefetch;
-        break;
-    case Resource::LinkSubresource:
-        targetType = ResourceRequest::TargetIsSubresource;
-        break;
-    case Resource::TextTrack:
-        targetType = ResourceRequest::TargetIsTextTrack;
-        break;
-    case Resource::SVGDocument:
-        targetType = ResourceRequest::TargetIsImage;
-        break;
-    default:
-        ASSERT_NOT_REACHED();
-        targetType = ResourceRequest::TargetIsSubresource;
-        break;
-    }
+    ResourceRequest::TargetType targetType = requestTargetType(this, request, type);
     request.setTargetType(targetType);
 }
 
