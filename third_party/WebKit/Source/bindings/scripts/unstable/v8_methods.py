@@ -40,7 +40,7 @@ import v8_utilities
 
 
 def generate_method(method):
-    idl_type = method.data_type
+    idl_type = method.idl_type
     name = method.name
     cpp_value = 'imp->%s()' % method.name
     contents = {

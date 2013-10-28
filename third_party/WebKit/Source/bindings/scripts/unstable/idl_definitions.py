@@ -70,7 +70,7 @@ class TypedObject:
     before passing data to the code generator.
     """
     __metaclass__ = abc.ABCMeta
-    data_type = None
+    idl_type = None
     extended_attributes = None
 
     def resolve_typedefs(self, typedefs):
@@ -78,13 +78,13 @@ class TypedObject:
         additional_extended_attributes = {}
         # Convert string representation to and from an IdlType object
         # to handle parsing
-        data_type_object = IdlType.from_string(self.data_type)
-        base_type = data_type_object.base_type
+        idl_type_object = IdlType.from_string(self.idl_type)
+        base_type = idl_type_object.base_type
         if base_type in typedefs:
             replacement_type = typedefs[base_type]
-            data_type_object.base_type = replacement_type.data_type
+            idl_type_object.base_type = replacement_type.idl_type
             additional_extended_attributes = replacement_type.extended_attributes
-        self.data_type = str(data_type_object)
+        self.idl_type = str(idl_type_object)
         self.extended_attributes.update(additional_extended_attributes)
 
 
@@ -137,8 +137,8 @@ class IdlDefinitions(BaseIdl):
 
 
 class IdlCallbackFunction(BaseIdl, TypedObject):
-    def __init__(self, name=None, data_type=None, arguments=None):
-        self.data_type = data_type
+    def __init__(self, name=None, idl_type=None, arguments=None):
+        self.idl_type = idl_type
         self.name = name
         self.arguments = arguments or []
 
@@ -151,7 +151,7 @@ class IdlCallbackFunction(BaseIdl, TypedObject):
     def json_serializable(self):
         return {
             'callbackFunction::name': self.name,
-            'callbackFunction::type': self.data_type,
+            'callbackFunction::type': self.idl_type,
             'callbackFunction::parameters': self.arguments,
             }
 
@@ -244,8 +244,8 @@ class IdlException(BaseIdl):
 
 
 class IdlAttribute(BaseIdl, TypedObject):
-    def __init__(self, data_type=None, extended_attributes=None, getter_exceptions=None, is_nullable=False, is_static=False, is_read_only=False, name=None, setter_exceptions=None):
-        self.data_type = data_type
+    def __init__(self, idl_type=None, extended_attributes=None, getter_exceptions=None, is_nullable=False, is_static=False, is_read_only=False, name=None, setter_exceptions=None):
+        self.idl_type = idl_type
         self.extended_attributes = extended_attributes or {}
         self.getter_exceptions = getter_exceptions or []
         self.is_nullable = is_nullable
@@ -263,13 +263,13 @@ class IdlAttribute(BaseIdl, TypedObject):
             'domAttribute::isStatic': boolean_to_perl(false_to_none(self.is_static)),
             'domAttribute::name': self.name,
             'domAttribute::setterExceptions': self.setter_exceptions,
-            'domAttribute::type': self.data_type,
+            'domAttribute::type': self.idl_type,
             }
 
 
 class IdlConstant(BaseIdl, TypedObject):
-    def __init__(self, name=None, data_type=None, value=None, extended_attributes=None):
-        self.data_type = data_type
+    def __init__(self, name=None, idl_type=None, value=None, extended_attributes=None):
+        self.idl_type = idl_type
         self.extended_attributes = extended_attributes or {}
         self.name = name
         self.value = value
@@ -278,16 +278,16 @@ class IdlConstant(BaseIdl, TypedObject):
         return {
             'domConstant::extendedAttributes': none_to_value_is_missing(self.extended_attributes),
             'domConstant::name': self.name,
-            'domConstant::type': self.data_type,
+            'domConstant::type': self.idl_type,
             'domConstant::value': self.value,
             }
 
 
 class IdlOperation(BaseIdl, TypedObject):
-    def __init__(self, is_static=False, name=None, data_type=None, extended_attributes=None, specials=None, arguments=None, overloaded_index=None):
+    def __init__(self, is_static=False, name=None, idl_type=None, extended_attributes=None, specials=None, arguments=None, overloaded_index=None):
         self.is_static = is_static
         self.name = name or ''
-        self.data_type = data_type
+        self.idl_type = idl_type
         self.extended_attributes = extended_attributes or {}
         self.specials = specials or []
         self.arguments = arguments or []
@@ -306,13 +306,13 @@ class IdlOperation(BaseIdl, TypedObject):
             'domFunction::overloadedIndex': self.overloaded_index,
             'domFunction::parameters': self.arguments,
             'domFunction::specials': self.specials,
-            'domFunction::type': self.data_type,
+            'domFunction::type': self.idl_type,
             }
 
 
 class IdlArgument(BaseIdl, TypedObject):
-    def __init__(self, name=None, data_type=None, extended_attributes=None, is_optional=False, is_nullable=None, is_variadic=False):
-        self.data_type = data_type
+    def __init__(self, name=None, idl_type=None, extended_attributes=None, is_optional=False, is_nullable=None, is_variadic=False):
+        self.idl_type = idl_type
         self.extended_attributes = extended_attributes or {}
         # FIXME: boolean values are inconsistent.
         # The below hack is so that generated JSON is identical to
@@ -336,7 +336,7 @@ class IdlArgument(BaseIdl, TypedObject):
             'domParameter::isOptional': boolean_to_perl(self.is_optional),
             'domParameter::isVariadic': boolean_to_perl(self.is_variadic),
             'domParameter::name': self.name,
-            'domParameter::type': self.data_type,
+            'domParameter::type': self.idl_type,
             }
 
 # Type classes
@@ -387,9 +387,9 @@ class IdlType:
 class IdlTypedef:
     # Internal to IDL parsing: typedefs are all translated during IdlObject
     # construction, and the typedefs themselves not stored in the object.
-    def __init__(self, extended_attributes=None, data_type=None):
+    def __init__(self, extended_attributes=None, idl_type=None):
         self.extended_attributes = extended_attributes or {}
-        self.data_type = data_type
+        self.idl_type = idl_type
 
 
 class IdlUnionType(BaseIdl):

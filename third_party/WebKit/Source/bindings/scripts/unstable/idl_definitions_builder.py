@@ -35,7 +35,7 @@ from idl_definitions import IdlDefinitions, IdlInterface, IdlException, IdlOpera
 SPECIAL_KEYWORD_LIST = ['GETTER', 'SETTER', 'DELETER']
 STANDARD_TYPEDEFS = {
     # http://www.w3.org/TR/WebIDL/#common-DOMTimeStamp
-    'DOMTimeStamp': IdlTypedef(data_type='unsigned long long'),
+    'DOMTimeStamp': IdlTypedef(idl_type='unsigned long long'),
 }
 
 def build_idl_definitions_from_ast(node):
@@ -125,7 +125,7 @@ def interface_node_to_idl_interface(node):
 
 
 def attribute_node_to_idl_attribute(node):
-    data_type = None
+    idl_type = None
     extended_attributes = {}
     is_nullable = False
     is_read_only = node.GetProperty('READONLY') or False
@@ -136,14 +136,14 @@ def attribute_node_to_idl_attribute(node):
     for child in children:
         child_class = child.GetClass()
         if child_class == 'Type':
-            data_type = type_node_to_type(child)
+            idl_type = type_node_to_type(child)
             is_nullable = child.GetProperty('NULLABLE') or False
         elif child_class == 'ExtAttributes':
             extended_attributes = ext_attributes_node_to_extended_attributes(child)
         else:
             raise ValueError('Unrecognized node class: %s' % child_class)
 
-    return IdlAttribute(data_type=data_type, extended_attributes=extended_attributes, is_nullable=is_nullable, is_read_only=is_read_only, is_static=is_static, name=name)
+    return IdlAttribute(idl_type=idl_type, extended_attributes=extended_attributes, is_nullable=is_nullable, is_read_only=is_read_only, is_static=is_static, name=name)
 
 
 def constant_node_to_idl_constant(node):
@@ -157,7 +157,7 @@ def constant_node_to_idl_constant(node):
     type_node = children[0]
     # ConstType is more limited than Type, so subtree is smaller and we don't
     # use the full type_node_to_type function.
-    data_type = type_node_inner_to_type(type_node)
+    idl_type = type_node_inner_to_type(type_node)
 
     value_node = children[1]
     value_node_class = value_node.GetClass()
@@ -170,7 +170,7 @@ def constant_node_to_idl_constant(node):
         ext_attributes_node = children[2]
         extended_attributes = ext_attributes_node_to_extended_attributes(ext_attributes_node)
 
-    return IdlConstant(data_type=data_type, extended_attributes=extended_attributes, name=name, value=value)
+    return IdlConstant(idl_type=idl_type, extended_attributes=extended_attributes, name=name, value=value)
 
 
 def operation_node_to_idl_operation(node):
@@ -201,7 +201,7 @@ def operation_node_to_idl_operation(node):
         else:
             raise ValueError('Unrecognized node class: %s' % child_class)
 
-    return IdlOperation(name=name, data_type=return_type, extended_attributes=extended_attributes, is_static=is_static, arguments=arguments, specials=specials)
+    return IdlOperation(name=name, idl_type=return_type, extended_attributes=extended_attributes, is_static=is_static, arguments=arguments, specials=specials)
 
 
 def arguments_node_to_arguments(node):
@@ -221,7 +221,7 @@ def arguments_node_to_arguments(node):
 def argument_node_to_idl_argument(node):
     name = node.GetName()
 
-    data_type = None
+    idl_type = None
     extended_attributes = {}
     # FIXME: Boolean values are inconsistent due to Perl compatibility.
     # Make all default to False once Perl removed.
@@ -232,7 +232,7 @@ def argument_node_to_idl_argument(node):
     for child in children:
         child_class = child.GetClass()
         if child_class == 'Type':
-            data_type = type_node_to_type(child)
+            idl_type = type_node_to_type(child)
             is_nullable = child.GetProperty('NULLABLE')
         elif child_class == 'ExtAttributes':
             extended_attributes = ext_attributes_node_to_extended_attributes(child)
@@ -244,7 +244,7 @@ def argument_node_to_idl_argument(node):
         else:
             raise ValueError('Unrecognized node class: %s' % child_class)
 
-    return IdlArgument(name=name, data_type=data_type, extended_attributes=extended_attributes, is_nullable=is_nullable, is_optional=is_optional, is_variadic=is_variadic)
+    return IdlArgument(name=name, idl_type=idl_type, extended_attributes=extended_attributes, is_nullable=is_nullable, is_optional=is_optional, is_variadic=is_variadic)
 
 # Constructors for for non-interface definitions
 
@@ -257,7 +257,7 @@ def callback_node_to_idl_callback_function(node):
         raise ValueError('Expected 2 children, got %s' % num_children)
 
     type_node = children[0]
-    data_type = type_node_to_type(type_node)
+    idl_type = type_node_to_type(type_node)
 
     arguments_node = children[1]
     arguments_node_class = arguments_node.GetClass()
@@ -265,7 +265,7 @@ def callback_node_to_idl_callback_function(node):
         raise ValueError('Expected Value node, got %s' % arguments_node_class)
     arguments = arguments_node_to_arguments(arguments_node)
 
-    return IdlCallbackFunction(name=name, data_type=data_type, arguments=arguments)
+    return IdlCallbackFunction(name=name, idl_type=idl_type, arguments=arguments)
 
 
 def enum_node_to_idl_enum(node):
@@ -294,7 +294,7 @@ def exception_operation_node_to_idl_operation(node):
         ext_attributes_node = children[1]
         extended_attributes = ext_attributes_node_to_extended_attributes(ext_attributes_node)
 
-    return IdlOperation(name=name, data_type=return_type, extended_attributes=extended_attributes)
+    return IdlOperation(name=name, idl_type=return_type, extended_attributes=extended_attributes)
 
 
 def exception_node_to_idl_exception(node):
@@ -324,21 +324,21 @@ def exception_node_to_idl_exception(node):
 
 
 def typedef_node_to_idl_typedef(node):
-    data_type = None
+    idl_type = None
     extended_attributes = None
 
     children = node.GetChildren()
     for child in children:
         child_class = child.GetClass()
         if child_class == 'Type':
-            data_type = type_node_to_type(child)
+            idl_type = type_node_to_type(child)
         elif child_class == 'ExtAttributes':
             extended_attributes = ext_attributes_node_to_extended_attributes(child)
             raise ValueError('Extended attributes in a typedef are untested!')
         else:
             raise ValueError('Unrecognized node class: %s' % child_class)
 
-    return IdlTypedef(data_type=data_type, extended_attributes=extended_attributes)
+    return IdlTypedef(idl_type=idl_type, extended_attributes=extended_attributes)
 
 # Extended attributes
 
@@ -480,16 +480,16 @@ def type_node_to_type(node):
         raise ValueError('Type node expects 1 or 2 children (type + optional array []), got %s (multi-dimensional arrays are not supported).' % len(children))
 
     type_node_child = children[0]
-    data_type = type_node_inner_to_type(type_node_child)
+    idl_type = type_node_inner_to_type(type_node_child)
 
     if len(children) == 2:
         array_node = children[1]
         array_node_class = array_node.GetClass()
         if array_node_class != 'Array':
             raise ValueError('Expected Array node as TypeSuffix, got %s node.' % array_node_class)
-        data_type += '[]'
+        idl_type += '[]'
 
-    return data_type
+    return idl_type
 
 
 def type_node_inner_to_type(node):

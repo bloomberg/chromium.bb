@@ -97,7 +97,7 @@ def generate_interface(interface):
 def generate_constant(constant):
     # (Blink-only) string literals are unquoted in tokenizer, must be re-quoted
     # in C++.
-    if constant.data_type == 'DOMString':
+    if constant.idl_type == 'DOMString':
         value = '"%s"' % constant.value
     else:
         value = constant.value

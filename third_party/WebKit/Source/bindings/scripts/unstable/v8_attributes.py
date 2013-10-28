@@ -42,7 +42,7 @@ from v8_utilities import capitalize, cpp_name, has_extended_attribute, uncapital
 
 
 def generate_attribute(interface, attribute):
-    idl_type = attribute.data_type
+    idl_type = attribute.idl_type
     extended_attributes = attribute.extended_attributes
 
     has_custom_getter = has_extended_attribute(attribute, ('Custom', 'CustomGetter'))
@@ -91,7 +91,7 @@ def generate_attribute(interface, attribute):
 # Getter
 
 def generate_getter(interface, attribute, contents):
-    idl_type = attribute.data_type
+    idl_type = attribute.idl_type
     v8_types.add_includes_for_type(idl_type)
     extended_attributes = attribute.extended_attributes
 
@@ -149,7 +149,7 @@ def getter_expression(interface, attribute, contents):
         arguments.append('isNull')
     if contents['is_getter_raises_exception']:
         arguments.append('es')
-    if attribute.data_type == 'EventHandler':
+    if attribute.idl_type == 'EventHandler':
         arguments.append('isolatedWorldForIsolate(info.GetIsolate())')
     return '%s(%s)' % (getter_name, ', '.join(arguments))
 
@@ -173,7 +173,7 @@ def getter_base_name(attribute, arguments):
 
     arguments.append(scoped_content_attribute_name(attribute))
 
-    idl_type = attribute.data_type
+    idl_type = attribute.idl_type
     if idl_type in CONTENT_ATTRIBUTE_GETTER_NAMES:
         return CONTENT_ATTRIBUTE_GETTER_NAMES[idl_type]
     if 'URL' in attribute.extended_attributes:
@@ -182,7 +182,7 @@ def getter_base_name(attribute, arguments):
 
 
 def is_keep_alive_for_gc(attribute):
-    idl_type = attribute.data_type
+    idl_type = attribute.idl_type
     extended_attributes = attribute.extended_attributes
     return (
         'KeepAttributeAliveForGC' in extended_attributes or
@@ -205,7 +205,7 @@ def is_keep_alive_for_gc(attribute):
 # Setter
 
 def generate_setter(interface, attribute, contents):
-    idl_type = attribute.data_type
+    idl_type = attribute.idl_type
     extended_attributes = attribute.extended_attributes
     if v8_types.is_interface_type(idl_type) and not v8_types.array_type(idl_type):
         cpp_value = 'WTF::getPtr(cppValue)'
@@ -230,7 +230,7 @@ def setter_expression(interface, attribute, contents):
     this_setter_base_name = setter_base_name(attribute, arguments)
     setter_name = scoped_name(interface, attribute, this_setter_base_name)
 
-    idl_type = attribute.data_type
+    idl_type = attribute.idl_type
     if idl_type == 'EventHandler':
         # FIXME: move V8EventListenerList.h to INCLUDES_FOR_TYPE
         includes.add('bindings/v8/V8EventListenerList.h')
@@ -261,7 +261,7 @@ def setter_base_name(attribute, arguments):
         return 'set%s' % capitalize(cpp_name(attribute))
     arguments.append(scoped_content_attribute_name(attribute))
 
-    idl_type = attribute.data_type
+    idl_type = attribute.idl_type
     if idl_type in CONTENT_ATTRIBUTE_SETTER_NAMES:
         return CONTENT_ATTRIBUTE_SETTER_NAMES[idl_type]
     return 'setAttribute'
@@ -290,7 +290,7 @@ def scoped_name(interface, attribute, base_name):
 # Attribute configuration
 
 def getter_callback_name(interface, attribute):
-    if attribute.data_type.endswith('Constructor'):
+    if attribute.idl_type.endswith('Constructor'):
         return '{0}V8Internal::{0}ConstructorGetter'.format(cpp_name(interface))
     return '%sV8Internal::%sAttributeGetterCallback' % (cpp_name(interface), attribute.name)
 
@@ -299,7 +299,7 @@ def getter_callback_name(interface, attribute):
 def setter_callback_name(interface, attribute):
     cpp_class_name = cpp_name(interface)
     if ('Replaceable' in attribute.extended_attributes or
-        attribute.data_type.endswith('Constructor')):
+        attribute.idl_type.endswith('Constructor')):
         # FIXME: rename to ForceSetAttributeOnThisCallback, since also used for Constructors
         return '{0}V8Internal::{0}ReplaceableAttributeSetterCallback'.format(cpp_class_name)
     # FIXME: support [PutForwards]
@@ -325,7 +325,7 @@ def setter_callback_name_for_main_world(interface, attribute):
 def wrapper_type_info(attribute):
     if not is_constructor_attribute(attribute):
         return '0'
-    return 'const_cast<WrapperTypeInfo*>(&V8%s::wrapperTypeInfo)' % v8_types.constructor_type(attribute.data_type)
+    return 'const_cast<WrapperTypeInfo*>(&V8%s::wrapperTypeInfo)' % v8_types.constructor_type(attribute.idl_type)
 
 
 # [DoNotCheckSecurity], [DoNotCheckSecurityOnGetter], [DoNotCheckSecurityOnSetter], [Unforgeable]
@@ -358,4 +358,4 @@ def property_attributes(attribute):
 
 
 def is_constructor_attribute(attribute):
-    return attribute.data_type.endswith('Constructor')
+    return attribute.idl_type.endswith('Constructor')

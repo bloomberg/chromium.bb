@@ -74,13 +74,13 @@ def generate_callback_interface(callback_interface):
 
 
 def add_includes_for_operation(operation):
-    add_includes_for_type(operation.data_type)
+    add_includes_for_type(operation.idl_type)
     for argument in operation.arguments:
-        add_includes_for_type(argument.data_type)
+        add_includes_for_type(argument.idl_type)
 
 
 def generate_method(operation):
-    if operation.data_type != 'boolean':
+    if operation.idl_type != 'boolean':
         raise Exception("We don't yet support callbacks that return non-boolean values.")
     is_custom = 'Custom' in operation.extended_attributes
     if not is_custom:
@@ -91,7 +91,7 @@ def generate_method(operation):
         'call_with_this_handle': extended_attribute_value_contains(call_with, 'ThisValue'),
         'custom': is_custom,
         'name': operation.name,
-        'return_cpp_type': cpp_type(operation.data_type, 'RefPtr'),
+        'return_cpp_type': cpp_type(operation.idl_type, 'RefPtr'),
     }
     contents.update(generate_arguments_contents(operation.arguments, call_with_this_handle))
     return contents
@@ -99,12 +99,12 @@ def generate_method(operation):
 
 def generate_arguments_contents(arguments, call_with_this_handle):
     def argument_declaration(argument):
-        return '%s %s' % (cpp_type(argument.data_type), argument.name)
+        return '%s %s' % (cpp_type(argument.idl_type), argument.name)
 
     def generate_argument(argument):
         return {
             'name': argument.name,
-            'cpp_to_v8_conversion': cpp_to_v8_conversion(argument.data_type, argument.name),
+            'cpp_to_v8_conversion': cpp_to_v8_conversion(argument.idl_type, argument.name),
         }
 
     argument_declarations = [argument_declaration(argument) for argument in arguments]
