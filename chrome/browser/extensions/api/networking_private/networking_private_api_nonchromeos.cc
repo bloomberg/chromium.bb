@@ -390,10 +390,12 @@ bool NetworkingPrivateStartConnectFunction::RunImpl() {
          "\"SignalStrength\":80}}";
 
     // Store network_properties in profile to return from GetProperties.
+    scoped_ptr<Value> network_properties_value(
+        base::JSONReader::Read(network_properties));
     GetProfile()->SetUserData(
         kNetworkingPrivateProperties,
-        new NetworkingPrivatePropertiesData(static_cast<DictionaryValue*>(
-            base::JSONReader::Read(network_properties))));
+        new NetworkingPrivatePropertiesData(
+            static_cast<DictionaryValue*>(network_properties_value.get())));
 
     // Broadcast NetworksChanged Event that network is connected
     EventRouter* event_router =
