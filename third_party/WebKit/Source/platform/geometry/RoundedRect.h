@@ -32,6 +32,9 @@
 
 namespace WebCore {
 
+// This class is used to represent rectangles with rounded corners. It is only
+// used for painting. It uses integer units because using layout units leads to
+// blurry rounded corners.
 class PLATFORM_EXPORT RoundedRect {
 public:
     class PLATFORM_EXPORT Radii {
