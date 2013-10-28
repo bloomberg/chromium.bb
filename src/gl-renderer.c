@@ -50,9 +50,18 @@ struct gl_shader {
 
 #define BUFFER_DAMAGE_COUNT 2
 
+struct gl_border_image {
+	GLuint tex;
+	int32_t width, height;
+	int32_t tex_width;
+	int dirty;
+	void *data;
+};
+
 struct gl_output_state {
 	EGLSurface egl_surface;
 	pixman_region32_t buffer_damage[BUFFER_DAMAGE_COUNT];
+	struct gl_border_image borders[4];
 };
 
 enum buffer_type {
@@ -588,6 +597,106 @@ repaint_views(struct weston_output *output, pixman_region32_t *damage)
 			draw_view(view, output, damage);
 }
 
+static void
+draw_output_border_texture(struct gl_border_image *img, int32_t x, int32_t y,
+			   int32_t width, int32_t height)
+{
+	static GLushort indices [] = { 0, 1, 3, 3, 1, 2 };
+
+	if (!img->data) {
+		if (img->tex) {
+			glDeleteTextures(1, &img->tex);
+			img->tex = 0;
+		}
+
+		return;
+	}
+
+	if (!img->tex) {
+		glGenTextures(1, &img->tex);
+		glBindTexture(GL_TEXTURE_2D, img->tex);
+
+		glTexParameteri(GL_TEXTURE_2D,
+				GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D,
+				GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D,
+				GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D,
+				GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	} else {
+		glBindTexture(GL_TEXTURE_2D, img->tex);
+	}
+
+	if (img->dirty) {
+#ifdef GL_EXT_unpack_subimage
+		glPixelStorei(GL_UNPACK_ROW_LENGTH_EXT, 0);
+		glPixelStorei(GL_UNPACK_SKIP_PIXELS_EXT, 0);
+		glPixelStorei(GL_UNPACK_SKIP_ROWS_EXT, 0);
+#endif
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_BGRA_EXT,
+			     img->tex_width, img->height, 0,
+			     GL_BGRA_EXT, GL_UNSIGNED_BYTE, img->data);
+		img->dirty = 0;
+	}
+
+	GLfloat texcoord[] = {
+		0.0f, 0.0f,
+		(GLfloat)img->width / (GLfloat)img->tex_width, 0.0f,
+		(GLfloat)img->width / (GLfloat)img->tex_width, 1.0f,
+		0.0f, 1.0f,
+	};
+
+	GLfloat verts[] = {
+		x, y,
+		x + width, y,
+		x + width, y + height,
+		x, y + height
+	};
+
+	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, verts);
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, texcoord);
+	glEnableVertexAttribArray(0);
+	glEnableVertexAttribArray(1);
+
+	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, indices);
+
+	glDisableVertexAttribArray(1);
+	glDisableVertexAttribArray(0);
+}
+
+static void
+draw_output_border(struct weston_output *output)
+{
+	struct gl_output_state *go = get_output_state(output);
+	struct gl_renderer *gr = get_renderer(output->compositor);
+	struct gl_shader *shader = &gr->texture_shader_rgba;
+	int32_t full_width;
+
+	glDisable(GL_BLEND);
+	use_shader(gr, shader);
+
+	glUniformMatrix4fv(shader->proj_uniform,
+			   1, GL_FALSE, output->matrix.d);
+
+	glUniform1i(shader->tex_uniforms[0], 0);
+	glUniform1f(shader->alpha_uniform, 1);
+	glActiveTexture(GL_TEXTURE0);
+
+	full_width = output->width + output->border.left + output->border.right;
+	draw_output_border_texture(&go->borders[GL_RENDERER_BORDER_TOP],
+				   -output->border.left, -output->border.top,
+				   full_width, output->border.top);
+	draw_output_border_texture(&go->borders[GL_RENDERER_BORDER_LEFT],
+				   -output->border.left, 0,
+				   output->border.left, output->height);
+	draw_output_border_texture(&go->borders[GL_RENDERER_BORDER_RIGHT],
+				   output->width, 0,
+				   output->border.right, output->height);
+	draw_output_border_texture(&go->borders[GL_RENDERER_BORDER_BOTTOM],
+				   -output->border.left, output->height,
+				   full_width, output->border.bottom);
+}
 
 static int
 texture_border(struct weston_output *output)
@@ -666,7 +775,7 @@ texture_border(struct weston_output *output)
 }
 
 static void
-draw_border(struct weston_output *output)
+draw_global_border(struct weston_output *output)
 {
 	struct weston_compositor *ec = output->compositor;
 	struct gl_renderer *gr = get_renderer(ec);
@@ -798,8 +907,11 @@ gl_renderer_repaint_output(struct weston_output *output,
 	pixman_region32_fini(&total_damage);
 	pixman_region32_fini(&buffer_damage);
 
-	if (gr->border.texture)
-		draw_border(output);
+	if (gr->border.texture) {
+		draw_global_border(output);
+	} else {
+		draw_output_border(output);
+	}
 
 	pixman_region32_copy(&output->previous_damage, output_damage);
 	wl_signal_emit(&output->frame_signal, output);
@@ -1505,6 +1617,21 @@ log_egl_config_info(EGLDisplay egldpy, EGLConfig eglconfig)
 }
 
 static void
+gl_renderer_output_set_border(struct weston_output *output,
+			      enum gl_renderer_border_side side,
+			      int32_t width, int32_t height,
+			      int32_t tex_width, unsigned char *data)
+{
+	struct gl_output_state *go = get_output_state(output);
+
+	go->borders[side].width = width;
+	go->borders[side].height = height;
+	go->borders[side].tex_width = tex_width;
+	go->borders[side].data = data;
+	go->borders[side].dirty = 1;
+}
+
+static void
 output_apply_border(struct weston_output *output, struct gl_renderer *gr)
 {
 	output->border.top = gr->border.top;
@@ -1955,6 +2082,7 @@ WL_EXPORT struct gl_renderer_interface gl_renderer_interface = {
 	.output_create = gl_renderer_output_create,
 	.output_destroy = gl_renderer_output_destroy,
 	.output_surface = gl_renderer_output_surface,
+	.output_set_border = gl_renderer_output_set_border,
 	.set_border = gl_renderer_set_border,
 	.print_egl_error_state = gl_renderer_print_egl_error_state
 };
