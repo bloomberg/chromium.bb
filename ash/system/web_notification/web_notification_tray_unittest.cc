@@ -16,7 +16,7 @@
 #include "ash/system/tray/system_tray_item.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/test_system_tray_delegate.h"
-#include "ash/wm/window_properties.h"
+#include "ash/wm/window_state.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/aura/client/aura_constants.h"
@@ -429,8 +429,10 @@ TEST_F(WebNotificationTrayTest, MAYBE_PopupAndFullscreen) {
   gfx::Rect work_area_auto_hidden = GetPopupWorkArea();
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
 
-  // Make the window to use immersive mode.
-  window->SetProperty(internal::kFullscreenUsesMinimalChromeKey, true);
+  // Put |window| into fullscreen without forcing the shelf to hide. Currently,
+  // this is used by immersive fullscreen and forces the shelf to be auto
+  // hidden.
+  wm::GetWindowState(window.get())->set_hide_shelf_when_fullscreen(false);
   window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_FULLSCREEN);
   RunAllPendingInMessageLoop();
 

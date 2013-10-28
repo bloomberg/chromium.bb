@@ -12,7 +12,7 @@
 #include "ash/shell.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/wm/gestures/tray_gesture_handler.h"
-#include "ash/wm/window_properties.h"
+#include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
@@ -43,11 +43,11 @@ bool ShelfGestureHandler::ProcessGestureEvent(const ui::GestureEvent& event) {
 
   ShelfLayoutManager* shelf = controller->GetShelfLayoutManager();
 
-  // The gesture are disabled for fullscreen windows that are not in immersive
-  // mode.
   const aura::Window* fullscreen = controller->GetTopmostFullscreenWindow();
-  if (fullscreen && !shelf->FullscreenWithMinimalChrome())
+  if (fullscreen &&
+      ash::wm::GetWindowState(fullscreen)->hide_shelf_when_fullscreen()) {
     return false;
+  }
 
   if (event.type() == ui::ET_GESTURE_SCROLL_BEGIN) {
     drag_in_progress_ = true;

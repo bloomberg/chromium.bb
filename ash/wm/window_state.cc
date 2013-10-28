@@ -38,6 +38,7 @@ WindowState::WindowState(aura::Window* window)
       top_row_keys_are_function_keys_(false),
       window_resizer_(NULL),
       always_restores_to_restore_bounds_(false),
+      hide_shelf_when_fullscreen_(true),
       window_show_type_(ToWindowShowType(GetShowState())) {
   window_->AddObserver(this);
 }

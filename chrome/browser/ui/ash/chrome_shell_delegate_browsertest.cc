@@ -10,7 +10,6 @@
 #include "ash/ash_switches.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
-#include "ash/wm/window_properties.h"
 #include "ash/wm/window_state.h"
 #include "base/command_line.h"
 #include "chrome/browser/apps/app_browsertest_util.h"
@@ -24,15 +23,15 @@
 namespace {
 
 // Returns true if |window| is in immersive fullscreen. Infer whether |window|
-// is in immersive fullscreen based on whether kFullscreenUsesMinimalChromeKey
-// is set for |window| because DEPS does not allow the test to use BrowserView.
-// (This is not quite right because if a window is in both immersive browser
-// fullscreen and in tab fullscreen, kFullScreenUsesMinimalChromeKey will
-// not be set).
+// is in immersive fullscreen based on whether the shelf is hidden when
+// |window| is fullscreen because DEPS does not allow the test to use
+// BrowserView. (This is not quite right because the shelf is hidden if a window
+// is in both immersive fullscreen and tab fullscreen.)
 bool IsInImmersiveFullscreen(BrowserWindow* browser_window) {
-  return browser_window->IsFullscreen() &&
-      browser_window->GetNativeWindow()->GetProperty(
-          ash::internal::kFullscreenUsesMinimalChromeKey);
+  ash::wm::WindowState* window_state = ash::wm::GetWindowState(
+      browser_window->GetNativeWindow());
+  return window_state->IsFullscreen() &&
+      !window_state->hide_shelf_when_fullscreen();
 }
 
 }  // namespace

@@ -9,7 +9,7 @@
 
 #include "ash/ash_switches.h"
 #include "ash/shell.h"
-#include "ash/wm/window_properties.h"
+#include "ash/wm/window_state.h"
 #include "base/command_line.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/ui/fullscreen/fullscreen_controller.h"
@@ -914,8 +914,12 @@ void ImmersiveModeControllerAsh::UpdateUseMinimalChrome(Layout layout) {
   bool in_tab_fullscreen = fullscreen_controller ?
       fullscreen_controller->IsFullscreenForTabOrPending() : false;
   bool use_minimal_chrome = !in_tab_fullscreen && enabled_;
-  native_window_->SetProperty(ash::internal::kFullscreenUsesMinimalChromeKey,
-                              use_minimal_chrome);
+
+  // When using minimal chrome, the shelf is auto-hidden. The auto-hidden shelf
+  // displays a 3px 'light bar' when it is closed. Otherwise, the shelf is
+  // hidden completely and cannot be revealed.
+  ash::wm::GetWindowState(native_window_)->set_hide_shelf_when_fullscreen(
+      !use_minimal_chrome);
 
   TabIndicatorVisibility previous_tab_indicator_visibility =
       tab_indicator_visibility_;
@@ -924,12 +928,7 @@ void ImmersiveModeControllerAsh::UpdateUseMinimalChrome(Layout layout) {
         TAB_INDICATORS_SHOW : TAB_INDICATORS_HIDE;
   }
 
-  // Ash on Windows may not have a shell.
-  if (ash::Shell::HasInstance()) {
-    // When using minimal chrome, the shelf is auto-hidden. The auto-hidden
-    // shelf displays a 3px 'light bar' when it is closed.
-    ash::Shell::GetInstance()->UpdateShelfVisibility();
-  }
+  ash::Shell::GetInstance()->UpdateShelfVisibility();
 
   if (tab_indicator_visibility_ != previous_tab_indicator_visibility) {
     // If the top-of-window views are revealed or animating, the change will

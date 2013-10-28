@@ -13,7 +13,7 @@
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/system/system_notifier.h"
-#include "ash/wm/window_properties.h"
+#include "ash/wm/window_state.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #endif
@@ -30,13 +30,14 @@ bool DoesFullscreenModeBlockNotifications() {
     if (!controller)
       return false;
 
+    // Block notifications if the shelf is hidden because of a fullscreen
+    // window.
     const aura::Window* fullscreen_window =
         controller->GetTopmostFullscreenWindow();
-
-    // Should appear notifications if kFullscreenUsesMinimalChromeKey is set,
-    // since shelf/message_center UI is visible in such situation.
-    return fullscreen_window && !fullscreen_window->GetProperty(
-        ash::internal::kFullscreenUsesMinimalChromeKey);
+    if (!fullscreen_window)
+      return false;
+    return ash::wm::GetWindowState(fullscreen_window)->
+        hide_shelf_when_fullscreen();
   }
 #endif
 

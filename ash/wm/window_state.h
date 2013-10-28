@@ -124,6 +124,16 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
     always_restores_to_restore_bounds_ = value;
   }
 
+  // Gets/sets whether the shelf should be hidden when this window is
+  // fullscreen.
+  bool hide_shelf_when_fullscreen() const {
+    return hide_shelf_when_fullscreen_;
+  }
+
+  void set_hide_shelf_when_fullscreen(bool value) {
+    hide_shelf_when_fullscreen_ = value;
+  }
+
   // Gets/Sets the bounds of the window before it was moved by the auto window
   // management. As long as it was not auto-managed, it will return NULL.
   const gfx::Rect* pre_auto_manage_window_bounds() const {
@@ -235,6 +245,7 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   WindowResizer* window_resizer_;
 
   bool always_restores_to_restore_bounds_;
+  bool hide_shelf_when_fullscreen_;
 
   // A property to remember the window position which was set before the
   // auto window position manager changed the window bounds, so that it can get

@@ -23,7 +23,7 @@
 #include "ash/system/tray/system_tray_item.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/launcher_test_api.h"
-#include "ash/wm/window_properties.h"
+#include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
 #include "base/strings/utf_string_conversions.h"
@@ -579,9 +579,10 @@ void ShelfLayoutManagerTest::RunGestureDragTests(gfx::Vector2d delta) {
   EXPECT_EQ(shelf_hidden.ToString(),
             GetShelfWidget()->GetWindowBoundsInScreen().ToString());
 
-  // Enter into fullscreen with minimal chrome (immersive fullscreen).
+  // Put |widget| into fullscreen. Set the shelf to be auto hidden when |widget|
+  // is fullscreen. (eg browser immersive fullscreen).
   widget->SetFullscreen(true);
-  window->SetProperty(ash::internal::kFullscreenUsesMinimalChromeKey, true);
+  wm::GetWindowState(window)->set_hide_shelf_when_fullscreen(false);
   shelf->UpdateVisibilityState();
 
   gfx::Rect bounds_fullscreen = window->bounds();
@@ -613,9 +614,9 @@ void ShelfLayoutManagerTest::RunGestureDragTests(gfx::Vector2d delta) {
             GetShelfWidget()->GetWindowBoundsInScreen().ToString());
   EXPECT_EQ(bounds_fullscreen.ToString(), window->bounds().ToString());
 
-  // Put the window into fullscreen without any chrome at all (eg tab
-  // fullscreen).
-  window->SetProperty(ash::internal::kFullscreenUsesMinimalChromeKey, false);
+  // Set the shelf to be hidden when |widget| is fullscreen. (eg tab fullscreen
+  // with or without immersive browser fullscreen).
+  wm::GetWindowState(window)->set_hide_shelf_when_fullscreen(true);
   shelf->UpdateVisibilityState();
   EXPECT_EQ(SHELF_HIDDEN, shelf->visibility_state());
   EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS, shelf->auto_hide_behavior());
