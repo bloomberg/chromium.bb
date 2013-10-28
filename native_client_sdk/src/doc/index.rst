@@ -31,6 +31,7 @@ Contents:
    devguide/coding/application-structure.rst
    devguide/coding/native-client-modules.rst
    devguide/coding/FileIO.rst
+   devguide/coding/nacl_io.rst
    devguide/coding/message-system.rst
    devguide/coding/progress-events.rst
    devguide/coding/url-loading.rst
