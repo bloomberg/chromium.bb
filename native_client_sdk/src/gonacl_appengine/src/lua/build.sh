@@ -5,14 +5,14 @@
 
 set -o nounset
 set -o errexit
+set -o xtrace
 
 SCRIPT_DIR="$(cd $(dirname $0) && pwd)"
-
 cd ${SCRIPT_DIR}
 
 OUT_DIR=out
-NACLPORTS_URL=https://chromium.googlesource.com/external/naclports.git
-NACLPORTS_REV=58a6ab9
+NACLPORTS_URL=http://naclports.googlecode.com/svn/trunk/src
+NACLPORTS_REV=939
 NACLPORTS_DIR=${OUT_DIR}/naclports
 
 if [ -z "${NACL_SDK_ROOT:-}" ]; then
@@ -62,10 +62,12 @@ if [ ! -d ${NACLPORTS_DIR} ]; then
   popd
 fi
 
-pushd ${NACLPORTS_DIR}/src
+pushd ${NACLPORTS_DIR}
 gclient sync -r ${NACLPORTS_REV}
+popd
 
 Banner Building lua
+pushd ${NACLPORTS_DIR}/src
 make NACL_ARCH=pnacl lua_ppapi
 popd
 
