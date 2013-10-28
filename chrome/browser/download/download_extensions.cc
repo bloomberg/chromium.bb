@@ -68,8 +68,7 @@ static const struct Executables {
   { "jnlp", DANGEROUS },
 #endif
 #if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
-  // Relating to PDF.
-  { "pdf", ALLOW_ON_USER_GESTURE },
+  // Relating to PDF. ".pdf" per se is not considered dangerous.
   { "pdfxml", ALLOW_ON_USER_GESTURE },
   { "mars", ALLOW_ON_USER_GESTURE },
   { "fdf", ALLOW_ON_USER_GESTURE },
