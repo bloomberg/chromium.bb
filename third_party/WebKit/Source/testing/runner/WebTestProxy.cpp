@@ -488,6 +488,12 @@ WebView* WebTestProxyBase::webView()
     return static_cast<WebView*>(m_webWidget);
 }
 
+void WebTestProxyBase::didForceResize()
+{
+    invalidateAll();
+    discardBackingStore();
+}
+
 void WebTestProxyBase::reset()
 {
     m_paintRect = WebRect();

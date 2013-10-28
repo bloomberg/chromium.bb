@@ -148,6 +148,8 @@ public:
 
     WebKit::WebView* webView();
 
+    void didForceResize();
+
 protected:
     WebTestProxyBase();
     ~WebTestProxyBase();
@@ -155,6 +157,7 @@ protected:
     void didInvalidateRect(const WebKit::WebRect&);
     void didScrollRect(int, int, const WebKit::WebRect&);
     void scheduleAnimation();
+    // FIXME: Remove once we switch to use didForceResize.
     void setWindowRect(const WebKit::WebRect&);
     void show(WebKit::WebNavigationPolicy);
     void didAutoResize(const WebKit::WebSize&);
