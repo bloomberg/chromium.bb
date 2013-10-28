@@ -307,7 +307,7 @@ void RenderFlowThread::paintFlowThreadPortionInRegion(PaintInfo& paintInfo, Rend
         if (info.phase == PaintPhaseTextClip)
             info.paintBehavior = PaintBehaviorForceBlackText;
 
-        layer()->paint(context, info.rect, info.paintBehavior, 0, region, RenderLayer::PaintLayerTemporaryClipRects);
+        layer()->paint(context, info.rect, info.paintBehavior, 0, region, PaintLayerTemporaryClipRects);
 
         context->restore();
     }

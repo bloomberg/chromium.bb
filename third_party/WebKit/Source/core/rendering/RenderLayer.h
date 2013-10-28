@@ -46,9 +46,11 @@
 #define RenderLayer_h
 
 #include "core/rendering/CompositingReasons.h"
+#include "core/rendering/LayerPaintingInfo.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderBox.h"
 #include "core/rendering/RenderLayerClipper.h"
+#include "core/rendering/RenderLayerReflectionInfo.h"
 #include "core/rendering/RenderLayerRepainter.h"
 #include "core/rendering/RenderLayerScrollableArea.h"
 #include "core/rendering/RenderLayerStackingNode.h"
@@ -115,10 +117,9 @@ public:
     RenderLayer* transparentPaintingAncestor();
     void beginTransparencyLayers(GraphicsContext*, const RenderLayer* rootLayer, const LayoutRect& paintDirtyRect, PaintBehavior);
 
-    bool hasReflection() const { return renderer()->hasReflection(); }
     bool isReflection() const { return renderer()->isReplica(); }
-    RenderReplica* reflection() const { return m_reflection; }
-    RenderLayer* reflectionLayer() const;
+    RenderLayerReflectionInfo* reflectionInfo() { return m_reflectionInfo.get(); }
+    const RenderLayerReflectionInfo* reflectionInfo() const { return m_reflectionInfo.get(); }
 
     const RenderLayer* root() const
     {
@@ -253,25 +254,6 @@ public:
     void convertToPixelSnappedLayerCoords(const RenderLayer* ancestorLayer, IntRect&) const;
     void convertToLayerCoords(const RenderLayer* ancestorLayer, LayoutPoint& location) const;
     void convertToLayerCoords(const RenderLayer* ancestorLayer, LayoutRect&) const;
-
-    enum PaintLayerFlag {
-        PaintLayerHaveTransparency = 1,
-        PaintLayerAppliedTransform = 1 << 1,
-        PaintLayerTemporaryClipRects = 1 << 2,
-        PaintLayerPaintingReflection = 1 << 3,
-        PaintLayerPaintingOverlayScrollbars = 1 << 4,
-        PaintLayerPaintingCompositingBackgroundPhase = 1 << 5,
-        PaintLayerPaintingCompositingForegroundPhase = 1 << 6,
-        PaintLayerPaintingCompositingMaskPhase = 1 << 7,
-        PaintLayerPaintingCompositingScrollingPhase = 1 << 8,
-        PaintLayerPaintingOverflowContents = 1 << 9,
-        PaintLayerPaintingRootBackgroundOnly = 1 << 10,
-        PaintLayerPaintingSkipRootBackground = 1 << 11,
-        PaintLayerPaintingChildClippingMaskPhase = 1 << 12,
-        PaintLayerPaintingCompositingAllPhases = (PaintLayerPaintingCompositingBackgroundPhase | PaintLayerPaintingCompositingForegroundPhase | PaintLayerPaintingCompositingMaskPhase)
-    };
-
-    typedef unsigned PaintLayerFlags;
 
     // The two main functions that use the layer system.  The paint method
     // paints the layers that intersect the damage rect from back to
@@ -463,6 +445,8 @@ public:
         return isRootLayer() || layerRenderer->isPositioned() || hasTransform();
     }
 
+    void paintLayer(GraphicsContext*, const LayerPaintingInfo&, PaintLayerFlags);
+
 private:
     bool hasOverflowControls() const;
 
@@ -514,28 +498,6 @@ private:
 
     LayoutPoint renderBoxLocation() const { return renderer()->isBox() ? toRenderBox(renderer())->location() : LayoutPoint(); }
 
-    struct LayerPaintingInfo {
-        LayerPaintingInfo(RenderLayer* inRootLayer, const LayoutRect& inDirtyRect, PaintBehavior inPaintBehavior, const LayoutSize& inSubPixelAccumulation, RenderObject* inPaintingRoot = 0, RenderRegion*inRegion = 0, OverlapTestRequestMap* inOverlapTestRequests = 0)
-            : rootLayer(inRootLayer)
-            , paintingRoot(inPaintingRoot)
-            , paintDirtyRect(inDirtyRect)
-            , subPixelAccumulation(inSubPixelAccumulation)
-            , region(inRegion)
-            , overlapTestRequests(inOverlapTestRequests)
-            , paintBehavior(inPaintBehavior)
-            , clipToDirtyRect(true)
-        { }
-        RenderLayer* rootLayer;
-        RenderObject* paintingRoot; // only paint descendants of this object
-        LayoutRect paintDirtyRect; // relative to rootLayer;
-        LayoutSize subPixelAccumulation;
-        RenderRegion* region; // May be null.
-        OverlapTestRequestMap* overlapTestRequests; // May be null.
-        PaintBehavior paintBehavior;
-        bool clipToDirtyRect;
-    };
-
-    void paintLayer(GraphicsContext*, const LayerPaintingInfo&, PaintLayerFlags);
     void paintLayerContentsAndReflection(GraphicsContext*, const LayerPaintingInfo&, PaintLayerFlags);
     void paintLayerByApplyingTransform(GraphicsContext*, const LayerPaintingInfo&, PaintLayerFlags, const LayoutPoint& translationOffset = LayoutPoint());
     void paintLayerContents(GraphicsContext*, const LayerPaintingInfo&, PaintLayerFlags);
@@ -610,6 +572,8 @@ private:
     bool requiresStackingNode() const { return true; }
     void updateStackingNode();
 
+    void updateReflectionInfo(const RenderStyle*);
+
     // FIXME: We could lazily allocate our ScrollableArea based on style properties ('overflow', ...)
     // but for now, we are always allocating it for RenderBox as it's safer.
     bool requiresScrollableArea() const { return renderBox(); }
@@ -636,13 +600,6 @@ private:
     void dirty3DTransformedDescendantStatus();
     // Both updates the status, and returns true if descendants of this have 3d.
     bool update3DTransformedDescendantStatus();
-
-    void createReflection();
-    void removeReflection();
-
-    void updateReflectionStyle();
-    bool paintingInsideReflection() const { return m_paintingInsideReflection; }
-    void setPaintingInsideReflection(bool b) { m_paintingInsideReflection = b; }
 
     void updateOrRemoveFilterClients();
     void updateOrRemoveFilterEffectRenderer();
@@ -701,7 +658,6 @@ protected:
 
     unsigned m_childLayerHasBlendMode : 1;
     unsigned m_childLayerHasBlendModeStatusDirty : 1;
-    unsigned m_paintingInsideReflection : 1; // A state bit tracking if we are painting inside a replica.
 
     unsigned m_visibleContentStatusDirty : 1;
     unsigned m_hasVisibleContent : 1;
@@ -749,9 +705,6 @@ protected:
 
     OwnPtr<TransformationMatrix> m_transform;
 
-    // May ultimately be extended to many replicas (with their own paint order).
-    RenderReplica* m_reflection;
-
     // Pointer to the enclosing RenderLayer that caused us to be paginated. It is 0 if we are not paginated.
     RenderLayer* m_enclosingPaginationLayer;
 
@@ -794,6 +747,7 @@ private:
     RenderLayerRepainter m_repainter;
     RenderLayerClipper m_clipper; // FIXME: Lazily allocate?
     OwnPtr<RenderLayerStackingNode> m_stackingNode;
+    OwnPtr<RenderLayerReflectionInfo> m_reflectionInfo;
 };
 
 } // namespace WebCore

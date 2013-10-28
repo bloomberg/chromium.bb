@@ -965,10 +965,10 @@ void RenderLayerCompositor::computeCompositingRequirements(RenderLayer* ancestor
     }
 
     // If the original layer is composited, the reflection needs to be, too.
-    if (layer->reflectionLayer()) {
+    if (layer->reflectionInfo()) {
         // FIXME: Shouldn't we call computeCompositingRequirements to handle a reflection overlapping with another renderer?
         CompositingReasons reflectionCompositingReason = willBeComposited ? CompositingReasonReflectionOfCompositedParent : CompositingReasonNone;
-        layer->reflectionLayer()->setCompositingReasons(layer->reflectionLayer()->compositingReasons() | reflectionCompositingReason);
+        layer->reflectionInfo()->reflectionLayer()->setCompositingReasons(layer->reflectionInfo()->reflectionLayer()->compositingReasons() | reflectionCompositingReason);
     }
 
     // Subsequent layers in the parent's stacking context may also need to composite.
@@ -1005,7 +1005,7 @@ void RenderLayerCompositor::computeCompositingRequirements(RenderLayer* ancestor
     if (allocateOrClearCompositedLayerMapping(layer, CompositingChangeRepaintNow))
         layersChanged = true;
 
-    if (layer->reflectionLayer() && updateLayerCompositingState(layer->reflectionLayer(), CompositingChangeRepaintNow))
+    if (layer->reflectionInfo() && updateLayerCompositingState(layer->reflectionInfo()->reflectionLayer(), CompositingChangeRepaintNow))
         layersChanged = true;
 
     descendantHas3DTransform |= anyDescendantHas3DTransform || layer->has3DTransform();
@@ -1073,9 +1073,10 @@ void RenderLayerCompositor::rebuildCompositingLayerTree(RenderLayer* layer, Vect
         // we can compute and cache the composited bounds for this layer.
         currentCompositedLayerMapping->updateCompositedBounds();
 
-        if (RenderLayer* reflection = layer->reflectionLayer()) {
-            if (reflection->compositedLayerMapping())
-                reflection->compositedLayerMapping()->updateCompositedBounds();
+        if (layer->reflectionInfo()) {
+            RenderLayer* reflectionLayer = layer->reflectionInfo()->reflectionLayer();
+            if (reflectionLayer->compositedLayerMapping())
+                reflectionLayer->compositedLayerMapping()->updateCompositedBounds();
         }
 
         currentCompositedLayerMapping->updateGraphicsLayerConfiguration();
@@ -1326,9 +1327,10 @@ void RenderLayerCompositor::updateLayerTreeGeometry(RenderLayer* layer, int dept
         // we can compute and cache the composited bounds for this layer.
         compositedLayerMapping->updateCompositedBounds();
 
-        if (RenderLayer* reflection = layer->reflectionLayer()) {
-            if (reflection->compositedLayerMapping())
-                reflection->compositedLayerMapping()->updateCompositedBounds();
+        if (layer->reflectionInfo()) {
+            RenderLayer* reflectionLayer = layer->reflectionInfo()->reflectionLayer();
+            if (reflectionLayer->compositedLayerMapping())
+                reflectionLayer->compositedLayerMapping()->updateCompositedBounds();
         }
 
         compositedLayerMapping->updateGraphicsLayerConfiguration();
@@ -1360,9 +1362,10 @@ void RenderLayerCompositor::updateCompositingDescendantGeometry(RenderLayerStack
         if (CompositedLayerMapping* compositedLayerMapping = layer->compositedLayerMapping()) {
             compositedLayerMapping->updateCompositedBounds();
 
-            if (RenderLayer* reflection = layer->reflectionLayer()) {
-                if (reflection->compositedLayerMapping())
-                    reflection->compositedLayerMapping()->updateCompositedBounds();
+            if (layer->reflectionInfo()) {
+                RenderLayer* reflectionLayer = layer->reflectionInfo()->reflectionLayer();
+                if (reflectionLayer->compositedLayerMapping())
+                    reflectionLayer->compositedLayerMapping()->updateCompositedBounds();
             }
 
             compositedLayerMapping->updateGraphicsLayerGeometry();
@@ -1371,8 +1374,8 @@ void RenderLayerCompositor::updateCompositingDescendantGeometry(RenderLayerStack
         }
     }
 
-    if (layer->reflectionLayer())
-        updateCompositingDescendantGeometry(compositingAncestor, layer->reflectionLayer(), compositedChildrenOnly);
+    if (layer->reflectionInfo())
+        updateCompositingDescendantGeometry(compositingAncestor, layer->reflectionInfo()->reflectionLayer(), compositedChildrenOnly);
 
     if (!layer->hasCompositingDescendant())
         return;

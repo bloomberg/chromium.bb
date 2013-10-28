@@ -219,7 +219,7 @@ void RenderLayerStackingNode::rebuildZOrderLists(OwnPtr<Vector<RenderLayerStacki
 {
     bool includeHiddenLayers = compositor()->inCompositingMode();
     for (RenderLayer* child = layer()->firstChild(); child; child = child->nextSibling()) {
-        if (!layer()->reflection() || layer()->reflectionLayer() != child)
+        if (!layer()->reflectionInfo() || layer()->reflectionInfo()->reflectionLayer() != child)
             child->stackingNode()->collectLayers(includeHiddenLayers, posZOrderList, negZOrderList, nodeToForceAsStackingContainer, collectLayersBehavior);
     }
 
@@ -256,7 +256,7 @@ void RenderLayerStackingNode::updateNormalFlowList()
 
     for (RenderLayer* child = layer()->firstChild(); child; child = child->nextSibling()) {
         // Ignore non-overflow layers and reflections.
-        if (child->stackingNode()->isNormalFlowOnly() && (!layer()->reflection() || layer()->reflectionLayer() != child)) {
+        if (child->stackingNode()->isNormalFlowOnly() && (!layer()->reflectionInfo() || layer()->reflectionInfo()->reflectionLayer() != child)) {
             if (!m_normalFlowList)
                 m_normalFlowList = adoptPtr(new Vector<RenderLayerStackingNode*>);
             m_normalFlowList->append(child->stackingNode());
@@ -323,7 +323,7 @@ void RenderLayerStackingNode::collectLayers(bool includeHiddenLayers,
     if ((includeHiddenLayers || layer()->hasVisibleDescendant()) && !isStacking) {
         for (RenderLayer* child = layer()->firstChild(); child; child = child->nextSibling()) {
             // Ignore reflections.
-            if (!layer()->reflection() || layer()->reflectionLayer() != child)
+            if (!layer()->reflectionInfo() || layer()->reflectionInfo()->reflectionLayer() != child)
                 child->stackingNode()->collectLayers(includeHiddenLayers, posBuffer, negBuffer, nodeToForceAsStackingContainer, collectLayersBehavior);
         }
     }
@@ -379,10 +379,12 @@ void RenderLayerStackingNode::updateLayerListsIfNeeded()
     updateZOrderLists();
     updateNormalFlowList();
 
-    if (RenderLayer* reflectionLayer = layer()->reflectionLayer()) {
-        reflectionLayer->stackingNode()->updateZOrderLists();
-        reflectionLayer->stackingNode()->updateNormalFlowList();
-    }
+    if (!layer()->reflectionInfo())
+        return;
+
+    RenderLayer* reflectionLayer = layer()->reflectionInfo()->reflectionLayer();
+    reflectionLayer->stackingNode()->updateZOrderLists();
+    reflectionLayer->stackingNode()->updateNormalFlowList();
 }
 
 void RenderLayerStackingNode::updateStackingNodesAfterStyleChange(const RenderStyle* oldStyle)

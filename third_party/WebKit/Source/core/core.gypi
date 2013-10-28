@@ -1443,6 +1443,7 @@
             'rendering/RenderLayerScrollableArea.cpp',
             'rendering/RenderLayerStackingNode.cpp',
             'rendering/RenderLayerStackingNodeIterator.cpp',
+            'rendering/RenderLayerReflectionInfo.cpp',
             'rendering/RenderLayerRepainter.cpp',
             'rendering/RenderLayerModelObject.cpp',
             'rendering/RenderLineBoxList.cpp',

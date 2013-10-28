@@ -460,9 +460,9 @@ bool CompositedLayerMapping::updateGraphicsLayerConfiguration()
     if (updateClippingMaskLayers(needsChildClippingMask))
         m_graphicsLayer->setContentsClippingMaskLayer(m_childClippingMaskLayer.get());
 
-    if (m_owningLayer->hasReflection()) {
-        if (m_owningLayer->reflectionLayer()->compositedLayerMapping()) {
-            GraphicsLayer* reflectionLayer = m_owningLayer->reflectionLayer()->compositedLayerMapping()->mainGraphicsLayer();
+    if (m_owningLayer->reflectionInfo()) {
+        if (m_owningLayer->reflectionInfo()->reflectionLayer()->compositedLayerMapping()) {
+            GraphicsLayer* reflectionLayer = m_owningLayer->reflectionInfo()->reflectionLayer()->compositedLayerMapping()->mainGraphicsLayer();
             m_graphicsLayer->setReplicatedByLayer(reflectionLayer);
         }
     } else {
@@ -697,8 +697,8 @@ void CompositedLayerMapping::updateGraphicsLayerGeometry()
         m_backgroundLayer->setOffsetFromRenderer(m_graphicsLayer->offsetFromRenderer());
     }
 
-    if (m_owningLayer->reflectionLayer() && m_owningLayer->reflectionLayer()->compositedLayerMapping()) {
-        CompositedLayerMapping* reflectionCompositedLayerMapping = m_owningLayer->reflectionLayer()->compositedLayerMapping();
+    if (m_owningLayer->reflectionInfo() && m_owningLayer->reflectionInfo()->reflectionLayer()->compositedLayerMapping()) {
+        CompositedLayerMapping* reflectionCompositedLayerMapping = m_owningLayer->reflectionInfo()->reflectionLayer()->compositedLayerMapping();
         reflectionCompositedLayerMapping->updateGraphicsLayerGeometry();
 
         // The reflection layer has the bounds of m_owningLayer->reflectionLayer(),
@@ -1632,24 +1632,24 @@ void CompositedLayerMapping::doPaintTask(GraphicsLayerPaintInfo& paintInfo, Grap
 
     FontCachePurgePreventer fontCachePurgePreventer;
 
-    RenderLayer::PaintLayerFlags paintFlags = 0;
+    PaintLayerFlags paintFlags = 0;
     if (paintInfo.paintingPhase & GraphicsLayerPaintBackground)
-        paintFlags |= RenderLayer::PaintLayerPaintingCompositingBackgroundPhase;
+        paintFlags |= PaintLayerPaintingCompositingBackgroundPhase;
     if (paintInfo.paintingPhase & GraphicsLayerPaintForeground)
-        paintFlags |= RenderLayer::PaintLayerPaintingCompositingForegroundPhase;
+        paintFlags |= PaintLayerPaintingCompositingForegroundPhase;
     if (paintInfo.paintingPhase & GraphicsLayerPaintMask)
-        paintFlags |= RenderLayer::PaintLayerPaintingCompositingMaskPhase;
+        paintFlags |= PaintLayerPaintingCompositingMaskPhase;
     if (paintInfo.paintingPhase & GraphicsLayerPaintChildClippingMask)
-        paintFlags |= RenderLayer::PaintLayerPaintingChildClippingMaskPhase;
+        paintFlags |= PaintLayerPaintingChildClippingMaskPhase;
     if (paintInfo.paintingPhase & GraphicsLayerPaintOverflowContents)
-        paintFlags |= RenderLayer::PaintLayerPaintingOverflowContents;
+        paintFlags |= PaintLayerPaintingOverflowContents;
     if (paintInfo.paintingPhase & GraphicsLayerPaintCompositedScroll)
-        paintFlags |= RenderLayer::PaintLayerPaintingCompositingScrollingPhase;
+        paintFlags |= PaintLayerPaintingCompositingScrollingPhase;
 
     if (paintInfo.isBackgroundLayer)
-        paintFlags |= (RenderLayer::PaintLayerPaintingRootBackgroundOnly | RenderLayer::PaintLayerPaintingCompositingForegroundPhase); // Need PaintLayerPaintingCompositingForegroundPhase to walk child layers.
+        paintFlags |= (PaintLayerPaintingRootBackgroundOnly | PaintLayerPaintingCompositingForegroundPhase); // Need PaintLayerPaintingCompositingForegroundPhase to walk child layers.
     else if (compositor()->fixedRootBackgroundLayer())
-        paintFlags |= RenderLayer::PaintLayerPaintingSkipRootBackground;
+        paintFlags |= PaintLayerPaintingSkipRootBackground;
 
     InspectorInstrumentation::willPaint(paintInfo.renderLayer->renderer());
 
@@ -1674,13 +1674,13 @@ void CompositedLayerMapping::doPaintTask(GraphicsLayerPaintInfo& paintInfo, Grap
 #endif
 
     // FIXME: GraphicsLayers need a way to split for RenderRegions.
-    RenderLayer::LayerPaintingInfo paintingInfo(paintInfo.renderLayer, dirtyRect, PaintBehaviorNormal, LayoutSize());
+    LayerPaintingInfo paintingInfo(paintInfo.renderLayer, dirtyRect, PaintBehaviorNormal, LayoutSize());
     paintInfo.renderLayer->paintLayerContents(context, paintingInfo, paintFlags);
 
-    ASSERT(!paintInfo.isBackgroundLayer || paintFlags & RenderLayer::PaintLayerPaintingRootBackgroundOnly);
+    ASSERT(!paintInfo.isBackgroundLayer || paintFlags & PaintLayerPaintingRootBackgroundOnly);
 
     if (paintInfo.renderLayer->containsDirtyOverlayScrollbars())
-        paintInfo.renderLayer->paintLayerContents(context, paintingInfo, paintFlags | RenderLayer::PaintLayerPaintingOverlayScrollbars);
+        paintInfo.renderLayer->paintLayerContents(context, paintingInfo, paintFlags | PaintLayerPaintingOverlayScrollbars);
 
     ASSERT(!paintInfo.renderLayer->m_usedTransparency);
 

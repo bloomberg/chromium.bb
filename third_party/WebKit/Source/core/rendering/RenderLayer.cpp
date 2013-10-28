@@ -57,7 +57,6 @@
 #include "core/frame/FrameView.h"
 #include "core/page/Page.h"
 #include "core/page/Settings.h"
-#include "core/page/UseCounter.h"
 #include "core/frame/animation/AnimationController.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
 #include "core/platform/graphics/GraphicsContextStateSaver.h"
@@ -73,6 +72,7 @@
 #include "core/rendering/HitTestRequest.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/HitTestingTransformState.h"
+#include "core/rendering/RenderBox.h"
 #include "core/rendering/RenderFlowThread.h"
 #include "core/rendering/RenderGeometryMap.h"
 #include "core/rendering/RenderInline.h"
@@ -118,7 +118,6 @@ RenderLayer::RenderLayer(RenderLayerModelObject* renderer)
     , m_usedTransparency(false)
     , m_childLayerHasBlendMode(false)
     , m_childLayerHasBlendModeStatusDirty(false)
-    , m_paintingInsideReflection(false)
     , m_visibleContentStatusDirty(true)
     , m_hasVisibleContent(false)
     , m_visibleDescendantStatusDirty(false)
@@ -138,7 +137,6 @@ RenderLayer::RenderLayer(RenderLayerModelObject* renderer)
     , m_last(0)
     , m_staticInlinePosition(0)
     , m_staticBlockPosition(0)
-    , m_reflection(0)
     , m_enclosingPaginationLayer(0)
     , m_forceNeedsCompositedScrolling(DoNotForceCompositedScrolling)
     , m_repainter(renderer)
@@ -166,9 +164,6 @@ RenderLayer::~RenderLayer()
             scrollingCoordinator->willDestroyRenderLayer(this);
     }
 
-    if (m_reflection)
-        removeReflection();
-
     removeFilterInfoIfNeeded();
 
     // Child layers will be deleted by their corresponding render objects, so
@@ -179,10 +174,9 @@ RenderLayer::~RenderLayer()
 
 String RenderLayer::debugName() const
 {
-    String name = renderer()->debugName();
-    if (!isReflection())
-        return name;
-    return name + " (reflection)";
+    if (isReflection())
+        return m_reflectionInfo->debugName();
+    return renderer()->debugName();
 }
 
 RenderLayerCompositor* RenderLayer::compositor() const
@@ -294,8 +288,8 @@ void RenderLayer::updateLayerPositions(RenderGeometryMap* geometryMap, UpdateLay
     repainter().repaintAfterLayout(geometryMap, flags & CheckForRepaint);
 
     // Go ahead and update the reflection's position and size.
-    if (m_reflection)
-        m_reflection->layout();
+    if (m_reflectionInfo)
+        m_reflectionInfo->reflection()->layout();
 
     // Clear the IsCompositingUpdateRoot flag once we've found the first compositing layer in this update.
     bool isUpdateRoot = (flags & IsCompositingUpdateRoot);
@@ -1209,7 +1203,7 @@ RenderLayer* RenderLayer::clippingRootForPainting() const
 
 bool RenderLayer::cannotBlitToWindow() const
 {
-    if (isTransparent() || hasReflection() || hasTransform())
+    if (isTransparent() || m_reflectionInfo || hasTransform())
         return true;
     if (!parent())
         return false;
@@ -1259,7 +1253,7 @@ static void expandClipRectForDescendantsAndReflection(LayoutRect& clipRect, cons
         // Note: we don't have to walk z-order lists since transparent elements always establish
         // a stacking container. This means we can just walk the layer tree directly.
         for (RenderLayer* curr = layer->firstChild(); curr; curr = curr->nextSibling()) {
-            if (!layer->reflection() || layer->reflectionLayer() != curr)
+            if (!layer->reflectionInfo() || layer->reflectionInfo()->reflectionLayer() != curr)
                 clipRect.unite(transparencyClipBox(curr, rootLayer, transparencyBehavior, DescendantsOfTransparencyClipBox, paintBehavior));
         }
     }
@@ -1489,8 +1483,8 @@ void RenderLayer::removeOnlyThisLayer()
 
     // Remove the child reflection layer before moving other child layers.
     // The reflection layer should not be moved to the parent.
-    if (reflection())
-        removeChild(reflectionLayer());
+    if (m_reflectionInfo)
+        removeChild(m_reflectionInfo->reflectionLayer());
 
     // Now walk our kids and reattach them to our parent.
     RenderLayer* current = m_first;
@@ -1517,7 +1511,7 @@ void RenderLayer::insertOnlyThisLayer()
         // Find our enclosingLayer and add ourselves.
         RenderLayer* parentLayer = renderer()->parent()->enclosingLayer();
         ASSERT(parentLayer);
-        RenderLayer* beforeChild = parentLayer->reflectionLayer() != this ? renderer()->parent()->findNextLayer(parentLayer, renderer()) : 0;
+        RenderLayer* beforeChild = !parentLayer->reflectionInfo() || parentLayer->reflectionInfo()->reflectionLayer() != this ? renderer()->parent()->findNextLayer(parentLayer, renderer()) : 0;
         parentLayer->addChild(this, beforeChild);
     }
 
@@ -1844,6 +1838,17 @@ void RenderLayer::updateCompositingLayersAfterScroll()
     }
 }
 
+void RenderLayer::updateReflectionInfo(const RenderStyle* oldStyle)
+{
+    if (renderer()->hasReflection()) {
+        if (!m_reflectionInfo)
+            m_reflectionInfo = adoptPtr(new RenderLayerReflectionInfo(toRenderBox(renderer())));
+        m_reflectionInfo->updateAfterStyleChange(oldStyle);
+    } else if (m_reflectionInfo) {
+        m_reflectionInfo = nullptr;
+    }
+}
+
 void RenderLayer::updateStackingNode()
 {
     if (requiresStackingNode())
@@ -1999,9 +2004,9 @@ static inline bool shouldSuppressPaintingLayer(RenderLayer* layer)
     return false;
 }
 
-static bool paintForFixedRootBackground(const RenderLayer* layer, RenderLayer::PaintLayerFlags paintFlags)
+static bool paintForFixedRootBackground(const RenderLayer* layer, PaintLayerFlags paintFlags)
 {
-    return layer->renderer()->isRoot() && (paintFlags & RenderLayer::PaintLayerPaintingRootBackgroundOnly);
+    return layer->renderer()->isRoot() && (paintFlags & PaintLayerPaintingRootBackgroundOnly);
 }
 
 void RenderLayer::paintLayer(GraphicsContext* context, const LayerPaintingInfo& paintingInfo, PaintLayerFlags paintFlags)
@@ -2089,12 +2094,8 @@ void RenderLayer::paintLayerContentsAndReflection(GraphicsContext* context, cons
     PaintLayerFlags localPaintFlags = paintFlags & ~(PaintLayerAppliedTransform);
 
     // Paint the reflection first if we have one.
-    if (m_reflection && !m_paintingInsideReflection) {
-        // Mark that we are now inside replica painting.
-        m_paintingInsideReflection = true;
-        reflectionLayer()->paintLayer(context, paintingInfo, localPaintFlags | PaintLayerPaintingReflection);
-        m_paintingInsideReflection = false;
-    }
+    if (m_reflectionInfo)
+        m_reflectionInfo->paint(context, paintingInfo, localPaintFlags | PaintLayerPaintingReflection);
 
     localPaintFlags |= PaintLayerPaintingCompositingAllPhases;
     paintLayerContents(context, paintingInfo, localPaintFlags);
@@ -2306,7 +2307,7 @@ void RenderLayer::paintLayerContents(GraphicsContext* context, const LayerPainti
     }
 
     // End our transparency layer
-    if ((haveTransparency || hasBlendMode() || createTransparencyLayerForBlendMode) && m_usedTransparency && !m_paintingInsideReflection) {
+    if ((haveTransparency || hasBlendMode() || createTransparencyLayerForBlendMode) && m_usedTransparency && !(m_reflectionInfo && m_reflectionInfo->isPaintingInsideReflection())) {
         context->endLayer();
         context->restore();
         m_usedTransparency = false;
@@ -3702,9 +3703,10 @@ IntRect RenderLayer::calculateLayerBounds(const RenderLayer* ancestorLayer, cons
 
     const_cast<RenderLayer*>(this)->stackingNode()->updateLayerListsIfNeeded();
 
-    if (RenderLayer* reflection = reflectionLayer()) {
-        if (!reflection->compositedLayerMapping()) {
-            IntRect childUnionBounds = reflection->calculateLayerBounds(this, 0, descendantFlags);
+    if (m_reflectionInfo) {
+        RenderLayer* reflectionLayer = m_reflectionInfo->reflectionLayer();
+        if (!reflectionLayer->compositedLayerMapping()) {
+            IntRect childUnionBounds = reflectionLayer->calculateLayerBounds(this, 0, descendantFlags);
             unionBounds.unite(childUnionBounds);
         }
     }
@@ -4086,14 +4088,7 @@ void RenderLayer::styleChanged(StyleDifference, const RenderStyle* oldStyle)
     updateSelfPaintingLayer();
     updateOutOfFlowPositioned(oldStyle);
 
-    if (!hasReflection() && m_reflection)
-        removeReflection();
-    else if (hasReflection()) {
-        if (!m_reflection)
-            createReflection();
-        UseCounter::count(renderer()->document(), UseCounter::Reflection);
-        updateReflectionStyle();
-    }
+    updateReflectionInfo(oldStyle);
 
     if (RuntimeEnabledFeatures::cssCompositingEnabled())
         updateBlendMode();
@@ -4168,65 +4163,6 @@ bool RenderLayer::scrollsOverflow() const
             return frameView->containsScrollableArea(scrollableArea);
     }
     return false;
-}
-
-RenderLayer* RenderLayer::reflectionLayer() const
-{
-    return m_reflection ? m_reflection->layer() : 0;
-}
-
-void RenderLayer::createReflection()
-{
-    ASSERT(!m_reflection);
-    m_reflection = RenderReplica::createAnonymous(&renderer()->document());
-    m_reflection->setParent(renderer()); // We create a 1-way connection.
-}
-
-void RenderLayer::removeReflection()
-{
-    if (!m_reflection->documentBeingDestroyed())
-        m_reflection->removeLayers(this);
-
-    m_reflection->setParent(0);
-    m_reflection->destroy();
-    m_reflection = 0;
-}
-
-void RenderLayer::updateReflectionStyle()
-{
-    RefPtr<RenderStyle> newStyle = RenderStyle::create();
-    newStyle->inheritFrom(renderer()->style());
-
-    // Map in our transform.
-    TransformOperations transform;
-    switch (renderer()->style()->boxReflect()->direction()) {
-        case ReflectionBelow:
-            transform.operations().append(TranslateTransformOperation::create(Length(0, Fixed), Length(100., Percent), TransformOperation::Translate));
-            transform.operations().append(TranslateTransformOperation::create(Length(0, Fixed), renderer()->style()->boxReflect()->offset(), TransformOperation::Translate));
-            transform.operations().append(ScaleTransformOperation::create(1.0, -1.0, ScaleTransformOperation::Scale));
-            break;
-        case ReflectionAbove:
-            transform.operations().append(ScaleTransformOperation::create(1.0, -1.0, ScaleTransformOperation::Scale));
-            transform.operations().append(TranslateTransformOperation::create(Length(0, Fixed), Length(100., Percent), TransformOperation::Translate));
-            transform.operations().append(TranslateTransformOperation::create(Length(0, Fixed), renderer()->style()->boxReflect()->offset(), TransformOperation::Translate));
-            break;
-        case ReflectionRight:
-            transform.operations().append(TranslateTransformOperation::create(Length(100., Percent), Length(0, Fixed), TransformOperation::Translate));
-            transform.operations().append(TranslateTransformOperation::create(renderer()->style()->boxReflect()->offset(), Length(0, Fixed), TransformOperation::Translate));
-            transform.operations().append(ScaleTransformOperation::create(-1.0, 1.0, ScaleTransformOperation::Scale));
-            break;
-        case ReflectionLeft:
-            transform.operations().append(ScaleTransformOperation::create(-1.0, 1.0, ScaleTransformOperation::Scale));
-            transform.operations().append(TranslateTransformOperation::create(Length(100., Percent), Length(0, Fixed), TransformOperation::Translate));
-            transform.operations().append(TranslateTransformOperation::create(renderer()->style()->boxReflect()->offset(), Length(0, Fixed), TransformOperation::Translate));
-            break;
-    }
-    newStyle->setTransform(transform);
-
-    // Map in our mask.
-    newStyle->setMaskBoxImage(renderer()->style()->boxReflect()->mask());
-
-    m_reflection->setStyle(newStyle.release());
 }
 
 bool RenderLayer::isCSSCustomFilterEnabled() const
