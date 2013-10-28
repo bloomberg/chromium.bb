@@ -368,91 +368,38 @@ set_clip_for_output(struct weston_output *output_base, pixman_region32_t *region
 	struct x11_output *output = (struct x11_output *)output_base;
 	struct weston_compositor *ec = output->base.compositor;
 	struct x11_compositor *c = (struct x11_compositor *)ec;
+	pixman_region32_t transformed_region;
 	pixman_box32_t *rects;
 	xcb_rectangle_t *output_rects;
-	pixman_box32_t rect, transformed_rect;
 	xcb_void_cookie_t cookie;
-	int width, height, nrects, i;
+	int nrects, i;
 	xcb_generic_error_t *err;
 
-	rects = pixman_region32_rectangles(region, &nrects);
+	pixman_region32_init(&transformed_region);
+	pixman_region32_copy(&transformed_region, region);
+	pixman_region32_translate(&transformed_region,
+				  -output_base->x, -output_base->y);
+	weston_transformed_region(output_base->width, output_base->height,
+				  output_base->transform,
+				  output_base->current_scale,
+				  &transformed_region, &transformed_region);
+
+	rects = pixman_region32_rectangles(&transformed_region, &nrects);
 	output_rects = calloc(nrects, sizeof(xcb_rectangle_t));
 
-	if (output_rects == NULL)
+	if (output_rects == NULL) {
+		pixman_region32_fini(&transformed_region);
 		return;
-
-	width = output_base->width;
-	height = output_base->height;
+	}
 
 	for (i = 0; i < nrects; i++) {
-		rect = rects[i];
-		rect.x1 -= output_base->x;
-		rect.y1 -= output_base->y;
-		rect.x2 -= output_base->x;
-		rect.y2 -= output_base->y;
-
-		switch (output_base->transform) {
-		default:
-		case WL_OUTPUT_TRANSFORM_NORMAL:
-			transformed_rect.x1 = rect.x1;
-			transformed_rect.y1 = rect.y1;
-			transformed_rect.x2 = rect.x2;
-			transformed_rect.y2 = rect.y2;
-			break;
-		case WL_OUTPUT_TRANSFORM_90:
-			transformed_rect.x1 = height - rect.y2;
-			transformed_rect.y1 = rect.x1;
-			transformed_rect.x2 = height - rect.y1;
-			transformed_rect.y2 = rect.x2;
-			break;
-		case WL_OUTPUT_TRANSFORM_180:
-			transformed_rect.x1 = width - rect.x2;
-			transformed_rect.y1 = height - rect.y2;
-			transformed_rect.x2 = width - rect.x1;
-			transformed_rect.y2 = height - rect.y1;
-			break;
-		case WL_OUTPUT_TRANSFORM_270:
-			transformed_rect.x1 = rect.y1;
-			transformed_rect.y1 = width - rect.x2;
-			transformed_rect.x2 = rect.y2;
-			transformed_rect.y2 = width - rect.x1;
-			break;
-		case WL_OUTPUT_TRANSFORM_FLIPPED:
-			transformed_rect.x1 = width - rect.x2;
-			transformed_rect.y1 = rect.y1;
-			transformed_rect.x2 = width - rect.x1;
-			transformed_rect.y2 = rect.y2;
-			break;
-		case WL_OUTPUT_TRANSFORM_FLIPPED_90:
-			transformed_rect.x1 = height - rect.y2;
-			transformed_rect.y1 = width - rect.x2;
-			transformed_rect.x2 = height - rect.y1;
-			transformed_rect.y2 = width - rect.x1;
-			break;
-		case WL_OUTPUT_TRANSFORM_FLIPPED_180:
-			transformed_rect.x1 = rect.x1;
-			transformed_rect.y1 = height - rect.y2;
-			transformed_rect.x2 = rect.x2;
-			transformed_rect.y2 = height - rect.y1;
-			break;
-		case WL_OUTPUT_TRANSFORM_FLIPPED_270:
-			transformed_rect.x1 = rect.y1;
-			transformed_rect.y1 = rect.x1;
-			transformed_rect.x2 = rect.y2;
-			transformed_rect.y2 = rect.x2;
-			break;
-		}
-
-		transformed_rect.x1 *= output_base->current_scale;
-		transformed_rect.y1 *= output_base->current_scale;
-		transformed_rect.x2 *= output_base->current_scale;
-		transformed_rect.y2 *= output_base->current_scale;
-
-		output_rects[i].x = transformed_rect.x1;
-		output_rects[i].y = transformed_rect.y1;
-		output_rects[i].width = transformed_rect.x2 - transformed_rect.x1;
-		output_rects[i].height = transformed_rect.y2 - transformed_rect.y1;
+		output_rects[i].x = rects[i].x1;
+		output_rects[i].y = rects[i].y1;
+		output_rects[i].width = rects[i].x2 - rects[i].x1;
+		output_rects[i].height = rects[i].y2 - rects[i].y1;
 	}
+
+	pixman_region32_fini(&transformed_region);
 
 	cookie = xcb_set_clip_rectangles_checked(c->conn, XCB_CLIP_ORDERING_UNSORTED,
 					output->gc,
