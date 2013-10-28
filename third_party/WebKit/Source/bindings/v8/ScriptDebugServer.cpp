@@ -74,8 +74,8 @@ v8::Local<v8::Value> ScriptDebugServer::callDebuggerMethod(const char* functionN
 ScriptDebugServer::ScriptDebugServer(v8::Isolate* isolate)
     : m_pauseOnExceptionsState(DontPauseOnExceptions)
     , m_breakpointsActivated(true)
-    , m_runningNestedMessageLoop(false)
     , m_isolate(isolate)
+    , m_runningNestedMessageLoop(false)
 {
 }
 

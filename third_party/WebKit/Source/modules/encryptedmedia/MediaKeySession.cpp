@@ -44,8 +44,8 @@ PassRefPtr<MediaKeySession> MediaKeySession::create(ExecutionContext* context, C
 
 MediaKeySession::MediaKeySession(ExecutionContext* context, ContentDecryptionModule* cdm, MediaKeys* keys)
     : ContextLifecycleObserver(context)
-    , m_asyncEventQueue(GenericEventQueue::create(this))
     , m_keySystem(keys->keySystem())
+    , m_asyncEventQueue(GenericEventQueue::create(this))
     , m_session(cdm->createSession(this))
     , m_keys(keys)
     , m_keyRequestTimer(this, &MediaKeySession::keyRequestTimerFired)
@@ -134,8 +134,6 @@ void MediaKeySession::addKeyTimerFired(Timer<MediaKeySession>*)
 
     while (!m_pendingKeys.isEmpty()) {
         RefPtr<Uint8Array> pendingKey = m_pendingKeys.takeFirst();
-        unsigned short errorCode = 0;
-        unsigned long systemCode = 0;
 
         // NOTE: Continued from step 2. of MediaKeySession::update()
         // 2.1. Let cdm be the cdm loaded in the MediaKeys constructor.

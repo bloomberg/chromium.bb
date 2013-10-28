@@ -1703,7 +1703,7 @@ void WebGLRenderingContext::deleteTexture(WebGLTexture* texture)
         m_framebufferBinding->removeAttachmentFromBoundFramebuffer(texture);
 
     // If the deleted was bound to the the current maximum index, trace backwards to find the new max texture index
-    if (m_onePlusMaxNonDefaultTextureUnit == maxBoundTextureIndex + 1) {
+    if (m_onePlusMaxNonDefaultTextureUnit == static_cast<unsigned long>(maxBoundTextureIndex + 1)) {
         findNewMaxNonDefaultTextureUnit();
     }
 }

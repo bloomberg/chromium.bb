@@ -413,7 +413,6 @@ void V8InjectedScriptHost::monitorFunctionMethodCustom(const v8::FunctionCallbac
     if (!getFunctionLocation(args, &scriptId, &lineNumber, &columnNumber))
         return;
 
-    v8::Handle<v8::Function> function = v8::Handle<v8::Function>::Cast(args[0]);
     v8::Handle<v8::Value> name;
     if (args.Length() > 0 && args[0]->IsFunction()) {
         v8::Handle<v8::Function> function = v8::Handle<v8::Function>::Cast(args[0]);

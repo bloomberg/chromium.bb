@@ -37,8 +37,8 @@
 namespace WebCore {
 
 NewDeviceOrientationController::NewDeviceOrientationController(Document* document)
-    : DOMWindowLifecycleObserver(document->domWindow())
-    , DeviceSensorEventController(document)
+    : DeviceSensorEventController(document)
+    , DOMWindowLifecycleObserver(document->domWindow())
 {
 }
 

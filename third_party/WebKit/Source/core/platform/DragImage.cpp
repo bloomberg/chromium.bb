@@ -58,10 +58,8 @@ namespace WebCore {
 const float kDragLabelBorderX = 4;
 // Keep border_y in synch with DragController::LinkDragBorderInset.
 const float kDragLabelBorderY = 2;
-const float kDragLabelRadius = 5;
 const float kLabelBorderYOffset = 2;
 
-const float kMinDragLabelWidthBeforeClip = 120;
 const float kMaxDragLabelWidth = 300;
 const float kMaxDragLabelStringWidth = (kMaxDragLabelWidth - 2 * kDragLabelBorderX);
 

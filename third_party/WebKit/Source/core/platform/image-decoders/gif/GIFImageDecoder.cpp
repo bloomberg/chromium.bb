@@ -348,7 +348,6 @@ void GIFImageDecoder::decode(size_t frameIndex)
 bool GIFImageDecoder::initFrameBuffer(size_t frameIndex)
 {
     // Initialize the frame rect in our buffer.
-    const GIFFrameContext* frameContext = m_reader->frameContext(frameIndex);
     ImageFrame* const buffer = &m_frameBufferCache[frameIndex];
 
     size_t requiredPreviousFrameIndex = buffer->requiredPreviousFrameIndex();

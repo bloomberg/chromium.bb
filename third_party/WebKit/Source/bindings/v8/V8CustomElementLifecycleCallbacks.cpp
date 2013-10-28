@@ -91,13 +91,13 @@ static void weakCallback(v8::Isolate*, v8::Persistent<T>*, ScopedPersistent<T>* 
 V8CustomElementLifecycleCallbacks::V8CustomElementLifecycleCallbacks(ExecutionContext* executionContext, v8::Handle<v8::Object> prototype, v8::Handle<v8::Function> created, v8::Handle<v8::Function> enteredView, v8::Handle<v8::Function> leftView, v8::Handle<v8::Function> attributeChanged)
     : CustomElementLifecycleCallbacks(flagSet(enteredView, leftView, attributeChanged))
     , ActiveDOMCallback(executionContext)
+    , m_owner(0)
     , m_world(DOMWrapperWorld::current())
     , m_prototype(toIsolate(executionContext), prototype)
     , m_created(toIsolate(executionContext), created)
     , m_enteredView(toIsolate(executionContext), enteredView)
     , m_leftView(toIsolate(executionContext), leftView)
     , m_attributeChanged(toIsolate(executionContext), attributeChanged)
-    , m_owner(0)
 {
     m_prototype.makeWeak(&m_prototype, weakCallback<v8::Object>);
 

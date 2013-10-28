@@ -108,7 +108,6 @@ void ScrollbarThemeMacOverlayAPI::paintThumb(GraphicsContext* context, Scrollbar
     LocalCurrentGraphicsContext localContext(context);
 
     ScrollbarPainter scrollbarPainter = painterForScrollbar(scrollbar);
-    CGRect frameRect = scrollbar->frameRect();
     [scrollbarPainter setEnabled:scrollbar->enabled()];
     [scrollbarPainter setBoundsSize:NSSizeFromCGSize(rect.size())];
     [scrollbarPainter setDoubleValue:0];

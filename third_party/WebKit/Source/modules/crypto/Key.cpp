@@ -167,7 +167,7 @@ Algorithm* Key::algorithm()
 Vector<String> Key::usages() const
 {
     Vector<String> result;
-    for (int i = 0; i < WTF_ARRAY_LENGTH(keyUsageMappings); ++i) {
+    for (size_t i = 0; i < WTF_ARRAY_LENGTH(keyUsageMappings); ++i) {
         WebKit::WebCryptoKeyUsage usage = keyUsageMappings[i].value;
         if (m_key.usages() & usage)
             result.append(keyUsageToString(usage));

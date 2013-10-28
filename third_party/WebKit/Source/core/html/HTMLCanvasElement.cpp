@@ -70,12 +70,12 @@ HTMLCanvasElement::HTMLCanvasElement(const QualifiedName& tagName, Document& doc
     , m_size(DefaultWidth, DefaultHeight)
     , m_rendererIsCanvas(false)
     , m_ignoreReset(false)
+    , m_accelerationDisabled(false)
+    , m_externallyAllocatedMemory(0)
     , m_deviceScaleFactor(1)
     , m_originClean(true)
     , m_hasCreatedImageBuffer(false)
     , m_didClearImageBuffer(false)
-    , m_accelerationDisabled(false)
-    , m_externallyAllocatedMemory(0)
 {
     ASSERT(hasTagName(canvasTag));
     ScriptWrappable::init(this);

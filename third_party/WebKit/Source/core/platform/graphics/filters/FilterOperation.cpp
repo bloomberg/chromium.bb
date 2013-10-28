@@ -56,6 +56,7 @@ PassRefPtr<FilterOperation> BasicColorMatrixFilterOperation::blend(const FilterO
             fromAmount = 1;
             break;
         default:
+            fromAmount = 0;
             ASSERT_NOT_REACHED();
         }
     }
@@ -94,6 +95,7 @@ PassRefPtr<FilterOperation> BasicComponentTransferFilterOperation::blend(const F
             fromAmount = 0;
             break;
         default:
+            fromAmount = 0;
             ASSERT_NOT_REACHED();
         }
     }

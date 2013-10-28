@@ -53,7 +53,7 @@ PassRefPtr<FEDropShadow> FEDropShadow::create(Filter* filter, float stdX, float 
 void FEDropShadow::determineAbsolutePaintRect()
 {
     Filter* filter = this->filter();
-    ASSERT(filter);
+    ASSERT_UNUSED(filter, filter);
 
     FloatRect absolutePaintRect = mapRect(inputEffect(0)->absolutePaintRect());
 

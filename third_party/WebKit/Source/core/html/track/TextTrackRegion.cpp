@@ -365,7 +365,6 @@ void TextTrackRegion::willRemoveTextTrackCueBox(TextTrackCueBox* box)
     ASSERT(m_cueContainer->contains(box));
 
     double boxHeight = box->getBoundingClientRect()->bottom() - box->getBoundingClientRect()->top();
-    float regionBottom = m_regionDisplayTree->getBoundingClientRect()->bottom();
 
     m_cueContainer->classList()->remove(textTrackCueContainerScrollingClass(), ASSERT_NO_EXCEPTION);
 

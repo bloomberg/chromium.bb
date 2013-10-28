@@ -81,8 +81,6 @@
 // FIXME: check the proper way to reference an undefined thread ID
 const int UndefinedThreadIdentifier = 0xffffffff;
 
-const unsigned MaxNodesToDeletePerQuantum = 10;
-
 namespace WebCore {
 
 bool AudioContext::isSampleRateRangeGood(float sampleRate)

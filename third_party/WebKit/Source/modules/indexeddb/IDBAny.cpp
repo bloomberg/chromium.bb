@@ -138,9 +138,9 @@ IDBAny::IDBAny(PassRefPtr<DOMStringList> value)
 }
 
 IDBAny::IDBAny(PassRefPtr<IDBCursor> value)
-    : m_integer(0)
-    , m_type(value->isCursorWithValue() ? IDBCursorWithValueType : IDBCursorType)
+    : m_type(value->isCursorWithValue() ? IDBCursorWithValueType : IDBCursorType)
     , m_idbCursor(value)
+    , m_integer(0)
 {
 }
 

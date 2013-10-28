@@ -178,7 +178,7 @@ LinkImport* HTMLLinkElement::linkImport() const
 Document* HTMLLinkElement::import() const
 {
     if (LinkImport* link = linkImport())
-        return linkImport()->importedDocument();
+        return link->importedDocument();
     return 0;
 }
 

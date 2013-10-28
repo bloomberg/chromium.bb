@@ -212,9 +212,9 @@ inline HarfBuzzShaper::HarfBuzzRun::HarfBuzzRun(const SimpleFontData* fontData, 
     : m_fontData(fontData)
     , m_startIndex(startIndex)
     , m_numCharacters(numCharacters)
+    , m_numGlyphs(0)
     , m_direction(direction)
     , m_script(script)
-    , m_numGlyphs(0)
     , m_width(0)
 {
 }
@@ -369,7 +369,7 @@ HarfBuzzShaper::HarfBuzzShaper(const Font* font, const TextRun& run)
 
 static void normalizeSpacesAndMirrorChars(const UChar* source, unsigned length, UChar* destination, unsigned* destinationLength, HarfBuzzShaper::NormalizeMode normalizeMode)
 {
-    int position = 0;
+    unsigned position = 0;
     bool error = false;
     // Iterate characters in source and mirror character if needed.
     *destinationLength = 0;

@@ -41,8 +41,6 @@
 
 namespace WebCore {
 
-const size_t DefaultBufferSize = 4096;
-
 static size_t chooseBufferSize()
 {
     // Choose a buffer size based on the audio hardware buffer size. Arbitarily make it a power of

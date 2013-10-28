@@ -175,7 +175,6 @@ private:
     Platform3DObject m_fbo;
     Platform3DObject m_colorBuffer;
     Platform3DObject m_frontColorBuffer;
-    bool m_separateFrontTexture;
 
     // This is used when we have OES_packed_depth_stencil.
     Platform3DObject m_depthStencilBuffer;

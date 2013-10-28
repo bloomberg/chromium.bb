@@ -469,7 +469,6 @@ static void paintButton(ControlPart part, ControlStates states, GraphicsContext*
 
     LocalCurrentGraphicsContext localContext(context);
     NSView *view = ThemeMac::ensuredView(scrollView);
-    NSWindow *window = [view window];
 
     [buttonCell drawWithFrame:NSRect(inflatedRect) inView:view];
 #if !BUTTON_CELL_DRAW_WITH_FRAME_DRAWS_FOCUS_RING

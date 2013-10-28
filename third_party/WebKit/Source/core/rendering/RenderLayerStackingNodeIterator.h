@@ -50,7 +50,6 @@ class RenderLayerStackingNodeIterator {
 public:
     RenderLayerStackingNodeIterator(const RenderLayerStackingNode& root, unsigned whichChildren)
         : m_root(root)
-        , m_whichChildren(whichChildren)
         , m_remainingChildren(whichChildren)
         , m_index(0)
     {
@@ -60,7 +59,6 @@ public:
 
 private:
     const RenderLayerStackingNode& m_root;
-    unsigned m_whichChildren;
     unsigned m_remainingChildren;
     unsigned m_index;
 };

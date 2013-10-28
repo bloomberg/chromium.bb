@@ -39,10 +39,10 @@ static inline SVGDocumentExtensions* svgExtensionsFromElement(SVGElement* elemen
 
 RenderSVGResourceContainer::RenderSVGResourceContainer(SVGElement* node)
     : RenderSVGHiddenContainer(node)
+    , m_isInLayout(false)
     , m_id(node->getIdAttribute())
     , m_registered(false)
     , m_isInvalidating(false)
-    , m_isInLayout(false)
 {
 }
 

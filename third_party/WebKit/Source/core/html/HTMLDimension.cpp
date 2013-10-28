@@ -62,7 +62,6 @@ static HTMLDimension parseDimension(const CharacterType* characters, size_t last
 
         if (position < endOfCurrentToken && characters[position] == '.') {
             ++position;
-            size_t fractionStart = position;
             Vector<CharacterType> fractionNumbers;
             while (position < endOfCurrentToken && (isASCIIDigit(characters[position]) || isASCIISpace(characters[position]))) {
                 if (isASCIIDigit(characters[position]))

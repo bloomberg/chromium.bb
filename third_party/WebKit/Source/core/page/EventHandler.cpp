@@ -1271,7 +1271,7 @@ OptionalCursor EventHandler::selectAutoCursor(const HitTestResult& result, Node*
     RenderObject* renderer = node ? node->renderer() : 0;
     if (renderer) {
         if (RenderLayer* layer = renderer->enclosingLayer()) {
-            if (FrameView* view = m_frame->view())
+            if (m_frame->view())
                 inResizer = layer->scrollableArea() && layer->scrollableArea()->isPointInResizeControl(result.roundedPointInMainFrame(), ResizerForPointer);
         }
     }

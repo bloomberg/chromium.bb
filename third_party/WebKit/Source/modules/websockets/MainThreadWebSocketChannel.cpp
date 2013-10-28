@@ -46,7 +46,6 @@
 #include "core/loader/UniqueIdentifier.h"
 #include "core/frame/Frame.h"
 #include "core/page/Page.h"
-#include "core/page/Settings.h"
 #include "modules/websockets/WebSocketChannel.h"
 #include "modules/websockets/WebSocketChannelClient.h"
 #include "modules/websockets/WebSocketHandshake.h"
@@ -103,7 +102,6 @@ void MainThreadWebSocketChannel::connect(const KURL& url, const String& protocol
     ASSERT(!m_suspended);
     m_handshake = adoptPtr(new WebSocketHandshake(url, protocol, m_document));
     m_handshake->reset();
-    Settings* settings = m_document->settings();
     m_handshake->addExtensionProcessor(m_perMessageDeflate.createExtensionProcessor());
     m_handshake->addExtensionProcessor(m_deflateFramer.createExtensionProcessor());
     if (m_identifier)

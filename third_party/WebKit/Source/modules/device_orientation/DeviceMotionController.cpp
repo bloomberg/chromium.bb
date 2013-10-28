@@ -38,8 +38,8 @@
 namespace WebCore {
 
 DeviceMotionController::DeviceMotionController(Document* document)
-    : DOMWindowLifecycleObserver(document->domWindow())
-    , DeviceSensorEventController(document)
+    : DeviceSensorEventController(document)
+    , DOMWindowLifecycleObserver(document->domWindow())
     , PageLifecycleObserver(document->page())
     , m_hasEventListener(false)
 {

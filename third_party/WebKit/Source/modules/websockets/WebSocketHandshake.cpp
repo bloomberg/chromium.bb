@@ -75,8 +75,6 @@ String formatHandshakeFailureReason(const String& detail)
 
 } // namespace
 
-static const char randomCharacterInSecWebSocketKey[] = "!\"#$%&'()*+,-./:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~";
-
 static String resourceName(const KURL& url)
 {
     StringBuilder name;

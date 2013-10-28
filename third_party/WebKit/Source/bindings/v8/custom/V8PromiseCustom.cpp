@@ -505,7 +505,6 @@ void V8Promise::thenMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args
 {
     v8::Isolate* isolate = args.GetIsolate();
     v8::Local<v8::Function> onFulfilled, onRejected;
-    v8::Local<v8::Object> promise = V8PromiseCustom::createPromise(args.Holder(), isolate);
     if (args.Length() > 0 && !args[0]->IsUndefined()) {
         if (!args[0]->IsFunction()) {
             v8SetReturnValue(args, throwTypeError("onFulfilled must be a function or undefined", isolate));

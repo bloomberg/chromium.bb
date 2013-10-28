@@ -250,7 +250,7 @@ public:
     bool capture() const;
 #endif
 
-    static const unsigned maximumLength;
+    static const int maximumLength;
 
     unsigned height() const;
     unsigned width() const;

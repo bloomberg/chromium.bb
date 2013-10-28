@@ -88,6 +88,7 @@ NSScrollerStyle recommendedScrollerStyle()
     // This function is hot.
     // http://crbug.com/303205
     static ScrollerStyleObserver* scrollerStyleObserver = [[ScrollerStyleObserver alloc] init];
+    (void)scrollerStyleObserver;
     return g_scrollerStyle;
 }
 

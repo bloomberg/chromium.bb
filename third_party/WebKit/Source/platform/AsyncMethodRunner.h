@@ -38,7 +38,7 @@
 namespace WebCore {
 
 template <typename TargetClass>
-class AsyncMethodRunner {
+class AsyncMethodRunner FINAL {
     WTF_MAKE_NONCOPYABLE(AsyncMethodRunner);
     WTF_MAKE_FAST_ALLOCATED;
 public:
@@ -111,7 +111,7 @@ public:
     }
 
 private:
-    virtual void fired(Timer<AsyncMethodRunner<TargetClass> >*) { (m_object->*m_method)(); }
+    void fired(Timer<AsyncMethodRunner<TargetClass> >*) { (m_object->*m_method)(); }
 
     Timer<AsyncMethodRunner<TargetClass> > m_timer;
 

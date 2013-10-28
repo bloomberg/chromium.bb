@@ -285,7 +285,6 @@ public:
         , m_version(0)
         , m_screenWidth(0)
         , m_screenHeight(0)
-        , m_isGlobalColormapDefined(false)
         , m_loopCount(cLoopCountNotSeen)
         , m_parseCompleted(false)
     {
@@ -351,7 +350,6 @@ private:
     int m_version; // Either 89 for GIF89 or 87 for GIF87.
     unsigned m_screenWidth; // Logical screen width & height.
     unsigned m_screenHeight;
-    bool m_isGlobalColormapDefined;
     GIFColorMap m_globalColorMap;
     int m_loopCount; // Netscape specific extension block to control the number of animation loops a GIF renders.
 
