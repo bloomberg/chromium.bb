@@ -13,6 +13,7 @@
         '../base/base.gyp:*',
         '../chrome/chrome.gyp:*',
         '../content/content.gyp:*',
+        '../content/content_shell_and_tests.gyp:*',
         '../crypto/crypto.gyp:*',
         '../net/net.gyp:*',
         '../sdch/sdch.gyp:*',
