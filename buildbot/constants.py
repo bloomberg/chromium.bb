@@ -307,6 +307,7 @@ GERRIT_ON_BORG_LABELS = {
     'Code-Review': 'CRVW',
     'Commit-Queue': 'COMR',
     'Verified': 'VRIF',
+    'Trybot-Verified': 'TBVF',
 }
 
 # Environment variables that should be exposed to all children processes

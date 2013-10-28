@@ -1123,6 +1123,9 @@ class GerritPatch(GitRepoPatch):
     if current_revision_info:
       approvals = []
       for label, label_data in change['labels'].iteritems():
+        # Skip unknown labels.
+        if label not in constants.GERRIT_ON_BORG_LABELS:
+          continue
         for review_data in label_data.get('all', []):
           granted_on = review_data.get('date', change['created'])
           approvals.append({
@@ -1190,11 +1193,24 @@ class GerritPatch(GitRepoPatch):
         'VRIF': Whether patch was verified.
         'CRVW': Whether patch was approved.
         'COMR': Whether patch was marked ready.
-      value: The expected value of the specified field.
+        'TBVF': Whether patch was verified by trybot.
+      value: The expected value of the specified field (as str).
     """
     # All approvals default to '0', so use that if there's no matches.
     type_approvals = [x['value'] for x in self._approvals if x['type'] == field]
     return value in (type_approvals or ['0'])
+
+  def GetLatestApproval(self, field):
+    """Return most recent value of specific field on the current patchset.
+
+    Args:
+      field: Which field to check ('VRIF', 'CRVW', ...).
+    Returns:
+      Most recent field value (as str) or '0' if no such field.
+    """
+    # All approvals default to '0', so use that if there's no matches.
+    type_approvals = [x['value'] for x in self._approvals if x['type'] == field]
+    return type_approvals[-1] if type_approvals else '0'
 
   def _EnsureId(self, commit_message):
     """Ensure we have a usable Change-Id, validating what we received
