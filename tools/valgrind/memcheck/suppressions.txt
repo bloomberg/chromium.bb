@@ -6433,3 +6433,12 @@
    fun:_ZN2v88internalL34Builtin_implHandleApiCallConstructENS0_12_GLOBAL__N_116BuiltinArgumentsILNS0_21BuiltinExtraArgumentsE1EEEPNS0_7IsolateE
    fun:_ZN2v88internalL30Builtin_HandleApiCallConstructEiPPNS0_6ObjectEPNS0_7IsolateE
 }
+{
+   bug_312332
+   Memcheck:Uninitialized
+   ...
+   fun:_ZNK7WebCore17RenderTextControl29computeIntrinsicLogicalWidthsERNS_10LayoutUnitES2_
+   fun:_ZN7WebCore17RenderTextControl29computePreferredLogicalWidthsEv
+   ...
+   fun:_ZN7WebCore11RenderBlock6layoutEv
+}
