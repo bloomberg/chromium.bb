@@ -185,7 +185,9 @@ bool MockTimeSingleThreadTaskRunner::TemporalOrder::operator()(
 MockTimeSingleThreadTaskRunner::~MockTimeSingleThreadTaskRunner() {
 }
 
-SessionLengthLimiterTest::SessionLengthLimiterTest() : delegate_(NULL) {
+SessionLengthLimiterTest::SessionLengthLimiterTest()
+    : user_activity_seen_(false),
+      delegate_(NULL) {
 }
 
 void SessionLengthLimiterTest::SetUp() {
