@@ -220,6 +220,10 @@ void PowerPrefs::RegisterProfilePrefs(
       prefs::kPowerUserActivityScreenDimDelayFactor,
       2.0,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(
+      prefs::kPowerWaitForInitialUserActivity,
+      false,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 void PowerPrefs::SetProfile(Profile* profile) {

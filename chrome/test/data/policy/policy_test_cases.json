@@ -1822,6 +1822,16 @@
     ]
   },
 
+  "WaitForInitialUserActivity": {
+    "os": ["chromeos"],
+    "test_policy": { "WaitForInitialUserActivity": true },
+    "pref_mappings": [
+      { "pref": "session.wait_for_initial_user_activity",
+        "local_state": true },
+      { "pref": "power.wait_for_initial_user_activity" }
+    ]
+  },
+
   "TermsOfServiceURL": {
     "os": ["chromeos"],
     "test_policy": { "TermsOfServiceURL": "http://www.example.com/terms_of_service.txt" },

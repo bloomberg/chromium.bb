@@ -6,6 +6,8 @@
 
 #include <algorithm>
 
+#include "ash/shell.h"
+#include "ash/wm/user_activity_detector.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/location.h"
@@ -15,6 +17,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/common/pref_names.h"
+#include "ui/events/event.h"
 
 namespace chromeos {
 
@@ -62,61 +65,126 @@ SessionLengthLimiter::Delegate::~Delegate() {
 
 // static
 void SessionLengthLimiter::RegisterPrefs(PrefRegistrySimple* registry) {
+  registry->RegisterBooleanPref(prefs::kSessionUserActivitySeen, false);
   registry->RegisterInt64Pref(prefs::kSessionStartTime, 0);
   registry->RegisterIntegerPref(prefs::kSessionLengthLimit, 0);
+  registry->RegisterBooleanPref(prefs::kSessionWaitForInitialUserActivity,
+                                false);
 }
 
 SessionLengthLimiter::SessionLengthLimiter(Delegate* delegate,
                                            bool browser_restarted)
-    : delegate_(delegate ? delegate : new SessionLengthLimiterDelegateImpl) {
+    : delegate_(delegate ? delegate : new SessionLengthLimiterDelegateImpl),
+      user_activity_seen_(false) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  // If this is a user login, set the session start time in local state to the
-  // current time. If this a browser restart after a crash, set the session
-  // start time only if its current value appears corrupted (value unset, value
-  // lying in the future).
   PrefService* local_state = g_browser_process->local_state();
-  int64 session_start_time = local_state->GetInt64(prefs::kSessionStartTime);
-  const int64 now = delegate_->GetCurrentTime().ToInternalValue();
-  if (!browser_restarted ||
-      !local_state->HasPrefPath(prefs::kSessionStartTime) ||
-      session_start_time > now) {
-    local_state->SetInt64(prefs::kSessionStartTime, now);
-    // Ensure that the session start time is persisted to local state.
-    local_state->CommitPendingWrite();
-    session_start_time = now;
-  }
-  session_start_time_ = base::TimeTicks::FromInternalValue(session_start_time);
-
-  // Listen for changes to the session length limit.
   pref_change_registrar_.Init(local_state);
+  pref_change_registrar_.Add(prefs::kSessionLengthLimit,
+                             base::Bind(&SessionLengthLimiter::UpdateLimit,
+                                        base::Unretained(this)));
   pref_change_registrar_.Add(
-      prefs::kSessionLengthLimit,
-      base::Bind(&SessionLengthLimiter::OnSessionLengthLimitChanged,
+      prefs::kSessionWaitForInitialUserActivity,
+      base::Bind(&SessionLengthLimiter::UpdateSessionStartTime,
                  base::Unretained(this)));
 
-  // Handle the current session length limit, if any.
-  OnSessionLengthLimitChanged();
+  // If this is a browser restart after a crash, try to restore the session
+  // start time and the boolean indicating user activity from local state. If
+  // this is not a browser restart after a crash or the attempt to restore
+  // fails, set  the session start time to the current time and clear the
+  // boolean indicating user activity.
+  if (!browser_restarted || !RestoreStateAfterCrash()) {
+    local_state->ClearPref(prefs::kSessionUserActivitySeen);
+    UpdateSessionStartTime();
+  }
+
+  if (!user_activity_seen_ && ash::Shell::HasInstance())
+    ash::Shell::GetInstance()->user_activity_detector()->AddObserver(this);
 }
 
 SessionLengthLimiter::~SessionLengthLimiter() {
+  if (!user_activity_seen_ && ash::Shell::HasInstance())
+    ash::Shell::GetInstance()->user_activity_detector()->RemoveObserver(this);
 }
 
-void SessionLengthLimiter::OnSessionLengthLimitChanged() {
+void SessionLengthLimiter::OnUserActivity(const ui::Event* event) {
+  if (user_activity_seen_)
+    return;
+  if (ash::Shell::HasInstance())
+    ash::Shell::GetInstance()->user_activity_detector()->RemoveObserver(this);
+  user_activity_seen_ = true;
+
+  PrefService* local_state = g_browser_process->local_state();
+  local_state->SetBoolean(prefs::kSessionUserActivitySeen, true);
+  if (session_start_time_.is_null()) {
+    // If instructed to wait for initial user activity and this is the first
+    // activity in the session, set the session start time to the current time
+    // and persist it in local state.
+    session_start_time_ = delegate_->GetCurrentTime();
+    local_state->SetInt64(prefs::kSessionStartTime,
+                          session_start_time_.ToInternalValue());
+  }
+  local_state->CommitPendingWrite();
+
+  UpdateLimit();
+}
+
+bool SessionLengthLimiter::RestoreStateAfterCrash() {
+  PrefService* local_state = g_browser_process->local_state();
+  const base::TimeTicks session_start_time =
+      base::TimeTicks::FromInternalValue(
+          local_state->GetInt64(prefs::kSessionStartTime));
+  if (session_start_time.is_null() ||
+      session_start_time >= delegate_->GetCurrentTime()) {
+    return false;
+  }
+
+  session_start_time_ = session_start_time;
+  user_activity_seen_ =
+      local_state->GetBoolean(prefs::kSessionUserActivitySeen);
+
+  UpdateLimit();
+  return true;
+}
+
+void SessionLengthLimiter::UpdateSessionStartTime() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  if (user_activity_seen_)
+    return;
+
+  PrefService* local_state = g_browser_process->local_state();
+  if (local_state->GetBoolean(prefs::kSessionWaitForInitialUserActivity)) {
+    session_start_time_ = base::TimeTicks();
+    local_state->ClearPref(prefs::kSessionStartTime);
+  } else {
+    session_start_time_ = delegate_->GetCurrentTime();
+    local_state->SetInt64(prefs::kSessionStartTime,
+                          session_start_time_.ToInternalValue());
+  }
+  local_state->CommitPendingWrite();
+
+  UpdateLimit();
+}
+
+void SessionLengthLimiter::UpdateLimit() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   // Stop any currently running timer.
-  if (timer_)
-    timer_->Stop();
+  timer_.reset();
 
+  // If instructed to wait for initial user activity and no user activity has
+  // occurred yet, do not start a timer.
+  if (session_start_time_.is_null())
+    return;
+
+  // If no session length limit is set, do not start a timer.
   int limit;
   const PrefService::Preference* session_length_limit_pref =
       pref_change_registrar_.prefs()->
           FindPreference(prefs::kSessionLengthLimit);
   if (session_length_limit_pref->IsDefaultValue() ||
       !session_length_limit_pref->GetValue()->GetAsInteger(&limit)) {
-    // If no session length limit is set, destroy the timer.
-    timer_.reset();
     return;
   }
 
@@ -137,8 +205,7 @@ void SessionLengthLimiter::OnSessionLengthLimitChanged() {
   }
 
   // Set a timer to log out the user when the session length limit is reached.
-  if (!timer_)
-    timer_.reset(new base::OneShotTimer<SessionLengthLimiter::Delegate>);
+  timer_.reset(new base::OneShotTimer<SessionLengthLimiter::Delegate>);
   timer_->Start(FROM_HERE, remaining, delegate_.get(),
                 &SessionLengthLimiter::Delegate::StopSession);
 }

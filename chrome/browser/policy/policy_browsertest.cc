@@ -161,6 +161,11 @@ namespace policy {
 
 namespace {
 
+#if defined(OS_CHROMEOS)
+const int kOneHourInMs = 60 * 60 * 1000;
+const int kThreeHoursInMs = 180 * 60 * 1000;
+#endif
+
 const char kURL[] = "http://example.com";
 const char kCookieValue[] = "converted=true";
 // Assigned to Philip J. Fry to fix eventually.
@@ -2092,7 +2097,8 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DisableAudioOutput) {
 }
 
 IN_PROC_BROWSER_TEST_F(PolicyTest, PRE_SessionLengthLimit) {
-  // Set the session start time to 2 hours ago.
+  // Indicate that the session started 2 hours ago and no user activity has
+  // occurred yet.
   g_browser_process->local_state()->SetInt64(
       prefs::kSessionStartTime,
       (base::TimeTicks::Now() - base::TimeDelta::FromHours(2))
@@ -2113,7 +2119,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, SessionLengthLimit) {
   PolicyMap policies;
   policies.Set(key::kSessionLengthLimit, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER,
-               base::Value::CreateIntegerValue(180 * 60 * 1000),  // 3 hours.
+               base::Value::CreateIntegerValue(kThreeHoursInMs),
                NULL);
   UpdateProviderPolicy(policies);
   base::RunLoop().RunUntilIdle();
@@ -2124,7 +2130,92 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, SessionLengthLimit) {
   EXPECT_CALL(observer, Observe(chrome::NOTIFICATION_APP_TERMINATING, _, _));
   policies.Set(key::kSessionLengthLimit, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER,
-               base::Value::CreateIntegerValue(60 * 60 * 1000),  // 1 hour.
+               base::Value::CreateIntegerValue(kOneHourInMs),
+               NULL);
+  UpdateProviderPolicy(policies);
+  base::RunLoop().RunUntilIdle();
+  Mock::VerifyAndClearExpectations(&observer);
+}
+
+IN_PROC_BROWSER_TEST_F(PolicyTest, PRE_WaitForInitialUserActivityUsatisfied) {
+  // Indicate that the session started 2 hours ago and no user activity has
+  // occurred yet.
+  g_browser_process->local_state()->SetInt64(
+      prefs::kSessionStartTime,
+      (base::TimeTicks::Now() - base::TimeDelta::FromHours(2))
+          .ToInternalValue());
+}
+
+IN_PROC_BROWSER_TEST_F(PolicyTest, WaitForInitialUserActivityUsatisfied) {
+  content::MockNotificationObserver observer;
+  content::NotificationRegistrar registrar;
+  registrar.Add(&observer,
+                chrome::NOTIFICATION_APP_TERMINATING,
+                content::NotificationService::AllSources());
+
+  // Require initial user activity.
+  PolicyMap policies;
+  policies.Set(key::kWaitForInitialUserActivity, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER,
+               new base::FundamentalValue(true),
+               NULL);
+  UpdateProviderPolicy(policies);
+  base::RunLoop().RunUntilIdle();
+
+  // Set the session length limit to 1 hour. Verify that the session is not
+  // terminated.
+  EXPECT_CALL(observer, Observe(chrome::NOTIFICATION_APP_TERMINATING, _, _))
+      .Times(0);
+  policies.Set(key::kSessionLengthLimit, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER,
+               base::Value::CreateIntegerValue(kOneHourInMs),
+               NULL);
+  UpdateProviderPolicy(policies);
+  base::RunLoop().RunUntilIdle();
+  Mock::VerifyAndClearExpectations(&observer);
+}
+
+IN_PROC_BROWSER_TEST_F(PolicyTest, PRE_WaitForInitialUserActivitySatisfied) {
+  // Indicate that initial user activity in this session occurred 2 hours ago.
+  g_browser_process->local_state()->SetInt64(
+      prefs::kSessionStartTime,
+      (base::TimeTicks::Now() - base::TimeDelta::FromHours(2))
+          .ToInternalValue());
+  g_browser_process->local_state()->SetBoolean(
+      prefs::kSessionUserActivitySeen,
+      true);
+}
+
+IN_PROC_BROWSER_TEST_F(PolicyTest, WaitForInitialUserActivitySatisfied) {
+  content::MockNotificationObserver observer;
+  content::NotificationRegistrar registrar;
+  registrar.Add(&observer,
+                chrome::NOTIFICATION_APP_TERMINATING,
+                content::NotificationService::AllSources());
+
+  // Require initial user activity and set the session length limit to 3 hours.
+  // Verify that the session is not terminated.
+  EXPECT_CALL(observer, Observe(chrome::NOTIFICATION_APP_TERMINATING, _, _))
+      .Times(0);
+  PolicyMap policies;
+  policies.Set(key::kWaitForInitialUserActivity, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER,
+               new base::FundamentalValue(true),
+               NULL);
+  policies.Set(key::kSessionLengthLimit, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER,
+               base::Value::CreateIntegerValue(kThreeHoursInMs),
+               NULL);
+  UpdateProviderPolicy(policies);
+  base::RunLoop().RunUntilIdle();
+  Mock::VerifyAndClearExpectations(&observer);
+
+  // Decrease the session length limit to 1 hour. Verify that the session is
+  // terminated immediately.
+  EXPECT_CALL(observer, Observe(chrome::NOTIFICATION_APP_TERMINATING, _, _));
+  policies.Set(key::kSessionLengthLimit, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER,
+               base::Value::CreateIntegerValue(kOneHourInMs),
                NULL);
   UpdateProviderPolicy(policies);
   base::RunLoop().RunUntilIdle();
