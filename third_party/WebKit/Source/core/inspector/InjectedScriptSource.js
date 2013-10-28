@@ -408,9 +408,10 @@ InjectedScript.prototype = {
         var nameProcessed = { __proto__: null };
 
         /**
+         * @param {Object} o
          * @param {Array.<string>} names
          */
-        function process(names)
+        function process(o, names)
         {
             for (var i = 0; i < names.length; ++i) {
                 var name = names[i];
@@ -454,8 +455,8 @@ InjectedScript.prototype = {
 
         for (var o = object; this._isDefined(o); o = o.__proto__) {
             // First call Object.keys() to enforce ordering of the property descriptors.
-            process(Object.keys(/** @type {!Object} */ (o)));
-            process(Object.getOwnPropertyNames(/** @type {!Object} */ (o)));
+            process(o, Object.keys(/** @type {!Object} */ (o)));
+            process(o, Object.getOwnPropertyNames(/** @type {!Object} */ (o)));
 
             if (ownProperties) {
                 if (object.__proto__ && !accessorPropertiesOnly)
@@ -994,6 +995,10 @@ InjectedScript.RemoteObject.prototype = {
                 var descriptor = descriptors[i];
                 if (!descriptor)
                     continue;
+                if (descriptor.wasThrown) {
+                    preview.lossless = false;
+                    continue;
+                }
                 if (!descriptor.enumerable && !descriptor.isOwn)
                     continue;
 
