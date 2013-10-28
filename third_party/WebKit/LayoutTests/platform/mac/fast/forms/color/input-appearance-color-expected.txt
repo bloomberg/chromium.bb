@@ -113,3 +113,15 @@ layer at (0,0) size 800x600
         RenderBlock {INPUT} at (0,0) size 100x30 [bgcolor=#FFFFFF] [border: none (2px inset #EEEEEE) none (2px inset #EEEEEE)]
           RenderFlexibleBox {DIV} at (3,1) size 94x28
             RenderBlock {DIV} at (2,4) size 90x20 [bgcolor=#FF0000] [border: (1px solid #777777)]
+        RenderText {#text} at (0,0) size 0x0
+      RenderBlock {H3} at (0,372.75) size 784x22
+        RenderText {#text} at (0,0) size 280x22
+          text run at (0,0) width 280: "Default Appearance in RTL mode"
+      RenderBlock (anonymous) at (0,413.47) size 784x36
+        RenderText {#text} at (0,0) size 507x18
+          text run at (0,0) width 507: "List color controls have different appearance in RTL if ENABLE(DATALIST)."
+        RenderBR {BR} at (507,14) size 0x0
+        RenderBlock {INPUT} at (0,18) size 88x18 [bgcolor=#FFFFFF]
+          RenderFlexibleBox {DIV} at (0,0) size 88x18
+            RenderBlock {DIV} at (24,4) size 56x10 [bgcolor=#000000] [border: (1px solid #000000)]
+        RenderText {#text} at (0,0) size 0x0
