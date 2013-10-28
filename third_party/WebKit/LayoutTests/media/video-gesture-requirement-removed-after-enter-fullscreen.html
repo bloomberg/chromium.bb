@@ -1,0 +1,65 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <script src=media-file.js></script>
+        <script src=video-test.js></script>
+        <script>
+            var userGestureInitiated = 0;
+
+            if (window.internals)
+                window.internals.settings.setMediaPlaybackRequiresUserGesture(true);
+
+            function buttonClick()
+            {
+                try {
+                    run("video.webkitEnterFullScreen()");
+                    userGestureInitiated = 1;
+                } catch(ex) {
+                    failTest("Failed to enter fullscreen.");
+                }
+            }
+
+            function playing()
+            {
+                if (userGestureInitiated == 0) {
+                    failTest("Should not play without user gesture.");
+                } else {
+                    endTest();
+                }
+            }
+
+            function canplaythrough()
+            {
+                consoleWrite("* No user gesture initiated");
+                run("video.play()");
+                consoleWrite("* Click button to enter fullscreen");
+                // click the button
+                var button = document.getElementById('button');
+                eventSender.mouseMoveTo(button.offsetLeft + 20, button.offsetTop + 7);
+                eventSender.mouseDown();
+                eventSender.mouseUp();
+            }
+
+            function fullscreenChange()
+            {
+                consoleWrite("* User gesture initiated");
+                run("video.play()");
+            }
+
+            function start()
+            {
+                findMediaElement();
+                waitForEvent('canplaythrough', canplaythrough);
+                waitForEvent('playing', playing);
+                video.src = findMediaFile("video", "content/test");
+                video.addEventListener('webkitfullscreenchange', fullscreenChange, false);
+            }
+        </script>
+    </head>
+
+    <body onload="start()">
+        <video controls></video>
+        <input type="button" id="button" value="Click to enter fullscreen!" onclick="buttonClick()"></input>
+        <p>Test that entering fullscreen with user gesture will remove gesture requirement for media playback.</p>
+    </body>
+</html>

@@ -1,0 +1,13 @@
+ 
+Test that entering fullscreen with user gesture will remove gesture requirement for media playback.
+
+EVENT(canplaythrough)
+* No user gesture initiated
+RUN(video.play())
+* Click button to enter fullscreen
+RUN(video.webkitEnterFullScreen())
+* User gesture initiated
+RUN(video.play())
+EVENT(playing)
+END OF TEST
+
