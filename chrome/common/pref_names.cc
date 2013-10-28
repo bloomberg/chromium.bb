@@ -1377,6 +1377,10 @@ const char kVariationsSeedDate[] = "variations_seed_date";
 // SHA-1 hash of the serialized variations seed data.
 const char kVariationsSeedHash[] = "variations_seed_hash";
 
+// An enum value to indicate the execution phase the browser was in.
+const char kStabilityExecutionPhase[] =
+    "user_experience_metrics.stability.execution_phase";
+
 // True if the previous run of the program exited cleanly.
 const char kStabilityExitedCleanly[] =
     "user_experience_metrics.stability.exited_cleanly";

@@ -1098,6 +1098,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   // application is in the foreground or not. Do not start here.
 #if !defined(OS_ANDROID)
   // Now that the file thread has been started, start recording.
+  MetricsService::SetExecutionPhase(MetricsService::START_METRICS_RECORDING);
   StartMetricsRecording();
 #endif
 
@@ -1244,6 +1245,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   // calls to GetDefaultProfile().
   ProfileManager::AllowGetDefaultProfile();
 
+  MetricsService::SetExecutionPhase(MetricsService::CREATE_PROFILE);
   profile_ = CreateProfile(parameters(), user_data_dir_, parsed_command_line());
   if (!profile_)
     return content::RESULT_CODE_NORMAL_EXIT;
@@ -1428,6 +1430,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   // Start watching for hangs during startup. We disarm this hang detector when
   // ThreadWatcher takes over or when browser is shutdown or when
   // startup_watcher_ is deleted.
+  MetricsService::SetExecutionPhase(MetricsService::STARTUP_TIMEBOMB_ARM);
   startup_watcher_->Arm(base::TimeDelta::FromSeconds(300));
 
   // On mobile, need for clean shutdown arises only when the application comes
@@ -1449,6 +1452,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
 #endif
 
   // Start watching all browser threads for responsiveness.
+  MetricsService::SetExecutionPhase(MetricsService::THREAD_WATCHER_START);
   ThreadWatcherList::StartWatchingAll(parsed_command_line());
 
 #if !defined(DISABLE_NACL)
@@ -1620,6 +1624,7 @@ bool ChromeBrowserMainParts::MainMessageLoopRun(int* result_code) {
 
   performance_monitor::PerformanceMonitor::GetInstance()->StartGatherCycle();
 
+  MetricsService::SetExecutionPhase(MetricsService::MAIN_MESSAGE_LOOP_RUN);
   run_loop.Run();
 
   return true;
@@ -1636,6 +1641,7 @@ void ChromeBrowserMainParts::PostMainMessageLoopRun() {
 
   // Start watching for jank during shutdown. It gets disarmed when
   // |shutdown_watcher_| object is destructed.
+  MetricsService::SetExecutionPhase(MetricsService::SHUTDOWN_TIMEBOMB_ARM);
   shutdown_watcher_->Arm(base::TimeDelta::FromSeconds(300));
 
   // Disarm the startup hang detector time bomb if it is still Arm'ed.

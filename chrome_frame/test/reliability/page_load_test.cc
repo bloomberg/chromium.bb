@@ -136,6 +136,7 @@ class PageLoadTest : public testing::Test {
     int crash_dump_count;
     // These are stability metrics recorded by Chrome itself
     bool browser_clean_exit;
+    int browser_execution_phase;
     int browser_launch_count;
     int page_load_count;
     int browser_crash_count;
@@ -446,6 +447,7 @@ class PageLoadTest : public testing::Test {
       return;
     scoped_refptr<PrefRegistrySimple> registry = new PrefRegistrySimple();
     registry->RegisterBooleanPref(prefs::kStabilityExitedCleanly, false);
+    registry->RegisterIntegerPref(prefs::kStabilityExecutionPhase, 0);
     registry->RegisterIntegerPref(prefs::kStabilityLaunchCount, -1);
     registry->RegisterIntegerPref(prefs::kStabilityPageLoadCount, -1);
     registry->RegisterIntegerPref(prefs::kStabilityCrashCount, 0);
@@ -457,6 +459,8 @@ class PageLoadTest : public testing::Test {
 
     metrics->browser_clean_exit =
         local_state->GetBoolean(prefs::kStabilityExitedCleanly);
+    metrics->browser_execution_phase =
+        local_state->GetInteger(prefs::kStabilityExecutionPhase);
     metrics->browser_launch_count =
         local_state->GetInteger(prefs::kStabilityLaunchCount);
     metrics->page_load_count =

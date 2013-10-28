@@ -329,6 +329,8 @@ int MapCrashExitCodeForHistogram(int exit_code) {
 void MarkAppCleanShutdownAndCommit() {
   PrefService* pref = g_browser_process->local_state();
   pref->SetBoolean(prefs::kStabilityExitedCleanly, true);
+  pref->SetInteger(prefs::kStabilityExecutionPhase,
+                   MetricsService::CLEAN_SHUTDOWN);
   // Start writing right away (write happens on a different thread).
   pref->CommitPendingWrite();
 }
@@ -338,6 +340,9 @@ void MarkAppCleanShutdownAndCommit() {
 // static
 MetricsService::ShutdownCleanliness MetricsService::clean_shutdown_status_ =
     MetricsService::CLEANLY_SHUTDOWN;
+
+MetricsService::ExecutionPhase MetricsService::execution_phase_ =
+    MetricsService::CLEAN_SHUTDOWN;
 
 // This is used to quickly log stats from child process related notifications in
 // MetricsService::child_stats_buffer_.  The buffer's contents are transferred
@@ -409,6 +414,8 @@ void MetricsService::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterStringPref(prefs::kStabilityStatsVersion, std::string());
   registry->RegisterInt64Pref(prefs::kStabilityStatsBuildTime, 0);
   registry->RegisterBooleanPref(prefs::kStabilityExitedCleanly, true);
+  registry->RegisterIntegerPref(prefs::kStabilityExecutionPhase,
+                                CLEAN_SHUTDOWN);
   registry->RegisterBooleanPref(prefs::kStabilitySessionEndCompleted, true);
   registry->RegisterIntegerPref(prefs::kMetricsSessionID, -1);
   registry->RegisterIntegerPref(prefs::kStabilityLaunchCount, 0);
@@ -445,6 +452,7 @@ void MetricsService::RegisterPrefs(PrefRegistrySimple* registry) {
 // static
 void MetricsService::DiscardOldStabilityStats(PrefService* local_state) {
   local_state->SetBoolean(prefs::kStabilityExitedCleanly, true);
+  local_state->SetInteger(prefs::kStabilityExecutionPhase, CLEAN_SHUTDOWN);
   local_state->SetBoolean(prefs::kStabilitySessionEndCompleted, true);
 
   local_state->SetInteger(prefs::kStabilityIncompleteSessionEndCount, 0);
@@ -773,6 +781,7 @@ void MetricsService::OnAppEnterBackground() {
 void MetricsService::OnAppEnterForeground() {
   PrefService* pref = g_browser_process->local_state();
   pref->SetBoolean(prefs::kStabilityExitedCleanly, false);
+  pref->SetInteger(prefs::kStabilityExecutionPhase, execution_phase_);
 
   StartSchedulerIfNecessary();
 }
@@ -780,6 +789,7 @@ void MetricsService::OnAppEnterForeground() {
 void MetricsService::LogNeedForCleanShutdown() {
   PrefService* pref = g_browser_process->local_state();
   pref->SetBoolean(prefs::kStabilityExitedCleanly, false);
+  pref->SetInteger(prefs::kStabilityExecutionPhase, execution_phase_);
   // Redundant setting to be sure we call for a clean shutdown.
   clean_shutdown_status_ = NEED_TO_SHUTDOWN;
 }
@@ -898,6 +908,13 @@ void MetricsService::InitializeMetricsState() {
     // Reset flag, and wait until we call LogNeedForCleanShutdown() before
     // monitoring.
     pref->SetBoolean(prefs::kStabilityExitedCleanly, true);
+
+    // TODO(rtenneti): On windows, consider saving/getting execution_phase from
+    // the registry.
+    int execution_phase = pref->GetInteger(prefs::kStabilityExecutionPhase);
+    UMA_HISTOGRAM_SPARSE_SLOWLY("Chrome.Browser.ExecutionPhase",
+                                execution_phase);
+    pref->SetInteger(prefs::kStabilityExecutionPhase, CLEAN_SHUTDOWN);
   }
 
 #if defined(OS_WIN)
@@ -1670,6 +1687,9 @@ void MetricsService::LogCleanShutdown() {
   clean_shutdown_status_ = CLEANLY_SHUTDOWN;
 
   RecordBooleanPrefValue(prefs::kStabilityExitedCleanly, true);
+  PrefService* pref = g_browser_process->local_state();
+  pref->SetInteger(prefs::kStabilityExecutionPhase,
+                   MetricsService::CLEAN_SHUTDOWN);
 }
 
 #if defined(OS_CHROMEOS)
