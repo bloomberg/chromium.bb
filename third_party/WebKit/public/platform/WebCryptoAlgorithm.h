@@ -34,7 +34,7 @@
 #include "WebCommon.h"
 #include "WebPrivatePtr.h"
 
-#if BLINK_IMPLEMENTATION
+#if INSIDE_BLINK
 #include "wtf/PassOwnPtr.h"
 #endif
 
@@ -52,7 +52,7 @@ enum WebCryptoAlgorithmId {
     WebCryptoAlgorithmIdSha512,
     WebCryptoAlgorithmIdAesGcm,
     WebCryptoAlgorithmIdRsaOaep,
-#if BLINK_IMPLEMENTATION
+#if INSIDE_BLINK
     NumberOfWebCryptoAlgorithmId,
 #endif
 };
@@ -90,13 +90,13 @@ class WebCryptoAlgorithmPrivate;
 // methods on it (other than destruction, assignment, or isNull()).
 class WebCryptoAlgorithm {
 public:
-#if BLINK_IMPLEMENTATION
+#if INSIDE_BLINK
     WebCryptoAlgorithm() { }
-    WebCryptoAlgorithm(WebCryptoAlgorithmId, PassOwnPtr<WebCryptoAlgorithmParams>);
+    BLINK_PLATFORM_EXPORT WebCryptoAlgorithm(WebCryptoAlgorithmId, PassOwnPtr<WebCryptoAlgorithmParams>);
 #endif
 
-    BLINK_EXPORT static WebCryptoAlgorithm createNull();
-    BLINK_EXPORT static WebCryptoAlgorithm adoptParamsAndCreate(WebCryptoAlgorithmId, WebCryptoAlgorithmParams*);
+    BLINK_PLATFORM_EXPORT static WebCryptoAlgorithm createNull();
+    BLINK_PLATFORM_EXPORT static WebCryptoAlgorithm adoptParamsAndCreate(WebCryptoAlgorithmId, WebCryptoAlgorithmParams*);
 
     ~WebCryptoAlgorithm() { reset(); }
 
@@ -107,26 +107,26 @@ public:
         return *this;
     }
 
-    BLINK_EXPORT bool isNull() const;
+    BLINK_PLATFORM_EXPORT bool isNull() const;
 
-    BLINK_EXPORT WebCryptoAlgorithmId id() const;
+    BLINK_PLATFORM_EXPORT WebCryptoAlgorithmId id() const;
 
-    BLINK_EXPORT WebCryptoAlgorithmParamsType paramsType() const;
+    BLINK_PLATFORM_EXPORT WebCryptoAlgorithmParamsType paramsType() const;
 
     // Retrieves the type-specific parameters. The algorithm contains at most 1
     // type of parameters. Retrieving an invalid parameter will return 0.
-    BLINK_EXPORT const WebCryptoAesCbcParams* aesCbcParams() const;
-    BLINK_EXPORT const WebCryptoAesKeyGenParams* aesKeyGenParams() const;
-    BLINK_EXPORT const WebCryptoHmacParams* hmacParams() const;
-    BLINK_EXPORT const WebCryptoHmacKeyParams* hmacKeyParams() const;
-    BLINK_EXPORT const WebCryptoRsaSsaParams* rsaSsaParams() const;
-    BLINK_EXPORT const WebCryptoRsaKeyGenParams* rsaKeyGenParams() const;
-    BLINK_EXPORT const WebCryptoAesGcmParams* aesGcmParams() const;
-    BLINK_EXPORT const WebCryptoRsaOaepParams* rsaOaepParams() const;
+    BLINK_PLATFORM_EXPORT const WebCryptoAesCbcParams* aesCbcParams() const;
+    BLINK_PLATFORM_EXPORT const WebCryptoAesKeyGenParams* aesKeyGenParams() const;
+    BLINK_PLATFORM_EXPORT const WebCryptoHmacParams* hmacParams() const;
+    BLINK_PLATFORM_EXPORT const WebCryptoHmacKeyParams* hmacKeyParams() const;
+    BLINK_PLATFORM_EXPORT const WebCryptoRsaSsaParams* rsaSsaParams() const;
+    BLINK_PLATFORM_EXPORT const WebCryptoRsaKeyGenParams* rsaKeyGenParams() const;
+    BLINK_PLATFORM_EXPORT const WebCryptoAesGcmParams* aesGcmParams() const;
+    BLINK_PLATFORM_EXPORT const WebCryptoRsaOaepParams* rsaOaepParams() const;
 
 private:
-    BLINK_EXPORT void assign(const WebCryptoAlgorithm& other);
-    BLINK_EXPORT void reset();
+    BLINK_PLATFORM_EXPORT void assign(const WebCryptoAlgorithm& other);
+    BLINK_PLATFORM_EXPORT void reset();
 
     WebPrivatePtr<WebCryptoAlgorithmPrivate> m_private;
 };

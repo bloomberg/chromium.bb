@@ -202,6 +202,7 @@
       'exported/WebAudioBus.cpp',
       'exported/WebAudioDevice.cpp',
       'exported/WebBlobData.cpp',
+      'exported/WebCryptoAlgorithm.cpp',
       'exported/WebData.cpp',
       'exported/WebFileSystemCallbacks.cpp',
       'exported/WebFilterKeyframe.cpp',
