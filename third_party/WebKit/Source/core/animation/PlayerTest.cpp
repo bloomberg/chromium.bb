@@ -50,7 +50,7 @@ protected:
         document = Document::create();
         document->animationClock().resetTimeForTesting();
         timeline = DocumentTimeline::create(document.get());
-        player = Player::create(timeline.get(), 0);
+        player = Player::create(*timeline, 0);
         timeline->setZeroTime(0);
     }
 
@@ -80,7 +80,7 @@ TEST_F(CoreAnimationPlayerTest, CreatePlayerAfterTimelineStarted)
 {
     updateTimeline(1234);
     EXPECT_EQ(1234, timeline->currentTime());
-    RefPtr<Player> player = Player::create(timeline.get(), 0);
+    RefPtr<Player> player = Player::create(*timeline, 0);
     EXPECT_EQ(1234, player->startTime());
     EXPECT_EQ(0, player->currentTime());
 }
@@ -279,7 +279,7 @@ TEST_F(CoreAnimationPlayerTest, PlayersReturnTimeToNextEffect)
     timing.iterationDuration = 1;
     timing.hasIterationDuration = true;
     RefPtr<Animation> animation = Animation::create(0, 0, timing);
-    player = Player::create(timeline.get(), animation.get());
+    player = Player::create(*timeline, animation.get());
 
     double timeToNextEffect;
     updateTimeline(0, &timeToNextEffect);

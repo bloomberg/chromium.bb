@@ -63,7 +63,7 @@ DocumentTimeline::DocumentTimeline(Document* document, PassOwnPtr<PlatformTiming
 
 PassRefPtr<Player> DocumentTimeline::play(TimedItem* child)
 {
-    RefPtr<Player> player = Player::create(this, child);
+    RefPtr<Player> player = Player::create(*this, child);
     m_players.append(player);
 
     if (m_document->view())

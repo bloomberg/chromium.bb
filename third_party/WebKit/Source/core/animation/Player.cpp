@@ -37,17 +37,16 @@
 
 namespace WebCore {
 
-PassRefPtr<Player> Player::create(DocumentTimeline* timeline, TimedItem* content)
+PassRefPtr<Player> Player::create(DocumentTimeline& timeline, TimedItem* content)
 {
-    ASSERT(timeline);
     return adoptRef(new Player(timeline, content));
 }
 
-Player::Player(DocumentTimeline* timeline, TimedItem* content)
+Player::Player(DocumentTimeline& timeline, TimedItem* content)
     : m_pauseStartTime(nullValue())
     , m_playbackRate(1)
     , m_timeDrift(0)
-    , m_startTime(effectiveTime(timeline->currentTime()))
+    , m_startTime(effectiveTime(timeline.currentTime()))
     , m_content(content)
     , m_timeline(timeline)
     , m_isPausedForTesting(false)
@@ -66,7 +65,7 @@ Player::~Player()
 
 double Player::currentTimeBeforeDrift() const
 {
-    return (effectiveTime(m_timeline->currentTime()) - m_startTime) * m_playbackRate;
+    return (effectiveTime(m_timeline.currentTime()) - m_startTime) * m_playbackRate;
 }
 
 double Player::pausedTimeDrift() const
@@ -93,7 +92,7 @@ bool Player::update(double* timeToEffectChange)
         return false;
     }
 
-    double newTime = isNull(m_timeline->currentTime()) ? nullValue() : currentTime();
+    double newTime = isNull(m_timeline.currentTime()) ? nullValue() : currentTime();
     m_content->updateInheritedTime(newTime);
     if (timeToEffectChange)
         *timeToEffectChange = m_content->timeToEffectChange();

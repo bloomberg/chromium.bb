@@ -42,7 +42,7 @@ class Player FINAL : public RefCounted<Player> {
 
 public:
     ~Player();
-    static PassRefPtr<Player> create(DocumentTimeline*, TimedItem*);
+    static PassRefPtr<Player> create(DocumentTimeline&, TimedItem*);
 
     // Returns whether this player is still current or in effect.
     // timeToEffectChange returns:
@@ -60,7 +60,7 @@ public:
     void setPlaybackRate(double);
     double startTime() const { return m_startTime; }
     double timeDrift() const;
-    DocumentTimeline* timeline() { return m_timeline; }
+    DocumentTimeline& timeline() { return m_timeline; }
     TimedItem* source() { return m_content.get(); }
 
     // Pausing via this method is not reflected in the value returned by
@@ -70,7 +70,7 @@ public:
     bool pausedInternal() const { return !isNull(m_pauseStartTime); }
 
 private:
-    Player(DocumentTimeline*, TimedItem*);
+    Player(DocumentTimeline&, TimedItem*);
     static double effectiveTime(double time) { return isNull(time) ? 0 : time; }
     inline double pausedTimeDrift() const;
     inline double currentTimeBeforeDrift() const;
@@ -83,7 +83,7 @@ private:
     const double m_startTime;
 
     RefPtr<TimedItem> m_content;
-    DocumentTimeline* const m_timeline;
+    DocumentTimeline& m_timeline;
     bool m_isPausedForTesting;
 };
 
