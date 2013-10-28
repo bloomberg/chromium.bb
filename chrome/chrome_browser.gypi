@@ -1726,6 +1726,8 @@
         'browser/process_singleton_win.cc',
         'browser/profile_resetter/automatic_profile_resetter.h',
         'browser/profile_resetter/automatic_profile_resetter.cc',
+        'browser/profile_resetter/automatic_profile_resetter_delegate.h',
+        'browser/profile_resetter/automatic_profile_resetter_delegate.cc',
         'browser/profile_resetter/automatic_profile_resetter_factory.h',
         'browser/profile_resetter/automatic_profile_resetter_factory.cc',
         'browser/profile_resetter/automatic_profile_resetter_mementos.h',

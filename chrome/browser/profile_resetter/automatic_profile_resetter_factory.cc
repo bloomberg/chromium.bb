@@ -40,7 +40,9 @@ void AutomaticProfileResetterFactory::RegisterPrefs(
 AutomaticProfileResetterFactory::AutomaticProfileResetterFactory()
     : BrowserContextKeyedServiceFactory(
           "AutomaticProfileResetter",
-          BrowserContextDependencyManager::GetInstance()) {}
+          BrowserContextDependencyManager::GetInstance()) {
+  DependsOn(TemplateURLServiceFactory::GetInstance());
+}
 
 AutomaticProfileResetterFactory::~AutomaticProfileResetterFactory() {}
 
@@ -49,7 +51,7 @@ AutomaticProfileResetterFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = Profile::FromBrowserContext(context);
   AutomaticProfileResetter* service = new AutomaticProfileResetter(profile);
-  service->Initialize();
+  service->Activate();
   return service;
 }
 
@@ -61,8 +63,8 @@ void AutomaticProfileResetterFactory::RegisterProfilePrefs(
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
-bool AutomaticProfileResetterFactory::ServiceIsCreatedWithBrowserContext()
-    const {
+bool AutomaticProfileResetterFactory::
+    ServiceIsCreatedWithBrowserContext() const {
   return true;
 }
 

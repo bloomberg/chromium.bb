@@ -441,7 +441,6 @@ void ModuleEnumerator::ScanNow(ModulesVector* list, bool limited_mode) {
 
   if (!limited_mode_) {
     CHECK(BrowserThread::GetCurrentThreadIdentifier(&callback_thread_id_));
-    DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::FILE));
     BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
                             base::Bind(&ModuleEnumerator::ScanImpl, this));
   } else {

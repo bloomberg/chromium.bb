@@ -4,103 +4,29 @@
 
 #include "chrome/browser/profile_resetter/automatic_profile_resetter.h"
 
+#include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/task_runner.h"
 #include "base/task_runner_util.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "base/time/time.h"
+#include "base/values.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/profile_resetter/automatic_profile_resetter_delegate.h"
 #include "chrome/browser/profile_resetter/jtl_interpreter.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/search_engines/template_url_service.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "content/public/browser/browser_thread.h"
 #include "grit/browser_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 
-namespace {
-
-// Number of bits, and maximum value (exclusive) for the mask whose bits
-// indicate which of reset criteria were satisfied.
-const size_t kSatisfiedCriteriaMaskBits = 2;
-const uint32 kSatisfiedCriteriaMaskMaximumValue =
-    (1 << kSatisfiedCriteriaMaskBits);
-
-// Number of bits, and maximum value (exclusive) for the mask whose bits
-// indicate if any of reset criteria were satisfied, and which of the mementos
-// were already present.
-const size_t kCombinedStatusMaskBits = 4;
-const uint32 kCombinedStatusMaskMaximumValue = (1 << kCombinedStatusMaskBits);
-
-// Name constants for the field trial behind which we enable this feature.
-const char kAutomaticProfileResetStudyName[] = "AutomaticProfileReset";
-const char kAutomaticProfileResetStudyDryRunGroupName[] = "DryRun";
-const char kAutomaticProfileResetStudyEnabledGroupName[] = "Enabled";
-
-// Keys used in the input dictionary of the program.
-// TODO(engedy): Add these here on an as-needed basis.
-
-// Keys used in the output dictionary of the program.
-const char kHadPromptedAlreadyKey[] = "had_prompted_already";
-const char kSatisfiedCriteriaMaskKeys[][29] = {"satisfied_criteria_mask_bit1",
-                                               "satisfied_criteria_mask_bit2"};
-const char kCombinedStatusMaskKeys[][26] = {
-    "combined_status_mask_bit1", "combined_status_mask_bit2",
-    "combined_status_mask_bit3", "combined_status_mask_bit4"};
-
-// Keys used in both the input and output dictionary of the program.
-const char kMementoValueInPrefsKey[] = "memento_value_in_prefs";
-const char kMementoValueInLocalStateKey[] = "memento_value_in_local_state";
-const char kMementoValueInFileKey[] = "memento_value_in_file";
-
-COMPILE_ASSERT(
-    arraysize(kSatisfiedCriteriaMaskKeys) == kSatisfiedCriteriaMaskBits,
-    satisfied_criteria_mask_bits_mismatch);
-COMPILE_ASSERT(arraysize(kCombinedStatusMaskKeys) == kCombinedStatusMaskBits,
-               combined_status_mask_bits_mismatch);
-
-// Implementation detail classes ---------------------------------------------
-
-class AutomaticProfileResetterDelegateImpl
-    : public AutomaticProfileResetterDelegate {
- public:
-  AutomaticProfileResetterDelegateImpl() {}
-  virtual ~AutomaticProfileResetterDelegateImpl() {}
-
-  // AutomaticProfileResetterDelegate overrides:
-
-  virtual void ShowPrompt() OVERRIDE {
-    // TODO(engedy): Call the UI from here once we have it.
-  }
-
-  virtual void ReportStatistics(uint32 satisfied_criteria_mask,
-                                uint32 combined_status_mask) OVERRIDE {
-    UMA_HISTOGRAM_ENUMERATION("AutomaticProfileReset.SatisfiedCriteriaMask",
-                              satisfied_criteria_mask,
-                              kSatisfiedCriteriaMaskMaximumValue);
-    UMA_HISTOGRAM_ENUMERATION("AutomaticProfileReset.CombinedStatusMask",
-                              combined_status_mask,
-                              kCombinedStatusMaskMaximumValue);
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(AutomaticProfileResetterDelegateImpl);
-};
-
-// Enumeration of the possible outcomes of showing the profile reset prompt.
-enum PromptResult {
-  // Prompt was not shown because only a dry-run was performed.
-  PROMPT_NOT_SHOWN,
-  PROMPT_ACTION_RESET,
-  PROMPT_ACTION_NO_RESET,
-  PROMPT_DISMISSED,
-  // Prompt was still shown (not dismissed by the user) when Chrome was closed.
-  PROMPT_IGNORED,
-  PROMPT_RESULT_MAX
-};
-
-}  // namespace
 
 // AutomaticProfileResetter::EvaluationResults -------------------------------
 
@@ -120,19 +46,180 @@ struct AutomaticProfileResetter::EvaluationResults {
   uint32 combined_status_mask;
 };
 
+
+// Helpers -------------------------------------------------------------------
+
+namespace {
+
+// Name constants for the field trial behind which we enable this feature.
+const char kAutomaticProfileResetStudyName[] = "AutomaticProfileReset";
+const char kAutomaticProfileResetStudyDryRunGroupName[] = "DryRun";
+const char kAutomaticProfileResetStudyEnabledGroupName[] = "Enabled";
+
+// How long to wait after start-up before unleashing the evaluation flow.
+const int64 kEvaluationFlowDelayInSeconds = 55;
+
+// Keys used in the input dictionary of the program.
+const char kDefaultSearchProviderKey[] = "default_search_provider";
+const char kDefaultSearchProviderIsUserControlledKey[] =
+    "default_search_provider_iuc";
+const char kLoadedModuleDigestsKey[] = "loaded_modules";
+const char kLocalStateKey[] = "local_state";
+const char kLocalStateIsUserControlledKey[] = "local_state_iuc";
+const char kSearchProvidersKey[] = "search_providers";
+const char kUserPreferencesKey[] = "preferences";
+const char kUserPreferencesIsUserControlledKey[] = "preferences_iuc";
+
+// Keys used in the output dictionary of the program.
+const char kCombinedStatusMaskKeys[][26] = {
+    "combined_status_mask_bit1", "combined_status_mask_bit2",
+    "combined_status_mask_bit3", "combined_status_mask_bit4"};
+const char kHadPromptedAlreadyKey[] = "had_prompted_already";
+const char kSatisfiedCriteriaMaskKeys[][29] = {"satisfied_criteria_mask_bit1",
+                                               "satisfied_criteria_mask_bit2"};
+
+// Keys used in both the input and output dictionary of the program.
+const char kMementoValueInFileKey[] = "memento_value_in_file";
+const char kMementoValueInLocalStateKey[] = "memento_value_in_local_state";
+const char kMementoValueInPrefsKey[] = "memento_value_in_prefs";
+
+// Number of bits, and maximum value (exclusive) for the mask whose bits
+// indicate which of reset criteria were satisfied.
+const size_t kSatisfiedCriteriaMaskNumberOfBits = 2u;
+const uint32 kSatisfiedCriteriaMaskMaximumValue =
+    (1u << kSatisfiedCriteriaMaskNumberOfBits);
+
+// Number of bits, and maximum value (exclusive) for the mask whose bits
+// indicate if any of reset criteria were satisfied, and which of the mementos
+// were already present.
+const size_t kCombinedStatusMaskNumberOfBits = 4u;
+const uint32 kCombinedStatusMaskMaximumValue =
+    (1u << kCombinedStatusMaskNumberOfBits);
+
+COMPILE_ASSERT(
+    arraysize(kSatisfiedCriteriaMaskKeys) == kSatisfiedCriteriaMaskNumberOfBits,
+    satisfied_criteria_mask_bits_mismatch);
+COMPILE_ASSERT(
+    arraysize(kCombinedStatusMaskKeys) == kCombinedStatusMaskNumberOfBits,
+    combined_status_mask_bits_mismatch);
+
+// Enumeration of the possible outcomes of showing the profile reset prompt.
+enum PromptResult {
+  // Prompt was not shown because only a dry-run was performed.
+  PROMPT_NOT_SHOWN,
+  PROMPT_ACTION_RESET,
+  PROMPT_ACTION_NO_RESET,
+  PROMPT_DISMISSED,
+  // Prompt was still shown (not dismissed by the user) when Chrome was closed.
+  PROMPT_IGNORED,
+  PROMPT_RESULT_MAX
+};
+
+// Returns whether or not a dry-run shall be performed.
+bool ShouldPerformDryRun() {
+  return base::FieldTrialList::FindFullName(kAutomaticProfileResetStudyName) ==
+         kAutomaticProfileResetStudyDryRunGroupName;
+}
+
+// Returns whether or not a live-run shall be performed.
+bool ShouldPerformLiveRun() {
+  return base::FieldTrialList::FindFullName(kAutomaticProfileResetStudyName) ==
+         kAutomaticProfileResetStudyEnabledGroupName;
+}
+
+// Deep-copies all preferences in |source| to a sub-tree named |value_tree_key|
+// in |target_dictionary|, with path expansion, and also creates an isomorphic
+// sub-tree under the key |is_user_controlled_tree_key| that contains only
+// Boolean values, indicating whether or not the corresponding preferences are
+// coming from the 'user' PrefStore.
+void BuildSubTreesFromPreferences(const PrefService* source,
+                                  const char* value_tree_key,
+                                  const char* is_user_controlled_tree_key,
+                                  base::DictionaryValue* target_dictionary) {
+  scoped_ptr<base::DictionaryValue> pref_name_to_value_map(
+      source->GetPreferenceValuesWithoutPathExpansion());
+  std::vector<std::string> pref_names;
+  pref_names.reserve(pref_name_to_value_map->size());
+  for (base::DictionaryValue::Iterator it(*pref_name_to_value_map);
+       !it.IsAtEnd(); it.Advance())
+    pref_names.push_back(it.key());
+
+  base::DictionaryValue* value_tree = new base::DictionaryValue;
+  base::DictionaryValue* is_user_controlled_tree = new base::DictionaryValue;
+  for (std::vector<std::string>::const_iterator it = pref_names.begin();
+       it != pref_names.end(); ++it) {
+    scoped_ptr<Value> pref_value_owned;
+    if (pref_name_to_value_map->RemoveWithoutPathExpansion(*it,
+                                                           &pref_value_owned)) {
+      value_tree->Set(*it, pref_value_owned.release());
+      const PrefService::Preference* pref = source->FindPreference(it->c_str());
+      is_user_controlled_tree->Set(
+          *it, new base::FundamentalValue(pref->IsUserControlled()));
+    }
+  }
+  target_dictionary->Set(value_tree_key, value_tree);
+  target_dictionary->Set(is_user_controlled_tree_key, is_user_controlled_tree);
+}
+
+}  // namespace
+
+
 // AutomaticProfileResetter --------------------------------------------------
 
 AutomaticProfileResetter::AutomaticProfileResetter(Profile* profile)
     : profile_(profile),
       state_(STATE_UNINITIALIZED),
+      enumeration_of_loaded_modules_ready_(false),
+      template_url_service_ready_(false),
       memento_in_prefs_(profile_),
       memento_in_local_state_(profile_),
       memento_in_file_(profile_),
       weak_ptr_factory_(this) {
   DCHECK(profile_);
+  Initialize();
 }
 
 AutomaticProfileResetter::~AutomaticProfileResetter() {}
+
+void AutomaticProfileResetter::Activate() {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK(state_ == STATE_INITIALIZED || state_ == STATE_DISABLED);
+
+  if (state_ == STATE_INITIALIZED) {
+    if (!program_.empty()) {
+      // Some steps in the flow (e.g. loaded modules, file-based memento) are
+      // IO-intensive, so defer execution until some time later.
+      task_runner_for_waiting_->PostDelayedTask(
+          FROM_HERE,
+          base::Bind(&AutomaticProfileResetter::PrepareEvaluationFlow,
+                     weak_ptr_factory_.GetWeakPtr()),
+          base::TimeDelta::FromSeconds(kEvaluationFlowDelayInSeconds));
+    } else {
+      // Terminate early if there is no program included (nor set by tests).
+      state_ = STATE_DISABLED;
+    }
+  }
+}
+
+void AutomaticProfileResetter::SetHashSeedForTesting(
+    const base::StringPiece& hash_key) {
+  hash_seed_ = hash_key;
+}
+
+void AutomaticProfileResetter::SetProgramForTesting(
+    const base::StringPiece& program) {
+  program_ = program;
+}
+
+void AutomaticProfileResetter::SetDelegateForTesting(
+    scoped_ptr<AutomaticProfileResetterDelegate> delegate) {
+  delegate_ = delegate.Pass();
+}
+
+void AutomaticProfileResetter::SetTaskRunnerForWaitingForTesting(
+    const scoped_refptr<base::TaskRunner>& task_runner) {
+  task_runner_for_waiting_ = task_runner;
+}
 
 void AutomaticProfileResetter::Initialize() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
@@ -151,55 +238,115 @@ void AutomaticProfileResetter::Initialize() {
       hash_seed_ = resources.GetRawDataResource(
           IDR_AUTOMATIC_PROFILE_RESET_HASH_SEED_DRY);
     }
-    delegate_.reset(new AutomaticProfileResetterDelegateImpl());
+    delegate_.reset(new AutomaticProfileResetterDelegateImpl(
+        TemplateURLServiceFactory::GetForProfile(profile_)));
+    task_runner_for_waiting_ =
+        content::BrowserThread::GetMessageLoopProxyForThread(
+            content::BrowserThread::UI);
+    state_ = STATE_INITIALIZED;
+  } else {
+    state_ = STATE_DISABLED;
+  }
+}
 
+void AutomaticProfileResetter::PrepareEvaluationFlow() {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_EQ(state_, STATE_INITIALIZED);
+
+  state_ = STATE_WAITING_ON_DEPENDENCIES;
+
+  delegate_->RequestCallbackWhenTemplateURLServiceIsLoaded(
+      base::Bind(&AutomaticProfileResetter::OnTemplateURLServiceIsLoaded,
+                 weak_ptr_factory_.GetWeakPtr()));
+  delegate_->RequestCallbackWhenLoadedModulesAreEnumerated(
+      base::Bind(&AutomaticProfileResetter::OnLoadedModulesAreEnumerated,
+                 weak_ptr_factory_.GetWeakPtr()));
+  delegate_->LoadTemplateURLServiceIfNeeded();
+  delegate_->EnumerateLoadedModulesIfNeeded();
+}
+
+void AutomaticProfileResetter::OnTemplateURLServiceIsLoaded() {
+  template_url_service_ready_ = true;
+  OnDependencyIsReady();
+}
+
+void AutomaticProfileResetter::OnLoadedModulesAreEnumerated() {
+  enumeration_of_loaded_modules_ready_ = true;
+  OnDependencyIsReady();
+}
+
+void AutomaticProfileResetter::OnDependencyIsReady() {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_EQ(state_, STATE_WAITING_ON_DEPENDENCIES);
+
+  if (template_url_service_ready_ && enumeration_of_loaded_modules_ready_) {
     state_ = STATE_READY;
-
     content::BrowserThread::PostTask(
         content::BrowserThread::UI,
         FROM_HERE,
         base::Bind(&AutomaticProfileResetter::BeginEvaluationFlow,
                    weak_ptr_factory_.GetWeakPtr()));
-  } else {
-    state_ = STATE_DISABLED;
   }
-}
-
-bool AutomaticProfileResetter::ShouldPerformDryRun() const {
-  return base::FieldTrialList::FindFullName(kAutomaticProfileResetStudyName) ==
-         kAutomaticProfileResetStudyDryRunGroupName;
-}
-
-bool AutomaticProfileResetter::ShouldPerformLiveRun() const {
-  return base::FieldTrialList::FindFullName(kAutomaticProfileResetStudyName) ==
-         kAutomaticProfileResetStudyEnabledGroupName;
 }
 
 void AutomaticProfileResetter::BeginEvaluationFlow() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   DCHECK_EQ(state_, STATE_READY);
+  DCHECK(!program_.empty());
 
-  if (!program_.empty()) {
-    state_ = STATE_WORKING;
-    memento_in_file_.ReadValue(
-        base::Bind(&AutomaticProfileResetter::ContinueWithEvaluationFlow,
-                   weak_ptr_factory_.GetWeakPtr()));
-  } else {
-    // Terminate early if there is no program included (nor set by tests).
-    state_ = STATE_DISABLED;
-  }
+  state_ = STATE_WORKING;
+  memento_in_file_.ReadValue(
+      base::Bind(&AutomaticProfileResetter::ContinueWithEvaluationFlow,
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 scoped_ptr<base::DictionaryValue>
-AutomaticProfileResetter::BuildEvaluatorProgramInput(
+    AutomaticProfileResetter::BuildEvaluatorProgramInput(
     const std::string& memento_value_in_file) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  // TODO(engedy): Add any additional state here that is needed by the program.
+
   scoped_ptr<base::DictionaryValue> input(new base::DictionaryValue);
+
+  // Include memento values (or empty strings in case mementos are not there).
   input->SetString(kMementoValueInPrefsKey, memento_in_prefs_.ReadValue());
   input->SetString(kMementoValueInLocalStateKey,
                    memento_in_local_state_.ReadValue());
   input->SetString(kMementoValueInFileKey, memento_value_in_file);
+
+  // Include all user (i.e. profile-specific) preferences, along with
+  // information about whether the value is coming from the 'user' PrefStore.
+  PrefService* prefs = profile_->GetPrefs();
+  DCHECK(prefs);
+  BuildSubTreesFromPreferences(prefs,
+                               kUserPreferencesKey,
+                               kUserPreferencesIsUserControlledKey,
+                               input.get());
+
+  // Include all local state (i.e. shared) preferences, along with information
+  // about whether the value is coming from the 'user' PrefStore.
+  PrefService* local_state = g_browser_process->local_state();
+  DCHECK(local_state);
+  BuildSubTreesFromPreferences(
+      local_state, kLocalStateKey, kLocalStateIsUserControlledKey, input.get());
+
+  // Include all information related to search engines.
+  scoped_ptr<base::DictionaryValue> default_search_provider_details(
+      delegate_->GetDefaultSearchProviderDetails());
+  input->Set(kDefaultSearchProviderKey,
+             default_search_provider_details.release());
+
+  scoped_ptr<base::ListValue> search_providers_details(
+      delegate_->GetPrepopulatedSearchProvidersDetails());
+  input->Set(kSearchProvidersKey, search_providers_details.release());
+
+  input->SetBoolean(kDefaultSearchProviderIsUserControlledKey,
+                    !delegate_->IsDefaultSearchProviderManaged());
+
+  // Include information about loaded modules.
+  scoped_ptr<base::ListValue> loaded_module_digests(
+      delegate_->GetLoadedModuleNameDigests());
+  input->Set(kLoadedModuleDigestsKey, loaded_module_digests.release());
+
   return input.Pass();
 }
 
@@ -232,13 +379,12 @@ void AutomaticProfileResetter::ContinueWithEvaluationFlow(
 
 // static
 scoped_ptr<AutomaticProfileResetter::EvaluationResults>
-AutomaticProfileResetter::EvaluateConditionsOnWorkerPoolThread(
+    AutomaticProfileResetter::EvaluateConditionsOnWorkerPoolThread(
     const base::StringPiece& hash_seed,
     const base::StringPiece& program,
     scoped_ptr<base::DictionaryValue> program_input) {
-  std::string hash_seed_str(hash_seed.as_string());
-  std::string program_str(program.as_string());
-  JtlInterpreter interpreter(hash_seed_str, program_str, program_input.get());
+  JtlInterpreter interpreter(
+      hash_seed.as_string(), program.as_string(), program_input.get());
   interpreter.Execute();
   UMA_HISTOGRAM_ENUMERATION("AutomaticProfileReset.InterpreterResult",
                             interpreter.result(),
@@ -246,7 +392,7 @@ AutomaticProfileResetter::EvaluateConditionsOnWorkerPoolThread(
 
   // In each case below, the respective field in result originally contains the
   // default, so if the getter fails, we still have the correct value there.
-  scoped_ptr<EvaluationResults> results(new EvaluationResults());
+  scoped_ptr<EvaluationResults> results(new EvaluationResults);
   interpreter.GetOutputBoolean(kHadPromptedAlreadyKey,
                                &results->had_prompted_already);
   interpreter.GetOutputString(kMementoValueInPrefsKey,
@@ -274,8 +420,8 @@ void AutomaticProfileResetter::FinishEvaluationFlow(
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   DCHECK_EQ(state_, STATE_WORKING);
 
-  delegate_->ReportStatistics(results->satisfied_criteria_mask,
-                              results->combined_status_mask);
+  ReportStatistics(results->satisfied_criteria_mask,
+                   results->combined_status_mask);
 
   if (results->satisfied_criteria_mask != 0 && !results->had_prompted_already) {
     memento_in_prefs_.StoreValue(results->memento_value_in_prefs);
@@ -294,19 +440,14 @@ void AutomaticProfileResetter::FinishEvaluationFlow(
   state_ = STATE_DONE;
 }
 
-void AutomaticProfileResetter::SetHashSeedForTesting(
-    const base::StringPiece& hash_key) {
-  hash_seed_ = hash_key;
-}
-
-void AutomaticProfileResetter::SetProgramForTesting(
-    const base::StringPiece& program) {
-  program_ = program;
-}
-
-void AutomaticProfileResetter::SetDelegateForTesting(
-    AutomaticProfileResetterDelegate* delegate) {
-  delegate_.reset(delegate);
+void AutomaticProfileResetter::ReportStatistics(uint32 satisfied_criteria_mask,
+                                                uint32 combined_status_mask) {
+  UMA_HISTOGRAM_ENUMERATION("AutomaticProfileReset.SatisfiedCriteriaMask",
+                            satisfied_criteria_mask,
+                            kSatisfiedCriteriaMaskMaximumValue);
+  UMA_HISTOGRAM_ENUMERATION("AutomaticProfileReset.CombinedStatusMask",
+                            combined_status_mask,
+                            kCombinedStatusMaskMaximumValue);
 }
 
 void AutomaticProfileResetter::Shutdown() {
