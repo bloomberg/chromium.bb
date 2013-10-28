@@ -1779,6 +1779,8 @@
         'browser/ui/views/frame/browser_view_layout.cc',
         'browser/ui/views/frame/browser_view_layout.h',
         'browser/ui/views/frame/browser_view_layout_delegate.h',
+        'browser/ui/views/frame/browser_window_property_manager_win.cc',
+        'browser/ui/views/frame/browser_window_property_manager_win.h',
         'browser/ui/views/frame/contents_container.cc',
         'browser/ui/views/frame/contents_container.h',
         'browser/ui/views/frame/desktop_browser_frame_aura.cc',

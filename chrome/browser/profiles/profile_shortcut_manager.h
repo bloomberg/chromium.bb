@@ -10,6 +10,7 @@
 #include "base/strings/string16.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 
+class CommandLine;
 class ProfileManager;
 
 class ProfileShortcutManager {
@@ -17,10 +18,8 @@ class ProfileShortcutManager {
   virtual ~ProfileShortcutManager();
 
   // Create a profile icon for the profile with path |profile_path|.
-  // |callback| is called only on creation success.
   virtual void CreateOrUpdateProfileIcon(
-      const base::FilePath& profile_path,
-      const base::Closure& callback) = 0;
+      const base::FilePath& profile_path) = 0;
 
   // Create a profile shortcut for the profile with path |profile_path|, plus
   // update the original profile shortcut if |profile_path| is the second
@@ -37,6 +36,13 @@ class ProfileShortcutManager {
   virtual void HasProfileShortcuts(
       const base::FilePath& profile_path,
       const base::Callback<void(bool)>& callback) = 0;
+
+  // Populates the |command_line|, |name| and |icon_path| that a shortcut for
+  // the given |profile_path| should use.
+  virtual void GetShortcutProperties(const base::FilePath& profile_path,
+                                     CommandLine* command_line,
+                                     string16* name,
+                                     base::FilePath* icon_path) = 0;
 
   static bool IsFeatureEnabled();
   static ProfileShortcutManager* Create(ProfileManager* manager);

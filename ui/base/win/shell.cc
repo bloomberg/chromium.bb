@@ -22,42 +22,6 @@
 namespace ui {
 namespace win {
 
-namespace {
-
-void SetAppDetailsForWindow(const string16& app_id,
-                            const string16& app_icon,
-                            const string16& relaunch_command,
-                            const string16& relaunch_display_name,
-                            HWND hwnd) {
-  // This functionality is only available on Win7+. It also doesn't make sense
-  // to do this for Chrome Metro.
-  if (base::win::GetVersion() < base::win::VERSION_WIN7 ||
-      base::win::IsMetroProcess())
-    return;
-  base::win::ScopedComPtr<IPropertyStore> pps;
-  HRESULT result = SHGetPropertyStoreForWindow(
-      hwnd, __uuidof(*pps), reinterpret_cast<void**>(pps.Receive()));
-  if (S_OK == result) {
-    if (!app_id.empty())
-      base::win::SetAppIdForPropertyStore(pps, app_id.c_str());
-    if (!app_icon.empty()) {
-      base::win::SetStringValueForPropertyStore(
-          pps, PKEY_AppUserModel_RelaunchIconResource, app_icon.c_str());
-    }
-    if (!relaunch_command.empty()) {
-      base::win::SetStringValueForPropertyStore(
-          pps, PKEY_AppUserModel_RelaunchCommand, relaunch_command.c_str());
-    }
-    if (!relaunch_display_name.empty()) {
-      base::win::SetStringValueForPropertyStore(
-          pps, PKEY_AppUserModel_RelaunchDisplayNameResource,
-          relaunch_display_name.c_str());
-    }
-  }
-}
-
-}  // namespace
-
 // Show the Windows "Open With" dialog box to ask the user to pick an app to
 // open the file with.
 bool OpenItemWithExternalApp(const string16& full_path) {
@@ -112,6 +76,40 @@ bool PreventWindowFromPinning(HWND hwnd) {
 
   return base::win::SetBooleanValueForPropertyStore(
              pps, PKEY_AppUserModel_PreventPinning, true);
+}
+
+// TODO(calamity): investigate moving this out of the UI thread as COM
+// operations may spawn nested message loops which can cause issues.
+void SetAppDetailsForWindow(const string16& app_id,
+                            const string16& app_icon,
+                            const string16& relaunch_command,
+                            const string16& relaunch_display_name,
+                            HWND hwnd) {
+  // This functionality is only available on Win7+. It also doesn't make sense
+  // to do this for Chrome Metro.
+  if (base::win::GetVersion() < base::win::VERSION_WIN7 ||
+      base::win::IsMetroProcess())
+    return;
+  base::win::ScopedComPtr<IPropertyStore> pps;
+  HRESULT result = SHGetPropertyStoreForWindow(
+      hwnd, __uuidof(*pps), reinterpret_cast<void**>(pps.Receive()));
+  if (S_OK == result) {
+    if (!app_id.empty())
+      base::win::SetAppIdForPropertyStore(pps, app_id.c_str());
+    if (!app_icon.empty()) {
+      base::win::SetStringValueForPropertyStore(
+          pps, PKEY_AppUserModel_RelaunchIconResource, app_icon.c_str());
+    }
+    if (!relaunch_command.empty()) {
+      base::win::SetStringValueForPropertyStore(
+          pps, PKEY_AppUserModel_RelaunchCommand, relaunch_command.c_str());
+    }
+    if (!relaunch_display_name.empty()) {
+      base::win::SetStringValueForPropertyStore(
+          pps, PKEY_AppUserModel_RelaunchDisplayNameResource,
+          relaunch_display_name.c_str());
+    }
+  }
 }
 
 void SetAppIdForWindow(const string16& app_id, HWND hwnd) {
