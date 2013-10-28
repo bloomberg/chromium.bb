@@ -53,8 +53,8 @@ scoped_refptr<Layer> ParseTreeFromValue(base::Value* val,
     ListValue* bounds;
     success &= dict->GetList("ImageBounds", &bounds);
     double image_width, image_height;
-    success &= bounds->GetDouble(0, &image_height);
-    success &= bounds->GetDouble(1, &image_width);
+    success &= bounds->GetDouble(0, &image_width);
+    success &= bounds->GetDouble(1, &image_height);
 
     success &= dict->GetList("Border", &list);
     int border_x, border_y, border_width, border_height;
@@ -81,7 +81,7 @@ scoped_refptr<Layer> ParseTreeFromValue(base::Value* val,
 
     new_layer = nine_patch_layer;
   } else if (layer_type == "TextureLayer") {
-    new_layer = TextureLayer::Create(NULL);
+    new_layer = TextureLayer::CreateForMailbox(NULL);
   } else if (layer_type == "PictureLayer") {
     new_layer = PictureLayer::Create(content_client);
   } else {  // Type "Layer" or "unknown"
