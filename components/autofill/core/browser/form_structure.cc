@@ -334,8 +334,7 @@ FormStructure::FormStructure(const FormData& form)
   std::map<base::string16, size_t> unique_names;
   for (std::vector<FormFieldData>::const_iterator field =
            form.fields.begin();
-       field != form.fields.end(); field++) {
-
+       field != form.fields.end(); ++field) {
     if (!ShouldSkipField(*field)) {
       // Add all supported form fields (including with empty names) to the
       // signature.  This is a requirement for Autofill servers.
