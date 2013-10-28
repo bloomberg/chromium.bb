@@ -297,6 +297,7 @@ protected:
     OwnPtr<RenderBlockFlowRareData> m_rareData;
     OwnPtr<FloatingObjects> m_floatingObjects;
 
+    friend class BreakingContext; // FIXME: It uses insertFloatingObject and positionNewFloatOnLine, if we move those out from the private scope/add a helper to LineBreaker, we can remove this friend
     friend class MarginInfo;
     friend class LineBreaker;
     friend class LineWidth; // needs to know FloatingObject

@@ -140,6 +140,7 @@ static IndentTextOrNot requiresIndent(bool isFirstLine, bool isAfterHardLineBrea
 
 class LineBreaker {
 public:
+    friend class BreakingContext;
     LineBreaker(RenderBlockFlow* block)
         : m_block(block)
     {
@@ -155,113 +156,6 @@ private:
     void reset();
 
     InlineIterator nextSegmentBreak(InlineBidiResolver&, LineInfo&, RenderTextInfo&, FloatingObject* lastFloatFromPreviousLine, unsigned consecutiveHyphenatedLines, WordMeasurements&);
-
-    class BreakingContext {
-    public:
-        BreakingContext(InlineBidiResolver& resolver, LineInfo& inLineInfo, LineWidth& lineWidth, RenderTextInfo& inRenderTextInfo, FloatingObject* inLastFloatFromPreviousLine, bool appliedStartWidth, RenderBlockFlow* block)
-            : m_resolver(resolver)
-            , m_current(resolver.position())
-            , m_lineBreak(resolver.position())
-            , m_block(block)
-            , m_lastObject(m_current.m_obj)
-            , m_nextObject(0)
-            , m_currentStyle(0)
-            , m_blockStyle(block->style())
-            , m_lineInfo(inLineInfo)
-            , m_renderTextInfo(inRenderTextInfo)
-            , m_lastFloatFromPreviousLine(inLastFloatFromPreviousLine)
-            , m_width(lineWidth)
-            , m_currWS(NORMAL)
-            , m_lastWS(NORMAL)
-            , m_preservesNewline(false)
-            , m_atStart(true)
-            , m_ignoringSpaces(false)
-            , m_currentCharacterIsSpace(false)
-            , m_currentCharacterShouldCollapseIfPreWap(false)
-            , m_appliedStartWidth(appliedStartWidth)
-            , m_includeEndWidth(true)
-            , m_autoWrap(false)
-            , m_autoWrapWasEverTrueOnLine(false)
-            , m_floatsFitOnLine(true)
-            , m_collapseWhiteSpace(false)
-            , m_startingNewParagraph(m_lineInfo.previousLineBrokeCleanly())
-            , m_allowImagesToBreak(!block->document().inQuirksMode() || !block->isTableCell() || !m_blockStyle->logicalWidth().isIntrinsicOrAuto())
-            , m_atEnd(false)
-            , m_lineMidpointState(resolver.midpointState())
-        {
-            m_lineInfo.setPreviousLineBrokeCleanly(false);
-        }
-
-        RenderObject* currentObject() { return m_current.m_obj; }
-        InlineIterator lineBreak() { return m_lineBreak; }
-        bool atEnd() { return m_atEnd; }
-
-        void initializeForCurrentObject();
-
-        void increment();
-
-        void handleBR(EClear&);
-        void handleOutOfFlowPositioned(Vector<RenderBox*>& positionedObjects);
-        void handleFloat();
-        void handleEmptyInline();
-        void handleReplaced();
-        bool handleText(WordMeasurements&, bool& hyphenated);
-        void commitAndUpdateLineBreakIfNeeded();
-        InlineIterator handleEndOfLine();
-
-        void clearLineBreakIfFitsOnLine()
-        {
-            if (m_width.fitsOnLine() || m_lastWS == NOWRAP)
-                m_lineBreak.clear();
-        }
-
-    private:
-        void skipTrailingWhitespace(InlineIterator&, const LineInfo&);
-
-        InlineBidiResolver& m_resolver;
-
-        InlineIterator m_current;
-        InlineIterator m_lineBreak;
-        InlineIterator m_startOfIgnoredSpaces;
-
-        RenderBlockFlow* m_block;
-        RenderObject* m_lastObject;
-        RenderObject* m_nextObject;
-
-        RenderStyle* m_currentStyle;
-        RenderStyle* m_blockStyle;
-
-        LineInfo& m_lineInfo;
-
-        RenderTextInfo& m_renderTextInfo;
-
-        FloatingObject* m_lastFloatFromPreviousLine;
-
-        LineWidth m_width;
-
-        EWhiteSpace m_currWS;
-        EWhiteSpace m_lastWS;
-
-        bool m_preservesNewline;
-        bool m_atStart;
-        bool m_ignoringSpaces;
-        bool m_currentCharacterIsSpace;
-        bool m_currentCharacterShouldCollapseIfPreWap;
-        bool m_appliedStartWidth;
-        bool m_includeEndWidth;
-        bool m_autoWrap;
-        bool m_autoWrapWasEverTrueOnLine;
-        bool m_floatsFitOnLine;
-        bool m_collapseWhiteSpace;
-        bool m_startingNewParagraph;
-        bool m_allowImagesToBreak;
-        bool m_atEnd;
-
-        LineMidpointState& m_lineMidpointState;
-
-        TrailingObjects m_trailingObjects;
-    };
-
     void skipLeadingWhitespace(InlineBidiResolver&, LineInfo&, FloatingObject* lastFloatFromPreviousLine, LineWidth&);
 
     RenderBlockFlow* m_block;
@@ -270,7 +164,113 @@ private:
     Vector<RenderBox*> m_positionedObjects;
 };
 
-inline void LineBreaker::BreakingContext::initializeForCurrentObject()
+class BreakingContext {
+public:
+    BreakingContext(InlineBidiResolver& resolver, LineInfo& inLineInfo, LineWidth& lineWidth, RenderTextInfo& inRenderTextInfo, FloatingObject* inLastFloatFromPreviousLine, bool appliedStartWidth, RenderBlockFlow* block)
+        : m_resolver(resolver)
+        , m_current(resolver.position())
+        , m_lineBreak(resolver.position())
+        , m_block(block)
+        , m_lastObject(m_current.m_obj)
+        , m_nextObject(0)
+        , m_currentStyle(0)
+        , m_blockStyle(block->style())
+        , m_lineInfo(inLineInfo)
+        , m_renderTextInfo(inRenderTextInfo)
+        , m_lastFloatFromPreviousLine(inLastFloatFromPreviousLine)
+        , m_width(lineWidth)
+        , m_currWS(NORMAL)
+        , m_lastWS(NORMAL)
+        , m_preservesNewline(false)
+        , m_atStart(true)
+        , m_ignoringSpaces(false)
+        , m_currentCharacterIsSpace(false)
+        , m_currentCharacterShouldCollapseIfPreWap(false)
+        , m_appliedStartWidth(appliedStartWidth)
+        , m_includeEndWidth(true)
+        , m_autoWrap(false)
+        , m_autoWrapWasEverTrueOnLine(false)
+        , m_floatsFitOnLine(true)
+        , m_collapseWhiteSpace(false)
+        , m_startingNewParagraph(m_lineInfo.previousLineBrokeCleanly())
+        , m_allowImagesToBreak(!block->document().inQuirksMode() || !block->isTableCell() || !m_blockStyle->logicalWidth().isIntrinsicOrAuto())
+        , m_atEnd(false)
+        , m_lineMidpointState(resolver.midpointState())
+    {
+        m_lineInfo.setPreviousLineBrokeCleanly(false);
+    }
+
+    RenderObject* currentObject() { return m_current.m_obj; }
+    InlineIterator lineBreak() { return m_lineBreak; }
+    bool atEnd() { return m_atEnd; }
+
+    void initializeForCurrentObject();
+
+    void increment();
+
+    void handleBR(EClear&);
+    void handleOutOfFlowPositioned(Vector<RenderBox*>& positionedObjects);
+    void handleFloat();
+    void handleEmptyInline();
+    void handleReplaced();
+    bool handleText(WordMeasurements&, bool& hyphenated);
+    void commitAndUpdateLineBreakIfNeeded();
+    InlineIterator handleEndOfLine();
+
+    void clearLineBreakIfFitsOnLine()
+    {
+        if (m_width.fitsOnLine() || m_lastWS == NOWRAP)
+            m_lineBreak.clear();
+    }
+
+private:
+    void skipTrailingWhitespace(InlineIterator&, const LineInfo&);
+
+    InlineBidiResolver& m_resolver;
+
+    InlineIterator m_current;
+    InlineIterator m_lineBreak;
+    InlineIterator m_startOfIgnoredSpaces;
+
+    RenderBlockFlow* m_block;
+    RenderObject* m_lastObject;
+    RenderObject* m_nextObject;
+
+    RenderStyle* m_currentStyle;
+    RenderStyle* m_blockStyle;
+
+    LineInfo& m_lineInfo;
+
+    RenderTextInfo& m_renderTextInfo;
+
+    FloatingObject* m_lastFloatFromPreviousLine;
+
+    LineWidth m_width;
+
+    EWhiteSpace m_currWS;
+    EWhiteSpace m_lastWS;
+
+    bool m_preservesNewline;
+    bool m_atStart;
+    bool m_ignoringSpaces;
+    bool m_currentCharacterIsSpace;
+    bool m_currentCharacterShouldCollapseIfPreWap;
+    bool m_appliedStartWidth;
+    bool m_includeEndWidth;
+    bool m_autoWrap;
+    bool m_autoWrapWasEverTrueOnLine;
+    bool m_floatsFitOnLine;
+    bool m_collapseWhiteSpace;
+    bool m_startingNewParagraph;
+    bool m_allowImagesToBreak;
+    bool m_atEnd;
+
+    LineMidpointState& m_lineMidpointState;
+
+    TrailingObjects m_trailingObjects;
+};
+
+inline void BreakingContext::initializeForCurrentObject()
 {
     m_currentStyle = m_current.m_obj->style();
     m_nextObject = bidiNextSkippingEmptyInlines(m_block, m_current.m_obj);
@@ -288,7 +288,7 @@ inline void LineBreaker::BreakingContext::initializeForCurrentObject()
     m_collapseWhiteSpace = RenderStyle::collapseWhiteSpace(m_currWS);
 }
 
-inline void LineBreaker::BreakingContext::increment()
+inline void BreakingContext::increment()
 {
     // Clear out our character space bool, since inline <pre>s don't collapse whitespace
     // with adjacent inline normal/nowrap spans.
@@ -2484,7 +2484,7 @@ bool RenderBlock::generatesLineBoxesForInlineChild(RenderObject* inlineObj)
 // object iteration process.
 // NB. this function will insert any floating elements that would otherwise
 // be skipped but it will not position them.
-inline void LineBreaker::BreakingContext::skipTrailingWhitespace(InlineIterator& iterator, const LineInfo& lineInfo)
+inline void BreakingContext::skipTrailingWhitespace(InlineIterator& iterator, const LineInfo& lineInfo)
 {
     while (!iterator.atEnd() && !requiresLineBox(iterator, lineInfo, TrailingWhitespace)) {
         RenderObject* object = iterator.m_obj;
@@ -2694,7 +2694,7 @@ static inline bool iteratorIsBeyondEndOfRenderCombineText(const InlineIterator& 
     return iter.m_obj == renderer && iter.m_pos >= renderer->textLength();
 }
 
-inline void LineBreaker::BreakingContext::handleBR(EClear& clear)
+inline void BreakingContext::handleBR(EClear& clear)
 {
     if (m_width.fitsOnLine()) {
         RenderObject* br = m_current.m_obj;
@@ -2723,7 +2723,7 @@ inline void LineBreaker::BreakingContext::handleBR(EClear& clear)
     m_atEnd = true;
 }
 
-inline void LineBreaker::BreakingContext::handleOutOfFlowPositioned(Vector<RenderBox*>& positionedObjects)
+inline void BreakingContext::handleOutOfFlowPositioned(Vector<RenderBox*>& positionedObjects)
 {
     // If our original display wasn't an inline type, then we can
     // go ahead and determine our static inline position now.
@@ -2751,7 +2751,7 @@ inline void LineBreaker::BreakingContext::handleOutOfFlowPositioned(Vector<Rende
     m_renderTextInfo.m_lineBreakIterator.resetPriorContext();
 }
 
-inline void LineBreaker::BreakingContext::handleFloat()
+inline void BreakingContext::handleFloat()
 {
     RenderBox* floatBox = toRenderBox(m_current.m_obj);
     FloatingObject* floatingObject = m_block->insertFloatingObject(floatBox);
@@ -2772,7 +2772,7 @@ inline void LineBreaker::BreakingContext::handleFloat()
     m_renderTextInfo.m_lineBreakIterator.updatePriorContext(replacementCharacter);
 }
 
-inline void LineBreaker::BreakingContext::handleEmptyInline()
+inline void BreakingContext::handleEmptyInline()
 {
     // This should only end up being called on empty inlines
     ASSERT(isEmptyInline(m_current.m_obj));
@@ -2804,7 +2804,7 @@ inline void LineBreaker::BreakingContext::handleEmptyInline()
     m_width.addUncommittedWidth(inlineLogicalWidth(m_current.m_obj) + borderPaddingMarginStart(flowBox) + borderPaddingMarginEnd(flowBox));
 }
 
-inline void LineBreaker::BreakingContext::handleReplaced()
+inline void BreakingContext::handleReplaced()
 {
     RenderBox* replacedBox = toRenderBox(m_current.m_obj);
 
@@ -2893,7 +2893,7 @@ static void updateSegmentsForShapes(RenderBlockFlow* block, const FloatingObject
     width.updateAvailableWidth();
 }
 
-inline bool LineBreaker::BreakingContext::handleText(WordMeasurements& wordMeasurements, bool& hyphenated)
+inline bool BreakingContext::handleText(WordMeasurements& wordMeasurements, bool& hyphenated)
 {
     if (!m_current.m_pos)
         m_appliedStartWidth = false;
@@ -3186,7 +3186,7 @@ inline bool LineBreaker::BreakingContext::handleText(WordMeasurements& wordMeasu
     return false;
 }
 
-inline void LineBreaker::BreakingContext::commitAndUpdateLineBreakIfNeeded()
+inline void BreakingContext::commitAndUpdateLineBreakIfNeeded()
 {
     bool checkForBreak = m_autoWrap;
     if (m_width.committedWidth() && !m_width.fitsOnLine() && m_lineBreak.m_obj && m_currWS == NOWRAP) {
@@ -3251,7 +3251,7 @@ inline void LineBreaker::BreakingContext::commitAndUpdateLineBreakIfNeeded()
     }
 }
 
-InlineIterator LineBreaker::BreakingContext::handleEndOfLine()
+InlineIterator BreakingContext::handleEndOfLine()
 {
     ShapeInsideInfo* shapeInfo = m_block->layoutShapeInsideInfo();
     bool segmentAllowsOverflow = !shapeInfo || !shapeInfo->hasSegments();
