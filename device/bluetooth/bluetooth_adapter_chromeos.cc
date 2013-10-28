@@ -7,10 +7,9 @@
 #include <string>
 
 #include "base/bind.h"
-#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
-#include "chromeos/chromeos_switches.h"
+#include "base/sys_info.h"
 #include "chromeos/dbus/bluetooth_adapter_client.h"
 #include "chromeos/dbus/bluetooth_device_client.h"
 #include "chromeos/dbus/bluetooth_input_client.h"
@@ -328,16 +327,7 @@ void BluetoothAdapterChromeOS::SetAdapter(const dbus::ObjectPath& object_path) {
 }
 
 void BluetoothAdapterChromeOS::SetAdapterName() {
-  // Set a better name for the adapter than "BlueZ 5.x"; this isn't an ideal
-  // way to do this but it'll do for now. See http://crbug.com/126732 and
-  // http://crbug.com/126802.
-  std::string board;
-  const CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(chromeos::switches::kChromeOSReleaseBoard)) {
-    board = command_line->
-        GetSwitchValueASCII(chromeos::switches::kChromeOSReleaseBoard);
-  }
-
+  std::string board = base::SysInfo::GetLsbReleaseBoard();
   std::string alias;
   if (board.substr(0, 6) == "stumpy") {
     alias = "Chromebox";

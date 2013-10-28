@@ -18,9 +18,6 @@ const char kAshWebUIInit[]                  = "ash-webui-init";
 // Enables overriding the path for the default authentication extension.
 const char kAuthExtensionPath[]             = "auth-ext-path";
 
-// Enables overriding the Chrome OS board type when running on Linux.
-const char kChromeOSReleaseBoard[] = "chromeos-release-board";
-
 // Forces the stub implementation of dbus clients.
 const char kDbusStub[] = "dbus-stub";
 
