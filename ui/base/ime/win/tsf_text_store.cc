@@ -442,7 +442,7 @@ STDMETHODIMP TSFTextStore::QueryInsert(
     return E_INVALIDARG;
   }
   *acp_result_start = acp_test_start;
-  *acp_result_end = acp_test_start + text_size;
+  *acp_result_end = acp_test_end;
   return S_OK;
 }
 
