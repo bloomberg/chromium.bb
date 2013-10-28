@@ -496,8 +496,7 @@ function onLaunched() {
       }
     });
   }
-
-  launchFileManager();
+  launchFileManager(null, null, LaunchType.FOCUS_ANY_OR_CREATE);
 }
 
 /**

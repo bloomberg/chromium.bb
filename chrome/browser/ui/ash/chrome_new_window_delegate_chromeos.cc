@@ -26,29 +26,18 @@ ChromeNewWindowDelegateChromeos::~ChromeNewWindowDelegateChromeos() {}
 void ChromeNewWindowDelegateChromeos::OpenFileManager() {
   using file_manager::kFileManagerAppId;
   Profile* const profile = ProfileManager::GetDefaultProfileOrOffTheRecord();
-  const apps::ShellWindowRegistry* const registry =
-      apps::ShellWindowRegistry::Get(profile);
-  const apps::ShellWindowRegistry::ShellWindowList list =
-      registry->GetShellWindowsForApp(kFileManagerAppId);
-  if (list.empty()) {
-    // Open the new window.
-    const ExtensionService* const service = profile->GetExtensionService();
-    if (service == NULL ||
-        !service->IsExtensionEnabledForLauncher(kFileManagerAppId))
-      return;
-    const extensions::Extension* const extension =
-        service->GetInstalledExtension(kFileManagerAppId);
-    // event_flags = 0 means this invokes the same behavior as the launcher
-    // item is clicked without any keyboard modifiers.
-    OpenApplication(AppLaunchParams(
-        profile,
-        extension,
-        0 /* event_flags */,
-        chrome::HOST_DESKTOP_TYPE_ASH));
-  } else {
-    // Activate the existing window.
-    list.front()->GetBaseWindow()->Activate();
-  }
+  const ExtensionService* const service = profile->GetExtensionService();
+  if (service == NULL ||
+      !service->IsExtensionEnabledForLauncher(kFileManagerAppId))
+    return;
+  const extensions::Extension* const extension =
+      service->GetInstalledExtension(kFileManagerAppId);
+  // event_flags = 0 means this invokes the same behavior as the launcher
+  // item is clicked without any keyboard modifiers.
+  OpenApplication(AppLaunchParams(profile,
+                                  extension,
+                                  0 /* event_flags */,
+                                  chrome::HOST_DESKTOP_TYPE_ASH));
 }
 
 void ChromeNewWindowDelegateChromeos::OpenCrosh() {
