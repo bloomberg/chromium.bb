@@ -12,10 +12,15 @@ platforms is planned.
 import errno
 import optparse
 import os
+import Queue
 import re
 import shutil
 import subprocess
 import sys
+import threading
+
+
+CONCURRENT_TASKS=4
 
 
 def GetCommandOutput(command):
@@ -134,16 +139,37 @@ def mkdir_p(path):
     else: raise
 
 
-def GenerateSymbols(dump_syms_dir, symbol_dir, binary):
+def GenerateSymbols(options, binaries):
   """Dumps the symbols of binary and places them in the given directory."""
-  syms = GetCommandOutput([GetDumpSymsBinary(dump_syms_dir), binary])
-  module_line = re.match("MODULE [^ ]+ [^ ]+ ([0-9A-F]+) (.*)\n", syms)
-  output_path = os.path.join(symbol_dir, module_line.group(2),
-                             module_line.group(1))
-  mkdir_p(output_path)
-  symbol_file = "%s.sym" % module_line.group(2)
-  f = open(os.path.join(output_path, symbol_file), 'w')
-  f.write(syms)
+
+  queue = Queue.Queue()
+
+  def _Worker():
+    while True:
+      binary = queue.get()
+
+      syms = GetCommandOutput([GetDumpSymsBinary(options.dump_syms_dir),
+                               binary])
+      module_line = re.match("MODULE [^ ]+ [^ ]+ ([0-9A-F]+) (.*)\n", syms)
+      output_path = os.path.join(options.symbols_dir, module_line.group(2),
+                                 module_line.group(1))
+      mkdir_p(output_path)
+      symbol_file = "%s.sym" % module_line.group(2)
+      f = open(os.path.join(output_path, symbol_file), 'w')
+      f.write(syms)
+      f.close()
+
+      queue.task_done()
+
+  for binary in binaries:
+    queue.put(binary)
+
+  for _ in range(options.jobs):
+    t = threading.Thread(target=_Worker)
+    t.daemon = True
+    t.start()
+
+  queue.join()
 
 
 def main():
@@ -158,6 +184,8 @@ def main():
   parser.add_option('', '--clear', default=False, action='store_true',
                     help='Clear the symbols directory before writing new '
                          'symbols.')
+  parser.add_option('-j', '--jobs', default=CONCURRENT_TASKS, action='store',
+                    type='int', help='Number of parallel tasks to run.')
 
   (options, _) = parser.parse_args()
 
@@ -189,8 +217,7 @@ def main():
     binaries |= new_deps
     queue.extend(list(new_deps))
 
-  for binary in binaries:
-    GenerateSymbols(options.dump_syms_dir, options.symbols_dir, binary)
+  GenerateSymbols(options, binaries)
 
   return 0
 
