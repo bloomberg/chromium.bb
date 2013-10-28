@@ -44,6 +44,10 @@ class LayerTreeHostPerfTest : public LayerTreeTest {
     fake_content_layer_client_.set_paint_all_opaque(true);
   }
 
+  virtual void InitializeSettings(LayerTreeSettings* settings) OVERRIDE {
+    settings->throttle_frame_production = false;
+  }
+
   virtual void BeginTest() OVERRIDE {
     BuildTree();
     PostSetNeedsCommitToMainThread();
