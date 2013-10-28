@@ -278,8 +278,7 @@ crbug.com/245644 virtual/gpu/fast/canvas/2d.text.draw.fill.maxWidth.gradient.htm
 
 crbug.com/310866 fast/workers/storage/use-same-database-in-page-and-workers.html [ Slow Timeout ]
 
-crbug.com/247982 [ Linux Mac Debug ] virtual/gpu/compositedscrolling/overflow/overflow-positioning.html [ ImageOnlyFailure Pass ]
-crbug.com/247982 [ Win ] virtual/gpu/compositedscrolling/overflow/overflow-positioning.html [ ImageOnlyFailure Pass ]
+crbug.com/245630 virtual/gpu/compositedscrolling/overflow/overflow-positioning.html [ ImageOnlyFailure Pass ]
 crbug.com/248063 plugins/plugin-clip-subframe.html [ Pass Failure ]
 crbug.com/248067 fast/workers/shared-worker-storagequota-query-usage.html [ Pass Failure ]
 crbug.com/248067 storage/storageinfo-query-usage.html [ Pass Failure ]
