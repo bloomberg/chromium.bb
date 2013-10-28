@@ -28,6 +28,7 @@
 #include "net/base/iovec.h"
 #include "net/base/ip_endpoint.h"
 #include "net/quic/congestion_control/quic_congestion_manager.h"
+#include "net/quic/iovector.h"
 #include "net/quic/quic_ack_notifier.h"
 #include "net/quic/quic_ack_notifier_manager.h"
 #include "net/quic/quic_alarm.h"
@@ -198,24 +199,22 @@ class NET_EXPORT_PRIVATE QuicConnection
                  QuicVersion version);
   virtual ~QuicConnection();
 
-  // Send the data in |iov| to the peer in as few packets as possible.
+  // Send the data in |data| to the peer in as few packets as possible.
   // Returns a pair with the number of bytes consumed from data, and a boolean
   // indicating if the fin bit was consumed.  This does not indicate the data
   // has been sent on the wire: it may have been turned into a packet and queued
   // if the socket was unexpectedly blocked.
-  QuicConsumedData SendvStreamData(QuicStreamId id,
-                                   const struct iovec* iov,
-                                   int iov_count,
-                                   QuicStreamOffset offset,
-                                   bool fin);
+  QuicConsumedData SendStreamData(QuicStreamId id,
+                                  const IOVector& data,
+                                  QuicStreamOffset offset,
+                                  bool fin);
 
-  // Same as SendvStreamData, except the provided delegate will be informed
+  // Same as SendStreamData, except the provided delegate will be informed
   // once ACKs have been received for all the packets written.
   // The |delegate| is not owned by the QuicConnection and must outlive it.
-  QuicConsumedData SendvStreamDataAndNotifyWhenAcked(
+  QuicConsumedData SendStreamDataAndNotifyWhenAcked(
       QuicStreamId id,
-      const struct iovec* iov,
-      int iov_count,
+      const IOVector& data,
       QuicStreamOffset offset,
       bool fin,
       QuicAckNotifier::DelegateInterface* delegate);
@@ -417,6 +416,7 @@ class NET_EXPORT_PRIVATE QuicConnection
                                  QuicPacketEntropyHash entropy_hash,
                                  TransmissionType transmission_type,
                                  HasRetransmittableData retransmittable,
+                                 IsHandshake handshake,
                                  Force forced);
 
   // Writes the given packet to socket, encrypted with |level|, with the help
@@ -432,11 +432,8 @@ class NET_EXPORT_PRIVATE QuicConnection
                    QuicPacket* packet,
                    TransmissionType transmission_type,
                    HasRetransmittableData retransmittable,
+                   IsHandshake handshake,
                    Force force);
-
-  WriteResult WritePacketToWire(QuicPacketSequenceNumber sequence_number,
-                                EncryptionLevel level,
-                                const QuicEncryptedPacket& packet);
 
   // Make sure an ack we got from our peer is sane.
   bool ValidateAckFrame(const QuicAckFrame& incoming_ack);
@@ -486,12 +483,14 @@ class NET_EXPORT_PRIVATE QuicConnection
                  EncryptionLevel level,
                  TransmissionType transmission_type,
                  HasRetransmittableData retransmittable,
+                 IsHandshake handshake,
                  Force forced)
         : sequence_number(sequence_number),
           packet(packet),
           encryption_level(level),
           transmission_type(transmission_type),
           retransmittable(retransmittable),
+          handshake(handshake),
           forced(forced) {
     }
 
@@ -500,6 +499,7 @@ class NET_EXPORT_PRIVATE QuicConnection
     const EncryptionLevel encryption_level;
     TransmissionType transmission_type;
     HasRetransmittableData retransmittable;
+    IsHandshake handshake;
     Force forced;
   };
 
@@ -573,14 +573,13 @@ class NET_EXPORT_PRIVATE QuicConnection
                               RetransmissionTimeComparator>
       RetransmissionTimeouts;
 
-  // Inner helper function for SendvStreamData and
-  // SendvStreamDataAndNotifyWhenAcked.
-  QuicConsumedData SendvStreamDataInner(QuicStreamId id,
-                                        const struct iovec* iov,
-                                        int iov_count,
-                                        QuicStreamOffset offset,
-                                        bool fin,
-                                        QuicAckNotifier *notifier);
+  // Inner helper function for SendStreamData and
+  // SendStreamDataAndNotifyWhenAcked.
+  QuicConsumedData SendStreamDataInner(QuicStreamId id,
+                                       const IOVector& data,
+                                       QuicStreamOffset offset,
+                                       bool fin,
+                                       QuicAckNotifier *notifier);
 
   // Sends a version negotiation packet to the peer.
   void SendVersionNegotiationPacket();
@@ -616,6 +615,11 @@ class NET_EXPORT_PRIVATE QuicConnection
 
   // Writes as many pending retransmissions as possible.
   void WritePendingRetransmissions();
+
+  // Returns true if the packet should be discarded and not sent.
+  bool ShouldDiscardPacket(EncryptionLevel level,
+                           QuicPacketSequenceNumber sequence_number,
+                           HasRetransmittableData retransmittable);
 
   // Queues |packet| in the hopes that it can be decrypted in the
   // future, when a new key is installed.

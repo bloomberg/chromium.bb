@@ -135,7 +135,7 @@ TEST_F(QuicEpollConnectionHelperTest, DISABLED_TestRTORetransmission) {
       Return(QuicTime::Delta::Zero()));
   const int64 kDefaultRetransmissionTimeMs = 500;
 
-  const char buffer[] = "foo";
+  char buffer[] = "foo";
   const size_t packet_size =
       QuicPacketCreator::StreamFramePacketOverhead(
           framer_.version(), PACKET_8BYTE_GUID, kIncludeVersion,
@@ -147,9 +147,9 @@ TEST_F(QuicEpollConnectionHelperTest, DISABLED_TestRTORetransmission) {
   EXPECT_CALL(*send_algorithm_, OnPacketAbandoned(1, packet_size));
   EXPECT_CALL(visitor_, OnCanWrite()).WillOnce(Return(true));
   EXPECT_CALL(visitor_, HasPendingHandshake()).Times(AnyNumber());
-  struct iovec iov = {const_cast<char*>(buffer),
-                      static_cast<size_t>(3)};
-  connection_.SendvStreamData(1, &iov, 1, 0, false);
+  IOVector data;
+  data.Append(buffer, 3);
+  connection_.SendStreamData(1, data, 0, false);
   EXPECT_EQ(1u, writer_.header().packet_sequence_number);
   EXPECT_CALL(*send_algorithm_,
               OnPacketSent(_, 2, packet_size, RTO_RETRANSMISSION, _));

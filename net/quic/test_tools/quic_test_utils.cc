@@ -109,6 +109,7 @@ FramerVisitorCapturingFrames::FramerVisitorCapturingFrames() : frame_count_(0) {
 }
 
 FramerVisitorCapturingFrames::~FramerVisitorCapturingFrames() {
+  STLDeleteElements(&stream_data_);
 }
 
 bool FramerVisitorCapturingFrames::OnPacketHeader(
@@ -119,9 +120,12 @@ bool FramerVisitorCapturingFrames::OnPacketHeader(
 }
 
 bool FramerVisitorCapturingFrames::OnStreamFrame(const QuicStreamFrame& frame) {
-  // TODO(ianswett): Own the underlying string, so it will not exist outside
-  // this callback.
-  stream_frames_.push_back(frame);
+  // Make a copy of the frame and store a copy of underlying string, since
+  // frame.data may not exist outside this callback.
+  stream_data_.push_back(new string(frame.data.as_string()));
+  QuicStreamFrame frame_copy = frame;
+  stream_frames_.push_back(frame_copy);
+  stream_frames_.back().data = *(stream_data_.back());
   ++frame_count_;
   return true;
 }
@@ -252,6 +256,7 @@ bool PacketSavingConnection::SendOrQueuePacket(
     QuicPacketEntropyHash /* entropy_hash */,
     TransmissionType /* transmission_type */,
     HasRetransmittableData /* retransmittable */,
+    IsHandshake /* handshake */,
     Force /* forced */) {
   packets_.push_back(packet);
   QuicEncryptedPacket* encrypted =

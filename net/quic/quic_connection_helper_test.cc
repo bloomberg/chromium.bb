@@ -355,15 +355,15 @@ TEST_F(QuicConnectionHelperTest, TestRTORetransmission) {
       QuicTime::Delta::FromMilliseconds(500);
   QuicTime start = clock_.ApproximateNow();
 
+  char buffer[] = "foo";
+
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, 1, _, NOT_RETRANSMISSION, _));
   EXPECT_CALL(*send_algorithm_, OnPacketAbandoned(1, _));
   EXPECT_CALL(visitor_, OnCanWrite()).WillOnce(Return(true));
   EXPECT_CALL(visitor_, HasPendingHandshake()).Times(AnyNumber());
-
-  // Send a packet.
-  struct iovec iov = {const_cast<char*>(kData),
-                      static_cast<size_t>(strlen(kData))};
-  connection_->SendvStreamData(1, &iov, 1, 0, false);
+  IOVector data;
+  data.Append(buffer, 3);
+  connection_->SendStreamData(1, data, 0, false);
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, 2, _, RTO_RETRANSMISSION, _));
   // Since no ack was received, the retransmission alarm will fire and
   // retransmit it.
@@ -387,15 +387,16 @@ TEST_F(QuicConnectionHelperTest, TestMultipleRTORetransmission) {
       QuicTime::Delta::FromMilliseconds(500);
   QuicTime start = clock_.ApproximateNow();
 
+  char buffer[] = "foo";
+
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, 1, _, NOT_RETRANSMISSION, _));
   EXPECT_CALL(*send_algorithm_, OnPacketAbandoned(1, _));
   EXPECT_CALL(visitor_, OnCanWrite()).WillRepeatedly(Return(true));
   EXPECT_CALL(visitor_, HasPendingHandshake()).Times(AnyNumber());
 
-  // Send a packet.
-  struct iovec iov = {const_cast<char*>(kData),
-                      static_cast<size_t>(strlen(kData))};
-  connection_->SendvStreamData(1, &iov, 1, 0, false);
+  IOVector data;
+  data.Append(buffer, 3);
+  connection_->SendStreamData(1, data, 0, false);
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, 2, _, RTO_RETRANSMISSION, _));
   // Since no ack was received, the retransmission alarm will fire and
   // retransmit it.

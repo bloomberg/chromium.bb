@@ -251,8 +251,10 @@ class NET_EXPORT_PRIVATE QuicFramer {
   // Returns the number of bytes added to the packet for the specified frame,
   // and 0 if the frame doesn't fit.  Includes the header size for the first
   // frame.
-  size_t GetSerializedFrameLength(
-      const QuicFrame& frame, size_t free_bytes, bool first_frame);
+  size_t GetSerializedFrameLength(const QuicFrame& frame,
+                                  size_t free_bytes,
+                                  bool first_frame,
+                                  bool last_frame);
 
   // Returns the associated data from the encrypted packet |encrypted| as a
   // stringpiece.

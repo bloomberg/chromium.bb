@@ -27,6 +27,25 @@ namespace net {
 namespace test {
 namespace {
 
+template<typename SaveType>
+class ValueRestore {
+ public:
+  ValueRestore(SaveType* name, SaveType value)
+      : name_(name),
+        value_(*name) {
+    *name_ = value;
+  }
+  ~ValueRestore() {
+    *name_ = value_;
+  }
+
+ private:
+  SaveType* name_;
+  SaveType value_;
+
+  DISALLOW_COPY_AND_ASSIGN(ValueRestore);
+};
+
 class QuicPacketCreatorTest : public ::testing::TestWithParam<bool> {
  protected:
   QuicPacketCreatorTest()
@@ -49,8 +68,11 @@ class QuicPacketCreatorTest : public ::testing::TestWithParam<bool> {
     server_framer_.ProcessPacket(*encrypted);
   }
 
-  void CheckStreamFrame(const QuicFrame& frame, QuicStreamId stream_id,
-                        const string& data, QuicStreamOffset offset, bool fin) {
+  void CheckStreamFrame(const QuicFrame& frame,
+                        QuicStreamId stream_id,
+                        const string& data,
+                        QuicStreamOffset offset,
+                        bool fin) {
     EXPECT_EQ(STREAM_FRAME, frame.type);
     ASSERT_TRUE(frame.stream_frame);
     EXPECT_EQ(stream_id, frame.stream_frame->stream_id);
@@ -58,6 +80,33 @@ class QuicPacketCreatorTest : public ::testing::TestWithParam<bool> {
     EXPECT_EQ(offset, frame.stream_frame->offset);
     EXPECT_EQ(fin, frame.stream_frame->fin);
   }
+
+  // Returns the number of bytes consumed by the header of packet, including
+  // the version, that is not in an FEC group.
+  size_t GetPacketHeaderOverhead() {
+    return GetPacketHeaderSize(creator_.options()->send_guid_length,
+                               kIncludeVersion,
+                               creator_.options()->send_sequence_number_length,
+                               NOT_IN_FEC_GROUP);
+  }
+
+  // Returns the number of bytes of overhead that will be added to a packet
+  // of maximum length.
+  size_t GetEncryptionOverhead() {
+    return creator_.options()->max_packet_length -
+        client_framer_.GetMaxPlaintextSize(
+            creator_.options()->max_packet_length);
+  }
+
+  // Returns the number of bytes consumed by the non-data fields of a stream
+  // frame, assuming it is the last frame in the packet
+  size_t GetStreamFrameOverhead() {
+    return QuicFramer::GetMinStreamFrameSize(
+        client_framer_.version(), kStreamId, kOffset, true);
+  }
+
+  static const QuicStreamId kStreamId = 1u;
+  static const QuicStreamOffset kOffset = 1u;
 
   QuicFrames frames_;
   QuicFramer server_framer_;
@@ -246,6 +295,7 @@ TEST_F(QuicPacketCreatorTest, ReserializeFramesWithSequenceNumberLength) {
 TEST_F(QuicPacketCreatorTest, SerializeConnectionClose) {
   QuicConnectionCloseFrame frame;
   frame.error_code = QUIC_NO_ERROR;
+  frame.error_details = "error";
   frame.ack_frame = QuicAckFrame(0u, QuicTime::Zero(), 0u);
 
   SerializedPacket serialized = creator_.SerializeConnectionClose(&frame);
@@ -288,18 +338,10 @@ TEST_F(QuicPacketCreatorTest, CreateStreamFrameFinOnly) {
 }
 
 TEST_F(QuicPacketCreatorTest, CreateAllFreeBytesForStreamFrames) {
-  QuicStreamId kStreamId = 1u;
-  QuicStreamOffset kOffset = 1u;
-  for (int i = 0; i < 100; ++i) {
+  const size_t overhead = GetPacketHeaderOverhead() + GetEncryptionOverhead();
+  for (size_t i = overhead; i < overhead + 100; ++i) {
     creator_.options()->max_packet_length = i;
-    const size_t max_plaintext_size = client_framer_.GetMaxPlaintextSize(i);
-    const bool should_have_room = max_plaintext_size >
-        (QuicFramer::GetMinStreamFrameSize(
-             client_framer_.version(), kStreamId, kOffset, true) +
-         GetPacketHeaderSize(creator_.options()->send_guid_length,
-                             kIncludeVersion,
-                             creator_.options()->send_sequence_number_length,
-                             NOT_IN_FEC_GROUP));
+    const bool should_have_room = i > overhead + GetStreamFrameOverhead();
     ASSERT_EQ(should_have_room,
               creator_.HasRoomForStreamFrame(kStreamId, kOffset));
     if (should_have_room) {
@@ -313,6 +355,100 @@ TEST_F(QuicPacketCreatorTest, CreateAllFreeBytesForStreamFrames) {
       delete serialized_packet.packet;
       delete serialized_packet.retransmittable_frames;
     }
+  }
+}
+
+TEST_F(QuicPacketCreatorTest, StreamFrameConsumption) {
+  // Compute the total overhead for a single frame in packet.
+  const size_t overhead = GetPacketHeaderOverhead() + GetEncryptionOverhead()
+      + GetStreamFrameOverhead();
+  size_t capacity = kMaxPacketSize - overhead;
+  // Now, test various sizes around this size.
+  for (int delta = -5; delta <= 5; ++delta) {
+    string data(capacity + delta, 'A');
+    size_t bytes_free = delta > 0 ? 0 : 0 - delta;
+    QuicFrame frame;
+    size_t bytes_consumed = creator_.CreateStreamFrame(
+        kStreamId, data, kOffset, false, &frame);
+    EXPECT_EQ(capacity - bytes_free, bytes_consumed);
+
+    ASSERT_TRUE(creator_.AddSavedFrame(frame));
+    // BytesFree() returns bytes available for the next frame, which will
+    // be two bytes smaller since the stream frame would need to be grown.
+    size_t expected_bytes_free = bytes_free < 3 ? 0 : bytes_free - 2;
+    EXPECT_EQ(expected_bytes_free, creator_.BytesFree()) << "delta: " << delta;
+    SerializedPacket serialized_packet = creator_.SerializePacket();
+    ASSERT_TRUE(serialized_packet.packet);
+    delete serialized_packet.packet;
+    delete serialized_packet.retransmittable_frames;
+  }
+}
+
+TEST_F(QuicPacketCreatorTest, CryptoStreamFramePacketPadding) {
+  ValueRestore<bool> old_flag(&FLAGS_pad_quic_handshake_packets, true);
+
+  // Compute the total overhead for a single frame in packet.
+  const size_t overhead = GetPacketHeaderOverhead() + GetEncryptionOverhead()
+      + GetStreamFrameOverhead();
+  ASSERT_GT(kMaxPacketSize, overhead);
+  size_t capacity = kMaxPacketSize - overhead;
+  // Now, test various sizes around this size.
+  for (int delta = -5; delta <= 5; ++delta) {
+    string data(capacity + delta, 'A');
+    size_t bytes_free = delta > 0 ? 0 : 0 - delta;
+
+    QuicFrame frame;
+    size_t bytes_consumed = creator_.CreateStreamFrame(
+        kStreamId, data, kOffset, false, &frame);
+    EXPECT_LT(0u, bytes_consumed);
+    ASSERT_TRUE(creator_.AddSavedFrame(frame));
+    SerializedPacket serialized_packet = creator_.SerializePacket();
+    ASSERT_TRUE(serialized_packet.packet);
+    // If there is not enough space in the packet to fit a padding frame
+    // (1 byte) and to expand the stream frame (another 2 bytes) the packet
+    // will not be padded.
+    if (bytes_free < 3) {
+      EXPECT_EQ(client_framer_.GetMaxPlaintextSize(kMaxPacketSize) - bytes_free,
+                serialized_packet.packet->length());
+    } else {
+      EXPECT_EQ(client_framer_.GetMaxPlaintextSize(kMaxPacketSize),
+                serialized_packet.packet->length());
+    }
+    delete serialized_packet.packet;
+    delete serialized_packet.retransmittable_frames;
+  }
+}
+
+
+TEST_F(QuicPacketCreatorTest, NonCryptoStreamFramePacketNonPadding) {
+  ValueRestore<bool> old_flag(&FLAGS_pad_quic_handshake_packets, true);
+
+  // Compute the total overhead for a single frame in packet.
+  const size_t overhead = GetPacketHeaderOverhead() + GetEncryptionOverhead()
+      + GetStreamFrameOverhead();
+  ASSERT_GT(kMaxPacketSize, overhead);
+  size_t capacity = kMaxPacketSize - overhead;
+  // Now, test various sizes around this size.
+  for (int delta = -5; delta <= 5; ++delta) {
+    string data(capacity + delta, 'A');
+    size_t bytes_free = delta > 0 ? 0 : 0 - delta;
+
+    QuicFrame frame;
+    size_t bytes_consumed = creator_.CreateStreamFrame(
+        kStreamId + 2, data, kOffset, false, &frame);
+    EXPECT_LT(0u, bytes_consumed);
+    ASSERT_TRUE(creator_.AddSavedFrame(frame));
+    SerializedPacket serialized_packet = creator_.SerializePacket();
+    ASSERT_TRUE(serialized_packet.packet);
+    if (bytes_free > 0) {
+      EXPECT_EQ(client_framer_.GetMaxPlaintextSize(kMaxPacketSize) - bytes_free,
+                serialized_packet.packet->length());
+    } else {
+      EXPECT_EQ(client_framer_.GetMaxPlaintextSize(kMaxPacketSize),
+                serialized_packet.packet->length());
+    }
+    delete serialized_packet.packet;
+    delete serialized_packet.retransmittable_frames;
   }
 }
 

@@ -4,6 +4,7 @@
 
 #include <stddef.h>
 #include <string>
+#include <vector>
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
@@ -43,6 +44,7 @@ using net::tools::test::PacketDroppingTestWriter;
 using net::tools::test::QuicDispatcherPeer;
 using net::tools::test::QuicServerPeer;
 using std::string;
+using std::vector;
 
 namespace net {
 namespace tools {
@@ -65,7 +67,30 @@ void GenerateBody(string* body, int length) {
   }
 }
 
-class EndToEndTest : public ::testing::TestWithParam<QuicVersion> {
+// Run all tests with the cross products of all versions
+// and all values of FLAGS_pad_quic_handshake_packets.
+struct TestParams {
+  TestParams(QuicVersion version,
+             bool use_padding)
+      : version(version),
+        use_padding(use_padding) {
+  }
+
+  QuicVersion version;
+  bool use_padding;
+};
+
+// Constructs all the various test permutations.
+vector<TestParams> GetTestParams() {
+  vector<TestParams> params;
+  for (size_t i = 0; i < arraysize(kSupportedQuicVersions); ++i) {
+    params.push_back(TestParams(kSupportedQuicVersions[i], true));
+    params.push_back(TestParams(kSupportedQuicVersions[i], false));
+  }
+  return params;
+}
+
+class EndToEndTest : public ::testing::TestWithParam<TestParams> {
  protected:
   EndToEndTest()
       : server_hostname_("example.com"),
@@ -84,7 +109,9 @@ class EndToEndTest : public ::testing::TestWithParam<QuicVersion> {
                "HTTP/1.1", "200", "OK", kFooResponseBody);
     AddToCache("GET", "https://www.google.com/bar",
                "HTTP/1.1", "200", "OK", kBarResponseBody);
-    version_ = GetParam();
+    version_ = GetParam().version;
+    FLAGS_pad_quic_handshake_packets =
+        GetParam().use_padding;
   }
 
   virtual ~EndToEndTest() {
@@ -168,14 +195,14 @@ class EndToEndTest : public ::testing::TestWithParam<QuicVersion> {
   }
 
   void SetPacketSendDelay(QuicTime::Delta delay) {
-    // TODO(rtenneti): enable when we can do random packet loss tests in
+    // TODO(rtenneti): enable when we can do random packet send delay tests in
     // chrome's tree.
     // client_writer_->set_fake_packet_delay(delay);
     // server_writer_->set_fake_packet_delay(delay);
   }
 
   void SetReorderPercentage(int32 reorder) {
-    // TODO(rtenneti): enable when we can do random packet loss tests in
+    // TODO(rtenneti): enable when we can do random packet reorder tests in
     // chrome's tree.
     // client_writer_->set_fake_reorder_percentage(reorder);
     // server_writer_->set_fake_reorder_percentage(reorder);
@@ -197,7 +224,7 @@ class EndToEndTest : public ::testing::TestWithParam<QuicVersion> {
 // Run all end to end tests with all supported versions.
 INSTANTIATE_TEST_CASE_P(EndToEndTests,
                         EndToEndTest,
-                        ::testing::ValuesIn(kSupportedQuicVersions));
+                        ::testing::ValuesIn(GetTestParams()));
 
 TEST_P(EndToEndTest, SimpleRequestResponse) {
   ASSERT_TRUE(Initialize());
@@ -287,11 +314,12 @@ TEST_P(EndToEndTest, RequestOverMultiplePackets) {
   const QuicStreamOffset kStreamOffset = 0u;
   size_t stream_payload_size =
       QuicFramer::GetMinStreamFrameSize(
-          GetParam(), kStreamId, kStreamOffset, true) + kStreamDataLength;
+          version_, kStreamId, kStreamOffset, true) + kStreamDataLength;
   size_t min_payload_size =
       std::max(kCongestionFeedbackFrameSize, stream_payload_size);
+  bool use_short_hash = version_ >= QUIC_VERSION_11;
   size_t ciphertext_size =
-      NullEncrypter(GetParam()).GetCiphertextSize(min_payload_size);
+      NullEncrypter(use_short_hash).GetCiphertextSize(min_payload_size);
   // TODO(satyashekhar): Fix this when versioning is implemented.
   client_->options()->max_packet_length =
       GetPacketHeaderSize(PACKET_8BYTE_GUID, !kIncludeVersion,
@@ -306,6 +334,8 @@ TEST_P(EndToEndTest, RequestOverMultiplePackets) {
 
 TEST_P(EndToEndTest, MultipleFramesRandomOrder) {
   ASSERT_TRUE(Initialize());
+  SetPacketSendDelay(QuicTime::Delta::FromMilliseconds(2));
+  SetReorderPercentage(50);
   // Set things up so we have a small payload, to guarantee fragmentation.
   // A congestion feedback frame can't be split into multiple packets, make sure
   // that our packet have room for at least this amount after the normal headers
@@ -317,17 +347,17 @@ TEST_P(EndToEndTest, MultipleFramesRandomOrder) {
   const QuicStreamOffset kStreamOffset = 0u;
   size_t stream_payload_size =
       QuicFramer::GetMinStreamFrameSize(
-          GetParam(), kStreamId, kStreamOffset, true) + kStreamDataLength;
+          version_, kStreamId, kStreamOffset, true) + kStreamDataLength;
   size_t min_payload_size =
       std::max(kCongestionFeedbackFrameSize, stream_payload_size);
+  bool use_short_hash = version_ >= QUIC_VERSION_11;
   size_t ciphertext_size =
-      NullEncrypter(GetParam()).GetCiphertextSize(min_payload_size);
+      NullEncrypter(use_short_hash).GetCiphertextSize(min_payload_size);
   // TODO(satyashekhar): Fix this when versioning is implemented.
   client_->options()->max_packet_length =
       GetPacketHeaderSize(PACKET_8BYTE_GUID, !kIncludeVersion,
                           PACKET_6BYTE_SEQUENCE_NUMBER, NOT_IN_FEC_GROUP) +
       ciphertext_size;
-  client_->options()->random_reorder = true;
 
   // Make sure our request is too large to fit in one packet.
   EXPECT_GT(strlen(kLargeRequest), min_payload_size);
@@ -489,6 +519,13 @@ TEST_P(EndToEndTest, DISABLED_LargePostFEC) {
 /*TEST_P(EndToEndTest, PacketTooLarge) {
   FLAGS_quic_allow_oversized_packets_for_test = true;
   ASSERT_TRUE(Initialize());
+
+  // If we use packet padding, then the CHLO is padded to such a large
+  // size that it is rejected by the server before the handshake can complete
+  // which results in a test timeout.
+  if (FLAGS_pad_quic_handshake_packets) {
+    return;
+  }
 
   string body;
   GenerateBody(&body, kMaxPacketSize);

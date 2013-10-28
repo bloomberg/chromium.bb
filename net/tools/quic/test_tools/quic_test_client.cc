@@ -4,11 +4,13 @@
 
 #include "net/tools/quic/test_tools/quic_test_client.h"
 
+#include "base/time/time.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_errors.h"
 #include "net/cert/cert_verify_result.h"
 #include "net/cert/x509_certificate.h"
 #include "net/quic/crypto/proof_verifier.h"
+#include "net/quic/test_tools/quic_connection_peer.h"
 #include "net/tools/balsa/balsa_headers.h"
 #include "net/tools/quic/quic_epoll_connection_helper.h"
 #include "net/tools/quic/quic_spdy_client_stream.h"
@@ -16,6 +18,7 @@
 #include "url/gurl.h"
 
 using base::StringPiece;
+using net::test::QuicConnectionPeer;
 using net::test::QuicTestWriter;
 using std::string;
 using std::vector;
@@ -317,10 +320,46 @@ void QuicTestClient::ClearPerRequestState() {
   bytes_written_ = 0;
 }
 
-void QuicTestClient::WaitForInitialResponse() {
-  DCHECK(stream_ != NULL);
-  while (stream_ && stream_->stream_bytes_read() == 0) {
+void QuicTestClient::WaitForResponseForMs(int timeout_ms) {
+  int64 timeout_us = timeout_ms * base::Time::kMicrosecondsPerMillisecond;
+  int64 old_timeout_us = client()->epoll_server()->timeout_in_us();
+  if (timeout_us > 0) {
+    client()->epoll_server()->set_timeout_in_us(timeout_us);
+  }
+  const QuicClock* clock =
+      QuicConnectionPeer::GetHelper(client()->session()->connection())->
+          GetClock();
+  QuicTime end_waiting_time = clock->Now().Add(
+      QuicTime::Delta::FromMicroseconds(timeout_us));
+  while (stream_ != NULL &&
+         !client_->session()->IsClosedStream(stream_->id()) &&
+         (timeout_us < 0 || clock->Now() < end_waiting_time)) {
     client_->WaitForEvents();
+  }
+  if (timeout_us > 0) {
+    client()->epoll_server()->set_timeout_in_us(old_timeout_us);
+  }
+}
+
+void QuicTestClient::WaitForInitialResponseForMs(int timeout_ms) {
+  int64 timeout_us = timeout_ms * base::Time::kMicrosecondsPerMillisecond;
+  int64 old_timeout_us = client()->epoll_server()->timeout_in_us();
+  if (timeout_us > 0) {
+    client()->epoll_server()->set_timeout_in_us(timeout_us);
+  }
+  const QuicClock* clock =
+      QuicConnectionPeer::GetHelper(client()->session()->connection())->
+          GetClock();
+  QuicTime end_waiting_time = clock->Now().Add(
+      QuicTime::Delta::FromMicroseconds(timeout_us));
+  while (stream_ != NULL &&
+         !client_->session()->IsClosedStream(stream_->id()) &&
+         stream_->stream_bytes_read() == 0 &&
+         (timeout_us < 0 || clock->Now() < end_waiting_time)) {
+    client_->WaitForEvents();
+  }
+  if (timeout_us > 0) {
+    client()->epoll_server()->set_timeout_in_us(old_timeout_us);
   }
 }
 

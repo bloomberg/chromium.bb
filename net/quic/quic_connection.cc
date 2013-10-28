@@ -17,6 +17,7 @@
 #include "base/stl_util.h"
 #include "net/quic/crypto/quic_decrypter.h"
 #include "net/quic/crypto/quic_encrypter.h"
+#include "net/quic/iovector.h"
 #include "net/quic/quic_bandwidth.h"
 #include "net/quic/quic_utils.h"
 
@@ -175,10 +176,13 @@ net::QuicConnection::Force HasForcedFrames(
 }
 
 net::IsHandshake HasCryptoHandshake(
-    const RetransmittableFrames& retransmittable_frames) {
-  for (size_t i = 0; i < retransmittable_frames.frames().size(); ++i) {
-    if (retransmittable_frames.frames()[i].type == STREAM_FRAME &&
-        retransmittable_frames.frames()[i].stream_frame->stream_id ==
+    const RetransmittableFrames* retransmittable_frames) {
+  if (!retransmittable_frames) {
+    return net::NOT_HANDSHAKE;
+  }
+  for (size_t i = 0; i < retransmittable_frames->frames().size(); ++i) {
+    if (retransmittable_frames->frames()[i].type == STREAM_FRAME &&
+        retransmittable_frames->frames()[i].stream_frame->stream_id ==
             kCryptoStreamId) {
       return net::IS_HANDSHAKE;
     }
@@ -846,10 +850,9 @@ void QuicConnection::SendVersionNegotiationPacket() {
   pending_version_negotiation_packet_ = true;
 }
 
-QuicConsumedData QuicConnection::SendvStreamDataInner(
+QuicConsumedData QuicConnection::SendStreamDataInner(
     QuicStreamId id,
-    const struct iovec* iov,
-    int iov_count,
+    const IOVector& data,
     QuicStreamOffset offset,
     bool fin,
     QuicAckNotifier* notifier) {
@@ -861,17 +864,18 @@ QuicConsumedData QuicConnection::SendvStreamDataInner(
   size_t bytes_written = 0;
   bool fin_consumed = false;
 
-  for (int i = 0; i < iov_count; ++i) {
-    bool send_fin = fin && (i == iov_count - 1);
-    if (!send_fin && iov[i].iov_len == 0) {
+  for (int i = 0; i < data.Size(); ++i) {
+    bool send_fin = fin && (i == data.Size() - 1);
+    if (!send_fin && data.iovec()[i].iov_len == 0) {
       LOG(DFATAL) << "Attempt to send empty stream frame";
     }
 
-    StringPiece data(static_cast<char*>(iov[i].iov_base), iov[i].iov_len);
+    StringPiece data_piece(static_cast<char*>(data.iovec()[i].iov_base),
+                           data.iovec()[i].iov_len);
     int currentOffset = offset + bytes_written;
     QuicConsumedData consumed_data =
         packet_generator_.ConsumeData(id,
-                                      data,
+                                      data_piece,
                                       currentOffset,
                                       send_fin,
                                       notifier);
@@ -881,12 +885,12 @@ QuicConsumedData QuicConnection::SendvStreamDataInner(
     fin_consumed = consumed_data.fin_consumed;
     // If no bytes were consumed, bail now, because the stream can not write
     // more data.
-    if (consumed_data.bytes_consumed < iov[i].iov_len) {
+    if (consumed_data.bytes_consumed < data.iovec()[i].iov_len) {
       break;
     }
   }
   // Handle the 0 byte write properly.
-  if (iov_count == 0) {
+  if (data.Empty()) {
     DCHECK(fin);
     QuicConsumedData consumed_data = packet_generator_.ConsumeData(
         id, StringPiece(), offset, fin, NULL);
@@ -897,22 +901,20 @@ QuicConsumedData QuicConnection::SendvStreamDataInner(
   return QuicConsumedData(bytes_written, fin_consumed);
 }
 
-QuicConsumedData QuicConnection::SendvStreamData(QuicStreamId id,
-                                                 const struct iovec* iov,
-                                                 int iov_count,
-                                                 QuicStreamOffset offset,
-                                                 bool fin) {
-  return SendvStreamDataInner(id, iov, iov_count, offset, fin, NULL);
+QuicConsumedData QuicConnection::SendStreamData(QuicStreamId id,
+                                                const IOVector& data,
+                                                QuicStreamOffset offset,
+                                                bool fin) {
+  return SendStreamDataInner(id, data, offset, fin, NULL);
 }
 
-QuicConsumedData QuicConnection::SendvStreamDataAndNotifyWhenAcked(
+QuicConsumedData QuicConnection::SendStreamDataAndNotifyWhenAcked(
     QuicStreamId id,
-    const struct iovec* iov,
-    int iov_count,
+    const IOVector& data,
     QuicStreamOffset offset,
     bool fin,
     QuicAckNotifier::DelegateInterface* delegate) {
-  if (!fin && iov_count == 0) {
+  if (!fin && data.Empty()) {
     LOG(DFATAL) << "Attempt to send empty stream frame";
   }
 
@@ -920,7 +922,7 @@ QuicConsumedData QuicConnection::SendvStreamDataAndNotifyWhenAcked(
   // no data was consumed).
   QuicAckNotifier* notifier = new QuicAckNotifier(delegate);
   QuicConsumedData consumed_data =
-      SendvStreamDataInner(id, iov, iov_count, offset, fin, notifier);
+      SendStreamDataInner(id, data, offset, fin, notifier);
 
   if (consumed_data.bytes_consumed == 0) {
     // No data was consumed, delete the notifier.
@@ -1066,6 +1068,7 @@ bool QuicConnection::WriteQueuedPackets() {
                     packet_iterator->packet,
                     packet_iterator->transmission_type,
                     packet_iterator->retransmittable,
+                    packet_iterator->handshake,
                     packet_iterator->forced)) {
       packet_iterator = queued_packets_.erase(packet_iterator);
     } else {
@@ -1086,7 +1089,7 @@ void QuicConnection::WritePendingRetransmissions() {
         sent_packet_manager_.NextPendingRetransmission();
     if (HasForcedFrames(&pending.retransmittable_frames) == NO_FORCE &&
         !CanWrite(pending.transmission_type, HAS_RETRANSMITTABLE_DATA,
-                  HasCryptoHandshake(pending.retransmittable_frames))) {
+                  HasCryptoHandshake(&pending.retransmittable_frames))) {
       break;
     }
 
@@ -1117,6 +1120,8 @@ void QuicConnection::WritePendingRetransmissions() {
                       serialized_packet.entropy_hash,
                       pending.transmission_type,
                       HAS_RETRANSMITTABLE_DATA,
+                      HasCryptoHandshake(
+                          serialized_packet.retransmittable_frames),
                       HasForcedFrames(
                           serialized_packet.retransmittable_frames));
   }
@@ -1242,69 +1247,12 @@ bool QuicConnection::WritePacket(EncryptionLevel level,
                                  QuicPacket* packet,
                                  TransmissionType transmission_type,
                                  HasRetransmittableData retransmittable,
+                                 IsHandshake handshake,
                                  Force forced) {
-  if (!connected_) {
-    DLOG(INFO) << ENDPOINT
-               << "Not sending packet as connection is disconnected.";
-    delete packet;
-    // Returning true because we deleted the packet and the caller shouldn't
-    // delete it again.
-    return true;
-  }
-
-  if (encryption_level_ == ENCRYPTION_FORWARD_SECURE &&
-      level == ENCRYPTION_NONE) {
-    // Drop packets that are NULL encrypted since the peer won't accept them
-    // anymore.
-    DLOG(INFO) << ENDPOINT << "Dropping packet: " << sequence_number
-               << " since the packet is NULL encrypted.";
-    sent_packet_manager_.DiscardUnackedPacket(sequence_number);
+  if (ShouldDiscardPacket(level, sequence_number, retransmittable)) {
     delete packet;
     return true;
   }
-
-  if (retransmittable == HAS_RETRANSMITTABLE_DATA) {
-    if (!sent_packet_manager_.IsUnacked(sequence_number)) {
-      // This is a crazy edge case, but if we retransmit a packet,
-      // (but have to queue it for some reason) then receive an ack
-      // for the previous transmission (but not the retransmission)
-      // then receive a truncated ACK which causes us to raise the
-      // high water mark, all before we're able to send the packet
-      // then we can simply drop it.
-      DLOG(INFO) << ENDPOINT << "Dropping packet: " << sequence_number
-                 << " since it has already been acked.";
-      delete packet;
-      return true;
-    }
-
-    if (sent_packet_manager_.IsPreviousTransmission(sequence_number)) {
-      // If somehow we have already retransmitted this packet *before*
-      // we actually send it for the first time (I think this is probably
-      // impossible in the real world), then don't bother sending it.
-      // We don't want to call DiscardUnackedPacket because in this case
-      // the peer has not yet ACK'd the data.  We need the subsequent
-      // retransmission to be sent.
-      DLOG(INFO) << ENDPOINT << "Dropping packet: " << sequence_number
-                 << " since it has already been retransmitted.";
-      delete packet;
-      return true;
-    }
-
-    if (!sent_packet_manager_.HasRetransmittableFrames(sequence_number)) {
-      DLOG(INFO) << ENDPOINT << "Dropping packet: " << sequence_number
-                 << " since a previous transmission has been acked.";
-      sent_packet_manager_.DiscardUnackedPacket(sequence_number);
-      delete packet;
-      return true;
-    }
-  }
-
-  // TODO(wtc): use the same logic that is used in the packet generator.
-  // Namely, a packet is a handshake if it contains a stream frame for the
-  // crypto stream.  It should be possible to look at the RetransmittableFrames
-  // in the SerializedPacket to determine this for a packet.
-  IsHandshake handshake = level == ENCRYPTION_NONE ? IS_HANDSHAKE
-                                                   : NOT_HANDSHAKE;
 
   // If we are not forced and we can't write, then simply return false;
   if (forced == NO_FORCE &&
@@ -1351,7 +1299,13 @@ bool QuicConnection::WritePacket(EncryptionLevel level,
                                         packet->is_fec_packet(),
                                         packet->length()));
 
-  WriteResult result = WritePacketToWire(sequence_number, level, *encrypted);
+  WriteResult result =
+      writer_->WritePacket(encrypted->data(), encrypted->length(),
+                           self_address().address(), peer_address(), this);
+  if (debug_visitor_) {
+    // Pass the write result to the visitor.
+    debug_visitor_->OnPacketSent(sequence_number, level, *encrypted, result);
+  }
   if (result.status == WRITE_STATUS_BLOCKED) {
     // TODO(satyashekhar): It might be more efficient (fewer system calls), if
     // all connections share this variable i.e this becomes a part of
@@ -1373,6 +1327,62 @@ bool QuicConnection::WritePacket(EncryptionLevel level,
     delete packet;
     return true;
   }
+  return false;
+}
+
+bool QuicConnection::ShouldDiscardPacket(
+    EncryptionLevel level,
+    QuicPacketSequenceNumber sequence_number,
+    HasRetransmittableData retransmittable) {
+  if (!connected_) {
+    DLOG(INFO) << ENDPOINT
+        << "Not sending packet as connection is disconnected.";
+    return true;
+  }
+
+  if (encryption_level_ == ENCRYPTION_FORWARD_SECURE &&
+      level == ENCRYPTION_NONE) {
+    // Drop packets that are NULL encrypted since the peer won't accept them
+    // anymore.
+    DLOG(INFO) << ENDPOINT << "Dropping packet: " << sequence_number
+        << " since the packet is NULL encrypted.";
+    sent_packet_manager_.DiscardUnackedPacket(sequence_number);
+    return true;
+  }
+
+  if (retransmittable == HAS_RETRANSMITTABLE_DATA) {
+    if (!sent_packet_manager_.IsUnacked(sequence_number)) {
+      // This is a crazy edge case, but if we retransmit a packet,
+      // (but have to queue it for some reason) then receive an ack
+      // for the previous transmission (but not the retransmission)
+      // then receive a truncated ACK which causes us to raise the
+      // high water mark, all before we're able to send the packet
+      // then we can simply drop it.
+      DLOG(INFO) << ENDPOINT << "Dropping packet: " << sequence_number
+          << " since it has already been acked.";
+      return true;
+    }
+
+    if (sent_packet_manager_.IsPreviousTransmission(sequence_number)) {
+      // If somehow we have already retransmitted this packet *before*
+      // we actually send it for the first time (I think this is probably
+      // impossible in the real world), then don't bother sending it.
+      // We don't want to call DiscardUnackedPacket because in this case
+      // the peer has not yet ACK'd the data.  We need the subsequent
+      // retransmission to be sent.
+      DLOG(INFO) << ENDPOINT << "Dropping packet: " << sequence_number
+          << " since it has already been retransmitted.";
+      return true;
+    }
+
+    if (!sent_packet_manager_.HasRetransmittableFrames(sequence_number)) {
+      DLOG(INFO) << ENDPOINT << "Dropping packet: " << sequence_number
+          << " since a previous transmission has been acked.";
+      sent_packet_manager_.DiscardUnackedPacket(sequence_number);
+      return true;
+    }
+  }
+
   return false;
 }
 
@@ -1435,20 +1445,6 @@ bool QuicConnection::OnPacketSent(WriteResult result) {
   return true;
 }
 
-WriteResult QuicConnection::WritePacketToWire(
-    QuicPacketSequenceNumber sequence_number,
-    EncryptionLevel level,
-    const QuicEncryptedPacket& packet) {
-  WriteResult result =
-      writer_->WritePacket(packet.data(), packet.length(),
-                           self_address().address(), peer_address(), this);
-  if (debug_visitor_) {
-    // Pass the write result to the visitor.
-    debug_visitor_->OnPacketSent(sequence_number, level, packet, result);
-  }
-  return result;
-}
-
 bool QuicConnection::OnSerializedPacket(
     const SerializedPacket& serialized_packet) {
   if (serialized_packet.retransmittable_frames) {
@@ -1467,6 +1463,8 @@ bool QuicConnection::OnSerializedPacket(
                            serialized_packet.retransmittable_frames != NULL ?
                                HAS_RETRANSMITTABLE_DATA :
                                NO_RETRANSMITTABLE_DATA,
+                           HasCryptoHandshake(
+                               serialized_packet.retransmittable_frames),
                            HasForcedFrames(
                                serialized_packet.retransmittable_frames));
 }
@@ -1490,13 +1488,14 @@ bool QuicConnection::SendOrQueuePacket(EncryptionLevel level,
                                        QuicPacketEntropyHash entropy_hash,
                                        TransmissionType transmission_type,
                                        HasRetransmittableData retransmittable,
+                                       IsHandshake handshake,
                                        Force forced) {
   sent_entropy_manager_.RecordPacketEntropyHash(sequence_number, entropy_hash);
   if (!WritePacket(level, sequence_number, packet,
-                   transmission_type, retransmittable, forced)) {
+                   transmission_type, retransmittable, handshake, forced)) {
     queued_packets_.push_back(QueuedPacket(sequence_number, packet, level,
                                            transmission_type, retransmittable,
-                                           forced));
+                                           handshake, forced));
     return false;
   }
   return true;

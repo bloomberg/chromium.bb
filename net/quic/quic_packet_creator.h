@@ -18,6 +18,8 @@
 #include "net/quic/quic_framer.h"
 #include "net/quic/quic_protocol.h"
 
+NET_EXPORT_PRIVATE extern bool FLAGS_pad_quic_handshake_packets;
+
 namespace net {
 namespace test {
 class QuicPacketCreatorPeer;
@@ -32,13 +34,11 @@ class NET_EXPORT_PRIVATE QuicPacketCreator : public QuicFecBuilderInterface {
   struct Options {
     Options()
         : max_packet_length(kMaxPacketSize),
-          random_reorder(false),
           max_packets_per_fec_group(0),
           send_guid_length(PACKET_8BYTE_GUID),
           send_sequence_number_length(PACKET_1BYTE_SEQUENCE_NUMBER) {}
 
     size_t max_packet_length;
-    bool random_reorder;  // Inefficient: rewrite if used at scale.
     // 0 indicates fec is disabled.
     size_t max_packets_per_fec_group;
     // Length of guid to send over the wire.
@@ -116,10 +116,16 @@ class NET_EXPORT_PRIVATE QuicPacketCreator : public QuicFecBuilderInterface {
   // Returns true if there are frames pending to be serialized.
   bool HasPendingFrames();
 
-  // Returns the number of bytes which are free to frames in the current packet.
+  // Returns the number of bytes which are available to be used by additional
+  // frames in the packet.  Since stream frames are slightly smaller when they
+  // are the last frame in a packet, this method will return a different
+  // value than max_packet_size - PacketSize(), in this case.
   size_t BytesFree() const;
 
-  // Returns the number of bytes in the current packet, including the header.
+  // Returns the number of bytes in the current packet, including the header,
+  // if serialized with the current frames.  Adding a frame to the packet
+  // may change the serialized length of existing frames, as per the comment
+  // in BytesFree.
   size_t PacketSize() const;
 
   // Adds |frame| to the packet creator's list of frames to be serialized.
@@ -184,6 +190,11 @@ class NET_EXPORT_PRIVATE QuicPacketCreator : public QuicFecBuilderInterface {
   // Allows a frame to be added without creating retransmittable frames.
   // Particularly useful for retransmits using SerializeAllFrames().
   bool AddFrame(const QuicFrame& frame, bool save_retransmittable_frames);
+
+  // Adds a padding frame to the current packet only if the current packet
+  // contains a handshake message, and there is sufficient room to fit a
+  // padding frame.
+  void MaybeAddPadding();
 
   Options options_;
   QuicGuid guid_;

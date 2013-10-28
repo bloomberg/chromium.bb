@@ -21,9 +21,9 @@ class NET_EXPORT_PRIVATE QuicPacketWriter {
   virtual ~QuicPacketWriter() {}
 
   // Sends the packet out to the peer.  If the write succeeded, the result's
-  // status is WRITE_OK and bytes_written is populated. If the write failed,
-  // the result's status is WRITE_BLOCKED or WRITE_ERROR and error_code is
-  // populated.
+  // status is WRITE_STATUS_OK and bytes_written is populated. If the write
+  // failed, the result's status is WRITE_STATUS_BLOCKED or WRITE_STATUS_ERROR
+  // and error_code is populated.
   virtual WriteResult WritePacket(
       const char* buffer, size_t buf_len,
       const net::IPAddressNumber& self_address,

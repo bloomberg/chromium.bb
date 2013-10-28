@@ -69,7 +69,8 @@ class QuicTestClient :  public ReliableQuicStream::Visitor {
   void Disconnect();
   IPEndPoint LocalSocketAddress() const;
   void ClearPerRequestState();
-  void WaitForInitialResponse();
+  void WaitForResponseForMs(int timeout_ms);
+  void WaitForInitialResponseForMs(int timeout_ms);
   ssize_t Send(const void *buffer, size_t size);
   int response_size() const;
   size_t bytes_read() const;
@@ -116,7 +117,6 @@ class QuicTestClient :  public ReliableQuicStream::Visitor {
 
   BalsaHeaders headers_;
   QuicPriority priority_;
-
   string response_;
   uint64 bytes_read_;
   uint64 bytes_written_;

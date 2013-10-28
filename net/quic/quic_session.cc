@@ -242,7 +242,9 @@ QuicConsumedData QuicSession::WritevData(QuicStreamId id,
                                          int iov_count,
                                          QuicStreamOffset offset,
                                          bool fin) {
-  return connection_->SendvStreamData(id, iov, iov_count, offset, fin);
+  IOVector data;
+  data.AppendIovec(iov, iov_count);
+  return connection_->SendStreamData(id, data, offset, fin);
 }
 
 void QuicSession::SendRstStream(QuicStreamId id,

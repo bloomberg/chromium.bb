@@ -160,7 +160,7 @@ size_t QuicFramer::GetMinRstStreamFrameSize() {
 // static
 size_t QuicFramer::GetMinConnectionCloseFrameSize() {
   return kQuicFrameTypeSize + kQuicErrorCodeSize + kQuicErrorDetailsLengthSize +
-      GetMinAckFrameSize();
+      GetMinAckFrameSize() - 1;  // Don't include the frame type again.
 }
 
 // static
@@ -237,18 +237,15 @@ bool QuicFramer::IsSupportedVersion(const QuicVersion version) const {
   return false;
 }
 
-size_t QuicFramer::GetSerializedFrameLength(
-    const QuicFrame& frame, size_t free_bytes, bool first_frame) {
+size_t QuicFramer::GetSerializedFrameLength(const QuicFrame& frame,
+                                            size_t free_bytes,
+                                            bool first_frame,
+                                            bool last_frame) {
   if (frame.type == PADDING_FRAME) {
     // PADDING implies end of packet.
     return free_bytes;
   }
-  // See if it fits as the non-last frame.
-  size_t frame_len = ComputeFrameLength(frame, false);
-  // STREAM frames save two bytes when they're the last frame in the packet.
-  if (frame_len > free_bytes && frame.type == STREAM_FRAME) {
-    frame_len = ComputeFrameLength(frame, true);
-  }
+  size_t frame_len = ComputeFrameLength(frame, last_frame);
   if (frame_len > free_bytes) {
     // Only truncate the first frame in a packet, so if subsequent ones go
     // over, stop including more frames.
@@ -282,8 +279,10 @@ SerializedPacket QuicFramer::BuildUnsizedDataPacket(
   size_t packet_size = GetPacketHeaderSize(header);
   for (size_t i = 0; i < frames.size(); ++i) {
     DCHECK_LE(packet_size, max_plaintext_size);
+    bool first_frame = i == 0;
+    bool last_frame = i == frames.size() - 1;
     const size_t frame_size = GetSerializedFrameLength(
-        frames[i], max_plaintext_size - packet_size, i == 0);
+        frames[i], max_plaintext_size - packet_size, first_frame, last_frame);
     DCHECK(frame_size);
     packet_size += frame_size;
   }

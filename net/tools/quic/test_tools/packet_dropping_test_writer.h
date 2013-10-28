@@ -63,14 +63,19 @@ class PacketDroppingTestWriter : public net::test::QuicTestWriter {
   // The percent of time a packet is simulated as being reordered.
   void set_fake_reorder_percentage(int32 fake_packet_reorder_percentage) {
     DCHECK(clock_);
+    DCHECK(!fake_packet_delay_.IsZero());
     fake_packet_reorder_percentage_ = fake_packet_reorder_percentage;
   }
 
   // The percent of time WritePacket will block and set WriteResult's status
-  // to WRITE_BLOCKED.
+  // to WRITE_STATUS_BLOCKED.
   void set_fake_packet_delay(QuicTime::Delta fake_packet_delay) {
     DCHECK(clock_);
     fake_packet_delay_  = fake_packet_delay;
+  }
+
+  void set_seed(uint64 seed) {
+    simple_random_.set_seed(seed);
   }
 
  private:

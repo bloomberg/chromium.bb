@@ -797,6 +797,8 @@
         'quic/crypto/strike_register.h',
         'quic/crypto/source_address_token.cc',
         'quic/crypto/source_address_token.h',
+        'quic/iovector.cc',
+        'quic/iovector.h',
         'quic/quic_ack_notifier.cc',
         'quic/quic_ack_notifier.h',
         'quic/quic_ack_notifier_manager.cc',

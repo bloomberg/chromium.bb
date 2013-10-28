@@ -147,6 +147,9 @@ class FramerVisitorCapturingFrames : public NoOpFramerVisitor {
   const std::vector<QuicStreamFrame>* stream_frames() const {
     return &stream_frames_;
   }
+  const std::vector<string*>& stream_data() const {
+    return stream_data_;
+  }
   QuicAckFrame* ack() { return ack_.get(); }
   QuicCongestionFeedbackFrame* feedback() { return feedback_.get(); }
   QuicRstStreamFrame* rst() { return rst_.get(); }
@@ -160,6 +163,7 @@ class FramerVisitorCapturingFrames : public NoOpFramerVisitor {
   size_t frame_count_;
   QuicPacketHeader header_;
   std::vector<QuicStreamFrame> stream_frames_;
+  std::vector<std::string*> stream_data_;
   scoped_ptr<QuicAckFrame> ack_;
   scoped_ptr<QuicCongestionFeedbackFrame> feedback_;
   scoped_ptr<QuicRstStreamFrame> rst_;
@@ -263,6 +267,7 @@ class PacketSavingConnection : public MockConnection {
       QuicPacketEntropyHash entropy_hash,
       TransmissionType transmission_type,
       HasRetransmittableData has_retransmittable_data,
+      IsHandshake handshake,
       Force forced) OVERRIDE;
 
   std::vector<QuicPacket*> packets_;
