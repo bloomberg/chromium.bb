@@ -61,30 +61,6 @@ SVGElement* SVGLocatable::farthestViewportElement(const SVGElement* element)
     return farthest;
 }
 
-SVGRect SVGLocatable::getBBox(SVGElement* element)
-{
-    ASSERT(element);
-    element->document().updateLayoutIgnorePendingStylesheets();
-
-    // FIXME: Eventually we should support getBBox for detached elements.
-    if (!element->renderer())
-        return SVGRect();
-
-    return element->renderer()->objectBoundingBox();
-}
-
-SVGRect SVGLocatable::getStrokeBBox(SVGElement* element)
-{
-    ASSERT(element);
-    element->document().updateLayoutIgnorePendingStylesheets();
-
-    // FIXME: Eventually we should support getStrokeBBox for detached elements.
-    if (!element->renderer())
-        return SVGRect();
-
-    return element->renderer()->strokeBoundingBox();
-}
-
 AffineTransform SVGLocatable::computeCTM(SVGElement* element, CTMScope mode, StyleUpdateStrategy styleUpdateStrategy)
 {
     ASSERT(element);

@@ -168,12 +168,24 @@ SVGElement* SVGGraphicsElement::farthestViewportElement() const
 
 SVGRect SVGGraphicsElement::getBBox()
 {
-    return SVGTransformable::getBBox(this);
+    document().updateLayoutIgnorePendingStylesheets();
+
+    // FIXME: Eventually we should support getBBox for detached elements.
+    if (!renderer())
+        return SVGRect();
+
+    return renderer()->objectBoundingBox();
 }
 
 SVGRect SVGGraphicsElement::getStrokeBBox()
 {
-    return SVGTransformable::getStrokeBBox(this);
+    document().updateLayoutIgnorePendingStylesheets();
+
+    // FIXME: Eventually we should support getStrokeBBox for detached elements.
+    if (!renderer())
+        return SVGRect();
+
+    return renderer()->strokeBoundingBox();
 }
 
 RenderObject* SVGGraphicsElement::createRenderer(RenderStyle*)

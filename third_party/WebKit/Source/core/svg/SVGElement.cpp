@@ -573,11 +573,11 @@ const HashSet<SVGElementInstance*>& SVGElement::instancesForElement() const
 
 bool SVGElement::getBoundingBox(FloatRect& rect)
 {
-    if (isSVGGraphicsElement()) {
-        rect = toSVGGraphicsElement(this)->getBBox();
-        return true;
-    }
-    return false;
+    if (!isSVGGraphicsElement())
+        return false;
+
+    rect = toSVGGraphicsElement(this)->getBBox();
+    return true;
 }
 
 void SVGElement::setCursorElement(SVGCursorElement* cursorElement)

@@ -45,7 +45,7 @@ public:
     virtual AffineTransform* supplementalTransform();
 
     virtual SVGRect getBBox();
-    virtual SVGRect getStrokeBBox();
+    SVGRect getStrokeBBox();
 
     // "base class" methods for all the elements which render as paths
     virtual void toClipPath(Path&);

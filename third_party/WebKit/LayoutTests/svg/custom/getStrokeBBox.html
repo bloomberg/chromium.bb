@@ -39,7 +39,7 @@
     ids.forEach(function(id) {
       var element = document.getElementById(id);
       var bbox = element.getBBox();
-      var strokeBBox = element.getStrokeBBox()
+      var strokeBBox = element.getStrokeBBox();
 
       // Add a green rect for the bounding box.
       var bboxEl = document.createElementNS(svgNS, 'rect');
