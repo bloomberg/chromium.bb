@@ -397,7 +397,6 @@ static void paintTextWithShadows(GraphicsContext* context,
 {
     // Text shadows are disabled when printing. http://crbug.com/258321
     bool hasShadow = shadowList && !context->printing();
-    Color fillColor = context->fillColor();
 
     if (hasShadow) {
         DrawLooper drawLooper;

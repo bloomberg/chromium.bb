@@ -88,7 +88,6 @@ static int nodeWidth(Node* node)
 
 int RenderFileUploadControl::maxFilenameWidth() const
 {
-    HTMLInputElement* input = toHTMLInputElement(node());
     return max(0, contentBoxRect().pixelSnappedWidth() - nodeWidth(uploadButton()) - afterButtonSpacing);
 }
 
@@ -120,7 +119,6 @@ void RenderFileUploadControl::paintObject(PaintInfo& paintInfo, const LayoutPoin
         if (!button)
             return;
 
-        HTMLInputElement* input = toHTMLInputElement(node());
         LayoutUnit buttonWidth = nodeWidth(button);
         LayoutUnit buttonAndSpacingWidth = buttonWidth + afterButtonSpacing;
         float textWidth = font.width(textRun);

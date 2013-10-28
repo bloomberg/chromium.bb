@@ -53,8 +53,8 @@ static const size_t defaultResourceTimingBufferSize = 150;
 Performance::Performance(Frame* frame)
     : DOMWindowProperty(frame)
     , m_resourceTimingBufferSize(defaultResourceTimingBufferSize)
-    , m_userTiming(0)
     , m_referenceTime(frame->document()->loader()->timing()->referenceMonotonicTime())
+    , m_userTiming(0)
 {
     ASSERT(m_referenceTime);
     ScriptWrappable::init(this);

@@ -568,7 +568,6 @@ void DocumentLoader::ensureWriter(const String& mimeType, const KURL& overriding
         return;
 
     String encoding = overrideEncoding().isNull() ? response().textEncodingName().impl() : overrideEncoding();
-    bool userChosen = !overrideEncoding().isNull();
     m_writer = createWriterFor(m_frame, 0, requestURL(), mimeType, encoding, false, false);
     m_writer->setDocumentWasLoadedAsPartOfNavigation();
     // This should be set before receivedFirstData().

@@ -66,16 +66,16 @@ HitTestResult::HitTestResult(const LayoutPoint& point)
 HitTestResult::HitTestResult(const LayoutPoint& centerPoint, unsigned topPadding, unsigned rightPadding, unsigned bottomPadding, unsigned leftPadding)
     : m_hitTestLocation(centerPoint, topPadding, rightPadding, bottomPadding, leftPadding)
     , m_pointInInnerNodeFrame(centerPoint)
-    , m_isFirstLetter(false)
     , m_isOverWidget(false)
+    , m_isFirstLetter(false)
 {
 }
 
 HitTestResult::HitTestResult(const HitTestLocation& other)
     : m_hitTestLocation(other)
     , m_pointInInnerNodeFrame(m_hitTestLocation.point())
-    , m_isFirstLetter(false)
     , m_isOverWidget(false)
+    , m_isFirstLetter(false)
 {
 }
 
@@ -88,8 +88,8 @@ HitTestResult::HitTestResult(const HitTestResult& other)
     , m_localPoint(other.localPoint())
     , m_innerURLElement(other.URLElement())
     , m_scrollbar(other.scrollbar())
-    , m_isFirstLetter(other.m_isFirstLetter)
     , m_isOverWidget(other.isOverWidget())
+    , m_isFirstLetter(other.m_isFirstLetter)
 {
     // Only copy the NodeSet in case of rect hit test.
     m_rectBasedTestResult = adoptPtr(other.m_rectBasedTestResult ? new NodeSet(*other.m_rectBasedTestResult) : 0);

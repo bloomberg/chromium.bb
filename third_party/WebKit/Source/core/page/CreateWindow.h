@@ -32,7 +32,7 @@
 
 namespace WebCore {
 class Frame;
-class WindowFeatures;
+struct WindowFeatures;
 
 Frame* createWindow(const String& urlString, const AtomicString& frameName, const WindowFeatures&,
     DOMWindow* activeWindow, Frame* firstFrame, Frame* openerFrame, DOMWindow::PrepareDialogFunction = 0, void* functionContext = 0);

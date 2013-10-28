@@ -698,7 +698,6 @@ static PassRefPtr<CSSValueList> valueForBorderRadiusShorthand(const RenderStyle*
     bool showVerticalBottomLeft = style->borderTopRightRadius().height() != style->borderBottomLeftRadius().height();
     bool showVerticalBottomRight = showVerticalBottomLeft || (style->borderBottomRightRadius().height() != style->borderTopLeftRadius().height());
     bool showVerticalTopRight = showVerticalBottomRight || (style->borderTopRightRadius().height() != style->borderTopLeftRadius().height());
-    bool showVerticalTopLeft = (style->borderTopLeftRadius().width() != style->borderTopLeftRadius().height());
 
     RefPtr<CSSValueList> topLeftRadius = valuesForBorderRadiusCorner(style->borderTopLeftRadius(), style);
     RefPtr<CSSValueList> topRightRadius = valuesForBorderRadiusCorner(style->borderTopRightRadius(), style);

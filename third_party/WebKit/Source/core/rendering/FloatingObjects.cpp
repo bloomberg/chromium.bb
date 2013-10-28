@@ -255,7 +255,7 @@ void FloatingObjects::setCachedLowestFloatLogicalBottom(bool isHorizontal, Float
 
 void FloatingObjects::markLowestFloatLogicalBottomCacheAsDirty()
 {
-    for (int i = 0; i < sizeof(m_lowestFloatBottomCache) / sizeof(FloatBottomCachedValue); ++i)
+    for (size_t i = 0; i < sizeof(m_lowestFloatBottomCache) / sizeof(FloatBottomCachedValue); ++i)
         m_lowestFloatBottomCache[i].dirty = true;
 }
 

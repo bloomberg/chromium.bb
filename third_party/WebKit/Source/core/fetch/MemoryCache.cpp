@@ -75,9 +75,9 @@ MemoryCache::MemoryCache()
     , m_minDeadCapacity(0)
     , m_maxDeadCapacity(cDefaultCacheCapacity)
     , m_maxDeferredPruneDeadCapacity(cDeferredPruneDeadCapacityFactor * cDefaultCacheCapacity)
+    , m_delayBeforeLiveDecodedPrune(cMinDelayBeforeLiveDecodedPrune)
     , m_liveSize(0)
     , m_deadSize(0)
-    , m_delayBeforeLiveDecodedPrune(cMinDelayBeforeLiveDecodedPrune)
 #ifdef MEMORY_CACHE_STATS
     , m_statsTimer(this, &MemoryCache::dumpStats)
 #endif

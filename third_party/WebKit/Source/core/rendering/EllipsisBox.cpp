@@ -41,7 +41,6 @@ void EllipsisBox::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset, La
     if (styleTextColor != context->fillColor())
         context->setFillColor(styleTextColor);
 
-    Color textColor = styleTextColor;
     const Font& font = style->font();
     if (selectionState() != RenderObject::SelectionNone) {
         paintSelection(context, paintOffset, style, font);

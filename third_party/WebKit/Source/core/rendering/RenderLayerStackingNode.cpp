@@ -56,9 +56,9 @@ namespace WebCore {
 // we have to ask the render layer about some of its state.
 RenderLayerStackingNode::RenderLayerStackingNode(RenderLayer* layer)
     : m_layer(layer)
-    , m_normalFlowListDirty(true)
     , m_descendantsAreContiguousInStackingOrder(false)
     , m_descendantsAreContiguousInStackingOrderDirty(true)
+    , m_normalFlowListDirty(true)
     , m_needsToBeStackingContainer(false)
     , m_needsToBeStackingContainerHasBeenRecorded(false)
 #if !ASSERT_DISABLED

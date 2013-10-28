@@ -67,7 +67,6 @@ namespace WebCore {
         PassOwnPtr<ContextMenu> createContextMenu(Event*);
         void showContextMenu(Event*);
 
-        Page* m_page;
         ContextMenuClient* m_client;
         OwnPtr<ContextMenu> m_contextMenu;
         RefPtr<ContextMenuProvider> m_menuProvider;

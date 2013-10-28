@@ -204,7 +204,6 @@ void ConsoleBase::internalAddMessage(MessageType type, MessageLevel level, Scrip
 
     size_t stackSize = printTrace ? ScriptCallStack::maxCallStackSizeToCapture : 1;
     RefPtr<ScriptCallStack> callStack(createScriptCallStackForConsole(stackSize));
-    const ScriptCallFrame& lastCaller = callStack->at(0);
 
     String message;
     bool gotStringMessage = arguments->getFirstArgumentAsString(message);

@@ -39,9 +39,9 @@ class XMLParserInput {
 public:
     explicit XMLParserInput(const String& source)
         : m_source(source)
+        , m_encoding(0)
         , m_data(0)
         , m_size(0)
-        , m_encoding(0)
     {
         if (m_source.isEmpty())
             return;

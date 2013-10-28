@@ -41,11 +41,9 @@
 
 namespace WebCore {
 
-ContextMenuController::ContextMenuController(Page* page, ContextMenuClient* client)
-    : m_page(page)
-    , m_client(client)
+ContextMenuController::ContextMenuController(Page*, ContextMenuClient* client)
+    : m_client(client)
 {
-    ASSERT_ARG(page, page);
     ASSERT_ARG(client, client);
 }
 

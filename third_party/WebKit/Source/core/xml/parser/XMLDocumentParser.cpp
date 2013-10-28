@@ -998,7 +998,6 @@ void XMLDocumentParser::startElementNs(const AtomicString& localName, const Atom
 
     m_currentNode->parserAppendChild(newElement.get());
 
-    const ContainerNode* currentNode = m_currentNode;
     if (newElement->hasTagName(HTMLNames::templateTag))
         pushCurrentNode(toHTMLTemplateElement(newElement.get())->content());
     else

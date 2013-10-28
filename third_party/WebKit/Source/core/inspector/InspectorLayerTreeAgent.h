@@ -83,7 +83,6 @@ private:
 
     InspectorFrontend::LayerTree* m_frontend;
     Page* m_page;
-    InspectorDOMAgent* m_domAgent;
 
     HashMap<const RenderLayer*, String> m_documentLayerToIdMap;
 };

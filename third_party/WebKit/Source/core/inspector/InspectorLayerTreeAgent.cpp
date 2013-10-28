@@ -107,11 +107,10 @@ void gatherGraphicsLayers(GraphicsLayer* root, HashMap<int, int>& layerIdToNodeI
         gatherGraphicsLayers(root->children()[i], layerIdToNodeIdMap, layers);
 }
 
-InspectorLayerTreeAgent::InspectorLayerTreeAgent(InstrumentingAgents* instrumentingAgents, InspectorCompositeState* state, InspectorDOMAgent* domAgent, Page* page)
+InspectorLayerTreeAgent::InspectorLayerTreeAgent(InstrumentingAgents* instrumentingAgents, InspectorCompositeState* state, InspectorDOMAgent*, Page* page)
     : InspectorBaseAgent<InspectorLayerTreeAgent>("LayerTree", instrumentingAgents, state)
     , m_frontend(0)
     , m_page(page)
-    , m_domAgent(domAgent)
 {
 }
 

@@ -1523,7 +1523,6 @@ bool RenderThemeChromiumMac::paintSliderThumb(RenderObject* o, const PaintInfo& 
     FloatRect borderBounds = unzoomedRect;
     borderBounds.inflate(sliderThumbBorderWidth / 2.0);
 
-    FloatRect shadowBounds = unzoomedRect;
     borderBounds.inflate(-sliderThumbBorderWidth);
     FloatSize shadowOffset(0, 1);
     paintInfo.context->setShadow(shadowOffset, sliderThumbShadowBlur, shadowColor);

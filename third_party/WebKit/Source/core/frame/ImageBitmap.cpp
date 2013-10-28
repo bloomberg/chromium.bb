@@ -39,9 +39,9 @@ static inline PassRefPtr<Image> cropImage(Image* image, const IntRect& cropRect)
 }
 
 ImageBitmap::ImageBitmap(HTMLImageElement* image, const IntRect& cropRect)
-    : m_cropRect(cropRect)
+    : m_imageElement(image)
     , m_bitmap(0)
-    , m_imageElement(image)
+    , m_cropRect(cropRect)
 {
     IntRect srcRect = intersection(cropRect, IntRect(0, 0, image->width(), image->height()));
     m_bitmapRect = IntRect(IntPoint(max(0, -cropRect.x()), max(0, -cropRect.y())), srcRect.size());
@@ -56,8 +56,8 @@ ImageBitmap::ImageBitmap(HTMLImageElement* image, const IntRect& cropRect)
 }
 
 ImageBitmap::ImageBitmap(HTMLVideoElement* video, const IntRect& cropRect)
-    : m_cropRect(cropRect)
-    , m_imageElement(0)
+    : m_imageElement(0)
+    , m_cropRect(cropRect)
     , m_bitmapOffset(IntPoint())
 {
     IntRect videoRect = IntRect(IntPoint(), video->player()->naturalSize());
@@ -76,8 +76,8 @@ ImageBitmap::ImageBitmap(HTMLVideoElement* video, const IntRect& cropRect)
 }
 
 ImageBitmap::ImageBitmap(HTMLCanvasElement* canvas, const IntRect& cropRect)
-    : m_cropRect(cropRect)
-    , m_imageElement(0)
+    : m_imageElement(0)
+    , m_cropRect(cropRect)
     , m_bitmapOffset(IntPoint())
 {
     CanvasRenderingContext* sourceContext = canvas->renderingContext();
@@ -92,8 +92,8 @@ ImageBitmap::ImageBitmap(HTMLCanvasElement* canvas, const IntRect& cropRect)
 }
 
 ImageBitmap::ImageBitmap(ImageData* data, const IntRect& cropRect)
-    : m_cropRect(cropRect)
-    , m_imageElement(0)
+    : m_imageElement(0)
+    , m_cropRect(cropRect)
     , m_bitmapOffset(IntPoint())
 {
     IntRect srcRect = intersection(cropRect, IntRect(IntPoint(), data->size()));
@@ -109,9 +109,9 @@ ImageBitmap::ImageBitmap(ImageData* data, const IntRect& cropRect)
 }
 
 ImageBitmap::ImageBitmap(ImageBitmap* bitmap, const IntRect& cropRect)
-    : m_cropRect(cropRect)
+    : m_imageElement(bitmap->imageElement())
     , m_bitmap(0)
-    , m_imageElement(bitmap->imageElement())
+    , m_cropRect(cropRect)
     , m_bitmapOffset(IntPoint())
 {
     IntRect oldBitmapRect = bitmap->bitmapRect();
@@ -130,8 +130,8 @@ ImageBitmap::ImageBitmap(ImageBitmap* bitmap, const IntRect& cropRect)
 }
 
 ImageBitmap::ImageBitmap(Image* image, const IntRect& cropRect)
-    : m_cropRect(cropRect)
-    , m_imageElement(0)
+    : m_imageElement(0)
+    , m_cropRect(cropRect)
 {
     IntRect srcRect = intersection(cropRect, IntRect(IntPoint(), image->size()));
     m_bitmap = cropImage(image, cropRect);

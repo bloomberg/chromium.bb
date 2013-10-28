@@ -154,11 +154,11 @@ TimelineTraceEventProcessor::TimelineTraceEventProcessor(WeakPtr<InspectorTimeli
     , m_inspectorClient(client)
     , m_pageId(reinterpret_cast<unsigned long long>(m_timelineAgent.get()->page()))
     , m_layerTreeId(m_timelineAgent.get()->layerTreeId())
+    , m_lastEventProcessingTime(0)
+    , m_processEventsTaskInFlight(false)
     , m_layerId(0)
     , m_paintSetupStart(0)
     , m_paintSetupEnd(0)
-    , m_lastEventProcessingTime(0)
-    , m_processEventsTaskInFlight(false)
 {
     registerHandler(InstrumentationEvents::BeginFrame, TRACE_EVENT_PHASE_INSTANT, &TimelineTraceEventProcessor::onBeginFrame);
     registerHandler(InstrumentationEvents::UpdateLayer, TRACE_EVENT_PHASE_BEGIN, &TimelineTraceEventProcessor::onUpdateLayerBegin);
@@ -249,7 +249,7 @@ void TimelineTraceEventProcessor::onBeginFrame(const TraceEvent&)
 void TimelineTraceEventProcessor::onUpdateLayerBegin(const TraceEvent& event)
 {
     unsigned long long layerTreeId = event.asUInt(InstrumentationEventArguments::LayerTreeId);
-    if (layerTreeId != m_layerTreeId)
+    if (layerTreeId != static_cast<unsigned long long>(m_layerTreeId))
         return;
     m_layerId = event.asUInt(InstrumentationEventArguments::LayerId);
     // We don't know the node yet. For content layers, the node will be updated

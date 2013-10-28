@@ -478,7 +478,7 @@ void RenderTableSection::updateRowsHeightHavingOnlySpanningCells(RenderTableCell
     const unsigned rowSpan = cell->rowSpan();
     const unsigned rowIndex = cell->rowIndex();
 
-    ASSERT(rowSpan == spanningRowsHeight.rowHeight.size());
+    ASSERT_UNUSED(rowSpan, rowSpan == spanningRowsHeight.rowHeight.size());
 
     for (unsigned row = 0; row < spanningRowsHeight.rowHeight.size(); row++) {
         unsigned actualRow = row + rowIndex;

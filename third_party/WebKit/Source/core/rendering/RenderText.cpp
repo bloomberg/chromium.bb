@@ -916,8 +916,6 @@ void RenderText::computePreferredLogicalWidths(float leadWidth, HashSet<const Si
     // If automatic hyphenation is allowed, we keep track of the width of the widest word (or word
     // fragment) encountered so far, and only try hyphenating words that are wider.
     float maxWordWidth = numeric_limits<float>::max();
-    int minimumPrefixLength = 0;
-    int minimumSuffixLength = 0;
     int firstGlyphLeftOverflow = -1;
 
     bool breakAll = (styleToUse->wordBreak() == BreakAllWordBreak || styleToUse->wordBreak() == BreakWordBreak) && styleToUse->autoWrap();

@@ -47,8 +47,8 @@
 namespace WebCore {
 
 StyleResourceLoader::StyleResourceLoader(ResourceFetcher* fetcher)
-    : m_fetcher(fetcher)
-    , m_customFilterProgramCache(StyleCustomFilterProgramCache::create())
+    : m_customFilterProgramCache(StyleCustomFilterProgramCache::create())
+    , m_fetcher(fetcher)
 {
 }
 

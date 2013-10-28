@@ -78,7 +78,9 @@
 
 #define WTF_USE_COMPOSITING_FOR_SMALL_CANVASES 1
 
+#if !USE(COMPOSITING_FOR_SMALL_CANVASES)
 static const int canvasAreaThresholdRequiringCompositing = 50 * 100;
+#endif
 
 namespace WebCore {
 

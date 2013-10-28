@@ -37,7 +37,7 @@
 
 namespace WebCore {
 
-class WorkerLocation : public RefCounted<WorkerLocation>, public ScriptWrappable, public DOMURLUtilsReadOnly {
+class WorkerLocation FINAL : public RefCounted<WorkerLocation>, public ScriptWrappable, public DOMURLUtilsReadOnly {
 public:
     static PassRefPtr<WorkerLocation> create(const KURL& url)
     {

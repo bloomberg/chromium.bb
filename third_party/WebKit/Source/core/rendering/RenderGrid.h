@@ -31,8 +31,8 @@
 
 namespace WebCore {
 
-class GridCoordinate;
-class GridSpan;
+struct GridCoordinate;
+struct GridSpan;
 class GridTrack;
 
 enum GridPositionSide {
@@ -70,7 +70,7 @@ private:
     bool namedGridLinesDefinitionDidChange(const RenderStyle*) const;
 
     class GridIterator;
-    class GridSizingData;
+    struct GridSizingData;
     enum TrackSizingDirection { ForColumns, ForRows };
     void computedUsedBreadthOfGridTracks(TrackSizingDirection, GridSizingData&);
     void computedUsedBreadthOfGridTracks(TrackSizingDirection, GridSizingData&, LayoutUnit& availableLogicalSpace);

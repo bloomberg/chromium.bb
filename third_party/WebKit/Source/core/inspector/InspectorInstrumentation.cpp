@@ -249,7 +249,6 @@ const char Paint[] = "Paint";
 const char Layer[] = "Layer";
 const char BeginFrame[] = "BeginFrame";
 const char UpdateLayer[] = "UpdateLayer";
-const char DrawLazyPixelRef[] = "DrawLazyPixelRef";
 };
 
 namespace InstrumentationEventArguments {
