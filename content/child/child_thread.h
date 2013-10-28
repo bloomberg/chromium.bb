@@ -49,7 +49,7 @@ class CONTENT_EXPORT ChildThread : public IPC::Listener, public IPC::Sender {
  public:
   // Creates the thread.
   ChildThread();
-  // Used for single-process mode.
+  // Used for single-process mode and for in process gpu mode.
   explicit ChildThread(const std::string& channel_name);
   // ChildProcess::main_thread() is reset after Shutdown(), and before the
   // destructor, so any subsystem that relies on ChildProcess::main_thread()
@@ -210,6 +210,8 @@ class CONTENT_EXPORT ChildThread : public IPC::Listener, public IPC::Sender {
   scoped_ptr<base::debug::TraceMemoryController> trace_memory_controller_;
 
   scoped_ptr<base::PowerMonitor> power_monitor_;
+
+  bool in_browser_process_;
 
   DISALLOW_COPY_AND_ASSIGN(ChildThread);
 };

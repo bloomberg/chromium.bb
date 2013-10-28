@@ -133,7 +133,8 @@ void QuitMainThreadMessageLoop() {
 }  // namespace
 
 ChildThread::ChildThread()
-    : channel_connected_factory_(this) {
+    : channel_connected_factory_(this),
+      in_browser_process_(false) {
   channel_name_ = CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
       switches::kProcessChannelID);
   Init();
@@ -141,7 +142,8 @@ ChildThread::ChildThread()
 
 ChildThread::ChildThread(const std::string& channel_name)
     : channel_name_(channel_name),
-      channel_connected_factory_(this) {
+      channel_connected_factory_(this),
+      in_browser_process_(true) {
   Init();
 }
 
@@ -163,7 +165,8 @@ void ChildThread::Init() {
                            true,
                            ChildProcess::current()->GetShutDownEvent()));
 #ifdef IPC_MESSAGE_LOG_ENABLED
-  IPC::Logging::GetInstance()->SetIPCSender(this);
+  if (!in_browser_process_)
+    IPC::Logging::GetInstance()->SetIPCSender(this);
 #endif
 
   sync_message_filter_ =
