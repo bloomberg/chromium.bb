@@ -1,3 +1,6 @@
+<!DOCTYPE html>
+<script src="../fast/js/resources/js-test-pre.js"></script>
+<script>
 description(
 'This tests that string replacement with a large replacement string causes an out-of-memory exception. See <a href="https://bugs.webkit.org/show_bug.cgi?id=102956">bug 102956</a> for more details.'
 );
@@ -16,3 +19,5 @@ y = createStringWithRepeatedChar(y, (1 << 20) + 1);
 
 shouldThrow("x.replace(/\\d/g, y)", '"Error: Out of memory"');
 var successfullyParsed = true;
+</script>
+<script src="../fast/js/resources/js-test-post.js"></script>
