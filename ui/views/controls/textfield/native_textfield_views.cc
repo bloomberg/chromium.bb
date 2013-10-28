@@ -745,6 +745,10 @@ bool NativeTextfieldViews::IsCommandIdChecked(int command_id) const {
 }
 
 bool NativeTextfieldViews::IsCommandIdEnabled(int command_id) const {
+  TextfieldController* controller = textfield_->GetController();
+  if (controller && controller->HandlesCommand(command_id))
+    return controller->IsCommandIdEnabled(command_id);
+
   bool editable = !textfield_->read_only();
   string16 result;
   switch (command_id) {
@@ -763,7 +767,7 @@ bool NativeTextfieldViews::IsCommandIdEnabled(int command_id) const {
     case IDS_APP_SELECT_ALL:
       return !model_->GetText().empty();
     default:
-      return textfield_->GetController()->IsCommandIdEnabled(command_id);
+      return controller->IsCommandIdEnabled(command_id);
   }
 }
 

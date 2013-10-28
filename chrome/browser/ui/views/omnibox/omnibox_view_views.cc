@@ -291,9 +291,13 @@ bool OmniboxViewViews::OnKeyPressed(const ui::KeyEvent& event) {
       return true;
     case ui::VKEY_V:
       if (control && !alt && !read_only()) {
-        OnBeforePossibleChange();
-        OnPaste();
-        OnAfterPossibleChange();
+        ExecuteCommand(IDS_APP_PASTE, 0);
+        return true;
+      }
+      break;
+    case ui::VKEY_INSERT:
+      if (shift && !control && !read_only()) {
+        ExecuteCommand(IDS_APP_PASTE, 0);
         return true;
       }
       break;
@@ -835,8 +839,10 @@ void OmniboxViewViews::UpdateContextMenu(ui::SimpleMenuModel* menu_contents) {
 }
 
 bool OmniboxViewViews::IsCommandIdEnabled(int command_id) const {
+  if (command_id == IDS_APP_PASTE)
+    return !read_only() && !GetClipboardText().empty();
   if (command_id == IDS_PASTE_AND_GO)
-    return model()->CanPasteAndGo(GetClipboardText());
+    return !read_only() && model()->CanPasteAndGo(GetClipboardText());
   if (command_id != IDS_SHOW_URL)
     return command_updater()->IsCommandEnabled(command_id);
   return controller()->GetToolbarModel()->WouldPerformSearchTermReplacement(
