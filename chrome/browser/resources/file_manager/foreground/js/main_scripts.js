@@ -98,7 +98,7 @@
 //<include src="file_type.js"/>
 //<include src="file_watcher.js"/>
 //<include src="folder_shortcuts_data_model.js"/>
-//<include src="navigation_list.js"/>
+//<include src="navigation_list_model.js"/>
 //<include src="scrollbar.js"/>
 //<include src="share_client.js"/>
 //<include src="share_dialog.js"/>
@@ -108,6 +108,7 @@
 //<include src="ui/breadcrumbs_controller.js"/>
 //<include src="ui/conflict_dialog.js"/>
 //<include src="ui/file_manager_ui.js"/>
+//<include src="ui/navigation_list.js"/>
 //<include src="ui/preview_panel.js"/>
 //<include src="ui/progress_center_panel.js"/>
 //<include src="ui/search_box.js"/>
