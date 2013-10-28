@@ -494,7 +494,7 @@ crbug.com/310992 virtual/threaded/animations/play-state.html [ Pass Failure ]
 crbug.com/310992 virtual/web-animations-css/animations/play-state.html [ Pass Failure ]
 
 # This can't be rebaselined because it's a reftest.
-Bug(steveblock) animations/opacity-transform-animation.html [ ImageOnlyFailure ]
+crbug.com/311423 animations/opacity-transform-animation.html [ ImageOnlyFailure ]
 
 crbug.com/309369 perf/accessibility-title-ui-element.html [ Pass Timeout ]
 crbug.com/309370 [ Mac ] fast/css/font-face-html-as-svg.html [ Timeout ]
