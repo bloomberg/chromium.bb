@@ -2396,7 +2396,7 @@ frame_handle_status(struct window_frame *frame, struct input *input,
 					      window->user_data);
 		else
 			display_exit(window->display);
-		frame_status_clear(frame->frame, FRAME_STATUS_CLOSE);
+		return;
 	}
 
 	if ((status & FRAME_STATUS_MOVE) && window->shell_surface) {
