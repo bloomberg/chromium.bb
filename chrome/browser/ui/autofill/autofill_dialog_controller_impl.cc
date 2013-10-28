@@ -791,7 +791,6 @@ string16 AutofillDialogControllerImpl::LegalDocumentsText() {
   if (!IsPayingWithWallet())
     return string16();
 
-  EnsureLegalDocumentsText();
   return legal_documents_text_;
 }
 
@@ -924,7 +923,6 @@ DialogOverlayState AutofillDialogControllerImpl::GetDialogOverlay() {
 
 const std::vector<gfx::Range>& AutofillDialogControllerImpl::
     LegalDocumentLinks() {
-  EnsureLegalDocumentsText();
   return legal_document_link_ranges_;
 }
 
@@ -1085,41 +1083,57 @@ void AutofillDialogControllerImpl::OnWalletFormFieldError(
   UpdateForErrors();
 }
 
-void AutofillDialogControllerImpl::EnsureLegalDocumentsText() {
+void AutofillDialogControllerImpl::ConstructLegalDocumentsText() {
   if (!wallet_items_ || wallet_items_->legal_documents().empty())
     return;
-
-  // The text has already been constructed, no need to recompute.
-  if (!legal_documents_text_.empty())
-    return;
+  NOTIMPLEMENTED();
 
   const std::vector<wallet::WalletItems::LegalDocument*>& documents =
       wallet_items_->legal_documents();
-  DCHECK_LE(documents.size(), 3U);
+  // There should never be just one document because the privacy policy doc gets
+  // tacked on the end of other documents.
   DCHECK_GE(documents.size(), 2U);
-  const bool new_user = wallet_items_->HasRequiredAction(wallet::SETUP_WALLET);
 
-  const string16 privacy_policy_display_name =
-      l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_PRIVACY_POLICY_LINK);
-  string16 text;
-  if (documents.size() == 2U) {
-    text = l10n_util::GetStringFUTF16(
-        new_user ? IDS_AUTOFILL_DIALOG_LEGAL_LINKS_NEW_2 :
-                   IDS_AUTOFILL_DIALOG_LEGAL_LINKS_UPDATED_2,
-        documents[0]->display_name(),
-        documents[1]->display_name());
-  } else {
-    text = l10n_util::GetStringFUTF16(
-        new_user ? IDS_AUTOFILL_DIALOG_LEGAL_LINKS_NEW_3 :
-                   IDS_AUTOFILL_DIALOG_LEGAL_LINKS_UPDATED_3,
-        documents[0]->display_name(),
-        documents[1]->display_name(),
-        documents[2]->display_name());
+  std::vector<base::string16> link_names;
+  for (size_t i = 0; i < documents.size(); ++i) {
+    link_names.push_back(documents[i]->display_name());
   }
 
+  const bool new_user = wallet_items_->HasRequiredAction(wallet::SETUP_WALLET);
+  int resource_id = 0;
+  switch (documents.size()) {
+    case 2U:
+      resource_id = new_user ? IDS_AUTOFILL_DIALOG_LEGAL_LINKS_NEW_2 :
+                               IDS_AUTOFILL_DIALOG_LEGAL_LINKS_UPDATED_2;
+      break;
+    case 3U:
+      resource_id = new_user ? IDS_AUTOFILL_DIALOG_LEGAL_LINKS_NEW_3 :
+                               IDS_AUTOFILL_DIALOG_LEGAL_LINKS_UPDATED_3;
+      break;
+    case 4U:
+      resource_id = new_user ? IDS_AUTOFILL_DIALOG_LEGAL_LINKS_NEW_4 :
+                               IDS_AUTOFILL_DIALOG_LEGAL_LINKS_UPDATED_4;
+      break;
+    case 5U:
+      resource_id = new_user ? IDS_AUTOFILL_DIALOG_LEGAL_LINKS_NEW_5 :
+                               IDS_AUTOFILL_DIALOG_LEGAL_LINKS_UPDATED_5;
+      break;
+    case 6U:
+      resource_id = new_user ? IDS_AUTOFILL_DIALOG_LEGAL_LINKS_NEW_6 :
+                               IDS_AUTOFILL_DIALOG_LEGAL_LINKS_UPDATED_6;
+      break;
+    default:
+      // We can only handle so many documents. For lack of a better way of
+      // handling document overflow, just error out if there are too many.
+      DisableWallet(wallet::WalletClient::UNKNOWN_ERROR);
+      return;
+  }
+
+  std::vector<size_t> offsets;
+  string16 text = l10n_util::GetStringFUTF16(resource_id, link_names, &offsets);
   legal_document_link_ranges_.clear();
   for (size_t i = 0; i < documents.size(); ++i) {
-    size_t link_start = text.find(documents[i]->display_name());
+    size_t link_start = offsets[i];
     legal_document_link_ranges_.push_back(gfx::Range(
         link_start, link_start + documents[i]->display_name().size()));
   }
@@ -2365,6 +2379,7 @@ void AutofillDialogControllerImpl::OnDidGetWalletItems(
 
   wallet_items_ = wallet_items.Pass();
   OnWalletOrSigninUpdate();
+  ConstructLegalDocumentsText();
 }
 
 void AutofillDialogControllerImpl::OnDidSaveToWallet(

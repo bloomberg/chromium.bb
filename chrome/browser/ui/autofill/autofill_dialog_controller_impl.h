@@ -351,9 +351,8 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
   void OnWalletFormFieldError(
       const std::vector<wallet::FormFieldError>& form_field_errors);
 
-  // Calculates |legal_documents_text_| and |legal_document_link_ranges_| if
-  // they have not already been calculated.
-  void EnsureLegalDocumentsText();
+  // Calculates |legal_documents_text_| and |legal_document_link_ranges_|.
+  void ConstructLegalDocumentsText();
 
   // Clears previously entered manual input and removes |section| from
   // |section_editing_state_|. Does not update the view.

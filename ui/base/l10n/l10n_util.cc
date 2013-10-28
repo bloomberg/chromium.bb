@@ -673,9 +673,9 @@ string16 GetStringUTF16(int message_id) {
   return str;
 }
 
-static string16 GetStringF(int message_id,
-                           const std::vector<string16>& replacements,
-                           std::vector<size_t>* offsets) {
+string16 GetStringFUTF16(int message_id,
+                         const std::vector<string16>& replacements,
+                         std::vector<size_t>* offsets) {
   // TODO(tc): We could save a string copy if we got the raw string as
   // a StringPiece and were able to call ReplaceStringPlaceholders with
   // a StringPiece format string and string16 substitution strings.  In
@@ -748,7 +748,7 @@ string16 GetStringFUTF16(int message_id,
                          const string16& a) {
   std::vector<string16> replacements;
   replacements.push_back(a);
-  return GetStringF(message_id, replacements, NULL);
+  return GetStringFUTF16(message_id, replacements, NULL);
 }
 
 string16 GetStringFUTF16(int message_id,
@@ -765,7 +765,7 @@ string16 GetStringFUTF16(int message_id,
   replacements.push_back(a);
   replacements.push_back(b);
   replacements.push_back(c);
-  return GetStringF(message_id, replacements, NULL);
+  return GetStringFUTF16(message_id, replacements, NULL);
 }
 
 string16 GetStringFUTF16(int message_id,
@@ -778,7 +778,7 @@ string16 GetStringFUTF16(int message_id,
   replacements.push_back(b);
   replacements.push_back(c);
   replacements.push_back(d);
-  return GetStringF(message_id, replacements, NULL);
+  return GetStringFUTF16(message_id, replacements, NULL);
 }
 
 string16 GetStringFUTF16(int message_id,
@@ -793,7 +793,7 @@ string16 GetStringFUTF16(int message_id,
   replacements.push_back(c);
   replacements.push_back(d);
   replacements.push_back(e);
-  return GetStringF(message_id, replacements, NULL);
+  return GetStringFUTF16(message_id, replacements, NULL);
 }
 
 string16 GetStringFUTF16(int message_id, const string16& a, size_t* offset) {
@@ -801,7 +801,7 @@ string16 GetStringFUTF16(int message_id, const string16& a, size_t* offset) {
   std::vector<size_t> offsets;
   std::vector<string16> replacements;
   replacements.push_back(a);
-  string16 result = GetStringF(message_id, replacements, &offsets);
+  string16 result = GetStringFUTF16(message_id, replacements, &offsets);
   DCHECK(offsets.size() == 1);
   *offset = offsets[0];
   return result;
@@ -814,7 +814,7 @@ string16 GetStringFUTF16(int message_id,
   std::vector<string16> replacements;
   replacements.push_back(a);
   replacements.push_back(b);
-  return GetStringF(message_id, replacements, offsets);
+  return GetStringFUTF16(message_id, replacements, offsets);
 }
 
 string16 GetStringFUTF16Int(int message_id, int a) {

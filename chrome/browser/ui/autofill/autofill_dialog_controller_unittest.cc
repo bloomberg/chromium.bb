@@ -1226,12 +1226,56 @@ TEST_F(AutofillDialogControllerTest, AcceptLegalDocuments) {
   EXPECT_CALL(*controller()->GetTestingWalletClient(), GetFullWallet(_));
   EXPECT_CALL(*controller(), LoadRiskFingerprintData());
 
+  EXPECT_TRUE(controller()->LegalDocumentsText().empty());
+  controller()->OnDidGetWalletItems(CompleteAndValidWalletItems());
+  EXPECT_TRUE(controller()->LegalDocumentsText().empty());
+
   scoped_ptr<wallet::WalletItems> wallet_items = CompleteAndValidWalletItems();
   wallet_items->AddLegalDocument(wallet::GetTestLegalDocument());
+  wallet_items->AddLegalDocument(wallet::GetTestLegalDocument());
   controller()->OnDidGetWalletItems(wallet_items.Pass());
+  EXPECT_FALSE(controller()->LegalDocumentsText().empty());
+
   controller()->OnAccept();
   controller()->OnDidAcceptLegalDocuments();
   controller()->OnDidLoadRiskFingerprintData(GetFakeFingerprint().Pass());
+}
+
+TEST_F(AutofillDialogControllerTest, RejectLegalDocuments) {
+  EXPECT_CALL(*controller()->GetTestingWalletClient(),
+              AcceptLegalDocuments(_, _)).Times(0);
+
+  scoped_ptr<wallet::WalletItems> wallet_items = CompleteAndValidWalletItems();
+  wallet_items->AddLegalDocument(wallet::GetTestLegalDocument());
+  wallet_items->AddLegalDocument(wallet::GetTestLegalDocument());
+  controller()->OnDidGetWalletItems(wallet_items.Pass());
+  EXPECT_FALSE(controller()->LegalDocumentsText().empty());
+
+  controller()->OnCancel();
+}
+
+TEST_F(AutofillDialogControllerTest, LegalDocumentOverflow) {
+  for (size_t number_of_docs = 2; number_of_docs < 11; ++number_of_docs) {
+    scoped_ptr<wallet::WalletItems> wallet_items =
+        CompleteAndValidWalletItems();
+    for (size_t i = 0; i < number_of_docs; ++i)
+      wallet_items->AddLegalDocument(wallet::GetTestLegalDocument());
+
+    Reset();
+    controller()->OnDidGetWalletItems(wallet_items.Pass());
+
+    // The dialog is only equipped to handle 2-6 legal documents. More than
+    // 6 errors out.
+    if (number_of_docs <= 6U) {
+      EXPECT_FALSE(controller()->LegalDocumentsText().empty());
+    } else {
+      EXPECT_TRUE(controller()->LegalDocumentsText().empty());
+      EXPECT_EQ(1U, NotificationsOfType(
+          DialogNotification::WALLET_ERROR).size());
+    }
+  }
+
+  controller()->OnCancel();
 }
 
 // Makes sure the default object IDs are respected.
@@ -1926,6 +1970,7 @@ TEST_F(AutofillDialogControllerTest, RiskNeverLoadsWithPendingLegalDocuments) {
 
   scoped_ptr<wallet::WalletItems> wallet_items = CompleteAndValidWalletItems();
   wallet_items->AddLegalDocument(wallet::GetTestLegalDocument());
+  wallet_items->AddLegalDocument(wallet::GetTestLegalDocument());
   controller()->OnDidGetWalletItems(wallet_items.Pass());
   controller()->OnAccept();
 }
@@ -1934,6 +1979,7 @@ TEST_F(AutofillDialogControllerTest, RiskLoadsAfterAcceptingLegalDocuments) {
   EXPECT_CALL(*controller(), LoadRiskFingerprintData()).Times(0);
 
   scoped_ptr<wallet::WalletItems> wallet_items = CompleteAndValidWalletItems();
+  wallet_items->AddLegalDocument(wallet::GetTestLegalDocument());
   wallet_items->AddLegalDocument(wallet::GetTestLegalDocument());
   controller()->OnDidGetWalletItems(wallet_items.Pass());
 
