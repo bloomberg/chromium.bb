@@ -1,3 +1,14 @@
+# This file is automatically processed to create .DEPS.git which is the file
+# that gclient uses under git.
+#
+# See http://code.google.com/p/chromium/wiki/UsingGit
+#
+# To test manually, run:
+#   python tools/deps2git/deps2git.py -o .DEPS.git
+#   gclient runhooks
+# DO NOT CHECK IN CHANGES TO .DEPS.git. It will be automatically updated by
+# a bot when you modify this one.
+#
 # When adding a new dependency, please update the top-level .gitignore file
 # to list the dependency's destination directory.
 
@@ -605,6 +616,27 @@ hooks = [
     "action": ["python", "src/build/util/lastchange.py",
                "-s", "src/third_party/WebKit",
                "-o", "src/build/util/LASTCHANGE.blink"],
+  },
+  # Pull GN binaries. This needs to be before running GYP below.
+  {
+    "name": "gn_win",
+    "pattern": "\\.sha1$",
+    "action": [ "download_from_google_storage",
+                "--platform=win32",
+                "--directory",
+                "--bucket", "chromium-gn",
+                "src/tools/gn/bin/win",
+    ],
+  },
+  {
+    "name": "gn_linux",
+    "pattern": "\\.sha1$",
+    "action": [ "download_from_google_storage",
+                "--platform=\"linux*\"",
+                "--directory",
+                "--bucket", "chromium-gn",
+                "src/tools/gn/bin/linux",
+    ],
   },
   {
     # A change to a .gyp, .gypi, or to GYP itself should run the generator.

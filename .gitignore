@@ -305,6 +305,9 @@ v8.log
 /third_party/yasm/yasm.xml
 /tools/deps2git/
 /tools/distcc
+/tools/gn/bin/linux
+/tools/gn/bin/mac
+/tools/gn/bin/win
 /tools/grit
 /tools/gyp
 /tools/histograms
