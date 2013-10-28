@@ -2373,5 +2373,43 @@ TEST_F(TraceEventTestFixture, ThreadOnceBlocking) {
   ValidateAllTraceMacrosCreatedData(trace_parsed_);
 }
 
+std::string* g_log_buffer = NULL;
+bool MockLogMessageHandler(int, const char*, int, size_t,
+                           const std::string& str) {
+  if (!g_log_buffer)
+    g_log_buffer = new std::string();
+  g_log_buffer->append(str);
+  return false;
+}
+
+TEST_F(TraceEventTestFixture, EchoToConsole) {
+  logging::LogMessageHandlerFunction old_log_message_handler =
+      logging::GetLogMessageHandler();
+  logging::SetLogMessageHandler(MockLogMessageHandler);
+
+  TraceLog::GetInstance()->SetEnabled(CategoryFilter("*"),
+                                      TraceLog::ECHO_TO_CONSOLE);
+  TRACE_EVENT_BEGIN0("a", "begin_end");
+  {
+    TRACE_EVENT0("b", "duration");
+    TRACE_EVENT0("b1", "duration1");
+  }
+  TRACE_EVENT_INSTANT0("c", "instant", TRACE_EVENT_SCOPE_GLOBAL);
+  TRACE_EVENT_END0("a", "begin_end");
+
+  EXPECT_NE(std::string::npos, g_log_buffer->find("begin_end[a]\x1b"));
+  EXPECT_NE(std::string::npos, g_log_buffer->find("| duration[b]\x1b"));
+  EXPECT_NE(std::string::npos, g_log_buffer->find("| | duration1[b1]\x1b"));
+  EXPECT_NE(std::string::npos, g_log_buffer->find("| | duration1[b1] ("));
+  EXPECT_NE(std::string::npos, g_log_buffer->find("| duration[b] ("));
+  EXPECT_NE(std::string::npos, g_log_buffer->find("| instant[c]\x1b"));
+  EXPECT_NE(std::string::npos, g_log_buffer->find("begin_end[a] ("));
+
+  EndTraceAndFlush();
+  delete g_log_buffer;
+  logging::SetLogMessageHandler(old_log_message_handler);
+  g_log_buffer = NULL;
+}
+
 }  // namespace debug
 }  // namespace base

@@ -636,7 +636,9 @@ class BASE_EXPORT TraceLog {
   TraceBuffer* trace_buffer() const { return logged_events_.get(); }
   TraceBuffer* CreateTraceBuffer();
 
-  void OutputEventToConsoleWhileLocked(TraceEvent* trace_event);
+  void OutputEventToConsoleWhileLocked(unsigned char phase,
+                                       const TimeTicks& timestamp,
+                                       TraceEvent* trace_event);
 
   TraceEvent* AddEventToThreadSharedChunkWhileLocked(
       NotificationHelper* notifier, TraceEventHandle* handle);
