@@ -1354,4 +1354,44 @@ bool HttpResponseHeaders::IsChunkEncoded() const {
       HasHeaderValue("Transfer-Encoding", "chunked");
 }
 
+#if defined(SPDY_PROXY_AUTH_ORIGIN)
+bool HttpResponseHeaders::GetChromeProxyInfo(
+    base::TimeDelta* bypass_duration) const {
+  const char kProxyBypass[] = "proxy-bypass";
+  *bypass_duration = base::TimeDelta();
+
+  // Support header of the form Chrome-Proxy: bypass=<duration>, where
+  // <duration> is the number of seconds to wait before retrying
+  // the proxy. If the duration is 0, then the default proxy retry delay
+  // (specified in |ProxyList::UpdateRetryInfoOnFallback|) will be used.
+  std::string name = "chrome-proxy";
+  const char kBypassPrefix[] = "bypass=";
+  const size_t kBypassPrefixLen = arraysize(kBypassPrefix) - 1;
+
+  void* iter = NULL;
+  std::string value;
+  while (EnumerateHeader(&iter, name, &value)) {
+    if (value.size() > kBypassPrefixLen) {
+      if (LowerCaseEqualsASCII(value.begin(),
+                               value.begin() + kBypassPrefixLen,
+                               kBypassPrefix)) {
+        int64 seconds;
+        if (!base::StringToInt64(StringPiece(value.begin() + kBypassPrefixLen,
+                                             value.end()),
+                                 &seconds) || seconds < 0) {
+          continue;  // In case there is a well formed bypass instruction.
+        }
+        *bypass_duration = TimeDelta::FromSeconds(seconds);
+        return true;
+      }
+    }
+  }
+  // TODO(bengr): Deprecate the use of Connection: Proxy-Bypass.
+  if (HasHeaderValue("Connection", kProxyBypass))
+    return true;
+
+  return false;
+}
+#endif
+
 }  // namespace net

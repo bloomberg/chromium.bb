@@ -185,23 +185,27 @@ bool ProxyList::Fallback(ProxyRetryInfoMap* proxy_retry_info,
     NOTREACHED();
     return false;
   }
-  UpdateRetryInfoOnFallback(proxy_retry_info, net_log);
+  UpdateRetryInfoOnFallback(proxy_retry_info, base::TimeDelta(), net_log);
 
   // Remove this proxy from our list.
   proxies_.erase(proxies_.begin());
   return !proxies_.empty();
 }
 
-void ProxyList::UpdateRetryInfoOnFallback(
-    ProxyRetryInfoMap* proxy_retry_info, const BoundNetLog& net_log) const {
+void ProxyList::UpdateRetryInfoOnFallback(ProxyRetryInfoMap* proxy_retry_info,
+                                          base::TimeDelta retry_delay,
+                                          const BoundNetLog& net_log) const {
   // Time to wait before retrying a bad proxy server.
-#if defined(OS_ANDROID) || defined(OS_IOS)
-  // Randomize the timeout over a range from one to five minutes.
-  const TimeDelta proxy_retry_delay =
-      TimeDelta::FromMilliseconds(base::RandInt(1 * 60 * 1000, 5 * 60 * 1000));
+  if (retry_delay == base::TimeDelta()) {
+#if defined(SPDY_PROXY_AUTH_ORIGIN)
+    // Randomize the timeout over a range from one to five minutes.
+    retry_delay =
+        TimeDelta::FromMilliseconds(
+            base::RandInt(1 * 60 * 1000, 5 * 60 * 1000));
 #else
-  const TimeDelta proxy_retry_delay = TimeDelta::FromMinutes(5);
+    retry_delay = TimeDelta::FromMinutes(5);
 #endif
+  }
 
   if (proxies_.empty()) {
     NOTREACHED();
@@ -218,7 +222,7 @@ void ProxyList::UpdateRetryInfoOnFallback(
       iter->second.bad_until = TimeTicks::Now() + iter->second.current_delay;
     } else {
       ProxyRetryInfo retry_info;
-      retry_info.current_delay = proxy_retry_delay;
+      retry_info.current_delay = retry_delay;
       retry_info.bad_until = TimeTicks().Now() + retry_info.current_delay;
       (*proxy_retry_info)[key] = retry_info;
     }

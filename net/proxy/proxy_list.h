@@ -14,6 +14,7 @@
 
 namespace base {
 class ListValue;
+class TimeDelta;
 }
 
 namespace net {
@@ -89,8 +90,11 @@ class NET_EXPORT_PRIVATE ProxyList {
 
   // Updates |proxy_retry_info| to indicate that the first proxy in the list
   // is bad. This is distinct from Fallback(), above, to allow updating proxy
-  // retry information without modifying a given transction's proxy list.
+  // retry information without modifying a given transction's proxy list. Will
+  // retry after |retry_delay| if positive, and will use the default proxy retry
+  // duration otherwise.
   void UpdateRetryInfoOnFallback(ProxyRetryInfoMap* proxy_retry_info,
+                                 base::TimeDelta retry_delay,
                                  const BoundNetLog& net_log) const;
 
  private:

@@ -1179,8 +1179,10 @@ int ProxyService::ReconsiderProxyAfterError(const GURL& url,
 }
 
 bool ProxyService::MarkProxyAsBad(const ProxyInfo& result,
+                                  base::TimeDelta retry_delay,
                                   const BoundNetLog& net_log) {
-  result.proxy_list_.UpdateRetryInfoOnFallback(&proxy_retry_info_, net_log);
+  result.proxy_list_.UpdateRetryInfoOnFallback(&proxy_retry_info_, retry_delay,
+                                               net_log);
   return result.proxy_list_.HasUntriedProxies(proxy_retry_info_);
 }
 

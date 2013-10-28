@@ -250,6 +250,15 @@ class NET_EXPORT HttpResponseHeaders
   // Returns true if the response is chunk-encoded.
   bool IsChunkEncoded() const;
 
+#if defined (SPDY_PROXY_AUTH_ORIGIN)
+  // Returns true if the Chrome-Proxy header is present and contains a bypass
+  // delay. Sets |bypass_duration| to the specified delay if greater than 0, and
+  // to 0 otherwise to indicate that the default proxy delay (as specified in
+  // |ProxyList::UpdateRetryInfoOnFallback|) should be used. |bypass_duration|
+  // must be non-NULL.
+  bool GetChromeProxyInfo(base::TimeDelta* bypass_duration) const;
+#endif
+
   // Creates a Value for use with the NetLog containing the response headers.
   base::Value* NetLogCallback(NetLog::LogLevel log_level) const;
 
