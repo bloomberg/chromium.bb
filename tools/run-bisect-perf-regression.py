@@ -266,7 +266,8 @@ def _SetupAndRunPerformanceTest(config, path_to_file, path_to_goma):
     return 1
 
 
-def _RunBisectionScript(config, working_directory, path_to_file, path_to_goma):
+def _RunBisectionScript(config, working_directory, path_to_file, path_to_goma,
+    dry_run):
   """Attempts to execute src/tools/bisect-perf-regression.py with the parameters
   passed in.
 
@@ -277,6 +278,7 @@ def _RunBisectionScript(config, working_directory, path_to_file, path_to_goma):
       the depot.
     path_to_file: Path to the bisect-perf-regression.py script.
     path_to_goma: Path to goma directory.
+    dry_run: Do a dry run, skipping sync, build, and performance testing steps.
 
   Returns:
     0 on success, otherwise 1.
@@ -325,6 +327,9 @@ def _RunBisectionScript(config, working_directory, path_to_file, path_to_goma):
   if path_to_goma:
     cmd.append('--use_goma')
 
+  if dry_run:
+    cmd.extend(['--debug_ignore_build', '--debug_ignore_sync',
+        '--debug_ignore_perf_test'])
   cmd = [str(c) for c in cmd]
 
   with Goma(path_to_goma) as goma:
@@ -354,6 +359,11 @@ def main():
                     type='str',
                     help='Path to goma directory. If this is supplied, goma '
                     'builds will be enabled.')
+  parser.add_option('--dry_run',
+                    action="store_true",
+                    help='The script will perform the full bisect, but '
+                    'without syncing, building, or running the performance '
+                    'tests.')
   (opts, args) = parser.parse_args()
 
   path_to_current_directory = os.path.abspath(os.path.dirname(sys.argv[0]))
@@ -373,7 +383,7 @@ def main():
       return 1
 
     return _RunBisectionScript(config, opts.working_directory,
-        path_to_current_directory, opts.path_to_goma)
+        path_to_current_directory, opts.path_to_goma, opts.dry_run)
   else:
     perf_cfg_files = ['run-perf-test.cfg', os.path.join('..', 'third_party',
         'WebKit', 'Tools', 'run-perf-test.cfg')]
