@@ -214,6 +214,7 @@
       'exported/WebSocketStreamError.cpp',
       'exported/WebSourceInfo.cpp',
       'exported/WebThreadSafeData.cpp',
+      'exported/WebTransformKeyframe.cpp',
       'exported/WebURL.cpp',
       'exported/WebURLError.cpp',
       'exported/WebURLLoadTiming.cpp',
