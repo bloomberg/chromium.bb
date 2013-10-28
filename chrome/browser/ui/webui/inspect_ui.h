@@ -75,7 +75,7 @@ class InspectUI : public content::WebUIController,
   PrefChangeRegistrar pref_change_registrar_;
 
   typedef std::map<std::string, DevToolsTargetImpl*> TargetMap;
-  TargetMap web_contents_targets_;
+  TargetMap render_view_host_targets_;
   TargetMap worker_targets_;
   TargetMap remote_targets_;
 

@@ -12,6 +12,7 @@
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "content/public/browser/browser_thread.h"
@@ -50,16 +51,16 @@ std::string GetExtensionName(WebContents* web_contents) {
   return extension_host->extension()->name();
 }
 
-class WebContentsTarget : public DevToolsTargetImpl {
+class RenderViewHostTarget : public DevToolsTargetImpl {
  public:
-  explicit WebContentsTarget(WebContents* web_contents);
+  explicit RenderViewHostTarget(RenderViewHost* rvh, bool is_tab);
 
   // content::DevToolsTarget overrides:
   virtual bool Activate() const OVERRIDE;
   virtual bool Close() const OVERRIDE;
 
   // DevToolsTargetImpl overrides:
-  virtual WebContents* GetWebContents() const OVERRIDE;
+  virtual RenderViewHost* GetRenderViewHost() const OVERRIDE;
   virtual int GetTabId() const OVERRIDE;
   virtual std::string GetExtensionId() const OVERRIDE;
   virtual void Inspect(Profile* profile) const OVERRIDE;
@@ -69,10 +70,16 @@ class WebContentsTarget : public DevToolsTargetImpl {
   std::string extension_id_;
 };
 
-WebContentsTarget::WebContentsTarget(WebContents* web_contents) {
-  agent_host_ =
-      DevToolsAgentHost::GetOrCreateFor(web_contents->GetRenderViewHost());
+RenderViewHostTarget::RenderViewHostTarget(RenderViewHost* rvh, bool is_tab) {
+  agent_host_ = DevToolsAgentHost::GetOrCreateFor(rvh);
   id_ = agent_host_->GetId();
+  type_ = kTargetTypeOther;
+  tab_id_ = -1;
+
+  WebContents* web_contents = WebContents::FromRenderViewHost(rvh);
+  if (!web_contents)
+    return;  // Orphan RVH will show up with no title/url/icon in clients.
+
   title_ = UTF16ToUTF8(web_contents->GetTitle());
   url_ = web_contents->GetURL();
   content::NavigationController& controller = web_contents->GetController();
@@ -81,11 +88,10 @@ WebContentsTarget::WebContentsTarget(WebContents* web_contents) {
     favicon_url_ = entry->GetFavicon().url;
   last_activity_time_ = web_contents->GetLastSelectedTime();
 
-  tab_id_ = ExtensionTabUtil::GetTabId(web_contents);
-  if (tab_id_ >= 0) {
+  if (is_tab) {
     type_ = kTargetTypePage;
+    tab_id_ = ExtensionTabUtil::GetTabId(web_contents);
   } else {
-    type_ = kTargetTypeOther;
     Profile* profile =
         Profile::FromBrowserContext(web_contents->GetBrowserContext());
     if (profile) {
@@ -122,37 +128,39 @@ WebContentsTarget::WebContentsTarget(WebContents* web_contents) {
   }
 }
 
-bool WebContentsTarget::Activate() const {
-  WebContents* web_contents = GetWebContents();
+bool RenderViewHostTarget::Activate() const {
+  RenderViewHost* rvh = GetRenderViewHost();
+  if (!rvh)
+    return false;
+  WebContents* web_contents = WebContents::FromRenderViewHost(rvh);
   if (!web_contents)
     return false;
   web_contents->GetDelegate()->ActivateContents(web_contents);
   return true;
 }
 
-bool WebContentsTarget::Close() const {
-  RenderViewHost* rvh = agent_host_->GetRenderViewHost();
+bool RenderViewHostTarget::Close() const {
+  RenderViewHost* rvh = GetRenderViewHost();
   if (!rvh)
     return false;
   rvh->ClosePage();
   return true;
 }
 
-WebContents* WebContentsTarget::GetWebContents() const {
-  RenderViewHost* rvh = agent_host_->GetRenderViewHost();
-  return rvh ? WebContents::FromRenderViewHost(rvh) : NULL;
+RenderViewHost* RenderViewHostTarget::GetRenderViewHost() const {
+  return agent_host_->GetRenderViewHost();
 }
 
-int WebContentsTarget::GetTabId() const {
+int RenderViewHostTarget::GetTabId() const {
   return tab_id_;
 }
 
-std::string WebContentsTarget::GetExtensionId() const {
+std::string RenderViewHostTarget::GetExtensionId() const {
   return extension_id_;
 }
 
-void WebContentsTarget::Inspect(Profile* profile) const {
-  RenderViewHost* rvh = agent_host_->GetRenderViewHost();
+void RenderViewHostTarget::Inspect(Profile* profile) const {
+  RenderViewHost* rvh = GetRenderViewHost();
   if (!rvh)
     return;
   DevToolsWindow::OpenDevToolsWindow(rvh);
@@ -260,7 +268,7 @@ int DevToolsTargetImpl::GetTabId() const {
   return -1;
 }
 
-WebContents* DevToolsTargetImpl::GetWebContents() const {
+RenderViewHost* DevToolsTargetImpl::GetRenderViewHost() const {
   return NULL;
 }
 
@@ -275,9 +283,9 @@ void DevToolsTargetImpl::Reload() const {
 }
 
 // static
-scoped_ptr<DevToolsTargetImpl> DevToolsTargetImpl::CreateForWebContents(
-    content::WebContents* web_contents) {
-  return scoped_ptr<DevToolsTargetImpl>(new WebContentsTarget(web_contents));
+scoped_ptr<DevToolsTargetImpl> DevToolsTargetImpl::CreateForRenderViewHost(
+    content::RenderViewHost* rvh, bool is_tab) {
+  return scoped_ptr<DevToolsTargetImpl>(new RenderViewHostTarget(rvh, is_tab));
 }
 
 // static
@@ -287,16 +295,19 @@ scoped_ptr<DevToolsTargetImpl> DevToolsTargetImpl::CreateForWorker(
 }
 
 // static
-DevToolsTargetImpl::List DevToolsTargetImpl::EnumerateWebContentsTargets() {
+DevToolsTargetImpl::List DevToolsTargetImpl::EnumerateRenderViewHostTargets() {
+  std::set<RenderViewHost*> tab_rvhs;
+  for (TabContentsIterator it; !it.done(); it.Next())
+    tab_rvhs.insert(it->GetRenderViewHost());
+
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DevToolsTargetImpl::List result;
   std::vector<RenderViewHost*> rvh_list =
       content::DevToolsAgentHost::GetValidRenderViewHosts();
   for (std::vector<RenderViewHost*>::iterator it = rvh_list.begin();
        it != rvh_list.end(); ++it) {
-    WebContents* web_contents = WebContents::FromRenderViewHost(*it);
-    if (web_contents)
-      result.push_back(new WebContentsTarget(web_contents));
+    bool is_tab = tab_rvhs.find(*it) != tab_rvhs.end();
+    result.push_back(new RenderViewHostTarget(*it, is_tab));
   }
   return result;
 }
@@ -328,7 +339,7 @@ static void CollectAllTargets(
     const DevToolsTargetImpl::List& worker_targets) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DevToolsTargetImpl::List result =
-      DevToolsTargetImpl::EnumerateWebContentsTargets();
+      DevToolsTargetImpl::EnumerateRenderViewHostTargets();
   result.insert(result.begin(), worker_targets.begin(), worker_targets.end());
   callback.Run(result);
 }

@@ -393,8 +393,8 @@ DevToolsTargetImpl* InspectUI::FindTarget(const std::string& type,
     TargetMap::iterator it = remote_targets_.find(id);
     return it == remote_targets_.end() ? NULL : it->second;
   } else {
-    TargetMap::iterator it = web_contents_targets_.find(id);
-    return it == web_contents_targets_.end() ? NULL : it->second;
+    TargetMap::iterator it = render_view_host_targets_.find(id);
+    return it == render_view_host_targets_.end() ? NULL : it->second;
   }
 }
 
@@ -419,20 +419,20 @@ void InspectUI::PopulateWebContentsTargets() {
   std::vector<DevToolsTargetImpl*> guest_targets;
 
   DevToolsTargetImpl::List targets =
-      DevToolsTargetImpl::EnumerateWebContentsTargets();
+      DevToolsTargetImpl::EnumerateRenderViewHostTargets();
 
-  STLDeleteValues(&web_contents_targets_);
+  STLDeleteValues(&render_view_host_targets_);
   for (DevToolsTargetImpl::List::iterator it = targets.begin();
       it != targets.end(); ++it) {
     DevToolsTargetImpl* target = *it;
-    WebContents* web_contents = target->GetWebContents();
-    if (!web_contents)
-      continue;
-    RenderViewHost* rvh = web_contents->GetRenderViewHost();
+    RenderViewHost* rvh = target->GetRenderViewHost();
     if (!rvh)
       continue;
+    WebContents* web_contents = WebContents::FromRenderViewHost(rvh);
+    if (!web_contents)
+      continue;
 
-    web_contents_targets_[target->GetId()] = target;
+    render_view_host_targets_[target->GetId()] = target;
     if (rvh->GetProcess()->IsGuest()) {
       guest_targets.push_back(target);
     } else {
@@ -446,7 +446,9 @@ void InspectUI::PopulateWebContentsTargets() {
   for (std::vector<DevToolsTargetImpl*>::iterator it(guest_targets.begin());
        it != guest_targets.end(); ++it) {
     DevToolsTargetImpl* guest = (*it);
-    WebContents* embedder = guest->GetWebContents()->GetEmbedderWebContents();
+    WebContents* guest_web_contents =
+        WebContents::FromRenderViewHost(guest->GetRenderViewHost());
+    WebContents* embedder = guest_web_contents->GetEmbedderWebContents();
     if (embedder && web_contents_to_descriptor_.count(embedder) > 0) {
       DictionaryValue* parent = web_contents_to_descriptor_[embedder];
       ListValue* guests = NULL;
