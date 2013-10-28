@@ -507,10 +507,8 @@ void SetJobLevel(const CommandLine& cmd_line,
 // TODO(jschuh): Need get these restrictions applied to NaCl and Pepper.
 // Just have to figure out what needs to be warmed up first.
 void AddBaseHandleClosePolicy(sandbox::TargetPolicy* policy) {
-  // Being able to manipulate anything BaseNamedObjects is bad.
-  string16 object_path = PrependWindowsSessionPath(L"\\BaseNamedObjects");
-  policy->AddKernelObjectToClose(L"Directory", object_path.data());
-  object_path = PrependWindowsSessionPath(
+  // TODO(cpu): Add back the BaseNamedObjects policy.
+  string16 object_path = PrependWindowsSessionPath(
       L"\\BaseNamedObjects\\windows_shell_global_counters");
   policy->AddKernelObjectToClose(L"Section", object_path.data());
 }
