@@ -103,8 +103,8 @@ class WrapperTestLauncherDelegate : public base::TestLauncherDelegate {
       const testing::TestInfo* test_info) OVERRIDE;
   virtual bool ShouldRunTest(const testing::TestCase* test_case,
                              const testing::TestInfo* test_info) OVERRIDE;
-  virtual void RunTests(base::TestLauncher* test_launcher,
-                        const std::vector<std::string>& test_names) OVERRIDE;
+  virtual size_t RunTests(base::TestLauncher* test_launcher,
+                          const std::vector<std::string>& test_names) OVERRIDE;
   virtual size_t RetryTests(
       base::TestLauncher* test_launcher,
       const std::vector<std::string>& test_names) OVERRIDE;
@@ -153,6 +153,9 @@ class WrapperTestLauncherDelegate : public base::TestLauncherDelegate {
   typedef std::map<std::string, base::FilePath> UserDataDirMap;
   UserDataDirMap user_data_dir_map_;
 
+  // Store names of all seen tests to properly handle PRE_ tests.
+  std::set<std::string> all_test_names_;
+
   // Temporary directory for user data directories.
   base::ScopedTempDir temp_dir_;
 
@@ -174,8 +177,17 @@ std::string WrapperTestLauncherDelegate::GetTestNameForFiltering(
 bool WrapperTestLauncherDelegate::ShouldRunTest(
     const testing::TestCase* test_case,
     const testing::TestInfo* test_info) {
+  all_test_names_.insert(
+      std::string(test_case->name()) + "." + test_info->name());
+
   if (StartsWithASCII(test_info->name(), kManualTestPrefix, true) &&
       !CommandLine::ForCurrentProcess()->HasSwitch(kRunManualTestsFlag)) {
+    return false;
+  }
+
+  if (StartsWithASCII(test_info->name(), kPreTestPrefix, true)) {
+    // We will actually run PRE_ tests, but to ensure they run on the same shard
+    // as dependent tests, handle all these details internally.
     return false;
   }
 
@@ -191,46 +203,60 @@ bool WrapperTestLauncherDelegate::ShouldRunTest(
   return true;
 }
 
-void WrapperTestLauncherDelegate::RunTests(
+std::string GetPreTestName(const std::string& full_name) {
+  size_t dot_pos = full_name.find('.');
+  CHECK_NE(dot_pos, std::string::npos);
+  std::string test_case_name = full_name.substr(0, dot_pos);
+  std::string test_name = full_name.substr(dot_pos + 1);
+  return test_case_name + "." + kPreTestPrefix + test_name;
+}
+
+size_t WrapperTestLauncherDelegate::RunTests(
     base::TestLauncher* test_launcher,
     const std::vector<std::string>& test_names) {
-  // List of tests we can kick off right now, depending on no other tests.
-  std::vector<std::string> tests_to_run_now;
+  // Number of additional tests to run because of dependencies.
+  size_t additional_tests_to_run_count = 0;
 
-  std::set<std::string> test_names_set(test_names.begin(), test_names.end());
-
+  // Compute dependencies of tests to be run.
   for (size_t i = 0; i < test_names.size(); i++) {
     std::string full_name(test_names[i]);
+    std::string pre_test_name(GetPreTestName(full_name));
 
-    // Make sure PRE_ tests and tests that depend on them share the same
-    // data directory - based it on the test name without prefixes.
-    std::string test_name_no_pre(RemoveAnyPrePrefixes(full_name));
-    if (!ContainsKey(user_data_dir_map_, test_name_no_pre)) {
-      base::FilePath temp_dir;
-      CHECK(file_util::CreateTemporaryDirInDir(
-                temp_dir_.path(), FILE_PATH_LITERAL("d"), &temp_dir));
-      user_data_dir_map_[test_name_no_pre] = temp_dir;
-    }
+    while (ContainsKey(all_test_names_, pre_test_name)) {
+      additional_tests_to_run_count++;
 
-    size_t dot_pos = full_name.find('.');
-    CHECK_NE(dot_pos, std::string::npos);
-    std::string test_case_name = full_name.substr(0, dot_pos);
-    std::string test_name = full_name.substr(dot_pos + 1);
-    std::string pre_test_name(
-        test_case_name + "." + kPreTestPrefix + test_name);
-    if (ContainsKey(test_names_set, pre_test_name)) {
       DCHECK(!ContainsKey(dependent_test_map_, pre_test_name));
       dependent_test_map_[pre_test_name] = full_name;
 
       DCHECK(!ContainsKey(reverse_dependent_test_map_, full_name));
       reverse_dependent_test_map_[full_name] = pre_test_name;
-    } else {
-      tests_to_run_now.push_back(full_name);
+
+      full_name = pre_test_name;
+      pre_test_name = GetPreTestName(pre_test_name);
     }
   }
 
-  for (size_t i = 0; i < tests_to_run_now.size(); i++)
-    DoRunTest(test_launcher, tests_to_run_now[i]);
+  for (size_t i = 0; i < test_names.size(); i++) {
+    std::string full_name(test_names[i]);
+
+    // Make sure no PRE_ tests were requested explicitly.
+    DCHECK_EQ(full_name, RemoveAnyPrePrefixes(full_name));
+
+    if (!ContainsKey(user_data_dir_map_, full_name)) {
+      base::FilePath temp_dir;
+      CHECK(file_util::CreateTemporaryDirInDir(
+                temp_dir_.path(), FILE_PATH_LITERAL("d"), &temp_dir));
+      user_data_dir_map_[full_name] = temp_dir;
+    }
+
+    // If the test has any dependencies, get to the root and start with that.
+    while (ContainsKey(reverse_dependent_test_map_, full_name))
+      full_name = GetPreTestName(full_name);
+
+    DoRunTest(test_launcher, full_name);
+  }
+
+  return test_names.size() + additional_tests_to_run_count;
 }
 
 size_t WrapperTestLauncherDelegate::RetryTests(
@@ -367,10 +393,7 @@ void WrapperTestLauncherDelegate::GTestCallback(
 
   result.elapsed_time = elapsed_time;
 
-  // TODO(phajdan.jr): Use base::PrintTestOutputSnippetOnFailure after migrating
-  // away from run_test_cases.py (http://crbug.com/236893).
-  fprintf(stdout, "%s", output.c_str());
-  fflush(stdout);
+  result.output_snippet = GetTestOutputSnippet(result, output);
 
   if (ContainsKey(dependent_test_map_, test_name))
     RunDependentTest(test_launcher, dependent_test_map_[test_name], result);
@@ -439,6 +462,7 @@ int RunContentMain(int argc, char** argv,
 }
 
 int LaunchTests(TestLauncherDelegate* launcher_delegate,
+                int default_jobs,
                 int argc,
                 char** argv) {
   DCHECK(!g_launcher_delegate);
@@ -470,22 +494,22 @@ int LaunchTests(TestLauncherDelegate* launcher_delegate,
   if (ShouldRunContentMain())
     return RunContentMain(argc, argv, launcher_delegate);
 
+  base::AtExitManager at_exit;
+  testing::InitGoogleTest(&argc, argv);
+  TestTimeouts::Initialize();
+
+  int jobs = default_jobs;
+  if (!GetSwitchValueAsInt(switches::kTestLauncherJobs, &jobs))
+    return 1;
+
   fprintf(stdout,
-      "Starting tests...\n"
+      "Starting tests (using %d parallel jobs)...\n"
       "IMPORTANT DEBUGGING NOTE: each test is run inside its own process.\n"
       "For debugging a test inside a debugger, use the\n"
       "--gtest_filter=<your_test_name> flag along with either\n"
       "--single_process (to run the test in one launcher/browser process) or\n"
       "--single-process (to do the above, and also run Chrome in single-"
-      "process mode).\n");
-
-  base::AtExitManager at_exit;
-  testing::InitGoogleTest(&argc, argv);
-  TestTimeouts::Initialize();
-
-  int jobs = 1;  // TODO(phajdan.jr): Default to half the number of CPU cores.
-  if (!GetSwitchValueAsInt(switches::kTestLauncherJobs, &jobs))
-    return 1;
+          "process mode).\n", jobs);
 
   base::MessageLoopForIO message_loop;
 

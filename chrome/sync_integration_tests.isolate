@@ -8,7 +8,6 @@
         'command': [
           '../testing/xvfb.py',
           '<(PRODUCT_DIR)',
-          '../tools/swarm_client/googletest/run_test_cases.py',
           '<(PRODUCT_DIR)/sync_integration_tests<(EXECUTABLE_SUFFIX)',
         ],
         'isolate_dependency_tracked': [
@@ -52,7 +51,6 @@
     ['OS=="mac"', {
       'variables': {
         'command': [
-          '../tools/swarm_client/googletest/run_test_cases.py',
           '<(PRODUCT_DIR)/sync_integration_tests<(EXECUTABLE_SUFFIX)',
         ],
         'isolate_dependency_tracked': [

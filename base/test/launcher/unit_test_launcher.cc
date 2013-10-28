@@ -115,8 +115,8 @@ class UnitTestLauncherDelegate : public TestLauncherDelegate {
     return true;
   }
 
-  virtual void RunTests(TestLauncher* test_launcher,
-                        const std::vector<std::string>& test_names) OVERRIDE {
+  virtual size_t RunTests(TestLauncher* test_launcher,
+                          const std::vector<std::string>& test_names) OVERRIDE {
     DCHECK(thread_checker_.CalledOnValidThread());
 
     std::vector<std::string> batch;
@@ -130,6 +130,8 @@ class UnitTestLauncherDelegate : public TestLauncherDelegate {
     }
 
     RunBatch(test_launcher, batch);
+
+    return test_names.size();
   }
 
   virtual size_t RetryTests(
