@@ -34,8 +34,7 @@ class VIEWS_EXPORT DesktopFactoryOzone {
   // Ozone implementation.
   virtual DesktopRootWindowHost* CreateRootWindowHost(
       internal::NativeWidgetDelegate* native_widget_delegate,
-      DesktopNativeWidgetAura* desktop_native_widget_aura,
-      const gfx::Rect& initial_bounds) = 0;
+      DesktopNativeWidgetAura* desktop_native_widget_aura) = 0;
 
  private:
   static DesktopFactoryOzone* impl_; // not owned
