@@ -70,6 +70,17 @@ TEST(ParseWebViewsInfo, WithoutDebuggerUrl) {
 
 namespace {
 
+void AssertTypeIsOk(const std::string& type_as_string, WebViewInfo::Type type) {
+  WebViewsInfo views_info;
+  std::string data = "[{\"type\": \"" + type_as_string
+      + "\", \"id\": \"1\", \"url\": \"http://page1\"}]";
+  Status status = internal::ParseWebViewsInfo(data, &views_info);
+  ASSERT_TRUE(status.IsOk());
+  ASSERT_EQ(1u, views_info.GetSize());
+  ExpectEqual(WebViewInfo("1", std::string(), "http://page1", type),
+              views_info.Get(0));
+}
+
 void AssertFails(const std::string& data) {
   WebViewsInfo views_info;
   Status status = internal::ParseWebViewsInfo(data, &views_info);
@@ -78,6 +89,15 @@ void AssertFails(const std::string& data) {
 }
 
 }  // namespace
+
+TEST(ParseWebViewsInfo, Types) {
+  AssertTypeIsOk("app", WebViewInfo::kApp);
+  AssertTypeIsOk("background_page", WebViewInfo::kBackgroundPage);
+  AssertTypeIsOk("page", WebViewInfo::kPage);
+  AssertTypeIsOk("worker", WebViewInfo::kWorker);
+  AssertTypeIsOk("other", WebViewInfo::kOther);
+  AssertFails("[{\"type\": \"\", \"id\": \"1\", \"url\": \"http://page1\"}]");
+}
 
 TEST(ParseWebViewsInfo, NonList) {
   AssertFails("{\"id\": \"1\"}");

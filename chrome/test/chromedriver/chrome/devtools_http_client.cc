@@ -302,22 +302,29 @@ Status ParseWebViewsInfo(const std::string& data,
     std::string id;
     if (!info->GetString("id", &id))
       return Status(kUnknownError, "DevTools did not include id");
-    std::string type;
-    if (!info->GetString("type", &type))
+    std::string type_as_string;
+    if (!info->GetString("type", &type_as_string))
       return Status(kUnknownError, "DevTools did not include type");
     std::string url;
     if (!info->GetString("url", &url))
       return Status(kUnknownError, "DevTools did not include url");
     std::string debugger_url;
     info->GetString("webSocketDebuggerUrl", &debugger_url);
-    if (type == "page")
-      temp_views_info.push_back(
-          WebViewInfo(id, debugger_url, url, WebViewInfo::kPage));
-    else if (type == "other")
-      temp_views_info.push_back(
-          WebViewInfo(id, debugger_url, url, WebViewInfo::kOther));
+    WebViewInfo::Type type;
+    if (type_as_string == "app")
+      type = WebViewInfo::kApp;
+    else if (type_as_string == "background_page")
+      type = WebViewInfo::kBackgroundPage;
+    else if (type_as_string == "page")
+      type = WebViewInfo::kPage;
+    else if (type_as_string == "worker")
+      type = WebViewInfo::kWorker;
+    else if (type_as_string == "other")
+      type = WebViewInfo::kOther;
     else
-      return Status(kUnknownError, "DevTools returned unknown type:" + type);
+      return Status(kUnknownError,
+                    "DevTools returned unknown type:" + type_as_string);
+    temp_views_info.push_back(WebViewInfo(id, debugger_url, url, type));
   }
   *views_info = WebViewsInfo(temp_views_info);
   return Status(kOk);

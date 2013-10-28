@@ -23,7 +23,10 @@ class URLRequestContextGetter;
 
 struct WebViewInfo {
   enum Type {
+    kApp,
+    kBackgroundPage,
     kPage,
+    kWorker,
     kOther
   };
 
