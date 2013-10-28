@@ -122,7 +122,7 @@ function generatePolygonContentString(polygon, lineheight) {
 function generatePolygonShapeInsideElement(elementId, stylesheet, polygon, lineHeight) {
     var verticesString = polygon.vertices.map( function(p) { return p.x + "px " + p.y + "px"; } ).join(", ");
     stylesheet.insertRule("#" + elementId + " { "
-        + "-webkit-shape-inside: polygon(" + verticesString + "); "
+        + "shape-inside: polygon(" + verticesString + "); "
         + "width: " + polygon.maxX + "px; "
         + "height: " + polygon.maxY + "px; "
         + "font: " + lineHeight + "px/1 Ahem, sans-serif; }");

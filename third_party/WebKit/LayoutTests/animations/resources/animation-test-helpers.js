@@ -459,7 +459,7 @@ function getPropertyValue(property, elementId, iframeId)
                || property == "webkitMaskBoxImage"
                || property == "webkitFilter"
                || property == "webkitClipPath"
-               || property == "webkitShapeInside"
+               || property == "shapeInside"
                || !property.indexOf("webkitTransform")) {
         computedValue = window.getComputedStyle(element)[property.split(".")[0]];
     } else {
@@ -496,7 +496,7 @@ function comparePropertyValue(property, computedValue, expectedValue, tolerance)
         var filterParameters = getFilterParameters(computedValue);
         var filter2Parameters = getFilterParameters(expectedValue);
         result = filterParametersMatch(filterParameters, filter2Parameters, tolerance);
-    } else if (property == "webkitClipPath" || property == "webkitShapeInside") {
+    } else if (property == "webkitClipPath" || property == "shapeInside") {
         var clipPathParameters = parseBasicShape(computedValue);
         var clipPathParameters2 = parseBasicShape(expectedValue);
         if (!clipPathParameters || !clipPathParameters2)

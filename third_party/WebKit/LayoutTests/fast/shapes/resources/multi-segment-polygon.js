@@ -4,7 +4,7 @@ function generatePolygon(width, height, fontSize, points, content, elementId) {
         return elem.toString() + 'px' + (index < array.length - 1 && index % 2 == 1 ? ',' : '');
     }).join(' ');
     polygon = 'polygon(' + polygon + ')';
-    div.style.setProperty('-webkit-shape-inside', polygon);
+    div.style.setProperty('shape-inside', polygon);
     div.style.setProperty('width', width + 'px');
     div.style.setProperty('height', height + 'px');
     div.style.setProperty('font', fontSize + 'px/1 Ahem, sans-serif');

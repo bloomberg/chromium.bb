@@ -10,7 +10,7 @@ div { font-size: 8px; }
 <body>
 <script src="parsing-test-utils.js"></script>
 <script>
-description('Test that exclusion shapes accept different length units');
+description('Test that basic shapes accept different length units');
 
 // The test functions and globals used here are defined parsing-test-utils.js.
 
@@ -22,12 +22,12 @@ function getStyleValue(property, value) {
 
 function testStyleValue(value, expected) {
     if (expected === null)
-        shouldBeNull('getStyleValue("-webkit-shape-inside", "' + value + '")');
+        shouldBeNull('getStyleValue("shape-inside", "' + value + '")');
     else
-        shouldBeEqualToString('getStyleValue("-webkit-shape-inside", "' + value + '")', expected);
+        shouldBeEqualToString('getStyleValue("shape-inside", "' + value + '")', expected);
 }
 function testComputedStyleValue(value, expected) {
-    testShapeComputedProperty("-webkit-shape-inside", value, expected);
+    testShapeComputedProperty("shape-inside", value, expected);
 }
 
 function testInvalidValue(property, value) {
@@ -79,29 +79,29 @@ testComputedStyleValue("ellipse(100%, 100%, 100%, 100%)", "ellipse(100%, 100%, 1
 testComputedStyleValue("polygon(10% 20%, 30% 40%, 40% 50%)", "polygon(nonzero, 10% 20%, 30% 40%, 40% 50%)");
 
 // reject non-lengths
-testInvalidValue("-webkit-shape-inside", "circle(1px, 1px, 1)");
-testInvalidValue("-webkit-shape-inside", "circle(1px, 1px, px)");
-testInvalidValue("-webkit-shape-inside", "circle(1px, 1px, 1p)");
-testInvalidValue("-webkit-shape-inside", "circle(1px, 1px, calc())");
+testInvalidValue("shape-inside", "circle(1px, 1px, 1)");
+testInvalidValue("shape-inside", "circle(1px, 1px, px)");
+testInvalidValue("shape-inside", "circle(1px, 1px, 1p)");
+testInvalidValue("shape-inside", "circle(1px, 1px, calc())");
 
 // reject negative radiuses
-testInvalidValue("-webkit-shape-inside", "circle(-1.5px, +1.5px, -1.5px)");
-testInvalidValue("-webkit-shape-inside", "rectangle(1cm, 1mm, 1in, 1px, -1pt, 1pc)");
-testInvalidValue("-webkit-shape-inside", "rectangle(1cm, 1mm, 1in, 1px, 1pt, -1pc)");
-testInvalidValue("-webkit-shape-inside", "inset-rectangle(1cm, 1mm, 1in, 1px, -1pt, 1pc)");
-testInvalidValue("-webkit-shape-inside", "inset-rectangle(1cm, 1mm, 1in, 1px, 1pt, -1pc)");
-testInvalidValue("-webkit-shape-inside", "ellipse(1em, 1em, -1em, 1em)");
-testInvalidValue("-webkit-shape-inside", "ellipse(1em, 1em, 1em, -1em)");
+testInvalidValue("shape-inside", "circle(-1.5px, +1.5px, -1.5px)");
+testInvalidValue("shape-inside", "rectangle(1cm, 1mm, 1in, 1px, -1pt, 1pc)");
+testInvalidValue("shape-inside", "rectangle(1cm, 1mm, 1in, 1px, 1pt, -1pc)");
+testInvalidValue("shape-inside", "inset-rectangle(1cm, 1mm, 1in, 1px, -1pt, 1pc)");
+testInvalidValue("shape-inside", "inset-rectangle(1cm, 1mm, 1in, 1px, 1pt, -1pc)");
+testInvalidValue("shape-inside", "ellipse(1em, 1em, -1em, 1em)");
+testInvalidValue("shape-inside", "ellipse(1em, 1em, 1em, -1em)");
 
 // reject negative height and width
-testInvalidValue("-webkit-shape-inside", "rectangle(1cm, 1mm, -1in, 1px, 1pt, 1pc)");
-testInvalidValue("-webkit-shape-inside", "rectangle(1cm, 1mm, 1in, -1px, 1pt, 1pc)");
+testInvalidValue("shape-inside", "rectangle(1cm, 1mm, -1in, 1px, 1pt, 1pc)");
+testInvalidValue("shape-inside", "rectangle(1cm, 1mm, 1in, -1px, 1pt, 1pc)");
 
 // reject negative top, right, bottom, and left
-testInvalidValue("-webkit-shape-inside", "inset-rectangle(-1cm, 1mm, 1in, 1px, 1pt, 1pc)");
-testInvalidValue("-webkit-shape-inside", "inset-rectangle(1cm, -1mm, 1in, 1px, 1pt, 1pc)");
-testInvalidValue("-webkit-shape-inside", "inset-rectangle(1cm, 1mm, -1in, 1px, 1pt, 1pc)");
-testInvalidValue("-webkit-shape-inside", "inset-rectangle(1cm, 1mm, 1in, -1px, 1pt, 1pc)");
+testInvalidValue("shape-inside", "inset-rectangle(-1cm, 1mm, 1in, 1px, 1pt, 1pc)");
+testInvalidValue("shape-inside", "inset-rectangle(1cm, -1mm, 1in, 1px, 1pt, 1pc)");
+testInvalidValue("shape-inside", "inset-rectangle(1cm, 1mm, -1in, 1px, 1pt, 1pc)");
+testInvalidValue("shape-inside", "inset-rectangle(1cm, 1mm, 1in, -1px, 1pt, 1pc)");
 </script>
 <script src="../../js/resources/js-test-post.js"></script>
 </body>

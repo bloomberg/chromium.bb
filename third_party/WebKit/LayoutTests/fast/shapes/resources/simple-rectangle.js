@@ -13,7 +13,7 @@ function createRectangleTest(elementId, stylesheetId, bounds, shapeBounds, units
     for (var i in bounds)
         rules.push(i + ':' + bounds[i] + units);
     var rectangleBounds = [shapeBounds.x + units, shapeBounds.y + units, shapeBounds.width + units, shapeBounds.height + units];
-    rules.push('-webkit-shape-inside: rectangle(' + rectangleBounds.join(',') + ')');
+    rules.push('shape-inside: rectangle(' + rectangleBounds.join(',') + ')');
     rules.push('position: relative');
     rules.push('overflow-wrap: break-word');
     stylesheet.insertRule('#' + elementId + '{' + rules.join(';') + '}', 0);

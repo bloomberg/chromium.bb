@@ -4,7 +4,7 @@
 <script src="resources/interpolation-test.js"></script>
 <script>
 assertInterpolation({
-  property: '-webkit-shape-outside',
+  property: 'shape-outside',
   from: 'rectangle(0px, 0px, 100px, 100px)',
   to: 'rectangle(25px, 25px, 50px, 50px)'
 }, [
@@ -17,7 +17,7 @@ assertInterpolation({
 ]);
 
 assertInterpolation({
-  property: '-webkit-shape-outside',
+  property: 'shape-outside',
   from: 'inset-rectangle(25px, 25px, 100px, 100px)',
   to: 'inset-rectangle(50px, 50px, 50px, 50px)'
 }, [
@@ -30,7 +30,7 @@ assertInterpolation({
 ]);
 
 assertInterpolation({
-  property: '-webkit-shape-outside',
+  property: 'shape-outside',
   from: 'circle(0%, 0%, 100%)',
   to: 'circle(25%, 25%, 50%)',
 }, [
@@ -43,7 +43,7 @@ assertInterpolation({
 ]);
 
 assertInterpolation({
-  property: '-webkit-shape-outside',
+  property: 'shape-outside',
   from: 'ellipse(0%, 0%, 100%, 100%)',
   to: 'ellipse(25%, 25%, 50%, 50%)',
 }, [
@@ -56,7 +56,7 @@ assertInterpolation({
 ]);
 
 assertInterpolation({
-  property: '-webkit-shape-outside',
+  property: 'shape-outside',
   from: 'polygon(nonzero, 0px 0px, 25px 25px, 50px 50px)',
   to: 'polygon(nonzero, 25px 25px, 50px 50px, 75px 75px)',
 }, [

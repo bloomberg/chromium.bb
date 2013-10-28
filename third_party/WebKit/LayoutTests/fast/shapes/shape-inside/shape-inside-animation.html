@@ -28,23 +28,23 @@
 
 
     @-webkit-keyframes rectangle-anim {
-        from { -webkit-shape-inside: rectangle(0%, 0%, 100%, 100%); }
-        to   { -webkit-shape-inside: rectangle(20%, 20%, 60%, 60%); }
+        from { shape-inside: rectangle(0%, 0%, 100%, 100%); }
+        to   { shape-inside: rectangle(20%, 20%, 60%, 60%); }
     }
 
     @-webkit-keyframes circle-anim {
-        from { -webkit-shape-inside: circle(50%, 50%, 50%); }
-        to   { -webkit-shape-inside: circle(20%, 20%, 20%); }
+        from { shape-inside: circle(50%, 50%, 50%); }
+        to   { shape-inside: circle(20%, 20%, 20%); }
     }
 
     @-webkit-keyframes ellipse-anim {
-        from { -webkit-shape-inside: ellipse(50%, 50%, 50%, 40%); }
-        to   { -webkit-shape-inside: ellipse(20%, 20%, 20%, 20%); }
+        from { shape-inside: ellipse(50%, 50%, 50%, 40%); }
+        to   { shape-inside: ellipse(20%, 20%, 20%, 20%); }
     }
 
     @-webkit-keyframes polygon-anim {
-        from { -webkit-shape-inside: polygon(nonzero, 0% 0%, 100% 0%, 100% 100%, 0% 100%); }
-        to   { -webkit-shape-inside: polygon(nonzero, 20% 20%, 80% 20%, 80% 80%, 20% 80%); }
+        from { shape-inside: polygon(nonzero, 0% 0%, 100% 0%, 100% 100%, 0% 100%); }
+        to   { shape-inside: polygon(nonzero, 20% 20%, 80% 20%, 80% 80%, 20% 80%); }
     }
 
   </style>
@@ -52,10 +52,10 @@
   <script type="text/javascript">
     const expectedValues = [
       // [time, element-id, property, expected-value, tolerance]
-      [1, "rectangle-box", "webkitShapeInside", "rectangle(10%, 10%, 80%, 80%, 0px, 0px)", 0.05],
-      [1, "circle-box", "webkitShapeInside", "circle(35%, 35%, 35%)", 0.05],
-      [1, "ellipse-box", "webkitShapeInside", "ellipse(35%, 35%, 35%, 30%)", 0.05],
-      [1, "polygon-box", "webkitShapeInside", "polygon(nonzero, 10% 10%, 90% 10%, 90% 90%, 10% 90%)", 0.05],
+      [1, "rectangle-box", "shapeInside", "rectangle(10%, 10%, 80%, 80%, 0px, 0px)", 0.05],
+      [1, "circle-box", "shapeInside", "circle(35%, 35%, 35%)", 0.05],
+      [1, "ellipse-box", "shapeInside", "ellipse(35%, 35%, 35%, 30%)", 0.05],
+      [1, "polygon-box", "shapeInside", "polygon(nonzero, 10% 10%, 90% 10%, 90% 90%, 10% 90%)", 0.05],
     ];
     
     runAnimationTest(expectedValues);
