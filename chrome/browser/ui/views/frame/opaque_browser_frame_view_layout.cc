@@ -362,6 +362,10 @@ void OpaqueBrowserFrameViewLayout::LayoutTitleBar(views::View* host) {
 }
 
 void OpaqueBrowserFrameViewLayout::LayoutNewStyleAvatar(views::View* host) {
+  DCHECK(profiles::IsNewProfileManagementEnabled());
+  if (!new_avatar_button_)
+    return;
+
   gfx::Size label_size = new_avatar_button_->GetPreferredSize();
   int button_size_with_offset = kNewAvatarButtonOffset + label_size.width();
 
