@@ -35,17 +35,17 @@ chrome/browser/importer/firefox_profile_lock_win.cc
 # Credits notice for ChromeOS.
 chrome/browser/resources/chromeos/about_os_credits.html
 # String 'copyright' used in code.
-chrome/browser/resources/file_manager/js/action_choice_scripts.js
+chrome/browser/resources/file_manager/foreground/js/action_choice/action_choice_scripts.js
 # String 'copyright' used in code.
-chrome/browser/resources/file_manager/js/photo/gallery_scripts.js
+chrome/browser/resources/file_manager/foreground/js/photo/gallery_scripts.js
 # String 'copyright' used in code.
-chrome/browser/resources/file_manager/js/main_scripts.js
+chrome/browser/resources/file_manager/foreground/js/main_scripts.js
 # String 'copyright' used in code.
-chrome/browser/resources/file_manager/js/media/mediaplayer_scripts.js
+chrome/browser/resources/file_manager/foreground/js/media/mediaplayer_scripts.js
 # String 'copyright' used in code.
-chrome/browser/resources/file_manager/js/media/video_player_scripts.js
+chrome/browser/resources/file_manager/foreground/js/media/video_player_scripts.js
 # String 'copyright' used in code.
-chrome/browser/resources/file_manager/js/photo/photo_import_scripts.js
+chrome/browser/resources/file_manager/foreground/js/photo/photo_import_scripts.js
 # String 'copyright' used in code.
 chrome/common/importer/firefox_importer_utils.cc
 # Copyright Netscape Communications Corporation; MPL, GPL v2 or LGPL v2
