@@ -39,7 +39,7 @@
 #include "../shared/os-compatibility.h"
 
 struct wayland_compositor {
-	struct weston_compositor	 base;
+	struct weston_compositor base;
 
 	struct {
 		struct wl_display *wl_display;
@@ -61,28 +61,34 @@ struct wayland_compositor {
 		int32_t top, bottom, left, right;
 	} border;
 
-	struct wl_list input_list;
+	struct wl_list inputs;
 };
 
 struct wayland_output {
-	struct weston_output	base;
+	struct weston_output base;
+
 	struct {
-		int 			 draw_initial_frame;
-		struct wl_surface	*surface;
-		struct wl_shell_surface	*shell_surface;
-		struct wl_egl_window	*egl_window;
+		int draw_initial_frame;
+		struct wl_surface *surface;
+		struct wl_shell_surface *shell_surface;
+		struct wl_egl_window *egl_window;
 	} parent;
-	struct weston_mode	mode;
+
+	struct weston_mode mode;
 };
 
 struct wayland_input {
 	struct weston_seat base;
 	struct wayland_compositor *compositor;
-	struct wl_seat *seat;
-	struct wl_pointer *pointer;
-	struct wl_keyboard *keyboard;
-	struct wl_touch *touch;
 	struct wl_list link;
+
+	struct {
+		struct wl_seat *seat;
+		struct wl_pointer *pointer;
+		struct wl_keyboard *keyboard;
+		struct wl_touch *touch;
+	} parent;
+
 	uint32_t key_serial;
 	uint32_t enter_serial;
 	int focus;
@@ -404,7 +410,7 @@ check_focus(struct wayland_input *input, wl_fixed_t x, wl_fixed_t y)
 		notify_pointer_focus(&input->base, &input->output->base,
 				     x - wl_fixed_from_int(c->border.left),
 				     y = wl_fixed_from_int(c->border.top));
-		wl_pointer_set_cursor(input->pointer,
+		wl_pointer_set_cursor(input->parent.pointer,
 				      input->enter_serial, NULL, 0, 0);
 	} else if (input->focus && !inside) {
 		notify_pointer_focus(&input->base, NULL, 0, 0);
@@ -605,25 +611,25 @@ input_handle_capabilities(void *data, struct wl_seat *seat,
 {
 	struct wayland_input *input = data;
 
-	if ((caps & WL_SEAT_CAPABILITY_POINTER) && !input->pointer) {
-		input->pointer = wl_seat_get_pointer(seat);
-		wl_pointer_set_user_data(input->pointer, input);
-		wl_pointer_add_listener(input->pointer, &pointer_listener,
-					input);
+	if ((caps & WL_SEAT_CAPABILITY_POINTER) && !input->parent.pointer) {
+		input->parent.pointer = wl_seat_get_pointer(seat);
+		wl_pointer_set_user_data(input->parent.pointer, input);
+		wl_pointer_add_listener(input->parent.pointer,
+					&pointer_listener, input);
 		weston_seat_init_pointer(&input->base);
-	} else if (!(caps & WL_SEAT_CAPABILITY_POINTER) && input->pointer) {
-		wl_pointer_destroy(input->pointer);
-		input->pointer = NULL;
+	} else if (!(caps & WL_SEAT_CAPABILITY_POINTER) && input->parent.pointer) {
+		wl_pointer_destroy(input->parent.pointer);
+		input->parent.pointer = NULL;
 	}
 
-	if ((caps & WL_SEAT_CAPABILITY_KEYBOARD) && !input->keyboard) {
-		input->keyboard = wl_seat_get_keyboard(seat);
-		wl_keyboard_set_user_data(input->keyboard, input);
-		wl_keyboard_add_listener(input->keyboard, &keyboard_listener,
-					 input);
-	} else if (!(caps & WL_SEAT_CAPABILITY_KEYBOARD) && input->keyboard) {
-		wl_keyboard_destroy(input->keyboard);
-		input->keyboard = NULL;
+	if ((caps & WL_SEAT_CAPABILITY_KEYBOARD) && !input->parent.keyboard) {
+		input->parent.keyboard = wl_seat_get_keyboard(seat);
+		wl_keyboard_set_user_data(input->parent.keyboard, input);
+		wl_keyboard_add_listener(input->parent.keyboard,
+					 &keyboard_listener, input);
+	} else if (!(caps & WL_SEAT_CAPABILITY_KEYBOARD) && input->parent.keyboard) {
+		wl_keyboard_destroy(input->parent.keyboard);
+		input->parent.keyboard = NULL;
 	}
 }
 
@@ -642,12 +648,12 @@ display_add_seat(struct wayland_compositor *c, uint32_t id)
 
 	weston_seat_init(&input->base, &c->base, "default");
 	input->compositor = c;
-	input->seat = wl_registry_bind(c->parent.registry, id,
-				       &wl_seat_interface, 1);
-	wl_list_insert(c->input_list.prev, &input->link);
+	input->parent.seat = wl_registry_bind(c->parent.registry, id,
+					      &wl_seat_interface, 1);
+	wl_list_insert(c->inputs.prev, &input->link);
 
-	wl_seat_add_listener(input->seat, &seat_listener, input);
-	wl_seat_set_user_data(input->seat, input);
+	wl_seat_add_listener(input->parent.seat, &seat_listener, input);
+	wl_seat_set_user_data(input->parent.seat, input);
 }
 
 static void
@@ -750,7 +756,7 @@ wayland_compositor_create(struct wl_display *display,
 		goto err_compositor;
 	}
 
-	wl_list_init(&c->input_list);
+	wl_list_init(&c->inputs);
 	c->parent.registry = wl_display_get_registry(c->parent.wl_display);
 	wl_registry_add_listener(c->parent.registry, &registry_listener, c);
 	wl_display_dispatch(c->parent.wl_display);
