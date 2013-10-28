@@ -527,3 +527,5 @@ crbug.com/312060 [ Win ] virtual/threaded/animations/3d/matrix-transform-type-an
 crbug.com/312060 [ Win ] virtual/threaded/animations/additive-transform-animations.html [ ImageOnlyFailure ]
 crbug.com/312060 [ Win ] virtual/threaded/animations/keyframe-multiple-timing-functions-transform.html [ ImageOnlyFailure ]
 crbug.com/312060 [ Win ] virtual/threaded/animations/missing-values-first-keyframe.html [ ImageOnlyFailure ]
+
+crbug.com/311469 [ Mac ] svg/zoom/page/zoom-zoom-coords.xhtml [ Failure Pass ]
