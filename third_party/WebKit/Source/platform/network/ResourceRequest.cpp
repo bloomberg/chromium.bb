@@ -27,8 +27,6 @@
 #include "config.h"
 #include "platform/network/ResourceRequest.h"
 
-#include "platform/network/ResourceRequest.h"
-
 namespace WebCore {
 
 double ResourceRequest::s_defaultTimeoutInterval = INT_MAX;

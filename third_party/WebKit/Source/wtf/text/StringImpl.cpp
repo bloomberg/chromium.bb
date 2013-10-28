@@ -37,7 +37,6 @@
 
 #ifdef STRING_STATS
 #include "wtf/DataLog.h"
-#include "wtf/MainThread.h"
 #include "wtf/ProcessID.h"
 #include "wtf/RefCounted.h"
 #include <unistd.h>
