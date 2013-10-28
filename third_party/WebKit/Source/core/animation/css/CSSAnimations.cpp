@@ -414,21 +414,17 @@ AnimationEffect::CompositableValueMap CSSAnimations::compositableValuesForAnimat
     ActiveAnimations* activeAnimations = element->activeAnimations();
     AnimationStack* animationStack = activeAnimations ? &activeAnimations->defaultStack() : 0;
 
+    if (!update)
+        return AnimationStack::compositableValues(animationStack, 0, 0, Animation::DefaultPriority);
+
     Vector<InertAnimation*> newAnimations;
-    HashSet<const Player*> cancelledPlayers;
-    if (update) {
-        for (size_t i = 0; i < update->newTransitions().size(); ++i)
-            newAnimations.append(update->newTransitions()[i].animation.get());
-        if (!update->cancelledTransitions().isEmpty()) {
-            const TransitionMap& transitionMap = activeAnimations->cssAnimations().m_transitions;
-            for (HashSet<CSSPropertyID>::iterator iter = update->cancelledTransitions().begin(); iter != update->cancelledTransitions().end(); ++iter) {
-                ASSERT(transitionMap.contains(*iter));
-                cancelledPlayers.add(transitionMap.get(*iter).transition->player());
-            }
-        }
+    for (size_t i = 0; i < update->newAnimations().size(); ++i) {
+        HashSet<RefPtr<InertAnimation> > animations = update->newAnimations()[i].animations;
+        for (HashSet<RefPtr<InertAnimation> >::const_iterator animationsIter = animations.begin(); animationsIter != animations.end(); ++animationsIter)
+            newAnimations.append(animationsIter->get());
     }
 
-    return AnimationStack::compositableValues(animationStack, newAnimations, cancelledPlayers, Animation::TransitionPriority);
+    return AnimationStack::compositableValues(animationStack, &newAnimations, &update->cancelledAnimationPlayers(), Animation::DefaultPriority);
 }
 
 AnimationEffect::CompositableValueMap CSSAnimations::compositableValuesForTransitions(const Element* element, const CSSAnimationUpdate* update)
@@ -436,19 +432,23 @@ AnimationEffect::CompositableValueMap CSSAnimations::compositableValuesForTransi
     ActiveAnimations* activeAnimations = element->activeAnimations();
     AnimationStack* animationStack = activeAnimations ? &activeAnimations->defaultStack() : 0;
 
-    Vector<InertAnimation*> newAnimations;
-    if (update) {
-        for (size_t i = 0; i < update->newAnimations().size(); ++i) {
-            HashSet<RefPtr<InertAnimation> > animations = update->newAnimations()[i].animations;
-            for (HashSet<RefPtr<InertAnimation> >::const_iterator animationsIter = animations.begin(); animationsIter != animations.end(); ++animationsIter)
-                newAnimations.append(animationsIter->get());
+    if (!update)
+        return AnimationStack::compositableValues(animationStack, 0, 0, Animation::TransitionPriority);
+
+    Vector<InertAnimation*> newTransitions;
+    for (size_t i = 0; i < update->newTransitions().size(); ++i)
+        newTransitions.append(update->newTransitions()[i].animation.get());
+
+    HashSet<const Player*> cancelledPlayers;
+    if (!update->cancelledTransitions().isEmpty()) {
+        const TransitionMap& transitionMap = activeAnimations->cssAnimations().m_transitions;
+        for (HashSet<CSSPropertyID>::iterator iter = update->cancelledTransitions().begin(); iter != update->cancelledTransitions().end(); ++iter) {
+            ASSERT(transitionMap.contains(*iter));
+            cancelledPlayers.add(transitionMap.get(*iter).transition->player());
         }
     }
 
-    DEFINE_STATIC_LOCAL(HashSet<const Player*>, emptyCancelledPlayers, ());
-    const HashSet<const Player*>& cancelledPlayers = update ? update->cancelledAnimationPlayers() : emptyCancelledPlayers;
-
-    return AnimationStack::compositableValues(animationStack, newAnimations, cancelledPlayers, Animation::DefaultPriority);
+    return AnimationStack::compositableValues(animationStack, &newTransitions, &cancelledPlayers, Animation::TransitionPriority);
 }
 
 void CSSAnimations::AnimationEventDelegate::maybeDispatch(Document::ListenerType listenerType, const AtomicString& eventName, double elapsedTime)

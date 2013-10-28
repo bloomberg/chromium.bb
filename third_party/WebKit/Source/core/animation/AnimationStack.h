@@ -51,7 +51,7 @@ public:
         m_activeAnimations.remove(position);
     }
     bool isEmpty() const { return m_activeAnimations.isEmpty(); }
-    static AnimationEffect::CompositableValueMap compositableValues(const AnimationStack*, const Vector<InertAnimation*>& newAnimations, const HashSet<const Player*> cancelledPlayers, Animation::Priority);
+    static AnimationEffect::CompositableValueMap compositableValues(const AnimationStack*, const Vector<InertAnimation*>* newAnimations, const HashSet<const Player*>* cancelledPlayers, Animation::Priority);
 
 private:
     Vector<Animation*> m_activeAnimations;

@@ -467,7 +467,7 @@ function getPropertyValue(property, elementId, iframeId)
         try {
             computedValue = computedStyle.getFloatValue(CSSPrimitiveValue.CSS_NUMBER);
         } catch (e) {
-            computedValue = computedStyle.getStringValue();
+            computedValue = computedStyle.cssText;
         }
     }
 

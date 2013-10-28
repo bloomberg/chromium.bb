@@ -47,7 +47,7 @@ void copyToCompositableValueMap(const AnimationEffect::CompositableValueMap* sou
 
 } // namespace
 
-AnimationEffect::CompositableValueMap AnimationStack::compositableValues(const AnimationStack* animationStack, const Vector<InertAnimation*>& newAnimations, const HashSet<const Player*> cancelledPlayers, Animation::Priority priority)
+AnimationEffect::CompositableValueMap AnimationStack::compositableValues(const AnimationStack* animationStack, const Vector<InertAnimation*>* newAnimations, const HashSet<const Player*>* cancelledPlayers, Animation::Priority priority)
 {
     AnimationEffect::CompositableValueMap result;
 
@@ -57,14 +57,16 @@ AnimationEffect::CompositableValueMap AnimationStack::compositableValues(const A
             Animation* animation = animations[i];
             if (animation->priority() != priority)
                 continue;
-            if (cancelledPlayers.contains(animation->player()))
+            if (cancelledPlayers && cancelledPlayers->contains(animation->player()))
                 continue;
             copyToCompositableValueMap(animation->compositableValues(), result);
         }
     }
 
-    for (size_t i = 0; i < newAnimations.size(); ++i)
-        copyToCompositableValueMap(newAnimations[i]->sample().get(), result);
+    if (newAnimations) {
+        for (size_t i = 0; i < newAnimations->size(); ++i)
+            copyToCompositableValueMap(newAnimations->at(i)->sample().get(), result);
+    }
 
     return result;
 }
