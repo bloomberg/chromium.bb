@@ -97,10 +97,6 @@ class CONTENT_EXPORT WebContentsImpl
       int guest_instance_id,
       scoped_ptr<base::DictionaryValue> extra_params);
 
-  // Returns the content specific prefs for the given RVH.
-  static WebPreferences GetWebkitPrefs(
-      RenderViewHost* rvh, const GURL& url);
-
   // Creates a swapped out RenderView. This is used by the browser plugin to
   // create a swapped out RenderView in the embedder render process for the
   // guest, to expose the guest's window object to the embedder.

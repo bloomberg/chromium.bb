@@ -242,6 +242,9 @@ class CONTENT_EXPORT RenderViewHostImpl
     return render_view_termination_status_;
   }
 
+  // Returns the content specific prefs for this RenderViewHost.
+  WebPreferences GetWebkitPrefs(const GURL& url);
+
   // Sends the given navigation message. Use this rather than sending it
   // yourself since this does the internal bookkeeping described below. This
   // function takes ownership of the provided message pointer.

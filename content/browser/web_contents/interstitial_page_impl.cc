@@ -465,7 +465,7 @@ WebPreferences InterstitialPageImpl::GetWebkitPrefs() {
   if (!enabled())
     return WebPreferences();
 
-  return WebContentsImpl::GetWebkitPrefs(render_view_host_, url_);
+  return render_view_host_->GetWebkitPrefs(url_);
 }
 
 void InterstitialPageImpl::RenderWidgetDeleted(
