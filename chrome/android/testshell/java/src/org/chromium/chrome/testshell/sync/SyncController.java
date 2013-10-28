@@ -100,6 +100,7 @@ public class SyncController implements ProfileSyncService.SyncStateChangedListen
         // The SigninManager handles most of the sign-in flow, and doFinishSignIn handles the
         // Chromium testshell specific details.
         SigninManager signinManager = SigninManager.get(mContext);
+        signinManager.onFirstRunCheckDone();
         final boolean passive = false;
         signinManager.startSignIn(activity, account, passive, new SigninManager.Observer() {
             @Override

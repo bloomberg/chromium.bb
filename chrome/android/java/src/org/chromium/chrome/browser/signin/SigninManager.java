@@ -15,6 +15,7 @@ import android.os.Handler;
 import android.util.Log;
 
 import org.chromium.base.CalledByNative;
+import org.chromium.base.ObserverList;
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.invalidation.InvalidationController;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
@@ -44,6 +45,15 @@ public class SigninManager {
     private final Context mContext;
     private final int mNativeSigninManagerAndroid;
 
+    /** Tracks whether the First Run check has been completed.
+     *
+     * A new sign-in can not be started while this is pending, to prevent the
+     * pending check from eventually starting a 2nd sign-in.
+     */
+    private boolean mFirstRunCheckIsPending = true;
+    private ObserverList<SignInAllowedObserver> mSignInAllowedObservers =
+            new ObserverList<SignInAllowedObserver>();
+
     private Activity mSignInActivity;
     private Account mSignInAccount;
     private Observer mSignInObserver;
@@ -53,6 +63,16 @@ public class SigninManager {
     private Runnable mSignOutCallback;
 
     private AlertDialog mPolicyConfirmationDialog;
+
+    /**
+     * SignInAllowedObservers will be notified once signing-in becomes allowed or disallowed.
+     */
+    public static interface SignInAllowedObserver {
+        /**
+         * Invoked once all startup checks are done and signing-in becomes allowed, or disallowed.
+         */
+        public void onSignInAllowedChanged();
+    }
 
     /**
      * The Observer of startSignIn() will be notified when sign-in completes.
@@ -95,6 +115,47 @@ public class SigninManager {
     }
 
     /**
+     * Notifies the SigninManager that the First Run check has completed.
+     *
+     * The user will be allowed to sign-in once this is signaled.
+     */
+    public void onFirstRunCheckDone() {
+        mFirstRunCheckIsPending = false;
+
+        if (isSignInAllowed()) {
+            notifySignInAllowedChanged();
+        }
+    }
+
+    /**
+     * Returns true if signin can be started now.
+     */
+    public boolean isSignInAllowed() {
+        return !mFirstRunCheckIsPending &&
+                mSignInAccount == null &&
+                ChromeSigninController.get(mContext).getSignedInUser() == null;
+    }
+
+    public void addSignInAllowedObserver(SignInAllowedObserver observer) {
+        mSignInAllowedObservers.addObserver(observer);
+    }
+
+    public void removeSignInAllowedObserver(SignInAllowedObserver observer) {
+        mSignInAllowedObservers.removeObserver(observer);
+    }
+
+    private void notifySignInAllowedChanged() {
+        new Handler().post(new Runnable() {
+            @Override
+            public void run() {
+                for (SignInAllowedObserver observer : mSignInAllowedObservers) {
+                    observer.onSignInAllowedChanged();
+                }
+            }
+        });
+    }
+
+    /**
      * Starts the sign-in flow, and executes the callback when ready to proceed.
      * <p/>
      * This method checks with the native side whether the account has management enabled, and may
@@ -111,10 +172,18 @@ public class SigninManager {
         assert mSignInActivity == null;
         assert mSignInAccount == null;
         assert mSignInObserver == null;
+
+        if (mFirstRunCheckIsPending) {
+            Log.w(TAG, "Ignoring sign-in request until the First Run check completes.");
+            return;
+        }
+
         mSignInActivity = activity;
         mSignInAccount = account;
         mSignInObserver = observer;
         mPassive = passive;
+
+        notifySignInAllowedChanged();
 
         if (!nativeShouldLoadPolicyForUser(account.name)) {
             // Proceed with the sign-in flow without checking for policy if it can be determined
@@ -228,6 +297,7 @@ public class SigninManager {
         mSignInActivity = null;
         mSignInAccount = null;
         mSignInObserver = null;
+        notifySignInAllowedChanged();
     }
 
     /**
@@ -275,6 +345,7 @@ public class SigninManager {
         mSignInActivity = null;
         mSignInObserver = null;
         mSignInAccount = null;
+        notifySignInAllowedChanged();
     }
 
     private void wipeProfileData(Activity activity) {
