@@ -56,6 +56,7 @@ TEST_F(PowerPolicyControllerTest, Prefs) {
   prefs.enable_screen_lock = false;
   prefs.presentation_screen_dim_delay_factor = 3.0;
   prefs.user_activity_screen_dim_delay_factor = 2.0;
+  prefs.wait_for_initial_user_activity = true;
   policy_controller_->ApplyPrefs(prefs);
 
   power_manager::PowerManagementPolicy expected_policy;
@@ -79,6 +80,7 @@ TEST_F(PowerPolicyControllerTest, Prefs) {
   expected_policy.set_use_video_activity(true);
   expected_policy.set_presentation_screen_dim_delay_factor(3.0);
   expected_policy.set_user_activity_screen_dim_delay_factor(2.0);
+  expected_policy.set_wait_for_initial_user_activity(true);
   expected_policy.set_reason("Prefs");
   EXPECT_EQ(PowerPolicyController::GetPolicyDebugString(expected_policy),
             PowerPolicyController::GetPolicyDebugString(

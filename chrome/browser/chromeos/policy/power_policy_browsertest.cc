@@ -349,6 +349,7 @@ IN_PROC_BROWSER_TEST_F(PowerPolicyInSessionBrowserTest, SetUserPolicy) {
       pm::PowerManagementPolicy::STOP_SESSION);
   power_management_policy.set_presentation_screen_dim_delay_factor(3.0);
   power_management_policy.set_user_activity_screen_dim_delay_factor(3.0);
+  power_management_policy.set_wait_for_initial_user_activity(true);
 
   user_policy_.payload().mutable_screendimdelayac()->set_value(5000);
   user_policy_.payload().mutable_screenlockdelayac()->set_value(6000);
@@ -374,6 +375,7 @@ IN_PROC_BROWSER_TEST_F(PowerPolicyInSessionBrowserTest, SetUserPolicy) {
       300);
   user_policy_.payload().mutable_useractivityscreendimdelayscale()->set_value(
       300);
+  user_policy_.payload().mutable_waitforinitialuseractivity()->set_value(true);
   StoreAndReloadUserPolicy();
   EXPECT_EQ(GetDebugString(power_management_policy),
             GetDebugString(power_manager_client_->get_policy()));

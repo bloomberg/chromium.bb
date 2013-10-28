@@ -84,7 +84,8 @@ PowerPolicyController::PrefValues::PrefValues()
       allow_screen_wake_locks(true),
       enable_screen_lock(false),
       presentation_screen_dim_delay_factor(1.0),
-      user_activity_screen_dim_delay_factor(1.0) {}
+      user_activity_screen_dim_delay_factor(1.0),
+      wait_for_initial_user_activity(false) {}
 
 // static
 std::string PowerPolicyController::GetPolicyDebugString(
@@ -111,6 +112,10 @@ std::string PowerPolicyController::GetPolicyDebugString(
   if (policy.has_user_activity_screen_dim_delay_factor()) {
     str += base::StringPrintf("user_activity_screen_dim_delay_factor=%f ",
         policy.user_activity_screen_dim_delay_factor());
+  }
+  if (policy.has_wait_for_initial_user_activity()) {
+    str += base::StringPrintf("wait_for_initial_user_activity=%d ",
+        policy.wait_for_initial_user_activity());
   }
   if (policy.has_reason())
     str += base::StringPrintf("reason=\"%s\" ", policy.reason().c_str());
@@ -185,6 +190,8 @@ void PowerPolicyController::ApplyPrefs(const PrefValues& values) {
       values.presentation_screen_dim_delay_factor);
   prefs_policy_.set_user_activity_screen_dim_delay_factor(
       values.user_activity_screen_dim_delay_factor);
+  prefs_policy_.set_wait_for_initial_user_activity(
+      values.wait_for_initial_user_activity);
 
   honor_screen_wake_locks_ = values.allow_screen_wake_locks;
 

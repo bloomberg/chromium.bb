@@ -56,6 +56,7 @@ class CHROMEOS_EXPORT PowerPolicyController
     bool enable_screen_lock;
     double presentation_screen_dim_delay_factor;
     double user_activity_screen_dim_delay_factor;
+    bool wait_for_initial_user_activity;
   };
 
   // Returns a string describing |policy|.  Useful for tests.
