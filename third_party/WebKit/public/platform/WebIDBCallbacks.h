@@ -64,10 +64,6 @@ public:
     virtual void onSuccess() { BLINK_ASSERT_NOT_REACHED(); }
     virtual void onSuccess(const WebIDBKey& key, const WebIDBKey& primaryKey, const WebData&) { BLINK_ASSERT_NOT_REACHED(); }
     virtual void onBlocked(long long oldVersion) { BLINK_ASSERT_NOT_REACHED(); }
-    virtual void onUpgradeNeeded(long long oldVersion, WebIDBDatabase* database, const WebIDBMetadata& metadata)
-    {
-        onUpgradeNeeded(oldVersion, database, metadata, DataLossNone);
-    }
     virtual void onUpgradeNeeded(long long oldVersion, WebIDBDatabase*, const WebIDBMetadata&, DataLoss dataLoss) { BLINK_ASSERT_NOT_REACHED(); }
 };
 
