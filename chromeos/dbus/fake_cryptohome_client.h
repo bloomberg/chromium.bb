@@ -36,7 +36,7 @@ class CHROMEOS_EXPORT FakeCryptohomeClient : public CryptohomeClient {
                                const AsyncMethodCallback& callback) OVERRIDE;
   virtual void AsyncRemove(const std::string& username,
                            const AsyncMethodCallback& callback) OVERRIDE;
-  virtual bool GetSystemSalt(std::vector<uint8>* salt) OVERRIDE;
+  virtual void GetSystemSalt(const GetSystemSaltCallback& callback) OVERRIDE;
   virtual void GetSanitizedUsername(
       const std::string& username,
       const StringDBusMethodCallback& callback) OVERRIDE;

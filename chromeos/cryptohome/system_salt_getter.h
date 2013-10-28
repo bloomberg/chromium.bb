@@ -12,6 +12,7 @@
 #include "base/callback_forward.h"
 #include "base/memory/weak_ptr.h"
 #include "chromeos/chromeos_export.h"
+#include "chromeos/dbus/dbus_method_call_status.h"
 
 namespace chromeos {
 
@@ -31,14 +32,8 @@ class CHROMEOS_EXPORT SystemSaltGetter {
   static std::string ConvertRawSaltToHexString(const std::vector<uint8>& salt);
 
   // Returns system hash in hex encoded ascii format. Note: this may return
-  // an empty string (e.g. if cryptohome is not running). It is up to the
-  // calling function to try again after a delay if desired.
+  // an empty string (e.g. errors in D-Bus layer)
   void GetSystemSalt(const GetSystemSaltCallback& callback);
-
-  // Synchronous version of GetSystemSalt().
-  // Blocks the UI thread until the Cryptohome service returns the result.
-  // DEPRECATED: DO NOT USE.
-  std::string GetSystemSaltSync();
 
  protected:
   SystemSaltGetter();
@@ -46,11 +41,11 @@ class CHROMEOS_EXPORT SystemSaltGetter {
 
  private:
   // Used to implement GetSystemSalt().
-  void GetSystemSaltInternal(const GetSystemSaltCallback& callback,
-                             bool service_is_available);
-
-  // Loads the system salt from cryptohome and caches it.
-  void LoadSystemSalt();
+  void DidWaitForServiceToBeAvailable(const GetSystemSaltCallback& callback,
+                                      bool service_is_available);
+  void DidGetSystemSalt(const GetSystemSaltCallback& callback,
+                        DBusMethodCallStatus call_status,
+                        const std::vector<uint8>& system_salt);
 
   std::string system_salt_;
 

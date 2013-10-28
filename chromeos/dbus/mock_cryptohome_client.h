@@ -37,7 +37,7 @@ class MockCryptohomeClient : public CryptohomeClient {
                     const AsyncMethodCallback& callback));
   MOCK_METHOD2(AsyncRemove, void(const std::string& username,
                                  const AsyncMethodCallback& callback));
-  MOCK_METHOD1(GetSystemSalt, bool(std::vector<uint8>* salt));
+  MOCK_METHOD1(GetSystemSalt, void(const GetSystemSaltCallback& callback));
   MOCK_METHOD2(GetSanitizedUsername,
                void(const std::string& username,
                     const StringDBusMethodCallback& callback));

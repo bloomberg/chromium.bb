@@ -35,6 +35,10 @@ class CHROMEOS_EXPORT CryptohomeClient : public DBusClient {
       AsyncCallStatusWithDataHandler;
   // A callback to handle responses of AsyncXXX methods.
   typedef base::Callback<void(int async_id)> AsyncMethodCallback;
+  // A callback for GetSystemSalt().
+  typedef base::Callback<void(
+      DBusMethodCallStatus call_status,
+      const std::vector<uint8>& system_salt)> GetSystemSaltCallback;
   // A callback for WaitForServiceToBeAvailable().
   typedef base::Callback<void(bool service_is_ready)>
       WaitForServiceToBeAvailableCallback;
@@ -105,9 +109,9 @@ class CHROMEOS_EXPORT CryptohomeClient : public DBusClient {
   virtual void AsyncRemove(const std::string& username,
                            const AsyncMethodCallback& callback) = 0;
 
-  // Calls GetSystemSalt method.  This method blocks until the call returns.
-  // The original content of |salt| is lost.
-  virtual bool GetSystemSalt(std::vector<uint8>* salt) = 0;
+  // Calls GetSystemSalt method.  |callback| is called after the method call
+  // succeeds.
+  virtual void GetSystemSalt(const GetSystemSaltCallback& callback) = 0;
 
   // Calls GetSanitizedUsername method.  |callback| is called after the method
   // call succeeds.

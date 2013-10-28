@@ -55,6 +55,7 @@ TEST_F(SystemSaltGetterTest, GetSystemSalt) {
 
   // Service becomes available.
   fake_cryptohome_client_->SetServiceIsAvailable(true);
+  base::RunLoop().RunUntilIdle();
   const std::string expected_system_salt =
       SystemSaltGetter::ConvertRawSaltToHexString(
           FakeCryptohomeClient::GetStubSystemSalt());

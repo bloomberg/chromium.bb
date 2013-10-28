@@ -80,9 +80,11 @@ void FakeCryptohomeClient::AsyncRemove(
   ReturnAsyncMethodResult(callback, false);
 }
 
-bool FakeCryptohomeClient::GetSystemSalt(std::vector<uint8>* salt) {
-  *salt = system_salt_;
-  return true;
+void FakeCryptohomeClient::GetSystemSalt(
+    const GetSystemSaltCallback& callback) {
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(callback, DBUS_METHOD_CALL_SUCCESS, system_salt_));
 }
 
 void FakeCryptohomeClient::GetSanitizedUsername(

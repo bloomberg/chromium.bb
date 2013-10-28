@@ -4,6 +4,7 @@
 
 #include "chromeos/dbus/mock_dbus_thread_manager.h"
 
+#include "base/message_loop/message_loop.h"
 #include "chromeos/dbus/dbus_thread_manager_observer.h"
 #include "chromeos/dbus/fake_bluetooth_adapter_client.h"
 #include "chromeos/dbus/fake_bluetooth_agent_manager_client.h"
@@ -26,24 +27,25 @@
 #include "chromeos/dbus/power_policy_controller.h"
 
 using ::testing::AnyNumber;
+using ::testing::Invoke;
 using ::testing::Return;
 using ::testing::ReturnNull;
-using ::testing::SetArgumentPointee;
 using ::testing::_;
 
 namespace chromeos {
 
 namespace {
 
-std::vector<uint8>* GetMockSystemSalt() {
-  static std::vector<uint8>* s_system_salt = NULL;
-  if (!s_system_salt) {
-    const char kStubSystemSalt[] = "stub_system_salt";
-    s_system_salt = new std::vector<uint8>();
-    s_system_salt->assign(kStubSystemSalt,
-                          kStubSystemSalt + arraysize(kStubSystemSalt) - 1);
-  }
-  return s_system_salt;
+void GetMockSystemSalt(
+    const CryptohomeClient::GetSystemSaltCallback& callback) {
+  const char kStubSystemSalt[] = "stub_system_salt";
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(callback,
+                 DBUS_METHOD_CALL_SUCCESS,
+                 std::vector<uint8>(
+                     kStubSystemSalt,
+                     kStubSystemSalt + arraysize(kStubSystemSalt) - 1)));
 }
 
 }  // namespace
@@ -117,8 +119,7 @@ MockDBusThreadManager::MockDBusThreadManager()
       .Times(AnyNumber());
   // Called from various locations.
   EXPECT_CALL(*mock_cryptohome_client_.get(), GetSystemSalt(_))
-      .WillRepeatedly(DoAll(SetArgumentPointee<0>(*GetMockSystemSalt()),
-                            Return(true)));
+      .WillRepeatedly(Invoke(&GetMockSystemSalt));
   EXPECT_CALL(*mock_cryptohome_client_.get(), TpmIsEnabled(_))
       .Times(AnyNumber());
 

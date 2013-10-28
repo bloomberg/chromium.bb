@@ -27,35 +27,43 @@ SystemSaltGetter::~SystemSaltGetter() {
 
 void SystemSaltGetter::GetSystemSalt(
     const GetSystemSaltCallback& callback) {
+  if (!system_salt_.empty()) {
+    base::MessageLoopProxy::current()->PostTask(
+        FROM_HERE, base::Bind(callback, system_salt_));
+    return;
+  }
+
   DBusThreadManager::Get()->GetCryptohomeClient()->WaitForServiceToBeAvailable(
-      base::Bind(&SystemSaltGetter::GetSystemSaltInternal,
+      base::Bind(&SystemSaltGetter::DidWaitForServiceToBeAvailable,
                  weak_ptr_factory_.GetWeakPtr(),
                  callback));
 }
 
-std::string SystemSaltGetter::GetSystemSaltSync() {
-  LoadSystemSalt();  // no-op if it's already loaded.
-  return system_salt_;
-}
-
-void SystemSaltGetter::GetSystemSaltInternal(
+void SystemSaltGetter::DidWaitForServiceToBeAvailable(
     const GetSystemSaltCallback& callback,
     bool service_is_available) {
-  LOG_IF(ERROR, !service_is_available) << "WaitForServiceToBeAvailable failed.";
-  // TODO(hashimoto): Stop using GetSystemSaltSync(). crbug.com/141009
-  callback.Run(GetSystemSaltSync());
-}
-
-void SystemSaltGetter::LoadSystemSalt() {
-  if (!system_salt_.empty())
-    return;
-  std::vector<uint8> salt;
-  DBusThreadManager::Get()->GetCryptohomeClient()->GetSystemSalt(&salt);
-  if (salt.empty() || salt.size() % 2 != 0U) {
-    LOG(WARNING) << "System salt not available";
+  if (!service_is_available) {
+    LOG(ERROR) << "WaitForServiceToBeAvailable failed.";
+    callback.Run(std::string());
     return;
   }
-  system_salt_ = ConvertRawSaltToHexString(salt);
+  DBusThreadManager::Get()->GetCryptohomeClient()->GetSystemSalt(
+      base::Bind(&SystemSaltGetter::DidGetSystemSalt,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 callback));
+}
+
+void SystemSaltGetter::DidGetSystemSalt(const GetSystemSaltCallback& callback,
+                                        DBusMethodCallStatus call_status,
+                                        const std::vector<uint8>& system_salt) {
+  if (call_status == DBUS_METHOD_CALL_SUCCESS &&
+      !system_salt.empty() &&
+      system_salt.size() % 2 == 0U)
+    system_salt_ = ConvertRawSaltToHexString(system_salt);
+  else
+    LOG(WARNING) << "System salt not available";
+
+  callback.Run(system_salt_);
 }
 
 // static
