@@ -1,40 +1,45 @@
-<html> 
-<head>
-
-<style>
-.editing { 
-    border: 2px solid red; 
-    padding: 12px; 
-    font-size: 24px; 
-}
-</style>
-<script src="../editing.js" language="JavaScript" type="text/JavaScript" ></script>
-
-<script>
-
-function editingTest() {
-    moveSelectionForwardByWordCommand();
-    moveSelectionForwardByWordCommand();
-    deleteCommand();
-    deleteCommand();
-    deleteCommand();
-    deleteCommand();
-    undoCommand();
-}
-
-</script>
-
-</head> 
+<!DOCTYPE html>
+<html>
 <body>
-<div contenteditable id="root" class="editing">
-<span id="test">This word should be selected, since the test deleted it a character at a time and then did an undo.</span>
+<div id="container">
+<p id="description"></p>
+<p>To test manually, place the cursor at the end of 'word' and delete it completely character by character. Do ctrl+z. On Mac, 'word' should be selected. On other platforms 'word' should not be selected and the cursor should be placed at the end of 'word'.</p>
+<div id="test" style="border: 2px solid red;" contenteditable>This word should be selected.</div>
 </div>
-
+<div id="console"></div>
+<script src="../../fast/js/resources/js-test-pre.js"></script>
 <script>
-if (window.internals)
-    internals.settings.setEditingBehavior("mac");
-runEditingTest();
-</script>
+description('Verifies the selection behavior on undoing a text deletion.');
+var selectionNode = document.getElementById('test').firstChild;
+var selectionOffset = selectionNode.data.indexOf('d') + 1;
+var endOffset = selectionNode.data.indexOf(' ') + 1;
+var selection = window.getSelection();
 
+function undoTest(platform, expectedStartNode, expectedStartOffset, expectedEndNode, expectedEndOffset, selectedText) {
+    debug(platform);
+    internals.settings.setEditingBehavior(platform);
+
+    selection.collapse(selectionNode, selectionOffset);
+    for (var i = 0; i < 4; i++)
+        document.execCommand('delete');
+    document.execCommand('undo');
+
+    shouldBeEqualToString('selection.anchorNode.data', expectedStartNode.data);
+    shouldBe('selection.anchorOffset', expectedStartOffset + '');
+    shouldBeEqualToString('selection.focusNode.data', expectedEndNode.data);
+    shouldBe('selection.focusOffset', expectedEndOffset + '');
+    shouldBeEqualToString('selection.toString()', selectedText);
+}
+
+if (window.internals) {
+    undoTest('mac', selectionNode, selectionOffset, selectionNode, endOffset, 'word');
+    undoTest('win', selectionNode, selectionOffset, selectionNode, endOffset, 'word');
+    undoTest('unix', selectionNode, selectionOffset, selectionNode, endOffset, 'word');
+    undoTest('android', selectionNode, selectionOffset, selectionNode, endOffset, 'word');
+}
+if (window.testRunner)
+  document.getElementById('container').outerHTML = '';
+</script>
+<script src="../../fast/js/resources/js-test-post.js"></script>
 </body>
 </html>
