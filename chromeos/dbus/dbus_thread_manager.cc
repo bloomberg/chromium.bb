@@ -404,8 +404,11 @@ class DBusThreadManagerImpl : public DBusThreadManager {
   scoped_ptr<ImageBurnerClient> image_burner_client_;
   scoped_ptr<IntrospectableClient> introspectable_client_;
   scoped_ptr<ModemMessagingClient> modem_messaging_client_;
-  scoped_ptr<NfcAdapterClient> nfc_adapter_client_;
+  // NfcAdapterClient depends on NfcManagerClient. We declare NfcManagerClient
+  // first, so that it won't be deallocated before NfcAdapterClient is done
+  // cleaning up.
   scoped_ptr<NfcManagerClient> nfc_manager_client_;
+  scoped_ptr<NfcAdapterClient> nfc_adapter_client_;
   scoped_ptr<PermissionBrokerClient> permission_broker_client_;
   scoped_ptr<SystemClockClient> system_clock_client_;
   scoped_ptr<PowerManagerClient> power_manager_client_;
