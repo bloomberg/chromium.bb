@@ -56,6 +56,8 @@ class CC_EXPORT PictureLayer : public Layer {
   Region pile_invalidation_;
   bool is_mask_;
 
+  int update_source_frame_number_;
+
   DISALLOW_COPY_AND_ASSIGN(PictureLayer);
 };
 
