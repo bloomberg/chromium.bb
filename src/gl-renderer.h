@@ -96,10 +96,6 @@ struct gl_renderer_interface {
 				  int32_t width, int32_t height,
 				  int32_t tex_width, unsigned char *data);
 
-	void (*set_border)(struct weston_compositor *ec,
-			   int32_t width, int32_t height,
-			   void *data, int32_t *edges);
-
 	void (*print_egl_error_state)(void);
 };
 

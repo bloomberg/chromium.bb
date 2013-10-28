@@ -106,14 +106,7 @@ struct gl_renderer {
 	EGLContext egl_context;
 	EGLConfig egl_config;
 
-	struct {
-		int32_t top, bottom, left, right;
-		GLuint texture;
-		int32_t width, height;
-	} border;
-
 	struct wl_array vertices;
-	struct wl_array indices; /* only used in compositor-wayland */
 	struct wl_array vtxcnt;
 
 	PFNGLEGLIMAGETARGETTEXTURE2DOESPROC image_target_texture_2d;
@@ -698,121 +691,6 @@ draw_output_border(struct weston_output *output)
 				   full_width, output->border.bottom);
 }
 
-static int
-texture_border(struct weston_output *output)
-{
-	struct weston_compositor *ec = output->compositor;
-	struct gl_renderer *gr = get_renderer(ec);
-	GLfloat *d;
-	unsigned short *p;
-	int i, j, k, n;
-	GLfloat x[4], y[4], u[4], v[4];
-
-	x[0] = -gr->border.left;
-	x[1] = 0;
-	x[2] = output->current_mode->width;
-	x[3] = output->current_mode->width + gr->border.right;
-
-	y[0] = -gr->border.top;
-	y[1] = 0;
-	y[2] = output->current_mode->height;
-	y[3] = output->current_mode->height + gr->border.bottom;
-
-	u[0] = 0.0;
-	u[1] = (GLfloat) gr->border.left / gr->border.width;
-	u[2] = (GLfloat) (gr->border.width - gr->border.right) / gr->border.width;
-	u[3] = 1.0;
-
-	v[0] = 0.0;
-	v[1] = (GLfloat) gr->border.top / gr->border.height;
-	v[2] = (GLfloat) (gr->border.height - gr->border.bottom) / gr->border.height;
-	v[3] = 1.0;
-
-	n = 8;
-	d = wl_array_add(&gr->vertices, n * 16 * sizeof *d);
-	p = wl_array_add(&gr->indices, n * 6 * sizeof *p);
-
-	k = 0;
-	for (i = 0; i < 3; i++)
-		for (j = 0; j < 3; j++) {
-
-			if (i == 1 && j == 1)
-				continue;
-
-			d[ 0] = x[i];
-			d[ 1] = y[j];
-			d[ 2] = u[i];
-			d[ 3] = v[j];
-
-			d[ 4] = x[i];
-			d[ 5] = y[j + 1];
-			d[ 6] = u[i];
-			d[ 7] = v[j + 1];
-
-			d[ 8] = x[i + 1];
-			d[ 9] = y[j];
-			d[10] = u[i + 1];
-			d[11] = v[j];
-
-			d[12] = x[i + 1];
-			d[13] = y[j + 1];
-			d[14] = u[i + 1];
-			d[15] = v[j + 1];
-
-			p[0] = k + 0;
-			p[1] = k + 1;
-			p[2] = k + 2;
-			p[3] = k + 2;
-			p[4] = k + 1;
-			p[5] = k + 3;
-
-			d += 16;
-			p += 6;
-			k += 4;
-		}
-
-	return k / 4;
-}
-
-static void
-draw_global_border(struct weston_output *output)
-{
-	struct weston_compositor *ec = output->compositor;
-	struct gl_renderer *gr = get_renderer(ec);
-	struct gl_shader *shader = &gr->texture_shader_rgba;
-	GLfloat *v;
-	int n;
-
-	glDisable(GL_BLEND);
-	use_shader(gr, shader);
-
-	glUniformMatrix4fv(shader->proj_uniform,
-			   1, GL_FALSE, output->matrix.d);
-
-	glUniform1i(shader->tex_uniforms[0], 0);
-	glUniform1f(shader->alpha_uniform, 1);
-
-	n = texture_border(output);
-
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, gr->border.texture);
-
-	v = gr->vertices.data;
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof *v, &v[0]);
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof *v, &v[2]);
-	glEnableVertexAttribArray(0);
-	glEnableVertexAttribArray(1);
-
-	glDrawElements(GL_TRIANGLES, n * 6,
-		       GL_UNSIGNED_SHORT, gr->indices.data);
-
-	glDisableVertexAttribArray(1);
-	glDisableVertexAttribArray(0);
-
-	gr->vertices.size = 0;
-	gr->indices.size = 0;
-}
-
 static void
 output_get_buffer_damage(struct weston_output *output,
 			 pixman_region32_t *buffer_damage)
@@ -907,11 +785,7 @@ gl_renderer_repaint_output(struct weston_output *output,
 	pixman_region32_fini(&total_damage);
 	pixman_region32_fini(&buffer_damage);
 
-	if (gr->border.texture) {
-		draw_global_border(output);
-	} else {
-		draw_output_border(output);
-	}
+	draw_output_border(output);
 
 	pixman_region32_copy(&output->previous_damage, output_damage);
 	wl_signal_emit(&output->frame_signal, output);
@@ -1631,47 +1505,6 @@ gl_renderer_output_set_border(struct weston_output *output,
 	go->borders[side].dirty = 1;
 }
 
-static void
-output_apply_border(struct weston_output *output, struct gl_renderer *gr)
-{
-	output->border.top = gr->border.top;
-	output->border.bottom = gr->border.bottom;
-	output->border.left = gr->border.left;
-	output->border.right = gr->border.right;
-}
-
-static void
-gl_renderer_set_border(struct weston_compositor *ec, int32_t width, int32_t height, void *data,
-			  int32_t *edges)
-{
-	struct gl_renderer *gr = get_renderer(ec);
-	struct weston_output *output;
-
-	gr->border.left = edges[0];
-	gr->border.right = edges[1];
-	gr->border.top = edges[2];
-	gr->border.bottom = edges[3];
-
-	gr->border.width = width;
-	gr->border.height = height;
-
-	glGenTextures(1, &gr->border.texture);
-	glBindTexture(GL_TEXTURE_2D, gr->border.texture);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_BGRA_EXT,
-		     width,
-		     height,
-		     0, GL_BGRA_EXT, GL_UNSIGNED_BYTE,
-		     data);
-
-	wl_list_for_each(output, &ec->output_list, link)
-		output_apply_border(output, gr);
-}
-
 static int
 gl_renderer_setup(struct weston_compositor *ec, EGLSurface egl_surface);
 
@@ -1708,8 +1541,6 @@ gl_renderer_output_create(struct weston_output *output,
 		pixman_region32_init(&go->buffer_damage[i]);
 
 	output->renderer_state = go;
-
-	output_apply_border(output, gr);
 
 	return 0;
 }
@@ -1754,7 +1585,6 @@ gl_renderer_destroy(struct weston_compositor *ec)
 	eglReleaseThread();
 
 	wl_array_release(&gr->vertices);
-	wl_array_release(&gr->indices);
 	wl_array_release(&gr->vtxcnt);
 
 	weston_binding_destroy(gr->fragment_binding);
@@ -2083,6 +1913,5 @@ WL_EXPORT struct gl_renderer_interface gl_renderer_interface = {
 	.output_destroy = gl_renderer_output_destroy,
 	.output_surface = gl_renderer_output_surface,
 	.output_set_border = gl_renderer_output_set_border,
-	.set_border = gl_renderer_set_border,
 	.print_egl_error_state = gl_renderer_print_egl_error_state
 };
