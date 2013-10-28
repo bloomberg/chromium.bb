@@ -33,7 +33,6 @@ NativeViewHost::NativeViewHost()
     : native_view_(NULL),
       fast_resize_(false),
       fast_resize_at_last_layout_(false),
-      fast_resize_gravity_(GRAVITY_NORTHWEST),
       focus_view_(NULL) {
 }
 
@@ -48,9 +47,11 @@ void NativeViewHost::Attach(gfx::NativeView native_view) {
   // be seen as focused when the native view receives focus.
   if (!focus_view_)
     focus_view_ = this;
-  native_wrapper_->AttachNativeView();
+  native_wrapper_->NativeViewWillAttach();
+  Widget::ReparentNativeView(native_view_, GetWidget()->GetNativeView());
   Layout();
-  Widget* widget = Widget::GetWidgetForNativeView(native_view_);
+
+  Widget* widget = Widget::GetWidgetForNativeView(native_view);
   if (widget)
     widget->SetNativeWindowProperty(kWidgetNativeViewHostKey, this);
 }
@@ -62,56 +63,6 @@ void NativeViewHost::Detach() {
 void NativeViewHost::SetPreferredSize(const gfx::Size& size) {
   preferred_size_ = size;
   PreferredSizeChanged();
-}
-
-float NativeViewHost::GetWidthScaleFactor() const {
-  switch (fast_resize_gravity_) {
-    case GRAVITY_NORTHWEST:
-      return 0.0;
-    case GRAVITY_NORTH:
-      return 0.5;
-    case GRAVITY_NORTHEAST:
-      return 1.0;
-    case GRAVITY_EAST:
-      return 1.0;
-    case GRAVITY_SOUTHEAST:
-      return 1.0;
-    case GRAVITY_SOUTH:
-      return 0.5;
-    case GRAVITY_SOUTHWEST:
-      return 0.0;
-    case GRAVITY_WEST:
-      return 0.0;
-    case GRAVITY_CENTER:
-      return 0.5;
-  }
-  NOTREACHED();
-  return 0.0;
-}
-
-float NativeViewHost::GetHeightScaleFactor() const {
-  switch (fast_resize_gravity_) {
-    case GRAVITY_NORTHWEST:
-      return 0.0;
-    case GRAVITY_NORTH:
-      return 0.0;
-    case GRAVITY_NORTHEAST:
-      return 0.0;
-    case GRAVITY_EAST:
-      return 0.5;
-    case GRAVITY_SOUTHEAST:
-      return 1.0;
-    case GRAVITY_SOUTH:
-      return 1.0;
-    case GRAVITY_SOUTHWEST:
-      return 1.0;
-    case GRAVITY_WEST:
-      return 0.5;
-    case GRAVITY_CENTER:
-      return 0.5;
-  }
-  NOTREACHED();
-  return 0.0;
 }
 
 void NativeViewHost::NativeViewDestroyed() {
