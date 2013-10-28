@@ -12,6 +12,7 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/test/display_manager_test_api.h"
 #include "ash/touch/touch_hud_debug.h"
+#include "ash/touch/touch_hud_projection.h"
 #include "base/command_line.h"
 #include "base/format_macros.h"
 #include "base/strings/stringprintf.h"
@@ -20,18 +21,12 @@
 namespace ash {
 namespace internal {
 
-class TouchHudTest : public test::AshTestBase {
+class TouchHudTestBase : public test::AshTestBase {
  public:
-  TouchHudTest() {}
-  virtual ~TouchHudTest() {}
+  TouchHudTestBase() {}
+  virtual ~TouchHudTestBase() {}
 
   virtual void SetUp() OVERRIDE {
-    // Add ash-touch-hud flag to enable touch HUD. This flag should be set
-    // before Ash environment is set up, i.e., before
-    // test::AshTestBase::SetUp().
-    CommandLine::ForCurrentProcess()->AppendSwitch(
-        ash::switches::kAshTouchHud);
-
     test::AshTestBase::SetUp();
 
     // Initialize display infos. They should be initialized after Ash
@@ -131,29 +126,7 @@ class TouchHudTest : public test::AshTestBase {
     return external_display_id_;
   }
 
-  void CheckInternalDisplay() {
-    EXPECT_NE(static_cast<internal::TouchObserverHUD*>(NULL),
-              GetInternalTouchHud());
-    EXPECT_EQ(internal_display_id(), GetInternalTouchHud()->display_id_);
-    EXPECT_EQ(GetInternalRootWindow(), GetInternalTouchHud()->root_window_);
-    EXPECT_EQ(GetInternalRootWindow(),
-              GetInternalTouchHud()->widget_->GetNativeView()->GetRootWindow());
-    EXPECT_EQ(GetInternalDisplay().size(),
-              GetInternalTouchHud()->widget_->GetWindowBoundsInScreen().size());
-  }
-
-  void CheckExternalDisplay() {
-    EXPECT_NE(static_cast<internal::TouchObserverHUD*>(NULL),
-              GetExternalTouchHud());
-    EXPECT_EQ(external_display_id(), GetExternalTouchHud()->display_id_);
-    EXPECT_EQ(GetExternalRootWindow(), GetExternalTouchHud()->root_window_);
-    EXPECT_EQ(GetExternalRootWindow(),
-              GetExternalTouchHud()->widget_->GetNativeView()->GetRootWindow());
-    EXPECT_EQ(GetExternalDisplay().size(),
-              GetExternalTouchHud()->widget_->GetWindowBoundsInScreen().size());
-  }
-
- private:
+ protected:
   DisplayManager* GetDisplayManager() {
     return Shell::GetInstance()->display_manager();
   }
@@ -210,26 +183,18 @@ class TouchHudTest : public test::AshTestBase {
     return GetRootWindowController(root);
   }
 
-  internal::TouchObserverHUD* GetInternalTouchHud() {
-    return GetInternalRootController()->touch_hud_debug();
-  }
-
-  internal::TouchObserverHUD* GetExternalTouchHud() {
-    return GetExternalRootController()->touch_hud_debug();
-  }
-
-  internal::TouchObserverHUD* GetPrimaryTouchHud() {
-    return GetPrimaryRootController()->touch_hud_debug();
-  }
-
-  internal::TouchObserverHUD* GetSecondaryTouchHud() {
-    return GetSecondaryRootController()->touch_hud_debug();
-  }
-
   DisplayInfo CreateDisplayInfo(int64 id, const gfx::Rect& bounds) {
     DisplayInfo info(id, base::StringPrintf("x-%" PRId64, id), false);
     info.SetBounds(bounds);
     return info;
+  }
+
+  aura::Window* GetRootWindowForTouchHud(internal::TouchObserverHUD* hud) {
+    return hud->root_window_;
+  }
+
+  views::Widget* GetWidgetForTouchHud(internal::TouchObserverHUD* hud) {
+    return hud->widget_;
   }
 
   int64 internal_display_id_;
@@ -241,11 +206,120 @@ class TouchHudTest : public test::AshTestBase {
 
   std::vector<DisplayInfo> display_info_list_;
 
-  DISALLOW_COPY_AND_ASSIGN(TouchHudTest);
+  DISALLOW_COPY_AND_ASSIGN(TouchHudTestBase);
 };
 
-// Checks if touch HUDs are correctly initialized for displays.
-TEST_F(TouchHudTest, Basic) {
+class TouchHudDebugTest : public TouchHudTestBase {
+ public:
+  TouchHudDebugTest() {}
+  virtual ~TouchHudDebugTest() {}
+
+  virtual void SetUp() OVERRIDE {
+    // Add ash-touch-hud flag to enable debug touch HUD. This flag should be set
+    // before Ash environment is set up, i.e., before TouchHudTestBase::SetUp().
+    CommandLine::ForCurrentProcess()->AppendSwitch(
+        ash::switches::kAshTouchHud);
+
+    TouchHudTestBase::SetUp();
+  }
+
+  void CheckInternalDisplay() {
+    EXPECT_NE(static_cast<internal::TouchObserverHUD*>(NULL),
+              GetInternalTouchHudDebug());
+    EXPECT_EQ(internal_display_id(), GetInternalTouchHudDebug()->display_id());
+    EXPECT_EQ(GetInternalRootWindow(),
+              GetRootWindowForTouchHud(GetInternalTouchHudDebug()));
+    EXPECT_EQ(GetInternalRootWindow(),
+              GetWidgetForTouchHud(GetInternalTouchHudDebug())->
+                  GetNativeView()->GetRootWindow());
+    EXPECT_EQ(GetInternalDisplay().size(),
+              GetWidgetForTouchHud(GetInternalTouchHudDebug())->
+                  GetWindowBoundsInScreen().size());
+  }
+
+  void CheckExternalDisplay() {
+    EXPECT_NE(static_cast<internal::TouchHudDebug*>(NULL),
+              GetExternalTouchHudDebug());
+    EXPECT_EQ(external_display_id(), GetExternalTouchHudDebug()->display_id());
+    EXPECT_EQ(GetExternalRootWindow(),
+              GetRootWindowForTouchHud(GetExternalTouchHudDebug()));
+    EXPECT_EQ(GetExternalRootWindow(),
+              GetWidgetForTouchHud(GetExternalTouchHudDebug())->
+                  GetNativeView()->GetRootWindow());
+    EXPECT_EQ(GetExternalDisplay().size(),
+              GetWidgetForTouchHud(GetExternalTouchHudDebug())->
+                  GetWindowBoundsInScreen().size());
+  }
+
+ private:
+  internal::TouchHudDebug* GetInternalTouchHudDebug() {
+    return GetInternalRootController()->touch_hud_debug();
+  }
+
+  internal::TouchHudDebug* GetExternalTouchHudDebug() {
+    return GetExternalRootController()->touch_hud_debug();
+  }
+
+  internal::TouchHudDebug* GetPrimaryTouchHudDebug() {
+    return GetPrimaryRootController()->touch_hud_debug();
+  }
+
+  internal::TouchHudDebug* GetSecondaryTouchHudDebug() {
+    return GetSecondaryRootController()->touch_hud_debug();
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(TouchHudDebugTest);
+};
+
+class TouchHudProjectionTest : public TouchHudTestBase {
+ public:
+  TouchHudProjectionTest() {}
+  virtual ~TouchHudProjectionTest() {}
+
+  void EnableTouchHudProjection() {
+    Shell::GetInstance()->SetTouchHudProjectionEnabled(true);
+  }
+
+  void DisableTouchHudProjection() {
+    Shell::GetInstance()->SetTouchHudProjectionEnabled(false);
+  }
+
+  internal::TouchHudProjection* GetInternalTouchHudProjection() {
+    return GetInternalRootController()->touch_hud_projection();
+  }
+
+  int GetInternalTouchPointsCount() {
+    return GetInternalTouchHudProjection()->points_.size();
+  }
+
+  void SendTouchEventToInternalHud(ui::EventType type,
+                                   const gfx::Point& location,
+                                   int touch_id) {
+    ui::TouchEvent event(type, location, touch_id, event_time);
+    GetInternalTouchHudProjection()->OnTouchEvent(&event);
+
+    // Advance time for next event.
+    event_time += base::TimeDelta::FromMilliseconds(100);
+  }
+
+ private:
+  base::TimeDelta event_time;
+
+  DISALLOW_COPY_AND_ASSIGN(TouchHudProjectionTest);
+};
+
+// Checks if debug touch HUD is correctly initialized for a single display.
+TEST_F(TouchHudDebugTest, SingleDisplay) {
+  // Setup a single display setting.
+  SetupSingleDisplay();
+
+  // Check if touch HUD is set correctly and associated with appropriate
+  // display.
+  CheckInternalDisplay();
+}
+
+// Checks if debug touch HUDs are correctly initialized for two displays.
+TEST_F(TouchHudDebugTest, DualDisplays) {
   if (!SupportsMultipleDisplays())
     return;
 
@@ -258,8 +332,9 @@ TEST_F(TouchHudTest, Basic) {
   CheckExternalDisplay();
 }
 
-// Checks if touch HUDs are correctly handled when primary display is changed.
-TEST_F(TouchHudTest, SwapPrimaryDisplay) {
+// Checks if debug touch HUDs are correctly handled when primary display is
+// changed.
+TEST_F(TouchHudDebugTest, SwapPrimaryDisplay) {
   if (!SupportsMultipleDisplays())
     return;
 
@@ -285,8 +360,8 @@ TEST_F(TouchHudTest, SwapPrimaryDisplay) {
   CheckExternalDisplay();
 }
 
-// Checks if touch HUDs are correctly handled when displays are mirrored.
-TEST_F(TouchHudTest, MirrorDisplays) {
+// Checks if debug touch HUDs are correctly handled when displays are mirrored.
+TEST_F(TouchHudDebugTest, MirrorDisplays) {
   if (!SupportsMultipleDisplays())
     return;
 
@@ -310,9 +385,9 @@ TEST_F(TouchHudTest, MirrorDisplays) {
   CheckExternalDisplay();
 }
 
-// Checks if touch HUDs are correctly handled when displays are mirrored after
-// setting the external display as the primary one.
-TEST_F(TouchHudTest, SwapPrimaryThenMirrorDisplays) {
+// Checks if debug touch HUDs are correctly handled when displays are mirrored
+// after setting the external display as the primary one.
+TEST_F(TouchHudDebugTest, SwapPrimaryThenMirrorDisplays) {
   if (!SupportsMultipleDisplays())
     return;
 
@@ -340,9 +415,9 @@ TEST_F(TouchHudTest, SwapPrimaryThenMirrorDisplays) {
   CheckExternalDisplay();
 }
 
-// Checks if touch HUDs are correctly handled when the external display, which
-// is the secondary one, is removed.
-TEST_F(TouchHudTest, RemoveSecondaryDisplay) {
+// Checks if debug touch HUDs are correctly handled when the external display,
+// which is the secondary one, is removed.
+TEST_F(TouchHudDebugTest, RemoveSecondaryDisplay) {
   if (!SupportsMultipleDisplays())
     return;
 
@@ -366,9 +441,9 @@ TEST_F(TouchHudTest, RemoveSecondaryDisplay) {
   CheckExternalDisplay();
 }
 
-// Checks if touch HUDs are correctly handled when the external display, which
-// is set as the primary display, is removed.
-TEST_F(TouchHudTest, RemovePrimaryDisplay) {
+// Checks if debug touch HUDs are correctly handled when the external display,
+// which is set as the primary display, is removed.
+TEST_F(TouchHudDebugTest, RemovePrimaryDisplay) {
   if (!SupportsMultipleDisplays())
     return;
 
@@ -396,8 +471,9 @@ TEST_F(TouchHudTest, RemovePrimaryDisplay) {
   CheckExternalDisplay();
 }
 
-// Checks if touch HUDs are correctly handled when all displays are removed.
-TEST_F(TouchHudTest, Headless) {
+// Checks if debug touch HUDs are correctly handled when all displays are
+// removed.
+TEST_F(TouchHudDebugTest, Headless) {
   if (!SupportsMultipleDisplays())
     return;
 
@@ -413,6 +489,108 @@ TEST_F(TouchHudTest, Headless) {
   // Check if the display's touch HUD is set correctly.
   EXPECT_EQ(internal_display_id(), GetPrimaryDisplay().id());
   CheckInternalDisplay();
+}
+
+// Checks projection touch HUD with a sequence of touch-pressed, touch-moved,
+// and touch-released events.
+TEST_F(TouchHudProjectionTest, TouchMoveRelease) {
+  SetupSingleDisplay();
+  EXPECT_EQ(NULL, GetInternalTouchHudProjection());
+
+  EnableTouchHudProjection();
+  EXPECT_NE(static_cast<internal::TouchHudProjection*>(NULL),
+            GetInternalTouchHudProjection());
+  EXPECT_EQ(0, GetInternalTouchPointsCount());
+
+  SendTouchEventToInternalHud(ui::ET_TOUCH_PRESSED, gfx::Point(10, 10), 1);
+  EXPECT_EQ(1, GetInternalTouchPointsCount());
+
+  SendTouchEventToInternalHud(ui::ET_TOUCH_MOVED, gfx::Point(10, 20), 1);
+  EXPECT_EQ(1, GetInternalTouchPointsCount());
+
+  SendTouchEventToInternalHud(ui::ET_TOUCH_RELEASED, gfx::Point(10, 20), 1);
+  EXPECT_EQ(0, GetInternalTouchPointsCount());
+
+  // Disabling projection touch HUD shoud remove it without crashing.
+  DisableTouchHudProjection();
+  EXPECT_EQ(NULL, GetInternalTouchHudProjection());
+}
+
+// Checks projection touch HUD with a sequence of touch-pressed, touch-moved,
+// and touch-cancelled events.
+TEST_F(TouchHudProjectionTest, TouchMoveCancel) {
+  SetupSingleDisplay();
+  EXPECT_EQ(NULL, GetInternalTouchHudProjection());
+
+  EnableTouchHudProjection();
+  EXPECT_NE(static_cast<internal::TouchHudProjection*>(NULL),
+            GetInternalTouchHudProjection());
+  EXPECT_EQ(0, GetInternalTouchPointsCount());
+
+  SendTouchEventToInternalHud(ui::ET_TOUCH_PRESSED, gfx::Point(10, 10), 1);
+  EXPECT_EQ(1, GetInternalTouchPointsCount());
+
+  SendTouchEventToInternalHud(ui::ET_TOUCH_MOVED, gfx::Point(10, 20), 1);
+  EXPECT_EQ(1, GetInternalTouchPointsCount());
+
+  SendTouchEventToInternalHud(ui::ET_TOUCH_CANCELLED, gfx::Point(10, 20), 1);
+  EXPECT_EQ(0, GetInternalTouchPointsCount());
+
+  // Disabling projection touch HUD shoud remove it without crashing.
+  DisableTouchHudProjection();
+  EXPECT_EQ(NULL, GetInternalTouchHudProjection());
+}
+
+// Checks projection touch HUD with two simultaneous touches.
+TEST_F(TouchHudProjectionTest, DoubleTouch) {
+  SetupSingleDisplay();
+  EXPECT_EQ(NULL, GetInternalTouchHudProjection());
+
+  EnableTouchHudProjection();
+  EXPECT_NE(static_cast<internal::TouchHudProjection*>(NULL),
+            GetInternalTouchHudProjection());
+  EXPECT_EQ(0, GetInternalTouchPointsCount());
+
+  SendTouchEventToInternalHud(ui::ET_TOUCH_PRESSED, gfx::Point(10, 10), 1);
+  EXPECT_EQ(1, GetInternalTouchPointsCount());
+
+  SendTouchEventToInternalHud(ui::ET_TOUCH_PRESSED, gfx::Point(20, 10), 2);
+  EXPECT_EQ(2, GetInternalTouchPointsCount());
+
+  SendTouchEventToInternalHud(ui::ET_TOUCH_MOVED, gfx::Point(10, 20), 1);
+  EXPECT_EQ(2, GetInternalTouchPointsCount());
+
+  SendTouchEventToInternalHud(ui::ET_TOUCH_MOVED, gfx::Point(20, 20), 2);
+  EXPECT_EQ(2, GetInternalTouchPointsCount());
+
+  SendTouchEventToInternalHud(ui::ET_TOUCH_RELEASED, gfx::Point(10, 20), 1);
+  EXPECT_EQ(1, GetInternalTouchPointsCount());
+
+  SendTouchEventToInternalHud(ui::ET_TOUCH_RELEASED, gfx::Point(20, 20), 2);
+  EXPECT_EQ(0, GetInternalTouchPointsCount());
+
+  // Disabling projection touch HUD shoud remove it without crashing.
+  DisableTouchHudProjection();
+  EXPECT_EQ(NULL, GetInternalTouchHudProjection());
+}
+
+// Checks if turning off touch HUD projection while touching the screen is
+// handled correctly.
+TEST_F(TouchHudProjectionTest, DisableWhileTouching) {
+  SetupSingleDisplay();
+  EXPECT_EQ(NULL, GetInternalTouchHudProjection());
+
+  EnableTouchHudProjection();
+  EXPECT_NE(static_cast<internal::TouchHudProjection*>(NULL),
+            GetInternalTouchHudProjection());
+  EXPECT_EQ(0, GetInternalTouchPointsCount());
+
+  SendTouchEventToInternalHud(ui::ET_TOUCH_PRESSED, gfx::Point(10, 10), 1);
+  EXPECT_EQ(1, GetInternalTouchPointsCount());
+
+  // Disabling projection touch HUD shoud remove it without crashing.
+  DisableTouchHudProjection();
+  EXPECT_EQ(NULL, GetInternalTouchHudProjection());
 }
 
 }  // namespace internal

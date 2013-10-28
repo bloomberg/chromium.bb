@@ -77,7 +77,7 @@ class ASH_EXPORT TouchObserverHUD
   virtual void OnDisplayConfigurationChanged() OVERRIDE;
 
  private:
-  friend class TouchHudTest;
+  friend class TouchHudTestBase;
 
   const int64 display_id_;
   aura::Window* root_window_;

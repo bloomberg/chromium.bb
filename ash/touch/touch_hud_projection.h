@@ -24,6 +24,8 @@ class TouchHudProjection : public TouchObserverHUD {
   virtual void Clear() OVERRIDE;
 
  private:
+  friend class TouchHudProjectionTest;
+
   virtual ~TouchHudProjection();
 
   // Overriden from TouchObserverHUD.
