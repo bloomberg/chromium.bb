@@ -499,8 +499,13 @@ void SVGElement::invalidateRelativeLengthClients(SubtreeLayoutScope* layoutScope
         if (*it == this)
             continue;
 
-        if ((*it)->renderer() && (*it)->selfHasRelativeLengths())
-            (*it)->renderer()->setNeedsLayout(MarkContainingBlockChain, layoutScope);
+        RenderObject* renderer = (*it)->renderer();
+        if (renderer && (*it)->selfHasRelativeLengths()) {
+            if (renderer->isSVGResourceContainer())
+                toRenderSVGResourceContainer(renderer)->invalidateCacheAndMarkForLayout(layoutScope);
+            else
+                renderer->setNeedsLayout(MarkContainingBlockChain, layoutScope);
+        }
 
         (*it)->invalidateRelativeLengthClients(layoutScope);
     }

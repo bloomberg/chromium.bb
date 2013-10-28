@@ -181,12 +181,12 @@ void RenderSVGResourceContainer::removeClientRenderLayer(RenderLayer* client)
     m_clientLayers.remove(client);
 }
 
-void RenderSVGResourceContainer::invalidateCacheAndMarkForLayout()
+void RenderSVGResourceContainer::invalidateCacheAndMarkForLayout(SubtreeLayoutScope* layoutScope)
 {
     if (selfNeedsLayout())
         return;
 
-    setNeedsLayout();
+    setNeedsLayout(MarkContainingBlockChain, layoutScope);
 
     if (everHadLayout())
         removeAllClientsFromCache();
