@@ -38,21 +38,5 @@ For details, see bug http://crbug.com/239771
 import v8_utilities
 
 
-def generate_methods(interface):
-    methods = [generate_method(method) for method in interface.operations]
-    contents = {'methods': methods}
-    contents.update(generate_methods_common(interface, methods))
-    return contents
-
-
 def generate_method(method):
     return {'name': method.name}
-
-
-def generate_methods_common(interface, methods):
-    v8_class_name = v8_utilities.v8_class_name(interface)
-    return {
-        'installed_methods': '%sMethods' % v8_class_name if methods else '0',
-        # Size 0 constant array is not allowed in VC++
-        'number_of_methods': 'WTF_ARRAY_LENGTH(%sMethods)' % v8_class_name if methods else '0',
-    }

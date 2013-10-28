@@ -41,27 +41,6 @@ import v8_utilities
 from v8_utilities import capitalize, cpp_name, has_extended_attribute, uncapitalize
 
 
-def generate_attributes(interface):
-    attributes = [generate_attribute(interface, attribute)
-                  for attribute in interface.attributes]
-    contents = {'attributes': attributes}
-    contents.update(generate_attributes_common(interface, attributes))
-    return contents
-
-
-def generate_attributes_common(interface, attributes):
-    v8_class_name = v8_utilities.v8_class_name(interface)
-    return {
-        'has_per_context_enabled_attributes': any(attribute['per_context_enabled_function_name'] for attribute in attributes),
-        'has_constructor_attributes': any(attribute['is_constructor'] for attribute in attributes),
-        'has_replaceable_attributes': any(attribute['is_replaceable'] for attribute in attributes),
-        'has_runtime_enabled_attributes': any(attribute['runtime_enabled_function_name'] for attribute in attributes),
-        'installed_attributes': '%sAttributes' % v8_class_name if attributes else '0',
-        # Size 0 constant array is not allowed in VC++
-        'number_of_attributes': 'WTF_ARRAY_LENGTH(%sAttributes)' % v8_class_name if attributes else '0',
-    }
-
-
 def generate_attribute(interface, attribute):
     idl_type = attribute.data_type
     extended_attributes = attribute.extended_attributes

@@ -91,8 +91,9 @@ static v8::Handle<v8::FunctionTemplate> Configure{{v8_class_name}}Template(v8::H
 
     v8::Local<v8::Signature> defaultSignature;
     defaultSignature = V8DOMConfiguration::installDOMClassTemplate(desc, "{{interface_name}}", v8::Local<v8::FunctionTemplate>(), {{v8_class_name}}::internalFieldCount,
-        {{installed_attributes}}, {{number_of_attributes}},
-        {{installed_methods}}, {{number_of_methods}}, isolate, currentWorldType);
+        {# Test needed as size 0 constant arrays are not allowed in VC++ #}
+        {%+ if attributes %}{{v8_class_name}}Attributes, WTF_ARRAY_LENGTH({{v8_class_name}}Attributes){% else %}0, 0{% endif %},
+        {%+ if methods %}{{v8_class_name}}Methods, WTF_ARRAY_LENGTH({{v8_class_name}}Methods){% else %}0, 0{% endif %}, isolate, currentWorldType);
     UNUSED_PARAM(defaultSignature);
     {% if constants or has_runtime_enabled_attributes %}
     v8::Local<v8::ObjectTemplate> instance = desc->InstanceTemplate();
