@@ -97,10 +97,26 @@ void ClipboardMap::Set(const std::string& format, const std::string& data) {
 
   map_[format] = data;
   if (format == kPlainTextFormat) {
-    ScopedJavaLocalRef<jstring> str = ConvertUTF8ToJavaString(
-        env, data.c_str());
-    DCHECK(str.obj() && !ClearException(env));
+    ScopedJavaLocalRef<jstring> str = ConvertUTF8ToJavaString(env, data);
+    DCHECK(str.obj());
+
     Java_Clipboard_setText(env, clipboard_manager_.obj(), str.obj());
+  } else if (format == kHTMLFormat) {
+    // Android's API for storing HTML content on the clipboard requires a plain-
+    // text representation to be available as well. ScopedClipboardWriter has a
+    // stable order for setting clipboard data, ensuring that plain-text data
+    // is available first. Do not write to the clipboard when only HTML data is
+    // available, because otherwise others apps may not be able to paste it.
+    if (!ContainsKey(map_, kPlainTextFormat))
+      return;
+
+    ScopedJavaLocalRef<jstring> html = ConvertUTF8ToJavaString(env, data);
+    ScopedJavaLocalRef<jstring> text = ConvertUTF8ToJavaString(
+        env, map_[kPlainTextFormat].c_str());
+
+    DCHECK(html.obj() && text.obj());
+    Java_Clipboard_setHTMLText(
+        env, clipboard_manager_.obj(), html.obj(), text.obj());
   }
 }
 
