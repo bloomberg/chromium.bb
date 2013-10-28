@@ -29,7 +29,8 @@ class QuicDispatcher;
 class QuicServer : public EpollCallbackInterface {
  public:
   QuicServer();
-  explicit QuicServer(const QuicConfig& config);
+  QuicServer(const QuicConfig& config,
+             const QuicVersionVector& supported_versions);
 
   virtual ~QuicServer();
 
@@ -113,6 +114,12 @@ class QuicServer : public EpollCallbackInterface {
   QuicConfig config_;
   // crypto_config_ contains crypto parameters for the handshake.
   QuicCryptoServerConfig crypto_config_;
+
+  // This vector contains QUIC versions which we currently support.
+  // This should be ordered such that the highest supported version is the first
+  // element, with subsequent elements in descending order (versions can be
+  // skipped as necessary).
+  QuicVersionVector supported_versions_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicServer);
 };

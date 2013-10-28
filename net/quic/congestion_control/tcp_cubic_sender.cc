@@ -12,6 +12,8 @@ namespace net {
 
 namespace {
 // Constants based on TCP defaults.
+//TODO(rch): set to 2.
+const QuicTcpCongestionWindow kMinimumCongestionWindow = 1;
 const int64 kHybridStartLowWindow = 16;
 const QuicByteCount kMaxSegmentSize = kDefaultTCPMSS;
 const QuicByteCount kDefaultReceiveWindow = 64000;
@@ -94,7 +96,7 @@ void TcpCubicSender::OnIncomingLoss(QuicTime /*ack_receive_time*/) {
   }
   // Sanity, make sure that we don't end up with an empty window.
   if (congestion_window_ == 0) {
-    congestion_window_ = 1;
+    congestion_window_ = kMinimumCongestionWindow;
   }
   DLOG(INFO) << "Incoming loss; congestion window:" << congestion_window_;
 }
@@ -155,8 +157,7 @@ QuicByteCount TcpCubicSender::AvailableSendWindow() {
 
 QuicByteCount TcpCubicSender::SendWindow() {
   // What's the current send window in bytes.
-  return std::min(receive_window_,
-                  congestion_window_ * kMaxSegmentSize);
+  return std::min(receive_window_, GetCongestionWindow());
 }
 
 QuicBandwidth TcpCubicSender::BandwidthEstimate() {
@@ -176,6 +177,17 @@ QuicTime::Delta TcpCubicSender::SmoothedRtt() {
 QuicTime::Delta TcpCubicSender::RetransmissionDelay() {
   return QuicTime::Delta::FromMicroseconds(
       smoothed_rtt_.ToMicroseconds() + 4 * mean_deviation_.ToMicroseconds());
+}
+
+QuicByteCount TcpCubicSender::GetCongestionWindow() {
+  return congestion_window_ * kMaxSegmentSize;
+}
+
+void TcpCubicSender::SetCongestionWindow(QuicByteCount window) {
+  congestion_window_ = window / kMaxSegmentSize;
+  if (congestion_window_ < kMinimumCongestionWindow) {
+    congestion_window_ = kMinimumCongestionWindow;
+  }
 }
 
 void TcpCubicSender::Reset() {

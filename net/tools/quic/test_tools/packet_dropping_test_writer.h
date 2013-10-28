@@ -9,6 +9,7 @@
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/synchronization/lock.h"
 #include "net/quic/quic_alarm.h"
 #include "net/quic/quic_blocked_writer_interface.h"
 #include "net/quic/quic_packet_writer.h"
@@ -49,6 +50,7 @@ class PacketDroppingTestWriter : public net::test::QuicTestWriter {
 
   // The percent of time a packet is simulated as being lost.
   void set_fake_packet_loss_percentage(int32 fake_packet_loss_percentage) {
+    base::AutoLock locked(config_mutex_);
     fake_packet_loss_percentage_ = fake_packet_loss_percentage;
   }
 
@@ -57,12 +59,14 @@ class PacketDroppingTestWriter : public net::test::QuicTestWriter {
   void set_fake_blocked_socket_percentage(
       int32 fake_blocked_socket_percentage) {
     DCHECK(clock_);
+    base::AutoLock locked(config_mutex_);
     fake_blocked_socket_percentage_  = fake_blocked_socket_percentage;
   }
 
   // The percent of time a packet is simulated as being reordered.
   void set_fake_reorder_percentage(int32 fake_packet_reorder_percentage) {
     DCHECK(clock_);
+    base::AutoLock locked(config_mutex_);
     DCHECK(!fake_packet_delay_.IsZero());
     fake_packet_reorder_percentage_ = fake_packet_reorder_percentage;
   }
@@ -71,6 +75,7 @@ class PacketDroppingTestWriter : public net::test::QuicTestWriter {
   // to WRITE_STATUS_BLOCKED.
   void set_fake_packet_delay(QuicTime::Delta fake_packet_delay) {
     DCHECK(clock_);
+    base::AutoLock locked(config_mutex_);
     fake_packet_delay_  = fake_packet_delay;
   }
 
@@ -101,12 +106,14 @@ class PacketDroppingTestWriter : public net::test::QuicTestWriter {
   scoped_ptr<QuicAlarm> write_unblocked_alarm_;
   scoped_ptr<QuicAlarm> delay_alarm_;
   QuicBlockedWriterInterface* blocked_writer_;
+  SimpleRandom simple_random_;
+  DelayedPacketList delayed_packets_;
+
+  base::Lock config_mutex_;
   int32 fake_packet_loss_percentage_;
   int32 fake_blocked_socket_percentage_;
   int32 fake_packet_reorder_percentage_;
   QuicTime::Delta fake_packet_delay_;
-  SimpleRandom simple_random_;
-  DelayedPacketList delayed_packets_;
 
   DISALLOW_COPY_AND_ASSIGN(PacketDroppingTestWriter);
 };

@@ -123,4 +123,11 @@ QuicTime::Delta FixRateSender::RetransmissionDelay() {
   return latest_rtt_.Add(latest_rtt_);
 }
 
+QuicByteCount FixRateSender::GetCongestionWindow() {
+  return 0;
+}
+
+void FixRateSender::SetCongestionWindow(QuicByteCount window) {
+}
+
 }  // namespace net

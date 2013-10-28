@@ -41,7 +41,8 @@ class TestDispatcher : public QuicDispatcher {
   explicit TestDispatcher(const QuicConfig& config,
                           const QuicCryptoServerConfig& crypto_config,
                           EpollServer* eps)
-      : QuicDispatcher(config, crypto_config, 1, eps) {}
+      : QuicDispatcher(config, crypto_config, QuicSupportedVersions(), 1, eps) {
+  }
 
   MOCK_METHOD2(CreateQuicSession, QuicSession*(
       QuicGuid guid,
@@ -174,7 +175,7 @@ class MockTimeWaitListManager : public QuicTimeWaitListManager {
  public:
   MockTimeWaitListManager(QuicPacketWriter* writer,
                           EpollServer* eps)
-      : QuicTimeWaitListManager(writer, eps) {
+      : QuicTimeWaitListManager(writer, eps, QuicSupportedVersions()) {
   }
 
   MOCK_METHOD4(ProcessPacket, void(const IPEndPoint& server_address,

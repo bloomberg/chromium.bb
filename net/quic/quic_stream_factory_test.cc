@@ -108,7 +108,7 @@ class QuicStreamFactoryTest : public ::testing::Test {
     feedback.tcp.accumulated_number_of_lost_packets = 0;
     feedback.tcp.receive_window = 16000;
 
-    QuicFramer framer(QuicVersionMax(), QuicTime::Zero(), false);
+    QuicFramer framer(QuicSupportedVersions(), QuicTime::Zero(), false);
     QuicFrames frames;
     frames.push_back(QuicFrame(&ack));
     frames.push_back(QuicFrame(&feedback));
@@ -142,7 +142,7 @@ class QuicStreamFactoryTest : public ::testing::Test {
   scoped_ptr<QuicEncryptedPacket> ConstructPacket(
       const QuicPacketHeader& header,
       const QuicFrame& frame) {
-    QuicFramer framer(QuicVersionMax(), QuicTime::Zero(), false);
+    QuicFramer framer(QuicSupportedVersions(), QuicTime::Zero(), false);
     QuicFrames frames;
     frames.push_back(frame);
     scoped_ptr<QuicPacket> packet(

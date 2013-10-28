@@ -39,7 +39,7 @@ class TestPacketWriter : public QuicDefaultPacketWriter {
       const IPAddressNumber& self_address,
       const IPEndPoint& peer_address,
       QuicBlockedWriterInterface* blocked_writer) OVERRIDE {
-    QuicFramer framer(QuicVersionMax(), QuicTime::Zero(), true);
+    QuicFramer framer(QuicSupportedVersions(), QuicTime::Zero(), true);
     FramerVisitorCapturingFrames visitor;
     framer.set_visitor(&visitor);
     QuicEncryptedPacket packet(buffer, buf_len);

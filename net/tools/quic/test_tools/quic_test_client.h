@@ -29,16 +29,16 @@ class HTTPMessage;
 class QuicTestClient :  public ReliableQuicStream::Visitor {
  public:
   QuicTestClient(IPEndPoint server_address, const string& server_hostname,
-                 const QuicVersion version);
+                 const QuicVersionVector& supported_versions);
   QuicTestClient(IPEndPoint server_address,
                  const string& server_hostname,
                  bool secure,
-                 const QuicVersion version);
+                 const QuicVersionVector& supported_versions);
   QuicTestClient(IPEndPoint server_address,
                  const string& server_hostname,
                  bool secure,
                  const QuicConfig& config,
-                 const QuicVersion version);
+                 const QuicVersionVector& supported_versions);
 
   virtual ~QuicTestClient();
 

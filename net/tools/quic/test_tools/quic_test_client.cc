@@ -101,16 +101,16 @@ class QuicEpollClient : public QuicClient {
 
   QuicEpollClient(IPEndPoint server_address,
              const string& server_hostname,
-             const QuicVersion version)
-      : Super(server_address, server_hostname, version, false),
+             const QuicVersionVector& supported_versions)
+      : Super(server_address, server_hostname, supported_versions, false),
         override_guid_(0), test_writer_(NULL) {
   }
 
   QuicEpollClient(IPEndPoint server_address,
              const string& server_hostname,
              const QuicConfig& config,
-             const QuicVersion version)
-      : Super(server_address, server_hostname, config, version),
+             const QuicVersionVector& supported_versions)
+      : Super(server_address, server_hostname, config, supported_versions),
         override_guid_(0), test_writer_(NULL) {
   }
 
@@ -146,16 +146,16 @@ class QuicEpollClient : public QuicClient {
 };
 
 QuicTestClient::QuicTestClient(IPEndPoint address, const string& hostname,
-                               const QuicVersion version)
-    : client_(new QuicEpollClient(address, hostname, version)) {
+                               const QuicVersionVector& supported_versions)
+    : client_(new QuicEpollClient(address, hostname, supported_versions)) {
   Initialize(address, hostname, true);
 }
 
 QuicTestClient::QuicTestClient(IPEndPoint address,
                                const string& hostname,
                                bool secure,
-                               const QuicVersion version)
-    : client_(new QuicEpollClient(address, hostname, version)) {
+                               const QuicVersionVector& supported_versions)
+    : client_(new QuicEpollClient(address, hostname, supported_versions)) {
   Initialize(address, hostname, secure);
 }
 
@@ -163,8 +163,9 @@ QuicTestClient::QuicTestClient(IPEndPoint address,
                                const string& hostname,
                                bool secure,
                                const QuicConfig& config,
-                               const QuicVersion version)
-    : client_(new QuicEpollClient(address, hostname, config, version)) {
+                               const QuicVersionVector& supported_versions)
+    : client_(new QuicEpollClient(address, hostname, config,
+                                  supported_versions)) {
   Initialize(address, hostname, secure);
 }
 
@@ -303,7 +304,9 @@ void QuicTestClient::ResetConnection() {
 }
 
 void QuicTestClient::Disconnect() {
-  client_->Disconnect();
+  if (client_->connected()) {
+    client_->Disconnect();
+  }
   connect_attempted_ = false;
 }
 

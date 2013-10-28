@@ -230,7 +230,7 @@ string QuicUtils::TagToString(QuicTag tag) {
 
   for (size_t i = 0; i < sizeof(chars); i++) {
     chars[i] = tag;
-    if (chars[i] == 0 && i == 3) {
+    if ((chars[i] == 0 || chars[i] == '\xff') && i == 3) {
       chars[i] = ' ';
     }
     if (!isprint(static_cast<unsigned char>(chars[i]))) {

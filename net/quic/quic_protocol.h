@@ -83,6 +83,23 @@ const int64 kDefaultInitialTimeoutSecs = 120;  // 2 mins.
 const int64 kDefaultTimeoutSecs = 60 * 10;  // 10 minutes.
 const int64 kDefaultMaxTimeForCryptoHandshakeSecs = 5;  // 5 secs.
 
+// We define an unsigned 16-bit floating point value, inspired by IEEE floats
+// (http://en.wikipedia.org/wiki/Half_precision_floating-point_format),
+// with 5-bit exponent (bias 1), 11-bit mantissa (effective 12 with hidden
+// bit) and denormals, but without signs, transfinites or fractions. Wire format
+// 16 bits (little-endian byte order) are split into exponent (high 5) and
+// mantissa (low 11) and decoded as:
+//   uint64 value;
+//   if (exponent == 0) value = mantissa;
+//   else value = (mantissa | 1 << 11) << (exponent - 1)
+const int kUFloat16ExponentBits = 5;
+const int kUFloat16MaxExponent = (1 << kUFloat16ExponentBits) - 2;  // 30
+const int kUFloat16MantissaBits = 16 - kUFloat16ExponentBits;  // 11
+const int kUFloat16MantissaEffectiveBits = kUFloat16MantissaBits + 1;  // 12
+const uint64 kUFloat16MaxValue =  // 0x3FFC0000000
+    ((GG_UINT64_C(1) << kUFloat16MantissaEffectiveBits) - 1) <<
+    kUFloat16MaxExponent;
+
 enum TransmissionType {
   NOT_RETRANSMISSION,
   NACK_RETRANSMISSION,
@@ -203,11 +220,8 @@ static const QuicVersion kSupportedQuicVersions[] =
 
 typedef std::vector<QuicVersion> QuicVersionVector;
 
-// Upper limit on versions we support.
-NET_EXPORT_PRIVATE QuicVersion QuicVersionMax();
-
-// Lower limit on versions we support.
-NET_EXPORT_PRIVATE QuicVersion QuicVersionMin();
+// Returns a vector of QUIC versions in kSupportedQuicVersions.
+NET_EXPORT_PRIVATE QuicVersionVector QuicSupportedVersions();
 
 // QuicTag is written to and read from the wire, but we prefer to use
 // the more readable QuicVersion at other levels.
@@ -224,9 +238,9 @@ NET_EXPORT_PRIVATE QuicVersion QuicTagToQuicVersion(const QuicTag version_tag);
 NET_EXPORT_PRIVATE std::string QuicVersionToString(const QuicVersion version);
 
 // Returns comma separated list of string representations of QuicVersion enum
-// values in the supplied QuicVersionArray.
-NET_EXPORT_PRIVATE std::string QuicVersionArrayToString(
-    const QuicVersion versions[], int num_versions);
+// values in the supplied |versions| vector.
+NET_EXPORT_PRIVATE std::string QuicVersionVectorToString(
+    const QuicVersionVector& versions);
 
 // Version and Crypto tags are written to the wire with a big-endian
 // representation of the name of the tag.  For example

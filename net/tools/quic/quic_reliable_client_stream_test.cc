@@ -15,6 +15,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using net::test::DefaultQuicConfig;
 using testing::TestWithParam;
 
 namespace net {
@@ -25,7 +26,7 @@ namespace {
 class QuicClientStreamTest : public ::testing::Test {
  public:
   QuicClientStreamTest()
-      : session_("example.com", QuicConfig(),
+      : session_("example.com", DefaultQuicConfig(),
                  new MockConnection(1, IPEndPoint(), 0, &eps_, false),
                  &crypto_config_),
         body_("hello world") {

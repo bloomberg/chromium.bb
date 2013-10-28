@@ -59,8 +59,9 @@ int main(int argc, char *argv[]) {
   net::IPAddressNumber addr;
   CHECK(net::ParseIPLiteralToNumber(FLAGS_address, &addr));
   // TODO(rjshade): Set version on command line.
-  net::tools::QuicClient client(net::IPEndPoint(addr, FLAGS_port),
-                                FLAGS_hostname, net::QuicVersionMax(), true);
+  net::tools::QuicClient client(
+      net::IPEndPoint(addr, FLAGS_port), FLAGS_hostname,
+      net::QuicSupportedVersions(), true);
 
   client.Initialize();
 

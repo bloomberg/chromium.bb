@@ -451,7 +451,7 @@ QuicClientSession* QuicStreamFactory::CreateSession(
 
   QuicConnection* connection = new QuicConnection(guid, addr, helper_.get(),
                                                   writer.get(), false,
-                                                  QuicVersionMax());
+                                                  QuicSupportedVersions());
   writer->SetConnection(connection);
 
   QuicCryptoClientConfig* crypto_config =

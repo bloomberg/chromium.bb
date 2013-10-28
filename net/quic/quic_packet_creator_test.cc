@@ -49,8 +49,8 @@ class ValueRestore {
 class QuicPacketCreatorTest : public ::testing::TestWithParam<bool> {
  protected:
   QuicPacketCreatorTest()
-      : server_framer_(QuicVersionMax(), QuicTime::Zero(), true),
-        client_framer_(QuicVersionMax(), QuicTime::Zero(), false),
+      : server_framer_(QuicSupportedVersions(), QuicTime::Zero(), true),
+        client_framer_(QuicSupportedVersions(), QuicTime::Zero(), false),
         sequence_number_(0),
         guid_(2),
         data_("foo"),
@@ -455,7 +455,7 @@ TEST_F(QuicPacketCreatorTest, NonCryptoStreamFramePacketNonPadding) {
 TEST_F(QuicPacketCreatorTest, SerializeVersionNegotiationPacket) {
   QuicPacketCreatorPeer::SetIsServer(&creator_, true);
   QuicVersionVector versions;
-  versions.push_back(QuicVersionMax());
+  versions.push_back(test::QuicVersionMax());
   scoped_ptr<QuicEncryptedPacket> encrypted(
       creator_.SerializeVersionNegotiationPacket(versions));
 

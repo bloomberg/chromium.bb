@@ -100,7 +100,7 @@ struct PacketContents {
 class QuicPacketGeneratorTest : public ::testing::Test {
  protected:
   QuicPacketGeneratorTest()
-      : framer_(QuicVersionMax(), QuicTime::Zero(), false),
+      : framer_(QuicSupportedVersions(), QuicTime::Zero(), false),
         creator_(42, &framer_, &random_, false),
         generator_(&delegate_, NULL, &creator_),
         packet_(0, PACKET_1BYTE_SEQUENCE_NUMBER, NULL, 0, NULL),
@@ -481,9 +481,8 @@ TEST_F(QuicPacketGeneratorTest, ConsumeDataSendsFecAtEnd) {
 TEST_F(QuicPacketGeneratorTest, ConsumeData_FramesPreviouslyQueued) {
   // Set the packet size be enough for two stream frames with 0 stream offset,
   // but not enough for a stream frame of 0 offset and one with non-zero offset.
-  bool use_short_hash = framer_.version() >= QUIC_VERSION_11;
   creator_.options()->max_packet_length =
-      NullEncrypter(use_short_hash).GetCiphertextSize(0) +
+      NullEncrypter(false).GetCiphertextSize(0) +
       GetPacketHeaderSize(creator_.options()->send_guid_length,
                           true,
                           creator_.options()->send_sequence_number_length,

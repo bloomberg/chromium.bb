@@ -43,7 +43,7 @@ class QuicCryptoServerStreamTest : public ::testing::Test {
         addr_(ParseIPLiteralToNumber("192.0.2.33", &ip_) ?
               ip_ : IPAddressNumber(), 1),
         connection_(new PacketSavingConnection(guid_, addr_, true)),
-        session_(connection_, QuicConfig(), true),
+        session_(connection_, DefaultQuicConfig(), true),
         crypto_config_(QuicCryptoServerConfig::TESTING,
                        QuicRandom::GetInstance()),
         stream_(crypto_config_, &session_) {

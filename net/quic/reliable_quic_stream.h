@@ -28,6 +28,8 @@ class IPEndPoint;
 class QuicSession;
 class SSLInfo;
 
+#define ENDPOINT (is_server_ ? "Server: " : " Client: ")
+
 // All this does right now is send data to subclasses via the sequencer.
 class NET_EXPORT_PRIVATE ReliableQuicStream : public
     QuicSpdyDecompressor::Visitor {
@@ -224,6 +226,9 @@ class NET_EXPORT_PRIVATE ReliableQuicStream : public
   bool priority_parsed_;
   bool fin_buffered_;
   bool fin_sent_;
+
+  // True if the session this stream is running under is a server session.
+  bool is_server_;
 };
 
 }  // namespace net

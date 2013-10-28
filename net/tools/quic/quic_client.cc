@@ -32,7 +32,7 @@ const int kEpollFlags = EPOLLIN | EPOLLOUT | EPOLLET;
 
 QuicClient::QuicClient(IPEndPoint server_address,
                        const string& server_hostname,
-                       const QuicVersion version,
+                       const QuicVersionVector& supported_versions,
                        bool print_response)
     : server_address_(server_address),
       server_hostname_(server_hostname),
@@ -42,7 +42,7 @@ QuicClient::QuicClient(IPEndPoint server_address,
       initialized_(false),
       packets_dropped_(0),
       overflow_supported_(false),
-      version_(version),
+      supported_versions_(supported_versions),
       print_response_(print_response) {
   config_.SetDefaults();
 }
@@ -50,7 +50,7 @@ QuicClient::QuicClient(IPEndPoint server_address,
 QuicClient::QuicClient(IPEndPoint server_address,
                        const string& server_hostname,
                        const QuicConfig& config,
-                       const QuicVersion version)
+                       const QuicVersionVector& supported_versions)
     : server_address_(server_address),
       server_hostname_(server_hostname),
       config_(config),
@@ -60,7 +60,7 @@ QuicClient::QuicClient(IPEndPoint server_address,
       initialized_(false),
       packets_dropped_(0),
       overflow_supported_(false),
-      version_(version),
+      supported_versions_(supported_versions),
       print_response_(false) {
 }
 
@@ -155,14 +155,16 @@ bool QuicClient::Connect() {
 bool QuicClient::StartConnect() {
   DCHECK(!connected() && initialized_);
 
-  if (!writer_.get()) {
-    writer_.reset(CreateQuicPacketWriter());
+  QuicPacketWriter* writer = CreateQuicPacketWriter();
+  if (writer_.get() != writer) {
+    writer_.reset(writer);
   }
+
   session_.reset(new QuicClientSession(
       server_hostname_,
       config_,
       new QuicConnection(GenerateGuid(), server_address_, helper_.get(),
-                         writer_.get(), false, version_),
+                         writer_.get(), false, supported_versions_),
       &crypto_config_));
   return session_->CryptoConnect();
 }

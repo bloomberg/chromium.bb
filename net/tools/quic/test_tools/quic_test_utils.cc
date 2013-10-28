@@ -17,6 +17,10 @@ namespace net {
 namespace tools {
 namespace test {
 
+QuicVersion QuicVersionMax() { return QuicSupportedVersions().front(); }
+
+QuicVersion QuicVersionMin() { return QuicSupportedVersions().back(); }
+
 MockConnection::MockConnection(QuicGuid guid,
                                IPEndPoint address,
                                int fd,
@@ -25,7 +29,7 @@ MockConnection::MockConnection(QuicGuid guid,
     : QuicConnection(guid, address,
                      new QuicEpollConnectionHelper(eps),
                      new QuicDefaultPacketWriter(fd), is_server,
-                     QuicVersionMax()),
+                     QuicSupportedVersions()),
       has_mock_helper_(false),
       writer_(net::test::QuicConnectionPeer::GetWriter(this)),
       helper_(helper()) {
@@ -36,7 +40,7 @@ MockConnection::MockConnection(QuicGuid guid,
                                bool is_server)
     : QuicConnection(guid, address, new testing::NiceMock<MockHelper>(),
                      new testing::NiceMock<MockPacketWriter>(),
-                     is_server, QuicVersionMax()),
+                     is_server, QuicSupportedVersions()),
       has_mock_helper_(true),
       writer_(net::test::QuicConnectionPeer::GetWriter(this)),
       helper_(helper()) {
@@ -48,7 +52,7 @@ MockConnection::MockConnection(QuicGuid guid,
                                QuicPacketWriter* writer,
                                bool is_server)
     : QuicConnection(guid, address, helper, writer, is_server,
-                     QuicVersionMax()),
+                     QuicSupportedVersions()),
       has_mock_helper_(false) {
 }
 

@@ -95,6 +95,14 @@ class NET_EXPORT_PRIVATE QuicCongestionManager {
   // Returns the estimated bandwidth calculated by the congestion algorithm.
   QuicBandwidth BandwidthEstimate();
 
+  // Returns the size of the current congestion window.  Note, this
+  // is not the *available* window.  Some send algorithms may not use a
+  // congestion window and will return 0.
+  QuicByteCount GetCongestionWindow();
+
+  // Sets the value of the current congestion window to |window|.
+  void SetCongestionWindow(QuicByteCount window);
+
  private:
   friend class test::QuicConnectionPeer;
   friend class test::QuicCongestionManagerPeer;

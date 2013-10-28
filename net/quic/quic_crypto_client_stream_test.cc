@@ -116,7 +116,7 @@ TEST_F(QuicCryptoClientStreamTest, ExpiredServerConfig) {
   CompleteCryptoHandshake();
 
   connection_ = new PacketSavingConnection(1, addr_, true);
-  session_.reset(new TestSession(connection_, QuicConfig(), true));
+  session_.reset(new TestSession(connection_, DefaultQuicConfig(), true));
   stream_.reset(new QuicCryptoClientStream(kServerHostname, session_.get(),
                                            &crypto_config_));
 

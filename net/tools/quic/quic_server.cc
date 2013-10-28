@@ -39,20 +39,23 @@ QuicServer::QuicServer()
       packets_dropped_(0),
       overflow_supported_(false),
       use_recvmmsg_(false),
-      crypto_config_(kSourceAddressTokenSecret, QuicRandom::GetInstance()) {
+      crypto_config_(kSourceAddressTokenSecret, QuicRandom::GetInstance()),
+      supported_versions_(QuicSupportedVersions()) {
   // Use hardcoded crypto parameters for now.
   config_.SetDefaults();
   Initialize();
 }
 
-QuicServer::QuicServer(const QuicConfig& config)
+QuicServer::QuicServer(const QuicConfig& config,
+                       const QuicVersionVector& supported_versions)
     : port_(0),
       fd_(-1),
       packets_dropped_(0),
       overflow_supported_(false),
       use_recvmmsg_(false),
       config_(config),
-      crypto_config_(kSourceAddressTokenSecret, QuicRandom::GetInstance()) {
+      crypto_config_(kSourceAddressTokenSecret, QuicRandom::GetInstance()),
+      supported_versions_(supported_versions) {
   Initialize();
 }
 
@@ -141,8 +144,9 @@ bool QuicServer::Listen(const IPEndPoint& address) {
   }
 
   epoll_server_.RegisterFD(fd_, this, kEpollFlags);
-  dispatcher_.reset(new QuicDispatcher(config_, crypto_config_, fd_,
-                                       &epoll_server_));
+  dispatcher_.reset(new QuicDispatcher(config_, crypto_config_,
+                                       supported_versions_,
+                                       fd_, &epoll_server_));
 
   return true;
 }

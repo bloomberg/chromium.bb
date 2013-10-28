@@ -114,7 +114,7 @@ QuicTag GetNullTag(QuicVersion version) {
 
 }  // namespace
 
-QuicFramer::QuicFramer(QuicVersion version,
+QuicFramer::QuicFramer(const QuicVersionVector& supported_versions,
                        QuicTime creation_time,
                        bool is_server)
     : visitor_(NULL),
@@ -122,13 +122,15 @@ QuicFramer::QuicFramer(QuicVersion version,
       error_(QUIC_NO_ERROR),
       last_sequence_number_(0),
       last_serialized_guid_(0),
-      quic_version_(version),
-      decrypter_(QuicDecrypter::Create(GetNullTag(version))),
+      supported_versions_(supported_versions),
       alternative_decrypter_latch_(false),
       is_server_(is_server),
       creation_time_(creation_time) {
-  DCHECK(IsSupportedVersion(version));
-  encrypter_[ENCRYPTION_NONE].reset(QuicEncrypter::Create(GetNullTag(version)));
+  DCHECK(!supported_versions.empty());
+  quic_version_ = supported_versions_[0];
+  decrypter_.reset(QuicDecrypter::Create(GetNullTag(quic_version_)));
+  encrypter_[ENCRYPTION_NONE].reset(
+      QuicEncrypter::Create(GetNullTag(quic_version_)));
 }
 
 QuicFramer::~QuicFramer() {}
@@ -229,8 +231,8 @@ bool QuicFramer::CanTruncate(const QuicFrame& frame, size_t free_bytes) {
 }
 
 bool QuicFramer::IsSupportedVersion(const QuicVersion version) const {
-  for (size_t i = 0; i < arraysize(kSupportedQuicVersions); ++i) {
-    if (version == kSupportedQuicVersions[i]) {
+  for (size_t i = 0; i < supported_versions_.size(); ++i) {
+    if (version == supported_versions_[i]) {
       return true;
     }
   }
@@ -1433,7 +1435,8 @@ size_t QuicFramer::GetMaxPlaintextSize(size_t ciphertext_size) {
   // level to hand. At the moment, the NullEncrypter has a tag length of 16
   // bytes and AES-GCM has a tag length of 12. We take the minimum plaintext
   // length just to be safe.
-  size_t min_plaintext_size = ciphertext_size;
+  // TODO(rtenneti): remove '- 16' after we delete QUIC_VERSION_10.
+  size_t min_plaintext_size = ciphertext_size - 16;
 
   for (int i = ENCRYPTION_NONE; i < NUM_ENCRYPTION_LEVELS; i++) {
     if (encrypter_[i].get() != NULL) {
@@ -1684,6 +1687,9 @@ QuicPacketSequenceNumber QuicFramer::CalculateLargestObserved(
 
 void QuicFramer::set_version(const QuicVersion version) {
   DCHECK(IsSupportedVersion(version));
+  // Handle version incompatibility between QUIC_VERSION_10 and QUIC_VERSION_11
+  // because of introduction of a new QUIC null encryption format in
+  // QUIC_VERSION_11.
   if ((quic_version_ > QUIC_VERSION_10 && version <= QUIC_VERSION_10) ||
       (quic_version_ <= QUIC_VERSION_10 && version > QUIC_VERSION_10)) {
     // TODO(rtenneti): remove the following code after we delete

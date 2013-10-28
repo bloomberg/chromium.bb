@@ -54,7 +54,8 @@ class TestQuicConnection : public QuicConnection {
                      IPEndPoint address,
                      QuicConnectionHelper* helper,
                      QuicPacketWriter* writer)
-      : QuicConnection(guid, address, helper, writer, false, QuicVersionMax()) {
+      : QuicConnection(guid, address, helper, writer, false,
+                       QuicSupportedVersions()) {
   }
 
   void SetSendAlgorithm(SendAlgorithmInterface* send_algorithm) {
@@ -134,7 +135,7 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<bool> {
         use_closing_stream_(false),
         read_buffer_(new IOBufferWithSize(4096)),
         guid_(2),
-        framer_(QuicVersionMax(), QuicTime::Zero(), false),
+        framer_(QuicSupportedVersions(), QuicTime::Zero(), false),
         creator_(guid_, &framer_, &random_, false) {
     IPAddressNumber ip;
     CHECK(ParseIPLiteralToNumber("192.0.2.33", &ip));

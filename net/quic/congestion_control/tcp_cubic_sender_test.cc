@@ -75,8 +75,8 @@ class TcpCubicSenderTest : public ::testing::Test {
 TEST_F(TcpCubicSenderTest, SimpleSender) {
   QuicCongestionFeedbackFrame feedback;
   // At startup make sure we are at the default.
-  EXPECT_EQ(kDefaultWindowTCP,
-            sender_->AvailableSendWindow());
+  EXPECT_EQ(kDefaultWindowTCP, sender_->AvailableSendWindow());
+  EXPECT_EQ(kDefaultWindowTCP, sender_->GetCongestionWindow());
   // At startup make sure we can send.
   EXPECT_TRUE(sender_->TimeUntilSend(clock_.Now(),
       NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA, NOT_HANDSHAKE).IsZero());
@@ -89,6 +89,7 @@ TEST_F(TcpCubicSenderTest, SimpleSender) {
       NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA, NOT_HANDSHAKE).IsZero());
   // And that window is un-affected.
   EXPECT_EQ(kDefaultWindowTCP, sender_->AvailableSendWindow());
+  EXPECT_EQ(kDefaultWindowTCP, sender_->GetCongestionWindow());
 
   // A retransmit should always return 0.
   EXPECT_TRUE(sender_->TimeUntilSend(clock_.Now(),
@@ -146,6 +147,7 @@ TEST_F(TcpCubicSenderTest, SlowStartAckTrain) {
   QuicByteCount expected_send_window =
       kDefaultWindowTCP + (kDefaultTCPMSS * 2 * kNumberOfAck);
   EXPECT_EQ(expected_send_window, sender_->SendWindow());
+  EXPECT_EQ(expected_send_window, sender_->GetCongestionWindow());
   // We should now have fallen out of slow start.
   SendAvailableSendWindow();
   AckNPackets(2);

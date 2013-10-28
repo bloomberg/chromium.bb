@@ -41,7 +41,7 @@ class TestWriter : public QuicPacketWriter {
       const IPAddressNumber& self_address,
       const IPEndPoint& peer_address,
       QuicBlockedWriterInterface* blocked_writer) OVERRIDE {
-    QuicFramer framer(QuicVersionMax(), QuicTime::Zero(), true);
+    QuicFramer framer(QuicSupportedVersions(), QuicTime::Zero(), true);
     FramerVisitorCapturingFrames visitor;
     framer.set_visitor(&visitor);
     QuicEncryptedPacket packet(buffer, buf_len);
@@ -67,7 +67,8 @@ class TestConnection : public QuicConnection {
                  IPEndPoint address,
                  QuicEpollConnectionHelper* helper,
                  TestWriter* writer)
-      : QuicConnection(guid, address, helper, writer, false, QuicVersionMax()) {
+      : QuicConnection(guid, address, helper, writer, false,
+                       QuicSupportedVersions()) {
   }
 
   void SendAck() {
@@ -83,7 +84,7 @@ class QuicEpollConnectionHelperTest : public ::testing::Test {
  protected:
   QuicEpollConnectionHelperTest()
       : guid_(42),
-        framer_(QuicVersionMax(), QuicTime::Zero(), false),
+        framer_(QuicSupportedVersions(), QuicTime::Zero(), false),
         send_algorithm_(new testing::StrictMock<MockSendAlgorithm>),
         helper_(&epoll_server_),
         connection_(guid_, IPEndPoint(), &helper_, &writer_),

@@ -196,7 +196,7 @@ class NET_EXPORT_PRIVATE QuicConnection
                  QuicConnectionHelperInterface* helper,
                  QuicPacketWriter* writer,
                  bool is_server,
-                 QuicVersion version);
+                 const QuicVersionVector& supported_versions);
   virtual ~QuicConnection();
 
   // Send the data in |data| to the peer in as few packets as possible.

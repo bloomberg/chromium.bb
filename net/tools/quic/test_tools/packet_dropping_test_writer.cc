@@ -4,6 +4,8 @@
 
 #include "net/tools/quic/test_tools/packet_dropping_test_writer.h"
 
+#include <limits>
+
 #include "base/rand_util.h"
 #include "net/tools/quic/quic_epoll_connection_helper.h"
 #include "net/tools/quic/quic_socket_utils.h"
@@ -49,11 +51,12 @@ class DelayAlarm : public QuicAlarm::Delegate {
 PacketDroppingTestWriter::PacketDroppingTestWriter()
     : clock_(NULL),
       blocked_writer_(NULL),
+      config_mutex_(),
       fake_packet_loss_percentage_(0),
       fake_blocked_socket_percentage_(0),
       fake_packet_reorder_percentage_(0),
       fake_packet_delay_(QuicTime::Delta::Zero()) {
-  int64 seed = base::RandUint64();
+  uint32 seed = base::RandInt(0, std::numeric_limits<int32>::max());
   LOG(INFO) << "Seeding packet loss with " << seed;
   simple_random_.set_seed(seed);
 }
@@ -74,6 +77,7 @@ WriteResult PacketDroppingTestWriter::WritePacket(
     const net::IPAddressNumber& self_address,
     const net::IPEndPoint& peer_address,
     QuicBlockedWriterInterface* blocked_writer) {
+  base::AutoLock locked(config_mutex_);
   if (fake_packet_loss_percentage_ > 0 &&
       simple_random_.RandUint64() % 100 <
           static_cast<uint64>(fake_packet_loss_percentage_)) {
@@ -98,7 +102,7 @@ WriteResult PacketDroppingTestWriter::WritePacket(
     // Queue it to be sent.
     QuicTime send_time = clock_->ApproximateNow().Add(fake_packet_delay_);
     delayed_packets_.push_back(DelayedWrite(buffer, buf_len, self_address,
-                                             peer_address, send_time));
+                                            peer_address, send_time));
     // Set the alarm if it's not yet set.
     if (!delay_alarm_->IsSet()) {
       delay_alarm_->Set(send_time);
@@ -119,6 +123,7 @@ QuicTime PacketDroppingTestWriter::ReleaseNextPacket() {
   if (delayed_packets_.empty()) {
     return QuicTime::Zero();
   }
+  base::AutoLock locked(config_mutex_);
   DelayedPacketList::iterator iter = delayed_packets_.begin();
   // Determine if we should re-order.
   if (delayed_packets_.size() > 1 && fake_packet_reorder_percentage_ > 0 &&

@@ -10,11 +10,12 @@ namespace test {
 
 ServerThread::ServerThread(IPEndPoint address,
                            const QuicConfig& config,
+                           const QuicVersionVector& supported_versions,
                            bool strike_register_no_startup_period)
     : SimpleThread("server_thread"),
       listening_(true, false),
       quit_(true, false),
-      server_(config),
+      server_(config, supported_versions),
       address_(address),
       port_(0) {
   if (strike_register_no_startup_period) {

@@ -43,6 +43,10 @@ class NET_EXPORT_PRIVATE QuicDataWriter {
   bool WriteUInt32(uint32 value);
   bool WriteUInt48(uint64 value);
   bool WriteUInt64(uint64 value);
+  // Write unsigned floating point corresponding to the value. Large values are
+  // clamped to the maximum representable (kUFloat16MaxValue). Values that can
+  // not be represented directly are rounded down.
+  bool WriteUFloat16(uint64 value);
   bool WriteStringPiece16(base::StringPiece val);
   bool WriteBytes(const void* data, size_t data_len);
   bool WriteRepeatedByte(uint8 byte, size_t count);

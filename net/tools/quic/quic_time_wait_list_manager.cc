@@ -92,8 +92,9 @@ class QuicTimeWaitListManager::QueuedPacket {
 
 QuicTimeWaitListManager::QuicTimeWaitListManager(
     QuicPacketWriter* writer,
-    EpollServer* epoll_server)
-    : framer_(QuicVersionMax(),
+    EpollServer* epoll_server,
+    const QuicVersionVector& supported_versions)
+    : framer_(supported_versions,
               QuicTime::Zero(),  // unused
               true),
       epoll_server_(epoll_server),

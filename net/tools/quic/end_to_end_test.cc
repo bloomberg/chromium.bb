@@ -70,22 +70,65 @@ void GenerateBody(string* body, int length) {
 // Run all tests with the cross products of all versions
 // and all values of FLAGS_pad_quic_handshake_packets.
 struct TestParams {
-  TestParams(QuicVersion version,
+  TestParams(const QuicVersionVector& client_supported_versions,
+             const QuicVersionVector& server_supported_versions,
+             QuicVersion negotiated_version,
              bool use_padding)
-      : version(version),
+      : client_supported_versions(client_supported_versions),
+        server_supported_versions(server_supported_versions),
+        negotiated_version(negotiated_version),
         use_padding(use_padding) {
   }
 
-  QuicVersion version;
+  QuicVersionVector client_supported_versions;
+  QuicVersionVector server_supported_versions;
+  QuicVersion negotiated_version;
   bool use_padding;
 };
 
-// Constructs all the various test permutations.
+// Constructs various test permutations.
 vector<TestParams> GetTestParams() {
   vector<TestParams> params;
-  for (size_t i = 0; i < arraysize(kSupportedQuicVersions); ++i) {
-    params.push_back(TestParams(kSupportedQuicVersions[i], true));
-    params.push_back(TestParams(kSupportedQuicVersions[i], false));
+  QuicVersionVector all_supported_versions = QuicSupportedVersions();
+
+  // Add an entry for server and client supporting all versions.
+  params.push_back(TestParams(all_supported_versions, all_supported_versions,
+                              all_supported_versions[0], true));
+  params.push_back(TestParams(all_supported_versions, all_supported_versions,
+                              all_supported_versions[0], false));
+
+  // Test client supporting 1 version and server supporting all versions.
+  // Simulate an old client and exercise version downgrade in the server.
+  // No protocol negotiation should occur. Skip the i = 0 case because it
+  // is essentially the same as the default case.
+  for (size_t i = 1; i < all_supported_versions.size(); ++i) {
+    QuicVersionVector client_supported_versions;
+    client_supported_versions.push_back(all_supported_versions[i]);
+    params.push_back(TestParams(client_supported_versions,
+                                all_supported_versions,
+                                client_supported_versions[0],
+                                true));
+    params.push_back(TestParams(client_supported_versions,
+                                all_supported_versions,
+                                client_supported_versions[0],
+                                false));
+  }
+
+  // Test client supporting all versions and server supporting 1 version.
+  // Simulate an old server and exercise version downgrade in the client.
+  // Protocol negotiation should occur. Skip the i = 0 case because it is
+  // essentially the same as the default case.
+  for (size_t i = 1; i < all_supported_versions.size(); ++i) {
+    QuicVersionVector server_supported_versions;
+    server_supported_versions.push_back(all_supported_versions[i]);
+    params.push_back(TestParams(all_supported_versions,
+                                server_supported_versions,
+                                server_supported_versions[0],
+                                true));
+    params.push_back(TestParams(all_supported_versions,
+                                server_supported_versions,
+                                server_supported_versions[0],
+                                false));
   }
   return params;
 }
@@ -109,12 +152,23 @@ class EndToEndTest : public ::testing::TestWithParam<TestParams> {
                "HTTP/1.1", "200", "OK", kFooResponseBody);
     AddToCache("GET", "https://www.google.com/bar",
                "HTTP/1.1", "200", "OK", kBarResponseBody);
-    version_ = GetParam().version;
-    FLAGS_pad_quic_handshake_packets =
-        GetParam().use_padding;
+
+    client_supported_versions_ = GetParam().client_supported_versions;
+    server_supported_versions_ = GetParam().server_supported_versions;
+    negotiated_version_ = GetParam().negotiated_version;
+    FLAGS_pad_quic_handshake_packets = GetParam().use_padding;
+    LOG(INFO) << "server running " << QuicVersionVectorToString(
+        server_supported_versions_);
+    LOG(INFO) << "client running " << QuicVersionVectorToString(
+        client_supported_versions_);
+    LOG(INFO) << "negotiated_version_ " << QuicVersionToString(
+        negotiated_version_);
+    LOG(INFO) << "use_padding " << GetParam().use_padding;
   }
 
   virtual ~EndToEndTest() {
+    // TODO(rtenneti): port RecycleUnusedPort if needed.
+    // RecycleUnusedPort(server_address_.port());
     QuicInMemoryCachePeer::ResetForTests();
   }
 
@@ -123,7 +177,7 @@ class EndToEndTest : public ::testing::TestWithParam<TestParams> {
                                                 server_hostname_,
                                                 false,  // not secure
                                                 client_config_,
-                                                version_);
+                                                client_supported_versions_);
     client->UseWriter(writer);
     client->Connect();
     return client;
@@ -155,6 +209,7 @@ class EndToEndTest : public ::testing::TestWithParam<TestParams> {
 
   void StartServer() {
     server_thread_.reset(new ServerThread(server_address_, server_config_,
+                                          server_supported_versions_,
                                           strike_register_no_startup_period_));
     server_thread_->Start();
     server_thread_->listening()->Wait();
@@ -217,7 +272,9 @@ class EndToEndTest : public ::testing::TestWithParam<TestParams> {
   bool server_started_;
   QuicConfig client_config_;
   QuicConfig server_config_;
-  QuicVersion version_;
+  QuicVersionVector client_supported_versions_;
+  QuicVersionVector server_supported_versions_;
+  QuicVersion negotiated_version_;
   bool strike_register_no_startup_period_;
 };
 
@@ -312,14 +369,12 @@ TEST_P(EndToEndTest, RequestOverMultiplePackets) {
   const size_t kStreamDataLength = 3;
   const QuicStreamId kStreamId = 1u;
   const QuicStreamOffset kStreamOffset = 0u;
-  size_t stream_payload_size =
-      QuicFramer::GetMinStreamFrameSize(
-          version_, kStreamId, kStreamOffset, true) + kStreamDataLength;
+  size_t stream_payload_size = QuicFramer::GetMinStreamFrameSize(
+      negotiated_version_, kStreamId, kStreamOffset, true) + kStreamDataLength;
   size_t min_payload_size =
       std::max(kCongestionFeedbackFrameSize, stream_payload_size);
-  bool use_short_hash = version_ >= QUIC_VERSION_11;
   size_t ciphertext_size =
-      NullEncrypter(use_short_hash).GetCiphertextSize(min_payload_size);
+      NullEncrypter(false).GetCiphertextSize(min_payload_size);
   // TODO(satyashekhar): Fix this when versioning is implemented.
   client_->options()->max_packet_length =
       GetPacketHeaderSize(PACKET_8BYTE_GUID, !kIncludeVersion,
@@ -345,14 +400,12 @@ TEST_P(EndToEndTest, MultipleFramesRandomOrder) {
   const size_t kStreamDataLength = 3;
   const QuicStreamId kStreamId = 1u;
   const QuicStreamOffset kStreamOffset = 0u;
-  size_t stream_payload_size =
-      QuicFramer::GetMinStreamFrameSize(
-          version_, kStreamId, kStreamOffset, true) + kStreamDataLength;
+  size_t stream_payload_size = QuicFramer::GetMinStreamFrameSize(
+      negotiated_version_, kStreamId, kStreamOffset, true) + kStreamDataLength;
   size_t min_payload_size =
       std::max(kCongestionFeedbackFrameSize, stream_payload_size);
-  bool use_short_hash = version_ >= QUIC_VERSION_11;
   size_t ciphertext_size =
-      NullEncrypter(use_short_hash).GetCiphertextSize(min_payload_size);
+      NullEncrypter(false).GetCiphertextSize(min_payload_size);
   // TODO(satyashekhar): Fix this when versioning is implemented.
   client_->options()->max_packet_length =
       GetPacketHeaderSize(PACKET_8BYTE_GUID, !kIncludeVersion,

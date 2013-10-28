@@ -61,7 +61,8 @@ ReliableQuicStream::ReliableQuicStream(QuicStreamId id,
       write_side_closed_(false),
       priority_parsed_(false),
       fin_buffered_(false),
-      fin_sent_(false) {
+      fin_sent_(false),
+      is_server_(session_->is_server()) {
 }
 
 ReliableQuicStream::~ReliableQuicStream() {
@@ -82,7 +83,7 @@ bool ReliableQuicStream::WillAcceptStreamFrame(
 bool ReliableQuicStream::OnStreamFrame(const QuicStreamFrame& frame) {
   DCHECK_EQ(frame.stream_id, id_);
   if (read_side_closed_) {
-    DLOG(INFO) << "Ignoring frame " << frame.stream_id;
+    DLOG(INFO) << ENDPOINT << "Ignoring frame " << frame.stream_id;
     // We don't want to be reading: blackhole the data.
     return true;
   }
@@ -261,7 +262,7 @@ QuicConsumedData ReliableQuicStream::WritevDataInternal(const struct iovec* iov,
                                                         int iov_count,
                                                         bool fin) {
   if (write_side_closed_) {
-    DLOG(ERROR) << "Attempt to write when the write side is closed";
+    DLOG(ERROR) << ENDPOINT << "Attempt to write when the write side is closed";
     return QuicConsumedData(0, false);
   }
 
@@ -293,11 +294,11 @@ void ReliableQuicStream::CloseReadSide() {
   if (read_side_closed_) {
     return;
   }
-  DLOG(INFO) << "Done reading from stream " << id();
+  DLOG(INFO) << ENDPOINT << "Done reading from stream " << id();
 
   read_side_closed_ = true;
   if (write_side_closed_) {
-    DLOG(INFO) << "Closing stream: " << id();
+    DLOG(INFO) << ENDPOINT << "Closing stream: " << id();
     session_->CloseStream(id());
   }
 }
@@ -338,7 +339,8 @@ uint32 ReliableQuicStream::ProcessRawData(const char* data, uint32 data_len) {
   // Ensure that this header id looks sane.
   if (headers_id_ < current_header_id ||
       headers_id_ > kMaxHeaderIdDelta + current_header_id) {
-    DVLOG(1) << "Invalid headers for stream: " << id()
+    DVLOG(1) << ENDPOINT
+             << "Invalid headers for stream: " << id()
              << " header_id: " << headers_id_
              << " current_header_id: " << current_header_id;
     session_->connection()->SendConnectionClose(QUIC_INVALID_HEADER_ID);
@@ -348,7 +350,8 @@ uint32 ReliableQuicStream::ProcessRawData(const char* data, uint32 data_len) {
   // If we are head-of-line blocked on decompression, then back up.
   if (current_header_id != headers_id_) {
     session_->MarkDecompressionBlocked(headers_id_, id());
-    DVLOG(1) << "Unable to decompress header data for stream: " << id()
+    DVLOG(1) << ENDPOINT
+             << "Unable to decompress header data for stream: " << id()
              << " header_id: " << headers_id_;
     return total_bytes_consumed;
   }
@@ -463,11 +466,11 @@ void ReliableQuicStream::CloseWriteSide() {
   if (write_side_closed_) {
     return;
   }
-  DLOG(INFO) << "Done writing to stream " << id();
+  DLOG(INFO) << ENDPOINT << "Done writing to stream " << id();
 
   write_side_closed_ = true;
   if (read_side_closed_) {
-    DLOG(INFO) << "Closing stream: " << id();
+    DLOG(INFO) << ENDPOINT << "Closing stream: " << id();
     session_->CloseStream(id());
   }
 }

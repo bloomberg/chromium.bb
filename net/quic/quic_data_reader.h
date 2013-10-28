@@ -59,6 +59,11 @@ class NET_EXPORT_PRIVATE QuicDataReader {
   // Returns true on success, false otherwise.
   bool ReadUInt128(uint128* result);
 
+  // Reads a 16-bit unsigned float into the given output parameter.
+  // Forwards the internal iterator on success.
+  // Returns true on success, false otherwise.
+  bool ReadUFloat16(uint64* result);
+
   // Reads a string prefixed with 16-bit length into the given output parameter.
   //
   // NOTE: Does not copy but rather references strings in the underlying buffer.

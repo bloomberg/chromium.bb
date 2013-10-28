@@ -87,6 +87,14 @@ class NET_EXPORT_PRIVATE SendAlgorithmInterface {
   // Note 1: the caller is responsible for sanity checking this value.
   // Note 2: this will return zero if we don't have enough data for an estimate.
   virtual QuicTime::Delta RetransmissionDelay() = 0;
+
+  // Returns the size of the current congestion window.  Note, this
+  // is not the *available* window.  Some send algorithms may not use a
+  // congestion window and will return 0.
+  virtual QuicByteCount GetCongestionWindow() = 0;
+
+  // Sets the value of the current congestion window to |window|.
+  virtual void SetCongestionWindow(QuicByteCount window) = 0;
 };
 
 }  // namespace net

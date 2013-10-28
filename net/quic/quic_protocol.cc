@@ -113,10 +113,12 @@ uint32 MakeQuicTag(char a, char b, char c, char d) {
          static_cast<uint32>(d) << 24;
 }
 
-QuicVersion QuicVersionMax() { return kSupportedQuicVersions[0]; }
-
-QuicVersion QuicVersionMin() {
-  return kSupportedQuicVersions[arraysize(kSupportedQuicVersions) - 1];
+QuicVersionVector QuicSupportedVersions() {
+  QuicVersionVector supported_versions;
+  for (size_t i = 0; i < arraysize(kSupportedQuicVersions); ++i) {
+    supported_versions.push_back(kSupportedQuicVersions[i]);
+  }
+  return supported_versions;
 }
 
 QuicTag QuicVersionToQuicTag(const QuicVersion version) {
@@ -158,13 +160,13 @@ string QuicVersionToString(const QuicVersion version) {
   }
 }
 
-string QuicVersionArrayToString(const QuicVersion versions[],
-                                int num_versions) {
+string QuicVersionVectorToString(const QuicVersionVector& versions) {
   string result = "";
-  for (int i = 0; i < num_versions; ++i) {
-    const QuicVersion& version = versions[i];
-    result.append(QuicVersionToString(version));
-    result.append(",");
+  for (size_t i = 0; i < versions.size(); ++i) {
+    if (i != 0) {
+      result.append(",");
+    }
+    result.append(QuicVersionToString(versions[i]));
   }
   return result;
 }

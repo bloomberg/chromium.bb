@@ -215,6 +215,14 @@ QuicBandwidth QuicCongestionManager::BandwidthEstimate() {
   return send_algorithm_->BandwidthEstimate();
 }
 
+QuicByteCount QuicCongestionManager::GetCongestionWindow() {
+  return send_algorithm_->GetCongestionWindow();
+}
+
+void QuicCongestionManager::SetCongestionWindow(QuicByteCount window) {
+  send_algorithm_->SetCongestionWindow(window);
+}
+
 void QuicCongestionManager::CleanupPacketHistory() {
   const QuicTime::Delta kHistoryPeriod =
       QuicTime::Delta::FromMilliseconds(kHistoryPeriodMs);

@@ -296,7 +296,7 @@ class TestPacketWriter : public QuicPacketWriter {
              sizeof(final_bytes_of_last_packet_));
     }
 
-    QuicFramer framer(QuicVersionMax(), QuicTime::Zero(), !is_server_);
+    QuicFramer framer(QuicSupportedVersions(), QuicTime::Zero(), !is_server_);
     if (use_tagging_decrypter_) {
       framer.SetDecrypter(new TaggingDecrypter);
     }
@@ -402,7 +402,7 @@ class TestConnection : public QuicConnection {
                  TestPacketWriter* writer,
                  bool is_server)
       : QuicConnection(guid, address, helper, writer, is_server,
-                       QuicVersionMax()),
+                       QuicSupportedVersions()),
         helper_(helper),
         writer_(writer) {
     writer_->set_is_server(is_server);
@@ -533,7 +533,7 @@ class QuicConnectionTest : public ::testing::TestWithParam<bool> {
  protected:
   QuicConnectionTest()
       : guid_(42),
-        framer_(QuicVersionMax(), QuicTime::Zero(), false),
+        framer_(QuicSupportedVersions(), QuicTime::Zero(), false),
         creator_(guid_, &framer_, QuicRandom::GetInstance(), false),
         send_algorithm_(new StrictMock<MockSendAlgorithm>),
         helper_(new TestConnectionHelper(&clock_, &random_generator_)),
@@ -2844,6 +2844,7 @@ TEST_P(QuicConnectionTest, ServerSendsVersionNegotiationPacketSocketBlocked) {
   connection_.ProcessUdpPacket(IPEndPoint(), IPEndPoint(), *encrypted);
   EXPECT_EQ(0u, writer_->last_packet_size());
   EXPECT_TRUE(connection_.HasQueuedData());
+  EXPECT_TRUE(QuicConnectionPeer::IsWriteBlocked(&connection_));
 
   writer_->set_blocked(false);
   connection_.OnCanWrite();
@@ -2859,6 +2860,37 @@ TEST_P(QuicConnectionTest, ServerSendsVersionNegotiationPacketSocketBlocked) {
     EXPECT_EQ(kSupportedQuicVersions[i],
               writer_->version_negotiation_packet()->versions[i]);
   }
+}
+
+TEST_P(QuicConnectionTest,
+       ServerSendsVersionNegotiationPacketSocketBlockedDataBuffered) {
+  framer_.set_version_for_tests(QUIC_VERSION_UNSUPPORTED);
+
+  QuicPacketHeader header;
+  header.public_header.guid = guid_;
+  header.public_header.reset_flag = false;
+  header.public_header.version_flag = true;
+  header.entropy_flag = false;
+  header.fec_flag = false;
+  header.packet_sequence_number = 12;
+  header.fec_group = 0;
+
+  QuicFrames frames;
+  QuicFrame frame(&frame1_);
+  frames.push_back(frame);
+  scoped_ptr<QuicPacket> packet(
+      framer_.BuildUnsizedDataPacket(header, frames).packet);
+  scoped_ptr<QuicEncryptedPacket> encrypted(
+      framer_.EncryptPacket(ENCRYPTION_NONE, 12, *packet));
+
+  framer_.set_version(QuicVersionMax());
+  connection_.set_is_server(true);
+  writer_->set_blocked(true);
+  writer_->set_is_write_blocked_data_buffered(true);
+  connection_.ProcessUdpPacket(IPEndPoint(), IPEndPoint(), *encrypted);
+  EXPECT_EQ(0u, writer_->last_packet_size());
+  EXPECT_FALSE(connection_.HasQueuedData());
+  EXPECT_TRUE(QuicConnectionPeer::IsWriteBlocked(&connection_));
 }
 
 TEST_P(QuicConnectionTest, ClientHandlesVersionNegotiation) {
@@ -3065,8 +3097,8 @@ TEST_P(QuicConnectionTest, DontProcessFramesIfPacketClosedConnection) {
 
 TEST_P(QuicConnectionTest, SelectMutualVersion) {
   // Set the connection to speak the lowest quic version.
-  connection_.set_version(QuicVersionMin());
-  EXPECT_EQ(QuicVersionMin(), connection_.version());
+  connection_.set_version(test::QuicVersionMin());
+  EXPECT_EQ(test::QuicVersionMin(), connection_.version());
 
   // Pass in available versions which includes a higher mutually supported
   // version.  The higher mutually supported version should be selected.
@@ -3080,11 +3112,11 @@ TEST_P(QuicConnectionTest, SelectMutualVersion) {
   // Expect that the lowest version is selected.
   // Ensure the lowest supported version is less than the max, unless they're
   // the same.
-  EXPECT_LE(QuicVersionMin(), QuicVersionMax());
+  EXPECT_LE(test::QuicVersionMin(), QuicVersionMax());
   QuicVersionVector lowest_version_vector;
-  lowest_version_vector.push_back(QuicVersionMin());
+  lowest_version_vector.push_back(test::QuicVersionMin());
   EXPECT_TRUE(connection_.SelectMutualVersion(lowest_version_vector));
-  EXPECT_EQ(QuicVersionMin(), connection_.version());
+  EXPECT_EQ(test::QuicVersionMin(), connection_.version());
 
   // Shouldn't be able to find a mutually supported version.
   QuicVersionVector unsupported_version;

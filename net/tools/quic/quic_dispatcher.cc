@@ -37,18 +37,20 @@ class DeleteSessionsAlarm : public EpollAlarm {
 
 QuicDispatcher::QuicDispatcher(const QuicConfig& config,
                                const QuicCryptoServerConfig& crypto_config,
+                               const QuicVersionVector& supported_versions,
                                int fd,
                                EpollServer* epoll_server)
     : config_(config),
       crypto_config_(crypto_config),
       time_wait_list_manager_(
-          new QuicTimeWaitListManager(this, epoll_server)),
+          new QuicTimeWaitListManager(this, epoll_server, supported_versions)),
       delete_sessions_alarm_(new DeleteSessionsAlarm(this)),
       epoll_server_(epoll_server),
       fd_(fd),
       write_blocked_(false),
       helper_(new QuicEpollConnectionHelper(epoll_server_)),
-      writer_(new QuicDefaultPacketWriter(fd)) {
+      writer_(new QuicDefaultPacketWriter(fd)),
+      supported_versions_(supported_versions) {
 }
 
 QuicDispatcher::~QuicDispatcher() {
@@ -102,9 +104,10 @@ void QuicDispatcher::ProcessPacket(const IPEndPoint& server_address,
 
     if (session == NULL) {
       DLOG(INFO) << "Failed to create session for " << guid;
-      // Add this guid fo the time-wait state, to safely nack future packets.
+      // Add this guid fo the time-wait state, to safely reject future packets.
       // We don't know the version here, so assume latest.
-      time_wait_list_manager_->AddGuidToTimeWait(guid, QuicVersionMax());
+      time_wait_list_manager_->AddGuidToTimeWait(guid,
+                                                 supported_versions_.front());
       time_wait_list_manager_->ProcessPacket(server_address,
                                              client_address,
                                              guid,
@@ -202,7 +205,7 @@ QuicSession* QuicDispatcher::CreateQuicSession(
     const IPEndPoint& client_address) {
   QuicServerSession* session = new QuicServerSession(
       config_, new QuicConnection(guid, client_address, helper_.get(), this,
-                                  true, QuicVersionMax()), this);
+                                  true, supported_versions_), this);
   session->InitializeSession(crypto_config_);
   return session;
 }

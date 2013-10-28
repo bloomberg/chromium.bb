@@ -13,7 +13,9 @@ MockQuicDispatcher::MockQuicDispatcher(
     const QuicCryptoServerConfig& crypto_config,
     QuicGuid guid,
     EpollServer* eps)
-    : QuicDispatcher(config, crypto_config, guid, eps) { }
+    : QuicDispatcher(config, crypto_config, QuicSupportedVersions(), guid,
+                     eps) {
+}
 MockQuicDispatcher::~MockQuicDispatcher() {}
 
 }  // namespace test

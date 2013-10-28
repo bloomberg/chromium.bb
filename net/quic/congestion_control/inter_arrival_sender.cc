@@ -324,6 +324,13 @@ QuicTime::Delta InterArrivalSender::RetransmissionDelay() {
   return smoothed_rtt_.Add(smoothed_rtt_);
 }
 
+QuicByteCount InterArrivalSender::GetCongestionWindow() {
+  return 0;
+}
+
+void InterArrivalSender::SetCongestionWindow(QuicByteCount window) {
+}
+
 void InterArrivalSender::EstimateNewBandwidth(QuicTime feedback_receive_time,
                                               QuicBandwidth sent_bandwidth) {
   QuicBandwidth new_bandwidth = bitrate_ramp_up_->GetNewBitrate(sent_bandwidth);

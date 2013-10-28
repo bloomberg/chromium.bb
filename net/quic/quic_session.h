@@ -162,6 +162,8 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
 
   QuicErrorCode error() const { return error_; }
 
+  bool is_server() const { return is_server_; }
+
  protected:
   // Creates a new stream, owned by the caller, to handle a peer-initiated
   // stream.  Returns NULL and does error handling if the stream can not be

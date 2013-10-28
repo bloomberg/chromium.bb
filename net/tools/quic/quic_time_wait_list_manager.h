@@ -37,7 +37,8 @@ class QuicTimeWaitListManager : public QuicBlockedWriterInterface,
   // writer - the entity that writes to the socket. (Owned by the dispatcher)
   // epoll_server - used to run clean up alarms. (Owned by the dispatcher)
   QuicTimeWaitListManager(QuicPacketWriter* writer,
-                          EpollServer* epoll_server);
+                          EpollServer* epoll_server,
+                          const QuicVersionVector& supported_versions);
   virtual ~QuicTimeWaitListManager();
 
   // Adds the given guid to time wait state for kTimeWaitPeriod. Henceforth,

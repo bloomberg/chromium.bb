@@ -199,8 +199,8 @@ QuicConnection::QuicConnection(QuicGuid guid,
                                QuicConnectionHelperInterface* helper,
                                QuicPacketWriter* writer,
                                bool is_server,
-                               QuicVersion version)
-    : framer_(version,
+                               const QuicVersionVector& supported_versions)
+    : framer_(supported_versions,
               helper->GetClock()->ApproximateNow(),
               is_server),
       helper_(helper),
@@ -237,6 +237,7 @@ QuicConnection::QuicConnection(QuicGuid guid,
       connected_(true),
       received_truncated_ack_(false),
       address_migrating_(false) {
+  DLOG(INFO) << ENDPOINT << "Created connection with guid: " << guid;
   timeout_alarm_->Set(clock_->ApproximateNow().Add(idle_network_timeout_));
   framer_.set_visitor(this);
   framer_.set_received_entropy_calculator(&received_packet_manager_);
@@ -256,8 +257,9 @@ bool QuicConnection::SelectMutualVersion(
   // Try to find the highest mutual version by iterating over supported
   // versions, starting with the highest, and breaking out of the loop once we
   // find a matching version in the provided available_versions vector.
-  for (size_t i = 0; i < arraysize(kSupportedQuicVersions); ++i) {
-    const QuicVersion& version = kSupportedQuicVersions[i];
+  const QuicVersionVector& supported_versions = framer_.supported_versions();
+  for (size_t i = 0; i < supported_versions.size(); ++i) {
+    const QuicVersion& version = supported_versions[i];
     if (std::find(available_versions.begin(), available_versions.end(),
                   version) != available_versions.end()) {
       framer_.set_version(version);
@@ -294,6 +296,8 @@ void QuicConnection::OnPublicResetPacket(
 }
 
 bool QuicConnection::OnProtocolVersionMismatch(QuicVersion received_version) {
+  DLOG(INFO) << ENDPOINT << "Received packet with mismatched version "
+             << received_version;
   // TODO(satyamshekhar): Implement no server state in this mode.
   if (!is_server_) {
     LOG(DFATAL) << ENDPOINT << "Framer called OnProtocolVersionMismatch. "
@@ -318,7 +322,7 @@ bool QuicConnection::OnProtocolVersionMismatch(QuicVersion received_version) {
 
     case NEGOTIATION_IN_PROGRESS:
       if (!framer_.IsSupportedVersion(received_version)) {
-        // Drop packets which can't be parsed due to version mismatch.
+        SendVersionNegotiationPacket();
         return false;
       }
       break;
@@ -334,6 +338,7 @@ bool QuicConnection::OnProtocolVersionMismatch(QuicVersion received_version) {
 
   version_negotiation_state_ = NEGOTIATED_VERSION;
   visitor_->OnSuccessfulVersionNegotiation(received_version);
+  DLOG(INFO) << ENDPOINT << "version negotiated " << received_version;
 
   // Store the new version.
   framer_.set_version(received_version);
@@ -378,6 +383,7 @@ void QuicConnection::OnVersionNegotiationPacket(
     return;
   }
 
+  DLOG(INFO) << ENDPOINT << "negotiating version " << version();
   version_negotiation_state_ = NEGOTIATION_IN_PROGRESS;
   RetransmitUnackedPackets(ALL_PACKETS);
 }
@@ -824,16 +830,16 @@ void QuicConnection::MaybeSendInResponseToPacket(
 }
 
 void QuicConnection::SendVersionNegotiationPacket() {
-  QuicVersionVector supported_versions;
-  for (size_t i = 0; i < arraysize(kSupportedQuicVersions); ++i) {
-    supported_versions.push_back(kSupportedQuicVersions[i]);
-  }
   scoped_ptr<QuicEncryptedPacket> version_packet(
-      packet_creator_.SerializeVersionNegotiationPacket(supported_versions));
+      packet_creator_.SerializeVersionNegotiationPacket(
+          framer_.supported_versions()));
   // TODO(satyamshekhar): implement zero server state negotiation.
   WriteResult result =
       writer_->WritePacket(version_packet->data(), version_packet->length(),
                            self_address().address(), peer_address(), this);
+  if (result.status == WRITE_STATUS_BLOCKED) {
+    write_blocked_ = true;
+  }
   if (result.status == WRITE_STATUS_OK ||
       (result.status == WRITE_STATUS_BLOCKED &&
        writer_->IsWriteBlockedDataBuffered())) {
@@ -843,9 +849,6 @@ void QuicConnection::SendVersionNegotiationPacket() {
   if (result.status == WRITE_STATUS_ERROR) {
     // We can't send an error as the socket is presumably borked.
     CloseConnection(QUIC_PACKET_WRITE_ERROR, false);
-  }
-  if (result.status == WRITE_STATUS_BLOCKED) {
-    write_blocked_ = true;
   }
   pending_version_negotiation_packet_ = true;
 }
@@ -1254,6 +1257,11 @@ bool QuicConnection::WritePacket(EncryptionLevel level,
     return true;
   }
 
+  // If we're write blocked, we know we can't write.
+  if (write_blocked_) {
+    return false;
+  }
+
   // If we are not forced and we can't write, then simply return false;
   if (forced == NO_FORCE &&
       !CanWrite(transmission_type, retransmittable, handshake)) {
@@ -1402,6 +1410,7 @@ bool QuicConnection::OnPacketSent(WriteResult result) {
   pending_write_.reset();
 
   if (result.status == WRITE_STATUS_ERROR) {
+    DLOG(INFO) << "Write failed with error code: " << result.error_code;
     // We can't send an error as the socket is presumably borked.
     CloseConnection(QUIC_PACKET_WRITE_ERROR, false);
     return false;

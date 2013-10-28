@@ -52,7 +52,8 @@ class TestConnection : public QuicConnection {
                  IPEndPoint address,
                  QuicConnectionHelper* helper,
                  QuicPacketWriter* writer)
-      : QuicConnection(guid, address, helper, writer, false, QuicVersionMax()) {
+      : QuicConnection(guid, address, helper, writer, false,
+                       QuicSupportedVersions()) {
   }
 
   void SendAck() {
@@ -79,7 +80,7 @@ class QuicConnectionHelperTest : public ::testing::Test {
 
   QuicConnectionHelperTest()
       : guid_(2),
-        framer_(QuicVersionMax(), QuicTime::Zero(), false),
+        framer_(QuicSupportedVersions(), QuicTime::Zero(), false),
         net_log_(BoundNetLog()),
         frame_(1, false, 0, kData) {
     Initialize();

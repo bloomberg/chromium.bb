@@ -4,6 +4,9 @@
 
 #include "net/quic/quic_data_reader.h"
 
+#include "net/base/int128.h"
+#include "net/quic/quic_protocol.h"
+
 using base::StringPiece;
 
 namespace net {
@@ -56,6 +59,37 @@ bool QuicDataReader::ReadUInt128(uint128* result) {
   }
 
   *result = uint128(high_hash, low_hash);
+  return true;
+}
+
+bool QuicDataReader::ReadUFloat16(uint64* result) {
+  uint16 value;
+  if (!ReadUInt16(&value)) {
+    return false;
+  }
+
+  *result = value;
+  if (*result < (1 << kUFloat16MantissaEffectiveBits)) {
+    // Fast path: either the value is denormalized (no hidden bit), or
+    // normalized (hidden bit set, exponent offset by one) with exponent zero.
+    // Zero exponent offset by one sets the bit exactly where the hidden bit is.
+    // So in both cases the value encodes itself.
+    return true;
+  }
+
+  uint16 exponent = value >> kUFloat16MantissaBits;  // No sign extend on uint!
+  // After the fast pass, the exponent is at least one (offset by one).
+  // Un-offset the exponent.
+  --exponent;
+  DCHECK_GE(exponent, 1);
+  DCHECK_LE(exponent, kUFloat16MaxExponent);
+  // Here we need to clear the exponent and set the hidden bit. We have already
+  // decremented the exponent, so when we subtract it, it leaves behind the
+  // hidden bit.
+  *result -= exponent << kUFloat16MantissaBits;
+  *result <<= exponent;
+  DCHECK_GE(value, 1 << kUFloat16MantissaEffectiveBits);
+  DCHECK_LE(value, kUFloat16MaxValue);
   return true;
 }
 

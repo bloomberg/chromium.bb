@@ -138,6 +138,7 @@ class QuicEndToEndTest : public PlatformTest {
     server_address_ = IPEndPoint(ip, 0);
     server_config_.SetDefaults();
     server_thread_.reset(new ServerThread(server_address_, server_config_,
+                                          QuicSupportedVersions(),
                                           strike_register_no_startup_period_));
     server_thread_->Start();
     server_thread_->listening()->Wait();

@@ -25,6 +25,12 @@ namespace net {
 
 namespace test {
 
+// Upper limit on versions we support.
+QuicVersion QuicVersionMax();
+
+// Lower limit on versions we support.
+QuicVersion QuicVersionMin();
+
 void CompareCharArraysWithHexError(const std::string& description,
                                    const char* actual,
                                    const int actual_len,
@@ -360,6 +366,8 @@ class MockSendAlgorithm : public SendAlgorithmInterface {
   MOCK_METHOD0(BandwidthEstimate, QuicBandwidth(void));
   MOCK_METHOD0(SmoothedRtt, QuicTime::Delta(void));
   MOCK_METHOD0(RetransmissionDelay, QuicTime::Delta(void));
+  MOCK_METHOD0(GetCongestionWindow, QuicByteCount());
+  MOCK_METHOD1(SetCongestionWindow, void(QuicByteCount));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockSendAlgorithm);

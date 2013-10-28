@@ -4,6 +4,7 @@
 
 #include "net/quic/quic_utils.h"
 
+#include "net/quic/crypto/crypto_protocol.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::StringPiece;
@@ -66,6 +67,21 @@ TEST(QuicUtilsTest, StringToHexASCIIDumpSuccess) {
   EXPECT_EQ(string(reinterpret_cast<const char*>(kHexDump)),
       QuicUtils::StringToHexASCIIDump(
           string(reinterpret_cast<const char*>(kString), sizeof(kString))));
+}
+
+TEST(QuicUtilsTest, TagToString) {
+  EXPECT_EQ("SCFG",
+            QuicUtils::TagToString(kSCFG));
+  EXPECT_EQ("SNO ",
+            QuicUtils::TagToString(kServerNonceTag));
+  EXPECT_EQ("CRT ",
+            QuicUtils::TagToString(kCertificateTag));
+  EXPECT_EQ("CHLO",
+            QuicUtils::TagToString(MakeQuicTag('C', 'H', 'L', 'O')));
+  // A tag that contains a non-printing character will be printed as a decimal
+  // number.
+  EXPECT_EQ("525092931",
+            QuicUtils::TagToString(MakeQuicTag('C', 'H', 'L', '\x1f')));
 }
 
 }  // namespace

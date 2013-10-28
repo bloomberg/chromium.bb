@@ -309,7 +309,7 @@ class QuicFramerTest : public ::testing::TestWithParam<QuicVersion> {
       : encrypter_(new test::TestEncrypter()),
         decrypter_(new test::TestDecrypter()),
         start_(QuicTime::Zero().Add(QuicTime::Delta::FromMicroseconds(0x10))),
-        framer_(QuicVersionMax(), start_, true) {
+        framer_(QuicSupportedVersions(), start_, true) {
     version_ = GetParam();
     framer_.set_version(version_);
     framer_.SetDecrypter(decrypter_);
@@ -2285,9 +2285,11 @@ TEST_P(QuicFramerTest, BuildPaddingFramePacket) {
       framer_.BuildUnsizedDataPacket(header, frames).packet);
   ASSERT_TRUE(data != NULL);
 
+  // TODO(rtenneti): remove "- 16" when we remove QUIC_VERSION_10.
   test::CompareCharArraysWithHexError("constructed packet",
                                       data->data(), data->length(),
-                                      AsChars(packet), arraysize(packet));
+                                      AsChars(packet),
+                                      arraysize(packet) - 16);
 }
 
 TEST_P(QuicFramerTest, Build4ByteSequenceNumberPaddingFramePacket) {
@@ -2331,9 +2333,11 @@ TEST_P(QuicFramerTest, Build4ByteSequenceNumberPaddingFramePacket) {
       framer_.BuildUnsizedDataPacket(header, frames).packet);
   ASSERT_TRUE(data != NULL);
 
+  // TODO(rtenneti): remove "- 16" when we remove QUIC_VERSION_10.
   test::CompareCharArraysWithHexError("constructed packet",
                                       data->data(), data->length(),
-                                      AsChars(packet), arraysize(packet));
+                                      AsChars(packet),
+                                      arraysize(packet) - 16);
 }
 
 TEST_P(QuicFramerTest, Build2ByteSequenceNumberPaddingFramePacket) {
@@ -2377,9 +2381,11 @@ TEST_P(QuicFramerTest, Build2ByteSequenceNumberPaddingFramePacket) {
       framer_.BuildUnsizedDataPacket(header, frames).packet);
   ASSERT_TRUE(data != NULL);
 
+  // TODO(rtenneti): remove "- 16" when we remove QUIC_VERSION_10.
   test::CompareCharArraysWithHexError("constructed packet",
                                       data->data(), data->length(),
-                                      AsChars(packet), arraysize(packet));
+                                      AsChars(packet),
+                                      arraysize(packet) - 16);
 }
 
 TEST_P(QuicFramerTest, Build1ByteSequenceNumberPaddingFramePacket) {
@@ -2423,9 +2429,11 @@ TEST_P(QuicFramerTest, Build1ByteSequenceNumberPaddingFramePacket) {
       framer_.BuildUnsizedDataPacket(header, frames).packet);
   ASSERT_TRUE(data != NULL);
 
+  // TODO(rtenneti): remove "- 16" when we remove QUIC_VERSION_10.
   test::CompareCharArraysWithHexError("constructed packet",
                                       data->data(), data->length(),
-                                      AsChars(packet), arraysize(packet));
+                                      AsChars(packet),
+                                      arraysize(packet) - 16);
 }
 
 TEST_P(QuicFramerTest, BuildStreamFramePacket) {

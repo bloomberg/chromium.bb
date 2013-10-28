@@ -13,9 +13,10 @@
 #include "net/tools/quic/quic_reliable_client_stream.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using testing::_;
 using net::test::CryptoTestUtils;
+using net::test::DefaultQuicConfig;
 using net::test::PacketSavingConnection;
+using testing::_;
 
 namespace net {
 namespace tools {
@@ -30,7 +31,7 @@ class ToolsQuicClientSessionTest : public ::testing::Test {
       : guid_(1),
         connection_(new PacketSavingConnection(guid_, IPEndPoint(), false)) {
     crypto_config_.SetDefaults();
-    session_.reset(new QuicClientSession(kServerHostname, QuicConfig(),
+    session_.reset(new QuicClientSession(kServerHostname, DefaultQuicConfig(),
                                          connection_, &crypto_config_));
     session_->config()->SetDefaults();
   }

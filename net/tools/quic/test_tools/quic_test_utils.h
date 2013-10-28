@@ -24,6 +24,12 @@ class IPEndPoint;
 namespace tools {
 namespace test {
 
+// Upper limit on versions we support.
+QuicVersion QuicVersionMax();
+
+// Lower limit on versions we support.
+QuicVersion QuicVersionMin();
+
 // Simple random number generator used to compute random numbers suitable
 // for pseudo-randomly dropping packets in tests.  It works by computing
 // the sha1 hash of the current seed, and using the first 64 bits as

@@ -55,9 +55,11 @@ class QuicDispatcher : public QuicPacketWriter, public QuicSessionOwner {
   typedef linked_hash_map<QuicBlockedWriterInterface*, bool> WriteBlockedList;
 
   // Due to the way delete_sessions_closure_ is registered, the Dispatcher
-  // must live until epoll_server Shutdown.
+  // must live until epoll_server Shutdown. |supported_versions| specifies the
+  // list of supported QUIC versions.
   QuicDispatcher(const QuicConfig& config,
                  const QuicCryptoServerConfig& crypto_config,
+                 const QuicVersionVector& supported_versions,
                  int fd,
                  EpollServer* epoll_server);
   virtual ~QuicDispatcher();
@@ -118,6 +120,10 @@ class QuicDispatcher : public QuicPacketWriter, public QuicSessionOwner {
   QuicEpollConnectionHelper* helper() { return helper_.get(); }
   EpollServer* epoll_server() { return epoll_server_; }
 
+  const QuicVersionVector& supported_versions() const {
+    return supported_versions_;
+  }
+
  private:
   friend class net::tools::test::QuicDispatcherPeer;
 
@@ -153,6 +159,12 @@ class QuicDispatcher : public QuicPacketWriter, public QuicSessionOwner {
 
   // The writer to write to the socket with.
   scoped_ptr<QuicPacketWriter> writer_;
+
+  // This vector contains QUIC versions which we currently support.
+  // This should be ordered such that the highest supported version is the first
+  // element, with subsequent elements in descending order (versions can be
+  // skipped as necessary).
+  const QuicVersionVector supported_versions_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicDispatcher);
 };

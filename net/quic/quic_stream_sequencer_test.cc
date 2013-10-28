@@ -8,7 +8,9 @@
 #include <vector>
 
 #include "base/rand_util.h"
+#include "net/base/ip_endpoint.h"
 #include "net/quic/reliable_quic_stream.h"
+#include "net/quic/test_tools/quic_test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -85,8 +87,9 @@ static const char kPayload[] =
 class QuicStreamSequencerTest : public ::testing::Test {
  protected:
   QuicStreamSequencerTest()
-      : session_(NULL),
-        stream_(session_,  1),
+      : connection_(new MockConnection(1, IPEndPoint(), false)),
+        session_(connection_, true),
+        stream_(&session_, 1),
         sequencer_(new QuicStreamSequencerPeer(&stream_)) {
   }
 
@@ -128,7 +131,8 @@ class QuicStreamSequencerTest : public ::testing::Test {
     return true;
   }
 
-  QuicSession* session_;
+  MockConnection* connection_;
+  MockSession session_;
   testing::StrictMock<MockStream> stream_;
   scoped_ptr<QuicStreamSequencerPeer> sequencer_;
 };
