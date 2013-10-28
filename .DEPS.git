@@ -479,6 +479,36 @@ hooks = [
     {
     'action':
          [
+    'download_from_google_storage',
+    '--platform=win32',
+    '--directory',
+    '--bucket',
+    'chromium-gn',
+    'src/tools/gn/bin/win'
+],
+    'pattern':
+         '\\.sha1$',
+    'name':
+         'gn_win'
+},
+    {
+    'action':
+         [
+    'download_from_google_storage',
+    '--platform="linux*"',
+    '--directory',
+    '--bucket',
+    'chromium-gn',
+    'src/tools/gn/bin/linux'
+],
+    'pattern':
+         '\\.sha1$',
+    'name':
+         'gn_linux'
+},
+    {
+    'action':
+         [
     'python',
     'src/build/gyp_chromium'
 ],
