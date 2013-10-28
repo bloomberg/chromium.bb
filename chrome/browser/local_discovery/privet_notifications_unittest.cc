@@ -29,6 +29,8 @@ class MockPrivetNotificationsListenerDeleagate
   MOCK_METHOD0(PrivetRemoveNotification, void());
 };
 
+// TODO(noamsml): Migrate this test to use a real privet info operation and a
+// fake URL fetcher.
 class MockPrivetInfoOperation : public PrivetInfoOperation {
  public:
   class DelegateForTests {
@@ -82,6 +84,18 @@ class MockPrivetHTTPClient : public PrivetHTTPClient {
       PrivetInfoOperation::Delegate* delegate) OVERRIDE {
     return scoped_ptr<PrivetInfoOperation>(new MockPrivetInfoOperation(
         this, delegate_for_tests_, delegate));
+  }
+
+  virtual scoped_ptr<PrivetCapabilitiesOperation> CreateCapabilitiesOperation(
+      PrivetCapabilitiesOperation::Delegate* delegate) OVERRIDE {
+    NOTIMPLEMENTED();
+    return scoped_ptr<PrivetCapabilitiesOperation>();
+  }
+
+  virtual scoped_ptr<PrivetLocalPrintOperation> CreateLocalPrintOperation(
+      PrivetLocalPrintOperation::Delegate* delegate) OVERRIDE {
+    NOTIMPLEMENTED();
+    return scoped_ptr<PrivetLocalPrintOperation>();
   }
 
   virtual const std::string& GetName() OVERRIDE { return name_; }

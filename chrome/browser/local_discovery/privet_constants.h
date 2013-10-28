@@ -9,6 +9,7 @@ namespace local_discovery {
 
 extern const char kPrivetKeyError[];
 extern const char kPrivetInfoKeyToken[];
+extern const char kPrivetInfoKeyAPIList[];
 extern const char kPrivetInfoKeyID[];
 extern const char kPrivetKeyDeviceID[];
 extern const char kPrivetKeyClaimURL[];

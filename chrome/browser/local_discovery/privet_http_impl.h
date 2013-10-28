@@ -123,6 +123,108 @@ class PrivetRegisterOperationImpl
   std::string expected_id_;
 };
 
+// TODO(noamsml): Factor out some of this code into a PrivetBaseOperation
+class PrivetCapabilitiesOperationImpl : public PrivetCapabilitiesOperation,
+                                        public PrivetURLFetcher::Delegate,
+                                        public PrivetInfoOperation::Delegate {
+ public:
+  PrivetCapabilitiesOperationImpl(
+      PrivetHTTPClientImpl* privet_client,
+      PrivetCapabilitiesOperation::Delegate* delegate);
+  virtual ~PrivetCapabilitiesOperationImpl();
+  virtual void Start() OVERRIDE;
+
+  virtual PrivetHTTPClient* GetHTTPClient() OVERRIDE;
+
+  virtual void OnError(PrivetURLFetcher* fetcher,
+                       PrivetURLFetcher::ErrorType error) OVERRIDE;
+  virtual void OnParsedJson(PrivetURLFetcher* fetcher,
+                            const base::DictionaryValue* value,
+                            bool has_error) OVERRIDE;
+
+  virtual void OnPrivetInfoDone(PrivetInfoOperation* operation,
+                                int http_code,
+                                const base::DictionaryValue* value) OVERRIDE;
+ private:
+  void StartRequest();
+
+  PrivetHTTPClientImpl* privet_client_;
+  PrivetCapabilitiesOperation::Delegate* delegate_;
+
+  scoped_ptr<PrivetURLFetcher> url_fetcher_;
+  scoped_ptr<PrivetInfoOperation> info_operation_;
+};
+
+class PrivetLocalPrintOperationImpl
+    : public PrivetLocalPrintOperation,
+      public PrivetURLFetcher::Delegate,
+      public PrivetInfoOperation::Delegate {
+ public:
+  PrivetLocalPrintOperationImpl(
+      PrivetHTTPClientImpl* privet_client,
+      PrivetLocalPrintOperation::Delegate* delegate);
+
+  virtual ~PrivetLocalPrintOperationImpl();
+  virtual void Start() OVERRIDE;
+
+  virtual void SendData(const std::string& data) OVERRIDE;
+
+  virtual void SetTicket(const std::string& ticket) OVERRIDE;
+
+  virtual void SetUsername(const std::string& user) OVERRIDE;
+
+  virtual void SetJobname(const std::string& jobname) OVERRIDE;
+
+  virtual  void SetOffline(bool offline) OVERRIDE;
+
+  virtual PrivetHTTPClient* GetHTTPClient() OVERRIDE;
+
+  virtual void OnError(PrivetURLFetcher* fetcher,
+                       PrivetURLFetcher::ErrorType error) OVERRIDE;
+  virtual void OnParsedJson(PrivetURLFetcher* fetcher,
+                            const base::DictionaryValue* value,
+                            bool has_error) OVERRIDE;
+
+  virtual void OnPrivetInfoDone(PrivetInfoOperation* operation,
+                                int http_code,
+                                const base::DictionaryValue* value) OVERRIDE;
+ private:
+  typedef base::Callback<void(const base::DictionaryValue* value)>
+      ResponseCallback;
+
+  void StartCurrentRequest();
+
+  void StartInitialRequest();
+  void GetCapabilities();
+  // TODO(noamsml): void DoCreatejob();
+  void DoSubmitdoc();
+
+  void OnCapabilities(const base::DictionaryValue* value);
+  void OnSubmitdocResponse(const base::DictionaryValue* value);
+
+  PrivetHTTPClientImpl* privet_client_;
+  PrivetLocalPrintOperation::Delegate* delegate_;
+
+  base::Closure current_request_;
+  ResponseCallback current_response_;
+
+  std::string ticket_;
+  std::string data_;
+
+  bool use_pdf_;
+  bool has_capabilities_;
+  bool has_extended_workflow_;
+  bool processed_api_list_;
+  bool started_;
+  bool offline_;
+
+  std::string user_;
+  std::string jobname_;
+
+  scoped_ptr<PrivetURLFetcher> url_fetcher_;
+  scoped_ptr<PrivetInfoOperation> info_operation_;
+};
+
 class PrivetHTTPClientImpl : public PrivetHTTPClient {
  public:
   PrivetHTTPClientImpl(
@@ -139,6 +241,12 @@ class PrivetHTTPClientImpl : public PrivetHTTPClient {
 
   virtual scoped_ptr<PrivetInfoOperation> CreateInfoOperation(
       PrivetInfoOperation::Delegate* delegate) OVERRIDE;
+
+  virtual scoped_ptr<PrivetCapabilitiesOperation> CreateCapabilitiesOperation(
+      PrivetCapabilitiesOperation::Delegate* delegate) OVERRIDE;
+
+  virtual scoped_ptr<PrivetLocalPrintOperation> CreateLocalPrintOperation(
+      PrivetLocalPrintOperation::Delegate* delegate) OVERRIDE;
 
   virtual const std::string& GetName() OVERRIDE;
 

@@ -45,6 +45,11 @@ void PrivetURLFetcher::Start() {
   url_fetcher_->Start();
 }
 
+void PrivetURLFetcher::SetUploadData(const std::string& upload_content_type,
+                                     const std::string& upload_data) {
+  url_fetcher_->SetUploadData(upload_content_type, upload_data);
+}
+
 void PrivetURLFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
   if (source->GetStatus().status() != net::URLRequestStatus::SUCCESS) {
     delegate_->OnError(this, URL_FETCH_ERROR);

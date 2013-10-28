@@ -24,6 +24,9 @@ class PrivetInfoOperation {
     virtual ~Delegate() {}
 
     // In case of non-HTTP errors, |http_code| will be -1.
+
+    // TODO(noamsml): Remove http_code from this delegate; it's unnecessary in
+    // practice
     virtual void OnPrivetInfoDone(
         PrivetInfoOperation* operation,
         int http_code,
@@ -60,6 +63,7 @@ class PrivetRegisterOperation {
         const std::string& token,
         const GURL& url) = 0;
 
+    // TODO(noamsml): Remove all unnecessary parameters.
     // Called in case of an error while registering.  |action| is the
     // registration action taken during the error. |reason| is the reason for
     // the failure. |printer_http_code| is the http code returned from the
@@ -86,6 +90,63 @@ class PrivetRegisterOperation {
   virtual PrivetHTTPClient* GetHTTPClient() = 0;
 };
 
+class PrivetCapabilitiesOperation {
+ public:
+  class Delegate {
+   public:
+    virtual ~Delegate() {}
+
+    // |capabilities| will be NULL in case of an error.
+    virtual void OnPrivetCapabilities(
+        PrivetCapabilitiesOperation* capabilities_operation,
+        int http_error,
+        const base::DictionaryValue* capabilities) = 0;
+  };
+
+  virtual ~PrivetCapabilitiesOperation() {}
+  virtual void Start() = 0;
+
+  virtual PrivetHTTPClient* GetHTTPClient() = 0;
+};
+
+class PrivetLocalPrintOperation {
+ public:
+  class Delegate {
+   public:
+    virtual ~Delegate() {}
+    virtual void OnPrivetPrintingRequestPDF(
+        const PrivetLocalPrintOperation* print_operation) = 0;
+    virtual void OnPrivetPrintingRequestPWGRaster(
+        const PrivetLocalPrintOperation* print_operation) = 0;
+    virtual void OnPrivetPrintingDone(
+        const PrivetLocalPrintOperation* print_operation) = 0;
+    virtual void OnPrivetPrintingError(
+        const PrivetLocalPrintOperation* print_operation, int http_code) = 0;
+  };
+
+  virtual ~PrivetLocalPrintOperation() {}
+
+  virtual void Start() = 0;
+
+  // Should be called ONLY after |OnPrivetPrintingRequestPDF| or
+  // |OnPrivetPrintingRequestPWGRaster| are called on the delegate.  Data should
+  // be in PDF or PWG format depending on what is requested by the local print
+  // operation.
+  virtual void SendData(const std::string& data) = 0;
+
+  // Optional attributes for /submitdoc. Call before calling |Start()|
+  // |ticket| should be in CJT format.
+  virtual void SetTicket(const std::string& ticket) = 0;
+  // Username and jobname are for display only.
+  virtual void SetUsername(const std::string& username) = 0;
+  virtual void SetJobname(const std::string& jobname) = 0;
+  // If |offline| is true, we will indicate to the printer not to post the job
+  // to Google Cloud Print.
+  virtual void SetOffline(bool offline) = 0;
+
+  virtual PrivetHTTPClient* GetHTTPClient() = 0;
+};
+
 // Privet HTTP client. Must not outlive the operations it creates.
 class PrivetHTTPClient {
  public:
@@ -97,6 +158,10 @@ class PrivetHTTPClient {
       PrivetRegisterOperation::Delegate* delegate) = 0;
   virtual scoped_ptr<PrivetInfoOperation> CreateInfoOperation(
       PrivetInfoOperation::Delegate* delegate) = 0;
+  virtual scoped_ptr<PrivetCapabilitiesOperation> CreateCapabilitiesOperation(
+      PrivetCapabilitiesOperation::Delegate* delegate) = 0;
+  virtual scoped_ptr<PrivetLocalPrintOperation> CreateLocalPrintOperation(
+      PrivetLocalPrintOperation::Delegate* delegate) = 0;
 
   // A name for the HTTP client, e.g. the device name for the privet device.
   virtual const std::string& GetName() = 0;

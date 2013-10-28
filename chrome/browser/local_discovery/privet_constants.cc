@@ -8,6 +8,7 @@ namespace local_discovery {
 
 const char kPrivetKeyError[] = "error";
 const char kPrivetInfoKeyToken[] = "x-privet-token";
+const char kPrivetInfoKeyAPIList[] = "api";
 const char kPrivetInfoKeyID[] = "id";
 const char kPrivetKeyDeviceID[] = "device_id";
 const char kPrivetKeyClaimURL[] = "claim_url";

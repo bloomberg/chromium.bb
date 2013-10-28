@@ -47,6 +47,9 @@ class PrivetURLFetcher : public net::URLFetcherDelegate {
 
   void Start();
 
+  void SetUploadData(const std::string& upload_content_type,
+                     const std::string& upload_data);
+
   virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
 
   const GURL& url() const { return url_fetcher_->GetOriginalURL(); }
