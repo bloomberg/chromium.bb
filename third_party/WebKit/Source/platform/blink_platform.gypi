@@ -1,6 +1,7 @@
 {
   'variables': {
     'platform_files': [
+      'AsyncFileSystemCallbacks.h',
       'CalculationValue.cpp',
       'CalculationValue.h',
       'Clock.cpp',
@@ -196,12 +197,13 @@
       'clipboard/ClipboardUtilitiesPosix.cpp',
       'clipboard/ClipboardUtilitiesWin.cpp',
       'exported/Platform.cpp',
+      'exported/WebActiveGestureAnimation.cpp',
+      'exported/WebActiveGestureAnimation.h',
       'exported/WebAudioBus.cpp',
       'exported/WebAudioDevice.cpp',
       'exported/WebBlobData.cpp',
       'exported/WebData.cpp',
-      'exported/WebActiveGestureAnimation.cpp',
-      'exported/WebActiveGestureAnimation.h',
+      'exported/WebFileSystemCallbacks.cpp',
       'exported/WebFilterKeyframe.cpp',
       'exported/WebFloatQuad.cpp',
       'exported/WebHTTPBody.cpp',

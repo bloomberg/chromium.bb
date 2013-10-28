@@ -35,7 +35,6 @@
 #include "core/dom/DataTransferItem.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/fileapi/File.h"
-#include "core/platform/AsyncFileSystemCallbacks.h"
 #include "core/platform/chromium/ChromiumDataObject.h"
 #include "modules/filesystem/DOMFilePath.h"
 #include "modules/filesystem/DOMFileSystem.h"
@@ -43,6 +42,7 @@
 #include "modules/filesystem/DraggedIsolatedFileSystem.h"
 #include "modules/filesystem/Entry.h"
 #include "modules/filesystem/FileEntry.h"
+#include "platform/AsyncFileSystemCallbacks.h"
 #include "platform/FileMetadata.h"
 
 namespace WebCore {

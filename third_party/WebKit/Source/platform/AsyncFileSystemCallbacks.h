@@ -41,7 +41,7 @@
 
 namespace WebCore {
 
-class AsyncFileSystemCallbacks {
+class PLATFORM_EXPORT AsyncFileSystemCallbacks {
     WTF_MAKE_NONCOPYABLE(AsyncFileSystemCallbacks);
 public:
     AsyncFileSystemCallbacks() : m_blockUntilCompletion(false) { }

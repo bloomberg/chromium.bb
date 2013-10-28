@@ -31,8 +31,8 @@
 #ifndef FileSystemCallbacks_h
 #define FileSystemCallbacks_h
 
-#include "core/platform/AsyncFileSystemCallbacks.h"
 #include "modules/filesystem/EntriesCallback.h"
+#include "platform/AsyncFileSystemCallbacks.h"
 #include "platform/FileSystemType.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/Vector.h"

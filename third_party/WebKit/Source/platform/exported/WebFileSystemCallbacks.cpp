@@ -31,7 +31,7 @@
 #include "config.h"
 #include "public/platform/WebFileSystemCallbacks.h"
 
-#include "core/platform/AsyncFileSystemCallbacks.h"
+#include "platform/AsyncFileSystemCallbacks.h"
 #include "platform/FileMetadata.h"
 #include "public/platform/WebFileInfo.h"
 #include "public/platform/WebFileSystem.h"
