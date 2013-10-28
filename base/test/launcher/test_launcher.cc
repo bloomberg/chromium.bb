@@ -461,8 +461,7 @@ void TestLauncher::RunTests() {
     }
   }
 
-  test_started_count_ = test_names.size();
-  launcher_delegate_->RunTests(this, test_names);
+  test_started_count_ = launcher_delegate_->RunTests(this, test_names);
 
   if (test_started_count_ == 0) {
     fprintf(stdout, "0 tests run\n");

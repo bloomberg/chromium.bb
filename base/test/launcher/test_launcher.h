@@ -58,10 +58,12 @@ class TestLauncherDelegate {
                              const testing::TestInfo* test_info) = 0;
 
   // Called to make the delegate run the specified tests. The delegate must
-  // call |test_launcher|'s OnTestFinished method once per every test in
-  // |test_names|, regardless of its success.
-  virtual void RunTests(TestLauncher* test_launcher,
-                        const std::vector<std::string>& test_names) = 0;
+  // return the number of actual tests it's going to run (can be smaller,
+  // equal to, or larger than size of |test_names|). It must also call
+  // |test_launcher|'s OnTestFinished method once per every run test,
+  // regardless of its success.
+  virtual size_t RunTests(TestLauncher* test_launcher,
+                          const std::vector<std::string>& test_names) = 0;
 
   // Called to make the delegate retry the specified tests. The delegate must
   // return the number of actual tests it's going to retry (can be smaller,
