@@ -1424,7 +1424,7 @@ OMXResult omxSP_FFTInit_C_SC32 (
  * Input Arguments:
  *   
  *   order - base-2 logarithm of the desired block length; valid in the range 
- *            [0,12] 
+ *            [1,15] 
  *
  * Output Arguments:
  *   
@@ -1437,7 +1437,7 @@ OMXResult omxSP_FFTInit_C_SC32 (
  *              following is true: 
  *    -   pFFTSpec is either NULL or violates the 8-byte alignment 
  *              restrictions 
- *    -   order < 0 or order > 12 
+ *    -   order < 1 or order > 15
  *
  */
 OMXResult omxSP_FFTInit_C_FC32(
@@ -1583,7 +1583,7 @@ OMXResult omxSP_FFTInit_R_S32 (
  * Input Arguments:
  *   
  *   order - base-2 logarithm of the desired block length; valid in the range 
- *            [0,12] 
+ *            [1,15] 
  *
  * Output Arguments:
  *   
@@ -1596,7 +1596,7 @@ OMXResult omxSP_FFTInit_R_S32 (
  *              following is true: 
  *    -   pFFTFwdSpec is either NULL or violates the 8-byte alignment 
  *              restrictions 
- *    -   order < 0 or order > 12 
+ *    -   order < 1 or order > 15
  *
  */
 OMXResult omxSP_FFTInit_R_F32(
@@ -1684,7 +1684,7 @@ OMXResult omxSP_FFTGetBufSize_C_SC32 (
  * Input Arguments:
  *   
  *   order - base-2 logarithm of the desired block length; valid in the range 
- *            [0,12] 
+ *            [1,15] 
  *
  * Output Arguments:
  *   
@@ -1697,7 +1697,7 @@ OMXResult omxSP_FFTGetBufSize_C_SC32 (
  *    OMX_Sts_BadArgErr - bad arguments; returned if one or more of the 
  *              following is true: 
  *    -    pSize is NULL 
- *    -    order < 0 or order > 12 
+ *    -    order < 1 or order > 15 
  *
  */
 OMXResult omxSP_FFTGetBufSize_C_FC32(
@@ -1815,7 +1815,7 @@ OMXResult omxSP_FFTGetBufSize_R_S32 (
  *
  * Input Arguments:
  *   
- *   order - base-2 logarithm of the length; valid in the range [0,12] 
+ *   order - base-2 logarithm of the length; valid in the range [1,15] 
  *
  * Output Arguments:
  *   
@@ -1828,7 +1828,7 @@ OMXResult omxSP_FFTGetBufSize_R_S32 (
  *    OMX_Sts_BadArgErr - bad arguments The function returns 
  *              OMX_Sts_BadArgErr if one or more of the following is true: 
  *    pSize is NULL 
- *    order < 0 or order > 12 
+ *    order < 1 or order > 15
  *
  */
 OMXResult omxSP_FFTGetBufSize_R_F32(
