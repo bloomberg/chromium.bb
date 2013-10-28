@@ -13587,7 +13587,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
         Nope
       </message>
       <message name="IDS_TRANSLATE_INFOBAR_NEVER_TRANSLATE" desc="Button label shown to never translate a specific language in the translate infobar">
-        Never translate <ph name="language">$1<ex>English</ex></ph>
+        Never translate <ph name="language">$1<ex>French</ex></ph>
       </message>
       <message name="IDS_TRANSLATE_INFOBAR_ALWAYS_TRANSLATE" desc="Button label shown to always translate a specific language in the translate infobar">
         Always translate <ph name="language">$1<ex>English</ex></ph>
