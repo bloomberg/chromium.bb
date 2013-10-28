@@ -164,13 +164,11 @@ bool SharedStyleFinder::canShareStyleWithElement(Element& candidate) const
     RenderStyle* style = candidate.renderStyle();
     if (!style)
         return false;
+    if (!style->isSharable())
+        return false;
     if (!parent)
         return false;
     if (element().parentElement()->renderStyle() != parent->renderStyle())
-        return false;
-    if (style->unique())
-        return false;
-    if (style->hasUniquePseudoStyle())
         return false;
     if (candidate.tagQName() != element().tagQName())
         return false;
@@ -209,9 +207,6 @@ bool SharedStyleFinder::canShareStyleWithElement(Element& candidate) const
         return false;
 
     if (isControl && !canShareStyleWithControl(candidate))
-        return false;
-
-    if (style->transitions() || style->animations())
         return false;
 
     // FIXME: This line is surprisingly hot, we may wish to inline hasDirectionAuto into StyleResolver.

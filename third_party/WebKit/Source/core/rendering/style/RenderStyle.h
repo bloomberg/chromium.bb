@@ -1487,6 +1487,8 @@ public:
     bool unique() const { return noninherited_flags.unique; }
     void setUnique() { noninherited_flags.unique = true; }
 
+    bool isSharable() const;
+
     bool emptyState() const { return noninherited_flags.emptyState; }
     void setEmptyState(bool b) { setUnique(); noninherited_flags.emptyState = b; }
     bool firstChildState() const { return noninherited_flags.firstChildState; }
@@ -1807,6 +1809,17 @@ inline bool RenderStyle::setEffectiveZoom(float f)
     if (compareEqual(rareInheritedData->m_effectiveZoom, f))
         return false;
     rareInheritedData.access()->m_effectiveZoom = f;
+    return true;
+}
+
+inline bool RenderStyle::isSharable() const
+{
+    if (unique())
+        return false;
+    if (hasUniquePseudoStyle())
+        return false;
+    if (transitions() || animations())
+        return false;
     return true;
 }
 
