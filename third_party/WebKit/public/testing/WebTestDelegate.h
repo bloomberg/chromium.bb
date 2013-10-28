@@ -99,9 +99,6 @@ public:
     virtual WebPreferences* preferences() = 0;
     virtual void applyPreferences() = 0;
 
-    // Resizes the WebView to the given size.
-    virtual void setClientWindowRect(const WebKit::WebRect&) = 0;
-
     // Enables or disables synchronous resize mode. When enabled, all window-sizing machinery is
     // short-circuited inside the renderer. This mode is necessary for some tests that were written
     // before browsers had multi-process architecture and rely on window resizes to happen synchronously.
