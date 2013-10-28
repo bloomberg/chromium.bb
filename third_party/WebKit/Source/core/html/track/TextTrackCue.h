@@ -35,6 +35,7 @@
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/events/EventTarget.h"
 #include "core/html/HTMLDivElement.h"
+#include "core/page/UseCounter.h"
 #include "wtf/RefCounted.h"
 
 namespace WebCore {
@@ -75,6 +76,7 @@ class TextTrackCue : public RefCounted<TextTrackCue>, public ScriptWrappable, pu
 public:
     static PassRefPtr<TextTrackCue> create(Document& document, double start, double end, const String& content)
     {
+        UseCounter::count(document, UseCounter::TextTrackCueConstructor);
         return adoptRef(new TextTrackCue(document, start, end, content));
     }
 
