@@ -54,6 +54,7 @@ void GetFontsInFamily_SlowBlocking(
         desc.charset = PP_TRUETYPEFONTCHARSET_DEFAULT;
 
         fonts_in_family->push_back(desc);
+        ::pango_font_description_free(font_desc);
       }
       g_free(font_faces);
     }
