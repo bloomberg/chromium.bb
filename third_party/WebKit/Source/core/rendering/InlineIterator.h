@@ -519,11 +519,11 @@ static void adjustMidpointsAndAppendRunsForObjectIfNeeded(RenderObject* obj, uns
 
         // An end midpoint has been encountered within our object. We
         // need to go ahead and append a run with our endpoint.
-        if (static_cast<int>(nextMidpoint.m_pos + 1) <= end) {
+        if (nextMidpoint.m_pos + 1 <= end) {
             lineMidpointState.betweenMidpoints = true;
             lineMidpointState.currentMidpoint++;
             if (nextMidpoint.m_pos != UINT_MAX) { // UINT_MAX means stop at the object and don't nclude any of it.
-                if (static_cast<int>(nextMidpoint.m_pos + 1) > start && behavior == AppendingRunsForObject)
+                if (nextMidpoint.m_pos + 1 > start && behavior == AppendingRunsForObject)
                     runs->addRun(createRun(start, nextMidpoint.m_pos + 1, obj, resolver));
                 return adjustMidpointsAndAppendRunsForObjectIfNeeded(obj, nextMidpoint.m_pos + 1, end, resolver, behavior, runs);
             }

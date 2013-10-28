@@ -196,8 +196,6 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-static const double cDefaultIncrementalRenderingSuppressionTimeoutInSeconds = 5;
-
 static const unsigned cMaxWriteRecursionDepth = 21;
 
 // This amount of time must have elapsed before we will even consider scheduling a layout without a delay.
@@ -384,10 +382,10 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
     , m_styleResolverAccessCount(0)
     , m_lastStyleResolverAccessCount(0)
     , m_didCalculateStyleResolver(false)
+    , m_hasNodesWithPlaceholderStyle(false)
+    , m_needsNotifyRemoveAllPendingStylesheet(false)
     , m_ignorePendingStylesheets(false)
     , m_evaluateMediaQueriesOnStyleRecalc(false)
-    , m_needsNotifyRemoveAllPendingStylesheet(false)
-    , m_hasNodesWithPlaceholderStyle(false)
     , m_pendingSheetLayout(NoLayoutWithPendingSheets)
     , m_frame(initializer.frame())
     , m_domWindow(0)
@@ -449,9 +447,9 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
     , m_writeRecursionIsTooDeep(false)
     , m_writeRecursionDepth(0)
     , m_lastHandledUserGestureTimestamp(0)
+    , m_pendingTasksTimer(this, &Document::pendingTasksTimerFired)
     , m_textAutosizer(TextAutosizer::create(this))
     , m_registrationContext(initializer.registrationContext(this))
-    , m_pendingTasksTimer(this, &Document::pendingTasksTimerFired)
     , m_scheduledTasksAreSuspended(false)
     , m_sharedObjectPoolClearTimer(this, &Document::sharedObjectPoolClearTimerFired)
 #ifndef NDEBUG

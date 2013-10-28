@@ -43,7 +43,7 @@ public:
         return adoptRef(new AnimatableLengthBoxAndBool(box, flag));
     }
     const AnimatableValue* box() const { return m_box.get(); }
-    const bool flag() const { return m_flag; }
+    bool flag() const { return m_flag; }
 
 protected:
     virtual PassRefPtr<AnimatableValue> interpolateTo(const AnimatableValue*, double fraction) const OVERRIDE;

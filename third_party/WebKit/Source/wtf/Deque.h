@@ -208,9 +208,9 @@ namespace WTF {
 
     template<typename T, size_t inlineCapacity>
     inline Deque<T, inlineCapacity>::Deque(const Deque<T, inlineCapacity>& other)
-        : m_start(other.m_start)
+        : m_buffer(other.m_buffer.capacity())
+        , m_start(other.m_start)
         , m_end(other.m_end)
-        , m_buffer(other.m_buffer.capacity())
     {
         const T* otherBuffer = other.m_buffer.buffer();
         if (m_start <= m_end)

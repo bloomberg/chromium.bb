@@ -41,9 +41,9 @@ namespace WebCore {
 UpSampler::UpSampler(size_t inputBlockSize)
     : m_inputBlockSize(inputBlockSize)
     , m_kernel(DefaultKernelSize)
+    , m_convolver(inputBlockSize)
     , m_tempBuffer(inputBlockSize)
     , m_inputBuffer(inputBlockSize * 2)
-    , m_convolver(inputBlockSize)
 {
     initializeKernel();
 }

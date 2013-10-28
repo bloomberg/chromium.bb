@@ -63,7 +63,7 @@ void ActiveDOMObject::suspendIfNeeded()
     m_suspendIfNeededCalled = true;
 #endif
     if (ExecutionContext* context = executionContext())
-        executionContext()->suspendActiveDOMObjectIfNeeded(this);
+        context->suspendActiveDOMObjectIfNeeded(this);
 }
 
 bool ActiveDOMObject::hasPendingActivity() const

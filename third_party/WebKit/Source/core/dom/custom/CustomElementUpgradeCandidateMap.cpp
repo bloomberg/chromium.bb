@@ -47,7 +47,7 @@ void CustomElementUpgradeCandidateMap::add(const CustomElementDescriptor& descri
     observe(element);
 
     UpgradeCandidateMap::AddResult result = m_upgradeCandidates.add(element, descriptor);
-    ASSERT(result.isNewEntry);
+    ASSERT_UNUSED(result, result.isNewEntry);
 
     UnresolvedDefinitionMap::iterator it = m_unresolvedDefinitions.find(descriptor);
     if (it == m_unresolvedDefinitions.end())

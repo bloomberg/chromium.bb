@@ -50,8 +50,8 @@ PassRefPtr<DocumentTimeline> DocumentTimeline::create(Document* document, PassOw
 }
 
 DocumentTimeline::DocumentTimeline(Document* document, PassOwnPtr<PlatformTiming> timing)
-    : m_document(document)
-    , m_zeroTime(nullValue())
+    : m_zeroTime(nullValue())
+    , m_document(document)
 {
     if (!timing)
         m_timing = adoptPtr(new DocumentTimelineTiming(this));

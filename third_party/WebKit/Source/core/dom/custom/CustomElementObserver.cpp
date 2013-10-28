@@ -58,13 +58,13 @@ void CustomElementObserver::notifyElementWasDestroyed(Element* element)
 void CustomElementObserver::observe(Element* element)
 {
     ElementObserverMap::AddResult result = elementObservers().add(element, this);
-    ASSERT(result.isNewEntry);
+    ASSERT_UNUSED(result, result.isNewEntry);
 }
 
 void CustomElementObserver::unobserve(Element* element)
 {
     CustomElementObserver* observer = elementObservers().take(element);
-    ASSERT(observer == this);
+    ASSERT_UNUSED(observer, observer == this);
 }
 
 } // namespace WebCore

@@ -43,8 +43,8 @@
 
 namespace WebCore {
 
-static const unsigned maximumValidPortNumber = 0xFFFE;
-static const unsigned invalidPortNumber = 0xFFFF;
+static const int maximumValidPortNumber = 0xFFFE;
+static const int invalidPortNumber = 0xFFFF;
 
 static void assertProtocolIsGood(const char* protocol)
 {

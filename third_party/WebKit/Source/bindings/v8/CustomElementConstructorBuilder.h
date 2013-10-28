@@ -51,7 +51,7 @@ class ExceptionState;
 class QualifiedName;
 class ScriptState;
 class V8PerContextData;
-class WrapperTypeInfo;
+struct WrapperTypeInfo;
 
 // Handles the scripting-specific parts of the Custom Elements element
 // registration algorithm and constructor generation algorithm. It is

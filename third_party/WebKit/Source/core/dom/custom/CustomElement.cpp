@@ -170,7 +170,7 @@ void CustomElement::DefinitionMap::add(Element* element, PassRefPtr<CustomElemen
 {
     ASSERT(definition.get());
     DefinitionMap::ElementDefinitionHashMap::AddResult result = m_definitions.add(element, definition);
-    ASSERT(result.isNewEntry);
+    ASSERT_UNUSED(result, result.isNewEntry);
 }
 
 CustomElement::DefinitionMap& CustomElement::definitions()

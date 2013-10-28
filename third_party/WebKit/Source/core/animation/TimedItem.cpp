@@ -36,11 +36,11 @@ namespace WebCore {
 
 TimedItem::TimedItem(const Timing& timing, PassOwnPtr<EventDelegate> eventDelegate)
     : m_parent(0)
-    , m_player(0)
     , m_startTime(0)
+    , m_player(0)
     , m_specified(timing)
-    , m_calculated()
     , m_eventDelegate(eventDelegate)
+    , m_calculated()
     , m_isFirstSample(true)
 {
     timing.assertValid();

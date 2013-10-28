@@ -42,7 +42,7 @@ class ExceptionState;
 class ExecutionContext;
 class URLRegistrable;
 
-class DOMURL : public ScriptWrappable, public DOMURLUtils, public RefCounted<DOMURL> {
+class DOMURL FINAL : public ScriptWrappable, public DOMURLUtils, public RefCounted<DOMURL> {
 
 public:
     static PassRefPtr<DOMURL> create(const String& url, ExceptionState& es)

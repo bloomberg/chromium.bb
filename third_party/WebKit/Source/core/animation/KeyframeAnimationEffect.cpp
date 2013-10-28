@@ -265,7 +265,7 @@ void KeyframeAnimationEffect::PropertySpecificKeyframeGroup::removeRedundantKeyf
     for (int i = m_keyframes.size() - 1; i >= 0; --i) {
         double offset = m_keyframes[i]->offset();
         bool hasSameOffsetAsPreviousNeighbor = !i || m_keyframes[i - 1]->offset() == offset;
-        bool hasSameOffsetAsNextNeighbor = i == m_keyframes.size() - 1 || m_keyframes[i + 1]->offset() == offset;
+        bool hasSameOffsetAsNextNeighbor = i == static_cast<int>(m_keyframes.size() - 1) || m_keyframes[i + 1]->offset() == offset;
         if (hasSameOffsetAsPreviousNeighbor && hasSameOffsetAsNextNeighbor)
             m_keyframes.remove(i);
     }

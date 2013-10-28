@@ -44,7 +44,7 @@
 
 namespace WebCore {
 
-class CandidateTransition;
+struct CandidateTransition;
 class Element;
 class StylePropertyShorthand;
 class StyleResolver;

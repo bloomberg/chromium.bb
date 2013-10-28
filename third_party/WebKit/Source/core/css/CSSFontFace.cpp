@@ -141,7 +141,6 @@ void CSSFontFace::willUseFontData(const FontDescription& fontDescription)
         return;
 
     ASSERT(m_segmentedFontFace);
-    CSSFontSelector* fontSelector = m_segmentedFontFace->fontSelector();
 
     size_t size = m_sources.size();
     for (size_t i = 0; i < size; ++i) {
