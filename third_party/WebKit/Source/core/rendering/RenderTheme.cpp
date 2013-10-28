@@ -490,7 +490,7 @@ String RenderTheme::extraDefaultStyleSheet()
 
         if (RuntimeEnabledFeatures::inputTypeColorEnabled()) {
             runtimeCSS.appendLiteral("input[type=\"color\"][list] { -webkit-appearance: menulist; width: 88px; height: 23px;}");
-            runtimeCSS.appendLiteral("input[type=\"color\"][list]::-webkit-color-swatch-wrapper { padding-left: 8px; padding-right: 24px;}");
+            runtimeCSS.appendLiteral("input[type=\"color\"][list]::-webkit-color-swatch-wrapper { -webkit-padding-start: 8px; -webkit-padding-end: 24px;}");
             runtimeCSS.appendLiteral("input[type=\"color\"][list]::-webkit-color-swatch { border-color: #000000;}");
         }
     }
