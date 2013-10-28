@@ -4,6 +4,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import base64
 import gzip
 import logging
 import optparse
@@ -13,6 +14,7 @@ import shutil
 import sys
 import threading
 import time
+import webbrowser
 import zipfile
 import zlib
 
@@ -22,11 +24,74 @@ from pylib import constants
 from pylib import pexpect
 
 
+_TRACE_VIEWER_TEMPLATE = """<!DOCTYPE html>
+<html>
+  <head>
+    <title>%(title)s</title>
+    <style>
+      %(timeline_css)s
+    </style>
+    <style>
+      .view {
+        overflow: hidden;
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+      }
+    </style>
+    <script>
+      %(timeline_js)s
+    </script>
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        var trace_data = window.atob('%(trace_data_base64)s');
+        var m = new tracing.TraceModel(trace_data);
+        var timelineViewEl = document.querySelector('.view');
+        ui.decorate(timelineViewEl, tracing.TimelineView);
+        timelineViewEl.model = m;
+        timelineViewEl.tabIndex = 1;
+        timelineViewEl.timeline.focusElement = timelineViewEl;
+      });
+    </script>
+  </head>
+  <body>
+    <div class="view"></view>
+  </body>
+</html>"""
+
 _DEFAULT_CHROME_CATEGORIES = '_DEFAULT_CHROME_CATEGORIES'
 
 
 def _GetTraceTimestamp():
  return time.strftime('%Y-%m-%d-%H%M%S', time.localtime())
+
+
+def _PackageTraceAsHtml(trace_file_name, html_file_name):
+  trace_viewer_root = os.path.join(constants.DIR_SOURCE_ROOT,
+                                   'third_party', 'trace-viewer')
+  build_dir = os.path.join(trace_viewer_root, 'build')
+  src_dir = os.path.join(trace_viewer_root, 'src')
+  if not build_dir in sys.path:
+    sys.path.append(build_dir)
+  generate = __import__('generate', {}, {})
+  parse_deps = __import__('parse_deps', {}, {})
+
+  basename = os.path.splitext(trace_file_name)[0]
+  load_sequence = parse_deps.calc_load_sequence(
+      ['tracing/standalone_timeline_view.js'], [src_dir])
+
+  with open(trace_file_name) as trace_file:
+    trace_data = base64.b64encode(trace_file.read())
+    with open(html_file_name, 'w') as html_file:
+      html = _TRACE_VIEWER_TEMPLATE % {
+        'title': os.path.basename(os.path.splitext(trace_file_name)[0]),
+        'timeline_js': generate.generate_js(load_sequence),
+        'timeline_css': generate.generate_css(load_sequence),
+        'trace_data_base64': trace_data
+      }
+      html_file.write(html)
 
 
 class ChromeTracingController(object):
@@ -208,7 +273,7 @@ def _StopTracing(controllers):
     controller.StopTracing()
 
 
-def _PullTraces(controllers, output, compress):
+def _PullTraces(controllers, output, compress, write_html):
   _PrintMessage('Downloading...', eol='')
   trace_files = []
   for controller in controllers:
@@ -226,11 +291,18 @@ def _PullTraces(controllers, output, compress):
   else:
     result = trace_files[0]
 
+  if write_html:
+    result, trace_file = os.path.splitext(result)[0] + '.html', result
+    _PackageTraceAsHtml(trace_file, result)
+    if trace_file != result:
+      os.unlink(trace_file)
+
   _PrintMessage('done')
   _PrintMessage('Trace written to %s' % os.path.abspath(result))
+  return result
 
 
-def _CaptureAndPullTrace(controllers, interval, output, compress):
+def _CaptureAndPullTrace(controllers, interval, output, compress, write_html):
   trace_type = ' + '.join(map(str, controllers))
   try:
     _StartTracing(controllers, interval)
@@ -248,7 +320,7 @@ def _CaptureAndPullTrace(controllers, interval, output, compress):
   if interval:
     _PrintMessage('done')
 
-  _PullTraces(controllers, output, compress)
+  return _PullTraces(controllers, output, compress, write_html)
 
 
 def _ComputeChromeCategories(options):
@@ -311,7 +383,14 @@ def main():
                         'GPU data.', action='store_true')
   parser.add_option_group(categories)
 
-  parser.add_option('-o', '--output', help='Save profile output to file.')
+  output_options = optparse.OptionGroup(parser, 'Output options')
+  output_options.add_option('-o', '--output', help='Save trace output to file.')
+  output_options.add_option('--html', help='Package trace into a standalone '
+                            'html file.', action='store_true')
+  output_options.add_option('--view', help='Open resulting trace file in a '
+                            'browser.', action='store_true')
+  parser.add_option_group(output_options)
+
   browsers = sorted(_GetSupportedBrowsers().keys())
   parser.add_option('-b', '--browser', help='Select among installed browsers. '
                     'One of ' + ', '.join(browsers) + ', "stable" is used by '
@@ -358,10 +437,13 @@ def main():
     _PrintMessage('No trace categories enabled.')
     return 1
 
-  _CaptureAndPullTrace(controllers,
-                       options.time if not options.continuous else 0,
-                       options.output,
-                       options.compress)
+  result = _CaptureAndPullTrace(controllers,
+                                options.time if not options.continuous else 0,
+                                options.output,
+                                options.compress,
+                                options.html)
+  if options.view:
+    webbrowser.open(result)
 
 
 if __name__ == '__main__':
