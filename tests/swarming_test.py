@@ -430,6 +430,7 @@ def generate_expected_json(
       },
     ],
     u'data': [],
+    u'encoding': 'UTF-8',
     u'env_vars': {},
     u'restart_on_failure': True,
     u'test_case_name': TEST_NAME,

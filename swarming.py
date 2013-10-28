@@ -152,6 +152,8 @@ class Manifest(object):
       'test_case_name': self._test_name,
       'data': [],
       'tests': self._tasks,
+      # TODO: Let the encoding get set from the command line.
+      'encoding': 'UTF-8',
       'env_vars': {},
       'configurations': [
         {
