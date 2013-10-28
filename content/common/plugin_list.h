@@ -171,6 +171,10 @@ class CONTENT_EXPORT PluginList {
     LOADING_STATE_UP_TO_DATE,
   };
 
+  struct VersionComparator {
+    bool operator()(const WebPluginInfo& lhs, const WebPluginInfo& rhs) const;
+  };
+
   friend class PluginListTest;
   friend struct base::DefaultLazyInstanceTraits<PluginList>;
 

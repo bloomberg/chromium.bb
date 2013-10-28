@@ -13,6 +13,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/version.h"
 #include "content/public/common/content_switches.h"
 #include "net/base/mime_util.h"
 #include "url/gurl.h"
@@ -166,6 +167,20 @@ bool PluginList::ParseMimeTypes(
   }
 
   return true;
+}
+
+bool PluginList::VersionComparator::operator()(const WebPluginInfo& lhs,
+                                               const WebPluginInfo& rhs) const {
+  Version lhs_version;
+  Version rhs_version;
+  WebPluginInfo::CreateVersionFromString(lhs.version, &lhs_version);
+  WebPluginInfo::CreateVersionFromString(rhs.version, &rhs_version);
+  if (!lhs_version.IsValid())
+    lhs_version = Version("0");
+  if (!rhs_version.IsValid())
+    rhs_version = Version("0");
+
+  return lhs_version.CompareTo(rhs_version) > 0;
 }
 
 PluginList::PluginList()
@@ -322,18 +337,25 @@ void PluginList::GetPluginInfoArray(
   base::AutoLock lock(lock_);
   if (use_stale)
     *use_stale = (loading_state_ != LOADING_STATE_UP_TO_DATE);
-  info->clear();
   if (actual_mime_types)
     actual_mime_types->clear();
 
   std::set<base::FilePath> visited_plugins;
+  // Instead of pushing elements to |info| directly, we add it to
+  // |matched_plugins| first so that they are sorted by version number.
+  // Returning matched plugins in sorted order ensures that the first plugin
+  // that is tried is always the one with the latest version. This helps in the
+  // case when we have more than one plugin for given mime type. If we would
+  // pick the one that is older, we would decide to block it because it's
+  // outdated and wouldn't give the newer plugin a chance to run.
+  std::multiset<WebPluginInfo, VersionComparator> matched_plugins;
 
   // Add in plugins by mime type.
   for (size_t i = 0; i < plugins_list_.size(); ++i) {
     if (SupportsType(plugins_list_[i], mime_type, allow_wildcard)) {
       base::FilePath path = plugins_list_[i].path;
       if (visited_plugins.insert(path).second) {
-        info->push_back(plugins_list_[i]);
+        matched_plugins.insert(plugins_list_[i]);
         if (actual_mime_types)
           actual_mime_types->push_back(mime_type);
       }
@@ -355,13 +377,16 @@ void PluginList::GetPluginInfoArray(
       if (SupportsExtension(plugins_list_[i], extension, &actual_mime_type)) {
         base::FilePath path = plugins_list_[i].path;
         if (visited_plugins.insert(path).second) {
-          info->push_back(plugins_list_[i]);
+          matched_plugins.insert(plugins_list_[i]);
           if (actual_mime_types)
             actual_mime_types->push_back(actual_mime_type);
         }
       }
     }
   }
+
+  // Assign in sorted order.
+  info->assign(matched_plugins.begin(), matched_plugins.end());
 }
 
 bool PluginList::SupportsType(const WebPluginInfo& plugin,

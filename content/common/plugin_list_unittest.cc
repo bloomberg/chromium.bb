@@ -4,6 +4,8 @@
 
 #include "content/common/plugin_list.h"
 
+#include <string>
+
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -34,6 +36,18 @@ bool Contains(const std::vector<WebPluginInfo>& list,
       return true;
   }
   return false;
+}
+
+WebPluginInfo CreateFooPluginWithVersion(const std::string& version) {
+  base::FilePath plugin_path = base::FilePath::FromUTF8Unsafe(
+      std::string("/plugins/foo") + version + std::string(".plugin"));
+  WebPluginInfo plugin(ASCIIToUTF16(kFooName),
+                       plugin_path,
+                       ASCIIToUTF16(version.c_str()),
+                       base::string16());
+  plugin.mime_types.push_back(
+      WebPluginMimeType(kFooMimeType, kFooFileType, std::string()));
+  return plugin;
 }
 
 }  // namespace
@@ -134,6 +148,36 @@ TEST_F(PluginListTest, GetPluginInfoArray) {
   EXPECT_TRUE(Contains(plugins, foo_plugin_));
   ASSERT_EQ(1u, actual_mime_types.size());
   EXPECT_EQ(kFooMimeType, actual_mime_types.front());
+}
+
+TEST_F(PluginListTest, GetPluginInfoArrayVersionOrder) {
+  GURL target_url("http://example.com/test.foo");
+
+  // Set up 3 plug-ins that differ in version, randomly ordered.
+  std::vector<WebPluginInfo> test_plugins;
+  WebPluginInfo plugin_v1 = CreateFooPluginWithVersion("1.2.3");
+  WebPluginInfo plugin_v2 = CreateFooPluginWithVersion("2.3.4");
+  WebPluginInfo plugin_v3 = CreateFooPluginWithVersion("3.4.5");
+  test_plugins.push_back(plugin_v3);
+  test_plugins.push_back(plugin_v1);
+  test_plugins.push_back(plugin_v2);
+  plugin_list_.SetPlugins(test_plugins);
+
+  std::vector<WebPluginInfo> matched_plugins;
+  std::vector<std::string> actual_mime_types;
+  plugin_list_.GetPluginInfoArray(target_url,
+                                  kFooMimeType,
+                                  false,  // allow_wildcard
+                                  NULL,   // use_stale
+                                  false,  // include_npapi
+                                  &matched_plugins,
+                                  &actual_mime_types);
+
+  EXPECT_EQ(3u, matched_plugins.size());
+  // Must be ordered from the highest to lowest version.
+  EXPECT_TRUE(Equals(matched_plugins[0], plugin_v3));
+  EXPECT_TRUE(Equals(matched_plugins[1], plugin_v2));
+  EXPECT_TRUE(Equals(matched_plugins[2], plugin_v1));
 }
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
