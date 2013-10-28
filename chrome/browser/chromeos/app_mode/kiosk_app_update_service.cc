@@ -56,7 +56,7 @@ void KioskAppUpdateService::StartAppUpdateRestartTimer() {
 void KioskAppUpdateService::ForceAppUpdateRestart() {
   // Force a chrome restart (not a logout or reboot) by closing all browsers.
   LOG(WARNING) << "Force closing all browsers to update kiosk app.";
-  chrome::CloseAllBrowsers();
+  chrome::CloseAllBrowsersAndQuit();
 }
 
 void KioskAppUpdateService::Shutdown() {

@@ -359,14 +359,14 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
 
   size_t num_browsers = chrome::GetTotalBrowserCount();
 
-  // Initiate a shutdown (via chrome::CloseAllBrowsers()) if we aren't
+  // Initiate a shutdown (via chrome::CloseAllBrowsersAndQuit()) if we aren't
   // already shutting down.
   if (!browser_shutdown::IsTryingToQuit()) {
     content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_CLOSE_ALL_BROWSERS_REQUEST,
         content::NotificationService::AllSources(),
         content::NotificationService::NoDetails());
-    chrome::CloseAllBrowsers();
+    chrome::CloseAllBrowsersAndQuit();
   }
 
   return num_browsers == 0 ? YES : NO;

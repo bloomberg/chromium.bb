@@ -87,7 +87,13 @@ void MarkAsCleanShutdown() {
     it->profile()->SetExitType(Profile::EXIT_NORMAL);
 }
 
-void AttemptExitInternal() {
+void AttemptExitInternal(bool try_to_quit_application) {
+  // On Mac, the platform-specific part handles setting this.
+#if !defined(OS_MACOSX)
+  if (try_to_quit_application)
+    browser_shutdown::SetTryingToQuit(true);
+#endif
+
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_CLOSE_ALL_BROWSERS_REQUEST,
       content::NotificationService::AllSources(),
@@ -96,11 +102,20 @@ void AttemptExitInternal() {
   g_browser_process->platform_part()->AttemptExit();
 }
 
+void CloseAllBrowsersAndQuit() {
+  browser_shutdown::SetTryingToQuit(true);
+  CloseAllBrowsers();
+}
+
 void CloseAllBrowsers() {
-  // If there are no browsers, send the APP_TERMINATING action here. Otherwise,
-  // it will be sent by RemoveBrowser() when the last browser has closed.
+  // If there are no browsers and closing the last browser would quit the
+  // application, send the APP_TERMINATING action here. Otherwise, it will be
+  // sent by RemoveBrowser() when the last browser has closed.
   if (browser_shutdown::ShuttingDownWithoutClosingBrowsers() ||
-      chrome::GetTotalBrowserCount() == 0) {
+      (chrome::GetTotalBrowserCount() == 0 &&
+       (browser_shutdown::IsTryingToQuit() || !chrome::WillKeepAlive() ||
+        CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kDisableBatchedShutdown)))) {
     // Tell everyone that we are shutting down.
     browser_shutdown::SetTryingToQuit(true);
 
@@ -154,7 +169,7 @@ void AttemptUserExit() {
   // request.
   PrefService* pref_service = g_browser_process->local_state();
   pref_service->SetBoolean(prefs::kRestartLastSessionOnShutdown, false);
-  AttemptExitInternal();
+  AttemptExitInternal(false);
 #endif
 }
 
@@ -213,7 +228,7 @@ void AttemptExit() {
   if (AreAllBrowsersCloseable())
     MarkAsCleanShutdown();
 #endif
-  AttemptExitInternal();
+  AttemptExitInternal(true);
 }
 
 #if defined(OS_CHROMEOS)
@@ -228,7 +243,7 @@ void ExitCleanly() {
   // screen locker.
   if (!AreAllBrowsersCloseable())
     browser_shutdown::OnShutdownStarting(browser_shutdown::END_SESSION);
-  AttemptExitInternal();
+  AttemptExitInternal(true);
 }
 #endif
 

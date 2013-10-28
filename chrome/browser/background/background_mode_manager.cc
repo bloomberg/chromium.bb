@@ -30,6 +30,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/host_desktop.h"
@@ -148,6 +149,8 @@ BackgroundModeManager::BackgroundModeManager(
       in_background_mode_(false),
       keep_alive_for_startup_(false),
       keep_alive_for_test_(false),
+      background_mode_suspended_(false),
+      keeping_alive_(false),
       current_command_id_(0) {
   // We should never start up if there is no browser process or if we are
   // currently quitting.
@@ -174,6 +177,11 @@ BackgroundModeManager::BackgroundModeManager(
   if (command_line->HasSwitch(switches::kNoStartupWindow)) {
     keep_alive_for_startup_ = true;
     chrome::StartKeepAlive();
+  } else {
+    // Otherwise, start with background mode suspended in case we're launching
+    // in a mode that doesn't open a browser window. It will be resumed when the
+    // first browser window is opened.
+    SuspendBackgroundMode();
   }
 
   // If the -keep-alive-for-test flag is passed, then always keep chrome running
@@ -188,6 +196,7 @@ BackgroundModeManager::BackgroundModeManager(
   // count.
   registrar_.Add(this, chrome::NOTIFICATION_APP_TERMINATING,
                  content::NotificationService::AllSources());
+  BrowserList::AddObserver(this);
 }
 
 BackgroundModeManager::~BackgroundModeManager() {
@@ -199,6 +208,7 @@ BackgroundModeManager::~BackgroundModeManager() {
        ++it) {
     it->second->applications_->RemoveObserver(this);
   }
+  BrowserList::RemoveObserver(this);
 
   // We're going away, so exit background mode (does nothing if we aren't in
   // background mode currently). This is primarily needed for unit tests,
@@ -457,7 +467,7 @@ void BackgroundModeManager::ExecuteCommand(int command_id, int event_flags) {
       break;
     case IDC_EXIT:
       content::RecordAction(UserMetricsAction("Exit"));
-      chrome::AttemptExit();
+      chrome::CloseAllBrowsers();
       break;
     case IDC_STATUS_TRAY_KEEP_CHROME_RUNNING_IN_BACKGROUND: {
       // Background mode must already be enabled (as otherwise this menu would
@@ -502,11 +512,7 @@ void BackgroundModeManager::StartBackgroundMode() {
   // Mark ourselves as running in background mode.
   in_background_mode_ = true;
 
-  // Put ourselves in KeepAlive mode and create a status tray icon.
-  chrome::StartKeepAlive();
-
-  // Display a status icon to exit Chrome.
-  InitStatusTrayIcon();
+  UpdateKeepAliveAndTrayIcon();
 
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_BACKGROUND_MODE_CHANGED,
@@ -514,22 +520,13 @@ void BackgroundModeManager::StartBackgroundMode() {
       content::Details<bool>(&in_background_mode_));
 }
 
-void BackgroundModeManager::InitStatusTrayIcon() {
-  // Only initialize status tray icons for those profiles which actually
-  // have a background app running.
-  if (ShouldBeInBackgroundMode())
-    CreateStatusTrayIcon();
-}
-
 void BackgroundModeManager::EndBackgroundMode() {
   if (!in_background_mode_)
     return;
   in_background_mode_ = false;
 
-  // End KeepAlive mode and blow away our status tray icon.
-  chrome::EndKeepAlive();
+  UpdateKeepAliveAndTrayIcon();
 
-  RemoveStatusTrayIcon();
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_BACKGROUND_MODE_CHANGED,
       content::Source<BackgroundModeManager>(this),
@@ -552,6 +549,37 @@ void BackgroundModeManager::DisableBackgroundMode() {
     EndBackgroundMode();
     EnableLaunchOnStartup(false);
   }
+}
+
+void BackgroundModeManager::SuspendBackgroundMode() {
+  background_mode_suspended_ = true;
+  UpdateKeepAliveAndTrayIcon();
+}
+
+void BackgroundModeManager::ResumeBackgroundMode() {
+  background_mode_suspended_ = false;
+  UpdateKeepAliveAndTrayIcon();
+}
+
+void BackgroundModeManager::UpdateKeepAliveAndTrayIcon() {
+  if (in_background_mode_ && !background_mode_suspended_) {
+    if (!keeping_alive_) {
+      keeping_alive_ = true;
+      chrome::StartKeepAlive();
+    }
+    CreateStatusTrayIcon();
+    return;
+  }
+
+  RemoveStatusTrayIcon();
+  if (keeping_alive_) {
+    keeping_alive_ = false;
+    chrome::EndKeepAlive();
+  }
+}
+
+void BackgroundModeManager::OnBrowserAdded(Browser* browser) {
+  ResumeBackgroundMode();
 }
 
 int BackgroundModeManager::GetBackgroundAppCount() const {
@@ -584,9 +612,10 @@ void BackgroundModeManager::OnBackgroundAppInstalled(
   if (!IsBackgroundModePrefEnabled())
     return;
 
-  // Check if we need a status tray icon and make one if we do (needed so we
-  // can display the app-installed notification below).
-  CreateStatusTrayIcon();
+  // Ensure we have a tray icon (needed so we can display the app-installed
+  // notification below).
+  EnableBackgroundMode();
+  ResumeBackgroundMode();
 
   // Notify the user that a background app has been installed.
   if (extension) {  // NULL when called by unit tests.
@@ -640,11 +669,8 @@ void BackgroundModeManager::CreateStatusTrayIcon() {
 }
 
 void BackgroundModeManager::UpdateStatusTrayIconContextMenu() {
-  // If no status icon exists, it's either because one wasn't created when
-  // it should have been which can happen when extensions load after the
-  // profile has already been registered with the background mode manager.
-  if (in_background_mode_ && !status_icon_)
-     CreateStatusTrayIcon();
+  // Ensure we have a tray icon if appropriate.
+  UpdateKeepAliveAndTrayIcon();
 
   // If we don't have a status icon or one could not be created succesfully,
   // then no need to continue the update.

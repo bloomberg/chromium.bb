@@ -53,9 +53,13 @@ void AttemptExit();
 void ExitCleanly();
 #endif
 
+// Closes all browsers and if successful, quits.
+void CloseAllBrowsersAndQuit();
+
 // Closes all browsers. If the session is ending the windows are closed
 // directly. Otherwise the windows are closed by way of posting a WM_CLOSE
-// message.
+// message. This will quit the application if there is nothing other than
+// browser windows keeping it alive or the application is quitting.
 void CloseAllBrowsers();
 
 // Begins shutdown of the application when the desktop session is ending.

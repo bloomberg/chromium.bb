@@ -5,6 +5,7 @@
 #include "chrome/browser/lifetime/browser_close_manager.h"
 
 #include "base/command_line.h"
+#include "chrome/browser/background/background_mode_manager.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/download/download_service.h"
@@ -32,6 +33,8 @@ void BrowserCloseManager::StartClosingBrowsers() {
   if (browser_shutdown::GetShutdownType() == browser_shutdown::END_SESSION ||
       CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableBatchedShutdown)) {
+    // Tell everyone that we are shutting down.
+    browser_shutdown::SetTryingToQuit(true);
     CloseBrowsers();
     return;
   }
@@ -123,14 +126,17 @@ void BrowserCloseManager::OnReportDownloadsCancellable(bool proceed) {
 }
 
 void BrowserCloseManager::CloseBrowsers() {
-  // Tell everyone that we are shutting down.
-  browser_shutdown::SetTryingToQuit(true);
-
 #if defined(ENABLE_SESSION_SERVICE)
   // Before we close the browsers shutdown all session services. That way an
   // exit can restore all browsers open before exiting.
   ProfileManager::ShutdownSessionServices();
 #endif
+  if (!browser_shutdown::IsTryingToQuit()) {
+    BackgroundModeManager* background_mode_manager =
+        g_browser_process->background_mode_manager();
+    if (background_mode_manager)
+      background_mode_manager->SuspendBackgroundMode();
+  }
 
   bool session_ending =
       browser_shutdown::GetShutdownType() == browser_shutdown::END_SESSION;

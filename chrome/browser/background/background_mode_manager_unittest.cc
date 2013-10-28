@@ -38,7 +38,9 @@ class TestBackgroundModeManager : public BackgroundModeManager {
         app_count_(0),
         profile_app_count_(0),
         have_status_tray_(false),
-        launch_on_startup_(false) {}
+        launch_on_startup_(false) {
+    ResumeBackgroundMode();
+  }
   virtual void EnableLaunchOnStartup(bool launch) OVERRIDE {
     launch_on_startup_ = launch;
   }
@@ -84,6 +86,13 @@ static void AssertBackgroundModeInactive(
   EXPECT_FALSE(manager.IsLaunchOnStartup());
 }
 
+static void AssertBackgroundModeSuspended(
+    const TestBackgroundModeManager& manager) {
+  EXPECT_FALSE(chrome::WillKeepAlive());
+  EXPECT_FALSE(manager.HaveStatusTray());
+  EXPECT_TRUE(manager.IsLaunchOnStartup());
+}
+
 TEST_F(BackgroundModeManagerTest, BackgroundAppLoadUnload) {
   TestingProfile* profile = profile_manager_.CreateTestingProfile("p1");
   TestBackgroundModeManager manager(
@@ -97,10 +106,24 @@ TEST_F(BackgroundModeManagerTest, BackgroundAppLoadUnload) {
   manager.OnApplicationListChanged(profile);
   AssertBackgroundModeActive(manager);
 
+  manager.SuspendBackgroundMode();
+  AssertBackgroundModeSuspended(manager);
+  manager.ResumeBackgroundMode();
+
   // Mimic app unload.
   manager.SetBackgroundAppCount(0);
   manager.OnApplicationListChanged(profile);
   AssertBackgroundModeInactive(manager);
+
+  manager.SuspendBackgroundMode();
+  AssertBackgroundModeInactive(manager);
+
+  // Mimic app load while suspended, e.g. from sync. This should enable and
+  // resume background mode.
+  manager.OnBackgroundAppInstalled(NULL);
+  manager.SetBackgroundAppCount(1);
+  manager.OnApplicationListChanged(profile);
+  AssertBackgroundModeActive(manager);
 }
 
 // App installs while background mode is disabled should do nothing.
