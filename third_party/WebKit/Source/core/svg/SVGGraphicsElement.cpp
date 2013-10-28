@@ -166,9 +166,14 @@ SVGElement* SVGGraphicsElement::farthestViewportElement() const
     return SVGTransformable::farthestViewportElement(this);
 }
 
-SVGRect SVGGraphicsElement::getBBox(StyleUpdateStrategy styleUpdateStrategy)
+SVGRect SVGGraphicsElement::getBBox()
 {
-    return SVGTransformable::getBBox(this, styleUpdateStrategy);
+    return SVGTransformable::getBBox(this);
+}
+
+SVGRect SVGGraphicsElement::getStrokeBBox()
+{
+    return SVGTransformable::getStrokeBBox(this);
 }
 
 RenderObject* SVGGraphicsElement::createRenderer(RenderStyle*)

@@ -571,10 +571,10 @@ const HashSet<SVGElementInstance*>& SVGElement::instancesForElement() const
     return svgRareData()->elementInstances();
 }
 
-bool SVGElement::getBoundingBox(FloatRect& rect, SVGLocatable::StyleUpdateStrategy styleUpdateStrategy)
+bool SVGElement::getBoundingBox(FloatRect& rect)
 {
     if (isSVGGraphicsElement()) {
-        rect = toSVGGraphicsElement(this)->getBBox(styleUpdateStrategy);
+        rect = toSVGGraphicsElement(this)->getBBox();
         return true;
     }
     return false;

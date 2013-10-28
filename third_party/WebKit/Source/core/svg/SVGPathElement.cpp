@@ -385,10 +385,9 @@ void SVGPathElement::pathSegListChanged(SVGPathSegRole role, ListModification li
     RenderSVGResource::markForLayoutAndParentResourceInvalidation(renderer);
 }
 
-SVGRect SVGPathElement::getBBox(StyleUpdateStrategy styleUpdateStrategy)
+SVGRect SVGPathElement::getBBox()
 {
-    if (styleUpdateStrategy == AllowStyleUpdate)
-        this->document().updateLayoutIgnorePendingStylesheets();
+    this->document().updateLayoutIgnorePendingStylesheets();
 
     RenderSVGPath* renderer = toRenderSVGPath(this->renderer());
 

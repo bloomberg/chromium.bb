@@ -97,7 +97,7 @@ public:
 
     const HashSet<SVGElementInstance*>& instancesForElement() const;
 
-    bool getBoundingBox(FloatRect&, SVGLocatable::StyleUpdateStrategy = SVGLocatable::AllowStyleUpdate);
+    bool getBoundingBox(FloatRect&);
 
     void setCursorElement(SVGCursorElement*);
     void cursorElementRemoved();

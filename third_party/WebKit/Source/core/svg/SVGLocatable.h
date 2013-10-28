@@ -40,7 +40,8 @@ public:
 
     enum StyleUpdateStrategy { AllowStyleUpdate, DisallowStyleUpdate };
 
-    virtual SVGRect getBBox(StyleUpdateStrategy) = 0;
+    virtual SVGRect getBBox() = 0;
+    virtual SVGRect getStrokeBBox() = 0;
     virtual AffineTransform getCTM(StyleUpdateStrategy) = 0;
     virtual AffineTransform getScreenCTM(StyleUpdateStrategy) = 0;
     AffineTransform getTransformToElement(SVGElement*, ExceptionState&, StyleUpdateStrategy = AllowStyleUpdate);
@@ -56,7 +57,8 @@ public:
 protected:
     virtual AffineTransform localCoordinateSpaceTransform(SVGLocatable::CTMScope) const { return AffineTransform(); }
 
-    static SVGRect getBBox(SVGElement*, StyleUpdateStrategy);
+    static SVGRect getBBox(SVGElement*);
+    static SVGRect getStrokeBBox(SVGElement*);
     static AffineTransform computeCTM(SVGElement*, CTMScope, StyleUpdateStrategy);
 };
 
