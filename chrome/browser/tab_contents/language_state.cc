@@ -4,9 +4,11 @@
 
 #include "chrome/browser/tab_contents/language_state.h"
 
+#include "chrome/browser/tab_contents/language_state_observer.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/web_contents.h"
 
 using content::NavigationController;
 
@@ -15,7 +17,9 @@ LanguageState::LanguageState(NavigationController* nav_controller)
       page_needs_translation_(false),
       translation_pending_(false),
       translation_declined_(false),
-      in_page_navigation_(false) {
+      in_page_navigation_(false),
+      translate_enabled_(false),
+      observer_(NULL) {
 }
 
 LanguageState::~LanguageState() {
@@ -44,6 +48,8 @@ void LanguageState::DidNavigate(
 
   translation_pending_ = false;
   translation_declined_ = false;
+
+  SetTranslateEnabled(false);
 }
 
 void LanguageState::LanguageDetermined(const std::string& page_language,
@@ -83,4 +89,20 @@ std::string LanguageState::AutoTranslateTo() const {
   }
 
   return std::string();
+}
+
+void LanguageState::SetTranslateEnabled(bool value) {
+  if (translate_enabled_ == value)
+    return;
+
+  translate_enabled_ = value;
+  if (observer_) {
+    content::WebContents* web_contents =
+        navigation_controller_->GetWebContents();
+    observer_->OnTranslateEnabledChanged(web_contents);
+  }
+}
+
+bool LanguageState::HasLanguageChanged() const {
+  return original_lang_ != prev_original_lang_;
 }

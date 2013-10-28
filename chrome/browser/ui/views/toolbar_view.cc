@@ -32,6 +32,7 @@
 #include "chrome/browser/ui/views/home_button.h"
 #include "chrome/browser/ui/views/location_bar/page_action_image_view.h"
 #include "chrome/browser/ui/views/location_bar/star_view.h"
+#include "chrome/browser/ui/views/location_bar/translate_icon_view.h"
 #include "chrome/browser/ui/views/outdated_upgrade_bubble_view.h"
 #include "chrome/browser/ui/views/wrench_menu.h"
 #include "chrome/browser/ui/views/wrench_toolbar_button.h"
@@ -286,6 +287,13 @@ views::View* ToolbarView::GetBookmarkBubbleAnchor() {
   views::View* star_view = location_bar()->star_view();
   if (star_view && star_view->visible())
     return star_view;
+  return app_menu_;
+}
+
+views::View* ToolbarView::GetTranslateBubbleAnchor() {
+  views::View* translate_icon_view = location_bar()->translate_icon_view();
+  if (translate_icon_view)
+    return translate_icon_view;
   return app_menu_;
 }
 

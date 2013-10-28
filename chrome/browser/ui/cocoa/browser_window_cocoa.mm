@@ -493,6 +493,11 @@ void BrowserWindowCocoa::ShowBookmarkBubble(const GURL& url,
                       alreadyBookmarked:(already_bookmarked ? YES : NO)];
 }
 
+void BrowserWindowCocoa::ShowTranslateBubble(
+      content::WebContents* contents,
+      TranslateBubbleModel::ViewState view_state) {
+}
+
 #if defined(ENABLE_ONE_CLICK_SIGNIN)
 void BrowserWindowCocoa::ShowOneClickSigninBubble(
     OneClickSigninBubbleType type,

@@ -11,13 +11,6 @@
 
 // Used when sending a notification about a page that has been translated.
 struct PageTranslatedDetails {
-  PageTranslatedDetails(const std::string& in_source_language,
-      const std::string& in_target_language,
-      TranslateErrors::Type in_error_type)
-      : source_language(in_source_language),
-        target_language(in_target_language),
-        error_type(in_error_type) { }
-
   std::string source_language;
   std::string target_language;
   TranslateErrors::Type error_type;

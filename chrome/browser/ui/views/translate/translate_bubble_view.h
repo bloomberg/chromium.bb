@@ -48,6 +48,11 @@ class TranslateBubbleView : public views::BubbleDelegateView,
   // If true, the Translate bubble is being shown.
   static bool IsShowing();
 
+  // Returns the bubble view currently shown. This may return NULL.
+  static TranslateBubbleView* GetCurrentBubble();
+
+  TranslateBubbleModel* model() { return model_.get(); }
+
   // views::BubbleDelegateView methods.
   virtual void Init() OVERRIDE;
   virtual void ButtonPressed(views::Button* sender,

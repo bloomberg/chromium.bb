@@ -5,6 +5,8 @@
 #ifndef CHROME_COMMON_TRANSLATE_TRANSLATE_ERRORS_H_
 #define CHROME_COMMON_TRANSLATE_TRANSLATE_ERRORS_H_
 
+#include "base/basictypes.h"
+
 // This file consolidates all the error types for translation of a page.
 // Note: TranslateErrors is used for UMA and translate_internals.js.
 // Assigned numbers should be changed because the number is binded to UMA value.

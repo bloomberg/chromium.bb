@@ -9,8 +9,10 @@
 LanguageComboboxModel::LanguageComboboxModel(
     int default_index,
     TranslateBubbleModel* model)
-    : default_index_(default_index),
+    : default_index_(default_index < 0 ? 0 : default_index),
       model_(model) {
+  // view::Combobox can't treate an negative index, but |default_index| can be
+  // negative when, for example, the page's language can't be detected.
 }
 
 LanguageComboboxModel::~LanguageComboboxModel() {

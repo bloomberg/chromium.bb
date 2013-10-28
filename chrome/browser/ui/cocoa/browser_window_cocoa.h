@@ -100,6 +100,9 @@ class BrowserWindowCocoa :
   virtual void ShowUpdateChromeDialog() OVERRIDE;
   virtual void ShowBookmarkBubble(const GURL& url,
                                   bool already_bookmarked) OVERRIDE;
+  virtual void ShowTranslateBubble(
+      content::WebContents* contents,
+      TranslateBubbleModel::ViewState view_state) OVERRIDE;
 #if defined(ENABLE_ONE_CLICK_SIGNIN)
   virtual void ShowOneClickSigninBubble(
       OneClickSigninBubbleType type,

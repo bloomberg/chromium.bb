@@ -536,6 +536,9 @@ void BrowserCommandController::ExecuteCommandWithDisposition(
     case IDC_PRINT_TO_DESTINATION:
       PrintToDestination(browser_);
       break;
+    case IDC_TRANSLATE_PAGE:
+      Translate(browser_);
+      break;
     case IDC_ENCODING_AUTO_DETECT:
       browser_->ToggleEncodingAutoDetect();
       break;

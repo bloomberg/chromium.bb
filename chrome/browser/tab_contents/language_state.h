@@ -9,9 +9,12 @@
 
 #include "base/basictypes.h"
 
+class LanguageStateObserver;
+
 namespace content {
-class NavigationController;
 struct LoadCommittedDetails;
+class NavigationController;
+class WebContents;
 }
 
 // This class holds the language state of the current page.
@@ -71,6 +74,17 @@ class LanguageState {
   // navigation.
   bool in_page_navigation() const { return in_page_navigation_; }
 
+  // Whether the translate is enabled. This value is supposed to be used for the
+  // Translate icon on the Omnibox.
+  bool translate_enabled() const { return translate_enabled_; }
+  void SetTranslateEnabled(bool value);
+
+  // Whether the current page's language is different from the previous
+  // language.
+  bool HasLanguageChanged() const;
+
+  void set_observer(LanguageStateObserver* observer) { observer_ = observer; }
+
  private:
   // The languages this page is in. Note that current_lang_ is different from
   // original_lang_ when the page has been translated.
@@ -108,6 +122,11 @@ class LanguageState {
 
   // Whether the current navigation is a fragment navigation (in page).
   bool in_page_navigation_;
+
+  // Whether the Translate is enabled.
+  bool translate_enabled_;
+
+  LanguageStateObserver* observer_;
 
   DISALLOW_COPY_AND_ASSIGN(LanguageState);
 };

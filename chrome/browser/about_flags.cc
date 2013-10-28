@@ -1831,6 +1831,13 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(chromeos::switches::kEnableIMEModeIndicator)
   },
 #endif
+  {
+    "enable-translate-new-ux",
+    IDS_FLAGS_ENABLE_TRANSLATE_NEW_UX_NAME,
+    IDS_FLAGS_ENABLE_TRANSLATE_NEW_UX_DESCRIPTION,
+    kOsDesktop,
+    SINGLE_VALUE_TYPE(switches::kEnableTranslateNewUX)
+  },
 };
 
 const Experiment* experiments = kExperiments;

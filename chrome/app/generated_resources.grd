@@ -6896,6 +6896,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Always send click events immediate upon a tap, even when it's part of a double-tap gesture.  This speeds up navigation and other tap actions by 300ms on most pages, but means links and buttons must be avoided when double tapping to zoom.
         </message>
       </if>
+      <message name="IDS_FLAGS_ENABLE_TRANSLATE_NEW_UX_NAME" desc="Name of the flag to enable the new Translate UX.">
+        Enable the new Translate UX.
+      </message>
+      <message name="IDS_FLAGS_ENABLE_TRANSLATE_NEW_UX_DESCRIPTION" desc="Description for the flag to enable the new Translate UX.">
+        Enable the new Translate bubble UX is offered instead of the infobar.
+      </message>
 
       <!-- Crashes -->
       <message name="IDS_CRASHES_TITLE" desc="Title for the chrome://crashes page.">
@@ -7452,6 +7458,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_TOOLTIP_MIC_SEARCH" desc="The tooltip for search-by-voice button">
         Search by voice
+      </message>
+      <message name="IDS_TOOLTIP_TRANSLATE" desc="The tooltip for translate">
+        Translate this page
       </message>
       <message name="IDS_TOOLTIP_ZOOM" desc="The tooltip for zoom icon">
         Zoom: <ph name="VALUE">$1<ex>100</ex></ph>%

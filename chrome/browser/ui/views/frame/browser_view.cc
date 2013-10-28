@@ -33,6 +33,7 @@
 #include "chrome/browser/speech/tts_controller.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/themes/theme_service_factory.h"
+#include "chrome/browser/translate/translate_tab_helper.h"
 #include "chrome/browser/ui/app_modal_dialogs/app_modal_dialog.h"
 #include "chrome/browser/ui/app_modal_dialogs/app_modal_dialog_queue.h"
 #include "chrome/browser/ui/bookmarks/bookmark_bar_constants.h"
@@ -81,6 +82,7 @@
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/toolbar_view.h"
+#include "chrome/browser/ui/views/translate/translate_bubble_view.h"
 #include "chrome/browser/ui/views/update_recommended_message_box.h"
 #include "chrome/browser/ui/views/website_settings/website_settings_popup_view.h"
 #include "chrome/browser/ui/window_sizer/window_sizer.h"
@@ -1175,6 +1177,18 @@ void BrowserView::ShowBookmarkBubble(const GURL& url, bool already_bookmarked) {
 
 void BrowserView::ShowBookmarkPrompt() {
   GetLocationBarView()->ShowBookmarkPrompt();
+}
+
+void BrowserView::ShowTranslateBubble(
+    content::WebContents* web_contents,
+    TranslateBubbleModel::ViewState view_state) {
+  TranslateTabHelper* translate_tab_helper =
+      TranslateTabHelper::FromWebContents(web_contents);
+  LanguageState& language_state = translate_tab_helper->language_state();
+  language_state.SetTranslateEnabled(true);
+
+  TranslateBubbleView::ShowBubble(GetToolbarView()->GetTranslateBubbleAnchor(),
+                                  web_contents, view_state, browser_.get());
 }
 
 #if defined(ENABLE_ONE_CLICK_SIGNIN)

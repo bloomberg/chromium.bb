@@ -46,6 +46,7 @@
 
 class BrowserContentSettingBubbleModelDelegate;
 class BrowserInstantController;
+class BrowserLanguageStateObserver;
 class BrowserSyncedWindowDelegate;
 class BrowserToolbarModelDelegate;
 class BrowserTabRestoreServiceDelegate;
@@ -937,6 +938,8 @@ class Browser : public TabStripModelObserver,
 
   // The following factory is used to close the frame at a later time.
   base::WeakPtrFactory<Browser> weak_factory_;
+
+  scoped_ptr<BrowserLanguageStateObserver> language_state_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(Browser);
 };

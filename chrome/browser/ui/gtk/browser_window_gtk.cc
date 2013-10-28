@@ -1029,6 +1029,11 @@ void BrowserWindowGtk::ShowBookmarkBubble(const GURL& url,
   toolbar_->GetLocationBarView()->ShowStarBubble(url, !already_bookmarked);
 }
 
+void BrowserWindowGtk::ShowTranslateBubble(
+    content::WebContents* contents,
+    TranslateBubbleModel::ViewState view_state) {
+}
+
 #if defined(ENABLE_ONE_CLICK_SIGNIN)
 void BrowserWindowGtk::ShowOneClickSigninBubble(
     OneClickSigninBubbleType type,

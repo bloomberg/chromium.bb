@@ -2427,6 +2427,7 @@
         'browser/tab_contents/background_contents.h',
         'browser/tab_contents/language_state.cc',
         'browser/tab_contents/language_state.h',
+        'browser/tab_contents/language_state_observer.h',
         'browser/tab_contents/navigation_metrics_recorder.cc',
         'browser/tab_contents/navigation_metrics_recorder.h',
         'browser/tab_contents/render_view_context_menu.cc',

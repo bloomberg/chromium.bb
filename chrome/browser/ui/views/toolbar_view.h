@@ -76,6 +76,9 @@ class ToolbarView : public views::AccessiblePaneView,
   // Returns the view to which the bookmark bubble should be anchored.
   views::View* GetBookmarkBubbleAnchor();
 
+  // Returns the view to which the Translate bubble should be anchored.
+  views::View* GetTranslateBubbleAnchor();
+
   // Accessors...
   Browser* browser() const { return browser_; }
   BrowserActionsContainer* browser_actions() const { return browser_actions_; }

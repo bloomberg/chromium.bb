@@ -91,7 +91,6 @@ size_t TranslateUIDelegate::GetOriginalLanguageIndex() const {
 }
 
 void TranslateUIDelegate::SetOriginalLanguageIndex(size_t language_index) {
-  DCHECK_LT(language_index, GetNumberOfLanguages());
   original_language_index_ = language_index;
 }
 
@@ -167,10 +166,15 @@ bool TranslateUIDelegate::IsLanguageBlocked() {
 }
 
 void TranslateUIDelegate::SetLanguageBlocked(bool value) {
-  if (value)
+  if (value) {
     prefs_->BlockLanguage(GetOriginalLanguageCode());
-  else
+    TranslateTabHelper* translate_tab_helper =
+        TranslateTabHelper::FromWebContents(web_contents());
+    DCHECK(translate_tab_helper);
+    translate_tab_helper->language_state().SetTranslateEnabled(false);
+  } else {
     prefs_->UnblockLanguage(GetOriginalLanguageCode());
+  }
 
   UMA_HISTOGRAM_BOOLEAN(kNeverTranslateLang, true);
 }
@@ -185,10 +189,15 @@ void TranslateUIDelegate::SetSiteBlacklist(bool value) {
   if (host.empty())
     return;
 
-  if (value)
+  if (value) {
     prefs_->BlacklistSite(host);
-  else
+    TranslateTabHelper* translate_tab_helper =
+        TranslateTabHelper::FromWebContents(web_contents());
+    DCHECK(translate_tab_helper);
+    translate_tab_helper->language_state().SetTranslateEnabled(false);
+  } else {
     prefs_->RemoveSiteFromBlacklist(host);
+  }
 
   UMA_HISTOGRAM_BOOLEAN(kNeverTranslateSite, true);
 }

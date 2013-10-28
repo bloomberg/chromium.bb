@@ -25,6 +25,7 @@
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/browser/translate/translate_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_instant_controller.h"
@@ -49,11 +50,13 @@
 #include "chrome/browser/ui/views/location_bar/script_bubble_icon_view.h"
 #include "chrome/browser/ui/views/location_bar/selected_keyword_view.h"
 #include "chrome/browser/ui/views/location_bar/star_view.h"
+#include "chrome/browser/ui/views/location_bar/translate_icon_view.h"
 #include "chrome/browser/ui/views/location_bar/zoom_bubble_view.h"
 #include "chrome/browser/ui/views/location_bar/zoom_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_view_views.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_views.h"
 #include "chrome/browser/ui/zoom/zoom_controller.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/feature_switch.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_service.h"
@@ -182,6 +185,7 @@ LocationBarView::LocationBarView(Browser* browser,
       open_pdf_in_reader_view_(NULL),
       script_bubble_icon_view_(NULL),
       star_view_(NULL),
+      translate_icon_view_(NULL),
       is_popup_mode_(is_popup_mode),
       show_focus_rect_(false),
       template_url_service_(NULL),
@@ -358,6 +362,13 @@ void LocationBarView::Init() {
   star_view_ = new StarView(command_updater());
   star_view_->SetVisible(false);
   AddChildView(star_view_);
+
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableTranslateNewUX)) {
+    translate_icon_view_ = new TranslateIconView(command_updater());
+    translate_icon_view_->SetVisible(false);
+    AddChildView(translate_icon_view_);
+  }
 
   registrar_.Add(this,
                  chrome::NOTIFICATION_EXTENSION_LOCATION_BAR_UPDATED,
@@ -698,6 +709,12 @@ void LocationBarView::Layout() {
         vertical_edge_thickness(), location_height,
         GetBuiltInHorizontalPaddingForChildViews(), star_view_);
   }
+  if (translate_icon_view_ && translate_icon_view_->visible()) {
+    trailing_decorations.AddDecoration(
+        vertical_edge_thickness(), location_height,
+        GetBuiltInHorizontalPaddingForChildViews(),
+        translate_icon_view_);
+  }
   if (script_bubble_icon_view_ && script_bubble_icon_view_->visible()) {
     trailing_decorations.AddDecoration(
         vertical_edge_thickness(), location_height,
@@ -980,6 +997,7 @@ void LocationBarView::Update(const WebContents* contents) {
   RefreshZoomView();
   RefreshPageActionViews();
   RefreshScriptBubble();
+  RefreshTranslateIcon();
   open_pdf_in_reader_view_->Update(
       GetToolbarModel()->input_in_progress() ? NULL : GetWebContents());
 
@@ -1440,6 +1458,23 @@ void LocationBarView::RefreshZoomView() {
   ZoomController* zoom_controller =
       ZoomController::FromWebContents(web_contents);
   zoom_view_->Update(zoom_controller);
+}
+
+void LocationBarView::RefreshTranslateIcon() {
+  if (!translate_icon_view_)
+    return;
+
+  WebContents* web_contents = GetWebContents();
+  if (!web_contents)
+    return;
+
+  TranslateTabHelper* translate_tab_helper =
+      TranslateTabHelper::FromWebContents(web_contents);
+  bool enabled =
+      translate_tab_helper->language_state().translate_enabled();
+
+  command_updater()->UpdateCommandEnabled(IDC_TRANSLATE_PAGE, enabled);
+  translate_icon_view_->SetVisible(enabled);
 }
 
 #if defined(OS_WIN) && !defined(USE_AURA)

@@ -1035,6 +1035,7 @@
       <structure type="chrome_scaled_image" name="IDR_TOOLS_BAR_LOW" file="common/browser_tools_bar_low.png" />
       <structure type="chrome_scaled_image" name="IDR_TOOLS_BAR_MEDIUM" file="common/browser_tools_bar_medium.png" />
       <structure type="chrome_scaled_image" name="IDR_TOOLS_BAR_HIGH" file="common/browser_tools_bar_high.png" />
+      <structure type="chrome_scaled_image" name="IDR_TRANSLATE" file="translate.png" />
       <structure type="chrome_scaled_image" name="IDR_UP_ARROW" file="common/up_arrow.png" />
       <if expr="not is_macosx and not is_ios and not pp_ifdef('toolkit_views')">
         <structure type="chrome_scaled_image" name="IDR_UPDATE_BADGE" file="update_badge.png" />

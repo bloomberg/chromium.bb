@@ -160,6 +160,11 @@ bool TranslateBubbleView::IsShowing() {
   return translate_bubble_view_ != NULL;
 }
 
+// static
+TranslateBubbleView* TranslateBubbleView::GetCurrentBubble() {
+  return translate_bubble_view_;
+}
+
 void TranslateBubbleView::Init() {
   SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical,
                                         0, 0, 0));
@@ -187,8 +192,10 @@ void TranslateBubbleView::ButtonPressed(views::Button* sender,
 }
 
 void TranslateBubbleView::WindowClosing() {
-  if (!translate_executed_)
+  if (!translate_executed_ &&
+      (browser_ == NULL || !browser_->IsAttemptingToCloseBrowser())) {
     model_->TranslationDeclined();
+  }
 
   // We have to reset |translate_bubble_view_| here, not in our destructor,
   // because we'll be destroyed asynchronously and the shown state will be

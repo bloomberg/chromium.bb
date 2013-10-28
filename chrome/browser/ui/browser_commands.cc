@@ -30,6 +30,7 @@
 #include "chrome/browser/sessions/tab_restore_service.h"
 #include "chrome/browser/sessions/tab_restore_service_delegate.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
+#include "chrome/browser/translate/translate_tab_helper.h"
 #include "chrome/browser/ui/bookmarks/bookmark_prompt_controller.h"
 #include "chrome/browser/ui/bookmarks/bookmark_utils.h"
 #include "chrome/browser/ui/browser.h"
@@ -49,6 +50,7 @@
 #include "chrome/browser/ui/status_bubble.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/translate/translate_bubble_model.h"
 #include "chrome/browser/ui/webui/ntp/core_app_launcher_handler.h"
 #include "chrome/browser/upgrade_detector.h"
 #include "chrome/browser/web_applications/web_app.h"
@@ -677,6 +679,26 @@ void BookmarkAllTabs(Browser* browser) {
 bool CanBookmarkAllTabs(const Browser* browser) {
   return browser->tab_strip_model()->count() > 1 &&
              CanBookmarkCurrentPage(browser);
+}
+
+void Translate(Browser* browser) {
+  if (!browser->window()->IsActive())
+    return;
+
+  WebContents* web_contents =
+      browser->tab_strip_model()->GetActiveWebContents();
+  TranslateTabHelper* translate_tab_helper =
+      TranslateTabHelper::FromWebContents(web_contents);
+
+  TranslateBubbleModel::ViewState view_state =
+      TranslateBubbleModel::VIEW_STATE_BEFORE_TRANSLATE;
+  if (translate_tab_helper) {
+    if (translate_tab_helper->language_state().translation_pending())
+      view_state = TranslateBubbleModel::VIEW_STATE_TRANSLATING;
+    else if (translate_tab_helper->language_state().IsPageTranslated())
+      view_state = TranslateBubbleModel::VIEW_STATE_AFTER_TRANSLATE;
+  }
+  browser->window()->ShowTranslateBubble(web_contents, view_state);
 }
 
 void TogglePagePinnedToStartScreen(Browser* browser) {

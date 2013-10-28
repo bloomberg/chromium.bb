@@ -6,6 +6,7 @@
 #include <set>
 #include <vector>
 
+#include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_change_registrar.h"
 #include "base/prefs/pref_service.h"
@@ -25,6 +26,10 @@
 #include "chrome/browser/translate/translate_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/translate/translate_bubble_factory.h"
+#include "chrome/browser/ui/translate/translate_bubble_model.h"
+#include "chrome/browser/ui/translate/translate_bubble_model_impl.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/translate/language_detection_details.h"
@@ -322,6 +327,42 @@ class TranslateManagerBrowserTest : public ChromeRenderViewHostTestHarness,
   std::set<InfoBarDelegate*> removed_infobars_;
 
   DISALLOW_COPY_AND_ASSIGN(TranslateManagerBrowserTest);
+};
+
+class MockTranslateBubbleFactory : public TranslateBubbleFactory {
+ public:
+  MockTranslateBubbleFactory() {
+  }
+
+  virtual void ShowImplementation(
+      BrowserWindow* window,
+      content::WebContents* web_contents,
+      TranslateBubbleModel::ViewState view_state) OVERRIDE {
+    if (model_) {
+      model_->SetViewState(view_state);
+      return;
+    }
+
+    TranslateTabHelper* translate_tab_helper =
+        TranslateTabHelper::FromWebContents(web_contents);
+    std::string source_language =
+        translate_tab_helper->language_state().original_language();
+    std::string target_language = TranslateManager::GetLanguageCode(
+        g_browser_process->GetApplicationLocale());
+    scoped_ptr<TranslateUIDelegate> ui_delegate(
+        new TranslateUIDelegate(web_contents,
+                                source_language,
+                                target_language));
+    model_.reset(
+        new TranslateBubbleModelImpl(view_state, ui_delegate.Pass()));
+  }
+
+  TranslateBubbleModel* model() { return model_.get(); }
+
+ private:
+  scoped_ptr<TranslateBubbleModel> model_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockTranslateBubbleFactory);
 };
 
 namespace {
@@ -1409,6 +1450,115 @@ TEST_F(TranslateManagerBrowserTest, DownloadsAndHistoryNotTranslated) {
   ASSERT_FALSE(TranslateManager::IsTranslatableURL(
       GURL(chrome::kChromeUIHistoryURL)));
 }
+
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+
+TEST_F(TranslateManagerBrowserTest, BubbleNormalTranslate) {
+  // Prepare for the bubble
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  command_line->AppendSwitch(switches::kEnableTranslateNewUX);
+  MockTranslateBubbleFactory* factory = new MockTranslateBubbleFactory;
+  scoped_ptr<TranslateBubbleFactory> factory_ptr(factory);
+  TranslateBubbleFactory::SetFactory(factory);
+
+  SimulateNavigation(GURL("http://www.google.fr"), "fr", true);
+
+  // Check the bubble exists instead of the infobar.
+  TranslateInfoBarDelegate* infobar = GetTranslateInfoBar();
+  ASSERT_TRUE(infobar == NULL);
+  TranslateBubbleModel* bubble = factory->model();
+  ASSERT_TRUE(bubble != NULL);
+  EXPECT_EQ(TranslateBubbleModel::VIEW_STATE_BEFORE_TRANSLATE,
+            bubble->GetViewState());
+
+  // Simulate clicking translate.
+  process()->sink().ClearMessages();
+  bubble->Translate();
+
+  // Check the bubble shows "Translating...".
+  bubble = factory->model();
+  ASSERT_TRUE(bubble != NULL);
+  EXPECT_EQ(TranslateBubbleModel::VIEW_STATE_TRANSLATING,
+            bubble->GetViewState());
+
+  // Simulate the translate script being retrieved (it only needs to be done
+  // once in the test as it is cached).
+  SimulateTranslateScriptURLFetch(true);
+
+  // Simulate the render notifying the translation has been done.
+  SimulateOnPageTranslated("fr", "en");
+
+  // Check the bubble shows "Translated."
+  bubble = factory->model();
+  ASSERT_TRUE(bubble != NULL);
+  EXPECT_EQ(TranslateBubbleModel::VIEW_STATE_AFTER_TRANSLATE,
+            bubble->GetViewState());
+}
+
+TEST_F(TranslateManagerBrowserTest, BubbleTranslateScriptNotAvailable) {
+  // Prepare for the bubble
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  command_line->AppendSwitch(switches::kEnableTranslateNewUX);
+  MockTranslateBubbleFactory* factory = new MockTranslateBubbleFactory;
+  scoped_ptr<TranslateBubbleFactory> factory_ptr(factory);
+  TranslateBubbleFactory::SetFactory(factory);
+
+  SimulateNavigation(GURL("http://www.google.fr"), "fr", true);
+
+  // Check the bubble exists instead of the infobar.
+  TranslateInfoBarDelegate* infobar = GetTranslateInfoBar();
+  ASSERT_TRUE(infobar == NULL);
+  TranslateBubbleModel* bubble = factory->model();
+  ASSERT_TRUE(bubble != NULL);
+  EXPECT_EQ(TranslateBubbleModel::VIEW_STATE_BEFORE_TRANSLATE,
+            bubble->GetViewState());
+
+  // Simulate clicking translate.
+  process()->sink().ClearMessages();
+  bubble->Translate();
+  SimulateTranslateScriptURLFetch(false);
+
+  // We should not have sent any message to translate to the renderer.
+  EXPECT_FALSE(GetTranslateMessage(NULL, NULL, NULL));
+
+  // And we should have an error infobar showing.
+  bubble = factory->model();
+  ASSERT_TRUE(bubble != NULL);
+  EXPECT_EQ(TranslateBubbleModel::VIEW_STATE_ERROR,
+            bubble->GetViewState());
+}
+
+TEST_F(TranslateManagerBrowserTest, BubbleUnknownLanguage) {
+  // Prepare for the bubble
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  command_line->AppendSwitch(switches::kEnableTranslateNewUX);
+  MockTranslateBubbleFactory* factory = new MockTranslateBubbleFactory;
+  scoped_ptr<TranslateBubbleFactory> factory_ptr(factory);
+  TranslateBubbleFactory::SetFactory(factory);
+
+  // Simulate navigating to a page ("und" is the string returned by the CLD for
+  // languages it does not recognize).
+  SimulateNavigation(GURL("http://www.google.mys"), "und", true);
+
+  // We should not have a bubble as we don't know the language.
+  ASSERT_TRUE(factory->model() == NULL);
+
+  // Translate the page anyway throught the context menu.
+  scoped_ptr<TestRenderViewContextMenu> menu(
+      TestRenderViewContextMenu::CreateContextMenu(web_contents()));
+  menu->Init();
+  menu->ExecuteCommand(IDC_CONTENT_CONTEXT_TRANSLATE, 0);
+
+  // Check the bubble exists instead of the infobar.
+  TranslateInfoBarDelegate* infobar = GetTranslateInfoBar();
+  ASSERT_TRUE(infobar == NULL);
+  TranslateBubbleModel* bubble = factory->model();
+  ASSERT_TRUE(bubble != NULL);
+  EXPECT_EQ(TranslateBubbleModel::VIEW_STATE_TRANSLATING,
+            bubble->GetViewState());
+}
+
+#endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
 
 // Test is flaky on Win http://crbug.com/166334
 #if defined(OS_WIN)

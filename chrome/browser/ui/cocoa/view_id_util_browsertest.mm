@@ -71,7 +71,8 @@ class ViewIDTest : public InProcessBrowserTest {
           i == VIEW_ID_CONTENTS_SPLIT ||
           i == VIEW_ID_FEEDBACK_BUTTON ||
           i == VIEW_ID_SCRIPT_BUBBLE ||
-          i == VIEW_ID_MIC_SEARCH_BUTTON) {
+          i == VIEW_ID_MIC_SEARCH_BUTTON ||
+          i == VIEW_ID_TRANSLATE_BUTTON) {
         continue;
       }
 

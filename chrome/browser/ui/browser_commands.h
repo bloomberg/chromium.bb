@@ -97,6 +97,7 @@ void BookmarkCurrentPageFromStar(Browser* browser);
 bool CanBookmarkCurrentPage(const Browser* browser);
 void BookmarkAllTabs(Browser* browser);
 bool CanBookmarkAllTabs(const Browser* browser);
+void Translate(Browser* browser);
 void TogglePagePinnedToStartScreen(Browser* browser);
 void SavePage(Browser* browser);
 bool CanSavePage(const Browser* browser);
