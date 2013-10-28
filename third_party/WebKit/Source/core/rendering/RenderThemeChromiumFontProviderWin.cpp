@@ -78,7 +78,7 @@ static float pointsToPixels(float points)
 
 static void getNonClientMetrics(NONCLIENTMETRICS* metrics)
 {
-    static UINT size = (windowsVersion() >= WindowsVista) ?
+    static UINT size = isWindowsVistaOrGreater() ?
         sizeof(NONCLIENTMETRICS) : NONCLIENTMETRICS_SIZE_PRE_VISTA;
     metrics->cbSize = size;
     bool success = !!SystemParametersInfo(SPI_GETNONCLIENTMETRICS, size, metrics, 0);

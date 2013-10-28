@@ -26,54 +26,38 @@
 #include "config.h"
 #include "platform/win/SystemInfo.h"
 
+#if _WIN32_WINNT_WINBLUE
+#include <versionhelpers.h>
+#endif
+
 #include <windows.h>
 
 namespace WebCore {
 
-WindowsVersion windowsVersion(int* major, int* minor)
+#ifndef _WIN32_WINNT_WINBLUE
+static bool IsWindowsVistaOrGreater()
+{
+    OSVERSIONINFOEXW osvi = { };
+    osvi.dwOSVersionInfoSize = sizeof(osvi);
+    osvi.dwMajorVersion = HIBYTE(_WIN32_WINNT_VISTA);
+    osvi.dwMinorVersion = LOBYTE(_WIN32_WINNT_VISTA);
+    DWORDLONG conditoin = 0;
+    VER_SET_CONDITION(conditoin, VER_MAJORVERSION, VER_GREATER_EQUAL);
+    VER_SET_CONDITION(conditoin, VER_MINORVERSION, VER_GREATER_EQUAL);
+    return !!::VerifyVersionInfoW(&osvi, VER_MAJORVERSION | VER_MINORVERSION, conditoin);
+}
+#endif
+
+bool isWindowsVistaOrGreater()
 {
     static bool initialized = false;
-    static WindowsVersion version;
-    static int majorVersion, minorVersion;
+    static bool cachedIsWindowsVistaOrGreater;
 
     if (!initialized) {
         initialized = true;
-        OSVERSIONINFOEX versionInfo;
-        ZeroMemory(&versionInfo, sizeof(versionInfo));
-        versionInfo.dwOSVersionInfoSize = sizeof(versionInfo);
-        GetVersionEx(reinterpret_cast<OSVERSIONINFO*>(&versionInfo));
-        majorVersion = versionInfo.dwMajorVersion;
-        minorVersion = versionInfo.dwMinorVersion;
-
-        if (versionInfo.dwPlatformId == VER_PLATFORM_WIN32s) {
-            version = Windows3_1;
-        } else if (versionInfo.dwPlatformId == VER_PLATFORM_WIN32_WINDOWS) {
-            if (!minorVersion)
-                version = Windows95;
-            else
-                version = (minorVersion == 10) ? Windows98 : WindowsME;
-        } else {
-            if (majorVersion == 5) {
-                if (!minorVersion)
-                    version = Windows2000;
-                else
-                    version = (minorVersion == 1) ? WindowsXP : WindowsServer2003;
-            } else if (majorVersion >= 6) {
-                if (versionInfo.wProductType == VER_NT_WORKSTATION)
-                    version = (majorVersion == 6 && !minorVersion) ? WindowsVista : Windows7;
-                else
-                    version = WindowsServer2008;
-            } else {
-                version = (majorVersion == 4) ? WindowsNT4 : WindowsNT3;
-            }
-        }
+        cachedIsWindowsVistaOrGreater = IsWindowsVistaOrGreater();
     }
-
-    if (major)
-        *major = majorVersion;
-    if (minor)
-        *minor = minorVersion;
-    return version;
+    return cachedIsWindowsVistaOrGreater;
 }
 
 } // namespace WebCore

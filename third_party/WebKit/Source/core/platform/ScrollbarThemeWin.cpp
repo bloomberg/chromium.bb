@@ -72,7 +72,7 @@ int ScrollbarThemeWin::scrollbarThickness(ScrollbarControlSize controlSize)
 
 bool ScrollbarThemeWin::invalidateOnMouseEnterExit()
 {
-    return windowsVersion() >= WindowsVista;
+    return isWindowsVistaOrGreater();
 }
 
 bool ScrollbarThemeWin::shouldSnapBackToDragOrigin(ScrollbarThemeClient* scrollbar, const PlatformMouseEvent& evt)
@@ -145,12 +145,12 @@ int ScrollbarThemeWin::getThemeState(ScrollbarThemeClient* scrollbar, ScrollbarP
     if (scrollbar->pressedPart() == ThumbPart) {
         if (part == ThumbPart)
             return SCRBS_PRESSED;
-        return (windowsVersion() < WindowsVista) ? SCRBS_NORMAL : SCRBS_HOVER;
+        return isWindowsVistaOrGreater() ? SCRBS_HOVER : SCRBS_NORMAL;
     }
     if (!scrollbar->enabled())
         return SCRBS_DISABLED;
     if (scrollbar->hoveredPart() != part || part == BackTrackPart || part == ForwardTrackPart)
-        return (scrollbar->hoveredPart() == NoPart || (windowsVersion() < WindowsVista)) ? SCRBS_NORMAL : SCRBS_HOVER;
+        return (scrollbar->hoveredPart() == NoPart || !isWindowsVistaOrGreater()) ? SCRBS_NORMAL : SCRBS_HOVER;
     if (scrollbar->pressedPart() == NoPart)
         return SCRBS_HOT;
     return (scrollbar->pressedPart() == part) ? SCRBS_PRESSED : SCRBS_NORMAL;
@@ -164,43 +164,43 @@ int ScrollbarThemeWin::getThemeArrowState(ScrollbarThemeClient* scrollbar, Scrol
     if (part == BackButtonStartPart || part == ForwardButtonStartPart) {
         if (scrollbar->orientation() == HorizontalScrollbar) {
             if (scrollbar->pressedPart() == ThumbPart)
-                return (windowsVersion() < WindowsVista) ? ABS_LEFTNORMAL : ABS_LEFTHOVER;
+                return isWindowsVistaOrGreater() ? ABS_LEFTHOVER : ABS_LEFTNORMAL;
             if (!scrollbar->enabled())
                 return ABS_LEFTDISABLED;
             if (scrollbar->hoveredPart() != part)
-                return ((scrollbar->hoveredPart() == NoPart) || (windowsVersion() < WindowsVista)) ? ABS_LEFTNORMAL : ABS_LEFTHOVER;
+                return ((scrollbar->hoveredPart() == NoPart) || !isWindowsVistaOrGreater()) ? ABS_LEFTNORMAL : ABS_LEFTHOVER;
             if (scrollbar->pressedPart() == NoPart)
                 return ABS_LEFTHOT;
             return (scrollbar->pressedPart() == part) ?
                 ABS_LEFTPRESSED : ABS_LEFTNORMAL;
         }
         if (scrollbar->pressedPart() == ThumbPart)
-            return (windowsVersion() < WindowsVista) ? ABS_UPNORMAL : ABS_UPHOVER;
+            return isWindowsVistaOrGreater() ? ABS_UPHOVER : ABS_UPNORMAL;
         if (!scrollbar->enabled())
             return ABS_UPDISABLED;
         if (scrollbar->hoveredPart() != part)
-            return ((scrollbar->hoveredPart() == NoPart) || (windowsVersion() < WindowsVista)) ? ABS_UPNORMAL : ABS_UPHOVER;
+            return ((scrollbar->hoveredPart() == NoPart) || !isWindowsVistaOrGreater()) ? ABS_UPNORMAL : ABS_UPHOVER;
         if (scrollbar->pressedPart() == NoPart)
             return ABS_UPHOT;
         return (scrollbar->pressedPart() == part) ? ABS_UPPRESSED : ABS_UPNORMAL;
     }
     if (scrollbar->orientation() == HorizontalScrollbar) {
         if (scrollbar->pressedPart() == ThumbPart)
-            return (windowsVersion() < WindowsVista) ? ABS_RIGHTNORMAL : ABS_RIGHTHOVER;
+            return isWindowsVistaOrGreater() ? ABS_RIGHTHOVER : ABS_RIGHTNORMAL;
         if (!scrollbar->enabled())
             return ABS_RIGHTDISABLED;
         if (scrollbar->hoveredPart() != part)
-            return ((scrollbar->hoveredPart() == NoPart) || (windowsVersion() < WindowsVista)) ? ABS_RIGHTNORMAL : ABS_RIGHTHOVER;
+            return ((scrollbar->hoveredPart() == NoPart) || !isWindowsVistaOrGreater()) ? ABS_RIGHTNORMAL : ABS_RIGHTHOVER;
         if (scrollbar->pressedPart() == NoPart)
             return ABS_RIGHTHOT;
         return (scrollbar->pressedPart() == part) ? ABS_RIGHTPRESSED : ABS_RIGHTNORMAL;
     }
     if (scrollbar->pressedPart() == ThumbPart)
-        return (windowsVersion() < WindowsVista) ? ABS_DOWNNORMAL : ABS_DOWNHOVER;
+        return isWindowsVistaOrGreater() ? ABS_DOWNHOVER : ABS_DOWNNORMAL;
     if (!scrollbar->enabled())
         return ABS_DOWNDISABLED;
     if (scrollbar->hoveredPart() != part)
-        return ((scrollbar->hoveredPart() == NoPart) || (windowsVersion() < WindowsVista)) ? ABS_DOWNNORMAL : ABS_DOWNHOVER;
+        return ((scrollbar->hoveredPart() == NoPart) || !isWindowsVistaOrGreater()) ? ABS_DOWNNORMAL : ABS_DOWNHOVER;
     if (scrollbar->pressedPart() == NoPart)
         return ABS_DOWNHOT;
     return (scrollbar->pressedPart() == part) ? ABS_DOWNPRESSED : ABS_DOWNNORMAL;
