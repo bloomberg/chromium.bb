@@ -7,6 +7,7 @@ import unittest
 
 from empty_dir_file_system import EmptyDirFileSystem
 from fake_fetchers import ConfigureFakeFetchers
+from github_file_system_provider import GithubFileSystemProvider
 from host_file_system_provider import HostFileSystemProvider
 from patch_servlet import PatchServlet
 from render_servlet import RenderServlet
@@ -22,14 +23,14 @@ class _RenderServletDelegate(RenderServlet.Delegate):
     return ServerInstance.ForLocal()
 
 class _PatchServletDelegate(RenderServlet.Delegate):
-  def CreateAppSamplesFileSystem(self, object_store_creator):
-    return EmptyDirFileSystem()
-
   def CreateBranchUtility(self, object_store_creator):
     return TestBranchUtility.CreateWithCannedData()
 
   def CreateHostFileSystemProvider(self, object_store_creator, **optargs):
     return HostFileSystemProvider.ForLocal(object_store_creator, **optargs)
+
+  def CreateGithubFileSystemProvider(self, object_store_creator):
+    return GithubFileSystemProvider.ForEmpty()
 
 class PatchServletTest(unittest.TestCase):
   def setUp(self):

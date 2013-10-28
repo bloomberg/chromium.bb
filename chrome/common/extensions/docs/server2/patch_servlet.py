@@ -61,11 +61,11 @@ class _PatchServletDelegate(RenderServlet.Delegate):
     branch_utility = self._delegate.CreateBranchUtility(object_store_creator)
 
     return ServerInstance(object_store_creator,
-                          self._delegate.CreateAppSamplesFileSystem(
-                              object_store_creator),
                           combined_compiled_fs_factory,
                           branch_utility,
                           patched_host_file_system_provider,
+                          self._delegate.CreateGithubFileSystemProvider(
+                              object_store_creator),
                           base_path='/_patch/%s/' % self._issue)
 
 class PatchServlet(Servlet):

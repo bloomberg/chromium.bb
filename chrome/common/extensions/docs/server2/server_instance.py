@@ -10,6 +10,7 @@ from compiled_file_system import CompiledFileSystem
 from empty_dir_file_system import EmptyDirFileSystem
 from example_zipper import ExampleZipper
 from features_bundle import FeaturesBundle
+from github_file_system_provider import GithubFileSystemProvider
 from host_file_system_provider import HostFileSystemProvider
 from host_file_system_iterator import HostFileSystemIterator
 from intro_data_source import IntroDataSource
@@ -27,16 +28,14 @@ class ServerInstance(object):
 
   def __init__(self,
                object_store_creator,
-               app_samples_file_system,
                compiled_fs_factory,
                branch_utility,
                host_file_system_provider,
+               github_file_system_provider,
                base_path='/'):
     '''
     |object_store_creator|
         The ObjectStoreCreator used to create almost all caches.
-    |app_samples_file_system|
-        The FileSystem instance which hosts the App samples.
     |compiled_fs_factory|
         Factory used to create CompiledFileSystems, a higher-level cache type
         than ObjectStores. This can usually be derived from just
@@ -47,18 +46,20 @@ class ServerInstance(object):
     |host_file_system_provider|
         Creates FileSystem instances which host the server at alternative
         revisions.
+    |github_file_system_provider|
+        Creates FileSystem instances backed by GitHub.
     |base_path|
         The path which all HTML is generated relative to. Usually this is /
         but some servlets need to override this.
     '''
     self.object_store_creator = object_store_creator
 
-    self.app_samples_file_system = app_samples_file_system
-
     self.compiled_fs_factory = compiled_fs_factory
 
     self.host_file_system_provider = host_file_system_provider
     host_fs_at_trunk = host_file_system_provider.GetTrunk()
+
+    self.github_file_system_provider = github_file_system_provider
 
     assert base_path.startswith('/') and base_path.endswith('/')
     self.base_path = base_path
@@ -105,11 +106,14 @@ class ServerInstance(object):
     # async fetch, so disable them.
     if IsDevServer():
       extension_samples_fs = EmptyDirFileSystem()
+      app_samples_fs = EmptyDirFileSystem()
     else:
       extension_samples_fs = host_fs_at_trunk
+      app_samples_fs = github_file_system_provider.Create(
+          'GoogleChrome', 'chrome-app-samples')
     self.samples_data_source_factory = SamplesDataSource.Factory(
         extension_samples_fs,
-        self.app_samples_file_system,
+        app_samples_fs,
         CompiledFileSystem.Factory(object_store_creator),
         self.ref_resolver_factory,
         svn_constants.EXAMPLES_PATH,
@@ -161,11 +165,11 @@ class ServerInstance(object):
   def ForTest(file_system, base_path='/'):
     object_store_creator = ObjectStoreCreator.ForTest()
     return ServerInstance(object_store_creator,
-                          EmptyDirFileSystem(),
                           CompiledFileSystem.Factory(object_store_creator),
                           TestBranchUtility.CreateWithCannedData(),
                           HostFileSystemProvider.ForTest(file_system,
                                                          object_store_creator),
+                          GithubFileSystemProvider.ForEmpty(),
                           base_path=base_path)
 
   @staticmethod
@@ -176,7 +180,7 @@ class ServerInstance(object):
         object_store_creator)
     return ServerInstance(
         object_store_creator,
-        EmptyDirFileSystem(),
         CompiledFileSystem.Factory(object_store_creator),
         TestBranchUtility.CreateWithCannedData(),
-        host_file_system_provider)
+        host_file_system_provider,
+        GithubFileSystemProvider.ForEmpty())

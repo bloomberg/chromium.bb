@@ -5,6 +5,7 @@
 import json
 import logging
 from cStringIO import StringIO
+import posixpath
 import sys
 from zipfile import BadZipfile, ZipFile
 
@@ -42,7 +43,7 @@ class GithubFileSystem(FileSystem):
     specified by |owner| and |repo|.
     '''
     return GithubFileSystem(
-        url_constants.NEW_GITHUB_URL,
+        url_constants.GITHUB_REPOS,
         owner,
         repo,
         object_store_creator,
@@ -159,8 +160,8 @@ class GithubFileSystem(FileSystem):
 
     reads = {}
     for path in paths:
-      full_path = prefix + path
-      if path.endswith('/'):  # If path is a directory...
+      full_path = posixpath.join(prefix, path)
+      if path == '' or path.endswith('/'):  # If path is a directory...
         trimmed_paths = []
         for f in filter(lambda s: s.startswith(full_path), names):
           if not '/' in f[len(full_path):-1] and not f == full_path:
@@ -188,14 +189,15 @@ class GithubFileSystem(FileSystem):
     stat versions are always 0.
     '''
     # Trim off the zip file's name.
-    trimmed = ['/' + f.split('/', 1)[1] for f in self._GetNamelist()]
+    path = path.lstrip('/')
+    trimmed = [f.split('/', 1)[1] for f in self._GetNamelist()]
 
     if path not in trimmed:
-      raise FileNotFoundError("No stat found for '%s'" % path)
+      raise FileNotFoundError("No stat found for '%s' in %s" % (path, trimmed))
 
     version = self._GetVersion()
     child_paths = {}
-    if path.endswith('/'):
+    if path == '' or path.endswith('/'):
       # Deal with a directory
       for f in filter(lambda s: s.startswith(path), trimmed):
         filename = f[len(path):]

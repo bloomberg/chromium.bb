@@ -14,7 +14,7 @@ from compiled_file_system import CompiledFileSystem
 from data_source_registry import CreateDataSources
 from empty_dir_file_system import EmptyDirFileSystem
 from file_system_util import CreateURLsFromPaths
-from github_file_system import GithubFileSystem
+from github_file_system_provider import GithubFileSystemProvider
 from host_file_system_provider import HostFileSystemProvider
 from object_store_creator import ObjectStoreCreator
 from render_servlet import RenderServlet
@@ -96,11 +96,8 @@ class CronServlet(Servlet):
       return HostFileSystemProvider(object_store_creator,
                                     max_trunk_revision=max_trunk_revision)
 
-    def CreateAppSamplesFileSystem(self, object_store_creator):
-      # TODO(kalman): CachingFileSystem wrapper for GithubFileSystem, but it's
-      # not supported yet (see comment there).
-      return (EmptyDirFileSystem() if IsDevServer() else
-              GithubFileSystem.Create(object_store_creator))
+    def CreateGithubFileSystemProvider(self, object_store_creator):
+      return GithubFileSystemProvider(object_store_creator)
 
     def GetAppVersion(self):
       return GetAppVersion()
@@ -263,10 +260,10 @@ class CronServlet(Servlet):
     branch_utility = self._delegate.CreateBranchUtility(object_store_creator)
     host_file_system_provider = self._delegate.CreateHostFileSystemProvider(
         object_store_creator, max_trunk_revision=revision)
-    app_samples_file_system = self._delegate.CreateAppSamplesFileSystem(
+    github_file_system_provider = self._delegate.CreateGithubFileSystemProvider(
         object_store_creator)
     return ServerInstance(object_store_creator,
-                          app_samples_file_system,
                           CompiledFileSystem.Factory(object_store_creator),
                           branch_utility,
-                          host_file_system_provider)
+                          host_file_system_provider,
+                          github_file_system_provider)

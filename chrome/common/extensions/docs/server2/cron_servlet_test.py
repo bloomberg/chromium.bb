@@ -9,6 +9,7 @@ from appengine_wrappers import GetAppVersion
 from app_yaml_helper import AppYamlHelper
 from cron_servlet import CronServlet
 from empty_dir_file_system import EmptyDirFileSystem
+from github_file_system_provider import GithubFileSystemProvider
 from host_file_system_provider import HostFileSystemProvider
 from local_file_system import LocalFileSystem
 from mock_file_system import MockFileSystem
@@ -38,11 +39,11 @@ class _TestDelegate(CronServlet.Delegate):
       self.file_systems.append(file_system)
       return file_system
     return HostFileSystemProvider(object_store_creator,
-                                 max_trunk_revision=max_trunk_revision,
-                                 constructor_for_test=constructor)
+                                  max_trunk_revision=max_trunk_revision,
+                                  constructor_for_test=constructor)
 
-  def CreateAppSamplesFileSystem(self, object_store_creator):
-    return EmptyDirFileSystem()
+  def CreateGithubFileSystemProvider(self, object_store_creator):
+    return GithubFileSystemProvider.ForEmpty()
 
   def GetAppVersion(self):
     return self._app_version

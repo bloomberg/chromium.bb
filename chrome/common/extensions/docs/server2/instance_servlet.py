@@ -6,7 +6,7 @@ from appengine_wrappers import IsDevServer
 from branch_utility import BranchUtility
 from compiled_file_system import CompiledFileSystem
 from empty_dir_file_system import EmptyDirFileSystem
-from github_file_system import GithubFileSystem
+from github_file_system_provider import GithubFileSystemProvider
 from host_file_system_provider import HostFileSystemProvider
 from third_party.json_schema_compiler.memoize import memoize
 from render_servlet import RenderServlet
@@ -38,13 +38,13 @@ class OfflineRenderServletDelegate(RenderServlet.Delegate):
     host_file_system_provider = self._delegate.CreateHostFileSystemProvider(
         object_store_creator,
         offline=True)
-    app_samples_file_system = self._delegate.CreateAppSamplesFileSystem(
+    github_file_system_provider = self._delegate.CreateGithubFileSystemProvider(
         object_store_creator)
     return ServerInstance(object_store_creator,
-                          app_samples_file_system,
                           CompiledFileSystem.Factory(object_store_creator),
                           branch_utility,
-                          host_file_system_provider)
+                          host_file_system_provider,
+                          github_file_system_provider)
 
 class InstanceServlet(object):
   '''Servlet for running on normal AppEngine instances.
@@ -60,11 +60,8 @@ class InstanceServlet(object):
     def CreateHostFileSystemProvider(self, object_store_creator, **optargs):
       return HostFileSystemProvider(object_store_creator, **optargs)
 
-    def CreateAppSamplesFileSystem(self, object_store_creator):
-      # TODO(kalman): OfflineServerInstance wrapper for GithubFileSystem, but
-      # the cron job doesn't crawl the samples yet.
-      return (EmptyDirFileSystem() if IsDevServer() else
-              GithubFileSystem.Create(object_store_creator))
+    def CreateGithubFileSystemProvider(self, object_store_creator):
+      return GithubFileSystemProvider(object_store_creator)
 
   @staticmethod
   def GetConstructor(delegate_for_test=None):

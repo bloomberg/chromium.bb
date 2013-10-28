@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import posixpath
 import sys
 
 from file_system import FileSystem, StatInfo, FileNotFoundError
@@ -62,10 +63,8 @@ class CachingFileSystem(FileSystem):
     '''
     # Always stat the parent directory, since it will have the stat of the child
     # anyway, and this gives us an entire directory's stat info at once.
-    if path.endswith('/'):
-      dir_path = path
-    else:
-      dir_path, file_path = path.rsplit('/', 1)
+    dir_path, file_path = posixpath.split(path)
+    if dir_path:
       dir_path += '/'
 
     # ... and we only ever need to cache the dir stat, too.

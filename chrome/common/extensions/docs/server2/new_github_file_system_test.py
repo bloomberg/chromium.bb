@@ -41,10 +41,10 @@ class TestGithubFileSystem(unittest.TestCase):
     self._gfs.Refresh().Get()
     self.assertEqual(
         sorted(['requirements.txt', '.gitignore', 'README.md', 'src/']),
-        sorted(self._gfs.ReadSingle('/').Get()))
+        sorted(self._gfs.ReadSingle('').Get()))
     self.assertEqual(
         sorted(['__init__.notpy', 'hello.notpy']),
-        sorted(self._gfs.ReadSingle('/src/').Get()))
+        sorted(self._gfs.ReadSingle('src/').Get()))
 
   def testReadFile(self):
     self._gfs.Refresh().Get()
@@ -52,24 +52,24 @@ class TestGithubFileSystem(unittest.TestCase):
       '# Compiled Python files\n'
       '*.pyc\n'
     )
-    self.assertEqual(expected, self._gfs.ReadSingle('/.gitignore').Get())
+    self.assertEqual(expected, self._gfs.ReadSingle('.gitignore').Get())
 
   def testMultipleReads(self):
     self._gfs.Refresh().Get()
     self.assertEqual(
-        self._gfs.ReadSingle('/requirements.txt').Get(),
-        self._gfs.ReadSingle('/requirements.txt').Get())
+        self._gfs.ReadSingle('requirements.txt').Get(),
+        self._gfs.ReadSingle('requirements.txt').Get())
 
   def testReads(self):
     self._gfs.Refresh().Get()
     expected = {
-        '/src/': sorted(['hello.notpy', '__init__.notpy']),
-        '/': sorted(['requirements.txt', '.gitignore', 'README.md', 'src/'])
+        'src/': sorted(['hello.notpy', '__init__.notpy']),
+        '': sorted(['requirements.txt', '.gitignore', 'README.md', 'src/'])
     }
 
-    read = self._gfs.Read(['/', '/src/']).Get()
-    self.assertEqual(expected['/src/'], sorted(read['/src/']))
-    self.assertEqual(expected['/'], sorted(read['/']))
+    read = self._gfs.Read(['', 'src/']).Get()
+    self.assertEqual(expected['src/'], sorted(read['src/']))
+    self.assertEqual(expected[''], sorted(read['']))
 
   def testStat(self):
     self._gfs.Refresh().Get()
@@ -78,37 +78,37 @@ class TestGithubFileSystem(unittest.TestCase):
       '__init__.notpy': StatInfo(FAKE_HASH)
     })
 
-    self.assertEqual(StatInfo(FAKE_HASH), self._gfs.Stat('/README.md'))
-    self.assertEqual(StatInfo(FAKE_HASH), self._gfs.Stat('/src/hello.notpy'))
-    self.assertEqual(dir_stat, self._gfs.Stat('/src/'))
+    self.assertEqual(StatInfo(FAKE_HASH), self._gfs.Stat('README.md'))
+    self.assertEqual(StatInfo(FAKE_HASH), self._gfs.Stat('src/hello.notpy'))
+    self.assertEqual(dir_stat, self._gfs.Stat('src/'))
 
   def testBadReads(self):
     self._gfs.Refresh().Get()
-    self.assertRaises(FileNotFoundError, self._gfs.Stat, '/DONT_README.md')
+    self.assertRaises(FileNotFoundError, self._gfs.Stat, 'DONT_README.md')
     self.assertRaises(FileNotFoundError,
-                      self._gfs.ReadSingle('/DONT_README.md').Get)
+                      self._gfs.ReadSingle('DONT_README.md').Get)
 
   def testCachingFileSystem(self):
     self._cgfs.Refresh().Get()
-    initial_cgfs_read_one = self._cgfs.ReadSingle('/src/hello.notpy').Get()
+    initial_cgfs_read_one = self._cgfs.ReadSingle('src/hello.notpy').Get()
 
     self.assertEqual(initial_cgfs_read_one,
-                     self._gfs.ReadSingle('/src/hello.notpy').Get())
+                     self._gfs.ReadSingle('src/hello.notpy').Get())
     self.assertEqual(initial_cgfs_read_one,
-                     self._cgfs.ReadSingle('/src/hello.notpy').Get())
+                     self._cgfs.ReadSingle('src/hello.notpy').Get())
 
     initial_cgfs_read_two = self._cgfs.Read(
-        ['/README.md', '/requirements.txt']).Get()
+        ['README.md', 'requirements.txt']).Get()
 
     self.assertEqual(
         initial_cgfs_read_two,
-        self._gfs.Read(['/README.md', '/requirements.txt']).Get())
+        self._gfs.Read(['README.md', 'requirements.txt']).Get())
     self.assertEqual(
         initial_cgfs_read_two,
-        self._cgfs.Read(['/README.md', '/requirements.txt']).Get())
+        self._cgfs.Read(['README.md', 'requirements.txt']).Get())
 
   def testWithoutRefresh(self):
-    self.assertRaises(FileNotFoundError, self._gfs.ReadSingle('/src/').Get)
+    self.assertRaises(FileNotFoundError, self._gfs.ReadSingle('src/').Get)
 
   def testRefresh(self):
     def make_sha_json(hash_value):
@@ -146,8 +146,8 @@ class TestGithubFileSystem(unittest.TestCase):
         'changing-repo', FakeURLFSFetcher.Create(test_file_system), path='')
 
     gfs.Refresh().Get()
-    initial_dir_read = sorted(gfs.ReadSingle('/').Get())
-    initial_file_read = gfs.ReadSingle('/dir/file1').Get()
+    initial_dir_read = sorted(gfs.ReadSingle('').Get())
+    initial_file_read = gfs.ReadSingle('dir/file1').Get()
 
     # Change the underlying data.
     files['zipfile/hello.txt'] = 'hello world again'
@@ -158,15 +158,15 @@ class TestGithubFileSystem(unittest.TestCase):
         make_sha_json(FAKE_HASH + 'hash'))
 
     # Check that changes have not effected the file system yet.
-    self.assertEqual(initial_dir_read, sorted(gfs.ReadSingle('/').Get()))
-    self.assertEqual(initial_file_read, gfs.ReadSingle('/dir/file1').Get())
+    self.assertEqual(initial_dir_read, sorted(gfs.ReadSingle('').Get()))
+    self.assertEqual(initial_file_read, gfs.ReadSingle('dir/file1').Get())
 
     gfs.Refresh().Get()
 
     # Check that the changes have effected the file system.
-    self.assertTrue('new-file' in gfs.ReadSingle('/').Get())
+    self.assertTrue('new-file' in gfs.ReadSingle('').Get())
     self.assertEqual(files['zipfile/dir/file1'],
-                     gfs.ReadSingle('/dir/file1').Get())
+                     gfs.ReadSingle('dir/file1').Get())
 
 
 if __name__ == '__main__':

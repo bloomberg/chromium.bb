@@ -6,14 +6,12 @@
 import unittest
 
 from empty_dir_file_system import EmptyDirFileSystem
+from github_file_system_provider import GithubFileSystemProvider
 from instance_servlet import InstanceServlet
 from servlet import Request
 from fail_on_access_file_system import FailOnAccessFileSystem
 from test_branch_utility import TestBranchUtility
 from test_util import DisableLogging
-
-# XXX(kalman): what is this test supposed to be?
-# Create a test host file system creator which failz?
 
 # NOTE(kalman): The ObjectStore created by the InstanceServlet is backed onto
 # our fake AppEngine memcache/datastore, so the tests aren't isolated.
@@ -24,10 +22,15 @@ class _TestDelegate(InstanceServlet.Delegate):
   def CreateBranchUtility(self, object_store_creator):
     return TestBranchUtility.CreateWithCannedData()
 
-  def CreateAppSamplesFileSystem(self, object_store_creator):
-    return EmptyDirFileSystem()
+  def CreateGithubFileSystemProvider(self, object_store_creator):
+    return GithubFileSystemProvider.ForEmpty()
 
 class InstanceServletTest(unittest.TestCase):
+  '''Tests that if the file systems underlying the docserver's data fail,
+  the instance servlet still returns 404s or 301s with a best-effort.
+  It should never return a 500 (i.e. crash).
+  '''
+
   @DisableLogging('warning')
   def testHostFileSystemNotAccessed(self):
     delegate = _TestDelegate(FailOnAccessFileSystem)

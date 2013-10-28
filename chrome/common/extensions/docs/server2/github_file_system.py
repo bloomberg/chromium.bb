@@ -69,9 +69,9 @@ class _AsyncFetchFutureZip(object):
 
 class GithubFileSystem(FileSystem):
   @staticmethod
-  def Create(object_store_creator):
+  def CreateChromeAppsSamples(object_store_creator):
     return GithubFileSystem(
-        url_constants.GITHUB_URL,
+        '%s/GoogleChrome/chrome-app-samples' % url_constants.GITHUB_REPOS,
         blobstore.AppEngineBlobstore(),
         object_store_creator)
 

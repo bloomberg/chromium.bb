@@ -2,8 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-GITHUB_URL = 'https://api.github.com/repos/GoogleChrome/chrome-app-samples'
-NEW_GITHUB_URL = 'https://api.github.com/repos'
+GITHUB_REPOS = 'https://api.github.com/repos'
 GITHUB_BASE = 'https://github.com/GoogleChrome/chrome-app-samples/tree/master'
 RAW_GITHUB_BASE = ('https://github.com/GoogleChrome/chrome-app-samples/raw/'
                    'master')

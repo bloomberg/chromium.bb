@@ -22,7 +22,8 @@ class GithubFileSystemTest(unittest.TestCase):
     self._base_path = os.path.join(sys.path[0],
                                    'test_data',
                                    'github_file_system')
-    self._file_system = GithubFileSystem.Create(ObjectStoreCreator.ForTest())
+    self._file_system = GithubFileSystem.CreateChromeAppsSamples(
+        ObjectStoreCreator.ForTest())
 
   def _ReadLocalFile(self, filename):
     with open(os.path.join(self._base_path, filename), 'r') as f:
