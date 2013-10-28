@@ -6,7 +6,7 @@
 
 // This file requires these functions to be defined globally by someone else:
 // function handleMessage(peerConnection, message)
-// function createPeerConnection(stun_server, enableLogging, useRtpDataChannel)
+// function createPeerConnection(stun_server, useRtpDataChannel)
 // function setupCall(peerConnection)
 // function answerCall(peerConnection, message)
 
@@ -129,12 +129,11 @@ function useRtpDataChannelsForNewPeerConnections(useRtpDataChannels) {
  * Creates a peer connection. Must be called before most other public functions
  * in this file.
  */
-function preparePeerConnection(enableLogging) {
+function preparePeerConnection() {
   if (gPeerConnection != null)
     throw failTest('creating peer connection, but we already have one.');
 
-  gPeerConnection = createPeerConnection(STUN_SERVER, enableLogging,
-                                         gUseRtpDataChannels);
+  gPeerConnection = createPeerConnection(STUN_SERVER, gUseRtpDataChannels);
   returnToTest('ok-peerconnection-created');
 }
 
@@ -568,8 +567,7 @@ function handlePeerMessage_(peerId, message) {
     // The other side is calling us.
     debug('We are being called: answer...');
 
-    gPeerConnection = createPeerConnection(STUN_SERVER, false,
-                                           gUseRtpDataChannels);
+    gPeerConnection = createPeerConnection(STUN_SERVER, gUseRtpDataChannels);
     if (gAutoAddLocalToPeerConnectionStreamWhenCalled &&
         obtainGetUserMediaResult() == 'ok-got-stream') {
       debug('We have a local stream, so hook it up automatically.');

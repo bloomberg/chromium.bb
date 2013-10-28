@@ -272,7 +272,7 @@ window.onbeforeunload = function() {
  */
 function ensureHasPeerConnection_() {
   if (getReadyState() == 'no-peer-connection') {
-    preparePeerConnection(false);
+    preparePeerConnection();
   }
 }
 

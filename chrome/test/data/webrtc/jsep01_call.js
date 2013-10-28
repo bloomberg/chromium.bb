@@ -129,12 +129,10 @@ function handleMessage(peerConnection, message) {
   return;
 }
 
-function createPeerConnection(stun_server, loggingSessionId,
-                              useRtpDataChannels) {
+function createPeerConnection(stun_server, useRtpDataChannels) {
   servers = {iceServers: [{url: 'stun:' + stun_server}]};
   try {
-    var constraints = { optional: [{ RtpDataChannels: useRtpDataChannels },
-                                   { googLog: loggingSessionId }]};
+    var constraints = { optional: [{ RtpDataChannels: useRtpDataChannels }]};
     peerConnection = new webkitRTCPeerConnection(servers, constraints);
   } catch (exception) {
     throw failTest('Failed to create peer connection: ' + exception);

@@ -180,8 +180,7 @@ class WebrtcVideoQualityBrowserTest : public WebRtcTestBase {
   void EstablishCall(content::WebContents* from_tab,
                      content::WebContents* to_tab) {
     EXPECT_EQ("ok-peerconnection-created",
-              ExecuteJavascript("preparePeerConnection(false, true)",
-                                from_tab));
+              ExecuteJavascript("preparePeerConnection()", from_tab));
     EXPECT_EQ("ok-added", ExecuteJavascript("addLocalStream()", from_tab));
     EXPECT_EQ("ok-negotiating", ExecuteJavascript("negotiateCall()", from_tab));
 

@@ -138,7 +138,7 @@ IN_PROC_BROWSER_TEST_F(WebrtcTypingDetectionBrowserTest,
   GetUserMediaWithSpecificConstraintsAndAccept(left_tab,
                                                kAudioOnlyCallConstraints);
   EXPECT_EQ("ok-peerconnection-created",
-            ExecuteJavascript("preparePeerConnection(false, true)", left_tab));
+            ExecuteJavascript("preparePeerConnection()", left_tab));
 
   AddAudioFile(kReferenceFileRelativeUrl, left_tab);
   MixLocalStreamWithPreviouslyLoadedAudioFile(left_tab);
