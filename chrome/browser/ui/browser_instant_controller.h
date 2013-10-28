@@ -13,7 +13,6 @@
 #include "chrome/browser/ui/search/instant_controller.h"
 #include "chrome/browser/ui/search/instant_unload_handler.h"
 #include "chrome/browser/ui/search/search_model_observer.h"
-#include "ui/base/window_open_disposition.h"
 
 class Browser;
 struct InstantSuggestion;
@@ -64,11 +63,6 @@ class BrowserInstantController : public SearchModelObserver,
 
   // Invoked by |browser_| when the active tab is about to be deactivated.
   void TabDeactivated(content::WebContents* contents);
-
-  // Invoked by the InstantController when it wants to open a URL.
-  void OpenURL(const GURL& url,
-               content::PageTransition transition,
-               WindowOpenDisposition disposition);
 
   // Invoked by |instant_| to paste the |text| (or clipboard content if text is
   // empty) into the omnibox. It will set focus to the omnibox if the omnibox is

@@ -125,11 +125,6 @@ class InstantNTPPrerenderer
   virtual void InstantPageAboutToNavigateMainFrame(
       const content::WebContents* contents,
       const GURL& url) OVERRIDE;
-  virtual void NavigateToURL(const content::WebContents* contents,
-                             const GURL& url,
-                             content::PageTransition transition,
-                             WindowOpenDisposition disposition,
-                             bool is_search_type) OVERRIDE;
   virtual void PasteIntoOmnibox(const content::WebContents* contents,
                                 const string16& text) OVERRIDE;
   virtual void InstantPageLoadFailed(content::WebContents* contents) OVERRIDE;

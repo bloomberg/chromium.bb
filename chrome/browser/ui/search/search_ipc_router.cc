@@ -91,6 +91,8 @@ bool SearchIPCRouter::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_SetVoiceSearchSupported,
                         OnVoiceSearchSupportDetermined)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_FocusOmnibox, OnFocusOmnibox);
+    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_SearchBoxNavigate,
+                        OnSearchBoxNavigate);
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_SearchBoxDeleteMostVisitedItem,
                         OnDeleteMostVisitedItem);
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_SearchBoxUndoMostVisitedDeletion,
@@ -134,6 +136,21 @@ void SearchIPCRouter::OnFocusOmnibox(int page_id,
     return;
 
   delegate_->FocusOmnibox(state);
+}
+
+void SearchIPCRouter::OnSearchBoxNavigate(
+    int page_id,
+    const GURL& url,
+    WindowOpenDisposition disposition,
+    bool is_most_visited_item_url) const {
+  if (!web_contents()->IsActiveEntry(page_id))
+    return;
+
+  delegate_->OnInstantSupportDetermined(true);
+  if (!policy_->ShouldProcessNavigateToURL(is_active_tab_))
+    return;
+
+  delegate_->NavigateToURL(url, disposition, is_most_visited_item_url);
 }
 
 void SearchIPCRouter::OnDeleteMostVisitedItem(int page_id,

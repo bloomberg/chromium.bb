@@ -19,11 +19,13 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
+#include "ui/base/window_open_disposition.h"
 
 namespace content {
 class WebContents;
 }
 
+class GURL;
 class InstantPageTest;
 class InstantService;
 class Profile;
@@ -114,6 +116,7 @@ class SearchTabHelper : public content::NotificationObserver,
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest,
                            AppropriateMessagesSentToIncognitoPages);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest, SubmitQuery);
+  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest, ProcessNavigateToURL);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest,
                            ProcessDeleteMostVisitedItem);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest,
@@ -134,6 +137,8 @@ class SearchTabHelper : public content::NotificationObserver,
                            DoNotSendSetPromoInformationMsg);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest, ProcessLogEventMsg);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest, IgnoreLogEventMsg);
+  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest, ProcessNavigateToURLMsg);
+  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest, IgnoreNavigateToURLMsg);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest,
                            ProcessDeleteMostVisitedItemMsg);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest,
@@ -198,6 +203,9 @@ class SearchTabHelper : public content::NotificationObserver,
   virtual void OnInstantSupportDetermined(bool supports_instant) OVERRIDE;
   virtual void OnSetVoiceSearchSupport(bool supports_voice_search) OVERRIDE;
   virtual void FocusOmnibox(OmniboxFocusState state) OVERRIDE;
+  virtual void NavigateToURL(const GURL& url,
+                             WindowOpenDisposition disposition,
+                             bool is_most_visited_item_url) OVERRIDE;
   virtual void OnDeleteMostVisitedItem(const GURL& url) OVERRIDE;
   virtual void OnUndoMostVisitedDeletion(const GURL& url) OVERRIDE;
   virtual void OnUndoAllMostVisitedDeletions() OVERRIDE;

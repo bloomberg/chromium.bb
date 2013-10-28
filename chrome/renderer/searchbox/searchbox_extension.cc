@@ -855,14 +855,14 @@ void SearchBoxExtensionWrapper::NavigateContentWindow(
   if (!render_view || !args.Length()) return;
 
   GURL destination_url;
-  content::PageTransition transition = content::PAGE_TRANSITION_AUTO_BOOKMARK;
-
+  bool is_most_visited_item_url = false;
   // Check if the url is a rid
   if (args[0]->IsNumber()) {
     InstantMostVisitedItem item;
     if (SearchBox::Get(render_view)->GetMostVisitedItemWithID(
-        args[0]->IntegerValue(), &item)) {
+            args[0]->IntegerValue(), &item)) {
       destination_url = item.url;
+      is_most_visited_item_url = true;
     }
   } else {
     // Resolve the URL
@@ -878,8 +878,8 @@ void SearchBoxExtensionWrapper::NavigateContentWindow(
     WindowOpenDisposition disposition = CURRENT_TAB;
     if (args[1]->Uint32Value() == 2)
       disposition = NEW_BACKGROUND_TAB;
-    SearchBox::Get(render_view)->NavigateToURL(
-        destination_url, transition, disposition, false);
+    SearchBox::Get(render_view)->NavigateToURL(destination_url, disposition,
+                                               is_most_visited_item_url);
   }
 }
 

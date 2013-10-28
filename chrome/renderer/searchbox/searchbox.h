@@ -13,7 +13,6 @@
 #include "chrome/common/instant_types.h"
 #include "chrome/common/ntp_logging_events.h"
 #include "chrome/common/omnibox_focus_state.h"
-#include "content/public/common/page_transition_types.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "content/public/renderer/render_view_observer_tracker.h"
 #include "ui/base/window_open_disposition.h"
@@ -71,9 +70,8 @@ class SearchBox : public content::RenderViewObserver,
 
   // Sends ChromeViewHostMsg_SearchBoxNavigate to the browser.
   void NavigateToURL(const GURL& url,
-                     content::PageTransition transition,
                      WindowOpenDisposition disposition,
-                     bool is_search_type);
+                     bool is_most_visited_item_url);
 
   // Sends ChromeViewHostMsg_SearchBoxPaste to the browser.
   void Paste(const string16& text);

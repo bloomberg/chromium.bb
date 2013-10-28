@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/app_list/app_list_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
 #include "chrome/browser/ui/omnibox/omnibox_popup_model.h"
@@ -34,9 +35,11 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "content/public/common/page_transition_types.h"
+#include "content/public/common/referrer.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
@@ -417,6 +420,36 @@ void SearchTabHelper::FocusOmnibox(OmniboxFocusState state) {
         web_contents()->GetView()->Focus();
       break;
   }
+#endif
+}
+
+void SearchTabHelper::NavigateToURL(const GURL& url,
+                                    WindowOpenDisposition disposition,
+                                    bool is_most_visited_item_url) {
+// iOS and Android don't use the Instant framework.
+#if !defined(OS_IOS) && !defined(OS_ANDROID)
+  // TODO(kmadhusu): Remove chrome::FindBrowser...() function call from here.
+  // Create a SearchTabHelperDelegate interface and have the Browser object
+  // implement that interface to provide the necessary functionality.
+  Browser* browser = chrome::FindBrowserWithWebContents(web_contents_);
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents_->GetBrowserContext());
+  if (!browser || !profile)
+    return;
+
+  if (is_most_visited_item_url) {
+    content::RecordAction(
+        content::UserMetricsAction("InstantExtended.MostVisitedClicked"));
+  }
+
+  chrome::NavigateParams params(browser, url,
+                                content::PAGE_TRANSITION_AUTO_BOOKMARK);
+  params.referrer = content::Referrer();
+  params.source_contents = web_contents_;
+  params.disposition = disposition;
+  params.is_renderer_initiated = false;
+  params.initiating_profile = profile;
+  chrome::Navigate(&params);
 #endif
 }
 

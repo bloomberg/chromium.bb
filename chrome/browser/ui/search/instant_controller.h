@@ -18,8 +18,6 @@
 #include "chrome/common/instant_types.h"
 #include "chrome/common/omnibox_focus_state.h"
 #include "chrome/common/search_types.h"
-#include "content/public/common/page_transition_types.h"
-#include "ui/base/window_open_disposition.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect.h"
 
@@ -159,12 +157,6 @@ class InstantController : public InstantPage::Delegate {
   virtual void InstantPageAboutToNavigateMainFrame(
       const content::WebContents* contents,
       const GURL& url) OVERRIDE;
-  virtual void NavigateToURL(
-      const content::WebContents* contents,
-      const GURL& url,
-      content::PageTransition transition,
-      WindowOpenDisposition disposition,
-      bool is_search_type) OVERRIDE;
   virtual void PasteIntoOmnibox(const content::WebContents* contents,
                                 const string16& text) OVERRIDE;
   virtual void InstantPageLoadFailed(content::WebContents* contents) OVERRIDE;
@@ -186,9 +178,6 @@ class InstantController : public InstantPage::Delegate {
   // Returns whether input is in progress, i.e. if the omnibox has focus and the
   // active tab is in mode SEARCH_SUGGESTIONS.
   bool IsInputInProgress() const;
-
-  // Returns true if the local page is being used.
-  bool UsingLocalPage() const;
 
   // Returns the InstantService for the browser profile.
   InstantService* GetInstantService() const;

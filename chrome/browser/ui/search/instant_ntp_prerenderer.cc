@@ -207,15 +207,6 @@ void InstantNTPPrerenderer::InstantPageAboutToNavigateMainFrame(
   NOTREACHED();
 }
 
-void InstantNTPPrerenderer::NavigateToURL(
-    const content::WebContents* /* contents */,
-    const GURL& /* url */,
-    content::PageTransition /* transition */,
-    WindowOpenDisposition /* disposition */,
-    bool /* is_search_type */) {
-  NOTREACHED();
-}
-
 void InstantNTPPrerenderer::PasteIntoOmnibox(
     const content::WebContents* /* contents */,
     const string16& /* text */) {

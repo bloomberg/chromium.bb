@@ -228,12 +228,11 @@ void SearchBox::Focus() {
 }
 
 void SearchBox::NavigateToURL(const GURL& url,
-                              content::PageTransition transition,
                               WindowOpenDisposition disposition,
-                              bool is_search_type) {
+                              bool is_most_visited_item_url) {
   render_view()->Send(new ChromeViewHostMsg_SearchBoxNavigate(
-      render_view()->GetRoutingID(), render_view()->GetPageId(),
-      url, transition, disposition, is_search_type));
+      render_view()->GetRoutingID(), render_view()->GetPageId(), url,
+      disposition, is_most_visited_item_url));
 }
 
 void SearchBox::Paste(const string16& text) {

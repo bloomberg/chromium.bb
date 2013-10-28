@@ -156,17 +156,6 @@ void BrowserInstantController::TabDeactivated(content::WebContents* contents) {
   instant_.TabDeactivated(contents);
 }
 
-void BrowserInstantController::OpenURL(
-    const GURL& url,
-    content::PageTransition transition,
-    WindowOpenDisposition disposition) {
-  browser_->OpenURL(content::OpenURLParams(url,
-                                           content::Referrer(),
-                                           disposition,
-                                           transition,
-                                           false));
-}
-
 void BrowserInstantController::PasteIntoOmnibox(const string16& text) {
   OmniboxView* omnibox_view = browser_->window()->GetLocationBar()->
       GetLocationEntry();

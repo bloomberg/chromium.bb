@@ -32,6 +32,7 @@ class MockSearchIPCRouterDelegate : public SearchIPCRouter::Delegate {
   MOCK_METHOD1(OnInstantSupportDetermined, void(bool supports_instant));
   MOCK_METHOD1(OnSetVoiceSearchSupport, void(bool supports_voice_search));
   MOCK_METHOD1(FocusOmnibox, void(OmniboxFocusState state));
+  MOCK_METHOD3(NavigateToURL, void(const GURL&, WindowOpenDisposition, bool));
   MOCK_METHOD1(OnDeleteMostVisitedItem, void(const GURL& url));
   MOCK_METHOD1(OnUndoMostVisitedDeletion, void(const GURL& url));
   MOCK_METHOD0(OnUndoAllMostVisitedDeletions, void());

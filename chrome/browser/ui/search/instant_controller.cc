@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/search/instant_controller.h"
 
-#include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -31,7 +30,6 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_widget_host_view.h"
-#include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "net/base/escape.h"
@@ -43,32 +41,6 @@
 #endif
 
 namespace {
-
-// For reporting Instant navigations.
-enum InstantNavigation {
-  INSTANT_NAVIGATION_LOCAL_CLICK = 0,
-  INSTANT_NAVIGATION_LOCAL_SUBMIT = 1,
-  INSTANT_NAVIGATION_ONLINE_CLICK = 2,
-  INSTANT_NAVIGATION_ONLINE_SUBMIT = 3,
-  INSTANT_NAVIGATION_NONEXTENDED = 4,
-  INSTANT_NAVIGATION_MAX = 5
-};
-
-void RecordNavigationHistogram(bool is_local, bool is_click, bool is_extended) {
-  InstantNavigation navigation;
-  if (!is_extended) {
-    navigation = INSTANT_NAVIGATION_NONEXTENDED;
-  } else if (is_local) {
-    navigation = is_click ? INSTANT_NAVIGATION_LOCAL_CLICK :
-                            INSTANT_NAVIGATION_LOCAL_SUBMIT;
-  } else {
-    navigation = is_click ? INSTANT_NAVIGATION_ONLINE_CLICK :
-                            INSTANT_NAVIGATION_ONLINE_SUBMIT;
-  }
-  UMA_HISTOGRAM_ENUMERATION("InstantExtended.InstantNavigation",
-                            navigation,
-                            INSTANT_NAVIGATION_MAX);
-}
 
 bool IsContentsFrom(const InstantPage* page,
                     const content::WebContents* contents) {
@@ -289,27 +261,6 @@ void InstantController::InstantPageAboutToNavigateMainFrame(
   UpdateInfoForInstantTab();
 }
 
-void InstantController::NavigateToURL(const content::WebContents* contents,
-                                      const GURL& url,
-                                      content::PageTransition transition,
-                                      WindowOpenDisposition disposition,
-                                      bool is_search_type) {
-  LOG_INSTANT_DEBUG_EVENT(this, base::StringPrintf(
-      "NavigateToURL: url='%s'", url.spec().c_str()));
-
-  // TODO(samarth): handle case where contents are no longer "active" (e.g. user
-  // has switched tabs).
-  if (transition == content::PAGE_TRANSITION_AUTO_BOOKMARK) {
-    content::RecordAction(
-        content::UserMetricsAction("InstantExtended.MostVisitedClicked"));
-  } else {
-    // Exclude navigation by Most Visited click and searches.
-    if (!is_search_type)
-      RecordNavigationHistogram(UsingLocalPage(), true, true);
-  }
-  browser_->OpenURL(url, transition, disposition);
-}
-
 void InstantController::PasteIntoOmnibox(const content::WebContents* contents,
       const string16& text) {
   if (search_mode_.is_origin_default())
@@ -353,10 +304,6 @@ void InstantController::UpdateInfoForInstantTab() {
 bool InstantController::IsInputInProgress() const {
   return !search_mode_.is_ntp() &&
       omnibox_focus_state_ == OMNIBOX_FOCUS_VISIBLE;
-}
-
-bool InstantController::UsingLocalPage() const {
-  return instant_tab_ && instant_tab_->IsLocal();
 }
 
 void InstantController::RedirectToLocalNTP(content::WebContents* contents) {

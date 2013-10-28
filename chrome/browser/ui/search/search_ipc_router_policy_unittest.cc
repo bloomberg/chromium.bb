@@ -84,9 +84,6 @@ TEST_F(SearchIPCRouterPolicyTest, ProcessUndoMostVisitedDeletion) {
 
 TEST_F(SearchIPCRouterPolicyTest, ProcessUndoAllMostVisitedDeletions) {
   NavigateAndCommitActiveTab(GURL(chrome::kChromeSearchLocalNtpUrl));
-  SearchTabHelper* search_tab_helper =
-      SearchTabHelper::FromWebContents(web_contents());
-  ASSERT_NE(static_cast<SearchTabHelper*>(NULL), search_tab_helper);
   EXPECT_TRUE(GetSearchTabHelper()->ipc_router().policy()->
       ShouldProcessUndoAllMostVisitedDeletions());
 }
@@ -104,6 +101,12 @@ TEST_F(SearchIPCRouterPolicyTest, DoNotProcessLogEvent) {
       ShouldProcessLogEvent());
 }
 
+TEST_F(SearchIPCRouterPolicyTest, ProcessNavigateToURL) {
+  NavigateAndCommitActiveTab(GURL(chrome::kChromeSearchLocalNtpUrl));
+  EXPECT_TRUE(GetSearchTabHelper()->ipc_router().policy()->
+      ShouldProcessNavigateToURL(true));
+}
+
 TEST_F(SearchIPCRouterPolicyTest, DoNotProcessMessagesForIncognitoPage) {
   NavigateAndCommitActiveTab(GURL(chrome::kChromeSearchLocalNtpUrl));
   SearchTabHelper* search_tab_helper = GetSearchTabHelper();
@@ -114,6 +117,8 @@ TEST_F(SearchIPCRouterPolicyTest, DoNotProcessMessagesForIncognitoPage) {
 
   EXPECT_FALSE(search_tab_helper->ipc_router().policy()->
       ShouldProcessFocusOmnibox(true));
+  EXPECT_FALSE(search_tab_helper->ipc_router().policy()->
+      ShouldProcessNavigateToURL(true));
   EXPECT_FALSE(search_tab_helper->ipc_router().policy()->
       ShouldProcessDeleteMostVisitedItem());
   EXPECT_FALSE(search_tab_helper->ipc_router().policy()->
@@ -128,8 +133,11 @@ TEST_F(SearchIPCRouterPolicyTest, DoNotProcessMessagesForInactiveTab) {
   NavigateAndCommitActiveTab(GURL(chrome::kChromeSearchLocalNtpUrl));
 
   // Assume the NTP is deactivated.
-  EXPECT_FALSE(GetSearchTabHelper()->ipc_router().policy()->
+  SearchTabHelper* search_tab_helper = GetSearchTabHelper();
+  EXPECT_FALSE(search_tab_helper->ipc_router().policy()->
       ShouldProcessFocusOmnibox(false));
+  EXPECT_FALSE(search_tab_helper->ipc_router().policy()->
+      ShouldProcessNavigateToURL(false));
 }
 
 TEST_F(SearchIPCRouterPolicyTest, SendSetDisplayInstantResults) {

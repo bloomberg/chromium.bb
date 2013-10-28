@@ -5255,6 +5255,10 @@ other types of suffix sets.
 
 <histogram name="InstantExtended.InstantNavigation"
     enum="InstantExtended_InstantNavigation">
+  <obsolete>
+    Deprecated as of 10/2013. This histogram is no longer relevant since the
+    HTML overlay went away.
+  </obsolete>
   <summary>
     Records a histogram for instant extended (Local NTP and Online NTP) and
     non-extended navigations.
@@ -23258,6 +23262,9 @@ other types of suffix sets.
 </enum>
 
 <enum name="InstantExtended_InstantNavigation" type="int">
+  <obsolete>
+    Deprecated as of 10/2013.
+  </obsolete>
   <int value="0" label="Local click"/>
   <int value="1" label="Local submit"/>
   <int value="2" label="Online click"/>

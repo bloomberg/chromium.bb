@@ -13,6 +13,7 @@
 #include "chrome/common/ntp_logging_events.h"
 #include "chrome/common/omnibox_focus_state.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "ui/base/window_open_disposition.h"
 
 class GURL;
 
@@ -41,6 +42,14 @@ class SearchIPCRouter : public content::WebContentsObserver {
     // the omnibox focus state.
     virtual void FocusOmnibox(OmniboxFocusState state) = 0;
 
+    // Called when the page wants to navigate to |url|. Usually used by the
+    // page to navigate to privileged destinations (e.g. chrome:// URLs) or to
+    // navigate to URLs that are hidden from the page using Restricted IDs (rid
+    // in the API).
+    virtual void NavigateToURL(const GURL& url,
+                               WindowOpenDisposition disposition,
+                               bool is_most_visited_item_url) = 0;
+
     // Called when the SearchBox wants to delete a Most Visited item.
     virtual void OnDeleteMostVisitedItem(const GURL& url) = 0;
 
@@ -65,6 +74,7 @@ class SearchIPCRouter : public content::WebContentsObserver {
     // to/from the page.
     virtual bool ShouldProcessSetVoiceSearchSupport() = 0;
     virtual bool ShouldProcessFocusOmnibox(bool is_active_tab) = 0;
+    virtual bool ShouldProcessNavigateToURL(bool is_active_tab) = 0;
     virtual bool ShouldProcessDeleteMostVisitedItem() = 0;
     virtual bool ShouldProcessUndoMostVisitedDeletion() = 0;
     virtual bool ShouldProcessUndoAllMostVisitedDeletions() = 0;
@@ -142,6 +152,7 @@ class SearchIPCRouter : public content::WebContentsObserver {
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest, SendSetPromoInformation);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest,
                            DoNotSendSetPromoInformation);
+  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest, ProcessNavigateToURL);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest,
                            ProcessDeleteMostVisitedItem);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest,
@@ -162,6 +173,8 @@ class SearchIPCRouter : public content::WebContentsObserver {
                            DoNotSendSetPromoInformationMsg);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest, ProcessLogEventMsg);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest, IgnoreLogEventMsg);
+  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest, ProcessNavigateToURLMsg);
+  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest, IgnoreNavigateToURLMsg);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest,
                            ProcessDeleteMostVisitedItemMsg);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest,
@@ -184,6 +197,10 @@ class SearchIPCRouter : public content::WebContentsObserver {
   void OnVoiceSearchSupportDetermined(int page_id,
                                       bool supports_voice_search) const;
   void OnFocusOmnibox(int page_id, OmniboxFocusState state) const;
+  void OnSearchBoxNavigate(int page_id,
+                           const GURL& url,
+                           WindowOpenDisposition disposition,
+                           bool is_most_visited_item_url) const;
   void OnDeleteMostVisitedItem(int page_id, const GURL& url) const;
   void OnUndoMostVisitedDeletion(int page_id, const GURL& url) const;
   void OnUndoAllMostVisitedDeletions(int page_id) const;
