@@ -414,10 +414,7 @@ void HTMLInputElement::updateType()
     bool didRespectHeightAndWidth = m_inputType->shouldRespectHeightAndWidthAttributes();
 
     m_inputType->destroyShadowSubtree();
-
-    bool wasAttached = confusingAndOftenMisusedAttached();
-    if (wasAttached)
-        detach();
+    lazyReattachIfAttached();
 
     m_inputType = newType.release();
     if (hasAuthorShadowRoot())
@@ -464,11 +461,8 @@ void HTMLInputElement::updateType()
             attributeChanged(alignAttr, align->value());
     }
 
-    if (wasAttached) {
-        lazyAttach();
-        if (document().focusedElement() == this)
-            document().updateFocusAppearanceSoon(true /* restore selection */);
-    }
+    if (document().focusedElement() == this)
+        document().updateFocusAppearanceSoon(true /* restore selection */);
 
     setChangedSinceLastFormControlChangeEvent(false);
 
