@@ -84,6 +84,8 @@ TEST(NinjaScriptTargetWriter, InvokeOverSources) {
   // Posix.
   {
     setup.settings()->set_target_os(Settings::LINUX);
+    setup.build_settings()->set_python_path(base::FilePath(FILE_PATH_LITERAL(
+        "/usr/bin/python")));
 
     std::ostringstream out;
     NinjaScriptTargetWriter writer(&target, out);
@@ -91,14 +93,17 @@ TEST(NinjaScriptTargetWriter, InvokeOverSources) {
 
     const char expected_linux[] =
         "rule __foo_bar___rule\n"
-        "  command = cd ../../foo; $pythonpath ../../foo/script.py -i ${source} \"--out=foo$ bar${source_name_part}.o\"\n"
+        "  command = /usr/bin/python ../../foo/script.py -i ${source} "
+            "\"--out=foo$ bar${source_name_part}.o\"\n"
         "  description = CUSTOM //foo:bar()\n"
         "  restat = 1\n"
         "\n"
-        "build input1.out: __foo_bar___rule../../foo/input1.txt | ../../foo/included.txt\n"
+        "build input1.out: __foo_bar___rule ../../foo/input1.txt | "
+            "../../foo/included.txt\n"
         "  source = ../../foo/input1.txt\n"
         "  source_name_part = input1\n"
-        "build input2.out: __foo_bar___rule../../foo/input2.txt | ../../foo/included.txt\n"
+        "build input2.out: __foo_bar___rule ../../foo/input2.txt | "
+            "../../foo/included.txt\n"
         "  source = ../../foo/input2.txt\n"
         "  source_name_part = input2\n"
         "\n"
@@ -127,17 +132,21 @@ TEST(NinjaScriptTargetWriter, InvokeOverSources) {
     // depending if we're on actual Windows or Linux pretending to be Windows.
     const char expected_win[] =
         "rule __foo_bar___rule\n"
-        "  command = C:/python/python.exe gyp-win-tool action-wrapper environment.x86 __foo_bar___rule.$unique_name.rsp\n"
+        "  command = C:/python/python.exe gyp-win-tool action-wrapper "
+            "environment.x86 __foo_bar___rule.$unique_name.rsp\n"
         "  description = CUSTOM //foo:bar()\n"
         "  restat = 1\n"
         "  rspfile = __foo_bar___rule.$unique_name.rsp\n"
-        "  rspfile_content = C:/python/python.exe ../../foo/script.py -i ${source} \"--out=foo$ bar${source_name_part}.o\"\n"
+        "  rspfile_content = C:/python/python.exe ../../foo/script.py -i "
+            "${source} \"--out=foo$ bar${source_name_part}.o\"\n"
         "\n"
-        "build input1.out: __foo_bar___rule../../foo/input1.txt | ../../foo/included.txt\n"
+        "build input1.out: __foo_bar___rule ../../foo/input1.txt | "
+            "../../foo/included.txt\n"
         "  unique_name = 0\n"
         "  source = ../../foo/input1.txt\n"
         "  source_name_part = input1\n"
-        "build input2.out: __foo_bar___rule../../foo/input2.txt | ../../foo/included.txt\n"
+        "build input2.out: __foo_bar___rule ../../foo/input2.txt | "
+            "../../foo/included.txt\n"
         "  unique_name = 1\n"
         "  source = ../../foo/input2.txt\n"
         "  source_name_part = input2\n"

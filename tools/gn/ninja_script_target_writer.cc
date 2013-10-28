@@ -94,10 +94,9 @@ std::string NinjaScriptTargetWriter::WriteRuleDefinition(
   } else {
     // Posix can execute Python directly.
     out_ << "rule " << custom_rule_name << std::endl;
-    out_ << "  command = cd ";
-    path_output_.WriteDir(out_, target_->label().dir(),
-                          PathOutput::DIR_NO_LAST_SLASH);
-    out_ << "; $pythonpath ";
+    out_ << "  command = ";
+    path_output_.WriteFile(out_, settings_->build_settings()->python_path());
+    out_ << " ";
     path_output_.WriteFile(out_, target_->script_values().script());
     args_template.WriteWithNinjaExpansions(out_);
     out_ << std::endl;
@@ -135,7 +134,7 @@ void NinjaScriptTargetWriter::WriteSourceRules(
     out_ << "build";
     WriteOutputFilesForBuildLine(output_template, sources[i], output_files);
 
-    out_ << ": " << custom_rule_name;
+    out_ << ": " << custom_rule_name << " ";
     path_output_.WriteFile(out_, sources[i]);
     out_ << implicit_deps << std::endl;
 
