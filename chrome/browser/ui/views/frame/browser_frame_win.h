@@ -14,7 +14,6 @@
 #include "ui/views/widget/native_widget_win.h"
 
 class BrowserView;
-class BrowserWindowPropertyManager;
 
 namespace views {
 class NativeMenuWin;
@@ -44,7 +43,6 @@ class BrowserFrameWin : public views::NativeWidgetWin,
   // Overridden from views::NativeWidgetWin:
   virtual int GetInitialShowState() const OVERRIDE;
   virtual bool GetClientAreaInsets(gfx::Insets* insets) const OVERRIDE;
-  virtual void HandleCreate() OVERRIDE;
   virtual void HandleFrameChanged() OVERRIDE;
   virtual bool PreHandleMSG(UINT message,
                             WPARAM w_param,
@@ -102,8 +100,6 @@ class BrowserFrameWin : public views::NativeWidgetWin,
   scoped_ptr<views::NativeMenuWin> system_menu_;
 
   MinimizeButtonMetrics minimize_button_metrics_;
-
-  scoped_ptr<BrowserWindowPropertyManager> browser_window_property_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserFrameWin);
 };

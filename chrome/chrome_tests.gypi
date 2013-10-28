@@ -1457,7 +1457,6 @@
         'browser/ui/views/frame/app_non_client_frame_view_ash_browsertest.cc',
         'browser/ui/views/frame/browser_non_client_frame_view_ash_browsertest.cc',
         'browser/ui/views/frame/browser_view_browsertest.cc',
-        'browser/ui/views/frame/browser_window_property_manager_browsertest_win.cc',
         'browser/ui/views/frame/immersive_mode_controller_ash_browsertest.cc',
         'browser/ui/views/location_bar/zoom_bubble_view_browsertest.cc',
         'browser/ui/views/new_avatar_menu_button_browsertest.cc',

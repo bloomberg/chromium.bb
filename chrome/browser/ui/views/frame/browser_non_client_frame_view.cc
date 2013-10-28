@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
 
-#include "base/command_line.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/avatar_menu.h"
 #include "chrome/browser/profiles/profile.h"
@@ -18,7 +17,6 @@
 #include "chrome/browser/ui/views/frame/taskbar_decorator.h"
 #include "chrome/browser/ui/views/new_avatar_button.h"
 #include "chrome/browser/ui/views/profile_chooser_view.h"
-#include "chrome/common/chrome_switches.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -116,15 +114,10 @@ void BrowserNonClientFrameView::UpdateAvatarInfo() {
   }
 
   // For popups and panels which don't have the avatar button, we still
-  // need to draw the taskbar decoration. Draw the avatar for
-  // custom-user-data-dir windows which don't support having a shortcut icon.
-  // For non-custom-user-data-dir windows, the window's relaunch details are set
-  // so that the profile's shortcut icon is used, which includes this badge.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kUserDataDir)) {
-    chrome::DrawTaskbarDecoration(
-        frame_->GetNativeWindow(),
-        AvatarMenu::ShouldShowAvatarMenu() ? &avatar : NULL);
-  }
+  // need to draw the taskbar decoration.
+  chrome::DrawTaskbarDecoration(
+      frame_->GetNativeWindow(),
+      AvatarMenu::ShouldShowAvatarMenu() ? &avatar : NULL);
 }
 
 void BrowserNonClientFrameView::UpdateNewStyleAvatarInfo(
