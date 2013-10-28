@@ -136,25 +136,35 @@ def get_interface_extended_attributes_from_idl(file_contents):
                       file_contents, flags=re.DOTALL)
     if not match:
         return {}
+    # Strip comments
+    # re.compile needed b/c Python 2.6 doesn't support flags in re.sub
+    single_line_comment_re = re.compile(r'//.*$', flags=re.MULTILINE)
+    block_comment_re = re.compile(r'/\*.*?\*/', flags=re.MULTILINE | re.DOTALL)
+    extended_attributes_string = re.sub(single_line_comment_re, '', match.group(1))
+    extended_attributes_string = re.sub(block_comment_re, '', extended_attributes_string)
     extended_attributes = {}
-    parts = string.split(match.group(1), ',')
+    # FIXME: this splitting is WRONG: it fails on ExtendedAttributeArgList like
+    # 'NamedConstructor=Foo(a, b)'
+    parts = [extended_attribute.strip()
+             for extended_attribute in extended_attributes_string.split(',')
+             # Discard empty parts, which may exist due to trailing comma
+             if extended_attribute.strip()]
     for part in parts:
-        key, _, value = map(string.strip, part.partition('='))
-        if not key:
-            continue
-        value = value or 'VALUE_IS_MISSING'
-        extended_attributes[key] = value
+        name, _, value = map(string.strip, part.partition('='))
+        extended_attributes[name] = value
     return extended_attributes
 
 
 def generate_constructor_attribute_list(interface_name, extended_attributes):
     extended_attributes_list = []
-    for attribute_name, attribute_value in extended_attributes.iteritems():
-        if attribute_name not in ['Conditional', 'RuntimeEnabled', 'PerContextEnabled']:
+    # FIXME: this is non-deterministic; loop over extended attributes in order
+    for name, value in extended_attributes.iteritems():
+        if name not in ['Conditional', 'RuntimeEnabled', 'PerContextEnabled']:
             continue
-        extended_attribute = attribute_name
-        if attribute_value != 'VALUE_IS_MISSING':
-            extended_attribute += '=' + attribute_value
+        if value:
+            extended_attribute = name + '=' + value
+        else:
+            extended_attribute = name
         extended_attributes_list.append(extended_attribute)
     if extended_attributes_list:
         extended_string = '[%s] ' % ', '.join(extended_attributes_list)
