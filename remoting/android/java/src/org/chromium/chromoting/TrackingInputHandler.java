@@ -97,6 +97,39 @@ public class TrackingInputHandler implements TouchInputHandler {
             mRenderData.transform.postTranslate(
                     (float)mRenderData.screenWidth / 2 - cursorScreen[0],
                     (float)mRenderData.screenHeight / 2 - cursorScreen[1]);
+
+            // Now the cursor is displayed in the middle of the screen, see if the image can be
+            // panned so that more of it is visible. The primary goal is to show as much of the
+            // image as possible. The secondary goal is to keep the cursor in the middle.
+
+            // Get the coordinates of the desktop rectangle (top-left/bottom-right corners) in
+            // screen coordinates. Order is: left, top, right, bottom.
+            float[] rectScreen = {0, 0, mRenderData.imageWidth, mRenderData.imageHeight};
+            mRenderData.transform.mapPoints(rectScreen);
+
+            float leftDelta = rectScreen[0];
+            float rightDelta = rectScreen[2] - mRenderData.screenWidth;
+            float topDelta = rectScreen[1];
+            float bottomDelta = rectScreen[3] - mRenderData.screenHeight;
+            float xAdjust = 0;
+            float yAdjust = 0;
+
+            if (leftDelta > 0 && rightDelta > 0) {
+                // Panning the image left will show more of it.
+                xAdjust = -Math.min(leftDelta, rightDelta);
+            } else if (leftDelta < 0 && rightDelta < 0) {
+                // Pan the image right.
+                xAdjust = Math.min(-leftDelta, -rightDelta);
+            }
+
+            // Apply similar logic for yAdjust.
+            if (topDelta > 0 && bottomDelta > 0) {
+                yAdjust = -Math.min(topDelta, bottomDelta);
+            } else if (topDelta < 0 && bottomDelta < 0) {
+                yAdjust = Math.min(-topDelta, -bottomDelta);
+            }
+
+            mRenderData.transform.postTranslate(xAdjust, yAdjust);
         }
         mViewer.transformationChanged();
     }
