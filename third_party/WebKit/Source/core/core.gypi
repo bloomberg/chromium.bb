@@ -2765,8 +2765,6 @@
             'platform/graphics/Pattern.cpp',
             'platform/graphics/SegmentedFontData.cpp',
             'platform/graphics/SegmentedFontData.h',
-            'platform/graphics/ShadowBlur.cpp',
-            'platform/graphics/ShadowBlur.h',
             'platform/graphics/SimpleFontData.cpp',
             'platform/graphics/SVGGlyph.cpp',
             'platform/graphics/StringTruncator.cpp',
