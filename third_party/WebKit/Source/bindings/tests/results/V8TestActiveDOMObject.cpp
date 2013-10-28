@@ -102,7 +102,6 @@ static void excitingFunctionMethod(const v8::FunctionCallbackInfo<v8::Value>& ar
     }
     V8TRYCATCH_VOID(Node*, nextChild, V8Node::HasInstance(args[0], args.GetIsolate(), worldType(args.GetIsolate())) ? V8Node::toNative(v8::Handle<v8::Object>::Cast(args[0])) : 0);
     imp->excitingFunction(nextChild);
-    return;
 }
 
 static void excitingFunctionMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -121,7 +120,6 @@ static void postMessageMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
     TestActiveDOMObject* imp = V8TestActiveDOMObject::toNative(args.Holder());
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, message, args[0]);
     imp->postMessage(message);
-    return;
 }
 
 static void postMessageMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)

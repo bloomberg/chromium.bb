@@ -70,7 +70,6 @@ static void anotherFunctionMethod(const v8::FunctionCallbackInfo<v8::Value>& arg
     TestCustomAccessors* imp = V8TestCustomAccessors::toNative(args.Holder());
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, str, args[0]);
     imp->anotherFunction(str);
-    return;
 }
 
 static void anotherFunctionMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)

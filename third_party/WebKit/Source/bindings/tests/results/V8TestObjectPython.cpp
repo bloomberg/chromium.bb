@@ -3237,7 +3237,6 @@ static void voidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(args.Holder());
     imp->voidMethod();
-    return;
 }
 
 static void voidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -3251,7 +3250,6 @@ static void dateMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(args.Holder());
     v8SetReturnValue(args, v8DateOrNull(imp->dateMethod(), args.GetIsolate()));
-    return;
 }
 
 static void dateMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -3265,7 +3263,6 @@ static void stringMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(args.Holder());
     v8SetReturnValueString(args, imp->stringMethod(), args.GetIsolate());
-    return;
 }
 
 static void stringMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -3279,7 +3276,6 @@ static void readonlyDOMTimeStampMethodMethod(const v8::FunctionCallbackInfo<v8::
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(args.Holder());
     v8SetReturnValue(args, static_cast<double>(imp->readonlyDOMTimeStampMethod()));
-    return;
 }
 
 static void readonlyDOMTimeStampMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -3293,7 +3289,6 @@ static void booleanMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(args.Holder());
     v8SetReturnValueBool(args, imp->booleanMethod());
-    return;
 }
 
 static void booleanMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -3307,7 +3302,6 @@ static void byteMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(args.Holder());
     v8SetReturnValueInt(args, imp->byteMethod());
-    return;
 }
 
 static void byteMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -3321,7 +3315,6 @@ static void doubleMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(args.Holder());
     v8SetReturnValue(args, imp->doubleMethod());
-    return;
 }
 
 static void doubleMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -3335,7 +3328,6 @@ static void floatMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(args.Holder());
     v8SetReturnValue(args, imp->floatMethod());
-    return;
 }
 
 static void floatMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -3349,7 +3341,6 @@ static void longMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(args.Holder());
     v8SetReturnValueInt(args, imp->longMethod());
-    return;
 }
 
 static void longMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -3363,7 +3354,6 @@ static void longLongMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& args
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(args.Holder());
     v8SetReturnValue(args, static_cast<double>(imp->longLongMethod()));
-    return;
 }
 
 static void longLongMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -3377,7 +3367,6 @@ static void octetMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(args.Holder());
     v8SetReturnValueUnsigned(args, imp->octetMethod());
-    return;
 }
 
 static void octetMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -3391,7 +3380,6 @@ static void shortMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(args.Holder());
     v8SetReturnValueInt(args, imp->shortMethod());
-    return;
 }
 
 static void shortMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -3405,7 +3393,6 @@ static void unsignedLongMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& 
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(args.Holder());
     v8SetReturnValueUnsigned(args, imp->unsignedLongMethod());
-    return;
 }
 
 static void unsignedLongMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -3419,7 +3406,6 @@ static void unsignedLongLongMethodMethod(const v8::FunctionCallbackInfo<v8::Valu
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(args.Holder());
     v8SetReturnValue(args, static_cast<double>(imp->unsignedLongLongMethod()));
-    return;
 }
 
 static void unsignedLongLongMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -3433,7 +3419,6 @@ static void unsignedShortMethodMethod(const v8::FunctionCallbackInfo<v8::Value>&
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(args.Holder());
     v8SetReturnValueUnsigned(args, imp->unsignedShortMethod());
-    return;
 }
 
 static void unsignedShortMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)

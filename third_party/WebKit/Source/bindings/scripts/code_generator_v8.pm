@@ -2456,12 +2456,13 @@ sub GenerateParametersCheck
         # Optional arguments with [Optional=...] should not generate the early call.
         # Optional Dictionary arguments always considered to have default of empty dictionary.
         if ($parameter->isOptional && !$parameter->extendedAttributes->{"Default"} && $nativeType ne "Dictionary" && !IsCallbackInterface($parameter->type)) {
-            $parameterCheckString .= "    if (UNLIKELY(args.Length() <= $paramIndex))";
             my $functionCall = GenerateFunctionCallString($function, $paramIndex, "    " x 2, $interface, $forMainWorldSuffix, %replacements);
-            my $multiLine = ($functionCall =~ tr/\n//) > 1;
-            $parameterCheckString .= $multiLine ? " {\n" : "\n";
-            $parameterCheckString .= $functionCall;
-            $parameterCheckString .= $multiLine ? "    }\n" : "\n";
+            $parameterCheckString .= <<END
+    if (UNLIKELY(args.Length() <= $paramIndex)) {
+$functionCall;
+        return;
+    }
+END
         }
 
         my $parameterName = $parameter->name;
@@ -5171,7 +5172,6 @@ END
         } else {
             $code .= $indent . "v8SetReturnValue${forMainWorldSuffix}(args, WTF::getPtr(${svgNativeType}::create($return)), args.Holder());\n";
         }
-        $code .= $indent . "return;\n";
         return $code;
     }
 
@@ -5190,10 +5190,7 @@ END
         $nativeValue = NativeToJSValue($function->type, $function->extendedAttributes, $return, $indent, "", "args.Holder()", "args.GetIsolate()", "args", 0, $forMainWorldSuffix, "return");
     }
 
-    if ($nativeValue) {  # Skip blank line for void return type
-        $code .= $nativeValue . "\n";
-    }
-    $code .= $indent . "return;\n";
+    $code .= $nativeValue . "\n" if $nativeValue;  # Skip blank line for void return type
 
     return $code;
 }

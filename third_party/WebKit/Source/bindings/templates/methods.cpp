@@ -8,7 +8,6 @@ static void {{method.name}}Method(const v8::FunctionCallbackInfo<v8::Value>& arg
     {% else %}
     {{method.v8_set_return_value}};
     {% endif %}
-    return;
 }
 {% endmacro %}
 

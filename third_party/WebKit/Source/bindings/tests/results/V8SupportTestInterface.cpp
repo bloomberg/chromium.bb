@@ -296,7 +296,6 @@ static void supplementalMethod1Method(const v8::FunctionCallbackInfo<v8::Value>&
 {
     SupportTestInterface* imp = V8SupportTestInterface::toNative(args.Holder());
     SupportTestPartialInterface::supplementalMethod1(imp);
-    return;
 }
 
 #endif // ENABLE(Condition11) || ENABLE(Condition12)
@@ -329,7 +328,6 @@ static void supplementalMethod2Method(const v8::FunctionCallbackInfo<v8::Value>&
     if (es.throwIfNeeded())
         return;
     v8SetReturnValue(args, result.release(), args.Holder());
-    return;
 }
 
 #endif // ENABLE(Condition11) || ENABLE(Condition12)
@@ -361,7 +359,6 @@ static void supplementalMethod3MethodCallback(const v8::FunctionCallbackInfo<v8:
 static void supplementalMethod4Method(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     SupportTestPartialInterface::supplementalMethod4();
-    return;
 }
 
 #endif // ENABLE(Condition11) || ENABLE(Condition12)

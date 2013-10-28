@@ -535,7 +535,6 @@ static void implementsMethod1Method(const v8::FunctionCallbackInfo<v8::Value>& a
 {
     TestInterface* imp = V8TestInterface::toNative(args.Holder());
     TestImplements::implementsMethod1(imp);
-    return;
 }
 
 static void implementsMethod1MethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -560,7 +559,6 @@ static void implementsMethod2Method(const v8::FunctionCallbackInfo<v8::Value>& a
     if (es.throwIfNeeded())
         return;
     v8SetReturnValue(args, result.release(), args.Holder());
-    return;
 }
 
 static void implementsMethod2MethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -580,7 +578,6 @@ static void implementsMethod3MethodCallback(const v8::FunctionCallbackInfo<v8::V
 static void implementsMethod4Method(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     TestImplements::implementsMethod4();
-    return;
 }
 
 static void implementsMethod4MethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -596,7 +593,6 @@ static void supplementalMethod1Method(const v8::FunctionCallbackInfo<v8::Value>&
 {
     TestInterface* imp = V8TestInterface::toNative(args.Holder());
     TestPartialInterface::supplementalMethod1(imp);
-    return;
 }
 
 #endif // ENABLE(Condition11) || ENABLE(Condition12)
@@ -629,7 +625,6 @@ static void supplementalMethod2Method(const v8::FunctionCallbackInfo<v8::Value>&
     if (es.throwIfNeeded())
         return;
     v8SetReturnValue(args, result.release(), args.Holder());
-    return;
 }
 
 #endif // ENABLE(Condition11) || ENABLE(Condition12)
@@ -661,7 +656,6 @@ static void supplementalMethod3MethodCallback(const v8::FunctionCallbackInfo<v8:
 static void supplementalMethod4Method(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     TestPartialInterface::supplementalMethod4();
-    return;
 }
 
 #endif // ENABLE(Condition11) || ENABLE(Condition12)
