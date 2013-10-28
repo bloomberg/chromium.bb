@@ -1091,7 +1091,7 @@ void RenderLayerCompositor::rebuildCompositingLayerTree(RenderLayer* layer, Vect
         UNUSED_PARAM(depth);
 #endif
         if (currentCompositedLayerMapping->hasUnpositionedOverflowControlsLayers())
-            layer->positionNewlyCreatedOverflowControls();
+            layer->scrollableArea()->positionNewlyCreatedOverflowControls();
 
         pixelsWithoutPromotingAllTransitions += layer->size().height() * layer->size().width();
     } else {

@@ -140,8 +140,6 @@ public:
     bool hitTestOverflowControls(HitTestResult&, const IntPoint& localPoint);
     IntSize offsetFromResizeCorner(const IntPoint& absolutePoint) const;
 
-    void updateScrollInfoAfterLayout();
-
     void autoscroll(const IntPoint&);
 
     bool isRootLayer() const { return m_isRootLayer; }
@@ -168,8 +166,6 @@ public:
 
     void updateLayerPositionsAfterOverflowScroll();
     void updateLayerPositionsAfterDocumentScroll();
-
-    void positionNewlyCreatedOverflowControls();
 
     bool isPaginated() const { return m_isPaginated; }
     RenderLayer* enclosingPaginationLayer() const { return m_enclosingPaginationLayer; }

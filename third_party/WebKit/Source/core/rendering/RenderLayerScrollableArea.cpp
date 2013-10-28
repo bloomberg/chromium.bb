@@ -601,6 +601,10 @@ void RenderLayerScrollableArea::updateAfterLayout()
     }
 
     layer()->updateScrollableAreaSet(hasScrollableHorizontalOverflow() || hasScrollableVerticalOverflow());
+
+    // Composited scrolling may need to be enabled or disabled if the amount of overflow changed.
+    if (m_box->view() && m_box->view()->compositor()->updateLayerCompositingState(m_box->layer()))
+        m_box->view()->compositor()->setCompositingLayersNeedRebuild();
 }
 
 bool RenderLayerScrollableArea::hasHorizontalOverflow() const
@@ -883,6 +887,20 @@ void RenderLayerScrollableArea::positionOverflowControls(const IntSize& offsetFr
 
     if (m_box->compositedLayerMapping())
         m_box->compositedLayerMapping()->positionOverflowControlsLayers(offsetFromRoot);
+}
+
+void RenderLayerScrollableArea::positionNewlyCreatedOverflowControls()
+{
+    if (!m_box->compositedLayerMapping()->hasUnpositionedOverflowControlsLayers())
+        return;
+
+    RenderGeometryMap geometryMap(UseTransforms);
+    RenderView* view = m_box->view();
+    if (this != view->layer()->scrollableArea() && m_box->layer()->parent())
+        geometryMap.pushMappingsToAncestor(m_box->layer()->parent(), 0);
+
+    LayoutPoint offsetFromRoot = LayoutPoint(geometryMap.absolutePoint(FloatPoint()));
+    positionOverflowControls(toIntSize(roundedIntPoint(offsetFromRoot)));
 }
 
 void RenderLayerScrollableArea::updateScrollCornerStyle()

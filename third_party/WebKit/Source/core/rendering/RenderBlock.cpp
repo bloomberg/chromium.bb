@@ -1239,7 +1239,7 @@ void RenderBlock::finishDelayUpdateScrollInfo()
         for (DelayedUpdateScrollInfoSet::iterator it = infoSet->begin(); it != infoSet->end(); ++it) {
             RenderBlock* block = *it;
             if (block->hasOverflowClip()) {
-                block->layer()->updateScrollInfoAfterLayout();
+                block->layer()->scrollableArea()->updateAfterLayout();
             }
         }
     }
@@ -1253,14 +1253,14 @@ void RenderBlock::updateScrollInfoAfterLayout()
             // Workaround for now. We cannot delay the scroll info for overflow
             // for items with opposite writing directions, as the contents needs
             // to overflow in that direction
-            layer()->updateScrollInfoAfterLayout();
+            layer()->scrollableArea()->updateAfterLayout();
             return;
         }
 
         if (gDelayUpdateScrollInfo)
             gDelayedUpdateScrollInfoSet->add(this);
         else
-            layer()->updateScrollInfoAfterLayout();
+            layer()->scrollableArea()->updateAfterLayout();
     }
 }
 

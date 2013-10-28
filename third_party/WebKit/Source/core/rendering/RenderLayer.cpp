@@ -520,20 +520,6 @@ void RenderLayer::updateLayerPositionsAfterScroll(RenderGeometryMap* geometryMap
         geometryMap->popMappingsToAncestor(parent());
 }
 
-void RenderLayer::positionNewlyCreatedOverflowControls()
-{
-    if (!compositedLayerMapping()->hasUnpositionedOverflowControlsLayers())
-        return;
-
-    RenderGeometryMap geometryMap(UseTransforms);
-    RenderView* view = renderer()->view();
-    if (this != view->layer() && parent())
-        geometryMap.pushMappingsToAncestor(parent(), 0);
-
-    LayoutPoint offsetFromRoot = LayoutPoint(geometryMap.absolutePoint(FloatPoint()));
-    scrollableArea()->positionOverflowControls(toIntSize(roundedIntPoint(offsetFromRoot)));
-}
-
 bool RenderLayer::hasBlendMode() const
 {
     return RuntimeEnabledFeatures::cssCompositingEnabled() && renderer()->hasBlendMode();
@@ -1887,19 +1873,6 @@ IntSize RenderLayer::offsetFromResizeCorner(const IntPoint& absolutePoint) const
 bool RenderLayer::hasOverflowControls() const
 {
     return m_scrollableArea && (m_scrollableArea->hasScrollbar() || m_scrollableArea->hasScrollCorner() || renderer()->style()->resize() != RESIZE_NONE);
-}
-
-void RenderLayer::updateScrollInfoAfterLayout()
-{
-    RenderBox* box = renderBox();
-    if (!box)
-        return;
-
-    m_scrollableArea->updateAfterLayout();
-
-    // Composited scrolling may need to be enabled or disabled if the amount of overflow changed.
-    if (renderer()->view() && compositor()->updateLayerCompositingState(this))
-        compositor()->setCompositingLayersNeedRebuild();
 }
 
 void RenderLayer::paint(GraphicsContext* context, const LayoutRect& damageRect, PaintBehavior paintBehavior, RenderObject* paintingRoot, RenderRegion* region, PaintLayerFlags paintFlags)

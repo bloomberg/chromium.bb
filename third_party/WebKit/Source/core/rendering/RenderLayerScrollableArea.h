@@ -153,6 +153,7 @@ public:
     // and compute the correct offset ourselves.
     void positionOverflowControls();
     void positionOverflowControls(const IntSize& offsetFromRoot);
+    void positionNewlyCreatedOverflowControls();
 
     // isPointInResizeControl() is used for testing if a pointer/touch position is in the resize control
     // area.
