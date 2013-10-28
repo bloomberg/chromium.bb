@@ -159,7 +159,7 @@ AM_CONDITIONAL(ENABLE_WAYLAND_COMPOSITOR,
 if test x$enable_wayland_compositor = xyes -a x$enable_egl = xyes; then
   AC_DEFINE([BUILD_WAYLAND_COMPOSITOR], [1],
 	    [Build the Wayland (nested) compositor])
-  PKG_CHECK_MODULES(WAYLAND_COMPOSITOR, [wayland-client wayland-egl])
+  PKG_CHECK_MODULES(WAYLAND_COMPOSITOR, [wayland-client wayland-egl wayland-cursor])
 fi
 
 
