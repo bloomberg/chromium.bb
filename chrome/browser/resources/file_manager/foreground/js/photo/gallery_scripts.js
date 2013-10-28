@@ -10,31 +10,31 @@
 
 //<include src="../metrics.js">
 
-//<include src="../../../image_loader/image_loader_client.js"/>
+//<include src="../../../../image_loader/image_loader_client.js"/>
 
-//<include src="../../../../../../ui/webui/resources/js/cr.js">
-//<include src="../../../../../../ui/webui/resources/js/event_tracker.js">
-//<include src="../../../../../../ui/webui/resources/js/load_time_data.js">
+//<include src="../../../../../../../ui/webui/resources/js/cr.js">
+//<include src="../../../../../../../ui/webui/resources/js/event_tracker.js">
+//<include src="../../../../../../../ui/webui/resources/js/load_time_data.js">
 
-//<include src="../../../../../../ui/webui/resources/js/cr/ui.js">
-//<include src="../../../../../../ui/webui/resources/js/cr/event_target.js">
-//<include src="../../../../../../ui/webui/resources/js/cr/ui/touch_handler.js">
-//<include src="../../../../../../ui/webui/resources/js/cr/ui/array_data_model.js">
-//<include src="../../../../../../ui/webui/resources/js/cr/ui/dialogs.js">
-//<include src="../../../../../../ui/webui/resources/js/cr/ui/list_item.js">
-//<include src="../../../../../../ui/webui/resources/js/cr/ui/list_selection_model.js">
-//<include src="../../../../../../ui/webui/resources/js/cr/ui/list_single_selection_model.js">
-//<include src="../../../../../../ui/webui/resources/js/cr/ui/list_selection_controller.js">
-//<include src="../../../../../../ui/webui/resources/js/cr/ui/list.js">
-//<include src="../../../../../../ui/webui/resources/js/cr/ui/grid.js">
+//<include src="../../../../../../../ui/webui/resources/js/cr/ui.js">
+//<include src="../../../../../../../ui/webui/resources/js/cr/event_target.js">
+//<include src="../../../../../../../ui/webui/resources/js/cr/ui/touch_handler.js">
+//<include src="../../../../../../../ui/webui/resources/js/cr/ui/array_data_model.js">
+//<include src="../../../../../../../ui/webui/resources/js/cr/ui/dialogs.js">
+//<include src="../../../../../../../ui/webui/resources/js/cr/ui/list_item.js">
+//<include src="../../../../../../../ui/webui/resources/js/cr/ui/list_selection_model.js">
+//<include src="../../../../../../../ui/webui/resources/js/cr/ui/list_single_selection_model.js">
+//<include src="../../../../../../../ui/webui/resources/js/cr/ui/list_selection_controller.js">
+//<include src="../../../../../../../ui/webui/resources/js/cr/ui/list.js">
+//<include src="../../../../../../../ui/webui/resources/js/cr/ui/grid.js">
 
 (function() {
 // 'strict mode' is invoked for this scope.
 
+//<include src="../../../common/js/async_util.js">
+//<include src="../../../common/js/util.js">
+//<include src="../../../common/js/path_util.js">
 //<include src="../file_type.js">
-//<include src="../async_util.js">
-//<include src="../util.js">
-//<include src="../path_util.js">
 //<include src="../volume_manager_wrapper.js">
 
 //<include src="../image_editor/image_util.js"/>

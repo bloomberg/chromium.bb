@@ -27,7 +27,7 @@
 
     <!-- Don't load main_scripts.js when flattening is disabled. -->
     <if expr="0"><!-- </if>
-      <script src="js/main_scripts.js"></script>
+      <script src="foreground/js/main_scripts.js"></script>
     <if expr="0"> --></if>
 
     <if expr="0">
@@ -80,59 +80,58 @@
       <script src="chrome://resources/js/cr/ui/context_menu_handler.js"></script>
 
       <!-- This script must be loaded before all other Files.app's scripts. -->
-      <script src="js/error_counter.js"></script>
+      <script src="foreground/js/error_counter.js"></script>
 
-      <script src="js/combobutton.js"></script>
-      <script src="js/commandbutton.js"></script>
-      <script src="js/ui/file_manager_dialog_base.js"></script>
+      <script src="common/js/async_util.js"></script>
+      <script src="common/js/path_util.js"></script>
+      <script src="common/js/util.js"></script>
+      <script src="common/js/progress_center_common.js"></script>
 
-      <script src="js/app_installer.js"></script>
-      <script src="js/async_util.js"></script>
-      <script src="js/path_util.js"></script>
-      <script src="js/util.js"></script>
-      <script src="js/action_choice_util.js"></script>
-      <script src="js/butter_bar.js"></script>
-      <script src="js/cws_container_client.js"></script>
-      <script src="js/directory_contents.js"></script>
-      <script src="js/directory_model.js"></script>
-      <script src="js/directory_tree.js"></script>
-      <script src="js/drag_selector.js"></script>
-      <script src="js/drive_banners.js"></script>
-      <script src="js/error_dialog.js"></script>
-      <script src="js/file_operation_manager_wrapper.js"></script>
-      <script src="js/file_grid.js"></script>
-      <script src="js/file_manager.js"></script>
-      <script src="js/file_selection.js"></script>
-      <script src="js/file_table.js"></script>
-      <script src="js/file_tasks.js"></script>
-      <script src="js/file_transfer_controller.js"></script>
-      <script src="js/file_type.js"></script>
-      <script src="js/file_watcher.js"></script>
-      <script src="js/folder_shortcuts_data_model.js"></script>
-      <script src="js/navigation_list.js"></script>
-      <script src="js/progress_center_common.js"></script>
-      <script src="js/scrollbar.js"></script>
-      <script src="js/share_client.js"></script>
-      <script src="js/share_dialog.js"></script>
-      <script src="js/suggest_apps_dialog.js"></script>
-      <script src="js/text_measure.js"></script>
-      <script src="js/tree.css.js"></script>
-      <script src="js/ui/breadcrumbs_controller.js"></script>
-      <script src="js/ui/conflict_dialog.js"></script>
-      <script src="js/ui/file_manager_ui.js"></script>
-      <script src="js/ui/preview_panel.js"></script>
-      <script src="js/ui/progress_center_panel.js"></script>
-      <script src="js/ui/search_box.js"></script>
-      <script src="js/url_constants.js"></script>
-      <script src="js/volume_manager_wrapper.js"></script>
-      <script src="js/media/media_util.js"></script>
-      <script src="js/metadata/metadata_cache.js"></script>
-      <script src="js/default_action_dialog.js"></script>
-      <script src="js/file_manager_commands.js"></script>
+      <script src="foreground/js/combobutton.js"></script>
+      <script src="foreground/js/commandbutton.js"></script>
+      <script src="foreground/js/ui/file_manager_dialog_base.js"></script>
+
+      <script src="foreground/js/action_choice/action_choice_util.js"></script>
+      <script src="foreground/js/app_installer.js"></script>
+      <script src="foreground/js/butter_bar.js"></script>
+      <script src="foreground/js/cws_container_client.js"></script>
+      <script src="foreground/js/directory_contents.js"></script>
+      <script src="foreground/js/directory_model.js"></script>
+      <script src="foreground/js/directory_tree.js"></script>
+      <script src="foreground/js/drag_selector.js"></script>
+      <script src="foreground/js/drive_banners.js"></script>
+      <script src="foreground/js/error_dialog.js"></script>
+      <script src="foreground/js/file_operation_manager_wrapper.js"></script>
+      <script src="foreground/js/file_grid.js"></script>
+      <script src="foreground/js/file_manager.js"></script>
+      <script src="foreground/js/file_selection.js"></script>
+      <script src="foreground/js/file_table.js"></script>
+      <script src="foreground/js/file_tasks.js"></script>
+      <script src="foreground/js/file_transfer_controller.js"></script>
+      <script src="foreground/js/file_type.js"></script>
+      <script src="foreground/js/file_watcher.js"></script>
+      <script src="foreground/js/folder_shortcuts_data_model.js"></script>
+      <script src="foreground/js/navigation_list.js"></script>
+      <script src="foreground/js/scrollbar.js"></script>
+      <script src="foreground/js/share_client.js"></script>
+      <script src="foreground/js/share_dialog.js"></script>
+      <script src="foreground/js/suggest_apps_dialog.js"></script>
+      <script src="foreground/js/text_measure.js"></script>
+      <script src="foreground/js/tree.css.js"></script>
+      <script src="foreground/js/ui/breadcrumbs_controller.js"></script>
+      <script src="foreground/js/ui/conflict_dialog.js"></script>
+      <script src="foreground/js/ui/file_manager_ui.js"></script>
+      <script src="foreground/js/ui/preview_panel.js"></script>
+      <script src="foreground/js/ui/progress_center_panel.js"></script>
+      <script src="foreground/js/ui/search_box.js"></script>
+      <script src="foreground/js/url_constants.js"></script>
+      <script src="foreground/js/volume_manager_wrapper.js"></script>
+      <script src="foreground/js/default_action_dialog.js"></script>
+      <script src="foreground/js/file_manager_commands.js"></script>
 
       <!-- For accurate load performance tracking main.js should be
            the last script to include. -->
-      <script src="js/main.js"></script>
+      <script src="foreground/js/main.js"></script>
     </if>
 
   </head>

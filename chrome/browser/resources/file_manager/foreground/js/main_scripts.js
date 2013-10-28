@@ -24,44 +24,44 @@
 // //so we want to parse it as early as possible.
 //<include src="metrics.js"/>
 //
-//<include src="../../image_loader/image_loader_client.js"/>
+//<include src="../../../image_loader/image_loader_client.js"/>
 //
-//<include src="../../../../../ui/webui/resources/js/load_time_data.js"/>
-//<include src="../../../../../ui/webui/resources/js/cr.js"/>
-//<include src="../../../../../ui/webui/resources/js/util.js"/>
-//<include src="../../../../../ui/webui/resources/js/i18n_template_no_process.js"/>
+//<include src="../../../../../../ui/webui/resources/js/load_time_data.js"/>
+//<include src="../../../../../../ui/webui/resources/js/cr.js"/>
+//<include src="../../../../../../ui/webui/resources/js/util.js"/>
+//<include src="../../../../../../ui/webui/resources/js/i18n_template_no_process.js"/>
 //
-//<include src="../../../../../ui/webui/resources/js/event_tracker.js"/>
-//<include src="../../../../../ui/webui/resources/js/cr/ui.js"/>
-//<include src="../../../../../ui/webui/resources/js/cr/event_target.js"/>
-//<include src="../../../../../ui/webui/resources/js/cr/ui/touch_handler.js"/>
-//<include src="../../../../../ui/webui/resources/js/cr/ui/array_data_model.js"/>
-//<include src="../../../../../ui/webui/resources/js/cr/ui/dialogs.js"/>
-//<include src="../../../../../ui/webui/resources/js/cr/ui/list_item.js"/>
-//<include src="../../../../../ui/webui/resources/js/cr/ui/list_selection_model.js"/>
-//<include src="../../../../../ui/webui/resources/js/cr/ui/list_single_selection_model.js"/>
-//<include src="../../../../../ui/webui/resources/js/cr/ui/list_selection_controller.js"/>
-//<include src="../../../../../ui/webui/resources/js/cr/ui/list.js"/>
-//<include src="../../../../../ui/webui/resources/js/cr/ui/tree.js"/>
-//<include src="../../../../../ui/webui/resources/js/cr/ui/autocomplete_list.js"/>
+//<include src="../../../../../../ui/webui/resources/js/event_tracker.js"/>
+//<include src="../../../../../../ui/webui/resources/js/cr/ui.js"/>
+//<include src="../../../../../../ui/webui/resources/js/cr/event_target.js"/>
+//<include src="../../../../../../ui/webui/resources/js/cr/ui/touch_handler.js"/>
+//<include src="../../../../../../ui/webui/resources/js/cr/ui/array_data_model.js"/>
+//<include src="../../../../../../ui/webui/resources/js/cr/ui/dialogs.js"/>
+//<include src="../../../../../../ui/webui/resources/js/cr/ui/list_item.js"/>
+//<include src="../../../../../../ui/webui/resources/js/cr/ui/list_selection_model.js"/>
+//<include src="../../../../../../ui/webui/resources/js/cr/ui/list_single_selection_model.js"/>
+//<include src="../../../../../../ui/webui/resources/js/cr/ui/list_selection_controller.js"/>
+//<include src="../../../../../../ui/webui/resources/js/cr/ui/list.js"/>
+//<include src="../../../../../../ui/webui/resources/js/cr/ui/tree.js"/>
+//<include src="../../../../../../ui/webui/resources/js/cr/ui/autocomplete_list.js"/>
 //
-//<include src="../../../../../ui/webui/resources/js/cr/ui/splitter.js"/>
-//<include src="../../../../../ui/webui/resources/js/cr/ui/table/table_splitter.js"/>
+//<include src="../../../../../../ui/webui/resources/js/cr/ui/splitter.js"/>
+//<include src="../../../../../../ui/webui/resources/js/cr/ui/table/table_splitter.js"/>
 //
-//<include src="../../../../../ui/webui/resources/js/cr/ui/table/table_column.js"/>
-//<include src="../../../../../ui/webui/resources/js/cr/ui/table/table_column_model.js"/>
-//<include src="../../../../../ui/webui/resources/js/cr/ui/table/table_header.js"/>
-//<include src="../../../../../ui/webui/resources/js/cr/ui/table/table_list.js"/>
-//<include src="../../../../../ui/webui/resources/js/cr/ui/table.js"/>
+//<include src="../../../../../../ui/webui/resources/js/cr/ui/table/table_column.js"/>
+//<include src="../../../../../../ui/webui/resources/js/cr/ui/table/table_column_model.js"/>
+//<include src="../../../../../../ui/webui/resources/js/cr/ui/table/table_header.js"/>
+//<include src="../../../../../../ui/webui/resources/js/cr/ui/table/table_list.js"/>
+//<include src="../../../../../../ui/webui/resources/js/cr/ui/table.js"/>
 //
-//<include src="../../../../../ui/webui/resources/js/cr/ui/grid.js"/>
+//<include src="../../../../../../ui/webui/resources/js/cr/ui/grid.js"/>
 //
-//<include src="../../../../../ui/webui/resources/js/cr/ui/command.js"/>
-//<include src="../../../../../ui/webui/resources/js/cr/ui/position_util.js"/>
-//<include src="../../../../../ui/webui/resources/js/cr/ui/menu_item.js"/>
-//<include src="../../../../../ui/webui/resources/js/cr/ui/menu.js"/>
-//<include src="../../../../../ui/webui/resources/js/cr/ui/menu_button.js"/>
-//<include src="../../../../../ui/webui/resources/js/cr/ui/context_menu_handler.js"/>
+//<include src="../../../../../../ui/webui/resources/js/cr/ui/command.js"/>
+//<include src="../../../../../../ui/webui/resources/js/cr/ui/position_util.js"/>
+//<include src="../../../../../../ui/webui/resources/js/cr/ui/menu_item.js"/>
+//<include src="../../../../../../ui/webui/resources/js/cr/ui/menu.js"/>
+//<include src="../../../../../../ui/webui/resources/js/cr/ui/menu_button.js"/>
+//<include src="../../../../../../ui/webui/resources/js/cr/ui/context_menu_handler.js"/>
 
 (function() {
 // 'strict mode' is invoked for this scope.
@@ -69,15 +69,17 @@
 // // This script must be loaded before all other Files.app's scripts.
 //<include src="error_counter.js"/>
 //
+//<include src="../../common/js/async_util.js"/>
+//<include src="../../common/js/path_util.js"/>
+//<include src="../../common/js/util.js"/>
+//<include src="../../common/js/progress_center_common.js">
+//
 //<include src="combobutton.js"/>
 //<include src="commandbutton.js"/>
 //<include src="ui/file_manager_dialog_base.js"/>
 //
+//<include src="action_choice/action_choice_util.js"/>
 //<include src="app_installer.js"/>
-//<include src="async_util.js"/>
-//<include src="path_util.js"/>
-//<include src="util.js"/>
-//<include src="action_choice_util.js"/>
 //<include src="butter_bar.js"/>
 //<include src="cws_container_client.js"/>
 //<include src="directory_contents.js"/>
@@ -97,7 +99,6 @@
 //<include src="file_watcher.js"/>
 //<include src="folder_shortcuts_data_model.js"/>
 //<include src="navigation_list.js"/>
-//<include src="progress_center_common.js">
 //<include src="scrollbar.js"/>
 //<include src="share_client.js"/>
 //<include src="share_dialog.js"/>

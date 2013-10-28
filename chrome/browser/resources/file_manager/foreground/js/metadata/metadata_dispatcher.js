@@ -9,7 +9,7 @@
 // line.
 importScripts('metadata_parser.js');
 importScripts('byte_reader.js');
-importScripts('../util.js');
+importScripts('../../../common/js/util.js');
 
 /**
  * Dispatches metadata requests to the correct parser.

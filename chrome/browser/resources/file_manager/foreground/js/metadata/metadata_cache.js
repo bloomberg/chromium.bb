@@ -864,7 +864,7 @@ function ContentProvider() {
   var path = document.location.pathname;
   var workerPath = document.location.origin +
       path.substring(0, path.lastIndexOf('/') + 1) +
-      'js/metadata/metadata_dispatcher.js';
+      'foreground/js/metadata/metadata_dispatcher.js';
 
   if (ContentProvider.USE_SHARED_WORKER) {
     this.dispatcher_ = new SharedWorker(workerPath).port;

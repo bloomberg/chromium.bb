@@ -72,44 +72,44 @@
       <if expr="pp_ifdef('file_manager_extension')">
         <!-- App pages and scripts. -->
         <include name="IDR_FILE_MANAGER_MAIN" file="file_manager/main.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
-        <include name="IDR_FILE_MANAGER_MAIN_JS" file="file_manager/js/main_scripts.js" flattenhtml="true" type="BINDATA" />
-        <include name="IDR_FILE_MANAGER_BKGND_JS" file="file_manager/js/background.js" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_MAIN_JS" file="file_manager/foreground/js/main_scripts.js" flattenhtml="true" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_BKGND_JS" file="file_manager/background/js/background.js" type="BINDATA" />
 
         <include name="IDR_FILE_MANAGER_MEDIAPLAYER" file="file_manager/mediaplayer.html" allowexternalscript="true" flattenhtml="true" type="BINDATA" />
-        <include name="IDR_FILE_MANAGER_MEDIAPLAYER_JS" file="file_manager/js/media/mediaplayer_scripts.js" flattenhtml="true" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_MEDIAPLAYER_JS" file="file_manager/foreground/js/media/mediaplayer_scripts.js" flattenhtml="true" type="BINDATA" />
 
         <include name="IDR_FILE_MANAGER_VIDEO_PLAYER" file="file_manager/video_player.html" allowexternalscript="true" flattenhtml="true" type="BINDATA" />
-        <include name="IDR_FILE_MANAGER_VIDEO_PLAYER_JS" file="file_manager/js/media/video_player_scripts.js" flattenhtml="true" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_VIDEO_PLAYER_JS" file="file_manager/foreground/js/media/video_player_scripts.js" flattenhtml="true" type="BINDATA" />
 
         <include name="IDR_FILE_MANAGER_GALLERY" file="file_manager/gallery.html" allowexternalscript="true" flattenhtml="true" type="BINDATA" />
-        <include name="IDR_FILE_MANAGER_GALLERY_JS" file="file_manager/js/photo/gallery_scripts.js" flattenhtml="true" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_GALLERY_JS" file="file_manager/foreground/js/photo/gallery_scripts.js" flattenhtml="true" type="BINDATA" />
 
         <include name="IDR_FILE_MANAGER_PHOTO_IMPORT" file="file_manager/photo_import.html" allowexternalscript="true" flattenhtml="true" type="BINDATA" />
-        <include name="IDR_FILE_MANAGER_PHOTO_IMPORT_JS" file="file_manager/js/photo/photo_import_scripts.js" flattenhtml="true" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_PHOTO_IMPORT_JS" file="file_manager/foreground/js/photo/photo_import_scripts.js" flattenhtml="true" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_ACTION_CHOICE" file="file_manager/action_choice.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
-        <include name="IDR_FILE_MANAGER_ACTION_CHOICE_SCRIPT_JS" file="file_manager/js/action_choice_scripts.js" flattenhtml="true" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_ACTION_CHOICE_SCRIPT_JS" file="file_manager/foreground/js/action_choice/action_choice_scripts.js" flattenhtml="true" type="BINDATA" />
 
         <!-- Scripts working in background page. -->
-        <include name="IDR_FILE_MANAGER_VOLUME_MANAGER_JS" file="file_manager/js/volume_manager.js" flattenhtml="false" type="BINDATA" />
-        <include name="IDR_FILE_MANAGER_FILE_OPERATION_MANAGER_JS" file="file_manager/js/file_operation_manager.js" flattenhtml="false" type="BINDATA" />
-        <include name="IDR_FILE_MANAGER_PROGRESS_CENTER_JS" file="file_manager/js/progress_center.js" flattenhtml="false" type="BINDATA" />
-        <include name="IDR_FILE_MANAGER_PROGRESS_CENTER_COMMON_JS" file="file_manager/js/progress_center_common.js" flattenhtml="false" type="BINDATA" />
-        <include name="IDR_FILE_MANAGER_ASYNC_UTIL_JS" file="file_manager/js/async_util.js" flattenhtml="false" type="BINDATA" />
-        <include name="IDR_FILE_MANAGER_PATH_UTIL_JS" file="file_manager/js/path_util.js" flattenhtml="false" type="BINDATA" />
-        <include name="IDR_FILE_MANAGER_UTIL_JS" file="file_manager/js/util.js" flattenhtml="false" type="BINDATA" />
-        <include name="IDR_FILE_MANAGER_TEST_UTIL_JS" file="file_manager/js/test_util.js" flattenhtml="false" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_VOLUME_MANAGER_JS" file="file_manager/background/js/volume_manager.js" flattenhtml="false" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_FILE_OPERATION_MANAGER_JS" file="file_manager/background/js/file_operation_manager.js" flattenhtml="false" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_PROGRESS_CENTER_JS" file="file_manager/background/js/progress_center.js" flattenhtml="false" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_PROGRESS_CENTER_COMMON_JS" file="file_manager/common/js/progress_center_common.js" flattenhtml="false" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_ASYNC_UTIL_JS" file="file_manager/common/js/async_util.js" flattenhtml="false" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_PATH_UTIL_JS" file="file_manager/common/js/path_util.js" flattenhtml="false" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_UTIL_JS" file="file_manager/common/js/util.js" flattenhtml="false" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_TEST_UTIL_JS" file="file_manager/background/js/test_util.js" flattenhtml="false" type="BINDATA" />
 
         <!-- Scripts required by the metadata parser worker. -->
-        <include name="IDR_FILE_MANAGER_UTIL" file="file_manager/js/util.js" type="BINDATA" />
-        <include name="IDR_FILE_MANAGER_METADATA_DISPATCHER" file="file_manager/js/metadata/metadata_dispatcher.js" type="BINDATA" />
-        <include name="IDR_FILE_MANAGER_METADATA_READER" file="file_manager/js/metadata/byte_reader.js" type="BINDATA" />
-        <include name="IDR_FILE_MANAGER_METADATA_PARSER" file="file_manager/js/metadata/metadata_parser.js" type="BINDATA" />
-        <include name="IDR_FILE_MANAGER_EXIF_PARSER" file="file_manager/js/metadata/exif_parser.js" type="BINDATA" />
-        <include name="IDR_FILE_MANAGER_MPEG_PARSER" file="file_manager/js/metadata/mpeg_parser.js" type="BINDATA" />
-        <include name="IDR_FILE_MANAGER_IMAGE_PARSERS" file="file_manager/js/metadata/image_parsers.js" type="BINDATA" />
-        <include name="IDR_FILE_MANAGER_ID3_PARSER" file="file_manager/js/metadata/id3_parser.js" type="BINDATA" />
-        <include name="IDR_FILE_MANAGER_PARALLEL" file="file_manager/js/metadata/function_parallel.js" type="BINDATA" />
-        <include name="IDR_FILE_MANAGER_SEQUENCE" file="file_manager/js/metadata/function_sequence.js" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_UTIL" file="file_manager/common/js/util.js" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_METADATA_DISPATCHER" file="file_manager/foreground/js/metadata/metadata_dispatcher.js" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_METADATA_READER" file="file_manager/foreground/js/metadata/byte_reader.js" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_METADATA_PARSER" file="file_manager/foreground/js/metadata/metadata_parser.js" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_EXIF_PARSER" file="file_manager/foreground/js/metadata/exif_parser.js" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_MPEG_PARSER" file="file_manager/foreground/js/metadata/mpeg_parser.js" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_IMAGE_PARSERS" file="file_manager/foreground/js/metadata/image_parsers.js" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_ID3_PARSER" file="file_manager/foreground/js/metadata/id3_parser.js" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_PARALLEL" file="file_manager/foreground/js/metadata/function_parallel.js" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_SEQUENCE" file="file_manager/foreground/js/metadata/function_sequence.js" type="BINDATA" />
 
         <!-- Images referenced from the manifest or the code -->
         <include name="IDR_FILE_MANAGER_ICON_16" file="file_manager/images/icon16.png" type="BINDATA" />

@@ -18,7 +18,7 @@
 
   <!-- Don't load photo_import_scripts.js when flattening is disabled -->
   <if expr="0"><!-- </if>
-    <script src="js/photo/photo_import_scripts.js"></script>
+    <script src="foreground/js/photo/photo_import_scripts.js"></script>
   <if expr="0"> --></if>
 
   <if expr="0">
@@ -47,21 +47,22 @@
     <script src="chrome://resources/js/cr/ui/list.js"></script>
     <script src="chrome://resources/js/cr/ui/grid.js"></script>
 
-    <script src="js/async_util.js"></script>
-    <script src="js/util.js"></script>
-    <script src="js/path_util.js"></script>
-    <script src="js/file_type.js"></script>
-    <script src="js/directory_contents.js"></script>
-    <script src="js/volume_manager_wrapper.js"></script>
-    <script src="js/file_operation_manager_wrapper.js"></script>
-    <script src="js/metadata/metadata_cache.js"></script>
-    <script src="js/metrics.js"></script>
-    <script src="js/image_editor/image_util.js"></script>
-    <script src="js/media/media_util.js"></script>
+    <script src="common/js/async_util.js"></script>
+    <script src="common/js/util.js"></script>
+    <script src="common/js/path_util.js"></script>
 
-    <script src="js/photo/importing_dialog.js"></script>
-    <script src="js/photo/tile_view.js"></script>
-    <script src="js/photo/photo_import.js"></script>
+    <script src="foreground/js/file_type.js"></script>
+    <script src="foreground/js/directory_contents.js"></script>
+    <script src="foreground/js/volume_manager_wrapper.js"></script>
+    <script src="foreground/js/file_operation_manager_wrapper.js"></script>
+    <script src="foreground/js/metadata/metadata_cache.js"></script>
+    <script src="foreground/js/metrics.js"></script>
+    <script src="foreground/js/image_editor/image_util.js"></script>
+    <script src="foreground/js/media/media_util.js"></script>
+
+    <script src="foreground/js/photo/importing_dialog.js"></script>
+    <script src="foreground/js/photo/tile_view.js"></script>
+    <script src="foreground/js/photo/photo_import.js"></script>
   </if>
   <title>&#xFEFF;</title>
 </head>

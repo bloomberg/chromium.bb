@@ -13,14 +13,14 @@
 
   <!-- Don't load gallery_scripts.js when flattening is disabled -->
   <if expr="0"><!-- </if>
-    <script src="js/photo/gallery_scripts.js"></script>
+    <script src="foreground/js/photo/gallery_scripts.js"></script>
   <if expr="0"> --></if>
 
   <if expr="0">
     <!-- This section is used when the file manager is loaded with
          'filemgr-ext-path' command-line flag. -->
     <!-- Keep the list in sync with gallery_scripts.js. -->
-    <script src="js/metrics.js"></script>
+    <script src="foreground/js/metrics.js"></script>
 
     <!-- Loads the client of the image loader extension -->
     <script src="chrome-extension://pmfjbimdmchhbnneeidfognadeopoehp/image_loader_client.js"></script>
@@ -41,35 +41,36 @@
     <script src="chrome://resources/js/cr/ui/list.js"></script>
     <script src="chrome://resources/js/cr/ui/grid.js"></script>
 
-    <script src="js/file_type.js"></script>
-    <script src="js/async_util.js"></script>
-    <script src="js/util.js"></script>
-    <script src="js/path_util.js"></script>
-    <script src="js/volume_manager_wrapper.js"></script>
+    <script src="common/js/async_util.js"></script>
+    <script src="common/js/util.js"></script>
+    <script src="common/js/path_util.js"></script>
 
-    <script src="js/image_editor/image_util.js"></script>
-    <script src="js/image_editor/viewport.js"></script>
-    <script src="js/image_editor/image_buffer.js"></script>
-    <script src="js/image_editor/image_view.js"></script>
-    <script src="js/image_editor/commands.js"></script>
-    <script src="js/image_editor/image_editor.js"></script>
-    <script src="js/image_editor/image_transform.js"></script>
-    <script src="js/image_editor/image_adjust.js"></script>
-    <script src="js/image_editor/filter.js"></script>
-    <script src="js/image_editor/image_encoder.js"></script>
-    <script src="js/image_editor/exif_encoder.js"></script>
+    <script src="foreground/js/file_type.js"></script>
+    <script src="foreground/js/volume_manager_wrapper.js"></script>
 
-    <script src="js/media/media_controls.js"></script>
-    <script src="js/media/media_util.js"></script>
-    <script src="js/media/util.js"></script>
+    <script src="foreground/js/image_editor/image_util.js"></script>
+    <script src="foreground/js/image_editor/viewport.js"></script>
+    <script src="foreground/js/image_editor/image_buffer.js"></script>
+    <script src="foreground/js/image_editor/image_view.js"></script>
+    <script src="foreground/js/image_editor/commands.js"></script>
+    <script src="foreground/js/image_editor/image_editor.js"></script>
+    <script src="foreground/js/image_editor/image_transform.js"></script>
+    <script src="foreground/js/image_editor/image_adjust.js"></script>
+    <script src="foreground/js/image_editor/filter.js"></script>
+    <script src="foreground/js/image_editor/image_encoder.js"></script>
+    <script src="foreground/js/image_editor/exif_encoder.js"></script>
 
-    <script src="js/metadata/metadata_cache.js"></script>
+    <script src="foreground/js/media/media_controls.js"></script>
+    <script src="foreground/js/media/media_util.js"></script>
+    <script src="foreground/js/media/util.js"></script>
 
-    <script src="js/photo/gallery.js"></script>
-    <script src="js/photo/gallery_item.js"></script>
-    <script src="js/photo/mosaic_mode.js"></script>
-    <script src="js/photo/slide_mode.js"></script>
-    <script src="js/photo/ribbon.js"></script>
+    <script src="foreground/js/metadata/metadata_cache.js"></script>
+
+    <script src="foreground/js/photo/gallery.js"></script>
+    <script src="foreground/js/photo/gallery_item.js"></script>
+    <script src="foreground/js/photo/mosaic_mode.js"></script>
+    <script src="foreground/js/photo/slide_mode.js"></script>
+    <script src="foreground/js/photo/ribbon.js"></script>
   </if>
 </head>
 <body>

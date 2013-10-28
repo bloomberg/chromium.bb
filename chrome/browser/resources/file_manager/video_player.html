@@ -16,7 +16,7 @@
 
   <!-- Don't load video_player_scripts.js when flattening is disabled -->
   <if expr="0"><!-- </if>
-    <script src="js/media/video_player_scripts.js"></script>
+    <script src="foreground/js/media/video_player_scripts.js"></script>
   <if expr="0"> --></if>
 
   <if expr="0">
@@ -28,17 +28,18 @@
     <script src="chrome://resources/js/cr/ui/array_data_model.js"></script>
     <script src="chrome://resources/js/load_time_data.js"></script>
 
-    <script src="js/async_util.js"></script>
-    <script src="js/util.js"></script>
-    <script src="js/path_util.js"></script>
-    <script src="js/file_type.js"></script>
-    <script src="js/volume_manager_wrapper.js"></script>
-    <script src="js/metadata/metadata_cache.js"></script>
+    <script src="common/js/async_util.js"></script>
+    <script src="common/js/util.js"></script>
+    <script src="common/js/path_util.js"></script>
 
-    <script src="js/media/media_controls.js"></script>
-    <script src="js/media/util.js"></script>
-    <script src="js/media/video_player.js"></script>
-    <script src="js/media/player_testapi.js"></script>
+    <script src="foreground/js/file_type.js"></script>
+    <script src="foreground/js/volume_manager_wrapper.js"></script>
+    <script src="foreground/js/metadata/metadata_cache.js"></script>
+
+    <script src="foreground/js/media/media_controls.js"></script>
+    <script src="foreground/js/media/util.js"></script>
+    <script src="foreground/js/media/video_player.js"></script>
+    <script src="foreground/js/media/player_testapi.js"></script>
   </if>
 </head>
 <body>

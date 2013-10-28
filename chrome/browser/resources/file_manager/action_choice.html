@@ -12,7 +12,7 @@
 
   <!-- Don't load action_choice_scripts.js when flattening is disabled. -->
   <if expr="0"><!-- </if>
-    <script src="js/action_choice_scripts.js"></script>
+    <script src="foreground/js/action_choice/action_choice_scripts.js"></script>
   <if expr="0"> --></if>
 
   <if expr="0">
@@ -38,18 +38,19 @@
     <script src="chrome://resources/js/cr/ui/list_single_selection_model.js"></script>
     <script src="chrome://resources/js/cr/ui/list_selection_controller.js"></script>
 
-    <script src="js/async_util.js"></script>
-    <script src="js/util.js"></script>
-    <script src="js/file_type.js"></script>
-    <script src="js/path_util.js"></script>
-    <script src="js/volume_manager_wrapper.js"></script>
-    <script src="js/metadata/metadata_cache.js"></script>
-    <script src="js/metrics.js"></script>
-    <script src="js/image_editor/image_util.js"></script>
-    <script src="js/media/media_util.js"></script>
-    <script src="js/action_choice_util.js"></script>
+    <script src="common/js/async_util.js"></script>
+    <script src="common/js/util.js"></script>
+    <script src="common/js/path_util.js"></script>
 
-    <script src="js/action_choice.js"></script>
+    <script src="foreground/js/file_type.js"></script>
+    <script src="foreground/js/volume_manager_wrapper.js"></script>
+    <script src="foreground/js/metadata/metadata_cache.js"></script>
+    <script src="foreground/js/metrics.js"></script>
+    <script src="foreground/js/image_editor/image_util.js"></script>
+    <script src="foreground/js/media/media_util.js"></script>
+
+    <script src="foreground/js/action_choice/action_choice_util.js"></script>
+    <script src="foreground/js/action_choice/action_choice.js"></script>
   </if>
   <title>&#xFEFF;</title>
 </head>
