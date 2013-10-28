@@ -734,6 +734,11 @@ void Node::setNeedsStyleRecalc(StyleChangeType changeType, StyleChangeSource sou
         markAncestorsWithChildNeedsStyleRecalc();
 }
 
+bool Node::inActiveDocument() const
+{
+    return inDocument() && document().isActive();
+}
+
 void Node::lazyAttach()
 {
     markAncestorsWithChildNeedsStyleRecalc();

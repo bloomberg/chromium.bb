@@ -272,7 +272,7 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName, Document& docum
     , m_playing(false)
     , m_shouldDelayLoadEvent(false)
     , m_haveFiredLoadedData(false)
-    , m_inActiveDocument(true)
+    , m_active(true)
     , m_autoplaying(true)
     , m_muted(false)
     , m_paused(true)
@@ -486,7 +486,7 @@ Node::InsertionNotificationRequest HTMLMediaElement::insertedInto(ContainerNode*
 
     HTMLElement::insertedInto(insertionPoint);
     if (insertionPoint->inDocument()) {
-        m_inActiveDocument = true;
+        m_active = true;
 
         if (!getAttribute(srcAttr).isEmpty() && m_networkState == NETWORK_EMPTY)
             scheduleDelayedAction(LoadMediaResource);
@@ -500,7 +500,7 @@ void HTMLMediaElement::removedFrom(ContainerNode* insertionPoint)
 {
     LOG(Media, "HTMLMediaElement::removedFrom");
 
-    m_inActiveDocument = false;
+    m_active = false;
     if (insertionPoint->inDocument()) {
         configureMediaControls();
         if (m_networkState > NETWORK_EMPTY)
@@ -1224,7 +1224,7 @@ void HTMLMediaElement::endIgnoringTrackDisplayUpdateRequests()
 {
     ASSERT(m_ignoreTrackDisplayUpdate);
     --m_ignoreTrackDisplayUpdate;
-    if (!m_ignoreTrackDisplayUpdate && m_inActiveDocument)
+    if (!m_ignoreTrackDisplayUpdate && m_active)
         updateActiveTextTrackCues(currentTime());
 }
 
@@ -3411,7 +3411,7 @@ void HTMLMediaElement::stop()
 {
     LOG(Media, "HTMLMediaElement::stop");
 
-    m_inActiveDocument = false;
+    m_active = false;
     userCancelledLoad();
 
     // Stop the playback without generating events

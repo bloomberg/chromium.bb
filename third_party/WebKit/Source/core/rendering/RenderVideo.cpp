@@ -204,7 +204,7 @@ void RenderVideo::updatePlayer()
     if (!mediaPlayer)
         return;
 
-    if (!videoElement()->inActiveDocument())
+    if (!videoElement()->isActive())
         return;
 
     contentChanged(VideoChanged);

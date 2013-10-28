@@ -481,6 +481,8 @@ public:
 
     TreeScope& treeScope() const { return *m_treeScope; }
 
+    bool inActiveDocument() const;
+
     // Returns true if this node is associated with a document and is in its associated document's
     // node tree, false otherwise.
     bool inDocument() const

@@ -970,7 +970,7 @@ void Element::attributeChanged(const QualifiedName& name, const AtomicString& ne
     document().incDOMTreeVersion();
 
     StyleResolver* styleResolver = document().styleResolverIfExists();
-    bool testShouldInvalidateStyle = confusingAndOftenMisusedAttached() && styleResolver && styleChangeType() < SubtreeStyleChange;
+    bool testShouldInvalidateStyle = inActiveDocument() && styleResolver && styleChangeType() < SubtreeStyleChange;
     bool shouldInvalidateStyle = false;
 
     if (isStyledElement() && name == styleAttr) {
@@ -1085,7 +1085,7 @@ static bool checkSelectorForClassChange(const SpaceSplitString& oldClasses, cons
 void Element::classAttributeChanged(const AtomicString& newClassString)
 {
     StyleResolver* styleResolver = document().styleResolverIfExists();
-    bool testShouldInvalidateStyle = confusingAndOftenMisusedAttached() && styleResolver && styleChangeType() < SubtreeStyleChange;
+    bool testShouldInvalidateStyle = inActiveDocument() && styleResolver && styleChangeType() < SubtreeStyleChange;
     bool shouldInvalidateStyle = false;
 
     if (classStringHasClassName(newClassString)) {
@@ -1763,7 +1763,7 @@ static void inline checkForEmptyStyleChange(Element* element, RenderStyle* style
 static void checkForSiblingStyleChanges(Element* e, RenderStyle* style, bool finishedParsingCallback,
                                         Node* beforeChange, Node* afterChange, int childCountDelta)
 {
-    if (!e->confusingAndOftenMisusedAttached() || e->document().hasPendingForcedStyleRecalc() || e->styleChangeType() >= SubtreeStyleChange)
+    if (!e->inActiveDocument() || e->document().hasPendingForcedStyleRecalc() || e->styleChangeType() >= SubtreeStyleChange)
         return;
 
     // :empty selector.
@@ -2307,7 +2307,7 @@ RenderStyle* Element::computedStyle(PseudoId pseudoElementSpecifier)
             return usedStyle;
     }
 
-    if (!confusingAndOftenMisusedAttached())
+    if (!inActiveDocument())
         // FIXME: Try to do better than this. Ensure that styleForElement() works for elements that are not in the
         // document tree and figure out when to destroy the computed style for such elements.
         return 0;
@@ -2925,7 +2925,7 @@ void Element::willModifyAttribute(const QualifiedName& name, const AtomicString&
     }
 
     if (oldValue != newValue) {
-        if (confusingAndOftenMisusedAttached() && hasSelectorForAttribute(&document(), name.localName()))
+        if (inActiveDocument() && hasSelectorForAttribute(&document(), name.localName()))
            setNeedsStyleRecalc();
 
         if (isUpgradedCustomElement())

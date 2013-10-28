@@ -96,7 +96,7 @@ public:
     };
     void scheduleDelayedAction(DelayedActionType);
 
-    bool inActiveDocument() const { return m_inActiveDocument; }
+    bool isActive() const { return m_active; }
 
 // DOM API
 // error state
@@ -514,10 +514,11 @@ private:
     typedef unsigned PendingActionFlags;
     PendingActionFlags m_pendingActionFlags;
 
+    // FIXME: MediaElement has way too many state bits.
     bool m_playing : 1;
     bool m_shouldDelayLoadEvent : 1;
     bool m_haveFiredLoadedData : 1;
-    bool m_inActiveDocument : 1;
+    bool m_active : 1;
     bool m_autoplaying : 1;
     bool m_muted : 1;
     bool m_paused : 1;
