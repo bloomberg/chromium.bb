@@ -7,6 +7,23 @@
 
 import itertools
 import sys
+import xml.dom.minidom
+
+def _GetPolicyTemplates(template_path):
+  # Read list of policies in the template. eval() is used instead of a JSON
+  # parser because policy_templates.json is not quite JSON, and uses some
+  # python features such as #-comments and '''strings'''. policy_templates.json
+  # is actually maintained as a python dictionary.
+  with open(template_path) as f:
+    template_data = eval(f.read(), {})
+  policies = ( policy
+               for policy in template_data['policy_definitions']
+               if policy['type'] != 'group' )
+  groups = ( policy['policies']
+             for policy in template_data['policy_definitions']
+             if policy['type'] == 'group' )
+  subpolicies = ( policy for group in groups for policy in group )
+  return list(itertools.chain(policies, subpolicies))
 
 def _CheckPolicyTemplatesSyntax(input_api, output_api):
   filepath = input_api.os_path.join(input_api.PresubmitLocalPath(),
@@ -27,40 +44,18 @@ def _CheckPolicyTemplatesSyntax(input_api, output_api):
   return []
 
 
-def _CheckPolicyTestCases(input_api, output_api):
-  os_path = input_api.os_path
-  local_path = input_api.PresubmitLocalPath()
-  template_path = os_path.join(local_path, 'policy_templates.json')
-  affected_files = input_api.AffectedFiles()
-  if not any(f.AbsoluteLocalPath() == template_path for f in affected_files):
-    return []
-
-  # Read list of policies in the template. eval() is used instead of a JSON
-  # parser because policy_templates.json is not quite JSON, and uses some
-  # python features such as #-comments and '''strings'''. policy_templates.json
-  # is actually maintained as a python dictionary.
-  with open(template_path) as f:
-    template_data = eval(f.read(), {})
-  policies = ( policy['name']
-               for policy in template_data['policy_definitions']
-               if policy['type'] != 'group' )
-  groups = ( policy['policies']
-             for policy in template_data['policy_definitions']
-             if policy['type'] == 'group' )
-  subpolicies = ( policy['name'] for group in groups for policy in group )
-  template_policies = frozenset(itertools.chain(policies, subpolicies))
-
+def _CheckPolicyTestCases(input_api, output_api, policies):
   # Read list of policies in chrome/test/data/policy/policy_test_cases.json.
   root = input_api.change.RepositoryRoot()
-  policy_test_cases_file = os_path.join(
+  policy_test_cases_file = input_api.os_path.join(
       root, 'chrome', 'test', 'data', 'policy', 'policy_test_cases.json')
   test_names = input_api.json.load(open(policy_test_cases_file)).keys()
-  tested_policies = frozenset(
-      [name for name in test_names if name[:2] != '--'])
+  tested_policies = frozenset(name for name in test_names if name[:2] != '--')
+  policy_names = frozenset(policy['name'] for policy in policies)
 
   # Finally check if any policies are missing.
-  missing = template_policies - tested_policies
-  extra = tested_policies - template_policies
+  missing = policy_names - tested_policies
+  extra = tested_policies - policy_names
   error_missing = ('Policy \'%s\' was added to policy_templates.json but not '
                    'to src/chrome/test/data/policy/policy_test_cases.json. '
                    'Please update both files.')
@@ -75,10 +70,43 @@ def _CheckPolicyTestCases(input_api, output_api):
   return results
 
 
+def _CheckPolicyHistograms(input_api, output_api, policies):
+  root = input_api.change.RepositoryRoot()
+  histograms = input_api.os_path.join(
+      root, 'tools', 'metrics', 'histograms', 'histograms.xml')
+  with open(histograms) as f:
+    tree = xml.dom.minidom.parseString(f.read())
+  enums = (tree.getElementsByTagName('histogram-configuration')[0]
+               .getElementsByTagName('enums')[0]
+               .getElementsByTagName('enum'))
+  policy_enum = [e for e in enums
+                 if e.getAttribute('name') == 'EnterprisePolicies'][0]
+  policy_ids = frozenset([int(e.getAttribute('value'))
+                          for e in policy_enum.getElementsByTagName('int')])
+
+  error_missing = ('Policy \'%s\' was added to policy_templates.json but not '
+                   'to src/tools/metrics/histograms/histograms.xml. '
+                   'Please update both files.')
+  results = []
+  for policy in policies:
+    if policy['id'] not in policy_ids:
+      results.append(output_api.PresubmitError(error_missing % policy['name']))
+  return results
+
+
 def _CommonChecks(input_api, output_api):
   results = []
   results.extend(_CheckPolicyTemplatesSyntax(input_api, output_api))
-  results.extend(_CheckPolicyTestCases(input_api, output_api))
+
+  os_path = input_api.os_path
+  local_path = input_api.PresubmitLocalPath()
+  template_path = os_path.join(local_path, 'policy_templates.json')
+  affected_files = input_api.AffectedFiles()
+  if any(f.AbsoluteLocalPath() == template_path for f in affected_files):
+    policies = _GetPolicyTemplates(template_path)
+    results.extend(_CheckPolicyTestCases(input_api, output_api, policies))
+    results.extend(_CheckPolicyHistograms(input_api, output_api, policies))
+
   return results
 
 

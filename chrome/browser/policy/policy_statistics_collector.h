@@ -47,8 +47,6 @@ class PolicyStatisticsCollector {
   void CollectStatistics();
   void ScheduleUpdate(base::TimeDelta delay);
 
-  int max_policy_id_;
-
   PolicyService* policy_service_;
   PrefService* prefs_;
 

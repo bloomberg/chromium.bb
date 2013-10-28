@@ -21233,6 +21233,81 @@ other types of suffix sets.
       label="Set the restriction on the fetching of the Variations seed"/>
   <int value="197" label="Idle warning delay when running on AC power"/>
   <int value="198" label="Idle warning delay when running on battery power"/>
+  <int value="199"
+      label="Set the restriction on the fetching of the Variations seed"/>
+  <int value="200" label="Enable remote attestation for the user"/>
+  <int value="201"
+      label="Extensions allowed to to use the remote attestation API"/>
+  <int value="202" label="Enable bailout keyboard shortcut for auto-login"/>
+  <int value="203" label="Allow screen wake locks"/>
+  <int value="204" label="Default behavior for sites not in any content pack"/>
+  <int value="205" label="Managed user manual exception hosts"/>
+  <int value="206" label="Managed user manual exception URLs"/>
+  <int value="207" label="Enable remote attestation for the device"/>
+  <int value="208"
+      label="URLs that will be granted access to audio capture devices
+             without prompt"/>
+  <int value="209"
+      label="URLs that will be granted access to video capture devices
+             without prompt"/>
+  <int value="210"
+      label="Percentage by which to scale the screen dim delay if the user
+             becomes active after dimming"/>
+  <int value="211" label="Enable large cursor"/>
+  <int value="212" label="Enable spoken feedback"/>
+  <int value="213" label="Enable high contrast mode"/>
+  <int value="214" label="Set screen magnifier type"/>
+  <int value="215"
+      label="Set default state of the large cursor on the login screen"/>
+  <int value="216"
+      label="Set the default state of spoken feedback on the login screen"/>
+  <int value="217"
+      label="Set the default state of high contrast mode on the login screen"/>
+  <int value="218"
+      label="Set the default screen magnifier type enabled on the login
+             screen"/>
+  <int value="219" label="Enable supervised users"/>
+  <int value="220"
+      label="Percentage by which to scale the screen dim delay in
+             presentation mode"/>
+  <int value="221" label="Suppress the Google Chrome Frame turndown prompt"/>
+  <int value="222"
+      label="Action to take when the idle delay is reached while running on
+             battery power"/>
+  <int value="223" label="Enable creation of supervised users"/>
+  <int value="224" label="Report device network interfaces"/>
+  <int value="225" label="Power mangement on the login screen"/>
+  <int value="226"
+      label="Action to take when the idle delay is reached while running on
+             AC power"/>
+  <int value="227" label="Managed Bookmarks"/>
+  <int value="228" label="Maximum fetch delay after a policy invalidation"/>
+  <int value="229"
+      label="Parameter providing search-by-image feature for the default
+             search provider"/>
+  <int value="230" label="Parameters for search URL which uses POST"/>
+  <int value="231" label="Parameters for suggest URL which uses POST"/>
+  <int value="232" label="Parameters for instant URL which uses POST"/>
+  <int value="233" label="Parameters for image URL which uses POST"/>
+  <int value="234" label="Enable or disable PIN-less authentication"/>
+  <int value="235"
+      label="Whether online OCSP/CRL checks are required for local trust
+             anchors"/>
+  <int value="236" label="Use 24 hour clock by default"/>
+  <int value="237" label="Default search provider new tab page URL"/>
+  <int value="238" label="Skip the meta tag check in Google Chrome Frame"/>
+  <int value="239"
+      label="Enable the use of remote attestation for content protection for
+             the device"/>
+  <int value="240" label="Allow fullscreen mode"/>
+  <int value="241" label="Enable the data compression proxy feature"/>
+  <int value="242" label="Auto update p2p enabled"/>
+  <int value="243" label="Allow autoupdate downloads via HTTP"/>
+  <int value="244" label="Control the user behavior in a multiprofile session"/>
+  <int value="245" label="Ephemeral profile"/>
+  <int value="246"
+      label="Selects the strategy used to free up disk space during automatic
+             clean-up"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations" type="int">

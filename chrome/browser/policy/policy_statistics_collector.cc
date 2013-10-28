@@ -9,7 +9,7 @@
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/sparse_histogram.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
 #include "base/task_runner.h"
@@ -26,8 +26,7 @@ PolicyStatisticsCollector::PolicyStatisticsCollector(
     PolicyService* policy_service,
     PrefService* prefs,
     const scoped_refptr<base::TaskRunner>& task_runner)
-    : max_policy_id_(-1),
-      policy_service_(policy_service),
+    : policy_service_(policy_service),
       prefs_(prefs),
       task_runner_(task_runner) {
 }
@@ -55,21 +54,7 @@ void PolicyStatisticsCollector::RegisterPrefs(PrefRegistrySimple* registry) {
 }
 
 void PolicyStatisticsCollector::RecordPolicyUse(int id) {
-  if (max_policy_id_ == -1) {
-    const policy::PolicyDefinitionList* policy_list =
-        policy::GetChromePolicyDefinitionList();
-    for (const policy::PolicyDefinitionList::Entry* policy = policy_list->begin;
-         policy != policy_list->end; ++policy) {
-      if (policy->id > max_policy_id_)
-        max_policy_id_ = policy->id;
-    }
-  }
-
-  // Set the boundary to be max policy id + 1. Note that this may decrease in
-  // future builds if the policy with maximum id is removed. This does not
-  // pose a problem.
-  DCHECK_LE(id, max_policy_id_);
-  UMA_HISTOGRAM_ENUMERATION("Enterprise.Policies", id, max_policy_id_ + 1);
+  UMA_HISTOGRAM_SPARSE_SLOWLY("Enterprise.Policies", id);
 }
 
 void PolicyStatisticsCollector::CollectStatistics() {
