@@ -466,6 +466,13 @@ gfx::RectF MathUtil::ScaleRectProportional(const gfx::RectF& input_outer_rect,
 }
 
 static inline float ScaleOnAxis(double a, double b, double c) {
+  if (!b && !c)
+    return a;
+  if (!a && !c)
+    return b;
+  if (!a && !b)
+    return c;
+
   // Do the sqrt as a double to not lose precision.
   return static_cast<float>(std::sqrt(a * a + b * b + c * c));
 }
