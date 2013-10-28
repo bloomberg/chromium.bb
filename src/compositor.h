@@ -521,11 +521,9 @@ struct weston_renderer {
 			       pixman_region32_t *output_damage);
 	void (*flush_damage)(struct weston_surface *surface);
 	void (*attach)(struct weston_surface *es, struct weston_buffer *buffer);
-	int (*create_view)(struct weston_view *view);
 	void (*surface_set_color)(struct weston_surface *surface,
 			       float red, float green,
 			       float blue, float alpha);
-	void (*destroy_view)(struct weston_view *view);
 	void (*destroy)(struct weston_compositor *ec);
 };
 

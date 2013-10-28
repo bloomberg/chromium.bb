@@ -358,12 +358,6 @@ weston_view_create(struct weston_surface *surface)
 
 	view->surface = surface;
 
-	if (surface->compositor->renderer->create_view &&
-	    surface->compositor->renderer->create_view(view) < 0) {
-		free(view);
-		return NULL;
-	}
-
 	/* Assign to surface */
 	wl_list_insert(&surface->views, &view->surface_link);
 
@@ -1203,9 +1197,6 @@ weston_view_destroy(struct weston_view *view)
 	pixman_region32_fini(&view->transform.boundingbox);
 
 	weston_view_set_transform_parent(view, NULL);
-
-	if (view->surface->compositor->renderer->destroy_view)
-		view->surface->compositor->renderer->destroy_view(view);
 
 	wl_list_remove(&view->surface_link);
 

@@ -136,6 +136,8 @@ struct rpir_view {
 
 	DISPMANX_ELEMENT_HANDLE_T handle;
 	int layer;
+
+	struct wl_listener view_destroy_listener;
 };
 
 struct rpir_output {
@@ -172,6 +174,12 @@ struct rpi_renderer {
 static int
 rpi_renderer_create_surface(struct weston_surface *base);
 
+static int
+rpi_renderer_create_view(struct weston_view *base);
+
+static void
+rpir_view_handle_view_destroy(struct wl_listener *listener, void *data);
+
 static inline struct rpir_surface *
 to_rpir_surface(struct weston_surface *surface)
 {
@@ -184,6 +192,9 @@ to_rpir_surface(struct weston_surface *surface)
 static inline struct rpir_view *
 to_rpir_view(struct weston_view *view)
 {
+	if (!view->renderer_state)
+		rpi_renderer_create_view(view);
+
 	return view->renderer_state;
 }
 
@@ -1477,6 +1488,12 @@ rpi_renderer_create_view(struct weston_view *base)
 
 	view->view = base;
 	base->renderer_state = view;
+
+	view->view_destroy_listener.notify =
+		rpir_view_handle_view_destroy;
+	wl_signal_add(&base->destroy_signal,
+		      &view->view_destroy_listener);
+
 	return 0;
 }
 
@@ -1522,9 +1539,12 @@ rpi_renderer_surface_set_color(struct weston_surface *base,
 }
 
 static void
-rpi_renderer_destroy_view(struct weston_view *base)
+rpir_view_handle_view_destroy(struct wl_listener *listener, void *data)
 {
-	struct rpir_view *view = to_rpir_view(base);
+	struct rpir_view *view;
+	struct weston_view *base = data;
+
+	view = container_of(listener, struct rpir_view, view_destroy_listener);
 
 	assert(view);
 	assert(view->view == base);
@@ -1532,8 +1552,9 @@ rpi_renderer_destroy_view(struct weston_view *base)
 		return;
 
 	view->view = NULL;
+	base->renderer_state = NULL;
 
-	/* If guaranteed to not be on screen, just detroy it. */
+	/* If guaranteed to not be on screen, just destroy it. */
 	if (wl_list_empty(&view->link))
 		rpir_view_destroy(view);
 
@@ -1582,9 +1603,7 @@ rpi_renderer_create(struct weston_compositor *compositor,
 	renderer->base.repaint_output = rpi_renderer_repaint_output;
 	renderer->base.flush_damage = rpi_renderer_flush_damage;
 	renderer->base.attach = rpi_renderer_attach;
-	renderer->base.create_view = rpi_renderer_create_view;
 	renderer->base.surface_set_color = rpi_renderer_surface_set_color;
-	renderer->base.destroy_view = rpi_renderer_destroy_view;
 	renderer->base.destroy = rpi_renderer_destroy;
 
 #ifdef ENABLE_EGL
