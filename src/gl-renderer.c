@@ -664,31 +664,44 @@ draw_output_border(struct weston_output *output)
 	struct gl_output_state *go = get_output_state(output);
 	struct gl_renderer *gr = get_renderer(output->compositor);
 	struct gl_shader *shader = &gr->texture_shader_rgba;
-	int32_t full_width;
+	struct gl_border_image *top, *bottom, *left, *right;
+	struct weston_matrix matrix;
+	int full_width, full_height;
+
+	top = &go->borders[GL_RENDERER_BORDER_TOP];
+	bottom = &go->borders[GL_RENDERER_BORDER_BOTTOM];
+	left = &go->borders[GL_RENDERER_BORDER_LEFT];
+	right = &go->borders[GL_RENDERER_BORDER_RIGHT];
+
+	full_width = output->current_mode->width + left->width + right->width;
+	full_height = output->current_mode->height + top->height + bottom->height;
 
 	glDisable(GL_BLEND);
 	use_shader(gr, shader);
 
-	glUniformMatrix4fv(shader->proj_uniform,
-			   1, GL_FALSE, output->matrix.d);
+	glViewport(0, 0, full_width, full_height);
+
+	weston_matrix_init(&matrix);
+	weston_matrix_translate(&matrix, -full_width/2.0, -full_height/2.0, 0);
+	weston_matrix_scale(&matrix, 2.0/full_width, -2.0/full_height, 1);
+	glUniformMatrix4fv(shader->proj_uniform, 1, GL_FALSE, matrix.d);
 
 	glUniform1i(shader->tex_uniforms[0], 0);
 	glUniform1f(shader->alpha_uniform, 1);
 	glActiveTexture(GL_TEXTURE0);
 
-	full_width = output->width + output->border.left + output->border.right;
-	draw_output_border_texture(&go->borders[GL_RENDERER_BORDER_TOP],
-				   -output->border.left, -output->border.top,
-				   full_width, output->border.top);
-	draw_output_border_texture(&go->borders[GL_RENDERER_BORDER_LEFT],
-				   -output->border.left, 0,
-				   output->border.left, output->height);
-	draw_output_border_texture(&go->borders[GL_RENDERER_BORDER_RIGHT],
-				   output->width, 0,
-				   output->border.right, output->height);
-	draw_output_border_texture(&go->borders[GL_RENDERER_BORDER_BOTTOM],
-				   -output->border.left, output->height,
-				   full_width, output->border.bottom);
+	draw_output_border_texture(top,
+				   0, 0,
+				   full_width, top->height);
+	draw_output_border_texture(left,
+				   0, top->height,
+				   left->width, output->current_mode->height);
+	draw_output_border_texture(right,
+				   full_width - right->width, top->height,
+				   right->width, output->current_mode->height);
+	draw_output_border_texture(bottom,
+				   0, full_height - bottom->height,
+				   full_width, bottom->height);
 }
 
 static void
@@ -745,15 +758,13 @@ gl_renderer_repaint_output(struct weston_output *output,
 	struct gl_renderer *gr = get_renderer(compositor);
 	EGLBoolean ret;
 	static int errored;
-	int32_t width, height;
 	pixman_region32_t buffer_damage, total_damage;
 
-	width = output->current_mode->width +
-		output->border.left + output->border.right;
-	height = output->current_mode->height +
-		output->border.top + output->border.bottom;
-
-	glViewport(0, 0, width, height);
+	/* Calculate the viewport */
+	glViewport(go->borders[GL_RENDERER_BORDER_LEFT].width,
+		   go->borders[GL_RENDERER_BORDER_BOTTOM].height,
+		   output->current_mode->width,
+		   output->current_mode->height);
 
 	if (use_output(output) < 0)
 		return;

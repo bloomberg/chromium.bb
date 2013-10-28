@@ -114,10 +114,6 @@ struct weston_shell_interface {
 
 };
 
-struct weston_border {
-	int32_t left, right, top, bottom;
-};
-
 struct weston_animation {
 	void (*frame)(struct weston_animation *animation,
 		      struct weston_output *output, uint32_t msecs);
@@ -189,7 +185,6 @@ struct weston_output {
 	struct wl_list animation_list;
 	int32_t x, y, width, height;
 	int32_t mm_width, mm_height;
-	struct weston_border border;
 	pixman_region32_t region;
 	pixman_region32_t previous_damage;
 	int repaint_needed;

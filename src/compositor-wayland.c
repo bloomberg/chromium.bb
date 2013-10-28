@@ -570,7 +570,7 @@ static const struct wl_shell_surface_listener shell_surface_listener;
 static int
 wayland_output_init_gl_renderer(struct wayland_output *output)
 {
-	int32_t fx, fy, fwidth, fheight;
+	int32_t fwidth = 0, fheight = 0;
 
 	if (output->frame) {
 		fwidth = frame_width(output->frame);
@@ -591,14 +591,6 @@ wayland_output_init_gl_renderer(struct wayland_output *output)
 	if (gl_renderer->output_create(&output->base,
 			output->gl.egl_window) < 0)
 		goto cleanup_window;
-
-	if (output->frame) {
-		frame_interior(output->frame, &fx, &fy, NULL, NULL);
-		output->base.border.left = fx;
-		output->base.border.top = fy;
-		output->base.border.right = fwidth - output->base.width - fx;
-		output->base.border.bottom = fheight - output->base.height - fy;
-	}
 
 	return 0;
 

@@ -2997,12 +2997,12 @@ weston_output_update_matrix(struct weston_output *output)
 
 	weston_matrix_init(&output->matrix);
 	weston_matrix_translate(&output->matrix,
-				-(output->x + (output->border.right + output->width - output->border.left) / 2.0),
-				-(output->y + (output->border.bottom + output->height - output->border.top) / 2.0), 0);
+				-(output->x + output->width / 2.0),
+				-(output->y + output->height / 2.0), 0);
 
 	weston_matrix_scale(&output->matrix,
-			    2.0 / (output->width + output->border.left + output->border.right),
-			    -2.0 / (output->height + output->border.top + output->border.bottom), 1);
+			    2.0 / output->width,
+			    -2.0 / output->height, 1);
 
 	weston_output_compute_transform(output);
 
@@ -3071,10 +3071,6 @@ weston_output_init(struct weston_output *output, struct weston_compositor *c,
 	output->compositor = c;
 	output->x = x;
 	output->y = y;
-	output->border.top = 0;
-	output->border.bottom = 0;
-	output->border.left = 0;
-	output->border.right = 0;
 	output->mm_width = mm_width;
 	output->mm_height = mm_height;
 	output->dirty = 1;
