@@ -494,9 +494,9 @@ base::PlatformFileError FileSystemOperationRunner::SyncGetPlatformPath(
     const FileSystemURL& url,
     base::FilePath* platform_path) {
   base::PlatformFileError error = base::PLATFORM_FILE_OK;
-  FileSystemOperation* operation =
-      file_system_context_->CreateFileSystemOperation(url, &error);
-  if (!operation)
+  scoped_ptr<FileSystemOperation> operation(
+      file_system_context_->CreateFileSystemOperation(url, &error));
+  if (!operation.get())
     return error;
   return operation->SyncGetPlatformPath(url, platform_path);
 }
