@@ -653,12 +653,10 @@ void ShellWindow::AdjustBoundsToBeVisibleOnScreen(
 
 ShellWindow::CreateParams ShellWindow::LoadDefaultsAndConstrain(
     CreateParams params) const {
-  gfx::Rect bounds = params.bounds;
-
-  if (bounds.width() == 0)
-    bounds.set_width(kDefaultWidth);
-  if (bounds.height() == 0)
-    bounds.set_height(kDefaultHeight);
+  if (params.bounds.width() == 0)
+    params.bounds.set_width(kDefaultWidth);
+  if (params.bounds.height() == 0)
+    params.bounds.set_height(kDefaultHeight);
 
   // If left and top are left undefined, the native shell window will center
   // the window on the main screen in a platform-defined manner.
@@ -682,13 +680,13 @@ ShellWindow::CreateParams ShellWindow::LoadDefaultsAndConstrain(
                                       cached_screen_bounds,
                                       current_screen_bounds,
                                       params.minimum_size,
-                                      &bounds);
+                                      &params.bounds);
       params.state = cached_state;
     }
   }
 
   SizeConstraints size_constraints(params.minimum_size, params.maximum_size);
-  params.bounds.set_size(size_constraints.ClampSize(bounds.size()));
+  params.bounds.set_size(size_constraints.ClampSize(params.bounds.size()));
   params.minimum_size = size_constraints.GetMinimumSize();
   params.maximum_size = size_constraints.GetMaximumSize();
 
