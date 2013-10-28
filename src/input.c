@@ -93,7 +93,7 @@ move_resources_for_client(struct wl_list *destination,
 }
 
 static void
-default_grab_focus(struct weston_pointer_grab *grab)
+default_grab_pointer_focus(struct weston_pointer_grab *grab)
 {
 	struct weston_pointer *pointer = grab->pointer;
 	struct weston_view *view;
@@ -111,7 +111,7 @@ default_grab_focus(struct weston_pointer_grab *grab)
 }
 
 static void
-default_grab_motion(struct weston_pointer_grab *grab, uint32_t time)
+default_grab_pointer_motion(struct weston_pointer_grab *grab, uint32_t time)
 {
 	struct weston_pointer *pointer = grab->pointer;
 	wl_fixed_t sx, sy;
@@ -128,8 +128,8 @@ default_grab_motion(struct weston_pointer_grab *grab, uint32_t time)
 }
 
 static void
-default_grab_button(struct weston_pointer_grab *grab,
-		    uint32_t time, uint32_t button, uint32_t state_w)
+default_grab_pointer_button(struct weston_pointer_grab *grab,
+			    uint32_t time, uint32_t button, uint32_t state_w)
 {
 	struct weston_pointer *pointer = grab->pointer;
 	struct weston_compositor *compositor = pointer->seat->compositor;
@@ -169,9 +169,9 @@ default_grab_pointer_cancel(struct weston_pointer_grab *grab)
 
 static const struct weston_pointer_grab_interface
 				default_pointer_grab_interface = {
-	default_grab_focus,
-	default_grab_motion,
-	default_grab_button,
+	default_grab_pointer_focus,
+	default_grab_pointer_motion,
+	default_grab_pointer_button,
 	default_grab_pointer_cancel,
 };
 
@@ -244,8 +244,8 @@ static const struct weston_touch_grab_interface default_touch_grab_interface = {
 };
 
 static void
-default_grab_key(struct weston_keyboard_grab *grab,
-		 uint32_t time, uint32_t key, uint32_t state)
+default_grab_keyboard_key(struct weston_keyboard_grab *grab,
+			  uint32_t time, uint32_t key, uint32_t state)
 {
 	struct weston_keyboard *keyboard = grab->keyboard;
 	struct wl_resource *resource;
@@ -316,9 +316,10 @@ find_resource_for_view(struct wl_list *list, struct weston_view *view)
 }
 
 static void
-default_grab_modifiers(struct weston_keyboard_grab *grab, uint32_t serial,
-		       uint32_t mods_depressed, uint32_t mods_latched,
-		       uint32_t mods_locked, uint32_t group)
+default_grab_keyboard_modifiers(struct weston_keyboard_grab *grab,
+				uint32_t serial, uint32_t mods_depressed,
+				uint32_t mods_latched,
+				uint32_t mods_locked, uint32_t group)
 {
 	struct weston_keyboard *keyboard = grab->keyboard;
 	struct weston_pointer *pointer = grab->keyboard->seat->pointer;
@@ -348,8 +349,8 @@ default_grab_keyboard_cancel(struct weston_keyboard_grab *grab)
 
 static const struct weston_keyboard_grab_interface
 				default_keyboard_grab_interface = {
-	default_grab_key,
-	default_grab_modifiers,
+	default_grab_keyboard_key,
+	default_grab_keyboard_modifiers,
 	default_grab_keyboard_cancel,
 };
 
