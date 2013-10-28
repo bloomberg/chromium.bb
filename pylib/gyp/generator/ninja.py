@@ -58,7 +58,7 @@ generator_default_variables = {
 generator_additional_non_configuration_keys = []
 generator_additional_path_sections = []
 generator_extra_sources_for_rules = []
-generator_filelist_path = None
+generator_filelist_paths = None
 
 # TODO: figure out how to not build extra host objects in the non-cross-compile
 # case when this is enabled, and enable unconditionally.
@@ -1483,17 +1483,11 @@ def CalculateGeneratorInputInfo(params):
   qualified_out_dir = os.path.normpath(os.path.join(
       toplevel, ComputeOutputDir(params), 'gypfiles'))
 
-  def gypfile_path(build_file_dir, name):
-    # build_file_dir is absolute, make it relative to toplevel
-    if os.path.isabs(build_file_dir):
-      build_file_dir = gyp.common.RelativePath(build_file_dir, toplevel)
-    name = os.path.join(qualified_out_dir, build_file_dir, name)
-    if not os.path.isdir(os.path.dirname(name)):
-      os.makedirs(os.path.dirname(name))
-    return name
-
-  global generator_filelist_path
-  generator_filelist_path = gypfile_path
+  global generator_filelist_paths
+  generator_filelist_paths = {
+      'toplevel': toplevel,
+      'qualified_out_dir': qualified_out_dir,
+  }
 
 
 def OpenOutput(path, mode='w'):

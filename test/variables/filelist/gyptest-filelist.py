@@ -25,3 +25,5 @@ if not test.match(contents, expect):
   print "Unexpected contents of `src/dummy_foo'"
   test.diff(expect, contents, 'src/dummy_foo')
   test.fail_test()
+
+test.pass_test()

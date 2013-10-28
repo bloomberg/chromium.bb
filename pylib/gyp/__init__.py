@@ -119,8 +119,8 @@ def Load(build_files, format, default_variables={},
                 'generator_wants_static_library_dependencies_adjusted', True),
     'generator_wants_sorted_dependencies':
         getattr(generator, 'generator_wants_sorted_dependencies', False),
-    'generator_filelist_path':
-        getattr(generator, 'generator_filelist_path', None),
+    'generator_filelist_paths':
+        getattr(generator, 'generator_filelist_paths', None),
   }
 
   # Process the input specific to this generator.
@@ -324,9 +324,8 @@ def gyp_main(args):
   parser.add_option('--no-circular-check', dest='circular_check',
                     action='store_false', default=True, regenerate=False,
                     help="don't check for circular relationships between files")
-  parser.add_option('--parallel', action='store_true',
-                    env_name='GYP_PARALLEL',
-                    help='Use multiprocessing for speed (experimental)')
+  parser.add_option('--no-parallel', action='store_true', default=False,
+                    help='Disable multiprocessing')
   parser.add_option('-S', '--suffix', dest='suffix', default='',
                     help='suffix to add to generated files')
   parser.add_option('--toplevel-dir', dest='toplevel_dir', action='store',
@@ -389,9 +388,7 @@ def gyp_main(args):
     if g_o:
       options.generator_output = g_o
 
-  if not options.parallel and options.use_environment:
-    p = os.environ.get('GYP_PARALLEL')
-    options.parallel = bool(p and p != '0')
+  options.parallel = not options.no_parallel
 
   for mode in options.debug:
     gyp.debug[mode] = 1

@@ -93,6 +93,7 @@ class TestGypBase(TestCommon.TestCommon):
         else:
           gyp = 'gyp'
     self.gyp = os.path.abspath(gyp)
+    self.no_parallel = False
 
     self.initialize_build_tool()
 
@@ -254,6 +255,8 @@ class TestGypBase(TestCommon.TestCommon):
     # TODO:  --depth=. works around Chromium-specific tree climbing.
     depth = kw.pop('depth', '.')
     run_args = ['--depth='+depth, '--format='+self.format, gyp_file]
+    if self.no_parallel:
+      run_args += ['--no-parallel']
     run_args.extend(self.extra_args)
     run_args.extend(args)
     return self.run(program=self.gyp, arguments=run_args, **kw)
@@ -356,6 +359,11 @@ class TestGypGypd(TestGypBase):
   internal data structure as pretty-printed Python).
   """
   format = 'gypd'
+  def __init__(self, gyp=None, *args, **kw):
+    super(TestGypGypd, self).__init__(*args, **kw)
+    # gypd implies the use of 'golden' files, so parallelizing conflicts as it
+    # causes ordering changes.
+    self.no_parallel = True
 
 
 class TestGypCustom(TestGypBase):
