@@ -120,7 +120,7 @@ static inline uint16_t Swap(uint16_t value) {
 
 string UTF16ToUTF8(const vector<uint16_t> &in, bool swap) {
   const UTF16 *source_ptr = &in[0];
-  scoped_ptr<uint16_t> source_buffer;
+  scoped_array<uint16_t> source_buffer;
 
   // If we're to swap, we need to make a local copy and swap each byte pair
   if (swap) {
