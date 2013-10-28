@@ -22278,6 +22278,39 @@ other types of suffix sets.
   <int value="151" label="HTMLAppletElementLegacyCall"/>
   <int value="152" label="HTMLEmbedElementLegacyCall"/>
   <int value="153" label="HTMLObjectElementLegacyCall"/>
+  <int value="154" label="BeforeLoadEvent"/>
+  <int value="155" label="GetMatchedCSSRules"/>
+  <int value="156" label="SVGFontInCSS"/>
+  <int value="157" label="ScrollTopBodyNotQuirksMode"/>
+  <int value="158" label="ScrollLeftBodyNotQuirksMode"/>
+  <int value="159" label="AttributeIsId"/>
+  <int value="160" label="AttributeOwnerElement"/>
+  <int value="161" label="AttributeSetPrefix"/>
+  <int value="162" label="AttributeSpecified"/>
+  <int value="163" label="BeforeLoadEventInIsolatedWorld"/>
+  <int value="164" label="PrefixedAudioDecodedByteCount"/>
+  <int value="165" label="PrefixedVideoDecodedByteCount"/>
+  <int value="166" label="PrefixedVideoSupportsFullscreen"/>
+  <int value="167" label="PrefixedVideoDisplayingFullscreen"/>
+  <int value="168" label="PrefixedVideoEnterFullscreen"/>
+  <int value="169" label="PrefixedVideoExitFullscreen"/>
+  <int value="170" label="PrefixedVideoEnterFullScreen"/>
+  <int value="171" label="PrefixedVideoExitFullScreen"/>
+  <int value="172" label="PrefixedVideoDecodedFrameCount"/>
+  <int value="173" label="PrefixedVideoDroppedFrameCount"/>
+  <int value="174" label="SourceElementCandidate"/>
+  <int value="175" label="SourceElementNonMatchingMedia"/>
+  <int value="176" label="PrefixedElementRequestFullscreen"/>
+  <int value="177" label="PrefixedElementRequestFullScreen"/>
+  <int value="178" label="BarPropLocationbar"/>
+  <int value="179" label="BarPropMenubar"/>
+  <int value="180" label="BarPropPersonalbar"/>
+  <int value="181" label="BarPropScrollbars"/>
+  <int value="182" label="BarPropStatusbar"/>
+  <int value="183" label="BarPropToolbar"/>
+  <int value="184" label="input[type=email][multiple]"/>
+  <int value="185" label="input[type=email][maxlength]"/>
+  <int value="186" label="input[type=email][multiple][maxlength]"/>
 </enum>
 
 <enum name="FFmpegCodecs" type="int">
