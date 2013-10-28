@@ -8,6 +8,7 @@
 #include <string>
 
 #include "chrome/browser/signin/signin_promo.h"
+#include "chrome/browser/ui/host_desktop.h"
 #include "chrome/common/content_settings_types.h"
 
 class Browser;
@@ -39,11 +40,17 @@ void ShowDownloads(Browser* browser);
 void ShowExtensions(Browser* browser,
                     const std::string& extension_to_highlight);
 void ShowConflicts(Browser* browser);
+
+// ShowFeedbackPage() uses |browser| to determine the URL of the current tab.
+// |browser| should be NULL if there are no currently open browser windows.
 void ShowFeedbackPage(Browser* browser,
                       const std::string& description_template,
                       const std::string& category_tag);
 
 void ShowHelp(Browser* browser, HelpSource source);
+void ShowHelpForProfile(Profile* profile,
+                        HostDesktopType host_desktop_type,
+                        HelpSource source);
 void ShowPolicy(Browser* browser);
 void ShowSlow(Browser* browser);
 

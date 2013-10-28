@@ -531,7 +531,10 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   }
 
   virtual void ShowHelp() OVERRIDE {
-    chrome::ShowHelp(GetAppropriateBrowser(), chrome::HELP_SOURCE_MENU);
+    chrome::ShowHelpForProfile(
+        ProfileManager::GetDefaultProfileOrOffTheRecord(),
+        chrome::HOST_DESKTOP_TYPE_ASH,
+        chrome::HELP_SOURCE_MENU);
   }
 
   virtual void ShowAccessibilityHelp() OVERRIDE {

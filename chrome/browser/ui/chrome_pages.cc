@@ -64,6 +64,45 @@ void NavigateToSingletonTab(Browser* browser, const GURL& url) {
   ShowSingletonTabOverwritingNTP(browser, params);
 }
 
+// Shows either the help app or the appropriate help page for |source|. If
+// |browser| is NULL and the help page is used (vs the app), the help page is
+// shown in the last active browser. If there is no such browser, a new browser
+// is created.
+void ShowHelpImpl(Browser* browser,
+                  Profile* profile,
+                  HostDesktopType host_desktop_type,
+                  HelpSource source) {
+  content::RecordAction(UserMetricsAction("ShowHelpTab"));
+#if defined(OS_CHROMEOS) && defined(OFFICIAL_BUILD)
+  const CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (!command_line->HasSwitch(chromeos::switches::kDisableGeniusApp)) {
+    Profile* profile = ProfileManager::GetDefaultProfileOrOffTheRecord();
+    const extensions::Extension* extension = profile->GetExtensionService()->
+        GetInstalledExtension(genius_app::kGeniusAppId);
+    OpenApplication(
+        AppLaunchParams(profile, extension, 0, host_desktop_type));
+    return;
+  }
+#endif
+  GURL url;
+  switch (source) {
+    case HELP_SOURCE_KEYBOARD:
+      url = GURL(kChromeHelpViaKeyboardURL);
+      break;
+    case HELP_SOURCE_MENU:
+      url = GURL(kChromeHelpViaMenuURL);
+      break;
+    case HELP_SOURCE_WEBUI:
+      url = GURL(kChromeHelpViaWebUIURL);
+      break;
+    default:
+      NOTREACHED() << "Unhandled help source " << source;
+  }
+  if (!browser)
+    browser = chrome::FindOrCreateTabbedBrowser(profile, host_desktop_type);
+  ShowSingletonTab(browser, url);
+}
+
 }  // namespace
 
 void ShowBookmarkManager(Browser* browser) {
@@ -134,33 +173,14 @@ void ShowConflicts(Browser* browser) {
 }
 
 void ShowHelp(Browser* browser, HelpSource source) {
-  content::RecordAction(UserMetricsAction("ShowHelpTab"));
-#if defined(OS_CHROMEOS) && defined(OFFICIAL_BUILD)
-  const CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (!command_line->HasSwitch(chromeos::switches::kDisableGeniusApp)) {
-    Profile* profile = ProfileManager::GetDefaultProfileOrOffTheRecord();
-    const extensions::Extension* extension = profile->GetExtensionService()->
-        GetInstalledExtension(genius_app::kGeniusAppId);
-    OpenApplication(
-        AppLaunchParams(profile, extension, 0, browser->host_desktop_type()));
-    return;
-  }
-#endif
-  GURL url;
-  switch (source) {
-    case HELP_SOURCE_KEYBOARD:
-      url = GURL(kChromeHelpViaKeyboardURL);
-      break;
-    case HELP_SOURCE_MENU:
-      url = GURL(kChromeHelpViaMenuURL);
-      break;
-    case HELP_SOURCE_WEBUI:
-      url = GURL(kChromeHelpViaWebUIURL);
-      break;
-    default:
-      NOTREACHED() << "Unhandled help source " << source;
-  }
-  ShowSingletonTab(browser, url);
+  ShowHelpImpl(browser, browser->profile(), browser->host_desktop_type(),
+      source);
+}
+
+void ShowHelpForProfile(Profile* profile,
+                        HostDesktopType host_desktop_type,
+                        HelpSource source) {
+  ShowHelpImpl(NULL, profile, host_desktop_type, source);
 }
 
 void ShowPolicy(Browser* browser) {
