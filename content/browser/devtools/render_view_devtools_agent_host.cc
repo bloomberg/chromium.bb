@@ -12,7 +12,6 @@
 #include "content/browser/devtools/devtools_protocol_constants.h"
 #include "content/browser/devtools/devtools_tracing_handler.h"
 #include "content/browser/devtools/renderer_overrides_handler.h"
-#include "content/browser/power_save_blocker_impl.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/site_instance_impl.h"
@@ -25,6 +24,7 @@
 #include "content/public/browser/render_widget_host_iterator.h"
 
 #if defined(OS_ANDROID)
+#include "content/browser/power_save_blocker_impl.h"
 #include "content/public/browser/render_widget_host_view.h"
 #endif
 
@@ -176,12 +176,12 @@ void RenderViewDevToolsAgentHost::OnClientAttached() {
   // ExtensionProcessManager no longer relies on this notification.
   DevToolsManagerImpl::GetInstance()->NotifyObservers(this, true);
 
+#if defined(OS_ANDROID)
   power_save_blocker_.reset(
       static_cast<PowerSaveBlockerImpl*>(
           PowerSaveBlocker::Create(
               PowerSaveBlocker::kPowerSaveBlockPreventDisplaySleep,
               "DevTools").release()));
-#if defined(OS_ANDROID)
   if (render_view_host_->GetView()) {
     power_save_blocker_.get()->
         InitDisplaySleepBlocker(render_view_host_->GetView()->GetNativeView());
@@ -190,7 +190,9 @@ void RenderViewDevToolsAgentHost::OnClientAttached() {
 }
 
 void RenderViewDevToolsAgentHost::OnClientDetached() {
+#if defined(OS_ANDROID)
   power_save_blocker_.reset();
+#endif
   overrides_handler_->OnClientDetached();
   ClientDetachedFromRenderer();
 }

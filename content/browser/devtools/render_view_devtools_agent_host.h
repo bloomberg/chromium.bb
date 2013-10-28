@@ -19,9 +19,12 @@
 namespace content {
 
 class DevToolsTracingHandler;
-class PowerSaveBlockerImpl;
 class RendererOverridesHandler;
 class RenderViewHost;
+
+#if defined(OS_ANDROID)
+class PowerSaveBlockerImpl;
+#endif
 
 class CONTENT_EXPORT RenderViewDevToolsAgentHost
     : public IPCDevToolsAgentHost,
@@ -79,7 +82,9 @@ class CONTENT_EXPORT RenderViewDevToolsAgentHost
   RenderViewHost* render_view_host_;
   scoped_ptr<RendererOverridesHandler> overrides_handler_;
   scoped_ptr<DevToolsTracingHandler> tracing_handler_;
+#if defined(OS_ANDROID)
   scoped_ptr<PowerSaveBlockerImpl> power_save_blocker_;
+#endif
   std::string state_;
   NotificationRegistrar registrar_;
 
