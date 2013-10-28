@@ -90,8 +90,6 @@
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_CELLULAR_ENABLED_HOVER" file="cros/network/status_cellular_enabled_hover.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_DISPLAY" file="cros/status/status_display_dark.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_DISPLAY_LIGHT" file="cros/status/status_display.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_SCREEN_SHARE_DARK" file="cros/status/status_screen_share_dark.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_SCREEN_SHARE_LIGHT" file="cros/status/status_screen_share_light.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_DRIVE" file="cros/status/status_drive.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_DRIVE_CANCEL" file="cros/status/status_drive_item_cancel.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_DRIVE_CANCEL_HOVER" file="cros/status/status_drive_item_cancel_hover.png" />
