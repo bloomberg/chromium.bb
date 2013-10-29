@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import sys
+
 from metrics import smoothness
 from metrics import rendering_stats
 from telemetry.page import page_test
@@ -47,6 +49,13 @@ class Smoothness(page_measurement.PageMeasurement):
 
   def CustomizeBrowserOptions(self, options):
     options.AppendExtraBrowserArgs('--enable-gpu-benchmarking')
+
+    # smoothness.tough_canvas_cases fails on Android.
+    # TODO(ernstm): Re-enable this test when crbug.com/311582 is fixed.
+    if (sys.platform == 'android' and
+        (sys.argv[-1].endswith('tough_canvas_cases'))):
+      print '%s is currently disabled on Android. Skipping test.' % sys.argv[-1]
+      sys.exit(0)
 
   def CanRunForPage(self, page):
     return hasattr(page, 'smoothness')

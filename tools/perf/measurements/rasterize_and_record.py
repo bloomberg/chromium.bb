@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import sys
 import time
 
 from metrics import rendering_stats
@@ -31,6 +32,12 @@ class RasterizeAndRecord(page_measurement.PageMeasurement):
                       '(must be long enough to render one frame)')
 
   def CustomizeBrowserOptions(self, options):
+    # rasterize_and_record fails on the Linux perf bot.
+    # TODO(ernstm): Re-enable this test when crbug.com/311389 is fixed.
+    if 'linux' in sys.platform:
+      print 'This benchmark is temporarily disabled on Linux. Skipping test.'
+      sys.exit(0)
+
     # Run each raster task N times. This allows us to report the time for the
     # best run, effectively excluding cache effects and time when the thread is
     # de-scheduled.
@@ -50,10 +57,10 @@ class RasterizeAndRecord(page_measurement.PageMeasurement):
     # been updated to branch 1671 or later.
     backend = tab.browser._browser_backend # pylint: disable=W0212
     if (not hasattr(backend, 'chrome_branch_number') or
-        backend.chrome_branch_number < 1671):
+        (sys.platform != 'android' and backend.chrome_branch_number < 1671)):
       print ('Warning: rasterize_and_record requires Chrome branch 1671 or '
              'later. Skipping measurement.')
-      return
+      sys.exit(0)
 
     # Rasterize only what's visible.
     tab.ExecuteJavaScript(
