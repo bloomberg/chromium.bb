@@ -968,8 +968,7 @@ void ExtensionService::EnableExtension(const std::string& extension_id) {
 
   // Move it over to the enabled list.
   extensions_.Insert(make_scoped_refptr(extension));
-  if (disabled_extensions_.Remove(extension->id()))
-    extension_prefs_->SetKnownDisabled(disabled_extensions_.GetIDs());
+  disabled_extensions_.Remove(extension->id());
 
   NotifyExtensionLoaded(extension);
 
@@ -1021,8 +1020,7 @@ void ExtensionService::DisableExtension(
 
   // Move it over to the disabled list. Don't send a second unload notification
   // for terminated extensions being disabled.
-  if (disabled_extensions_.Insert(make_scoped_refptr(extension)))
-    extension_prefs_->SetKnownDisabled(disabled_extensions_.GetIDs());
+  disabled_extensions_.Insert(make_scoped_refptr(extension));
   if (extensions_.Contains(extension->id())) {
     extensions_.Remove(extension->id());
     NotifyExtensionUnloaded(extension, UnloadedExtensionInfo::REASON_DISABLE);
@@ -1799,6 +1797,12 @@ void ExtensionService::ReconcileKnownDisabled() {
     UMA_HISTOGRAM_COUNTS_100("Extensions.KnownDisabledReDisabled",
                              known_disabled_count);
   }
+
+  // Update the list of known disabled to reflect every change to
+  // |disabled_extensions_| from this point forward.
+  disabled_extensions_.set_modification_callback(
+      base::Bind(&extensions::ExtensionPrefs::SetKnownDisabled,
+                 base::Unretained(extension_prefs_)));
 }
 
 void ExtensionService::HandleExtensionAlertDetails() {
@@ -2250,8 +2254,7 @@ void ExtensionService::CheckPermissionsIncrease(const Extension* extension,
       RecordPermissionMessagesHistogram(
           extension, "Extensions.Permissions_AutoDisable");
     }
-    DisableExtension(extension->id(),
-                     static_cast<Extension::DisableReason>(disable_reasons));
+    extension_prefs_->SetExtensionState(extension->id(), Extension::DISABLED);
     extension_prefs_->SetDidExtensionEscalatePermissions(extension, true);
   }
   if (disable_reasons != Extension::DISABLE_NONE) {

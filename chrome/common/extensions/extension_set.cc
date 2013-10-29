@@ -4,6 +4,7 @@
 
 #include "chrome/common/extensions/extension_set.h"
 
+#include "base/callback.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "chrome/common/extensions/extension.h"
@@ -44,6 +45,8 @@ bool ExtensionSet::Contains(const std::string& extension_id) const {
 bool ExtensionSet::Insert(const scoped_refptr<const Extension>& extension) {
   bool was_present = ContainsKey(extensions_, extension->id());
   extensions_[extension->id()] = extension;
+  if (!was_present && !modification_callback_.is_null())
+    modification_callback_.Run(GetIDs());
   return !was_present;
 }
 
@@ -57,7 +60,10 @@ bool ExtensionSet::InsertAll(const ExtensionSet& extensions) {
 }
 
 bool ExtensionSet::Remove(const std::string& id) {
-  return extensions_.erase(id) > 0;
+  bool was_present = extensions_.erase(id) > 0;
+  if (was_present && !modification_callback_.is_null())
+    modification_callback_.Run(GetIDs());
+  return was_present;
 }
 
 void ExtensionSet::Clear() {
@@ -117,8 +123,8 @@ const Extension* ExtensionSet::GetByID(const std::string& id) const {
     return NULL;
 }
 
-std::set<std::string> ExtensionSet::GetIDs() const {
-  std::set<std::string> ids;
+extensions::ExtensionIdSet ExtensionSet::GetIDs() const {
+  extensions::ExtensionIdSet ids;
   for (ExtensionMap::const_iterator it = extensions_.begin();
        it != extensions_.end(); ++it) {
     ids.insert(it->first);
