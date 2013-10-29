@@ -133,7 +133,7 @@ void MIDIManagerMac::ReadMIDI(MIDIEndpointRef source,
   uint32 port_index = source_map_[source];
 
   // Go through each packet and process separately.
-  for(size_t i = 0; i < packet_list->numPackets; i++) {
+  for (size_t i = 0; i < packet_list->numPackets; i++) {
     // Each packet contains MIDI data for one or more messages (like note-on).
     const MIDIPacket &packet = packet_list->packet[i];
     double timestamp_seconds = MIDITimeStampToSeconds(packet.timeStamp);
@@ -184,19 +184,39 @@ MIDIPortInfo MIDIManagerMac::GetPortInfoFromEndpoint(
   MIDIObjectGetIntegerProperty(endpoint, kMIDIPropertyUniqueID, &id_number);
   string id = IntToString(id_number);
 
+  string manufacturer;
   CFStringRef manufacturer_ref = NULL;
-  MIDIObjectGetStringProperty(
+  OSStatus result = MIDIObjectGetStringProperty(
       endpoint, kMIDIPropertyManufacturer, &manufacturer_ref);
-  string manufacturer = SysCFStringRefToUTF8(manufacturer_ref);
+  if (result == noErr) {
+    manufacturer = SysCFStringRefToUTF8(manufacturer_ref);
+  } else {
+    // kMIDIPropertyManufacturer is not supported in IAC driver providing
+    // endpoints, and the result will be kMIDIUnknownProperty (-10835).
+    DLOG(WARNING) << "Failed to get kMIDIPropertyManufacturer with status "
+                  << result;
+  }
 
+  string name;
   CFStringRef name_ref = NULL;
-  MIDIObjectGetStringProperty(endpoint, kMIDIPropertyName, &name_ref);
-  string name = SysCFStringRefToUTF8(name_ref);
+  result = MIDIObjectGetStringProperty(endpoint, kMIDIPropertyName, &name_ref);
+  if (result == noErr)
+    name = SysCFStringRefToUTF8(name_ref);
+  else
+    DLOG(WARNING) << "Failed to get kMIDIPropertyName with status " << result;
 
+  string version;
   SInt32 version_number = 0;
-  MIDIObjectGetIntegerProperty(
+  result = MIDIObjectGetIntegerProperty(
       endpoint, kMIDIPropertyDriverVersion, &version_number);
-  string version = IntToString(version_number);
+  if (result == noErr) {
+    version = IntToString(version_number);
+  } else {
+    // kMIDIPropertyDriverVersion is not supported in IAC driver providing
+    // endpoints, and the result will be kMIDIUnknownProperty (-10835).
+    DLOG(WARNING) << "Failed to get kMIDIPropertyDriverVersion with status "
+                  << result;
+  }
 
   return MIDIPortInfo(id, manufacturer, name, version);
 }
