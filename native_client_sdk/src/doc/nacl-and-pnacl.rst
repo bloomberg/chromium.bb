@@ -115,3 +115,6 @@ non-portable NaCl:
   ``newlib``). Dynamic linking and ``glibc`` are not yet supported.
   Work is under way to enable dynamic linking in future versions of PNaCl.
 * In the initial release, PNaCl does not support C++ exception handling. 
+* In the initial release, PNaCl does not support vector types and SIMD.
+* In the initial release, PNaCl does not support some GNU extensions like
+  taking the address of a label for computed gotos, or nested functions.

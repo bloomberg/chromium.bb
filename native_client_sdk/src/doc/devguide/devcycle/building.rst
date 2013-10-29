@@ -155,6 +155,8 @@ architecture-specific .nexe (e.g., for debugging purposes).
 Each tool's name is preceded by the prefix "pnacl-". Some of the useful
 tools include:
 
+pnacl-abicheck
+  Check that the **pexe** follows the PNaCl ABI rules.
 pnacl-ar
   Creates archives (e.g., static libraries)
 pnacl-clang
@@ -619,5 +621,37 @@ Here is one way to find the appropriate library for a given symbol:
   <NACL_SDK_ROOT>/toolchain/<platform>_pnacl/bin/pnacl-nm -o \
     toolchain/<platform>_pnacl/usr/lib/*.a | grep <MySymbolName>
 
-.. TODO(jvoung): Add some notes about debugging GNU-extensions not
-.. supported by PNaCl ABI stabilization passes, like computed gotos?
+
+PNaCl ABI Verification errors
+-----------------------------
+
+PNaCl has restrictions on what is supported in bitcode. There is a bitcode
+ABI verifier which checks that the application conforms to the ABI restrictions,
+before it is translated and run in the browser. However, it is best to
+avoid runtime errors for users, so the verifier also runs on the developer's
+machine at link time.
+
+For example, the following program which uses 128-bit integers
+would compile with NaCl GCC for the x86-64 target. However, it is not
+portable and would not compile with NaCl GCC for the i686 target.
+With PNaCl, it would fail to pass the ABI verifier:
+
+.. naclcode::
+
+  typedef unsigned int uint128_t __attribute__((mode(TI)));
+
+  uint128_t foo(uint128_t x) {
+    return x;
+  }
+
+With PNaCl you would get the following error at link time:
+
+.. naclcode::
+
+  Function foo has disallowed type: i128 (i128)
+  LLVM ERROR: PNaCl ABI verification failed
+
+When faced with a PNaCl ABI verification error, check the list of features
+that are :ref:`not supported by PNaCl <when-to-use-nacl>`.
+If the problem you face is not listed as restricted,
+:ref:`let us know <help>`!
