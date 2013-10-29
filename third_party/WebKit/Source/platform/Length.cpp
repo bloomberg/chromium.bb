@@ -95,7 +95,7 @@ Vector<Length> parseHTMLAreaElementCoords(const String& string)
     unsigned len = str->count(' ') + 1;
     Vector<Length> r(len);
 
-    int i = 0;
+    unsigned i = 0;
     unsigned pos = 0;
     size_t pos2;
 

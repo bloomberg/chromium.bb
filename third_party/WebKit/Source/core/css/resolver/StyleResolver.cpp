@@ -971,7 +971,7 @@ void StyleResolver::resolveKeyframes(Element* element, const RenderStyle* style,
         keyframesAndTimingFunctions.append(std::make_pair(splitOutKeyframes, generateTimingFunction(splitOutKeyframes, perKeyframeTimingFunctions)));
     }
 
-    size_t numPropertiesSpecifiedInAllKeyframes = keyframes.first()->properties().size();
+    int numPropertiesSpecifiedInAllKeyframes = keyframes.first()->properties().size();
 #ifndef NDEBUG
     for (size_t i = 1; i < numKeyframes; ++i)
         ASSERT(keyframes[i]->properties().size() == numPropertiesSpecifiedInAllKeyframes);

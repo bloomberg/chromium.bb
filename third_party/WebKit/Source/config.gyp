@@ -65,6 +65,12 @@
           # timesNewRoman.unstatic.3258 and colorTransparent.unstatic.4879.
           'cflags': ['-Wno-uninitialized'],
         }],
+        ['OS=="mac"', {
+          # TODO: Turn this on on all platforms, http://crbug.com/312287
+          'variables': {
+            'chromium_code': 1,
+          },
+        }],
         ['clang==1', {
           'cflags': ['-Wglobal-constructors'],
           'xcode_settings': {

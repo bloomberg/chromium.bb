@@ -133,6 +133,7 @@ TEST(WTF_PartitionAlloc, SimpleLeak)
 {
     TestSetup();
     void* leakedPtr = partitionAlloc(allocator.root(), kTestAllocSize);
+    (void)leakedPtr;
     EXPECT_FALSE(allocator.shutdown());
 }
 
@@ -294,7 +295,7 @@ TEST(WTF_PartitionAlloc, FreePageListPageTransitions)
 
     // At this moment, we should have filled an entire partition page full of
     // WTF::PartitionFreepagelistEntry, in the special free list entry bucket.
-    EXPECT_EQ(numToFillFreeListPage - 1, freePageBucket->currPage->numAllocatedSlots);
+    EXPECT_EQ(numToFillFreeListPage - 1, static_cast<size_t>(freePageBucket->currPage->numAllocatedSlots));
     EXPECT_FALSE(freePageBucket->currPage->freelistHead);
 
     // Allocate / free in a different bucket size so we get control of a

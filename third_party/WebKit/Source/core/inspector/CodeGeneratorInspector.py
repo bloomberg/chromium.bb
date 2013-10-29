@@ -1924,8 +1924,10 @@ class Generator:
 
         if "parameters" in json_command:
             json_params = json_command["parameters"]
-            method_in_code += Templates.param_container_access_code
             request_message_param = " requestMessageObject"
+
+            if json_params:
+                method_in_code += Templates.param_container_access_code
 
             for json_parameter in json_params:
                 json_param_name = json_parameter["name"]

@@ -72,7 +72,7 @@ TEST(TextCodecUTF8, DecodeChineseCharacters)
     bool sawError = false;
     const String& result = codec->decode(testCase, testCaseSize, true, false, sawError);
     EXPECT_FALSE(sawError);
-    ASSERT_EQ(2, result.length());
+    ASSERT_EQ(2u, result.length());
     EXPECT_EQ(0x6f22U, result[0]);
     EXPECT_EQ(0x5b57U, result[1]);
 }
@@ -85,7 +85,7 @@ TEST(TextCodecUTF8, Decode0xFF)
     bool sawError = false;
     const String& result = codec->decode("\xff", 1, true, false, sawError);
     EXPECT_TRUE(sawError);
-    ASSERT_EQ(1, result.length());
+    ASSERT_EQ(1u, result.length());
     EXPECT_EQ(0xFFFDU, result[0]);
 }
 

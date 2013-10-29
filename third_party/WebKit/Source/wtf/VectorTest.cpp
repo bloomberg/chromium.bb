@@ -135,7 +135,7 @@ TEST(WTF_Vector, OwnPtr)
     OwnPtrVector vector;
     vector.append(adoptPtr(new DestructCounter(0, &destructNumber)));
     vector.append(adoptPtr(new DestructCounter(1, &destructNumber)));
-    ASSERT_EQ(2, vector.size());
+    ASSERT_EQ(2u, vector.size());
 
     OwnPtr<DestructCounter>& counter0 = vector.first();
     ASSERT_EQ(0, counter0->get());
@@ -146,15 +146,15 @@ TEST(WTF_Vector, OwnPtr)
     size_t index = 0;
     for (OwnPtrVector::iterator iter = vector.begin(); iter != vector.end(); ++iter) {
         OwnPtr<DestructCounter>* refCounter = iter;
-        ASSERT_EQ(index, refCounter->get()->get());
-        ASSERT_EQ(index, (*refCounter)->get());
+        ASSERT_EQ(index, static_cast<size_t>(refCounter->get()->get()));
+        ASSERT_EQ(index, static_cast<size_t>((*refCounter)->get()));
         index++;
     }
     ASSERT_EQ(0, destructNumber);
 
     for (index = 0; index < vector.size(); index++) {
         OwnPtr<DestructCounter>& refCounter = vector[index];
-        ASSERT_EQ(index, refCounter->get());
+        ASSERT_EQ(index, static_cast<size_t>(refCounter->get()));
         index++;
     }
     ASSERT_EQ(0, destructNumber);
@@ -163,21 +163,21 @@ TEST(WTF_Vector, OwnPtr)
     ASSERT_EQ(1, vector[1]->get());
     vector.remove(0);
     ASSERT_EQ(1, vector[0]->get());
-    ASSERT_EQ(1, vector.size());
+    ASSERT_EQ(1u, vector.size());
     ASSERT_EQ(1, destructNumber);
 
     OwnPtr<DestructCounter> ownCounter1 = vector[0].release();
     vector.remove(0);
     ASSERT_EQ(counter1.get(), ownCounter1.get());
-    ASSERT_EQ(0, vector.size());
+    ASSERT_EQ(0u, vector.size());
     ASSERT_EQ(1, destructNumber);
 
     ownCounter1.clear();
     ASSERT_EQ(2, destructNumber);
 
-    int count = 1025;
+    size_t count = 1025;
     destructNumber = 0;
-    for (int i = 0; i < count; i++)
+    for (size_t i = 0; i < count; i++)
         vector.prepend(adoptPtr(new DestructCounter(i, &destructNumber)));
 
     // Vector relocation must not destruct OwnPtr element.
@@ -188,10 +188,10 @@ TEST(WTF_Vector, OwnPtr)
     vector.swap(copyVector);
     ASSERT_EQ(0, destructNumber);
     ASSERT_EQ(count, copyVector.size());
-    ASSERT_EQ(0, vector.size());
+    ASSERT_EQ(0u, vector.size());
 
     copyVector.clear();
-    ASSERT_EQ(count, destructNumber);
+    ASSERT_EQ(count, static_cast<size_t>(destructNumber));
 }
 
 } // namespace

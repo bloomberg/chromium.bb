@@ -230,7 +230,7 @@ LayoutUnit FloatingObjects::lowestFloatLogicalBottom(FloatingObject::Type floatT
 bool FloatingObjects::hasLowestFloatLogicalBottomCached(bool isHorizontal, FloatingObject::Type type) const
 {
     int floatIndex = static_cast<int>(type) - 1;
-    ASSERT(floatIndex < sizeof(m_lowestFloatBottomCache) / sizeof(FloatBottomCachedValue));
+    ASSERT(floatIndex < static_cast<int>(sizeof(m_lowestFloatBottomCache) / sizeof(FloatBottomCachedValue)));
     ASSERT(floatIndex >= 0);
     return (m_cachedHorizontalWritingMode == isHorizontal && !m_lowestFloatBottomCache[floatIndex].dirty);
 }
@@ -238,7 +238,7 @@ bool FloatingObjects::hasLowestFloatLogicalBottomCached(bool isHorizontal, Float
 LayoutUnit FloatingObjects::getCachedlowestFloatLogicalBottom(FloatingObject::Type type) const
 {
     int floatIndex = static_cast<int>(type) - 1;
-    ASSERT(floatIndex < sizeof(m_lowestFloatBottomCache) / sizeof(FloatBottomCachedValue));
+    ASSERT(floatIndex < static_cast<int>(sizeof(m_lowestFloatBottomCache) / sizeof(FloatBottomCachedValue)));
     ASSERT(floatIndex >= 0);
     return m_lowestFloatBottomCache[floatIndex].value;
 }
@@ -246,7 +246,7 @@ LayoutUnit FloatingObjects::getCachedlowestFloatLogicalBottom(FloatingObject::Ty
 void FloatingObjects::setCachedLowestFloatLogicalBottom(bool isHorizontal, FloatingObject::Type type, LayoutUnit value)
 {
     int floatIndex = static_cast<int>(type) - 1;
-    ASSERT(floatIndex < sizeof(m_lowestFloatBottomCache) / sizeof(FloatBottomCachedValue));
+    ASSERT(floatIndex < static_cast<int>(sizeof(m_lowestFloatBottomCache) / sizeof(FloatBottomCachedValue)));
     ASSERT(floatIndex >= 0);
     m_cachedHorizontalWritingMode = isHorizontal;
     m_lowestFloatBottomCache[floatIndex].value = value;

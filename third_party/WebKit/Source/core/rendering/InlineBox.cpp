@@ -49,10 +49,6 @@ struct SameSizeAsInlineBox {
 COMPILE_ASSERT(sizeof(InlineBox) == sizeof(SameSizeAsInlineBox), InlineBox_size_guard);
 
 #ifndef NDEBUG
-static bool inInlineBoxDetach;
-#endif
-
-#ifndef NDEBUG
 
 InlineBox::~InlineBox()
 {

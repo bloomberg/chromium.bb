@@ -42,7 +42,7 @@ static int lock = 0;
 
 static void fillBuffer(volatile char* buffer, char fillPattern)
 {
-    for (int i = 0; i < bufferSize; ++i)
+    for (size_t i = 0; i < bufferSize; ++i)
         buffer[i] = fillPattern;
 }
 
@@ -50,7 +50,7 @@ static void changeAndCheckBuffer(volatile char* buffer)
 {
     fillBuffer(buffer, '\0');
     int total = 0;
-    for (int i = 0; i < bufferSize; ++i)
+    for (size_t i = 0; i < bufferSize; ++i)
         total += buffer[i];
 
     EXPECT_EQ(0, total);
@@ -76,8 +76,8 @@ TEST(WTF_SpinLock, Torture)
 
     ThreadIdentifier thread1 = createThread(threadMain, sharedBuffer, "thread1");
     ThreadIdentifier thread2 = createThread(threadMain, sharedBuffer, "thread2");
-    EXPECT_NE(0, thread1);
-    EXPECT_NE(0, thread2);
+    EXPECT_NE(0u, thread1);
+    EXPECT_NE(0u, thread2);
 
     int ret = waitForThreadCompletion(thread1);
     EXPECT_EQ(0, ret);

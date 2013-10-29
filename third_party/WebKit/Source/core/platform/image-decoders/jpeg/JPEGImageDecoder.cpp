@@ -723,8 +723,8 @@ bool JPEGImageDecoder::outputScanlines()
     // Initialize the framebuffer if needed.
     ImageFrame& buffer = m_frameBufferCache[0];
     if (buffer.status() == ImageFrame::FrameEmpty) {
-        ASSERT(info->output_width == m_decodedSize.width());
-        ASSERT(info->output_height == m_decodedSize.height());
+        ASSERT(info->output_width == static_cast<JDIMENSION>(m_decodedSize.width()));
+        ASSERT(info->output_height == static_cast<JDIMENSION>(m_decodedSize.height()));
 
         if (!buffer.setSize(info->output_width, info->output_height))
             return setFailed();

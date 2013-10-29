@@ -4777,7 +4777,7 @@ bool CSSParser::parseGridAreaShorthand(bool important)
 
     ShorthandScope scope(this, CSSPropertyGridArea);
     const StylePropertyShorthand& shorthand = gridAreaShorthand();
-    ASSERT(shorthand.length() == 4);
+    ASSERT_UNUSED(shorthand, shorthand.length() == 4);
 
     RefPtr<CSSValue> rowStartValue = parseGridPosition();
     if (!rowStartValue)
@@ -4896,7 +4896,7 @@ bool CSSParser::parseGridTrackRepeatFunction(CSSValueList& list)
         arguments->next();
     }
 
-    while (CSSParserValue* argumentValue = arguments->current()) {
+    while (arguments->current()) {
         RefPtr<CSSValue> trackSize = parseGridTrackSize(*arguments);
         if (!trackSize)
             return false;
@@ -10504,7 +10504,7 @@ inline void CSSParser::detectSupportsToken(int length)
 template <typename CharacterType>
 inline void CSSParser::detectCSSVariableDefinitionToken(int length)
 {
-    static const unsigned prefixLength = sizeof("var-") - 1;
+    static const int prefixLength = static_cast<int>(sizeof("var-") - 1);
     if (length <= prefixLength)
         return;
     CharacterType* name = tokenStart<CharacterType>();

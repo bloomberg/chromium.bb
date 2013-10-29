@@ -40,16 +40,16 @@ namespace WTF {
 TEST(ArrayBufferBuilder, Constructor)
 {
     ArrayBufferBuilder zeroBuilder(0);
-    EXPECT_EQ(0, zeroBuilder.byteLength());
-    EXPECT_EQ(0, zeroBuilder.capacity());
+    EXPECT_EQ(0u, zeroBuilder.byteLength());
+    EXPECT_EQ(0u, zeroBuilder.capacity());
 
     ArrayBufferBuilder smallBuilder(1024);
-    EXPECT_EQ(0, zeroBuilder.byteLength());
-    EXPECT_EQ(1024, smallBuilder.capacity());
+    EXPECT_EQ(0u, zeroBuilder.byteLength());
+    EXPECT_EQ(1024u, smallBuilder.capacity());
 
     ArrayBufferBuilder bigBuilder(2048);
-    EXPECT_EQ(0, zeroBuilder.byteLength());
-    EXPECT_EQ(2048, bigBuilder.capacity());
+    EXPECT_EQ(0u, zeroBuilder.byteLength());
+    EXPECT_EQ(2048u, bigBuilder.capacity());
 }
 
 TEST(ArrayBufferBuilder, Append)
@@ -110,15 +110,15 @@ TEST(ArrayBufferBuilder, AppendFixedCapacity)
 
     EXPECT_EQ(dataSize, builder.append(data, dataSize));
     EXPECT_EQ(dataSize, builder.byteLength());
-    EXPECT_EQ(15, builder.capacity());
+    EXPECT_EQ(15u, builder.capacity());
 
-    EXPECT_EQ(5, builder.append(data, dataSize));
-    EXPECT_EQ(15, builder.byteLength());
-    EXPECT_EQ(15, builder.capacity());
+    EXPECT_EQ(5u, builder.append(data, dataSize));
+    EXPECT_EQ(15u, builder.byteLength());
+    EXPECT_EQ(15u, builder.capacity());
 
-    EXPECT_EQ(0, builder.append(data, dataSize));
-    EXPECT_EQ(15, builder.byteLength());
-    EXPECT_EQ(15, builder.capacity());
+    EXPECT_EQ(0u, builder.append(data, dataSize));
+    EXPECT_EQ(15u, builder.byteLength());
+    EXPECT_EQ(15u, builder.capacity());
 }
 
 TEST(ArrayBufferBuilder, ToArrayBuffer)
@@ -179,10 +179,10 @@ TEST(ArrayBufferBuilder, ToString)
 TEST(ArrayBufferBuilder, ShrinkToFitNoAppend)
 {
     ArrayBufferBuilder builder(1024);
-    EXPECT_EQ(1024, builder.capacity());
+    EXPECT_EQ(1024u, builder.capacity());
     builder.shrinkToFit();
-    EXPECT_EQ(0, builder.byteLength());
-    EXPECT_EQ(0, builder.capacity());
+    EXPECT_EQ(0u, builder.byteLength());
+    EXPECT_EQ(0u, builder.capacity());
 }
 
 TEST(ArrayBufferBuilder, ShrinkToFit)
@@ -194,7 +194,7 @@ TEST(ArrayBufferBuilder, ShrinkToFit)
 
     EXPECT_EQ(dataSize, builder.append(data, dataSize));
     EXPECT_EQ(dataSize, builder.byteLength());
-    EXPECT_EQ(32, builder.capacity());
+    EXPECT_EQ(32u, builder.capacity());
 
     builder.shrinkToFit();
     EXPECT_EQ(dataSize, builder.byteLength());
