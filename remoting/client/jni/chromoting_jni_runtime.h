@@ -19,6 +19,8 @@ template<typename T> struct DefaultSingletonTraits;
 
 namespace remoting {
 
+bool RegisterJni(JNIEnv* env);
+
 // Houses the global resources on which the Chromoting components run
 // (e.g. message loops and task runners). Proxies outgoing JNI calls from its
 // ChromotingJniInstance member to Java. All its methods should be invoked
@@ -106,9 +108,6 @@ class ChromotingJniRuntime {
 
   // Detaches JVM from the current thread, then signals. Doesn't own |waiter|.
   void DetachFromVmAndSignal(base::WaitableEvent* waiter);
-
-  // Reference to the Java class into which we make JNI calls.
-  jclass class_;
 
   // Used by the Chromium libraries to clean up the base and net libraries' JNI
   // bindings. It must persist for the lifetime of the singleton.

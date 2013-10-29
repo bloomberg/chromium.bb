@@ -1821,25 +1821,40 @@
     ['OS=="android"', {
       'targets': [
         {
+          'target_name': 'remoting_jni_headers',
+          'type': 'none',
+          'sources': [
+            'android/java/src/org/chromium/chromoting/jni/JniInterface.java',
+          ],
+          'variables': {
+            'jni_gen_package': 'remoting',
+          },
+          'includes': [ '../build/jni_generator.gypi' ],
+        },  # end of target 'remoting_jni_headers'
+        {
           'target_name': 'remoting_client_jni',
           'type': 'shared_library',
           'dependencies': [
             'remoting_base',
             'remoting_client',
             'remoting_jingle_glue',
+            'remoting_jni_headers',
             'remoting_protocol',
             '../google_apis/google_apis.gyp:google_apis',
+          ],
+          'include_dirs': [
+            '<(SHARED_INTERMEDIATE_DIR)/remoting',
           ],
           'sources': [
             'client/jni/android_keymap.cc',
             'client/jni/android_keymap.h',
             'client/jni/chromoting_jni_instance.cc',
             'client/jni/chromoting_jni_instance.h',
+            'client/jni/chromoting_jni_onload.cc',
             'client/jni/chromoting_jni_runtime.cc',
             'client/jni/chromoting_jni_runtime.h',
             'client/jni/jni_frame_consumer.cc',
             'client/jni/jni_frame_consumer.h',
-            'client/jni/jni_interface.cc',
           ],
         },  # end of target 'remoting_client_jni'
         {

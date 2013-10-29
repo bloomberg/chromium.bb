@@ -22,6 +22,8 @@ import android.widget.CheckBox;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.chromium.base.CalledByNative;
+import org.chromium.base.JNINamespace;
 import org.chromium.chromoting.R;
 
 import java.nio.ByteBuffer;
@@ -31,6 +33,7 @@ import java.nio.ByteOrder;
  * Initializes the Chromium remoting library, and provides JNI calls into it.
  * All interaction with the native code is centralized in this class.
  */
+@JNINamespace("remoting")
 public class JniInterface {
     /** The status code indicating successful connection. */
     private static final int SUCCESSFUL_CONNECTION = 3;
@@ -57,19 +60,20 @@ public class JniInterface {
         }
 
         System.loadLibrary("remoting_client_jni");
-        loadNative(context);
+
+        nativeLoadNative(context);
         sLoaded = true;
     }
 
     /** Performs the native portion of the initialization. */
-    private static native void loadNative(Context context);
+    private static native void nativeLoadNative(Context context);
 
     /*
      * API/OAuth2 keys access.
      */
-    public static native String getApiKey();
-    public static native String getClientId();
-    public static native String getClientSecret();
+    public static native String nativeGetApiKey();
+    public static native String nativeGetClientId();
+    public static native String nativeGetClientSecret();
 
     /*
      * Connection-initiating state machine.
@@ -96,7 +100,7 @@ public class JniInterface {
 
         sSuccessCallback = successCallback;
         SharedPreferences prefs = sContext.getPreferences(Activity.MODE_PRIVATE);
-        connectNative(username, authToken, hostJid, hostId, hostPubkey,
+        nativeConnect(username, authToken, hostJid, hostId, hostPubkey,
                 prefs.getString(hostId + "_id", ""), prefs.getString(hostId + "_secret", ""));
         sConnected = true;
     }
@@ -112,7 +116,7 @@ public class JniInterface {
             }
         }
 
-        disconnectNative();
+        nativeDisconnect();
         sSuccessCallback = null;
         sConnected = false;
 
@@ -123,11 +127,11 @@ public class JniInterface {
     }
 
     /** Performs the native portion of the connection. */
-    private static native void connectNative(String username, String authToken, String hostJid,
+    private static native void nativeConnect(String username, String authToken, String hostJid,
             String hostId, String hostPubkey, String pairId, String pairSecret);
 
     /** Performs the native portion of the cleanup. */
-    private static native void disconnectNative();
+    private static native void nativeDisconnect();
 
     /** Position of cursor hotspot within cursor image. */
     public static Point getCursorHotspot() { return sCursorHotspot; }
@@ -154,6 +158,7 @@ public class JniInterface {
     private static Bitmap sCursorBitmap = null;
 
     /** Reports whenever the connection status changes. */
+    @CalledByNative
     private static void reportConnectionStatus(int state, int error) {
         if (state < SUCCESSFUL_CONNECTION && error == 0) {
             // The connection is still being established, so we'll report the current progress.
@@ -201,6 +206,7 @@ public class JniInterface {
     }
 
     /** Prompts the user to enter a PIN. */
+    @CalledByNative
     private static void displayAuthenticationPrompt(boolean pairingSupported) {
         AlertDialog.Builder pinPrompt = new AlertDialog.Builder(sContext);
         pinPrompt.setTitle(sContext.getString(R.string.pin_entry_title));
@@ -223,8 +229,8 @@ public class JniInterface {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         Log.i("jniiface", "User provided a PIN code");
-                        authenticationResponse(String.valueOf(pinTextView.getText()),
-                                               pinCheckBox.isChecked());
+                        nativeAuthenticationResponse(String.valueOf(pinTextView.getText()),
+                                                     pinCheckBox.isChecked());
                     }
                 });
 
@@ -266,6 +272,7 @@ public class JniInterface {
     }
 
     /** Saves newly-received pairing credentials to permanent storage. */
+    @CalledByNative
     private static void commitPairingCredentials(String host, byte[] id, byte[] secret) {
         synchronized (sContext) {
             sContext.getPreferences(Activity.MODE_PRIVATE).edit().
@@ -289,14 +296,16 @@ public class JniInterface {
             if (!sConnected || sRedrawCallback == null) return false;
         }
 
-        scheduleRedrawNative();
+        nativeScheduleRedraw();
         return true;
     }
 
     /** Performs the redrawing callback. This is a no-op if the window isn't visible. */
+    @CalledByNative
     private static void redrawGraphicsInternal() {
-        if (sRedrawCallback != null)
+        if (sRedrawCallback != null) {
             sRedrawCallback.run();
+        }
     }
 
     /**
@@ -318,9 +327,9 @@ public class JniInterface {
     }
 
     /**
-     * Sets a new video frame. Called from native code on the native graphics thread when a new
-     * frame is allocated.
+     * Sets a new video frame. Called on the native graphics thread when a new frame is allocated.
      */
+    @CalledByNative
     private static void setVideoFrame(Bitmap bitmap) {
         if (Looper.myLooper() == Looper.getMainLooper()) {
             Log.w("jniiface", "Video frame updated on UI thread");
@@ -335,14 +344,16 @@ public class JniInterface {
      * Creates a new Bitmap to hold video frame pixels. Called by native code which stores a global
      * reference to the Bitmap and writes the decoded frame pixels to it.
      */
+    @CalledByNative
     private static Bitmap newBitmap(int width, int height) {
         return Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
     }
 
     /**
-     * Updates the cursor shape. This is called from native code on the graphics thread when
-     * receiving a new cursor shape from the host.
+     * Updates the cursor shape. This is called on the graphics thread when receiving a new cursor
+     * shape from the host.
      */
+    @CalledByNative
     public static void updateCursorShape(int width, int height, int hotspotX, int hotspotY,
                                          ByteBuffer buffer) {
         sCursorHotspot = new Point(hotspotX, hotspotY);
@@ -359,7 +370,7 @@ public class JniInterface {
             return;
         }
 
-        mouseActionNative(x, y, whichButton, buttonDown);
+        nativeMouseAction(x, y, whichButton, buttonDown);
     }
 
     /** Presses and releases the specified (nonnegative) key. */
@@ -368,18 +379,18 @@ public class JniInterface {
             return;
         }
 
-        keyboardActionNative(keyCode, keyDown);
+        nativeKeyboardAction(keyCode, keyDown);
     }
 
     /** Performs the native response to the user's PIN. */
-    private static native void authenticationResponse(String pin, boolean createPair);
+    private static native void nativeAuthenticationResponse(String pin, boolean createPair);
 
     /** Schedules a redraw on the native graphics thread. */
-    private static native void scheduleRedrawNative();
+    private static native void nativeScheduleRedraw();
 
     /** Passes mouse information to the native handling code. */
-    private static native void mouseActionNative(int x, int y, int whichButton, boolean buttonDown);
+    private static native void nativeMouseAction(int x, int y, int whichButton, boolean buttonDown);
 
     /** Passes key press information to the native handling code. */
-    private static native void keyboardActionNative(int keyCode, boolean keyDown);
+    private static native void nativeKeyboardAction(int keyCode, boolean keyDown);
 }
