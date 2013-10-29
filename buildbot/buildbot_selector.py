@@ -193,25 +193,25 @@ BOT_ASSIGNMENT = {
     'lucid64-toolchain_arm':
         python + ' buildbot/buildbot_toolchain_build.py --buildbot',
 
-    # Pnacl toolchain builders.
+    # Pnacl toolchain builders (second argument indicates trybot).
     'linux-armtools-x86_32':
         'bash buildbot/buildbot_toolchain_arm_trusted.sh',
     'linux-pnacl-x86_32':
-        python + ' buildbot/buildbot_pnacl_toolchain.py --buildbot',
+        'bash buildbot/buildbot_pnacl.sh mode-buildbot-tc-x8632-linux false',
     'linux-pnacl-x86_64':
-        python + ' buildbot/buildbot_pnacl_toolchain.py --buildbot',
+        'bash buildbot/buildbot_pnacl.sh mode-buildbot-tc-x8664-linux false',
     'precise-pnacl-x86_32':
-        python + ' buildbot/buildbot_pnacl_toolchain.py --buildbot',
+        'bash buildbot/buildbot_pnacl.sh mode-buildbot-tc-x8632-linux false',
     'precise-pnacl-x86_64':
-        python + ' buildbot/buildbot_pnacl_toolchain.py --buildbot',
+        'bash buildbot/buildbot_pnacl.sh mode-buildbot-tc-x8664-linux false',
     'mac-pnacl-x86_32':
-        python + ' buildbot/buildbot_pnacl_toolchain.py --buildbot',
+        'bash buildbot/buildbot_pnacl.sh mode-buildbot-tc-x8632-mac false',
     # TODO(robertm): Delete this once we are using win-pnacl-x86_64
     'win-pnacl-x86_32':
-        python + ' buildbot/buildbot_pnacl_toolchain.py --buildbot',
+        'buildbot\\buildbot_pnacl.bat mode-buildbot-tc-x8664-win false',
     # TODO(robertm): use this in favor or the misnamed win-pnacl-x86_32
     'win-pnacl-x86_64':
-        python + ' buildbot/buildbot_pnacl_toolchain.py --buildbot',
+        'buildbot\\buildbot_pnacl.bat mode-buildbot-tc-x8664-win false',
 
     # Pnacl toolchain testers
     'linux-pnacl-x86_64-tests-x86_64':
@@ -243,21 +243,31 @@ BOT_ASSIGNMENT = {
     'nacl-toolchain-win7-glibc':
         'buildbot\\buildbot_windows-glibc-makefile.bat',
 
-    # Pnacl toolchain trybots.
+    # Pnacl toolchain trybots (second argument indicates trybot).
     'nacl-toolchain-linux-pnacl-x86_32':
-        python + ' buildbot/buildbot_pnacl_toolchain.py --trybot',
+        'bash buildbot/buildbot_pnacl.sh mode-buildbot-tc-x8632-linux true',
     'nacl-toolchain-linux-pnacl-x86_64':
-        python + ' buildbot/buildbot_pnacl_toolchain.py --trybot',
+        'bash buildbot/buildbot_pnacl.sh mode-buildbot-tc-x8664-linux true',
     'nacl-toolchain-linux-pnacl-mips': 'echo "TODO(mseaborn)"',
     'nacl-toolchain-precise-pnacl-x86_32':
-        python + ' buildbot/buildbot_pnacl_toolchain.py --trybot',
+        'bash buildbot/buildbot_pnacl.sh mode-buildbot-tc-x8632-linux true',
     'nacl-toolchain-precise-pnacl-x86_64':
-        python + ' buildbot/buildbot_pnacl_toolchain.py --trybot',
+        'bash buildbot/buildbot_pnacl.sh mode-buildbot-tc-x8664-linux true',
     'nacl-toolchain-precise-pnacl-mips': 'echo "TODO(mseaborn)"',
     'nacl-toolchain-mac-pnacl-x86_32':
-        python + ' buildbot/buildbot_pnacl_toolchain.py --trybot',
+        'bash buildbot/buildbot_pnacl.sh mode-buildbot-tc-x8632-mac true',
     'nacl-toolchain-win7-pnacl-x86_64':
-        python + ' buildbot/buildbot_pnacl_toolchain.py --trybot',
+        'buildbot\\buildbot_pnacl.bat mode-buildbot-tc-x8664-win true',
+
+    # PNaCl LLVM Merging bots
+    'llvm':
+        'bash buildbot/buildbot_pnacl_merge.sh merge-bot',
+    'llvm-scons':
+        'bash buildbot/buildbot_pnacl_merge.sh scons-bot',
+    'llvm-spec2k-x86':
+        'bash buildbot/buildbot_pnacl_merge.sh spec2k-x86-bot',
+    'llvm-spec2k-arm':
+        'bash buildbot/buildbot_pnacl_merge.sh spec2k-arm-bot',
 
 }
 

@@ -334,12 +334,7 @@ class Step(object):
 
   def __init__(self, name, status, halt_on_fail=True):
     self.status = status
-
-    if 'step_suffix' in status.context:
-      suffix = status.context['step_suffix']
-    else:
-      suffix = ''
-    self.name = name + suffix
+    self.name = name + status.context['step_suffix']
     self.halt_on_fail = halt_on_fail
     self.step_failed = False
 
@@ -460,10 +455,6 @@ class BuildContext(object):
   # Emulate dictionary subscripting.
   def __setitem__(self, key, value):
     self.config[key] = value
-
-  # Emulate dictionary membership test
-  def __contains__(self, key):
-    return key in self.config
 
   def Windows(self):
     return self.config['platform'] == 'win'

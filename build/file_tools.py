@@ -106,14 +106,5 @@ def RemoveDirectoryIfPresent(path):
   Args:
     path: Directory to remove.
   """
-
-  # On Windows, attempts to remove read-only files get Error 5. This
-  # error handler fixes the permissions and retries the removal.
-  def onerror_readonly(func, path, exc_info):
-    import stat
-    if not os.access(path, os.W_OK):
-      os.chmod(path, stat.S_IWUSR)
-      func(path)
-
   if os.path.exists(path):
-    shutil.rmtree(path, onerror=onerror_readonly)
+    shutil.rmtree(path)
