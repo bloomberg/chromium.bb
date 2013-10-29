@@ -35,6 +35,7 @@
 #include "InspectorTypeBuilder.h"
 #include "core/inspector/InspectorBaseAgent.h"
 #include "core/rendering/RenderLayer.h"
+#include "platform/Timer.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/text/WTFString.h"
@@ -67,7 +68,6 @@ public:
     // Called from the front-end.
     virtual void enable(ErrorString*);
     virtual void disable(ErrorString*);
-    virtual void getLayers(ErrorString*, const int* nodeId, RefPtr<TypeBuilder::Array<TypeBuilder::LayerTree::Layer> >&);
     virtual void compositingReasons(ErrorString*, const String& layerId, RefPtr<TypeBuilder::Array<String> >&);
 
 private:
@@ -77,12 +77,16 @@ private:
 
     RenderLayerCompositor* renderLayerCompositor();
     GraphicsLayer* layerById(ErrorString*, const String& layerId);
-    int idForNode(ErrorString*, Node*);
-
-    void buildLayerIdToNodeIdMap(ErrorString*, RenderLayer*, LayerIdToNodeIdMap&);
+    void notificationTimerFired(Timer<InspectorLayerTreeAgent>*);
+    PassRefPtr<TypeBuilder::Array<TypeBuilder::LayerTree::Layer> > buildLayerTree();
+    void buildLayerIdToNodeIdMap(RenderLayer*, LayerIdToNodeIdMap&);
+    int idForNode(Node*);
 
     InspectorFrontend::LayerTree* m_frontend;
     Page* m_page;
+    InspectorDOMAgent* m_domAgent;
+    Timer<InspectorLayerTreeAgent> m_notificationTimer;
+    bool m_notifyAfterNextLayersUpdate;
 
     HashMap<const RenderLayer*, String> m_documentLayerToIdMap;
 };

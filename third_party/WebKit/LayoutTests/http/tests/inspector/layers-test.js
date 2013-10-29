@@ -85,4 +85,16 @@ function initialize_LayerTreeTests()
             InspectorTest.addResult("ERROR: No layer for " + nodeIdAttribute);
         return result;
     }
+
+    InspectorTest.requestLayers = function(callback)
+    {
+        InspectorTest._layerTreeModel.addEventListener(WebInspector.LayerTreeModel.Events.LayerTreeChanged, onLayerTreeChanged);
+        InspectorTest._layerTreeModel.enable();
+        function onLayerTreeChanged()
+        {
+            InspectorTest._layerTreeModel.removeEventListener(WebInspector.LayerTreeModel.Events.LayerTreeChanged, onLayerTreeChanged);
+            callback();
+        }
+    }
+
 }

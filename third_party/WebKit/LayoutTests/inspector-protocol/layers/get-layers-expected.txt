@@ -1,15 +1,10 @@
 
-=== Enable the LayerTree agent ===
-
-PASS
-
 === Get the Document ===
 
 PASS
 
-=== Get the initial layer tree ===
+=== Enable the LayerTree agent ===
 
-PASS
 
 [
     {
@@ -76,11 +71,6 @@ PASS
 
 === Message the page to add a new composited layer ===
 
-PASS
-
-=== Get the modified layer tree ===
-
-PASS
 
 [
     {
@@ -158,6 +148,5 @@ PASS
 === Get attributes for the newly inserted node ===
 
 PASS
-
-=== Test complete, all expected conditions met ===
+DONE!
 

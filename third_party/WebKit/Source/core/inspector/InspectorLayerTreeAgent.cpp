@@ -52,10 +52,6 @@
 
 namespace WebCore {
 
-namespace LayerTreeAgentState {
-static const char layerTreeAgentEnabled[] = "layerTreeAgentEnabled";
-};
-
 inline String idForLayer(GraphicsLayer* graphicsLayer)
 {
     return String::number(graphicsLayer->platformLayer()->id());
@@ -107,10 +103,13 @@ void gatherGraphicsLayers(GraphicsLayer* root, HashMap<int, int>& layerIdToNodeI
         gatherGraphicsLayers(root->children()[i], layerIdToNodeIdMap, layers);
 }
 
-InspectorLayerTreeAgent::InspectorLayerTreeAgent(InstrumentingAgents* instrumentingAgents, InspectorCompositeState* state, InspectorDOMAgent*, Page* page)
+InspectorLayerTreeAgent::InspectorLayerTreeAgent(InstrumentingAgents* instrumentingAgents, InspectorCompositeState* state, InspectorDOMAgent* domAgent, Page* page)
     : InspectorBaseAgent<InspectorLayerTreeAgent>("LayerTree", instrumentingAgents, state)
     , m_frontend(0)
     , m_page(page)
+    , m_domAgent(domAgent)
+    , m_notificationTimer(this, &InspectorLayerTreeAgent::notificationTimerFired)
+    , m_notifyAfterNextLayersUpdate(false)
 {
 }
 
@@ -131,27 +130,45 @@ void InspectorLayerTreeAgent::clearFrontend()
 
 void InspectorLayerTreeAgent::restore()
 {
-    if (m_state->getBoolean(LayerTreeAgentState::layerTreeAgentEnabled))
-        enable(0);
+    // We do not re-enable layer agent automatically after navigation. This is because
+    // it depends on DOMAgent and node ids in particular, so we let front-end request document
+    // and re-enable the agent manually after this.
 }
 
 void InspectorLayerTreeAgent::enable(ErrorString*)
 {
-    m_state->setBoolean(LayerTreeAgentState::layerTreeAgentEnabled, true);
     m_instrumentingAgents->setInspectorLayerTreeAgent(this);
+    layerTreeDidChange();
 }
 
 void InspectorLayerTreeAgent::disable(ErrorString*)
 {
-    if (!m_state->getBoolean(LayerTreeAgentState::layerTreeAgentEnabled))
-        return;
-    m_state->setBoolean(LayerTreeAgentState::layerTreeAgentEnabled, false);
     m_instrumentingAgents->setInspectorLayerTreeAgent(0);
+    m_notificationTimer.stop();
 }
 
 void InspectorLayerTreeAgent::layerTreeDidChange()
 {
-    m_frontend->layerTreeDidChange();
+    if (m_notificationTimer.isActive())
+        return;
+    if (m_notifyAfterNextLayersUpdate) {
+        m_notifyAfterNextLayersUpdate = false;
+        m_frontend->layerTreeDidChange(buildLayerTree());
+        return;
+    }
+    const double layerTreeUpdateDelayInSeconds = 0.1;
+    m_notificationTimer.startOneShot(layerTreeUpdateDelayInSeconds);
+}
+
+void InspectorLayerTreeAgent::notificationTimerFired(Timer<InspectorLayerTreeAgent>*)
+{
+    RenderLayerCompositor* compositor = renderLayerCompositor();
+    if (compositor && compositor->compositingLayersNeedRebuild()) {
+        // Bad time for building layer tree -- let's do it as soon as it gets rebuild.
+        m_notifyAfterNextLayersUpdate = true;
+        return;
+    }
+    m_frontend->layerTreeDidChange(buildLayerTree());
 }
 
 void InspectorLayerTreeAgent::didPaint(RenderObject* renderer, GraphicsContext*, const LayoutRect& rect)
@@ -170,64 +187,46 @@ void InspectorLayerTreeAgent::didPaint(RenderObject* renderer, GraphicsContext*,
     m_frontend->layerPainted(idForLayer(graphicsLayer), domRect.release());
 }
 
-void InspectorLayerTreeAgent::getLayers(ErrorString* errorString, const int* nodeId, RefPtr<TypeBuilder::Array<TypeBuilder::LayerTree::Layer> >& layers)
+PassRefPtr<TypeBuilder::Array<TypeBuilder::LayerTree::Layer> > InspectorLayerTreeAgent::buildLayerTree()
 {
-    LayerIdToNodeIdMap layerIdToNodeIdMap;
-    layers = TypeBuilder::Array<TypeBuilder::LayerTree::Layer>::create();
-
     RenderLayerCompositor* compositor = renderLayerCompositor();
-    if (!compositor || !compositor->inCompositingMode()) {
-        *errorString = "Not in the compositing mode";
-        return;
-    }
-    if (!nodeId) {
-        buildLayerIdToNodeIdMap(errorString, compositor->rootRenderLayer(), layerIdToNodeIdMap);
-        gatherGraphicsLayers(compositor->rootGraphicsLayer(), layerIdToNodeIdMap, layers);
-        return;
-    }
-    Node* node = m_instrumentingAgents->inspectorDOMAgent()->nodeForId(*nodeId);
-    if (!node) {
-        *errorString = "Provided node id doesn't match any known node";
-        return;
-    }
-    RenderObject* renderer = node->renderer();
-    if (!renderer) {
-        *errorString = "Node for provided node id doesn't have a renderer";
-        return;
-    }
-    RenderLayer* enclosingLayer = renderer->enclosingLayer();
-    GraphicsLayer* enclosingGraphicsLayer = enclosingLayer->enclosingCompositingLayer()->compositedLayerMapping()->childForSuperlayers();
-    buildLayerIdToNodeIdMap(errorString, enclosingLayer, layerIdToNodeIdMap);
-    gatherGraphicsLayers(enclosingGraphicsLayer, layerIdToNodeIdMap, layers);
+    if (!compositor || !compositor->inCompositingMode())
+        return 0;
+    // Caller is responsible for only calling this when layer tree is up to date (preferrably just in the end of RenderLayerCompositor::updateCompositingLayers()
+    ASSERT(!compositor->compositingLayersNeedRebuild());
+    LayerIdToNodeIdMap layerIdToNodeIdMap;
+    RefPtr<TypeBuilder::Array<TypeBuilder::LayerTree::Layer> > layers = TypeBuilder::Array<TypeBuilder::LayerTree::Layer>::create();
+    buildLayerIdToNodeIdMap(compositor->rootRenderLayer(), layerIdToNodeIdMap);
+    gatherGraphicsLayers(compositor->rootGraphicsLayer(), layerIdToNodeIdMap, layers);
+    return layers.release();
 }
 
-void InspectorLayerTreeAgent::buildLayerIdToNodeIdMap(ErrorString* errorString, RenderLayer* root, LayerIdToNodeIdMap& layerIdToNodeIdMap)
+void InspectorLayerTreeAgent::buildLayerIdToNodeIdMap(RenderLayer* root, LayerIdToNodeIdMap& layerIdToNodeIdMap)
 {
     if (root->compositedLayerMapping()) {
         if (Node* node = root->renderer()->generatingNode()) {
             GraphicsLayer* graphicsLayer = root->compositedLayerMapping()->childForSuperlayers();
-            layerIdToNodeIdMap.set(graphicsLayer->platformLayer()->id(), idForNode(errorString, node));
+            layerIdToNodeIdMap.set(graphicsLayer->platformLayer()->id(), idForNode(node));
         }
     }
     for (RenderLayer* child = root->firstChild(); child; child = child->nextSibling())
-        buildLayerIdToNodeIdMap(errorString, child, layerIdToNodeIdMap);
+        buildLayerIdToNodeIdMap(child, layerIdToNodeIdMap);
     if (!root->renderer()->isRenderIFrame())
         return;
     FrameView* childFrameView = toFrameView(toRenderWidget(root->renderer())->widget());
     if (RenderView* childRenderView = childFrameView->renderView()) {
         if (RenderLayerCompositor* childCompositor = childRenderView->compositor())
-            buildLayerIdToNodeIdMap(errorString, childCompositor->rootRenderLayer(), layerIdToNodeIdMap);
+            buildLayerIdToNodeIdMap(childCompositor->rootRenderLayer(), layerIdToNodeIdMap);
     }
 }
 
-int InspectorLayerTreeAgent::idForNode(ErrorString* errorString, Node* node)
+int InspectorLayerTreeAgent::idForNode(Node* node)
 {
-    InspectorDOMAgent* domAgent = m_instrumentingAgents->inspectorDOMAgent();
-
-    int nodeId = domAgent->boundNodeId(node);
-    if (!nodeId)
-        nodeId = domAgent->pushNodeToFrontend(errorString, domAgent->boundNodeId(&node->document()), node);
-
+    int nodeId = m_domAgent->boundNodeId(node);
+    if (!nodeId) {
+        ErrorString ignoredError;
+        nodeId = m_domAgent->pushNodeToFrontend(&ignoredError, m_domAgent->boundNodeId(&node->document()), node);
+    }
     return nodeId;
 }
 

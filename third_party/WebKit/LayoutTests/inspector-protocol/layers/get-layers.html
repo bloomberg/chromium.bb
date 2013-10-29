@@ -9,54 +9,42 @@ function addCompositedLayer()
     element.className = "composited";
     element.id = "last-element";
     document.body.appendChild(element);
+    if (window.testRunner)
+        testRunner.display();
 };
 
 function test()
 {
     var documentNode;
     var initialLayers;
-    var eventsCount = 0;
 
-    InspectorTest.eventHandler["LayerTree.layerTreeDidChange"] = function (messageObject) {
-        eventsCount++;
-    };
+    setTimeout(InspectorTest.completeTest.bind(InspectorTest), 3000);
+    getDocument();
 
-    enableLayerTreeAgent();
-
-    function enableLayerTreeAgent(result)
-    {
-        step({
-            name: "Enable the LayerTree agent",
-            command: "LayerTree.enable",
-            parameters: {},
-            callback: getDocument
-        });
-    };
-
-    function getDocument(result)
+    function getDocument()
     {
         step({
             name: "Get the Document",
             command: "DOM.getDocument",
             parameters: {},
-            callback: makeDeferredCallback(getInitialLayerTree)
+            callback: enableLayerTreeAgent
         });
     };
 
-    function getInitialLayerTree(result)
+    function enableLayerTreeAgent()
     {
-        documentNode = result.root;
+        InspectorTest.eventHandler["LayerTree.layerTreeDidChange"] = gotInitialLayerTree;
         step({
-            name: "Get the initial layer tree",
-            command: "LayerTree.getLayers",
-            parameters: {"nodeId": documentNode.nodeId},
-            callback: gotInitialLayerTree
+            name: "Enable the LayerTree agent",
+            command: "LayerTree.enable",
+            parameters: {},
         });
     };
 
-    function gotInitialLayerTree(result)
+    function gotInitialLayerTree(message)
     {
-        initialLayers = result.layers;
+        InspectorTest.eventHandler["LayerTree.layerTreeDidChange"] = gotModifiedLayerTree;
+        initialLayers = message.params.layers;
 
         dumpLayers(initialLayers);
 
@@ -64,25 +52,16 @@ function test()
             name: "Message the page to add a new composited layer",
             command: "Runtime.evaluate",
             parameters: {"expression": "addCompositedLayer()"},
-            callback: makeDeferredCallback(getModifiedLayerTree)
         });
     };
 
-    function getModifiedLayerTree(result)
+    function gotModifiedLayerTree(message)
     {
-        step({
-            name: "Get the modified layer tree",
-            command: "LayerTree.getLayers",
-            parameters: {"nodeId": documentNode.nodeId},
-            callback: gotModifiedLayerTree
-        });
-    };
+        InspectorTest.eventHandler["LayerTree.layerTreeDidChange"] = null;
+        var layers = message.params.layers;
+        dumpLayers(layers);
 
-    function gotModifiedLayerTree(result)
-    {
-        dumpLayers(result.layers);
-
-        var mutations = layerMutations(initialLayers, result.layers);
+        var mutations = layerMutations(initialLayers, layers);
         var newLayer = mutations.additions[0];
 
         step({
@@ -99,16 +78,8 @@ function test()
         if (attributes.id !== "last-element")
             InspectorTest.log("FAIL: Did not obtain the expected element for the last inserted layer.");
 
-        finishTest();
-    };
 
-    function finishTest()
-    {
-        if (!eventsCount)
-            InspectorTest.log("FAIL: Did not receive layerTreeDidChange events.");
-        else
-            InspectorTest.log("\n=== Test complete, all expected conditions met ===");
-
+        InspectorTest.log("DONE!");
         InspectorTest.completeTest();
     };
 
@@ -142,6 +113,8 @@ function test()
 
     function dumpLayers(layers)
     {
+        // Keep "internal" layers out for better stability.
+        layers = layers.filter(function(layer) { return !!layer.nodeId; });
         function replacer(key, value)
         {
 
@@ -169,6 +142,8 @@ function test()
                 return;
             }
 
+            if (!test.callback)
+                return;
             InspectorTest.log("PASS");
             test.callback(messageObject.result);
         });

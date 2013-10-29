@@ -38,35 +38,30 @@ function test()
         layer.__extraData = layer.parent() ? layer.parent().__extraData + 1 : 0;
     }
 
-    function step1()
-    {
-        InspectorTest._layerTreeModel.requestLayers(step2);
-    }
+    InspectorTest.requestLayers(step1);
 
-    function step2()
+    function step1()
     {
          // Assure layer objects are not re-created during updates.
          InspectorTest._layerTreeModel.forEachLayer(addDepthMarker);
          InspectorTest.addResult("Initial layer tree");
          InspectorTest.dumpLayerTree();
-         InspectorTest.evaluateAndRunWhenTreeChanges("updateTree()", step3);
+         InspectorTest.evaluateAndRunWhenTreeChanges("updateTree()", step2);
     }
 
-    function step3()
+    function step2()
     {
          InspectorTest.addResult("Updated layer tree");
          InspectorTest.dumpLayerTree();
-         InspectorTest.evaluateAndRunWhenTreeChanges("updateGeometry()", step4);
+         InspectorTest.evaluateAndRunWhenTreeChanges("updateGeometry()", step3);
     }
 
-    function step4()
+    function step3()
     {
          InspectorTest.addResult("Updated layer geometry");
          InspectorTest.dumpLayerTree();
          InspectorTest.completeTest();
     }
-
-    step1();
 }
 
 </script>
