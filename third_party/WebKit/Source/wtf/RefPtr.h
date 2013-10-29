@@ -24,7 +24,6 @@
 #define WTF_RefPtr_h
 
 #include <algorithm>
-#include "wtf/FastAllocBase.h"
 #include "wtf/HashTableDeletedValueType.h"
 #include "wtf/PassRefPtr.h"
 
@@ -33,7 +32,6 @@ namespace WTF {
     template<typename T> class PassRefPtr;
 
     template<typename T> class RefPtr {
-        WTF_MAKE_FAST_ALLOCATED;
     public:
         ALWAYS_INLINE RefPtr() : m_ptr(0) { }
         ALWAYS_INLINE RefPtr(T* ptr) : m_ptr(ptr) { refIfNotNull(ptr); }
