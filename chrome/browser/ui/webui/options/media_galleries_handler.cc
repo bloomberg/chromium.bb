@@ -32,7 +32,8 @@ MediaGalleriesHandler::~MediaGalleriesHandler() {
   Profile* profile = Profile::FromWebUI(web_ui());
   MediaGalleriesPreferences* preferences =
       g_browser_process->media_file_system_registry()->GetPreferences(profile);
-  preferences->RemoveGalleryChangeObserver(this);
+  if (preferences->IsInitialized())
+    preferences->RemoveGalleryChangeObserver(this);
 }
 
 void MediaGalleriesHandler::GetLocalizedValues(DictionaryValue* values) {
@@ -49,37 +50,14 @@ void MediaGalleriesHandler::GetLocalizedValues(DictionaryValue* values) {
                 IDS_MEDIA_GALLERY_MANAGE_TITLE);
 }
 
-void MediaGalleriesHandler::InitializeHandler() {
-  Profile* profile = Profile::FromWebUI(web_ui());
-  MediaGalleriesPreferences* preferences =
-      g_browser_process->media_file_system_registry()->GetPreferences(profile);
-  preferences->EnsureInitialized(base::Bind(
-      &MediaGalleriesHandler::InitializeHandlerOnMediaGalleriesPreferencesInit,
-      weak_ptr_factory_.GetWeakPtr()));
-}
-
-void MediaGalleriesHandler::InitializePage() {
-  Profile* profile = Profile::FromWebUI(web_ui());
-  MediaGalleriesPreferences* preferences =
-      g_browser_process->media_file_system_registry()->GetPreferences(profile);
-  preferences->EnsureInitialized(base::Bind(
-      &MediaGalleriesHandler::InitializePageOnMediaGalleriesPreferencesInit,
-      weak_ptr_factory_.GetWeakPtr()));
-}
-
 void MediaGalleriesHandler::RegisterMessages() {
-  Profile* profile = Profile::FromWebUI(web_ui());
-  MediaGalleriesPreferences* preferences =
-      g_browser_process->media_file_system_registry()->GetPreferences(profile);
-  preferences->EnsureInitialized(base::Bind(
-      &MediaGalleriesHandler::RegisterOnPreferencesInit,
-      weak_ptr_factory_.GetWeakPtr()));
-}
-
-void MediaGalleriesHandler::RegisterOnPreferencesInit() {
   web_ui()->RegisterMessageCallback(
       "addNewGallery",
       base::Bind(&MediaGalleriesHandler::HandleAddNewGallery,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "initializeMediaGalleries",
+      base::Bind(&MediaGalleriesHandler::HandleInitializeMediaGalleries,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "forgetGallery",
@@ -125,26 +103,6 @@ void MediaGalleriesHandler::OnGalleriesChanged(
       "options.MediaGalleriesManager.setAvailableMediaGalleries", list);
 }
 
-void MediaGalleriesHandler::InitializeHandlerOnMediaGalleriesPreferencesInit() {
-  Profile* profile = Profile::FromWebUI(web_ui());
-  if (!MediaGalleriesPreferences::APIHasBeenUsed(profile))
-    return;
-  MediaGalleriesPreferences* preferences =
-      g_browser_process->media_file_system_registry()->GetPreferences(profile);
-
-  preferences->AddGalleryChangeObserver(this);
-}
-
-void MediaGalleriesHandler::InitializePageOnMediaGalleriesPreferencesInit() {
-  Profile* profile = Profile::FromWebUI(web_ui());
-  if (!MediaGalleriesPreferences::APIHasBeenUsed(profile))
-    return;
-  MediaGalleriesPreferences* preferences =
-      g_browser_process->media_file_system_registry()->GetPreferences(profile);
-
-  OnGalleriesChanged(preferences);
-}
-
 void MediaGalleriesHandler::HandleAddNewGallery(const base::ListValue* args) {
   select_file_dialog_ = ui::SelectFileDialog::Create(
       this,
@@ -158,6 +116,16 @@ void MediaGalleriesHandler::HandleAddNewGallery(const base::ListValue* args) {
       web_ui()->GetWebContents()->GetView()->
           GetTopLevelNativeWindow(),
       NULL);
+}
+
+void MediaGalleriesHandler::HandleInitializeMediaGalleries(
+    const base::ListValue* args) {
+  Profile* profile = Profile::FromWebUI(web_ui());
+  MediaGalleriesPreferences* preferences =
+      g_browser_process->media_file_system_registry()->GetPreferences(profile);
+  preferences->EnsureInitialized(base::Bind(
+      &MediaGalleriesHandler::PreferencesInitialized,
+      weak_ptr_factory_.GetWeakPtr()));
 }
 
 void MediaGalleriesHandler::HandleForgetGallery(const base::ListValue* args) {
@@ -186,6 +154,16 @@ void MediaGalleriesHandler::FileSelected(const base::FilePath& path,
       g_browser_process->media_file_system_registry()->GetPreferences(
           Profile::FromWebUI(web_ui()));
   preferences->AddGalleryByPath(path);
+}
+
+void MediaGalleriesHandler::PreferencesInitialized() {
+  Profile* profile = Profile::FromWebUI(web_ui());
+  MediaGalleriesPreferences* preferences =
+      g_browser_process->media_file_system_registry()->GetPreferences(profile);
+  DCHECK(preferences->IsInitialized());
+  preferences->RemoveGalleryChangeObserver(this);
+  preferences->AddGalleryChangeObserver(this);
+  OnGalleriesChanged(preferences);
 }
 
 }  // namespace options

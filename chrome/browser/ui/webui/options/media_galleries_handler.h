@@ -26,8 +26,6 @@ class MediaGalleriesHandler
 
   // OptionsPageUIHandler implementation.
   virtual void GetLocalizedValues(base::DictionaryValue* values) OVERRIDE;
-  virtual void InitializeHandler() OVERRIDE;
-  virtual void InitializePage() OVERRIDE;
   virtual void RegisterMessages() OVERRIDE;
 
   // SelectFileDialog::Listener implementation.
@@ -46,6 +44,10 @@ class MediaGalleriesHandler
  private:
   // Handles the "addNewGallery" message (no arguments).
   void HandleAddNewGallery(const base::ListValue* args);
+
+  // Handles the "initializeMediaGalleries" message (no arguments).
+  void HandleInitializeMediaGalleries(const base::ListValue* args);
+
   // Handles "forgetGallery" message. The first and only argument is the id of
   // the gallery.
   void HandleForgetGallery(const base::ListValue* args);
@@ -53,14 +55,8 @@ class MediaGalleriesHandler
   // Called when the list of known galleries has changed; updates the page.
   void OnGalleriesChanged(MediaGalleriesPreferences* pref);
 
-  // Bottom half of |InitializeHandler()| and |InitializePage()|, respectively,
-  // after async call to initialize MediaGalleriesPreferences.
-  void InitializeHandlerOnMediaGalleriesPreferencesInit();
-  void InitializePageOnMediaGalleriesPreferencesInit();
-
-  // Bottom half of |RegisterMessages()| after async call to initialize
-  // MediaGalleriesPreferences.
-  void RegisterOnPreferencesInit();
+  // Called when MediaGalleriesPreferences have been initialized.
+  void PreferencesInitialized();
 
   scoped_refptr<ui::SelectFileDialog> select_file_dialog_;
 

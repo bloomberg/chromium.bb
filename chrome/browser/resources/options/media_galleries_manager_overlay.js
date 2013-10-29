@@ -42,14 +42,12 @@ cr.define('options', function() {
       this.addEventListener('visibleChange', this.handleVisibleChange_);
     },
 
-    /**
-     * TODO(dbeam): why is a private method being overridden?
-     * @override
-     * @private
-     */
+    /** @private */
     handleVisibleChange_: function() {
       if (!this.visible)
         return;
+
+      chrome.send('initializeMediaGalleries');
 
       if (this.availableGalleriesList_)
         this.availableGalleriesList_.redraw();
@@ -61,7 +59,7 @@ cr.define('options', function() {
      */
     setAvailableMediaGalleries_: function(galleries) {
       $('available-galleries-list').dataModel = new ArrayDataModel(galleries);
-      // TODO(estade): show this section by default.
+      $('new-media-gallery').disabled = false;
       $('media-galleries-section').hidden = false;
     },
   },
