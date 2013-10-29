@@ -77,7 +77,7 @@ class Endure(page_measurement.PageMeasurement):
   def CanRunForPage(self, page):
     return hasattr(page, 'endure')
 
-  def WillRunPageRepeats(self, page, tab):
+  def WillRunPageRepeats(self, page):
     """Set-up before starting a new page."""
     # Reset the starting time for each new page.
     self._start_time = time.time()

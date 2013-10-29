@@ -171,9 +171,9 @@ class PageCycler(page_measurement.PageMeasurement):
       self._speedindex_metric.AddResults(
           tab, results, chart_name=chart_name_prefix+'speed_index')
 
-  def DidRunTest(self, tab, results):
+  def DidRunTest(self, browser, results):
     self._memory_metric.AddSummaryResults(results)
-    io.IOMetric().AddSummaryResults(tab, results)
+    io.IOMetric().AddSummaryResults(browser, results)
 
   def ShouldRunCold(self, url):
     # We do the warm runs first for two reasons.  The first is so we can

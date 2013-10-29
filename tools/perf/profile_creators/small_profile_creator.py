@@ -22,13 +22,13 @@ class SmallProfileCreator(profile_creator.ProfileCreator):
     # are each opened in a new tab.
     self._NUM_TABS = 5
 
-  def TabForPage(self, page, tab):
+  def TabForPage(self, page, browser):
     idx = page.page_set.pages.index(page)
     # The last _NUM_TABS pages open a new tab.
     if idx <= (len(page.page_set.pages) - self._NUM_TABS):
-      return tab
+      return browser.tabs[0]
     else:
-      return tab.browser.tabs.New()
+      return browser.tabs.New()
 
   def MeasurePage(self, _, tab, results):
     # Can't use WaitForDocumentReadyStateToBeComplete() here due to

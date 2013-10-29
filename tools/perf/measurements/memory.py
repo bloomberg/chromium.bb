@@ -41,5 +41,5 @@ class Memory(page_measurement.PageMeasurement):
         }
       """)
 
-  def DidRunTest(self, tab, results):
+  def DidRunTest(self, browser, results):
     self._memory_metric.AddSummaryResults(results)

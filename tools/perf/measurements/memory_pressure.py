@@ -13,6 +13,7 @@ import logging
 from metrics import histogram_util
 from telemetry.page import page_measurement
 
+
 class MemoryPressure(page_measurement.PageMeasurement):
   def __init__(self, *args, **kwargs):
     super(MemoryPressure, self).__init__(*args, **kwargs)
@@ -25,8 +26,8 @@ class MemoryPressure(page_measurement.PageMeasurement):
     histogram_util.CustomizeBrowserOptions(options)
 
   # Open a new tab at each page
-  def TabForPage(self, page, tab):
-    return tab.browser.tabs.New()
+  def TabForPage(self, page, browser):
+    return browser.tabs.New()
 
   def GetTabsHistogramCounts(self, tab):
     histogram_type = histogram_util.BROWSER_HISTOGRAM
@@ -36,7 +37,7 @@ class MemoryPressure(page_measurement.PageMeasurement):
       histogram_type, "Tabs.SadTab.KillCreated", tab)
     return (discard_count, kill_count)
 
-  def DidRunPageRepeats(self, page, tab):
+  def MeasurePage(self, page, tab, results):
     # After navigating to each page, check if it triggered tab discards or
     # kills.
     (discard_count, kill_count) = self.GetTabsHistogramCounts(tab)
@@ -54,6 +55,3 @@ class MemoryPressure(page_measurement.PageMeasurement):
       logging.info("test ending at tab %d, discards = %d, kills = %d" %
         (self._tab_count, discard_count, kill_count))
       self.RequestExit()
-
-  def MeasurePage(self, page, tab, results):  # pylint: disable=W0613
-    pass

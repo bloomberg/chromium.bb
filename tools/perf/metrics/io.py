@@ -21,9 +21,9 @@ class IOMetric(Metric):
     # This metric currently only returns summary results, not per-page results.
     raise NotImplementedError()
 
-  def AddSummaryResults(self, tab, results):
+  def AddSummaryResults(self, browser, results):
     """Add summary results to the results object."""
-    io_stats = tab.browser.io_stats
+    io_stats = browser.io_stats
     if not io_stats['Browser']:
       return
 

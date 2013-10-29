@@ -42,8 +42,8 @@ class MemoryMultiTab(page_measurement.PageMeasurement):
     # a high frequency.
     options.AppendExtraBrowserArgs('--memory-metrics')
 
-  def TabForPage(self, page, tab):
-    return tab.browser.tabs.New()
+  def TabForPage(self, page, browser):
+    return browser.tabs.New()
 
   def DidNavigateToPage(self, page, tab):
     # Start measurement on the first tab.
@@ -57,5 +57,5 @@ class MemoryMultiTab(page_measurement.PageMeasurement):
       self._memory_metric.Stop(page, self._first_tab)
       self._memory_metric.AddResults(self._first_tab, results)
 
-  def DidRunTest(self, tab, results):
+  def DidRunTest(self, browser, results):
     self._memory_metric.AddSummaryResults(results)

@@ -28,8 +28,8 @@ class TabSwitching(page_measurement.PageMeasurement):
         '--enable-stats-collection-bindings'
     ])
 
-  def TabForPage(self, page, tab):
-    return tab.browser.tabs.New()
+  def TabForPage(self, page, browser):
+    return browser.tabs.New()
 
   def DidStartBrowser(self, browser):
     self._cpu_metric = cpu.CpuMetric(browser)
