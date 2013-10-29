@@ -48,18 +48,12 @@ http://src.chromium.org/viewvc/chrome/trunk/src/chrome/browser/resources/ +
 (gclient config svn://svn.chromium.org/chrome/trunk/src)
 For an example CL, see https://codereview.chromium.org/13496002/
 
-It is recommended that you use a fancy differ like 'meld' to review license
-diffs. GNU diff will show too much irrelevant noise and not resync properly.
-
 UPDATE: gcl will probably fail now, because the file is too big. Before it
 gets moved somewhere else, you should just use svn diff and svn commit.
 
-Recommended way to diff the html, go outside of the cros_sdk chroot:
-grep -E -A5 '(class="title|class="homepage|Provided Stock|Source license)' \
-    out.html  > /tmp/new
-grep -E -A5 '(class="title|class="homepage|Provided Stock|Source license)' \
-    out-sav-new3.html  > /tmp/old
-meld /tmp/old /tmp/new (or your favourite fancy diff program)
+Before you commit a new html file, make sure the changes are valid with:
+bin/diff_license_html output.html-M31 output.html-M32
+and review the diff.
 
 If you don't get this in before the freeze window, it'll need to be merged into
 the branch being released, which is done by adding a Merge-Requested label to
@@ -79,9 +73,9 @@ import os
 import re
 import sys
 
+from chromite.buildbot import portage_utilities
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
-import portage
 
 
 debug = False
@@ -95,15 +89,18 @@ STOCK_LICENSE_DIRS = [
 # upstream gentoo.
 CUSTOM_LICENSE_DIRS = [
     os.path.expanduser('~/trunk/src/third_party/chromiumos-overlay/licenses'),
-    # All licenses there should go away, they're a stopgap.
-    os.path.abspath(os.path.join(os.path.dirname(__file__), 'licenses')),
 ]
+
+COPYRIGHT_ATTRIBUTION_DIR = \
+    os.path.expanduser(
+    '~/trunk/src/third_party/chromiumos-overlay/licenses/copyright-attribution')
 
 # Virtual packages don't need to have a license and often don't, so we skip them
 # chromeos-base contains google platform packages that are covered by the
 # general license at top of tree, so we skip those too.
 SKIPPED_CATEGORIES = [
-    'chromeos-base',  # TODO: this shouldn't be excluded ?
+    'chromeos-base',  # TODO: it wouldn't hurt to remove this and make sure our
+                      # packages all come with a BSD-Google license.
     'virtual',
 ]
 
@@ -246,6 +243,8 @@ LICENSE_FILENAMES = [
     'license.txt',    # used by hdparm, NumPy, glew
     'licensing.txt',  # used by libatomic_ops
 ]
+# FIXME, allow for these licenses to be regexes instead. For instance,
+# sys-apps/util-linux-2.21.2-r1 should show Documentation/licenses/COPYING.BSD-3
 
 # These are _temporary_ license mappings for packages that do not have a valid
 # shared/custom license, or LICENSE file we can use.
@@ -254,60 +253,13 @@ LICENSE_FILENAMES = [
 # that requires copyright assignment (BSD and friends).
 # At that point, new packages will get fixed to include LICENSE instead of
 # adding workaround mappings like those below.
-# We should also fix the packages listed below so that the hardcoded
-# mappings can be obsoleted (i.e. FIXME for this entire list).
+# The way you now fix copyright attribution cases create a custom file with the
+# right license directly in COPYRIGHT_ATTRIBUTION_DIR.
 PACKAGE_LICENSES = {
-    # One off licenses. Should we check in a custom LICENSE file in upstream?
-    'sys-libs/ncurses': ['ncurses'],
-
-    # BSD and MIT license authorship mapping.
-    # Ideally we should have a custom LICENSE file in the upstream source.
-    # TODO: BSD-2: bsdiff is missing a license file, add one upstream.
-    'dev-util/bsdiff': ['BSD-bsdiff'],
-    # TODO: libevent is missing a license file, add one upstream.
-    'dev-libs/libevent': ['BSD-libevent'],
-    # TODO: dhcpcd is missing a license file, (c) in README. Add one upstream.
-    'net-misc/dhcpcd': ['BSD-dhcpcd'],
-    # TODO: iputils is missing a license file, add one upstream.
-    'net-misc/iputils': ['BSD-iputils'],
-    # TODO: c-ares is missing a license file, add one upstream.
-    'net-dns/c-ares': ['MIT-MIT'],
-
-    # TODO: We should just check in a LICENSE file in all of these:
-    'app-i18n/input-tools': ['BSD-Google'],
-    'app-i18n/nacl-mozc': ['BSD-Google'],
-    'app-i18n/ibus-mozc': ['BSD-Google'],
-    'media-plugins/o3d': ['BSD-Google'],
-    'dev-python/unittest2': ['BSD-Google'],
-
-    # Fix ebuild multi license definitions when they define licenses that do
-    # not apply to us because we don't use the resulting binaries.
-
-    # Mesa ebuild says MIT and omits LGPL-3 and SGI-B-2.0 mentioned in the
-    # docs directory? Either way, I had to create a text license file like so:
-    # mesa-9.1-r9/work/Mesa-9.1/docs$ lynx --dump license.html -nolist > license
-    'media-libs/mesa': ['MIT-Mesa', 'LGPL-3', 'SGI-B-2.0'],
-
-    # TODO: Ebuild seems to wrongfully say BSD + public-domain.
-    # I scanned the unpacked source with licensecheck and didn't find any BSD.
-    # FIXME: Do a second review and fix upstream gentoo package
-    'sys-libs/timezone-data': ['public-domain'],
-
-    # Ebuild only says 'LGPL-2.1', but source disagrees. I'll include 'as-is'
-    # to force reading files from the source (which states some parts are as-is)
-    # FIXME? Update ebuild license to match xz-4.999.9beta/COPYING?
-    'app-arch/xz-utils': ['public-domain', 'as-is', 'LGPL-2.1', 'GPL-2'],
-
-    # These packages are not in Alex, check and remove later (might be used in
-    # other platforms).
-    # 'media-libs/freeimage': ['GPL-2'],
-    # 'sys-libs/talloc': ['LGPL-3'],  # ebuild incorrectly says GPL-3
-    # 'media-libs/jpeg': ['jpeg'],
-    # 'app-editors/gentoo-editor': ['MIT-gentoo-editor'],
-    #
-    # 'media-fonts/font-util': ['font-util'],  # COPYING file from git repo
-    # 'net-wireless/iwl1000-ucode': ['Intel-iwl1000'],
-    # 'sys-process/vixie-cron': ['vixie-cron'],
+    # Example of what we used to have here. The code that uses this dictionary
+    # will be removed in the near future, so don't rely on adding anything here
+    # longterm.
+    # 'sys-libs/ncurses': ['ncurses'],
 }
 
 # Any license listed list here found in the ebuild will make the code look for
@@ -365,6 +317,7 @@ SHARED_LICENSE_TMPL = 'about_credits_shared_license_entry.tmpl'
 
 class PackageLicenseError(Exception):
   """Thrown if something fails while getting license information for a package.
+
   This will cause the processing to error in the end.
   """
 
@@ -440,18 +393,72 @@ class PackageInfo(object):
         ['ebuild-%s' % self.board, self.ebuild_path] + phases, print_cmd=debug,
         redirect_stdout=True)
 
+  def _GetOverrideLicense(self):
+    """Look in COPYRIGHT_ATTRIBUTION_DIR for license with copyright attribution.
+
+    For dev-util/bsdiff-4.3-r5, the code will look for
+    dev-util/bsdiff-4.3-r5
+    dev-util/bsdiff-4.3
+    dev-util/bsdiff
+
+    It is ok to have more than one bsdiff license file, and an empty file acts
+    as a rubout (i.e. an empty dev-util/bsdiff-4.4 will shadow dev-util/bsdiff
+    and tell the licensing code to look in the package source for a license
+    instead of using dev-util/bsdiff as an override).
+
+    Returns:
+      False (no license found) or a multiline license string.
+    """
+
+    license_read = None
+    # dev-util/bsdiff-4.3-r5 -> bsdiff-4.3-r5
+    filename = os.path.basename(self.fullnamerev)
+    license_path = os.path.join(COPYRIGHT_ATTRIBUTION_DIR,
+                                os.path.dirname(self.fullnamerev))
+    pv = portage_utilities.SplitPV(filename)
+    pv_no_rev = '%s-%s' % (pv.package, pv.version_no_rev)
+    for filename in (pv.pv, pv_no_rev, pv.package):
+      file_path = os.path.join(license_path, filename)
+      logging.debug("Looking for override copyright attribution license in %s",
+                    file_path)
+      if os.path.exists(file_path):
+        # Turn
+        # /../merlin/trunk/src/third_party/chromiumos-overlay/../dev-util/bsdiff
+        # into
+        # chromiumos-overlay/../dev-util/bsdiff
+        short_dir_path = os.path.join(*file_path.rsplit(os.path.sep, 5)[1:])
+        license_read = "Copyright Attribution License %s:\n\n" % short_dir_path
+        license_read += ReadUnknownEncodedFile(
+            file_path, "read copyright attribution license")
+        break
+
+    return license_read
+
   def _ExtractLicenses(self):
     """Scrounge for text licenses in the source of package we'll unpack.
 
     This is only called if we couldn't get usable licenses from the ebuild,
     or one of them is BSD/MIT like which forces us to look for a file with
     copyright attribution in the source code itself.
-    It'll scan the unpacked source code for what looks like license files
-    as defined in LICENSE_FILENAMES.
+
+    First, we have a shortcut where we scan COPYRIGHT_ATTRIBUTION_DIR to see if
+    we find a license for this package. If so, we use that.
+    Typically it'll be used if the unpacked source does not have the license
+    that we're required to display for copyright attribution (in some cases it's
+    plain absent, in other cases, it could be in a filename we don't look for).
+
+    Otherwise, we scan the unpacked source code for what looks like license
+    files as defined in LICENSE_FILENAMES.
 
     Raises:
+      AssertionError: on runtime errors
       PackageLicenseError: couldn't find copyright attribution file.
     """
+
+    license_override = self._GetOverrideLicense()
+    if license_override:
+      self.license_text_scanned = [license_override]
+      return
 
     self._RunEbuildPhases(['clean', 'fetch'])
     output = self._RunEbuildPhases(['unpack']).output.splitlines()
@@ -480,6 +487,10 @@ class PackageInfo(object):
     # tmpdir gets something like /build/daisy/tmp/
     workdir = os.path.join(tmpdir, 'portage', self.fullnamerev, 'work')
 
+    if not os.path.exists(workdir):
+      raise AssertionError("Unpack of %s didn't create %s. Version mismatch?" %
+                           (self.fullnamerev, workdir))
+
     # You may wonder how deep should we go?
     # In case of packages with sub-packages, it could be deep.
     # Let's just be safe and get everything we can find.
@@ -498,9 +509,23 @@ class PackageInfo(object):
 
     if not license_files:
       if self.need_copyright_attribution:
-        logging.error("%s used license with copyright attribution, but "
-                      "couldn't find license file in %s",
-                      self.fullnamerev, workdir)
+        logging.error("""
+%s: unable to find usable license.
+Typically this will happen because the ebuild says it's MIT or BSD, but there
+was no license file that this script could find to include along with a
+copyright attribution (required for BSD/MIT).
+
+If this is Google source, please change
+LICENSE="BSD"
+to
+LICENSE="BSD-Google"
+
+If not, go investigate the unpacked source in %s,
+and find which license to assign.  Once you found it, you should copy that
+license to a file under %s
+(unless you can modify LICENSE_FILENAMES to pickup a license file that isn't
+being scraped currently).""",
+                      self.fullnamerev, workdir, COPYRIGHT_ATTRIBUTION_DIR)
         raise PackageLicenseError()
       else:
         # We can get called for a license like as-is where it's preferable
@@ -558,8 +583,9 @@ class PackageInfo(object):
     """
 
     try:
-      self.category, self.name, self.version, self.revision = \
-          portage.versions.catpkgsplit(fullnamewithrev)
+      cpv = portage_utilities.SplitCPV(fullnamewithrev)
+      (self.category, self.name, self.version, self.revision) = (
+          cpv.category, cpv.package, cpv.version_no_rev, cpv.rev)
     except TypeError:
       raise AssertionError("portage couldn't find %s, missing version number?" %
                            fullnamewithrev)
@@ -732,18 +758,10 @@ class PackageInfo(object):
     if self.scan_source_for_licenses:
       self._ExtractLicenses()
 
+    # This shouldn't run, but leaving as sanity check.
     if not self.license_names and not self.license_text_scanned:
-      logging.error("""
-  %s: unable to find usable license.
-  Typically this will happen because the ebuild says it's MIT or BSD, but there
-  was no license file that this script could find to include along with a
-  copyright attribution (required for BSD/MIT).
-  Go investigate the unpacked source in /tmp/boardname/tmp/portage/..., and
-  find which license to assign. Once you found it, add a static mapping to the
-  PACKAGE_LICENSES dict if that license is not in a file, or teach this script
-  to find the license file.""",
-                    self.fullname)
-      raise PackageLicenseError()
+      raise AssertionError("Didn't find usable licenses for %s" %
+                           self.fullnamerev)
 
 
 class Licensing(object):
@@ -844,18 +862,28 @@ class Licensing(object):
 
     license_path = None
     for directory in STOCK_LICENSE_DIRS + CUSTOM_LICENSE_DIRS:
-      path = '%s/%s' % (directory, license_name)
-      if os.access(path, os.F_OK):
+      path = os.path.join(directory, license_name)
+      if os.path.exists(path):
         license_path = path
         break
 
     if license_path:
       return ReadUnknownEncodedFile(license_path, "read license")
     else:
-      raise AssertionError("license %s could not be found in %s"
-                           % (license_name,
-                              '\n'.join(STOCK_LICENSE_DIRS +
-                                        CUSTOM_LICENSE_DIRS)))
+      raise AssertionError("""
+license %s could not be found in %s
+If the license in the ebuild is correct,
+a) a stock license should be be added to portage-stable/licenses :
+running `cros_portage_upgrade` inside of the chroot should clone this repo
+to /tmp/portage/:
+http://git.chromium.org/gitweb/?p=chromiumos/overlays/portage.git;a=summary
+find the new licenses under licenses, and add them to portage-stable/licenses
+
+b) if it's a non gentoo package with a custom license, you can copy that license
+to third_party/chromiumos-overlay/licenses/""" %
+                           (license_name,
+                            '\n'.join(STOCK_LICENSE_DIRS + CUSTOM_LICENSE_DIRS))
+                          )
 
   @staticmethod
   def EvaluateTemplate(template, env):
@@ -1054,6 +1082,12 @@ def main(args):
 
   board, output_file, testpkg = opts.board, opts.output_file, opts.testpkg
 
+  builddir = "/build/%s/tmp/portage" % board
+  if not os.path.exists(builddir):
+    raise AssertionError(
+        "FATAL: %s missing.\n"
+        "Did you give the right board and build that tree?" % builddir)
+
   # We have a hardcoded list of skipped packages for various reasons, but we
   # also exclude any google platform package from needing a license since they
   # are covered by the top license in the tree.
@@ -1068,8 +1102,6 @@ def main(args):
     packages = [testpkg]
   else:
     packages = ListInstalledPackages(board)
-  # If the caller forgets to set $board, it'll default to beaglebone, and return
-  # no packages. Catch this and give a hint that the wrong board was given.
   if not packages:
     raise AssertionError('FATAL: Could not get any packages for board %s' %
                          board)

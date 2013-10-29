@@ -29,13 +29,17 @@ def GetPackagesLicensesFromHtml(html_file):
   licenses = set()
 
   pkg_rgx = re.compile(r'<span class="title">(.+)-(.+)</span>')
+  # Do not add <pre> in the regex or it would only show the first entry on
+  # a package that has multiple hits.
   license_rgx1 = re.compile(r'Scanned (Source License .+):', re.IGNORECASE)
-  license_rgx2 = re.compile(r'<pre>(Custom License .+):', re.IGNORECASE)
+  license_rgx2 = re.compile(r'(Custom License .+):', re.IGNORECASE)
+  license_rgx3 = re.compile(r'(Copyright Attribution .+):', re.IGNORECASE)
+  # This regex isn't as tight because it has to match these:
   # Gentoo Package Stock License BZIP2:
+  # <a ... class="title">Gentoo Package Provided Stock License public-domain</a>
   # <a ... class="title">Gentoo Package Stock License public-domain</a>
-  license_rgx3 = re.compile(r'Gentoo Package (Stock License [^<:]+)',
-                            re.IGNORECASE)
-  license_rgx4 = re.compile(r'class="title">(Custom License .+)</a>',
+  license_rgx4 = re.compile(r'(Stock License [^<:]+)', re.IGNORECASE)
+  license_rgx5 = re.compile(r'class="title">(Custom License .+)</a>',
                             re.IGNORECASE)
   with open(html_file, 'r') as f:
     for line in f:
@@ -57,7 +61,7 @@ def GetPackagesLicensesFromHtml(html_file):
         lic = re.sub(r'Source license', r'Source License', lic)
         licenses.add(lic)
 
-      for rgx in (license_rgx2, license_rgx3, license_rgx4):
+      for rgx in (license_rgx2, license_rgx3, license_rgx4, license_rgx5):
         match = rgx.search(line)
         if match:
           licenses.add(match.group(1))
