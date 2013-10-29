@@ -274,6 +274,7 @@ void PreloadPepperPlugins() {
 static void PreSandboxInit() {
   base::RandUint64();
 
+  base::SysInfo::AmountOfPhysicalMemory();
   base::SysInfo::MaxSharedMemorySize();
 
   // ICU DateFormat class (used in base/time_format.cc) needs to get the

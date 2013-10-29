@@ -75,7 +75,8 @@ class BASE_EXPORT SysInfo {
   static size_t VMAllocationGranularity();
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
-  // Returns the maximum SysV shared memory segment size.
+  // Returns the maximum SysV shared memory segment size, or zero if there is no
+  // limit.
   static size_t MaxSharedMemorySize();
 #endif  // defined(OS_POSIX) && !defined(OS_MACOSX)
 
