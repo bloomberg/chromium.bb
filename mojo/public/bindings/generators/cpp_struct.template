@@ -1,0 +1,43 @@
+// Copyright $year The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef $header_guard
+#define $header_guard
+
+#include "mojo/public/bindings/lib/bindings.h"
+
+namespace $namespace {
+
+#pragma pack(push, 1)
+
+class $classname {
+ public:
+  static $classname* New(mojo::Buffer* buf) {
+    return new (buf->Allocate(sizeof($classname))) $classname();
+  }
+
+$setters
+
+$getters
+
+ private:
+  friend class mojo::internal::ObjectTraits<$classname>;
+
+  $classname() {
+    header_.num_bytes = sizeof(*this);
+    header_.num_fields = $num_fields;
+  }
+  ~$classname();  // NOT IMPLEMENTED
+
+  mojo::internal::StructHeader _header_;
+$fields
+};
+
+MOJO_COMPILE_ASSERT(sizeof($classname) == $size, bad_sizeof_$classname);
+
+#pragma pack(pop)
+
+}  // namespace $namespace
+
+#endif  // $header_guard

@@ -41,6 +41,9 @@ class PackedField(object):
     self.offset = None
     self.bit = None
 
+# Returns the pad necessary to reserve space for alignment of |size|.
+def GetPad(offset, size):
+  return (size - (offset % size)) % size
 
 # Returns a 2-tuple of the field offset and bit (for BOOLs)
 def GetFieldOffset(field, last_field):
@@ -50,8 +53,7 @@ def GetFieldOffset(field, last_field):
     return (last_field.offset, last_field.bit + 1)
 
   offset = last_field.offset + last_field.size
-  size = field.size
-  pad = (size - (offset % size)) % size
+  pad = GetPad(offset, field.size)
   return (offset + pad, 0)
 
 

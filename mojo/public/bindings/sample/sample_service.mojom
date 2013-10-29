@@ -1,0 +1,31 @@
+{
+  'name': 'sample',
+  'namespace': 'sample',
+  'structs': [{
+    'name': 'Bar',
+    'fields': [
+      {'name': 'alpha', 'kind': 'u8', 'ordinal': 0},
+      {'name': 'beta', 'kind': 'u8', 'ordinal': 1},
+      {'name': 'gamma', 'kind': 'u8', 'ordinal': 2}]}, {
+    'name': 'Foo',
+    'fields': [
+      {'name': 'name', 'kind': 's', 'ordinal': 8},
+      {'name': 'x', 'kind': 'i32', 'ordinal': 0},
+      {'name': 'y', 'kind': 'i32', 'ordinal': 1},
+      {'name': 'a', 'kind': 'b', 'ordinal': 2},
+      {'name': 'b', 'kind': 'b', 'ordinal': 3},
+      {'name': 'c', 'kind': 'b', 'ordinal': 4},
+      {'name': 'bar', 'kind': 'x:Bar', 'ordinal': 5},
+      {'name': 'extra_bars', 'kind': 'a:x:Bar', 'ordinal': 7},
+      {'name': 'data', 'kind': 'a:u8', 'ordinal': 6},
+      {'name': 'files', 'kind': 'a:h', 'ordinal': 9}]}],
+  'interfaces': [{
+    'name': 'Service',
+    'methods': [{
+      'name': 'Frobinate',
+      'ordinal': 0,
+      'parameters': [
+        {'name': 'foo', 'kind': 'x:Foo', 'ordinal': 0},
+        {'name': 'baz', 'kind': 'b', 'ordinal': 1},
+        {'name': 'port', 'kind': 'h', 'ordinal': 2}]}]}]
+}
