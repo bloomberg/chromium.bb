@@ -288,6 +288,8 @@ am__src_libbreakpad_a_SOURCES_DIST =  \
 	src/processor/disassembler_x86.h \
 	src/processor/disassembler_x86.cc \
 	src/processor/exploitability.cc \
+	src/processor/exploitability_linux.h \
+	src/processor/exploitability_linux.cc \
 	src/processor/exploitability_win.h \
 	src/processor/exploitability_win.cc \
 	src/processor/fast_source_line_resolver_types.h \
@@ -348,6 +350,7 @@ am__src_libbreakpad_a_SOURCES_DIST =  \
 @DISABLE_PROCESSOR_FALSE@	src/processor/cfi_frame_info.$(OBJEXT) \
 @DISABLE_PROCESSOR_FALSE@	src/processor/disassembler_x86.$(OBJEXT) \
 @DISABLE_PROCESSOR_FALSE@	src/processor/exploitability.$(OBJEXT) \
+@DISABLE_PROCESSOR_FALSE@	src/processor/exploitability_linux.$(OBJEXT) \
 @DISABLE_PROCESSOR_FALSE@	src/processor/exploitability_win.$(OBJEXT) \
 @DISABLE_PROCESSOR_FALSE@	src/processor/fast_source_line_resolver.$(OBJEXT) \
 @DISABLE_PROCESSOR_FALSE@	src/processor/logging.$(OBJEXT) \
@@ -726,6 +729,7 @@ src_processor_exploitability_unittest_OBJECTS =  \
 @DISABLE_PROCESSOR_FALSE@	src/processor/process_state.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/disassembler_x86.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/exploitability.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/exploitability_linux.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/exploitability_win.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/basic_code_modules.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/basic_source_line_resolver.o \
@@ -734,6 +738,7 @@ src_processor_exploitability_unittest_OBJECTS =  \
 @DISABLE_PROCESSOR_FALSE@	src/processor/logging.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/minidump.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/simple_symbol_supplier.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/source_line_resolver_base.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stack_frame_symbolizer.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker.o \
@@ -808,6 +813,7 @@ src_processor_minidump_processor_unittest_OBJECTS =  \
 @DISABLE_PROCESSOR_FALSE@	src/processor/cfi_frame_info.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/disassembler_x86.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/exploitability.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/exploitability_linux.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/exploitability_win.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/logging.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/minidump_processor.o \
@@ -842,6 +848,7 @@ src_processor_minidump_stackwalk_OBJECTS =  \
 @DISABLE_PROCESSOR_FALSE@	src/processor/cfi_frame_info.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/disassembler_x86.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/exploitability.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/exploitability_linux.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/exploitability_win.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/logging.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/minidump.o \
@@ -992,6 +999,7 @@ src_processor_stackwalker_selftest_OBJECTS =  \
 @DISABLE_PROCESSOR_FALSE@	src/processor/call_stack.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/disassembler_x86.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/exploitability.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/exploitability_linux.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/exploitability_win.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/logging.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/minidump.o \
@@ -1482,6 +1490,8 @@ lib_LIBRARIES = $(am__append_5) $(am__append_7)
 @DISABLE_PROCESSOR_FALSE@	src/processor/disassembler_x86.h \
 @DISABLE_PROCESSOR_FALSE@	src/processor/disassembler_x86.cc \
 @DISABLE_PROCESSOR_FALSE@	src/processor/exploitability.cc \
+@DISABLE_PROCESSOR_FALSE@	src/processor/exploitability_linux.h \
+@DISABLE_PROCESSOR_FALSE@	src/processor/exploitability_linux.cc \
 @DISABLE_PROCESSOR_FALSE@	src/processor/exploitability_win.h \
 @DISABLE_PROCESSOR_FALSE@	src/processor/exploitability_win.cc \
 @DISABLE_PROCESSOR_FALSE@	src/processor/fast_source_line_resolver_types.h \
@@ -1860,6 +1870,7 @@ TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
 @DISABLE_PROCESSOR_FALSE@	src/processor/process_state.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/disassembler_x86.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/exploitability.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/exploitability_linux.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/exploitability_win.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/basic_code_modules.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/basic_source_line_resolver.o \
@@ -1868,6 +1879,7 @@ TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
 @DISABLE_PROCESSOR_FALSE@	src/processor/logging.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/minidump.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/simple_symbol_supplier.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/source_line_resolver_base.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stack_frame_symbolizer.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker.o \
@@ -1961,6 +1973,7 @@ TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
 @DISABLE_PROCESSOR_FALSE@	src/processor/cfi_frame_info.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/disassembler_x86.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/exploitability.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/exploitability_linux.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/exploitability_win.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/logging.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/minidump_processor.o \
@@ -2104,6 +2117,7 @@ TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
 @DISABLE_PROCESSOR_FALSE@	src/processor/call_stack.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/disassembler_x86.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/exploitability.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/exploitability_linux.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/exploitability_win.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/logging.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/minidump.o \
@@ -2267,6 +2281,7 @@ TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
 @DISABLE_PROCESSOR_FALSE@	src/processor/cfi_frame_info.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/disassembler_x86.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/exploitability.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/exploitability_linux.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/exploitability_win.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/logging.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/minidump.o \
@@ -2640,6 +2655,9 @@ src/processor/disassembler_x86.$(OBJEXT):  \
 	src/processor/$(am__dirstamp) \
 	src/processor/$(DEPDIR)/$(am__dirstamp)
 src/processor/exploitability.$(OBJEXT): src/processor/$(am__dirstamp) \
+	src/processor/$(DEPDIR)/$(am__dirstamp)
+src/processor/exploitability_linux.$(OBJEXT):  \
+	src/processor/$(am__dirstamp) \
 	src/processor/$(DEPDIR)/$(am__dirstamp)
 src/processor/exploitability_win.$(OBJEXT):  \
 	src/processor/$(am__dirstamp) \
@@ -3628,6 +3646,7 @@ mostlyclean-compile:
 	-rm -f src/processor/contained_range_map_unittest.$(OBJEXT)
 	-rm -f src/processor/disassembler_x86.$(OBJEXT)
 	-rm -f src/processor/exploitability.$(OBJEXT)
+	-rm -f src/processor/exploitability_linux.$(OBJEXT)
 	-rm -f src/processor/exploitability_win.$(OBJEXT)
 	-rm -f src/processor/fast_source_line_resolver.$(OBJEXT)
 	-rm -f src/processor/logging.$(OBJEXT)
@@ -3877,6 +3896,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/contained_range_map_unittest.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/disassembler_x86.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/exploitability.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/exploitability_linux.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/exploitability_win.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/fast_source_line_resolver.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/logging.Po@am__quote@

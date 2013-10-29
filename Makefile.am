@@ -155,6 +155,8 @@ src_libbreakpad_a_SOURCES = \
 	src/processor/disassembler_x86.h \
 	src/processor/disassembler_x86.cc \
 	src/processor/exploitability.cc \
+	src/processor/exploitability_linux.h \
+	src/processor/exploitability_linux.cc \
 	src/processor/exploitability_win.h \
 	src/processor/exploitability_win.cc \
 	src/processor/fast_source_line_resolver_types.h \
@@ -623,6 +625,7 @@ src_processor_exploitability_unittest_LDADD = \
 	src/processor/process_state.o \
 	src/processor/disassembler_x86.o \
 	src/processor/exploitability.o \
+	src/processor/exploitability_linux.o \
 	src/processor/exploitability_win.o \
 	src/processor/basic_code_modules.o \
 	src/processor/basic_source_line_resolver.o \
@@ -631,6 +634,7 @@ src_processor_exploitability_unittest_LDADD = \
 	src/processor/logging.o \
 	src/processor/minidump.o \
 	src/processor/pathname_stripper.o \
+	src/processor/simple_symbol_supplier.o \
 	src/processor/source_line_resolver_base.o \
 	src/processor/stack_frame_symbolizer.o \
 	src/processor/stackwalker.o \
@@ -716,6 +720,7 @@ src_processor_minidump_processor_unittest_LDADD = \
 	src/processor/cfi_frame_info.o \
 	src/processor/disassembler_x86.o \
 	src/processor/exploitability.o \
+	src/processor/exploitability_linux.o \
 	src/processor/exploitability_win.o \
 	src/processor/logging.o \
 	src/processor/minidump_processor.o \
@@ -845,6 +850,7 @@ src_processor_stackwalker_selftest_LDADD = \
 	src/processor/call_stack.o \
 	src/processor/disassembler_x86.o \
 	src/processor/exploitability.o \
+	src/processor/exploitability_linux.o \
 	src/processor/exploitability_win.o \
 	src/processor/logging.o \
 	src/processor/minidump.o \
@@ -997,6 +1003,7 @@ src_processor_minidump_stackwalk_LDADD = \
 	src/processor/cfi_frame_info.o \
 	src/processor/disassembler_x86.o \
 	src/processor/exploitability.o \
+	src/processor/exploitability_linux.o \
 	src/processor/exploitability_win.o \
 	src/processor/logging.o \
 	src/processor/minidump.o \

@@ -50,39 +50,41 @@ class CallStack;
 class CodeModules;
 
 enum ExploitabilityRating {
-  EXPLOITABILITY_HIGH,                    // The crash likely represents
-                                          // a exploitable memory corruption
-                                          // vulnerability.
+  EXPLOITABILITY_HIGH,                 // The crash likely represents
+                                       // a exploitable memory corruption
+                                       // vulnerability.
 
-  EXPLOITABLITY_MEDIUM,                   // The crash appears to corrupt
-                                          // memory in a way which may be
-                                          // exploitable in some situations.
+  EXPLOITABILITY_MEDIUM,               // The crash appears to corrupt
+                                       // memory in a way which may be
+                                       // exploitable in some situations.
 
-  EXPLOITABILITY_LOW,                     // The crash either does not corrupt
-                                          // memory directly or control over
-                                          // the effected data is limited. The
-                                          // issue may still be exploitable
-                                          // on certain platforms or situations.
+  EXPLOITABLITY_MEDIUM = EXPLOITABILITY_MEDIUM,  // an old misspelling
 
-  EXPLOITABILITY_INTERESTING,             // The crash does not appear to be
-                                          // directly exploitable. However it
-                                          // represents a condition which should
-                                          // be furthur analyzed.
+  EXPLOITABILITY_LOW,                  // The crash either does not corrupt
+                                       // memory directly or control over
+                                       // the affected data is limited. The
+                                       // issue may still be exploitable
+                                       // on certain platforms or situations.
 
-  EXPLOITABILITY_NONE,                    // The crash does not appear to represent
-                                          // an exploitable condition.
+  EXPLOITABILITY_INTERESTING,          // The crash does not appear to be
+                                       // directly exploitable. However it
+                                       // represents a condition which should
+                                       // be further analyzed.
 
-  EXPLOITABILITY_NOT_ANALYZED,            // The crash was not analyzed for
-                                          // exploitability because the engine
-                                          // was disabled.
+  EXPLOITABILITY_NONE,                 // The crash does not appear to represent
+                                       // an exploitable condition.
 
-  EXPLOITABILITY_ERR_NOENGINE,            // The supplied minidump's platform does
-                                          // not have a exploitability engine
-                                          // associated with it.
+  EXPLOITABILITY_NOT_ANALYZED,         // The crash was not analyzed for
+                                       // exploitability because the engine
+                                       // was disabled.
 
-  EXPLOITABILITY_ERR_PROCESSING           // An error occured within the
-                                          // exploitability engine and no rating
-                                          // was calculated.
+  EXPLOITABILITY_ERR_NOENGINE,         // The supplied minidump's platform does
+                                       // not have a exploitability engine
+                                       // associated with it.
+
+  EXPLOITABILITY_ERR_PROCESSING        // An error occured within the
+                                       // exploitability engine and no rating
+                                       // was calculated.
 };
 
 class ProcessState {
