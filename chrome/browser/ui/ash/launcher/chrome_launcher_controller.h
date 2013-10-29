@@ -336,6 +336,9 @@ class ChromeLauncherController : public ash::LauncherDelegate,
   // Called when the active user has changed.
   void ActiveUserChanged(const std::string& user_email);
 
+  // Called when a user got added to the session.
+  void AdditionalUserAddedToSession(Profile* profile);
+
   // Get the list of all running incarnations of this item.
   // |event_flags| specifies the flags which were set by the event which
   // triggered this menu generation. It can be used to generate different lists.

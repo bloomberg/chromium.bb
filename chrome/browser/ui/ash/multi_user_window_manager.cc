@@ -17,6 +17,7 @@
 #include "base/strings/string_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
@@ -124,8 +125,37 @@ void MultiUserWindowManager::DeleteInstance() {
 
 // static
 std::string MultiUserWindowManager::GetUserIDFromProfile(Profile* profile) {
-  return gaia::CanonicalizeEmail(gaia::SanitizeEmail(
-      profile->GetOriginalProfile()->GetProfileName()));
+  return GetUserIDFromEmail(profile->GetOriginalProfile()->GetProfileName());
+}
+
+// static
+std::string MultiUserWindowManager::GetUserIDFromEmail(
+    const std::string& email) {
+  return gaia::CanonicalizeEmail(gaia::SanitizeEmail(email));
+}
+
+// static
+Profile* MultiUserWindowManager::GetProfileFromUserID(
+    const std::string& user_id) {
+  // This can only happen for unit tests. If it happens we return NULL.
+  if (!g_browser_process || !g_browser_process->profile_manager())
+    return NULL;
+
+  std::vector<Profile*> profiles =
+      g_browser_process->profile_manager()->GetLoadedProfiles();
+
+  std::vector<Profile*>::const_iterator profile_iterator = profiles.begin();
+  for (; profile_iterator != profiles.end(); ++profile_iterator) {
+    if (GetUserIDFromProfile(*profile_iterator) == user_id)
+      return *profile_iterator;
+  }
+  return NULL;
+}
+
+// static
+bool MultiUserWindowManager::ProfileIsFromActiveUser(Profile* profile) {
+  return MultiUserWindowManager::GetUserIDFromProfile(profile) ==
+         chromeos::UserManager::Get()->GetActiveUser()->email();
 }
 
 void MultiUserWindowManager::SetWindowOwner(aura::Window* window,
@@ -251,12 +281,6 @@ void MultiUserWindowManager::ActiveUserChanged(const std::string& user_id) {
   }
 }
 
-void MultiUserWindowManager::UserAddedToSession(const std::string& user_id) {
-  // Make sure that all newly created applications get properly added to this
-  // user's account.
-  AddUser(user_id);
-}
-
 void MultiUserWindowManager::OnWindowDestroyed(aura::Window* window) {
   DCHECK(!GetWindowOwner(window).empty());
   // Remove the state and the window observer.
@@ -336,7 +360,9 @@ MultiUserWindowManager::MultiUserWindowManager(
                  content::NotificationService::AllSources());
 
   // Add an app window observer & all already running apps.
-  AddUser(current_user_id);
+  Profile* profile = GetProfileFromUserID(current_user_id);
+  if (profile)
+    AddUser(profile);
 }
 
 MultiUserWindowManager::~MultiUserWindowManager() {
@@ -365,15 +391,9 @@ MultiUserWindowManager::~MultiUserWindowManager() {
         RemoveSessionStateObserver(this);
 }
 
-void MultiUserWindowManager::AddUser(const std::string& user_id) {
+void MultiUserWindowManager::AddUser(Profile* profile) {
+  const std::string& user_id = GetUserIDFromProfile(profile);
   if (user_id_to_app_observer_.find(user_id) != user_id_to_app_observer_.end())
-    return;
-
-  // Add an observer for all shell window changes.
-  Profile* profile = GetProfileFromUserID(user_id);
-
-  // In case of unit tests we might have no profile.
-  if (!profile)
     return;
 
   user_id_to_app_observer_[user_id] = new AppObserver(user_id);
@@ -419,23 +439,6 @@ void MultiUserWindowManager::SetWindowVisibility(
     window->Show();
   else
     window->Hide();
-}
-
-Profile* MultiUserWindowManager::GetProfileFromUserID(
-    const std::string& user_id) {
-  // This can only happen for unit tests. If it happens we return NULL.
-  if (!g_browser_process || !g_browser_process->profile_manager())
-    return NULL;
-
-  std::vector<Profile*> profiles =
-      g_browser_process->profile_manager()->GetLoadedProfiles();
-
-  std::vector<Profile*>::iterator profile_iterator = profiles.begin();
-  for (; profile_iterator != profiles.end(); ++profile_iterator) {
-    if (GetUserIDFromProfile(*profile_iterator) == user_id)
-      return *profile_iterator;
-  }
-  return NULL;
 }
 
 }  // namespace chrome

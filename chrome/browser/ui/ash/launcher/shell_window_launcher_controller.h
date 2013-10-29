@@ -28,6 +28,7 @@ class ActivationClient;
 }
 
 class ChromeLauncherController;
+class Profile;
 class ShellWindowLauncherItemController;
 
 // ShellWindowLauncherController observes the Shell Window registry and the
@@ -40,6 +41,14 @@ class ShellWindowLauncherController
  public:
   explicit ShellWindowLauncherController(ChromeLauncherController* owner);
   virtual ~ShellWindowLauncherController();
+
+  // Called by ChromeLauncherController when the active user changed and the
+  // items need to be updated.
+  virtual void ActiveUserChanged(const std::string& user_email) {}
+
+  // An additional user identified by |Profile|, got added to the existing
+  // session.
+  virtual void AdditionalUserAddedToSession(Profile* profile) {}
 
   // Overridden from ShellWindowRegistry::Observer:
   virtual void OnShellWindowAdded(apps::ShellWindow* shell_window) OVERRIDE;
@@ -54,11 +63,15 @@ class ShellWindowLauncherController
   virtual void OnWindowActivated(aura::Window* gained_active,
                                  aura::Window* lost_active) OVERRIDE;
 
-  // Returns the number of running applications.
-  int NumberOfAppsRunning();
+ protected:
+  // Registers a shell window with the shelf and this object.
+  void RegisterApp(apps::ShellWindow* shell_window);
 
-  // Activate the application with the given index.
-  void ActivateAppAt(int index);
+  // Unregisters a shell window with the shelf and this object.
+  void UnregisterApp(aura::Window* window);
+
+  // Check if a given window is known to the launcher controller.
+  bool IsRegisteredApp(aura::Window* window);
 
  private:
   typedef std::map<std::string, ShellWindowLauncherItemController*>
