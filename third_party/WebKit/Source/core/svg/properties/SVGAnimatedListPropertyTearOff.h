@@ -39,6 +39,14 @@ public:
     typedef SVGListPropertyTearOff<PropertyType> ListPropertyTearOff;
     typedef PropertyType ContentType;
 
+    virtual ~SVGAnimatedListPropertyTearOff()
+    {
+        if (m_baseVal)
+            static_cast<ListPropertyTearOff*>(m_baseVal.get())->clearAnimatedProperty();
+        if (m_animVal)
+            static_cast<ListPropertyTearOff*>(m_animVal.get())->clearAnimatedProperty();
+    }
+
     virtual ListProperty* baseVal()
     {
         if (!m_baseVal)
@@ -109,6 +117,7 @@ public:
     {
         ASSERT(m_isAnimating);
         ASSERT(m_animVal);
+        ASSERT(contextElement());
         ASSERT(m_values.size() == m_wrappers.size());
 
         ListProperty* animVal = static_cast<ListProperty*>(m_animVal.get());

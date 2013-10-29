@@ -76,6 +76,7 @@ SVGElement::SVGElement(const QualifiedName& tagName, Document& document, Constru
 #if !ASSERT_DISABLED
     , m_inRelativeLengthClientsInvalidation(false)
 #endif
+    , m_animatedPropertiesDestructed(false)
 {
     ScriptWrappable::init(this);
     registerAnimatedPropertiesForSVGElement();
@@ -84,6 +85,16 @@ SVGElement::SVGElement(const QualifiedName& tagName, Document& document, Constru
 
 SVGElement::~SVGElement()
 {
+    ASSERT(inDocument() || !hasRelativeLengths());
+}
+
+void
+SVGElement::cleanupAnimatedProperties()
+{
+    if (m_animatedPropertiesDestructed)
+        return;
+    m_animatedPropertiesDestructed = true;
+
     if (!hasSVGRareData())
         ASSERT(!SVGElementRareData::rareDataMap().contains(this));
     else {
@@ -111,8 +122,7 @@ SVGElement::~SVGElement()
     }
     document().accessSVGExtensions()->rebuildAllElementReferencesForTarget(this);
     document().accessSVGExtensions()->removeAllElementReferencesForTarget(this);
-
-    ASSERT(inDocument() || !hasRelativeLengths());
+    SVGAnimatedProperty::detachAnimatedPropertiesForElement(this);
 }
 
 void SVGElement::willRecalcStyle(StyleRecalcChange change)

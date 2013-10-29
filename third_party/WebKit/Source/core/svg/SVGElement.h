@@ -165,6 +165,25 @@ protected:
     void reportAttributeParsingError(SVGParsingError, const QualifiedName&, const AtomicString&);
     bool hasFocusEventListeners() const;
 
+    class CleanUpAnimatedPropertiesCaller {
+    public:
+        CleanUpAnimatedPropertiesCaller()
+        :   m_owner(0)
+        {
+        }
+
+        ~CleanUpAnimatedPropertiesCaller()
+        {
+            ASSERT(m_owner);
+            m_owner->cleanupAnimatedProperties();
+        }
+
+        void setOwner(SVGElement* owner) { m_owner = owner; }
+
+    private:
+        SVGElement* m_owner;
+    };
+
 private:
     friend class SVGElementInstance;
 
@@ -184,6 +203,9 @@ private:
     void mapInstanceToElement(SVGElementInstance*);
     void removeInstanceMapping(SVGElementInstance*);
 
+    void cleanupAnimatedProperties();
+    friend class CleanUpAnimatedPropertiesCaller;
+
     HashSet<SVGElement*> m_elementsWithRelativeLengths;
 
     BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGElement)
@@ -193,6 +215,7 @@ private:
 #if !ASSERT_DISABLED
     bool m_inRelativeLengthClientsInvalidation;
 #endif
+    bool m_animatedPropertiesDestructed;
 };
 
 struct SVGAttributeHashTranslator {

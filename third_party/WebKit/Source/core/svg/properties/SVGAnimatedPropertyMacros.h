@@ -75,8 +75,9 @@ SVGAttributeToPropertyMap& OwnerType::localAttributeToPropertyMap() const \
     return attributeToPropertyMap(); \
 } \
 \
-static void registerAnimatedPropertiesFor##OwnerType() \
+void OwnerType::registerAnimatedPropertiesFor##OwnerType() \
 { \
+    OwnerType::m_cleanupAnimatedPropertiesCaller.setOwner(this); \
     SVGAttributeToPropertyMap& map = OwnerType::attributeToPropertyMap(); \
     if (!map.isEmpty()) \
         return; \
@@ -154,6 +155,7 @@ void OwnerType::synchronize##UpperProperty(SVGElement* maskedOwnerType) \
 public: \
     static SVGAttributeToPropertyMap& attributeToPropertyMap(); \
     virtual SVGAttributeToPropertyMap& localAttributeToPropertyMap() const; \
+    void registerAnimatedPropertiesFor##OwnerType(); \
     typedef OwnerType UseOwnerType;
 
 #define DECLARE_ANIMATED_PROPERTY(TearOffType, PropertyType, UpperProperty, LowerProperty) \
@@ -171,7 +173,8 @@ private: \
 \
     mutable SVGSynchronizableAnimatedProperty<PropertyType> m_##LowerProperty;
 
-#define END_DECLARE_ANIMATED_PROPERTIES
+#define END_DECLARE_ANIMATED_PROPERTIES \
+    CleanUpAnimatedPropertiesCaller m_cleanupAnimatedPropertiesCaller;
 
 // List specific definition/declaration helpers
 #define DECLARE_ANIMATED_LIST_PROPERTY(TearOffType, PropertyType, UpperProperty, LowerProperty) \
