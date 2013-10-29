@@ -7,26 +7,27 @@
 module sample {
 
 struct Bar {
-  alpha @0 :uint8;
-  beta @1 :uint8;
-  gamma @2 :uint8;
+  uint8 alpha @0;
+  uint8 beta @1;
+  uint8 gamma @2;
 };
 
+[RequiredFields=7]
 struct Foo {
-  name @8 :string;
-  x @0 :int32;
-  y @1 :int32;
-  a @2 :bool;
-  b @3 :bool;
-  c @4 :bool;
-  bar @5 :Bar;
-  extra_bars @7 :array(Bar) [optional];
-  data @6 :array(uint8);
-  files @9 :array(handle);
+  string name @8;
+  int32 x @0;
+  int32 y @1;
+  bool a @2;
+  bool b @3;
+  bool c @4;
+  Bar bar @5;
+  Bar[] extra_bars @7;
+  uint8[] data @6;
+  handle[] files @9;
 };
 
 interface Service {
-  Frobinate @0 (foo @0 :Foo, baz @1 :bool, port @2 :handle);
+  void Frobinate(Foo foo @0, bool baz @1, handle port @2) @0;
 };
 
 }
