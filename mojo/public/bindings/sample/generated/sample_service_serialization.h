@@ -8,6 +8,7 @@
 #include <string.h>
 
 #include "mojo/public/bindings/lib/bindings_serialization.h"
+#include "mojo/public/bindings/sample/generated/sample_foo_serialization.h"
 #include "mojo/public/bindings/sample/generated/sample_service.h"
 
 namespace sample {
@@ -19,38 +20,30 @@ const uint32_t kService_Frobinate_Name = 1;
 
 class Service_Frobinate_Params {
  public:
-  static Service_Frobinate_Params* New(mojo::Buffer* buf) {
-    return new (buf->Allocate(sizeof(Service_Frobinate_Params)))
-        Service_Frobinate_Params();
-  }
+  static Service_Frobinate_Params* New(mojo::Buffer* buf);
 
-  void set_foo(Foo* foo) { d_.foo.ptr = foo; }
-  void set_baz(bool baz) { d_.baz = baz; }
-  void set_port(mojo::Handle port) { d_.port = port; }
+  void set_foo(Foo* foo) { foo_.ptr = foo; }
+  void set_baz(bool baz) { baz_ = baz; }
+  void set_port(mojo::Handle port) { port_ = port; }
 
-  const Foo* foo() const { return d_.foo.ptr; }
-  bool baz() const { return d_.baz; }
+  const Foo* foo() const { return foo_.ptr; }
+  bool baz() const { return baz_; }
   mojo::Handle port() const {
     // NOTE: port is an optional field!
-    return header_.num_fields >= 3 ? d_.port : mojo::kInvalidHandle;
+    return _header_.num_fields >= 3 ? port_ : mojo::kInvalidHandle;
   }
 
  private:
   friend class mojo::internal::ObjectTraits<Service_Frobinate_Params>;
 
-  Service_Frobinate_Params() {
-    header_.num_bytes = sizeof(*this);
-    header_.num_fields = 3;
-  }
+  Service_Frobinate_Params();
   ~Service_Frobinate_Params();  // NOT IMPLEMENTED
 
-  mojo::internal::StructHeader header_;
-  struct Data {
-    mojo::internal::StructPointer<Foo> foo;
-    uint8_t baz : 1;
-    uint8_t padding0_[3];
-    mojo::Handle port;
-  } d_;
+  mojo::internal::StructHeader _header_;
+  mojo::internal::StructPointer<Foo> foo_;
+  uint8_t baz_ : 1;
+  uint8_t _pad0_[3];
+  mojo::Handle port_;
 };
 MOJO_COMPILE_ASSERT(sizeof(Service_Frobinate_Params) == 24,
                     bad_sizeof_Service_Frobinate_Params);
@@ -64,109 +57,14 @@ namespace mojo {
 namespace internal {
 
 template <>
-class ObjectTraits<sample::Bar> {
- public:
-  static size_t ComputeSizeOf(const sample::Bar* bar) {
-    return sizeof(*bar);
-  }
-
-  static sample::Bar* Clone(const sample::Bar* bar, Buffer* buf) {
-    sample::Bar* clone = sample::Bar::New(buf);
-    memcpy(clone, bar, sizeof(*bar));
-    return clone;
-  }
-
-  static void EncodePointersAndHandles(sample::Bar* bar,
-                                       std::vector<mojo::Handle>* handles) {
-  }
-
-  static bool DecodePointersAndHandles(sample::Bar* bar,
-                                       const mojo::Message& message) {
-    return true;
-  }
-};
-
-template <>
-class ObjectTraits<sample::Foo> {
- public:
-  static size_t ComputeSizeOf(const sample::Foo* foo) {
-    return sizeof(*foo) +
-        mojo::internal::ComputeSizeOf(foo->bar()) +
-        mojo::internal::ComputeSizeOf(foo->data()) +
-        mojo::internal::ComputeSizeOf(foo->extra_bars()) +
-        mojo::internal::ComputeSizeOf(foo->name()) +
-        mojo::internal::ComputeSizeOf(foo->files());
-  }
-
-  static sample::Foo* Clone(const sample::Foo* foo, Buffer* buf) {
-    sample::Foo* clone = sample::Foo::New(buf);
-    memcpy(clone, foo, sizeof(*foo));
-
-    clone->set_bar(mojo::internal::Clone(foo->bar(), buf));
-    clone->set_data(mojo::internal::Clone(foo->data(), buf));
-    clone->set_extra_bars(mojo::internal::Clone(foo->extra_bars(), buf));
-    clone->set_name(mojo::internal::Clone(foo->name(), buf));
-    clone->set_files(mojo::internal::Clone(foo->files(), buf));
-
-    return clone;
-  }
-
-  static void EncodePointersAndHandles(sample::Foo* foo,
-                                       std::vector<mojo::Handle>* handles) {
-    Encode(&foo->d_.bar, handles);
-    Encode(&foo->d_.data, handles);
-    Encode(&foo->d_.extra_bars, handles);
-    Encode(&foo->d_.name, handles);
-    Encode(&foo->d_.files, handles);
-  }
-
-  static bool DecodePointersAndHandles(sample::Foo* foo,
-                                       const mojo::Message& message) {
-    if (!Decode(&foo->d_.bar, message))
-      return false;
-    if (!Decode(&foo->d_.data, message))
-      return false;
-    if (foo->header_.num_fields >= 8) {
-      if (!Decode(&foo->d_.extra_bars, message))
-        return false;
-    }
-    if (foo->header_.num_fields >= 9) {
-      if (!Decode(&foo->d_.name, message))
-        return false;
-    }
-    if (foo->header_.num_fields >= 10) {
-      if (!Decode(&foo->d_.files, message))
-        return false;
-    }
-
-    // TODO: validate
-    return true;
-  }
-};
-
-template <>
 class ObjectTraits<sample::internal::Service_Frobinate_Params> {
  public:
   static void EncodePointersAndHandles(
       sample::internal::Service_Frobinate_Params* params,
-      std::vector<mojo::Handle>* handles) {
-    Encode(&params->d_.foo, handles);
-    EncodeHandle(&params->d_.port, handles);
-  }
-
+      std::vector<mojo::Handle>* handles);
   static bool DecodePointersAndHandles(
       sample::internal::Service_Frobinate_Params* params,
-      const mojo::Message& message) {
-    if (!Decode(&params->d_.foo, message))
-      return false;
-    if (params->header_.num_fields >= 3) {
-      if (!DecodeHandle(&params->d_.port, message.handles))
-        return false;
-    }
-
-    // TODO: validate
-    return true;
-  }
+      const mojo::Message& message);
 };
 
 }  // namespace internal
