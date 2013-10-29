@@ -52,6 +52,7 @@
       'PODInterval.h',
       'PODIntervalTree.h',
       'PODRedBlackTree.h',
+      'ParsingUtilities.h',
       'Partitions.cpp',
       'Partitions.h',
       'PasteMode.h',
