@@ -140,16 +140,6 @@ class ScopedViewUpdates {
   DISALLOW_COPY_AND_ASSIGN(ScopedViewUpdates);
 };
 
-// Returns true if |card_type| is supported by Wallet.
-bool IsWalletSupportedCard(const std::string& card_type,
-                           const wallet::WalletItems& wallet_items) {
-  return card_type == autofill::kVisaCard ||
-         card_type == autofill::kMasterCard ||
-         card_type == autofill::kDiscoverCard ||
-         (card_type == autofill::kAmericanExpressCard &&
-             wallet_items.is_amex_allowed());
-}
-
 // Returns true if |input| should be used to fill a site-requested |field| which
 // is notated with a "shipping" tag, for use when the user has decided to use
 // the billing address as the shipping address.
@@ -3026,13 +3016,9 @@ base::string16 AutofillDialogControllerImpl::CreditCardNumberValidityMessage(
         IDS_AUTOFILL_DIALOG_VALIDATION_INVALID_CREDIT_CARD_NUMBER);
   }
 
-  // Wallet only accepts MasterCard, Visa and Discover. No AMEX.
-  if (IsPayingWithWallet() &&
-      !IsWalletSupportedCard(CreditCard::GetCreditCardType(number),
-                             *wallet_items_)) {
-    return l10n_util::GetStringUTF16(
-        IDS_AUTOFILL_DIALOG_VALIDATION_CREDIT_CARD_NOT_SUPPORTED_BY_WALLET);
-  }
+  base::string16 message;
+  if (IsPayingWithWallet() && !wallet_items_->SupportsCard(number, &message))
+    return message;
 
   // Card number is good and supported.
   return base::string16();

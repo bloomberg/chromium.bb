@@ -257,6 +257,30 @@ bool WalletItems::HasRequiredAction(RequiredAction action) const {
                    action) != required_actions_.end();
 }
 
+bool WalletItems::SupportsCard(const base::string16& card_number,
+                               base::string16* message) const {
+  std::string card_type = CreditCard::GetCreditCardType(card_number);
+
+  if (card_type == kVisaCard ||
+      card_type == kMasterCard ||
+      card_type == kDiscoverCard) {
+    return true;
+  }
+
+  if (card_type == kAmericanExpressCard) {
+    if (amex_permission_ == AMEX_ALLOWED)
+      return true;
+
+    *message = l10n_util::GetStringUTF16(
+        IDS_AUTOFILL_CREDIT_CARD_NOT_SUPPORTED_BY_WALLET_FOR_MERCHANT);
+    return false;
+  }
+
+  *message = l10n_util::GetStringUTF16(
+      IDS_AUTOFILL_CREDIT_CARD_NOT_SUPPORTED_BY_WALLET);
+   return false;
+}
+
 base::string16 WalletItems::MaskedInstrument::DisplayName() const {
 #if defined(OS_ANDROID)
   // TODO(aruslan): improve this stub implementation.

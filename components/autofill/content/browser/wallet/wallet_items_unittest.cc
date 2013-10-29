@@ -515,7 +515,11 @@ TEST_F(WalletItemsTest, CreateWalletItemsMissingGoogleTransactionId) {
 TEST_F(WalletItemsTest, CreateWalletItemsMissingAmexDisallowed) {
   SetUpDictionary(std::string(kWalletItems) + std::string(kCloseJson));
   EXPECT_TRUE(dict->Remove("amex_disallowed", NULL));
-  EXPECT_FALSE(WalletItems::CreateWalletItems(*dict)->is_amex_allowed());
+  base::string16 amex_number = ASCIIToUTF16("378282246310005");
+  base::string16 message;
+  EXPECT_FALSE(WalletItems::CreateWalletItems(*dict)->SupportsCard(amex_number,
+                                                                   &message));
+  EXPECT_FALSE(message.empty());
 }
 
 TEST_F(WalletItemsTest, CreateWalletItems) {
