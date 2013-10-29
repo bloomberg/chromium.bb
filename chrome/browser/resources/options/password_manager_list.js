@@ -78,6 +78,12 @@ cr.define('options.passwordManager', function() {
         button.className = 'list-inline-button custom-appearance';
         button.textContent = loadTimeData.getString('passwordShowButton');
         button.addEventListener('click', this.onClick_.bind(this), true);
+        button.addEventListener('mousedown', function(event) {
+          // Don't focus on this button by mousedown.
+          event.preventDefault();
+          // Don't handle list item selection. It causes focus change.
+          event.stopPropagation();
+        }, false);
         passwordInputDiv.appendChild(button);
         this.passwordShowButton = button;
       }
@@ -107,6 +113,7 @@ cr.define('options.passwordManager', function() {
      */
     showPassword: function() {
       this.passwordField.type = 'text';
+      this.passwordField.focus();
 
       var button = this.passwordShowButton;
       if (button)
