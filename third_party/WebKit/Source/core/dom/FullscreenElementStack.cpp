@@ -353,7 +353,7 @@ bool FullscreenElementStack::webkitFullscreenEnabled(Document* document)
 
 void FullscreenElementStack::webkitWillEnterFullScreenForElement(Element* element)
 {
-    if (!document()->confusingAndOftenMisusedAttached())
+    if (!document()->isActive())
         return;
 
     ASSERT(element);
@@ -393,7 +393,7 @@ void FullscreenElementStack::webkitDidEnterFullScreenForElement(Element*)
     if (!m_fullScreenElement)
         return;
 
-    if (!document()->confusingAndOftenMisusedAttached())
+    if (!document()->isActive())
         return;
 
     m_fullScreenElement->didBecomeFullscreenElement();
@@ -406,7 +406,7 @@ void FullscreenElementStack::webkitWillExitFullScreenForElement(Element*)
     if (!m_fullScreenElement)
         return;
 
-    if (!document()->confusingAndOftenMisusedAttached())
+    if (!document()->isActive())
         return;
 
     m_fullScreenElement->willStopBeingFullscreenElement();
@@ -417,7 +417,7 @@ void FullscreenElementStack::webkitDidExitFullScreenForElement(Element*)
     if (!m_fullScreenElement)
         return;
 
-    if (!document()->confusingAndOftenMisusedAttached())
+    if (!document()->isActive())
         return;
 
     m_fullScreenElement->setContainsFullScreenElementOnAncestorsCrossingFrameBoundaries(false);
