@@ -16,6 +16,8 @@
 
 namespace content {
 
+GURL GetDevToolsPathAsURL();
+
 class RenderViewHost;
 class Shell;
 class WebContents;

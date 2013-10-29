@@ -21,8 +21,6 @@
 
 namespace content {
 
-namespace {
-
 // DevTools frontend path for inspector LayoutTests.
 GURL GetDevToolsPathAsURL() {
   base::FilePath dir_exe;
@@ -40,8 +38,6 @@ GURL GetDevToolsPathAsURL() {
       "resources/inspector/devtools.html");
   return net::FilePathToFileURL(dev_tools_path);
 }
-
-}  // namespace
 
 // static
 ShellDevToolsFrontend* ShellDevToolsFrontend::Show(
