@@ -1660,8 +1660,8 @@ void Document::recalcStyle(StyleRecalcChange change)
     // we should not enter style recalc while painting
     RELEASE_ASSERT(!view() || !view()->isPainting());
 
-    // FIXME: We should never enter here without a FrameView or a RenderView.
-    if (!renderer() || !view())
+    // FIXME: We should never enter here without a FrameView or with an inactive document.
+    if (!isActive() || !view())
         return;
 
     if (m_inStyleRecalc)
