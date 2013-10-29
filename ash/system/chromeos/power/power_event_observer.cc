@@ -16,7 +16,8 @@
 namespace ash {
 namespace internal {
 
-PowerEventObserver::PowerEventObserver() {
+PowerEventObserver::PowerEventObserver()
+    : screen_locked_(false) {
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->
       AddObserver(this);
   chromeos::DBusThreadManager::Get()->GetSessionManagerClient()->

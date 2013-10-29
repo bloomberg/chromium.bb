@@ -293,6 +293,11 @@ void AshTestBase::SetCanLockScreen(bool can_lock_screen) {
       SetCanLockScreen(can_lock_screen);
 }
 
+void AshTestBase::SetShouldLockScreenBeforeSuspending(bool should_lock) {
+  ash_test_helper_->test_shell_delegate()->test_session_state_delegate()->
+      SetShouldLockScreenBeforeSuspending(should_lock);
+}
+
 void AshTestBase::SetUserAddingScreenRunning(bool user_adding_screen_running) {
   ash_test_helper_->test_shell_delegate()->test_session_state_delegate()->
       SetUserAddingScreenRunning(user_adding_screen_running);

@@ -211,6 +211,10 @@ class PowerManagerClientImpl : public PowerManagerClient {
                       weak_ptr_factory_.GetWeakPtr(), pending_suspend_id_);
   }
 
+  virtual int GetNumPendingSuspendReadinessCallbacks() OVERRIDE {
+    return num_pending_suspend_readiness_callbacks_;
+  }
+
  protected:
   virtual void Init(dbus::Bus* bus) OVERRIDE {
     power_manager_proxy_ = bus->GetObjectProxy(
@@ -641,11 +645,16 @@ class PowerManagerClientStubImpl : public PowerManagerClient {
         brightness_(50.0),
         pause_count_(2),
         cycle_count_(0),
+        num_pending_suspend_readiness_callbacks_(0),
         weak_ptr_factory_(this) {}
 
   virtual ~PowerManagerClientStubImpl() {}
 
-  // PowerManagerClient overrides
+  int num_pending_suspend_readiness_callbacks() const {
+    return num_pending_suspend_readiness_callbacks_;
+  }
+
+  // PowerManagerClient overrides:
   virtual void Init(dbus::Bus* bus) OVERRIDE {
     if (CommandLine::ForCurrentProcess()->HasSwitch(
         chromeos::switches::kEnableStubInteractive)) {
@@ -714,10 +723,19 @@ class PowerManagerClientStubImpl : public PowerManagerClient {
       const power_manager::PowerManagementPolicy& policy) OVERRIDE {}
   virtual void SetIsProjecting(bool is_projecting) OVERRIDE {}
   virtual base::Closure GetSuspendReadinessCallback() OVERRIDE {
-    return base::Closure();
+    num_pending_suspend_readiness_callbacks_++;
+    return base::Bind(&PowerManagerClientStubImpl::HandleSuspendReadiness,
+                      weak_ptr_factory_.GetWeakPtr());
+  }
+  virtual int GetNumPendingSuspendReadinessCallbacks() OVERRIDE {
+    return num_pending_suspend_readiness_callbacks_;
   }
 
  private:
+  void HandleSuspendReadiness() {
+    num_pending_suspend_readiness_callbacks_--;
+  }
+
   void UpdateStatus() {
     if (pause_count_ > 0) {
       pause_count_--;
@@ -801,6 +819,10 @@ class PowerManagerClientStubImpl : public PowerManagerClient {
   ObserverList<Observer> observers_;
   base::RepeatingTimer<PowerManagerClientStubImpl> update_timer_;
   power_manager::PowerSupplyProperties props_;
+
+  // Number of callbacks returned by GetSuspendReadinessCallback() but not yet
+  // invoked.
+  int num_pending_suspend_readiness_callbacks_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

@@ -47,6 +47,7 @@ class FakePowerManagerClient : public PowerManagerClient {
       const power_manager::PowerManagementPolicy& policy) OVERRIDE;
   virtual void SetIsProjecting(bool is_projecting) OVERRIDE;
   virtual base::Closure GetSuspendReadinessCallback() OVERRIDE;
+  virtual int GetNumPendingSuspendReadinessCallbacks() OVERRIDE;
 
   power_manager::PowerManagementPolicy& get_policy() { return policy_; }
 

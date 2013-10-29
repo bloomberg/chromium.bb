@@ -122,6 +122,7 @@ class AshTestBase : public testing::Test {
   void SetSessionStarted(bool session_started);
   void SetUserLoggedIn(bool user_logged_in);
   void SetCanLockScreen(bool can_lock_screen);
+  void SetShouldLockScreenBeforeSuspending(bool should_lock);
   void SetUserAddingScreenRunning(bool user_adding_screen_running);
 
   // Methods to emulate blocking and unblocking user session with given

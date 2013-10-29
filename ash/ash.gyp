@@ -784,6 +784,7 @@
         'shell_unittest.cc',
         'system/chromeos/managed/tray_locally_managed_user_unittest.cc',
         'system/chromeos/network/network_state_notifier_unittest.cc',
+        'system/chromeos/power/power_event_observer_unittest.cc',
         'system/chromeos/power/power_status_unittest.cc',
         'system/chromeos/power/tray_power_unittest.cc',
         'system/chromeos/screen_security/screen_tray_item_unittest.cc',

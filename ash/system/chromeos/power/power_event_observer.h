@@ -5,6 +5,7 @@
 #ifndef ASH_SYSTEM_CHROMEOS_POWER_POWER_EVENT_OBSERVER_H_
 #define ASH_SYSTEM_CHROMEOS_POWER_POWER_EVENT_OBSERVER_H_
 
+#include "ash/ash_export.h"
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
@@ -15,8 +16,9 @@ namespace ash {
 namespace internal {
 
 // A class that observes power-management-related events.
-class PowerEventObserver : public chromeos::PowerManagerClient::Observer,
-                           public chromeos::SessionManagerClient::Observer {
+class ASH_EXPORT PowerEventObserver
+    : public chromeos::PowerManagerClient::Observer,
+      public chromeos::SessionManagerClient::Observer {
  public:
   // This class registers/unregisters itself as an observer in ctor/dtor.
   PowerEventObserver();

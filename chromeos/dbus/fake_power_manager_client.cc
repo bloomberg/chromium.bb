@@ -51,6 +51,10 @@ base::Closure FakePowerManagerClient::GetSuspendReadinessCallback() {
   return base::Closure();
 }
 
+int FakePowerManagerClient::GetNumPendingSuspendReadinessCallbacks() {
+  return 0;
+}
+
 bool FakePowerManagerClient::HasObserver(Observer* observer) {
   return false;
 }

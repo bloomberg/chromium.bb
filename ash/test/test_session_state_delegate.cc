@@ -31,6 +31,7 @@ TestSessionStateDelegate::TestSessionStateDelegate()
     : has_active_user_(false),
       active_user_session_started_(false),
       can_lock_screen_(true),
+      should_lock_screen_before_suspending_(false),
       screen_locked_(false),
       user_adding_screen_running_(false),
       logged_in_users_(1) {
@@ -61,7 +62,7 @@ bool TestSessionStateDelegate::IsScreenLocked() const {
 }
 
 bool TestSessionStateDelegate::ShouldLockScreenBeforeSuspending() const {
-  return false;
+  return should_lock_screen_before_suspending_;
 }
 
 void TestSessionStateDelegate::LockScreen() {
@@ -99,6 +100,11 @@ void TestSessionStateDelegate::SetActiveUserSessionStarted(
 
 void TestSessionStateDelegate::SetCanLockScreen(bool can_lock_screen) {
   can_lock_screen_ = can_lock_screen;
+}
+
+void TestSessionStateDelegate::SetShouldLockScreenBeforeSuspending(
+    bool should_lock) {
+  should_lock_screen_before_suspending_ = should_lock;
 }
 
 void TestSessionStateDelegate::SetUserAddingScreenRunning(

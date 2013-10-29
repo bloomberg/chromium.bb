@@ -143,6 +143,10 @@ class CHROMEOS_EXPORT PowerManagerClient : public DBusClient {
   // readiness for suspend.  See Observer::SuspendImminent().
   virtual base::Closure GetSuspendReadinessCallback() = 0;
 
+  // Returns the number of callbacks returned by GetSuspendReadinessCallback()
+  // for the current suspend attempt but not yet called. Used by tests.
+  virtual int GetNumPendingSuspendReadinessCallbacks() = 0;
+
   // Creates the instance.
   static PowerManagerClient* Create(DBusClientImplementationType type);
 

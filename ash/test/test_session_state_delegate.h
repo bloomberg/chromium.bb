@@ -69,6 +69,9 @@ class TestSessionStateDelegate : public SessionStateDelegate {
   // is an active user.
   void SetCanLockScreen(bool can_lock_screen);
 
+  // Updates |should_lock_screen_before_suspending_|.
+  void SetShouldLockScreenBeforeSuspending(bool should_lock);
+
   // Updates the internal state that indicates whether user adding screen is
   // running now.
   void SetUserAddingScreenRunning(bool user_adding_screen_running);
@@ -85,6 +88,9 @@ class TestSessionStateDelegate : public SessionStateDelegate {
   // Whether the screen can be locked. Locking will only actually be allowed
   // when this is |true| and there is an active user.
   bool can_lock_screen_;
+
+  // Return value for ShouldLockScreenBeforeSuspending().
+  bool should_lock_screen_before_suspending_;
 
   // Whether the screen is currently locked.
   bool screen_locked_;
