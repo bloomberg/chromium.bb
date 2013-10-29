@@ -781,7 +781,7 @@ TextBreakIterator* cursorMovementIterator(const UChar* string, int length)
     // * Added rules that prevent a cursor from moving after virama signs of Indic languages except Tamil (Bug 15790), and;
     // * Added rules that prevent a cursor from moving before Japanese half-width katakara voiced marks.
     // * Added rules for regional indicator symbols.
-    static const char* kRules =
+    static const char* const kRules =
         "$CR      = [\\p{Grapheme_Cluster_Break = CR}];"
         "$LF      = [\\p{Grapheme_Cluster_Break = LF}];"
         "$Control = [\\p{Grapheme_Cluster_Break = Control}];"

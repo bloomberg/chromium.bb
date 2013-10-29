@@ -4081,8 +4081,8 @@ String Document::queryCommandValue(const String& commandName)
 
 KURL Document::openSearchDescriptionURL()
 {
-    static const char* const openSearchMIMEType = "application/opensearchdescription+xml";
-    static const char* const openSearchRelation = "search";
+    static const char openSearchMIMEType[] = "application/opensearchdescription+xml";
+    static const char openSearchRelation[] = "search";
 
     // FIXME: Why do only top-level frames have openSearchDescriptionURLs?
     if (!frame() || frame()->tree().parent())

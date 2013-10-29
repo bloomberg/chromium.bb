@@ -201,7 +201,7 @@ bool WebSocketInflater::addBytes(const char* data, size_t length)
 
 bool WebSocketInflater::finish()
 {
-    static const char* strippedFields = "\0\0\xff\xff";
+    static const char strippedFields[] = "\0\0\xff\xff";
     static const size_t strippedLength = 4;
 
     // Appends 4 octests of 0x00 0x00 0xff 0xff

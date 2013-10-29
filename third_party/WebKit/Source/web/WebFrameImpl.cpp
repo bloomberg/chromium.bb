@@ -205,7 +205,7 @@ namespace WebKit {
 static int frameCount = 0;
 
 // Key for a StatsCounter tracking how many WebFrames are active.
-static const char* const webFrameActiveCount = "WebFrameActiveCount";
+static const char webFrameActiveCount[] = "WebFrameActiveCount";
 
 static void frameContentAsPlainText(size_t maxChars, Frame* frame, StringBuilder& output)
 {

@@ -125,7 +125,7 @@ static const char* boolString(bool val)
 #endif
 
 // URL protocol used to signal that the media source API is being used.
-static const char* mediaSourceBlobProtocol = "blob";
+static const char mediaSourceBlobProtocol[] = "blob";
 
 using namespace HTMLNames;
 using namespace std;

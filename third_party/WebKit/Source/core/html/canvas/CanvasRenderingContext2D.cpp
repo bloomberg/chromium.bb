@@ -77,8 +77,8 @@ using namespace std;
 namespace WebCore {
 
 static const int defaultFontSize = 10;
-static const char* const defaultFontFamily = "sans-serif";
-static const char* const defaultFont = "10px sans-serif";
+static const char defaultFontFamily[] = "sans-serif";
+static const char defaultFont[] = "10px sans-serif";
 
 CanvasRenderingContext2D::CanvasRenderingContext2D(HTMLCanvasElement* canvas, const Canvas2DContextAttributes* attrs, bool usesCSSCompatibilityParseMode)
     : CanvasRenderingContext(canvas)

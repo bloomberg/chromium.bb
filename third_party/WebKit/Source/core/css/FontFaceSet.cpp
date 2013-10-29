@@ -46,7 +46,7 @@
 namespace WebCore {
 
 static const int defaultFontSize = 10;
-static const char* const defaultFontFamily = "sans-serif";
+static const char defaultFontFamily[] = "sans-serif";
 
 class LoadFontPromiseResolver : public CSSSegmentedFontFace::LoadFontCallback {
 public:

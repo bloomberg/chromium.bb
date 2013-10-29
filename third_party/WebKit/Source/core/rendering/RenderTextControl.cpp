@@ -158,7 +158,7 @@ void RenderTextControl::hitInnerTextElement(HitTestResult& result, const LayoutP
     result.setLocalPoint(localPoint);
 }
 
-static const char* fontFamiliesWithInvalidCharWidth[] = {
+static const char* const fontFamiliesWithInvalidCharWidth[] = {
     "American Typewriter",
     "Arial Hebrew",
     "Chalkboard",

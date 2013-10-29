@@ -45,7 +45,7 @@ static HashSet<String>* protocolWhitelist;
 static void initProtocolHandlerWhitelist()
 {
     protocolWhitelist = new HashSet<String>;
-    static const char* protocols[] = {
+    static const char* const protocols[] = {
         "bitcoin",
         "geo",
         "im",
