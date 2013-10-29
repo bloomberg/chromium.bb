@@ -194,8 +194,6 @@ function init() {
 
   rendererContainer.appendChild(renderer.domElement);
 
-  controls = new THREE.OrbitControls (camera, rendererContainer);
-
   var idFuncHash = {
     jenga10: loadJenga10,
     jenga20: loadJenga20,
@@ -213,9 +211,13 @@ function init() {
 
   $('reload').addEventListener('click', reloadScene, false);
 
-  renderer.domElement.addEventListener('mousemove', onDocumentMouseMove, false );
-  window.addEventListener('keydown', onDocumentKeyDown, false);
-  window.addEventListener('keyup', onDocumentKeyUp, false);
+  rendererContainer.addEventListener('mousedown', onMouseDown, false);
+  rendererContainer.addEventListener('mouseup', onMouseUp, false);
+  renderer.domElement.addEventListener('mousemove', onMouseMove, false);
+
+  // Add the OrbitControls after our own listeners -- that way we can prevent
+  // the camera rotation when dragging an object.
+  controls = new THREE.OrbitControls(camera, rendererContainer);
 
   window.setInterval(pollForRendererResize, 10);
 }
@@ -234,35 +236,35 @@ function pollForRendererResize() {
   lastRendererHeight = h;
 }
 
-function onDocumentKeyDown(event) {
-  if (event.keyCode == 72 || event.keyCode == 104) {
-    if (SELECTED != undefined) {
-      return;
-    }
-    hold = true;
-    var vector = new THREE.Vector3( mouse.x, mouse.y, 0.5 );
-    projector.unprojectVector( vector, camera );
-    var ray = new THREE.Ray( camera.position, vector.subSelf( camera.position ).normalize() );
-    var intersects = ray.intersectObjects( objects );
-    if (intersects.length > 0) {
-      if (intersects[0].object != plane) {
-        SELECTED = intersects[0].object;
-        //console.log(SELECTED.objectTableIndex);
-        NaClAMBulletPickObject(SELECTED.objectTableIndex, camera.position, intersects[0].point);
-      }
+function onMouseDown(event) {
+  var vector = new THREE.Vector3( mouse.x, mouse.y, 0.5 );
+  projector.unprojectVector( vector, camera );
+  var ray = new THREE.Ray( camera.position, vector.subSelf( camera.position ).normalize() );
+  var intersects = ray.intersectObjects( objects );
+  if (intersects.length > 0) {
+    if (intersects[0].object != plane) {
+      hold = true;
+      SELECTED = intersects[0].object;
+      //console.log(SELECTED.objectTableIndex);
+      NaClAMBulletPickObject(SELECTED.objectTableIndex, camera.position, intersects[0].point);
+      // stopImmediatePropagation() will prevent other event listeners on the
+      // same element from firing -- in this case, the OrbitControls camera
+      // rotation.
+      event.stopImmediatePropagation();
     }
   }
 }
 
-function onDocumentKeyUp(event) {
-  if (event.keyCode == 72 || event.keyCode == 104) {
+function onMouseUp(event) {
+  if (hold) {
     hold = false;
     SELECTED = undefined;
     NaClAMBulletDropObject();
+    event.stopImmediatePropagation();
   }
 }
 
-function onDocumentMouseMove( event ) {
+function onMouseMove( event ) {
   event.preventDefault();
 
   var rendererContainer = $('rendererContainer');
