@@ -3455,8 +3455,6 @@ TEST(HttpCache, RangeGET_OK) {
   RemoveMockTransaction(&kRangeGET_TransactionOK);
 }
 
-#if defined(OS_ANDROID)
-
 // Checks that with a cache backend having Sparse IO unimplementes the cache
 // entry would be doomed after a range request.
 // TODO(pasko): remove when the SimpleBackendImpl implements Sparse IO.
@@ -3528,8 +3526,6 @@ TEST(HttpCache, RangeGET_SparseNotImplementedOnEmptyCache) {
   ASSERT_EQ(net::ERR_CACHE_OPEN_FAILURE, cb.GetResult(rv));
   RemoveMockTransaction(&transaction);
 }
-
-#endif  // OS_ANDROID
 
 // Tests that we can cache range requests and fetch random blocks from the
 // cache and the network, with synchronous responses.
