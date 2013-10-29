@@ -3827,7 +3827,6 @@ static void voidMethodOptionalStringArgMethod(const v8::FunctionCallbackInfo<v8:
     TestObjectPython* imp = V8TestObjectPython::toNative(args.Holder());
     if (UNLIKELY(args.Length() <= 0)) {
         imp->voidMethodOptionalStringArg();
-;
         return;
     }
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, stringArg, args[0]);
@@ -3846,7 +3845,6 @@ static void voidMethodOptionalLongArgMethod(const v8::FunctionCallbackInfo<v8::V
     TestObjectPython* imp = V8TestObjectPython::toNative(args.Holder());
     if (UNLIKELY(args.Length() <= 0)) {
         imp->voidMethodOptionalLongArg();
-;
         return;
     }
     V8TRYCATCH_VOID(int, optionalLongArg, toInt32(args[0]));
@@ -3865,7 +3863,6 @@ static void stringMethodOptionalLongArgMethod(const v8::FunctionCallbackInfo<v8:
     TestObjectPython* imp = V8TestObjectPython::toNative(args.Holder());
     if (UNLIKELY(args.Length() <= 0)) {
         v8SetReturnValueString(args, imp->stringMethodOptionalLongArg(), args.GetIsolate());
-;
         return;
     }
     V8TRYCATCH_VOID(int, optionalLongArg, toInt32(args[0]));
@@ -3884,7 +3881,6 @@ static void testInterfaceEmptyMethodOptionalLongArgMethod(const v8::FunctionCall
     TestObjectPython* imp = V8TestObjectPython::toNative(args.Holder());
     if (UNLIKELY(args.Length() <= 0)) {
         v8SetReturnValue(args, imp->testInterfaceEmptyMethodOptionalLongArg(), args.Holder());
-;
         return;
     }
     V8TRYCATCH_VOID(int, optionalLongArg, toInt32(args[0]));
@@ -3903,7 +3899,6 @@ static void longMethodOptionalLongArgMethod(const v8::FunctionCallbackInfo<v8::V
     TestObjectPython* imp = V8TestObjectPython::toNative(args.Holder());
     if (UNLIKELY(args.Length() <= 0)) {
         v8SetReturnValueInt(args, imp->longMethodOptionalLongArg());
-;
         return;
     }
     V8TRYCATCH_VOID(int, optionalLongArg, toInt32(args[0]));
@@ -3927,7 +3922,6 @@ static void voidMethodLongArgOptionalLongArgMethod(const v8::FunctionCallbackInf
     V8TRYCATCH_VOID(int, longArg, toInt32(args[0]));
     if (UNLIKELY(args.Length() <= 1)) {
         imp->voidMethodLongArgOptionalLongArg(longArg);
-;
         return;
     }
     V8TRYCATCH_VOID(int, optionalLongArg, toInt32(args[1]));
@@ -3951,13 +3945,11 @@ static void voidMethodLongArgOptionalLongArgOptionalLongArgMethod(const v8::Func
     V8TRYCATCH_VOID(int, longArg, toInt32(args[0]));
     if (UNLIKELY(args.Length() <= 1)) {
         imp->voidMethodLongArgOptionalLongArgOptionalLongArg(longArg);
-;
         return;
     }
     V8TRYCATCH_VOID(int, optionalLongArg1, toInt32(args[1]));
     if (UNLIKELY(args.Length() <= 2)) {
         imp->voidMethodLongArgOptionalLongArgOptionalLongArg(longArg, optionalLongArg1);
-;
         return;
     }
     V8TRYCATCH_VOID(int, optionalLongArg2, toInt32(args[2]));
