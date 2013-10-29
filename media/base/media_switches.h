@@ -40,6 +40,7 @@ MEDIA_EXPORT extern const char kAlsaOutputDevice[];
 
 #if defined(OS_MACOSX)
 MEDIA_EXPORT extern const char kDisableMainThreadAudio[];
+MEDIA_EXPORT extern const char kEnableAVFoundation[];
 #endif
 
 #if defined(OS_WIN)
