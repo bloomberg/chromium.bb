@@ -53,16 +53,7 @@ crbug.com/24182 jquery/traversing.html [ Slow ]
 crbug.com/24182 media/track/track-cues-cuechange.html [ Slow ]
 crbug.com/24182 media/track/track-cues-enter-exit.html [ Slow ]
 crbug.com/24182 perf/append-text-nodes-without-renderers.html [ Slow ]
-crbug.com/24182 perf/array-push-pop.html [ Slow ]
-crbug.com/24182 perf/class-list-remove.html [ Slow ]
-crbug.com/24182 perf/document-contains.html [ Slow ]
-crbug.com/24182 perf/htmlcollection-backwards-iteration.html [ Slow ]
-crbug.com/24182 perf/htmlcollection-last-item.html [ Slow ]
-crbug.com/24182 perf/mouse-event.html [ Slow ]
-crbug.com/24182 perf/object-keys.html [ Slow ]
 crbug.com/24182 perf/set-attribute.html [ Slow ]
-crbug.com/24182 perf/svg-path-appenditem.html [ Slow ]
-crbug.com/24182 perf/table-rows-length-caching.html [ Slow ]
 crbug.com/24182 svg/filters/big-sized-filter.svg [ Slow ]
 crbug.com/24182 tables/mozilla/other/slashlogo.html [ Slow ]
 crbug.com/24182 virtual/gpu/fast/canvas/canvas-composite-alpha.html [ Slow ]
@@ -119,8 +110,6 @@ crbug.com/258896 virtual/web-animations-css/animations/animation-direction-rever
 
 # FIXME: These tests might still be buggy and time out. They were marked as Slow on 9/20/2013.
 # Double-check the data after they've been running another week or so.
-Bug(nbarth) perf/show-hide-table-rows.html [ Slow ] # Should be [ Slow Timeout ] ?
-Bug(nbarth) perf/typing-at-end-of-line.html [ Slow ] # Possibly just times out ?
 webkit.org/b/58193 [ Win7 ] http/tests/local/fileapi/send-sliced-dragged-file.html [ Slow ]
 webkit.org/b/74746 [ Win ] http/tests/xmlhttprequest/workers/methods.html [ Slow ]
 crbug.com/9798 [ Win Release ] http/tests/navigation/no-referrer-reset.html [ Slow ]

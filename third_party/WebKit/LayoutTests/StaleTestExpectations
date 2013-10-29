@@ -146,22 +146,6 @@ crbug.com/27569 [ Win ] http/tests/xmlhttprequest/redirect-cross-origin-tripmine
 # Test introduced in r64817
 crbug.com/51571 [ Win ] http/tests/misc/bad-charset-alias.html [ WontFix ]
 
-# Mark as flaky initially while tuning on trybots
-# Most perf tests are also Slow
-Bug(nbarth) [ Release ] perf/array-push-pop.html [ WontFix ]
-Bug(nbarth) [ Release ] perf/array-reverse.html [ WontFix ]
-Bug(nbarth) [ Release ] perf/class-list-remove.html [ WontFix ]
-Bug(nbarth) [ Release ] perf/clone-with-focus.html [ WontFix ]
-Bug(nbarth) [ Release ] perf/document-contains.html [ WontFix ]
-Bug(nbarth) [ Release ] perf/htmlcollection-backwards-iteration.html [ WontFix ]
-Bug(nbarth) [ Release ] perf/htmlcollection-last-item.html [ WontFix ]
-Bug(nbarth) [ Release ] perf/mouse-event.html [ WontFix ]
-Bug(nbarth) [ Release ] perf/object-keys.html [ WontFix ]
-Bug(nbarth) [ Release ] perf/show-hide-table-rows.html [ Failure ] # Should be [ Failure Timeout ]?
-Bug(nbarth) [ Release ] perf/svg-path-appenditem.html [ WontFix ]
-Bug(nbarth) [ Release ] perf/table-rows-length-caching.html [ WontFix ]
-Bug(nbarth) [ Release ] perf/typing-at-end-of-line.html [ WontFix ]
-
 crbug.com/58257 [ Win ] http/tests/misc/last-modified-parsing.html [ WontFix ]
 
 # Failing from r69420

@@ -1,4 +1,0 @@
-Tests that classList remove is linear, both in number of class names and in length of class name.
-PASS
-PASS
-
