@@ -503,7 +503,6 @@ TEST_F(CastSocketTest, TestFullSecureConnectionFlowAsync) {
   ExpectTcpConnectPending(&tcp_connect_callback2);
   ExpectSslConnectPending(&ssl_connect_callback2);
   EXPECT_CALL(handler_, OnConnectComplete(net::OK));
-  ExpectSslRead(1);
 
   // Trigger callbacks for the first connect
   ssl_connect_callback1.Run(net::ERR_CERT_AUTHORITY_INVALID);
@@ -531,7 +530,6 @@ TEST_F(CastSocketTest, TestFullSecureConnectionFlowSync) {
   ExpectTcpConnect(&tcp_connect_callback, net::OK);
   ExpectSslConnect(&ssl_connect_callback, net::OK);
   EXPECT_CALL(handler_, OnConnectComplete(net::OK));
-  ExpectSslRead(1);
 
   socket_->SetSendAuthChallengeResult(net::OK);
   socket_->SetReadAuthChallengeReplyResult(net::OK);

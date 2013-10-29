@@ -317,7 +317,10 @@ void CastSocket::DoConnectCallback(int result) {
   error_state_ = (result == net::OK) ?
       CHANNEL_ERROR_NONE : CHANNEL_ERROR_CONNECT_ERROR;
   base::ResetAndReturn(&connect_callback_).Run(result);
-  if (result == net::OK)
+  // Start the ReadData loop if not already started.
+  // If auth_required_ is true we would've started a ReadData loop already.
+  // TODO(munjal): This is a bit ugly. Refactor read and write code.
+  if (result == net::OK && !auth_required_)
     ReadData();
 }
 
@@ -350,13 +353,6 @@ void CastSocket::SendMessage(const MessageInfo& message,
     return;
   }
   SendMessageInternal(message_proto, callback);
-   /*
-  if (result >= 0) {
-    callback.Run(result);
-  } else if (result != net::ERR_IO_PENDING && result != net::OK) {
-    CloseWithError(cast_channel::CHANNEL_ERROR_INVALID_MESSAGE);
-    callback.Run(net::ERR_FAILED);
-  }*/
 }
 
 int CastSocket::SendMessageInternal(const CastMessage& message_proto,
