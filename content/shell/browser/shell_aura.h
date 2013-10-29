@@ -28,7 +28,7 @@ class ShellAuraPlatformData {
   ShellAuraPlatformData();
   ~ShellAuraPlatformData();
 
-  void CreateWindow(int width, int height);
+  void ResizeWindow(int width, int height);
 
   aura::RootWindow* window() { return root_window_.get(); }
 

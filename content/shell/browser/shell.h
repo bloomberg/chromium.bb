@@ -269,7 +269,7 @@ class Shell : public WebContentsDelegate,
 
   views::Widget* window_widget_;
 #else // defined(TOOLKIT_VIEWS)
-  scoped_ptr<ShellAuraPlatformData> platform_;
+  static ShellAuraPlatformData* platform_;
 #endif // defined(TOOLKIT_VIEWS)
 #elif defined(OS_MACOSX)
   int content_width_;

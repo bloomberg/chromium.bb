@@ -126,17 +126,12 @@ class MinimalInputEventFilter : public ui::internal::InputMethodDelegate,
 
 }
 
+ShellAuraPlatformData* Shell::platform_ = NULL;
+
 ShellAuraPlatformData::ShellAuraPlatformData() {
-}
-
-ShellAuraPlatformData::~ShellAuraPlatformData() {
-}
-
-void ShellAuraPlatformData::CreateWindow(int width, int height) {
   aura::TestScreen* screen = aura::TestScreen::Create();
   gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, screen);
   root_window_.reset(screen->CreateRootWindowForPrimaryDisplay());
-  root_window_->SetHostSize(gfx::Size(width, height));
   root_window_->ShowRootWindow();
   root_window_->SetLayoutManager(new FillLayout(root_window_.get()));
 
@@ -152,12 +147,24 @@ void ShellAuraPlatformData::CreateWindow(int width, int height) {
   ime_filter_.reset(new MinimalInputEventFilter(root_window_.get()));
 }
 
+ShellAuraPlatformData::~ShellAuraPlatformData() {
+}
+
+void ShellAuraPlatformData::ResizeWindow(int width, int height) {
+  root_window_->SetHostSize(gfx::Size(width, height));
+}
+
 // static
 void Shell::PlatformInitialize(const gfx::Size& default_window_size) {
+  CHECK(!platform_);
   aura::Env::CreateInstance();
+  platform_ = new ShellAuraPlatformData();
 }
 
 void Shell::PlatformExit() {
+  CHECK(platform_);
+  delete platform_;
+  platform_ = NULL;
   aura::Env::DeleteInstance();
 }
 
@@ -174,13 +181,18 @@ void Shell::PlatformSetIsLoading(bool loading) {
 }
 
 void Shell::PlatformCreateWindow(int width, int height) {
-  platform_.reset(new ShellAuraPlatformData());
-  platform_->CreateWindow(width, height);
+  CHECK(platform_);
+  platform_->ResizeWindow(width, height);
 }
 
 void Shell::PlatformSetContents() {
-  platform_->window()->AddChild(web_contents_->GetView()->GetNativeView());
-  web_contents_->GetView()->GetNativeView()->Show();
+  CHECK(platform_);
+  aura::Window* content = web_contents_->GetView()->GetNativeView();
+  aura::Window* parent = platform_->window();
+  if (parent->Contains(content))
+    return;
+  parent->AddChild(content);
+  content->Show();
 }
 
 void Shell::PlatformResizeSubViews() {
@@ -188,7 +200,6 @@ void Shell::PlatformResizeSubViews() {
 
 void Shell::Close() {
   web_contents_.reset();
-  platform_.reset();
 }
 
 void Shell::PlatformSetTitle(const string16& title) {
