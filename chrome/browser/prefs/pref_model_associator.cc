@@ -105,9 +105,6 @@ void PrefModelAssociator::InitPrefAndAssociate(
       pref_name.c_str());
   VLOG(1) << "Associating preference " << pref_name;
 
-  // Set if a migrated pref name has been added to the synced_preferences_ list.
-  bool remembered_migrated_synced_preference = false;
-
   if (sync_pref.IsValid()) {
     const sync_pb::PreferenceSpecifics& preference = GetSpecifics(sync_pref);
     DCHECK(pref_name == preference.name() ||
@@ -123,6 +120,7 @@ void PrefModelAssociator::InitPrefAndAssociate(
     }
 
     if (user_pref_value) {
+      DVLOG(1) << "Found user pref value for " << pref_name;
       // We have both server and local values. Merge them.
       scoped_ptr<Value> new_value(
           MergePreference(pref_name, *user_pref_value, *sync_value));
@@ -180,12 +178,6 @@ void PrefModelAssociator::InitPrefAndAssociate(
           }
           if (migrated_preference_list)
             (*migrated_preference_list)[old_pref_name] = old_sync_data;
-
-          // Keep track of the name of the synced pref. This will be idempotent
-          // with the insertion of pref_name below when the migrated value has
-          // already been synced, not so when it has not.
-          synced_preferences_.insert(preference.name());
-          remembered_migrated_synced_preference = true;
         } else {
           sync_changes->push_back(
             syncer::SyncChange(FROM_HERE,
@@ -199,6 +191,7 @@ void PrefModelAssociator::InitPrefAndAssociate(
     } else {
       LOG(WARNING) << "Sync has null value for pref " << pref_name.c_str();
     }
+    synced_preferences_.insert(preference.name());
   } else if (user_pref_value) {
     // The server does not know about this preference and should be added
     // to the syncer's database.
@@ -211,19 +204,13 @@ void PrefModelAssociator::InitPrefAndAssociate(
         syncer::SyncChange(FROM_HERE,
                            syncer::SyncChange::ACTION_ADD,
                            sync_data));
-  } else {
-    // This pref does not have a sync value but also does not have a user
-    // controlled value (either it's a default value or it's policy controlled,
-    // either way it's not interesting). We can ignore it. Once it gets changed,
-    // we'll send the new user controlled value to the syncer.
-    return;
+    synced_preferences_.insert(pref_name);
   }
 
-  // Make sure we add it to our list of synced preferences so we know what
-  // the server is aware of.
-  if (!remembered_migrated_synced_preference)
-    synced_preferences_.insert(pref_name);
-  return;
+  // Else this pref does not have a sync value but also does not have a user
+  // controlled value (either it's a default value or it's policy controlled,
+  // either way it's not interesting). We can ignore it. Once it gets changed,
+  // we'll send the new user controlled value to the syncer.
 }
 
 syncer::SyncMergeResult PrefModelAssociator::MergeDataAndStartSyncing(
@@ -302,6 +289,7 @@ syncer::SyncMergeResult PrefModelAssociator::MergeDataAndStartSyncing(
             syncer::SyncChange::ACTION_UPDATE;
     new_changes.push_back(
         syncer::SyncChange(FROM_HERE, change_type, migrated_pref_iter->second));
+    synced_preferences_.insert(migrated_pref_iter->first);
   }
 
   // Push updates to sync.

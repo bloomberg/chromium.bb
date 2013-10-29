@@ -111,12 +111,6 @@ class PrefModelAssociator
 
  protected:
   friend class ProfileSyncServicePreferenceTest;
-  FRIEND_TEST_ALL_PREFIXES(ProfileSyncServicePreferenceTest,
-                           ModelAssociationCloudHasOldMigratedData);
-  FRIEND_TEST_ALL_PREFIXES(ProfileSyncServicePreferenceTest,
-                           ModelAssociationCloudHasNewMigratedData);
-  FRIEND_TEST_ALL_PREFIXES(ProfileSyncServicePreferenceTest,
-                           ModelAssociationCloudAddsOldAndNewMigratedData);
 
   typedef std::map<std::string, syncer::SyncData> SyncDataMap;
 
