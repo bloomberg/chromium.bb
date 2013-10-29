@@ -1931,7 +1931,7 @@ PassRefPtr<Attr> Element::setAttributeNode(Attr* attrNode, ExceptionState& es)
     setAttributeInternal(index, attrNode->qualifiedName(), attrNode->value(), NotInSynchronizationOfLazyAttribute);
 
     attrNode->attachToElement(this);
-    treeScope().adoptIfNeeded(attrNode);
+    treeScope().adoptIfNeeded(*attrNode);
     ensureAttrNodeListForElement(this).append(attrNode);
 
     return oldAttrNode.release();
@@ -3062,7 +3062,7 @@ PassRefPtr<Attr> Element::ensureAttr(const QualifiedName& name)
     RefPtr<Attr> attrNode = findAttrNodeInList(attrNodeList, name);
     if (!attrNode) {
         attrNode = Attr::create(*this, name);
-        treeScope().adoptIfNeeded(attrNode.get());
+        treeScope().adoptIfNeeded(*attrNode);
         attrNodeList.append(attrNode);
     }
     return attrNode.release();

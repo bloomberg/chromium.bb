@@ -90,7 +90,7 @@ public:
     bool applyAuthorStyles() const;
 
     // Used by the basic DOM mutation methods (e.g., appendChild()).
-    void adoptIfNeeded(Node*);
+    void adoptIfNeeded(Node&);
 
     Node* rootNode() const { return m_rootNode; }
 

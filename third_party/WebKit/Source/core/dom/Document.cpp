@@ -655,7 +655,7 @@ void Document::setDoctype(PassRefPtr<DocumentType> docType)
     ASSERT(!m_docType || !docType);
     m_docType = docType;
     if (m_docType) {
-        this->adoptIfNeeded(m_docType.get());
+        this->adoptIfNeeded(*m_docType);
         if (m_docType->publicId().startsWith("-//wapforum//dtd xhtml mobile 1.", /* caseSensitive */ false))
             m_isMobileDocument = true;
     }
@@ -957,7 +957,7 @@ PassRefPtr<Node> Document::adoptNode(PassRefPtr<Node> source, ExceptionState& es
         }
     }
 
-    this->adoptIfNeeded(source.get());
+    this->adoptIfNeeded(*source);
 
     return source;
 }

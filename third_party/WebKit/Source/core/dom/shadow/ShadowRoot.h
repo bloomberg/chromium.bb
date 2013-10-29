@@ -166,6 +166,12 @@ inline ShadowRoot* toShadowRoot(Node* node)
     return const_cast<ShadowRoot*>(toShadowRoot(static_cast<const Node*>(node)));
 }
 
+inline ShadowRoot& toShadowRoot(Node& node)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(node.isShadowRoot());
+    return static_cast<ShadowRoot&>(node);
+}
+
 inline const ShadowRoot& toShadowRoot(const Node& node)
 {
     ASSERT_WITH_SECURITY_IMPLICATION(node.isShadowRoot());

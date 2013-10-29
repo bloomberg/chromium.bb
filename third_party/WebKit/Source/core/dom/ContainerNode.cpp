@@ -89,7 +89,7 @@ void ContainerNode::parserTakeAllChildrenFrom(ContainerNode* oldParent)
 {
     while (RefPtr<Node> child = oldParent->firstChild()) {
         oldParent->parserRemoveChild(*child);
-        treeScope().adoptIfNeeded(child.get());
+        treeScope().adoptIfNeeded(*child);
         parserAppendChild(child.get());
     }
 }
@@ -248,7 +248,7 @@ void ContainerNode::insertBefore(PassRefPtr<Node> newChild, Node* refChild, Exce
         if (child.parentNode())
             break;
 
-        treeScope().adoptIfNeeded(&child);
+        treeScope().adoptIfNeeded(child);
 
         insertBeforeCommon(*next, child);
 
@@ -376,7 +376,7 @@ void ContainerNode::replaceChild(PassRefPtr<Node> newChild, Node* oldChild, Exce
         if (child.parentNode())
             break;
 
-        treeScope().adoptIfNeeded(&child);
+        treeScope().adoptIfNeeded(child);
 
         // Add child before "next".
         {
@@ -497,7 +497,7 @@ void ContainerNode::removeBetween(Node* previousChild, Node* nextChild, Node& ol
     oldChild.setNextSibling(0);
     oldChild.setParentOrShadowHostNode(0);
 
-    document().adoptIfNeeded(&oldChild);
+    document().adoptIfNeeded(oldChild);
 }
 
 void ContainerNode::parserRemoveChild(Node& oldChild)
@@ -612,7 +612,7 @@ void ContainerNode::appendChild(PassRefPtr<Node> newChild, ExceptionState& es)
         if (child.parentNode())
             break;
 
-        treeScope().adoptIfNeeded(&child);
+        treeScope().adoptIfNeeded(child);
 
         // Append child to the end of the list
         {
@@ -641,7 +641,7 @@ void ContainerNode::parserAppendChild(PassRefPtr<Node> newChild)
         NoEventDispatchAssertion assertNoEventDispatch;
         // FIXME: This method should take a PassRefPtr.
         appendChildToContainer(*newChild, *this);
-        treeScope().adoptIfNeeded(newChild.get());
+        treeScope().adoptIfNeeded(*newChild);
     }
 
     newChild->updateAncestorConnectedSubframeCountForInsertion();

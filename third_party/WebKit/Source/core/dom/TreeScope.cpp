@@ -333,13 +333,12 @@ bool TreeScope::applyAuthorStyles() const
     return !rootNode()->isShadowRoot() || toShadowRoot(rootNode())->applyAuthorStyles();
 }
 
-void TreeScope::adoptIfNeeded(Node* node)
+void TreeScope::adoptIfNeeded(Node& node)
 {
     ASSERT(this);
-    ASSERT(node);
-    ASSERT(!node->isDocumentNode());
-    ASSERT_WITH_SECURITY_IMPLICATION(!node->m_deletionHasBegun);
-    TreeScopeAdopter adopter(node, this);
+    ASSERT(!node.isDocumentNode());
+    ASSERT_WITH_SECURITY_IMPLICATION(!node.m_deletionHasBegun);
+    TreeScopeAdopter adopter(node, *this);
     if (adopter.needsScopeChange())
         adopter.execute();
 }
