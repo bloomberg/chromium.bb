@@ -89,6 +89,9 @@ void RenderTable::styleDidChange(StyleDifference diff, const RenderStyle* oldSty
     m_columnPos[0] = m_hSpacing;
 
     if (!m_tableLayout || style()->tableLayout() != oldTableLayout) {
+        if (m_tableLayout)
+            m_tableLayout->willChangeTableLayout();
+
         // According to the CSS2 spec, you only use fixed table layout if an
         // explicit width is specified on the table.  Auto width implies auto table layout.
         if (style()->tableLayout() == TFIXED && !style()->logicalWidth().isAuto())

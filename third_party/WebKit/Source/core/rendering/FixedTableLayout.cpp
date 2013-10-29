@@ -318,4 +318,25 @@ void FixedTableLayout::layout()
         m_table->setColumnPosition(colPositionsSize - 1, pos);
 }
 
+void FixedTableLayout::willChangeTableLayout()
+{
+    // When switching table layout algorithm, we need to dirty the preferred
+    // logical widths as we cleared the bits without computing them.
+    // (see calcWidthArray above.) This optimization is preferred to always
+    // computing the logical widths we never intended to use.
+    m_table->recalcSectionsIfNeeded();
+    for (RenderTableSection* section = m_table->topNonEmptySection(); section; section = m_table->sectionBelow(section)) {
+        for (unsigned i = 0; i < section->numRows(); i++) {
+            RenderTableRow* row = section->rowRendererAt(i);
+            if (!row)
+                continue;
+            for (RenderObject* cell = row->firstChild(); cell; cell = cell->nextSibling()) {
+                if (!cell->isTableCell())
+                    continue;
+                cell->setPreferredLogicalWidthsDirty();
+            }
+        }
+    }
+}
+
 } // namespace WebCore

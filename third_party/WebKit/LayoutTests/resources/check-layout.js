@@ -179,8 +179,9 @@ function checkExpectedValues(node, failures)
     return output.checked;
 }
 
-window.checkLayout = function(selectorList)
+window.checkLayout = function(selectorList, outputContainer)
 {
+    var result = true;
     if (!selectorList) {
         console.error("You must provide a CSS selector of nodes to check.");
         return;
@@ -197,20 +198,32 @@ window.checkLayout = function(selectorList)
         var container = node.parentNode.className == 'container' ? node.parentNode : node;
 
         var pre = document.createElement('pre');
-        if (failures.length)
+        if (failures.length) {
             pre.className = 'FAIL';
+            result = false;
+        }
         pre.appendChild(document.createTextNode(failures.length ? "FAIL:\n" + failures.join('\n') + '\n\n' + container.outerHTML : "PASS"));
-        insertAfter(pre, container);
+
+        var referenceNode = container;
+        if (outputContainer) {
+            if (!outputContainer.lastChild) {
+                // Inserting a text node so we have something to insertAfter.
+                outputContainer.textContent = " ";
+            }
+            referenceNode = outputContainer.lastChild;
+        }
+        insertAfter(pre, referenceNode);
     });
 
     if (!checkedLayout) {
         document.body.innerHTML = "FAIL: No valid data-* attributes found in selector list : " + selectorList;
-        return;
+        return false;
     }
 
     var pre = document.querySelector('.FAIL');
     if (pre)
         setTimeout(function() { pre.previousSibling.scrollIntoView(); }, 0);
+    return result;
 }
 
 })();
