@@ -17,6 +17,7 @@
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/v8_value_converter.h"
 #include "content/renderer/gpu/render_widget_compositor.h"
+#include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
 #include "content/renderer/skia_benchmarking_extension.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
@@ -307,6 +308,10 @@ class GpuBenchmarkingWrapper : public v8::Extension {
           "  arguments = opt_arguments || {};"
           "  native function RunMicroBenchmark();"
           "  return RunMicroBenchmark(name, callback, arguments);"
+          "};"
+          "chrome.gpuBenchmarking.hasGpuProcess = function() {"
+          "  native function HasGpuProcess();"
+          "  return HasGpuProcess();"
           "};") {}
 
   virtual v8::Handle<v8::FunctionTemplate> GetNativeFunction(
@@ -333,6 +338,8 @@ class GpuBenchmarkingWrapper : public v8::Extension {
       return v8::FunctionTemplate::New(ClearImageCache);
     if (name->Equals(v8::String::New("RunMicroBenchmark")))
       return v8::FunctionTemplate::New(RunMicroBenchmark);
+    if (name->Equals(v8::String::New("HasGpuProcess")))
+      return v8::FunctionTemplate::New(HasGpuProcess);
 
     return v8::Handle<v8::FunctionTemplate>();
   }
@@ -677,6 +684,11 @@ class GpuBenchmarkingWrapper : public v8::Extension {
         std::string(*benchmark),
         value.Pass(),
         base::Bind(&OnMicroBenchmarkCompleted, callback_and_context)));
+  }
+
+  static void HasGpuProcess(const v8::FunctionCallbackInfo<v8::Value>& args) {
+    GpuChannelHost* gpu_channel = RenderThreadImpl::current()->GetGpuChannel();
+    args.GetReturnValue().Set(!!gpu_channel);
   }
 };
 
