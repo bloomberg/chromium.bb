@@ -9,7 +9,7 @@
 
 {##############################################################################}
 {% macro method_configuration(method) %}
-{"{{method.name}}", {{interface_name}}V8Internal::{{method.name}}MethodCallback, 0, 0}
+{"{{method.name}}", {{interface_name}}V8Internal::{{method.name}}MethodCallback, 0, {{method.number_of_required_arguments}}}
 {%- endmacro %}
 
 

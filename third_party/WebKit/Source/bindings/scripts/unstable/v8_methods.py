@@ -42,11 +42,22 @@ import v8_utilities
 def generate_method(method):
     idl_type = method.idl_type
     name = method.name
-    cpp_value = 'imp->%s()' % method.name
+    arguments = method.arguments
+    arguments_contents = [{
+        'v8_value_to_local_cpp_value':
+            v8_types.v8_value_to_local_cpp_value(
+                argument.idl_type, argument.extended_attributes,
+                'args[%s]' % index, argument.name, 'args.GetIsolate()'),
+            }
+        for index, argument in enumerate(arguments)]
+    argument_names = [argument.name for argument in arguments]
+    cpp_value = 'imp->%s(%s)' % (method.name, ', '.join(argument_names))
     contents = {
+        'arguments': arguments_contents,
         'cpp_value': cpp_value,
         'idl_type': idl_type,
         'name': name,
+        'number_of_required_arguments': len(arguments),
     }
     if idl_type != 'void':
         contents['v8_set_return_value'] = v8_types.v8_set_return_value(idl_type, cpp_value, callback_info='args', isolate='args.GetIsolate()', script_wrappable='imp')
