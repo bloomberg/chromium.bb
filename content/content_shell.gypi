@@ -889,6 +889,29 @@
         },
       ],
     }],  # OS=="android"
+    ['OS=="win"', {
+      'targets': [
+        {
+          'target_name': 'content_shell_crash_service',
+          'type': 'executable',
+          'dependencies': [
+            '../base/base.gyp:base',
+            '../components/components.gyp:breakpad_crash_service',
+          ],
+          'include_dirs': [
+            '..',
+          ],
+          'sources': [
+            'shell/tools/content_shell_crash_service.cc',
+          ],
+          'msvs_settings': {
+            'VCLinkerTool': {
+              'SubSystem': '2',         # Set /SUBSYSTEM:WINDOWS
+            },
+          },
+        },
+      ],
+    }],  # OS=="win"
     ['OS=="win" and fastbuild==0 and target_arch=="ia32"', {
       'variables': {
         'dest_dir': '<(PRODUCT_DIR)/syzygy',
