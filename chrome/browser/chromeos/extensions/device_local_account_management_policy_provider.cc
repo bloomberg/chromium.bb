@@ -19,7 +19,50 @@ namespace {
 
 // Apps/extensions explicitly whitelisted for use in device-local accounts.
 const char* kDeviceLocalAccountWhitelist[] = {
-  "bpmcpldpdmajfigpchkicefoigmkfalc",  // QuickOffice
+  // Public sessions in general:
+  "cbkkbcmdlboombapidmoeolnmdacpkch",  // Chrome RDP
+  "djflhoibgkdhkhhcedjiklpkjnoahfmg",  // User Agent Switcher
+  "iabmpiboiopbgfabjmgeedhcmjenhbla",  // VNC Viewer
+
+  // Retail mode:
+  "ehcabepphndocfmgbdkbjibfodelmpbb",  // Angry Birds
+  "kgimkbnclbekdkabkpjhpakhhalfanda",  // Bejeweled
+  "joodangkbfjnajiiifokapkpmhfnpleo",  // Calculator
+  "fpgfohogebplgnamlafljlcidjedbdeb",  // Calendar
+  "hfhhnacclhffhdffklopdkcgdhifgngh",  // Camera
+  "cdjikkcakjcdjemakobkmijmikhkegcj",  // Chrome Remote Desktop
+  "jkoildpomkimndcphjpffmephmcmkfhn",  // Chromebook Demo App
+  "ielkookhdphmgbipcfmafkaiagademfp",  // Custom bookmarks
+  "kogjlbfgggambihdjcpijgcbmenblimd",  // Custom bookmarks
+  "ogbkmlkceflgpilgbmbcfbifckpkfacf",  // Custom bookmarks
+  "pbbbjjecobhljkkcenlakfnkmkfkfamd",  // Custom bookmarks
+  "jkbfjmnjcdmhlfpephomoiipbhcoiffb",  // Custom bookmarks
+  "dgmblbpgafgcgpkoiilhjifindhinmai",  // Custom bookmarks
+  "iggnealjakkgfofealilhkkclnbnfnmo",  // Custom bookmarks
+  "lplkobnahgbopmpkdapaihnnojkphahc",  // Custom bookmarks
+  "lejnflfhjpcannpaghnahbedlabpmhoh",  // Custom bookmarks
+  "ebkhfdfghngbimnpgelagnfacdafhaba",  // Deezer
+  "npnjdccdffhdndcbeappiamcehbhjibf",  // Docs.app
+  "iddohohhpmajlkbejjjcfednjnhlnenk",  // Evernote
+  "bjdhhokmhgelphffoafoejjmlfblpdha",  // Gmail
+  "mdhnphfgagkpdhndljccoackjjhghlif",  // Google Drive
+  "fgjnkhlabjcaajddbaenilcmpcidahll",  // Google+
+  "cgmlfbhkckbedohgdepgbkflommbfkep",  // Hangouts.app
+  "edhhaiphkklkcfcbnlbpbiepchnkgkpn",  // Helper.extension
+  "diehajhcjifpahdplfdkhiboknagmfii",  // Kindle
+  "nhpmmldpbfjofkipjaieeomhnmcgihfm",  // Menu.app
+  "onbhgdmifjebcabplolilidlpgeknifi",  // Music.app
+  "kkkbcoabfhgekpnddfkaphobhinociem",  // Netflix
+  "adlphlfdhhjenpgimjochcpelbijkich",  // New York Times
+  "cgefhjmlaifaamhhoojmpcnihlbddeki",  // Pandora
+  "kpjjigggmcjinapdeipapdcnmnjealll",  // Pixlr
+  "aleodiobpjillgfjdkblghiiaegggmcm",  // Quickoffice
+  "nifkmgcdokhkjghdlgflonppnefddien",  // Sheets
+  "hdmobeajeoanbanmdlabnbnlopepchip",  // Slides
+  "dgohlccohkojjgkkfholmobjjoledflp",  // Spotify
+  "dhmdaeekeihmajjnmichlhiffffdbpde",  // Store.app
+  "jeabmjjifhfcejonjjhccaeigpnnjaak",  // TweetDeck
+  "pbdihpaifchmclcmkfdgffnnpfbobefh",  // YouTube
 };
 
 }  // namespace

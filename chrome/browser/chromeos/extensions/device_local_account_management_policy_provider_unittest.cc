@@ -18,7 +18,7 @@ namespace chromeos {
 
 namespace {
 
-const char kWhitelistedId[] = "bpmcpldpdmajfigpchkicefoigmkfalc";
+const char kWhitelistedId[] = "cbkkbcmdlboombapidmoeolnmdacpkch";
 
 scoped_refptr<const extensions::Extension> CreateExtensionFromValues(
     const std::string& id,
