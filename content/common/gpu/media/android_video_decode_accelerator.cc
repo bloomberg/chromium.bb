@@ -60,7 +60,6 @@ AndroidVideoDecodeAccelerator::AndroidVideoDecodeAccelerator(
       state_(NO_ERROR),
       surface_texture_id_(0),
       picturebuffers_requested_(false),
-      decoder_met_eos_(false),
       gl_decoder_(decoder) {
 }
 
@@ -229,11 +228,11 @@ void AndroidVideoDecodeAccelerator::DequeueOutput() {
               &AndroidVideoDecodeAccelerator::RequestPictureBuffers,
               base::AsWeakPtr(this)));
         } else {
-          // TODO(dwkang): support the dynamic resolution change.
-          // Currently, we assume that there is no resolution change in the
-          // input stream. So, INFO_OUTPUT_FORMAT_CHANGED should not happen
-          // more than once. However, we allows it if resolution is the same
-          // as the previous one because |media_codec_| can be reset in Reset().
+          // Dynamic resolution change support is not specified by the Android
+          // platform at and before JB-MR1, so it's not possible to smoothly
+          // continue playback at this point.  Instead, error out immediately,
+          // expecting clients to Reset() as appropriate to avoid this.
+          // b/7093648
           RETURN_ON_FAILURE(size_ == gfx::Size(width, height),
                             "Dynamic resolution change is not supported.",
                             PLATFORM_FAILURE);
@@ -263,7 +262,6 @@ void AndroidVideoDecodeAccelerator::DequeueOutput() {
     base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
         &AndroidVideoDecodeAccelerator::NotifyFlushDone,
         base::AsWeakPtr(this)));
-    decoder_met_eos_ = true;
   } else {
     int64 bitstream_buffer_id = timestamp.InMicroseconds();
     SendCurrentSurfaceToClient(static_cast<int32>(bitstream_buffer_id));
@@ -356,13 +354,19 @@ void AndroidVideoDecodeAccelerator::AssignPictureBuffers(
     const std::vector<media::PictureBuffer>& buffers) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(output_picture_buffers_.empty());
+  DCHECK(free_picture_ids_.empty());
 
   for (size_t i = 0; i < buffers.size(); ++i) {
     RETURN_ON_FAILURE(buffers[i].size() == size_,
                       "Invalid picture buffer size was passed.",
                       INVALID_ARGUMENT);
-    output_picture_buffers_.insert(std::make_pair(buffers[i].id(), buffers[i]));
-    free_picture_ids_.push(buffers[i].id());
+    int32 id = buffers[i].id();
+    output_picture_buffers_.insert(std::make_pair(id, buffers[i]));
+    free_picture_ids_.push(id);
+    // Since the client might be re-using |picture_buffer_id| values, forget
+    // about previously-dismissed IDs now.  See ReusePictureBuffer() comment
+    // about "zombies" for why we maintain this set in the first place.
+    dismissed_picture_ids_.erase(id);
   }
 
   RETURN_ON_FAILURE(output_picture_buffers_.size() == kNumPictureBuffers,
@@ -375,6 +379,14 @@ void AndroidVideoDecodeAccelerator::AssignPictureBuffers(
 void AndroidVideoDecodeAccelerator::ReusePictureBuffer(
     int32 picture_buffer_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
+
+  // This ReusePictureBuffer() might have been in a pipe somewhere (queued in
+  // IPC, or in a PostTask either at the sender or receiver) when we sent a
+  // DismissPictureBuffer() for this |picture_buffer_id|.  Account for such
+  // potential "zombie" IDs here.
+  if (dismissed_picture_ids_.erase(picture_buffer_id))
+    return;
+
   free_picture_ids_.push(picture_buffer_id);
 
   DoIOTask();
@@ -422,16 +434,25 @@ void AndroidVideoDecodeAccelerator::Reset() {
   }
   bitstreams_notified_in_advance_.clear();
 
-  if (!decoder_met_eos_) {
-    media_codec_->Reset();
-  } else {
-    // MediaCodec should be usable after meeting EOS, but it is not on some
-    // devices. b/8125974 To avoid the case, we recreate a new one.
-    io_timer_.Stop();
-    media_codec_->Stop();
-    ConfigureMediaCodec();
+  for (OutputBufferMap::iterator it = output_picture_buffers_.begin();
+       it != output_picture_buffers_.end();
+       ++it) {
+    client_->DismissPictureBuffer(it->first);
+    dismissed_picture_ids_.insert(it->first);
   }
-  decoder_met_eos_ = false;
+  output_picture_buffers_.clear();
+  std::queue<int32> empty;
+  std::swap(free_picture_ids_, empty);
+  CHECK(free_picture_ids_.empty());
+  picturebuffers_requested_ = false;
+
+  // On some devices, and up to at least JB-MR1,
+  // - flush() can fail after EOS (b/8125974); and
+  // - mid-stream resolution change is unsupported (b/7093648).
+  // To cope with these facts, we always stop & restart the codec on Reset().
+  io_timer_.Stop();
+  media_codec_->Stop();
+  ConfigureMediaCodec();
   state_ = NO_ERROR;
 
   base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(

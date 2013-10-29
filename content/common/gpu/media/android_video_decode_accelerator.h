@@ -124,6 +124,11 @@ class CONTENT_EXPORT AndroidVideoDecodeAccelerator
   // decoded frames to the client.
   std::queue<int32> free_picture_ids_;
 
+  // Picture buffer ids which have been dismissed and not yet re-assigned.  Used
+  // to ignore ReusePictureBuffer calls that were in flight when the
+  // DismissPictureBuffer call was made.
+  std::set<int32> dismissed_picture_ids_;
+
   // The low-level decoder which Android SDK provides.
   scoped_ptr<media::VideoCodecBridge> media_codec_;
 
@@ -135,9 +140,6 @@ class CONTENT_EXPORT AndroidVideoDecodeAccelerator
 
   // Set to true after requesting picture buffers to the client.
   bool picturebuffers_requested_;
-
-  // Set to true when decoder outputs EOS (end of stream).
-  bool decoder_met_eos_;
 
   // The resolution of the stream.
   gfx::Size size_;
