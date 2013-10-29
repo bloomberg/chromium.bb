@@ -66,6 +66,8 @@ static const char kFormHtml[] =
     "  <INPUT type=\"text\" style=\"visibility: hidden\""
     "         id=\"invisible\"/>"
     "  <INPUT type=\"text\" style=\"display: none\" id=\"displaynone\"/>"
+    "  <INPUT type=\"month\" id=\"month\"/>"
+    "  <INPUT type=\"month\" id=\"month-nonempty\" value=\"2011-12\"/>"
     "  <SELECT id=\"select\">"
     "    <OPTION></OPTION>"
     "    <OPTION value=\"CA\">California</OPTION>"
@@ -234,7 +236,8 @@ class FormAutofillTest : public ChromeRenderViewTest {
     } else if (element.formControlType() == "textarea") {
       value = element.to<WebTextAreaElement>().value();
     } else {
-      ASSERT_EQ("text", element.formControlType());
+      ASSERT_TRUE(element.formControlType() == "text" ||
+                  element.formControlType() == "month");
       WebInputElement input_element = GetMainFrame()->document().getElementById(
           ASCIIToUTF16(field_case.name)).to<WebInputElement>();
       value = (input_element.*get_value_function)();
@@ -462,12 +465,37 @@ TEST_F(FormAutofillTest, WebFormControlElementToFormFieldTextArea) {
   expected.form_control_type = "textarea";
   EXPECT_FORM_FIELD_DATA_EQUALS(expected, result_sans_value);
 
-
   FormFieldData result_with_value;
   WebFormControlElementToFormField(element, autofill::EXTRACT_VALUE,
                                    &result_with_value);
   expected.value = ASCIIToUTF16("This element's value\n"
                                 "spans multiple lines.");
+  EXPECT_FORM_FIELD_DATA_EQUALS(expected, result_with_value);
+}
+
+// We should be able to extract an <input type="month"> field.
+TEST_F(FormAutofillTest, WebFormControlElementToFormFieldMonthInput) {
+  LoadHTML("<INPUT type=\"month\" id=\"element\" value=\"2011-12\">");
+
+  WebFrame* frame = GetMainFrame();
+  ASSERT_NE(static_cast<WebFrame*>(NULL), frame);
+
+  WebElement web_element = frame->document().getElementById("element");
+  WebFormControlElement element = web_element.to<WebFormControlElement>();
+  FormFieldData result_sans_value;
+  WebFormControlElementToFormField(element, autofill::EXTRACT_NONE,
+                                   &result_sans_value);
+
+  FormFieldData expected;
+  expected.name = ASCIIToUTF16("element");
+  expected.max_length = 0;
+  expected.form_control_type = "month";
+  EXPECT_FORM_FIELD_DATA_EQUALS(expected, result_sans_value);
+
+  FormFieldData result_with_value;
+  WebFormControlElementToFormField(element, autofill::EXTRACT_VALUE,
+                                   &result_with_value);
+  expected.value = ASCIIToUTF16("2011-12");
   EXPECT_FORM_FIELD_DATA_EQUALS(expected, result_with_value);
 }
 
@@ -533,6 +561,7 @@ TEST_F(FormAutofillTest, WebFormControlElementToFormFieldAutocompletetype) {
       "<INPUT type=\"text\" id=\"multi-valued\" "
       "       autocomplete=\"billing email\"/>"
       "<INPUT type=\"text\" id=\"experimental\" x-autocompletetype=\"email\"/>"
+      "<INPUT type=\"month\" id=\"month\" autocomplete=\"cc-exp\"/>"
       "<SELECT id=\"select\" autocomplete=\"state\"/>"
       "  <OPTION value=\"CA\">California</OPTION>"
       "  <OPTION value=\"TX\">Texas</OPTION>"
@@ -566,6 +595,8 @@ TEST_F(FormAutofillTest, WebFormControlElementToFormFieldAutocompletetype) {
     { "regular", "text", "email" },
     // Verify that we correctly extract multiple tokens as well.
     { "multi-valued", "text", "billing email" },
+    // Verify that <input type="month"> fields are supported.
+    { "month", "month", "cc-exp" },
     // We previously extracted this data from the experimental
     // 'x-autocompletetype' attribute.  Now that the field type hints are part
     // of the spec under the autocomplete attribute, we no longer support the
@@ -619,6 +650,8 @@ TEST_F(FormAutofillTest, WebFormElementToFormData) {
            "  </SELECT>"
            " <LABEL for=\"password\">Password:</LABEL>"
            "  <INPUT type=\"password\" id=\"password\" value=\"secret\"/>"
+           " <LABEL for=\"month\">Card expiration:</LABEL>"
+           "  <INPUT type=\"month\" id=\"month\" value=\"2011-12\"/>"
            "  <INPUT type=\"submit\" name=\"reply-send\" value=\"Send\"/>"
            // The below inputs should be ignored
            " <LABEL for=\"notvisible\">Hidden:</LABEL>"
@@ -648,7 +681,7 @@ TEST_F(FormAutofillTest, WebFormElementToFormData) {
   EXPECT_EQ(GURL("http://cnn.com"), form.action);
 
   const std::vector<FormFieldData>& fields = form.fields;
-  ASSERT_EQ(5U, fields.size());
+  ASSERT_EQ(6U, fields.size());
 
   FormFieldData expected;
   expected.name = ASCIIToUTF16("firstname");
@@ -685,6 +718,13 @@ TEST_F(FormAutofillTest, WebFormElementToFormData) {
   expected.form_control_type = "password";
   expected.max_length = WebInputElement::defaultMaxLength();
   EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields[4]);
+
+  expected.name = ASCIIToUTF16("month");
+  expected.value = ASCIIToUTF16("2011-12");
+  expected.label = ASCIIToUTF16("Card expiration:");
+  expected.form_control_type = "month";
+  expected.max_length = 0;
+  EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields[5]);
 }
 
 // We should not be able to serialize a form with too many fillable fields.
@@ -1057,6 +1097,10 @@ TEST_F(FormAutofillTest, FillForm) {
       {"text", "invisible", "", "", false, "filled invisible", ""},
       // Fields with "display:none" should not be autofilled.
       {"text", "displaynone", "", "", false, "filled displaynone", ""},
+      // Regular <input type="month"> should be autofilled.
+      {"month", "month", "", "", true, "2017-11", "2017-11"},
+      // Non-empty <input type="month"> should not be autofilled.
+      {"month", "month-nonempty", "2011-12", "", false, "2017-11", "2011-12"},
       // Regular select fields should be autofilled.
       {"select-one", "select", "", "", true, "TX", "TX"},
       // Select fields should be autofilled even if they already have a
@@ -1102,6 +1146,10 @@ TEST_F(FormAutofillTest, FillFormIncludingNonFocusableElements) {
       // Fields with "display:none" should also be autofilled.
       {"text", "displaynone", "", "", true, "filled displaynone",
        "filled displaynone"},
+      // Regular <input type="month"> should be autofilled.
+      {"month", "month", "", "", true, "2017-11", "2017-11"},
+      // Non-empty <input type="month"> should be overridden.
+      {"month", "month-nonempty", "2011-12", "", true, "2017-11", "2017-11"},
       // Regular select fields should be autofilled.
       {"select-one", "select", "", "", true, "TX", "TX"},
       // Select fields should be autofilled even if they already have a
@@ -2589,6 +2637,9 @@ TEST_F(FormAutofillTest, ClearFormWithNode) {
       "  <INPUT type=\"text\" id=\"lastname\" value=\"Earp\"/>"
       "  <INPUT type=\"text\" autocomplete=\"off\" id=\"noAC\" value=\"one\"/>"
       "  <INPUT type=\"text\" id=\"notenabled\" disabled=\"disabled\">"
+      "  <INPUT type=\"month\" id=\"month\" value=\"2012-11\">"
+      "  <INPUT type=\"month\" id=\"month-disabled\" value=\"2012-11\""
+      "         disabled=\"disabled\">"
       "  <TEXTAREA id=\"textarea\">Apple.</TEXTAREA>"
       "  <TEXTAREA id=\"textarea-disabled\" disabled=\"disabled\">"
       "    Banana!"
@@ -2631,7 +2682,7 @@ TEST_F(FormAutofillTest, ClearFormWithNode) {
   EXPECT_EQ(GURL("http://buh.com"), form2.action);
 
   const std::vector<FormFieldData>& fields2 = form2.fields;
-  ASSERT_EQ(7U, fields2.size());
+  ASSERT_EQ(9U, fields2.size());
 
   FormFieldData expected;
   expected.form_control_type = "text";
@@ -2655,20 +2706,29 @@ TEST_F(FormAutofillTest, ClearFormWithNode) {
   expected.value = ASCIIToUTF16("no clear");
   EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields2[3]);
 
-  expected.form_control_type = "textarea";
+  expected.form_control_type = "month";
   expected.max_length = 0;
-  expected.name = ASCIIToUTF16("textarea");
+  expected.name = ASCIIToUTF16("month");
   expected.value = string16();
   EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields2[4]);
 
+  expected.name = ASCIIToUTF16("month-disabled");
+  expected.value = ASCIIToUTF16("2012-11");
+  EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields2[5]);
+
+  expected.form_control_type = "textarea";
+  expected.name = ASCIIToUTF16("textarea");
+  expected.value = string16();
+  EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields2[6]);
+
   expected.name = ASCIIToUTF16("textarea-disabled");
   expected.value = ASCIIToUTF16("    Banana!  ");
-  EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields2[5]);
+  EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields2[7]);
 
   expected.name = ASCIIToUTF16("textarea-noAC");
   expected.value = string16();
   expected.autocomplete_attribute = "off";
-  EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields2[6]);
+  EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields2[8]);
   expected.autocomplete_attribute = std::string();  // reset
 
   // Verify that the cursor position has been updated.

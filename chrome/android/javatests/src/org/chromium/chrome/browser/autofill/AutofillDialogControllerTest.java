@@ -279,15 +279,14 @@ public class AutofillDialogControllerTest extends ChromiumTestShellTestBase {
                 TEST_CC_CSC, "id", false, false, false);
     }
 
-// TODO(isherman): http://crbug.com/263705 autocomplete="cc-exp" type="month" doesn't work.
-//    @SmallTest
-//    @Feature({"autofill"})
-//    public void testRacTypeCCExp() throws InterruptedException, TimeoutException {
-//        verifyOneField(
-//                "<input id=\"id\" autocomplete=\"cc-exp\" type=\"month\" value=\"1111-11\">",
-//                "" + TEST_CC_EXP_YEAR + "-" + TEST_CC_EXP_MONTH,
-//                "id", false, false, false);
-//    }
+    @SmallTest
+    @Feature({"autofill"})
+    public void testRacTypeCCExp() throws InterruptedException, TimeoutException {
+        verifyOneField(
+                "<input id=\"id\" autocomplete=\"cc-exp\" type=\"month\" value=\"1111-11\">",
+                "" + TEST_CC_EXP_YEAR + "-" + TEST_CC_EXP_MONTH,
+                "id", false, false, false);
+    }
 
     @SmallTest
     @Feature({"autofill"})
@@ -494,10 +493,9 @@ public class AutofillDialogControllerTest extends ChromiumTestShellTestBase {
         assertEquals("cc-csc did not match",
                 TEST_CC_CSC, DOMUtils.getNodeValue(view, viewClient, "id-cc-csc"));
 
-// TODO(isherman): http://crbug.com/263705 autocomplete="cc-exp" type="month" doesn't work.
-//        assertEquals("cc-exp did not match",
-//                "" + TEST_CC_EXP_YEAR + "-" + TEST_CC_EXP_MONTH,
-//                DOMUtils.getNodeValue(view, viewClient, "id-cc-exp"));
+        assertEquals("cc-exp did not match",
+                "" + TEST_CC_EXP_YEAR + "-" + TEST_CC_EXP_MONTH,
+                DOMUtils.getNodeValue(view, viewClient, "id-cc-exp"));
 
         assertEquals("cc-exp-month did not match",
                 "" + TEST_CC_EXP_MONTH,

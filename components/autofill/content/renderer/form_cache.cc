@@ -196,7 +196,7 @@ bool FormCache::ClearFormWithElement(const WebInputElement& element) {
     control_element.setAutofilled(false);
 
     WebInputElement* input_element = toWebInputElement(&control_element);
-    if (IsTextInput(input_element)) {
+    if (IsTextInput(input_element) || IsMonthInput(input_element)) {
       input_element->setValue(base::string16(), true);
 
       // Clearing the value in the focused node (above) can cause selection

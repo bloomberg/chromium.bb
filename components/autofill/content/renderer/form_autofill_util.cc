@@ -507,7 +507,8 @@ void ForEachMatchingFormField(const WebFormElement& form_element,
     // i.e. the field the user is currently editing and interacting with.
     const WebInputElement* input_element = toWebInputElement(element);
     if (!force_override && !is_initiating_element &&
-        ((IsTextInput(input_element) && !input_element->value().isEmpty()) ||
+        ((IsAutofillableInputElement(input_element) &&
+          !input_element->value().isEmpty()) ||
          (IsTextAreaElement(*element) &&
           !element->toConst<WebTextAreaElement>().value().isEmpty())))
       continue;
@@ -533,7 +534,7 @@ void FillFormField(const FormFieldData& data,
   field->setAutofilled(true);
 
   WebInputElement* input_element = toWebInputElement(field);
-  if (IsTextInput(input_element)) {
+  if (IsTextInput(input_element) || IsMonthInput(input_element)) {
     // If the maxlength attribute contains a negative value, maxLength()
     // returns the default maxlength value.
     input_element->setValue(
@@ -628,6 +629,11 @@ bool IsWebNodeVisibleImpl(const WebKit::WebNode& node, const int depth) {
 
 const size_t kMaxParseableFields = 200;
 
+bool IsMonthInput(const WebInputElement* element) {
+  CR_DEFINE_STATIC_LOCAL(WebString, kMonth, ("month"));
+  return element && element->formControlType() == kMonth;
+}
+
 // All text fields, including password fields, should be extracted.
 bool IsTextInput(const WebInputElement* element) {
   return element && element->isTextField();
@@ -653,7 +659,9 @@ bool IsCheckableElement(const WebInputElement* element) {
 }
 
 bool IsAutofillableInputElement(const WebInputElement* element) {
-  return IsTextInput(element) || IsCheckableElement(element);
+  return IsTextInput(element) ||
+         IsMonthInput(element) ||
+         IsCheckableElement(element);
 }
 
 const base::string16 GetFormIdentifier(const WebFormElement& form) {
