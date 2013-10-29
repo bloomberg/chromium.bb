@@ -135,9 +135,12 @@ bool Args::DeclareArgs(const Scope::KeyValueMap& args,
     }
 
     // Only set on the current scope to the new value if it hasn't been already
-    // set.
-    if (!scope_to_set->GetValue(i->first))
+    // set. Mark the variable used so the build script can override it in
+    // certain cases without getting unused value errors.
+    if (!scope_to_set->GetValue(i->first)) {
       scope_to_set->SetValue(i->first, i->second, i->second.origin());
+      scope_to_set->MarkUsed(i->first);
+    }
   }
 
   return true;

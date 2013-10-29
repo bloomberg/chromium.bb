@@ -233,15 +233,15 @@ std::pair<int, int> WriteGypFiles(
   for (CorrelatedTargetsMap::iterator i = correlated.begin();
        i != correlated.end(); ++i) {
     const TargetGroup& group = i->second;
-    if (!EnsureTargetsMatch(group, err))
-      return std::make_pair(0, 0);
-
     if (!group.debug->item_node()->should_generate())
       continue;  // Skip non-generated ones.
     if (group.debug->external())
       continue;  // Skip external ones.
     if (group.debug->gyp_file().is_null())
       continue;  // Skip ones without GYP files.
+
+    if (!EnsureTargetsMatch(group, err))
+      return std::make_pair(0, 0);
 
     target_count++;
     grouped_targets[helper.GetGypFileForTarget(group.debug, err)].push_back(

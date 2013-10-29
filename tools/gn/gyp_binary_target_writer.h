@@ -48,11 +48,13 @@ class GypBinaryTargetWriter : public GypTargetWriter {
   // Writes the flags, sources, and deps.
   void WriteVCConfiguration(int indent);
   void WriteLinuxConfiguration(int indent);
+  void WriteMacConfiguration(int indent);
 
-  // Writes the Visual Studio flags, defines, etc. The flags input is non-const
-  // because the cflags will be fixed up to account for things converted to
-  // VC settings (rather than compiler flags).
+  // Writes the flags, defines, etc. The flags input is non-const because the
+  // cflags will be fixed up to account for things converted to VC settings
+  // (rather than compiler flags).
   void WriteVCFlags(Flags& flags, int indent);
+  void WriteMacFlags(Flags& flags, int indent);
 
   // Writes the Linux compiler and linker flags. The first version does the
   // flags for the given target, the second version takes a pregenerted list of

@@ -116,9 +116,7 @@ config("compiler") {
 
     # Clang-specific compiler flags setup.
     # ------------------------------------
-    # TODO(brettw) these should be clang-only. For now, make it mac-only since
-    # that's where we always use clang.
-    if (is_mac) { # if (is_clang) {
+    if (is_clang) {
       cflags += [
         "-fcolor-diagnostics",
       ]
@@ -301,7 +299,7 @@ config("default_warnings") {
 
     # TODO(brettw) Ones below here should be clang-only when we have a flag
     # for it.
-    if (is_mac) { #if (is_clang) {
+    if (is_clang) {
       cflags += [
         "-Wheader-hygiene",
 

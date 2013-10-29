@@ -2,9 +2,18 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+# Should only be running on Mac.
+assert(is_mac)
+
 cc = rebase_path("//third_party/llvm-build/Release+Asserts/bin/clang", ".", root_build_dir)
 cxx = rebase_path("//third_party/llvm-build/Release+Asserts/bin/clang++", ".", root_build_dir)
 ld = cxx
+
+# This will copy the gyp-mac-tool to the build directory. We pass in the source
+# file of the win tool.
+gyp_mac_tool_source =
+  rebase_path("//tools/gyp/pylib/gyp/mac_tool.py", ".", root_build_dir)
+exec_script("setup_toolchain.py", [ gyp_mac_tool_source ], "value")
 
 toolchain("clang") {
   # Make these apply to all tools below.

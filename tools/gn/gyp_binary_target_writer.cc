@@ -10,6 +10,7 @@
 #include "tools/gn/config_values_extractors.h"
 #include "tools/gn/err.h"
 #include "tools/gn/escape.h"
+#include "tools/gn/filesystem_utils.h"
 #include "tools/gn/settings.h"
 #include "tools/gn/target.h"
 
@@ -132,15 +133,12 @@ void GypBinaryTargetWriter::Run() {
   WriteName(indent + kExtraIndent);
   WriteType(indent + kExtraIndent);
 
-  if (target_->settings()->IsLinux()) {
+  if (target_->settings()->IsLinux())
     WriteLinuxConfiguration(indent + kExtraIndent);
-  } else if (target_->settings()->IsWin()) {
+  else if (target_->settings()->IsWin())
     WriteVCConfiguration(indent + kExtraIndent);
-  } else if (target_->settings()->IsMac()) {
-    // TODO(brettw) mac.
-    NOTREACHED();
-    //WriteMacConfiguration();
-  }
+  else if (target_->settings()->IsMac())
+    WriteMacConfiguration(indent + kExtraIndent);
   WriteDirectDependentSettings(indent + kExtraIndent);
   WriteAllDependentSettings(indent + kExtraIndent);
 
@@ -256,6 +254,25 @@ void GypBinaryTargetWriter::WriteLinuxConfiguration(int indent) {
   WriteDeps(target_, indent);
 }
 
+void GypBinaryTargetWriter::WriteMacConfiguration(int indent) {
+  Indent(indent) << "'configurations': {\n";
+
+  Indent(indent + kExtraIndent) << "'Debug': {\n";
+  Flags debug_flags(FlagsFromTarget(group_.debug));
+  WriteMacFlags(debug_flags, indent + kExtraIndent * 2);
+  Indent(indent + kExtraIndent) << "},\n";
+
+  Indent(indent + kExtraIndent) << "'Release': {\n";
+  Flags release_flags(FlagsFromTarget(group_.release));
+  WriteMacFlags(release_flags, indent + kExtraIndent * 2);
+  Indent(indent + kExtraIndent) << "},\n";
+
+  Indent(indent) << "},\n";
+
+  WriteSources(target_, indent);
+  WriteDeps(target_, indent);
+}
+
 void GypBinaryTargetWriter::WriteVCFlags(Flags& flags, int indent) {
   // Defines and includes go outside of the msvs settings.
   WriteNamedArray(out_, "defines", flags.defines, indent);
@@ -303,6 +320,78 @@ void GypBinaryTargetWriter::WriteVCFlags(Flags& flags, int indent) {
   // UACExecutionLevel and UACUIAccess depends on that and defaults to 0/false.
   WriteNamedArray(out_, "AdditionalOptions", flags.ldflags, 14);
   Indent(indent + kExtraIndent) << "},\n";
+  Indent(indent) << "},\n";
+}
+
+void GypBinaryTargetWriter::WriteMacFlags(Flags& flags, int indent) {
+  WriteNamedArray(out_, "defines", flags.defines, indent);
+  WriteIncludeDirs(flags, indent);
+
+  // Libraries and library directories.
+  EscapeOptions escape_options;
+  escape_options.mode = ESCAPE_JSON;
+  if (!flags.lib_dirs.empty()) {
+    Indent(indent + kExtraIndent) << "'library_dirs': [";
+    for (size_t i = 0; i < flags.lib_dirs.size(); i++) {
+      out_ << " '";
+      EscapeStringToStream(out_,
+                           helper_.GetDirReference(flags.lib_dirs[i], false),
+                           escape_options);
+      out_ << "',";
+    }
+    out_ << " ],\n";
+  }
+  if (!flags.libs.empty()) {
+    Indent(indent) << "'link_settings': {\n";
+    Indent(indent + kExtraIndent) << "'libraries': [";
+    for (size_t i = 0; i < flags.libs.size(); i++) {
+      out_ << " '-l";
+      EscapeStringToStream(out_, flags.libs[i], escape_options);
+      out_ << "',";
+    }
+    out_ << " ],\n";
+    Indent(indent) << "},\n";
+  }
+
+  Indent(indent) << "'xcode_settings': {\n";
+
+  // C/C++ flags.
+  if (!flags.cflags.empty() || !flags.cflags_c.empty() ||
+      !flags.cflags_objc.empty()) {
+    Indent(indent + kExtraIndent) << "'OTHER_CFLAGS': [";
+    WriteArrayValues(out_, flags.cflags);
+    WriteArrayValues(out_, flags.cflags_c);
+    WriteArrayValues(out_, flags.cflags_objc);
+    out_ << " ],\n";
+  }
+  if (!flags.cflags.empty() || !flags.cflags_cc.empty() ||
+      !flags.cflags_objcc.empty()) {
+    Indent(indent + kExtraIndent) << "'OTHER_CPLUSPLUSFLAGS': [";
+    WriteArrayValues(out_, flags.cflags);
+    WriteArrayValues(out_, flags.cflags_cc);
+    WriteArrayValues(out_, flags.cflags_objcc);
+    out_ << " ],\n";
+  }
+
+  // Ld flags. Don't write these for static libraries. Otherwise, they'll be
+  // passed to the library tool which doesn't expect it (the toolchain does
+  // not use ldflags so these are ignored in the normal build).
+  if (target_->output_type() != Target::STATIC_LIBRARY) {
+    WriteNamedArray(out_, "OTHER_LDFLAGS", flags.ldflags,
+                    indent + kExtraIndent);
+  }
+
+  base::FilePath clang_path =
+      target_->settings()->build_settings()->GetFullPath(SourceFile(
+          "//third_party/llvm-build/Release+Asserts/bin/clang"));
+  base::FilePath clang_pp_path =
+      target_->settings()->build_settings()->GetFullPath(SourceFile(
+          "//third_party/llvm-build/Release+Asserts/bin/clang++"));
+
+  Indent(indent) << "'CC': '" << FilePathToUTF8(clang_path) << "',\n";
+  Indent(indent) << "'LDPLUSPLUS': '"
+                 << FilePathToUTF8(clang_pp_path) << "',\n";
+
   Indent(indent) << "},\n";
 }
 
@@ -398,14 +487,12 @@ void GypBinaryTargetWriter::WriteDirectDependentSettings(int indent) {
   out_ << "'direct_dependent_settings': {\n";
 
   Flags flags(FlagsFromConfigList(target_->direct_dependent_configs()));
-  if (target_->settings()->IsLinux()) {
+  if (target_->settings()->IsLinux())
     WriteLinuxFlags(flags, indent + kExtraIndent);
-  } else if (target_->settings()->IsWin()) {
+  else if (target_->settings()->IsWin())
     WriteVCFlags(flags, indent + kExtraIndent);
-  } else if (target_->settings()->IsMac()) {
-    // TODO(brettw) write mac.
-    NOTREACHED();
-  }
+  else if (target_->settings()->IsMac())
+    WriteMacFlags(flags, indent + kExtraIndent);
   Indent(indent) << "},\n";
 }
 
@@ -415,14 +502,12 @@ void GypBinaryTargetWriter::WriteAllDependentSettings(int indent) {
   Indent(indent) << "'all_dependent_settings': {\n";
 
   Flags flags(FlagsFromConfigList(target_->all_dependent_configs()));
-  if (target_->settings()->IsLinux()) {
+  if (target_->settings()->IsLinux())
     WriteLinuxFlags(flags, indent + kExtraIndent);
-  } else if (target_->settings()->IsWin()) {
+  else if (target_->settings()->IsWin())
     WriteVCFlags(flags, indent + kExtraIndent);
-  } else if (target_->settings()->IsMac()) {
-    // TODO(brettw) write mac.
-    NOTREACHED();
-  }
+  else if (target_->settings()->IsMac())
+    WriteMacFlags(flags, indent + kExtraIndent);
   Indent(indent) << "},\n";
 }
 
