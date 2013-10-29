@@ -98,6 +98,8 @@ ActionChoice.load = function(opt_params) {
   if (!params.advancedMode) params.advancedMode = (query == 'advanced-mode');
   if (!params.metadataCache) params.metadataCache = MetadataCache.createFull();
 
+  var group = new Async.Group();
+
   chrome.fileBrowserPrivate.getStrings(function(strings) {
     loadTimeData.data = strings;
     i18nTemplate.process(document, loadTimeData);
@@ -420,19 +422,8 @@ ActionChoice.prototype.onKeyDown_ = function(e) {
  */
 ActionChoice.prototype.runAction_ = function(action) {
   // TODO(mtomasz): Remove these predefined actions in Apps v2.
-  if (action == this.importPhotosToDriveAction_) {
-    var url = chrome.runtime.getURL('photo_import.html') +
-        '#' + this.sourceEntry_.fullPath;
-    var width = 728;
-    var height = 656;
-    var top = Math.round((window.screen.availHeight - height) / 2);
-    var left = Math.round((window.screen.availWidth - width) / 2);
-    chrome.app.window.create(url,
-        {height: height, width: width, left: left, top: top});
-    this.recordAction_('import-photos-to-drive');
-    this.close_();
+  if (action == this.importPhotosToDriveAction_)
     return;
-  }
 
   if (action == this.watchSingleVideoAction_) {
     util.viewFilesInBrowser([this.singleVideo_.toURL()],

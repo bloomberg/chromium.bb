@@ -84,8 +84,6 @@
         <include name="IDR_FILE_MANAGER_GALLERY" file="file_manager/gallery.html" allowexternalscript="true" flattenhtml="true" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_GALLERY_JS" file="file_manager/foreground/js/photo/gallery_scripts.js" flattenhtml="true" type="BINDATA" />
 
-        <include name="IDR_FILE_MANAGER_PHOTO_IMPORT" file="file_manager/photo_import.html" allowexternalscript="true" flattenhtml="true" type="BINDATA" />
-        <include name="IDR_FILE_MANAGER_PHOTO_IMPORT_JS" file="file_manager/foreground/js/photo/photo_import_scripts.js" flattenhtml="true" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_ACTION_CHOICE" file="file_manager/action_choice.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_ACTION_CHOICE_SCRIPT_JS" file="file_manager/foreground/js/action_choice/action_choice_scripts.js" flattenhtml="true" type="BINDATA" />
 
