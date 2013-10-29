@@ -212,7 +212,7 @@ void Frame::setView(PassRefPtr<FrameView> view)
 void Frame::sendOrientationChangeEvent(int orientation)
 {
     m_orientation = orientation;
-    if (Document* window = domWindow())
+    if (DOMWindow* window = domWindow())
         window->dispatchEvent(Event::create(EventTypeNames::orientationchange));
 }
 #endif // ENABLE(ORIENTATION_EVENTS)
