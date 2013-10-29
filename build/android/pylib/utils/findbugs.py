@@ -122,7 +122,7 @@ def _Run(exclude, known_bugs, classes_to_analyze, auxiliary_classes,
     cmd = '%s -exclude %s ' % (cmd, os.path.abspath(exclude))
 
   if findbug_args:
-    cmd = '%s %s ' % (cmd, fingbug_args)
+    cmd = '%s %s ' % (cmd, findbug_args)
 
 
   chrome_classes = _GetChromeClasses(release_version)
