@@ -158,7 +158,6 @@ class IOThread : public content::BrowserThreadDelegate {
     Optional<size_t> max_spdy_concurrent_streams_limit;
     Optional<bool> force_spdy_single_domain;
     Optional<bool> enable_spdy_ip_pooling;
-    Optional<bool> enable_spdy_credential_frames;
     Optional<bool> enable_spdy_compression;
     Optional<bool> enable_spdy_ping_based_connection_checking;
     Optional<net::NextProto> spdy_default_protocol;

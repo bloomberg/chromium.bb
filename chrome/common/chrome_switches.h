@@ -213,7 +213,6 @@ extern const char kDisableStickyKeys[];
 extern const char kEnableSpdy2[];
 extern const char kDisableSpdy31[];
 extern const char kEnableSpdy4a2[];
-extern const char kEnableSpdyCredentialFrames[];
 extern const char kEnableSpellingAutoCorrect[];
 extern const char kEnableSpellingServiceFeedback[];
 extern const char kEnableStackedTabStrip[];

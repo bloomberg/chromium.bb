@@ -122,11 +122,13 @@ class NET_EXPORT SSLClientSocket : public SSLSocket {
   // This may be useful for protocols, like SPDY, which allow the same
   // connection to be shared between multiple domains, each of which need
   // a channel ID.
+  //
+  // Public for ssl_client_socket_openssl_unittest.cc.
   virtual bool WasChannelIDSent() const;
 
+ protected:
   virtual void set_channel_id_sent(bool channel_id_sent);
 
- protected:
   // Records histograms for channel id support during full handshakes - resumed
   // handshakes are ignored.
   static void RecordChannelIDSupport(

@@ -2285,38 +2285,6 @@ TEST_P(SpdySessionTest, CancelTwoStalledCreateStream) {
   EXPECT_EQ(0u, session->pending_create_stream_queue_size(LOWEST));
 }
 
-TEST_P(SpdySessionTest, NeedsCredentials) {
-  MockConnect connect_data(SYNCHRONOUS, OK);
-  MockRead reads[] = {
-    MockRead(SYNCHRONOUS, ERR_IO_PENDING)  // Stall forever.
-  };
-  StaticSocketDataProvider data(reads, arraysize(reads), NULL, 0);
-  data.set_connect_data(connect_data);
-  session_deps_.socket_factory->AddSocketDataProvider(&data);
-
-  SSLSocketDataProvider ssl(SYNCHRONOUS, OK);
-  ssl.channel_id_sent = true;
-  ssl.protocol_negotiated = GetParam();
-  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
-
-  CreateNetworkSession();
-
-  const GURL url("https://www.foo.com");
-  HostPortPair test_host_port_pair(url.host(), 443);
-  SpdySessionKey key(test_host_port_pair, ProxyServer::Direct(),
-                     kPrivacyModeDisabled);
-
-  base::WeakPtr<SpdySession> session =
-      CreateSecureSpdySession(http_session_, key, BoundNetLog());
-
-  EXPECT_EQ(spdy_util_.spdy_version() >= SPDY3, session->NeedsCredentials());
-
-  // Flush the read completion task.
-  base::MessageLoop::current()->RunUntilIdle();
-
-  session->CloseSessionOnError(ERR_ABORTED, std::string());
-}
-
 // Test that SpdySession::DoReadLoop reads data from the socket
 // without yielding.  This test makes 32k - 1 bytes of data available
 // on the socket for reading. It then verifies that it has read all
@@ -3075,49 +3043,6 @@ TEST_P(SpdySessionTest, CreateStreamOnStreamReset) {
 }
 
 // The tests below are only for SPDY/3 and above.
-
-TEST_P(SpdySessionTest, SendCredentials) {
-  if (GetParam() < kProtoSPDY3)
-    return;
-
-  MockConnect connect_data(SYNCHRONOUS, OK);
-  MockRead reads[] = {
-    MockRead(SYNCHRONOUS, ERR_IO_PENDING)  // Stall forever.
-  };
-  SettingsMap settings;
-  scoped_ptr<SpdyFrame> settings_frame(
-      spdy_util_.ConstructSpdySettings(settings));
-  MockWrite writes[] = {
-    CreateMockWrite(*settings_frame),
-  };
-  StaticSocketDataProvider data(reads, arraysize(reads),
-                                writes, arraysize(writes));
-  data.set_connect_data(connect_data);
-  session_deps_.socket_factory->AddSocketDataProvider(&data);
-
-  SSLSocketDataProvider ssl(SYNCHRONOUS, OK);
-  ssl.channel_id_sent = true;
-  ssl.protocol_negotiated = GetParam();
-  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
-
-  CreateNetworkSession();
-
-  const GURL kTestUrl("https://www.foo.com");
-  HostPortPair test_host_port_pair(kTestUrl.host(), 443);
-  SpdySessionKey key(test_host_port_pair, ProxyServer::Direct(),
-                     kPrivacyModeDisabled);
-
-  base::WeakPtr<SpdySession> session =
-      CreateSecureSpdySession(http_session_, key, BoundNetLog());
-
-  EXPECT_TRUE(session->NeedsCredentials());
-
-  // Flush the read completion task.
-  base::MessageLoop::current()->RunUntilIdle();
-
-  session->CloseSessionOnError(ERR_ABORTED, std::string());
-  EXPECT_FALSE(HasSpdySession(spdy_session_pool_, key));
-}
 
 TEST_P(SpdySessionTest, UpdateStreamsSendWindowSize) {
   if (GetParam() < kProtoSPDY3)

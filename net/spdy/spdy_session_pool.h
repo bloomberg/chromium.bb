@@ -52,7 +52,6 @@ class NET_EXPORT SpdySessionPool
       const base::WeakPtr<HttpServerProperties>& http_server_properties,
       bool force_single_domain,
       bool enable_ip_pooling,
-      bool enable_credential_frames,
       bool enable_compression,
       bool enable_ping_based_connection_checking,
       NextProto default_protocol,
@@ -214,7 +213,6 @@ class NET_EXPORT SpdySessionPool
   bool enable_sending_initial_data_;
   bool force_single_domain_;
   bool enable_ip_pooling_;
-  bool enable_credential_frames_;
   bool enable_compression_;
   bool enable_ping_based_connection_checking_;
   const NextProto default_protocol_;

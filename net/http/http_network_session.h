@@ -77,7 +77,6 @@ class NET_EXPORT HttpNetworkSession
     uint16 testing_fixed_https_port;
     bool force_spdy_single_domain;
     bool enable_spdy_ip_pooling;
-    bool enable_spdy_credential_frames;
     bool enable_spdy_compression;
     bool enable_spdy_ping_based_connection_checking;
     NextProto spdy_default_protocol;

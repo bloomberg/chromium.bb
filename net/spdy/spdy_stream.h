@@ -412,26 +412,16 @@ class NET_EXPORT_PRIVATE SpdyStream {
 
   enum State {
     STATE_NONE,
-    STATE_GET_DOMAIN_BOUND_CERT,
-    STATE_GET_DOMAIN_BOUND_CERT_COMPLETE,
-    STATE_SEND_DOMAIN_BOUND_CERT,
-    STATE_SEND_DOMAIN_BOUND_CERT_COMPLETE,
     STATE_SEND_REQUEST_HEADERS,
     STATE_SEND_REQUEST_HEADERS_COMPLETE,
     STATE_IDLE,
     STATE_CLOSED
   };
 
-  void OnGetDomainBoundCertComplete(int result);
-
   // Try to make progress sending/receiving the request/response.
   int DoLoop(int result);
 
   // The implementations of each state of the state machine.
-  int DoGetDomainBoundCert();
-  int DoGetDomainBoundCertComplete(int result);
-  int DoSendDomainBoundCert();
-  int DoSendDomainBoundCertComplete(int result);
   int DoSendRequestHeaders();
   int DoSendRequestHeadersComplete();
   int DoReadHeaders();

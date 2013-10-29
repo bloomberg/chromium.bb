@@ -28,7 +28,6 @@
 #include "net/socket/stream_socket.h"
 #include "net/spdy/buffered_spdy_framer.h"
 #include "net/spdy/spdy_buffer.h"
-#include "net/spdy/spdy_credential_state.h"
 #include "net/spdy/spdy_framer.h"
 #include "net/spdy/spdy_header_block.h"
 #include "net/spdy/spdy_protocol.h"
@@ -207,7 +206,6 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
               const base::WeakPtr<HttpServerProperties>& http_server_properties,
               bool verify_domain_authentication,
               bool enable_sending_initial_data,
-              bool enable_credential_frames,
               bool enable_compression,
               bool enable_ping_based_connection_checking,
               NextProto default_protocol,
@@ -292,15 +290,6 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
       SpdyControlFlags flags,
       const SpdyHeaderBlock& headers);
 
-  // Tries to create a CREDENTIAL frame. If successful, fills in
-  // |credential_frame| and returns OK. Returns the error (guaranteed
-  // to not be ERR_IO_PENDING) otherwise.
-  int CreateCredentialFrame(const std::string& origin,
-                            const std::string& key,
-                            const std::string& cert,
-                            RequestPriority priority,
-                            scoped_ptr<SpdyFrame>* credential_frame);
-
   // Creates and returns a SpdyBuffer holding a data frame with the
   // given data. May return NULL if stalled by flow control.
   scoped_ptr<SpdyBuffer> CreateDataBuffer(SpdyStreamId stream_id,
@@ -340,10 +329,6 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   // Fills SSL Certificate Request info |cert_request_info| and returns
   // true when SSL is in use.
   bool GetSSLCertRequestInfo(SSLCertRequestInfo* cert_request_info);
-
-  // Returns the ServerBoundCertService used by this Socket, or NULL
-  // if server bound certs are not supported in this session.
-  ServerBoundCertService* GetServerBoundCertService() const;
 
   // Send a WINDOW_UPDATE frame for a stream. Called by a stream
   // whenever receive window size is increased.
@@ -439,11 +424,6 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
 
   int GetPeerAddress(IPEndPoint* address) const;
   int GetLocalAddress(IPEndPoint* address) const;
-
-  // Returns true if requests on this session require credentials.
-  bool NeedsCredentials() const;
-
-  SpdyCredentialState* credential_state() { return &credential_state_; }
 
   // Adds |alias| to set of aliases associated with this session.
   void AddPooledAlias(const SpdySessionKey& alias_key);
@@ -1094,15 +1074,12 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   // Outside of tests, these should always be true.
   bool verify_domain_authentication_;
   bool enable_sending_initial_data_;
-  bool enable_credential_frames_;
   bool enable_compression_;
   bool enable_ping_based_connection_checking_;
 
   // The SPDY protocol used. Always between kProtoSPDYMinimumVersion and
   // kProtoSPDYMaximumVersion.
   NextProto protocol_;
-
-  SpdyCredentialState credential_state_;
 
   // |connection_at_risk_of_loss_time_| is an optimization to avoid sending
   // wasteful preface pings (when we just got some data).

@@ -583,7 +583,7 @@ int SpdyStream::SendRequestHeaders(scoped_ptr<SpdyHeaderBlock> request_headers,
   CHECK_EQ(io_state_, STATE_NONE);
   request_headers_ = request_headers.Pass();
   send_status_ = send_status;
-  io_state_ = STATE_GET_DOMAIN_BOUND_CERT;
+  io_state_ = STATE_SEND_REQUEST_HEADERS;
   return DoLoop(OK);
 }
 
@@ -656,11 +656,6 @@ bool SpdyStream::HasUrlFromHeaders() const {
   return !GetUrlFromHeaders().is_empty();
 }
 
-void SpdyStream::OnGetDomainBoundCertComplete(int result) {
-  DCHECK_EQ(io_state_, STATE_GET_DOMAIN_BOUND_CERT_COMPLETE);
-  DoLoop(result);
-}
-
 int SpdyStream::DoLoop(int result) {
   CHECK(!in_do_loop_);
   in_do_loop_ = true;
@@ -669,20 +664,6 @@ int SpdyStream::DoLoop(int result) {
     State state = io_state_;
     io_state_ = STATE_NONE;
     switch (state) {
-      case STATE_GET_DOMAIN_BOUND_CERT:
-        CHECK_EQ(result, OK);
-        result = DoGetDomainBoundCert();
-        break;
-      case STATE_GET_DOMAIN_BOUND_CERT_COMPLETE:
-        result = DoGetDomainBoundCertComplete(result);
-        break;
-      case STATE_SEND_DOMAIN_BOUND_CERT:
-        CHECK_EQ(result, OK);
-        result = DoSendDomainBoundCert();
-        break;
-      case STATE_SEND_DOMAIN_BOUND_CERT_COMPLETE:
-        result = DoSendDomainBoundCertComplete(result);
-        break;
       case STATE_SEND_REQUEST_HEADERS:
         CHECK_EQ(result, OK);
         result = DoSendRequestHeaders();
@@ -720,91 +701,6 @@ int SpdyStream::DoLoop(int result) {
   in_do_loop_ = false;
 
   return result;
-}
-
-int SpdyStream::DoGetDomainBoundCert() {
-  CHECK(request_headers_);
-  DCHECK_NE(type_, SPDY_PUSH_STREAM);
-  GURL url = GetUrlFromHeaders();
-  if (!session_->NeedsCredentials() || !url.SchemeIs("https")) {
-    // Proceed directly to sending the request headers
-    io_state_ = STATE_SEND_REQUEST_HEADERS;
-    return OK;
-  }
-
-  slot_ = session_->credential_state()->FindCredentialSlot(GetUrlFromHeaders());
-  if (slot_ != SpdyCredentialState::kNoEntry) {
-    // Proceed directly to sending the request headers
-    io_state_ = STATE_SEND_REQUEST_HEADERS;
-    return OK;
-  }
-
-  io_state_ = STATE_GET_DOMAIN_BOUND_CERT_COMPLETE;
-  ServerBoundCertService* sbc_service = session_->GetServerBoundCertService();
-  DCHECK(sbc_service != NULL);
-  int rv = sbc_service->GetOrCreateDomainBoundCert(
-      url.GetOrigin().host(),
-      &domain_bound_private_key_,
-      &domain_bound_cert_,
-      base::Bind(&SpdyStream::OnGetDomainBoundCertComplete, GetWeakPtr()),
-      &domain_bound_cert_request_handle_);
-  return rv;
-}
-
-int SpdyStream::DoGetDomainBoundCertComplete(int result) {
-  DCHECK_NE(type_, SPDY_PUSH_STREAM);
-  if (result != OK)
-    return result;
-
-  io_state_ = STATE_SEND_DOMAIN_BOUND_CERT;
-  slot_ =  session_->credential_state()->SetHasCredential(GetUrlFromHeaders());
-  return OK;
-}
-
-int SpdyStream::DoSendDomainBoundCert() {
-  CHECK(request_headers_);
-  DCHECK_NE(type_, SPDY_PUSH_STREAM);
-  io_state_ = STATE_SEND_DOMAIN_BOUND_CERT_COMPLETE;
-
-  std::string origin = GetUrlFromHeaders().GetOrigin().spec();
-  DCHECK(origin[origin.length() - 1] == '/');
-  origin.erase(origin.length() - 1);  // Trim trailing slash.
-  scoped_ptr<SpdyFrame> frame;
-  int rv = session_->CreateCredentialFrame(
-      origin,
-      domain_bound_private_key_,
-      domain_bound_cert_,
-      priority_,
-      &frame);
-  if (rv != OK) {
-    DCHECK_NE(rv, ERR_IO_PENDING);
-    return rv;
-  }
-
-  DCHECK(frame);
-  // TODO(akalin): Fix the following race condition:
-  //
-  // Since this is decoupled from sending the SYN_STREAM frame, it is
-  // possible that other domain-bound cert frames will clobber ours
-  // before our SYN_STREAM frame gets sent. This can be solved by
-  // immediately enqueueing the SYN_STREAM frame here and adjusting
-  // the state machine appropriately.
-  session_->EnqueueStreamWrite(
-      GetWeakPtr(), CREDENTIAL,
-      scoped_ptr<SpdyBufferProducer>(
-          new SimpleBufferProducer(
-              scoped_ptr<SpdyBuffer>(new SpdyBuffer(frame.Pass())))));
-  return ERR_IO_PENDING;
-}
-
-int SpdyStream::DoSendDomainBoundCertComplete(int result) {
-  DCHECK_NE(type_, SPDY_PUSH_STREAM);
-  if (result != OK)
-    return result;
-
-  DCHECK_EQ(just_completed_frame_type_, CREDENTIAL);
-  io_state_ = STATE_SEND_REQUEST_HEADERS;
-  return OK;
 }
 
 int SpdyStream::DoSendRequestHeaders() {

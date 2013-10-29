@@ -746,9 +746,6 @@ const char kDisableSpdy31[]                 = "disable-spdy31";
 // Enable SPDY/4 alpha 2. This is a temporary testing flag.
 const char kEnableSpdy4a2[]                 = "enable-spdy4a2";
 
-// Enable SPDY CREDENTIAL frame support.  This is a temporary testing flag.
-const char kEnableSpdyCredentialFrames[]    = "enable-spdy-credential-frames";
-
 // Enables auto correction for misspelled words.
 const char kEnableSpellingAutoCorrect[]     = "enable-spelling-auto-correct";
 

@@ -33,7 +33,6 @@ SpdySessionPool::SpdySessionPool(
     const base::WeakPtr<HttpServerProperties>& http_server_properties,
     bool force_single_domain,
     bool enable_ip_pooling,
-    bool enable_credential_frames,
     bool enable_compression,
     bool enable_ping_based_connection_checking,
     NextProto default_protocol,
@@ -49,7 +48,6 @@ SpdySessionPool::SpdySessionPool(
       enable_sending_initial_data_(true),
       force_single_domain_(force_single_domain),
       enable_ip_pooling_(enable_ip_pooling),
-      enable_credential_frames_(enable_credential_frames),
       enable_compression_(enable_compression),
       enable_ping_based_connection_checking_(
           enable_ping_based_connection_checking),
@@ -99,7 +97,6 @@ net::Error SpdySessionPool::CreateAvailableSessionFromSocket(
                       http_server_properties_,
                       verify_domain_authentication_,
                       enable_sending_initial_data_,
-                      enable_credential_frames_,
                       enable_compression_,
                       enable_ping_based_connection_checking_,
                       default_protocol_,

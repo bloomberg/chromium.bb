@@ -704,9 +704,6 @@ void IOThread::InitializeNetworkOptions(const CommandLine& command_line) {
     if (command_line.HasSwitch(switches::kDisableIPPooling))
       globals_->enable_spdy_ip_pooling.set(false);
 
-    if (command_line.HasSwitch(switches::kEnableSpdyCredentialFrames))
-      globals_->enable_spdy_credential_frames.set(true);
-
     if (command_line.HasSwitch(switches::kEnableWebSocketOverSpdy)) {
       // Enable WebSocket over SPDY.
       net::WebSocketJob::set_websocket_over_spdy_enabled(true);
@@ -926,8 +923,6 @@ void IOThread::InitializeNetworkSessionParams(
       &params->force_spdy_single_domain);
   globals_->enable_spdy_ip_pooling.CopyToIfSet(
       &params->enable_spdy_ip_pooling);
-  globals_->enable_spdy_credential_frames.CopyToIfSet(
-      &params->enable_spdy_credential_frames);
   globals_->enable_spdy_compression.CopyToIfSet(
       &params->enable_spdy_compression);
   globals_->enable_spdy_ping_based_connection_checking.CopyToIfSet(

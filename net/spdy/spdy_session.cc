@@ -32,7 +32,6 @@
 #include "net/http/http_network_session.h"
 #include "net/http/http_server_properties.h"
 #include "net/spdy/spdy_buffer_producer.h"
-#include "net/spdy/spdy_credential_builder.h"
 #include "net/spdy/spdy_frame_builder.h"
 #include "net/spdy/spdy_http_utils.h"
 #include "net/spdy/spdy_protocol.h"
@@ -378,7 +377,6 @@ SpdySession::SpdySession(
     const base::WeakPtr<HttpServerProperties>& http_server_properties,
     bool verify_domain_authentication,
     bool enable_sending_initial_data,
-    bool enable_credential_frames,
     bool enable_compression,
     bool enable_ping_based_connection_checking,
     NextProto default_protocol,
@@ -433,12 +431,10 @@ SpdySession::SpdySession(
       net_log_(BoundNetLog::Make(net_log, NetLog::SOURCE_SPDY_SESSION)),
       verify_domain_authentication_(verify_domain_authentication),
       enable_sending_initial_data_(enable_sending_initial_data),
-      enable_credential_frames_(enable_credential_frames),
       enable_compression_(enable_compression),
       enable_ping_based_connection_checking_(
           enable_ping_based_connection_checking),
       protocol_(default_protocol),
-      credential_state_(SpdyCredentialState::kDefaultNumSlots),
       connection_at_risk_of_loss_time_(
           base::TimeDelta::FromSeconds(kDefaultConnectionAtRiskOfLossSeconds)),
       hung_interval_(
@@ -504,14 +500,6 @@ Error SpdySession::InitializeWithSocket(
   DCHECK_GE(protocol_, kProtoSPDYMinimumVersion);
   DCHECK_LE(protocol_, kProtoSPDYMaximumVersion);
 
-  SSLClientSocket* ssl_socket = GetSSLClientSocket();
-  if (ssl_socket && ssl_socket->WasChannelIDSent()) {
-    // According to the SPDY spec, the credential associated with the TLS
-    // connection is stored in slot[1].
-    credential_state_.SetHasCredential(GURL("https://" +
-                                            host_port_pair().ToString()));
-  }
-
   if (protocol_ == kProtoHTTP2Draft04)
     send_connection_header_prefix_ = true;
 
@@ -570,11 +558,12 @@ bool SpdySession::VerifyDomainAuthentication(const std::string& domain) {
     return true;   // This is not a secure session, so all domains are okay.
 
   bool unused = false;
-  return !ssl_info.client_cert_sent &&
-      (enable_credential_frames_ || !ssl_info.channel_id_sent ||
-       ServerBoundCertService::GetDomainForHost(domain) ==
-       ServerBoundCertService::GetDomainForHost(host_port_pair().host())) &&
-       ssl_info.cert->VerifyNameMatch(domain, &unused);
+  return
+      !ssl_info.client_cert_sent &&
+      (!ssl_info.channel_id_sent ||
+       (ServerBoundCertService::GetDomainForHost(domain) ==
+        ServerBoundCertService::GetDomainForHost(host_port_pair().host()))) &&
+      ssl_info.cert->VerifyNameMatch(domain, &unused);
 }
 
 int SpdySession::GetPushStream(
@@ -776,15 +765,6 @@ void SpdySession::ProcessPendingStreamRequests() {
   }
 }
 
-bool SpdySession::NeedsCredentials() const {
-  if (!is_secure_)
-    return false;
-  SSLClientSocket* ssl_socket = GetSSLClientSocket();
-  if (ssl_socket->GetNegotiatedProtocol() < kProtoSPDY3)
-    return false;
-  return ssl_socket->WasChannelIDSent();
-}
-
 void SpdySession::AddPooledAlias(const SpdySessionKey& alias_key) {
   pooled_aliases_.insert(alias_key);
 }
@@ -859,39 +839,6 @@ scoped_ptr<SpdyFrame> SpdySession::CreateSynStream(
   }
 
   return syn_frame.Pass();
-}
-
-int SpdySession::CreateCredentialFrame(
-    const std::string& origin,
-    const std::string& key,
-    const std::string& cert,
-    RequestPriority priority,
-    scoped_ptr<SpdyFrame>* credential_frame) {
-  DCHECK(is_secure_);
-  SSLClientSocket* ssl_socket = GetSSLClientSocket();
-  DCHECK(ssl_socket);
-  DCHECK(ssl_socket->WasChannelIDSent());
-
-  SpdyCredential credential;
-  std::string tls_unique;
-  ssl_socket->GetTLSUniqueChannelBinding(&tls_unique);
-  size_t slot = credential_state_.SetHasCredential(GURL(origin));
-  int rv = SpdyCredentialBuilder::Build(tls_unique, key, cert, slot,
-                                        &credential);
-  DCHECK_NE(rv, ERR_IO_PENDING);
-  if (rv != OK)
-    return rv;
-
-  DCHECK(buffered_spdy_framer_.get());
-  credential_frame->reset(
-      buffered_spdy_framer_->CreateCredentialFrame(credential));
-
-  if (net_log().IsLoggingAllEvents()) {
-    net_log().AddEvent(
-        NetLog::TYPE_SPDY_SESSION_SEND_CREDENTIAL,
-        base::Bind(&NetLogSpdyCredentialCallback, credential.slot, &origin));
-  }
-  return OK;
 }
 
 scoped_ptr<SpdyBuffer> SpdySession::CreateDataBuffer(SpdyStreamId stream_id,
@@ -1832,12 +1779,6 @@ bool SpdySession::GetSSLCertRequestInfo(
     return false;
   GetSSLClientSocket()->GetSSLCertRequestInfo(cert_request_info);
   return true;
-}
-
-ServerBoundCertService* SpdySession::GetServerBoundCertService() const {
-  if (!is_secure_)
-    return NULL;
-  return GetSSLClientSocket()->GetServerBoundCertService();
 }
 
 void SpdySession::OnError(SpdyFramer::SpdyError error_code) {
