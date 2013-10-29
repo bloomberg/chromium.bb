@@ -287,6 +287,14 @@ MostVisitedURL::MostVisitedURL(const GURL& url,
       title(title) {
 }
 
+MostVisitedURL::MostVisitedURL(const GURL& url,
+                               const string16& title,
+                               const base::Time& last_forced_time)
+    : url(url),
+      title(title),
+      last_forced_time(last_forced_time) {
+}
+
 MostVisitedURL::~MostVisitedURL() {}
 
 // FilteredURL -----------------------------------------------------------------

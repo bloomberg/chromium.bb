@@ -509,10 +509,18 @@ struct KeywordSearchTermRow {
 struct MostVisitedURL {
   MostVisitedURL();
   MostVisitedURL(const GURL& url, const string16& title);
+  MostVisitedURL(const GURL& url,
+                 const string16& title,
+                 const base::Time& last_forced_time);
   ~MostVisitedURL();
 
   GURL url;
   string16 title;
+
+  // If this is a URL for which we want to force a thumbnail, records the last
+  // time it was forced so we can evict it when more recent URLs are requested.
+  // If it's not a forced thumbnail, keep a time of 0.
+  base::Time last_forced_time;
 
   RedirectList redirects;
 

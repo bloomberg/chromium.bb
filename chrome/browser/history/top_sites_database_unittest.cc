@@ -5,6 +5,7 @@
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/path_service.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/history/top_sites_database.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/tools/profiles/thumbnail-inl.h"
@@ -46,8 +47,8 @@ void VerifyTablesAndColumns(sql::Connection* db) {
 
   // [url], [url_rank], [title], [thumbnail], [redirects],
   // [boring_score], [good_clipping], [at_top], [last_updated], and
-  // [load_completed].
-  EXPECT_EQ(10u, sql::test::CountTableColumns(db, "thumbnails"));
+  // [load_completed], [last_forced]
+  EXPECT_EQ(11u, sql::test::CountTableColumns(db, "thumbnails"));
 }
 
 }  // namespace
@@ -118,6 +119,157 @@ TEST_F(TopSitesDatabaseTest, Version2) {
   db.GetPageThumbnails(&urls, &thumbnails);
   ASSERT_EQ(2u, urls.size());
   ASSERT_EQ(2u, thumbnails.size());
+}
+
+TEST_F(TopSitesDatabaseTest, Version3) {
+  ASSERT_TRUE(CreateDatabaseFromSQL(file_name_, "TopSites.v3.sql"));
+
+  TopSitesDatabase db;
+  ASSERT_TRUE(db.Init(file_name_));
+
+  VerifyTablesAndColumns(db.db_.get());
+
+  // Basic operational check.
+  MostVisitedURLList urls;
+  std::map<GURL, Images> thumbnails;
+  db.GetPageThumbnails(&urls, &thumbnails);
+  ASSERT_EQ(3u, urls.size());
+  ASSERT_EQ(3u, thumbnails.size());
+  EXPECT_EQ(kUrl, urls[0].url);  // [0] because of url_rank.
+  // kGoogleThumbnail includes nul terminator.
+  ASSERT_EQ(sizeof(kGoogleThumbnail) - 1,
+            thumbnails[urls[0].url].thumbnail->size());
+  EXPECT_TRUE(!memcmp(thumbnails[urls[0].url].thumbnail->front(),
+                      kGoogleThumbnail, sizeof(kGoogleThumbnail) - 1));
+
+  ASSERT_TRUE(db.RemoveURL(urls[1]));
+  db.GetPageThumbnails(&urls, &thumbnails);
+  ASSERT_EQ(2u, urls.size());
+  ASSERT_EQ(2u, thumbnails.size());
+}
+
+TEST_F(TopSitesDatabaseTest, AddRemoveEditThumbnails) {
+  ASSERT_TRUE(CreateDatabaseFromSQL(file_name_, "TopSites.v3.sql"));
+
+  TopSitesDatabase db;
+  ASSERT_TRUE(db.Init(file_name_));
+
+  // Add a new URL, not forced, rank = 1.
+  GURL mapsUrl = GURL("http://maps.google.com/");
+  MostVisitedURL url1(mapsUrl, ASCIIToUTF16("Google Maps"));
+  db.SetPageThumbnail(url1, 1, Images());
+
+  MostVisitedURLList urls;
+  std::map<GURL, Images> thumbnails;
+  db.GetPageThumbnails(&urls, &thumbnails);
+  ASSERT_EQ(4u, urls.size());
+  ASSERT_EQ(4u, thumbnails.size());
+  EXPECT_EQ(kUrl, urls[0].url);
+  EXPECT_EQ(mapsUrl, urls[1].url);
+
+  // Add a new URL, forced.
+  GURL driveUrl = GURL("http://drive.google.com/");
+  MostVisitedURL url2(driveUrl, ASCIIToUTF16("Google Drive"));
+  url2.last_forced_time = base::Time::FromJsTime(789714000000);  // 10/1/1995
+  db.SetPageThumbnail(url2, TopSitesDatabase::kRankOfForcedURL, Images());
+
+  db.GetPageThumbnails(&urls, &thumbnails);
+  ASSERT_EQ(5u, urls.size());
+  ASSERT_EQ(5u, thumbnails.size());
+  EXPECT_EQ(driveUrl, urls[0].url);  // Forced URLs always appear first.
+  EXPECT_EQ(kUrl, urls[1].url);
+  EXPECT_EQ(mapsUrl, urls[2].url);
+
+  // Add a new URL, forced (earlier).
+  GURL plusUrl = GURL("http://plus.google.com/");
+  MostVisitedURL url3(plusUrl, ASCIIToUTF16("Google Plus"));
+  url3.last_forced_time = base::Time::FromJsTime(787035600000);  // 10/12/1994
+  db.SetPageThumbnail(url3, TopSitesDatabase::kRankOfForcedURL, Images());
+
+  db.GetPageThumbnails(&urls, &thumbnails);
+  ASSERT_EQ(6u, urls.size());
+  ASSERT_EQ(6u, thumbnails.size());
+  EXPECT_EQ(plusUrl, urls[0].url);  // New forced URL should appear first.
+  EXPECT_EQ(driveUrl, urls[1].url);
+  EXPECT_EQ(kUrl, urls[2].url);
+  EXPECT_EQ(mapsUrl, urls[3].url);
+
+  // Change the last_forced_time of a forced URL.
+  url3.last_forced_time = base::Time::FromJsTime(792392400000);  // 10/2/1995
+  db.SetPageThumbnail(url3, TopSitesDatabase::kRankOfForcedURL, Images());
+
+  db.GetPageThumbnails(&urls, &thumbnails);
+  ASSERT_EQ(6u, urls.size());
+  ASSERT_EQ(6u, thumbnails.size());
+  EXPECT_EQ(driveUrl, urls[0].url);
+  EXPECT_EQ(plusUrl, urls[1].url);  // Forced URL should have moved second.
+  EXPECT_EQ(kUrl, urls[2].url);
+  EXPECT_EQ(mapsUrl, urls[3].url);
+
+  // Change a non-forced URL to forced using UpdatePageRank.
+  url1.last_forced_time = base::Time::FromJsTime(792219600000);  // 8/2/1995
+  db.UpdatePageRank(url1, TopSitesDatabase::kRankOfForcedURL);
+
+  db.GetPageThumbnails(&urls, &thumbnails);
+  ASSERT_EQ(6u, urls.size());
+  ASSERT_EQ(6u, thumbnails.size());
+  EXPECT_EQ(driveUrl, urls[0].url);
+  EXPECT_EQ(mapsUrl, urls[1].url);  // Maps moves to second forced URL.
+  EXPECT_EQ(plusUrl, urls[2].url);
+  EXPECT_EQ(kUrl, urls[3].url);
+
+  // Change a forced URL to non-forced using SetPageThumbnail.
+  db.SetPageThumbnail(url3, 1, Images());
+
+  db.GetPageThumbnails(&urls, &thumbnails);
+  ASSERT_EQ(6u, urls.size());
+  ASSERT_EQ(6u, thumbnails.size());
+  EXPECT_EQ(driveUrl, urls[0].url);
+  EXPECT_EQ(mapsUrl, urls[1].url);
+  EXPECT_EQ(kUrl, urls[2].url);
+  EXPECT_EQ(plusUrl, urls[3].url);  // Plus moves to second non-forced URL.
+
+  // Change a non-forced URL to earlier non-forced using UpdatePageRank.
+  url3.last_forced_time = base::Time();
+  db.UpdatePageRank(url3, 0);
+
+  db.GetPageThumbnails(&urls, &thumbnails);
+  ASSERT_EQ(6u, urls.size());
+  ASSERT_EQ(6u, thumbnails.size());
+  EXPECT_EQ(driveUrl, urls[0].url);
+  EXPECT_EQ(mapsUrl, urls[1].url);
+  EXPECT_EQ(plusUrl, urls[2].url);  // Plus moves to first non-forced URL.
+  EXPECT_EQ(kUrl, urls[3].url);
+
+  // Change a non-forced URL to later non-forced using SetPageThumbnail.
+  db.SetPageThumbnail(url3, 2, Images());
+
+  db.GetPageThumbnails(&urls, &thumbnails);
+  ASSERT_EQ(6u, urls.size());
+  ASSERT_EQ(6u, thumbnails.size());
+  EXPECT_EQ(driveUrl, urls[0].url);
+  EXPECT_EQ(mapsUrl, urls[1].url);
+  EXPECT_EQ(kUrl, urls[2].url);
+  EXPECT_EQ(plusUrl, urls[4].url);  // Plus moves to third non-forced URL.
+
+  // Remove a non-forced URL.
+  db.RemoveURL(url3);
+
+  db.GetPageThumbnails(&urls, &thumbnails);
+  ASSERT_EQ(5u, urls.size());
+  ASSERT_EQ(5u, thumbnails.size());
+  EXPECT_EQ(driveUrl, urls[0].url);
+  EXPECT_EQ(mapsUrl, urls[1].url);
+  EXPECT_EQ(kUrl, urls[2].url);
+
+  // Remove a forced URL.
+  db.RemoveURL(url2);
+
+  db.GetPageThumbnails(&urls, &thumbnails);
+  ASSERT_EQ(4u, urls.size());
+  ASSERT_EQ(4u, thumbnails.size());
+  EXPECT_EQ(mapsUrl, urls[0].url);
+  EXPECT_EQ(kUrl, urls[1].url);
 }
 
 }  // namespace history
