@@ -361,22 +361,6 @@
           # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
           'msvs_disabled_warnings': [ 4267, ],
         },
-        {
-          'target_name': 'ipclist',
-          'type': 'executable',
-          'variables': { 'enable_wexit_time_destructors': 1, },
-          'dependencies': [
-            'test_support_common',
-            '../skia/skia.gyp:skia',
-            '../sync/sync.gyp:sync',
-          ],
-          'include_dirs': [
-             '..',
-          ],
-          'sources': [
-            'tools/ipclist/ipclist.cc',
-          ],
-        },
       ],
     }],  # OS!="ios"
     ['OS=="mac"',
