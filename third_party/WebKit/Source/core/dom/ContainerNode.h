@@ -37,8 +37,8 @@ class HTMLCollection;
 
 namespace Private {
     template<class GenericNode, class GenericNodeContainer>
-    void addChildNodesToDeletionQueue(GenericNode*& head, GenericNode*& tail, GenericNodeContainer*);
-};
+    void addChildNodesToDeletionQueue(GenericNode*& head, GenericNode*& tail, GenericNodeContainer&);
+}
 
 class NoEventDispatchAssertion {
 public:
@@ -105,7 +105,7 @@ public:
     // They don't send DOM mutation events or handle reparenting.
     // However, arbitrary code may be run by beforeload handlers.
     void parserAppendChild(PassRefPtr<Node>);
-    void parserRemoveChild(Node*);
+    void parserRemoveChild(Node&);
     void parserInsertBefore(PassRefPtr<Node> newChild, Node* refChild);
     void parserTakeAllChildrenFrom(ContainerNode*);
 
@@ -135,18 +135,18 @@ protected:
     ContainerNode(TreeScope*, ConstructionType = CreateContainer);
 
     template<class GenericNode, class GenericNodeContainer>
-    friend void appendChildToContainer(GenericNode* child, GenericNodeContainer*);
+    friend void appendChildToContainer(GenericNode& child, GenericNodeContainer&);
 
     template<class GenericNode, class GenericNodeContainer>
-    friend void Private::addChildNodesToDeletionQueue(GenericNode*& head, GenericNode*& tail, GenericNodeContainer*);
+    friend void Private::addChildNodesToDeletionQueue(GenericNode*& head, GenericNode*& tail, GenericNodeContainer&);
 
     void removeDetachedChildren();
     void setFirstChild(Node* child) { m_firstChild = child; }
     void setLastChild(Node* child) { m_lastChild = child; }
 
 private:
-    void removeBetween(Node* previousChild, Node* nextChild, Node* oldChild);
-    void insertBeforeCommon(Node* nextChild, Node* oldChild);
+    void removeBetween(Node* previousChild, Node* nextChild, Node& oldChild);
+    void insertBeforeCommon(Node& nextChild, Node& oldChild);
 
     void attachChildren(const AttachContext& = AttachContext());
     void detachChildren(const AttachContext& = AttachContext());
@@ -246,8 +246,8 @@ class ChildNodesLazySnapshot {
     WTF_MAKE_NONCOPYABLE(ChildNodesLazySnapshot);
     WTF_MAKE_FAST_ALLOCATED;
 public:
-    explicit ChildNodesLazySnapshot(Node* parentNode)
-        : m_currentNode(parentNode->firstChild())
+    explicit ChildNodesLazySnapshot(Node& parentNode)
+        : m_currentNode(parentNode.firstChild())
         , m_currentIndex(0)
     {
         m_nextSnapshot = latestSnapshot;

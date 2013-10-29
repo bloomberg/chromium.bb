@@ -1688,7 +1688,7 @@ PassRefPtr<ShadowRoot> Element::createShadowRoot(ExceptionState& es)
         ensureUserAgentShadowRoot();
 
     if (RuntimeEnabledFeatures::authorShadowDOMForAnyElementEnabled())
-        return ensureShadow().addShadowRoot(this, ShadowRoot::AuthorShadowRoot);
+        return ensureShadow().addShadowRoot(*this, ShadowRoot::AuthorShadowRoot);
 
     // Since some elements recreates shadow root dynamically, multiple shadow
     // subtrees won't work well in that element. Until they are fixed, we disable
@@ -1697,7 +1697,7 @@ PassRefPtr<ShadowRoot> Element::createShadowRoot(ExceptionState& es)
         es.throwUninformativeAndGenericDOMException(HierarchyRequestError);
         return 0;
     }
-    return ensureShadow().addShadowRoot(this, ShadowRoot::AuthorShadowRoot);
+    return ensureShadow().addShadowRoot(*this, ShadowRoot::AuthorShadowRoot);
 }
 
 ShadowRoot* Element::shadowRoot() const
@@ -1731,7 +1731,7 @@ ShadowRoot* Element::ensureUserAgentShadowRoot()
 {
     if (ShadowRoot* shadowRoot = userAgentShadowRoot())
         return shadowRoot;
-    ShadowRoot* shadowRoot = ensureShadow().addShadowRoot(this, ShadowRoot::UserAgentShadowRoot);
+    ShadowRoot* shadowRoot = ensureShadow().addShadowRoot(*this, ShadowRoot::UserAgentShadowRoot);
     didAddUserAgentShadowRoot(shadowRoot);
     return shadowRoot;
 }

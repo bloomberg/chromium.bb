@@ -99,7 +99,7 @@ static inline void insert(HTMLConstructionSiteTask& task)
         task.parent = toHTMLTemplateElement(task.parent.get())->content();
 
     if (ContainerNode* parent = task.child->parentNode())
-        parent->parserRemoveChild(task.child.get());
+        parent->parserRemoveChild(*task.child);
 
     if (task.nextChild)
         task.parent->parserInsertBefore(task.child.get(), task.nextChild.get());
@@ -124,7 +124,7 @@ static inline void executeReparentTask(HTMLConstructionSiteTask& task)
     ASSERT(task.operation == HTMLConstructionSiteTask::Reparent);
 
     if (ContainerNode* parent = task.child->parentNode())
-        parent->parserRemoveChild(task.child.get());
+        parent->parserRemoveChild(*task.child);
 
     task.parent->parserAppendChild(task.child);
 }

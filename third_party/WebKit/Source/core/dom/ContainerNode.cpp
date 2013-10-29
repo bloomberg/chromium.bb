@@ -51,7 +51,7 @@ namespace WebCore {
 
 static void dispatchChildInsertionEvents(Node*);
 static void dispatchChildRemovalEvents(Node*);
-static void updateTreeAfterInsertion(ContainerNode*, Node*);
+static void updateTreeAfterInsertion(ContainerNode&, Node&);
 
 ChildNodesLazySnapshot* ChildNodesLazySnapshot::latestSnapshot = 0;
 
@@ -82,13 +82,13 @@ void ContainerNode::removeDetachedChildren()
             child->updateAncestorConnectedSubframeCountForRemoval();
     }
     // FIXME: We should be able to ASSERT(!confusingAndOftenMisusedAttached()) here: https://bugs.webkit.org/show_bug.cgi?id=107801
-    removeDetachedChildrenInContainer<Node, ContainerNode>(this);
+    removeDetachedChildrenInContainer<Node, ContainerNode>(*this);
 }
 
 void ContainerNode::parserTakeAllChildrenFrom(ContainerNode* oldParent)
 {
     while (RefPtr<Node> child = oldParent->firstChild()) {
-        oldParent->parserRemoveChild(child.get());
+        oldParent->parserRemoveChild(*child);
         treeScope().adoptIfNeeded(child.get());
         parserAppendChild(child.get());
     }
@@ -236,7 +236,8 @@ void ContainerNode::insertBefore(PassRefPtr<Node> newChild, Node* refChild, Exce
 
     ChildListMutationScope mutation(this);
     for (NodeVector::const_iterator it = targets.begin(); it != targets.end(); ++it) {
-        Node* child = it->get();
+        ASSERT(*it);
+        Node& child = **it;
 
         // Due to arbitrary code running in response to a DOM mutation event it's
         // possible that "next" is no longer a child of "this".
@@ -244,43 +245,42 @@ void ContainerNode::insertBefore(PassRefPtr<Node> newChild, Node* refChild, Exce
         // In either of those cases, we'll just stop.
         if (next->parentNode() != this)
             break;
-        if (child->parentNode())
+        if (child.parentNode())
             break;
 
-        treeScope().adoptIfNeeded(child);
+        treeScope().adoptIfNeeded(&child);
 
-        insertBeforeCommon(next.get(), child);
+        insertBeforeCommon(*next, child);
 
-        updateTreeAfterInsertion(this, child);
+        updateTreeAfterInsertion(*this, child);
     }
 
     dispatchSubtreeModifiedEvent();
 }
 
-void ContainerNode::insertBeforeCommon(Node* nextChild, Node* newChild)
+void ContainerNode::insertBeforeCommon(Node& nextChild, Node& newChild)
 {
     NoEventDispatchAssertion assertNoEventDispatch;
 
-    ASSERT(newChild);
-    ASSERT(!newChild->parentNode()); // Use insertBefore if you need to handle reparenting (and want DOM mutation events).
-    ASSERT(!newChild->nextSibling());
-    ASSERT(!newChild->previousSibling());
-    ASSERT(!newChild->isShadowRoot());
+    ASSERT(!newChild.parentNode()); // Use insertBefore if you need to handle reparenting (and want DOM mutation events).
+    ASSERT(!newChild.nextSibling());
+    ASSERT(!newChild.previousSibling());
+    ASSERT(!newChild.isShadowRoot());
 
-    Node* prev = nextChild->previousSibling();
+    Node* prev = nextChild.previousSibling();
     ASSERT(m_lastChild != prev);
-    nextChild->setPreviousSibling(newChild);
+    nextChild.setPreviousSibling(&newChild);
     if (prev) {
         ASSERT(m_firstChild != nextChild);
         ASSERT(prev->nextSibling() == nextChild);
-        prev->setNextSibling(newChild);
+        prev->setNextSibling(&newChild);
     } else {
         ASSERT(m_firstChild == nextChild);
-        m_firstChild = newChild;
+        m_firstChild = &newChild;
     }
-    newChild->setParentOrShadowHostNode(this);
-    newChild->setPreviousSibling(prev);
-    newChild->setNextSibling(nextChild);
+    newChild.setParentOrShadowHostNode(this);
+    newChild.setPreviousSibling(prev);
+    newChild.setNextSibling(&nextChild);
 }
 
 void ContainerNode::parserInsertBefore(PassRefPtr<Node> newChild, Node* nextChild)
@@ -297,7 +297,7 @@ void ContainerNode::parserInsertBefore(PassRefPtr<Node> newChild, Node* nextChil
     if (document() != newChild->document())
         document().adoptNode(newChild.get(), ASSERT_NO_EXCEPTION);
 
-    insertBeforeCommon(nextChild, newChild.get());
+    insertBeforeCommon(*nextChild, *newChild);
 
     newChild->updateAncestorConnectedSubframeCountForInsertion();
 
@@ -305,7 +305,7 @@ void ContainerNode::parserInsertBefore(PassRefPtr<Node> newChild, Node* nextChil
 
     childrenChanged(true, newChild->previousSibling(), nextChild, 1);
 
-    ChildNodeInsertionNotifier(this).notify(newChild.get());
+    ChildNodeInsertionNotifier(*this).notify(*newChild);
 }
 
 void ContainerNode::replaceChild(PassRefPtr<Node> newChild, Node* oldChild, ExceptionState& es)
@@ -364,7 +364,8 @@ void ContainerNode::replaceChild(PassRefPtr<Node> newChild, Node* oldChild, Exce
 
     // Add the new child(ren)
     for (NodeVector::const_iterator it = targets.begin(); it != targets.end(); ++it) {
-        Node* child = it->get();
+        ASSERT(*it);
+        Node& child = **it;
 
         // Due to arbitrary code running in response to a DOM mutation event it's
         // possible that "next" is no longer a child of "this".
@@ -372,21 +373,21 @@ void ContainerNode::replaceChild(PassRefPtr<Node> newChild, Node* oldChild, Exce
         // In either of those cases, we'll just stop.
         if (next && next->parentNode() != this)
             break;
-        if (child->parentNode())
+        if (child.parentNode())
             break;
 
-        treeScope().adoptIfNeeded(child);
+        treeScope().adoptIfNeeded(&child);
 
         // Add child before "next".
         {
             NoEventDispatchAssertion assertNoEventDispatch;
             if (next)
-                insertBeforeCommon(next.get(), child);
+                insertBeforeCommon(*next, child);
             else
-                appendChildToContainer(child, this);
+                appendChildToContainer(child, *this);
         }
 
-        updateTreeAfterInsertion(this, child);
+        updateTreeAfterInsertion(*this, child);
     }
 
     dispatchSubtreeModifiedEvent();
@@ -466,23 +467,22 @@ void ContainerNode::removeChild(Node* oldChild, ExceptionState& es)
 
         Node* prev = child->previousSibling();
         Node* next = child->nextSibling();
-        removeBetween(prev, next, child.get());
+        removeBetween(prev, next, *child);
         childrenChanged(false, prev, next, -1);
-        ChildNodeRemovalNotifier(this).notify(child.get());
+        ChildNodeRemovalNotifier(*this).notify(*child);
     }
     dispatchSubtreeModifiedEvent();
 }
 
-void ContainerNode::removeBetween(Node* previousChild, Node* nextChild, Node* oldChild)
+void ContainerNode::removeBetween(Node* previousChild, Node* nextChild, Node& oldChild)
 {
     NoEventDispatchAssertion assertNoEventDispatch;
 
-    ASSERT(oldChild);
-    ASSERT(oldChild->parentNode() == this);
+    ASSERT(oldChild.parentNode() == this);
 
     // Remove from rendering tree
-    if (oldChild->confusingAndOftenMisusedAttached())
-        oldChild->detach();
+    if (oldChild.confusingAndOftenMisusedAttached())
+        oldChild.detach();
 
     if (nextChild)
         nextChild->setPreviousSibling(previousChild);
@@ -493,31 +493,30 @@ void ContainerNode::removeBetween(Node* previousChild, Node* nextChild, Node* ol
     if (m_lastChild == oldChild)
         m_lastChild = previousChild;
 
-    oldChild->setPreviousSibling(0);
-    oldChild->setNextSibling(0);
-    oldChild->setParentOrShadowHostNode(0);
+    oldChild.setPreviousSibling(0);
+    oldChild.setNextSibling(0);
+    oldChild.setParentOrShadowHostNode(0);
 
-    document().adoptIfNeeded(oldChild);
+    document().adoptIfNeeded(&oldChild);
 }
 
-void ContainerNode::parserRemoveChild(Node* oldChild)
+void ContainerNode::parserRemoveChild(Node& oldChild)
 {
-    ASSERT(oldChild);
-    ASSERT(oldChild->parentNode() == this);
-    ASSERT(!oldChild->isDocumentFragment());
+    ASSERT(oldChild.parentNode() == this);
+    ASSERT(!oldChild.isDocumentFragment());
 
-    Node* prev = oldChild->previousSibling();
-    Node* next = oldChild->nextSibling();
+    Node* prev = oldChild.previousSibling();
+    Node* next = oldChild.nextSibling();
 
-    oldChild->updateAncestorConnectedSubframeCountForRemoval();
+    oldChild.updateAncestorConnectedSubframeCountForRemoval();
 
-    ChildListMutationScope(this).willRemoveChild(oldChild);
-    oldChild->notifyMutationObserversNodeWillDetach();
+    ChildListMutationScope(this).willRemoveChild(&oldChild);
+    oldChild.notifyMutationObserversNodeWillDetach();
 
     removeBetween(prev, next, oldChild);
 
     childrenChanged(true, prev, next, -1);
-    ChildNodeRemovalNotifier(this).notify(oldChild);
+    ChildNodeRemovalNotifier(*this).notify(oldChild);
 }
 
 // this differs from other remove functions because it forcibly removes all the children,
@@ -559,14 +558,14 @@ void ContainerNode::removeChildren()
             removedChildren.reserveInitialCapacity(childNodeCount());
             while (m_firstChild) {
                 removedChildren.append(m_firstChild);
-                removeBetween(0, m_firstChild->nextSibling(), m_firstChild);
+                removeBetween(0, m_firstChild->nextSibling(), *m_firstChild);
             }
         }
 
         childrenChanged(false, 0, 0, -static_cast<int>(removedChildren.size()));
 
         for (size_t i = 0; i < removedChildren.size(); ++i)
-            ChildNodeRemovalNotifier(this).notify(removedChildren[i].get());
+            ChildNodeRemovalNotifier(*this).notify(*removedChildren[i]);
     }
 
     dispatchSubtreeModifiedEvent();
@@ -604,23 +603,24 @@ void ContainerNode::appendChild(PassRefPtr<Node> newChild, ExceptionState& es)
     // Now actually add the child(ren)
     ChildListMutationScope mutation(this);
     for (NodeVector::const_iterator it = targets.begin(); it != targets.end(); ++it) {
-        Node* child = it->get();
+        ASSERT(*it);
+        Node& child = **it;
 
         // If the child has a parent again, just stop what we're doing, because
         // that means someone is doing something with DOM mutation -- can't re-parent
         // a child that already has a parent.
-        if (child->parentNode())
+        if (child.parentNode())
             break;
 
-        treeScope().adoptIfNeeded(child);
+        treeScope().adoptIfNeeded(&child);
 
         // Append child to the end of the list
         {
             NoEventDispatchAssertion assertNoEventDispatch;
-            appendChildToContainer(child, this);
+            appendChildToContainer(child, *this);
         }
 
-        updateTreeAfterInsertion(this, child);
+        updateTreeAfterInsertion(*this, child);
     }
 
     dispatchSubtreeModifiedEvent();
@@ -640,7 +640,7 @@ void ContainerNode::parserAppendChild(PassRefPtr<Node> newChild)
     {
         NoEventDispatchAssertion assertNoEventDispatch;
         // FIXME: This method should take a PassRefPtr.
-        appendChildToContainer(newChild.get(), this);
+        appendChildToContainer(*newChild, *this);
         treeScope().adoptIfNeeded(newChild.get());
     }
 
@@ -649,7 +649,7 @@ void ContainerNode::parserAppendChild(PassRefPtr<Node> newChild)
     ChildListMutationScope(this).childAdded(newChild.get());
 
     childrenChanged(true, last, 0, 1);
-    ChildNodeInsertionNotifier(this).notify(newChild.get());
+    ChildNodeInsertionNotifier(*this).notify(*newChild);
 }
 
 void ContainerNode::attach(const AttachContext& context)
@@ -964,18 +964,18 @@ static void dispatchChildRemovalEvents(Node* child)
     }
 }
 
-static void updateTreeAfterInsertion(ContainerNode* parent, Node* child)
+static void updateTreeAfterInsertion(ContainerNode& parent, Node& child)
 {
-    ASSERT(parent->refCount());
-    ASSERT(child->refCount());
+    ASSERT(parent.refCount());
+    ASSERT(child.refCount());
 
-    ChildListMutationScope(parent).childAdded(child);
+    ChildListMutationScope(&parent).childAdded(&child);
 
-    parent->childrenChanged(false, child->previousSibling(), child->nextSibling(), 1);
+    parent.childrenChanged(false, child.previousSibling(), child.nextSibling(), 1);
 
     ChildNodeInsertionNotifier(parent).notify(child);
 
-    dispatchChildInsertionEvents(child);
+    dispatchChildInsertionEvents(&child);
 }
 
 #ifndef NDEBUG

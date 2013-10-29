@@ -131,23 +131,23 @@ ElementShadow::~ElementShadow()
     removeAllShadowRoots();
 }
 
-ShadowRoot* ElementShadow::addShadowRoot(Element* shadowHost, ShadowRoot::ShadowRootType type)
+ShadowRoot* ElementShadow::addShadowRoot(Element& shadowHost, ShadowRoot::ShadowRootType type)
 {
-    RefPtr<ShadowRoot> shadowRoot = ShadowRoot::create(&shadowHost->document(), type);
+    RefPtr<ShadowRoot> shadowRoot = ShadowRoot::create(&shadowHost.document(), type);
 
-    shadowRoot->setParentOrShadowHostNode(shadowHost);
-    shadowRoot->setParentTreeScope(&shadowHost->treeScope());
+    shadowRoot->setParentOrShadowHostNode(&shadowHost);
+    shadowRoot->setParentTreeScope(&shadowHost.treeScope());
     m_shadowRoots.push(shadowRoot.get());
-    ChildNodeInsertionNotifier(shadowHost).notify(shadowRoot.get());
+    ChildNodeInsertionNotifier(shadowHost).notify(*shadowRoot);
     setNeedsDistributionRecalc();
-    shadowHost->lazyReattachIfAttached();
+    shadowHost.lazyReattachIfAttached();
 
     // addShadowRoot() affects apply-author-styles. However, we know that the youngest shadow root has not had any children yet.
     // The youngest shadow root's apply-author-styles is default (false). So we can just set m_applyAuthorStyles false.
     m_applyAuthorStyles = false;
 
-    shadowHost->didAddShadowRoot(*shadowRoot);
-    InspectorInstrumentation::didPushShadowRoot(shadowHost, shadowRoot.get());
+    shadowHost.didAddShadowRoot(*shadowRoot);
+    InspectorInstrumentation::didPushShadowRoot(&shadowHost, shadowRoot.get());
 
     return shadowRoot.get();
 }
@@ -156,6 +156,7 @@ void ElementShadow::removeAllShadowRoots()
 {
     // Dont protect this ref count.
     Element* shadowHost = host();
+    ASSERT(shadowHost);
 
     while (RefPtr<ShadowRoot> oldRoot = m_shadowRoots.head()) {
         InspectorInstrumentation::willPopShadowRoot(shadowHost, oldRoot.get());
@@ -169,7 +170,7 @@ void ElementShadow::removeAllShadowRoots()
         oldRoot->setParentTreeScope(&shadowHost->document());
         oldRoot->setPrev(0);
         oldRoot->setNext(0);
-        ChildNodeRemovalNotifier(shadowHost).notify(oldRoot.get());
+        ChildNodeRemovalNotifier(*shadowHost).notify(*oldRoot);
     }
 }
 
