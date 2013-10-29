@@ -112,9 +112,8 @@
              inView:(NSView*)controlView {
   if (invalid_) {
     // Draw with a color that has high contrast against the custom background.
-    NSMutableAttributedString* coloredTitle =
-        [[[NSMutableAttributedString alloc] initWithAttributedString:title]
-            autorelease];
+    base::scoped_nsobject<NSMutableAttributedString> coloredTitle(
+        [[NSMutableAttributedString alloc] initWithAttributedString:title]);
     [coloredTitle addAttribute:NSForegroundColorAttributeName
                          value:[NSColor whiteColor]
                          range:NSMakeRange(0, [title length])];
