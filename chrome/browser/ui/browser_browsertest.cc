@@ -471,6 +471,9 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, CrossProcessNavCancelsDialogs) {
   GURL url(test_server()->GetURL("empty.html"));
   ui_test_utils::NavigateToURL(browser(), url);
 
+  // TODO(creis): Test this with a setInterval loop of alert dialogs to ensure
+  // that we can navigate away even if the renderer tries to synchronously
+  // create more.  See http://crbug.com/312490.
   WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
   contents->GetRenderViewHost()->ExecuteJavascriptInWebFrame(
       string16(),
