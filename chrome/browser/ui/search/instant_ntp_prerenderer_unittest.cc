@@ -20,7 +20,10 @@ class TestableInstantNTP : public InstantNTP {
   TestableInstantNTP(InstantNTPPrerenderer* ntp_prerenderer,
                      const std::string& instant_url,
                      Profile* profile)
-      : InstantNTP(ntp_prerenderer, instant_url, profile) {
+      : InstantNTP(ntp_prerenderer, "UNUSED", profile),
+        test_instant_url_(instant_url),
+        test_supports_instant_(true),
+        test_is_local_(false) {
   }
 
   // Overrides from InstantPage
@@ -151,12 +154,8 @@ TEST_F(InstantNTPPrerendererTest, PrefersRemoteNTPOnStartup) {
   std::string instant_url("http://instant_url");
   scoped_ptr<TestableInstantNTP> ntp(new TestableInstantNTP(
       instant_ntp_prerenderer(), instant_url, profile()));
-  ntp->set_is_local(false);
   instant_ntp_prerenderer()->set_ntp(ntp.get());
-  instant_ntp_prerenderer()->set_javascript_enabled(true);
   instant_ntp_prerenderer()->set_instant_url(instant_url);
-  ntp->set_instant_url(instant_url);
-  ntp->set_supports_instant(false);
   instant_ntp_prerenderer()->set_in_startup(true);
   EXPECT_EQ(!chrome::ShouldPreferRemoteNTPOnStartup(),
             instant_ntp_prerenderer()->ShouldSwitchToLocalNTP());
@@ -166,15 +165,9 @@ TEST_F(InstantNTPPrerendererTest, SwitchesToLocalNTPIfNoInstantSupport) {
   std::string instant_url("http://instant_url");
   scoped_ptr<TestableInstantNTP> ntp(new TestableInstantNTP(
       instant_ntp_prerenderer(), instant_url, profile()));
-  ntp.reset(new TestableInstantNTP(instant_ntp_prerenderer(), instant_url,
-                                   profile()));
-  ntp->set_is_local(false);
   instant_ntp_prerenderer()->set_ntp(ntp.get());
-  instant_ntp_prerenderer()->set_javascript_enabled(true);
   instant_ntp_prerenderer()->set_instant_url(instant_url);
-  ntp->set_instant_url(instant_url);
   ntp->set_supports_instant(false);
-  instant_ntp_prerenderer()->set_in_startup(false);
   EXPECT_TRUE(instant_ntp_prerenderer()->ShouldSwitchToLocalNTP());
 }
 
@@ -182,15 +175,8 @@ TEST_F(InstantNTPPrerendererTest, SwitchesToLocalNTPIfPathBad) {
   std::string instant_url("http://instant_url");
   scoped_ptr<TestableInstantNTP> ntp(new TestableInstantNTP(
       instant_ntp_prerenderer(), instant_url, profile()));
-  ntp.reset(new TestableInstantNTP(instant_ntp_prerenderer(), instant_url,
-                                   profile()));
-  ntp->set_is_local(false);
   instant_ntp_prerenderer()->set_ntp(ntp.get());
-  instant_ntp_prerenderer()->set_javascript_enabled(true);
   instant_ntp_prerenderer()->set_instant_url("http://bogus_url");
-  ntp->set_instant_url(instant_url);
-  ntp->set_supports_instant(true);
-  instant_ntp_prerenderer()->set_in_startup(false);
   EXPECT_TRUE(instant_ntp_prerenderer()->ShouldSwitchToLocalNTP());
 }
 
@@ -198,15 +184,8 @@ TEST_F(InstantNTPPrerendererTest, DoesNotSwitchToLocalNTPIfOnCurrentNTP) {
   std::string instant_url("http://instant_url");
   scoped_ptr<TestableInstantNTP> ntp(new TestableInstantNTP(
       instant_ntp_prerenderer(), instant_url, profile()));
-  ntp.reset(new TestableInstantNTP(instant_ntp_prerenderer(), instant_url,
-                                   profile()));
-  ntp->set_is_local(false);
   instant_ntp_prerenderer()->set_ntp(ntp.get());
-  instant_ntp_prerenderer()->set_javascript_enabled(true);
   instant_ntp_prerenderer()->set_instant_url(instant_url);
-  ntp->set_instant_url(instant_url);
-  ntp->set_supports_instant(true);
-  instant_ntp_prerenderer()->set_in_startup(false);
   EXPECT_FALSE(instant_ntp_prerenderer()->ShouldSwitchToLocalNTP());
 }
 
@@ -214,15 +193,9 @@ TEST_F(InstantNTPPrerendererTest, DoesNotSwitchToLocalNTPIfOnLocalNTP) {
   std::string instant_url("http://instant_url");
   scoped_ptr<TestableInstantNTP> ntp(new TestableInstantNTP(
       instant_ntp_prerenderer(), instant_url, profile()));
-  ntp.reset(new TestableInstantNTP(instant_ntp_prerenderer(), instant_url,
-                                   profile()));
-  ntp->set_is_local(false);
   instant_ntp_prerenderer()->set_ntp(ntp.get());
-  instant_ntp_prerenderer()->set_javascript_enabled(true);
   instant_ntp_prerenderer()->set_instant_url(instant_url);
   ntp->set_instant_url("http://local_instant_url");
-  ntp->set_supports_instant(true);
-  instant_ntp_prerenderer()->set_in_startup(false);
   EXPECT_FALSE(instant_ntp_prerenderer()->ShouldSwitchToLocalNTP());
 }
 
@@ -230,15 +203,10 @@ TEST_F(InstantNTPPrerendererTest, SwitchesToLocalNTPIfJSDisabled) {
   std::string instant_url("http://instant_url");
   scoped_ptr<TestableInstantNTP> ntp(new TestableInstantNTP(
       instant_ntp_prerenderer(), instant_url, profile()));
-  ntp.reset(new TestableInstantNTP(instant_ntp_prerenderer(), instant_url,
-                                   profile()));
-  ntp->set_is_local(false);
   instant_ntp_prerenderer()->set_ntp(ntp.get());
   instant_ntp_prerenderer()->set_javascript_enabled(false);
   instant_ntp_prerenderer()->set_instant_url(instant_url);
   ntp->set_instant_url("http://local_instant_url");
-  ntp->set_supports_instant(true);
-  instant_ntp_prerenderer()->set_in_startup(false);
   EXPECT_TRUE(instant_ntp_prerenderer()->ShouldSwitchToLocalNTP());
 }
 
