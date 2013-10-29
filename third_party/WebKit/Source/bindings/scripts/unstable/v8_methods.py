@@ -83,8 +83,9 @@ def custom_signature(arguments):
             return 'V8PerIsolateData::from(isolate)->rawTemplate(&V8{idl_type}::wrapperTypeInfo, currentWorldType)'.format(idl_type=idl_type)
         return 'v8::Handle<v8::FunctionTemplate>()'
 
-    if all(not v8_types.is_wrapper_type(argument.idl_type)
-           for argument in arguments):
+    if (any(argument.is_optional for argument in arguments) or
+        all(not v8_types.is_wrapper_type(argument.idl_type)
+            for argument in arguments)):
         return None
     return ', '.join([argument_template(argument) for argument in arguments])
 

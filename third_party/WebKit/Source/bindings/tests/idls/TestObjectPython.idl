@@ -218,12 +218,16 @@ interface TestObjectPython {
     void voidMethodStringArgLongArg(DOMString stringArg, long longArg);
     // Optional arguments
     void voidMethodOptionalStringArg(optional DOMString stringArg);
+    void voidMethodOptionalTestInterfaceEmptyArg(optional TestInterfaceEmpty stringArg);
     void voidMethodOptionalLongArg(optional long optionalLongArg);
     DOMString stringMethodOptionalLongArg(optional long optionalLongArg);
     TestInterfaceEmpty testInterfaceEmptyMethodOptionalLongArg(optional long optionalLongArg);
     long longMethodOptionalLongArg(optional long optionalLongArg);
+
     void voidMethodLongArgOptionalLongArg(long longArg, optional long optionalLongArg);
     void voidMethodLongArgOptionalLongArgOptionalLongArg(long longArg, optional long optionalLongArg1, optional long optionalLongArg2);
+    void voidMethodLongArgOptionalTestInterfaceEmptyArg(long longArg, optional TestInterfaceEmpty optionalTestInterfaceEmpty);
+    void voidMethodTestInterfaceEmptyArgOptionalLongArg(TestInterfaceEmpty optionalTestInterfaceEmpty, optional long longArg);
     // Variadic operations
     void voidMethodVariadicStringArg(DOMString... variadicStringArgs);
     void voidMethodStringArgVariadicStringArg(DOMString stringArg, DOMString... variadicStringArgs);

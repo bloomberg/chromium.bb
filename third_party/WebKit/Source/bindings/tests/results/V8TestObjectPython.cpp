@@ -3840,6 +3840,24 @@ static void voidMethodOptionalStringArgMethodCallback(const v8::FunctionCallback
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
+static void voidMethodOptionalTestInterfaceEmptyArgMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
+{
+    TestObjectPython* imp = V8TestObjectPython::toNative(args.Holder());
+    if (UNLIKELY(args.Length() <= 0)) {
+        imp->voidMethodOptionalTestInterfaceEmptyArg();
+        return;
+    }
+    V8TRYCATCH_VOID(TestInterfaceEmpty*, stringArg, V8TestInterfaceEmpty::HasInstance(args[0], args.GetIsolate(), worldType(args.GetIsolate())) ? V8TestInterfaceEmpty::toNative(v8::Handle<v8::Object>::Cast(args[0])) : 0);
+    imp->voidMethodOptionalTestInterfaceEmptyArg(stringArg);
+}
+
+static void voidMethodOptionalTestInterfaceEmptyArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    TestObjectPythonV8Internal::voidMethodOptionalTestInterfaceEmptyArgMethod(args);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
 static void voidMethodOptionalLongArgMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(args.Holder());
@@ -3960,6 +3978,52 @@ static void voidMethodLongArgOptionalLongArgOptionalLongArgMethodCallback(const 
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
     TestObjectPythonV8Internal::voidMethodLongArgOptionalLongArgOptionalLongArgMethod(args);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
+static void voidMethodLongArgOptionalTestInterfaceEmptyArgMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
+{
+    if (UNLIKELY(args.Length() < 1)) {
+        throwTypeError(ExceptionMessages::failedToExecute("voidMethodLongArgOptionalTestInterfaceEmptyArg", "TestObjectPython", ExceptionMessages::notEnoughArguments(1, args.Length())), args.GetIsolate());
+        return;
+    }
+    TestObjectPython* imp = V8TestObjectPython::toNative(args.Holder());
+    V8TRYCATCH_VOID(int, longArg, toInt32(args[0]));
+    if (UNLIKELY(args.Length() <= 1)) {
+        imp->voidMethodLongArgOptionalTestInterfaceEmptyArg(longArg);
+        return;
+    }
+    V8TRYCATCH_VOID(TestInterfaceEmpty*, optionalTestInterfaceEmpty, V8TestInterfaceEmpty::HasInstance(args[1], args.GetIsolate(), worldType(args.GetIsolate())) ? V8TestInterfaceEmpty::toNative(v8::Handle<v8::Object>::Cast(args[1])) : 0);
+    imp->voidMethodLongArgOptionalTestInterfaceEmptyArg(longArg, optionalTestInterfaceEmpty);
+}
+
+static void voidMethodLongArgOptionalTestInterfaceEmptyArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    TestObjectPythonV8Internal::voidMethodLongArgOptionalTestInterfaceEmptyArgMethod(args);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
+static void voidMethodTestInterfaceEmptyArgOptionalLongArgMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
+{
+    if (UNLIKELY(args.Length() < 1)) {
+        throwTypeError(ExceptionMessages::failedToExecute("voidMethodTestInterfaceEmptyArgOptionalLongArg", "TestObjectPython", ExceptionMessages::notEnoughArguments(1, args.Length())), args.GetIsolate());
+        return;
+    }
+    TestObjectPython* imp = V8TestObjectPython::toNative(args.Holder());
+    V8TRYCATCH_VOID(TestInterfaceEmpty*, optionalTestInterfaceEmpty, V8TestInterfaceEmpty::HasInstance(args[0], args.GetIsolate(), worldType(args.GetIsolate())) ? V8TestInterfaceEmpty::toNative(v8::Handle<v8::Object>::Cast(args[0])) : 0);
+    if (UNLIKELY(args.Length() <= 1)) {
+        imp->voidMethodTestInterfaceEmptyArgOptionalLongArg(optionalTestInterfaceEmpty);
+        return;
+    }
+    V8TRYCATCH_VOID(int, longArg, toInt32(args[1]));
+    imp->voidMethodTestInterfaceEmptyArgOptionalLongArg(optionalTestInterfaceEmpty, longArg);
+}
+
+static void voidMethodTestInterfaceEmptyArgOptionalLongArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    TestObjectPythonV8Internal::voidMethodTestInterfaceEmptyArgOptionalLongArgMethod(args);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
@@ -4148,12 +4212,15 @@ static const V8DOMConfiguration::MethodConfiguration V8TestObjectPythonMethods[]
     {"testInterfaceEmptyMethod", TestObjectPythonV8Internal::testInterfaceEmptyMethodMethodCallback, 0, 0},
     {"voidMethodStringArgLongArg", TestObjectPythonV8Internal::voidMethodStringArgLongArgMethodCallback, 0, 2},
     {"voidMethodOptionalStringArg", TestObjectPythonV8Internal::voidMethodOptionalStringArgMethodCallback, 0, 0},
+    {"voidMethodOptionalTestInterfaceEmptyArg", TestObjectPythonV8Internal::voidMethodOptionalTestInterfaceEmptyArgMethodCallback, 0, 0},
     {"voidMethodOptionalLongArg", TestObjectPythonV8Internal::voidMethodOptionalLongArgMethodCallback, 0, 0},
     {"stringMethodOptionalLongArg", TestObjectPythonV8Internal::stringMethodOptionalLongArgMethodCallback, 0, 0},
     {"testInterfaceEmptyMethodOptionalLongArg", TestObjectPythonV8Internal::testInterfaceEmptyMethodOptionalLongArgMethodCallback, 0, 0},
     {"longMethodOptionalLongArg", TestObjectPythonV8Internal::longMethodOptionalLongArgMethodCallback, 0, 0},
     {"voidMethodLongArgOptionalLongArg", TestObjectPythonV8Internal::voidMethodLongArgOptionalLongArgMethodCallback, 0, 1},
     {"voidMethodLongArgOptionalLongArgOptionalLongArg", TestObjectPythonV8Internal::voidMethodLongArgOptionalLongArgOptionalLongArgMethodCallback, 0, 1},
+    {"voidMethodLongArgOptionalTestInterfaceEmptyArg", TestObjectPythonV8Internal::voidMethodLongArgOptionalTestInterfaceEmptyArgMethodCallback, 0, 1},
+    {"voidMethodTestInterfaceEmptyArgOptionalLongArg", TestObjectPythonV8Internal::voidMethodTestInterfaceEmptyArgOptionalLongArgMethodCallback, 0, 1},
     {"voidMethodVariadicStringArg", TestObjectPythonV8Internal::voidMethodVariadicStringArgMethodCallback, 0, 1},
     {"voidMethodStringArgVariadicStringArg", TestObjectPythonV8Internal::voidMethodStringArgVariadicStringArgMethodCallback, 0, 2},
 };
