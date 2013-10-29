@@ -186,10 +186,8 @@ void ElementShadow::detach(const Node::AttachContext& context)
     Node::AttachContext childrenContext(context);
     childrenContext.resolvedStyle = 0;
 
-    for (ShadowRoot* root = youngestShadowRoot(); root; root = root->olderShadowRoot()) {
-        if (root->confusingAndOftenMisusedAttached())
-            root->detach(childrenContext);
-    }
+    for (ShadowRoot* root = youngestShadowRoot(); root; root = root->olderShadowRoot())
+        root->detach(childrenContext);
 }
 
 void ElementShadow::removeAllEventListeners()
