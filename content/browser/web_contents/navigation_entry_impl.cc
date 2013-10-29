@@ -321,6 +321,16 @@ void NavigationEntryImpl::ClearExtraData(const std::string& key) {
   extra_data_.erase(key);
 }
 
+void NavigationEntryImpl::ResetForCommit() {
+  // Any state that only matters when a navigation entry is pending should be
+  // cleared here.
+  SetBrowserInitiatedPostData(NULL);
+  set_is_renderer_initiated(false);
+  set_transferred_global_request_id(GlobalRequestID());
+  set_should_replace_entry(false);
+  set_should_clear_history_list(false);
+}
+
 void NavigationEntryImpl::SetScreenshotPNGData(
     scoped_refptr<base::RefCountedBytes> png_data) {
   screenshot_ = png_data;

@@ -1217,6 +1217,51 @@ TEST_F(NavigationControllerTest, ReloadOriginalRequestURL) {
 
 #endif  // !defined(OS_ANDROID)
 
+// Test that certain non-persisted NavigationEntryImpl values get reset after
+// commit.
+TEST_F(NavigationControllerTest, ResetEntryValuesAfterCommit) {
+  NavigationControllerImpl& controller = controller_impl();
+  const GURL url1("http://foo1");
+  controller.LoadURL(url1, Referrer(), PAGE_TRANSITION_TYPED, std::string());
+
+  // Set up some sample values.
+  const unsigned char* raw_data =
+      reinterpret_cast<const unsigned char*>("post\n\n\0data");
+  const int length = 11;
+  std::vector<unsigned char> post_data_vector(raw_data, raw_data+length);
+  scoped_refptr<base::RefCountedBytes> post_data =
+      base::RefCountedBytes::TakeVector(&post_data_vector);
+  GlobalRequestID transfer_id(3, 4);
+
+  // Set non-persisted values on the pending entry.
+  NavigationEntryImpl* pending_entry =
+      NavigationEntryImpl::FromNavigationEntry(controller.GetPendingEntry());
+  pending_entry->SetBrowserInitiatedPostData(post_data.get());
+  pending_entry->set_is_renderer_initiated(true);
+  pending_entry->set_transferred_global_request_id(transfer_id);
+  pending_entry->set_should_replace_entry(true);
+  pending_entry->set_should_clear_history_list(true);
+  EXPECT_EQ(post_data.get(), pending_entry->GetBrowserInitiatedPostData());
+  EXPECT_TRUE(pending_entry->is_renderer_initiated());
+  EXPECT_EQ(transfer_id, pending_entry->transferred_global_request_id());
+  EXPECT_TRUE(pending_entry->should_replace_entry());
+  EXPECT_TRUE(pending_entry->should_clear_history_list());
+
+  test_rvh()->SendNavigate(0, url1);
+
+  // Certain values that are only used for pending entries get reset after
+  // commit.
+  NavigationEntryImpl* committed_entry =
+      NavigationEntryImpl::FromNavigationEntry(
+          controller.GetLastCommittedEntry());
+  EXPECT_FALSE(committed_entry->GetBrowserInitiatedPostData());
+  EXPECT_FALSE(committed_entry->is_renderer_initiated());
+  EXPECT_EQ(GlobalRequestID(-1, -1),
+            committed_entry->transferred_global_request_id());
+  EXPECT_FALSE(committed_entry->should_replace_entry());
+  EXPECT_FALSE(committed_entry->should_clear_history_list());
+}
+
 // Tests what happens when we navigate back successfully
 TEST_F(NavigationControllerTest, Back) {
   NavigationControllerImpl& controller = controller_impl();

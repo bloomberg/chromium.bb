@@ -807,16 +807,10 @@ bool NavigationControllerImpl::RendererDidNavigate(
   active_entry->SetTimestamp(timestamp);
   active_entry->SetHttpStatusCode(params.http_status_code);
   active_entry->SetPageState(params.page_state);
-  // No longer needed since content state will hold the post data if any.
-  active_entry->SetBrowserInitiatedPostData(NULL);
 
-  // Once committed, we do not need to track if the entry was initiated by
-  // the renderer.
-  active_entry->set_is_renderer_initiated(false);
-
-  // Once committed, we no longer need to track whether the session history was
-  // cleared. Navigating to this entry again shouldn't clear it again.
-  active_entry->set_should_clear_history_list(false);
+  // Once it is committed, we no longer need to track several pieces of state on
+  // the entry.
+  active_entry->ResetForCommit();
 
   // The active entry's SiteInstance should match our SiteInstance.
   CHECK(active_entry->site_instance() == delegate_->GetSiteInstance());

@@ -87,6 +87,10 @@ class CONTENT_EXPORT NavigationEntryImpl
   virtual void SetHttpStatusCode(int http_status_code) OVERRIDE;
   virtual int GetHttpStatusCode() const OVERRIDE;
 
+  // Once a navigation entry is committed, we should no longer track several
+  // pieces of non-persisted state, as documented on the members below.
+  void ResetForCommit();
+
   void set_unique_id(int unique_id) {
     unique_id_ = unique_id;
   }
@@ -239,6 +243,7 @@ class CONTENT_EXPORT NavigationEntryImpl
   // If the post request succeeds, this field is cleared since the same
   // information is stored in |content_state_| above. It is also only shallow
   // copied with compiler provided copy constructor.
+  // Cleared in |ResetForCommit|.
   scoped_refptr<const base::RefCountedMemory> browser_initiated_post_data_;
 
   // This is also a transient member (i.e. is not persisted with session
@@ -259,7 +264,7 @@ class CONTENT_EXPORT NavigationEntryImpl
 
   // Whether the entry, while loading, was created for a renderer-initiated
   // navigation.  This dictates whether the URL should be displayed before the
-  // navigation commits.  It is cleared on commit and not persisted.
+  // navigation commits.  It is cleared in |ResetForCommit| and not persisted.
   bool is_renderer_initiated_;
 
   // This is a cached version of the result of GetTitleForDisplay. It prevents
@@ -275,13 +280,14 @@ class CONTENT_EXPORT NavigationEntryImpl
   // carries this |transferred_global_request_id_| annotation. Once the request
   // is transferred to the new process, this is cleared and the request
   // continues as normal.
+  // Cleared in |ResetForCommit|.
   GlobalRequestID transferred_global_request_id_;
 
   // This is set to true when this entry is being reloaded and due to changes in
   // the state of the URL, it has to be reloaded in a different site instance.
   // In such case, we must treat it as an existing navigation in the new site
   // instance, instead of a new navigation. This value should not be persisted
-  // and is not needed after the entry commits.
+  // and is cleared in |ResetForCommit|.
   //
   // We also use this flag for cross-process redirect navigations, so that the
   // browser will replace the current navigation entry (which is the page
@@ -292,7 +298,7 @@ class CONTENT_EXPORT NavigationEntryImpl
   // history both on the renderer and browser side. The browser side history
   // won't be cleared until the renderer has committed this navigation. This
   // entry is not persisted by the session restore system, as it is always
-  // reset to false after commit.
+  // cleared in |ResetForCommit|.
   bool should_clear_history_list_;
 
   // Set when this entry should be able to access local file:// resources. This

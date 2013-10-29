@@ -1979,10 +1979,10 @@ void WebContentsImpl::DidStartProvisionalLoadForFrame(
     // SiteInstance, and ensure the address bar updates accordingly.  We don't
     // know the referrer or extra headers at this point, but the referrer will
     // be set properly upon commit.
-    NavigationEntry* pending_entry = controller_.GetPendingEntry();
+    NavigationEntryImpl* pending_entry =
+        NavigationEntryImpl::FromNavigationEntry(controller_.GetPendingEntry());
     bool has_browser_initiated_pending_entry = pending_entry &&
-        !NavigationEntryImpl::FromNavigationEntry(pending_entry)->
-            is_renderer_initiated();
+        !pending_entry->is_renderer_initiated();
     if (!has_browser_initiated_pending_entry && !is_error_page) {
       NavigationEntryImpl* entry = NavigationEntryImpl::FromNavigationEntry(
           controller_.CreateNavigationEntry(validated_url,
@@ -1995,10 +1995,10 @@ void WebContentsImpl::DidStartProvisionalLoadForFrame(
           static_cast<SiteInstanceImpl*>(GetSiteInstance()));
       // TODO(creis): If there's a pending entry already, find a safe way to
       // update it instead of replacing it and copying over things like this.
-      if (pending_entry &&
-          NavigationEntryImpl::FromNavigationEntry(pending_entry)->
-              should_replace_entry()) {
-        entry->set_should_replace_entry(true);
+      if (pending_entry) {
+        entry->set_transferred_global_request_id(
+            pending_entry->transferred_global_request_id());
+        entry->set_should_replace_entry(pending_entry->should_replace_entry());
       }
       controller_.SetPendingEntry(entry);
       NotifyNavigationStateChanged(content::INVALIDATE_TYPE_URL);
