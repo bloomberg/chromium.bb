@@ -534,3 +534,5 @@ crbug.com/312606 [ Mac ] fast/text/international/text-combine-image-test.html [ 
 
 crbug.com/312613 fast/canvas/canvas-blending-pattern-over-gradient.html [ Pass Timeout ]
 
+# Crashes on Linux ASAN
+crbug.com/312639 [ Linux ] fast/dom/HTMLObjectElement/beforeload-set-text-crash.xhtml [ Crash Pass ]
