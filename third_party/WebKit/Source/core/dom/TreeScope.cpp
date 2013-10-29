@@ -487,7 +487,7 @@ Element* TreeScope::getElementByAccessKey(const String& key) const
     Element* result = 0;
     Node* root = rootNode();
     for (Element* element = ElementTraversal::firstWithin(root); element; element = ElementTraversal::next(element, root)) {
-        if (element->fastGetAttribute(accesskeyAttr) == key)
+        if (equalIgnoringCase(element->fastGetAttribute(accesskeyAttr), key))
             result = element;
         for (ShadowRoot* shadowRoot = element->youngestShadowRoot(); shadowRoot; shadowRoot = shadowRoot->olderShadowRoot()) {
             if (Element* shadowResult = shadowRoot->getElementByAccessKey(key))
