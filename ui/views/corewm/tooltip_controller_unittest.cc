@@ -438,7 +438,7 @@ TEST_F(TooltipControllerCaptureTest, MAYBE_Capture) {
   widget_->SetBounds(gfx::Rect(0, 0, 200, 200));
   view_->set_tooltip_text(tooltip_text);
 
-  views::Widget* widget2 = CreateWidget(root_window());
+  scoped_ptr<views::Widget> widget2(CreateWidget(root_window()));
   widget2->SetContentsView(new View);
   TooltipTestView* view2 = new TooltipTestView;
   widget2->GetContentsView()->AddChildView(view2);
@@ -475,7 +475,7 @@ TEST_F(TooltipControllerCaptureTest, MAYBE_Capture) {
   helper_->FireTooltipTimer();
   EXPECT_EQ(tooltip_text2, helper_->GetTooltipText());
 
-  widget2->Close();
+  widget2.reset();
 }
 
 #if !defined(OS_CHROMEOS)
