@@ -40,29 +40,38 @@ import v8_utilities
 
 
 def generate_method(method):
-    idl_type = method.idl_type
-    name = method.name
     arguments = method.arguments
     arguments_contents = [{
+        'cpp_method': cpp_method(method, index),
+        'index': index,
+        'is_optional': argument.is_optional,
         'v8_value_to_local_cpp_value':
             v8_types.v8_value_to_local_cpp_value(
                 argument.idl_type, argument.extended_attributes,
                 'args[%s]' % index, argument.name, 'args.GetIsolate()'),
             }
         for index, argument in enumerate(arguments)]
-    argument_names = [argument.name for argument in arguments]
-    cpp_value = 'imp->%s(%s)' % (method.name, ', '.join(argument_names))
     contents = {
         'arguments': arguments_contents,
+        'cpp_method': cpp_method(method, len(arguments)),
         'custom_signature': custom_signature(arguments),
-        'cpp_value': cpp_value,
-        'idl_type': idl_type,
-        'name': name,
-        'number_of_required_arguments': len(arguments),
+        'idl_type': method.idl_type,
+        'name': method.name,
+        'number_of_required_arguments': len([argument for argument in arguments if not argument.is_optional]),
     }
-    if idl_type != 'void':
-        contents['v8_set_return_value'] = v8_types.v8_set_return_value(idl_type, cpp_value, callback_info='args', creation_context='args.Holder()', isolate='args.GetIsolate()')
     return contents
+
+
+def cpp_method(method, number_of_arguments):
+    argument_names = [argument.name for argument in method.arguments]
+    # Truncate omitted optional arguments
+    argument_names = argument_names[:number_of_arguments]
+    cpp_value = 'imp->%s(%s)' % (method.name, ', '.join(argument_names))
+
+    idl_type = method.idl_type
+    if idl_type == 'void':
+        return cpp_value
+    return v8_types.v8_set_return_value(idl_type, cpp_value, callback_info='args', creation_context='args.Holder()', isolate='args.GetIsolate()')
 
 
 def custom_signature(arguments):

@@ -171,6 +171,8 @@ interface TestObjectPython {
 
     // Methods
     void voidMethod();
+
+    // Types
     // Basic types
     Date dateMethod();
     DOMString stringMethod();
@@ -212,5 +214,14 @@ interface TestObjectPython {
     void voidMethodElementArg(Element elementArg);
     void voidMethodNodeArg(Node nodeArg);
 
+    // Arguments
     void voidMethodStringArgLongArg(DOMString stringArg, long longArg);
+    // Optional arguments
+    void voidMethodOptionalStringArg(optional DOMString stringArg);
+    void voidMethodOptionalLongArg(optional long optionalLongArg);
+    DOMString stringMethodOptionalLongArg(optional long optionalLongArg);
+    TestInterfaceEmpty testInterfaceEmptyMethodOptionalLongArg(optional long optionalLongArg);
+    long longMethodOptionalLongArg(optional long optionalLongArg);
+    void voidMethodLongArgOptionalLongArg(long longArg, optional long optionalLongArg);
+    void voidMethodLongArgOptionalLongArgOptionalLongArg(long longArg, optional long optionalLongArg1, optional long optionalLongArg2);
 };

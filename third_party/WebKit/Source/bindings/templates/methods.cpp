@@ -10,13 +10,15 @@ static void {{method.name}}Method(const v8::FunctionCallbackInfo<v8::Value>& arg
     {% endif %}
     {{cpp_class_name}}* imp = {{v8_class_name}}::toNative(args.Holder());
     {% for argument in method.arguments %}
+    {% if argument.is_optional %}
+    if (UNLIKELY(args.Length() <= {{argument.index}})) {
+        {{argument.cpp_method}};
+        return;
+    }
+    {% endif %}
     {{argument.v8_value_to_local_cpp_value}};
     {% endfor %}
-    {% if method.idl_type == 'void' %}
-    {{method.cpp_value}};
-    {% else %}
-    {{method.v8_set_return_value}};
-    {% endif %}
+    {{method.cpp_method}};
 }
 {% endmacro %}
 

@@ -3822,6 +3822,155 @@ static void voidMethodStringArgLongArgMethodCallback(const v8::FunctionCallbackI
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
+static void voidMethodOptionalStringArgMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
+{
+    TestObjectPython* imp = V8TestObjectPython::toNative(args.Holder());
+    if (UNLIKELY(args.Length() <= 0)) {
+        imp->voidMethodOptionalStringArg();
+;
+        return;
+    }
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, stringArg, args[0]);
+    imp->voidMethodOptionalStringArg(stringArg);
+}
+
+static void voidMethodOptionalStringArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    TestObjectPythonV8Internal::voidMethodOptionalStringArgMethod(args);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
+static void voidMethodOptionalLongArgMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
+{
+    TestObjectPython* imp = V8TestObjectPython::toNative(args.Holder());
+    if (UNLIKELY(args.Length() <= 0)) {
+        imp->voidMethodOptionalLongArg();
+;
+        return;
+    }
+    V8TRYCATCH_VOID(int, optionalLongArg, toInt32(args[0]));
+    imp->voidMethodOptionalLongArg(optionalLongArg);
+}
+
+static void voidMethodOptionalLongArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    TestObjectPythonV8Internal::voidMethodOptionalLongArgMethod(args);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
+static void stringMethodOptionalLongArgMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
+{
+    TestObjectPython* imp = V8TestObjectPython::toNative(args.Holder());
+    if (UNLIKELY(args.Length() <= 0)) {
+        v8SetReturnValueString(args, imp->stringMethodOptionalLongArg(), args.GetIsolate());
+;
+        return;
+    }
+    V8TRYCATCH_VOID(int, optionalLongArg, toInt32(args[0]));
+    v8SetReturnValueString(args, imp->stringMethodOptionalLongArg(optionalLongArg), args.GetIsolate());
+}
+
+static void stringMethodOptionalLongArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    TestObjectPythonV8Internal::stringMethodOptionalLongArgMethod(args);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
+static void testInterfaceEmptyMethodOptionalLongArgMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
+{
+    TestObjectPython* imp = V8TestObjectPython::toNative(args.Holder());
+    if (UNLIKELY(args.Length() <= 0)) {
+        v8SetReturnValue(args, imp->testInterfaceEmptyMethodOptionalLongArg(), args.Holder());
+;
+        return;
+    }
+    V8TRYCATCH_VOID(int, optionalLongArg, toInt32(args[0]));
+    v8SetReturnValue(args, imp->testInterfaceEmptyMethodOptionalLongArg(optionalLongArg), args.Holder());
+}
+
+static void testInterfaceEmptyMethodOptionalLongArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    TestObjectPythonV8Internal::testInterfaceEmptyMethodOptionalLongArgMethod(args);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
+static void longMethodOptionalLongArgMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
+{
+    TestObjectPython* imp = V8TestObjectPython::toNative(args.Holder());
+    if (UNLIKELY(args.Length() <= 0)) {
+        v8SetReturnValueInt(args, imp->longMethodOptionalLongArg());
+;
+        return;
+    }
+    V8TRYCATCH_VOID(int, optionalLongArg, toInt32(args[0]));
+    v8SetReturnValueInt(args, imp->longMethodOptionalLongArg(optionalLongArg));
+}
+
+static void longMethodOptionalLongArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    TestObjectPythonV8Internal::longMethodOptionalLongArgMethod(args);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
+static void voidMethodLongArgOptionalLongArgMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
+{
+    if (UNLIKELY(args.Length() < 1)) {
+        throwTypeError(ExceptionMessages::failedToExecute("voidMethodLongArgOptionalLongArg", "TestObjectPython", ExceptionMessages::notEnoughArguments(1, args.Length())), args.GetIsolate());
+        return;
+    }
+    TestObjectPython* imp = V8TestObjectPython::toNative(args.Holder());
+    V8TRYCATCH_VOID(int, longArg, toInt32(args[0]));
+    if (UNLIKELY(args.Length() <= 1)) {
+        imp->voidMethodLongArgOptionalLongArg(longArg);
+;
+        return;
+    }
+    V8TRYCATCH_VOID(int, optionalLongArg, toInt32(args[1]));
+    imp->voidMethodLongArgOptionalLongArg(longArg, optionalLongArg);
+}
+
+static void voidMethodLongArgOptionalLongArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    TestObjectPythonV8Internal::voidMethodLongArgOptionalLongArgMethod(args);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
+static void voidMethodLongArgOptionalLongArgOptionalLongArgMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
+{
+    if (UNLIKELY(args.Length() < 1)) {
+        throwTypeError(ExceptionMessages::failedToExecute("voidMethodLongArgOptionalLongArgOptionalLongArg", "TestObjectPython", ExceptionMessages::notEnoughArguments(1, args.Length())), args.GetIsolate());
+        return;
+    }
+    TestObjectPython* imp = V8TestObjectPython::toNative(args.Holder());
+    V8TRYCATCH_VOID(int, longArg, toInt32(args[0]));
+    if (UNLIKELY(args.Length() <= 1)) {
+        imp->voidMethodLongArgOptionalLongArgOptionalLongArg(longArg);
+;
+        return;
+    }
+    V8TRYCATCH_VOID(int, optionalLongArg1, toInt32(args[1]));
+    if (UNLIKELY(args.Length() <= 2)) {
+        imp->voidMethodLongArgOptionalLongArgOptionalLongArg(longArg, optionalLongArg1);
+;
+        return;
+    }
+    V8TRYCATCH_VOID(int, optionalLongArg2, toInt32(args[2]));
+    imp->voidMethodLongArgOptionalLongArgOptionalLongArg(longArg, optionalLongArg1, optionalLongArg2);
+}
+
+static void voidMethodLongArgOptionalLongArgOptionalLongArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    TestObjectPythonV8Internal::voidMethodLongArgOptionalLongArgOptionalLongArgMethod(args);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
 } // namespace TestObjectPythonV8Internal
 
 static const V8DOMConfiguration::AttributeConfiguration V8TestObjectPythonAttributes[] = {
@@ -3973,6 +4122,13 @@ static const V8DOMConfiguration::MethodConfiguration V8TestObjectPythonMethods[]
     {"voidMethodUnsignedShortArg", TestObjectPythonV8Internal::voidMethodUnsignedShortArgMethodCallback, 0, 1},
     {"testInterfaceEmptyMethod", TestObjectPythonV8Internal::testInterfaceEmptyMethodMethodCallback, 0, 0},
     {"voidMethodStringArgLongArg", TestObjectPythonV8Internal::voidMethodStringArgLongArgMethodCallback, 0, 2},
+    {"voidMethodOptionalStringArg", TestObjectPythonV8Internal::voidMethodOptionalStringArgMethodCallback, 0, 0},
+    {"voidMethodOptionalLongArg", TestObjectPythonV8Internal::voidMethodOptionalLongArgMethodCallback, 0, 0},
+    {"stringMethodOptionalLongArg", TestObjectPythonV8Internal::stringMethodOptionalLongArgMethodCallback, 0, 0},
+    {"testInterfaceEmptyMethodOptionalLongArg", TestObjectPythonV8Internal::testInterfaceEmptyMethodOptionalLongArgMethodCallback, 0, 0},
+    {"longMethodOptionalLongArg", TestObjectPythonV8Internal::longMethodOptionalLongArgMethodCallback, 0, 0},
+    {"voidMethodLongArgOptionalLongArg", TestObjectPythonV8Internal::voidMethodLongArgOptionalLongArgMethodCallback, 0, 1},
+    {"voidMethodLongArgOptionalLongArgOptionalLongArg", TestObjectPythonV8Internal::voidMethodLongArgOptionalLongArgOptionalLongArgMethodCallback, 0, 1},
 };
 
 static v8::Handle<v8::FunctionTemplate> ConfigureV8TestObjectPythonTemplate(v8::Handle<v8::FunctionTemplate> desc, v8::Isolate* isolate, WrapperWorldType currentWorldType)
