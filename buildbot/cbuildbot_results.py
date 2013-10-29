@@ -209,21 +209,6 @@ class _Results(object):
     """
     self._results_log.append((name, result, description, time))
 
-  def UpdateResult(self, name, result, description=None):
-    """Updates a stage result with a different result.
-
-       Args:
-         name: The name of the stage
-         result: See docstring for Record above.
-         description:
-           The textual backtrace of the exception, or None
-    """
-    for index in range(len(self._results_log)):
-      if self._results_log[index][0] == name:
-        _, _, _, run_time = self._results_log[index]
-        self._results_log[index] = name, result, description, run_time
-        break
-
   def Get(self):
     """Fetch stage results.
 
