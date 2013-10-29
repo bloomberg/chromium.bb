@@ -6,6 +6,7 @@
 #define UI_GFX_PLATFORM_FONT_MAC_H_
 
 #include "base/compiler_specific.h"
+#include "base/mac/scoped_nsobject.h"
 #include "ui/gfx/platform_font.h"
 
 namespace gfx {
@@ -31,16 +32,12 @@ class PlatformFontMac : public PlatformFont {
   virtual NativeFont GetNativeFont() const OVERRIDE;
 
  private:
-  PlatformFontMac(const std::string& font_name, int font_size, int style);
-  virtual ~PlatformFontMac() {}
+  virtual ~PlatformFontMac();
 
-  // Initialize the object with the specified parameters.
-  void InitWithNameSizeAndStyle(const std::string& font_name,
-                                int font_size,
-                                int style);
+  // Initialize the object, and calculate and cache the font metrics.
+  void InitAndCalculateMetrics();
 
-  // Calculate and cache the font metrics.
-  void CalculateMetrics();
+  base::scoped_nsobject<NSFont> native_font_;
 
   std::string font_name_;
   int font_size_;
