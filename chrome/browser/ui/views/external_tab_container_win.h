@@ -20,7 +20,6 @@
 #include "content/public/browser/navigation_type.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "ui/base/accelerators/accelerator.h"
@@ -255,8 +254,6 @@ class ExternalTabContainerWin : public ExternalTabContainer,
   views::Widget* widget_;
   scoped_ptr<content::WebContents> web_contents_;
   scoped_refptr<AutomationProvider> automation_;
-
-  content::RenderViewHost::CreatedCallback rvh_callback_;
 
   content::NotificationRegistrar registrar_;
 
