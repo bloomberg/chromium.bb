@@ -212,8 +212,7 @@ bool NativeWidgetWin::HasCapture() const {
 }
 
 InputMethod* NativeWidgetWin::CreateInputMethod() {
-  return new InputMethodBridge(GetMessageHandler(), ui::GetSharedInputMethod(),
-                               true);
+  return new InputMethodBridge(GetMessageHandler(), ui::GetSharedInputMethod());
 }
 
 internal::InputMethodDelegate* NativeWidgetWin::GetInputMethodDelegate() {

@@ -133,8 +133,6 @@ void InputMethodBase::NotifyTextInputStateChanged(
 void InputMethodBase::SetFocusedTextInputClientInternal(
     TextInputClient* client) {
   TextInputClient* old = text_input_client_;
-  if (old == client)
-    return;
   OnWillChangeFocusedClient(old, client);
   text_input_client_ = client;  // NULL allowed.
   OnDidChangeFocusedClient(old, client);

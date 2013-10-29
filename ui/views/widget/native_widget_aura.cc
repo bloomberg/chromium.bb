@@ -279,7 +279,7 @@ InputMethod* NativeWidgetAura::CreateInputMethod() {
   aura::Window* root_window = window_->GetRootWindow();
   ui::InputMethod* host =
       root_window->GetProperty(aura::client::kRootWindowInputMethodKey);
-  return new InputMethodBridge(this, host, true);
+  return new InputMethodBridge(this, host);
 }
 
 internal::InputMethodDelegate* NativeWidgetAura::GetInputMethodDelegate() {
