@@ -187,6 +187,14 @@ class GenerateSymbolsTest(cros_test_lib.MockTempDirTestCase):
       self.assertEquals(gen_mock.call_count, 2)
       self.assertExists(dummy_file)
 
+  def testExclusionList(self, gen_mock):
+    """Verify files in directories of the exclusion list are excluded"""
+    exclude_dirs = ['bin', 'usr', 'fake/dir/fake']
+    with parallel_unittest.ParallelMock():
+      ret = cros_generate_breakpad_symbols.GenerateBreakpadSymbols(
+          self.board, sysroot=self.board_dir, exclude_dirs=exclude_dirs)
+      self.assertEquals(ret, 0)
+      self.assertEquals(gen_mock.call_count, 1)
 
 class GenerateSymbolTest(cros_test_lib.MockTempDirTestCase):
 

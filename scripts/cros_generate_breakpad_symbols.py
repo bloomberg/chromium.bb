@@ -153,7 +153,8 @@ def GenerateBreakpadSymbol(elf_file, debug_file=None, breakpad_dir=None,
 
 def GenerateBreakpadSymbols(board, breakpad_dir=None, strip_cfi=False,
                             generate_count=None, sysroot=None,
-                            num_processes=None, clean_breakpad=False):
+                            num_processes=None, clean_breakpad=False,
+                            exclude_dirs=()):
   """Generate all the symbols for this board
 
   TODO(build):
@@ -169,6 +170,7 @@ def GenerateBreakpadSymbols(board, breakpad_dir=None, strip_cfi=False,
     num_processes: Number of jobs to run in parallel
     clean_breakpad: Should we `rm -rf` the breakpad output dir first; note: we
       do not do any locking, so do not run more than one in parallel when True
+    exclude_dirs: List of dirs (relative to |sysroot|) to not search
   Returns:
     The number of errors that were encountered.
   """
@@ -185,6 +187,7 @@ def GenerateBreakpadSymbols(board, breakpad_dir=None, strip_cfi=False,
     cros_build_lib.SudoRunCommand(['chown', '-R', str(os.getuid()),
                                    breakpad_dir])
   debug_dir = FindDebugDir(board)
+  exclude_paths = [os.path.join(debug_dir, x) for x in exclude_dirs]
 
   cros_build_lib.Info('generating all breakpad symbol files using %s',
                       debug_dir)
@@ -192,7 +195,12 @@ def GenerateBreakpadSymbols(board, breakpad_dir=None, strip_cfi=False,
   # Let's locate all the debug_files first and their size.  This way we can
   # start processing the largest files first in parallel with the small ones.
   debug_files = []
-  for root, _, files in os.walk(debug_dir):
+  for root, dirs, files in os.walk(debug_dir):
+    if root in exclude_paths:
+      cros_build_lib.Info('Skipping excluded dir %s', root)
+      del dirs[:]
+      continue
+
     for debug_file in files:
       debug_file = os.path.join(root, debug_file)
       if debug_file.endswith('.ko.debug'):
@@ -254,6 +262,9 @@ def main(argv):
                       help='board to generate symbols for')
   parser.add_argument('--breakpad_root', type='path', default=None,
                       help='root directory for breakpad symbols')
+  parser.add_argument('--exclude-dir', type=str, action='append',
+                      default=[],
+                      help='directory (relative to |board| root) to not search')
   parser.add_argument('--generate-count', type=int, default=None,
                       help='only generate # number of symbols')
   parser.add_argument('--noclean', dest='clean', action='store_false',
@@ -273,7 +284,8 @@ def main(argv):
                                 strip_cfi=opts.strip_cfi,
                                 generate_count=opts.generate_count,
                                 num_processes=opts.jobs,
-                                clean_breakpad=opts.clean)
+                                clean_breakpad=opts.clean,
+                                exclude_dirs=opts.exclude_dir)
   if ret:
     cros_build_lib.Error('encountered %i problem(s)', ret)
     # Since exit(status) gets masked, clamp it to 1 so we don't inadvertently
