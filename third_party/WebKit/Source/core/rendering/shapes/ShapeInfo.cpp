@@ -36,19 +36,16 @@
 
 namespace WebCore {
 
-template<class RenderType>
-bool ShapeInfo<RenderType>::checkImageOrigin(const RenderType* renderer, const StyleImage* styleImage)
+bool checkShapeImageOrigin(Document& document, ImageResource& imageResource)
 {
-    ASSERT(styleImage && styleImage->isImageResource() && styleImage->cachedImage() && styleImage->cachedImage()->image());
+    if (imageResource.isAccessAllowed(document.securityOrigin()))
+        return true;
 
-    bool accessAllowed = styleImage->cachedImage()->isAccessAllowed(renderer->document().securityOrigin());
-    if (!accessAllowed) {
-        const KURL& url = styleImage->cachedImage()->url();
-        String urlString = url.isNull() ? "''" : url.elidedString();
-        renderer->document().addConsoleMessage(SecurityMessageSource, ErrorMessageLevel, "Unsafe attempt to load URL " + urlString + ".");
-        return false;
-    }
-    return true;
+    const KURL& url = imageResource.url();
+    String urlString = url.isNull() ? "''" : url.elidedString();
+    document.addConsoleMessage(SecurityMessageSource, ErrorMessageLevel, "Unsafe attempt to load URL " + urlString + ".");
+
+    return false;
 }
 
 template<class RenderType>

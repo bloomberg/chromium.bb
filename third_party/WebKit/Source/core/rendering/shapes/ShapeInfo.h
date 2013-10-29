@@ -105,7 +105,6 @@ protected:
     ShapeInfo(const RenderType* renderer): m_renderer(renderer) { }
 
     const Shape* computedShape() const;
-    static bool checkImageOrigin(const RenderType* renderer, const StyleImage*);
 
     virtual LayoutRect computedShapeLogicalBoundingBox() const = 0;
     virtual ShapeValue* shapeValue() const = 0;
@@ -123,5 +122,8 @@ private:
     mutable OwnPtr<Shape> m_shape;
     LayoutSize m_shapeLogicalSize;
 };
+
+bool checkShapeImageOrigin(Document&, ImageResource&);
+
 }
 #endif
