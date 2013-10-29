@@ -23,6 +23,7 @@
 
 #include "HTMLNames.h"
 #include "RuntimeEnabledFeatures.h"
+#include "V8Attr.h"
 #include "V8DOMStringList.h"
 #include "V8Document.h"
 #include "V8DocumentFragment.h"
@@ -3712,6 +3713,96 @@ static void voidMethodLongArgTestInterfaceEmptyArgMethodCallback(const v8::Funct
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
+static void voidMethodAttrArgMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
+{
+    if (UNLIKELY(args.Length() < 1)) {
+        throwTypeError(ExceptionMessages::failedToExecute("voidMethodAttrArg", "TestObjectPython", ExceptionMessages::notEnoughArguments(1, args.Length())), args.GetIsolate());
+        return;
+    }
+    TestObjectPython* imp = V8TestObjectPython::toNative(args.Holder());
+    V8TRYCATCH_VOID(Attr*, attrArg, V8Attr::HasInstance(args[0], args.GetIsolate(), worldType(args.GetIsolate())) ? V8Attr::toNative(v8::Handle<v8::Object>::Cast(args[0])) : 0);
+    imp->voidMethodAttrArg(attrArg);
+}
+
+static void voidMethodAttrArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    TestObjectPythonV8Internal::voidMethodAttrArgMethod(args);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
+static void voidMethodDocumentArgMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
+{
+    if (UNLIKELY(args.Length() < 1)) {
+        throwTypeError(ExceptionMessages::failedToExecute("voidMethodDocumentArg", "TestObjectPython", ExceptionMessages::notEnoughArguments(1, args.Length())), args.GetIsolate());
+        return;
+    }
+    TestObjectPython* imp = V8TestObjectPython::toNative(args.Holder());
+    V8TRYCATCH_VOID(Document*, documentArg, V8Document::HasInstance(args[0], args.GetIsolate(), worldType(args.GetIsolate())) ? V8Document::toNative(v8::Handle<v8::Object>::Cast(args[0])) : 0);
+    imp->voidMethodDocumentArg(documentArg);
+}
+
+static void voidMethodDocumentArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    TestObjectPythonV8Internal::voidMethodDocumentArgMethod(args);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
+static void voidMethodDocumentTypeArgMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
+{
+    if (UNLIKELY(args.Length() < 1)) {
+        throwTypeError(ExceptionMessages::failedToExecute("voidMethodDocumentTypeArg", "TestObjectPython", ExceptionMessages::notEnoughArguments(1, args.Length())), args.GetIsolate());
+        return;
+    }
+    TestObjectPython* imp = V8TestObjectPython::toNative(args.Holder());
+    V8TRYCATCH_VOID(DocumentType*, documentTypeArg, V8DocumentType::HasInstance(args[0], args.GetIsolate(), worldType(args.GetIsolate())) ? V8DocumentType::toNative(v8::Handle<v8::Object>::Cast(args[0])) : 0);
+    imp->voidMethodDocumentTypeArg(documentTypeArg);
+}
+
+static void voidMethodDocumentTypeArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    TestObjectPythonV8Internal::voidMethodDocumentTypeArgMethod(args);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
+static void voidMethodElementArgMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
+{
+    if (UNLIKELY(args.Length() < 1)) {
+        throwTypeError(ExceptionMessages::failedToExecute("voidMethodElementArg", "TestObjectPython", ExceptionMessages::notEnoughArguments(1, args.Length())), args.GetIsolate());
+        return;
+    }
+    TestObjectPython* imp = V8TestObjectPython::toNative(args.Holder());
+    V8TRYCATCH_VOID(Element*, elementArg, V8Element::HasInstance(args[0], args.GetIsolate(), worldType(args.GetIsolate())) ? V8Element::toNative(v8::Handle<v8::Object>::Cast(args[0])) : 0);
+    imp->voidMethodElementArg(elementArg);
+}
+
+static void voidMethodElementArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    TestObjectPythonV8Internal::voidMethodElementArgMethod(args);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
+static void voidMethodNodeArgMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
+{
+    if (UNLIKELY(args.Length() < 1)) {
+        throwTypeError(ExceptionMessages::failedToExecute("voidMethodNodeArg", "TestObjectPython", ExceptionMessages::notEnoughArguments(1, args.Length())), args.GetIsolate());
+        return;
+    }
+    TestObjectPython* imp = V8TestObjectPython::toNative(args.Holder());
+    V8TRYCATCH_VOID(Node*, nodeArg, V8Node::HasInstance(args[0], args.GetIsolate(), worldType(args.GetIsolate())) ? V8Node::toNative(v8::Handle<v8::Object>::Cast(args[0])) : 0);
+    imp->voidMethodNodeArg(nodeArg);
+}
+
+static void voidMethodNodeArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    TestObjectPythonV8Internal::voidMethodNodeArgMethod(args);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
 static void voidMethodStringArgLongArgMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     if (UNLIKELY(args.Length() < 2)) {
@@ -3921,6 +4012,36 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestObjectPythonTemplate(v8::
     v8::Handle<v8::FunctionTemplate> voidMethodLongArgTestInterfaceEmptyArgArgv[voidMethodLongArgTestInterfaceEmptyArgArgc] = { v8::Handle<v8::FunctionTemplate>(), V8PerIsolateData::from(isolate)->rawTemplate(&V8TestInterfaceEmpty::wrapperTypeInfo, currentWorldType) };
     v8::Handle<v8::Signature> voidMethodLongArgTestInterfaceEmptyArgSignature = v8::Signature::New(desc, voidMethodLongArgTestInterfaceEmptyArgArgc, voidMethodLongArgTestInterfaceEmptyArgArgv);
     proto->Set(v8::String::NewSymbol("voidMethodLongArgTestInterfaceEmptyArg"), v8::FunctionTemplate::New(TestObjectPythonV8Internal::voidMethodLongArgTestInterfaceEmptyArgMethodCallback, v8Undefined(), voidMethodLongArgTestInterfaceEmptyArgSignature, 2));
+
+    // Custom Signature 'voidMethodAttrArg'
+    const int voidMethodAttrArgArgc = 1;
+    v8::Handle<v8::FunctionTemplate> voidMethodAttrArgArgv[voidMethodAttrArgArgc] = { V8PerIsolateData::from(isolate)->rawTemplate(&V8Attr::wrapperTypeInfo, currentWorldType) };
+    v8::Handle<v8::Signature> voidMethodAttrArgSignature = v8::Signature::New(desc, voidMethodAttrArgArgc, voidMethodAttrArgArgv);
+    proto->Set(v8::String::NewSymbol("voidMethodAttrArg"), v8::FunctionTemplate::New(TestObjectPythonV8Internal::voidMethodAttrArgMethodCallback, v8Undefined(), voidMethodAttrArgSignature, 1));
+
+    // Custom Signature 'voidMethodDocumentArg'
+    const int voidMethodDocumentArgArgc = 1;
+    v8::Handle<v8::FunctionTemplate> voidMethodDocumentArgArgv[voidMethodDocumentArgArgc] = { V8PerIsolateData::from(isolate)->rawTemplate(&V8Document::wrapperTypeInfo, currentWorldType) };
+    v8::Handle<v8::Signature> voidMethodDocumentArgSignature = v8::Signature::New(desc, voidMethodDocumentArgArgc, voidMethodDocumentArgArgv);
+    proto->Set(v8::String::NewSymbol("voidMethodDocumentArg"), v8::FunctionTemplate::New(TestObjectPythonV8Internal::voidMethodDocumentArgMethodCallback, v8Undefined(), voidMethodDocumentArgSignature, 1));
+
+    // Custom Signature 'voidMethodDocumentTypeArg'
+    const int voidMethodDocumentTypeArgArgc = 1;
+    v8::Handle<v8::FunctionTemplate> voidMethodDocumentTypeArgArgv[voidMethodDocumentTypeArgArgc] = { V8PerIsolateData::from(isolate)->rawTemplate(&V8DocumentType::wrapperTypeInfo, currentWorldType) };
+    v8::Handle<v8::Signature> voidMethodDocumentTypeArgSignature = v8::Signature::New(desc, voidMethodDocumentTypeArgArgc, voidMethodDocumentTypeArgArgv);
+    proto->Set(v8::String::NewSymbol("voidMethodDocumentTypeArg"), v8::FunctionTemplate::New(TestObjectPythonV8Internal::voidMethodDocumentTypeArgMethodCallback, v8Undefined(), voidMethodDocumentTypeArgSignature, 1));
+
+    // Custom Signature 'voidMethodElementArg'
+    const int voidMethodElementArgArgc = 1;
+    v8::Handle<v8::FunctionTemplate> voidMethodElementArgArgv[voidMethodElementArgArgc] = { V8PerIsolateData::from(isolate)->rawTemplate(&V8Element::wrapperTypeInfo, currentWorldType) };
+    v8::Handle<v8::Signature> voidMethodElementArgSignature = v8::Signature::New(desc, voidMethodElementArgArgc, voidMethodElementArgArgv);
+    proto->Set(v8::String::NewSymbol("voidMethodElementArg"), v8::FunctionTemplate::New(TestObjectPythonV8Internal::voidMethodElementArgMethodCallback, v8Undefined(), voidMethodElementArgSignature, 1));
+
+    // Custom Signature 'voidMethodNodeArg'
+    const int voidMethodNodeArgArgc = 1;
+    v8::Handle<v8::FunctionTemplate> voidMethodNodeArgArgv[voidMethodNodeArgArgc] = { V8PerIsolateData::from(isolate)->rawTemplate(&V8Node::wrapperTypeInfo, currentWorldType) };
+    v8::Handle<v8::Signature> voidMethodNodeArgSignature = v8::Signature::New(desc, voidMethodNodeArgArgc, voidMethodNodeArgArgv);
+    proto->Set(v8::String::NewSymbol("voidMethodNodeArg"), v8::FunctionTemplate::New(TestObjectPythonV8Internal::voidMethodNodeArgMethodCallback, v8Undefined(), voidMethodNodeArgSignature, 1));
     desc->SetNativeDataProperty(v8::String::NewSymbol("staticStringAttribute"), TestObjectPythonV8Internal::staticStringAttributeAttributeGetterCallback, TestObjectPythonV8Internal::staticStringAttributeAttributeSetterCallback, v8::External::New(0), static_cast<v8::PropertyAttribute>(v8::None), v8::Handle<v8::AccessorSignature>(), static_cast<v8::AccessControl>(v8::DEFAULT));
     desc->SetNativeDataProperty(v8::String::NewSymbol("staticLongAttribute"), TestObjectPythonV8Internal::staticLongAttributeAttributeGetterCallback, TestObjectPythonV8Internal::staticLongAttributeAttributeSetterCallback, v8::External::New(0), static_cast<v8::PropertyAttribute>(v8::None), v8::Handle<v8::AccessorSignature>(), static_cast<v8::AccessControl>(v8::DEFAULT));
 

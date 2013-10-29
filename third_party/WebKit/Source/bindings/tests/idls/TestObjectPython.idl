@@ -205,6 +205,12 @@ interface TestObjectPython {
     TestInterfaceEmpty testInterfaceEmptyMethod();
     void voidMethodTestInterfaceEmptyArg(TestInterfaceEmpty testInterfaceEmptyArg);
     void voidMethodLongArgTestInterfaceEmptyArg(long longArg, TestInterfaceEmpty testInterfaceEmptyArg);
+    // DOM node types
+    void voidMethodAttrArg(Attr attrArg);
+    void voidMethodDocumentArg(Document documentArg);
+    void voidMethodDocumentTypeArg(DocumentType documentTypeArg);
+    void voidMethodElementArg(Element elementArg);
+    void voidMethodNodeArg(Node nodeArg);
 
     void voidMethodStringArgLongArg(DOMString stringArg, long longArg);
 };
