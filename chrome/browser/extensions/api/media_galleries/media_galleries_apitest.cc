@@ -161,11 +161,11 @@ class MediaGalleriesPlatformAppBrowserTest : public PlatformAppBrowserTest {
   }
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
-  void PopulatePicasaTestData(const base::FilePath& metadata_root) {
+  void PopulatePicasaTestData(const base::FilePath& picasa_app_data_root) {
     base::FilePath picasa_database_path =
-        metadata_root.AppendASCII(picasa::kPicasaDatabaseDirName);
+        picasa::MakePicasaDatabasePath(picasa_app_data_root);
     base::FilePath picasa_temp_dir_path =
-        metadata_root.AppendASCII(picasa::kPicasaTempDirName);
+        picasa_database_path.DirName().AppendASCII(picasa::kPicasaTempDirName);
     ASSERT_TRUE(file_util::CreateDirectory(picasa_database_path));
     ASSERT_TRUE(file_util::CreateDirectory(picasa_temp_dir_path));
 
@@ -277,27 +277,22 @@ IN_PROC_BROWSER_TEST_F(MediaGalleriesPlatformAppBrowserTest,
 IN_PROC_BROWSER_TEST_F(MediaGalleriesPlatformAppBrowserTest,
                        PicasaDefaultLocation) {
 #if defined(OS_WIN)
-  base::FilePath metadata_root = ensure_media_directories_exists()->
-      GetFakeLocalAppDataPath().AppendASCII("Google").AppendASCII("Picasa2");
+  PopulatePicasaTestData(
+      ensure_media_directories_exists()->GetFakeLocalAppDataPath());
 #elif defined(OS_MACOSX)
-  base::FilePath metadata_root = ensure_media_directories_exists()->
-      GetFakeAppDataPath().AppendASCII("Google").AppendASCII("Picasa3");
+  PopulatePicasaTestData(
+      ensure_media_directories_exists()->GetFakeAppDataPath());
 #endif
-  PopulatePicasaTestData(metadata_root);
+  ASSERT_TRUE(RunMediaGalleriesTest("picasa")) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(MediaGalleriesPlatformAppBrowserTest,
+                       PicasaCustomLocation) {
+  base::ScopedTempDir custom_picasa_app_data_root;
+  ASSERT_TRUE(custom_picasa_app_data_root.CreateUniqueTempDir());
+  ensure_media_directories_exists()->SetCustomPicasaAppDataPath(
+      custom_picasa_app_data_root.path());
+  PopulatePicasaTestData(custom_picasa_app_data_root.path());
   ASSERT_TRUE(RunMediaGalleriesTest("picasa")) << message_;
 }
 #endif  // defined(OS_WIN) || defined(OS_MACOSX)
-
-#if defined(OS_WIN)
-IN_PROC_BROWSER_TEST_F(MediaGalleriesPlatformAppBrowserTest,
-                       PicasaCustomLocation) {
-  base::ScopedTempDir fake_alternate_app_data_dir;
-  ASSERT_TRUE(fake_alternate_app_data_dir.CreateUniqueTempDir());
-  ensure_media_directories_exists()->WriteCustomPicasaAppDataPathToRegistry(
-      fake_alternate_app_data_dir.path());
-  base::FilePath metadata_root = fake_alternate_app_data_dir.path()
-      .AppendASCII("Google").AppendASCII("Picasa2");
-  PopulatePicasaTestData(metadata_root);
-  ASSERT_TRUE(RunMediaGalleriesTest("picasa")) << message_;
-}
-#endif  // defined(OS_WIN)

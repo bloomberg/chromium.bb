@@ -44,9 +44,9 @@ class EnsureMediaDirectoriesExists {
   base::FilePath GetFakeAppDataPath() const;
 #if defined(OS_WIN)
   base::FilePath GetFakeLocalAppDataPath() const;
-  void WriteCustomPicasaAppDataPathToRegistry(const base::FilePath& path);
 #endif
 #if defined(OS_WIN) || defined(OS_MACOSX)
+  void SetCustomPicasaAppDataPath(const base::FilePath& path);
   base::FilePath GetFakePicasaFoldersRootPath() const;
 #endif
 

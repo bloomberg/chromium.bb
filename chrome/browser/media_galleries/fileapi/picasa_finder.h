@@ -8,12 +8,28 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/files/file_path.h"
+
+#if defined(OS_MACOSX)
+
+class MacPreferences;
+#if defined(__OBJC__)
+@class NSString;
+#else  // __OBJC__
+class NSString;
+#endif  // __OBJC__
+
+#endif  // OS_MACOSX
 
 namespace picasa {
 
 #if defined(OS_WIN)
 extern const wchar_t kPicasaRegistryPath[];
-extern const wchar_t kPicasaRegistryAppDataKey[];
+extern const wchar_t kPicasaRegistryAppDataPathKey[];
+#endif
+
+#if defined(OS_MACOSX)
+extern NSString* const kPicasaAppDataPathMacPreferencesKey;
 #endif
 
 typedef base::Callback<void(const std::string&)> DeviceIDCallback;
@@ -23,6 +39,21 @@ typedef base::Callback<void(const std::string&)> DeviceIDCallback;
 // calling thread with the device ID. Otherwise, |callback| will be invoked
 // with an empty string.
 void FindPicasaDatabase(const DeviceIDCallback& callback);
+
+// Builds the OS-dependent Picasa database path from the app-data path.
+// Used internally and by tests to construct an test environments.
+base::FilePath MakePicasaDatabasePath(
+    const base::FilePath& picasa_app_data_path);
+
+#if defined(OS_MACOSX)
+// Set the mac preferences to use for testing. The caller continues to own
+// |preferences| and should call this function again with NULL before freeing
+// it.
+void SetMacPreferencesForTesting(MacPreferences* preferences);
+
+// Used internally only.
+base::FilePath GetCustomPicasaAppDataPathFromMacPreferences();
+#endif  // OS_MACOSX
 
 }  // namespace picasa
 

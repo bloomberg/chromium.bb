@@ -92,6 +92,7 @@ EnsureMediaDirectoriesExists::EnsureMediaDirectoriesExists()
 EnsureMediaDirectoriesExists::~EnsureMediaDirectoriesExists() {
 #if defined(OS_MACOSX)
   iapps::SetMacPreferencesForTesting(NULL);
+  picasa::SetMacPreferencesForTesting(NULL);
 #endif  // OS_MACOSX
 }
 
@@ -106,13 +107,23 @@ base::FilePath EnsureMediaDirectoriesExists::GetFakeLocalAppDataPath() const {
   return fake_dir_.path().AppendASCII("localappdata");
 }
 
-void EnsureMediaDirectoriesExists::WriteCustomPicasaAppDataPathToRegistry(
+void EnsureMediaDirectoriesExists::SetCustomPicasaAppDataPath(
     const base::FilePath& path) {
   base::win::RegKey key(HKEY_CURRENT_USER, picasa::kPicasaRegistryPath,
                         KEY_SET_VALUE);
-  key.WriteValue(picasa::kPicasaRegistryAppDataKey, path.value().c_str());
+  key.WriteValue(picasa::kPicasaRegistryAppDataPathKey, path.value().c_str());
 }
 #endif  // OS_WIN
+
+#if defined(OS_MACOSX)
+void EnsureMediaDirectoriesExists::SetCustomPicasaAppDataPath(
+    const base::FilePath& path) {
+  mac_preferences_->AddTestItem(
+      base::mac::NSToCFCast(picasa::kPicasaAppDataPathMacPreferencesKey),
+      base::SysUTF8ToNSString(path.value()),
+      false);
+}
+#endif // OS_MACOSX
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
 base::FilePath
@@ -147,6 +158,7 @@ void EnsureMediaDirectoriesExists::Init() {
 #if defined(OS_MACOSX)
   mac_preferences_.reset(new MockPreferences);
   iapps::SetMacPreferencesForTesting(mac_preferences_.get());
+  picasa::SetMacPreferencesForTesting(mac_preferences_.get());
 
   // iTunes override.
   mac_preferences_->AddTestItem(
