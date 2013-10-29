@@ -1069,8 +1069,7 @@ void InlineTextBox::paintDecoration(GraphicsContext* context, const FloatPoint& 
 {
     GraphicsContextStateSaver stateSaver(*context);
 
-    // FIXME: We should improve this rule and not always just assume 1.
-    const float textDecorationThickness = 1.f;
+    float textDecorationThickness = 1.f;
 
     if (m_truncation == cFullTruncation)
         return;
@@ -1092,7 +1091,6 @@ void InlineTextBox::paintDecoration(GraphicsContext* context, const FloatPoint& 
 
     // Use a special function for underlines to get the positioning exactly right.
     bool isPrinting = textRenderer()->document().printing();
-    context->setStrokeThickness(textDecorationThickness);
 
     bool linesAreOpaque = !isPrinting && (!(deco & TextDecorationUnderline) || underline.alpha() == 255) && (!(deco & TextDecorationOverline) || overline.alpha() == 255) && (!(deco & TextDecorationLineThrough) || linethrough.alpha() == 255);
 
@@ -1100,6 +1098,10 @@ void InlineTextBox::paintDecoration(GraphicsContext* context, const FloatPoint& 
     int baseline = styleToUse->fontMetrics().ascent();
 
     size_t shadowCount = shadowList ? shadowList->shadows().size() : 0;
+    // Set the thick of the line to be 10% (or something else ?)of the computed font size and not less than 1px.
+    // Using computedFontSize should take care of zoom as well.
+    textDecorationThickness = max(textDecorationThickness, styleToUse->computedFontSize() / 10.0f);
+    context->setStrokeThickness(textDecorationThickness);
 
     int extraOffset = 0;
     if (!linesAreOpaque && shadowCount > 1) {
