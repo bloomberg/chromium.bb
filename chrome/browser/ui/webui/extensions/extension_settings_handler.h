@@ -21,7 +21,6 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
@@ -92,8 +91,6 @@ class ExtensionSettingsHandler
  private:
   friend class ExtensionUITest;
   friend class BrokerDelegate;
-
-  void RenderViewHostCreated(content::RenderViewHost* render_view_host);
 
   // content::WebContentsObserver implementation.
   virtual void RenderViewDeleted(
@@ -255,8 +252,6 @@ class ExtensionSettingsHandler
   content::NotificationRegistrar registrar_;
 
   PrefChangeRegistrar pref_registrar_;
-
-  content::RenderViewHost::CreatedCallback rvh_created_callback_;
 
   // This will not be empty when a requirements check is in progress. Doing
   // another Check() before the previous one is complete will cause the first

@@ -149,16 +149,11 @@ ExtensionSettingsHandler::ExtensionSettingsHandler()
       ignore_notifications_(false),
       deleting_rvh_(NULL),
       registered_for_notifications_(false),
-      rvh_created_callback_(
-          base::Bind(&ExtensionSettingsHandler::RenderViewHostCreated,
-                     base::Unretained(this))),
       warning_service_observer_(this),
       error_console_observer_(this) {
 }
 
 ExtensionSettingsHandler::~ExtensionSettingsHandler() {
-  content::RenderViewHost::RemoveCreatedCallback(rvh_created_callback_);
-
   // There may be pending file dialogs, we need to tell them that we've gone
   // away so they don't try and call back to us.
   if (load_extension_dialog_.get())
@@ -427,15 +422,6 @@ void ExtensionSettingsHandler::GetLocalizedValues(
   // uber extensions.
   source->AddString("extensionUninstall",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_UNINSTALL));
-}
-
-void ExtensionSettingsHandler::RenderViewHostCreated(
-    content::RenderViewHost* render_view_host) {
-  Profile* source_profile = Profile::FromBrowserContext(
-      render_view_host->GetSiteInstance()->GetBrowserContext());
-  if (!Profile::FromWebUI(web_ui())->IsSameProfile(source_profile))
-    return;
-  MaybeUpdateAfterNotification();
 }
 
 void ExtensionSettingsHandler::RenderViewDeleted(
@@ -1046,8 +1032,6 @@ void ExtensionSettingsHandler::MaybeRegisterForNotifications() {
   registrar_.Add(this,
                  chrome::NOTIFICATION_EXTENSION_HOST_DESTROYED,
                  content::NotificationService::AllBrowserContextsAndSources());
-
-  content::RenderViewHost::AddCreatedCallback(rvh_created_callback_);
 
   content::WebContentsObserver::Observe(web_ui()->GetWebContents());
 
