@@ -129,23 +129,23 @@ bool SoftwareFrameManager::SwapToNewFrame(
     if (!shared_memory->Map(0)) {
       DumpWithoutCrashing();
       DLOG(ERROR) << "Unable to map renderer memory.";
-      RecordAction(UserMetricsAction(
-          "BadMessageTerminate_SharedMemoryManager1"));
+      RecordAction(
+          UserMetricsAction("BadMessageTerminate_SharedMemoryManager1"));
       return false;
     }
 
     if (shared_memory->mapped_size() < size_in_bytes) {
       DumpWithoutCrashing();
       DLOG(ERROR) << "Shared memory too small for given rectangle";
-      RecordAction(UserMetricsAction(
-          "BadMessageTerminate_SharedMemoryManager2"));
+      RecordAction(
+          UserMetricsAction("BadMessageTerminate_SharedMemoryManager2"));
       return false;
     }
 #else
     if (!shared_memory->Map(size_in_bytes)) {
       DLOG(ERROR) << "Unable to map renderer memory.";
-      RecordAction(UserMetricsAction(
-          "BadMessageTerminate_SharedMemoryManager1"));
+      RecordAction(
+          UserMetricsAction("BadMessageTerminate_SharedMemoryManager1"));
       return false;
     }
 #endif
