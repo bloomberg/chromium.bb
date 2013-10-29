@@ -116,7 +116,7 @@ static v8::Handle<v8::FunctionTemplate> Configure{{v8_class_name}}Template(v8::H
     const int {{method.name}}Argc = {{method.arguments | length}};
     v8::Handle<v8::FunctionTemplate> {{method.name}}Argv[{{method.name}}Argc] = { {{method.custom_signature}} };
     v8::Handle<v8::Signature> {{method.name}}Signature = v8::Signature::New(desc, {{method.name}}Argc, {{method.name}}Argv);
-    proto->Set(v8::String::NewSymbol("{{method.name}}"), v8::FunctionTemplate::New({{interface_name}}V8Internal::{{method.name}}MethodCallback, v8Undefined(), {{method.name}}Signature, {{method.number_of_required_arguments}}));
+    proto->Set(v8::String::NewSymbol("{{method.name}}"), v8::FunctionTemplate::New({{interface_name}}V8Internal::{{method.name}}MethodCallback, v8Undefined(), {{method.name}}Signature, {{method.number_of_required_or_variadic_arguments}}));
     {% endfor %}
     {% for attribute in attributes if attribute.is_static %}
     desc->SetNativeDataProperty(v8::String::NewSymbol("{{attribute.name}}"), {{attribute.getter_callback_name}}, {{attribute.setter_callback_name}}, v8::External::New(0), static_cast<v8::PropertyAttribute>(v8::None), v8::Handle<v8::AccessorSignature>(), static_cast<v8::AccessControl>(v8::DEFAULT));

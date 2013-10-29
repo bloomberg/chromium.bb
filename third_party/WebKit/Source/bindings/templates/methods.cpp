@@ -16,7 +16,18 @@ static void {{method.name}}Method(const v8::FunctionCallbackInfo<v8::Value>& arg
         return;
     }
     {% endif %}
+    {% if argument.is_variadic_wrapper_type %}
+    Vector<{{argument.cpp_type}} > {{argument.name}};
+    for (int i = {{argument.index}}; i < args.Length(); ++i) {
+        if (!V8{{argument.idl_type}}::HasInstance(args[i], args.GetIsolate(), worldType(args.GetIsolate()))) {
+            throwTypeError(ExceptionMessages::failedToExecute("{{method.name}}", "{{interface_name}}", "parameter {{argument.index + 1}} is not of type '{{argument.idl_type}}'."), args.GetIsolate());
+            return;
+        }
+        {{argument.name}}.append(V8{{argument.idl_type}}::toNative(v8::Handle<v8::Object>::Cast(args[i])));
+    }
+    {% else %}
     {{argument.v8_value_to_local_cpp_value}};
+    {% endif %}
     {% endfor %}
     {{method.cpp_method}};
 }

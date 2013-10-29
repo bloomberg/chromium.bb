@@ -41,15 +41,9 @@ import v8_utilities
 
 def generate_method(method):
     arguments = method.arguments
-    arguments_contents = [{
-        'cpp_method': cpp_method(method, index),
-        'index': index,
-        'is_optional': argument.is_optional,
-        'v8_value_to_local_cpp_value': v8_value_to_local_cpp_value(argument, index),
-        }
-        for index, argument in enumerate(arguments)]
     contents = {
-        'arguments': arguments_contents,
+        'arguments': [generate_argument(method, argument, index)
+                      for index, argument in enumerate(arguments)],
         'cpp_method': cpp_method(method, len(arguments)),
         'custom_signature': custom_signature(arguments),
         'idl_type': method.idl_type,
@@ -62,6 +56,20 @@ def generate_method(method):
             if not argument.is_optional]),
     }
     return contents
+
+
+def generate_argument(method, argument, index):
+    idl_type = argument.idl_type
+    return {
+        'cpp_method': cpp_method(method, index),
+        'cpp_type': v8_types.cpp_type(idl_type),
+        'idl_type': argument.idl_type,
+        'index': index,
+        'is_optional': argument.is_optional,
+        'is_variadic_wrapper_type': argument.is_variadic and v8_types.is_wrapper_type(idl_type),
+        'name': argument.name,
+        'v8_value_to_local_cpp_value': v8_value_to_local_cpp_value(argument, index),
+    }
 
 
 def cpp_method(method, number_of_arguments):
