@@ -10,6 +10,8 @@
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/indexed_db/indexed_db_connection.h"
+#include "content/browser/indexed_db/mock_indexed_db_callbacks.h"
+#include "content/browser/indexed_db/mock_indexed_db_database_callbacks.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebIDBDatabaseException.h"
 #include "third_party/WebKit/public/platform/WebIDBTypes.h"
@@ -215,36 +217,6 @@ TEST_F(IndexedDBFactoryTest, QuotaErrorOnDiskFull) {
                 base::FilePath(FILE_PATH_LITERAL("/dummy")));
 }
 
-class MockOpenCallbacks : public IndexedDBCallbacks {
- public:
-  MockOpenCallbacks() : IndexedDBCallbacks(NULL, 0, 0) {}
-
-  virtual void OnSuccess(scoped_ptr<IndexedDBConnection> connection,
-                         const IndexedDBDatabaseMetadata& metadata) OVERRIDE {
-    connection_ = connection.Pass();
-  }
-
-  IndexedDBConnection* connection() { return connection_.get(); }
-
- private:
-  virtual ~MockOpenCallbacks() { EXPECT_TRUE(connection_); }
-  scoped_ptr<IndexedDBConnection> connection_;
-};
-
-class FakeDatabaseCallbacks : public IndexedDBDatabaseCallbacks {
- public:
-  FakeDatabaseCallbacks() : IndexedDBDatabaseCallbacks(NULL, 0, 0) {}
-
-  virtual void OnVersionChange(int64 old_version, int64 new_version) OVERRIDE {}
-  virtual void OnForcedClose() OVERRIDE {}
-  virtual void OnAbort(int64 transaction_id,
-                       const IndexedDBDatabaseError& error) OVERRIDE {}
-  virtual void OnComplete(int64 transaction_id) OVERRIDE {}
-
- private:
-  virtual ~FakeDatabaseCallbacks() {}
-};
-
 TEST_F(IndexedDBFactoryTest, BackingStoreReleasedOnForcedClose) {
   GURL origin("http://localhost:81");
 
@@ -253,9 +225,9 @@ TEST_F(IndexedDBFactoryTest, BackingStoreReleasedOnForcedClose) {
 
   scoped_refptr<IndexedDBFactory> factory = new IndexedDBFactory();
 
-  scoped_refptr<MockOpenCallbacks> callbacks(new MockOpenCallbacks());
-  scoped_refptr<FakeDatabaseCallbacks> db_callbacks(
-      new FakeDatabaseCallbacks());
+  scoped_refptr<MockIndexedDBCallbacks> callbacks(new MockIndexedDBCallbacks());
+  scoped_refptr<MockIndexedDBDatabaseCallbacks> db_callbacks(
+      new MockIndexedDBDatabaseCallbacks());
   const int64 transaction_id = 1;
   factory->Open(ASCIIToUTF16("db"),
                 IndexedDBDatabaseMetadata::DEFAULT_INT_VERSION,
@@ -280,9 +252,9 @@ TEST_F(IndexedDBFactoryTest, BackingStoreReleaseDelayedOnClose) {
 
   scoped_refptr<IndexedDBFactory> factory = new IndexedDBFactory();
 
-  scoped_refptr<MockOpenCallbacks> callbacks(new MockOpenCallbacks());
-  scoped_refptr<FakeDatabaseCallbacks> db_callbacks(
-      new FakeDatabaseCallbacks());
+  scoped_refptr<MockIndexedDBCallbacks> callbacks(new MockIndexedDBCallbacks());
+  scoped_refptr<MockIndexedDBDatabaseCallbacks> db_callbacks(
+      new MockIndexedDBDatabaseCallbacks());
   const int64 transaction_id = 1;
   factory->Open(ASCIIToUTF16("db"),
                 IndexedDBDatabaseMetadata::DEFAULT_INT_VERSION,

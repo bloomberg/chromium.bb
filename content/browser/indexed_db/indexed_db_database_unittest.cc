@@ -14,10 +14,11 @@
 #include "content/browser/indexed_db/indexed_db_connection.h"
 #include "content/browser/indexed_db/indexed_db_cursor.h"
 #include "content/browser/indexed_db/indexed_db_database.h"
-#include "content/browser/indexed_db/indexed_db_database_callbacks.h"
 #include "content/browser/indexed_db/indexed_db_factory.h"
 #include "content/browser/indexed_db/indexed_db_fake_backing_store.h"
 #include "content/browser/indexed_db/indexed_db_transaction.h"
+#include "content/browser/indexed_db/mock_indexed_db_callbacks.h"
+#include "content/browser/indexed_db/mock_indexed_db_database_callbacks.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
@@ -38,36 +39,6 @@ TEST(IndexedDBDatabaseTest, BackingStoreRetention) {
   EXPECT_TRUE(backing_store->HasOneRef());  // local
 }
 
-class MockOpenCallbacks : public IndexedDBCallbacks {
- public:
-  MockOpenCallbacks() : IndexedDBCallbacks(NULL, 0, 0) {}
-
-  virtual void OnSuccess(scoped_ptr<IndexedDBConnection> connection,
-                         const IndexedDBDatabaseMetadata& metadata) OVERRIDE {
-    connection_ = connection.Pass();
-  }
-
-  IndexedDBConnection* connection() { return connection_.get(); }
-
- private:
-  virtual ~MockOpenCallbacks() { EXPECT_TRUE(connection_); }
-  scoped_ptr<IndexedDBConnection> connection_;
-};
-
-class FakeDatabaseCallbacks : public IndexedDBDatabaseCallbacks {
- public:
-  FakeDatabaseCallbacks() : IndexedDBDatabaseCallbacks(NULL, 0, 0) {}
-
-  virtual void OnVersionChange(int64 old_version, int64 new_version) OVERRIDE {}
-  virtual void OnForcedClose() OVERRIDE {}
-  virtual void OnAbort(int64 transaction_id,
-                       const IndexedDBDatabaseError& error) OVERRIDE {}
-  virtual void OnComplete(int64 transaction_id) OVERRIDE {}
-
- private:
-  virtual ~FakeDatabaseCallbacks() {}
-};
-
 TEST(IndexedDBDatabaseTest, ConnectionLifecycle) {
   scoped_refptr<IndexedDBFakeBackingStore> backing_store =
       new IndexedDBFakeBackingStore();
@@ -82,8 +53,9 @@ TEST(IndexedDBDatabaseTest, ConnectionLifecycle) {
 
   EXPECT_FALSE(backing_store->HasOneRef());  // local and db
 
-  scoped_refptr<MockOpenCallbacks> request1(new MockOpenCallbacks());
-  scoped_refptr<FakeDatabaseCallbacks> callbacks1(new FakeDatabaseCallbacks());
+  scoped_refptr<MockIndexedDBCallbacks> request1(new MockIndexedDBCallbacks());
+  scoped_refptr<MockIndexedDBDatabaseCallbacks> callbacks1(
+      new MockIndexedDBDatabaseCallbacks());
   const int64 transaction_id1 = 1;
   db->OpenConnection(request1,
                      callbacks1,
@@ -92,8 +64,9 @@ TEST(IndexedDBDatabaseTest, ConnectionLifecycle) {
 
   EXPECT_FALSE(backing_store->HasOneRef());  // db, connection count > 0
 
-  scoped_refptr<MockOpenCallbacks> request2(new MockOpenCallbacks());
-  scoped_refptr<FakeDatabaseCallbacks> callbacks2(new FakeDatabaseCallbacks());
+  scoped_refptr<MockIndexedDBCallbacks> request2(new MockIndexedDBCallbacks());
+  scoped_refptr<MockIndexedDBDatabaseCallbacks> callbacks2(
+      new MockIndexedDBDatabaseCallbacks());
   const int64 transaction_id2 = 2;
   db->OpenConnection(request2,
                      callbacks2,
@@ -116,21 +89,6 @@ TEST(IndexedDBDatabaseTest, ConnectionLifecycle) {
   db = NULL;
 }
 
-class MockAbortCallbacks : public IndexedDBDatabaseCallbacks {
- public:
-  MockAbortCallbacks()
-      : IndexedDBDatabaseCallbacks(NULL, 0, 0), abort_called_(false) {}
-
-  virtual void OnAbort(int64 transaction_id,
-                       const IndexedDBDatabaseError& error) OVERRIDE {
-    abort_called_ = true;
-  }
-
- private:
-  virtual ~MockAbortCallbacks() { EXPECT_TRUE(abort_called_); }
-  bool abort_called_;
-};
-
 TEST(IndexedDBDatabaseTest, ForcedClose) {
   scoped_refptr<IndexedDBFakeBackingStore> backing_store =
       new IndexedDBFakeBackingStore();
@@ -145,8 +103,9 @@ TEST(IndexedDBDatabaseTest, ForcedClose) {
 
   EXPECT_FALSE(backing_store->HasOneRef());  // local and db
 
-  scoped_refptr<MockAbortCallbacks> callbacks(new MockAbortCallbacks());
-  scoped_refptr<MockOpenCallbacks> request(new MockOpenCallbacks());
+  scoped_refptr<MockIndexedDBDatabaseCallbacks> callbacks(
+      new MockIndexedDBDatabaseCallbacks());
+  scoped_refptr<MockIndexedDBCallbacks> request(new MockIndexedDBCallbacks());
   const int64 upgrade_transaction_id = 3;
   database->OpenConnection(request,
                            callbacks,
@@ -164,6 +123,7 @@ TEST(IndexedDBDatabaseTest, ForcedClose) {
   request->connection()->ForceClose();
 
   EXPECT_TRUE(backing_store->HasOneRef());  // local
+  EXPECT_TRUE(callbacks->abort_called());
 }
 
 class MockDeleteCallbacks : public IndexedDBCallbacks {
@@ -183,7 +143,6 @@ class MockDeleteCallbacks : public IndexedDBCallbacks {
  private:
   virtual ~MockDeleteCallbacks() { EXPECT_TRUE(success_void_called_); }
 
-  scoped_ptr<IndexedDBConnection> connection_;
   bool blocked_called_;
   bool success_void_called_;
 };
@@ -202,8 +161,9 @@ TEST(IndexedDBDatabaseTest, PendingDelete) {
 
   EXPECT_FALSE(backing_store->HasOneRef());  // local and db
 
-  scoped_refptr<MockOpenCallbacks> request1(new MockOpenCallbacks());
-  scoped_refptr<FakeDatabaseCallbacks> callbacks1(new FakeDatabaseCallbacks());
+  scoped_refptr<MockIndexedDBCallbacks> request1(new MockIndexedDBCallbacks());
+  scoped_refptr<MockIndexedDBDatabaseCallbacks> callbacks1(
+      new MockIndexedDBDatabaseCallbacks());
   const int64 transaction_id1 = 1;
   db->OpenConnection(request1,
                      callbacks1,
