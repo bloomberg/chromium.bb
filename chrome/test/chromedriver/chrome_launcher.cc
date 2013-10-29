@@ -277,6 +277,7 @@ Status LaunchDesktopChrome(
                             devtools_event_listeners,
                             port_reservation.Pass(),
                             process,
+                            command,
                             &user_data_dir,
                             &extension_dir));
   for (size_t i = 0; i < extension_bg_pages.size(); ++i) {

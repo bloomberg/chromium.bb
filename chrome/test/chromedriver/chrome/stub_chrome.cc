@@ -10,8 +10,8 @@ StubChrome::StubChrome() {}
 
 StubChrome::~StubChrome() {}
 
-Chrome::Type StubChrome::GetType() {
-  return DESKTOP;
+ChromeDesktopImpl* StubChrome::GetAsDesktop() {
+  return NULL;
 }
 
 std::string StubChrome::GetVersion() {
@@ -39,10 +39,6 @@ Status StubChrome::CloseWebView(const std::string& id) {
 }
 
 Status StubChrome::ActivateWebView(const std::string& id) {
-  return Status(kOk);
-}
-
-Status StubChrome::GetAutomationExtension(AutomationExtension** extension) {
   return Status(kOk);
 }
 

@@ -21,7 +21,6 @@ class ChromeExistingImpl : public ChromeImpl {
   virtual ~ChromeExistingImpl();
 
   // Overridden from Chrome.
-  virtual Type GetType() OVERRIDE;
   virtual std::string GetOperatingSystemName() OVERRIDE;
 
   // Overridden from ChromeImpl.

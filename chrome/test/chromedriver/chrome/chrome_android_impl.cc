@@ -21,10 +21,6 @@ ChromeAndroidImpl::ChromeAndroidImpl(
 
 ChromeAndroidImpl::~ChromeAndroidImpl() {}
 
-Chrome::Type ChromeAndroidImpl::GetType() {
-  return ANDROID;
-}
-
 std::string ChromeAndroidImpl::GetOperatingSystemName() {
   return "ANDROID";
 }

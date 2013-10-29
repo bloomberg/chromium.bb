@@ -16,6 +16,10 @@ ChromeImpl::~ChromeImpl() {
     port_reservation_->Leak();
 }
 
+ChromeDesktopImpl* ChromeImpl::GetAsDesktop() {
+  return NULL;
+}
+
 std::string ChromeImpl::GetVersion() {
   return devtools_http_client_->version();
 }
@@ -113,10 +117,6 @@ Status ChromeImpl::CloseWebView(const std::string& id) {
 
 Status ChromeImpl::ActivateWebView(const std::string& id) {
   return devtools_http_client_->ActivateWebView(id);
-}
-
-Status ChromeImpl::GetAutomationExtension(AutomationExtension** extension) {
-  return Status(kUnknownError, "automation extension not supported");
 }
 
 Status ChromeImpl::Quit() {

@@ -29,6 +29,7 @@ class ChromeImpl : public Chrome {
 
   // Overridden from Chrome:
   virtual std::string GetVersion() OVERRIDE;
+  virtual ChromeDesktopImpl* GetAsDesktop() OVERRIDE;
   virtual int GetBuildNo() OVERRIDE;
   virtual bool HasCrashedWebView() OVERRIDE;
   virtual Status GetWebViewIds(std::list<std::string>* web_view_ids) OVERRIDE;
@@ -36,8 +37,6 @@ class ChromeImpl : public Chrome {
                                 WebView** web_view) OVERRIDE;
   virtual Status CloseWebView(const std::string& id) OVERRIDE;
   virtual Status ActivateWebView(const std::string& id) OVERRIDE;
-  virtual Status GetAutomationExtension(
-      AutomationExtension** extension) OVERRIDE;
   virtual Status Quit() OVERRIDE;
 
  protected:

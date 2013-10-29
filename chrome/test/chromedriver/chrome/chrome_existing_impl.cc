@@ -16,10 +16,6 @@ ChromeExistingImpl::ChromeExistingImpl(
 
 ChromeExistingImpl::~ChromeExistingImpl() {}
 
-Chrome::Type ChromeExistingImpl::GetType() {
-  return EXISTING;
-}
-
 std::string ChromeExistingImpl::GetOperatingSystemName() {
  return std::string();
 }

@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_ptr.h"
@@ -29,6 +30,7 @@ class ChromeDesktopImpl : public ChromeImpl {
       ScopedVector<DevToolsEventListener>& devtools_event_listeners,
       scoped_ptr<PortReservation> port_reservation,
       base::ProcessHandle process,
+      const CommandLine& command,
       base::ScopedTempDir* user_data_dir,
       base::ScopedTempDir* extension_dir);
   virtual ~ChromeDesktopImpl();
@@ -39,17 +41,21 @@ class ChromeDesktopImpl : public ChromeImpl {
                            const base::TimeDelta& timeout,
                            scoped_ptr<WebView>* web_view);
 
+  // Gets the installed automation extension.
+  Status GetAutomationExtension(AutomationExtension** extension);
+
   // Overridden from Chrome:
-  virtual Type GetType() OVERRIDE;
-  virtual Status GetAutomationExtension(
-      AutomationExtension** extension) OVERRIDE;
+  virtual ChromeDesktopImpl* GetAsDesktop() OVERRIDE;
   virtual std::string GetOperatingSystemName() OVERRIDE;
 
   // Overridden from ChromeImpl:
   virtual Status QuitImpl() OVERRIDE;
 
+  const CommandLine& command() const;
+
  private:
   base::ProcessHandle process_;
+  CommandLine command_;
   base::ScopedTempDir user_data_dir_;
   base::ScopedTempDir extension_dir_;
 

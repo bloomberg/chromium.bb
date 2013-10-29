@@ -16,6 +16,7 @@
 #include "chrome/test/chromedriver/basic_types.h"
 #include "chrome/test/chromedriver/chrome/automation_extension.h"
 #include "chrome/test/chromedriver/chrome/chrome.h"
+#include "chrome/test/chromedriver/chrome/chrome_desktop_impl.h"
 #include "chrome/test/chromedriver/chrome/devtools_client.h"
 #include "chrome/test/chromedriver/chrome/geoposition.h"
 #include "chrome/test/chromedriver/chrome/javascript_dialog_manager.h"
@@ -739,10 +740,10 @@ Status ExecuteScreenshot(
     return status;
 
   std::string screenshot;
-  if (session->chrome->GetType() == Chrome::DESKTOP &&
-      !session->force_devtools_screenshot) {
+  if (session->chrome->GetAsDesktop() && !session->force_devtools_screenshot) {
     AutomationExtension* extension = NULL;
-    status = session->chrome->GetAutomationExtension(&extension);
+    status =
+        session->chrome->GetAsDesktop()->GetAutomationExtension(&extension);
     if (status.IsError())
       return status;
     status = extension->CaptureScreenshot(&screenshot);

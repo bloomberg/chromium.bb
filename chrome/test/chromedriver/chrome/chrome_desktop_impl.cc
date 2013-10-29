@@ -66,12 +66,14 @@ ChromeDesktopImpl::ChromeDesktopImpl(
     ScopedVector<DevToolsEventListener>& devtools_event_listeners,
     scoped_ptr<PortReservation> port_reservation,
     base::ProcessHandle process,
+    const CommandLine& command,
     base::ScopedTempDir* user_data_dir,
     base::ScopedTempDir* extension_dir)
     : ChromeImpl(client.Pass(),
                  devtools_event_listeners,
                  port_reservation.Pass()),
-      process_(process) {
+      process_(process),
+      command_(command) {
   if (user_data_dir->IsValid())
     CHECK(user_data_dir_.Set(user_data_dir->Take()));
   if (extension_dir->IsValid())
@@ -125,10 +127,6 @@ Status ChromeDesktopImpl::WaitForPageToLoad(const std::string& url,
   return status;
 }
 
-Chrome::Type ChromeDesktopImpl::GetType() {
-  return DESKTOP;
-}
-
 Status ChromeDesktopImpl::GetAutomationExtension(
     AutomationExtension** extension) {
   if (!automation_extension_) {
@@ -147,6 +145,10 @@ Status ChromeDesktopImpl::GetAutomationExtension(
   return Status(kOk);
 }
 
+ChromeDesktopImpl* ChromeDesktopImpl::GetAsDesktop() {
+  return this;
+}
+
 std::string ChromeDesktopImpl::GetOperatingSystemName() {
   return base::SysInfo::OperatingSystemName();
 }
@@ -155,4 +157,8 @@ Status ChromeDesktopImpl::QuitImpl() {
   if (!KillProcess(process_))
     return Status(kUnknownError, "cannot kill Chrome");
   return Status(kOk);
+}
+
+const CommandLine& ChromeDesktopImpl::command() const {
+  return command_;
 }

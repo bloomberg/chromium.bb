@@ -19,7 +19,7 @@ class StubChrome : public Chrome {
   virtual ~StubChrome();
 
   // Overridden from Chrome:
-  virtual Type GetType() OVERRIDE;
+  virtual ChromeDesktopImpl* GetAsDesktop() OVERRIDE;
   virtual std::string GetVersion() OVERRIDE;
   virtual int GetBuildNo() OVERRIDE;
   virtual bool HasCrashedWebView() OVERRIDE;
@@ -28,8 +28,6 @@ class StubChrome : public Chrome {
                                 WebView** web_view) OVERRIDE;
   virtual Status CloseWebView(const std::string& id) OVERRIDE;
   virtual Status ActivateWebView(const std::string& id) OVERRIDE;
-  virtual Status GetAutomationExtension(
-      AutomationExtension** extension) OVERRIDE;
   virtual std::string GetOperatingSystemName() OVERRIDE;
   virtual Status Quit() OVERRIDE;
 };
