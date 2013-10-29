@@ -64,9 +64,7 @@
 #include "ui/aura/window.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/layer.h"
-#include "ui/compositor/layer_animation_element.h"
-#include "ui/compositor/layer_animation_sequence.h"
-#include "ui/compositor/layer_animator.h"
+#include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/events/event_utils.h"
 #include "ui/gfx/rect.h"
@@ -148,6 +146,26 @@ ui::Layer* GetLayer(views::Widget* widget) {
   return widget->GetNativeView()->layer();
 }
 
+// A class to observe an implicit animation and invokes the callback after the
+// animation is completed.
+class AnimationObserver : public ui::ImplicitAnimationObserver {
+ public:
+  explicit AnimationObserver(const base::Closure& callback)
+      : callback_(callback) {}
+  virtual ~AnimationObserver() {}
+
+ private:
+  // ui::ImplicitAnimationObserver implementation:
+  virtual void OnImplicitAnimationsCompleted() OVERRIDE {
+    callback_.Run();
+    delete this;
+  }
+
+  base::Closure callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(AnimationObserver);
+};
+
 }  // namespace
 
 namespace chromeos {
@@ -175,7 +193,9 @@ LoginDisplayHostImpl::LoginDisplayHostImpl(const gfx::Rect& background_bounds)
       status_area_saved_visibility_(false),
       crash_count_(0),
       restore_path_(RESTORE_UNKNOWN),
-      auto_enrollment_check_done_(false) {
+      auto_enrollment_check_done_(false),
+      finalize_animation_type_(ANIMATION_WORKSPACE),
+      animation_weak_ptr_factory_(this) {
   // We need to listen to CLOSE_ALL_BROWSERS_REQUEST but not APP_TERMINATING
   // because/ APP_TERMINATING will never be fired as long as this keeps
   // ref-count. CLOSE_ALL_BROWSERS_REQUEST is safe here because there will be no
@@ -315,14 +335,23 @@ void LoginDisplayHostImpl::Finalize() {
   }
   if (wizard_controller_.get())
     wizard_controller_->OnSessionStart();
-  if (!IsRunningUserAdding()) {
-    // Display host is deleted once animation is completed
-    // since sign in screen widget has to stay alive.
-    if (ash::Shell::HasInstance()) {
-      StartAnimation();
-    }
+
+  switch (finalize_animation_type_) {
+    case ANIMATION_NONE:
+      ShutdownDisplayHost(false);
+      break;
+    case ANIMATION_WORKSPACE:
+      if (ash::Shell::HasInstance())
+        ScheduleWorkspaceAnimation();
+
+      ShutdownDisplayHost(false);
+      break;
+    case ANIMATION_FADE_OUT:
+      // Display host is deleted once animation is completed
+      // since sign in screen widget has to stay alive.
+      ScheduleFadeOutAnimation();
+      break;
   }
-  ShutdownDisplayHost(false);
 }
 
 void LoginDisplayHostImpl::OnCompleteLogin() {
@@ -422,6 +451,7 @@ void LoginDisplayHostImpl::StartUserAdding(
     const base::Closure& completion_callback) {
   restore_path_ = RESTORE_ADD_USER_INTO_SESSION;
   completion_callback_ = completion_callback;
+  finalize_animation_type_ = ANIMATION_NONE;
   LOG(WARNING) << "Login WebUI >> user adding";
   if (!login_window_)
     LoadURL(GURL(kUserAddingURL));
@@ -450,6 +480,7 @@ void LoginDisplayHostImpl::StartUserAdding(
 void LoginDisplayHostImpl::StartSignInScreen() {
   restore_path_ = RESTORE_SIGN_IN;
   is_showing_login_ = true;
+  finalize_animation_type_ = ANIMATION_WORKSPACE;
 
   PrewarmAuthentication();
 
@@ -531,6 +562,7 @@ void LoginDisplayHostImpl::PrewarmAuthentication() {
 void LoginDisplayHostImpl::StartAppLaunch(const std::string& app_id) {
   LOG(WARNING) << "Login WebUI >> start app launch.";
   SetStatusAreaVisible(false);
+  finalize_animation_type_ = ANIMATION_FADE_OUT;
   if (!login_window_)
     LoadURL(GURL(kAppLaunchSplashURL));
 
@@ -666,7 +698,7 @@ void LoginDisplayHostImpl::ShutdownDisplayHost(bool post_quit_task) {
     completion_callback_.Run();
 }
 
-void LoginDisplayHostImpl::StartAnimation() {
+void LoginDisplayHostImpl::ScheduleWorkspaceAnimation() {
   if (ash::Shell::GetContainer(
           ash::Shell::GetPrimaryRootWindow(),
           ash::internal::kShellWindowId_DesktopBackgroundContainer)->
@@ -679,6 +711,16 @@ void LoginDisplayHostImpl::StartAnimation() {
   if (!CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableLoginAnimations))
     ash::Shell::GetInstance()->DoInitialWorkspaceAnimation();
+}
+
+void LoginDisplayHostImpl::ScheduleFadeOutAnimation() {
+  ui::Layer* layer = login_window_->GetLayer();
+  ui::ScopedLayerAnimationSettings animation(layer->GetAnimator());
+  animation.AddObserver(new AnimationObserver(
+      base::Bind(&LoginDisplayHostImpl::ShutdownDisplayHost,
+                 animation_weak_ptr_factory_.GetWeakPtr(),
+                 false)));
+  layer->SetOpacity(0);
 }
 
 void LoginDisplayHostImpl::OnOwnershipStatusCheckDone(
@@ -833,10 +875,6 @@ void LoginDisplayHostImpl::ResetLoginWindowAndView() {
   login_window_->Close();
   login_window_ = NULL;
   login_view_ = NULL;
-}
-
-bool LoginDisplayHostImpl::IsRunningUserAdding() {
-  return restore_path_ == RESTORE_ADD_USER_INTO_SESSION;
 }
 
 void LoginDisplayHostImpl::OnAuthPrewarmDone() {

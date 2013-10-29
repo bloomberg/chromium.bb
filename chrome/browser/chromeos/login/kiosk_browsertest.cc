@@ -64,6 +64,7 @@
 #include "net/test/embedded_test_server/http_response.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/compositor/layer.h"
 
 namespace em = enterprise_management;
 
@@ -156,6 +157,51 @@ class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
  private:
   ConnectionType connection_type_;
   DISALLOW_COPY_AND_ASSIGN(FakeNetworkChangeNotifier);
+};
+
+// Helper class that monitors app windows to wait for a window to appear.
+class ShellWindowObserver : public apps::ShellWindowRegistry::Observer {
+ public:
+  ShellWindowObserver(apps::ShellWindowRegistry* registry,
+                      const std::string& app_id)
+      : registry_(registry), app_id_(app_id), window_(NULL), running_(false) {
+    registry_->AddObserver(this);
+  }
+  virtual ~ShellWindowObserver() {
+    registry_->RemoveObserver(this);
+  }
+
+  apps::ShellWindow* Wait() {
+    running_ = true;
+    message_loop_runner_ = new content::MessageLoopRunner;
+    message_loop_runner_->Run();
+    EXPECT_TRUE(window_);
+    return window_;
+  }
+
+  // ShellWindowRegistry::Observer
+  virtual void OnShellWindowAdded(apps::ShellWindow* shell_window) OVERRIDE {
+    if (!running_)
+      return;
+
+    if (shell_window->extension_id() == app_id_) {
+      window_ = shell_window;
+      message_loop_runner_->Quit();
+      running_ = false;
+    }
+  }
+  virtual void OnShellWindowIconChanged(
+      apps::ShellWindow* shell_window) OVERRIDE {}
+  virtual void OnShellWindowRemoved(apps::ShellWindow* shell_window) OVERRIDE {}
+
+ private:
+  apps::ShellWindowRegistry* registry_;
+  std::string app_id_;
+  scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
+  apps::ShellWindow* window_;
+  bool running_;
+
+  DISALLOW_COPY_AND_ASSIGN(ShellWindowObserver);
 };
 
 class KioskTest : public InProcessBrowserTest,
@@ -278,16 +324,32 @@ class KioskTest : public InProcessBrowserTest,
         chrome::NOTIFICATION_KIOSK_APP_LAUNCHED,
         content::NotificationService::AllSources()).Wait();
 
+    // Default profile switches to app profile after app is launched.
+    Profile* app_profile = ProfileManager::GetDefaultProfile();
+    ASSERT_TRUE(app_profile);
+
     // Check installer status.
     EXPECT_EQ(chromeos::KioskAppLaunchError::NONE,
               chromeos::KioskAppLaunchError::Get());
 
     // Check if the kiosk webapp is really installed for the default profile.
-    ASSERT_TRUE(ProfileManager::GetDefaultProfile());
     const extensions::Extension* app =
-        extensions::ExtensionSystem::Get(ProfileManager::GetDefaultProfile())->
+        extensions::ExtensionSystem::Get(app_profile)->
         extension_service()->GetInstalledExtension(kTestKioskApp);
     EXPECT_TRUE(app);
+
+    // App should appear with its window.
+    apps::ShellWindow* window = ShellWindowObserver(
+        apps::ShellWindowRegistry::Get(app_profile),
+        kTestKioskApp).Wait();
+    EXPECT_TRUE(window);
+
+    // Login screen should be fading out.
+    EXPECT_EQ(0.0f,
+              LoginDisplayHostImpl::default_host()
+                  ->GetNativeWindow()
+                  ->layer()
+                  ->GetTargetOpacity());
 
     // Wait until the app terminates.
     content::RunMessageLoop();
@@ -486,24 +548,7 @@ IN_PROC_BROWSER_TEST_P(KioskTest, AutolaunchWarningConfirm) {
   EXPECT_FALSE(KioskAppManager::Get()->GetAutoLaunchApp().empty());
   EXPECT_TRUE(KioskAppManager::Get()->IsAutoLaunchEnabled());
 
-  // Wait for the Kiosk App to launch.
-  content::WindowedNotificationObserver(
-      chrome::NOTIFICATION_KIOSK_APP_LAUNCHED,
-      content::NotificationService::AllSources()).Wait();
-
-  // Check installer status.
-  EXPECT_EQ(chromeos::KioskAppLaunchError::NONE,
-            chromeos::KioskAppLaunchError::Get());
-
-  // Check if the kiosk webapp is really installed for the default profile.
-  ASSERT_TRUE(ProfileManager::GetDefaultProfile());
-  const extensions::Extension* app =
-      extensions::ExtensionSystem::Get(ProfileManager::GetDefaultProfile())->
-      extension_service()->GetInstalledExtension(kTestKioskApp);
-  EXPECT_TRUE(app);
-
-  // Wait until the app terminates.
-  content::RunMessageLoop();
+  WaitForAppLaunchSuccess();
 }
 
 IN_PROC_BROWSER_TEST_P(KioskTest, KioskEnableCancel) {
@@ -616,51 +661,6 @@ IN_PROC_BROWSER_TEST_P(KioskTest, KioskEnableAbortedWithAutoEnrollment) {
 }
 
 INSTANTIATE_TEST_CASE_P(KioskTestInstantiation, KioskTest, testing::Bool());
-
-// Helper class that monitors app windows to wait for a window to appear.
-class ShellWindowObserver : public apps::ShellWindowRegistry::Observer {
- public:
-  ShellWindowObserver(apps::ShellWindowRegistry* registry,
-                      const std::string& app_id)
-      : registry_(registry), app_id_(app_id), window_(NULL), running_(false) {
-    registry_->AddObserver(this);
-  }
-  virtual ~ShellWindowObserver() {
-    registry_->RemoveObserver(this);
-  }
-
-  apps::ShellWindow* Wait() {
-    running_ = true;
-    message_loop_runner_ = new content::MessageLoopRunner;
-    message_loop_runner_->Run();
-    EXPECT_TRUE(window_);
-    return window_;
-  }
-
-  // ShellWindowRegistry::Observer
-  virtual void OnShellWindowAdded(apps::ShellWindow* shell_window) OVERRIDE {
-    if (!running_)
-      return;
-
-    if (shell_window->extension_id() == app_id_) {
-      window_ = shell_window;
-      message_loop_runner_->Quit();
-      running_ = false;
-    }
-  }
-  virtual void OnShellWindowIconChanged(
-      apps::ShellWindow* shell_window) OVERRIDE {}
-  virtual void OnShellWindowRemoved(apps::ShellWindow* shell_window) OVERRIDE {}
-
- private:
-  apps::ShellWindowRegistry* registry_;
-  std::string app_id_;
-  scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
-  apps::ShellWindow* window_;
-  bool running_;
-
-  DISALLOW_COPY_AND_ASSIGN(ShellWindowObserver);
-};
 
 class KioskEnterpriseTest : public KioskTest {
  protected:

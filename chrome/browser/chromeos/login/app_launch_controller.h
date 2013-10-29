@@ -59,9 +59,15 @@ class AppLaunchController
   static void SetUserManagerForTesting(UserManager* user_manager);
 
  private:
-  void Cleanup();
+  // A class to watch app window creation.
+  class AppWindowWatcher;
+
+  void CleanUp();
   void OnNetworkWaitTimedout();
   UserManager* GetUserManager();
+
+  // Callback of AppWindowWatcher to notify an app window is created.
+  void OnAppWindowCreated();
 
   // KioskProfileLoader::Delegate overrides:
   virtual void OnProfileLoaded(Profile* profile) OVERRIDE;
@@ -97,6 +103,7 @@ class AppLaunchController
   scoped_ptr<KioskProfileLoader> kiosk_profile_loader_;
   scoped_ptr<StartupAppLauncher> startup_app_launcher_;
   scoped_ptr<AppLaunchSigninScreen> signin_screen_;
+  scoped_ptr<AppWindowWatcher> app_window_watcher_;
 
   content::NotificationRegistrar registrar_;
   bool webui_visible_;

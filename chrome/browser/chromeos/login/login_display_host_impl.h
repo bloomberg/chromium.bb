@@ -103,12 +103,31 @@ class LoginDisplayHostImpl : public LoginDisplayHost,
   virtual void RenderProcessGone(base::TerminationStatus status) OVERRIDE;
 
  private:
+  // Way to restore if renderer have crashed.
+  enum RestorePath {
+    RESTORE_UNKNOWN,
+    RESTORE_WIZARD,
+    RESTORE_SIGN_IN,
+    RESTORE_ADD_USER_INTO_SESSION,
+  };
+
+  // Type of animations to run after the login screen.
+  enum FinalizeAnimationType {
+    ANIMATION_NONE,       // No animation.
+    ANIMATION_WORKSPACE,  // Use initial workspace animation (drop and
+                          // and fade in workspace). Used for user login.
+    ANIMATION_FADE_OUT,   // Fade out login screen. Used for app launch.
+  };
+
   // Marks display host for deletion.
   // If |post_quit_task| is true also posts Quit task to the MessageLoop.
   void ShutdownDisplayHost(bool post_quit_task);
 
-  // Start sign in transition animation.
-  void StartAnimation();
+  // Schedules workspace transition animation.
+  void ScheduleWorkspaceAnimation();
+
+  // Schedules fade out animation.
+  void ScheduleFadeOutAnimation();
 
   // Callback for the ownership status check.
   void OnOwnershipStatusCheckDone(
@@ -135,9 +154,6 @@ class LoginDisplayHostImpl : public LoginDisplayHost,
 
   // Closes |login_window_| and resets |login_window_| and |login_view_| fields.
   void ResetLoginWindowAndView();
-
-  // Returns true if hosr running UI for adding users into session.
-  bool IsRunningUserAdding();
 
   // Deletes |auth_prewarmer_|.
   void OnAuthPrewarmDone();
@@ -219,12 +235,7 @@ class LoginDisplayHostImpl : public LoginDisplayHost,
   int crash_count_;
 
   // Way to restore if renderer have crashed.
-  enum {
-    RESTORE_UNKNOWN,
-    RESTORE_WIZARD,
-    RESTORE_SIGN_IN,
-    RESTORE_ADD_USER_INTO_SESSION,
-  } restore_path_;
+  RestorePath restore_path_;
 
   // Stored parameters for StartWizard, required to restore in case of crash.
   std::string wizard_first_screen_name_;
@@ -250,6 +261,10 @@ class LoginDisplayHostImpl : public LoginDisplayHost,
   // Callbacks to notify when auto enrollment client has done the check.
   std::vector<GetAutoEnrollmentCheckResultCallback>
       get_auto_enrollment_result_callbacks_;
+
+  FinalizeAnimationType finalize_animation_type_;
+
+  base::WeakPtrFactory<LoginDisplayHostImpl> animation_weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(LoginDisplayHostImpl);
 };
