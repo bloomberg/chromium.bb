@@ -45,7 +45,7 @@ class Document;
 class ExceptionState;
 class Node;
 
-class DOMPatchSupport {
+class DOMPatchSupport FINAL {
     WTF_MAKE_NONCOPYABLE(DOMPatchSupport);
 public:
     static void patchDocument(Document&, const String& markup);

@@ -46,7 +46,7 @@ public:
     virtual void inspectorStateUpdated() = 0;
 };
 
-class InspectorState {
+class InspectorState FINAL {
     WTF_MAKE_FAST_ALLOCATED;
 public:
     InspectorState(InspectorStateUpdateListener*, PassRefPtr<JSONObject>);

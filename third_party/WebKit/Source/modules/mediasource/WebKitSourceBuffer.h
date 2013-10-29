@@ -43,7 +43,7 @@ class SourceBufferPrivate;
 class TimeRanges;
 class WebKitMediaSource;
 
-class WebKitSourceBuffer : public RefCounted<WebKitSourceBuffer>, public ScriptWrappable {
+class WebKitSourceBuffer FINAL : public RefCounted<WebKitSourceBuffer>, public ScriptWrappable {
 public:
     static PassRefPtr<WebKitSourceBuffer> create(PassOwnPtr<SourceBufferPrivate>, PassRefPtr<WebKitMediaSource>);
 

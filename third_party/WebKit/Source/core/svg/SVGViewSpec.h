@@ -33,7 +33,7 @@ class ExceptionState;
 class SVGElement;
 class SVGTransformListPropertyTearOff;
 
-class SVGViewSpec : public RefCounted<SVGViewSpec>, public ScriptWrappable, public SVGZoomAndPan, public SVGFitToViewBox {
+class SVGViewSpec FINAL : public RefCounted<SVGViewSpec>, public ScriptWrappable, public SVGZoomAndPan, public SVGFitToViewBox {
 public:
     using RefCounted<SVGViewSpec>::ref;
     using RefCounted<SVGViewSpec>::deref;

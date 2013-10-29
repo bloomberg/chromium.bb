@@ -37,7 +37,7 @@
 
 namespace WebKit {
 
-class WebRTCICECandidatePrivate : public RefCounted<WebRTCICECandidatePrivate> {
+class WebRTCICECandidatePrivate FINAL : public RefCounted<WebRTCICECandidatePrivate> {
 public:
     static PassRefPtr<WebRTCICECandidatePrivate> create(const WebString& candidate, const WebString& sdpMid, unsigned short sdpMLineIndex)
     {

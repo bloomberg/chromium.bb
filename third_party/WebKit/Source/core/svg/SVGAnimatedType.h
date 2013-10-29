@@ -35,7 +35,7 @@ namespace WebCore {
 
 class SVGPathByteStream;
 
-class SVGAnimatedType {
+class SVGAnimatedType FINAL {
     WTF_MAKE_FAST_ALLOCATED;
 public:
     ~SVGAnimatedType();

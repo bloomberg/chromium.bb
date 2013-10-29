@@ -39,7 +39,7 @@ namespace WebCore {
 
 class Page;
 
-class PageConsole {
+class PageConsole FINAL {
 public:
     static PassOwnPtr<PageConsole> create(Page* page) { return adoptPtr(new PageConsole(page)); }
 

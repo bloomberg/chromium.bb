@@ -45,7 +45,7 @@ class SharedBuffer;
 
 struct SerializedResource;
 
-class MHTMLArchive : public RefCounted<MHTMLArchive> {
+class MHTMLArchive FINAL : public RefCounted<MHTMLArchive> {
 public:
     static PassRefPtr<MHTMLArchive> create();
     static PassRefPtr<MHTMLArchive> create(const KURL&, SharedBuffer*);

@@ -39,7 +39,7 @@ class CSSStyleDeclaration;
 class CSSVariablesIterator;
 class ExceptionState;
 
-class CSSVariablesMap : public RefCounted<CSSVariablesMap> {
+class CSSVariablesMap FINAL : public RefCounted<CSSVariablesMap> {
 public:
     static PassRefPtr<CSSVariablesMap> create(CSSStyleDeclaration* styleDeclaration)
     {

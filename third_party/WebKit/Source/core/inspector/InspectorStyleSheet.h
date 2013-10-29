@@ -129,7 +129,7 @@ struct InspectorStyleProperty {
     String rawText;
 };
 
-class InspectorStyle : public RefCounted<InspectorStyle> {
+class InspectorStyle FINAL : public RefCounted<InspectorStyle> {
 public:
     static PassRefPtr<InspectorStyle> create(const InspectorCSSId& styleId, PassRefPtr<CSSStyleDeclaration> style, InspectorStyleSheet* parentStyleSheet);
 

@@ -46,7 +46,7 @@ namespace WebCore {
 class Font;
 class SimpleFontData;
 
-class HarfBuzzShaper {
+class HarfBuzzShaper FINAL {
 public:
     enum NormalizeMode {
         DoNotNormalizeMirrorChars,

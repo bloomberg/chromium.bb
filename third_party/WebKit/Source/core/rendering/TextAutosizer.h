@@ -40,7 +40,7 @@ class RenderText;
 struct TextAutosizingWindowInfo;
 struct TextAutosizingClusterInfo;
 
-class TextAutosizer {
+class TextAutosizer FINAL {
     WTF_MAKE_NONCOPYABLE(TextAutosizer);
 
 public:

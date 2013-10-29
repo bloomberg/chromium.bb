@@ -38,7 +38,7 @@
 
 namespace WebKit {
 
-class WebRTCSessionDescriptionPrivate : public RefCounted<WebRTCSessionDescriptionPrivate> {
+class WebRTCSessionDescriptionPrivate FINAL : public RefCounted<WebRTCSessionDescriptionPrivate> {
 public:
     static PassRefPtr<WebRTCSessionDescriptionPrivate> create(const WebString& type, const WebString& sdp);
 

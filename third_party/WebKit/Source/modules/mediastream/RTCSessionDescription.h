@@ -42,7 +42,7 @@ namespace WebCore {
 class Dictionary;
 class ExceptionState;
 
-class RTCSessionDescription : public RefCounted<RTCSessionDescription>, public ScriptWrappable {
+class RTCSessionDescription FINAL : public RefCounted<RTCSessionDescription>, public ScriptWrappable {
 public:
     static PassRefPtr<RTCSessionDescription> create(const Dictionary&, ExceptionState&);
     static PassRefPtr<RTCSessionDescription> create(WebKit::WebRTCSessionDescription);

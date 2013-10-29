@@ -32,7 +32,7 @@
 
 namespace WebCore {
 
-class NavigatorUserMediaError : public RefCounted<NavigatorUserMediaError>, public ScriptWrappable {
+class NavigatorUserMediaError FINAL : public RefCounted<NavigatorUserMediaError>, public ScriptWrappable {
 public:
     enum Name {
         NamePermissionDenied,

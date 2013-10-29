@@ -34,7 +34,7 @@
 
 namespace WebCore {
 
-class SpeechSynthesisVoice : public ScriptWrappable, public RefCounted<SpeechSynthesisVoice> {
+class SpeechSynthesisVoice FINAL : public ScriptWrappable, public RefCounted<SpeechSynthesisVoice> {
 public:
     static PassRefPtr<SpeechSynthesisVoice> create(PassRefPtr<PlatformSpeechSynthesisVoice>);
 

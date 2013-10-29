@@ -39,7 +39,7 @@
 
 namespace WebCore {
 
-class RTCIceServer : public RefCounted<RTCIceServer> {
+class RTCIceServer FINAL : public RefCounted<RTCIceServer> {
 public:
     static PassRefPtr<RTCIceServer> create(const KURL& uri, const String& username, const String& credential)
     {
@@ -63,7 +63,7 @@ private:
     String m_credential;
 };
 
-class RTCConfiguration : public RefCounted<RTCConfiguration> {
+class RTCConfiguration FINAL : public RefCounted<RTCConfiguration> {
 public:
     static PassRefPtr<RTCConfiguration> create() { return adoptRef(new RTCConfiguration()); }
 

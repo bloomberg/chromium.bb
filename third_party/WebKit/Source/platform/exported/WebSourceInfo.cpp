@@ -33,7 +33,7 @@
 
 namespace WebKit {
 
-class WebSourceInfoPrivate : public RefCounted<WebSourceInfoPrivate> {
+class WebSourceInfoPrivate FINAL : public RefCounted<WebSourceInfoPrivate> {
 public:
     static PassRefPtr<WebSourceInfoPrivate> create(const WebString& id, WebSourceInfo::SourceKind, const WebString& label, WebSourceInfo::VideoFacingMode);
 
