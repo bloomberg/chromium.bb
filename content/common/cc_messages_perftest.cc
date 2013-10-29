@@ -21,10 +21,45 @@ using cc::SharedQuadState;
 namespace content {
 namespace {
 
-class CCMessagesPerfTest : public testing::Test {};
+static const int kTimeLimitMillis = 2000;
+static const int kNumWarmupRuns = 20;
+static const int kTimeCheckInterval = 10;
 
-const int kNumWarmupRuns = 10;
-const int kNumRuns = 100;
+class CCMessagesPerfTest : public testing::Test {
+ protected:
+  static void RunTest(std::string test_name, const CompositorFrame& frame) {
+    for (int i = 0; i < kNumWarmupRuns; ++i) {
+      IPC::Message msg(1, 2);
+      IPC::ParamTraits<CompositorFrame>::Write(&msg, frame);
+    }
+
+    base::TimeTicks start = base::TimeTicks::HighResNow();
+    base::TimeTicks end =
+        start + base::TimeDelta::FromMilliseconds(kTimeLimitMillis);
+    base::TimeDelta min_time;
+    int count = 0;
+    while (start < end) {
+      for (int i = 0; i < kTimeCheckInterval; ++i) {
+        IPC::Message msg(1, 2);
+        IPC::ParamTraits<CompositorFrame>::Write(&msg, frame);
+        ++count;
+      }
+
+      base::TimeTicks now = base::TimeTicks::HighResNow();
+      if (now - start < min_time || min_time == base::TimeDelta())
+        min_time = now - start;
+      start = base::TimeTicks::HighResNow();
+    }
+
+    perf_test::PrintResult(
+        "min_frame_serialization_time",
+        "",
+        test_name,
+        min_time.InMillisecondsF() / kTimeCheckInterval * 1000,
+        "us",
+        true);
+  }
+};
 
 TEST_F(CCMessagesPerfTest, DelegatedFrame_ManyQuads_1_4000) {
   scoped_ptr<CompositorFrame> frame(new CompositorFrame);
@@ -39,27 +74,7 @@ TEST_F(CCMessagesPerfTest, DelegatedFrame_ManyQuads_1_4000) {
   frame->delegated_frame_data.reset(new DelegatedFrameData);
   frame->delegated_frame_data->render_pass_list.push_back(render_pass.Pass());
 
-  for (int i = 0; i < kNumWarmupRuns; ++i) {
-    IPC::Message msg(1, 2);
-    IPC::ParamTraits<CompositorFrame>::Write(&msg, *frame);
-  }
-
-  base::TimeDelta min_time_delta;
-  for (int i = 0; i < kNumRuns; ++i) {
-    base::TimeTicks start = base::TimeTicks::HighResNow();
-    IPC::Message msg(1, 2);
-    IPC::ParamTraits<CompositorFrame>::Write(&msg, *frame);
-    base::TimeTicks end = base::TimeTicks::HighResNow();
-    if (i == 0 || end - start < min_time_delta)
-      min_time_delta = end - start;
-  }
-
-  perf_test::PrintResult("min_frame_serialization_time",
-                         "",
-                         "DelegatedFrame_ManyQuads_1_4000",
-                         min_time_delta.InMicroseconds(),
-                         "us",
-                         true);
+  RunTest("DelegatedFrame_ManyQuads_1_4000", *frame);
 }
 
 TEST_F(CCMessagesPerfTest, DelegatedFrame_ManyQuads_1_100000) {
@@ -75,27 +90,7 @@ TEST_F(CCMessagesPerfTest, DelegatedFrame_ManyQuads_1_100000) {
   frame->delegated_frame_data.reset(new DelegatedFrameData);
   frame->delegated_frame_data->render_pass_list.push_back(render_pass.Pass());
 
-  for (int i = 0; i < kNumWarmupRuns; ++i) {
-    IPC::Message msg(1, 2);
-    IPC::ParamTraits<CompositorFrame>::Write(&msg, *frame);
-  }
-
-  base::TimeDelta min_time_delta;
-  for (int i = 0; i < kNumRuns; ++i) {
-    base::TimeTicks start = base::TimeTicks::HighResNow();
-    IPC::Message msg(1, 2);
-    IPC::ParamTraits<CompositorFrame>::Write(&msg, *frame);
-    base::TimeTicks end = base::TimeTicks::HighResNow();
-    if (i == 0 || end - start < min_time_delta)
-      min_time_delta = end - start;
-  }
-
-  perf_test::PrintResult("min_frame_serialization_time",
-                         "",
-                         "DelegatedFrame_ManyQuads_1_100000",
-                         min_time_delta.InMicroseconds(),
-                         "us",
-                         true);
+  RunTest("DelegatedFrame_ManyQuads_1_100000", *frame);
 }
 
 TEST_F(CCMessagesPerfTest, DelegatedFrame_ManyQuads_4000_4000) {
@@ -111,27 +106,7 @@ TEST_F(CCMessagesPerfTest, DelegatedFrame_ManyQuads_4000_4000) {
   frame->delegated_frame_data.reset(new DelegatedFrameData);
   frame->delegated_frame_data->render_pass_list.push_back(render_pass.Pass());
 
-  for (int i = 0; i < kNumWarmupRuns; ++i) {
-    IPC::Message msg(1, 2);
-    IPC::ParamTraits<CompositorFrame>::Write(&msg, *frame);
-  }
-
-  base::TimeDelta min_time_delta;
-  for (int i = 0; i < kNumRuns; ++i) {
-    base::TimeTicks start = base::TimeTicks::HighResNow();
-    IPC::Message msg(1, 2);
-    IPC::ParamTraits<CompositorFrame>::Write(&msg, *frame);
-    base::TimeTicks end = base::TimeTicks::HighResNow();
-    if (i == 0 || end - start < min_time_delta)
-      min_time_delta = end - start;
-  }
-
-  perf_test::PrintResult("min_frame_serialization_time",
-                         "",
-                         "DelegatedFrame_ManyQuads_4000_4000",
-                         min_time_delta.InMicroseconds(),
-                         "us",
-                         true);
+  RunTest("DelegatedFrame_ManyQuads_4000_4000", *frame);
 }
 
 TEST_F(CCMessagesPerfTest, DelegatedFrame_ManyQuads_100000_100000) {
@@ -147,27 +122,7 @@ TEST_F(CCMessagesPerfTest, DelegatedFrame_ManyQuads_100000_100000) {
   frame->delegated_frame_data.reset(new DelegatedFrameData);
   frame->delegated_frame_data->render_pass_list.push_back(render_pass.Pass());
 
-  for (int i = 0; i < kNumWarmupRuns; ++i) {
-    IPC::Message msg(1, 2);
-    IPC::ParamTraits<CompositorFrame>::Write(&msg, *frame);
-  }
-
-  base::TimeDelta min_time_delta;
-  for (int i = 0; i < kNumRuns; ++i) {
-    base::TimeTicks start = base::TimeTicks::HighResNow();
-    IPC::Message msg(1, 2);
-    IPC::ParamTraits<CompositorFrame>::Write(&msg, *frame);
-    base::TimeTicks end = base::TimeTicks::HighResNow();
-    if (i == 0 || end - start < min_time_delta)
-      min_time_delta = end - start;
-  }
-
-  perf_test::PrintResult("min_frame_serialization_time",
-                         "",
-                         "DelegatedFrame_ManyQuads_100000_100000",
-                         min_time_delta.InMicroseconds(),
-                         "us",
-                         true);
+  RunTest("DelegatedFrame_ManyQuads_100000_100000", *frame);
 }
 
 TEST_F(CCMessagesPerfTest,
@@ -185,27 +140,7 @@ TEST_F(CCMessagesPerfTest,
     frame->delegated_frame_data->render_pass_list.push_back(render_pass.Pass());
   }
 
-  for (int i = 0; i < kNumWarmupRuns; ++i) {
-    IPC::Message msg(1, 2);
-    IPC::ParamTraits<CompositorFrame>::Write(&msg, *frame);
-  }
-
-  base::TimeDelta min_time_delta;
-  for (int i = 0; i < kNumRuns; ++i) {
-    base::TimeTicks start = base::TimeTicks::HighResNow();
-    IPC::Message msg(1, 2);
-    IPC::ParamTraits<CompositorFrame>::Write(&msg, *frame);
-    base::TimeTicks end = base::TimeTicks::HighResNow();
-    if (i == 0 || end - start < min_time_delta)
-      min_time_delta = end - start;
-  }
-
-  perf_test::PrintResult("min_frame_serialization_time",
-                         "",
-                         "DelegatedFrame_ManyRenderPasses_10000_100",
-                         min_time_delta.InMicroseconds(),
-                         "us",
-                         true);
+  RunTest("DelegatedFrame_ManyRenderPasses_10000_100", *frame);
 }
 
 }  // namespace
