@@ -9,9 +9,9 @@
 #include "base/values.h"
 #include "chrome/common/extensions/api/permissions.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/permissions/permission_set.h"
 #include "chrome/common/extensions/permissions/usb_device_permission.h"
 #include "extensions/common/error_utils.h"
+#include "extensions/common/permissions/permission_set.h"
 #include "extensions/common/permissions/permissions_info.h"
 #include "extensions/common/url_pattern_set.h"
 

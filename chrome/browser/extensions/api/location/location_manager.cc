@@ -15,12 +15,12 @@
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/common/extensions/api/location.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/permissions/permission_set.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/geolocation_provider.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/common/geoposition.h"
+#include "extensions/common/permissions/permission_set.h"
 
 using content::BrowserThread;
 

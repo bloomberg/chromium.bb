@@ -9,9 +9,9 @@
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/extensions/extension_enable_flow_delegate.h"
-#include "chrome/common/extensions/permissions/permission_set.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
+#include "extensions/common/permissions/permission_set.h"
 
 using extensions::Extension;
 

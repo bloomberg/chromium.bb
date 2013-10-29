@@ -8,7 +8,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/common/extensions/permissions/permission_set.h"
+#include "extensions/common/permissions/permission_set.h"
 #include "extensions/common/switches.h"
 #include "net/dns/mock_host_resolver.h"
 

@@ -75,6 +75,8 @@
         'common/permissions/permission_message.h',
         'common/permissions/permission_message_provider.cc',
         'common/permissions/permission_message_provider.h',
+        'common/permissions/permission_set.cc',
+        'common/permissions/permission_set.h',
         'common/permissions/permissions_info.cc',
         'common/permissions/permissions_info.h',
         'common/permissions/permissions_provider.h',

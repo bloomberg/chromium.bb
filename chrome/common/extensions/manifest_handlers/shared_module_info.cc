@@ -10,10 +10,10 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/version.h"
-#include "chrome/common/extensions/permissions/permission_set.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/manifest_constants.h"
+#include "extensions/common/permissions/permission_set.h"
 
 namespace extensions {
 

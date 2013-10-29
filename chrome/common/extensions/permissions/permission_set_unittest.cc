@@ -14,11 +14,11 @@
 #include "chrome/common/extensions/features/feature_channel.h"
 #include "chrome/common/extensions/permissions/chrome_permission_message_provider.h"
 #include "chrome/common/extensions/permissions/permission_message_util.h"
-#include "chrome/common/extensions/permissions/permission_set.h"
 #include "chrome/common/extensions/permissions/permissions_data.h"
 #include "chrome/common/extensions/permissions/socket_permission.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/permissions/permission_message_provider.h"
+#include "extensions/common/permissions/permission_set.h"
 #include "extensions/common/permissions/permissions_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

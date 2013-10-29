@@ -10,7 +10,7 @@
 #include "base/compiler_specific.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
-#include "chrome/common/extensions/permissions/permission_set.h"
+#include "extensions/common/permissions/permission_set.h"
 
 class ExtensionService;
 

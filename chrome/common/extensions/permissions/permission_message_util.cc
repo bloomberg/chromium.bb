@@ -6,9 +6,9 @@
 
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/common/extensions/permissions/permission_set.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/common/permissions/permission_message.h"
+#include "extensions/common/permissions/permission_set.h"
 #include "extensions/common/url_pattern_set.h"
 #include "grit/generated_resources.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"

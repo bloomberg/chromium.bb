@@ -15,9 +15,9 @@
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
-#include "chrome/common/extensions/permissions/permission_set.h"
 #include "content/public/browser/notification_service.h"
 #include "extensions/common/permissions/api_permission.h"
+#include "extensions/common/permissions/permission_set.h"
 
 namespace apps {
 

@@ -6,7 +6,7 @@
 #include "base/values.h"
 #include "chrome/browser/extensions/api/permissions/permissions_api_helpers.h"
 #include "chrome/common/extensions/api/permissions.h"
-#include "chrome/common/extensions/permissions/permission_set.h"
+#include "extensions/common/permissions/permission_set.h"
 #include "extensions/common/url_pattern_set.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"

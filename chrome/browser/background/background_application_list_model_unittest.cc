@@ -19,12 +19,12 @@
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/permissions_updater.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/permissions/permission_set.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_types.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/permissions/api_permission.h"
+#include "extensions/common/permissions/permission_set.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 // This value is used to seed the PRNG at the beginning of a sequence of
