@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/debug/alias.h"
-#include "base/sys_info.h"
 #include "content/browser/renderer_host/dip_util.h"
 #include "content/public/browser/user_metrics.h"
 
@@ -171,18 +170,17 @@ void SoftwareFrameManager::DiscardCurrentFrame() {
   if (!HasCurrentFrame())
     return;
   current_frame_ = NULL;
-  SoftwareFrameMemoryManager::GetInstance()->RemoveFrame(this);
+  RendererFrameManager::GetInstance()->RemoveFrame(this);
 }
 
 void SoftwareFrameManager::SwapToNewFrameComplete(bool visible) {
   DCHECK(HasCurrentFrame());
-  SoftwareFrameMemoryManager::GetInstance()->AddFrame(this, visible);
+  RendererFrameManager::GetInstance()->AddFrame(this, visible);
 }
 
 void SoftwareFrameManager::SetVisibility(bool visible) {
   if (HasCurrentFrame()) {
-    SoftwareFrameMemoryManager::GetInstance()->SetFrameVisibility(this,
-                                                                  visible);
+    RendererFrameManager::GetInstance()->SetFrameVisibility(this, visible);
   }
 }
 
@@ -218,57 +216,6 @@ void SoftwareFrameManager::EvictCurrentFrame() {
   DiscardCurrentFrame();
   if (client_)
     client_->ReleaseReferencesToSoftwareFrame();
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// SoftwareFrameMemoryManager
-
-SoftwareFrameMemoryManager* SoftwareFrameMemoryManager::GetInstance() {
-  return Singleton<SoftwareFrameMemoryManager>::get();
-}
-
-void SoftwareFrameMemoryManager::AddFrame(SoftwareFrameManager* frame,
-                                          bool visible) {
-  RemoveFrame(frame);
-  if (visible)
-    visible_frames_.insert(frame);
-  else
-    hidden_frames_.push_front(frame);
-  CullHiddenFrames();
-}
-
-void SoftwareFrameMemoryManager::RemoveFrame(SoftwareFrameManager* frame) {
-  visible_frames_.erase(frame);
-  hidden_frames_.remove(frame);
-}
-
-void SoftwareFrameMemoryManager::SetFrameVisibility(SoftwareFrameManager* frame,
-                                                    bool visible) {
-  if (visible) {
-    hidden_frames_.remove(frame);
-    visible_frames_.insert(frame);
-  } else {
-    visible_frames_.erase(frame);
-    hidden_frames_.push_front(frame);
-    CullHiddenFrames();
-  }
-}
-
-SoftwareFrameMemoryManager::SoftwareFrameMemoryManager()
-  : max_number_of_saved_frames_(
-        std::min(5, 2 + (base::SysInfo::AmountOfPhysicalMemoryMB() / 256))) {}
-
-SoftwareFrameMemoryManager::~SoftwareFrameMemoryManager() {}
-
-void SoftwareFrameMemoryManager::CullHiddenFrames() {
-  while (!hidden_frames_.empty() &&
-         hidden_frames_.size() + visible_frames_.size() >
-             max_number_of_saved_frames()) {
-    size_t old_size = hidden_frames_.size();
-    // Should remove self from list.
-    hidden_frames_.back()->EvictCurrentFrame();
-    DCHECK_EQ(hidden_frames_.size() + 1, old_size);
-  }
 }
 
 }  // namespace content

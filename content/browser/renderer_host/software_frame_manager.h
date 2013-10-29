@@ -11,17 +11,16 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/shared_memory.h"
-#include "base/memory/singleton.h"
 #include "base/memory/weak_ptr.h"
 #include "cc/output/software_frame_data.h"
 #include "cc/resources/single_release_callback.h"
 #include "cc/resources/texture_mailbox.h"
+#include "content/browser/renderer_host/renderer_frame_manager.h"
 #include "content/common/content_export.h"
 #include "ui/gfx/size.h"
 
 namespace content {
 class SoftwareFrame;
-class SoftwareFrameMemoryManager;
 
 class CONTENT_EXPORT SoftwareFrameManagerClient {
  public:
@@ -36,11 +35,11 @@ class CONTENT_EXPORT SoftwareFrameManagerClient {
   virtual void ReleaseReferencesToSoftwareFrame() = 0;
 };
 
-class CONTENT_EXPORT SoftwareFrameManager {
+class CONTENT_EXPORT SoftwareFrameManager : public RendererFrameManagerClient {
  public:
   explicit SoftwareFrameManager(
       base::WeakPtr<SoftwareFrameManagerClient> client);
-  ~SoftwareFrameManager();
+  virtual ~SoftwareFrameManager();
 
   // Swaps to a new frame from shared memory. This frame is guaranteed to
   // not be evicted until SwapToNewFrameComplete is called.
@@ -61,11 +60,9 @@ class CONTENT_EXPORT SoftwareFrameManager {
   gfx::Size GetCurrentFrameSizeInDIP() const;
 
  private:
-  friend class SoftwareFrameMemoryManager;
-
   // Called by SoftwareFrameMemoryManager to demand that the current frame
   // be evicted.
-  void EvictCurrentFrame();
+  virtual void EvictCurrentFrame() OVERRIDE;
 
   base::WeakPtr<SoftwareFrameManagerClient> client_;
 
@@ -73,31 +70,6 @@ class CONTENT_EXPORT SoftwareFrameManager {
   scoped_refptr<SoftwareFrame> current_frame_;
 
   DISALLOW_COPY_AND_ASSIGN(SoftwareFrameManager);
-};
-
-class CONTENT_EXPORT SoftwareFrameMemoryManager {
- public:
-  static SoftwareFrameMemoryManager* GetInstance();
-
-  void AddFrame(SoftwareFrameManager*, bool visible);
-  void RemoveFrame(SoftwareFrameManager*);
-  void SetFrameVisibility(SoftwareFrameManager*, bool visible);
-
-  size_t max_number_of_saved_frames() const {
-    return max_number_of_saved_frames_;
-  }
-
- private:
-  SoftwareFrameMemoryManager();
-  ~SoftwareFrameMemoryManager();
-  void CullHiddenFrames();
-  friend struct DefaultSingletonTraits<SoftwareFrameMemoryManager>;
-
-  std::set<SoftwareFrameManager*> visible_frames_;
-  std::list<SoftwareFrameManager*> hidden_frames_;
-  size_t max_number_of_saved_frames_;
-
-  DISALLOW_COPY_AND_ASSIGN(SoftwareFrameMemoryManager);
 };
 
 }  // namespace content

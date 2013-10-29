@@ -67,8 +67,8 @@ class SoftwareFrameManagerTest : public testing::Test {
     clients_.clear();
   }
   size_t MaxNumberOfSavedFrames() const {
-    size_t result = SoftwareFrameMemoryManager::GetInstance()->
-        max_number_of_saved_frames();
+    size_t result =
+        RendererFrameManager::GetInstance()->max_number_of_saved_frames();
     return result;
   }
 

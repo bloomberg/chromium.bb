@@ -575,6 +575,7 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(RenderWidgetHost* host)
       cursor_visibility_state_in_renderer_(UNKNOWN),
       paint_observer_(NULL),
       touch_editing_client_(NULL),
+      delegated_frame_evictor_(new DelegatedFrameEvictor(this)),
       weak_ptr_factory_(this) {
   host_->SetView(this);
   window_observer_.reset(new WindowObserver(this));
@@ -663,6 +664,7 @@ void RenderWidgetHostViewAura::WasShown() {
     return;
   host_->WasShown();
   software_frame_manager_->SetVisibility(true);
+  delegated_frame_evictor_->SetVisible(true);
 
   aura::Window* root = window_->GetRootWindow();
   if (root) {
@@ -691,6 +693,7 @@ void RenderWidgetHostViewAura::WasHidden() {
     return;
   host_->WasHidden();
   software_frame_manager_->SetVisibility(false);
+  delegated_frame_evictor_->SetVisible(false);
   released_front_lock_ = NULL;
 
 #if defined(OS_WIN)
@@ -1452,8 +1455,7 @@ void RenderWidgetHostViewAura::SwapDelegatedFrame(
     // resources from the old one with resources from the new one which would
     // have the same id. Changing the layer to showing painted content destroys
     // the DelegatedRendererLayer.
-    window_->layer()->SetShowPaintedContent();
-    frame_provider_ = NULL;
+    EvictDelegatedFrame();
 
     // Drop the cc::DelegatedFrameResourceCollection so that we will not return
     // any resources from the old output surface with the new output surface id.
@@ -1469,8 +1471,7 @@ void RenderWidgetHostViewAura::SwapDelegatedFrame(
   }
   if (frame_size.IsEmpty()) {
     DCHECK_EQ(0u, frame_data->resource_list.size());
-    window_->layer()->SetShowPaintedContent();
-    frame_provider_ = NULL;
+    EvictDelegatedFrame();
   } else {
     if (!resource_collection_) {
       resource_collection_ = new cc::DelegatedFrameResourceCollection;
@@ -1506,6 +1507,9 @@ void RenderWidgetHostViewAura::SwapDelegatedFrame(
                    output_surface_id));
   }
   DidReceiveFrameFromRenderer();
+  if (frame_provider_.get())
+    delegated_frame_evictor_->SwappedFrame(!host_->is_hidden());
+  // Note: the frame may have been evicted immediately.
 }
 
 void RenderWidgetHostViewAura::SendDelegatedFrameAck(uint32 output_surface_id) {
@@ -1538,6 +1542,12 @@ void RenderWidgetHostViewAura::SendReturnedDelegatedResources(
       output_surface_id,
       host_->GetProcess()->GetID(),
       ack);
+}
+
+void RenderWidgetHostViewAura::EvictDelegatedFrame() {
+  window_->layer()->SetShowPaintedContent();
+  frame_provider_ = NULL;
+  delegated_frame_evictor_->DiscardedFrame();
 }
 
 void RenderWidgetHostViewAura::SwapSoftwareFrame(
@@ -1799,8 +1809,7 @@ void RenderWidgetHostViewAura::AcceleratedSurfaceRelease() {
       // We need to wait for a commit to clear to guarantee that all we
       // will not issue any more GL referencing the previous surface.
       AddOnCommitCallbackAndDisableLocks(
-          base::Bind(&RenderWidgetHostViewAura::
-                     SetSurfaceNotInUseByCompositor,
+          base::Bind(&RenderWidgetHostViewAura::SetSurfaceNotInUseByCompositor,
                      AsWeakPtr(),
                      current_surface_));  // Hold a ref so the texture will not
                                           // get deleted until after commit.

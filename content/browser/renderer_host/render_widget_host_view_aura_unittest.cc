@@ -158,13 +158,12 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
     aura_test_helper_->SetUp();
 
     browser_context_.reset(new TestBrowserContext);
-    MockRenderProcessHost* process_host =
-        new MockRenderProcessHost(browser_context_.get());
+    process_host_ = new MockRenderProcessHost(browser_context_.get());
 
-    sink_ = &process_host->sink();
+    sink_ = &process_host_->sink();
 
     parent_host_ = new RenderWidgetHostImpl(
-        &delegate_, process_host, MSG_ROUTING_NONE, false);
+        &delegate_, process_host_, MSG_ROUTING_NONE, false);
     parent_view_ = static_cast<RenderWidgetHostViewAura*>(
         RenderWidgetHostView::CreateViewForWidget(parent_host_));
     parent_view_->InitAsChild(NULL);
@@ -173,7 +172,7 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
                                           gfx::Rect());
 
     widget_host_ = new RenderWidgetHostImpl(
-        &delegate_, process_host, MSG_ROUTING_NONE, false);
+        &delegate_, process_host_, MSG_ROUTING_NONE, false);
     widget_host_->Init();
     widget_host_->OnMessageReceived(
         ViewHostMsg_DidActivateAcceleratedCompositing(0, true));
@@ -182,6 +181,7 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
 
   virtual void TearDown() {
     sink_ = NULL;
+    process_host_ = NULL;
     if (view_)
       view_->Destroy();
     delete widget_host_;
@@ -203,6 +203,7 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
   scoped_ptr<aura::test::AuraTestHelper> aura_test_helper_;
   scoped_ptr<BrowserContext> browser_context_;
   MockRenderWidgetHostDelegate delegate_;
+  MockRenderProcessHost* process_host_;
 
   // Tests should set these to NULL if they've already triggered their
   // destruction.
@@ -974,6 +975,105 @@ TEST_F(RenderWidgetHostViewAuraTest, OutputSurfaceIdChange) {
   view_->RunOnCompositingDidCommit();
 
   view_->window_->RemoveObserver(&observer);
+}
+
+TEST_F(RenderWidgetHostViewAuraTest, DiscardDelegatedFrames) {
+  size_t max_renderer_frames =
+      RendererFrameManager::GetInstance()->max_number_of_saved_frames();
+  ASSERT_LE(2u, max_renderer_frames);
+  size_t renderer_count = max_renderer_frames + 1;
+  gfx::Rect view_rect(100, 100);
+  gfx::Size frame_size = view_rect.size();
+
+  scoped_ptr<RenderWidgetHostImpl * []> hosts(
+      new RenderWidgetHostImpl* [renderer_count]);
+  scoped_ptr<FakeRenderWidgetHostViewAura * []> views(
+      new FakeRenderWidgetHostViewAura* [renderer_count]);
+
+  // Create a bunch of renderers.
+  for (size_t i = 0; i < renderer_count; ++i) {
+    hosts[i] = new RenderWidgetHostImpl(
+        &delegate_, process_host_, MSG_ROUTING_NONE, false);
+    hosts[i]->Init();
+    hosts[i]->OnMessageReceived(
+        ViewHostMsg_DidActivateAcceleratedCompositing(0, true));
+    views[i] = new FakeRenderWidgetHostViewAura(hosts[i]);
+    views[i]->InitAsChild(NULL);
+    aura::client::ParentWindowWithContext(
+        views[i]->GetNativeView(),
+        parent_view_->GetNativeView()->GetRootWindow(),
+        gfx::Rect());
+    views[i]->SetSize(view_rect.size());
+  }
+
+  // Make each renderer visible, and swap a frame on it, then make it invisible.
+  for (size_t i = 0; i < renderer_count; ++i) {
+    views[i]->WasShown();
+    views[i]->OnSwapCompositorFrame(
+        1, MakeDelegatedFrame(1.f, frame_size, view_rect));
+    EXPECT_TRUE(views[i]->frame_provider_);
+    views[i]->WasHidden();
+  }
+
+  // There should be max_renderer_frames with a frame in it, and one without it.
+  // Since the logic is LRU eviction, the first one should be without.
+  EXPECT_FALSE(views[0]->frame_provider_);
+  for (size_t i = 1; i < renderer_count; ++i)
+    EXPECT_TRUE(views[i]->frame_provider_);
+
+  // LRU renderer is [0], make it visible, it shouldn't evict anything yet.
+  views[0]->WasShown();
+  EXPECT_FALSE(views[0]->frame_provider_);
+  EXPECT_TRUE(views[1]->frame_provider_);
+
+  // Swap a frame on it, it should evict the next LRU [1].
+  views[0]->OnSwapCompositorFrame(
+      1, MakeDelegatedFrame(1.f, frame_size, view_rect));
+  EXPECT_TRUE(views[0]->frame_provider_);
+  EXPECT_FALSE(views[1]->frame_provider_);
+  views[0]->WasHidden();
+
+  // LRU renderer is [1], still hidden. Swap a frame on it, it should evict
+  // the next LRU [2].
+  views[1]->OnSwapCompositorFrame(
+      1, MakeDelegatedFrame(1.f, frame_size, view_rect));
+  EXPECT_TRUE(views[0]->frame_provider_);
+  EXPECT_TRUE(views[1]->frame_provider_);
+  EXPECT_FALSE(views[2]->frame_provider_);
+  for (size_t i = 3; i < renderer_count; ++i)
+    EXPECT_TRUE(views[i]->frame_provider_);
+
+  // Make all renderers but [0] visible and swap a frame on them, keep [0]
+  // hidden, it becomes the LRU.
+  for (size_t i = 1; i < renderer_count; ++i) {
+    views[i]->WasShown();
+    views[i]->OnSwapCompositorFrame(
+        1, MakeDelegatedFrame(1.f, frame_size, view_rect));
+    EXPECT_TRUE(views[i]->frame_provider_);
+  }
+  EXPECT_FALSE(views[0]->frame_provider_);
+
+  // Swap a frame on [0], it should be evicted immediately.
+  views[0]->OnSwapCompositorFrame(
+      1, MakeDelegatedFrame(1.f, frame_size, view_rect));
+  EXPECT_FALSE(views[0]->frame_provider_);
+
+  // Make [0] visible, and swap a frame on it. Nothing should be evicted
+  // although we're above the limit.
+  views[0]->WasShown();
+  views[0]->OnSwapCompositorFrame(
+      1, MakeDelegatedFrame(1.f, frame_size, view_rect));
+  for (size_t i = 0; i < renderer_count; ++i)
+    EXPECT_TRUE(views[i]->frame_provider_);
+
+  // Make [0] hidden, it should evict its frame.
+  views[0]->WasHidden();
+  EXPECT_FALSE(views[0]->frame_provider_);
+
+  for (size_t i = 0; i < renderer_count; ++i) {
+    views[i]->Destroy();
+    delete hosts[i];
+  }
 }
 
 }  // namespace content
