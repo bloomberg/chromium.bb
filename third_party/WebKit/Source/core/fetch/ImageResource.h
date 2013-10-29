@@ -65,6 +65,9 @@ public:
     bool usesImageContainerSize() const;
     bool imageHasRelativeWidth() const;
     bool imageHasRelativeHeight() const;
+    // The device pixel ratio we got from the server for this image, or 1.0.
+    float devicePixelRatioHeaderValue() const { return m_devicePixelRatioHeaderValue; }
+    bool hasDevicePixelRatioHeaderValue() const { return m_hasDevicePixelRatioHeaderValue; }
 
     enum SizeType {
         NormalSize, // Report the size of the image associated with a certain renderer
@@ -116,10 +119,12 @@ private:
     typedef pair<IntSize, float> SizeAndZoom;
     typedef HashMap<const ImageResourceClient*, SizeAndZoom> ContainerSizeRequests;
     ContainerSizeRequests m_pendingContainerSizeRequests;
+    float m_devicePixelRatioHeaderValue;
 
     RefPtr<WebCore::Image> m_image;
     OwnPtr<SVGImageCache> m_svgImageCache;
     bool m_loadingMultipartContent;
+    bool m_hasDevicePixelRatioHeaderValue;
 };
 
 }

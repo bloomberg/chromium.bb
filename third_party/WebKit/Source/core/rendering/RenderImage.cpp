@@ -164,6 +164,11 @@ void RenderImage::imageChanged(WrappedImagePtr newImage, const IntRect* rect)
     if (newImage != m_imageResource->imagePtr())
         return;
 
+    // Per the spec, we let the server-sent header override srcset/other sources of dpr.
+    // https://github.com/igrigorik/http-client-hints/blob/master/draft-grigorik-http-client-hints-01.txt#L255
+    if (m_imageResource->cachedImage() && m_imageResource->cachedImage()->hasDevicePixelRatioHeaderValue())
+        m_imageDevicePixelRatio = 1 / m_imageResource->cachedImage()->devicePixelRatioHeaderValue();
+
     if (!m_didIncrementVisuallyNonEmptyPixelCount) {
         // At a zoom level of 1 the image is guaranteed to have an integer size.
         view()->frameView()->incrementVisuallyNonEmptyPixelCount(flooredIntSize(m_imageResource->imageSize(1.0f)));

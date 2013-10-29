@@ -24,6 +24,7 @@
 #include "config.h"
 #include "core/fetch/ImageResource.h"
 
+#include "RuntimeEnabledFeatures.h"
 #include "core/fetch/ImageResourceClient.h"
 #include "core/fetch/MemoryCache.h"
 #include "core/fetch/ResourceClient.h"
@@ -44,8 +45,10 @@ namespace WebCore {
 
 ImageResource::ImageResource(const ResourceRequest& resourceRequest)
     : Resource(resourceRequest, Image)
+    , m_devicePixelRatioHeaderValue(1.0)
     , m_image(0)
     , m_loadingMultipartContent(false)
+    , m_hasDevicePixelRatioHeaderValue(false)
 {
     setStatus(Unknown);
     setCustomAcceptHeader();
@@ -377,6 +380,13 @@ void ImageResource::responseReceived(const ResourceResponse& response)
         finishOnePart();
     else if (response.isMultipart())
         m_loadingMultipartContent = true;
+    if (RuntimeEnabledFeatures::clientHintsDprEnabled()) {
+        m_devicePixelRatioHeaderValue = response.httpHeaderField("DPR").toFloat(&m_hasDevicePixelRatioHeaderValue);
+        if (!m_hasDevicePixelRatioHeaderValue || m_devicePixelRatioHeaderValue <= 0.0) {
+            m_devicePixelRatioHeaderValue = 1.0;
+            m_hasDevicePixelRatioHeaderValue = false;
+        }
+    }
     Resource::responseReceived(response);
 }
 
