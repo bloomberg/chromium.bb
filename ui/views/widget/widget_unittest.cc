@@ -1958,16 +1958,12 @@ TEST_F(WidgetChildDestructionTest,
   RunDestroyChildWidgetsTest(true, false);
 }
 
-// TODO: test fails on linux as destroying parent X widget does not
-// automatically destroy transients. http://crbug.com/300020 .
-#if !defined(OS_LINUX)
 // See description of RunDestroyChildWidgetsTest(). Both parent and child use
 // DesktopNativeWidgetAura.
 TEST_F(WidgetChildDestructionTest,
        DestroyChildWidgetsInOrderWithDesktopNativeWidgetForBoth) {
   RunDestroyChildWidgetsTest(true, true);
 }
-#endif
 #endif
 
 // See description of RunDestroyChildWidgetsTest().

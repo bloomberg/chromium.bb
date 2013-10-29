@@ -249,6 +249,11 @@ private:
   aura::RootWindowHostDelegate* root_window_host_delegate_;
   aura::Window* content_window_;
 
+  // We can optionally have a parent which can order us to close, or own
+  // children who we're responsible for closing when we CloseNow().
+  DesktopRootWindowHostX11* window_parent_;
+  std::set<DesktopRootWindowHostX11*> window_children_;
+
   ObserverList<DesktopRootWindowHostObserverX11> observer_list_;
 
   // The current root window host that has capture. While X11 has something

@@ -123,7 +123,10 @@ DesktopRootWindowHostX11::DesktopRootWindowHostX11(
       drag_drop_client_(NULL),
       current_cursor_(ui::kCursorNull),
       native_widget_delegate_(native_widget_delegate),
-      desktop_native_widget_aura_(desktop_native_widget_aura) {
+      desktop_native_widget_aura_(desktop_native_widget_aura),
+      root_window_host_delegate_(NULL),
+      content_window_(NULL),
+      window_parent_(NULL) {
 }
 
 DesktopRootWindowHostX11::~DesktopRootWindowHostX11() {
@@ -272,6 +275,22 @@ void DesktopRootWindowHostX11::CloseNow() {
     return;
 
   native_widget_delegate_->OnNativeWidgetDestroying();
+
+  // If we have children, close them. Use a copy for iteration because they'll
+  // remove themselves.
+  std::set<DesktopRootWindowHostX11*> window_children_copy = window_children_;
+  for (std::set<DesktopRootWindowHostX11*>::iterator it =
+           window_children_copy.begin(); it != window_children_copy.end();
+       ++it) {
+    (*it)->CloseNow();
+  }
+  DCHECK(window_children_.empty());
+
+  // If we have a parent, remove ourselves from its children list.
+  if (window_parent_) {
+    window_parent_->window_children_.erase(this);
+    window_parent_ = NULL;
+  }
 
   // Remove the event listeners we've installed. We need to remove these
   // because otherwise we get assert during ~RootWindow().
@@ -970,6 +989,16 @@ void DesktopRootWindowHostX11::InitX11Window(
   if (!params.wm_class_name.empty() || !params.wm_class_class.empty()) {
     ui::SetWindowClassHint(
         xdisplay_, xwindow_, params.wm_class_name, params.wm_class_class);
+  }
+
+  // If we have a parent, record the parent/child relationship. We use this
+  // data during destruction to make sure that when we try to close a parent
+  // window, we also destroy all child windows.
+  if (params.parent && params.parent->GetDispatcher()) {
+    XID parent_xid = params.parent->GetDispatcher()->GetAcceleratedWidget();
+    window_parent_ = GetHostForXID(parent_xid);
+    DCHECK(window_parent_);
+    window_parent_->window_children_.insert(this);
   }
 }
 
