@@ -458,7 +458,8 @@ class BASE_EXPORT TraceLog {
   // client will still receive pairs of TRACE_EVENT_PHASE_BEGIN and
   // TRACE_EVENT_PHASE_END events. Should send TRACE_EVENT_PHASE_COMPLETE
   // directly to clients if it is beneficial and feasible.
-  typedef void (*EventCallback)(char phase,
+  typedef void (*EventCallback)(TimeTicks timestamp,
+                                char phase,
                                 const unsigned char* category_group_enabled,
                                 const char* name,
                                 unsigned long long id,

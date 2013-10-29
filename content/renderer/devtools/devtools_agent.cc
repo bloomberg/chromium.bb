@@ -137,7 +137,9 @@ void DevToolsAgent::clearBrowserCookies() {
 
 void DevToolsAgent::setTraceEventCallback(TraceEventCallback cb) {
   TraceLog* trace_log = TraceLog::GetInstance();
-  trace_log->SetEventCallback(cb);
+  trace_log->SetEventCallback(cb ? TraceEventCallbackWrapper : 0);
+  base::subtle::NoBarrier_Store(&event_callback_,
+                                reinterpret_cast<base::subtle::AtomicWord>(cb));
   if (!!cb) {
     trace_log->SetEnabled(base::debug::CategoryFilter(
         base::debug::CategoryFilter::kDefaultCategoryFilterString),
@@ -147,13 +149,8 @@ void DevToolsAgent::setTraceEventCallback(TraceEventCallback cb) {
   }
 }
 
-void DevToolsAgent::setTraceEventCallback(TraceEventWithTimestampCallback cb) {
-  base::subtle::NoBarrier_Store(&event_callback_,
-                                reinterpret_cast<base::subtle::AtomicWord>(cb));
-  setTraceEventCallback(cb ? TraceEventCallbackWrapper : 0);
-}
-
 void DevToolsAgent::TraceEventCallbackWrapper(
+    base::TimeTicks timestamp,
     char phase,
     const unsigned char* category_group_enabled,
     const char* name,
@@ -163,14 +160,13 @@ void DevToolsAgent::TraceEventCallbackWrapper(
     const unsigned char arg_types[],
     const unsigned long long arg_values[],
     unsigned char flags) {
-  TraceEventWithTimestampCallback callback =
-      reinterpret_cast<TraceEventWithTimestampCallback>(
+  TraceEventCallback callback =
+      reinterpret_cast<TraceEventCallback>(
           base::subtle::NoBarrier_Load(&event_callback_));
   if (callback) {
-    double timestamp = base::TimeTicks::Now().ToInternalValue() /
-      static_cast<double>(base::Time::kMicrosecondsPerSecond);
+    double timestamp_seconds = (timestamp - base::TimeTicks()).InSecondsF();
     callback(phase, category_group_enabled, name, id, num_args,
-             arg_names, arg_types, arg_values, flags, timestamp);
+             arg_names, arg_types, arg_values, flags, timestamp_seconds);
   }
 }
 

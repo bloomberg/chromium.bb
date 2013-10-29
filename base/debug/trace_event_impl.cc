@@ -1831,7 +1831,8 @@ TraceEventHandle TraceLog::AddTraceEventWithThreadIdAndTimestamp(
   if (event_callback) {
     // TODO(wangxianzhu): Should send TRACE_EVENT_PHASE_COMPLETE directly to
     // clients if it is beneficial and feasible.
-    event_callback(phase == TRACE_EVENT_PHASE_COMPLETE ?
+    event_callback(now,
+                   phase == TRACE_EVENT_PHASE_COMPLETE ?
                        TRACE_EVENT_PHASE_BEGIN : phase,
                    category_group_enabled, name, id,
                    num_args, arg_names, arg_types, arg_values,
@@ -1942,9 +1943,11 @@ void TraceLog::UpdateTraceEventDuration(TraceEventHandle handle) {
     TraceEvent event_copy;
     event_copy.CopyFrom(*trace_event);
     lock.EnsureReleased();
+    DCHECK(event_copy.duration().InMicroseconds() >= 0);
     // TODO(wangxianzhu): Should send TRACE_EVENT_PHASE_COMPLETE directly to
     // clients if it is beneficial and feasible.
-    event_callback(TRACE_EVENT_PHASE_END,
+    event_callback(event_copy.timestamp() + event_copy.duration(),
+                   TRACE_EVENT_PHASE_END,
                    event_copy.category_group_enabled(),
                    event_copy.name(), event_copy.id(),
                    0, NULL, NULL, NULL, event_copy.flags());
