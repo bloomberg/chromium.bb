@@ -17,8 +17,10 @@ import logging
 import os
 import platform
 import shutil
+import subprocess
 import sys
 
+import command
 import directory_storage
 import file_tools
 import gsd_storage
@@ -31,7 +33,7 @@ class Once(object):
   """Class to memoize slow operations."""
 
   def __init__(self, storage, use_cached_results=True, cache_results=True,
-               print_url=None, check_call=None):
+               print_url=None, check_call=None, system_summary=None):
     """Constructor.
 
     Args:
@@ -53,6 +55,7 @@ class Once(object):
     self._cache_results = cache_results
     self._print_url = print_url
     self._check_call = check_call
+    self._system_summary = system_summary
 
   def KeyForOutput(self, package, output_hash):
     """Compute the key to store a give output in the data-store.
@@ -222,17 +225,27 @@ class Once(object):
     Ideally this would capture anything relevant about the current machine that
     would cause build output to vary (other than build recipe + inputs).
     """
-    # Note there is no attempt to canonicalize these values.  If two
-    # machines that would in fact produce identical builds differ in
-    # these values, it just means that a superfluous build will be
-    # done once to get the mapping from new input hash to preexisting
-    # output hash into the cache.
-    assert len(sys.platform) != 0, len(platform.machine()) != 0
-    items = [
-        ('platform', sys.platform),
-        ('machine', platform.machine()),
-        ]
-    return str(items)
+    if self._system_summary is None:
+      # Note there is no attempt to canonicalize these values.  If two
+      # machines that would in fact produce identical builds differ in
+      # these values, it just means that a superfluous build will be
+      # done once to get the mapping from new input hash to preexisting
+      # output hash into the cache.
+      assert len(sys.platform) != 0, len(platform.machine()) != 0
+      # Use environment from command so we can access MinGW on windows.
+      env = command.PlatformEnvironment([])
+      gcc = file_tools.Which('gcc', paths=env['PATH'].split(os.pathsep))
+      p = subprocess.Popen(
+          [gcc, '-v'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env)
+      _, gcc_version = p.communicate()
+      assert p.returncode == 0
+      items = [
+          ('platform', sys.platform),
+          ('machine', platform.machine()),
+          ('gcc-v', gcc_version),
+          ]
+      self._system_summary = str(items)
+    return self._system_summary
 
   def BuildSignature(self, package, inputs, commands):
     """Compute a total checksum for a computation.

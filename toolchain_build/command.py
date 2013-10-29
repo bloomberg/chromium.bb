@@ -58,13 +58,35 @@ def PrepareCommandValues(cwd, inputs, output):
   return values
 
 
-def MsysPath():
-  # TODO(bradnelson): switch to something hermetic.
-  mingw = os.environ.get('MINGW', r'c:\mingw')
-  msys = os.path.join(mingw, 'msys', '1.0')
-  if not os.path.exists(msys):
-    msys = os.path.join(mingw, 'msys')
-  return msys
+def PlatformEnvironment(extra_paths):
+  """Select the environment variables to run commands with.
+
+  Args:
+    extra_paths: Extra paths to add to the PATH variable.
+  Returns:
+    A dict to be passed as env to subprocess.
+  """
+  env = os.environ.copy()
+  paths = []
+  if sys.platform == 'win32':
+    # TODO(bradnelson): switch to something hermetic.
+    mingw = os.environ.get('MINGW', r'c:\mingw')
+    msys = os.path.join(mingw, 'msys', '1.0')
+    if not os.path.exists(msys):
+      msys = os.path.join(mingw, 'msys')
+    # We need both msys (posix like build environment) and MinGW (windows
+    # build of tools like gcc). We add <MINGW>/msys/[1.0/]bin to the path to
+    # get sh.exe. We add <MINGW>/bin to allow direct invocation on MinGW tools.
+    # We also add an msys style path (/mingw/bin) to get things like gcc from
+    # inside msys.
+    paths = [
+        '/mingw/bin',
+        os.path.join(mingw, 'bin'),
+        os.path.join(msys, 'bin'),
+    ]
+  env['PATH'] = os.pathsep.join(
+      paths + extra_paths + env.get('PATH', '').split(os.pathsep))
+  return env
 
 
 class Command(object):
@@ -101,34 +123,18 @@ class Command(object):
     values['top_srcdir'] = FixPath(os.path.relpath(NACL_DIR, kwargs['cwd']))
     values['abs_top_srcdir'] = FixPath(os.path.abspath(NACL_DIR))
 
-    # Use mingw on windows, unless otherwise specified.
-    if sys.platform == 'win32':
-      if Command.use_cygwin:
-        # Use the hermetic cygwin.
-        cygwin = os.path.join(NACL_DIR, 'cygwin', 'bin')
-        kwargs['path_dirs'] = ([cygwin] + kwargs.get('path_dirs', []))
-      else:
-        msys = MsysPath()
-        # We need both msys (posix like build environment) and MinGW (windows
-        # build of tools like gcc). We add <MINGW>/msys/[1.0/]bin to the path to
-        # get sh.exe. We also add an msys style path (/mingw/bin) to get things
-        # like gcc from inside msys.
-        kwargs['path_dirs'] = (
-            ['/mingw/bin', os.path.join(msys, 'bin')] +
-            kwargs.get('path_dirs', []))
-
+    # Extract paths from kwargs and add to the command environment.
+    path_dirs = []
     if 'path_dirs' in kwargs:
       path_dirs = [dirname % values for dirname in kwargs['path_dirs']]
       del kwargs['path_dirs']
-      env = os.environ.copy()
-      env['PATH'] = os.pathsep.join(path_dirs + env['PATH'].split(os.pathsep))
-      kwargs['env'] = env
+    kwargs['env'] = PlatformEnvironment(path_dirs)
 
     if isinstance(self._command, str):
       command = self._command % values
     else:
       command = [arg % values for arg in self._command]
-      paths = kwargs.get('env', os.environ).get('PATH', '').split(os.pathsep)
+      paths = kwargs['env']['PATH'].split(os.pathsep)
       command[0] = file_tools.Which(command[0], paths=paths)
     check_call(command, **kwargs)
 
