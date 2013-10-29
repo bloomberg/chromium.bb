@@ -31,28 +31,40 @@
 #include "config.h"
 #include "wtf/SHA1.h"
 
-#include "wtf/testing/WTFTestHelpers.h"
-#include "wtf/text/CString.h"
+#include "wtf/StringExtras.h"
 
 #include <gtest/gtest.h>
 
 namespace {
 
-CString SHA1HexDigest(CString input, int repeat)
-{
-    SHA1 sha1;
-    for (int i = 0; i < repeat; i++)
-        sha1.addBytes(input);
-    return sha1.computeHexDigest();
-}
+class SHA1Test : public testing::Test {
+    char m_buffer[40];
 
-TEST(SHA1Test, RFC3174)
+protected:
+    const char* SHA1HexDigest(const char* input, int repeat)
+    {
+        SHA1 sha1;
+        for (int i = 0; i < repeat; i++)
+            sha1.addBytes(input);
+        Vector<uint8_t, 20> digest;
+        sha1.computeHash(digest);
+
+        char* buffer = &m_buffer[0];
+        for (size_t i = 0; i < 20; ++i) {
+            snprintf(buffer, 3, "%02X", digest.at(i));
+            buffer += 2;
+        }
+        return &m_buffer[0];
+    }
+};
+
+TEST_F(SHA1Test, RFC3174)
 {
     // Examples taken from sample code in RFC 3174.
-    EXPECT_EQ("A9993E364706816ABA3E25717850C26C9CD0D89D", SHA1HexDigest("abc", 1));
-    EXPECT_EQ("84983E441C3BD26EBAAE4AA1F95129E5E54670F1", SHA1HexDigest("abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq", 1));
-    EXPECT_EQ("34AA973CD4C4DAA4F61EEB2BDBAD27316534016F", SHA1HexDigest("a", 1000000));
-    EXPECT_EQ("DEA356A2CDDD90C7A7ECEDC5EBB563934F460452", SHA1HexDigest("0123456701234567012345670123456701234567012345670123456701234567", 10));
+    EXPECT_STREQ("A9993E364706816ABA3E25717850C26C9CD0D89D", SHA1HexDigest("abc", 1));
+    EXPECT_STREQ("84983E441C3BD26EBAAE4AA1F95129E5E54670F1", SHA1HexDigest("abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq", 1));
+    EXPECT_STREQ("34AA973CD4C4DAA4F61EEB2BDBAD27316534016F", SHA1HexDigest("a", 1000000));
+    EXPECT_STREQ("DEA356A2CDDD90C7A7ECEDC5EBB563934F460452", SHA1HexDigest("0123456701234567012345670123456701234567012345670123456701234567", 10));
 }
 
 } // namespace

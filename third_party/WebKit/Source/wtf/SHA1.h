@@ -60,12 +60,6 @@ public:
     // computeHash has a side effect of resetting the state of the object.
     void computeHash(Vector<uint8_t, 20>&);
 
-    // Get a hex hash from the digest. Pass a limit less than 40 if you want a shorter digest.
-    static CString hexDigest(const Vector<uint8_t, 20>&);
-
-    // Compute the hex digest directly. Pass a limit less than 40 if you want a shorter digest.
-    CString computeHexDigest();
-
 private:
     void finalize();
     void processBlock();
