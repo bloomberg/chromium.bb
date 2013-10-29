@@ -51,6 +51,7 @@ struct test {
 	struct wl_test *wl_test;
 	int pointer_x;
 	int pointer_y;
+	uint32_t n_egl_buffers;
 };
 
 struct input {
@@ -119,5 +120,8 @@ frame_callback_set(struct wl_surface *surface, int *done);
 
 void
 frame_callback_wait(struct client *client, int *done);
+
+int
+get_n_egl_buffers(struct client *client);
 
 #endif

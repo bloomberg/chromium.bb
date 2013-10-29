@@ -20,6 +20,8 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include "config.h"
+
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
@@ -27,6 +29,11 @@
 #include <unistd.h>
 #include "../src/compositor.h"
 #include "wayland-test-server-protocol.h"
+
+#ifdef ENABLE_EGL
+#include <EGL/egl.h>
+#include <EGL/eglext.h>
+#endif /* ENABLE_EGL */
 
 struct weston_test {
 	struct weston_compositor *compositor;
@@ -181,12 +188,54 @@ send_key(struct wl_client *client, struct wl_resource *resource,
 	notify_key(seat, 100, key, state, STATE_UPDATE_AUTOMATIC);
 }
 
+#ifdef ENABLE_EGL
+static int
+is_egl_buffer(struct wl_resource *resource)
+{
+	PFNEGLQUERYWAYLANDBUFFERWL query_buffer =
+		(void *) eglGetProcAddress("eglQueryWaylandBufferWL");
+	EGLint format;
+
+	if (query_buffer(eglGetCurrentDisplay(),
+			 resource,
+			 EGL_TEXTURE_FORMAT,
+			 &format))
+		return 1;
+
+	return 0;
+}
+#endif /* ENABLE_EGL */
+
+static void
+get_n_buffers(struct wl_client *client, struct wl_resource *resource)
+{
+	int n_buffers = 0;
+
+#ifdef ENABLE_EGL
+	struct wl_resource *buffer_resource;
+	int i;
+
+	for (i = 0; i < 1000; i++) {
+		buffer_resource = wl_client_get_object(client, i);
+
+		if (buffer_resource == NULL)
+			continue;
+
+		if (is_egl_buffer(buffer_resource))
+			n_buffers++;
+	}
+#endif /* ENABLE_EGL */
+
+	wl_test_send_n_egl_buffers(resource, n_buffers);
+}
+
 static const struct wl_test_interface test_implementation = {
 	move_surface,
 	move_pointer,
 	send_button,
 	activate_surface,
-	send_key
+	send_key,
+	get_n_buffers,
 };
 
 static void

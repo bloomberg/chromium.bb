@@ -17,6 +17,11 @@ weston_tests =				\
 	subsurface.weston		\
 	$(xwayland_test)
 
+if ENABLE_EGL
+weston_tests +=				\
+	buffer-count.weston
+endif
+
 AM_TESTS_ENVIRONMENT = \
 	abs_builddir='$(abs_builddir)'; export abs_builddir;
 
@@ -62,6 +67,10 @@ weston_test_la_SOURCES =		\
 	weston-test.c			\
 	wayland-test-protocol.c		\
 	wayland-test-server-protocol.h
+
+if ENABLE_EGL
+weston_test_la_LDFLAGS += $(EGL_TESTS_LIBS)
+endif
 
 libtest_runner_la_SOURCES =	\
 	weston-test-runner.c	\
@@ -110,6 +119,9 @@ text_weston_LDADD = libtest-client.la
 
 subsurface_weston_SOURCES = subsurface-test.c
 subsurface_weston_LDADD = libtest-client.la
+
+buffer_count_weston_SOURCES = buffer-count-test.c
+buffer_count_weston_LDADD = libtest-client.la $(EGL_TESTS_LIBS)
 
 xwayland_weston_SOURCES = xwayland-test.c
 xwayland_weston_CFLAGS = $(GCC_CFLAGS) $(XWAYLAND_TEST_CFLAGS)

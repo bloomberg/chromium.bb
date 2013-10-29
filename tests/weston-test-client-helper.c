@@ -111,6 +111,17 @@ move_client(struct client *client, int x, int y)
 	frame_callback_wait(client, &done);
 }
 
+int
+get_n_egl_buffers(struct client *client)
+{
+	client->test->n_egl_buffers = -1;
+
+	wl_test_get_n_egl_buffers(client->test->wl_test);
+	wl_display_roundtrip(client->wl_display);
+
+	return client->test->n_egl_buffers;
+}
+
 static void
 pointer_handle_enter(void *data, struct wl_pointer *wl_pointer,
 		     uint32_t serial, struct wl_surface *wl_surface,
@@ -340,8 +351,17 @@ test_handle_pointer_position(void *data, struct wl_test *wl_test,
 		test->pointer_x, test->pointer_y);
 }
 
+static void
+test_handle_n_egl_buffers(void *data, struct wl_test *wl_test, uint32_t n)
+{
+	struct test *test = data;
+
+	test->n_egl_buffers = n;
+}
+
 static const struct wl_test_listener test_listener = {
-	test_handle_pointer_position
+	test_handle_pointer_position,
+	test_handle_n_egl_buffers,
 };
 
 static void

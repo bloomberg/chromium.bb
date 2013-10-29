@@ -51,5 +51,12 @@
       <arg name="x" type="fixed"/>
       <arg name="y" type="fixed"/>
     </event>
+    <request name="get_n_egl_buffers">
+      <!-- causes a n_egl_buffers event to be sent which reports how many
+           buffer objects are live for the client -->
+    </request>
+    <event name="n_egl_buffers">
+      <arg name="n" type="uint"/>
+    </event>
   </interface>
 </protocol>
