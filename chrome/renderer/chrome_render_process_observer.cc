@@ -351,9 +351,6 @@ void ChromeRenderProcessObserver::WebKitInitialized() {
   WebSecurityPolicy::registerURLSchemeAsNoAccess(native_scheme);
   WebSecurityPolicy::registerURLSchemeAsNotAllowingJavascriptURLs(
       native_scheme);
-
-  if (base::FieldTrialList::FindFullName("DateExtensionEnabled") == "Disabled")
-    WebRuntimeFeatures::enableDateExtension(false);
 }
 
 void ChromeRenderProcessObserver::OnRenderProcessShutdown() {

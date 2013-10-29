@@ -14037,6 +14037,9 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="Renderer.unloadEventsDurationMS" units="milliseconds">
+  <obsolete>
+    Deprecated as of 10/2013.
+  </obsolete>
   <summary>
     This measures how long all unload event handlers required to run whenever an
     unload event is processed.
