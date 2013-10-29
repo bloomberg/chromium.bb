@@ -2638,6 +2638,10 @@
             'OTHER_LDFLAGS': [
               '/usr/lib/libpython2.6.dylib'
             ],
+            'WARNING_CFLAGS': [
+              # swig creates code with self assignments.
+              '-Wno-self-assign',
+            ],
           },
           'msvs_disabled_warnings': [4211],
           'conditions': [
@@ -2686,17 +2690,6 @@
                   ],
                 },
               }
-            }],
-            ['clang == 1', {
-              'xcode_settings': {
-                'WARNING_CFLAGS': [
-                  # swig creates code with self assignments.
-                  '-Wno-self-assign',
-                ],
-              },
-              'cflags': [
-                '-Wno-self-assign',
-              ],
             }],
             ['asan==1', {
               'cflags!': [ '-fsanitize=address' ],
