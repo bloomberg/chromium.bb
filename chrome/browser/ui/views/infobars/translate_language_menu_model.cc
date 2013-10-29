@@ -7,6 +7,7 @@
 #include "base/metrics/histogram.h"
 #include "chrome/browser/translate/translate_infobar_delegate.h"
 #include "chrome/browser/ui/views/infobars/translate_infobar_base.h"
+#include "components/translate/common/translate_metrics.h"
 
 TranslateLanguageMenuModel::TranslateLanguageMenuModel(
     LanguageType language_type,
@@ -48,10 +49,12 @@ void TranslateLanguageMenuModel::ExecuteCommand(int command_id,
                                                 int event_flags) {
   size_t command_id_size_t = static_cast<size_t>(command_id);
   if (language_type_ == ORIGINAL) {
-    UMA_HISTOGRAM_BOOLEAN("Translate.ModifyOriginalLang", true);
+    UMA_HISTOGRAM_BOOLEAN(
+        translate::GetMetricsName(translate::UMA_MODIFY_ORIGINAL_LANG), true);
     infobar_delegate_->set_original_language_index(command_id_size_t);
   } else {
-    UMA_HISTOGRAM_BOOLEAN("Translate.ModifyTargetLang", true);
+    UMA_HISTOGRAM_BOOLEAN(
+        translate::GetMetricsName(translate::UMA_MODIFY_TARGET_LANG), true);
     infobar_delegate_->set_target_language_index(command_id_size_t);
   }
   infobar_->UpdateLanguageButtonText(button_,

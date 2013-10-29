@@ -6,9 +6,11 @@
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
+#include "base/metrics/histogram.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/translate/translate_infobar_delegate.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
+#include "components/translate/common/translate_metrics.h"
 #include "grit/generated_resources.h"
 #include "ui/base/gtk/gtk_hig_constants.h"
 #include "ui/base/gtk/gtk_signal_registrar.h"
@@ -90,11 +92,15 @@ bool AfterTranslateInfoBar::ShowOptionsMenuButton() const {
 }
 
 void AfterTranslateInfoBar::SetOriginalLanguage(size_t language_index) {
+  UMA_HISTOGRAM_BOOLEAN(
+      translate::GetMetricsName(translate::UMA_MODIFY_ORIGINAL_LANG), true);
   GetDelegate()->set_original_language_index(language_index);
   GetDelegate()->Translate();
 }
 
 void AfterTranslateInfoBar::SetTargetLanguage(size_t language_index) {
+  UMA_HISTOGRAM_BOOLEAN(
+      translate::GetMetricsName(translate::UMA_MODIFY_TARGET_LANG), true);
   GetDelegate()->set_target_language_index(language_index);
   GetDelegate()->Translate();
 }

@@ -7,7 +7,9 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_helper.h"
+#include "base/metrics/histogram.h"
 #include "chrome/browser/translate/translate_infobar_delegate.h"
+#include "components/translate/common/translate_metrics.h"
 #include "grit/generated_resources.h"
 #include "jni/TranslateInfoBarDelegate_jni.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -90,8 +92,19 @@ void TranslateInfoBar::ApplyTranslateOptions(JNIEnv* env,
                                              bool always_translate,
                                              bool never_translate_language,
                                              bool never_translate_site) {
-  delegate_->set_original_language_index(source_language_index);
-  delegate_->set_target_language_index(target_language_index);
+  if (delegate_->original_language_index() !=
+      static_cast<size_t>(source_language_index)) {
+    UMA_HISTOGRAM_BOOLEAN(
+        translate::GetMetricsName(translate::UMA_MODIFY_ORIGINAL_LANG), true);
+    delegate_->set_original_language_index(source_language_index);
+  }
+
+  if (delegate_->target_language_index() !=
+      static_cast<size_t>(target_language_index)) {
+    UMA_HISTOGRAM_BOOLEAN(
+        translate::GetMetricsName(translate::UMA_MODIFY_TARGET_LANG), true);
+    delegate_->set_target_language_index(target_language_index);
+  }
 
   if (delegate_->ShouldAlwaysTranslate() != always_translate)
     delegate_->ToggleAlwaysTranslate();

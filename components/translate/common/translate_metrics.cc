@@ -23,6 +23,9 @@ const char kTranslateTimeToTranslate[] = "Translate.TimeToTranslate";
 const char kTranslateUserActionDuration[] = "Translate.UserActionDuration";
 const char kTranslatePageScheme[] = "Translate.PageScheme";
 const char kTranslateSimilarLanguageMatch[] = "Translate.SimilarLanguageMatch";
+const char kTranslateModifyOriginalLang[] = "Translate.ModifyOriginalLang";
+const char kTranslateModifyTargetLang[] = "Translate.ModifyTargetlLang";
+
 
 const char kSchemeHttp[] = "http";
 const char kSchemeHttps[] = "https";
@@ -33,6 +36,8 @@ struct MetricsEntry {
 };
 
 // This entry table should be updated when new UMA items are added.
+// TODO(miguelg) Move kTranslateModifyOriginalLang and
+// kTranslateModifyTargetLang to the UX delegate  once crbug/312720 is fixed.
 const MetricsEntry kMetricsEntries[] = {
     {UMA_LANGUAGE_DETECTION, kRenderer4LanguageDetection},
     {UMA_CONTENT_LANGUAGE, kTranslateContentLanguage},
@@ -43,7 +48,9 @@ const MetricsEntry kMetricsEntries[] = {
     {UMA_TIME_TO_TRANSLATE, kTranslateTimeToTranslate},
     {UMA_USER_ACTION_DURATION, kTranslateUserActionDuration},
     {UMA_PAGE_SCHEME, kTranslatePageScheme},
-    {UMA_SIMILAR_LANGUAGE_MATCH, kTranslateSimilarLanguageMatch}, };
+    {UMA_SIMILAR_LANGUAGE_MATCH, kTranslateSimilarLanguageMatch},
+    {UMA_MODIFY_ORIGINAL_LANG, kTranslateModifyOriginalLang},
+    {UMA_MODIFY_TARGET_LANG, kTranslateModifyTargetLang}, };
 
 COMPILE_ASSERT(arraysize(kMetricsEntries) == UMA_MAX,
                arraysize_of_kMetricsEntries_should_be_UMA_MAX);
