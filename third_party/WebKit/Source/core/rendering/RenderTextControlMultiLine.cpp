@@ -88,11 +88,6 @@ PassRefPtr<RenderStyle> RenderTextControlMultiLine::createInnerTextStyle(const R
     return textBlockStyle.release();
 }
 
-RenderStyle* RenderTextControlMultiLine::textBaseStyle() const
-{
-    return style();
-}
-
 RenderObject* RenderTextControlMultiLine::layoutSpecialExcludedChild(bool relayoutChildren, SubtreeLayoutScope& layoutScope)
 {
     RenderObject* placeholderRenderer = RenderTextControl::layoutSpecialExcludedChild(relayoutChildren, layoutScope);

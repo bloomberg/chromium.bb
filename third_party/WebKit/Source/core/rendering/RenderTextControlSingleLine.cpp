@@ -68,12 +68,6 @@ inline HTMLElement* RenderTextControlSingleLine::innerSpinButtonElement() const
     return toHTMLElement(inputElement()->userAgentShadowRoot()->getElementById(ShadowElementNames::spinButton()));
 }
 
-RenderStyle* RenderTextControlSingleLine::textBaseStyle() const
-{
-    Element* viewPort = editingViewPortElement();
-    return viewPort ? viewPort->renderer()->style() : style();
-}
-
 void RenderTextControlSingleLine::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     RenderTextControl::paint(paintInfo, paintOffset);

@@ -74,8 +74,6 @@ private:
 
     virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle);
 
-    virtual RenderStyle* textBaseStyle() const;
-
     bool textShouldBeTruncated() const;
 
     HTMLElement* innerSpinButtonElement() const;
