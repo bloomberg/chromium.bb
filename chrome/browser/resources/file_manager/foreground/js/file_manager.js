@@ -768,22 +768,24 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     // Initialize progress center panel.
     this.progressCenterPanel_ = new ProgressCenterPanel(
         dom.querySelector('#progress-center'),
-        this.backgroundPage_.progressCenter.requestCancel.bind(
-            this.backgroundPage_.progressCenter));
-    var initialItems = this.backgroundPage_.progressCenter.applicationItems;
+        this.backgroundPage_.background.progressCenter.requestCancel.bind(
+            this.backgroundPage_.background.progressCenter));
+    var initialItems =
+        this.backgroundPage_.background.progressCenter.applicationItems;
     for (var i = 0; i < initialItems.length; i++) {
       this.progressCenterPanel_.updateItem(
           initialItems[i],
-          this.backgroundPage_.progressCenter.getSummarizedItem());
+          this.backgroundPage_.background.progressCenter.getSummarizedItem());
     }
-    this.backgroundPage_.progressCenter.addEventListener(
+    this.backgroundPage_.background.progressCenter.addEventListener(
         ProgressCenterEvent.ITEM_UPDATED,
         function(event) {
           this.progressCenterPanel_.updateItem(
               event.item,
-              this.backgroundPage_.progressCenter.getSummarizedItem());
+              this.backgroundPage_.background.progressCenter.
+                  getSummarizedItem());
         }.bind(this));
-    this.backgroundPage_.progressCenter.addEventListener(
+    this.backgroundPage_.background.progressCenter.addEventListener(
         ProgressCenterEvent.RESET,
         function(event) {
           this.progressCenterPanel_.reset();

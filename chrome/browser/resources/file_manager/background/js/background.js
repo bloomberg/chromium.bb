@@ -11,16 +11,9 @@
 var JSErrorCount = 0;
 
 /**
- * Map of all currently open app window. The key is an app id.
- * @type {Object.<string, AppWindow>}
+ * Counts runtime JavaScript errors.
  */
-var appWindows = {};
-
-/**
- * Synchronous queue for asynchronous calls.
- * @type {AsyncUtil.Queue}
- */
-var queue = new AsyncUtil.Queue();
+window.onerror = function() { JSErrorCount++; };
 
 /**
  * Type of a Files.app's instance launch.
@@ -31,6 +24,58 @@ var LaunchType = Object.freeze({
   FOCUS_ANY_OR_CREATE: 1,
   FOCUS_SAME_OR_CREATE: 2
 });
+
+/**
+ * Root class of the background page.
+ * @constructor
+ */
+function Background() {
+  /**
+   * Map of all currently open app windows. The key is an app id.
+   * @type {Object.<string, AppWindow>}
+   */
+  this.appWindows = {};
+
+  /**
+   * Synchronous queue for asynchronous calls.
+   * @type {AsyncUtil.Queue}
+   */
+  this.queue = new AsyncUtil.Queue();
+
+  /**
+   * Progress center of the background page.
+   * @type {ProgressCenter}
+   */
+  this.progressCenter = new ProgressCenter();
+
+  /**
+   * Event handler for progress center.
+   * @type {ProgressCenter}
+   * @private
+   */
+  this.progressCenterHandler_ = new ProgressCenterHandler(
+      FileOperationManager.getInstance(),
+      this.progressCenter);
+
+  // Freeze self.
+  Object.freeze(this);
+
+  // Initialize handlers.
+  chrome.fileBrowserHandler.onExecute.addListener(this.onExecute_.bind(this));
+  chrome.app.runtime.onLaunched.addListener(this.onLaunched_.bind(this));
+  chrome.app.runtime.onRestarted.addListener(this.onRestarted_.bind(this));
+  chrome.contextMenus.onClicked.addListener(
+      this.onContextMenuClicked_.bind(this));
+
+  // Fetch strings and initialize the context menu.
+  this.queue.run(function(callback) {
+    chrome.fileBrowserPrivate.getStrings(function(strings) {
+      loadTimeData.data = strings;
+      this.initContextMenu_();
+      chrome.storage.local.set({strings: strings}, callback);
+    }.bind(this));
+  }.bind(this));
+}
 
 /**
  * Wrapper for an app window.
@@ -76,9 +121,9 @@ AppWindowWrapper.SHIFT_DISTANCE = 40;
  */
 AppWindowWrapper.prototype.getSimilarWindows_ = function() {
   var result = [];
-  for (var appID in appWindows) {
-    if (appWindows[appID].contentWindow.appInitialURL == this.url_)
-      result.push(appWindows[appID]);
+  for (var appID in background.appWindows) {
+    if (background.appWindows[appID].contentWindow.appInitialURL == this.url_)
+      result.push(background.appWindows[appID]);
   }
   return result;
 };
@@ -146,7 +191,7 @@ AppWindowWrapper.prototype.launch = function(appState, opt_callback) {
                        bounds.top + AppWindowWrapper.SHIFT_DISTANCE);
     }
 
-    appWindows[this.id_] = appWindow;
+    background.appWindows[this.id_] = appWindow;
     var contentWindow = appWindow.contentWindow;
     contentWindow.appID = this.id_;
     contentWindow.appState = this.appState_;
@@ -162,7 +207,7 @@ AppWindowWrapper.prototype.launch = function(appState, opt_callback) {
           util.AppCache.update(entry.key, entry.value);
         });
       }
-      delete appWindows[this.id_];
+      delete background.appWindows[this.id_];
       chrome.storage.local.remove(this.id_);  // Forget the persisted state.
       this.window_ = null;
       this.openingOrOpened_ = false;
@@ -285,17 +330,17 @@ function launchFileManager(opt_appState, opt_id, opt_type, opt_callback) {
   var type = opt_type || LaunchType.ALWAYS_CREATE;
 
   // Wait until all windows are created.
-  queue.run(function(onTaskCompleted) {
+  background.queue.run(function(onTaskCompleted) {
     // Check if there is already a window with the same path. If so, then
     // reuse it instead of opening a new one.
     if (type == LaunchType.FOCUS_SAME_OR_CREATE ||
         type == LaunchType.FOCUS_ANY_OR_CREATE) {
       if (opt_appState && opt_appState.defaultPath) {
-        for (var key in appWindows) {
-          var contentWindow = appWindows[key].contentWindow;
+        for (var key in background.appWindows) {
+          var contentWindow = background.appWindows[key].contentWindow;
           if (contentWindow.appState &&
               opt_appState.defaultPath == contentWindow.appState.defaultPath) {
-            appWindows[key].focus();
+            background.appWindows[key].focus();
             if (opt_callback)
               opt_callback(key);
             onTaskCompleted();
@@ -308,11 +353,11 @@ function launchFileManager(opt_appState, opt_id, opt_type, opt_callback) {
     // Focus any window if none is focused. Try restored first.
     if (type == LaunchType.FOCUS_ANY_OR_CREATE) {
       // If there is already a focused window, then finish.
-      for (var key in appWindows) {
+      for (var key in background.appWindows) {
         // The isFocused() method should always be available, but in case
         // Files.app's failed on some error, wrap it with try catch.
         try {
-          if (appWindows[key].contentWindow.isFocused()) {
+          if (background.appWindows[key].contentWindow.isFocused()) {
             if (opt_callback)
               opt_callback(key);
             onTaskCompleted();
@@ -323,9 +368,9 @@ function launchFileManager(opt_appState, opt_id, opt_type, opt_callback) {
         }
       }
       // Try to focus the first non-minimized window.
-      for (var key in appWindows) {
-        if (!appWindows[key].isMinimized()) {
-          appWindows[key].focus();
+      for (var key in background.appWindows) {
+        if (!background.appWindows[key].isMinimized()) {
+          background.appWindows[key].focus();
           if (opt_callback)
             opt_callback(key);
           onTaskCompleted();
@@ -333,8 +378,8 @@ function launchFileManager(opt_appState, opt_id, opt_type, opt_callback) {
         }
       }
       // Restore and focus any window.
-      for (var key in appWindows) {
-        appWindows[key].focus();
+      for (var key in background.appWindows) {
+        background.appWindows[key].focus();
         if (opt_callback)
           opt_callback(key);
         onTaskCompleted();
@@ -362,34 +407,13 @@ function launchFileManager(opt_appState, opt_id, opt_type, opt_callback) {
 }
 
 /**
- * Relaunch file manager windows based on the persisted state.
- */
-function reopenFileManagers() {
-  chrome.storage.local.get(function(items) {
-    for (var key in items) {
-      if (items.hasOwnProperty(key)) {
-        var match = key.match(FILES_ID_PATTERN);
-        if (match) {
-          var id = Number(match[1]);
-          try {
-            var appState = JSON.parse(items[key]);
-            launchFileManager(appState, id);
-          } catch (e) {
-            console.error('Corrupt launch data for ' + id);
-          }
-        }
-      }
-    }
-  });
-}
-
-/**
  * Executes a file browser task.
  *
  * @param {string} action Task id.
  * @param {Object} details Details object.
+ * @private
  */
-function onExecute(action, details) {
+Background.prototype.onExecute_ = function(action, details) {
   var urls = details.entries.map(function(e) { return e.toURL(); });
 
   switch (action) {
@@ -441,7 +465,7 @@ function onExecute(action, details) {
       });
       break;
   }
-}
+};
 
 /**
  * Audio player window create options.
@@ -482,8 +506,9 @@ function launchVideoPlayer(url) {
 
 /**
  * Launches the app.
+ * @private
  */
-function onLaunched() {
+Background.prototype.onLaunched_ = function() {
   if (nextFileManagerWindowID == 0) {
     // The app just launched. Remove window state records that are not needed
     // any more.
@@ -497,30 +522,51 @@ function onLaunched() {
     });
   }
   launchFileManager(null, null, LaunchType.FOCUS_ANY_OR_CREATE);
-}
+};
 
 /**
  * Restarted the app, restore windows.
+ * @private
  */
-function onRestarted() {
-  reopenFileManagers();
+Background.prototype.onRestarted_ = function() {
+  // Reopen file manager windows.
+  chrome.storage.local.get(function(items) {
+    for (var key in items) {
+      if (items.hasOwnProperty(key)) {
+        var match = key.match(FILES_ID_PATTERN);
+        if (match) {
+          var id = Number(match[1]);
+          try {
+            var appState = JSON.parse(items[key]);
+            launchFileManager(appState, id);
+          } catch (e) {
+            console.error('Corrupt launch data for ' + id);
+          }
+        }
+      }
+    }
+  });
+
+  // Reopen sub-applications.
   audioPlayer.reopen();
   videoPlayer.reopen();
-}
+};
 
 /**
  * Handles clicks on a custom item on the launcher context menu.
  * @param {OnClickData} info Event details.
+ * @private
  */
-function onContextMenuClicked(info) {
+Background.prototype.onContextMenuClicked_ = function(info) {
   if (info.menuItemId == 'new-window') {
     // Find the focused window (if any) and use it's current path for the
     // new window. If not found, then launch with the default path.
-    for (var key in appWindows) {
+    for (var key in background.appWindows) {
       try {
-        if (appWindows[key].contentWindow.isFocused()) {
+        if (background.appWindows[key].contentWindow.isFocused()) {
           var appState = {
-            defaultPath: appWindows[key].contentWindow.appState.defaultPath
+            defaultPath: background.appWindows[key].contentWindow.
+                appState.defaultPath
           };
           launchFileManager(appState);
           return;
@@ -534,22 +580,22 @@ function onContextMenuClicked(info) {
     // Launch with the default path.
     launchFileManager();
   }
-}
+};
 
 /**
  * Closes the background page, if it is not needed.
  */
 function maybeCloseBackgroundPage() {
-  if (Object.keys(appWindows).length === 0 &&
+  if (Object.keys(background.appWindows).length === 0 &&
       !FileOperationManager.getInstance().hasQueuedTasks())
     close();
 }
 
 /**
  * Initializes the context menu. Recreates if already exists.
- * @param {Object} strings Hash array of strings.
+ * @private
  */
-function initContextMenu(strings) {
+Background.prototype.initContextMenu_ = function() {
   try {
     chrome.contextMenus.remove('new-window');
   } catch (ignore) {
@@ -559,48 +605,12 @@ function initContextMenu(strings) {
   chrome.contextMenus.create({
     id: 'new-window',
     contexts: ['launcher'],
-    title: strings['NEW_WINDOW_BUTTON_LABEL']
+    title: str('NEW_WINDOW_BUTTON_LABEL')
   });
-}
+};
 
 /**
- * Initializes the background page of Files.app.
+ * Singleton instance of Background.
+ * @type {Background}
  */
-function initApp() {
-  // Initialize handlers.
-  chrome.fileBrowserHandler.onExecute.addListener(onExecute);
-  chrome.app.runtime.onLaunched.addListener(onLaunched);
-  chrome.app.runtime.onRestarted.addListener(onRestarted);
-  chrome.contextMenus.onClicked.addListener(onContextMenuClicked);
-
-  // Fetch strings and initialize the context menu.
-  queue.run(function(callback) {
-    chrome.fileBrowserPrivate.getStrings(function(strings) {
-      loadTimeData.data = strings;
-      initContextMenu(strings);
-      chrome.storage.local.set({strings: strings}, callback);
-    });
-  });
-
-  // Count runtime JavaScript errors.
-  window.onerror = function() {
-    JSErrorCount++;
-  };
-}
-
-// Initialize Files.app.
-initApp();
-
-/**
- * Progress center of the background page.
- * @type {ProgressCenter}
- */
-window.progressCenter = new ProgressCenter();
-
-/**
- * Event handler for progress center.
- * @type {ProgressCenter}
- */
-var progressCenterHandler = new ProgressCenterHandler(
-    FileOperationManager.getInstance(),
-    window.progressCenter);
+window.background = new Background();

@@ -75,9 +75,9 @@ test.util.async.openMainWindow = function(appState, callback) {
     },
     function(appId) {
       test.util.repeatUntilTrue_(function() {
-        if (!appWindows[appId])
+        if (!background.appWindows[appId])
           return false;
-        var contentWindow = appWindows[appId].contentWindow;
+        var contentWindow = background.appWindows[appId].contentWindow;
         var table = contentWindow.document.querySelector('#detail-table');
         if (!table)
           return false;
@@ -99,9 +99,9 @@ test.util.async.openMainWindow = function(appState, callback) {
  */
 test.util.async.waitForWindow = function(appIdPrefix, callback) {
   test.util.repeatUntilTrue_(function() {
-    for (var appId in appWindows) {
+    for (var appId in background.appWindows) {
       if (appId.indexOf(appIdPrefix) == 0 &&
-          appWindows[appId].contentWindow) {
+          background.appWindows[appId].contentWindow) {
         callback(appId);
         return true;
       }
@@ -133,8 +133,8 @@ test.util.sync.getDocument_ = function(contentWindow, opt_iframeQuery) {
  */
 test.util.sync.getErrorCount = function() {
   var totalCount = JSErrorCount;
-  for (var appId in appWindows) {
-    var contentWindow = appWindows[appId].contentWindow;
+  for (var appId in background.appWindows) {
+    var contentWindow = background.appWindows[appId].contentWindow;
     if (contentWindow.JSErrorCount)
       totalCount += contentWindow.JSErrorCount;
   }
@@ -150,7 +150,7 @@ test.util.sync.getErrorCount = function() {
  * @return {boolean} True for success.
  */
 test.util.sync.resizeWindow = function(contentWindow, width, height) {
-  appWindows[contentWindow.appID].resizeTo(width, height);
+  background.appWindows[contentWindow.appID].resizeTo(width, height);
   return true;
 };
 
@@ -742,11 +742,11 @@ test.util.registerRemoteTestUtils = function() {
     // Prepare arguments.
     var args = request.args.slice();  // shallow copy
     if (request.appId) {
-      if (!appWindows[request.appId]) {
+      if (!background.appWindows[request.appId]) {
         console.error('Specified window not found.');
         return false;
       }
-      args.unshift(appWindows[request.appId].contentWindow);
+      args.unshift(background.appWindows[request.appId].contentWindow);
     }
     // Call the test utility function and respond the result.
     if (test.util.async[request.func]) {
