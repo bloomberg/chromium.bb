@@ -441,6 +441,12 @@ void RenderLayerCompositor::updateCompositingLayers(CompositingUpdateType update
             // scrolling and animation bounds is implemented (crbug.com/252472).
             Vector<RenderLayer*> unclippedDescendants;
             computeCompositingRequirements(0, updateRoot, &overlapTestRequestMap, recursionData, layersChanged, saw3DTransform, unclippedDescendants);
+
+            const FrameView::ScrollableAreaSet* scrollableAreas = m_renderView->frameView()->scrollableAreas();
+            if (scrollableAreas) {
+                for (FrameView::ScrollableAreaSet::iterator it = scrollableAreas->begin(); it != scrollableAreas->end(); ++it)
+                    (*it)->updateHasVisibleNonLayerContent();
+            }
         }
         needHierarchyUpdate |= layersChanged;
     }
@@ -791,6 +797,7 @@ void RenderLayerCompositor::computeCompositingRequirements(RenderLayer* ancestor
 
     // Clear the flag
     layer->setHasCompositingDescendant(false);
+    layer->setHasNonCompositedChild(false);
 
     // Start by assuming this layer will not need to composite.
     CompositingReasons reasonsToComposite = CompositingReasonNone;
@@ -1002,6 +1009,9 @@ void RenderLayerCompositor::computeCompositingRequirements(RenderLayer* ancestor
 
     // At this point we have finished collecting all reasons to composite this layer.
     layer->setCompositingReasons(reasonsToComposite);
+
+    if (!willBeComposited && layer->parent())
+        layer->parent()->setHasNonCompositedChild(true);
 
     // Allocate or deallocate the compositedLayerMapping now, so that we can know the layer's compositing state reliably during tree traversal in rebuildCompositingLayerTree().
     if (allocateOrClearCompositedLayerMapping(layer, CompositingChangeRepaintNow))

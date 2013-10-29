@@ -544,6 +544,16 @@ void GraphicsLayer::addRepaintRect(const FloatRect& repaintRect)
     }
 }
 
+void GraphicsLayer::collectTrackedRepaintRects(Vector<FloatRect>& rects) const
+{
+    if (!m_client->isTrackingRepaints())
+        return;
+
+    RepaintMap::iterator repaintIt = repaintRectMap().find(this);
+    if (repaintIt != repaintRectMap().end())
+        rects.append(repaintIt->value);
+}
+
 void GraphicsLayer::writeIndent(TextStream& ts, int indent)
 {
     for (int i = 0; i != indent; ++i)

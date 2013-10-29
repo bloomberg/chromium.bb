@@ -316,6 +316,9 @@ crbug.com/271243 [ Win ] http/tests/misc/acid3.html [ Failure ]
 # crbug.com/277110 also makes this test fail.
 crbug.com/130260 inspector/profiler/canvas2d/canvas2d-api-changes.html [ Failure ]
 
+Bug(vollick) virtual/softwarecompositing/geometry/limit-layer-bounds-clipping-ancestor.html [ NeedsRebaseline ]
+Bug(vollick) compositing/geometry/limit-layer-bounds-clipping-ancestor.html [ NeedsRebaseline ]
+
 crbug.com/278497 [ Linux SnowLeopard Debug ] http/tests/security/contentSecurityPolicy/1.1/plugintypes-invalid.html [ Failure Pass  ]
 
 crbug.com/280658  [ Win7 ] inspector-protocol/layers/get-layers.html [ Pass Failure ]

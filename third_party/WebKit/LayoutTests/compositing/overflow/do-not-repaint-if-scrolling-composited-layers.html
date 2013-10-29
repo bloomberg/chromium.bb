@@ -1,0 +1,170 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<script>
+    if (window.testRunner)
+        window.testRunner.dumpAsText();
+
+    if (window.internals)
+        window.internals.settings.setForceCompositingMode(true);
+
+    function isScrollbarRepaint(rect) {
+        return rect.width == 15 && rect.height == 285;
+    }
+
+    function hasNonScrollbarRepaint(repaintRects) {
+        for (var i = 0; i < repaintRects.length; ++i) {
+           if (!isScrollbarRepaint(repaintRects[i]))
+              return true;
+        }
+        return false;
+    }
+
+    function testRepaint() {
+        var result = "";
+        for (var testIteration = 0; testIteration < 2; ++testIteration) {
+            var container = document.getElementById("container");
+            if (testIteration == 0) {
+                var selection = getSelection();
+
+                var range = document.createRange();
+                range.selectNode(document.getElementById("selection-start"));
+                selection.addRange(range);
+
+                range = document.createRange();
+                range.selectNode(document.getElementById("selection-end"));
+                selection.addRange(range);
+
+                document.body.offsetTop;
+                if (window.testRunner)
+                    testRunner.displayInvalidatedRegion();
+            } else {
+                // This should also cause repainting.
+                var span = document.getElementById("span");
+                span.style.display = "inline";
+            }
+
+            document.body.offsetTop;
+
+            if (window.internals)
+                window.internals.startTrackingRepaints(document);
+
+            container.scrollTop = 100;
+
+            if (window.internals) {
+                var repaintRects = window.internals.repaintRects(container);
+                var repainted = hasNonScrollbarRepaint(repaintRects);
+                if (repainted === true)
+                    result += "PASS repainted when expected\n";
+                else
+                    result += "FAIL did not repaint when expected\n";
+                window.internals.stopTrackingRepaints(document);
+            }
+
+            // Do all cleanup here (so as not to affect repaint rects).
+            document.getElementById("span").style.display = "none";
+            document.getElementById("container").scrollTop = 0;
+            getSelection().removeAllRanges();
+        }
+
+        return result;
+    }
+
+    function testNoRepaint() {
+        var result = "";
+        var container = document.getElementById("container");
+
+        document.body.offsetTop;
+
+        if (window.internals)
+            window.internals.startTrackingRepaints(document);
+
+        container.scrollTop = 100;
+
+        if (window.internals) {
+            var repaintRects = window.internals.repaintRects(container);
+            var repainted = hasNonScrollbarRepaint(repaintRects);
+            if (repainted === false)
+                result += "PASS did not repaint as expected\n";
+            else
+                result += "FAIL repainted when unexpected\n";
+            window.internals.stopTrackingRepaints(document);
+        }
+
+        return result;
+    }
+
+    function doTests() {
+        var result = testRepaint();
+        result += testNoRepaint();
+        var pre = document.createElement('pre');
+        document.body.appendChild(pre);
+        pre.innerHTML = result;
+        if (!window.internals)
+            document.getElementById("description").style.display = "block";
+    }
+
+    window.onload = doTests;
+</script>
+<style>
+    #target::selection { background-color: green; }
+
+    #container {
+        width:100px;
+        height:300px;
+        border: 1px black solid;
+        overflow: scroll;
+        -webkit-backface-visibility: hidden;
+        position: relative;
+    }
+
+    #fixed {
+        width: 50px;
+        height: 50px;
+        position: fixed;
+        top: 200px;
+        left: 200px;
+        background-color: blue;    
+        -webkit-backface-visibility: hidden;
+    }
+
+    .scrolled {
+        width: 50px;
+        height: 50px;
+        margin: 10px;
+        position: relative;
+        background-color: green;    
+        -webkit-backface-visibility: hidden;
+    }
+
+    #span {
+        display: none;
+    }
+
+    #description {
+        display: none;
+    }
+</style>
+</head>
+<body>
+    <pre id="description">
+      This test ensures that if the only thing that scrolls is a composited layer,
+      we do not repaint. It passes if we repaint when we have to draw the selection
+      block gaps or if we have content that is not in a composited layer. It also
+      checks that we do not repaint when all the content is in a composited layer.
+    </pre>
+    <div id="container">
+        <span id="span">Hello!</span>
+        <div id="fixed"></div>
+        <div class="scrolled" id="selection-start"></div>
+        <div class="scrolled" id="selection-end"></div>
+        <div class="scrolled"></div>
+        <div class="scrolled"></div>
+        <div class="scrolled"></div>
+        <div class="scrolled"></div>
+        <div class="scrolled"></div>
+        <div class="scrolled"></div>
+        <div class="scrolled"></div>
+    </div>
+</body>
+</html>

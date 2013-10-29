@@ -191,6 +191,7 @@
     [RaisesException] ClientRectList nonFastScrollableRects(Document document);
 
     [RaisesException] DOMString repaintRectsAsText(Document document);
+    [RaisesException] ClientRectList repaintRects(Element element);
 
     [RaisesException] void garbageCollectDocumentResources(Document document);
     void evictAllResources();

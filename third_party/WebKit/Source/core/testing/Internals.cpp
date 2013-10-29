@@ -119,6 +119,7 @@
 #include "platform/Language.h"
 #include "platform/TraceEvent.h"
 #include "platform/geometry/IntRect.h"
+#include "platform/geometry/LayoutRect.h"
 #include "public/platform/WebLayer.h"
 #include "weborigin/SchemeRegistry.h"
 #include "wtf/dtoa.h"
@@ -1799,6 +1800,29 @@ String Internals::repaintRectsAsText(Document* document, ExceptionState& es) con
     }
 
     return document->frame()->trackedRepaintRectsAsText();
+}
+
+PassRefPtr<ClientRectList> Internals::repaintRects(Element* element, ExceptionState& es) const
+{
+    if (!element) {
+        es.throwUninformativeAndGenericDOMException(InvalidAccessError);
+        return 0;
+    }
+
+    if (RenderLayer* layer = getRenderLayerForElement(element, es)) {
+        if (layer->compositingState() == PaintsIntoOwnBacking) {
+            OwnPtr<Vector<FloatRect> > rects = layer->collectTrackedRepaintRects();
+            ASSERT(rects.get());
+            Vector<FloatQuad> quads(rects->size());
+            for (size_t i = 0; i < rects->size(); ++i)
+                quads[i] = FloatRect(rects->at(i));
+            return ClientRectList::create(quads);
+        }
+    }
+
+    // It's an error to call this on an element that's not composited.
+    es.throwUninformativeAndGenericDOMException(InvalidAccessError);
+    return 0;
 }
 
 String Internals::scrollingStateTreeAsText(Document* document, ExceptionState& es) const

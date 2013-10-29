@@ -224,6 +224,8 @@ public:
     void setNeedsCompositedScrolling(Element*, unsigned value, ExceptionState&);
 
     String repaintRectsAsText(Document*, ExceptionState&) const;
+    PassRefPtr<ClientRectList> repaintRects(Element*, ExceptionState&) const;
+
     String scrollingStateTreeAsText(Document*, ExceptionState&) const;
     String mainThreadScrollingReasons(Document*, ExceptionState&) const;
     PassRefPtr<ClientRectList> nonFastScrollableRects(Document*, ExceptionState&) const;

@@ -315,6 +315,13 @@ bool CompositedLayerMapping::shouldClipCompositedBounds() const
     if (layerOrAncestorIsTransformedOrUsingCompositedScrolling(m_owningLayer))
         return false;
 
+    // Scrolled composited layers are clipped by their ancestor clipping layer,
+    // so don't clip these, either.
+    bool hasAncestorClippingLayer = compositor()->clippedByAncestor(m_owningLayer);
+    bool clippingAncestorIsScrollParent = m_owningLayer->renderer()->containingBlock()->enclosingLayer() == m_owningLayer->ancestorScrollingLayer();
+    if (hasAncestorClippingLayer && clippingAncestorIsScrollParent)
+        return false;
+
     return true;
 }
 
@@ -435,7 +442,7 @@ bool CompositedLayerMapping::updateGraphicsLayerConfiguration()
     if (scrollParent) {
         // If our containing block is our ancestor scrolling layer, then we'll already be clipped
         // to it via our scroll parent and we don't need an ancestor clipping layer.
-        if (m_owningLayer->renderer()->containingBlock()->enclosingLayer() == m_owningLayer->ancestorScrollingLayer())
+        if (m_owningLayer->renderer()->containingBlock()->enclosingLayer() == m_owningLayer->ancestorCompositedScrollingLayer())
             needsAncestorClip = false;
     }
     if (updateClippingLayers(needsAncestorClip, needsDescendentsClippingLayer))
@@ -1768,6 +1775,30 @@ bool CompositedLayerMapping::isTrackingRepaints() const
 {
     GraphicsLayerClient* client = compositor();
     return client ? client->isTrackingRepaints() : false;
+}
+
+static void collectTrackedRepaintRectsForGraphicsLayer(GraphicsLayer* graphicsLayer, Vector<FloatRect>& rects)
+{
+    if (graphicsLayer)
+        graphicsLayer->collectTrackedRepaintRects(rects);
+}
+
+PassOwnPtr<Vector<FloatRect> > CompositedLayerMapping::collectTrackedRepaintRects() const
+{
+    OwnPtr<Vector<FloatRect> > rects = adoptPtr(new Vector<FloatRect>);
+    collectTrackedRepaintRectsForGraphicsLayer(m_ancestorClippingLayer.get(), *rects);
+    collectTrackedRepaintRectsForGraphicsLayer(m_graphicsLayer.get(), *rects);
+    collectTrackedRepaintRectsForGraphicsLayer(m_childContainmentLayer.get(), *rects);
+    collectTrackedRepaintRectsForGraphicsLayer(m_scrollingLayer.get(), *rects);
+    collectTrackedRepaintRectsForGraphicsLayer(m_scrollingContentsLayer.get(), *rects);
+    collectTrackedRepaintRectsForGraphicsLayer(m_maskLayer.get(), *rects);
+    collectTrackedRepaintRectsForGraphicsLayer(m_childClippingMaskLayer.get(), *rects);
+    collectTrackedRepaintRectsForGraphicsLayer(m_foregroundLayer.get(), *rects);
+    collectTrackedRepaintRectsForGraphicsLayer(m_backgroundLayer.get(), *rects);
+    collectTrackedRepaintRectsForGraphicsLayer(m_layerForHorizontalScrollbar.get(), *rects);
+    collectTrackedRepaintRectsForGraphicsLayer(m_layerForVerticalScrollbar.get(), *rects);
+    collectTrackedRepaintRectsForGraphicsLayer(m_layerForScrollCorner.get(), *rects);
+    return rects.release();
 }
 
 #ifndef NDEBUG

@@ -179,6 +179,7 @@ public:
     void addBlockSelectionGapsBounds(const LayoutRect&);
     void clearBlockSelectionGapsBounds();
     void repaintBlockSelectionGaps();
+    bool hasBlockSelectionGapBounds() const;
 
     RenderLayerStackingNode* stackingNode() { return m_stackingNode.get(); }
     const RenderLayerStackingNode* stackingNode() const { return m_stackingNode.get(); }
@@ -217,6 +218,9 @@ public:
     void updateHasUnclippedDescendant();
     bool isUnclippedDescendant() const { return m_isUnclippedDescendant; }
 
+    bool hasVisibleNonLayerContent() const { return m_hasVisibleNonLayerContent; }
+    void updateHasVisibleNonLayerContent();
+
     // Gets the nearest enclosing positioned ancestor layer (also includes
     // the <html> layer and the root layer).
     RenderLayer* enclosingPositionedAncestor() const;
@@ -232,6 +236,9 @@ public:
     RenderLayer* enclosingCompositingLayerForRepaint(bool includeSelf = true) const;
     // Ancestor compositing layer, excluding this.
     RenderLayer* ancestorCompositingLayer() const { return enclosingCompositingLayer(false); }
+
+    // Ancestor composited scrolling layer at or above our containing block.
+    RenderLayer* ancestorCompositedScrollingLayer() const;
 
     // Ancestor scrolling layer at or above our containing block.
     RenderLayer* ancestorScrollingLayer() const;
@@ -443,6 +450,8 @@ public:
 
     void paintLayer(GraphicsContext*, const LayerPaintingInfo&, PaintLayerFlags);
 
+    PassOwnPtr<Vector<FloatRect> > collectTrackedRepaintRects() const;
+
 private:
     bool hasOverflowControls() const;
 
@@ -602,6 +611,9 @@ private:
     bool hasCompositingDescendant() const { return m_compositingProperties.hasCompositingDescendant; }
     void setHasCompositingDescendant(bool b)  { m_compositingProperties.hasCompositingDescendant = b; }
 
+    bool hasNonCompositedChild() const { return m_compositingProperties.hasNonCompositedChild; }
+    void setHasNonCompositedChild(bool b)  { m_compositingProperties.hasNonCompositedChild = b; }
+
     void setCompositingReasons(CompositingReasons reasons) { m_compositingProperties.compositingReasons = reasons; }
     CompositingReasons compositingReasons() const { return m_compositingProperties.compositingReasons; }
 
@@ -643,6 +655,8 @@ protected:
     unsigned m_hasVisibleContent : 1;
     unsigned m_visibleDescendantStatusDirty : 1;
     unsigned m_hasVisibleDescendant : 1;
+
+    unsigned m_hasVisibleNonLayerContent : 1;
 
     unsigned m_isPaginated : 1; // If we think this layer is split by a multi-column ancestor, then this bit will be set.
 
@@ -693,12 +707,17 @@ protected:
     struct CompositingProperties {
         CompositingProperties()
             : hasCompositingDescendant(false)
+            , hasNonCompositedChild(false)
             , viewportConstrainedNotCompositedReason(NoNotCompositedReason)
             , compositingReasons(CompositingReasonNone)
         { }
 
         // Used only while determining what layers should be composited. Applies to the tree of z-order lists.
         bool hasCompositingDescendant : 1;
+
+        // Applies to the real render layer tree (i.e., the tree determined by the layer's parent and children and
+        // as opposed to the tree formed by the z-order and normal flow lists).
+        bool hasNonCompositedChild : 1;
 
         // The reason, if any exists, that a fixed-position layer is chosen not to be composited.
         unsigned viewportConstrainedNotCompositedReason : 2;
