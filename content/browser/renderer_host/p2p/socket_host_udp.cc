@@ -202,7 +202,12 @@ void P2PSocketHostUdp::Send(const net::IPEndPoint& to,
 void P2PSocketHostUdp::DoSend(const PendingPacket& packet) {
   TRACE_EVENT_ASYNC_STEP_INTO1("p2p", "Send", packet.id, "UdpAsyncSendTo",
                                "size", packet.size);
-  if (last_dscp_ != packet.dscp && last_dscp_ != net::DSCP_NO_CHANGE) {
+  // Don't try to set DSCP in following conditions,
+  // 1. If the outgoing packet is set to DSCP_NO_CHANGE
+  // 2. If no change in DSCP value from last packet
+  // 3. If there is any error in setting DSCP on socket.
+  if (packet.dscp != net::DSCP_NO_CHANGE &&
+      last_dscp_ != packet.dscp && last_dscp_ != net::DSCP_NO_CHANGE) {
     int result = socket_->SetDiffServCodePoint(packet.dscp);
     if (result == net::OK) {
       last_dscp_ = packet.dscp;
