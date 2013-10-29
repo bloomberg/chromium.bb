@@ -303,6 +303,7 @@
       'tests/ScrollingCoordinatorChromiumTest.cpp',
       'tests/URLTestHelpers.cpp',
       'tests/URLTestHelpers.h',
+      'tests/ViewportTest.cpp',
       'tests/WebFrameTest.cpp',
       'tests/WebImageTest.cpp',
       'tests/WebInputEventConversionTest.cpp',
