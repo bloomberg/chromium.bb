@@ -12,6 +12,7 @@
 #include "gpu/command_buffer/common/command_buffer.h"
 #include "gpu/command_buffer/common/compiler_specific.h"
 #include "gpu/command_buffer/common/gpu_control.h"
+#include "gpu/command_buffer/common/gpu_memory_allocation.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -100,6 +101,8 @@ class MockClientGpuControl : public GpuControl {
                                      const base::Closure& callback));
 
   MOCK_METHOD2(SignalQuery, void(uint32 query, const base::Closure& callback));
+  MOCK_METHOD1(SendManagedMemoryStats,
+               void(const ManagedMemoryStats& stats));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockClientGpuControl);

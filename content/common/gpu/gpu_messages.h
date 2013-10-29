@@ -10,7 +10,6 @@
 
 #include "base/memory/shared_memory.h"
 #include "content/common/content_export.h"
-#include "content/common/gpu/gpu_memory_allocation.h"
 #include "content/common/gpu/gpu_memory_uma_stats.h"
 #include "content/common/gpu/gpu_process_launch_causes.h"
 #include "content/common/gpu/gpu_rendering_stats.h"
@@ -18,6 +17,7 @@
 #include "content/public/common/gpu_memory_stats.h"
 #include "gpu/command_buffer/common/command_buffer.h"
 #include "gpu/command_buffer/common/constants.h"
+#include "gpu/command_buffer/common/gpu_memory_allocation.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/config/gpu_info.h"
 #include "gpu/ipc/gpu_command_buffer_traits.h"
@@ -183,16 +183,16 @@ IPC_STRUCT_TRAITS_BEGIN(content::GPUMemoryUmaStats)
   IPC_STRUCT_TRAITS_MEMBER(bytes_limit)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(content::GpuMemoryAllocationForRenderer)
+IPC_STRUCT_TRAITS_BEGIN(gpu::MemoryAllocation)
   IPC_STRUCT_TRAITS_MEMBER(bytes_limit_when_visible)
   IPC_STRUCT_TRAITS_MEMBER(priority_cutoff_when_visible)
   IPC_STRUCT_TRAITS_MEMBER(bytes_limit_when_not_visible)
   IPC_STRUCT_TRAITS_MEMBER(priority_cutoff_when_not_visible)
   IPC_STRUCT_TRAITS_MEMBER(have_backbuffer_when_not_visible)
 IPC_STRUCT_TRAITS_END()
-IPC_ENUM_TRAITS(content::GpuMemoryAllocationForRenderer::PriorityCutoff)
+IPC_ENUM_TRAITS(gpu::MemoryAllocation::PriorityCutoff)
 
-IPC_STRUCT_TRAITS_BEGIN(content::GpuManagedMemoryStats)
+IPC_STRUCT_TRAITS_BEGIN(gpu::ManagedMemoryStats)
   IPC_STRUCT_TRAITS_MEMBER(bytes_required)
   IPC_STRUCT_TRAITS_MEMBER(bytes_nice_to_have)
   IPC_STRUCT_TRAITS_MEMBER(bytes_allocated)
@@ -596,13 +596,12 @@ IPC_MESSAGE_ROUTED0(GpuCommandBufferMsg_EnsureBackbuffer)
 
 // Sent to proxy when the gpu memory manager changes its memory allocation.
 IPC_MESSAGE_ROUTED1(GpuCommandBufferMsg_SetMemoryAllocation,
-                    content::GpuMemoryAllocationForRenderer /* allocation */)
+                    gpu::MemoryAllocation /* allocation */)
 
 // Sent to stub from the proxy with statistics on managed memory usage and
 // requirements.
-IPC_MESSAGE_ROUTED1(
-    GpuCommandBufferMsg_SendClientManagedMemoryStats,
-    content::GpuManagedMemoryStats /* stats */)
+IPC_MESSAGE_ROUTED1(GpuCommandBufferMsg_SendClientManagedMemoryStats,
+                    gpu::ManagedMemoryStats /* stats */)
 
 // Sent to stub when proxy is assigned a memory allocation changed callback.
 IPC_MESSAGE_ROUTED1(

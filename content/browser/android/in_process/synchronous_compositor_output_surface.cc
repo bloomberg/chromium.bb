@@ -14,6 +14,7 @@
 #include "content/browser/android/in_process/synchronous_compositor_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "gpu/command_buffer/client/gl_in_process_context.h"
+#include "gpu/command_buffer/common/gpu_memory_allocation.h"
 #include "third_party/skia/include/core/SkBitmapDevice.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/gfx/rect_conversions.h"
@@ -117,7 +118,7 @@ SynchronousCompositorOutputSurface::SynchronousCompositorOutputSurface(
   // constructed on the correct thread.
 
   memory_policy_.priority_cutoff_when_visible =
-      cc::ManagedMemoryPolicy::CUTOFF_ALLOW_NICE_TO_HAVE;
+      gpu::MemoryAllocation::CUTOFF_ALLOW_NICE_TO_HAVE;
 }
 
 SynchronousCompositorOutputSurface::~SynchronousCompositorOutputSurface() {

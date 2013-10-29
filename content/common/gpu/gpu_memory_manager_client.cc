@@ -40,7 +40,7 @@ void GpuMemoryManagerClientState::SetVisible(bool visible) {
 }
 
 void GpuMemoryManagerClientState::SetManagedMemoryStats(
-    const GpuManagedMemoryStats& stats) {
+    const gpu::ManagedMemoryStats& stats) {
   memory_manager_->SetClientStateManagedMemoryStats(this, stats);
 }
 

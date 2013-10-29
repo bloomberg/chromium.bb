@@ -122,6 +122,8 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
                                const base::Closure& callback) OVERRIDE;
   virtual void SignalQuery(uint32 query,
                            const base::Closure& callback) OVERRIDE;
+  virtual void SendManagedMemoryStats(const gpu::ManagedMemoryStats& stats)
+      OVERRIDE;
 
   // The serializer interface to the GPU service (i.e. thread).
   class SchedulerClient {

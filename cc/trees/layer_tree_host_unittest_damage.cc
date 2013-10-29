@@ -58,9 +58,9 @@ class LayerTreeHostDamageTestSetVisibleDoesNotDraw
         // No evictions when we become not-visible.
         impl->SetMemoryPolicy(ManagedMemoryPolicy(
             1000 * 1000 * 1000,
-            ManagedMemoryPolicy::CUTOFF_ALLOW_EVERYTHING,
+            gpu::MemoryAllocation::CUTOFF_ALLOW_EVERYTHING,
             1000 * 1000 * 1000,
-            ManagedMemoryPolicy::CUTOFF_ALLOW_EVERYTHING,
+            gpu::MemoryAllocation::CUTOFF_ALLOW_EVERYTHING,
             ManagedMemoryPolicy::kDefaultNumResourcesLimit));
 
         PostSetVisibleToMainThread(false);

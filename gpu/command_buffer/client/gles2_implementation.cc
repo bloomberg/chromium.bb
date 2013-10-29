@@ -335,6 +335,12 @@ void GLES2Implementation::SignalQuery(uint32 query,
                  weak_ptr_factory_.GetWeakPtr(),
                  callback));
 }
+
+void GLES2Implementation::SendManagedMemoryStats(
+    const ManagedMemoryStats& stats) {
+  gpu_control_->SendManagedMemoryStats(stats);
+}
+
 void GLES2Implementation::WaitForCmd() {
   TRACE_EVENT0("gpu", "GLES2::WaitForCmd");
   helper_->CommandBufferHelper::Finish();

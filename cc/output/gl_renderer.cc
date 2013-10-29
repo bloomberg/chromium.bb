@@ -38,6 +38,7 @@
 #include "cc/trees/single_thread_proxy.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/context_support.h"
+#include "gpu/command_buffer/common/gpu_memory_allocation.h"
 #include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
@@ -278,12 +279,12 @@ void GLRenderer::SetVisible(bool visible) {
 void GLRenderer::SendManagedMemoryStats(size_t bytes_visible,
                                         size_t bytes_visible_and_nearby,
                                         size_t bytes_allocated) {
-  WebKit::WebGraphicsManagedMemoryStats stats;
-  stats.bytesVisible = bytes_visible;
-  stats.bytesVisibleAndNearby = bytes_visible_and_nearby;
-  stats.bytesAllocated = bytes_allocated;
-  stats.backbufferRequested = !is_backbuffer_discarded_;
-  context_->sendManagedMemoryStatsCHROMIUM(&stats);
+  gpu::ManagedMemoryStats stats;
+  stats.bytes_required = bytes_visible;
+  stats.bytes_nice_to_have = bytes_visible_and_nearby;
+  stats.bytes_allocated = bytes_allocated;
+  stats.backbuffer_requested = !is_backbuffer_discarded_;
+  context_support_->SendManagedMemoryStats(stats);
 }
 
 void GLRenderer::ReleaseRenderPassTextures() { render_pass_textures_.clear(); }

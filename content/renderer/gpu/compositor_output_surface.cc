@@ -103,9 +103,9 @@ bool CompositorOutputSurface::BindToClient(
     // Without a GPU context, the memory policy otherwise wouldn't be set.
     client->SetMemoryPolicy(cc::ManagedMemoryPolicy(
         64 * 1024 * 1024,
-        cc::ManagedMemoryPolicy::CUTOFF_ALLOW_NICE_TO_HAVE,
+        gpu::MemoryAllocation::CUTOFF_ALLOW_NICE_TO_HAVE,
         0,
-        cc::ManagedMemoryPolicy::CUTOFF_ALLOW_NOTHING,
+        gpu::MemoryAllocation::CUTOFF_ALLOW_NOTHING,
         cc::ManagedMemoryPolicy::kDefaultNumResourcesLimit));
   }
 

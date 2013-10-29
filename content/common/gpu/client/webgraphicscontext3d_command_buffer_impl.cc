@@ -24,7 +24,6 @@
 #include "base/metrics/histogram.h"
 #include "base/synchronization/lock.h"
 #include "content/common/gpu/client/gpu_channel_host.h"
-#include "content/common/gpu/gpu_memory_allocation.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
 #include "gpu/GLES2/gl2extchromium.h"
@@ -34,6 +33,7 @@
 #include "gpu/command_buffer/client/gles2_trace_implementation.h"
 #include "gpu/command_buffer/client/transfer_buffer.h"
 #include "gpu/command_buffer/common/constants.h"
+#include "gpu/command_buffer/common/gpu_memory_allocation.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "third_party/skia/include/core/SkTypes.h"
 #include "webkit/common/gpu/gl_bindings_skia_cmd_buffer.h"
@@ -609,34 +609,6 @@ void WebGraphicsContext3DCommandBufferImpl::ensureBackbufferCHROMIUM() {
   gl_->Flush();
   command_buffer_->EnsureBackbuffer();
 }
-
-void WebGraphicsContext3DCommandBufferImpl::sendManagedMemoryStatsCHROMIUM(
-    const WebGraphicsManagedMemoryStats* stats)
-{
-  CHECK(command_buffer_);
-  command_buffer_->SendManagedMemoryStats(GpuManagedMemoryStats(
-      stats->bytesVisible,
-      stats->bytesVisibleAndNearby,
-      stats->bytesAllocated,
-      stats->backbufferRequested));
-}
-
-void WebGraphicsContext3DCommandBufferImpl::
-    setMemoryAllocationChangedCallbackCHROMIUM(
-        WebGraphicsMemoryAllocationChangedCallbackCHROMIUM* callback) {
-  if (!command_buffer_)
-    return;
-
-  if (callback)
-    command_buffer_->SetMemoryAllocationChangedCallback(base::Bind(
-        &WebGraphicsContext3DCommandBufferImpl::OnMemoryAllocationChanged,
-        weak_ptr_factory_.GetWeakPtr(),
-        callback));
-  else
-    command_buffer_->SetMemoryAllocationChangedCallback(
-        base::Callback<void(const GpuMemoryAllocationForRenderer&)>());
-}
-
 
 void WebGraphicsContext3DCommandBufferImpl::copyTextureToParentTextureCHROMIUM(
     WebGLId texture, WebGLId parentTexture) {
@@ -1269,56 +1241,6 @@ void WebGraphicsContext3DCommandBufferImpl::OnSwapBuffersComplete() {
 
   if (swapbuffers_complete_callback_)
     swapbuffers_complete_callback_->onSwapBuffersComplete();
-}
-
-WebGraphicsMemoryAllocation::PriorityCutoff
-    WebGraphicsContext3DCommandBufferImpl::WebkitPriorityCutoff(
-        GpuMemoryAllocationForRenderer::PriorityCutoff priorityCutoff) {
-  switch (priorityCutoff) {
-  case GpuMemoryAllocationForRenderer::kPriorityCutoffAllowNothing:
-    return WebGraphicsMemoryAllocation::PriorityCutoffAllowNothing;
-  case GpuMemoryAllocationForRenderer::kPriorityCutoffAllowOnlyRequired:
-    return WebGraphicsMemoryAllocation::PriorityCutoffAllowVisibleOnly;
-  case GpuMemoryAllocationForRenderer::kPriorityCutoffAllowNiceToHave:
-    return WebGraphicsMemoryAllocation::PriorityCutoffAllowVisibleAndNearby;
-  case GpuMemoryAllocationForRenderer::kPriorityCutoffAllowEverything:
-    return WebGraphicsMemoryAllocation::PriorityCutoffAllowEverything;
-  }
-  NOTREACHED();
-  return WebGraphicsMemoryAllocation::PriorityCutoffAllowEverything;
-}
-
-void WebGraphicsContext3DCommandBufferImpl::OnMemoryAllocationChanged(
-    WebGraphicsMemoryAllocationChangedCallbackCHROMIUM* callback,
-    const GpuMemoryAllocationForRenderer& allocation) {
-
-  // Convert the gpu structure to the WebKit structure.
-  WebGraphicsMemoryAllocation web_allocation;
-  web_allocation.bytesLimitWhenVisible =
-      ClampUint64ToSizeT(allocation.bytes_limit_when_visible);
-  web_allocation.priorityCutoffWhenVisible =
-      WebkitPriorityCutoff(allocation.priority_cutoff_when_visible);
-  web_allocation.bytesLimitWhenNotVisible =
-      ClampUint64ToSizeT(allocation.bytes_limit_when_not_visible);
-  web_allocation.priorityCutoffWhenNotVisible =
-      WebkitPriorityCutoff(allocation.priority_cutoff_when_not_visible);
-  web_allocation.haveBackbufferWhenNotVisible =
-      allocation.have_backbuffer_when_not_visible;
-
-  // Populate deprecated WebKit fields. These may be removed when references to
-  // them in WebKit are removed.
-  web_allocation.gpuResourceSizeInBytes =
-      ClampUint64ToSizeT(allocation.bytes_limit_when_visible);
-  web_allocation.suggestHaveBackbuffer =
-      allocation.have_backbuffer_when_not_visible;
-
-  if (callback)
-    callback->onMemoryAllocationChanged(web_allocation);
-
-  // We may have allocated transfer buffers in order to free GL resources in a
-  // backgrounded tab. Re-free the transfer buffers.
-  if (!visible_)
-    real_gl_->FreeEverything();
 }
 
 void WebGraphicsContext3DCommandBufferImpl::setErrorMessageCallback(

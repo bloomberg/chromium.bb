@@ -61,6 +61,8 @@ class PPAPI_PROXY_EXPORT PpapiCommandBufferProxy
                                const base::Closure& callback) OVERRIDE;
   virtual void SignalQuery(uint32 query,
                            const base::Closure& callback) OVERRIDE;
+  virtual void SendManagedMemoryStats(const gpu::ManagedMemoryStats& stats)
+      OVERRIDE;
 
  private:
   bool Send(IPC::Message* msg);

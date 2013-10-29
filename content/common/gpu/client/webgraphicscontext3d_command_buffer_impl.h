@@ -45,12 +45,9 @@ using WebKit::WGC3Dfloat;
 using WebKit::WGC3Dclampf;
 using WebKit::WGC3Dintptr;
 using WebKit::WGC3Dsizeiptr;
-using WebKit::WebGraphicsManagedMemoryStats;
-using WebKit::WebGraphicsMemoryAllocation;
 
 namespace content {
 class GpuChannelHost;
-struct GpuMemoryAllocationForRenderer;
 
 const size_t kDefaultCommandBufferSize = 1024 * 1024;
 const size_t kDefaultStartTransferBufferSize = 1 * 1024 * 1024;
@@ -525,12 +522,6 @@ class WebGraphicsContext3DCommandBufferImpl
   virtual void discardBackbufferCHROMIUM();
   virtual void ensureBackbufferCHROMIUM();
 
-  virtual void setMemoryAllocationChangedCallbackCHROMIUM(
-      WebGraphicsMemoryAllocationChangedCallbackCHROMIUM* callback);
-
-  virtual void sendManagedMemoryStatsCHROMIUM(
-      const WebGraphicsManagedMemoryStats* stats);
-
   virtual void copyTextureToParentTextureCHROMIUM(
       WebGLId texture, WebGLId parentTexture);
 
@@ -722,15 +713,6 @@ class WebGraphicsContext3DCommandBufferImpl
   // Check if we should call into the swap client. We can only do that on the
   // main thread.
   bool ShouldUseSwapClient();
-
-  // MemoryAllocationChanged callback.
-  void OnMemoryAllocationChanged(
-      WebGraphicsMemoryAllocationChangedCallbackCHROMIUM* callback,
-      const GpuMemoryAllocationForRenderer& allocation);
-
-  // Convert the gpu cutoff enum to the WebKit enum.
-  static WebGraphicsMemoryAllocation::PriorityCutoff WebkitPriorityCutoff(
-      GpuMemoryAllocationForRenderer::PriorityCutoff priorityCutoff);
 
   bool initialize_failed_;
 

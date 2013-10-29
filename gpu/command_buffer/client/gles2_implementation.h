@@ -231,6 +231,8 @@ class GLES2_IMPL_EXPORT GLES2Implementation
                                const base::Closure& callback) OVERRIDE;
   virtual void SignalQuery(uint32 query,
                            const base::Closure& callback) OVERRIDE;
+  virtual void SendManagedMemoryStats(const ManagedMemoryStats& stats)
+      OVERRIDE;
 
   void SetErrorMessageCallback(ErrorMessageCallback* callback) {
     error_message_callback_ = callback;

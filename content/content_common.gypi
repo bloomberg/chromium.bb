@@ -205,7 +205,6 @@
     'common/gpu/gpu_command_buffer_stub.cc',
     'common/gpu/gpu_command_buffer_stub.h',
     'common/gpu/gpu_config.h',
-    'common/gpu/gpu_memory_allocation.h',
     'common/gpu/gpu_memory_manager.cc',
     'common/gpu/gpu_memory_manager.h',
     'common/gpu/gpu_memory_manager_client.cc',

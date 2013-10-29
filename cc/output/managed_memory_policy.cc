@@ -11,18 +11,29 @@ namespace cc {
 
 const size_t ManagedMemoryPolicy::kDefaultNumResourcesLimit = 10 * 1000 * 1000;
 
+using gpu::MemoryAllocation;
+
 ManagedMemoryPolicy::ManagedMemoryPolicy(size_t bytes_limit_when_visible)
     : bytes_limit_when_visible(bytes_limit_when_visible),
-      priority_cutoff_when_visible(CUTOFF_ALLOW_EVERYTHING),
+      priority_cutoff_when_visible(MemoryAllocation::CUTOFF_ALLOW_EVERYTHING),
       bytes_limit_when_not_visible(0),
-      priority_cutoff_when_not_visible(CUTOFF_ALLOW_NOTHING),
+      priority_cutoff_when_not_visible(MemoryAllocation::CUTOFF_ALLOW_NOTHING),
+      num_resources_limit(kDefaultNumResourcesLimit) {}
+
+ManagedMemoryPolicy::ManagedMemoryPolicy(
+    const gpu::MemoryAllocation& allocation)
+    : bytes_limit_when_visible(allocation.bytes_limit_when_visible),
+      priority_cutoff_when_visible(allocation.priority_cutoff_when_visible),
+      bytes_limit_when_not_visible(allocation.bytes_limit_when_not_visible),
+      priority_cutoff_when_not_visible(
+          allocation.priority_cutoff_when_not_visible),
       num_resources_limit(kDefaultNumResourcesLimit) {}
 
 ManagedMemoryPolicy::ManagedMemoryPolicy(
     size_t bytes_limit_when_visible,
-    PriorityCutoff priority_cutoff_when_visible,
+    MemoryAllocation::PriorityCutoff priority_cutoff_when_visible,
     size_t bytes_limit_when_not_visible,
-    PriorityCutoff priority_cutoff_when_not_visible,
+    MemoryAllocation::PriorityCutoff priority_cutoff_when_not_visible,
     size_t num_resources_limit)
     : bytes_limit_when_visible(bytes_limit_when_visible),
       priority_cutoff_when_visible(priority_cutoff_when_visible),
@@ -44,15 +55,16 @@ bool ManagedMemoryPolicy::operator!=(const ManagedMemoryPolicy& other) const {
 }
 
 // static
-int ManagedMemoryPolicy::PriorityCutoffToValue(PriorityCutoff priority_cutoff) {
+int ManagedMemoryPolicy::PriorityCutoffToValue(
+    MemoryAllocation::PriorityCutoff priority_cutoff) {
   switch (priority_cutoff) {
-    case CUTOFF_ALLOW_NOTHING:
+    case MemoryAllocation::CUTOFF_ALLOW_NOTHING:
       return PriorityCalculator::AllowNothingCutoff();
-    case CUTOFF_ALLOW_REQUIRED_ONLY:
+    case MemoryAllocation::CUTOFF_ALLOW_REQUIRED_ONLY:
       return PriorityCalculator::AllowVisibleOnlyCutoff();
-    case CUTOFF_ALLOW_NICE_TO_HAVE:
+    case MemoryAllocation::CUTOFF_ALLOW_NICE_TO_HAVE:
       return PriorityCalculator::AllowVisibleAndNearbyCutoff();
-    case CUTOFF_ALLOW_EVERYTHING:
+    case MemoryAllocation::CUTOFF_ALLOW_EVERYTHING:
       return PriorityCalculator::AllowEverythingCutoff();
   }
   NOTREACHED();
@@ -62,15 +74,15 @@ int ManagedMemoryPolicy::PriorityCutoffToValue(PriorityCutoff priority_cutoff) {
 // static
 TileMemoryLimitPolicy
 ManagedMemoryPolicy::PriorityCutoffToTileMemoryLimitPolicy(
-    PriorityCutoff priority_cutoff) {
+    gpu::MemoryAllocation::PriorityCutoff priority_cutoff) {
   switch (priority_cutoff) {
-    case CUTOFF_ALLOW_NOTHING:
+    case MemoryAllocation::CUTOFF_ALLOW_NOTHING:
       return ALLOW_NOTHING;
-    case CUTOFF_ALLOW_REQUIRED_ONLY:
+    case MemoryAllocation::CUTOFF_ALLOW_REQUIRED_ONLY:
       return ALLOW_ABSOLUTE_MINIMUM;
-    case CUTOFF_ALLOW_NICE_TO_HAVE:
+    case MemoryAllocation::CUTOFF_ALLOW_NICE_TO_HAVE:
       return ALLOW_PREPAINT_ONLY;
-    case CUTOFF_ALLOW_EVERYTHING:
+    case MemoryAllocation::CUTOFF_ALLOW_EVERYTHING:
       return ALLOW_ANYTHING;
   }
   NOTREACHED();

@@ -8,6 +8,7 @@
 #include "base/callback.h"
 
 namespace gpu {
+struct ManagedMemoryStats;
 
 class ContextSupport {
  public:
@@ -18,6 +19,8 @@ class ContextSupport {
   // Runs |callback| when a query created via glCreateQueryEXT() has cleared
   // passed the glEndQueryEXT() point.
   virtual void SignalQuery(uint32 query, const base::Closure& callback) = 0;
+
+  virtual void SendManagedMemoryStats(const ManagedMemoryStats& stats) = 0;
 
  protected:
   ContextSupport() {}

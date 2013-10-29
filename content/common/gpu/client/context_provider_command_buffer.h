@@ -59,8 +59,7 @@ class CONTENT_EXPORT ContextProviderCommandBuffer
 
   void OnLostContext();
   void OnSwapBuffersComplete();
-  void OnMemoryAllocationChanged(
-      const WebKit::WebGraphicsMemoryAllocation& allocation);
+  void OnMemoryAllocationChanged(const gpu::MemoryAllocation& allocation);
 
  private:
   bool InitializeCapabilities();
@@ -88,9 +87,6 @@ class CONTENT_EXPORT ContextProviderCommandBuffer
   class SwapBuffersCompleteCallbackProxy;
   scoped_ptr<SwapBuffersCompleteCallbackProxy>
       swap_buffers_complete_callback_proxy_;
-
-  class MemoryAllocationCallbackProxy;
-  scoped_ptr<MemoryAllocationCallbackProxy> memory_allocation_callback_proxy_;
 };
 
 }  // namespace content

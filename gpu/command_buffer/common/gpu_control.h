@@ -17,6 +17,7 @@ class GpuMemoryBuffer;
 }
 
 namespace gpu {
+struct ManagedMemoryStats;
 
 // Common interface for GpuControl implementations.
 class GPU_EXPORT GpuControl {
@@ -53,6 +54,8 @@ class GPU_EXPORT GpuControl {
   // Runs |callback| when a query created via glCreateQueryEXT() has cleared
   // passed the glEndQueryEXT() point.
   virtual void SignalQuery(uint32 query, const base::Closure& callback) = 0;
+
+  virtual void SendManagedMemoryStats(const ManagedMemoryStats& stats) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(GpuControl);

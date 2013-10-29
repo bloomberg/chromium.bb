@@ -22,6 +22,8 @@
 #include "cc/quads/tile_draw_quad.h"
 #include "cc/quads/yuv_video_draw_quad.h"
 #include "cc/resources/resource_provider.h"
+#include "gpu/command_buffer/client/context_support.h"
+#include "gpu/command_buffer/common/gpu_memory_allocation.h"
 #include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
 
@@ -181,12 +183,13 @@ void DelegatingRenderer::SendManagedMemoryStats(size_t bytes_visible,
     NOTIMPLEMENTED();
     return;
   }
-  WebKit::WebGraphicsManagedMemoryStats stats;
-  stats.bytesVisible = bytes_visible;
-  stats.bytesVisibleAndNearby = bytes_visible_and_nearby;
-  stats.bytesAllocated = bytes_allocated;
-  stats.backbufferRequested = false;
-  context_provider->Context3d()->sendManagedMemoryStatsCHROMIUM(&stats);
+  gpu::ManagedMemoryStats stats;
+  stats.bytes_required = bytes_visible;
+  stats.bytes_nice_to_have = bytes_visible_and_nearby;
+  stats.bytes_allocated = bytes_allocated;
+  stats.backbuffer_requested = false;
+
+  context_provider->ContextSupport()->SendManagedMemoryStats(stats);
 }
 
 void DelegatingRenderer::SetDiscardBackBufferWhenNotVisible(bool discard) {

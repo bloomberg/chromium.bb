@@ -14,8 +14,8 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
-#include "content/common/gpu/gpu_memory_allocation.h"
 #include "content/public/common/gpu_memory_stats.h"
+#include "gpu/command_buffer/common/gpu_memory_allocation.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
 
 namespace content {
@@ -182,7 +182,7 @@ class CONTENT_EXPORT GpuMemoryManager :
       GpuMemoryManagerClientState* client_state, bool visible);
   void SetClientStateManagedMemoryStats(
       GpuMemoryManagerClientState* client_state,
-      const GpuManagedMemoryStats& stats);
+      const gpu::ManagedMemoryStats& stats);
   void OnDestroyClientState(GpuMemoryManagerClientState* client);
 
   // Add or remove a client from its clients list (visible, nonvisible, or

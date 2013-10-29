@@ -13,7 +13,6 @@
 #include "cc/output/managed_memory_policy.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "webkit/common/gpu/grcontext_for_webgraphicscontext3d.h"
-#include "webkit/common/gpu/managed_memory_policy_convert.h"
 
 namespace webkit {
 namespace gpu {
@@ -53,28 +52,6 @@ class ContextProviderInProcess::SwapBuffersCompleteCallbackProxy
 
   virtual void onSwapBuffersComplete() {
     provider_->OnSwapBuffersComplete();
-  }
-
- private:
-  ContextProviderInProcess* provider_;
-};
-
-class ContextProviderInProcess::MemoryAllocationCallbackProxy
-    : public WebKit::WebGraphicsContext3D::
-          WebGraphicsMemoryAllocationChangedCallbackCHROMIUM {
- public:
-  explicit MemoryAllocationCallbackProxy(ContextProviderInProcess* provider)
-      : provider_(provider) {
-    provider_->context3d_->setMemoryAllocationChangedCallbackCHROMIUM(this);
-  }
-
-  virtual ~MemoryAllocationCallbackProxy() {
-    provider_->context3d_->setMemoryAllocationChangedCallbackCHROMIUM(NULL);
-  }
-
-  virtual void onMemoryAllocationChanged(
-      WebKit::WebGraphicsMemoryAllocation allocation) {
-    provider_->OnMemoryAllocationChanged(allocation);
   }
 
  private:
@@ -140,8 +117,6 @@ bool ContextProviderInProcess::BindToCurrentThread() {
   lost_context_callback_proxy_.reset(new LostContextCallbackProxy(this));
   swap_buffers_complete_callback_proxy_.reset(
       new SwapBuffersCompleteCallbackProxy(this));
-  memory_allocation_callback_proxy_.reset(
-      new MemoryAllocationCallbackProxy(this));
   return true;
 }
 
@@ -226,27 +201,6 @@ void ContextProviderInProcess::OnSwapBuffersComplete() {
     swap_buffers_complete_callback_.Run();
 }
 
-void ContextProviderInProcess::OnMemoryAllocationChanged(
-    const WebKit::WebGraphicsMemoryAllocation& allocation) {
-  DCHECK(context_thread_checker_.CalledOnValidThread());
-
-  if (gr_context_) {
-    bool nonzero_allocation = !!allocation.gpuResourceSizeInBytes;
-    gr_context_->SetMemoryLimit(nonzero_allocation);
-  }
-
-  if (memory_policy_changed_callback_.is_null())
-    return;
-
-  bool discard_backbuffer_when_not_visible;
-  cc::ManagedMemoryPolicy policy =
-      ManagedMemoryPolicyConvert::Convert(allocation,
-                                          &discard_backbuffer_when_not_visible);
-
-  memory_policy_changed_callback_.Run(
-      policy, discard_backbuffer_when_not_visible);
-}
-
 bool ContextProviderInProcess::DestroyedOnMainThread() {
   DCHECK(main_thread_checker_.CalledOnValidThread());
 
@@ -272,10 +226,7 @@ void ContextProviderInProcess::SetSwapBuffersCompleteCallback(
 
 void ContextProviderInProcess::SetMemoryPolicyChangedCallback(
     const MemoryPolicyChangedCallback& memory_policy_changed_callback) {
-  DCHECK(context_thread_checker_.CalledOnValidThread());
-  DCHECK(memory_policy_changed_callback_.is_null() ||
-         memory_policy_changed_callback.is_null());
-  memory_policy_changed_callback_ = memory_policy_changed_callback;
+  // There's no memory manager for the in-process implementation.
 }
 
 }  // namespace gpu

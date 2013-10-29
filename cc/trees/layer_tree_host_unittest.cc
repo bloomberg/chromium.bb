@@ -2453,9 +2453,9 @@ class LayerTreeHostTestShutdownWithOnlySomeResourcesEvicted
         // Because a resource was evicted, a commit will be kicked off.
         host_impl->SetMemoryPolicy(
             ManagedMemoryPolicy(100 * 100 * 4 * 2,
-                                ManagedMemoryPolicy::CUTOFF_ALLOW_EVERYTHING,
+                                gpu::MemoryAllocation::CUTOFF_ALLOW_EVERYTHING,
                                 100 * 100 * 4 * 1,
-                                ManagedMemoryPolicy::CUTOFF_ALLOW_EVERYTHING,
+                                gpu::MemoryAllocation::CUTOFF_ALLOW_EVERYTHING,
                                 1000));
         host_impl->SetDiscardBackBufferWhenNotVisible(true);
         break;
@@ -4977,9 +4977,9 @@ class LayerTreeHostTestMemoryLimits : public LayerTreeHostTest {
         // This will trigger a commit because the priority cutoff has changed.
         impl->SetMemoryPolicy(ManagedMemoryPolicy(
             16u*1024u*1024u,
-            ManagedMemoryPolicy::CUTOFF_ALLOW_NICE_TO_HAVE,
+            gpu::MemoryAllocation::CUTOFF_ALLOW_NICE_TO_HAVE,
             0,
-            ManagedMemoryPolicy::CUTOFF_ALLOW_NOTHING,
+            gpu::MemoryAllocation::CUTOFF_ALLOW_NOTHING,
             1000));
         break;
       case 2:
@@ -4987,9 +4987,9 @@ class LayerTreeHostTestMemoryLimits : public LayerTreeHostTest {
         // changed, and there is already enough memory for all allocations.
         impl->SetMemoryPolicy(ManagedMemoryPolicy(
             32u*1024u*1024u,
-            ManagedMemoryPolicy::CUTOFF_ALLOW_NICE_TO_HAVE,
+            gpu::MemoryAllocation::CUTOFF_ALLOW_NICE_TO_HAVE,
             0,
-            ManagedMemoryPolicy::CUTOFF_ALLOW_NOTHING,
+            gpu::MemoryAllocation::CUTOFF_ALLOW_NOTHING,
             1000));
         break;
       case 3:
@@ -5137,14 +5137,14 @@ class LayerTreeHostTestSetMemoryPolicyOnLostOutputSurface
                 second_context_provider_ :
                 first_context_provider_));
     output_surface->SetMemoryPolicyToSetAtBind(make_scoped_ptr(
-        new cc::ManagedMemoryPolicy(
+        new ManagedMemoryPolicy(
             second_context_provider_ ?
                 second_output_surface_memory_limit_ :
                 first_output_surface_memory_limit_,
-            cc::ManagedMemoryPolicy::CUTOFF_ALLOW_NICE_TO_HAVE,
+            gpu::MemoryAllocation::CUTOFF_ALLOW_NICE_TO_HAVE,
             0,
-            cc::ManagedMemoryPolicy::CUTOFF_ALLOW_NOTHING,
-            cc::ManagedMemoryPolicy::kDefaultNumResourcesLimit)));
+            gpu::MemoryAllocation::CUTOFF_ALLOW_NOTHING,
+            ManagedMemoryPolicy::kDefaultNumResourcesLimit)));
     return output_surface.PassAs<OutputSurface>();
   }
 

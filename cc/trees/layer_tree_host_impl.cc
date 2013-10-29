@@ -207,9 +207,9 @@ LayerTreeHostImpl::LayerTreeHostImpl(
       visible_(true),
       cached_managed_memory_policy_(
           PrioritizedResourceManager::DefaultMemoryAllocationLimit(),
-          ManagedMemoryPolicy::CUTOFF_ALLOW_EVERYTHING,
+          gpu::MemoryAllocation::CUTOFF_ALLOW_EVERYTHING,
           0,
-          ManagedMemoryPolicy::CUTOFF_ALLOW_NOTHING,
+          gpu::MemoryAllocation::CUTOFF_ALLOW_NOTHING,
           ManagedMemoryPolicy::kDefaultNumResourcesLimit),
       pinch_gesture_active_(false),
       pinch_gesture_end_should_clear_scrolling_layer_(false),
@@ -1561,9 +1561,9 @@ ManagedMemoryPolicy LayerTreeHostImpl::ActualManagedMemoryPolicy() const {
   ManagedMemoryPolicy actual = cached_managed_memory_policy_;
   if (debug_state_.rasterize_only_visible_content) {
     actual.priority_cutoff_when_not_visible =
-        ManagedMemoryPolicy::CUTOFF_ALLOW_NOTHING;
+        gpu::MemoryAllocation::CUTOFF_ALLOW_NOTHING;
     actual.priority_cutoff_when_visible =
-        ManagedMemoryPolicy::CUTOFF_ALLOW_REQUIRED_ONLY;
+        gpu::MemoryAllocation::CUTOFF_ALLOW_REQUIRED_ONLY;
   }
 
   if (zero_budget_) {

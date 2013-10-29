@@ -13,10 +13,7 @@
 #include "webkit/common/gpu/webgraphicscontext3d_in_process_command_buffer_impl.h"
 #include "webkit/common/gpu/webkit_gpu_export.h"
 
-namespace WebKit {
-class WebGraphicsContext3D;
-struct WebGraphicsMemoryAllocation;
-}
+namespace WebKit { class WebGraphicsContext3D; }
 
 namespace webkit {
 namespace gpu {
@@ -57,8 +54,6 @@ class WEBKIT_GPU_EXPORT ContextProviderInProcess
 
   void OnLostContext();
   void OnSwapBuffersComplete();
-  void OnMemoryAllocationChanged(
-      const WebKit::WebGraphicsMemoryAllocation& allocation);
 
  private:
   base::ThreadChecker main_thread_checker_;
@@ -70,7 +65,6 @@ class WEBKIT_GPU_EXPORT ContextProviderInProcess
 
   LostContextCallback lost_context_callback_;
   SwapBuffersCompleteCallback swap_buffers_complete_callback_;
-  MemoryPolicyChangedCallback memory_policy_changed_callback_;
 
   base::Lock destroyed_lock_;
   bool destroyed_;
@@ -83,8 +77,7 @@ class WEBKIT_GPU_EXPORT ContextProviderInProcess
   scoped_ptr<SwapBuffersCompleteCallbackProxy>
       swap_buffers_complete_callback_proxy_;
 
-  class MemoryAllocationCallbackProxy;
-  scoped_ptr<MemoryAllocationCallbackProxy> memory_allocation_callback_proxy_;
+  DISALLOW_COPY_AND_ASSIGN(ContextProviderInProcess);
 };
 
 }  // namespace gpu

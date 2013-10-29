@@ -730,6 +730,10 @@ void InProcessCommandBuffer::SignalQuery(unsigned query,
                        WrapCallback(callback)));
 }
 
+void InProcessCommandBuffer::SendManagedMemoryStats(
+    const gpu::ManagedMemoryStats& stats) {
+}
+
 gpu::error::Error InProcessCommandBuffer::GetLastError() {
   CheckSequencedThread();
   return last_state_.error;

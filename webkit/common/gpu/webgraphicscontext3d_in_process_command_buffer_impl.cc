@@ -398,11 +398,6 @@ void WebGraphicsContext3DInProcessCommandBufferImpl::setVisibilityCHROMIUM(
     bool visible) {
 }
 
-void WebGraphicsContext3DInProcessCommandBufferImpl::
-    setMemoryAllocationChangedCallbackCHROMIUM(
-        WebGraphicsMemoryAllocationChangedCallbackCHROMIUM* callback) {
-}
-
 void WebGraphicsContext3DInProcessCommandBufferImpl::discardFramebufferEXT(
     WGC3Denum target, WGC3Dsizei numAttachments, const WGC3Denum* attachments) {
   gl_->DiscardFramebufferEXT(target, numAttachments, attachments);

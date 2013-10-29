@@ -440,9 +440,6 @@ class WEBKIT_GPU_EXPORT WebGraphicsContext3DInProcessCommandBufferImpl
 
   virtual void setVisibilityCHROMIUM(bool visible);
 
-  virtual void setMemoryAllocationChangedCallbackCHROMIUM(
-      WebGraphicsMemoryAllocationChangedCallbackCHROMIUM* callback);
-
   virtual void discardFramebufferEXT(WGC3Denum target,
                                      WGC3Dsizei numAttachments,
                                      const WGC3Denum* attachments);

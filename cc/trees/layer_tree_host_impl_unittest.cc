@@ -5215,8 +5215,8 @@ TEST_F(LayerTreeHostImplTest, DefaultMemoryAllocation) {
 
 TEST_F(LayerTreeHostImplTest, MemoryPolicy) {
   ManagedMemoryPolicy policy1(
-      456, ManagedMemoryPolicy::CUTOFF_ALLOW_EVERYTHING,
-      123, ManagedMemoryPolicy::CUTOFF_ALLOW_NICE_TO_HAVE, 1000);
+      456, gpu::MemoryAllocation::CUTOFF_ALLOW_EVERYTHING,
+      123, gpu::MemoryAllocation::CUTOFF_ALLOW_NICE_TO_HAVE, 1000);
   int visible_cutoff_value = ManagedMemoryPolicy::PriorityCutoffToValue(
       policy1.priority_cutoff_when_visible);
   int not_visible_cutoff_value = ManagedMemoryPolicy::PriorityCutoffToValue(

@@ -88,6 +88,11 @@ void GpuControlService::SignalQuery(uint32 query_id,
     query->AddCallback(callback);
 }
 
+void GpuControlService::SendManagedMemoryStats(
+    const ManagedMemoryStats& stats) {
+  NOTREACHED();
+}
+
 bool GpuControlService::RegisterGpuMemoryBuffer(
     int32 id,
     gfx::GpuMemoryBufferHandle buffer,

@@ -213,6 +213,11 @@ void PpapiCommandBufferProxy::SignalQuery(uint32 query,
   NOTREACHED();
 }
 
+void PpapiCommandBufferProxy::SendManagedMemoryStats(
+    const gpu::ManagedMemoryStats& stats) {
+  NOTREACHED();
+}
+
 bool PpapiCommandBufferProxy::SupportsGpuMemoryBuffer() {
   return false;
 }

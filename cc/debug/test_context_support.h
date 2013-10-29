@@ -21,6 +21,8 @@ class TestContextSupport : public gpu::ContextSupport {
                                const base::Closure& callback) OVERRIDE;
   virtual void SignalQuery(uint32 query,
                            const base::Closure& callback) OVERRIDE;
+  virtual void SendManagedMemoryStats(const gpu::ManagedMemoryStats& stats)
+    OVERRIDE;
 
   void CallAllSyncPointCallbacks();
 

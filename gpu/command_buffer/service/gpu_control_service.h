@@ -44,6 +44,8 @@ class GPU_EXPORT GpuControlService : public GpuControl {
                                const base::Closure& callback) OVERRIDE;
   virtual void SignalQuery(uint32 query,
                            const base::Closure& callback) OVERRIDE;
+  virtual void SendManagedMemoryStats(const ManagedMemoryStats& stats)
+      OVERRIDE;
 
   // Register an existing gpu memory buffer and get an ID that can be used
   // to identify it in the command buffer.

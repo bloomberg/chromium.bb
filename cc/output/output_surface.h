@@ -196,7 +196,6 @@ class CC_EXPORT OutputSurface : public FrameRateControllerClient {
 
  private:
   OutputSurfaceClient* client_;
-  friend class OutputSurfaceCallbacks;
 
   void SetUpContext3d();
   void ResetContext3d();

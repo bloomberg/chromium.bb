@@ -429,20 +429,20 @@ TEST(OutputSurfaceTest, MemoryAllocation) {
   ManagedMemoryPolicy policy(0);
   policy.bytes_limit_when_visible = 1234;
   policy.priority_cutoff_when_visible =
-      ManagedMemoryPolicy::CUTOFF_ALLOW_REQUIRED_ONLY;
+      gpu::MemoryAllocation::CUTOFF_ALLOW_REQUIRED_ONLY;
   policy.bytes_limit_when_not_visible = 4567;
   policy.priority_cutoff_when_not_visible =
-      ManagedMemoryPolicy::CUTOFF_ALLOW_NOTHING;
+      gpu::MemoryAllocation::CUTOFF_ALLOW_NOTHING;
 
   bool discard_backbuffer_when_not_visible = false;
 
   context_provider->SetMemoryAllocation(policy,
                                         discard_backbuffer_when_not_visible);
   EXPECT_EQ(1234u, client.memory_policy().bytes_limit_when_visible);
-  EXPECT_EQ(ManagedMemoryPolicy::CUTOFF_ALLOW_REQUIRED_ONLY,
+  EXPECT_EQ(gpu::MemoryAllocation::CUTOFF_ALLOW_REQUIRED_ONLY,
             client.memory_policy().priority_cutoff_when_visible);
   EXPECT_EQ(4567u, client.memory_policy().bytes_limit_when_not_visible);
-  EXPECT_EQ(ManagedMemoryPolicy::CUTOFF_ALLOW_NOTHING,
+  EXPECT_EQ(gpu::MemoryAllocation::CUTOFF_ALLOW_NOTHING,
             client.memory_policy().priority_cutoff_when_not_visible);
   EXPECT_FALSE(client.discard_backbuffer_when_not_visible());
 
@@ -452,14 +452,14 @@ TEST(OutputSurfaceTest, MemoryAllocation) {
   EXPECT_TRUE(client.discard_backbuffer_when_not_visible());
 
   policy.priority_cutoff_when_visible =
-      ManagedMemoryPolicy::CUTOFF_ALLOW_EVERYTHING;
+      gpu::MemoryAllocation::CUTOFF_ALLOW_EVERYTHING;
   policy.priority_cutoff_when_not_visible =
-      ManagedMemoryPolicy::CUTOFF_ALLOW_NICE_TO_HAVE;
+      gpu::MemoryAllocation::CUTOFF_ALLOW_NICE_TO_HAVE;
   context_provider->SetMemoryAllocation(policy,
                                         discard_backbuffer_when_not_visible);
-  EXPECT_EQ(ManagedMemoryPolicy::CUTOFF_ALLOW_EVERYTHING,
+  EXPECT_EQ(gpu::MemoryAllocation::CUTOFF_ALLOW_EVERYTHING,
             client.memory_policy().priority_cutoff_when_visible);
-  EXPECT_EQ(ManagedMemoryPolicy::CUTOFF_ALLOW_NICE_TO_HAVE,
+  EXPECT_EQ(gpu::MemoryAllocation::CUTOFF_ALLOW_NICE_TO_HAVE,
             client.memory_policy().priority_cutoff_when_not_visible);
 
   // 0 bytes limit should be ignored.

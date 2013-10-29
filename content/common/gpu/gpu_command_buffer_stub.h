@@ -13,10 +13,10 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "content/common/content_export.h"
-#include "content/common/gpu/gpu_memory_allocation.h"
 #include "content/common/gpu/gpu_memory_manager.h"
 #include "content/common/gpu/gpu_memory_manager_client.h"
 #include "gpu/command_buffer/common/constants.h"
+#include "gpu/command_buffer/common/gpu_memory_allocation.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/gpu_scheduler.h"
@@ -93,7 +93,8 @@ class GpuCommandBufferStub
   virtual gfx::Size GetSurfaceSize() const OVERRIDE;
   virtual gpu::gles2::MemoryTracker* GetMemoryTracker() const OVERRIDE;
   virtual void SetMemoryAllocation(
-      const GpuMemoryAllocation& allocation) OVERRIDE;
+      const gpu::MemoryAllocation& allocation) OVERRIDE;
+  virtual void SuggestHaveFrontBuffer(bool suggest_have_frontbuffer) OVERRIDE;
   virtual bool GetTotalGpuMemory(uint64* bytes) OVERRIDE;
 
   // Whether this command buffer can currently handle IPC messages.
@@ -180,7 +181,7 @@ class GpuCommandBufferStub
   void OnSignalSyncPointAck(uint32 id);
   void OnSignalQuery(uint32 query, uint32 id);
 
-  void OnReceivedClientManagedMemoryStats(const GpuManagedMemoryStats& stats);
+  void OnReceivedClientManagedMemoryStats(const gpu::ManagedMemoryStats& stats);
   void OnSetClientHasMemoryAllocationChangedCallback(bool has_callback);
 
   void OnRegisterGpuMemoryBuffer(int32 id,
@@ -238,7 +239,7 @@ class GpuCommandBufferStub
   // The last memory allocation received from the GpuMemoryManager (used to
   // elide redundant work).
   bool last_memory_allocation_valid_;
-  GpuMemoryAllocation last_memory_allocation_;
+  gpu::MemoryAllocation last_memory_allocation_;
 
   GpuWatchdog* watchdog_;
 

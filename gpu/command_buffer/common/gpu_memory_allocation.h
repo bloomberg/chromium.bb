@@ -1,32 +1,30 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_GPU_GPU_MEMORY_ALLOCATION_H_
-#define CONTENT_COMMON_GPU_GPU_MEMORY_ALLOCATION_H_
+#ifndef GPU_COMMAND_BUFFER_COMMON_GPU_MEMORY_ALLOCATION_H_
+#define GPU_COMMAND_BUFFER_COMMON_GPU_MEMORY_ALLOCATION_H_
 
 #include "base/basictypes.h"
 
-namespace content {
+namespace gpu {
 
 // These are per context memory allocation limits set by the GpuMemoryManager
 // and assigned to the browser and renderer context.
 // They will change over time, given memory availability, and browser state.
-
-// Memory Allocation which will be assigned to the renderer context.
-struct GpuMemoryAllocationForRenderer {
+struct MemoryAllocation {
   enum PriorityCutoff {
     // Allow no allocations.
-    kPriorityCutoffAllowNothing,
+    CUTOFF_ALLOW_NOTHING,
     // Allow only allocations that are strictly required for correct rendering.
     // For compositors, this is what is visible.
-    kPriorityCutoffAllowOnlyRequired,
+    CUTOFF_ALLOW_REQUIRED_ONLY,
     // Allow allocations that are not strictly needed for correct rendering, but
     // are nice to have for performance. For compositors, this includes textures
     // that are a few screens away from being visible.
-    kPriorityCutoffAllowNiceToHave,
+    CUTOFF_ALLOW_NICE_TO_HAVE,
     // Allow all allocations.
-    kPriorityCutoffAllowEverything,
+    CUTOFF_ALLOW_EVERYTHING,
   };
 
   // Limits when this renderer is visible.
@@ -38,23 +36,23 @@ struct GpuMemoryAllocationForRenderer {
   PriorityCutoff priority_cutoff_when_not_visible;
   bool have_backbuffer_when_not_visible;
 
-  GpuMemoryAllocationForRenderer()
+  MemoryAllocation()
       : bytes_limit_when_visible(0),
-        priority_cutoff_when_visible(kPriorityCutoffAllowNothing),
+        priority_cutoff_when_visible(CUTOFF_ALLOW_NOTHING),
         bytes_limit_when_not_visible(0),
-        priority_cutoff_when_not_visible(kPriorityCutoffAllowNothing),
+        priority_cutoff_when_not_visible(CUTOFF_ALLOW_NOTHING),
         have_backbuffer_when_not_visible(false) {
   }
 
-  GpuMemoryAllocationForRenderer(uint64 bytes_limit_when_visible)
+  MemoryAllocation(uint64 bytes_limit_when_visible)
       : bytes_limit_when_visible(bytes_limit_when_visible),
-        priority_cutoff_when_visible(kPriorityCutoffAllowEverything),
+        priority_cutoff_when_visible(CUTOFF_ALLOW_EVERYTHING),
         bytes_limit_when_not_visible(0),
-        priority_cutoff_when_not_visible(kPriorityCutoffAllowNothing),
+        priority_cutoff_when_not_visible(CUTOFF_ALLOW_NOTHING),
         have_backbuffer_when_not_visible(false) {
   }
 
-  bool Equals(const GpuMemoryAllocationForRenderer& other) const {
+  bool Equals(const MemoryAllocation& other) const {
     return bytes_limit_when_visible ==
                other.bytes_limit_when_visible &&
         priority_cutoff_when_visible == other.priority_cutoff_when_visible &&
@@ -66,52 +64,9 @@ struct GpuMemoryAllocationForRenderer {
   }
 };
 
-// Memory Allocation which will be assigned to the browser.
-struct GpuMemoryAllocationForBrowser {
-  bool suggest_have_frontbuffer;
-
-  GpuMemoryAllocationForBrowser()
-      : suggest_have_frontbuffer(false) {
-  }
-
-  GpuMemoryAllocationForBrowser(bool suggest_have_frontbuffer)
-      : suggest_have_frontbuffer(suggest_have_frontbuffer) {
-  }
-
-  bool Equals(const GpuMemoryAllocationForBrowser& other) const {
-      return suggest_have_frontbuffer == other.suggest_have_frontbuffer;
-  }
-};
-
-// Combination of the above two Memory Allocations which will be created by the
-// GpuMemoryManager.
-struct GpuMemoryAllocation {
-  GpuMemoryAllocationForRenderer renderer_allocation;
-  GpuMemoryAllocationForBrowser browser_allocation;
-
-  enum BufferAllocation {
-    kHasNoFrontbuffer = 0,
-    kHasFrontbuffer = 1,
-  };
-
-  GpuMemoryAllocation() {
-  }
-
-  GpuMemoryAllocation(uint64 gpu_resource_size_in_bytes,
-                      BufferAllocation buffer_allocation)
-      : renderer_allocation(gpu_resource_size_in_bytes),
-        browser_allocation(buffer_allocation == kHasFrontbuffer) {
-  }
-
-  bool Equals(const GpuMemoryAllocation& other) const {
-      return renderer_allocation.Equals(other.renderer_allocation) &&
-          browser_allocation.Equals(other.browser_allocation);
-  }
-};
-
 // Memory Allocation request which is sent by a client, to help GpuMemoryManager
 // more ideally split memory allocations across clients.
-struct GpuManagedMemoryStats {
+struct ManagedMemoryStats {
   // Bytes required for correct rendering.
   uint64 bytes_required;
 
@@ -126,14 +81,14 @@ struct GpuManagedMemoryStats {
   // of the buffer is known by the GPU process).
   bool backbuffer_requested;
 
-  GpuManagedMemoryStats()
+  ManagedMemoryStats()
       : bytes_required(0),
         bytes_nice_to_have(0),
         bytes_allocated(0),
         backbuffer_requested(false) {
   }
 
-  GpuManagedMemoryStats(uint64 bytes_required,
+  ManagedMemoryStats(uint64 bytes_required,
                         uint64 bytes_nice_to_have,
                         uint64 bytes_allocated,
                         bool backbuffer_requested)
@@ -143,7 +98,7 @@ struct GpuManagedMemoryStats {
         backbuffer_requested(backbuffer_requested) {
   }
 
-  bool Equals(const GpuManagedMemoryStats& other) const {
+  bool Equals(const ManagedMemoryStats& other) const {
     return bytes_required == other.bytes_required &&
         bytes_nice_to_have == other.bytes_nice_to_have &&
         bytes_allocated == other.bytes_allocated &&
@@ -153,4 +108,4 @@ struct GpuManagedMemoryStats {
 
 }  // namespace content
 
-#endif // CONTENT_COMMON_GPU_GPU_MEMORY_ALLOCATION_H_
+#endif // GPU_COMMAND_BUFFER_COMMON_GPU_MEMORY_ALLOCATION_H_

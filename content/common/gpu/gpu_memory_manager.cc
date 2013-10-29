@@ -13,12 +13,15 @@
 #include "base/process/process_handle.h"
 #include "base/strings/string_number_conversions.h"
 #include "content/common/gpu/gpu_channel_manager.h"
-#include "content/common/gpu/gpu_memory_allocation.h"
 #include "content/common/gpu/gpu_memory_manager_client.h"
 #include "content/common/gpu/gpu_memory_tracking.h"
 #include "content/common/gpu/gpu_memory_uma_stats.h"
 #include "content/common/gpu/gpu_messages.h"
+#include "gpu/command_buffer/common/gpu_memory_allocation.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
+
+using gpu::ManagedMemoryStats;
+using gpu::MemoryAllocation;
 
 namespace content {
 namespace {
@@ -337,7 +340,7 @@ void GpuMemoryManager::SetClientStateVisible(
 
 void GpuMemoryManager::SetClientStateManagedMemoryStats(
     GpuMemoryManagerClientState* client_state,
-    const GpuManagedMemoryStats& stats)
+    const ManagedMemoryStats& stats)
 {
   TrackValueChanged(client_state->managed_memory_stats_.bytes_allocated,
                     stats.bytes_allocated,
@@ -474,7 +477,7 @@ uint64 GpuMemoryManager::ComputeClientAllocationWhenVisible(
     uint64 bytes_above_required_cap,
     uint64 bytes_above_minimum_cap,
     uint64 bytes_overall_cap) {
-  GpuManagedMemoryStats* stats = &client_state->managed_memory_stats_;
+  ManagedMemoryStats* stats = &client_state->managed_memory_stats_;
 
   if (!client_state->managed_memory_stats_received_)
     return GetDefaultClientAllocation();
@@ -769,30 +772,28 @@ void GpuMemoryManager::AssignSurfacesAllocations() {
         3 * client_state->managed_memory_stats_.bytes_nice_to_have / 4;
 
     // Populate and send the allocation to the client
-    GpuMemoryAllocation allocation;
+    MemoryAllocation allocation;
 
-    allocation.browser_allocation.suggest_have_frontbuffer =
-        !client_state->hibernated_;
-
-    allocation.renderer_allocation.bytes_limit_when_visible =
+    allocation.bytes_limit_when_visible =
         client_state->bytes_allocation_when_visible_;
     // Use a more conservative memory allocation policy on Linux and Mac
     // because the platform is unstable when under memory pressure.
     // http://crbug.com/145600 (Linux)
     // http://crbug.com/141377 (Mac)
-    allocation.renderer_allocation.priority_cutoff_when_visible =
+    allocation.priority_cutoff_when_visible =
 #if defined(OS_MACOSX) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
-        GpuMemoryAllocationForRenderer::kPriorityCutoffAllowNiceToHave;
+        MemoryAllocation::CUTOFF_ALLOW_NICE_TO_HAVE;
 #else
-        GpuMemoryAllocationForRenderer::kPriorityCutoffAllowEverything;
+        MemoryAllocation::CUTOFF_ALLOW_EVERYTHING;
 #endif
 
-    allocation.renderer_allocation.bytes_limit_when_not_visible =
+    allocation.bytes_limit_when_not_visible =
         client_state->bytes_allocation_when_nonvisible_;
-    allocation.renderer_allocation.priority_cutoff_when_not_visible =
-        GpuMemoryAllocationForRenderer::kPriorityCutoffAllowOnlyRequired;
+    allocation.priority_cutoff_when_not_visible =
+        MemoryAllocation::CUTOFF_ALLOW_REQUIRED_ONLY;
 
     client_state->client_->SetMemoryAllocation(allocation);
+    client_state->client_->SuggestHaveFrontBuffer(!client_state->hibernated_);
   }
 }
 
@@ -801,13 +802,13 @@ void GpuMemoryManager::AssignNonSurfacesAllocations() {
        it != clients_nonsurface_.end();
        ++it) {
     GpuMemoryManagerClientState* client_state = *it;
-    GpuMemoryAllocation allocation;
+    MemoryAllocation allocation;
 
     if (!client_state->hibernated_) {
-      allocation.renderer_allocation.bytes_limit_when_visible =
+      allocation.bytes_limit_when_visible =
           GetMinimumClientAllocation();
-      allocation.renderer_allocation.priority_cutoff_when_visible =
-          GpuMemoryAllocationForRenderer::kPriorityCutoffAllowEverything;
+      allocation.priority_cutoff_when_visible =
+          MemoryAllocation::CUTOFF_ALLOW_EVERYTHING;
     }
 
     client_state->client_->SetMemoryAllocation(allocation);

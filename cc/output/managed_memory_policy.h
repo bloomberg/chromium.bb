@@ -8,36 +8,35 @@
 #include "base/basictypes.h"
 #include "cc/base/cc_export.h"
 #include "cc/resources/tile_priority.h"
+#include "gpu/command_buffer/common/gpu_memory_allocation.h"
 
 namespace cc {
 
 struct CC_EXPORT ManagedMemoryPolicy {
-  enum PriorityCutoff {
-    CUTOFF_ALLOW_NOTHING,
-    CUTOFF_ALLOW_REQUIRED_ONLY,
-    CUTOFF_ALLOW_NICE_TO_HAVE,
-    CUTOFF_ALLOW_EVERYTHING,
-  };
   static const size_t kDefaultNumResourcesLimit;
 
   explicit ManagedMemoryPolicy(size_t bytes_limit_when_visible);
-  ManagedMemoryPolicy(size_t bytes_limit_when_visible,
-                      PriorityCutoff priority_cutoff_when_visible,
-                      size_t bytes_limit_when_not_visible,
-                      PriorityCutoff priority_cutoff_when_not_visible,
-                      size_t num_resources_limit);
+  explicit ManagedMemoryPolicy(
+      const gpu::MemoryAllocation& allocation);
+  ManagedMemoryPolicy(
+      size_t bytes_limit_when_visible,
+      gpu::MemoryAllocation::PriorityCutoff priority_cutoff_when_visible,
+      size_t bytes_limit_when_not_visible,
+      gpu::MemoryAllocation::PriorityCutoff priority_cutoff_when_not_visible,
+      size_t num_resources_limit);
   bool operator==(const ManagedMemoryPolicy&) const;
   bool operator!=(const ManagedMemoryPolicy&) const;
 
   size_t bytes_limit_when_visible;
-  PriorityCutoff priority_cutoff_when_visible;
+  gpu::MemoryAllocation::PriorityCutoff priority_cutoff_when_visible;
   size_t bytes_limit_when_not_visible;
-  PriorityCutoff priority_cutoff_when_not_visible;
+  gpu::MemoryAllocation::PriorityCutoff priority_cutoff_when_not_visible;
   size_t num_resources_limit;
 
-  static int PriorityCutoffToValue(PriorityCutoff priority_cutoff);
+  static int PriorityCutoffToValue(
+      gpu::MemoryAllocation::PriorityCutoff priority_cutoff);
   static TileMemoryLimitPolicy PriorityCutoffToTileMemoryLimitPolicy(
-      PriorityCutoff priority_cutoff);
+      gpu::MemoryAllocation::PriorityCutoff priority_cutoff);
 };
 
 }  // namespace cc
