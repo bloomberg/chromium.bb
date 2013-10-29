@@ -2161,6 +2161,7 @@ PassRefPtr<TextMetrics> CanvasRenderingContext2D::measureText(const String& text
 {
     FontCachePurgePreventer fontCachePurgePreventer;
     RefPtr<TextMetrics> metrics = TextMetrics::create();
+    canvas()->document().updateStyleIfNeeded();
     metrics->setWidth(accessFont().width(TextRun(text)));
     return metrics.release();
 }
@@ -2177,6 +2178,11 @@ static void replaceCharacterInString(String& text, WTF::CharacterMatchFunctionPt
 
 void CanvasRenderingContext2D::drawTextInternal(const String& text, float x, float y, bool fill, float maxWidth, bool useMaxWidth)
 {
+    // accessFont needs the style to be up to date, but updating style can cause script to run,
+    // (e.g. due to autofocus) which can free the GraphicsContext, so update style before grabbing
+    // the GraphicsContext.
+    canvas()->document().updateStyleIfNeeded();
+
     GraphicsContext* c = drawingContext();
     if (!c)
         return;
@@ -2297,8 +2303,8 @@ void CanvasRenderingContext2D::inflateStrokeRect(FloatRect& rect) const
 
 const Font& CanvasRenderingContext2D::accessFont()
 {
-    canvas()->document().updateStyleIfNeeded();
-
+    // This needs style to be up to date, but can't assert so because drawTextInternal
+    // can invalidate style before this is called (e.g. drawingContext invalidates style).
     if (!state().m_realizedFont)
         setFont(state().m_unparsedFont);
     return state().m_font;
