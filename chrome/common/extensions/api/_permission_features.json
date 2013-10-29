@@ -686,7 +686,7 @@
     "extension_types": ["extension", "legacy_packaged_app", "platform_app"]
   },
   "system.memory": {
-    "channel": "dev",
+    "channel": "stable",
     "extension_types": ["extension", "legacy_packaged_app", "platform_app"]
   },
   "system.storage": {
