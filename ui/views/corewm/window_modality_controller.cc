@@ -118,19 +118,19 @@ WindowModalityController::~WindowModalityController() {
 void WindowModalityController::OnKeyEvent(ui::KeyEvent* event) {
   aura::Window* target = static_cast<aura::Window*>(event->target());
   if (GetModalTransient(target))
-    event->StopPropagation();
+    event->SetHandled();
 }
 
 void WindowModalityController::OnMouseEvent(ui::MouseEvent* event) {
   aura::Window* target = static_cast<aura::Window*>(event->target());
   if (ProcessLocatedEvent(target, event))
-   event->StopPropagation();
+   event->SetHandled();
 }
 
 void WindowModalityController::OnTouchEvent(ui::TouchEvent* event) {
   aura::Window* target = static_cast<aura::Window*>(event->target());
   if (ProcessLocatedEvent(target, event))
-    event->StopPropagation();
+    event->SetHandled();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -183,6 +183,8 @@ void WindowModalityController::OnWindowDestroyed(aura::Window* window) {
 
 bool WindowModalityController::ProcessLocatedEvent(aura::Window* target,
                                                    ui::LocatedEvent* event) {
+  if (event->handled())
+    return false;
   aura::Window* modal_transient_child = GetModalTransient(target);
   if (modal_transient_child && (event->type() == ui::ET_MOUSE_PRESSED ||
                                 event->type() == ui::ET_TOUCH_PRESSED)) {

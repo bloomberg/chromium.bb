@@ -281,7 +281,7 @@ void WindowOverview::OnTouchEvent(ui::TouchEvent* event) {
   // the window, perhaps a transparent window in front of the target window
   // or using EventClientImpl::CanProcessEventsWithinSubtree and then a tap
   // gesture could be used to activate the window.
-  event->StopPropagation();
+  event->SetHandled();
   window_selector_->SelectWindow(target);
 }
 
