@@ -16,6 +16,7 @@
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "ui/aura/client/activation_change_observer.h"
 #include "ui/base/ui_base_types.h"
@@ -645,6 +646,8 @@ class ASH_EXPORT Shell
   scoped_ptr<views::corewm::InputMethodEventFilter> input_method_filter_;
 
   scoped_ptr<internal::DisplayManager> display_manager_;
+  scoped_ptr<base::WeakPtrFactory<internal::DisplayManager> >
+      weak_display_manager_factory_;
 
   scoped_ptr<internal::LocaleNotificationController>
       locale_notification_controller_;

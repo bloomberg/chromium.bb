@@ -899,13 +899,16 @@ void Shell::Init() {
       new internal::VideoActivityNotifier(video_detector_.get()));
 #endif
 
+  weak_display_manager_factory_.reset(
+      new base::WeakPtrFactory<internal::DisplayManager>(
+          display_manager_.get()));
   // The compositor thread and main message loop have to be running in
   // order to create mirror window. Run it after the main message loop
   // is started.
   base::MessageLoopForUI::current()->PostTask(
       FROM_HERE,
       base::Bind(&internal::DisplayManager::CreateMirrorWindowIfAny,
-                 base::Unretained(display_manager_.get())));
+                 weak_display_manager_factory_->GetWeakPtr()));
 }
 
 void Shell::InitKeyboard(internal::RootWindowController* root) {
