@@ -280,6 +280,14 @@ size_t WrapperTestLauncherDelegate::RetryTests(
 
   // Discard user data directories from any previous runs. Start with
   // fresh state.
+  for (UserDataDirMap::const_iterator i = user_data_dir_map_.begin();
+       i != user_data_dir_map_.end();
+       ++i) {
+    // Delete temporary directories now to avoid using too much space in /tmp.
+    if (!base::DeleteFile(i->second, true)) {
+      LOG(WARNING) << "Failed to delete " << i->second.value();
+    }
+  }
   user_data_dir_map_.clear();
 
   for (std::set<std::string>::const_iterator i = test_names_set.begin();
@@ -395,8 +403,20 @@ void WrapperTestLauncherDelegate::GTestCallback(
 
   result.output_snippet = GetTestOutputSnippet(result, output);
 
-  if (ContainsKey(dependent_test_map_, test_name))
+  if (ContainsKey(dependent_test_map_, test_name)) {
     RunDependentTest(test_launcher, dependent_test_map_[test_name], result);
+  } else {
+    // No other tests depend on this, we can delete the temporary directory now.
+    // Do so to avoid too many temporary files using lots of disk space.
+    std::string test_name_no_pre(RemoveAnyPrePrefixes(test_name));
+    if (ContainsKey(user_data_dir_map_, test_name_no_pre)) {
+      if (!base::DeleteFile(user_data_dir_map_[test_name_no_pre], true)) {
+        LOG(WARNING) << "Failed to delete "
+                     << user_data_dir_map_[test_name_no_pre].value();
+      }
+      user_data_dir_map_.erase(test_name_no_pre);
+    }
+  }
 
   test_launcher->OnTestFinished(result);
   parallel_launcher_.ResetOutputWatchdog();
