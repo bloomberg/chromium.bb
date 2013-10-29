@@ -60,8 +60,8 @@ public:
     void start();
     void close();
 
-    void entangle(PassRefPtr<MessagePortChannel>);
-    PassRefPtr<MessagePortChannel> disentangle();
+    void entangle(PassOwnPtr<MessagePortChannel>);
+    PassOwnPtr<MessagePortChannel> disentangle();
 
     // Returns 0 if there is an exception, or if the passed-in array is 0/empty.
     static PassOwnPtr<MessagePortChannelArray> disentanglePorts(const MessagePortArray*, ExceptionState&);
@@ -98,7 +98,7 @@ public:
 private:
     explicit MessagePort(ExecutionContext&);
 
-    RefPtr<MessagePortChannel> m_entangledChannel;
+    OwnPtr<MessagePortChannel> m_entangledChannel;
 
     bool m_started;
     bool m_closed;

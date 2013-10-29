@@ -39,28 +39,29 @@
 
 namespace WebCore {
 
-PassRefPtr<MessagePortChannel> MessagePortChannel::create(WebKit::WebMessagePortChannel* channel)
+PassOwnPtr<MessagePortChannel> MessagePortChannel::create(WebKit::WebMessagePortChannel* channel)
 {
-    return adoptRef(new MessagePortChannel(channel));
+    return adoptPtr(new MessagePortChannel(channel));
 }
 
 void MessagePortChannel::createChannel(MessagePort* port1, MessagePort* port2)
 {
     // Create proxies for each endpoint.
-    RefPtr<MessagePortChannel> channel1 = create(WebKit::Platform::current()->createMessagePortChannel());
-    RefPtr<MessagePortChannel> channel2 = create(WebKit::Platform::current()->createMessagePortChannel());
+    OwnPtr<MessagePortChannel> channel1 = create(WebKit::Platform::current()->createMessagePortChannel());
+    OwnPtr<MessagePortChannel> channel2 = create(WebKit::Platform::current()->createMessagePortChannel());
 
     // Entangle the two endpoints.
-    channel1->setEntangledChannel(channel2);
-    channel2->setEntangledChannel(channel1);
+    channel1->setEntangledChannelAndPort(channel2.get(), port2);
+    channel2->setEntangledChannelAndPort(channel1.get(), port1);
 
     // Now entangle the proxies with the appropriate local ports.
-    port1->entangle(channel2.release());
-    port2->entangle(channel1.release());
+    port1->entangle(channel1.release());
+    port2->entangle(channel2.release());
 }
 
 MessagePortChannel::MessagePortChannel(WebKit::WebMessagePortChannel* channel)
     : m_localPort(0)
+    , m_entangledLocalPort(0)
     , m_webChannel(channel)
 {
     ASSERT(m_webChannel);
@@ -126,14 +127,13 @@ void MessagePortChannel::close()
     // Disentangle ourselves from the other end. We still maintain a reference to m_webChannel,
     // since previously-existing messages should still be delivered.
     m_localPort = 0;
-    m_entangledChannel = 0;
+    m_entangledLocalPort = 0;
 }
 
 bool MessagePortChannel::isConnectedTo(MessagePort* port)
 {
     MutexLocker lock(m_mutex);
-    // FIXME: Shouldn't the access to m_entangledChannel->m_localPort be protected by m_entangledChannel->m_mutex?
-    return m_entangledChannel && m_entangledChannel->m_localPort == port;
+    return m_entangledLocalPort && m_entangledLocalPort == port;
 }
 
 bool MessagePortChannel::hasPendingActivity()
@@ -149,13 +149,13 @@ void MessagePortChannel::messageAvailable()
         m_localPort->messageAvailable();
 }
 
-void MessagePortChannel::setEntangledChannel(PassRefPtr<MessagePortChannel> remote)
+void MessagePortChannel::setEntangledChannelAndPort(MessagePortChannel* remote, MessagePort* port)
 {
     ASSERT(m_webChannel);
     m_webChannel->entangle(remote->m_webChannel);
 
     MutexLocker lock(m_mutex);
-    m_entangledChannel = remote;
+    m_entangledLocalPort = port;
 }
 
 WebKit::WebMessagePortChannel* MessagePortChannel::webChannelRelease()
