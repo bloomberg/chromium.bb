@@ -9,16 +9,17 @@
 #define CHROME_BROWSER_EXTENSIONS_API_DEBUGGER_DEBUGGER_API_H_
 
 #include <string>
+#include <vector>
 
 #include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/common/extensions/api/debugger.h"
-#include "content/public/browser/worker_service.h"
 
 using extensions::api::debugger::Debuggee;
 
 // Base debugger function.
 
 class ExtensionDevToolsClientHost;
+class DevToolsTargetImpl;
 
 namespace base {
 class DictionaryValue;
@@ -101,12 +102,7 @@ class DebuggerGetTargetsFunction : public DebuggerFunction {
   virtual bool RunImpl() OVERRIDE;
 
  private:
-  typedef std::vector<content::WorkerService::WorkerInfo> WorkerInfoList;
-
-  WorkerInfoList CollectWorkerInfo();
-
-  void SendTargetList(base::ListValue* list,
-                      const WorkerInfoList& worker_info);
+  void SendTargetList(const std::vector<DevToolsTargetImpl*>& target_list);
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_API_DEBUGGER_DEBUGGER_API_H_

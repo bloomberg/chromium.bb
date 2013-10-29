@@ -14,10 +14,12 @@
 #include "base/json/json_writer.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/devtools/devtools_target_impl.h"
 #include "chrome/browser/extensions/api/debugger/debugger_api_constants.h"
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_host.h"
@@ -35,15 +37,12 @@
 #include "content/public/browser/devtools_client_host.h"
 #include "content/public/browser/devtools_http_handler.h"
 #include "content/public/browser/devtools_manager.h"
-#include "content/public/browser/favicon_status.h"
-#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/worker_service.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/url_utils.h"
 #include "extensions/common/error_utils.h"
@@ -58,7 +57,6 @@ using content::RenderProcessHost;
 using content::RenderViewHost;
 using content::RenderWidgetHost;
 using content::WebContents;
-using content::WorkerService;
 using extensions::ErrorUtils;
 
 namespace keys = debugger_api_constants;
@@ -676,75 +674,28 @@ const char kTargetTypeOther[] = "other";
 const char kTargetTabIdField[] = "tabId";
 const char kTargetExtensionIdField[] = "extensionId";
 
-extensions::ExtensionHost*
-    GetExtensionBackgroundHost(WebContents* web_contents) {
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  if (!profile)
-    return NULL;
-
-  extensions::ExtensionHost* extension_host =
-      extensions::ExtensionSystem::Get(profile)->process_manager()->
-          GetBackgroundHostForExtension(web_contents->GetURL().host());
-
-  return (extension_host && extension_host->host_contents() == web_contents) ?
-      extension_host : NULL;
-}
-
-base::Value* SerializePageInfo(RenderViewHost* rvh) {
-  WebContents* web_contents = WebContents::FromRenderViewHost(rvh);
-  if (!web_contents)
-    return NULL;
-
-  DevToolsAgentHost* agent_host = DevToolsAgentHost::GetOrCreateFor(rvh);
-
+base::Value* SerializeTarget(const DevToolsTargetImpl& target) {
   base::DictionaryValue* dictionary = new base::DictionaryValue();
 
-  dictionary->SetString(kTargetIdField, agent_host->GetId());
-  dictionary->SetBoolean(kTargetAttachedField, agent_host->IsAttached());
-  dictionary->SetString(kTargetUrlField, web_contents->GetURL().spec());
+  dictionary->SetString(kTargetIdField, target.GetId());
+  dictionary->SetString(kTargetTitleField, target.GetTitle());
+  dictionary->SetBoolean(kTargetAttachedField, target.IsAttached());
+  dictionary->SetString(kTargetUrlField, target.GetUrl().spec());
 
-  extensions::ExtensionHost* extension_host =
-      GetExtensionBackgroundHost(web_contents);
-  if (extension_host) {
-    // This RenderViewHost belongs to a background page.
-    dictionary->SetString(kTargetTypeField, kTargetTypeBackgroundPage);
-    dictionary->SetString(kTargetExtensionIdField,
-                          extension_host->extension()->id());
-    dictionary->SetString(kTargetTitleField,
-                          extension_host->extension()->name());
-  } else {
-    int tab_id = ExtensionTabUtil::GetTabId(web_contents);
-    if (tab_id != -1) {
-      // This RenderViewHost belongs to a regular page.
-      dictionary->SetString(kTargetTypeField, kTargetTypePage);
-      dictionary->SetInteger(kTargetTabIdField, tab_id);
-    } else {
-      dictionary->SetString(kTargetTypeField, kTargetTypeOther);
-    }
-    dictionary->SetString(kTargetTitleField, web_contents->GetTitle());
-
-    content::NavigationController& controller = web_contents->GetController();
-    content::NavigationEntry* entry = controller.GetVisibleEntry();
-    if (entry != NULL && entry->GetURL().is_valid()) {
-      dictionary->SetString(kTargetFaviconUrlField,
-                            entry->GetFavicon().url.spec());
-    }
+  std::string type = target.GetType();
+  if (type == kTargetTypePage) {
+    dictionary->SetInteger(kTargetTabIdField, target.GetTabId());
+  } else if (type == kTargetTypeBackgroundPage) {
+    dictionary->SetString(kTargetExtensionIdField, target.GetExtensionId());
+  } else if (type != kTargetTypeWorker) {
+    // DevToolsTargetImpl may support more types than the debugger API.
+    type = kTargetTypeOther;
   }
+  dictionary->SetString(kTargetTypeField, type);
 
-  return dictionary;
-}
-
-base::Value* SerializeWorkerInfo(const WorkerService::WorkerInfo& worker) {
-  base::DictionaryValue* dictionary = new base::DictionaryValue;
-
-  scoped_refptr<DevToolsAgentHost> agent(DevToolsAgentHost::GetForWorker(
-      worker.process_id, worker.route_id));
-  dictionary->SetString(kTargetIdField, agent->GetId());
-  dictionary->SetString(kTargetTypeField, kTargetTypeWorker);
-  dictionary->SetString(kTargetTitleField, worker.name);
-  dictionary->SetString(kTargetUrlField, worker.url.spec());
-  dictionary->SetBoolean(kTargetAttachedField, agent->IsAttached());
+  GURL favicon_url = target.GetFaviconUrl();
+  if (favicon_url.is_valid())
+    dictionary->SetString(kTargetFaviconUrlField, favicon_url.spec());
 
   return dictionary;
 }
@@ -758,36 +709,17 @@ DebuggerGetTargetsFunction::~DebuggerGetTargetsFunction() {
 }
 
 bool DebuggerGetTargetsFunction::RunImpl() {
-  base::ListValue* results_list = new base::ListValue();
-
-  std::vector<RenderViewHost*> rvh_list =
-      DevToolsAgentHost::GetValidRenderViewHosts();
-  for (std::vector<RenderViewHost*>::iterator it = rvh_list.begin();
-       it != rvh_list.end(); ++it) {
-    base::Value* value = SerializePageInfo(*it);
-    if (value)
-      results_list->Append(value);
-  }
-
-  content::BrowserThread::PostTaskAndReplyWithResult(
-      content::BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(&DebuggerGetTargetsFunction::CollectWorkerInfo, this),
-      base::Bind(&DebuggerGetTargetsFunction::SendTargetList, this,
-                 results_list));
+  DevToolsTargetImpl::EnumerateAllTargets(
+      base::Bind(&DebuggerGetTargetsFunction::SendTargetList, this));
   return true;
 }
 
-DebuggerGetTargetsFunction::WorkerInfoList
-DebuggerGetTargetsFunction::CollectWorkerInfo() {
-  return WorkerService::GetInstance()->GetWorkers();
-}
-
 void DebuggerGetTargetsFunction::SendTargetList(
-    base::ListValue* list,
-    const WorkerInfoList& worker_info) {
-  for (size_t i = 0; i < worker_info.size(); ++i)
-    list->Append(SerializeWorkerInfo(worker_info[i]));
-  SetResult(list);
+    const std::vector<DevToolsTargetImpl*>& target_list) {
+  scoped_ptr<base::ListValue> result(new base::ListValue());
+  for (size_t i = 0; i < target_list.size(); ++i)
+    result->Append(SerializeTarget(*target_list[i]));
+  STLDeleteContainerPointers(target_list.begin(), target_list.end());
+  SetResult(result.release());
   SendResponse(true);
 }
