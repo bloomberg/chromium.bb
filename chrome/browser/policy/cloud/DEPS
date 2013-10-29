@@ -18,6 +18,7 @@ specific_include_rules = {
   r"cloud_policy_manager_browsertest|"
   r"component_cloud_policy_browsertest|"
   r"device_management_service_browsertest|"
+  r"test_request_interceptor|"
   r"user_policy_signin_service_android|"
   r"user_policy_signin_service_base|"
   r"user_policy_signin_service|"
@@ -47,10 +48,6 @@ specific_include_rules = {
 
   r"cloud_policy_manager_unittest\.cc": [
     "+chrome/browser/invalidation/fake_invalidation_service.h",
-  ],
-
-  r"test_request_interceptor\.cc": [
-    "+content/test/net/url_request_mock_http_job.h",
   ],
 
   r"user_cloud_policy_invalidator\.cc": [
