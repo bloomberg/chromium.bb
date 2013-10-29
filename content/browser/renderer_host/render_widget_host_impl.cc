@@ -1222,6 +1222,11 @@ void RenderWidgetHostImpl::GetSnapshotFromRenderer(
     const gfx::Rect& src_subrect,
     const base::Callback<void(bool, const SkBitmap&)>& callback) {
   TRACE_EVENT0("browser", "RenderWidgetHostImpl::GetSnapshotFromRenderer");
+  if (!view_) {
+    callback.Run(false, SkBitmap());
+    return;
+  }
+
   pending_snapshots_.push(callback);
 
   gfx::Rect copy_rect = src_subrect.IsEmpty() ?
