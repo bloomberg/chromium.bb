@@ -57,8 +57,7 @@ void BuiltinProvider::Start(const AutocompleteInput& input,
   matches_.clear();
   if ((input.type() == AutocompleteInput::INVALID) ||
       (input.type() == AutocompleteInput::FORCED_QUERY) ||
-      (input.type() == AutocompleteInput::QUERY) ||
-      (input.matches_requested() == AutocompleteInput::BEST_MATCH))
+      (input.type() == AutocompleteInput::QUERY))
     return;
 
   const string16 kAbout = ASCIIToUTF16(chrome::kAboutScheme) +
@@ -88,7 +87,10 @@ void BuiltinProvider::Start(const AutocompleteInput& input,
   } else {
     // Match input about: or chrome: URL input against builtin chrome URLs.
     GURL url = URLFixerUpper::FixupURL(UTF16ToUTF8(text), std::string());
-    if (url.SchemeIs(chrome::kChromeUIScheme) && url.has_host()) {
+    // BuiltinProvider doesn't know how to suggest valid ?query or #fragment
+    // extensions to chrome: URLs.
+    if (url.SchemeIs(chrome::kChromeUIScheme) && url.has_host() &&
+        !url.has_query() && !url.has_ref()) {
       // Include the path for sub-pages (e.g. "chrome://settings/browser").
       string16 host_and_path = UTF8ToUTF16(url.host() + url.path());
       TrimString(host_and_path, ASCIIToUTF16("/").c_str(), &host_and_path);
