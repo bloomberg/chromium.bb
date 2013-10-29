@@ -148,7 +148,6 @@ class PixelValidator(page_test.PageTest):
     png_image.WriteFile(image_path)
 
 class Pixel(test.Test):
-  enabled = False
   test = PixelValidator
   page_set = 'page_sets/pixel_tests.json'
 

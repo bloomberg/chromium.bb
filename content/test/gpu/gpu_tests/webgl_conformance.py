@@ -72,7 +72,6 @@ class WebglConformanceValidator(page_test.PageTest):
 
 class WebglConformance(test_module.Test):
   """Conformance with Khronos WebGL Conformance Tests"""
-  enabled = False
   test = WebglConformanceValidator
 
   @staticmethod

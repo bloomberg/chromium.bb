@@ -45,7 +45,6 @@ robustness_harness_script = conformance_harness_script + r"""
 
 
 class WebglRobustness(test.Test):
-  enabled = False
   test = WebglConformanceValidator
 
   def CreatePageSet(self, options):
