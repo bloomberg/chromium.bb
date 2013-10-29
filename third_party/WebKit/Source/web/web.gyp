@@ -31,11 +31,10 @@
 {
     'includes': [
         '../bindings/bindings.gypi',
+        '../core/core.gypi',
         '../build/features.gypi',
         '../build/scripts/scripts.gypi',
         '../build/win/precompile.gypi',
-        '../config.gypi',
-        '../core/core.gypi',
         '../modules/modules.gypi',
         '../wtf/wtf.gypi',
         'web.gypi',
@@ -46,15 +45,15 @@
             'type': '<(component)',
             'variables': { 'enable_wexit_time_destructors': 1, },
             'dependencies': [
+                'picker_resources',
+                '../platform/blink_platform.gyp:blink_common',
                 '../core/core.gyp:webcore',
                 '../modules/modules.gyp:modules',
-                '../platform/blink_platform.gyp:blink_common',
                 '<(DEPTH)/skia/skia.gyp:skia',
                 '<(DEPTH)/third_party/angle_dx11/src/build_angle.gyp:translator',
                 '<(DEPTH)/third_party/icu/icu.gyp:icuuc',
                 '<(DEPTH)/third_party/npapi/npapi.gyp:npapi',
                 '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
-                'picker_resources',
             ],
             'export_dependent_settings': [
                 '<(DEPTH)/skia/skia.gyp:skia',
@@ -177,11 +176,19 @@
                     'include_dirs': [
                         '../../public/web/gtk',
                     ],
+                }, { # else: toolkit_uses_gtk != 1
+                    'sources/': [
+                        ['exclude', 'WebInputEventFactoryGtk.cpp$'],
+                    ],
                 }],
                 ['OS=="android"', {
                     'include_dirs': [
                         '../../public/web/android',
                         '../../public/web/linux', # We need linux/WebFontRendering.h on Android.
+                    ],
+                }, { # else: OS!="android"
+                    'sources/': [
+                        ['exclude', 'WebInputEventFactoryAndroid.cpp$'],
                     ],
                 }],
                 ['OS=="mac"', {
@@ -194,12 +201,19 @@
                             '$(SDKROOT)/System/Library/Frameworks/OpenGL.framework',
                         ],
                     },
+                }, { # else: OS!="mac"
+                    'sources/': [
+                        ['exclude', 'WebInputEventFactoryMac.mm$'],
+                    ],
                 }],
                 ['OS=="win"', {
                     'include_dirs': [
                         '../../public/web/win',
                     ],
                 }, { # else: OS!="win"
+                    'sources/': [
+                        ['exclude', 'WebInputEventFactoryWin.cpp$'],
+                    ],
                     'variables': {
                         # FIXME: Turn on warnings on Windows.
                         'chromium_code': 1,
