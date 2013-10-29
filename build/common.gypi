@@ -4200,10 +4200,12 @@
             'xcode_settings': {
               'SDKROOT': 'macosx<(mac_sdk)',  # -isysroot
               'MACOSX_DEPLOYMENT_TARGET': '<(mac_deployment_target)',
-              'ARCHS': [
-                'x86_64'
-              ],
             },
+            'conditions': [
+              ['"<(GENERATOR)"!="xcode"', {
+                'xcode_settings': { 'ARCHS': [ 'x86_64' ] },
+              }],
+            ],
           }],
           ['_toolset=="target"', {
             'xcode_settings': {
@@ -4212,6 +4214,13 @@
               # instead set it here for target only.
               'IPHONEOS_DEPLOYMENT_TARGET': '<(ios_deployment_target)',
             },
+            'conditions': [
+              ['target_arch=="armv7" and "<(GENERATOR)"!="xcode"', {
+                'xcode_settings': { 'ARCHS': [ 'armv7' ]},
+              }, {
+                'xcode_settings': { 'ARCHS': [ 'i386' ] },
+              }],
+            ],
           }],
           ['_type=="executable"', {
             'configurations': {
@@ -4228,17 +4237,77 @@
                 },
               },
             },
-            'xcode_settings': {
-              'conditions': [
-                ['chromium_ios_signing', {
-                  # iOS SDK wants everything for device signed.
-                  'CODE_SIGN_IDENTITY[sdk=iphoneos*]': 'iPhone Developer',
-                }, {
-                  'CODE_SIGNING_REQUIRED': 'NO',
-                  'CODE_SIGN_IDENTITY[sdk=iphoneos*]': '',
-                }],
-              ],
-            },
+            'conditions': [
+              ['"<(GENERATOR)"=="xcode"', {
+                'xcode_settings': {
+                  # TODO(justincohen): ninja builds don't support signing yet.
+                  'conditions': [
+                    ['chromium_ios_signing', {
+                      # iOS SDK wants everything for device signed.
+                      'CODE_SIGN_IDENTITY[sdk=iphoneos*]': 'iPhone Developer',
+                    }, {
+                      'CODE_SIGNING_REQUIRED': 'NO',
+                      'CODE_SIGN_IDENTITY[sdk=iphoneos*]': '',
+                    }],
+                  ],
+                },
+              }],
+              ['"<(GENERATOR)"=="xcode" and clang!=1', {
+                'xcode_settings': {
+                  # It is necessary to link with the -fobjc-arc flag to use
+                  # subscripting on iOS < 6.
+                  'OTHER_LDFLAGS': [
+                    '-fobjc-arc',
+                  ],
+                },
+              }],
+              ['clang==1', {
+                'target_conditions': [
+                  ['_toolset=="target"', {
+                    'variables': {
+                      'developer_dir': '<!(xcode-select -print-path)',
+                      'arc_toolchain_path': '<(developer_dir)/Toolchains/XcodeDefault.xctoolchain/usr/lib/arc',
+                    },
+                    # It is necessary to force load libarclite from Xcode for
+                    # third_party/llvm-build because libarclite_* is only
+                    # distributed by Xcode.
+                    'conditions': [
+                      ['"<(GENERATOR)"=="ninja" and target_arch=="armv7"', {
+                        'xcode_settings': {
+                          'OTHER_LDFLAGS': [
+                            '-force_load',
+                            '<(arc_toolchain_path)/libarclite_iphoneos.a',
+                          ],
+                        },
+                      }],
+                      ['"<(GENERATOR)"=="ninja" and target_arch!="armv7"', {
+                        'xcode_settings': {
+                          'OTHER_LDFLAGS': [
+                            '-force_load',
+                            '<(arc_toolchain_path)/libarclite_iphonesimulator.a',
+                          ],
+                        },
+                      }],
+                      # Xcode sets target_arch at compile-time.
+                      ['"<(GENERATOR)"=="xcode"', {
+                        'xcode_settings': {
+                          'OTHER_LDFLAGS[arch=armv7]': [
+                            '$(inherited)',
+                            '-force_load',
+                            '<(arc_toolchain_path)/libarclite_iphoneos.a',
+                          ],
+                          'OTHER_LDFLAGS[arch=i386]': [
+                            '$(inherited)',
+                            '-force_load',
+                            '<(arc_toolchain_path)/libarclite_iphonesimulator.a',
+                          ],
+                        },
+                      }],
+                    ],
+                  }],
+                ],
+              }],
+            ],
           }],
         ],  # target_conditions
       },  # target_defaults
@@ -4594,6 +4663,35 @@
       ],
     }],
   ],
+  'configurations': {
+    # DON'T ADD ANYTHING NEW TO THIS BLOCK UNLESS YOU REALLY REALLY NEED IT!
+    # This block adds *project-wide* configuration settings to each project
+    # file.  It's almost always wrong to put things here.  Specify your
+    # custom |configurations| in target_defaults to add them to targets instead.
+    'conditions': [
+      ['OS=="ios"', {
+        'Debug': {
+          'xcode_settings': {
+            # Enable 'Build Active Architecture Only' for Debug. This
+            # avoids a project-level warning in Xcode.
+            # Note that this configuration uses the default VALID_ARCHS value
+            # because if there is a device connected Xcode sets the active arch
+            # to the arch of the device. In cases where the device's arch is not
+            # in VALID_ARCHS (e.g. iPhone5 is armv7s) Xcode complains because it
+            # can't determine what arch to compile for.
+            'ONLY_ACTIVE_ARCH': 'YES',
+          },
+        },
+        'Release': {
+          'xcode_settings': {
+            # Override VALID_ARCHS and omit armv7s. Otherwise Xcode compiles for
+            # both armv7 and armv7s, doubling the binary size.
+            'VALID_ARCHS': 'armv7 i386',
+          },
+        },
+      }],
+    ],
+  },
   'xcode_settings': {
     # DON'T ADD ANYTHING NEW TO THIS BLOCK UNLESS YOU REALLY REALLY NEED IT!
     # This block adds *project-wide* configuration settings to each project
@@ -4619,7 +4717,7 @@
           ['ios_sdk_path==""', {
             'conditions': [
               # TODO(justincohen): Ninja only supports simulator for now.
-              ['"<(GENERATOR)"=="xcode"', {
+              ['"<(GENERATOR)"=="xcode" or ("<(GENERATOR)"=="ninja" and target_arch=="armv7")', {
                 'SDKROOT': 'iphoneos<(ios_sdk)',  # -isysroot
               }, {
                 'SDKROOT': 'iphonesimulator<(ios_sdk)',  # -isysroot
@@ -4633,7 +4731,6 @@
       ['OS=="ios"', {
         # Target both iPhone and iPad.
         'TARGETED_DEVICE_FAMILY': '1,2',
-        'VALID_ARCHS': 'armv7 i386',
       }],
       ['target_arch=="x64"', {
         'ARCHS': [
