@@ -38,7 +38,7 @@
 namespace {
 
 class SHA1Test : public testing::Test {
-    char m_buffer[40];
+    char m_buffer[41];
 
 protected:
     const char* SHA1HexDigest(const char* input, int repeat)
