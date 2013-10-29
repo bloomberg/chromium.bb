@@ -52,8 +52,6 @@ class AppListServiceImpl : public AppListService,
  protected:
   AppListServiceImpl();
 
-  Profile* profile() const { return profile_; }
-  void SetProfile(Profile* new_profile);
   void InvalidatePendingProfileLoads();
   ProfileLoader& profile_loader() { return *profile_loader_; }
   const ProfileLoader& profile_loader() const { return *profile_loader_; }
@@ -79,18 +77,12 @@ class AppListServiceImpl : public AppListService,
                        Profile* profile,
                        Profile::CreateStatus status);
 
-  virtual Profile* GetCurrentAppListProfile() OVERRIDE;
-
   // ProfileInfoCacheObserver overrides:
   virtual void OnProfileWillBeRemoved(
       const base::FilePath& profile_path) OVERRIDE;
 
-  // The profile the AppList is currently displaying.
-  Profile* profile_;
   scoped_ptr<ProfileStore> profile_store_;
-
   base::WeakPtrFactory<AppListServiceImpl> weak_factory_;
-
   CommandLine command_line_;
   PrefService* local_state_;
   scoped_ptr<ProfileLoader> profile_loader_;

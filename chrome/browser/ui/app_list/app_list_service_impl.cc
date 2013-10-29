@@ -166,8 +166,7 @@ void AppListServiceImpl::SendAppListStats() {
 }
 
 AppListServiceImpl::AppListServiceImpl()
-    : profile_(NULL),
-      profile_store_(new ProfileStoreImpl(
+    : profile_store_(new ProfileStoreImpl(
           g_browser_process->profile_manager())),
       weak_factory_(this),
       command_line_(*CommandLine::ForCurrentProcess()),
@@ -183,8 +182,7 @@ AppListServiceImpl::AppListServiceImpl(
     PrefService* local_state,
     scoped_ptr<ProfileStore> profile_store,
     scoped_ptr<KeepAliveService> keep_alive_service)
-    : profile_(NULL),
-      profile_store_(profile_store.Pass()),
+    : profile_store_(profile_store.Pass()),
       weak_factory_(this),
       command_line_(command_line),
       local_state_(local_state),
@@ -263,14 +261,6 @@ void AppListServiceImpl::EnableAppList(Profile* initial_profile) {
 
   local_state_->SetBoolean(prefs::kAppLauncherHasBeenEnabled, true);
   CreateShortcut();
-}
-
-Profile* AppListServiceImpl::GetCurrentAppListProfile() {
-  return profile();
-}
-
-void AppListServiceImpl::SetProfile(Profile* new_profile) {
-  profile_ = new_profile;
 }
 
 void AppListServiceImpl::InvalidatePendingProfileLoads() {

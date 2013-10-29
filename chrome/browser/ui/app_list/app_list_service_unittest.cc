@@ -42,6 +42,12 @@ class TestingAppListServiceImpl : public AppListServiceImpl {
     AppListServiceImpl::HandleCommandLineFlags(profile);
   }
 
+  virtual Profile* GetCurrentAppListProfile() OVERRIDE {
+    // We don't return showing_for_profile_ here because that is only defined if
+    // the app list is visible.
+    return NULL;
+  }
+
   virtual void CreateForProfile(Profile* requested_profile) OVERRIDE {
   }
 

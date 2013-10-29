@@ -38,6 +38,8 @@ class AppListShower {
     return app_list_.get();
   }
 
+  Profile* profile() const { return profile_; }
+
   // Create or recreate, and initialize |app_list_| from |requested_profile|.
   void CreateViewForProfile(Profile* requested_profile);
 

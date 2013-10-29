@@ -35,6 +35,7 @@ class AppListServiceAsh : public AppListServiceImpl {
   virtual void DismissAppList() OVERRIDE;
   virtual void EnableAppList(Profile* initial_profile) OVERRIDE;
   virtual gfx::NativeWindow GetAppListWindow() OVERRIDE;
+  virtual Profile* GetCurrentAppListProfile() OVERRIDE;
   virtual AppListControllerDelegate* CreateControllerDelegate() OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(AppListServiceAsh);
@@ -70,6 +71,10 @@ gfx::NativeWindow AppListServiceAsh::GetAppListWindow() {
   if (ash::Shell::HasInstance())
     return ash::Shell::GetInstance()->GetAppListWindow();
   return NULL;
+}
+
+Profile* AppListServiceAsh::GetCurrentAppListProfile() {
+  return ChromeLauncherController::instance()->profile();
 }
 
 AppListControllerDelegate* AppListServiceAsh::CreateControllerDelegate() {

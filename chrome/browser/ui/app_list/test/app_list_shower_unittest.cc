@@ -149,6 +149,14 @@ TEST_F(AppListShowerUnitTest, CloseRemovesView) {
   EXPECT_FALSE(keep_alive_service_->is_keeping_alive());
 }
 
+TEST_F(AppListShowerUnitTest, CloseAppListClearsProfile) {
+  EXPECT_EQ(NULL, shower_->profile());
+  shower_->ShowForProfile(profile1_.get());
+  EXPECT_EQ(profile1_.get(), shower_->profile());
+  shower_->CloseAppList();
+  EXPECT_EQ(NULL, shower_->profile());
+}
+
 TEST_F(AppListShowerUnitTest, SwitchingProfiles) {
   shower_->ShowForProfile(profile1_.get());
   EXPECT_EQ("p1", GetCurrentAppList()->profile_name());

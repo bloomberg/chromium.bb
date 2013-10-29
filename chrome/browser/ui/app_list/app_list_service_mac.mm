@@ -291,7 +291,8 @@ void GetAppListWindowOrigins(
 
 }  // namespace
 
-AppListServiceMac::AppListServiceMac() {
+AppListServiceMac::AppListServiceMac()
+    : profile_(NULL) {
   animation_controller_.reset([[AppListAnimationController alloc] init]);
 }
 
@@ -333,11 +334,15 @@ void AppListServiceMac::Init(Profile* initial_profile) {
                                         AppListServiceMac::GetInstance());
 }
 
+Profile* AppListServiceMac::GetCurrentAppListProfile() {
+  return profile_;
+}
+
 void AppListServiceMac::CreateForProfile(Profile* requested_profile) {
-  if (profile() == requested_profile)
+  if (profile_ == requested_profile)
     return;
 
-  SetProfile(requested_profile);
+  profile_ = requested_profile;
 
   if (window_controller_) {
     // Clear the search box.
@@ -350,7 +355,7 @@ void AppListServiceMac::CreateForProfile(Profile* requested_profile) {
   scoped_ptr<app_list::AppListViewDelegate> delegate(
       new AppListViewDelegate(
           scoped_ptr<AppListControllerDelegate>(
-              new AppListControllerDelegateImpl(this)), profile()));
+              new AppListControllerDelegateImpl(this)), profile_));
   [[window_controller_ appListViewController] setDelegate:delegate.Pass()];
 }
 
@@ -360,7 +365,7 @@ void AppListServiceMac::ShowForProfile(Profile* requested_profile) {
 
   InvalidatePendingProfileLoads();
 
-  if (requested_profile == profile()) {
+  if (requested_profile == profile_) {
     ShowWindowNearDock();
     return;
   }

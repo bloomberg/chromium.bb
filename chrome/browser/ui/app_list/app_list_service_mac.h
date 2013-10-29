@@ -38,6 +38,8 @@ class AppListServiceMac : public AppListServiceImpl,
   virtual bool IsAppListVisible() const OVERRIDE;
   virtual gfx::NativeWindow GetAppListWindow() OVERRIDE;
   virtual AppListControllerDelegate* CreateControllerDelegate() OVERRIDE;
+  virtual Profile* GetCurrentAppListProfile() OVERRIDE;
+
 
   // AppListServiceImpl overrides:
   virtual void CreateShortcut() OVERRIDE;
@@ -64,6 +66,7 @@ class AppListServiceMac : public AppListServiceImpl,
   base::scoped_nsobject<AppListAnimationController> animation_controller_;
   base::scoped_nsobject<NSRunningApplication> previously_active_application_;
   NSPoint last_start_origin_;
+  Profile* profile_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListServiceMac);
 };
