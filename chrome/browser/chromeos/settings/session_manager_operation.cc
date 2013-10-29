@@ -52,10 +52,14 @@ void SessionManagerOperation::RestartLoad(bool key_changed) {
 
   // Abort previous load operations.
   weak_factory_.InvalidateWeakPtrs();
+  // Mark as not loading to start loading again.
+  is_loading_ = false;
   StartLoading();
 }
 
 void SessionManagerOperation::StartLoading() {
+  if (is_loading_)
+    return;
   is_loading_ = true;
   EnsureOwnerKey(base::Bind(&SessionManagerOperation::RetrieveDeviceSettings,
                             weak_factory_.GetWeakPtr()));
@@ -68,8 +72,12 @@ void SessionManagerOperation::ReportResult(
 
 void SessionManagerOperation::EnsureOwnerKey(const base::Closure& callback) {
   if (force_key_load_ || !owner_key_.get() || !owner_key_->public_key()) {
+    scoped_refptr<base::TaskRunner> task_runner =
+        content::BrowserThread::GetBlockingPool()->
+        GetTaskRunnerWithShutdownBehavior(
+            base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
     base::PostTaskAndReplyWithResult(
-        content::BrowserThread::GetBlockingPool(),
+        task_runner.get(),
         FROM_HERE,
         base::Bind(&SessionManagerOperation::LoadOwnerKey,
                    owner_key_util_, owner_key_),
