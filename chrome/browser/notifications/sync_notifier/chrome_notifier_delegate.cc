@@ -48,7 +48,8 @@ void ChromeNotifierDelegate::Click() {
 
   GURL destination = notification->GetDefaultDestinationUrl();
   NavigateToUrl(destination);
-  chrome_notifier_->MarkNotificationAsRead(notification_id_);
+  // TODO(petewil): Once the service protobuf supports a viewed state, mark the
+  // notification as viewed here.
 
   // Record the action in UMA statistics.
   CollectAction(SYNCED_NOTIFICATION_ACTION_CLICK);
@@ -61,7 +62,8 @@ void ChromeNotifierDelegate::ButtonClick(int button_index) {
   if (notification) {
     GURL destination = notification->GetButtonUrl(button_index);
     NavigateToUrl(destination);
-    chrome_notifier_->MarkNotificationAsRead(notification_id_);
+    // TODO(petewil): Once the service protobuf supports a viewed state, mark
+    // the notification as viewed here.
   }
 
   // Now record the UMA statistics for this action.

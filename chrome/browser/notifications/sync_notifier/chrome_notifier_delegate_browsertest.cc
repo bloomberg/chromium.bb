@@ -140,9 +140,6 @@ IN_PROC_BROWSER_TEST_F(ChromeNotifierDelegateBrowserTest,
   GURL url2(kButtonTwoUrl);
   tab = browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_EQ(url2, tab->GetController().GetActiveEntry()->GetVirtualURL());
-
-  // Also verify that the click dismissed the notification.
-  ASSERT_EQ(kTestNotificationId, notifier.read_id());
 }
 
 IN_PROC_BROWSER_TEST_F(ChromeNotifierDelegateBrowserTest, CloseTest) {
