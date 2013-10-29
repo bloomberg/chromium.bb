@@ -21,8 +21,6 @@
             'v8/DOMWrapperMap.h',
             'v8/DOMWrapperWorld.cpp',
             'v8/DOMWrapperWorld.h',
-            'v8/DateExtension.cpp',
-            'v8/DateExtension.h',
             'v8/Dictionary.cpp',
             'v8/Dictionary.h',
             'v8/ExceptionMessages.h',

@@ -51,8 +51,6 @@ public:
     BLINK_EXPORT static void enableDatabase(bool);
     BLINK_EXPORT static bool isDatabaseEnabled();
 
-    BLINK_EXPORT static void enableDateExtension(bool);
-
     BLINK_EXPORT static void enableDeviceMotion(bool);
     BLINK_EXPORT static bool isDeviceMotionEnabled();
 
