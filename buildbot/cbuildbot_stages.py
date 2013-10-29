@@ -144,33 +144,6 @@ class BoardSpecificBuilderStage(bs.BuilderStage):
     return os.path.join(buildroot, 'src', 'build', 'images', board, pointer)
 
 
-class PartialStatusUploadingStage(BoardSpecificBuilderStage):
-  """Stage that uploads a BuilderStatus before full build is done.
-
-  Subclasses of this should call UploadStepStatus at the end of PerformStage.
-  """
-
-  def __init__(self, short_step_name, *args, **kwargs):
-    """Construct a PartialStatusUploadingStage.
-
-    Args:
-      short_step_name: A short string to be used as a subdirectory in the url
-                       that the status will be uploaded to.
-    """
-    super(PartialStatusUploadingStage, self).__init__(*args, **kwargs)
-    self._short_step_name = short_step_name
-
-  def _HandleStageException(self, e):
-    self.UploadStepStatus(False, e)
-    return super(PartialStatusUploadingStage, self)._HangleStageException(e)
-
-
-  def UploadStepStatus(self, success, message):
-    if ManifestVersionedSyncStage.manifest_manager:
-      ManifestVersionedSyncStage.manifest_manager.UploadStatus(
-          success=success, message=message, step_name=self._short_step_name)
-
-
 class ArchivingStage(BoardSpecificBuilderStage):
   """Helper for stages that archive files.
 
@@ -2334,7 +2307,7 @@ class SignerTestStage(ArchivingStage):
       commands.RunSignerTests(self._build_root, self._current_board)
 
 
-class UnitTestStage(PartialStatusUploadingStage):
+class UnitTestStage(BoardSpecificBuilderStage):
   """Run unit tests."""
 
   option_name = 'tests'
@@ -2346,9 +2319,6 @@ class UnitTestStage(PartialStatusUploadingStage):
   # If the processes hang, parallel_emerge will print a status report after 60
   # minutes, so we picked 70 minutes because it gives us a little buffer time.
   UNIT_TEST_TIMEOUT = 70 * 60
-
-  def __init__(self, *args, **kwargs):
-    super(UnitTestStage, self).__init__(self.config_name, *args, **kwargs)
 
   def PerformStage(self):
     extra_env = {}
@@ -2365,8 +2335,6 @@ class UnitTestStage(PartialStatusUploadingStage):
                                    'au-generator.zip')):
       commands.TestAuZip(self._build_root,
                          self.GetImageDirSymlink())
-
-    self.UploadStepStatus(True, 'Unit tests passed.')
 
 
 class VMTestStage(ArchivingStage):
