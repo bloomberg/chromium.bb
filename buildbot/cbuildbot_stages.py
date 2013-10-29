@@ -389,7 +389,8 @@ class ArchivingStage(BoardSpecificBuilderStage):
           'log': self.ConstructDashboardURL(stage=name),
       })
 
-    if (sync_instance and isinstance(sync_instance, CommitQueueSyncStage) and
+    commit_queue_stages = (CommitQueueSyncStage, PreCQSyncStage)
+    if (sync_instance and isinstance(sync_instance, commit_queue_stages) and
         sync_instance.pool):
       changes = []
       pool = sync_instance.pool
