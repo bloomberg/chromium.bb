@@ -288,6 +288,19 @@ def RemoveThirdPartyLibjingleDirectory():
   return True
 
 
+def _CleanupPreviousGitRuns():
+  """Performs necessary cleanup between runs."""
+  if os.name != 'nt':
+    return
+  # On windows, if a previous run of git crashed, bot was reset, etc... we
+  # might end up with leftover index.lock files.
+  for (path, dir, files) in os.walk(os.getcwd()):
+    for cur_file in files:
+      if cur_file.endswith('index.lock'):
+        path_to_file = os.path.join(path, cur_file)
+        os.remove(path_to_file)
+
+
 def RunGClientAndSync(cwd=None):
   """Runs gclient and does a normal sync.
 
@@ -334,6 +347,8 @@ def SetupGitDepot(opts, custom_deps):
       os.chdir(cwd)
 
     if passed_deps_check:
+      _CleanupPreviousGitRuns()
+
       RunGClient(['revert'])
       if not RunGClientAndSync():
         passed = True
