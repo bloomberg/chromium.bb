@@ -1079,8 +1079,8 @@
         '../testing/perf/perf_test.gyp:perf_test',
       ],
       'sources': [
-        'base/run_all_unittests.cc',
         'base/audio_converter_perftest.cc',
+        'base/run_all_unittests.cc',
       ],
     },
     {

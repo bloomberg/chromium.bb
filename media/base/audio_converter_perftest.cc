@@ -10,7 +10,7 @@
 
 namespace media {
 
-static const int kBenchmarkIterations = 50000;
+static const int kBenchmarkIterations = 500000;
 
 // InputCallback that zero's out the provided AudioBus.
 class NullInputProvider : public AudioConverter::InputCallback {
@@ -44,7 +44,7 @@ void RunConvertBenchmark(const AudioParameters& in_params,
     converter.Convert(output_bus.get());
   }
   double runs_per_second = kBenchmarkIterations /
-                      (base::TimeTicks::HighResNow() - start).InSecondsF();
+                           (base::TimeTicks::HighResNow() - start).InSecondsF();
   perf_test::PrintResult(
       "audio_converter", "", trace_name, runs_per_second, "runs/s", true);
 }
@@ -63,10 +63,13 @@ TEST(AudioConverterPerfTest, ConvertBenchmark) {
 TEST(AudioConverterPerfTest, ConvertBenchmarkFIFO) {
   // Create input and output parameters to convert between common buffer sizes
   // without any resampling for the FIFO vs no FIFO benchmarks.
-  AudioParameters input_params(
-    AudioParameters::AUDIO_PCM_LINEAR, CHANNEL_LAYOUT_STEREO, 44100, 16, 2048);
+  AudioParameters input_params(AudioParameters::AUDIO_PCM_LINEAR,
+                               CHANNEL_LAYOUT_STEREO,
+                               44100,
+                               16,
+                               2048);
   AudioParameters output_params(
-    AudioParameters::AUDIO_PCM_LINEAR, CHANNEL_LAYOUT_STEREO, 44100, 16, 440);
+      AudioParameters::AUDIO_PCM_LINEAR, CHANNEL_LAYOUT_STEREO, 44100, 16, 440);
 
   RunConvertBenchmark(input_params, output_params, true, "convert_fifo_only");
   RunConvertBenchmark(input_params, output_params, false,
