@@ -484,10 +484,10 @@ void TypingCommand::deleteKeyPressed(TextGranularity granularity, bool killRing)
 
     if (killRing)
         frame->editor().addToKillRing(selectionToDelete.toNormalizedRange().get(), false);
-    // Make undo select everything that has been deleted, unless an undo will undo more than just this deletion.
+    // On Mac, make undo select everything that has been deleted, unless an undo will undo more than just this deletion.
     // FIXME: This behaves like TextEdit except for the case where you open with text insertion and then delete
     // more text than you insert.  In that case all of the text that was around originally should be selected.
-    if (m_openedByBackwardDelete)
+    if (frame->editor().behavior().shouldUndoOfDeleteSelectText() && m_openedByBackwardDelete)
         setStartingSelection(selectionAfterUndo);
     CompositeEditCommand::deleteSelection(selectionToDelete, m_smartDelete);
     setSmartDelete(false);
@@ -577,8 +577,9 @@ void TypingCommand::forwardDeleteKeyPressed(TextGranularity granularity, bool ki
 
     if (killRing)
         frame->editor().addToKillRing(selectionToDelete.toNormalizedRange().get(), false);
-    // make undo select what was deleted
-    setStartingSelection(selectionAfterUndo);
+    // Make undo select what was deleted on Mac alone
+    if (frame->editor().behavior().shouldUndoOfDeleteSelectText())
+        setStartingSelection(selectionAfterUndo);
     CompositeEditCommand::deleteSelection(selectionToDelete, m_smartDelete);
     setSmartDelete(false);
     typingAddedToOpenCommand(ForwardDeleteKey);

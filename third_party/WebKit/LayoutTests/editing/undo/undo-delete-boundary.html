@@ -4,17 +4,17 @@
 <div id="container">
 <p id="description"></p>
 <p>To test manually, place the cursor at the end of 'word' and delete it completely character by character. Do ctrl+z. On Mac, 'word' should be selected. On other platforms 'word' should not be selected and the cursor should be placed at the end of 'word'.</p>
-<div id="test" style="border: 2px solid red;" contenteditable >This wo<b>rd </b>should be selected.</div>
+<div id="test" style="border: 2px solid red;" contenteditable >This wo<b>rd </b>should be selected only on mac.</div>
 </div>
 <div id="console"></div>
 <script src="../../fast/js/resources/js-test-pre.js"></script>
 <script>
 description('Verifies the selection behavior on undoing a text deletion.');
-var sampleHTML = 'This wo<b>rd </b>should be selected.';
+var sampleHTML = 'This wo<b>rd </b>should be selected only on mac.';
 var selectionNode = document.getElementById('test').childNodes[1].firstChild; // Text node 'rd '
 var selectionOffset = selectionNode.length - 1;
-var endNode = document.getElementById('test').firstChild; // Text node 'This wo'
-var endOffset = endNode.data.indexOf(' ') + 1;
+var endNodeMac = document.getElementById('test').firstChild; // Text node 'This wo'
+var endOffsetMac = endNodeMac.data.indexOf(' ') + 1;
 var selection = window.getSelection();
 
 function $(id) { return document.getElementById(id); }
@@ -37,10 +37,10 @@ function undoTest(platform, expectedStartNode, expectedStartOffset, expectedEndN
 }
 
 if (window.internals) {
-    undoTest('mac', selectionNode, selectionOffset, endNode, endOffset, 'word');
-    undoTest('win', selectionNode, selectionOffset, endNode, endOffset, 'word');
-    undoTest('unix', selectionNode, selectionOffset, endNode, endOffset, 'word');
-    undoTest('android', selectionNode, selectionOffset, endNode, endOffset, 'word');
+    undoTest('mac', selectionNode, selectionOffset, endNodeMac, endOffsetMac, 'word');
+    undoTest('win', selectionNode, selectionOffset, selectionNode, selectionOffset, '');
+    undoTest('unix', selectionNode, selectionOffset, selectionNode, selectionOffset, '');
+    undoTest('android', selectionNode, selectionOffset, selectionNode, selectionOffset, '');
 }
 if (window.testRunner)
   document.getElementById('container').outerHTML = '';

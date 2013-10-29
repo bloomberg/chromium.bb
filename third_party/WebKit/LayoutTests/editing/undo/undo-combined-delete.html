@@ -4,7 +4,7 @@
 <div id="container">
 <p id="description"></p>
 <p>To test manually, place the cursor after 'o' in 'word' and delete it completely character by character. Do ctrl+z. On Mac, 'word' should be selected. On other platforms 'word' should not be selected and the cursor should be placed after 'o' in 'word'.</p>
-<div id="test" style="border: 2px solid red;" contenteditable>This word should be selected.</div>
+<div id="test" style="border: 2px solid red;" contenteditable>This word should be selected only on mac.</div>
 </div>
 <div id="console"></div>
 <script src="../../fast/js/resources/js-test-pre.js"></script>
@@ -12,8 +12,8 @@
 description('Verifies the selection behavior on undoing a text deletion.');
 var selectionNode = document.getElementById('test').firstChild;
 var selectionOffset = selectionNode.data.indexOf('o') + 1;
-var startOffset = selectionNode.data.indexOf(' ') + 1;
-var endOffset = selectionNode.data.indexOf('d') + 1;
+var startOffsetMac = selectionNode.data.indexOf(' ') + 1;
+var endOffsetMac = selectionNode.data.indexOf('d') + 1;
 var selection = window.getSelection();
 
 function undoTest(platform, expectedStartNode, expectedStartOffset, expectedEndNode, expectedEndOffset, selectedText) {
@@ -35,10 +35,10 @@ function undoTest(platform, expectedStartNode, expectedStartOffset, expectedEndN
 }
 
 if (window.internals) {
-    undoTest('mac', selectionNode, startOffset, selectionNode, endOffset, 'word');
-    undoTest('win', selectionNode, startOffset, selectionNode, endOffset, 'word');
-    undoTest('unix', selectionNode, startOffset, selectionNode, endOffset, 'word');
-    undoTest('android', selectionNode, startOffset, selectionNode, endOffset, 'word');
+    undoTest('mac', selectionNode, startOffsetMac, selectionNode, endOffsetMac, 'word');
+    undoTest('win', selectionNode, selectionOffset, selectionNode, selectionOffset, '');
+    undoTest('unix', selectionNode, selectionOffset, selectionNode, selectionOffset, '');
+    undoTest('android', selectionNode, selectionOffset, selectionNode, selectionOffset, '');
 }
 if (window.testRunner)
   document.getElementById('container').outerHTML = '';
