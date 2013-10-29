@@ -71,6 +71,39 @@ class KernelProxyTest : public ::testing::Test {
 
 }  // namespace
 
+static int ki_fcntl_wrapper(int fd, int request, ...) {
+  va_list ap;
+  va_start(ap, request);
+  int rtn = ki_fcntl(fd, request, ap);
+  va_end(ap);
+  return rtn;
+}
+
+/**
+ * Test for fcntl commands F_SETFD and F_GETFD.  This
+ * is tested here rather than in the mount_node tests
+ * since the fd flags are not stored in the kernel_handle
+ * or the mount node but directly in the FD mapping.
+ */
+TEST_F(KernelProxyTest, Fcntl_GETFD) {
+  int fd = ki_open("/test", O_RDWR | O_CREAT);
+  ASSERT_NE(-1, fd);
+
+  // FD flags should start as zero.
+  ASSERT_EQ(0, ki_fcntl_wrapper(fd, F_GETFD));
+
+  // Check that setting FD_CLOEXEC works
+  int flags = FD_CLOEXEC;
+  ASSERT_EQ(0, ki_fcntl_wrapper(fd, F_SETFD, flags))
+    << "fcntl failed with: " << strerror(errno);
+  ASSERT_EQ(FD_CLOEXEC, ki_fcntl_wrapper(fd, F_GETFD));
+
+  // Check that setting invalid flag causes EINVAL
+  flags = FD_CLOEXEC + 1;
+  ASSERT_EQ(-1, ki_fcntl_wrapper(fd, F_SETFD, flags));
+  ASSERT_EQ(EINVAL, errno);
+}
+
 TEST_F(KernelProxyTest, FileLeak) {
   const size_t buffer_size = 1024;
   char filename[128];

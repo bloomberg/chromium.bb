@@ -161,12 +161,15 @@ TEST(MountNodeTest, FTruncate) {
   EXPECT_EQ(0, memcmp(buffer, data, 100));
 }
 
-TEST(MountNodeTest, Fcntl) {
+TEST(MountNodeTest, Fcntl_GETFL) {
   MockNode* node = new MockNode();
   ScopedMount mnt(new MockMount());
   ScopedMountNode file(node);
   KernelHandle handle(mnt, file);
   ASSERT_EQ(0, handle.Init(O_CREAT | O_APPEND));
+
+  // Test invalid fcntl command.
+  ASSERT_EQ(ENOSYS, handle.Fcntl(-1, NULL));
 
   // Test F_GETFL
   ASSERT_EQ(0, node->Init(0));

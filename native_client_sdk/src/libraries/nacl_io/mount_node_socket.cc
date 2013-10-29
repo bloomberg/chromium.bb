@@ -24,7 +24,9 @@ MountNodeSocket::MountNodeSocket(Mount* mount)
       local_addr_(0),
       remote_addr_(0),
       socket_flags_(0),
-      last_errno_(0) {
+      last_errno_(0),
+      keep_alive_(false) {
+  memset(&linger_, 0, sizeof(linger_));
   SetType(S_IFSOCK);
 }
 
@@ -34,7 +36,9 @@ MountNodeSocket::MountNodeSocket(Mount* mount, PP_Resource socket)
       local_addr_(0),
       remote_addr_(0),
       socket_flags_(0),
-      last_errno_(0) {
+      last_errno_(0),
+      keep_alive_(false) {
+  memset(&linger_, 0, sizeof(linger_));
   SetType(S_IFSOCK);
   mount_->ppapi()->AddRefResource(socket_resource_);
 }
@@ -222,26 +226,41 @@ Error MountNodeSocket::GetSockOpt(int lvl,
   if (lvl != SOL_SOCKET)
     return ENOPROTOOPT;
 
+  int value = 0;
+  socklen_t value_len = 0;
+  void* value_ptr = NULL;
+
   switch (optname) {
-    case SO_REUSEADDR: {
-      // SO_REUSEADDR is effectivly always on since we can't
+    case SO_REUSEADDR:
+      // SO_REUSEADDR is effectively always on since we can't
       // disable it with PPAPI sockets.
-      int value = 1;
-      int copy_bytes = std::min(sizeof(int), *len);
-      memcpy(optval, &value, copy_bytes);
-      *len = sizeof(int);
-      return 0;
-    }
-    case SO_ERROR: {
-      int copy_bytes = std::min(sizeof(int), *len);
-      memcpy(optval, &last_errno_, copy_bytes);
-      *len = sizeof(int);
+      value = 1;
+      value_ptr = &value;
+      value_len = sizeof(value);
+      break;
+    case SO_LINGER:
+      value_ptr = &linger_;
+      value_len = sizeof(linger_);
+      break;
+    case SO_KEEPALIVE:
+      value = keep_alive_;
+      value_ptr = &value;
+      value_len = sizeof(value);
+      break;
+    case SO_ERROR:
+      value_ptr = &last_errno_;
+      value_len = sizeof(last_errno_);
       last_errno_ = 0;
-      return 0;
-    }
+      break;
+    default:
+      return ENOPROTOOPT;
   }
 
-  return ENOPROTOOPT;
+
+  int copy_bytes = std::min(value_len, *len);
+  memcpy(optval, value_ptr, copy_bytes);
+  *len = value_len;
+  return 0;
 }
 
 Error MountNodeSocket::SetSockOpt(int lvl,
@@ -256,6 +275,32 @@ Error MountNodeSocket::SetSockOpt(int lvl,
       // SO_REUSEADDR is effectivly always on since we can't
       // disable it with PPAPI sockets. Just return success
       // here regardless.
+      if (len < sizeof(int))
+        return EINVAL;
+      return 0;
+    }
+    case SO_LINGER: {
+      // Not supported by the PPAPI interface but we preserve
+      // the settings and pretend to support it.
+      if (len < sizeof(struct linger))
+        return EINVAL;
+      struct linger new_linger = *static_cast<const linger*>(optval);
+      // Don't allow setting linger to be enabled until we
+      // implement the required synchronous shutdown()/close().
+      // TODO(sbc): remove this after http://crbug.com/312401
+      // gets fixed.
+      if (new_linger.l_onoff != 0)
+        return EINVAL;
+      linger_ = new_linger;
+      return 0;
+    }
+    case SO_KEEPALIVE: {
+      // Not supported by the PPAPI interface but we preserve
+      // the flag and pretend to support it.
+      if (len < sizeof(int))
+        return EINVAL;
+      int value = *static_cast<const int*>(optval);
+      keep_alive_ = value != 0;
       return 0;
     }
   }

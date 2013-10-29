@@ -145,6 +145,28 @@ Error KernelObject::SetCWD(const std::string& path) {
   return 0;
 }
 
+Error KernelObject::GetFDFlags(int fd, int* out_flags) {
+  AUTO_LOCK(handle_lock_);
+  if (fd < 0 || fd >= static_cast<int>(handle_map_.size()))
+    return EBADF;
+
+  *out_flags = handle_map_[fd].flags;
+  return 0;
+}
+
+Error KernelObject::SetFDFlags(int fd, int flags) {
+  AUTO_LOCK(handle_lock_);
+  if (fd < 0 || fd >= static_cast<int>(handle_map_.size()))
+    return EBADF;
+
+  // Only setting of FD_CLOEXEC is supported.
+  if (flags & ~FD_CLOEXEC)
+    return EINVAL;
+
+  handle_map_[fd].flags = flags;
+  return 0;
+}
+
 Error KernelObject::AcquireHandle(int fd, ScopedKernelHandle* out_handle) {
   out_handle->reset(NULL);
 
@@ -152,7 +174,7 @@ Error KernelObject::AcquireHandle(int fd, ScopedKernelHandle* out_handle) {
   if (fd < 0 || fd >= static_cast<int>(handle_map_.size()))
     return EBADF;
 
-  *out_handle = handle_map_[fd];
+  *out_handle = handle_map_[fd].handle;
   if (out_handle) return 0;
 
   return EBADF;
@@ -162,16 +184,18 @@ int KernelObject::AllocateFD(const ScopedKernelHandle& handle) {
   AUTO_LOCK(handle_lock_);
   int id;
 
+  Descriptor_t descriptor(handle);
+
   // If we can recycle and FD, use that first
   if (free_fds_.size()) {
     id = free_fds_.front();
     // Force lower numbered FD to be available first.
     std::pop_heap(free_fds_.begin(), free_fds_.end(), std::greater<int>());
     free_fds_.pop_back();
-    handle_map_[id] = handle;
+    handle_map_[id] = descriptor;
   } else {
     id = handle_map_.size();
-    handle_map_.push_back(handle);
+    handle_map_.push_back(descriptor);
   }
   return id;
 }
@@ -186,14 +210,14 @@ void KernelObject::FreeAndReassignFD(int fd, const ScopedKernelHandle& handle) {
     if (fd >= (int)handle_map_.size())
       handle_map_.resize(fd + 1);
 
-    handle_map_[fd] = handle;
+    handle_map_[fd] = Descriptor_t(handle);
   }
 }
 
 void KernelObject::FreeFD(int fd) {
   AUTO_LOCK(handle_lock_);
 
-  handle_map_[fd].reset(NULL);
+  handle_map_[fd].handle.reset(NULL);
   free_fds_.push_back(fd);
 
   // Force lower numbered FD to be available first.

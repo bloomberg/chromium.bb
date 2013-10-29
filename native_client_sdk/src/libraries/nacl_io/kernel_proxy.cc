@@ -648,8 +648,34 @@ int KernelProxy::fchmod(int fd, int mode) {
 }
 
 int KernelProxy::fcntl(int fd, int request, va_list args) {
+  Error error = 0;
+
+  // F_GETFD and F_SETFD are descirptor specific flags that
+  // are stored in the KernelObject's decriptor map unlink
+  // F_GETFL and F_SETFL which are handle specific.
+  switch (request) {
+    case F_GETFD: {
+      int rtn = -1;
+      error = GetFDFlags(fd, &rtn);
+      if (error) {
+        errno = error;
+        return -1;
+      }
+      return rtn;
+    }
+    case F_SETFD: {
+      int flags = va_arg(args, int);
+      error = SetFDFlags(fd, flags);
+      if (error) {
+        errno = error;
+        return -1;
+      }
+      return 0;
+    }
+  }
+
   ScopedKernelHandle handle;
-  Error error = AcquireHandle(fd, &handle);
+  error = AcquireHandle(fd, &handle);
   if (error) {
     errno = error;
     return -1;

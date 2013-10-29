@@ -29,7 +29,14 @@ namespace nacl_io {
 // All calls are assumed to be a relative path.
 class KernelObject {
  public:
-  typedef std::vector<ScopedKernelHandle> HandleMap_t;
+  struct Descriptor_t {
+    Descriptor_t() : flags(0) {}
+    explicit Descriptor_t(const ScopedKernelHandle& h) : handle(h), flags(0) {}
+
+    ScopedKernelHandle handle;
+    int flags;
+  };
+  typedef std::vector<Descriptor_t> HandleMap_t;
   typedef std::map<std::string, ScopedMount> MountMap_t;
 
   KernelObject();
@@ -55,6 +62,11 @@ class KernelObject {
                             int oflags,
                             ScopedMount* out_mount,
                             ScopedMountNode* out_node);
+
+  // Get FD-specific flags (currently only FD_CLOEXEC is supported).
+  Error GetFDFlags(int fd, int* out_flags);
+  // Set FD-specific flags (currently only FD_CLOEXEC is supported).
+  Error SetFDFlags(int fd, int flags);
 
   // Convert from FD to KernelHandle, and acquire the handle.
   // Assumes |out_handle| is non-NULL.

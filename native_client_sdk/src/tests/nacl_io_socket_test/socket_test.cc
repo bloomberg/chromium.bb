@@ -341,11 +341,6 @@ TEST_F(SocketTest, Getsockopt) {
   ASSERT_EQ(0, socket_error);
   ASSERT_EQ(sizeof(socket_error), len);
 
-  int reuse = 0;
-  len = sizeof(reuse);
-  ASSERT_EQ(0, getsockopt(sock1_, SOL_SOCKET, SO_REUSEADDR, &reuse, &len));
-  ASSERT_EQ(1, reuse);
-
   // Test for an invalid option (-1)
   ASSERT_EQ(-1, getsockopt(sock1_, SOL_SOCKET, -1, &socket_error, &len));
   ASSERT_EQ(ENOPROTOOPT, errno);
@@ -361,9 +356,72 @@ TEST_F(SocketTest, Setsockopt) {
   ASSERT_EQ(-1, setsockopt(sock1_, SOL_SOCKET, SO_ERROR, &socket_error, len));
   ASSERT_EQ(ENOPROTOOPT, errno);
 
-  int reuse = 1;
-  len = sizeof(reuse);
-  ASSERT_EQ(0, setsockopt(sock1_, SOL_SOCKET, SO_REUSEADDR, &reuse, len));
+}
+
+TEST_F(SocketTest, Sockopt_KEEPALIVE) {
+  sock1_ = socket(AF_INET, SOCK_STREAM, 0);
+  ASSERT_GT(sock1_, -1);
+  sock2_ = socket(AF_INET, SOCK_DGRAM, 0);
+  ASSERT_GT(sock2_, -1);
+
+  int value = 0;
+  socklen_t len = sizeof(value);
+  ASSERT_EQ(0, getsockopt(sock1_, SOL_SOCKET, SO_KEEPALIVE, &value, &len));
+  ASSERT_EQ(0, value);
+  ASSERT_EQ(sizeof(int), len);
+}
+
+// Disabled until we support SO_LINGER (i.e. syncronouse close()/shutdown())
+// TODO(sbc): re-enable once we fix http://crbug.com/312401
+TEST_F(SocketTest, DISABLED_Sockopt_LINGER) {
+  sock1_ = socket(AF_INET, SOCK_STREAM, 0);
+  ASSERT_GT(sock1_, -1);
+  sock2_ = socket(AF_INET, SOCK_DGRAM, 0);
+  ASSERT_GT(sock2_, -1);
+
+  struct linger linger = { 7, 8 };
+  socklen_t len = sizeof(linger);
+  ASSERT_EQ(0, getsockopt(sock1_, SOL_SOCKET, SO_LINGER, &linger, &len));
+  ASSERT_EQ(0, linger.l_onoff);
+  ASSERT_EQ(0, linger.l_linger);
+  ASSERT_EQ(sizeof(struct linger), len);
+  ASSERT_EQ(0, getsockopt(sock2_, SOL_SOCKET, SO_LINGER, &linger, &len));
+  ASSERT_EQ(0, linger.l_onoff);
+  ASSERT_EQ(0, linger.l_linger);
+  ASSERT_EQ(sizeof(struct linger), len);
+
+  linger.l_onoff = 1;
+  linger.l_linger = 77;
+  len = sizeof(linger);
+  ASSERT_EQ(0, setsockopt(sock1_, SOL_SOCKET, SO_LINGER, &linger, len));
+  linger.l_onoff = 1;
+  linger.l_linger = 88;
+  ASSERT_EQ(0, setsockopt(sock2_, SOL_SOCKET, SO_LINGER, &linger, len));
+
+  len = sizeof(linger);
+  ASSERT_EQ(0, getsockopt(sock1_, SOL_SOCKET, SO_LINGER, &linger, &len));
+  ASSERT_EQ(1, linger.l_onoff);
+  ASSERT_EQ(77, linger.l_linger);
+  ASSERT_EQ(sizeof(struct linger), len);
+  ASSERT_EQ(0, getsockopt(sock2_, SOL_SOCKET, SO_LINGER, &linger, &len));
+  ASSERT_EQ(1, linger.l_onoff);
+  ASSERT_EQ(88, linger.l_linger);
+  ASSERT_EQ(sizeof(struct linger), len);
+}
+
+TEST_F(SocketTest, Sockopt_REUSEADDR) {
+  int value = 1;
+  socklen_t len = sizeof(value);
+  sock1_ = socket(AF_INET, SOCK_STREAM, 0);
+
+  ASSERT_GT(sock1_, -1);
+  ASSERT_EQ(0, setsockopt(sock1_, SOL_SOCKET, SO_REUSEADDR, &value, len));
+
+  value = 0;
+  len = sizeof(value);
+  ASSERT_EQ(0, getsockopt(sock1_, SOL_SOCKET, SO_REUSEADDR, &value, &len));
+  ASSERT_EQ(1, value);
+  ASSERT_EQ(sizeof(int), len);
 }
 
 // The size of the data to send is deliberately chosen to be

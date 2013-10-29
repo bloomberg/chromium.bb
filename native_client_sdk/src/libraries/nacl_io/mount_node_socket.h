@@ -157,6 +157,8 @@ class MountNodeSocket : public MountNodeStream {
   PP_Resource remote_addr_;
   uint32_t socket_flags_;
   int last_errno_;
+  bool keep_alive_;
+  struct linger linger_;
 
   friend class KernelProxy;
   friend class MountStream;
