@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "content/common/media/media_player_messages_android.h"
+#include "content/renderer/media/android/proxy_media_keys.h"
 #include "content/renderer/media/android/renderer_media_player_manager.h"
 #include "content/renderer/media/android/webmediaplayer_android.h"
 
@@ -227,8 +228,10 @@ void WebMediaPlayerProxyAndroid::DidCommitCompositorFrame() {
 #endif
 
 void WebMediaPlayerProxyAndroid::InitializeCDM(int media_keys_id,
+                                               ProxyMediaKeys* media_keys,
                                                const std::vector<uint8>& uuid,
                                                const GURL& frame_url) {
+  manager_->RegisterMediaKeys(media_keys_id, media_keys);
   Send(new MediaKeysHostMsg_InitializeCDM(
       routing_id(), media_keys_id, uuid, frame_url));
 }
@@ -262,11 +265,15 @@ WebMediaPlayerAndroid* WebMediaPlayerProxyAndroid::GetWebMediaPlayer(
       manager_->GetMediaPlayer(player_id));
 }
 
+ProxyMediaKeys* WebMediaPlayerProxyAndroid::GetMediaKeys(int media_keys_id) {
+  return manager_->GetMediaKeys(media_keys_id);
+}
+
 void WebMediaPlayerProxyAndroid::OnKeyAdded(int media_keys_id,
                                             const std::string& session_id) {
-  WebMediaPlayerAndroid* player = GetWebMediaPlayer(media_keys_id);
-  if (player)
-    player->OnKeyAdded(session_id);
+  ProxyMediaKeys* media_keys = GetMediaKeys(media_keys_id);
+  if (media_keys)
+    media_keys->OnKeyAdded(session_id);
 }
 
 void WebMediaPlayerProxyAndroid::OnKeyError(
@@ -274,9 +281,9 @@ void WebMediaPlayerProxyAndroid::OnKeyError(
     const std::string& session_id,
     media::MediaKeys::KeyError error_code,
     int system_code) {
-  WebMediaPlayerAndroid* player = GetWebMediaPlayer(media_keys_id);
-  if (player)
-    player->OnKeyError(session_id, error_code, system_code);
+  ProxyMediaKeys* media_keys = GetMediaKeys(media_keys_id);
+  if (media_keys)
+    media_keys->OnKeyError(session_id, error_code, system_code);
 }
 
 void WebMediaPlayerProxyAndroid::OnKeyMessage(
@@ -284,9 +291,9 @@ void WebMediaPlayerProxyAndroid::OnKeyMessage(
     const std::string& session_id,
     const std::vector<uint8>& message,
     const std::string& destination_url) {
-  WebMediaPlayerAndroid* player = GetWebMediaPlayer(media_keys_id);
-  if (player)
-    player->OnKeyMessage(session_id, message, destination_url);
+  ProxyMediaKeys* media_keys = GetMediaKeys(media_keys_id);
+  if (media_keys)
+    media_keys->OnKeyMessage(session_id, message, destination_url);
 }
 
 }  // namespace content

@@ -116,8 +116,8 @@ scoped_ptr<media::MediaKeys> ContentDecryptionModuleFactory::Create(
       key_system, key_added_cb, key_error_cb, key_message_cb,
       destroy_plugin_cb, web_media_player_client, web_frame);
 #elif defined(OS_ANDROID)
-  scoped_ptr<ProxyMediaKeys> proxy_media_keys(
-      new ProxyMediaKeys(proxy, media_keys_id));
+  scoped_ptr<ProxyMediaKeys> proxy_media_keys(new ProxyMediaKeys(
+      proxy, media_keys_id, key_added_cb, key_error_cb, key_message_cb));
   proxy_media_keys->InitializeCDM(key_system, frame_url);
   return proxy_media_keys.PassAs<media::MediaKeys>();
 #else

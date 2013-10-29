@@ -22,6 +22,7 @@
 
 namespace content {
 
+class ProxyMediaKeys;
 class RendererMediaPlayerManager;
 class WebMediaPlayerAndroid;
 
@@ -85,6 +86,7 @@ class WebMediaPlayerProxyAndroid : public RenderViewObserver {
 
   // Encrypted media related methods.
   void InitializeCDM(int media_keys_id,
+                     ProxyMediaKeys* media_keys,
                      const std::vector<uint8>& uuid,
                      const GURL& frame_url);
   void GenerateKeyRequest(int media_keys_id,
@@ -98,6 +100,7 @@ class WebMediaPlayerProxyAndroid : public RenderViewObserver {
 
  private:
   WebMediaPlayerAndroid* GetWebMediaPlayer(int player_id);
+  ProxyMediaKeys* GetMediaKeys(int media_keys_id);
 
   // Message handlers.
   void OnMediaMetadataChanged(int player_id,

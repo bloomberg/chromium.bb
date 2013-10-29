@@ -20,7 +20,12 @@ class WebMediaPlayerProxyAndroid;
 // class!
 class ProxyMediaKeys : public media::MediaKeys {
  public:
-  ProxyMediaKeys(WebMediaPlayerProxyAndroid* proxy, int media_keys_id);
+  ProxyMediaKeys(WebMediaPlayerProxyAndroid* proxy,
+                 int media_keys_id,
+                 const media::KeyAddedCB& key_added_cb,
+                 const media::KeyErrorCB& key_error_cb,
+                 const media::KeyMessageCB& key_message_cb);
+  virtual ~ProxyMediaKeys();
 
   void InitializeCDM(const std::string& key_system, const GURL& frame_url);
 
@@ -33,9 +38,21 @@ class ProxyMediaKeys : public media::MediaKeys {
                       const std::string& session_id) OVERRIDE;
   virtual void CancelKeyRequest(const std::string& session_id) OVERRIDE;
 
+  // Callbacks.
+  void OnKeyAdded(const std::string& session_id);
+  void OnKeyError(const std::string& session_id,
+                  media::MediaKeys::KeyError error_code,
+                  int system_code);
+  void OnKeyMessage(const std::string& session_id,
+                    const std::vector<uint8>& message,
+                    const std::string& destination_url);
+
  private:
   WebMediaPlayerProxyAndroid* proxy_;
   int media_keys_id_;
+  media::KeyAddedCB key_added_cb_;
+  media::KeyErrorCB key_error_cb_;
+  media::KeyMessageCB key_message_cb_;
 
   DISALLOW_COPY_AND_ASSIGN (ProxyMediaKeys);
 };

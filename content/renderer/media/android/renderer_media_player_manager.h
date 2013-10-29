@@ -19,6 +19,7 @@ class RectF;
 
 namespace content {
 
+class ProxyMediaKeys;
 class WebMediaPlayerAndroid;
 
 // Class for managing all the WebMediaPlayerAndroid objects in the same
@@ -31,6 +32,12 @@ class RendererMediaPlayerManager {
   // Register and unregister a WebMediaPlayerAndroid object.
   int RegisterMediaPlayer(WebMediaPlayerAndroid* player);
   void UnregisterMediaPlayer(int player_id);
+
+  // Register a ProxyMediaKeys object. There must be a WebMediaPlayerAndroid
+  // object already registered for this id, and it is unregistered when the
+  // player is unregistered. For now |media_keys_id| is the same as player_id
+  // used in other methods.
+  void RegisterMediaKeys(int media_keys_id, ProxyMediaKeys* media_keys);
 
   // Release the media resources managed by this object when a video
   // is playing.
@@ -49,6 +56,9 @@ class RendererMediaPlayerManager {
   // Get the pointer to WebMediaPlayerAndroid given the |player_id|.
   WebMediaPlayerAndroid* GetMediaPlayer(int player_id);
 
+  // Get the pointer to ProxyMediaKeys given the |media_keys_id|.
+  ProxyMediaKeys* GetMediaKeys(int media_keys_id);
+
 #if defined(GOOGLE_TV)
   // Get the list of media players with video geometry changes.
   void RetrieveGeometryChanges(std::map<int, gfx::RectF>* changes);
@@ -58,6 +68,10 @@ class RendererMediaPlayerManager {
   // Info for all available WebMediaPlayerAndroid on a page; kept so that
   // we can enumerate them to send updates about tab focus and visibily.
   std::map<int, WebMediaPlayerAndroid*> media_players_;
+
+  // Info for all available ProxyMediaKeys. There must be at most one
+  // ProxyMediaKeys for each available WebMediaPlayerAndroid.
+  std::map<int, ProxyMediaKeys*> media_keys_;
 
   int next_media_player_id_;
 

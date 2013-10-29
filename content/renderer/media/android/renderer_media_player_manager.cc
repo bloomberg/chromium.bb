@@ -31,6 +31,20 @@ int RendererMediaPlayerManager::RegisterMediaPlayer(
 
 void RendererMediaPlayerManager::UnregisterMediaPlayer(int player_id) {
   media_players_.erase(player_id);
+  media_keys_.erase(player_id);
+}
+
+void RendererMediaPlayerManager::RegisterMediaKeys(int media_keys_id,
+                                                   ProxyMediaKeys* media_keys) {
+  // WebMediaPlayerAndroid must have already been registered for
+  // |media_keys_id|. For now |media_keys_id| is the same as player_id
+  // used in other methods.
+  DCHECK(media_players_.find(media_keys_id) != media_players_.end());
+
+  // Only allowed to register once.
+  DCHECK(media_keys_.find(media_keys_id) == media_keys_.end());
+
+  media_keys_[media_keys_id] = media_keys;
 }
 
 void RendererMediaPlayerManager::ReleaseVideoResources() {
@@ -52,6 +66,12 @@ WebMediaPlayerAndroid* RendererMediaPlayerManager::GetMediaPlayer(
   if (iter != media_players_.end())
     return iter->second;
   return NULL;
+}
+
+ProxyMediaKeys* RendererMediaPlayerManager::GetMediaKeys(int media_keys_id) {
+  std::map<int, ProxyMediaKeys*>::iterator iter =
+      media_keys_.find(media_keys_id);
+  return (iter != media_keys_.end()) ? iter->second : NULL;
 }
 
 bool RendererMediaPlayerManager::CanEnterFullscreen(WebKit::WebFrame* frame) {

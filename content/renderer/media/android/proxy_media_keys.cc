@@ -14,9 +14,19 @@
 namespace content {
 
 ProxyMediaKeys::ProxyMediaKeys(WebMediaPlayerProxyAndroid* proxy,
-                               int media_keys_id)
-    : proxy_(proxy), media_keys_id_(media_keys_id) {
+                               int media_keys_id,
+                               const media::KeyAddedCB& key_added_cb,
+                               const media::KeyErrorCB& key_error_cb,
+                               const media::KeyMessageCB& key_message_cb)
+    : proxy_(proxy),
+      media_keys_id_(media_keys_id),
+      key_added_cb_(key_added_cb),
+      key_error_cb_(key_error_cb),
+      key_message_cb_(key_message_cb) {
   DCHECK(proxy_);
+}
+
+ProxyMediaKeys::~ProxyMediaKeys() {
 }
 
 void ProxyMediaKeys::InitializeCDM(const std::string& key_system,
@@ -26,7 +36,7 @@ void ProxyMediaKeys::InitializeCDM(const std::string& key_system,
 #elif defined(OS_ANDROID)
   std::vector<uint8> uuid = GetUUID(key_system);
   DCHECK(!uuid.empty());
-  proxy_->InitializeCDM(media_keys_id_, uuid, frame_url);
+  proxy_->InitializeCDM(media_keys_id_, this, uuid, frame_url);
 #endif
 }
 
@@ -51,6 +61,22 @@ void ProxyMediaKeys::AddKey(const uint8* key, int key_length,
 
 void ProxyMediaKeys::CancelKeyRequest(const std::string& session_id) {
   proxy_->CancelKeyRequest(media_keys_id_, session_id);
+}
+
+void ProxyMediaKeys::OnKeyAdded(const std::string& session_id) {
+  key_added_cb_.Run(session_id);
+}
+
+void ProxyMediaKeys::OnKeyError(const std::string& session_id,
+                                media::MediaKeys::KeyError error_code,
+                                int system_code) {
+  key_error_cb_.Run(session_id, error_code, system_code);
+}
+
+void ProxyMediaKeys::OnKeyMessage(const std::string& session_id,
+                                  const std::vector<uint8>& message,
+                                  const std::string& destination_url) {
+  key_message_cb_.Run(session_id, message, destination_url);
 }
 
 }  // namespace content
