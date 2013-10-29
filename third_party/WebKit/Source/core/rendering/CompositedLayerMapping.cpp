@@ -1917,12 +1917,6 @@ void CompositedLayerMapping::notifyAnimationStarted(const GraphicsLayer*, double
     renderer()->animation().notifyAnimationStarted(renderer(), time);
 }
 
-// This is used for the 'freeze' API, for testing only.
-void CompositedLayerMapping::suspendAnimations(double time)
-{
-    m_graphicsLayer->suspendAnimations(time);
-}
-
 IntRect CompositedLayerMapping::compositedBounds() const
 {
     return m_compositedBounds;

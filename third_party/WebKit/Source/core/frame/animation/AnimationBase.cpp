@@ -556,7 +556,7 @@ void AnimationBase::freezeAtTime(double t)
     // It is possible that m_isAccelerated is true and m_object->compositingState() is NotComposited, because of style change.
     // So, both conditions need to be checked.
     if (m_object && m_object->compositingState() == PaintsIntoOwnBacking && isAccelerated())
-        toRenderBoxModelObject(m_object)->suspendAnimations(m_pauseTime);
+        pauseAnimation(t);
 }
 
 double AnimationBase::beginAnimationUpdateTime() const

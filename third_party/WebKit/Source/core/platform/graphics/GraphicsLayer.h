@@ -229,8 +229,6 @@ public:
     void pauseAnimation(int animationId, double /*timeOffset*/);
     void removeAnimation(int animationId);
 
-    void suspendAnimations(double time);
-
     // Layer contents
     void setContentsToImage(Image*);
     void setContentsToNinePatch(Image*, const IntRect& aperture);

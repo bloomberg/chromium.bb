@@ -142,13 +142,6 @@ void RenderBoxModelObject::animationFinished(const String& name)
     layer()->compositedLayerMapping()->animationFinished(name);
 }
 
-void RenderBoxModelObject::suspendAnimations(double time)
-{
-    ASSERT(hasLayer());
-    ASSERT(compositingState() == PaintsIntoOwnBacking);
-    layer()->compositedLayerMapping()->suspendAnimations(time);
-}
-
 bool RenderBoxModelObject::shouldPaintAtLowQuality(GraphicsContext* context, Image* image, const void* layer, const LayoutSize& size)
 {
     return ImageQualityController::imageQualityController()->shouldPaintAtLowQuality(context, this, image, layer, size);

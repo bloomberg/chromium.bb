@@ -1054,14 +1054,6 @@ void GraphicsLayer::removeAnimation(int animationId)
     platformLayer()->removeAnimation(animationId);
 }
 
-void GraphicsLayer::suspendAnimations(double wallClockTime)
-{
-    // |wallClockTime| is in the wrong time base. Need to convert here.
-    // FIXME: find a more reliable way to do this.
-    double monotonicTime = wallClockTime + monotonicallyIncreasingTime() - currentTime();
-    platformLayer()->suspendAnimations(monotonicTime);
-}
-
 WebLayer* GraphicsLayer::platformLayer() const
 {
     return m_layer->layer();

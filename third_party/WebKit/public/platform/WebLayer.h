@@ -150,10 +150,6 @@ public:
     // Pauses all animations with the given id.
     virtual void pauseAnimation(int animationId, double timeOffset) = 0;
 
-    // The following function suspends all animations. The given time is
-    // assumed to use the same time base as monotonicallyIncreasingTime().
-    virtual void suspendAnimations(double monotonicTime) = 0;
-
     // Returns true if this layer has any active animations - useful for tests.
     virtual bool hasActiveAnimation() = 0;
 
