@@ -371,6 +371,17 @@
 	
 	.endm
 
+        @// Allocate 8-byte aligned area of name
+        @// |name| and size |size| bytes.
+	.macro	M_ALLOC8 name, size
+	.if	(_SBytes & 7) != 0
+	.set	_SBytes, _SBytes + (8 - (_SBytes & 7))
+	.endif
+	.set	\name\()_F, _SBytes
+	.set	_SBytes, _SBytes + \size
+	
+	.endm
+
         @ Load word from stack
 	.macro M_LDR r, a0, a1, a2, a3
 	_M_DATA "ldr", 4, \r, \a0, \a1, \a2, \a3
@@ -379,6 +390,16 @@
         @ Store word to stack
 	.macro M_STR r, a0, a1, a2, a3
 	_M_DATA "str", 4, \r, \a0, \a1, \a2, \a3
+	.endm
+
+        @ Load double word from stack
+	.macro M_LDRD r0, r1, a0, a1, a2, a3
+	_M_DATA2 "ldrd", 8, \r0, \r1, \a0, \a1, \a2, \a3
+	.endm
+
+        @ Store double word to stack
+	.macro M_STRD r0, r1, a0, a1, a2, a3
+	_M_DATA2 "strd", 8, \r0, \r1, \a0, \a1, \a2, \a3
 	.endm
 
         @ Macro to perform a data access operation
@@ -407,3 +428,31 @@
 	.set	_Offset, _Workspace + \a0\()_F
 	\i\a1	\r, [sp, #_Offset]	
 	.endm
+
+        @ Macro to perform a data access operation
+        @ Such as LDR or STR
+        @ The addressing mode is modified such that
+        @ 1. If no address is given then the name is taken
+        @    as a stack offset
+        @ 2. If the addressing mode is not available for the
+        @    state being assembled for (eg Thumb) then a suitable
+        @    addressing mode is substituted.
+        @
+        @ On Entry:
+        @ $i = Instruction to perform (eg "LDRB")
+        @ $a = Required byte alignment
+        @ $r = Register(s) to transfer (eg "r1")
+        @ $a0,$a1,$a2. Addressing mode and condition. One of:
+        @     label {,cc}
+        @     [base]                    {,,,cc}
+        @     [base, offset]{!}         {,,cc}
+        @     [base, offset, shift]{!}  {,cc}
+        @     [base], offset            {,,cc}
+        @     [base], offset, shift     {,cc}
+	@
+	@ WARNING: Most of the above are not supported, except the first case.
+	.macro _M_DATA2 i, a, r0, r1, a0, a1, a2, a3
+	.set	_Offset, _Workspace + \a0\()_F
+	\i\a1	\r0, \r1, [sp, #_Offset]	
+	.endm
+	
