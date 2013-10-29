@@ -63,8 +63,9 @@ class RenderServlet(Servlet):
       if path.endswith('/'):
         pass
       elif fnmatch(path, 'extensions/examples/*.zip'):
-        content = server_instance.example_zipper.Create(
-            path[len('extensions/'):-len('.zip')])
+        zip_path = (
+            svn_constants.DOCS_PATH + path[len('extensions'):-len('.zip')])
+        content = server_instance.directory_zipper.Zip(zip_path).Get()
         content_type = 'application/zip'
       elif path.startswith('extensions/examples/'):
         mimetype = mimetypes.guess_type(path)[0] or 'text/plain'

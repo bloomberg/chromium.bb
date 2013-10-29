@@ -7,8 +7,8 @@ from api_list_data_source import APIListDataSource
 from appengine_wrappers import IsDevServer
 from availability_finder import AvailabilityFinder
 from compiled_file_system import CompiledFileSystem
+from directory_zipper import DirectoryZipper
 from empty_dir_file_system import EmptyDirFileSystem
-from example_zipper import ExampleZipper
 from features_bundle import FeaturesBundle
 from github_file_system_provider import GithubFileSystemProvider
 from host_file_system_provider import HostFileSystemProvider
@@ -128,10 +128,9 @@ class ServerInstance(object):
         self.ref_resolver_factory,
         [svn_constants.INTRO_PATH, svn_constants.ARTICLE_PATH])
 
-    self.example_zipper = ExampleZipper(
+    self.directory_zipper = DirectoryZipper(
         self.compiled_fs_factory,
-        host_fs_at_trunk,
-        svn_constants.DOCS_PATH)
+        host_fs_at_trunk)
 
     self.path_canonicalizer = PathCanonicalizer(
         self.compiled_fs_factory,
