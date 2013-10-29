@@ -98,6 +98,8 @@ cr.define('cr.login', function() {
     assert(this.frame_);
     window.addEventListener('message',
                             this.onMessage_.bind(this), false);
+    window.addEventListener('popstate',
+                            this.onPopState_.bind(this), false);
   }
 
   GaiaAuthHost.prototype = {
@@ -334,7 +336,31 @@ cr.define('cr.login', function() {
         return;
       }
 
+      if (msg.method == 'reportState') {
+        if (history.state) {
+          history.state.src == msg.src || history.pushState({src: msg.src});
+        } else {
+          history.replaceState({src: msg.src});
+        }
+        return;
+      }
+
       console.error('Unknown message method=' + msg.method);
+    },
+
+    /**
+     * Event handler that is invoked when the history state is changed.
+     * @param {object} e The popstate event being triggered.
+     */
+    onPopState_: function(e) {
+      var state = e.state;
+      if (state) {
+        var msg = {
+          method: 'navigate',
+          src: state.src
+        };
+        this.frame_.contentWindow.postMessage(msg, AUTH_URL_BASE);
+      }
     }
   };
 

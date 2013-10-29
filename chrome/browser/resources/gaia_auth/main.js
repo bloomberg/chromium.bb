@@ -91,6 +91,14 @@ Authenticator.prototype = {
 
   /** Callback when all loads in the gaia webview is complete. */
   onWebviewLoadstop_: function(gaiaFrame) {
+    // Report the current state to the parent which will then update the
+    // browser history so that later it could respond properly to back/forward.
+    var msg = {
+      'method': 'reportState',
+      'src': gaiaFrame.src
+    };
+    window.parent.postMessage(msg, this.parentPage_);
+
     if (gaiaFrame.src.lastIndexOf(
         this.gaiaUrl_ + this.GAIA_PAGE_PATH, 0) == 0) {
       gaiaFrame.executeScript({file: 'inline_injected.js'}, function() {
@@ -105,9 +113,17 @@ Authenticator.prototype = {
       // URL. Cannot reuse the login complete flow in success.html, because
       // webview does not support extension pages yet.
       gaiaFrame.hidden = true;
-      var msg = {'method': 'completeLogin'};
+      msg = {'method': 'completeLogin'};
       window.parent.postMessage(msg, this.parentPage_);
     }
+  },
+
+  /**
+   * Callback when the gaia webview attempts to open a new window.
+  */
+  onWebviewNewWindow_: function(gaiaFrame, e) {
+    window.open(e.targetUrl, '_blank');
+    e.window.discard();
   },
 
   loadFrame_: function() {
@@ -116,6 +132,8 @@ Authenticator.prototype = {
     if (this.inlineMode_) {
       gaiaFrame.addEventListener(
           'loadstop', this.onWebviewLoadstop_.bind(this, gaiaFrame));
+      gaiaFrame.addEventListener(
+          'newwindow', this.onWebviewNewWindow_.bind(this, gaiaFrame));
     }
   },
 
@@ -230,6 +248,9 @@ Authenticator.prototype = {
     } else if (msg.method == 'verifyConfirmedPassword' &&
                this.isParentMessage_(e)) {
       this.onVerifyConfirmedPassword_(msg.password);
+    } else if (msg.method == 'navigate' &&
+               this.isParentMessage_(e)) {
+       $('gaia-frame').src = msg.src;
     } else {
       console.error('Authenticator.onMessage: unknown message + origin!?');
     }
