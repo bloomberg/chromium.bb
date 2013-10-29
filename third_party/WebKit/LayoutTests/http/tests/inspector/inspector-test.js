@@ -337,6 +337,7 @@ InspectorTest.addSniffer = function(receiver, methodName, override, opt_sticky)
         }
         // In case of exception the override won't be called.
         try {
+            Array.prototype.push.call(arguments, result);
             override.apply(this, arguments);
         } catch (e) {
             throw ("Exception in overriden method '" + methodName + "': " + e);

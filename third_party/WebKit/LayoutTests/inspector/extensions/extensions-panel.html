@@ -54,8 +54,10 @@ function initialize_extensionsPanelTest()
 
     InspectorTest.installShowResourceLocationHooks = function()
     {
-        function showAnchorLocationHook(anchor)
+        function showAnchorLocationHook(anchor, shown)
         {
+            if (!shown)
+                return;
             var url = anchor.href.replace(/^.*(([/][^/]*){3}[^/)]*)$/, "...$1");
             InspectorTest.addResult("Showing resource " + url + " in panel " + this.name + " (" + WebInspector.inspectorView.currentPanel().name + "), line: " + anchor.lineNumber);
         }
