@@ -28,11 +28,13 @@
 
 #include "core/dom/DOMError.h"
 #include "core/dom/Document.h"
+#include "core/events/EventQueue.h"
 #include "modules/indexeddb/IDBCursorBackendInterface.h"
 #include "modules/indexeddb/IDBDatabaseBackendInterface.h"
 #include "modules/indexeddb/IDBDatabaseCallbacksImpl.h"
 #include "modules/indexeddb/IDBKeyRange.h"
 #include "modules/indexeddb/IDBOpenDBRequest.h"
+#include "wtf/PassOwnPtr.h"
 
 #include <gtest/gtest.h>
 
@@ -40,24 +42,52 @@ using namespace WebCore;
 
 namespace {
 
+class NullEventQueue : public EventQueue {
+public:
+    NullEventQueue() { }
+    virtual ~NullEventQueue() { }
+    virtual bool enqueueEvent(PassRefPtr<Event>) OVERRIDE { return true; }
+    virtual bool cancelEvent(Event*) OVERRIDE { return true; }
+    virtual void close() OVERRIDE { }
+};
+
+class NullExecutionContext : public ExecutionContext, public RefCounted<NullExecutionContext> {
+public:
+    using RefCounted<NullExecutionContext>::ref;
+    using RefCounted<NullExecutionContext>::deref;
+
+    virtual void refExecutionContext() OVERRIDE { ref(); }
+    virtual void derefExecutionContext() OVERRIDE { deref(); }
+    virtual EventQueue* eventQueue() const OVERRIDE { return m_queue.get(); }
+
+    NullExecutionContext();
+private:
+    OwnPtr<EventQueue> m_queue;
+};
+
+NullExecutionContext::NullExecutionContext()
+    : m_queue(adoptPtr(new NullEventQueue()))
+{
+}
+
 class IDBRequestTest : public testing::Test {
 public:
     IDBRequestTest()
         : m_handleScope(v8::Isolate::GetCurrent())
         , m_scope(v8::Context::New(v8::Isolate::GetCurrent()))
-        , m_document(Document::create())
+        , m_context(adoptRef(new NullExecutionContext()))
     {
     }
 
     ExecutionContext* executionContext()
     {
-        return m_document.get();
+        return m_context.get();
     }
 
 private:
     v8::HandleScope m_handleScope;
     v8::Context::Scope m_scope;
-    RefPtr<Document> m_document;
+    RefPtr<ExecutionContext> m_context;
 };
 
 TEST_F(IDBRequestTest, EventsAfterStopping)

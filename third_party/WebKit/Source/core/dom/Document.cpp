@@ -100,13 +100,11 @@
 #include "core/editing/Editor.h"
 #include "core/editing/FrameSelection.h"
 #include "core/events/BeforeUnloadEvent.h"
-#include "core/events/DocumentEventQueue.h"
 #include "core/events/Event.h"
 #include "core/events/EventFactory.h"
 #include "core/events/EventListener.h"
 #include "core/events/HashChangeEvent.h"
 #include "core/events/PageTransitionEvent.h"
-#include "core/events/PopStateEvent.h"
 #include "core/events/ScopedEventQueue.h"
 #include "core/events/ThreadLocalEventNames.h"
 #include "core/fetch/ResourceFetcher.h"
@@ -434,7 +432,6 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
     , m_isMobileDocument(false)
     , m_mayDisplaySeamlesslyWithParent(false)
     , m_renderView(0)
-    , m_eventQueue(DocumentEventQueue::create(this))
     , m_weakFactory(this)
     , m_contextDocument(initializer.contextDocument())
     , m_idAttributeName(idAttr)
@@ -1103,6 +1100,11 @@ void Document::setReadyState(ReadyState readyState)
 
     m_readyState = readyState;
     dispatchEvent(Event::create(EventTypeNames::readystatechange));
+}
+
+bool Document::isLoadCompleted()
+{
+    return m_readyState == Complete;
 }
 
 String Document::encodingName() const
@@ -1990,7 +1992,6 @@ void Document::detach(const AttachContext& context)
         clearAXObjectCache();
 
     stopActiveDOMObjects();
-    m_eventQueue->close();
 
     // FIXME: consider using ActiveDOMObject.
     if (m_scriptedAnimationController)
@@ -2316,7 +2317,7 @@ void Document::implicitClose()
 
     // The call to dispatchWindowLoadEvent can detach the DOMWindow and cause it (and its
     // attached Document) to be destroyed.
-    RefPtr<DOMWindow> protect(this->domWindow());
+    RefPtr<DOMWindow> protectedWindow(this->domWindow());
 
     m_loadEventProgress = LoadEventInProgress;
 
@@ -2343,9 +2344,8 @@ void Document::implicitClose()
     if (svgExtensions())
         accessSVGExtensions()->dispatchSVGLoadEventToOutermostSVGElements();
 
-    dispatchWindowLoadEvent();
-    enqueuePageshowEvent(PageshowEventNotPersisted);
-    enqueuePopstateEvent(m_pendingStateObject ? m_pendingStateObject.release() : SerializedScriptValue::nullValue());
+    if (protectedWindow)
+        protectedWindow->documentWasClosed();
 
     if (frame()) {
         frame()->loader().client()->dispatchDidHandleOnloadEvents();
@@ -2419,7 +2419,7 @@ bool Document::dispatchBeforeUnloadEvent(Chrome& chrome, bool& didAllowNavigatio
 
     RefPtr<BeforeUnloadEvent> beforeUnloadEvent = BeforeUnloadEvent::create();
     m_loadEventProgress = BeforeUnloadEventInProgress;
-    dispatchWindowEvent(beforeUnloadEvent.get(), this);
+    m_domWindow->dispatchEvent(beforeUnloadEvent.get(), this);
     m_loadEventProgress = BeforeUnloadEventCompleted;
     if (!beforeUnloadEvent->defaultPrevented())
         defaultEventHandler(beforeUnloadEvent.get());
@@ -2451,7 +2451,8 @@ void Document::dispatchUnloadEvents()
             toHTMLInputElement(currentFocusedElement)->endEditing();
         if (m_loadEventProgress < PageHideInProgress) {
             m_loadEventProgress = PageHideInProgress;
-            dispatchWindowEvent(PageTransitionEvent::create(EventTypeNames::pagehide, false), this);
+            if (DOMWindow* window = domWindow())
+                window->dispatchEvent(PageTransitionEvent::create(EventTypeNames::pagehide, false), this);
             if (!m_frame)
                 return;
 
@@ -2465,7 +2466,7 @@ void Document::dispatchUnloadEvents()
                 DocumentLoadTiming* timing = documentLoader->timing();
                 ASSERT(timing->navigationStart());
                 timing->markUnloadEventStart();
-                dispatchWindowEvent(unloadEvent, this);
+                m_frame->domWindow()->dispatchEvent(unloadEvent, this);
                 timing->markUnloadEventEnd();
             } else {
                 m_frame->domWindow()->dispatchEvent(unloadEvent, m_frame->document());
@@ -3610,30 +3611,11 @@ EventListener* Document::getWindowAttributeEventListener(const AtomicString& eve
     return domWindow->getAttributeEventListener(eventType, isolatedWorld);
 }
 
-void Document::dispatchWindowEvent(PassRefPtr<Event> event,  PassRefPtr<EventTarget> target)
-{
-    ASSERT(!NoEventDispatchAssertion::isEventDispatchForbidden());
-    DOMWindow* domWindow = this->domWindow();
-    if (!domWindow)
-        return;
-    domWindow->dispatchEvent(event, target);
-}
-
 EventQueue* Document::eventQueue() const
 {
-    return m_eventQueue.get();
-}
-
-void Document::enqueueWindowEvent(PassRefPtr<Event> event)
-{
-    event->setTarget(domWindow());
-    m_eventQueue->enqueueEvent(event);
-}
-
-void Document::enqueueDocumentEvent(PassRefPtr<Event> event)
-{
-    event->setTarget(this);
-    m_eventQueue->enqueueEvent(event);
+    if (!m_domWindow)
+        return 0;
+    return m_domWindow->eventQueue();
 }
 
 void Document::scheduleAnimationFrameEvent(PassRefPtr<Event> event)
@@ -3657,15 +3639,6 @@ PassRefPtr<Event> Document::createEvent(const String& eventType, ExceptionState&
 
     es.throwUninformativeAndGenericDOMException(NotSupportedError);
     return 0;
-}
-
-void Document::dispatchWindowLoadEvent()
-{
-    ASSERT(!NoEventDispatchAssertion::isEventDispatchForbidden());
-    DOMWindow* domWindow = this->domWindow();
-    if (!domWindow)
-        return;
-    domWindow->dispatchLoadEvent();
 }
 
 void Document::addMutationEventListenerTypeIfEnabled(ListenerType listenerType)
@@ -4580,19 +4553,6 @@ bool Document::isContextThread() const
     return isMainThread();
 }
 
-void Document::statePopped(PassRefPtr<SerializedScriptValue> stateObject)
-{
-    if (!frame())
-        return;
-
-    // Per step 11 of section 6.5.9 (history traversal) of the HTML5 spec, we
-    // defer firing of popstate until we're in the complete state.
-    if (m_readyState == Complete)
-        enqueuePopstateEvent(stateObject);
-    else
-        m_pendingStateObject = stateObject;
-}
-
 void Document::updateFocusAppearanceSoon(bool restorePreviousSelection)
 {
     m_updateFocusAppearanceRestoresSelection = restorePreviousSelection;
@@ -4801,26 +4761,6 @@ void Document::resumeScriptedAnimationControllerCallbacks()
 {
     if (m_scriptedAnimationController)
         m_scriptedAnimationController->resume();
-}
-
-void Document::enqueuePageshowEvent(PageshowEventPersistence persisted)
-{
-    // FIXME: https://bugs.webkit.org/show_bug.cgi?id=36334 Pageshow event needs to fire asynchronously.
-    dispatchWindowEvent(PageTransitionEvent::create(EventTypeNames::pageshow, persisted), this);
-}
-
-void Document::enqueueHashchangeEvent(const String& oldURL, const String& newURL)
-{
-    enqueueWindowEvent(HashChangeEvent::create(oldURL, newURL));
-}
-
-void Document::enqueuePopstateEvent(PassRefPtr<SerializedScriptValue> stateObject)
-{
-    if (!ContextFeatures::pushStateEnabled(this))
-        return;
-
-    // FIXME: https://bugs.webkit.org/show_bug.cgi?id=36202 Popstate event needs to fire asynchronously
-    dispatchWindowEvent(PopStateEvent::create(stateObject, domWindow() ? domWindow()->history() : 0));
 }
 
 void Document::addToTopLayer(Element* element, const Element* before)

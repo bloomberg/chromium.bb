@@ -44,7 +44,6 @@
 #include "core/dom/UserActionElementSet.h"
 #include "core/dom/ViewportDescription.h"
 #include "core/dom/custom/CustomElement.h"
-#include "core/events/DocumentEventQueue.h"
 #include "core/html/CollectionType.h"
 #include "core/page/FocusDirection.h"
 #include "core/page/PageVisibilityState.h"
@@ -81,7 +80,6 @@ class DOMWindow;
 class DOMWrapperWorld;
 class Database;
 class DatabaseThread;
-class DocumentEventQueue;
 class DocumentFragment;
 class DocumentLifecycleNotifier;
 class DocumentLifecycleObserver;
@@ -167,11 +165,6 @@ struct AnnotatedRegionValue;
 class FontFaceSet;
 
 typedef int ExceptionCode;
-
-enum PageshowEventPersistence {
-    PageshowEventNotPersisted = 0,
-    PageshowEventPersisted = 1
-};
 
 enum RecalcStyleTime {
     RecalcStyleImmediately, // synchronous
@@ -587,6 +580,8 @@ public:
         Complete
     };
     void setReadyState(ReadyState);
+    bool isLoadCompleted();
+
     void setParsing(bool);
     bool parsing() const { return m_bParsing; }
     int minimumLayoutDelay();
@@ -667,7 +662,6 @@ public:
     // Helper functions for forwarding DOMWindow event related tasks to the DOMWindow if it exists.
     void setWindowAttributeEventListener(const AtomicString& eventType, PassRefPtr<EventListener>, DOMWrapperWorld* isolatedWorld = 0);
     EventListener* getWindowAttributeEventListener(const AtomicString& eventType, DOMWrapperWorld* isolatedWorld);
-    void dispatchWindowEvent(PassRefPtr<Event>, PassRefPtr<EventTarget> = 0);
 
     PassRefPtr<Event> createEvent(const String& eventType, ExceptionState&);
 
@@ -896,11 +890,6 @@ public:
     bool containsValidityStyleRules() const { return m_containsValidityStyleRules; }
     void setContainsValidityStyleRules() { m_containsValidityStyleRules = true; }
 
-    void enqueueWindowEvent(PassRefPtr<Event>);
-    void enqueueDocumentEvent(PassRefPtr<Event>);
-    void enqueuePageshowEvent(PageshowEventPersistence);
-    void enqueueHashchangeEvent(const String& oldURL, const String& newURL);
-    void enqueuePopstateEvent(PassRefPtr<SerializedScriptValue> stateObject);
     void enqueueScrollEventForNode(Node*);
     void scheduleAnimationFrameEvent(PassRefPtr<Event>);
 
@@ -1219,7 +1208,6 @@ private:
 
     LoadEventProgress m_loadEventProgress;
 
-    RefPtr<SerializedScriptValue> m_pendingStateObject;
     double m_startTime;
     bool m_overMinimumLayoutThreshold;
 
@@ -1270,7 +1258,6 @@ private:
     bool m_mayDisplaySeamlesslyWithParent;
 
     RenderView* m_renderView;
-    RefPtr<DocumentEventQueue> m_eventQueue;
 
     WeakPtrFactory<Document> m_weakFactory;
     WeakPtr<Document> m_contextDocument;

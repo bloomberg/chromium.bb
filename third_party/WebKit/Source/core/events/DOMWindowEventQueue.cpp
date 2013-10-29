@@ -25,7 +25,7 @@
  */
 
 #include "config.h"
-#include "core/events/DocumentEventQueue.h"
+#include "core/events/DOMWindowEventQueue.h"
 
 #include "core/dom/Document.h"
 #include "core/events/Event.h"
@@ -35,35 +35,35 @@
 
 namespace WebCore {
 
-class DocumentEventQueueTimer : public SuspendableTimer {
-    WTF_MAKE_NONCOPYABLE(DocumentEventQueueTimer);
+class DOMWindowEventQueueTimer : public SuspendableTimer {
+    WTF_MAKE_NONCOPYABLE(DOMWindowEventQueueTimer);
 public:
-    DocumentEventQueueTimer(DocumentEventQueue* eventQueue, ExecutionContext* context)
+    DOMWindowEventQueueTimer(DOMWindowEventQueue* eventQueue, ExecutionContext* context)
         : SuspendableTimer(context)
         , m_eventQueue(eventQueue) { }
 
 private:
     virtual void fired() { m_eventQueue->pendingEventTimerFired(); }
-    DocumentEventQueue* m_eventQueue;
+    DOMWindowEventQueue* m_eventQueue;
 };
 
-PassRefPtr<DocumentEventQueue> DocumentEventQueue::create(ExecutionContext* context)
+PassRefPtr<DOMWindowEventQueue> DOMWindowEventQueue::create(ExecutionContext* context)
 {
-    return adoptRef(new DocumentEventQueue(context));
+    return adoptRef(new DOMWindowEventQueue(context));
 }
 
-DocumentEventQueue::DocumentEventQueue(ExecutionContext* context)
-    : m_pendingEventTimer(adoptPtr(new DocumentEventQueueTimer(this, context)))
+DOMWindowEventQueue::DOMWindowEventQueue(ExecutionContext* context)
+    : m_pendingEventTimer(adoptPtr(new DOMWindowEventQueueTimer(this, context)))
     , m_isClosed(false)
 {
     m_pendingEventTimer->suspendIfNeeded();
 }
 
-DocumentEventQueue::~DocumentEventQueue()
+DOMWindowEventQueue::~DOMWindowEventQueue()
 {
 }
 
-bool DocumentEventQueue::enqueueEvent(PassRefPtr<Event> event)
+bool DOMWindowEventQueue::enqueueEvent(PassRefPtr<Event> event)
 {
     if (m_isClosed)
         return false;
@@ -78,7 +78,7 @@ bool DocumentEventQueue::enqueueEvent(PassRefPtr<Event> event)
     return true;
 }
 
-bool DocumentEventQueue::cancelEvent(Event* event)
+bool DOMWindowEventQueue::cancelEvent(Event* event)
 {
     ListHashSet<RefPtr<Event>, 16>::iterator it = m_queuedEvents.find(event);
     bool found = it != m_queuedEvents.end();
@@ -89,14 +89,14 @@ bool DocumentEventQueue::cancelEvent(Event* event)
     return found;
 }
 
-void DocumentEventQueue::close()
+void DOMWindowEventQueue::close()
 {
     m_isClosed = true;
     m_pendingEventTimer->stop();
     m_queuedEvents.clear();
 }
 
-void DocumentEventQueue::pendingEventTimerFired()
+void DOMWindowEventQueue::pendingEventTimerFired()
 {
     ASSERT(!m_pendingEventTimer->isActive());
     ASSERT(!m_queuedEvents.isEmpty());
@@ -106,7 +106,7 @@ void DocumentEventQueue::pendingEventTimerFired()
     bool wasAdded = m_queuedEvents.add(0).isNewEntry;
     ASSERT_UNUSED(wasAdded, wasAdded); // It should not have already been in the list.
 
-    RefPtr<DocumentEventQueue> protector(this);
+    RefPtr<DOMWindowEventQueue> protector(this);
 
     while (!m_queuedEvents.isEmpty()) {
         ListHashSet<RefPtr<Event>, 16>::iterator iter = m_queuedEvents.begin();
@@ -118,7 +118,7 @@ void DocumentEventQueue::pendingEventTimerFired()
     }
 }
 
-void DocumentEventQueue::dispatchEvent(PassRefPtr<Event> event)
+void DOMWindowEventQueue::dispatchEvent(PassRefPtr<Event> event)
 {
     EventTarget* eventTarget = event->target();
     if (eventTarget->toDOMWindow())

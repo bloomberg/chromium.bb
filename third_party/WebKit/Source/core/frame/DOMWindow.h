@@ -48,9 +48,11 @@ namespace WebCore {
     class Database;
     class DatabaseCallback;
     class Document;
+    class DOMWindowEventQueue;
     class DOMWindowLifecycleNotifier;
     class Element;
     class EventListener;
+    class EventQueue;
     class ExceptionState;
     class FloatRect;
     class Frame;
@@ -78,6 +80,11 @@ namespace WebCore {
     struct WindowFeatures;
 
     typedef Vector<RefPtr<MessagePort>, 1> MessagePortArray;
+
+enum PageshowEventPersistence {
+    PageshowEventNotPersisted = 0,
+    PageshowEventPersisted = 1
+};
 
     enum SetLocationLocking { LockHistoryBasedOnGestureState, LockHistoryAndBackForwardList };
 
@@ -326,6 +333,15 @@ namespace WebCore {
 
         PassOwnPtr<LifecycleNotifier<DOMWindow> > createLifecycleNotifier();
 
+        EventQueue* eventQueue() const;
+        void enqueueWindowEvent(PassRefPtr<Event>);
+        void enqueueDocumentEvent(PassRefPtr<Event>);
+        void enqueuePageshowEvent(PageshowEventPersistence);
+        void enqueueHashchangeEvent(const String& oldURL, const String& newURL);
+        void enqueuePopstateEvent(PassRefPtr<SerializedScriptValue>);
+        void dispatchWindowLoadEvent();
+        void documentWasClosed();
+        void statePopped(PassRefPtr<SerializedScriptValue>);
     protected:
         DOMWindowLifecycleNotifier& lifecycleNotifier();
 
@@ -370,6 +386,9 @@ namespace WebCore {
         mutable RefPtr<Performance> m_performance;
 
         mutable RefPtr<DOMWindowCSS> m_css;
+
+        RefPtr<DOMWindowEventQueue> m_eventQueue;
+        RefPtr<SerializedScriptValue> m_pendingStateObject;
     };
 
     inline String DOMWindow::status() const

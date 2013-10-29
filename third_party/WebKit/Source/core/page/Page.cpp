@@ -27,6 +27,8 @@
 #include "core/editing/Caret.h"
 #include "core/events/Event.h"
 #include "core/events/ThreadLocalEventNames.h"
+#include "core/frame/DOMTimer.h"
+#include "core/frame/DOMWindow.h"
 #include "core/history/HistoryItem.h"
 #include "core/inspector/InspectorController.h"
 #include "core/inspector/InspectorInstrumentation.h"
@@ -36,7 +38,6 @@
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/ContextMenuController.h"
-#include "core/frame/DOMTimer.h"
 #include "core/page/DragController.h"
 #include "core/page/FocusController.h"
 #include "core/frame/Frame.h"
@@ -81,7 +82,7 @@ void Page::networkStateChanged(bool online)
 
     AtomicString eventName = online ? EventTypeNames::online : EventTypeNames::offline;
     for (unsigned i = 0; i < frames.size(); i++)
-        frames[i]->document()->dispatchWindowEvent(Event::create(eventName));
+        frames[i]->domWindow()->dispatchEvent(Event::create(eventName));
 }
 
 float deviceScaleFactor(Frame* frame)

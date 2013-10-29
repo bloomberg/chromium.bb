@@ -42,6 +42,9 @@
 #include "core/editing/htmlediting.h" // For firstPositionInOrBeforeNode
 #include "core/events/Event.h"
 #include "core/events/ThreadLocalEventNames.h"
+#include "core/frame/DOMWindow.h"
+#include "core/frame/Frame.h"
+#include "core/frame/FrameView.h"
 #include "core/html/HTMLAreaElement.h"
 #include "core/html/HTMLImageElement.h"
 #include "core/html/HTMLTextAreaElement.h"
@@ -49,9 +52,7 @@
 #include "core/page/Chrome.h"
 #include "core/page/EditorClient.h"
 #include "core/page/EventHandler.h"
-#include "core/frame/Frame.h"
 #include "core/page/FrameTree.h"
-#include "core/frame/FrameView.h"
 #include "core/page/Page.h"
 #include "core/page/Settings.h"
 #include "core/page/SpatialNavigation.h"
@@ -144,7 +145,9 @@ static inline void dispatchEventsOnWindowAndFocusedNode(Document* document, bool
                 focusedElement->dispatchFocusOutEvent(EventTypeNames::DOMFocusOut, 0);
         }
     }
-    document->dispatchWindowEvent(Event::create(focused ? EventTypeNames::focus : EventTypeNames::blur));
+
+    if (DOMWindow* window = document->domWindow())
+        window->dispatchEvent(Event::create(focused ? EventTypeNames::focus : EventTypeNames::blur));
     if (focused && document->focusedElement()) {
         RefPtr<Element> focusedElement(document->focusedElement());
         focusedElement->dispatchFocusEvent(0, FocusDirectionPage);
@@ -236,12 +239,12 @@ void FocusController::setFocusedFrame(PassRefPtr<Frame> frame)
     // Now that the frame is updated, fire events and update the selection focused states of both frames.
     if (oldFrame && oldFrame->view()) {
         oldFrame->selection().setFocused(false);
-        oldFrame->document()->dispatchWindowEvent(Event::create(EventTypeNames::blur));
+        oldFrame->domWindow()->dispatchEvent(Event::create(EventTypeNames::blur));
     }
 
     if (newFrame && newFrame->view() && isFocused()) {
         newFrame->selection().setFocused(true);
-        newFrame->document()->dispatchWindowEvent(Event::create(EventTypeNames::focus));
+        newFrame->domWindow()->dispatchEvent(Event::create(EventTypeNames::focus));
     }
 
     m_isChangingFocusedFrame = false;

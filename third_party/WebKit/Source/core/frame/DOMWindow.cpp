@@ -42,15 +42,19 @@
 #include "core/css/MediaQueryMatcher.h"
 #include "core/css/StyleMedia.h"
 #include "core/css/resolver/StyleResolver.h"
+#include "core/dom/ContextFeatures.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/RequestAnimationFrameCallback.h"
 #include "core/editing/Editor.h"
+#include "core/events/DOMWindowEventQueue.h"
 #include "core/events/EventListener.h"
+#include "core/events/HashChangeEvent.h"
 #include "core/events/MessageEvent.h"
 #include "core/events/PageTransitionEvent.h"
+#include "core/events/PopStateEvent.h"
 #include "core/events/ThreadLocalEventNames.h"
 #include "core/frame/Console.h"
 #include "core/frame/DOMPoint.h"
@@ -347,7 +351,10 @@ void DOMWindow::clearDocument()
         // depends on this detach() call, so it seems like there's some room
         // for cleanup.
         m_document->detach();
+        m_eventQueue->close();
     }
+
+    m_eventQueue.clear();
 
     m_document->setDOMWindow(0);
     m_document = 0;
@@ -358,6 +365,7 @@ void DOMWindow::setDocument(PassRefPtr<Document> document)
     ASSERT(document && document->frame() == m_frame);
     clearDocument();
     m_document = document;
+    m_eventQueue = DOMWindowEventQueue::create(document.get());
 
     m_document->setDOMWindow(this);
     if (!m_document->confusingAndOftenMisusedAttached())
@@ -384,6 +392,69 @@ void DOMWindow::setDocument(PassRefPtr<Document> document)
         if (m_document->hasTouchEventHandlers())
             m_frame->page()->chrome().client().needTouchEvents(true);
     }
+}
+
+EventQueue* DOMWindow::eventQueue() const
+{
+    return m_eventQueue.get();
+}
+
+void DOMWindow::enqueueWindowEvent(PassRefPtr<Event> event)
+{
+    event->setTarget(this);
+    m_eventQueue->enqueueEvent(event);
+}
+
+void DOMWindow::enqueueDocumentEvent(PassRefPtr<Event> event)
+{
+    event->setTarget(m_document);
+    m_eventQueue->enqueueEvent(event);
+}
+
+void DOMWindow::dispatchWindowLoadEvent()
+{
+    ASSERT(!NoEventDispatchAssertion::isEventDispatchForbidden());
+    dispatchLoadEvent();
+}
+
+void DOMWindow::documentWasClosed()
+{
+    dispatchWindowLoadEvent();
+    enqueuePageshowEvent(PageshowEventNotPersisted);
+    enqueuePopstateEvent(m_pendingStateObject ? m_pendingStateObject.release() : SerializedScriptValue::nullValue());
+}
+
+void DOMWindow::enqueuePageshowEvent(PageshowEventPersistence persisted)
+{
+    // FIXME: https://bugs.webkit.org/show_bug.cgi?id=36334 Pageshow event needs to fire asynchronously.
+    dispatchEvent(PageTransitionEvent::create(EventTypeNames::pageshow, persisted), m_document.get());
+}
+
+void DOMWindow::enqueueHashchangeEvent(const String& oldURL, const String& newURL)
+{
+    enqueueWindowEvent(HashChangeEvent::create(oldURL, newURL));
+}
+
+void DOMWindow::enqueuePopstateEvent(PassRefPtr<SerializedScriptValue> stateObject)
+{
+    if (!ContextFeatures::pushStateEnabled(document()))
+        return;
+
+    // FIXME: https://bugs.webkit.org/show_bug.cgi?id=36202 Popstate event needs to fire asynchronously
+    dispatchEvent(PopStateEvent::create(stateObject, history()));
+}
+
+void DOMWindow::statePopped(PassRefPtr<SerializedScriptValue> stateObject)
+{
+    if (!frame())
+        return;
+
+    // Per step 11 of section 6.5.9 (history traversal) of the HTML5 spec, we
+    // defer firing of popstate until we're in the complete state.
+    if (document()->isLoadCompleted())
+        enqueuePopstateEvent(stateObject);
+    else
+        m_pendingStateObject = stateObject;
 }
 
 DOMWindow::~DOMWindow()
@@ -1517,6 +1588,8 @@ void DOMWindow::dispatchLoadEvent()
 
 bool DOMWindow::dispatchEvent(PassRefPtr<Event> prpEvent, PassRefPtr<EventTarget> prpTarget)
 {
+    ASSERT(!NoEventDispatchAssertion::isEventDispatchForbidden());
+
     RefPtr<EventTarget> protect = this;
     RefPtr<Event> event = prpEvent;
 

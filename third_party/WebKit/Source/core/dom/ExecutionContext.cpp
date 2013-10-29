@@ -294,12 +294,6 @@ void ExecutionContext::didChangeTimerAlignmentInterval()
         iter->value->didChangeAlignmentInterval();
 }
 
-EventQueue* ExecutionContext::eventQueue() const
-{
-    RELEASE_ASSERT(m_client);
-    return m_client->eventQueue();
-}
-
 SecurityOrigin* ExecutionContext::securityOrigin() const
 {
     RELEASE_ASSERT(m_client);

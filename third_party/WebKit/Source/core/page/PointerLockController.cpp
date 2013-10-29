@@ -27,6 +27,7 @@
 
 #include "core/dom/Element.h"
 #include "core/events/Event.h"
+#include "core/frame/DOMWindow.h"
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
@@ -152,8 +153,8 @@ void PointerLockController::enqueueEvent(const AtomicString& type, Element* elem
 
 void PointerLockController::enqueueEvent(const AtomicString& type, Document* document)
 {
-    if (document)
-        document->enqueueDocumentEvent(Event::create(type));
+    if (document && document->domWindow())
+        document->domWindow()->enqueueDocumentEvent(Event::create(type));
 }
 
 } // namespace WebCore

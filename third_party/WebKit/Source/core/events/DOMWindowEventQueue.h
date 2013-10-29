@@ -24,8 +24,8 @@
  *
  */
 
-#ifndef DocumentEventQueue_h
-#define DocumentEventQueue_h
+#ifndef DOMWindowEventQueue_h
+#define DOMWindowEventQueue_h
 
 #include "core/events/EventQueue.h"
 #include "wtf/Forward.h"
@@ -37,14 +37,14 @@
 namespace WebCore {
 
 class Event;
-class DocumentEventQueueTimer;
+class DOMWindowEventQueueTimer;
 class Node;
 class ExecutionContext;
 
-class DocumentEventQueue : public RefCounted<DocumentEventQueue>, public EventQueue {
+class DOMWindowEventQueue : public RefCounted<DOMWindowEventQueue>, public EventQueue {
 public:
-    static PassRefPtr<DocumentEventQueue> create(ExecutionContext*);
-    virtual ~DocumentEventQueue();
+    static PassRefPtr<DOMWindowEventQueue> create(ExecutionContext*);
+    virtual ~DOMWindowEventQueue();
 
     // EventQueue
     virtual bool enqueueEvent(PassRefPtr<Event>) OVERRIDE;
@@ -52,18 +52,18 @@ public:
     virtual void close() OVERRIDE;
 
 private:
-    explicit DocumentEventQueue(ExecutionContext*);
+    explicit DOMWindowEventQueue(ExecutionContext*);
 
     void pendingEventTimerFired();
     void dispatchEvent(PassRefPtr<Event>);
 
-    OwnPtr<DocumentEventQueueTimer> m_pendingEventTimer;
+    OwnPtr<DOMWindowEventQueueTimer> m_pendingEventTimer;
     ListHashSet<RefPtr<Event>, 16> m_queuedEvents;
     bool m_isClosed;
 
-    friend class DocumentEventQueueTimer;
+    friend class DOMWindowEventQueueTimer;
 };
 
 }
 
-#endif // DocumentEventQueue_h
+#endif // DOMWindowEventQueue_h

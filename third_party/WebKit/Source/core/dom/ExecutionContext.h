@@ -70,7 +70,6 @@ public:
     bool isDocument() const { return m_client && m_client->isDocument(); }
     bool isWorkerGlobalScope() { return m_client && m_client->isWorkerGlobalScope(); }
     bool isJSExecutionForbidden() { return m_client && m_client->isJSExecutionForbidden(); }
-    EventQueue* eventQueue() const;
     SecurityOrigin* securityOrigin() const;
     ContentSecurityPolicy* contentSecurityPolicy() const;
     const KURL& url() const;
@@ -124,6 +123,8 @@ public:
     void enforceSandboxFlags(SandboxFlags mask);
 
     PassOwnPtr<LifecycleNotifier<ExecutionContext> > createLifecycleNotifier();
+
+    virtual EventQueue* eventQueue() const = 0;
 
 protected:
 

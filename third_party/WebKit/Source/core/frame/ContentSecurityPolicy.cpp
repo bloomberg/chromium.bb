@@ -34,6 +34,7 @@
 #include "core/dom/Document.h"
 #include "core/events/SecurityPolicyViolationEvent.h"
 #include "core/frame/ContentSecurityPolicyResponseHeaders.h"
+#include "core/frame/DOMWindow.h"
 #include "core/frame/Frame.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/ScriptCallStack.h"
@@ -1731,7 +1732,7 @@ void ContentSecurityPolicy::reportViolation(const String& directiveText, const S
     gatherSecurityPolicyViolationEventData(violationData, document, directiveText, effectiveDirective, blockedURL, header);
 
     if (experimentalFeaturesEnabled())
-        document->enqueueDocumentEvent(SecurityPolicyViolationEvent::create(EventTypeNames::securitypolicyviolation, violationData));
+        frame->domWindow()->enqueueDocumentEvent(SecurityPolicyViolationEvent::create(EventTypeNames::securitypolicyviolation, violationData));
 
     if (reportURIs.isEmpty())
         return;

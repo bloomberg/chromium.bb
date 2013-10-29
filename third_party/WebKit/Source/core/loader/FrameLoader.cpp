@@ -329,7 +329,7 @@ void FrameLoader::didBeginDocument(bool dispatch)
     m_frame->document()->setReadyState(Document::Loading);
 
     if (history()->currentItem() && m_loadType == FrameLoadTypeBackForward)
-        m_frame->document()->statePopped(history()->currentItem()->stateObject());
+        m_frame->domWindow()->statePopped(history()->currentItem()->stateObject());
 
     if (dispatch)
         dispatchDidClearWindowObjectsInAllWorlds();
@@ -579,7 +579,7 @@ void FrameLoader::loadInSameDocument(const KURL& url, PassRefPtr<SerializedScrip
     bool hashChange = equalIgnoringFragmentIdentifier(url, oldURL) && url.fragmentIdentifier() != oldURL.fragmentIdentifier();
     if (hashChange) {
         m_frame->eventHandler().stopAutoscrollTimer();
-        m_frame->document()->enqueueHashchangeEvent(oldURL, url);
+        m_frame->domWindow()->enqueueHashchangeEvent(oldURL, url);
     }
     m_documentLoader->setIsClientRedirect((m_startingClientRedirect && !isNewNavigation) || !UserGestureIndicator::processingUserGesture());
     m_documentLoader->setReplacesCurrentHistoryItem(!isNewNavigation);
@@ -597,7 +597,7 @@ void FrameLoader::loadInSameDocument(const KURL& url, PassRefPtr<SerializedScrip
     m_isComplete = false;
     checkCompleted();
 
-    m_frame->document()->statePopped(stateObject ? stateObject : SerializedScriptValue::nullValue());
+    m_frame->domWindow()->statePopped(stateObject ? stateObject : SerializedScriptValue::nullValue());
 }
 
 void FrameLoader::completed()
