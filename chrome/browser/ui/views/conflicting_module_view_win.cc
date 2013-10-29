@@ -26,6 +26,14 @@
 #include "ui/views/layout/layout_constants.h"
 #include "ui/views/widget/widget.h"
 
+  // TODO(sky): remove this. Debugging code used to help isolate 309784.
+#if defined(USE_AURA)
+#include <Windows.h>
+
+#include "chrome/browser/ui/browser_window.h"
+#include "ui/views/win/hwnd_util.h"
+#endif
+
 using content::UserMetricsAction;
 
 namespace {
@@ -92,6 +100,19 @@ void ConflictingModuleView::MaybeShow(Browser* browser,
   ConflictingModuleView* bubble_delegate =
       new ConflictingModuleView(anchor_view, browser, url);
   views::BubbleDelegateView::CreateBubble(bubble_delegate);
+
+  // TODO(sky): remove this. Debugging code used to help isolate 309784.
+#if defined(USE_AURA)
+  CHECK(browser);
+  CHECK(anchor_view);
+  CHECK(anchor_view->GetWidget());
+  HWND browser_hwnd =
+      views::HWNDForNativeWindow(browser->window()->GetNativeWindow());
+  CHECK_EQ(browser_hwnd, views::HWNDForView(anchor_view));
+  HWND bubble_hwnd = views::HWNDForWidget(bubble_delegate->GetWidget());
+  CHECK(bubble_hwnd);
+  CHECK_EQ(browser_hwnd, GetParent(bubble_hwnd));
+#endif
   bubble_delegate->ShowBubble();
 
   done_checking = true;
