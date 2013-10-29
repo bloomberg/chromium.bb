@@ -155,10 +155,16 @@ enum EdgeStateSignatureType {
       G(GS_PENDING_TWO_FINGER_TAP, 1, TS_RELEASED, TSI_PROCESSED),
 
   GST_PENDING_TWO_FINGER_TAP_FIRST_MOVED =
-      G(GS_PENDING_TWO_FINGER_TAP, 0, TS_MOVED, TSI_ALWAYS),
+      G(GS_PENDING_TWO_FINGER_TAP, 0, TS_MOVED, TSI_NOT_PROCESSED),
 
   GST_PENDING_TWO_FINGER_TAP_SECOND_MOVED =
-      G(GS_PENDING_TWO_FINGER_TAP, 1, TS_MOVED, TSI_ALWAYS),
+      G(GS_PENDING_TWO_FINGER_TAP, 1, TS_MOVED, TSI_NOT_PROCESSED),
+
+  GST_PENDING_TWO_FINGER_TAP_FIRST_MOVED_HANDLED =
+      G(GS_PENDING_TWO_FINGER_TAP, 0, TS_MOVED, TSI_PROCESSED),
+
+  GST_PENDING_TWO_FINGER_TAP_SECOND_MOVED_HANDLED =
+      G(GS_PENDING_TWO_FINGER_TAP, 1, TS_MOVED, TSI_PROCESSED),
 
   GST_PENDING_TWO_FINGER_TAP_FIRST_CANCELLED =
       G(GS_PENDING_TWO_FINGER_TAP, 0, TS_CANCELLED, TSI_ALWAYS),
@@ -166,8 +172,74 @@ enum EdgeStateSignatureType {
   GST_PENDING_TWO_FINGER_TAP_SECOND_CANCELLED =
       G(GS_PENDING_TWO_FINGER_TAP, 1, TS_CANCELLED, TSI_ALWAYS),
 
+  GST_PENDING_TWO_FINGER_TAP_NO_PINCH_FIRST_RELEASED =
+      G(GS_PENDING_TWO_FINGER_TAP_NO_PINCH, 0, TS_RELEASED, TSI_NOT_PROCESSED),
+
+  GST_PENDING_TWO_FINGER_TAP_NO_PINCH_FIRST_RELEASED_HANDLED =
+      G(GS_PENDING_TWO_FINGER_TAP_NO_PINCH, 0, TS_RELEASED, TSI_PROCESSED),
+
+  GST_PENDING_TWO_FINGER_TAP_NO_PINCH_SECOND_RELEASED =
+      G(GS_PENDING_TWO_FINGER_TAP_NO_PINCH, 1, TS_RELEASED, TSI_NOT_PROCESSED),
+
+  GST_PENDING_TWO_FINGER_TAP_NO_PINCH_SECOND_RELEASED_HANDLED =
+      G(GS_PENDING_TWO_FINGER_TAP_NO_PINCH, 1, TS_RELEASED, TSI_PROCESSED),
+
+  GST_PENDING_TWO_FINGER_TAP_NO_PINCH_FIRST_MOVED =
+      G(GS_PENDING_TWO_FINGER_TAP_NO_PINCH, 0, TS_MOVED, TSI_ALWAYS),
+
+  GST_PENDING_TWO_FINGER_TAP_NO_PINCH_SECOND_MOVED =
+      G(GS_PENDING_TWO_FINGER_TAP_NO_PINCH, 1, TS_MOVED, TSI_ALWAYS),
+
+  GST_PENDING_TWO_FINGER_TAP_NO_PINCH_FIRST_CANCELLED =
+      G(GS_PENDING_TWO_FINGER_TAP_NO_PINCH, 0, TS_CANCELLED, TSI_ALWAYS),
+
+  GST_PENDING_TWO_FINGER_TAP_NO_PINCH_SECOND_CANCELLED =
+      G(GS_PENDING_TWO_FINGER_TAP_NO_PINCH, 1, TS_CANCELLED, TSI_ALWAYS),
+
   GST_PENDING_TWO_FINGER_TAP_THIRD_PRESSED =
       G(GS_PENDING_TWO_FINGER_TAP, 2, TS_PRESSED, TSI_NOT_PROCESSED),
+
+  GST_PENDING_PINCH_FIRST_MOVED =
+      G(GS_PENDING_PINCH, 0, TS_MOVED, TSI_NOT_PROCESSED),
+
+  GST_PENDING_PINCH_SECOND_MOVED =
+      G(GS_PENDING_PINCH, 1, TS_MOVED, TSI_NOT_PROCESSED),
+
+  GST_PENDING_PINCH_FIRST_MOVED_HANDLED =
+      G(GS_PENDING_PINCH, 0, TS_MOVED, TSI_PROCESSED),
+
+  GST_PENDING_PINCH_SECOND_MOVED_HANDLED =
+      G(GS_PENDING_PINCH, 1, TS_MOVED, TSI_PROCESSED),
+
+  GST_PENDING_PINCH_FIRST_CANCELLED =
+      G(GS_PENDING_PINCH, 0, TS_CANCELLED, TSI_ALWAYS),
+
+  GST_PENDING_PINCH_SECOND_CANCELLED =
+      G(GS_PENDING_PINCH, 1, TS_CANCELLED, TSI_ALWAYS),
+
+  GST_PENDING_PINCH_FIRST_RELEASED =
+      G(GS_PENDING_PINCH, 0, TS_RELEASED, TSI_ALWAYS),
+
+  GST_PENDING_PINCH_SECOND_RELEASED =
+      G(GS_PENDING_PINCH, 1, TS_RELEASED, TSI_ALWAYS),
+
+  GST_PENDING_PINCH_NO_PINCH_FIRST_MOVED =
+      G(GS_PENDING_PINCH_NO_PINCH, 0, TS_MOVED, TSI_ALWAYS),
+
+  GST_PENDING_PINCH_NO_PINCH_SECOND_MOVED =
+      G(GS_PENDING_PINCH_NO_PINCH, 1, TS_MOVED, TSI_ALWAYS),
+
+  GST_PENDING_PINCH_NO_PINCH_FIRST_CANCELLED =
+      G(GS_PENDING_PINCH_NO_PINCH, 0, TS_CANCELLED, TSI_ALWAYS),
+
+  GST_PENDING_PINCH_NO_PINCH_SECOND_CANCELLED =
+      G(GS_PENDING_PINCH_NO_PINCH, 1, TS_CANCELLED, TSI_ALWAYS),
+
+  GST_PENDING_PINCH_NO_PINCH_FIRST_RELEASED =
+      G(GS_PENDING_PINCH_NO_PINCH, 0, TS_RELEASED, TSI_ALWAYS),
+
+  GST_PENDING_PINCH_NO_PINCH_SECOND_RELEASED =
+      G(GS_PENDING_PINCH_NO_PINCH, 1, TS_RELEASED, TSI_ALWAYS),
 
   GST_PINCH_FIRST_MOVED =
       G(GS_PINCH, 0, TS_MOVED, TSI_NOT_PROCESSED),
@@ -280,9 +352,33 @@ EdgeStateSignatureType Signature(GestureState gesture_state,
     case GST_PENDING_TWO_FINGER_TAP_SECOND_RELEASED_HANDLED:
     case GST_PENDING_TWO_FINGER_TAP_FIRST_MOVED:
     case GST_PENDING_TWO_FINGER_TAP_SECOND_MOVED:
+    case GST_PENDING_TWO_FINGER_TAP_FIRST_MOVED_HANDLED:
+    case GST_PENDING_TWO_FINGER_TAP_SECOND_MOVED_HANDLED:
     case GST_PENDING_TWO_FINGER_TAP_FIRST_CANCELLED:
     case GST_PENDING_TWO_FINGER_TAP_SECOND_CANCELLED:
     case GST_PENDING_TWO_FINGER_TAP_THIRD_PRESSED:
+    case GST_PENDING_TWO_FINGER_TAP_NO_PINCH_FIRST_MOVED:
+    case GST_PENDING_TWO_FINGER_TAP_NO_PINCH_SECOND_MOVED:
+    case GST_PENDING_TWO_FINGER_TAP_NO_PINCH_FIRST_RELEASED:
+    case GST_PENDING_TWO_FINGER_TAP_NO_PINCH_SECOND_RELEASED:
+    case GST_PENDING_TWO_FINGER_TAP_NO_PINCH_FIRST_RELEASED_HANDLED:
+    case GST_PENDING_TWO_FINGER_TAP_NO_PINCH_SECOND_RELEASED_HANDLED:
+    case GST_PENDING_TWO_FINGER_TAP_NO_PINCH_FIRST_CANCELLED:
+    case GST_PENDING_TWO_FINGER_TAP_NO_PINCH_SECOND_CANCELLED:
+    case GST_PENDING_PINCH_FIRST_MOVED:
+    case GST_PENDING_PINCH_SECOND_MOVED:
+    case GST_PENDING_PINCH_FIRST_MOVED_HANDLED:
+    case GST_PENDING_PINCH_SECOND_MOVED_HANDLED:
+    case GST_PENDING_PINCH_FIRST_RELEASED:
+    case GST_PENDING_PINCH_SECOND_RELEASED:
+    case GST_PENDING_PINCH_FIRST_CANCELLED:
+    case GST_PENDING_PINCH_SECOND_CANCELLED:
+    case GST_PENDING_PINCH_NO_PINCH_FIRST_MOVED:
+    case GST_PENDING_PINCH_NO_PINCH_SECOND_MOVED:
+    case GST_PENDING_PINCH_NO_PINCH_FIRST_RELEASED:
+    case GST_PENDING_PINCH_NO_PINCH_SECOND_RELEASED:
+    case GST_PENDING_PINCH_NO_PINCH_FIRST_CANCELLED:
+    case GST_PENDING_PINCH_NO_PINCH_SECOND_CANCELLED:
     case GST_PINCH_FIRST_MOVED:
     case GST_PINCH_FIRST_MOVED_HANDLED:
     case GST_PINCH_SECOND_MOVED:
@@ -526,6 +622,10 @@ GestureSequence::Gestures* GestureSequence::ProcessTouchEventForGesture(
       if (TwoFingerTouchMove(event, point, gestures.get()))
         set_state(GS_PINCH);
       break;
+    case GST_PENDING_TWO_FINGER_TAP_FIRST_MOVED_HANDLED:
+    case GST_PENDING_TWO_FINGER_TAP_SECOND_MOVED_HANDLED:
+      set_state(GS_PENDING_TWO_FINGER_TAP_NO_PINCH);
+      break;
     case GST_PENDING_TWO_FINGER_TAP_FIRST_RELEASED_HANDLED:
     case GST_PENDING_TWO_FINGER_TAP_SECOND_RELEASED_HANDLED:
     case GST_PENDING_TWO_FINGER_TAP_FIRST_CANCELLED:
@@ -534,8 +634,58 @@ GestureSequence::Gestures* GestureSequence::ProcessTouchEventForGesture(
       set_state(GS_SCROLL);
       break;
     case GST_PENDING_TWO_FINGER_TAP_THIRD_PRESSED:
-      PinchStart(event, point, gestures.get());
-      set_state(GS_PINCH);
+      set_state(GS_PENDING_PINCH);
+      break;
+    case GST_PENDING_TWO_FINGER_TAP_NO_PINCH_FIRST_MOVED:
+    case GST_PENDING_TWO_FINGER_TAP_NO_PINCH_SECOND_MOVED:
+      // No pinch allowed, so nothing happens.
+      break;
+    case GST_PENDING_TWO_FINGER_TAP_NO_PINCH_FIRST_RELEASED:
+    case GST_PENDING_TWO_FINGER_TAP_NO_PINCH_SECOND_RELEASED:
+      TwoFingerTouchReleased(event, point, gestures.get());
+      // We transit into GS_SCROLL even though the touch move can be
+      // consumed and no scroll should happen. crbug.com/240399.
+      set_state(GS_SCROLL);
+      break;
+    case GST_PENDING_TWO_FINGER_TAP_NO_PINCH_FIRST_RELEASED_HANDLED:
+    case GST_PENDING_TWO_FINGER_TAP_NO_PINCH_SECOND_RELEASED_HANDLED:
+    case GST_PENDING_TWO_FINGER_TAP_NO_PINCH_FIRST_CANCELLED:
+    case GST_PENDING_TWO_FINGER_TAP_NO_PINCH_SECOND_CANCELLED:
+      // We transit into GS_SCROLL even though the touch move can be
+      // consumed and no scroll should happen. crbug.com/240399.
+      scroll_type_ = ST_FREE;
+      set_state(GS_SCROLL);
+      break;
+    case GST_PENDING_PINCH_FIRST_MOVED:
+    case GST_PENDING_PINCH_SECOND_MOVED:
+      if (TwoFingerTouchMove(event, point, gestures.get()))
+        set_state(GS_PINCH);
+      break;
+    case GST_PENDING_PINCH_FIRST_MOVED_HANDLED:
+    case GST_PENDING_PINCH_SECOND_MOVED_HANDLED:
+      set_state(GS_PENDING_PINCH_NO_PINCH);
+      break;
+    case GST_PENDING_PINCH_FIRST_RELEASED:
+    case GST_PENDING_PINCH_SECOND_RELEASED:
+    case GST_PENDING_PINCH_FIRST_CANCELLED:
+    case GST_PENDING_PINCH_SECOND_CANCELLED:
+      // We transit into GS_SCROLL even though the touch move can be
+      // consumed and no scroll should happen. crbug.com/240399.
+      scroll_type_ = ST_FREE;
+      set_state(GS_SCROLL);
+      break;
+    case GST_PENDING_PINCH_NO_PINCH_FIRST_MOVED:
+    case GST_PENDING_PINCH_NO_PINCH_SECOND_MOVED:
+      // No pinch allowed, so nothing happens.
+      break;
+    case GST_PENDING_PINCH_NO_PINCH_FIRST_RELEASED:
+    case GST_PENDING_PINCH_NO_PINCH_SECOND_RELEASED:
+    case GST_PENDING_PINCH_NO_PINCH_FIRST_CANCELLED:
+    case GST_PENDING_PINCH_NO_PINCH_SECOND_CANCELLED:
+      // We transit into GS_SCROLL even though the touch move can be
+      // consumed and no scroll should happen. crbug.com/240399.
+      scroll_type_ = ST_FREE;
+      set_state(GS_SCROLL);
       break;
     case GST_PINCH_FIRST_MOVED_HANDLED:
     case GST_PINCH_SECOND_MOVED_HANDLED:
@@ -1046,7 +1196,8 @@ bool GestureSequence::TwoFingerTouchDown(const TouchEvent& event,
 bool GestureSequence::TwoFingerTouchMove(const TouchEvent& event,
                                          const GesturePoint& point,
                                          Gestures* gestures) {
-  DCHECK(state_ == GS_PENDING_TWO_FINGER_TAP);
+  DCHECK(state_ == GS_PENDING_TWO_FINGER_TAP ||
+         state_ == GS_PENDING_PINCH);
 
   base::TimeDelta time_delta = event.time_stamp() - second_touch_time_;
   base::TimeDelta max_delta = base::TimeDelta::FromMilliseconds(1000 *
@@ -1061,7 +1212,8 @@ bool GestureSequence::TwoFingerTouchMove(const TouchEvent& event,
 bool GestureSequence::TwoFingerTouchReleased(const TouchEvent& event,
                                              const GesturePoint& point,
                                              Gestures* gestures) {
-  DCHECK(state_ == GS_PENDING_TWO_FINGER_TAP);
+  DCHECK(state_ == GS_PENDING_TWO_FINGER_TAP ||
+         state_ == GS_PENDING_TWO_FINGER_TAP_NO_PINCH);
   base::TimeDelta time_delta = event.time_stamp() - second_touch_time_;
   base::TimeDelta max_delta = base::TimeDelta::FromMilliseconds(1000 *
       ui::GestureConfiguration::max_touch_down_duration_in_seconds_for_click());
@@ -1122,8 +1274,8 @@ bool GestureSequence::PinchStart(const TouchEvent& event,
                                  const GesturePoint& point,
                                  Gestures* gestures) {
   DCHECK(state_ == GS_SCROLL ||
-         state_ == GS_PENDING_SYNTHETIC_CLICK ||
-         state_ == GS_PENDING_TWO_FINGER_TAP);
+         state_ == GS_PENDING_TWO_FINGER_TAP ||
+         state_ == GS_PENDING_PINCH);
 
   // Once pinch starts, we immediately break rail scroll.
   scroll_type_ = ST_FREE;
@@ -1136,8 +1288,8 @@ bool GestureSequence::PinchStart(const TouchEvent& event,
   latest_multi_scroll_update_location_ = bounding_box_.CenterPoint();
   AppendPinchGestureBegin(*point1, *point2, gestures);
 
-  if (state_ == GS_PENDING_SYNTHETIC_CLICK ||
-      state_ == GS_PENDING_TWO_FINGER_TAP) {
+  if (state_ == GS_PENDING_TWO_FINGER_TAP ||
+      state_ == GS_PENDING_PINCH) {
     gfx::Point center = bounding_box_.CenterPoint();
     AppendScrollGestureBegin(point, center, gestures);
   }
@@ -1270,8 +1422,7 @@ void GestureSequence::TwoFingerTapOrPinch(const TouchEvent& event,
     TwoFingerTouchDown(event, point, gestures);
     set_state(GS_PENDING_TWO_FINGER_TAP);
   } else {
-    PinchStart(event, point, gestures);
-    set_state(GS_PINCH);
+    set_state(GS_PENDING_PINCH);
   }
 }
 

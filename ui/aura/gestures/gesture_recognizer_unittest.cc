@@ -1982,11 +1982,16 @@ scoped_ptr<GestureEventConsumeDelegate> delegate(
   ui::TouchEvent press2(ui::ET_TOUCH_PRESSED, gfx::Point(10, 10),
                         kTouchId2, tes.Now());
   root_window()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press2);
-  // Since the touch points are far enough we will go to pinch rather than two
-  // finger tap.
-  EXPECT_TRUE(delegate->pinch_begin());
+  EXPECT_FALSE(delegate->pinch_begin());
 
+  // Touch move triggers pinch begin.
   tes.SendScrollEvent(root_window(), 130, 230, kTouchId1, delegate.get());
+  EXPECT_TRUE(delegate->pinch_begin());
+  EXPECT_FALSE(delegate->pinch_update());
+
+  // Touch move triggers pinch update.
+  tes.SendScrollEvent(root_window(), 160, 200, kTouchId1, delegate.get());
+  EXPECT_FALSE(delegate->pinch_begin());
   EXPECT_TRUE(delegate->pinch_update());
 
   // Pinch has started, now release the second finger
@@ -2038,17 +2043,14 @@ TEST_F(GestureRecognizerTest, GestureEventPinchFromTap) {
                   ui::ET_GESTURE_TAP_DOWN);
   EXPECT_TRUE(delegate->bounding_box().IsEmpty());
 
-  // Press the second finger far enough to break two finger tap. It should
-  // instead cause a scroll-begin and pinch-begin.
+  // Press the second finger far enough to break two finger tap.
   delegate->Reset();
   ui::TouchEvent press2(ui::ET_TOUCH_PRESSED, gfx::Point(10, 10),
                         kTouchId2, tes.Now());
   root->AsRootWindowHostDelegate()->OnHostTouchEvent(&press2);
-  EXPECT_4_EVENTS(delegate->events(),
+  EXPECT_2_EVENTS(delegate->events(),
                   ui::ET_GESTURE_TAP_CANCEL,
-                  ui::ET_GESTURE_BEGIN,
-                  ui::ET_GESTURE_PINCH_BEGIN,
-                  ui::ET_GESTURE_SCROLL_BEGIN);
+                  ui::ET_GESTURE_BEGIN);
   EXPECT_EQ(gfx::Rect(10, 10, 91, 291).ToString(),
             delegate->bounding_box().ToString());
 
@@ -2058,8 +2060,8 @@ TEST_F(GestureRecognizerTest, GestureEventPinchFromTap) {
                        kTouchId1, tes.Now());
   root->AsRootWindowHostDelegate()->OnHostTouchEvent(&move3);
   EXPECT_2_EVENTS(delegate->events(),
-                  ui::ET_GESTURE_PINCH_UPDATE,
-                  ui::ET_GESTURE_SCROLL_UPDATE);
+                  ui::ET_GESTURE_PINCH_BEGIN,
+                  ui::ET_GESTURE_SCROLL_BEGIN);
   EXPECT_EQ(gfx::Rect(10, 10, 55, 191).ToString(),
             delegate->bounding_box().ToString());
 
@@ -2837,6 +2839,21 @@ TEST_F(GestureRecognizerTest, VeryWideTwoFingerTouchDownShouldBeAPinch) {
   EXPECT_FALSE(delegate->tap());
   EXPECT_FALSE(delegate->tap_down());  // no touch down for second tap.
   EXPECT_TRUE(delegate->tap_cancel());
+  EXPECT_FALSE(delegate->scroll_begin());
+  EXPECT_FALSE(delegate->scroll_update());
+  EXPECT_FALSE(delegate->scroll_end());
+  EXPECT_FALSE(delegate->long_press());
+  EXPECT_FALSE(delegate->two_finger_tap());
+  EXPECT_FALSE(delegate->pinch_begin());
+
+  delegate->Reset();
+  ui::TouchEvent move2(ui::ET_TOUCH_MOVED, gfx::Point(530, 301),
+                       kTouchId2, tes.Now());
+  root_window()->AsRootWindowHostDelegate()->OnHostTouchEvent(&move2);
+  EXPECT_FALSE(delegate->tap());
+  EXPECT_FALSE(delegate->tap_down());
+  EXPECT_FALSE(delegate->tap_cancel());
+  // Pinch & Scroll only when there is enough movement.
   EXPECT_TRUE(delegate->scroll_begin());
   EXPECT_FALSE(delegate->scroll_update());
   EXPECT_FALSE(delegate->scroll_end());
@@ -3014,11 +3031,10 @@ TEST_F(GestureRecognizerTest, GestureEventScrollTwoFingerTouchMoveConsumed) {
   root_window()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press2);
   tes.SendScrollEvent(root_window(), 161, 231, kTouchId2, delegate.get());
 
-  // PinchBegin & ScrollBegin were sent even though the touch-move events
-  // were consumed. This seems reasonable, as long as we don't send PinchUpdate
-  // ScrollUpdate when touch-move are consumed.
-  EXPECT_TRUE(delegate->pinch_begin());
-  EXPECT_TRUE(delegate->scroll_begin());
+  // PinchBegin & ScrollBegin were not sent if the touch-move events were
+  // consumed.
+  EXPECT_FALSE(delegate->pinch_begin());
+  EXPECT_FALSE(delegate->scroll_begin());
 
   EXPECT_FALSE(delegate->tap());
   EXPECT_FALSE(delegate->two_finger_tap());
@@ -3044,15 +3060,24 @@ TEST_F(GestureRecognizerTest, GestureEventScrollTwoFingerTouchMoveConsumed) {
   delegate->Reset();
   // Making a pinch gesture.
   tes.SendScrollEvent(root_window(), 161, 251, kTouchId1, delegate.get());
-  tes.SendScrollEvent(root_window(), 161, 241, kTouchId2, delegate.get());
-
-  // Now we see PinchUpdate & ScrollUpdate.
+  // If touch moves are ever consumed, we should not see PinchBegin/Update
+  // even touch moves become not consumed.
   EXPECT_FALSE(delegate->scroll_begin());
-  EXPECT_TRUE(delegate->scroll_update());
+  EXPECT_FALSE(delegate->scroll_update());
   EXPECT_FALSE(delegate->scroll_end());
 
   EXPECT_FALSE(delegate->pinch_begin());
-  EXPECT_TRUE(delegate->pinch_update());
+  EXPECT_FALSE(delegate->pinch_update());
+  EXPECT_FALSE(delegate->pinch_end());
+
+  delegate->Reset();
+  tes.SendScrollEvent(root_window(), 161, 241, kTouchId2, delegate.get());
+  EXPECT_FALSE(delegate->scroll_begin());
+  EXPECT_FALSE(delegate->scroll_update());
+  EXPECT_FALSE(delegate->scroll_end());
+
+  EXPECT_FALSE(delegate->pinch_begin());
+  EXPECT_FALSE(delegate->pinch_update());
   EXPECT_FALSE(delegate->pinch_end());
 
   delegate->Reset();
@@ -3064,16 +3089,17 @@ TEST_F(GestureRecognizerTest, GestureEventScrollTwoFingerTouchMoveConsumed) {
   root_window()->AsRootWindowHostDelegate()->OnHostTouchEvent(&release2);
 
   EXPECT_FALSE(delegate->tap());
-  EXPECT_FALSE(delegate->two_finger_tap());
+  // Touch release is not consumed, so we still see two finger tap.
+  EXPECT_TRUE(delegate->two_finger_tap());
 
-  // Should see PinchEnd & ScrollEnd.
+  // Should not see PinchEnd & ScrollEnd.
   EXPECT_FALSE(delegate->scroll_begin());
   EXPECT_FALSE(delegate->scroll_update());
-  EXPECT_TRUE(delegate->scroll_end());
+  EXPECT_FALSE(delegate->scroll_end());
 
   EXPECT_FALSE(delegate->pinch_begin());
   EXPECT_FALSE(delegate->pinch_update());
-  EXPECT_TRUE(delegate->pinch_end());
+  EXPECT_FALSE(delegate->pinch_end());
 }
 
 // Like as GestureEventTouchMoveConsumed but tests the different behavior
