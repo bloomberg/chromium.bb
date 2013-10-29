@@ -26,16 +26,14 @@
 #ifndef TextTrackResource_h
 #define TextTrackResource_h
 
-#include "core/fetch/Resource.h"
+#include "core/fetch/RawResource.h"
 
 namespace WebCore {
 
-class TextTrackResource : public Resource {
+class TextTrackResource : public RawResource {
 public:
     TextTrackResource(const ResourceRequest&);
     virtual ~TextTrackResource();
-
-    virtual void appendData(const char*, int) OVERRIDE;
 };
 
 }

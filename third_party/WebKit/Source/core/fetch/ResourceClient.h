@@ -44,7 +44,6 @@ public:
 
     virtual ~ResourceClient() { }
     virtual void notifyFinished(Resource*) { }
-    virtual void deprecatedDidReceiveResource(Resource*) { }
 
     static ResourceClientType expectedType() { return BaseResourceType; }
     virtual ResourceClientType resourceClientType() const { return expectedType(); }

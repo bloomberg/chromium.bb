@@ -33,7 +33,7 @@
 namespace WebCore {
 
 TextTrackResource::TextTrackResource(const ResourceRequest& resourceRequest)
-    : Resource(resourceRequest, TextTrack)
+    : RawResource(resourceRequest, TextTrack)
 {
 }
 
@@ -41,13 +41,4 @@ TextTrackResource::~TextTrackResource()
 {
 }
 
-void TextTrackResource::appendData(const char* data, int length)
-{
-    Resource::appendData(data, length);
-    ResourceClientWalker<ResourceClient> walker(m_clients);
-    while (ResourceClient *client = walker.next())
-        client->deprecatedDidReceiveResource(this);
 }
-
-}
-

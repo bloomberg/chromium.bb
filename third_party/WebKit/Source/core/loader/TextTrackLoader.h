@@ -26,7 +26,7 @@
 #ifndef TextTrackLoader_h
 #define TextTrackLoader_h
 
-#include "core/fetch/ResourceClient.h"
+#include "core/fetch/RawResource.h"
 #include "core/fetch/ResourcePtr.h"
 #include "core/fetch/TextTrackResource.h"
 #include "core/html/track/WebVTTParser.h"
@@ -49,7 +49,7 @@ public:
     virtual void newRegionsAvailable(TextTrackLoader*) = 0;
 };
 
-class TextTrackLoader : public ResourceClient, private WebVTTParserClient {
+class TextTrackLoader : public RawResourceClient, private WebVTTParserClient {
     WTF_MAKE_NONCOPYABLE(TextTrackLoader);
     WTF_MAKE_FAST_ALLOCATED;
 public:
@@ -69,14 +69,14 @@ public:
     void getNewRegions(Vector<RefPtr<TextTrackRegion> >& outputRegions);
 private:
 
-    // ResourceClient
-    virtual void notifyFinished(Resource*);
-    virtual void deprecatedDidReceiveResource(Resource*);
+    // RawResourceClient
+    virtual void dataReceived(Resource*, const char* data, int length) OVERRIDE;
+    virtual void notifyFinished(Resource*) OVERRIDE;
 
     // WebVTTParserClient
-    virtual void newCuesParsed();
-    virtual void newRegionsParsed();
-    virtual void fileFailedToParse();
+    virtual void newCuesParsed() OVERRIDE;
+    virtual void newRegionsParsed() OVERRIDE;
+    virtual void fileFailedToParse() OVERRIDE;
 
     TextTrackLoader(TextTrackLoaderClient*, Document&);
 
