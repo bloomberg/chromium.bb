@@ -7,6 +7,9 @@
 #include <string>
 
 #include "base/logging.h"
+#include "base/strings/string16.h"
+#include "base/strings/string_split.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/common/render_messages.h"
 #include "content/public/renderer/render_thread.h"
 
@@ -41,11 +44,17 @@ const char kMp4aAvc1Avc3[] = "mp4a,avc1,avc3";
 #endif  // defined(USE_PROPRIETARY_CODECS)
 
 #if defined(ENABLE_PEPPER_CDMS)
-static bool IsPepperCdmRegistered(const std::string& pepper_type) {
+static bool IsPepperCdmRegistered(
+    const std::string& pepper_type,
+    std::vector<base::string16>* additional_param_names,
+    std::vector<base::string16>* additional_param_values) {
   bool is_registered = false;
   content::RenderThread::Get()->Send(
       new ChromeViewHostMsg_IsInternalPluginRegisteredForMimeType(
-          pepper_type, &is_registered));
+          pepper_type,
+          &is_registered,
+          additional_param_names,
+          additional_param_values));
 
   return is_registered;
 }
@@ -58,8 +67,13 @@ static void AddExternalClearKey(
   static const char kExternalClearKeyPepperType[] =
       "application/x-ppapi-clearkey-cdm";
 
-  if (!IsPepperCdmRegistered(kExternalClearKeyPepperType))
+  std::vector<base::string16> additional_param_names;
+  std::vector<base::string16> additional_param_values;
+  if (!IsPepperCdmRegistered(kExternalClearKeyPepperType,
+                             &additional_param_names,
+                             &additional_param_values)) {
     return;
+  }
 
   KeySystemInfo info(kExternalClearKeyKeySystem);
 
@@ -93,7 +107,10 @@ enum WidevineCdmType {
 
 // Defines bitmask values used to specify supported codecs.
 // Each value represents a codec within a specific container.
-enum SupportedCodecs {
+// The mask values are stored in a SupportedCodecs.
+typedef uint32 SupportedCodecs;
+enum SupportedCodecMasks {
+  NO_CODECS = 0,
   WEBM_VP8_AND_VORBIS = 1 << 0,
 #if defined(USE_PROPRIETARY_CODECS)
   MP4_AAC = 1 << 1,
@@ -179,7 +196,37 @@ static void AddWidevineWithCodecs(
 }
 
 #if defined(ENABLE_PEPPER_CDMS)
-// Supported types are determined at compile time.
+// When the adapter is registered, a name-value pair is inserted in
+// additional_param_* that lists the supported codecs. The name is "codecs" and
+// the value is a comma-delimited list of codecs.
+// This function finds "codecs" and parses the value into the vector |codecs|.
+// Converts the codec strings to UTF-8 since we only expect ASCII strings and
+// this simplifies the rest of the code in this file.
+void GetSupportedCodecs(
+    const std::vector<base::string16>& additional_param_names,
+    const std::vector<base::string16>& additional_param_values,
+    std::vector<std::string>* codecs) {
+  DCHECK(codecs->empty());
+  DCHECK_EQ(additional_param_names.size(), additional_param_values.size());
+  for (size_t i = 0; i < additional_param_names.size(); ++i) {
+    if (additional_param_names[i] ==
+        base::ASCIIToUTF16(kCdmSupportedCodecsParamName)) {
+      const base::string16& codecs_string16 = additional_param_values[i];
+      std::string codecs_string;
+      if (!base::UTF16ToUTF8(codecs_string16.c_str(),
+                             codecs_string16.length(),
+                             &codecs_string)) {
+        DLOG(WARNING) << "Non-UTF-8 codecs string.";
+        // Continue using the best effort conversion.
+      }
+      base::SplitString(codecs_string,
+                        kCdmSupportedCodecsValueDelimiter,
+                        codecs);
+      break;
+    }
+  }
+}
+
 static void AddPepperBasedWidevine(
     std::vector<KeySystemInfo>* concrete_key_systems) {
 #if defined(WIDEVINE_CDM_MIN_GLIBC_VERSION)
@@ -189,21 +236,30 @@ static void AddPepperBasedWidevine(
     return;
 #endif  // defined(WIDEVINE_CDM_MIN_GLIBC_VERSION)
 
-  if (!IsPepperCdmRegistered(kWidevineCdmPluginMimeType)) {
+  std::vector<base::string16> additional_param_names;
+  std::vector<base::string16> additional_param_values;
+  if (!IsPepperCdmRegistered(kWidevineCdmPluginMimeType,
+                             &additional_param_names,
+                             &additional_param_values)) {
     DVLOG(1) << "Widevine CDM is not currently available.";
     return;
   }
 
-  SupportedCodecs supported_codecs = WEBM_VP8_AND_VORBIS;
+  std::vector<std::string> codecs;
+  GetSupportedCodecs(additional_param_names, additional_param_values, &codecs);
 
+  SupportedCodecs supported_codecs = NO_CODECS;
+  for (size_t i = 0; i < codecs.size(); ++i) {
+    // TODO(ddorwin): Break up VP8 and Vorbis. For now, "vp8" implies both.
+    if (codecs[i] == kCdmSupportedCodecVp8)
+      supported_codecs |= WEBM_VP8_AND_VORBIS;
 #if defined(USE_PROPRIETARY_CODECS)
-#if defined(WIDEVINE_CDM_AAC_SUPPORT_AVAILABLE)
-  supported_codecs = static_cast<SupportedCodecs>(supported_codecs | MP4_AAC);
-#endif
-#if defined(WIDEVINE_CDM_AVC1_SUPPORT_AVAILABLE)
-  supported_codecs = static_cast<SupportedCodecs>(supported_codecs | MP4_AVC1);
-#endif
+    if (codecs[i] == kCdmSupportedCodecAac)
+      supported_codecs |= MP4_AAC;
+    if (codecs[i] == kCdmSupportedCodecAvc1)
+      supported_codecs |= MP4_AVC1;
 #endif  // defined(USE_PROPRIETARY_CODECS)
+  }
 
   AddWidevineWithCodecs(WIDEVINE, supported_codecs, concrete_key_systems);
 

@@ -37,7 +37,11 @@
 #endif  // defined(ENABLE_PEPPER_CDMS)
 
 // Expectations for Widevine.
-#if defined(WIDEVINE_CDM_AVAILABLE)
+// Note: Widevine is not available on platforms using components because
+// RegisterPepperCdm() cannot set the codecs.
+// TODO(ddorwin): Enable these tests after we have the ability to use the CUS
+// in these tests. See http://crbug.com/311724.
+#if defined(WIDEVINE_CDM_AVAILABLE) && !defined(WIDEVINE_CDM_IS_COMPONENT)
 #define EXPECT_WV EXPECT_TRUE
 
 #if defined(WIDEVINE_CDM_AVC1_SUPPORT_AVAILABLE)
@@ -58,12 +62,13 @@
 #define EXPECT_WVAAC EXPECT_FALSE
 #endif
 
-#else  // defined(WIDEVINE_CDM_AVAILABLE)
+#else  // defined(WIDEVINE_CDM_AVAILABLE) && !defined(WIDEVINE_CDM_IS_COMPONENT)
 #define EXPECT_WV EXPECT_FALSE
 #define EXPECT_WVAVC1 EXPECT_FALSE
 #define EXPECT_WVAVC1AAC EXPECT_FALSE
 #define EXPECT_WVAAC EXPECT_FALSE
-#endif  // defined(WIDEVINE_CDM_AVAILABLE)
+#endif  // defined(WIDEVINE_CDM_AVAILABLE) &&
+        // !defined(WIDEVINE_CDM_IS_COMPONENT)
 
 namespace chrome {
 
@@ -277,7 +282,8 @@ class EncryptedMediaIsTypeSupportedExternalClearKeyTest
 // For Widevine tests, ensure that the Widevine adapter is loaded.
 class EncryptedMediaIsTypeSupportedWidevineTest
     : public EncryptedMediaIsTypeSupportedTest {
-#if defined(WIDEVINE_CDM_AVAILABLE) && defined(ENABLE_PEPPER_CDMS)
+#if defined(WIDEVINE_CDM_AVAILABLE) && defined(ENABLE_PEPPER_CDMS) && \
+    defined(WIDEVINE_CDM_IS_COMPONENT)
  protected:
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     // File name of the adapter on different platforms.
@@ -293,7 +299,8 @@ class EncryptedMediaIsTypeSupportedWidevineTest
     const std::string pepper_name("application/x-ppapi-widevine-cdm");
     RegisterPepperCdm(command_line, adapter_file_name, pepper_name);
   }
-#endif  // defined(WIDEVINE_CDM_AVAILABLE) && defined(ENABLE_PEPPER_CDMS)
+#endif  // defined(WIDEVINE_CDM_AVAILABLE) && defined(ENABLE_PEPPER_CDMS) &&
+        // defined(WIDEVINE_CDM_IS_COMPONENT)
 };
 
 #if defined(ENABLE_PEPPER_CDMS)
@@ -678,7 +685,11 @@ IN_PROC_BROWSER_TEST_F(
 
 IN_PROC_BROWSER_TEST_F(EncryptedMediaIsTypeSupportedWidevineTest,
                        Widevine_Basic) {
+#if defined(WIDEVINE_CDM_AVAILABLE) && defined(WIDEVINE_CDM_IS_COMPONENT)
+  EXPECT_TRUE(IsConcreteSupportedKeySystem(kWidevineAlpha));
+#else
   EXPECT_WV(IsConcreteSupportedKeySystem(kWidevineAlpha));
+#endif
   EXPECT_WV(IsSupportedKeySystemWithMediaMimeType(
       "video/webm", no_codecs(), kWidevineAlpha));
 }

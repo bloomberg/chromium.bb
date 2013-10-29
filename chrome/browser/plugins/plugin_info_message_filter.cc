@@ -173,21 +173,25 @@ void PluginInfoMessageFilter::PluginsLoaded(
 
 void PluginInfoMessageFilter::OnIsInternalPluginRegisteredForMimeType(
     const std::string& mime_type,
-    bool* is_registered) {
-   std::vector<WebPluginInfo> plugins;
-   PluginService::GetInstance()->GetInternalPlugins(&plugins);
-   for (size_t i = 0; i < plugins.size(); ++i) {
-     const std::vector<content::WebPluginMimeType>& mime_types =
-         plugins[i].mime_types;
-     for (size_t j = 0; j < mime_types.size(); ++j) {
-       if (mime_types[j].mime_type == mime_type) {
-         *is_registered = true;
-         return;
-       }
-     }
-   }
+    bool* is_registered,
+    std::vector<base::string16>* additional_param_names,
+    std::vector<base::string16>* additional_param_values) {
+  std::vector<WebPluginInfo> plugins;
+  PluginService::GetInstance()->GetInternalPlugins(&plugins);
+  for (size_t i = 0; i < plugins.size(); ++i) {
+    const std::vector<content::WebPluginMimeType>& mime_types =
+        plugins[i].mime_types;
+    for (size_t j = 0; j < mime_types.size(); ++j) {
+      if (mime_types[j].mime_type == mime_type) {
+        *is_registered = true;
+        *additional_param_names = mime_types[j].additional_param_names;
+        *additional_param_values = mime_types[j].additional_param_values;
+        return;
+      }
+    }
+  }
 
-   *is_registered = false;
+  *is_registered = false;
 }
 
 void PluginInfoMessageFilter::Context::DecidePluginStatus(
