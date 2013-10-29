@@ -17,6 +17,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "cc/base/cc_export.h"
+#include "cc/base/region.h"
 #include "skia/ext/lazy_pixel_ref.h"
 #include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkPixelRef.h"
@@ -67,10 +68,11 @@ class CC_EXPORT Picture
   // Has Record() been called yet?
   bool HasRecording() const { return picture_.get() != NULL; }
 
-  // Apply this contents scale and raster the content rect into the canvas.
+  // Apply this scale and raster the negated region into the canvas. See comment
+  // in PicturePileImpl::RasterCommon for explanation on negated content region.
   int Raster(SkCanvas* canvas,
              SkDrawPictureCallback* callback,
-             gfx::Rect content_rect,
+             const Region& negated_content_region,
              float contents_scale);
 
   // Draw the picture directly into the given canvas, without applying any
@@ -142,7 +144,7 @@ class CC_EXPORT Picture
   gfx::Size cell_size_;
 
   scoped_refptr<base::debug::ConvertableToTraceFormat>
-    AsTraceableRasterData(gfx::Rect rect, float scale) const;
+    AsTraceableRasterData(float scale) const;
   scoped_refptr<base::debug::ConvertableToTraceFormat>
     AsTraceableRecordData() const;
 

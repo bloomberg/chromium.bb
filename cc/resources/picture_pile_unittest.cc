@@ -16,11 +16,11 @@ class TestPicturePile : public PicturePile {
  public:
   using PicturePile::buffer_pixels;
 
-  PictureListMap& picture_list_map() { return picture_list_map_; }
+  PictureMap& picture_map() { return picture_map_; }
 
-  typedef PicturePile::PictureList PictureList;
-  typedef PicturePile::PictureListMapKey PictureListMapKey;
-  typedef PicturePile::PictureListMap PictureListMap;
+  typedef PicturePile::PictureInfo PictureInfo;
+  typedef PicturePile::PictureMapKey PictureMapKey;
+  typedef PicturePile::PictureMap PictureMap;
 
  protected:
     virtual ~TestPicturePile() {}
@@ -60,22 +60,17 @@ TEST(PicturePileTest, SmallInvalidateInflated) {
   EXPECT_EQ(1, pile->tiling().num_tiles_x());
   EXPECT_EQ(1, pile->tiling().num_tiles_y());
 
-  TestPicturePile::PictureList& picture_list =
-      pile->picture_list_map().find(
-          TestPicturePile::PictureListMapKey(0, 0))->second;
-  EXPECT_EQ(2u, picture_list.size());
-  for (TestPicturePile::PictureList::iterator it = picture_list.begin();
-       it != picture_list.end();
-       ++it) {
-    scoped_refptr<Picture> picture = *it;
-    gfx::Rect picture_rect =
-        gfx::ScaleToEnclosedRect(picture->LayerRect(), min_scale);
+  TestPicturePile::PictureInfo& picture_info =
+      pile->picture_map().find(TestPicturePile::PictureMapKey(0, 0))->second;
+  // We should have a picture.
+  EXPECT_TRUE(!!picture_info.picture.get());
+  gfx::Rect picture_rect =
+      gfx::ScaleToEnclosedRect(picture_info.picture->LayerRect(), min_scale);
 
-    // The invalidation in each tile should have been made large enough
-    // that scaling it never makes a rect smaller than 1 px wide or tall.
-    EXPECT_FALSE(picture_rect.IsEmpty()) << "Picture rect " <<
-        picture_rect.ToString();
-  }
+  // The the picture should be large enough that scaling it never makes a rect
+  // smaller than 1 px wide or tall.
+  EXPECT_FALSE(picture_rect.IsEmpty()) << "Picture rect " <<
+      picture_rect.ToString();
 }
 
 TEST(PicturePileTest, LargeInvalidateInflated) {
@@ -112,24 +107,17 @@ TEST(PicturePileTest, LargeInvalidateInflated) {
   EXPECT_EQ(1, pile->tiling().num_tiles_x());
   EXPECT_EQ(1, pile->tiling().num_tiles_y());
 
-  TestPicturePile::PictureList& picture_list =
-      pile->picture_list_map().find(
-          TestPicturePile::PictureListMapKey(0, 0))->second;
-  EXPECT_EQ(2u, picture_list.size());
+  TestPicturePile::PictureInfo& picture_info =
+      pile->picture_map().find(TestPicturePile::PictureMapKey(0, 0))->second;
+  EXPECT_TRUE(!!picture_info.picture.get());
 
   int expected_inflation = pile->buffer_pixels();
 
-  scoped_refptr<Picture> base_picture = *picture_list.begin();
+  scoped_refptr<Picture> base_picture = picture_info.picture;
   gfx::Rect base_picture_rect(layer_size);
   base_picture_rect.Inset(-expected_inflation, -expected_inflation);
   EXPECT_EQ(base_picture_rect.ToString(),
             base_picture->LayerRect().ToString());
-
-  scoped_refptr<Picture> picture = *(++picture_list.begin());
-  gfx::Rect picture_rect(invalidate_rect);
-  picture_rect.Inset(-expected_inflation, -expected_inflation);
-  EXPECT_EQ(picture_rect.ToString(),
-            picture->LayerRect().ToString());
 }
 
 TEST(PicturePileTest, InvalidateOnTileBoundaryInflated) {
@@ -179,30 +167,13 @@ TEST(PicturePileTest, InvalidateOnTileBoundaryInflated) {
 
   for (int i = 0; i < pile->tiling().num_tiles_x(); ++i) {
     for (int j = 0; j < pile->tiling().num_tiles_y(); ++j) {
-      // (1, 0) and (1, 1) should be invalidated partially.
-      bool expect_invalidated = i == 1 && (j == 0 || j == 1);
+      TestPicturePile::PictureInfo& picture_info =
+          pile->picture_map().find(
+              TestPicturePile::PictureMapKey(i, j))->second;
 
-      TestPicturePile::PictureList& picture_list =
-          pile->picture_list_map().find(
-              TestPicturePile::PictureListMapKey(i, j))->second;
-      if (!expect_invalidated) {
-        EXPECT_EQ(1u, picture_list.size()) << "For i,j " << i << "," << j;
-        continue;
-      }
-
-      EXPECT_EQ(2u, picture_list.size()) << "For i,j " << i << "," << j;
-      for (TestPicturePile::PictureList::iterator it = picture_list.begin();
-           it != picture_list.end();
-           ++it) {
-        scoped_refptr<Picture> picture = *it;
-        gfx::Rect picture_rect =
-            gfx::ScaleToEnclosedRect(picture->LayerRect(), min_scale);
-
-        // The invalidation in each tile should have been made large enough
-        // that scaling it never makes a rect smaller than 1 px wide or tall.
-        EXPECT_FALSE(picture_rect.IsEmpty()) << "Picture rect " <<
-            picture_rect.ToString();
-      }
+      // TODO(vmpstr): Fix this to check invalidation frequency instead
+      // of the picture, since we always have one picture per tile.
+      EXPECT_TRUE(!!picture_info.picture.get());
     }
   }
 }

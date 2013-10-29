@@ -65,17 +65,10 @@ void FakePicturePileImpl::AddRecordingAt(int x, int y) {
   scoped_refptr<Picture> picture(Picture::Create(bounds));
   picture->Record(&client_, tile_grid_info_);
   picture->GatherPixelRefs(tile_grid_info_);
-  picture_list_map_[std::pair<int, int>(x, y)].push_back(picture);
+  picture_map_[std::pair<int, int>(x, y)].picture = picture;
   EXPECT_TRUE(HasRecordingAt(x, y));
 
   UpdateRecordedRegion();
-}
-
-void FakePicturePileImpl::AddPictureToRecording(
-    int x,
-    int y,
-    scoped_refptr<Picture> picture) {
-  picture_list_map_[std::pair<int, int>(x, y)].push_back(picture);
 }
 
 void FakePicturePileImpl::RemoveRecordingAt(int x, int y) {
@@ -86,7 +79,7 @@ void FakePicturePileImpl::RemoveRecordingAt(int x, int y) {
 
   if (!HasRecordingAt(x, y))
     return;
-  picture_list_map_.erase(std::pair<int, int>(x, y));
+  picture_map_.erase(std::pair<int, int>(x, y));
   EXPECT_FALSE(HasRecordingAt(x, y));
 
   UpdateRecordedRegion();

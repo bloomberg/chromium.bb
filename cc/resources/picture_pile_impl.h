@@ -7,6 +7,7 @@
 
 #include <list>
 #include <map>
+#include <set>
 #include <vector>
 
 #include "base/time/time.h"
@@ -87,15 +88,13 @@ class CC_EXPORT PicturePileImpl : public PicturePileBase {
     operator bool() const { return pixel_ref_iterator_; }
 
    private:
-    bool AdvanceToTileWithPictures();
-    void AdvanceToPictureWithPixelRefs();
+    void AdvanceToTilePictureWithPixelRefs();
 
     const PicturePileImpl* picture_pile_;
     gfx::Rect layer_rect_;
     TilingData::Iterator tile_iterator_;
     Picture::PixelRefIterator pixel_ref_iterator_;
-    const PictureList* picture_list_;
-    PictureList::const_iterator picture_list_iterator_;
+    std::set<const void*> processed_pictures_;
   };
 
   void DidBeginTracing();
@@ -122,6 +121,13 @@ class CC_EXPORT PicturePileImpl : public PicturePileBase {
       const PicturePileImpl* other, unsigned thread_index);
 
   PicturePileImpl(const PicturePileImpl* other, unsigned thread_index);
+
+ private:
+  typedef std::map<Picture*, Region> PictureRegionMap;
+  void CoalesceRasters(gfx::Rect canvas_rect,
+                       gfx::Rect content_rect,
+                       float contents_scale,
+                       PictureRegionMap* result);
 
   void RasterCommon(
       SkCanvas* canvas,

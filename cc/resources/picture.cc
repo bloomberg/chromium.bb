@@ -294,16 +294,21 @@ void Picture::GatherPixelRefs(
 int Picture::Raster(
     SkCanvas* canvas,
     SkDrawPictureCallback* callback,
-    gfx::Rect content_rect,
+    const Region& negated_content_region,
     float contents_scale) {
   TRACE_EVENT_BEGIN1(
-      "cc", "Picture::Raster",
-      "data", AsTraceableRasterData(content_rect, contents_scale));
+      "cc",
+      "Picture::Raster",
+      "data",
+      AsTraceableRasterData(contents_scale));
 
   DCHECK(picture_);
 
   canvas->save();
-  canvas->clipRect(gfx::RectToSkRect(content_rect));
+
+  for (Region::Iterator it(negated_content_region); it.has_rect(); it.next())
+    canvas->clipRect(gfx::RectToSkRect(it.rect()), SkRegion::kDifference_Op);
+
   canvas->scale(contents_scale, contents_scale);
   canvas->translate(layer_rect_.x(), layer_rect_.y());
   picture_->draw(canvas, callback);
@@ -460,14 +465,10 @@ Picture::PixelRefIterator& Picture::PixelRefIterator::operator++() {
 }
 
 scoped_refptr<base::debug::ConvertableToTraceFormat>
-    Picture::AsTraceableRasterData(gfx::Rect rect, float scale) const {
+    Picture::AsTraceableRasterData(float scale) const {
   scoped_ptr<base::DictionaryValue> raster_data(new base::DictionaryValue());
   raster_data->Set("picture_id", TracedValue::CreateIDRef(this).release());
   raster_data->SetDouble("scale", scale);
-  raster_data->SetDouble("rect_x", rect.x());
-  raster_data->SetDouble("rect_y", rect.y());
-  raster_data->SetDouble("rect_width", rect.width());
-  raster_data->SetDouble("rect_height", rect.height());
   return TracedValue::FromValue(raster_data.release());
 }
 
