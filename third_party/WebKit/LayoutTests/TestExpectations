@@ -530,6 +530,8 @@ crbug.com/312060 [ Win ] virtual/threaded/animations/missing-values-first-keyfra
 
 crbug.com/311469 [ Mac ] svg/zoom/page/zoom-zoom-coords.xhtml [ Failure Pass ]
 
+crbug.com/312606 [ Mac ] fast/text/international/text-combine-image-test.html [ Failure Pass ]
+
 crbug.com/241070 fast/text/international/rtl-white-space-pre-wrap.html [ NeedsRebaseline ]
 crbug.com/241070 fast/repaint/shadow-multiple-strict-vertical.html [ NeedsRebaseline ]
 crbug.com/241070 editing/pasteboard/paste-4038267-fix.html [ NeedsRebaseline ]
