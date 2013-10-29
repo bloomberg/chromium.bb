@@ -273,11 +273,28 @@ CommandHandler.prototype.updateAvailability = function() {
 };
 
 /**
+ * Checks if the handler should ignore the current event, eg. since there is
+ * a popup dialog currently opened.
+ *
+ * @return {boolean} True if the event should be ignored, false otherwise.
+ * @private
+ */
+CommandHandler.prototype.shouldIgnoreEvents_ = function() {
+  // Do not handle commands, when a dialog is shown.
+  if (this.fileManager_.document.querySelector('.cr-dialog-container.shown'))
+    return true;
+
+  return false;  // Do not ignore.
+};
+
+/**
  * Handles command events.
  * @param {Event} event Command event.
  * @private
  */
 CommandHandler.prototype.onCommand_ = function(event) {
+  if (this.shouldIgnoreEvents_())
+    return;
   var handler = CommandHandler.COMMANDS_[event.command.id];
   handler.execute.call(this, event, this.fileManager_);
 };
@@ -288,6 +305,8 @@ CommandHandler.prototype.onCommand_ = function(event) {
  * @private
  */
 CommandHandler.prototype.onCanExecute_ = function(event) {
+  if (this.shouldIgnoreEvents_())
+    return;
   var handler = CommandHandler.COMMANDS_[event.command.id];
   handler.canExecute.call(this, event, this.fileManager_);
 };
