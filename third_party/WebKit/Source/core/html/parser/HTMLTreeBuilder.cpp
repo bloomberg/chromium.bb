@@ -375,10 +375,13 @@ void HTMLTreeBuilder::constructTree(AtomicHTMLToken* token)
         processToken(token);
 
     if (m_parser->tokenizer()) {
-        bool inForeignContent = !m_tree.isEmpty()
-            && !m_tree.currentStackItem()->isInHTMLNamespace()
-            && !HTMLElementStack::isHTMLIntegrationPoint(m_tree.currentStackItem())
-            && !HTMLElementStack::isMathMLTextIntegrationPoint(m_tree.currentStackItem());
+        bool inForeignContent = false;
+        if (!m_tree.isEmpty()) {
+            RefPtr<HTMLStackItem> adjustedCurrentNode = adjustedCurrentStackItem();
+            inForeignContent = !adjustedCurrentNode->isInHTMLNamespace()
+                && !HTMLElementStack::isHTMLIntegrationPoint(adjustedCurrentNode.get())
+                && !HTMLElementStack::isMathMLTextIntegrationPoint(adjustedCurrentNode.get());
+        }
 
         m_parser->tokenizer()->setForceNullCharacterReplacement(m_insertionMode == TextMode || inForeignContent);
         m_parser->tokenizer()->setShouldAllowCDATA(inForeignContent);
@@ -993,6 +996,16 @@ bool HTMLTreeBuilder::processColgroupEndTagForInColumnGroup()
     m_tree.openElements()->pop();
     setInsertionMode(InTableMode);
     return true;
+}
+
+// http://www.whatwg.org/specs/web-apps/current-work/#adjusted-current-node
+PassRefPtr<HTMLStackItem> HTMLTreeBuilder::adjustedCurrentStackItem() const
+{
+    ASSERT(!m_tree.isEmpty());
+    if (isParsingFragment() && m_tree.openElements()->hasOnlyOneElement())
+        return HTMLStackItem::create(m_fragmentContext.contextElement(), HTMLStackItem::ItemForContextElement);
+
+    return m_tree.currentStackItem();
 }
 
 // http://www.whatwg.org/specs/web-apps/current-work/multipage/tokenization.html#close-the-cell
@@ -2675,10 +2688,11 @@ bool HTMLTreeBuilder::shouldProcessTokenInForeignContent(AtomicHTMLToken* token)
 {
     if (m_tree.isEmpty())
         return false;
-    HTMLStackItem* item = m_tree.currentStackItem();
-    if (item->isInHTMLNamespace())
+    RefPtr<HTMLStackItem> adjustedCurrentNode = adjustedCurrentStackItem();
+
+    if (adjustedCurrentNode->isInHTMLNamespace())
         return false;
-    if (HTMLElementStack::isMathMLTextIntegrationPoint(item)) {
+    if (HTMLElementStack::isMathMLTextIntegrationPoint(adjustedCurrentNode.get())) {
         if (token->type() == HTMLToken::StartTag
             && token->name() != MathMLNames::mglyphTag
             && token->name() != MathMLNames::malignmarkTag)
@@ -2686,11 +2700,11 @@ bool HTMLTreeBuilder::shouldProcessTokenInForeignContent(AtomicHTMLToken* token)
         if (token->type() == HTMLToken::Character)
             return false;
     }
-    if (item->hasTagName(MathMLNames::annotation_xmlTag)
+    if (adjustedCurrentNode->hasTagName(MathMLNames::annotation_xmlTag)
         && token->type() == HTMLToken::StartTag
         && token->name() == SVGNames::svgTag)
         return false;
-    if (HTMLElementStack::isHTMLIntegrationPoint(item)) {
+    if (HTMLElementStack::isHTMLIntegrationPoint(adjustedCurrentNode.get())) {
         if (token->type() == HTMLToken::StartTag)
             return false;
         if (token->type() == HTMLToken::Character)
@@ -2703,6 +2717,8 @@ bool HTMLTreeBuilder::shouldProcessTokenInForeignContent(AtomicHTMLToken* token)
 
 void HTMLTreeBuilder::processTokenInForeignContent(AtomicHTMLToken* token)
 {
+    RefPtr<HTMLStackItem> adjustedCurrentNode = adjustedCurrentStackItem();
+
     switch (token->type()) {
     case HTMLToken::Uninitialized:
         ASSERT_NOT_REACHED();
@@ -2756,7 +2772,7 @@ void HTMLTreeBuilder::processTokenInForeignContent(AtomicHTMLToken* token)
             processStartTag(token);
             return;
         }
-        const AtomicString& currentNamespace = m_tree.currentStackItem()->namespaceURI();
+        const AtomicString& currentNamespace = adjustedCurrentNode->namespaceURI();
         if (currentNamespace == MathMLNames::mathmlNamespaceURI)
             adjustMathMLAttributes(token);
         if (currentNamespace == SVGNames::svgNamespaceURI) {
@@ -2768,7 +2784,7 @@ void HTMLTreeBuilder::processTokenInForeignContent(AtomicHTMLToken* token)
         break;
     }
     case HTMLToken::EndTag: {
-        if (m_tree.currentStackItem()->namespaceURI() == SVGNames::svgNamespaceURI)
+        if (adjustedCurrentNode->namespaceURI() == SVGNames::svgNamespaceURI)
             adjustSVGTagNameCase(token);
 
         if (token->name() == SVGNames::scriptTag && m_tree.currentStackItem()->hasTagName(SVGNames::scriptTag)) {

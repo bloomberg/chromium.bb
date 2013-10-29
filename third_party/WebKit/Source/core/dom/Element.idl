@@ -92,6 +92,8 @@
 
     // HTML 5
     NodeList getElementsByClassName([Default=Undefined] optional DOMString name);
+    [TreatNullAs=NullString, CustomElementCallbacks, PerWorldBindings, ActivityLogging=SetterForIsolatedWorlds, SetterRaisesException] attribute DOMString innerHTML;
+    [TreatNullAs=NullString, CustomElementCallbacks, SetterRaisesException] attribute DOMString outerHTML;
 
     [Reflect=class, TreatNullAs=NullString, PerWorldBindings] attribute DOMString className;
     [PerWorldBindings] readonly attribute DOMTokenList classList;

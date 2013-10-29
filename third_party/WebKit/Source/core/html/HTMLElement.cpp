@@ -325,64 +325,6 @@ void HTMLElement::parseAttribute(const QualifiedName& name, const AtomicString& 
     }
 }
 
-String HTMLElement::innerHTML() const
-{
-    return createMarkup(this, ChildrenOnly);
-}
-
-String HTMLElement::outerHTML() const
-{
-    return createMarkup(this);
-}
-
-void HTMLElement::setInnerHTML(const String& html, ExceptionState& es)
-{
-    if (RefPtr<DocumentFragment> fragment = createFragmentForInnerOuterHTML(html, this, AllowScriptingContent, "innerHTML", es)) {
-        ContainerNode* container = this;
-        if (hasLocalName(templateTag))
-            container = toHTMLTemplateElement(this)->content();
-        replaceChildrenWithFragment(container, fragment.release(), es);
-    }
-}
-
-static void mergeWithNextTextNode(PassRefPtr<Node> node, ExceptionState& es)
-{
-    ASSERT(node && node->isTextNode());
-    Node* next = node->nextSibling();
-    if (!next || !next->isTextNode())
-        return;
-
-    RefPtr<Text> textNode = toText(node.get());
-    RefPtr<Text> textNext = toText(next);
-    textNode->appendData(textNext->data());
-    if (textNext->parentNode()) // Might have been removed by mutation event.
-        textNext->remove(es);
-}
-
-void HTMLElement::setOuterHTML(const String& html, ExceptionState& es)
-{
-    Node* p = parentNode();
-    if (!p || !p->isHTMLElement()) {
-        es.throwUninformativeAndGenericDOMException(NoModificationAllowedError);
-        return;
-    }
-    RefPtr<HTMLElement> parent = toHTMLElement(p);
-    RefPtr<Node> prev = previousSibling();
-    RefPtr<Node> next = nextSibling();
-
-    RefPtr<DocumentFragment> fragment = createFragmentForInnerOuterHTML(html, parent.get(), AllowScriptingContent, "outerHTML", es);
-    if (es.hadException())
-        return;
-
-    parent->replaceChild(fragment.release(), this, es);
-    RefPtr<Node> node = next ? next->previousSibling() : 0;
-    if (!es.hadException() && node && node->isTextNode())
-        mergeWithNextTextNode(node.release(), es);
-
-    if (!es.hadException() && prev && prev->isTextNode())
-        mergeWithNextTextNode(prev.release(), es);
-}
-
 PassRefPtr<DocumentFragment> HTMLElement::textToFragment(const String& text, ExceptionState& es)
 {
     RefPtr<DocumentFragment> fragment = DocumentFragment::create(document());
