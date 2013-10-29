@@ -19,6 +19,10 @@
 #include "ui/views/event_utils.h"
 #include "ui/views/widget/widget.h"
 
+#if defined(USE_AURA)
+#include "ui/views/corewm/window_animations.h"
+#endif
+
 using WebKit::WebAutofillClient;
 
 namespace {
@@ -182,6 +186,11 @@ void AutofillPopupViewViews::Show() {
     params.parent = controller_->container_view();
     widget->Init(params);
     widget->SetContentsView(this);
+#if defined(USE_AURA)
+    // No animation for popup appearance (too distracting).
+    views::corewm::SetWindowVisibilityAnimationTransition(
+        widget->GetNativeView(), views::corewm::ANIMATE_HIDE);
+#endif
   }
 
   set_border(views::Border::CreateSolidBorder(kBorderThickness, kBorderColor));
