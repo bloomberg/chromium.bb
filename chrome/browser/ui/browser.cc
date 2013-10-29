@@ -1069,8 +1069,8 @@ void Browser::ActiveTabChanged(WebContents* old_contents,
   // Propagate the profile to the location bar.
   UpdateToolbar((reason & CHANGE_REASON_REPLACED) == 0);
 
-  // Propagate tab state to toolbar, tab-strip, etc.
-  UpdateSearchState(new_contents);
+  if (chrome::IsInstantExtendedAPIEnabled())
+    search_delegate_->OnTabActivated(new_contents);
 
   // Update reload/stop state.
   command_controller_->LoadingStateChanged(new_contents->IsLoading(), true);
@@ -1102,7 +1102,7 @@ void Browser::ActiveTabChanged(WebContents* old_contents,
                                             tab_strip_model_->active_index());
   }
 
-  // This needs to be called after UpdateSearchState().
+  // This needs to be called after notifying SearchDelegate.
   if (instant_controller_)
     instant_controller_->ActiveTabChanged();
 
@@ -1882,11 +1882,6 @@ void Browser::OnDevToolsDisabledChanged() {
 void Browser::UpdateToolbar(bool should_restore_state) {
   window_->UpdateToolbar(should_restore_state ?
       tab_strip_model_->GetActiveWebContents() : NULL);
-}
-
-void Browser::UpdateSearchState(WebContents* contents) {
-  if (chrome::IsInstantExtendedAPIEnabled())
-    search_delegate_->OnTabActivated(contents);
 }
 
 void Browser::ScheduleUIUpdate(const WebContents* source,

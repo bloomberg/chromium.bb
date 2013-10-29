@@ -711,9 +711,6 @@ class Browser : public TabStripModelObserver,
   // well.
   void UpdateToolbar(bool should_restore_state);
 
-  // Updates the browser's search model with the tab's search model.
-  void UpdateSearchState(content::WebContents* contents);
-
   // Does one or both of the following for each bit in |changed_flags|:
   // . If the update should be processed immediately, it is.
   // . If the update should processed asynchronously (to avoid lots of ui
