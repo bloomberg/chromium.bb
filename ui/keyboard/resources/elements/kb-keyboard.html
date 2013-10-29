@@ -114,17 +114,7 @@
      * @const
      * @type {number}
      */
-    var MIN_SWIPE_DIST = 30;
-
-    /**
-     * The flags constants when shift is on. It is according to the EventFlags
-     * in event_constants.h in chromium c++ code.
-     * @const
-     * @type {number}
-     * TODO(zyaozhujun): Might add more flags here according to the defination
-     * in EventFlags.
-     */
-    var SHIFT = 2;
+    var MIN_SWIPE_DIST = 60;
 
     /**
      * The boolean to decide if it is swipe in process or finished.
@@ -139,6 +129,16 @@
      * imports are fully resolved.
      */
     var isReady = false;
+
+    // Flag values for ctrl, alt and shift as defined by EventFlags
+    // in "event_constants.h".
+    // @enum {number}
+    var Modifier = {
+      NONE: 0,
+      ALT: 8,
+      CONTROL: 4,
+      SHIFT: 2
+    };
 
     /**
      * The enumeration of swipe directions.
@@ -184,6 +184,12 @@
       swipeDirection : 0,
 
       /**
+       * The number of times we've swiped within a single swipe.
+       * @type {number}
+       */
+      swipeIndex: 0,
+
+      /**
        * Reset all the values when swipe finished.
        */
       resetAll: function() {
@@ -193,6 +199,7 @@
         this.pre_y = 0;
         this.swipeFlags = 0;
         this.swipeDirection = 0;
+        this.swipeIndex = 0;
       }
     };
 
@@ -286,43 +293,43 @@
         if (!event.isPrimary)
           return;
         swipeStatus.offset_x += event.screenX - swipeStatus.pre_x;
-        swipeStatus.offset_y += event.screenY - swipeStatus.pre_y;
-        // Inflates the initial minimal swipe distance that triggers swipe
-        // gesture. It can reduce the accidental cursor movements during fast
-        // typing. After entered swipe gesture mode, the minimal swipe distance
-        // is set to a smaller distance to allow for more responsive cursor
-        // movement.
-        var minSwipeDist =
-            swipeInProgress ? MIN_SWIPE_DIST : 2 * MIN_SWIPE_DIST;
-        if (Math.abs(swipeStatus.offset_x) > minSwipeDist ||
-            Math.abs(swipeStatus.offset_y) > minSwipeDist) {
+        // swipeStatus.offset_y += event.screenY - swipeStatus.pre_y;
+        if (Math.abs(swipeStatus.offset_x) > MIN_SWIPE_DIST ||
+            Math.abs(swipeStatus.offset_y) > MIN_SWIPE_DIST) {
           swipeInProgress = true;
           if (this.lastPressedKey) {
             this.lastPressedKey.classList.remove('active');
             this.lastPressedKey = null;
           }
         }
-        if (swipeStatus.offset_x > minSwipeDist) {
+        if (swipeStatus.offset_x > MIN_SWIPE_DIST) {
           swipeStatus.swipeDirection |= SWIPE_DIRECTION.RIGHT;
+          swipeStatus.swipeIndex++;
           swipeStatus.offset_x = 0;
-        } else if (swipeStatus.offset_x < -minSwipeDist) {
+        } else if (swipeStatus.offset_x < -MIN_SWIPE_DIST) {
           swipeStatus.swipeDirection |= SWIPE_DIRECTION.LEFT;
+          swipeStatus.swipeIndex--;
           swipeStatus.offset_x = 0;
         }
         // Swipe vertically only when the swipe reaches the gradient of 45
         // degree. This can also be larger.
         if (Math.abs(event.screenY - swipeStatus.pre_y) >
             Math.abs(event.screenX - swipeStatus.pre_x)) {
-          if (swipeStatus.offset_y > minSwipeDist) {
+          if (swipeStatus.offset_y > MIN_SWIPE_DIST) {
             swipeStatus.swipeDirection |= SWIPE_DIRECTION.DOWN;
             swipeStatus.offset_y = 0;
-          } else if (swipeStatus.offset_y < -minSwipeDist) {
+          } else if (swipeStatus.offset_y < -MIN_SWIPE_DIST) {
             swipeStatus.swipeDirection |= SWIPE_DIRECTION.UP;
             swipeStatus.offset_y = 0;
           }
         }
         if (swipeStatus.swipeDirection) {
-          MoveCursor(swipeStatus.swipeDirection, swipeStatus.swipeFlags);
+          var modifiers = 0;
+          if (swipeStatus.swipeIndex % 2 != 0) {
+            modifiers |= Modifier.SHIFT;
+            modifiers |= Modifier.CONTROL;
+          }
+          MoveCursor(swipeStatus.swipeDirection, modifiers);
           swipeStatus.swipeDirection = 0;
         }
         swipeStatus.pre_x = event.screenX;
@@ -415,7 +422,8 @@
        *    kb-shift-key.
        */
       enableSel: function(event) {
-        swipeStatus.swipeFlags = SHIFT;
+        // TODO(rsadam): Disabled for now. May come back if we revert swipe
+        // selection to not do word selection.
       },
 
       /**
