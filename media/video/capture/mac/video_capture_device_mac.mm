@@ -4,12 +4,11 @@
 
 #include "media/video/capture/mac/video_capture_device_mac.h"
 
-#import <QTKit/QTKit.h>
-
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/time/time.h"
+#import "media/video/capture/mac/platform_video_capturing_mac.h"
 #include "media/video/capture/mac/video_capture_device_qtkit_mac.h"
 
 namespace {
@@ -129,11 +128,10 @@ void VideoCaptureDeviceMac::AllocateAndStart(
   int height = capture_format.height;
   int frame_rate = capture_format.frame_rate;
 
-  // QTKit can scale captured frame to any size requested, which would lead to
-  // undesired aspect ratio change. Tries to open the camera with a natively
-  // supported format and let the client to crop/pad the captured frames.
-  GetBestMatchSupportedResolution(&width,
-                                  &height);
+  // The OS API can scale captured frame to any size requested, which would lead
+  // to undesired aspect ratio change. Try to open the camera with a natively
+  // supported format and let the client crop/pad the captured frames.
+  GetBestMatchSupportedResolution(&width, &height);
 
   client_ = client.Pass();
   NSString* deviceId =

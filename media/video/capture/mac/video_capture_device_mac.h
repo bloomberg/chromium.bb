@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// OS X implementation of VideoCaptureDevice, using QTKit as native capture API.
+// MacOSX implementation of generic VideoCaptureDevice, using either QTKit or
+// AVFoundation as native capture API. QTKit is used in OSX versions 10.6 and
+// previous, and AVFoundation is used in the rest.
 
 #ifndef MEDIA_VIDEO_CAPTURE_MAC_VIDEO_CAPTURE_DEVICE_MAC_H_
 #define MEDIA_VIDEO_CAPTURE_MAC_VIDEO_CAPTURE_DEVICE_MAC_H_
@@ -16,7 +18,7 @@
 #include "media/video/capture/video_capture_device.h"
 #include "media/video/capture/video_capture_types.h"
 
-@class VideoCaptureDeviceQTKit;
+@protocol PlatformVideoCapturingMac;
 
 namespace media {
 
@@ -71,7 +73,7 @@ class VideoCaptureDeviceMac : public VideoCaptureDevice {
   base::WeakPtrFactory<VideoCaptureDeviceMac> weak_factory_;
   base::WeakPtr<VideoCaptureDeviceMac> weak_this_;
 
-  VideoCaptureDeviceQTKit* capture_device_;
+  id<PlatformVideoCapturingMac> capture_device_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoCaptureDeviceMac);
 };

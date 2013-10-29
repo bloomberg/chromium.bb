@@ -12,6 +12,8 @@
 
 #include <vector>
 
+#import "media/video/capture/mac/platform_video_capturing_mac.h"
+
 namespace media {
   class VideoCaptureDeviceMac;
 }
@@ -19,7 +21,7 @@ namespace media {
 @class QTCaptureDeviceInput;
 @class QTCaptureSession;
 
-@interface VideoCaptureDeviceQTKit : NSObject {
+@interface VideoCaptureDeviceQTKit : NSObject<PlatformVideoCapturingMac> {
  @private
   // Settings.
   int frameRate_;
