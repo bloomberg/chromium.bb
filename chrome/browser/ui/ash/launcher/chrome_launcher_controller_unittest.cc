@@ -57,6 +57,7 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/variations/entropy_provider.h"
+#include "ui/aura/window.h"
 #endif
 
 using extensions::Extension;
@@ -617,6 +618,51 @@ class LegacyShelfLayoutChromeLauncherControllerTest
 };
 
 #if defined(OS_CHROMEOS)
+// A browser window proxy which is able to associate an aura native window with
+// it.
+class TestBrowserWindowAura : public TestBrowserWindow {
+ public:
+  // |native_window| will still be owned by the caller after the constructor
+  // was called.
+  explicit TestBrowserWindowAura(aura::Window* native_window)
+      : native_window_(native_window) {
+  }
+  virtual ~TestBrowserWindowAura() {}
+
+  virtual gfx::NativeWindow GetNativeWindow() OVERRIDE {
+    return native_window_.get();
+  }
+
+  Browser* browser() { return browser_.get(); }
+
+  void CreateBrowser(const Browser::CreateParams& params) {
+    Browser::CreateParams create_params = params;
+    create_params.window = this;
+    browser_.reset(new Browser(create_params));
+  }
+
+ private:
+  scoped_ptr<Browser> browser_;
+  scoped_ptr<aura::Window> native_window_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestBrowserWindowAura);
+};
+
+scoped_ptr<TestBrowserWindowAura> CreateTestBrowserWindow(
+    const Browser::CreateParams& params) {
+  // Create a window.
+  aura::Window* window = new aura::Window(NULL);
+  window->set_id(0);
+  window->SetType(aura::client::WINDOW_TYPE_NORMAL);
+  window->Init(ui::LAYER_TEXTURED);
+  window->Show();
+
+  scoped_ptr<TestBrowserWindowAura> browser_window(
+      new TestBrowserWindowAura(window));
+  browser_window->CreateBrowser(params);
+  return browser_window.Pass();
+}
+
 // The testing framework to test multi profile scenarios.
 class MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest
     : public ChromeLauncherControllerTest {
@@ -1349,6 +1395,42 @@ TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest,
   EXPECT_EQ(2, model_->item_count());
   SwitchActiveUser(profile()->GetProfileName());
   EXPECT_EQ(2, model_->item_count());
+}
+
+// Check that activating an item which is on another user's desktop, will bring
+// it back.
+TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest,
+       TestLauncherActivationPullsBackWindow) {
+  // Create a browser item in the LauncherController.
+  InitLauncherController();
+  chrome::MultiUserWindowManager* manager =
+      chrome::MultiUserWindowManager::GetInstance();
+
+  // Add two users to the window manager.
+  std::string user2 = "user2";
+  manager->UserAddedToSession(manager->GetUserIDFromProfile(profile()));
+  manager->UserAddedToSession(user2);
+  const std::string& current_user = manager->GetUserIDFromProfile(profile());
+
+  // Create a browser window with a native window for the current user.
+  scoped_ptr<BrowserWindow> browser_window(CreateTestBrowserWindow(
+      Browser::CreateParams(profile(), chrome::HOST_DESKTOP_TYPE_ASH)));
+  aura::Window* window = browser_window->GetNativeWindow();
+  manager->SetWindowOwner(window, current_user);
+
+  // Check that an activation of the window on its owner's desktop does not
+  // change the visibility to another user.
+  launcher_controller_->ActivateWindowOrMinimizeIfActive(browser_window.get(),
+                                                         false);
+  EXPECT_TRUE(manager->IsWindowOnDesktopOfUser(window, current_user));
+
+  // Transfer the window to another user's desktop and check that activating it
+  // does pull it back to that user.
+  manager->ShowWindowForUser(window, user2);
+  EXPECT_FALSE(manager->IsWindowOnDesktopOfUser(window, current_user));
+  launcher_controller_->ActivateWindowOrMinimizeIfActive(browser_window.get(),
+                                                         false);
+  EXPECT_TRUE(manager->IsWindowOnDesktopOfUser(window, current_user));
 }
 #endif
 

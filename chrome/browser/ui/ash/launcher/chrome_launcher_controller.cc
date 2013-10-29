@@ -1032,6 +1032,21 @@ const Extension* ChromeLauncherController::GetExtensionForAppID(
 void ChromeLauncherController::ActivateWindowOrMinimizeIfActive(
     ui::BaseWindow* window,
     bool allow_minimize) {
+#if defined(OS_CHROMEOS)
+  if (chrome::MultiUserWindowManager::GetMultiProfileMode() ==
+          chrome::MultiUserWindowManager::MULTI_PROFILE_MODE_SEPARATED) {
+    chrome::MultiUserWindowManager* manager =
+        chrome::MultiUserWindowManager::GetInstance();
+    aura::Window* native_window = window->GetNativeWindow();
+    const std::string& current_user =
+        manager->GetUserIDFromProfile(profile());
+    if (!manager->IsWindowOnDesktopOfUser(native_window, current_user)) {
+      manager->ShowWindowForUser(native_window, current_user);
+      window->Activate();
+      return;
+    }
+  }
+#endif
   if (window->IsActive() && allow_minimize) {
     if (CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kDisableMinimizeOnSecondLauncherItemClick)) {
