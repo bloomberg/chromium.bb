@@ -27,30 +27,19 @@ var binarySearch = function(target) {
 };
 
 /**
- * Return the intersection set of two arrays.
+ * Return the intersection set of two sorted arrays.
  * @param {Array.<*>} left
  * @param {Array.<*>} right
  * @return {Array.<*>}
  */
-var intersection = function(left, right) {
+var intersectionOfSorted = function(left, right) {
+  var from = 0;
   return left.reduce(function(previous, current) {
-    if (right.indexOf(current) != -1)
+    var idx = right.indexOf(current, from);
+    if (idx != -1) {
       previous.push(current);
-    return previous;
-  }, []);
-};
-
-/**
- * Return the difference set of left with right.
- * Notice: difference(left, right) differentiates with difference(right, left).
- * @param {Array.<*>} left
- * @param {Array.<*>} right
- * @return {Array.<*>}
- */
-var difference = function(left, right) {
-  return left.reduce(function(previous, current) {
-    if (right.indexOf(current) == -1)
-      previous.push(current);
+      from = idx;
+    }
     return previous;
   }, []);
 };

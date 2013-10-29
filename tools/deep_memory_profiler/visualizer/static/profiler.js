@@ -193,13 +193,14 @@ Profiler.prototype.accumulate_ = function(
     children: []
   };
 
+  localUnits.sort(function(a, b) { return b - a; });
   Object.keys(categories).forEach(function(categoryName) {
     var category = categories[categoryName];
     if (category['hidden'] === true)
       return;
-
+    category.units.sort(function(a, b) { return b - a; });
     // Filter units.
-    var matchedUnits = intersection(category.units, localUnits);
+    var matchedUnits = intersectionOfSorted(category.units, localUnits);
     matchedUnits.forEach(function(unit) {
       matchedUnitsSet[unit] = unit;
     });
