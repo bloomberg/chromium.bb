@@ -78,7 +78,7 @@ void EventDispatcher::ProcessEvent(EventTarget* target, Event* event) {
   target->GetPreTargetHandlers(&handler_list_);
 
   dispatch_helper.set_phase(EP_PRETARGET);
-  DispatchEventToEventHandlers(handler_list_, event);
+  DispatchEventToEventHandlers(&handler_list_, event);
   if (event->handled())
     return;
 
@@ -100,7 +100,7 @@ void EventDispatcher::ProcessEvent(EventTarget* target, Event* event) {
   handler_list_.clear();
   target->GetPostTargetHandlers(&handler_list_);
   dispatch_helper.set_phase(EP_POSTTARGET);
-  DispatchEventToEventHandlers(handler_list_, event);
+  DispatchEventToEventHandlers(&handler_list_, event);
 }
 
 void EventDispatcher::OnDispatcherDelegateDestroyed() {
@@ -110,24 +110,24 @@ void EventDispatcher::OnDispatcherDelegateDestroyed() {
 ////////////////////////////////////////////////////////////////////////////////
 // EventDispatcher, private:
 
-void EventDispatcher::DispatchEventToEventHandlers(EventHandlerList& list,
+void EventDispatcher::DispatchEventToEventHandlers(EventHandlerList* list,
                                                    Event* event) {
-  for (EventHandlerList::const_iterator it = list.begin(),
-           end = list.end(); it != end; ++it) {
+  for (EventHandlerList::const_iterator it = list->begin(),
+           end = list->end(); it != end; ++it) {
     (*it)->dispatchers_.push(this);
   }
 
-  while (!list.empty()) {
-    EventHandler* handler = (*list.begin());
+  while (!list->empty()) {
+    EventHandler* handler = (*list->begin());
     if (delegate_ && !event->stopped_propagation())
       DispatchEvent(handler, event);
 
-    if (!list.empty() && *list.begin() == handler) {
+    if (!list->empty() && *list->begin() == handler) {
       // The handler has not been destroyed (because if it were, then it would
       // have been removed from the list).
       CHECK(handler->dispatchers_.top() == this);
       handler->dispatchers_.pop();
-      list.erase(list.begin());
+      list->erase(list->begin());
     }
   }
 }

@@ -6,28 +6,34 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "ui/aura/client/cursor_client.h"
+#include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/client/tooltip_client.h"
 #include "ui/aura/client/window_types.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/test/event_generator.h"
+#include "ui/aura/test/test_screen.h"
 #include "ui/aura/window.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/point.h"
+#include "ui/gfx/screen.h"
 #include "ui/gfx/screen_type_delegate.h"
 #include "ui/gfx/text_elider.h"
 #include "ui/views/corewm/tooltip_aura.h"
 #include "ui/views/corewm/tooltip_controller_test_helper.h"
 #include "ui/views/view.h"
+#include "ui/views/widget/tooltip_manager.h"
 #include "ui/views/widget/widget.h"
 
 #if defined(OS_WIN)
 #include "ui/base/win/scoped_ole_initializer.h"
 #endif
+
 #if !defined(OS_CHROMEOS)
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
+#include "ui/views/widget/desktop_aura/desktop_screen.h"
 #endif
 
 namespace views {
@@ -326,8 +332,80 @@ TEST_F(TooltipControllerTest, HideOnExit) {
   EXPECT_FALSE(helper_->IsTooltipVisible());
 }
 
+namespace {
+
+// Returns the index of |window| in its parent's children.
+int IndexInParent(const aura::Window* window) {
+  aura::Window::Windows::const_iterator i =
+      std::find(window->parent()->children().begin(),
+                window->parent()->children().end(),
+                window);
+  return i == window->parent()->children().end() ? -1 :
+      static_cast<int>(i - window->parent()->children().begin());
+}
+
+class TestScreenPositionClient : public aura::client::ScreenPositionClient {
+ public:
+  TestScreenPositionClient() {}
+  virtual ~TestScreenPositionClient() {}
+
+  // ScreenPositionClient overrides:
+  virtual void ConvertPointToScreen(const aura::Window* window,
+                                    gfx::Point* point) OVERRIDE {
+  }
+  virtual void ConvertPointFromScreen(const aura::Window* window,
+                                      gfx::Point* point) OVERRIDE {
+  }
+  virtual void ConvertHostPointToScreen(aura::Window* root_gwindow,
+                                        gfx::Point* point) OVERRIDE {
+    NOTREACHED();
+  }
+  virtual void SetBounds(aura::Window* window,
+                         const gfx::Rect& bounds,
+                         const gfx::Display& display) OVERRIDE {
+    window->SetBounds(bounds);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestScreenPositionClient);
+};
+
+}  // namespace
+
+class TooltipControllerCaptureTest : public TooltipControllerTest {
+ public:
+  TooltipControllerCaptureTest() {}
+  virtual ~TooltipControllerCaptureTest() {}
+
+  virtual void SetUp() OVERRIDE {
+    TooltipControllerTest::SetUp();
+    aura::client::SetScreenPositionClient(GetRootWindow(),
+                                          &screen_position_client_);
+#if !defined(OS_CHROMEOS)
+    desktop_screen_.reset(CreateDesktopScreen());
+    gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE,
+                                   desktop_screen_.get());
+#endif
+  }
+
+  virtual void TearDown() OVERRIDE {
+#if !defined(OS_CHROMEOS)
+    gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, test_screen());
+    desktop_screen_.reset();
+#endif
+    aura::client::SetScreenPositionClient(GetRootWindow(), NULL);
+    TooltipControllerTest::TearDown();
+  }
+
+ private:
+  TestScreenPositionClient screen_position_client_;
+  scoped_ptr<gfx::Screen> desktop_screen_;
+
+  DISALLOW_COPY_AND_ASSIGN(TooltipControllerCaptureTest);
+};
+
 // Verifies when capture is released the TooltipController resets state.
-TEST_F(TooltipControllerTest, CloseOnCaptureLost) {
+TEST_F(TooltipControllerCaptureTest, CloseOnCaptureLost) {
   view_->GetWidget()->SetCapture(view_);
   view_->set_tooltip_text(ASCIIToUTF16("Tooltip Text"));
   generator_->MoveMouseToCenterOf(GetWindow());
@@ -343,6 +421,61 @@ TEST_F(TooltipControllerTest, CloseOnCaptureLost) {
   view_->GetWidget()->ReleaseCapture();
   EXPECT_FALSE(helper_->IsTooltipVisible());
   EXPECT_TRUE(helper_->GetTooltipWindow() == NULL);
+}
+
+// Disabled on linux as DesktopScreenX11::GetWindowAtScreenPoint() doesn't
+// consider z-order.
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#define MAYBE_Capture DISABLED_Capture
+#else
+#define MAYBE_Capture Capture
+#endif
+// Verifies the correct window is found for tooltips when there is a capture.
+TEST_F(TooltipControllerCaptureTest, MAYBE_Capture) {
+  const string16 tooltip_text(ASCIIToUTF16("1"));
+  const string16 tooltip_text2(ASCIIToUTF16("2"));
+
+  widget_->SetBounds(gfx::Rect(0, 0, 200, 200));
+  view_->set_tooltip_text(tooltip_text);
+
+  views::Widget* widget2 = CreateWidget(root_window());
+  widget2->SetContentsView(new View);
+  TooltipTestView* view2 = new TooltipTestView;
+  widget2->GetContentsView()->AddChildView(view2);
+  view2->set_tooltip_text(tooltip_text2);
+  widget2->SetBounds(gfx::Rect(0, 0, 200, 200));
+  view2->SetBoundsRect(widget2->GetContentsView()->GetLocalBounds());
+
+  widget_->SetCapture(view_);
+  EXPECT_TRUE(widget_->HasCapture());
+  widget2->Show();
+  EXPECT_GE(IndexInParent(widget2->GetNativeWindow()),
+            IndexInParent(widget_->GetNativeWindow()));
+
+  generator_->MoveMouseRelativeTo(widget_->GetNativeWindow(),
+                                  view_->bounds().CenterPoint());
+
+  EXPECT_TRUE(helper_->IsTooltipTimerRunning());
+  helper_->FireTooltipTimer();
+  // Even though the mouse is over a window with a tooltip it shouldn't be
+  // picked up because the windows don't have the same value for
+  // |TooltipManager::kGroupingPropertyKey|.
+  EXPECT_TRUE(helper_->GetTooltipText().empty());
+
+  // Now make both the windows have same transient value for
+  // kGroupingPropertyKey. In this case the tooltip should be picked up from
+  // |widget2| (because the mouse is over it).
+  const int grouping_key = 1;
+  widget_->SetNativeWindowProperty(TooltipManager::kGroupingPropertyKey,
+                                   reinterpret_cast<void*>(grouping_key));
+  widget2->SetNativeWindowProperty(TooltipManager::kGroupingPropertyKey,
+                                   reinterpret_cast<void*>(grouping_key));
+  generator_->MoveMouseBy(1, 10);
+  EXPECT_TRUE(helper_->IsTooltipTimerRunning());
+  helper_->FireTooltipTimer();
+  EXPECT_EQ(tooltip_text2, helper_->GetTooltipText());
+
+  widget2->Close();
 }
 
 #if !defined(OS_CHROMEOS)

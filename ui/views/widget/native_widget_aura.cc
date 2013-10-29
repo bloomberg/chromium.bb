@@ -169,7 +169,7 @@ void NativeWidgetAura::InitNativeWidget(const Widget::InitParams& params) {
       params.type != Widget::InitParams::TYPE_TOOLTIP;
   DCHECK(GetWidget()->GetRootView());
   if (params.type != Widget::InitParams::TYPE_TOOLTIP)
-    tooltip_manager_.reset(new views::TooltipManagerAura(window_, GetWidget()));
+    tooltip_manager_.reset(new views::TooltipManagerAura(GetWidget()));
 
   drop_helper_.reset(new DropHelper(GetWidget()->GetRootView()));
   if (params.type != Widget::InitParams::TYPE_TOOLTIP &&
@@ -834,6 +834,7 @@ void NativeWidgetAura::OnMouseEvent(ui::MouseEvent* event) {
 
   if (tooltip_manager_.get())
     tooltip_manager_->UpdateTooltip();
+  TooltipManagerAura::UpdateTooltipManagerForCapture(GetWidget());
   delegate_->OnMouseEvent(event);
 }
 

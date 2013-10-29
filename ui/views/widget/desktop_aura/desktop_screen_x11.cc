@@ -157,7 +157,7 @@ gfx::NativeWindow DesktopScreenX11::GetWindowUnderCursor() {
 gfx::NativeWindow DesktopScreenX11::GetWindowAtScreenPoint(
     const gfx::Point& point) {
   std::vector<aura::Window*> windows =
-    DesktopRootWindowHostX11::GetAllOpenWindows();
+      DesktopRootWindowHostX11::GetAllOpenWindows();
 
   for (std::vector<aura::Window*>::const_iterator it = windows.begin();
        it != windows.end(); ++it) {

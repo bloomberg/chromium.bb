@@ -37,6 +37,7 @@
 #include "ui/views/view_constants.h"
 #include "ui/views/views_delegate.h"
 #include "ui/views/widget/root_view.h"
+#include "ui/views/widget/tooltip_manager.h"
 #include "ui/views/widget/widget.h"
 
 #if defined(USE_AURA)
@@ -1578,10 +1579,17 @@ void MenuController::OpenMenuImpl(MenuItemView* item, bool show) {
   state_.open_leading.push_back(resulting_direction);
   bool do_capture = (!did_capture_ && blocking_run_);
   showing_submenu_ = true;
-  if (show)
+  if (show) {
+    // Menus are the only place using kGroupingPropertyKey, so any value (other
+    // than 0) is fine.
+    const int kGroupingId = 1001;
     item->GetSubmenu()->ShowAt(owner_, bounds, do_capture);
-  else
+    item->GetSubmenu()->GetWidget()->SetNativeWindowProperty(
+        TooltipManager::kGroupingPropertyKey,
+        reinterpret_cast<void*>(kGroupingId));
+  } else {
     item->GetSubmenu()->Reposition(bounds);
+  }
   showing_submenu_ = false;
 }
 

@@ -89,6 +89,7 @@ class VIEWS_EXPORT TooltipController : public aura::client::TooltipClient,
   // this timer fires.
   base::OneShotTimer<TooltipController> tooltip_shown_timer_;
 
+  // Location of the last event in |tooltip_window_|'s coordinates.
   gfx::Point curr_mouse_loc_;
 
   bool tooltips_enabled_;

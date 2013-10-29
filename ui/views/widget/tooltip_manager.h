@@ -26,6 +26,15 @@ class View;
 // the various tooltip methods on View.
 class VIEWS_EXPORT TooltipManager {
  public:
+  // When a NativeView has capture all events are delivered to it. In some
+  // situations, such as menus, we want the tooltip to be shown for the
+  // NativeView the mouse is over, even if it differs from the NativeView that
+  // has capture (with menus the first menu shown has capture). To enable this
+  // if the NativeView that has capture has the same value for the property
+  // |kGroupingPropertyKey| as the NativeView the mouse is over the tooltip is
+  // shown.
+  static const char kGroupingPropertyKey[];
+
   TooltipManager() {}
   virtual ~TooltipManager() {}
 

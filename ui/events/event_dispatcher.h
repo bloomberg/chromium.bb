@@ -58,8 +58,7 @@ class EVENTS_EXPORT EventDispatcher {
   void OnDispatcherDelegateDestroyed();
 
  private:
-  void DispatchEventToEventHandlers(EventHandlerList& list,
-                                    Event* event);
+  void DispatchEventToEventHandlers(EventHandlerList* list, Event* event);
 
   // Dispatches an event, and makes sure it sets ER_CONSUMED on the
   // event-handling result if the dispatcher itself has been destroyed during

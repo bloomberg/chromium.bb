@@ -13,6 +13,9 @@ namespace views {
 const size_t kMaxTooltipLength = 1024;
 
 // static
+const char TooltipManager::kGroupingPropertyKey[] = "GroupingPropertyKey";
+
+// static
 int TooltipManager::GetMaxWidth(int x, int y, gfx::NativeView context) {
   return GetMaxWidth(gfx::Screen::GetScreenFor(context)->GetDisplayNearestPoint(
                          gfx::Point(x, y)));

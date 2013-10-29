@@ -21,6 +21,8 @@ namespace client {
 // Window into system coordinates.
 class AURA_EXPORT ScreenPositionClient {
  public:
+  virtual ~ScreenPositionClient() {}
+
   // Converts the |screen_point| from a given |window|'s coordinate space
   // into screen coordinate space.
   virtual void ConvertPointToScreen(const Window* window,
@@ -39,7 +41,6 @@ class AURA_EXPORT ScreenPositionClient {
   virtual void SetBounds(Window* window,
                          const gfx::Rect& bounds,
                          const gfx::Display& display) = 0;
-  virtual ~ScreenPositionClient() {}
 };
 
 // Sets/Gets the activation client on the Window.

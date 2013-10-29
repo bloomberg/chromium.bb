@@ -9,23 +9,84 @@
 #include "base/time/time.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/client/drag_drop_client.h"
+#include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #include "ui/events/event.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/rect.h"
+#include "ui/gfx/screen.h"
 #include "ui/views/corewm/tooltip.h"
 #include "ui/views/widget/tooltip_manager.h"
 
+namespace views {
+namespace corewm {
 namespace {
 
 const int kTooltipTimeoutMs = 500;
 const int kDefaultTooltipShownTimeoutMs = 10000;
 
-}  // namespace
+// Returns true if |target| is a valid window to get the tooltip from.
+// |event_target| is the original target from the event and |target| the window
+// at the same location.
+bool IsValidTarget(aura::Window* event_target, aura::Window* target) {
+  if (!target || (event_target == target))
+    return true;
 
-namespace views {
-namespace corewm {
+  void* event_target_grouping_id = event_target->GetNativeWindowProperty(
+      TooltipManager::kGroupingPropertyKey);
+  void* target_grouping_id = target->GetNativeWindowProperty(
+      TooltipManager::kGroupingPropertyKey);
+  return event_target_grouping_id &&
+      event_target_grouping_id == target_grouping_id;
+}
+
+// Returns the target (the Window tooltip text comes from) based on the event.
+// If a Window other than event.target() is returned, |location| is adjusted
+// to be in the coordinates of the returned Window.
+aura::Window* GetTooltipTarget(const ui::MouseEvent& event,
+                               gfx::Point* location) {
+  switch (event.type()) {
+    case ui::ET_MOUSE_CAPTURE_CHANGED:
+      // On windows we can get a capture changed without an exit. We need to
+      // reset state when this happens else the tooltip may incorrectly show.
+      return NULL;
+    case ui::ET_MOUSE_EXITED:
+      return NULL;
+    case ui::ET_MOUSE_MOVED:
+    case ui::ET_MOUSE_DRAGGED: {
+      aura::Window* event_target = static_cast<aura::Window*>(event.target());
+      if (!event_target || !event_target->HasCapture())
+        return event_target;
+
+      // If |target| has capture all events go to it, even if the mouse is
+      // really over another window. Find the real window the mouse is over.
+      gfx::Point screen_loc(event.location());
+      aura::client::GetScreenPositionClient(event_target->GetRootWindow())->
+          ConvertPointToScreen(event_target, &screen_loc);
+      gfx::Screen* screen = gfx::Screen::GetScreenFor(event_target);
+      aura::Window* target = screen->GetWindowAtScreenPoint(screen_loc);
+      if (!target)
+        return NULL;
+      gfx::Point target_loc(screen_loc);
+      aura::client::GetScreenPositionClient(target->GetRootWindow())->
+          ConvertPointFromScreen(target, &target_loc);
+      aura::Window* screen_target = target->GetEventHandlerForPoint(target_loc);
+      if (!IsValidTarget(event_target, screen_target))
+        return NULL;
+
+      aura::Window::ConvertPointToTarget(screen_target, target, &target_loc);
+      *location = target_loc;
+      return screen_target;
+    }
+    default:
+      NOTREACHED();
+      break;
+  }
+  return NULL;
+}
+
+}  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
 // TooltipController public:
@@ -85,17 +146,13 @@ void TooltipController::OnKeyEvent(ui::KeyEvent* event) {
 }
 
 void TooltipController::OnMouseEvent(ui::MouseEvent* event) {
-  aura::Window* target = static_cast<aura::Window*>(event->target());
   switch (event->type()) {
     case ui::ET_MOUSE_CAPTURE_CHANGED:
-      // On windows we can get a capture changed without an exit. We need to
-      // reset state when this happens else the tooltip may incorrectly show.
-      // Fall through to setting target to NULL.
     case ui::ET_MOUSE_EXITED:
-      target = NULL;
-      // Fall through.
     case ui::ET_MOUSE_MOVED:
-    case ui::ET_MOUSE_DRAGGED:
+    case ui::ET_MOUSE_DRAGGED: {
+      curr_mouse_loc_ = event->location();
+      aura::Window* target = GetTooltipTarget(*event, &curr_mouse_loc_);
       if (tooltip_window_ != target) {
         if (tooltip_window_)
           tooltip_window_->RemoveObserver(this);
@@ -103,15 +160,16 @@ void TooltipController::OnMouseEvent(ui::MouseEvent* event) {
         if (tooltip_window_)
           tooltip_window_->AddObserver(this);
       }
-      curr_mouse_loc_ = event->location();
       if (tooltip_timer_.IsRunning())
         tooltip_timer_.Reset();
 
       if (tooltip_->IsVisible())
         UpdateIfRequired();
       break;
+    }
     case ui::ET_MOUSE_PRESSED:
       if ((event->flags() & ui::EF_IS_NON_CLIENT) == 0) {
+        aura::Window* target = static_cast<aura::Window*>(event->target());
         // We don't get a release for non-client areas.
         tooltip_window_at_mouse_press_ = target;
         if (target)

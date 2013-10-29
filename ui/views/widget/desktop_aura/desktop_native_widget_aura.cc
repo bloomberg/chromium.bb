@@ -412,8 +412,7 @@ void DesktopNativeWidgetAura::InitNativeWidget(
       static_cast<internal::RootView*>(GetWidget()->GetRootView())));
   aura::client::SetDragDropDelegate(content_window_, this);
 
-  tooltip_manager_.reset(new views::TooltipManagerAura(content_window_,
-                                                       GetWidget()));
+  tooltip_manager_.reset(new TooltipManagerAura(GetWidget()));
 
   tooltip_controller_.reset(
       new corewm::TooltipController(
@@ -911,6 +910,7 @@ void DesktopNativeWidgetAura::OnMouseEvent(ui::MouseEvent* event) {
   DCHECK(content_window_->IsVisible());
   if (tooltip_manager_.get())
     tooltip_manager_->UpdateTooltip();
+  TooltipManagerAura::UpdateTooltipManagerForCapture(GetWidget());
   native_widget_delegate_->OnMouseEvent(event);
   // WARNING: we may have been deleted.
 }

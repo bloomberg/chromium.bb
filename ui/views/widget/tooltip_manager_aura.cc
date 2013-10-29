@@ -5,6 +5,7 @@
 #include "ui/views/widget/tooltip_manager_aura.h"
 
 #include "base/logging.h"
+#include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/client/tooltip_client.h"
 #include "ui/aura/root_window.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -24,20 +25,59 @@ int TooltipManager::GetTooltipHeight() {
 ////////////////////////////////////////////////////////////////////////////////
 // TooltipManagerAura public:
 
-TooltipManagerAura::TooltipManagerAura(aura::Window* window, Widget* widget)
-    : window_(window),
-      widget_(widget) {
-  aura::client::SetTooltipText(window_, &tooltip_text_);
+TooltipManagerAura::TooltipManagerAura(Widget* widget) : widget_(widget) {
+  aura::client::SetTooltipText(GetWindow(), &tooltip_text_);
 }
 
 TooltipManagerAura::~TooltipManagerAura() {
-  aura::client::SetTooltipText(window_, NULL);
+  aura::client::SetTooltipText(GetWindow(), NULL);
 }
 
 // static
 const gfx::FontList& TooltipManagerAura::GetDefaultFontList() {
   return ui::ResourceBundle::GetSharedInstance().GetFontList(
       ui::ResourceBundle::BaseFont);
+}
+
+// static
+void TooltipManagerAura::UpdateTooltipManagerForCapture(Widget* source) {
+  if (!source->HasCapture())
+    return;
+
+  aura::Window* root_window = source->GetNativeView()->GetRootWindow();
+  if (!root_window)
+    return;
+
+  gfx::Point screen_loc(
+      root_window->GetDispatcher()->GetLastMouseLocationInRoot());
+  aura::client::ScreenPositionClient* screen_position_client =
+      aura::client::GetScreenPositionClient(root_window);
+  if (!screen_position_client)
+    return;
+  screen_position_client->ConvertPointToScreen(root_window, &screen_loc);
+  gfx::Screen* screen = gfx::Screen::GetScreenFor(root_window);
+  aura::Window* target = screen->GetWindowAtScreenPoint(screen_loc);
+  if (!target)
+    return;
+  gfx::Point target_loc(screen_loc);
+  screen_position_client =
+      aura::client::GetScreenPositionClient(target->GetRootWindow());
+  if (!screen_position_client)
+    return;
+  screen_position_client->ConvertPointFromScreen(target, &target_loc);
+  target = target->GetEventHandlerForPoint(target_loc);
+  while (target) {
+    Widget* target_widget = Widget::GetWidgetForNativeView(target);
+    if (target_widget == source)
+      return;
+
+    if (target_widget) {
+      if (target_widget->GetTooltipManager())
+        target_widget->GetTooltipManager()->UpdateTooltip();
+      return;
+    }
+    target = target->parent();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -48,22 +88,22 @@ const gfx::FontList& TooltipManagerAura::GetFontList() const {
 }
 
 void TooltipManagerAura::UpdateTooltip() {
-  aura::Window* root_window = window_->GetRootWindow();
+  aura::Window* root_window = GetWindow()->GetRootWindow();
   if (aura::client::GetTooltipClient(root_window)) {
     gfx::Point view_point =
         root_window->GetDispatcher()->GetLastMouseLocationInRoot();
-    aura::Window::ConvertPointToTarget(root_window, window_, &view_point);
+    aura::Window::ConvertPointToTarget(root_window, GetWindow(), &view_point);
     View* view = GetViewUnderPoint(view_point);
     UpdateTooltipForTarget(view, view_point, root_window);
   }
 }
 
 void TooltipManagerAura::TooltipTextChanged(View* view)  {
-  aura::Window* root_window = window_->GetRootWindow();
+  aura::Window* root_window = GetWindow()->GetRootWindow();
   if (aura::client::GetTooltipClient(root_window)) {
     gfx::Point view_point =
         root_window->GetDispatcher()->GetLastMouseLocationInRoot();
-    aura::Window::ConvertPointToTarget(root_window, window_, &view_point);
+    aura::Window::ConvertPointToTarget(root_window, GetWindow(), &view_point);
     View* target = GetViewUnderPoint(view_point);
     if (target != view)
       return;
@@ -92,7 +132,11 @@ void TooltipManagerAura::UpdateTooltipForTarget(View* target,
   } else {
     tooltip_text_.clear();
   }
-  aura::client::GetTooltipClient(root_window)->UpdateTooltip(window_);
+  aura::client::GetTooltipClient(root_window)->UpdateTooltip(GetWindow());
+}
+
+aura::Window* TooltipManagerAura::GetWindow() {
+  return widget_->GetNativeView();
 }
 
 }  // namespace views.

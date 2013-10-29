@@ -578,8 +578,10 @@ void Window::ReleaseCapture() {
 
 bool Window::HasCapture() {
   Window* root_window = GetRootWindow();
-  return root_window &&
-      client::GetCaptureClient(root_window)->GetCaptureWindow() == this;
+  if (!root_window)
+    return false;
+  client::CaptureClient* capture_client = client::GetCaptureClient(root_window);
+  return capture_client && capture_client->GetCaptureWindow() == this;
 }
 
 void Window::SuppressPaint() {

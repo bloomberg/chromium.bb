@@ -41,6 +41,7 @@ class AuraTestBase : public testing::Test {
   void ParentWindow(Window* window);
 
   RootWindow* root_window() { return helper_->root_window(); }
+  TestScreen* test_screen() { return helper_->test_screen(); }
 
  private:
   bool setup_called_;
