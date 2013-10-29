@@ -209,6 +209,11 @@ bool base64Decode(const char* data, unsigned length, Vector<char>& out, Base64De
     return base64DecodeInternal<LChar>(reinterpret_cast<const LChar*>(data), length, out, policy);
 }
 
+bool base64Decode(const UChar* data, unsigned length, Vector<char>& out, Base64DecodePolicy policy)
+{
+    return base64DecodeInternal<UChar>(data, length, out, policy);
+}
+
 bool base64Decode(const String& in, Vector<char>& out, Base64DecodePolicy policy)
 {
     if (in.isEmpty())

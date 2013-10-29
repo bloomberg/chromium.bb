@@ -73,6 +73,12 @@ public:
         SuppressReport
     };
 
+    enum HashAlgorithms {
+        HashAlgorithmsNone   = 0,
+        HashAlgorithmsSha1   = 1 << 1,
+        HashAlgorithmsSha256 = 1 << 2
+    };
+
     void didReceiveHeaders(const ContentSecurityPolicyResponseHeaders&);
     void didReceiveHeader(const String&, HeaderType);
 
@@ -98,8 +104,13 @@ public:
     bool allowConnectToSource(const KURL&, ReportingStatus = SendReport) const;
     bool allowFormAction(const KURL&, ReportingStatus = SendReport) const;
     bool allowBaseURI(const KURL&, ReportingStatus = SendReport) const;
+    // The nonce and hash allow functions are guaranteed to not have any side
+    // effects, including reporting.
     bool allowScriptNonce(const String& nonce) const;
     bool allowStyleNonce(const String& nonce) const;
+    bool allowScriptHash(const String& source) const;
+
+    void usesScriptHashAlgorithms(uint8_t HashAlgorithms);
 
     ReflectedXSSDisposition reflectedXSSDisposition() const;
 
@@ -112,7 +123,6 @@ public:
     void reportDuplicateDirective(const String&) const;
     void reportInvalidDirectiveValueCharacter(const String& directiveName, const String& value) const;
     void reportInvalidPathCharacter(const String& directiveName, const String& value, const char) const;
-    void reportInvalidNonce(const String&) const;
     void reportInvalidPluginTypes(const String&) const;
     void reportInvalidSandboxFlags(const String&) const;
     void reportInvalidSourceExpression(const String& directiveName, const String& source) const;
@@ -149,6 +159,11 @@ private:
     CSPDirectiveListVector m_policies;
 
     HashSet<unsigned, AlreadyHashed> m_violationReportsSent;
+
+    // We put the hash functions used on the policy object so that we only need
+    // to calculate a script hash once and then distribute it to all of the
+    // directives for validation.
+    uint8_t m_sourceHashAlgorithmsUsed;
 };
 
 }

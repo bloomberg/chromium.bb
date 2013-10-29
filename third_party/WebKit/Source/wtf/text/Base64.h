@@ -56,6 +56,7 @@ WTF_EXPORT String base64Encode(const CString&, Base64EncodePolicy = Base64DoNotI
 WTF_EXPORT bool base64Decode(const String&, Vector<char>&, Base64DecodePolicy = Base64FailOnInvalidCharacter);
 WTF_EXPORT bool base64Decode(const Vector<char>&, Vector<char>&, Base64DecodePolicy = Base64FailOnInvalidCharacter);
 WTF_EXPORT bool base64Decode(const char*, unsigned, Vector<char>&, Base64DecodePolicy = Base64FailOnInvalidCharacter);
+WTF_EXPORT bool base64Decode(const UChar*, unsigned, Vector<char>&, Base64DecodePolicy = Base64FailOnInvalidCharacter);
 
 inline void base64Encode(const Vector<char>& in, Vector<char>& out, Base64EncodePolicy policy)
 {

@@ -1,0 +1,10 @@
+ALERT: PASS (1/1)
+CONSOLE ERROR: line 10: Refused to execute inline script because it violates the following Content Security Policy directive: "script-src 'sha1-Au4uYFbkf7OYd+ACMnKq96FN3qo='".
+
+CONSOLE ERROR: line 13: Refused to execute inline script because it violates the following Content Security Policy directive: "script-src 'sha1-Au4uYFbkf7OYd+ACMnKq96FN3qo='".
+
+CONSOLE ERROR: line 15: Refused to execute inline script because it violates the following Content Security Policy directive: "script-src 'sha1-Au4uYFbkf7OYd+ACMnKq96FN3qo='".
+
+CONSOLE ERROR: line 16: Refused to execute inline script because it violates the following Content Security Policy directive: "script-src 'sha1-Au4uYFbkf7OYd+ACMnKq96FN3qo='".
+
+This tests the effect of a valid script-hash value, with one valid script and several invalid ones. It passes if one alert is executed and four console warings are visible.
