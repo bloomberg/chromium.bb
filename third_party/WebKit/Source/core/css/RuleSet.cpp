@@ -334,7 +334,7 @@ void RuleSet::addViewportRule(StyleRuleViewport* rule)
     m_viewportRules.append(rule);
 }
 
-void RuleSet::addRegionRule(StyleRuleRegion* regionRule, bool hasDocumentSecurityOrigin)
+void RuleSet::addRegionRule(StyleRuleRegion* regionRule, bool hasDocumentSecurityOrigin, const ContainerNode* scope)
 {
     ensurePendingRules(); // So that m_regionSelectorsAndRuleSets.shrinkToFit() gets called.
     OwnPtr<RuleSet> regionRuleSet = RuleSet::create();
@@ -347,7 +347,7 @@ void RuleSet::addRegionRule(StyleRuleRegion* regionRule, bool hasDocumentSecurit
     // FIXME: Should this add other types of rules? (i.e. use addChildRules() directly?)
     const Vector<RefPtr<StyleRuleBase> >& childRules = regionRule->childRules();
     AddRuleFlags addRuleFlags = hasDocumentSecurityOrigin ? RuleHasDocumentSecurityOrigin : RuleHasNoSpecialState;
-    addRuleFlags = static_cast<AddRuleFlags>(addRuleFlags | RuleCanUseFastCheckSelector | RuleIsInRegionRule);
+    addRuleFlags = static_cast<AddRuleFlags>(addRuleFlags | RuleIsInRegionRule | (!scope ? RuleCanUseFastCheckSelector : 0));
     for (unsigned i = 0; i < childRules.size(); ++i) {
         StyleRuleBase* regionStylingRule = childRules[i].get();
         if (regionStylingRule->isStyleRule())
@@ -394,7 +394,7 @@ void RuleSet::addChildRules(const Vector<RefPtr<StyleRuleBase> >& rules, const M
             resolver->ensureScopedStyleResolver(scope)->addKeyframeStyle(static_cast<StyleRuleKeyframes*>(rule));
         } else if (rule->isRegionRule() && resolver) {
             // FIXME (BUG 72472): We don't add @-webkit-region rules of scoped style sheets for the moment.
-            addRegionRule(static_cast<StyleRuleRegion*>(rule), hasDocumentSecurityOrigin);
+            addRegionRule(static_cast<StyleRuleRegion*>(rule), hasDocumentSecurityOrigin, scope);
         } else if (rule->isHostRule() && resolver) {
             if (!isScopingNodeInShadowTree(scope))
                 continue;

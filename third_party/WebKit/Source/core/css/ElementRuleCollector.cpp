@@ -206,7 +206,8 @@ inline bool ElementRuleCollector::ruleMatches(const RuleData& ruleData, const Co
 {
     // They can't match because the fast path uses a pool of tag/class/ids, collected from
     // elements in that tree and those will never match the host, since it's in a different pool.
-    if (ruleData.hasFastCheckableSelector() && SelectorChecker::isHostInItsShadowTree(m_context.element(), behaviorAtBoundary, scope)) {
+    // So when adding scoped rules to RuleSet, RuleCanUseFastCheckSelector is not used.
+    if (ruleData.hasFastCheckableSelector()) {
         // We know this selector does not include any pseudo elements.
         if (m_pseudoStyleRequest.pseudoId != NOPSEUDO)
             return false;

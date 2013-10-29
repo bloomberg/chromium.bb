@@ -272,8 +272,7 @@ void ScopedStyleResolver::addHostRule(StyleRuleHost* hostRule, bool hasDocumentS
     RuleSet* rule = ensureAtHostRuleSetFor(shadowRoot);
 
     const Vector<RefPtr<StyleRuleBase> >& childRules = hostRule->childRules();
-    AddRuleFlags addRuleFlags = hasDocumentSecurityOrigin ? RuleHasDocumentSecurityOrigin : RuleHasNoSpecialState;
-    addRuleFlags = static_cast<AddRuleFlags>(addRuleFlags | RuleCanUseFastCheckSelector);
+    AddRuleFlags addRuleFlags = static_cast<AddRuleFlags>(hasDocumentSecurityOrigin ? RuleHasDocumentSecurityOrigin : RuleHasNoSpecialState);
     for (unsigned i = 0; i < childRules.size(); ++i) {
         StyleRuleBase* hostStylingRule = childRules[i].get();
         if (hostStylingRule->isStyleRule())

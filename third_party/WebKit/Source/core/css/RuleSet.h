@@ -156,7 +156,7 @@ private:
     void addToRuleSet(StringImpl* key, PendingRuleMap&, const RuleData&);
     void addPageRule(StyleRulePage*);
     void addViewportRule(StyleRuleViewport*);
-    void addRegionRule(StyleRuleRegion*, bool hasDocumentSecurityOrigin);
+    void addRegionRule(StyleRuleRegion*, bool hasDocumentSecurityOrigin, const ContainerNode* scope);
 
     void addChildRules(const Vector<RefPtr<StyleRuleBase> >&, const MediaQueryEvaluator& medium, StyleResolver*, const ContainerNode* scope, bool hasDocumentSecurityOrigin, AddRuleFlags);
     bool findBestRuleSetAndAdd(const CSSSelector*, RuleData&);
