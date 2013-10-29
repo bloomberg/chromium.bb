@@ -35,7 +35,7 @@
 #include "core/fetch/ResourceClient.h"
 #include "core/fetch/ResourcePtr.h"
 #include "core/loader/LinkLoaderClient.h"
-#include "core/platform/PrerenderClient.h"
+#include "platform/PrerenderClient.h"
 #include "platform/Timer.h"
 #include "wtf/OwnPtr.h"
 

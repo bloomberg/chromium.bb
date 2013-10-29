@@ -31,7 +31,7 @@
 #include "config.h"
 #include "public/platform/WebPrerender.h"
 
-#include "core/platform/Prerender.h"
+#include "platform/Prerender.h"
 #include "wtf/PassRefPtr.h"
 
 namespace WebKit {

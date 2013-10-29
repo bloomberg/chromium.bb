@@ -35,7 +35,7 @@
 #include "core/frame/Frame.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/PrerendererClient.h"
-#include "core/platform/Prerender.h"
+#include "platform/Prerender.h"
 #include "weborigin/ReferrerPolicy.h"
 #include "weborigin/SecurityPolicy.h"
 

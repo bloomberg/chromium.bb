@@ -32,6 +32,7 @@
 #ifndef Prerender_h
 #define Prerender_h
 
+#include "platform/PlatformExport.h"
 #include "weborigin/KURL.h"
 #include "weborigin/ReferrerPolicy.h"
 #include "wtf/OwnPtr.h"
@@ -49,7 +50,7 @@ namespace WebCore {
 
 class PrerenderClient;
 
-class Prerender : public RefCounted<Prerender> {
+class PLATFORM_EXPORT Prerender : public RefCounted<Prerender> {
     WTF_MAKE_NONCOPYABLE(Prerender);
 public:
     class ExtraData : public RefCounted<ExtraData> {

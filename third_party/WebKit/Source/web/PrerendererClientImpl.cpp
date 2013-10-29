@@ -35,7 +35,7 @@
 #include "WebPrerendererClient.h"
 #include "WebViewImpl.h"
 #include "core/dom/Document.h"
-#include "core/platform/Prerender.h"
+#include "platform/Prerender.h"
 #include "public/platform/WebPrerender.h"
 #include "wtf/PassRefPtr.h"
 

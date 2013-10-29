@@ -37,7 +37,7 @@
 #include "WebString.h"
 #include "WebURL.h"
 
-#if BLINK_IMPLEMENTATION
+#if INSIDE_BLINK
 #include "wtf/PassRefPtr.h"
 #endif
 
@@ -63,27 +63,27 @@ public:
         return *this;
     }
 
-#if BLINK_IMPLEMENTATION
-    explicit WebPrerender(PassRefPtr<WebCore::Prerender>);
+#if INSIDE_BLINK
+    BLINK_PLATFORM_EXPORT explicit WebPrerender(PassRefPtr<WebCore::Prerender>);
 
-    const WebCore::Prerender* toPrerender() const;
+    BLINK_PLATFORM_EXPORT const WebCore::Prerender* toPrerender() const;
 #endif
 
-    BLINK_EXPORT void reset();
-    BLINK_EXPORT void assign(const WebPrerender&);
-    BLINK_EXPORT bool isNull() const;
+    BLINK_PLATFORM_EXPORT void reset();
+    BLINK_PLATFORM_EXPORT void assign(const WebPrerender&);
+    BLINK_PLATFORM_EXPORT bool isNull() const;
 
-    BLINK_EXPORT WebURL url() const;
-    BLINK_EXPORT WebString referrer() const;
-    BLINK_EXPORT WebReferrerPolicy referrerPolicy() const;
+    BLINK_PLATFORM_EXPORT WebURL url() const;
+    BLINK_PLATFORM_EXPORT WebString referrer() const;
+    BLINK_PLATFORM_EXPORT WebReferrerPolicy referrerPolicy() const;
 
-    BLINK_EXPORT void setExtraData(ExtraData*);
-    BLINK_EXPORT const ExtraData* extraData() const;
+    BLINK_PLATFORM_EXPORT void setExtraData(ExtraData*);
+    BLINK_PLATFORM_EXPORT const ExtraData* extraData() const;
 
-    BLINK_EXPORT void didStartPrerender();
-    BLINK_EXPORT void didStopPrerender();
-    BLINK_EXPORT void didSendLoadForPrerender();
-    BLINK_EXPORT void didSendDOMContentLoadedForPrerender();
+    BLINK_PLATFORM_EXPORT void didStartPrerender();
+    BLINK_PLATFORM_EXPORT void didStopPrerender();
+    BLINK_PLATFORM_EXPORT void didSendLoadForPrerender();
+    BLINK_PLATFORM_EXPORT void didSendDOMContentLoadedForPrerender();
 
 private:
     WebPrivatePtr<WebCore::Prerender> m_private;

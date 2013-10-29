@@ -30,9 +30,9 @@
  */
 
 #include "config.h"
-#include "core/platform/Prerender.h"
+#include "platform/Prerender.h"
 
-#include "core/platform/PrerenderClient.h"
+#include "platform/PrerenderClient.h"
 #include "public/platform/WebPrerender.h"
 #include "public/platform/WebPrerenderingSupport.h"
 
