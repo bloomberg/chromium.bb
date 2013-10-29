@@ -154,6 +154,7 @@ static void Start(Options *options) {
 
   if (!success) {
     printf("Failed to send symbol file: %s\n", error.c_str());
+    printf("Response code: %ld\n", response_code);
     printf("Response:\n");
     printf("%s\n", response.c_str());
   } else if (response_code == 0) {
