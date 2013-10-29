@@ -58,8 +58,18 @@ def PrepareCommandValues(cwd, inputs, output):
   return values
 
 
+def MsysPath():
+  # TODO(bradnelson): switch to something hermetic.
+  mingw = os.environ.get('MINGW', r'c:\mingw')
+  msys = os.path.join(mingw, 'msys', '1.0')
+  if not os.path.exists(msys):
+    msys = os.path.join(mingw, 'msys')
+  return msys
+
+
 class Command(object):
   """An object representing a single command."""
+  use_cygwin = False
 
   def __init__(self, command, **kwargs):
     self._command = command
@@ -91,20 +101,21 @@ class Command(object):
     values['top_srcdir'] = FixPath(os.path.relpath(NACL_DIR, kwargs['cwd']))
     values['abs_top_srcdir'] = FixPath(os.path.abspath(NACL_DIR))
 
-    # Use mingw on windows.
+    # Use mingw on windows, unless otherwise specified.
     if sys.platform == 'win32':
-      # TODO(bradnelson): switch to something hermetic.
-      mingw = os.environ.get('MINGW', r'c:\mingw')
-      msys = os.path.join(mingw, 'msys', '1.0')
-      if not os.path.exists(msys):
-        msys = os.path.join(mingw, 'msys')
-      # We need both msys (posix like build environment) and MinGW (windows
-      # build of tools like gcc). We add <MINGW>/msys/[1.0/]bin to the path to
-      # get sh.exe. We also add an msys style path (/mingw/bin) to get things
-      # like gcc from inside msys.
-      kwargs['path_dirs'] = (
-          ['/mingw/bin', os.path.join(msys, 'bin')] +
-          kwargs.get('path_dirs', []))
+      if Command.use_cygwin:
+        # Use the hermetic cygwin.
+        cygwin = os.path.join(NACL_DIR, 'cygwin', 'bin')
+        kwargs['path_dirs'] = ([cygwin] + kwargs.get('path_dirs', []))
+      else:
+        msys = MsysPath()
+        # We need both msys (posix like build environment) and MinGW (windows
+        # build of tools like gcc). We add <MINGW>/msys/[1.0/]bin to the path to
+        # get sh.exe. We also add an msys style path (/mingw/bin) to get things
+        # like gcc from inside msys.
+        kwargs['path_dirs'] = (
+            ['/mingw/bin', os.path.join(msys, 'bin')] +
+            kwargs.get('path_dirs', []))
 
     if 'path_dirs' in kwargs:
       path_dirs = [dirname % values for dirname in kwargs['path_dirs']]
