@@ -313,8 +313,7 @@ TEST_F(ProfileShortcutManagerTest, ShortcutFilenameStripsReservedCharacters) {
   const string16 kSanitizedProfileName = L"Harry";
   BrowserDistribution* distribution = GetDistribution();
   const string16 expected_name = kSanitizedProfileName + L" - " +
-      distribution->GetShortcutName(BrowserDistribution::SHORTCUT_CHROME) +
-          installer::kLnkExt;
+      l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME) + installer::kLnkExt;
   EXPECT_EQ(expected_name,
             profiles::internal::GetShortcutFilenameForProfile(kProfileName,
                                                               distribution));
