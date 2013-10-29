@@ -269,13 +269,32 @@ bool TestLauncher::Run(int argc, char** argv) {
 void TestLauncher::OnTestFinished(const TestResult& result) {
   ++test_finished_count_;
 
+  bool print_snippet = false;
+  std::string print_test_stdio("auto");
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kTestLauncherPrintTestStdio)) {
+    print_test_stdio = CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+        switches::kTestLauncherPrintTestStdio);
+  }
+  if (print_test_stdio == "auto") {
+    print_snippet = (result.status != TestResult::TEST_SUCCESS);
+  } else if (print_test_stdio == "always") {
+    print_snippet = true;
+  } else if (print_test_stdio == "never") {
+    print_snippet = false;
+  } else {
+    LOG(WARNING) << "Invalid value of " << switches::kTestLauncherPrintTestStdio
+                 << ": " << print_test_stdio;
+  }
+  if (print_snippet) {
+    fprintf(stdout, "%s", result.output_snippet.c_str());
+    fflush(stdout);
+  }
+
   if (result.status == TestResult::TEST_SUCCESS) {
     ++test_success_count_;
   } else {
     tests_to_retry_.insert(result.full_name);
-
-    fprintf(stdout, "%s", result.output_snippet.c_str());
-    fflush(stdout);
   }
 
   results_tracker_.AddTestResult(result);

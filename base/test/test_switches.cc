@@ -21,6 +21,11 @@ const char switches::kTestLauncherOutput[] = "test-launcher-output";
 const char switches::kTestLauncherSummaryOutput[] =
     "test-launcher-summary-output";
 
+// Flag controlling when test stdio is displayed as part of the launcher's
+// standard output.
+const char switches::kTestLauncherPrintTestStdio[] =
+    "test-launcher-print-test-stdio";
+
 // Time (in milliseconds) that the tests should wait before timing out.
 const char switches::kTestLauncherTimeout[] = "test-launcher-timeout";
 // TODO(phajdan.jr): Clean up the switch names.
