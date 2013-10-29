@@ -23,6 +23,7 @@ var initialFeedbackInfo = null;
 var whitelistedExtensionIds = [
   'bpmcpldpdmajfigpchkicefoigmkfalc', // QuickOffice
   'ehibbfinohgbchlgdbfpikodjaojhccn', // QuickOffice
+  'gbkeegbaiigmenfmjfclcdgdpimamgkj', // QuickOffice
   'efjnaogkjbogokcnohkmnjdojkikgobo', // G+ Photos
   'ebpbnabdhheoknfklmpddcdijjkmklkp', // G+ Photoes
   'endkpmfloggdajndjpoekmkjnkolfdbf', // Feedback Extension
