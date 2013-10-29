@@ -170,10 +170,10 @@
         '../../skia/skia.gyp:skia',
         '../../testing/gtest.gyp:gtest',
         '../compositor/compositor.gyp:compositor',
-        '../ui.gyp:run_ui_unittests',
         '../ui.gyp:ui',
         '../ui.gyp:ui_resources',
-        '../ui.gyp:ui_test_support',
+        '../ui_unittests.gyp:run_ui_unittests',
+        '../ui_unittests.gyp:ui_test_support',
         'app_list',
       ],
       'sources': [
@@ -210,7 +210,7 @@
         }],
         ['OS=="mac"', {
           'dependencies': [
-            '../ui.gyp:ui_test_support',
+            '../ui_unittests.gyp:ui_test_support',
           ],
           'conditions': [
             ['component=="static_library"', {

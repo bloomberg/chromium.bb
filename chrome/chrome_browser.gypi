@@ -63,7 +63,7 @@
         '../ui/events/events.gyp:events',
         '../ui/gfx/gfx.gyp:gfx',
         '../ui/message_center/message_center.gyp:message_center',
-        '../ui/ui.gyp:shell_dialogs',
+        '../ui/shell_dialogs/shell_dialogs.gyp:shell_dialogs',
         '../ui/ui.gyp:ui',
         '../ui/ui.gyp:ui_resources',
         '../webkit/common/user_agent/webkit_user_agent.gyp:user_agent',

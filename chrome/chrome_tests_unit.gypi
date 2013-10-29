@@ -479,7 +479,7 @@
         '../third_party/icu/icu.gyp:icuuc',
         '../third_party/libxml/libxml.gyp:libxml',
         '../ui/ui.gyp:ui_resources',
-        '../ui/ui.gyp:ui_test_support',
+        '../ui/ui_unittests.gyp:ui_test_support',
         'chrome_resources.gyp:chrome_resources',
         'chrome_resources.gyp:chrome_strings',
       ],

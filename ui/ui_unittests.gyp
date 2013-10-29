@@ -1,8 +1,11 @@
-# Copyright (c) 2012 The Chromium Authors. All rights reserved.
+# Copyright 2013 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
 {
+  'variables': {
+    'chromium_code': 1,
+  },
   'targets': [
     {
       'target_name': 'ui_test_support',
@@ -64,7 +67,7 @@
       'dependencies': [
         '../base/base.gyp:base',
         '../base/base.gyp:test_support_base',
-        'ui',
+        'ui.gyp:ui',
       ],
       'sources': [
         'test/test_suite.cc',
@@ -87,11 +90,11 @@
         '../url/url.gyp:url_lib',
         'base/strings/ui_strings.gyp:ui_strings',
         'events/events.gyp:events',
-        'keycode_converter',
         'run_ui_unittests',
-        'shell_dialogs',
-        'ui',
-        'ui_resources',
+        'shell_dialogs/shell_dialogs.gyp:shell_dialogs',
+        'ui.gyp:keycode_converter',
+        'ui.gyp:ui',
+        'ui.gyp:ui_resources',
         'ui_test_support',
       ],
       # iOS uses a small subset of ui. common_sources are the only files that

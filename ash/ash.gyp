@@ -704,7 +704,7 @@
         '../ui/message_center/message_center.gyp:message_center_test_support',
         '../ui/ui.gyp:ui',
         '../ui/ui.gyp:ui_resources',
-        '../ui/ui.gyp:ui_test_support',
+        '../ui/ui_unittests.gyp:ui_test_support',
         '../ui/views/views.gyp:views',
         '../ui/views/views.gyp:views_examples_with_content_lib',
         '../ui/views/views.gyp:views_test_support',

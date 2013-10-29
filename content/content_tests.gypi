@@ -17,7 +17,7 @@
         '../ui/ui.gyp:keycode_converter',
         '../ui/ui.gyp:ui',
         '../ui/ui.gyp:ui_resources',
-        '../ui/ui.gyp:ui_test_support',
+        '../ui/ui_unittests.gyp:ui_test_support',
         '../url/url.gyp:url_lib',
         'browser/speech/proto/speech_proto.gyp:speech_proto',
         'content.gyp:content_app_both',
@@ -289,7 +289,7 @@
         }],
         ['OS=="android"', {
           'dependencies': [
-            '../ui/ui.gyp:shell_dialogs',
+            '../ui/shell_dialogs/shell_dialogs.gyp:shell_dialogs',
             'test_support_content_jni_headers',
           ],
         }],
@@ -859,8 +859,8 @@
             '../third_party/mesa/mesa.gyp:osmesa',
             '../ui/gfx/gfx.gyp:gfx',
             '../ui/gl/gl.gyp:gl',
+            '../ui/shell_dialogs/shell_dialogs.gyp:shell_dialogs',
             '../ui/snapshot/snapshot.gyp:snapshot',
-            '../ui/ui.gyp:shell_dialogs',
             '../ui/ui.gyp:ui',
             '../ui/ui.gyp:ui_resources',
             '../webkit/glue/webkit_glue.gyp:glue',

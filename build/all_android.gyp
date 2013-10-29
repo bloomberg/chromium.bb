@@ -81,7 +81,7 @@
         '../tools/android/android_tools.gyp:android_tools',
         '../tools/android/android_tools.gyp:memconsumer',
         '../tools/android/findbugs_plugin/findbugs_plugin.gyp:findbugs_plugin_test',
-        '../ui/ui.gyp:ui_unittests',
+        '../ui/ui_unittests.gyp:ui_unittests',
         # Required by ui_unittests.
         # TODO(wangxianzhu): It'd better let ui_unittests depend on it, but
         # this would cause circular gyp dependency which needs refactoring the
@@ -109,7 +109,7 @@
             '../sandbox/sandbox.gyp:sandbox_linux_jni_unittests_apk',
             '../sql/sql.gyp:sql_unittests_apk',
             '../sync/sync.gyp:sync_unit_tests_apk',
-            '../ui/ui.gyp:ui_unittests_apk',
+            '../ui/ui_unittests.gyp:ui_unittests_apk',
             '../android_webview/android_webview.gyp:android_webview_test_apk',
             '../chrome/chrome.gyp:chromium_testshell_test_apk',
             '../chrome/chrome.gyp:chromium_testshell_uiautomator_tests',

@@ -164,11 +164,11 @@
         '../../base/base.gyp:test_support_base',
         '../../skia/skia.gyp:skia',
         '../../testing/gtest.gyp:gtest',
+        '../../url/url.gyp:url_lib',
         '../events/events.gyp:events',
         '../gfx/gfx.gyp:gfx',
-        '../ui.gyp:run_ui_unittests',
         '../ui.gyp:ui',
-        '../../url/url.gyp:url_lib',
+        '../ui_unittests.gyp:run_ui_unittests',
         'message_center',
         'message_center_test_support',
       ],
@@ -188,7 +188,7 @@
       'conditions': [
         ['OS=="mac"', {
           'dependencies': [
-            '../ui.gyp:ui_test_support',
+            '../ui_unittests.gyp:ui_test_support',
           ],
         }],
         ['toolkit_views==1', {

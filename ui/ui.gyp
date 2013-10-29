@@ -7,9 +7,7 @@
     'chromium_code': 1,
   },
   'includes': [
-    'shell_dialogs.gypi',
     'ui_resources.gypi',
-    'ui_unittests.gypi',
   ],
   'targets': [
     {

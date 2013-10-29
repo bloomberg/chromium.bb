@@ -86,8 +86,8 @@
         '../aura/aura.gyp:aura_test_support',
         '../compositor/compositor.gyp:compositor',
         '../gfx/gfx.gyp:gfx',
-        '../ui.gyp:run_ui_unittests',
         '../ui.gyp:ui',
+        '../ui_unittests.gyp:run_ui_unittests',
         'keyboard',
       ],
       'sources': [

@@ -550,7 +550,7 @@
         }],
         ['OS=="linux" and chromeos==0', {
           'dependencies': [
-            '../ui.gyp:shell_dialogs',
+            '../shell_dialogs/shell_dialogs.gyp:shell_dialogs',
           ],
         }, { # OS=="linux" and chromeos==0
           'sources/': [
@@ -709,7 +709,7 @@
         '../gfx/gfx.gyp:gfx',
         '../ui.gyp:ui',
         '../ui.gyp:ui_resources',
-        '../ui.gyp:ui_test_support',
+        '../ui_unittests.gyp:ui_test_support',
         'views',
         'views_test_support',
       ],
