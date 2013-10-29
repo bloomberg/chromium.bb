@@ -12,39 +12,95 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "printing/page_size_margins.h"
 #include "printing/print_job_constants.h"
 #include "printing/print_settings.h"
 #include "printing/units.h"
-#include "ui/base/resource/resource_bundle.h"
-#include "ui/gfx/font_list.h"
-#include "ui/gfx/text_elider.h"
-#include "url/gurl.h"
 
 namespace printing {
 
-void PrintSettingsInitializer::InitHeaderFooterStrings(
-      const base::DictionaryValue& job_settings,
-      PrintSettings* print_settings) {
+bool PrintSettingsInitializer::InitSettings(
+    const base::DictionaryValue& job_settings,
+    const PageRanges& ranges,
+    PrintSettings* settings) {
+  bool display_header_footer = false;
   if (!job_settings.GetBoolean(kSettingHeaderFooterEnabled,
-                               &print_settings->display_header_footer)) {
-    NOTREACHED();
+                               &display_header_footer)) {
+    return false;
   }
-  if (!print_settings->display_header_footer)
-    return;
+  settings->set_display_header_footer(display_header_footer);
 
-  base::string16 title;
-  base::string16 url;
-  if (!job_settings.GetString(kSettingHeaderFooterTitle, &title) ||
-      !job_settings.GetString(kSettingHeaderFooterURL, &url)) {
-    NOTREACHED();
+  if (settings->display_header_footer()) {
+    base::string16 title;
+    base::string16 url;
+    if (!job_settings.GetString(kSettingHeaderFooterTitle, &title) ||
+        !job_settings.GetString(kSettingHeaderFooterURL, &url)) {
+      return false;
+    }
+    settings->set_title(title);
+    settings->set_url(url);
   }
 
-  print_settings->title = title;
-  const gfx::FontList& default_fonts =
-      ui::ResourceBundle::GetSharedInstance().GetFontList(
-          ui::ResourceBundle::BaseFont);
-  print_settings->url = gfx::ElideUrl(GURL(url), default_fonts, 0,
-                                      std::string());
+  bool backgrounds = false;
+  bool selection_only = false;
+  if (!job_settings.GetBoolean(kSettingShouldPrintBackgrounds, &backgrounds) ||
+      !job_settings.GetBoolean(kSettingShouldPrintSelectionOnly,
+                               &selection_only)) {
+    return false;
+  }
+  settings->set_should_print_backgrounds(backgrounds);
+  settings->set_selection_only(selection_only);
+
+  int margin_type = DEFAULT_MARGINS;
+  if (!job_settings.GetInteger(kSettingMarginsType, &margin_type) ||
+      (margin_type != DEFAULT_MARGINS &&
+       margin_type != NO_MARGINS &&
+       margin_type != CUSTOM_MARGINS &&
+       margin_type != PRINTABLE_AREA_MARGINS)) {
+    margin_type = DEFAULT_MARGINS;
+  }
+  settings->set_margin_type(static_cast<MarginType>(margin_type));
+
+  if (margin_type == CUSTOM_MARGINS) {
+    PageSizeMargins page_size_margins;
+    GetCustomMarginsFromJobSettings(job_settings, &page_size_margins);
+
+    PageMargins margins_in_points;
+    margins_in_points.Clear();
+    margins_in_points.top = page_size_margins.margin_top;
+    margins_in_points.bottom = page_size_margins.margin_bottom;
+    margins_in_points.left = page_size_margins.margin_left;
+    margins_in_points.right = page_size_margins.margin_right;
+
+    settings->SetCustomMargins(margins_in_points);
+  }
+
+  settings->set_ranges(ranges);
+
+  int color = 0;
+  bool landscape = false;
+  int duplex_mode = 0;
+  base::string16 device_name;
+  bool collate = false;
+  int copies = 1;
+
+  if (!job_settings.GetBoolean(kSettingCollate, &collate) ||
+      !job_settings.GetInteger(kSettingCopies, &copies) ||
+      !job_settings.GetInteger(kSettingColor, &color) ||
+      !job_settings.GetInteger(kSettingDuplexMode, &duplex_mode) ||
+      !job_settings.GetBoolean(kSettingLandscape, &landscape) ||
+      !job_settings.GetString(kSettingDeviceName, &device_name)) {
+    return false;
+  }
+
+  settings->set_collate(collate);
+  settings->set_copies(copies);
+  settings->SetOrientation(landscape);
+  settings->set_device_name(device_name);
+  settings->set_duplex_mode(static_cast<DuplexMode>(duplex_mode));
+  settings->set_color(static_cast<ColorModel>(color));
+
+  return true;
 }
 
 }  // namespace printing

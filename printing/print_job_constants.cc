@@ -129,9 +129,8 @@ const char kSettingShouldPrintSelectionOnly[] = "shouldPrintSelectionOnly";
 const int FIRST_PAGE_INDEX = 0;
 const int COMPLETE_PREVIEW_DOCUMENT_INDEX = -1;
 
-#if defined(OS_MACOSX)
+// Whether to show PDF in view provided by OS. Implemented for MacOS only.
 const char kSettingOpenPDFInPreview[] = "OpenPDFInPreview";
-#endif
 
 #if defined (USE_CUPS)
 const char kBlack[] = "Black";

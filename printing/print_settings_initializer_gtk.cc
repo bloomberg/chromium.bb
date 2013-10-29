@@ -18,8 +18,6 @@ namespace printing {
 void PrintSettingsInitializerGtk::InitPrintSettings(
     GtkPrintSettings* settings,
     GtkPageSetup* page_setup,
-    const PageRanges& new_ranges,
-    bool print_selection_only,
     PrintSettings* print_settings) {
   DCHECK(settings);
   DCHECK(page_setup);
@@ -28,8 +26,6 @@ void PrintSettingsInitializerGtk::InitPrintSettings(
   base::string16 name(base::UTF8ToUTF16(static_cast<const char*>(
       gtk_print_settings_get_printer(settings))));
   print_settings->set_device_name(name);
-  print_settings->ranges = new_ranges;
-  print_settings->selection_only = print_selection_only;
 
   gfx::Size physical_size_device_units;
   gfx::Rect printable_area_device_units;
@@ -60,9 +56,6 @@ void PrintSettingsInitializerGtk::InitPrintSettings(
   }
 
   print_settings->set_dpi(dpi);
-  print_settings->SetPrinterPrintableArea(physical_size_device_units,
-                                          printable_area_device_units,
-                                          dpi);
 
   // Note: With the normal GTK print dialog, when the user selects the landscape
   // orientation, all that does is change the paper size. Which seems to be
@@ -72,7 +65,12 @@ void PrintSettingsInitializerGtk::InitPrintSettings(
   // Thus this is only useful in print preview mode, where we manually set the
   // orientation and change the paper size ourselves.
   GtkPageOrientation orientation = gtk_print_settings_get_orientation(settings);
+  // Set before SetPrinterPrintableArea to make it flip area if necessary.
   print_settings->SetOrientation(orientation == GTK_PAGE_ORIENTATION_LANDSCAPE);
+
+  print_settings->SetPrinterPrintableArea(physical_size_device_units,
+                                          printable_area_device_units,
+                                          dpi, true);
 }
 
 const double PrintSettingsInitializerGtk::kTopMarginInInch = 0.25;

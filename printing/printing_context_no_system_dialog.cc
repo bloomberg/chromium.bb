@@ -73,24 +73,14 @@ PrintingContext::Result PrintingContextNoSystemDialog::UseDefaultSettings() {
   settings_.set_dpi(dpi);
   settings_.SetPrinterPrintableArea(physical_size_device_units,
                                     printable_area_device_units,
-                                    dpi);
+                                    dpi, true);
 
   return OK;
 }
 
 PrintingContext::Result PrintingContextNoSystemDialog::UpdatePrinterSettings(
-    const base::DictionaryValue& job_settings, const PageRanges& ranges) {
-  bool landscape = false;
-
-  if (!job_settings.GetBoolean(kSettingLandscape, &landscape))
-    return OnError();
-
-  if (settings_.dpi() == 0)
-    UseDefaultSettings();
-
-  settings_.SetOrientation(landscape);
-  settings_.ranges = ranges;
-
+    bool target_is_pdf,
+    bool external_preview) {
   return OK;
 }
 

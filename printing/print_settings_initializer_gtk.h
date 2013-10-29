@@ -20,8 +20,6 @@ class PRINTING_EXPORT PrintSettingsInitializerGtk {
  public:
   static void InitPrintSettings(GtkPrintSettings* settings,
                                 GtkPageSetup* page_setup,
-                                const PageRanges& new_ranges,
-                                bool print_selection_only,
                                 PrintSettings* print_settings);
 
   // The default margins, in points. These values are based on 72 dpi,

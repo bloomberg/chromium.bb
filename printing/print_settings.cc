@@ -110,52 +110,49 @@ bool IsColorModelSelected(int color_mode) {
 // Global SequenceNumber used for generating unique cookie values.
 static base::StaticAtomicSequenceNumber cookie_seq;
 
-PrintSettings::PrintSettings()
-    : min_shrink(1.25),
-      max_shrink(2.0),
-      desired_dpi(72),
-      selection_only(false),
-      margin_type(DEFAULT_MARGINS),
-      display_header_footer(false),
-      should_print_backgrounds(false),
-      dpi_(0),
-      landscape_(false),
-      supports_alpha_blend_(true) {
+PrintSettings::PrintSettings() {
+  Clear();
 }
 
 PrintSettings::~PrintSettings() {
 }
 
 void PrintSettings::Clear() {
-  ranges.clear();
-  min_shrink = 1.25;
-  max_shrink = 2.;
-  desired_dpi = 72;
-  selection_only = false;
-  title = base::string16();
-  url = base::string16();
-  display_header_footer = false;
+  ranges_.clear();
+  margin_type_ = DEFAULT_MARGINS;
+  min_shrink_ = 1.25;
+  max_shrink_ = 2.;
+  desired_dpi_ = 72;
+  selection_only_ = false;
+  title_ = base::string16();
+  url_ = base::string16();
+  display_header_footer_ = false;
   device_name_.clear();
   page_setup_device_units_.Clear();
   dpi_ = 0;
   landscape_ = false;
   supports_alpha_blend_ = true;
-  should_print_backgrounds = false;
+  should_print_backgrounds_ = false;
+  collate_ = false;
+  color_ = UNKNOWN_COLOR_MODEL;
+  copies_ = 0;
+  duplex_mode_ = UNKNOWN_DUPLEX_MODE;
 }
 
 void PrintSettings::SetPrinterPrintableArea(
     gfx::Size const& physical_size_device_units,
     gfx::Rect const& printable_area_device_units,
-    int units_per_inch) {
+    int units_per_inch,
+    bool landscape_needs_flip) {
   int header_footer_text_height = 0;
-  if (display_header_footer) {
+  if (display_header_footer_) {
     // Hard-code text_height = 0.5cm = ~1/5 of inch.
     header_footer_text_height = ConvertUnit(kSettingHeaderFooterInterstice,
                                             kPointsPerInch, units_per_inch);
   }
 
   PageMargins margins;
-  switch (margin_type) {
+  switch (margin_type_) {
     case DEFAULT_MARGINS: {
       // Default margins 1.0cm = ~2/5 of an inch.
       int margin_printer_units = ConvertUnit(1000, kHundrethsMMPerInch,
@@ -204,7 +201,7 @@ void PrintSettings::SetPrinterPrintableArea(
     }
   }
 
-  if (margin_type == DEFAULT_MARGINS || margin_type == PRINTABLE_AREA_MARGINS)
+  if (margin_type_ == DEFAULT_MARGINS || margin_type_ == PRINTABLE_AREA_MARGINS)
     page_setup_device_units_.SetRequestedMargins(margins);
   else
     page_setup_device_units_.ForceRequestedMargins(margins);
@@ -212,27 +209,14 @@ void PrintSettings::SetPrinterPrintableArea(
   page_setup_device_units_.Init(physical_size_device_units,
                                 printable_area_device_units,
                                 header_footer_text_height);
+  if (landscape_ && landscape_needs_flip)
+    page_setup_device_units_.FlipOrientation();
 }
 
 void PrintSettings::SetCustomMargins(
     const PageMargins& requested_margins_in_points) {
   requested_custom_margins_in_points_ = requested_margins_in_points;
-  margin_type = CUSTOM_MARGINS;
-}
-
-bool PrintSettings::Equals(const PrintSettings& rhs) const {
-  // Do not test the display device name (printer_name_) for equality since it
-  // may sometimes be chopped off at 30 chars. As long as device_name is the
-  // same, that's fine.
-  return ranges == rhs.ranges &&
-      min_shrink == rhs.min_shrink &&
-      max_shrink == rhs.max_shrink &&
-      desired_dpi == rhs.desired_dpi &&
-      device_name_ == rhs.device_name_ &&
-      page_setup_device_units_.Equals(rhs.page_setup_device_units_) &&
-      dpi_ == rhs.dpi_ &&
-      landscape_ == rhs.landscape_ &&
-      should_print_backgrounds == rhs.should_print_backgrounds;
+  margin_type_ = CUSTOM_MARGINS;
 }
 
 int PrintSettings::NewCookie() {

@@ -31,9 +31,8 @@ class PRINTING_EXPORT PrintingContextMac : public PrintingContext {
       bool has_selection,
       const PrintSettingsCallback& callback) OVERRIDE;
   virtual Result UseDefaultSettings() OVERRIDE;
-  virtual Result UpdatePrinterSettings(
-      const base::DictionaryValue& job_settings,
-      const PageRanges& ranges) OVERRIDE;
+  virtual Result UpdatePrinterSettings(bool target_is_pdf,
+                                       bool external_preview) OVERRIDE;
   virtual Result InitWithSettings(const PrintSettings& settings) OVERRIDE;
   virtual Result NewDocument(const base::string16& document_name) OVERRIDE;
   virtual Result NewPage() OVERRIDE;
@@ -48,8 +47,8 @@ class PRINTING_EXPORT PrintingContextMac : public PrintingContext {
   // after changes to |print_info_| in order for the changes to take effect in
   // printing.
   // This function ignores the page range information specified in the print
-  // info object and use |ranges| instead.
-  void InitPrintSettingsFromPrintInfo(const PageRanges& ranges);
+  // info object and use |settings_.ranges| instead.
+  void InitPrintSettingsFromPrintInfo();
 
   // Returns the set of page ranges constructed from |print_info_|.
   PageRanges GetPageRangesFromPrintInfo();

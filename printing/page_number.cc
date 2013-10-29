@@ -31,7 +31,7 @@ void PageNumber::operator=(const PageNumber& other) {
 
 void PageNumber::Init(const PrintSettings& settings, int document_page_count) {
   DCHECK(document_page_count);
-  ranges_ = settings.ranges.empty() ? NULL : &settings.ranges;
+  ranges_ = settings.ranges().empty() ? NULL : &settings.ranges();
   document_page_count_ = document_page_count;
   if (ranges_) {
     page_range_index_ = 0;

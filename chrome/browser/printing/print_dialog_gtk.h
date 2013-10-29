@@ -36,8 +36,7 @@ class PrintDialogGtk
 
   // printing::PrintDialogGtkInterface implementation.
   virtual void UseDefaultSettings() OVERRIDE;
-  virtual bool UpdateSettings(const base::DictionaryValue& job_settings,
-                              const printing::PageRanges& ranges,
+  virtual bool UpdateSettings(bool target_is_pdf,
                               printing::PrintSettings* settings) OVERRIDE;
   virtual void ShowDialog(
       gfx::NativeView parent_view,
@@ -69,9 +68,8 @@ class PrintDialogGtk
   void OnJobCompleted(GtkPrintJob* print_job, GError* error);
 
   // Helper function for initializing |context_|'s PrintSettings with a given
-  // set of |page_ranges| and |settings|.
-  void InitPrintSettings(const printing::PageRanges& page_ranges,
-                         printing::PrintSettings* settings);
+  // |settings|.
+  void InitPrintSettings(printing::PrintSettings* settings);
 
   // Printing dialog callback.
   PrintingContextGtk::PrintSettingsCallback callback_;

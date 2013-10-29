@@ -19,8 +19,6 @@ class PRINTING_EXPORT PrintSettingsInitializerMac {
  public:
   static void InitPrintSettings(PMPrinter printer,
                                 PMPageFormat page_format,
-                                const PageRanges& new_ranges,
-                                bool print_selection_only,
                                 PrintSettings* print_settings);
 
  private:

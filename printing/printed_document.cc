@@ -51,10 +51,10 @@ PrintedDocument::PrintedDocument(const PrintSettings& settings,
       immutable_(settings, source, cookie) {
 
   // Records the expected page count if a range is setup.
-  if (!settings.ranges.empty()) {
+  if (!settings.ranges().empty()) {
     // If there is a range, set the number of page
-    for (unsigned i = 0; i < settings.ranges.size(); ++i) {
-      const PageRange& range = settings.ranges[i];
+    for (unsigned i = 0; i < settings.ranges().size(); ++i) {
+      const PageRange& range = settings.ranges()[i];
       mutable_.expected_page_count_ += range.to - range.from + 1;
     }
   }
@@ -153,7 +153,7 @@ void PrintedDocument::set_page_count(int max_page) {
   base::AutoLock lock(lock_);
   DCHECK_EQ(0, mutable_.page_count_);
   mutable_.page_count_ = max_page;
-  if (immutable_.settings_.ranges.empty()) {
+  if (immutable_.settings_.ranges().empty()) {
     mutable_.expected_page_count_ = max_page;
   } else {
     // If there is a range, don't bother since expected_page_count_ is already

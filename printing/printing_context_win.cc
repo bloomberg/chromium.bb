@@ -308,33 +308,12 @@ PrintingContext::Result PrintingContextWin::UseDefaultSettings() {
 }
 
 PrintingContext::Result PrintingContextWin::UpdatePrinterSettings(
-    const DictionaryValue& job_settings,
-    const PageRanges& ranges) {
+    bool target_is_pdf,
+    bool external_preview) {
   DCHECK(!in_print_job_);
+  DCHECK(!external_preview) << "Not implemented";
 
-  bool collate;
-  int color;
-  bool landscape;
-  bool print_to_pdf;
-  bool is_cloud_dialog;
-  int copies;
-  int duplex_mode;
-  base::string16 device_name;
-
-  if (!job_settings.GetBoolean(kSettingLandscape, &landscape) ||
-      !job_settings.GetBoolean(kSettingCollate, &collate) ||
-      !job_settings.GetInteger(kSettingColor, &color) ||
-      !job_settings.GetBoolean(kSettingPrintToPDF, &print_to_pdf) ||
-      !job_settings.GetInteger(kSettingDuplexMode, &duplex_mode) ||
-      !job_settings.GetInteger(kSettingCopies, &copies) ||
-      !job_settings.GetString(kSettingDeviceName, &device_name) ||
-      !job_settings.GetBoolean(kSettingCloudPrintDialog, &is_cloud_dialog)) {
-    return OnError();
-  }
-
-  bool print_to_cloud = job_settings.HasKey(kSettingCloudPrintId);
-
-  if (print_to_pdf || print_to_cloud || is_cloud_dialog) {
+  if (target_is_pdf) {
     // Default fallback to Letter size.
     gfx::Size paper_size;
     gfx::Rect paper_rect;
@@ -362,15 +341,14 @@ PrintingContext::Result PrintingContextWin::UpdatePrinterSettings(
       }
     }
     paper_rect.SetRect(0, 0, paper_size.width(), paper_size.height());
-    settings_.SetPrinterPrintableArea(paper_size, paper_rect, kPDFDpi);
+    settings_.SetPrinterPrintableArea(paper_size, paper_rect, kPDFDpi, true);
     settings_.set_dpi(kPDFDpi);
-    settings_.SetOrientation(landscape);
-    settings_.ranges = ranges;
     return OK;
   }
 
   ScopedPrinterHandle printer;
-  LPWSTR device_name_wide = const_cast<wchar_t*>(device_name.c_str());
+  LPWSTR device_name_wide =
+      const_cast<wchar_t*>(settings_.device_name().c_str());
   if (!printer.OpenPrinter(device_name_wide))
     return OnError();
 
@@ -394,15 +372,17 @@ PrintingContext::Result PrintingContextWin::UpdatePrinterSettings(
     return OnError();
   }
 
-  if (color == GRAY)
+  if (settings_.color() == GRAY)
     dev_mode->dmColor = DMCOLOR_MONOCHROME;
   else
     dev_mode->dmColor = DMCOLOR_COLOR;
 
-  dev_mode->dmCopies = std::max(copies, 1);
-  if (dev_mode->dmCopies > 1)  // do not change collate unless multiple copies
-    dev_mode->dmCollate = collate ? DMCOLLATE_TRUE : DMCOLLATE_FALSE;
-  switch (duplex_mode) {
+  dev_mode->dmCopies = std::max(settings_.copies(), 1);
+  if (dev_mode->dmCopies > 1) { // do not change collate unless multiple copies
+    dev_mode->dmCollate = settings_.collate() ? DMCOLLATE_TRUE :
+                                                DMCOLLATE_FALSE;
+  }
+  switch (settings_.duplex_mode()) {
     case LONG_EDGE:
       dev_mode->dmDuplex = DMDUP_VERTICAL;
       break;
@@ -415,7 +395,8 @@ PrintingContext::Result PrintingContextWin::UpdatePrinterSettings(
     default:  // UNKNOWN_DUPLEX_MODE
       break;
   }
-  dev_mode->dmOrientation = landscape ? DMORIENT_LANDSCAPE : DMORIENT_PORTRAIT;
+  dev_mode->dmOrientation = settings_.landscape() ? DMORIENT_LANDSCAPE :
+                                                    DMORIENT_PORTRAIT;
 
   // Update data using DocumentProperties.
   if (DocumentProperties(NULL, printer, device_name_wide, dev_mode, dev_mode,
@@ -424,12 +405,11 @@ PrintingContext::Result PrintingContextWin::UpdatePrinterSettings(
   }
 
   // Set printer then refresh printer settings.
-  if (!AllocateContext(device_name, dev_mode, &context_)) {
+  if (!AllocateContext(settings_.device_name(), dev_mode, &context_)) {
     return OnError();
   }
   PrintSettingsInitializerWin::InitPrintSettings(context_, *dev_mode,
-                                                 ranges, device_name,
-                                                 false, &settings_);
+                                                 &settings_);
   return OK;
 }
 
@@ -626,11 +606,10 @@ bool PrintingContextWin::InitializeSettings(const DEVMODE& dev_mode,
     }
   }
 
-  PrintSettingsInitializerWin::InitPrintSettings(context_,
-                                                 dev_mode,
-                                                 ranges_vector,
-                                                 new_device_name,
-                                                 selection_only,
+  settings_.set_ranges(ranges_vector);
+  settings_.set_device_name(new_device_name);
+  settings_.set_selection_only(selection_only);
+  PrintSettingsInitializerWin::InitPrintSettings(context_, dev_mode,
                                                  &settings_);
 
   return true;

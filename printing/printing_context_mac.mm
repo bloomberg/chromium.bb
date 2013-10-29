@@ -15,6 +15,7 @@
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/mac/scoped_nsexception_enabler.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "printing/print_settings_initializer_mac.h"
 
@@ -97,7 +98,8 @@ void PrintingContextMac::AskUserForSettings(
   NSInteger selection = [panel runModalWithPrintInfo:printInfo];
   if (selection == NSOKButton) {
     print_info_.reset([[panel printInfo] retain]);
-    InitPrintSettingsFromPrintInfo(GetPageRangesFromPrintInfo());
+    settings_.set_ranges(GetPageRangesFromPrintInfo());
+    InitPrintSettingsFromPrintInfo();
     callback.Run(OK);
   } else {
     callback.Run(CANCEL);
@@ -108,74 +110,40 @@ PrintingContext::Result PrintingContextMac::UseDefaultSettings() {
   DCHECK(!in_print_job_);
 
   print_info_.reset([[NSPrintInfo sharedPrintInfo] copy]);
-  InitPrintSettingsFromPrintInfo(GetPageRangesFromPrintInfo());
+  settings_.set_ranges(GetPageRangesFromPrintInfo());
+  InitPrintSettingsFromPrintInfo();
 
   return OK;
 }
 
 PrintingContext::Result PrintingContextMac::UpdatePrinterSettings(
-    const DictionaryValue& job_settings, const PageRanges& ranges) {
+    bool target_is_pdf,
+    bool external_preview) {
   DCHECK(!in_print_job_);
 
   // NOTE: Reset |print_info_| with a copy of |sharedPrintInfo| so as to start
   // with a clean slate.
   print_info_.reset([[NSPrintInfo sharedPrintInfo] copy]);
 
-  bool collate;
-  int color;
-  bool landscape;
-  bool print_to_pdf;
-  bool is_cloud_dialog;
-  int copies;
-  int duplex_mode;
-  std::string device_name;
-
-  if (!job_settings.GetBoolean(kSettingLandscape, &landscape) ||
-      !job_settings.GetBoolean(kSettingCollate, &collate) ||
-      !job_settings.GetInteger(kSettingColor, &color) ||
-      !job_settings.GetBoolean(kSettingPrintToPDF, &print_to_pdf) ||
-      !job_settings.GetInteger(kSettingDuplexMode, &duplex_mode) ||
-      !job_settings.GetInteger(kSettingCopies, &copies) ||
-      !job_settings.GetString(kSettingDeviceName, &device_name) ||
-      !job_settings.GetBoolean(kSettingCloudPrintDialog, &is_cloud_dialog)) {
-    return OnError();
-  }
-
-  bool print_to_cloud = job_settings.HasKey(kSettingCloudPrintId);
-  bool open_pdf_in_preview = job_settings.HasKey(kSettingOpenPDFInPreview);
-
-  if (!print_to_pdf && !print_to_cloud && !is_cloud_dialog) {
-    if (!SetPrinter(device_name))
-      return OnError();
-
-    if (!SetCopiesInPrintSettings(copies))
-      return OnError();
-
-    if (!SetCollateInPrintSettings(collate))
-      return OnError();
-
-    if (!SetDuplexModeInPrintSettings(
-            static_cast<DuplexMode>(duplex_mode))) {
+  if (!target_is_pdf) {
+    if (!SetPrinter(UTF16ToUTF8(settings_.device_name())) ||
+        !SetCopiesInPrintSettings(settings_.copies()) ||
+        !SetCollateInPrintSettings(settings_.collate()) ||
+        !SetDuplexModeInPrintSettings(settings_.duplex_mode()) ||
+        !SetOutputColor(settings_.color())) {
       return OnError();
     }
-
-    if (!SetOutputColor(color))
-      return OnError();
-  }
-  if (open_pdf_in_preview) {
-    if (!SetPrintPreviewJob())
-      return OnError();
   }
 
-  if (!UpdatePageFormatWithPaperInfo())
+  if ((external_preview && !SetPrintPreviewJob()) ||
+      !UpdatePageFormatWithPaperInfo() ||
+      !SetOrientationIsLandscape(settings_.landscape())) {
     return OnError();
-
-  if (!SetOrientationIsLandscape(landscape))
-    return OnError();
+  }
 
   [print_info_.get() updateFromPMPrintSettings];
 
-  InitPrintSettingsFromPrintInfo(ranges);
+  InitPrintSettingsFromPrintInfo();
   return OK;
 }
 
@@ -189,16 +157,16 @@ bool PrintingContextMac::SetPrintPreviewJob() {
       NULL, NULL) == noErr;
 }
 
-void PrintingContextMac::InitPrintSettingsFromPrintInfo(
-    const PageRanges& ranges) {
+void PrintingContextMac::InitPrintSettingsFromPrintInfo() {
   PMPrintSession print_session =
       static_cast<PMPrintSession>([print_info_.get() PMPrintSession]);
   PMPageFormat page_format =
       static_cast<PMPageFormat>([print_info_.get() PMPageFormat]);
   PMPrinter printer;
   PMSessionGetCurrentPrinter(print_session, &printer);
+  settings_.set_selection_only(false);
   PrintSettingsInitializerMac::InitPrintSettings(
-      printer, page_format, ranges, false, &settings_);
+      printer, page_format, &settings_);
 }
 
 bool PrintingContextMac::SetPrinter(const std::string& device_name) {

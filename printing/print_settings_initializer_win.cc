@@ -14,17 +14,10 @@ namespace printing {
 void PrintSettingsInitializerWin::InitPrintSettings(
     HDC hdc,
     const DEVMODE& dev_mode,
-    const PageRanges& new_ranges,
-    const std::wstring& new_device_name,
-    bool print_selection_only,
     PrintSettings* print_settings) {
   DCHECK(hdc);
   DCHECK(print_settings);
-
-  print_settings->set_device_name(new_device_name);
-  print_settings->ranges = const_cast<PageRanges&>(new_ranges);
-  print_settings->set_landscape(dev_mode.dmOrientation == DMORIENT_LANDSCAPE);
-  print_settings->selection_only = print_selection_only;
+  print_settings->SetOrientation(dev_mode.dmOrientation == DMORIENT_LANDSCAPE);
 
   int dpi = GetDeviceCaps(hdc, LOGPIXELSX);
   print_settings->set_dpi(dpi);
@@ -58,7 +51,7 @@ void PrintSettingsInitializerWin::InitPrintSettings(
 
   print_settings->SetPrinterPrintableArea(physical_size_device_units,
                                           printable_area_device_units,
-                                          dpi);
+                                          dpi, false);
 }
 
 }  // namespace printing

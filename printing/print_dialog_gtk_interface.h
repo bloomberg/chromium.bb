@@ -22,12 +22,12 @@ class PrintDialogGtkInterface {
   // Tell the dialog to use the default print setting.
   virtual void UseDefaultSettings() = 0;
 
-  // Update the dialog to use |job_settings| and |ranges|, where |job_settings|
-  // is a dictionary of settings with possible keys from
-  // printing/print_job_constants.h. Only used when printing without the system
-  // print dialog. E.g. for Print Preview. Returns false on error.
-  virtual bool UpdateSettings(const base::DictionaryValue& job_settings,
-                              const PageRanges& ranges,
+  // Updates the dialog to use |settings|. Only used when printing without the
+  // system print dialog. E.g. for Print Preview. Returns false on error.
+  // |target_is_pdf| is true if implementation needs to generate PDF without
+  // actual printing. In this case implementation may avoid setup of native
+  // print system. Ex. "save to pdf" or Cloud Print.
+  virtual bool UpdateSettings(bool target_is_pdf,
                               PrintSettings* settings) = 0;
 
   // Shows the dialog and handles the response with |callback|. Only used when

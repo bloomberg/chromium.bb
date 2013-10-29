@@ -208,7 +208,6 @@ void PrintJobWorker::StartPrinting(PrintedDocument* new_document) {
   DCHECK_EQ(page_number_, PageNumber::npos());
   DCHECK_EQ(document_, new_document);
   DCHECK(document_.get());
-  DCHECK(new_document->settings().Equals(printing_context_->settings()));
 
   if (!document_.get() || page_number_ != PageNumber::npos() ||
       document_.get() != new_document) {
@@ -240,8 +239,6 @@ void PrintJobWorker::StartPrinting(PrintedDocument* new_document) {
 void PrintJobWorker::OnDocumentChanged(PrintedDocument* new_document) {
   DCHECK_EQ(message_loop(), base::MessageLoop::current());
   DCHECK_EQ(page_number_, PageNumber::npos());
-  DCHECK(!new_document ||
-         new_document->settings().Equals(printing_context_->settings()));
 
   if (page_number_ != PageNumber::npos())
     return;

@@ -79,15 +79,17 @@ PrintingContext::Result PrintingContextGtk::UseDefaultSettings() {
 }
 
 PrintingContext::Result PrintingContextGtk::UpdatePrinterSettings(
-    const DictionaryValue& job_settings, const PageRanges& ranges) {
+    bool target_is_pdf,
+    bool external_preview) {
   DCHECK(!in_print_job_);
+  DCHECK(!external_preview) << "Not implemented";
 
   if (!print_dialog_) {
     print_dialog_ = create_dialog_func_(this);
     print_dialog_->AddRefToDialog();
   }
 
-  if (!print_dialog_->UpdateSettings(job_settings, ranges, &settings_))
+  if (!print_dialog_->UpdateSettings(target_is_pdf, &settings_))
     return OnError();
 
   return OK;
