@@ -27,11 +27,11 @@
 
 #include "core/frame/AdjustViewSizeOrNot.h"
 #include "core/platform/ScrollView.h"
-#include "core/platform/graphics/Color.h"
 #include "core/rendering/Pagination.h"
 #include "core/rendering/PaintPhase.h"
 #include "core/rendering/PartialLayoutState.h"
 #include "platform/geometry/LayoutRect.h"
+#include "platform/graphics/Color.h"
 #include "wtf/Forward.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/text/WTFString.h"

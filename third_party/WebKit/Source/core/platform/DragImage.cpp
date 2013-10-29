@@ -27,7 +27,6 @@
 #include "core/platform/DragImage.h"
 
 #include "core/platform/graphics/BitmapImage.h"
-#include "core/platform/graphics/Color.h"
 #include "core/platform/graphics/Font.h"
 #include "core/platform/graphics/FontCache.h"
 #include "core/platform/graphics/FontDescription.h"
@@ -41,6 +40,7 @@
 #include "platform/geometry/FloatRect.h"
 #include "platform/geometry/IntPoint.h"
 #include "platform/geometry/IntSize.h"
+#include "platform/graphics/Color.h"
 #include "platform/graphics/TextRun.h"
 #include "platform/transforms/AffineTransform.h"
 #include "skia/ext/image_operations.h"

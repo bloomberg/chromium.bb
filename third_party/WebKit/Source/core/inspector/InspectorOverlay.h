@@ -29,10 +29,10 @@
 #ifndef InspectorOverlay_h
 #define InspectorOverlay_h
 
-#include "core/platform/graphics/Color.h"
 #include "platform/Timer.h"
 #include "platform/geometry/FloatQuad.h"
 #include "platform/geometry/LayoutRect.h"
+#include "platform/graphics/Color.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefPtr.h"

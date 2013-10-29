@@ -25,8 +25,8 @@
 #ifndef ShadowData_h
 #define ShadowData_h
 
-#include "core/platform/graphics/Color.h"
 #include "platform/geometry/IntPoint.h"
+#include "platform/graphics/Color.h"
 
 namespace WebCore {
 

@@ -94,6 +94,7 @@
       '<(SHARED_INTERMEDIATE_DIR)/blink/FontFamilyNames.cpp',
       '<(SHARED_INTERMEDIATE_DIR)/blink/RuntimeEnabledFeatures.cpp',
       '<(SHARED_INTERMEDIATE_DIR)/blink/RuntimeEnabledFeatures.h',
+      '<(SHARED_INTERMEDIATE_DIR)/blink/ColorData.cpp',
     ],
     # Disable c4267 warnings until we fix size_t to int truncations.
     # Disable c4724 warnings which is generated in VS2012 due to improper

@@ -79,6 +79,22 @@
             '<(SHARED_INTERMEDIATE_DIR)/blink',
           ],
         },
+        {
+          'action_name': 'ColorData',
+          'inputs': [
+            'ColorData.gperf',
+          ],
+          'outputs': [
+            '<(SHARED_INTERMEDIATE_DIR)/blink/ColorData.cpp',
+          ],
+          'action': [
+            '<(gperf_exe)',
+            '--key-positions=*',
+            '-D', '-s', '2',
+            '<@(_inputs)',
+            '--output-file=<(SHARED_INTERMEDIATE_DIR)/blink/ColorData.cpp',
+          ],
+        },
       ]
     },
   ],

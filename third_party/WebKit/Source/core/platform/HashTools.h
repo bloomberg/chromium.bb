@@ -22,11 +22,6 @@
 
 namespace WebCore {
 
-struct NamedColor {
-    const char* name;
-    unsigned ARGBValue;
-};
-
 struct Property {
     int nameOffset;
     int id;
@@ -37,7 +32,6 @@ struct Value {
     int id;
 };
 
-const NamedColor* findColor(register const char* str, register unsigned int len);
 const Property* findProperty(register const char* str, register unsigned int len);
 const Value* findValue(register const char* str, register unsigned int len);
 

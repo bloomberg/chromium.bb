@@ -25,10 +25,10 @@
 #ifndef StyleRareInheritedData_h
 #define StyleRareInheritedData_h
 
-#include "core/platform/graphics/Color.h"
 #include "core/rendering/style/DataRef.h"
 #include "core/rendering/style/StyleVariableData.h"
 #include "platform/Length.h"
+#include "platform/graphics/Color.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/text/AtomicString.h"

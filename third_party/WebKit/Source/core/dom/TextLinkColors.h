@@ -28,7 +28,7 @@
 #ifndef TextLinkColors_h
 #define TextLinkColors_h
 
-#include "core/platform/graphics/Color.h"
+#include "platform/graphics/Color.h"
 #include "wtf/Noncopyable.h"
 
 namespace WebCore {

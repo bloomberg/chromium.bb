@@ -31,6 +31,7 @@
 #ifndef DrawLooper_h
 #define DrawLooper_h
 
+#include "platform/PlatformExport.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/RefPtr.h"
 
@@ -42,7 +43,7 @@ namespace WebCore {
 class Color;
 class FloatSize;
 
-class DrawLooper {
+class PLATFORM_EXPORT DrawLooper {
     // Implementing the copy constructor properly would require writing code to
     // copy the underlying SkDrawLooper.
     WTF_MAKE_NONCOPYABLE(DrawLooper);

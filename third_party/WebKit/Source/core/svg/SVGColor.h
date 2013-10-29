@@ -23,7 +23,7 @@
 #define SVGColor_h
 
 #include "core/css/CSSValue.h"
-#include "core/platform/graphics/Color.h"
+#include "platform/graphics/Color.h"
 #include "wtf/PassRefPtr.h"
 
 namespace WebCore {

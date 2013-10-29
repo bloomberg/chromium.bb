@@ -36,7 +36,7 @@
 #include "core/css/MediaQuery.h"
 #include "core/css/StylePropertySet.h"
 #include "core/page/UseCounter.h"
-#include "core/platform/graphics/Color.h"
+#include "platform/graphics/Color.h"
 #include "wtf/HashSet.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/Vector.h"

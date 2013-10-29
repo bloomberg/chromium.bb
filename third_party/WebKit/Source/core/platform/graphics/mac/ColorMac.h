@@ -29,7 +29,7 @@
 #ifndef ColorMac_h
 #define ColorMac_h
 
-#include "core/platform/graphics/Color.h"
+#include "platform/graphics/Color.h"
 
 OBJC_CLASS NSColor;
 

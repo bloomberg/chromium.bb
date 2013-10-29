@@ -2720,13 +2720,10 @@
             'platform/graphics/ContentDecryptionModule.h',
             'platform/graphics/ContentDecryptionModuleSession.cpp',
             'platform/graphics/ContentDecryptionModuleSession.h',
-            'platform/graphics/Color.cpp',
             'platform/graphics/CrossfadeGeneratedImage.cpp',
             'platform/graphics/CrossfadeGeneratedImage.h',
             'platform/graphics/GradientGeneratedImage.cpp',
             'platform/graphics/GradientGeneratedImage.h',
-            'platform/graphics/DrawLooper.cpp',
-            'platform/graphics/DrawLooper.h',
             'platform/graphics/Extensions3D.cpp',
             'platform/graphics/Extensions3D.h',
             'platform/graphics/Font.cpp',
@@ -3580,26 +3577,5 @@
             'platform/testing/FakeWebGraphicsContext3D.h',
             'rendering/RenderOverflowTest.cpp',
         ],
-        'conditions': [
-            ['OS=="win"', {
-                # Using native perl rather than cygwin perl cuts execution time
-                # of idl preprocessing rules by a bit more than 50%.
-                'perl_exe': '<(DEPTH)/third_party/perl/perl/bin/perl.exe',
-                'gperf_exe': '<(DEPTH)/third_party/gperf/bin/gperf.exe',
-                'bison_exe': '<(DEPTH)/third_party/bison/bin/bison.exe',
-                # Using cl instead of cygwin gcc cuts the processing time from
-                # 1m58s to 0m52s.
-                'preprocessor': '--preprocessor "cl.exe -nologo -EP -TP"',
-              },{
-                'perl_exe': 'perl',
-                'gperf_exe': 'gperf',
-                'bison_exe': 'bison',
-                # We specify a preprocess so it happens locally and won't get
-                # distributed to goma.
-                # FIXME: /usr/bin/gcc won't exist on OSX forever. We want to
-                # use /usr/bin/clang once we require Xcode 4.x.
-                'preprocessor': '--preprocessor "/usr/bin/gcc -E -P -x c++"'
-              }],
-         ],
     }
 }

@@ -27,11 +27,11 @@
 #define Theme_h
 
 #include "core/platform/ThemeTypes.h"
-#include "core/platform/graphics/Color.h"
 #include "core/platform/graphics/Font.h"
 #include "platform/LengthBox.h"
 #include "platform/LengthSize.h"
 #include "platform/geometry/IntRect.h"
+#include "platform/graphics/Color.h"
 #include "wtf/Forward.h"
 
 namespace WebCore {

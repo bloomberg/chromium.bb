@@ -31,7 +31,7 @@
 #ifndef StyleColor_h
 #define StyleColor_h
 
-#include "core/platform/graphics/Color.h"
+#include "platform/graphics/Color.h"
 #include "wtf/FastAllocBase.h"
 
 namespace WebCore {

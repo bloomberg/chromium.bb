@@ -20,7 +20,6 @@
 #include "config.h"
 #include "core/rendering/EllipsisBox.h"
 
-#include "core/platform/graphics/DrawLooper.h"
 #include "core/platform/graphics/Font.h"
 #include "core/platform/graphics/GraphicsContextStateSaver.h"
 #include "core/rendering/HitTestResult.h"
@@ -29,6 +28,7 @@
 #include "core/rendering/RenderBlock.h"
 #include "core/rendering/RootInlineBox.h"
 #include "core/rendering/style/ShadowList.h"
+#include "platform/graphics/DrawLooper.h"
 #include "platform/graphics/TextRun.h"
 
 namespace WebCore {

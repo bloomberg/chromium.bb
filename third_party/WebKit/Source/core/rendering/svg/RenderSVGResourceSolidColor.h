@@ -20,9 +20,9 @@
 #ifndef RenderSVGResourceSolidColor_h
 #define RenderSVGResourceSolidColor_h
 
-#include "core/platform/graphics/Color.h"
 #include "core/rendering/svg/RenderSVGResource.h"
 #include "platform/geometry/FloatRect.h"
+#include "platform/graphics/Color.h"
 
 namespace WebCore {
 

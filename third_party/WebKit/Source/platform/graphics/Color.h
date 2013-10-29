@@ -35,24 +35,31 @@ namespace WebCore {
 
 class Color;
 
-typedef unsigned RGBA32;        // RGBA quadruplet
+typedef unsigned RGBA32; // RGBA quadruplet
 
-RGBA32 makeRGB(int r, int g, int b);
-RGBA32 makeRGBA(int r, int g, int b, int a);
+PLATFORM_EXPORT RGBA32 makeRGB(int r, int g, int b);
+PLATFORM_EXPORT RGBA32 makeRGBA(int r, int g, int b, int a);
 
-RGBA32 colorWithOverrideAlpha(RGBA32 color, float overrideAlpha);
-RGBA32 makeRGBA32FromFloats(float r, float g, float b, float a);
-RGBA32 makeRGBAFromHSLA(double h, double s, double l, double a);
-RGBA32 makeRGBAFromCMYKA(float c, float m, float y, float k, float a);
+PLATFORM_EXPORT RGBA32 colorWithOverrideAlpha(RGBA32 color, float overrideAlpha);
+PLATFORM_EXPORT RGBA32 makeRGBA32FromFloats(float r, float g, float b, float a);
+PLATFORM_EXPORT RGBA32 makeRGBAFromHSLA(double h, double s, double l, double a);
+PLATFORM_EXPORT RGBA32 makeRGBAFromCMYKA(float c, float m, float y, float k, float a);
 
-int differenceSquared(const Color&, const Color&);
+PLATFORM_EXPORT int differenceSquared(const Color&, const Color&);
 
 inline int redChannel(RGBA32 color) { return (color >> 16) & 0xFF; }
 inline int greenChannel(RGBA32 color) { return (color >> 8) & 0xFF; }
 inline int blueChannel(RGBA32 color) { return color & 0xFF; }
 inline int alphaChannel(RGBA32 color) { return (color >> 24) & 0xFF; }
 
-class Color {
+struct NamedColor {
+    const char* name;
+    unsigned ARGBValue;
+};
+
+const NamedColor* findColor(register const char* str, register unsigned len);
+
+class PLATFORM_EXPORT Color {
     WTF_MAKE_FAST_ALLOCATED;
 public:
     Color() : m_color(0), m_valid(false) { }
@@ -136,8 +143,8 @@ inline bool operator!=(const Color& a, const Color& b)
     return !(a == b);
 }
 
-Color colorFromPremultipliedARGB(RGBA32);
-RGBA32 premultipliedARGBFromColor(const Color&);
+PLATFORM_EXPORT Color colorFromPremultipliedARGB(RGBA32);
+PLATFORM_EXPORT RGBA32 premultipliedARGBFromColor(const Color&);
 
 inline Color blend(const Color& from, const Color& to, double progress, bool blendPremultiplied = true)
 {
@@ -152,9 +159,9 @@ inline Color blend(const Color& from, const Color& to, double progress, bool ble
         Color premultTo = to.alpha() ? premultipliedARGBFromColor(to) : 0;
 
         Color premultBlended(blend(premultFrom.red(), premultTo.red(), progress),
-                     blend(premultFrom.green(), premultTo.green(), progress),
-                     blend(premultFrom.blue(), premultTo.blue(), progress),
-                     blend(premultFrom.alpha(), premultTo.alpha(), progress));
+                             blend(premultFrom.green(), premultTo.green(), progress),
+                             blend(premultFrom.blue(), premultTo.blue(), progress),
+                             blend(premultFrom.alpha(), premultTo.alpha(), progress));
 
         return Color(colorFromPremultipliedARGB(premultBlended.rgb()));
     }

@@ -1,5 +1,6 @@
 %{
-#include "core/platform/HashTools.h"
+#include "config.h"
+#include "platform/graphics/Color.h"
 #include <string.h>
 
 namespace WebCore {
@@ -167,7 +168,7 @@ whitesmoke, 0xfff5f5f5
 yellow, 0xffffff00
 yellowgreen, 0xff9acd32
 %%
-const struct NamedColor* findColor(register const char* str, register unsigned int len)
+const struct NamedColor* findColor(register const char* str, register unsigned len)
 {
     return ColorDataHash::findColorImpl(str, len);
 }

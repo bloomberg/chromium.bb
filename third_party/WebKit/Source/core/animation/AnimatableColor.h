@@ -32,7 +32,7 @@
 #define AnimatableColor_h
 
 #include "core/animation/AnimatableValue.h"
-#include "core/platform/graphics/Color.h"
+#include "platform/graphics/Color.h"
 
 namespace WebCore {
 

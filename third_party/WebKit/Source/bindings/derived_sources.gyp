@@ -32,6 +32,7 @@
   'includes': [
     '../build/scripts/scripts.gypi',
     '../build/win/precompile.gypi',
+    '../build/scripts/scripts.gypi',
     '../core/core.gypi',
     '../modules/modules.gypi',
     'bindings.gypi',

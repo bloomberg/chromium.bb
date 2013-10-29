@@ -26,7 +26,7 @@
 #ifndef InbandTextTrackPrivateClient_h
 #define InbandTextTrackPrivateClient_h
 
-#include "core/platform/graphics/Color.h"
+#include "platform/graphics/Color.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/text/WTFString.h"
 

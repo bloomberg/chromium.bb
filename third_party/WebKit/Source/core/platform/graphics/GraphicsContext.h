@@ -28,8 +28,6 @@
 #ifndef GraphicsContext_h
 #define GraphicsContext_h
 
-#include "core/platform/graphics/DashArray.h"
-#include "core/platform/graphics/DrawLooper.h"
 #include "core/platform/graphics/Font.h"
 #include "core/platform/graphics/GraphicsContextAnnotation.h"
 #include "core/platform/graphics/GraphicsContextState.h"
@@ -38,6 +36,8 @@
 #include "core/platform/graphics/skia/SkiaUtils.h"
 #include "platform/TraceEvent.h"
 #include "platform/geometry/FloatRect.h"
+#include "platform/graphics/DashArray.h"
+#include "platform/graphics/DrawLooper.h"
 #include "platform/graphics/ImageOrientation.h"
 // TODO(robertphillips): replace this include with "class SkBaseDevice;"
 #include "third_party/skia/include/core/SkDevice.h"

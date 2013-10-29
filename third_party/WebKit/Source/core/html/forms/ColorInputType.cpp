@@ -43,9 +43,9 @@
 #include "core/html/HTMLOptionElement.h"
 #include "core/html/forms/InputTypeNames.h"
 #include "core/page/Chrome.h"
-#include "core/platform/graphics/Color.h"
 #include "core/rendering/RenderView.h"
 #include "platform/UserGestureIndicator.h"
+#include "platform/graphics/Color.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/WTFString.h"
 
