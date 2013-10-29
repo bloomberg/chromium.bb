@@ -146,7 +146,11 @@ InspectorTest.dumpTimelineRecord = function(record, level)
         prefix = "----" + prefix;
     if (level > 0)
         prefix = prefix + "> ";
-    if (record.type === WebInspector.TimelineModel.RecordType.TimeStamp) {
+    if (record.coalesced) {
+        suffix = " x " + record.children.length;
+    } else if (record.type === WebInspector.TimelineModel.RecordType.TimeStamp
+        || record.type === WebInspector.TimelineModel.RecordType.Time
+        || record.type === WebInspector.TimelineModel.RecordType.TimeEnd) {
         suffix = " : " + record.data.message;
     }
     InspectorTest.addResult(prefix + InspectorTest._timelineAgentTypeToString(record.type) + suffix);

@@ -1,1 +1,29 @@
-Test time/timeEnd nesting (Bug 100936)
+Test nesting of time/timeEnd records on Timeline<
+
+Root
+----> Time : a
+--------> Layout
+----> Time : a
+--------> Time : a
+------------> Time : a
+------------> Time : b
+----------------> Time : a
+----> Time : a
+--------> Time : b
+------------> Time x 2
+----------------> Time : c1
+----------------> Time : c1
+------------> Time : c2
+----> Time : x
+--------> Time : y
+----> TimeEnd : y
+----> TimeEnd : bar
+----> Time : foo
+----> Time : s
+----> TimeEnd : s
+----> Time : l1
+----> FunctionCall
+--------> TimeEnd : l1
+--------> Time : l2
+----> TimeEnd : l2
+

@@ -1,25 +1,25 @@
 Test timeline records coalescing
 
 Root
-----> Layout
+----> Layout x 3
 --------> Layout
 --------> Layout
 --------> Layout
 ----> Layout
-----> FunctionCall
+----> FunctionCall x 2
 --------> FunctionCall
-------------> Layout
+------------> Layout x 2
 ----------------> Layout
 ----------------> Layout
 --------> FunctionCall
-------------> Layout
+------------> Layout x 2
 ----------------> Layout
 ----------------> Layout
-----> TimeStamp : foo
+----> TimeStamp x 2
 --------> TimeStamp : foo
 --------> TimeStamp : foo
 ----> TimeStamp : bar
-----> EventDispatch
+----> EventDispatch x 2
 --------> EventDispatch
 --------> EventDispatch
 ----> EventDispatch
