@@ -193,12 +193,12 @@ TEST_F(AutomaticProfileResetterDelegateTest,
   testing::StrictMock<MockCallbackTarget> mock_target;
 
   // Expect ready_callback to be called just after the modules have been
-  // enumerated. Fail if it is not called, or called too early.
+  // enumerated. Fail if it is not called. Note: as the EnumerateModulesModel is
+  // a global singleton, the callback might be invoked immediately if another
+  // test-case (e.g. the one below) has already performed module enumeration.
+  EXPECT_CALL(mock_target, Run());
   resetter_delegate()->RequestCallbackWhenLoadedModulesAreEnumerated(
       mock_target.CreateClosure());
-  base::RunLoop().RunUntilIdle();
-
-  EXPECT_CALL(mock_target, Run());
   resetter_delegate()->EnumerateLoadedModulesIfNeeded();
   base::RunLoop().RunUntilIdle();
 
