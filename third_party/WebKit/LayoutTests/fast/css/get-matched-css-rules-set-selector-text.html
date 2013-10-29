@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<style>
+html, img {  border: 5px solid salmon; }
+</style>
+<script>
+function eventhandler() {
+    window.getMatchedCSSRules(document.documentElement)[0].selectorText = 'div';
+    document.documentElement.offsetHeight; // Crash under ASAN was here in updateStyleIfNeeded
+}
+</script>
+<img>
+<iframe onbeforeload="eventhandler()"></iframe>
+<div>This div should be the only element with a 5px border.</div>

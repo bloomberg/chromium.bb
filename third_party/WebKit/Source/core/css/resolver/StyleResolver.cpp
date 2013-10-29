@@ -1151,12 +1151,12 @@ void StyleResolver::updateFont(StyleResolverState& state)
     state.fontBuilder().createFont(m_fontSelector, state.parentStyle(), state.style());
 }
 
-PassRefPtr<CSSRuleList> StyleResolver::styleRulesForElement(Element* e, unsigned rulesToInclude)
+PassRefPtr<CSSRuleList> StyleResolver::styleRulesForElement(Element* e, unsigned rulesToInclude, ShouldIncludeStyleSheetInCSSOMWrapper includeDocument)
 {
-    return pseudoStyleRulesForElement(e, NOPSEUDO, rulesToInclude);
+    return pseudoStyleRulesForElement(e, NOPSEUDO, rulesToInclude, includeDocument);
 }
 
-PassRefPtr<CSSRuleList> StyleResolver::pseudoStyleRulesForElement(Element* e, PseudoId pseudoId, unsigned rulesToInclude)
+PassRefPtr<CSSRuleList> StyleResolver::pseudoStyleRulesForElement(Element* e, PseudoId pseudoId, unsigned rulesToInclude, ShouldIncludeStyleSheetInCSSOMWrapper includeDocument)
 {
     if (!e || !e->document().haveStylesheetsLoaded())
         return 0;
@@ -1165,7 +1165,7 @@ PassRefPtr<CSSRuleList> StyleResolver::pseudoStyleRulesForElement(Element* e, Ps
         resetDirectionAndWritingModeOnDocument(document());
     StyleResolverState state(document(), e);
 
-    ElementRuleCollector collector(state.elementContext(), m_selectorFilter, state.style());
+    ElementRuleCollector collector(state.elementContext(), m_selectorFilter, state.style(), includeDocument);
     collector.setMode(SelectorChecker::CollectingRules);
     collector.setPseudoStyleRequest(PseudoStyleRequest(pseudoId));
 

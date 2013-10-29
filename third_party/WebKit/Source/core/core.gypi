@@ -830,6 +830,7 @@
             'css/resolver/StyleBuilderCustom.h',
             'css/resolver/StyleResolver.cpp',
             'css/resolver/StyleResolver.h',
+            'css/resolver/StyleResolverIncludes.h',
             'css/resolver/StyleResolverState.cpp',
             'css/resolver/StyleResolverState.h',
             'css/resolver/StyleResourceLoader.cpp',
