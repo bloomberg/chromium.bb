@@ -20,7 +20,7 @@
 
 // Introduced in DOM Level 2:
 [
-    CustomToV8
+    SetReference(NodeFilter filter)
 ] interface NodeIterator {
     readonly attribute Node root;
     readonly attribute unsigned long whatToShow;

@@ -451,13 +451,13 @@ sub HeaderFilesForInterface
     return @includes;
 }
 
-sub NeedsOpaqueRootForGC
+sub NeedsResolveWrapperReachability
 {
     my $interface = shift;
-    return $interface->extendedAttributes->{"GenerateIsReachable"} || $interface->extendedAttributes->{"CustomIsReachable"};
+    return $interface->extendedAttributes->{"GenerateIsReachable"} || $interface->extendedAttributes->{"CustomIsReachable"} || $interface->extendedAttributes->{"SetReference"};
 }
 
-sub GenerateOpaqueRootForGC
+sub GenerateResolveWrapperReachability
 {
     my $interface = shift;
     my $implClassName = GetImplName($interface);
@@ -468,22 +468,46 @@ sub GenerateOpaqueRootForGC
     }
 
     my $code = <<END;
-void* ${v8ClassName}::opaqueRootForGC(void* object, v8::Isolate* isolate)
+void ${v8ClassName}::resolveWrapperReachability(void* object, const v8::Persistent<v8::Object>& wrapper, v8::Isolate* isolate)
 {
     ${implClassName}* impl = fromInternalPointer(object);
 END
+    if ($interface->extendedAttributes->{"SetReference"}) {
+        $code .= <<END;
+    v8::Local<v8::Object> creationContext = v8::Local<v8::Object>::New(isolate, wrapper);
+    V8WrapperInstantiationScope scope(creationContext, isolate);
+END
+    }
+    for my $setReference (@{$interface->extendedAttributes->{"SetReference"}}) {
+        my $setReferenceType = $setReference->type;
+        my $setReferenceName = $setReference->name;
+        my $setReferenceV8Type = "V8".$setReferenceType;
+
+        AddIncludesForType($setReferenceType);
+        $code .= <<END;
+    ${setReferenceType}* ${setReferenceName} = impl->${setReferenceName}();
+    if (${setReferenceName}) {
+        if (!DOMDataStore::containsWrapper<${setReferenceV8Type}>(${setReferenceName}, isolate))
+            wrap(${setReferenceName}, creationContext, isolate);
+        DOMDataStore::setWrapperReference<${setReferenceV8Type}>(wrapper, ${setReferenceName}, isolate);
+    }
+END
+    }
+
     my $isReachableMethod = $interface->extendedAttributes->{"GenerateIsReachable"};
     if ($isReachableMethod) {
         AddToImplIncludes("bindings/v8/V8GCController.h");
         AddToImplIncludes("core/dom/Element.h");
         $code .= <<END;
-    if (Node* owner = impl->${isReachableMethod}())
-        return V8GCController::opaqueRootForGC(owner, isolate);
+    if (Node* owner = impl->${isReachableMethod}()) {
+        setObjectGroup(V8GCController::opaqueRootForGC(owner, isolate), wrapper, isolate);
+        return;
+    }
 END
     }
 
     $code .= <<END;
-    return object;
+    setObjectGroup(object, wrapper, isolate);
 }
 
 END
@@ -666,8 +690,8 @@ END
     static const WrapperTypeInfo wrapperTypeInfo;
 END
 
-    if (NeedsOpaqueRootForGC($interface)) {
-        $header{classPublic}->add("    static void* opaqueRootForGC(void*, v8::Isolate*);\n");
+    if (NeedsResolveWrapperReachability($interface)) {
+        $header{classPublic}->add("    static void resolveWrapperReachability(void*, const v8::Persistent<v8::Object>&, v8::Isolate*);\n");
     }
 
     if (InheritsExtendedAttribute($interface, "ActiveDOMObject")) {
@@ -4030,7 +4054,7 @@ sub GenerateImplementation
 
     my $toActiveDOMObject = InheritsExtendedAttribute($interface, "ActiveDOMObject") ? "${v8ClassName}::toActiveDOMObject" : "0";
     my $toEventTarget = InheritsInterface($interface, "EventTarget") ? "${v8ClassName}::toEventTarget" : "0";
-    my $rootForGC = NeedsOpaqueRootForGC($interface) ? "${v8ClassName}::opaqueRootForGC" : "0";
+    my $resolveWrapperReachability = NeedsResolveWrapperReachability($interface) ? "${v8ClassName}::resolveWrapperReachability" : "0";
 
     # Find the super descriptor.
     my $parentClass = "";
@@ -4080,7 +4104,7 @@ END
     }
 
     my $code = "const WrapperTypeInfo ${v8ClassName}::wrapperTypeInfo = { ${v8ClassName}::GetTemplate, ${v8ClassName}::derefObject, $toActiveDOMObject, $toEventTarget, ";
-    $code .= "$rootForGC, ${v8ClassName}::installPerContextEnabledPrototypeProperties, $parentClassInfo, $WrapperTypePrototype };\n";
+    $code .= "$resolveWrapperReachability, ${v8ClassName}::installPerContextEnabledPrototypeProperties, $parentClassInfo, $WrapperTypePrototype };\n";
     $implementation{nameSpaceWebCore}->addHeader($code);
 
     $implementation{nameSpaceInternal}->add("template <typename T> void V8_USE(T) { }\n\n");
@@ -4139,8 +4163,8 @@ END
         GenerateReplaceableAttributeSetterCallback($interface);
     }
 
-    if (NeedsOpaqueRootForGC($interface)) {
-        GenerateOpaqueRootForGC($interface);
+    if (NeedsResolveWrapperReachability($interface)) {
+        GenerateResolveWrapperReachability($interface);
     }
 
     if ($interface->extendedAttributes->{"CheckSecurity"} && $interface->name ne "Window") {
@@ -4937,8 +4961,7 @@ sub GenerateToV8Converters
     my $wrapperConfiguration = "WrapperConfiguration::Independent";
     if (InheritsExtendedAttribute($interface, "ActiveDOMObject")
         || InheritsExtendedAttribute($interface, "DependentLifetime")
-        || InheritsExtendedAttribute($interface, "GenerateIsReachable")
-        || InheritsExtendedAttribute($interface, "CustomIsReachable")
+        || NeedsResolveWrapperReachability($interface)
         || $v8ClassName =~ /SVG/) {
         $wrapperConfiguration = "WrapperConfiguration::Dependent";
     }
