@@ -85,7 +85,8 @@ FieldTrial::FieldTrial(const std::string& trial_name,
       group_(kNotFinalized),
       enable_field_trial_(true),
       forced_(false),
-      group_reported_(false) {
+      group_reported_(false),
+      trial_registered_(false) {
   DCHECK_GT(total_probability, 0);
   DCHECK(!trial_name_.empty());
   DCHECK(!default_group_name_.empty());
@@ -146,7 +147,8 @@ int FieldTrial::AppendGroup(const std::string& name,
 
 int FieldTrial::group() {
   FinalizeGroupChoice();
-  FieldTrialList::NotifyFieldTrialGroupSelection(this);
+  if (trial_registered_)
+    FieldTrialList::NotifyFieldTrialGroupSelection(this);
   return group_;
 }
 
@@ -174,7 +176,23 @@ void FieldTrial::SetForced() {
   forced_ = true;
 }
 
+// static
+FieldTrial* FieldTrial::CreateSimulatedFieldTrial(
+    const std::string& trial_name,
+    Probability total_probability,
+    const std::string& default_group_name,
+    double entropy_value) {
+  return new FieldTrial(trial_name, total_probability, default_group_name,
+                        entropy_value);
+}
+
 FieldTrial::~FieldTrial() {}
+
+void FieldTrial::SetTrialRegistered() {
+  DCHECK_EQ(kNotFinalized, group_);
+  DCHECK(!trial_registered_);
+  trial_registered_ = true;
+}
 
 void FieldTrial::SetGroupChoice(const std::string& group_name, int number) {
   group_ = number;
@@ -434,9 +452,9 @@ FieldTrial* FieldTrialList::CreateFieldTrial(
   }
   const int kTotalProbability = 100;
   field_trial = new FieldTrial(name, kTotalProbability, group_name, 0);
+  FieldTrialList::Register(field_trial);
   // Force the trial, which will also finalize the group choice.
   field_trial->SetForced();
-  FieldTrialList::Register(field_trial);
   return field_trial;
 }
 
@@ -510,6 +528,7 @@ void FieldTrialList::Register(FieldTrial* trial) {
   AutoLock auto_lock(global_->lock_);
   DCHECK(!global_->PreLockedFind(trial->trial_name()));
   trial->AddRef();
+  trial->SetTrialRegistered();
   global_->registered_[trial->trial_name()] = trial;
 }
 

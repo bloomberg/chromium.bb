@@ -153,6 +153,22 @@ class BASE_EXPORT FieldTrial : public RefCounted<FieldTrial> {
   // be done from the UI thread.
   void SetForced();
 
+  // Creates a FieldTrial object with the specified parameters, to be used for
+  // simulation of group assignment without actually affecting global field
+  // trial state in the running process. Group assignment will be done based on
+  // |entropy_value|, which must have a range of [0, 1).
+  //
+  // Note: Using this function will not register the field trial globally in the
+  // running process - for that, use FieldTrialList::FactoryGetFieldTrial().
+  //
+  // The ownership of the returned FieldTrial is transfered to the caller which
+  // is responsible for deref'ing it (e.g. by using scoped_refptr<FieldTrial>).
+  static FieldTrial* CreateSimulatedFieldTrial(
+      const std::string& trial_name,
+      Probability total_probability,
+      const std::string& default_group_name,
+      double entropy_value);
+
  private:
   // Allow tests to access our innards for testing purposes.
   FRIEND_TEST_ALL_PREFIXES(FieldTrialTest, Registration);
@@ -184,7 +200,7 @@ class BASE_EXPORT FieldTrial : public RefCounted<FieldTrial> {
 
   // Creates a field trial with the specified parameters. Group assignment will
   // be done based on |entropy_value|, which must have a range of [0, 1).
-  FieldTrial(const std::string& name,
+  FieldTrial(const std::string& trial_name,
              Probability total_probability,
              const std::string& default_group_name,
              double entropy_value);
@@ -192,6 +208,10 @@ class BASE_EXPORT FieldTrial : public RefCounted<FieldTrial> {
 
   // Return the default group name of the FieldTrial.
   std::string default_group_name() const { return default_group_name_; }
+
+  // Marks this trial as having been registered with the FieldTrialList. Must be
+  // called no more than once and before any |group()| calls have occurred.
+  void SetTrialRegistered();
 
   // Sets the chosen group name and number.
   void SetGroupChoice(const std::string& group_name, int number);
@@ -230,6 +250,7 @@ class BASE_EXPORT FieldTrial : public RefCounted<FieldTrial> {
   // Sum of the probabilities of all appended groups.
   Probability accumulated_group_probability_;
 
+  // The number that will be returned by the next AppendGroup() call.
   int next_group_number_;
 
   // The pseudo-randomly assigned group number.
@@ -250,6 +271,10 @@ class BASE_EXPORT FieldTrial : public RefCounted<FieldTrial> {
 
   // Specifies whether the group choice has been reported to observers.
   bool group_reported_;
+
+  // Whether this trial is registered with the global FieldTrialList and thus
+  // should notify it when its group is queried.
+  bool trial_registered_;
 
   // When benchmarking is enabled, field trials all revert to the 'default'
   // group.
