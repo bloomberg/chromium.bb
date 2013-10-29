@@ -273,6 +273,11 @@ class BASE_EXPORT Pickle {
   // not been changed.
   void TrimWriteData(int length);
 
+  // Reserves space for upcoming writes when multiple writes will be made and
+  // their sizes are computed in advance. It can be significantly faster to call
+  // Reserve() before calling WriteFoo() multiple times.
+  void Reserve(size_t additional_capacity);
+
   // Payload follows after allocation of Header (header size is customizable).
   struct Header {
     uint32 payload_size;  // Specifies the size of the payload.

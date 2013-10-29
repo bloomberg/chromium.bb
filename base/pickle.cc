@@ -304,8 +304,18 @@ void Pickle::TrimWriteData(int new_length) {
   *cur_length = new_length;
 }
 
+void Pickle::Reserve(size_t additional_capacity) {
+  // Write at a uint32-aligned offset from the beginning of the header.
+  size_t offset = AlignInt(header_->payload_size, sizeof(uint32));
+
+  size_t new_size = offset + additional_capacity;
+  size_t needed_size = header_size_ + new_size;
+  if (needed_size > capacity_)
+    Resize(capacity_ * 2 + needed_size);
+}
+
 char* Pickle::BeginWrite(size_t length) {
-  // write at a uint32-aligned offset from the beginning of the header
+  // Write at a uint32-aligned offset from the beginning of the header.
   size_t offset = AlignInt(header_->payload_size, sizeof(uint32));
 
   size_t new_size = offset + length;

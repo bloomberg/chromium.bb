@@ -369,6 +369,19 @@ void ParamTraits<cc::RenderPass>::Write(
   }
 }
 
+static size_t ReserveSizeForRenderPassWrite(const cc::RenderPass& p) {
+  size_t to_reserve = sizeof(cc::RenderPass);
+
+  to_reserve += p.shared_quad_state_list.size() * sizeof(cc::SharedQuadState);
+
+  // The shared_quad_state_index for each quad.
+  to_reserve += p.quad_list.size() * sizeof(size_t);
+
+  // The largest quad type, verified by a unit test.
+  to_reserve += p.quad_list.size() * sizeof(cc::RenderPassDrawQuad);
+  return to_reserve;
+}
+
 template<typename QuadType>
 static scoped_ptr<cc::DrawQuad> ReadDrawQuad(const Message* m,
                                              PickleIterator* iter) {
@@ -680,6 +693,14 @@ void ParamTraits<cc::CompositorFrameAck>::Log(const param_type& p,
 void ParamTraits<cc::DelegatedFrameData>::Write(Message* m,
                                                 const param_type& p) {
   DCHECK_NE(0u, p.render_pass_list.size());
+
+  size_t to_reserve = p.resource_list.size() * sizeof(cc::TransferableResource);
+  for (size_t i = 0; i < p.render_pass_list.size(); ++i) {
+    const cc::RenderPass* pass = p.render_pass_list[i];
+    to_reserve += ReserveSizeForRenderPassWrite(*pass);
+  }
+  m->Reserve(to_reserve);
+
   WriteParam(m, p.resource_list);
   WriteParam(m, p.render_pass_list.size());
   for (size_t i = 0; i < p.render_pass_list.size(); ++i)
