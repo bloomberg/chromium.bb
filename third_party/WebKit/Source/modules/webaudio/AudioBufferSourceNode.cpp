@@ -381,13 +381,22 @@ unsigned AudioBufferSourceNode::numberOfChannels()
     return output(0)->numberOfChannels();
 }
 
-void AudioBufferSourceNode::startGrain(double when, double grainOffset)
+void AudioBufferSourceNode::start(double when)
 {
-    // Duration of 0 has special value, meaning calculate based on the entire buffer's duration.
-    startGrain(when, grainOffset, 0);
+    startPlaying(false, when, 0, buffer()->duration());
 }
 
-void AudioBufferSourceNode::startGrain(double when, double grainOffset, double grainDuration)
+void AudioBufferSourceNode::start(double when, double grainOffset)
+{
+    startPlaying(true, when, grainOffset, buffer()->duration());
+}
+
+void AudioBufferSourceNode::start(double when, double grainOffset, double grainDuration)
+{
+    startPlaying(true, when, grainOffset, grainDuration);
+}
+
+void AudioBufferSourceNode::startPlaying(bool isGrain, double when, double grainOffset, double grainDuration)
 {
     ASSERT(isMainThread());
 
@@ -397,23 +406,28 @@ void AudioBufferSourceNode::startGrain(double when, double grainOffset, double g
     if (!buffer())
         return;
 
-    // Do sanity checking of grain parameters versus buffer size.
-    double bufferDuration = buffer()->duration();
+    if (isGrain) {
+        // Do sanity checking of grain parameters versus buffer size.
+        double bufferDuration = buffer()->duration();
 
-    grainOffset = max(0.0, grainOffset);
-    grainOffset = min(bufferDuration, grainOffset);
-    m_grainOffset = grainOffset;
+        grainOffset = max(0.0, grainOffset);
+        grainOffset = min(bufferDuration, grainOffset);
+        m_grainOffset = grainOffset;
 
-    // Handle default/unspecified duration.
-    double maxDuration = bufferDuration - grainOffset;
-    if (!grainDuration)
-        grainDuration = maxDuration;
+        double maxDuration = bufferDuration - grainOffset;
 
-    grainDuration = max(0.0, grainDuration);
-    grainDuration = min(maxDuration, grainDuration);
-    m_grainDuration = grainDuration;
+        grainDuration = max(0.0, grainDuration);
+        grainDuration = min(maxDuration, grainDuration);
+        m_grainDuration = grainDuration;
 
-    m_isGrain = true;
+    } else {
+        // Until crbug.com/306139 is implemented, we initialize m_grainOffset and m_grainDuration
+        // again.
+        m_grainOffset = 0.0;
+        m_grainDuration = DefaultGrainDuration;
+    }
+
+    m_isGrain = isGrain;
     m_startTime = when;
 
     // We call timeToSampleFrame here since at playbackRate == 1 we don't want to go through linear interpolation
@@ -427,7 +441,10 @@ void AudioBufferSourceNode::startGrain(double when, double grainOffset, double g
 
 void AudioBufferSourceNode::noteGrainOn(double when, double grainOffset, double grainDuration)
 {
-    startGrain(when, grainOffset, grainDuration);
+    // Handle unspecified duration where 0 means the rest of the buffer.
+    if (!grainDuration)
+        grainDuration = buffer()->duration();
+    startPlaying(true, when, grainOffset, grainDuration);
 }
 
 double AudioBufferSourceNode::totalPitchRate()

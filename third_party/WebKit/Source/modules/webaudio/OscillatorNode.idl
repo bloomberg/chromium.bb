@@ -47,8 +47,8 @@
     readonly attribute AudioParam frequency; // in Hertz
     readonly attribute AudioParam detune; // in Cents
 
-    void start(double when);
-    void stop(double when);
+    void start(optional double when);
+    void stop(optional double when);
 
     void noteOn(double when);
     void noteOff(double when);

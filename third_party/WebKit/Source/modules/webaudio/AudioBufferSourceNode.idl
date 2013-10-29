@@ -43,10 +43,8 @@
     attribute double loopStart;
     attribute double loopEnd;
 
-    [MeasureAs=WebAudioStart] void start(double when);
-    [MeasureAs=WebAudioStart, ImplementedAs=startGrain] void start(double when, double grainOffset);
-    [MeasureAs=WebAudioStart, ImplementedAs=startGrain] void start(double when, double grainOffset, double grainDuration);
-    void stop(double when);
+    [MeasureAs=WebAudioStart] void start(optional double when, optional double grainOffset, optional double grainDuration);
+    void stop(optional double when);
 
     [DeprecateAs=WebAudioLooping, ImplementedAs=loop] attribute boolean looping; // This is an alias for the .loop attribute for backwards compatibility.
 

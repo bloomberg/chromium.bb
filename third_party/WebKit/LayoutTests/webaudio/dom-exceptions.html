@@ -117,6 +117,18 @@ function runTest() {
     // WaveShaper types
     node = context.createWaveShaper();
     shouldThrow("node.oversample = '9x'");
+
+    // Start/stop for AudioBufferSourceNodes
+    buffer = context.createBuffer(1,1, context.sampleRate);
+    shouldNotThrow("source = context.createBufferSource()");
+    source.buffer = buffer;
+    shouldNotThrow("source.start()");
+    shouldNotThrow("source.stop()");
+
+    // Start/stop for OscillatorNodes
+    shouldNotThrow("source = context.createOscillator()");
+    shouldNotThrow("source.start()");
+    shouldNotThrow("source.stop()");
 }
 
 runTest();

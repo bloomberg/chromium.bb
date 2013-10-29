@@ -68,8 +68,8 @@ public:
     AudioScheduledSourceNode(AudioContext*, float sampleRate);
 
     // Scheduling.
-    void start(double when);
-    void stop(double when);
+    void start(double when = 0);
+    void stop(double when = 0);
 
     void noteOn(double when);
     void noteOff(double when);

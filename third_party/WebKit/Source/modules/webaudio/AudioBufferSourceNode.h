@@ -61,8 +61,9 @@ public:
     unsigned numberOfChannels();
 
     // Play-state
-    void startGrain(double when, double grainOffset);
-    void startGrain(double when, double grainOffset, double grainDuration);
+    void start(double when = 0);
+    void start(double when, double grainOffset);
+    void start(double when, double grainOffset, double grainDuration);
 
     void noteGrainOn(double when, double grainOffset, double grainDuration);
 
@@ -93,6 +94,8 @@ public:
 
 private:
     AudioBufferSourceNode(AudioContext*, float sampleRate);
+
+    void startPlaying(bool isGrain, double when, double grainOffset, double grainDuration);
 
     // Returns true on success.
     bool renderFromBuffer(AudioBus*, unsigned destinationFrameOffset, size_t numberOfFrames);
