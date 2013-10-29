@@ -10,8 +10,6 @@
 #include "base/mac/scoped_nsobject.h"
 #import "chrome/browser/ui/cocoa/autofill/autofill_layout.h"
 
-@class AutofillNotificationView;
-
 // Contains a single notification for requestAutocomplete dialog.
 @interface AutofillNotificationController : NSViewController<AutofillLayout> {
  @private
@@ -20,9 +18,6 @@
 
   // Optional checkbox.
   base::scoped_nsobject<NSButton> checkbox_;
-
-  // Size of a checkbox without title.
-  NSSize checkboxSizeWithoutTitle_;
 }
 
 @property(nonatomic, readonly) NSTextField* textfield;

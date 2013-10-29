@@ -81,9 +81,6 @@
 
     checkbox_.reset([[NSButton alloc] initWithFrame:NSZeroRect]);
     [checkbox_ setButtonType:NSSwitchButton];
-    [checkbox_ setTitle:@""];
-    [checkbox_ sizeToFit];
-    checkboxSizeWithoutTitle_ = [checkbox_ frame].size;
     [checkbox_ setHidden:YES];
     [view setSubviews:@[textfield_, checkbox_]];
   }
@@ -105,6 +102,7 @@
 
 - (void)setHasCheckbox:(BOOL)hasCheckbox {
   [checkbox_ setHidden:!hasCheckbox];
+  [textfield_ setHidden:hasCheckbox];
 }
 
 - (NSString*)text {
@@ -113,6 +111,7 @@
 
 - (void)setText:(NSString*)string {
   [textfield_ setStringValue:string];
+  [checkbox_ setAttributedTitle:[textfield_ attributedStringValue]];
 }
 
 - (NSTextField*)textfield {
@@ -140,15 +139,9 @@
 }
 
 - (NSSize)preferredSizeForWidth:(CGFloat)width {
-  NSRect textRect = NSMakeRect(0, 0, width, CGFLOAT_MAX);
-  if (![checkbox_ isHidden])
-    textRect.size.width -= checkboxSizeWithoutTitle_.width;
-
-  NSSize preferredSize = [[textfield_ cell] cellSizeForBounds:textRect];
-  if (![checkbox_ isHidden]) {
-    preferredSize.height = std::max(preferredSize.height,
-                                    checkboxSizeWithoutTitle_.height);
-  }
+  NSCell* cell = [checkbox_ isHidden] ? [textfield_ cell] : [checkbox_ cell];
+  NSSize preferredSize =
+      [cell cellSizeForBounds:NSMakeRect(0, 0, width, CGFLOAT_MAX)];
 
   if ([[self notificationView] hasArrow])
       preferredSize.height += autofill::kArrowHeight;
@@ -170,20 +163,9 @@
   NSRect textFrame = NSInsetRect(bounds,
                                  chrome_style::kHorizontalPadding,
                                  autofill::kNotificationPadding);
-  if (![checkbox_ isHidden]) {
-    // Temporarily resize checkbox to just the box, no extra clickable area.
-    textFrame.origin.x += checkboxSizeWithoutTitle_.width;
-    textFrame.size.width -= checkboxSizeWithoutTitle_.width;
-    textFrame.size = [[textfield_ cell] cellSizeForBounds:textFrame];
-
-    NSRect checkboxFrame =
-        NSMakeRect(chrome_style::kHorizontalPadding,
-                   NSMaxY(textFrame) - checkboxSizeWithoutTitle_.height,
-                   NSMaxX(textFrame), NSHeight(textFrame));
-    [checkbox_ setFrame:checkboxFrame];
-  }
-  [textfield_ setFrame:textFrame];
+  NSControl* control =
+      [checkbox_ isHidden] ? textfield_.get() : checkbox_.get();
+  [control setFrame:textFrame];
 }
 
 @end
-

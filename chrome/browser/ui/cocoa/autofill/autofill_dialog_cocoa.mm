@@ -33,7 +33,7 @@ const CGFloat kMinimumContentsHeight = 101;
 
 // Height of all decorations & paddings on main dialog together.
 const CGFloat kDecorationHeight = kAccountChooserHeight +
-                                  autofill::kDetailTopPadding +
+                                  autofill::kDetailVerticalPadding +
                                   chrome_style::kClientBottomPadding +
                                   chrome_style::kTitleTopPadding;
 
@@ -417,7 +417,8 @@ void AutofillDialogCocoa::OnConstrainedWindowClosed(
     // equivalent to the height of the header. Clarify with UX what the final
     // padding will be.
     if (height != 0.0) {
-      size.height = height + headerSize.height + autofill::kDetailTopPadding;
+      size.height =
+          height + headerSize.height + autofill::kDetailVerticalPadding;
     }
   }
 
@@ -440,7 +441,7 @@ void AutofillDialogCocoa::OnConstrainedWindowClosed(
   NSDivideRect(clientRect, &headerRect, &mainRect,
                kAccountChooserHeight, NSMinYEdge);
   NSDivideRect(mainRect, &dummyRect, &mainRect,
-               autofill::kDetailTopPadding, NSMinYEdge);
+               autofill::kDetailVerticalPadding, NSMinYEdge);
   headerRect = NSInsetRect(
       headerRect, chrome_style::kHorizontalPadding, 0);
   NSDivideRect(headerRect, &titleRect, &headerRect,
