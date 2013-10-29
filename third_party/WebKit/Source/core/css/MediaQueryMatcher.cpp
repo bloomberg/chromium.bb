@@ -140,7 +140,8 @@ void MediaQueryMatcher::removeListener(MediaQueryListListener* listener, MediaQu
 
 void MediaQueryMatcher::styleResolverChanged()
 {
-    ASSERT(m_document);
+    if (!m_document)
+        return;
 
     ScriptState* scriptState = m_document->frame() ? mainWorldScriptState(m_document->frame()) : 0;
     if (!scriptState)
