@@ -164,6 +164,18 @@ TEST_F(CalcDrawPropsMainTest, HeavyPage) {
   RunCalcDrawProps();
 }
 
+TEST_F(CalcDrawPropsMainTest, TouchRegionLight) {
+  SetTestName("touch_region_light");
+  ReadTestFile("touch_region_light");
+  RunCalcDrawProps();
+}
+
+TEST_F(CalcDrawPropsMainTest, TouchRegionHeavy) {
+  SetTestName("touch_region_heavy");
+  ReadTestFile("touch_region_heavy");
+  RunCalcDrawProps();
+}
+
 TEST_F(CalcDrawPropsImplTest, TenTen) {
   SetTestName("10_10");
   ReadTestFile("10_10_layer_tree");
@@ -173,6 +185,18 @@ TEST_F(CalcDrawPropsImplTest, TenTen) {
 TEST_F(CalcDrawPropsImplTest, HeavyPage) {
   SetTestName("heavy_page");
   ReadTestFile("heavy_layer_tree");
+  RunCalcDrawProps();
+}
+
+TEST_F(CalcDrawPropsImplTest, TouchRegionLight) {
+  SetTestName("touch_region_light");
+  ReadTestFile("touch_region_light");
+  RunCalcDrawProps();
+}
+
+TEST_F(CalcDrawPropsImplTest, TouchRegionHeavy) {
+  SetTestName("touch_region_heavy");
+  ReadTestFile("touch_region_heavy");
   RunCalcDrawProps();
 }
 

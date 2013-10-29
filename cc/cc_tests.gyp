@@ -77,6 +77,7 @@
       'scheduler/scheduler_unittest.cc',
       'scheduler/texture_uploader_unittest.cc',
       'test/fake_web_graphics_context_3d_unittest.cc',
+      'test/layer_tree_json_parser_unittest.cc',
       'trees/damage_tracker_unittest.cc',
       'trees/layer_sorter_unittest.cc',
       'trees/layer_tree_host_common_unittest.cc',
