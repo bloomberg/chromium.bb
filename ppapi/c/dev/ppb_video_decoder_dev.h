@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From dev/ppb_video_decoder_dev.idl modified Wed Dec 14 18:08:00 2011. */
+/* From dev/ppb_video_decoder_dev.idl modified Tue Oct 29 00:32:59 2013. */
 
 #ifndef PPAPI_C_DEV_PPB_VIDEO_DECODER_DEV_H_
 #define PPAPI_C_DEV_PPB_VIDEO_DECODER_DEV_H_
@@ -78,7 +78,8 @@ struct PPB_VideoDecoder_Dev_0_16 {
    *
    * Parameters:
    *   |video_decoder| is the previously created handle to the decoder resource.
-   *   |bitstream_buffer| is the bitstream buffer that contains the input data.
+   *   |bitstream_buffer| is the bitstream buffer that contains at most one
+   *   input frame.
    *   |callback| will be called when |bitstream_buffer| has been processed by
    *   the decoder.
    *

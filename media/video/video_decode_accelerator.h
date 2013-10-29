@@ -90,9 +90,9 @@ class MEDIA_EXPORT VideoDecodeAccelerator
   // Returns true when command successfully accepted. Otherwise false.
   virtual bool Initialize(VideoCodecProfile profile) = 0;
 
-  // Decodes given bitstream buffer. Once decoder is done with processing
-  // |bitstream_buffer| it will call NotifyEndOfBitstreamBuffer() with the
-  // bitstream buffer id.
+  // Decodes given bitstream buffer that contains at most one frame. Once
+  // decoder is done with processing |bitstream_buffer| it will call
+  // NotifyEndOfBitstreamBuffer() with the bitstream buffer id.
   // Parameters:
   //  |bitstream_buffer| is the input bitstream that is sent for decoding.
   virtual void Decode(const BitstreamBuffer& bitstream_buffer) = 0;

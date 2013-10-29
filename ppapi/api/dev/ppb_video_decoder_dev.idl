@@ -62,7 +62,8 @@ interface PPB_VideoDecoder_Dev {
    *
    * Parameters:
    *   |video_decoder| is the previously created handle to the decoder resource.
-   *   |bitstream_buffer| is the bitstream buffer that contains the input data.
+   *   |bitstream_buffer| is the bitstream buffer that contains at most one
+   *   input frame.
    *   |callback| will be called when |bitstream_buffer| has been processed by
    *   the decoder.
    *
