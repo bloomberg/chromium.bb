@@ -392,15 +392,12 @@ class NET_EXPORT_PRIVATE ClientSocketPoolBaseHelper
       return pending_requests_.FirstMax().value()->priority();
     }
 
-    bool HasBackupJob() const { return weak_factory_.HasWeakPtrs(); }
+    // Set a timer to create a backup job if it takes too long to
+    // create one and if a timer isn't already running.
+    void StartBackupJobTimer(const std::string& group_name,
+                             ClientSocketPoolBaseHelper* pool);
 
-    void CleanupBackupJob() {
-      weak_factory_.InvalidateWeakPtrs();
-    }
-
-    // Set a timer to create a backup socket if it takes too long to create one.
-    void StartBackupSocketTimer(const std::string& group_name,
-                                ClientSocketPoolBaseHelper* pool);
+    bool BackupJobTimerIsRunning() const;
 
     // If there's a ConnectJob that's never been assigned to Request,
     // decrements |unassigned_job_count_| and returns true.
@@ -457,7 +454,7 @@ class NET_EXPORT_PRIVATE ClientSocketPoolBaseHelper
         const RequestQueue::Pointer& pointer);
 
     // Called when the backup socket timer fires.
-    void OnBackupSocketTimerFired(
+    void OnBackupJobTimerFired(
         std::string group_name,
         ClientSocketPoolBaseHelper* pool);
 
@@ -477,8 +474,8 @@ class NET_EXPORT_PRIVATE ClientSocketPoolBaseHelper
     std::set<ConnectJob*> jobs_;
     RequestQueue pending_requests_;
     int active_socket_count_;  // number of active sockets used by clients
-    // A factory to pin the backup_job tasks.
-    base::WeakPtrFactory<Group> weak_factory_;
+    // A timer for when to start the backup job.
+    base::OneShotTimer<Group> backup_job_timer_;
   };
 
   typedef std::map<std::string, Group*> GroupMap;

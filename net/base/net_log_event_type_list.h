@@ -666,8 +666,8 @@ EVENT_TYPE(TCP_CLIENT_SOCKET_POOL_REQUESTED_SOCKET)
 EVENT_TYPE(TCP_CLIENT_SOCKET_POOL_REQUESTED_SOCKETS)
 
 
-// A backup socket is created due to slow connect
-EVENT_TYPE(SOCKET_BACKUP_CREATED)
+// A backup connect job is created due to slow connect.
+EVENT_TYPE(BACKUP_CONNECT_JOB_CREATED)
 
 // This event is sent when a connect job is eventually bound to a request
 // (because of late binding and socket backup jobs, we don't assign the job to

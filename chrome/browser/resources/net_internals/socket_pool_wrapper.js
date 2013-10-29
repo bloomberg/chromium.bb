@@ -131,7 +131,7 @@ var SocketPoolWrapper = (function() {
       tablePrinter.addHeaderCell('Active');
       tablePrinter.addHeaderCell('Idle');
       tablePrinter.addHeaderCell('Connect Jobs');
-      tablePrinter.addHeaderCell('Backup Job');
+      tablePrinter.addHeaderCell('Backup Timer');
       tablePrinter.addHeaderCell('Stalled');
 
       for (var groupName in this.origPool.groups) {
@@ -152,7 +152,8 @@ var SocketPoolWrapper = (function() {
         idleCell.link = sourceListLink(group.idle_sockets);
         connectingCell.link = sourceListLink(group.connect_jobs);
 
-        tablePrinter.addCell(group.has_backup_job);
+        tablePrinter.addCell(
+            group.backup_job_timer_is_running ? 'started' : 'stopped');
         tablePrinter.addCell(group.is_stalled);
       }
       return tablePrinter;

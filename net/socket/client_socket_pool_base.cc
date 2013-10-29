@@ -408,9 +408,8 @@ int ClientSocketPoolBaseHelper::RequestSocketInternal(
     // If we don't have any sockets in this group, set a timer for potentially
     // creating a new one.  If the SYN is lost, this backup socket may complete
     // before the slow socket, improving end user latency.
-    if (connect_backup_jobs_enabled_ &&
-        group->IsEmpty() && !group->HasBackupJob()) {
-      group->StartBackupSocketTimer(group_name, this);
+    if (connect_backup_jobs_enabled_ && group->IsEmpty()) {
+      group->StartBackupJobTimer(group_name, this);
     }
 
     connecting_socket_count_++;
@@ -631,7 +630,8 @@ base::DictionaryValue* ClientSocketPoolBaseHelper::GetInfoAsValue(
     group_dict->SetBoolean("is_stalled",
                            group->IsStalledOnPoolMaxSockets(
                                max_sockets_per_group_));
-    group_dict->SetBoolean("has_backup_job", group->HasBackupJob());
+    group_dict->SetBoolean("backup_job_timer_is_running",
+                           group->BackupJobTimerIsRunning());
 
     all_groups_dict->SetWithoutPathExpansion(it->first, group_dict);
   }
@@ -930,11 +930,6 @@ void ClientSocketPoolBaseHelper::RemoveConnectJob(ConnectJob* job,
 
   DCHECK(group);
   group->RemoveJob(job);
-
-  // If we've got no more jobs for this group, then we no longer need a
-  // backup job either.
-  if (group->jobs().empty())
-    group->CleanupBackupJob();
 }
 
 void ClientSocketPoolBaseHelper::OnAvailableSocketSlot(
@@ -1139,26 +1134,29 @@ ClientSocketPoolBaseHelper::Group::Group()
       // The number of priorities is doubled since requests with
       // |ignore_limits| are prioritized over other requests.
       pending_requests_(2 * NUM_PRIORITIES),
-      active_socket_count_(0),
-      weak_factory_(this) {}
+      active_socket_count_(0) {}
 
 ClientSocketPoolBaseHelper::Group::~Group() {
-  CleanupBackupJob();
   DCHECK_EQ(0u, unassigned_job_count_);
 }
 
-void ClientSocketPoolBaseHelper::Group::StartBackupSocketTimer(
+void ClientSocketPoolBaseHelper::Group::StartBackupJobTimer(
     const std::string& group_name,
     ClientSocketPoolBaseHelper* pool) {
-  // Only allow one timer pending to create a backup socket.
-  if (weak_factory_.HasWeakPtrs())
+  // Only allow one timer to run at a time.
+  if (BackupJobTimerIsRunning())
     return;
 
-  base::MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&Group::OnBackupSocketTimerFired, weak_factory_.GetWeakPtr(),
-                 group_name, pool),
-      pool->ConnectRetryInterval());
+  // Unretained here is okay because |backup_job_timer_| is
+  // automatically cancelled when it's destroyed.
+  backup_job_timer_.Start(
+      FROM_HERE, pool->ConnectRetryInterval(),
+      base::Bind(&Group::OnBackupJobTimerFired, base::Unretained(this),
+                 group_name, pool));
+}
+
+bool ClientSocketPoolBaseHelper::Group::BackupJobTimerIsRunning() const {
+  return backup_job_timer_.IsRunning();
 }
 
 bool ClientSocketPoolBaseHelper::Group::TryToUseUnassignedConnectJob() {
@@ -1192,9 +1190,14 @@ void ClientSocketPoolBaseHelper::Group::RemoveJob(ConnectJob* job) {
   size_t job_count = jobs_.size();
   if (job_count < unassigned_job_count_)
     unassigned_job_count_ = job_count;
+
+  // If we've got no more jobs for this group, then we no longer need a
+  // backup job either.
+  if (jobs_.empty())
+    backup_job_timer_.Stop();
 }
 
-void ClientSocketPoolBaseHelper::Group::OnBackupSocketTimerFired(
+void ClientSocketPoolBaseHelper::Group::OnBackupJobTimerFired(
     std::string group_name,
     ClientSocketPoolBaseHelper* pool) {
   // If there are no more jobs pending, there is no work to do.
@@ -1209,7 +1212,7 @@ void ClientSocketPoolBaseHelper::Group::OnBackupSocketTimerFired(
   if (pool->ReachedMaxSocketsLimit() ||
       !HasAvailableSocketSlot(pool->max_sockets_per_group_) ||
       (*jobs_.begin())->GetLoadState() == LOAD_STATE_RESOLVING_HOST) {
-    StartBackupSocketTimer(group_name, pool);
+    StartBackupJobTimer(group_name, pool);
     return;
   }
 
@@ -1219,7 +1222,7 @@ void ClientSocketPoolBaseHelper::Group::OnBackupSocketTimerFired(
   scoped_ptr<ConnectJob> backup_job =
       pool->connect_job_factory_->NewConnectJob(
           group_name, *pending_requests_.FirstMax().value(), pool);
-  backup_job->net_log().AddEvent(NetLog::TYPE_SOCKET_BACKUP_CREATED);
+  backup_job->net_log().AddEvent(NetLog::TYPE_BACKUP_CONNECT_JOB_CREATED);
   SIMPLE_STATS_COUNTER("socket.backup_created");
   int rv = backup_job->Connect();
   pool->connecting_socket_count_++;
@@ -1240,8 +1243,8 @@ void ClientSocketPoolBaseHelper::Group::RemoveAllJobs() {
   STLDeleteElements(&jobs_);
   unassigned_job_count_ = 0;
 
-  // Cancel pending backup job.
-  weak_factory_.InvalidateWeakPtrs();
+  // Stop backup job timer.
+  backup_job_timer_.Stop();
 }
 
 const ClientSocketPoolBaseHelper::Request*
@@ -1302,7 +1305,7 @@ ClientSocketPoolBaseHelper::Group::RemovePendingRequest(
   pending_requests_.Erase(pointer);
   // If there are no more requests, kill the backup timer.
   if (pending_requests_.empty())
-    CleanupBackupJob();
+    backup_job_timer_.Stop();
   return request.Pass();
 }
 
