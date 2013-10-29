@@ -37,6 +37,12 @@
 
 namespace WebCore {
 
+namespace {
+
+double effectiveTime(double time) { return isNull(time) ? 0 : time; }
+
+} // namespace
+
 PassRefPtr<Player> Player::create(DocumentTimeline& timeline, TimedItem* content)
 {
     return adoptRef(new Player(timeline, content));

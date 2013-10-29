@@ -71,7 +71,6 @@ public:
 
 private:
     Player(DocumentTimeline&, TimedItem*);
-    static double effectiveTime(double time) { return isNull(time) ? 0 : time; }
     inline double pausedTimeDrift() const;
     inline double currentTimeBeforeDrift() const;
 
