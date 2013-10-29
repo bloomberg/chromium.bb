@@ -44,6 +44,7 @@
 #include "public/platform/WebURLRequest.h"
 #include "public/platform/WebURLResponse.h"
 #include "wtf/Assertions.h"
+#include "wtf/CurrentTime.h"
 
 namespace WebCore {
 
@@ -431,7 +432,7 @@ void ResourceLoader::requestSynchronously()
     RefPtr<ResourceLoadInfo> resourceLoadInfo = responseOut.toResourceResponse().resourceLoadInfo();
     m_host->didReceiveData(m_resource, dataOut.data(), dataOut.size(), resourceLoadInfo ? resourceLoadInfo->encodedDataLength : -1, m_options);
     m_resource->setResourceBuffer(dataOut);
-    didFinishLoading(0, responseOut.responseTime());
+    didFinishLoading(0, monotonicallyIncreasingTime());
 }
 
 }
