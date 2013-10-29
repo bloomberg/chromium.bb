@@ -886,13 +886,13 @@ LRESULT HWNDMessageHandler::OnWndProc(UINT message,
   // Otherwise we handle everything else.
   // NOTE: We inline ProcessWindowMessage() as 'this' may be destroyed during
   // dispatch and ProcessWindowMessage() doesn't deal with that well.
-  const BOOL old_msg_handled = m_bMsgHandled;
+  const BOOL old_msg_handled = msg_handled_;
   base::WeakPtr<HWNDMessageHandler> ref(weak_factory_.GetWeakPtr());
   const BOOL processed =
       _ProcessWindowMessage(window, message, w_param, l_param, result, 0);
   if (!ref)
     return 0;
-  m_bMsgHandled = old_msg_handled;
+  msg_handled_ = old_msg_handled;
 
   if (!processed)
     result = DefWindowProc(window, message, w_param, l_param);

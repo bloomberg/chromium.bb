@@ -52,6 +52,53 @@ class InputMethod;
 const int WM_NCUAHDRAWCAPTION = 0xAE;
 const int WM_NCUAHDRAWFRAME = 0xAF;
 
+// IsMsgHandled() and BEGIN_SAFE_MSG_MAP_EX are a modified version of
+// BEGIN_MSG_MAP_EX. The main difference is it adds a WeakPtrFactory member
+// (|weak_factory_|) that is used in _ProcessWindowMessage() and changing
+// IsMsgHandled() from a member function to a define that checks if the weak
+// factory is still valid in addition to the member. Together these allow for
+// |this| to be deleted during dispatch.
+#define IsMsgHandled() !ref.get() || msg_handled_
+
+#define BEGIN_SAFE_MSG_MAP_EX(the_class) \
+ private: \
+  base::WeakPtrFactory<the_class> weak_factory_; \
+  BOOL msg_handled_; \
+\
+ public: \
+  /* "handled" management for cracked handlers */ \
+  void SetMsgHandled(BOOL handled) { \
+    msg_handled_ = handled; \
+  } \
+  BOOL ProcessWindowMessage(HWND hwnd, \
+                            UINT msg, \
+                            WPARAM w_param, \
+                            LPARAM l_param, \
+                            LRESULT& l_result, \
+                            DWORD msg_map_id = 0) { \
+    BOOL old_msg_handled = msg_handled_; \
+    BOOL ret = _ProcessWindowMessage(hwnd, msg, w_param, l_param, l_result, \
+                                     msg_map_id); \
+    msg_handled_ = old_msg_handled; \
+    return ret; \
+  } \
+  BOOL _ProcessWindowMessage(HWND hWnd, \
+                             UINT uMsg, \
+                             WPARAM wParam, \
+                             LPARAM lParam, \
+                             LRESULT& lResult, \
+                             DWORD dwMsgMapID) { \
+    base::WeakPtr<HWNDMessageHandler> ref(weak_factory_.GetWeakPtr()); \
+    BOOL bHandled = TRUE; \
+    hWnd; \
+    uMsg; \
+    wParam; \
+    lParam; \
+    lResult; \
+    bHandled; \
+    switch(dwMsgMapID) { \
+      case 0:
+
 // An object that handles messages for a HWND that implements the views
 // "Custom Frame" look. The purpose of this class is to isolate the windows-
 // specific message handling from the code that wraps it. It is intended to be
@@ -235,7 +282,7 @@ class VIEWS_EXPORT HWNDMessageHandler :
 
   // Message Handlers ----------------------------------------------------------
 
-  BEGIN_MSG_MAP_EX(HWNDMessageHandler)
+  BEGIN_SAFE_MSG_MAP_EX(HWNDMessageHandler)
     // Range handlers must go first!
     MESSAGE_RANGE_HANDLER_EX(WM_MOUSEFIRST, WM_MOUSELAST, OnMouseRange)
     MESSAGE_RANGE_HANDLER_EX(WM_NCMOUSEMOVE, WM_NCXBUTTONDBLCLK, OnMouseRange)
@@ -377,8 +424,6 @@ class VIEWS_EXPORT HWNDMessageHandler :
   HWNDMessageHandlerDelegate* delegate_;
 
   scoped_ptr<FullscreenHandler> fullscreen_handler_;
-
-  base::WeakPtrFactory<HWNDMessageHandler> weak_factory_;
 
   // Set to true in Close() and false is CloseNow().
   bool waiting_for_close_now_;
