@@ -48,7 +48,7 @@ public:
     SharedWorkerRepositoryClient() { }
     virtual ~SharedWorkerRepositoryClient() { }
 
-    virtual void connect(PassRefPtr<SharedWorker>, PassOwnPtr<MessagePortChannel>, const KURL&, const String& name, ExceptionState&)  = 0;
+    virtual void connect(PassRefPtr<SharedWorker>, PassRefPtr<MessagePortChannel>, const KURL&, const String& name, ExceptionState&)  = 0;
 
     virtual void documentDetached(Document*) = 0;
 };

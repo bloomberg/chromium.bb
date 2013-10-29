@@ -261,14 +261,14 @@ bool WebSharedWorkerImpl::isStarted()
 
 void WebSharedWorkerImpl::connect(WebMessagePortChannel* webChannel, ConnectListener* listener)
 {
-    OwnPtr<MessagePortChannel> channel = MessagePortChannel::create(webChannel);
+    RefPtr<MessagePortChannel> channel = MessagePortChannel::create(webChannel);
     workerThread()->runLoop().postTask(
         createCallbackTask(&connectTask, channel.release()));
     if (listener)
         listener->connected();
 }
 
-void WebSharedWorkerImpl::connectTask(ExecutionContext* context, PassOwnPtr<MessagePortChannel> channel)
+void WebSharedWorkerImpl::connectTask(ExecutionContext* context, PassRefPtr<MessagePortChannel> channel)
 {
     // Wrap the passed-in channel in a MessagePort, and send it off via a connect event.
     RefPtr<MessagePort> port = MessagePort::create(*context);

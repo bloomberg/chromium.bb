@@ -90,7 +90,7 @@ public:
     const String& lastEventId() const { return m_lastEventId; }
     EventTarget* source() const { return m_source.get(); }
     MessagePortArray ports() const { return m_ports ? *m_ports : MessagePortArray(); }
-    MessagePortChannelArray* channels() const { return m_channels ? m_channels.get() : 0; }
+    MessagePortChannelArray channels() const { return m_channels ? *m_channels : MessagePortChannelArray(); }
 
     virtual const AtomicString& interfaceName() const;
 

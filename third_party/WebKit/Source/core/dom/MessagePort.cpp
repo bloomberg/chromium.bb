@@ -81,7 +81,7 @@ void MessagePort::postMessage(PassRefPtr<SerializedScriptValue> message, const M
     m_entangledChannel->postMessageToRemote(message, channels.release());
 }
 
-PassOwnPtr<MessagePortChannel> MessagePort::disentangle()
+PassRefPtr<MessagePortChannel> MessagePort::disentangle()
 {
     ASSERT(m_entangledChannel);
 
@@ -124,7 +124,7 @@ void MessagePort::close()
     m_closed = true;
 }
 
-void MessagePort::entangle(PassOwnPtr<MessagePortChannel> remote)
+void MessagePort::entangle(PassRefPtr<MessagePortChannel> remote)
 {
     // Only invoked to set our initial entanglement.
     ASSERT(!m_entangledChannel);
@@ -211,7 +211,7 @@ PassOwnPtr<MessagePortChannelArray> MessagePort::disentanglePorts(const MessageP
     // Passed-in ports passed validity checks, so we can disentangle them.
     OwnPtr<MessagePortChannelArray> portArray = adoptPtr(new MessagePortChannelArray(ports->size()));
     for (unsigned int i = 0 ; i < ports->size() ; ++i) {
-        OwnPtr<MessagePortChannel> channel = (*ports)[i]->disentangle();
+        RefPtr<MessagePortChannel> channel = (*ports)[i]->disentangle();
         (*portArray)[i] = channel.release();
     }
     return portArray.release();

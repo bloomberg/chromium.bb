@@ -61,7 +61,7 @@ namespace WebKit {
 // Callback class that keeps the SharedWorker and WebSharedWorker objects alive while loads are potentially happening, and also translates load errors into error events on the worker.
 class SharedWorkerScriptLoader : private WorkerScriptLoaderClient, private WebSharedWorker::ConnectListener {
 public:
-    SharedWorkerScriptLoader(PassRefPtr<SharedWorker> worker, const KURL& url, const String& name, PassOwnPtr<MessagePortChannel> channel, PassOwnPtr<WebSharedWorker> webWorker)
+    SharedWorkerScriptLoader(PassRefPtr<SharedWorker> worker, const KURL& url, const String& name, PassRefPtr<MessagePortChannel> channel, PassOwnPtr<WebSharedWorker> webWorker)
         : m_worker(worker)
         , m_url(url)
         , m_name(name)
@@ -89,7 +89,7 @@ private:
     KURL m_url;
     String m_name;
     OwnPtr<WebSharedWorker> m_webWorker;
-    OwnPtr<MessagePortChannel> m_channel;
+    RefPtr<MessagePortChannel> m_channel;
     RefPtr<WorkerScriptLoader> m_scriptLoader;
     bool m_loading;
     long long m_responseAppCacheID;
@@ -155,7 +155,7 @@ static WebSharedWorkerRepositoryClient::DocumentID getId(void* document)
     return reinterpret_cast<WebSharedWorkerRepositoryClient::DocumentID>(document);
 }
 
-void SharedWorkerRepositoryClientImpl::connect(PassRefPtr<SharedWorker> worker, PassOwnPtr<MessagePortChannel> port, const KURL& url, const String& name, ExceptionState& es)
+void SharedWorkerRepositoryClientImpl::connect(PassRefPtr<SharedWorker> worker, PassRefPtr<MessagePortChannel> port, const KURL& url, const String& name, ExceptionState& es)
 {
     ASSERT(m_client);
 
