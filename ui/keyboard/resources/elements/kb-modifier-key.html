@@ -64,10 +64,10 @@
         },
 
         /**
-         * Notifies key that a non-control keyed up.
+         * Notifies key that a non-control keyed was typed.
          * A control key is defined as one of shift, control or alt.
          */
-        onNonControlKeyUp: function() {
+        onNonControlKeyTyped: function() {
            switch(this.state) {
              case (KEY_STATES.TAPPED):
                this.state = KEY_STATES.UNLOCKED;

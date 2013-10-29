@@ -29,7 +29,9 @@
     // keyCode attribute for kb-key or kb-keysequence elements to refer to
     // indices in this table in order to emulate a physical keyboard with an
     // alternate layout.  Not all keys on a virtual keyboard are required to
-    // have keyCodes.
+    // have keyCodes. The shiftModifier specifies whether to always include or
+    // exclude the shift modifer when sending key events for this key. If it's
+    // undefined, it will defer to state of the keyboard.
     // TODO(rsadam): Correctly propagate shutdown keycode. This is currently
     // ignored due to chromoting (crbug/146609)
     var keyCodes = {
@@ -38,10 +40,10 @@
       '\n': {keyCode: 0x0D, shiftModifier: false},
       'Esc': {keyCode: 0x1B, shiftModifier: false},
       ' ': {keyCode: 0x20, shiftModifier: false},
-      'Arrow-Left': {keyCode: 0x25, shiftModifier: false},
-      'Arrow-Up': {keyCode: 0x26, shiftModifier: false},
-      'Arrow-Right': {keyCode: 0x27, shiftModifier: false},
-      'Arrow-Down': {keyCode: 0x28, shiftModifier: false},
+      'Arrow-Left': {keyCode: 0x25, shiftModifier: undefined},
+      'Arrow-Up': {keyCode: 0x26, shiftModifier: undefined},
+      'Arrow-Right': {keyCode: 0x27, shiftModifier: undefined},
+      'Arrow-Down': {keyCode: 0x28, shiftModifier: undefined},
       '0': {keyCode: 0x30, shiftModifier: false},
       ')': {keyCode: 0x30, shiftModifier: true},
       '1': {keyCode: 0x31, shiftModifier: false},
@@ -186,13 +188,16 @@
        var keyCode = detail.keyCode;
        // The shift modifier is handled specially. Some charactares like '+'
        // {keyCode: 0xBB, shiftModifier: true}, are available on non-upper
-       // keysets, and so we rely on caching the correct shiftModifier.
+       // keysets, and so we rely on caching the correct shiftModifier. If
+       // the cached value of the shiftModifier is undefined, we defer to
+       // the shiftModifier in the detail.
        var shiftModifier = detail.shiftModifier;
        if (keyCode == undefined) {
          var state = this.GetKeyCodeAndModifiers(char);
          if (state) {
            keyCode = state.keyCode;
-           shiftModifier = state.shiftModifier;
+           shiftModifier = (state.shiftModifier == undefined) ?
+               shiftModifier : state.shiftModifier;
          } else {
            // Keycode not defined.
            return;

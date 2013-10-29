@@ -144,6 +144,11 @@
           }, null, LONGPRESS_DELAY_MSEC);
         },
 
+        // @return Whether the shift modifier is currently active.
+        isActive: function() {
+          return state != KEY_STATES.UNLOCKED;
+        },
+
         /**
          * Callback function for when a double click is triggered.
          */
@@ -156,19 +161,25 @@
          * A control key is defined as one of shift, control or alt.
          */
         onNonControlKeyDown: function() {
-           switch (state) {
-             case (KEY_STATES.TAPPED):
-               state = KEY_STATES.UNLOCKED;
-               break;
-             case (KEY_STATES.PRESSED):
-               state = KEY_STATES.CHORDING;
-               // Disable longpress timer.
-               clearTimeout(shiftLongPressTimer);
-               break;
-             default:
-               break;
-           }
-         },
+          switch (state) {
+            case (KEY_STATES.PRESSED):
+              state = KEY_STATES.CHORDING;
+              // Disable longpress timer.
+              clearTimeout(shiftLongPressTimer);
+              break;
+            default:
+              break;
+          }
+        },
+
+        /**
+         * Notifies key that a non-control keyed was typed.
+         * A control key is defined as one of shift, control or alt.
+         */
+        onNonControlKeyTyped: function() {
+          if (state == KEY_STATES.TAPPED)
+            state = KEY_STATES.UNLOCKED;
+        },
 
         /**
          * Callback function for when a space is pressed after punctuation.

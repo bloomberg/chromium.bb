@@ -369,6 +369,7 @@
           return;
         if (detail.repeat) {
           this.keyTyped(detail);
+          this.onNonControlKeyTyped();
           repeatKey.key = this.lastPressedKey;
           var self = this;
           repeatKey.timer = setTimeout(function() {
@@ -546,12 +547,7 @@
         }
         if(!this.keyTyped(detail))
           insertText(char);
-        if (this.ctrl)
-          this.ctrl.onNonControlKeyUp();
-        if (this.alt)
-          this.alt.onNonControlKeyUp();
-        this.classList.remove('ctrl-active');
-        this.classList.remove('alt-active');
+        this.onNonControlKeyTyped();
       },
 
       /*
@@ -612,6 +608,22 @@
       },
 
       /**
+       * Notifies the modifier keys that a non-control key was typed. This
+       * lets them reset sticky behaviour. A non-control key is defined as
+       * any key that is not Control, Alt, or Shift.
+       */
+      onNonControlKeyTyped: function() {
+        if (this.shift)
+          this.shift.onNonControlKeyTyped();
+        if (this.ctrl)
+          this.ctrl.onNonControlKeyTyped();
+        if (this.alt)
+          this.alt.onNonControlKeyTyped();
+        this.classList.remove('ctrl-active');
+        this.classList.remove('alt-active');
+      },
+
+      /**
        * Indicate if the keyboard is ready for user input.
        * @type {boolean}
        */
@@ -663,6 +675,8 @@
        */
       keyTyped: function(detail) {
         var builder = this.$.keyCodeMetadata;
+        if (this.shift)
+          detail.shiftModifier = this.shift.isActive();
         if (this.ctrl)
           detail.controlModifier = this.ctrl.isActive();
         if (this.alt)

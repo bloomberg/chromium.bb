@@ -27,6 +27,14 @@
       nextKeyset: undefined,
       // TODO(bshe): support select keyset on down, long and dbl events.
       keyUp: function(event, detail) {
+        switch (detail.char) {
+          case 'Shift':
+          case 'Alt':
+          case 'Ctrl':
+            return;
+          default:
+            break;
+        }
         if (!detail.toKeyset)
           detail.toKeyset = this.nextKeyset;
       },
