@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/win/windows_version.h"
 
 namespace base {
 
@@ -99,7 +100,18 @@ FilePath FileEnumerator::Next() {
       else
         src = src.Append(pattern_);
 
-      find_handle_ = FindFirstFile(src.value().c_str(), &find_data_);
+      if (base::win::GetVersion() >= base::win::VERSION_WIN7) {
+        // Use a "large fetch" on newer Windows which should speed up large
+        // enumerations (we seldom abort in the middle).
+        find_handle_ = FindFirstFileEx(src.value().c_str(),
+                                       FindExInfoBasic,  // Omit short name.
+                                       &find_data_,
+                                       FindExSearchNameMatch,
+                                       NULL,
+                                       FIND_FIRST_EX_LARGE_FETCH);
+      } else {
+        find_handle_ = FindFirstFile(src.value().c_str(), &find_data_);
+      }
       has_find_data_ = true;
     } else {
       // Search for the next file/directory.

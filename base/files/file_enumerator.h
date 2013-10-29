@@ -53,6 +53,9 @@ class BASE_EXPORT FileEnumerator {
     Time GetLastModifiedTime() const;
 
 #if defined(OS_WIN)
+    // Note that the cAlternateFileName (used to hold the "short" 8.3 name)
+    // of the WIN32_FIND_DATA will be empty. Since we don't use short file
+    // names, we tell Windows to omit it which speeds up the query slightly.
     const WIN32_FIND_DATA& find_data() const { return find_data_; }
 #elif defined(OS_POSIX)
     const struct stat& stat() const { return stat_; }
