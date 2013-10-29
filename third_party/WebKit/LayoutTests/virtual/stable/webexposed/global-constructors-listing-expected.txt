@@ -237,6 +237,7 @@ PluginArray
 PopStateEvent
 ProcessingInstruction
 ProgressEvent
+Promise
 RGBColor
 RTCIceCandidate
 RTCSessionDescription

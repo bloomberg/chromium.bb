@@ -31,7 +31,6 @@
 #include "config.h"
 #include "bindings/v8/ScriptPromiseResolver.h"
 
-#include "RuntimeEnabledFeatures.h"
 #include "bindings/v8/ScriptState.h"
 #include "bindings/v8/ScriptValue.h"
 #include "bindings/v8/V8Binding.h"
@@ -46,7 +45,6 @@ ScriptPromiseResolver::ScriptPromiseResolver(ScriptPromise promise, v8::Isolate*
     : m_isolate(isolate)
     , m_promise(promise)
 {
-    ASSERT(RuntimeEnabledFeatures::promiseEnabled());
 }
 
 ScriptPromiseResolver::~ScriptPromiseResolver()

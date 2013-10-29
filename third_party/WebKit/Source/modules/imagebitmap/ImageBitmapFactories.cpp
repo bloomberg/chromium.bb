@@ -31,7 +31,6 @@
 #include "config.h"
 #include "modules/imagebitmap/ImageBitmapFactories.h"
 
-#include "RuntimeEnabledFeatures.h"
 #include "V8ImageBitmap.h"
 #include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
@@ -69,8 +68,6 @@ static IntSize sizeFor(HTMLVideoElement* video)
 
 static ScriptPromise fulfillImageBitmap(ExecutionContext* context, PassRefPtr<ImageBitmap> imageBitmap)
 {
-    // Promises must be enabled.
-    ASSERT(RuntimeEnabledFeatures::promiseEnabled());
     ScriptPromise promise = ScriptPromise::createPending(context);
     RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(promise, context);
     resolver->resolve(imageBitmap);
@@ -198,9 +195,6 @@ ScriptPromise ImageBitmapFactories::createImageBitmap(EventTarget* eventTarget, 
 
 ScriptPromise ImageBitmapFactories::createImageBitmap(EventTarget* eventTarget, Blob* blob, ExceptionState& es)
 {
-    // Promises must be enabled.
-    ASSERT(RuntimeEnabledFeatures::promiseEnabled());
-
     if (!blob) {
         es.throwUninformativeAndGenericDOMException(TypeError);
         return ScriptPromise();
@@ -215,9 +209,6 @@ ScriptPromise ImageBitmapFactories::createImageBitmap(EventTarget* eventTarget, 
 
 ScriptPromise ImageBitmapFactories::createImageBitmap(EventTarget* eventTarget, Blob* blob, int sx, int sy, int sw, int sh, ExceptionState& es)
 {
-    // Promises must be enabled.
-    ASSERT(RuntimeEnabledFeatures::promiseEnabled());
-
     if (!blob) {
         es.throwUninformativeAndGenericDOMException(TypeError);
         return ScriptPromise();
