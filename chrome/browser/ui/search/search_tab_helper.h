@@ -154,8 +154,6 @@ class SearchTabHelper : public content::NotificationObserver,
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest,
                            IgnoreMessageIfThePageIsNotActive);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest,
-                           SendSetDisplayInstantResultsMsg);
-  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest,
                            DoNotSendSetDisplayInstantResultsMsg);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest, SendMostVisitedItemsMsg);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest, DoNotSendMostVisitedItemsMsg);

@@ -8,7 +8,13 @@
 
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/metrics/field_trial.h"
 #include "base/strings/string16.h"
+#include "base/tuple.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/search/search.h"
+#include "chrome/browser/search_engines/template_url_service.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/search/search_ipc_router_policy_impl.h"
 #include "chrome/browser/ui/search/search_tab_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -19,6 +25,7 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
+#include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
@@ -69,12 +76,32 @@ class MockSearchIPCRouterPolicy : public SearchIPCRouter::Policy {
 
 class SearchIPCRouterTest : public BrowserWithTestWindowTest {
  public:
+  SearchIPCRouterTest() : field_trial_list_(NULL) {}
+
   virtual void SetUp() {
-    CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kEnableInstantExtendedAPI);
     BrowserWithTestWindowTest::SetUp();
     AddTab(browser(), GURL("chrome://blank"));
     SearchTabHelper::CreateForWebContents(web_contents());
+
+    TemplateURLServiceFactory::GetInstance()->SetTestingFactoryAndUse(
+        profile(),
+        &TemplateURLServiceFactory::BuildInstanceFor);
+    TemplateURLService* template_url_service =
+        TemplateURLServiceFactory::GetForProfile(profile());
+    ui_test_utils::WaitForTemplateURLServiceToLoad(template_url_service);
+
+    TemplateURLData data;
+    data.SetURL("http://foo.com/url?bar={searchTerms}");
+    data.instant_url = "http://foo.com/instant?"
+        "{google:omniboxStartMarginParameter}foo=foo#foo=foo&espv";
+    data.new_tab_url = "https://foo.com/newtab?espv";
+    data.alternate_urls.push_back("http://foo.com/alt#quux={searchTerms}");
+    data.search_terms_replacement_key = "espv";
+
+    TemplateURL* template_url = new TemplateURL(profile(), data);
+    // Takes ownership of |template_url|.
+    template_url_service->Add(template_url);
+    template_url_service->SetDefaultSearchProvider(template_url);
   }
 
   content::WebContents* web_contents() {
@@ -107,6 +134,26 @@ class SearchIPCRouterTest : public BrowserWithTestWindowTest {
     return process()->sink().GetFirstMessageMatching(id) != NULL;
   }
 
+  void VerifyDisplayInstantResultsMsg(bool expected_param_value) {
+    process()->sink().ClearMessages();
+
+    content::WebContents* contents = web_contents();
+    SetupMockDelegateAndPolicy(contents);
+    MockSearchIPCRouterPolicy* policy =
+        GetSearchIPCRouterPolicy(contents);
+    EXPECT_CALL(*policy, ShouldSendSetDisplayInstantResults()).Times(1)
+        .WillOnce(testing::Return(true));
+
+    GetSearchTabHelper(contents)->ipc_router().SetDisplayInstantResults();
+    const IPC::Message* message = process()->sink().GetFirstMessageMatching(
+        ChromeViewMsg_SearchBoxSetDisplayInstantResults::ID);
+    EXPECT_NE(static_cast<const IPC::Message*>(NULL), message);
+    Tuple1<bool> display_instant_results_param;
+    ChromeViewMsg_SearchBoxSetDisplayInstantResults::Read(
+        message, &display_instant_results_param);
+    EXPECT_EQ(expected_param_value, display_instant_results_param.a);
+  }
+
   MockSearchIPCRouterDelegate* mock_delegate() { return &delegate_; }
 
   MockSearchIPCRouterPolicy* GetSearchIPCRouterPolicy(
@@ -121,6 +168,7 @@ class SearchIPCRouterTest : public BrowserWithTestWindowTest {
 
  private:
   MockSearchIPCRouterDelegate delegate_;
+  base::FieldTrialList field_trial_list_;
 };
 
 TEST_F(SearchIPCRouterTest, ProcessVoiceSearchSupportMsg) {
@@ -146,9 +194,9 @@ TEST_F(SearchIPCRouterTest, ProcessVoiceSearchSupportMsg) {
 TEST_F(SearchIPCRouterTest, IgnoreVoiceSearchSupportMsg) {
   NavigateAndCommitActiveTab(GURL("chrome-search://foo/bar"));
   process()->sink().ClearMessages();
-  EXPECT_CALL(*mock_delegate(), OnSetVoiceSearchSupport(true)).Times(0);
 
   content::WebContents* contents = web_contents();
+  EXPECT_CALL(*mock_delegate(), OnSetVoiceSearchSupport(true)).Times(0);
   SetupMockDelegateAndPolicy(contents);
   MockSearchIPCRouterPolicy* policy =
       GetSearchIPCRouterPolicy(contents);
@@ -523,20 +571,39 @@ TEST_F(SearchIPCRouterTest, DoNotSendSetPromoInformationMsg) {
   EXPECT_FALSE(MessageWasSent(ChromeViewMsg_SearchBoxPromoInformation::ID));
 }
 
-TEST_F(SearchIPCRouterTest, SendSetDisplayInstantResultsMsg) {
-  NavigateAndCommitActiveTab(GURL("chrome-search://foo/bar"));
-  process()->sink().ClearMessages();
+TEST_F(SearchIPCRouterTest,
+       SendSetDisplayInstantResultsMsg_EnableInstantOnResultsPage) {
+  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
+      "EmbeddedSearch", "Group1 espv:42 prefetch_results_srp:1"));
+  NavigateAndCommitActiveTab(GURL("https://foo.com/url?espv&bar=abc"));
 
-  content::WebContents* contents = web_contents();
-  SetupMockDelegateAndPolicy(contents);
-  MockSearchIPCRouterPolicy* policy =
-      GetSearchIPCRouterPolicy(contents);
-  EXPECT_CALL(*policy, ShouldSendSetDisplayInstantResults()).Times(1)
-      .WillOnce(testing::Return(true));
+  // Make sure ChromeViewMsg_SearchBoxSetDisplayInstantResults message param is
+  // set to true if the underlying page is a results page and
+  // "prefetch_results_srp" flag is enabled via field trials.
+  VerifyDisplayInstantResultsMsg(true);
+}
 
-  GetSearchTabHelper(contents)->ipc_router().SetDisplayInstantResults();
-  EXPECT_TRUE(MessageWasSent(
-      ChromeViewMsg_SearchBoxSetDisplayInstantResults::ID));
+TEST_F(SearchIPCRouterTest,
+       SendSetDisplayInstantResultsMsg_DisableInstantOnResultsPage) {
+  // |prefetch_results_srp" flag is disabled via field trials.
+  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
+      "EmbeddedSearch", "Group1 espv:42 prefetch_results_srp:0"));
+  NavigateAndCommitActiveTab(GURL("https://foo.com/url?espv&bar=abc"));
+
+  // Make sure ChromeViewMsg_SearchBoxSetDisplayInstantResults message param is
+  // set to false.
+  VerifyDisplayInstantResultsMsg(false);
+}
+
+TEST_F(SearchIPCRouterTest,
+       SendSetDisplayInstantResultsMsg_DisableInstantOutsideResultsPage) {
+  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
+      "EmbeddedSearch", "Group1 espv:42 prefetch_results_srp:1"));
+  NavigateAndCommitActiveTab(GURL(chrome::kChromeSearchLocalNtpUrl));
+
+  // Make sure ChromeViewMsg_SearchBoxSetDisplayInstantResults param is set to
+  // false if the underlying page is not a search results page.
+  VerifyDisplayInstantResultsMsg(false);
 }
 
 TEST_F(SearchIPCRouterTest, DoNotSendSetDisplayInstantResultsMsg) {

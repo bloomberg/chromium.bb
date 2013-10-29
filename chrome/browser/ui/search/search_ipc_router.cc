@@ -37,9 +37,10 @@ void SearchIPCRouter::SetDisplayInstantResults() {
   if (!policy_->ShouldSendSetDisplayInstantResults())
     return;
 
+  bool is_search_results_page = !chrome::GetSearchTerms(web_contents()).empty();
   Send(new ChromeViewMsg_SearchBoxSetDisplayInstantResults(
        routing_id(),
-       chrome::ShouldPrefetchSearchResultsOnSRP()));
+       is_search_results_page && chrome::ShouldPrefetchSearchResultsOnSRP()));
 }
 
 void SearchIPCRouter::SendThemeBackgroundInfo(
