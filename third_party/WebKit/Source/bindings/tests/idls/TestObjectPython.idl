@@ -224,4 +224,9 @@ interface TestObjectPython {
     long longMethodOptionalLongArg(optional long optionalLongArg);
     void voidMethodLongArgOptionalLongArg(long longArg, optional long optionalLongArg);
     void voidMethodLongArgOptionalLongArgOptionalLongArg(long longArg, optional long optionalLongArg1, optional long optionalLongArg2);
+    // Variadic operations
+    void voidMethodVariadicStringArg(DOMString... variadicStringArgs);
+    void voidMethodStringArgVariadicStringArg(DOMString stringArg, DOMString... variadicStringArgs);
+    // FIXME: variadic interface type arguments implement type checking
+    // void voidMethodVariadicTestInterfaceEmptyArg(TestInterfaceEmpty... variadicTestInterfaceEmptyArgs);
 };

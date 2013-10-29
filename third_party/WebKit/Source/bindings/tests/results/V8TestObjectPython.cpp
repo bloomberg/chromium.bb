@@ -3963,6 +3963,39 @@ static void voidMethodLongArgOptionalLongArgOptionalLongArgMethodCallback(const 
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
+static void voidMethodVariadicStringArgMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
+{
+    TestObjectPython* imp = V8TestObjectPython::toNative(args.Holder());
+    V8TRYCATCH_VOID(Vector<String>, variadicStringArgs, toNativeArguments<String>(args, 0));
+    imp->voidMethodVariadicStringArg(variadicStringArgs);
+}
+
+static void voidMethodVariadicStringArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    TestObjectPythonV8Internal::voidMethodVariadicStringArgMethod(args);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
+static void voidMethodStringArgVariadicStringArgMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
+{
+    if (UNLIKELY(args.Length() < 1)) {
+        throwTypeError(ExceptionMessages::failedToExecute("voidMethodStringArgVariadicStringArg", "TestObjectPython", ExceptionMessages::notEnoughArguments(1, args.Length())), args.GetIsolate());
+        return;
+    }
+    TestObjectPython* imp = V8TestObjectPython::toNative(args.Holder());
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, stringArg, args[0]);
+    V8TRYCATCH_VOID(Vector<String>, variadicStringArgs, toNativeArguments<String>(args, 1));
+    imp->voidMethodStringArgVariadicStringArg(stringArg, variadicStringArgs);
+}
+
+static void voidMethodStringArgVariadicStringArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    TestObjectPythonV8Internal::voidMethodStringArgVariadicStringArgMethod(args);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
 } // namespace TestObjectPythonV8Internal
 
 static const V8DOMConfiguration::AttributeConfiguration V8TestObjectPythonAttributes[] = {
@@ -4121,6 +4154,8 @@ static const V8DOMConfiguration::MethodConfiguration V8TestObjectPythonMethods[]
     {"longMethodOptionalLongArg", TestObjectPythonV8Internal::longMethodOptionalLongArgMethodCallback, 0, 0},
     {"voidMethodLongArgOptionalLongArg", TestObjectPythonV8Internal::voidMethodLongArgOptionalLongArgMethodCallback, 0, 1},
     {"voidMethodLongArgOptionalLongArgOptionalLongArg", TestObjectPythonV8Internal::voidMethodLongArgOptionalLongArgOptionalLongArgMethodCallback, 0, 1},
+    {"voidMethodVariadicStringArg", TestObjectPythonV8Internal::voidMethodVariadicStringArgMethodCallback, 0, 1},
+    {"voidMethodStringArgVariadicStringArg", TestObjectPythonV8Internal::voidMethodStringArgVariadicStringArgMethodCallback, 0, 2},
 };
 
 static v8::Handle<v8::FunctionTemplate> ConfigureV8TestObjectPythonTemplate(v8::Handle<v8::FunctionTemplate> desc, v8::Isolate* isolate, WrapperWorldType currentWorldType)

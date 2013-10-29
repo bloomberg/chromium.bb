@@ -45,11 +45,8 @@ def generate_method(method):
         'cpp_method': cpp_method(method, index),
         'index': index,
         'is_optional': argument.is_optional,
-        'v8_value_to_local_cpp_value':
-            v8_types.v8_value_to_local_cpp_value(
-                argument.idl_type, argument.extended_attributes,
-                'args[%s]' % index, argument.name, 'args.GetIsolate()'),
-            }
+        'v8_value_to_local_cpp_value': v8_value_to_local_cpp_value(argument, index),
+        }
         for index, argument in enumerate(arguments)]
     contents = {
         'arguments': arguments_contents,
@@ -57,7 +54,12 @@ def generate_method(method):
         'custom_signature': custom_signature(arguments),
         'idl_type': method.idl_type,
         'name': method.name,
-        'number_of_required_arguments': len([argument for argument in arguments if not argument.is_optional]),
+        'number_of_required_arguments': len([
+            argument for argument in arguments
+            if not (argument.is_optional or argument.is_variadic)]),
+        'number_of_required_or_variadic_arguments': len([
+            argument for argument in arguments
+            if not argument.is_optional]),
     }
     return contents
 
@@ -85,3 +87,14 @@ def custom_signature(arguments):
            for argument in arguments):
         return None
     return ', '.join([argument_template(argument) for argument in arguments])
+
+
+def v8_value_to_local_cpp_value(argument, index):
+    idl_type = argument.idl_type
+    name = argument.name
+    if argument.is_variadic:
+        return 'V8TRYCATCH_VOID(Vector<{cpp_type}>, {name}, toNativeArguments<{cpp_type}>(args, {index}))'.format(
+                cpp_type=v8_types.cpp_type(idl_type), name=name, index=index)
+    return v8_types.v8_value_to_local_cpp_value(
+        idl_type, argument.extended_attributes,
+        'args[%s]' % index, name, 'args.GetIsolate()')
