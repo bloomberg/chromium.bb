@@ -4470,6 +4470,8 @@ window_show_menu(struct display *display,
 	window->x = x;
 	window->y = y;
 
+	input_ungrab(input);
+
 	widget_set_redraw_handler(menu->widget, menu_redraw_handler);
 	widget_set_enter_handler(menu->widget, menu_enter_handler);
 	widget_set_leave_handler(menu->widget, menu_leave_handler);
@@ -4482,7 +4484,6 @@ window_show_menu(struct display *display,
 	window_schedule_resize(window, frame_width(menu->frame),
 			       frame_height(menu->frame));
 
-	input_ungrab(input);
 	frame_interior(menu->frame, &ix, &iy, NULL, NULL);
 	wl_shell_surface_set_popup(window->shell_surface, input->seat,
 				   display_get_serial(window->display),
