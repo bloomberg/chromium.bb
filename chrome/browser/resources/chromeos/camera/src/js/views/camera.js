@@ -242,6 +242,13 @@ camera.views.Camera = function(context, router) {
    */
   this.keyBuffer_ = '';
 
+  /**
+   * Measures frames per seconds.
+   * @type {camera.util.PerformanceMonitor}
+   * @private
+   */
+  this.performanceMonitor_ = new camera.util.PerformanceMonitor();
+
   // End of properties, seal the object.
   Object.seal(this);
 
@@ -382,6 +389,8 @@ camera.views.Camera.prototype.onEnter = function() {
   if (!this.running_ && this.mainCanvas_ && this.mainFastCanvas_)
     this.start_();
   this.scrollTracker_.start();
+  this.performanceMonitor_.start();
+  this.tracker_.start();
   this.onResize();
 };
 
@@ -391,6 +400,8 @@ camera.views.Camera.prototype.onEnter = function() {
  */
 camera.views.Camera.prototype.onLeave = function() {
   this.scrollTracker_.stop();
+  this.performanceMonitor_.stop();
+  this.tracker_.stop();
 };
 
 /**
@@ -473,7 +484,12 @@ camera.views.Camera.prototype.onKeyPressed = function(event) {
 
   // Allow to load a file stream (for debugging).
   if (this.keyBuffer_.indexOf('CRAZYPONY') !== -1) {
-    this.chooseFileStream();
+    this.chooseFileStream_();
+    this.keyBuffer_ = '';
+  }
+
+  if (this.keyBuffer_.indexOf('VER') !== -1) {
+    this.showVersion_();
     this.keyBuffer_ = '';
   }
 
@@ -533,8 +549,9 @@ camera.views.Camera.prototype.setExpanded_ = function(expanded) {
 
 /**
  * Chooses a file stream to override the camera stream. Used for debugging.
+ * @private
  */
-camera.views.Camera.prototype.chooseFileStream = function() {
+camera.views.Camera.prototype.chooseFileStream_ = function() {
   chrome.fileSystem.chooseEntry(function(fileEntry) {
     if (!fileEntry)
       return;
@@ -544,6 +561,24 @@ camera.views.Camera.prototype.chooseFileStream = function() {
       this.video_.play();
     }.bind(this));
   }.bind(this));
+};
+
+/**
+ * Shows a version dialog.
+ * @private
+ */
+camera.views.Camera.prototype.showVersion_ = function() {
+  // No need to localize, since for debugging purpose only.
+  var message = 'Version: ' + chrome.runtime.getManifest().version + '\n' +
+      'Resolution: ' + this.video_.videoWidth + 'x' + this.video_.videoHeight +
+          '\n' +
+      'Frames per second: ' + this.performanceMonitor_.fps.toPrecision(2) +
+          '\n' +
+      'Head tracking frames per second: ' + this.tracker_.fps.toPrecision(2);
+  this.router.navigate(camera.Router.ViewIdentifier.DIALOG, {
+    type: camera.views.Dialog.Type.ALERT,
+    message: message
+  });
 };
 
 /**
@@ -847,6 +882,8 @@ camera.views.Camera.prototype.onAnimationFrame_ = function() {
   if (this.context.resizing)
     return;
 
+  var finishMeasuring = this.performanceMonitor_.startMeasuring();
+
   // Copy the video frame to the back buffer. The back buffer is low
   // resolution, since it is only used by the effects' previews as by the
   // head tracker.
@@ -879,20 +916,21 @@ camera.views.Camera.prototype.onAnimationFrame_ = function() {
   // Process effect preview canvases. Ribbon initialization is true before the
   // ribbon is expanded for the first time. This trick is used to fill the
   // ribbon with images as soon as possible.
-   if (this.expanded_ && !this.taking_ &&
-      !this.scrollTracker_.scrolling || this.ribbonInitialization_) {
+  if (this.expanded_ && !this.taking_ &&
+     !this.scrollTracker_.scrolling || this.ribbonInitialization_) {
 
-     // Every third frame draw only the visible effects. Every 30-th frame, draw
-     // all of them, to avoid displaying old effects when scrolling.
-     if (this.frame_ %
-         camera.views.Camera.EFFECTS_RIBBON_FULL_REFRESH_SKIP_FRAMES == 0) {
-       this.drawEffectsRibbon_(camera.views.Camera.DrawMode.FULL);
-     } else if (this.frame_ %
-         camera.views.Camera.PREVIEW_BUFFER_SKIP_FRAMES == 0) {
-       this.drawEffectsRibbon_(camera.views.Camera.DrawMode.OPTIMIZED);
-     }
-   }
+    // Every third frame draw only the visible effects. Every 30-th frame, draw
+    // all of them, to avoid displaying old effects when scrolling.
+    if (this.frame_ %
+        camera.views.Camera.EFFECTS_RIBBON_FULL_REFRESH_SKIP_FRAMES == 0) {
+      this.drawEffectsRibbon_(camera.views.Camera.DrawMode.FULL);
+    } else if (this.frame_ %
+        camera.views.Camera.PREVIEW_BUFFER_SKIP_FRAMES == 0) {
+      this.drawEffectsRibbon_(camera.views.Camera.DrawMode.OPTIMIZED);
+    }
+  }
 
   this.frame_++;
+  finishMeasuring();
 };
 
