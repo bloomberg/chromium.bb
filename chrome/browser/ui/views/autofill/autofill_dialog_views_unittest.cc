@@ -9,6 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/autofill/mock_autofill_dialog_view_delegate.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/views/autofill/decorated_textfield.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/test_with_browser_view.h"
 #include "components/web_modal/test_web_contents_modal_dialog_host.h"
@@ -106,6 +107,13 @@ class AutofillDialogViewsTest : public TestWithBrowserView {
 
   scoped_ptr<TestAutofillDialogViews> dialog_;
 };
+
+TEST_F(AutofillDialogViewsTest, InitialFocus) {
+  views::FocusManager* focus_manager = dialog()->GetWidget()->GetFocusManager();
+  views::View* focused_view = focus_manager->GetFocusedView();
+  EXPECT_STREQ(DecoratedTextfield::kViewClassName,
+               focused_view->GetClassName());
+}
 
 TEST_F(AutofillDialogViewsTest, SignInFocus) {
   SetSectionsFocusable();

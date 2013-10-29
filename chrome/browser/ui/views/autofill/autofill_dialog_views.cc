@@ -158,6 +158,12 @@ void DrawArrow(gfx::Canvas* canvas,
   }
 }
 
+// Returns whether |view| is an input (e.g. textfield, combobox).
+bool IsInput(views::View* view) {
+  return view->GetClassName() == DecoratedTextfield::kViewClassName ||
+         view->GetClassName() == views::Combobox::kViewClassName;
+}
+
 // This class handles layout for the first row of a SuggestionView.
 // It exists to circumvent shortcomings of GridLayout and BoxLayout (namely that
 // the former doesn't fully respect child visibility, and that the latter won't
@@ -1332,9 +1338,7 @@ void AutofillDialogViews::Show() {
   focus_manager_ = window_->GetFocusManager();
   focus_manager_->AddFocusChangeListener(this);
 
-  // This line fixes http://crbug.com/271779, which happens only on Views/Win32.
-  // TODO(rouslan): Remove this line after Windows is entirely on Aura.
-  focus_manager_->SetFocusedView(GetInitiallyFocusedView());
+  ShowDialogInMode(DETAIL_INPUT);
 
   // Listen for size changes on the browser.
   views::Widget* browser_widget =
@@ -1514,7 +1518,6 @@ const content::NavigationController* AutofillDialogViews::ShowSignIn() {
   sign_in_web_view_->LoadInitialURL(delegate_->SignInUrl());
 
   ShowDialogInMode(SIGN_IN);
-  sign_in_web_view_->RequestFocus();
 
   UpdateButtonStrip();
   ContentsPreferredSizeChanged();
@@ -1713,6 +1716,36 @@ bool AutofillDialogViews::IsDialogButtonEnabled(ui::DialogButton button) const {
   return delegate_->IsDialogButtonEnabled(button);
 }
 
+views::View* AutofillDialogViews::GetInitiallyFocusedView() {
+  if (!window_ || !focus_manager_)
+    return NULL;
+
+  if (sign_in_web_view_->visible())
+    return sign_in_web_view_;
+
+  if (loading_shield_->visible())
+    return views::DialogDelegateView::GetInitiallyFocusedView();
+
+  DCHECK(scrollable_area_->visible());
+
+  views::FocusManager* manager = focus_manager_;
+  for (views::View* next = scrollable_area_;
+       next;
+       next = manager->GetNextFocusableView(next, window_, false, true)) {
+    if (!IsInput(next))
+      continue;
+
+    // If there are no invalid inputs, return the first input found. Otherwise,
+    // return the first invalid input found.
+    if (validity_map_.empty() ||
+        validity_map_.find(next) != validity_map_.end()) {
+      return next;
+    }
+  }
+
+  return views::DialogDelegateView::GetInitiallyFocusedView();
+}
+
 views::View* AutofillDialogViews::CreateExtraView() {
   return button_strip_extra_view_;
 }
@@ -1758,16 +1791,7 @@ bool AutofillDialogViews::Accept() {
 
   // |ValidateForm()| failed; there should be invalid views in |validity_map_|.
   DCHECK(!validity_map_.empty());
-
-  views::FocusManager* manager = focus_manager_;
-  for (views::View* next = GroupForSection(GetCreditCardSection())->container;
-       next;
-       next = manager->GetNextFocusableView(next, window_, false, true)) {
-    if (validity_map_.find(next) != validity_map_.end()) {
-      next->RequestFocus();
-      break;
-    }
-  }
+  FocusInitialView();
 
   return false;
 }
@@ -1988,8 +2012,6 @@ void AutofillDialogViews::InitChildViews() {
 
   overlay_view_ = new OverlayView(delegate_);
   overlay_view_->SetVisible(false);
-
-  ShowDialogInMode(DETAIL_INPUT);
 }
 
 views::View* AutofillDialogViews::CreateDetailsContainer() {
@@ -2131,6 +2153,7 @@ void AutofillDialogViews::ShowDialogInMode(DialogMode dialog_mode) {
   sign_in_web_view_->SetVisible(dialog_mode == SIGN_IN);
   notification_area_->SetVisible(dialog_mode == DETAIL_INPUT);
   scrollable_area_->SetVisible(dialog_mode == DETAIL_INPUT);
+  FocusInitialView();
 }
 
 void AutofillDialogViews::UpdateSectionImpl(
@@ -2197,6 +2220,12 @@ void AutofillDialogViews::UpdateDetailsGroupState(const DetailsGroup& group) {
   }
 
   ContentsPreferredSizeChanged();
+}
+
+void AutofillDialogViews::FocusInitialView() {
+  views::View* to_focus = GetInitiallyFocusedView();
+  if (to_focus && !to_focus->HasFocus())
+    to_focus->RequestFocus();
 }
 
 template<class T>

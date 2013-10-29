@@ -130,6 +130,7 @@ class AutofillDialogViews : public AutofillDialogView,
       OVERRIDE;
   virtual bool ShouldDefaultButtonBeBlue() const OVERRIDE;
   virtual bool IsDialogButtonEnabled(ui::DialogButton button) const OVERRIDE;
+  virtual views::View* GetInitiallyFocusedView() OVERRIDE;
   virtual views::View* CreateExtraView() OVERRIDE;
   virtual views::View* CreateTitlebarExtraView() OVERRIDE;
   virtual views::View* CreateFootnoteView() OVERRIDE;
@@ -570,6 +571,9 @@ class AutofillDialogViews : public AutofillDialogView,
   // Gets a pointer to the DetailsGroup that's associated with a given |view|.
   // Returns NULL if no DetailsGroup was found.
   DetailsGroup* GroupForView(views::View* view);
+
+  // Explicitly focuses the initially focusable view.
+  void FocusInitialView();
 
   // Sets the visual state for an input to be either valid or invalid. This
   // should work on Comboboxes or DecoratedTextfields. If |message| is empty,
