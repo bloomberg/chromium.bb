@@ -1,15 +1,13 @@
-<p>Tests that toggling disabled state in a textarea leaves the textarea typeable.
-To Test manually, load this page and type in the textarea. If you can type, then
-the test succeeded.<p>
-<textarea id="ta" disabled="disabled"></textarea>
+<!DOCTYPE html>
+<html>
+<head>
+<script>
+function test()
+{
+    if (window.testRunner)
+        testRunner.dumpAsText();
 
-<script type="text/javascript">
-if (window.testRunner) {
-    testRunner.dumpAsText();
-    testRunner.waitUntilDone();
-}
-
-setTimeout(function() {
+    ta = document.getElementById('ta');
     ta.disabled = false;
     ta.focus();
     if (window.eventSender) {
@@ -20,7 +18,13 @@ setTimeout(function() {
         else
             document.write("<pre>FAIL, result was '" + result + "'.</pre>");
     }
-    if (window.testRunner)
-        testRunner.notifyDone();
-}, 0);
+}
 </script>
+</head>
+<body onload="test();">
+<p>Tests that toggling disabled state in a textarea leaves the textarea typeable.
+To Test manually, load this page and type in the textarea. If you can type, then
+the test succeeded.<p>
+<textarea id="ta" disabled="disabled"></textarea>
+</body>
+</html>
