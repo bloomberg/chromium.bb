@@ -1,21 +1,23 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_LAZY_BACKGROUND_TASK_QUEUE_H_
-#define CHROME_BROWSER_EXTENSIONS_LAZY_BACKGROUND_TASK_QUEUE_H_
+#ifndef EXTENSIONS_BROWSER_LAZY_BACKGROUND_TASK_QUEUE_H_
+#define EXTENSIONS_BROWSER_LAZY_BACKGROUND_TASK_QUEUE_H_
 
 #include <map>
 #include <string>
 
-#include "base/compiler_specific.h"
 #include "base/callback_forward.h"
+#include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/linked_ptr.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
-class Profile;
+namespace content {
+class BrowserContext;
+}
 
 namespace extensions {
 class Extension;
@@ -31,7 +33,7 @@ class LazyBackgroundTaskQueue : public content::NotificationObserver {
  public:
   typedef base::Callback<void(ExtensionHost*)> PendingTask;
 
-  explicit LazyBackgroundTaskQueue(Profile* profile);
+  explicit LazyBackgroundTaskQueue(content::BrowserContext* browser_context);
   virtual ~LazyBackgroundTaskQueue();
 
   // Returns the number of extensions having pending tasks.
@@ -41,7 +43,8 @@ class LazyBackgroundTaskQueue : public content::NotificationObserver {
   // extension has a lazy background page that isn't ready yet). If the
   // extension has a lazy background page that is being suspended this method
   // cancels that suspension.
-  bool ShouldEnqueueTask(Profile* profile, const Extension* extension);
+  bool ShouldEnqueueTask(content::BrowserContext* context,
+                         const Extension* extension);
 
   // Adds a task to the queue for a given extension. If this is the first
   // task added for the extension, its lazy background page will be loaded.
@@ -49,17 +52,17 @@ class LazyBackgroundTaskQueue : public content::NotificationObserver {
   // page fails to load for some reason (e.g. a crash or browser
   // shutdown). In the latter case, the ExtensionHost parameter is NULL.
   void AddPendingTask(
-      Profile* profile,
+      content::BrowserContext* context,
       const std::string& extension_id,
       const PendingTask& task);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(LazyBackgroundTaskQueueTest, ProcessPendingTasks);
 
-  // A map between an extension_id,Profile pair and the queue of tasks pending
-  // the load of its background page.
+  // A map between a BrowserContext/extension_id pair and the queue of tasks
+  // pending the load of its background page.
   typedef std::string ExtensionID;
-  typedef std::pair<Profile*, ExtensionID> PendingTasksKey;
+  typedef std::pair<content::BrowserContext*, ExtensionID> PendingTasksKey;
   typedef std::vector<PendingTask> PendingTasksList;
   typedef std::map<PendingTasksKey,
                    linked_ptr<PendingTasksList> > PendingTasksMap;
@@ -73,14 +76,14 @@ class LazyBackgroundTaskQueue : public content::NotificationObserver {
   // load (host is NULL in that case). All enqueued tasks are run in order.
   void ProcessPendingTasks(
       ExtensionHost* host,
-      Profile* profile,
+      content::BrowserContext* context,
       const Extension* extension);
 
-  Profile* profile_;
+  content::BrowserContext* browser_context_;
   content::NotificationRegistrar registrar_;
   PendingTasksMap pending_tasks_;
 };
 
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_LAZY_BACKGROUND_TASK_QUEUE_H_
+#endif  // EXTENSIONS_BROWSER_LAZY_BACKGROUND_TASK_QUEUE_H_

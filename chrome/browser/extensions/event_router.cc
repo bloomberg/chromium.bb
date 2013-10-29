@@ -23,7 +23,6 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_util.h"
-#include "chrome/browser/extensions/lazy_background_task_queue.h"
 #include "chrome/browser/extensions/process_map.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -37,6 +36,7 @@
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
+#include "extensions/browser/lazy_background_task_queue.h"
 #include "extensions/common/extension_urls.h"
 
 using base::DictionaryValue;

@@ -1,0 +1,7 @@
+# Please talk to the apps shell team before adding DEPS.
+per-file DEPS=set noparent
+per-file DEPS=benwells@chromium.org
+per-file DEPS=derat@chromium.org
+per-file DEPS=jamescook@chromium.org
+per-file DEPS=miket@chromium.org
+per-file DEPS=yoz@chromium.org

@@ -1,3 +1,30 @@
 include_rules = [
   "+content/public/browser",
+
+  # Temporarily allowed includes as part of the app shell/extensions refactor.
+  #
+  # NOTE: Please do not add includes without talking to the app shell team;
+  # see OWNERS for this directory.
+  #
+  # TODO(jamescook): Remove these. http://crbug.com/162530
+  "+chrome/browser/chrome_notification_types.h",
+  "+chrome/browser/extensions/extension_host.h",
+  "+chrome/browser/extensions/extension_process_manager.h",
+  "+chrome/browser/extensions/extension_service.h",
+  "+chrome/browser/extensions/extension_system.h",
+  "+chrome/browser/extensions/process_map.h",
+  "+chrome/common/extensions/background_info.h",
+  "+chrome/common/extensions/extension.h",
+  "+chrome/common/extensions/extension_messages.h",
 ]
+
+specific_include_rules = {
+  ".*test\.cc": [
+    # Temporarily allowed testing includes.  See above.
+    # TODO(jamescook): Remove these. http://crbug.com/159366
+    "+chrome/browser/extensions/extension_service_unittest.h",
+    "+chrome/browser/extensions/test_extension_system.h",
+    "+chrome/common/extensions/extension_builder.h",
+    "+chrome/test/base/testing_profile.h",
+  ]
+}

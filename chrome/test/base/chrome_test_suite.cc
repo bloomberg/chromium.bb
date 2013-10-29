@@ -17,6 +17,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_content_browser_client.h"
+#include "chrome/browser/extensions/chrome_extensions_browser_client.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_controller_factory.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_content_client.h"
@@ -171,6 +172,8 @@ void ChromeTestSuite::Initialize() {
 
   extensions::ExtensionsClient::Set(
       extensions::ChromeExtensionsClient::GetInstance());
+  extensions::ExtensionsBrowserClient::Set(
+      extensions::ChromeExtensionsBrowserClient::GetInstance());
 
   // Only want to do this for unit tests.
   if (!content::GetCurrentTestLauncherDelegate()) {

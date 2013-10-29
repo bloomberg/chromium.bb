@@ -39,6 +39,7 @@ class Browser;
 class PrefsTabHelper;
 
 namespace content {
+class BrowserContext;
 class RenderProcessHost;
 class RenderWidgetHostView;
 class SiteInstance;
@@ -114,6 +115,10 @@ class ExtensionHost : public content::WebContentsDelegate,
   }
 
   Profile* profile() const { return profile_; }
+
+  // Returns the same value as profile() but as a BrowserContext. Implemented
+  // in the .cc file to avoid including profile.h in this header.
+  content::BrowserContext* browser_context();
 
   ViewType extension_host_type() const { return extension_host_type_; }
   const GURL& GetURL() const;

@@ -258,6 +258,10 @@ WindowController* ExtensionHost::GetExtensionWindowController() const {
       view()->browser()->extension_window_controller() : NULL;
 }
 
+content::BrowserContext* ExtensionHost::browser_context() {
+  return profile_;
+}
+
 const GURL& ExtensionHost::GetURL() const {
   return host_contents()->GetURL();
 }

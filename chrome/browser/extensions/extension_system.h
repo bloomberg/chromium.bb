@@ -24,6 +24,10 @@ class DeviceLocalAccountManagementPolicyProvider;
 }
 #endif  // defined(OS_CHROMEOS)
 
+namespace content {
+class BrowserContext;
+}
+
 namespace extensions {
 class Blacklist;
 class ErrorConsole;
@@ -52,6 +56,10 @@ class ExtensionSystem : public BrowserContextKeyedService {
   // Returns the instance for the given profile, or NULL if none. This is
   // a convenience wrapper around ExtensionSystemFactory::GetForProfile.
   static ExtensionSystem* Get(Profile* profile);
+
+  // Returns the same instance as Get() above.
+  static ExtensionSystem* GetForBrowserContext(
+      content::BrowserContext* profile);
 
   // BrowserContextKeyedService implementation.
   virtual void Shutdown() OVERRIDE {}

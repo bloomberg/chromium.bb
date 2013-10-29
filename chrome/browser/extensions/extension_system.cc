@@ -27,7 +27,6 @@
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/extension_warning_badge_service.h"
 #include "chrome/browser/extensions/extension_warning_set.h"
-#include "chrome/browser/extensions/lazy_background_task_queue.h"
 #include "chrome/browser/extensions/management_policy.h"
 #include "chrome/browser/extensions/navigation_observer.h"
 #include "chrome/browser/extensions/standard_management_policy_provider.h"
@@ -44,6 +43,7 @@
 #include "chrome/common/extensions/features/feature_channel.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/url_data_source.h"
+#include "extensions/browser/lazy_background_task_queue.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/manifest.h"
 
@@ -77,6 +77,12 @@ ExtensionSystem::~ExtensionSystem() {
 // static
 ExtensionSystem* ExtensionSystem::Get(Profile* profile) {
   return ExtensionSystemFactory::GetForProfile(profile);
+}
+
+// static
+ExtensionSystem* ExtensionSystem::GetForBrowserContext(
+    content::BrowserContext* profile) {
+  return ExtensionSystemFactory::GetForProfile(static_cast<Profile*>(profile));
 }
 
 //

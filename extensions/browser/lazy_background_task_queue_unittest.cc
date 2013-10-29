@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/lazy_background_task_queue.h"
+#include "extensions/browser/lazy_background_task_queue.h"
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -176,6 +176,12 @@ TEST_F(LazyBackgroundTaskQueueTest, ProcessPendingTasks) {
                        extension->id(),
                        base::Bind(&LazyBackgroundTaskQueueTest::RunPendingTask,
                                   base::Unretained(this)));
+  EXPECT_EQ(0, task_run_count());
+  EXPECT_EQ(1u, queue.extensions_with_pending_tasks());
+
+  // Trying to run tasks for an unrelated profile should do nothing.
+  TestingProfile profile2;
+  queue.ProcessPendingTasks(NULL, &profile2, extension);
   EXPECT_EQ(0, task_run_count());
   EXPECT_EQ(1u, queue.extensions_with_pending_tasks());
 
