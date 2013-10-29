@@ -42,6 +42,7 @@ class DisplayManager;
 class FocusActivationStore;
 class MirrorWindowController;
 class RootWindowController;
+class VirtualKeyboardWindowController;
 }
 
 // DisplayController owns and maintains RootWindows for each attached
@@ -209,8 +210,9 @@ class ASH_EXPORT DisplayController : public gfx::DisplayObserver,
 
   scoped_ptr<internal::FocusActivationStore> focus_activation_store_;
 
-
   scoped_ptr<internal::MirrorWindowController> mirror_window_controller_;
+  scoped_ptr<internal::VirtualKeyboardWindowController>
+      virtual_keyboard_window_controller_;
 
   // Stores the curent cursor location (in native coordinates) used to
   // restore the cursor location when display configuration

@@ -96,6 +96,7 @@
 #include "ui/gfx/size.h"
 #include "ui/keyboard/keyboard.h"
 #include "ui/keyboard/keyboard_controller.h"
+#include "ui/keyboard/keyboard_switches.h"
 #include "ui/keyboard/keyboard_util.h"
 #include "ui/message_center/message_center.h"
 #include "ui/views/corewm/compound_event_filter.h"
@@ -695,6 +696,10 @@ void Shell::Init() {
   output_configurator_animation_.reset(
       new internal::OutputConfiguratorAnimation());
   output_configurator_->AddObserver(output_configurator_animation_.get());
+  if (command_line->HasSwitch(keyboard::switches::kKeyboardUsabilityTest)) {
+    display_manager_->SetSecondDisplayMode(
+        internal::DisplayManager::VIRTUAL_KEYBOARD);
+  }
   if (base::SysInfo::IsRunningOnChromeOS()) {
     display_change_observer_.reset(new internal::DisplayChangeObserver);
     // Register |display_change_observer_| first so that the rest of

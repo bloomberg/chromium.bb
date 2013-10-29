@@ -581,26 +581,37 @@ void DisplayManager::UpdateDisplays(
   // the root window so that it matches the external display's
   // resolution. This is necessary in order for scaling to work while
   // mirrored.
-  if (second_display_mode_ == MIRRORING && new_display_info_list.size() == 2) {
+  int64 non_desktop_display_id = gfx::Display::kInvalidDisplayID;
+
+  if (second_display_mode_ != EXTENDED && new_display_info_list.size() == 2) {
     bool zero_is_source =
         first_display_id_ == new_display_info_list[0].id() ||
         gfx::Display::InternalDisplayId() == new_display_info_list[0].id();
-    mirrored_display_id_ = new_display_info_list[zero_is_source ? 1 : 0].id();
+    if (second_display_mode_ == MIRRORING) {
+      mirrored_display_id_ = new_display_info_list[zero_is_source ? 1 : 0].id();
+      non_desktop_display_id = mirrored_display_id_;
+    } else {
+      // TODO(oshima|bshe): The virtual keyboard is currently assigned to
+      // the 1st display.
+      non_desktop_display_id =
+          new_display_info_list[zero_is_source ? 0 : 1].id();
+    }
   }
 
   while (curr_iter != displays_.end() ||
          new_info_iter != new_display_info_list.end()) {
     if (new_info_iter != new_display_info_list.end() &&
-        mirrored_display_id_ == new_info_iter->id()) {
+        non_desktop_display_id == new_info_iter->id()) {
       DisplayInfo info = *new_info_iter;
       info.SetOverscanInsets(gfx::Insets());
       InsertAndUpdateDisplayInfo(info);
       non_desktop_display_ =
-          CreateDisplayFromDisplayInfoById(mirrored_display_id_);
+          CreateDisplayFromDisplayInfoById(non_desktop_display_id);
       ++new_info_iter;
-      // Remove existing external dispaly if it is going to be mirrored.
+      // Remove existing external dispaly if it is going to be used as
+      // non desktop.
       if (curr_iter != displays_.end() &&
-          curr_iter->id() == mirrored_display_id_) {
+          curr_iter->id() == non_desktop_display_id) {
         removed_displays.push_back(*curr_iter);
         ++curr_iter;
       }
@@ -699,7 +710,7 @@ void DisplayManager::UpdateDisplays(
     Shell::GetInstance()->screen()->NotifyDisplayRemoved(displays_.back());
     displays_.pop_back();
   }
-  // Close the mirror window here to avoid creating two compositor on
+  // Close the non desktop window here to avoid creating two compositor on
   // one display.
   if (!non_desktop_display_updater->enabled())
     non_desktop_display_updater.reset();
@@ -707,7 +718,7 @@ void DisplayManager::UpdateDisplays(
        iter != added_display_indices.end(); ++iter) {
     Shell::GetInstance()->screen()->NotifyDisplayAdded(displays_[*iter]);
   }
-  // Create the mirror window after all displays are added so that
+  // Create the non destkop window after all displays are added so that
   // it can mirror the display newly added. This can happen when switching
   // from dock mode to software mirror mode.
   non_desktop_display_updater.reset();
@@ -730,9 +741,8 @@ const gfx::Display& DisplayManager::GetDisplayAt(size_t index) const {
 }
 
 const gfx::Display& DisplayManager::GetPrimaryDisplayCandidate() const {
-  if (GetNumDisplays() == 1) {
+  if (GetNumDisplays() == 1)
     return displays_[0];
-  }
   DisplayLayout layout = layout_store_->GetRegisteredDisplayLayout(
       GetCurrentDisplayIdPair());
   return GetDisplayForId(layout.primary_id);
@@ -837,6 +847,10 @@ void DisplayManager::ToggleDisplayScaleFactor() {
 
 #if defined(OS_CHROMEOS)
 void DisplayManager::SetSoftwareMirroring(bool enabled) {
+  // TODO(oshima|bshe): Support external display on the system
+  // that has virtual keyboard display.
+  if (second_display_mode_ == VIRTUAL_KEYBOARD)
+    return;
   SetSecondDisplayMode(enabled ? MIRRORING : EXTENDED);
 }
 #endif

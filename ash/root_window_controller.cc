@@ -219,13 +219,20 @@ namespace internal {
 void RootWindowController::CreateForPrimaryDisplay(
     aura::RootWindow* root) {
   RootWindowController* controller = new RootWindowController(root);
-  controller->Init(true /* primary */,
+  controller->Init(RootWindowController::PRIMARY,
                    Shell::GetInstance()->delegate()->IsFirstRunAfterBoot());
 }
 
 void RootWindowController::CreateForSecondaryDisplay(aura::RootWindow * root) {
   RootWindowController* controller = new RootWindowController(root);
-  controller->Init(false /* secondary */, false /* first run */);
+  controller->Init(RootWindowController::SECONDARY, false /* first run */);
+}
+
+void RootWindowController::CreateForVirtualKeyboardDisplay(
+    aura::RootWindow * root) {
+  RootWindowController* controller = new RootWindowController(root);
+  controller->Init(RootWindowController::VIRTUAL_KEYBOARD,
+                   false /* first run */);
 }
 
 // static
@@ -569,11 +576,16 @@ RootWindowController::RootWindowController(aura::RootWindow* root_window)
   capture_client_.reset(new views::corewm::ScopedCaptureClient(root_window));
 }
 
-void RootWindowController::Init(bool is_primary, bool first_run_after_boot) {
+void RootWindowController::Init(RootWindowType root_window_type,
+                                bool first_run_after_boot) {
   Shell::GetInstance()->InitRootWindow(root_window_.get());
 
   root_window_->SetCursor(ui::kCursorPointer);
   CreateContainersInRootWindow(root_window_.get());
+
+  if (root_window_type == VIRTUAL_KEYBOARD)
+    return;
+
   CreateSystemBackground(first_run_after_boot);
 
   InitLayoutManagers();
@@ -587,7 +599,7 @@ void RootWindowController::Init(bool is_primary, bool first_run_after_boot) {
   Shell* shell = Shell::GetInstance();
   shell->AddShellObserver(this);
 
-  if (is_primary) {
+  if (root_window_type == PRIMARY) {
     root_window_layout()->OnWindowResized();
     shell->InitKeyboard(this);
   } else {

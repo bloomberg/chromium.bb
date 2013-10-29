@@ -127,6 +127,8 @@
         'display/screen_position_controller.h',
         'display/shared_display_edge_indicator.cc',
         'display/shared_display_edge_indicator.h',
+        'display/virtual_keyboard_window_controller.cc',
+        'display/virtual_keyboard_window_controller.h',
         'drag_drop/drag_drop_controller.cc',
         'drag_drop/drag_drop_controller.h',
         'drag_drop/drag_drop_tracker.cc',

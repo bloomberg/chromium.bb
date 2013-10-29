@@ -13,6 +13,7 @@
 #include "ash/display/display_manager.h"
 #include "ash/display/mirror_window_controller.h"
 #include "ash/display/root_window_transformers.h"
+#include "ash/display/virtual_keyboard_window_controller.h"
 #include "ash/host/root_window_host_factory.h"
 #include "ash/root_window_controller.h"
 #include "ash/root_window_settings.h"
@@ -221,7 +222,9 @@ bool DisplayController::DisplayChangeLimiter::IsThrottled() const {
 DisplayController::DisplayController()
     : primary_root_window_for_replace_(NULL),
       focus_activation_store_(new internal::FocusActivationStore()),
-      mirror_window_controller_(new internal::MirrorWindowController) {
+      mirror_window_controller_(new internal::MirrorWindowController),
+      virtual_keyboard_window_controller_(
+          new internal::VirtualKeyboardWindowController) {
 #if defined(OS_CHROMEOS)
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (!command_line->HasSwitch(switches::kAshDisableDisplayChangeLimiter) &&
@@ -251,6 +254,7 @@ void DisplayController::Shutdown() {
   Shell::GetInstance()->display_manager()->set_delegate(NULL);
 
   mirror_window_controller_.reset();
+  virtual_keyboard_window_controller_.reset();
 
   DCHECK(!primary_display_for_shutdown);
   primary_display_for_shutdown = new gfx::Display(
@@ -676,11 +680,23 @@ void DisplayController::OnRootWindowHostResized(const aura::RootWindow* root) {
 
 void DisplayController::CreateOrUpdateNonDesktopDisplay(
     const internal::DisplayInfo& info) {
-  mirror_window_controller_->UpdateWindow(info);
+  switch (GetDisplayManager()->second_display_mode()) {
+    case internal::DisplayManager::MIRRORING:
+      mirror_window_controller_->UpdateWindow(info);
+      virtual_keyboard_window_controller_->Close();
+      break;
+    case internal::DisplayManager::VIRTUAL_KEYBOARD:
+      mirror_window_controller_->Close();
+      virtual_keyboard_window_controller_->UpdateWindow(info);
+      break;
+    case internal::DisplayManager::EXTENDED:
+      NOTREACHED();
+  }
 }
 
 void DisplayController::CloseNonDesktopDisplay() {
   mirror_window_controller_->Close();
+  virtual_keyboard_window_controller_->Close();
 }
 
 void DisplayController::PreDisplayConfigurationChange(bool display_removed) {
