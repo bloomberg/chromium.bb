@@ -454,7 +454,6 @@ void WindowSelector::OnAttemptToReactivateWindow(aura::Window* request_active,
 }
 
 void WindowSelector::StartOverview() {
-  showing_window_.reset();
   DCHECK(!window_overview_);
   window_overview_.reset(new WindowOverview(this, &windows_,
       mode_ == CYCLE ? windows_[selected_window_]->GetRootWindow() : NULL));
