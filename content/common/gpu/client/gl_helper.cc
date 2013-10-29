@@ -284,6 +284,7 @@ class GLHelper::CopyTextureToImpl :
     CopyTextureToImpl* copy_impl_;
     gfx::Size dst_size_;
     gfx::Rect dst_subrect_;
+    GLHelper::ScalerQuality quality_;
     ScalerHolder scaler_;
     scoped_ptr<content::GLHelperScaling::ShaderInterface> pass1_shader_;
     scoped_ptr<content::GLHelperScaling::ShaderInterface> pass2_shader_;
@@ -891,6 +892,7 @@ GLHelper::CopyTextureToImpl::ReadbackYUV_MRT::ReadbackYUV_MRT(
       copy_impl_(copy_impl),
       dst_size_(dst_size),
       dst_subrect_(dst_subrect),
+      quality_(quality),
       scaler_(context, scaler_impl->CreateScaler(
           quality,
           src_size,
@@ -952,15 +954,27 @@ void GLHelper::CopyTextureToImpl::ReadbackYUV_MRT::ReadbackYUV(
   WebGLId mailbox_texture =
       copy_impl_->ConsumeMailboxToTexture(mailbox, sync_point);
 
-  // Scale texture to right size.
-  scaler_.Scale(mailbox_texture);
-  context_->deleteTexture(mailbox_texture);
+  WebGLId texture;
+  if (quality_ == GLHelper::SCALER_QUALITY_FAST) {
+    // Optimization: SCALER_QUALITY_FAST is just a single bilinear
+    // pass, which pass1_shader_ can do just as well, so let's skip
+    // the actual scaling in that case.
+    texture = mailbox_texture;
+  } else {
+    // Scale texture to right size.
+    scaler_.Scale(mailbox_texture);
+    texture = scaler_.texture();
+  }
+
 
   std::vector<WebKit::WebGLId> outputs(2);
   // Convert the scaled texture in to Y, U and V planes.
   outputs[0] = y_.texture();
   outputs[1] = uv_;
-  pass1_shader_->Execute(scaler_.texture(), outputs);
+  pass1_shader_->Execute(texture, outputs);
+
+  context_->deleteTexture(mailbox_texture);
+
   outputs[0] = u_.texture();
   outputs[1] = v_.texture();
   pass2_shader_->Execute(uv_, outputs);
