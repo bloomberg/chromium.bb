@@ -3351,7 +3351,6 @@ static void methodWithOptionalArgMethod(const v8::FunctionCallbackInfo<v8::Value
     TestObj* imp = V8TestObject::toNative(args.Holder());
     if (UNLIKELY(args.Length() <= 0)) {
         imp->methodWithOptionalArg();
-;
         return;
     }
     V8TRYCATCH_VOID(int, opt, toInt32(args[0]));
@@ -3375,7 +3374,6 @@ static void methodWithNonOptionalArgAndOptionalArgMethod(const v8::FunctionCallb
     V8TRYCATCH_VOID(int, nonOpt, toInt32(args[0]));
     if (UNLIKELY(args.Length() <= 1)) {
         imp->methodWithNonOptionalArgAndOptionalArg(nonOpt);
-;
         return;
     }
     V8TRYCATCH_VOID(int, opt, toInt32(args[1]));
@@ -3399,13 +3397,11 @@ static void methodWithNonOptionalArgAndTwoOptionalArgsMethod(const v8::FunctionC
     V8TRYCATCH_VOID(int, nonOpt, toInt32(args[0]));
     if (UNLIKELY(args.Length() <= 1)) {
         imp->methodWithNonOptionalArgAndTwoOptionalArgs(nonOpt);
-;
         return;
     }
     V8TRYCATCH_VOID(int, opt1, toInt32(args[1]));
     if (UNLIKELY(args.Length() <= 2)) {
         imp->methodWithNonOptionalArgAndTwoOptionalArgs(nonOpt, opt1);
-;
         return;
     }
     V8TRYCATCH_VOID(int, opt2, toInt32(args[2]));
@@ -3424,7 +3420,6 @@ static void methodWithOptionalStringMethod(const v8::FunctionCallbackInfo<v8::Va
     TestObj* imp = V8TestObject::toNative(args.Holder());
     if (UNLIKELY(args.Length() <= 0)) {
         imp->methodWithOptionalString();
-;
         return;
     }
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, str, args[0]);
@@ -3819,7 +3814,6 @@ static void overloadedMethod2Method(const v8::FunctionCallbackInfo<v8::Value>& a
     V8TRYCATCH_VOID(TestObj*, objArg, V8TestObject::HasInstance(args[0], args.GetIsolate(), worldType(args.GetIsolate())) ? V8TestObject::toNative(v8::Handle<v8::Object>::Cast(args[0])) : 0);
     if (UNLIKELY(args.Length() <= 1)) {
         imp->overloadedMethod(objArg);
-;
         return;
     }
     V8TRYCATCH_VOID(int, longArg, toInt32(args[1]));
@@ -4006,7 +4000,6 @@ static void classMethodWithOptionalMethod(const v8::FunctionCallbackInfo<v8::Val
 {
     if (UNLIKELY(args.Length() <= 0)) {
         v8SetReturnValueInt(args, TestObj::classMethodWithOptional());
-;
         return;
     }
     V8TRYCATCH_VOID(int, arg, toInt32(args[0]));
@@ -4500,7 +4493,6 @@ static void methodWithNullableArgumentsMethod(const v8::FunctionCallbackInfo<v8:
     V8TRYCATCH_VOID(TestObj*, obj, V8TestObject::HasInstance(args[2], args.GetIsolate(), worldType(args.GetIsolate())) ? V8TestObject::toNative(v8::Handle<v8::Object>::Cast(args[2])) : 0);
     if (UNLIKELY(args.Length() <= 3)) {
         imp->methodWithNullableArguments(strIsNull ? 0 : &str, lIsNull ? 0 : &l, obj);
-;
         return;
     }
     bool dIsNull = args[3]->IsNull();

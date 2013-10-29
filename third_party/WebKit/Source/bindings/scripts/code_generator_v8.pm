@@ -2480,10 +2480,11 @@ sub GenerateParametersCheck
         # Optional arguments with [Optional=...] should not generate the early call.
         # Optional Dictionary arguments always considered to have default of empty dictionary.
         if ($parameter->isOptional && !$parameter->extendedAttributes->{"Default"} && $nativeType ne "Dictionary" && !IsCallbackInterface($parameter->type)) {
-            my $functionCall = GenerateFunctionCallString($function, $paramIndex, "    " x 2, $interface, $forMainWorldSuffix, %replacements);
-            $parameterCheckString .= <<END
+            $parameterCheckString .= <<END;
     if (UNLIKELY(args.Length() <= $paramIndex)) {
-$functionCall;
+END
+            $parameterCheckString .= GenerateFunctionCallString($function, $paramIndex, "    " x 2, $interface, $forMainWorldSuffix, %replacements);
+            $parameterCheckString .= <<END;
         return;
     }
 END
