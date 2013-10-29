@@ -246,8 +246,19 @@ cr.define('options.browser_options', function() {
       if (this.dropPos == 'below')
         newIndex += 1;
 
-      chrome.send('dragDropStartupPage',
-                  [newIndex, this.selectionModel.selectedIndexes]);
+      // If there are selected indexes, it was a re-order.
+      if (this.selectionModel.selectedIndexes.length > 0) {
+        chrome.send('dragDropStartupPage',
+                    [newIndex, this.selectionModel.selectedIndexes]);
+        return;
+      }
+
+      // Otherwise it was potentially a drop of new data (e.g. a bookmark).
+      var url = e.dataTransfer.getData('url');
+      if (url) {
+        e.preventDefault();
+        chrome.send('addStartupPage', [url, newIndex]);
+      }
     },
 
     /**

@@ -1533,6 +1533,7 @@
         'browser/ui/webui/options/search_engine_manager_browsertest.js',
         'browser/ui/webui/options/settings_app_browsertest.js',
         'browser/ui/webui/options/settings_format_browsertest.js',
+        'browser/ui/webui/options/startup_page_list_browsertest.js',
         'browser/ui/webui/policy_ui_browsertest.cc',
         'browser/ui/webui/print_preview/print_preview_ui_browsertest.cc',
         'browser/ui/webui/signin/user_manager_ui_browsertest.cc',

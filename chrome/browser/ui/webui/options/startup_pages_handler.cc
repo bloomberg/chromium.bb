@@ -151,13 +151,17 @@ void StartupPagesHandler::RemoveStartupPages(const ListValue* args) {
 
 void StartupPagesHandler::AddStartupPage(const ListValue* args) {
   std::string url_string;
-  CHECK_EQ(args->GetSize(), 1U);
   CHECK(args->GetString(0, &url_string));
 
   GURL url = URLFixerUpper::FixupURL(url_string, std::string());
   if (!url.is_valid())
     return;
-  int index = startup_custom_pages_table_model_->RowCount();
+
+  int row_count = startup_custom_pages_table_model_->RowCount();
+  int index;
+  if (!args->GetInteger(1, &index) || index > row_count)
+    index = row_count;
+
   startup_custom_pages_table_model_->Add(index, url);
 }
 
