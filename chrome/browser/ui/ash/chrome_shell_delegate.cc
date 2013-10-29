@@ -56,9 +56,24 @@ bool ChromeShellDelegate::IsMultiProfilesEnabled() const {
 #if defined(OS_CHROMEOS)
   // If there is a user manager, we need to see that we can at least have 2
   // simultaneous users to allow this feature.
-  if (chromeos::UserManager::IsInitialized() &&
-      chromeos::UserManager::Get()->GetUsersAdmittedForMultiProfile().size() +
-      chromeos::UserManager::Get()->GetLoggedInUsers().size() <= 1)
+  if (!chromeos::UserManager::IsInitialized())
+    return false;
+  size_t admitted_users_to_be_added =
+      chromeos::UserManager::Get()->GetUsersAdmittedForMultiProfile().size();
+  size_t logged_in_users =
+      chromeos::UserManager::Get()->GetLoggedInUsers().size();
+  if (!logged_in_users) {
+    // The shelf gets created on the login screen and as such we have to create
+    // all multi profile items of the the system tray menu before the user logs
+    // in. For special cases like Kiosk mode and / or guest mode this isn't a
+    // problem since either the browser gets restarted and / or the flag is not
+    // allowed, but for an "ephermal" user (see crbug.com/312324) it is not
+    // decided yet if he could add other users to his session or not.
+    // TODO(skuhne): As soon as the issue above needs to be resolved, this logic
+    // should change.
+    logged_in_users = 1;
+  }
+  if (admitted_users_to_be_added + logged_in_users <= 1)
     return false;
 #endif
   return true;
