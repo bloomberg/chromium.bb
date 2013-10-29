@@ -634,8 +634,12 @@ body.dialog #dialog #dialog-popup {
 }
 
 #dialog #dialog-msg {
+  -webkit-user-select: initial;  /* Allow copying the message. */
+  cursor: text;
   font-size: 120%;
+  max-width: 640px;
   padding: 20px 0;
+  white-space: pre-wrap;
 }
 
 #dialog #dialog-buttons {
