@@ -1,6 +1,8 @@
 include_rules = [
   "+components/nacl/common",
   "+ppapi/host",
+  "+ppapi/native_client/src/trusted/plugin/nacl_entry_points.h",  # For NaCl registration.
+  "+ppapi/proxy",
   
   # TODO(raymes): Once all of the resources are refactored to the new pepper
   # resource model, these includes shouldn't be needed.

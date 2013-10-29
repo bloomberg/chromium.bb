@@ -9,12 +9,8 @@ include_rules = [
   "+content/public/renderer",
   "+extensions/common",
   "+grit",  # For generated headers
-  "+media/base",  # For initializing media library and media switches.
-  "+ppapi/native_client/src/trusted/plugin/nacl_entry_points.h",  # For NaCl registration.
   "+ppapi/c",
-  "+ppapi/proxy",
   "+ppapi/shared_impl",
-  "+sandbox/win/src",
   "+skia",
 
   "+webkit/child",
@@ -22,9 +18,5 @@ include_rules = [
   "+webkit/glue",
   "+webkit/renderer",
 
-  "+third_party/npapi/bindings",
-  "+third_party/re2",
-  "+third_party/smhasher",
   "+third_party/sqlite",
-  "+third_party/widevine",
 ]
