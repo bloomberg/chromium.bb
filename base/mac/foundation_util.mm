@@ -29,20 +29,6 @@ namespace {
 bool g_override_am_i_bundled = false;
 bool g_override_am_i_bundled_value = false;
 
-int CheapPathNormalizedCount(NSString* path) {
-  int count = 0;
-  for (NSString* component in [path pathComponents]) {
-    if ([component isEqualToString:@"."])
-      continue;
-    else if ([component isEqualToString:@".."])
-      --count;
-    else
-      ++count;
-  }
-
-  return count;
-}
-
 bool UncachedAmIBundled() {
 #if defined(OS_IOS)
   // All apps are bundled on iOS.
@@ -51,16 +37,8 @@ bool UncachedAmIBundled() {
   if (g_override_am_i_bundled)
     return g_override_am_i_bundled_value;
 
-  NSBundle* bundle = base::mac::OuterBundle();
-  int bundle_count = CheapPathNormalizedCount([bundle bundlePath]);
-  int executable_count = CheapPathNormalizedCount([bundle executablePath]);
-
-  // Bundled executables are exactly three levels deeper than their bundle.
-  // Non-bundled executables have a fake bundle with a bundle path of their
-  // parent directory.
-  int depth_difference = executable_count - bundle_count;
-  CHECK(depth_difference == 1 || depth_difference == 3);
-  return depth_difference == 3;
+  // Yes, this is cheap.
+  return [[base::mac::OuterBundle() bundlePath] hasSuffix:@".app"];
 #endif
 }
 
