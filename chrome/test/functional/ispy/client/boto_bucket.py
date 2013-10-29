@@ -1,5 +1,8 @@
 # Copyright 2013 The Chromium Authors. All rights reserved.
-# Use of this source code is governed by a BSD-style license that can be # found in the LICENSE file.  """Implementation of CloudBucket using Google Cloud Storage as the backend."""
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+"""Implementation of CloudBucket using Google Cloud Storage as the backend."""
 import os
 import sys
 
@@ -9,7 +12,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir,
                              'depot_tools', 'third_party'))
 import boto
 
-from common import cloud_bucket
+from ..common import cloud_bucket
 
 
 class BotoCloudBucket(cloud_bucket.BaseCloudBucket):

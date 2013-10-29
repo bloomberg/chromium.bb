@@ -11,8 +11,8 @@ import re
 import sys
 import webapp2
 
-from common import constants
-from common import ispy_utils
+from ..common import constants
+from ..common import ispy_utils
 
 import gs_bucket
 import views
