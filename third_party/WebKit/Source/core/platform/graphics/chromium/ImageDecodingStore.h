@@ -116,9 +116,9 @@ public:
     void clear();
     void setCacheLimitInBytes(size_t);
     size_t memoryUsageInBytes();
-    unsigned cacheEntries();
-    unsigned imageCacheEntries();
-    unsigned decoderCacheEntries();
+    int cacheEntries();
+    int imageCacheEntries();
+    int decoderCacheEntries();
 
 private:
     // Image cache entry is identified by:

@@ -263,19 +263,19 @@ size_t ImageDecodingStore::memoryUsageInBytes()
     return m_memoryUsageInBytes;
 }
 
-unsigned ImageDecodingStore::cacheEntries()
+int ImageDecodingStore::cacheEntries()
 {
     MutexLocker lock(m_mutex);
     return m_imageCacheMap.size() + m_decoderCacheMap.size();
 }
 
-unsigned ImageDecodingStore::imageCacheEntries()
+int ImageDecodingStore::imageCacheEntries()
 {
     MutexLocker lock(m_mutex);
     return m_imageCacheMap.size();
 }
 
-unsigned ImageDecodingStore::decoderCacheEntries()
+int ImageDecodingStore::decoderCacheEntries()
 {
     MutexLocker lock(m_mutex);
     return m_decoderCacheMap.size();

@@ -143,13 +143,13 @@ TEST_F(ImageDecodingStoreTest, evictOneCache)
     insertCache(SkISize::Make(1, 1));
     insertCache(SkISize::Make(2, 2));
     insertCache(SkISize::Make(3, 3));
-    EXPECT_EQ(3u, ImageDecodingStore::instance()->cacheEntries());
+    EXPECT_EQ(3, ImageDecodingStore::instance()->cacheEntries());
 
     evictOneCache();
-    EXPECT_EQ(2u, ImageDecodingStore::instance()->cacheEntries());
+    EXPECT_EQ(2, ImageDecodingStore::instance()->cacheEntries());
 
     evictOneCache();
-    EXPECT_EQ(1u, ImageDecodingStore::instance()->cacheEntries());
+    EXPECT_EQ(1, ImageDecodingStore::instance()->cacheEntries());
 }
 
 TEST_F(ImageDecodingStoreTest, pruneOrderIsLeastRecentlyUsed)
@@ -159,7 +159,7 @@ TEST_F(ImageDecodingStoreTest, pruneOrderIsLeastRecentlyUsed)
     insertCache(SkISize::Make(3, 3));
     insertCache(SkISize::Make(4, 4));
     insertCache(SkISize::Make(5, 5));
-    EXPECT_EQ(5u, ImageDecodingStore::instance()->cacheEntries());
+    EXPECT_EQ(5, ImageDecodingStore::instance()->cacheEntries());
 
     // Use cache in the order 3, 2, 4, 1, 5.
     EXPECT_TRUE(isCacheAlive(SkISize::Make(3, 3)));
@@ -171,27 +171,27 @@ TEST_F(ImageDecodingStoreTest, pruneOrderIsLeastRecentlyUsed)
     // Evict 3.
     evictOneCache();
     EXPECT_FALSE(isCacheAlive(SkISize::Make(3, 3)));
-    EXPECT_EQ(4u, ImageDecodingStore::instance()->cacheEntries());
+    EXPECT_EQ(4, ImageDecodingStore::instance()->cacheEntries());
 
     // Evict 2.
     evictOneCache();
     EXPECT_FALSE(isCacheAlive(SkISize::Make(2, 2)));
-    EXPECT_EQ(3u, ImageDecodingStore::instance()->cacheEntries());
+    EXPECT_EQ(3, ImageDecodingStore::instance()->cacheEntries());
 
     // Evict 4.
     evictOneCache();
     EXPECT_FALSE(isCacheAlive(SkISize::Make(4, 4)));
-    EXPECT_EQ(2u, ImageDecodingStore::instance()->cacheEntries());
+    EXPECT_EQ(2, ImageDecodingStore::instance()->cacheEntries());
 
     // Evict 1.
     evictOneCache();
     EXPECT_FALSE(isCacheAlive(SkISize::Make(1, 1)));
-    EXPECT_EQ(1u, ImageDecodingStore::instance()->cacheEntries());
+    EXPECT_EQ(1, ImageDecodingStore::instance()->cacheEntries());
 
     // Evict 5.
     evictOneCache();
     EXPECT_FALSE(isCacheAlive(SkISize::Make(5, 5)));
-    EXPECT_EQ(0u, ImageDecodingStore::instance()->cacheEntries());
+    EXPECT_EQ(0, ImageDecodingStore::instance()->cacheEntries());
 }
 
 TEST_F(ImageDecodingStoreTest, pruneCausedByInsertion)
@@ -203,12 +203,12 @@ TEST_F(ImageDecodingStoreTest, pruneCausedByInsertion)
     insertCache(SkISize::Make(1, 1));
     insertCache(SkISize::Make(2, 2));
     insertCache(SkISize::Make(3, 3));
-    EXPECT_EQ(3u, ImageDecodingStore::instance()->cacheEntries());
+    EXPECT_EQ(3, ImageDecodingStore::instance()->cacheEntries());
 
     for (int i = 4; i <= 100; ++i)
         insertCache(SkISize::Make(i, i));
 
-    EXPECT_EQ(1u, ImageDecodingStore::instance()->cacheEntries());
+    EXPECT_EQ(1, ImageDecodingStore::instance()->cacheEntries());
     for (int i = 1; i <= 99; ++i)
         EXPECT_FALSE(isCacheAlive(SkISize::Make(i, i)));
     EXPECT_TRUE(isCacheAlive(SkISize::Make(100, 100)));
@@ -219,7 +219,7 @@ TEST_F(ImageDecodingStoreTest, cacheInUseNotEvicted)
     insertCache(SkISize::Make(1, 1));
     insertCache(SkISize::Make(2, 2));
     insertCache(SkISize::Make(3, 3));
-    EXPECT_EQ(3u, ImageDecodingStore::instance()->cacheEntries());
+    EXPECT_EQ(3, ImageDecodingStore::instance()->cacheEntries());
 
     const ScaledImageFragment* cachedImage = lockCache(SkISize::Make(1, 1));
     ASSERT_TRUE(cachedImage);
@@ -230,7 +230,7 @@ TEST_F(ImageDecodingStoreTest, cacheInUseNotEvicted)
     EXPECT_FALSE(isCacheAlive(SkISize::Make(2, 2)));
     EXPECT_TRUE(isCacheAlive(SkISize::Make(3, 3)));
 
-    EXPECT_EQ(2u, ImageDecodingStore::instance()->cacheEntries());
+    EXPECT_EQ(2, ImageDecodingStore::instance()->cacheEntries());
     unlockCache(cachedImage);
 }
 
@@ -242,7 +242,7 @@ TEST_F(ImageDecodingStoreTest, destroyImageFrameGenerator)
     OwnPtr<ImageDecoder> decoder = MockImageDecoder::create(this);
     decoder->setSize(1, 1);
     ImageDecodingStore::instance()->insertDecoder(m_generator.get(), decoder.release(), false);
-    EXPECT_EQ(4u, ImageDecodingStore::instance()->cacheEntries());
+    EXPECT_EQ(4, ImageDecodingStore::instance()->cacheEntries());
 
     m_generator.clear();
     EXPECT_FALSE(ImageDecodingStore::instance()->cacheEntries());
@@ -255,7 +255,7 @@ TEST_F(ImageDecodingStoreTest, insertDecoder)
     decoder->setSize(1, 1);
     const ImageDecoder* refDecoder = decoder.get();
     ImageDecodingStore::instance()->insertDecoder(m_generator.get(), decoder.release(), false);
-    EXPECT_EQ(1u, ImageDecodingStore::instance()->cacheEntries());
+    EXPECT_EQ(1, ImageDecodingStore::instance()->cacheEntries());
     EXPECT_EQ(4u, ImageDecodingStore::instance()->memoryUsageInBytes());
 
     ImageDecoder* testDecoder;
@@ -263,7 +263,7 @@ TEST_F(ImageDecodingStoreTest, insertDecoder)
     EXPECT_TRUE(testDecoder);
     EXPECT_EQ(refDecoder, testDecoder);
     ImageDecodingStore::instance()->unlockDecoder(m_generator.get(), testDecoder);
-    EXPECT_EQ(1u, ImageDecodingStore::instance()->cacheEntries());
+    EXPECT_EQ(1, ImageDecodingStore::instance()->cacheEntries());
 }
 
 TEST_F(ImageDecodingStoreTest, evictDecoder)
@@ -277,15 +277,15 @@ TEST_F(ImageDecodingStoreTest, evictDecoder)
     ImageDecodingStore::instance()->insertDecoder(m_generator.get(), decoder1.release(), false);
     ImageDecodingStore::instance()->insertDecoder(m_generator.get(), decoder2.release(), false);
     ImageDecodingStore::instance()->insertDecoder(m_generator.get(), decoder3.release(), false);
-    EXPECT_EQ(3u, ImageDecodingStore::instance()->cacheEntries());
+    EXPECT_EQ(3, ImageDecodingStore::instance()->cacheEntries());
     EXPECT_EQ(56u, ImageDecodingStore::instance()->memoryUsageInBytes());
 
     evictOneCache();
-    EXPECT_EQ(2u, ImageDecodingStore::instance()->cacheEntries());
+    EXPECT_EQ(2, ImageDecodingStore::instance()->cacheEntries());
     EXPECT_EQ(52u, ImageDecodingStore::instance()->memoryUsageInBytes());
 
     evictOneCache();
-    EXPECT_EQ(1u, ImageDecodingStore::instance()->cacheEntries());
+    EXPECT_EQ(1, ImageDecodingStore::instance()->cacheEntries());
     EXPECT_EQ(36u, ImageDecodingStore::instance()->memoryUsageInBytes());
 
     evictOneCache();
@@ -304,7 +304,7 @@ TEST_F(ImageDecodingStoreTest, decoderInUseNotEvicted)
     ImageDecodingStore::instance()->insertDecoder(m_generator.get(), decoder1.release(), false);
     ImageDecodingStore::instance()->insertDecoder(m_generator.get(), decoder2.release(), false);
     ImageDecodingStore::instance()->insertDecoder(m_generator.get(), decoder3.release(), false);
-    EXPECT_EQ(3u, ImageDecodingStore::instance()->cacheEntries());
+    EXPECT_EQ(3, ImageDecodingStore::instance()->cacheEntries());
 
     ImageDecoder* testDecoder;
     EXPECT_TRUE(ImageDecodingStore::instance()->lockDecoder(m_generator.get(), SkISize::Make(2, 2), &testDecoder));
@@ -312,7 +312,7 @@ TEST_F(ImageDecodingStoreTest, decoderInUseNotEvicted)
     evictOneCache();
     evictOneCache();
     evictOneCache();
-    EXPECT_EQ(1u, ImageDecodingStore::instance()->cacheEntries());
+    EXPECT_EQ(1, ImageDecodingStore::instance()->cacheEntries());
     EXPECT_EQ(16u, ImageDecodingStore::instance()->memoryUsageInBytes());
 
     ImageDecodingStore::instance()->unlockDecoder(m_generator.get(), testDecoder);
@@ -328,7 +328,7 @@ TEST_F(ImageDecodingStoreTest, removeDecoder)
     decoder->setSize(1, 1);
     const ImageDecoder* refDecoder = decoder.get();
     ImageDecodingStore::instance()->insertDecoder(m_generator.get(), decoder.release(), false);
-    EXPECT_EQ(1u, ImageDecodingStore::instance()->cacheEntries());
+    EXPECT_EQ(1, ImageDecodingStore::instance()->cacheEntries());
     EXPECT_EQ(4u, ImageDecodingStore::instance()->memoryUsageInBytes());
 
     ImageDecoder* testDecoder;
@@ -351,7 +351,7 @@ TEST_F(ImageDecodingStoreTest, multipleIndex)
         m_generator.get(), createCompleteImage(size, false, 1));
     unlockCache(testImage);
     EXPECT_NE(refImage, testImage);
-    EXPECT_EQ(2u, ImageDecodingStore::instance()->cacheEntries());
+    EXPECT_EQ(2, ImageDecodingStore::instance()->cacheEntries());
 
     EXPECT_TRUE(ImageDecodingStore::instance()->lockCache(m_generator.get(), size, 1, &refImage));
     EXPECT_EQ(refImage, testImage);
@@ -368,7 +368,7 @@ TEST_F(ImageDecodingStoreTest, finalAndPartialImage)
         m_generator.get(), createIncompleteImage(size, false, 1));
     unlockCache(testImage);
     EXPECT_NE(refImage, testImage);
-    EXPECT_EQ(2u, ImageDecodingStore::instance()->cacheEntries());
+    EXPECT_EQ(2, ImageDecodingStore::instance()->cacheEntries());
 
     EXPECT_TRUE(ImageDecodingStore::instance()->lockCache(m_generator.get(), size, 0, &refImage));
     EXPECT_NE(refImage, testImage);
@@ -385,7 +385,7 @@ TEST_F(ImageDecodingStoreTest, insertNoGenerationCollision)
         m_generator.get(), createIncompleteImage(size, false, 2));
     unlockCache(testImage);
     EXPECT_NE(refImage, testImage);
-    EXPECT_EQ(2u, ImageDecodingStore::instance()->cacheEntries());
+    EXPECT_EQ(2, ImageDecodingStore::instance()->cacheEntries());
 }
 
 TEST_F(ImageDecodingStoreTest, insertGenerationCollision)
@@ -398,7 +398,7 @@ TEST_F(ImageDecodingStoreTest, insertGenerationCollision)
         m_generator.get(), createIncompleteImage(size, false, 1));
     unlockCache(testImage);
     EXPECT_EQ(refImage, testImage);
-    EXPECT_EQ(1u, ImageDecodingStore::instance()->cacheEntries());
+    EXPECT_EQ(1, ImageDecodingStore::instance()->cacheEntries());
 }
 
 TEST_F(ImageDecodingStoreTest, insertGenerationCollisionAfterMemoryDiscarded)
@@ -413,7 +413,7 @@ TEST_F(ImageDecodingStoreTest, insertGenerationCollisionAfterMemoryDiscarded)
         m_generator.get(), createIncompleteImage(size, false, 1));
     unlockCache(testImage);
     EXPECT_NE(refImage, testImage);
-    EXPECT_EQ(1u, ImageDecodingStore::instance()->cacheEntries());
+    EXPECT_EQ(1, ImageDecodingStore::instance()->cacheEntries());
 }
 
 TEST_F(ImageDecodingStoreTest, lockCacheFailedAfterMemoryDiscarded)
@@ -424,37 +424,37 @@ TEST_F(ImageDecodingStoreTest, lockCacheFailedAfterMemoryDiscarded)
     MockDiscardablePixelRef* pixelRef = static_cast<MockDiscardablePixelRef*>(cachedImage->bitmap().pixelRef());
     pixelRef->discard();
     EXPECT_EQ(0, lockCache(SkISize::Make(1, 1)));
-    EXPECT_EQ(0u, ImageDecodingStore::instance()->cacheEntries());
+    EXPECT_EQ(0, ImageDecodingStore::instance()->cacheEntries());
 }
 
 TEST_F(ImageDecodingStoreTest, clear)
 {
     insertCache(SkISize::Make(1, 1));
     insertCache(SkISize::Make(2, 2));
-    EXPECT_EQ(2u, ImageDecodingStore::instance()->cacheEntries());
+    EXPECT_EQ(2, ImageDecodingStore::instance()->cacheEntries());
 
     OwnPtr<ImageDecoder> decoder = MockImageDecoder::create(this);
     decoder->setSize(1, 1);
     ImageDecodingStore::instance()->insertDecoder(m_generator.get(), decoder.release(), false);
-    EXPECT_EQ(3u, ImageDecodingStore::instance()->cacheEntries());
+    EXPECT_EQ(3, ImageDecodingStore::instance()->cacheEntries());
 
     ImageDecodingStore::instance()->clear();
-    EXPECT_EQ(0u, ImageDecodingStore::instance()->cacheEntries());
+    EXPECT_EQ(0, ImageDecodingStore::instance()->cacheEntries());
 }
 
 TEST_F(ImageDecodingStoreTest, clearInUse)
 {
     insertCache(SkISize::Make(1, 1));
     insertCache(SkISize::Make(2, 2));
-    EXPECT_EQ(2u, ImageDecodingStore::instance()->cacheEntries());
+    EXPECT_EQ(2, ImageDecodingStore::instance()->cacheEntries());
 
     const ScaledImageFragment* cachedImage = lockCache(SkISize::Make(1, 1));
     ASSERT_TRUE(cachedImage);
     ImageDecodingStore::instance()->clear();
-    EXPECT_EQ(1u, ImageDecodingStore::instance()->cacheEntries());
+    EXPECT_EQ(1, ImageDecodingStore::instance()->cacheEntries());
 
     unlockCache(cachedImage);
-    EXPECT_EQ(1u, ImageDecodingStore::instance()->cacheEntries());
+    EXPECT_EQ(1, ImageDecodingStore::instance()->cacheEntries());
 }
 
 } // namespace

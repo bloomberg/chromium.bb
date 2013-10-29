@@ -190,7 +190,7 @@ namespace WTF {
 
         static const bool needsDestruction = FirstTraits::needsDestruction || SecondTraits::needsDestruction;
 
-        static const int minimumTableSize = FirstTraits::minimumTableSize;
+        static const unsigned minimumTableSize = FirstTraits::minimumTableSize;
 
         static void constructDeletedValue(TraitType& slot) { FirstTraits::constructDeletedValue(slot.first); }
         static bool isDeletedValue(const TraitType& value) { return FirstTraits::isDeletedValue(value.first); }
@@ -236,7 +236,7 @@ namespace WTF {
 
         static const bool needsDestruction = KeyTraits::needsDestruction || ValueTraits::needsDestruction;
 
-        static const int minimumTableSize = KeyTraits::minimumTableSize;
+        static const unsigned minimumTableSize = KeyTraits::minimumTableSize;
 
         static void constructDeletedValue(TraitType& slot) { KeyTraits::constructDeletedValue(slot.key); }
         static bool isDeletedValue(const TraitType& value) { return KeyTraits::isDeletedValue(value.key); }

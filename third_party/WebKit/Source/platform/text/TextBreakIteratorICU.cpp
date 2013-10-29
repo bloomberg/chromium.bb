@@ -107,17 +107,6 @@ private:
     friend WTF::ThreadSpecific<LineBreakIteratorPool>::operator LineBreakIteratorPool*();
 };
 
-static TextBreakIterator* ensureIterator(bool& createdIterator, TextBreakIterator*& iterator, UBreakIteratorType type)
-{
-    if (!createdIterator) {
-        UErrorCode openStatus = U_ZERO_ERROR;
-        iterator = reinterpret_cast<TextBreakIterator*>(ubrk_open(type, currentTextBreakLocaleID(), 0, 0, &openStatus));
-        createdIterator = true;
-        ASSERT_WITH_MESSAGE(U_SUCCESS(openStatus), "ICU could not open a break iterator: %s (%d)", u_errorName(openStatus), openStatus);
-    }
-    return iterator;
-}
-
 enum TextContext { NoContext, PriorContext, PrimaryContext };
 
 const int textBufferCapacity = 16;

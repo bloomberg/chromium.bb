@@ -45,7 +45,7 @@ static const int staticQualifiedNamesCount = HTMLNames::HTMLTagsCount + HTMLName
     + XMLNames::XMLAttrsCount;
 
 struct QualifiedNameHashTraits : public HashTraits<QualifiedName::QualifiedNameImpl*> {
-    static const int minimumTableSize = WTF::HashTableCapacityForSize<staticQualifiedNamesCount>::value;
+    static const unsigned minimumTableSize = WTF::HashTableCapacityForSize<staticQualifiedNamesCount>::value;
 };
 
 typedef HashSet<QualifiedName::QualifiedNameImpl*, QualifiedNameHash, QualifiedNameHashTraits> QualifiedNameCache;

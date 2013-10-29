@@ -1627,12 +1627,10 @@ void Document::inheritHtmlAndBodyElementStyles(StyleRecalcChange change)
     }
 
     WritingMode rootWritingMode = documentElementStyle->writingMode();
-    bool isHorizontalWritingMode = documentElementStyle->isHorizontalWritingMode();
     TextDirection rootDirection = documentElementStyle->direction();
 
     if (!writingModeSetOnDocumentElement() && body()) {
         rootWritingMode = bodyStyle->writingMode();
-        isHorizontalWritingMode = bodyStyle->isHorizontalWritingMode();
     }
 
     if (!directionSetOnDocumentElement() && body())

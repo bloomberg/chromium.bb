@@ -37,7 +37,6 @@
 #include "core/html/HTMLMapElement.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/frame/Frame.h"
-#include "core/page/Page.h"
 #include "core/platform/graphics/Font.h"
 #include "core/platform/graphics/FontCache.h"
 #include "core/platform/graphics/GraphicsContext.h"
@@ -307,10 +306,6 @@ void RenderImage::paintReplaced(PaintInfo& paintInfo, const LayoutPoint& paintOf
     LayoutUnit topPad = paddingTop();
 
     GraphicsContext* context = paintInfo.context;
-
-    Page* page = 0;
-    if (Frame* frame = this->frame())
-        page = frame->page();
 
     if (!m_imageResource->hasImage() || m_imageResource->errorOccurred()) {
         if (paintInfo.phase == PaintPhaseSelection)

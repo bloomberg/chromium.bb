@@ -355,8 +355,8 @@ namespace WTF {
         iterator makeKnownGoodIterator(ValueType* pos) { return iterator(this, pos, m_table + m_tableSize, HashItemKnownGood); }
         const_iterator makeKnownGoodConstIterator(ValueType* pos) const { return const_iterator(this, pos, m_table + m_tableSize, HashItemKnownGood); }
 
-        static const int m_maxLoad = 2;
-        static const int m_minLoad = 6;
+        static const unsigned m_maxLoad = 2;
+        static const unsigned m_minLoad = 6;
 
         ValueType* m_table;
         unsigned m_tableSize;

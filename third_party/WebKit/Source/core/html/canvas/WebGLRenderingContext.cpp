@@ -87,7 +87,7 @@ namespace WebCore {
 
 const double secondsBetweenRestoreAttempts = 1.0;
 const int maxGLErrorsAllowedToConsole = 256;
-const int maxGLActiveContexts = 16;
+const unsigned maxGLActiveContexts = 16;
 
 Vector<WebGLRenderingContext*>& WebGLRenderingContext::activeContexts()
 {

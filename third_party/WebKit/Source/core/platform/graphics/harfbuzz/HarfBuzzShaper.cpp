@@ -74,7 +74,7 @@ private:
 };
 
 
-static const int cHarfBuzzCacheMaxSize = 256;
+static const unsigned cHarfBuzzCacheMaxSize = 256;
 
 struct CachedShapingResultsLRUNode;
 struct CachedShapingResults;

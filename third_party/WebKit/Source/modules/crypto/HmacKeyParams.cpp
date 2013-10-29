@@ -44,7 +44,7 @@ Algorithm* HmacKeyParams::hash()
 
 unsigned HmacKeyParams::length(bool& isNull)
 {
-    unsigned length;
+    unsigned length = 0;
     isNull = !m_algorithm.hmacKeyParams()->getLength(length);
     return length;
 }

@@ -39,6 +39,7 @@ class DOMURLUtils : public DOMURLUtilsReadOnly {
 public:
     virtual void setURL(const KURL&) = 0;
     virtual void setInput(const String&) = 0;
+    virtual ~DOMURLUtils() { };
 
     static void setHref(DOMURLUtils*, const String&);
 

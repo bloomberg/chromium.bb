@@ -200,18 +200,18 @@ TEST_F(ImageFrameGeneratorTest, cacheMissWithIncompleteDecode)
     EXPECT_FALSE(tempImage->isComplete());
     EXPECT_EQ(1, m_frameBufferRequestCount);
     ImageDecodingStore::instance()->unlockCache(m_generator.get(), tempImage);
-    EXPECT_EQ(2u, ImageDecodingStore::instance()->cacheEntries());
-    EXPECT_EQ(1u, ImageDecodingStore::instance()->imageCacheEntries());
-    EXPECT_EQ(1u, ImageDecodingStore::instance()->decoderCacheEntries());
+    EXPECT_EQ(2, ImageDecodingStore::instance()->cacheEntries());
+    EXPECT_EQ(1, ImageDecodingStore::instance()->imageCacheEntries());
+    EXPECT_EQ(1, ImageDecodingStore::instance()->decoderCacheEntries());
 
     addNewData();
     tempImage = m_generator->decodeAndScale(fullSize());
     EXPECT_FALSE(tempImage->isComplete());
     EXPECT_EQ(2, m_frameBufferRequestCount);
     ImageDecodingStore::instance()->unlockCache(m_generator.get(), tempImage);
-    EXPECT_EQ(3u, ImageDecodingStore::instance()->cacheEntries());
-    EXPECT_EQ(2u, ImageDecodingStore::instance()->imageCacheEntries());
-    EXPECT_EQ(1u, ImageDecodingStore::instance()->decoderCacheEntries());
+    EXPECT_EQ(3, ImageDecodingStore::instance()->cacheEntries());
+    EXPECT_EQ(2, ImageDecodingStore::instance()->imageCacheEntries());
+    EXPECT_EQ(1, ImageDecodingStore::instance()->decoderCacheEntries());
     EXPECT_EQ(0, m_decodersDestroyed);
 }
 
@@ -223,18 +223,18 @@ TEST_F(ImageFrameGeneratorTest, cacheMissWithIncompleteDecodeAndScale)
     EXPECT_FALSE(tempImage->isComplete());
     EXPECT_EQ(1, m_frameBufferRequestCount);
     ImageDecodingStore::instance()->unlockCache(m_generator.get(), tempImage);
-    EXPECT_EQ(3u, ImageDecodingStore::instance()->cacheEntries());
-    EXPECT_EQ(2u, ImageDecodingStore::instance()->imageCacheEntries());
-    EXPECT_EQ(1u, ImageDecodingStore::instance()->decoderCacheEntries());
+    EXPECT_EQ(3, ImageDecodingStore::instance()->cacheEntries());
+    EXPECT_EQ(2, ImageDecodingStore::instance()->imageCacheEntries());
+    EXPECT_EQ(1, ImageDecodingStore::instance()->decoderCacheEntries());
 
     addNewData();
     tempImage = m_generator->decodeAndScale(scaledSize());
     EXPECT_FALSE(tempImage->isComplete());
     EXPECT_EQ(2, m_frameBufferRequestCount);
     ImageDecodingStore::instance()->unlockCache(m_generator.get(), tempImage);
-    EXPECT_EQ(5u, ImageDecodingStore::instance()->cacheEntries());
-    EXPECT_EQ(4u, ImageDecodingStore::instance()->imageCacheEntries());
-    EXPECT_EQ(1u, ImageDecodingStore::instance()->decoderCacheEntries());
+    EXPECT_EQ(5, ImageDecodingStore::instance()->cacheEntries());
+    EXPECT_EQ(4, ImageDecodingStore::instance()->imageCacheEntries());
+    EXPECT_EQ(1, ImageDecodingStore::instance()->decoderCacheEntries());
     EXPECT_EQ(0, m_decodersDestroyed);
 }
 
@@ -247,9 +247,9 @@ TEST_F(ImageFrameGeneratorTest, incompleteDecodeBecomesComplete)
     EXPECT_EQ(1, m_frameBufferRequestCount);
     EXPECT_EQ(0, m_decodersDestroyed);
     ImageDecodingStore::instance()->unlockCache(m_generator.get(), tempImage);
-    EXPECT_EQ(2u, ImageDecodingStore::instance()->cacheEntries());
-    EXPECT_EQ(1u, ImageDecodingStore::instance()->imageCacheEntries());
-    EXPECT_EQ(1u, ImageDecodingStore::instance()->decoderCacheEntries());
+    EXPECT_EQ(2, ImageDecodingStore::instance()->cacheEntries());
+    EXPECT_EQ(1, ImageDecodingStore::instance()->imageCacheEntries());
+    EXPECT_EQ(1, ImageDecodingStore::instance()->decoderCacheEntries());
 
     setFrameStatus(ImageFrame::FrameComplete);
     addNewData();
@@ -259,9 +259,9 @@ TEST_F(ImageFrameGeneratorTest, incompleteDecodeBecomesComplete)
     EXPECT_EQ(2, m_frameBufferRequestCount);
     EXPECT_EQ(1, m_decodersDestroyed);
     ImageDecodingStore::instance()->unlockCache(m_generator.get(), tempImage);
-    EXPECT_EQ(2u, ImageDecodingStore::instance()->cacheEntries());
-    EXPECT_EQ(2u, ImageDecodingStore::instance()->imageCacheEntries());
-    EXPECT_EQ(0u, ImageDecodingStore::instance()->decoderCacheEntries());
+    EXPECT_EQ(2, ImageDecodingStore::instance()->cacheEntries());
+    EXPECT_EQ(2, ImageDecodingStore::instance()->imageCacheEntries());
+    EXPECT_EQ(0, ImageDecodingStore::instance()->decoderCacheEntries());
 
     tempImage = m_generator->decodeAndScale(fullSize());
     EXPECT_TRUE(tempImage->isComplete());
@@ -278,9 +278,9 @@ TEST_F(ImageFrameGeneratorTest, incompleteDecodeAndScaleBecomesComplete)
     EXPECT_EQ(1, m_frameBufferRequestCount);
     EXPECT_EQ(0, m_decodersDestroyed);
     ImageDecodingStore::instance()->unlockCache(m_generator.get(), tempImage);
-    EXPECT_EQ(3u, ImageDecodingStore::instance()->cacheEntries());
-    EXPECT_EQ(2u, ImageDecodingStore::instance()->imageCacheEntries());
-    EXPECT_EQ(1u, ImageDecodingStore::instance()->decoderCacheEntries());
+    EXPECT_EQ(3, ImageDecodingStore::instance()->cacheEntries());
+    EXPECT_EQ(2, ImageDecodingStore::instance()->imageCacheEntries());
+    EXPECT_EQ(1, ImageDecodingStore::instance()->decoderCacheEntries());
 
     setFrameStatus(ImageFrame::FrameComplete);
     addNewData();
@@ -290,9 +290,9 @@ TEST_F(ImageFrameGeneratorTest, incompleteDecodeAndScaleBecomesComplete)
     EXPECT_EQ(2, m_frameBufferRequestCount);
     EXPECT_EQ(1, m_decodersDestroyed);
     ImageDecodingStore::instance()->unlockCache(m_generator.get(), tempImage);
-    EXPECT_EQ(4u, ImageDecodingStore::instance()->cacheEntries());
-    EXPECT_EQ(4u, ImageDecodingStore::instance()->imageCacheEntries());
-    EXPECT_EQ(0u, ImageDecodingStore::instance()->decoderCacheEntries());
+    EXPECT_EQ(4, ImageDecodingStore::instance()->cacheEntries());
+    EXPECT_EQ(4, ImageDecodingStore::instance()->imageCacheEntries());
+    EXPECT_EQ(0, ImageDecodingStore::instance()->decoderCacheEntries());
 
     tempImage = m_generator->decodeAndScale(scaledSize());
     EXPECT_TRUE(tempImage->isComplete());
@@ -320,9 +320,9 @@ TEST_F(ImageFrameGeneratorTest, incompleteDecodeBecomesCompleteMultiThreaded)
     EXPECT_EQ(1, m_frameBufferRequestCount);
     EXPECT_EQ(0, m_decodersDestroyed);
     ImageDecodingStore::instance()->unlockCache(m_generator.get(), tempImage);
-    EXPECT_EQ(2u, ImageDecodingStore::instance()->cacheEntries());
-    EXPECT_EQ(1u, ImageDecodingStore::instance()->imageCacheEntries());
-    EXPECT_EQ(1u, ImageDecodingStore::instance()->decoderCacheEntries());
+    EXPECT_EQ(2, ImageDecodingStore::instance()->cacheEntries());
+    EXPECT_EQ(1, ImageDecodingStore::instance()->imageCacheEntries());
+    EXPECT_EQ(1, ImageDecodingStore::instance()->decoderCacheEntries());
 
     // Frame can now be decoded completely.
     setFrameStatus(ImageFrame::FrameComplete);
@@ -333,9 +333,9 @@ TEST_F(ImageFrameGeneratorTest, incompleteDecodeBecomesCompleteMultiThreaded)
 
     EXPECT_EQ(2, m_frameBufferRequestCount);
     EXPECT_EQ(1, m_decodersDestroyed);
-    EXPECT_EQ(2u, ImageDecodingStore::instance()->cacheEntries());
-    EXPECT_EQ(2u, ImageDecodingStore::instance()->imageCacheEntries());
-    EXPECT_EQ(0u, ImageDecodingStore::instance()->decoderCacheEntries());
+    EXPECT_EQ(2, ImageDecodingStore::instance()->cacheEntries());
+    EXPECT_EQ(2, ImageDecodingStore::instance()->imageCacheEntries());
+    EXPECT_EQ(0, ImageDecodingStore::instance()->decoderCacheEntries());
 
     tempImage = m_generator->decodeAndScale(fullSize());
     EXPECT_TRUE(tempImage->isComplete());
@@ -354,9 +354,9 @@ TEST_F(ImageFrameGeneratorTest, concurrentIncompleteDecodeAndScale)
     EXPECT_EQ(2, m_frameBufferRequestCount);
     ImageDecodingStore::instance()->unlockCache(m_generator.get(), fullImage);
     ImageDecodingStore::instance()->unlockCache(m_generator.get(), scaledImage);
-    EXPECT_EQ(4u, ImageDecodingStore::instance()->cacheEntries());
-    EXPECT_EQ(3u, ImageDecodingStore::instance()->imageCacheEntries());
-    EXPECT_EQ(1u, ImageDecodingStore::instance()->decoderCacheEntries());
+    EXPECT_EQ(4, ImageDecodingStore::instance()->cacheEntries());
+    EXPECT_EQ(3, ImageDecodingStore::instance()->imageCacheEntries());
+    EXPECT_EQ(1, ImageDecodingStore::instance()->decoderCacheEntries());
     EXPECT_EQ(0, m_decodersDestroyed);
 
     addNewData();
@@ -365,9 +365,9 @@ TEST_F(ImageFrameGeneratorTest, concurrentIncompleteDecodeAndScale)
     EXPECT_TRUE(scaledImage->isComplete());
     EXPECT_EQ(3, m_frameBufferRequestCount);
     ImageDecodingStore::instance()->unlockCache(m_generator.get(), scaledImage);
-    EXPECT_EQ(5u, ImageDecodingStore::instance()->cacheEntries());
-    EXPECT_EQ(5u, ImageDecodingStore::instance()->imageCacheEntries());
-    EXPECT_EQ(0u, ImageDecodingStore::instance()->decoderCacheEntries());
+    EXPECT_EQ(5, ImageDecodingStore::instance()->cacheEntries());
+    EXPECT_EQ(5, ImageDecodingStore::instance()->imageCacheEntries());
+    EXPECT_EQ(0, ImageDecodingStore::instance()->decoderCacheEntries());
     EXPECT_EQ(1, m_decodersDestroyed);
 }
 

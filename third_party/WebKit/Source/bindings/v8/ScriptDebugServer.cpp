@@ -415,16 +415,14 @@ void ScriptDebugServer::v8DebugEventCallback(const v8::Debug::EventDetails& even
 
 bool ScriptDebugServer::executeSkipPauseRequest(ScriptDebugListener::SkipPauseRequest request, v8::Handle<v8::Object> executionState)
 {
-    const char* v8MethodName;
     switch (request) {
     case ScriptDebugListener::NoSkip:
         return false;
     case ScriptDebugListener::Continue:
         return true;
     case ScriptDebugListener::StepInto:
-        v8MethodName = stepIntoV8MethodName;
     case ScriptDebugListener::StepOut:
-        v8MethodName = stepOutV8MethodName;
+        break;
     }
     v8::Handle<v8::Value> argv[] = { executionState };
     callDebuggerMethod(stepIntoV8MethodName, 1, argv);

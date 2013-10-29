@@ -55,7 +55,7 @@ TEST(WTF, HashTableIteratorComparison)
 }
 
 struct TestDoubleHashTraits : HashTraits<double> {
-    static const int minimumTableSize = 8;
+    static const unsigned minimumTableSize = 8;
 };
 
 typedef HashMap<double, int64_t, DefaultHash<double>::Hash, TestDoubleHashTraits> DoubleHashMap;

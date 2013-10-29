@@ -37,6 +37,7 @@ class DOMURLUtilsReadOnly {
 public:
     virtual KURL url() const = 0;
     virtual String input() const = 0;
+    virtual ~DOMURLUtilsReadOnly() { };
 
     static String href(DOMURLUtilsReadOnly*);
 
