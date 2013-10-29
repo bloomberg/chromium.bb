@@ -45,7 +45,7 @@ class MutationObserverInterestGroup;
 // ChildListMutationAccumulator is not meant to be used directly; ChildListMutationScope is the public interface.
 class ChildListMutationAccumulator : public RefCounted<ChildListMutationAccumulator> {
 public:
-    static PassRefPtr<ChildListMutationAccumulator> getOrCreate(Node*);
+    static PassRefPtr<ChildListMutationAccumulator> getOrCreate(Node&);
     ~ChildListMutationAccumulator();
 
     void childAdded(PassRefPtr<Node>);
@@ -75,22 +75,22 @@ private:
 class ChildListMutationScope {
     WTF_MAKE_NONCOPYABLE(ChildListMutationScope);
 public:
-    explicit ChildListMutationScope(Node* target)
+    explicit ChildListMutationScope(Node& target)
     {
-        if (target->document().hasMutationObserversOfType(MutationObserver::ChildList))
+        if (target.document().hasMutationObserversOfType(MutationObserver::ChildList))
             m_accumulator = ChildListMutationAccumulator::getOrCreate(target);
     }
 
-    void childAdded(Node* child)
+    void childAdded(Node& child)
     {
         if (m_accumulator && m_accumulator->hasObservers())
-            m_accumulator->childAdded(child);
+            m_accumulator->childAdded(PassRefPtr<Node>(child));
     }
 
-    void willRemoveChild(Node* child)
+    void willRemoveChild(Node& child)
     {
         if (m_accumulator && m_accumulator->hasObservers())
-            m_accumulator->willRemoveChild(child);
+            m_accumulator->willRemoveChild(PassRefPtr<Node>(child));
     }
 
 private:

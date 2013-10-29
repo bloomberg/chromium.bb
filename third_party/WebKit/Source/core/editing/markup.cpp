@@ -1028,9 +1028,10 @@ PassRefPtr<DocumentFragment> createContextualFragment(const String& markup, HTML
 
 void replaceChildrenWithFragment(ContainerNode* container, PassRefPtr<DocumentFragment> fragment, ExceptionState& es)
 {
+    ASSERT(container);
     RefPtr<ContainerNode> containerNode(container);
 
-    ChildListMutationScope mutation(containerNode.get());
+    ChildListMutationScope mutation(*containerNode);
 
     if (!fragment->firstChild()) {
         containerNode->removeChildren();
@@ -1053,9 +1054,10 @@ void replaceChildrenWithFragment(ContainerNode* container, PassRefPtr<DocumentFr
 
 void replaceChildrenWithText(ContainerNode* container, const String& text, ExceptionState& es)
 {
+    ASSERT(container);
     RefPtr<ContainerNode> containerNode(container);
 
-    ChildListMutationScope mutation(containerNode.get());
+    ChildListMutationScope mutation(*containerNode);
 
     if (containerNode->hasOneTextChild()) {
         toText(containerNode->firstChild())->setData(text);

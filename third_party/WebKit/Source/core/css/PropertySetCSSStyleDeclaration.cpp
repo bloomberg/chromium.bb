@@ -59,7 +59,7 @@ public:
 
         bool shouldReadOldValue = false;
 
-        m_mutationRecipients = MutationObserverInterestGroup::createForAttributesMutation(s_currentDecl->parentElement(), HTMLNames::styleAttr);
+        m_mutationRecipients = MutationObserverInterestGroup::createForAttributesMutation(*s_currentDecl->parentElement(), HTMLNames::styleAttr);
         if (m_mutationRecipients && m_mutationRecipients->isOldValueRequested())
             shouldReadOldValue = true;
 

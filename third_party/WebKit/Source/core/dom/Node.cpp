@@ -1564,7 +1564,7 @@ void Node::setTextContent(const String& text, ExceptionState& es)
         case ENTITY_NODE:
         case DOCUMENT_FRAGMENT_NODE: {
             RefPtr<ContainerNode> container = toContainerNode(this);
-            ChildListMutationScope mutation(this);
+            ChildListMutationScope mutation(*this);
             container->removeChildren();
             if (!text.isEmpty())
                 container->appendChild(document().createTextNode(text), es);

@@ -2978,7 +2978,7 @@ void Element::willModifyAttribute(const QualifiedName& name, const AtomicString&
             CustomElement::attributeDidChange(this, name.localName(), oldValue, newValue);
     }
 
-    if (OwnPtr<MutationObserverInterestGroup> recipients = MutationObserverInterestGroup::createForAttributesMutation(this, name))
+    if (OwnPtr<MutationObserverInterestGroup> recipients = MutationObserverInterestGroup::createForAttributesMutation(*this, name))
         recipients->enqueueMutationRecord(MutationRecord::createAttributes(this, name, oldValue));
 
     InspectorInstrumentation::willModifyDOMAttr(this, oldValue, newValue);

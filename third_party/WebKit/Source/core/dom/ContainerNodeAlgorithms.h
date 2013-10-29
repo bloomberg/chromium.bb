@@ -273,7 +273,7 @@ public:
         DescendantsOnly
     };
 
-    explicit ChildFrameDisconnector(Node* root)
+    explicit ChildFrameDisconnector(Node& root)
         : m_root(root)
     {
     }
@@ -281,45 +281,45 @@ public:
     void disconnect(DisconnectPolicy = RootAndDescendants);
 
 private:
-    void collectFrameOwners(Node* root);
-    void collectFrameOwners(ElementShadow*);
+    void collectFrameOwners(Node& root);
+    void collectFrameOwners(ElementShadow&);
     void disconnectCollectedFrameOwners();
 
     Vector<RefPtr<HTMLFrameOwnerElement>, 10> m_frameOwners;
-    Node* m_root;
+    Node& m_root;
 };
 
 #ifndef NDEBUG
-unsigned assertConnectedSubrameCountIsConsistent(Node*);
+unsigned assertConnectedSubrameCountIsConsistent(Node&);
 #endif
 
-inline void ChildFrameDisconnector::collectFrameOwners(Node* root)
+inline void ChildFrameDisconnector::collectFrameOwners(Node& root)
 {
-    if (!root->connectedSubframeCount())
+    if (!root.connectedSubframeCount())
         return;
 
-    if (root->isHTMLElement() && root->isFrameOwnerElement())
-        m_frameOwners.append(toHTMLFrameOwnerElement(root));
+    if (root.isHTMLElement() && root.isFrameOwnerElement())
+        m_frameOwners.append(&toHTMLFrameOwnerElement(root));
 
-    for (Node* child = root->firstChild(); child; child = child->nextSibling())
-        collectFrameOwners(child);
+    for (Node* child = root.firstChild(); child; child = child->nextSibling())
+        collectFrameOwners(*child);
 
-    ElementShadow* shadow = root->isElementNode() ? toElement(root)->shadow() : 0;
+    ElementShadow* shadow = root.isElementNode() ? toElement(root).shadow() : 0;
     if (shadow)
-        collectFrameOwners(shadow);
+        collectFrameOwners(*shadow);
 }
 
 inline void ChildFrameDisconnector::disconnectCollectedFrameOwners()
 {
     // Must disable frame loading in the subtree so an unload handler cannot
     // insert more frames and create loaded frames in detached subtrees.
-    SubframeLoadingDisabler disabler(m_root);
+    SubframeLoadingDisabler disabler(&m_root);
 
     for (unsigned i = 0; i < m_frameOwners.size(); ++i) {
         HTMLFrameOwnerElement* owner = m_frameOwners[i].get();
         // Don't need to traverse up the tree for the first owner since no
         // script could have moved it.
-        if (!i || m_root->containsIncludingShadowDOM(owner))
+        if (!i || m_root.containsIncludingShadowDOM(owner))
             owner->disconnectContentFrame();
     }
 }
@@ -330,14 +330,14 @@ inline void ChildFrameDisconnector::disconnect(DisconnectPolicy policy)
     assertConnectedSubrameCountIsConsistent(m_root);
 #endif
 
-    if (!m_root->connectedSubframeCount())
+    if (!m_root.connectedSubframeCount())
         return;
 
     if (policy == RootAndDescendants)
         collectFrameOwners(m_root);
     else {
-        for (Node* child = m_root->firstChild(); child; child = child->nextSibling())
-            collectFrameOwners(child);
+        for (Node* child = m_root.firstChild(); child; child = child->nextSibling())
+            collectFrameOwners(*child);
     }
 
     disconnectCollectedFrameOwners();

@@ -49,8 +49,8 @@ using namespace std;
 
 namespace WebCore {
 
-static void dispatchChildInsertionEvents(Node*);
-static void dispatchChildRemovalEvents(Node*);
+static void dispatchChildInsertionEvents(Node&);
+static void dispatchChildRemovalEvents(Node&);
 static void updateTreeAfterInsertion(ContainerNode&, Node&);
 
 ChildNodesLazySnapshot* ChildNodesLazySnapshot::latestSnapshot = 0;
@@ -234,7 +234,7 @@ void ContainerNode::insertBefore(PassRefPtr<Node> newChild, Node* refChild, Exce
 
     InspectorInstrumentation::willInsertDOMNode(this);
 
-    ChildListMutationScope mutation(this);
+    ChildListMutationScope mutation(*this);
     for (NodeVector::const_iterator it = targets.begin(); it != targets.end(); ++it) {
         ASSERT(*it);
         Node& child = **it;
@@ -301,7 +301,7 @@ void ContainerNode::parserInsertBefore(PassRefPtr<Node> newChild, Node* nextChil
 
     newChild->updateAncestorConnectedSubframeCountForInsertion();
 
-    ChildListMutationScope(this).childAdded(newChild.get());
+    ChildListMutationScope(*this).childAdded(*newChild);
 
     childrenChanged(true, newChild->previousSibling(), nextChild, 1);
 
@@ -334,7 +334,7 @@ void ContainerNode::replaceChild(PassRefPtr<Node> newChild, Node* oldChild, Exce
         return;
     }
 
-    ChildListMutationScope mutation(this);
+    ChildListMutationScope mutation(*this);
 
     RefPtr<Node> next = oldChild->nextSibling();
 
@@ -393,26 +393,27 @@ void ContainerNode::replaceChild(PassRefPtr<Node> newChild, Node* oldChild, Exce
     dispatchSubtreeModifiedEvent();
 }
 
-static void willRemoveChild(Node* child)
+static void willRemoveChild(Node& child)
 {
-    ASSERT(child->parentNode());
-    ChildListMutationScope(child->parentNode()).willRemoveChild(child);
-    child->notifyMutationObserversNodeWillDetach();
+    ASSERT(child.parentNode());
+    ChildListMutationScope(*child.parentNode()).willRemoveChild(child);
+    child.notifyMutationObserversNodeWillDetach();
     dispatchChildRemovalEvents(child);
-    child->document().nodeWillBeRemoved(child); // e.g. mutation event listener can create a new range.
+    child.document().nodeWillBeRemoved(&child); // e.g. mutation event listener can create a new range.
     ChildFrameDisconnector(child).disconnect();
 }
 
-static void willRemoveChildren(ContainerNode* container)
+static void willRemoveChildren(ContainerNode& container)
 {
     NodeVector children;
-    getChildNodes(container, children);
+    getChildNodes(&container, children);
 
     ChildListMutationScope mutation(container);
     for (NodeVector::const_iterator it = children.begin(); it != children.end(); it++) {
-        Node* child = it->get();
+        ASSERT(*it);
+        Node& child = **it;
         mutation.willRemoveChild(child);
-        child->notifyMutationObserversNodeWillDetach();
+        child.notifyMutationObserversNodeWillDetach();
 
         // fire removed from document mutation events.
         dispatchChildRemovalEvents(child);
@@ -423,7 +424,7 @@ static void willRemoveChildren(ContainerNode* container)
 
 void ContainerNode::disconnectDescendantFrames()
 {
-    ChildFrameDisconnector(this).disconnect();
+    ChildFrameDisconnector(*this).disconnect();
 }
 
 void ContainerNode::removeChild(Node* oldChild, ExceptionState& es)
@@ -454,7 +455,7 @@ void ContainerNode::removeChild(Node* oldChild, ExceptionState& es)
         return;
     }
 
-    willRemoveChild(child.get());
+    willRemoveChild(*child);
 
     // Mutation events might have moved this child into a different parent.
     if (child->parentNode() != this) {
@@ -510,7 +511,7 @@ void ContainerNode::parserRemoveChild(Node& oldChild)
 
     oldChild.updateAncestorConnectedSubframeCountForRemoval();
 
-    ChildListMutationScope(this).willRemoveChild(&oldChild);
+    ChildListMutationScope(*this).willRemoveChild(oldChild);
     oldChild.notifyMutationObserversNodeWillDetach();
 
     removeBetween(prev, next, oldChild);
@@ -534,7 +535,7 @@ void ContainerNode::removeChildren()
 
     // Do any prep work needed before actually starting to detach
     // and remove... e.g. stop loading frames, fire unload events.
-    willRemoveChildren(protect.get());
+    willRemoveChildren(*this);
 
     {
         // Removing focus can cause frames to load, either via events (focusout, blur)
@@ -601,7 +602,7 @@ void ContainerNode::appendChild(PassRefPtr<Node> newChild, ExceptionState& es)
     InspectorInstrumentation::willInsertDOMNode(this);
 
     // Now actually add the child(ren)
-    ChildListMutationScope mutation(this);
+    ChildListMutationScope mutation(*this);
     for (NodeVector::const_iterator it = targets.begin(); it != targets.end(); ++it) {
         ASSERT(*it);
         Node& child = **it;
@@ -646,7 +647,7 @@ void ContainerNode::parserAppendChild(PassRefPtr<Node> newChild)
 
     newChild->updateAncestorConnectedSubframeCountForInsertion();
 
-    ChildListMutationScope(this).childAdded(newChild.get());
+    ChildListMutationScope(*this).childAdded(*newChild);
 
     childrenChanged(true, last, 0, 1);
     ChildNodeInsertionNotifier(*this).notify(*newChild);
@@ -916,50 +917,50 @@ Node *ContainerNode::childNode(unsigned index) const
     return n;
 }
 
-static void dispatchChildInsertionEvents(Node* child)
+static void dispatchChildInsertionEvents(Node& child)
 {
-    if (child->isInShadowTree())
+    if (child.isInShadowTree())
         return;
 
     ASSERT(!NoEventDispatchAssertion::isEventDispatchForbidden());
 
-    RefPtr<Node> c = child;
-    RefPtr<Document> document(child->document());
+    RefPtr<Node> c(child);
+    RefPtr<Document> document(child.document());
 
     if (c->parentNode() && document->hasListenerType(Document::DOMNODEINSERTED_LISTENER))
         c->dispatchScopedEvent(MutationEvent::create(EventTypeNames::DOMNodeInserted, true, c->parentNode()));
 
     // dispatch the DOMNodeInsertedIntoDocument event to all descendants
     if (c->inDocument() && document->hasListenerType(Document::DOMNODEINSERTEDINTODOCUMENT_LISTENER)) {
-        for (; c; c = NodeTraversal::next(c.get(), child))
+        for (; c; c = NodeTraversal::next(c.get(), &child))
             c->dispatchScopedEvent(MutationEvent::create(EventTypeNames::DOMNodeInsertedIntoDocument, false));
     }
 }
 
-static void dispatchChildRemovalEvents(Node* child)
+static void dispatchChildRemovalEvents(Node& child)
 {
-    if (child->isInShadowTree()) {
-        InspectorInstrumentation::willRemoveDOMNode(child);
+    if (child.isInShadowTree()) {
+        InspectorInstrumentation::willRemoveDOMNode(&child);
         return;
     }
 
     ASSERT(!NoEventDispatchAssertion::isEventDispatchForbidden());
 
-    InspectorInstrumentation::willRemoveDOMNode(child);
+    InspectorInstrumentation::willRemoveDOMNode(&child);
 
-    RefPtr<Node> c = child;
-    RefPtr<Document> document(child->document());
+    RefPtr<Node> c(child);
+    RefPtr<Document> document(child.document());
 
     // dispatch pre-removal mutation events
     if (c->parentNode() && document->hasListenerType(Document::DOMNODEREMOVED_LISTENER)) {
-        NodeChildRemovalTracker scope(child);
+        NodeChildRemovalTracker scope(&child);
         c->dispatchScopedEvent(MutationEvent::create(EventTypeNames::DOMNodeRemoved, true, c->parentNode()));
     }
 
     // dispatch the DOMNodeRemovedFromDocument event to all descendants
     if (c->inDocument() && document->hasListenerType(Document::DOMNODEREMOVEDFROMDOCUMENT_LISTENER)) {
-        NodeChildRemovalTracker scope(child);
-        for (; c; c = NodeTraversal::next(c.get(), child))
+        NodeChildRemovalTracker scope(&child);
+        for (; c; c = NodeTraversal::next(c.get(), &child))
             c->dispatchScopedEvent(MutationEvent::create(EventTypeNames::DOMNodeRemovedFromDocument, false));
     }
 }
@@ -969,13 +970,13 @@ static void updateTreeAfterInsertion(ContainerNode& parent, Node& child)
     ASSERT(parent.refCount());
     ASSERT(child.refCount());
 
-    ChildListMutationScope(&parent).childAdded(&child);
+    ChildListMutationScope(parent).childAdded(child);
 
     parent.childrenChanged(false, child.previousSibling(), child.nextSibling(), 1);
 
     ChildNodeInsertionNotifier(parent).notify(child);
 
-    dispatchChildInsertionEvents(&child);
+    dispatchChildInsertionEvents(child);
 }
 
 #ifndef NDEBUG
