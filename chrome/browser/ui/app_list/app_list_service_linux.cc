@@ -40,9 +40,9 @@ gfx::NativeWindow AppListServiceLinux::GetAppListWindow() {
   return gfx::NativeWindow();
 }
 
-Profile* AppListServiceLinux::GetCurrentAppListProfile() OVERRIDE {
-    NOTIMPLEMENTED();
-    return NULL;
+Profile* AppListServiceLinux::GetCurrentAppListProfile() {
+  NOTIMPLEMENTED();
+  return NULL;
 }
 
 AppListControllerDelegate* AppListServiceLinux::CreateControllerDelegate() {
