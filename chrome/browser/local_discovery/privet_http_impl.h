@@ -105,8 +105,6 @@ class PrivetRegisterOperationImpl
 
   void SendRequest(const std::string& action);
 
-  bool PrivetErrorTransient(const std::string& error);
-
   std::string user_;
   std::string current_action_;
   scoped_ptr<PrivetURLFetcher> url_fetcher_;

@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
-#include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/local_discovery/privet_constants.h"
 #include "net/base/url_util.h"
@@ -174,27 +173,6 @@ void PrivetRegisterOperationImpl::OnParsedJson(
 
     if (error == kPrivetErrorInvalidXPrivetToken) {
       StartInfoOperation();
-
-      // Use a list of transient error names, but also detect if a "timeout"
-      // key is present as a fallback.
-    } else if (PrivetErrorTransient(error) ||
-               value->HasKey(kPrivetKeyTimeout)) {
-      int timeout_seconds;
-      double random_scaling_factor =
-          1 + base::RandDouble() * kPrivetMaximumTimeRandomAddition;
-
-      if (!value->GetInteger(kPrivetKeyTimeout, &timeout_seconds)) {
-        timeout_seconds = kPrivetDefaultTimeout;
-      }
-
-      int timeout_seconds_randomized =
-          static_cast<int>(timeout_seconds * random_scaling_factor);
-
-      base::MessageLoop::current()->PostDelayedTask(
-          FROM_HERE,
-          base::Bind(&PrivetRegisterOperationImpl::SendRequest,
-                     AsWeakPtr(), current_action_),
-                     base::TimeDelta::FromSeconds(timeout_seconds_randomized));
     } else  {
       ongoing_ = false;
       delegate_->OnPrivetRegisterError(this,
@@ -357,12 +335,6 @@ void PrivetRegisterOperationImpl::VerifyIDFromInfoCall(
 void PrivetRegisterOperationImpl::StartInfoOperation() {
   info_operation_ = privet_client_->CreateInfoOperation(this);
   info_operation_->Start();
-}
-
-bool PrivetRegisterOperationImpl::PrivetErrorTransient(
-    const std::string& error) {
-  return (error == kPrivetErrorDeviceBusy) ||
-         (error == kPrivetErrorPendingUserAction);
 }
 
 PrivetRegisterOperationImpl::Cancelation::Cancelation(

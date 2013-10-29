@@ -7,10 +7,12 @@
 
 #include <string>
 
+#include "base/memory/weak_ptr.h"
 #include "base/values.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "url/gurl.h"
 
 namespace local_discovery {
 
@@ -24,7 +26,8 @@ class PrivetURLFetcher : public net::URLFetcherDelegate {
   enum ErrorType {
     JSON_PARSE_ERROR,
     URL_FETCH_ERROR,
-    RESPONSE_CODE_ERROR
+    RESPONSE_CODE_ERROR,
+    RETRY_ERROR
   };
 
   class Delegate {
@@ -56,9 +59,22 @@ class PrivetURLFetcher : public net::URLFetcherDelegate {
   int response_code() const { return url_fetcher_->GetResponseCode(); }
 
  private:
-  scoped_ptr<net::URLFetcher> url_fetcher_;
+  void Try();
+  void ScheduleRetry(int timeout_seconds);
+  bool PrivetErrorTransient(const std::string& error);
+
+  std::string privet_access_token_;
+  GURL url_;
+  net::URLFetcher::RequestType request_type_;
+  scoped_refptr<net::URLRequestContextGetter> request_context_;
   Delegate* delegate_;
 
+  int tries_;
+  std::string upload_data_;
+  std::string upload_content_type_;
+  scoped_ptr<net::URLFetcher> url_fetcher_;
+
+  base::WeakPtrFactory<PrivetURLFetcher> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(PrivetURLFetcher);
 };
 
