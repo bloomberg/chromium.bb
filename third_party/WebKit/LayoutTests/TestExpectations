@@ -534,3 +534,4 @@ crbug.com/312613 fast/canvas/canvas-blending-pattern-over-gradient.html [ Pass T
 # Crashes on Linux ASAN
 crbug.com/312639 [ Linux ] fast/dom/HTMLObjectElement/beforeload-set-text-crash.xhtml [ Crash Pass ]
 crbug.com/312910 webaudio/audiobuffersource-loop-points.html [ Crash Timeout Pass ]
+crbug.com/312925 inspector-protocol/heap-profiler/heap-snapshot-with-detached-dom-tree.html [ Failure Pass ]
