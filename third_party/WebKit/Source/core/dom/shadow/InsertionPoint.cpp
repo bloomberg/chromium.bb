@@ -222,7 +222,7 @@ void InsertionPoint::removedFrom(ContainerNode* insertionPoint)
 void InsertionPoint::parseAttribute(const QualifiedName& name, const AtomicString& value)
 {
     if (name == reset_style_inheritanceAttr) {
-        if (!inDocument() || !confusingAndOftenMisusedAttached() || !isActive())
+        if (!inDocument() || !isActive())
             return;
         containingShadowRoot()->host()->setNeedsStyleRecalc();
     } else
