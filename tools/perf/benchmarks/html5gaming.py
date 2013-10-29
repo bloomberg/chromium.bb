@@ -13,7 +13,6 @@ score is a indicator for the browser's ability to smoothly run HTML5 games."""
 import os
 
 from telemetry import test
-from telemetry.core import util
 from telemetry.page import page_measurement
 from telemetry.page import page_set
 
@@ -23,11 +22,8 @@ class HTML5GamingMeasurement(page_measurement.PageMeasurement):
     tab.ExecuteJavaScript('benchmark();')
     # Default value of score element is 87485, its value is updated with actual
     # score when test finish.
-    js_is_done = ('document.getElementById("score").innerHTML != "87485"')
-
-    def _IsDone():
-      return tab.EvaluateJavaScript(js_is_done)
-    util.WaitFor(_IsDone, 200, poll_interval=5)
+    tab.WaitForJavaScriptExpression(
+        'document.getElementById("score").innerHTML != "87485"', 200)
     result = int(tab.EvaluateJavaScript(
         'document.getElementById("score").innerHTML'))
     results.Add('Score', 'score', result)

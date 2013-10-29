@@ -2,15 +2,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from telemetry.core import util
 from telemetry.page import page_measurement
 
 class Dromaeo(page_measurement.PageMeasurement):
   def MeasurePage(self, page, tab, results):
-    js_is_done = 'window.document.cookie.indexOf("__done=1") >= 0'
-    def _IsDone():
-      return bool(tab.EvaluateJavaScript(js_is_done))
-    util.WaitFor(_IsDone, 600, poll_interval=5)
+    tab.WaitForJavaScriptExpression(
+        'window.document.cookie.indexOf("__done=1") >= 0', 600)
 
     js_get_results = 'JSON.stringify(window.automation.GetResults())'
     print js_get_results

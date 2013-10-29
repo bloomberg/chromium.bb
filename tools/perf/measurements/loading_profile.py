@@ -6,7 +6,6 @@ import os
 import tempfile
 
 from metrics import loading
-from telemetry.core import util
 from telemetry.core.platform.profiler import perf_profiler
 from telemetry.page import page_measurement
 
@@ -39,9 +38,7 @@ class LoadingProfile(page_measurement.PageMeasurement):
   def MeasurePage(self, page, tab, results):
     # In current telemetry tests, all tests wait for DocumentComplete state,
     # but we need to wait for the load event.
-    def IsLoaded():
-      return bool(tab.EvaluateJavaScript('performance.timing.loadEventStart'))
-    util.WaitFor(IsLoaded, 300)
+    tab.WaitForJavaScriptExpression('performance.timing.loadEventStart', 300)
 
     profile_files = tab.browser.StopProfiling()
 

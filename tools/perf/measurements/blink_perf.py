@@ -7,7 +7,6 @@
 import os
 import sys
 
-from telemetry.core import util
 from telemetry.page import page_measurement
 from telemetry.page import page_set
 
@@ -87,9 +86,7 @@ class BlinkPerf(page_measurement.PageMeasurement):
     ])
 
   def MeasurePage(self, page, tab, results):
-    def _IsDone():
-      return tab.EvaluateJavaScript('testRunner.isDone')
-    util.WaitFor(_IsDone, 600)
+    tab.WaitForJavaScriptExpression('testRunner.isDone', 600)
 
     log = tab.EvaluateJavaScript('document.getElementById("log").innerHTML')
 

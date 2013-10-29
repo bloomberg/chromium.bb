@@ -44,7 +44,7 @@ class DomPerfMeasurement(page_measurement.PageMeasurement):
     try:
       def _IsDone():
         return tab.GetCookieByName('__domperf_finished') == '1'
-      util.WaitFor(_IsDone, 600, poll_interval=5)
+      util.WaitFor(_IsDone, 600)
 
       data = json.loads(tab.EvaluateJavaScript('__domperf_result'))
       for suite in data['BenchmarkSuites']:

@@ -141,9 +141,7 @@ class PageCycler(page_measurement.PageMeasurement):
                                  self.discard_first_result)
 
   def MeasurePage(self, page, tab, results):
-    def PageLoadIsFinished():
-      return bool(tab.EvaluateJavaScript('__pc_load_time'))
-    util.WaitFor(PageLoadIsFinished, 60)
+    tab.WaitForJavaScriptExpression('__pc_load_time', 60)
 
     chart_name_prefix = ('' if not self._cold_runs_requested else
                          'cold_' if self.ShouldRunCold(page.url) else

@@ -18,8 +18,8 @@ class SpaceportMeasurement(page_measurement.PageMeasurement):
     options.AppendExtraBrowserArgs('--disable-gpu-vsync')
 
   def MeasurePage(self, _, tab, results):
-    util.WaitFor(lambda: tab.EvaluateJavaScript(
-        '!document.getElementById("start-performance-tests").disabled'), 60)
+    tab.WaitForJavaScriptExpression(
+        '!document.getElementById("start-performance-tests").disabled', 60)
 
     tab.ExecuteJavaScript("""
         window.__results = {};
@@ -32,20 +32,18 @@ class SpaceportMeasurement(page_measurement.PageMeasurement):
         document.getElementById('start-performance-tests').click();
     """)
 
-    js_get_results = 'JSON.stringify(window.__results)'
-    num_tests_complete = [0]  # A list to work around closure issue.
-    def _IsDone():
-      num_tests_in_measurement = 24
-      num_results = len(eval(tab.EvaluateJavaScript(js_get_results)))
-      if num_results > num_tests_complete[0]:
-        num_tests_complete[0] = num_results
-        logging.info('Completed measurement %d of %d'
-                     % (num_tests_complete[0],
-                        num_tests_in_measurement))
-      return num_tests_complete[0] >= num_tests_in_measurement
-    util.WaitFor(_IsDone, 1200, poll_interval=5)
+    num_results = 0
+    num_tests_in_spaceport = 24
+    while num_results < num_tests_in_spaceport:
+      tab.WaitForJavaScriptExpression(
+          'Object.keys(window.__results).length > %d' % num_results, 180)
+      num_results = tab.EvaluateJavaScript(
+          'Object.keys(window.__results).length')
+      logging.info('Completed test %d of %d' %
+                   (num_results, num_tests_in_spaceport))
 
-    result_dict = eval(tab.EvaluateJavaScript(js_get_results))
+    result_dict = eval(tab.EvaluateJavaScript(
+        'JSON.stringify(window.__results)'))
     for key in result_dict:
       chart, trace = key.split('.', 1)
       results.Add(trace, 'objects (bigger is better)', float(result_dict[key]),

@@ -12,7 +12,6 @@ fills, shadows and text functions.
 import os
 
 from telemetry import test
-from telemetry.core import util
 from telemetry.page import page_measurement
 from telemetry.page import page_set
 
@@ -29,10 +28,7 @@ class CanvasMarkMeasurement(page_measurement.PageMeasurement):
         """
 
   def MeasurePage(self, _, tab, results):
-    def _IsDone():
-      return int(tab.EvaluateJavaScript('__results.length')) == 8
-    util.WaitFor(_IsDone, 300, poll_interval=5)
-
+    tab.WaitForJavaScriptExpression('__results.length == 8', 300)
     results_log = tab.EvaluateJavaScript('__results')
     total = 0
     for output in results_log:

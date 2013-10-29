@@ -107,6 +107,8 @@ class PageCyclerUnitTest(unittest.TestCase):
         self.clear_cache_calls += 1
       def EvaluateJavaScript(self, _):
         return 1
+      def WaitForJavaScriptExpression(self, _, __):
+        pass
 
     url_name = "http://fakepage.com"
     page = FakePage(url_name)

@@ -5,7 +5,6 @@
 import time
 
 from metrics import smoothness
-from telemetry.core import util
 from telemetry.page import page_measurement
 
 class RecordPerArea(page_measurement.PageMeasurement):
@@ -50,10 +49,7 @@ class RecordPerArea(page_measurement.PageMeasurement):
                 {width: 1024, height: 256}]);
     """)
 
-    def _IsDone():
-      return tab.EvaluateJavaScript(
-          'window.benchmark_results.done', timeout=300)
-    util.WaitFor(_IsDone, timeout=300)
+    tab.WaitForJavaScriptExpression('window.benchmark_results.done', 300)
 
     all_data = tab.EvaluateJavaScript('window.benchmark_results.results')
     for data in all_data:

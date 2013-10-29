@@ -7,7 +7,6 @@
 import os
 
 from telemetry import test
-from telemetry.core import util
 from telemetry.page import page_measurement
 from telemetry.page import page_set
 
@@ -18,12 +17,9 @@ def _Mean(l):
 
 class KrakenMeasurement(page_measurement.PageMeasurement):
   def MeasurePage(self, _, tab, results):
-    js_is_done = """
-document.title.indexOf("Results") != -1 && document.readyState == "complete"
-"""
-    def _IsDone():
-      return bool(tab.EvaluateJavaScript(js_is_done))
-    util.WaitFor(_IsDone, 500, poll_interval=5)
+    tab.WaitForDocumentReadyStateToBeComplete()
+    tab.WaitForJavaScriptExpression(
+        'document.title.indexOf("Results") != -1', 500)
 
     js_get_results = """
 var formElement = document.getElementsByTagName("input")[0];
