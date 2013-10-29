@@ -52,6 +52,10 @@
 #include "ui/aura/window.h"
 #endif
 
+#if defined(USE_AURA)
+#include "ui/aura/window.h"
+#endif
+
 using apps::ShellWindow;
 
 namespace {
@@ -651,7 +655,7 @@ bool NativeAppWindowViews::ShouldDescendIntoChildForEventHandling(
     gfx::NativeView child,
     const gfx::Point& location) {
 #if defined(USE_AURA)
-  if (child == web_view_->web_contents()->GetView()->GetNativeView()) {
+  if (child->Contains(web_view_->web_contents()->GetView()->GetNativeView())) {
     // Shell window should claim mouse events that fall within the draggable
     // region.
     return !draggable_region_.get() ||
