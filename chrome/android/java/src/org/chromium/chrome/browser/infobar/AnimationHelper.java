@@ -9,6 +9,7 @@ import android.animation.AnimatorListenerAdapter;
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.animation.PropertyValuesHolder;
+import android.os.Build;
 import android.view.View;
 import android.view.ViewTreeObserver;
 import android.view.animation.AccelerateDecelerateInterpolator;
@@ -233,6 +234,13 @@ public class AnimationHelper implements ViewTreeObserver.OnGlobalLayoutListener 
             public void onAnimationEnd(Animator animation) {
                 mTargetWrapperView.finishTransition();
                 mContainer.finishTransition();
+
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN && mToShow != null &&
+                        (mAnimationType == ANIMATION_TYPE_SHOW ||
+                                mAnimationType == ANIMATION_TYPE_SWAP)) {
+                        mToShow.announceForAccessibility(
+                                mInfoBar.getMessageText(mContainer.getContext()));
+                }
             }
         });
 
