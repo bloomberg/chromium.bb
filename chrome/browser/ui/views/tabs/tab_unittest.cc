@@ -83,8 +83,7 @@ class TabTest : public views::ViewsTestBase {
     // Tab size and TabRendererData state.
     if (tab.data_.mini) {
       EXPECT_EQ(1, tab.IconCapacity());
-      if (tab.data_.media_state == TAB_MEDIA_STATE_CAPTURING ||
-          tab.data_.media_state == TAB_MEDIA_STATE_RECORDING) {
+      if (tab.data_.media_state != TAB_MEDIA_STATE_NONE) {
         EXPECT_FALSE(tab.ShouldShowIcon());
         EXPECT_TRUE(tab.ShouldShowMediaIndicator());
       } else {
@@ -101,8 +100,7 @@ class TabTest : public views::ViewsTestBase {
           EXPECT_FALSE(tab.ShouldShowMediaIndicator());
           break;
         case 2:
-          if (tab.data_.media_state == TAB_MEDIA_STATE_CAPTURING ||
-              tab.data_.media_state == TAB_MEDIA_STATE_RECORDING) {
+          if (tab.data_.media_state != TAB_MEDIA_STATE_NONE) {
             EXPECT_FALSE(tab.ShouldShowIcon());
             EXPECT_TRUE(tab.ShouldShowMediaIndicator());
           } else {
@@ -128,8 +126,7 @@ class TabTest : public views::ViewsTestBase {
           break;
         case 1:
           EXPECT_FALSE(tab.ShouldShowCloseBox());
-          if (tab.data_.media_state == TAB_MEDIA_STATE_CAPTURING ||
-              tab.data_.media_state == TAB_MEDIA_STATE_RECORDING) {
+          if (tab.data_.media_state != TAB_MEDIA_STATE_NONE) {
             EXPECT_FALSE(tab.ShouldShowIcon());
             EXPECT_TRUE(tab.ShouldShowMediaIndicator());
           } else {

@@ -35,12 +35,11 @@ namespace chrome {
 // Precedence rules for deciding what to show when capacity is insufficient to
 // show everything:
 //
-//   Active tab: Always show the close button, then the capture/recording
-//               indicator, then favicon, then audio playback indicator.
-//   Inactive tab: Capture/Recording indicator, then favicon, then audio
-//                 playback indicator, then close button.
-//   Pinned tab: Capture/recording indicator, then favicon, then audio
-//               playback indicator.  Never show the close button.
+//   Active tab: Always show the close button, then the media indicator, then
+//               the favicon.
+//   Inactive tab: Media indicator, then the favicon, then the close button.
+//   Pinned tab: Show only the media indicator, or only the favicon
+//               (TAB_MEDIA_STATE_NONE).  Never show the close button.
 bool ShouldTabShowFavicon(int capacity,
                           bool is_pinned_tab,
                           bool is_active_tab,

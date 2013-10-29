@@ -100,14 +100,9 @@ bool ShouldTabShowMediaIndicator(int capacity,
                                  TabMediaState media_state) {
   if (media_state == TAB_MEDIA_STATE_NONE)
     return false;
-  const bool audio_playback_active =
-      (media_state == TAB_MEDIA_STATE_AUDIO_PLAYING);
-  int required_capacity = (has_favicon && audio_playback_active) ?
-      2 :  // Must have capacity to also show the favicon.
-      1;  // Only need capacity to show the capturing/recording indicator.
   if (ShouldTabShowCloseButton(capacity, is_pinned_tab, is_active_tab))
-    ++required_capacity;
-  return capacity >= required_capacity;
+    return capacity >= 2;
+  return capacity >= 1;
 }
 
 bool ShouldTabShowCloseButton(int capacity,

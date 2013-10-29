@@ -122,8 +122,7 @@ class TabControllerTest : public CocoaTest {
         [[controller mediaIndicatorView] mediaState];
     if ([controller mini]) {
       EXPECT_EQ(1, [controller iconCapacity]);
-      if (indicatorState == TAB_MEDIA_STATE_CAPTURING ||
-          indicatorState == TAB_MEDIA_STATE_RECORDING) {
+      if (indicatorState != TAB_MEDIA_STATE_NONE) {
         EXPECT_FALSE([controller shouldShowIcon]);
         EXPECT_TRUE([controller shouldShowMediaIndicator]);
       } else {
@@ -140,8 +139,7 @@ class TabControllerTest : public CocoaTest {
           EXPECT_FALSE([controller shouldShowMediaIndicator]);
           break;
         case 2:
-          if (indicatorState == TAB_MEDIA_STATE_CAPTURING ||
-              indicatorState == TAB_MEDIA_STATE_RECORDING) {
+          if (indicatorState != TAB_MEDIA_STATE_NONE) {
             EXPECT_FALSE([controller shouldShowIcon]);
             EXPECT_TRUE([controller shouldShowMediaIndicator]);
           } else {
@@ -167,8 +165,7 @@ class TabControllerTest : public CocoaTest {
           break;
         case 1:
           EXPECT_FALSE([controller shouldShowCloseButton]);
-          if (indicatorState == TAB_MEDIA_STATE_CAPTURING ||
-              indicatorState == TAB_MEDIA_STATE_RECORDING) {
+          if (indicatorState != TAB_MEDIA_STATE_NONE) {
             EXPECT_FALSE([controller shouldShowIcon]);
             EXPECT_TRUE([controller shouldShowMediaIndicator]);
           } else {
