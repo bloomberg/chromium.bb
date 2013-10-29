@@ -637,7 +637,7 @@ const char kLanguagePreloadEngines[] = "settings.language.preload_engines";
 const char kLanguageEnabledExtensionImes[] =
     "settings.language.enabled_extension_imes";
 
-// A integer prefs which determine how we remap modifier keys (e.g. swap Alt and
+// Integer prefs which determine how we remap modifier keys (e.g. swap Alt and
 // Control.) Possible values for these prefs are 0-4. See ModifierKey enum in
 // src/chrome/browser/chromeos/input_method/xkeyboard.h
 const char kLanguageRemapSearchKeyTo[] =
@@ -652,6 +652,11 @@ const char kLanguageRemapCapsLockKeyTo[] =
     "settings.language.remap_caps_lock_key_to";
 const char kLanguageRemapDiamondKeyTo[] =
     "settings.language.remap_diamond_key_to";
+
+// A boolean pref that causes top-row keys to be interpreted as function keys
+// instead of as media keys.
+const char kLanguageSendFunctionKeys[] =
+    "settings.language.send_function_keys";
 
 // A boolean pref which determines whether key repeat is enabled.
 const char kLanguageXkbAutoRepeatEnabled[] =

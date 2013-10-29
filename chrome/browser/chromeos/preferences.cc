@@ -244,6 +244,13 @@ void Preferences::RegisterProfilePrefs(
       prefs::kLanguageRemapDiamondKeyTo,
       input_method::kControlKey,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF);
+  // The following pref isn't synced since the user may desire a different value
+  // depending on whether an external keyboard is attached to a particular
+  // device.
+  registry->RegisterBooleanPref(
+      prefs::kLanguageSendFunctionKeys,
+      false,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   // We don't sync the following keyboard prefs since they are not user-
   // configurable.
   registry->RegisterBooleanPref(

@@ -65,11 +65,11 @@ class EventRewriter : public ash::EventRewriterDelegate,
     last_device_id_ = device_id;
   }
   void set_pref_service_for_testing(const PrefService* pref_service) {
-    pref_service_ = pref_service;
+    pref_service_for_testing_ = pref_service;
   }
 #if defined(OS_CHROMEOS)
   void set_xkeyboard_for_testing(chromeos::input_method::XKeyboard* xkeyboard) {
-    xkeyboard_ = xkeyboard;
+    xkeyboard_for_testing_ = xkeyboard;
   }
 #endif
 
@@ -115,6 +115,12 @@ class EventRewriter : public ash::EventRewriterDelegate,
     unsigned int output_native_mods;
   };
 
+  // Returns true if the target for |event| would prefer to receive raw function
+  // keys instead of having them rewritten into back, forward, brightness,
+  // volume, etc. or if the user has specified that they desire top-row keys to
+  // be treated as function keys globally.
+  bool TopRowKeysAreFunctionKeys(ui::KeyEvent* event) const;
+
   // Given a set of KeyboardRemapping structs, it finds a matching struct
   // if possible, and updates the remapped event values. Returns true if a
   // remapping was found and remapped values were updated.
@@ -145,6 +151,9 @@ class EventRewriter : public ash::EventRewriterDelegate,
       ui::KeyboardCode* remapped_keycode,
       unsigned int* remapped_mods);
 #endif
+
+  // Returns the PrefService that should be used.
+  const PrefService* GetPrefService() const;
 
   // Rewrites the |event| by applying all RewriteXXX functions as needed.
   void Rewrite(ui::KeyEvent* event);
@@ -214,13 +223,13 @@ class EventRewriter : public ash::EventRewriterDelegate,
   // A mapping from X11 KeySym keys to KeyCode values.
   base::hash_map<unsigned long, unsigned long> keysym_to_keycode_map_;
 
-  chromeos::input_method::XKeyboard* xkeyboard_;  // for testing.
+  chromeos::input_method::XKeyboard* xkeyboard_for_testing_;
 
   scoped_ptr<chromeos::KeyboardDrivenEventRewriter>
-      keyboard_driven_event_rewritter_;
+      keyboard_driven_event_rewriter_;
 #endif
 
-  const PrefService* pref_service_;  // for testing.
+  const PrefService* pref_service_for_testing_;
 
   DISALLOW_COPY_AND_ASSIGN(EventRewriter);
 };

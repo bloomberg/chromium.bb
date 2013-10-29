@@ -2369,6 +2369,14 @@ Press any key to continue exploring.
            desc="The dropdown list item for 'Customize modifier keys' overlay">
     Escape
   </message>
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_SEND_FUNCTION_KEYS"
+           desc="The checkbox label for a setting to interpret the top-row keys as function keys instead.">
+    Treat top-row keys as function keys
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_SEND_FUNCTION_KEYS_DESCRIPTION"
+           desc="A label describing how to use the top-row keys' original actions when the treat-as-function-keys setting is enabled.">
+    Hold the Search key to switch the behavior of the top-row keys.
+  </message>
   <message name="IDS_OPTIONS_SETTINGS_CHANGE_LANGUAGE_AND_INPUT_SETTINGS"
            desc="The link to open 'Language and input settings' window.">
     Change language and input settings

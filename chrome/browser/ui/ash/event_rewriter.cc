@@ -136,39 +136,18 @@ bool IsMod3UsedByCurrentInputMethod() {
       manager->GetCurrentInputMethod().id() == kCaMultixLayoutId;
 }
 
-// Returns true if the target for |event| would prefer to receive raw function
-// keys instead of having them rewritten into back, forward, brightness, volume,
-// etc. Web apps (v2 apps) can request this behavior via a permission so users
-// can use unmodified top-row keypresses to send function keys for things like
-// ssh and remote desktop.
-bool TopRowKeysAreFunctionKeys(ui::KeyEvent* event) {
-  aura::Window* target = static_cast<aura::Window*>(event->target());
-  if (!target)
-    return false;
-  aura::Window* top_level = views::corewm::GetToplevelWindow(target);
-  return top_level &&
-      ash::wm::GetWindowState(top_level)->top_row_keys_are_function_keys();
-}
-
 #endif  // defined(OS_CHROMEOS)
-
-const PrefService* GetPrefService() {
-  Profile* profile = ProfileManager::GetDefaultProfile();
-  if (profile)
-    return profile->GetPrefs();
-  return NULL;
-}
 
 }  // namespace
 
 EventRewriter::EventRewriter()
     : last_device_id_(kBadDeviceId),
 #if defined(OS_CHROMEOS)
-      xkeyboard_(NULL),
-      keyboard_driven_event_rewritter_(
+      xkeyboard_for_testing_(NULL),
+      keyboard_driven_event_rewriter_(
           new chromeos::KeyboardDrivenEventRewriter),
 #endif
-      pref_service_(NULL) {
+      pref_service_for_testing_(NULL) {
   // The ash shell isn't instantiated for our unit tests.
   if (ash::Shell::HasInstance()) {
     ash::Shell::GetPrimaryRootWindow()->GetDispatcher()->
@@ -309,6 +288,21 @@ KeyCode EventRewriter::NativeKeySymToNativeKeycode(KeySym keysym) {
   return keycode;
 }
 
+bool EventRewriter::TopRowKeysAreFunctionKeys(ui::KeyEvent* event) const {
+  const PrefService* prefs = GetPrefService();
+  if (prefs &&
+      prefs->FindPreference(prefs::kLanguageSendFunctionKeys) &&
+      prefs->GetBoolean(prefs::kLanguageSendFunctionKeys))
+    return true;
+
+  aura::Window* target = static_cast<aura::Window*>(event->target());
+  if (!target)
+    return false;
+  aura::Window* top_level = views::corewm::GetToplevelWindow(target);
+  return top_level &&
+      ash::wm::GetWindowState(top_level)->top_row_keys_are_function_keys();
+}
+
 bool EventRewriter::RewriteWithKeyboardRemappingsByKeySym(
     const KeyboardRemapping* remappings,
     size_t num_remappings,
@@ -369,7 +363,14 @@ bool EventRewriter::RewriteWithKeyboardRemappingsByKeyCode(
 
   return false;
 }
-#endif
+#endif  // defined(OS_CHROMEOS)
+
+const PrefService* EventRewriter::GetPrefService() const {
+  if (pref_service_for_testing_)
+    return pref_service_for_testing_;
+  Profile* profile = ProfileManager::GetDefaultProfile();
+  return profile ? profile->GetPrefs() : NULL;
+}
 
 void EventRewriter::Rewrite(ui::KeyEvent* event) {
 #if defined(OS_CHROMEOS)
@@ -381,7 +382,7 @@ void EventRewriter::Rewrite(ui::KeyEvent* event) {
   // Keyboard driven rewriting needs to happen before RewriteExtendedKeys
   // to handle Ctrl+Alt+Shift+(Up | Down) so that they are not translated
   // to Home/End.
-  keyboard_driven_event_rewritter_->RewriteIfKeyboardDrivenOnLoginScreen(event);
+  keyboard_driven_event_rewriter_->RewriteIfKeyboardDrivenOnLoginScreen(event);
 #endif
   RewriteModifiers(event);
   RewriteNumPadKeys(event);
@@ -418,8 +419,7 @@ void EventRewriter::GetRemappedModifierMasks(
     return;
   }
 
-  const PrefService* pref_service =
-      pref_service_ ? pref_service_ : GetPrefService();
+  const PrefService* pref_service = GetPrefService();
   if (!pref_service)
     return;
 
@@ -472,6 +472,7 @@ void EventRewriter::GetRemappedModifierMasks(
 }
 
 bool EventRewriter::RewriteModifiers(ui::KeyEvent* event) {
+#if defined(OS_CHROMEOS)
   // Do nothing if we have just logged in as guest but have not restarted chrome
   // process yet (so we are still on the login screen). In this situations we
   // have no user profile so can not do anything useful.
@@ -479,17 +480,14 @@ bool EventRewriter::RewriteModifiers(ui::KeyEvent* event) {
   // restart chrome process. In future this is to be changed.
   // TODO(glotov): remove the following condition when we do not restart chrome
   // when user logs in as guest.
-#if defined(OS_CHROMEOS)
   if (chromeos::UserManager::Get()->IsLoggedInAsGuest() &&
       chromeos::LoginDisplayHostImpl::default_host())
     return false;
-#endif  // defined(OS_CHROMEOS)
-  const PrefService* pref_service =
-      pref_service_ ? pref_service_ : GetPrefService();
+
+  const PrefService* pref_service = GetPrefService();
   if (!pref_service)
     return false;
 
-#if defined(OS_CHROMEOS)
   DCHECK_EQ(chromeos::input_method::kControlKey,
             kModifierRemappingCtrl->remap_to);
 
@@ -571,8 +569,8 @@ bool EventRewriter::RewriteModifiers(ui::KeyEvent* event) {
   if ((event->type() == ui::ET_KEY_PRESSED) &&
       (event->key_code() != ui::VKEY_CAPITAL) &&
       (remapped_keycode == ui::VKEY_CAPITAL)) {
-    chromeos::input_method::XKeyboard* xkeyboard = xkeyboard_ ?
-        xkeyboard_ :
+    chromeos::input_method::XKeyboard* xkeyboard = xkeyboard_for_testing_ ?
+        xkeyboard_for_testing_ :
         chromeos::input_method::InputMethodManager::Get()->GetXKeyboard();
     xkeyboard->SetCapsLockEnabled(!xkeyboard->CapsLockIsEnabled());
   }

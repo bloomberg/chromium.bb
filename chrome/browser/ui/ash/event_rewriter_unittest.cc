@@ -2332,12 +2332,18 @@ TEST_F(EventRewriterTest, TestRewriteKeyEventSentByXSendEvent) {
 // Tests of event rewriting that depend on the Ash window manager.
 class EventRewriterAshTest : public ash::test::AshTestBase {
  public:
-  EventRewriterAshTest() {}
+  EventRewriterAshTest() {
+    chromeos::Preferences::RegisterProfilePrefs(prefs_.registry());
+    rewriter_.set_pref_service_for_testing(&prefs_);
+  }
   virtual ~EventRewriterAshTest() {}
 
   bool RewriteFunctionKeys(ui::KeyEvent* event) {
     return rewriter_.RewriteFunctionKeys(event);
   }
+
+ protected:
+  TestingPrefServiceSyncable prefs_;
 
  private:
   EventRewriter rewriter_;
@@ -2361,13 +2367,25 @@ TEST_F(EventRewriterAshTest, TopRowKeysAreFunctionKeys) {
   // Simulate an apps v2 window that has requested top row keys as function
   // keys. The event should not be rewritten.
   window_state->set_top_row_keys_are_function_keys(true);
-  EXPECT_FALSE(RewriteFunctionKeys(&press_f1));
-  EXPECT_EQ(ui::VKEY_F1, press_f1.key_code());
+  ASSERT_FALSE(RewriteFunctionKeys(&press_f1));
+  ASSERT_EQ(ui::VKEY_F1, press_f1.key_code());
 
-  // For a regular window, F1 is rewritten to the back key.
+  // The event should also not be rewritten if the send-function-keys pref is
+  // additionally set, for both apps v2 and regular windows.
+  BooleanPrefMember send_function_keys_pref;
+  send_function_keys_pref.Init(prefs::kLanguageSendFunctionKeys, &prefs_);
+  send_function_keys_pref.SetValue(true);
+  ASSERT_FALSE(RewriteFunctionKeys(&press_f1));
+  ASSERT_EQ(ui::VKEY_F1, press_f1.key_code());
   window_state->set_top_row_keys_are_function_keys(false);
-  EXPECT_TRUE(RewriteFunctionKeys(&press_f1));
-  EXPECT_EQ(ui::VKEY_BROWSER_BACK, press_f1.key_code());
+  ASSERT_FALSE(RewriteFunctionKeys(&press_f1));
+  ASSERT_EQ(ui::VKEY_F1, press_f1.key_code());
+
+  // If the pref isn't set when an event is sent to a regular window, F1 is
+  // rewritten to the back key.
+  send_function_keys_pref.SetValue(false);
+  ASSERT_TRUE(RewriteFunctionKeys(&press_f1));
+  ASSERT_EQ(ui::VKEY_BROWSER_BACK, press_f1.key_code());
 }
 
 #endif  // OS_CHROMEOS
