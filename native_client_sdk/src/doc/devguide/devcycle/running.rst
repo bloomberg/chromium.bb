@@ -207,7 +207,7 @@ server. For example, to run the ``flock`` example in the SDK, start the server
 and point your browser to http://localhost:5103/demo/flock/.
 
 Some of the applications need special flags to Chrome, and must be run with the
-``make run`` command. See :ref:`run_sdk_examples` for more details.
+``make run`` command. See :ref:`running_the_sdk_examples` for more details.
 
 .. _metadata:
 

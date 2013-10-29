@@ -181,6 +181,8 @@ Chrome Web Store.
 For more details on the difference between NaCl and PNaCl, see
 :doc:`NaCl and PNaCl <nacl-and-pnacl>`.
 
+.. _toolchains:
+
 Toolchains
 ----------
 

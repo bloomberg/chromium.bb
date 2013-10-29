@@ -19,6 +19,7 @@ Contents:
    devguide/index.rst
    devguide/tutorial/index.rst
    devguide/tutorial/tutorial-part1.rst
+   devguide/tutorial/tutorial-part2.rst
    devguide/devcycle/index.rst
    devguide/devcycle/building.rst
    devguide/devcycle/running.rst

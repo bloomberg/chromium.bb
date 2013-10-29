@@ -159,7 +159,7 @@ For details on how to use ``make``, see the `GNU 'make' Manual
 use the SDK toolchain itself, see :doc:`Building Native Client Modules
 <../devguide/devcycle/building>`.
 
-.. _run_sdk_examples:
+.. _running_the_sdk_examples:
 
 Run the SDK examples
 --------------------

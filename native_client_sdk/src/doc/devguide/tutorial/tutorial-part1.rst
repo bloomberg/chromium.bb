@@ -1,8 +1,8 @@
 .. _tutorial:
 
-#############################
-C++ Tutorial: Getting Started
-#############################
+######################################
+C++ Tutorial: Getting Started (Part 1)
+######################################
 
 .. contents::
   :local:
@@ -143,6 +143,8 @@ on the structure of a typical Native Client application, see
 The stub code is intentionally very minimal. The C++ code does not do anything
 except correctly initialize itself. The JavaScript code waits for the Native
 Client module to load and changes the status text on the web page accordingly.
+
+.. _tutorial_step_5:
 
 Step 5: Compile the Native Client module and run the stub application
 =====================================================================
