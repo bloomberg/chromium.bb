@@ -880,9 +880,6 @@ void DownloadProtectionService::ShowDetailsForDownload(
     const content::DownloadItem& item,
     content::PageNavigator* navigator) {
   GURL learn_more_url(chrome::kDownloadScanningLearnMoreURL);
-  if (item.GetDangerType() ==
-      content::DOWNLOAD_DANGER_TYPE_POTENTIALLY_UNWANTED)
-    learn_more_url = GURL(chrome::kDownloadPotentiallyUnwantedLearnMoreURL);
   navigator->OpenURL(
       content::OpenURLParams(learn_more_url,
                              content::Referrer(),
