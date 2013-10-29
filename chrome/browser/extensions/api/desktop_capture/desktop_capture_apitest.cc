@@ -142,7 +142,13 @@ class DesktopCaptureApiTest : public ExtensionApiTest {
 
 }  // namespace
 
-IN_PROC_BROWSER_TEST_F(DesktopCaptureApiTest, ChooseDesktopMedia) {
+// Flaky on Windows: http://crbug.com/301887
+#if defined(OS_WIN)
+#define MAYBE_ChooseDesktopMedia DISABLED_ChooseDesktopMedia
+#else
+#define MAYBE_ChooseDesktopMedia ChooseDesktopMedia
+#endif
+IN_PROC_BROWSER_TEST_F(DesktopCaptureApiTest, MAYBE_ChooseDesktopMedia) {
   // Each of the following expectations corresponds to one test in
   // chrome/test/data/extensions/api_test/desktop_capture/test.js .
   FakeDesktopMediaPickerFactory::Expectation picker_expectations[] = {
