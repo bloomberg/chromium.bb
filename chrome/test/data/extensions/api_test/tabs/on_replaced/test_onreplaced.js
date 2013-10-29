@@ -17,13 +17,6 @@ onload = function() {
             };
             chrome.tabs.onReplaced.addListener(onReplaceListener);
 
-            var URL_TARGET =
-                "http://127.0.0.1:PORT/prerender/prerender_page.html"
-                    .replace(/PORT/g, config.testServer.port);
-            chrome.tabs.update({
-              url: URL_TARGET
-            });
-
             chrome.test.notifyPass();
           }
       ]);

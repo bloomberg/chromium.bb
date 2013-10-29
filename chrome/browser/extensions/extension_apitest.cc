@@ -32,6 +32,7 @@ const char kTestCustomArg[] = "customArg";
 const char kTestServerPort[] = "testServer.port";
 const char kTestDataDirectory[] = "testDataDirectory";
 const char kTestWebSocketPort[] = "testWebSocketPort";
+const char kSpawnedTestServerPort[] = "spawnedTestServer.port";
 
 scoped_ptr<net::test_server::HttpResponse> HandleServerRedirectRequest(
     const net::test_server::HttpRequest& request) {
@@ -435,6 +436,19 @@ bool ExtensionApiTest::StartWebSocketServer(
 
   test_config_->SetInteger(kTestWebSocketPort,
                            websocket_server_->host_port_pair().port());
+
+  return true;
+}
+
+bool ExtensionApiTest::StartSpawnedTestServer() {
+  if (!test_server()->Start())
+    return false;
+
+  // Build a dictionary of values that tests can use to build URLs that
+  // access the test server and local file system.  Tests can see these values
+  // using the extension API function chrome.test.getConfig().
+  test_config_->SetInteger(kSpawnedTestServerPort,
+                           test_server()->host_port_pair().port());
 
   return true;
 }

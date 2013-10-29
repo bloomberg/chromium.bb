@@ -36,6 +36,19 @@
                       }
                     }
                   },
+                  "spawnedTestServer": {
+                    "type": "object",
+                    "optional": true,
+                    "description": "Details on the spawned test server used to mock network responses.  Will be set only if test calls ExtensionApiTest::StartSpawnedTestServer().",
+                    "properties": {
+                      "port": {
+                        "type": "integer",
+                        "description": "The port on which the test server is listening.",
+                        "minimum": 1024,
+                        "maximum": 65535
+                      }
+                    }
+                  },
                   "testDataDirectory": {
                     "type": "string",
                     "description": "file:/// URL for the API test data directory."

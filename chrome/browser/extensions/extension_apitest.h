@@ -168,6 +168,11 @@ class ExtensionApiTest : public ExtensionBrowserTest {
   // chrome.test.getConfig().
   bool StartWebSocketServer(const base::FilePath& root_directory);
 
+  // Start the spawned test server, and store details of its state.  Those
+  // details will be available to javascript tests using
+  // chrome.test.getConfig().
+  bool StartSpawnedTestServer();
+
   // Test that exactly one extension loaded.  If so, return a pointer to
   // the extension.  If not, return NULL and set message_.
   const extensions::Extension* GetSingleLoadedExtension();
