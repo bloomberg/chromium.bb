@@ -10,6 +10,7 @@
 #include "net/http/http_server_properties_impl.h"
 #include "net/proxy/proxy_service.h"
 #include "net/ssl/ssl_config_service_defaults.h"
+#include "net/url_request/file_protocol_handler.h"
 #include "net/url_request/static_http_user_agent_settings.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_job_factory_impl.h"
@@ -20,10 +21,14 @@ namespace shell {
 URLRequestContextGetter::URLRequestContextGetter(
     base::FilePath base_path,
     base::SingleThreadTaskRunner* network_task_runner,
-    base::MessageLoopProxy* cache_task_runner)
+    base::SingleThreadTaskRunner* file_task_runner,
+    base::MessageLoopProxy* cache_task_runner,
+    scoped_ptr<net::NetworkDelegate> network_delegate)
     : base_path_(base_path),
+      file_task_runner_(file_task_runner),
       network_task_runner_(network_task_runner),
       cache_task_runner_(cache_task_runner),
+      network_delegate_(network_delegate.Pass()),
       net_log_(new net::NetLog()) {
 }
 
@@ -34,6 +39,7 @@ net::URLRequestContext* URLRequestContextGetter::GetURLRequestContext() {
   if (!url_request_context_) {
     url_request_context_.reset(new net::URLRequestContext());
     url_request_context_->set_net_log(net_log_.get());
+    url_request_context_->set_network_delegate(network_delegate_.get());
 
     storage_.reset(
         new net::URLRequestContextStorage(url_request_context_.get()));
@@ -78,7 +84,9 @@ net::URLRequestContext* URLRequestContextGetter::GetURLRequestContext() {
 
     scoped_ptr<net::URLRequestJobFactoryImpl> job_factory(
         new net::URLRequestJobFactoryImpl());
-
+    job_factory->SetProtocolHandler(
+        "file",
+        new net::FileProtocolHandler(file_task_runner_));
     storage_->set_job_factory(job_factory.release());
   }
 

@@ -147,6 +147,8 @@
         'shell/context.h',
         'shell/loader.cc',
         'shell/loader.h',
+        'shell/network_delegate.cc',
+        'shell/network_delegate.h',
         'shell/run.cc',
         'shell/run.h',
         'shell/storage.cc',

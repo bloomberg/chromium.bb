@@ -118,67 +118,66 @@ class NET_EXPORT NetworkDelegate : public base::NonThreadSafe {
   // ERR_IO_PENDING if the result is not ready yet. A status code other than OK
   // and ERR_IO_PENDING will cancel the request and report the status code as
   // the reason.
+  //
+  // The default implementation returns OK (continue with request).
   virtual int OnBeforeURLRequest(URLRequest* request,
                                  const CompletionCallback& callback,
-                                 GURL* new_url) = 0;
+                                 GURL* new_url);
 
   // Called right before the HTTP headers are sent. Allows the delegate to
   // read/write |headers| before they get sent out. |callback| and |headers| are
   // valid only until OnCompleted or OnURLRequestDestroyed is called for this
   // request.
-  // Returns a net status code.
+  // See OnBeforeURLRequest for return value description. Returns OK by default.
   virtual int OnBeforeSendHeaders(URLRequest* request,
                                   const CompletionCallback& callback,
-                                  HttpRequestHeaders* headers) = 0;
+                                  HttpRequestHeaders* headers);
 
   // Called right before the HTTP request(s) are being sent to the network.
   // |headers| is only valid until OnCompleted or OnURLRequestDestroyed is
   // called for this request.
   virtual void OnSendHeaders(URLRequest* request,
-                             const HttpRequestHeaders& headers) = 0;
+                             const HttpRequestHeaders& headers);
 
-  // Called for HTTP requests when the headers have been received. Returns a net
-  // status code, generally either OK to continue with the request or
-  // ERR_IO_PENDING if the result is not ready yet.  A status code other than OK
-  // and ERR_IO_PENDING will cancel the request and report the status code as
-  // the reason.
+  // Called for HTTP requests when the headers have been received.
   // |original_response_headers| contains the headers as received over the
   // network, these must not be modified. |override_response_headers| can be set
   // to new values, that should be considered as overriding
   // |original_response_headers|.
   // |callback|, |original_response_headers|, and |override_response_headers|
   // are only valid until OnURLRequestDestroyed is called for this request.
+  // See OnBeforeURLRequest for return value description. Returns OK by default.
   virtual int OnHeadersReceived(
       URLRequest* request,
       const CompletionCallback& callback,
       const HttpResponseHeaders* original_response_headers,
-      scoped_refptr<HttpResponseHeaders>* override_response_headers) = 0;
+      scoped_refptr<HttpResponseHeaders>* override_response_headers);
 
   // Called right after a redirect response code was received.
   // |new_location| is only valid until OnURLRequestDestroyed is called for this
   // request.
   virtual void OnBeforeRedirect(URLRequest* request,
-                                const GURL& new_location) = 0;
+                                const GURL& new_location);
 
   // This corresponds to URLRequestDelegate::OnResponseStarted.
-  virtual void OnResponseStarted(URLRequest* request) = 0;
+  virtual void OnResponseStarted(URLRequest* request);
 
   // Called every time we read raw bytes.
-  virtual void OnRawBytesRead(const URLRequest& request, int bytes_read) = 0;
+  virtual void OnRawBytesRead(const URLRequest& request, int bytes_read);
 
   // Indicates that the URL request has been completed or failed.
   // |started| indicates whether the request has been started. If false,
   // some information like the socket address is not available.
-  virtual void OnCompleted(URLRequest* request, bool started) = 0;
+  virtual void OnCompleted(URLRequest* request, bool started);
 
   // Called when an URLRequest is being destroyed. Note that the request is
   // being deleted, so it's not safe to call any methods that may result in
   // a virtual method call.
-  virtual void OnURLRequestDestroyed(URLRequest* request) = 0;
+  virtual void OnURLRequestDestroyed(URLRequest* request);
 
   // Corresponds to ProxyResolverJSBindings::OnError.
   virtual void OnPACScriptError(int line_number,
-                                const base::string16& error) = 0;
+                                const base::string16& error);
 
   // Called when a request receives an authentication challenge
   // specified by |auth_info|, and is unable to respond using cached
@@ -201,31 +200,31 @@ class NET_EXPORT NetworkDelegate : public base::NonThreadSafe {
       URLRequest* request,
       const AuthChallengeInfo& auth_info,
       const AuthCallback& callback,
-      AuthCredentials* credentials) = 0;
+      AuthCredentials* credentials);
 
   // Called when reading cookies to allow the network delegate to block access
   // to the cookie. This method will never be invoked when
   // LOAD_DO_NOT_SEND_COOKIES is specified.
   virtual bool OnCanGetCookies(const URLRequest& request,
-                               const CookieList& cookie_list) = 0;
+                               const CookieList& cookie_list);
 
   // Called when a cookie is set to allow the network delegate to block access
   // to the cookie. This method will never be invoked when
   // LOAD_DO_NOT_SAVE_COOKIES is specified.
   virtual bool OnCanSetCookie(const URLRequest& request,
                               const std::string& cookie_line,
-                              CookieOptions* options) = 0;
+                              CookieOptions* options);
 
   // Called when a file access is attempted to allow the network delegate to
   // allow or block access to the given file path.  Returns true if access is
   // allowed.
   virtual bool OnCanAccessFile(const URLRequest& request,
-                               const base::FilePath& path) const = 0;
+                               const base::FilePath& path) const;
 
   // Returns true if the given request may be rejected when the
   // URLRequestThrottlerManager believes the server servicing the
   // request is overloaded or down.
-  virtual bool OnCanThrottleRequest(const URLRequest& request) const = 0;
+  virtual bool OnCanThrottleRequest(const URLRequest& request) const;
 
   // Returns true if the given |url| has to be requested over connection that
   // is not tracked by the server. Usually is false, unless user privacy
@@ -235,15 +234,16 @@ class NET_EXPORT NetworkDelegate : public base::NonThreadSafe {
       const GURL& first_party_for_cookies) const;
 
   // Called before a SocketStream tries to connect.
+  // See OnBeforeURLRequest for return value description. Returns OK by default.
   virtual int OnBeforeSocketStreamConnect(
-      SocketStream* socket, const CompletionCallback& callback) = 0;
+      SocketStream* socket, const CompletionCallback& callback);
 
   // Called when the completion of a URLRequest is blocking on a cache
   // action or a network action, or when that is no longer the case.
   // REQUEST_WAIT_STATE_RESET indicates for a given URLRequest
   // cancellation of any pending waits for this request.
   virtual void OnRequestWaitStateChange(const URLRequest& request,
-                                        RequestWaitState state) = 0;
+                                        RequestWaitState state);
 };
 
 }  // namespace net

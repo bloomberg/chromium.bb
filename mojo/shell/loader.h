@@ -14,6 +14,10 @@
 #include "net/url_request/url_fetcher_delegate.h"
 #include "url/gurl.h"
 
+namespace net {
+class NetworkDelegate;
+}
+
 namespace mojo {
 namespace shell {
 
@@ -48,6 +52,7 @@ class Loader {
 
   Loader(base::SingleThreadTaskRunner* network_runner,
          base::SingleThreadTaskRunner* file_runner,
+         scoped_ptr<net::NetworkDelegate> network_delegate,
          base::FilePath base_path);
   ~Loader();
 

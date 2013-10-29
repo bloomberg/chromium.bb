@@ -5,6 +5,7 @@
 #include "mojo/shell/loader.h"
 
 #include "base/message_loop/message_loop.h"
+#include "net/base/network_delegate.h"
 
 namespace mojo {
 namespace shell {
@@ -40,11 +41,16 @@ void Loader::Job::OnURLFetchComplete(const net::URLFetcher* source) {
 
 Loader::Loader(base::SingleThreadTaskRunner* network_runner,
                base::SingleThreadTaskRunner* file_runner,
+               scoped_ptr<net::NetworkDelegate> network_delegate,
                base::FilePath base_path)
     : file_runner_(file_runner),
       cache_thread_(CreateIOThread("cache_thread")),
       url_request_context_getter_(new URLRequestContextGetter(
-          base_path, network_runner, cache_thread_->message_loop_proxy())) {
+          base_path,
+          network_runner,
+          file_runner,
+          cache_thread_->message_loop_proxy(),
+          network_delegate.Pass())) {
 }
 
 Loader::~Loader() {
