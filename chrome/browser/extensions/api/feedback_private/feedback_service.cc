@@ -93,7 +93,7 @@ void FeedbackService::CompleteSendFeedback() {
       feedback_data_->attached_file_uuid().empty() ||
       feedback_data_->attached_filedata();
   bool screenshot_completed =
-      !feedback_data_->screenshot_uuid().empty() ||
+      feedback_data_->screenshot_uuid().empty() ||
       feedback_data_->image();
 
   if (screenshot_completed && attached_file_completed) {
