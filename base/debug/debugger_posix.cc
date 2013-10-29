@@ -199,6 +199,14 @@ bool BeingDebugged() {
 //        SIGABRT
 // Mac: Always send SIGTRAP.
 
+#if defined(ARCH_CPU_ARM_FAMILY)
+#define DEBUG_BREAK_ASM() asm("bkpt 0")
+#elif defined(ARCH_CPU_MIPS_FAMILY)
+#define DEBUG_BREAK_ASM() asm("break 2")
+#elif defined(ARCH_CPU_X86_FAMILY)
+#define DEBUG_BREAK_ASM() asm("int3")
+#endif
+
 #if defined(NDEBUG) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
 #define DEBUG_BREAK() abort()
 #elif defined(OS_NACL)
@@ -224,12 +232,8 @@ void DebugBreak() {
   if (!BeingDebugged()) {
     abort();
   } else {
-#if defined(ARCH_CPU_ARM_FAMILY) && !defined(OS_ANDROID)
-    asm("bkpt 0")
-#elif defined(ARCH_CPU_MIPS_FAMILY)
-    asm("break 2")
-#elif defined(ARCH_CPU_X86_FAMILY) || !defined(OS_ANDROID)
-    asm("int3");
+#if defined(DEBUG_BREAK_ASM)
+    DEBUG_BREAK_ASM();
 #else
     volatile int go = 0;
     while (!go) {
@@ -240,8 +244,10 @@ void DebugBreak() {
 }
 }  // namespace
 #define DEBUG_BREAK() DebugBreak()
-#else  // defined(OS_MACOSX)
-#define DEBUG_BREAK() asm("int3")
+#elif defined(DEBUG_BREAK_ASM)
+#define DEBUG_BREAK() DEBUG_BREAK_ASM()
+#else
+#error "Don't know how to debug break on this architecture/OS"
 #endif
 
 void BreakDebugger() {
