@@ -93,9 +93,10 @@ class BuilderStage(object):
     self._attempt = attempt
     self._max_retry = max_retry
     self._build_config = copy.deepcopy(build_config)
-    self.name = self.StageNamePrefix()
+    self._prefix = self.StageNamePrefix()
+    self.name = self._prefix
     if suffix:
-      self.name += suffix
+      self.name = self._prefix + suffix
     self._boards = self._build_config['boards']
     self._build_root = os.path.abspath(self._options.buildroot)
     self._prebuilt_type = None
@@ -299,7 +300,8 @@ class BuilderStage(object):
         self.config_name and not self._build_config[self.config_name]):
       self._PrintLoudly('Not running Stage %s' % self.name)
       self.HandleSkip()
-      results_lib.Results.Record(self.name, results_lib.Results.SKIPPED)
+      results_lib.Results.Record(self.name, results_lib.Results.SKIPPED,
+                                 prefix=self._prefix)
       return
 
     record = results_lib.Results.PreviouslyCompletedRecord(self.name)
@@ -308,8 +310,8 @@ class BuilderStage(object):
       # successfully in a previous run.
       self._PrintLoudly('Stage %s processed previously' % self.name)
       self.HandleSkip()
-      results_lib.Results.Record(self.name, results_lib.Results.SUCCESS, None,
-                                 float(record[2]))
+      results_lib.Results.Record(self.name, results_lib.Results.SUCCESS,
+                                 prefix=self._prefix, time=float(record.time))
       return
 
     start_time = time.time()
@@ -347,7 +349,7 @@ class BuilderStage(object):
     finally:
       elapsed_time = time.time() - start_time
       results_lib.Results.Record(self.name, result, description,
-                                 time=elapsed_time)
+                                 prefix=self._prefix, time=elapsed_time)
       self._Finish()
       sys.stdout.flush()
       sys.stderr.flush()

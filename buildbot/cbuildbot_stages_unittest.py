@@ -1333,21 +1333,23 @@ class BuildStagesResultsTest(cros_test_lib.TestCase):
     # Break out the asserts to be per item to make debugging easier
     self.assertEqual(len(expectedResults), len(actualResults))
     for i in xrange(len(expectedResults)):
-      name, result, description, runtime = actualResults[i]
+      entry = actualResults[i]
       xname, xresult = expectedResults[i]
 
-      if result not in results_lib.Results.NON_FAILURE_TYPES:
-        self.assertTrue(isinstance(result, BaseException))
-        if isinstance(result, results_lib.StepFailure):
-          self.assertEqual(str(result), description)
+      if entry.result not in results_lib.Results.NON_FAILURE_TYPES:
+        self.assertTrue(isinstance(entry.result, BaseException))
+        if isinstance(entry.result, results_lib.StepFailure):
+          self.assertEqual(str(entry.result), entry.description)
 
-      self.assertTrue(runtime >= 0 and runtime < 2.0)
-      self.assertEqual(xname, name)
-      self.assertEqual(type(xresult), type(result))
-      self.assertEqual(repr(xresult), repr(result))
+      self.assertTrue(entry.time >= 0 and entry.time < 2.0)
+      self.assertEqual(xname, entry.name)
+      self.assertEqual(type(xresult), type(entry.result))
+      self.assertEqual(repr(xresult), repr(entry.result))
 
   def _PassString(self):
-    return results_lib.Results.SPLIT_TOKEN.join(['Pass', 'None', '0\n'])
+    record = results_lib.Result('Pass', results_lib.Results.SUCCESS, 'None',
+                                'Pass', '0')
+    return results_lib.Results.SPLIT_TOKEN.join(record) + '\n'
 
   def testRunStages(self):
     """Run some stages and verify the captured results"""

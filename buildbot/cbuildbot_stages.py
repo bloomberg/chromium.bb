@@ -373,20 +373,20 @@ class ArchivingStage(BoardSpecificBuilderStage):
           toolchain.FilterToolchains(toolchains, 'default', False).keys())
 
     metadata['results'] = []
-    for name, result, description, run_time in results_lib.Results.Get():
-      timestr = datetime.timedelta(seconds=math.ceil(run_time))
-      if result in results_lib.Results.NON_FAILURE_TYPES:
+    for entry in results_lib.Results.Get():
+      timestr = datetime.timedelta(seconds=math.ceil(entry.time))
+      if entry.result in results_lib.Results.NON_FAILURE_TYPES:
         status = 'passed'
       else:
         status = 'failed'
       metadata['results'].append({
-          'name': name,
+          'name': entry.name,
           'status': status,
           # The result might be a custom exception.
-          'summary': str(result),
+          'summary': str(entry.result),
           'duration': '%s' % timestr,
-          'description': description,
-          'log': self.ConstructDashboardURL(stage=name),
+          'description': entry.description,
+          'log': self.ConstructDashboardURL(stage=entry.name),
       })
 
     commit_queue_stages = (CommitQueueSyncStage, PreCQSyncStage)
@@ -1304,7 +1304,7 @@ class LKGMCandidateSyncCompletionStage(ManifestVersionedSyncCompletionStage):
           success=self.success, message=self.message)
       if not self.success and self._build_config['important']:
         tracebacks = results_lib.Results.GetTracebacks()
-        if len(tracebacks) != 1 or tracebacks[0] != 'HWTest':
+        if len(tracebacks) != 1 or tracebacks[0].failed_prefix != 'HWTest':
           self._AbortCQHWTests()
 
       statuses = self._FetchSlaveStatuses()

@@ -959,7 +959,8 @@ class TestFindSuspects(MoxBase):
     all_exceptions = list(exceptions) + [self._GetBuildFailure(x) for x in pkgs]
     tracebacks = []
     for ex in all_exceptions:
-      tracebacks.append(results_lib.RecordedTraceback('Build', ex, str(ex)))
+      tracebacks.append(results_lib.RecordedTraceback('Build', 'Build', ex,
+                                                      str(ex)))
     message = validation_pool.ValidationFailedMessage(
         'foo bar %r' % tracebacks, tracebacks, internal)
     results = validation_pool.CalculateSuspects.FindSuspects(patches, [message])
