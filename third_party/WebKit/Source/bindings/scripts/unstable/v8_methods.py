@@ -54,6 +54,7 @@ def generate_method(method):
     cpp_value = 'imp->%s(%s)' % (method.name, ', '.join(argument_names))
     contents = {
         'arguments': arguments_contents,
+        'custom_signature': custom_signature(arguments),
         'cpp_value': cpp_value,
         'idl_type': idl_type,
         'name': name,
@@ -62,3 +63,16 @@ def generate_method(method):
     if idl_type != 'void':
         contents['v8_set_return_value'] = v8_types.v8_set_return_value(idl_type, cpp_value, callback_info='args', creation_context='args.Holder()', isolate='args.GetIsolate()')
     return contents
+
+
+def custom_signature(arguments):
+    def argument_template(argument):
+        idl_type = argument.idl_type
+        if v8_types.is_wrapper_type(idl_type):
+            return 'V8PerIsolateData::from(isolate)->rawTemplate(&V8{idl_type}::wrapperTypeInfo, currentWorldType)'.format(idl_type=idl_type)
+        return 'v8::Handle<v8::FunctionTemplate>()'
+
+    if all(not v8_types.is_wrapper_type(argument.idl_type)
+           for argument in arguments):
+        return None
+    return ', '.join([argument_template(argument) for argument in arguments])

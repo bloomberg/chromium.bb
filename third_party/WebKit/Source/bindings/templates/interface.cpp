@@ -73,7 +73,7 @@ static const V8DOMConfiguration::AttributeConfiguration {{v8_class_name}}Attribu
 {# FIXME: rename to install_methods and put into configure_class_template #}
 {% if methods %}
 static const V8DOMConfiguration::MethodConfiguration {{v8_class_name}}Methods[] = {
-    {% for method in methods %}
+    {% for method in methods if not method.custom_signature %}
     {{method_configuration(method)}},
     {% endfor %}
 };
@@ -109,6 +109,14 @@ static v8::Handle<v8::FunctionTemplate> Configure{{v8_class_name}}Template(v8::H
         V8DOMConfiguration::installAttribute(instance, proto, attributeConfiguration, isolate, currentWorldType);
     }
     {% endfilter %}
+    {% endfor %}
+    {% for method in methods if method.custom_signature %}
+
+    // Custom Signature '{{method.name}}'
+    const int {{method.name}}Argc = {{method.arguments | length}};
+    v8::Handle<v8::FunctionTemplate> {{method.name}}Argv[{{method.name}}Argc] = { {{method.custom_signature}} };
+    v8::Handle<v8::Signature> {{method.name}}Signature = v8::Signature::New(desc, {{method.name}}Argc, {{method.name}}Argv);
+    proto->Set(v8::String::NewSymbol("{{method.name}}"), v8::FunctionTemplate::New({{interface_name}}V8Internal::{{method.name}}MethodCallback, v8Undefined(), {{method.name}}Signature, {{method.number_of_required_arguments}}));
     {% endfor %}
     {% for attribute in attributes if attribute.is_static %}
     desc->SetNativeDataProperty(v8::String::NewSymbol("{{attribute.name}}"), {{attribute.getter_callback_name}}, {{attribute.setter_callback_name}}, v8::External::New(0), static_cast<v8::PropertyAttribute>(v8::None), v8::Handle<v8::AccessorSignature>(), static_cast<v8::AccessControl>(v8::DEFAULT));

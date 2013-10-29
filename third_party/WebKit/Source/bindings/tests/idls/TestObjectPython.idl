@@ -203,6 +203,8 @@ interface TestObjectPython {
     void voidMethodUnsignedShortArg(unsigned short unsignedShortArg);
     // Interface types
     TestInterfaceEmpty testInterfaceEmptyMethod();
+    void voidMethodTestInterfaceEmptyArg(TestInterfaceEmpty testInterfaceEmptyArg);
+    void voidMethodLongArgTestInterfaceEmptyArg(long longArg, TestInterfaceEmpty testInterfaceEmptyArg);
 
     void voidMethodStringArgLongArg(DOMString stringArg, long longArg);
 };

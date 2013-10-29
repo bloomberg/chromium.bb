@@ -3675,6 +3675,43 @@ static void testInterfaceEmptyMethodMethodCallback(const v8::FunctionCallbackInf
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
+static void voidMethodTestInterfaceEmptyArgMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
+{
+    if (UNLIKELY(args.Length() < 1)) {
+        throwTypeError(ExceptionMessages::failedToExecute("voidMethodTestInterfaceEmptyArg", "TestObjectPython", ExceptionMessages::notEnoughArguments(1, args.Length())), args.GetIsolate());
+        return;
+    }
+    TestObjectPython* imp = V8TestObjectPython::toNative(args.Holder());
+    V8TRYCATCH_VOID(TestInterfaceEmpty*, testInterfaceEmptyArg, V8TestInterfaceEmpty::HasInstance(args[0], args.GetIsolate(), worldType(args.GetIsolate())) ? V8TestInterfaceEmpty::toNative(v8::Handle<v8::Object>::Cast(args[0])) : 0);
+    imp->voidMethodTestInterfaceEmptyArg(testInterfaceEmptyArg);
+}
+
+static void voidMethodTestInterfaceEmptyArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    TestObjectPythonV8Internal::voidMethodTestInterfaceEmptyArgMethod(args);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
+static void voidMethodLongArgTestInterfaceEmptyArgMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
+{
+    if (UNLIKELY(args.Length() < 2)) {
+        throwTypeError(ExceptionMessages::failedToExecute("voidMethodLongArgTestInterfaceEmptyArg", "TestObjectPython", ExceptionMessages::notEnoughArguments(2, args.Length())), args.GetIsolate());
+        return;
+    }
+    TestObjectPython* imp = V8TestObjectPython::toNative(args.Holder());
+    V8TRYCATCH_VOID(int, longArg, toInt32(args[0]));
+    V8TRYCATCH_VOID(TestInterfaceEmpty*, testInterfaceEmptyArg, V8TestInterfaceEmpty::HasInstance(args[1], args.GetIsolate(), worldType(args.GetIsolate())) ? V8TestInterfaceEmpty::toNative(v8::Handle<v8::Object>::Cast(args[1])) : 0);
+    imp->voidMethodLongArgTestInterfaceEmptyArg(longArg, testInterfaceEmptyArg);
+}
+
+static void voidMethodLongArgTestInterfaceEmptyArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    TestObjectPythonV8Internal::voidMethodLongArgTestInterfaceEmptyArgMethod(args);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
 static void voidMethodStringArgLongArgMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     if (UNLIKELY(args.Length() < 2)) {
@@ -3872,6 +3909,18 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestObjectPythonTemplate(v8::
         V8DOMConfiguration::installAttribute(instance, proto, attributeConfiguration, isolate, currentWorldType);
     }
 #endif // ENABLE(Condition)
+
+    // Custom Signature 'voidMethodTestInterfaceEmptyArg'
+    const int voidMethodTestInterfaceEmptyArgArgc = 1;
+    v8::Handle<v8::FunctionTemplate> voidMethodTestInterfaceEmptyArgArgv[voidMethodTestInterfaceEmptyArgArgc] = { V8PerIsolateData::from(isolate)->rawTemplate(&V8TestInterfaceEmpty::wrapperTypeInfo, currentWorldType) };
+    v8::Handle<v8::Signature> voidMethodTestInterfaceEmptyArgSignature = v8::Signature::New(desc, voidMethodTestInterfaceEmptyArgArgc, voidMethodTestInterfaceEmptyArgArgv);
+    proto->Set(v8::String::NewSymbol("voidMethodTestInterfaceEmptyArg"), v8::FunctionTemplate::New(TestObjectPythonV8Internal::voidMethodTestInterfaceEmptyArgMethodCallback, v8Undefined(), voidMethodTestInterfaceEmptyArgSignature, 1));
+
+    // Custom Signature 'voidMethodLongArgTestInterfaceEmptyArg'
+    const int voidMethodLongArgTestInterfaceEmptyArgArgc = 2;
+    v8::Handle<v8::FunctionTemplate> voidMethodLongArgTestInterfaceEmptyArgArgv[voidMethodLongArgTestInterfaceEmptyArgArgc] = { v8::Handle<v8::FunctionTemplate>(), V8PerIsolateData::from(isolate)->rawTemplate(&V8TestInterfaceEmpty::wrapperTypeInfo, currentWorldType) };
+    v8::Handle<v8::Signature> voidMethodLongArgTestInterfaceEmptyArgSignature = v8::Signature::New(desc, voidMethodLongArgTestInterfaceEmptyArgArgc, voidMethodLongArgTestInterfaceEmptyArgArgv);
+    proto->Set(v8::String::NewSymbol("voidMethodLongArgTestInterfaceEmptyArg"), v8::FunctionTemplate::New(TestObjectPythonV8Internal::voidMethodLongArgTestInterfaceEmptyArgMethodCallback, v8Undefined(), voidMethodLongArgTestInterfaceEmptyArgSignature, 2));
     desc->SetNativeDataProperty(v8::String::NewSymbol("staticStringAttribute"), TestObjectPythonV8Internal::staticStringAttributeAttributeGetterCallback, TestObjectPythonV8Internal::staticStringAttributeAttributeSetterCallback, v8::External::New(0), static_cast<v8::PropertyAttribute>(v8::None), v8::Handle<v8::AccessorSignature>(), static_cast<v8::AccessControl>(v8::DEFAULT));
     desc->SetNativeDataProperty(v8::String::NewSymbol("staticLongAttribute"), TestObjectPythonV8Internal::staticLongAttributeAttributeGetterCallback, TestObjectPythonV8Internal::staticLongAttributeAttributeSetterCallback, v8::External::New(0), static_cast<v8::PropertyAttribute>(v8::None), v8::Handle<v8::AccessorSignature>(), static_cast<v8::AccessControl>(v8::DEFAULT));
 
