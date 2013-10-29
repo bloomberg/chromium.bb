@@ -271,12 +271,10 @@ inline void ElementRareData::releasePseudoElement(PseudoElement* element)
 
     InspectorInstrumentation::pseudoElementDestroyed(element);
 
-    if (element->confusingAndOftenMisusedAttached())
-        element->detach();
-
     ASSERT(!element->nextSibling());
     ASSERT(!element->previousSibling());
 
+    element->detach();
     element->document().removeFromTopLayer(element);
     element->setParentOrShadowHostNode(0);
 }
