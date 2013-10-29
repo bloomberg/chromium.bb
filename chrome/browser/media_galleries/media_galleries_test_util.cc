@@ -91,7 +91,7 @@ EnsureMediaDirectoriesExists::EnsureMediaDirectoriesExists()
 
 EnsureMediaDirectoriesExists::~EnsureMediaDirectoriesExists() {
 #if defined(OS_MACOSX)
-  iapps::SetMacPreferencesForTesting(mac_preferences_.get());
+  iapps::SetMacPreferencesForTesting(NULL);
 #endif  // OS_MACOSX
 }
 
