@@ -28,7 +28,7 @@
 #define ExecutionContextClient_h
 
 #include "core/frame/ConsoleTypes.h"
-#include "core/platform/LifecycleNotifier.h"
+#include "platform/LifecycleNotifier.h"
 #include "weborigin/KURL.h"
 #include "wtf/Forward.h"
 #include "wtf/PassRefPtr.h"

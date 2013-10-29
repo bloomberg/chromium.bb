@@ -28,8 +28,8 @@
 #ifndef LifecycleContext_h
 #define LifecycleContext_h
 
-#include "core/platform/LifecycleNotifier.h"
-#include "core/platform/LifecycleObserver.h"
+#include "platform/LifecycleNotifier.h"
+#include "platform/LifecycleObserver.h"
 #include "wtf/HashSet.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"

@@ -27,7 +27,7 @@
 #define PageLifecycleNotifier_h
 
 #include "core/page/PageLifecycleObserver.h"
-#include "core/platform/LifecycleNotifier.h"
+#include "platform/LifecycleNotifier.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/TemporaryChange.h"
 

@@ -27,7 +27,7 @@
 #ifndef LifecycleNotifier_h
 #define LifecycleNotifier_h
 
-#include "core/platform/LifecycleObserver.h"
+#include "platform/LifecycleObserver.h"
 #include "wtf/HashSet.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/TemporaryChange.h"

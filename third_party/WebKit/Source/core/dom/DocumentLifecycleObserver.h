@@ -26,7 +26,7 @@
 #ifndef DocumentLifecycleObserver_h
 #define DocumentLifecycleObserver_h
 
-#include "core/platform/LifecycleContext.h"
+#include "platform/LifecycleContext.h"
 
 namespace WebCore {
 

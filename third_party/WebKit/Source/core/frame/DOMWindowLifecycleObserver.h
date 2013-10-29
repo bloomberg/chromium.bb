@@ -27,7 +27,7 @@
 #ifndef DOMWindowLifecycleObserver_h
 #define DOMWindowLifecycleObserver_h
 
-#include "core/platform/LifecycleObserver.h"
+#include "platform/LifecycleObserver.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {

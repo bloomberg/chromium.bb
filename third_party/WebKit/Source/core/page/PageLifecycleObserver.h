@@ -27,7 +27,7 @@
 #ifndef PageLifecycleObserver_h
 #define PageLifecycleObserver_h
 
-#include "core/platform/LifecycleObserver.h"
+#include "platform/LifecycleObserver.h"
 
 namespace WebCore {
 

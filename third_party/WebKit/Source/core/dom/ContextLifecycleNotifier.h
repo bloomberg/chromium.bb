@@ -28,7 +28,7 @@
 #define ContextLifecycleNotifier_h
 
 #include "core/dom/ActiveDOMObject.h"
-#include "core/platform/LifecycleNotifier.h"
+#include "platform/LifecycleNotifier.h"
 #include "wtf/HashSet.h"
 #include "wtf/PassOwnPtr.h"
 

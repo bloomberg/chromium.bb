@@ -36,7 +36,7 @@
 #include "core/fetch/CrossOriginAccessControl.h"
 #include "core/frame/ConsoleTypes.h"
 #include "core/frame/DOMTimer.h"
-#include "core/platform/LifecycleContext.h"
+#include "platform/LifecycleContext.h"
 #include "weborigin/KURL.h"
 #include "wtf/HashSet.h"
 #include "wtf/OwnPtr.h"

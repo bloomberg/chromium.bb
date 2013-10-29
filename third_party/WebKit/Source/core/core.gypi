@@ -2655,9 +2655,6 @@
             'platform/HashTools.h',
             'platform/KillRing.h',
             'platform/KillRingNone.cpp',
-            'platform/LifecycleContext.h',
-            'platform/LifecycleNotifier.h',
-            'platform/LifecycleObserver.h',
             'platform/MIMETypeFromURL.cpp',
             'platform/MIMETypeFromURL.h',
             'platform/OverscrollTheme.cpp',
@@ -3582,7 +3579,6 @@
             'platform/image-decoders/jpeg/JPEGImageDecoderTest.cpp',
             'platform/image-decoders/webp/WEBPImageDecoderTest.cpp',
             'platform/testing/FakeWebGraphicsContext3D.h',
-            'platform/LifecycleContextTest.cpp',
             'rendering/RenderOverflowTest.cpp',
         ],
         'conditions': [

@@ -27,7 +27,7 @@
 #ifndef ContextLifecycleObserver_h
 #define ContextLifecycleObserver_h
 
-#include "core/platform/LifecycleContext.h"
+#include "platform/LifecycleContext.h"
 
 namespace WebCore {
 

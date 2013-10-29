@@ -30,7 +30,7 @@
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/events/EventTarget.h"
 #include "core/frame/FrameDestructionObserver.h"
-#include "core/platform/LifecycleContext.h"
+#include "platform/LifecycleContext.h"
 #include "platform/Supplementable.h"
 
 #include "wtf/Forward.h"

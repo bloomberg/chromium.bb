@@ -26,9 +26,9 @@
 
 #include "config.h"
 
-#include "core/platform/LifecycleContext.h"
+#include "platform/LifecycleContext.h"
 
-#include "core/platform/LifecycleNotifier.h"
+#include "platform/LifecycleNotifier.h"
 #include <gtest/gtest.h>
 
 using namespace WebCore;
