@@ -71,7 +71,7 @@ void BeginDownload(scoped_ptr<DownloadUrlParameters> params,
     // to do a re-POST without user consent, and currently don't have a good
     // plan on how to display the UI for that.
     DCHECK(params->prefer_cache());
-    DCHECK(params->method() == "POST");
+    DCHECK_EQ("POST", params->method());
     ScopedVector<net::UploadElementReader> element_readers;
     request->set_upload(make_scoped_ptr(
         new net::UploadDataStream(element_readers.Pass(), params->post_id())));
@@ -108,7 +108,7 @@ void BeginDownload(scoped_ptr<DownloadUrlParameters> params,
        iter != params->request_headers_end();
        ++iter) {
     request->SetExtraRequestHeaderByName(
-        iter->first, iter->second, false/*overwrite*/);
+        iter->first, iter->second, false /*overwrite*/);
   }
 
   scoped_ptr<DownloadSaveInfo> save_info(new DownloadSaveInfo());
@@ -561,11 +561,9 @@ void DownloadManagerImpl::DownloadRemoved(DownloadItemImpl* download) {
     return;
 
   uint32 download_id = download->GetId();
-  if (downloads_.find(download_id) == downloads_.end())
+  if (downloads_.erase(download_id) == 0)
     return;
-
   delete download;
-  downloads_.erase(download_id);
 }
 
 int DownloadManagerImpl::RemoveDownloadsBetween(base::Time remove_begin,
@@ -605,7 +603,7 @@ void DownloadManagerImpl::DownloadUrl(
   if (params->post_id() >= 0) {
     // Check this here so that the traceback is more useful.
     DCHECK(params->prefer_cache());
-    DCHECK(params->method() == "POST");
+    DCHECK_EQ("POST", params->method());
   }
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, base::Bind(
       &BeginDownload, base::Passed(&params),
@@ -636,9 +634,10 @@ DownloadItem* DownloadManagerImpl::CreateDownloadItem(
     DownloadDangerType danger_type,
     DownloadInterruptReason interrupt_reason,
     bool opened) {
-  DCHECK(!ContainsKey(downloads_, id));
-  if (ContainsKey(downloads_, id))
+  if (ContainsKey(downloads_, id)) {
+    NOTREACHED();
     return NULL;
+  }
   DownloadItemImpl* item = item_factory_->CreatePersistedItem(
       this,
       id,
