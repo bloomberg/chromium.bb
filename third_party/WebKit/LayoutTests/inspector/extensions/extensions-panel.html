@@ -12,7 +12,7 @@ function initialize_extensionsPanelTest()
 {
     InspectorTest.getPanelSize = function()
     {
-        var boundingRect = WebInspector.inspectorView._panelsElement.getBoundingClientRect();
+        var boundingRect = WebInspector.inspectorView._tabbedPane._contentElement.getBoundingClientRect();
         return {
             width: boundingRect.width,
             height: boundingRect.height
@@ -22,7 +22,7 @@ function initialize_extensionsPanelTest()
     InspectorTest.dumpStatusBarButtons = function()
     {
         var panel = WebInspector.inspectorView.currentPanel();
-        var items = panel.statusBarItems;
+        var items = panel._panelStatusBarElement.children;
         InspectorTest.addResult("Status bar buttons state:");
         for (var i = 0; i < items.length; ++i) {
             var item = items[i];
@@ -39,7 +39,7 @@ function initialize_extensionsPanelTest()
     InspectorTest.clickButton = function(index)
     {
         var panel = WebInspector.inspectorView.currentPanel();
-        panel.statusBarItems[index].click();
+        panel._panelStatusBarElement.children[index].click();
     }
 
     InspectorTest.clickOnURL = function()
@@ -66,7 +66,7 @@ function initialize_extensionsPanelTest()
 
     InspectorTest.switchToLastPanel = function()
     {
-        var lastPanelName = WebInspector.inspectorView._panelOrder.peekLast();
+        var lastPanelName = WebInspector.inspectorView._tabbedPane._tabs.peekLast().id;
         WebInspector.showPanel(lastPanelName);
     }
 }

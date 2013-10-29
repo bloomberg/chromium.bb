@@ -43,7 +43,7 @@ WebInspector.extensionServer._registerHandler("evaluateForTestInFrontEnd", onEva
 InspectorTest.showPanel = function(panelId)
 {
     if (panelId === "extension")
-        panelId = WebInspector.inspectorView._panelOrder[WebInspector.inspectorView._panelOrder.length - 1];
+        panelId = WebInspector.inspectorView._tabbedPane._tabs[WebInspector.inspectorView._tabbedPane._tabs.length - 1].id;
     WebInspector.showPanel(panelId);
 }
 
