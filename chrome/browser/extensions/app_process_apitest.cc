@@ -587,15 +587,6 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, ReloadIntoAppProcessWithJavaScript) {
       contents->GetRenderProcessHost()->GetID()));
 }
 
-namespace {
-
-void RenderViewHostCreated(std::vector<content::RenderViewHost*>* rvh_vector,
-                           content::RenderViewHost* rvh) {
-  rvh_vector->push_back(rvh);
-}
-
-}  // namespace
-
 // Tests that if we have a non-app process (path3/container.html) that has an
 // iframe with  a URL in the app's extent (path1/iframe.html), then opening a
 // link from that iframe to a new window to a URL in the app's extent (path1/
@@ -621,20 +612,21 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, OpenAppFromIframe) {
       LoadExtension(test_data_dir_.AppendASCII("app_process"));
   ASSERT_TRUE(app);
 
-  std::vector<content::RenderViewHost*> rvh_vector;
-  content::RenderViewHost::CreatedCallback rvh_callback(
-      base::Bind(&RenderViewHostCreated, &rvh_vector));
-  content::RenderViewHost::AddCreatedCallback(rvh_callback);
   ui_test_utils::NavigateToURL(browser(),
                                base_url.Resolve("path3/container.html"));
-  content::RenderViewHost::RemoveCreatedCallback(rvh_callback);
   EXPECT_FALSE(process_map->Contains(
       browser()->tab_strip_model()->GetWebContentsAt(0)->
           GetRenderProcessHost()->GetID()));
 
+  const BrowserList* active_browser_list =
+      BrowserList::GetInstance(chrome::GetActiveDesktop());
+  EXPECT_EQ(2U, active_browser_list->size());
+  content::WebContents* popup_contents =
+      active_browser_list->get(1)->tab_strip_model()->GetActiveWebContents();
+  content::WaitForLoadStop(popup_contents);
+
   // Popup window should be in the app's process.
-  ASSERT_EQ(3U, rvh_vector.size());
-  RenderViewHost* popup_host = rvh_vector[2];
+  RenderViewHost* popup_host = popup_contents->GetRenderViewHost();
   EXPECT_TRUE(process_map->Contains(popup_host->GetProcess()->GetID()));
 }
 
@@ -770,20 +762,21 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, OpenWebPopupFromWebIframe) {
       LoadExtension(test_data_dir_.AppendASCII("app_process"));
   ASSERT_TRUE(app);
 
-  std::vector<content::RenderViewHost*> rvh_vector;
-  content::RenderViewHost::CreatedCallback rvh_callback(
-      base::Bind(&RenderViewHostCreated, &rvh_vector));
-  content::RenderViewHost::AddCreatedCallback(rvh_callback);
   ui_test_utils::NavigateToURL(browser(),
                                base_url.Resolve("path1/container.html"));
-  content::RenderViewHost::RemoveCreatedCallback(rvh_callback);
   content::RenderProcessHost* process =
       browser()->tab_strip_model()->GetWebContentsAt(0)->GetRenderProcessHost();
   EXPECT_TRUE(process_map->Contains(process->GetID()));
 
   // Popup window should be in the app's process.
-  ASSERT_EQ(2U, rvh_vector.size());
-  RenderViewHost* popup_host = rvh_vector[1];
+  const BrowserList* active_browser_list =
+      BrowserList::GetInstance(chrome::GetActiveDesktop());
+  EXPECT_EQ(2U, active_browser_list->size());
+  content::WebContents* popup_contents =
+      active_browser_list->get(1)->tab_strip_model()->GetActiveWebContents();
+  content::WaitForLoadStop(popup_contents);
+
+  RenderViewHost* popup_host = popup_contents->GetRenderViewHost();
   EXPECT_EQ(process, popup_host->GetProcess());
 }
 
