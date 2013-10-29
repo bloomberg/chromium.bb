@@ -2277,6 +2277,8 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
    * dialog, because it closes by calling extension API functions that do not
    * return.
    *
+   * TODO(hirono): This method is not called when Files.app is opend as a dialog
+   *     and is closed by the close button in the dialog frame. crbug.com/309967
    * @private
    */
   FileManager.prototype.onUnload_ = function() {
@@ -2300,6 +2302,9 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
             'entry-changed', this.onEntryChangedBound_);
       }
     }
+    window.closing = true;
+    if (this.backgroundPage_ && util.platform.runningInBrowser())
+      this.backgroundPage_.maybeCloseBackgroundPage();
   };
 
   FileManager.prototype.initiateRename = function() {
@@ -3571,7 +3576,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     this.defaultActionMenuItem_.hidden = !defaultItem;
     defaultActionSeparator.hidden = !defaultItem;
   };
-
 
   /**
    * Window beforeunload handler.

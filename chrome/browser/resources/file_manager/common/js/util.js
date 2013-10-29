@@ -611,7 +611,7 @@ util.applyTransform = function(element, transform) {
 util.makeFilesystemUrl = function(path) {
   path = path.split('/').map(encodeURIComponent).join('/');
   var prefix = 'external';
-  return 'filesystem:' + document.location.origin + '/' + prefix + path;
+  return 'filesystem:' + chrome.runtime.getURL(prefix + path);
 };
 
 /**

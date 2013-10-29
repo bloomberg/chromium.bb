@@ -586,9 +586,14 @@ Background.prototype.onContextMenuClicked_ = function(info) {
  * Closes the background page, if it is not needed.
  */
 function maybeCloseBackgroundPage() {
-  if (Object.keys(background.appWindows).length === 0 &&
-      !FileOperationManager.getInstance().hasQueuedTasks())
-    close();
+  if (FileOperationManager.getInstance().hasQueuedTasks())
+    return;
+  var views = chrome.extension.getViews();
+  for (var i = 0; i < views.length; i++) {
+    if (views[i] !== window && !views[i].closing)
+      return;
+  }
+  close();
 }
 
 /**
