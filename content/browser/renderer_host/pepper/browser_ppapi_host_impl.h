@@ -36,6 +36,7 @@ class CONTENT_EXPORT BrowserPpapiHostImpl : public BrowserPpapiHost {
       const std::string& plugin_name,
       const base::FilePath& plugin_path,
       const base::FilePath& profile_data_directory,
+      bool in_process,
       bool external_plugin);
   virtual ~BrowserPpapiHostImpl();
 
@@ -56,6 +57,7 @@ class CONTENT_EXPORT BrowserPpapiHostImpl : public BrowserPpapiHost {
     plugin_process_handle_ = handle;
   }
 
+  bool in_process() const { return in_process_; }
   bool external_plugin() const { return external_plugin_; }
 
   // These two functions are notifications that an instance has been created
@@ -99,6 +101,9 @@ class CONTENT_EXPORT BrowserPpapiHostImpl : public BrowserPpapiHost {
   std::string plugin_name_;
   base::FilePath plugin_path_;
   base::FilePath profile_data_directory_;
+
+  // If true, this refers to a plugin running in the renderer process.
+  bool in_process_;
 
   // If true, this is an external plugin, i.e. created by the embedder using
   // BrowserPpapiHost::CreateExternalPluginProcess.
