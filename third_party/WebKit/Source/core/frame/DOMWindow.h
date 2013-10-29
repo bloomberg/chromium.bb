@@ -267,19 +267,8 @@ enum PageshowEventPersistence {
         DEFINE_ATTRIBUTE_EVENT_LISTENER(animationend);
         DEFINE_ATTRIBUTE_EVENT_LISTENER(animationiteration);
         DEFINE_ATTRIBUTE_EVENT_LISTENER(animationstart);
-        DEFINE_ATTRIBUTE_EVENT_LISTENER(beforeunload);
-        DEFINE_ATTRIBUTE_EVENT_LISTENER(hashchange);
-        DEFINE_ATTRIBUTE_EVENT_LISTENER(message);
-        DEFINE_ATTRIBUTE_EVENT_LISTENER(offline);
-        DEFINE_ATTRIBUTE_EVENT_LISTENER(online);
-        DEFINE_ATTRIBUTE_EVENT_LISTENER(pagehide);
-        DEFINE_ATTRIBUTE_EVENT_LISTENER(pageshow);
-        DEFINE_ATTRIBUTE_EVENT_LISTENER(popstate);
-        DEFINE_ATTRIBUTE_EVENT_LISTENER(resize);
         DEFINE_ATTRIBUTE_EVENT_LISTENER(search);
-        DEFINE_ATTRIBUTE_EVENT_LISTENER(storage);
         DEFINE_ATTRIBUTE_EVENT_LISTENER(transitionend);
-        DEFINE_ATTRIBUTE_EVENT_LISTENER(unload);
         DEFINE_ATTRIBUTE_EVENT_LISTENER(wheel);
 
         DEFINE_MAPPED_ATTRIBUTE_EVENT_LISTENER(webkitanimationstart, webkitAnimationStart);

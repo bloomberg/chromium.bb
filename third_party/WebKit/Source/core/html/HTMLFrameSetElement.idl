@@ -23,17 +23,6 @@ interface HTMLFrameSetElement : HTMLElement {
     [Reflect, TreatNullAs=NullString] attribute DOMString cols;
     [Reflect, TreatNullAs=NullString] attribute DOMString rows;
 
-    // Event handler attributes
-    attribute EventHandler onbeforeunload;
-    attribute EventHandler onhashchange;
-    attribute EventHandler onmessage;
-    attribute EventHandler onoffline;
-    attribute EventHandler ononline;
-    attribute EventHandler onpopstate;
-    attribute EventHandler onresize;
-    attribute EventHandler onstorage;
-    attribute EventHandler onunload;
-
     [Conditional=ORIENTATION_EVENTS] attribute EventHandler onorientationchange;
 
     // Overrides of GlobalEventHandler attributes
@@ -42,11 +31,6 @@ interface HTMLFrameSetElement : HTMLElement {
     attribute EventHandler onfocus;
     attribute EventHandler onload;
     attribute EventHandler onscroll;
-
-    // Not implemented yet.
-    // attribute EventHandler onafterprint;
-    // attribute EventHandler onbeforeprint;
-    // attribute EventHandler onredo;
-    // attribute EventHandler onundo;
 };
 
+HTMLFrameSetElement implements WindowEventHandlers;

@@ -20,9 +20,16 @@
     "onstorage",
     "onunload"
 ].forEach(function(attribute) {
+    testSet("Window", attribute);
     testEnumerate("Window", attribute);
+    testSet("HTMLBodyElement", attribute);
     testEnumerate("HTMLBodyElement", attribute);
+    testReflect("HTMLBodyElement", attribute);
+    testForwardToWindow("HTMLBodyElement", attribute);
+    testSet("HTMLFrameSetElement", attribute);
     testEnumerate("HTMLFrameSetElement", attribute);
+    testReflect("HTMLFrameSetElement", attribute);
+    testForwardToWindow("HTMLFrameSetElement", attribute);
 });
 </script>
 <div id="log"></div>

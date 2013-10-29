@@ -170,6 +170,22 @@ private:
     EventListener* on##attribute(DOMWrapperWorld* isolatedWorld) { return document().getWindowAttributeEventListener(EventTypeNames::attribute, isolatedWorld); } \
     void setOn##attribute(PassRefPtr<EventListener> listener, DOMWrapperWorld* isolatedWorld) { document().setWindowAttributeEventListener(EventTypeNames::attribute, listener, isolatedWorld); } \
 
+#define DEFINE_STATIC_WINDOW_ATTRIBUTE_EVENT_LISTENER(attribute) \
+    static EventListener* on##attribute(EventTarget* eventTarget, DOMWrapperWorld* isolatedWorld) { \
+        if (Node* node = eventTarget->toNode()) \
+            return node->document().getWindowAttributeEventListener(EventTypeNames::attribute, isolatedWorld); \
+        ASSERT(eventTarget->toDOMWindow()); \
+        return eventTarget->getAttributeEventListener(EventTypeNames::attribute, isolatedWorld); \
+    } \
+    static void setOn##attribute(EventTarget* eventTarget, PassRefPtr<EventListener> listener, DOMWrapperWorld* isolatedWorld) { \
+        if (Node* node = eventTarget->toNode()) \
+            node->document().setWindowAttributeEventListener(EventTypeNames::attribute, listener, isolatedWorld); \
+        else { \
+            ASSERT(eventTarget->toDOMWindow()); \
+            eventTarget->setAttributeEventListener(EventTypeNames::attribute, listener, isolatedWorld); \
+        } \
+    }
+
 #define DEFINE_MAPPED_ATTRIBUTE_EVENT_LISTENER(attribute, eventName) \
     EventListener* on##attribute(DOMWrapperWorld* isolatedWorld) { return getAttributeEventListener(EventTypeNames::eventName, isolatedWorld); } \
     void setOn##attribute(PassRefPtr<EventListener> listener, DOMWrapperWorld* isolatedWorld) { setAttributeEventListener(EventTypeNames::eventName, listener, isolatedWorld); } \

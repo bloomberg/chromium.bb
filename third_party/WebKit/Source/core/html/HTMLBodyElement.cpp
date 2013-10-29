@@ -142,6 +142,8 @@ void HTMLBodyElement::parseAttribute(const QualifiedName& name, const AtomicStri
 #endif
     else if (name == onhashchangeAttr)
         document().setWindowAttributeEventListener(EventTypeNames::hashchange, createAttributeEventListener(document().frame(), name, value));
+    else if (name == onmessageAttr)
+        document().setWindowAttributeEventListener(EventTypeNames::message, createAttributeEventListener(document().frame(), name, value));
     else if (name == onresizeAttr)
         document().setWindowAttributeEventListener(EventTypeNames::resize, createAttributeEventListener(document().frame(), name, value));
     else if (name == onscrollAttr)
