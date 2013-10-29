@@ -33,6 +33,7 @@
 
 #include <v8.h>
 #include "V8Promise.h"
+#include "bindings/v8/DOMRequestState.h"
 #include "bindings/v8/ScopedPersistent.h"
 #include "bindings/v8/ScriptFunctionCall.h"
 #include "bindings/v8/ScriptState.h"
@@ -191,10 +192,11 @@ void addToDerived(v8::Handle<v8::Object> internal, v8::Handle<v8::Object> derive
 
 class CallHandlerTask : public ExecutionContextTask {
 public:
-    CallHandlerTask(v8::Handle<v8::Object> promise, v8::Handle<v8::Function> handler, v8::Handle<v8::Value> argument, v8::Isolate* isolate)
+    CallHandlerTask(v8::Handle<v8::Object> promise, v8::Handle<v8::Function> handler, v8::Handle<v8::Value> argument, v8::Isolate* isolate, ExecutionContext* context)
         : m_promise(isolate, promise)
         , m_handler(isolate, handler)
         , m_argument(isolate, argument)
+        , m_requestState(context)
     {
         ASSERT(!m_promise.isEmpty());
         ASSERT(!m_handler.isEmpty());
@@ -208,6 +210,7 @@ private:
     ScopedPersistent<v8::Object> m_promise;
     ScopedPersistent<v8::Function> m_handler;
     ScopedPersistent<v8::Value> m_argument;
+    DOMRequestState m_requestState;
 };
 
 void CallHandlerTask::performTask(ExecutionContext* context)
@@ -216,19 +219,8 @@ void CallHandlerTask::performTask(ExecutionContext* context)
     if (context->activeDOMObjectsAreStopped())
         return;
 
-    ScriptState* state = 0;
-    if (context->isDocument()) {
-        state = mainWorldScriptState(static_cast<Document*>(context)->frame());
-    } else {
-        ASSERT(context->isWorkerGlobalScope());
-        state = scriptStateFromWorkerGlobalScope(toWorkerGlobalScope(context));
-    }
-    ASSERT(state);
-
-    v8::Isolate* isolate = state->isolate();
-    v8::HandleScope handleScope(isolate);
-    v8::Handle<v8::Context> v8Context = state->context();
-    v8::Context::Scope scope(v8Context);
+    DOMRequestState::Scope scope(m_requestState);
+    v8::Isolate* isolate = m_requestState.isolate();
     v8::Handle<v8::Value> args[] = { m_argument.newLocal(isolate) };
     v8::TryCatch trycatch;
     v8::Local<v8::Value> value = V8ScriptRunner::callFunction(m_handler.newLocal(isolate), context, v8::Undefined(isolate), WTF_ARRAY_LENGTH(args), args, isolate);
@@ -241,11 +233,12 @@ void CallHandlerTask::performTask(ExecutionContext* context)
 
 class UpdateDerivedTask : public ExecutionContextTask {
 public:
-    UpdateDerivedTask(v8::Handle<v8::Object> promise, v8::Handle<v8::Function> onFulfilled, v8::Handle<v8::Function> onRejected, v8::Handle<v8::Object> originatorValueObject, v8::Isolate* isolate)
+    UpdateDerivedTask(v8::Handle<v8::Object> promise, v8::Handle<v8::Function> onFulfilled, v8::Handle<v8::Function> onRejected, v8::Handle<v8::Object> originatorValueObject, v8::Isolate* isolate, ExecutionContext* context)
         : m_promise(isolate, promise)
         , m_onFulfilled(isolate, onFulfilled)
         , m_onRejected(isolate, onRejected)
         , m_originatorValueObject(isolate, originatorValueObject)
+        , m_requestState(context)
     {
         ASSERT(!m_promise.isEmpty());
         ASSERT(!m_originatorValueObject.isEmpty());
@@ -259,6 +252,7 @@ private:
     ScopedPersistent<v8::Function> m_onFulfilled;
     ScopedPersistent<v8::Function> m_onRejected;
     ScopedPersistent<v8::Object> m_originatorValueObject;
+    DOMRequestState m_requestState;
 };
 
 void UpdateDerivedTask::performTask(ExecutionContext* context)
@@ -267,20 +261,8 @@ void UpdateDerivedTask::performTask(ExecutionContext* context)
     if (context->activeDOMObjectsAreStopped())
         return;
 
-    ScriptState* state = 0;
-    if (context->isDocument()) {
-        state = mainWorldScriptState(static_cast<Document*>(context)->frame());
-    } else {
-        ASSERT(context->isWorkerGlobalScope());
-        state = scriptStateFromWorkerGlobalScope(toWorkerGlobalScope(context));
-    }
-    ASSERT(state);
-
-    v8::Isolate* isolate = state->isolate();
-    v8::HandleScope handleScope(isolate);
-    v8::Handle<v8::Context> v8Context = state->context();
-    v8::Context::Scope scope(v8Context);
-
+    DOMRequestState::Scope scope(m_requestState);
+    v8::Isolate* isolate = m_requestState.isolate();
     v8::Local<v8::Object> originatorValueObject = m_originatorValueObject.newLocal(isolate);
     v8::Local<v8::Value> coercedAlready = originatorValueObject->GetHiddenValue(V8HiddenPropertyName::thenableHiddenPromise(isolate));
     if (!coercedAlready.IsEmpty() && coercedAlready->IsObject()) {
@@ -456,7 +438,7 @@ void PromisePropagator::updateDerived(v8::Handle<v8::Object> derivedPromise, v8:
         if (originatorValue->IsObject()) {
             ExecutionContext* executionContext = getExecutionContext();
             ASSERT(executionContext && executionContext->isContextThread());
-            executionContext->postTask(adoptPtr(new UpdateDerivedTask(derivedPromise, onFulfilled, onRejected, originatorValue.As<v8::Object>(), isolate)));
+            executionContext->postTask(adoptPtr(new UpdateDerivedTask(derivedPromise, onFulfilled, onRejected, originatorValue.As<v8::Object>(), isolate, executionContext)));
         } else {
             updateDerivedFromValue(derivedPromise, onFulfilled, originatorValue, isolate);
         }
@@ -816,7 +798,7 @@ void V8PromiseCustom::callHandler(v8::Handle<v8::Object> promise, v8::Handle<v8:
 {
     ExecutionContext* executionContext = getExecutionContext();
     ASSERT(executionContext && executionContext->isContextThread());
-    executionContext->postTask(adoptPtr(new CallHandlerTask(promise, handler, argument, isolate)));
+    executionContext->postTask(adoptPtr(new CallHandlerTask(promise, handler, argument, isolate, executionContext)));
 }
 
 } // namespace WebCore
