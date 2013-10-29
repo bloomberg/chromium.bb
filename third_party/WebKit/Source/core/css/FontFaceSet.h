@@ -112,6 +112,8 @@ private:
 
     FontFaceSet(Document*);
 
+    bool hasLoadedFonts() const { return !m_loadedFonts.isEmpty() || !m_failedFonts.isEmpty(); }
+
     void scheduleEvent(PassRefPtr<Event>);
     void queueDoneEvent(FontFace*);
     void firePendingEvents();
@@ -127,7 +129,6 @@ private:
     Vector<OwnPtr<FontsReadyPromiseResolver> > m_readyResolvers;
     FontFaceArray m_loadedFonts;
     FontFaceArray m_failedFonts;
-    bool m_shouldFireDoneEvent;
 
     AsyncMethodRunner<FontFaceSet> m_asyncRunner;
 

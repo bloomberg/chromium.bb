@@ -137,7 +137,6 @@ private:
 FontFaceSet::FontFaceSet(Document* document)
     : ActiveDOMObject(document)
     , m_loadingCount(0)
-    , m_shouldFireDoneEvent(false)
     , m_asyncRunner(this, &FontFaceSet::handlePendingEventsAndPromises)
 {
     suspendIfNeeded();
@@ -166,7 +165,7 @@ AtomicString FontFaceSet::status() const
 {
     DEFINE_STATIC_LOCAL(AtomicString, loading, ("loading", AtomicString::ConstructFromLiteral));
     DEFINE_STATIC_LOCAL(AtomicString, loaded, ("loaded", AtomicString::ConstructFromLiteral));
-    return (m_loadingCount > 0 || m_shouldFireDoneEvent) ? loading : loaded;
+    return (m_loadingCount > 0 || hasLoadedFonts()) ? loading : loaded;
 }
 
 void FontFaceSet::handlePendingEventsAndPromisesSoon()
@@ -183,7 +182,7 @@ void FontFaceSet::didLayout()
         m_histogram.record();
     if (!RuntimeEnabledFeatures::fontLoadEventsEnabled())
         return;
-    if (m_loadingCount || (!m_shouldFireDoneEvent && m_readyResolvers.isEmpty()))
+    if (m_loadingCount || (!hasLoadedFonts() && m_readyResolvers.isEmpty()))
         return;
     handlePendingEventsAndPromisesSoon();
 }
@@ -250,10 +249,9 @@ void FontFaceSet::beginFontLoading(FontFace* fontFace)
     if (!RuntimeEnabledFeatures::fontLoadEventsEnabled())
         return;
 
-    ++m_loadingCount;
-    if (m_loadingCount == 1 && !m_shouldFireDoneEvent)
+    if (!m_loadingCount && !hasLoadedFonts())
         scheduleEvent(CSSFontFaceLoadEvent::createForFontFaces(EventTypeNames::loading));
-    m_shouldFireDoneEvent = false;
+    ++m_loadingCount;
 }
 
 void FontFaceSet::fontLoaded(FontFace* fontFace)
@@ -276,11 +274,8 @@ void FontFaceSet::queueDoneEvent(FontFace* fontFace)
 {
     ASSERT(m_loadingCount > 0);
     --m_loadingCount;
-    if (!m_loadingCount) {
-        ASSERT(!m_shouldFireDoneEvent);
-        m_shouldFireDoneEvent = true;
+    if (!m_loadingCount)
         handlePendingEventsAndPromisesSoon();
-    }
 }
 
 ScriptPromise FontFaceSet::ready()
@@ -296,7 +291,7 @@ void FontFaceSet::fireDoneEventIfPossible()
 {
     if (!m_pendingEvents.isEmpty() || !m_pendingLoadResolvers.isEmpty())
         return;
-    if (m_loadingCount || (!m_shouldFireDoneEvent && m_readyResolvers.isEmpty()))
+    if (m_loadingCount || (!hasLoadedFonts() && m_readyResolvers.isEmpty()))
         return;
 
     // If the layout was invalidated in between when we thought layout
@@ -306,8 +301,7 @@ void FontFaceSet::fireDoneEventIfPossible()
     if (!d->view() || d->view()->needsLayout())
         return;
 
-    if (m_shouldFireDoneEvent) {
-        m_shouldFireDoneEvent = false;
+    if (hasLoadedFonts()) {
         RefPtr<CSSFontFaceLoadEvent> doneEvent;
         RefPtr<CSSFontFaceLoadEvent> errorEvent;
         doneEvent = CSSFontFaceLoadEvent::createForFontFaces(EventTypeNames::loadingdone, m_loadedFonts);
