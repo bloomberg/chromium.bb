@@ -14,6 +14,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/prefs/pref_change_registrar.h"
+#include "base/time/time.h"
 #include "ui/base/work_area_watcher_observer.h"
 
 class AppControllerProfileObserver;
@@ -79,6 +80,10 @@ class WorkAreaWatcherObserver;
 
   // Indicates wheter an NSPopover is currently being shown.
   BOOL hasPopover_;
+
+  // If we are expecting a workspace change in response to a reopen
+  // event, the time we got the event. A null time otherwise.
+  base::TimeTicks reopenTime_;
 
   // Observers that listen to the work area changes.
   ObserverList<ui::WorkAreaWatcherObserver> workAreaChangeObservers_;

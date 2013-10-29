@@ -16,16 +16,22 @@ namespace ui {
 // In addition, limit to the windows on the current
 // workspace. Otherwise we jump spaces haphazardly.
 //
-// NOTE: This is not perfect. If clicking the dock icon resulted in
-// switching spaces, isOnActiveSpace gives the answer for the PREVIOUS
-// space. This means that we actually raise the wrong space's
-// windows. This seems to still work okay.
+// NOTE: If this is called in the
+// applicationShouldHandleReopen:hasVisibleWindows: hook when clicking
+// the dock icon, and that caused OS X to begin switch spaces,
+// isOnActiveSpace gives the answer for the PREVIOUS space. This means
+// that we actually raise and focus the wrong space's windows, leaving
+// the new key window off-screen. To detect this, check if the key
+// window prior to calling is on an active space.
 //
-// However, if we decide to deminiaturize a window instead, that
-// results in switching spaces and switching back. Fortunately, this
-// only happens if, say, space 1 contains an app, space 2 contains a
+// Also, if we decide to deminiaturize a window during a space switch,
+// that can switch spaces and then switch back. Fortunately, this only
+// happens if, say, space 1 contains an app, space 2 contains a
 // miniaturized browser. We click the icon, OS X switches to space 1,
 // we deminiaturize the browser, and that triggers switching back.
+//
+// TODO(davidben): To limit those cases, consider preferentially
+// deminiaturizing a window on the current space.
 void FocusWindowSet(const std::set<NSWindow*>& windows,
                     bool allow_workspace_switch) {
   NSArray* ordered_windows = [NSApp orderedWindows];

@@ -106,6 +106,11 @@ NSString* NSPopoverDidShowNotification = @"NSPopoverDidShowNotification";
 NSString* NSPopoverDidCloseNotification = @"NSPopoverDidCloseNotification";
 #endif
 
+// How long we allow a workspace change notification to wait to be
+// associated with a dock activation. The animation lasts 250ms. See
+// applicationShouldHandleReopen:hasVisibleWindows:.
+static const int kWorkspaceChangeTimeoutMs = 500;
+
 // True while AppController is calling chrome::NewEmptyWindow(). We need a
 // global flag here, analogue to StartupBrowserCreator::InProcessStartup()
 // because otherwise the SessionService will try to restore sessions when we
@@ -196,6 +201,7 @@ void RecordLastRunAppBundlePath() {
      withReply:(NSAppleEventDescriptor*)reply;
 - (void)submitCloudPrintJob:(NSAppleEventDescriptor*)event;
 - (void)windowLayeringDidChange:(NSNotification*)inNotification;
+- (void)activeSpaceDidChange:(NSNotification*)inNotification;
 - (void)windowChangedToProfile:(Profile*)profile;
 - (void)checkForAnyKeyWindows;
 - (BOOL)userWillWaitForInProgressDownloads:(int)downloadCount;
@@ -314,6 +320,13 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
              object:nil];
   }
 
+  // Register for space change notifications.
+  [[[NSWorkspace sharedWorkspace] notificationCenter]
+    addObserver:self
+       selector:@selector(activeSpaceDidChange:)
+           name:NSWorkspaceActiveSpaceDidChangeNotification
+         object:nil];
+
   // Set up the command updater for when there are no windows open
   [self initMenuState];
 
@@ -330,6 +343,7 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
   [em removeEventHandlerForEventClass:'WWW!'
                            andEventID:'OURL'];
   [[NSNotificationCenter defaultCenter] removeObserver:self];
+  [[[NSWorkspace sharedWorkspace] notificationCenter] removeObserver:self];
 }
 
 // (NSApplicationDelegate protocol) This is the Apple-approved place to override
@@ -553,6 +567,28 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
   } else if (chrome::GetTotalBrowserCount() == 0) {
     [self windowChangedToProfile:
         g_browser_process->profile_manager()->GetLastUsedProfile()];
+  }
+}
+
+- (void)activeSpaceDidChange:(NSNotification*)notify {
+  if (reopenTime_.is_null() ||
+      ![NSApp isActive] ||
+      (base::TimeTicks::Now() - reopenTime_).InMilliseconds() >
+      kWorkspaceChangeTimeoutMs) {
+    return;
+  }
+
+  // The last applicationShouldHandleReopen:hasVisibleWindows: call
+  // happened during a space change. Now that the change has
+  // completed, raise browser windows.
+  reopenTime_ = base::TimeTicks();
+  std::set<NSWindow*> browserWindows;
+  for (chrome::BrowserIterator iter; !iter.done(); iter.Next()) {
+    Browser* browser = *iter;
+    browserWindows.insert(browser->window()->GetNativeWindow());
+  }
+  if (!browserWindows.empty()) {
+    ui::FocusWindowSet(browserWindows, false);
   }
 }
 
@@ -1083,9 +1119,26 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
       browserWindows.insert(browser->window()->GetNativeWindow());
     }
     if (!browserWindows.empty()) {
-      ui::FocusWindowSet(browserWindows, false);
-      // Return NO; we've done the unminimize, so AppKit shouldn't do
-      // anything.
+      NSWindow* keyWindow = [NSApp keyWindow];
+      if (keyWindow && ![keyWindow isOnActiveSpace]) {
+        // The key window is not on the active space. We must be mid-animation
+        // for a space transition triggered by the dock. Delay the call to
+        // |ui::FocusWindowSet| until the transition completes. Otherwise, the
+        // wrong space's windows get raised, resulting in an off-screen key
+        // window. It does not work to |ui::FocusWindowSet| twice, once here
+        // and once in |activeSpaceDidChange:|, as that appears to break when
+        // the omnibox is focused.
+        //
+        // This check relies on OS X setting the key window to a window on the
+        // target space before calling this method.
+        //
+        // See http://crbug.com/309656.
+        reopenTime_ = base::TimeTicks::Now();
+      } else {
+        ui::FocusWindowSet(browserWindows, false);
+      }
+      // Return NO; we've done (or soon will do) the deminiaturize, so
+      // AppKit shouldn't do anything.
       return NO;
     }
   }
