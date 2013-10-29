@@ -156,11 +156,7 @@ class LKGMManager(manifest_version.BuildSpecsManager):
       self.rel_working_dir = self.LKGM_SUBDIR
 
   def _RunLambdaWithTimeout(self, function_to_run, use_long_timeout=False):
-    """Runs function_to_run until it returns a value or timeout is reached.
-
-    Returns:
-      The value returned by the final call to function_to_run.
-    """
+    """Runs function_to_run until it returns a value or timeout is reached."""
     function_success = False
     start_time = time.time()
     max_timeout = self.MAX_TIMEOUT_SECONDS
@@ -384,32 +380,22 @@ class LKGMManager(manifest_version.BuildSpecsManager):
     else:
       return None
 
-  def GetBuildersStatus(self, builders_array, step_name=None,
-                        wait_for_status=True):
+  def GetBuildersStatus(self, builders_array):
     """Returns a build-names->status dictionary of build statuses.
 
     Args:
       builders_array: A list of the names of the builders to check.
-      step_name: The step name to get a partial builder status for.
-                 Defaults to None, in which case the full builder
-                 status is fetched.
-      wait_for_status: Defaults to True, in which case the call will
-                       wait until status files appear (with a default
-                       timeout). If False, will not wait for files to
-                       appear.
     """
     builders_completed = set()
     builder_statuses = {}
 
     def _CheckStatusOfBuildersArray():
-      """Helper function that iterates through current statuses.
-      """
+      """Helper function that iterates through current statuses."""
       for b in builders_array:
         cached_status = builder_statuses.get(b)
         if not cached_status or not cached_status.Completed():
           logging.debug("Checking for builder %s's status", b)
-          builder_status = self.GetBuildStatus(b, self.current_version,
-                                               step_name=step_name)
+          builder_status = self.GetBuildStatus(b, self.current_version)
           builder_statuses[b] = builder_status
           if builder_status is None:
             logging.warn('No status found for builder %s.', b)
@@ -428,14 +414,10 @@ class LKGMManager(manifest_version.BuildSpecsManager):
         return 'Builds completed.'
 
     # Check for build completion until all builders report in.
-    if wait_for_status:
-      builds_succeeded = self._RunLambdaWithTimeout(_CheckStatusOfBuildersArray,
-          use_long_timeout=True)
-    else:
-      builds_succeeded = _CheckStatusOfBuildersArray()
-
+    builds_succeeded = self._RunLambdaWithTimeout(_CheckStatusOfBuildersArray,
+                                                  use_long_timeout=True)
     if not builds_succeeded:
-      logging.error('Not all build statuses available or MAX_TIMEOUT reached.')
+      logging.error('Not all builds finished before MAX_TIMEOUT reached.')
 
     return builder_statuses
 

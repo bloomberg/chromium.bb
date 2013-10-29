@@ -341,13 +341,12 @@ class LKGMManagerTest(cros_test_lib.MoxTempDirTestCase):
     osutils.Touch(manifest)
     return manifest, dir_pfx
 
-  def _GetBuildersStatus(self, builders, status_runs, step_name=None):
+  def _GetBuildersStatus(self, builders, status_runs):
     """Test a call to LKGMManager.GetBuildersStatus.
 
     Args:
       builders: List of builders to get status for.
       status_runs: List of expected (builder, status) tuples.
-      step_name: Builder step to test getting status for. Default: None
     """
     self.mox.StubOutWithMock(lkgm_manager.LKGMManager, 'GetBuildStatus')
     for builder, status in status_runs:
@@ -356,7 +355,7 @@ class LKGMManagerTest(cros_test_lib.MoxTempDirTestCase):
       if status is not None:
         status = manifest_version.BuilderStatus(status, None)
       lkgm_manager.LKGMManager.GetBuildStatus(
-          builder, mox.IgnoreArg(), step_name=step_name).AndReturn(status)
+          builder, mox.IgnoreArg()).AndReturn(status)
 
     self.mox.ReplayAll()
     statuses = self.manager.GetBuildersStatus(builders)

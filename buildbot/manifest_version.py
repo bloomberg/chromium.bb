@@ -535,8 +535,7 @@ class BuildSpecsManager(object):
     return self._latest_status and self._latest_status.Failed()
 
   @staticmethod
-  def GetBuildStatus(builder, version, retries=NUM_RETRIES,
-                     step_name=None):
+  def GetBuildStatus(builder, version, retries=NUM_RETRIES):
     """Returns a BuilderStatus instance for the given the builder.
 
     Args:
@@ -548,7 +547,7 @@ class BuildSpecsManager(object):
       A BuilderStatus instance containing the builder status and any optional
       message associated with the status passed by the builder.
     """
-    url = BuildSpecsManager._GetStatusUrl(builder, version, step_name)
+    url = BuildSpecsManager._GetStatusUrl(builder, version)
     ctx = gs.GSContext(retries=retries)
     try:
       output = ctx.Cat(url).output
