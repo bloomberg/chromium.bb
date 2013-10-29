@@ -3662,6 +3662,19 @@ static void voidMethodUnsignedShortArgMethodCallback(const v8::FunctionCallbackI
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
+static void testInterfaceEmptyMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
+{
+    TestObjectPython* imp = V8TestObjectPython::toNative(args.Holder());
+    v8SetReturnValue(args, imp->testInterfaceEmptyMethod(), args.Holder());
+}
+
+static void testInterfaceEmptyMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    TestObjectPythonV8Internal::testInterfaceEmptyMethodMethod(args);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
 static void voidMethodStringArgLongArgMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     if (UNLIKELY(args.Length() < 2)) {
@@ -3830,6 +3843,7 @@ static const V8DOMConfiguration::MethodConfiguration V8TestObjectPythonMethods[]
     {"voidMethodUnsignedLongArg", TestObjectPythonV8Internal::voidMethodUnsignedLongArgMethodCallback, 0, 1},
     {"voidMethodUnsignedLongLongArg", TestObjectPythonV8Internal::voidMethodUnsignedLongLongArgMethodCallback, 0, 1},
     {"voidMethodUnsignedShortArg", TestObjectPythonV8Internal::voidMethodUnsignedShortArgMethodCallback, 0, 1},
+    {"testInterfaceEmptyMethod", TestObjectPythonV8Internal::testInterfaceEmptyMethodMethodCallback, 0, 0},
     {"voidMethodStringArgLongArg", TestObjectPythonV8Internal::voidMethodStringArgLongArgMethodCallback, 0, 2},
 };
 

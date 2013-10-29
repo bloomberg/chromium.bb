@@ -533,7 +533,6 @@ V8_SET_RETURN_VALUE = {
 }
 
 
-# XXX
 def v8_set_return_value(idl_type, cpp_value, callback_info, isolate, creation_context='', extended_attributes=None, script_wrappable=''):
     """Returns a statement that converts a C++ value to a V8 value and sets it as a return value."""
     def dom_wrapper_conversion_type():

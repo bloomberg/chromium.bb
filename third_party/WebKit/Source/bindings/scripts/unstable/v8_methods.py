@@ -60,5 +60,5 @@ def generate_method(method):
         'number_of_required_arguments': len(arguments),
     }
     if idl_type != 'void':
-        contents['v8_set_return_value'] = v8_types.v8_set_return_value(idl_type, cpp_value, callback_info='args', isolate='args.GetIsolate()', script_wrappable='imp')
+        contents['v8_set_return_value'] = v8_types.v8_set_return_value(idl_type, cpp_value, callback_info='args', creation_context='args.Holder()', isolate='args.GetIsolate()')
     return contents

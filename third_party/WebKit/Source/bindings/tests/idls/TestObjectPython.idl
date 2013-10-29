@@ -171,7 +171,6 @@ interface TestObjectPython {
 
     // Methods
     void voidMethod();
-
     // Basic types
     Date dateMethod();
     DOMString stringMethod();
@@ -202,6 +201,8 @@ interface TestObjectPython {
     void voidMethodUnsignedLongArg(unsigned long unsignedLongArg);
     void voidMethodUnsignedLongLongArg(unsigned long long unsignedLongLongArg);
     void voidMethodUnsignedShortArg(unsigned short unsignedShortArg);
+    // Interface types
+    TestInterfaceEmpty testInterfaceEmptyMethod();
 
     void voidMethodStringArgLongArg(DOMString stringArg, long longArg);
 };
