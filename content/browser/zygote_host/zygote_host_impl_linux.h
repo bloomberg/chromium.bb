@@ -55,7 +55,6 @@ class CONTENT_EXPORT ZygoteHostImpl : public ZygoteHost {
   virtual int GetSandboxStatus() const OVERRIDE;
   virtual void AdjustRendererOOMScore(base::ProcessHandle process_handle,
                                       int score) OVERRIDE;
-  virtual void AdjustLowMemoryMargin(int64 margin_mb) OVERRIDE;
 
  private:
   friend struct DefaultSingletonTraits<ZygoteHostImpl>;

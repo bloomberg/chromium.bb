@@ -24,10 +24,6 @@
 static const int kMaxOomScore = 1000;
 static const int kMaxOldOomScore = 15;
 
-// Kernel pseudo-file that allows setting of the low memory margin.
-static const char kLowMemMarginFile[] =
-    "/sys/kernel/mm/chromeos-low_mem/margin";
-
 // NOTE: This is not the only version of this function in the source:
 // the base library (in process_util_linux.cc) also has its own C++ version.
 bool AdjustOOMScore(pid_t process, int score) {
@@ -76,31 +72,4 @@ bool AdjustOOMScore(pid_t process, int score) {
   ssize_t bytes_written = write(fd, buf, len);
   close(fd);
   return (bytes_written == len);
-}
-
-bool AdjustLowMemoryMargin(int64_t margin_mb) {
-  int file_descriptor = open(kLowMemMarginFile, O_WRONLY);
-  if (file_descriptor < 0)
-    return false;
-
-  // Only allow those values which are reasonable, to prevent mischief.
-  char value[21];
-  switch (margin_mb) {
-    case -1L:
-      snprintf(value, sizeof(value), "off");
-      break;
-    case 0L:
-    case 25L:
-    case 50L:
-    case 100L:
-    case 200L:
-      snprintf(value, sizeof(value), "%lld", (long long int)margin_mb);
-      break;
-    default:
-      return false;
-  }
-
-  bool success = (write(file_descriptor, value, strlen(value)) >= 0);
-  close(file_descriptor);
-  return success;
 }

@@ -12,9 +12,6 @@ namespace sandbox {
 // These are command line switches that may be used by other programs
 // (e.g. Chrome) to construct a command line for the sandbox.
 static const char kAdjustOOMScoreSwitch[] = "--adjust-oom-score";
-#if defined(OS_CHROMEOS)
-static const char kAdjustLowMemMarginSwitch[] = "--adjust-low-mem";
-#endif
 
 static const char kSandboxDescriptorEnvironmentVarName[] = "SBX_D";
 static const char kSandboxHelperPidEnvironmentVarName[] = "SBX_HELPER_PID";

@@ -450,16 +450,6 @@ int main(int argc, char **argv) {
       return 1;
     return AdjustOOMScore(pid, score);
   }
-#if defined(OS_CHROMEOS)
-  if (argc == 3 && (0 == strcmp(argv[1], kAdjustLowMemMarginSwitch))) {
-    char* endptr = NULL;
-    errno = 0;
-    unsigned long margin_mb = strtoul(argv[2], &endptr, 10);
-    if (!endptr || *endptr || errno != 0)
-      return 1;
-    return AdjustLowMemoryMargin(margin_mb);
-  }
-#endif
 
   // Protect the core setuid sandbox functionality with an API version
   if (!CheckAndExportApiVersion()) {
