@@ -1100,7 +1100,8 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
       doneOnce = YES;
       if (base::mac::WasLaunchedAsHiddenLoginItem()) {
         SessionService* sessionService =
-            SessionServiceFactory::GetForProfile([self lastProfile]);
+            SessionServiceFactory::GetForProfileForSessionRestore(
+                [self lastProfile]);
         if (sessionService &&
             sessionService->RestoreIfNecessary(std::vector<GURL>()))
           return NO;

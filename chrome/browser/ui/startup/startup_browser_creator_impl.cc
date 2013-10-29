@@ -605,7 +605,8 @@ void StartupBrowserCreatorImpl::ProcessLaunchURLs(
     // Chrome may have been running in the background due to an app with a
     // background page being installed, or running with only an app window
     // displayed.
-    SessionService* service = SessionServiceFactory::GetForProfile(profile_);
+    SessionService* service =
+        SessionServiceFactory::GetForProfileForSessionRestore(profile_);
     if (service && service->ShouldNewWindowStartSession()) {
       // Restore the last session if any.
       if (!HasPendingUncleanExit(profile_) &&

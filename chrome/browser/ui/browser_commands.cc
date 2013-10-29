@@ -289,7 +289,8 @@ void NewEmptyWindow(Profile* profile, HostDesktopType desktop_type) {
   } else {
     content::RecordAction(UserMetricsAction("NewWindow"));
     SessionService* session_service =
-        SessionServiceFactory::GetForProfile(profile->GetOriginalProfile());
+        SessionServiceFactory::GetForProfileForSessionRestore(
+            profile->GetOriginalProfile());
     if (!session_service ||
         !session_service->RestoreIfNecessary(std::vector<GURL>())) {
       OpenEmptyWindow(profile->GetOriginalProfile(), desktop_type);

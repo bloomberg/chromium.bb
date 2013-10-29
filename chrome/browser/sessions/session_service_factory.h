@@ -18,7 +18,8 @@ class SessionServiceFactory : public BrowserContextKeyedServiceFactory {
   // Returns the session service for |profile|. This may return NULL. If this
   // profile supports a session service (it isn't incognito), and the session
   // service hasn't yet been created, this forces creation of the session
-  // service.
+  // service. This returns NULL if ShutdownForProfile has been called for
+  // |profile|.
   //
   // This returns NULL if the profile is incognito. Callers should always check
   // the return value for NULL.
@@ -29,6 +30,11 @@ class SessionServiceFactory : public BrowserContextKeyedServiceFactory {
   // service has been explicitly shutdown (browser is exiting). Callers should
   // always check the return value for NULL.
   static SessionService* GetForProfileIfExisting(Profile* profile);
+
+  // Returns the session service for |profile|. This is the same as
+  // GetForProfile, but will force creation of the session service even if
+  // ShutdownForProfile has been called for |profile|.
+  static SessionService* GetForProfileForSessionRestore(Profile* profile);
 
   // If |profile| has a session service, it is shut down. To properly record the
   // current state this forces creation of the session service, then shuts it
