@@ -407,7 +407,6 @@ public:
     void setV8CollectableDuringMinorGC(bool flag) { setFlag(flag, V8CollectableDuringMinorGCFlag); }
 
     void lazyAttach();
-    void lazyReattach();
 
     virtual void setFocus(bool flag);
     virtual void setActive(bool flag = true, bool pause = false);
@@ -899,20 +898,15 @@ inline ContainerNode* Node::parentNodeGuaranteedHostFree() const
 
 inline void Node::lazyReattachIfAttached()
 {
-    if (confusingAndOftenMisusedAttached())
-        lazyReattach();
-}
-
-inline void Node::lazyReattach()
-{
     if (styleChangeType() == NeedsReattachStyleChange)
+        return;
+    if (!inActiveDocument())
         return;
 
     AttachContext context;
     context.performingReattach = true;
 
-    if (confusingAndOftenMisusedAttached())
-        detach(context);
+    detach(context);
     lazyAttach();
 }
 

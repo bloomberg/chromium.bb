@@ -304,8 +304,8 @@ void HTMLSelectElement::parseAttribute(const QualifiedName& name, const AtomicSt
 
         m_size = size;
         setNeedsValidityCheck();
-        if (m_size != oldSize && confusingAndOftenMisusedAttached()) {
-            lazyReattach();
+        if (m_size != oldSize && inActiveDocument()) {
+            lazyReattachIfAttached();
             setRecalcListItems();
         }
     } else if (name == multipleAttr)
@@ -707,6 +707,9 @@ void HTMLSelectElement::invalidateSelectedItems()
 
 void HTMLSelectElement::setRecalcListItems()
 {
+    // FIXME: This function does a bunch of confusing things depending on if it
+    // is in the document or not.
+
     m_shouldRecalcListItems = true;
     // Manual selection anchor is reset when manipulating the select programmatically.
     m_activeSelectionAnchorIndex = -1;

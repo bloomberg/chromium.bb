@@ -361,7 +361,7 @@ void HTMLObjectElement::reattachFallbackContent()
     if (document().inStyleRecalc())
         reattach();
     else
-        lazyReattach();
+        lazyReattachIfAttached();
 }
 
 void HTMLObjectElement::renderFallbackContent()
