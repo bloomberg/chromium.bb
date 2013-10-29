@@ -124,14 +124,24 @@ dbg_list="libatk1.0-dbg libc6-dbg libcairo2-dbg libfontconfig1-dbg
           libxdmcp6-dbg libxext6-dbg libxfixes3-dbg libxi6-dbg libxinerama1-dbg
           libxrandr2-dbg libxrender1-dbg libxtst6-dbg zlib1g-dbg"
 
-# arm cross toolchain packages needed to build chrome on arm
-arm_list="libc6-armel-cross libc6-dev-armel-cross libgcc1-armel-cross
-          libgomp1-armel-cross linux-libc-dev-armel-cross
-          libgcc1-dbg-armel-cross libgomp1-dbg-armel-cross
-          binutils-arm-linux-gnueabi cpp-arm-linux-gnueabi
-          gcc-arm-linux-gnueabi g++-arm-linux-gnueabi
-          libmudflap0-dbg-armel-cross"
+# arm cross toolchain packages needed to build chrome on armhf
+arm_list="libc6-armhf-cross libc6-dev-armhf-cross libgcc1-armhf-cross
+          libgomp1-armhf-cross linux-libc-dev-armhf-cross
+          libgcc1-dbg-armhf-cross libgomp1-dbg-armhf-cross
+          binutils-arm-linux-gnueabihf cpp-arm-linux-gnueabihf
+          gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf
+          libmudflap0-dbg-armhf-cross"
 
+# Old armel cross toolchain packages
+armel_list="libc6-armel-cross libc6-dev-armel-cross libgcc1-armel-cross
+            libgomp1-armel-cross linux-libc-dev-armel-cross
+            libgcc1-dbg-armel-cross libgomp1-dbg-armel-cross
+            binutils-arm-linux-gnueabi cpp-arm-linux-gnueabi
+            gcc-arm-linux-gnueabi g++-arm-linux-gnueabi
+            libmudflap0-dbg-armel-cross"
+
+# TODO(sbc): remove armel once the armhf transition is complete
+arm_list="$arm_list $armel_list"
 
 # Some package names have changed over time
 if package_exists ttf-mscorefonts-installer; then

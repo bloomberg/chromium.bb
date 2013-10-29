@@ -22,7 +22,7 @@ Steps to rebuild the arm sysroot image:
 - ./tools/trusted_cross_toolchains/trusted-toolchain-creator.armel.precise.sh \
     BuildJail $SRC/out/arm-sysroot.tar.gz
 - gsutil cp -a public-read $SRC/out/arm-sysroot.tar.gz \
-    nativeclient-archive2/toolchain/$NACL_REV/naclsdk_linux_arm-trusted.tgz
+    nativeclient-archive2/toolchain/$NACL_REV/sysroot-arm-trusted.tgz
 """
 
 import os
@@ -34,9 +34,13 @@ import sys
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 URL_PREFIX = 'https://commondatastorage.googleapis.com'
 URL_PATH = 'nativeclient-archive2/toolchain'
-REVISION = 12203
-TARBALL = 'naclsdk_linux_arm-trusted.tgz'
+REVISION = 12292
+TARBALL = 'sysroot-arm-trusted.tgz'
 
+# TODO(sbc): remove armel support once the transision to armhf
+# is complete.
+REVISION_ARMEL = 12203
+TARBALL_ARMEL = 'naclsdk_linux_arm-trusted.tgz'
 
 def main(args):
   if '--linux-only' in args:
@@ -51,7 +55,10 @@ def main(args):
 
   src_root = os.path.dirname(os.path.dirname(SCRIPT_DIR))
   sysroot = os.path.join(src_root, 'arm-sysroot')
-  url = "%s/%s/%s/%s" % (URL_PREFIX, URL_PATH, REVISION, TARBALL)
+  if '-gnueabihf-' in os.environ.get('CC', ''):
+    url = "%s/%s/%s/%s" % (URL_PREFIX, URL_PATH, REVISION, TARBALL)
+  else:
+    url = "%s/%s/%s/%s" % (URL_PREFIX, URL_PATH, REVISION_ARMEL, TARBALL_ARMEL)
 
   stamp = os.path.join(sysroot, ".stamp")
   if os.path.exists(stamp):

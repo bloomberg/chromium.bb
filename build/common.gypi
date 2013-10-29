@@ -225,7 +225,6 @@
       # Python version.
       'python_ver%': '2.6',
 
-
       # Set NEON compilation flags.
       'arm_neon%': 1,
 
@@ -674,7 +673,6 @@
           # incorrect results when passed to pkg-config
           'sysroot%': '<!(cd <(DEPTH) && pwd -P)/arm-sysroot',
         }], # OS=="linux" and target_arch=="arm" and chromeos==0
-
 
         ['OS=="linux" and branding=="Chrome" and buildtype=="Official" and chromeos==0', {
           'conditions': [
@@ -1771,6 +1769,7 @@
             'arm_fpu%': 'vfpv3-d16',
           }],
         ],
+        # Change the default to hard once the armhf transition is complete.
         'arm_float_abi%': 'softfp',
         'arm_thumb%': 1,
       }],
