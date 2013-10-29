@@ -110,13 +110,12 @@ void InputMethodLinuxX11::OnTextInputTypeChanged(
   InputMethodBase::OnTextInputTypeChanged(client);
 }
 
-void InputMethodLinuxX11::OnCaretBoundsChanged(
-    const TextInputClient* client) {
-  if (!IsTextInputClientFocused(client))
-    return;
-
-  input_method_context_->OnCaretBoundsChanged(
-      GetTextInputClient()->GetCaretBounds());
+void InputMethodLinuxX11::OnCaretBoundsChanged(const TextInputClient* client) {
+  if (IsTextInputClientFocused(client)) {
+    input_method_context_->OnCaretBoundsChanged(
+        GetTextInputClient()->GetCaretBounds());
+  }
+  InputMethodBase::OnCaretBoundsChanged(client);
 }
 
 void InputMethodLinuxX11::CancelComposition(const TextInputClient* client) {
@@ -128,6 +127,7 @@ void InputMethodLinuxX11::CancelComposition(const TextInputClient* client) {
 }
 
 void InputMethodLinuxX11::OnInputLocaleChanged() {
+  InputMethodBase::OnInputLocaleChanged();
 }
 
 std::string InputMethodLinuxX11::GetInputLocale() {

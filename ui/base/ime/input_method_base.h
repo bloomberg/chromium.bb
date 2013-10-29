@@ -45,6 +45,8 @@ class UI_EXPORT InputMethodBase : NON_EXPORTED_BASE(public InputMethod) {
   // If a derived class overrides this method, it should call parent's
   // implementation.
   virtual void OnTextInputTypeChanged(const TextInputClient* client) OVERRIDE;
+  virtual void OnCaretBoundsChanged(const TextInputClient* client) OVERRIDE;
+  virtual void OnInputLocaleChanged() OVERRIDE;
 
   virtual TextInputType GetTextInputType() const OVERRIDE;
   virtual TextInputMode GetTextInputMode() const OVERRIDE;
