@@ -37,6 +37,7 @@
 #include "V8HTMLDocument.h"
 #include "V8Window.h"
 #include "bindings/v8/DOMWrapperWorld.h"
+#include "bindings/v8/DateExtension.h"
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8GCForContextDispose.h"
@@ -269,6 +270,10 @@ void V8WindowShell::createContext()
 
     double contextCreationStartInSeconds = currentTime();
 
+    // Used to avoid sleep calls in unload handlers.
+    if (DateExtension::get())
+        ScriptController::registerExtensionIfNeeded(DateExtension::get());
+
     // Dynamically tell v8 about our extensions now.
     const V8Extensions& extensions = ScriptController::registeredExtensions();
     OwnPtr<const char*[]> extensionNames = adoptArrayPtr(new const char*[extensions.size()]);
@@ -276,7 +281,9 @@ void V8WindowShell::createContext()
     int extensionGroup = m_world->extensionGroup();
     int worldId = m_world->worldId();
     for (size_t i = 0; i < extensions.size(); ++i) {
-        if (!m_frame->loader().client()->allowScriptExtension(extensions[i]->name(), extensionGroup, worldId))
+        // Ensure our date extension is always allowed.
+        if (extensions[i] != DateExtension::get()
+            && !m_frame->loader().client()->allowScriptExtension(extensions[i]->name(), extensionGroup, worldId))
             continue;
 
         extensionNames[index++] = extensions[i]->name();
