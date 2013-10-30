@@ -62,10 +62,24 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Accessibility.CrosAutoclick" enum="BooleanEnabled">
+  <summary>
+    Whether the Chrome OS Autoclick feature is on (checked once 45 secs after
+    startup).
+  </summary>
+</histogram>
+
+<histogram name="Accessibility.CrosAutoclickDelay" units="milliseconds">
+  <summary>
+    If the user has enabled Autoclick, this is the delay set by the user for
+    autoclicks to occur, in milliseconds.
+  </summary>
+</histogram>
+
 <histogram name="Accessibility.CrosHighContrast" enum="BooleanEnabled">
   <summary>
-    Whether the Chrome OS High Constrast mode feature is on (checked once 45
-    secs after startup).
+    Whether the Chrome OS High Contrast mode feature is on (checked once 45 secs
+    after startup).
   </summary>
 </histogram>
 

@@ -14,6 +14,7 @@
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_member.h"
 #include "base/prefs/pref_service.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/accessibility/accessibility_extension_api.h"
 #include "chrome/browser/browser_process.h"
@@ -729,6 +730,20 @@ void AccessibilityManager::UpdateChromeOSAccessibilityHistograms() {
     UMA_HISTOGRAM_BOOLEAN(
         "Accessibility.CrosAlwaysShowA11yMenu",
         prefs->GetBoolean(prefs::kShouldAlwaysShowAccessibilityMenu));
+
+    bool autoclick_enabled = prefs->GetBoolean(prefs::kAutoclickEnabled);
+    UMA_HISTOGRAM_BOOLEAN("Accessibility.CrosAutoclick", autoclick_enabled);
+    if (autoclick_enabled) {
+      // We only want to log the autoclick delay if the user has actually
+      // enabled autoclick.
+      UMA_HISTOGRAM_CUSTOM_TIMES(
+          "Accessibility.CrosAutoclickDelay",
+          base::TimeDelta::FromMilliseconds(
+              prefs->GetInteger(prefs::kAutoclickDelayMs)),
+          base::TimeDelta::FromMilliseconds(1),
+          base::TimeDelta::FromMilliseconds(3000),
+          50);
+    }
   }
 }
 
