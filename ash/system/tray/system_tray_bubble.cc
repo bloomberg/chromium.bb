@@ -271,16 +271,6 @@ void SystemTrayBubble::InitView(views::View* anchor,
   }
 }
 
-void SystemTrayBubble::FocusDefault() {
-  views::FocusManager* manager = bubble_view_->GetFocusManager();
-  if (!manager)
-    return;
-
-  views::View* view = manager->GetNextFocusableView(NULL, NULL, false, false);
-  if (view)
-    view->RequestFocus();
-}
-
 void SystemTrayBubble::DestroyItemViews() {
   for (std::vector<ash::SystemTrayItem*>::iterator it = items_.begin();
        it != items_.end();

@@ -99,7 +99,6 @@ class SystemBubbleWrapper {
           views::BubbleBorder::PAINT_NONE);
     }
     is_persistent_ = is_persistent;
-    bubble_->FocusDefault();
   }
 
   // Convenience accessors:

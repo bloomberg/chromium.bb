@@ -43,9 +43,6 @@ class SystemTrayBubble {
                 user::LoginStatus login_status,
                 views::TrayBubbleView::InitParams* init_params);
 
-  // Focus the default item.
-  void FocusDefault();
-
   BubbleType bubble_type() const { return bubble_type_; }
   views::TrayBubbleView* bubble_view() const { return bubble_view_; }
 
