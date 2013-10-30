@@ -142,7 +142,9 @@ bool OverscrollController::DispatchEventCompletesAction (
       event.type != WebKit::WebInputEvent::GestureFlingStart)
     return false;
 
-  DCHECK(delegate_);
+  if (!delegate_)
+    return false;
+
   gfx::Rect bounds = delegate_->GetVisibleBounds();
   if (bounds.IsEmpty())
     return false;
