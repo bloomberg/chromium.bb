@@ -82,13 +82,13 @@ HttpStreamRequest* HttpStreamFactoryImpl::RequestStream(
                                net_log);
 }
 
-HttpStreamRequest* HttpStreamFactoryImpl::RequestWebSocketStream(
+HttpStreamRequest* HttpStreamFactoryImpl::RequestWebSocketHandshakeStream(
     const HttpRequestInfo& request_info,
     RequestPriority priority,
     const SSLConfig& server_ssl_config,
     const SSLConfig& proxy_ssl_config,
     HttpStreamRequest::Delegate* delegate,
-    WebSocketStreamBase::Factory* factory,
+    WebSocketHandshakeStreamBase::Factory* factory,
     const BoundNetLog& net_log) {
   DCHECK(for_websockets_);
   DCHECK(factory);
@@ -107,12 +107,12 @@ HttpStreamRequest* HttpStreamFactoryImpl::RequestStreamInternal(
     const SSLConfig& server_ssl_config,
     const SSLConfig& proxy_ssl_config,
     HttpStreamRequest::Delegate* delegate,
-    WebSocketStreamBase::Factory* websocket_stream_factory,
+    WebSocketHandshakeStreamBase::Factory* websocket_handshake_stream_factory,
     const BoundNetLog& net_log) {
   Request* request = new Request(request_info.url,
                                  this,
                                  delegate,
-                                 websocket_stream_factory,
+                                 websocket_handshake_stream_factory,
                                  net_log);
 
   GURL alternate_url;
@@ -289,11 +289,11 @@ void HttpStreamFactoryImpl::OnNewSpdySessionReady(
                       using_spdy,
                       net_log);
     if (for_websockets_) {
-      WebSocketStreamBase::Factory* factory =
-          request->websocket_stream_factory();
+      WebSocketHandshakeStreamBase::Factory* factory =
+          request->websocket_handshake_stream_factory();
       DCHECK(factory);
       bool use_relative_url = direct || request->url().SchemeIs("wss");
-      request->OnWebSocketStreamReady(
+      request->OnWebSocketHandshakeStreamReady(
           NULL,
           used_ssl_config,
           used_proxy_info,

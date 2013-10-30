@@ -447,10 +447,10 @@ void HttpNetworkTransaction::OnStreamReady(const SSLConfig& used_ssl_config,
   OnIOComplete(OK);
 }
 
-void HttpNetworkTransaction::OnWebSocketStreamReady(
+void HttpNetworkTransaction::OnWebSocketHandshakeStreamReady(
     const SSLConfig& used_ssl_config,
     const ProxyInfo& used_proxy_info,
-    WebSocketStreamBase* stream) {
+    WebSocketHandshakeStreamBase* stream) {
   NOTREACHED() << "This function should never be called.";
 }
 

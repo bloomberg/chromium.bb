@@ -36,7 +36,7 @@
 // This file can be included from net/http even though
 // it is in net/websockets because it doesn't
 // introduce any link dependency to net/websockets.
-#include "net/websockets/websocket_stream_base.h"
+#include "net/websockets/websocket_handshake_stream_base.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
@@ -57,7 +57,7 @@ class UseAlternateProtocolsScopedSetter {
   bool use_alternate_protocols_;
 };
 
-class MockWebSocketHandshakeStream : public WebSocketStreamBase {
+class MockWebSocketHandshakeStream : public WebSocketHandshakeStreamBase {
  public:
   enum StreamType {
     kStreamTypeBasic,
@@ -111,6 +111,10 @@ class MockWebSocketHandshakeStream : public WebSocketStreamBase {
   virtual bool IsSpdyHttpStream() const OVERRIDE { return false; }
   virtual void Drain(HttpNetworkSession* session) OVERRIDE {}
   virtual void SetPriority(RequestPriority priority) OVERRIDE {}
+
+  virtual scoped_ptr<WebSocketStream> Upgrade() OVERRIDE {
+    return scoped_ptr<WebSocketStream>();
+  }
 
  private:
   const StreamType type_;
@@ -166,9 +170,10 @@ class StreamRequestWaiter : public HttpStreamRequest::Delegate {
     used_proxy_info_ = used_proxy_info;
   }
 
-  virtual void OnWebSocketStreamReady(const SSLConfig& used_ssl_config,
-                                      const ProxyInfo& used_proxy_info,
-                                      WebSocketStreamBase* stream) OVERRIDE {
+  virtual void OnWebSocketHandshakeStreamReady(
+      const SSLConfig& used_ssl_config,
+      const ProxyInfo& used_proxy_info,
+      WebSocketHandshakeStreamBase* stream) OVERRIDE {
     stream_done_ = true;
     if (waiting_for_stream_)
       base::MessageLoop::current()->Quit();
@@ -229,7 +234,7 @@ class StreamRequestWaiter : public HttpStreamRequest::Delegate {
   bool waiting_for_stream_;
   bool stream_done_;
   scoped_ptr<HttpStreamBase> stream_;
-  scoped_ptr<WebSocketStreamBase> websocket_stream_;
+  scoped_ptr<WebSocketHandshakeStreamBase> websocket_stream_;
   SSLConfig used_ssl_config_;
   ProxyInfo used_proxy_info_;
 
@@ -267,16 +272,17 @@ class WebSocketBasicHandshakeStream : public MockWebSocketHandshakeStream {
   scoped_ptr<ClientSocketHandle> connection_;
 };
 
-class WebSocketStreamFactory : public WebSocketStreamBase::Factory {
+class WebSocketStreamFactory : public WebSocketHandshakeStreamBase::Factory {
  public:
   virtual ~WebSocketStreamFactory() {}
 
-  virtual WebSocketStreamBase* CreateBasicStream(ClientSocketHandle* connection,
-                                                 bool using_proxy) OVERRIDE {
+  virtual WebSocketHandshakeStreamBase* CreateBasicStream(
+      ClientSocketHandle* connection,
+      bool using_proxy) OVERRIDE {
     return new WebSocketBasicHandshakeStream(connection);
   }
 
-  virtual WebSocketStreamBase* CreateSpdyStream(
+  virtual WebSocketHandshakeStreamBase* CreateSpdyStream(
       const base::WeakPtr<SpdySession>& spdy_session,
       bool use_relative_url) OVERRIDE {
     return new WebSocketSpdyHandshakeStream(spdy_session);
@@ -926,14 +932,14 @@ TEST_P(HttpStreamFactoryTest, RequestWebSocketBasicHandshakeStream) {
   StreamRequestWaiter waiter;
   WebSocketStreamFactory factory;
   scoped_ptr<HttpStreamRequest> request(
-      session->websocket_stream_factory()->RequestWebSocketStream(
-          request_info,
-          DEFAULT_PRIORITY,
-          ssl_config,
-          ssl_config,
-          &waiter,
-          &factory,
-          BoundNetLog()));
+      session->websocket_handshake_stream_factory()
+          ->RequestWebSocketHandshakeStream(request_info,
+                                            DEFAULT_PRIORITY,
+                                            ssl_config,
+                                            ssl_config,
+                                            &waiter,
+                                            &factory,
+                                            BoundNetLog()));
   waiter.WaitForStream();
   EXPECT_TRUE(waiter.stream_done());
   EXPECT_TRUE(NULL == waiter.stream());
@@ -977,14 +983,14 @@ TEST_P(HttpStreamFactoryTest, RequestWebSocketBasicHandshakeStreamOverSSL) {
   StreamRequestWaiter waiter;
   WebSocketStreamFactory factory;
   scoped_ptr<HttpStreamRequest> request(
-      session->websocket_stream_factory()->RequestWebSocketStream(
-          request_info,
-          DEFAULT_PRIORITY,
-          ssl_config,
-          ssl_config,
-          &waiter,
-          &factory,
-          BoundNetLog()));
+      session->websocket_handshake_stream_factory()
+          ->RequestWebSocketHandshakeStream(request_info,
+                                            DEFAULT_PRIORITY,
+                                            ssl_config,
+                                            ssl_config,
+                                            &waiter,
+                                            &factory,
+                                            BoundNetLog()));
   waiter.WaitForStream();
   EXPECT_TRUE(waiter.stream_done());
   EXPECT_TRUE(NULL == waiter.stream());
@@ -1025,14 +1031,14 @@ TEST_P(HttpStreamFactoryTest, RequestWebSocketBasicHandshakeStreamOverProxy) {
   StreamRequestWaiter waiter;
   WebSocketStreamFactory factory;
   scoped_ptr<HttpStreamRequest> request(
-      session->websocket_stream_factory()->RequestWebSocketStream(
-          request_info,
-          DEFAULT_PRIORITY,
-          ssl_config,
-          ssl_config,
-          &waiter,
-          &factory,
-          BoundNetLog()));
+      session->websocket_handshake_stream_factory()
+          ->RequestWebSocketHandshakeStream(request_info,
+                                            DEFAULT_PRIORITY,
+                                            ssl_config,
+                                            ssl_config,
+                                            &waiter,
+                                            &factory,
+                                            BoundNetLog()));
   waiter.WaitForStream();
   EXPECT_TRUE(waiter.stream_done());
   EXPECT_TRUE(NULL == waiter.stream());
@@ -1139,14 +1145,14 @@ TEST_P(HttpStreamFactoryTest, RequestWebSocketSpdyHandshakeStream) {
   StreamRequestWaiter waiter1;
   WebSocketStreamFactory factory;
   scoped_ptr<HttpStreamRequest> request1(
-      session->websocket_stream_factory()->RequestWebSocketStream(
-          request_info,
-          DEFAULT_PRIORITY,
-          ssl_config,
-          ssl_config,
-          &waiter1,
-          &factory,
-          BoundNetLog()));
+      session->websocket_handshake_stream_factory()
+          ->RequestWebSocketHandshakeStream(request_info,
+                                            DEFAULT_PRIORITY,
+                                            ssl_config,
+                                            ssl_config,
+                                            &waiter1,
+                                            &factory,
+                                            BoundNetLog()));
   waiter1.WaitForStream();
   EXPECT_TRUE(waiter1.stream_done());
   ASSERT_TRUE(NULL != waiter1.websocket_stream());
@@ -1156,14 +1162,14 @@ TEST_P(HttpStreamFactoryTest, RequestWebSocketSpdyHandshakeStream) {
 
   StreamRequestWaiter waiter2;
   scoped_ptr<HttpStreamRequest> request2(
-      session->websocket_stream_factory()->RequestWebSocketStream(
-          request_info,
-          DEFAULT_PRIORITY,
-          ssl_config,
-          ssl_config,
-          &waiter2,
-          &factory,
-          BoundNetLog()));
+      session->websocket_handshake_stream_factory()
+          ->RequestWebSocketHandshakeStream(request_info,
+                                            DEFAULT_PRIORITY,
+                                            ssl_config,
+                                            ssl_config,
+                                            &waiter2,
+                                            &factory,
+                                            BoundNetLog()));
   waiter2.WaitForStream();
   EXPECT_TRUE(waiter2.stream_done());
   ASSERT_TRUE(NULL != waiter2.websocket_stream());
@@ -1229,14 +1235,14 @@ TEST_P(HttpStreamFactoryTest, OrphanedWebSocketStream) {
   StreamRequestWaiter waiter;
   WebSocketStreamFactory factory;
   scoped_ptr<HttpStreamRequest> request(
-      session->websocket_stream_factory()->RequestWebSocketStream(
-          request_info,
-          DEFAULT_PRIORITY,
-          ssl_config,
-          ssl_config,
-          &waiter,
-          &factory,
-          BoundNetLog()));
+      session->websocket_handshake_stream_factory()
+          ->RequestWebSocketHandshakeStream(request_info,
+                                            DEFAULT_PRIORITY,
+                                            ssl_config,
+                                            ssl_config,
+                                            &waiter,
+                                            &factory,
+                                            BoundNetLog()));
   waiter.WaitForStream();
   EXPECT_TRUE(waiter.stream_done());
   EXPECT_TRUE(NULL == waiter.stream());
@@ -1259,7 +1265,7 @@ TEST_P(HttpStreamFactoryTest, OrphanedWebSocketStream) {
 
   // Make sure there is no orphaned job. it is already canceled.
   ASSERT_EQ(0u, static_cast<HttpStreamFactoryImpl*>(
-      session->websocket_stream_factory())->num_orphaned_jobs());
+      session->websocket_handshake_stream_factory())->num_orphaned_jobs());
 }
 
 }  // namespace

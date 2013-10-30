@@ -30,7 +30,8 @@ class NET_EXPORT_PRIVATE HttpStreamFactoryImpl :
     public HttpPipelinedHostPool::Delegate {
  public:
   // RequestStream may only be called if |for_websockets| is false.
-  // RequestWebSocketStream may only be called if |for_websockets| is true.
+  // RequestWebSocketHandshakeStream may only be called if |for_websockets|
+  // is true.
   HttpStreamFactoryImpl(HttpNetworkSession* session, bool for_websockets);
   virtual ~HttpStreamFactoryImpl();
 
@@ -43,13 +44,13 @@ class NET_EXPORT_PRIVATE HttpStreamFactoryImpl :
       HttpStreamRequest::Delegate* delegate,
       const BoundNetLog& net_log) OVERRIDE;
 
-  virtual HttpStreamRequest* RequestWebSocketStream(
+  virtual HttpStreamRequest* RequestWebSocketHandshakeStream(
       const HttpRequestInfo& info,
       RequestPriority priority,
       const SSLConfig& server_ssl_config,
       const SSLConfig& proxy_ssl_config,
       HttpStreamRequest::Delegate* delegate,
-      WebSocketStreamBase::Factory* factory,
+      WebSocketHandshakeStreamBase::Factory* factory,
       const BoundNetLog& net_log) OVERRIDE;
 
   virtual void PreconnectStreams(int num_streams,
@@ -84,7 +85,7 @@ class NET_EXPORT_PRIVATE HttpStreamFactoryImpl :
       const SSLConfig& server_ssl_config,
       const SSLConfig& proxy_ssl_config,
       HttpStreamRequest::Delegate* delegate,
-      WebSocketStreamBase::Factory* factory,
+      WebSocketHandshakeStreamBase::Factory* factory,
       const BoundNetLog& net_log);
 
   PortAlternateProtocolPair GetAlternateProtocolRequestFor(

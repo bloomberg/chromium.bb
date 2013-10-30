@@ -17,11 +17,11 @@ HttpStreamFactoryImpl::Request::Request(
     const GURL& url,
     HttpStreamFactoryImpl* factory,
     HttpStreamRequest::Delegate* delegate,
-    WebSocketStreamBase::Factory* websocket_stream_factory,
+    WebSocketHandshakeStreamBase::Factory* websocket_handshake_stream_factory,
     const BoundNetLog& net_log)
     : url_(url),
       factory_(factory),
-      websocket_stream_factory_(websocket_stream_factory),
+      websocket_handshake_stream_factory_(websocket_handshake_stream_factory),
       delegate_(delegate),
       net_log_(net_log),
       completed_(false),
@@ -110,17 +110,18 @@ void HttpStreamFactoryImpl::Request::OnStreamReady(
   delegate_->OnStreamReady(used_ssl_config, used_proxy_info, stream);
 }
 
-void HttpStreamFactoryImpl::Request::OnWebSocketStreamReady(
+void HttpStreamFactoryImpl::Request::OnWebSocketHandshakeStreamReady(
     Job* job,
     const SSLConfig& used_ssl_config,
     const ProxyInfo& used_proxy_info,
-    WebSocketStreamBase* stream) {
+    WebSocketHandshakeStreamBase* stream) {
   DCHECK(factory_->for_websockets_);
   DCHECK(stream);
   DCHECK(completed_);
 
   OnJobSucceeded(job);
-  delegate_->OnWebSocketStreamReady(used_ssl_config, used_proxy_info, stream);
+  delegate_->OnWebSocketHandshakeStreamReady(
+      used_ssl_config, used_proxy_info, stream);
 }
 
 void HttpStreamFactoryImpl::Request::OnStreamFailed(
@@ -315,13 +316,13 @@ void HttpStreamFactoryImpl::Request::OnNewSpdySessionReady(
   // Cache this so we can still use it if the request is deleted.
   HttpStreamFactoryImpl* factory = factory_;
   if (factory->for_websockets_) {
-    DCHECK(websocket_stream_factory_);
+    DCHECK(websocket_handshake_stream_factory_);
     bool use_relative_url = direct || url().SchemeIs("wss");
-    delegate_->OnWebSocketStreamReady(
+    delegate_->OnWebSocketHandshakeStreamReady(
         job->server_ssl_config(),
         job->proxy_info(),
-        websocket_stream_factory_->CreateSpdyStream(spdy_session,
-                                                    use_relative_url));
+        websocket_handshake_stream_factory_->CreateSpdyStream(
+            spdy_session, use_relative_url));
   } else {
     bool use_relative_url = direct || url().SchemeIs("https");
     delegate_->OnStreamReady(

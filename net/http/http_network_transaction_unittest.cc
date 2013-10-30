@@ -12032,13 +12032,13 @@ class FakeStreamFactory : public HttpStreamFactory {
     return fake_request;
   }
 
-  virtual HttpStreamRequest* RequestWebSocketStream(
+  virtual HttpStreamRequest* RequestWebSocketHandshakeStream(
       const HttpRequestInfo& info,
       RequestPriority priority,
       const SSLConfig& server_ssl_config,
       const SSLConfig& proxy_ssl_config,
       HttpStreamRequest::Delegate* delegate,
-      WebSocketStreamBase::Factory* factory,
+      WebSocketHandshakeStreamBase::Factory* factory,
       const BoundNetLog& net_log) OVERRIDE {
     ADD_FAILURE();
     return NULL;

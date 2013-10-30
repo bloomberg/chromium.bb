@@ -140,8 +140,8 @@ class NET_EXPORT HttpNetworkSession
   HttpStreamFactory* http_stream_factory() {
     return http_stream_factory_.get();
   }
-  HttpStreamFactory* websocket_stream_factory() {
-    return websocket_stream_factory_.get();
+  HttpStreamFactory* websocket_handshake_stream_factory() {
+    return websocket_handshake_stream_factory_.get();
   }
   NetLog* net_log() {
     return net_log_;
@@ -197,7 +197,7 @@ class NET_EXPORT HttpNetworkSession
   QuicStreamFactory quic_stream_factory_;
   SpdySessionPool spdy_session_pool_;
   scoped_ptr<HttpStreamFactory> http_stream_factory_;
-  scoped_ptr<HttpStreamFactory> websocket_stream_factory_;
+  scoped_ptr<HttpStreamFactory> websocket_handshake_stream_factory_;
   std::set<HttpResponseBodyDrainer*> response_drainers_;
 
   Params params_;

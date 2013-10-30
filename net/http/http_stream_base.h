@@ -5,7 +5,7 @@
 // HttpStreamBase is an interface for reading and writing data to an
 // HTTP-like stream that keeps the client agnostic of the actual underlying
 // transport layer.  This provides an abstraction for HttpStream and
-// WebSocketStream.
+// WebSocketHandshakeStreamBase.
 
 #ifndef NET_HTTP_HTTP_STREAM_BASE_H_
 #define NET_HTTP_HTTP_STREAM_BASE_H_

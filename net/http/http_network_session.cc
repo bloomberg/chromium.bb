@@ -126,7 +126,8 @@ HttpNetworkSession::HttpNetworkSession(const Params& params)
                          params.time_func,
                          params.trusted_spdy_proxy),
       http_stream_factory_(new HttpStreamFactoryImpl(this, false)),
-      websocket_stream_factory_(new HttpStreamFactoryImpl(this, true)),
+      websocket_handshake_stream_factory_(
+          new HttpStreamFactoryImpl(this, true)),
       params_(params) {
   DCHECK(proxy_service_);
   DCHECK(ssl_config_service_.get());
