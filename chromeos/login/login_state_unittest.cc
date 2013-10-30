@@ -22,8 +22,8 @@ class LoginStateTest : public testing::Test,
 
   // testing::Test
   virtual void SetUp() OVERRIDE {
-    CommandLine::ForCurrentProcess()->AppendSwitch(switches::kLoginManager);
     LoginState::Initialize();
+    LoginState::Get()->set_always_logged_in(false);
     LoginState::Get()->AddObserver(this);
   }
 

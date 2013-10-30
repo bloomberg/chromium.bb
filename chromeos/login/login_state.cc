@@ -16,7 +16,7 @@ namespace {
 // When running a Chrome OS build outside of a device (i.e. on a developer's
 // workstation) and not running as login-manager, pretend like we're always
 // logged in.
-bool AlwaysLoggedIn() {
+bool AlwaysLoggedInByDefault() {
   return !base::SysInfo::IsRunningOnChromeOS() &&
       !CommandLine::ForCurrentProcess()->HasSwitch(switches::kLoginManager);
 }
@@ -72,13 +72,13 @@ LoginState::LoggedInUserType LoginState::GetLoggedInUserType() const {
 }
 
 bool LoginState::IsUserLoggedIn() const {
-  if (AlwaysLoggedIn())
+  if (always_logged_in_)
     return true;
   return logged_in_state_ == LOGGED_IN_ACTIVE;
 }
 
 bool LoginState::IsInSafeMode() const {
-  DCHECK(!AlwaysLoggedIn() || logged_in_state_ != LOGGED_IN_SAFE_MODE);
+  DCHECK(!always_logged_in_ || logged_in_state_ != LOGGED_IN_SAFE_MODE);
   return logged_in_state_ == LOGGED_IN_SAFE_MODE;
 }
 
@@ -117,7 +117,8 @@ bool LoginState::IsUserGaiaAuthenticated() const {
 // Private methods
 
 LoginState::LoginState() : logged_in_state_(LOGGED_IN_OOBE),
-                           logged_in_user_type_(LOGGED_IN_USER_NONE) {
+                           logged_in_user_type_(LOGGED_IN_USER_NONE),
+                           always_logged_in_(AlwaysLoggedInByDefault()) {
 }
 
 LoginState::~LoginState() {

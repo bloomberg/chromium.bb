@@ -74,6 +74,10 @@ class CHROMEOS_EXPORT LoginState {
   // (i.e., non public nor locally managed account).
   bool IsUserGaiaAuthenticated() const;
 
+  void set_always_logged_in(bool always_logged_in) {
+    always_logged_in_ = always_logged_in;
+  }
+
  private:
   LoginState();
   virtual ~LoginState();
@@ -83,6 +87,11 @@ class CHROMEOS_EXPORT LoginState {
   LoggedInState logged_in_state_;
   LoggedInUserType logged_in_user_type_;
   ObserverList<Observer> observer_list_;
+
+  // If true, it always thinks the current status as logged in. Set to true by
+  // default running on a Linux desktop without flags and test cases. To test
+  // behaviors with a specific login state, call set_always_logged_in(false).
+  bool always_logged_in_;
 
   DISALLOW_COPY_AND_ASSIGN(LoginState);
 };
