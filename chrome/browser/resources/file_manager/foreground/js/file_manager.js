@@ -1829,24 +1829,23 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
    * Show a modal-like file viewer/editor on top of the File Manager UI.
    *
    * @param {HTMLElement} popup Popup element.
-   * @param {function} closeCallback Function to call after the popup is closed.
-   *
-   * @private
+   * @param {function()} closeCallback Function to call after the popup is
+   *     closed.
    */
-  FileManager.prototype.openFilePopup_ = function(popup, closeCallback) {
-    this.closeFilePopup_();
+  FileManager.prototype.openFilePopup = function(popup, closeCallback) {
+    this.closeFilePopup();
     this.filePopup_ = popup;
     this.filePopupCloseCallback_ = closeCallback;
-    this.dialogDom_.appendChild(this.filePopup_);
+    this.dialogDom_.insertBefore(
+        this.filePopup_, this.dialogDom_.querySelector('#iframe-drag-area'));
     this.filePopup_.focus();
-    this.document_.body.setAttribute('overlay-visible', '');
     this.document_.querySelector('#iframe-drag-area').hidden = false;
   };
 
   /**
-   * @private
+   * Closes the modal-like file viewer/editor popup.
    */
-  FileManager.prototype.closeFilePopup_ = function() {
+  FileManager.prototype.closeFilePopup = function() {
     if (this.filePopup_) {
       this.document_.body.removeAttribute('overlay-visible');
       this.document_.querySelector('#iframe-drag-area').hidden = true;
@@ -1868,6 +1867,19 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       this.dialogDom_.removeChild(this.filePopup_);
       this.filePopup_ = null;
     }
+  };
+
+  /**
+   * Updates visibility of the draggable app region in the modal-like file
+   * viewer/editor.
+   *
+   * @param {boolean} visible True for visible, false otherwise.
+   */
+  FileManager.prototype.onFilePopupAppRegionChanged = function(visible) {
+    if (!this.filePopup_)
+      return;
+
+    this.document_.querySelector('#iframe-drag-area').hidden = !visible;
   };
 
   FileManager.prototype.getAllUrlsInCurrentDirectory = function() {

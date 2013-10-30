@@ -26,6 +26,7 @@ function unload(opt_exiting) { Gallery.instance.onUnload(opt_exiting) }
  *     {function(string)} onBack
  *     {function()} onClose
  *     {function()} onMaximize
+ *     {function(boolean)} onAppRegionChanged
  *     {MetadataCache} metadataCache
  *     {Array.<Object>} shareActions
  *     {string} readonlyDirName Directory name for readonly warning or null.

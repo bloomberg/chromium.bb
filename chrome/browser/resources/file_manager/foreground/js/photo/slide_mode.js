@@ -231,7 +231,8 @@ SlideMode.prototype.initDom_ = function() {
         mode: this.editBarModeWrapper_
       },
       SlideMode.editorModes,
-      this.displayStringFunction_);
+      this.displayStringFunction_,
+      this.onToolsVisibilityChanged_.bind(this));
 
   this.editor_.getBuffer().addOverlay(
       new SwipeOverlay(this.advanceManually.bind(this)));
@@ -419,6 +420,18 @@ SlideMode.prototype.onSelection_ = function() {
     return;  // Do not reselect.
 
   this.commitItem_(this.loadSelectedItem_.bind(this));
+};
+
+/**
+ * Handles changes in tools visibility, and if the header is dimmed, then
+ * requests disabling the draggable app region.
+ *
+ * @private
+ */
+SlideMode.prototype.onToolsVisibilityChanged_ = function() {
+  var headerDimmed =
+      this.document_.querySelector('.header').hasAttribute('dimmed');
+  this.context_.onAppRegionChanged(!headerDimmed);
 };
 
 /**

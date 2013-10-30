@@ -601,7 +601,7 @@ FileTasks.prototype.openGalleryInternal_ = function(urls) {
 
   var onBack = function(selectedUrls) {
     fm.directoryModel_.selectUrls(selectedUrls);
-    fm.closeFilePopup_();  // Will call Gallery.unload.
+    fm.closeFilePopup();  // Will call Gallery.unload.
     window.appState = savedAppState;
     util.saveAppState();
     document.title = savedTitle;
@@ -613,6 +613,10 @@ FileTasks.prototype.openGalleryInternal_ = function(urls) {
 
   var onMaximize = function() {
     fm.onMaximize();
+  };
+
+  var onAppRegionChanged = function(visible) {
+    fm.onFilePopupAppRegionChanged(visible);
   };
 
   galleryFrame.onload = function() {
@@ -646,6 +650,7 @@ FileTasks.prototype.openGalleryInternal_ = function(urls) {
       onBack: onBack,
       onClose: onClose,
       onMaximize: onMaximize,
+      onAppRegionChanged: onAppRegionChanged,
       displayStringFunction: strf
     };
     galleryFrame.contentWindow.Gallery.open(
@@ -653,7 +658,7 @@ FileTasks.prototype.openGalleryInternal_ = function(urls) {
   }.bind(this);
 
   galleryFrame.src = 'gallery.html';
-  fm.openFilePopup_(galleryFrame, fm.updateTitle_.bind(fm));
+  fm.openFilePopup(galleryFrame, fm.updateTitle_.bind(fm));
 };
 
 /**

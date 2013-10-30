@@ -1408,6 +1408,7 @@ body[drive] .dialog-container[connection='offline'] .dim-offline {
 
 /* Overlay pane covering the entire file manager window (e.g. image editor)*/
 .overlay-pane {
+  -webkit-app-region: no-drag;
   border: none;
   height: 100%;
   left: 0;
@@ -1802,10 +1803,10 @@ menuitem#thumbnail-view[lead]:not([disabled]) {
 
 #iframe-drag-area {
   -webkit-app-region: drag;
-  height: 45px;
+  height: 48px;
   left: 64px;
   position: absolute;
-  right: 70px;
+  right: 92px;
   top: 0;
   width: auto;
   z-index: 101;

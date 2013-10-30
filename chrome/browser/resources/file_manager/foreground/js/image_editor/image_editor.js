@@ -7,20 +7,25 @@
 /**
  * ImageEditor is the top level object that holds together and connects
  * everything needed for image editing.
+ *
  * @param {Viewport} viewport The viewport.
  * @param {ImageView} imageView The ImageView containing the images to edit.
  * @param {ImageEditor.Prompt} prompt Prompt instance.
  * @param {Object} DOMContainers Various DOM containers required for the editor.
  * @param {Array.<ImageEditor.Mode>} modes Available editor modes.
  * @param {function} displayStringFunction String formatting function.
+ * @param {function()} onToolsVisibilityChanged Callback to be called, when
+ *     some of the UI elements have been dimmed or revealed.
  * @constructor
  */
 function ImageEditor(
-    viewport, imageView, prompt, DOMContainers, modes, displayStringFunction) {
+    viewport, imageView, prompt, DOMContainers, modes, displayStringFunction,
+    onToolsVisibilityChanged) {
   this.rootContainer_ = DOMContainers.root;
   this.container_ = DOMContainers.image;
   this.modes_ = modes;
   this.displayStringFunction_ = displayStringFunction;
+  this.onToolsVisibilityChanged_ = onToolsVisibilityChanged;
 
   ImageUtil.removeChildren(this.container_);
 
@@ -619,13 +624,21 @@ ImageEditor.prototype.onDoubleTap_ = function(x, y) {
  */
 ImageEditor.prototype.hideOverlappingTools = function(frame, transparent) {
   var tools = this.rootContainer_.ownerDocument.querySelectorAll('.dimmable');
+  var changed = false;
   for (var i = 0; i != tools.length; i++) {
     var tool = tools[i];
     var toolRect = tool.getBoundingClientRect();
-    ImageUtil.setAttribute(tool, 'dimmed',
+    var overlapping =
         (frame && frame.intersects(toolRect)) &&
-        !(transparent && transparent.contains(toolRect)));
+        !(transparent && transparent.contains(toolRect));
+    if (overlapping && !tool.hasAttribute('dimmed') ||
+        !overlapping && tool.hasAttribute('dimmed')) {
+      ImageUtil.setAttribute(tool, 'dimmed', overlapping);
+      changed = true;
+    }
   }
+  if (changed)
+    this.onToolsVisibilityChanged_();
 };
 
 /**
