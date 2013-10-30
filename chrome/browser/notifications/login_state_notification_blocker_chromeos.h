@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_NOTIFICATIONS_LOGIN_STATE_NOTIFICATION_BLOCKER_CHROMEOS_H_
 
 #include "ash/shell_observer.h"
+#include "chromeos/login/login_state.h"
 #include "ui/message_center/notification_blocker.h"
 
 // A notification blocker which checks screen lock / login state for ChromeOS.
@@ -17,7 +18,8 @@
 //  - In ChromeOS, some system notifications are allowed to be shown as popups.
 class LoginStateNotificationBlockerChromeOS
     : public message_center::NotificationBlocker,
-      public ash::ShellObserver {
+      public ash::ShellObserver,
+      public chromeos::LoginState::Observer {
  public:
   explicit LoginStateNotificationBlockerChromeOS(
       message_center::MessageCenter* message_center);
@@ -29,10 +31,11 @@ class LoginStateNotificationBlockerChromeOS
       const message_center::NotifierId& notifier_id) const OVERRIDE;
 
   // ash::ShellObserver overrides:
-  virtual void OnLoginStateChanged(
-      ash::user::LoginStatus login_status) OVERRIDE;
   virtual void OnLockStateChanged(bool locked) OVERRIDE;
   virtual void OnAppTerminating() OVERRIDE;
+
+  // chromeos::LoginState::Observer overrides:
+  virtual void LoggedInStateChanged() OVERRIDE;
 
   bool locked_;
   bool observing_;

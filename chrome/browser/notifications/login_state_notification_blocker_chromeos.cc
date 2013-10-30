@@ -7,7 +7,6 @@
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/system/system_notifier.h"
-#include "ash/system/tray/system_tray_delegate.h"
 #include "ash/wm/window_properties.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "content/public/browser/notification_service.h"
@@ -23,12 +22,18 @@ LoginStateNotificationBlockerChromeOS::LoginStateNotificationBlockerChromeOS(
   // This class is created in the ctor of NotificationUIManager which is created
   // when a notification is created, so ash::Shell should be initialized.
   ash::Shell::GetInstance()->AddShellObserver(this);
+
+  // LoginState may not exist in some tests.
+  if (chromeos::LoginState::IsInitialized())
+    chromeos::LoginState::Get()->AddObserver(this);
 }
 
 LoginStateNotificationBlockerChromeOS::
     ~LoginStateNotificationBlockerChromeOS() {
   // In some tests, the notification blockers may be removed without calling
   // OnAppTerminating().
+  if (chromeos::LoginState::IsInitialized())
+    chromeos::LoginState::Get()->RemoveObserver(this);
   if (observing_ && ash::Shell::HasInstance())
     ash::Shell::GetInstance()->RemoveShellObserver(this);
 }
@@ -38,17 +43,13 @@ bool LoginStateNotificationBlockerChromeOS::ShouldShowNotificationAsPopup(
   if (ash::system_notifier::ShouldAlwaysShowPopups(notifier_id))
     return true;
 
-  ash::user::LoginStatus login_status =
-      ash::Shell::GetInstance()->system_tray_delegate()->GetUserLoginStatus();
-  return login_status != ash::user::LOGGED_IN_NONE &&
-      login_status != ash::user::LOGGED_IN_LOCKED &&
-      !locked_;
-}
+  if (locked_)
+    return false;
 
-void LoginStateNotificationBlockerChromeOS::OnLoginStateChanged(
-    ash::user::LoginStatus login_status) {
-  FOR_EACH_OBSERVER(
-      NotificationBlocker::Observer, observers(), OnBlockingStateChanged());
+  if (chromeos::LoginState::IsInitialized())
+    return chromeos::LoginState::Get()->IsUserLoggedIn();
+
+  return true;
 }
 
 void LoginStateNotificationBlockerChromeOS::OnLockStateChanged(bool locked) {
@@ -60,4 +61,9 @@ void LoginStateNotificationBlockerChromeOS::OnLockStateChanged(bool locked) {
 void LoginStateNotificationBlockerChromeOS::OnAppTerminating() {
   ash::Shell::GetInstance()->RemoveShellObserver(this);
   observing_ = false;
+}
+
+void LoginStateNotificationBlockerChromeOS::LoggedInStateChanged() {
+  FOR_EACH_OBSERVER(
+      NotificationBlocker::Observer, observers(), OnBlockingStateChanged());
 }

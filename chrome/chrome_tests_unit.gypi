@@ -1046,6 +1046,7 @@
         'browser/network_time/navigation_time_helper_unittest.cc',
         'browser/network_time/network_time_tracker_unittest.cc',
         'browser/notifications/desktop_notification_service_unittest.cc',
+        'browser/notifications/login_state_notification_blocker_chromeos_unittest.cc',
         'browser/notifications/message_center_notifications_unittest_win.cc',
         'browser/notifications/message_center_settings_controller_unittest.cc',
         'browser/notifications/sync_notifier/chrome_notifier_service_unittest.cc',
@@ -2327,6 +2328,7 @@
           'sources!': [
             'browser/extensions/api/enterprise_platform_keys_private/enterprise_platform_keys_private_api_unittest.cc',
             'browser/net/gaia/gaia_oauth_fetcher_unittest.cc',
+            'browser/notifications/login_state_notification_blocker_chromeos_unittest.cc',
             'browser/extensions/api/log_private/syslog_parser_unittest.cc',
           ],
         }],
