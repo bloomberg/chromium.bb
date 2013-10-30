@@ -200,6 +200,10 @@ void RendererGpuVideoAcceleratorFactories::WaitSyncPoint(uint32 sync_point) {
 
   gpu::gles2::GLES2Implementation* gles2 = context->GetImplementation();
   gles2->WaitSyncPointCHROMIUM(sync_point);
+
+  // Callers expect the WaitSyncPoint to affect the next IPCs. Make sure to
+  // flush the command buffers to ensure that.
+  gles2->ShallowFlushCHROMIUM();
 }
 
 void RendererGpuVideoAcceleratorFactories::ReadPixels(uint32 texture_id,
