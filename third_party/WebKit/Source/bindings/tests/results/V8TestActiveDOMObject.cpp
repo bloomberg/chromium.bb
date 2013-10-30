@@ -28,6 +28,7 @@
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/V8Binding.h"
+#include "bindings/v8/V8DOMActivityLogger.h"
 #include "bindings/v8/V8DOMConfiguration.h"
 #include "bindings/v8/V8DOMWrapper.h"
 #include "core/dom/ContextFeatures.h"
@@ -168,6 +169,125 @@ static void postMessageAttributeGetterCallback(v8::Local<v8::String> name, const
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
+static void perWorldBindingsMethodWithDoNotCheckSecurityMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
+{
+    if (UNLIKELY(args.Length() < 1)) {
+        throwTypeError(ExceptionMessages::failedToExecute("perWorldBindingsMethodWithDoNotCheckSecurity", "TestActiveDOMObject", ExceptionMessages::notEnoughArguments(1, args.Length())), args.GetIsolate());
+        return;
+    }
+    TestActiveDOMObject* imp = V8TestActiveDOMObject::toNative(args.Holder());
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, url, args[0]);
+    imp->perWorldBindingsMethodWithDoNotCheckSecurity(url);
+}
+
+static void perWorldBindingsMethodWithDoNotCheckSecurityMethodForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& args)
+{
+    if (UNLIKELY(args.Length() < 1)) {
+        throwTypeError(ExceptionMessages::failedToExecute("perWorldBindingsMethodWithDoNotCheckSecurity", "TestActiveDOMObject", ExceptionMessages::notEnoughArguments(1, args.Length())), args.GetIsolate());
+        return;
+    }
+    TestActiveDOMObject* imp = V8TestActiveDOMObject::toNative(args.Holder());
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, url, args[0]);
+    imp->perWorldBindingsMethodWithDoNotCheckSecurity(url);
+}
+
+static void perWorldBindingsMethodWithDoNotCheckSecurityMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    V8PerContextData* contextData = V8PerContextData::from(args.GetIsolate()->GetCurrentContext());
+    if (contextData && contextData->activityLogger()) {
+        Vector<v8::Handle<v8::Value> > loggerArgs = toVectorOfArguments(args);
+        contextData->activityLogger()->log("TestActiveDOMObject.perWorldBindingsMethodWithDoNotCheckSecurity", args.Length(), loggerArgs.data(), "Method");
+    }
+    TestActiveDOMObjectV8Internal::perWorldBindingsMethodWithDoNotCheckSecurityMethod(args);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
+static void perWorldBindingsMethodWithDoNotCheckSecurityMethodCallbackForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& args)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    TestActiveDOMObjectV8Internal::perWorldBindingsMethodWithDoNotCheckSecurityMethodForMainWorld(args);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
+static void perWorldBindingsMethodWithDoNotCheckSecurityAttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    // This is only for getting a unique pointer which we can pass to privateTemplate.
+    static int privateTemplateUniqueKey;
+    WrapperWorldType currentWorldType = worldType(info.GetIsolate());
+    V8PerIsolateData* data = V8PerIsolateData::from(info.GetIsolate());
+    v8::Handle<v8::FunctionTemplate> privateTemplate = data->privateTemplate(currentWorldType, &privateTemplateUniqueKey, TestActiveDOMObjectV8Internal::perWorldBindingsMethodWithDoNotCheckSecurityMethodCallback, v8Undefined(), v8::Signature::New(V8PerIsolateData::from(info.GetIsolate())->rawTemplate(&V8TestActiveDOMObject::wrapperTypeInfo, currentWorldType)), 1);
+
+    v8::Handle<v8::Object> holder = info.This()->FindInstanceInPrototypeChain(V8TestActiveDOMObject::GetTemplate(info.GetIsolate(), currentWorldType));
+    if (holder.IsEmpty()) {
+        // can only reach here by 'object.__proto__.func', and it should passed
+        // domain security check already
+        v8SetReturnValue(info, privateTemplate->GetFunction());
+        return;
+    }
+    TestActiveDOMObject* imp = V8TestActiveDOMObject::toNative(holder);
+    if (!BindingSecurity::shouldAllowAccessToFrame(imp->frame(), DoNotReportSecurityError)) {
+        static int sharedTemplateUniqueKey;
+        v8::Handle<v8::FunctionTemplate> sharedTemplate = data->privateTemplate(currentWorldType, &sharedTemplateUniqueKey, TestActiveDOMObjectV8Internal::perWorldBindingsMethodWithDoNotCheckSecurityMethodCallback, v8Undefined(), v8::Signature::New(V8PerIsolateData::from(info.GetIsolate())->rawTemplate(&V8TestActiveDOMObject::wrapperTypeInfo, currentWorldType)), 1);
+        v8SetReturnValue(info, sharedTemplate->GetFunction());
+        return;
+    }
+
+    v8::Local<v8::Value> hiddenValue = info.This()->GetHiddenValue(name);
+    if (!hiddenValue.IsEmpty()) {
+        v8SetReturnValue(info, hiddenValue);
+        return;
+    }
+
+    v8SetReturnValue(info, privateTemplate->GetFunction());
+}
+
+static void perWorldBindingsMethodWithDoNotCheckSecurityAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
+    TestActiveDOMObjectV8Internal::perWorldBindingsMethodWithDoNotCheckSecurityAttributeGetter(name, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
+static void perWorldBindingsMethodWithDoNotCheckSecurityAttributeGetterForMainWorld(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    // This is only for getting a unique pointer which we can pass to privateTemplate.
+    static int privateTemplateUniqueKey;
+    WrapperWorldType currentWorldType = worldType(info.GetIsolate());
+    V8PerIsolateData* data = V8PerIsolateData::from(info.GetIsolate());
+    v8::Handle<v8::FunctionTemplate> privateTemplate = data->privateTemplate(currentWorldType, &privateTemplateUniqueKey, TestActiveDOMObjectV8Internal::perWorldBindingsMethodWithDoNotCheckSecurityMethodCallbackForMainWorld, v8Undefined(), v8::Signature::New(V8PerIsolateData::from(info.GetIsolate())->rawTemplate(&V8TestActiveDOMObject::wrapperTypeInfo, currentWorldType)), 1);
+
+    v8::Handle<v8::Object> holder = info.This()->FindInstanceInPrototypeChain(V8TestActiveDOMObject::GetTemplate(info.GetIsolate(), currentWorldType));
+    if (holder.IsEmpty()) {
+        // can only reach here by 'object.__proto__.func', and it should passed
+        // domain security check already
+        v8SetReturnValue(info, privateTemplate->GetFunction());
+        return;
+    }
+    TestActiveDOMObject* imp = V8TestActiveDOMObject::toNative(holder);
+    if (!BindingSecurity::shouldAllowAccessToFrame(imp->frame(), DoNotReportSecurityError)) {
+        static int sharedTemplateUniqueKey;
+        v8::Handle<v8::FunctionTemplate> sharedTemplate = data->privateTemplate(currentWorldType, &sharedTemplateUniqueKey, TestActiveDOMObjectV8Internal::perWorldBindingsMethodWithDoNotCheckSecurityMethodCallbackForMainWorld, v8Undefined(), v8::Signature::New(V8PerIsolateData::from(info.GetIsolate())->rawTemplate(&V8TestActiveDOMObject::wrapperTypeInfo, currentWorldType)), 1);
+        v8SetReturnValue(info, sharedTemplate->GetFunction());
+        return;
+    }
+
+    v8::Local<v8::Value> hiddenValue = info.This()->GetHiddenValue(name);
+    if (!hiddenValue.IsEmpty()) {
+        v8SetReturnValue(info, hiddenValue);
+        return;
+    }
+
+    v8SetReturnValue(info, privateTemplate->GetFunction());
+}
+
+static void perWorldBindingsMethodWithDoNotCheckSecurityAttributeGetterCallbackForMainWorld(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
+    TestActiveDOMObjectV8Internal::perWorldBindingsMethodWithDoNotCheckSecurityAttributeGetterForMainWorld(name, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
 static void TestActiveDOMObjectDomainSafeFunctionSetter(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     v8::Handle<v8::Object> holder = info.This()->FindInstanceInPrototypeChain(V8TestActiveDOMObject::GetTemplate(info.GetIsolate(), worldType(info.GetIsolate())));
@@ -212,6 +332,13 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestActiveDOMObjectTemplate(v
 
     // Function 'postMessage' (Extended Attributes: 'DoNotCheckSecurity')
     proto->SetAccessor(v8::String::NewSymbol("postMessage"), TestActiveDOMObjectV8Internal::postMessageAttributeGetterCallback, TestActiveDOMObjectV8Internal::TestActiveDOMObjectDomainSafeFunctionSetter, v8Undefined(), v8::ALL_CAN_READ, static_cast<v8::PropertyAttribute>(v8::DontDelete));
+
+    // Function 'perWorldBindingsMethodWithDoNotCheckSecurity' (Extended Attributes: 'DoNotCheckSecurity PerWorldBindings ActivityLogging')
+    if (currentWorldType == MainWorld) {
+        proto->SetAccessor(v8::String::NewSymbol("perWorldBindingsMethodWithDoNotCheckSecurity"), TestActiveDOMObjectV8Internal::perWorldBindingsMethodWithDoNotCheckSecurityAttributeGetterCallbackForMainWorld, TestActiveDOMObjectV8Internal::TestActiveDOMObjectDomainSafeFunctionSetter, v8Undefined(), v8::ALL_CAN_READ, static_cast<v8::PropertyAttribute>(v8::DontDelete));
+    } else {
+        proto->SetAccessor(v8::String::NewSymbol("perWorldBindingsMethodWithDoNotCheckSecurity"), TestActiveDOMObjectV8Internal::perWorldBindingsMethodWithDoNotCheckSecurityAttributeGetterCallback, TestActiveDOMObjectV8Internal::TestActiveDOMObjectDomainSafeFunctionSetter, v8Undefined(), v8::ALL_CAN_READ, static_cast<v8::PropertyAttribute>(v8::DontDelete));
+    }
 
     // Custom toString template
     desc->Set(v8::String::NewSymbol("toString"), V8PerIsolateData::current()->toStringTemplate());

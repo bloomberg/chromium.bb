@@ -1168,6 +1168,7 @@ sub GenerateDomainSafeFunctionGetter
 {
     my $function = shift;
     my $interface = shift;
+    my $forMainWorldSuffix = shift;
 
     my $implClassName = GetImplName($interface);
     my $v8ClassName = GetV8ClassName($interface);
@@ -1179,11 +1180,11 @@ sub GenerateDomainSafeFunctionGetter
         $signature = "v8::Local<v8::Signature>()";
     }
 
-    my $newTemplateParams = "${implClassName}V8Internal::${funcName}MethodCallback, v8Undefined(), $signature";
+    my $newTemplateParams = "${implClassName}V8Internal::${funcName}MethodCallback${forMainWorldSuffix}, v8Undefined(), $signature";
 
     AddToImplIncludes("bindings/v8/BindingSecurity.h");
     $implementation{nameSpaceInternal}->add(<<END);
-static void ${funcName}AttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void ${funcName}AttributeGetter${forMainWorldSuffix}(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     // This is only for getting a unique pointer which we can pass to privateTemplate.
     static int privateTemplateUniqueKey;
@@ -1217,10 +1218,10 @@ static void ${funcName}AttributeGetter(v8::Local<v8::String> name, const v8::Pro
 
 END
     $implementation{nameSpaceInternal}->add(<<END);
-static void ${funcName}AttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void ${funcName}AttributeGetterCallback${forMainWorldSuffix}(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    ${implClassName}V8Internal::${funcName}AttributeGetter(name, info);
+    ${implClassName}V8Internal::${funcName}AttributeGetter${forMainWorldSuffix}(name, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
@@ -3287,8 +3288,17 @@ sub GenerateNonStandardFunction
         $code .= <<END;
 
     // $commentInfo
-    ${conditional}$template->SetAccessor(v8::String::NewSymbol("$name"), ${implClassName}V8Internal::${name}AttributeGetterCallback, ${setter}, v8Undefined(), v8::ALL_CAN_READ, static_cast<v8::PropertyAttribute>($property_attributes));
 END
+    if ($function->extendedAttributes->{"PerWorldBindings"}) {
+        $code .= "    if (currentWorldType == MainWorld) {\n";
+        $code .= "        ${conditional}$template->SetAccessor(v8::String::NewSymbol(\"$name\"), ${implClassName}V8Internal::${name}AttributeGetterCallbackForMainWorld, ${setter}, v8Undefined(), v8::ALL_CAN_READ, static_cast<v8::PropertyAttribute>($property_attributes));\n";
+        $code .= "    } else {\n";
+        $code .= "        ${conditional}$template->SetAccessor(v8::String::NewSymbol(\"$name\"), ${implClassName}V8Internal::${name}AttributeGetterCallback, ${setter}, v8Undefined(), v8::ALL_CAN_READ, static_cast<v8::PropertyAttribute>($property_attributes));\n";
+        $code .= "    }\n";
+    } else {
+        $code .= "    ${conditional}$template->SetAccessor(v8::String::NewSymbol(\"$name\"), ${implClassName}V8Internal::${name}AttributeGetterCallback, ${setter}, v8Undefined(), v8::ALL_CAN_READ, static_cast<v8::PropertyAttribute>($property_attributes));\n";
+    }
+
         return $code;
     }
 
@@ -4234,7 +4244,13 @@ END
         # for different calling context.
         if ($interface->extendedAttributes->{"CheckSecurity"} && $function->extendedAttributes->{"DoNotCheckSecurity"}) {
             if (!HasCustomMethod($function->extendedAttributes) || $function->{overloadIndex} == 1) {
-                GenerateDomainSafeFunctionGetter($function, $interface);
+                my @worldSuffixes = ("");
+                if ($function->extendedAttributes->{"PerWorldBindings"}) {
+                    push(@worldSuffixes, "ForMainWorld");
+                }
+                foreach my $worldSuffix (@worldSuffixes) {
+                    GenerateDomainSafeFunctionGetter($function, $interface, $worldSuffix);
+                }
                 if (!$function->extendedAttributes->{"ReadOnly"}) {
                     $needsDomainSafeFunctionSetter = 1;
                 }

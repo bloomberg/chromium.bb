@@ -32,4 +32,5 @@
     readonly attribute long excitingAttr;
     void excitingFunction(Node nextChild);
     [DoNotCheckSecurity] void postMessage(DOMString message);
+    [DoNotCheckSecurity, PerWorldBindings, ActivityLogging=AccessForIsolatedWorlds] void perWorldBindingsMethodWithDoNotCheckSecurity(DOMString url);
 };
