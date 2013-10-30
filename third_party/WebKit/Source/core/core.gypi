@@ -3500,7 +3500,6 @@
         'webcore_platform_support_files': [
             'platform/chromium/support/WebArrayBuffer.cpp',
             'platform/chromium/support/WebCrypto.cpp',
-            'platform/chromium/support/WebCryptoKey.cpp',
             'platform/chromium/support/WebCursorInfo.cpp',
             'platform/chromium/support/WebDeviceMotionData.cpp',
             'platform/chromium/support/WebDeviceOrientationData.cpp',

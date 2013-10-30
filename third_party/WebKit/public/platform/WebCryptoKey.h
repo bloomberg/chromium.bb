@@ -50,7 +50,7 @@ enum WebCryptoKeyUsage {
     WebCryptoKeyUsageDeriveKey = 1 << 4,
     WebCryptoKeyUsageWrapKey = 1 << 5,
     WebCryptoKeyUsageUnwrapKey = 1 << 6,
-#if BLINK_IMPLEMENTATION
+#if INSIDE_BLINK
     EndOfWebCryptoKeyUsage,
 #endif
 };
@@ -103,22 +103,22 @@ public:
     // https://dvcs.w3.org/hg/webcrypto-api/raw-file/tip/spec/Overview.html#key-interface-members
     //
     // Note that the caller is passing ownership of the WebCryptoKeyHandle*.
-    BLINK_EXPORT static WebCryptoKey create(WebCryptoKeyHandle*, WebCryptoKeyType, bool extractable, const WebCryptoAlgorithm&, WebCryptoKeyUsageMask);
+    BLINK_PLATFORM_EXPORT static WebCryptoKey create(WebCryptoKeyHandle*, WebCryptoKeyType, bool extractable, const WebCryptoAlgorithm&, WebCryptoKeyUsageMask);
 
     // Returns the opaque key handle that was set by the embedder.
     //   * Safe to downcast to known type (since embedder creates all the keys)
     //   * Returned pointer's lifetime is bound to |this|
-    BLINK_EXPORT WebCryptoKeyHandle* handle() const;
+    BLINK_PLATFORM_EXPORT WebCryptoKeyHandle* handle() const;
 
-    BLINK_EXPORT WebCryptoKeyType type() const;
-    BLINK_EXPORT bool extractable() const;
-    BLINK_EXPORT const WebCryptoAlgorithm& algorithm() const;
-    BLINK_EXPORT WebCryptoKeyUsageMask usages() const;
+    BLINK_PLATFORM_EXPORT WebCryptoKeyType type() const;
+    BLINK_PLATFORM_EXPORT bool extractable() const;
+    BLINK_PLATFORM_EXPORT const WebCryptoAlgorithm& algorithm() const;
+    BLINK_PLATFORM_EXPORT WebCryptoKeyUsageMask usages() const;
 
 private:
     WebCryptoKey() { }
-    BLINK_EXPORT void assign(const WebCryptoKey& other);
-    BLINK_EXPORT void reset();
+    BLINK_PLATFORM_EXPORT void assign(const WebCryptoKey& other);
+    BLINK_PLATFORM_EXPORT void reset();
 
     WebPrivatePtr<WebCryptoKeyPrivate> m_private;
 };
