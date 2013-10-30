@@ -118,7 +118,7 @@ public:
 
     Platform3DObject framebuffer() const;
 
-    void markContentsChanged() { m_contentsChanged = true; }
+    void markContentsChanged();
 
     WebKit::WebLayer* platformLayer();
     void paintCompositedResultsToCanvas(ImageBuffer*);
@@ -127,6 +127,9 @@ public:
     virtual WebKit::WebGraphicsContext3D* context() OVERRIDE;
     virtual bool prepareMailbox(WebKit::WebExternalTextureMailbox*, WebKit::WebExternalBitmap*) OVERRIDE;
     virtual void mailboxReleased(const WebKit::WebExternalTextureMailbox&) OVERRIDE;
+
+    bool copyToPlatformTexture(GraphicsContext3D&, Platform3DObject texture, GC3Denum internalFormat,
+        GC3Denum destType, GC3Dint level, bool premultiplyAlpha, bool flipY);
 
 private:
     DrawingBuffer(GraphicsContext3D*, const IntSize&, bool multisampleExtensionSupported,
@@ -189,6 +192,9 @@ private:
 
     // True if our contents have been modified since the last presentation of this buffer.
     bool m_contentsChanged;
+
+    // True if commit() has been called since the last time markContentsChanged() had been called.
+    bool m_contentsChangeCommitted;
 
     GraphicsContext3D::Attributes m_attributes;
     unsigned m_internalColorFormat;
