@@ -1023,8 +1023,13 @@ def GenerateBreakpadSymbols(buildroot, board, debug):
     board: Board type that was built on this machine.
     debug: Include extra debugging output.
   """
+  # We don't care about firmware symbols.
+  # See http://crbug.com/213670.
+  exclude_dirs = ['firmware']
+
   cmd = ['cros_generate_breakpad_symbols', '--board=%s' % board,
          '--jobs=%s' % str(max([1, multiprocessing.cpu_count() / 2]))]
+  cmd += ['--exclude-dir=%s' % x for x in exclude_dirs]
   if debug:
     cmd += ['--debug']
   _RunBuildScript(buildroot, cmd, enter_chroot=True, chromite_cmd=True)
