@@ -140,9 +140,6 @@ class BASE_EXPORT FieldTrial : public RefCounted<FieldTrial> {
   // is used as the group name. This causes a winner to be chosen if none was.
   const std::string& group_name();
 
-  // Enable benchmarking sets field trials to a common setting.
-  static void EnableBenchmarking();
-
   // Set the field trial as forced, meaning that it was setup earlier than
   // the hard coded registration of the field trial to override it.
   // This allows the code that was hard coded to register the field trial to
@@ -152,6 +149,9 @@ class BASE_EXPORT FieldTrial : public RefCounted<FieldTrial> {
   // And, as the rest of the FieldTrial code, this is not thread safe and must
   // be done from the UI thread.
   void SetForced();
+
+  // Enable benchmarking sets field trials to a common setting.
+  static void EnableBenchmarking();
 
   // Creates a FieldTrial object with the specified parameters, to be used for
   // simulation of group assignment without actually affecting global field

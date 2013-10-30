@@ -72,26 +72,6 @@ int FieldTrialList::kNoExpirationYear = 0;
 //------------------------------------------------------------------------------
 // FieldTrial methods and members.
 
-FieldTrial::FieldTrial(const std::string& trial_name,
-                       const Probability total_probability,
-                       const std::string& default_group_name,
-                       double entropy_value)
-    : trial_name_(trial_name),
-      divisor_(total_probability),
-      default_group_name_(default_group_name),
-      random_(GetGroupBoundaryValue(total_probability, entropy_value)),
-      accumulated_group_probability_(0),
-      next_group_number_(kDefaultGroupNumber + 1),
-      group_(kNotFinalized),
-      enable_field_trial_(true),
-      forced_(false),
-      group_reported_(false),
-      trial_registered_(false) {
-  DCHECK_GT(total_probability, 0);
-  DCHECK(!trial_name_.empty());
-  DCHECK(!default_group_name_.empty());
-}
-
 FieldTrial::EntropyProvider::~EntropyProvider() {
 }
 
@@ -159,12 +139,6 @@ const std::string& FieldTrial::group_name() {
   return group_name_;
 }
 
-// static
-void FieldTrial::EnableBenchmarking() {
-  DCHECK_EQ(0u, FieldTrialList::GetFieldTrialCount());
-  enable_benchmarking_ = true;
-}
-
 void FieldTrial::SetForced() {
   // We might have been forced before (e.g., by CreateFieldTrial) and it's
   // first come first served, e.g., command line switch has precedence.
@@ -177,6 +151,12 @@ void FieldTrial::SetForced() {
 }
 
 // static
+void FieldTrial::EnableBenchmarking() {
+  DCHECK_EQ(0u, FieldTrialList::GetFieldTrialCount());
+  enable_benchmarking_ = true;
+}
+
+// static
 FieldTrial* FieldTrial::CreateSimulatedFieldTrial(
     const std::string& trial_name,
     Probability total_probability,
@@ -184,6 +164,26 @@ FieldTrial* FieldTrial::CreateSimulatedFieldTrial(
     double entropy_value) {
   return new FieldTrial(trial_name, total_probability, default_group_name,
                         entropy_value);
+}
+
+FieldTrial::FieldTrial(const std::string& trial_name,
+                       const Probability total_probability,
+                       const std::string& default_group_name,
+                       double entropy_value)
+    : trial_name_(trial_name),
+      divisor_(total_probability),
+      default_group_name_(default_group_name),
+      random_(GetGroupBoundaryValue(total_probability, entropy_value)),
+      accumulated_group_probability_(0),
+      next_group_number_(kDefaultGroupNumber + 1),
+      group_(kNotFinalized),
+      enable_field_trial_(true),
+      forced_(false),
+      group_reported_(false),
+      trial_registered_(false) {
+  DCHECK_GT(total_probability, 0);
+  DCHECK(!trial_name_.empty());
+  DCHECK(!default_group_name_.empty());
 }
 
 FieldTrial::~FieldTrial() {}
