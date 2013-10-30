@@ -114,8 +114,10 @@ gfx::Rect GlassBrowserFrameView::GetBoundsForTabStrip(
 
   // The new avatar button is optionally displayed to the left of the
   // minimize button.
-  if (browser_view()->ShouldShowAvatar() && new_avatar_button())
+  if (new_avatar_button()) {
+    DCHECK(profiles::IsNewProfileManagementEnabled());
     minimize_button_offset -= new_avatar_button()->width();
+  }
 
   int tabstrip_x = browser_view()->ShouldShowAvatar() ?
       (avatar_bounds_.right() + kAvatarRightSpacing) :
@@ -128,6 +130,10 @@ gfx::Rect GlassBrowserFrameView::GetBoundsForTabStrip(
   if (base::i18n::IsRTL()) {
     if (!browser_view()->ShouldShowAvatar() && frame()->IsMaximized())
       tabstrip_x += avatar_bounds_.x();
+    else if (browser_view()->IsRegularOrGuestSession() &&
+        profiles::IsNewProfileManagementEnabled())
+      tabstrip_x = width() - minimize_button_offset;
+
     minimize_button_offset = width();
   }
   int tabstrip_width = minimize_button_offset - tabstrip_x -
@@ -263,13 +269,11 @@ void GlassBrowserFrameView::OnPaint(gfx::Canvas* canvas) {
 }
 
 void GlassBrowserFrameView::Layout() {
-  if (browser_view()->ShouldShowAvatar()) {
-    if (browser_view()->IsRegularOrGuestSession() &&
-        profiles::IsNewProfileManagementEnabled())
-      LayoutNewStyleAvatar();
-    else
-      LayoutAvatar();
-  }
+  if (browser_view()->IsRegularOrGuestSession() &&
+      profiles::IsNewProfileManagementEnabled())
+    LayoutNewStyleAvatar();
+  else
+    LayoutAvatar();
 
   LayoutClientView();
 }
@@ -441,6 +445,7 @@ void GlassBrowserFrameView::PaintRestoredClientEdge(gfx::Canvas* canvas) {
 }
 
 void GlassBrowserFrameView::LayoutNewStyleAvatar() {
+  DCHECK(profiles::IsNewProfileManagementEnabled());
   if (!new_avatar_button())
     return;
 
