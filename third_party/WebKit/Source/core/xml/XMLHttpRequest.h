@@ -178,11 +178,8 @@ private:
     void clearVariablesForLoading();
     // Returns false iff reentry happened and a new load is started.
     bool internalAbort(DropProtection = DropProtectionSync);
-    // Clears variables holding response header and body data. If it's needed
-    // to keep response header data, use clearResponseBuffers().
+    // Clears variables holding response header and body data.
     void clearResponse();
-    // Clears variables holding response body data.
-    void clearResponseBuffers();
     void clearRequest();
 
     void createRequest(ExceptionState&);

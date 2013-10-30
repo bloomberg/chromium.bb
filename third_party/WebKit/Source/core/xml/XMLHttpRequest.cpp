@@ -851,7 +851,7 @@ void XMLHttpRequest::abort()
     if (!internalAbort())
         return;
 
-    clearResponseBuffers();
+    clearResponse();
 
     // Clear headers as required by the spec
     m_requestHeaders.clear();
@@ -923,11 +923,7 @@ bool XMLHttpRequest::internalAbort(DropProtection async)
 void XMLHttpRequest::clearResponse()
 {
     m_response = ResourceResponse();
-    clearResponseBuffers();
-}
 
-void XMLHttpRequest::clearResponseBuffers()
-{
     m_responseText.clear();
 
     m_createdDocument = false;
