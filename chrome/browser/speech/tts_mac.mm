@@ -89,7 +89,6 @@ class TtsPlatformImplMac : public TtsPlatformImpl {
   base::scoped_nsobject<ChromeTtsDelegate> delegate_;
   int utterance_id_;
   std::string utterance_;
-  bool sent_start_event_;
   int last_char_index_;
   bool paused_;
 
@@ -133,7 +132,6 @@ bool TtsPlatformImplMac::Speak(
   }
 
   utterance_id_ = utterance_id;
-  sent_start_event_ = false;
 
   // TODO: support languages other than the default: crbug.com/88059
 
@@ -164,7 +162,12 @@ bool TtsPlatformImplMac::Speak(
         forProperty:NSSpeechVolumeProperty error:nil];
   }
 
-  return [speech_synthesizer_ startSpeakingRetainedUtterance];
+  bool success = [speech_synthesizer_ startSpeakingRetainedUtterance];
+  if (success) {
+    TtsController* controller = TtsController::GetInstance();
+    controller->OnTtsEvent(utterance_id_, TTS_EVENT_START, 0, "");
+  }
+  return success;
 }
 
 bool TtsPlatformImplMac::StopSpeaking() {
@@ -195,7 +198,9 @@ void TtsPlatformImplMac::Resume() {
 }
 
 bool TtsPlatformImplMac::IsSpeaking() {
-  return [NSSpeechSynthesizer isAnyApplicationSpeaking];
+  if (speech_synthesizer_)
+    return [speech_synthesizer_ isSpeaking];
+  return false;
 }
 
 void TtsPlatformImplMac::GetVoices(std::vector<VoiceData>* outVoices) {
@@ -268,19 +273,13 @@ void TtsPlatformImplMac::OnSpeechEvent(
   if (event_type == TTS_EVENT_END)
     char_index = utterance_.size();
   TtsController* controller = TtsController::GetInstance();
-  if (event_type == TTS_EVENT_WORD && !sent_start_event_) {
-    controller->OnTtsEvent(
-        utterance_id_, TTS_EVENT_START, 0, "");
-    sent_start_event_ = true;
-  }
-  controller->OnTtsEvent(
+controller->OnTtsEvent(
       utterance_id_, event_type, char_index, error_message);
   last_char_index_ = char_index;
 }
 
 TtsPlatformImplMac::TtsPlatformImplMac() {
   utterance_id_ = -1;
-  sent_start_event_ = true;
   paused_ = false;
 
   delegate_.reset([[ChromeTtsDelegate alloc] initWithPlatformImplMac:this]);

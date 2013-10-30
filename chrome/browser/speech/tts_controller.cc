@@ -181,6 +181,9 @@ void TtsController::SpeakNow(Utterance* utterance) {
     }
 #endif
   } else {
+    // It's possible for certain platforms to send start events immediately
+    // during |speak|.
+    current_utterance_ = utterance;
     GetPlatformImpl()->clear_error();
     bool success = GetPlatformImpl()->Speak(
         utterance->id(),
@@ -188,6 +191,8 @@ void TtsController::SpeakNow(Utterance* utterance) {
         utterance->lang(),
         voice,
         utterance->continuous_parameters());
+    if (!success)
+      current_utterance_ = NULL;
 
     // If the native voice wasn't able to process this speech, see if
     // the browser has built-in TTS that isn't loaded yet.
@@ -203,7 +208,6 @@ void TtsController::SpeakNow(Utterance* utterance) {
       delete utterance;
       return;
     }
-    current_utterance_ = utterance;
   }
 }
 
@@ -259,9 +263,9 @@ void TtsController::OnTtsEvent(int utterance_id,
   // already finished the utterance (for example because another utterance
   // interrupted or we got a call to Stop). This is normal and we can
   // safely just ignore these events.
-  if (!current_utterance_ || utterance_id != current_utterance_->id())
+  if (!current_utterance_ || utterance_id != current_utterance_->id()) {
     return;
-
+  }
   current_utterance_->OnTtsEvent(event_type, char_index, error_message);
   if (current_utterance_->finished()) {
     FinishCurrentUtterance();
