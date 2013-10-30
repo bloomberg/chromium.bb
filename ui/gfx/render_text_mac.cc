@@ -112,7 +112,10 @@ void RenderTextMac::EnsureLayout() {
   runs_valid_ = false;
 
   const Font& font = GetPrimaryFont();
-  CTFontRef ct_font = base::mac::NSToCFCast(font.GetNativeFont());
+  base::ScopedCFTypeRef<CFStringRef> font_name_cf_string(
+      base::SysUTF8ToCFStringRef(font.GetFontName()));
+  base::ScopedCFTypeRef<CTFontRef> ct_font(
+      CTFontCreateWithName(font_name_cf_string, font.GetFontSize(), NULL));
 
   const void* keys[] = { kCTFontAttributeName };
   const void* values[] = { ct_font };
