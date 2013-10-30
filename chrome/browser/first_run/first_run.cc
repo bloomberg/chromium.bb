@@ -716,9 +716,6 @@ void AutoImport(
     int import_items,
     int dont_import_items,
     const std::string& import_bookmarks_path) {
-  // Deletes itself.
-  ExternalProcessImporterHost* importer_host = new ExternalProcessImporterHost;
-
   base::FilePath local_state_path;
   PathService::Get(chrome::FILE_LOCAL_STATE, &local_state_path);
   bool local_state_file_exists = base::PathExists(local_state_path);
@@ -729,10 +726,6 @@ void AutoImport(
 
   // Do import if there is an available profile for us to import.
   if (importer_list->count() > 0) {
-    // Don't show the warning dialog if import fails.
-    importer_host->set_headless();
-    int items = 0;
-
     if (internal::IsOrganicFirstRun()) {
       // Home page is imported in organic builds only unless turned off or
       // defined in master_preferences.
@@ -751,6 +744,7 @@ void AutoImport(
     }
 
     PrefService* user_prefs = profile->GetPrefs();
+    int items = 0;
 
     SetImportItem(user_prefs,
                   prefs::kImportHistory,
@@ -776,6 +770,13 @@ void AutoImport(
                   dont_import_items,
                   importer::FAVORITES,
                   &items);
+
+    // Deletes itself.
+    ExternalProcessImporterHost* importer_host =
+        new ExternalProcessImporterHost;
+
+    // Don't show the warning dialog if import fails.
+    importer_host->set_headless();
 
     importer::LogImporterUseToMetrics(
         "AutoImport", importer_list->GetSourceProfileAt(0).importer_type);
