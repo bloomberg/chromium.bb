@@ -47,7 +47,6 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_types.h"
-#include "content/public/browser/render_view_host_observer.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/size.h"
 

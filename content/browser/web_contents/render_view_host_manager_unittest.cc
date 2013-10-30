@@ -15,9 +15,9 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/browser/render_view_host_observer.h"
 #include "content/public/browser/render_widget_host_iterator.h"
 #include "content/public/browser/web_contents_delegate.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_ui_controller.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/javascript_message_type.h"
@@ -451,20 +451,24 @@ TEST_F(RenderViewHostManagerTest, ActiveViewCountWhileSwappingInandOut) {
 // other parts of the system. For now, this class is only used for the
 // next test cases to detect the bug mentioned at
 // http://crbug.com/259859.
-class RenderViewHostDestroyer : public content::RenderViewHostObserver {
+class RenderViewHostDestroyer : public WebContentsObserver {
  public:
   RenderViewHostDestroyer(RenderViewHost* render_view_host,
                           WebContents* web_contents)
-      : content::RenderViewHostObserver(render_view_host),
+      : WebContentsObserver(WebContents::FromRenderViewHost(render_view_host)),
+        render_view_host_(render_view_host),
         web_contents_(web_contents) {}
 
-  virtual void RenderViewHostDestroyed(RenderViewHost* render_view_host)
-      OVERRIDE {
-    delete web_contents_;
+  virtual void RenderViewDeleted(
+      RenderViewHost* render_view_host) OVERRIDE {
+    if (render_view_host == render_view_host_)
+      delete web_contents_;
   }
 
  private:
+  RenderViewHost* render_view_host_;
   WebContents* web_contents_;
+
   DISALLOW_COPY_AND_ASSIGN(RenderViewHostDestroyer);
 };
 

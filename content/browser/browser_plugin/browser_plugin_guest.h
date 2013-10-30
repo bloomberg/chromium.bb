@@ -6,12 +6,9 @@
 // renderer channel. A BrowserPlugin (a WebPlugin) is on the embedder
 // renderer side of browser <--> embedder renderer communication.
 //
-// BrowserPluginGuest lives on the UI thread of the browser process. It has a
-// helper, BrowserPluginGuestHelper, which is a RenderViewHostObserver. The
-// helper object intercepts messages (ViewHostMsg_*) directed at the browser
-// process and redirects them to this class. Any messages about the guest render
-// process that the embedder might be interested in receiving should be listened
-// for here.
+// BrowserPluginGuest lives on the UI thread of the browser process. Any
+// messages about the guest render process that the embedder might be interested
+// in receiving should be listened for here.
 //
 // BrowserPluginGuest is a WebContentsDelegate and WebContentsObserver for the
 // guest WebContents. BrowserPluginGuest operates under the assumption that the
@@ -33,7 +30,6 @@
 #include "content/port/common/input_event_ack_state.h"
 #include "content/public/browser/browser_plugin_guest_delegate.h"
 #include "content/public/browser/javascript_dialog_manager.h"
-#include "content/public/browser/render_view_host_observer.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/browser_plugin_permission_type.h"

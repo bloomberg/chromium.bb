@@ -57,7 +57,6 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
-#include "content/public/browser/render_view_host_observer.h"
 #include "content/public/browser/render_widget_host_iterator.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/common/bindings_policy.h"
@@ -213,9 +212,6 @@ RenderViewHostImpl::RenderViewHostImpl(
 }
 
 RenderViewHostImpl::~RenderViewHostImpl() {
-  FOR_EACH_OBSERVER(
-      RenderViewHostObserver, observers_, RenderViewHostDestruction());
-
   if (ResourceDispatcherHostImpl::Get()) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
@@ -299,9 +295,6 @@ bool RenderViewHostImpl::CreateRenderView(
   Send(new ViewMsg_AllowBindings(GetRoutingID(), enabled_bindings_));
   // Let our delegate know that we created a RenderView.
   delegate_->RenderViewCreated(this);
-
-  FOR_EACH_OBSERVER(
-      RenderViewHostObserver, observers_, RenderViewHostInitialized());
 
   return true;
 }
@@ -1146,13 +1139,6 @@ bool RenderViewHostImpl::OnMessageReceived(const IPC::Message& msg) {
     }
   }
 
-  ObserverListBase<RenderViewHostObserver>::Iterator it(observers_);
-  RenderViewHostObserver* observer;
-  while ((observer = it.GetNext()) != NULL) {
-    if (observer->OnMessageReceived(msg))
-      return true;
-  }
-
   if (delegate_->OnMessageReceived(this, msg))
     return true;
 
@@ -1775,14 +1761,6 @@ void RenderViewHostImpl::OnAddMessageToConsole(
     logging::LogMessage("CONSOLE", line_no, resolved_level).stream() << "\"" <<
         message << "\", source: " << source_id << " (" << line_no << ")";
   }
-}
-
-void RenderViewHostImpl::AddObserver(RenderViewHostObserver* observer) {
-  observers_.AddObserver(observer);
-}
-
-void RenderViewHostImpl::RemoveObserver(RenderViewHostObserver* observer) {
-  observers_.RemoveObserver(observer);
 }
 
 void RenderViewHostImpl::OnUserGesture() {

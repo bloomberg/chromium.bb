@@ -12,7 +12,6 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/observer_list.h"
 #include "base/process/kill.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
@@ -62,7 +61,6 @@ class BrowserMediaPlayerManager;
 class ChildProcessSecurityPolicyImpl;
 class PageState;
 class RenderFrameHostImpl;
-class RenderViewHostObserver;
 class RenderWidgetHostDelegate;
 class SessionStorageNamespace;
 class SessionStorageNamespaceImpl;
@@ -485,13 +483,6 @@ class CONTENT_EXPORT RenderViewHostImpl
   // to keep them consistent).
 
  protected:
-  friend class RenderViewHostObserver;
-
-  // Add and remove observers for filtering IPC messages.  Clients must be sure
-  // to remove the observer before they go away.
-  void AddObserver(RenderViewHostObserver* observer);
-  void RemoveObserver(RenderViewHostObserver* observer);
-
   // RenderWidgetHost protected overrides.
   virtual void OnUserGesture() OVERRIDE;
   virtual void NotifyRendererUnresponsive() OVERRIDE;
@@ -717,9 +708,6 @@ class CONTENT_EXPORT RenderViewHostImpl
 
   // The termination status of the last render view that terminated.
   base::TerminationStatus render_view_termination_status_;
-
-  // A list of observers that filter messages.  Weak references.
-  ObserverList<RenderViewHostObserver> observers_;
 
   // When the last ShouldClose message was sent.
   base::TimeTicks send_should_close_start_time_;

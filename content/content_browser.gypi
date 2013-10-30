@@ -149,8 +149,6 @@
     'public/browser/render_process_host.h',
     'public/browser/render_process_host_factory.h',
     'public/browser/render_view_host.h',
-    'public/browser/render_view_host_observer.cc',
-    'public/browser/render_view_host_observer.h',
     'public/browser/render_widget_host.h',
     'public/browser/render_widget_host_view.h',
     'public/browser/render_widget_host_view_mac_delegate.h',

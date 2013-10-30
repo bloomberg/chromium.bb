@@ -12,7 +12,6 @@
 #include "content/public/browser/child_process_data.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "content/public/browser/render_view_host_observer.h"
 #include "content/public/common/process_type.h"
 
 class TaskManager;
