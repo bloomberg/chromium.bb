@@ -456,6 +456,7 @@ base::Value* QuicClientSession::GetInfoAsValue(const HostPortPair& pair) const {
   dict->SetInteger("total_streams", num_total_streams_);
   dict->SetString("peer_address", peer_address().ToString());
   dict->SetString("guid", base::Uint64ToString(guid()));
+  dict->SetBoolean("connected", connection()->connected());
   return dict;
 }
 

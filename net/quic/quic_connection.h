@@ -326,7 +326,7 @@ class NET_EXPORT_PRIVATE QuicConnection
 
   QuicPacketCreator::Options* options() { return packet_creator_.options(); }
 
-  bool connected() { return connected_; }
+  bool connected() const { return connected_; }
 
   size_t NumFecGroups() const { return group_map_.size(); }
 
