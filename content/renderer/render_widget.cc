@@ -703,6 +703,15 @@ void RenderWidget::Resize(const gfx::Size& new_size,
   DCHECK(resize_ack != SEND_RESIZE_ACK || next_paint_is_resize_ack());
 }
 
+void RenderWidget::ResizeSynchronously(const gfx::Rect& new_position) {
+  Resize(new_position.size(), new_position.size(), overdraw_bottom_height_,
+         gfx::Rect(), is_fullscreen_, NO_RESIZE_ACK);
+  view_screen_rect_ = new_position;
+  window_screen_rect_ = new_position;
+  if (!did_show_)
+    initial_pos_ = new_position;
+}
+
 void RenderWidget::OnClose() {
   if (closing_)
     return;
@@ -2016,13 +2025,7 @@ void RenderWidget::setWindowRect(const WebRect& rect) {
       initial_pos_ = pos;
     }
   } else {
-    WebSize new_size(pos.width, pos.height);
-    Resize(new_size, new_size, overdraw_bottom_height_,
-           WebRect(), is_fullscreen_, NO_RESIZE_ACK);
-    view_screen_rect_ = pos;
-    window_screen_rect_ = pos;
-    if (!did_show_)
-      initial_pos_ = pos;
+    ResizeSynchronously(pos);
   }
 }
 

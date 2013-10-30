@@ -6553,6 +6553,14 @@ void RenderViewImpl::SetDeviceScaleFactorForTesting(float factor) {
   OnResize(params);
 }
 
+void RenderViewImpl::ForceResizeForTesting(const gfx::Size& new_size) {
+  gfx::Rect new_position(rootWindowRect().x,
+                         rootWindowRect().y,
+                         new_size.width(),
+                         new_size.height());
+  ResizeSynchronously(new_position);
+}
+
 void RenderViewImpl::UseSynchronousResizeModeForTesting(bool enable) {
   resizing_mode_selector_->set_is_synchronous_mode(enable);
 }

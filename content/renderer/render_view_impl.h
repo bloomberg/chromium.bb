@@ -387,6 +387,9 @@ class CONTENT_EXPORT RenderViewImpl
   // Change the device scale factor and force the compositor to resize.
   void SetDeviceScaleFactorForTesting(float factor);
 
+  // Used to force the size of a window when running layout tests.
+  void ForceResizeForTesting(const gfx::Size& new_size);
+
   void UseSynchronousResizeModeForTesting(bool enable);
 
   // Control autoresize mode.
