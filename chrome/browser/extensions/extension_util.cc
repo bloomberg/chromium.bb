@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_sync_service.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/incognito_handler.h"
@@ -74,8 +75,10 @@ void SetIsIncognitoEnabled(const std::string& extension_id,
 
   // Reloading the extension invalidates the |extension| pointer.
   extension = service->GetInstalledExtension(id);
-  if (extension)
-    service->SyncExtensionChangeIfNeeded(*extension);
+  if (extension) {
+    ExtensionSyncService::Get(service->profile())->
+        SyncExtensionChangeIfNeeded(*extension);
+  }
 }
 
 bool CanCrossIncognito(const Extension* extension,

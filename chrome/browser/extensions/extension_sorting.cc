@@ -9,7 +9,7 @@
 
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_scoped_prefs.h"
-#include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_sync_service.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/public/browser/notification_service.h"
 
@@ -47,16 +47,16 @@ ExtensionSorting::AppOrdinals::~AppOrdinals() {}
 
 ExtensionSorting::ExtensionSorting(ExtensionScopedPrefs* extension_scoped_prefs)
     : extension_scoped_prefs_(extension_scoped_prefs),
-      extension_service_(NULL),
+      extension_sync_service_(NULL),
       default_ordinals_created_(false) {
 }
 
 ExtensionSorting::~ExtensionSorting() {
 }
 
-void ExtensionSorting::SetExtensionService(
-    ExtensionServiceInterface* extension_service) {
-  extension_service_ = extension_service;
+void ExtensionSorting::SetExtensionSyncService(
+    ExtensionSyncService* extension_sync_service) {
+  extension_sync_service_ = extension_sync_service;
 }
 
 void ExtensionSorting::Initialize(
@@ -523,19 +523,8 @@ void ExtensionSorting::RemoveOrdinalMapping(
 }
 
 void ExtensionSorting::SyncIfNeeded(const std::string& extension_id) {
-  if (extension_service_) {
-    const extensions::Extension* ext =
-        extension_service_->GetInstalledExtension(extension_id);
-
-    if (ext) {
-      // It is possible for old extension to have ordinal values, but they
-      // shouldn't so we clear them.
-      if (!ext->is_app())
-        ClearOrdinals(extension_id);
-
-      extension_service_->SyncExtensionChangeIfNeeded(*ext);
-    }
-  }
+  if (extension_sync_service_)
+    extension_sync_service_->SyncOrderingChange(extension_id);
 }
 
 void ExtensionSorting::CreateDefaultOrdinals() {

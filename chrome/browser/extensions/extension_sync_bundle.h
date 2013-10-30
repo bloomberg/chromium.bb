@@ -16,7 +16,7 @@
 #include "chrome/browser/extensions/sync_bundle.h"
 #include "sync/api/syncable_service.h"
 
-class ExtensionService;
+class ExtensionSyncService;
 class ExtensionSet;
 
 namespace syncer {
@@ -31,7 +31,7 @@ class Extension;
 // Bundle of extension specific sync stuff.
 class ExtensionSyncBundle : public SyncBundle {
  public:
-  explicit ExtensionSyncBundle(ExtensionService* extension_service);
+  explicit ExtensionSyncBundle(ExtensionSyncService* extension_sync_service);
   virtual ~ExtensionSyncBundle();
 
   // Setup this bundle to be sync extension data.
@@ -75,7 +75,7 @@ class ExtensionSyncBundle : public SyncBundle {
 
   // Appends sync data objects for every extension in |extensions|.
   void GetExtensionSyncDataListHelper(
-      const ExtensionSet& extensions,
+      const ExtensionSet* extensions,
       std::vector<extensions::ExtensionSyncData>* sync_data_list) const;
 
   // Overrides for SyncBundle.
@@ -95,7 +95,7 @@ class ExtensionSyncBundle : public SyncBundle {
   // Change an extension from being pending to synced.
   void MarkPendingExtensionSynced(const std::string& id);
 
-  ExtensionService* extension_service_;  // Owns us.
+  ExtensionSyncService* extension_sync_service_;  // Owns us.
   scoped_ptr<syncer::SyncChangeProcessor> sync_processor_;
   scoped_ptr<syncer::SyncErrorFactory> sync_error_factory_;
 

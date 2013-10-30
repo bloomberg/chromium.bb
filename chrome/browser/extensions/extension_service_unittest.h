@@ -58,6 +58,8 @@ class ExtensionServiceTestBase : public testing::Test {
 
   void InitializeExtensionServiceWithUpdater();
 
+  void InitializeExtensionSyncService();
+
   static void SetUpTestCase();
 
   virtual void SetUp() OVERRIDE;
@@ -81,6 +83,7 @@ class ExtensionServiceTestBase : public testing::Test {
   // Managed by extensions::ExtensionSystemFactory.
   ExtensionService* service_;
   extensions::ManagementPolicy* management_policy_;
+  scoped_ptr<ExtensionSyncService> extension_sync_service_;
   size_t expected_extensions_count_;
 
 #if defined OS_CHROMEOS

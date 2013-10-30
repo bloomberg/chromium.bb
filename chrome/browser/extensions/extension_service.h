@@ -18,13 +18,12 @@
 #include "base/memory/weak_ptr.h"
 #include "base/prefs/pref_change_registrar.h"
 #include "base/strings/string16.h"
-#include "chrome/browser/extensions/app_sync_bundle.h"
 #include "chrome/browser/extensions/blacklist.h"
 #include "chrome/browser/extensions/extension_function_histogram_value.h"
 #include "chrome/browser/extensions/extension_icon_manager.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
-#include "chrome/browser/extensions/extension_sync_bundle.h"
+#include "chrome/browser/extensions/extension_sync_service.h"
 #include "chrome/browser/extensions/extension_toolbar_model.h"
 #include "chrome/browser/extensions/extensions_quota_service.h"
 #include "chrome/browser/extensions/external_provider_interface.h"
@@ -43,13 +42,9 @@
 #include "content/public/browser/notification_registrar.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/one_shot_event.h"
-#include "sync/api/string_ordinal.h"
-#include "sync/api/sync_change.h"
-#include "sync/api/syncable_service.h"
 
 class CommandLine;
 class ExtensionErrorUI;
-class ExtensionSyncData;
 class ExtensionToolbarModel;
 class GURL;
 class Profile;
@@ -60,13 +55,11 @@ class Version;
 }
 
 namespace extensions {
-class AppSyncData;
 class BrowserEventRouter;
 class ComponentLoader;
 class ContentSettingsStore;
 class CrxInstaller;
 class ExtensionActionStorageManager;
-class ExtensionSyncData;
 class ExtensionSystem;
 class ExtensionUpdater;
 class PendingExtensionManager;
@@ -79,7 +72,8 @@ class SyncErrorFactory;
 
 // This is an interface class to encapsulate the dependencies that
 // various classes have on ExtensionService. This allows easy mocking.
-class ExtensionServiceInterface : public syncer::SyncableService {
+class ExtensionServiceInterface
+    : public base::SupportsWeakPtr<ExtensionServiceInterface> {
  public:
   virtual ~ExtensionServiceInterface() {}
   virtual const ExtensionSet* extensions() const = 0;
@@ -123,9 +117,6 @@ class ExtensionServiceInterface : public syncer::SyncableService {
       const std::string& extension_id,
       extensions::UnloadedExtensionInfo::Reason reason) = 0;
   virtual void RemoveComponentExtension(const std::string& extension_id) = 0;
-
-  virtual void SyncExtensionChangeIfNeeded(
-      const extensions::Extension& extension) = 0;
 
   virtual bool is_ready() = 0;
 
@@ -343,11 +334,6 @@ class ExtensionService
   // Scan the extension directory and clean up the cruft.
   void GarbageCollectExtensions();
 
-  // Notifies Sync (if needed) of a newly-installed extension or a change to
-  // an existing extension.
-  virtual void SyncExtensionChangeIfNeeded(
-      const extensions::Extension& extension) OVERRIDE;
-
   // Returns true if |url| should get extension api bindings and be permitted
   // to make api calls. Note that this is independent of what extension
   // permissions the given extension has been granted.
@@ -435,44 +421,6 @@ class ExtensionService
 
   virtual void CheckForUpdatesSoon() OVERRIDE;
 
-  // syncer::SyncableService implementation.
-  virtual syncer::SyncMergeResult MergeDataAndStartSyncing(
-      syncer::ModelType type,
-      const syncer::SyncDataList& initial_sync_data,
-      scoped_ptr<syncer::SyncChangeProcessor> sync_processor,
-      scoped_ptr<syncer::SyncErrorFactory> sync_error_factory) OVERRIDE;
-  virtual void StopSyncing(syncer::ModelType type) OVERRIDE;
-  virtual syncer::SyncDataList GetAllSyncData(
-      syncer::ModelType type) const OVERRIDE;
-  virtual syncer::SyncError ProcessSyncChanges(
-      const tracked_objects::Location& from_here,
-      const syncer::SyncChangeList& change_list) OVERRIDE;
-
-  // Gets the sync data for the given extension, assuming that the extension is
-  // syncable.
-  extensions::ExtensionSyncData GetExtensionSyncData(
-      const extensions::Extension& extension) const;
-
-  // Gets the sync data for the given app, assuming that the app is
-  // syncable.
-  extensions::AppSyncData GetAppSyncData(
-      const extensions::Extension& extension) const;
-
-  // Gets the ExtensionSyncData for all extensions.
-  std::vector<extensions::ExtensionSyncData> GetExtensionSyncDataList() const;
-
-  // Gets the AppSyncData for all extensions.
-  std::vector<extensions::AppSyncData> GetAppSyncDataList() const;
-
-  // Applies the change specified passed in by either ExtensionSyncData or
-  // AppSyncData to the current system.
-  // Returns false if the changes were not completely applied and were added
-  // to the pending list to be tried again.
-  bool ProcessExtensionSyncData(
-      const extensions::ExtensionSyncData& extension_sync_data);
-  bool ProcessAppSyncData(const extensions::AppSyncData& app_sync_data);
-
-
   void set_extensions_enabled(bool enabled) { extensions_enabled_ = enabled; }
   bool extensions_enabled() { return extensions_enabled_; }
 
@@ -492,6 +440,11 @@ class ExtensionService
   const extensions::ExtensionPrefs* extension_prefs() const;
 
   extensions::SettingsFrontend* settings_frontend();
+
+  void set_extension_sync_service(
+      ExtensionSyncService* extension_sync_service) {
+    extension_sync_service_ = extension_sync_service;
+  }
 
   extensions::ContentSettingsStore* GetContentSettingsStore();
 
@@ -631,7 +584,6 @@ class ExtensionService
   }
 #endif
 
-  // Specialization of syncer::SyncableService::AsWeakPtr.
   base::WeakPtr<ExtensionService> AsWeakPtr() { return base::AsWeakPtr(this); }
 
   bool browser_terminating() const { return browser_terminating_; }
@@ -651,10 +603,6 @@ class ExtensionService
   // Adds/Removes update observers.
   void AddUpdateObserver(extensions::UpdateObserver* observer);
   void RemoveUpdateObserver(extensions::UpdateObserver* observer);
-
-  // |flare| provides a StartSyncFlare to the SyncableService. See
-  // sync_start_util for more.
-  void SetSyncStartFlare(const syncer::SyncableService::StartSyncFlare& flare);
 
 #if defined(OS_CHROMEOS)
   void disable_garbage_collection() {
@@ -687,22 +635,7 @@ class ExtensionService
   void SetReadyAndNotifyListeners();
 
   // Return true if the sync type of |extension| matches |type|.
-  bool IsCorrectSyncType(const extensions::Extension& extension,
-                         syncer::ModelType type)
-      const;
-
   void OnExtensionInstallPrefChanged();
-
-  // Whether the given extension has been enabled before sync has started.
-  bool IsPendingEnable(const std::string& extension_id) const;
-
-  // Handles setting the extension specific values in |extension_sync_data| to
-  // the current system.
-  // Returns false if the changes were not completely applied and need to be
-  // tried again later.
-  bool ProcessExtensionSyncDataHelper(
-      const extensions::ExtensionSyncData& extension_sync_data,
-      syncer::ModelType type);
 
   // Adds the given extension to the list of terminated extensions if
   // it is not already there and unloads it.
@@ -793,6 +726,9 @@ class ExtensionService
 
   // Settings for the owning profile.
   scoped_ptr<extensions::SettingsFrontend> settings_frontend_;
+
+  // The ExtensionSyncService that is used by this ExtensionService.
+  ExtensionSyncService* extension_sync_service_;
 
   // The current list of installed extensions.
   ExtensionSet extensions_;
@@ -896,18 +832,11 @@ class ExtensionService
   // first time.
   bool is_first_run_;
 
-  extensions::AppSyncBundle app_sync_bundle_;
-  extensions::ExtensionSyncBundle extension_sync_bundle_;
-
   extensions::ProcessMap process_map_;
 
   // A set of the extension ids currently being reloaded.  We use this to
   // avoid showing a "new install" notice for an extension reinstall.
   std::set<std::string> extensions_being_reloaded_;
-
-  // Set of extensions/apps that have been enabled before sync has started.
-  extensions::PendingEnables pending_app_enables_;
-  extensions::PendingEnables pending_extension_enables_;
 
   scoped_ptr<ExtensionErrorUI> extension_error_ui_;
   // Sequenced task runner for extension related file operations.
@@ -921,11 +850,6 @@ class ExtensionService
       shared_module_policy_provider_;
 
   ObserverList<extensions::UpdateObserver, true> update_observers_;
-
-  // Run()ning tells sync to try and start soon, because syncable changes
-  // have started happening. It will cause sync to call us back
-  // asynchronously via MergeDataAndStartSyncing as soon as possible.
-  syncer::SyncableService::StartSyncFlare flare_;
 
 #if defined(OS_CHROMEOS)
   // TODO(rkc): HACK alert - this is only in place to allow the

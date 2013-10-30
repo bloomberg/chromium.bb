@@ -3,9 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/extensions/crx_installer.h"
-#include "chrome/browser/extensions/extension_sync_data.h"
 #include "chrome/browser/extensions/test_extension_service.h"
-#include "sync/api/sync_error_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using extensions::Extension;
@@ -80,32 +78,6 @@ void TestExtensionService::CheckForUpdatesSoon() {
   ADD_FAILURE();
 }
 
-syncer::SyncMergeResult TestExtensionService::MergeDataAndStartSyncing(
-    syncer::ModelType type,
-    const syncer::SyncDataList& initial_sync_data,
-    scoped_ptr<syncer::SyncChangeProcessor> sync_processor,
-    scoped_ptr<syncer::SyncErrorFactory> sync_error_factory) {
-  ADD_FAILURE();
-  return syncer::SyncMergeResult(type);
-}
-
-void TestExtensionService::StopSyncing(syncer::ModelType type) {
-  ADD_FAILURE();
-}
-
-syncer::SyncDataList TestExtensionService::GetAllSyncData(
-    syncer::ModelType type) const {
-  ADD_FAILURE();
-  return syncer::SyncDataList();
-}
-
-syncer::SyncError TestExtensionService::ProcessSyncChanges(
-    const tracked_objects::Location& from_here,
-    const syncer::SyncChangeList& change_list) {
-  ADD_FAILURE();
-  return syncer::SyncError();
-}
-
 bool TestExtensionService::is_ready() {
   ADD_FAILURE();
   return false;
@@ -132,10 +104,5 @@ void TestExtensionService::UnloadExtension(
 
 void TestExtensionService::RemoveComponentExtension(
     const std::string& extension_id) {
-  ADD_FAILURE();
-}
-
-void TestExtensionService::SyncExtensionChangeIfNeeded(
-    const Extension& extension) {
   ADD_FAILURE();
 }

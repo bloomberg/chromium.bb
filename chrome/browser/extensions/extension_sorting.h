@@ -15,7 +15,7 @@
 #include "sync/api/string_ordinal.h"
 
 class ExtensionScopedPrefs;
-class ExtensionServiceInterface;
+class ExtensionSyncService;
 class PrefService;
 
 class ExtensionSorting {
@@ -23,8 +23,8 @@ class ExtensionSorting {
   explicit ExtensionSorting(ExtensionScopedPrefs* extension_scoped_prefs);
   ~ExtensionSorting();
 
-  // Set up the ExtensionService to inform of changes that require syncing.
-  void SetExtensionService(ExtensionServiceInterface* extension_service);
+  // Set up the ExtensionSyncService to inform of changes that require syncing.
+  void SetExtensionSyncService(ExtensionSyncService* extension_sync_service);
 
   // Properly initialize ExtensionSorting internal values that require
   // |extension_ids|.
@@ -197,7 +197,7 @@ class ExtensionSorting {
   size_t CountItemsVisibleOnNtp(const AppLaunchOrdinalMap& m) const;
 
   ExtensionScopedPrefs* extension_scoped_prefs_;  // Weak, owns this instance.
-  ExtensionServiceInterface* extension_service_;  // Weak.
+  ExtensionSyncService* extension_sync_service_;  // Weak.
 
   // A map of all the StringOrdinal page ordinals mapping to the collections of
   // app launch ordinals that exist on that page. This is used for mapping

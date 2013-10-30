@@ -5,8 +5,8 @@
 #include "chrome/browser/extensions/extension_sync_bundle.h"
 
 #include "base/location.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_sorting.h"
+#include "chrome/browser/extensions/extension_sync_service.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_set.h"
 #include "chrome/common/extensions/sync_helper.h"
@@ -15,8 +15,9 @@
 
 namespace extensions {
 
-ExtensionSyncBundle::ExtensionSyncBundle(ExtensionService* extension_service)
-    : extension_service_(extension_service) {}
+ExtensionSyncBundle::ExtensionSyncBundle(
+    ExtensionSyncService* extension_sync_service)
+    : extension_sync_service_(extension_sync_service) {}
 
 ExtensionSyncBundle::~ExtensionSyncBundle() {}
 
@@ -32,7 +33,7 @@ void ExtensionSyncBundle::SetupSync(
        ++i) {
     ExtensionSyncData extension_sync_data(*i);
     AddExtension(extension_sync_data.id());
-    extension_service_->ProcessExtensionSyncData(extension_sync_data);
+    extension_sync_service_->ProcessExtensionSyncData(extension_sync_data);
   }
 }
 
@@ -46,7 +47,7 @@ void ExtensionSyncBundle::Reset() {
 syncer::SyncChange ExtensionSyncBundle::CreateSyncChangeToDelete(
     const Extension* extension) const {
   extensions::ExtensionSyncData sync_data =
-      extension_service_->GetExtensionSyncData(*extension);
+      extension_sync_service_->GetExtensionSyncData(*extension);
   return sync_data.GetSyncChange(syncer::SyncChange::ACTION_DELETE);
 }
 
@@ -73,7 +74,7 @@ syncer::SyncChange ExtensionSyncBundle::CreateSyncChange(
 
 syncer::SyncDataList ExtensionSyncBundle::GetAllSyncData() const {
   std::vector<ExtensionSyncData> extension_sync_data =
-      extension_service_->GetExtensionSyncDataList();
+      extension_sync_service_->GetExtensionSyncDataList();
   syncer::SyncDataList result(extension_sync_data.size());
   for (int i = 0; i < static_cast<int>(extension_sync_data.size()); ++i) {
     result[i] = extension_sync_data[i].GetSyncData();
@@ -87,7 +88,7 @@ void ExtensionSyncBundle::ProcessSyncChange(
     RemoveExtension(extension_sync_data.id());
   else
     AddExtension(extension_sync_data.id());
-  extension_service_->ProcessExtensionSyncData(extension_sync_data);
+  extension_sync_service_->ProcessExtensionSyncData(extension_sync_data);
 }
 
 void ExtensionSyncBundle::ProcessSyncChangeList(
@@ -117,7 +118,7 @@ bool ExtensionSyncBundle::IsSyncing() const {
 
 void ExtensionSyncBundle::SyncChangeIfNeeded(const Extension& extension) {
   ExtensionSyncData extension_sync_data =
-      extension_service_->GetExtensionSyncData(extension);
+      extension_sync_service_->GetExtensionSyncData(extension);
 
   syncer::SyncChangeList sync_change_list(1, extension_sync_data.GetSyncChange(
       HasExtensionId(extension.id()) ?
@@ -139,10 +140,10 @@ std::vector<ExtensionSyncData> ExtensionSyncBundle::GetPendingData() const {
 }
 
 void ExtensionSyncBundle::GetExtensionSyncDataListHelper(
-    const ExtensionSet& extensions,
+    const ExtensionSet* extensions,
     std::vector<ExtensionSyncData>* sync_data_list) const {
-  for (ExtensionSet::const_iterator it = extensions.begin();
-       it != extensions.end(); ++it) {
+  for (ExtensionSet::const_iterator it = extensions->begin();
+       it != extensions->end(); ++it) {
     const Extension& extension = *it->get();
     // If we have pending extension data for this extension, then this
     // version is out of date.  We'll sync back the version we got from
@@ -150,7 +151,7 @@ void ExtensionSyncBundle::GetExtensionSyncDataListHelper(
     if (IsSyncing() && sync_helper::IsSyncableExtension(&extension) &&
         !HasPendingExtensionId(extension.id())) {
       sync_data_list->push_back(
-          extension_service_->GetExtensionSyncData(extension));
+          extension_sync_service_->GetExtensionSyncData(extension));
     }
   }
 }

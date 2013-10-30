@@ -35,7 +35,6 @@
 #include "chrome/browser/extensions/user_script_master.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/sync/glue/sync_start_util.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
@@ -177,8 +176,6 @@ void ExtensionSystemImpl::Shared::Init(bool extensions_enabled) {
       autoupdate_enabled,
       extensions_enabled,
       &ready_));
-  extension_service_->SetSyncStartFlare(
-      sync_start_util::GetFlareForSyncableService(profile_->GetPath()));
 
   // These services must be registered before the ExtensionService tries to
   // load any extensions.
