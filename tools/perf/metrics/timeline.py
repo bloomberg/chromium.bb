@@ -24,12 +24,6 @@ class TimelineMetric(Metric):
       if not tab.browser.supports_tracing:
         raise Exception('Not supported')
       tab.browser.StartTracing()
-    else:
-      assert self._mode == TIMELINE_MODE
-      tab.StartTimelineRecording()
-
-  def Stop(self, page, tab):
-    if self._mode == TRACING_MODE:
       # This creates an async trace event in the render process for tab that
       # will allow us to find that tab during the AddTracingResultsForTab
       # function.
@@ -37,7 +31,12 @@ class TimelineMetric(Metric):
           console.time("__loading_measurement_was_here__");
           console.timeEnd("__loading_measurement_was_here__");
           """)
+    else:
+      assert self._mode == TIMELINE_MODE
+      tab.StartTimelineRecording()
 
+  def Stop(self, page, tab):
+    if self._mode == TRACING_MODE:
       trace_result = tab.browser.StopTracing()
       self._model = trace_result.AsTimelineModel()
       events = [s for
