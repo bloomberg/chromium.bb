@@ -73,8 +73,6 @@
     [RaisesException] Node nextNodeByWalker(Node node);
     [RaisesException] Node previousNodeByWalker(Node node);
 
-    [RaisesException] boolean attached(Node node);
-
     DOMString visiblePlaceholder(Element element);
 
     void selectColorInColorChooser(Element element, DOMString colorValue);

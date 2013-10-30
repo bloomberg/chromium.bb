@@ -456,16 +456,6 @@ size_t Internals::countElementShadow(const Node* root, ExceptionState& es) const
     return toShadowRoot(root)->childShadowRootCount();
 }
 
-bool Internals::attached(Node* node, ExceptionState& es)
-{
-    if (!node) {
-        es.throwUninformativeAndGenericDOMException(InvalidAccessError);
-        return false;
-    }
-
-    return node->confusingAndOftenMisusedAttached();
-}
-
 Node* Internals::nextSiblingByWalker(Node* node, ExceptionState& es)
 {
     if (!node) {
