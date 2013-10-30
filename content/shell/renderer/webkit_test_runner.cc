@@ -349,10 +349,6 @@ std::string WebKitTestRunner::makeURLErrorDescription(
       domain.c_str(), code, error.unreachableURL.spec().data());
 }
 
-void WebKitTestRunner::setClientWindowRect(const WebRect& rect) {
-  ForceResizeRenderView(render_view(), WebSize(rect.width, rect.height));
-}
-
 void WebKitTestRunner::useUnfortunateSynchronousResizeMode(bool enable) {
   UseSynchronousResizeMode(render_view(), enable);
 }
