@@ -4,6 +4,7 @@
     <script type="text/javascript">
         if (window.testRunner)
             testRunner.waitUntilDone();
+        window.jsTestIsAsync = true
     </script>
 </head>
 <body>
@@ -29,9 +30,7 @@
 
         function drawElement(context, i) {
             if (i >= blendModes.length) {
-                var scriptElement = document.createElement("script");
-                scriptElement.src = "../js/resources/js-test-post-async.js";
-                document.body.appendChild(scriptElement);
+                finishJSTest();
                 return;
             }
             debug("Testing blend mode " + blendModes[i]);
@@ -60,5 +59,6 @@
 
         runTest();
     </script>
+    <script src="../js/resources/js-test-post.js"></script>
 </body>
 </html>
