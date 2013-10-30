@@ -111,7 +111,7 @@ class PackageBuildFailure(BuildScriptFailure):
     """
     BuildScriptFailure.__init__(self, exception, shortname)
     self.failed_packages = set(failed_packages)
-    self.args += (failed_packages,)
+    self.args = (exception, shortname, failed_packages)
 
   def __str__(self):
     return ('Packages failed in %s: %s'
