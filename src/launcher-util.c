@@ -202,6 +202,11 @@ weston_launcher_restore(struct weston_launcher *launcher)
 	if (ioctl(launcher->tty, KDSETMODE, KD_TEXT))
 		weston_log("failed to set KD_TEXT mode on tty: %m\n");
 
+	/* We have to drop master before we switch the VT back in
+	 * VT_AUTO, so we don't risk switching to a VT with another
+	 * display server, that will then fail to set drm master. */
+	drm_drop_master(launcher->drm_fd);
+
 	mode.mode = VT_AUTO;
 	if (ioctl(launcher->tty, VT_SETMODE, &mode) < 0)
 		weston_log("could not reset vt handling\n");
