@@ -5,9 +5,7 @@
 #include "chrome/browser/ui/webui/options/options_browsertest.h"
 
 #include "base/bind.h"
-#include "base/prefs/pref_service.h"
 #include "base/values.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "content/public/browser/navigation_controller.h"
@@ -30,10 +28,6 @@ void OptionsBrowserTest::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "optionsTestReportHistory", base::Bind(&OptionsBrowserTest::ReportHistory,
                                              base::Unretained(this)));
-
-  web_ui()->RegisterMessageCallback(
-      "optionsTestSetPref", base::Bind(&OptionsBrowserTest::HandleSetPref,
-                                       base::Unretained(this)));
 }
 
 // Includes the current entry.
@@ -47,22 +41,7 @@ void OptionsBrowserTest::ReportHistory(const base::ListValue* list_value) {
     history.Append(new base::StringValue(url.spec()));
   }
   web_ui()->CallJavascriptFunction(
-      "OptionsWebUIExtendedTest.verifyHistoryCallback", history);
-}
-
-void OptionsBrowserTest::ClearPref(const char* path) {
-  browser()->profile()->GetPrefs()->ClearPref(path);
-}
-
-void OptionsBrowserTest::HandleSetPref(const base::ListValue* args) {
-  ASSERT_EQ(2u, args->GetSize());
-
-  std::string pref_name;
-  ASSERT_TRUE(args->GetString(0, &pref_name));
-  const base::Value* pref_value;
-  ASSERT_TRUE(args->Get(1, &pref_value));
-
-  browser()->profile()->GetPrefs()->Set(pref_name.c_str(), *pref_value);
+      "OptionsWebUINavigationTest.verifyHistoryCallback", history);
 }
 
 content::WebUIMessageHandler* OptionsBrowserTest::GetMockMessageHandler() {

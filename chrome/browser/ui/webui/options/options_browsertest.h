@@ -18,10 +18,6 @@ class OptionsBrowserTest : public WebUIBrowserTest,
   OptionsBrowserTest();
   virtual ~OptionsBrowserTest();
 
- protected:
-  // Clears the preference at the given |path|.
-  void ClearPref(const char* path);
-
  private:
   // WebUIMessageHandler implementation.
   virtual void RegisterMessages() OVERRIDE;
@@ -33,11 +29,6 @@ class OptionsBrowserTest : public WebUIBrowserTest,
   // URLs in the "back" tab history, including the current entry, back to the
   // WebUI via a callback.
   void ReportHistory(const base::ListValue* list_value);
-
-  // A callback for the 'optionsTestSetPref' message. The first argument should
-  // be a pref path (e.g., "profile.managed_users"); the second, the new value
-  // to set for that pref.
-  void HandleSetPref(const base::ListValue* args);
 
   DISALLOW_COPY_AND_ASSIGN(OptionsBrowserTest);
 };

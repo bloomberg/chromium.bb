@@ -824,16 +824,6 @@ cr.define('options', function() {
     },
 
     /**
-     * Update the UI depending on whether the current profile manages any
-     * supervised users.
-     * @param {boolean} value True if the current profile manages any supervised
-     *     users.
-     */
-    updateManagesSupervisedUsers_: function(value) {
-      $('profiles-supervised-dashboard-tip').hidden = !value;
-    },
-
-    /**
      * Get the start/stop sync button DOM element. Used for testing.
      * @return {DOMElement} The start/stop sync button.
      * @private
@@ -1541,7 +1531,6 @@ cr.define('options', function() {
     'updateAccountPicture',
     'updateAutoLaunchState',
     'updateDefaultBrowserState',
-    'updateManagesSupervisedUsers',
     'updateSearchEngines',
     'updateStartupPages',
     'updateSyncState',

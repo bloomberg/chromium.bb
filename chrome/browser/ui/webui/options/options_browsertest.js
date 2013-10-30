@@ -4,29 +4,19 @@
 
 GEN('#include "chrome/browser/ui/webui/options/options_browsertest.h"');
 
-/** @const */ var MANAGED_USERS_PREF = 'profile.managed_users';
-
 /**
- * Wait for the method specified by |methodName|, on the |object| object, to be
- * called, then execute |afterFunction|.
+ * Wait for the global window.onpopstate callback to be called (after a tab
+ * history navigation), then execute |afterFunction|.
  */
-function waitForResponse(object, methodName, afterFunction) {
-  var originalCallback = object[methodName];
+function waitForPopstate(afterFunction) {
+  var originalCallback = window.onpopstate;
 
   // Install a wrapper that temporarily replaces the original function.
-  object[methodName] = function() {
-    object[methodName] = originalCallback;
+  window.onpopstate = function() {
+    window.onpopstate = originalCallback;
     originalCallback.apply(this, arguments);
     afterFunction();
   };
-}
-
-/**
-  * Wait for the global window.onpopstate callback to be called (after a tab
-  * history navigation), then execute |afterFunction|.
-  */
-function waitForPopstate(afterFunction) {
-  waitForResponse(window, 'onpopstate', afterFunction);
 }
 
 /**
@@ -272,14 +262,13 @@ TEST_F('OptionsWebUITest', 'EnterPreventsDefault', function() {
 });
 
 /**
- * TestFixture for OptionsPage WebUI testing including tab history and support
- * for preference manipulation.
+ * TestFixture for OptionsPage WebUI testing including tab history.
  * @extends {testing.Test}
  * @constructor
  */
-function OptionsWebUIExtendedTest() {}
+function OptionsWebUINavigationTest() {}
 
-OptionsWebUIExtendedTest.prototype = {
+OptionsWebUINavigationTest.prototype = {
   __proto__: testing.Test.prototype,
 
   /** @override */
@@ -287,11 +276,6 @@ OptionsWebUIExtendedTest.prototype = {
 
   /** @override */
   typedefCppFixture: 'OptionsBrowserTest',
-
-  testGenPreamble: function() {
-    // Start with no supervised users managed by this profile.
-    GEN('  ClearPref("' + MANAGED_USERS_PREF + '");');
-  },
 
   /** @override */
   isAsync: true,
@@ -388,7 +372,7 @@ OptionsWebUIExtendedTest.prototype = {
    */
   verifyHistory_: function(expectedHistory, callback) {
     var self = this;
-    OptionsWebUIExtendedTest.verifyHistoryCallback = function(results) {
+    OptionsWebUINavigationTest.verifyHistoryCallback = function(results) {
       // The history always starts with a blank page.
       assertEquals('about:blank', results.shift());
       var fullExpectedHistory = [];
@@ -425,11 +409,11 @@ OptionsWebUIExtendedTest.prototype = {
  * C++ fixture with the navigation history to be verified.
  * @type {Function}
  */
-OptionsWebUIExtendedTest.verifyHistoryCallback = null;
+OptionsWebUINavigationTest.verifyHistoryCallback = null;
 
 // Show the search page with no query string, to fall back to the settings page.
 // Test disabled because it's flaky. crbug.com/303841
-TEST_F('OptionsWebUIExtendedTest', 'DISABLED_ShowSearchPageNoQuery',
+TEST_F('OptionsWebUINavigationTest', 'DISABLED_ShowSearchPageNoQuery',
        function() {
   OptionsPage.showPageByName('search');
   this.verifyOpenPages_(['settings']);
@@ -437,7 +421,7 @@ TEST_F('OptionsWebUIExtendedTest', 'DISABLED_ShowSearchPageNoQuery',
 });
 
 // Show a page without updating history.
-TEST_F('OptionsWebUIExtendedTest', 'ShowPageNoHistory', function() {
+TEST_F('OptionsWebUINavigationTest', 'ShowPageNoHistory', function() {
   this.verifyOpenPages_(['settings']);
   // There are only two main pages, 'settings' and 'search'. It's not possible
   // to show the search page using OptionsPage.showPageByName, because it
@@ -458,7 +442,7 @@ TEST_F('OptionsWebUIExtendedTest', 'ShowPageNoHistory', function() {
   });
 });
 
-TEST_F('OptionsWebUIExtendedTest', 'ShowPageWithHistory', function() {
+TEST_F('OptionsWebUINavigationTest', 'ShowPageWithHistory', function() {
   // See comments for ShowPageNoHistory.
   $('search-field').onsearch({currentTarget: {value: 'query'}});
   var self = this;
@@ -470,7 +454,7 @@ TEST_F('OptionsWebUIExtendedTest', 'ShowPageWithHistory', function() {
   });
 });
 
-TEST_F('OptionsWebUIExtendedTest', 'ShowPageReplaceHistory', function() {
+TEST_F('OptionsWebUINavigationTest', 'ShowPageReplaceHistory', function() {
   // See comments for ShowPageNoHistory.
   $('search-field').onsearch({currentTarget: {value: 'query'}});
   var self = this;
@@ -482,7 +466,7 @@ TEST_F('OptionsWebUIExtendedTest', 'ShowPageReplaceHistory', function() {
 });
 
 // This should be identical to ShowPageWithHisory.
-TEST_F('OptionsWebUIExtendedTest', 'NavigateToPage', function() {
+TEST_F('OptionsWebUINavigationTest', 'NavigateToPage', function() {
   // See comments for ShowPageNoHistory.
   $('search-field').onsearch({currentTarget: {value: 'query'}});
   var self = this;
@@ -496,7 +480,7 @@ TEST_F('OptionsWebUIExtendedTest', 'NavigateToPage', function() {
 
 // Settings overlays are much more straightforward than settings pages, opening
 // normally with none of the latter's quirks in the expected history or URL.
-TEST_F('OptionsWebUIExtendedTest', 'ShowOverlayNoHistory', function() {
+TEST_F('OptionsWebUINavigationTest', 'ShowOverlayNoHistory', function() {
   // Open a layer-1 overlay, not updating history.
   OptionsPage.showPageByName('languages', false);
   this.verifyOpenPages_(['settings', 'languages'], 'settings');
@@ -512,7 +496,7 @@ TEST_F('OptionsWebUIExtendedTest', 'ShowOverlayNoHistory', function() {
   });
 });
 
-TEST_F('OptionsWebUIExtendedTest', 'ShowOverlayWithHistory', function() {
+TEST_F('OptionsWebUINavigationTest', 'ShowOverlayWithHistory', function() {
   // Open a layer-1 overlay, updating history.
   OptionsPage.showPageByName('languages', true);
   this.verifyOpenPages_(['settings', 'languages']);
@@ -526,7 +510,7 @@ TEST_F('OptionsWebUIExtendedTest', 'ShowOverlayWithHistory', function() {
   });
 });
 
-TEST_F('OptionsWebUIExtendedTest', 'ShowOverlayReplaceHistory', function() {
+TEST_F('OptionsWebUINavigationTest', 'ShowOverlayReplaceHistory', function() {
   // Open a layer-1 overlay, updating history.
   OptionsPage.showPageByName('languages', true);
   var self = this;
@@ -540,7 +524,7 @@ TEST_F('OptionsWebUIExtendedTest', 'ShowOverlayReplaceHistory', function() {
 
 // Directly show an overlay further above this page, i.e. one for which the
 // current page is an ancestor but not a parent.
-TEST_F('OptionsWebUIExtendedTest', 'ShowOverlayFurtherAbove', function() {
+TEST_F('OptionsWebUINavigationTest', 'ShowOverlayFurtherAbove', function() {
   // Open a layer-2 overlay directly.
   OptionsPage.showPageByName('addLanguage', true);
   this.verifyOpenPages_(['settings', 'languages', 'addLanguage']);
@@ -550,7 +534,7 @@ TEST_F('OptionsWebUIExtendedTest', 'ShowOverlayFurtherAbove', function() {
 
 // Directly show a layer-2 overlay for which the layer-1 overlay is not a
 // parent.
-TEST_F('OptionsWebUIExtendedTest', 'ShowUnrelatedOverlay', function() {
+TEST_F('OptionsWebUINavigationTest', 'ShowUnrelatedOverlay', function() {
   // Open a layer-1 overlay.
   OptionsPage.showPageByName('languages', true);
   this.verifyOpenPages_(['settings', 'languages']);
@@ -565,7 +549,7 @@ TEST_F('OptionsWebUIExtendedTest', 'ShowUnrelatedOverlay', function() {
 });
 
 // Close an overlay.
-TEST_F('OptionsWebUIExtendedTest', 'CloseOverlay', function() {
+TEST_F('OptionsWebUINavigationTest', 'CloseOverlay', function() {
   // Open a layer-1 overlay, then a layer-2 overlay on top of it.
   OptionsPage.showPageByName('languages', true);
   this.verifyOpenPages_(['settings', 'languages']);
@@ -592,7 +576,7 @@ TEST_F('OptionsWebUIExtendedTest', 'CloseOverlay', function() {
 
 // Make sure an overlay isn't closed (even temporarily) when another overlay is
 // opened on top.
-TEST_F('OptionsWebUIExtendedTest', 'OverlayAboveNoReset', function() {
+TEST_F('OptionsWebUINavigationTest', 'OverlayAboveNoReset', function() {
   // Open a layer-1 overlay.
   OptionsPage.showPageByName('languages', true);
   this.verifyOpenPages_(['settings', 'languages']);
@@ -604,7 +588,7 @@ TEST_F('OptionsWebUIExtendedTest', 'OverlayAboveNoReset', function() {
   testDone();
 });
 
-TEST_F('OptionsWebUIExtendedTest', 'OverlayTabNavigation', function() {
+TEST_F('OptionsWebUINavigationTest', 'OverlayTabNavigation', function() {
   // Open a layer-1 overlay, then a layer-2 overlay on top of it.
   OptionsPage.showPageByName('languages', true);
   OptionsPage.showPageByName('addLanguage', true);
@@ -643,7 +627,7 @@ TEST_F('OptionsWebUIExtendedTest', 'OverlayTabNavigation', function() {
 
 // Going "back" to an overlay that's a child of the current overlay shouldn't
 // close the current one.
-TEST_F('OptionsWebUIExtendedTest', 'OverlayBackToChild', function() {
+TEST_F('OptionsWebUINavigationTest', 'OverlayBackToChild', function() {
   // Open a layer-1 overlay, then a layer-2 overlay on top of it.
   OptionsPage.showPageByName('languages', true);
   OptionsPage.showPageByName('addLanguage', true);
@@ -670,7 +654,7 @@ TEST_F('OptionsWebUIExtendedTest', 'OverlayBackToChild', function() {
 });
 
 // Going back to an unrelated overlay should close the overlay and its parent.
-TEST_F('OptionsWebUIExtendedTest', 'OverlayBackToUnrelated', function() {
+TEST_F('OptionsWebUINavigationTest', 'OverlayBackToUnrelated', function() {
   // Open a layer-1 overlay, then an unrelated layer-2 overlay.
   OptionsPage.showPageByName('languages', true);
   OptionsPage.showPageByName('cookies', true);
@@ -686,7 +670,7 @@ TEST_F('OptionsWebUIExtendedTest', 'OverlayBackToUnrelated', function() {
 });
 
 // An overlay's position should remain the same as it shows.
-TEST_F('OptionsWebUIExtendedTest', 'OverlayShowDoesntShift', function() {
+TEST_F('OptionsWebUINavigationTest', 'OverlayShowDoesntShift', function() {
   var searchEngineOverlay = $('search-engine-manager-page');
   var frozenPages = document.getElementsByClassName('frozen');  // Gets updated.
   expectEquals(0, frozenPages.length);
@@ -703,24 +687,4 @@ TEST_F('OptionsWebUIExtendedTest', 'OverlayShowDoesntShift', function() {
   OptionsPage.navigateToPage('searchEngines');
   var numFrozenPages = frozenPages.length;
   expectGT(numFrozenPages, 0);
-});
-
-// A tip should be shown or hidden depending on whether this profile manages any
-// supervised users.
-TEST_F('OptionsWebUIExtendedTest', 'SupervisingUsers', function() {
-  // We start managing no supervised users.
-  assertTrue($('profiles-supervised-dashboard-tip').hidden);
-
-  // Remove all supervised users, then add some, watching for the pref change
-  // notifications and UI updates in each case. Any non-empty pref dictionary
-  // is interpreted as having supervised users.
-  chrome.send('optionsTestSetPref', [MANAGED_USERS_PREF, {key: 'value'}]);
-  waitForResponse(BrowserOptions, 'updateManagesSupervisedUsers', function() {
-    assertFalse($('profiles-supervised-dashboard-tip').hidden);
-    chrome.send('optionsTestSetPref', [MANAGED_USERS_PREF, {}]);
-    waitForResponse(BrowserOptions, 'updateManagesSupervisedUsers', function() {
-      assertTrue($('profiles-supervised-dashboard-tip').hidden);
-      testDone();
-    });
-  });
 });

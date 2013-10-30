@@ -29,7 +29,7 @@ class PrefService;
 class ManagedUserSyncService : public BrowserContextKeyedService,
                                public syncer::SyncableService {
  public:
-  // For use with GetManagedUsersAsync() below.
+  // For use with GetAllManagedUsers() below.
   typedef base::Callback<void(const base::DictionaryValue*)>
       ManagedUsersCallback;
 
