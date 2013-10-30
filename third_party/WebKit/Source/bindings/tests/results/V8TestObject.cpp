@@ -1882,59 +1882,6 @@ static void strictFloatAttributeSetterCallback(v8::Local<v8::String> name, v8::L
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
-static void descriptionAttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
-{
-    TestObj* imp = V8TestObject::toNative(info.Holder());
-    v8SetReturnValueInt(info, imp->description());
-}
-
-static void descriptionAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
-{
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    TestObjV8Internal::descriptionAttributeGetter(name, info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
-}
-
-static void idAttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
-{
-    TestObj* imp = V8TestObject::toNative(info.Holder());
-    v8SetReturnValueInt(info, imp->id());
-}
-
-static void idAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
-{
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    TestObjV8Internal::idAttributeGetter(name, info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
-}
-
-static void idAttributeSetter(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
-{
-    TestObj* imp = V8TestObject::toNative(info.Holder());
-    V8TRYCATCH_VOID(int, cppValue, toInt32(jsValue));
-    imp->setId(cppValue);
-}
-
-static void idAttributeSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
-{
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
-    TestObjV8Internal::idAttributeSetter(name, jsValue, info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
-}
-
-static void hashAttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
-{
-    TestObj* imp = V8TestObject::toNative(info.Holder());
-    v8SetReturnValueString(info, imp->hash(), info.GetIsolate());
-}
-
-static void hashAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
-{
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    TestObjV8Internal::hashAttributeGetter(name, info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
-}
-
 static void replaceableAttributeAttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
@@ -5049,9 +4996,6 @@ static const V8DOMConfiguration::AttributeConfiguration V8TestObjectAttributes[]
     {"immutablePoint", TestObjV8Internal::immutablePointAttributeGetterCallback, TestObjV8Internal::immutablePointAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"strawberry", TestObjV8Internal::strawberryAttributeGetterCallback, TestObjV8Internal::strawberryAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"strictFloat", TestObjV8Internal::strictFloatAttributeGetterCallback, TestObjV8Internal::strictFloatAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
-    {"description", TestObjV8Internal::descriptionAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
-    {"id", TestObjV8Internal::idAttributeGetterCallback, TestObjV8Internal::idAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
-    {"hash", TestObjV8Internal::hashAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"replaceableAttribute", TestObjV8Internal::replaceableAttributeAttributeGetterCallback, TestObjV8Internal::TestObjReplaceableAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"nullableDoubleAttribute", TestObjV8Internal::nullableDoubleAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"nullableLongAttribute", TestObjV8Internal::nullableLongAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},

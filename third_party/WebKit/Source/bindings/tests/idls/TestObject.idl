@@ -252,11 +252,6 @@ callback TestCallbackFunction = void (TestEnumType formal1, TestObject formal2);
     [StrictTypeChecking] attribute float strictFloat;
     [StrictTypeChecking, RaisesException] boolean strictFunction(DOMString str, float a, long b);
 
-    // ObjectiveC reserved words.
-    readonly attribute long      description;
-    attribute long               id;
-    readonly attribute DOMString hash;
-
     [Replaceable] readonly attribute long replaceableAttribute;
 
     void variadicStringMethod(DOMString head, DOMString... tail);
