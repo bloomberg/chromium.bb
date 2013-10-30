@@ -63,7 +63,11 @@ Portable Native client further enhances the above:
   gains support for new processors and fully uses their capabilities.
 
 .. TODO Expand on the PNaCl performance section in another document, and
-.. link to it here.
+.. link to it here. How does one profile PNaCl code? What are common
+.. causes of slowness? How can code be made faster? What's the best way
+.. to use Pepper's asynchronous APIs? What do I need to know about
+.. threads and inter-thread communications? Can I use SIMD or other
+.. processor-specific instructions? What aboutt he GPU?
 
 For more details, refer to the :doc:`history behind and comparison of
 NaCl and PNaCl <nacl-and-pnacl>`.
@@ -91,28 +95,39 @@ When should I use Portable Native Client?
 See :doc:`NaCl and PNaCl <nacl-and-pnacl>`. In short: PNaCl works on the
 open web whereas NaCl only works on the Chrome Web Store.
 
-How fast does code run in Native Client?
-----------------------------------------
+How fast does code run in Portable Native Client?
+-------------------------------------------------
 
-Fast! Benchmarks on x86-32 measured an average performance overhead of
-less than 5% compared to native C/C++ on applications such as Quake,
-bzip2, and Google Earth. For details of those benchmarks, see `Native
-Client: A Sandbox for Portable, Untrusted x86 Code
-<https://src.chromium.org/viewvc/native_client/data/docs_tarball/nacl/googleclient/native_client/documentation/nacl_paper.pdf>`_
-(PDF).
+Fast! The SPEC2k benchmarks (C, C++ and floating-point benchmarks) give
+the following overhead for optimized PNaCl compared to regular optimized
+LLVM:
 
-Benchmarks on x86-64 and ARM measured an average performance overhead of
-less than 5% on ARM and 7% on x86-64; however, benchmark performance was
-bimodal for x86-64, so different use cases are likely to achieve either
-significantly better or significantly worse performance than that
-average. For details, see `Adapting Software Fault Isolation to
-Contemporary CPU Architectures
-<https://nativeclient.googlecode.com/svn/data/site/NaCl_SFI.pdf>`_ (PDF).
++--------+-----+
+| x86-32 | 15% |
++--------+-----+
+| x86-64 | 20% |
++--------+-----+
+|  ARM   | 10% |
++--------+-----+
 
-.. TODO Update performance numbers.
+Note that benchmark performance is sometimes bimodal, so different use
+cases are likely to achieve better or worse performance than the above
+averages. For example floating-point heavy code usually exhibits much
+lower overheads whereas very branch-heavy code often performs worse.
+
+For details, see:
+
+* `Adapting Software Fault Isolation to Contemporary CPU Architectures
+  <https://nativeclient.googlecode.com/svn/data/site/NaCl_SFI.pdf>`_
+  (PDF).
+* `Native Client: A Sandbox for Portable, Untrusted x86 Code
+  <https://src.chromium.org/viewvc/native_client/data/docs_tarball/nacl/googleclient/native_client/documentation/nacl_paper.pdf>`_
+  (PDF).
 
 If your code isn't performing as close to native speed as you'd expect,
 :doc:`let us know <help>`!
+
+.. TODO Link to the non-existent performance page! (see above todo).
 
 Why use Portable Native Client instead of *<technology X>*?
 -----------------------------------------------------------
@@ -151,11 +166,8 @@ develop on ChromeOS with `Crouton
 self-hosting a full development environment on Portable Native Client.
 
 Any editor+shell combination should work as well as IDEs like Eclipse,
-Visual Studio with the `Native Client Add-In
-<https://developers.google.com/native-client/dev/devguide/devcycle/vs-addin>`_
-on Windows, or Xcode on Mac OSX.
-
-.. TODO: update link to Visual Studio when ReST-ified.
+Visual Studio with the :doc:`Native Client Add-In
+<devguide/devcycle/vs-addin>` on Windows, or Xcode on Mac OSX.
 
 I'm not familiar with native development tools, can I still use the Native Client SDK?
 --------------------------------------------------------------------------------------
@@ -184,10 +196,8 @@ to consider Native Client for standardization.
 
 We consistenly try to document our design and implementation and hope to
 standardize Portable Native Client when it gains more traction. A good
-example is our `PNaCl bitcode reference manual
-<http://www.chromium.org/nativeclient/pnacl/bitcode-abi>`_.
-
-.. TODO Update the above bitcode-abi link to a :doc: once 3693 is fixed.
+example is our :doc:`PNaCl bitcode reference manual
+<reference/pnacl-bitcode-abi>`.
 
 What are the supported instruction set architectures?
 -----------------------------------------------------
@@ -274,12 +284,8 @@ Yes. Native Client supports `OpenGL ES 2.0
 
 
 To alert the user regarding their hardware platform's 3D feature set
-before loading a large NaCl application, see `Vetting the driver in
-Javascript
-<https://developers.google.com/native-client/devguide/coding/3D-graphics>`_.
-
-.. TODO Update link to point to the right place in the document once
-.. it's ReST-ified.
+before loading a large NaCl application, see :doc:`Vetting the driver in
+Javascript <devguide/coding/3D-graphics>`.
 
 Some GL extensions are exposed to Native Client applications, see the
 `GL ES 2 file
