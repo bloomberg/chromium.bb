@@ -40,6 +40,11 @@ bool IsKeyEvent(const MSG& msg) {
 bool IsKeyEvent(const XEvent* xev) {
   return xev->type == KeyPress || xev->type == KeyRelease;
 }
+#elif defined(USE_OZONE)
+bool IsKeyEvent(const base::NativeEvent& native_event) {
+  const ui::KeyEvent* event = static_cast<const ui::KeyEvent*>(native_event);
+  return event->IsKeyEvent();
+}
 #endif
 
 bool IsPossibleAcceleratorNotForMenu(const ui::KeyEvent& key_event) {

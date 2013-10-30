@@ -4,8 +4,10 @@
 
 #include "ash/wm/sticky_keys.h"
 
+#if defined(USE_X11)
 #include <X11/Xlib.h>
 #undef RootWindow
+#endif
 
 #include "base/basictypes.h"
 #include "base/debug/stack_trace.h"
@@ -208,6 +210,7 @@ bool StickyKeysHandler::HandleLockedState(ui::KeyEvent* event) {
 }
 
 void StickyKeysHandler::AppendModifier(ui::KeyEvent* event) {
+#if defined(USE_X11)
   XEvent* xev = event->native_event();
   XKeyEvent* xkey = &(xev->xkey);
   switch (modifier_flag_) {
@@ -223,6 +226,9 @@ void StickyKeysHandler::AppendModifier(ui::KeyEvent* event) {
     default:
       NOTREACHED();
   }
+#elif defined(USE_OZONE)
+  NOTIMPLEMENTED() << "Modifier key is not handled";
+#endif
   event->set_flags(event->flags() | modifier_flag_);
   event->set_character(ui::GetCharacterFromKeyCode(event->key_code(),
                                                    event->flags()));
