@@ -421,6 +421,9 @@ long WINAPI ServiceExceptionFilter(EXCEPTION_POINTERS* info) {
 // before doing so!
 extern "C" void __declspec(dllexport) __cdecl SetCrashKeyValueImpl(
     const wchar_t* key, const wchar_t* value) {
+  if (!g_dynamic_entries)
+    return;
+
   // CustomInfoEntry limits the length of key and value. If they exceed
   // their maximum length the underlying string handling functions raise
   // an exception and prematurely trigger a crash. Truncate here.
@@ -448,6 +451,9 @@ extern "C" void __declspec(dllexport) __cdecl SetCrashKeyValueImpl(
 
 extern "C" void __declspec(dllexport) __cdecl ClearCrashKeyValueImpl(
     const wchar_t* key) {
+  if (!g_dynamic_entries)
+    return;
+
   std::wstring key_string(key);
   DynamicEntriesMap::iterator it = g_dynamic_entries->find(key_string);
   if (it == g_dynamic_entries->end())
