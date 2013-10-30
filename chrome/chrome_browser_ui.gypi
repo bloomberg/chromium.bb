@@ -330,7 +330,7 @@
         'browser/ui/aura/chrome_browser_main_extra_parts_aura.h',
         'browser/ui/aura/tab_contents/web_drag_bookmark_handler_aura.cc',
         'browser/ui/aura/tab_contents/web_drag_bookmark_handler_aura.h',
-        'browser/ui/aura/tabs/dock_info_aurax11.cc',
+        'browser/ui/aura/tabs/dock_info_auralinux.cc',
         'browser/ui/autofill/account_chooser_model.cc',
         'browser/ui/autofill/account_chooser_model.h',
         'browser/ui/autofill/autofill_dialog_common.cc',

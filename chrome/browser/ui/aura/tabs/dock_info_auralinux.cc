@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,13 +7,12 @@
 #include "chrome/browser/ui/host_desktop.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
+#if defined(USE_X11)
 #include "ui/base/x/x11_util.h"
-
-#if !defined(OS_CHROMEOS)
-#include "ui/views/widget/desktop_aura/desktop_root_window_host_x11.h"
 #endif
 
-#if !defined(OS_CHROMEOS)
+#if !defined(OS_CHROMEOS) && defined(USE_X11)
+#include "ui/views/widget/desktop_aura/desktop_root_window_host_x11.h"
 
 namespace {
 
@@ -176,15 +175,6 @@ class LocalProcessWindowFinder : public BaseWindowFinder {
 }  // namespace
 
 // static
-DockInfo DockInfo::GetDockInfoAtPoint(chrome::HostDesktopType host_desktop_type,
-                                      const gfx::Point& screen_point,
-                                      const std::set<gfx::NativeView>& ignore) {
-  // TODO(beng):
-  NOTIMPLEMENTED();
-  return DockInfo();
-}
-
-// static
 gfx::NativeView DockInfo::GetLocalProcessWindowAtPoint(
     chrome::HostDesktopType host_desktop_type,
     const gfx::Point& screen_point,
@@ -194,6 +184,27 @@ gfx::NativeView DockInfo::GetLocalProcessWindowAtPoint(
   XID xid =
       LocalProcessWindowFinder::GetProcessWindowAtPoint(screen_point, ignore);
   return views::DesktopRootWindowHostX11::GetContentWindowForXID(xid);
+}
+#else
+// static
+gfx::NativeView DockInfo::GetLocalProcessWindowAtPoint(
+    chrome::HostDesktopType host_desktop_type,
+    const gfx::Point& screen_point,
+    const std::set<gfx::NativeView>& ignore) {
+
+  // TODO(vignatti):
+  NOTIMPLEMENTED();
+  return NULL;
+}
+#endif
+
+// static
+DockInfo DockInfo::GetDockInfoAtPoint(chrome::HostDesktopType host_desktop_type,
+                                      const gfx::Point& screen_point,
+                                      const std::set<gfx::NativeView>& ignore) {
+  // TODO(beng):
+  NOTIMPLEMENTED();
+  return DockInfo();
 }
 
 bool DockInfo::GetWindowBounds(gfx::Rect* bounds) const {
@@ -206,5 +217,3 @@ bool DockInfo::GetWindowBounds(gfx::Rect* bounds) const {
 void DockInfo::SizeOtherWindowTo(const gfx::Rect& bounds) const {
   window_->SetBounds(bounds);
 }
-
-#endif
