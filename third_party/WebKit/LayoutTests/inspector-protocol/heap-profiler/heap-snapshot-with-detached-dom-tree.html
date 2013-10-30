@@ -10,6 +10,7 @@ if (window.testRunner) {
 function createDetachedDomTreeAndRunTest()
 {
     gc();
+    gc();
     window.retaining_wrapper = document.createElement("div");
     var t = document.createElement("div");
     retaining_wrapper.appendChild(t);
