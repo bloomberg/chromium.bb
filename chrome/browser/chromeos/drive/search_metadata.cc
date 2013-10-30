@@ -9,7 +9,9 @@
 
 #include "base/bind.h"
 #include "base/i18n/string_search.h"
+#include "base/metrics/histogram.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/escape.h"
@@ -204,12 +206,17 @@ FileError SearchMetadataOnBlockingPool(ResourceMetadata* resource_metadata,
   return FILE_ERROR_OK;
 }
 
+// Runs the SearchMetadataCallback and updates the histogram.
 void RunSearchMetadataCallback(const SearchMetadataCallback& callback,
+                               const base::TimeTicks& start_time,
                                scoped_ptr<MetadataSearchResultVector> results,
                                FileError error) {
   if (error != FILE_ERROR_OK)
     results.reset();
   callback.Run(error, results.Pass());
+
+  UMA_HISTOGRAM_TIMES("Drive.SearchMetadataTime",
+                      base::TimeTicks::Now() - start_time);
 }
 
 }  // namespace
@@ -225,6 +232,8 @@ void SearchMetadata(
   DCHECK_LE(0, at_most_num_matches);
   DCHECK(!callback.is_null());
 
+  const base::TimeTicks start_time = base::TimeTicks::Now();
+
   scoped_ptr<MetadataSearchResultVector> results(
       new MetadataSearchResultVector);
   MetadataSearchResultVector* results_ptr = results.get();
@@ -238,6 +247,7 @@ void SearchMetadata(
                                               results_ptr),
                                    base::Bind(&RunSearchMetadataCallback,
                                               callback,
+                                              start_time,
                                               base::Passed(&results)));
 }
 

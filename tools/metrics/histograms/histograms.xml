@@ -3097,6 +3097,16 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Drive.SearchMetadataTime" units="microseconds">
+  <summary>
+    Time spent to perform an incremental search for auto completion of files on
+    Drive. This time is collected for every partial query the user types for
+    auto completion.  For instance, if the user types &quot;faq&quot;,
+    incremental searches are performed for &quot;f&quot;, &quot;fa&quot;, and
+    &quot;faq&quot; respectively.
+  </summary>
+</histogram>
+
 <histogram name="Enterprise.AutoEnrollmentExtraTime" units="milliseconds">
   <summary>
     Time since the user logged in until the auto-enrollment protocol completed.
