@@ -21,7 +21,7 @@ int __stdcall wWinMain(HINSTANCE instance, HINSTANCE, wchar_t* cmd_line,
 
   // Logging to stderr.
   logging::LoggingSettings settings;
-  settings.logging_dest = logging::LOG_TO_ALL;
+  settings.logging_dest = logging::LOG_TO_SYSTEM_DEBUG_LOG;
   logging::InitLogging(settings);
   // Logging with pid, tid and timestamp.
   logging::SetLogItems(true, true, true, false);
