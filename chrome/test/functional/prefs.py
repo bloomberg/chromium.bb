@@ -85,24 +85,6 @@ class PrefsTest(pyauto.PyUITest):
     self.ActivateTab(1)
     self.assertEqual(url2, self.GetActiveTabURL().spec())
 
-  def testHomepagePrefs(self):
-    """Verify homepage prefs."""
-    # "Use the New Tab page"
-    self.SetPrefs(pyauto.kHomePageIsNewTabPage, True)
-    logging.debug('Setting %s to 1' % pyauto.kHomePageIsNewTabPage)
-    self.RestartBrowser(clear_profile=False)
-    self.assertEqual(self.GetPrefsInfo().Prefs(pyauto.kHomePageIsNewTabPage),
-                     True)
-    # "Open this page"
-    url = self.GetFileURLForPath(os.path.join(self.DataDir(), 'title1.html'))
-    self.SetPrefs(pyauto.kHomePage, url)
-    self.SetPrefs(pyauto.kHomePageIsNewTabPage, False)
-    self.RestartBrowser(clear_profile=False)
-    self.assertEqual(self.GetPrefsInfo().Prefs(pyauto.kHomePage), url)
-    self.assertFalse(self.GetPrefsInfo().Prefs(pyauto.kHomePageIsNewTabPage))
-    # TODO(nirnimesh): Actually verify that homepage loads.
-    # This requires telling pyauto *not* to set about:blank as homepage.
-
   def testGeolocationPref(self):
     """Verify geolocation pref.
 
@@ -131,24 +113,6 @@ class PrefsTest(pyauto.PyUITest):
     self.assertEqual(
         behavior, Behaviors.BLOCK,
         msg='Behavior is "%s" when it should be BLOCKED.'  % behavior)
-
-  def testUnderTheHoodPref(self):
-    """Verify the security preferences for Under the Hood.
-    The setting is enabled by default."""
-    pref_list = [pyauto.kNetworkPredictionEnabled, pyauto.kSafeBrowsingEnabled,
-                 pyauto.kAlternateErrorPagesEnabled,
-                 pyauto.kSearchSuggestEnabled]
-    for pref in pref_list:
-      # Verify the default value
-      self.assertEqual(self.GetPrefsInfo().Prefs(pref), True)
-      self.SetPrefs(pref, False)
-    self.RestartBrowser(clear_profile=False)
-    for pref in pref_list:
-      self.assertEqual(self.GetPrefsInfo().Prefs(pref), False)
-
-  def testHaveLocalStatePrefs(self):
-    """Verify that we have some Local State prefs."""
-    self.assertTrue(self.GetLocalStatePrefsInfo())
 
   def testAllowSelectedGeoTracking(self):
     """Verify hostname pattern and behavior for allowed tracking."""
@@ -226,14 +190,6 @@ class PrefsTest(pyauto.PyUITest):
       window.domAutomationController.send(false);
     """
     return self.ExecuteJavascript(script, windex=windex, tab_index=tab_index)
-
-  def testImagesNotBlockedInIncognito(self):
-    """Verify images are not blocked in Incognito mode."""
-    url = self.GetHttpURLForDataPath('settings', 'image_page.html')
-    self.RunCommand(pyauto.IDC_NEW_INCOGNITO_WINDOW)
-    self.NavigateToURL(url, 1, 0)
-    self.assertTrue(self._CheckForVisibleImage(windex=1),
-                    msg='No visible images found in Incognito mode.')
 
   def testBlockImagesForHostname(self):
     """Verify images blocked for defined hostname pattern."""

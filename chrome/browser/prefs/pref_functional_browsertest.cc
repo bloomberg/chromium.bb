@@ -14,6 +14,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/web_contents.h"
@@ -158,3 +159,97 @@ IN_PROC_BROWSER_TEST_F(PrefsFunctionalTest,
       prefs::kShowBookmarkBar));
   EXPECT_EQ(BookmarkBar::SHOW, browser()->bookmark_bar_state());
 }
+
+// Verify images are not blocked in incognito mode.
+IN_PROC_BROWSER_TEST_F(PrefsFunctionalTest, TestImagesNotBlockedInIncognito) {
+  ASSERT_TRUE(test_server()->Start());
+  GURL url = test_server()->GetURL("files/settings/image_page.html");
+  Browser* incognito_browser = CreateIncognitoBrowser();
+  ui_test_utils::NavigateToURLWithDisposition(
+      incognito_browser,
+      url,
+      CURRENT_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+
+  bool result = false;
+  std::string script =
+      "for (i=0; i < document.images.length; i++) {"
+      "  if ((document.images[i].naturalWidth != 0) &&"
+      "      (document.images[i].naturalHeight != 0)) {"
+      "    window.domAutomationController.send(true);"
+      "  }"
+      "}"
+      "window.domAutomationController.send(false);";
+  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
+      incognito_browser->tab_strip_model()->GetActiveWebContents(),
+      script,
+      &result));
+  EXPECT_TRUE(result);
+}
+
+// Verify setting homepage preference to newtabpage across restarts. Part1
+IN_PROC_BROWSER_TEST_F(PrefsFunctionalTest, PRE_TestHomepageNewTabpagePrefs) {
+  browser()->profile()->GetPrefs()->SetBoolean(prefs::kHomePageIsNewTabPage,
+                                               true);
+}
+
+// Verify setting homepage preference to newtabpage across restarts. Part2
+IN_PROC_BROWSER_TEST_F(PrefsFunctionalTest, TestHomepageNewTabpagePrefs) {
+  EXPECT_TRUE(browser()->profile()->GetPrefs()->GetBoolean(
+      prefs::kHomePageIsNewTabPage));
+}
+
+// Verify setting homepage preference to specific url. Part1
+IN_PROC_BROWSER_TEST_F(PrefsFunctionalTest, PRE_TestHomepagePrefs) {
+  GURL home_page_url("http://www.google.com");
+
+  PrefService* prefs = browser()->profile()->GetPrefs();
+  prefs->SetBoolean(prefs::kHomePageIsNewTabPage, false);
+  const PrefService::Preference* pref =
+      prefs->FindPreference(prefs::kHomePage);
+  if (pref && !pref->IsManaged()) {
+    prefs->SetString(prefs::kHomePage, home_page_url.spec());
+  }
+}
+
+// Verify setting homepage preference to specific url. Part2
+IN_PROC_BROWSER_TEST_F(PrefsFunctionalTest, TestHomepagePrefs) {
+  GURL home_page_url("http://www.google.com");
+
+  PrefService* prefs = browser()->profile()->GetPrefs();
+  EXPECT_FALSE(prefs->GetBoolean(prefs::kHomePageIsNewTabPage));
+  EXPECT_EQ(home_page_url.spec(), prefs->GetString(prefs::kHomePage));
+}
+
+// Verify the security preference under privacy across restarts. Part1
+IN_PROC_BROWSER_TEST_F(PrefsFunctionalTest, PRE_TestPrivacySecurityPrefs) {
+  PrefService* prefs = browser()->profile()->GetPrefs();
+
+  EXPECT_TRUE(prefs->GetBoolean(prefs::kNetworkPredictionEnabled));
+  prefs->SetBoolean(prefs::kNetworkPredictionEnabled, false);
+
+  EXPECT_TRUE(prefs->GetBoolean(prefs::kSafeBrowsingEnabled));
+  prefs->SetBoolean(prefs::kSafeBrowsingEnabled, false);
+
+  EXPECT_TRUE(prefs->GetBoolean(prefs::kAlternateErrorPagesEnabled));
+  prefs->SetBoolean(prefs::kAlternateErrorPagesEnabled, false);
+
+  EXPECT_TRUE(prefs->GetBoolean(prefs::kSearchSuggestEnabled));
+  prefs->SetBoolean(prefs::kSearchSuggestEnabled, false);
+}
+
+// Verify the security preference under privacy across restarts. Part2
+IN_PROC_BROWSER_TEST_F(PrefsFunctionalTest, TestPrivacySecurityPrefs) {
+  PrefService* prefs = browser()->profile()->GetPrefs();
+
+  EXPECT_FALSE(prefs->GetBoolean(prefs::kNetworkPredictionEnabled));
+  EXPECT_FALSE(prefs->GetBoolean(prefs::kSafeBrowsingEnabled));
+  EXPECT_FALSE(prefs->GetBoolean(prefs::kAlternateErrorPagesEnabled));
+  EXPECT_FALSE(prefs->GetBoolean(prefs::kSearchSuggestEnabled));
+}
+
+// Verify that we have some Local State prefs.
+IN_PROC_BROWSER_TEST_F(PrefsFunctionalTest, TestHaveLocalStatePrefs) {
+  EXPECT_TRUE(g_browser_process->local_state()->GetPreferenceValues());
+}
+
