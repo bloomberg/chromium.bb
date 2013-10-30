@@ -22,8 +22,11 @@
    <script src="../animations/resources/animation-test-helpers.js"></script>
    <script>
     const expectedValues = [
+      // Times are relative to document load for transitions.
       // [time, element-id, property, expected-value, tolerance]
-      [0, "target", "left", 200, 4],
+      [0.0, "target", "left", 100, 0],
+      [0.4, "target", "left", 100, 0],
+      [0.6, "target", "left", 200, 0],
     ];
 
     function setupTest()
