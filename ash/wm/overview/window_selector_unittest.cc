@@ -747,8 +747,8 @@ TEST_F(WindowSelectorTest, MultipleDisplays) {
 }
 
 // Verifies that the single display overview used during alt tab cycling uses
-// the display of the currently selected window.
-TEST_F(WindowSelectorTest, CycleOverviewUsesCurrentDisplay) {
+// the display of the initial window by default.
+TEST_F(WindowSelectorTest, CycleOverviewUsesInitialDisplay) {
   if (!SupportsMultipleDisplays())
     return;
 
@@ -766,9 +766,9 @@ TEST_F(WindowSelectorTest, CycleOverviewUsesCurrentDisplay) {
   Cycle(WindowSelector::FORWARD);
   FireOverviewStartTimer();
 
-  EXPECT_TRUE(root_windows[1]->GetBoundsInScreen().Contains(
+  EXPECT_TRUE(root_windows[0]->GetBoundsInScreen().Contains(
       ToEnclosingRect(GetTransformedTargetBounds(window1.get()))));
-  EXPECT_TRUE(root_windows[1]->GetBoundsInScreen().Contains(
+  EXPECT_TRUE(root_windows[0]->GetBoundsInScreen().Contains(
       ToEnclosingRect(GetTransformedTargetBounds(window2.get()))));
   StopCycling();
 }
@@ -881,10 +881,13 @@ TEST_F(WindowSelectorTest, BoundsChangeDuringCycleOnOtherDisplay) {
 
   scoped_ptr<aura::Window> window1(CreateWindow(gfx::Rect(0, 0, 100, 100)));
   scoped_ptr<aura::Window> window2(CreateWindow(gfx::Rect(450, 0, 100, 100)));
+  scoped_ptr<aura::Window> window3(CreateWindow(gfx::Rect(450, 0, 100, 100)));
   EXPECT_EQ(root_windows[0], window1->GetRootWindow());
   EXPECT_EQ(root_windows[1], window2->GetRootWindow());
-  wm::ActivateWindow(window2.get());
+  EXPECT_EQ(root_windows[1], window3->GetRootWindow());
   wm::ActivateWindow(window1.get());
+  wm::ActivateWindow(window2.get());
+  wm::ActivateWindow(window3.get());
 
   Cycle(WindowSelector::FORWARD);
   FireOverviewStartTimer();

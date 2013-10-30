@@ -36,6 +36,11 @@ namespace {
 // overview is engaged.
 const int kOverviewDelayOnCycleMilliseconds = 100;
 
+// If the delay before overview is less than or equal to this threshold the
+// initial monitor is used for multi-display overview, otherwise the monitor
+// of the currently selected window is used.
+const int kOverviewDelayInitialMonitorThreshold = 100;
+
 // The maximum amount of time allowed for the delay before overview on cycling.
 // If the specified time exceeds this the timer will not be started.
 const int kMaxOverviewDelayOnCycleMilliseconds = 10000;
@@ -455,8 +460,14 @@ void WindowSelector::OnAttemptToReactivateWindow(aura::Window* request_active,
 
 void WindowSelector::StartOverview() {
   DCHECK(!window_overview_);
-  window_overview_.reset(new WindowOverview(this, &windows_,
-      mode_ == CYCLE ? windows_[selected_window_]->GetRootWindow() : NULL));
+  aura::Window* overview_root = NULL;
+  if (mode_ == CYCLE) {
+    overview_root = GetOverviewDelayOnCycleMilliseconds() <=
+                        kOverviewDelayInitialMonitorThreshold ?
+                    Shell::GetTargetRootWindow() :
+                    windows_[selected_window_]->GetRootWindow();
+  }
+  window_overview_.reset(new WindowOverview(this, &windows_, overview_root));
   if (mode_ == CYCLE)
     window_overview_->SetSelection(selected_window_);
   UpdateShelfVisibility();
