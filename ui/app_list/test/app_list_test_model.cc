@@ -10,6 +10,9 @@
 namespace app_list {
 namespace test {
 
+// static
+const char AppListTestModel::kAppType[] = "FolderItem";
+
 class AppListTestModel::AppListTestItemModel : public AppListItemModel {
  public:
   AppListTestItemModel(const std::string& id, AppListTestModel* model)
@@ -20,6 +23,10 @@ class AppListTestModel::AppListTestItemModel : public AppListItemModel {
 
   virtual void Activate(int event_flags) OVERRIDE {
     model_->ItemActivated(this);
+  }
+
+  virtual const char* GetAppType() const OVERRIDE {
+    return AppListTestModel::kAppType;
   }
 
  private:
@@ -38,7 +45,7 @@ std::string AppListTestModel::GetItemName(int id) {
 }
 
 void AppListTestModel::PopulateApps(int n) {
-  int start_index = apps()->item_count();
+  int start_index = item_list()->item_count();
   for (int i = 0; i < n; ++i)
     CreateAndAddItem(GetItemName(start_index + i));
 }
@@ -49,10 +56,10 @@ void AppListTestModel::PopulateAppWithId(int id) {
 
 std::string AppListTestModel::GetModelContent() {
   std::string content;
-  for (size_t i = 0; i < apps()->item_count(); ++i) {
+  for (size_t i = 0; i < item_list()->item_count(); ++i) {
     if (i > 0)
       content += ',';
-    content += apps()->GetItemAt(i)->title();
+    content += item_list()->item_at(i)->title();
   }
   return content;
 }
@@ -60,13 +67,20 @@ std::string AppListTestModel::GetModelContent() {
 AppListItemModel* AppListTestModel::CreateItem(const std::string& title,
                                                const std::string& full_name) {
   AppListItemModel* item = new AppListTestItemModel(title, this);
+  size_t nitems = item_list()->item_count();
+  syncer::StringOrdinal position;
+  if (nitems == 0)
+    position = syncer::StringOrdinal::CreateInitialOrdinal();
+  else
+    position = item_list()->item_at(nitems - 1)->position().CreateAfter();
+  item->set_position(position);
   item->SetTitleAndFullName(title, full_name);
   return item;
 }
 
 void AppListTestModel::CreateAndAddItem(const std::string& title,
                                         const std::string& full_name) {
-  AddItem(CreateItem(title, full_name));
+  item_list()->AddItem(CreateItem(title, full_name));
 }
 
 void AppListTestModel::CreateAndAddItem(const std::string& title) {
@@ -74,7 +88,7 @@ void AppListTestModel::CreateAndAddItem(const std::string& title) {
 }
 
 void AppListTestModel::HighlightItemAt(int index) {
-  AppListItemModel* item = apps()->GetItemAt(index);
+  AppListItemModel* item = item_list()->item_at(index);
   item->SetHighlighted(true);
 }
 

@@ -108,7 +108,7 @@ class AppsGridViewTest : public views::ViewsTestBase {
     apps_grid_view_->SetLayout(kIconDimension, kCols, kRows);
     apps_grid_view_->SetBoundsRect(gfx::Rect(gfx::Size(kWidth, kHeight)));
     apps_grid_view_->SetModel(model_.get());
-    apps_grid_view_->SetApps(model_->apps());
+    apps_grid_view_->SetItemList(model_->item_list());
 
     test_api_.reset(new AppsGridViewTestApi(apps_grid_view_.get()));
   }
@@ -124,7 +124,7 @@ class AppsGridViewTest : public views::ViewsTestBase {
   }
 
   AppListItemView* GetItemViewForPoint(const gfx::Point& point) {
-    for (size_t i = 0; i < model_->apps()->item_count(); ++i) {
+    for (size_t i = 0; i < model_->item_list()->item_count(); ++i) {
       AppListItemView* view = GetItemViewAt(i);
       if (view->bounds().Contains(point))
         return view;
@@ -133,7 +133,7 @@ class AppsGridViewTest : public views::ViewsTestBase {
   }
 
   gfx::Rect GetItemTileRectAt(int row, int col) {
-    DCHECK_GT(model_->apps()->item_count(), 0u);
+    DCHECK_GT(model_->item_list()->item_count(), 0u);
 
     gfx::Insets insets(apps_grid_view_->GetInsets());
     gfx::Rect rect(gfx::Point(insets.left(), insets.top()),
@@ -206,7 +206,7 @@ TEST_F(AppsGridViewTest, EnsureHighlightedVisible) {
   EXPECT_EQ(1, pagination_model_->selected_page());
 
   // Highlight last one in the model and last page should be selected.
-  model_->HighlightItemAt(model_->apps()->item_count() - 1);
+  model_->HighlightItemAt(model_->item_list()->item_count() - 1);
   EXPECT_EQ(kPages - 1, pagination_model_->selected_page());
 }
 
@@ -218,7 +218,7 @@ TEST_F(AppsGridViewTest, RemoveSelectedLastApp) {
 
   AppListItemView* last_view = GetItemViewAt(kLastItemIndex);
   apps_grid_view_->SetSelectedView(last_view);
-  model_->apps()->DeleteAt(kLastItemIndex);
+  model_->item_list()->DeleteItem(model_->GetItemName(kLastItemIndex));
 
   EXPECT_FALSE(apps_grid_view_->IsSelectedView(last_view));
 
@@ -253,7 +253,7 @@ TEST_F(AppsGridViewTest, MouseDrag) {
 
   // Deleting an item keeps remaining intact.
   SimulateDrag(AppsGridView::MOUSE, from, to);
-  model_->apps()->DeleteAt(1);
+  model_->item_list()->DeleteItem(model_->GetItemName(0));
   apps_grid_view_->EndDrag(false);
   EXPECT_EQ(std::string("Item 1,Item 2,Item 3"),
             model_->GetModelContent());

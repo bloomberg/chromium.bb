@@ -85,13 +85,15 @@ class ExtensionAppItem : public app_list::AppListItemModel,
   virtual void ExtensionEnableFlowAborted(bool user_initiated) OVERRIDE;
 
   // Overridden from AppListItemModel:
-  virtual std::string GetSortOrder() const OVERRIDE;
   virtual void Activate(int event_flags) OVERRIDE;
   virtual ui::MenuModel* GetContextMenuModel() OVERRIDE;
   virtual const char* GetAppType() const OVERRIDE;
 
   // Overridden from app_list::AppContextMenuDelegate:
   virtual void ExecuteLaunchCommand(int event_flags) OVERRIDE;
+
+  // Set the position from the extension ordering.
+  void UpdatePositionFromExtensionOrdering();
 
   Profile* profile_;
   const std::string extension_id_;
@@ -109,11 +111,6 @@ class ExtensionAppItem : public app_list::AppListItemModel,
 
   // Whether or not this app is a platform app.
   bool is_platform_app_;
-
-  // Cache initial sort order. Sort order is not synced with the extensions
-  // app ordering once apps are loaded. This will be ignored (or overridden)
-  // once the app list is synced.
-  std::string sort_order_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionAppItem);
 };

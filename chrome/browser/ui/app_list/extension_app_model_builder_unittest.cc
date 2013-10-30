@@ -32,10 +32,10 @@ const char kPackagedApp2Id[] = "jlklkagmeajbjiobondfhiekepofmljl";
 // Get a string of all apps in |model| joined with ','.
 std::string GetModelContent(app_list::AppListModel* model) {
   std::string content;
-  for (size_t i = 0; i < model->apps()->item_count(); ++i) {
+  for (size_t i = 0; i < model->item_list()->item_count(); ++i) {
     if (i > 0)
       content += ',';
-    content += model->apps()->GetItemAt(i)->title();
+    content += model->item_list()->item_at(i)->title();
   }
   return content;
 }
@@ -285,15 +285,15 @@ TEST_F(ExtensionAppModelBuilderTest, OrdinalConfilicts) {
 
 TEST_F(ExtensionAppModelBuilderTest, SwitchProfile) {
   ExtensionAppModelBuilder builder(profile_.get(), model_.get(), NULL);
-  EXPECT_EQ(kDefaultAppCount, model_->apps()->item_count());
+  EXPECT_EQ(kDefaultAppCount, model_->item_list()->item_count());
 
   // Switch to a profile with no apps, ensure all apps are removed.
   TestingProfile::Builder profile_builder;
   scoped_ptr<TestingProfile> profile2(profile_builder.Build());
   builder.SwitchProfile(profile2.get());
-  EXPECT_EQ(0u, model_->apps()->item_count());
+  EXPECT_EQ(0u, model_->item_list()->item_count());
 
   // Switch back to the main profile, ensure apps are restored.
   builder.SwitchProfile(profile_.get());
-  EXPECT_EQ(kDefaultAppCount, model_->apps()->item_count());
+  EXPECT_EQ(kDefaultAppCount, model_->item_list()->item_count());
 }

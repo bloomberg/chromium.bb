@@ -16,7 +16,7 @@ AppListModel::User::User() : active(false) {}
 AppListModel::User::~User() {}
 
 AppListModel::AppListModel()
-    : apps_(new Apps),
+    : item_list_(new AppListItemList),
       search_box_(new SearchBoxModel),
       results_(new SearchResults),
       signed_in_(false),
@@ -59,36 +59,6 @@ void AppListModel::SetSignedIn(bool signed_in) {
   FOR_EACH_OBSERVER(AppListModelObserver,
                     observers_,
                     OnAppListModelSigninStatusChanged());
-}
-
-AppListItemModel* AppListModel::FindItem(const std::string& id) {
-  for (size_t i = 0; i < apps_->item_count(); ++i) {
-    AppListItemModel* item = apps_->GetItemAt(i);
-    if (item->id() == id)
-      return item;
-  }
-  return NULL;
-}
-
-void AppListModel::AddItem(AppListItemModel* item) {
-  std::string sort_order = item->GetSortOrder();
-  // Note: ui::ListModel is not a sorted list.
-  size_t index = 0;
-  for (; index < apps_->item_count(); ++index) {
-    if (sort_order < apps_->GetItemAt(index)->GetSortOrder())
-      break;
-  }
-  apps_->AddAt(index, item);
-}
-
-void AppListModel::DeleteItem(const std::string& id) {
-  for (size_t i = 0; i < apps_->item_count(); ++i) {
-    AppListItemModel* item = apps_->GetItemAt(i);
-    if (item->id() == id) {
-      apps_->DeleteAt(i);
-      return;
-    }
-  }
 }
 
 }  // namespace app_list

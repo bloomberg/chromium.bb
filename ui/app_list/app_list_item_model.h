@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/observer_list.h"
+#include "sync/api/string_ordinal.h"
 #include "ui/app_list/app_list_export.h"
 #include "ui/gfx/image/image_skia.h"
 
@@ -46,13 +47,14 @@ class APP_LIST_EXPORT AppListItemModel {
   int percent_downloaded() const { return percent_downloaded_; }
 
   const std::string& id() const { return id_; }
+  const syncer::StringOrdinal& position() const { return position_; }
+  void set_position(const syncer::StringOrdinal& new_position) {
+    DCHECK(new_position.IsValid());
+    position_ = new_position;
+  }
 
   void AddObserver(AppListItemModelObserver* observer);
   void RemoveObserver(AppListItemModelObserver* observer);
-
-  // Returns a string used for initially sorting the apps (used by
-  // AppListModel::AddItem). Defaults to an empty string.
-  virtual std::string GetSortOrder() const;
 
   // Activates (opens) the item. Does nothing by default.
   virtual void Activate(int event_flags);
@@ -67,7 +69,10 @@ class APP_LIST_EXPORT AppListItemModel {
   virtual ui::MenuModel* GetContextMenuModel();
 
  private:
+  friend class AppListModelTest;
+
   const std::string id_;
+  syncer::StringOrdinal position_;
   gfx::ImageSkia icon_;
   bool has_shadow_;
   std::string title_;

@@ -48,10 +48,10 @@ class AppsGridViewDelegate;
 class PageSwitcher;
 class PaginationModel;
 
-// AppsGridView displays a grid for AppListModel::Apps sub model.
+// AppsGridView displays a grid for AppListItemList sub model.
 class APP_LIST_EXPORT AppsGridView : public views::View,
                                      public views::ButtonListener,
-                                     public ui::ListModelObserver,
+                                     public AppListItemListObserver,
                                      public PaginationModelObserver,
                                      public AppListModelObserver {
  public:
@@ -78,8 +78,9 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   // Sets |model| to use. Note this does not take ownership of |model|.
   void SetModel(AppListModel* model);
 
-  // Set |apps| to renders. Note this does not take ownership of |apps|.
-  void SetApps(AppListModel::Apps* apps);
+  // Sets the |item_list| to render. Note this does not take ownership of
+  // |item_list|.
+  void SetItemList(AppListItemList* item_list);
 
   void SetSelectedView(views::View* view);
   void ClearSelectedView(views::View* view);
@@ -250,11 +251,12 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   virtual void ButtonPressed(views::Button* sender,
                              const ui::Event& event) OVERRIDE;
 
-  // Overridden from ListModelObserver:
-  virtual void ListItemsAdded(size_t start, size_t count) OVERRIDE;
-  virtual void ListItemsRemoved(size_t start, size_t count) OVERRIDE;
-  virtual void ListItemMoved(size_t index, size_t target_index) OVERRIDE;
-  virtual void ListItemsChanged(size_t start, size_t count) OVERRIDE;
+  // Overridden from AppListItemListObserver:
+  virtual void OnListItemAdded(size_t index, AppListItemModel* item) OVERRIDE;
+  virtual void OnListItemRemoved(size_t index, AppListItemModel* item) OVERRIDE;
+  virtual void OnListItemMoved(size_t from_index,
+                               size_t to_index,
+                               AppListItemModel* item) OVERRIDE;
 
   // Overridden from PaginationModelObserver:
   virtual void TotalPagesChanged() OVERRIDE;
@@ -272,7 +274,7 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   void SetViewHidden(views::View* view, bool hide, bool immediate);
 
   AppListModel* model_;  // Owned by AppListView.
-  AppListModel::Apps* apps_;  // Not owned.
+  AppListItemList* item_list_;  // Not owned.
   AppsGridViewDelegate* delegate_;
   PaginationModel* pagination_model_;  // Owned by AppListController.
   PageSwitcher* page_switcher_view_;  // Owned by views hierarchy.

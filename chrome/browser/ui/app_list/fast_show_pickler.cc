@@ -207,23 +207,23 @@ scoped_ptr<Pickle> FastShowPickler::PickleAppListModelForFastShow(
     return scoped_ptr<Pickle>();
   if (!result->WriteBool(model->signed_in()))
     return scoped_ptr<Pickle>();
-  if (!result->WriteInt((int) model->apps()->item_count()))
+  if (!result->WriteInt((int) model->item_list()->item_count()))
     return scoped_ptr<Pickle>();
-  for (size_t i = 0; i < model->apps()->item_count(); ++i) {
-    if (!PickleAppListItemModel(result.get(), model->apps()->GetItemAt(i)))
+  for (size_t i = 0; i < model->item_list()->item_count(); ++i) {
+    if (!PickleAppListItemModel(result.get(), model->item_list()->item_at(i)))
       return scoped_ptr<Pickle>();
   }
   return result.Pass();
 }
 
 void FastShowPickler::CopyOver(AppListModel* src, AppListModel* dest) {
-  dest->apps()->DeleteAll();
+  dest->item_list()->DeleteItemsByType(NULL /* all items */);
   dest->SetSignedIn(src->signed_in());
-  for (size_t i = 0; i < src->apps()->item_count(); i++) {
-    AppListItemModel* src_item = src->apps()->GetItemAt(i);
+  for (size_t i = 0; i < src->item_list()->item_count(); i++) {
+    AppListItemModel* src_item = src->item_list()->item_at(i);
     AppListItemModel* dest_item = new AppListItemModel(src_item->id());
     CopyOverItem(src_item, dest_item);
-    dest->apps()->Add(dest_item);
+    dest->item_list()->AddItem(dest_item);
   }
 }
 
@@ -248,7 +248,7 @@ FastShowPickler::UnpickleAppListModelForFastShow(Pickle* pickle) {
     scoped_ptr<AppListItemModel> item(UnpickleAppListItemModel(&it).Pass());
     if (!item)
       return scoped_ptr<AppListModel>();
-    model->apps()->Add(item.release());
+    model->item_list()->AddItem(item.release());
   }
 
   return model.Pass();

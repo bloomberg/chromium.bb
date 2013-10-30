@@ -34,7 +34,7 @@ AppsContainerView::AppsContainerView(AppListMainView* app_list_main_view,
   AddChildView(app_list_folder_view_);
 
   apps_grid_view_->SetModel(model_);
-  apps_grid_view_->SetApps(model_->apps());
+  apps_grid_view_->SetItemList(model_->item_list());
 }
 
 AppsContainerView::~AppsContainerView() {
@@ -88,6 +88,3 @@ void AppsContainerView::SetShowState(ShowState show_state) {
 }
 
 }  // namespace app_list
-
-
-

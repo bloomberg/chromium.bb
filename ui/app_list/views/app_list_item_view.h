@@ -105,7 +105,7 @@ class APP_LIST_EXPORT AppListItemView : public views::CustomButton,
   // ui::EventHandler overrides:
   virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
 
-  AppListItemModel* model_;  // Owned by AppListModel::Apps.
+  AppListItemModel* model_;  // Owned by AppListModel.
 
   AppsGridView* apps_grid_view_;  // Owned by views hierarchy.
   views::ImageView* icon_;  // Owned by views hierarchy.

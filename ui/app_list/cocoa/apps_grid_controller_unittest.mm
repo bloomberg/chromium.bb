@@ -424,7 +424,7 @@ TEST_F(AppsGridControllerTest, EnsureHighlightedVisible) {
 // Test runtime updates: adding items, removing items, and moving items (e.g. in
 // response to app install, uninstall, and chrome sync changes. Also test
 // changing titles and icons.
-TEST_F(AppsGridControllerTest, ModelUpdates) {
+TEST_F(AppsGridControllerTest, ModelUpdate) {
   model()->PopulateApps(2);
   EXPECT_EQ(2u, [[GetPageAt(0) content] count]);
   EXPECT_EQ(std::string("|Item 0,Item 1|"), GetViewContent());
@@ -437,7 +437,7 @@ TEST_F(AppsGridControllerTest, ModelUpdates) {
   EXPECT_EQ(std::string("|Item 0,Item 1,Item 2|"), GetViewContent());
 
   // Update the title via the ItemModelObserver.
-  app_list::AppListItemModel* item_model = model()->apps()->GetItemAt(2);
+  app_list::AppListItemModel* item_model = model()->item_list()->item_at(2);
   item_model->SetTitleAndFullName("UpdatedItem", "UpdatedItem");
   EXPECT_NSEQ(@"UpdatedItem", [button title]);
   EXPECT_EQ(std::string("|Item 0,Item 1,UpdatedItem|"), GetViewContent());
@@ -456,9 +456,48 @@ TEST_F(AppsGridControllerTest, ModelUpdates) {
   // Icon should always be resized to 48x48.
   EXPECT_EQ(kTargetImageSize, icon_size.width);
   EXPECT_EQ(kTargetImageSize, icon_size.height);
+}
+
+TEST_F(AppsGridControllerTest, ModelAdd) {
+  model()->PopulateApps(2);
+  EXPECT_EQ(2u, [[GetPageAt(0) content] count]);
+  EXPECT_EQ(std::string("|Item 0,Item 1|"), GetViewContent());
+
+  app_list::AppListItemList* item_list = model()->item_list();
+
+  model()->CreateAndAddItem("Item 2");
+  ASSERT_EQ(3u, item_list->item_count());
+  EXPECT_EQ(3u, [apps_grid_controller_ itemCount]);
+  EXPECT_EQ(std::string("|Item 0,Item 1,Item 2|"), GetViewContent());
+
+  // Test adding an item whose position is in the middle.
+  app_list::AppListItemModel* item0 = item_list->item_at(0);
+  app_list::AppListItemModel* item1 = item_list->item_at(1);
+  app_list::AppListItemModel* item3 =
+      model()->CreateItem("Item Three", "Item Three");
+  item3->set_position(item0->position().CreateBetween(item1->position()));
+  item_list->AddItem(item3);
+  EXPECT_EQ(4u, [apps_grid_controller_ itemCount]);
+  EXPECT_EQ(std::string("|Item 0,Item Three,Item 1,Item 2|"), GetViewContent());
+}
+
+TEST_F(AppsGridControllerTest, ModelMove) {
+  model()->PopulateApps(3);
+  EXPECT_EQ(3u, [[GetPageAt(0) content] count]);
+  EXPECT_EQ(std::string("|Item 0,Item 1,Item 2|"), GetViewContent());
+
+  // Test swapping items (e.g. rearranging via sync).
+  model()->item_list()->MoveItem(1, 2);
+  EXPECT_EQ(std::string("|Item 0,Item 2,Item 1|"), GetViewContent());
+}
+
+TEST_F(AppsGridControllerTest, ModelRemove) {
+  model()->PopulateApps(3);
+  EXPECT_EQ(3u, [[GetPageAt(0) content] count]);
+  EXPECT_EQ(std::string("|Item 0,Item 1,Item 2|"), GetViewContent());
 
   // Test removing an item at the end.
-  model()->apps()->DeleteAt(2);
+  model()->item_list()->DeleteItem("Item 2");
   EXPECT_EQ(2u, [apps_grid_controller_ itemCount]);
   EXPECT_EQ(std::string("|Item 0,Item 1|"), GetViewContent());
 
@@ -466,29 +505,34 @@ TEST_F(AppsGridControllerTest, ModelUpdates) {
   model()->CreateAndAddItem("Item 2");
   EXPECT_EQ(3u, [apps_grid_controller_ itemCount]);
   EXPECT_EQ(std::string("|Item 0,Item 1,Item 2|"), GetViewContent());
-  model()->apps()->DeleteAt(1);
+  model()->item_list()->DeleteItem("Item 1");
   EXPECT_EQ(2u, [apps_grid_controller_ itemCount]);
   EXPECT_EQ(std::string("|Item 0,Item 2|"), GetViewContent());
+}
 
-  // Test inserting in the middle.
-  model()->apps()->AddAt(1, model()->CreateItem("Item One", "Item One"));
-  EXPECT_EQ(3u, [apps_grid_controller_ itemCount]);
-  EXPECT_EQ(std::string("|Item 0,Item One,Item 2|"), GetViewContent());
-
-  // Test swapping items (e.g. rearranging via sync).
-  model()->apps()->Move(1, 2);
-  EXPECT_EQ(std::string("|Item 0,Item 2,Item One|"), GetViewContent());
+TEST_F(AppsGridControllerTest, ModelRemoveAlll) {
+  model()->PopulateApps(3);
+  EXPECT_EQ(3u, [[GetPageAt(0) content] count]);
+  EXPECT_EQ(std::string("|Item 0,Item 1,Item 2|"), GetViewContent());
 
   // Test removing multiple items via the model.
-  model()->apps()->DeleteAll();
+  model()->item_list()->DeleteItemsByType(NULL /* all items */);
   EXPECT_EQ(0u, [apps_grid_controller_ itemCount]);
   EXPECT_EQ(std::string("||"), GetViewContent());
+}
 
-  // Test removing the last item when there is one item on the second page.
-  ReplaceTestModel(kItemsPerPage + 1);
+TEST_F(AppsGridControllerTest, ModelRemovePage) {
+  app_list::AppListItemList* item_list = model()->item_list();
+
+  model()->PopulateApps(kItemsPerPage + 1);
+  ASSERT_EQ(kItemsPerPage + 1, item_list->item_count());
   EXPECT_EQ(kItemsPerPage + 1, [apps_grid_controller_ itemCount]);
   EXPECT_EQ(2u, [apps_grid_controller_ pageCount]);
-  model()->apps()->DeleteAt(kItemsPerPage);
+
+  // Test removing the last item when there is one item on the second page.
+  app_list::AppListItemModel* last_item = item_list->item_at(kItemsPerPage);
+  item_list->DeleteItem(last_item->id());
+  EXPECT_EQ(kItemsPerPage, item_list->item_count());
   EXPECT_EQ(kItemsPerPage, [apps_grid_controller_ itemCount]);
   EXPECT_EQ(1u, [apps_grid_controller_ pageCount]);
 }
@@ -499,7 +543,7 @@ TEST_F(AppsGridControllerTest, ItemInstallProgress) {
   EXPECT_EQ(2u, [apps_grid_controller_ pageCount]);
   EXPECT_EQ(0u, [apps_grid_controller_ visiblePage]);
   app_list::AppListItemModel* item_model =
-      model()->apps()->GetItemAt(kItemsPerPage);
+      model()->item_list()->item_at(kItemsPerPage);
 
   // Highlighting an item should activate the page it is on.
   item_model->SetHighlighted(true);
@@ -535,7 +579,7 @@ TEST_F(AppsGridControllerTest, ItemInstallProgress) {
   // Two things can be installing simultaneously. When one starts or completes
   // the model builder will ask for the item to be highlighted.
   app_list::AppListItemModel* alternate_item_model =
-      model()->apps()->GetItemAt(0);
+      model()->item_list()->item_at(0);
   item_model->SetHighlighted(false);
   alternate_item_model->SetHighlighted(true);
   EXPECT_EQ(0u, [apps_grid_controller_ visiblePage]);
@@ -906,8 +950,8 @@ TEST_F(AppsGridControllerTest, ScrollingWhileDragging) {
 
 TEST_F(AppsGridControllerTest, ContextMenus) {
   AppListItemWithMenu* item_two_model = new AppListItemWithMenu("Item Two");
-  model()->apps()->AddAt(0, new AppListItemWithMenu("Item One"));
-  model()->apps()->AddAt(1, item_two_model);
+  model()->item_list()->AddItem(new AppListItemWithMenu("Item One"));
+  model()->item_list()->AddItem(item_two_model);
   EXPECT_EQ(2u, [apps_grid_controller_ itemCount]);
 
   NSCollectionView* page = [apps_grid_controller_ collectionViewAtPageIndex:0];

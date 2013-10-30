@@ -23,7 +23,7 @@ class AppsGridDelegateBridge;
 @protocol AppsPaginationModelObserver;
 @class AppsCollectionViewDragManager;
 
-// Controls a grid of views, representing AppListModel::Apps sub models.
+// Controls a grid of views, representing AppListItemList sub models.
 APP_LIST_EXPORT
 @interface AppsGridController : NSViewController<GestureScrollDelegate,
                                                  AppListPagerDelegate,

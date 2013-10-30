@@ -85,13 +85,7 @@ ExtensionAppItem::ExtensionAppItem(Profile* profile,
   Reload();
   GetExtensionSorting(profile_)->EnsureValidOrdinals(extension_id_,
                                                      syncer::StringOrdinal());
-  // Set |sort_order_|. Use '_' as a separator to ensure a_a preceeds aa_a.
-  // (StringOrdinal uses 'a'-'z').
-  const syncer::StringOrdinal& page =
-      GetExtensionSorting(profile_)->GetPageOrdinal(extension_id_);
-  const syncer::StringOrdinal& launch =
-     GetExtensionSorting(profile_)->GetAppLaunchOrdinal(extension_id_);
-  sort_order_ = page.ToInternalValue() + '_' + launch.ToInternalValue();
+  UpdatePositionFromExtensionOrdering();
 }
 
 ExtensionAppItem::~ExtensionAppItem() {
@@ -169,6 +163,7 @@ void ExtensionAppItem::Move(const ExtensionAppItem* prev,
   service->extension_prefs()->SetAppDraggedByUser(extension_id_);
   sorting->SetPageOrdinal(extension_id_, page);
   service->OnExtensionMoved(extension_id_, prev_id, next_id);
+  UpdatePositionFromExtensionOrdering();
 }
 
 const Extension* ExtensionAppItem::GetExtension() const {
@@ -240,10 +235,6 @@ void ExtensionAppItem::ExtensionEnableFlowAborted(bool user_initiated) {
   controller_->OnCloseExtensionPrompt();
 }
 
-std::string ExtensionAppItem::GetSortOrder() const {
-  return sort_order_;
-}
-
 void ExtensionAppItem::Activate(int event_flags) {
   // |extension| could be NULL when it is being unloaded for updating.
   const Extension* extension = GetExtension();
@@ -279,4 +270,13 @@ const char* ExtensionAppItem::GetAppType() const {
 
 void ExtensionAppItem::ExecuteLaunchCommand(int event_flags) {
   Launch(event_flags);
+}
+
+void ExtensionAppItem::UpdatePositionFromExtensionOrdering() {
+  const syncer::StringOrdinal& page =
+      GetExtensionSorting(profile_)->GetPageOrdinal(extension_id_);
+  const syncer::StringOrdinal& launch =
+     GetExtensionSorting(profile_)->GetAppLaunchOrdinal(extension_id_);
+  set_position(syncer::StringOrdinal(
+      page.ToInternalValue() + launch.ToInternalValue()));
 }

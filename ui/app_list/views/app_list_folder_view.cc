@@ -55,7 +55,7 @@ AppListFolderView::~AppListFolderView() {
 
 void AppListFolderView::SetAppListFolderItem(AppListFolderItem* folder) {
   folder_item_ = folder;
-  items_grid_view_->SetApps(folder_item_->apps());
+  items_grid_view_->SetItemList(folder_item_->item_list());
   folder_header_view_->SetFolderItem(folder_item_);
 }
 
@@ -93,4 +93,3 @@ void AppListFolderView::NavigateBack(AppListFolderItem* item,
 }
 
 }  // namespace app_list
-

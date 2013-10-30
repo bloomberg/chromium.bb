@@ -30,7 +30,7 @@ class ImageSkia;
 // This class populates and maintains the given |model| with information from
 // |profile|.
 class ExtensionAppModelBuilder : public extensions::InstallObserver,
-                                 public ui::ListModelObserver {
+                                 public app_list::AppListItemListObserver {
  public:
   ExtensionAppModelBuilder(Profile* profile,
                            app_list::AppListModel* model,
@@ -65,11 +65,10 @@ class ExtensionAppModelBuilder : public extensions::InstallObserver,
       const std::string& extension_id) OVERRIDE;
   virtual void OnShutdown() OVERRIDE;
 
-  // ui::ListModelObserver
-  virtual void ListItemsAdded(size_t start, size_t count) OVERRIDE;
-  virtual void ListItemsRemoved(size_t start, size_t count) OVERRIDE;
-  virtual void ListItemMoved(size_t index, size_t target_index) OVERRIDE;
-  virtual void ListItemsChanged(size_t start, size_t count) OVERRIDE;
+  // AppListItemListObserver
+  virtual void OnListItemMoved(size_t from_index,
+                               size_t to_index,
+                               app_list::AppListItemModel* item) OVERRIDE;
 
   // Adds apps in |extensions| to |apps|.
   void AddApps(const ExtensionSet* extensions, ExtensionAppList* apps);

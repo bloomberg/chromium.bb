@@ -48,6 +48,8 @@ class AppListTestModel : public AppListModel {
   int activate_count() { return activate_count_; }
   AppListItemModel* last_activated() { return last_activated_; }
 
+  static const char kAppType[];
+
  private:
   class AppListTestItemModel;
 

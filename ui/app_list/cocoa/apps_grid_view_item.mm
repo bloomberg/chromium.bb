@@ -80,7 +80,7 @@ class ItemModelObserverBridge : public app_list::AppListItemModelObserver {
 
  private:
   AppsGridViewItem* parent_;  // Weak. Owns us.
-  AppListItemModel* model_;  // Weak. Owned by AppListModel::Apps.
+  AppListItemModel* model_;  // Weak. Owned by AppListModel.
   base::scoped_nsobject<MenuController> context_menu_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(ItemModelObserverBridge);

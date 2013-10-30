@@ -6,55 +6,56 @@
 #define UI_APP_LIST_APP_LIST_FOLDER_ITEM_H_
 
 #include "ui/app_list/app_list_export.h"
+#include "ui/app_list/app_list_item_list_observer.h"
 #include "ui/app_list/app_list_item_model.h"
 #include "ui/app_list/app_list_item_model_observer.h"
 #include "ui/base/models/list_model.h"
 
 namespace app_list {
 
+class AppListItemList;
+
 // AppListFolderItem implements the model/controller for folders.
 class APP_LIST_EXPORT AppListFolderItem : public AppListItemModel,
+                                          public AppListItemListObserver,
                                           public AppListItemModelObserver {
  public:
-  typedef ui::ListModel<AppListItemModel> Apps;
-
   explicit AppListFolderItem(const std::string& id);
   virtual ~AppListFolderItem();
-
-  // Adds |item| to |apps_|. Takes ownership of |item|.
-  void AddItem(AppListItemModel* item);
-
-  // Finds |item| in |apps_| and deletes it.
-  void DeleteItem(const std::string& id);
 
   // Updates the folder's icon.
   void UpdateIcon();
 
-  Apps* apps() { return apps_.get(); }
+  AppListItemList* item_list() { return item_list_.get(); }
 
+  static const char kAppType[];
+
+ private:
   // AppListItemModel
-  virtual std::string GetSortOrder() const OVERRIDE;
   virtual void Activate(int event_flags) OVERRIDE;
   virtual const char* GetAppType() const OVERRIDE;
   virtual ui::MenuModel* GetContextMenuModel() OVERRIDE;
 
-  // AppListItemModelObserver overrides:
+  // AppListItemModelObserver
   virtual void ItemIconChanged() OVERRIDE;
   virtual void ItemTitleChanged() OVERRIDE;
   virtual void ItemHighlightedChanged() OVERRIDE;
   virtual void ItemIsInstallingChanged() OVERRIDE;
   virtual void ItemPercentDownloadedChanged() OVERRIDE;
 
-  static const char kAppType[];
-
- private:
-  typedef std::vector<AppListItemModel*> AppListItemList;
+  // AppListItemListObserver
+  virtual void OnListItemAdded(size_t index, AppListItemModel* item) OVERRIDE;
+  virtual void OnListItemRemoved(size_t index,
+                                 AppListItemModel* item) OVERRIDE;;
+  virtual void OnListItemMoved(size_t from_index,
+                               size_t to_index,
+                               AppListItemModel* item) OVERRIDE;
 
   void UpdateTopItems();
 
-  scoped_ptr<Apps> apps_;
+  scoped_ptr<AppListItemList> item_list_;
   // Top items for generating folder icon.
-  AppListItemList top_items_;
+  std::vector<AppListItemModel*> top_items_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListFolderItem);
 };

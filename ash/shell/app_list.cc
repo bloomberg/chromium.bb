@@ -16,6 +16,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "ui/app_list/app_list_item_list.h"
 #include "ui/app_list/app_list_item_model.h"
 #include "ui/app_list/app_list_model.h"
 #include "ui/app_list/app_list_view_delegate.h"
@@ -195,14 +196,14 @@ class ExampleAppListViewDelegate : public app_list::AppListViewDelegate {
   ExampleAppListViewDelegate() : model_(NULL) {}
 
  private:
-  void PopulateApps(app_list::AppListModel::Apps* apps) {
+  void PopulateApps(app_list::AppListItemList* item_list) {
     for (int i = 0;
          i < static_cast<int>(WindowTypeLauncherItem::LAST_TYPE);
          ++i) {
       WindowTypeLauncherItem::Type type =
           static_cast<WindowTypeLauncherItem::Type>(i);
       std::string id = base::StringPrintf("%d", i);
-      apps->Add(new WindowTypeLauncherItem(id, type));
+      item_list->AddItem(new WindowTypeLauncherItem(id, type));
     }
   }
 
@@ -233,7 +234,7 @@ class ExampleAppListViewDelegate : public app_list::AppListViewDelegate {
 
   virtual void InitModel(app_list::AppListModel* model) OVERRIDE {
     model_ = model;
-    PopulateApps(model_->apps());
+    PopulateApps(model_->item_list());
     DecorateSearchBox(model_->search_box());
   }
 

@@ -73,10 +73,6 @@ void AppListItemModel::RemoveObserver(AppListItemModelObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
-std::string AppListItemModel::GetSortOrder() const {
-  return "";
-}
-
 void AppListItemModel::Activate(int event_flags) {
 }
 
