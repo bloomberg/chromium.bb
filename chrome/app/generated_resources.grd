@@ -14846,10 +14846,7 @@ You need to be signed in to use this feature.
 
 Creating a supervised user does not create a Google Account, and their settings and data will not follow them to other devices with Chrome Sync. Currently, a supervised user applies only to this installation of Chrome, on this device.
 
-After you create a new supervised user, you can manage their settings at any time, from any device, at www.chrome.com/manage.
-    </message>
-    <message name="IDS_NEW_MANAGED_USER_LEARN_EVEN_MORE_LABEL" desc="Label for the link within the 'Learn more' dialog for the supervised user feature, which links to a Help Center article giving even more information about the feature.">
-      Learn even more
+After you create a new supervised user, you can manage their settings at any time, from any device, at www.chrome.com/manage. <ph name="BEGIN_LINK">&lt;a target="_blank" href="https://support.google.com/chrome/?p=ui_supervised_users&amp;hl=[GRITLANGCODE]"&gt;</ph>Learn more about supervised users<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
     </message>
     <message name="IDS_NEW_MANAGED_USER_LEARN_MORE_DONE_BUTTON" desc="Text for the 'OK' button on the 'Learn more' dialog for the supervised user feature.">
       OK, got it!
