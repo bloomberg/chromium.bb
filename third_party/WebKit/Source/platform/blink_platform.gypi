@@ -236,6 +236,8 @@
       'exported/WebURLRequestPrivate.h',
       'exported/WebURLResponse.cpp',
       'exported/WebURLResponsePrivate.h',
+      'exported/WrappedResourceRequest.h',
+      'exported/WrappedResourceResponse.h',
       'fonts/FontBaseline.h',
       'fonts/FontCacheKey.h',
       'fonts/FontData.cpp',

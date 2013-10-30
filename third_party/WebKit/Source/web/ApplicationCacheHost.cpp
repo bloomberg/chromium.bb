@@ -47,8 +47,8 @@
 #include "core/frame/Frame.h"
 #include "core/page/Page.h"
 #include "core/page/Settings.h"
-#include "core/platform/chromium/support/WrappedResourceRequest.h"
-#include "core/platform/chromium/support/WrappedResourceResponse.h"
+#include "platform/exported/WrappedResourceRequest.h"
+#include "platform/exported/WrappedResourceResponse.h"
 #include "weborigin/SecurityOrigin.h"
 
 using namespace WebKit;

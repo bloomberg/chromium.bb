@@ -32,7 +32,7 @@
 #include "WebCachedURLRequest.h"
 
 #include "core/fetch/FetchRequest.h"
-#include "core/platform/chromium/support/WrappedResourceRequest.h"
+#include "platform/exported/WrappedResourceRequest.h"
 #include "public/platform/WebURLRequest.h"
 
 using namespace WebCore;

@@ -43,7 +43,7 @@
 #include "WebViewImpl.h"
 #include "core/page/Chrome.h"
 #include "core/page/EventHandler.h"
-#include "core/platform/chromium/support/WrappedResourceResponse.h"
+#include "platform/exported/WrappedResourceResponse.h"
 
 #include "HTMLNames.h"
 #include "WebPrintParams.h"

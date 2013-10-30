@@ -3523,8 +3523,6 @@
             'platform/chromium/support/WebSpeechSynthesisVoice.cpp',
             'platform/chromium/support/WebSpeechSynthesizerClientImpl.cpp',
             'platform/chromium/support/WebSpeechSynthesizerClientImpl.h',
-            'platform/chromium/support/WrappedResourceRequest.h',
-            'platform/chromium/support/WrappedResourceResponse.h',
         ],
         'core_unittest_files': [
             'animation/AnimatableColorTest.cpp',
