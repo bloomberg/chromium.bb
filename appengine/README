@@ -1,36 +1,19 @@
-To install App Engine Python SDK for local development, in this directory:
-%> wget http://googleappengine.googlecode.com/files/google_appengine_1.6.4.zip
-%> unzip google_appengine_1.6.4.zip
+AppEngine supports Python 2.5 and 2.7:
+  https://developers.google.com/appengine/docs/python/
 
-AppEngine uses Python 2.5.  To install Python 2.5 locally on a Goobuntu machine:
-%> sudo aptitude install libsqlite3-dev
-%> sudo aptitude install build-essential gcc
-%> cd /usr/local/google/home/$USER
-%> wget http://www.python.org/ftp/python/2.5.5/Python-2.5.6.tgz
-%> tar -xvzf Python-2.5.6.tgz
-%> cd Python-2.5.6
-%> ./configure --prefix=/usr/local/python2.5
-If on GPrecise, do this step:
-  %> vi Makefile
-  s|LDFLAGS=|LDFLAGS = -L/usr/lib/x86_64-linux-gnu|
-%> make
-%> make test
-%> sudo make install
-%> sudo ln -s /usr/local/python2.5/bin/python /usr/bin/python2.5
-
-A utility script dev_appserver is in this directory to call
-./google_appengine/dev_appserver.py with arguments for correctly using
-python 2.5 and serving at <yourhostname>:8080 (which can then be
+A utility script dev_appserver is in this directory to automatically
+download the sdk and call ./google_appengine/dev_appserver.py with
+arguments for serving at <yourhostname>:8080 (which can then be
 accessed from other machines on intranet).  See contents of script
 for details on what it does (it is very short).
 
 Examples based on project name chromiumos-build-stats.
 
 To start the dev server on <yourhostname>:8080 do this:
-%> ./dev_appserver chromiumos-build-stats/
+%> ./dev_appserver chromiumos-build-stats/app.yaml
 
 To clear DB before starting:
-%> ./dev_appserver -c chromiumos-build-stats/
+%> ./dev_appserver -c chromiumos-build-stats/app.yaml
 
 To update on chromiumos-build-stats.appspot.com (WHEN READY):
 %> ./google_appengine/appcfg.py update chromiumos-build-stats/
