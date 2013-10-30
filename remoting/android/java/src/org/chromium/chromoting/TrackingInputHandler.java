@@ -119,7 +119,10 @@ public class TrackingInputHandler implements TouchInputHandler {
             float xAdjust = 0;
             float yAdjust = 0;
 
-            if (leftDelta > 0 && rightDelta > 0) {
+            if (rectScreen[2] - rectScreen[0] < mRenderData.screenWidth) {
+                // Image is narrower than the screen, so center it.
+                xAdjust = -(rightDelta + leftDelta) / 2;
+            } else if (leftDelta > 0 && rightDelta > 0) {
                 // Panning the image left will show more of it.
                 xAdjust = -Math.min(leftDelta, rightDelta);
             } else if (leftDelta < 0 && rightDelta < 0) {
@@ -128,7 +131,9 @@ public class TrackingInputHandler implements TouchInputHandler {
             }
 
             // Apply similar logic for yAdjust.
-            if (topDelta > 0 && bottomDelta > 0) {
+            if (rectScreen[3] - rectScreen[1] < mRenderData.screenHeight) {
+                yAdjust = -(bottomDelta + topDelta) / 2;
+            } else if (topDelta > 0 && bottomDelta > 0) {
                 yAdjust = -Math.min(topDelta, bottomDelta);
             } else if (topDelta < 0 && bottomDelta < 0) {
                 yAdjust = Math.min(-topDelta, -bottomDelta);
