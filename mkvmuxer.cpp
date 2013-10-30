@@ -1991,6 +1991,7 @@ Segment::Segment()
       frames_size_(0),
       has_video_(false),
       header_written_(false),
+      last_block_duration_(0),
       last_timestamp_(0),
       max_cluster_duration_(kDefaultMaxClusterDuration),
       max_cluster_size_(0),
