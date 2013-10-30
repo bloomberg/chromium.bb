@@ -238,7 +238,7 @@ class SourceBufferStreamTest : public testing::Test {
 
   void CheckNoNextBuffer() {
     scoped_refptr<StreamParserBuffer> buffer;
-    EXPECT_EQ(stream_->GetNextBuffer(&buffer), SourceBufferStream::kNeedBuffer);
+    EXPECT_EQ(SourceBufferStream::kNeedBuffer, stream_->GetNextBuffer(&buffer));
   }
 
   void CheckConfig(const VideoDecoderConfig& config) {
@@ -3158,6 +3158,71 @@ TEST_F(SourceBufferStreamTest, Remove_BeforeCurrentPosition) {
   CheckExpectedRangesByTimestamp("{ [90,360) }");
 
   CheckExpectedBuffers("150 180K 210 240 270K 300 330");
+}
+
+// Test removing the entire range for the current media segment
+// being appended.
+TEST_F(SourceBufferStreamTest, Remove_MidSegment) {
+  Seek(0);
+  NewSegmentAppend("0K 30 60 90 120K 150 180 210");
+  CheckExpectedRangesByTimestamp("{ [0,240) }");
+
+  NewSegmentAppend("0K 30");
+
+  CheckExpectedBuffers("0K");
+
+  CheckExpectedRangesByTimestamp("{ [0,60) [120,240) }");
+
+  // Remove the entire range that is being appended to.
+  RemoveInMs(0, 60, 240);
+
+  // Verify that there is no next buffer since it was removed.
+  CheckNoNextBuffer();
+
+  CheckExpectedRangesByTimestamp("{ [120,240) }");
+
+  // Continue appending frames for the current GOP.
+  AppendBuffers("60 90");
+
+  // Verify that the non-keyframes are not added.
+  CheckExpectedRangesByTimestamp("{ [120,240) }");
+
+  // Finish the previous GOP and start the next one.
+  AppendBuffers("120 150K 180");
+
+  // Verify that new GOP replaces the existing range.
+  CheckExpectedRangesByTimestamp("{ [150,210) }");
+
+
+  SeekToTimestamp(base::TimeDelta::FromMilliseconds(150));
+  CheckExpectedBuffers("150K 180");
+  CheckNoNextBuffer();
+}
+
+// Test removing the current GOP being appended, while not removing
+// the entire range the GOP belongs to.
+TEST_F(SourceBufferStreamTest, Remove_GOPBeingAppended) {
+  Seek(0);
+  NewSegmentAppend("0K 30 60 90 120K 150 180");
+  CheckExpectedRangesByTimestamp("{ [0,210) }");
+
+  // Remove the current GOP being appended.
+  RemoveInMs(120, 150, 240);
+  CheckExpectedRangesByTimestamp("{ [0,120) }");
+
+  // Continue appending the current GOP and the next one.
+  AppendBuffers("210 240K 270 300");
+
+  // Verify that the non-keyframe in the previous GOP does
+  // not effect any existing ranges and a new range is started at the
+  // beginning of the next GOP.
+  CheckExpectedRangesByTimestamp("{ [0,120) [240,330) }");
+
+  // Verify the buffers in the ranges.
+  CheckExpectedBuffers("0K 30 60 90");
+  CheckNoNextBuffer();
+  SeekToTimestamp(base::TimeDelta::FromMilliseconds(240));
+  CheckExpectedBuffers("240K 270 300");
 }
 
 // TODO(vrk): Add unit tests where keyframes are unaligned between streams.

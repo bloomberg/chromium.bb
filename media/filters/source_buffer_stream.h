@@ -162,18 +162,6 @@ class MEDIA_EXPORT SourceBufferStream {
   void PrepareRangesForNextAppend(const BufferQueue& new_buffers,
                                   BufferQueue* deleted_buffers);
 
-  // Resolve overlapping ranges such that no ranges overlap anymore.
-  // |range_with_new_buffers_itr| points to the range that has newly appended
-  // buffers.
-  // |deleted_buffers| is an output parameter containing candidates for
-  // |track_buffer_|.
-  void ResolveCompleteOverlaps(
-      const RangeList::iterator& range_with_new_buffers_itr,
-      BufferQueue* deleted_buffers);
-  void ResolveEndOverlap(
-      const RangeList::iterator& range_with_new_buffers_itr,
-      BufferQueue* deleted_buffers);
-
   // Removes buffers, from the |track_buffer_|, that come after |timestamp|.
   void PruneTrackBuffer(const base::TimeDelta timestamp);
 
@@ -181,17 +169,6 @@ class MEDIA_EXPORT SourceBufferStream {
   // next to it, and merges them if so.
   void MergeWithAdjacentRangeIfNecessary(
       const RangeList::iterator& range_with_new_buffers_itr);
-
-  // Deletes the buffers between |start_timestamp|, |end_timestamp| from
-  // the range that |range_itr| points to. Deletes between [start,end] if
-  // |is_range_exclusive| is true, or (start,end) if |is_range_exclusive| is
-  // false. Buffers are deleted in GOPs, so this method may delete buffers past
-  // |end_timestamp| if the keyframe a buffer depends on was deleted.
-  void DeleteBetween(const RangeList::iterator& range_itr,
-                     base::TimeDelta start_timestamp,
-                     base::TimeDelta end_timestamp,
-                     bool is_range_exclusive,
-                     BufferQueue* deleted_buffers);
 
   // Returns true if |second_timestamp| is the timestamp of the next buffer in
   // sequence after |first_timestamp|, false otherwise.
@@ -235,12 +212,6 @@ class MEDIA_EXPORT SourceBufferStream {
   // Returns true if |seek_timestamp| refers to the beginning of the first range
   // in |ranges_|, false otherwise or if |ranges_| is empty.
   bool ShouldSeekToStartOfBuffered(base::TimeDelta seek_timestamp) const;
-
-  // Returns true if the |prev_is_keyframe| & |current_is_keyframe| combination
-  // on buffers with the same timestamp should be allowed. Returns false if the
-  // combination should signal an error.
-  bool AllowSameTimestamp(bool prev_is_keyframe,
-                          bool current_is_keyframe) const;
 
   // Returns true if the timestamps of |buffers| are monotonically increasing
   // since the previous append to the media segment, false otherwise.
@@ -298,6 +269,20 @@ class MEDIA_EXPORT SourceBufferStream {
   // NULL. After the range is removed, |*itr| is to the range after the one that
   // was removed or to |ranges_.end()| if the last range was removed.
   void DeleteAndRemoveRange(RangeList::iterator* itr);
+
+  // Helper function used by Remove() and PrepareRangesForNextAppend() to
+  // remove buffers and ranges between |start| and |end|.
+  // |is_exclusive| - If set to true, buffers with timestamps that
+  // match |start| are not removed. If set to false, buffers with
+  // timestamps that match |start| will be removed.
+  // |*deleted_buffers| - Filled with buffers for the current playback position
+  // if the removal range included the current playback position. These buffers
+  // can be used as candidates for placing in the |track_buffer_|.
+  void RemoveInternal(
+      base::TimeDelta start, base::TimeDelta end, bool is_exclusive,
+      BufferQueue* deleted_buffers);
+
+  bool is_video() const { return video_configs_.size() > 0; }
 
   // Callback used to report error strings that can help the web developer
   // figure out what is wrong with the content.
