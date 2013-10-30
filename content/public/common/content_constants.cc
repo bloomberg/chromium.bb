@@ -39,10 +39,6 @@ const int kStatsMaxCounters = 3000;
 
 const int kHistogramSynchronizerReservedSequenceNumber = 0;
 
-const char kGpuCompositingFieldTrialName[] = "ForceCompositingMode";
-const char kGpuCompositingFieldTrialForceCompositingEnabledName[] = "enabled";
-const char kGpuCompositingFieldTrialThreadEnabledName[] = "thread";
-
 const char kLowLatencyFlashAudioFieldTrialName[] = "LowLatencyFlashAudio";
 const char kLowLatencyFlashAudioFieldTrialEnabledName[] = "LowLatency";
 
