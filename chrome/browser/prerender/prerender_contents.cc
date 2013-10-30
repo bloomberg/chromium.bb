@@ -308,11 +308,6 @@ void PrerenderContents::StartPrerendering(
       this, content::NOTIFICATION_WEB_CONTENTS_RENDER_VIEW_HOST_CREATED,
       content::Source<WebContents>(prerender_contents_.get()));
 
-  // Register for redirect notifications sourced from |this|.
-  notification_registrar_.Add(
-      this, content::NOTIFICATION_RESOURCE_RECEIVED_REDIRECT,
-      content::Source<WebContents>(prerender_contents_.get()));
-
   // Transfer over the user agent override.
   prerender_contents_.get()->SetUserAgentOverride(
       prerender_manager_->config().user_agent_override);
@@ -394,25 +389,6 @@ void PrerenderContents::Observe(int type,
     case chrome::NOTIFICATION_APP_TERMINATING:
       Destroy(FINAL_STATUS_APP_TERMINATING);
       return;
-
-    case content::NOTIFICATION_RESOURCE_RECEIVED_REDIRECT: {
-      // RESOURCE_RECEIVED_REDIRECT can come for any resource on a page.
-      // If it's a redirect on the top-level resource, the name needs
-      // to be remembered for future matching, and if it redirects to
-      // an https resource, it needs to be canceled. If a subresource
-      // is redirected, nothing changes.
-      DCHECK_EQ(content::Source<WebContents>(source).ptr(),
-                prerender_contents_.get());
-      ResourceRedirectDetails* resource_redirect_details =
-          content::Details<ResourceRedirectDetails>(details).ptr();
-      CHECK(resource_redirect_details);
-      if (resource_redirect_details->resource_type ==
-          ResourceType::MAIN_FRAME) {
-        if (!AddAliasURL(resource_redirect_details->new_url))
-          return;
-      }
-      break;
-    }
 
     case content::NOTIFICATION_WEB_CONTENTS_RENDER_VIEW_HOST_CREATED: {
       if (prerender_contents_.get()) {
@@ -597,6 +573,17 @@ void PrerenderContents::DidFinishLoad(int64 frame_id,
                                       RenderViewHost* render_view_host) {
   if (is_main_frame)
     has_finished_loading_ = true;
+}
+
+void PrerenderContents::DidGetRedirectForResourceRequest(
+    const content::ResourceRedirectDetails& details) {
+  // DidGetRedirectForResourceRequest can come for any resource on a page.  If
+  // it's a redirect on the top-level resource, the name needs to be remembered
+  // for future matching, and if it redirects to an https resource, it needs to
+  // be canceled. If a subresource is redirected, nothing changes.
+  if (details.resource_type != ResourceType::MAIN_FRAME)
+    return;
+  AddAliasURL(details.new_url);
 }
 
 void PrerenderContents::Destroy(FinalStatus final_status) {

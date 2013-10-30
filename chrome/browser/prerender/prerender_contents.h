@@ -228,6 +228,8 @@ class PrerenderContents : public content::NotificationObserver,
       const GURL& validated_url,
       bool is_main_frame,
       content::RenderViewHost* render_view_host) OVERRIDE;
+  virtual void DidGetRedirectForResourceRequest(
+      const content::ResourceRedirectDetails& details) OVERRIDE;
   virtual void DidUpdateFaviconURL(int32 page_id,
       const std::vector<content::FaviconURL>& urls) OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
