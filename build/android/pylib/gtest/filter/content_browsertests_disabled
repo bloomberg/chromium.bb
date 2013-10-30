@@ -7,7 +7,6 @@ MediaTest.*
 MediaSourceTest.*
 WebGLConformanceTest.*
 MessagePortTest.Tests
-*EncryptedMediaTest.*
 CrossPlatformAccessibilityBrowserTest.*
 DatabaseTest.*
 ResourceDispatcherHostBrowserTest.SyncXMLHttpRequest_DuringUnload
