@@ -976,8 +976,6 @@
             'fetch/ShaderResource.h',
             'fetch/TextResourceDecoder.cpp',
             'fetch/TextResourceDecoder.h',
-            'fetch/TextTrackResource.cpp',
-            'fetch/TextTrackResource.h',
             'fetch/XSLStyleSheetResource.cpp',
             'fetch/XSLStyleSheetResource.h',
             'fetch/MemoryCache.cpp',

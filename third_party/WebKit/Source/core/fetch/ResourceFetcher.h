@@ -50,7 +50,6 @@ class ImageResource;
 class RawResource;
 class ScriptResource;
 class ShaderResource;
-class TextTrackResource;
 class XSLStyleSheetResource;
 class Document;
 class DocumentLoader;
@@ -92,7 +91,6 @@ public:
     ResourcePtr<DocumentResource> fetchSVGDocument(FetchRequest&);
     ResourcePtr<XSLStyleSheetResource> fetchXSLStyleSheet(FetchRequest&);
     ResourcePtr<Resource> fetchLinkResource(Resource::Type, FetchRequest&);
-    ResourcePtr<TextTrackResource> fetchTextTrack(FetchRequest&);
     ResourcePtr<ShaderResource> fetchShader(FetchRequest&);
     ResourcePtr<RawResource> fetchImport(FetchRequest&);
 

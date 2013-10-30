@@ -32,7 +32,6 @@
 #include "core/fetch/CrossOriginAccessControl.h"
 #include "core/fetch/FetchRequest.h"
 #include "core/fetch/ResourceFetcher.h"
-#include "core/fetch/TextTrackResource.h"
 #include "core/html/track/WebVTTParser.h"
 #include "platform/Logging.h"
 #include "platform/SharedBuffer.h"
@@ -138,7 +137,7 @@ bool TextTrackLoader::load(const KURL& url, const String& crossOriginMode)
     }
 
     ResourceFetcher* fetcher = m_document.fetcher();
-    m_resource = fetcher->fetchTextTrack(cueRequest);
+    m_resource = fetcher->fetchRawResource(cueRequest);
     if (m_resource)
         m_resource->addClient(this);
 

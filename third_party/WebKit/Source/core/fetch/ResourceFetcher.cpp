@@ -42,7 +42,6 @@
 #include "core/fetch/ResourceLoaderSet.h"
 #include "core/fetch/ScriptResource.h"
 #include "core/fetch/ShaderResource.h"
-#include "core/fetch/TextTrackResource.h"
 #include "core/fetch/XSLStyleSheetResource.h"
 #include "core/html/HTMLElement.h"
 #include "core/html/HTMLFrameOwnerElement.h"
@@ -86,8 +85,9 @@ static Resource* createResource(Resource::Type type, const ResourceRequest& requ
         return new DocumentResource(request, Resource::SVGDocument);
     case Resource::Font:
         return new FontResource(request);
-    case Resource::Raw:
     case Resource::MainResource:
+    case Resource::Raw:
+    case Resource::TextTrack:
         return new RawResource(request, type);
     case Resource::XSLStyleSheet:
         return new XSLStyleSheetResource(request);
@@ -95,8 +95,6 @@ static Resource* createResource(Resource::Type type, const ResourceRequest& requ
         return new Resource(request, Resource::LinkPrefetch);
     case Resource::LinkSubresource:
         return new Resource(request, Resource::LinkSubresource);
-    case Resource::TextTrack:
-        return new TextTrackResource(request);
     case Resource::Shader:
         return new ShaderResource(request);
     case Resource::ImportResource:
@@ -308,11 +306,6 @@ void ResourceFetcher::preCacheDataURIImage(const FetchRequest& request)
 ResourcePtr<FontResource> ResourceFetcher::fetchFont(FetchRequest& request)
 {
     return static_cast<FontResource*>(requestResource(Resource::Font, request).get());
-}
-
-ResourcePtr<TextTrackResource> ResourceFetcher::fetchTextTrack(FetchRequest& request)
-{
-    return static_cast<TextTrackResource*>(requestResource(Resource::TextTrack, request).get());
 }
 
 ResourcePtr<ShaderResource> ResourceFetcher::fetchShader(FetchRequest& request)
