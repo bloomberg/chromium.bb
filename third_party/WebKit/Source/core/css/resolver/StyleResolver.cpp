@@ -1162,18 +1162,33 @@ void StyleResolver::updateFont(StyleResolverState& state)
     state.fontBuilder().createFont(m_fontSelector, state.parentStyle(), state.style());
 }
 
-PassRefPtr<CSSRuleList> StyleResolver::styleRulesForElement(Element* element, unsigned rulesToInclude, ShouldIncludeStyleSheetInCSSOMWrapper includeDocument)
-{
-    return pseudoStyleRulesForElement(element, NOPSEUDO, rulesToInclude, includeDocument);
-}
-
-PassRefPtr<CSSRuleList> StyleResolver::pseudoStyleRulesForElement(Element* element, PseudoId pseudoId, unsigned rulesToInclude, ShouldIncludeStyleSheetInCSSOMWrapper includeDocument)
+PassRefPtr<StyleRuleList> StyleResolver::styleRulesForElement(Element* element, unsigned rulesToInclude)
 {
     ASSERT(element);
     StyleResolverState state(document(), element);
+    ElementRuleCollector collector(state.elementContext(), m_selectorFilter, state.style());
+    collector.setMode(SelectorChecker::CollectingStyleRules);
+    collectPseudoRulesForElement(element, collector, NOPSEUDO, rulesToInclude);
+    return collector.matchedStyleRuleList();
+}
 
+PassRefPtr<CSSRuleList> StyleResolver::pseudoCSSRulesForElement(Element* element, PseudoId pseudoId, unsigned rulesToInclude, ShouldIncludeStyleSheetInCSSOMWrapper includeDocument)
+{
+    ASSERT(element);
+    StyleResolverState state(document(), element);
     ElementRuleCollector collector(state.elementContext(), m_selectorFilter, state.style(), includeDocument);
-    collector.setMode(SelectorChecker::CollectingRules);
+    collector.setMode(SelectorChecker::CollectingCSSRules);
+    collectPseudoRulesForElement(element, collector, pseudoId, rulesToInclude);
+    return collector.matchedCSSRuleList();
+}
+
+PassRefPtr<CSSRuleList> StyleResolver::cssRulesForElement(Element* element, unsigned rulesToInclude, ShouldIncludeStyleSheetInCSSOMWrapper includeDocument)
+{
+    return pseudoCSSRulesForElement(element, NOPSEUDO, rulesToInclude, includeDocument);
+}
+
+void StyleResolver::collectPseudoRulesForElement(Element* element, ElementRuleCollector& collector, PseudoId pseudoId, unsigned rulesToInclude)
+{
     collector.setPseudoStyleRequest(PseudoStyleRequest(pseudoId));
 
     if (rulesToInclude & UAAndUserCSSRules) {
@@ -1189,10 +1204,8 @@ PassRefPtr<CSSRuleList> StyleResolver::pseudoStyleRulesForElement(Element* eleme
         collector.setSameOriginOnly(!(rulesToInclude & CrossOriginCSSRules));
 
         // Check the rules in author sheets.
-        matchAuthorRules(state.element(), collector, rulesToInclude & EmptyCSSRules);
+        matchAuthorRules(element, collector, rulesToInclude & EmptyCSSRules);
     }
-
-    return collector.matchedRuleList();
 }
 
 // -------------------------------------------------------------------------------------

@@ -70,6 +70,12 @@ private:
     uint32_t m_position;
 };
 
+class StyleRuleList : public RefCounted<StyleRuleList> {
+public:
+    static PassRefPtr<StyleRuleList> create() { return adoptRef(new StyleRuleList()); }
+    Vector<StyleRule*> m_list;
+};
+
 // ElementRuleCollector is designed to be used as a stack object.
 // Create one, ask what rules the ElementResolveContext matches
 // and then let it go out of scope.
@@ -92,7 +98,8 @@ public:
     bool hasAnyMatchingRules(RuleSet*);
 
     MatchResult& matchedResult();
-    PassRefPtr<CSSRuleList> matchedRuleList();
+    PassRefPtr<StyleRuleList> matchedStyleRuleList();
+    PassRefPtr<CSSRuleList> matchedCSSRuleList();
 
     void collectMatchingRules(const MatchRequest&, RuleRange&, SelectorChecker::BehaviorAtBoundary = SelectorChecker::DoesNotCrossBoundary, CascadeScope = ignoreCascadeScope, CascadeOrder = ignoreCascadeOrder);
     void collectMatchingRulesForRegion(const MatchRequest&, RuleRange&, SelectorChecker::BehaviorAtBoundary = SelectorChecker::DoesNotCrossBoundary, CascadeScope = ignoreCascadeScope, CascadeOrder = ignoreCascadeOrder);
@@ -116,6 +123,7 @@ private:
     void addMatchedRule(const RuleData*, CascadeScope, CascadeOrder);
 
     StaticCSSRuleList* ensureRuleList();
+    StyleRuleList* ensureStyleRuleList();
 
 private:
     const ElementResolveContext& m_context;
@@ -133,7 +141,8 @@ private:
     OwnPtr<Vector<MatchedRule, 32> > m_matchedRules;
 
     // Output.
-    RefPtr<StaticCSSRuleList> m_ruleList;
+    RefPtr<StaticCSSRuleList> m_cssRuleList;
+    RefPtr<StyleRuleList> m_styleRuleList;
     MatchResult m_result;
 };
 
