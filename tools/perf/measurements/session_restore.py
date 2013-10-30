@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 from measurements import startup
+from metrics import cpu
 from metrics import startup_metric
 
 
@@ -17,6 +18,7 @@ class SessionRestore(startup.Startup):
   def __init__(self):
     super(SessionRestore, self).__init__()
     self.close_tabs_before_run = False
+    self._cpu_metric = None
 
   def CustomizeBrowserOptions(self, options):
     super(SessionRestore, self).CustomizeBrowserOptions(options)
@@ -42,11 +44,19 @@ class SessionRestore(startup.Startup):
       raise Exception("Invalid pageset: more than 1 WPR archive found.: " +
           ', '.join(wpr_archives.keys()))
 
+  def WillStartBrowser(self, browser):
+    self._cpu_metric = cpu.CpuMetric(browser)
+    self._cpu_metric.Start(None, None)
+
   def MeasurePage(self, page, tab, results):
     # Wait for all tabs to finish loading.
     for i in xrange(len(tab.browser.tabs)):
       t = tab.browser.tabs[i]
       t.WaitForDocumentReadyStateToBeComplete()
+
+    # Record CPU usage from browser start to when all pages have loaded.
+    self._cpu_metric.Stop(None, None)
+    self._cpu_metric.AddResults(tab, results, 'cpu_utilization')
 
     startup_metric.StartupMetric().AddResults(tab, results)
 
