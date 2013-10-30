@@ -441,4 +441,9 @@ void WebRuntimeFeatures::enableSharedWorker(bool enable)
     RuntimeEnabledFeatures::setSharedWorkerEnabled(enable);
 }
 
+void WebRuntimeFeatures::enableRepaintAfterLayout(bool enable)
+{
+    RuntimeEnabledFeatures::setRepaintAfterLayoutEnabled(enable);
+}
+
 } // namespace WebKit

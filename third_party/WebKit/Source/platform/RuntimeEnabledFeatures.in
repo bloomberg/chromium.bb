@@ -85,6 +85,11 @@ PointerEventsMaxTouchPoints status=experimental
 Quota status=stable
 OverlayScrollbars
 RegionBasedColumns status=experimental
+
+// This is implementation flag for the re-write of the layout/paint system to
+// do painting after we have completed layout, instead of piecemeal during layout.
+RepaintAfterLayout
+
 RequestAutocomplete status=test
 RowSpanLogicalHeightSpreading status=stable
 ScriptedSpeech status=stable

@@ -161,6 +161,8 @@ public:
 
     BLINK_EXPORT static void enableSharedWorker(bool);
 
+    BLINK_EXPORT static void enableRepaintAfterLayout(bool);
+
 private:
     WebRuntimeFeatures();
 };
