@@ -666,10 +666,6 @@ class EVENTS_EXPORT GestureEvent : public LocatedEvent {
   // gesture. If there are no touches associated with this gesture, returns -1.
   int GetLowestTouchId() const;
 
-  unsigned int touch_ids_bitfield() const {
-    return touch_ids_bitfield_;
-  }
-
  private:
   GestureEventDetails details_;
 

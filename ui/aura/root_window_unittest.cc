@@ -966,7 +966,8 @@ TEST_F(RootWindowTest, RepostTapdownGestureTest) {
       0);
   root_window()->RepostEvent(event);
   RunAllPendingInMessageLoop();
-  EXPECT_TRUE(EventTypesToString(filter->events()).find("GESTURE_TAP_DOWN") !=
+  // TODO(rbyers): Currently disabled - crbug.com/170987
+  EXPECT_FALSE(EventTypesToString(filter->events()).find("GESTURE_TAP_DOWN") !=
               std::string::npos);
   filter->events().clear();
 }
@@ -1019,7 +1020,9 @@ class RepostGestureEventRecorder : public EventFilterRecorder {
 // be received after the reposted gesture event.
 TEST_F(RootWindowTest, GestureRepostEventOrder) {
   // Expected events at the end for the repost_target window defined below.
-  const char kExpectedTargetEvents[] = "GESTURE_BEGIN GESTURE_TAP_DOWN "
+  const char kExpectedTargetEvents[] =
+    // TODO)(rbyers): Gesture event reposting is disabled - crbug.com/279039.
+    // "GESTURE_BEGIN GESTURE_TAP_DOWN "
     "TOUCH_RELEASED TOUCH_PRESSED GESTURE_BEGIN GESTURE_TAP_DOWN TOUCH_MOVED "
     " GESTURE_SCROLL_BEGIN GESTURE_SCROLL_UPDATE TOUCH_MOVED "
     "GESTURE_SCROLL_UPDATE TOUCH_MOVED GESTURE_SCROLL_UPDATE TOUCH_RELEASED "
@@ -1063,7 +1066,8 @@ TEST_F(RootWindowTest, GestureRepostEventOrder) {
 
   // We expect two tap down events. One from the repost and the other one from
   // the scroll sequence posted above.
-  EXPECT_EQ(tap_down_count, 2);
+  // TODO(rbyers): Currently disabled - crbug.com/170987
+  EXPECT_EQ(1, tap_down_count);
 
   EXPECT_EQ(kExpectedTargetEvents,
             EventTypesToString(repost_event_recorder->events()));
