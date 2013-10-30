@@ -318,6 +318,7 @@ void WebDevToolsAgentImpl::overrideDeviceMetrics(int width, int height, float de
 {
     if (!width && !height) {
         if (m_deviceMetricsEnabled) {
+            m_webViewImpl->setBackgroundColorOverride(Color::transparent);
             RuntimeEnabledFeatures::setOverlayScrollbarsEnabled(m_isOverlayScrollbarsEnabled);
 
             RuntimeEnabledFeatures::setCSSViewportEnabled(m_isCSSViewportEnabled);
@@ -330,6 +331,7 @@ void WebDevToolsAgentImpl::overrideDeviceMetrics(int width, int height, float de
         m_deviceMetricsEnabled = false;
     } else {
         if (!m_deviceMetricsEnabled) {
+            m_webViewImpl->setBackgroundColorOverride(Color::darkGray);
             m_isOverlayScrollbarsEnabled = RuntimeEnabledFeatures::overlayScrollbarsEnabled();
             RuntimeEnabledFeatures::setOverlayScrollbarsEnabled(true);
 

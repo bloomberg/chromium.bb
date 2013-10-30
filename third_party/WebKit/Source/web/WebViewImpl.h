@@ -314,6 +314,7 @@ public:
     void invalidateRect(const WebCore::IntRect&);
 
     void setIgnoreInputEvents(bool newValue);
+    void setBackgroundColorOverride(WebColor);
     WebDevToolsAgentPrivate* devToolsAgentPrivate() { return m_devToolsAgent.get(); }
 
     WebCore::Color baseBackgroundColor() const { return m_baseBackgroundColor; }
@@ -614,6 +615,7 @@ private:
     void doPixelReadbackToCanvas(WebCanvas*, const WebCore::IntRect&);
     void reallocateRenderer();
     void updateLayerTreeViewport();
+    void updateLayerTreeBackgroundColor();
     void updateRootLayerTransform();
     void updateLayerTreeDeviceScaleFactor();
 
@@ -806,6 +808,7 @@ private:
     bool m_continuousPaintingEnabled;
     bool m_showScrollBottleneckRects;
     WebColor m_baseBackgroundColor;
+    WebColor m_backgroundColorOverride;
 
     WebCore::Timer<WebViewImpl> m_helperPluginCloseTimer;
     Vector<RefPtr<WebHelperPluginImpl> > m_helperPluginsPendingClose;

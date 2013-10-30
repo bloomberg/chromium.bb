@@ -442,6 +442,7 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
     , m_continuousPaintingEnabled(false)
     , m_showScrollBottleneckRects(false)
     , m_baseBackgroundColor(Color::white)
+    , m_backgroundColorOverride(Color::transparent)
     , m_helperPluginCloseTimer(this, &WebViewImpl::closePendingHelperPlugins)
 {
     Page::PageClients pageClients;
@@ -1812,8 +1813,7 @@ void WebViewImpl::layout()
 {
     TRACE_EVENT0("webkit", "WebViewImpl::layout");
     PageWidgetDelegate::layout(m_page.get());
-    if (m_layerTreeView)
-        m_layerTreeView->setBackgroundColor(backgroundColor());
+    updateLayerTreeBackgroundColor();
 
     for (size_t i = 0; i < m_linkHighlights.size(); ++i)
         m_linkHighlights[i]->updateGeometry();
@@ -3539,8 +3539,7 @@ void WebViewImpl::setBaseBackgroundColor(WebColor color)
     if (m_page->mainFrame())
         m_page->mainFrame()->view()->setBaseBackgroundColor(color);
 
-    if (m_layerTreeView)
-        m_layerTreeView->setBackgroundColor(backgroundColor());
+    updateLayerTreeBackgroundColor();
 }
 
 void WebViewImpl::setIsActive(bool active)
@@ -3665,6 +3664,12 @@ void WebViewImpl::setIgnoreInputEvents(bool newValue)
 {
     ASSERT(m_ignoreInputEvents != newValue);
     m_ignoreInputEvents = newValue;
+}
+
+void WebViewImpl::setBackgroundColorOverride(WebColor color)
+{
+    m_backgroundColorOverride = color;
+    updateLayerTreeBackgroundColor();
 }
 
 void WebViewImpl::addPageOverlay(WebPageOverlay* overlay, int zOrder)
@@ -3903,7 +3908,7 @@ void WebViewImpl::setIsAcceleratedCompositingActive(bool active)
             m_layerTreeView->setVisible(visible);
             updateLayerTreeDeviceScaleFactor();
             m_layerTreeView->setPageScaleFactorAndLimits(pageScaleFactor(), minimumPageScaleFactor(), maximumPageScaleFactor());
-            m_layerTreeView->setBackgroundColor(backgroundColor());
+            updateLayerTreeBackgroundColor();
             m_layerTreeView->setHasTransparentBackground(isTransparent());
 #if USE(RUBBER_BANDING)
             RefPtr<Image> overhangImage = OverscrollTheme::theme()->getOverhangImage();
@@ -3989,6 +3994,14 @@ void WebViewImpl::updateLayerTreeViewport()
         return;
 
     m_layerTreeView->setPageScaleFactorAndLimits(pageScaleFactor(), minimumPageScaleFactor(), maximumPageScaleFactor());
+}
+
+void WebViewImpl::updateLayerTreeBackgroundColor()
+{
+    if (!m_layerTreeView)
+        return;
+
+    m_layerTreeView->setBackgroundColor(m_backgroundColorOverride != Color::transparent ? m_backgroundColorOverride : backgroundColor());
 }
 
 void WebViewImpl::updateLayerTreeDeviceScaleFactor()
