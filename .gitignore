@@ -21,7 +21,7 @@
 
 # Ignore locations where third-party tools are placed during bootstrapping.
 /python_bin
-/python_274
+/python275_bin
 /git_bin
 /git-1.8.0_bin
 /svn_bin
