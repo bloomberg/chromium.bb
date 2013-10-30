@@ -31,6 +31,9 @@ namespace {
 // The maximum opacity of the drag phantom window.
 const float kMaxOpacity = 0.8f;
 
+// The opacity of the window when dragging it over a user item in the tray.
+const float kOpacityWhenDraggedOverUserIcon = 0.4f;
+
 // Returns true if Ash has more than one root window.
 bool HasSecondaryRootWindow() {
   return Shell::GetAllRootWindows().size() > 1;
@@ -80,11 +83,12 @@ void DragWindowResizer::Drag(const gfx::Point& location, int event_flags) {
   base::WeakPtr<DragWindowResizer> resizer(weak_ptr_factory_.GetWeakPtr());
 
   // If we are on top of a window to desktop transfer button, we move the window
-  // temporarily back to where it was initially (showing that we do something).
-  gfx::Point filtered_location = GetTrayUserItemAtPoint(location) ?
-      details_.initial_location_in_parent : location;
+  // temporarily back to where it was initially and make it semi-transparent.
+  GetTarget()->layer()->SetOpacity(
+      GetTrayUserItemAtPoint(location) ? kOpacityWhenDraggedOverUserIcon :
+                                         details_.initial_opacity);
 
-  next_window_resizer_->Drag(filtered_location, event_flags);
+  next_window_resizer_->Drag(location, event_flags);
 
   if (!resizer)
     return;
@@ -260,6 +264,7 @@ bool DragWindowResizer::TryDraggingToNewUser() {
   // it's thing and return the transparency to its original value.
   int old_opacity = GetTarget()->layer()->opacity();
   GetTarget()->layer()->SetOpacity(0);
+  GetTarget()->SetBounds(details_.initial_bounds_in_parent);
   if (!tray_user->TransferWindowToUser(details_.window)) {
     GetTarget()->layer()->SetOpacity(old_opacity);
     return false;

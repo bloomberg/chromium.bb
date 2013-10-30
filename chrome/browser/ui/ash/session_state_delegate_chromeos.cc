@@ -169,7 +169,7 @@ void SessionStateDelegateChromeos::RemoveSessionStateObserver(
 
 bool SessionStateDelegateChromeos::TransferWindowToDesktopOfUser(
     aura::Window* window,
-    ash::MultiProfileIndex index) const {
+    ash::MultiProfileIndex index) {
   chrome::MultiUserWindowManager* window_manager =
       chrome::MultiUserWindowManager::GetInstance();
   if (!window_manager || window_manager->GetWindowOwner(window).empty())

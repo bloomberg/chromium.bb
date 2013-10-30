@@ -674,6 +674,11 @@ views::View* SystemTray::GetTrayItemViewForTest(SystemTrayItem* item) {
   return it == tray_item_map_.end() ? NULL : it->second;
 }
 
+void SystemTray::AddTrayUserItemForTest(internal::TrayUser* tray_user) {
+  AddTrayItem(tray_user);
+  user_items_.push_back(tray_user);
+}
+
 bool SystemTray::PerformAction(const ui::Event& event) {
   // If we're already showing the default view, hide it; otherwise, show it
   // (and hide any popup that's currently shown).

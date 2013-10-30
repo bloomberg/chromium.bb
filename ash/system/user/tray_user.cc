@@ -1148,7 +1148,7 @@ bool TrayUser::CanDropWindowHereToTransferToUser(
 }
 
 bool TrayUser::TransferWindowToUser(aura::Window* window) {
-  const SessionStateDelegate* session_state_delegate =
+  SessionStateDelegate* session_state_delegate =
       ash::Shell::GetInstance()->session_state_delegate();
   return session_state_delegate->TransferWindowToDesktopOfUser(window,
                                                                GetTrayIndex());

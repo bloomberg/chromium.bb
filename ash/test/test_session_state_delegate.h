@@ -48,7 +48,7 @@ class TestSessionStateDelegate : public SessionStateDelegate {
       ash::SessionStateObserver* observer) OVERRIDE;
   virtual bool TransferWindowToDesktopOfUser(
       aura::Window* window,
-      ash::MultiProfileIndex index) const OVERRIDE;
+      ash::MultiProfileIndex index) OVERRIDE;
 
   // TODO(oshima): Use state machine instead of using boolean variables.
 
@@ -75,6 +75,11 @@ class TestSessionStateDelegate : public SessionStateDelegate {
   // Updates the internal state that indicates whether user adding screen is
   // running now.
   void SetUserAddingScreenRunning(bool user_adding_screen_running);
+
+  // Returns the number of calls to TransferWindowToDesktopOfUser.
+  int num_transfer_to_desktop_of_user_calls() {
+    return num_transfer_to_desktop_of_user_calls_;
+  }
 
  private:
   // Whether a session is in progress and there is an active user.
@@ -106,6 +111,9 @@ class TestSessionStateDelegate : public SessionStateDelegate {
 
   // A test user image.
   gfx::ImageSkia null_image_;
+
+  // The number of calls which happened to TransferWindowToDesktopOfUser.
+  int num_transfer_to_desktop_of_user_calls_;
 
   DISALLOW_COPY_AND_ASSIGN(TestSessionStateDelegate);
 };

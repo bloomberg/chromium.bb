@@ -109,7 +109,7 @@ class ASH_EXPORT SessionStateDelegate {
   // is therefore shown on the desktop of every user.
   virtual bool TransferWindowToDesktopOfUser(
       aura::Window* window,
-      ash::MultiProfileIndex index) const = 0;
+      ash::MultiProfileIndex index) = 0;
 };
 
 }  // namespace ash

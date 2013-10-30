@@ -34,7 +34,8 @@ TestSessionStateDelegate::TestSessionStateDelegate()
       should_lock_screen_before_suspending_(false),
       screen_locked_(false),
       user_adding_screen_running_(false),
-      logged_in_users_(1) {
+      logged_in_users_(1),
+      num_transfer_to_desktop_of_user_calls_(0) {
 }
 
 TestSessionStateDelegate::~TestSessionStateDelegate() {
@@ -160,7 +161,8 @@ void TestSessionStateDelegate::RemoveSessionStateObserver(
 
 bool TestSessionStateDelegate::TransferWindowToDesktopOfUser(
     aura::Window* window,
-    ash::MultiProfileIndex index) const {
+    ash::MultiProfileIndex index) {
+  num_transfer_to_desktop_of_user_calls_++;
   return false;
 }
 

@@ -103,7 +103,7 @@ void SessionStateDelegate::RemoveSessionStateObserver(
 
 bool SessionStateDelegate::TransferWindowToDesktopOfUser(
     aura::Window* window,
-    ash::MultiProfileIndex index) const {
+    ash::MultiProfileIndex index) {
   NOTIMPLEMENTED();
   return false;
 }
