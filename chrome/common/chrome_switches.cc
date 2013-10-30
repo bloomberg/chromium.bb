@@ -699,6 +699,9 @@ const char kDisablePnaclInstall[]           = "disable-pnacl-install";
 // are likely to be needed in future page fetches.
 const char kEnablePrecache[]                = "enable-precache";
 
+// Enable Privet local printing.
+const char kEnablePrivetLocalPrinting[]     = "enable-privet-local-printing";
+
 // Enables tracking of tasks in profiler for viewing via about:profiler.
 // To predominantly disable tracking (profiling), use the command line switch:
 // --enable-profiling=0

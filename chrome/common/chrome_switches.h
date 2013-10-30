@@ -201,6 +201,7 @@ extern const char kEnablePasswordAutofillPublicSuffixDomainMatching[];
 extern const char kEnablePasswordManagerReauthentication[];
 extern const char kEnablePeopleSearch[];
 extern const char kEnablePrecache[];
+extern const char kEnablePrivetLocalPrinting[];
 extern const char kEnableProfiling[];
 extern const char kEnableQuic[];
 extern const char kEnableQuicHttps[];

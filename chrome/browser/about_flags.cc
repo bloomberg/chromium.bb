@@ -1573,6 +1573,13 @@ const Experiment kExperiments[] = {
     ENABLE_DISABLE_VALUE_TYPE(switches::kEnableDeviceDiscoveryNotifications,
                               switches::kDisableDeviceDiscoveryNotifications)
   },
+  {
+    "enable-privet-local-printing",
+    IDS_FLAGS_ENABLE_PRIVET_LOCAL_PRINTING_NAME,
+    IDS_FLAGS_ENABLE_PRIVET_LOCAL_PRINTING_DESCRIPTION,
+    kOsWin | kOsLinux | kOsCrOS,
+    SINGLE_VALUE_TYPE(switches::kEnablePrivetLocalPrinting)
+  },
 #endif  // ENABLE_MDNS
 #if defined(OS_MACOSX)
   {
