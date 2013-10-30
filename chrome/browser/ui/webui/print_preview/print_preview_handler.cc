@@ -691,8 +691,8 @@ void PrintPreviewHandler::HandlePrint(const ListValue* args) {
     // The PDF being printed contains only the pages that the user selected,
     // so ignore the page range and print all pages.
     settings->Remove(printing::kSettingPageRange, NULL);
-    // Remove selection only flag for the same reason.
-    settings->Remove(printing::kSettingShouldPrintSelectionOnly, NULL);
+    // Reset selection only flag for the same reason.
+    settings->SetBoolean(printing::kSettingShouldPrintSelectionOnly, false);
 
 #if defined(USE_CUPS)
     ConvertColorSettingToCUPSColorModel(settings.get());
