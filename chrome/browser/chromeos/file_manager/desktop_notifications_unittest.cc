@@ -9,236 +9,417 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "grit/generated_resources.h"
-#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
-
-using ::testing::_;
-using ::testing::InSequence;
-using ::testing::StrEq;
 
 namespace file_manager {
 
 namespace {
 
-class MockFileManagerNotificationsOnMount : public DesktopNotifications {
+// This class records parameters for functions to show and hide
+// notifications.
+class RecordedDesktopNotifications : public DesktopNotifications {
  public:
-  explicit MockFileManagerNotificationsOnMount(Profile* profile)
+  explicit RecordedDesktopNotifications(Profile* profile)
       : DesktopNotifications(profile) {
   }
 
-  virtual ~MockFileManagerNotificationsOnMount() {}
+  virtual ~RecordedDesktopNotifications() {}
 
-  MOCK_METHOD3(ShowNotificationWithMessage,
-               void(NotificationType, const std::string&, const string16&));
-  MOCK_METHOD2(HideNotification, void(NotificationType, const std::string&));
+  virtual void ShowNotificationWithMessage(
+      NotificationType type,
+      const std::string& path,
+      const string16& message)  OVERRIDE {
+    ShowAndHideParams params;
+    params.event = SHOW;
+    params.type = type;
+    params.path = path;
+    params.message = message;
+    params_.push_back(params);
+  }
+
+  virtual void HideNotification(NotificationType type,
+                                const std::string& path) OVERRIDE {
+    ShowAndHideParams params;
+    params.event = HIDE;
+    params.type = type;
+    params.path = path;
+    params_.push_back(params);
+  }
+
+  enum Event {
+    SHOW,
+    HIDE,
+  };
+
+  // Used to record parameters passed to ShowNotificationWithMessage() and
+  // HideNotification().
+  struct ShowAndHideParams {
+    Event event;
+    NotificationType type;
+    std::string path;
+    string16 message;  // Empty for HideNotification().
+  };
+
+  // Returns parameters passed to ShowNotificationWithMessage() and
+  // HideNotificationParams().
+  const std::vector<ShowAndHideParams>& params() const {
+    return params_;
+  }
+
+ private:
+  std::vector<ShowAndHideParams> params_;
 };
-
-MATCHER_P2(String16Equals, id, label, "") {
-  return arg == l10n_util::GetStringFUTF16(id, UTF8ToUTF16(label));
-}
 
 }  // namespace
 
 TEST(FileManagerMountNotificationsTest, GoodDevice) {
-  MockFileManagerNotificationsOnMount* mocked_notifications =
-      new MockFileManagerNotificationsOnMount(NULL);
-  scoped_ptr<DesktopNotifications> notifications(mocked_notifications);
+  RecordedDesktopNotifications notifications(NULL);
 
   std::string notification_path("system_path_prefix");
   std::string device_label("label");
 
-  notifications->RegisterDevice(notification_path);
+  notifications.RegisterDevice(notification_path);
 
-  EXPECT_CALL(*mocked_notifications, HideNotification(
-              DesktopNotifications::DEVICE, StrEq(notification_path)));
-
-  notifications->ManageNotificationsOnMountCompleted(notification_path,
-      device_label, true, true, false);
+  notifications.ManageNotificationsOnMountCompleted(
+      notification_path,
+      device_label,
+      true  /* is_parent */,
+      true  /* success */,
+      false  /* is_unsupported */);
+  // Should hide a DEVICE notification.
+  ASSERT_EQ(1U, notifications.params().size());
+  EXPECT_EQ(RecordedDesktopNotifications::HIDE,
+            notifications.params()[0].event);
+  EXPECT_EQ(DesktopNotifications::DEVICE, notifications.params()[0].type);
+  EXPECT_EQ(notification_path, notifications.params()[0].path);
 };
 
 TEST(FileManagerMountNotificationsTest, GoodDeviceWithBadParent) {
-  MockFileManagerNotificationsOnMount* mocked_notifications =
-      new MockFileManagerNotificationsOnMount(NULL);
-  scoped_ptr<DesktopNotifications> notifications(mocked_notifications);
+  RecordedDesktopNotifications notifications(NULL);
 
   std::string notification_path("system_path_prefix");
   std::string device_label("label");
 
-  notifications->RegisterDevice(notification_path);
+  notifications.RegisterDevice(notification_path);
 
-  EXPECT_CALL(*mocked_notifications, HideNotification(
-              DesktopNotifications::DEVICE, StrEq(notification_path)));
+  notifications.ManageNotificationsOnMountCompleted(
+      notification_path,
+      device_label,
+      true  /* is_parent */,
+      false  /* success */,
+      false  /* is_unsupported */);
+  ASSERT_EQ(2U, notifications.params().size());
+  // Should hide DEVICE notification.
+  EXPECT_EQ(RecordedDesktopNotifications::HIDE,
+            notifications.params()[0].event);
+  EXPECT_EQ(DesktopNotifications::DEVICE, notifications.params()[0].type);
+  EXPECT_EQ(notification_path, notifications.params()[0].path);
+  // Should show a DEVICE_FAIL notification.
+  EXPECT_EQ(RecordedDesktopNotifications::SHOW,
+            notifications.params()[1].event);
+  EXPECT_EQ(DesktopNotifications::DEVICE_FAIL,
+            notifications.params()[1].type);
+  EXPECT_EQ(notification_path, notifications.params()[0].path);
 
-  {
-    InSequence s;
+  notifications.ManageNotificationsOnMountCompleted(
+      notification_path,
+      device_label,
+      false  /* is_parent */,
+      true  /* success */,
+      false  /* is_unsupported */);
+  ASSERT_EQ(3U, notifications.params().size());
+  // Should hide a DEVICE_FAIL notification.
+  EXPECT_EQ(RecordedDesktopNotifications::HIDE,
+            notifications.params()[2].event);
+  EXPECT_EQ(DesktopNotifications::DEVICE_FAIL,
+            notifications.params()[2].type);
+  EXPECT_EQ(notification_path, notifications.params()[2].path);
 
-    EXPECT_CALL(*mocked_notifications, ShowNotificationWithMessage(
-        DesktopNotifications::DEVICE_FAIL, StrEq(notification_path), _));
-    EXPECT_CALL(*mocked_notifications, HideNotification(
-        DesktopNotifications::DEVICE_FAIL,
-        StrEq(notification_path)));
-  }
-
-  notifications->ManageNotificationsOnMountCompleted(notification_path,
-      device_label, true, false, false);
-  notifications->ManageNotificationsOnMountCompleted(notification_path,
-      device_label, false, true, false);
-  notifications->ManageNotificationsOnMountCompleted(notification_path,
-      device_label, false, true, false);
+  notifications.ManageNotificationsOnMountCompleted(
+      notification_path,
+      device_label,
+      false  /* is_parent */,
+      true  /* success */,
+      false  /* is_unsupported */);
+  // Should do nothing this time.
+  ASSERT_EQ(3U, notifications.params().size());
 }
 
 TEST(FileManagerMountNotificationsTest, UnsupportedDevice) {
-  MockFileManagerNotificationsOnMount* mocked_notifications =
-      new MockFileManagerNotificationsOnMount(NULL);
-  scoped_ptr<DesktopNotifications> notifications(mocked_notifications);
+  RecordedDesktopNotifications notifications(NULL);
 
   std::string notification_path("system_path_prefix");
   std::string device_label("label");
 
-  notifications->RegisterDevice(notification_path);
+  notifications.RegisterDevice(notification_path);
 
-  EXPECT_CALL(*mocked_notifications, HideNotification(
-              DesktopNotifications::DEVICE, StrEq(notification_path)));
-  EXPECT_CALL(*mocked_notifications, ShowNotificationWithMessage(
-      DesktopNotifications::DEVICE_FAIL, StrEq(notification_path),
-      String16Equals(IDS_DEVICE_UNSUPPORTED_MESSAGE, device_label)));
-
-  notifications->ManageNotificationsOnMountCompleted(notification_path,
-      device_label, false, false, true);
+  notifications.ManageNotificationsOnMountCompleted(
+      notification_path,
+      device_label,
+      false  /* is_parent */,
+      false  /* success */,
+      true  /* is_unsupported */);
+  ASSERT_EQ(2U, notifications.params().size());
+  // Should hide DEVICE notification.
+  EXPECT_EQ(RecordedDesktopNotifications::HIDE,
+            notifications.params()[0].event);
+  EXPECT_EQ(DesktopNotifications::DEVICE, notifications.params()[0].type);
+  EXPECT_EQ(notification_path, notifications.params()[0].path);
+  // And should show a DEVICE_FAIL notification.
+  EXPECT_EQ(RecordedDesktopNotifications::SHOW,
+            notifications.params()[1].event);
+  EXPECT_EQ(DesktopNotifications::DEVICE_FAIL,
+            notifications.params()[1].type);
+  EXPECT_EQ(notification_path, notifications.params()[1].path);
+  EXPECT_EQ(
+      l10n_util::GetStringFUTF16(IDS_DEVICE_UNSUPPORTED_MESSAGE,
+                                 UTF8ToUTF16(device_label)),
+      notifications.params()[1].message);
 }
 
 TEST(FileManagerMountNotificationsTest, UnsupportedWithUnknownParent) {
-  MockFileManagerNotificationsOnMount* mocked_notifications =
-      new MockFileManagerNotificationsOnMount(NULL);
-  scoped_ptr<DesktopNotifications> notifications(mocked_notifications);
+  RecordedDesktopNotifications notifications(NULL);
 
   std::string notification_path("system_path_prefix");
   std::string device_label("label");
 
-  notifications->RegisterDevice(notification_path);
+  notifications.RegisterDevice(notification_path);
 
-  EXPECT_CALL(*mocked_notifications, HideNotification(
-              DesktopNotifications::DEVICE, StrEq(notification_path)));
+  notifications.ManageNotificationsOnMountCompleted(
+      notification_path,
+      device_label,
+      true  /* is_parent */,
+      false  /* success */,
+      false  /* is_unsupported */);
+  ASSERT_EQ(2U, notifications.params().size());
+  // Should hide DEVICE notification.
+  EXPECT_EQ(RecordedDesktopNotifications::HIDE,
+            notifications.params()[0].event);
+  EXPECT_EQ(DesktopNotifications::DEVICE, notifications.params()[0].type);
+  EXPECT_EQ(notification_path, notifications.params()[0].path);
+  // And should show a DEVICE_FAIL notification.
+  EXPECT_EQ(RecordedDesktopNotifications::SHOW,
+            notifications.params()[1].event);
+  EXPECT_EQ(DesktopNotifications::DEVICE_FAIL,
+            notifications.params()[1].type);
+  EXPECT_EQ(notification_path, notifications.params()[1].path);
 
-  {
-    InSequence s;
-
-    EXPECT_CALL(*mocked_notifications, ShowNotificationWithMessage(
-        DesktopNotifications::DEVICE_FAIL, StrEq(notification_path), _));
-    EXPECT_CALL(*mocked_notifications, HideNotification(
-        DesktopNotifications::DEVICE_FAIL, StrEq(notification_path)));
-    EXPECT_CALL(*mocked_notifications, ShowNotificationWithMessage(
-        DesktopNotifications::DEVICE_FAIL, StrEq(notification_path),
-        String16Equals(IDS_DEVICE_UNSUPPORTED_MESSAGE,
-        device_label)));
-  }
-
-  notifications->ManageNotificationsOnMountCompleted(notification_path,
-      device_label, true, false, false);
-  notifications->ManageNotificationsOnMountCompleted(notification_path,
-      device_label, false, false, true);
+  notifications.ManageNotificationsOnMountCompleted(
+      notification_path,
+      device_label,
+      false  /* is_parent */,
+      false  /* success */,
+      true  /* is_unsupported */);
+  ASSERT_EQ(4U, notifications.params().size());
+  // Should hide DEVICE_FAIL notification.
+  EXPECT_EQ(RecordedDesktopNotifications::HIDE,
+            notifications.params()[2].event);
+  EXPECT_EQ(DesktopNotifications::DEVICE_FAIL,
+            notifications.params()[2].type);
+  EXPECT_EQ(notification_path, notifications.params()[2].path);
+  // Should show DEVICE_FAIL notification.
+  EXPECT_EQ(RecordedDesktopNotifications::SHOW,
+            notifications.params()[3].event);
+  EXPECT_EQ(DesktopNotifications::DEVICE_FAIL,
+            notifications.params()[3].type);
+  EXPECT_EQ(notification_path, notifications.params()[3].path);
+  EXPECT_EQ(
+      l10n_util::GetStringFUTF16(IDS_DEVICE_UNSUPPORTED_MESSAGE,
+                                 UTF8ToUTF16(device_label)),
+      notifications.params()[3].message);
 }
 
 TEST(FileManagerMountNotificationsTest, MountPartialSuccess) {
-  MockFileManagerNotificationsOnMount* mocked_notifications =
-      new MockFileManagerNotificationsOnMount(NULL);
-  scoped_ptr<DesktopNotifications> notifications(mocked_notifications);
+  RecordedDesktopNotifications notifications(NULL);
 
   std::string notification_path("system_path_prefix");
   std::string device_label("label");
 
-  notifications->RegisterDevice(notification_path);
-  EXPECT_CALL(*mocked_notifications, HideNotification(
-              DesktopNotifications::DEVICE, StrEq(notification_path)));
-  EXPECT_CALL(*mocked_notifications, ShowNotificationWithMessage(
-      DesktopNotifications::DEVICE_FAIL, StrEq(notification_path),
-          String16Equals(IDS_MULTIPART_DEVICE_UNSUPPORTED_MESSAGE,
-          device_label)));
+  notifications.RegisterDevice(notification_path);
 
-  notifications->ManageNotificationsOnMountCompleted(notification_path,
-      device_label, false, true, false);
-  notifications->ManageNotificationsOnMountCompleted(notification_path,
-      device_label, false, false, true);
+  notifications.ManageNotificationsOnMountCompleted(
+      notification_path,
+      device_label,
+      false  /* is_parent */,
+      true  /* success */,
+      false  /* is_unsupported */);
+  ASSERT_EQ(1U, notifications.params().size());
+  // Should hide DEVICE notification.
+  EXPECT_EQ(RecordedDesktopNotifications::HIDE,
+            notifications.params()[0].event);
+  EXPECT_EQ(DesktopNotifications::DEVICE, notifications.params()[0].type);
+  EXPECT_EQ(notification_path, notifications.params()[0].path);
+
+  notifications.ManageNotificationsOnMountCompleted(
+      notification_path,
+      device_label,
+      false  /* is_parent */,
+      false  /* success */,
+      true  /* is_unsupported */);
+  ASSERT_EQ(2U, notifications.params().size());
+  // Should show a DEVICE_FAIL notification.
+  EXPECT_EQ(RecordedDesktopNotifications::SHOW,
+            notifications.params()[1].event);
+  EXPECT_EQ(DesktopNotifications::DEVICE_FAIL,
+            notifications.params()[1].type);
+  EXPECT_EQ(notification_path, notifications.params()[1].path);
+  EXPECT_EQ(
+      l10n_util::GetStringFUTF16(IDS_MULTIPART_DEVICE_UNSUPPORTED_MESSAGE,
+                                 UTF8ToUTF16(device_label)),
+      notifications.params()[1].message);
 }
 
 TEST(FileManagerMountNotificationsTest, Unknown) {
-  MockFileManagerNotificationsOnMount* mocked_notifications =
-      new MockFileManagerNotificationsOnMount(NULL);
-  scoped_ptr<DesktopNotifications> notifications(mocked_notifications);
+  RecordedDesktopNotifications notifications(NULL);
 
   std::string notification_path("system_path_prefix");
   std::string device_label("label");
 
-  notifications->RegisterDevice(notification_path);
-  EXPECT_CALL(*mocked_notifications, HideNotification(
-              DesktopNotifications::DEVICE, StrEq(notification_path)));
-  EXPECT_CALL(*mocked_notifications, ShowNotificationWithMessage(
-      DesktopNotifications::DEVICE_FAIL, StrEq(notification_path),
-      String16Equals(IDS_DEVICE_UNKNOWN_MESSAGE, device_label)));
+  notifications.RegisterDevice(notification_path);
 
-  notifications->ManageNotificationsOnMountCompleted(notification_path,
-      device_label, false, false, false);
+  notifications.ManageNotificationsOnMountCompleted(
+      notification_path,
+      device_label,
+      false  /* is_parent */,
+      false  /* success */,
+      false  /* is_unsupported */);
+  ASSERT_EQ(2U, notifications.params().size());
+  // Should hide DEVICE notification.
+  EXPECT_EQ(RecordedDesktopNotifications::HIDE,
+            notifications.params()[0].event);
+  EXPECT_EQ(DesktopNotifications::DEVICE, notifications.params()[0].type);
+  EXPECT_EQ(notification_path, notifications.params()[0].path);
+  // Should show a DEVICE_FAIL notification.
+  EXPECT_EQ(RecordedDesktopNotifications::SHOW,
+            notifications.params()[1].event);
+  EXPECT_EQ(DesktopNotifications::DEVICE_FAIL,
+            notifications.params()[1].type);
+  EXPECT_EQ(notification_path, notifications.params()[1].path);
+  EXPECT_EQ(
+      l10n_util::GetStringFUTF16(IDS_DEVICE_UNKNOWN_MESSAGE,
+                                 UTF8ToUTF16(device_label)),
+      notifications.params()[1].message);
 }
 
 TEST(FileManagerMountNotificationsTest, NonASCIILabel) {
-  MockFileManagerNotificationsOnMount* mocked_notifications =
-      new MockFileManagerNotificationsOnMount(NULL);
-  scoped_ptr<DesktopNotifications> notifications(mocked_notifications);
+  RecordedDesktopNotifications notifications(NULL);
 
   std::string notification_path("system_path_prefix");
   // "RA (U+30E9) BE (U+30D9) RU (U+30EB)" in Katakana letters.
   std::string device_label("\xE3\x83\xA9\xE3\x83\x99\xE3\x83\xAB");
 
-  notifications->RegisterDevice(notification_path);
-  EXPECT_CALL(*mocked_notifications, HideNotification(
-              DesktopNotifications::DEVICE, StrEq(notification_path)));
-  EXPECT_CALL(*mocked_notifications, ShowNotificationWithMessage(
-      DesktopNotifications::DEVICE_FAIL, StrEq(notification_path),
-      String16Equals(IDS_DEVICE_UNKNOWN_MESSAGE, device_label)));
+  notifications.RegisterDevice(notification_path);
 
-  notifications->ManageNotificationsOnMountCompleted(notification_path,
-      device_label, false, false, false);
+  notifications.ManageNotificationsOnMountCompleted(
+      notification_path,
+      device_label,
+      false  /* is_parent */,
+      false  /* success */,
+      false  /* is_unsupported */);
+  ASSERT_EQ(2U, notifications.params().size());
+  // Should hide DEVICE notification.
+  EXPECT_EQ(RecordedDesktopNotifications::HIDE,
+            notifications.params()[0].event);
+  EXPECT_EQ(DesktopNotifications::DEVICE, notifications.params()[0].type);
+  EXPECT_EQ(notification_path, notifications.params()[0].path);
+  // Should show a DEVICE_FAIL notification.
+  EXPECT_EQ(RecordedDesktopNotifications::SHOW,
+            notifications.params()[1].event);
+  EXPECT_EQ(DesktopNotifications::DEVICE_FAIL,
+            notifications.params()[1].type);
+  EXPECT_EQ(notification_path, notifications.params()[1].path);
+  EXPECT_EQ(
+      l10n_util::GetStringFUTF16(IDS_DEVICE_UNKNOWN_MESSAGE,
+                                 UTF8ToUTF16(device_label)),
+      notifications.params()[1].message);
 }
 
 TEST(FileManagerMountNotificationsTest, MulitpleFail) {
-  MockFileManagerNotificationsOnMount* mocked_notifications =
-      new MockFileManagerNotificationsOnMount(NULL);
-  scoped_ptr<DesktopNotifications> notifications(mocked_notifications);
+  RecordedDesktopNotifications notifications(NULL);
 
   std::string notification_path("system_path_prefix");
   std::string device_label("label");
 
-  notifications->RegisterDevice(notification_path);
-  EXPECT_CALL(*mocked_notifications, HideNotification(
-              DesktopNotifications::DEVICE, StrEq(notification_path)));
-  {
-    InSequence s;
-    EXPECT_CALL(*mocked_notifications, ShowNotificationWithMessage(
-        DesktopNotifications::DEVICE_FAIL, StrEq(notification_path),
-        String16Equals(IDS_DEVICE_UNKNOWN_MESSAGE, device_label)))
-        .RetiresOnSaturation();
-    EXPECT_CALL(*mocked_notifications, HideNotification(
-        DesktopNotifications::DEVICE_FAIL, notification_path));
-    EXPECT_CALL(*mocked_notifications, ShowNotificationWithMessage(
-        DesktopNotifications::DEVICE_FAIL, StrEq(notification_path),
-        String16Equals(IDS_DEVICE_UNKNOWN_MESSAGE, device_label)));
-    EXPECT_CALL(*mocked_notifications, HideNotification(
-        DesktopNotifications::DEVICE_FAIL, notification_path));
-    EXPECT_CALL(*mocked_notifications, ShowNotificationWithMessage(
-        DesktopNotifications::DEVICE_FAIL, StrEq(notification_path),
-        String16Equals(IDS_MULTIPART_DEVICE_UNSUPPORTED_MESSAGE,
-                       device_label)));
-  }
+  notifications.RegisterDevice(notification_path);
 
-  notifications->ManageNotificationsOnMountCompleted(notification_path,
-      device_label, true, false, false);
-  notifications->ManageNotificationsOnMountCompleted(notification_path,
-      device_label, false, false, false);
-  notifications->ManageNotificationsOnMountCompleted(notification_path,
-      device_label, false, false, false);
-  notifications->ManageNotificationsOnMountCompleted(notification_path,
-      device_label, false, false, false);
+  notifications.ManageNotificationsOnMountCompleted(
+      notification_path,
+      device_label,
+      true  /* is_parent */,
+      false  /* success */,
+      false  /* is_unsupported */);
+  EXPECT_EQ(2U, notifications.params().size());
+  // Should hide DEVICE notification.
+  EXPECT_EQ(RecordedDesktopNotifications::HIDE,
+            notifications.params()[0].event);
+  EXPECT_EQ(DesktopNotifications::DEVICE, notifications.params()[0].type);
+  EXPECT_EQ(notification_path, notifications.params()[0].path);
+  // Should show a DEVICE_FAIL notification.
+  EXPECT_EQ(RecordedDesktopNotifications::SHOW,
+            notifications.params()[1].event);
+  EXPECT_EQ(DesktopNotifications::DEVICE_FAIL,
+            notifications.params()[1].type);
+  EXPECT_EQ(notification_path, notifications.params()[1].path);
+  EXPECT_EQ(
+      l10n_util::GetStringFUTF16(IDS_DEVICE_UNKNOWN_MESSAGE,
+                                 UTF8ToUTF16(device_label)),
+      notifications.params()[1].message);
+
+  notifications.ManageNotificationsOnMountCompleted(
+      notification_path,
+      device_label,
+      false  /* is_parent */,
+      false  /* success */,
+      false  /* is_unsupported */);
+  EXPECT_EQ(4U, notifications.params().size());
+  // Should hide DEVICE_FAIL notification.
+  EXPECT_EQ(RecordedDesktopNotifications::HIDE,
+            notifications.params()[2].event);
+  EXPECT_EQ(DesktopNotifications::DEVICE_FAIL, notifications.params()[2].type);
+  EXPECT_EQ(notification_path, notifications.params()[2].path);
+  // Should show a DEVICE_FAIL notification.
+  EXPECT_EQ(RecordedDesktopNotifications::SHOW,
+            notifications.params()[3].event);
+  EXPECT_EQ(DesktopNotifications::DEVICE_FAIL,
+            notifications.params()[3].type);
+  EXPECT_EQ(notification_path, notifications.params()[3].path);
+  EXPECT_EQ(
+      l10n_util::GetStringFUTF16(IDS_DEVICE_UNKNOWN_MESSAGE,
+                                 UTF8ToUTF16(device_label)),
+      notifications.params()[3].message);
+
+  notifications.ManageNotificationsOnMountCompleted(
+      notification_path,
+      device_label,
+      false  /* is_parent */,
+      false  /* success */,
+      false  /* is_unsupported */);
+  EXPECT_EQ(6U, notifications.params().size());
+  // Should hide DEVICE_FAIL notification.
+  EXPECT_EQ(RecordedDesktopNotifications::HIDE,
+            notifications.params()[4].event);
+  EXPECT_EQ(DesktopNotifications::DEVICE_FAIL, notifications.params()[4].type);
+  EXPECT_EQ(notification_path, notifications.params()[4].path);
+  // Should show a DEVICE_FAIL notification.
+  EXPECT_EQ(RecordedDesktopNotifications::SHOW,
+            notifications.params()[5].event);
+  EXPECT_EQ(DesktopNotifications::DEVICE_FAIL,
+            notifications.params()[5].type);
+  EXPECT_EQ(notification_path, notifications.params()[5].path);
+  EXPECT_EQ(
+      l10n_util::GetStringFUTF16(IDS_MULTIPART_DEVICE_UNSUPPORTED_MESSAGE,
+                                 UTF8ToUTF16(device_label)),
+      notifications.params()[5].message);
+
+  notifications.ManageNotificationsOnMountCompleted(
+      notification_path,
+      device_label,
+      false  /* is_parent */,
+      false  /* success */,
+      false  /* is_unsupported */);
+  EXPECT_EQ(6U, notifications.params().size());
+  // Should do nothing this time.
 }
 
 }  // namespace file_manager.
