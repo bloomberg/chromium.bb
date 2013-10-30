@@ -9,11 +9,8 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/command_line.h"
 #include "base/cpu.h"
-#include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/stringize_macros.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "media/base/sinc_resampler.h"
@@ -25,10 +22,6 @@ using testing::_;
 namespace media {
 
 static const double kSampleRateRatio = 192000.0 / 44100.0;
-static const double kKernelInterpolationFactor = 0.5;
-
-// Command line switch for runtime adjustment of ConvolveBenchmark iterations.
-static const char kConvolveIterations[] = "convolve-iterations";
 
 // Helper class to ensure ChunkedResample() functions properly.
 class MockSource {
@@ -125,6 +118,8 @@ TEST(SincResamplerTest, DISABLED_SetRatioBench) {
 // this test if other optimized methods exist, otherwise the default Convolve()
 // will be tested by the parameterized SincResampler tests below.
 #if defined(CONVOLVE_FUNC)
+static const double kKernelInterpolationFactor = 0.5;
+
 TEST(SincResamplerTest, Convolve) {
 #if defined(ARCH_CPU_X86_FAMILY)
   ASSERT_TRUE(base::CPU().has_sse());
@@ -160,74 +155,6 @@ TEST(SincResamplerTest, Convolve) {
   EXPECT_NEAR(result2, result, kEpsilon);
 }
 #endif
-
-// Benchmark for the various Convolve() methods.  Make sure to build with
-// branding=Chrome so that DCHECKs are compiled out when benchmarking.  Original
-// benchmarks were run with --convolve-iterations=50000000.
-TEST(SincResamplerTest, ConvolveBenchmark) {
-  // Initialize a dummy resampler.
-  MockSource mock_source;
-  SincResampler resampler(
-      kSampleRateRatio, SincResampler::kDefaultRequestSize,
-      base::Bind(&MockSource::ProvideInput, base::Unretained(&mock_source)));
-
-  // Retrieve benchmark iterations from command line.
-  int convolve_iterations = 10;
-  std::string iterations(CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-      kConvolveIterations));
-  if (!iterations.empty())
-    base::StringToInt(iterations, &convolve_iterations);
-
-  printf("Benchmarking %d iterations:\n", convolve_iterations);
-
-  // Benchmark Convolve_C().
-  base::TimeTicks start = base::TimeTicks::HighResNow();
-  for (int i = 0; i < convolve_iterations; ++i) {
-    resampler.Convolve_C(
-        resampler.kernel_storage_.get(), resampler.kernel_storage_.get(),
-        resampler.kernel_storage_.get(), kKernelInterpolationFactor);
-  }
-  double total_time_c_ms =
-      (base::TimeTicks::HighResNow() - start).InMillisecondsF();
-  printf("Convolve_C took %.2fms.\n", total_time_c_ms);
-
-#if defined(CONVOLVE_FUNC)
-#if defined(ARCH_CPU_X86_FAMILY)
-  ASSERT_TRUE(base::CPU().has_sse());
-#endif
-
-  // Benchmark with unaligned input pointer.
-  start = base::TimeTicks::HighResNow();
-  for (int j = 0; j < convolve_iterations; ++j) {
-    resampler.CONVOLVE_FUNC(
-        resampler.kernel_storage_.get() + 1, resampler.kernel_storage_.get(),
-        resampler.kernel_storage_.get(), kKernelInterpolationFactor);
-  }
-  double total_time_optimized_unaligned_ms =
-      (base::TimeTicks::HighResNow() - start).InMillisecondsF();
-  printf(STRINGIZE(CONVOLVE_FUNC) " (unaligned) took %.2fms; which is %.2fx "
-         "faster than Convolve_C.\n", total_time_optimized_unaligned_ms,
-         total_time_c_ms / total_time_optimized_unaligned_ms);
-
-  // Benchmark with aligned input pointer.
-  start = base::TimeTicks::HighResNow();
-  for (int j = 0; j < convolve_iterations; ++j) {
-    resampler.CONVOLVE_FUNC(
-        resampler.kernel_storage_.get(), resampler.kernel_storage_.get(),
-        resampler.kernel_storage_.get(), kKernelInterpolationFactor);
-  }
-  double total_time_optimized_aligned_ms =
-      (base::TimeTicks::HighResNow() - start).InMillisecondsF();
-  printf(STRINGIZE(CONVOLVE_FUNC) " (aligned) took %.2fms; which is %.2fx "
-         "faster than Convolve_C and %.2fx faster than "
-         STRINGIZE(CONVOLVE_FUNC) " (unaligned).\n",
-         total_time_optimized_aligned_ms,
-         total_time_c_ms / total_time_optimized_aligned_ms,
-         total_time_optimized_unaligned_ms / total_time_optimized_aligned_ms);
-#endif
-}
-
-#undef CONVOLVE_FUNC
 
 // Fake audio source for testing the resampler.  Generates a sinusoidal linear
 // chirp (http://en.wikipedia.org/wiki/Chirp) which can be tuned to stress the

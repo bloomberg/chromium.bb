@@ -1082,7 +1082,9 @@
       'sources': [
         'base/audio_bus_perftest.cc',
         'base/audio_converter_perftest.cc',
+        'base/sinc_resampler_perftest.cc',
         'base/run_all_unittests.cc',
+        'base/vector_math_perftest.cc',
       ],
     },
     {

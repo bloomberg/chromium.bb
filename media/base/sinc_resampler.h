@@ -75,7 +75,7 @@ class MEDIA_EXPORT SincResampler {
 
  private:
   FRIEND_TEST_ALL_PREFIXES(SincResamplerTest, Convolve);
-  FRIEND_TEST_ALL_PREFIXES(SincResamplerTest, ConvolveBenchmark);
+  FRIEND_TEST_ALL_PREFIXES(SincResamplerPerfTest, Convolve);
 
   void InitializeKernel();
   void UpdateRegions(bool second_load);
