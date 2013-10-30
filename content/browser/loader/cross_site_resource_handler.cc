@@ -25,15 +25,15 @@ namespace content {
 
 namespace {
 
-void OnCrossSiteResponseHelper(int render_process_id,
-                               int render_view_id,
+void OnCrossSiteResponseHelper(int render_view_id,
                                const GlobalRequestID& global_request_id,
                                bool is_transfer,
-                               const GURL& transfer_url,
+                               const std::vector<GURL>& transfer_url_chain,
                                const Referrer& referrer,
+                               PageTransition page_transition,
                                int64 frame_id) {
-  RenderViewHostImpl* rvh = RenderViewHostImpl::FromID(render_process_id,
-                                                       render_view_id);
+  RenderViewHostImpl* rvh =
+      RenderViewHostImpl::FromID(global_request_id.child_id, render_view_id);
   if (!rvh)
     return;
   RenderViewHostDelegate* delegate = rvh->GetDelegate();
@@ -41,7 +41,8 @@ void OnCrossSiteResponseHelper(int render_process_id,
     return;
 
   delegate->GetRendererManagementDelegate()->OnCrossSiteResponse(
-      rvh, global_request_id, is_transfer, transfer_url, referrer, frame_id);
+      rvh, global_request_id, is_transfer, transfer_url_chain, referrer,
+      page_transition, frame_id);
 }
 
 }  // namespace
@@ -225,28 +226,30 @@ void CrossSiteResourceHandler::StartCrossSiteTransition(
   // is starting, so that it can tell its old renderer to run its onunload
   // handler now.  We will wait until the unload is finished and (if a transfer
   // is needed) for the new renderer's request to arrive.
-  GURL transfer_url;
+  // The |transfer_url_chain| contains any redirect URLs that have already
+  // occurred, plus the destination URL at the end.
+  std::vector<GURL> transfer_url_chain;
   Referrer referrer;
   int frame_id = -1;
   if (should_transfer) {
-    transfer_url = request()->url();
+    transfer_url_chain = request()->url_chain();
     referrer = Referrer(GURL(request()->referrer()), info->GetReferrerPolicy());
     frame_id = info->GetFrameID();
 
     ResourceDispatcherHostImpl::Get()->MarkAsTransferredNavigation(
-        global_id, transfer_url);
+        global_id, transfer_url_chain.front());
   }
   BrowserThread::PostTask(
       BrowserThread::UI,
       FROM_HERE,
       base::Bind(
           &OnCrossSiteResponseHelper,
-          info->GetChildID(),
           info->GetRouteID(),
           global_id,
           should_transfer,
-          transfer_url,
+          transfer_url_chain,
           referrer,
+          info->GetPageTransition(),
           frame_id));
 }
 

@@ -40,15 +40,19 @@ RenderViewHostManager::PendingNavigationParams::PendingNavigationParams()
 RenderViewHostManager::PendingNavigationParams::PendingNavigationParams(
     const GlobalRequestID& global_request_id,
     bool is_transfer,
-    const GURL& transfer_url,
+    const std::vector<GURL>& transfer_url_chain,
     Referrer referrer,
+    PageTransition page_transition,
     int64 frame_id)
     : global_request_id(global_request_id),
       is_transfer(is_transfer),
-      transfer_url(transfer_url),
+      transfer_url_chain(transfer_url_chain),
       referrer(referrer),
+      page_transition(page_transition),
       frame_id(frame_id) {
 }
+
+RenderViewHostManager::PendingNavigationParams::~PendingNavigationParams() {}
 
 RenderViewHostManager::RenderViewHostManager(
     RenderViewHostDelegate* render_view_delegate,
@@ -248,12 +252,20 @@ void RenderViewHostManager::SwappedOut(RenderViewHost* render_view_host) {
   // we can shorten this by delivering the response directly, rather than
   // forcing an identical request to be made.
   if (pending_nav_params_->is_transfer) {
+    // Treat the last URL in the chain as the destination and the remainder as
+    // the redirect chain.
+    CHECK(pending_nav_params_->transfer_url_chain.size());
+    GURL transfer_url = pending_nav_params_->transfer_url_chain.back();
+    pending_nav_params_->transfer_url_chain.pop_back();
+
     // We don't know whether the original request had |user_action| set to true.
     // However, since we force the navigation to be in the current tab, it
     // doesn't matter.
     render_view_host->GetDelegate()->RequestTransferURL(
-        pending_nav_params_->transfer_url,
+        transfer_url,
+        pending_nav_params_->transfer_url_chain,
         pending_nav_params_->referrer,
+        pending_nav_params_->page_transition,
         CURRENT_TAB,
         pending_nav_params_->frame_id,
         pending_nav_params_->global_request_id,
@@ -399,8 +411,9 @@ void RenderViewHostManager::OnCrossSiteResponse(
     RenderViewHost* pending_render_view_host,
     const GlobalRequestID& global_request_id,
     bool is_transfer,
-    const GURL& transfer_url,
+    const std::vector<GURL>& transfer_url_chain,
     const Referrer& referrer,
+    PageTransition page_transition,
     int64 frame_id) {
   // This should be called either when the pending RVH is ready to commit or
   // when we realize that the current RVH's request requires a transfer.
@@ -414,7 +427,8 @@ void RenderViewHostManager::OnCrossSiteResponse(
   // In that case, we should set up a transfer after the unload handler runs.
   // If is_transfer is false, we will just run the unload handler and resume.
   pending_nav_params_.reset(new PendingNavigationParams(
-      global_request_id, is_transfer, transfer_url, referrer, frame_id));
+      global_request_id, is_transfer, transfer_url_chain, referrer,
+      page_transition, frame_id));
 
   // Run the unload handler of the current page.
   SwapOutOldPage();

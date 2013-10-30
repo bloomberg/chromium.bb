@@ -65,6 +65,10 @@ struct NavigateParams {
   GURL url;
   content::Referrer referrer;
 
+  // Any redirect URLs that occurred for this navigation before |url|.
+  // Usually empty.
+  std::vector<GURL> redirect_chain;
+
   // Indicates whether this navigation will be sent using POST.
   // The POST method is limited support for basic POST data by leveraging
   // NavigationController::LOAD_TYPE_BROWSER_INITIATED_HTTP_POST.

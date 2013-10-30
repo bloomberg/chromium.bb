@@ -328,6 +328,7 @@ void NavigationEntryImpl::ResetForCommit() {
   set_is_renderer_initiated(false);
   set_transferred_global_request_id(GlobalRequestID());
   set_should_replace_entry(false);
+  redirect_chain_.clear();
   set_should_clear_history_list(false);
 }
 

@@ -688,6 +688,8 @@ void NavigationControllerImpl::LoadURLWithParams(const LoadURLParams& params) {
           params.is_renderer_initiated,
           params.extra_headers,
           browser_context_));
+  if (params.redirect_chain.size() > 0)
+    entry->set_redirect_chain(params.redirect_chain);
   if (params.should_replace_current_entry)
     entry->set_should_replace_entry(true);
   entry->set_should_clear_history_list(params.should_clear_history_list);

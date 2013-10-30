@@ -244,6 +244,8 @@ void MakeNavigateParams(const NavigationEntryImpl& entry,
             entry.GetBrowserInitiatedPostData()->size());
   }
 
+  params->redirects = entry.redirect_chain();
+
   params->can_load_local_resources = entry.GetCanLoadLocalResources();
   params->frame_to_navigate = entry.GetFrameToNavigate();
 
@@ -1999,6 +2001,7 @@ void WebContentsImpl::DidStartProvisionalLoadForFrame(
         entry->set_transferred_global_request_id(
             pending_entry->transferred_global_request_id());
         entry->set_should_replace_entry(pending_entry->should_replace_entry());
+        entry->set_redirect_chain(pending_entry->redirect_chain());
       }
       controller_.SetPendingEntry(entry);
       NotifyNavigationStateChanged(content::INVALIDATE_TYPE_URL);
@@ -3097,14 +3100,19 @@ void WebContentsImpl::RequestOpenURL(RenderViewHost* rvh,
 
   // Delegate to RequestTransferURL because this is just the generic
   // case where |old_request_id| is empty.
-  RequestTransferURL(url, referrer, disposition, source_frame_id,
-                     GlobalRequestID(),
+  // TODO(creis): Pass the redirect_chain into this method to support client
+  // redirects.  http://crbug.com/311721.
+  std::vector<GURL> redirect_chain;
+  RequestTransferURL(url, redirect_chain, referrer, PAGE_TRANSITION_LINK,
+                     disposition, source_frame_id, GlobalRequestID(),
                      should_replace_current_entry, user_gesture);
 }
 
 void WebContentsImpl::RequestTransferURL(
     const GURL& url,
+    const std::vector<GURL>& redirect_chain,
     const Referrer& referrer,
+    PageTransition page_transition,
     WindowOpenDisposition disposition,
     int64 source_frame_id,
     const GlobalRequestID& old_request_id,
@@ -3117,16 +3125,20 @@ void WebContentsImpl::RequestTransferURL(
     dest_url = GURL(kAboutBlankURL);
 
   OpenURLParams params(dest_url, referrer, source_frame_id, disposition,
-      PAGE_TRANSITION_LINK, true /* is_renderer_initiated */);
+      page_transition, true /* is_renderer_initiated */);
+  if (redirect_chain.size() > 0)
+    params.redirect_chain = redirect_chain;
   params.transferred_global_request_id = old_request_id;
   params.should_replace_current_entry = should_replace_current_entry;
   params.user_gesture = user_gesture;
 
   if (render_manager_.web_ui()) {
-    // When we're a Web UI, it will provide a page transition type for us (this
-    // is so the new tab page can specify AUTO_BOOKMARK for automatically
-    // generated suggestions).
-    params.transition = render_manager_.web_ui()->GetLinkTransitionType();
+    // Web UI pages sometimes want to override the page transition type for
+    // link clicks (e.g., so the new tab page can specify AUTO_BOOKMARK for
+    // automatically generated suggestions).  We don't override other types
+    // like TYPED because they have different implications (e.g., autocomplete).
+    if (PageTransitionCoreTypeIs(params.transition, PAGE_TRANSITION_LINK))
+      params.transition = render_manager_.web_ui()->GetLinkTransitionType();
 
     // Note also that we hide the referrer for Web UI pages. We don't really
     // want web sites to see a referrer of "chrome://blah" (and some

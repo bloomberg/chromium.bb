@@ -47,6 +47,7 @@ NavigationController::LoadURLParams::operator=(
   load_type = other.load_type;
   transition_type = other.transition_type;
   referrer = other.referrer;
+  redirect_chain = other.redirect_chain;
   extra_headers = other.extra_headers;
   is_renderer_initiated = other.is_renderer_initiated;
   override_user_agent = other.override_user_agent;

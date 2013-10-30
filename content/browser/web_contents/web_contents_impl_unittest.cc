@@ -1061,8 +1061,11 @@ TEST_F(WebContentsImplTest, CrossSiteCantPreemptAfterUnload) {
 
   // Simulate the pending renderer's response, which leads to an unload request
   // being sent to orig_rvh.
+  std::vector<GURL> url_chain;
+  url_chain.push_back(GURL());
   contents()->GetRenderManagerForTesting()->OnCrossSiteResponse(
-      pending_rvh, GlobalRequestID(0, 0), false, GURL(), Referrer(), 1);
+      pending_rvh, GlobalRequestID(0, 0), false, url_chain, Referrer(),
+      PAGE_TRANSITION_TYPED, 1);
 
   // Suppose the original renderer navigates now, while the unload request is in
   // flight.  We should ignore it, wait for the unload ack, and let the pending

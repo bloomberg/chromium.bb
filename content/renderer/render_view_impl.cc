@@ -2118,8 +2118,13 @@ void RenderViewImpl::UpdateURL(WebFrame* frame) {
     // Send the user agent override back.
     params.is_overriding_user_agent = internal_data->is_overriding_user_agent();
 
-    // Track the URL of the original request.
-    params.original_request_url = original_request.url();
+    // Track the URL of the original request.  We use the first entry of the
+    // redirect chain if it exists because the chain may have started in another
+    // process.
+    if (params.redirects.size() > 0)
+      params.original_request_url = params.redirects.at(0);
+    else
+      params.original_request_url = original_request.url();
 
     params.history_list_was_cleared =
         navigation_state->history_list_was_cleared();
@@ -3465,6 +3470,15 @@ void RenderViewImpl::willSubmitForm(WebFrame* frame,
 
 void RenderViewImpl::didCreateDataSource(WebFrame* frame, WebDataSource* ds) {
   bool content_initiated = !pending_navigation_params_.get();
+
+  // Make sure any previous redirect URLs end up in our new data source.
+  if (pending_navigation_params_.get()) {
+    for (std::vector<GURL>::const_iterator i =
+             pending_navigation_params_->redirects.begin();
+         i != pending_navigation_params_->redirects.end(); ++i) {
+      ds->appendRedirect(*i);
+    }
+  }
 
   DocumentState* document_state = DocumentState::FromDataSource(ds);
   if (!document_state) {

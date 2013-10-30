@@ -70,6 +70,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_view.h"
+#include "content/public/common/frame_navigate_params.h"
 #include "content/public/common/page_transition_types.h"
 #include "content/public/common/renderer_preferences.h"
 #include "content/public/common/url_constants.h"
@@ -512,6 +513,28 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, ReloadThenCancelBeforeUnload) {
                                   ASCIIToUTF16("onbeforeunload=null;"));
 }
 
+class RedirectObserver : public content::WebContentsObserver {
+ public:
+  explicit RedirectObserver(content::WebContents* web_contents)
+      : WebContentsObserver(web_contents) {
+  }
+
+  virtual void DidNavigateAnyFrame(
+      const content::LoadCommittedDetails& details,
+      const content::FrameNavigateParams& params) OVERRIDE {
+    params_ = params;
+  }
+
+  const content::FrameNavigateParams& params() const {
+    return params_;
+  }
+
+ private:
+  content::FrameNavigateParams params_;
+
+  DISALLOW_COPY_AND_ASSIGN(RedirectObserver);
+};
+
 // Ensure that a transferred cross-process navigation does not generate
 // DidStopLoading events until the navigation commits.  If it did, then
 // ui_test_utils::NavigateToURL would proceed before the URL had committed.
@@ -534,16 +557,28 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, NoStopDuringTransferUntilCommit) {
   ui_test_utils::NavigateToURL(browser(), init_url);
 
   // Navigate to a same-site page that redirects, causing a transfer.
+  WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
+  RedirectObserver redirect_observer(contents);
   GURL dest_url(https_test_server.GetURL("files/title2.html"));
   GURL redirect_url(test_server()->GetURL("server-redirect?" +
       dest_url.spec()));
   ui_test_utils::NavigateToURL(browser(), redirect_url);
 
   // We should immediately see the new committed entry.
-  WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
   EXPECT_FALSE(contents->GetController().GetPendingEntry());
   EXPECT_EQ(dest_url,
             contents->GetController().GetLastCommittedEntry()->GetURL());
+
+  // We should keep track of the original request URL, redirect chain, and
+  // page transition type during a transfer, since these are necessary for
+  // history autocomplete to work.
+  EXPECT_EQ(redirect_url, contents->GetController().GetLastCommittedEntry()->
+                GetOriginalRequestURL());
+  EXPECT_EQ(2U, redirect_observer.params().redirects.size());
+  EXPECT_EQ(redirect_url, redirect_observer.params().redirects.at(0));
+  EXPECT_EQ(dest_url, redirect_observer.params().redirects.at(1));
+  EXPECT_TRUE(PageTransitionCoreTypeIs(redirect_observer.params().transition,
+                                       content::PAGE_TRANSITION_TYPED));
 
   // Restore previous browser client.
   SetBrowserClientForTesting(old_client);

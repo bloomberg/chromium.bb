@@ -25,6 +25,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/page_transition_types.h"
 #include "content/public/common/renderer_preferences.h"
 #include "content/public/common/three_d_api_types.h"
 #include "net/base/load_states.h"
@@ -341,7 +342,9 @@ class CONTENT_EXPORT WebContentsImpl
                               bool user_gesture) OVERRIDE;
   virtual void RequestTransferURL(
       const GURL& url,
+      const std::vector<GURL>& redirect_chain,
       const Referrer& referrer,
+      PageTransition page_transition,
       WindowOpenDisposition disposition,
       int64 source_frame_id,
       const GlobalRequestID& transferred_global_request_id,

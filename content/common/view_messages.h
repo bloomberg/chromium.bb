@@ -649,6 +649,10 @@ IPC_STRUCT_BEGIN(ViewMsg_Navigate_Params)
   // no referrer.
   IPC_STRUCT_MEMBER(content::Referrer, referrer)
 
+  // Any redirect URLs that occurred before |url|. Useful for cross-process
+  // navigations; defaults to empty.
+  IPC_STRUCT_MEMBER(std::vector<GURL>, redirects)
+
   // The type of transition.
   IPC_STRUCT_MEMBER(content::PageTransition, transition)
 

@@ -119,6 +119,10 @@ class NavigationController {
     // Referrer for this load. Empty if none.
     Referrer referrer;
 
+    // Any redirect URLs that occurred for this navigation before |url|.
+    // Defaults to an empty vector.
+    std::vector<GURL> redirect_chain;
+
     // Extra headers for this load, separated by \n.
     std::string extra_headers;
 

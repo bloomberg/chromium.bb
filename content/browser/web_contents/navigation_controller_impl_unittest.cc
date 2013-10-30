@@ -1232,6 +1232,8 @@ TEST_F(NavigationControllerTest, ResetEntryValuesAfterCommit) {
   scoped_refptr<base::RefCountedBytes> post_data =
       base::RefCountedBytes::TakeVector(&post_data_vector);
   GlobalRequestID transfer_id(3, 4);
+  std::vector<GURL> redirects;
+  redirects.push_back(GURL("http://foo2"));
 
   // Set non-persisted values on the pending entry.
   NavigationEntryImpl* pending_entry =
@@ -1240,11 +1242,13 @@ TEST_F(NavigationControllerTest, ResetEntryValuesAfterCommit) {
   pending_entry->set_is_renderer_initiated(true);
   pending_entry->set_transferred_global_request_id(transfer_id);
   pending_entry->set_should_replace_entry(true);
+  pending_entry->set_redirect_chain(redirects);
   pending_entry->set_should_clear_history_list(true);
   EXPECT_EQ(post_data.get(), pending_entry->GetBrowserInitiatedPostData());
   EXPECT_TRUE(pending_entry->is_renderer_initiated());
   EXPECT_EQ(transfer_id, pending_entry->transferred_global_request_id());
   EXPECT_TRUE(pending_entry->should_replace_entry());
+  EXPECT_EQ(1U, pending_entry->redirect_chain().size());
   EXPECT_TRUE(pending_entry->should_clear_history_list());
 
   test_rvh()->SendNavigate(0, url1);
@@ -1259,6 +1263,7 @@ TEST_F(NavigationControllerTest, ResetEntryValuesAfterCommit) {
   EXPECT_EQ(GlobalRequestID(-1, -1),
             committed_entry->transferred_global_request_id());
   EXPECT_FALSE(committed_entry->should_replace_entry());
+  EXPECT_EQ(0U, committed_entry->redirect_chain().size());
   EXPECT_FALSE(committed_entry->should_clear_history_list());
 }
 

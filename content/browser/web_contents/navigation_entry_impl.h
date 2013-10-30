@@ -192,6 +192,16 @@ class CONTENT_EXPORT NavigationEntryImpl
     should_replace_entry_ = should_replace_entry;
   }
 
+  // Any redirects present in a pending entry when it is transferred from one
+  // process to another.  Not valid after commit.
+  const std::vector<GURL>& redirect_chain() const {
+    return redirect_chain_;
+  }
+
+  void set_redirect_chain(const std::vector<GURL>& redirect_chain) {
+    redirect_chain_ = redirect_chain;
+  }
+
   void SetScreenshotPNGData(scoped_refptr<base::RefCountedBytes> png_data);
   const scoped_refptr<base::RefCountedBytes> screenshot() const {
     return screenshot_;
@@ -293,6 +303,10 @@ class CONTENT_EXPORT NavigationEntryImpl
   // browser will replace the current navigation entry (which is the page
   // doing the redirect).
   bool should_replace_entry_;
+
+  // This is used when transferring a pending entry from one process to another.
+  // It is cleared in |ResetForCommit| and should not be persisted.
+  std::vector<GURL> redirect_chain_;
 
   // This is set to true when this entry's navigation should clear the session
   // history both on the renderer and browser side. The browser side history

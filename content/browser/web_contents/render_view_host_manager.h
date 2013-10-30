@@ -221,8 +221,9 @@ class CONTENT_EXPORT RenderViewHostManager
       RenderViewHost* pending_render_view_host,
       const GlobalRequestID& global_request_id,
       bool is_transfer,
-      const GURL& transfer_url,
+      const std::vector<GURL>& transfer_url_chain,
       const Referrer& referrer,
+      PageTransition page_transition,
       int64 frame_id) OVERRIDE;
 
   // NotificationObserver implementation.
@@ -255,9 +256,11 @@ class CONTENT_EXPORT RenderViewHostManager
     PendingNavigationParams();
     PendingNavigationParams(const GlobalRequestID& global_request_id,
                             bool is_transfer,
-                            const GURL& transfer_url,
+                            const std::vector<GURL>& transfer_url,
                             Referrer referrer,
+                            PageTransition page_transition,
                             int64 frame_id);
+    ~PendingNavigationParams();
 
     // The child ID and request ID for the pending navigation.  Present whether
     // |is_transfer| is true or false.
@@ -268,13 +271,18 @@ class CONTENT_EXPORT RenderViewHostManager
     // |transfer_url|, |referrer|, and |frame_id| parameters will be set.
     bool is_transfer;
 
-    // If |is_transfer|, this is the destination URL to request in the new
-    // process.
-    GURL transfer_url;
+    // If |is_transfer|, this is the URL chain of the request.  The first entry
+    // is the original request URL, and the last entry is the destination URL to
+    // request in the new process.
+    std::vector<GURL> transfer_url_chain;
 
     // If |is_transfer|, this is the referrer to use for the request in the new
     // process.
     Referrer referrer;
+
+    // If |is_transfer|, this is the transition type for the original
+    // navigation.
+    PageTransition page_transition;
 
     // If |is_transfer|, this is the frame ID to use in RequestTransferURL.
     int64 frame_id;

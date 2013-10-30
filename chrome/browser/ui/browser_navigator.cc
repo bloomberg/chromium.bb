@@ -246,6 +246,7 @@ void LoadURLInContents(WebContents* target_contents,
                        chrome::NavigateParams* params) {
   NavigationController::LoadURLParams load_url_params(url);
   load_url_params.referrer = params->referrer;
+  load_url_params.redirect_chain = params->redirect_chain;
   load_url_params.transition_type = params->transition;
   load_url_params.extra_headers = params->extra_headers;
   load_url_params.should_replace_current_entry =
@@ -456,6 +457,7 @@ NavigateParams::~NavigateParams() {}
 void FillNavigateParamsFromOpenURLParams(chrome::NavigateParams* nav_params,
                                          const content::OpenURLParams& params) {
   nav_params->referrer = params.referrer;
+  nav_params->redirect_chain = params.redirect_chain;
   nav_params->extra_headers = params.extra_headers;
   nav_params->disposition = params.disposition;
   nav_params->is_renderer_initiated = params.is_renderer_initiated;

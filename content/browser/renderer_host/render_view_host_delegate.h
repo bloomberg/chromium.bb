@@ -15,6 +15,7 @@
 #include "content/common/content_export.h"
 #include "content/public/common/javascript_message_type.h"
 #include "content/public/common/media_stream_request.h"
+#include "content/public/common/page_transition_types.h"
 #include "net/base/load_states.h"
 #include "third_party/WebKit/public/web/WebPopupType.h"
 #include "ui/base/window_open_disposition.h"
@@ -100,8 +101,9 @@ class CONTENT_EXPORT RenderViewHostDelegate {
         RenderViewHost* pending_render_view_host,
         const GlobalRequestID& global_request_id,
         bool is_transfer,
-        const GURL& transfer_url,
+        const std::vector<GURL>& transfer_url_chain,
         const Referrer& referrer,
+        PageTransition page_transition,
         int64 frame_id) = 0;
 
    protected:
@@ -255,9 +257,13 @@ class CONTENT_EXPORT RenderViewHostDelegate {
                               bool user_gesture) {}
 
   // The page wants to transfer the request to a new renderer.
+  // |redirect_chain| contains any redirect URLs (excluding |url|) that happened
+  // before the transfer.
   virtual void RequestTransferURL(
       const GURL& url,
+      const std::vector<GURL>& redirect_chain,
       const Referrer& referrer,
+      PageTransition page_transition,
       WindowOpenDisposition disposition,
       int64 source_frame_id,
       const GlobalRequestID& old_request_id,
