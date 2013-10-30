@@ -35,8 +35,9 @@ src/md5c.c
 IT=perlbmk
 #CFLAGS_EXTRA = -DSPEC_CPU2000_LINUX -D_IOCTL_  -DHAS_DBL_DIG
 
+# Need -std=c89 for http://llvm.org/bugs/show_bug.cgi?id=5960
 CFLAGS_EXTRA = -DSPEC_CPU2000_LINUX -DHAS_DBL_DIG -DSPEC_CPU2000_NEED_TIME_H \
--DSPEC_CPU2000_NEED_BOOL
+-DSPEC_CPU2000_NEED_BOOL -std=c89
 EMCCFLAGS_EXTRA_TRAIN = --preload-file lib --preload-file lenums --preload-file benums --preload-file dictionary
 EMCCFLAGS_EXTRA_REF = --preload-file lib --preload-file lenums --preload-file benums --preload-file dictionary --preload-file cpu2000_mhonarc.rc
 

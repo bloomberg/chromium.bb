@@ -104,11 +104,14 @@ nacl_bin: $(IT).nacl.x8632 $(IT).nacl.opt.x8632 \
 nosfi_bin: $(IT).gcc.x8632 $(IT).gcc.opt.x8632 \
 	   $(IT).gcc.arm $(IT).gcc.opt.arm
 
-all: pnacl_bin nacl_bin nosfi_bin
+nosfillvm_bin: $(IT).llvm.x8632 $(IT).llvm.opt.x8632 \
+	       $(IT).llvm.hw.arm $(IT).llvm.opt.hw.arm
+
+all: pnacl_bin nacl_bin nosfi_bin nosfillvm_bin
 
 
 ######################################################################
-## NON-SANDBOXING TOOLCHAINS
+## NON-SANDBOXING GCC TOOLCHAINS
 ######################################################################
 LOCAL_GCC=/usr/bin/gcc
 EMCCFLAGS=-s ASM_JS=1 -s TOTAL_MEMORY=268435456 $(CFLAGS_EXTRA)
@@ -156,6 +159,45 @@ $(IT).emcc.html: $(SRC) $(CPPSRC)
 	../fixup_asmjs.py $@.ref.html
 	touch $@
 
+######################################################################
+## NON-SANDBOXING LLVM TOOLCHAINS
+######################################################################
+LOCAL_LLVM=clang
+
+# straight x86-32 llvm
+$(IT).llvm.x8632: $(SRC) $(CPPSRC)
+	$(LOCAL_LLVM) -O0 -m32 $(CFLAGS) $^ -static -lstdc++ -lm  -o $@
+	@$(call LOG_ZIP_SIZE,$@,$(IT))
+
+# optimized x86-32 llvm
+$(IT).llvm.opt.x8632: $(SRC) $(CPPSRC)
+	$(LOCAL_LLVM) -O3 -m32 $(CFLAGS) $^ -static -lstdc++ -lm  -o $@
+	@$(call LOG_ZIP_SIZE,$@,$(IT))
+
+
+# straight x86-64 llvm
+$(IT).llvm.x8664: $(SRC) $(CPPSRC)
+	$(LOCAL_LLVM) -O0 -m64 -DSPEC_CPU2000_LP64 $(CFLAGS) \
+	 	$^ -static -lstdc++ -lm  -o $@
+	@$(call LOG_ZIP_SIZE,$@,$(IT))
+
+# optimized x86-64 llvm
+$(IT).llvm.opt.x8664: $(SRC) $(CPPSRC)
+	$(LOCAL_LLVM) -O3 -m64 -DSPEC_CPU2000_LP64 $(CFLAGS) \
+	 	$^ -static -lstdc++ -lm  -o $@
+	@$(call LOG_ZIP_SIZE,$@,$(IT))
+
+# straight ARM llvm
+$(IT).llvm.hw.arm: $(SRC) $(CPPSRC)
+	$(LOCAL_LLVM) -O0 $(CFLAGS) \
+	 	$^ -static -lstdc++ -lm  -o $@
+	@$(call LOG_ZIP_SIZE,$@,$(IT))
+
+# optimized ARM llvm
+$(IT).llvm.opt.hw.arm: $(SRC) $(CPPSRC)
+	$(LOCAL_LLVM) -O3 $(CFLAGS) \
+	 	$^ -static -lstdc++ -lm  -o $@
+	@$(call LOG_ZIP_SIZE,$@,$(IT))
 
 ######################################################################
 # EXPERIMENTAL

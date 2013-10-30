@@ -159,6 +159,54 @@ SetupEmcc() {
   VERIFY=no
 }
 
+#@
+#@ SetupLlvmX8632
+#@   use system compiler for x86-32
+SetupLlvmX8632() {
+  PREFIX=
+  SUFFIX=llvm.x8632
+}
+
+#@
+#@ SetupLlvmX8632Opt
+#@   use system compiler for x86-32 with optimization
+SetupLlvmX8632Opt() {
+  PREFIX=
+  SUFFIX=llvm.opt.x8632
+}
+
+#@
+#@ SetupLlvmX8664
+#@   use system compiler for x86-64
+SetupLlvmX8664() {
+  PREFIX=
+  SUFFIX=llvm.x8664
+}
+
+#@
+#@ SetupLlvmX8664Opt
+#@   use system compiler for x86-64 with optimization
+SetupLlvmX8664Opt() {
+  PREFIX=
+  SUFFIX=llvm.opt.x8664
+}
+
+#@
+#@ SetupLlvmArm
+#@   use system compiler for ARM
+SetupLlvmArm() {
+  PREFIX=
+  SUFFIX=llvm.hw.arm
+}
+
+#@
+#@ SetupLlvmArmOpt
+#@   use system compiler for ARM with optimization
+SetupLlvmArmOpt() {
+  PREFIX=
+  SUFFIX=llvm.opt.hw.arm
+}
+
 ######################################################################
 
 SetupNaclX8632Common() {
