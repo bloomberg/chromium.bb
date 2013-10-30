@@ -23,7 +23,7 @@ shouldThrow('channel.port1.postMessage("duplicate port", [channel3.port1, channe
 // Should be OK to send channel3.port1 (should not have been disentangled by the previous failed calls).
 channel.port1.postMessage("entangled ports", [channel3.port1, channel3.port2]);
 
-shouldThrow('channel.port1.postMessage("notAnArray", channel3.port1)', '"TypeError: Failed to execute \'postMessage\' on \'MessagePort\': Second argument is neither an array, nor does it have indexed properties."');
+shouldThrow('channel.port1.postMessage("notAnArray", channel3.port1)', '"TypeError: Failed to execute \'postMessage\' on \'MessagePort\': The 2nd argument is neither an array, nor does it have indexed properties."');
 shouldThrow('channel.port1.postMessage("notASequence", [{length: 3}])', "'DataCloneError: An object could not be cloned.'");
 
 // Should not crash (we should figure out that the array contains undefined

@@ -51,7 +51,7 @@ void V8MessagePort::postMessageMethodCustom(const v8::FunctionCallbackInfo<v8::V
         const int transferablesArgIndex = 1;
         if (!extractTransferables(args[transferablesArgIndex], portArray, arrayBufferArray, notASequence, args.GetIsolate())) {
             if (notASequence)
-                throwTypeError(ExceptionMessages::failedToExecute("postMessage", "MessagePort", ExceptionMessages::notASequenceTypeArgumentOrValue(transferablesArgIndex + 1)), args.GetIsolate());
+                throwTypeError(ExceptionMessages::failedToExecute("postMessage", "MessagePort", ExceptionMessages::notAnArrayTypeArgumentOrValue(transferablesArgIndex + 1)), args.GetIsolate());
             return;
         }
     }

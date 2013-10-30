@@ -58,29 +58,14 @@ String ExceptionMessages::failedToDelete(const String& property, const String& t
     return "Failed to delete the '" + property + "' property from '" + type + "': " + detail;
 }
 
-String ExceptionMessages::notASequenceTypeArgumentOrValue(int argumentIndexOrValue)
+String ExceptionMessages::notAnArrayTypeArgumentOrValue(int argumentIndex)
 {
-    String kind(" argument");
-
-    String prefix;
-    switch (argumentIndexOrValue) {
-    case 1:
-        prefix = "First";
-        break;
-    case 2:
-        prefix = "Second";
-        break;
-    case 3:
-        prefix = "Third";
-        break;
-    default:
-        if (argumentIndexOrValue <= 0)
-            kind = "The value provided";
-        else
-            prefix = String::number(argumentIndexOrValue) + "th";
-        break;
-    }
-    return prefix + kind + " is neither an array, nor does it have indexed properties.";
+    String kind;
+    if (argumentIndex) // method argument
+        kind = ordinalNumber(argumentIndex) + " argument";
+    else // value, e.g. attribute setter
+        kind = "value provided";
+    return "The " + kind + " is neither an array, nor does it have indexed properties.";
 }
 
 String ExceptionMessages::notASequenceTypeProperty(const String& propertyName)
@@ -91,6 +76,26 @@ String ExceptionMessages::notASequenceTypeProperty(const String& propertyName)
 String ExceptionMessages::notEnoughArguments(unsigned expected, unsigned provided)
 {
     return String::number(expected) + " argument" + (expected > 1 ? "s" : "") + " required, but only " + String::number(provided) + " present.";
+}
+
+String ExceptionMessages::ordinalNumber(int number)
+{
+    String suffix("th");
+    switch (number % 10) {
+    case 1:
+        if (number % 100 != 11)
+            suffix = "st";
+        break;
+    case 2:
+        if (number % 100 != 12)
+            suffix = "nd";
+        break;
+    case 3:
+        if (number % 100 != 13)
+            suffix = "rd";
+        break;
+    }
+    return String::number(number) + suffix;
 }
 
 } // namespace WebCore

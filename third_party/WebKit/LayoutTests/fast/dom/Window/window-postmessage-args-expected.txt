@@ -1,9 +1,9 @@
 Test that the second argument of window.postMessage is ignored or triggers an error if it is not a message port. You should see PASS message '1' through '7', followed by 'done', with messages 4-7 received below.
 
-PASS: Posting message ('1', 1): threw exception TypeError: Failed to execute 'postMessage' on 'Window': Third argument is neither an array, nor does it have indexed properties.
-PASS: Posting message ('2', c): threw exception TypeError: Failed to execute 'postMessage' on 'Window': Second argument is neither an array, nor does it have indexed properties.
-PASS: Posting message ('3', [object Object]): threw exception TypeError: Failed to execute 'postMessage' on 'Window': Third argument is neither an array, nor does it have indexed properties.
-PASS: Posting message ('3a', *): threw exception TypeError: Failed to execute 'postMessage' on 'Window': Second argument is neither an array, nor does it have indexed properties.
+PASS: Posting message ('1', 1): threw exception TypeError: Failed to execute 'postMessage' on 'Window': The 3rd argument is neither an array, nor does it have indexed properties.
+PASS: Posting message ('2', c): threw exception TypeError: Failed to execute 'postMessage' on 'Window': The 2nd argument is neither an array, nor does it have indexed properties.
+PASS: Posting message ('3', [object Object]): threw exception TypeError: Failed to execute 'postMessage' on 'Window': The 3rd argument is neither an array, nor does it have indexed properties.
+PASS: Posting message ('3a', *): threw exception TypeError: Failed to execute 'postMessage' on 'Window': The 2nd argument is neither an array, nor does it have indexed properties.
 PASS: Posting message ('4', [object Window]) did not throw an exception
 PASS: Posting message ('4a', *) did not throw an exception
 PASS: Posting message ('5', null) did not throw an exception

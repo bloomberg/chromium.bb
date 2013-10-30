@@ -51,7 +51,7 @@ void V8DedicatedWorkerGlobalScope::postMessageMethodCustom(const v8::FunctionCal
         bool notASequence = false;
         if (!extractTransferables(args[transferablesArgIndex], ports, arrayBuffers, notASequence, args.GetIsolate())) {
             if (notASequence)
-                throwTypeError(ExceptionMessages::failedToExecute("postMessage", "WorkerGlobalScope", ExceptionMessages::notASequenceTypeArgumentOrValue(transferablesArgIndex + 1)), args.GetIsolate());
+                throwTypeError(ExceptionMessages::failedToExecute("postMessage", "WorkerGlobalScope", ExceptionMessages::notAnArrayTypeArgumentOrValue(transferablesArgIndex + 1)), args.GetIsolate());
             return;
         }
     }

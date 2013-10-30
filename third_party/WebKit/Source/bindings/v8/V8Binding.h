@@ -475,7 +475,7 @@ namespace WebCore {
             length = v8::Local<v8::Array>::Cast(v8Value)->Length();
         } else if (toV8Sequence(value, length, notASequence, isolate).IsEmpty()) {
             if (notASequence)
-                throwTypeError(ExceptionMessages::notASequenceTypeArgumentOrValue(argumentIndex), isolate);
+                throwTypeError(ExceptionMessages::notAnArrayTypeArgumentOrValue(argumentIndex), isolate);
             return Vector<RefPtr<T> >();
         }
 
@@ -514,7 +514,7 @@ namespace WebCore {
             length = v8::Local<v8::Array>::Cast(v8Value)->Length();
         } else if (toV8Sequence(value, length, notASequence, isolate).IsEmpty()) {
             if (notASequence)
-                throwTypeError(ExceptionMessages::notASequenceTypeArgumentOrValue(argumentIndex), isolate);
+                throwTypeError(ExceptionMessages::notAnArrayTypeArgumentOrValue(argumentIndex), isolate);
             return Vector<T>();
         }
 

@@ -9,7 +9,7 @@ PASS event.ports contains two ports when two ports sent
 PASS posting a null port did throw: DataCloneError: An object could not be cloned.
 PASS posting a non-port did throw: DataCloneError: An object could not be cloned.
 PASS event.ports contains two ports when two ports re-sent after error
-PASS posting a non-array did throw: TypeError: Failed to execute 'postMessage' on 'WorkerGlobalScope': Second argument is neither an array, nor does it have indexed properties.
+PASS posting a non-array did throw: TypeError: Failed to execute 'postMessage' on 'WorkerGlobalScope': The 2nd argument is neither an array, nor does it have indexed properties.
 PASS posting a non-sequence did throw: DataCloneError: An object could not be cloned.
 
 TEST COMPLETE

@@ -132,7 +132,7 @@ bool getMessagePortArray(v8::Local<v8::Value> value, int argumentIndex, MessageP
         return true;
     }
     if (!value->IsArray()) {
-        throwTypeError(ExceptionMessages::notASequenceTypeArgumentOrValue(argumentIndex), isolate);
+        throwTypeError(ExceptionMessages::notAnArrayTypeArgumentOrValue(argumentIndex), isolate);
         return false;
     }
     bool success = false;
