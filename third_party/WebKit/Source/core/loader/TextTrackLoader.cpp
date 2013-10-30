@@ -45,7 +45,6 @@ TextTrackLoader::TextTrackLoader(TextTrackLoaderClient* client, Document& docume
     , m_document(document)
     , m_cueLoadTimer(this, &TextTrackLoader::cueLoadTimerFired)
     , m_state(Idle)
-    , m_parseOffset(0)
     , m_newCuesAvailable(false)
 {
 }
@@ -77,37 +76,17 @@ void TextTrackLoader::cancelLoad()
     }
 }
 
-void TextTrackLoader::processNewCueData(Resource* resource)
+void TextTrackLoader::dataReceived(Resource* resource, const char* data, int length)
 {
     ASSERT(m_resource == resource);
 
-    if (m_state == Failed || !resource->resourceBuffer())
-        return;
-
-    SharedBuffer* buffer = resource->resourceBuffer();
-    if (m_parseOffset == buffer->size())
+    if (m_state == Failed)
         return;
 
     if (!m_cueParser)
         m_cueParser = WebVTTParser::create(this, m_document);
 
-    const char* data;
-    unsigned length;
-
-    while ((length = buffer->getSomeData(data, m_parseOffset))) {
-        m_cueParser->parseBytes(data, length);
-        m_parseOffset += length;
-    }
-}
-
-void TextTrackLoader::dataReceived(Resource* resource, const char*, int)
-{
-    ASSERT(m_resource == resource);
-
-    if (!resource->resourceBuffer())
-        return;
-
-    processNewCueData(resource);
+    m_cueParser->parseBytes(data, length);
 }
 
 void TextTrackLoader::corsPolicyPreventedLoad()
@@ -128,11 +107,8 @@ void TextTrackLoader::notifyFinished(Resource* resource)
         corsPolicyPreventedLoad();
     }
 
-    if (m_state != Failed) {
-        processNewCueData(resource);
-        if (m_state != Failed)
-            m_state = resource->errorOccurred() ? Failed : Finished;
-    }
+    if (m_state != Failed)
+        m_state = resource->errorOccurred() ? Failed : Finished;
 
     if (!m_cueLoadTimer.isActive())
         m_cueLoadTimer.startOneShot(0);

@@ -80,7 +80,6 @@ private:
 
     TextTrackLoader(TextTrackLoaderClient*, Document&);
 
-    void processNewCueData(Resource*);
     void cueLoadTimerFired(Timer<TextTrackLoader>*);
     void corsPolicyPreventedLoad();
 
@@ -92,7 +91,6 @@ private:
     Timer<TextTrackLoader> m_cueLoadTimer;
     String m_crossOriginMode;
     State m_state;
-    unsigned m_parseOffset;
     bool m_newCuesAvailable;
 };
 

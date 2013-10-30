@@ -4,7 +4,7 @@ PASS WebVTT parser tests, settings-size.vtt
 PASS WebVTT parser tests, settings-position.vtt 
 PASS WebVTT parser tests, settings-multiple.vtt 
 FAIL WebVTT parser tests, settings-line.vtt assert_equals: line (cue 8) expected 2147483647 but got -1
-FAIL WebVTT parser tests, settings-align.vtt assert_equals: number of cues expected 9 but got 10
+PASS WebVTT parser tests, settings-align.vtt 
 PASS WebVTT parser tests, signature-bom.vtt 
 PASS WebVTT parser tests, signature-space.vtt 
 PASS WebVTT parser tests, signature-space-no-newline.vtt 
