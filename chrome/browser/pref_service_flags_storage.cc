@@ -5,8 +5,8 @@
 #include "chrome/browser/pref_service_flags_storage.h"
 
 #include "base/prefs/pref_service.h"
+#include "base/prefs/scoped_user_pref_update.h"
 #include "base/values.h"
-#include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/common/pref_names.h"
 
 namespace about_flags {

@@ -1,16 +1,17 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
 // A helper class that assists preferences in firing notifications when lists
 // or dictionaries are changed.
 
-#ifndef CHROME_BROWSER_PREFS_SCOPED_USER_PREF_UPDATE_H_
-#define CHROME_BROWSER_PREFS_SCOPED_USER_PREF_UPDATE_H_
+#ifndef BASE_PREFS_SCOPED_USER_PREF_UPDATE_H_
+#define BASE_PREFS_SCOPED_USER_PREF_UPDATE_H_
 
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/prefs/base_prefs_export.h"
 #include "base/prefs/pref_service.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/values.h"
@@ -30,7 +31,7 @@ namespace subtle {
 // We need this base class mostly for making it a friend of PrefService
 // and getting access to PrefService::GetMutableUserPref and
 // PrefService::ReportUserPrefChanged.
-class ScopedUserPrefUpdateBase : public base::NonThreadSafe {
+class BASE_PREFS_EXPORT ScopedUserPrefUpdateBase : public base::NonThreadSafe {
  protected:
   ScopedUserPrefUpdateBase(PrefService* service, const char* path);
 
@@ -104,4 +105,4 @@ typedef ScopedUserPrefUpdate<base::DictionaryValue,
 typedef ScopedUserPrefUpdate<base::ListValue, base::Value::TYPE_LIST>
     ListPrefUpdate;
 
-#endif  // CHROME_BROWSER_PREFS_SCOPED_USER_PREF_UPDATE_H_
+#endif  // BASE_PREFS_SCOPED_USER_PREF_UPDATE_H_

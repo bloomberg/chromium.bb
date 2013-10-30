@@ -7,8 +7,8 @@
 #include <jni.h>
 
 #include "base/android/jni_string.h"
+#include "base/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile_android.h"
 #include "chrome/browser/sync/glue/session_model_associator.h"
 #include "chrome/browser/sync/profile_sync_service.h"

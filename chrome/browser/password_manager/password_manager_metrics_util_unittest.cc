@@ -8,8 +8,8 @@
 #include <map>
 
 #include "base/basictypes.h"
+#include "base/prefs/scoped_user_pref_update.h"
 #include "base/values.h"
-#include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"

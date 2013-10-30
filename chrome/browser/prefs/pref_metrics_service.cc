@@ -10,6 +10,7 @@
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
+#include "base/prefs/scoped_user_pref_update.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_shutdown.h"
@@ -18,7 +19,6 @@
 // http://crbug.com/276485
 #include "chrome/browser/extensions/api/music_manager_private/device_id.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
-#include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/prefs/synced_pref_change_registrar.h"
 #include "chrome/browser/profiles/incognito_helpers.h"

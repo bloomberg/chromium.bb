@@ -1,12 +1,12 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "base/prefs/mock_pref_change_callback.h"
 #include "base/prefs/pref_change_registrar.h"
-#include "chrome/browser/prefs/scoped_user_pref_update.h"
-#include "chrome/test/base/testing_pref_service_syncable.h"
-#include "components/user_prefs/pref_registry_syncable.h"
+#include "base/prefs/pref_registry_simple.h"
+#include "base/prefs/scoped_user_pref_update.h"
+#include "base/prefs/testing_pref_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -20,9 +20,7 @@ class ScopedUserPrefUpdateTest : public testing::Test {
 
  protected:
   virtual void SetUp() {
-    prefs_.registry()->RegisterDictionaryPref(
-        kPref,
-        user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+    prefs_.registry()->RegisterDictionaryPref(kPref);
     registrar_.Init(&prefs_);
     registrar_.Add(kPref, observer_.GetCallback());
   }
@@ -31,7 +29,7 @@ class ScopedUserPrefUpdateTest : public testing::Test {
   static const char kKey[];
   static const char kValue[];
 
-  TestingPrefServiceSyncable prefs_;
+  TestingPrefServiceSimple prefs_;
   MockPrefChangeCallback observer_;
   PrefChangeRegistrar registrar_;
 };

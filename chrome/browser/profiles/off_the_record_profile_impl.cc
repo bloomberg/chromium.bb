@@ -57,8 +57,8 @@
 #include "webkit/browser/database/database_tracker.h"
 
 #if defined(OS_ANDROID) || defined(OS_IOS)
+#include "base/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/prefs/proxy_prefs.h"
-#include "chrome/browser/prefs/scoped_user_pref_update.h"
 #endif  // defined(OS_ANDROID) || defined(OS_IOS)
 
 #if defined(OS_CHROMEOS)

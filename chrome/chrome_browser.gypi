@@ -1625,8 +1625,6 @@
         'browser/prefs/proxy_config_dictionary.h',
         'browser/prefs/proxy_prefs.cc',
         'browser/prefs/proxy_prefs.h',
-        'browser/prefs/scoped_user_pref_update.cc',
-        'browser/prefs/scoped_user_pref_update.h',
         'browser/prefs/session_startup_pref.cc',
         'browser/prefs/session_startup_pref.h',
         'browser/prefs/synced_pref_change_registrar.cc',
