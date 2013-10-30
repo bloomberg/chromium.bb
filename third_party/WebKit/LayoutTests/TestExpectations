@@ -105,8 +105,8 @@ crbug.com/309962 virtual/web-animations-css/animations/cross-fade-webkit-mask-bo
 # These can't be rebaselined because they timeout
 crbug.com/303430 virtual/web-animations-css/transitions/cancel-transition.html [ Pass Failure Timeout ]
 
-crbug.com/305070 [ Debug ] animations/interpolation/svg-stroke-dasharray-interpolation.html [ Crash ]
-crbug.com/305070 [ Debug ] virtual/threaded/animations/interpolation/svg-stroke-dasharray-interpolation.html [ Crash ]
+crbug.com/305070 [ Debug ] animations/interpolation/svg-stroke-dasharray-interpolation.html [ Crash Pass ]
+crbug.com/305070 [ Debug ] virtual/threaded/animations/interpolation/svg-stroke-dasharray-interpolation.html [ Crash Pass ]
 
 crbug.com/309963 animations/play-state-initially-paused.html [ Timeout ]
 crbug.com/309963 animations/play-state-initially-paused-start-event.html [ Timeout ]
